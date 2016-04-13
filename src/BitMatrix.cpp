@@ -153,6 +153,19 @@ BitMatrix::rotate180()
 	}
 }
 
+void
+BitMatrix::mirror()
+{
+	for (int x = 0; x < _width; x++) {
+		for (int y = x + 1; y < _height; y++) {
+			if (get(x, y) != get(y, x)) {
+				flip(y, x);
+				flip(x, y);
+			}
+		}
+	}
+}
+
 /**
 * This is useful in detecting the enclosing rectangle of a 'pure' barcode.
 *

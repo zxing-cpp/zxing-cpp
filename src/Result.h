@@ -1,6 +1,6 @@
 #pragma once
-#include "utils/ZXString.h"
-#include "utils/ByteArray.h"
+#include "ZXString.h"
+#include "ByteArray.h"
 #include "BarcodeFormat.h"
 #include "ResultPoint.h"
 #include "ResultMetadata.h"

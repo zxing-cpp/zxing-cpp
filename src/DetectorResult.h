@@ -1,5 +1,5 @@
 #pragma once
-#include "utils/BitMatrix.h"
+#include "BitMatrix.h"
 #include "ResultPoint.h"
 
 #include <vector>

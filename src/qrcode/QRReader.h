@@ -2,12 +2,14 @@
 #include "Reader.h"
 
 namespace ZXing {
+namespace QRCode {
 
-class QRReader : public Reader
+class Reader : public ZXing::Reader
 {
 public:
-	virtual ~QRReader();
+	virtual ~Reader();
 	virtual Result decode(const BinaryBitmap& image, const DecodeHints* hints = nullptr) const override;
 };
 
+} // QRCode
 } // ZXing

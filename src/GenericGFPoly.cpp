@@ -5,26 +5,31 @@
 
 namespace ZXing {
 
+GenericGFPoly::GenericGFPoly() :
+	_field(nullptr)
+{
+}
+
 GenericGFPoly::GenericGFPoly(const GenericGF& field, const std::vector<int>& coefs) :
 	_field(&field)
 {
-	if (coefs.empty() == 0) {
+	if (coefs.empty()) {
 		throw std::invalid_argument("GenericGFPoly: coefficients cannot be empty.");
 	}
 
-	int coefficientsLength = static_cast<int>(coefs.size());
-	if (coefficientsLength > 1 && coefs[0] == 0)
+	int coefCount = static_cast<int>(coefs.size());
+	if (coefCount > 1 && coefs[0] == 0)
 	{
 		// Leading term must be non-zero for anything except the constant polynomial "0"
 		int firstNonZero = 1;
-		while (firstNonZero < coefficientsLength && coefs[firstNonZero] == 0) {
+		while (firstNonZero < coefCount && coefs[firstNonZero] == 0) {
 			firstNonZero++;
 		}
-		if (firstNonZero == coefficientsLength) {
+		if (firstNonZero == coefCount) {
 			_coefficients.resize(1, 0);
 		}
 		else {
-			_coefficients.resize(coefficientsLength - firstNonZero);
+			_coefficients.resize(coefCount - firstNonZero);
 			std::copy(coefs.begin() + firstNonZero, coefs.end(), _coefficients.begin());
 		}
 	}

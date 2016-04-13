@@ -158,10 +158,6 @@ public:
 	//	return result.toString();
 	//}
 
-	//public BitArray clone() {
-	//	return new BitArray(bits.clone(), size);
-	//}
-
 private:
 	void ensureCapacity(int size)
 	{

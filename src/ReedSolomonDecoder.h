@@ -38,17 +38,16 @@ public:
 	* @param twoS number of error-correction codewords available
 	* @throws ReedSolomonException if decoding fails for any reason
 	*/
-	void decode(const std::vector<int>& received, int twoS) const;
+	bool decode(std::vector<int>& received, int twoS) const;
 
 private:
 	const GenericGF* _field;
-
 };
 
-class ReedSolomonException : public std::exception
-{
-public:
-	ReedSolomonException(const char* msg) : std::exception(msg) {}
-};
+//class ReedSolomonException : public std::exception
+//{
+//public:
+//	ReedSolomonException(const char* msg) : std::exception(msg) {}
+//};
 
-}
+} // ZXing

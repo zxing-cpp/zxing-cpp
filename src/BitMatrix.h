@@ -128,6 +128,8 @@ public:
 	*/
 	void rotate180();
 
+	void mirror();
+
 	/**
 	* This is useful in detecting the enclosing rectangle of a 'pure' barcode.
 	*

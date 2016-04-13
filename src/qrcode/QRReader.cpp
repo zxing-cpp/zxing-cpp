@@ -1,14 +1,16 @@
-#include "QRReader.h"
+#include "qrcode/QRReader.h"
+#include "Result.h"
 #include "DecoderResult.h"
 #include "ResultPoint.h"
 #include "DecodeHints.h"
 #include "BinaryBitmap.h"
-#include "utils/BitMatrix.h"
-#include "utils/ZXNumeric.h"
+#include "BitMatrix.h"
+#include "ZXNumeric.h"
 
 #include <ciso646>
 
 namespace ZXing {
+namespace QRCode {
 
 namespace {
 
@@ -119,11 +121,10 @@ bool extractPureBits(const BitMatrix& image, BitMatrix& outBits)
 	return true;
 }
 
-
 } // anonymous
 
 Result
-QRCodeReader::decode(const BinaryBitmap& image, const DecodeHints* hints) const
+Reader::decode(const BinaryBitmap& image, const DecodeHints* hints) const
 {
 	DecoderResult decoderResult;
 	std::vector<ResultPoint> points;
@@ -167,4 +168,5 @@ QRCodeReader::decode(const BinaryBitmap& image, const DecodeHints* hints) const
 	return result;
 }
 
+} // QRCode
 } // ZXing

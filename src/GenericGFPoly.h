@@ -15,6 +15,10 @@ class GenericGF;
 class GenericGFPoly
 {
 public:
+	// Build a invalid object, so that this can be used in container or return by reference,
+	// any access to invalid object is undefined behavior.
+	GenericGFPoly();
+
 	/**
 	* @param field the {@link GenericGF} instance representing the field to use
 	* to perform computations
