@@ -14,25 +14,36 @@
 * limitations under the License.
 */
 
-#include "Binarizer.h"
-#include "LuminanceSource.h"
+#include "DecodeHints.h"
+#include "ZXString.h"
 
 namespace ZXing {
 
-Binarizer::~Binarizer()
+struct DecodeHints::HintValue
 {
+	virtual ~HintValue() {}
+	virtual String toString() const = 0;
+};
+
+struct DecodeHints::StringHintValue : public HintValue
+{
+	String value;
+	virtual String toString() const override {
+		return value;
+	}
+};
+
+bool
+DecodeHints::contains(DecodeHint hint) const
+{
+	return _contents.find(hint) != _contents.end();
 }
 
-int
-Binarizer::width() const
+String
+DecodeHints::getString(DecodeHint hint) const
 {
-	return _source->width();
-}
-
-int
-Binarizer::height() const
-{
-	return _source->height();
+	auto it = _contents.find(hint);
+	return it != _contents.end() ? it->second->toString() : String();
 }
 
 

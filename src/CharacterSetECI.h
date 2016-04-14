@@ -15,30 +15,31 @@
 * limitations under the License.
 */
 
-#include "ByteArray.h"
-#include "ZXString.h"
-
-#include <memory>
-
 namespace ZXing {
 
-class ResultMetadata;
+enum class CharacterSet;
 
 /**
-* <p>Encapsulates the result of decoding a matrix of bits. This typically
-* applies to 2D barcode formats. For now it contains the raw bytes obtained,
-* as well as a String interpretation of those bytes, if applicable.</p>
+* Encapsulates a Character Set ECI, according to "Extended Channel Interpretations" 5.3.1.1
+* of ISO 18004.
 */
-class DecoderResult
+class CharacterSetECI
 {
-	ByteArray _rawBytes;
-	String _text;
-	std::shared_ptr<ResultMetadata> _metadata;
-
 public:
-	~DecoderResult();
+	/**
+	* @param value character set ECI value
+	* @return {@code CharacterSetECI} representing ECI of given value, or null if it is legal but
+	*   unsupported
+	* @throws FormatException if ECI value is invalid
+	*/
+	static CharacterSet CharsetFromValue(int value);
 
-	void setMetadata(const std::shared_ptr<ResultMetadata>& m);
+	/**
+	* @param name character set ECI encoding name
+	* @return CharacterSetECI representing ECI for character encoding, or null if it is legal
+	*   but unsupported
+	*/
+	static CharacterSet CharsetFromName(const char* name);
 };
 
 } // ZXing

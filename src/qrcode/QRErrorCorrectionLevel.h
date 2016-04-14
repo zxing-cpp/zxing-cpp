@@ -1,3 +1,4 @@
+#pragma once
 /*
 * Copyright 2016 ZXing authors
 *
@@ -14,26 +15,20 @@
 * limitations under the License.
 */
 
-#include "Binarizer.h"
-#include "LuminanceSource.h"
-
 namespace ZXing {
+namespace QRCode {
 
-Binarizer::~Binarizer()
+/**
+* <p>See ISO 18004:2006, 6.5.1. This enum encapsulates the four error correction levels
+* defined by the QR code standard.</p>
+*/
+enum class ErrorCorrectionLevel
 {
-}
+	Medium,			// M = ~15% correction
+	Low,			// L = ~7 % correction
+	High,			// H = ~30% correction
+	Quality,		// Q = ~25% correction
+};
 
-int
-Binarizer::width() const
-{
-	return _source->width();
-}
-
-int
-Binarizer::height() const
-{
-	return _source->height();
-}
-
-
+} // QRCode
 } // ZXing
