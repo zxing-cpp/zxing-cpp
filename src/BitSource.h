@@ -37,7 +37,7 @@ public:
 	* @param bytes bytes from which this will read bits. Bits will be read from the first byte first.
 	* Bits are read within a byte from most-significant to least-significant bit.
 	*/
-	explicit BitSource(const ByteArray& bytes) : _bytes(bytes) {}
+	explicit BitSource(const ByteArray& bytes) : _bytes(bytes), _byteOffset(0), _bitOffset(0) {}
 	
 	BitSource(BitSource &) = delete;
 	BitSource& operator=(const BitSource &) = delete;

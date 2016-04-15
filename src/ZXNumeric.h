@@ -22,24 +22,24 @@
 
 namespace ZXing {
 
-static const float kPi = NB_REAL(3.14159265358979323846);
-static const float kPi2 = NB_REAL(1.57079632679489661923);
-static const float kPi4 = NB_REAL(0.785398163397448309616);
+static const float kPi = 3.14159265358979323846f;
+static const float kPi2 = 1.57079632679489661923f;
+static const float kPi4 = 0.785398163397448309616f;
 static const float kEpsilon = std::numeric_limits<float>::epsilon() * 10;
-static const float kDegPerRad = NbReal(180.)/ kPi;
-static const float kRadPerDeg = kPi / NbReal(180.);
+static const float kDegPerRad = 180.0f/ kPi;
+static const float kRadPerDeg = kPi / 180.0f;
 static const float kDeg2Rad = kRadPerDeg;
 static const float kRad2Deg = kDegPerRad;
 static const float kInfinity = std::numeric_limits<float>::infinity();
-static const float kTinyDistance = NB_REAL(1e-4);
+static const float kTinyDistance = 1e-4f;
 
 /// Test the 'closeness' of two numbers
 template <typename T>
 typename std::enable_if<std::is_floating_point<T>::value, bool>::type
 FuzzyEqual(T a, T b, T tolerance = std::numeric_limits<T>::epsilon() * 10)
 {
-	NbReal fa = std::fabs(a);
-	NbReal fb = std::fabs(b);
+	T fa = std::fabs(a);
+	T fb = std::fabs(b);
 	return std::fabs(a - b) <= tolerance * (fa > fb ? fa : fb);
 }
 

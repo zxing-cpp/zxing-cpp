@@ -15,6 +15,8 @@
 * limitations under the License.
 */
 
+#include <memory>
+
 namespace ZXing {
 
 class String;
@@ -49,6 +51,7 @@ enum class CharacterSet
 	Big5,
 	GB2312,
 	GB18030,
+	EUC_JP,
 	EUC_KR,
 };
 
@@ -62,8 +65,13 @@ enum class CharacterSet
 class StringCodecs
 {
 public:
-	static String ToUnicode(const char* buffer, int count, CharacterSet codec);
-	static CharacterSet GuessEncoding(const char* buffer, int count);
+	virtual ~StringCodecs();
+	virtual String toUnicode(const char* bytes, int length, CharacterSet codec) const = 0;
+	virtual CharacterSet defaultEncoding() const = 0;
+
+	static CharacterSet GuessEncoding(const char* bytes, int length);
+	static std::shared_ptr<StringCodecs> Instance();
+	static void SetInstance(const std::shared_ptr<StringCodecs>& inst);
 };
 
 } // ZXing

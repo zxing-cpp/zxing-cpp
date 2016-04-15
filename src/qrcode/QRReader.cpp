@@ -15,6 +15,9 @@
 */
 
 #include "qrcode/QRReader.h"
+#include "qrcode/QRDecoder.h"
+#include "qrcode/QRDetector.h"
+#include "qrcode/QRDecoderMetadata.h"
 #include "Result.h"
 #include "DecoderResult.h"
 #include "ResultPoint.h"
@@ -22,8 +25,6 @@
 #include "BinaryBitmap.h"
 #include "BitMatrix.h"
 #include "ZXNumeric.h"
-
-#include <ciso646>
 
 namespace ZXing {
 namespace QRCode {
@@ -63,10 +64,10 @@ bool GetModuleSize(int x, int y, BitMatrix image, float& outSize)
 *
 * @see com.google.zxing.datamatrix.DataMatrixReader#extractPureBits(BitMatrix)
 */
-bool extractPureBits(const BitMatrix& image, BitMatrix& outBits)
+bool ExtractPureBits(const BitMatrix& image, BitMatrix& outBits)
 {
 	int left, top, right, bottom;
-	if (not image.getTopLeftOnBit(left, top) || not image.getBottomRightOnBit(right, bottom))
+	if (!image.getTopLeftOnBit(left, top) || !image.getBottomRightOnBit(right, bottom))
 	{
 		return false;
 	}
@@ -144,31 +145,39 @@ Reader::decode(const BinaryBitmap& image, const DecodeHints* hints) const
 {
 	DecoderResult decoderResult;
 	std::vector<ResultPoint> points;
-	if (hints != nullptr && hints->contains(DecodeHint::PURE_BARCODE))
+	if (hints != nullptr && hints->getFlag(DecodeHint::PURE_BARCODE))
 	{
 		BitMatrix binImg;
 		BitMatrix bits;
-		if (not image.getBlackMatrix(binImg) || not extractPureBits(binImg, bits))
-		{
-
+		if (image.getBlackMatrix(binImg) && ExtractPureBits(binImg, bits)) {
+			decoderResult = Decoder::Decode(bits, hints);
 		}
-		decoderResult = decoder.decode(bits, hints);
-		points = NO_POINTS;
+		else {
+			return Result();
+		}
 	}
 	else {
-		DetectorResult detectorResult = new Detector(image.getBlackMatrix()).detect(hints);
-		decoderResult = decoder.decode(detectorResult.getBits(), hints);
-		points = detectorResult.getPoints();
+		BitMatrix binImg;
+		if (image.getBlackMatrix(binImg))
+		{
+			auto detectorResult = Detector::Detect(binImg, hints);
+			decoderResult = Decoder::Decode(detectorResult.bits(), hints);
+			points = detectorResult.points();
+		}
+		else
+		{
+			return Result();
+		}
 	}
 
 	// If the code was mirrored: swap the bottom-left and the top-right points.
-	if (decoderResult.getOther() instanceof QRCodeDecoderMetaData) {
-		((QRCodeDecoderMetaData)decoderResult.getOther()).applyMirroredCorrection(points);
+	if (auto extra = std::dynamic_pointer_cast<DecoderMetadata>(decoderResult.extra())) {
+		extra->applyMirroredCorrection(points.begin(), points.end());
 	}
 
-	Result result = new Result(decoderResult.getText(), decoderResult.getRawBytes(), points, BarcodeFormat.QR_CODE);
-	List<byte[]> byteSegments = decoderResult.getByteSegments();
-	if (byteSegments != null) {
+	Result result(decoderResult.text(), decoderResult.rawBytes(), points, BarcodeFormat::QR_CODE);
+	auto& byteSegments = decoderResult.byteSegments();
+	if (!byteSegments.empty()) {
 		result.putMetadata(ResultMetadataType.BYTE_SEGMENTS, byteSegments);
 	}
 	String ecLevel = decoderResult.getECLevel();

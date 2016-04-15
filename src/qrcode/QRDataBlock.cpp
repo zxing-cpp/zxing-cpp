@@ -23,11 +23,6 @@
 namespace ZXing {
 namespace QRCode {
 
-DataBlock::DataBlock() :
-	_numDataCodewords(0)
-{
-}
-
 bool
 DataBlock::GetDataBlocks(const ByteArray& rawCodewords, const Version& version, ErrorCorrectionLevel ecLevel, std::vector<DataBlock>& result)
 {

@@ -36,10 +36,7 @@ class LuminanceSource
 	int _height;
 
 protected:
-	LuminanceSource(int width, int height) {
-		_width = width;
-		_height = height;
-	}
+	LuminanceSource(int width, int height) : _width(width), _height(height) {}
 	
 public:
 	virtual ~LuminanceSource();

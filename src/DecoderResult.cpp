@@ -15,18 +15,27 @@
 */
 
 #include "DecoderResult.h"
-#include "ResultMetadata.h"
 
 namespace ZXing {
 
-DecoderResult::~DecoderResult()
+DecoderResult::DecoderResult(const ByteArray& rawBytes, const String& text, std::list<ByteArray>& byteSegments, const String& ecLevel) :
+	_valid(true),
+	_rawBytes(rawBytes),
+	_text(text),
+	_byteSegments(byteSegments),
+	_ecLevel(ecLevel)
 {
 }
 
-void
-DecoderResult::setMetadata(const std::shared_ptr<ResultMetadata>& m)
+DecoderResult::DecoderResult(const ByteArray& rawBytes, const String& text, std::list<ByteArray>& byteSegments, const String& ecLevel, int saSequence, int saParity) :
+	_valid(true),
+	_rawBytes(rawBytes),
+	_text(text),
+	_byteSegments(byteSegments),
+	_ecLevel(ecLevel),
+	_structuredAppendSequenceNumber(saSequence),
+	_structuredAppendParity(saParity)
 {
-	_metadata = m;
 }
 
 } // ZXing

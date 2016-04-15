@@ -64,11 +64,7 @@ public:
 	* @param y The vertical component (i.e. which row)
 	* @return value of given bit in matrix
 	*/
-	bool get(int x, int y) const
-	{
-		int offset = y * _rowSize + (x / 32);
-		return ((_bits[offset] >> (x & 0x1f)) & 1) != 0;
-	}
+	bool get(int x, int y) const;
 
 	/**
 	* <p>Sets the given bit to true.</p>
@@ -76,17 +72,9 @@ public:
 	* @param x The horizontal component (i.e. which column)
 	* @param y The vertical component (i.e. which row)
 	*/
-	void set(int x, int y)
-	{
-		int offset = y * _rowSize + (x / 32);
-		_bits[offset] |= 1 << (x & 0x1f);
-	}
+	void set(int x, int y);
 
-	void unset(int x, int y)
-	{
-		int offset = y * _rowSize + (x / 32);
-		_bits[offset] &= ~(1 << (x & 0x1f));
-	}
+	void unset(int x, int y);
 
 	/**
 	* <p>Flips the given bit.</p>
@@ -94,11 +82,7 @@ public:
 	* @param x The horizontal component (i.e. which column)
 	* @param y The vertical component (i.e. which row)
 	*/
-	void flip(int x, int y)
-	{
-		int offset = y * _rowSize + (x / 32);
-		_bits[offset] ^= 1 << (x & 0x1f);
-	}
+	void flip(int x, int y);
 
 	/**
 	* Exclusive-or (XOR): Flip the bit in this {@code BitMatrix} if the corresponding
@@ -183,6 +167,12 @@ public:
 		return _rowSize;
 	}
 
+	/**
+	* Re-init the matrix with given size and clear all bits.
+	*/
+	void init(int width, int height);
+
+
 	friend bool operator==(const BitMatrix& a, const BitMatrix& b)
 	{
 		return a._width == b._width && a._height == b._height && a._rowSize == b._rowSize && a._bits == b._bits;
@@ -223,6 +213,9 @@ public:
 	//	}
 	//	return result.toString();
 	//}
+
+private:
+	int checkBounds(int offset) const;
 };
 
 } // ZXing

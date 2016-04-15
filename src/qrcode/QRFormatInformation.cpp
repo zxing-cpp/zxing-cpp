@@ -18,7 +18,6 @@
 #include "BitHacks.h"
 
 #include <array>
-#include <ciso646>
 
 namespace ZXing {
 namespace QRCode {
@@ -66,12 +65,6 @@ static const std::array<int, 2> FORMAT_INFO_DECODE_LOOKUP[] = {
 };
 
 } // anonymous
-
-FormatInformation::FormatInformation() :
-	_errorCorrectionLevel(ErrorCorrectionLevel::Medium),
-	_dataMask(0)
-{
-}
 
 void
 FormatInformation::set(int formatInfo)

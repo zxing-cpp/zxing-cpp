@@ -24,7 +24,7 @@ int
 BitSource::readBits(int numBits)
 {
 	if (numBits < 1 || numBits > 32 || numBits > available()) {
-		throw std::invalid_argument("BitSource::readBits: out of range");
+		throw std::out_of_range("BitSource::readBits: out of range");
 	}
 
 	int result = 0;

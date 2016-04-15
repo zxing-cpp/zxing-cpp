@@ -15,25 +15,22 @@
 * limitations under the License.
 */
 
+#include "qrcode/QRFinderPattern.h"
+
 namespace ZXing {
-
-class String;
-
 namespace QRCode {
 
 /**
-* <p>See ISO 18004:2006, 6.5.1. This enum encapsulates the four error correction levels
-* defined by the QR code standard.</p>
+* <p>Encapsulates information about finder patterns in an image, including the location of
+* the three finder patterns, and their estimated module size.</p>
 */
-enum class ErrorCorrectionLevel
+class FinderPatternInfo
 {
-	Medium,			// M = ~15% correction
-	Low,			// L = ~7 % correction
-	High,			// H = ~30% correction
-	Quality,		// Q = ~25% correction
+public:
+	FinderPattern bottomLeft;
+	FinderPattern topLeft;
+	FinderPattern topRight;
 };
-
-String ToString(ErrorCorrectionLevel l);
 
 } // QRCode
 } // ZXing

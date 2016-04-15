@@ -35,8 +35,6 @@ enum class ErrorCorrectionLevel;
 class DataBlock
 {
 public:
-	DataBlock();
-
 	int numDataCodewords() const {
 		return _numDataCodewords;
 	}
@@ -59,7 +57,7 @@ public:
 	static bool GetDataBlocks(const ByteArray& rawCodewords, const Version& version, ErrorCorrectionLevel ecLevel, std::vector<DataBlock>& result);
 
 private:
-	int _numDataCodewords;
+	int _numDataCodewords = 0;
 	ByteArray _codewords;
 };
 

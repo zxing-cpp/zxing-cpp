@@ -15,8 +15,6 @@
 * limitations under the License.
 */
 
-#include <memory>
-
 namespace ZXing {
 
 class DecoderResult;
@@ -70,7 +68,7 @@ public:
 	* @throws FormatException if the QR Code cannot be decoded
 	* @throws ChecksumException if error correction fails
 	*/
-	static std::shared_ptr<DecoderResult> Decode(const BitMatrix& bits, const DecodeHints* hints = nullptr);
+	static DecoderResult Decode(BitMatrix& bits, const DecodeHints* hints = nullptr);
 
 	//private DecoderResult decode(BitMatrixParser parser, Map<DecodeHintType, ? > hints)
 	//	throws FormatException, ChecksumException{

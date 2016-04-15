@@ -33,7 +33,6 @@ class BinaryBitmap
 {
 public:
 	explicit BinaryBitmap(const std::shared_ptr<Binarizer>& binarizer);
-	~BinaryBitmap();
 
 	/**
 	* @return The width of the bitmap.

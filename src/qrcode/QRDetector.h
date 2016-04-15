@@ -17,23 +17,29 @@
 
 namespace ZXing {
 
-class String;
+class DetectorResult;
+class DecodeHints;
+class BitMatrix;
 
 namespace QRCode {
 
 /**
-* <p>See ISO 18004:2006, 6.5.1. This enum encapsulates the four error correction levels
-* defined by the QR code standard.</p>
+* <p>Encapsulates logic that can detect a QR Code in an image, even if the QR Code
+* is rotated or skewed, or partially obscured.</p>
 */
-enum class ErrorCorrectionLevel
+class Detector
 {
-	Medium,			// M = ~15% correction
-	Low,			// L = ~7 % correction
-	High,			// H = ~30% correction
-	Quality,		// Q = ~25% correction
+public:
+	/**
+	* <p>Detects a QR Code in an image.</p>
+	*
+	* @param hints optional hints to detector
+	* @return {@link DetectorResult} encapsulating results of detecting a QR Code
+	* @throws NotFoundException if QR Code cannot be found
+	* @throws FormatException if a QR Code cannot be decoded
+	*/
+	static DetectorResult Detect(const BitMatrix& image, const DecodeHints* hints = nullptr);
 };
-
-String ToString(ErrorCorrectionLevel l);
 
 } // QRCode
 } // ZXing

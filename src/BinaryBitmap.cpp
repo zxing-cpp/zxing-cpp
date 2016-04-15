@@ -48,10 +48,6 @@ BinaryBitmap::BinaryBitmap(const std::shared_ptr<Binarizer>& binarizer)
 	_impl->binarizer = binarizer;
 }
 
-BinaryBitmap::~BinaryBitmap()
-{
-}
-
 int
 BinaryBitmap::width() const
 {

@@ -76,13 +76,13 @@ namespace {
 */
 bool CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
 {
-	int numCodewords = codewordBytes.length;
+	int numCodewords = codewordBytes.length();
 	// First read into an array of ints
 	std::vector<int> codewordsInts(numCodewords);
 	for (int i = 0; i < numCodewords; i++) {
 		codewordsInts[i] = codewordBytes[i] & 0xFF;
 	}
-	int numECCodewords = codewordBytes.length - numDataCodewords;
+	int numECCodewords = codewordBytes.length() - numDataCodewords;
 	if (ReedSolomonDecoder(GenericGF::QRCodeField256()).decode(codewordsInts, numECCodewords))
 	{
 		// Copy back into array of bytes -- only need to worry about the bytes that were data
@@ -128,7 +128,7 @@ bool DecodeHanziSegment(BitSource& bits, int count, String& result)
 		count--;
 	}
 
-	result += StringCodecs::ToUnicode(buffer.charPtr(), buffer.length(), CharacterSet::GB2312);
+	result += StringCodecs::Instance()->toUnicode(buffer.charPtr(), buffer.length(), CharacterSet::GB2312);
 	return true;
 }
 
@@ -160,7 +160,7 @@ bool DecodeKanjiSegment(BitSource& bits, int count, String& result)
 		count--;
 	}
 
-	result += StringCodecs::ToUnicode(buffer.charPtr(), buffer.length(), CharacterSet::Shift_JIS);
+	result += StringCodecs::Instance()->toUnicode(buffer.charPtr(), buffer.length(), CharacterSet::Shift_JIS);
 	return true;
 }
 
@@ -194,7 +194,7 @@ bool DecodeByteSegment(BitSource& bits, int count, CharacterSet charset, const D
 			charset = StringCodecs::GuessEncoding(readBytes.charPtr(), readBytes.length());
 		}
 	}
-	result += StringCodecs::ToUnicode(readBytes.charPtr(), readBytes.length(), charset);
+	result += StringCodecs::Instance()->toUnicode(readBytes.charPtr(), readBytes.length(), charset);
 	byteSegments.push_back(readBytes);
 	return true;
 }
@@ -212,7 +212,7 @@ char ToAlphaNumericChar(int value)
 	};
 
 	if (value >= sizeof(ALPHANUMERIC_CHARS)) {
-		throw std::invalid_argument("ToAlphaNumericChar: out of range");
+		throw std::out_of_range("ToAlphaNumericChar: out of range");
 	}
 	return ALPHANUMERIC_CHARS[value];
 }
@@ -332,7 +332,7 @@ bool ParseECIValue(BitSource& bits, int &outValue)
 *
 * <p>See ISO 18004:2006, 6.4.3 - 6.4.7</p>
 */
-static std::shared_ptr<DecoderResult> DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionLevel ecLevel, const DecodeHints* hints)
+static DecoderResult DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionLevel ecLevel, const DecodeHints* hints)
 {
 	BitSource bits(bytes);
 	String result;
@@ -360,7 +360,7 @@ static std::shared_ptr<DecoderResult> DecodeBitStream(const ByteArray& bytes, co
 			}
 			else if (mode == DecodeMode::STRUCTURED_APPEND) {
 				if (bits.available() < 16) {
-					return nullptr;
+					return DecoderResult();
 				}
 				// sequence number and parity is added later to the result metadata
 				// Read next 8 bits (symbol sequence #) and 8 bits (parity data), then continue
@@ -371,11 +371,11 @@ static std::shared_ptr<DecoderResult> DecodeBitStream(const ByteArray& bytes, co
 				// Count doesn't apply to ECI
 				int value;
 				if (!ParseECIValue(bits, value))
-					return nullptr;
+					return DecoderResult();
 
 				currentCharset = CharacterSetECI::CharsetFromValue(value);
 				if (currentCharset == CharacterSet::Unknown) {
-					return nullptr;
+					return DecoderResult();
 				}
 			}
 			else {
@@ -386,7 +386,7 @@ static std::shared_ptr<DecoderResult> DecodeBitStream(const ByteArray& bytes, co
 					int countHanzi = bits.readBits(DecodeMode::CharacterCountBits(mode, version));
 					if (subset == GB2312_SUBSET) {
 						if (!DecodeHanziSegment(bits, countHanzi, result))
-							return nullptr;
+							return DecoderResult();
 					}
 				}
 				else {
@@ -395,42 +395,37 @@ static std::shared_ptr<DecoderResult> DecodeBitStream(const ByteArray& bytes, co
 					int count = bits.readBits(DecodeMode::CharacterCountBits(mode, version));
 					if (mode == DecodeMode::NUMERIC) {
 						if (!DecodeNumericSegment(bits, count, result))
-							return nullptr;
+							return DecoderResult();
 					}
 					else if (mode == DecodeMode::ALPHANUMERIC) {
 						if (!DecodeAlphanumericSegment(bits, count, fc1InEffect, result)) {
-							return nullptr;
+							return DecoderResult();
 						}
 					}
 					else if (mode == DecodeMode::BYTE) {
 						if (!DecodeByteSegment(bits, count, currentCharset, hints, result, byteSegments))
-							return nullptr;
+							return DecoderResult();
 					}
 					else if (mode == DecodeMode::KANJI) {
 						if (!DecodeKanjiSegment(bits, count, result))
-							return nullptr;
+							return DecoderResult();
 					}
 					else {
-						return nullptr;
+						return DecoderResult();
 					}
 				}
 			}
 		}
 	} while (mode != DecodeMode::TERMINATOR);
 
-	return std::make_shared<DecoderResult>(bytes,
-		result.toString(),
-		byteSegments.isEmpty() ? null : byteSegments,
-		ecLevel == null ? null : ecLevel.toString(),
-		symbolSequence,
-		parityData);
+	return DecoderResult(bytes, result, byteSegments, ToString(ecLevel), symbolSequence, parityData);
 }
 
 #pragma endregion
 
 
 
-std::shared_ptr<DecoderResult> DoDecode(const BitMatrix& bits, const Version& version, const FormatInformation& formatInfo, const DecodeHints* hints)
+DecoderResult DoDecode(const BitMatrix& bits, const Version& version, const FormatInformation& formatInfo, const DecodeHints* hints)
 {
 	auto ecLevel = formatInfo.errorCorrectionLevel();
 
@@ -439,7 +434,7 @@ std::shared_ptr<DecoderResult> DoDecode(const BitMatrix& bits, const Version& ve
 	// Separate into data blocks
 	std::vector<DataBlock> dataBlocks;
 	if (!DataBlock::GetDataBlocks(codewords, version, ecLevel, dataBlocks))
-		return nullptr;
+		return DecoderResult();
 
 	// Count total number of data bytes
 	int totalBytes = 0;
@@ -456,7 +451,7 @@ std::shared_ptr<DecoderResult> DoDecode(const BitMatrix& bits, const Version& ve
 		int numDataCodewords = dataBlock.numDataCodewords();
 		
 		if (!CorrectErrors(codewordBytes, numDataCodewords))
-			return nullptr;
+			return DecoderResult();
 
 		for (int i = 0; i < numDataCodewords; i++) {
 			resultBytes[resultOffset++] = codewordBytes[i];
@@ -476,18 +471,17 @@ void ReMask(BitMatrix& bitMatrix, const FormatInformation& formatInfo)
 } // anonymous
 
 
-std::shared_ptr<DecoderResult>
-Decoder::Decode(const BitMatrix& bits_, const DecodeHints* hints)
+DecoderResult
+Decoder::Decode(BitMatrix& bits, const DecodeHints* hints)
 {
-	BitMatrix bits = bits_;
-
 	// Construct a parser and read version, error-correction level
 	const Version* version;
 	FormatInformation formatInfo;
 	if (BitMatrixParser::ParseVersionInfo(bits, false, version, formatInfo))
 	{
 		ReMask(bits, formatInfo);
-		if (auto result = DoDecode(bits, *version, formatInfo, hints))
+		auto result = DoDecode(bits, *version, formatInfo, hints);
+		if (result.isValid())
 		{
 			return result;
 		}
@@ -511,13 +505,14 @@ Decoder::Decode(const BitMatrix& bits_, const DecodeHints* hints)
 		bits.mirror();
 
 		ReMask(bits, formatInfo);
-		if (auto result = DoDecode(bits, *version, formatInfo, hints))
+		auto result = DoDecode(bits, *version, formatInfo, hints);
+		if (result.isValid())
 		{
-			result->setMetadata(std::make_shared<DecoderMetadata>(true));
+			result.setMetadata(std::make_shared<DecoderMetadata>(true));
 			return result;
 		}
 	}
-	return nullptr;
+	return DecoderResult();
 }
 
 } // QRCode

@@ -17,10 +17,14 @@
 
 #include <map>
 #include <memory>
+#include <functional>
+#include <vector>
 
 namespace ZXing {
 
 class String;
+class ResultPoint;
+enum class BarcodeFormat;
 
 enum class DecodeHint
 {
@@ -97,12 +101,27 @@ enum class DecodeHint
 class DecodeHints
 {
 public:
-	bool contains(DecodeHint hint) const;
+	typedef std::function<void(const ResultPoint&)> ResultPointCallback;
+
+	bool getFlag(DecodeHint hint) const;
 	String getString(DecodeHint hint) const;
+	std::vector<int> getIntegerList(DecodeHint hint) const;
+	std::vector<BarcodeFormat> getFormatList(DecodeHint hint) const;
+	ResultPointCallback getPointCallback(DecodeHint hint) const;
+
+	void setFlag(DecodeHint hint, bool value);
+	void setString(DecodeHint hint, const String& value);
+	void setIntegerList(DecodeHint hint, const std::vector<int>& list);
+	void setFormatList(DecodeHint hint, const std::vector<BarcodeFormat>& formats);
+	void setPointCallback(DecodeHint hint, const ResultPointCallback& callback);
 
 private:
 	struct HintValue;
+	struct BooleanHintValue;
 	struct StringHintValue;
+	struct IntegerListValue;
+	struct FormatListValue;
+	struct PointCallbackValue;
 
 	std::map<DecodeHint, std::shared_ptr<HintValue>> _contents;
 };

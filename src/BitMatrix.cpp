@@ -82,6 +82,54 @@ namespace ZXing {
 //}
 
 void
+BitMatrix::init(int width, int height)
+{
+	_width = width;
+	_height = height;
+	_rowSize = (width + 31) / 32;
+	_bits.resize(_rowSize * _height);
+	std::fill(_bits.begin(), _bits.end(), 0);
+}
+
+int
+BitMatrix::checkBounds(int offset) const
+{
+	if (offset < 0 || offset >= static_cast<int>(_bits.size()))
+	{
+		throw std::out_of_range("BitMatrix: index out of range");
+	}
+	return offset;
+}
+
+bool
+BitMatrix::get(int x, int y) const
+{
+	int offset = checkBounds(y * _rowSize + (x / 32));
+	return ((_bits[offset] >> (x & 0x1f)) & 1) != 0;
+}
+
+void
+BitMatrix::set(int x, int y)
+{
+	int offset = checkBounds(y * _rowSize + (x / 32));
+	_bits[offset] |= 1 << (x & 0x1f);
+}
+
+void
+BitMatrix::unset(int x, int y)
+{
+	int offset = checkBounds(y * _rowSize + (x / 32));
+	_bits[offset] &= ~(1 << (x & 0x1f));
+}
+
+void
+BitMatrix::flip(int x, int y)
+{
+	int offset = checkBounds(y * _rowSize + (x / 32));
+	_bits[offset] ^= 1 << (x & 0x1f);
+}
+
+void
 BitMatrix::xor(const BitMatrix& mask)
 {
 	if (_width != mask._width || _height != mask._height || _rowSize != mask._rowSize)

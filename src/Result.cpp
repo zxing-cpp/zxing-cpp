@@ -1,4 +1,3 @@
-#pragma once
 /*
 * Copyright 2016 ZXing authors
 *
@@ -15,25 +14,19 @@
 * limitations under the License.
 */
 
+#include "Result.h"
+
 namespace ZXing {
 
-class String;
-
-namespace QRCode {
-
-/**
-* <p>See ISO 18004:2006, 6.5.1. This enum encapsulates the four error correction levels
-* defined by the QR code standard.</p>
-*/
-enum class ErrorCorrectionLevel
+Result::Result(const String& text, const ByteArray& rawBytes, const std::vector<ResultPoint>& resultPoints, BarcodeFormat format, time_point tt) :
+	_valid(true),
+	_text(text),
+	_rawBytes(rawBytes),
+	_resultPoints(resultPoints),
+	_format(format),
+	_timestamp(tt)
 {
-	Medium,			// M = ~15% correction
-	Low,			// L = ~7 % correction
-	High,			// H = ~30% correction
-	Quality,		// Q = ~25% correction
-};
+}
 
-String ToString(ErrorCorrectionLevel l);
 
-} // QRCode
 } // ZXing

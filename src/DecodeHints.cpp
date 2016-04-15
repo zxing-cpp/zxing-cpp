@@ -16,27 +16,81 @@
 
 #include "DecodeHints.h"
 #include "ZXString.h"
+#include "BarcodeFormat.h"
 
 namespace ZXing {
 
 struct DecodeHints::HintValue
 {
 	virtual ~HintValue() {}
-	virtual String toString() const = 0;
+	virtual bool toBoolean() const {
+		return false;
+	}
+	virtual String toString() const {
+		return String();
+	}
+	virtual std::vector<int> toIntegerList() const {
+		return std::vector<int>();
+	}
+	virtual std::vector<BarcodeFormat> toFormatList() const {
+		return std::vector<BarcodeFormat>();
+	}
+	virtual DecodeHints::ResultPointCallback toPointCallback() const {
+		return nullptr;
+	}
+};
+
+struct DecodeHints::BooleanHintValue : public HintValue
+{
+	bool value;
+	BooleanHintValue(bool v) : value(v) {}
+	virtual bool toBoolean() const override {
+		return value;
+	}
 };
 
 struct DecodeHints::StringHintValue : public HintValue
 {
 	String value;
+	StringHintValue(const String& v) : value(v) {}
 	virtual String toString() const override {
 		return value;
 	}
 };
 
-bool
-DecodeHints::contains(DecodeHint hint) const
+struct DecodeHints::IntegerListValue : public HintValue
 {
-	return _contents.find(hint) != _contents.end();
+	std::vector<int> value;
+	IntegerListValue(const std::vector<int>& v) : value(v) {}
+	virtual std::vector<int> toIntegerList() const override {
+		return value;
+	}
+};
+
+struct DecodeHints::FormatListValue : public HintValue
+{
+	std::vector<BarcodeFormat> value;
+	FormatListValue(const std::vector<BarcodeFormat>& v) : value(v) {}
+	virtual std::vector<BarcodeFormat> toFormatList() const override {
+		return value;
+	}
+};
+
+struct DecodeHints::PointCallbackValue : public HintValue
+{
+	DecodeHints::ResultPointCallback value;
+	PointCallbackValue(const DecodeHints::ResultPointCallback& v) : value(v) {}
+	virtual DecodeHints::ResultPointCallback toPointCallback() const override {
+		return value;
+	}
+};
+
+
+bool
+DecodeHints::getFlag(DecodeHint hint) const
+{
+	auto it = _contents.find(hint);
+	return it != _contents.end() ? it->second->toBoolean() : false;
 }
 
 String
@@ -44,6 +98,57 @@ DecodeHints::getString(DecodeHint hint) const
 {
 	auto it = _contents.find(hint);
 	return it != _contents.end() ? it->second->toString() : String();
+}
+
+std::vector<int>
+DecodeHints::getIntegerList(DecodeHint hint) const
+{
+	auto it = _contents.find(hint);
+	return it != _contents.end() ? it->second->toIntegerList() : std::vector<int>();
+}
+
+std::vector<BarcodeFormat>
+DecodeHints::getFormatList(DecodeHint hint) const
+{
+	auto it = _contents.find(hint);
+	return it != _contents.end() ? it->second->toFormatList() : std::vector<BarcodeFormat>();
+}
+
+DecodeHints::ResultPointCallback
+DecodeHints::getPointCallback(DecodeHint hint) const
+{
+	auto it = _contents.find(hint);
+	return it != _contents.end() ? it->second->toPointCallback() : nullptr;
+}
+
+void
+DecodeHints::setFlag(DecodeHint hint, bool value)
+{
+	_contents[hint] = std::make_shared<BooleanHintValue>(value);
+}
+
+void
+DecodeHints::setString(DecodeHint hint, const String& value)
+{
+	_contents[hint] = std::make_shared<StringHintValue>(value);
+}
+
+void
+DecodeHints::setIntegerList(DecodeHint hint, const std::vector<int>& list)
+{
+	_contents[hint] = std::make_shared<IntegerListValue>(list);
+}
+
+void
+DecodeHints::setFormatList(DecodeHint hint, const std::vector<BarcodeFormat>& formats)
+{
+	_contents[hint] = std::make_shared<FormatListValue>(formats);
+}
+
+void
+DecodeHints::setPointCallback(DecodeHint hint, const ResultPointCallback& callback)
+{
+	_contents[hint] = std::make_shared<PointCallbackValue>(callback);
 }
 
 
