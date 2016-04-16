@@ -68,7 +68,7 @@ public:
 	* @throws FormatException if the QR Code cannot be decoded
 	* @throws ChecksumException if error correction fails
 	*/
-	static DecoderResult Decode(BitMatrix& bits, const DecodeHints* hints = nullptr);
+	static DecoderResult Decode(const BitMatrix& bits, const DecodeHints* hints = nullptr);
 
 	//private DecoderResult decode(BitMatrixParser parser, Map<DecodeHintType, ? > hints)
 	//	throws FormatException, ChecksumException{

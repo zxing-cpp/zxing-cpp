@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-#include "DecoderResultExtra.h"
+#include "CustomData.h"
 #include <algorithm>
 
 namespace ZXing {
@@ -31,7 +31,7 @@ namespace QRCode {
 * @see com.google.zxing.common.DecoderResult#getOther()
 */
 
-class DecoderMetadata : public DecoderResultExtra
+class DecoderMetadata : public CustomData
 {
 	bool _mirrored;
 

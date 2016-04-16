@@ -19,9 +19,9 @@
 #include "ByteArray.h"
 #include "BarcodeFormat.h"
 #include "ResultPoint.h"
+#include "ResultMetadata.h"
 
 #include <chrono>
-#include <memory>
 #include <vector>
 
 namespace ZXing {
@@ -64,12 +64,12 @@ public:
 		return _timestamp;
 	}
 
-	std::shared_ptr<ResultMetadata> metadata() const {
+	const ResultMetadata& metadata() const {
 		return _metadata;
 	}
 
-	void setMetadata(const std::shared_ptr<ResultMetadata>& m) {
-		_metadata = m;
+	ResultMetadata& metadata() {
+		return _metadata;
 	}
 
 private:
@@ -79,7 +79,7 @@ private:
 	std::vector<ResultPoint> _resultPoints;
 	BarcodeFormat _format;
 	time_point _timestamp;
-	std::shared_ptr<ResultMetadata> _metadata;
+	ResultMetadata _metadata;
 };
 
 } // ZXing

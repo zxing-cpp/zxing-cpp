@@ -20,6 +20,7 @@
 #include "qrcode/QRDecoderMetadata.h"
 #include "Result.h"
 #include "DecoderResult.h"
+#include "DetectorResult.h"
 #include "ResultPoint.h"
 #include "DecodeHints.h"
 #include "BinaryBitmap.h"
@@ -54,7 +55,6 @@ bool GetModuleSize(int x, int y, BitMatrix image, float& outSize)
 	outSize = (x - orgX) / 7.0f;
 	return true;
 }
-
 
 /**
 * This method detects a code in a "pure" image -- that is, pure monochrome image
@@ -178,17 +178,15 @@ Reader::decode(const BinaryBitmap& image, const DecodeHints* hints) const
 	Result result(decoderResult.text(), decoderResult.rawBytes(), points, BarcodeFormat::QR_CODE);
 	auto& byteSegments = decoderResult.byteSegments();
 	if (!byteSegments.empty()) {
-		result.putMetadata(ResultMetadataType.BYTE_SEGMENTS, byteSegments);
+		result.metadata().put(ResultMetadata::BYTE_SEGMENTS, byteSegments);
 	}
-	String ecLevel = decoderResult.getECLevel();
-	if (ecLevel != null) {
-		result.putMetadata(ResultMetadataType.ERROR_CORRECTION_LEVEL, ecLevel);
+	String ecLevel = decoderResult.ecLevel();
+	if (!ecLevel.empty()) {
+		result.metadata().put(ResultMetadata::ERROR_CORRECTION_LEVEL, ecLevel);
 	}
 	if (decoderResult.hasStructuredAppend()) {
-		result.putMetadata(ResultMetadataType.STRUCTURED_APPEND_SEQUENCE,
-			decoderResult.getStructuredAppendSequenceNumber());
-		result.putMetadata(ResultMetadataType.STRUCTURED_APPEND_PARITY,
-			decoderResult.getStructuredAppendParity());
+		result.metadata().put(ResultMetadata::STRUCTURED_APPEND_SEQUENCE, decoderResult.structuredAppendSequenceNumber());
+		result.metadata().put(ResultMetadata::STRUCTURED_APPEND_PARITY, decoderResult.structuredAppendParity());
 	}
 	return result;
 }

@@ -109,11 +109,11 @@ public:
 	std::vector<BarcodeFormat> getFormatList(DecodeHint hint) const;
 	ResultPointCallback getPointCallback(DecodeHint hint) const;
 
-	void setFlag(DecodeHint hint, bool value);
-	void setString(DecodeHint hint, const String& value);
-	void setIntegerList(DecodeHint hint, const std::vector<int>& list);
-	void setFormatList(DecodeHint hint, const std::vector<BarcodeFormat>& formats);
-	void setPointCallback(DecodeHint hint, const ResultPointCallback& callback);
+	void put(DecodeHint hint, bool value);
+	void put(DecodeHint hint, const String& value);
+	void put(DecodeHint hint, const std::vector<int>& list);
+	void put(DecodeHint hint, const std::vector<BarcodeFormat>& formats);
+	void put(DecodeHint hint, const ResultPointCallback& callback);
 
 private:
 	struct HintValue;

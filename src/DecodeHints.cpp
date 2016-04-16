@@ -122,31 +122,31 @@ DecodeHints::getPointCallback(DecodeHint hint) const
 }
 
 void
-DecodeHints::setFlag(DecodeHint hint, bool value)
+DecodeHints::put(DecodeHint hint, bool value)
 {
 	_contents[hint] = std::make_shared<BooleanHintValue>(value);
 }
 
 void
-DecodeHints::setString(DecodeHint hint, const String& value)
+DecodeHints::put(DecodeHint hint, const String& value)
 {
 	_contents[hint] = std::make_shared<StringHintValue>(value);
 }
 
 void
-DecodeHints::setIntegerList(DecodeHint hint, const std::vector<int>& list)
+DecodeHints::put(DecodeHint hint, const std::vector<int>& list)
 {
 	_contents[hint] = std::make_shared<IntegerListValue>(list);
 }
 
 void
-DecodeHints::setFormatList(DecodeHint hint, const std::vector<BarcodeFormat>& formats)
+DecodeHints::put(DecodeHint hint, const std::vector<BarcodeFormat>& formats)
 {
 	_contents[hint] = std::make_shared<FormatListValue>(formats);
 }
 
 void
-DecodeHints::setPointCallback(DecodeHint hint, const ResultPointCallback& callback)
+DecodeHints::put(DecodeHint hint, const ResultPointCallback& callback)
 {
 	_contents[hint] = std::make_shared<PointCallbackValue>(callback);
 }

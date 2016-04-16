@@ -15,7 +15,15 @@
 * limitations under the License.
 */
 
+#include <map>
+#include <memory>
+#include <list>
+
 namespace ZXing {
+
+class String;
+class ByteArray;
+class CustomData;
 
 class ResultMetadata
 {
@@ -28,7 +36,7 @@ public:
 	enum Key {
 
 		/**
-		* Unspecified, application-specific metadata. Maps to an unspecified {@link Object}.
+		* Unspecified, application-specific metadata. Maps to an unspecified {@link CustomData}.
 		*/
 		OTHER,
 
@@ -99,11 +107,24 @@ public:
 
 	};
 
+	int getInt(Key key, int fallbackValue = 0) const;
+	String getString(Key key) const;
+	std::list<ByteArray> getByteArrayList(Key key) const;
+	std::shared_ptr<CustomData> getCustomData(Key key) const;
+	
+	void put(Key key, int value);
+	void put(Key key, const String& value);
+	void put(Key key, const std::list<ByteArray>& value);
+	void put(Key key, const std::shared_ptr<CustomData>& value);
 
-	ResultMetadata();
+private:
+	struct Value;
+	struct IntegerValue;
+	struct StringValue;
+	struct ByteArrayListValue;
+	struct CustomDataValue;
 
-
-
+	std::map<Key, std::shared_ptr<Value>> _contents;
 };
 
 } // ZXing

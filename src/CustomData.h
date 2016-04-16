@@ -17,13 +17,13 @@
 
 namespace ZXing {
 
-class DecoderResultExtra
+class CustomData
 {
 public:
-	virtual ~DecoderResultExtra() {}
+	virtual ~CustomData() {}
 
 protected:
-	DecoderResultExtra() {}
+	CustomData() {}
 };
 
 } // ZXing

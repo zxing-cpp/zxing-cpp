@@ -472,8 +472,9 @@ void ReMask(BitMatrix& bitMatrix, const FormatInformation& formatInfo)
 
 
 DecoderResult
-Decoder::Decode(BitMatrix& bits, const DecodeHints* hints)
+Decoder::Decode(const BitMatrix& bits_, const DecodeHints* hints)
 {
+	BitMatrix bits = bits_;
 	// Construct a parser and read version, error-correction level
 	const Version* version;
 	FormatInformation formatInfo;
@@ -508,7 +509,7 @@ Decoder::Decode(BitMatrix& bits, const DecodeHints* hints)
 		auto result = DoDecode(bits, *version, formatInfo, hints);
 		if (result.isValid())
 		{
-			result.setMetadata(std::make_shared<DecoderMetadata>(true));
+			result.setExtra(std::make_shared<DecoderMetadata>(true));
 			return result;
 		}
 	}

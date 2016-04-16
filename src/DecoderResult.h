@@ -23,7 +23,7 @@
 
 namespace ZXing {
 
-class DecoderResultExtra;
+class CustomData;
 
 /**
 * <p>Encapsulates the result of decoding a matrix of bits. This typically
@@ -41,7 +41,7 @@ class DecoderResult
 	int _erasures = -1;
 	int _structuredAppendSequenceNumber = 0;
 	int _structuredAppendParity = 0;
-	std::shared_ptr<DecoderResultExtra> _extra;
+	std::shared_ptr<CustomData> _extra;
 
 public:
 	DecoderResult() {}
@@ -88,11 +88,11 @@ public:
 		return _structuredAppendSequenceNumber;
 	}
 
-	std::shared_ptr<DecoderResultExtra> extra() const {
+	std::shared_ptr<CustomData> extra() const {
 		return _extra;
 	}
 
-	void setExtra(const std::shared_ptr<DecoderResultExtra>& ex) {
+	void setExtra(const std::shared_ptr<CustomData>& ex) {
 		_extra = ex;
 	}
 };
