@@ -20,6 +20,9 @@
 #include <vector>
 
 namespace ZXing {
+
+enum class ErrorStatus;
+
 namespace QRCode {
 
 class Version;
@@ -54,7 +57,7 @@ public:
 	* @return DataBlocks containing original bytes, "de-interleaved" from representation in the
 	*         QR Code
 	*/
-	static bool GetDataBlocks(const ByteArray& rawCodewords, const Version& version, ErrorCorrectionLevel ecLevel, std::vector<DataBlock>& result);
+	static ErrorStatus GetDataBlocks(const ByteArray& rawCodewords, const Version& version, ErrorCorrectionLevel ecLevel, std::vector<DataBlock>& result);
 
 private:
 	int _numDataCodewords = 0;

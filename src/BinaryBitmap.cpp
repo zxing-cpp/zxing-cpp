@@ -29,11 +29,11 @@ public:
 	std::shared_ptr<Binarizer> binarizer;
 	BitMatrix matrix;
 	std::once_flag matrixOnce;
-	bool matrixOK;
+	ErrorStatus matrixStatus;
 
 	void initMatrix()
 	{
-		matrixOK = binarizer->getBlackMatrix(matrix);
+		matrixStatus = binarizer->getBlackMatrix(matrix);
 	}
 };
 
@@ -60,13 +60,13 @@ BinaryBitmap::height() const
 	return _impl->binarizer->height();
 }
 
-bool
+ErrorStatus
 BinaryBitmap::getBlackRow(int y, BitArray& outRow) const
 {
 	return _impl->binarizer->getBlackRow(y, outRow);
 }
 
-bool
+ErrorStatus
 BinaryBitmap::getBlackMatrix(BitMatrix& outMatrix) const
 {
 	// The matrix is created on demand the first time it is requested, then cached. There are two
@@ -76,11 +76,8 @@ BinaryBitmap::getBlackMatrix(BitMatrix& outMatrix) const
 	// 2. This work will only be done once even if the caller installs multiple 2D Readers.
 	std::call_once(_impl->matrixOnce, &BinaryBitmap::Private::initMatrix, _impl);
 
-	if (_impl->matrixOK) {
-		outMatrix = _impl->matrix;
-		return true;
-	}
-	return false;
+	outMatrix = _impl->matrix;
+	return _impl->matrixStatus;
 }
 
 bool

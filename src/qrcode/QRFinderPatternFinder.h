@@ -25,6 +25,7 @@ class BitMatrix;
 class ResultPoint;
 typedef std::function<void(const ResultPoint&)> ResultPointCallback;
 class DecodeHints;
+enum class ErrorStatus;
 
 namespace QRCode {
 
@@ -42,7 +43,7 @@ class FinderPatternFinder
 public:
 	typedef std::array<int, 5> StateCount;
 
-	static bool Find(const BitMatrix& image, const ResultPointCallback& resultPointCallback, const DecodeHints* hints, FinderPatternInfo& outInfo);
+	static ErrorStatus Find(const BitMatrix& image, const ResultPointCallback& resultPointCallback, const DecodeHints* hints, FinderPatternInfo& outInfo);
 
 	/**
 	* @param stateCount count of black/white/black/white/black pixels just read

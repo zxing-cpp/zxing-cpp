@@ -22,6 +22,7 @@ namespace ZXing {
 class LuminanceSource;
 class BitArray;
 class BitMatrix;
+enum class ErrorStatus;
 
 /**
 * This class hierarchy provides a set of methods to convert luminance data to 1 bit data.
@@ -56,7 +57,7 @@ public:
 	* @return The array of bits for this row (true means black).
 	* @throws NotFoundException if row can't be binarized
 	*/
-	virtual bool getBlackRow(int y, BitArray& outArray) const = 0;
+	virtual ErrorStatus getBlackRow(int y, BitArray& outArray) const = 0;
 
 	/**
 	* Converts a 2D array of luminance data to 1 bit data. As above, assume this method is expensive
@@ -67,7 +68,7 @@ public:
 	* @return The 2D array of bits for the image (true means black).
 	* @throws NotFoundException if image can't be binarized to make a matrix
 	*/
-	virtual bool getBlackMatrix(BitMatrix& outMatrix) const = 0;
+	virtual ErrorStatus getBlackMatrix(BitMatrix& outMatrix) const = 0;
 
 	/**
 	* Creates a new object with the same type as this Binarizer implementation, but with pristine

@@ -18,8 +18,13 @@
 
 namespace ZXing {
 
+DecoderResult::DecoderResult(ErrorStatus status) :
+	_status(status)
+{
+}
+
 DecoderResult::DecoderResult(const ByteArray& rawBytes, const String& text, std::list<ByteArray>& byteSegments, const String& ecLevel) :
-	_valid(true),
+	_status(ErrorStatus::NoError),
 	_rawBytes(rawBytes),
 	_text(text),
 	_byteSegments(byteSegments),
@@ -28,7 +33,7 @@ DecoderResult::DecoderResult(const ByteArray& rawBytes, const String& text, std:
 }
 
 DecoderResult::DecoderResult(const ByteArray& rawBytes, const String& text, std::list<ByteArray>& byteSegments, const String& ecLevel, int saSequence, int saParity) :
-	_valid(true),
+	_status(ErrorStatus::NoError),
 	_rawBytes(rawBytes),
 	_text(text),
 	_byteSegments(byteSegments),

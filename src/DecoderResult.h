@@ -17,6 +17,7 @@
 
 #include "ByteArray.h"
 #include "ZXString.h"
+#include "ErrorStatus.h"
 
 #include <memory>
 #include <list>
@@ -32,7 +33,7 @@ class CustomData;
 */
 class DecoderResult
 {
-	bool _valid = false;
+	ErrorStatus _status;
 	ByteArray _rawBytes;
 	String _text;
 	std::list<ByteArray> _byteSegments;
@@ -44,12 +45,12 @@ class DecoderResult
 	std::shared_ptr<CustomData> _extra;
 
 public:
-	DecoderResult() {}
+	explicit DecoderResult(ErrorStatus status);
 	DecoderResult(const ByteArray& rawBytes, const String& text, std::list<ByteArray>& byteSegments, const String& ecLevel);
 	DecoderResult(const ByteArray& rawBytes, const String& text, std::list<ByteArray>& byteSegments, const String& ecLevel, int saSequence, int saParity);
 
 	bool isValid() const {
-		return _valid;
+		return StatusIsOK(_status);
 	}
 
 	const ByteArray& rawBytes() const {

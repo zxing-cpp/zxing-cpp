@@ -1,5 +1,6 @@
+#pragma once
 /*
-* Copyright 2016 ZXing authors
+* Copyright 2016 Huy Cuong Nguyen
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -14,24 +15,16 @@
 * limitations under the License.
 */
 
-#include "Result.h"
+#include "ErrorStatus.h"
+#include "BitHacks.h"
 
 namespace ZXing {
 
-Result::Result(ErrorStatus status) :
-	_status(status)
+bool
+ErrorIsKindOf(ErrorStatus status, ErrorStatus group)
 {
+	int shift = BitHacks::NumberOfTrailingZeros(static_cast<uint32_t>(group));
+	return (static_cast<uint32_t>(status) >> shift) == (static_cast<uint32_t>(group) >> shift);
 }
-
-Result::Result(const String& text, const ByteArray& rawBytes, const std::vector<ResultPoint>& resultPoints, BarcodeFormat format, time_point tt) :
-	_status(ErrorStatus::NoError),
-	_text(text),
-	_rawBytes(rawBytes),
-	_resultPoints(resultPoints),
-	_format(format),
-	_timestamp(tt)
-{
-}
-
 
 } // ZXing

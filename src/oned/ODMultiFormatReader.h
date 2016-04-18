@@ -1,3 +1,4 @@
+#pragma once
 /*
 * Copyright 2016 ZXing authors
 *
@@ -14,24 +15,27 @@
 * limitations under the License.
 */
 
-#include "Result.h"
+#include "oned/ODReader.h"
+
+#include <vector>
+#include <memory>
 
 namespace ZXing {
 
-Result::Result(ErrorStatus status) :
-	_status(status)
+namespace OneD {
+
+class MultiFormatReader : public Reader
 {
-}
+public:
+	MultiFormatReader(const DecodeHints* hints = nullptr);
+	
+protected:
+	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) const override;
 
-Result::Result(const String& text, const ByteArray& rawBytes, const std::vector<ResultPoint>& resultPoints, BarcodeFormat format, time_point tt) :
-	_status(ErrorStatus::NoError),
-	_text(text),
-	_rawBytes(rawBytes),
-	_resultPoints(resultPoints),
-	_format(format),
-	_timestamp(tt)
-{
-}
+private:
+	std::vector<std::shared_ptr<Reader>> _readers;
+};
 
 
+} // OneD
 } // ZXing

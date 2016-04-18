@@ -17,17 +17,18 @@
 #include "qrcode/QRDataBlock.h"
 #include "qrcode/QRVersion.h"
 #include "qrcode/QRErrorCorrectionLevel.h"
+#include "ErrorStatus.h"
 
 #include <utility>
 
 namespace ZXing {
 namespace QRCode {
 
-bool
+ErrorStatus
 DataBlock::GetDataBlocks(const ByteArray& rawCodewords, const Version& version, ErrorCorrectionLevel ecLevel, std::vector<DataBlock>& result)
 {
 	if (rawCodewords.length() != version.totalCodewords()) {
-		return false;
+		return ErrorStatus::FormatError;
 	}
 
 	// Figure out the number and size of data blocks used by this version and
@@ -82,7 +83,7 @@ DataBlock::GetDataBlocks(const ByteArray& rawCodewords, const Version& version, 
 			result[j]._codewords[iOffset] = rawCodewords[rawCodewordsOffset++];
 		}
 	}
-	return true;
+	return ErrorStatus::NoError;
 }
 
 } // QRCode

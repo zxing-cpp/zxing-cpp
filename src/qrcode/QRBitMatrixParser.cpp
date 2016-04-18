@@ -19,6 +19,7 @@
 #include "qrcode/QRFormatInformation.h"
 #include "BitMatrix.h"
 #include "ByteArray.h"
+#include "ErrorStatus.h"
 
 namespace ZXing {
 namespace QRCode {
@@ -83,7 +84,7 @@ const Version* ReadVersion(const BitMatrix& bitMatrix, bool mirrored)
 * @throws FormatException if both format information locations cannot be parsed as
 * the valid encoding of format information
 */
-bool ReadFormatInformation(const BitMatrix& bitMatrix, bool mirrored, FormatInformation &out)
+ErrorStatus ReadFormatInformation(const BitMatrix& bitMatrix, bool mirrored, FormatInformation &out)
 {
 	// Read top-left format info bits
 	int formatInfoBits1 = 0;
@@ -110,18 +111,20 @@ bool ReadFormatInformation(const BitMatrix& bitMatrix, bool mirrored, FormatInfo
 		formatInfoBits2 = copyBit(bitMatrix, i, 8, formatInfoBits2, mirrored);
 	}
 
-	return out.decode(formatInfoBits1, formatInfoBits2);
+	if (out.decode(formatInfoBits1, formatInfoBits2))
+		return ErrorStatus::NoError;
+	return ErrorStatus::FormatError;
 }
 
 
 } // anonymous
 
-bool
+ErrorStatus
 BitMatrixParser::ParseVersionInfo(const BitMatrix& bitMatrix, bool mirrored, const Version*& parsedVersion, FormatInformation& parsedFormatInfo)
 {
 	int dimension = bitMatrix.height();
 	if (dimension < 21 || (dimension & 0x03) != 1) {
-		return false;
+		return ErrorStatus::FormatError;
 	}
 
 	parsedVersion = ReadVersion(bitMatrix, mirrored);
@@ -129,7 +132,7 @@ BitMatrixParser::ParseVersionInfo(const BitMatrix& bitMatrix, bool mirrored, con
 	{
 		return ReadFormatInformation(bitMatrix, mirrored, parsedFormatInfo);
 	}
-	return false;
+	return ErrorStatus::FormatError;
 }
 
 /**

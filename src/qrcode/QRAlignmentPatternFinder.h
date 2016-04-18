@@ -22,6 +22,7 @@ namespace ZXing {
 class BitMatrix;
 class ResultPoint;
 typedef std::function<void(const ResultPoint&)> ResultPointCallback;
+enum class ErrorStatus;
 
 namespace QRCode {
 
@@ -55,7 +56,7 @@ public:
 	* @return {@link AlignmentPattern} if found
 	* @throws NotFoundException if not found
 	*/
-	static bool Find(const BitMatrix& image, int startX, int startY, int width, int height, float moduleSize, const ResultPointCallback& resultPointCallback, AlignmentPattern &result);
+	static ErrorStatus Find(const BitMatrix& image, int startX, int startY, int width, int height, float moduleSize, const ResultPointCallback& resultPointCallback, AlignmentPattern &result);
 
 };
 

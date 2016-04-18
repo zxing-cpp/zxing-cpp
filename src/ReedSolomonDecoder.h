@@ -21,6 +21,7 @@
 namespace ZXing {
 
 class GenericGF;
+enum class ErrorStatus;
 
 /**
 * <p>Implements Reed-Solomon decoding, as the name implies.</p>
@@ -54,7 +55,7 @@ public:
 	* @param twoS number of error-correction codewords available
 	* @throws ReedSolomonException if decoding fails for any reason
 	*/
-	bool decode(std::vector<int>& received, int twoS) const;
+	ErrorStatus decode(std::vector<int>& received, int twoS) const;
 
 private:
 	const GenericGF* _field;

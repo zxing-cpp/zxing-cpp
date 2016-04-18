@@ -16,6 +16,7 @@
 
 #include "ReedSolomonDecoder.h"
 #include "GenericGF.h"
+#include "ErrorStatus.h"
 
 #include <memory>
 
@@ -24,7 +25,7 @@ namespace ZXing {
 namespace {
 
 // May throw ReedSolomonException
-bool
+ErrorStatus
 RunEuclideanAlgorithm(const GenericGF& field, GenericGFPoly a, GenericGFPoly b, int R, GenericGFPoly& sigma, GenericGFPoly& omega)
 {
 	using std::swap;
@@ -50,7 +51,7 @@ RunEuclideanAlgorithm(const GenericGF& field, GenericGFPoly a, GenericGFPoly b, 
 		if (rLast.isZero()) {
 			// Oops, Euclidean algorithm already terminated?
 			//throw ReedSolomonException("r_{i-1} was zero");
-			return false;
+			return ErrorStatus::ReedSolomonAlgoFailed;
 		}
 		r = rLastLast;
 		GenericGFPoly q = field.zero();
@@ -66,25 +67,24 @@ RunEuclideanAlgorithm(const GenericGF& field, GenericGFPoly a, GenericGFPoly b, 
 		t = q.multiply(tLast).addOrSubtract(tLastLast);
 
 		if (r.degree() >= rLast.degree()) {
-			//throw std::runtime_error("Division algorithm failed to reduce polynomial?");
-			return false;
+			throw std::runtime_error("Division algorithm failed to reduce polynomial?");
 		}
 	}
 
 	int sigmaTildeAtZero = t.coefficient(0);
 	if (sigmaTildeAtZero == 0) {
-		//throw ReedSolomonException("sigmaTilde(0) was zero");
-		return false;
+		return ErrorStatus::ReedSolomonSigmaTildeZero;
 	}
 
 	int inverse = field.inverse(sigmaTildeAtZero);
 	sigma = t.multiply(inverse);
 	omega = r.multiply(inverse);
-	return true;
+	return ErrorStatus::NoError;
 }
 
 // May throw ReedSolomonException
-bool FindErrorLocations(const GenericGF& field, const GenericGFPoly& errorLocator, std::vector<int>& outLocations)
+ErrorStatus
+FindErrorLocations(const GenericGF& field, const GenericGFPoly& errorLocator, std::vector<int>& outLocations)
 {
 	// This is a direct application of Chien's search
 	int numErrors = errorLocator.degree();
@@ -99,10 +99,11 @@ bool FindErrorLocations(const GenericGF& field, const GenericGFPoly& errorLocato
 			e++;
 		}
 	}
-	return e == numErrors;
-	//if (e != numErrors) {
+	if (e != numErrors) {
 		//throw ReedSolomonException("Error locator degree does not match number of roots");
-	//}
+		return ErrorStatus::ReedSolomonDegreeMismatch;
+	}
+	return ErrorStatus::NoError;
 }
 
 void FindErrorMagnitudes(const GenericGF& field, const GenericGFPoly& errorEvaluator, const std::vector<int>& errorLocations, std::vector<int>& outMagnitudes)
@@ -134,7 +135,7 @@ void FindErrorMagnitudes(const GenericGF& field, const GenericGFPoly& errorEvalu
 
 } // anonymous
 
-bool
+ErrorStatus
 ReedSolomonDecoder::decode(std::vector<int>& received, int twoS) const
 {
 	GenericGFPoly poly(*_field, received);
@@ -148,17 +149,20 @@ ReedSolomonDecoder::decode(std::vector<int>& received, int twoS) const
 		}
 	}
 	if (noError) {
-		return true;
+		return ErrorStatus::NoError;
 	}
 
 	GenericGFPoly syndrome(*_field, syndromeCoefficients);
 	GenericGFPoly sigma, omega;
-	if (!RunEuclideanAlgorithm(*_field, _field->buildMonomial(twoS, 1), syndrome, twoS, sigma, omega))
-		return false;
+
+	auto errStat = RunEuclideanAlgorithm(*_field, _field->buildMonomial(twoS, 1), syndrome, twoS, sigma, omega);
+	if (StatusIsError(errStat))
+		return errStat;
 
 	std::vector<int> errorLocations, errorMagnitudes;
-	if (!FindErrorLocations(*_field, sigma, errorLocations))
-		return false;
+	errStat = FindErrorLocations(*_field, sigma, errorLocations);
+	if (StatusIsError(errStat))
+		return errStat;
 
 	FindErrorMagnitudes(*_field, omega, errorLocations, errorMagnitudes);
 
@@ -166,12 +170,11 @@ ReedSolomonDecoder::decode(std::vector<int>& received, int twoS) const
 	for (size_t i = 0; i < errorLocations.size(); ++i) {
 		int position = receivedCount - 1 - _field->log(errorLocations[i]);
 		if (position < 0) {
-			return false;
-			//throw ReedSolomonException("Bad error location");
+			return ErrorStatus::ReedSolomonBadLocation;
 		}
 		received[position] = GenericGF::AddOrSubtract(received[position], errorMagnitudes[i]);
 	}
-	return true;
+	return ErrorStatus::NoError;
 }
 
 } // ZXing

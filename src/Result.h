@@ -20,6 +20,7 @@
 #include "BarcodeFormat.h"
 #include "ResultPoint.h"
 #include "ResultMetadata.h"
+#include "ErrorStatus.h"
 
 #include <chrono>
 #include <vector>
@@ -36,12 +37,12 @@ class Result
 public:
 	typedef std::chrono::steady_clock::time_point time_point;
 
-	Result() {}
+	explicit Result(ErrorStatus status);
 	Result(const String& text, const ByteArray& rawBytes, const std::vector<ResultPoint>& resultPoints, BarcodeFormat format, time_point tt = std::chrono::steady_clock::now());
 	~Result();
 
 	bool isValid() const {
-		return _valid;
+		return StatusIsOK(_status);
 	}
 
 	const String& text() const {
@@ -54,6 +55,10 @@ public:
 
 	const std::vector<ResultPoint>& resultPoints() const {
 		return _resultPoints;
+	}
+
+	void setResultPoints(const std::vector<ResultPoint>& points) {
+		_resultPoints = points;
 	}
 
 	BarcodeFormat format() const {
@@ -73,7 +78,7 @@ public:
 	}
 
 private:
-	bool _valid = false;
+	ErrorStatus _status;
 	String _text;
 	ByteArray _rawBytes;
 	std::vector<ResultPoint> _resultPoints;

@@ -151,5 +151,10 @@ DecodeHints::put(DecodeHint hint, const ResultPointCallback& callback)
 	_contents[hint] = std::make_shared<PointCallbackValue>(callback);
 }
 
+void
+DecodeHints::remove(DecodeHint hint)
+{
+	_contents.erase(hint);
+}
 
 } // ZXing

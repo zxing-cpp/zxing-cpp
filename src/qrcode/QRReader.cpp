@@ -26,13 +26,14 @@
 #include "BinaryBitmap.h"
 #include "BitMatrix.h"
 #include "ZXNumeric.h"
+#include "ErrorStatus.h"
 
 namespace ZXing {
 namespace QRCode {
 
 namespace {
 
-bool GetModuleSize(int x, int y, BitMatrix image, float& outSize)
+ErrorStatus GetModuleSize(int x, int y, BitMatrix image, float& outSize)
 {
 	int orgX = x;
 	int height = image.height();
@@ -50,10 +51,10 @@ bool GetModuleSize(int x, int y, BitMatrix image, float& outSize)
 		y++;
 	}
 	if (x == width || y == height) {
-		return false;
+		return ErrorStatus::NotFound;
 	}
 	outSize = (x - orgX) / 7.0f;
-	return true;
+	return ErrorStatus::NoError;
 }
 
 /**
@@ -64,21 +65,22 @@ bool GetModuleSize(int x, int y, BitMatrix image, float& outSize)
 *
 * @see com.google.zxing.datamatrix.DataMatrixReader#extractPureBits(BitMatrix)
 */
-bool ExtractPureBits(const BitMatrix& image, BitMatrix& outBits)
+ErrorStatus ExtractPureBits(const BitMatrix& image, BitMatrix& outBits)
 {
 	int left, top, right, bottom;
 	if (!image.getTopLeftOnBit(left, top) || !image.getBottomRightOnBit(right, bottom))
 	{
-		return false;
+		return ErrorStatus::NotFound;
 	}
 
 	float moduleSize;
-	if (!GetModuleSize(left, top, image, moduleSize))
-		return false;
+	auto status = GetModuleSize(left, top, image, moduleSize);
+	if (StatusIsError(status))
+		return status;
 
 	// Sanity check!
 	if (left >= right || top >= bottom) {
-		return false;
+		return ErrorStatus::NotFound;
 	}
 
 	if (bottom - top != right - left) {
@@ -90,11 +92,11 @@ bool ExtractPureBits(const BitMatrix& image, BitMatrix& outBits)
 	int matrixWidth = RoundToNearest((right - left + 1) / moduleSize);
 	int matrixHeight = RoundToNearest((bottom - top + 1) / moduleSize);
 	if (matrixWidth <= 0 || matrixHeight <= 0) {
-		return false;
+		return ErrorStatus::NotFound;
 	}
 	if (matrixHeight != matrixWidth) {
 		// Only possibly decode square regions
-		return false;
+		return ErrorStatus::NotFound;
 	}
 
 	// Push in the "border" by half the module width so that we start
@@ -111,7 +113,7 @@ bool ExtractPureBits(const BitMatrix& image, BitMatrix& outBits)
 	if (nudgedTooFarRight > 0) {
 		if (nudgedTooFarRight > nudge) {
 			// Neither way fits; abort
-			return false;
+			return ErrorStatus::NotFound;
 		}
 		left -= nudgedTooFarRight;
 	}
@@ -120,7 +122,7 @@ bool ExtractPureBits(const BitMatrix& image, BitMatrix& outBits)
 	if (nudgedTooFarDown > 0) {
 		if (nudgedTooFarDown > nudge) {
 			// Neither way fits; abort
-			return false;
+			return ErrorStatus::NotFound;
 		}
 		top -= nudgedTooFarDown;
 	}
@@ -135,7 +137,7 @@ bool ExtractPureBits(const BitMatrix& image, BitMatrix& outBits)
 			}
 		}
 	}
-	return true;
+	return ErrorStatus::NoError;
 }
 
 } // anonymous
@@ -143,31 +145,31 @@ bool ExtractPureBits(const BitMatrix& image, BitMatrix& outBits)
 Result
 Reader::decode(const BinaryBitmap& image, const DecodeHints* hints) const
 {
-	DecoderResult decoderResult;
+	DecoderResult decoderResult(ErrorStatus::NotFound);
 	std::vector<ResultPoint> points;
 	if (hints != nullptr && hints->getFlag(DecodeHint::PURE_BARCODE))
 	{
 		BitMatrix binImg;
+		auto status = image.getBlackMatrix(binImg);
+		if (StatusIsError(status))
+			return Result(status);
+
 		BitMatrix bits;
-		if (image.getBlackMatrix(binImg) && ExtractPureBits(binImg, bits)) {
-			decoderResult = Decoder::Decode(bits, hints);
-		}
-		else {
-			return Result();
-		}
+		status = ExtractPureBits(binImg, bits);
+		if (StatusIsError(status))
+			return Result(status);
+
+		decoderResult = Decoder::Decode(bits, hints);
 	}
 	else {
 		BitMatrix binImg;
-		if (image.getBlackMatrix(binImg))
-		{
-			auto detectorResult = Detector::Detect(binImg, hints);
-			decoderResult = Decoder::Decode(detectorResult.bits(), hints);
-			points = detectorResult.points();
-		}
-		else
-		{
-			return Result();
-		}
+		auto status = image.getBlackMatrix(binImg);
+		if (StatusIsError(status))
+			return Result(status);
+
+		auto detectorResult = Detector::Detect(binImg, hints);
+		decoderResult = Decoder::Decode(detectorResult.bits(), hints);
+		points = detectorResult.points();
 	}
 
 	// If the code was mirrored: swap the bottom-left and the top-right points.

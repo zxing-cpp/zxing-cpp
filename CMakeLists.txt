@@ -56,11 +56,18 @@ file (GLOB QRCODE_FILES
 	src/qrcode/*.cpp
 )
 
+file (GLOB ONED_FILES
+	src/oned/*.h
+	src/oned/*.cpp
+)
+
 source_group (Sources FILES ${COMMON_FILES})
+source_group (Sources\\oned FILES ${ONED_FILES})
 source_group (Sources\\qrcode FILES ${QRCODE_FILES})
 
 add_library (ZXing
 	${COMMON_FILES}
+	${ONED_FILES}
 	${QRCODE_FILES}
 )
 

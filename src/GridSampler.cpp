@@ -17,6 +17,7 @@
 #include "GridSampler.h"
 #include "PerspectiveTransform.h"
 #include "BitMatrix.h"
+#include "ErrorStatus.h"
 
 namespace ZXing {
 
@@ -37,7 +38,7 @@ namespace {
 * @param points actual points in x1,y1,...,xn,yn form
 * @throws NotFoundException if an endpoint is lies outside the image boundaries
 */
-static bool CheckAndNudgePoints(const BitMatrix& image, std::vector<float>& points)
+static ErrorStatus CheckAndNudgePoints(const BitMatrix& image, std::vector<float>& points)
 {
 	int width = image.width();
 	int height = image.height();
@@ -47,7 +48,7 @@ static bool CheckAndNudgePoints(const BitMatrix& image, std::vector<float>& poin
 		int x = (int)points[offset];
 		int y = (int)points[offset + 1];
 		if (x < -1 || x > width || y < -1 || y > height) {
-			return false;
+			return ErrorStatus::NotFound;
 		}
 		nudged = false;
 		if (x == -1) {
@@ -93,14 +94,14 @@ static bool CheckAndNudgePoints(const BitMatrix& image, std::vector<float>& poin
 			nudged = true;
 		}
 	}
-	return true;
+	return ErrorStatus::NoError;
 }
 
 class DefaultGridSampler : public GridSampler
 {
 public:
 
-	virtual bool sampleGrid(const BitMatrix& image, int dimensionX, int dimensionY,
+	virtual ErrorStatus sampleGrid(const BitMatrix& image, int dimensionX, int dimensionY,
 		float p1ToX, float p1ToY, float p2ToX, float p2ToY, float p3ToX, float p3ToY, float p4ToX, float p4ToY,
 		float p1FromX, float p1FromY, float p2FromX, float p2FromY, float p3FromX, float p3FromY, float p4FromX, float p4FromY,
 		BitMatrix& result) const override
@@ -112,7 +113,7 @@ public:
 		return sampleGrid(image, dimensionX, dimensionY, transform, result);
 	}
 
-	virtual bool sampleGrid(const BitMatrix& image, int dimensionX, int dimensionY, const PerspectiveTransform& transform, BitMatrix& result) const override
+	virtual ErrorStatus sampleGrid(const BitMatrix& image, int dimensionX, int dimensionY, const PerspectiveTransform& transform, BitMatrix& result) const override
 	{
 		if (dimensionX <= 0 || dimensionY <= 0) {
 			false;
@@ -146,10 +147,10 @@ public:
 				// This results in an ugly runtime exception despite our clever checks above -- can't have
 				// that. We could check each point's coordinates but that feels duplicative. We settle for
 				// catching and wrapping ArrayIndexOutOfBoundsException.
-				return false;
+				return ErrorStatus::NotFound;
 			}
 		}
-		return true;
+		return ErrorStatus::NoError;
 	}
 };
 

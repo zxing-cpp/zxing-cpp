@@ -115,6 +115,8 @@ public:
 	void put(DecodeHint hint, const std::vector<BarcodeFormat>& formats);
 	void put(DecodeHint hint, const ResultPointCallback& callback);
 
+	void remove(DecodeHint hint);
+
 private:
 	struct HintValue;
 	struct BooleanHintValue;

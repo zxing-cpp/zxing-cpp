@@ -284,15 +284,15 @@ static DetectorResult ProcessFinderPatternInfo(const BitMatrix& image, const Fin
 
 	float moduleSize = CalculateModuleSize(image, info.topLeft, info.topRight, info.bottomLeft);
 	if (moduleSize < 1.0f) {
-		throw DetectorResult();
+		return DetectorResult(ErrorStatus::NotFound);
 	}
 	int dimension = ComputeDimension(info.topLeft, info.topRight, info.bottomLeft, moduleSize);
 	if (dimension < 0)
-		return DetectorResult();
+		return DetectorResult(ErrorStatus::NotFound);
 
 	const Version* provisionalVersion = Version::ProvisionalVersionForDimension(dimension);
 	if (provisionalVersion == nullptr)
-		return DetectorResult();
+		return DetectorResult(ErrorStatus::NotFound);
 
 	int modulesBetweenFPCenters = provisionalVersion->dimensionForVersion() - 7;
 
@@ -325,17 +325,16 @@ static DetectorResult ProcessFinderPatternInfo(const BitMatrix& image, const Fin
 	PerspectiveTransform transform = CreateTransform(info.topLeft, info.topRight, info.bottomLeft, haveAlignPattern ? &alignmentPattern : nullptr, dimension);
 
 	BitMatrix bits;
-	if (GridSampler::Instance()->sampleGrid(image, dimension, dimension, transform, bits))
-	{
+	auto status = GridSampler::Instance()->sampleGrid(image, dimension, dimension, transform, bits);
+	if (StatusIsError(status))
+		return DetectorResult(status);
 
-		if (!haveAlignPattern) {
-			return DetectorResult(bits, { info.bottomLeft, info.topLeft, info.topRight });
-		}
-		else {
-			return DetectorResult(bits, { info.bottomLeft, info.topLeft, info.topRight, alignmentPattern });
-		}
+	if (!haveAlignPattern) {
+		return DetectorResult(bits, { info.bottomLeft, info.topLeft, info.topRight });
 	}
-	return DetectorResult();
+	else {
+		return DetectorResult(bits, { info.bottomLeft, info.topLeft, info.topRight, alignmentPattern });
+	}
 }
 
 DetectorResult
@@ -344,11 +343,11 @@ Detector::Detect(const BitMatrix& image, const DecodeHints* hints)
 	DecodeHints::ResultPointCallback resultPointCallback = hints == nullptr ? hints->getPointCallback(DecodeHint::NEED_RESULT_POINT_CALLBACK) : nullptr;
 
 	FinderPatternInfo info;
-	if (FinderPatternFinder::Find(image, resultPointCallback, hints, info))
-	{
-		return ProcessFinderPatternInfo(image, info, resultPointCallback);
-	}
-	return DetectorResult();
+	auto status = FinderPatternFinder::Find(image, resultPointCallback, hints, info);
+	if (StatusIsError(status))
+		return DetectorResult(status);
+	
+	return ProcessFinderPatternInfo(image, info, resultPointCallback);
 }
 
 } // QRCode

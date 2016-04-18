@@ -18,6 +18,7 @@
 #include "qrcode/QRFinderPatternInfo.h"
 #include "BitMatrix.h"
 #include "DecodeHints.h"
+#include "ErrorStatus.h"
 
 namespace ZXing {
 namespace QRCode {
@@ -367,12 +368,12 @@ struct CenterComparator
 *         size differs from the average among those patterns the least
 * @throws NotFoundException if 3 such finder patterns do not exist
 */
-bool SelectBestPatterns(std::vector<FinderPattern>& possibleCenters)
+ErrorStatus SelectBestPatterns(std::vector<FinderPattern>& possibleCenters)
 {
 	int startSize = possibleCenters.size();
 	if (startSize < 3) {
 		// Couldn't find enough finder patterns
-		return false;
+		return ErrorStatus::NotFound;
 	}
 
 	// Filter outlier possibilities whose module size is too different
@@ -415,10 +416,10 @@ bool SelectBestPatterns(std::vector<FinderPattern>& possibleCenters)
 
 		possibleCenters.resize(3);
 	}
-	return true;
+	return ErrorStatus::NoError;
 }
 
-bool
+ErrorStatus
 FinderPatternFinder::Find(const BitMatrix& image, const ResultPointCallback& resultPointCallback, const DecodeHints* hints, FinderPatternInfo& outInfo)
 {
 	bool tryHarder = hints != nullptr && hints->getFlag(DecodeHint::TRY_HARDER);
@@ -529,8 +530,9 @@ FinderPatternFinder::Find(const BitMatrix& image, const ResultPointCallback& res
 		}
 	}
 
-	if (!SelectBestPatterns(possibleCenters))
-		return false;
+	auto status = SelectBestPatterns(possibleCenters);
+	if (StatusIsError(status))
+		return status;
 
 	ResultPoint::OrderByBestPatterns(possibleCenters.data());
 
@@ -538,7 +540,7 @@ FinderPatternFinder::Find(const BitMatrix& image, const ResultPointCallback& res
 	outInfo.topLeft = possibleCenters[1];
 	outInfo.topRight = possibleCenters[2];
 	
-	return true;
+	return ErrorStatus::NoError;
 }
 
 
