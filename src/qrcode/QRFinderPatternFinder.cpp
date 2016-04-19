@@ -420,7 +420,7 @@ ErrorStatus SelectBestPatterns(std::vector<FinderPattern>& possibleCenters)
 }
 
 ErrorStatus
-FinderPatternFinder::Find(const BitMatrix& image, const ResultPointCallback& resultPointCallback, const DecodeHints* hints, FinderPatternInfo& outInfo)
+FinderPatternFinder::Find(const BitMatrix& image, const PointCallback& pointCallback, const DecodeHints* hints, FinderPatternInfo& outInfo)
 {
 	bool tryHarder = hints != nullptr && hints->getFlag(DecodeHint::TRY_HARDER);
 	bool pureBarcode = hints != nullptr && hints->getFlag(DecodeHint::PURE_BARCODE);
@@ -459,7 +459,7 @@ FinderPatternFinder::Find(const BitMatrix& image, const ResultPointCallback& res
 				if ((currentState & 1) == 0) { // Counting black pixels
 					if (currentState == 4) { // A winner?
 						if (FoundPatternCross(stateCount)) { // Yes
-							bool confirmed = HandlePossibleCenter(image, stateCount, i, j, pureBarcode, resultPointCallback, possibleCenters);
+							bool confirmed = HandlePossibleCenter(image, stateCount, i, j, pureBarcode, pointCallback, possibleCenters);
 							if (confirmed) {
 								// Start examining every other line. Checking each line turned out to be too
 								// expensive and didn't improve performance.
@@ -519,7 +519,7 @@ FinderPatternFinder::Find(const BitMatrix& image, const ResultPointCallback& res
 			}
 		}
 		if (FinderPatternFinder::FoundPatternCross(stateCount)) {
-			bool confirmed = FinderPatternFinder::HandlePossibleCenter(image, stateCount, i, maxJ, pureBarcode, resultPointCallback, possibleCenters);
+			bool confirmed = FinderPatternFinder::HandlePossibleCenter(image, stateCount, i, maxJ, pureBarcode, pointCallback, possibleCenters);
 			if (confirmed) {
 				iSkip = stateCount[0];
 				if (hasSkipped) {
@@ -592,7 +592,7 @@ FinderPatternFinder::FoundPatternCross(const StateCount& stateCount) {
 * @return true if a finder pattern candidate was found this time
 */
 bool
-FinderPatternFinder::HandlePossibleCenter(const BitMatrix& image, const StateCount& stateCount, int i, int j, bool pureBarcode, const ResultPointCallback& resultPointCallback, std::vector<FinderPattern>& possibleCenters)
+FinderPatternFinder::HandlePossibleCenter(const BitMatrix& image, const StateCount& stateCount, int i, int j, bool pureBarcode, const PointCallback& pointCallback, std::vector<FinderPattern>& possibleCenters)
 {
 	int stateCountTotal = stateCount[0] + stateCount[1] + stateCount[2] + stateCount[3] +
 		stateCount[4];
@@ -616,8 +616,9 @@ FinderPatternFinder::HandlePossibleCenter(const BitMatrix& image, const StateCou
 			}
 			if (!found) {
 				possibleCenters.emplace_back(centerJ, centerI, estimatedModuleSize);
-				if (resultPointCallback != nullptr) {
-					resultPointCallback(possibleCenters.back());
+				if (pointCallback != nullptr) {
+					const ResultPoint& p = possibleCenters.back();
+					pointCallback(p.x(), p.y());
 				}
 			}
 			return true;

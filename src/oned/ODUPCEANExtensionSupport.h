@@ -15,24 +15,17 @@
 * limitations under the License.
 */
 
-#include "oned/ODReader.h"
-
-#include <vector>
-#include <memory>
-
 namespace ZXing {
+
+class Result;
+class BitArray;
 
 namespace OneD {
 
-class MultiFormatReader : public Reader
+class UPCEANExtensionSupport
 {
 public:
-	MultiFormatReader(const DecodeHints* hints = nullptr);
-	
-	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) const override;
-
-private:
-	std::vector<std::shared_ptr<Reader>> _readers;
+	static Result DecodeRow(int rowNumber, const BitArray& row, int rowOffset);
 };
 
 

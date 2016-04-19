@@ -104,10 +104,10 @@ MultiFormatReader::decode(const BinaryBitmap& image, const DecodeHints* hints) c
 	auto readers = BuildReaders(hints);
 	for (const auto& reader : readers) {
 		Result r = reader->decode(image, hints);
-		if (r.isValid)
+		if (r.isValid())
 			return r;
 	}
-	return Result();
+	return Result(ErrorStatus::NotFound);
 }
 
 };

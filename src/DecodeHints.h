@@ -23,8 +23,8 @@
 namespace ZXing {
 
 class String;
-class ResultPoint;
 enum class BarcodeFormat;
+typedef std::function<void(float x, float y)> PointCallback;
 
 enum class DecodeHint
 {
@@ -101,19 +101,17 @@ enum class DecodeHint
 class DecodeHints
 {
 public:
-	typedef std::function<void(const ResultPoint&)> ResultPointCallback;
-
 	bool getFlag(DecodeHint hint) const;
 	String getString(DecodeHint hint) const;
 	std::vector<int> getIntegerList(DecodeHint hint) const;
 	std::vector<BarcodeFormat> getFormatList(DecodeHint hint) const;
-	ResultPointCallback getPointCallback(DecodeHint hint) const;
+	PointCallback getPointCallback(DecodeHint hint) const;
 
 	void put(DecodeHint hint, bool value);
 	void put(DecodeHint hint, const String& value);
 	void put(DecodeHint hint, const std::vector<int>& list);
 	void put(DecodeHint hint, const std::vector<BarcodeFormat>& formats);
-	void put(DecodeHint hint, const ResultPointCallback& callback);
+	void put(DecodeHint hint, const PointCallback& callback);
 
 	void remove(DecodeHint hint);
 

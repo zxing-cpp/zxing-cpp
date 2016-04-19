@@ -23,6 +23,7 @@
 namespace ZXing {
 
 enum class BarcodeFormat;
+enum class ErrorStatus;
 
 namespace OneD {
 
@@ -32,30 +33,31 @@ namespace OneD {
 */
 class UPCEANReader : public Reader
 {
-protected:
+public:
 	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) const override;
 
-		/**
-		* <p>Like {@link #decodeRow(int, BitArray, java.util.Map)}, but
-		* allows caller to inform method about where the UPC/EAN start pattern is
-		* found. This allows this to be computed once and reused across many implementations.</p>
-		*
-		* @param rowNumber row index into the image
-		* @param row encoding of the row of the barcode image
-		* @param startGuardRange start/end column where the opening start pattern was found
-		* @param hints optional hints that influence decoding
-		* @return {@link Result} encapsulating the result of decoding a barcode in the row
-		* @throws NotFoundException if no potential barcode is found
-		* @throws ChecksumException if a potential barcode is found but does not pass its checksum
-		* @throws FormatException if a potential barcode is found but format is invalid
-		*/
+protected:
+	/**
+	* <p>Like {@link #decodeRow(int, BitArray, java.util.Map)}, but
+	* allows caller to inform method about where the UPC/EAN start pattern is
+	* found. This allows this to be computed once and reused across many implementations.</p>
+	*
+	* @param rowNumber row index into the image
+	* @param row encoding of the row of the barcode image
+	* @param startGuardRange start/end column where the opening start pattern was found
+	* @param hints optional hints that influence decoding
+	* @return {@link Result} encapsulating the result of decoding a barcode in the row
+	* @throws NotFoundException if no potential barcode is found
+	* @throws ChecksumException if a potential barcode is found but does not pass its checksum
+	* @throws FormatException if a potential barcode is found but format is invalid
+	*/
 	virtual Result decodeRow(int rowNumber, const BitArray& row, int startGuardBegin, int startGuardEnd, const DecodeHints* hints) const;
 
 
 	/**
 	* Get the format of this decoder.
 	*/
-	virtual BarcodeFormat supportedFormat() const;
+	virtual BarcodeFormat supportedFormat() const = 0;
 
 	/**
 	* Subclasses override this to decode the portion of a barcode between the start
@@ -67,17 +69,21 @@ protected:
 	* @return horizontal offset of first pixel after the "middle" that was decoded
 	* @throws NotFoundException if decoding could not complete successfully
 	*/
-	virtual bool decodeMiddle(BitArray row, int startGuardBegin, int startGuardEnd, int &resultOffset, String& resultString);
+	virtual ErrorStatus decodeMiddle(const BitArray& row, int startGuardBegin, int startGuardEnd, int &resultOffset, String& resultString) const = 0;
 
 	/**
 	* @param s string of digits to check
 	* @return {@link #checkStandardUPCEANChecksum(CharSequence)}
 	* @throws FormatException if the string does not contain only digits
 	*/
-	virtual	bool checkChecksum(const String& s) const;
+	virtual	ErrorStatus checkChecksum(const String& s) const;
 
 
-	static bool FindStartGuardPattern(const BitArray& row, int& begin, int& end);
+	virtual ErrorStatus decodeEnd(const BitArray& row, int endStart, int& begin, int& end) const;
+
+public:
+	static ErrorStatus FindStartGuardPattern(const BitArray& row, int& begin, int& end);
+	static ErrorStatus FindGuardPattern(const BitArray& row, int rowOffset, bool whiteFirst, const std::vector<int>& pattern, int& begin, int& end);
 
 	/**
 	* Computes the UPC/EAN checksum on a string of digits, and reports
@@ -87,9 +93,22 @@ protected:
 	* @return true iff string of digits passes the UPC/EAN checksum algorithm
 	* @throws FormatException if the string does not contain only digits
 	*/
-	static bool CheckStandardUPCEANChecksum(const String& s);
+	static ErrorStatus CheckStandardUPCEANChecksum(const String& s);
 
-
+	/**
+	* Attempts to decode a single UPC/EAN-encoded digit.
+	*
+	* @param row row of black/white values to decode
+	* @param counters the counts of runs of observed black/white/black/... values
+	* @param rowOffset horizontal offset to start decoding from
+	* @param patterns the set of patterns to use to decode -- sometimes different encodings
+	* for the digits 0-9 are used, and this indicates the encodings for 0 to 9 that should
+	* be used
+	* @return horizontal offset of first pixel beyond the decoded digit
+	* @throws NotFoundException if digit cannot be decoded
+	*/
+	static ErrorStatus DecodeDigit(const BitArray& row, int rowOffset, const std::vector<std::vector<int>>& patterns, std::vector<int>& counters, int &resultOffset);
+	
 	/**
 	* Start/end guard pattern.
 	*/

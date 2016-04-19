@@ -86,7 +86,7 @@ MultiFormatReader::decodeRow(int rowNumber, const BitArray& row, const DecodeHin
 			return r;
 		}
 	}
-	return Result();
+	return Result(ErrorStatus::NotFound);
 }
 
 

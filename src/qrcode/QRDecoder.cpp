@@ -31,7 +31,6 @@
 #include "StringCodecs.h"
 #include "CharacterSetECI.h"
 #include "DecodeHints.h"
-#include "ErrorStatus.h"
 
 #include <list>
 

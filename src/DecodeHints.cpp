@@ -35,7 +35,7 @@ struct DecodeHints::HintValue
 	virtual std::vector<BarcodeFormat> toFormatList() const {
 		return std::vector<BarcodeFormat>();
 	}
-	virtual DecodeHints::ResultPointCallback toPointCallback() const {
+	virtual DecodeHints::PointCallback toPointCallback() const {
 		return nullptr;
 	}
 };
@@ -78,9 +78,9 @@ struct DecodeHints::FormatListValue : public HintValue
 
 struct DecodeHints::PointCallbackValue : public HintValue
 {
-	DecodeHints::ResultPointCallback value;
-	PointCallbackValue(const DecodeHints::ResultPointCallback& v) : value(v) {}
-	virtual DecodeHints::ResultPointCallback toPointCallback() const override {
+	DecodeHints::PointCallback value;
+	PointCallbackValue(const DecodeHints::PointCallback& v) : value(v) {}
+	virtual DecodeHints::PointCallback toPointCallback() const override {
 		return value;
 	}
 };
@@ -114,7 +114,7 @@ DecodeHints::getFormatList(DecodeHint hint) const
 	return it != _contents.end() ? it->second->toFormatList() : std::vector<BarcodeFormat>();
 }
 
-DecodeHints::ResultPointCallback
+DecodeHints::PointCallback
 DecodeHints::getPointCallback(DecodeHint hint) const
 {
 	auto it = _contents.find(hint);
@@ -146,7 +146,7 @@ DecodeHints::put(DecodeHint hint, const std::vector<BarcodeFormat>& formats)
 }
 
 void
-DecodeHints::put(DecodeHint hint, const ResultPointCallback& callback)
+DecodeHints::put(DecodeHint hint, const PointCallback& callback)
 {
 	_contents[hint] = std::make_shared<PointCallbackValue>(callback);
 }

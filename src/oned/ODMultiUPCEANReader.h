@@ -38,7 +38,6 @@ class MultiUPCEANReader : public Reader
 public:
 	MultiUPCEANReader(const DecodeHints* hints);
 
-protected:
 	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) const override;
 
 private:

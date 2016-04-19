@@ -22,6 +22,7 @@
 namespace ZXing {
 
 class BitArray;
+enum class ErrorStatus;
 
 namespace OneD {
 
@@ -37,7 +38,6 @@ class Reader : public ZXing::Reader
 public:
 	virtual Result decode(const BinaryBitmap& image, const DecodeHints* hints = nullptr) const override;
 
-protected:
 	/**
 	* <p>Attempts to decode a one-dimensional barcode format given a single row of
 	* an image.</p>
@@ -65,8 +65,8 @@ protected:
 	* @throws NotFoundException if counters cannot be filled entirely from row before running out
 	*  of pixels
 	*/
-	static bool RecordPattern(const BitArray& row, int start, std::vector<int>& counters);
-	static bool RecordPatternInReverse(const BitArray& row, int start, std::vector<int>& counters);
+	static ErrorStatus RecordPattern(const BitArray& row, int start, std::vector<int>& counters);
+	static ErrorStatus RecordPatternInReverse(const BitArray& row, int start, std::vector<int>& counters);
 
 	/**
 	* Determines how closely a set of observed counts of runs of black/white values matches a given

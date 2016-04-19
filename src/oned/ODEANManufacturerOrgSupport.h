@@ -15,26 +15,26 @@
 * limitations under the License.
 */
 
-#include "oned/ODReader.h"
-
-#include <vector>
-#include <memory>
-
 namespace ZXing {
+
+class String;
 
 namespace OneD {
 
-class MultiFormatReader : public Reader
+/**
+* Records EAN prefix to GS1 Member Organization, where the member organization
+* correlates strongly with a country. This is an imperfect means of identifying
+* a country of origin by EAN-13 barcode value. See
+* <a href="http://en.wikipedia.org/wiki/List_of_GS1_country_codes">
+* http://en.wikipedia.org/wiki/List_of_GS1_country_codes</a>.
+*
+* @author Sean Owen
+*/
+class EANManufacturerOrgSupport
 {
 public:
-	MultiFormatReader(const DecodeHints* hints = nullptr);
-	
-	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) const override;
-
-private:
-	std::vector<std::shared_ptr<Reader>> _readers;
+	static String LookupCountryIdentifier(const String& productCode);
 };
-
 
 } // OneD
 } // ZXing

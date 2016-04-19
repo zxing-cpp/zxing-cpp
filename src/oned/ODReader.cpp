@@ -72,7 +72,8 @@ Reader::doDecode(const BinaryBitmap& image, const DecodeHints* hints) const
 		}
 
 		// Estimate black point for this row and load it:
-		if (!image.getBlackRow(rowNumber, row))
+		auto status = image.getBlackRow(rowNumber, row);
+		if (StatusIsError(status))
 			continue;
 
 		// While we have the image data in a BitArray, it's fairly cheap to reverse it in place to
@@ -110,7 +111,7 @@ Reader::doDecode(const BinaryBitmap& image, const DecodeHints* hints) const
 			}
 		}
 	}
-	return Result();
+	return Result(ErrorStatus::NotFound);
 }
 
 
@@ -140,7 +141,6 @@ Reader::decode(const BinaryBitmap& image, const DecodeHints* hints) const
 				}
 				result.setResultPoints(points);
 			}
-			return result;
 		}
 	}
 	return result;
@@ -159,14 +159,14 @@ Reader::decode(const BinaryBitmap& image, const DecodeHints* hints) const
 * @throws NotFoundException if counters cannot be filled entirely from row before running out
 *  of pixels
 */
-bool
+ErrorStatus
 Reader::RecordPattern(const BitArray& row, int start, std::vector<int>& counters)
 {
 	size_t numCounters = counters.size();
 	std::fill_n(counters.begin(), numCounters, 0);
 	int end = row.size();
 	if (start >= end) {
-		return false;
+		return ErrorStatus::NotFound;
 	}
 	bool isWhite = !row.get(start);
 	size_t counterPosition = 0;
@@ -190,12 +190,12 @@ Reader::RecordPattern(const BitArray& row, int start, std::vector<int>& counters
 	// If we read fully the last section of pixels and filled up our counters -- or filled
 	// the last counter but ran off the side of the image, OK. Otherwise, a problem.
 	if (!(counterPosition == numCounters || (counterPosition == numCounters - 1 && i == end))) {
-		return false;
+		return ErrorStatus::NotFound;
 	}
-	return true;
+	return ErrorStatus::NoError;
 }
 
-bool
+ErrorStatus
 Reader::RecordPatternInReverse(const BitArray& row, int start, std::vector<int>& counters)
 {
 	// This could be more efficient I guess
@@ -208,7 +208,7 @@ Reader::RecordPatternInReverse(const BitArray& row, int start, std::vector<int>&
 		}
 	}
 	if (numTransitionsLeft >= 0) {
-		return false;
+		return ErrorStatus::NotFound;
 	}
 	return RecordPattern(row, start + 1, counters);
 }

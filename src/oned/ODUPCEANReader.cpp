@@ -15,6 +15,13 @@
 */
 
 #include "oned/ODUPCEANReader.h"
+#include "oned/ODUPCEANExtensionSupport.h"
+#include "oned/ODEANManufacturerOrgSupport.h"
+#include "Result.h"
+#include "BitArray.h"
+#include "DecodeHints.h"
+
+#include <algorithm>
 
 namespace ZXing {
 
@@ -84,25 +91,22 @@ UPCEANReader::L_AND_G_PATTERNS = {
 	//	eanManSupport = new EANManufacturerOrgSupport();
 	//}
 
-	/**
-	* @param row row of black/white values to search
-	* @param rowOffset position to start search
-	* @param whiteFirst if true, indicates that the pattern specifies white/black/white/...
-	* pixel counts, otherwise, it is interpreted as black/white/black/...
-	* @param pattern pattern of counts of number of black and white pixels that are being
-	* searched for as a pattern
-	* @param counters array of counters, as long as pattern, to re-use
-	* @return start/end horizontal offset of guard pattern, as an array of two ints
-	* @throws NotFoundException if pattern is not found
-	*/
-static bool FindGuardPattern(const BitArray& row,
-	int rowOffset,
-	boolean whiteFirst,
-	int[] pattern,
-	int[] counters) throws NotFoundException {
-	int patternLength = pattern.length;
-	int width = row.getSize();
-	boolean isWhite = whiteFirst;
+/**
+* @param row row of black/white values to search
+* @param rowOffset position to start search
+* @param whiteFirst if true, indicates that the pattern specifies white/black/white/...
+* pixel counts, otherwise, it is interpreted as black/white/black/...
+* @param pattern pattern of counts of number of black and white pixels that are being
+* searched for as a pattern
+* @param counters array of counters, as long as pattern, to re-use
+* @return start/end horizontal offset of guard pattern, as an array of two ints
+* @throws NotFoundException if pattern is not found
+*/
+static ErrorStatus DoFindGuardPattern(const BitArray& row, int rowOffset, bool whiteFirst, const std::vector<int>& pattern, std::vector<int>& counters, int& begin, int& end)
+{
+	int patternLength = static_cast<int>(pattern.size());
+	int width = row.size();
+	bool isWhite = whiteFirst;
 	rowOffset = whiteFirst ? row.getNextUnset(rowOffset) : row.getNextSet(rowOffset);
 	int counterPosition = 0;
 	int patternStart = rowOffset;
@@ -112,11 +116,13 @@ static bool FindGuardPattern(const BitArray& row,
 		}
 		else {
 			if (counterPosition == patternLength - 1) {
-				if (patternMatchVariance(counters, pattern, MAX_INDIVIDUAL_VARIANCE) < MAX_AVG_VARIANCE) {
-					return new int[] {patternStart, x};
+				if (Reader::PatternMatchVariance(counters, pattern, MAX_INDIVIDUAL_VARIANCE) < MAX_AVG_VARIANCE) {
+					begin = patternStart;
+					end = x;
+					return ErrorStatus::NoError;
 				}
 				patternStart += counters[0] + counters[1];
-				System.arraycopy(counters, 2, counters, 0, patternLength - 2);
+				std::copy(counters.begin() + 2, counters.end(), counters.begin());
 				counters[patternLength - 2] = 0;
 				counters[patternLength - 1] = 0;
 				counterPosition--;
@@ -128,22 +134,28 @@ static bool FindGuardPattern(const BitArray& row,
 			isWhite = !isWhite;
 		}
 	}
-	throw NotFoundException.getNotFoundInstance();
+	return ErrorStatus::NotFound;
 }
 
+ErrorStatus
+UPCEANReader::FindGuardPattern(const BitArray& row, int rowOffset, bool whiteFirst, const std::vector<int>& pattern, int& begin, int& end)
+{
+	std::vector<int> counters(pattern.size(), 0);
+	return DoFindGuardPattern(row, rowOffset, false, START_END_PATTERN, counters, begin, end);
+}
 
-bool
+ErrorStatus
 UPCEANReader::FindStartGuardPattern(const BitArray& row, int& begin, int& end)
 {
-	boolean foundStart = false;
-	int[] startRange = null;
+	bool foundStart = false;
+	int start = 0;
 	int nextStart = 0;
-	int[] counters = new int[START_END_PATTERN.length];
+	std::vector<int> counters(START_END_PATTERN.size());
 	while (!foundStart) {
-		Arrays.fill(counters, 0, START_END_PATTERN.length, 0);
-		startRange = findGuardPattern(row, nextStart, false, START_END_PATTERN, counters);
-		int start = startRange[0];
-		nextStart = startRange[1];
+		std::fill(counters.begin(), counters.end(), 0);
+		auto status = DoFindGuardPattern(row, nextStart, false, START_END_PATTERN, counters, start, nextStart);
+		if (StatusIsError(status))
+			return status;
 		// Make sure there is a quiet zone at least as big as the start pattern before the barcode.
 		// If this check would run off the left edge of the image, do not accept this barcode,
 		// as it is very likely to be a false positive.
@@ -152,107 +164,93 @@ UPCEANReader::FindStartGuardPattern(const BitArray& row, int& begin, int& end)
 			foundStart = row.isRange(quietStart, start, false);
 		}
 	}
-	return startRange;
+	begin = start;
+	end = nextStart;
+	return ErrorStatus::NoError;
 }
 
-	@Override
-		public Result decodeRow(int rowNumber, BitArray row, Map<DecodeHintType, ? > hints)
-		throws NotFoundException, ChecksumException, FormatException{
-		return decodeRow(rowNumber, row, findStartGuardPattern(row), hints);
+Result
+UPCEANReader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) const
+{
+	int begin, end;
+	auto status = FindStartGuardPattern(row, begin, end);
+	if (StatusIsError(status))
+		return Result(status);
+
+	return decodeRow(rowNumber, row, begin, end, hints);
+}
+
+ErrorStatus
+UPCEANReader::decodeEnd(const BitArray& row, int endStart, int& begin, int& end) const
+{
+	return FindGuardPattern(row, endStart, false, START_END_PATTERN, begin, end);
+}
+
+Result
+UPCEANReader::decodeRow(int rowNumber, const BitArray& row, int startGuardBegin, int startGuardEnd, const DecodeHints* hints) const
+{
+	auto pointCallback = hints != nullptr ? hints->getPointCallback(DecodeHint::NEED_RESULT_POINT_CALLBACK) : nullptr;
+	if (pointCallback != nullptr) {
+		pointCallback(0.5f * (startGuardBegin + startGuardEnd), rowNumber);
 	}
 
-		/**
-		* <p>Like {@link #decodeRow(int, BitArray, java.util.Map)}, but
-		* allows caller to inform method about where the UPC/EAN start pattern is
-		* found. This allows this to be computed once and reused across many implementations.</p>
-		*
-		* @param rowNumber row index into the image
-		* @param row encoding of the row of the barcode image
-		* @param startGuardRange start/end column where the opening start pattern was found
-		* @param hints optional hints that influence decoding
-		* @return {@link Result} encapsulating the result of decoding a barcode in the row
-		* @throws NotFoundException if no potential barcode is found
-		* @throws ChecksumException if a potential barcode is found but does not pass its checksum
-		* @throws FormatException if a potential barcode is found but format is invalid
-		*/
-		public Result decodeRow(int rowNumber,
-			BitArray row,
-			int[] startGuardRange,
-			Map<DecodeHintType, ? > hints)
-		throws NotFoundException, ChecksumException, FormatException{
+	String result;
+	int endStart = 0;
+	auto status = decodeMiddle(row, startGuardBegin, startGuardEnd, endStart, result);
+	if (StatusIsError(status))
+		return Result(status);
 
-		ResultPointCallback resultPointCallback = hints == null ? null :
-		(ResultPointCallback)hints.get(DecodeHintType.NEED_RESULT_POINT_CALLBACK);
-
-	if (resultPointCallback != null) {
-		resultPointCallback.foundPossibleResultPoint(new ResultPoint(
-			(startGuardRange[0] + startGuardRange[1]) / 2.0f, rowNumber
-		));
+	if (pointCallback != nullptr) {
+		pointCallback(endStart, rowNumber);
 	}
 
-	StringBuilder result = decodeRowStringBuffer;
-	result.setLength(0);
-	int endStart = decodeMiddle(row, startGuardRange, result);
+	int endRangeBegin, endRangeEnd;
+	status = decodeEnd(row, endStart, endRangeBegin, endRangeEnd);
+	if (StatusIsError(status))
+		return Result(status);
 
-	if (resultPointCallback != null) {
-		resultPointCallback.foundPossibleResultPoint(new ResultPoint(
-			endStart, rowNumber
-		));
+	if (pointCallback != nullptr) {
+		pointCallback(0.5f * (endRangeBegin + endRangeEnd), rowNumber);
 	}
-
-	int[] endRange = decodeEnd(row, endStart);
-
-	if (resultPointCallback != null) {
-		resultPointCallback.foundPossibleResultPoint(new ResultPoint(
-			(endRange[0] + endRange[1]) / 2.0f, rowNumber
-		));
-	}
-
 
 	// Make sure there is a quiet zone at least as big as the end pattern after the barcode. The
 	// spec might want more whitespace, but in practice this is the maximum we can count on.
-	int end = endRange[1];
-	int quietEnd = end + (end - endRange[0]);
-	if (quietEnd >= row.getSize() || !row.isRange(end, quietEnd, false)) {
-		throw NotFoundException.getNotFoundInstance();
+	int end = endRangeEnd;
+	int quietEnd = end + (end - endRangeBegin);
+	if (quietEnd >= row.size() || !row.isRange(end, quietEnd, false)) {
+		return Result(ErrorStatus::NotFound);
 	}
 
-	String resultString = result.toString();
 	// UPC/EAN should never be less than 8 chars anyway
-	if (resultString.length() < 8) {
-		throw FormatException.getFormatInstance();
+	if (result.byteCount() < 8) {
+		return Result(ErrorStatus::FormatError);
 	}
-	if (!checkChecksum(resultString)) {
-		throw ChecksumException.getChecksumInstance();
-	}
+	status = checkChecksum(result);
+	if (StatusIsError(status))
+		return Result(status);
 
-	float left = (float)(startGuardRange[1] + startGuardRange[0]) / 2.0f;
-	float right = (float)(endRange[1] + endRange[0]) / 2.0f;
-	BarcodeFormat format = getBarcodeFormat();
-	Result decodeResult = new Result(resultString,
-		null, // no natural byte representation for these barcodes
-		new ResultPoint[]{
-		new ResultPoint(left, (float)rowNumber),
-		new ResultPoint(right, (float)rowNumber) },
+	float left = 0.5f * static_cast<float>(startGuardBegin + startGuardEnd);
+	float right = 0.5f * static_cast<float>(endRangeBegin + endRangeEnd);
+	BarcodeFormat format = supportedFormat();
+	Result decodeResult(result,
+		ByteArray(), // no natural byte representation for these barcodes
+		{ ResultPoint(left, static_cast<float>(rowNumber)), ResultPoint(right, static_cast<float>(rowNumber)) },
 		format);
 
 	int extensionLength = 0;
 
-	try {
-		Result extensionResult = extensionReader.decodeRow(rowNumber, row, endRange[1]);
-		decodeResult.putMetadata(ResultMetadataType.UPC_EAN_EXTENSION, extensionResult.getText());
+	Result extensionResult = UPCEANExtensionSupport::DecodeRow(rowNumber, row, endRangeEnd);
+	if (extensionResult.isValid())
+	{
+		decodeResult.metadata().put(ResultMetadata::UPC_EAN_EXTENSION, extensionResult.text());
 		decodeResult.putAllMetadata(extensionResult.getResultMetadata());
 		decodeResult.addResultPoints(extensionResult.getResultPoints());
-		extensionLength = extensionResult.getText().length();
-	}
-	catch (ReaderException re) {
-		// continue
+		extensionLength = extensionResult.text().charCount();
 	}
 
-	int[] allowedExtensions =
-		hints == null ? null : (int[]) hints.get(DecodeHintType.ALLOWED_EAN_EXTENSIONS);
-	if (allowedExtensions != null) {
-		boolean valid = false;
+	auto allowedExtensions = hints != nullptr ? hints->getIntegerList(DecodeHint::ALLOWED_EAN_EXTENSIONS) : std::vector<int>();
+	if (!allowedExtensions.empty()) {
+		bool valid = false;
 		for (int length : allowedExtensions) {
 			if (extensionLength == length) {
 				valid = true;
@@ -260,129 +258,95 @@ UPCEANReader::FindStartGuardPattern(const BitArray& row, int& begin, int& end)
 			}
 		}
 		if (!valid) {
-			throw NotFoundException.getNotFoundInstance();
+			return Result(ErrorStatus::NotFound);
 		}
 	}
 
-	if (format == BarcodeFormat.EAN_13 || format == BarcodeFormat.UPC_A) {
-		String countryID = eanManSupport.lookupCountryIdentifier(resultString);
-		if (countryID != null) {
-			decodeResult.putMetadata(ResultMetadataType.POSSIBLE_COUNTRY, countryID);
+	if (format == BarcodeFormat::EAN_13 || format == BarcodeFormat::UPC_A) {
+		String countryID = EANManufacturerOrgSupport::LookupCountryIdentifier(result);
+		if (!countryID.empty()) {
+			decodeResult.metadata().put(ResultMetadata::POSSIBLE_COUNTRY, countryID);
 		}
 	}
 
 	return decodeResult;
+}
+
+ErrorStatus
+UPCEANReader::checkChecksum(const String& s) const
+{
+	return CheckStandardUPCEANChecksum(s);
+}
+
+/**
+* Computes the UPC/EAN checksum on a string of digits, and reports
+* whether the checksum is correct or not.
+*
+* @param s string of digits to check
+* @return true iff string of digits passes the UPC/EAN checksum algorithm
+* @throws FormatException if the string does not contain only digits
+*/
+ErrorStatus
+UPCEANReader::CheckStandardUPCEANChecksum(const String& str)
+{
+	auto s = str.toStdString();
+	int length = static_cast<int>(s.length());
+	if (length == 0) {
+		return ErrorStatus::ChecksumError;
 	}
 
-		/**
-		* @param s string of digits to check
-		* @return {@link #checkStandardUPCEANChecksum(CharSequence)}
-		* @throws FormatException if the string does not contain only digits
-		*/
-		boolean checkChecksum(String s) throws FormatException {
-		return checkStandardUPCEANChecksum(s);
+	int sum = 0;
+	int zero = static_cast<int>('0');
+	for (int i = length - 2; i >= 0; i -= 2) {
+		int digit = static_cast<int>(s[i]) - zero;
+		if (digit < 0 || digit > 9) {
+			return ErrorStatus::FormatError;
+		}
+		sum += digit;
 	}
-
-	/**
-	* Computes the UPC/EAN checksum on a string of digits, and reports
-	* whether the checksum is correct or not.
-	*
-	* @param s string of digits to check
-	* @return true iff string of digits passes the UPC/EAN checksum algorithm
-	* @throws FormatException if the string does not contain only digits
-	*/
-	static boolean checkStandardUPCEANChecksum(CharSequence s) throws FormatException {
-		int length = s.length();
-		if (length == 0) {
-			return false;
+	sum *= 3;
+	for (int i = length - 1; i >= 0; i -= 2) {
+		int digit = static_cast<int>(s[i]) - zero;
+		if (digit < 0 || digit > 9) {
+			return ErrorStatus::FormatError;
 		}
-
-		int sum = 0;
-		for (int i = length - 2; i >= 0; i -= 2) {
-			int digit = (int)s.charAt(i) - (int) '0';
-			if (digit < 0 || digit > 9) {
-				throw FormatException.getFormatInstance();
-			}
-			sum += digit;
-		}
-		sum *= 3;
-		for (int i = length - 1; i >= 0; i -= 2) {
-			int digit = (int)s.charAt(i) - (int) '0';
-			if (digit < 0 || digit > 9) {
-				throw FormatException.getFormatInstance();
-			}
-			sum += digit;
-		}
-		return sum % 10 == 0;
+		sum += digit;
 	}
+	return sum % 10 == 0 ? ErrorStatus::NoError : ErrorStatus::ChecksumError;
+}
 
-	int[] decodeEnd(BitArray row, int endStart) throws NotFoundException {
-		return findGuardPattern(row, endStart, false, START_END_PATTERN);
-	}
-
-	static int[] findGuardPattern(BitArray row,
-		int rowOffset,
-		boolean whiteFirst,
-		int[] pattern) throws NotFoundException {
-		return findGuardPattern(row, rowOffset, whiteFirst, pattern, new int[pattern.length]);
-	}
-
-
-	/**
-	* Attempts to decode a single UPC/EAN-encoded digit.
-	*
-	* @param row row of black/white values to decode
-	* @param counters the counts of runs of observed black/white/black/... values
-	* @param rowOffset horizontal offset to start decoding from
-	* @param patterns the set of patterns to use to decode -- sometimes different encodings
-	* for the digits 0-9 are used, and this indicates the encodings for 0 to 9 that should
-	* be used
-	* @return horizontal offset of first pixel beyond the decoded digit
-	* @throws NotFoundException if digit cannot be decoded
-	*/
-	static int decodeDigit(BitArray row, int[] counters, int rowOffset, int[][] patterns)
-		throws NotFoundException {
-		recordPattern(row, rowOffset, counters);
-		float bestVariance = MAX_AVG_VARIANCE; // worst variance we'll accept
-		int bestMatch = -1;
-		int max = patterns.length;
-		for (int i = 0; i < max; i++) {
-			int[] pattern = patterns[i];
-			float variance = patternMatchVariance(counters, pattern, MAX_INDIVIDUAL_VARIANCE);
-			if (variance < bestVariance) {
-				bestVariance = variance;
-				bestMatch = i;
-			}
-		}
-		if (bestMatch >= 0) {
-			return bestMatch;
-		}
-		else {
-			throw NotFoundException.getNotFoundInstance();
+/**
+* Attempts to decode a single UPC/EAN-encoded digit.
+*
+* @param row row of black/white values to decode
+* @param counters the counts of runs of observed black/white/black/... values
+* @param rowOffset horizontal offset to start decoding from
+* @param patterns the set of patterns to use to decode -- sometimes different encodings
+* for the digits 0-9 are used, and this indicates the encodings for 0 to 9 that should
+* be used
+* @return horizontal offset of first pixel beyond the decoded digit
+* @throws NotFoundException if digit cannot be decoded
+*/
+ErrorStatus
+UPCEANReader::DecodeDigit(const BitArray& row, int rowOffset, const std::vector<std::vector<int>>& patterns, std::vector<int>& counters, int &resultOffset)
+{
+	Reader::RecordPattern(row, rowOffset, counters);
+	float bestVariance = MAX_AVG_VARIANCE; // worst variance we'll accept
+	int bestMatch = -1;
+	int max = static_cast<int>(patterns.size());
+	for (int i = 0; i < max; i++) {
+		auto& pattern = patterns[i];
+		float variance = Reader::PatternMatchVariance(counters, pattern, MAX_INDIVIDUAL_VARIANCE);
+		if (variance < bestVariance) {
+			bestVariance = variance;
+			bestMatch = i;
 		}
 	}
-
-	/**
-	* Get the format of this decoder.
-	*
-	* @return The 1D format.
-	*/
-	abstract BarcodeFormat getBarcodeFormat();
-
-	/**
-	* Subclasses override this to decode the portion of a barcode between the start
-	* and end guard patterns.
-	*
-	* @param row row of black/white values to search
-	* @param startRange start/end offset of start guard pattern
-	* @param resultString {@link StringBuilder} to append decoded chars to
-	* @return horizontal offset of first pixel after the "middle" that was decoded
-	* @throws NotFoundException if decoding could not complete successfully
-	*/
-	protected abstract int decodeMiddle(BitArray row,
-		int[] startRange,
-		StringBuilder resultString) throws NotFoundException;
-
+	if (bestMatch >= 0) {
+		resultOffset = bestMatch;
+		return ErrorStatus::NoError;
+	}
+	return ErrorStatus::NotFound;
 }
 
 } // OneD

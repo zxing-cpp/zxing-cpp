@@ -19,10 +19,11 @@ namespace ZXing {
 
 enum class ErrorStatus
 {
-	NoError,
+	NoError = 0,
 
-	NotFound = 1,
-	FormatError = 2,
+	NotFound,
+	FormatError,
+	ChecksumError,
 
 	ReedSolomonError = 0x10,
 	ReedSolomonAlgoFailed,		// r_{i-1} was zero
