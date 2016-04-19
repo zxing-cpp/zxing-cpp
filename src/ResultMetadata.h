@@ -117,6 +117,8 @@ public:
 	void put(Key key, const std::list<ByteArray>& value);
 	void put(Key key, const std::shared_ptr<CustomData>& value);
 
+	void putAll(const ResultMetadata& other);
+
 private:
 	struct Value;
 	struct IntegerValue;

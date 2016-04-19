@@ -126,4 +126,10 @@ ResultMetadata::put(Key key, const std::shared_ptr<CustomData>& value)
 	_contents[key] = std::make_shared<CustomDataValue>(value);
 }
 
+void
+ResultMetadata::putAll(const ResultMetadata& other)
+{
+	_contents.insert(other._contents.begin(), other._contents.end());
+}
+
 } // ZXing

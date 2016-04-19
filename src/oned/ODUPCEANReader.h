@@ -16,8 +16,8 @@
 */
 
 #include "oned/ODReader.h"
-#include "ZXString.h"
 
+#include <string>
 #include <vector>
 
 namespace ZXing {
@@ -36,7 +36,6 @@ class UPCEANReader : public Reader
 public:
 	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) const override;
 
-protected:
 	/**
 	* <p>Like {@link #decodeRow(int, BitArray, java.util.Map)}, but
 	* allows caller to inform method about where the UPC/EAN start pattern is
@@ -53,30 +52,30 @@ protected:
 	*/
 	virtual Result decodeRow(int rowNumber, const BitArray& row, int startGuardBegin, int startGuardEnd, const DecodeHints* hints) const;
 
+protected:
 
 	/**
 	* Get the format of this decoder.
 	*/
-	virtual BarcodeFormat supportedFormat() const = 0;
+	virtual BarcodeFormat expectedFormat() const = 0;
 
 	/**
 	* Subclasses override this to decode the portion of a barcode between the start
 	* and end guard patterns.
 	*
 	* @param row row of black/white values to search
-	* @param startRange start/end offset of start guard pattern
+	* @param rowOffset on input, end offset of start guard pattern, and on output: horizontal offset of first pixel after the "middle" that was decoded
 	* @param resultString {@link StringBuilder} to append decoded chars to
-	* @return horizontal offset of first pixel after the "middle" that was decoded
 	* @throws NotFoundException if decoding could not complete successfully
 	*/
-	virtual ErrorStatus decodeMiddle(const BitArray& row, int startGuardBegin, int startGuardEnd, int &resultOffset, String& resultString) const = 0;
+	virtual ErrorStatus decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const = 0;
 
 	/**
 	* @param s string of digits to check
 	* @return {@link #checkStandardUPCEANChecksum(CharSequence)}
 	* @throws FormatException if the string does not contain only digits
 	*/
-	virtual	ErrorStatus checkChecksum(const String& s) const;
+	virtual	ErrorStatus checkChecksum(const std::string& s) const;
 
 
 	virtual ErrorStatus decodeEnd(const BitArray& row, int endStart, int& begin, int& end) const;
@@ -93,7 +92,7 @@ public:
 	* @return true iff string of digits passes the UPC/EAN checksum algorithm
 	* @throws FormatException if the string does not contain only digits
 	*/
-	static ErrorStatus CheckStandardUPCEANChecksum(const String& s);
+	static ErrorStatus CheckStandardUPCEANChecksum(const std::string& s);
 
 	/**
 	* Attempts to decode a single UPC/EAN-encoded digit.

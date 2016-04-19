@@ -92,6 +92,10 @@ ErrorStatus CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
 			codewordBytes[i] = static_cast<uint8_t>(codewordsInts[i]);
 		}
 	}
+	else if (StatusIsKindOf(status, ErrorStatus::ReedSolomonError))
+	{
+		status = ErrorStatus::FormatError;
+	}
 	return status;
 }
 

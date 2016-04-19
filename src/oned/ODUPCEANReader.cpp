@@ -191,17 +191,18 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, int startGuardBegin,
 {
 	auto pointCallback = hints != nullptr ? hints->getPointCallback(DecodeHint::NEED_RESULT_POINT_CALLBACK) : nullptr;
 	if (pointCallback != nullptr) {
-		pointCallback(0.5f * (startGuardBegin + startGuardEnd), rowNumber);
+		pointCallback(0.5f * (startGuardBegin + startGuardEnd), static_cast<float>(rowNumber));
 	}
 
-	String result;
-	int endStart = 0;
-	auto status = decodeMiddle(row, startGuardBegin, startGuardEnd, endStart, result);
+	std::string result;
+	result.reserve(20);
+	int endStart = startGuardEnd;
+	auto status = decodeMiddle(row, endStart, result);
 	if (StatusIsError(status))
 		return Result(status);
 
 	if (pointCallback != nullptr) {
-		pointCallback(endStart, rowNumber);
+		pointCallback(static_cast<float>(endStart), static_cast<float>(rowNumber));
 	}
 
 	int endRangeBegin, endRangeEnd;
@@ -210,7 +211,7 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, int startGuardBegin,
 		return Result(status);
 
 	if (pointCallback != nullptr) {
-		pointCallback(0.5f * (endRangeBegin + endRangeEnd), rowNumber);
+		pointCallback(0.5f * (endRangeBegin + endRangeEnd), static_cast<float>(rowNumber));
 	}
 
 	// Make sure there is a quiet zone at least as big as the end pattern after the barcode. The
@@ -222,7 +223,7 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, int startGuardBegin,
 	}
 
 	// UPC/EAN should never be less than 8 chars anyway
-	if (result.byteCount() < 8) {
+	if (result.length() < 8) {
 		return Result(ErrorStatus::FormatError);
 	}
 	status = checkChecksum(result);
@@ -231,7 +232,7 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, int startGuardBegin,
 
 	float left = 0.5f * static_cast<float>(startGuardBegin + startGuardEnd);
 	float right = 0.5f * static_cast<float>(endRangeBegin + endRangeEnd);
-	BarcodeFormat format = supportedFormat();
+	BarcodeFormat format = expectedFormat();
 	Result decodeResult(result,
 		ByteArray(), // no natural byte representation for these barcodes
 		{ ResultPoint(left, static_cast<float>(rowNumber)), ResultPoint(right, static_cast<float>(rowNumber)) },
@@ -243,8 +244,8 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, int startGuardBegin,
 	if (extensionResult.isValid())
 	{
 		decodeResult.metadata().put(ResultMetadata::UPC_EAN_EXTENSION, extensionResult.text());
-		decodeResult.putAllMetadata(extensionResult.getResultMetadata());
-		decodeResult.addResultPoints(extensionResult.getResultPoints());
+		decodeResult.metadata().putAll(extensionResult.metadata());
+		decodeResult.addResultPoints(extensionResult.resultPoints());
 		extensionLength = extensionResult.text().charCount();
 	}
 
@@ -273,7 +274,7 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, int startGuardBegin,
 }
 
 ErrorStatus
-UPCEANReader::checkChecksum(const String& s) const
+UPCEANReader::checkChecksum(const std::string& s) const
 {
 	return CheckStandardUPCEANChecksum(s);
 }
@@ -287,9 +288,8 @@ UPCEANReader::checkChecksum(const String& s) const
 * @throws FormatException if the string does not contain only digits
 */
 ErrorStatus
-UPCEANReader::CheckStandardUPCEANChecksum(const String& str)
+UPCEANReader::CheckStandardUPCEANChecksum(const std::string& s)
 {
-	auto s = str.toStdString();
 	int length = static_cast<int>(s.length());
 	if (length == 0) {
 		return ErrorStatus::ChecksumError;

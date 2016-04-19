@@ -1,6 +1,6 @@
 #pragma once
 /*
-* Copyright 2016 Huy Cuong Nguyen
+* Copyright 2016 ZXing authors
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -15,16 +15,25 @@
 * limitations under the License.
 */
 
-#include "ErrorStatus.h"
-#include "BitHacks.h"
+#include "oned/ODUPCEANReader.h"
 
 namespace ZXing {
 
-bool
-StatusIsKindOf(ErrorStatus status, ErrorStatus group)
-{
-	int shift = BitHacks::NumberOfTrailingZeros(static_cast<uint32_t>(group));
-	return (static_cast<uint32_t>(status) >> shift) == (static_cast<uint32_t>(group) >> shift);
-}
+namespace OneD {
 
+/**
+* <p>Implements decoding of the EAN-13 format.</p>
+*
+* @author dswitkin@google.com (Daniel Switkin)
+* @author Sean Owen
+* @author alasdair@google.com (Alasdair Mackintosh)
+*/
+class EAN13Reader : public UPCEANReader
+{
+public:
+	virtual BarcodeFormat expectedFormat() const override;
+	virtual ErrorStatus decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const override;
+};
+
+} // OneD
 } // ZXing

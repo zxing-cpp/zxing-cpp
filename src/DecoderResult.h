@@ -53,6 +53,10 @@ public:
 		return StatusIsOK(_status);
 	}
 
+	ErrorStatus status() const {
+		return _status;
+	}
+
 	const ByteArray& rawBytes() const {
 		return _rawBytes;
 	}

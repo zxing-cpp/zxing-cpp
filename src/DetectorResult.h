@@ -38,6 +38,14 @@ public:
 	explicit DetectorResult(ErrorStatus status) : _status(status) {}
 	DetectorResult(const BitMatrix& bits, const std::vector<ResultPoint>& points) : _status(ErrorStatus::NoError), _bits(bits), _points(points) {}
 
+	bool isValid() const {
+		return StatusIsOK(_status);
+	}
+
+	ErrorStatus status() const {
+		return _status;
+	}
+
 	const BitMatrix& bits() const { return _bits; }
 	const std::vector<ResultPoint>& points() const { return _points; }
 };

@@ -19,6 +19,7 @@
 #include <string>
 #include <cstdint>
 #include <iosfwd>
+#include <iterator>
 
 #ifdef ZX_HAVE_QT
 	class QString;
@@ -28,10 +29,48 @@ namespace ZXing {
 
 /// <summary>
 /// This is UTF-8 string class (i.e. it keeps data internally as UTF-8).
+/// Note that this class does not support null character in middle of string.
 /// </summary>
 class String
 {
 public:
+	class Iterator : public std::iterator<std::input_iterator_tag, uint32_t>
+	{
+	public:
+		Iterator(std::string::const_iterator p, std::string::const_iterator e) : m_ptr(p), m_end(e) {}
+
+		Iterator& operator++()
+		{
+			next();
+			return *this;
+		}
+
+		Iterator operator++(int)
+		{
+			Iterator it = *this;
+			next();
+			return it;
+		}
+
+		uint32_t operator*() const
+		{
+			return read();
+		}
+
+		bool operator!=(const Iterator& other) const {
+			return m_ptr != other.m_ptr;
+		}
+
+		bool operator==(const Iterator& other) const {
+			return m_ptr == other.m_ptr;
+		}
+	private:
+		std::string::const_iterator m_ptr;
+		std::string::const_iterator m_end;
+		void next();
+		uint32_t read() const;
+	};
+
 	String(const std::string& other) : m_utf8(other) {;}
 	String(const char* i_utf8 = nullptr, int i_len = -1) {
 		if (i_utf8 != nullptr) {
@@ -52,6 +91,14 @@ public:
 	int byteCount() const										{ return static_cast<int>(m_utf8.length()); }
 	int charCount() const;	// count the number of characters (which may not same as byte count)
 
+	// index is char index not byte index
+	uint32_t charAt(int charIndex) const;
+	String substring(int charIndex, int charCount = -1) const;
+
+	Iterator begin() const;
+	Iterator end() const;
+
+	void appendUtf8(char c)										{ m_utf8.append(1, c); }
 	void appendUtf8(const char* str)							{ m_utf8.append(str); }
 	void appendUtf8(const char* str, int len)					{ m_utf8.append(str, len); }
 	void appendUtf8(const uint8_t* str)							{ m_utf8.append((const char*)str); }
@@ -60,8 +107,11 @@ public:
 	void appendUcs2(const uint16_t* ucs2, int len);
 	void appendUtf16(const uint16_t* utf16, int len);
 	void appendUtf16(const std::vector<uint16_t>& utf16);
+	void appendUtf32(uint32_t utf32);
 	void appendUtf32(const uint32_t* utf32, int len);
 	void appendUtf32(const std::vector<uint32_t>& utf32);
+
+	void prependUtf8(char c)									{ m_utf8.insert(m_utf8.begin(), c); }
 
 	const char* utf8() const { return m_utf8.c_str(); }
 	void toUtf16(std::vector<uint16_t>& buffer) const;

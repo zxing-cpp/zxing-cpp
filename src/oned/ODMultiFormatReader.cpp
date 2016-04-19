@@ -15,6 +15,10 @@
 */
 
 #include "oned/ODMultiFormatReader.h"
+#include "oned/ODMultiUPCEANReader.h"
+#include "oned/ODCode39Reader.h"
+#include "oned/ODCode93Reader.h"
+#include "oned/ODCode128Reader.h"
 #include "DecodeHints.h"
 #include "BarcodeFormat.h"
 #include "Result.h"
@@ -39,7 +43,7 @@ MultiFormatReader::MultiFormatReader(const DecodeHints* hints)
 				formats.find(BarcodeFormat::UPC_A) != formats.end() ||
 				formats.find(BarcodeFormat::EAN_8) != formats.end() ||
 				formats.find(BarcodeFormat::UPC_E) != formats.end()) {
-				_readers.push_back(std::make_shared<MultiFormatUPCEANReader>(hints));
+				_readers.push_back(std::make_shared<MultiUPCEANReader>(hints));
 			}
 			if (formats.find(BarcodeFormat::CODE_39) != formats.end()) {
 				_readers.push_back(std::make_shared<Code39Reader>(useCode39CheckDigit));
@@ -66,7 +70,7 @@ MultiFormatReader::MultiFormatReader(const DecodeHints* hints)
 	}
 
 	if (_readers.empty()) {
-		_readers.push_back(std::make_shared<MultiFormatUPCEANReader>(hints));
+		_readers.push_back(std::make_shared<MultiUPCEANReader>(hints));
 		_readers.push_back(std::make_shared<Code39Reader>());
 		_readers.push_back(std::make_shared<CodaBarReader>());
 		_readers.push_back(std::make_shared<Code93Reader>());

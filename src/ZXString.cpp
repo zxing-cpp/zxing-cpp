@@ -27,100 +27,142 @@
 namespace ZXing {
 
 namespace {
-	
-	template <typename Iter>
-	void stringAppendUtf16(std::string& str, Iter beginRange, Iter endRange)
+
+template <typename Iter>
+void stringAppendUtf16(std::string& str, Iter beginRange, Iter endRange)
+{
+	char buffer[6];
+	int bufLength;
+
+	while (beginRange != endRange)
 	{
-		char buffer[6];
-		int bufLength;
-		
-		while (beginRange != endRange)
+		uint32_t codePoint = *beginRange++;
+
+		if (Utf16::IsHighSurrogate(codePoint) && beginRange != endRange && Utf16::IsLowSurrogate(*beginRange))
 		{
-			uint32_t codePoint = *beginRange++;
-	
-			if (Utf16::IsHighSurrogate(codePoint) && beginRange != endRange && Utf16::IsLowSurrogate(*beginRange))
+			uint32_t nextCodePoint = *beginRange++;
+			bufLength = Utf8::Encode(Utf16::CodePointFromSurrogates(codePoint, nextCodePoint), buffer);
+		}
+		else
+		{
+			bufLength = Utf8::Encode(codePoint, buffer);
+		}
+		str.append(buffer, bufLength);
+	}
+}
+
+template <typename Iter>
+void stringAppendUtf32(std::string& str, Iter beginRange, Iter endRange)
+{
+	char buffer[6];
+	int bufLength;
+	while (beginRange != endRange)
+	{
+		bufLength = Utf8::Encode(*beginRange++, buffer);
+		str.append(buffer, bufLength);
+	}
+}
+
+template <typename Container>
+void stringToUtf16(const std::string& str, Container& buffer)
+{
+	typedef typename Container::value_type CharType;
+
+	const uint8_t* src = (const uint8_t*)str.c_str();
+	const uint8_t* srcEnd = src + str.size();
+	int destLen = Utf8::CountCodePoints((const char*)src);
+	if (destLen > 0)
+	{
+		buffer.reserve(buffer.size() + destLen);
+		uint32_t codePoint = 0;
+		uint32_t state = Utf8::kAccepted;
+
+		while (src < srcEnd)
+		{
+			if (Utf8::Decode(*src++, state, codePoint) != Utf8::kAccepted)
 			{
-				uint32_t nextCodePoint = *beginRange++;
-				bufLength = Utf8::Encode(Utf16::CodePointFromSurrogates(codePoint, nextCodePoint), buffer);
+				continue;
+			}
+
+			if (codePoint > 0xffff) // surrogate pair
+			{
+				buffer.push_back((CharType)(0xd7c0 + (codePoint >> 10)));
+				buffer.push_back((CharType)(0xdc00 + (codePoint & 0x3ff)));
 			}
 			else
 			{
-				bufLength = Utf8::Encode(codePoint, buffer);
+				buffer.push_back((CharType)codePoint);
 			}
-			str.append(buffer, bufLength);
+
 		}
 	}
+}
 
-	template <typename Iter>
-	void stringAppendUtf32(std::string& str, Iter beginRange, Iter endRange)
+template <typename Container>
+void stringToUtf32(const std::string& str, Container& buffer)
+{
+	const uint8_t* src = (const uint8_t*)str.c_str();
+	const uint8_t* srcEnd = src + str.size();
+	int destLen = Utf8::CountCodePoints((const char*)src);
+	if (destLen > 0)
 	{
-		char buffer[6];
-		int bufLength;
-		while (beginRange != endRange)
+		buffer.reserve(buffer.size() + destLen);
+		uint32_t codePoint = 0;
+		uint32_t state = Utf8::kAccepted;
+
+		while (src < srcEnd)
 		{
-			bufLength = Utf8::Encode(*beginRange++, buffer);
-			str.append(buffer, bufLength);
-		}
-	}
-
-	template <typename Container>
-	void stringToUtf16(const std::string& str, Container& buffer)
-	{
-		typedef typename Container::value_type CharType;
-
-		const uint8_t* src = (const uint8_t*)str.c_str();
-		const uint8_t* srcEnd = src + str.size();
-		int destLen = Utf8::CountCodePoints((const char*)src);
-		if (destLen > 0)
-		{
-			buffer.reserve(buffer.size() + destLen);
-			uint32_t codePoint;
-			uint32_t state = 0;
-
-			while (src < srcEnd)
+			if (Utf8::Decode(*src++, state, codePoint) != Utf8::kAccepted)
 			{
-				if (Utf8::Decode(*src++, state, codePoint) != Utf8::kAccepted)
-				{
-					continue;
-				}
-
-				if (codePoint > 0xffff) // surrogate pair
-				{
-					buffer.push_back((CharType)(0xd7c0 + (codePoint >> 10)));
-					buffer.push_back((CharType)(0xdc00 + (codePoint & 0x3ff)));
-				}
-				else
-				{
-					buffer.push_back((CharType)codePoint);
-      			}
-	
+				continue;
 			}
+			buffer.push_back((typename Container::value_type)codePoint);
 		}
 	}
+}
 
-	template <typename Container>
-	void stringToUtf32(const std::string& str, Container& buffer)
+std::string::const_iterator skipCodePoints(std::string::const_iterator cur, std::string::const_iterator end, int count)
+{
+	while (cur != end && count > 0)
 	{
-		const uint8_t* src = (const uint8_t*)str.c_str();
-		const uint8_t* srcEnd = src + str.size();
-		int destLen = Utf8::CountCodePoints((const char*)src);
-		if (destLen > 0)
+		if ((*cur & 0x80) == 0)
 		{
-			buffer.reserve(buffer.size() + destLen);
-			uint32_t codePoint;
-			uint32_t state = 0;
-
-			while (src < srcEnd)
+			++cur;
+		}
+		else
+		{
+			switch (*cur & 0xf0)
 			{
-				if (Utf8::Decode(*src++, state, codePoint) != Utf8::kAccepted)
-				{
-					continue;
-				}
-				buffer.push_back((typename Container::value_type)codePoint);
+			case 0xc0: case 0xd0: cur += 2; break;
+			case 0xe0: cur += 3; break;
+			case 0xf0: cur += 4; break;
+			default: // we are in middle of a sequence
+				while ((*++cur & 0xc0) == 0x80); break;
 			}
 		}
+		--count;
 	}
+	return cur;
+}
 
+uint32_t readCodePoint(std::string::const_iterator cur, std::string::const_iterator end)
+{
+	uint32_t codePoint = 0;
+	uint32_t state = Utf8::kAccepted;
+	while (cur != end)
+	{
+		switch (Utf8::Decode(*cur, state, codePoint))
+		{
+		case Utf8::kAccepted:
+			return codePoint;
+		case Utf8::kRejected:
+			return 0xfffd; // REPLACEMENT CHARACTER
+		default:
+			++cur;
+		}
+	}
+	return 0;
+}
 
 };
 
@@ -235,6 +277,12 @@ String::appendUtf32(const uint32_t* utf32, int len)
 }
 
 void
+String::appendUtf32(uint32_t utf32)
+{
+	stringAppendUtf32(m_utf8, &utf32, &utf32 + 1);
+}
+
+void
 String::toUtf16(std::vector<uint16_t>& buffer) const
 {
 	stringToUtf16(m_utf8, buffer);
@@ -274,6 +322,41 @@ String::toWString() const
 	return buffer;
 }
 
+uint32_t
+String::charAt(int charIndex) const
+{
+	return readCodePoint(charIndex > 0 ? skipCodePoints(m_utf8.begin(), m_utf8.end(), charIndex) : m_utf8.begin(), m_utf8.end());
+}
+
+String
+String::substring(int charIndex, int charCount) const
+{
+	String result;
+	if (charCount != 0)
+	{
+		auto s = skipCodePoints(m_utf8.begin(), m_utf8.end(), charIndex);
+		if (charCount > 0)
+		{
+			auto e = skipCodePoints(s, m_utf8.end(), charCount);
+			return result.m_utf8.assign(s, e);
+		}
+		result.m_utf8.assign(s, m_utf8.end());
+	}
+	return result;
+}
+
+String::Iterator
+String::begin() const
+{
+	return Iterator(m_utf8.begin(), m_utf8.end());
+}
+
+String::Iterator
+String::end() const
+{
+	return Iterator(m_utf8.end(), m_utf8.end());
+}
+
 std::ostream &
 operator<<(std::ostream& out, const String& str)
 {
@@ -285,5 +368,18 @@ operator<<(std::wostream& out, const String& str)
 {
 	return (out << str.toWString());
 }
+
+void
+String::Iterator::next()
+{
+	m_ptr = skipCodePoints(m_ptr, m_end, 1);
+}
+
+uint32_t
+String::Iterator::read() const
+{
+	return readCodePoint(m_ptr, m_end);
+}
+
 
 } // ZXing

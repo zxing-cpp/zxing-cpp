@@ -21,11 +21,12 @@ enum class ErrorStatus
 {
 	NoError = 0,
 
+	ReaderError = 0x10,
 	NotFound,
 	FormatError,
 	ChecksumError,
 
-	ReedSolomonError = 0x10,
+	ReedSolomonError = 0x20,
 	ReedSolomonAlgoFailed,		// r_{i-1} was zero
 	ReedSolomonBadLocation,		// Bad error location
 	ReedSolomonDegreeMismatch,	// Error locator degree does not match number of roots
@@ -42,6 +43,6 @@ inline bool StatusIsError(ErrorStatus status)
 	return status != ErrorStatus::NoError;
 }
 
-bool ErrorIsKindOf(ErrorStatus status, ErrorStatus group);
+bool StatusIsKindOf(ErrorStatus status, ErrorStatus group);
 
 } // ZXing

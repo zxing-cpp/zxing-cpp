@@ -37,9 +37,21 @@ public:
 	static int CountCodePoints(const char* utf8);
 
 	/// <summary>
-	/// Return the new value of state:
-	/// kAccepted if enough bytes have been read for a character;
-    /// kRejected if the byte is not allowed to occur at its position, and some other positive value if more bytes have to be read.
+	/// Count the number of code points given a UTF-8 string.
+	/// </summary>
+	static const char* SkipCodePoints(const char* utf8, int count);
+
+	/// <summary>
+	/// This method implements a single step in this process. It takes two parameters maintaining state and a byte,
+	/// and returns the state achieved after processing the byte.Specifically, it returns the value UTF8_ACCEPT(0)
+	/// if enough bytes have been read for a character, UTF8_REJECT(1) if the byte is not allowed to occur at its
+	/// position, and some other positive value if more bytes have to be read.
+	///
+	/// When decoding the first byte of a string, the caller must set the state variable to UTF8_ACCEPT. If, after
+	/// decoding one or more bytes the state UTF8_ACCEPT is reached again, then the decoded Unicode character value
+	/// is available through the codep parameter.If the state UTF8_REJECT is entered, that state will never be exited
+	/// unless the caller intervenes.See the examples below for more information on usage and error handling, and the
+	/// section on implementation details for how the decoder is constructed.
 	/// </summary>
 	static uint32_t Decode(uint8_t byte, uint32_t& state, uint32_t& codep);
 

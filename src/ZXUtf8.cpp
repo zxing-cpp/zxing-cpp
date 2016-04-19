@@ -16,15 +16,6 @@
 
 #include "ZXUtf8.h"
 
-#ifdef _MSC_VER
-	#define __builtin_prefetch(x, y, z)		// what is the equivalent with VC++?
-#endif
-
-#define ONEMASK ((unsigned)(-1) / 0xFF)
-
-#define UTF8_ACCEPT = 0;
-#define UTF8_REJECT 1;
-
 namespace ZXing {
 
 namespace {
@@ -51,61 +42,72 @@ namespace {
 
 } // anonymous
 
-// This code ,originally named cp_strlen_utf8, is written by Colin Percival.
-// See http://www.daemonology.net/blog/2008-06-05-faster-utf8-strlen.html for more details
+// George Pollard:
+// http://porg.es/blog/counting-characters-in-utf-8-strings-is-faster
 int
-Utf8::CountCodePoints(const char *_s)
+Utf8::CountCodePoints(const char *utf8)
 {
-	const char *s = _s;
+	int i = 0;
+	int ibefore = 0;
 	int count = 0;
-	unsigned u;
-	unsigned char b;
+	const signed char *s = (const signed char *)utf8;
 
-	/* Handle any initial misaligned bytes. */
-	for (s = _s; (uintptr_t)(s) & (sizeof(unsigned) - 1); s++) {
-		b = *s;
-
-		/* Exit if we hit a zero byte. */
-		if (b == '\0')
-			goto done;
-
-		/* Is this byte NOT the first byte of a character? */
-		count += (b >> 7) & ((~b) >> 6);
+	/* using signed chars so ascii bytes are positive */
+	while (s[i] > 0) {
+	ascii:
+		i++;
 	}
 
-	/* Handle complete blocks. */
-	for (; ; s += sizeof(unsigned)) {
-		/* Prefetch 256 bytes ahead. */
-		__builtin_prefetch(&s[256], 0, 0);
-
-		/* Grab 4 or 8 bytes of UTF-8 data. */
-		u = *(unsigned *)(s);
-
-		/* Exit the loop if there are any zero bytes. */
-		if ((u - ONEMASK) & (~u) & (ONEMASK * 0x80))
-			break;
-
-		/* Count bytes which are NOT the first byte of a character. */
-		u = ((u & (ONEMASK * 0x80)) >> 7) & ((~u) >> 6);
-		count += (u * ONEMASK) >> ((sizeof(unsigned) - 1) * 8);
+	count += (i - ibefore);
+	while (s[i])
+	{
+		if (s[i] > 0)
+		{
+			ibefore = i;
+			goto ascii;
+		}
+		else
+		{
+			switch (s[i] & 0xf0)
+			{
+			case 0xc0: case 0xd0: i += 2; break;
+			case 0xe0: i += 3; break;
+			case 0xf0: i += 4; break;
+			default: // we are in middle of a sequence
+				while ((s[++i] & 0xc0) == 0x80); break; 
+			}
+		}
+		++count;
 	}
-
-	/* Take care of any left-over bytes. */
-	for (; ; s++) {
-		b = *s;
-
-		/* Exit if we hit a zero byte. */
-		if (b == '\0')
-			break;
-
-		/* Is this byte NOT the first byte of a character? */
-		count += (b >> 7) & ((~b) >> 6);
-	}
-
-done:
-	return static_cast<int>((s - _s) - count);
+	return count;
 }
 
+const char *
+Utf8::SkipCodePoints(const char* utf8, int count)
+{
+	int i = 0;
+	const signed char *s = (const signed char *)utf8;
+	while (s[i] && count > 0)
+	{
+		if (s[i] > 0)
+		{
+			i++;
+		}
+		else
+		{
+			switch (s[i] & 0xf0)
+			{
+			case 0xc0: case 0xd0: i += 2; break;
+			case 0xe0: i += 3; break;
+			case 0xf0: i += 4; break;
+			default: // we are in middle of a sequence
+				while ((s[++i] & 0xc0) == 0x80); break;
+			}
+		}
+		--count;
+	}
+	return (const char *)s + i;
+}
 
 /// <summary>
 /// Copyright (c) 2008-2009 Bjoern Hoehrmann <bjoern@hoehrmann.de>

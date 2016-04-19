@@ -1,6 +1,6 @@
 #pragma once
 /*
-* Copyright 2016 Huy Cuong Nguyen
+* Copyright 2016 ZXing authors
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -15,16 +15,23 @@
 * limitations under the License.
 */
 
-#include "ErrorStatus.h"
-#include "BitHacks.h"
+#include "oned/ODReader.h"
 
 namespace ZXing {
 
-bool
-StatusIsKindOf(ErrorStatus status, ErrorStatus group)
-{
-	int shift = BitHacks::NumberOfTrailingZeros(static_cast<uint32_t>(group));
-	return (static_cast<uint32_t>(status) >> shift) == (static_cast<uint32_t>(group) >> shift);
-}
+namespace OneD {
 
+/**
+* <p>Decodes Code 93 barcodes.</p>
+*
+* @author Sean Owen
+* @see Code39Reader
+*/
+class Code93Reader : public Reader
+{
+public:
+	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) const override;
+};
+
+} // OneD
 } // ZXing

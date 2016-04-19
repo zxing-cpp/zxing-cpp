@@ -45,6 +45,10 @@ public:
 		return StatusIsOK(_status);
 	}
 
+	ErrorStatus status() const {
+		return _status;
+	}
+
 	const String& text() const {
 		return _text;
 	}
@@ -60,6 +64,8 @@ public:
 	void setResultPoints(const std::vector<ResultPoint>& points) {
 		_resultPoints = points;
 	}
+
+	void addResultPoints(const std::vector<ResultPoint>& points);
 
 	BarcodeFormat format() const {
 		return _format;
