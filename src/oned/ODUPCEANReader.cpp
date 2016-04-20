@@ -33,52 +33,55 @@ namespace OneD {
 static const float MAX_AVG_VARIANCE = 0.48f;
 static const float MAX_INDIVIDUAL_VARIANCE = 0.7f;
 
-const std::vector<int>
-UPCEANReader::START_END_PATTERN = { 1, 1, 1 };
+/**
+* Start/end guard pattern.
+*/
+static const std::array<int, 3> START_END_PATTERN = { 1, 1, 1 };
 
-const std::vector<int>
-UPCEANReader::MIDDLE_PATTERN = { 1, 1, 1, 1, 1 };
+const std::array<int, 5> UPCEANReader::MIDDLE_PATTERN = { 1, 1, 1, 1, 1 };
 
-const std::vector<int>
-UPCEANReader::END_PATTERN = { 1, 1, 1, 1, 1, 1 };
+/**
+* end guard pattern.
+*/
+//static const std::array<int, 6> END_PATTERN = { 1, 1, 1, 1, 1, 1 };
 
-const std::vector<std::vector<int>>
+const std::array<std::array<int, 4>, 10>
 UPCEANReader::L_PATTERNS = {
-	{ 3, 2, 1, 1 }, // 0
-	{ 2, 2, 2, 1 }, // 1
-	{ 2, 1, 2, 2 }, // 2
-	{ 1, 4, 1, 1 }, // 3
-	{ 1, 1, 3, 2 }, // 4
-	{ 1, 2, 3, 1 }, // 5
-	{ 1, 1, 1, 4 }, // 6
-	{ 1, 3, 1, 2 }, // 7
-	{ 1, 2, 1, 3 }, // 8
-	{ 3, 1, 1, 2 }, // 9
+	3, 2, 1, 1, // 0
+	2, 2, 2, 1, // 1
+	2, 1, 2, 2, // 2
+	1, 4, 1, 1, // 3
+	1, 1, 3, 2, // 4
+	1, 2, 3, 1, // 5
+	1, 1, 1, 4, // 6
+	1, 3, 1, 2, // 7
+	1, 2, 1, 3, // 8
+	3, 1, 1, 2, // 9
 };
 
-const std::vector<std::vector<int>>
+const std::array<std::array<int, 4>, 20>
 UPCEANReader::L_AND_G_PATTERNS = {
-	{ 3, 2, 1, 1 }, // 0
-	{ 2, 2, 2, 1 }, // 1
-	{ 2, 1, 2, 2 }, // 2
-	{ 1, 4, 1, 1 }, // 3
-	{ 1, 1, 3, 2 }, // 4
-	{ 1, 2, 3, 1 }, // 5
-	{ 1, 1, 1, 4 }, // 6
-	{ 1, 3, 1, 2 }, // 7
-	{ 1, 2, 1, 3 }, // 8
-	{ 3, 1, 1, 2 }, // 9
+	3, 2, 1, 1, // 0
+	2, 2, 2, 1, // 1
+	2, 1, 2, 2, // 2
+	1, 4, 1, 1, // 3
+	1, 1, 3, 2, // 4
+	1, 2, 3, 1, // 5
+	1, 1, 1, 4, // 6
+	1, 3, 1, 2, // 7
+	1, 2, 1, 3, // 8
+	3, 1, 1, 2, // 9
 	// reversed
-	{ 1, 1, 2, 3 }, // 10
-	{ 1, 2, 2, 2 }, // 11
-	{ 2, 2, 1, 2 }, // 12
-	{ 1, 1, 4, 1 }, // 13
-	{ 2, 3, 1, 1 }, // 14
-	{ 1, 3, 2, 1 }, // 15
-	{ 4, 1, 1, 1 }, // 16
-	{ 2, 1, 3, 1 }, // 17
-	{ 3, 1, 2, 1 }, // 18
-	{ 2, 1, 1, 3 }, // 19
+	1, 1, 2, 3, // 10
+	1, 2, 2, 2, // 11
+	2, 2, 1, 2, // 12
+	1, 1, 4, 1, // 13
+	2, 3, 1, 1, // 14
+	1, 3, 2, 1, // 15
+	4, 1, 1, 1, // 16
+	2, 1, 3, 1, // 17
+	3, 1, 2, 1, // 18
+	2, 1, 1, 3, // 19
 };
 
 //	private final StringBuilder decodeRowStringBuffer;
@@ -102,9 +105,10 @@ UPCEANReader::L_AND_G_PATTERNS = {
 * @return start/end horizontal offset of guard pattern, as an array of two ints
 * @throws NotFoundException if pattern is not found
 */
-static ErrorStatus DoFindGuardPattern(const BitArray& row, int rowOffset, bool whiteFirst, const std::vector<int>& pattern, std::vector<int>& counters, int& begin, int& end)
+ErrorStatus
+UPCEANReader::DoFindGuardPattern(const BitArray& row, int rowOffset, bool whiteFirst, const int* pattern, int* counters, size_t length, int& begin, int& end)
 {
-	int patternLength = static_cast<int>(pattern.size());
+	int patternLength = static_cast<int>(length);
 	int width = row.size();
 	bool isWhite = whiteFirst;
 	rowOffset = whiteFirst ? row.getNextUnset(rowOffset) : row.getNextSet(rowOffset);
@@ -116,13 +120,13 @@ static ErrorStatus DoFindGuardPattern(const BitArray& row, int rowOffset, bool w
 		}
 		else {
 			if (counterPosition == patternLength - 1) {
-				if (Reader::PatternMatchVariance(counters, pattern, MAX_INDIVIDUAL_VARIANCE) < MAX_AVG_VARIANCE) {
+				if (PatternMatchVariance(counters, pattern, length, MAX_INDIVIDUAL_VARIANCE) < MAX_AVG_VARIANCE) {
 					begin = patternStart;
 					end = x;
 					return ErrorStatus::NoError;
 				}
 				patternStart += counters[0] + counters[1];
-				std::copy(counters.begin() + 2, counters.end(), counters.begin());
+				std::copy(counters + 2, counters + length, counters);
 				counters[patternLength - 2] = 0;
 				counters[patternLength - 1] = 0;
 				counterPosition--;
@@ -138,10 +142,10 @@ static ErrorStatus DoFindGuardPattern(const BitArray& row, int rowOffset, bool w
 }
 
 ErrorStatus
-UPCEANReader::FindGuardPattern(const BitArray& row, int rowOffset, bool whiteFirst, const std::vector<int>& pattern, int& begin, int& end)
+UPCEANReader::FindGuardPattern(const BitArray& row, int rowOffset, bool whiteFirst, const int* pattern, size_t length, int& begin, int& end)
 {
-	std::vector<int> counters(pattern.size(), 0);
-	return DoFindGuardPattern(row, rowOffset, false, START_END_PATTERN, counters, begin, end);
+	std::vector<int> counters(length, 0);
+	return DoFindGuardPattern(row, rowOffset, false, pattern, counters.data(), length, begin, end);
 }
 
 ErrorStatus
@@ -153,7 +157,7 @@ UPCEANReader::FindStartGuardPattern(const BitArray& row, int& begin, int& end)
 	std::vector<int> counters(START_END_PATTERN.size());
 	while (!foundStart) {
 		std::fill(counters.begin(), counters.end(), 0);
-		auto status = DoFindGuardPattern(row, nextStart, false, START_END_PATTERN, counters, start, nextStart);
+		auto status = DoFindGuardPattern(row, nextStart, false, START_END_PATTERN.data(), counters.data(), START_END_PATTERN.size(), start, nextStart);
 		if (StatusIsError(status))
 			return status;
 		// Make sure there is a quiet zone at least as big as the start pattern before the barcode.
@@ -183,7 +187,7 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* h
 ErrorStatus
 UPCEANReader::decodeEnd(const BitArray& row, int endStart, int& begin, int& end) const
 {
-	return FindGuardPattern(row, endStart, false, START_END_PATTERN, begin, end);
+	return FindGuardPattern(row, endStart, false, START_END_PATTERN.data(), START_END_PATTERN.size(), begin, end);
 }
 
 Result
@@ -233,13 +237,10 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, int startGuardBegin,
 	float left = 0.5f * static_cast<float>(startGuardBegin + startGuardEnd);
 	float right = 0.5f * static_cast<float>(endRangeBegin + endRangeEnd);
 	BarcodeFormat format = expectedFormat();
-	Result decodeResult(result,
-		ByteArray(), // no natural byte representation for these barcodes
-		{ ResultPoint(left, static_cast<float>(rowNumber)), ResultPoint(right, static_cast<float>(rowNumber)) },
-		format);
+	float ypos = static_cast<float>(rowNumber);
 
+	Result decodeResult(result, ByteArray(), { ResultPoint(left, ypos), ResultPoint(right, ypos) }, format);
 	int extensionLength = 0;
-
 	Result extensionResult = UPCEANExtensionSupport::DecodeRow(rowNumber, row, endRangeEnd);
 	if (extensionResult.isValid())
 	{
@@ -328,18 +329,17 @@ UPCEANReader::CheckStandardUPCEANChecksum(const std::string& s)
 * @throws NotFoundException if digit cannot be decoded
 */
 ErrorStatus
-UPCEANReader::DecodeDigit(const BitArray& row, int rowOffset, const std::vector<std::vector<int>>& patterns, std::vector<int>& counters, int &resultOffset)
+UPCEANReader::DecodeDigit(const BitArray& row, int rowOffset, const std::array<int, 4>* patterns, size_t patternCount, std::array<int, 4>& counters, int &resultOffset)
 {
 	Reader::RecordPattern(row, rowOffset, counters);
 	float bestVariance = MAX_AVG_VARIANCE; // worst variance we'll accept
 	int bestMatch = -1;
-	int max = static_cast<int>(patterns.size());
-	for (int i = 0; i < max; i++) {
+	for (size_t i = 0; i < patternCount; i++) {
 		auto& pattern = patterns[i];
-		float variance = Reader::PatternMatchVariance(counters, pattern, MAX_INDIVIDUAL_VARIANCE);
+		float variance = PatternMatchVariance(counters, pattern, MAX_INDIVIDUAL_VARIANCE);
 		if (variance < bestVariance) {
 			bestVariance = variance;
-			bestMatch = i;
+			bestMatch = static_cast<int>(i);
 		}
 	}
 	if (bestMatch >= 0) {

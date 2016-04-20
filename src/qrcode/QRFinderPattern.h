@@ -24,6 +24,8 @@ namespace QRCode {
 * <p>Encapsulates a finder pattern, which are the three square patterns found in
 * the corners of QR Codes. It also encapsulates a count of similar finder patterns,
 * as a convenience to the finder's bookkeeping.</p>
+*
+* @author Sean Owen
 */
 class FinderPattern : public ResultPoint
 {

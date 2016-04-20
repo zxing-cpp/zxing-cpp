@@ -15,23 +15,28 @@
 * limitations under the License.
 */
 
-#include "oned/ODUPCEANReader.h"
-
 namespace ZXing {
-
 namespace OneD {
+namespace RSS {
 
-/**
-* <p>Implements decoding of the EAN-8 format.</p>
-*
-* @author Sean Owen
-*/
-class EAN8Reader : public UPCEANReader
+class DataCharacter
 {
-protected:
-	virtual BarcodeFormat expectedFormat() const override;
-	virtual ErrorStatus decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const override;
+	int _value;
+	int _checksumPortion;
+
+public:
+	DataCharacter() : _value(-1), _checksumPortion(0) {}
+	DataCharacter(int value, int checksumPortion) : _value(value), _checksumPortion(checksumPortion) {}
+
+	int value() const {
+		return _value;
+	}
+
+	int checksumPortion() const {
+		return _checksumPortion;
+	}
 };
 
+} // RSS
 } // OneD
 } // ZXing

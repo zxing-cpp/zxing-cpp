@@ -160,10 +160,9 @@ Reader::decode(const BinaryBitmap& image, const DecodeHints* hints) const
 *  of pixels
 */
 ErrorStatus
-Reader::RecordPattern(const BitArray& row, int start, std::vector<int>& counters)
+Reader::RecordPattern(const BitArray& row, int start, int* counters, size_t length)
 {
-	size_t numCounters = counters.size();
-	std::fill_n(counters.begin(), numCounters, 0);
+	std::fill_n(counters, length, 0);
 	int end = row.size();
 	if (start >= end) {
 		return ErrorStatus::NotFound;
@@ -177,7 +176,7 @@ Reader::RecordPattern(const BitArray& row, int start, std::vector<int>& counters
 		}
 		else {
 			counterPosition++;
-			if (counterPosition == numCounters) {
+			if (counterPosition == length) {
 				break;
 			}
 			else {
@@ -189,17 +188,17 @@ Reader::RecordPattern(const BitArray& row, int start, std::vector<int>& counters
 	}
 	// If we read fully the last section of pixels and filled up our counters -- or filled
 	// the last counter but ran off the side of the image, OK. Otherwise, a problem.
-	if (!(counterPosition == numCounters || (counterPosition == numCounters - 1 && i == end))) {
+	if (!(counterPosition == length || (counterPosition+1 == length && i == end))) {
 		return ErrorStatus::NotFound;
 	}
 	return ErrorStatus::NoError;
 }
 
 ErrorStatus
-Reader::RecordPatternInReverse(const BitArray& row, int start, std::vector<int>& counters)
+Reader::RecordPatternInReverse(const BitArray& row, int start, int* counters, size_t length)
 {
 	// This could be more efficient I guess
-	int numTransitionsLeft = static_cast<int>(counters.size());
+	int numTransitionsLeft = static_cast<int>(length);
 	bool last = row.get(start);
 	while (start > 0 && numTransitionsLeft >= 0) {
 		if (row.get(--start) != last) {
@@ -210,7 +209,7 @@ Reader::RecordPatternInReverse(const BitArray& row, int start, std::vector<int>&
 	if (numTransitionsLeft >= 0) {
 		return ErrorStatus::NotFound;
 	}
-	return RecordPattern(row, start + 1, counters);
+	return RecordPattern(row, start + 1, counters, length);
 }
 
 /**
@@ -224,12 +223,11 @@ Reader::RecordPatternInReverse(const BitArray& row, int start, std::vector<int>&
 * @return ratio of total variance between counters and pattern compared to total pattern size
 */
 float
-Reader::PatternMatchVariance(const std::vector<int>& counters, const std::vector<int>& pattern, float maxIndividualVariance)
+Reader::PatternMatchVariance(const int *counters, const int* pattern, size_t length, float maxIndividualVariance)
 {
-	size_t numCounters = counters.size();
 	int total = 0;
 	int patternLength = 0;
-	for (size_t i = 0; i < numCounters; i++) {
+	for (size_t i = 0; i < length; i++) {
 		total += counters[i];
 		patternLength += pattern[i];
 	}
@@ -243,7 +241,7 @@ Reader::PatternMatchVariance(const std::vector<int>& counters, const std::vector
 	maxIndividualVariance *= unitBarWidth;
 
 	float totalVariance = 0.0f;
-	for (size_t x = 0; x < numCounters; x++) {
+	for (size_t x = 0; x < length; x++) {
 		int counter = counters[x];
 		float scaledPattern = pattern[x] * unitBarWidth;
 		float variance = counter > scaledPattern ? counter - scaledPattern : scaledPattern - counter;

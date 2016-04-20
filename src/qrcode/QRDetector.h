@@ -26,6 +26,8 @@ namespace QRCode {
 /**
 * <p>Encapsulates logic that can detect a QR Code in an image, even if the QR Code
 * is rotated or skewed, or partially obscured.</p>
+*
+* @author Sean Owen
 */
 class Detector
 {

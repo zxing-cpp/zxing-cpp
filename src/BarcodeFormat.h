@@ -19,6 +19,8 @@ namespace ZXing {
 
 /**
 * Enumerates barcode formats known to this package. Please keep alphabetized.
+*
+* @author Sean Owen
 */
 enum class BarcodeFormat : int
 {

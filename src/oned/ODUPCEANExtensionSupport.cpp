@@ -22,7 +22,7 @@ namespace ZXing {
 
 namespace OneD {
 
-static const std::vector<int> EXTENSION_START_PATTERN = { 1,1,2 };
+static const std::array<int, 3> EXTENSION_START_PATTERN = { 1,1,2 };
 
 Result
 UPCEANExtensionSupport::DecodeRow(int rowNumber, const BitArray& row, int rowOffset)

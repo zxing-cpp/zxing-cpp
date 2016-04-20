@@ -29,6 +29,8 @@ namespace QRCode {
 
 /**
 * See ISO 18004:2006 Annex D
+*
+* @author Sean Owen
 */
 class Version
 {

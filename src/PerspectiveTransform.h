@@ -21,6 +21,8 @@ namespace ZXing {
 * <p>This class implements a perspective transform in two dimensions. Given four source and four
 * destination points, it will compute the transformation implied between them. The code is based
 * directly upon section 3.4.2 of George Wolberg's "Digital Image Warping"; see pages 54-56.</p>
+*
+* @author Sean Owen
 */
 class PerspectiveTransform
 {

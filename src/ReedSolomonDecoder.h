@@ -40,6 +40,10 @@ enum class ErrorStatus;
 *
 * <p>Much credit is due to William Rucklidge since portions of this code are an indirect
 * port of his C++ Reed-Solomon implementation.</p>
+*
+* @author Sean Owen
+* @author William Rucklidge
+* @author sanfordsquires
 */
 class ReedSolomonDecoder
 {

@@ -15,22 +15,22 @@
 * limitations under the License.
 */
 
-#include "oned/ODUPCEANReader.h"
+#include "oned/ODReader.h"
 
 namespace ZXing {
 
 namespace OneD {
 
 /**
-* <p>Implements decoding of the EAN-8 format.</p>
+* <p>Decodes Codabar barcodes.</p>
 *
-* @author Sean Owen
+* @author Bas Vijfwinkel
+* @author David Walker
 */
-class EAN8Reader : public UPCEANReader
+class CodabarReader : public Reader
 {
-protected:
-	virtual BarcodeFormat expectedFormat() const override;
-	virtual ErrorStatus decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const override;
+public:
+	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) const override;
 };
 
 } // OneD

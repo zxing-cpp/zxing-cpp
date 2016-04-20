@@ -18,7 +18,7 @@
 #include "oned/ODReader.h"
 
 #include <string>
-#include <vector>
+#include <array>
 
 namespace ZXing {
 
@@ -30,6 +30,10 @@ namespace OneD {
 /**
 * <p>Encapsulates functionality and implementation that is common to UPC and EAN families
 * of one-dimensional barcodes.</p>
+*
+* @author dswitkin@google.com (Daniel Switkin)
+* @author Sean Owen
+* @author alasdair@google.com (Alasdair Mackintosh)
 */
 class UPCEANReader : public Reader
 {
@@ -82,7 +86,11 @@ protected:
 
 public:
 	static ErrorStatus FindStartGuardPattern(const BitArray& row, int& begin, int& end);
-	static ErrorStatus FindGuardPattern(const BitArray& row, int rowOffset, bool whiteFirst, const std::vector<int>& pattern, int& begin, int& end);
+
+	template <typename Container>
+	static ErrorStatus FindGuardPattern(const BitArray& row, int rowOffset, bool whiteFirst, const Container& pattern, int& begin, int& end) {
+		return FindGuardPattern(row, rowOffset, whiteFirst, pattern.data(), pattern.size(), begin, end);
+	}
 
 	/**
 	* Computes the UPC/EAN checksum on a string of digits, and reports
@@ -106,31 +114,30 @@ public:
 	* @return horizontal offset of first pixel beyond the decoded digit
 	* @throws NotFoundException if digit cannot be decoded
 	*/
-	static ErrorStatus DecodeDigit(const BitArray& row, int rowOffset, const std::vector<std::vector<int>>& patterns, std::vector<int>& counters, int &resultOffset);
+	template <typename Container>
+	static ErrorStatus DecodeDigit(const BitArray& row, int rowOffset, const Container& patterns, std::array<int, 4>& counters, int &resultOffset) {
+		return DecodeDigit(row, rowOffset, patterns.data(), patterns.size(), counters, resultOffset);
+	}
 	
-	/**
-	* Start/end guard pattern.
-	*/
-	static const std::vector<int> START_END_PATTERN;
-
 	/**
 	* Pattern marking the middle of a UPC/EAN pattern, separating the two halves.
 	*/
-	static const std::vector<int> MIDDLE_PATTERN;
-	/**
-	* end guard pattern.
-	*/
-	static const std::vector<int> END_PATTERN;
+	static const std::array<int, 5> MIDDLE_PATTERN;
 	
 	/**
 	* "Odd", or "L" patterns used to encode UPC/EAN digits.
 	*/
-	static const std::vector<std::vector<int>> L_PATTERNS;
+	static const std::array<std::array<int, 4>, 10> L_PATTERNS;
 
 	/**
 	* As above but also including the "even", or "G" patterns used to encode UPC/EAN digits.
 	*/
-	static const std::vector<std::vector<int>> L_AND_G_PATTERNS;
+	static const std::array<std::array<int, 4>, 20> L_AND_G_PATTERNS;
+
+private:
+	static ErrorStatus FindGuardPattern(const BitArray& row, int rowOffset, bool whiteFirst, const int* pattern, size_t length, int& begin, int& end);
+	static ErrorStatus DecodeDigit(const BitArray& row, int rowOffset, const std::array<int, 4>* patterns, size_t patternCount, std::array<int, 4>& counters, int &resultOffset);
+	static ErrorStatus DoFindGuardPattern(const BitArray& row, int rowOffset, bool whiteFirst, const int* pattern, int* counters, size_t length, int& begin, int& end);
 };
 
 } // OneD

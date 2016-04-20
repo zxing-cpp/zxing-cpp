@@ -41,6 +41,17 @@ class ITFReader : public Reader
 {
 public:
 	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) const override;
+
+private:
+	static ErrorStatus FindGuardPattern(const BitArray& row, int rowOffset, const int* pattern, size_t patternLength, int& begin, int& end);
+
+	template <typename Container>
+	static ErrorStatus FindGuardPattern(const BitArray& row, int rowOffset, const Container& pattern, int& begin, int& end) {
+		return FindGuardPattern(row, rowOffset, pattern.data(), pattern.size(), begin, end);
+	}
+
+	static ErrorStatus DecodeStart(const BitArray& row, int& narrowLineWidth, int& patternEnd);
+	static ErrorStatus DecodeEnd(const BitArray& row_, int narrowLineWidth, int& patternStart);
 };
 
 } // OneD

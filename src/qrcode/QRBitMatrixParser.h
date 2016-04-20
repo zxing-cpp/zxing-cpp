@@ -26,6 +26,9 @@ namespace QRCode {
 class Version;
 class FormatInformation;
 
+/**
+* @author Sean Owen
+*/
 class BitMatrixParser
 {
 public:

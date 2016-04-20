@@ -24,6 +24,10 @@ namespace ZXing {
 
 namespace OneD {
 
+/**
+* @author dswitkin@google.com (Daniel Switkin)
+* @author Sean Owen
+*/
 class MultiFormatReader : public Reader
 {
 public:

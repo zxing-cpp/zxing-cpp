@@ -31,6 +31,8 @@ class ResultMetadata;
 
 /**
 * <p>Encapsulates the result of decoding a barcode within an image.</p>
+*
+* @author Sean Owen
 */
 class Result
 {

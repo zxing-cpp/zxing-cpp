@@ -87,7 +87,7 @@ EAN13Reader::expectedFormat() const
 ErrorStatus
 EAN13Reader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const
 {
-	std::vector<int> counters(4, 0);
+	std::array<int, 4> counters = {};
 	int end = row.size();
 	ErrorStatus status;
 	int lgPatternFound = 0;

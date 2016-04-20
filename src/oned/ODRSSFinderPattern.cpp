@@ -1,4 +1,3 @@
-#pragma once
 /*
 * Copyright 2016 ZXing authors
 *
@@ -15,23 +14,13 @@
 * limitations under the License.
 */
 
-#include "oned/ODUPCEANReader.h"
+#include "oned/ODRSSFinderPattern.h"
 
 namespace ZXing {
 
 namespace OneD {
 
-/**
-* <p>Implements decoding of the EAN-8 format.</p>
-*
-* @author Sean Owen
-*/
-class EAN8Reader : public UPCEANReader
-{
-protected:
-	virtual BarcodeFormat expectedFormat() const override;
-	virtual ErrorStatus decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const override;
-};
+
 
 } // OneD
 } // ZXing

@@ -1,0 +1,499 @@
+/*
+* Copyright 2016 ZXing authors
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*      http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+
+#include "oned/ODRSS14Reader.h"
+#include "oned/ODRSSReaderHelper.h"
+#include "oned/ODRSSPair.h"
+#include "BitArray.h"
+#include "Result.h"
+#include "DecodeHints.h"
+
+#include <array>
+#include <algorithm>
+#include <numeric>
+
+namespace ZXing {
+
+namespace OneD {
+
+static const int OUTSIDE_EVEN_TOTAL_SUBSET[] = { 1,10,34,70,126 };
+static const int INSIDE_ODD_TOTAL_SUBSET[] = { 4,20,48,81 };
+static const int OUTSIDE_GSUM[] = { 0,161,961,2015,2715 };
+static const int INSIDE_GSUM[] = { 0,336,1036,1516 };
+static const int OUTSIDE_ODD_WIDEST[] = { 8,6,4,3,1 };
+static const int INSIDE_ODD_WIDEST[] = { 2,4,6,8 };
+
+typedef std::array<int, 4> FinderCounters;
+
+static const std::array<FinderCounters, 9> FINDER_PATTERNS = {
+	3,8,2,1,
+	3,5,5,1,
+	3,3,7,1,
+	3,1,9,1,
+	2,7,4,1,
+	2,5,6,1,
+	2,3,8,1,
+	1,5,7,1,
+	1,3,9,1,
+};
+
+//private final List<Pair> possibleLeftPairs;
+//private final List<Pair> possibleRightPairs;
+//
+//public RSS14Reader() {
+//	possibleLeftPairs = new ArrayList<>();
+//	possibleRightPairs = new ArrayList<>();
+//}
+
+static ErrorStatus
+FindFinderPattern(const BitArray& row, int rowOffset, bool rightFinderPattern, FinderCounters& counters, int& start, int& end)
+{
+	std::fill(counters.begin(), counters.end(), 0);
+	int width = row.size();
+	bool isWhite = false;
+	while (rowOffset < width) {
+		isWhite = !row.get(rowOffset);
+		if (rightFinderPattern == isWhite) {
+			// Will encounter white first when searching for right finder pattern
+			break;
+		}
+		rowOffset++;
+	}
+
+	int counterPosition = 0;
+	int patternStart = rowOffset;
+	for (int x = rowOffset; x < width; x++) {
+		if (row.get(x) ^ isWhite) {
+			counters[counterPosition]++;
+		}
+		else {
+			if (counterPosition == 3) {
+				if (RSS::ReaderHelper::IsFinderPattern(counters)) {
+					start = patternStart;
+					end = x;
+					return ErrorStatus::NoError;
+				}
+				patternStart += counters[0] + counters[1];
+				counters[0] = counters[2];
+				counters[1] = counters[3];
+				counters[2] = 0;
+				counters[3] = 0;
+				counterPosition--;
+			}
+			else {
+				counterPosition++;
+			}
+			counters[counterPosition] = 1;
+			isWhite = !isWhite;
+		}
+	}
+	return ErrorStatus::NotFound;
+}
+
+
+static RSS::FinderPattern
+ParseFoundFinderPattern(const BitArray& row, int rowNumber, bool right, int startRange, int endRange, FinderCounters& finderCounters)
+{
+	// Actually we found elements 2-5
+	bool firstIsBlack = row.get(startRange);
+	int firstElementStart = startRange - 1;
+	// Locate element 1
+	while (firstElementStart >= 0 && firstIsBlack ^ row.get(firstElementStart)) {
+		firstElementStart--;
+	}
+	firstElementStart++;
+	int firstCounter = startRange - firstElementStart;
+	// Make 'counters' hold 1-4
+	std::copy_backward(finderCounters.begin(), finderCounters.end() - 1, finderCounters.end());
+	finderCounters[0] = firstCounter;
+	int value = RSS::ReaderHelper::ParseFinderValue(finderCounters, FINDER_PATTERNS);
+	if (value >= 0)
+	{
+		int start = firstElementStart;
+		int end = endRange;
+		if (right) {
+			// row is actually reversed
+			start = row.size() - 1 - start;
+			end = row.size() - 1 - end;
+		}
+		float ypos = static_cast<float>(rowNumber);
+		return RSS::FinderPattern(value, firstElementStart, endRange, { ResultPoint(static_cast<float>(start), ypos), ResultPoint(static_cast<float>(end), ypos) });
+	}
+	return RSS::FinderPattern();
+}
+
+static bool
+AdjustOddEvenCounts(bool outsideChar, int numModules, std::array<int, 4>& oddCounts, std::array<int, 4>& evenCounts,
+	const std::array<float, 4>& oddRoundingErrors, const std::array<float, 4>& evenRoundingErrors)
+{
+	int oddSum = std::accumulate(oddCounts.begin(), oddCounts.end(), 0);
+	int evenSum = std::accumulate(evenCounts.begin(), evenCounts.end(), 0);
+	int mismatch = oddSum + evenSum - numModules;
+	bool oddParityBad = (oddSum & 0x01) == (outsideChar ? 1 : 0);
+	bool evenParityBad = (evenSum & 0x01) == 1;
+
+	bool incrementOdd = false;
+	bool decrementOdd = false;
+	bool incrementEven = false;
+	bool decrementEven = false;
+
+	if (outsideChar) {
+		if (oddSum > 12) {
+			decrementOdd = true;
+		}
+		else if (oddSum < 4) {
+			incrementOdd = true;
+		}
+		if (evenSum > 12) {
+			decrementEven = true;
+		}
+		else if (evenSum < 4) {
+			incrementEven = true;
+		}
+	}
+	else {
+		if (oddSum > 11) {
+			decrementOdd = true;
+		}
+		else if (oddSum < 5) {
+			incrementOdd = true;
+		}
+		if (evenSum > 10) {
+			decrementEven = true;
+		}
+		else if (evenSum < 4) {
+			incrementEven = true;
+		}
+	}
+
+	/*if (mismatch == 2) {
+	if (!(oddParityBad && evenParityBad)) {
+	throw ReaderException.getInstance();
+	}
+	decrementOdd = true;
+	decrementEven = true;
+	} else if (mismatch == -2) {
+	if (!(oddParityBad && evenParityBad)) {
+	throw ReaderException.getInstance();
+	}
+	incrementOdd = true;
+	incrementEven = true;
+	} else */
+	if (mismatch == 1) {
+		if (oddParityBad) {
+			if (evenParityBad) {
+				return false;
+			}
+			decrementOdd = true;
+		}
+		else {
+			if (!evenParityBad) {
+				return false;
+			}
+			decrementEven = true;
+		}
+	}
+	else if (mismatch == -1) {
+		if (oddParityBad) {
+			if (evenParityBad) {
+				return false;
+			}
+			incrementOdd = true;
+		}
+		else {
+			if (!evenParityBad) {
+				return false;
+			}
+			incrementEven = true;
+		}
+	}
+	else if (mismatch == 0) {
+		if (oddParityBad) {
+			if (!evenParityBad) {
+				return false;
+			}
+			// Both bad
+			if (oddSum < evenSum) {
+				incrementOdd = true;
+				decrementEven = true;
+			}
+			else {
+				decrementOdd = true;
+				incrementEven = true;
+			}
+		}
+		else {
+			if (evenParityBad) {
+				return false;
+			}
+			// Nothing to do!
+		}
+	}
+	else {
+		return false;
+	}
+
+	if (incrementOdd) {
+		if (decrementOdd) {
+			return false;
+		}
+		oddCounts[std::max_element(oddRoundingErrors.begin(), oddRoundingErrors.end()) - oddRoundingErrors.begin()] += 1;
+	}
+	if (decrementOdd) {
+		oddCounts[std::min_element(oddRoundingErrors.begin(), oddRoundingErrors.end()) - oddRoundingErrors.begin()] -= 1;
+	}
+	if (incrementEven) {
+		if (decrementEven) {
+			return false;
+		}
+		evenCounts[std::max_element(evenRoundingErrors.begin(), evenRoundingErrors.end()) - evenRoundingErrors.begin()] += 1;
+	}
+	if (decrementEven) {
+		evenCounts[std::min_element(evenRoundingErrors.begin(), evenRoundingErrors.end()) - evenRoundingErrors.begin()] -= 1;
+	}
+	return true;
+}
+
+static bool
+DecodeDataCharacter(const BitArray& row, const RSS::FinderPattern& pattern, bool outsideChar, RSS::DataCharacter& outCharacter)
+{
+	std::array<int, 8> counters = {};
+
+	if (outsideChar) {
+		Reader::RecordPatternInReverse(row, pattern.start(), counters);
+	}
+	else {
+		Reader::RecordPattern(row, pattern.end() + 1, counters);
+		std::reverse(counters.begin(), counters.end());
+	}
+
+	int numModules = outsideChar ? 16 : 15;
+	float elementWidth = static_cast<float>(std::accumulate(counters.begin(), counters.end(), 0)) / static_cast<float>(numModules);
+
+	std::array<int, 4> oddCounts;
+	std::array<int, 4> evenCounts;
+	std::array<float, 4> oddRoundingErrors;
+	std::array<float, 4> evenRoundingErrors;
+
+	for (int i = 0; i < 8; i++) {
+		float value = (float)counters[i] / elementWidth;
+		int count = (int)(value + 0.5f); // Round
+		if (count < 1) {
+			count = 1;
+		}
+		else if (count > 8) {
+			count = 8;
+		}
+		int offset = i / 2;
+		if ((i & 0x01) == 0) {
+			oddCounts[offset] = count;
+			oddRoundingErrors[offset] = value - count;
+		}
+		else {
+			evenCounts[offset] = count;
+			evenRoundingErrors[offset] = value - count;
+		}
+	}
+
+	if (!AdjustOddEvenCounts(outsideChar, numModules, oddCounts, evenCounts, oddRoundingErrors, evenRoundingErrors)) {
+		return false;
+	}
+
+	int oddSum = 0;
+	int oddChecksumPortion = 0;
+	for (auto it = oddCounts.rbegin(); it != oddCounts.rend(); ++it) {
+		oddChecksumPortion *= 9;
+		oddChecksumPortion += *it;
+		oddSum += *it;
+	}
+	int evenChecksumPortion = 0;
+	int evenSum = 0;
+	for (auto it = evenCounts.rbegin(); it != evenCounts.rend(); ++it) {
+		evenChecksumPortion *= 9;
+		evenChecksumPortion += *it;
+		evenSum += *it;
+	}
+	int checksumPortion = oddChecksumPortion + 3 * evenChecksumPortion;
+
+	if (outsideChar) {
+		if ((oddSum & 0x01) != 0 || oddSum > 12 || oddSum < 4) {
+			return false;
+		}
+		int group = (12 - oddSum) / 2;
+		int oddWidest = OUTSIDE_ODD_WIDEST[group];
+		int evenWidest = 9 - oddWidest;
+		int vOdd = RSS::ReaderHelper::GetRSSvalue(oddCounts, oddWidest, false);
+		int vEven = RSS::ReaderHelper::GetRSSvalue(evenCounts, evenWidest, true);
+		int tEven = OUTSIDE_EVEN_TOTAL_SUBSET[group];
+		int gSum = OUTSIDE_GSUM[group];
+		outCharacter = RSS::DataCharacter(vOdd * tEven + vEven + gSum, checksumPortion);
+		return true;
+	}
+	else {
+		if ((evenSum & 0x01) != 0 || evenSum > 10 || evenSum < 4) {
+			return false;
+		}
+		int group = (10 - evenSum) / 2;
+		int oddWidest = INSIDE_ODD_WIDEST[group];
+		int evenWidest = 9 - oddWidest;
+		int vOdd = RSS::ReaderHelper::GetRSSvalue(oddCounts, oddWidest, true);
+		int vEven = RSS::ReaderHelper::GetRSSvalue(evenCounts, evenWidest, false);
+		int tOdd = INSIDE_ODD_TOTAL_SUBSET[group];
+		int gSum = INSIDE_GSUM[group];
+		outCharacter = RSS::DataCharacter(vEven * tOdd + vOdd + gSum, checksumPortion);
+		return true;
+	}
+
+}
+
+static RSS::Pair
+DecodePair(const BitArray& row, bool right, int rowNumber, const DecodeHints* hints)
+{
+	FinderCounters finderCounters = {};
+	int patternStart, patternEnd;
+	ErrorStatus status = FindFinderPattern(row, 0, right, finderCounters, patternStart, patternEnd);
+	if (StatusIsOK(status)) {
+		auto pattern = ParseFoundFinderPattern(row, rowNumber, right, patternStart, patternEnd, finderCounters);
+		if (pattern.value() >= 0) {
+			PointCallback resultPointCallback = hints != nullptr ? hints->getPointCallback(DecodeHint::NEED_RESULT_POINT_CALLBACK) : nullptr;
+			if (resultPointCallback != nullptr) {
+				float center = 0.5f * static_cast<float>(patternStart + patternEnd);
+				if (right) {
+					// row is actually reversed
+					center = row.size() - 1 - center;
+				}
+				resultPointCallback(center, static_cast<float>(rowNumber)));
+			}
+
+			RSS::DataCharacter inside, outside;
+			if (DecodeDataCharacter(row, pattern, true, outside) && DecodeDataCharacter(row, pattern, false, inside)) {
+				return RSS::Pair(1597 * outside.value() + inside.value(), outside.checksumPortion() + 4 * inside.checksumPortion(), pattern);
+			}
+		}
+	}
+	return RSS::Pair();
+}
+
+Result
+RSS14Reader::decodeRow(int rowNumber, const BitArray& row_, const DecodeHints* hints) const
+{
+	BitArray row = row_;
+	RSS::Pair leftPair = DecodePair(row, false, rowNumber, hints);
+	if (leftPair.isValid()) {
+		addOrTally(possibleLeftPairs, leftPair);
+		row.reverse();
+		RSS::Pair rightPair = DecodePair(row, true, rowNumber, hints);
+		if (rightPair.isValid()) {
+			addOrTally(possibleRightPairs, rightPair);
+			row.reverse();
+
+			int lefSize = possibleLeftPairs.size();
+			for (int i = 0; i < lefSize; i++) {
+				Pair left = possibleLeftPairs.get(i);
+				if (left.getCount() > 1) {
+					int rightSize = possibleRightPairs.size();
+					for (int j = 0; j < rightSize; j++) {
+						Pair right = possibleRightPairs.get(j);
+						if (right.getCount() > 1) {
+							if (checkChecksum(left, right)) {
+								return constructResult(left, right);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	return Result(ErrorStatus::NotFound);
+}
+
+private static void addOrTally(Collection<Pair> possiblePairs, Pair pair) {
+	if (pair == null) {
+		return;
+	}
+	boolean found = false;
+	for (Pair other : possiblePairs) {
+		if (other.getValue() == pair.getValue()) {
+			other.incrementCount();
+			found = true;
+			break;
+		}
+	}
+	if (!found) {
+		possiblePairs.add(pair);
+	}
+}
+
+@Override
+public void reset() {
+	possibleLeftPairs.clear();
+	possibleRightPairs.clear();
+}
+
+private static Result constructResult(Pair leftPair, Pair rightPair) {
+	long symbolValue = 4537077L * leftPair.getValue() + rightPair.getValue();
+	String text = String.valueOf(symbolValue);
+
+	StringBuilder buffer = new StringBuilder(14);
+	for (int i = 13 - text.length(); i > 0; i--) {
+		buffer.append('0');
+	}
+	buffer.append(text);
+
+	int checkDigit = 0;
+	for (int i = 0; i < 13; i++) {
+		int digit = buffer.charAt(i) - '0';
+		checkDigit += (i & 0x01) == 0 ? 3 * digit : digit;
+	}
+	checkDigit = 10 - (checkDigit % 10);
+	if (checkDigit == 10) {
+		checkDigit = 0;
+	}
+	buffer.append(checkDigit);
+
+	ResultPoint[] leftPoints = leftPair.getFinderPattern().getResultPoints();
+	ResultPoint[] rightPoints = rightPair.getFinderPattern().getResultPoints();
+	return new Result(
+		String.valueOf(buffer.toString()),
+		null,
+		new ResultPoint[]{ leftPoints[0], leftPoints[1], rightPoints[0], rightPoints[1], },
+		BarcodeFormat.RSS_14);
+}
+
+private static boolean checkChecksum(Pair leftPair, Pair rightPair) {
+	//int leftFPValue = leftPair.getFinderPattern().getValue();
+	//int rightFPValue = rightPair.getFinderPattern().getValue();
+	//if ((leftFPValue == 0 && rightFPValue == 8) ||
+	//    (leftFPValue == 8 && rightFPValue == 0)) {
+	//}
+	int checkValue = (leftPair.getChecksumPortion() + 16 * rightPair.getChecksumPortion()) % 79;
+	int targetCheckValue =
+		9 * leftPair.getFinderPattern().getValue() + rightPair.getFinderPattern().getValue();
+	if (targetCheckValue > 72) {
+		targetCheckValue--;
+	}
+	if (targetCheckValue > 8) {
+		targetCheckValue--;
+	}
+	return checkValue == targetCheckValue;
+}
+
+
+
+
+
+} // OneD
+} // ZXing

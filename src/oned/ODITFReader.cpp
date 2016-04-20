@@ -19,6 +19,8 @@
 #include "BitArray.h"
 #include "DecodeHints.h"
 
+#include <array>
+
 namespace ZXing {
 
 namespace OneD {
@@ -30,7 +32,7 @@ static const int W = 3; // Pixel width of a wide line
 static const int N = 1; // Pixed width of a narrow line
 
 /** Valid ITF lengths. Anything longer than the largest value is also allowed. */
-static const int DEFAULT_ALLOWED_LENGTHS[] = { 6, 8, 10, 12, 14 };
+static const std::array<int, 5> DEFAULT_ALLOWED_LENGTHS = { 6, 8, 10, 12, 14 };
 
 /**
 * Start/end guard pattern.
@@ -38,24 +40,23 @@ static const int DEFAULT_ALLOWED_LENGTHS[] = { 6, 8, 10, 12, 14 };
 * Note: The end pattern is reversed because the row is reversed before
 * searching for the END_PATTERN
 */
-static const std::vector<int> START_PATTERN = { N, N, N, N };
-static const std::vector<int> END_PATTERN_REVERSED = { N, N, W };
+static const std::array<int, 4> START_PATTERN = { N, N, N, N };
+static const std::array<int, 3> END_PATTERN_REVERSED = { N, N, W };
 
 /**
 * Patterns of Wide / Narrow lines to indicate each digit
 */
-static const int PATTERNS_LENGTH = 10;
-static const std::vector<int> PATTERNS[PATTERNS_LENGTH] = {
-	{ N, N, W, W, N }, // 0
-	{ W, N, N, N, W }, // 1
-	{ N, W, N, N, W }, // 2
-	{ W, W, N, N, N }, // 3
-	{ N, N, W, N, W }, // 4
-	{ W, N, W, N, N }, // 5
-	{ N, W, W, N, N }, // 6
-	{ N, N, N, W, W }, // 7
-	{ W, N, N, W, N }, // 8
-	{ N, W, N, W, N }  // 9
+static const std::array<std::array<int, 5>, 10> PATTERNS = {
+	N, N, W, W, N, // 0
+	W, N, N, N, W, // 1
+	N, W, N, N, W, // 2
+	W, W, N, N, N, // 3
+	N, N, W, N, W, // 4
+	W, N, W, N, N, // 5
+	N, W, W, N, N, // 6
+	N, N, N, W, W, // 7
+	W, N, N, W, N, // 8
+	N, W, N, W, N,  // 9
 };
 
 /**
@@ -67,16 +68,16 @@ static const std::vector<int> PATTERNS[PATTERNS_LENGTH] = {
 * @throws NotFoundException if digit cannot be decoded
 */
 static ErrorStatus
-DecodeDigit(const std::vector<int>& counters, int& outCode)
+DecodeDigit(const std::array<int, 5>& counters, int& outCode)
 {
 	float bestVariance = MAX_AVG_VARIANCE; // worst variance we'll accept
 	int bestMatch = -1;
-	for (int i = 0; i < PATTERNS_LENGTH; i++) {
+	for (size_t i = 0; i < PATTERNS.size(); i++) {
 		auto& pattern = PATTERNS[i];
 		float variance = Reader::PatternMatchVariance(counters, pattern, MAX_INDIVIDUAL_VARIANCE);
 		if (variance < bestVariance) {
 			bestVariance = variance;
-			bestMatch = i;
+			bestMatch = static_cast<int>(i);
 		}
 	}
 	if (bestMatch >= 0) {
@@ -99,9 +100,9 @@ static ErrorStatus DecodeMiddle(const BitArray& row, int payloadStart, int paylo
 	// interleaved white lines for the second digit.
 	// Therefore, need to scan 10 lines and then
 	// split these into two arrays
-	std::vector<int> counterDigitPair(10, 0);
-	std::vector<int> counterBlack(5, 0);
-	std::vector<int> counterWhite(5, 0);
+	std::array<int, 10> counterDigitPair = {};
+	std::array<int, 5> counterBlack = {};
+	std::array<int, 5> counterWhite = {};
 
 	ErrorStatus status;
 
@@ -147,10 +148,9 @@ static ErrorStatus DecodeMiddle(const BitArray& row, int payloadStart, int paylo
 *         ints
 * @throws NotFoundException if pattern is not found
 */
-static ErrorStatus
-FindGuardPattern(const BitArray& row, int rowOffset, const std::vector<int>& pattern, int& begin, int& end)
+ErrorStatus
+ITFReader::FindGuardPattern(const BitArray& row, int rowOffset, const int* pattern, size_t patternLength, int& begin, int& end)
 {
-	int patternLength = static_cast<int>(pattern.size());
 	std::vector<int> counters(patternLength, 0);
 	int width = row.size();
 	bool isWhite = false;
@@ -163,7 +163,7 @@ FindGuardPattern(const BitArray& row, int rowOffset, const std::vector<int>& pat
 		}
 		else {
 			if (counterPosition == patternLength - 1) {
-				if (Reader::PatternMatchVariance(counters, pattern, MAX_INDIVIDUAL_VARIANCE) < MAX_AVG_VARIANCE) {
+				if (PatternMatchVariance(counters.data(), pattern, patternLength, MAX_INDIVIDUAL_VARIANCE) < MAX_AVG_VARIANCE) {
 					begin = patternStart;
 					end = x;
 					return ErrorStatus::NoError;
@@ -247,8 +247,8 @@ ValidateQuietZone(const BitArray& row, int startPattern, int narrowLineWidth)
 *         'start block'
 * @throws NotFoundException
 */
-static ErrorStatus
-DecodeStart(const BitArray& row, int& narrowLineWidth, int& patternEnd)
+ErrorStatus
+ITFReader::DecodeStart(const BitArray& row, int& narrowLineWidth, int& patternEnd)
 {
 	int endStart = 0;
 	ErrorStatus status = SkipWhiteSpace(row, endStart);
@@ -275,8 +275,8 @@ DecodeStart(const BitArray& row, int& narrowLineWidth, int& patternEnd)
 *         block'
 * @throws NotFoundException
 */
-static ErrorStatus
-DecodeEnd(const BitArray& row_, int narrowLineWidth, int& patternStart)
+ErrorStatus
+ITFReader::DecodeEnd(const BitArray& row_, int narrowLineWidth, int& patternStart)
 {
 	BitArray row = row_;
 	// For convenience, reverse the row and then
@@ -329,7 +329,7 @@ ITFReader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hint
 		allowedLengths = hints->getIntegerList(DecodeHint::ALLOWED_LENGTHS);
 	}
 	if (allowedLengths.empty()) {
-		allowedLengths.assign(DEFAULT_ALLOWED_LENGTHS, DEFAULT_ALLOWED_LENGTHS + sizeof(DEFAULT_ALLOWED_LENGTHS)/sizeof(int));
+		allowedLengths.assign(DEFAULT_ALLOWED_LENGTHS.begin(), DEFAULT_ALLOWED_LENGTHS.end());
 	}
 
 	// To avoid false positives with 2D barcodes (and other patterns), make
@@ -353,10 +353,11 @@ ITFReader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hint
 		return Result(ErrorStatus::FormatError);
 	}
 
-	return Result(result,
-		ByteArray(), // no natural byte representation for these barcodes
-		{ ResultPoint(static_cast<float>(startRangeEnd), static_cast<float>(rowNumber)), ResultPoint(static_cast<float>(endRangeBegin), static_cast<float>(rowNumber)) },
-		BarcodeFormat::ITF);
+	float x1 = static_cast<float>(startRangeEnd);
+	float x2 = static_cast<float>(endRangeBegin);
+	float ypos = static_cast<float>(rowNumber);
+
+	return Result(result, ByteArray(), { ResultPoint(x1, ypos), ResultPoint(x2, ypos) }, BarcodeFormat::ITF);
 }
 
 } // OneD

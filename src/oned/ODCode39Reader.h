@@ -23,6 +23,8 @@ namespace OneD {
 
 /**
 * <p>Decodes Code 39 barcodes. This does not support "Full ASCII Code 39" yet.</p>
+*
+* @author Sean Owen
 * @see Code93Reader
 */
 class Code39Reader : public Reader

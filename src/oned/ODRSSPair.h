@@ -15,23 +15,39 @@
 * limitations under the License.
 */
 
-#include "oned/ODUPCEANReader.h"
+#include "oned/ODRSSDataCharacter.h"
+#include "oned/ODRSSFinderPattern.h"
 
 namespace ZXing {
-
 namespace OneD {
+namespace RSS {
 
-/**
-* <p>Implements decoding of the EAN-8 format.</p>
-*
-* @author Sean Owen
-*/
-class EAN8Reader : public UPCEANReader
+class Pair : public DataCharacter
 {
-protected:
-	virtual BarcodeFormat expectedFormat() const override;
-	virtual ErrorStatus decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const override;
+	FinderPattern _finderPattern;
+	int _count;
+
+public:
+	Pair() : _count(0) {}
+	Pair(int value, int checksumPortion, const FinderPattern& finderPattern) : DataCharacter(value, checksumPortion), _finderPattern(finderPattern), _count(0) {}
+
+	const FinderPattern& finderPattern() const {
+		return _finderPattern;
+	}
+
+	bool isValid() const {
+		return _finderPattern.value() >= 0;
+	}
+
+	int count() const {
+		return 0;
+	}
+
+	void incrementCount() {
+		_count++;
+	}
 };
 
+} // RSS
 } // OneD
 } // ZXing

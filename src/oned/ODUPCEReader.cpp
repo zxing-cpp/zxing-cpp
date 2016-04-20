@@ -19,6 +19,8 @@
 #include "BitArray.h"
 #include "ErrorStatus.h"
 
+#include <array>
+
 namespace ZXing {
 
 namespace OneD {
@@ -54,14 +56,14 @@ namespace OneD {
 * The pattern that marks the middle, and end, of a UPC-E pattern.
 * There is no "second half" to a UPC-E barcode.
 */
-static const std::vector<int> MIDDLE_END_PATTERN = { 1, 1, 1, 1, 1, 1 };
+static const std::array<int, 6> MIDDLE_END_PATTERN = { 1, 1, 1, 1, 1, 1 };
 
 /**
 * See {@link #L_AND_G_PATTERNS}; these values similarly represent patterns of
 * even-odd parity encodings of digits that imply both the number system (0 or 1)
 * used, and the check digit.
 */
-static const int NUMSYS_AND_CHECK_DIGIT_PATTERNS[] = {
+static const std::array<std::array<int, 10>, 2> NUMSYS_AND_CHECK_DIGIT_PATTERNS = {
 	0x38, 0x34, 0x32, 0x31, 0x2C, 0x26, 0x23, 0x2A, 0x29, 0x25,
 	0x07, 0x0B, 0x0D, 0x0E, 0x13, 0x19, 0x1C, 0x15, 0x16, 0x1A,
 };
@@ -75,9 +77,9 @@ UPCEReader::expectedFormat() const
 static ErrorStatus
 DetermineNumSysAndCheckDigit(std::string& resultString, int lgPatternFound)
 {
-	for (int numSys = 0; numSys <= 1; numSys++) {
-		for (int d = 0; d < 10; d++) {
-			if (lgPatternFound == NUMSYS_AND_CHECK_DIGIT_PATTERNS[numSys * 10 + d]) {
+	for (size_t numSys = 0; numSys < NUMSYS_AND_CHECK_DIGIT_PATTERNS.size(); numSys++) {
+		for (size_t d = 0; d < NUMSYS_AND_CHECK_DIGIT_PATTERNS[0].size(); d++) {
+			if (lgPatternFound == NUMSYS_AND_CHECK_DIGIT_PATTERNS[numSys][d]) {
 				resultString.insert(0, 1, (char)('0' + numSys));
 				resultString.push_back((char)('0' + d));
 				return ErrorStatus::NoError;
@@ -90,7 +92,7 @@ DetermineNumSysAndCheckDigit(std::string& resultString, int lgPatternFound)
 ErrorStatus
 UPCEReader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const
 {
-	std::vector<int> counters(4, 0);
+	std::array<int, 4> counters = {};
 	int end = row.size();
 	int lgPatternFound = 0;
 	for (int x = 0; x < 6 && rowOffset < end; x++) {

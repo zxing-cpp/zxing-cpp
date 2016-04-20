@@ -11,6 +11,9 @@ namespace ZXing {
 * <p>Throughout this package, elements of the GF are represented as an {@code int}
 * for convenience and speed (but at the cost of memory).
 * </p>
+*
+* @author Sean Owen
+* @author David Olivier
 */
 class GenericGF
 {

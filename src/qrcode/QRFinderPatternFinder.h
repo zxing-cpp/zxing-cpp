@@ -36,6 +36,8 @@ class FinderPatternInfo;
 * markers at three corners of a QR Code.</p>
 *
 * <p>This class is thread-safe but not reentrant. Each thread must allocate its own object.
+*
+* @author Sean Owen
 */
 class FinderPatternFinder
 {

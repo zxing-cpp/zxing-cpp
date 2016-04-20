@@ -33,6 +33,8 @@ enum class ErrorStatus;
 *
 * The implementation used can be controlled by calling {@link #setGridSampler(GridSampler)}
 * with an instance of a class which implements this interface.
+*
+* @author Sean Owen
 */
 class GridSampler
 {

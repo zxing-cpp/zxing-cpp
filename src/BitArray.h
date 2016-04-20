@@ -24,6 +24,8 @@ class ByteArray;
 
 /**
 * <p>A simple, fast array of bits, represented compactly by an array of ints internally.</p>
+*
+* @author Sean Owen
 */
 class BitArray
 {

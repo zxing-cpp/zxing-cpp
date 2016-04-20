@@ -25,6 +25,9 @@ class String;
 class ByteArray;
 class CustomData;
 
+/**
+* @author Sean Owen
+*/
 class ResultMetadata
 {
 public:

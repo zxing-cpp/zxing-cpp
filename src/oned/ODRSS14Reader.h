@@ -15,22 +15,19 @@
 * limitations under the License.
 */
 
-#include "oned/ODUPCEANReader.h"
+#include "oned/ODReader.h"
 
 namespace ZXing {
 
 namespace OneD {
 
 /**
-* <p>Implements decoding of the EAN-8 format.</p>
-*
-* @author Sean Owen
+* Decodes RSS-14, including truncated and stacked variants. See ISO/IEC 24724:2006.
 */
-class EAN8Reader : public UPCEANReader
+class RSS14Reader : public Reader
 {
-protected:
-	virtual BarcodeFormat expectedFormat() const override;
-	virtual ErrorStatus decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const override;
+public:
+	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) const override;
 };
 
 } // OneD

@@ -539,8 +539,8 @@ Code128Reader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* 
 
 	float left = 0.5f * static_cast<float>(patternStart + patternEnd);
 	float right = static_cast<float>(lastStart) + 0.5f * static_cast<float>(lastPatternSize);
-
-	return Result(result, rawCodes, { ResultPoint(left, static_cast<float>(rowNumber)), ResultPoint(right, static_cast<float>(rowNumber)) }, BarcodeFormat::CODE_128);
+	float ypos = static_cast<float>(rowNumber);
+	return Result(result, rawCodes, { ResultPoint(left, ypos), ResultPoint(right, ypos) }, BarcodeFormat::CODE_128);
 }
 
 } // OneD

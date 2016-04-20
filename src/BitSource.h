@@ -25,6 +25,8 @@ namespace ZXing {
 *
 * <p>This class is thread-safe but not reentrant -- unless the caller modifies the bytes array
 * it passed in, in which case all bets are off.</p>
+*
+* @author Sean Owen
 */
 class BitSource
 {

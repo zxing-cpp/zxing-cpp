@@ -19,14 +19,18 @@
 #include "BitArray.h"
 
 #include <algorithm>
+#include <array>
 
 namespace ZXing {
 
 namespace OneD {
 
+static const int SYMBOL_COUNT = 44;
 static const char* ALPHABET_STRING = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. *$/+%";
+
 // Note this lacks '*' compared to ALPHABET_STRING
 static const char* CHECK_DIGIT_STRING = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%";
+static const int CHECK_DIGIT_COUNT = SYMBOL_COUNT - 1;
 
 /**
 * These represent the encodings of characters, as patterns of wide and narrow bars.
@@ -43,10 +47,12 @@ static const int CHARACTER_ENCODINGS[] = {
 
 static const int ASTERISK_ENCODING = CHARACTER_ENCODINGS[39];
 
+typedef std::array<int, 9> CounterContainer;
+
 // For efficiency, returns -1 on failure. Not throwing here saved as many as 700 exceptions
 // per image when using some of our blackbox images.
 static int
-ToNarrowWidePattern(const std::vector<int>& counters)
+ToNarrowWidePattern(const CounterContainer& counters)
 {
 	int numCounters = static_cast<int>(counters.size());
 	int maxNarrowCounter = 0;
@@ -91,7 +97,7 @@ ToNarrowWidePattern(const std::vector<int>& counters)
 }
 
 static ErrorStatus
-FindAsteriskPattern(const BitArray& row, std::vector<int>& counters, int& outPatternStart, int& outPatternEnd)
+FindAsteriskPattern(const BitArray& row, CounterContainer& counters, int& outPatternStart, int& outPatternEnd)
 {
 	int width = row.size();
 	int rowOffset = row.getNextSet(0);
@@ -133,8 +139,7 @@ FindAsteriskPattern(const BitArray& row, std::vector<int>& counters, int& outPat
 static char
 PatternToChar(int pattern)
 {
-	size_t len = sizeof(CHARACTER_ENCODINGS) / sizeof(int);
-	for (size_t i = 0; i < len; i++) {
+	for (size_t i = 0; i < SYMBOL_COUNT; i++) {
 		if (CHARACTER_ENCODINGS[i] == pattern) {
 			return ALPHABET_STRING[i];
 		}
@@ -212,16 +217,14 @@ DecodeExtended(const std::string& encoded, std::string& decoded)
 
 static int IndexOf(const char* str, char c)
 {
-	int i = 0;
-	while (str[i] != 0 && str[i] != c)
-		++i;
-	return str[i] == c ? i : -1;
+	auto s = strchr(str, c);
+	return s != nullptr ? (s - str) : -1;
 }
 
 Result
 Code39Reader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) const
 {
-	std::vector<int> theCounters(9, 0);
+	CounterContainer theCounters = {};
 	std::string result;
 	result.reserve(20);
 	int patternStart, patternEnd;
@@ -278,7 +281,7 @@ Code39Reader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* h
 		for (int i = 0; i < max; i++) {
 			total += IndexOf(CHECK_DIGIT_STRING, result[i]);
 		}
-		if (total < 0 || result[max] != CHECK_DIGIT_STRING[total % 43]) {
+		if (total < 0 || result[max] != CHECK_DIGIT_STRING[total % CHECK_DIGIT_COUNT]) {
 			return Result(ErrorStatus::ChecksumError);
 		}
 		result.resize(max);
@@ -302,7 +305,8 @@ Code39Reader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* h
 
 	float left = 0.5f * static_cast<float>(patternStart + patternEnd);
 	float right = static_cast<float>(lastStart) + 0.5f * static_cast<float>(lastPatternSize);
-	return Result(resultString, ByteArray(), { ResultPoint(left, static_cast<float>(rowNumber)), ResultPoint(right, static_cast<float>(rowNumber)) }, BarcodeFormat::CODE_39);
+	float ypos = static_cast<float>(rowNumber);
+	return Result(resultString, ByteArray(), { ResultPoint(left, ypos), ResultPoint(right, ypos) }, BarcodeFormat::CODE_39);
 }
 
 

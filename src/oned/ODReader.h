@@ -17,7 +17,7 @@
 
 #include "Reader.h"
 
-#include <vector>
+#include <cstddef>
 
 namespace ZXing {
 
@@ -65,8 +65,15 @@ public:
 	* @throws NotFoundException if counters cannot be filled entirely from row before running out
 	*  of pixels
 	*/
-	static ErrorStatus RecordPattern(const BitArray& row, int start, std::vector<int>& counters);
-	static ErrorStatus RecordPatternInReverse(const BitArray& row, int start, std::vector<int>& counters);
+	template <typename Container>
+	static ErrorStatus RecordPattern(const BitArray& row, int start, Container& counters) {
+		return RecordPattern(row, start, counters.data(), counters.size());
+	}
+
+	template <typename Container>
+	static ErrorStatus RecordPatternInReverse(const BitArray& row, int start, Container& counters) {
+		return RecordPatternInReverse(row, start, counters.data(), counters.size());
+	}
 
 	/**
 	* Determines how closely a set of observed counts of runs of black/white values matches a given
@@ -78,10 +85,18 @@ public:
 	* @param maxIndividualVariance The most any counter can differ before we give up
 	* @return ratio of total variance between counters and pattern compared to total pattern size
 	*/
-	static float PatternMatchVariance(const std::vector<int>& counters, const std::vector<int>& pattern, float maxIndividualVariance);
+	template <typename Container>
+	static float PatternMatchVariance(const Container& counters, const Container& pattern, float maxIndividualVariance) {
+		return PatternMatchVariance(counters.data(), pattern.data(), counters.size(), maxIndividualVariance);
+	}
 
 private:
 	Result doDecode(const BinaryBitmap& image, const DecodeHints* hints) const;
+	static ErrorStatus RecordPattern(const BitArray& row, int start, int* counters, size_t length);
+	static ErrorStatus RecordPatternInReverse(const BitArray& row, int start, int* counters, size_t length);
+
+protected:
+	static float PatternMatchVariance(const int *counters, const int* pattern, size_t length, float maxIndividualVariance);
 };
 
 } // OneD

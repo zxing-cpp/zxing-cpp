@@ -38,6 +38,8 @@ class AlignmentPattern;
 * some code.</p>
 *
 * <p>This class is thread-safe but not reentrant. Each thread must allocate its own object.</p>
+*
+* @author Sean Owen
 */
 class AlignmentPatternFinder
 {

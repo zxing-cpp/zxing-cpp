@@ -19,6 +19,8 @@
 #include "oned/ODCode39Reader.h"
 #include "oned/ODCode93Reader.h"
 #include "oned/ODCode128Reader.h"
+#include "oned/ODITFReader.h"
+#include "oned/ODCodabarReader.h"
 #include "DecodeHints.h"
 #include "BarcodeFormat.h"
 #include "Result.h"
@@ -58,7 +60,7 @@ MultiFormatReader::MultiFormatReader(const DecodeHints* hints)
 				_readers.push_back(std::make_shared<ITFReader>());
 			}
 			if (formats.find(BarcodeFormat::CODABAR) != formats.end()) {
-				_readers.push_back(std::make_shared<CodaBarReader>());
+				_readers.push_back(std::make_shared<CodabarReader>());
 			}
 			if (formats.find(BarcodeFormat::RSS_14) != formats.end()) {
 				_readers.push_back(std::make_shared<RSS14Reader>());

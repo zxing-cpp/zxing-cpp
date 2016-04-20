@@ -19,9 +19,13 @@
 #include "BitArray.h"
 #include "ZXNumeric.h"
 
+#include <array>
+
 namespace ZXing {
 
 namespace OneD {
+
+static const int SYMBOL_COUNT = 48;
 
 // Note that 'abcd' are dummy characters in place of control characters.
 static const char* ALPHABET_STRING = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%abcd*";
@@ -42,7 +46,9 @@ static const int CHARACTER_ENCODINGS[] = {
 
 static const int ASTERISK_ENCODING = CHARACTER_ENCODINGS[47];
 
-static int ToPattern(const std::vector<int>& counters)
+typedef std::array<int, 6> CounterContainer;
+
+static int ToPattern(const CounterContainer& counters)
 {
 	int max = static_cast<int>(counters.size());
 	int sum = 0;
@@ -73,7 +79,7 @@ FindAsteriskPattern(const BitArray& row, int& outPatternStart, int& outPatternEn
 	int width = row.size();
 	int rowOffset = row.getNextSet(0);
 
-	std::vector<int> theCounters(6, 0);
+	CounterContainer theCounters = {};
 	int patternStart = rowOffset;
 	bool isWhite = false;
 	int patternLength = static_cast<int>(theCounters.size());
@@ -109,8 +115,7 @@ FindAsteriskPattern(const BitArray& row, int& outPatternStart, int& outPatternEn
 static char
 PatternToChar(int pattern)
 {
-	int len = sizeof(CHARACTER_ENCODINGS) / sizeof(int);
-	for (int i = 0; i < len; i++) {
+	for (int i = 0; i < SYMBOL_COUNT; i++) {
 		if (CHARACTER_ENCODINGS[i] == pattern) {
 			return ALPHABET_STRING[i];
 		}
@@ -201,10 +206,8 @@ DecodeExtended(const std::string& encoded, std::string& decoded)
 
 static int IndexOf(const char* str, char c)
 {
-	int i = 0;
-	while (str[i] != 0 && str[i] != c)
-		++i;
-	return str[i] == c ? i : -1;
+	auto s = strchr(str, c);
+	return s != nullptr ? (s - str) : -1;
 }
 
 bool
@@ -247,7 +250,7 @@ Code93Reader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* h
 	int nextStart = row.getNextSet(patternEnd);
 	int end = row.size();
 
-	std::vector<int> theCounters(6, 0);
+	CounterContainer theCounters = {};
 	std::string result;
 	result.reserve(20);
 
@@ -307,7 +310,8 @@ Code93Reader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* h
 
 	float left = 0.5f * static_cast<float>(patternStart + patternEnd);
 	float right = static_cast<float>(lastStart) + 0.5f * static_cast<float>(lastPatternSize);
-	return Result(resultString, ByteArray(), { ResultPoint(left, static_cast<float>(rowNumber)), ResultPoint(right, static_cast<float>(rowNumber)) }, BarcodeFormat::CODE_93);
+	float ypos = static_cast<float>(rowNumber);
+	return Result(resultString, ByteArray(), { ResultPoint(left, ypos), ResultPoint(right, ypos) }, BarcodeFormat::CODE_93);
 }
 
 

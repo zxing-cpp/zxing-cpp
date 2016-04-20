@@ -215,7 +215,7 @@ char ToAlphaNumericChar(int value)
 		' ', '$', '%', '*', '+', '-', '.', '/', ':'
 	};
 
-	if (value >= sizeof(ALPHANUMERIC_CHARS)) {
+	if (value < 0 || value >= sizeof(ALPHANUMERIC_CHARS)) {
 		throw std::out_of_range("ToAlphaNumericChar: out of range");
 	}
 	return ALPHANUMERIC_CHARS[value];
