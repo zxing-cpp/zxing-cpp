@@ -35,15 +35,19 @@ public:
 	FinderPattern(int value, int start, int end, const std::array<ResultPoint, 2>& points) :
 		_value(value), _start(start), _end(end), _points(points) {}
 
+	bool isValid() const {
+		return _value >= 0;
+	}
+
 	int value() const {
 		return _value;
 	}
 
-	int start() const {
+	int startPos() const {
 		return _start;
 	}
 
-	int end() const {
+	int endPos() const {
 		return _end;
 	}
 

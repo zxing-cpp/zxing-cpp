@@ -17,20 +17,24 @@
 
 #include "oned/ODReader.h"
 
-namespace ZXing {
+#include <list>
 
+namespace ZXing {
 namespace OneD {
 
+namespace RSS { class ExpandedRow; }
+
 /**
-* <p>Decodes Code 93 barcodes.</p>
-*
-* @author Sean Owen
-* @see Code39Reader
+* @author Pablo Orduña, University of Deusto(pablo.orduna@deusto.es)
+* @author Eduardo Castillejo, University of Deusto(eduardo.castillejo@deusto.es)
 */
-class Code93Reader : public Reader
+class RSSExpandedReader : public Reader
 {
 public:
 	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) override;
+
+private:
+	std::list<RSS::ExpandedRow> _rows;
 };
 
 } // OneD

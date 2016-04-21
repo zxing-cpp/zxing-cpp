@@ -30,16 +30,7 @@ namespace ZXing {
 class MultiFormatReader : public Reader
 {
 public:
-	/**
-	* Decode an image using the hints provided. Does not honor existing state.
-	*
-	* @param image The pixel data to decode
-	* @param hints The hints to use, clearing the previous state.
-	* @return The contents of the image
-	* @throws NotFoundException Any errors which occurred
-	*/
-	virtual Result decode(const BinaryBitmap& image, const DecodeHints* hints = nullptr) const override;
-
+	virtual Result decode(const BinaryBitmap& image, const DecodeHints* hints = nullptr) override;
 };
 
 } // ZXing

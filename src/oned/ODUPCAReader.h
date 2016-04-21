@@ -30,13 +30,13 @@ namespace OneD {
 class UPCAReader : public UPCEANReader
 {
 public:
-	virtual Result decode(const BinaryBitmap& image, const DecodeHints* hints = nullptr) const override;
-	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) const override;
-	virtual Result decodeRow(int rowNumber, const BitArray& row, int startGuardBegin, int startGuardEnd, const DecodeHints* hints) const override;
+	virtual Result decode(const BinaryBitmap& image, const DecodeHints* hints = nullptr) override;
+	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) override;
+	virtual Result decodeRow(int rowNumber, const BitArray& row, int startGuardBegin, int startGuardEnd, const DecodeHints* hints) override;
 
 protected:
 	virtual BarcodeFormat expectedFormat() const override;
-	virtual ErrorStatus decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const override;
+	virtual ErrorStatus decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) override;
 
 private:
 	EAN13Reader _reader;

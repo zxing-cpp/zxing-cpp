@@ -60,7 +60,7 @@ MultiUPCEANReader::MultiUPCEANReader(const DecodeHints* hints)
 }
 
 Result
-MultiUPCEANReader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) const
+MultiUPCEANReader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints)
 {
 	// Compute this location once and reuse it on multiple implementations
 	int startGuardPatternBegin, startGuardPatternEnd;

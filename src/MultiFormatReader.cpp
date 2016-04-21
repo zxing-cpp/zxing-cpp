@@ -99,7 +99,7 @@ BuildReaders(const DecodeHints* hints)
 } // anonymous
 
 Result
-MultiFormatReader::decode(const BinaryBitmap& image, const DecodeHints* hints) const
+MultiFormatReader::decode(const BinaryBitmap& image, const DecodeHints* hints)
 {
 	auto readers = BuildReaders(hints);
 	for (const auto& reader : readers) {
@@ -109,7 +109,5 @@ MultiFormatReader::decode(const BinaryBitmap& image, const DecodeHints* hints) c
 	}
 	return Result(ErrorStatus::NotFound);
 }
-
-};
 
 } // ZXing

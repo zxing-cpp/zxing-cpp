@@ -38,7 +38,7 @@ class MultiUPCEANReader : public Reader
 public:
 	MultiUPCEANReader(const DecodeHints* hints);
 
-	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) const override;
+	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) override;
 
 private:
 	std::vector<std::shared_ptr<UPCEANReader>> _readers;

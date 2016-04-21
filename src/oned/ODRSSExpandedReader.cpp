@@ -1,0 +1,771 @@
+/*
+* Copyright 2016 ZXing authors
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*      http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+
+#include "oned/ODRSSExpandedReader.h"
+#include "oned/ODRSSExpandedRow.h"
+#include "oned/ODRSSReaderHelper.h"
+#include "Result.h"
+#include "BitArray.h"
+
+#include <array>
+#include <vector>
+#include <numeric>
+
+namespace ZXing {
+namespace OneD {
+
+static const int SYMBOL_WIDEST[] = { 7, 5, 4, 3, 1 };
+static const int EVEN_TOTAL_SUBSET[] = { 4, 20, 52, 104, 204 };
+static const int GSUM[] = { 0, 348, 1388, 2948, 3988 };
+
+static const std::array<std::array<int, 4>, 6> FINDER_PATTERNS = {
+	1,8,4,1, // A
+	3,6,4,1, // B
+	3,4,6,1, // C
+	3,2,8,1, // D
+	2,6,5,1, // E
+	2,2,9,1,  // F
+};
+
+static const std::array<std::array<int, 8>, 23> WEIGHTS = {
+	1,   3,   9,   27,  81,  32,  96,  77,
+	20,  60,  180, 118, 143, 7,   21,  63,
+	189, 145, 13,  39,  117, 140, 209, 205,
+	193, 157, 49,  147, 19,  57,  171, 91,
+	62,  186, 136, 197, 169, 85,  44,  132,
+	185, 133, 188, 142,  4,  12,  36,  108,
+	113, 128, 173, 97,  80,  29,  87,  50,
+	150, 28,  84,  41,  123, 158, 52,  156,
+	46,  138, 203, 187, 139, 206, 196, 166,
+	76,  17,  51,  153, 37,  111, 122, 155,
+	43,  129, 176, 106, 107, 110, 119, 146,
+	16,  48,  144, 10,  30,  90,  59,  177,
+	109, 116, 137, 200, 178, 112, 125, 164,
+	70,  210, 208, 202, 184, 130, 179, 115,
+	134, 191, 151, 31,  93,  68,  204, 190,
+	148, 22,  66,  198, 172, 94,  71,  2,
+	6,   18,  54,  162, 64,  192, 154, 40,
+	120, 149, 25,  75,  14,  42,  126, 167,
+	79,  26,  78,  23,  69,  207, 199, 175,
+	103, 98,  83,  38,  114, 131, 182, 124,
+	161, 61,  183, 127, 170, 88,  53,  159,
+	55,  165, 73,  8,   24,  72,  5,   15,
+	45,  135, 194, 160, 58,  174, 100, 89,
+};
+
+static const int FINDER_PAT_A = 0;
+static const int FINDER_PAT_B = 1;
+static const int FINDER_PAT_C = 2;
+static const int FINDER_PAT_D = 3;
+static const int FINDER_PAT_E = 4;
+static const int FINDER_PAT_F = 5;
+
+static const std::array<std::vector<int>, 10> FINDER_PATTERN_SEQUENCES = { {
+	{ FINDER_PAT_A, FINDER_PAT_A },
+	{ FINDER_PAT_A, FINDER_PAT_B, FINDER_PAT_B },
+	{ FINDER_PAT_A, FINDER_PAT_C, FINDER_PAT_B, FINDER_PAT_D },
+	{ FINDER_PAT_A, FINDER_PAT_E, FINDER_PAT_B, FINDER_PAT_D, FINDER_PAT_C },
+	{ FINDER_PAT_A, FINDER_PAT_E, FINDER_PAT_B, FINDER_PAT_D, FINDER_PAT_D, FINDER_PAT_F },
+	{ FINDER_PAT_A, FINDER_PAT_E, FINDER_PAT_B, FINDER_PAT_D, FINDER_PAT_E, FINDER_PAT_F, FINDER_PAT_F },
+	{ FINDER_PAT_A, FINDER_PAT_A, FINDER_PAT_B, FINDER_PAT_B, FINDER_PAT_C, FINDER_PAT_C, FINDER_PAT_D, FINDER_PAT_D },
+	{ FINDER_PAT_A, FINDER_PAT_A, FINDER_PAT_B, FINDER_PAT_B, FINDER_PAT_C, FINDER_PAT_C, FINDER_PAT_D, FINDER_PAT_E, FINDER_PAT_E },
+	{ FINDER_PAT_A, FINDER_PAT_A, FINDER_PAT_B, FINDER_PAT_B, FINDER_PAT_C, FINDER_PAT_C, FINDER_PAT_D, FINDER_PAT_E, FINDER_PAT_F, FINDER_PAT_F },
+	{ FINDER_PAT_A, FINDER_PAT_A, FINDER_PAT_B, FINDER_PAT_B, FINDER_PAT_C, FINDER_PAT_D, FINDER_PAT_D, FINDER_PAT_E, FINDER_PAT_E, FINDER_PAT_F, FINDER_PAT_F },
+} };
+
+//private final List<ExpandedPair> pairs = new ArrayList<>(MAX_PAIRS);
+//private final List<ExpandedRow> rows = new ArrayList<>();
+//private final int[] startEnd = new int[2];
+//private boolean startFromEven;
+
+using namespace RSS;
+
+
+static bool
+FindNextPair(const BitArray& row, const std::list<ExpandedPair> previousPairs, int forcedOffset, bool startFromEven, std::array<int, 4>& counters, int& patternStart_, int& patternEnd)
+{
+	int width = row.size();
+	int rowOffset;
+	if (forcedOffset >= 0) {
+		rowOffset = forcedOffset;
+	}
+	else if (previousPairs.empty()) {
+		rowOffset = 0;
+	}
+	else {
+		rowOffset = previousPairs.back().finderPattern().endPos();
+	}
+	bool searchingEvenPair = previousPairs.size() % 2 != 0;
+	if (startFromEven) {
+		searchingEvenPair = !searchingEvenPair;
+	}
+
+	bool isWhite = false;
+	while (rowOffset < width) {
+		isWhite = !row.get(rowOffset);
+		if (!isWhite) {
+			break;
+		}
+		rowOffset++;
+	}
+
+	int counterPosition = 0;
+	int patternStart = rowOffset;
+	for (int x = rowOffset; x < width; x++) {
+		if (row.get(x) ^ isWhite) {
+			counters[counterPosition]++;
+		}
+		else {
+			if (counterPosition == 3) {
+				if (searchingEvenPair) {
+					std::reverse(counters.begin(), counters.end());
+				}
+
+				if (ReaderHelper::IsFinderPattern(counters)) {
+					patternStart_ = patternStart;
+					patternEnd = x;
+					return true;
+				}
+
+				if (searchingEvenPair) {
+					std::reverse(counters.begin(), counters.end());
+				}
+
+				patternStart += counters[0] + counters[1];
+				counters[0] = counters[2];
+				counters[1] = counters[3];
+				counters[2] = 0;
+				counters[3] = 0;
+				counterPosition--;
+			}
+			else {
+				counterPosition++;
+			}
+			counters[counterPosition] = 1;
+			isWhite = !isWhite;
+		}
+	}
+	return false;
+}
+
+static FinderPattern
+ParseFoundFinderPattern(const BitArray& row, int rowNumber, bool oddPattern, int patternStart, int patternEnd, std::array<int, 4>& counters) {
+	// Actually we found elements 2-5.
+	int firstCounter;
+	int start;
+	int end;
+
+	if (oddPattern) {
+		// If pattern number is odd, we need to locate element 1 *before* the current block.
+
+		int firstElementStart = patternStart - 1;
+		// Locate element 1
+		while (firstElementStart >= 0 && !row.get(firstElementStart)) {
+			firstElementStart--;
+		}
+
+		firstElementStart++;
+		firstCounter = patternStart - firstElementStart;
+		start = firstElementStart;
+		end = patternEnd;
+
+	}
+	else {
+		// If pattern number is even, the pattern is reversed, so we need to locate element 1 *after* the current block.
+
+		start = patternStart;
+
+		end = row.getNextUnset(patternEnd + 1);
+		firstCounter = end - patternEnd;
+	}
+
+	// Make 'counters' hold 1-4
+	std::copy_backward(counters.begin(), counters.end() - 1, counters.end());
+	counters[0] = firstCounter;
+	int value = ReaderHelper::ParseFinderValue(counters, FINDER_PATTERNS);
+	if (value >= 0) {
+		float ypos = static_cast<float>(rowNumber);
+		return FinderPattern(value, start, end, { ResultPoint(static_cast<float>(start), ypos), ResultPoint(static_cast<float>(end), ypos) });
+	}
+	return FinderPattern();
+}
+
+static int
+GetNextSecondBar(const BitArray& row, int initialPos)
+{
+	int currentPos;
+	if (row.get(initialPos)) {
+		currentPos = row.getNextUnset(initialPos);
+		currentPos = row.getNextSet(currentPos);
+	}
+	else {
+		currentPos = row.getNextSet(initialPos);
+		currentPos = row.getNextUnset(currentPos);
+	}
+	return currentPos;
+}
+
+static bool
+IsNotA1left(FinderPattern pattern, bool isOddPattern, bool leftChar)
+{
+	// A1: pattern.getValue is 0 (A), and it's an oddPattern, and it is a left char
+	return !(pattern.value() == 0 && isOddPattern && leftChar);
+}
+
+static bool
+AdjustOddEvenCounts(int numModules, std::array<int, 4>& oddCounts, std::array<int, 4>& evenCounts,
+	const std::array<float, 4>& oddRoundingErrors, const std::array<float, 4>& evenRoundingErrors)
+{
+	int oddSum = std::accumulate(oddCounts.begin(), oddCounts.end(), 0);
+	int evenSum = std::accumulate(evenCounts.begin(), evenCounts.end(), 0);
+	int mismatch = oddSum + evenSum - numModules;
+	bool oddParityBad = (oddSum & 0x01) == 1;
+	bool evenParityBad = (evenSum & 0x01) == 0;
+
+	bool incrementOdd = false;
+	bool decrementOdd = false;
+
+	if (oddSum > 13) {
+		decrementOdd = true;
+	}
+	else if (oddSum < 4) {
+		incrementOdd = true;
+	}
+	bool incrementEven = false;
+	bool decrementEven = false;
+	if (evenSum > 13) {
+		decrementEven = true;
+	}
+	else if (evenSum < 4) {
+		incrementEven = true;
+	}
+
+	if (mismatch == 1) {
+		if (oddParityBad) {
+			if (evenParityBad) {
+				return false;
+			}
+			decrementOdd = true;
+		}
+		else {
+			if (!evenParityBad) {
+				return false;
+			}
+			decrementEven = true;
+		}
+	}
+	else if (mismatch == -1) {
+		if (oddParityBad) {
+			if (evenParityBad) {
+				return false;
+			}
+			incrementOdd = true;
+		}
+		else {
+			if (!evenParityBad) {
+				return false;
+			}
+			incrementEven = true;
+		}
+	}
+	else if (mismatch == 0) {
+		if (oddParityBad) {
+			if (!evenParityBad) {
+				return false;
+			}
+			// Both bad
+			if (oddSum < evenSum) {
+				incrementOdd = true;
+				decrementEven = true;
+			}
+			else {
+				decrementOdd = true;
+				incrementEven = true;
+			}
+		}
+		else {
+			if (evenParityBad) {
+				return false;
+			}
+			// Nothing to do!
+		}
+	}
+	else {
+		return false;
+	}
+
+	if (incrementOdd) {
+		if (decrementOdd) {
+			return false;
+		}
+		oddCounts[std::max_element(oddRoundingErrors.begin(), oddRoundingErrors.end()) - oddRoundingErrors.begin()] += 1;
+	}
+	if (decrementOdd) {
+		oddCounts[std::min_element(oddRoundingErrors.begin(), oddRoundingErrors.end()) - oddRoundingErrors.begin()] -= 1;
+	}
+	if (incrementEven) {
+		if (decrementEven) {
+			return false;
+		}
+		evenCounts[std::max_element(evenRoundingErrors.begin(), evenRoundingErrors.end()) - evenRoundingErrors.begin()] += 1;
+	}
+	if (decrementEven) {
+		evenCounts[std::min_element(evenRoundingErrors.begin(), evenRoundingErrors.end()) - evenRoundingErrors.begin()] -= 1;
+	}
+}
+
+static DataCharacter
+DecodeDataCharacter(const BitArray& row, const FinderPattern& pattern, bool isOddPattern, bool leftChar)
+{
+	std::array<int, 8> counters = {};
+
+	ErrorStatus status;
+	if (leftChar) {
+		status = Reader::RecordPatternInReverse(row, pattern.startPos(), counters);
+	}
+	else {
+		status = Reader::RecordPattern(row, pattern.endPos(), counters);
+		std::reverse(counters.begin(), counters.end());
+	}//counters[] has the pixels of the module
+
+	if (StatusIsError(status)) {
+		return DataCharacter();
+	}
+
+	int numModules = 17; //left and right data characters have all the same length
+	float elementWidth = static_cast<float>(std::accumulate(counters.begin(), counters.end(), 0)) / static_cast<float>(numModules);
+
+	// Sanity check: element width for pattern and the character should match
+	float expectedElementWidth = static_cast<float>(pattern.endPos() - pattern.startPos) / 15.0f;
+	if (std::abs(elementWidth - expectedElementWidth) / expectedElementWidth > 0.3f) {
+		return DataCharacter();
+	}
+
+	std::array<int, 4> oddCounts;
+	std::array<int, 4> evenCounts;
+	std::array<float, 4> oddRoundingErrors;
+	std::array<float, 4> evenRoundingErrors;
+
+	for (int i = 0; i < 8; i++) {
+		float value = 1.0f * counters[i] / elementWidth;
+		int count = (int)(value + 0.5f); // Round
+		if (count < 1) {
+			if (value < 0.3f) {
+				return DataCharacter();
+			}
+			count = 1;
+		}
+		else if (count > 8) {
+			if (value > 8.7f) {
+				return DataCharacter();
+			}
+			count = 8;
+		}
+		int offset = i / 2;
+		if ((i & 0x01) == 0) {
+			oddCounts[offset] = count;
+			oddRoundingErrors[offset] = value - count;
+		}
+		else {
+			evenCounts[offset] = count;
+			evenRoundingErrors[offset] = value - count;
+		}
+	}
+
+	if (!AdjustOddEvenCounts(numModules, oddCounts, evenCounts, oddRoundingErrors, evenRoundingErrors)) {
+		return DataCharacter();
+	}
+
+	int weightRowNumber = 4 * pattern.value() + (isOddPattern ? 0 : 2) + (leftChar ? 0 : 1) - 1;
+
+	int oddSum = 0;
+	int oddChecksumPortion = 0;
+	for (int i = 3; i >= 0; i--) {
+		if (IsNotA1left(pattern, isOddPattern, leftChar)) {
+			int weight = WEIGHTS[weightRowNumber][2 * i];
+			oddChecksumPortion += oddCounts[i] * weight;
+		}
+		oddSum += oddCounts[i];
+	}
+	int evenChecksumPortion = 0;
+	//int evenSum = 0;
+	for (int i = 3; i >= 0; i--) {
+		if (IsNotA1left(pattern, isOddPattern, leftChar)) {
+			int weight = WEIGHTS[weightRowNumber][2 * i + 1];
+			evenChecksumPortion += evenCounts[i] * weight;
+		}
+		//evenSum += evenCounts[i];
+	}
+	int checksumPortion = oddChecksumPortion + evenChecksumPortion;
+
+	if ((oddSum & 0x01) != 0 || oddSum > 13 || oddSum < 4) {
+		return DataCharacter();
+	}
+
+	int group = (13 - oddSum) / 2;
+	int oddWidest = SYMBOL_WIDEST[group];
+	int evenWidest = 9 - oddWidest;
+	int vOdd = ReaderHelper::GetRSSvalue(oddCounts, oddWidest, true);
+	int vEven = ReaderHelper::GetRSSvalue(evenCounts, evenWidest, false);
+	int tEven = EVEN_TOTAL_SUBSET[group];
+	int gSum = GSUM[group];
+	int value = vOdd * tEven + vEven + gSum;
+
+	return DataCharacter(value, checksumPortion);
+}
+
+// not private for testing
+static bool
+RetrieveNextPair(const BitArray& row, const std::list<ExpandedPair>& previousPairs, int rowNumber, bool startFromEven, ExpandedPair& outPair)
+{
+	bool isOddPattern = previousPairs.size() % 2 == 0;
+	if (startFromEven) {
+		isOddPattern = !isOddPattern;
+	}
+
+	FinderPattern pattern;
+	bool keepFinding = true;
+	int forcedOffset = -1;
+	do {
+		int patternStart, patternEnd;
+		std::array<int, 4> counters = {};
+		if (FindNextPair(row, previousPairs, forcedOffset, startFromEven, counters, patternStart, patternEnd)) {
+			pattern = ParseFoundFinderPattern(row, rowNumber, isOddPattern, patternStart, patternEnd, counters);
+			if (!pattern.isValid()) {
+				forcedOffset = GetNextSecondBar(row, patternStart);
+			}
+			else {
+				keepFinding = false;
+			}
+		}
+		else {
+			return false;
+		}
+	} while (keepFinding);
+
+	// When stacked symbol is split over multiple rows, there's no way to guess if this pair can be last or not.
+	// boolean mayBeLast = checkPairSequence(previousPairs, pattern);
+
+	DataCharacter leftChar = DecodeDataCharacter(row, pattern, isOddPattern, true);
+	if (!leftChar.isValid() || (!previousPairs.empty() && previousPairs.back().mustBeLast())) {
+		return false;
+	}
+
+	DataCharacter rightChar = DecodeDataCharacter(row, pattern, isOddPattern, false);
+	bool mayBeLast = true;
+	outPair = ExpandedPair(leftChar, rightChar, pattern, mayBeLast);
+	return true;
+}
+
+static bool
+CheckChecksum(const std::list<ExpandedPair>& myPairs)
+{
+	auto& firstPair = myPairs.front();
+	auto& firstCharacter = firstPair.rightChar();
+
+	if (!firstCharacter.isValid()) {
+		return false;
+	}
+
+	int checksum = firstCharacter.checksumPortion();
+	int s = 2;
+
+	for (auto it = ++myPairs.begin(); it != myPairs.end(); ++it) {
+		checksum += it->leftChar().checksumPortion();
+		s++;
+		auto& currentRightChar = it->rightChar();
+		if (currentRightChar.isValid()) {
+			checksum += currentRightChar.checksumPortion();
+			s++;
+		}
+	}
+	checksum %= 211;
+	int checkCharacterValue = 211 * (s - 4) + checksum;
+	return checkCharacterValue == firstPair.leftChar().value();
+}
+
+
+// Returns true when one of the rows already contains all the pairs
+static bool IsPartialRow(const std::list<ExpandedPair>& pairs, const std::list<ExpandedRow>& rows) {
+	for (const ExpandedRow& r : rows) {
+		bool allFound = true;
+		for (const ExpandedPair& p : pairs) {
+			bool found = false;
+			for (const ExpandedPair& pp : r.pairs()) {
+				if (p == pp) {
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				allFound = false;
+				break;
+			}
+		}
+		if (allFound) {
+			// the row 'r' contain all the pairs from 'pairs'
+			return true;
+		}
+	}
+	return false;
+}
+
+// Remove all the rows that contains only specified pairs 
+static void
+RemovePartialRows(std::list<ExpandedRow>& rows, const std::list<ExpandedPair>& pairs)
+{
+	for (std::list<ExpandedRow>::iterator it = rows.begin(); it != rows.end(); ++it) {
+		//ExpandedRow r = iterator.next();
+		if (it->pairs().size() == pairs.size()) {
+			continue;
+		}
+		bool allFound = true;
+		for (const ExpandedPair& p : it->pairs()) {
+			bool found = false;
+			for (const ExpandedPair& pp : pairs) {
+				if (p == pp) {
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				allFound = false;
+				break;
+			}
+		}
+		if (allFound) {
+			// 'pairs' contains all the pairs from the row 'r'
+			auto remPos = it;
+			++it;
+			rows.erase(remPos);
+			--it;
+		}
+	}
+}
+
+static void StoreRow(std::list<ExpandedRow>& rows, const std::list<ExpandedPair>& pairs, int rowNumber, bool wasReversed)
+{
+	// Discard if duplicate above or below; otherwise insert in order by row number.
+	bool prevIsSame = false;
+	bool nextIsSame = false;
+	std::list<ExpandedRow>::iterator insertPos = rows.begin();
+	for (; insertPos != rows.end(); ++insertPos) {
+		if (insertPos->rowNumber() > rowNumber) {
+			nextIsSame = insertPos->isEquivalent(pairs);
+			break;
+		}
+		prevIsSame = insertPos->isEquivalent(pairs);
+	}
+	if (nextIsSame || prevIsSame) {
+		return;
+	}
+
+	// When the row was partially decoded (e.g. 2 pairs found instead of 3),
+	// it will prevent us from detecting the barcode.
+	// Try to merge partial rows
+
+	// Check whether the row is part of an allready detected row
+	if (IsPartialRow(pairs, rows)) {
+		return;
+	}
+
+	rows.insert(insertPos, ExpandedRow(pairs, rowNumber, wasReversed));
+
+	RemovePartialRows(rows, pairs);
+}
+
+// Not private for testing
+static std::list<ExpandedPair>
+DecodeRow2Pairs(int rowNumber, const BitArray& row, int startFromEven, std::list<ExpandedRow>& rows)
+{
+	std::list<ExpandedPair> myPairs;
+	ExpandedPair nextPair;
+	while (RetrieveNextPair(row, myPairs, rowNumber, startFromEven, nextPair)) {
+		myPairs.push_back(nextPair);
+	}
+
+	if (myPairs.empty()) {
+		return throw error;
+	}
+
+	// TODO: verify sequence of finder patterns as in checkPairSequence()
+	if (CheckChecksum(myPairs)) {
+		return myPairs;
+	}
+
+	bool tryStackedDecode = !rows.empty();
+	bool wasReversed = false; // TODO: deal with reversed rows
+	StoreRow(rows, myPairs, rowNumber, wasReversed);
+	if (tryStackedDecode) {
+		// When the image is 180-rotated, then rows are sorted in wrong direction.
+		// Try twice with both the directions.
+		List<ExpandedPair> ps = checkRows(false);
+		if (ps != null) {
+			return ps;
+		}
+		ps = checkRows(true);
+		if (ps != null) {
+			return ps;
+		}
+	}
+
+	throw NotFoundException.getNotFoundInstance();
+}
+
+Result
+RSSExpandedReader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints)
+{
+	// Rows can start with even pattern in case in prev rows there where odd number of patters.
+	// So lets try twice
+	std::list<RSS::ExpandedPair> myPairs;
+	this.startFromEven = false;
+	try {
+		List<ExpandedPair> pairs = decodeRow2pairs(rowNumber, row);
+		return constructResult(pairs);
+	}
+	catch (NotFoundException e) {
+		// OK
+	}
+
+	myPairs.clear();
+	this.startFromEven = true;
+	List<ExpandedPair> pairs = decodeRow2pairs(rowNumber, row);
+	return constructResult(pairs);
+}
+
+@Override
+public void reset() {
+	this.pairs.clear();
+	this.rows.clear();
+}
+
+
+
+private List<ExpandedPair> checkRows(boolean reverse) {
+	// Limit number of rows we are checking
+	// We use recursive algorithm with pure complexity and don't want it to take forever
+	// Stacked barcode can have up to 11 rows, so 25 seems reasonable enough
+	if (this.rows.size() > 25) {
+		this.rows.clear();  // We will never have a chance to get result, so clear it
+		return null;
+	}
+
+	this.pairs.clear();
+	if (reverse) {
+		Collections.reverse(this.rows);
+	}
+
+	List<ExpandedPair> ps = null;
+	try {
+		ps = checkRows(new ArrayList<ExpandedRow>(), 0);
+	}
+	catch (NotFoundException e) {
+		// OK
+	}
+
+	if (reverse) {
+		Collections.reverse(this.rows);
+	}
+
+	return ps;
+}
+
+// Try to construct a valid rows sequence
+// Recursion is used to implement backtracking
+private List<ExpandedPair> checkRows(List<ExpandedRow> collectedRows, int currentRow) throws NotFoundException {
+	for (int i = currentRow; i < rows.size(); i++) {
+		ExpandedRow row = rows.get(i);
+		this.pairs.clear();
+		int size = collectedRows.size();
+		for (int j = 0; j < size; j++) {
+			this.pairs.addAll(collectedRows.get(j).getPairs());
+		}
+		this.pairs.addAll(row.getPairs());
+
+		if (!isValidSequence(this.pairs)) {
+			continue;
+		}
+
+		if (checkChecksum()) {
+			return this.pairs;
+		}
+
+		List<ExpandedRow> rs = new ArrayList<>();
+		rs.addAll(collectedRows);
+		rs.add(row);
+		try {
+			// Recursion: try to add more rows
+			return checkRows(rs, i + 1);
+		}
+		catch (NotFoundException e) {
+			// We failed, try the next candidate
+		}
+	}
+
+	throw NotFoundException.getNotFoundInstance();
+}
+
+// Whether the pairs form a valid find pattern seqience,
+// either complete or a prefix
+private static boolean isValidSequence(List<ExpandedPair> pairs) {
+	for (int[] sequence : FINDER_PATTERN_SEQUENCES) {
+		if (pairs.size() > sequence.length) {
+			continue;
+		}
+
+		boolean stop = true;
+		for (int j = 0; j < pairs.size(); j++) {
+			if (pairs.get(j).getFinderPattern().getValue() != sequence[j]) {
+				stop = false;
+				break;
+			}
+		}
+
+		if (stop) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+
+// Only used for unit testing
+List<ExpandedRow> getRows() {
+	return this.rows;
+}
+
+// Not private for unit testing
+static Result constructResult(List<ExpandedPair> pairs) throws NotFoundException, FormatException{
+	BitArray binary = BitArrayBuilder.buildBitArray(pairs);
+
+AbstractExpandedDecoder decoder = AbstractExpandedDecoder.createDecoder(binary);
+String resultingString = decoder.parseInformation();
+
+ResultPoint[] firstPoints = pairs.get(0).getFinderPattern().getResultPoints();
+ResultPoint[] lastPoints = pairs.get(pairs.size() - 1).getFinderPattern().getResultPoints();
+
+return new Result(
+	resultingString,
+	null,
+	new ResultPoint[]{ firstPoints[0], firstPoints[1], lastPoints[0], lastPoints[1] },
+	BarcodeFormat.RSS_EXPANDED
+);
+}
+
+
+} // OneD
+} // ZXing

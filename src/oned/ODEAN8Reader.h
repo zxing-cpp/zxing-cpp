@@ -30,7 +30,7 @@ class EAN8Reader : public UPCEANReader
 {
 protected:
 	virtual BarcodeFormat expectedFormat() const override;
-	virtual ErrorStatus decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const override;
+	virtual ErrorStatus decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) override;
 };
 
 } // OneD

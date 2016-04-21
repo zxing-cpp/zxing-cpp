@@ -24,6 +24,8 @@
 #include <array>
 #include <algorithm>
 #include <numeric>
+#include <sstream>
+#include <iomanip>
 
 namespace ZXing {
 
@@ -267,17 +269,22 @@ AdjustOddEvenCounts(bool outsideChar, int numModules, std::array<int, 4>& oddCou
 	return true;
 }
 
-static bool
-DecodeDataCharacter(const BitArray& row, const RSS::FinderPattern& pattern, bool outsideChar, RSS::DataCharacter& outCharacter)
+static RSS::DataCharacter
+DecodeDataCharacter(const BitArray& row, const RSS::FinderPattern& pattern, bool outsideChar)
 {
 	std::array<int, 8> counters = {};
 
+	ErrorStatus status;
 	if (outsideChar) {
-		Reader::RecordPatternInReverse(row, pattern.start(), counters);
+		status = Reader::RecordPatternInReverse(row, pattern.startPos(), counters);
 	}
 	else {
-		Reader::RecordPattern(row, pattern.end() + 1, counters);
+		status = Reader::RecordPattern(row, pattern.endPos() + 1, counters);
 		std::reverse(counters.begin(), counters.end());
+	}
+
+	if (StatusIsError(status)) {
+		return RSS::DataCharacter();
 	}
 
 	int numModules = outsideChar ? 16 : 15;
@@ -309,7 +316,7 @@ DecodeDataCharacter(const BitArray& row, const RSS::FinderPattern& pattern, bool
 	}
 
 	if (!AdjustOddEvenCounts(outsideChar, numModules, oddCounts, evenCounts, oddRoundingErrors, evenRoundingErrors)) {
-		return false;
+		return RSS::DataCharacter();
 	}
 
 	int oddSum = 0;
@@ -330,7 +337,7 @@ DecodeDataCharacter(const BitArray& row, const RSS::FinderPattern& pattern, bool
 
 	if (outsideChar) {
 		if ((oddSum & 0x01) != 0 || oddSum > 12 || oddSum < 4) {
-			return false;
+			return RSS::DataCharacter();
 		}
 		int group = (12 - oddSum) / 2;
 		int oddWidest = OUTSIDE_ODD_WIDEST[group];
@@ -339,12 +346,11 @@ DecodeDataCharacter(const BitArray& row, const RSS::FinderPattern& pattern, bool
 		int vEven = RSS::ReaderHelper::GetRSSvalue(evenCounts, evenWidest, true);
 		int tEven = OUTSIDE_EVEN_TOTAL_SUBSET[group];
 		int gSum = OUTSIDE_GSUM[group];
-		outCharacter = RSS::DataCharacter(vOdd * tEven + vEven + gSum, checksumPortion);
-		return true;
+		return RSS::DataCharacter(vOdd * tEven + vEven + gSum, checksumPortion);
 	}
 	else {
 		if ((evenSum & 0x01) != 0 || evenSum > 10 || evenSum < 4) {
-			return false;
+			return RSS::DataCharacter();
 		}
 		int group = (10 - evenSum) / 2;
 		int oddWidest = INSIDE_ODD_WIDEST[group];
@@ -353,8 +359,7 @@ DecodeDataCharacter(const BitArray& row, const RSS::FinderPattern& pattern, bool
 		int vEven = RSS::ReaderHelper::GetRSSvalue(evenCounts, evenWidest, false);
 		int tOdd = INSIDE_ODD_TOTAL_SUBSET[group];
 		int gSum = INSIDE_GSUM[group];
-		outCharacter = RSS::DataCharacter(vEven * tOdd + vOdd + gSum, checksumPortion);
-		return true;
+		return RSS::DataCharacter(vEven * tOdd + vOdd + gSum, checksumPortion);
 	}
 
 }
@@ -367,7 +372,7 @@ DecodePair(const BitArray& row, bool right, int rowNumber, const DecodeHints* hi
 	ErrorStatus status = FindFinderPattern(row, 0, right, finderCounters, patternStart, patternEnd);
 	if (StatusIsOK(status)) {
 		auto pattern = ParseFoundFinderPattern(row, rowNumber, right, patternStart, patternEnd, finderCounters);
-		if (pattern.value() >= 0) {
+		if (pattern.isValid()) {
 			PointCallback resultPointCallback = hints != nullptr ? hints->getPointCallback(DecodeHint::NEED_RESULT_POINT_CALLBACK) : nullptr;
 			if (resultPointCallback != nullptr) {
 				float center = 0.5f * static_cast<float>(patternStart + patternEnd);
@@ -375,113 +380,47 @@ DecodePair(const BitArray& row, bool right, int rowNumber, const DecodeHints* hi
 					// row is actually reversed
 					center = row.size() - 1 - center;
 				}
-				resultPointCallback(center, static_cast<float>(rowNumber)));
+				resultPointCallback(center, static_cast<float>(rowNumber));
 			}
 
-			RSS::DataCharacter inside, outside;
-			if (DecodeDataCharacter(row, pattern, true, outside) && DecodeDataCharacter(row, pattern, false, inside)) {
-				return RSS::Pair(1597 * outside.value() + inside.value(), outside.checksumPortion() + 4 * inside.checksumPortion(), pattern);
+			auto outside = DecodeDataCharacter(row, pattern, true);
+			if (outside.isValid()) {
+				auto inside = DecodeDataCharacter(row, pattern, false);
+				if (inside.isValid()) {
+					return RSS::Pair(1597 * outside.value() + inside.value(), outside.checksumPortion() + 4 * inside.checksumPortion(), pattern);
+				}
 			}
 		}
 	}
 	return RSS::Pair();
 }
 
-Result
-RSS14Reader::decodeRow(int rowNumber, const BitArray& row_, const DecodeHints* hints) const
+static void
+AddOrTally(std::list<RSS::Pair>& possiblePairs, const RSS::Pair& pair)
 {
-	BitArray row = row_;
-	RSS::Pair leftPair = DecodePair(row, false, rowNumber, hints);
-	if (leftPair.isValid()) {
-		addOrTally(possibleLeftPairs, leftPair);
-		row.reverse();
-		RSS::Pair rightPair = DecodePair(row, true, rowNumber, hints);
-		if (rightPair.isValid()) {
-			addOrTally(possibleRightPairs, rightPair);
-			row.reverse();
-
-			int lefSize = possibleLeftPairs.size();
-			for (int i = 0; i < lefSize; i++) {
-				Pair left = possibleLeftPairs.get(i);
-				if (left.getCount() > 1) {
-					int rightSize = possibleRightPairs.size();
-					for (int j = 0; j < rightSize; j++) {
-						Pair right = possibleRightPairs.get(j);
-						if (right.getCount() > 1) {
-							if (checkChecksum(left, right)) {
-								return constructResult(left, right);
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-	return Result(ErrorStatus::NotFound);
-}
-
-private static void addOrTally(Collection<Pair> possiblePairs, Pair pair) {
-	if (pair == null) {
+	if (!pair.isValid()) {
 		return;
 	}
-	boolean found = false;
-	for (Pair other : possiblePairs) {
-		if (other.getValue() == pair.getValue()) {
+	for (RSS::Pair& other : possiblePairs) {
+		if (other.value() == pair.value()) {
 			other.incrementCount();
-			found = true;
-			break;
+			return;
 		}
 	}
-	if (!found) {
-		possiblePairs.add(pair);
-	}
+	possiblePairs.push_back(pair);
 }
 
-@Override
-public void reset() {
-	possibleLeftPairs.clear();
-	possibleRightPairs.clear();
-}
-
-private static Result constructResult(Pair leftPair, Pair rightPair) {
-	long symbolValue = 4537077L * leftPair.getValue() + rightPair.getValue();
-	String text = String.valueOf(symbolValue);
-
-	StringBuilder buffer = new StringBuilder(14);
-	for (int i = 13 - text.length(); i > 0; i--) {
-		buffer.append('0');
-	}
-	buffer.append(text);
-
-	int checkDigit = 0;
-	for (int i = 0; i < 13; i++) {
-		int digit = buffer.charAt(i) - '0';
-		checkDigit += (i & 0x01) == 0 ? 3 * digit : digit;
-	}
-	checkDigit = 10 - (checkDigit % 10);
-	if (checkDigit == 10) {
-		checkDigit = 0;
-	}
-	buffer.append(checkDigit);
-
-	ResultPoint[] leftPoints = leftPair.getFinderPattern().getResultPoints();
-	ResultPoint[] rightPoints = rightPair.getFinderPattern().getResultPoints();
-	return new Result(
-		String.valueOf(buffer.toString()),
-		null,
-		new ResultPoint[]{ leftPoints[0], leftPoints[1], rightPoints[0], rightPoints[1], },
-		BarcodeFormat.RSS_14);
-}
-
-private static boolean checkChecksum(Pair leftPair, Pair rightPair) {
+static bool
+CheckChecksum(const RSS::Pair& leftPair, const RSS::Pair& rightPair)
+{
 	//int leftFPValue = leftPair.getFinderPattern().getValue();
 	//int rightFPValue = rightPair.getFinderPattern().getValue();
 	//if ((leftFPValue == 0 && rightFPValue == 8) ||
 	//    (leftFPValue == 8 && rightFPValue == 0)) {
 	//}
-	int checkValue = (leftPair.getChecksumPortion() + 16 * rightPair.getChecksumPortion()) % 79;
+	int checkValue = (leftPair.checksumPortion() + 16 * rightPair.checksumPortion()) % 79;
 	int targetCheckValue =
-		9 * leftPair.getFinderPattern().getValue() + rightPair.getFinderPattern().getValue();
+		9 * leftPair.finderPattern().value() + rightPair.finderPattern().value();
 	if (targetCheckValue > 72) {
 		targetCheckValue--;
 	}
@@ -491,9 +430,51 @@ private static boolean checkChecksum(Pair leftPair, Pair rightPair) {
 	return checkValue == targetCheckValue;
 }
 
+static Result
+ConstructResult(const RSS::Pair& leftPair, const RSS::Pair& rightPair)
+{
+	long symbolValue = 4537077L * leftPair.value() + rightPair.value();
+	std::stringstream buffer;
+	buffer << std::setw(13) << std::setfill('0') << symbolValue;
 
+	int checkDigit = 0;
+	for (int i = 0; i < 13; i++) {
+		int digit = buffer.get() - '0';
+		checkDigit += (i & 0x01) == 0 ? 3 * digit : digit;
+	}
+	checkDigit = 10 - (checkDigit % 10);
+	if (checkDigit == 10) {
+		checkDigit = 0;
+	}
+	buffer.put(static_cast<char>(checkDigit + '0'));
 
+	auto& leftPoints = leftPair.finderPattern().points();
+	auto& rightPoints = rightPair.finderPattern().points();
+	return Result(buffer.str(), ByteArray(), { leftPoints[0], leftPoints[1], rightPoints[0], rightPoints[1] }, BarcodeFormat::RSS_14);
+}
 
+Result
+RSS14Reader::decodeRow(int rowNumber, const BitArray& row_, const DecodeHints* hints)
+{
+	BitArray row = row_;
+	AddOrTally(_possibleLeftPairs, DecodePair(row, false, rowNumber, hints));
+	row.reverse();
+	AddOrTally(_possibleRightPairs, DecodePair(row, true, rowNumber, hints));
+	row.reverse();
+
+	for (const auto& left : _possibleLeftPairs) {
+		if (left.count() > 1) {
+			for (const auto& right : _possibleRightPairs) {
+				if (right.count() > 1) {
+					if (CheckChecksum(left, right)) {
+						return ConstructResult(left, right);
+					}
+				}
+			}
+		}
+	}
+	return Result(ErrorStatus::NotFound);
+}
 
 } // OneD
 } // ZXing

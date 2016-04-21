@@ -15,6 +15,8 @@
 * limitations under the License.
 */
 
+#include <limits>
+
 namespace ZXing {
 namespace OneD {
 namespace RSS {
@@ -25,8 +27,12 @@ class DataCharacter
 	int _checksumPortion;
 
 public:
-	DataCharacter() : _value(-1), _checksumPortion(0) {}
+	DataCharacter() : _value(std::numeric_limits<int>::max()), _checksumPortion(0) {}
 	DataCharacter(int value, int checksumPortion) : _value(value), _checksumPortion(checksumPortion) {}
+
+	bool isValid() const {
+		return _value != std::numeric_limits<int>::max();
+	}
 
 	int value() const {
 		return _value;
@@ -34,6 +40,14 @@ public:
 
 	int checksumPortion() const {
 		return _checksumPortion;
+	}
+
+	bool operator==(const DataCharacter& other) const {
+		return _value == other._value
+			&& _checksumPortion == other._checksumPortion;
+	}
+	bool operator!=(const DataCharacter& other) const {
+		return !(*this == other);
 	}
 };
 

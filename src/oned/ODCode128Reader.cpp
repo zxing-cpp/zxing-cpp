@@ -20,13 +20,13 @@
 #include "DecodeHints.h"
 
 #include <algorithm>
+#include <string>
+#include <array>
 
 namespace ZXing {
-
 namespace OneD {
 
-static const int CODE_PATTERNS_LENGTH = 107;
-static const std::vector<int> CODE_PATTERNS[CODE_PATTERNS_LENGTH] = {
+static const std::array<std::vector<int>, 107> CODE_PATTERNS = { {
 	{ 2, 1, 2, 2, 2, 2 }, // 0
 	{ 2, 2, 2, 1, 2, 2 },
 	{ 2, 2, 2, 2, 2, 1 },
@@ -134,7 +134,7 @@ static const std::vector<int> CODE_PATTERNS[CODE_PATTERNS_LENGTH] = {
 	{ 2, 1, 1, 2, 1, 4 },
 	{ 2, 1, 1, 2, 3, 2 }, // 105
 	{ 2, 3, 3, 1, 1, 1, 2 }
-};
+} };
 
 static const float MAX_AVG_VARIANCE = 0.25f;
 static const float MAX_INDIVIDUAL_VARIANCE = 0.7f;
@@ -216,12 +216,12 @@ DecodeCode(const BitArray &row, std::vector<int>& counters, int rowOffset, int& 
 	}
 	float bestVariance = MAX_AVG_VARIANCE; // worst variance we'll accept
 	int bestMatch = -1;
-	for (int d = 0; d < CODE_PATTERNS_LENGTH; d++) {
+	for (size_t d = 0; d < CODE_PATTERNS.size(); d++) {
 		auto& pattern = CODE_PATTERNS[d];
 		float variance = Reader::PatternMatchVariance(counters, pattern, MAX_INDIVIDUAL_VARIANCE);
 		if (variance < bestVariance) {
 			bestVariance = variance;
-			bestMatch = d;
+			bestMatch = static_cast<int>(d);
 		}
 	}
 	// TODO We're overlooking the fact that the STOP pattern has 7 values, not 6.
@@ -233,7 +233,7 @@ DecodeCode(const BitArray &row, std::vector<int>& counters, int rowOffset, int& 
 }
 
 Result
-Code128Reader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) const
+Code128Reader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints)
 {
 	bool convertFNC1 = hints != nullptr && hints->getFlag(DecodeHint::ASSUME_GS1);
 
@@ -461,7 +461,8 @@ Code128Reader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* 
 				if (code < 10) {
 					result.push_back('0');
 				}
-				result.push_back(code);
+				char buf[4];
+				result.append(itoa(code, buf, 10));
 			}
 			else {
 				if (code != CODE_STOP) {

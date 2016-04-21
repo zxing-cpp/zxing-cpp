@@ -30,7 +30,7 @@ namespace OneD {
 class CodabarReader : public Reader
 {
 public:
-	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) const override;
+	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) override;
 };
 
 } // OneD

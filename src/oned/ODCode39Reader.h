@@ -45,7 +45,7 @@ public:
 	*/
 	explicit Code39Reader(bool usingCheckDigit = false, bool extendedMode = false) : _usingCheckDigit(usingCheckDigit), _extendedMode(extendedMode) {}
 	
-	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) const override;
+	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) override;
 };
 
 } // OneD

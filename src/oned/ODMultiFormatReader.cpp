@@ -21,6 +21,7 @@
 #include "oned/ODCode128Reader.h"
 #include "oned/ODITFReader.h"
 #include "oned/ODCodabarReader.h"
+#include "oned/ODRSS14Reader.h"
 #include "DecodeHints.h"
 #include "BarcodeFormat.h"
 #include "Result.h"
@@ -74,7 +75,7 @@ MultiFormatReader::MultiFormatReader(const DecodeHints* hints)
 	if (_readers.empty()) {
 		_readers.push_back(std::make_shared<MultiUPCEANReader>(hints));
 		_readers.push_back(std::make_shared<Code39Reader>());
-		_readers.push_back(std::make_shared<CodaBarReader>());
+		_readers.push_back(std::make_shared<CodabarReader>());
 		_readers.push_back(std::make_shared<Code93Reader>());
 		_readers.push_back(std::make_shared<Code128Reader>());
 		_readers.push_back(std::make_shared<ITFReader>());
@@ -84,7 +85,7 @@ MultiFormatReader::MultiFormatReader(const DecodeHints* hints)
 }
 
 Result
-MultiFormatReader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) const
+MultiFormatReader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints)
 {
 	for (auto reader : _readers) {
 		Result r = reader->decodeRow(rowNumber, row, hints);

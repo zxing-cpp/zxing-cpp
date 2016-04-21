@@ -32,9 +32,9 @@ class UPCEReader : public UPCEANReader
 {
 protected:
 	virtual BarcodeFormat expectedFormat() const override;
-	virtual ErrorStatus decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const override;
-	virtual	ErrorStatus checkChecksum(const std::string& s) const;
-	virtual ErrorStatus decodeEnd(const BitArray& row, int endStart, int& begin, int& end) const;
+	virtual ErrorStatus decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) override;
+	virtual	ErrorStatus checkChecksum(const std::string& s) override;
+	virtual ErrorStatus decodeEnd(const BitArray& row, int endStart, int& begin, int& end) override;
 
 
 public:

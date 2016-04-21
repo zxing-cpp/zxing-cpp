@@ -174,7 +174,7 @@ UPCEANReader::FindStartGuardPattern(const BitArray& row, int& begin, int& end)
 }
 
 Result
-UPCEANReader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) const
+UPCEANReader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints)
 {
 	int begin, end;
 	auto status = FindStartGuardPattern(row, begin, end);
@@ -185,13 +185,13 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* h
 }
 
 ErrorStatus
-UPCEANReader::decodeEnd(const BitArray& row, int endStart, int& begin, int& end) const
+UPCEANReader::decodeEnd(const BitArray& row, int endStart, int& begin, int& end)
 {
 	return FindGuardPattern(row, endStart, false, START_END_PATTERN.data(), START_END_PATTERN.size(), begin, end);
 }
 
 Result
-UPCEANReader::decodeRow(int rowNumber, const BitArray& row, int startGuardBegin, int startGuardEnd, const DecodeHints* hints) const
+UPCEANReader::decodeRow(int rowNumber, const BitArray& row, int startGuardBegin, int startGuardEnd, const DecodeHints* hints)
 {
 	auto pointCallback = hints != nullptr ? hints->getPointCallback(DecodeHint::NEED_RESULT_POINT_CALLBACK) : nullptr;
 	if (pointCallback != nullptr) {
@@ -275,7 +275,7 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, int startGuardBegin,
 }
 
 ErrorStatus
-UPCEANReader::checkChecksum(const std::string& s) const
+UPCEANReader::checkChecksum(const std::string& s)
 {
 	return CheckStandardUPCEANChecksum(s);
 }
@@ -331,22 +331,26 @@ UPCEANReader::CheckStandardUPCEANChecksum(const std::string& s)
 ErrorStatus
 UPCEANReader::DecodeDigit(const BitArray& row, int rowOffset, const std::array<int, 4>* patterns, size_t patternCount, std::array<int, 4>& counters, int &resultOffset)
 {
-	Reader::RecordPattern(row, rowOffset, counters);
-	float bestVariance = MAX_AVG_VARIANCE; // worst variance we'll accept
-	int bestMatch = -1;
-	for (size_t i = 0; i < patternCount; i++) {
-		auto& pattern = patterns[i];
-		float variance = PatternMatchVariance(counters, pattern, MAX_INDIVIDUAL_VARIANCE);
-		if (variance < bestVariance) {
-			bestVariance = variance;
-			bestMatch = static_cast<int>(i);
+	ErrorStatus status = Reader::RecordPattern(row, rowOffset, counters);
+	if (StatusIsOK(status)) {
+		float bestVariance = MAX_AVG_VARIANCE; // worst variance we'll accept
+		int bestMatch = -1;
+		for (size_t i = 0; i < patternCount; i++) {
+			auto& pattern = patterns[i];
+			float variance = PatternMatchVariance(counters, pattern, MAX_INDIVIDUAL_VARIANCE);
+			if (variance < bestVariance) {
+				bestVariance = variance;
+				bestMatch = static_cast<int>(i);
+			}
+		}
+		if (bestMatch >= 0) {
+			resultOffset = bestMatch;
+		}
+		else {
+			status = ErrorStatus::NotFound;
 		}
 	}
-	if (bestMatch >= 0) {
-		resultOffset = bestMatch;
-		return ErrorStatus::NoError;
-	}
-	return ErrorStatus::NotFound;
+	return status;
 }
 
 } // OneD

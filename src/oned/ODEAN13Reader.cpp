@@ -85,7 +85,7 @@ EAN13Reader::expectedFormat() const
 }
 
 ErrorStatus
-EAN13Reader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const
+EAN13Reader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString)
 {
 	std::array<int, 4> counters = {};
 	int end = row.size();

@@ -227,7 +227,7 @@ ValidatePattern(const std::vector<int>& charOffsets, const std::vector<int>& cou
 
 
 Result
-CodabarReader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) const
+CodabarReader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints)
 {
 	std::vector<int> counters;
 	counters.reserve(80);

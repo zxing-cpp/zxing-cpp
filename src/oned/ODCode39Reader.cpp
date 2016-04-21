@@ -222,7 +222,7 @@ static int IndexOf(const char* str, char c)
 }
 
 Result
-Code39Reader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) const
+Code39Reader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints)
 {
 	CounterContainer theCounters = {};
 	std::string result;

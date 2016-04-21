@@ -30,7 +30,7 @@ EAN8Reader::expectedFormat() const
 }
 
 ErrorStatus
-EAN8Reader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const
+EAN8Reader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString)
 {
 	std::array<int, 4> counters = {};
 	int end = row.size();

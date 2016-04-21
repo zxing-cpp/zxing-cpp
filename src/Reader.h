@@ -52,7 +52,7 @@ public:
 	* @throws ChecksumException if a potential barcode is found but does not pass its checksum
 	* @throws FormatException if a potential barcode is found but format is invalid
 	*/
-	virtual Result decode(const BinaryBitmap& image, const DecodeHints* hints = nullptr) const = 0;
+	virtual Result decode(const BinaryBitmap& image, const DecodeHints* hints = nullptr) = 0;
 };
 
 } // ZXing

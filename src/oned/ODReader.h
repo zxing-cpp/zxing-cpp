@@ -36,7 +36,7 @@ namespace OneD {
 class Reader : public ZXing::Reader
 {
 public:
-	virtual Result decode(const BinaryBitmap& image, const DecodeHints* hints = nullptr) const override;
+	virtual Result decode(const BinaryBitmap& image, const DecodeHints* hints = nullptr) override;
 
 	/**
 	* <p>Attempts to decode a one-dimensional barcode format given a single row of
@@ -50,7 +50,7 @@ public:
 	* @throws ChecksumException if a potential barcode is found but does not pass its checksum
 	* @throws FormatException if a potential barcode is found but format is invalid
 	*/
-	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) const = 0;
+	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) = 0;
 
 	/**
 	* Records the size of successive runs of white and black pixels in a row, starting at a given point.
@@ -91,7 +91,7 @@ public:
 	}
 
 private:
-	Result doDecode(const BinaryBitmap& image, const DecodeHints* hints) const;
+	Result doDecode(const BinaryBitmap& image, const DecodeHints* hints);
 	static ErrorStatus RecordPattern(const BitArray& row, int start, int* counters, size_t length);
 	static ErrorStatus RecordPatternInReverse(const BitArray& row, int start, int* counters, size_t length);
 

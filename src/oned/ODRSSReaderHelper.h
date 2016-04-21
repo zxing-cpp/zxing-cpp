@@ -51,7 +51,7 @@ public:
 	static int GetRSSvalue(const std::array<int, 4>& widths, int maxWidth, bool noNarrow);
 
 private:
-	bool IsFinderPattern(const int* counters, size_t length);
+	static bool IsFinderPattern(const int* counters, size_t length);
 };
 
 } // RSS

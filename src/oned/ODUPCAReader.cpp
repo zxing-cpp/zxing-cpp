@@ -33,20 +33,20 @@ static Result MaybeReturnResult(const Result& result)
 }
 
 Result
-UPCAReader::decode(const BinaryBitmap& image, const DecodeHints* hints) const
+UPCAReader::decode(const BinaryBitmap& image, const DecodeHints* hints)
 {
 	return MaybeReturnResult(_reader.decode(image, hints));
 
 }
 
 Result
-UPCAReader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) const
+UPCAReader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints)
 {
 	return MaybeReturnResult(_reader.decodeRow(rowNumber, row, hints));
 }
 
 Result
-UPCAReader::decodeRow(int rowNumber, const BitArray& row, int startGuardBegin, int startGuardEnd, const DecodeHints* hints) const
+UPCAReader::decodeRow(int rowNumber, const BitArray& row, int startGuardBegin, int startGuardEnd, const DecodeHints* hints)
 {
 	return MaybeReturnResult(_reader.decodeRow(rowNumber, row, startGuardBegin, startGuardEnd, hints));
 }
@@ -58,7 +58,7 @@ UPCAReader::expectedFormat() const
 }
 
 ErrorStatus
-UPCAReader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const
+UPCAReader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString)
 {
 	return _reader.decodeMiddle(row, rowOffset, resultString);
 }

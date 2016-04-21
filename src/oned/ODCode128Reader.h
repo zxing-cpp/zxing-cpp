@@ -18,7 +18,6 @@
 #include "oned/ODReader.h"
 
 namespace ZXing {
-
 namespace OneD {
 
 /**
@@ -29,7 +28,7 @@ namespace OneD {
 class Code128Reader : public Reader
 {
 public:
-	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) const override;
+	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) override;
 };
 
 } // OneD

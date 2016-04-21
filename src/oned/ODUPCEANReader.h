@@ -38,7 +38,7 @@ namespace OneD {
 class UPCEANReader : public Reader
 {
 public:
-	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) const override;
+	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) override;
 
 	/**
 	* <p>Like {@link #decodeRow(int, BitArray, java.util.Map)}, but
@@ -54,7 +54,7 @@ public:
 	* @throws ChecksumException if a potential barcode is found but does not pass its checksum
 	* @throws FormatException if a potential barcode is found but format is invalid
 	*/
-	virtual Result decodeRow(int rowNumber, const BitArray& row, int startGuardBegin, int startGuardEnd, const DecodeHints* hints) const;
+	virtual Result decodeRow(int rowNumber, const BitArray& row, int startGuardBegin, int startGuardEnd, const DecodeHints* hints);
 
 protected:
 
@@ -72,17 +72,17 @@ protected:
 	* @param resultString {@link StringBuilder} to append decoded chars to
 	* @throws NotFoundException if decoding could not complete successfully
 	*/
-	virtual ErrorStatus decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const = 0;
+	virtual ErrorStatus decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) = 0;
 
 	/**
 	* @param s string of digits to check
 	* @return {@link #checkStandardUPCEANChecksum(CharSequence)}
 	* @throws FormatException if the string does not contain only digits
 	*/
-	virtual	ErrorStatus checkChecksum(const std::string& s) const;
+	virtual	ErrorStatus checkChecksum(const std::string& s);
 
 
-	virtual ErrorStatus decodeEnd(const BitArray& row, int endStart, int& begin, int& end) const;
+	virtual ErrorStatus decodeEnd(const BitArray& row, int endStart, int& begin, int& end);
 
 public:
 	static ErrorStatus FindStartGuardPattern(const BitArray& row, int& begin, int& end);

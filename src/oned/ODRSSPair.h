@@ -35,10 +35,6 @@ public:
 		return _finderPattern;
 	}
 
-	bool isValid() const {
-		return _finderPattern.value() >= 0;
-	}
-
 	int count() const {
 		return 0;
 	}

@@ -41,7 +41,7 @@ namespace OneD {
 * @throws NotFoundException Any spontaneous errors which occur
 */
 Result
-Reader::doDecode(const BinaryBitmap& image, const DecodeHints* hints) const
+Reader::doDecode(const BinaryBitmap& image, const DecodeHints* hints)
 {
 	int width = image.width();
 	int height = image.height();
@@ -117,7 +117,7 @@ Reader::doDecode(const BinaryBitmap& image, const DecodeHints* hints) const
 
 // Note that we don't try rotation without the try harder flag, even if rotation was supported.
 Result
-Reader::decode(const BinaryBitmap& image, const DecodeHints* hints) const
+Reader::decode(const BinaryBitmap& image, const DecodeHints* hints)
 {
 	Result result = doDecode(image, hints);
 	if (result.isValid()) {

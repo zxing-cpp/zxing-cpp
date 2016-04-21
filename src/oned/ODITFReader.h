@@ -40,7 +40,7 @@ namespace OneD {
 class ITFReader : public Reader
 {
 public:
-	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) const override;
+	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) override;
 
 private:
 	static ErrorStatus FindGuardPattern(const BitArray& row, int rowOffset, const int* pattern, size_t patternLength, int& begin, int& end);
