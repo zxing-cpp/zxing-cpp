@@ -22,6 +22,7 @@
 #include "oned/ODITFReader.h"
 #include "oned/ODCodabarReader.h"
 #include "oned/ODRSS14Reader.h"
+#include "oned/ODRSSExpandedReader.h"
 #include "DecodeHints.h"
 #include "BarcodeFormat.h"
 #include "Result.h"

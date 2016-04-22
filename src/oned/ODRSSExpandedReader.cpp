@@ -15,8 +15,7 @@
 */
 
 #include "oned/ODRSSExpandedReader.h"
-#include "oned/ODRSSExpandedRow.h"
-#include "oned/ODRSSReaderHelper.h"
+#include "oned/rss/ODRSSReaderHelper.h"
 #include "Result.h"
 #include "BitArray.h"
 
@@ -95,7 +94,7 @@ using namespace RSS;
 
 
 static bool
-FindNextPair(const BitArray& row, const std::list<ExpandedPair> previousPairs, int forcedOffset, bool startFromEven, std::array<int, 4>& counters, int& patternStart_, int& patternEnd)
+FindNextPair(const BitArray& row, const std::list<ExpandedPair>& previousPairs, int forcedOffset, bool startFromEven, std::array<int, 4>& counters, int& patternStart_, int& patternEnd)
 {
 	int width = row.size();
 	int rowOffset;
@@ -226,8 +225,7 @@ IsNotA1left(FinderPattern pattern, bool isOddPattern, bool leftChar)
 }
 
 static bool
-AdjustOddEvenCounts(int numModules, std::array<int, 4>& oddCounts, std::array<int, 4>& evenCounts,
-	const std::array<float, 4>& oddRoundingErrors, const std::array<float, 4>& evenRoundingErrors)
+AdjustOddEvenCounts(int numModules, std::array<int, 4>& oddCounts, std::array<int, 4>& evenCounts, const std::array<float, 4>& oddRoundingErrors, const std::array<float, 4>& evenRoundingErrors)
 {
 	int oddSum = std::accumulate(oddCounts.begin(), oddCounts.end(), 0);
 	int evenSum = std::accumulate(evenCounts.begin(), evenCounts.end(), 0);
@@ -349,7 +347,7 @@ DecodeDataCharacter(const BitArray& row, const FinderPattern& pattern, bool isOd
 	float elementWidth = static_cast<float>(std::accumulate(counters.begin(), counters.end(), 0)) / static_cast<float>(numModules);
 
 	// Sanity check: element width for pattern and the character should match
-	float expectedElementWidth = static_cast<float>(pattern.endPos() - pattern.startPos) / 15.0f;
+	float expectedElementWidth = static_cast<float>(pattern.endPos() - pattern.startPos()) / 15.0f;
 	if (std::abs(elementWidth - expectedElementWidth) / expectedElementWidth > 0.3f) {
 		return DataCharacter();
 	}
@@ -473,14 +471,16 @@ RetrieveNextPair(const BitArray& row, const std::list<ExpandedPair>& previousPai
 static bool
 CheckChecksum(const std::list<ExpandedPair>& myPairs)
 {
-	auto& firstPair = myPairs.front();
-	auto& firstCharacter = firstPair.rightChar();
+	if (myPairs.empty())
+		return false;
 
-	if (!firstCharacter.isValid()) {
+	auto& firstPair = myPairs.front();
+	
+	if (firstPair.mustBeLast()) {
 		return false;
 	}
 
-	int checksum = firstCharacter.checksumPortion();
+	int checksum = firstPair.rightChar().checksumPortion();
 	int s = 2;
 
 	for (auto it = ++myPairs.begin(); it != myPairs.end(); ++it) {
@@ -499,7 +499,8 @@ CheckChecksum(const std::list<ExpandedPair>& myPairs)
 
 
 // Returns true when one of the rows already contains all the pairs
-static bool IsPartialRow(const std::list<ExpandedPair>& pairs, const std::list<ExpandedRow>& rows) {
+static bool
+IsPartialRow(const std::list<ExpandedPair>& pairs, const std::list<ExpandedRow>& rows) {
 	for (const ExpandedRow& r : rows) {
 		bool allFound = true;
 		for (const ExpandedPair& p : pairs) {
@@ -556,7 +557,8 @@ RemovePartialRows(std::list<ExpandedRow>& rows, const std::list<ExpandedPair>& p
 	}
 }
 
-static void StoreRow(std::list<ExpandedRow>& rows, const std::list<ExpandedPair>& pairs, int rowNumber, bool wasReversed)
+static void
+StoreRow(std::list<ExpandedRow>& rows, const std::list<ExpandedPair>& pairs, int rowNumber, bool wasReversed)
 {
 	// Discard if duplicate above or below; otherwise insert in order by row number.
 	bool prevIsSame = false;
@@ -587,42 +589,179 @@ static void StoreRow(std::list<ExpandedRow>& rows, const std::list<ExpandedPair>
 	RemovePartialRows(rows, pairs);
 }
 
-// Not private for testing
+// Try to construct a valid rows sequence
+// Recursion is used to implement backtracking
+template <typename RowIterator>
 static std::list<ExpandedPair>
-DecodeRow2Pairs(int rowNumber, const BitArray& row, int startFromEven, std::list<ExpandedRow>& rows)
+CheckRows(RowIterator currentRow, RowIterator endRow, const std::list<ExpandedRow>& collectedRows)
 {
-	std::list<ExpandedPair> myPairs;
-	ExpandedPair nextPair;
-	while (RetrieveNextPair(row, myPairs, rowNumber, startFromEven, nextPair)) {
-		myPairs.push_back(nextPair);
+	std::list<ExpandedPair> collectedPairs;
+	for (const auto& collectedRow : collectedRows) {
+		auto &p = collectedRow.pairs();
+		collectedPairs.insert(collectedPairs.end(), p.begin(), p.end());
 	}
 
-	if (myPairs.empty()) {
-		return throw error;
+	for (; currentRow != endRow; ++currentRow) {
+		//ExpandedRow row = rows.get(i);
+		std::list<ExpandedPair> result = collectedPairs;
+		auto &p = currentRow->pairs();
+		result.insert(result.end(), p.begin(), p.end());
+
+		if (!IsValidSequence(result)) {
+			continue;
+		}
+
+		if (CheckChecksum(result)) {
+			return result;
+		}
+
+		std::list<ExpandedRow> rs = collectedRows;
+		rs.push_back(*currentRow);
+		auto nextRow = currentRow;
+		result = CheckRows(++nextRow, endRow, rs);
+		if (!result.empty()) {
+			return result;
+		}
+	}
+	return std::list<ExpandedPair>();
+}
+
+static std::list<ExpandedPair>
+CheckRows(std::list<ExpandedRow>& rows, bool reverse) {
+	// Limit number of rows we are checking
+	// We use recursive algorithm with pure complexity and don't want it to take forever
+	// Stacked barcode can have up to 11 rows, so 25 seems reasonable enough
+	if (rows.size() > 25) {
+		rows.clear();  // We will never have a chance to get result, so clear it
+		return std::list<ExpandedPair>();
+	}
+
+	return reverse ?
+		CheckRows(rows.rbegin(), rows.rend(), std::list<ExpandedRow>()) :
+		CheckRows(rows.begin(), rows.end(), std::list<ExpandedRow>());
+}
+
+// Whether the pairs form a valid find pattern seqience,
+// either complete or a prefix
+static bool
+IsValidSequence(const std::list<ExpandedPair>& pairs)
+{
+	for (auto& sequence : FINDER_PATTERN_SEQUENCES) {
+		if (pairs.size() <= sequence.size() && std::equal(pairs.begin(), pairs.end(), sequence.begin(), [](const ExpandedPair& p, int seq) { return p.finderPattern().value() == seq; })) {
+			return true;
+		}
+	}
+	return false;
+}
+
+
+
+// Not private for testing
+static std::list<ExpandedPair>
+DecodeRow2Pairs(int rowNumber, const BitArray& row, bool startFromEven, std::list<ExpandedRow>& rows)
+{
+	std::list<ExpandedPair> pairs;
+	ExpandedPair nextPair;
+	while (RetrieveNextPair(row, pairs, rowNumber, startFromEven, nextPair)) {
+		pairs.push_back(nextPair);
+	}
+
+	if (pairs.empty()) {
+		return pairs;
 	}
 
 	// TODO: verify sequence of finder patterns as in checkPairSequence()
-	if (CheckChecksum(myPairs)) {
-		return myPairs;
+	if (CheckChecksum(pairs)) {
+		return pairs;
 	}
 
 	bool tryStackedDecode = !rows.empty();
 	bool wasReversed = false; // TODO: deal with reversed rows
-	StoreRow(rows, myPairs, rowNumber, wasReversed);
+	StoreRow(rows, pairs, rowNumber, wasReversed);
 	if (tryStackedDecode) {
 		// When the image is 180-rotated, then rows are sorted in wrong direction.
 		// Try twice with both the directions.
-		List<ExpandedPair> ps = checkRows(false);
-		if (ps != null) {
+		auto ps = CheckRows(rows, false);
+		if (!ps.empty()) {
 			return ps;
 		}
-		ps = checkRows(true);
-		if (ps != null) {
+		ps = CheckRows(rows, true);
+		if (!ps.empty()) {
 			return ps;
 		}
 	}
+	return std::list<ExpandedPair>();
+}
 
-	throw NotFoundException.getNotFoundInstance();
+/**
+* @author Pablo Orduña, University of Deusto (pablo.orduna@deusto.es)
+* @author Eduardo Castillejo, University of Deusto (eduardo.castillejo@deusto.es)
+*/
+static BitArray
+BuildBitArray(const std::list<ExpandedPair>& pairs)
+{
+	int charNumber = (pairs.size() * 2) - 1;
+	if (pairs.back().mustBeLast()) {
+		charNumber -= 1;
+	}
+
+	int size = 12 * charNumber;
+
+	BitArray binary(size);
+	int accPos = 0;
+
+	auto it = pairs.begin();
+	int firstValue = it->rightChar().value();
+	for (int i = 11; i >= 0; --i) {
+		if ((firstValue & (1 << i)) != 0) {
+			binary.set(accPos);
+		}
+		accPos++;
+	}
+
+	for (++it; it != pairs.end(); ++it) {
+		int leftValue = it->leftChar().value();
+		for (int j = 11; j >= 0; --j) {
+			if ((leftValue & (1 << j)) != 0) {
+				binary.set(accPos);
+			}
+			accPos++;
+		}
+
+		if (it->rightChar().isValid()) {
+			int rightValue = it->rightChar().value();
+			for (int j = 11; j >= 0; --j) {
+				if ((rightValue & (1 << j)) != 0) {
+					binary.set(accPos);
+				}
+				accPos++;
+			}
+		}
+	}
+	return binary;
+}
+
+// Not private for unit testing
+static Result
+ConstructResult(const std::list<ExpandedPair>& pairs)
+{
+	if (pairs.empty()) {
+		return Result(ErrorStatus::NotFound);
+	}
+
+	BitArray binary = BuildBitArray(pairs);
+	AbstractExpandedDecoder decoder = AbstractExpandedDecoder.createDecoder(binary);
+	String resultingString = decoder.parseInformation();
+
+	ResultPoint[] firstPoints = pairs.get(0).getFinderPattern().getResultPoints();
+	ResultPoint[] lastPoints = pairs.get(pairs.size() - 1).getFinderPattern().getResultPoints();
+
+	return new Result(
+		resultingString,
+		null,
+		new ResultPoint[]{ firstPoints[0], firstPoints[1], lastPoints[0], lastPoints[1] },
+		BarcodeFormat.RSS_EXPANDED
+	);
 }
 
 Result
@@ -630,142 +769,20 @@ RSSExpandedReader::decodeRow(int rowNumber, const BitArray& row, const DecodeHin
 {
 	// Rows can start with even pattern in case in prev rows there where odd number of patters.
 	// So lets try twice
-	std::list<RSS::ExpandedPair> myPairs;
-	this.startFromEven = false;
-	try {
-		List<ExpandedPair> pairs = decodeRow2pairs(rowNumber, row);
-		return constructResult(pairs);
-	}
-	catch (NotFoundException e) {
-		// OK
+	Result r = ConstructResult(DecodeRow2Pairs(rowNumber, row, false, _rows));
+	if (!r.isValid()) {
+		ConstructResult(DecodeRow2Pairs(rowNumber, row, true, _rows));
+			return r;
+		}
 	}
 
-	myPairs.clear();
-	this.startFromEven = true;
-	List<ExpandedPair> pairs = decodeRow2pairs(rowNumber, row);
-	return constructResult(pairs);
+	auto pairs = DecodeRow2Pairs(rowNumber, row, true, *_rows);
+	if (!pairs.empty()) {
+		return ConstructResult(pairs);
+	}
+
+	return Result(ErrorStatus::NotFound);
 }
-
-@Override
-public void reset() {
-	this.pairs.clear();
-	this.rows.clear();
-}
-
-
-
-private List<ExpandedPair> checkRows(boolean reverse) {
-	// Limit number of rows we are checking
-	// We use recursive algorithm with pure complexity and don't want it to take forever
-	// Stacked barcode can have up to 11 rows, so 25 seems reasonable enough
-	if (this.rows.size() > 25) {
-		this.rows.clear();  // We will never have a chance to get result, so clear it
-		return null;
-	}
-
-	this.pairs.clear();
-	if (reverse) {
-		Collections.reverse(this.rows);
-	}
-
-	List<ExpandedPair> ps = null;
-	try {
-		ps = checkRows(new ArrayList<ExpandedRow>(), 0);
-	}
-	catch (NotFoundException e) {
-		// OK
-	}
-
-	if (reverse) {
-		Collections.reverse(this.rows);
-	}
-
-	return ps;
-}
-
-// Try to construct a valid rows sequence
-// Recursion is used to implement backtracking
-private List<ExpandedPair> checkRows(List<ExpandedRow> collectedRows, int currentRow) throws NotFoundException {
-	for (int i = currentRow; i < rows.size(); i++) {
-		ExpandedRow row = rows.get(i);
-		this.pairs.clear();
-		int size = collectedRows.size();
-		for (int j = 0; j < size; j++) {
-			this.pairs.addAll(collectedRows.get(j).getPairs());
-		}
-		this.pairs.addAll(row.getPairs());
-
-		if (!isValidSequence(this.pairs)) {
-			continue;
-		}
-
-		if (checkChecksum()) {
-			return this.pairs;
-		}
-
-		List<ExpandedRow> rs = new ArrayList<>();
-		rs.addAll(collectedRows);
-		rs.add(row);
-		try {
-			// Recursion: try to add more rows
-			return checkRows(rs, i + 1);
-		}
-		catch (NotFoundException e) {
-			// We failed, try the next candidate
-		}
-	}
-
-	throw NotFoundException.getNotFoundInstance();
-}
-
-// Whether the pairs form a valid find pattern seqience,
-// either complete or a prefix
-private static boolean isValidSequence(List<ExpandedPair> pairs) {
-	for (int[] sequence : FINDER_PATTERN_SEQUENCES) {
-		if (pairs.size() > sequence.length) {
-			continue;
-		}
-
-		boolean stop = true;
-		for (int j = 0; j < pairs.size(); j++) {
-			if (pairs.get(j).getFinderPattern().getValue() != sequence[j]) {
-				stop = false;
-				break;
-			}
-		}
-
-		if (stop) {
-			return true;
-		}
-	}
-
-	return false;
-}
-
-
-// Only used for unit testing
-List<ExpandedRow> getRows() {
-	return this.rows;
-}
-
-// Not private for unit testing
-static Result constructResult(List<ExpandedPair> pairs) throws NotFoundException, FormatException{
-	BitArray binary = BitArrayBuilder.buildBitArray(pairs);
-
-AbstractExpandedDecoder decoder = AbstractExpandedDecoder.createDecoder(binary);
-String resultingString = decoder.parseInformation();
-
-ResultPoint[] firstPoints = pairs.get(0).getFinderPattern().getResultPoints();
-ResultPoint[] lastPoints = pairs.get(pairs.size() - 1).getFinderPattern().getResultPoints();
-
-return new Result(
-	resultingString,
-	null,
-	new ResultPoint[]{ firstPoints[0], firstPoints[1], lastPoints[0], lastPoints[1] },
-	BarcodeFormat.RSS_EXPANDED
-);
-}
-
 
 } // OneD
 } // ZXing

@@ -16,6 +16,7 @@
 */
 
 #include "oned/ODReader.h"
+#include "oned/rss/ODRSSPair.h"
 
 #include <list>
 

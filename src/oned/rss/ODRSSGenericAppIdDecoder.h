@@ -15,28 +15,28 @@
 * limitations under the License.
 */
 
-#include "oned/ODReader.h"
-#include "oned/rss/ODRSSExpandedRow.h"
-
-#include <list>
+#include <string>
 
 namespace ZXing {
-namespace OneD {
 
-namespace RSS { class ExpandedRow; }
+class BitArray;
+enum class ErrorStatus;
+
+namespace OneD {
+namespace RSS {
 
 /**
-* @author Pablo Orduña, University of Deusto(pablo.orduna@deusto.es)
-* @author Eduardo Castillejo, University of Deusto(eduardo.castillejo@deusto.es)
+* @author Pablo Orduña, University of Deusto (pablo.orduna@deusto.es)
+* @author Eduardo Castillejo, University of Deusto (eduardo.castillejo@deusto.es)
 */
-class RSSExpandedReader : public Reader
+class GenericAppIdDecoder
 {
 public:
-	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) override;
-
-private:
-	std::list<RSS::ExpandedRow> _rows;
+	static int ExtractNumeric(const BitArray& bits, int pos, int count);
+	static ErrorStatus DecodeGeneralPurposeField(const BitArray& bits, int pos, std::string& result);
+	static ErrorStatus DecodeAllCodes(const BitArray& bits, int initialPosition, std::string& result);
 };
 
+} // RSS
 } // OneD
 } // ZXing

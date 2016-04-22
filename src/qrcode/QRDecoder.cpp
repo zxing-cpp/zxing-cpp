@@ -33,6 +33,7 @@
 #include "DecodeHints.h"
 
 #include <list>
+#include <type_traits>
 
 namespace ZXing {
 namespace QRCode {
@@ -94,7 +95,7 @@ ErrorStatus CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
 	}
 	else if (StatusIsKindOf(status, ErrorStatus::ReedSolomonError))
 	{
-		status = ErrorStatus::FormatError;
+		status = ErrorStatus::ChecksumError;
 	}
 	return status;
 }
@@ -215,7 +216,7 @@ char ToAlphaNumericChar(int value)
 		' ', '$', '%', '*', '+', '-', '.', '/', ':'
 	};
 
-	if (value < 0 || value >= sizeof(ALPHANUMERIC_CHARS)) {
+	if (value < 0 || value >= (int)std::extent<decltype(ALPHANUMERIC_CHARS)>::value) {
 		throw std::out_of_range("ToAlphaNumericChar: out of range");
 	}
 	return ALPHANUMERIC_CHARS[value];
@@ -494,7 +495,7 @@ Decoder::Decode(const BitMatrix& bits_, const DecodeHints* hints)
 	FormatInformation formatInfo;
 	DecoderResult firstResult(ErrorStatus::NotFound);
 
-	if (BitMatrixParser::ParseVersionInfo(bits, false, version, formatInfo))
+	if (StatusIsOK(BitMatrixParser::ParseVersionInfo(bits, false, version, formatInfo)))
 	{
 		ReMask(bits, formatInfo);
 		firstResult = DoDecode(bits, *version, formatInfo, hints);
@@ -510,7 +511,7 @@ Decoder::Decode(const BitMatrix& bits_, const DecodeHints* hints)
 		ReMask(bits, formatInfo);
 	}
 
-	if (BitMatrixParser::ParseVersionInfo(bits, true, version, formatInfo))
+	if (StatusIsOK(BitMatrixParser::ParseVersionInfo(bits, true, version, formatInfo)))
 	{
 		/*
 		* Since we're here, this means we have successfully detected some kind

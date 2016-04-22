@@ -19,6 +19,7 @@
 
 #include <algorithm>
 #include <string>
+#include <type_traits>
 
 namespace ZXing {
 namespace OneD {
@@ -147,7 +148,7 @@ String
 EANManufacturerOrgSupport::LookupCountryIdentifier(const String& productCode)
 {
 	int prefix = std::stoi(productCode.toStdString().substr(0, 3));
-	int count = sizeof(COUNTRIES) / sizeof(CountryId);
+	auto count = std::extent<decltype(COUNTRIES)>::value;
 	auto it = std::lower_bound(COUNTRIES, COUNTRIES + count, CountryId{ prefix });
 	if (it != COUNTRIES + count)
 	{

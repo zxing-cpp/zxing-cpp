@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-#include "oned/ODRSSExpandedPair.h"
+#include "oned/rss/ODRSSExpandedPair.h"
 
 #include <vector>
 

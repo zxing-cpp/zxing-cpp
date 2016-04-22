@@ -5,8 +5,8 @@ def writeToFile(path, text):
 	with open(path, 'w', encoding='utf-8') as f:
 		f.write(text) # Write a string to a file
 
-def write_files(relPath, fileName, className, namespace):
-	writeToFile(fileName + '.h', '\
+def write_files(relPath, fileName, className, namespaces):	
+	fileContents = '\
 #pragma once\n\
 /*\n\
 * Copyright 2016 ZXing authors\n\
@@ -24,18 +24,20 @@ def write_files(relPath, fileName, className, namespace):
 * limitations under the License.\n\
 */\n\
 \n\
-namespace ZXing {\n\
-\n\
-' +  ('namespace ' + namespace + ' {\n\n' if len(namespace) > 0 else '') + '\
-class ' + className + '\n\
-{\n\
-};\n\
-\n\
-' + ('} // ' + namespace + '\n' if len(namespace) > 0 else '') + '\
-} // ZXing\n\
-')
+namespace ZXing {\n';
+	for ns in namespaces:
+		fileContents += 'namespace ' + ns + ' {\n'
 
-	writeToFile(fileName + '.cpp', '\
+	fileContents += '\nclass ' + className + '\n{\n};\n\n'
+
+	for ns in reversed(namespaces):
+		fileContents += '} // ' + ns + '\n'
+	
+	fileContents += '} // ZXing\n'
+
+	writeToFile(fileName + '.h', fileContents)
+	
+	fileContents = '\
 /*\n\
 * Copyright 2016 ZXing authors\n\
 *\n\
@@ -54,14 +56,18 @@ class ' + className + '\n\
 \n\
 #include "' + relPath + fileName + '.h' + '"\n\
 \n\
-namespace ZXing {\n\
-\n\
-' + ('namespace ' + namespace + ' {\n\n' if len(namespace) > 0 else '') + '\
-\n\
-\n\
-' + ('} // ' + namespace + '\n' if len(namespace) > 0 else '') + '\
-} // ZXing\n\
-')
+namespace ZXing {\n';
+	for ns in namespaces:
+		fileContents += 'namespace ' + ns + ' {\n'
+
+	fileContents += '\n\n\n'
+
+	for ns in reversed(namespaces):
+		fileContents += '} // ' + ns + '\n'
+	
+	fileContents += '} // ZXing\n'
+
+	writeToFile(fileName + '.cpp', fileContents)
 
 if __name__ == '__main__':
 	try:
@@ -79,11 +85,5 @@ if __name__ == '__main__':
 		prefix = names[0]
 		names[0] = names[1]
 	names = names[0].split('::');
-	if len(names) > 1:
-		className = names[1]
-		namespace = names[0]
-	else:
-		className = names[0]
-		namespace = ''
 
-	write_files(relPath, prefix + className, className, namespace)
+	write_files(relPath, prefix + names[-1], names[-1], names[:-1])

@@ -14,7 +14,7 @@
 * limitations under the License.
 */
 
-#include "oned/ODRSSReaderHelper.h"
+#include "oned/rss/ODRSSReaderHelper.h"
 
 #include <limits>
 

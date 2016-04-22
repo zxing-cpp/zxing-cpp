@@ -15,8 +15,7 @@
 */
 
 #include "oned/ODRSS14Reader.h"
-#include "oned/ODRSSReaderHelper.h"
-#include "oned/ODRSSPair.h"
+#include "oned/rss/ODRSSReaderHelper.h"
 #include "BitArray.h"
 #include "Result.h"
 #include "DecodeHints.h"

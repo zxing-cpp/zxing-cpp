@@ -1,3 +1,4 @@
+#pragma once
 /*
 * Copyright 2016 ZXing authors
 *
@@ -14,13 +15,35 @@
 * limitations under the License.
 */
 
-#include "oned/ODRSSFinderPattern.h"
+#include "oned/rss/ODRSSDataCharacter.h"
+#include "oned/rss/ODRSSFinderPattern.h"
 
 namespace ZXing {
-
 namespace OneD {
+namespace RSS {
 
+class Pair : public DataCharacter
+{
+	FinderPattern _finderPattern;
+	int _count;
 
+public:
+	Pair() : _count(0) {}
+	Pair(int value, int checksumPortion, const FinderPattern& finderPattern) : DataCharacter(value, checksumPortion), _finderPattern(finderPattern), _count(0) {}
 
+	const FinderPattern& finderPattern() const {
+		return _finderPattern;
+	}
+
+	int count() const {
+		return 0;
+	}
+
+	void incrementCount() {
+		_count++;
+	}
+};
+
+} // RSS
 } // OneD
 } // ZXing
