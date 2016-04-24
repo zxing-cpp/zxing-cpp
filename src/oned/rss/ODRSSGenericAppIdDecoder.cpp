@@ -526,7 +526,7 @@ GenericAppIdDecoder::DecodeGeneralPurposeField(const BitArray& bits, int pos, st
 {
 	try
 	{
-		result = DoDecodeGeneralPurposeField(bits, pos, std::string()).newString;
+		result += DoDecodeGeneralPurposeField(bits, pos, std::string()).newString;
 		return ErrorStatus::NoError;
 	}
 	catch (const std::exception &)
@@ -569,8 +569,6 @@ GenericAppIdDecoder::DecodeAllCodes(const BitArray& bits, int pos, std::string& 
 	}
 	return ErrorStatus::FormatError;
 }
-
-
 
 } // RSS
 } // OneD

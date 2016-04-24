@@ -25,591 +25,85 @@
 */
 
 #include "oned/rss/ODRSSExpandedBinaryDecoder.h"
+#include "oned/rss/ODRSSGenericAppIdDecoder.h"
 #include "BitArray.h"
+#include "ErrorStatus.h"
+
+#include <functional>
 
 namespace ZXing {
 namespace OneD {
 namespace RSS {
 
-namespace GeneralAppIdDecoder {
+static const int AI01_GTIN_SIZE = 40;
 
-/**
-* @author Pablo Orduña, University of Deusto (pablo.orduna@deusto.es)
-* @author Eduardo Castillejo, University of Deusto (eduardo.castillejo@deusto.es)
-*/
-
-/**
-* @author Pablo Orduña, University of Deusto (pablo.orduna@deusto.es)
-*/
-struct ParsingState
+inline static void AppendInt(std::string& s, int value)
 {
-	enum State {
-		NUMERIC,
-		ALPHA,
-		ISO_IEC_646
-	};
+	char buf[16];
+	s.append(itoa(value, buf, 10));
+}
 
-	int position = 0;
-	State encoding = NUMERIC;
-};
-
-/**
-* @author Pablo Orduña, University of Deusto (pablo.orduna@deusto.es)
-* @author Eduardo Castillejo, University of Deusto (eduardo.castillejo@deusto.es)
-*/
-struct DecodedChar
+static void
+AI01AppendCheckDigit(std::string& buffer, int currentPos)
 {
-	static const char FNC1 = '$'; // It's not in Alphanumeric neither in ISO/IEC 646 charset
-	int newPosition = 0;
-	char value = '\0';
-
-	bool isFNC1() const {
-		return value == FNC1;
+	int checkDigit = 0;
+	for (int i = 0; i < 13; i++) {
+		int digit = buffer[i + currentPos] - '0';
+		checkDigit += (i & 0x01) == 0 ? 3 * digit : digit;
 	}
-};
 
-/**
-* @author Pablo Orduña, University of Deusto (pablo.orduna@deusto.es)
-* @author Eduardo Castillejo, University of Deusto (eduardo.castillejo@deusto.es)
-*/
-struct DecodedInformation
+	checkDigit = 10 - (checkDigit % 10);
+	if (checkDigit == 10) {
+		checkDigit = 0;
+	}
+	AppendInt(buffer, checkDigit);
+}
+
+static void
+AI01EncodeCompressedGtinWithoutAI(std::string& buffer, const BitArray& bits, int currentPos, int initialBufferPosition)
 {
-	int newPosition = 0;
-	std::string newString;
-	int remainingValue = -1;
-
-	bool isRemaining() const {
-		return remainingValue >= 0;
+	for (int i = 0; i < 4; ++i) {
+		int currentBlock = GenericAppIdDecoder::ExtractNumeric(bits, currentPos + 10 * i, 10);
+		if (currentBlock / 100 == 0) {
+			buffer.push_back('0');
+		}
+		if (currentBlock / 10 == 0) {
+			buffer.push_back('0');
+		}
+		AppendInt(buffer, currentBlock);
 	}
-};
+	AI01AppendCheckDigit(buffer, initialBufferPosition);
+}
 
-/**
-* @author Pablo Orduña, University of Deusto (pablo.orduna@deusto.es)
-* @author Eduardo Castillejo, University of Deusto (eduardo.castillejo@deusto.es)
-*/
-struct DecodedNumeric
+static void
+AI01EncodeCompressedGtin(std::string& buffer, const BitArray& bits, int currentPos)
 {
-	static const int FNC1 = 10;
-
-	int newPosition = 0;
-	int firstDigit = 0;
-	int secondDigit = 0;
-
-	int value() const {
-		return firstDigit * 10 + secondDigit;
-	}
-
-	bool isFirstDigitFNC1() const {
-		return firstDigit == FNC1;
-	}
-
-	bool isSecondDigitFNC1() const {
-		return secondDigit == FNC1;
-	}
-
-	bool isAnyFNC1() const {
-		return firstDigit == FNC1 || secondDigit == FNC1;
-	}
-
-private:
-		DecodedNumeric(int newPosition, int firstDigit, int secondDigit); // throws FormatException{
-	//	super(newPosition);
-
-	//	if (firstDigit < 0 || firstDigit > 10 || secondDigit < 0 || secondDigit > 10) {
-	//		throw FormatException.getFormatInstance();
-	//	}
-
-	//	this.firstDigit = firstDigit;
-	//	this.secondDigit = secondDigit;
-	//}
-};
-
-
-
-
-	//CurrentParsingState() {
-	//	this.position = 0;
-	//	this.encoding = State.NUMERIC;
-	//}
-
-	//int getPosition() {
-	//	return position;
-	//}
-
-	//void setPosition(int position) {
-	//	this.position = position;
-	//}
-
-	//void incrementPosition(int delta) {
-	//	position += delta;
-	//}
-
-	//boolean isAlpha() {
-	//	return this.encoding == State.ALPHA;
-	//}
-
-	//boolean isNumeric() {
-	//	return this.encoding == State.NUMERIC;
-	//}
-
-	//boolean isIsoIec646() {
-	//	return this.encoding == State.ISO_IEC_646;
-	//}
-
-	//void setNumeric() {
-	//	this.encoding = State.NUMERIC;
-	//}
-
-	//void setAlpha() {
-	//	this.encoding = State.ALPHA;
-	//}
-
-	//void setIsoIec646() {
-	//	this.encoding = State.ISO_IEC_646;
-	//}
-
-
-	//	private final BitArray information;
-	//	private final CurrentParsingState current = new CurrentParsingState();
-	//	private final StringBuilder buffer = new StringBuilder();
-
-	
-static DecodedInformation
-DecodeGeneralPurposeField(int pos, const std::string& remaining) throws FormatException {
-	this.buffer.setLength(0);
-
-	if (remaining != null) {
-		this.buffer.append(remaining);
-	}
-
-	this.current.setPosition(pos);
-
-	DecodedInformation lastDecoded = parseBlocks();
-	if (lastDecoded != null && lastDecoded.isRemaining()) {
-		return new DecodedInformation(this.current.getPosition(), this.buffer.toString(), lastDecoded.getRemainingValue());
-	}
-	return new DecodedInformation(this.current.getPosition(), this.buffer.toString());
+	buffer.append("(01)");
+	int initialPosition = static_cast<int>(buffer.length());
+	buffer.push_back('9');
+	AI01EncodeCompressedGtinWithoutAI(buffer, bits, currentPos, initialPosition);
 }
 
-static std::string
-DecodeAllCodes(const std::string& buff, int initialPosition) throws NotFoundException, FormatException{
-	int currentPosition = initialPosition;
-String remaining = null;
-do {
-	DecodedInformation info = this.decodeGeneralPurposeField(currentPosition, remaining);
-	String parsedFields = FieldParser.parseFieldsInGeneralPurpose(info.getNewString());
-	if (parsedFields != null) {
-		buff.append(parsedFields);
-	}
-	if (info.isRemaining()) {
-		remaining = String.valueOf(info.getRemainingValue());
-	}
-	else {
-		remaining = null;
-	}
+typedef const std::function<void(std::string&, int)> AddWeightCodeFunc;
+typedef const std::function<int(int)> CheckWeightFunc;
 
-	if (currentPosition == info.getNewPosition()) {// No step forward!
-		break;
-	}
-	currentPosition = info.getNewPosition();
-} while (true);
+static void AI01EncodeCompressedWeight(std::string& buffer, const BitArray& bits, int currentPos, int weightSize,
+	const AddWeightCodeFunc& addWeightCode, const CheckWeightFunc& checkWeight)
+{
+	int originalWeightNumeric = GenericAppIdDecoder::ExtractNumeric(bits, currentPos, weightSize);
+	addWeightCode(buffer, originalWeightNumeric);
 
-return buff.toString();
+	int weightNumeric = checkWeight(originalWeightNumeric);
+
+	int currentDivisor = 100000;
+	for (int i = 0; i < 5; ++i) {
+		if (weightNumeric / currentDivisor == 0) {
+			buffer.push_back('0');
+		}
+		currentDivisor /= 10;
+	}
+	AppendInt(buffer, weightNumeric);
 }
-
-private boolean isStillNumeric(int pos) {
-	// It's numeric if it still has 7 positions
-	// and one of the first 4 bits is "1".
-	if (pos + 7 > this.information.getSize()) {
-		return pos + 4 <= this.information.getSize();
-	}
-
-	for (int i = pos; i < pos + 3; ++i) {
-		if (this.information.get(i)) {
-			return true;
-		}
-	}
-
-	return this.information.get(pos + 3);
-}
-
-private DecodedNumeric decodeNumeric(int pos) throws FormatException {
-	if (pos + 7 > this.information.getSize()) {
-		int numeric = extractNumericValueFromBitArray(pos, 4);
-		if (numeric == 0) {
-			return new DecodedNumeric(this.information.getSize(), DecodedNumeric.FNC1, DecodedNumeric.FNC1);
-		}
-		return new DecodedNumeric(this.information.getSize(), numeric - 1, DecodedNumeric.FNC1);
-	}
-	int numeric = extractNumericValueFromBitArray(pos, 7);
-
-	int digit1 = (numeric - 8) / 11;
-	int digit2 = (numeric - 8) % 11;
-
-	return new DecodedNumeric(pos + 7, digit1, digit2);
-}
-
-int extractNumericValueFromBitArray(int pos, int bits) {
-	return extractNumericValueFromBitArray(this.information, pos, bits);
-}
-
-static int extractNumericValueFromBitArray(BitArray information, int pos, int bits) {
-	int value = 0;
-	for (int i = 0; i < bits; ++i) {
-		if (information.get(pos + i)) {
-			value |= 1 << (bits - i - 1);
-		}
-	}
-
-	return value;
-}
-
-
-private DecodedInformation parseBlocks() throws FormatException {
-	boolean isFinished;
-	BlockParsedResult result;
-	do {
-		int initialPosition = current.getPosition();
-
-		if (current.isAlpha()) {
-			result = parseAlphaBlock();
-			isFinished = result.isFinished();
-		}
-		else if (current.isIsoIec646()) {
-			result = parseIsoIec646Block();
-			isFinished = result.isFinished();
-		}
-		else { // it must be numeric
-			result = parseNumericBlock();
-			isFinished = result.isFinished();
-		}
-
-		boolean positionChanged = initialPosition != current.getPosition();
-		if (!positionChanged && !isFinished) {
-			break;
-		}
-	} while (!isFinished);
-
-	return result.getDecodedInformation();
-}
-
-private BlockParsedResult parseNumericBlock() throws FormatException {
-	while (isStillNumeric(current.getPosition())) {
-		DecodedNumeric numeric = decodeNumeric(current.getPosition());
-		current.setPosition(numeric.getNewPosition());
-
-		if (numeric.isFirstDigitFNC1()) {
-			DecodedInformation information;
-			if (numeric.isSecondDigitFNC1()) {
-				information = new DecodedInformation(current.getPosition(), buffer.toString());
-			}
-			else {
-				information = new DecodedInformation(current.getPosition(), buffer.toString(), numeric.getSecondDigit());
-			}
-			return new BlockParsedResult(information, true);
-		}
-		buffer.append(numeric.getFirstDigit());
-
-		if (numeric.isSecondDigitFNC1()) {
-			DecodedInformation information = new DecodedInformation(current.getPosition(), buffer.toString());
-			return new BlockParsedResult(information, true);
-		}
-		buffer.append(numeric.getSecondDigit());
-	}
-
-	if (isNumericToAlphaNumericLatch(current.getPosition())) {
-		current.setAlpha();
-		current.incrementPosition(4);
-	}
-	return new BlockParsedResult(false);
-}
-
-private BlockParsedResult parseIsoIec646Block() throws FormatException {
-	while (isStillIsoIec646(current.getPosition())) {
-		DecodedChar iso = decodeIsoIec646(current.getPosition());
-		current.setPosition(iso.getNewPosition());
-
-		if (iso.isFNC1()) {
-			DecodedInformation information = new DecodedInformation(current.getPosition(), buffer.toString());
-			return new BlockParsedResult(information, true);
-		}
-		buffer.append(iso.getValue());
-	}
-
-	if (isAlphaOr646ToNumericLatch(current.getPosition())) {
-		current.incrementPosition(3);
-		current.setNumeric();
-	}
-	else if (isAlphaTo646ToAlphaLatch(current.getPosition())) {
-		if (current.getPosition() + 5 < this.information.getSize()) {
-			current.incrementPosition(5);
-		}
-		else {
-			current.setPosition(this.information.getSize());
-		}
-
-		current.setAlpha();
-	}
-	return new BlockParsedResult(false);
-}
-
-private BlockParsedResult parseAlphaBlock() {
-	while (isStillAlpha(current.getPosition())) {
-		DecodedChar alpha = decodeAlphanumeric(current.getPosition());
-		current.setPosition(alpha.getNewPosition());
-
-		if (alpha.isFNC1()) {
-			DecodedInformation information = new DecodedInformation(current.getPosition(), buffer.toString());
-			return new BlockParsedResult(information, true); //end of the char block
-		}
-
-		buffer.append(alpha.getValue());
-	}
-
-	if (isAlphaOr646ToNumericLatch(current.getPosition())) {
-		current.incrementPosition(3);
-		current.setNumeric();
-	}
-	else if (isAlphaTo646ToAlphaLatch(current.getPosition())) {
-		if (current.getPosition() + 5 < this.information.getSize()) {
-			current.incrementPosition(5);
-		}
-		else {
-			current.setPosition(this.information.getSize());
-		}
-
-		current.setIsoIec646();
-	}
-	return new BlockParsedResult(false);
-}
-
-private boolean isStillIsoIec646(int pos) {
-	if (pos + 5 > this.information.getSize()) {
-		return false;
-	}
-
-	int fiveBitValue = extractNumericValueFromBitArray(pos, 5);
-	if (fiveBitValue >= 5 && fiveBitValue < 16) {
-		return true;
-	}
-
-	if (pos + 7 > this.information.getSize()) {
-		return false;
-	}
-
-	int sevenBitValue = extractNumericValueFromBitArray(pos, 7);
-	if (sevenBitValue >= 64 && sevenBitValue < 116) {
-		return true;
-	}
-
-	if (pos + 8 > this.information.getSize()) {
-		return false;
-	}
-
-	int eightBitValue = extractNumericValueFromBitArray(pos, 8);
-	return eightBitValue >= 232 && eightBitValue < 253;
-
-}
-
-private DecodedChar decodeIsoIec646(int pos) throws FormatException {
-	int fiveBitValue = extractNumericValueFromBitArray(pos, 5);
-	if (fiveBitValue == 15) {
-		return new DecodedChar(pos + 5, DecodedChar.FNC1);
-	}
-
-	if (fiveBitValue >= 5 && fiveBitValue < 15) {
-		return new DecodedChar(pos + 5, (char)('0' + fiveBitValue - 5));
-	}
-
-	int sevenBitValue = extractNumericValueFromBitArray(pos, 7);
-
-	if (sevenBitValue >= 64 && sevenBitValue < 90) {
-		return new DecodedChar(pos + 7, (char)(sevenBitValue + 1));
-	}
-
-	if (sevenBitValue >= 90 && sevenBitValue < 116) {
-		return new DecodedChar(pos + 7, (char)(sevenBitValue + 7));
-	}
-
-	int eightBitValue = extractNumericValueFromBitArray(pos, 8);
-	char c;
-	switch (eightBitValue) {
-	case 232:
-		c = '!';
-		break;
-	case 233:
-		c = '"';
-		break;
-	case 234:
-		c = '%';
-		break;
-	case 235:
-		c = '&';
-		break;
-	case 236:
-		c = '\'';
-		break;
-	case 237:
-		c = '(';
-		break;
-	case 238:
-		c = ')';
-		break;
-	case 239:
-		c = '*';
-		break;
-	case 240:
-		c = '+';
-		break;
-	case 241:
-		c = ',';
-		break;
-	case 242:
-		c = '-';
-		break;
-	case 243:
-		c = '.';
-		break;
-	case 244:
-		c = '/';
-		break;
-	case 245:
-		c = ':';
-		break;
-	case 246:
-		c = ';';
-		break;
-	case 247:
-		c = '<';
-		break;
-	case 248:
-		c = '=';
-		break;
-	case 249:
-		c = '>';
-		break;
-	case 250:
-		c = '?';
-		break;
-	case 251:
-		c = '_';
-		break;
-	case 252:
-		c = ' ';
-		break;
-	default:
-		throw FormatException.getFormatInstance();
-	}
-	return new DecodedChar(pos + 8, c);
-}
-
-private boolean isStillAlpha(int pos) {
-	if (pos + 5 > this.information.getSize()) {
-		return false;
-	}
-
-	// We now check if it's a valid 5-bit value (0..9 and FNC1)
-	int fiveBitValue = extractNumericValueFromBitArray(pos, 5);
-	if (fiveBitValue >= 5 && fiveBitValue < 16) {
-		return true;
-	}
-
-	if (pos + 6 > this.information.getSize()) {
-		return false;
-	}
-
-	int sixBitValue = extractNumericValueFromBitArray(pos, 6);
-	return sixBitValue >= 16 && sixBitValue < 63; // 63 not included
-}
-
-private DecodedChar decodeAlphanumeric(int pos) {
-	int fiveBitValue = extractNumericValueFromBitArray(pos, 5);
-	if (fiveBitValue == 15) {
-		return new DecodedChar(pos + 5, DecodedChar.FNC1);
-	}
-
-	if (fiveBitValue >= 5 && fiveBitValue < 15) {
-		return new DecodedChar(pos + 5, (char)('0' + fiveBitValue - 5));
-	}
-
-	int sixBitValue = extractNumericValueFromBitArray(pos, 6);
-
-	if (sixBitValue >= 32 && sixBitValue < 58) {
-		return new DecodedChar(pos + 6, (char)(sixBitValue + 33));
-	}
-
-	char c;
-	switch (sixBitValue) {
-	case 58:
-		c = '*';
-		break;
-	case 59:
-		c = ',';
-		break;
-	case 60:
-		c = '-';
-		break;
-	case 61:
-		c = '.';
-		break;
-	case 62:
-		c = '/';
-		break;
-	default:
-		throw new IllegalStateException("Decoding invalid alphanumeric value: " + sixBitValue);
-	}
-	return new DecodedChar(pos + 6, c);
-}
-
-private boolean isAlphaTo646ToAlphaLatch(int pos) {
-	if (pos + 1 > this.information.getSize()) {
-		return false;
-	}
-
-	for (int i = 0; i < 5 && i + pos < this.information.getSize(); ++i) {
-		if (i == 2) {
-			if (!this.information.get(pos + 2)) {
-				return false;
-			}
-		}
-		else if (this.information.get(pos + i)) {
-			return false;
-		}
-	}
-
-	return true;
-}
-
-private boolean isAlphaOr646ToNumericLatch(int pos) {
-	// Next is alphanumeric if there are 3 positions and they are all zeros
-	if (pos + 3 > this.information.getSize()) {
-		return false;
-	}
-
-	for (int i = pos; i < pos + 3; ++i) {
-		if (this.information.get(i)) {
-			return false;
-		}
-	}
-	return true;
-}
-
-private boolean isNumericToAlphaNumericLatch(int pos) {
-	// Next is alphanumeric if there are 4 positions and they are all zeros, or
-	// if there is a subset of this just before the end of the symbol
-	if (pos + 1 > this.information.getSize()) {
-		return false;
-	}
-
-	for (int i = 0; i < 4 && i + pos < this.information.getSize(); ++i) {
-		if (this.information.get(pos + i)) {
-			return false;
-		}
-	}
-	return true;
-}
-
-} // GeneralAppIdDecoder
 
 /**
 * @author Pablo Orduña, University of Deusto (pablo.orduna@deusto.es)
@@ -620,57 +114,225 @@ DecodeAI01AndOtherAIs(const BitArray& bits)
 {
 	static const int HEADER_SIZE = 1 + 1 + 2; //first bit encodes the linkage flag,
 													  //the second one is the encodation method, and the other two are for the variable length
-	std::string buff;
-	buff.append("(01)");
-	size_t initialGtinPosition = buff.length();
-	int firstGtinDigit = this.getGeneralDecoder().extractNumericValueFromBitArray(HEADER_SIZE, 4);
-	buff.append(firstGtinDigit);
+	std::string buffer;
+	buffer.append("(01)");
+	size_t initialGtinPosition = buffer.length();
+	int firstGtinDigit = GenericAppIdDecoder::ExtractNumeric(bits, HEADER_SIZE, 4);
+	AppendInt(buffer, firstGtinDigit);
 
-	this.encodeCompressedGtinWithoutAI(buff, HEADER_SIZE + 4, initialGtinPosition);
+	AI01EncodeCompressedGtinWithoutAI(buffer, bits, HEADER_SIZE + 4, initialGtinPosition);
+	if (StatusIsOK(GenericAppIdDecoder::DecodeAllCodes(bits, HEADER_SIZE + 44, buffer))) {
+		return buffer;
+	}
+	return std::string();
+}
 
-	return this.getGeneralDecoder().decodeAllCodes(buff, HEADER_SIZE + 44);
+static std::string
+DecodeAnyAI(const BitArray& bits)
+{
+	static const int HEADER_SIZE = 2 + 1 + 2;
+	std::string buffer;
+	if (StatusIsOK(GenericAppIdDecoder::DecodeAllCodes(bits, HEADER_SIZE, buffer))) {
+		return buffer;
+	}
+	return std::string();
+}
+
+static std::string
+DecodeAI013103(const BitArray& bits)
+{
+	static const int HEADER_SIZE = 4 + 1;
+	static const int WEIGHT_SIZE = 15;
+
+	if (bits.size() != HEADER_SIZE + AI01_GTIN_SIZE + WEIGHT_SIZE) {
+		return std::string();
 	}
 
+	std::string buffer;
+	AI01EncodeCompressedGtin(buffer, bits, HEADER_SIZE);
+	AI01EncodeCompressedWeight(buffer, bits, HEADER_SIZE + AI01_GTIN_SIZE, WEIGHT_SIZE,
+		// addWeightCode
+		[](std::string& buf, int weight) { buf.append("(3103)"); },
+		// checkWeight
+		[](int weight) { return weight; });
+
+	return buffer;
+}
+
+static std::string
+DecodeAI01320x(const BitArray& bits)
+{
+	static const int HEADER_SIZE = 4 + 1;
+	static const int WEIGHT_SIZE = 15;
+
+	if (bits.size() != HEADER_SIZE + AI01_GTIN_SIZE + WEIGHT_SIZE) {
+		return std::string();
+	}
+
+	std::string buffer;
+	AI01EncodeCompressedGtin(buffer, bits, HEADER_SIZE);
+	AI01EncodeCompressedWeight(buffer, bits, HEADER_SIZE + AI01_GTIN_SIZE, WEIGHT_SIZE,
+		// addWeightCode
+		[](std::string& buf, int weight) { buf.append(weight < 10000 ? "(3202)" : "(3203)"); },
+		// checkWeight
+		[](int weight) { return weight < 10000 ? weight : weight - 10000; });
+
+	return buffer;
+}
+
+static std::string
+DecodeAI01392x(const BitArray& bits)
+{
+	static const int HEADER_SIZE = 5 + 1 + 2;
+	static const int LAST_DIGIT_SIZE = 2;
+
+	if (bits.size() < HEADER_SIZE + AI01_GTIN_SIZE) {
+		return std::string();
+	}
+
+	std::string buffer;
+	AI01EncodeCompressedGtin(buffer, bits, HEADER_SIZE);
+
+	int lastAIdigit = GenericAppIdDecoder::ExtractNumeric(bits, HEADER_SIZE + AI01_GTIN_SIZE, LAST_DIGIT_SIZE);
+	buffer.append("(392");
+	AppendInt(buffer, lastAIdigit);
+	buffer.push_back(')');
+
+	if (StatusIsOK(GenericAppIdDecoder::DecodeGeneralPurposeField(bits, HEADER_SIZE + AI01_GTIN_SIZE + LAST_DIGIT_SIZE, buffer))) {
+		return buffer;
+	}
+	return std::string();
+}
+
+static std::string
+DecodeAI01393x(const BitArray& bits)
+{
+	static const int HEADER_SIZE = 5 + 1 + 2;
+	static const int LAST_DIGIT_SIZE = 2;
+	static const int FIRST_THREE_DIGITS_SIZE = 10;
+
+	if (bits.size() < HEADER_SIZE + AI01_GTIN_SIZE) {
+		return std::string();
+	}
+
+	std::string buffer;
+	AI01EncodeCompressedGtin(buffer, bits, HEADER_SIZE);
+
+	int lastAIdigit = GenericAppIdDecoder::ExtractNumeric(bits, HEADER_SIZE + AI01_GTIN_SIZE, LAST_DIGIT_SIZE);
+
+	buffer.append("(393");
+	AppendInt(buffer, lastAIdigit);
+	buffer.push_back(')');
+
+	int firstThreeDigits = GenericAppIdDecoder::ExtractNumeric(bits, HEADER_SIZE + AI01_GTIN_SIZE + LAST_DIGIT_SIZE, FIRST_THREE_DIGITS_SIZE);
+	if (firstThreeDigits / 100 == 0) {
+		buffer.push_back('0');
+	}
+	if (firstThreeDigits / 10 == 0) {
+		buffer.push_back('0');
+	}
+	AppendInt(buffer, firstThreeDigits);
+
+	if (StatusIsOK(GenericAppIdDecoder::DecodeGeneralPurposeField(bits, HEADER_SIZE + AI01_GTIN_SIZE + LAST_DIGIT_SIZE + FIRST_THREE_DIGITS_SIZE, buffer))) {
+		return buffer;
+	}
+	return std::string();
+}
+
+static std::string
+DecodeAI013x0x1x(const BitArray& bits, const char* firstAIdigits, const char* dateCode)
+{
+	static const int HEADER_SIZE = 7 + 1;
+	static const int WEIGHT_SIZE = 20;
+	static const int DATE_SIZE = 16;
+
+	if (bits.size() != HEADER_SIZE + AI01_GTIN_SIZE + WEIGHT_SIZE + DATE_SIZE) {
+		return std::string();
+	}
+
+	std::string buffer;
+	AI01EncodeCompressedGtin(buffer, bits, HEADER_SIZE);
+	AI01EncodeCompressedWeight(buffer, bits, HEADER_SIZE + AI01_GTIN_SIZE, WEIGHT_SIZE,
+		// addWeightCode
+		[firstAIdigits](std::string& buf, int weight) {
+			buf.push_back('(');
+			buf.append(firstAIdigits);
+			AppendInt(buf, weight / 100000);
+			buf.push_back(')');
+		},
+		// checkWeight
+		[](int weight) {
+			return weight % 100000;
+		});
+
+	// encode compressed date
+	int numericDate = GenericAppIdDecoder::ExtractNumeric(bits, HEADER_SIZE + AI01_GTIN_SIZE + WEIGHT_SIZE, DATE_SIZE);
+	if (numericDate != 38400) {
+		buffer.push_back('(');
+		buffer.append(dateCode);
+		buffer.push_back(')');
+
+		int day = numericDate % 32;
+		numericDate /= 32;
+		int month = numericDate % 12 + 1;
+		numericDate /= 12;
+		int year = numericDate;
+
+		if (year / 10 == 0) {
+			buffer.push_back('0');
+		}
+		AppendInt(buffer, year);
+		if (month / 10 == 0) {
+			buffer.push_back('0');
+		}
+		AppendInt(buffer, month);
+		if (day / 10 == 0) {
+			buffer.push_back('0');
+		}
+		AppendInt(buffer, day);
+	}
+
+	return buffer;
 }
 
 std::string
 ExpandedBinaryDecoder::Decode(const BitArray& bits)
 {
 	if (bits.get(1)) {
-		return new AI01AndOtherAIs(information);
+		return DecodeAI01AndOtherAIs(bits);
 	}
 	if (!bits.get(2)) {
-		return new AnyAIDecoder(information);
+		return DecodeAnyAI(bits);
 	}
 
-	int fourBitEncodationMethod = GeneralAppIdDecoder.extractNumericValueFromBitArray(information, 1, 4);
+	int fourBitEncodationMethod = GenericAppIdDecoder::ExtractNumeric(bits, 1, 4);
 
 	switch (fourBitEncodationMethod) {
-	case 4: return new AI013103decoder(information);
-	case 5: return new AI01320xDecoder(information);
+	case 4: return DecodeAI013103(bits);
+	case 5: return DecodeAI01320x(bits);
 	}
 
-	int fiveBitEncodationMethod = GeneralAppIdDecoder.extractNumericValueFromBitArray(information, 1, 5);
+	int fiveBitEncodationMethod = GenericAppIdDecoder::ExtractNumeric(bits, 1, 5);
 	switch (fiveBitEncodationMethod) {
-	case 12: return new AI01392xDecoder(information);
-	case 13: return new AI01393xDecoder(information);
+	case 12: return DecodeAI01392x(bits);
+	case 13: return DecodeAI01393x(bits);
 	}
 
-	int sevenBitEncodationMethod = GeneralAppIdDecoder.extractNumericValueFromBitArray(information, 1, 7);
+	int sevenBitEncodationMethod = GenericAppIdDecoder::ExtractNumeric(bits, 1, 7);
 	switch (sevenBitEncodationMethod) {
-	case 56: return new AI013x0x1xDecoder(information, "310", "11");
-	case 57: return new AI013x0x1xDecoder(information, "320", "11");
-	case 58: return new AI013x0x1xDecoder(information, "310", "13");
-	case 59: return new AI013x0x1xDecoder(information, "320", "13");
-	case 60: return new AI013x0x1xDecoder(information, "310", "15");
-	case 61: return new AI013x0x1xDecoder(information, "320", "15");
-	case 62: return new AI013x0x1xDecoder(information, "310", "17");
-	case 63: return new AI013x0x1xDecoder(information, "320", "17");
+	case 56: return DecodeAI013x0x1x(bits, "310", "11");
+	case 57: return DecodeAI013x0x1x(bits, "320", "11");
+	case 58: return DecodeAI013x0x1x(bits, "310", "13");
+	case 59: return DecodeAI013x0x1x(bits, "320", "13");
+	case 60: return DecodeAI013x0x1x(bits, "310", "15");
+	case 61: return DecodeAI013x0x1x(bits, "320", "15");
+	case 62: return DecodeAI013x0x1x(bits, "310", "17");
+	case 63: return DecodeAI013x0x1x(bits, "320", "17");
 	}
 
-	throw new IllegalStateException("unknown decoder: " + information);
+	return std::string();
+	//throw new IllegalStateException("unknown decoder: " + information);
 }
-
 
 } // RSS
 } // OneD

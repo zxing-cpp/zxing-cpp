@@ -28,7 +28,7 @@ namespace QRCode {
 class Reader : public ZXing::Reader
 {
 public:
-	virtual Result decode(const BinaryBitmap& image, const DecodeHints* hints = nullptr) const override;
+	virtual Result decode(const BinaryBitmap& image, const DecodeHints* hints = nullptr) override;
 };
 
 } // QRCode

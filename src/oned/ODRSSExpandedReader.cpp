@@ -16,6 +16,7 @@
 
 #include "oned/ODRSSExpandedReader.h"
 #include "oned/rss/ODRSSReaderHelper.h"
+#include "oned/rss/ODRSSExpandedBinaryDecoder.h"
 #include "Result.h"
 #include "BitArray.h"
 
@@ -323,6 +324,7 @@ AdjustOddEvenCounts(int numModules, std::array<int, 4>& oddCounts, std::array<in
 	if (decrementEven) {
 		evenCounts[std::min_element(evenRoundingErrors.begin(), evenRoundingErrors.end()) - evenRoundingErrors.begin()] -= 1;
 	}
+	return true;
 }
 
 static DataCharacter
@@ -749,19 +751,15 @@ ConstructResult(const std::list<ExpandedPair>& pairs)
 		return Result(ErrorStatus::NotFound);
 	}
 
-	BitArray binary = BuildBitArray(pairs);
-	AbstractExpandedDecoder decoder = AbstractExpandedDecoder.createDecoder(binary);
-	String resultingString = decoder.parseInformation();
+	auto resultString = ExpandedBinaryDecoder::Decode(BuildBitArray(pairs));
+	if (resultString.empty()) {
+		return Result(ErrorStatus::NotFound);
+	}
 
-	ResultPoint[] firstPoints = pairs.get(0).getFinderPattern().getResultPoints();
-	ResultPoint[] lastPoints = pairs.get(pairs.size() - 1).getFinderPattern().getResultPoints();
+	auto& firstPoints = pairs.front().finderPattern().points();
+	auto& lastPoints = pairs.back().finderPattern().points();
 
-	return new Result(
-		resultingString,
-		null,
-		new ResultPoint[]{ firstPoints[0], firstPoints[1], lastPoints[0], lastPoints[1] },
-		BarcodeFormat.RSS_EXPANDED
-	);
+	return Result(resultString, ByteArray(), { firstPoints[0], firstPoints[1], lastPoints[0], lastPoints[1] }, BarcodeFormat::RSS_EXPANDED);
 }
 
 Result
@@ -771,17 +769,9 @@ RSSExpandedReader::decodeRow(int rowNumber, const BitArray& row, const DecodeHin
 	// So lets try twice
 	Result r = ConstructResult(DecodeRow2Pairs(rowNumber, row, false, _rows));
 	if (!r.isValid()) {
-		ConstructResult(DecodeRow2Pairs(rowNumber, row, true, _rows));
-			return r;
-		}
+		r = ConstructResult(DecodeRow2Pairs(rowNumber, row, true, _rows));
 	}
-
-	auto pairs = DecodeRow2Pairs(rowNumber, row, true, *_rows);
-	if (!pairs.empty()) {
-		return ConstructResult(pairs);
-	}
-
-	return Result(ErrorStatus::NotFound);
+	return r;
 }
 
 } // OneD

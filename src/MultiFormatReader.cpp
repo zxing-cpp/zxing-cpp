@@ -84,7 +84,7 @@ BuildReaders(const DecodeHints* hints)
 		if (!tryHarder) {
 			readers.push_back(std::make_shared<OneD::MultiFormatReader>(hints));
 		}
-		readers.push_back(std::make_shared<QRCodeReader>());
+		readers.push_back(std::make_shared<QRCode::Reader>());
 		readers.push_back(std::make_shared<DataMatrixReader>());
 		readers.push_back(std::make_shared<AztecReader>());
 		readers.push_back(std::make_shared<PDF417Reader>());

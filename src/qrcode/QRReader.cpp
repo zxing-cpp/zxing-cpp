@@ -142,7 +142,7 @@ ErrorStatus ExtractPureBits(const BitMatrix& image, BitMatrix& outBits)
 } // anonymous
 
 Result
-Reader::decode(const BinaryBitmap& image, const DecodeHints* hints) const
+Reader::decode(const BinaryBitmap& image, const DecodeHints* hints)
 {
 	DecoderResult decoderResult(ErrorStatus::NotFound);
 	std::vector<ResultPoint> points;
