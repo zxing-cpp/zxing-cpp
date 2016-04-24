@@ -81,6 +81,20 @@ namespace ZXing {
 //	return matrix;
 //}
 
+BitMatrix::BitMatrix() :
+	_width(0),
+	_height(0),
+	_rowSize(0)
+{}
+
+BitMatrix::BitMatrix(int width, int height) :
+	_width(width),
+	_height(height),
+	_rowSize((width + 31) / 32)
+{
+	_bits.resize(_rowSize * _height, 0);
+}
+
 void
 BitMatrix::init(int width, int height)
 {
@@ -192,7 +206,7 @@ BitMatrix::setRegion(int left, int top, int width, int height)
 * @param row {@link BitArray} to copy from
 */
 void
-BitMatrix::setRow(int y, BitArray row)
+BitMatrix::setRow(int y, const BitArray& row)
 {
 	if (row.size() != _rowSize) {
 		throw std::invalid_argument("BitMatrix::setRegion(): row sizes do not match");

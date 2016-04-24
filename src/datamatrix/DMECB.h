@@ -18,14 +18,12 @@
 #include <array>
 
 namespace ZXing {
-namespace QRCode {
+namespace DataMatrix {
 
 /**
 * <p>Encapsualtes the parameters for one error-correction block in one symbol version.
 * This includes the number of data codewords, and the number of times a block with these
-* parameters is used consecutively in the QR code version's format.</p>
-*
-* @author Sean Owen
+* parameters is used consecutively in the Data Matrix code version's format.</p>
 */
 struct ECB
 {
@@ -38,8 +36,6 @@ struct ECB
 * use blocks of differing sizes within one version, so, this encapsulates the parameters for
 * each set of blocks. It also holds the number of error-correction codewords per block since it
 * will be the same across all blocks within one version.</p>
-*
-* @author Sean Owen
 */
 struct ECBlocks
 {
@@ -64,6 +60,5 @@ struct ECBlocks
 	}
 };
 
-
-} // QRCode
+} // DataMatrix
 } // ZXing

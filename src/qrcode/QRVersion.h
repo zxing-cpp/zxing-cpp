@@ -55,7 +55,7 @@ public:
 		return _ecBlocks[(int)ecLevel];
 	}
 
-	BitMatrix buildFunctionPattern() const;
+	void buildFunctionPattern(BitMatrix &bitMatrix) const;
 	
 	/**
 	* <p>Deduces version information purely from QR Code dimensions.</p>

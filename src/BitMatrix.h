@@ -45,18 +45,9 @@ class BitMatrix
 	std::vector<uint32_t> _bits;
 
 public:
-	BitMatrix() : _width(0), _height(0), _rowSize(0) {}
-
-	// Construct a square matrix.
-	explicit BitMatrix(int dimension) : _width(dimension), _height(dimension), _rowSize((dimension + 31) / 32)
-	{
-		_bits.resize(_rowSize * _height, 0);
-	}
-
-	BitMatrix(int width, int height) : _width(width), _height(height), _rowSize((width + 31) / 32)
-	{
-		_bits.resize(_rowSize * _height, 0);
-	}
+	BitMatrix();
+	BitMatrix(int width, int height);
+	explicit BitMatrix(int dimension) : BitMatrix(dimension, dimension) {} // Construct a square matrix.
 
 	//void parse(const std::string& stringRepresentation, const std::string& setString, const std::string& unsetString);
 
@@ -124,7 +115,7 @@ public:
 	* @param y row to set
 	* @param row {@link BitArray} to copy from
 	*/
-	void setRow(int y, BitArray row);
+	void setRow(int y, const BitArray& row);
 
 	/**
 	* Modifies this {@code BitMatrix} to represent the same but rotated 180 degrees

@@ -67,7 +67,7 @@ public:
 	* @return The 2D array of bits for the image (true means black).
 	* @throws NotFoundException if image can't be binarized to make a matrix
 	*/
-	ErrorStatus getBlackMatrix(BitMatrix &outMatrix) const;
+	ErrorStatus getBlackMatrix(BitMatrix& outMatrix) const;
 
 	/**
 	* @return Whether this bitmap can be cropped.

@@ -43,23 +43,7 @@ public:
 	* @throws FormatException if the QR Code cannot be decoded
 	* @throws ChecksumException if error correction fails
 	*/
-	//DecoderResult decode(boolean[][] image, Map<DecodeHintType, ? > hints)
-	//	throws ChecksumException, FormatException{
-	//	int dimension = image.length;
-	//BitMatrix bits = new BitMatrix(dimension);
-	//for (int i = 0; i < dimension; i++) {
-	//	for (int j = 0; j < dimension; j++) {
-	//		if (image[i][j]) {
-	//			bits.set(j, i);
-	//		}
-	//	}
-	//}
-	//return decode(bits, hints);
-	//}
-
-	//public DecoderResult decode(BitMatrix bits) throws ChecksumException, FormatException{
-	//	return decode(bits, null);
-	//}
+	//DecoderResult decode(boolean[][] image, Map<DecodeHintType, ? > hints);
 
 	/**
 	* <p>Decodes a QR Code represented as a {@link BitMatrix}. A 1 or "true" is taken to mean a black module.</p>
@@ -71,39 +55,6 @@ public:
 	* @throws ChecksumException if error correction fails
 	*/
 	static DecoderResult Decode(const BitMatrix& bits, const DecodeHints* hints = nullptr);
-
-	//private DecoderResult decode(BitMatrixParser parser, Map<DecodeHintType, ? > hints)
-	//	throws FormatException, ChecksumException{
-	//	Version version = parser.readVersion();
-	//ErrorCorrectionLevel ecLevel = parser.readFormatInformation().getErrorCorrectionLevel();
-
-	//// Read codewords
-	//byte[] codewords = parser.readCodewords();
-	//// Separate into data blocks
-	//DataBlock[] dataBlocks = DataBlock.getDataBlocks(codewords, version, ecLevel);
-
-	//// Count total number of data bytes
-	//int totalBytes = 0;
-	//for (DataBlock dataBlock : dataBlocks) {
-	//	totalBytes += dataBlock.getNumDataCodewords();
-	//}
-	//byte[] resultBytes = new byte[totalBytes];
-	//int resultOffset = 0;
-
-	//// Error-correct and copy data blocks together into a stream of bytes
-	//for (DataBlock dataBlock : dataBlocks) {
-	//	byte[] codewordBytes = dataBlock.getCodewords();
-	//	int numDataCodewords = dataBlock.getNumDataCodewords();
-	//	correctErrors(codewordBytes, numDataCodewords);
-	//	for (int i = 0; i < numDataCodewords; i++) {
-	//		resultBytes[resultOffset++] = codewordBytes[i];
-	//	}
-	//}
-
-	//// Decode the contents of that stream of bytes
-	//return DecodedBitStreamParser.decode(resultBytes, version, ecLevel, hints);
-	//}
-
 };
 
 } // QRCode

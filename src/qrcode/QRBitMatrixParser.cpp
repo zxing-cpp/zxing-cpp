@@ -143,14 +143,20 @@ BitMatrixParser::ParseVersionInfo(const BitMatrix& bitMatrix, bool mirrored, con
 * @return bytes encoded within the QR Code
 * @throws FormatException if the exact number of bytes expected is not read
 */
-ByteArray
-BitMatrixParser::ReadCodewords(const BitMatrix& bitMatrix, const Version& version)
+ErrorStatus
+BitMatrixParser::ReadCodewords(const BitMatrix& bitMatrix, const Version& version, ByteArray& result)
 {
-	BitMatrix functionPattern = version.buildFunctionPattern();
+	int dimension = bitMatrix.height();
+	if (dimension < 21 || (dimension & 0x03) != 1) {
+		return ErrorStatus::FormatError;
+	}
+
+	BitMatrix functionPattern;
+	version.buildFunctionPattern(functionPattern);
 	int dimension = bitMatrix.height();
 
 	bool readingUp = true;
-	ByteArray result(version.totalCodewords());
+	result.resize(version.totalCodewords());
 	int resultOffset = 0;
 	int currentByte = 0;
 	int bitsRead = 0;
@@ -184,7 +190,7 @@ BitMatrixParser::ReadCodewords(const BitMatrix& bitMatrix, const Version& versio
 		}
 		readingUp ^= true; // readingUp = !readingUp; // switch directions
 	}
-	return resultOffset == version.totalCodewords() ? result : ByteArray();
+	return resultOffset == version.totalCodewords() ? ErrorStatus::NoError : ErrorStatus::FormatError;
 }
 
 } // QRCode

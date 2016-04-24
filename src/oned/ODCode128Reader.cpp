@@ -208,7 +208,7 @@ FindStartPattern(const BitArray& row, int& begin, int& end, int& startCode)
 }
 
 static ErrorStatus
-DecodeCode(const BitArray &row, std::vector<int>& counters, int rowOffset, int& outCode)
+DecodeCode(const BitArray& row, std::vector<int>& counters, int rowOffset, int& outCode)
 {
 	ErrorStatus status = Reader::RecordPattern(row, rowOffset, counters);
 	if (StatusIsError(status)) {

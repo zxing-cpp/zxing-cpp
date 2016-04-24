@@ -16,9 +16,6 @@
 */
 
 namespace ZXing {
-
-class String;
-
 namespace QRCode {
 
 /**
@@ -35,7 +32,7 @@ enum class ErrorCorrectionLevel
 	Quality,		// Q = ~25% correction
 };
 
-String ToString(ErrorCorrectionLevel l);
+const char* ToString(ErrorCorrectionLevel l);
 
 } // QRCode
 } // ZXing

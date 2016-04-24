@@ -353,11 +353,11 @@ Version::DecodeVersionInformation(int versionBits)
 /**
 * See ISO 18004:2006 Annex E
 */
-BitMatrix
-Version::buildFunctionPattern() const
+void
+Version::buildFunctionPattern(BitMatrix &bitMatrix) const
 {
 	int dimension = dimensionForVersion();
-	BitMatrix bitMatrix(dimension);
+	bitMatrix.init(dimension, dimension);
 
 	// Top left finder pattern + separator + format
 	bitMatrix.setRegion(0, 0, 9, 9);
@@ -390,7 +390,6 @@ Version::buildFunctionPattern() const
 		// Version info, bottom left
 		bitMatrix.setRegion(0, dimension - 11, 6, 3);
 	}
-	return bitMatrix;
 }
 
 } // QRCode

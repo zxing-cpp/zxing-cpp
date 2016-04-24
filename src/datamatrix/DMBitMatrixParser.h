@@ -1,3 +1,4 @@
+#pragma once
 /*
 * Copyright 2016 ZXing authors
 *
@@ -14,17 +15,22 @@
 * limitations under the License.
 */
 
-#include "qrcode/QRErrorCorrectionLevel.h"
-#include "ZXString.h"
-
 namespace ZXing {
-namespace QRCode {
 
-const char* ToString(ErrorCorrectionLevel l)
+enum class ErrorStatus;
+class BitMatrix;
+class ByteArray;
+
+namespace DataMatrix {
+
+class Version;
+
+class BitMatrixParser
 {
-	static const char* const LEVEL_STR[] = { "M", "L", "H", "Q" };
-	return LEVEL_STR[static_cast<int>(l)];
-}
+public:
+	static ErrorStatus ReadCodewords(const BitMatrix& bits, ByteArray& result);
+	static const Version* ReadVersion(const BitMatrix& bits);
+};
 
-} // QRCode
+} // DataMatrix
 } // ZXing

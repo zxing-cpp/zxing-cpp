@@ -23,16 +23,12 @@ DecoderResult::DecoderResult(ErrorStatus status) :
 {
 }
 
-DecoderResult::DecoderResult(const ByteArray& rawBytes, const String& text, std::list<ByteArray>& byteSegments, const String& ecLevel) :
-	_status(ErrorStatus::NoError),
-	_rawBytes(rawBytes),
-	_text(text),
-	_byteSegments(byteSegments),
-	_ecLevel(ecLevel)
+DecoderResult::DecoderResult(const ByteArray& rawBytes, const String& text, std::list<ByteArray>& byteSegments, const std::string& ecLevel) :
+	DecoderResult(rawBytes, text, byteSegments, ecLevel, 0, 0)
 {
 }
 
-DecoderResult::DecoderResult(const ByteArray& rawBytes, const String& text, std::list<ByteArray>& byteSegments, const String& ecLevel, int saSequence, int saParity) :
+DecoderResult::DecoderResult(const ByteArray& rawBytes, const String& text, std::list<ByteArray>& byteSegments, const std::string& ecLevel, int saSequence, int saParity) :
 	_status(ErrorStatus::NoError),
 	_rawBytes(rawBytes),
 	_text(text),

@@ -443,13 +443,17 @@ DecoderResult DoDecode(const BitMatrix& bits, const Version& version, const Form
 	auto ecLevel = formatInfo.errorCorrectionLevel();
 
 	// Read codewords
-	auto codewords = BitMatrixParser::ReadCodewords(bits, version);
+	ByteArray codewords;
+	ErrorStatus status = BitMatrixParser::ReadCodewords(bits, version, codewords);
+	if (StatusIsError(status)) {
+		return DecoderResult(status);
+	}
 	// Separate into data blocks
 	std::vector<DataBlock> dataBlocks;
-	ErrorStatus status = DataBlock::GetDataBlocks(codewords, version, ecLevel, dataBlocks);
-	if (StatusIsError(status))
+	status = DataBlock::GetDataBlocks(codewords, version, ecLevel, dataBlocks);
+	if (StatusIsError(status)) {
 		return DecoderResult(status);
-
+	}
 	// Count total number of data bytes
 	int totalBytes = 0;
 	for (DataBlock dataBlock : dataBlocks) {
@@ -465,9 +469,9 @@ DecoderResult DoDecode(const BitMatrix& bits, const Version& version, const Form
 		int numDataCodewords = dataBlock.numDataCodewords();
 		
 		status = CorrectErrors(codewordBytes, numDataCodewords);
-		if (StatusIsError(status))
+		if (StatusIsError(status)) {
 			return DecoderResult(status);
-
+		}
 		for (int i = 0; i < numDataCodewords; i++) {
 			resultBytes[resultOffset++] = codewordBytes[i];
 		}

@@ -30,9 +30,8 @@
 namespace ZXing {
 namespace QRCode {
 
-namespace {
-
-ErrorStatus GetModuleSize(int x, int y, BitMatrix image, float& outSize)
+static float
+GetModuleSize(int x, int y, const BitMatrix& image)
 {
 	int orgX = x;
 	int height = image.height();
@@ -50,10 +49,9 @@ ErrorStatus GetModuleSize(int x, int y, BitMatrix image, float& outSize)
 		y++;
 	}
 	if (x == width || y == height) {
-		return ErrorStatus::NotFound;
+		return 0.0f;
 	}
-	outSize = (x - orgX) / 7.0f;
-	return ErrorStatus::NoError;
+	return static_cast<float>(x - orgX) / 7.0f;
 }
 
 /**
@@ -64,18 +62,18 @@ ErrorStatus GetModuleSize(int x, int y, BitMatrix image, float& outSize)
 *
 * @see com.google.zxing.datamatrix.DataMatrixReader#extractPureBits(BitMatrix)
 */
-ErrorStatus ExtractPureBits(const BitMatrix& image, BitMatrix& outBits)
+static ErrorStatus
+ExtractPureBits(const BitMatrix& image, BitMatrix& outBits)
 {
 	int left, top, right, bottom;
-	if (!image.getTopLeftOnBit(left, top) || !image.getBottomRightOnBit(right, bottom))
-	{
+	if (!image.getTopLeftOnBit(left, top) || !image.getBottomRightOnBit(right, bottom)) {
 		return ErrorStatus::NotFound;
 	}
 
-	float moduleSize;
-	auto status = GetModuleSize(left, top, image, moduleSize);
-	if (StatusIsError(status))
-		return status;
+	float moduleSize = GetModuleSize(left, top, image);
+	if (moduleSize <= 0.0f) {
+		return ErrorStatus::NotFound;
+	}
 
 	// Sanity check!
 	if (left >= right || top >= bottom) {
@@ -127,7 +125,7 @@ ErrorStatus ExtractPureBits(const BitMatrix& image, BitMatrix& outBits)
 	}
 
 	// Now just read off the bits
-	outBits = BitMatrix(matrixWidth, matrixHeight);
+	outBits.init(matrixWidth, matrixHeight);
 	for (int y = 0; y < matrixHeight; y++) {
 		int iOffset = top + (int)(y * moduleSize);
 		for (int x = 0; x < matrixWidth; x++) {
@@ -139,36 +137,38 @@ ErrorStatus ExtractPureBits(const BitMatrix& image, BitMatrix& outBits)
 	return ErrorStatus::NoError;
 }
 
-} // anonymous
-
 Result
 Reader::decode(const BinaryBitmap& image, const DecodeHints* hints)
 {
+	BitMatrix binImg;
+	auto status = image.getBlackMatrix(binImg);
+	if (StatusIsError(status)) {
+		return Result(status);
+	}
+
 	DecoderResult decoderResult(ErrorStatus::NotFound);
 	std::vector<ResultPoint> points;
-	if (hints != nullptr && hints->getFlag(DecodeHint::PURE_BARCODE))
-	{
-		BitMatrix binImg;
-		auto status = image.getBlackMatrix(binImg);
-		if (StatusIsError(status))
-			return Result(status);
-
+	if (hints != nullptr && hints->getFlag(DecodeHint::PURE_BARCODE)) {
 		BitMatrix bits;
 		status = ExtractPureBits(binImg, bits);
-		if (StatusIsError(status))
+		if (StatusIsError(status)) {
 			return Result(status);
-
+		}
 		decoderResult = Decoder::Decode(bits, hints);
 	}
 	else {
-		BitMatrix binImg;
-		auto status = image.getBlackMatrix(binImg);
-		if (StatusIsError(status))
-			return Result(status);
-
 		auto detectorResult = Detector::Detect(binImg, hints);
-		decoderResult = Decoder::Decode(detectorResult.bits(), hints);
-		points = detectorResult.points();
+		if (detectorResult.isValid()) {
+			decoderResult = Decoder::Decode(detectorResult.bits(), hints);
+			points = detectorResult.points();
+		}
+		else {
+			decoderResult = DecoderResult(detectorResult.status());
+		}
+	}
+
+	if (!decoderResult.isValid()) {
+		return Result(decoderResult.status());
 	}
 
 	// If the code was mirrored: swap the bottom-left and the top-right points.

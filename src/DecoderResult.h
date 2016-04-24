@@ -39,7 +39,7 @@ class DecoderResult
 	ByteArray _rawBytes;
 	String _text;
 	std::list<ByteArray> _byteSegments;
-	String _ecLevel;
+	std::string _ecLevel;
 	int _errorsCorrected = -1;
 	int _erasures = -1;
 	int _structuredAppendSequenceNumber = 0;
@@ -48,8 +48,8 @@ class DecoderResult
 
 public:
 	explicit DecoderResult(ErrorStatus status);
-	DecoderResult(const ByteArray& rawBytes, const String& text, std::list<ByteArray>& byteSegments, const String& ecLevel);
-	DecoderResult(const ByteArray& rawBytes, const String& text, std::list<ByteArray>& byteSegments, const String& ecLevel, int saSequence, int saParity);
+	DecoderResult(const ByteArray& rawBytes, const String& text, std::list<ByteArray>& byteSegments, const std::string& ecLevel, int saSequence, int saParity);
+	DecoderResult(const ByteArray& rawBytes, const String& text, std::list<ByteArray>& byteSegments, const std::string& ecLevel);
 
 	bool isValid() const {
 		return StatusIsOK(_status);

@@ -15,10 +15,17 @@
 */
 
 #include "BitSource.h"
+#include "ByteArray.h"
 
 #include <stdexcept>
 
 namespace ZXing {
+
+int
+BitSource::available() const
+{
+	return 8 * (_bytes.length() - _byteOffset) - _bitOffset;
+}
 
 int
 BitSource::readBits(int numBits)

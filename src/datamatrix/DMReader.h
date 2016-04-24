@@ -1,3 +1,4 @@
+#pragma once
 /*
 * Copyright 2016 ZXing authors
 *
@@ -14,17 +15,21 @@
 * limitations under the License.
 */
 
-#include "qrcode/QRErrorCorrectionLevel.h"
-#include "ZXString.h"
+#include "Reader.h"
 
 namespace ZXing {
-namespace QRCode {
+namespace DataMatrix {
 
-const char* ToString(ErrorCorrectionLevel l)
+/**
+* This implementation can detect and decode Data Matrix codes in an image.
+*
+* @author bbrown@google.com (Brian Brown)
+*/
+class Reader : public ZXing::Reader
 {
-	static const char* const LEVEL_STR[] = { "M", "L", "H", "Q" };
-	return LEVEL_STR[static_cast<int>(l)];
-}
+public:
+	virtual Result decode(const BinaryBitmap& image, const DecodeHints* hints = nullptr) override;
+};
 
-} // QRCode
+} // DataMatrix
 } // ZXing

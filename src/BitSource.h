@@ -15,9 +15,9 @@
 * limitations under the License.
 */
 
-#include "ByteArray.h"
-
 namespace ZXing {
+
+class ByteArray;
 
 /**
 * <p>This provides an easy abstraction to read bits at a time from a sequence of bytes, where the
@@ -30,7 +30,7 @@ namespace ZXing {
 */
 class BitSource
 {
-	ByteArray _bytes;
+	const ByteArray& _bytes;
 	int _byteOffset;
 	int _bitOffset;
 
@@ -38,6 +38,7 @@ public:
 	/**
 	* @param bytes bytes from which this will read bits. Bits will be read from the first byte first.
 	* Bits are read within a byte from most-significant to least-significant bit.
+	* IMPORTANT: Bit source DOES NOT copy data byte, thus make sure that the bytes outlive the bit source object.
 	*/
 	explicit BitSource(const ByteArray& bytes) : _bytes(bytes), _byteOffset(0), _bitOffset(0) {}
 	
@@ -69,9 +70,7 @@ public:
 	/**
 	* @return number of bits that can be read successfully
 	*/
-	int available() const {
-		return 8 * (_bytes.length() - _byteOffset) - _bitOffset;
-	}
+	int available() const;
 };
 
 } // ZXing
