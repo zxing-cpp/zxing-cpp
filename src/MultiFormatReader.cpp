@@ -24,6 +24,7 @@
 #include "qrcode/QRReader.h"
 #include "datamatrix/DMReader.h"
 #include "aztec/AZReader.h"
+#include "maxicode/MCReader.h"
 
 #include <vector>
 #include <memory>
@@ -70,10 +71,10 @@ BuildReaders(const DecodeHints* hints)
 				readers.push_back(std::make_shared<Aztec::Reader>());
 			}
 			if (formats.find(BarcodeFormat::PDF_417) != formats.end()) {
-				readers.push_back(std::make_shared<PDF417Reader>());
+				readers.push_back(std::make_shared<PDF417::Reader>());
 			}
 			if (formats.find(BarcodeFormat::MAXICODE) != formats.end()) {
-				readers.push_back(std::make_shared<MaxiCodeReader>());
+				readers.push_back(std::make_shared<MaxiCode::Reader>());
 			}
 			// At end in "try harder" mode
 			if (addOneDReader && tryHarder) {
@@ -89,8 +90,8 @@ BuildReaders(const DecodeHints* hints)
 		readers.push_back(std::make_shared<QRCode::Reader>());
 		readers.push_back(std::make_shared<DataMatrix::Reader>());
 		readers.push_back(std::make_shared<Aztec::Reader>());
-		readers.push_back(std::make_shared<PDF417Reader>());
-		readers.push_back(std::make_shared<MaxiCodeReader>());
+		readers.push_back(std::make_shared<PDF417::Reader>());
+		readers.push_back(std::make_shared<MaxiCode::Reader>());
 		if (tryHarder) {
 			readers.push_back(std::make_shared<OneD::MultiFormatReader>(hints));
 		}
