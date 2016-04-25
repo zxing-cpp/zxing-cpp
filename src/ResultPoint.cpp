@@ -54,9 +54,9 @@ float ResultPoint::Distance(float aX, float aY, float bX, float bY)
 
 float ResultPoint::Distance(int aX, int aY, int bX, int bY)
 {
-	int dx = aX - bX;
-	int dy = aY - bY;
-	return static_cast<float>(std::sqrt(dx * dx + dy * dy));
+	float dx = static_cast<float>(aX - bX);
+	float dy = static_cast<float>(aY - bY);
+	return std::sqrt(dx * dx + dy * dy);
 }
 
 void ResultPoint::OrderByBestPatterns(ResultPoint patterns[3])

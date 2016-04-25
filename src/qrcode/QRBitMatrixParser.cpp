@@ -29,7 +29,7 @@ namespace {
 inline int copyBit(const BitMatrix& bitMatrix, int i, int j, int versionBits, bool mirrored)
 {
 	bool bit = mirrored ? bitMatrix.get(j, i) : bitMatrix.get(i, j);
-	return bit ? (versionBits << 1) | 0x1 : versionBits << 1;
+	return (versionBits << 1) | static_cast<int>(bit);
 }
 
 /**
@@ -174,10 +174,7 @@ BitMatrixParser::ReadCodewords(const BitMatrix& bitMatrix, const Version& versio
 				if (!functionPattern.get(j - col, i)) {
 					// Read a bit
 					bitsRead++;
-					currentByte <<= 1;
-					if (bitMatrix.get(j - col, i)) {
-						currentByte |= 1;
-					}
+					currentByte = (currentByte << 1) | static_cast<int>(bitMatrix.get(j - col, i));
 					// If we've made a whole byte, save it off
 					if (bitsRead == 8) {
 						result[resultOffset++] = static_cast<uint8_t>(currentByte);

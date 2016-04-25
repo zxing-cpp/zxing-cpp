@@ -26,9 +26,9 @@ static const int INIT_SIZE = 10;
 static const int CORR = 1;
 
 ErrorStatus
-WhiteRectDetector::Detect(const BitMatrix& image, std::vector<ResultPoint>& result)
+WhiteRectDetector::Detect(const BitMatrix& image, ResultPoint& p0, ResultPoint& p1, ResultPoint& p2, ResultPoint& p3)
 {
-	return Detect(image, INIT_SIZE, image.width() / 2, image.height() / 2, result);
+	return Detect(image, INIT_SIZE, image.width() / 2, image.height() / 2, p0, p1, p2, p3);
 }
 
 /**
@@ -89,7 +89,7 @@ static bool GetBlackPointOnSegment(const BitMatrix& image, int aX, int aY, int b
 *         point and the last, the bottommost. The second point will be
 *         leftmost and the third, the rightmost
 */
-static void CenterEdges(const ResultPoint& y, const ResultPoint& z, const ResultPoint& x, const ResultPoint& t, int width, std::vector<ResultPoint>& result)
+static void CenterEdges(const ResultPoint& y, const ResultPoint& z, const ResultPoint& x, const ResultPoint& t, int width, ResultPoint& p0, ResultPoint& p1, ResultPoint& p2, ResultPoint& p3)
 {
 	//
 	//       t            t
@@ -107,19 +107,17 @@ static void CenterEdges(const ResultPoint& y, const ResultPoint& z, const Result
 	float ti = t.x();
 	float tj = t.y();
 
-	result.reserve(4);
-
 	if (yi < width / 2.0f) {
-		result.emplace_back(ti - CORR, tj + CORR);
-		result.emplace_back(zi + CORR, zj + CORR);
-		result.emplace_back(xi - CORR, xj - CORR);
-		result.emplace_back(yi + CORR, yj - CORR);
+		p0 = ResultPoint(ti - CORR, tj + CORR);
+		p1 = ResultPoint(zi + CORR, zj + CORR);
+		p2 = ResultPoint(xi - CORR, xj - CORR);
+		p3 = ResultPoint(yi + CORR, yj - CORR);
 	}
 	else {
-		result.emplace_back(ti + CORR, tj + CORR);
-		result.emplace_back(zi + CORR, zj - CORR);
-		result.emplace_back(xi - CORR, xj + CORR);
-		result.emplace_back(yi - CORR, yj - CORR);
+		p0 = ResultPoint(ti + CORR, tj + CORR);
+		p1 = ResultPoint(zi + CORR, zj - CORR);
+		p2 = ResultPoint(xi - CORR, xj + CORR);
+		p3 = ResultPoint(yi - CORR, yj - CORR);
 	}
 }
 
@@ -138,7 +136,7 @@ static void CenterEdges(const ResultPoint& y, const ResultPoint& z, const Result
 * @throws NotFoundException if no Data Matrix Code can be found
 */
 ErrorStatus
-WhiteRectDetector::Detect(const BitMatrix& image, int initSize, int x, int y, std::vector<ResultPoint>& result)
+WhiteRectDetector::Detect(const BitMatrix& image, int initSize, int x, int y, ResultPoint& p0, ResultPoint& p1, ResultPoint& p2, ResultPoint& p3)
 {
 	int height = image.height();
 	int width = image.width();
@@ -313,7 +311,7 @@ WhiteRectDetector::Detect(const BitMatrix& image, int initSize, int x, int y, st
 			return ErrorStatus::NotFound;
 		}
 
-		CenterEdges(y, z, x, t, width, result);
+		CenterEdges(y, z, x, t, width, p0, p1, p2, p3);
 		return ErrorStatus::NoError;
 	}
 	else {

@@ -82,7 +82,7 @@ static ResultPointsAndTransitions TransitionsBetween(const BitMatrix& image, con
 	return ResultPointsAndTransitions{ &from, &to, transitions };
 }
 
-static inline bool IsValidPoint(const ResultPoint& p, int imgWidth, int imgHeight)
+inline static bool IsValidPoint(const ResultPoint& p, int imgWidth, int imgHeight)
 {
 	return p.x() >= 0 && p.x() < imgWidth && p.y() > 0 && p.y() < imgHeight;
 }
@@ -194,15 +194,11 @@ SampleGrid(const BitMatrix& image, const ResultPoint& topLeft, const ResultPoint
 DetectorResult
 Detector::Detect(const BitMatrix& image)
 {
-	std::vector<ResultPoint> cornerPoints;
-	ErrorStatus status = WhiteRectDetector::Detect(image, cornerPoints);
+	ResultPoint pointA, pointB, pointC, pointD;
+	ErrorStatus status = WhiteRectDetector::Detect(image, pointA, pointB, pointC, pointD);
 	if (StatusIsError(status)) {
 		return DetectorResult(status);
 	}
-	const auto& pointA = cornerPoints[0];
-	const auto& pointB = cornerPoints[1];
-	const auto& pointC = cornerPoints[2];
-	const auto& pointD = cornerPoints[3];
 
 	// Point A and D are across the diagonal from one another,
 	// as are B and C. Figure out which are the solid black lines

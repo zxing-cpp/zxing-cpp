@@ -51,14 +51,19 @@ file (GLOB COMMON_FILES
 	src/*.cpp
 )
 
-file (GLOB QRCODE_FILES
-	src/qrcode/*.h
-	src/qrcode/*.cpp
+file (GLOB AZTEC_FILES
+	src/aztec/*.h
+	src/aztec/*.cpp
 )
 
 file (GLOB DATAMATRIX_FILES
 	src/datamatrix/*.h
 	src/datamatrix/*.cpp
+)
+
+file (GLOB QRCODE_FILES
+	src/qrcode/*.h
+	src/qrcode/*.cpp
 )
 
 file (GLOB ONED_FILES
@@ -72,6 +77,7 @@ file (GLOB ONED_RSS_FILES
 )
 
 source_group (Sources FILES ${COMMON_FILES})
+source_group (Sources\\aztec FILES ${AZTEC_FILES})
 source_group (Sources\\datamatrix FILES ${DATAMATRIX_FILES})
 source_group (Sources\\qrcode FILES ${QRCODE_FILES})
 source_group (Sources\\oned FILES ${ONED_FILES})
@@ -79,6 +85,7 @@ source_group (Sources\\oned\\rss FILES ${ONED_RSS_FILES})
 
 add_library (ZXing
 	${COMMON_FILES}
+	${AZTEC_FILES}
 	${DATAMATRIX_FILES}
 	${QRCODE_FILES}
 	${ONED_FILES}
