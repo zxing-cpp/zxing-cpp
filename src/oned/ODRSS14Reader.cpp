@@ -445,7 +445,7 @@ ConstructResult(const RSS::Pair& leftPair, const RSS::Pair& rightPair)
 	if (checkDigit == 10) {
 		checkDigit = 0;
 	}
-	buffer.put(static_cast<char>(checkDigit + '0'));
+	buffer.put((char)(checkDigit + '0'));
 
 	auto& leftPoints = leftPair.finderPattern().points();
 	auto& rightPoints = rightPair.finderPattern().points();

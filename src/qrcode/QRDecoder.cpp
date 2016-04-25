@@ -38,13 +38,6 @@
 namespace ZXing {
 namespace QRCode {
 
-//public Decoder() {
-//	rsDecoder = new ReedSolomonDecoder(GenericGF.QR_CODE_FIELD_256);
-//}
-
-//public DecoderResult decode(boolean[][] image) throws ChecksumException, FormatException{
-//	return decode(image, null);
-//}
 //
 //public DecoderResult decode(boolean[][] image, Map<DecodeHintType, ? > hints)
 //throws ChecksumException, FormatException{
@@ -64,9 +57,6 @@ namespace QRCode {
 //	return decode(bits, null);
 //}
 
-
-namespace {
-
 /**
 * <p>Given data and error-correction codewords received, possibly corrupted by errors, attempts to
 * correct the errors in-place using Reed-Solomon error correction.</p>
@@ -75,7 +65,8 @@ namespace {
 * @param numDataCodewords number of codewords that are data bytes
 * @throws ChecksumException if error correction fails
 */
-ErrorStatus CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
+static ErrorStatus
+CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
 {
 	int numCodewords = codewordBytes.length();
 	// First read into an array of ints
@@ -105,7 +96,8 @@ ErrorStatus CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
 /**
 * See specification GBT 18284-2000
 */
-ErrorStatus DecodeHanziSegment(BitSource& bits, int count, String& result)
+static ErrorStatus
+DecodeHanziSegment(BitSource& bits, int count, String& result)
 {
 	// Don't crash trying to read more bits than we have available.
 	if (count * 13 > bits.available()) {
@@ -137,7 +129,8 @@ ErrorStatus DecodeHanziSegment(BitSource& bits, int count, String& result)
 	return ErrorStatus::NoError;
 }
 
-ErrorStatus DecodeKanjiSegment(BitSource& bits, int count, String& result)
+static ErrorStatus
+DecodeKanjiSegment(BitSource& bits, int count, String& result)
 {
 	// Don't crash trying to read more bits than we have available.
 	if (count * 13 > bits.available()) {
@@ -169,7 +162,8 @@ ErrorStatus DecodeKanjiSegment(BitSource& bits, int count, String& result)
 	return ErrorStatus::NoError;
 }
 
-ErrorStatus DecodeByteSegment(BitSource& bits, int count, CharacterSet charset, const DecodeHints* hints, String& result, std::list<ByteArray>& byteSegments)
+static ErrorStatus
+DecodeByteSegment(BitSource& bits, int count, CharacterSet charset, const DecodeHints* hints, String& result, std::list<ByteArray>& byteSegments)
 {
 	// Don't crash trying to read more bits than we have available.
 	if (8 * count > bits.available()) {
@@ -204,7 +198,8 @@ ErrorStatus DecodeByteSegment(BitSource& bits, int count, CharacterSet charset, 
 	return ErrorStatus::NoError;
 }
 
-char ToAlphaNumericChar(int value)
+static char
+ToAlphaNumericChar(int value)
 {
 	/**
 	* See ISO 18004:2006, 6.4.4 Table 5
@@ -222,7 +217,8 @@ char ToAlphaNumericChar(int value)
 	return ALPHANUMERIC_CHARS[value];
 }
 
-ErrorStatus DecodeAlphanumericSegment(BitSource& bits, int count, bool fc1InEffect, String& result)
+static ErrorStatus
+DecodeAlphanumericSegment(BitSource& bits, int count, bool fc1InEffect, String& result)
 {
 	// Read two characters at a time
 	std::string buffer;
@@ -262,7 +258,8 @@ ErrorStatus DecodeAlphanumericSegment(BitSource& bits, int count, bool fc1InEffe
 	return ErrorStatus::NoError;
 }
 
-ErrorStatus DecodeNumericSegment(BitSource& bits, int count, String& result)
+static ErrorStatus
+DecodeNumericSegment(BitSource& bits, int count, String& result)
 {
 	// Read three digits at a time
 	std::string buffer;
@@ -308,7 +305,8 @@ ErrorStatus DecodeNumericSegment(BitSource& bits, int count, String& result)
 	return ErrorStatus::NoError;
 }
 
-ErrorStatus ParseECIValue(BitSource& bits, int &outValue)
+static ErrorStatus
+ParseECIValue(BitSource& bits, int &outValue)
 {
 	int firstByte = bits.readBits(8);
 	if ((firstByte & 0x80) == 0) {
@@ -337,7 +335,8 @@ ErrorStatus ParseECIValue(BitSource& bits, int &outValue)
 *
 * <p>See ISO 18004:2006, 6.4.3 - 6.4.7</p>
 */
-static DecoderResult DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionLevel ecLevel, const DecodeHints* hints)
+static DecoderResult
+DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionLevel ecLevel, const DecodeHints* hints)
 {
 	BitSource bits(bytes);
 	String result;
@@ -438,7 +437,8 @@ static DecoderResult DecodeBitStream(const ByteArray& bytes, const Version& vers
 #pragma endregion
 
 
-DecoderResult DoDecode(const BitMatrix& bits, const Version& version, const FormatInformation& formatInfo, const DecodeHints* hints)
+static DecoderResult
+DoDecode(const BitMatrix& bits, const Version& version, const FormatInformation& formatInfo, const DecodeHints* hints)
 {
 	auto ecLevel = formatInfo.errorCorrectionLevel();
 
@@ -481,13 +481,12 @@ DecoderResult DoDecode(const BitMatrix& bits, const Version& version, const Form
 	return DecodeBitStream(resultBytes, version, ecLevel, hints);
 }
 
-void ReMask(BitMatrix& bitMatrix, const FormatInformation& formatInfo)
+static void
+ReMask(BitMatrix& bitMatrix, const FormatInformation& formatInfo)
 {
 	int dimension = bitMatrix.height();
 	DataMask(formatInfo.dataMask()).unmaskBitMatrix(bitMatrix, dimension);
 }
-
-} // anonymous
 
 
 DecoderResult

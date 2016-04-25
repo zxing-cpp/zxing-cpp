@@ -28,10 +28,59 @@ namespace ZXing {
 
 namespace {
 
+int CountUtf8Bytes(const uint16_t* utf16, size_t count)
+{
+	int result = 0;
+	for (size_t i = 0; i < count; ++i) {
+		uint16_t codePoint = utf16[i];
+		if (codePoint < 0x80)
+		{
+			result += 1;
+		}
+		else if (codePoint < 0x800)
+		{
+			result += 2;
+		}
+		else if (Utf16::IsHighSurrogate(codePoint))
+		{
+			result += 4;
+			++count;
+		}
+		else
+		{
+			result += 3;
+		}
+	}
+	return result;
+}
+
+int CountUtf8BytesFromUCS2(const uint16_t* utf16, size_t count)
+{
+	int result = 0;
+	for (size_t i = 0; i < count; ++i) {
+		uint16_t codePoint = utf16[i];
+		if (codePoint < 0x80)
+		{
+			result += 1;
+		}
+		else if (codePoint < 0x800)
+		{
+			result += 2;
+		}
+		else
+		{
+			result += 3;
+		}
+	}
+	return result;
+}
+
+
+
 template <typename Iter>
 void stringAppendUtf16(std::string& str, Iter beginRange, Iter endRange)
 {
-	char buffer[6];
+	char buffer[4];
 	int bufLength;
 
 	while (beginRange != endRange)
@@ -54,7 +103,7 @@ void stringAppendUtf16(std::string& str, Iter beginRange, Iter endRange)
 template <typename Iter>
 void stringAppendUtf32(std::string& str, Iter beginRange, Iter endRange)
 {
-	char buffer[6];
+	char buffer[4];
 	int bufLength;
 	while (beginRange != endRange)
 	{
@@ -166,55 +215,32 @@ uint32_t readCodePoint(std::string::const_iterator cur, std::string::const_itera
 
 };
 
-String::String(const wchar_t* i_wstr)
+String::String(const wchar_t* i_wstr) : String(i_wstr, std::char_traits<wchar_t>::length(i_wstr))
 {
-	if (sizeof(wchar_t) == 2)
-	{
-		size_t len = std::char_traits<wchar_t>::length(i_wstr);
-		stringAppendUtf16(m_utf8, i_wstr, i_wstr + len);
-	}
-	else
-	{
-		char buffer[6];
-		for (; *i_wstr; ++i_wstr)
-		{
-			int length = Utf8::Encode(static_cast<uint32_t>(*i_wstr), buffer);
-			m_utf8.append(buffer, length);
-		}
-	}
 }
 
-String::String(const wchar_t* i_begin, const wchar_t* i_end)
+String::String(const wchar_t* i_begin, const wchar_t* i_end) : String(i_begin, i_end - i_begin)
 {
-	if (sizeof(wchar_t) == 2)
-	{
-		stringAppendUtf16(m_utf8, i_begin, i_end);
-	}
-	else
-	{
-		stringAppendUtf32(m_utf8, i_begin, i_end);
-	}
 }
 
 String::String(const wchar_t* i_wstr, int i_len)
 {
 	if (sizeof(wchar_t) == 2)
 	{
+		m_utf8.reserve(m_utf8.size() + CountUtf8Bytes(reinterpret_cast<const uint16_t*>(i_wstr), i_len));
 		stringAppendUtf16(m_utf8, i_wstr, i_wstr + i_len);
 	}
 	else
 	{
+		m_utf8.reserve(m_utf8.size() + Utf8::CountBytes(reinterpret_cast<const uint32_t*>(i_wstr), i_len));
 		stringAppendUtf32(m_utf8, i_wstr, i_wstr + i_len);
 	}
 }
 
 #ifdef NB_HAVE_QT
 
-String::String(const QString& qstr)
+String::String(const QString& qstr) : String(qstr.utf16()), qstr.length())
 {
-	const ushort* utf16 = qstr.utf16();
-	int len = std::char_traits<ushort>::length(utf16);
-	stringAppendUtf16(m_utf8, utf16, utf16 + len);
 }
 
 String::operator QString() const
@@ -233,7 +259,8 @@ String::charCount() const
 void
 String::appendUcs2(const uint16_t* ucs2, int len)
 {
-	char buffer[6];
+	m_utf8.reserve(m_utf8.size() + CountUtf8BytesFromUCS2(ucs2, len));
+	char buffer[4];
 	for (int i = 0; i < len; ++i)
 	{
 		int length = Utf8::Encode(static_cast<uint32_t>(ucs2[i]), buffer);
@@ -244,35 +271,34 @@ String::appendUcs2(const uint16_t* ucs2, int len)
 void
 String::appendUcs2(const uint16_t* ucs2)
 {
-	char buffer[6];
-	for (; *ucs2; ++ucs2)
-	{
-		int length = Utf8::Encode(static_cast<uint32_t>(*ucs2), buffer);
-		m_utf8.append(buffer, length);
-	}
+	appendUcs2(ucs2, std::char_traits<uint16_t>::length(ucs2));
 }
 
 void
 String::appendUtf16(const std::vector<uint16_t>& utf16)
 {
+	m_utf8.reserve(m_utf8.size() + CountUtf8Bytes(utf16.data(), utf16.size()));
 	stringAppendUtf16(m_utf8, utf16.begin(), utf16.end());
 }
 
 void
 String::appendUtf32(const std::vector<uint32_t>& utf32)
 {
+	m_utf8.reserve(m_utf8.size() + Utf8::CountBytes(utf32.data(), utf32.size()));
 	stringAppendUtf32(m_utf8, utf32.begin(), utf32.end());
 }
 
 void
 String::appendUtf16(const uint16_t* utf16, int len)
 {
+	m_utf8.reserve(m_utf8.size() + CountUtf8Bytes(utf16, len));
 	stringAppendUtf16(m_utf8, utf16, utf16 + len);
 }
 
 void
 String::appendUtf32(const uint32_t* utf32, int len)
 {
+	m_utf8.reserve(m_utf8.size() + Utf8::CountBytes(utf32, len));
 	stringAppendUtf32(m_utf8, utf32, utf32 + len);
 }
 

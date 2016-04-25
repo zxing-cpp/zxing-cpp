@@ -59,9 +59,14 @@ public:
 	/// Encode given code point in UTF-32 into a sequence of bytes which will be written to 'out'.
 	/// Return the number of bytes written.
 	/// Caller is responsible to make sure that there is enough room to write output bytes.
-	/// A maximum of 6 bytes will be written to 'out'.
+	/// A maximum of 4 bytes will be written to 'out'.
 	/// </summary>
 	static int Encode(uint32_t utf32, char* utf8);
+
+	/// <summary>
+	/// Count the number of bytes required to store given code points in UTF-8.
+	/// </summary>
+	static int CountBytes(const uint32_t* utf32, size_t count);
 };
 
 } // ZXing

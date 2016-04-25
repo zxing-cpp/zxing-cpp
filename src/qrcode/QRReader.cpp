@@ -181,7 +181,7 @@ Reader::decode(const BinaryBitmap& image, const DecodeHints* hints)
 	if (!byteSegments.empty()) {
 		result.metadata().put(ResultMetadata::BYTE_SEGMENTS, byteSegments);
 	}
-	String ecLevel = decoderResult.ecLevel();
+	auto ecLevel = decoderResult.ecLevel();
 	if (!ecLevel.empty()) {
 		result.metadata().put(ResultMetadata::ERROR_CORRECTION_LEVEL, ecLevel);
 	}

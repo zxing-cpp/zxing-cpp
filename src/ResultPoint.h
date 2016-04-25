@@ -45,6 +45,11 @@ public:
 		return _x == other._x && _y == other._y;
 	}
 
+	void set(float x, float y) {
+		_x = x;
+		_y = y;
+	}
+
 	//String toString() {
 	//	StringBuilder result = new StringBuilder(25);
 	//	result.append('(');

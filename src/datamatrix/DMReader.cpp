@@ -15,6 +15,7 @@
 */
 
 #include "datamatrix/DMReader.h"
+#include "datamatrix/DMDecoder.h"
 #include "Result.h"
 #include "DecodeHints.h"
 #include "BitMatrix.h"
@@ -125,24 +126,12 @@ Reader::decode(const BinaryBitmap& image, const DecodeHints* hints)
 	if (!byteSegments.empty()) {
 		result.metadata().put(ResultMetadata::BYTE_SEGMENTS, byteSegments);
 	}
-	String ecLevel = decoderResult.ecLevel();
+	auto ecLevel = decoderResult.ecLevel();
 	if (!ecLevel.empty()) {
 		result.metadata().put(ResultMetadata::ERROR_CORRECTION_LEVEL, ecLevel);
 	}
-
-	String ecLevel = decoderResult.getECLevel();
-	if (ecLevel != null) {
-		result.putMetadata(ResultMetadataType.ERROR_CORRECTION_LEVEL, ecLevel);
-	}
 	return result;
 }
-
-@Override
-public void reset() {
-	// do nothing
-}
-
-
 
 } // DataMatrix
 } // ZXing

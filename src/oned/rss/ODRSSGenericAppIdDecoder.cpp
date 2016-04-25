@@ -470,14 +470,11 @@ ParseNumericBlock(const BitArray& bits, ParsingState& state, std::string& buffer
 			}
 		}
 
-		char buf[4];
-		buffer.append(itoa(numeric.firstDigit, buf, 10));
-
+		buffer.append(std::to_string(numeric.firstDigit));
 		if (numeric.isSecondDigitFNC1()) {
 			return DecodedInformation(state.position, buffer);
 		}
-
-		buffer.append(itoa(numeric.secondDigit, buf, 10));
+		buffer.append(std::to_string(numeric.secondDigit));
 	}
 
 	if (IsNumericToAlphaNumericLatch(bits, state.position)) {
@@ -550,8 +547,7 @@ GenericAppIdDecoder::DecodeAllCodes(const BitArray& bits, int pos, std::string& 
 			}
 			result += parsedFields;
 			if (info.isRemaining()) {
-				char buf[16];
-				remaining = itoa(info.remainingValue, buf, 10);
+				remaining = std::to_string(info.remainingValue);
 			}
 			else {
 				remaining.clear();

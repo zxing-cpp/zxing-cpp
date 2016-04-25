@@ -151,4 +151,33 @@ Utf8::Encode(uint32_t utf32, char* out)
 	return 4;
 }
 
+/// <summary>
+/// Count the number of bytes required to store given code points in UTF-8.
+/// </summary>
+int
+Utf8::CountBytes(const uint32_t* utf32, size_t count)
+{
+	int result = 0;
+	for (size_t i = 0; i < count; ++i) {
+		uint32_t codePoint = utf32[i];
+		if (codePoint < 0x80)
+		{
+			result += 1;
+		}
+		else if (codePoint < 0x800)
+		{
+			result += 2;
+		}
+		else if (codePoint < 0x10000)
+		{
+			result += 3;
+		}
+		else
+		{
+			result += 4;
+		}
+	}
+	return result;
+}
+
 } // ZXing

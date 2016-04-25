@@ -461,8 +461,7 @@ Code128Reader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* 
 				if (code < 10) {
 					result.push_back('0');
 				}
-				char buf[4];
-				result.append(itoa(code, buf, 10));
+				result.append(std::to_string(code));
 			}
 			else {
 				if (code != CODE_STOP) {

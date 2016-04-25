@@ -71,7 +71,7 @@ public:
 		return _byteSegments;
 	}
 
-	String ecLevel() const {
+	std::string ecLevel() const {
 		return _ecLevel;
 	}
 

@@ -79,19 +79,11 @@ inline T Clamp(T n, T lower, T upper)
 	return n <= lower ? lower : n >= upper ? upper : n;
 }
 
-/// <summary>
-/// Round to neares integer.
-/// Note that if 'x' is equally close to its two nearest integers,
-/// this function returns the greater of the two independently x is positive
-/// or negative. In other words, 3.5 will return 4 and -3.5 will return -3.
-/// This behavior is intended. If it's not what you want, consider using
-/// other way.
-/// </summary>
 template <typename T>
 typename std::enable_if<std::is_floating_point<T>::value, int>::type
 RoundToNearest(T x)
 {
-	return static_cast<int>(std::floor(x + T(0.5)));
+	return static_cast<int>(std::round(x));
 }
 
 /// <summary>

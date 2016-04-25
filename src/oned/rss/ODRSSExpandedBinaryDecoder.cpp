@@ -37,12 +37,6 @@ namespace RSS {
 
 static const int AI01_GTIN_SIZE = 40;
 
-inline static void AppendInt(std::string& s, int value)
-{
-	char buf[16];
-	s.append(itoa(value, buf, 10));
-}
-
 static void
 AI01AppendCheckDigit(std::string& buffer, int currentPos)
 {
@@ -56,7 +50,7 @@ AI01AppendCheckDigit(std::string& buffer, int currentPos)
 	if (checkDigit == 10) {
 		checkDigit = 0;
 	}
-	AppendInt(buffer, checkDigit);
+	buffer.append(std::to_string(checkDigit));
 }
 
 static void
@@ -70,7 +64,7 @@ AI01EncodeCompressedGtinWithoutAI(std::string& buffer, const BitArray& bits, int
 		if (currentBlock / 10 == 0) {
 			buffer.push_back('0');
 		}
-		AppendInt(buffer, currentBlock);
+		buffer.append(std::to_string(currentBlock));
 	}
 	AI01AppendCheckDigit(buffer, initialBufferPosition);
 }
@@ -102,7 +96,7 @@ static void AI01EncodeCompressedWeight(std::string& buffer, const BitArray& bits
 		}
 		currentDivisor /= 10;
 	}
-	AppendInt(buffer, weightNumeric);
+	buffer.append(std::to_string(weightNumeric));
 }
 
 /**
@@ -118,7 +112,7 @@ DecodeAI01AndOtherAIs(const BitArray& bits)
 	buffer.append("(01)");
 	size_t initialGtinPosition = buffer.length();
 	int firstGtinDigit = GenericAppIdDecoder::ExtractNumeric(bits, HEADER_SIZE, 4);
-	AppendInt(buffer, firstGtinDigit);
+	buffer.append(std::to_string(firstGtinDigit));
 
 	AI01EncodeCompressedGtinWithoutAI(buffer, bits, HEADER_SIZE + 4, initialGtinPosition);
 	if (StatusIsOK(GenericAppIdDecoder::DecodeAllCodes(bits, HEADER_SIZE + 44, buffer))) {
@@ -195,7 +189,7 @@ DecodeAI01392x(const BitArray& bits)
 
 	int lastAIdigit = GenericAppIdDecoder::ExtractNumeric(bits, HEADER_SIZE + AI01_GTIN_SIZE, LAST_DIGIT_SIZE);
 	buffer.append("(392");
-	AppendInt(buffer, lastAIdigit);
+	buffer.append(std::to_string(lastAIdigit));
 	buffer.push_back(')');
 
 	if (StatusIsOK(GenericAppIdDecoder::DecodeGeneralPurposeField(bits, HEADER_SIZE + AI01_GTIN_SIZE + LAST_DIGIT_SIZE, buffer))) {
@@ -221,7 +215,7 @@ DecodeAI01393x(const BitArray& bits)
 	int lastAIdigit = GenericAppIdDecoder::ExtractNumeric(bits, HEADER_SIZE + AI01_GTIN_SIZE, LAST_DIGIT_SIZE);
 
 	buffer.append("(393");
-	AppendInt(buffer, lastAIdigit);
+	buffer.append(std::to_string(lastAIdigit));
 	buffer.push_back(')');
 
 	int firstThreeDigits = GenericAppIdDecoder::ExtractNumeric(bits, HEADER_SIZE + AI01_GTIN_SIZE + LAST_DIGIT_SIZE, FIRST_THREE_DIGITS_SIZE);
@@ -231,7 +225,7 @@ DecodeAI01393x(const BitArray& bits)
 	if (firstThreeDigits / 10 == 0) {
 		buffer.push_back('0');
 	}
-	AppendInt(buffer, firstThreeDigits);
+	buffer.append(std::to_string(firstThreeDigits));
 
 	if (StatusIsOK(GenericAppIdDecoder::DecodeGeneralPurposeField(bits, HEADER_SIZE + AI01_GTIN_SIZE + LAST_DIGIT_SIZE + FIRST_THREE_DIGITS_SIZE, buffer))) {
 		return buffer;
@@ -257,7 +251,7 @@ DecodeAI013x0x1x(const BitArray& bits, const char* firstAIdigits, const char* da
 		[firstAIdigits](std::string& buf, int weight) {
 			buf.push_back('(');
 			buf.append(firstAIdigits);
-			AppendInt(buf, weight / 100000);
+			buf.append(std::to_string(weight / 100000));
 			buf.push_back(')');
 		},
 		// checkWeight
@@ -281,15 +275,15 @@ DecodeAI013x0x1x(const BitArray& bits, const char* firstAIdigits, const char* da
 		if (year / 10 == 0) {
 			buffer.push_back('0');
 		}
-		AppendInt(buffer, year);
+		buffer.append(std::to_string(year));
 		if (month / 10 == 0) {
 			buffer.push_back('0');
 		}
-		AppendInt(buffer, month);
+		buffer.append(std::to_string(month));
 		if (day / 10 == 0) {
 			buffer.push_back('0');
 		}
-		AppendInt(buffer, day);
+		buffer.append(std::to_string(day));
 	}
 
 	return buffer;
