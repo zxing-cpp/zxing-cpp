@@ -56,26 +56,33 @@ file (GLOB QRCODE_FILES
 	src/qrcode/*.cpp
 )
 
+file (GLOB DATAMATRIX_FILES
+	src/datamatrix/*.h
+	src/datamatrix/*.cpp
+)
+
 file (GLOB ONED_FILES
 	src/oned/*.h
 	src/oned/*.cpp
 )
 
-file (GLOB RSS_FILES
+file (GLOB ONED_RSS_FILES
 	src/oned/rss/*.h
 	src/oned/rss/*.cpp
 )
 
 source_group (Sources FILES ${COMMON_FILES})
-source_group (Sources\\oned FILES ${ONED_FILES})
-source_group (Sources\\oned\\rss FILES ${RSS_FILES})
+source_group (Sources\\datamatrix FILES ${DATAMATRIX_FILES})
 source_group (Sources\\qrcode FILES ${QRCODE_FILES})
+source_group (Sources\\oned FILES ${ONED_FILES})
+source_group (Sources\\oned\\rss FILES ${ONED_RSS_FILES})
 
 add_library (ZXing
 	${COMMON_FILES}
-	${ONED_FILES}
-	${RSS_FILES}
+	${DATAMATRIX_FILES}
 	${QRCODE_FILES}
+	${ONED_FILES}
+	${ONED_RSS_FILES}
 )
 
 set_target_properties (ZXing PROPERTIES COMPILE_DEFINITIONS "${ZXING_DEFINES_LOCAL}")

@@ -16,6 +16,7 @@
 
 #include "ResultPoint.h"
 #include <cmath>
+#include <utility>
 
 namespace ZXing {
 
@@ -24,7 +25,7 @@ namespace {
 /**
 * Returns the z component of the cross product between vectors BC and BA.
 */
-static float CrossProductZ(ResultPoint a, ResultPoint b, ResultPoint c)
+static float CrossProductZ(const ResultPoint& a, const ResultPoint& b, const ResultPoint& c)
 {
 	return (c.x() - b.x())*(a.y() - b.y()) - (c.y() - b.y())*(a.x() - b.x());
 }
@@ -58,16 +59,26 @@ float ResultPoint::Distance(int aX, int aY, int bX, int bY)
 	return static_cast<float>(std::sqrt(dx * dx + dy * dy));
 }
 
-void ResultPoint::OrderByBestPatterns(ResultPoint* patterns)
+void ResultPoint::OrderByBestPatterns(ResultPoint patterns[3])
+{
+	ResultPoint copyPatterns[3] = { patterns[0], patterns[1], patterns[2] };
+	const ResultPoint* ordered[3] = { &copyPatterns[0], &copyPatterns[1] , &copyPatterns[2] };
+	OrderByBestPatterns(ordered);
+	patterns[0] = *ordered[0];
+	patterns[1] = *ordered[1];
+	patterns[2] = *ordered[2];
+}
+
+void ResultPoint::OrderByBestPatterns(const ResultPoint* patterns[3])
 {
 	// Find distances between pattern centers
-	float zeroOneDistance = Distance(patterns[0], patterns[1]);
-	float oneTwoDistance = Distance(patterns[1], patterns[2]);
-	float zeroTwoDistance = Distance(patterns[0], patterns[2]);
+	float zeroOneDistance = Distance(*patterns[0], *patterns[1]);
+	float oneTwoDistance = Distance(*patterns[1], *patterns[2]);
+	float zeroTwoDistance = Distance(*patterns[0], *patterns[2]);
 
-	ResultPoint pointA;
-	ResultPoint pointB;
-	ResultPoint pointC;
+	const ResultPoint* pointA;
+	const ResultPoint* pointB;
+	const ResultPoint* pointC;
 	// Assume one closest to other two is B; A and C will just be guesses at first
 	if (oneTwoDistance >= zeroOneDistance && oneTwoDistance >= zeroTwoDistance) {
 		pointB = patterns[0];
@@ -89,15 +100,14 @@ void ResultPoint::OrderByBestPatterns(ResultPoint* patterns)
 	// This asks whether BC x BA has a positive z component, which is the arrangement
 	// we want for A, B, C. If it's negative, then we've got it flipped around and
 	// should swap A and C.
-	if (CrossProductZ(pointA, pointB, pointC) < 0.0f) {
-		ResultPoint temp = pointA;
-		pointA = pointC;
-		pointC = temp;
+	if (CrossProductZ(*pointA, *pointB, *pointC) < 0.0f) {
+		std::swap(pointA, pointC);
 	}
 
 	patterns[0] = pointA;
 	patterns[1] = pointB;
 	patterns[2] = pointC;
 }
+
 
 } // ZXing

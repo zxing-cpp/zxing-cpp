@@ -16,11 +16,13 @@
 
 #include "datamatrix/DMReader.h"
 #include "datamatrix/DMDecoder.h"
+#include "datamatrix/DMDetector.h"
 #include "Result.h"
 #include "DecodeHints.h"
 #include "BitMatrix.h"
 #include "BinaryBitmap.h"
 #include "DecoderResult.h"
+#include "DetectorResult.h"
 
 namespace ZXing {
 namespace DataMatrix {
@@ -113,7 +115,7 @@ Reader::decode(const BinaryBitmap& image, const DecodeHints* hints)
 		auto detectorResult = Detector::Detect(binImg);
 		if (detectorResult.isValid()) {
 			decoderResult = Decoder::Decode(detectorResult.bits());
-			points = detectorResult.getPoints();
+			points = detectorResult.points();
 		}
 	}
 

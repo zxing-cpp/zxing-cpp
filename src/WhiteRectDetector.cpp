@@ -25,14 +25,6 @@ namespace ZXing {
 static const int INIT_SIZE = 10;
 static const int CORR = 1;
 
-//private final BitMatrix image;
-//private final int height;
-//private final int width;
-//private final int leftInit;
-//private final int rightInit;
-//private final int downInit;
-//private final int upInit;
-
 ErrorStatus
 WhiteRectDetector::Detect(const BitMatrix& image, std::vector<ResultPoint>& result)
 {

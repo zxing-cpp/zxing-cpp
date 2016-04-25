@@ -66,7 +66,8 @@ public:
 	*
 	* @param patterns array of three {@code ResultPoint} to order
 	*/
-	static void OrderByBestPatterns(ResultPoint* patterns);
+	static void OrderByBestPatterns(ResultPoint patterns[3]);
+	static void OrderByBestPatterns(const ResultPoint* patterns[3]);
 
 	static float Distance(const ResultPoint& a, const ResultPoint& b);
 	static float Distance(float aX, float aY, float bX, float bY);

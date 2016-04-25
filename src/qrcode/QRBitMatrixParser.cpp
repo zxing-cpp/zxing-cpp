@@ -153,7 +153,6 @@ BitMatrixParser::ReadCodewords(const BitMatrix& bitMatrix, const Version& versio
 
 	BitMatrix functionPattern;
 	version.buildFunctionPattern(functionPattern);
-	int dimension = bitMatrix.height();
 
 	bool readingUp = true;
 	result.resize(version.totalCodewords());

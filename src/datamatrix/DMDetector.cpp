@@ -18,9 +18,11 @@
 #include "BitMatrix.h"
 #include "DetectorResult.h"
 #include "WhiteRectDetector.h"
+#include "GridSampler.h"
 
 #include <array>
 #include <algorithm>
+#include <map>
 
 namespace ZXing {
 namespace DataMatrix {
@@ -30,8 +32,8 @@ namespace DataMatrix {
 */
 struct ResultPointsAndTransitions
 {
-	ResultPoint from;
-	ResultPoint to;
+	const ResultPoint* from;
+	const ResultPoint* to;
 	int transitions;
 };
 
@@ -77,15 +79,115 @@ static ResultPointsAndTransitions TransitionsBetween(const BitMatrix& image, con
 			error -= dx;
 		}
 	}
-	return ResultPointsAndTransitions{ from, to, transitions };
+	return ResultPointsAndTransitions{ &from, &to, transitions };
+}
+
+static inline bool IsValidPoint(const ResultPoint& p, int imgWidth, int imgHeight)
+{
+	return p.x() >= 0 && p.x() < imgWidth && p.y() > 0 && p.y() < imgHeight;
 }
 
 /**
-* Increments the Integer associated with a key by one.
+* Calculates the position of the white top right module using the output of the rectangle detector
+* for a rectangular matrix
 */
-private static void increment(Map<ResultPoint, Integer> table, ResultPoint key) {
-	Integer value = table.get(key);
-	table.put(key, value == null ? 1 : value + 1);
+static bool CorrectTopRightRectangular(const BitMatrix& image, const ResultPoint& bottomLeft, const ResultPoint& bottomRight, const ResultPoint& topLeft, const ResultPoint& topRight, int dimensionTop, int dimensionRight, ResultPoint& result)
+{
+	float corr = std::round(ResultPoint::Distance(bottomLeft, bottomRight)) / static_cast<float>(dimensionTop);
+	float norm = std::round(ResultPoint::Distance(topLeft, topRight));
+	float cos = (topRight.x() - topLeft.x()) / norm;
+	float sin = (topRight.y() - topLeft.y()) / norm;
+
+	ResultPoint c1(topRight.x() + corr*cos, topRight.y() + corr*sin);
+
+	corr = std::round(ResultPoint::Distance(bottomLeft, topLeft)) / (float)dimensionRight;
+	norm = std::round(ResultPoint::Distance(bottomRight, topRight));
+	cos = (topRight.x() - bottomRight.x()) / norm;
+	sin = (topRight.y() - bottomRight.y()) / norm;
+
+	ResultPoint c2(topRight.x() + corr*cos, topRight.y() + corr*sin);
+
+	if (!IsValidPoint(c1, image.width(), image.height())) {
+		if (IsValidPoint(c2, image.width(), image.height())) {
+			result = c2;
+			return true;
+		}
+		return false;
+	}
+	if (!IsValidPoint(c2, image.width(), image.height())) {
+		result = c1;
+		return true;
+	}
+
+	int l1 = std::abs(dimensionTop - TransitionsBetween(image, topLeft, c1).transitions) + std::abs(dimensionRight - TransitionsBetween(image, bottomRight, c1).transitions);
+	int l2 = std::abs(dimensionTop - TransitionsBetween(image, topLeft, c2).transitions) + std::abs(dimensionRight - TransitionsBetween(image, bottomRight, c2).transitions);
+
+	result = l1 <= l2 ? c1 : c2;
+	return true;
+}
+
+/**
+* Calculates the position of the white top right module using the output of the rectangle detector
+* for a square matrix
+*/
+static bool CorrectTopRight(const BitMatrix& image, const ResultPoint& bottomLeft, const ResultPoint& bottomRight, const ResultPoint& topLeft, const ResultPoint& topRight, int dimension, ResultPoint& result)
+{
+	float corr = std::round(ResultPoint::Distance(bottomLeft, bottomRight)) / (float)dimension;
+	float norm = std::round(ResultPoint::Distance(topLeft, topRight));
+	float cos = (topRight.x() - topLeft.x()) / norm;
+	float sin = (topRight.y() - topLeft.y()) / norm;
+
+	ResultPoint c1(topRight.x() + corr * cos, topRight.y() + corr * sin);
+
+	corr = std::round(ResultPoint::Distance(bottomLeft, topLeft)) / (float)dimension;
+	norm = std::round(ResultPoint::Distance(bottomRight, topRight));
+	cos = (topRight.x() - bottomRight.x()) / norm;
+	sin = (topRight.y() - bottomRight.y()) / norm;
+
+	ResultPoint c2(topRight.x() + corr * cos, topRight.y() + corr * sin);
+
+	if (!IsValidPoint(c1, image.width(), image.height())) {
+		if (IsValidPoint(c2, image.width(), image.height())) {
+			result = c2;
+			return true;
+		}
+		return false;
+	}
+	if (!IsValidPoint(c2, image.width(), image.height())) {
+		result = c1;
+		return true;
+	}
+
+	int l1 = std::abs(TransitionsBetween(image, topLeft, c1).transitions - TransitionsBetween(image, bottomRight, c1).transitions);
+	int l2 = std::abs(TransitionsBetween(image, topLeft, c2).transitions - TransitionsBetween(image, bottomRight, c2).transitions);
+	result = l1 <= l2 ? c1 : c2;
+	return true;
+}
+
+static ErrorStatus
+SampleGrid(const BitMatrix& image, const ResultPoint& topLeft, const ResultPoint& bottomLeft, const ResultPoint& bottomRight, const ResultPoint& topRight, int dimensionX, int dimensionY, BitMatrix& result)
+{
+	return GridSampler::Instance()->sampleGrid(
+		image,
+		dimensionX,
+		dimensionY,
+		0.5f,
+		0.5f,
+		dimensionX - 0.5f,
+		0.5f,
+		dimensionX - 0.5f,
+		dimensionY - 0.5f,
+		0.5f,
+		dimensionY - 0.5f,
+		topLeft.x(),
+		topLeft.y(),
+		topRight.x(),
+		topRight.y(),
+		bottomRight.x(),
+		bottomRight.y(),
+		bottomLeft.x(),
+		bottomLeft.y(),
+		result);
 }
 
 
@@ -97,10 +199,10 @@ Detector::Detect(const BitMatrix& image)
 	if (StatusIsError(status)) {
 		return DetectorResult(status);
 	}
-	ResultPoint pointA = cornerPoints[0];
-	ResultPoint pointB = cornerPoints[1];
-	ResultPoint pointC = cornerPoints[2];
-	ResultPoint pointD = cornerPoints[3];
+	const auto& pointA = cornerPoints[0];
+	const auto& pointB = cornerPoints[1];
+	const auto& pointC = cornerPoints[2];
+	const auto& pointD = cornerPoints[3];
 
 	// Point A and D are across the diagonal from one another,
 	// as are B and C. Figure out which are the solid black lines
@@ -115,64 +217,62 @@ Detector::Detect(const BitMatrix& image)
 
 	// Sort by number of transitions. First two will be the two solid sides; last two
 	// will be the two alternating black/white sides
-	ResultPointsAndTransitions lSideOne = transitions[0];
-	ResultPointsAndTransitions lSideTwo = transitions[1];
+	const auto& lSideOne = transitions[0];
+	const auto& lSideTwo = transitions[1];
 
 	// Figure out which point is their intersection by tallying up the number of times we see the
 	// endpoints in the four endpoints. One will show up twice.
-	Map<ResultPoint, Integer> pointCount = new HashMap<>();
-	increment(pointCount, lSideOne.from);
-	increment(pointCount, lSideOne.to);
-	increment(pointCount, lSideTwo.from);
-	increment(pointCount, lSideTwo.to);
+	std::map<const ResultPoint*, int> pointCount;
+	pointCount[lSideOne.from] += 1;
+	pointCount[lSideOne.to] += 1;
+	pointCount[lSideTwo.from] += 1;
+	pointCount[lSideTwo.to] += 1;
 
-	ResultPoint maybeTopLeft = null;
-	ResultPoint bottomLeft = null;
-	ResultPoint maybeBottomRight = null;
-	for (Map.Entry<ResultPoint, Integer> entry : pointCount.entrySet()) {
-		ResultPoint point = entry.getKey();
-		Integer value = entry.getValue();
-		if (value == 2) {
-			bottomLeft = point; // this is definitely the bottom left, then -- end of two L sides
+	const ResultPoint* maybeTopLeft = nullptr;
+	const ResultPoint* bottomLeft = nullptr;
+	const ResultPoint* maybeBottomRight = nullptr;
+	for (const auto& entry : pointCount) {
+		if (entry.second == 2) {
+			bottomLeft = entry.first; // this is definitely the bottom left, then -- end of two L sides
 		}
 		else {
 			// Otherwise it's either top left or bottom right -- just assign the two arbitrarily now
-			if (maybeTopLeft == null) {
-				maybeTopLeft = point;
+			if (maybeTopLeft == nullptr) {
+				maybeTopLeft = entry.first;
 			}
 			else {
-				maybeBottomRight = point;
+				maybeBottomRight = entry.first;
 			}
 		}
 	}
 
-	if (maybeTopLeft == null || bottomLeft == null || maybeBottomRight == null) {
-		throw NotFoundException.getNotFoundInstance();
+	if (maybeTopLeft == nullptr || bottomLeft == nullptr || maybeBottomRight == nullptr) {
+		return DetectorResult(ErrorStatus::NotFound);
 	}
 
 	// Bottom left is correct but top left and bottom right might be switched
-	ResultPoint[] corners = { maybeTopLeft, bottomLeft, maybeBottomRight };
+	const ResultPoint* corners[] = { maybeTopLeft, bottomLeft, maybeBottomRight };
 	// Use the dot product trick to sort them out
-	ResultPoint.orderBestPatterns(corners);
+	ResultPoint::OrderByBestPatterns(corners);
 
 	// Now we know which is which:
-	ResultPoint bottomRight = corners[0];
+	const ResultPoint* bottomRight = corners[0];
 	bottomLeft = corners[1];
-	ResultPoint topLeft = corners[2];
+	const ResultPoint* topLeft = corners[2];
 
 	// Which point didn't we find in relation to the "L" sides? that's the top right corner
-	ResultPoint topRight;
-	if (!pointCount.containsKey(pointA)) {
-		topRight = pointA;
+	const ResultPoint* topRight;
+	if (pointCount.find(&pointA) == pointCount.end()) {
+		topRight = &pointA;
 	}
-	else if (!pointCount.containsKey(pointB)) {
-		topRight = pointB;
+	else if (pointCount.find(&pointB) == pointCount.end()) {
+		topRight = &pointB;
 	}
-	else if (!pointCount.containsKey(pointC)) {
-		topRight = pointC;
+	else if (pointCount.find(&pointC) == pointCount.end()) {
+		topRight = &pointC;
 	}
 	else {
-		topRight = pointD;
+		topRight = &pointD;
 	}
 
 	// Next determine the dimension by tracing along the top or right side and counting black/white
@@ -184,8 +284,8 @@ Detector::Detect(const BitMatrix& image)
 	// adjacent to the white module at the top right. Tracing to that corner from either the top left
 	// or bottom right should work here.
 
-	int dimensionTop = transitionsBetween(topLeft, topRight).getTransitions();
-	int dimensionRight = transitionsBetween(bottomRight, topRight).getTransitions();
+	int dimensionTop = TransitionsBetween(image, *topLeft, *topRight).transitions;
+	int dimensionRight = TransitionsBetween(image, *bottomRight, *topRight).transitions;
 
 	if ((dimensionTop & 0x01) == 1) {
 		// it can't be odd, so, round... up?
@@ -208,14 +308,12 @@ Detector::Detect(const BitMatrix& image)
 	if (4 * dimensionTop >= 7 * dimensionRight || 4 * dimensionRight >= 7 * dimensionTop) {
 		// The matrix is rectangular
 
-		correctedTopRight =
-			correctTopRightRectangular(bottomLeft, bottomRight, topLeft, topRight, dimensionTop, dimensionRight);
-		if (correctedTopRight == null) {
-			correctedTopRight = topRight;
+		if (!CorrectTopRightRectangular(image, *bottomLeft, *bottomRight, *topLeft, *topRight, dimensionTop, dimensionRight, correctedTopRight)) {
+			correctedTopRight = *topRight;
 		}
 
-		dimensionTop = transitionsBetween(topLeft, correctedTopRight).getTransitions();
-		dimensionRight = transitionsBetween(bottomRight, correctedTopRight).getTransitions();
+		dimensionTop = TransitionsBetween(image, *topLeft, correctedTopRight).transitions;
+		dimensionRight = TransitionsBetween(image, *bottomRight, correctedTopRight).transitions;
 
 		if ((dimensionTop & 0x01) == 1) {
 			// it can't be odd, so, round... up?
@@ -227,176 +325,35 @@ Detector::Detect(const BitMatrix& image)
 			dimensionRight++;
 		}
 
-		bits = sampleGrid(image, topLeft, bottomLeft, bottomRight, correctedTopRight, dimensionTop, dimensionRight);
+		status = SampleGrid(image, *topLeft, *bottomLeft, *bottomRight, correctedTopRight, dimensionTop, dimensionRight, bits);
+		if (StatusIsError(status)) {
+			return DetectorResult(status);
+		}
 
 	}
 	else {
 		// The matrix is square
 
-		int dimension = Math.min(dimensionRight, dimensionTop);
+		int dimension = std::min(dimensionRight, dimensionTop);
 		// correct top right point to match the white module
-		correctedTopRight = correctTopRight(bottomLeft, bottomRight, topLeft, topRight, dimension);
-		if (correctedTopRight == null) {
-			correctedTopRight = topRight;
+		if (!CorrectTopRight(image, *bottomLeft, *bottomRight, *topLeft, *topRight, dimension, correctedTopRight)) {
+			correctedTopRight = *topRight;
 		}
 
 		// Redetermine the dimension using the corrected top right point
-		int dimensionCorrected = Math.max(transitionsBetween(topLeft, correctedTopRight).getTransitions(),
-			transitionsBetween(bottomRight, correctedTopRight).getTransitions());
+		int dimensionCorrected = std::max(TransitionsBetween(image, *topLeft, correctedTopRight).transitions, TransitionsBetween(image, *bottomRight, correctedTopRight).transitions);
 		dimensionCorrected++;
 		if ((dimensionCorrected & 0x01) == 1) {
 			dimensionCorrected++;
 		}
 
-		bits = sampleGrid(image,
-			topLeft,
-			bottomLeft,
-			bottomRight,
-			correctedTopRight,
-			dimensionCorrected,
-			dimensionCorrected);
-	}
-
-	return new DetectorResult(bits, new ResultPoint[]{ topLeft, bottomLeft, bottomRight, correctedTopRight });
-}
-
-/**
-* Calculates the position of the white top right module using the output of the rectangle detector
-* for a rectangular matrix
-*/
-private ResultPoint correctTopRightRectangular(ResultPoint bottomLeft,
-	ResultPoint bottomRight,
-	ResultPoint topLeft,
-	ResultPoint topRight,
-	int dimensionTop,
-	int dimensionRight) {
-
-	float corr = distance(bottomLeft, bottomRight) / (float)dimensionTop;
-	int norm = distance(topLeft, topRight);
-	float cos = (topRight.getX() - topLeft.getX()) / norm;
-	float sin = (topRight.getY() - topLeft.getY()) / norm;
-
-	ResultPoint c1 = new ResultPoint(topRight.getX() + corr*cos, topRight.getY() + corr*sin);
-
-	corr = distance(bottomLeft, topLeft) / (float)dimensionRight;
-	norm = distance(bottomRight, topRight);
-	cos = (topRight.getX() - bottomRight.getX()) / norm;
-	sin = (topRight.getY() - bottomRight.getY()) / norm;
-
-	ResultPoint c2 = new ResultPoint(topRight.getX() + corr*cos, topRight.getY() + corr*sin);
-
-	if (!isValid(c1)) {
-		if (isValid(c2)) {
-			return c2;
+		status = SampleGrid(image, *topLeft, *bottomLeft, *bottomRight, correctedTopRight, dimensionCorrected, dimensionCorrected, bits);
+		if (StatusIsError(status)) {
+			return DetectorResult(status);
 		}
-		return null;
 	}
-	if (!isValid(c2)) {
-		return c1;
-	}
-
-	int l1 = Math.abs(dimensionTop - transitionsBetween(topLeft, c1).getTransitions()) +
-		Math.abs(dimensionRight - transitionsBetween(bottomRight, c1).getTransitions());
-	int l2 = Math.abs(dimensionTop - transitionsBetween(topLeft, c2).getTransitions()) +
-		Math.abs(dimensionRight - transitionsBetween(bottomRight, c2).getTransitions());
-
-	if (l1 <= l2) {
-		return c1;
-	}
-
-	return c2;
+	return DetectorResult(bits, { *topLeft, *bottomLeft, *bottomRight, correctedTopRight });
 }
-
-/**
-* Calculates the position of the white top right module using the output of the rectangle detector
-* for a square matrix
-*/
-private ResultPoint correctTopRight(ResultPoint bottomLeft,
-	ResultPoint bottomRight,
-	ResultPoint topLeft,
-	ResultPoint topRight,
-	int dimension) {
-
-	float corr = distance(bottomLeft, bottomRight) / (float)dimension;
-	int norm = distance(topLeft, topRight);
-	float cos = (topRight.getX() - topLeft.getX()) / norm;
-	float sin = (topRight.getY() - topLeft.getY()) / norm;
-
-	ResultPoint c1 = new ResultPoint(topRight.getX() + corr * cos, topRight.getY() + corr * sin);
-
-	corr = distance(bottomLeft, topLeft) / (float)dimension;
-	norm = distance(bottomRight, topRight);
-	cos = (topRight.getX() - bottomRight.getX()) / norm;
-	sin = (topRight.getY() - bottomRight.getY()) / norm;
-
-	ResultPoint c2 = new ResultPoint(topRight.getX() + corr * cos, topRight.getY() + corr * sin);
-
-	if (!isValid(c1)) {
-		if (isValid(c2)) {
-			return c2;
-		}
-		return null;
-	}
-	if (!isValid(c2)) {
-		return c1;
-	}
-
-	int l1 = Math.abs(transitionsBetween(topLeft, c1).getTransitions() -
-		transitionsBetween(bottomRight, c1).getTransitions());
-	int l2 = Math.abs(transitionsBetween(topLeft, c2).getTransitions() -
-		transitionsBetween(bottomRight, c2).getTransitions());
-
-	return l1 <= l2 ? c1 : c2;
-}
-
-private boolean isValid(ResultPoint p) {
-	return p.getX() >= 0 && p.getX() < image.getWidth() && p.getY() > 0 && p.getY() < image.getHeight();
-}
-
-private static int distance(ResultPoint a, ResultPoint b) {
-	return MathUtils.round(ResultPoint.distance(a, b));
-}
-
-/**
-* Increments the Integer associated with a key by one.
-*/
-private static void increment(Map<ResultPoint, Integer> table, ResultPoint key) {
-	Integer value = table.get(key);
-	table.put(key, value == null ? 1 : value + 1);
-}
-
-private static BitMatrix sampleGrid(BitMatrix image,
-	ResultPoint topLeft,
-	ResultPoint bottomLeft,
-	ResultPoint bottomRight,
-	ResultPoint topRight,
-	int dimensionX,
-	int dimensionY) throws NotFoundException {
-
-	GridSampler sampler = GridSampler.getInstance();
-
-	return sampler.sampleGrid(image,
-		dimensionX,
-		dimensionY,
-		0.5f,
-		0.5f,
-		dimensionX - 0.5f,
-		0.5f,
-		dimensionX - 0.5f,
-		dimensionY - 0.5f,
-		0.5f,
-		dimensionY - 0.5f,
-		topLeft.getX(),
-		topLeft.getY(),
-		topRight.getX(),
-		topRight.getY(),
-		bottomRight.getX(),
-		bottomRight.getY(),
-		bottomLeft.getX(),
-		bottomLeft.getY());
-}
-
-
 
 
 } // DataMatrix

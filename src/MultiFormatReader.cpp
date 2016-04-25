@@ -22,6 +22,7 @@
 
 #include "oned/ODMultiFormatReader.h"
 #include "qrcode/QRReader.h"
+#include "datamatrix/DMReader.h"
 
 #include <vector>
 #include <memory>
@@ -62,7 +63,7 @@ BuildReaders(const DecodeHints* hints)
 				readers.push_back(std::make_shared<QRCode::Reader>());
 			}
 			if (formats.find(BarcodeFormat::DATA_MATRIX) != formats.end()) {
-				readers.push_back(std::make_shared<DataMatrixReader>());
+				readers.push_back(std::make_shared<DataMatrix::Reader>());
 			}
 			if (formats.find(BarcodeFormat::AZTEC) != formats.end()) {
 				readers.push_back(std::make_shared<AztecReader>());
@@ -85,7 +86,7 @@ BuildReaders(const DecodeHints* hints)
 			readers.push_back(std::make_shared<OneD::MultiFormatReader>(hints));
 		}
 		readers.push_back(std::make_shared<QRCode::Reader>());
-		readers.push_back(std::make_shared<DataMatrixReader>());
+		readers.push_back(std::make_shared<DataMatrix::Reader>());
 		readers.push_back(std::make_shared<AztecReader>());
 		readers.push_back(std::make_shared<PDF417Reader>());
 		readers.push_back(std::make_shared<MaxiCodeReader>());
