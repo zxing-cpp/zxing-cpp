@@ -331,7 +331,7 @@ UPCEANReader::CheckStandardUPCEANChecksum(const std::string& s)
 ErrorStatus
 UPCEANReader::DecodeDigit(const BitArray& row, int rowOffset, const std::array<int, 4>* patterns, size_t patternCount, std::array<int, 4>& counters, int &resultOffset)
 {
-	ErrorStatus status = Reader::RecordPattern(row, rowOffset, counters);
+	ErrorStatus status = RowReader::RecordPattern(row, rowOffset, counters);
 	if (StatusIsOK(status)) {
 		float bestVariance = MAX_AVG_VARIANCE; // worst variance we'll accept
 		int bestMatch = -1;

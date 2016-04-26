@@ -15,10 +15,9 @@
 * limitations under the License.
 */
 
-#include "oned/ODReader.h"
+#include "oned/ODRowReader.h"
 
 namespace ZXing {
-
 namespace OneD {
 
 /**
@@ -27,9 +26,8 @@ namespace OneD {
 * @author Sean Owen
 * @see Code93Reader
 */
-class Code39Reader : public Reader
+class Code39Reader : public RowReader
 {
-	bool _usingCheckDigit;
 	bool _extendedMode;
 
 public:
@@ -43,7 +41,7 @@ public:
 	* @param extendedMode if true, will attempt to decode extended Code 39 sequences in the
 	* text.
 	*/
-	explicit Code39Reader(bool usingCheckDigit = false, bool extendedMode = false) : _usingCheckDigit(usingCheckDigit), _extendedMode(extendedMode) {}
+	explicit Code39Reader(bool extendedMode = false) : _extendedMode(extendedMode) {}
 	
 	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) override;
 };

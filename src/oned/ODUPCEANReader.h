@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-#include "oned/ODReader.h"
+#include "oned/ODRowReader.h"
 
 #include <string>
 #include <array>
@@ -35,7 +35,7 @@ namespace OneD {
 * @author Sean Owen
 * @author alasdair@google.com (Alasdair Mackintosh)
 */
-class UPCEANReader : public Reader
+class UPCEANReader : public RowReader
 {
 public:
 	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) override;

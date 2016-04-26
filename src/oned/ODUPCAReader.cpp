@@ -33,13 +33,6 @@ static Result MaybeReturnResult(const Result& result)
 }
 
 Result
-UPCAReader::decode(const BinaryBitmap& image, const DecodeHints* hints)
-{
-	return MaybeReturnResult(_reader.decode(image, hints));
-
-}
-
-Result
 UPCAReader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints)
 {
 	return MaybeReturnResult(_reader.decodeRow(rowNumber, row, hints));

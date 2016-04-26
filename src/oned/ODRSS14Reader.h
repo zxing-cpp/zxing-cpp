@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-#include "oned/ODReader.h"
+#include "oned/ODRowReader.h"
 #include "oned/rss/ODRSSPair.h"
 
 #include <list>
@@ -28,7 +28,7 @@ namespace RSS { class Pair; }
 /**
 * Decodes RSS-14, including truncated and stacked variants. See ISO/IEC 24724:2006.
 */
-class RSS14Reader : public Reader
+class RSS14Reader : public RowReader
 {
 public:
 	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) override;

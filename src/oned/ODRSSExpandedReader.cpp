@@ -334,10 +334,10 @@ DecodeDataCharacter(const BitArray& row, const FinderPattern& pattern, bool isOd
 
 	ErrorStatus status;
 	if (leftChar) {
-		status = Reader::RecordPatternInReverse(row, pattern.startPos(), counters);
+		status = RowReader::RecordPatternInReverse(row, pattern.startPos(), counters);
 	}
 	else {
-		status = Reader::RecordPattern(row, pattern.endPos(), counters);
+		status = RowReader::RecordPattern(row, pattern.endPos(), counters);
 		std::reverse(counters.begin(), counters.end());
 	}//counters[] has the pixels of the module
 

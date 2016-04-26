@@ -28,7 +28,7 @@ namespace ZXing {
 namespace Aztec {
 
 Result
-Reader::decode(const BinaryBitmap& image, const DecodeHints* hints)
+Reader::decode(const BinaryBitmap& image, const DecodeHints* hints) const
 {
 	BitMatrix binImg;
 	ErrorStatus status = image.getBlackMatrix(binImg);

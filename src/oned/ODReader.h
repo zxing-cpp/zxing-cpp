@@ -16,87 +16,28 @@
 */
 
 #include "Reader.h"
-
-#include <cstddef>
+#include <unordered_set>
 
 namespace ZXing {
 
-class BitArray;
-enum class ErrorStatus;
+enum class BarcodeFormat;
 
 namespace OneD {
 
 /**
-* Encapsulates functionality and implementation that is common to all families
-* of one-dimensional barcodes.
-*
 * @author dswitkin@google.com (Daniel Switkin)
 * @author Sean Owen
 */
 class Reader : public ZXing::Reader
 {
 public:
-	virtual Result decode(const BinaryBitmap& image, const DecodeHints* hints = nullptr) override;
+	// Only POSSIBLE_FORMATS is read here, and the same hint is ignored in decode().
+	Reader(const DecodeHints* hints = nullptr);
 
-	/**
-	* <p>Attempts to decode a one-dimensional barcode format given a single row of
-	* an image.</p>
-	*
-	* @param rowNumber row number from top of the row
-	* @param row the black/white pixel data of the row
-	* @param hints decode hints
-	* @return {@link Result} containing encoded string and start/end of barcode
-	* @throws NotFoundException if no potential barcode is found
-	* @throws ChecksumException if a potential barcode is found but does not pass its checksum
-	* @throws FormatException if a potential barcode is found but format is invalid
-	*/
-	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) = 0;
-
-	/**
-	* Records the size of successive runs of white and black pixels in a row, starting at a given point.
-	* The values are recorded in the given array, and the number of runs recorded is equal to the size
-	* of the array. If the row starts on a white pixel at the given start point, then the first count
-	* recorded is the run of white pixels starting from that point; likewise it is the count of a run
-	* of black pixels if the row begin on a black pixels at that point.
-	*
-	* @param row row to count from
-	* @param start offset into row to start at
-	* @param counters array into which to record counts
-	* @throws NotFoundException if counters cannot be filled entirely from row before running out
-	*  of pixels
-	*/
-	template <typename Container>
-	static ErrorStatus RecordPattern(const BitArray& row, int start, Container& counters) {
-		return RecordPattern(row, start, counters.data(), counters.size());
-	}
-
-	template <typename Container>
-	static ErrorStatus RecordPatternInReverse(const BitArray& row, int start, Container& counters) {
-		return RecordPatternInReverse(row, start, counters.data(), counters.size());
-	}
-
-	/**
-	* Determines how closely a set of observed counts of runs of black/white values matches a given
-	* target pattern. This is reported as the ratio of the total variance from the expected pattern
-	* proportions across all pattern elements, to the length of the pattern.
-	*
-	* @param counters observed counters
-	* @param pattern expected pattern
-	* @param maxIndividualVariance The most any counter can differ before we give up
-	* @return ratio of total variance between counters and pattern compared to total pattern size
-	*/
-	template <typename Container>
-	static float PatternMatchVariance(const Container& counters, const Container& pattern, float maxIndividualVariance) {
-		return PatternMatchVariance(counters.data(), pattern.data(), counters.size(), maxIndividualVariance);
-	}
+	virtual Result decode(const BinaryBitmap& image, const DecodeHints* hints = nullptr) const override;
 
 private:
-	Result doDecode(const BinaryBitmap& image, const DecodeHints* hints);
-	static ErrorStatus RecordPattern(const BitArray& row, int start, int* counters, size_t length);
-	static ErrorStatus RecordPatternInReverse(const BitArray& row, int start, int* counters, size_t length);
-
-protected:
-	static float PatternMatchVariance(const int *counters, const int* pattern, size_t length, float maxIndividualVariance);
+	std::unordered_set<BarcodeFormat> _formats;
 };
 
 } // OneD

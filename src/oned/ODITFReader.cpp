@@ -74,7 +74,7 @@ DecodeDigit(const std::array<int, 5>& counters, int& outCode)
 	int bestMatch = -1;
 	for (size_t i = 0; i < PATTERNS.size(); i++) {
 		auto& pattern = PATTERNS[i];
-		float variance = Reader::PatternMatchVariance(counters, pattern, MAX_INDIVIDUAL_VARIANCE);
+		float variance = RowReader::PatternMatchVariance(counters, pattern, MAX_INDIVIDUAL_VARIANCE);
 		if (variance < bestVariance) {
 			bestVariance = variance;
 			bestMatch = static_cast<int>(i);
@@ -109,7 +109,7 @@ static ErrorStatus DecodeMiddle(const BitArray& row, int payloadStart, int paylo
 	while (payloadStart < payloadEnd) {
 
 		// Get 10 runs of black/white.
-		status = Reader::RecordPattern(row, payloadStart, counterDigitPair);
+		status = RowReader::RecordPattern(row, payloadStart, counterDigitPair);
 		if (StatusIsError(status)) {
 			return status;
 		}

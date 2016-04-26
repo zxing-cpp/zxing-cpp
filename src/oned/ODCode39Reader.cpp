@@ -17,6 +17,7 @@
 #include "oned/ODCode39Reader.h"
 #include "Result.h"
 #include "BitArray.h"
+#include "DecodeHints.h"
 
 #include <algorithm>
 #include <array>
@@ -224,6 +225,7 @@ static int IndexOf(const char* str, char c)
 Result
 Code39Reader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints)
 {
+
 	CounterContainer theCounters = {};
 	std::string result;
 	result.reserve(20);
@@ -275,7 +277,8 @@ Code39Reader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* h
 		return Result(ErrorStatus::NotFound);
 	}
 
-	if (_usingCheckDigit) {
+	bool usingCheckDigit = hints != nullptr && hints->getFlag(DecodeHint::ASSUME_CODE_39_CHECK_DIGIT);
+	if (usingCheckDigit) {
 		int max = static_cast<int>(result.length()) - 1;
 		int total = 0;
 		for (int i = 0; i < max; i++) {

@@ -138,7 +138,7 @@ ExtractPureBits(const BitMatrix& image, BitMatrix& outBits)
 }
 
 Result
-Reader::decode(const BinaryBitmap& image, const DecodeHints* hints)
+Reader::decode(const BinaryBitmap& image, const DecodeHints* hints) const
 {
 	BitMatrix binImg;
 	auto status = image.getBlackMatrix(binImg);

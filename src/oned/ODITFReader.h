@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-#include "oned/ODReader.h"
+#include "oned/ODRowReader.h"
 
 namespace ZXing {
 
@@ -37,7 +37,7 @@ namespace OneD {
 *
 * @author kevin.osullivan@sita.aero, SITA Lab.
 */
-class ITFReader : public Reader
+class ITFReader : public RowReader
 {
 public:
 	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) override;

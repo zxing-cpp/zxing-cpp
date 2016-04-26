@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-#include "oned/ODReader.h"
+#include "oned/ODRowReader.h"
 
 #include <array>
 
@@ -36,7 +36,7 @@ public:
 	static int ParseFinderValue(const C& counters, const P& finderPatterns)
 	{
 		for (size_t value = 0; value < finderPatterns.size(); ++value) {
-			if (Reader::PatternMatchVariance(counters, finderPatterns[value], MAX_INDIVIDUAL_VARIANCE) < MAX_AVG_VARIANCE) {
+			if (RowReader::PatternMatchVariance(counters, finderPatterns[value], MAX_INDIVIDUAL_VARIANCE) < MAX_AVG_VARIANCE) {
 				return value;
 			}
 		}

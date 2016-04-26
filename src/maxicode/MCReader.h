@@ -23,7 +23,7 @@ namespace MaxiCode {
 class Reader : public ZXing::Reader
 {
 public:
-	Result decode(const BinaryBitmap& image, const DecodeHints* hints = nullptr) override;
+	Result decode(const BinaryBitmap& image, const DecodeHints* hints = nullptr) const override;
 };
 
 } // MaxiCode

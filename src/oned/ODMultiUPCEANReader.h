@@ -15,12 +15,15 @@
 * limitations under the License.
 */
 
-#include "oned/ODReader.h"
+#include "oned/ODRowReader.h"
 
 #include <vector>
 #include <memory>
+#include <unordered_set>
 
 namespace ZXing {
+
+enum class BarcodeFormat;
 
 namespace OneD {
 
@@ -33,10 +36,10 @@ class UPCEANReader;
 *
 * @author Sean Owen
 */
-class MultiUPCEANReader : public Reader
+class MultiUPCEANReader : public RowReader
 {
 public:
-	MultiUPCEANReader(const DecodeHints* hints);
+	MultiUPCEANReader(const std::unordered_set<BarcodeFormat> &formats);
 
 	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) override;
 

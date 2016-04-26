@@ -16,6 +16,8 @@
 */
 
 #include "Reader.h"
+#include <vector>
+#include <memory>
 
 namespace ZXing {
 
@@ -30,7 +32,16 @@ namespace ZXing {
 class MultiFormatReader : public Reader
 {
 public:
-	virtual Result decode(const BinaryBitmap& image, const DecodeHints* hints = nullptr) override;
+	/**
+	* Construct a reader.
+	// Only POSSIBLE_FORMATS is read here, and the same hint is ignored in decode().
+	*/
+	explicit MultiFormatReader(const DecodeHints* hints = nullptr);
+
+	virtual Result decode(const BinaryBitmap& image, const DecodeHints* hints = nullptr) const override;
+
+private:
+	std::vector<std::shared_ptr<Reader>> _readers;
 };
 
 } // ZXing

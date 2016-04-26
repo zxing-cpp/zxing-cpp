@@ -57,7 +57,7 @@ static bool ExtractPureBits(const BitMatrix& image, BitMatrix& bits)
 }
 
 Result
-Reader::decode(const BinaryBitmap& image, const DecodeHints* hints)
+Reader::decode(const BinaryBitmap& image, const DecodeHints* hints) const
 {
 	if (hints == nullptr || !hints->getFlag(DecodeHint::PURE_BARCODE)) {
 		return Result(ErrorStatus::NotFound);

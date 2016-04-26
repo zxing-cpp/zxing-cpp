@@ -18,18 +18,13 @@
 #include "Reader.h"
 
 namespace ZXing {
-namespace DataMatrix {
+namespace Pdf417 {
 
-/**
-* This implementation can detect and decode Data Matrix codes in an image.
-*
-* @author bbrown@google.com (Brian Brown)
-*/
 class Reader : public ZXing::Reader
 {
 public:
 	virtual Result decode(const BinaryBitmap& image, const DecodeHints* hints = nullptr) const override;
 };
 
-} // DataMatrix
+} // Pdf417
 } // ZXing

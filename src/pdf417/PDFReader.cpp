@@ -1,4 +1,3 @@
-#pragma once
 /*
 * Copyright 2016 ZXing authors
 *
@@ -15,30 +14,12 @@
 * limitations under the License.
 */
 
-#include "oned/ODReader.h"
-
-#include <vector>
-#include <memory>
+#include "pdf417/PDFReader.h"
 
 namespace ZXing {
-
-namespace OneD {
-
-/**
-* @author dswitkin@google.com (Daniel Switkin)
-* @author Sean Owen
-*/
-class MultiFormatReader : public Reader
-{
-public:
-	MultiFormatReader(const DecodeHints* hints = nullptr);
-	
-	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) override;
-
-private:
-	std::vector<std::shared_ptr<Reader>> _readers;
-};
+namespace Pdf417 {
 
 
-} // OneD
+
+} // Pdf417
 } // ZXing

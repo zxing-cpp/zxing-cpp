@@ -20,11 +20,12 @@
 #include "BarcodeFormat.h"
 #include "Result.h"
 
-#include "oned/ODMultiFormatReader.h"
+#include "oned/ODReader.h"
 #include "qrcode/QRReader.h"
 #include "datamatrix/DMReader.h"
 #include "aztec/AZReader.h"
 #include "maxicode/MCReader.h"
+#include "pdf417/PDFReader.h"
 
 #include <vector>
 #include <memory>
@@ -32,12 +33,9 @@
 
 namespace ZXing {
 
-namespace {
-
-std::vector<std::shared_ptr<Reader>>
-BuildReaders(const DecodeHints* hints)
+MultiFormatReader::MultiFormatReader(const DecodeHints* hints)
 {
-	std::vector<std::shared_ptr<Reader>> readers;
+	_readers.reserve(6);
 	bool tryHarder = false;
 	if (hints != nullptr) {
 		tryHarder = hints->getFlag(DecodeHint::TRY_HARDER);
@@ -59,53 +57,49 @@ BuildReaders(const DecodeHints* hints)
 
 			// Put 1D readers upfront in "normal" mode
 			if (addOneDReader && !tryHarder) {
-				readers.push_back(std::make_shared<OneD::MultiFormatReader>(hints));
+				_readers.push_back(std::make_shared<OneD::Reader>(hints));
 			}
 			if (formats.find(BarcodeFormat::QR_CODE) != formats.end()) {
-				readers.push_back(std::make_shared<QRCode::Reader>());
+				_readers.push_back(std::make_shared<QRCode::Reader>());
 			}
 			if (formats.find(BarcodeFormat::DATA_MATRIX) != formats.end()) {
-				readers.push_back(std::make_shared<DataMatrix::Reader>());
+				_readers.push_back(std::make_shared<DataMatrix::Reader>());
 			}
 			if (formats.find(BarcodeFormat::AZTEC) != formats.end()) {
-				readers.push_back(std::make_shared<Aztec::Reader>());
+				_readers.push_back(std::make_shared<Aztec::Reader>());
 			}
 			if (formats.find(BarcodeFormat::PDF_417) != formats.end()) {
-				readers.push_back(std::make_shared<PDF417::Reader>());
+				_readers.push_back(std::make_shared<Pdf417::Reader>());
 			}
 			if (formats.find(BarcodeFormat::MAXICODE) != formats.end()) {
-				readers.push_back(std::make_shared<MaxiCode::Reader>());
+				_readers.push_back(std::make_shared<MaxiCode::Reader>());
 			}
 			// At end in "try harder" mode
 			if (addOneDReader && tryHarder) {
-				readers.push_back(std::make_shared<OneD::MultiFormatReader>(hints));
+				_readers.push_back(std::make_shared<OneD::Reader>(hints));
 			}
 		}
 	}
 
-	if (readers.empty()) {
+	if (_readers.empty()) {
 		if (!tryHarder) {
-			readers.push_back(std::make_shared<OneD::MultiFormatReader>(hints));
+			_readers.push_back(std::make_shared<OneD::Reader>(hints));
 		}
-		readers.push_back(std::make_shared<QRCode::Reader>());
-		readers.push_back(std::make_shared<DataMatrix::Reader>());
-		readers.push_back(std::make_shared<Aztec::Reader>());
-		readers.push_back(std::make_shared<PDF417::Reader>());
-		readers.push_back(std::make_shared<MaxiCode::Reader>());
+		_readers.push_back(std::make_shared<QRCode::Reader>());
+		_readers.push_back(std::make_shared<DataMatrix::Reader>());
+		_readers.push_back(std::make_shared<Aztec::Reader>());
+		_readers.push_back(std::make_shared<Pdf417::Reader>());
+		_readers.push_back(std::make_shared<MaxiCode::Reader>());
 		if (tryHarder) {
-			readers.push_back(std::make_shared<OneD::MultiFormatReader>(hints));
+			_readers.push_back(std::make_shared<OneD::Reader>(hints));
 		}
 	}
-	return readers;
 }
 
-} // anonymous
-
 Result
-MultiFormatReader::decode(const BinaryBitmap& image, const DecodeHints* hints)
+MultiFormatReader::decode(const BinaryBitmap& image, const DecodeHints* hints) const
 {
-	auto readers = BuildReaders(hints);
-	for (const auto& reader : readers) {
+	for (const auto& reader : _readers) {
 		Result r = reader->decode(image, hints);
 		if (r.isValid())
 			return r;

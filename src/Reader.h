@@ -30,6 +30,8 @@ class Result;
 * See {@link MultiFormatReader}, which attempts to determine what barcode
 * format is present within the image as well, and then decodes it accordingly.
 *
+* All readers are thread-safe with no temporary state left behind after decode().
+*
 * @author Sean Owen
 * @author dswitkin@google.com (Daniel Switkin)
 */
@@ -52,7 +54,7 @@ public:
 	* @throws ChecksumException if a potential barcode is found but does not pass its checksum
 	* @throws FormatException if a potential barcode is found but format is invalid
 	*/
-	virtual Result decode(const BinaryBitmap& image, const DecodeHints* hints = nullptr) = 0;
+	virtual Result decode(const BinaryBitmap& image, const DecodeHints* hints = nullptr) const = 0;
 };
 
 } // ZXing

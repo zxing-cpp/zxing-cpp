@@ -275,10 +275,10 @@ DecodeDataCharacter(const BitArray& row, const RSS::FinderPattern& pattern, bool
 
 	ErrorStatus status;
 	if (outsideChar) {
-		status = Reader::RecordPatternInReverse(row, pattern.startPos(), counters);
+		status = RowReader::RecordPatternInReverse(row, pattern.startPos(), counters);
 	}
 	else {
-		status = Reader::RecordPattern(row, pattern.endPos() + 1, counters);
+		status = RowReader::RecordPattern(row, pattern.endPos() + 1, counters);
 		std::reverse(counters.begin(), counters.end());
 	}
 

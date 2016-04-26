@@ -177,7 +177,7 @@ FindStartPattern(const BitArray& row, int& begin, int& end, int& startCode)
 				float bestVariance = MAX_AVG_VARIANCE;
 				int bestMatch = -1;
 				for (int startCode = CODE_START_A; startCode <= CODE_START_C; startCode++) {
-					float variance = Reader::PatternMatchVariance(counters, CODE_PATTERNS[startCode], MAX_INDIVIDUAL_VARIANCE);
+					float variance = RowReader::PatternMatchVariance(counters, CODE_PATTERNS[startCode], MAX_INDIVIDUAL_VARIANCE);
 					if (variance < bestVariance) {
 						bestVariance = variance;
 						bestMatch = startCode;
@@ -210,7 +210,7 @@ FindStartPattern(const BitArray& row, int& begin, int& end, int& startCode)
 static ErrorStatus
 DecodeCode(const BitArray& row, std::vector<int>& counters, int rowOffset, int& outCode)
 {
-	ErrorStatus status = Reader::RecordPattern(row, rowOffset, counters);
+	ErrorStatus status = RowReader::RecordPattern(row, rowOffset, counters);
 	if (StatusIsError(status)) {
 		return status;
 	}
@@ -218,7 +218,7 @@ DecodeCode(const BitArray& row, std::vector<int>& counters, int rowOffset, int& 
 	int bestMatch = -1;
 	for (size_t d = 0; d < CODE_PATTERNS.size(); d++) {
 		auto& pattern = CODE_PATTERNS[d];
-		float variance = Reader::PatternMatchVariance(counters, pattern, MAX_INDIVIDUAL_VARIANCE);
+		float variance = RowReader::PatternMatchVariance(counters, pattern, MAX_INDIVIDUAL_VARIANCE);
 		if (variance < bestVariance) {
 			bestVariance = variance;
 			bestMatch = static_cast<int>(d);

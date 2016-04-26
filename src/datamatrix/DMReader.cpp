@@ -93,7 +93,7 @@ ExtractPureBits(const BitMatrix& image, BitMatrix& outBits)
 * @throws ChecksumException if error correction fails
 */
 Result
-Reader::decode(const BinaryBitmap& image, const DecodeHints* hints)
+Reader::decode(const BinaryBitmap& image, const DecodeHints* hints) const
 {
 	BitMatrix binImg;
 	auto status = image.getBlackMatrix(binImg);

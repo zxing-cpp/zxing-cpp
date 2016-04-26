@@ -30,32 +30,28 @@ namespace ZXing {
 
 namespace OneD {
 
-MultiUPCEANReader::MultiUPCEANReader(const DecodeHints* hints)
+MultiUPCEANReader::MultiUPCEANReader(const std::unordered_set<BarcodeFormat> &formats)
 {
-	if (hints != nullptr)
-	{
-		auto possibleFormats = hints->getFormatList(DecodeHint::POSSIBLE_FORMATS);
-		if (!possibleFormats.empty()) {
-			std::unordered_set<BarcodeFormat> formats(possibleFormats.begin(), possibleFormats.end());
-			if (formats.find(BarcodeFormat::EAN_13) != formats.end()) {
-				_readers.push_back(std::make_shared<EAN13Reader>());
-			}
-			else if (formats.find(BarcodeFormat::UPC_A) != formats.end()) {
-				_readers.push_back(std::make_shared<UPCAReader>());
-			}
-			if (formats.find(BarcodeFormat::EAN_8) != formats.end()) {
-				_readers.push_back(std::make_shared<EAN8Reader>());
-			}
-			if (formats.find(BarcodeFormat::UPC_E) != formats.end()) {
-				_readers.push_back(std::make_shared<UPCEReader>());
-			}
-		}
-	}
-	if (_readers.empty()) {
+	if (formats.empty()) {
 		_readers.push_back(std::make_shared<EAN13Reader>());
 		// UPC-A is covered by EAN-13
 		_readers.push_back(std::make_shared<EAN8Reader>());
 		_readers.push_back(std::make_shared<UPCEReader>());
+	}
+	else
+	{
+		if (formats.find(BarcodeFormat::EAN_13) != formats.end()) {
+			_readers.push_back(std::make_shared<EAN13Reader>());
+		}
+		else if (formats.find(BarcodeFormat::UPC_A) != formats.end()) {
+			_readers.push_back(std::make_shared<UPCAReader>());
+		}
+		if (formats.find(BarcodeFormat::EAN_8) != formats.end()) {
+			_readers.push_back(std::make_shared<EAN8Reader>());
+		}
+		if (formats.find(BarcodeFormat::UPC_E) != formats.end()) {
+			_readers.push_back(std::make_shared<UPCEReader>());
+		}
 	}
 }
 

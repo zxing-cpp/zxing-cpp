@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-#include "oned/ODReader.h"
+#include "oned/ODRowReader.h"
 #include "oned/rss/ODRSSExpandedRow.h"
 
 #include <list>
@@ -29,7 +29,7 @@ namespace RSS { class ExpandedRow; }
 * @author Pablo Orduña, University of Deusto(pablo.orduna@deusto.es)
 * @author Eduardo Castillejo, University of Deusto(eduardo.castillejo@deusto.es)
 */
-class RSSExpandedReader : public Reader
+class RSSExpandedReader : public RowReader
 {
 public:
 	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) override;

@@ -30,7 +30,6 @@ namespace OneD {
 class UPCAReader : public UPCEANReader
 {
 public:
-	virtual Result decode(const BinaryBitmap& image, const DecodeHints* hints = nullptr) override;
 	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) override;
 	virtual Result decodeRow(int rowNumber, const BitArray& row, int startGuardBegin, int startGuardEnd, const DecodeHints* hints) override;
 
