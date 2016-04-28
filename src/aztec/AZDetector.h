@@ -18,6 +18,7 @@
 namespace ZXing {
 
 class BitMatrix;
+enum class ErrorStatus;
 
 namespace Aztec {
 
@@ -40,7 +41,7 @@ public:
 	* @return {@link AztecDetectorResult} encapsulating results of detecting an Aztec Code
 	* @throws NotFoundException if no Aztec Code can be found
 	*/
-	static DetectorResult Detect(const BitMatrix& image, bool isMirror);
+	static ErrorStatus Detect(const BitMatrix& image, bool isMirror, DetectorResult& result);
 };
 
 } // Aztec

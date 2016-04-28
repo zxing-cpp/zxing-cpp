@@ -19,6 +19,7 @@ namespace ZXing {
 
 class BitMatrix;
 class DetectorResult;
+enum class ErrorStatus;
 
 namespace DataMatrix {
 
@@ -37,7 +38,7 @@ public:
 	* @return {@link DetectorResult} encapsulating results of detecting a Data Matrix Code
 	* @throws NotFoundException if no Data Matrix Code can be found
 	*/
-	static DetectorResult Detect(const BitMatrix& image);
+	static ErrorStatus Detect(const BitMatrix& image, DetectorResult& result);
 };
 
 } // DataMatrix

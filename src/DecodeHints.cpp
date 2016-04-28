@@ -30,7 +30,7 @@ struct DecodeHints::HintValue
 		return String();
 	}
 	virtual std::vector<int> toIntegerList() const {
-		return std::vector<int>();
+		return{};
 	}
 	virtual std::vector<BarcodeFormat> toFormatList() const {
 		return std::vector<BarcodeFormat>();

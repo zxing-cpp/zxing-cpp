@@ -21,11 +21,6 @@
 
 namespace ZXing {
 
-GenericGFPoly::GenericGFPoly() :
-	_field(nullptr)
-{
-}
-
 GenericGFPoly::GenericGFPoly(const GenericGF& field, const std::vector<int>& coefs) :
 	_field(&field)
 {
@@ -101,7 +96,7 @@ GenericGFPoly::addOrSubtract(const GenericGFPoly& other) const
 		swap(smallerCoefficients, largerCoefficients);
 	}
 
-	std::vector<int> sumDiff(largerCoefficients->size());
+	std::vector<int> sumDiff(largerCoefficients->size(), 0);
 	int lengthDiff = static_cast<int>(largerCoefficients->size() - smallerCoefficients->size());
 
 	// Copy high-order terms only found in higher-degree polynomial's coefficients
@@ -128,7 +123,7 @@ GenericGFPoly::multiply(const GenericGFPoly& other) const
 	size_t aLength = aCoefficients.size();
 	auto& bCoefficients = other._coefficients;
 	size_t bLength = bCoefficients.size();
-	std::vector<int> product(aLength + bLength - 1);
+	std::vector<int> product(aLength + bLength - 1, 0);
 	for (size_t i = 0; i < aLength; ++i) {
 		int aCoeff = aCoefficients[i];
 		for (size_t j = 0; j < bLength; ++j) {

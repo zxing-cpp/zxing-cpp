@@ -18,7 +18,6 @@
 #include "oned/ODRowReader.h"
 
 namespace ZXing {
-
 namespace OneD {
 
 /**

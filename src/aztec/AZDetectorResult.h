@@ -26,33 +26,23 @@ class DetectorResult : public ZXing::DetectorResult
 	int _nbLayers;
 
 public:
-	DetectorResult(const BitMatrix& bits, const std::vector<ResultPoint>& points, bool compact, int nbDatablocks, int nbLayers) :
+	DetectorResult() : _compact(false), _nbDatablocks(0), _nbLayers(0) {}
+	/*DetectorResult(const BitMatrix& bits, const std::vector<ResultPoint>& points, bool compact, int nbDatablocks, int nbLayers) :
 		ZXing::DetectorResult(bits, points),
 		_compact(compact),
 		_nbDatablocks(nbDatablocks),
 		_nbLayers(nbLayers)
 	{
-	}
+	}*/
 
-	explicit DetectorResult(ErrorStatus status) :
-		ZXing::DetectorResult(status),
-		_compact(false),
-		_nbDatablocks(0),
-		_nbLayers(0)
-	{
-	}
+	bool isCompact() const { return _compact; }
+	void setCompact(bool compact) { _compact = compact; }
 
-	bool isCompact() const {
-		return _compact;
-	}
+	int nbDatablocks() const { return _nbDatablocks; }
+	void setNbDatablocks(int nb) { _nbDatablocks = nb; }
 
-	int nbDatablocks() const {
-		return _nbDatablocks;
-	}
-
-	int nbLayers() const {
-		return _nbLayers;
-	}
+	int nbLayers() const { return _nbLayers; }
+	void setNbLayers(int nb) { _nbLayers = nb; }
 };
 
 } // Aztec

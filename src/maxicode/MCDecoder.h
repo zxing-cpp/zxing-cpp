@@ -20,6 +20,7 @@ namespace ZXing {
 class DecoderResult;
 class BitMatrix;
 class DecodeHints;
+enum class ErrorStatus;
 
 namespace MaxiCode {
 
@@ -32,7 +33,7 @@ namespace MaxiCode {
 class Decoder
 {
 public:
-	static DecoderResult Decode(const BitMatrix& bits, const DecodeHints* hints);
+	static ErrorStatus Decode(const BitMatrix& bits, const DecodeHints* hints, DecoderResult& result);
 };
 
 } // MaxiCode

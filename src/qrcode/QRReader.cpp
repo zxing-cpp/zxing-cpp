@@ -146,29 +146,26 @@ Reader::decode(const BinaryBitmap& image, const DecodeHints* hints) const
 		return Result(status);
 	}
 
-	DecoderResult decoderResult(ErrorStatus::NotFound);
+	DecoderResult decoderResult;
 	std::vector<ResultPoint> points;
 	if (hints != nullptr && hints->getFlag(DecodeHint::PURE_BARCODE)) {
 		BitMatrix bits;
 		status = ExtractPureBits(binImg, bits);
-		if (StatusIsError(status)) {
-			return Result(status);
+		if (StatusIsOK(status)) {
+			status = Decoder::Decode(bits, hints, decoderResult);
 		}
-		decoderResult = Decoder::Decode(bits, hints);
 	}
 	else {
-		auto detectorResult = Detector::Detect(binImg, hints);
-		if (detectorResult.isValid()) {
-			decoderResult = Decoder::Decode(detectorResult.bits(), hints);
+		DetectorResult detectorResult;
+		status = Detector::Detect(binImg, hints, detectorResult);
+		if (StatusIsOK(status)) {
+			status = Decoder::Decode(detectorResult.bits(), hints, decoderResult);
 			points = detectorResult.points();
-		}
-		else {
-			decoderResult = DecoderResult(detectorResult.status());
 		}
 	}
 
-	if (!decoderResult.isValid()) {
-		return Result(decoderResult.status());
+	if (StatusIsError(status)) {
+		return Result(status);
 	}
 
 	// If the code was mirrored: swap the bottom-left and the top-right points.

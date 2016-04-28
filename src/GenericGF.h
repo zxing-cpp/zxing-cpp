@@ -52,22 +52,39 @@ public:
 	/**
 	* @return 2 to the power of a in GF(size)
 	*/
-	int exp(int a) const;
+	int exp(int a) const {
+		return _expTable.at(a);
+	}
 
 	/**
 	* @return base 2 log of a in GF(size)
 	*/
-	int log(int a) const;
+	int log(int a) const {
+		if (a == 0) {
+			throw std::invalid_argument("a == 0");
+		}
+		return _logTable[a];
+	}
 
 	/**
 	* @return multiplicative inverse of a
 	*/
-	int inverse(int a) const;
+	int inverse(int a) const {
+		if (a == 0) {
+			throw std::invalid_argument("a == 0");
+		}
+		return _expTable[_size - _logTable[a] - 1];
+	}
 
 	/**
 	* @return product of a and b in GF(size)
 	*/
-	int multiply(int a, int b) const;
+	int multiply(int a, int b) const {
+		if (a == 0 || b == 0) {
+			return 0;
+		}
+		return _expTable[(_logTable[a] + _logTable[b]) % (_size - 1)];
+	}
 
 	
 	int size() const {

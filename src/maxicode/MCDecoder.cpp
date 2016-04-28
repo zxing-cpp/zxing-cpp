@@ -20,6 +20,7 @@
 #include "DecoderResult.h"
 #include "ReedSolomonDecoder.h"
 #include "GenericGF.h"
+#include "ErrorStatus.h"
 
 #include <array>
 #include <sstream>
@@ -236,7 +237,7 @@ namespace DecodedBitStreamParser
 		return sb;
 	}
 
-	static DecoderResult Decode(const ByteArray& bytes, int mode)
+	static ErrorStatus Decode(const ByteArray& bytes, int mode, DecoderResult& decodeResult)
 	{
 		std::string result;
 		result.reserve(144);
@@ -262,21 +263,24 @@ namespace DecodedBitStreamParser
 				result.append(GetMessage(bytes, 1, 77));
 				break;
 		}
-		return DecoderResult(bytes, result, std::list<ByteArray>(), std::to_string(mode));
+		decodeResult.setRawBytes(bytes);
+		decodeResult.setText(result);
+		decodeResult.setEcLevel(std::to_string(mode)); // really???
+		return ErrorStatus::NoError;
 	}
 
 
 
 } // DecodedBitStreamParser
 
-DecoderResult
-Decoder::Decode(const BitMatrix& bits, const DecodeHints* hints)
+ErrorStatus
+Decoder::Decode(const BitMatrix& bits, const DecodeHints* hints, DecoderResult& result)
 {
 	ByteArray codewords;
 	BitMatrixParser::ReadCodewords(bits, codewords);
 
 	if (!CorrectErrors(codewords, 0, 10, 10, ALL)) {
-		return DecoderResult(ErrorStatus::ChecksumError);
+		return ErrorStatus::ChecksumError;
 	}
 	int mode = codewords[0] & 0x0F;
 	ByteArray datawords;
@@ -288,7 +292,7 @@ Decoder::Decode(const BitMatrix& bits, const DecodeHints* hints)
 				datawords.resize(94, 0);
 			}
 			else {
-				return DecoderResult(ErrorStatus::ChecksumError);
+				return ErrorStatus::ChecksumError;
 			}
 			break;
 		case 5:
@@ -296,17 +300,17 @@ Decoder::Decode(const BitMatrix& bits, const DecodeHints* hints)
 				datawords.resize(78, 0);
 			}
 			else {
-				return DecoderResult(ErrorStatus::ChecksumError);
+				return ErrorStatus::ChecksumError;
 			}
 			break;
 		default:
-			return DecoderResult(ErrorStatus::FormatError);
+			return ErrorStatus::FormatError;
 	}
 
 	std::copy_n(codewords.begin(), 10, datawords.begin());
 	std::copy_n(codewords.begin() + 20, datawords.size() - 10, datawords.begin() + 10);
 
-	return DecodedBitStreamParser::Decode(datawords, mode);
+	return DecodedBitStreamParser::Decode(datawords, mode, result);
 }
 
 } // MaxiCode

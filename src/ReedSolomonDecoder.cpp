@@ -139,7 +139,7 @@ ErrorStatus
 ReedSolomonDecoder::decode(std::vector<int>& received, int twoS) const
 {
 	GenericGFPoly poly(*_field, received);
-	std::vector<int> syndromeCoefficients(twoS);
+	std::vector<int> syndromeCoefficients(twoS, 0);
 	bool noError = true;
 	for (int i = 0; i < twoS; i++) {
 		int eval = poly.evaluateAt(_field->exp(i + _field->generatorBase()));
@@ -156,14 +156,14 @@ ReedSolomonDecoder::decode(std::vector<int>& received, int twoS) const
 	GenericGFPoly sigma, omega;
 
 	auto errStat = RunEuclideanAlgorithm(*_field, _field->buildMonomial(twoS, 1), syndrome, twoS, sigma, omega);
-	if (StatusIsError(errStat))
+	if (StatusIsError(errStat)) {
 		return errStat;
-
+	}
 	std::vector<int> errorLocations, errorMagnitudes;
 	errStat = FindErrorLocations(*_field, sigma, errorLocations);
-	if (StatusIsError(errStat))
+	if (StatusIsError(errStat)) {
 		return errStat;
-
+	}
 	FindErrorMagnitudes(*_field, omega, errorLocations, errorMagnitudes);
 
 	int receivedCount = static_cast<int>(received.size());

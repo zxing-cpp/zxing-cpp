@@ -17,7 +17,6 @@
 
 #include "ByteArray.h"
 #include "ZXString.h"
-#include "ErrorStatus.h"
 
 #include <memory>
 #include <list>
@@ -35,7 +34,6 @@ class CustomData;
 */
 class DecoderResult
 {
-	ErrorStatus _status;
 	ByteArray _rawBytes;
 	String _text;
 	std::list<ByteArray> _byteSegments;
@@ -47,61 +45,41 @@ class DecoderResult
 	std::shared_ptr<CustomData> _extra;
 
 public:
-	explicit DecoderResult(ErrorStatus status);
-	DecoderResult(const ByteArray& rawBytes, const String& text, std::list<ByteArray>& byteSegments, const std::string& ecLevel, int saSequence, int saParity);
-	DecoderResult(const ByteArray& rawBytes, const String& text, std::list<ByteArray>& byteSegments, const std::string& ecLevel);
+	//explicit DecoderResult(ErrorStatus status);
+	//DecoderResult(const ByteArray& rawBytes, const String& text, std::list<ByteArray>& byteSegments, const std::string& ecLevel, int saSequence, int saParity);
+	//DecoderResult(const ByteArray& rawBytes, const String& text, std::list<ByteArray>& byteSegments, const std::string& ecLevel);
+	DecoderResult() {}
+	DecoderResult(const DecoderResult &) = delete;
+	DecoderResult& operator=(const DecoderResult &) = delete;
 
-	bool isValid() const {
-		return StatusIsOK(_status);
-	}
+	const ByteArray& rawBytes() const { return _rawBytes; }
+	void setRawBytes(const ByteArray& bytes) { _rawBytes = bytes; }
 
-	ErrorStatus status() const {
-		return _status;
-	}
+	const String& text() const { return _text; }
+	void setText(const String& txt) { _text = txt; }
 
-	const ByteArray& rawBytes() const {
-		return _rawBytes;
-	}
+	const std::list<ByteArray>& byteSegments() const { return _byteSegments; }
+	void setByteSegments(const std::list<ByteArray>& segments) { _byteSegments = segments; }
 
-	const String& text() const {
-		return _text;
-	}
+	std::string ecLevel() const { return _ecLevel; }
+	void setEcLevel(const std::string& level) { _ecLevel = level; }
 
-	const std::list<ByteArray>& byteSegments() const {
-		return _byteSegments;
-	}
+	int errorsCorrected() const { return _errorsCorrected; }
+	void setErrorsCorrected(int ec) { _errorsCorrected = ec; }
 
-	std::string ecLevel() const {
-		return _ecLevel;
-	}
+	int erasures() const { return _erasures; }
+	void setErasures(int e) { _erasures = e; }
 
-	int errorsCorrected() const {
-		return _errorsCorrected;
-	}
+	bool hasStructuredAppend() const { return _structuredAppendParity >= 0 && _structuredAppendSequenceNumber >= 0; }
 
-	int erasures() const {
-		return _erasures;
-	}
+	int structuredAppendParity() const { return _structuredAppendParity; }
+	void setStructuredAppendParity(int p) { _structuredAppendParity = p; }
 
-	bool hasStructuredAppend() const {
-		return _structuredAppendParity >= 0 && _structuredAppendSequenceNumber >= 0;
-	}
+	int structuredAppendSequenceNumber() const { return _structuredAppendSequenceNumber; }
+	void setStructuredAppendSequenceNumber(int s) { _structuredAppendSequenceNumber = s; }
 
-	int structuredAppendParity() const {
-		return _structuredAppendParity;
-	}
-
-	int structuredAppendSequenceNumber() const {
-		return _structuredAppendSequenceNumber;
-	}
-
-	std::shared_ptr<CustomData> extra() const {
-		return _extra;
-	}
-
-	void setExtra(const std::shared_ptr<CustomData>& ex) {
-		_extra = ex;
-	}
+	std::shared_ptr<CustomData> extra() const { return _extra; }
+	void setExtra(const std::shared_ptr<CustomData> e) { _extra = e; }
 };
 
 } // ZXing

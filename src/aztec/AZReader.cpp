@@ -36,21 +36,20 @@ Reader::decode(const BinaryBitmap& image, const DecodeHints* hints) const
 		return Result(status);
 	}
 
-	DetectorResult detectResult = Detector::Detect(binImg, false);
-	status = detectResult.status();
-	DecoderResult decodeResult(status);
+	DetectorResult detectResult;
+	status = Detector::Detect(binImg, false, detectResult);
+	DecoderResult decodeResult;
 	std::vector<ResultPoint> points;
 	if (StatusIsOK(status)) {
 		points = detectResult.points();
-		decodeResult = Decoder::Decode(detectResult);
-		status = decodeResult.status();
+		status = Decoder::Decode(detectResult, decodeResult);
 	}
 	if (StatusIsError(status)) {
-		detectResult = Detector::Detect(binImg, true);
-		if (detectResult.isValid()) {
+		auto status2 = Detector::Detect(binImg, true, detectResult);
+		if (StatusIsOK(status2)) {
 			points = detectResult.points();
-			decodeResult = Decoder::Decode(detectResult);
-			if (!decodeResult.isValid()) {
+			status2 = Decoder::Decode(detectResult, decodeResult);
+			if (StatusIsError(status2)) {
 				return Result(status);
 			}
 		}

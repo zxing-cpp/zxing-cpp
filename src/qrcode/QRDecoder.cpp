@@ -31,6 +31,7 @@
 #include "StringCodecs.h"
 #include "CharacterSetECI.h"
 #include "DecodeHints.h"
+#include "ErrorStatus.h"
 
 #include <list>
 #include <type_traits>
@@ -335,8 +336,8 @@ ParseECIValue(BitSource& bits, int &outValue)
 *
 * <p>See ISO 18004:2006, 6.4.3 - 6.4.7</p>
 */
-static DecoderResult
-DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionLevel ecLevel, const DecodeHints* hints)
+static ErrorStatus
+DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionLevel ecLevel, const DecodeHints* hints, DecoderResult& decodeResult)
 {
 	BitSource bits(bytes);
 	String result;
@@ -366,7 +367,7 @@ DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionL
 				}
 				else if (mode == DecodeMode::STRUCTURED_APPEND) {
 					if (bits.available() < 16) {
-						return DecoderResult(ErrorStatus::FormatError);
+						return ErrorStatus::FormatError;
 					}
 					// sequence number and parity is added later to the result metadata
 					// Read next 8 bits (symbol sequence #) and 8 bits (parity data), then continue
@@ -377,12 +378,12 @@ DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionL
 					// Count doesn't apply to ECI
 					int value;
 					auto status = ParseECIValue(bits, value);
-					if (StatusIsError(status))
-						return DecoderResult(status);
-
+					if (StatusIsError(status)) {
+						return status;
+					}
 					currentCharset = CharacterSetECI::CharsetFromValue(value);
 					if (currentCharset == CharacterSet::Unknown) {
-						return DecoderResult(ErrorStatus::FormatError);
+						return ErrorStatus::FormatError;
 					}
 				}
 				else {
@@ -393,8 +394,9 @@ DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionL
 						int countHanzi = bits.readBits(DecodeMode::CharacterCountBits(mode, version));
 						if (subset == GB2312_SUBSET) {
 							auto status = DecodeHanziSegment(bits, countHanzi, result);
-							if (StatusIsError(status))
-								return DecoderResult(status);
+							if (StatusIsError(status)) {
+								return status;
+							}
 						}
 					}
 					else {
@@ -418,8 +420,9 @@ DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionL
 							status = ErrorStatus::FormatError;
 						}
 
-						if (StatusIsError(status))
-							return DecoderResult(status);
+						if (StatusIsError(status)) {
+							return status;
+						}
 					}
 				}
 			}
@@ -428,17 +431,23 @@ DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionL
 	catch (const std::exception &)
 	{
 		// from readBits() calls
-		return DecoderResult(ErrorStatus::FormatError);
+		return ErrorStatus::FormatError;
 	}
 	
-	return DecoderResult(bytes, result, byteSegments, ToString(ecLevel), symbolSequence, parityData);
+	decodeResult.setRawBytes(bytes);
+	decodeResult.setText(result);
+	decodeResult.setByteSegments(byteSegments);
+	decodeResult.setEcLevel(ToString(ecLevel));
+	decodeResult.setStructuredAppendSequenceNumber(symbolSequence);
+	decodeResult.setStructuredAppendParity(parityData);
+	return ErrorStatus::NoError;
 }
 
 #pragma endregion
 
 
-static DecoderResult
-DoDecode(const BitMatrix& bits, const Version& version, const FormatInformation& formatInfo, const DecodeHints* hints)
+static ErrorStatus
+DoDecode(const BitMatrix& bits, const Version& version, const FormatInformation& formatInfo, const DecodeHints* hints, DecoderResult& result)
 {
 	auto ecLevel = formatInfo.errorCorrectionLevel();
 
@@ -446,13 +455,13 @@ DoDecode(const BitMatrix& bits, const Version& version, const FormatInformation&
 	ByteArray codewords;
 	ErrorStatus status = BitMatrixParser::ReadCodewords(bits, version, codewords);
 	if (StatusIsError(status)) {
-		return DecoderResult(status);
+		return status;
 	}
 	// Separate into data blocks
 	std::vector<DataBlock> dataBlocks;
 	status = DataBlock::GetDataBlocks(codewords, version, ecLevel, dataBlocks);
 	if (StatusIsError(status)) {
-		return DecoderResult(status);
+		return status;
 	}
 	// Count total number of data bytes
 	int totalBytes = 0;
@@ -470,7 +479,7 @@ DoDecode(const BitMatrix& bits, const Version& version, const FormatInformation&
 		
 		status = CorrectErrors(codewordBytes, numDataCodewords);
 		if (StatusIsError(status)) {
-			return DecoderResult(status);
+			return status;
 		}
 		for (int i = 0; i < numDataCodewords; i++) {
 			resultBytes[resultOffset++] = codewordBytes[i];
@@ -478,7 +487,7 @@ DoDecode(const BitMatrix& bits, const Version& version, const FormatInformation&
 	}
 
 	// Decode the contents of that stream of bytes
-	return DecodeBitStream(resultBytes, version, ecLevel, hints);
+	return DecodeBitStream(resultBytes, version, ecLevel, hints, result);
 }
 
 static void
@@ -489,22 +498,21 @@ ReMask(BitMatrix& bitMatrix, const FormatInformation& formatInfo)
 }
 
 
-DecoderResult
-Decoder::Decode(const BitMatrix& bits_, const DecodeHints* hints)
+ErrorStatus
+Decoder::Decode(const BitMatrix& bits_, const DecodeHints* hints, DecoderResult& result)
 {
 	BitMatrix bits = bits_;
 	// Construct a parser and read version, error-correction level
 	const Version* version;
 	FormatInformation formatInfo;
-	DecoderResult firstResult(ErrorStatus::NotFound);
 
-	if (StatusIsOK(BitMatrixParser::ParseVersionInfo(bits, false, version, formatInfo)))
+	ErrorStatus status = BitMatrixParser::ParseVersionInfo(bits, false, version, formatInfo);
+	if (StatusIsOK(status))
 	{
 		ReMask(bits, formatInfo);
-		firstResult = DoDecode(bits, *version, formatInfo, hints);
-		if (firstResult.isValid())
-		{
-			return firstResult;
+		status = DoDecode(bits, *version, formatInfo, hints, result);
+		if (StatusIsOK(status)) {
+			return status;
 		}
 	}
 
@@ -514,7 +522,8 @@ Decoder::Decode(const BitMatrix& bits_, const DecodeHints* hints)
 		ReMask(bits, formatInfo);
 	}
 
-	if (StatusIsOK(BitMatrixParser::ParseVersionInfo(bits, true, version, formatInfo)))
+	status = BitMatrixParser::ParseVersionInfo(bits, true, version, formatInfo);
+	if (StatusIsOK(status))
 	{
 		/*
 		* Since we're here, this means we have successfully detected some kind
@@ -526,14 +535,13 @@ Decoder::Decode(const BitMatrix& bits_, const DecodeHints* hints)
 		bits.mirror();
 
 		ReMask(bits, formatInfo);
-		auto result = DoDecode(bits, *version, formatInfo, hints);
-		if (result.isValid())
+		status = DoDecode(bits, *version, formatInfo, hints, result);
+		if (StatusIsOK(status))
 		{
 			result.setExtra(std::make_shared<DecoderMetadata>(true));
-			return result;
 		}
 	}
-	return firstResult;
+	return status;
 }
 
 } // QRCode

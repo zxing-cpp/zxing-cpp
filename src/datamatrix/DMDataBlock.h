@@ -17,8 +17,6 @@
 
 #include "ByteArray.h"
 
-#include <vector>
-
 namespace ZXing {
 
 enum class ErrorStatus;

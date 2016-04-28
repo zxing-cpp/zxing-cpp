@@ -92,8 +92,8 @@ GenericGF::GenericGF(int primitive, int size, int b) :
 	_size(size),
 	_primitive(primitive),
 	_generatorBase(b),
-	_zero(*this, std::vector<int>(1, 0)),
-	_one(*this, std::vector<int>(1, 1))
+	_zero(*this, { 0 }),
+	_one(*this, { 1 })
 {
 	_expTable.resize(size, 0);
 	_logTable.resize(size, 0);
@@ -126,39 +126,6 @@ GenericGF::buildMonomial(int degree, int coefficient) const
 	std::vector<int> coef(degree + 1, 0);
 	coef[0] = coefficient;
 	return GenericGFPoly(*this, coef);
-}
-
-int
-GenericGF::exp(int a) const
-{
-	return _expTable[a];
-}
-
-int
-GenericGF::log(int a) const
-{
-	if (a == 0) {
-		throw std::invalid_argument("GenericGF::log: a cannot be 0");
-	}
-	return _logTable[a];
-}
-
-int
-GenericGF::inverse(int a) const
-{
-	if (a == 0) {
-		throw std::invalid_argument("GenericGF::inverse: a cannot be 0");
-	}
-	return _expTable[_size - _logTable[a] - 1];
-}
-
-int
-GenericGF::multiply(int a, int b) const
-{
-	if (a == 0 || b == 0) {
-		return 0;
-	}
-	return _expTable[(_logTable[a] + _logTable[b]) % (_size - 1)];
 }
 
 } // ZXing

@@ -74,7 +74,11 @@ Reader::decode(const BinaryBitmap& image, const DecodeHints* hints) const
 		return Result(ErrorStatus::NotFound);
 	}
 
-	auto decoderResult = Decoder::Decode(bits, hints);
+	DecoderResult decoderResult;
+	status = Decoder::Decode(bits, hints, decoderResult);
+	if (StatusIsError(status)) {
+		return Result(status);
+	}
 	Result result(decoderResult.text(), decoderResult.rawBytes(), std::vector<ResultPoint>(), BarcodeFormat::MAXICODE);
 
 	std::string ecLevel = decoderResult.ecLevel();

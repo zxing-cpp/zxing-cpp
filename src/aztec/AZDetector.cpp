@@ -22,6 +22,7 @@
 #include "GenericGF.h"
 #include "WhiteRectDetector.h"
 #include "GridSampler.h"
+#include "ErrorStatus.h"
 
 #include <array>
 
@@ -514,8 +515,8 @@ static ErrorStatus SampleGrid(const BitMatrix& image, const ResultPoint& topLeft
 }
 
 
-DetectorResult
-Detector::Detect(const BitMatrix& image, bool isMirror)
+ErrorStatus
+Detector::Detect(const BitMatrix& image, bool isMirror, DetectorResult& result)
 {
 	// 1. Get the center of the aztec matrix
 	auto pCenter = GetMatrixCenter(image);
@@ -526,7 +527,7 @@ Detector::Detect(const BitMatrix& image, bool isMirror)
 	bool compact = false;
 	int nbCenterLayers = 0;
 	if (!GetBullsEyeCorners(image, pCenter, bullsEyeCorners, compact, nbCenterLayers)) {
-		return DetectorResult(ErrorStatus::NotFound);
+		return ErrorStatus::NotFound;
 	}
 
 	if (isMirror) {
@@ -538,20 +539,25 @@ Detector::Detect(const BitMatrix& image, bool isMirror)
 	int nbDataBlocks = 0;
 	int shift = 0;
 	if (!ExtractParameters(image, bullsEyeCorners, compact, nbCenterLayers, nbLayers, nbDataBlocks, shift)) {
-		return DetectorResult(ErrorStatus::NotFound);
+		return ErrorStatus::NotFound;
 	}
 
 	// 4. Sample the grid
 	BitMatrix bits;
 	auto status = SampleGrid(image, bullsEyeCorners[shift % 4], bullsEyeCorners[(shift + 1) % 4], bullsEyeCorners[(shift + 2) % 4], bullsEyeCorners[(shift + 3) % 4], compact, nbLayers, nbCenterLayers, bits);
 	if (StatusIsError(status)) {
-		return DetectorResult(status);
+		return status;
 	}
 
 	// 5. Get the corners of the matrix.
 	GetMatrixCornerPoints(bullsEyeCorners, compact, nbLayers, nbCenterLayers);
 
-	return DetectorResult(bits, std::vector<ResultPoint>(bullsEyeCorners.begin(), bullsEyeCorners.end()), compact, nbDataBlocks, nbLayers);
+	result.setBits(bits);
+	result.setPoints({ bullsEyeCorners.begin(), bullsEyeCorners.end() });
+	result.setCompact(compact);
+	result.setNbDatablocks(nbDataBlocks);
+	result.setNbLayers(nbLayers);
+	return ErrorStatus::NoError;
 }
 
 } // Aztec

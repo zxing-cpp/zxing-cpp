@@ -15,20 +15,36 @@
 * limitations under the License.
 */
 
-#include "Reader.h"
+#include "BitMatrix.h"
+#include "ResultPoint.h"
+#include <vector>
 
 namespace ZXing {
+
+class BinaryBitmap;
+class DecodeHints;
+enum class ErrorStatus;
+
 namespace Pdf417 {
 
 /**
-* This implementation can detect and decode PDF417 codes in an image.
+* <p>Encapsulates logic that can detect a PDF417 Code in an image, even if the
+* PDF417 Code is rotated or skewed, or partially obscured.< / p>
 *
+* @author SITA Lab(kevin.osullivan@sita.aero)
+* @author dswitkin@google.com(Daniel Switkin)
 * @author Guenther Grau
 */
-class Reader : public ZXing::Reader
+class Detector
 {
 public:
-	virtual Result decode(const BinaryBitmap& image, const DecodeHints* hints = nullptr) const override;
+	struct Result
+	{
+		BitMatrix _bits;
+		std::vector<std::vector<ResultPoint>> points;
+	};
+
+	static ErrorStatus Detect(const BinaryBitmap& image, const DecodeHints* hints, bool multiple, Result& result);
 };
 
 } // Pdf417

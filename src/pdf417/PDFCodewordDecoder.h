@@ -15,20 +15,19 @@
 * limitations under the License.
 */
 
-#include "Reader.h"
+#include <array>
 
 namespace ZXing {
 namespace Pdf417 {
 
 /**
-* This implementation can detect and decode PDF417 codes in an image.
-*
 * @author Guenther Grau
+* @author creatale GmbH (christoph.schulz@creatale.de)
 */
-class Reader : public ZXing::Reader
+class CodewordDecoder
 {
 public:
-	virtual Result decode(const BinaryBitmap& image, const DecodeHints* hints = nullptr) const override;
+	static int GetDecodedValue(const std::array<int, 8>& moduleBitCount);
 };
 
 } // Pdf417

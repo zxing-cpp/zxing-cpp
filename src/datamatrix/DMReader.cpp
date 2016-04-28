@@ -101,26 +101,26 @@ Reader::decode(const BinaryBitmap& image, const DecodeHints* hints) const
 		return Result(status);
 	}
 
-	DecoderResult decoderResult(ErrorStatus::NotFound);
+	DecoderResult decoderResult;
 	std::vector<ResultPoint> points;
 	if (hints != nullptr && hints->getFlag(DecodeHint::PURE_BARCODE)) {
 		BitMatrix bits;
 		status = ExtractPureBits(binImg, bits);
-		if (StatusIsError(status))
-			return Result(status);
-
-		decoderResult = Decoder::Decode(bits);
+		if (StatusIsOK(status)) {
+			status = Decoder::Decode(bits, decoderResult);
+		}
 	}
 	else {
-		auto detectorResult = Detector::Detect(binImg);
-		if (detectorResult.isValid()) {
-			decoderResult = Decoder::Decode(detectorResult.bits());
+		DetectorResult detectorResult;
+		status = Detector::Detect(binImg, detectorResult);
+		if (StatusIsOK(status)) {
+			status = Decoder::Decode(detectorResult.bits(), decoderResult);
 			points = detectorResult.points();
 		}
 	}
 
-	if (!decoderResult.isValid()) {
-		return Result(decoderResult.status());
+	if (StatusIsError(status)) {
+		return Result(status);
 	}
 
 	Result result(decoderResult.text(), decoderResult.rawBytes(), points, BarcodeFormat::DATA_MATRIX);

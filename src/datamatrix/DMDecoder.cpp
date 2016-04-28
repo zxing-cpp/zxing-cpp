@@ -23,6 +23,7 @@
 #include "GenericGF.h"
 #include "BitSource.h"
 #include "ZXString.h"
+#include "ErrorStatus.h"
 
 #include <array>
 
@@ -505,7 +506,7 @@ namespace DecodedBitStreamParser {
 		return true;
 	}
 
-	static DecoderResult Decode(const ByteArray& bytes)
+	static ErrorStatus Decode(const ByteArray& bytes, DecoderResult& decodeResult)
 	{
 		BitSource bits(bytes);
 		std::string result;
@@ -540,7 +541,7 @@ namespace DecodedBitStreamParser {
 					break;
 				}
 				if (!decodeOK) {
-					return DecoderResult(ErrorStatus::FormatError);
+					return ErrorStatus::FormatError;
 				}
 				mode = Mode::ASCII_ENCODE;
 			}
@@ -549,7 +550,10 @@ namespace DecodedBitStreamParser {
 		if (resultTrailer.length() > 0) {
 			result.append(resultTrailer);
 		}
-		return DecoderResult(bytes, result, byteSegments, std::string());
+		decodeResult.setRawBytes(bytes);
+		decodeResult.setText(result);
+		decodeResult.setByteSegments(byteSegments);
+		return ErrorStatus::NoError;
 	}
 
 } // namespace DecodedBitStreamParser
@@ -595,27 +599,27 @@ CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
 	return status;
 }
 
-DecoderResult
-Decoder::Decode(const BitMatrix& bits)
+ErrorStatus
+Decoder::Decode(const BitMatrix& bits, DecoderResult& result)
 {
 	// Construct a parser and read version, error-correction level
 	const Version* version = BitMatrixParser::ReadVersion(bits);
 	if (version == nullptr) {
-		return DecoderResult(ErrorStatus::FormatError);
+		return ErrorStatus::FormatError;
 	}
 	
 	// Read codewords
 	ByteArray codewords;
 	ErrorStatus status = BitMatrixParser::ReadCodewords(bits, codewords);
 	if (StatusIsError(status)) {
-		return DecoderResult(status);
+		return status;
 	}
 
 	// Separate into data blocks
 	std::vector<DataBlock> dataBlocks;
 	status = DataBlock::GetDataBlocks(codewords, *version, dataBlocks);
 	if (StatusIsError(status)) {
-		return DecoderResult(status);
+		return status;
 	}
 
 	// Count total number of data bytes
@@ -639,7 +643,7 @@ Decoder::Decode(const BitMatrix& bits)
 	}
 
 	// Decode the contents of that stream of bytes
-	return DecodedBitStreamParser::Decode(resultBytes);
+	return DecodedBitStreamParser::Decode(resultBytes, result);
 }
 
 } // DataMatrix

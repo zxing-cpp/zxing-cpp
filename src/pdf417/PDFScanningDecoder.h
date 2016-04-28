@@ -15,20 +15,26 @@
 * limitations under the License.
 */
 
-#include "Reader.h"
-
 namespace ZXing {
+
+enum class ErrorStatus;
+class BitMatrix;
+class ResultPoint;
+class DecoderResult;
+template <typename T> class Nullable;
+
 namespace Pdf417 {
 
 /**
-* This implementation can detect and decode PDF417 codes in an image.
-*
 * @author Guenther Grau
 */
-class Reader : public ZXing::Reader
+class ScanningDecoder
 {
 public:
-	virtual Result decode(const BinaryBitmap& image, const DecodeHints* hints = nullptr) const override;
+	static ErrorStatus Decode(const BitMatrix& image,
+		const Nullable<ResultPoint>& imageTopLeft, const Nullable<ResultPoint>& imageBottomLeft,
+		const Nullable<ResultPoint>& imageTopRight, const Nullable<ResultPoint>& imageBottomRight,
+		int minCodewordWidth, int maxCodewordWidth, DecoderResult& result);
 };
 
 } // Pdf417

@@ -15,20 +15,25 @@
 * limitations under the License.
 */
 
-#include "Reader.h"
+#include <vector>
 
 namespace ZXing {
+
+enum class ErrorStatus;
+class DecoderResult;
+
 namespace Pdf417 {
 
 /**
-* This implementation can detect and decode PDF417 codes in an image.
+* <p>This class contains the methods for decoding the PDF417 codewords.</p>
 *
+* @author SITA Lab (kevin.osullivan@sita.aero)
 * @author Guenther Grau
 */
-class Reader : public ZXing::Reader
+class DecodedBitStreamParser
 {
 public:
-	virtual Result decode(const BinaryBitmap& image, const DecodeHints* hints = nullptr) const override;
+	static ErrorStatus Decode(const std::vector<int>& codewords, int ecLevel, DecoderResult& result);
 };
 
 } // Pdf417

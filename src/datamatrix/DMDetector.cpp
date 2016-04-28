@@ -19,6 +19,7 @@
 #include "DetectorResult.h"
 #include "WhiteRectDetector.h"
 #include "GridSampler.h"
+#include "ErrorStatus.h"
 
 #include <array>
 #include <algorithm>
@@ -191,13 +192,13 @@ SampleGrid(const BitMatrix& image, const ResultPoint& topLeft, const ResultPoint
 }
 
 
-DetectorResult
-Detector::Detect(const BitMatrix& image)
+ErrorStatus
+Detector::Detect(const BitMatrix& image, DetectorResult& result)
 {
 	ResultPoint pointA, pointB, pointC, pointD;
 	ErrorStatus status = WhiteRectDetector::Detect(image, pointA, pointB, pointC, pointD);
 	if (StatusIsError(status)) {
-		return DetectorResult(status);
+		return status;
 	}
 
 	// Point A and D are across the diagonal from one another,
@@ -243,7 +244,7 @@ Detector::Detect(const BitMatrix& image)
 	}
 
 	if (maybeTopLeft == nullptr || bottomLeft == nullptr || maybeBottomRight == nullptr) {
-		return DetectorResult(ErrorStatus::NotFound);
+		return ErrorStatus::NotFound;
 	}
 
 	// Bottom left is correct but top left and bottom right might be switched
@@ -323,7 +324,7 @@ Detector::Detect(const BitMatrix& image)
 
 		status = SampleGrid(image, *topLeft, *bottomLeft, *bottomRight, correctedTopRight, dimensionTop, dimensionRight, bits);
 		if (StatusIsError(status)) {
-			return DetectorResult(status);
+			return status;
 		}
 
 	}
@@ -345,10 +346,12 @@ Detector::Detect(const BitMatrix& image)
 
 		status = SampleGrid(image, *topLeft, *bottomLeft, *bottomRight, correctedTopRight, dimensionCorrected, dimensionCorrected, bits);
 		if (StatusIsError(status)) {
-			return DetectorResult(status);
+			return status;
 		}
 	}
-	return DetectorResult(bits, { *topLeft, *bottomLeft, *bottomRight, correctedTopRight });
+	result.setBits(bits);
+	result.setPoints({ *topLeft, *bottomLeft, *bottomRight, correctedTopRight });
+	return ErrorStatus::NoError;
 }
 
 

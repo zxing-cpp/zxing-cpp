@@ -17,7 +17,6 @@
 
 #include "BitMatrix.h"
 #include "ResultPoint.h"
-#include "ErrorStatus.h"
 
 #include <vector>
 
@@ -32,24 +31,20 @@ namespace ZXing {
 */
 class DetectorResult
 {
-	ErrorStatus _status;
 	BitMatrix _bits;
 	std::vector<ResultPoint> _points;
 
 public:
-	explicit DetectorResult(ErrorStatus status) : _status(status) {}
-	DetectorResult(const BitMatrix& bits, const std::vector<ResultPoint>& points) : _status(ErrorStatus::NoError), _bits(bits), _points(points) {}
-
-	bool isValid() const {
-		return StatusIsOK(_status);
-	}
-
-	ErrorStatus status() const {
-		return _status;
-	}
+	DetectorResult() {}
+	//DetectorResult(const BitMatrix& bits, const std::vector<ResultPoint>& points) : _bits(bits), _points(points) {}
+	DetectorResult(const DetectorResult&) = delete;
+	DetectorResult& operator=(const DetectorResult&) = delete;
 
 	const BitMatrix& bits() const { return _bits; }
+	void setBits(const BitMatrix& bits) { _bits = bits; }
 	const std::vector<ResultPoint>& points() const { return _points; }
+	void setPoints(const std::vector<ResultPoint>& points) { _points = points; }
+	void setPoints(std::initializer_list<ResultPoint> list) { _points.assign(list); }
 };
 
 } // ZXing

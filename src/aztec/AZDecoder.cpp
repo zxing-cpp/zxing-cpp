@@ -19,6 +19,7 @@
 #include "DecoderResult.h"
 #include "ReedSolomonDecoder.h"
 #include "GenericGF.h"
+#include "ErrorStatus.h"
 
 #include <numeric>
 
@@ -74,7 +75,7 @@ static void ExtractBits(const DetectorResult& ddata, std::vector<bool>& rawbits)
 	bool compact = ddata.isCompact();
 	int layers = ddata.nbLayers();
 	int baseMatrixSize = (compact ? 11 : 14) + layers * 4; // not including alignment lines
-	std::vector<int> alignmentMap(baseMatrixSize);
+	std::vector<int> alignmentMap(baseMatrixSize, 0);
 
 	if (compact) {
 		std::iota(alignmentMap.begin(), alignmentMap.end(), 0);
@@ -320,18 +321,19 @@ static std::string GetEncodedData(const std::vector<bool>& correctedBits) {
 	return result;
 }
 
-DecoderResult
-Decoder::Decode(const DetectorResult& detectorResult)
+ErrorStatus
+Decoder::Decode(const DetectorResult& detectorResult, DecoderResult& result)
 {
 	std::vector<bool> rawbits;
 	ExtractBits(detectorResult, rawbits);
 	std::vector<bool> correctedBits;
 	if (CorrectBits(detectorResult, rawbits, correctedBits)) {
 		auto resultString = GetEncodedData(correctedBits);
-		return DecoderResult(ByteArray(), resultString, std::list<ByteArray>(), std::string());
+		result.setText(resultString);
+		return ErrorStatus::NoError;
 	}
 	else {
-		return DecoderResult(ErrorStatus::FormatError);
+		return ErrorStatus::FormatError;
 	}
 }
 

@@ -18,7 +18,6 @@
 #include "oned/ODUPCEANReader.h"
 
 namespace ZXing {
-
 namespace OneD {
 
 /**
