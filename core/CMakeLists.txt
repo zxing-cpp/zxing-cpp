@@ -21,17 +21,17 @@ if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 	
 endif()
 
-set (ZXING_INCLUDE
+set (ZXING_CORE_INCLUDE
 	"${CMAKE_CURRENT_SOURCE_DIR}/src"
 CACHE INTERNAL "")
 
-set (ZXING_DEFINES "" CACHE INTERNAL "")
+set (ZXING_CORE_DEFINES "" CACHE INTERNAL "")
 
 if (WINRT)
-	set (ZXING_DEFINES "${ZXING_DEFINES};ZX_BUILD_FOR_WINRT;WINRT" CACHE INTERNAL "")
+	set (ZXING_CORE_DEFINES "${ZXING_CORE_DEFINES};ZX_BUILD_FOR_WINRT;WINRT" CACHE INTERNAL "")
 endif()
 
-set (ZXING_DEFINES_LOCAL "${ZXING_DEFINES}")
+set (ZXING_DEFINES_LOCAL "${ZXING_CORE_DEFINES}")
 
 if (MSVC)
 	add_definitions (
@@ -43,7 +43,7 @@ if (MSVC)
 endif()
 
 include_directories (
-	${ZXING_INCLUDE}
+	${ZXING_CORE_INCLUDE}
 )
 
 file (GLOB COMMON_FILES
@@ -66,11 +66,6 @@ file (GLOB MAXICODE_FILES
 	src/maxicode/*.cpp
 )
 
-file (GLOB PDF417_FILES
-	src/pdf417/*.h
-	src/pdf417/*.cpp
-)
-
 file (GLOB ONED_FILES
 	src/oned/*.h
 	src/oned/*.cpp
@@ -79,6 +74,11 @@ file (GLOB ONED_FILES
 file (GLOB ONED_RSS_FILES
 	src/oned/rss/*.h
 	src/oned/rss/*.cpp
+)
+
+file (GLOB PDF417_FILES
+	src/pdf417/*.h
+	src/pdf417/*.cpp
 )
 
 file (GLOB QRCODE_FILES
@@ -90,20 +90,20 @@ source_group (Sources FILES ${COMMON_FILES})
 source_group (Sources\\aztec FILES ${AZTEC_FILES})
 source_group (Sources\\datamatrix FILES ${DATAMATRIX_FILES})
 source_group (Sources\\maxicode FILES ${MAXICODE_FILES})
-source_group (Sources\\pdf417 FILES ${PDF417_FILES})
 source_group (Sources\\oned FILES ${ONED_FILES})
 source_group (Sources\\oned\\rss FILES ${ONED_RSS_FILES})
+source_group (Sources\\pdf417 FILES ${PDF417_FILES})
 source_group (Sources\\qrcode FILES ${QRCODE_FILES})
 
-add_library (ZXing
+add_library (ZXingCore
 	${COMMON_FILES}
 	${AZTEC_FILES}
 	${DATAMATRIX_FILES}
 	${MAXICODE_FILES}
-	${PDF417_FILES}
 	${ONED_FILES}
 	${ONED_RSS_FILES}
+	${PDF417_FILES}
 	${QRCODE_FILES}
 )
 
-set_target_properties (ZXing PROPERTIES COMPILE_DEFINITIONS "${ZXING_DEFINES_LOCAL}")
+set_target_properties (ZXingCore PROPERTIES COMPILE_DEFINITIONS "${ZXING_DEFINES_LOCAL}")
