@@ -15,8 +15,16 @@
 */
 
 #include "pdf417/PDFDecodedBitStreamParser.h"
+#include "pdf417/PDFDecoderResultExtra.h"
 #include "CharacterSetECI.h"
 #include "StringCodecs.h"
+#include "ZXBigInteger.h"
+#include "ZXString.h"
+#include "ByteArray.h"
+#include "ErrorStatus.h"
+#include "DecoderResult.h"
+
+#include <array>
 
 namespace ZXing {
 namespace Pdf417 {
@@ -67,136 +75,209 @@ static const CharacterSet DEFAULT_ENCODING = CharacterSet::ISO8859_1;
 * Table containing values for the exponent of 900.
 * This is used in the numeric compaction decode algorithm.
 */
-private static final BigInteger[] EXP900;
-static {
-	EXP900 = new BigInteger[16];
-	EXP900[0] = BigInteger.ONE;
-	BigInteger nineHundred = BigInteger.valueOf(900);
-	EXP900[1] = nineHundred;
-	for (int i = 2; i < EXP900.length; i++) {
-		EXP900[i] = EXP900[i - 1].multiply(nineHundred);
-	}
+static const std::array<BigInteger, 16>& EXP900()
+{
+	auto initInstance = [](std::array<BigInteger, 16>& table)->std::array<BigInteger, 16>& {
+		table[0] = BigInteger(1);
+		BigInteger nineHundred(900);
+		table[1] = nineHundred;
+		for (size_t i = 2; i < table.size(); ++i) {
+			BigInteger::Multiply(table[i - 1], nineHundred, table[i]);
+		}
+		return table;
+	};
+
+	static std::array<BigInteger, 16> instance;
+	static const std::array<BigInteger, 16>& ref = initInstance(instance);
+	return ref;
 }
 
-private static final int NUMBER_OF_SEQUENCE_CODEWORDS = 2;
+static const int NUMBER_OF_SEQUENCE_CODEWORDS = 2;
 
-private DecodedBitStreamParser() {
-}
 
-static DecoderResult decode(int[] codewords, String ecLevel) throws FormatException {
-	StringBuilder result = new StringBuilder(codewords.length * 2);
-	Charset encoding = DEFAULT_ENCODING;
-	// Get compaction mode
-	int codeIndex = 1;
-	int code = codewords[codeIndex++];
-	PDF417ResultMetadata resultMetadata = new PDF417ResultMetadata();
-	while (codeIndex < codewords[0]) {
-		switch (code) {
-		case TEXT_COMPACTION_MODE_LATCH:
-			codeIndex = textCompaction(codewords, codeIndex, result);
-			break;
-		case BYTE_COMPACTION_MODE_LATCH:
-		case BYTE_COMPACTION_MODE_LATCH_6:
-			codeIndex = byteCompaction(code, codewords, encoding, codeIndex, result);
-			break;
-		case MODE_SHIFT_TO_BYTE_COMPACTION_MODE:
-			result.append((char)codewords[codeIndex++]);
-			break;
-		case NUMERIC_COMPACTION_MODE_LATCH:
-			codeIndex = numericCompaction(codewords, codeIndex, result);
-			break;
-		case ECI_CHARSET:
-			CharacterSetECI charsetECI =
-				CharacterSetECI.getCharacterSetECIByValue(codewords[codeIndex++]);
-			encoding = Charset.forName(charsetECI.name());
-			break;
-		case ECI_GENERAL_PURPOSE:
-			// Can't do anything with generic ECI; skip its 2 characters
-			codeIndex += 2;
-			break;
-		case ECI_USER_DEFINED:
-			// Can't do anything with user ECI; skip its 1 character
-			codeIndex++;
-			break;
-		case BEGIN_MACRO_PDF417_CONTROL_BLOCK:
-			codeIndex = decodeMacroBlock(codewords, codeIndex, resultMetadata);
-			break;
-		case BEGIN_MACRO_PDF417_OPTIONAL_FIELD:
-		case MACRO_PDF417_TERMINATOR:
-			// Should not see these outside a macro block
-			throw FormatException.getFormatInstance();
-		default:
-			// Default to text compaction. During testing numerous barcodes
-			// appeared to be missing the starting mode. In these cases defaulting
-			// to text compaction seems to work.
-			codeIndex--;
-			codeIndex = textCompaction(codewords, codeIndex, result);
-			break;
-		}
-		if (codeIndex < codewords.length) {
-			code = codewords[codeIndex++];
-		}
-		else {
-			throw FormatException.getFormatInstance();
-		}
-	}
-	if (result.length() == 0) {
-		throw FormatException.getFormatInstance();
-	}
-	DecoderResult decoderResult = new DecoderResult(null, result.toString(), null, ecLevel);
-	decoderResult.setOther(resultMetadata);
-	return decoderResult;
-}
-
-private static int decodeMacroBlock(int[] codewords, int codeIndex, PDF417ResultMetadata resultMetadata)
-throws FormatException {
-	if (codeIndex + NUMBER_OF_SEQUENCE_CODEWORDS > codewords[0]) {
-		// we must have at least two bytes left for the segment index
-		throw FormatException.getFormatInstance();
-	}
-	int[] segmentIndexArray = new int[NUMBER_OF_SEQUENCE_CODEWORDS];
-	for (int i = 0; i < NUMBER_OF_SEQUENCE_CODEWORDS; i++, codeIndex++) {
-		segmentIndexArray[i] = codewords[codeIndex];
-	}
-	resultMetadata.setSegmentIndex(Integer.parseInt(decodeBase900toBase10(segmentIndexArray,
-		NUMBER_OF_SEQUENCE_CODEWORDS)));
-
-	StringBuilder fileId = new StringBuilder();
-	codeIndex = textCompaction(codewords, codeIndex, fileId);
-	resultMetadata.setFileId(fileId.toString());
-
-	if (codewords[codeIndex] == BEGIN_MACRO_PDF417_OPTIONAL_FIELD) {
-		codeIndex++;
-		int[] additionalOptionCodeWords = new int[codewords[0] - codeIndex];
-		int additionalOptionCodeWordsIndex = 0;
-
-		boolean end = false;
-		while ((codeIndex < codewords[0]) && !end) {
-			int code = codewords[codeIndex++];
-			if (code < TEXT_COMPACTION_MODE_LATCH) {
-				additionalOptionCodeWords[additionalOptionCodeWordsIndex++] = code;
+/**
+* The Text Compaction mode includes all the printable ASCII characters
+* (i.e. values from 32 to 126) and three ASCII control characters: HT or tab
+* (ASCII value 9), LF or line feed (ASCII value 10), and CR or carriage
+* return (ASCII value 13). The Text Compaction mode also includes various latch
+* and shift characters which are used exclusively within the mode. The Text
+* Compaction mode encodes up to 2 characters per codeword. The compaction rules
+* for converting data into PDF417 codewords are defined in 5.4.2.2. The sub-mode
+* switches are defined in 5.4.2.3.
+*
+* @param textCompactionData The text compaction data.
+* @param byteCompactionData The byte compaction data if there
+*                           was a mode shift.
+* @param length             The size of the text compaction and byte compaction data.
+* @param result             The decoded data is appended to the result.
+*/
+static void DecodeTextCompaction(const std::vector<int>& textCompactionData, const std::vector<int>& byteCompactionData, int length, String& result) {
+	// Beginning from an initial state of the Alpha sub-mode
+	// The default compaction mode for PDF417 in effect at the start of each symbol shall always be Text
+	// Compaction mode Alpha sub-mode (uppercase alphabetic). A latch codeword from another mode to the Text
+	// Compaction mode shall always switch to the Text Compaction Alpha sub-mode.
+	Mode subMode = Mode::ALPHA;
+	Mode priorToShiftMode = Mode::ALPHA;
+	int i = 0;
+	while (i < length) {
+		int subModeCh = textCompactionData[i];
+		char ch = 0;
+		switch (subMode) {
+		case Mode::ALPHA:
+			// Alpha (uppercase alphabetic)
+			if (subModeCh < 26) {
+				// Upper case Alpha Character
+				ch = (char)('A' + subModeCh);
 			}
 			else {
-				switch (code) {
-				case MACRO_PDF417_TERMINATOR:
-					resultMetadata.setLastSegment(true);
-					codeIndex++;
-					end = true;
-					break;
-				default:
-					throw FormatException.getFormatInstance();
+				if (subModeCh == 26) {
+					ch = ' ';
+				}
+				else if (subModeCh == LL) {
+					subMode = Mode::LOWER;
+				}
+				else if (subModeCh == ML) {
+					subMode = Mode::MIXED;
+				}
+				else if (subModeCh == PS) {
+					// Shift to punctuation
+					priorToShiftMode = subMode;
+					subMode = Mode::PUNCT_SHIFT;
+				}
+				else if (subModeCh == MODE_SHIFT_TO_BYTE_COMPACTION_MODE) {
+					result.appendUtf8((char)byteCompactionData[i]);
+				}
+				else if (subModeCh == TEXT_COMPACTION_MODE_LATCH) {
+					subMode = Mode::ALPHA;
 				}
 			}
+			break;
+
+		case Mode::LOWER:
+			// Lower (lowercase alphabetic)
+			if (subModeCh < 26) {
+				ch = (char)('a' + subModeCh);
+			}
+			else {
+				if (subModeCh == 26) {
+					ch = ' ';
+				}
+				else if (subModeCh == AS) {
+					// Shift to alpha
+					priorToShiftMode = subMode;
+					subMode = Mode::ALPHA_SHIFT;
+				}
+				else if (subModeCh == ML) {
+					subMode = Mode::MIXED;
+				}
+				else if (subModeCh == PS) {
+					// Shift to punctuation
+					priorToShiftMode = subMode;
+					subMode = Mode::PUNCT_SHIFT;
+				}
+				else if (subModeCh == MODE_SHIFT_TO_BYTE_COMPACTION_MODE) {
+					// TODO Does this need to use the current character encoding? See other occurrences below
+					result.appendUtf8((char)byteCompactionData[i]);
+				}
+				else if (subModeCh == TEXT_COMPACTION_MODE_LATCH) {
+					subMode = Mode::ALPHA;
+				}
+			}
+			break;
+
+		case Mode::MIXED:
+			// Mixed (numeric and some punctuation)
+			if (subModeCh < PL) {
+				ch = MIXED_CHARS[subModeCh];
+			}
+			else {
+				if (subModeCh == PL) {
+					subMode = Mode::PUNCT;
+				}
+				else if (subModeCh == 26) {
+					ch = ' ';
+				}
+				else if (subModeCh == LL) {
+					subMode = Mode::LOWER;
+				}
+				else if (subModeCh == AL) {
+					subMode = Mode::ALPHA;
+				}
+				else if (subModeCh == PS) {
+					// Shift to punctuation
+					priorToShiftMode = subMode;
+					subMode = Mode::PUNCT_SHIFT;
+				}
+				else if (subModeCh == MODE_SHIFT_TO_BYTE_COMPACTION_MODE) {
+					result.appendUtf8((char)byteCompactionData[i]);
+				}
+				else if (subModeCh == TEXT_COMPACTION_MODE_LATCH) {
+					subMode = Mode::ALPHA;
+				}
+			}
+			break;
+
+		case Mode::PUNCT:
+			// Punctuation
+			if (subModeCh < PAL) {
+				ch = PUNCT_CHARS[subModeCh];
+			}
+			else {
+				if (subModeCh == PAL) {
+					subMode = Mode::ALPHA;
+				}
+				else if (subModeCh == MODE_SHIFT_TO_BYTE_COMPACTION_MODE) {
+					result.appendUtf8((char)byteCompactionData[i]);
+				}
+				else if (subModeCh == TEXT_COMPACTION_MODE_LATCH) {
+					subMode = Mode::ALPHA;
+				}
+			}
+			break;
+
+		case Mode::ALPHA_SHIFT:
+			// Restore sub-mode
+			subMode = priorToShiftMode;
+			if (subModeCh < 26) {
+				ch = (char)('A' + subModeCh);
+			}
+			else {
+				if (subModeCh == 26) {
+					ch = ' ';
+				}
+				else if (subModeCh == TEXT_COMPACTION_MODE_LATCH) {
+					subMode = Mode::ALPHA;
+				}
+			}
+			break;
+
+		case Mode::PUNCT_SHIFT:
+			// Restore sub-mode
+			subMode = priorToShiftMode;
+			if (subModeCh < PAL) {
+				ch = PUNCT_CHARS[subModeCh];
+			}
+			else {
+				if (subModeCh == PAL) {
+					subMode = Mode::ALPHA;
+				}
+				else if (subModeCh == MODE_SHIFT_TO_BYTE_COMPACTION_MODE) {
+					// PS before Shift-to-Byte is used as a padding character, 
+					// see 5.4.2.4 of the specification
+					result.appendUtf8((char)byteCompactionData[i]);
+				}
+				else if (subModeCh == TEXT_COMPACTION_MODE_LATCH) {
+					subMode = Mode::ALPHA;
+				}
+			}
+			break;
 		}
-
-		resultMetadata.setOptionalData(Arrays.copyOf(additionalOptionCodeWords, additionalOptionCodeWordsIndex));
+		if (ch != 0) {
+			// Append decoded character to result
+			result.appendUtf8(ch);
+		}
+		i++;
 	}
-	else if (codewords[codeIndex] == MACRO_PDF417_TERMINATOR) {
-		resultMetadata.setLastSegment(true);
-		codeIndex++;
-	}
-
-	return codeIndex;
 }
 
 /**
@@ -209,14 +290,15 @@ throws FormatException {
 * @param result    The decoded data is appended to the result.
 * @return The next index into the codeword array.
 */
-private static int textCompaction(int[] codewords, int codeIndex, StringBuilder result) {
+static int TextCompaction(const std::vector<int>& codewords, int codeIndex, String& result)
+{
 	// 2 character per codeword
-	int[] textCompactionData = new int[(codewords[0] - codeIndex) * 2];
+	std::vector<int> textCompactionData((codewords[0] - codeIndex) * 2, 0);
 	// Used to hold the byte compaction value if there is a mode shift
-	int[] byteCompactionData = new int[(codewords[0] - codeIndex) * 2];
+	std::vector<int> byteCompactionData((codewords[0] - codeIndex) * 2, 0);
 
 	int index = 0;
-	boolean end = false;
+	bool end = false;
 	while ((codeIndex < codewords[0]) && !end) {
 		int code = codewords[codeIndex++];
 		if (code < TEXT_COMPACTION_MODE_LATCH) {
@@ -254,197 +336,10 @@ private static int textCompaction(int[] codewords, int codeIndex, StringBuilder 
 			}
 		}
 	}
-	decodeTextCompaction(textCompactionData, byteCompactionData, index, result);
+	DecodeTextCompaction(textCompactionData, byteCompactionData, index, result);
 	return codeIndex;
 }
 
-/**
-* The Text Compaction mode includes all the printable ASCII characters
-* (i.e. values from 32 to 126) and three ASCII control characters: HT or tab
-* (ASCII value 9), LF or line feed (ASCII value 10), and CR or carriage
-* return (ASCII value 13). The Text Compaction mode also includes various latch
-* and shift characters which are used exclusively within the mode. The Text
-* Compaction mode encodes up to 2 characters per codeword. The compaction rules
-* for converting data into PDF417 codewords are defined in 5.4.2.2. The sub-mode
-* switches are defined in 5.4.2.3.
-*
-* @param textCompactionData The text compaction data.
-* @param byteCompactionData The byte compaction data if there
-*                           was a mode shift.
-* @param length             The size of the text compaction and byte compaction data.
-* @param result             The decoded data is appended to the result.
-*/
-private static void decodeTextCompaction(int[] textCompactionData,
-	int[] byteCompactionData,
-	int length,
-	StringBuilder result) {
-	// Beginning from an initial state of the Alpha sub-mode
-	// The default compaction mode for PDF417 in effect at the start of each symbol shall always be Text
-	// Compaction mode Alpha sub-mode (uppercase alphabetic). A latch codeword from another mode to the Text
-	// Compaction mode shall always switch to the Text Compaction Alpha sub-mode.
-	Mode subMode = Mode.ALPHA;
-	Mode priorToShiftMode = Mode.ALPHA;
-	int i = 0;
-	while (i < length) {
-		int subModeCh = textCompactionData[i];
-		char ch = 0;
-		switch (subMode) {
-		case ALPHA:
-			// Alpha (uppercase alphabetic)
-			if (subModeCh < 26) {
-				// Upper case Alpha Character
-				ch = (char)('A' + subModeCh);
-			}
-			else {
-				if (subModeCh == 26) {
-					ch = ' ';
-				}
-				else if (subModeCh == LL) {
-					subMode = Mode.LOWER;
-				}
-				else if (subModeCh == ML) {
-					subMode = Mode.MIXED;
-				}
-				else if (subModeCh == PS) {
-					// Shift to punctuation
-					priorToShiftMode = subMode;
-					subMode = Mode.PUNCT_SHIFT;
-				}
-				else if (subModeCh == MODE_SHIFT_TO_BYTE_COMPACTION_MODE) {
-					result.append((char)byteCompactionData[i]);
-				}
-				else if (subModeCh == TEXT_COMPACTION_MODE_LATCH) {
-					subMode = Mode.ALPHA;
-				}
-			}
-			break;
-
-		case LOWER:
-			// Lower (lowercase alphabetic)
-			if (subModeCh < 26) {
-				ch = (char)('a' + subModeCh);
-			}
-			else {
-				if (subModeCh == 26) {
-					ch = ' ';
-				}
-				else if (subModeCh == AS) {
-					// Shift to alpha
-					priorToShiftMode = subMode;
-					subMode = Mode.ALPHA_SHIFT;
-				}
-				else if (subModeCh == ML) {
-					subMode = Mode.MIXED;
-				}
-				else if (subModeCh == PS) {
-					// Shift to punctuation
-					priorToShiftMode = subMode;
-					subMode = Mode.PUNCT_SHIFT;
-				}
-				else if (subModeCh == MODE_SHIFT_TO_BYTE_COMPACTION_MODE) {
-					// TODO Does this need to use the current character encoding? See other occurrences below
-					result.append((char)byteCompactionData[i]);
-				}
-				else if (subModeCh == TEXT_COMPACTION_MODE_LATCH) {
-					subMode = Mode.ALPHA;
-				}
-			}
-			break;
-
-		case MIXED:
-			// Mixed (numeric and some punctuation)
-			if (subModeCh < PL) {
-				ch = MIXED_CHARS[subModeCh];
-			}
-			else {
-				if (subModeCh == PL) {
-					subMode = Mode.PUNCT;
-				}
-				else if (subModeCh == 26) {
-					ch = ' ';
-				}
-				else if (subModeCh == LL) {
-					subMode = Mode.LOWER;
-				}
-				else if (subModeCh == AL) {
-					subMode = Mode.ALPHA;
-				}
-				else if (subModeCh == PS) {
-					// Shift to punctuation
-					priorToShiftMode = subMode;
-					subMode = Mode.PUNCT_SHIFT;
-				}
-				else if (subModeCh == MODE_SHIFT_TO_BYTE_COMPACTION_MODE) {
-					result.append((char)byteCompactionData[i]);
-				}
-				else if (subModeCh == TEXT_COMPACTION_MODE_LATCH) {
-					subMode = Mode.ALPHA;
-				}
-			}
-			break;
-
-		case PUNCT:
-			// Punctuation
-			if (subModeCh < PAL) {
-				ch = PUNCT_CHARS[subModeCh];
-			}
-			else {
-				if (subModeCh == PAL) {
-					subMode = Mode.ALPHA;
-				}
-				else if (subModeCh == MODE_SHIFT_TO_BYTE_COMPACTION_MODE) {
-					result.append((char)byteCompactionData[i]);
-				}
-				else if (subModeCh == TEXT_COMPACTION_MODE_LATCH) {
-					subMode = Mode.ALPHA;
-				}
-			}
-			break;
-
-		case ALPHA_SHIFT:
-			// Restore sub-mode
-			subMode = priorToShiftMode;
-			if (subModeCh < 26) {
-				ch = (char)('A' + subModeCh);
-			}
-			else {
-				if (subModeCh == 26) {
-					ch = ' ';
-				}
-				else if (subModeCh == TEXT_COMPACTION_MODE_LATCH) {
-					subMode = Mode.ALPHA;
-				}
-			}
-			break;
-
-		case PUNCT_SHIFT:
-			// Restore sub-mode
-			subMode = priorToShiftMode;
-			if (subModeCh < PAL) {
-				ch = PUNCT_CHARS[subModeCh];
-			}
-			else {
-				if (subModeCh == PAL) {
-					subMode = Mode.ALPHA;
-				}
-				else if (subModeCh == MODE_SHIFT_TO_BYTE_COMPACTION_MODE) {
-					// PS before Shift-to-Byte is used as a padding character, 
-					// see 5.4.2.4 of the specification
-					result.append((char)byteCompactionData[i]);
-				}
-				else if (subModeCh == TEXT_COMPACTION_MODE_LATCH) {
-					subMode = Mode.ALPHA;
-				}
-			}
-			break;
-		}
-		if (ch != 0) {
-			// Append decoded character to result
-			result.append(ch);
-		}
-		i++;
-	}
-}
 
 /**
 * Byte Compaction mode (see 5.4.3) permits all 256 possible 8-bit byte values to be encoded.
@@ -458,19 +353,16 @@ private static void decodeTextCompaction(int[] textCompactionData,
 * @param result    The decoded data is appended to the result.
 * @return The next index into the codeword array.
 */
-private static int byteCompaction(int mode,
-	int[] codewords,
-	Charset encoding,
-	int codeIndex,
-	StringBuilder result) {
-	ByteArrayOutputStream decodedBytes = new ByteArrayOutputStream();
+static int ByteCompaction(int mode, const std::vector<int>& codewords, CharacterSet encoding, int codeIndex, String& result)
+{
+	ByteArray decodedBytes;
 	if (mode == BYTE_COMPACTION_MODE_LATCH) {
 		// Total number of Byte Compaction characters to be encoded
 		// is not a multiple of 6
 		int count = 0;
 		long value = 0;
-		int[] byteCompactedCodewords = new int[6];
-		boolean end = false;
+		std::array<int, 6> byteCompactedCodewords = {};
+		bool end = false;
 		int nextCode = codewords[codeIndex++];
 		while ((codeIndex < codewords[0]) && !end) {
 			byteCompactedCodewords[count++] = nextCode;
@@ -493,7 +385,7 @@ private static int byteCompaction(int mode,
 					// Decode every 5 codewords
 					// Convert to Base 256
 					for (int j = 0; j < 6; ++j) {
-						decodedBytes.write((byte)(value >> (8 * (5 - j))));
+						decodedBytes.push_back((uint8_t)(value >> (8 * (5 - j))));
 					}
 					value = 0;
 					count = 0;
@@ -510,7 +402,7 @@ private static int byteCompaction(int mode,
 		// the last group of codewords is interpreted directly
 		// as one byte per codeword, without compaction.
 		for (int i = 0; i < count; i++) {
-			decodedBytes.write((byte)byteCompactedCodewords[i]);
+			decodedBytes.push_back((uint8_t)byteCompactedCodewords[i]);
 		}
 
 	}
@@ -519,7 +411,7 @@ private static int byteCompaction(int mode,
 		// is an integer multiple of 6
 		int count = 0;
 		long value = 0;
-		boolean end = false;
+		bool end = false;
 		while (codeIndex < codewords[0] && !end) {
 			int code = codewords[codeIndex++];
 			if (code < TEXT_COMPACTION_MODE_LATCH) {
@@ -543,67 +435,17 @@ private static int byteCompaction(int mode,
 				// Decode every 5 codewords
 				// Convert to Base 256
 				for (int j = 0; j < 6; ++j) {
-					decodedBytes.write((byte)(value >> (8 * (5 - j))));
+					decodedBytes.push_back((uint8_t)(value >> (8 * (5 - j))));
 				}
 				value = 0;
 				count = 0;
 			}
 		}
 	}
-	result.append(new String(decodedBytes.toByteArray(), encoding));
+	result += StringCodecs::Instance()->toUnicode(decodedBytes.data(), decodedBytes.length(), encoding);
 	return codeIndex;
 }
 
-/**
-* Numeric Compaction mode (see 5.4.4) permits efficient encoding of numeric data strings.
-*
-* @param codewords The array of codewords (data + error)
-* @param codeIndex The current index into the codeword array.
-* @param result    The decoded data is appended to the result.
-* @return The next index into the codeword array.
-*/
-private static int numericCompaction(int[] codewords, int codeIndex, StringBuilder result) throws FormatException {
-	int count = 0;
-	boolean end = false;
-
-	int[] numericCodewords = new int[MAX_NUMERIC_CODEWORDS];
-
-	while (codeIndex < codewords[0] && !end) {
-		int code = codewords[codeIndex++];
-		if (codeIndex == codewords[0]) {
-			end = true;
-		}
-		if (code < TEXT_COMPACTION_MODE_LATCH) {
-			numericCodewords[count] = code;
-			count++;
-		}
-		else {
-			if (code == TEXT_COMPACTION_MODE_LATCH ||
-				code == BYTE_COMPACTION_MODE_LATCH ||
-				code == BYTE_COMPACTION_MODE_LATCH_6 ||
-				code == BEGIN_MACRO_PDF417_CONTROL_BLOCK ||
-				code == BEGIN_MACRO_PDF417_OPTIONAL_FIELD ||
-				code == MACRO_PDF417_TERMINATOR) {
-				codeIndex--;
-				end = true;
-			}
-		}
-		if (count % MAX_NUMERIC_CODEWORDS == 0 ||
-			code == NUMERIC_COMPACTION_MODE_LATCH ||
-			end) {
-			// Re-invoking Numeric Compaction mode (by using codeword 902
-			// while in Numeric Compaction mode) serves  to terminate the
-			// current Numeric Compaction mode grouping as described in 5.4.4.2,
-			// and then to start a new one grouping.
-			if (count > 0) {
-				String s = decodeBase900toBase10(numericCodewords, count);
-				result.append(s);
-				count = 0;
-			}
-		}
-	}
-	return codeIndex;
-}
 
 /**
 * Convert a list of Numeric Compacted codewords from Base 900 to Base 10.
@@ -648,16 +490,204 @@ Decode the above codewords involves
 
 Remove leading 1 =>  Result is 000213298174000
 */
-private static String decodeBase900toBase10(int[] codewords, int count) throws FormatException {
-	BigInteger result = BigInteger.ZERO;
+static ErrorStatus DecodeBase900toBase10(const std::vector<int>& codewords, int count, std::string& resultString)
+{
+	BigInteger result;
 	for (int i = 0; i < count; i++) {
-		result = result.add(EXP900[count - i - 1].multiply(BigInteger.valueOf(codewords[i])));
+		result = result + (EXP900()[count - i - 1] * codewords[i]);
 	}
-	String resultString = result.toString();
-	if (resultString.charAt(0) != '1') {
-		throw FormatException.getFormatInstance();
+	resultString = result.toString();
+	if (!resultString.empty() && resultString.front() == '1') {
+		resultString = resultString.substr(1);
+		return ErrorStatus::NoError;
 	}
-	return resultString.substring(1);
+	return ErrorStatus::FormatError;
+}
+
+
+/**
+* Numeric Compaction mode (see 5.4.4) permits efficient encoding of numeric data strings.
+*
+* @param codewords The array of codewords (data + error)
+* @param codeIndex The current index into the codeword array.
+* @param result    The decoded data is appended to the result.
+* @return The next index into the codeword array.
+*/
+static ErrorStatus NumericCompaction(const std::vector<int>& codewords, int codeIndex, String& result, int& next)
+{
+	int count = 0;
+	bool end = false;
+
+	std::vector<int> numericCodewords(MAX_NUMERIC_CODEWORDS);
+
+	while (codeIndex < codewords[0] && !end) {
+		int code = codewords[codeIndex++];
+		if (codeIndex == codewords[0]) {
+			end = true;
+		}
+		if (code < TEXT_COMPACTION_MODE_LATCH) {
+			numericCodewords[count] = code;
+			count++;
+		}
+		else {
+			if (code == TEXT_COMPACTION_MODE_LATCH ||
+				code == BYTE_COMPACTION_MODE_LATCH ||
+				code == BYTE_COMPACTION_MODE_LATCH_6 ||
+				code == BEGIN_MACRO_PDF417_CONTROL_BLOCK ||
+				code == BEGIN_MACRO_PDF417_OPTIONAL_FIELD ||
+				code == MACRO_PDF417_TERMINATOR) {
+				codeIndex--;
+				end = true;
+			}
+		}
+		if (count % MAX_NUMERIC_CODEWORDS == 0 || code == NUMERIC_COMPACTION_MODE_LATCH || end) {
+			// Re-invoking Numeric Compaction mode (by using codeword 902
+			// while in Numeric Compaction mode) serves  to terminate the
+			// current Numeric Compaction mode grouping as described in 5.4.4.2,
+			// and then to start a new one grouping.
+			if (count > 0) {
+				std::string tmp;
+				auto status = DecodeBase900toBase10(numericCodewords, count, tmp);
+				if (StatusIsError(status)) {
+					return status;
+				}
+				result.appendUtf8(tmp);
+				count = 0;
+			}
+		}
+	}
+	next = codeIndex;
+	return ErrorStatus::NoError;
+}
+
+
+static ErrorStatus DecodeMacroBlock(const std::vector<int>& codewords, int codeIndex, DecoderResultExtra& resultMetadata, int& next)
+{
+	if (codeIndex + NUMBER_OF_SEQUENCE_CODEWORDS > codewords[0]) {
+		// we must have at least two bytes left for the segment index
+		return ErrorStatus::FormatError;
+	}
+	std::vector<int> segmentIndexArray(NUMBER_OF_SEQUENCE_CODEWORDS);
+	for (int i = 0; i < NUMBER_OF_SEQUENCE_CODEWORDS; i++, codeIndex++) {
+		segmentIndexArray[i] = codewords[codeIndex];
+	}
+
+	std::string strBuf;
+	ErrorStatus status = DecodeBase900toBase10(segmentIndexArray, NUMBER_OF_SEQUENCE_CODEWORDS, strBuf);
+	if (StatusIsError(status)) {
+		return status;
+	}
+
+	resultMetadata.setSegmentIndex(std::stoi(strBuf));
+
+	String fileId;
+	codeIndex = TextCompaction(codewords, codeIndex, fileId);
+	resultMetadata.setFileId(fileId);
+
+	if (codewords[codeIndex] == BEGIN_MACRO_PDF417_OPTIONAL_FIELD) {
+		codeIndex++;
+		std::vector<int> additionalOptionCodeWords;
+		additionalOptionCodeWords.reserve(codewords[0] - codeIndex);
+
+		bool end = false;
+		while ((codeIndex < codewords[0]) && !end) {
+			int code = codewords[codeIndex++];
+			if (code < TEXT_COMPACTION_MODE_LATCH) {
+				additionalOptionCodeWords.push_back(code);
+			}
+			else {
+				switch (code) {
+				case MACRO_PDF417_TERMINATOR:
+					resultMetadata.setLastSegment(true);
+					codeIndex++;
+					end = true;
+					break;
+				default:
+					return ErrorStatus::FormatError;
+				}
+			}
+		}
+
+		resultMetadata.setOptionalData(additionalOptionCodeWords);
+	}
+	else if (codewords[codeIndex] == MACRO_PDF417_TERMINATOR) {
+		resultMetadata.setLastSegment(true);
+		codeIndex++;
+	}
+
+	next = codeIndex;
+	return ErrorStatus::NoError;
+}
+
+ErrorStatus
+DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel, DecoderResult& result)
+{
+	String resultString;
+	auto encoding = DEFAULT_ENCODING;
+	// Get compaction mode
+	int codeIndex = 1;
+	int code = codewords[codeIndex++];
+	auto resultMetadata = std::make_shared<DecoderResultExtra>();
+	ErrorStatus status = ErrorStatus::NoError;
+	while (codeIndex < codewords[0] && status == ErrorStatus::NoError) {
+		switch (code) {
+		case TEXT_COMPACTION_MODE_LATCH:
+			codeIndex = TextCompaction(codewords, codeIndex, resultString);
+			break;
+		case BYTE_COMPACTION_MODE_LATCH:
+		case BYTE_COMPACTION_MODE_LATCH_6:
+			codeIndex = ByteCompaction(code, codewords, encoding, codeIndex, resultString);
+			break;
+		case MODE_SHIFT_TO_BYTE_COMPACTION_MODE:
+			resultString.appendUtf8((char)codewords[codeIndex++]);
+			break;
+		case NUMERIC_COMPACTION_MODE_LATCH:
+			status = NumericCompaction(codewords, codeIndex, resultString, codeIndex);
+			break;
+		case ECI_CHARSET:
+			encoding = CharacterSetECI::CharsetFromValue(codewords[codeIndex++]);
+			break;
+		case ECI_GENERAL_PURPOSE:
+			// Can't do anything with generic ECI; skip its 2 characters
+			codeIndex += 2;
+			break;
+		case ECI_USER_DEFINED:
+			// Can't do anything with user ECI; skip its 1 character
+			codeIndex++;
+			break;
+		case BEGIN_MACRO_PDF417_CONTROL_BLOCK:
+			status = DecodeMacroBlock(codewords, codeIndex, *resultMetadata, codeIndex);
+			break;
+		case BEGIN_MACRO_PDF417_OPTIONAL_FIELD:
+		case MACRO_PDF417_TERMINATOR:
+			// Should not see these outside a macro block
+			status = ErrorStatus::FormatError;
+			break;
+		default:
+			// Default to text compaction. During testing numerous barcodes
+			// appeared to be missing the starting mode. In these cases defaulting
+			// to text compaction seems to work.
+			codeIndex--;
+			codeIndex = TextCompaction(codewords, codeIndex, resultString);
+			break;
+		}
+		if (codeIndex < (int)codewords.size()) {
+			code = codewords[codeIndex++];
+		}
+		else {
+			status = ErrorStatus::FormatError;
+		}
+	}
+	if (resultString.empty()) {
+		status = ErrorStatus::FormatError;
+	}
+
+	if (StatusIsOK(status)) {
+		result.setText(resultString);
+		result.setEcLevel(std::to_string(ecLevel));
+		result.setExtra(resultMetadata);
+	}
+	return status;
 }
 
 

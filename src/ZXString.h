@@ -101,6 +101,7 @@ public:
 	void appendUtf8(char c)										{ m_utf8.append(1, c); }
 	void appendUtf8(const char* str)							{ m_utf8.append(str); }
 	void appendUtf8(const char* str, int len)					{ m_utf8.append(str, len); }
+	void appendUtf8(const std::string& str)						{ m_utf8.append(str.data(), static_cast<int>(str.length())); }
 	void appendUtf8(const uint8_t* str)							{ m_utf8.append((const char*)str); }
 	void appendUtf8(const uint8_t* str, int len)				{ m_utf8.append((const char*)str, len); }
 	void appendUcs2(const uint16_t* ucs2);

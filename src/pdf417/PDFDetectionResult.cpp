@@ -35,7 +35,7 @@ DetectionResult::init(const BarcodeMetadata& barcodeMetadata, const Nullable<Bou
 	_barcodeMetadata = barcodeMetadata;
 	_boundingBox = boundingBox;
 	_detectionResultColumns.resize(barcodeMetadata.columnCount() + 2);
-	std::fill(_detectionResultColumns.begin(), _detectionResultColumns.end(), 0);
+	std::fill(_detectionResultColumns.begin(), _detectionResultColumns.end(), nullptr);
 }
 
 static void AdjustIndicatorColumnRowNumbers(Nullable<DetectionResultColumn>& detectionResultColumn, const BarcodeMetadata& barcodeMetadata)

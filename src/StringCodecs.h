@@ -15,6 +15,7 @@
 * limitations under the License.
 */
 
+#include <cstddef>
 #include <memory>
 
 namespace ZXing {
@@ -66,10 +67,10 @@ class StringCodecs
 {
 public:
 	virtual ~StringCodecs();
-	virtual String toUnicode(const char* bytes, int length, CharacterSet codec) const = 0;
+	virtual String toUnicode(const uint8_t* bytes, size_t length, CharacterSet codec) const = 0;
 	virtual CharacterSet defaultEncoding() const = 0;
 
-	static CharacterSet GuessEncoding(const char* bytes, int length);
+	static CharacterSet GuessEncoding(const uint8_t* bytes, size_t length);
 	static std::shared_ptr<StringCodecs> Instance();
 	static void SetInstance(const std::shared_ptr<StringCodecs>& inst);
 };

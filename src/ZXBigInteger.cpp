@@ -15,11 +15,15 @@
 */
 
 #include "ZXBigInteger.h"
+#include "BitHacks.h"
 #include <algorithm>
 
 namespace ZXing {
 
-typedef std::vector<BigInteger::Block> Magnetude;
+typedef BigInteger::Block Block;
+typedef std::vector<Block> Magnetude;
+
+static const size_t NB_BITS = 8 * sizeof(Block);
 
 static void AddMag(const Magnetude& a, const Magnetude& b, Magnetude& c)
 {
@@ -66,11 +70,6 @@ static void AddMag(const Magnetude& a, const Magnetude& b, Magnetude& c)
 // Note that we DO NOT support the case where b is greater than a.
 static void SubMag(const Magnetude& a, const Magnetude& b, Magnetude& c)
 {
-	if (b.empty()) {
-		c = a;
-		return;
-	}
-
 	Magnetude tmp;
 	Magnetude& r = &c == &a || &c == &b ? tmp : c;
 
@@ -113,10 +112,7 @@ static void SubMag(const Magnetude& a, const Magnetude& b, Magnetude& c)
 	c = r;
 }
 
-typedef Magnetude::value_type Block;
-static const size_t NB_BITS = 8 * sizeof(Block);
-
-inline Block GetShiftedBlock(const Magnetude& num, size_t x, size_t y)
+static inline Block GetShiftedBlock(const Magnetude& num, size_t x, size_t y)
 {
 	Block part1 = (x == 0 || y == 0) ? Block(0) : (num[x - 1] >> (NB_BITS - y));
 	Block part2 = (x == num.size()) ? Block(0) : (num[x] << y);
@@ -141,14 +137,9 @@ static void MulMag(const Magnetude& a, const Magnetude& b, Magnetude& c)
 	* For each 1-bit of `a' (say the `i2'th bit of block `i'):
 	*    Add `b << (i blocks and i2 bits)' to *this.
 	*/
-	// Variables for the calculation
-	//Index i, j, k;
-	//unsigned int i2;
-	//Blk temp;
-	//bool carryIn, carryOut;
-	// Set preliminary length and make room
-	r.resize(a.size() + b.size());
-	std::fill(r.begin(), r.end(), 0);
+
+	r.clear();
+	r.resize(a.size() + b.size(), 0);
 
 	// For each block of the first number...
 	for (size_t i = 0; i < a.size(); ++i) {
@@ -199,6 +190,165 @@ static void MulMag(const Magnetude& a, const Magnetude& b, Magnetude& c)
 	}
 
 	c = r;
+}
+
+/*
+* DIVISION WITH REMAINDER
+* This monstrous function mods *this by the given divisor b while storing the
+* quotient in the given object q; at the end, *this contains the remainder.
+* The seemingly bizarre pattern of inputs and outputs was chosen so that the
+* function copies as little as possible (since it is implemented by repeated
+* subtraction of multiples of b from *this).
+*
+* "modWithQuotient" might be a better name for this function, but I would
+* rather not change the name now.
+*/
+void DivideWithRemainder(const Magnetude& a, const Magnetude& b, Magnetude& qq, Magnetude& rr)
+{
+	/* Defending against aliased calls is more complex than usual because we
+	* are writing to both r and q.
+	*
+	* It would be silly to try to write quotient and remainder to the
+	* same variable.  Rule that out right away. */
+	//if (&rr == &qq) {
+	//	throw std::invalid_argument("Quotient and remainder should be the same destination");
+	//}
+
+	Magnetude tmp, tmp2;
+	Magnetude& q = &qq == &a || &qq == &b ? tmp : qq;
+	Magnetude& r = &rr == &b ? tmp2 : rr;
+
+
+	/*
+	* Knuth's definition of mod (which this function uses) is somewhat
+	* different from the C++ definition of % in case of division by 0.
+	*
+	* We let a / 0 == 0 (it doesn't matter much) and a % 0 == a, no
+	* exceptions thrown.  This allows us to preserve both Knuth's demand
+	* that a mod 0 == a and the useful property that
+	* (a / b) * b + (a % b) == a.
+	*/
+	/*
+	* If a.len < b.len, then a < b, and we can be sure that b doesn't go into
+	* a at all.  The quotient is 0 and *this is already the remainder (so leave it alone).
+	*/
+	if (b.empty() || a.size() < b.size()) {
+		q.clear();
+		r = a;
+		return;
+	}
+
+	// At this point we know a.len >= b.len > 0.  (Whew!)
+
+	/*
+	* Overall method:
+	*
+	* For each appropriate i and i2, decreasing:
+	*    Subtract (b << (i blocks and i2 bits)) from *this, storing the
+	*      result in subtractBuf.
+	*    If the subtraction succeeds with a nonnegative result:
+	*        Turn on bit i2 of block i of the quotient q.
+	*        Copy subtractBuf back into *this.
+	*    Otherwise bit i2 of block i remains off, and *this is unchanged.
+	*
+	* Eventually q will contain the entire quotient, and *this will
+	* be left with the remainder.
+	*
+	* subtractBuf[x] corresponds to blk[x], not blk[x+i], since 2005.01.11.
+	* But on a single iteration, we don't touch the i lowest blocks of blk
+	* (and don't use those of subtractBuf) because these blocks are
+	* unaffected by the subtraction: we are subtracting
+	* (b << (i blocks and i2 bits)), which ends in at least `i' zero
+	* blocks. */
+
+	/*
+	* Make sure we have an extra zero block just past the value.
+	*
+	* When we attempt a subtraction, we might shift `b' so
+	* its first block begins a few bits left of the dividend,
+	* and then we'll try to compare these extra bits with
+	* a nonexistent block to the left of the dividend.  The
+	* extra zero block ensures sensible behavior; we need
+	* an extra block in `subtractBuf' for exactly the same reason.
+	*/
+	r.resize(a.size() + 1);
+	if (&r != &a) {
+		std::copy(a.begin(), a.end(), r.begin());
+	}
+	r.back() = 0;
+
+	Magnetude subtractBuf(r.size());
+
+	// Set preliminary length for quotient and make room
+	q.resize(a.size() - b.size() + 1);
+
+	// For each possible left-shift of b in blocks...
+	size_t i = q.size();
+	while (i > 0) {
+		i--;
+		// For each possible left-shift of b in bits...
+		// (Remember, N is the number of bits in a Blk.)
+		q[i] = 0;
+		size_t i2 = NB_BITS;
+		while (i2 > 0) {
+			i2--;
+			/*
+			* Subtract b, shifted left i blocks and i2 bits, from *this,
+			* and store the answer in subtractBuf.  In the for loop, `k == i + j'.
+			*
+			* Compare this to the middle section of `multiply'.  They
+			* are in many ways analogous.  See especially the discussion
+			* of `getShiftedBlock'.
+			*/
+			size_t k = i;
+			bool borrowIn = false;
+			for (size_t j = 0; j <= b.size(); ++j, ++k) {
+				auto temp = r[k] - GetShiftedBlock(b, j, i2);
+				bool borrowOut = (temp > r[k]);
+				if (borrowIn) {
+					borrowOut |= (temp == 0);
+					temp--;
+				}
+				// Since 2005.01.11, indices of `subtractBuf' directly match those of `blk', so use `k'.
+				subtractBuf[k] = temp;
+				borrowIn = borrowOut;
+			}
+			// No more extra iteration to deal with `bHigh'.
+			// Roll-over a borrow as necessary.
+			for (; k < a.size() && borrowIn; k++) {
+				borrowIn = (r[k] == 0);
+				subtractBuf[k] = r[k] - 1;
+			}
+			/*
+			* If the subtraction was performed successfully (!borrowIn),
+			* set bit i2 in block i of the quotient.
+			*
+			* Then, copy the portion of subtractBuf filled by the subtraction
+			* back to *this.  This portion starts with block i and ends--
+			* where?  Not necessarily at block `i + b.len'!  Well, we
+			* increased k every time we saved a block into subtractBuf, so
+			* the region of subtractBuf we copy is just [i, k).
+			*/
+			if (!borrowIn) {
+				q[i] |= (Block(1) << i2);
+				while (k > i) {
+					k--;
+					r[k] = subtractBuf[k];
+				}
+			}
+		}
+	}
+	// Zap possible leading zero in quotient
+	if (q.back() == 0)
+		q.resize(q.size() - 1);
+	
+	// Zap any/all leading zeros in remainder
+	while (!r.empty() && r.back() == 0) {
+		r.resize(r.size() - 1);
+	}
+
+	qq = q;
+	rr = r;
 }
 
 static int CompareMag(const Magnetude& a, const Magnetude& b)
@@ -265,7 +415,7 @@ BigInteger::Subtract(const BigInteger &a, const BigInteger &b, BigInteger& c)
 		c.mag = b.mag;
 		return;
 	}
-	else if (b.mag.empty()) {
+	if (b.mag.empty()) {
 		c = a;
 		return;
 	}
@@ -304,5 +454,56 @@ BigInteger::Multiply(const BigInteger &a, const BigInteger &b, BigInteger& c)
 	MulMag(a.mag, b.mag, c.mag);
 }
 
+static int GetBitLen(uint32_t x)
+{
+	return x == 0 ? 0 : BitHacks::HighestBitSet(x) + 1;
+	size_t len = 0;
+	while (x > 0) {
+		x >>= 1;
+		len++;
+	}
+	return len;
+}
+
+size_t ceilingDiv(size_t a, size_t b) {
+	return (a + b - 1) / b;
+}
+
+std::string
+BigInteger::toString() const
+{
+	if (mag.empty()) {
+		return "0";
+	}
+	std::string result;
+	if (negative) {
+		result.push_back('-');
+	}
+
+	static const uint32_t base = 10;
+	auto maxBitLenOfX = static_cast<uint32_t>(mag.size()) * NB_BITS;
+	int minBitsPerDigit = BitHacks::HighestBitSet(base);
+	auto maxDigitLenOfX = (maxBitLenOfX + minBitsPerDigit - 1) / minBitsPerDigit; // ceilingDiv
+	
+	std::vector<uint8_t> buffer;
+	buffer.reserve(maxDigitLenOfX);
+
+	Magnetude x2 = mag;
+	Magnetude buBase(1, base);
+	Magnetude lastDigit;
+	lastDigit.reserve(1);
+
+	while (!x2.empty()) {
+		// Get last digit.  This is like `lastDigit = x2 % buBase, x2 /= buBase'.
+		DivideWithRemainder(x2, buBase, x2, lastDigit);
+		// Save the digit.
+		buffer.push_back(static_cast<uint8_t>(lastDigit.empty() ? 0 : lastDigit.front()));
+	}
+
+	size_t offset = result.size();
+	result.resize(offset + buffer.size());
+	std::transform(buffer.rbegin(), buffer.rend(), result.begin() + offset, [](uint8_t c) { return static_cast<char>('0' + c); });
+	return result;
+}
 
 } // ZXing

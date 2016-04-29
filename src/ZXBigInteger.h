@@ -18,6 +18,8 @@
 #include <cstdlib>
 #include <type_traits>
 #include <vector>
+#include <string>
+#include <iosfwd>
 
 namespace ZXing {
 
@@ -36,11 +38,34 @@ public:
 	BigInteger() {}
 
 	template <typename T>
-	BigInteger(int x, typename std::enable_if<std::is_integral<T>::value && std::is_unsigned<T>::value>::type* = nullptr) : mag(1, x) {}
+	BigInteger(T x, typename std::enable_if<std::is_integral<T>::value && std::is_unsigned<T>::value>::type* = nullptr) : mag(1, x) {}
 
 	template <typename T>
-	BigInteger(int x, typename std::enable_if<std::is_integral<T>::value && std::is_signed<T>::value>::type* = nullptr) : negative(x < 0), mag(1, std::abs(x)) {}
+	BigInteger(T x, typename std::enable_if<std::is_integral<T>::value && std::is_signed<T>::value>::type* = nullptr) : negative(x < 0), mag(1, std::abs(x)) {}
 
+	std::string toString() const;
+
+	friend inline BigInteger operator+(const BigInteger& a, const BigInteger& b) {
+		BigInteger c;
+		BigInteger::Add(a, b, c);
+		return c;
+	}
+
+	friend inline BigInteger operator-(const BigInteger& a, const BigInteger& b) {
+		BigInteger c;
+		BigInteger::Subtract(a, b, c);
+		return c;
+	}
+
+	friend inline BigInteger operator*(const BigInteger& a, const BigInteger& b) {
+		BigInteger c;
+		BigInteger::Multiply(a, b, c);
+		return c;
+	}
+
+	friend inline std::ostream& operator<<(std::ostream& out, const BigInteger& x) {
+		return out << x.toString();
+	}
 
 	static void Add(const BigInteger& a, const BigInteger &b, BigInteger& c);
 	static void Subtract(const BigInteger& a, const BigInteger &b, BigInteger& c);

@@ -45,7 +45,7 @@ StringCodecs::SetInstance(const std::shared_ptr<StringCodecs>& inst)
 *  default encoding if none of these can possibly be correct
 */
 CharacterSet
-StringCodecs::GuessEncoding(const char* bytes, int length)
+StringCodecs::GuessEncoding(const uint8_t* bytes, size_t length)
 {
 	// For now, merely tries to distinguish ISO-8859-1, UTF-8 and Shift_JIS,
 	// which should be by far the most common encodings.
@@ -71,7 +71,7 @@ StringCodecs::GuessEncoding(const char* bytes, int length)
 
 	bool utf8bom = length > 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF;
 
-	for (int i = 0; i < length && (canBeISO88591 || canBeShiftJIS || canBeUTF8); ++i)
+	for (size_t i = 0; i < length && (canBeISO88591 || canBeShiftJIS || canBeUTF8); ++i)
 	{
 		int value = bytes[i] & 0xFF;
 
@@ -194,7 +194,7 @@ StringCodecs::GuessEncoding(const char* bytes, int length)
 	//   - at least 10% of bytes that could be "upper" not-alphanumeric Latin1,
 	// - then we conclude Shift_JIS, else ISO-8859-1
 	if (canBeISO88591 && canBeShiftJIS) {
-		return (sjisMaxKatakanaWordLength == 2 && sjisKatakanaChars == 2) || isoHighOther * 10 >= length
+		return (sjisMaxKatakanaWordLength == 2 && sjisKatakanaChars == 2) || isoHighOther * 10 >= (int)length
 			? CharacterSet::Shift_JIS : CharacterSet::ISO8859_1;
 	}
 

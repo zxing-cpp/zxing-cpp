@@ -126,7 +126,7 @@ DecodeHanziSegment(BitSource& bits, int count, String& result)
 		count--;
 	}
 
-	result += StringCodecs::Instance()->toUnicode(buffer.charPtr(), buffer.length(), CharacterSet::GB2312);
+	result += StringCodecs::Instance()->toUnicode(buffer.data(), buffer.length(), CharacterSet::GB2312);
 	return ErrorStatus::NoError;
 }
 
@@ -159,7 +159,7 @@ DecodeKanjiSegment(BitSource& bits, int count, String& result)
 		count--;
 	}
 
-	result += StringCodecs::Instance()->toUnicode(buffer.charPtr(), buffer.length(), CharacterSet::Shift_JIS);
+	result += StringCodecs::Instance()->toUnicode(buffer.data(), buffer.length(), CharacterSet::Shift_JIS);
 	return ErrorStatus::NoError;
 }
 
@@ -191,10 +191,10 @@ DecodeByteSegment(BitSource& bits, int count, CharacterSet charset, const Decode
 		}
 		if (charset == CharacterSet::Unknown)
 		{
-			charset = StringCodecs::GuessEncoding(readBytes.charPtr(), readBytes.length());
+			charset = StringCodecs::GuessEncoding(readBytes.data(), readBytes.length());
 		}
 	}
-	result += StringCodecs::Instance()->toUnicode(readBytes.charPtr(), readBytes.length(), charset);
+	result += StringCodecs::Instance()->toUnicode(readBytes.data(), readBytes.length(), charset);
 	byteSegments.push_back(readBytes);
 	return ErrorStatus::NoError;
 }

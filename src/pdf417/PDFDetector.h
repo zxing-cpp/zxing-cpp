@@ -17,7 +17,10 @@
 
 #include "BitMatrix.h"
 #include "ResultPoint.h"
-#include <vector>
+#include "ZXNullable.h"
+
+#include <list>
+#include <array>
 
 namespace ZXing {
 
@@ -40,8 +43,8 @@ class Detector
 public:
 	struct Result
 	{
-		BitMatrix _bits;
-		std::vector<std::vector<ResultPoint>> points;
+		BitMatrix bits;
+		std::list<std::array<Nullable<ResultPoint>, 8>> points;
 	};
 
 	static ErrorStatus Detect(const BinaryBitmap& image, const DecodeHints* hints, bool multiple, Result& result);

@@ -23,27 +23,31 @@
 namespace ZXing {
 namespace Pdf417 {
 
-typedef std::vector<std::array<float, Common::BARS_IN_MODULE>> RatioTableType;
+typedef std::array<std::array<float, Common::BARS_IN_MODULE>, Common::SYMBOL_COUNT> RatioTableType;
 typedef std::array<int, Common::BARS_IN_MODULE> ModuleBitCountType;
 
-static RatioTableType GenerateRatioTable()
+static const RatioTableType& GetRatioTable()
 {
-	RatioTableType table;
-	table.resize(Common::SYMBOL_COUNT);
-	for (int i = 0; i < Common::SYMBOL_COUNT; i++) {
-		int currentSymbol = Common::SYMBOL_TABLE[i];
-		int currentBit = currentSymbol & 0x1;
-		for (int j = 0; j < Common::BARS_IN_MODULE; j++) {
-			float size = 0.0f;
-			while ((currentSymbol & 0x1) == currentBit) {
-				size += 1.0f;
-				currentSymbol >>= 1;
+	auto initTable = [](RatioTableType& table) -> RatioTableType& {
+		for (int i = 0; i < Common::SYMBOL_COUNT; i++) {
+			int currentSymbol = Common::SYMBOL_TABLE[i];
+			int currentBit = currentSymbol & 0x1;
+			for (int j = 0; j < Common::BARS_IN_MODULE; j++) {
+				float size = 0.0f;
+				while ((currentSymbol & 0x1) == currentBit) {
+					size += 1.0f;
+					currentSymbol >>= 1;
+				}
+				currentBit = currentSymbol & 0x1;
+				table[i][Common::BARS_IN_MODULE - j - 1] = size / Common::MODULES_IN_CODEWORD;
 			}
-			currentBit = currentSymbol & 0x1;
-			table[i][Common::BARS_IN_MODULE - j - 1] = size / Common::MODULES_IN_CODEWORD;
 		}
-	}
-	return table;
+		return table;
+	};
+
+	static RatioTableType table;
+	static const auto& ref = initTable(table);
+	return ref;
 }
 
 static void SampleBitCounts(const ModuleBitCountType& moduleBitCount, ModuleBitCountType& result)
@@ -86,7 +90,7 @@ static int GetDecodedCodewordValue(const ModuleBitCountType& moduleBitCount)
 
 static int GetClosestDecodedValue(const ModuleBitCountType& moduleBitCount)
 {
-	static const RatioTableType ratioTable = GenerateRatioTable();
+	static const RatioTableType& ratioTable = GetRatioTable();
 
 	float bitCountSum = (float)std::accumulate(moduleBitCount.begin(), moduleBitCount.end(), 0);
 	std::array<float, Common::BARS_IN_MODULE> bitCountRatios;
