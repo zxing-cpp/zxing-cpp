@@ -5,7 +5,27 @@
 #include <memory>
 #include <vector>
 
+#include "RGBLuminanceSource.h"
+#include "HybridBinarizer.h"
+#include "BinaryBitmap.h"
+#include "MultiFormatReader.h"
+#include "Result.h"
+
 using namespace Gdiplus;
+using namespace ZXing;
+
+std::shared_ptr<LuminanceSource> CreateLuminanceSource(const BitmapData& bitmap)
+{
+	switch (bitmap.PixelFormat)
+	{
+	case PixelFormat24bppRGB:
+		return std::make_shared<RGBLuminanceSource>(bitmap.Scan0, bitmap.Width, bitmap.Height, bitmap.Stride, 3, 2, 1, 0);
+	case PixelFormat32bppARGB:
+	case PixelFormat32bppRGB:
+		return std::make_shared<RGBLuminanceSource>(bitmap.Scan0, bitmap.Width, bitmap.Height, bitmap.Stride, 4, 2, 1, 0);
+	}
+	throw std::invalid_argument("Unsupported format");
+}
 
 int main(int argc, char** argv)
 {
@@ -27,16 +47,18 @@ int main(int argc, char** argv)
 		//CLSID pngClsid;
 		//GetEncoderClsid(L"image/png", &pngClsid);
 
+		Result result(ErrorStatus::NotFound);
+
 		{
 			BitmapData data;
 			bitmap.LockBits(nullptr, ImageLockModeRead, bitmap.GetPixelFormat(), &data);
 			try
 			{
-				cv::Mat image(data.Height, data.Width, CVTypeFromPixelFormat(data.PixelFormat), data.Scan0, data.Stride);
-				cv::Mat gray;
-				
-				
-				
+				auto lum = CreateLuminanceSource(data);
+				auto binarizer = std::make_shared<HybridBinarizer>(lum);
+				BinaryBitmap binImg(binarizer);
+				MultiFormatReader reader;
+				result = reader.decode(binImg);
 				bitmap.UnlockBits(&data);
 			}
 			catch (...)
@@ -45,6 +67,8 @@ int main(int argc, char** argv)
 				throw;
 			}
 		}
+
+		std::cout << result.text();
 
 /* 		if (output.rows > 0)
 		{

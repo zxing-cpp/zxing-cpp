@@ -16,6 +16,7 @@
 */
 
 #include <memory>
+#include <cstddef>
 
 namespace ZXing {
 
@@ -45,8 +46,6 @@ public:
 	*/
 	virtual int height() const = 0;
 
-	virtual int rowBytes() const = 0;
-
 	/**
 	* Fetches one row of luminance data from the underlying platform's bitmap. Values range from
 	* 0 (black) to 255 (white). Because Java does not have an unsigned byte type, callers will have
@@ -69,7 +68,7 @@ public:
 	*         larger than width * height bytes on some platforms. Do not modify the contents
 	*         of the result.
 	*/
-	virtual const uint8_t* getMatrix(ByteArray& buffer, bool forceCopy = false) const = 0;
+	virtual const uint8_t* getMatrix(ByteArray& buffer, int& outRowBytes, bool forceCopy = false) const = 0;
 
 	/**
 	* @return Whether this subclass supports cropping.

@@ -36,7 +36,7 @@ public:
 
 	BitArray() : _size(0) {}
 
-	explicit BitArray(int size) : _size(0), _bits((size + 31) / 32, 0) {}
+	explicit BitArray(int size) : _size(size), _bits((size + 31) / 32, 0) {}
 
 	void init(int size) {
 		_size = size;

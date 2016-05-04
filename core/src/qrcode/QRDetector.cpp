@@ -344,7 +344,7 @@ static ErrorStatus ProcessFinderPatternInfo(const BitMatrix& image, const Finder
 ErrorStatus
 Detector::Detect(const BitMatrix& image, const DecodeHints* hints, DetectorResult& result)
 {
-	PointCallback pointCallback = hints == nullptr ? hints->getPointCallback(DecodeHint::NEED_RESULT_POINT_CALLBACK) : nullptr;
+	PointCallback pointCallback = hints != nullptr ? hints->getPointCallback(DecodeHint::NEED_RESULT_POINT_CALLBACK) : nullptr;
 
 	FinderPatternInfo info;
 	auto status = FinderPatternFinder::Find(image, pointCallback, hints, info);

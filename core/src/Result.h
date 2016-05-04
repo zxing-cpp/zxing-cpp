@@ -41,7 +41,6 @@ public:
 
 	explicit Result(ErrorStatus status);
 	Result(const String& text, const ByteArray& rawBytes, const std::vector<ResultPoint>& resultPoints, BarcodeFormat format, time_point tt = std::chrono::steady_clock::now());
-	~Result();
 
 	bool isValid() const {
 		return StatusIsOK(_status);

@@ -44,9 +44,9 @@ public:
 		return outBytes.data();
 	}
 
-	virtual const uint8_t* getMatrix(ByteArray& outBytes, bool forceCopy) const override
+	virtual const uint8_t* getMatrix(ByteArray& outBytes, int& outRowBytes, bool forceCopy) const override
 	{
-		_src->getMatrix(outBytes, true);
+		_src->getMatrix(outBytes, outRowBytes, true);
 		std::transform(outBytes.begin(), outBytes.end(), outBytes.begin(), [](uint8_t b) { return 255 - b; });
 		return outBytes.data();
 	}
@@ -62,11 +62,6 @@ public:
 	virtual int height() const override
 	{
 		return _src->height();
-	}
-
-	virtual int rowBytes() const override
-	{
-		return _src->rowBytes();
 	}
 
 	virtual bool canCrop() const override

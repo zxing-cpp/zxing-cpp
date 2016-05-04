@@ -208,10 +208,10 @@ BitMatrix::setRegion(int left, int top, int width, int height)
 void
 BitMatrix::setRow(int y, const BitArray& row)
 {
-	if (row.size() != _rowSize) {
+	auto& newRow = row.bitArray();
+	if (newRow.size() != _rowSize) {
 		throw std::invalid_argument("BitMatrix::setRegion(): row sizes do not match");
 	}
-	auto& newRow = row.bitArray();
 	std::copy(newRow.begin(), newRow.end(), _bits.begin() + y *_rowSize);
 }
 

@@ -155,8 +155,8 @@ GlobalHistogramBinarizer::getBlackMatrix(BitMatrix& matrix) const
 		// Although we end up reading four rows twice, it is consistent with our motto of
 		// "fail quickly" which is necessary for continuous scanning.
 		ByteArray buffer;
-		const uint8_t* luminances = _source->getMatrix(buffer);
-		int stride = _source->rowBytes();
+		int stride;
+		const uint8_t* luminances = _source->getMatrix(buffer, stride);
 		for (int y = 0; y < height; y++) {
 			int offset = y * stride;
 			for (int x = 0; x < width; x++) {

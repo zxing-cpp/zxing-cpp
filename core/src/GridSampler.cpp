@@ -170,4 +170,8 @@ GridSampler::SetInstance(const std::shared_ptr<GridSampler>& inst)
 	globalInstance = inst;
 }
 
+GridSampler::~GridSampler()
+{
+}
+
 } // ZXing

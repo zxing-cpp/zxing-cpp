@@ -180,8 +180,8 @@ HybridBinarizer::getBlackMatrix(BitMatrix& outMatrix) const
 	int height = _source->height();
 	if (width >= MINIMUM_DIMENSION && height >= MINIMUM_DIMENSION) {
 		ByteArray buffer;
-		const uint8_t* luminances = _source->getMatrix(buffer);
-		int stride = _source->rowBytes();
+		int stride;
+		const uint8_t* luminances = _source->getMatrix(buffer, stride);
 		int subWidth = width >> BLOCK_SIZE_POWER;
 		if ((width & BLOCK_SIZE_MASK) != 0) {
 			subWidth++;
