@@ -1,3 +1,4 @@
+#pragma once
 /*
 * Copyright 2016 ZXing authors
 *
@@ -14,26 +15,23 @@
 * limitations under the License.
 */
 
-#include "Binarizer.h"
-#include "LuminanceSource.h"
+#include <string>
+
+namespace Gdiplus {
+	class Bitmap;
+}
 
 namespace ZXing {
 
-Binarizer::~Binarizer()
+class BarcodeScanner
 {
-}
-
-int
-Binarizer::width() const
-{
-	return _source->width();
-}
-
-int
-Binarizer::height() const
-{
-	return _source->height();
-}
-
+public:
+	struct ScanResult {
+		std::string format;
+		std::wstring text;
+	};
+	
+	static ScanResult Scan(const Gdiplus::Bitmap& bitmap);
+};
 
 } // ZXing

@@ -100,10 +100,6 @@ protected:
 } // anonymous
 
 
-LuminanceSource::~LuminanceSource()
-{
-}
-
 bool
 LuminanceSource::canCrop() const
 {

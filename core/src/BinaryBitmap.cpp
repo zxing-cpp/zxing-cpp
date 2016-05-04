@@ -16,7 +16,6 @@
 
 #include "BinaryBitmap.h"
 #include "Binarizer.h"
-#include "LuminanceSource.h"
 
 #include <stdexcept>
 #include <mutex>
@@ -83,34 +82,31 @@ BinaryBitmap::getBlackMatrix(BitMatrix& outMatrix) const
 bool
 BinaryBitmap::canCrop() const
 {
-	return _impl->binarizer->luminanceSource()->canCrop();
+	return _impl->binarizer->canCrop();
 }
 
 BinaryBitmap
 BinaryBitmap::cropped(int left, int top, int width, int height) const
 {
-	auto newSource = _impl->binarizer->luminanceSource()->cropped(left, top, width, height);
-	return BinaryBitmap(_impl->binarizer->createBinarizer(newSource));
+	return BinaryBitmap(_impl->binarizer->cropped(left, top, width, height));
 }
 
 bool
 BinaryBitmap::canRotate() const
 {
-	return _impl->binarizer->luminanceSource()->canRotate();
+	return _impl->binarizer->canRotate();
 }
 
 BinaryBitmap
 BinaryBitmap::rotatedCCW90() const
 {
-	auto newSource = _impl->binarizer->luminanceSource()->rotatedCCW90();
-	return BinaryBitmap(_impl->binarizer->createBinarizer(newSource));
+	return BinaryBitmap(_impl->binarizer->rotatedCCW90());
 }
 
 BinaryBitmap
 BinaryBitmap::rotatedCCW45() const
 {
-	auto newSource = _impl->binarizer->luminanceSource()->rotatedCCW45();
-	return BinaryBitmap(_impl->binarizer->createBinarizer(newSource));
+	return BinaryBitmap(_impl->binarizer->rotatedCCW45());
 }
 
 } // ZXing

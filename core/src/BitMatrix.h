@@ -78,6 +78,8 @@ public:
 	*/
 	void flip(int x, int y);
 
+	void flipAll();
+
 	/**
 	* Exclusive-or (XOR): Flip the bit in this {@code BitMatrix} if the corresponding
 	* mask bit is set.
@@ -109,7 +111,7 @@ public:
 	* @return The resulting BitArray - this reference should always be used even when passing
 	*         your own row
 	*/
-	BitArray row(int y) const;
+	void getRow(int y, BitArray& row) const;
 
 	/**
 	* @param y row to set
@@ -155,7 +157,7 @@ public:
 	}
 
 	/**
-	* @return The row size of the matrix
+	* @return The row size of the matrix. That is the number of 32-bits blocks that one row takes.
 	*/
 	int rowSize() const {
 		return _rowSize;
@@ -171,42 +173,6 @@ public:
 	{
 		return a._width == b._width && a._height == b._height && a._rowSize == b._rowSize && a._bits == b._bits;
 	}
-
-	///**
-	//* @return string representation using "X" for set and " " for unset bits
-	//*/
-	//@Override
-	//	public String toString() {
-	//	return toString("X ", "  ");
-	//}
-
-	///**
-	//* @param setString representation of a set bit
-	//* @param unsetString representation of an unset bit
-	//* @return string representation of entire matrix utilizing given strings
-	//*/
-	//public String toString(String setString, String unsetString) {
-	//	return toString(setString, unsetString, "\n");
-	//}
-
-	///**
-	//* @param setString representation of a set bit
-	//* @param unsetString representation of an unset bit
-	//* @param lineSeparator newline character in string representation
-	//* @return string representation of entire matrix utilizing given strings and line separator
-	//* @deprecated call {@link #toString(String,String)} only, which uses \n line separator always
-	//*/
-	//@Deprecated
-	//	public String toString(String setString, String unsetString, String lineSeparator) {
-	//	StringBuilder result = new StringBuilder(height * (width + 1));
-	//	for (int y = 0; y < height; y++) {
-	//		for (int x = 0; x < width; x++) {
-	//			result.append(get(x, y) ? setString : unsetString);
-	//		}
-	//		result.append(lineSeparator);
-	//	}
-	//	return result.toString();
-	//}
 
 private:
 	int checkBounds(int offset) const;

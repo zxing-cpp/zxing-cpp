@@ -1,6 +1,6 @@
 #pragma once
 /*
-* Copyright 2016 ZXing authors
+* Copyright 2016 Huy Cuong Nguyen
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -16,29 +16,20 @@
 */
 
 #include "Binarizer.h"
+#include <memory>
 
 namespace ZXing {
 
-class LuminanceSource;
+class BitMatrix;
 
 /**
-* This Binarizer implementation uses the old ZXing global histogram approach. It is suitable
-* for low-end mobile devices which don't have enough CPU or memory to use a local thresholding
-* algorithm. However, because it picks a global black point, it cannot handle difficult shadows
-* and gradients.
-*
-* Faster mobile devices and all desktop applications should probably use HybridBinarizer instead.
-*
-* @author dswitkin@google.com (Daniel Switkin)
-* @author Sean Owen
+* This class provides a binarizer that wraps around a BitMatrix
 */
-class GlobalHistogramBinarizer : public Binarizer
+class BitWrapperBinarizer : public Binarizer
 {
-protected:
-	std::shared_ptr<LuminanceSource> _source;
-
 public:
-	GlobalHistogramBinarizer(const std::shared_ptr<LuminanceSource>& source);
+	BitWrapperBinarizer(const BitMatrix& bits, bool whitePixels);
+	BitWrapperBinarizer(const std::shared_ptr<const BitMatrix>& bits, bool whitePixels);
 
 	virtual int width() const override;
 	virtual int height() const override;
@@ -50,7 +41,15 @@ public:
 	virtual std::shared_ptr<Binarizer> rotatedCCW90() const override;
 	virtual std::shared_ptr<Binarizer> rotatedCCW45() const override;
 
-	virtual std::shared_ptr<Binarizer> createBinarizer(const std::shared_ptr<LuminanceSource>& source) const;
+private:
+	BitWrapperBinarizer() {}
+
+	std::shared_ptr<const BitMatrix> _matrix;
+	int _left;
+	int _top;
+	int _width;
+	int _height;
+	bool _inverted;
 };
 
 } // ZXing

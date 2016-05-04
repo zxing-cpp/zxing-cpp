@@ -31,6 +31,8 @@ class BitArray
 {
 	int _size;
 	std::vector<uint32_t> _bits;
+	
+	friend class BitMatrix;
 
 public:
 
@@ -40,7 +42,7 @@ public:
 
 	void init(int size) {
 		_size = size;
-		_bits.resize(_size);
+		_bits.resize((size + 31) / 32);
 		clear();
 	}
 
@@ -78,6 +80,8 @@ public:
 		_bits[i / 32] ^= 1 << (i & 0x1F);
 	}
 
+	void flipAll();
+
 	/**
 	* @param from first bit to check
 	* @return index of first bit that is set, starting from the given index, or size if none are set
@@ -100,9 +104,11 @@ public:
 	* @param newBits the new value of the next 32 bits. Note again that the least-significant bit
 	* corresponds to bit i, the next-least-significant to i+1, and so on.
 	*/
-	void setBulk(int i, uint32_t newBits) {
-		_bits[i / 32] = newBits;
-	}
+	//void setBulk(int i, uint32_t newBits) {
+	//	_bits[i / 32] = newBits;
+	//}
+
+	void getSubArray(int offset, int length, BitArray& result) const;
 
 	/**
 	* Sets a range of bits.
@@ -159,7 +165,7 @@ public:
 	* @return underlying array of ints. The first element holds the first 32 bits, and the least
 	*         significant bit is bit 0.
 	*/
-	const std::vector<uint32_t>& bitArray() const { return _bits; }
+	//const std::vector<uint32_t>& bitArray() const { return _bits; }
 
 	/**
 	* Reverses all bits in the array.
@@ -187,6 +193,8 @@ private:
 	{
 		_bits.reserve((size + 31) / 32);
 	}
+
+	void shiftLeft(unsigned offset);
 };
 
 } // ZXing

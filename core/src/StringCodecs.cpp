@@ -19,11 +19,24 @@
 
 namespace ZXing {
 
-static std::shared_ptr<StringCodecs> globalInstance;
+namespace {
 
-StringCodecs::~StringCodecs()
-{
+	class DummyConverter : public StringCodecs
+	{
+	public:
+		virtual String toUnicode(const uint8_t* bytes, size_t length, CharacterSet codec) const override
+		{
+			return String(reinterpret_cast<const char*>(bytes), length);
+		}
+
+		virtual CharacterSet defaultEncoding() const override
+		{
+			return CharacterSet::ISO8859_1;
+		}
+	};
 }
+
+static std::shared_ptr<StringCodecs> globalInstance = std::make_shared<DummyConverter>();
 
 std::shared_ptr<StringCodecs>
 StringCodecs::Instance()

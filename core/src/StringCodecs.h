@@ -66,7 +66,7 @@ enum class CharacterSet
 class StringCodecs
 {
 public:
-	virtual ~StringCodecs();
+	virtual ~StringCodecs() {}
 	virtual String toUnicode(const uint8_t* bytes, size_t length, CharacterSet codec) const = 0;
 	virtual CharacterSet defaultEncoding() const = 0;
 

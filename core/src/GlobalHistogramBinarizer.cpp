@@ -29,6 +29,24 @@ static const int LUMINANCE_BITS = 5;
 static const int LUMINANCE_SHIFT = 8 - LUMINANCE_BITS;
 static const int LUMINANCE_BUCKETS = 1 << LUMINANCE_BITS;
 
+
+GlobalHistogramBinarizer::GlobalHistogramBinarizer(const std::shared_ptr<LuminanceSource>& source) : _source(source)
+{
+}
+
+int
+GlobalHistogramBinarizer::width() const
+{
+	return _source->width();
+}
+
+int
+GlobalHistogramBinarizer::height() const
+{
+	return _source->height();
+}
+
+
 // Return -1 on error
 static int EstimateBlackPoint(std::array<int, LUMINANCE_BUCKETS>& buckets)
 {
@@ -85,10 +103,6 @@ static int EstimateBlackPoint(std::array<int, LUMINANCE_BUCKETS>& buckets)
 	}
 
 	return bestValley << LUMINANCE_SHIFT;
-}
-
-GlobalHistogramBinarizer::GlobalHistogramBinarizer(const std::shared_ptr<LuminanceSource>& source) : Binarizer(source)
-{
 }
 
 // Applies simple sharpening to the row data to improve performance of the 1D Readers.
@@ -171,10 +185,41 @@ GlobalHistogramBinarizer::getBlackMatrix(BitMatrix& matrix) const
 	return ErrorStatus::NotFound;
 }
 
+bool
+GlobalHistogramBinarizer::canCrop() const
+{
+	return _source->canCrop();
+}
+
+std::shared_ptr<Binarizer>
+GlobalHistogramBinarizer::cropped(int left, int top, int width, int height) const
+{
+	return createBinarizer(_source->cropped(left, top, width, height));
+}
+
+bool
+GlobalHistogramBinarizer::canRotate() const
+{
+	return _source->canRotate();
+}
+
+std::shared_ptr<Binarizer>
+GlobalHistogramBinarizer::rotatedCCW90() const
+{
+	return createBinarizer(_source->rotatedCCW90());
+}
+
+std::shared_ptr<Binarizer>
+GlobalHistogramBinarizer::rotatedCCW45() const
+{
+	return createBinarizer(_source->rotatedCCW45());
+}
+
 std::shared_ptr<Binarizer>
 GlobalHistogramBinarizer::createBinarizer(const std::shared_ptr<LuminanceSource>& source) const
 {
 	return std::make_shared<GlobalHistogramBinarizer>(source);
 }
+
 
 } // ZXing

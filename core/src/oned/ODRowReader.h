@@ -38,7 +38,7 @@ namespace OneD {
 class RowReader
 {
 public:
-	virtual ~RowReader();
+	virtual ~RowReader() {}
 
 	/**
 	* <p>Attempts to decode a one-dimensional barcode format given a single row of

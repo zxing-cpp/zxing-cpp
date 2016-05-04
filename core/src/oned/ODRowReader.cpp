@@ -23,10 +23,6 @@
 namespace ZXing {
 namespace OneD {
 
-RowReader::~RowReader()
-{
-}
-
 /**
 * Records the size of successive runs of white and black pixels in a row, starting at a given point.
 * The values are recorded in the given array, and the number of runs recorded is equal to the size

@@ -39,7 +39,7 @@ enum class ErrorStatus;
 class GridSampler
 {
 public:
-	virtual ~GridSampler();
+	virtual ~GridSampler() {}
 
 	/**
 	* Samples an image for a rectangular matrix of bits of the given dimension. The sampling

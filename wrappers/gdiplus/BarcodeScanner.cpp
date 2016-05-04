@@ -1,20 +1,34 @@
-#include <windows.h>
-#include <gdiplus.h>
-#include <iostream>
-#include <string>
-#include <memory>
-#include <vector>
+/*
+* Copyright 2016 ZXing authors
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*      http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
-#include "RGBLuminanceSource.h"
-#include "HybridBinarizer.h"
-#include "BinaryBitmap.h"
-#include "MultiFormatReader.h"
-#include "Result.h"
+#include "BarcodeScanner.h"
+#include "StringCodecs.h"
 
-using namespace Gdiplus;
-using namespace ZXing;
+#include <mutex>
 
-std::shared_ptr<LuminanceSource> CreateLuminanceSource(const BitmapData& bitmap)
+namespace ZXing {
+
+
+static void InitStringCodecs()
+{
+
+}
+
+
+static std::shared_ptr<Binarizer> CreateLuminanceSource(const BitmapData& bitmap)
 {
 	switch (bitmap.PixelFormat)
 	{
@@ -27,73 +41,14 @@ std::shared_ptr<LuminanceSource> CreateLuminanceSource(const BitmapData& bitmap)
 	throw std::invalid_argument("Unsupported format");
 }
 
-int main(int argc, char** argv)
+
+BarcodeScanner::ScanResult
+BarcodeScanner::Scan(const Gdiplus::Bitmap& bitmap)
 {
-	if (argc <= 1)
-	{
-		std::cout << "Usage: " << argv[0] << " <image_path>" << std::endl;
-		return 0;
-	}
+	static std::once_flag s_once;
+	std::call_once(s_once, InitStringCodecs);
 
-	GdiplusStartupInput gdiplusStartupInput;
-	ULONG_PTR           gdiplusToken;
-	GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 
-	try
-	{
-		std::wstring filePath(argv[1], argv[1] + strlen(argv[1]));
-		Bitmap bitmap(filePath.c_str());
-
-		//CLSID pngClsid;
-		//GetEncoderClsid(L"image/png", &pngClsid);
-
-		Result result(ErrorStatus::NotFound);
-
-		{
-			BitmapData data;
-			bitmap.LockBits(nullptr, ImageLockModeRead, bitmap.GetPixelFormat(), &data);
-			try
-			{
-				auto lum = CreateLuminanceSource(data);
-				auto binarizer = std::make_shared<HybridBinarizer>(lum);
-				BinaryBitmap binImg(binarizer);
-				MultiFormatReader reader;
-				result = reader.decode(binImg);
-				bitmap.UnlockBits(&data);
-			}
-			catch (...)
-			{
-				bitmap.UnlockBits(&data);
-				throw;
-			}
-		}
-
-		std::cout << result.text();
-
-/* 		if (output.rows > 0)
-		{
-			Gdiplus::Bitmap outputBitmap(output.cols, output.rows, PixelFormatFromCVType(output.type()));
-			BitmapData dataOut;
-			outputBitmap.LockBits(nullptr, ImageLockModeWrite, outputBitmap.GetPixelFormat(), &dataOut);
-			try
-			{
-				output.copyTo(cv::Mat(dataOut.Height, dataOut.Width, CVTypeFromPixelFormat(dataOut.PixelFormat), dataOut.Scan0, dataOut.Stride));
-				outputBitmap.UnlockBits(&dataOut);
-			}
-			catch (...)
-			{
-				outputBitmap.UnlockBits(&dataOut);
-				throw;
-			}
-
-			outputBitmap.Save((filePath + L".filtered.jpg").c_str(), &pngClsid, nullptr);
-		}
- */
-	}
-	catch (...)
-	{
-		std::cerr << "Internal error";
-	}
-
-	GdiplusShutdown(gdiplusToken);
 }
+
+} // ZXing

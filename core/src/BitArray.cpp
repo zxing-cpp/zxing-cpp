@@ -173,8 +173,6 @@ BitArray::xor(const BitArray& other)
 		throw std::invalid_argument("BitArray::xor(): Sizes don't match");
 	}
 	for (size_t i = 0; i < _bits.size(); i++) {
-		// The last byte could be incomplete (i.e. not have 8 bits in
-		// it) but there is no problem since 0 XOR 0 == 0.
 		_bits[i] ^= other._bits[i];
 	}
 }
@@ -197,32 +195,57 @@ BitArray::toBytes(int bitOffset, int offset, int numBytes) const
 }
 
 void
+BitArray::flipAll()
+{
+	for (auto it = _bits.begin(); it != _bits.end(); ++it) {
+		*it = ~(*it);
+	}
+}
+
+void
 BitArray::reverse()
 {
-	std::vector<uint32_t> newBits(_bits.size(), 0);
 	// reverse all int's first
-	int len = (_size - 1) / 32;
-	int oldBitsLen = len + 1;
-	for (int i = 0; i < oldBitsLen; i++) {
-		newBits[len - i] = BitHacks::Reverse(_bits[i]);
-	}
+	std::reverse(_bits.begin(), _bits.end());
+	std::transform(_bits.begin(), _bits.end(), _bits.begin(), [](uint32_t val) { return BitHacks::Reverse(val); });
+
 	// now correct the int's if the bit size isn't a multiple of 32
-	if (_size != oldBitsLen * 32) {
-		int leftOffset = oldBitsLen * 32 - _size;
-		int mask = 1;
-		for (int i = 0; i < 31 - leftOffset; i++) {
-			mask = (mask << 1) | 1;
-		}
-		uint32_t currentInt = (newBits[0] >> leftOffset) & mask;
-		for (int i = 1; i < oldBitsLen; i++) {
-			int nextInt = newBits[i];
-			currentInt |= nextInt << (32 - leftOffset);
-			newBits[i - 1] = currentInt;
-			currentInt = (nextInt >> leftOffset) & mask;
-		}
-		newBits[oldBitsLen - 1] = currentInt;
+	if (_size != _bits.size() * 32) {
+		shiftLeft(static_cast<unsigned>(_bits.size()) * 32 - _size);
 	}
-	_bits = newBits;
+}
+
+void
+BitArray::shiftLeft(unsigned offset)
+{
+	unsigned rightOffset = 32 - offset;
+	for (size_t i = 0; i + 1 < _bits.size(); ++i) {
+		_bits[i] = (_bits[i] << offset) | (_bits[i + 1] >> rightOffset);
+	}
+	_bits.back() <<= offset;
+}
+
+
+void
+BitArray::getSubArray(int offset, int length, BitArray& result) const
+{
+	if (offset < 0 || offset + length > _size) {
+		throw std::invalid_argument("Invalid range");
+	}
+
+	result._size = length;
+
+	int startIndex = offset / 32;
+	int endIndex = (offset + length + 31) / 32;
+	
+	result._bits.resize(endIndex - startIndex);
+	std::copy_n(_bits.begin() + startIndex, result._bits.size(), result._bits.begin());
+
+	unsigned leftOffset = offset % 32;
+	if (leftOffset > 0) {
+		result.shiftLeft(leftOffset);
+		result._bits.resize((length + 31) / 32);
+	}
 }
 
 } // ZXing

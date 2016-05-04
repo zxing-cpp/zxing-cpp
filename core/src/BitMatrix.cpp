@@ -144,6 +144,14 @@ BitMatrix::flip(int x, int y)
 }
 
 void
+BitMatrix::flipAll()
+{
+	for (auto it = _bits.begin(); it != _bits.end(); ++it) {
+		*it = ~(*it);
+	}
+}
+
+void
 BitMatrix::xor(const BitMatrix& mask)
 {
 	if (_width != mask._width || _height != mask._height || _rowSize != mask._rowSize)
@@ -151,14 +159,8 @@ BitMatrix::xor(const BitMatrix& mask)
 		throw std::invalid_argument("BitMatrix::xor(): input matrix dimensions do not match");
 	}
 	
-	BitArray rowArray(_width / 32 + 1);
-	for (int y = 0; y < _height; y++)
-	{
-		int offset = y * _rowSize;
-		auto& row = mask.row(y).bitArray();
-		for (int x = 0; x < _rowSize; x++) {
-			_bits[offset + x] ^= row[x];
-		}
+	for (size_t i = 0; i < _bits.size(); ++i) {
+		_bits[i] ^= mask._bits[i];
 	}
 }
 
@@ -168,15 +170,28 @@ BitMatrix::clear()
 	std::fill(_bits.begin(), _bits.end(), 0);
 }
 
-BitArray
-BitMatrix::row(int y) const
+void
+BitMatrix::getRow(int y, BitArray& row) const
 {
-	BitArray row(_width);
-	int offset = y * _rowSize;
-	for (int x = 0; x < _rowSize; x++) {
-		row.setBulk(x * 32, _bits[offset + x]);
+	if (y < 0 || y >= _height) {
+		throw std::out_of_range("Requested row is outside the matrix");
 	}
-	return row;
+	row.init(_width);
+	auto it = _bits.begin() + y * _rowSize;
+	std::copy(it, it + _rowSize, row._bits.begin());
+}
+
+/**
+* @param y row to set
+* @param row {@link BitArray} to copy from
+*/
+void
+BitMatrix::setRow(int y, const BitArray& row)
+{
+	if (row._bits.size() != _rowSize) {
+		throw std::invalid_argument("BitMatrix::setRegion(): row sizes do not match");
+	}
+	std::copy(row._bits.begin(), row._bits.end(), _bits.begin() + y *_rowSize);
 }
 
 void
@@ -202,28 +217,15 @@ BitMatrix::setRegion(int left, int top, int width, int height)
 }
 
 /**
-* @param y row to set
-* @param row {@link BitArray} to copy from
-*/
-void
-BitMatrix::setRow(int y, const BitArray& row)
-{
-	auto& newRow = row.bitArray();
-	if (newRow.size() != _rowSize) {
-		throw std::invalid_argument("BitMatrix::setRegion(): row sizes do not match");
-	}
-	std::copy(newRow.begin(), newRow.end(), _bits.begin() + y *_rowSize);
-}
-
-/**
 * Modifies this {@code BitMatrix} to represent the same but rotated 180 degrees
 */
 void
 BitMatrix::rotate180()
 {
 	for (int i = 0; i < (_height + 1) / 2; i++) {
-		auto topRow = row(i);
-		auto bottomRow = row(_height - 1 - i);
+		BitArray topRow, bottomRow;
+		getRow(i, topRow);
+		getRow(_height - 1 - i, bottomRow);
 		topRow.reverse();
 		bottomRow.reverse();
 		setRow(i, bottomRow);

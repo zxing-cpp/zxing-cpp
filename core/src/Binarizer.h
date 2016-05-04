@@ -19,7 +19,6 @@
 
 namespace ZXing {
 
-class LuminanceSource;
 class BitArray;
 class BitMatrix;
 enum class ErrorStatus;
@@ -34,17 +33,12 @@ enum class ErrorStatus;
 */
 class Binarizer
 {
-protected:
-	std::shared_ptr<LuminanceSource> _source;
-
 public:
-	virtual ~Binarizer();
+	virtual ~Binarizer() {}
 
-	std::shared_ptr<LuminanceSource> luminanceSource() const { return _source; }
+	virtual int width() const = 0;
 
-	int width() const;
-
-	int height() const;
+	virtual int height() const = 0;
 
 	/**
 	* Converts one row of luminance data to 1 bit data. May actually do the conversion, or return
@@ -74,17 +68,42 @@ public:
 	virtual ErrorStatus getBlackMatrix(BitMatrix& outMatrix) const = 0;
 
 	/**
-	* Creates a new object with the same type as this Binarizer implementation, but with pristine
-	* state. This is needed because Binarizer implementations may be stateful, e.g. keeping a cache
-	* of 1 bit data. See Effective Java for why we can't use Java's clone() method.
-	*
-	* @param source The LuminanceSource this Binarizer will operate on.
-	* @return A new concrete Binarizer implementation object.
+	* @return Whether this subclass supports cropping.
 	*/
-	virtual std::shared_ptr<Binarizer> createBinarizer(const std::shared_ptr<LuminanceSource>& source) const = 0;
+	virtual bool canCrop() const = 0;
 
-protected:
-	Binarizer(const std::shared_ptr<LuminanceSource>& source) : _source(source) {}
+	/**
+	* Returns a new object with cropped image data. Implementations may keep a reference to the
+	* original data rather than a copy. Only callable if isCropSupported() is true.
+	*
+	* @param left The left coordinate, which must be in [0,getWidth())
+	* @param top The top coordinate, which must be in [0,getHeight())
+	* @param width The width of the rectangle to crop.
+	* @param height The height of the rectangle to crop.
+	* @return A cropped version of this object.
+	*/
+	virtual std::shared_ptr<Binarizer> cropped(int left, int top, int width, int height) const = 0;
+
+	/**
+	* @return Whether this subclass supports counter-clockwise rotation.
+	*/
+	virtual bool canRotate() const = 0;
+
+	/**
+	* Returns a new object with rotated image data by 90 degrees counterclockwise.
+	* Only callable if {@link #isRotateSupported()} is true.
+	*
+	* @return A rotated version of this object.
+	*/
+	virtual std::shared_ptr<Binarizer> rotatedCCW90() const = 0;
+
+	/**
+	* Returns a new object with rotated image data by 45 degrees counterclockwise.
+	* Only callable if {@link #isRotateSupported()} is true.
+	*
+	* @return A rotated version of this object.
+	*/
+	virtual std::shared_ptr<Binarizer> rotatedCCW45() const = 0;
 };
 
 } // ZXing
