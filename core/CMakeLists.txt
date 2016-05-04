@@ -33,15 +33,6 @@ endif()
 
 set (ZXING_DEFINES_LOCAL "${ZXING_CORE_DEFINES}")
 
-if (MSVC)
-	add_definitions (
-		-D_SCL_SECURE_NO_WARNINGS
-		-D_CRT_SECURE_NO_WARNINGS
-		-D_CRT_NONSTDC_NO_WARNINGS
-		-DNOMINMAX
-	)
-endif()
-
 include_directories (
 	${ZXING_CORE_INCLUDE}
 )

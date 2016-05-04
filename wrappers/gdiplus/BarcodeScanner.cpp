@@ -5,6 +5,8 @@
 #include <memory>
 #include <vector>
 
+using namespace Gdiplus;
+
 int main(int argc, char** argv)
 {
 	if (argc <= 1)
@@ -20,7 +22,7 @@ int main(int argc, char** argv)
 	try
 	{
 		std::wstring filePath(argv[1], argv[1] + strlen(argv[1]));
-		Gdiplus::Bitmap bitmap(filePath.c_str());
+		Bitmap bitmap(filePath.c_str());
 
 		//CLSID pngClsid;
 		//GetEncoderClsid(L"image/png", &pngClsid);

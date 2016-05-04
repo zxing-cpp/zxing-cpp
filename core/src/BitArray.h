@@ -38,6 +38,12 @@ public:
 
 	explicit BitArray(int size) : _size(0), _bits((size + 31) / 32, 0) {}
 
+	void init(int size) {
+		_size = size;
+		_bits.resize(_size);
+		clear();
+	}
+
 	int size() const {
 		return _size;
 	}

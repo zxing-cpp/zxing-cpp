@@ -1,3 +1,4 @@
+#pragma once
 /*
 * Copyright 2016 ZXing authors
 *
@@ -14,13 +15,10 @@
 * limitations under the License.
 */
 
-#include "oned/rss/ODRSSFinderPattern.h"
+#include "LuminanceSource.h"
 
-namespace ZXing {
+class BitmapLuminanceSource : public ZXing::LuminanceSource
+{
+public:
 
-namespace OneD {
-
-
-
-} // OneD
-} // ZXing
+};

@@ -108,7 +108,6 @@ UPCEANReader::L_AND_G_PATTERNS = {
 ErrorStatus
 UPCEANReader::DoFindGuardPattern(const BitArray& row, int rowOffset, bool whiteFirst, const int* pattern, int* counters, size_t length, int& begin, int& end)
 {
-	int patternLength = static_cast<int>(length);
 	int width = row.size();
 	bool isWhite = whiteFirst;
 	rowOffset = whiteFirst ? row.getNextUnset(rowOffset) : row.getNextSet(rowOffset);
@@ -119,16 +118,18 @@ UPCEANReader::DoFindGuardPattern(const BitArray& row, int rowOffset, bool whiteF
 			counters[counterPosition]++;
 		}
 		else {
-			if (counterPosition == patternLength - 1) {
+			if (counterPosition == length - 1) {
 				if (PatternMatchVariance(counters, pattern, length, MAX_INDIVIDUAL_VARIANCE) < MAX_AVG_VARIANCE) {
 					begin = patternStart;
 					end = x;
 					return ErrorStatus::NoError;
 				}
 				patternStart += counters[0] + counters[1];
-				std::copy(counters + 2, counters + length, counters);
-				counters[patternLength - 2] = 0;
-				counters[patternLength - 1] = 0;
+				for (size_t i = 2; i < length; ++i) {
+					counters[i - 2] = counters[i];
+				}
+				counters[length - 2] = 0;
+				counters[length - 1] = 0;
 				counterPosition--;
 			}
 			else {

@@ -32,28 +32,20 @@ class ByteArray;
 */
 class LuminanceSource
 {
-	int _width;
-	int _height;
-
-protected:
-	LuminanceSource(int width, int height) : _width(width), _height(height) {}
-	
 public:
 	virtual ~LuminanceSource();
 
 	/**
 	* @return The width of the bitmap.
 	*/
-	int width() const {
-		return _width;
-	}
+	virtual int width() const = 0;
 
 	/**
 	* @return The height of the bitmap.
 	*/
-	int height() const {
-		return _height;
-	}
+	virtual int height() const = 0;
+
+	virtual int rowBytes() const = 0;
 
 	/**
 	* Fetches one row of luminance data from the underlying platform's bitmap. Values range from
@@ -67,7 +59,7 @@ public:
 	*            Always use the returned object, and ignore the .length of the array.
 	* @return An array containing the luminance data.
 	*/
-	virtual ByteArray row(int y) const = 0;
+	virtual const uint8_t* getRow(int y, ByteArray& buffer, bool forceCopy = false) const = 0;
 
 	/**
 	* Fetches luminance data for the underlying bitmap. Values should be fetched using:
@@ -77,7 +69,7 @@ public:
 	*         larger than width * height bytes on some platforms. Do not modify the contents
 	*         of the result.
 	*/
-	virtual ByteArray matrix() const = 0;
+	virtual const uint8_t* getMatrix(ByteArray& buffer, bool forceCopy = false) const = 0;
 
 	/**
 	* @return Whether this subclass supports cropping.

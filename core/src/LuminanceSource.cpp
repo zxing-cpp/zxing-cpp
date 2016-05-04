@@ -18,6 +18,7 @@
 #include "ByteArray.h"
 
 #include <stdexcept>
+#include <algorithm>
 
 namespace ZXing {
 
@@ -34,26 +35,38 @@ class InvertedLuminanceSource : public LuminanceSource
 	std::shared_ptr<LuminanceSource> _src;
 
 public:
-	explicit InvertedLuminanceSource(const std::shared_ptr<LuminanceSource>& src) : LuminanceSource(src->width(), src->height()), _src(src) {}
+	explicit InvertedLuminanceSource(const std::shared_ptr<LuminanceSource>& src) : _src(src) {}
 
-	virtual ByteArray row(int y) const override
+	virtual const uint8_t* getRow(int y, ByteArray& outBytes, bool forceCopy) const override
 	{
-		auto r = _src->row(y);
-		int w = width();
-		for (int i = 0; i < w; i++) {
-			r[i] = 255 - r[i];
-		}
-		return r;
+		_src->getRow(y, outBytes, true);
+		std::transform(outBytes.begin(), outBytes.end(), outBytes.begin(), [](uint8_t b) { return 255 - b; });
+		return outBytes.data();
 	}
 
-	virtual ByteArray matrix() const override
+	virtual const uint8_t* getMatrix(ByteArray& outBytes, bool forceCopy) const override
 	{
-		auto m = _src->matrix();
-		int length = width() * height();
-		for (int i = 0; i < length; i++) {
-			m[i] = 255 - m[i];
-		}
-		return m;
+		_src->getMatrix(outBytes, true);
+		std::transform(outBytes.begin(), outBytes.end(), outBytes.begin(), [](uint8_t b) { return 255 - b; });
+		return outBytes.data();
+	}
+
+	virtual int width() const override
+	{
+		return _src->width();
+	}
+
+	/**
+	* @return The height of the bitmap.
+	*/
+	virtual int height() const override
+	{
+		return _src->height();
+	}
+
+	virtual int rowBytes() const override
+	{
+		return _src->rowBytes();
 	}
 
 	virtual bool canCrop() const override

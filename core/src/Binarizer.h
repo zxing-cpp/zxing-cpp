@@ -34,6 +34,7 @@ enum class ErrorStatus;
 */
 class Binarizer
 {
+protected:
 	std::shared_ptr<LuminanceSource> _source;
 
 public:
