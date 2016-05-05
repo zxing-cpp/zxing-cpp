@@ -17,6 +17,7 @@
 
 #include <cstdint>
 #include <vector>
+#include <string>
 
 namespace ZXing {
 
@@ -177,16 +178,7 @@ public:
 		return a._size == b._size && b._bits == b._bits;
 	}
 
-	//public String toString() {
-	//	StringBuilder result = new StringBuilder(size);
-	//	for (int i = 0; i < size; i++) {
-	//		if ((i & 0x07) == 0) {
-	//			result.append(' ');
-	//		}
-	//		result.append(get(i) ? 'X' : '.');
-	//	}
-	//	return result.toString();
-	//}
+	std::string toString() const;
 
 private:
 	void ensureCapacity(int size)

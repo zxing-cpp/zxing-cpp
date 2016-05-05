@@ -111,7 +111,7 @@ RowReader::PatternMatchVariance(const int *counters, const int* pattern, size_t 
 	if (total < patternLength) {
 		// If we don't even have one pixel per unit of bar width, assume this is too small
 		// to reliably match, so fail:
-		return std::numeric_limits<float>::infinity();
+		return std::numeric_limits<float>::max();
 	}
 
 	float unitBarWidth = (float)total / patternLength;
@@ -123,7 +123,7 @@ RowReader::PatternMatchVariance(const int *counters, const int* pattern, size_t 
 		float scaledPattern = pattern[x] * unitBarWidth;
 		float variance = counter > scaledPattern ? counter - scaledPattern : scaledPattern - counter;
 		if (variance > maxIndividualVariance) {
-			return std::numeric_limits<float>::infinity();
+			return std::numeric_limits<float>::max();
 		}
 		totalVariance += variance;
 	}

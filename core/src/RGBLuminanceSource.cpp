@@ -56,7 +56,12 @@ ConvertToGray(int r, int g, int b)
 		return static_cast<uint8_t>(r);
 	}
 	// Calculate luminance cheaply, favoring green.
-	return static_cast<uint8_t>((r + 2 * g + b) / 4);
+	//return static_cast<uint8_t>((r + 2 * g + b) / 4);
+
+	// .299R + 0.587G + 0.114B (YUV/YIQ for PAL and NTSC), 
+    // (306*R) >> 10 is approximately equal to R*0.299, and so on.
+    // 0x200 >> 10 is 0.5, it implements rounding.
+	return static_cast<uint8_t>((306 * r + 601 * g + 117 * b + 0x200) >> 10);
 }
 
 const uint8_t *

@@ -48,7 +48,7 @@ GlobalHistogramBinarizer::height() const
 
 
 // Return -1 on error
-static int EstimateBlackPoint(std::array<int, LUMINANCE_BUCKETS>& buckets)
+static int EstimateBlackPoint(const std::array<int, LUMINANCE_BUCKETS>& buckets)
 {
 	// Find the tallest peak in the histogram.
 	int maxBucketCount = 0;
@@ -122,10 +122,10 @@ GlobalHistogramBinarizer::getBlackRow(int y, BitArray& row) const
 	int blackPoint = EstimateBlackPoint(buckets);
 	if (blackPoint >= 0) {
 
-		int left = luminances[0] & 0xff;
-		int center = luminances[1] & 0xff;
+		int left = luminances[0];
+		int center = luminances[1];
 		for (int x = 1; x < width - 1; x++) {
-			int right = luminances[x + 1] & 0xff;
+			int right = luminances[x + 1];
 			// A simple -1 4 -1 box filter with a weight of 2.
 			int luminance = ((center * 4) - left - right) / 2;
 			if (luminance < blackPoint) {

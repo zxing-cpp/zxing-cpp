@@ -21,6 +21,7 @@
 #include "BinaryBitmap.h"
 #include "MultiFormatReader.h"
 #include "Result.h"
+#include "DecodeHints.h"
 
 #include <windows.h>
 #include <gdiplus.h>
@@ -72,6 +73,11 @@ BarcodeScanner::Scan(Gdiplus::Bitmap& bitmap)
 			BinaryBitmap binImg(binarizer);
 			MultiFormatReader reader;
 			result = reader.decode(binImg);
+			if (!result.isValid()) {
+				DecodeHints hints;
+				hints.put(DecodeHint::TRY_HARDER, true);
+				result = reader.decode(binImg, &hints);
+			}
 			bitmap.UnlockBits(&data);
 		}
 		catch (...)

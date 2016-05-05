@@ -42,18 +42,6 @@ Reader::Reader(const DecodeHints* hints)
 			_formats.insert(possibleFormats.begin(), possibleFormats.end());
 		}
 	}
-	if (_formats.empty()) {
-		_formats.insert({
-			BarcodeFormat::EAN_13,
-			BarcodeFormat::CODE_39,
-			BarcodeFormat::CODE_93,
-			BarcodeFormat::CODE_128,
-			BarcodeFormat::ITF,
-			BarcodeFormat::CODABAR,
-			BarcodeFormat::RSS_14,
-			BarcodeFormat::RSS_EXPANDED,
-		});
-	}
 }
 
 static void

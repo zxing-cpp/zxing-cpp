@@ -279,4 +279,19 @@ BitArray::getSubArray(int offset, int length, BitArray& result) const
 	}
 }
 
+std::string
+BitArray::toString() const
+{
+	std::string result;
+	result.reserve(_size);
+	for (int i = 0; i < _size; ++i) {
+		if ((i & 0x07) == 0) {
+			result.push_back(' ');
+		}
+		result.push_back(get(i) ? 'X' : '.');
+	}
+	return result;
+}
+
+
 } // ZXing
