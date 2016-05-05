@@ -191,10 +191,10 @@ public:
 private:
 	void ensureCapacity(int size)
 	{
-		_bits.reserve((size + 31) / 32);
+		_bits.resize((size + 31) / 32);
 	}
 
-	void shiftLeft(unsigned offset);
+	static void ShiftRight(unsigned offset, std::vector<uint32_t>& bits);
 };
 
 } // ZXing

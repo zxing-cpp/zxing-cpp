@@ -159,10 +159,24 @@ BitArray::appendBits(int value, int numBits)
 void
 BitArray::appendBitArray(const BitArray& other)
 {
-	int otherSize = other._size;
-	ensureCapacity(_size + otherSize);
-	for (int i = 0; i < otherSize; i++) {
-		appendBit(other.get(i));
+	if (_bits.empty()) {
+		*this = other;
+	}
+	else if (other._size > 0) {
+		unsigned offset = _bits.size() * 32 - _size;
+		if (offset > 0) {
+			auto buffer = other._bits;
+			_bits.back() = (_bits.back() & (0xffffffff >> offset)) | (buffer.front() << (32 - offset));
+			ShiftRight(offset, buffer);
+			size_t prevBlockSize = _bits.size();
+			_size += other._size;
+			_bits.resize((_size + 31) / 32);
+			std::copy_n(buffer.begin(), _bits.size() - prevBlockSize, _bits.begin() + prevBlockSize);
+		}
+		else {
+			_size += other._size;
+			_bits.insert(_bits.end(), other._bits.begin(), other._bits.end());
+		}
 	}
 }
 
@@ -210,21 +224,29 @@ BitArray::reverse()
 	std::transform(_bits.begin(), _bits.end(), _bits.begin(), [](uint32_t val) { return BitHacks::Reverse(val); });
 
 	// now correct the int's if the bit size isn't a multiple of 32
-	if (_size != _bits.size() * 32) {
-		shiftLeft(static_cast<unsigned>(_bits.size()) * 32 - _size);
+	unsigned offset = _bits.size() * 32 - _size;
+	if (offset > 0) {
+		ShiftRight(offset, _bits);
 	}
 }
 
+/**
+* I't matter of convention that "right" here makes sense.
+* If you see consider the array from left to right, the shift here is left-shift from we move bits from right to left.
+* However since the least significant bit is at right, it's more clear to see the array element starts from right, goes to left.
+* In that case, the shift is right-shift.
+*/
 void
-BitArray::shiftLeft(unsigned offset)
+BitArray::ShiftRight(unsigned offset, std::vector<uint32_t>& bits)
 {
-	unsigned rightOffset = 32 - offset;
-	for (size_t i = 0; i + 1 < _bits.size(); ++i) {
-		_bits[i] = (_bits[i] << offset) | (_bits[i + 1] >> rightOffset);
+	if (!bits.empty()) {
+		unsigned leftOffset = 32 - offset;
+		for (size_t i = 0; i + 1 < bits.size(); ++i) {
+			bits[i] = (bits[i] >> offset) | (bits[i + 1] << leftOffset);
+		}
+		bits.back() >>= offset;
 	}
-	_bits.back() <<= offset;
 }
-
 
 void
 BitArray::getSubArray(int offset, int length, BitArray& result) const
@@ -232,19 +254,28 @@ BitArray::getSubArray(int offset, int length, BitArray& result) const
 	if (offset < 0 || offset + length > _size) {
 		throw std::invalid_argument("Invalid range");
 	}
+	if (length < 0) {
+		length = _size - offset;
+	}
+	if (length == 0) {
+		result._size = 0;
+		result._bits.clear();
+	}
+	else {
+		result._size = length;
 
-	result._size = length;
+		int startIndex = offset / 32;
+		int endIndex = (offset + length + 31) / 32;
 
-	int startIndex = offset / 32;
-	int endIndex = (offset + length + 31) / 32;
-	
-	result._bits.resize(endIndex - startIndex);
-	std::copy_n(_bits.begin() + startIndex, result._bits.size(), result._bits.begin());
+		result._bits.resize(endIndex - startIndex);
+		std::copy_n(_bits.begin() + startIndex, result._bits.size(), result._bits.begin());
 
-	unsigned leftOffset = offset % 32;
-	if (leftOffset > 0) {
-		result.shiftLeft(leftOffset);
-		result._bits.resize((length + 31) / 32);
+		unsigned rightOffset = offset % 32;
+		if (rightOffset > 0) {
+			ShiftRight(rightOffset, result._bits);
+			result._bits.resize((length + 31) / 32);
+		}
+		result._bits.back() &= (0xffffffff >> (result._bits.size() * 32 - result._size));
 	}
 }
 
