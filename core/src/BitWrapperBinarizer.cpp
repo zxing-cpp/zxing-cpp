@@ -27,15 +27,19 @@ BitWrapperBinarizer::BitWrapperBinarizer(const BitMatrix& bits, bool whitePixels
 }
 
 BitWrapperBinarizer::BitWrapperBinarizer(const std::shared_ptr<const BitMatrix>& bits, bool whitePixels) :
-	_matrix(bits),
-	_left(0),
-	_top(0),
-	_width(bits->width()),
-	_height(bits->height()),
-	_inverted(whitePixels)
+	BitWrapperBinarizer(bits, 0, 0, bits->width(), bits->height(), whitePixels)
 {
 }
 
+BitWrapperBinarizer::BitWrapperBinarizer(const std::shared_ptr<const BitMatrix>& bits, int left, int top, int width, int height, bool inverted) :
+	_matrix(bits),
+	_left(left),
+	_top(top),
+	_width(width),
+	_height(height),
+	_inverted(inverted)
+{
+}
 int
 BitWrapperBinarizer::width() const
 {
@@ -78,7 +82,14 @@ BitWrapperBinarizer::getBlackMatrix(BitMatrix& matrix) const
 		matrix = *_matrix;
 	}
 	else {
-
+		matrix.init(_width, _height);
+		BitArray tmp;
+		BitArray row;
+		for (int y = 0; y < _height; ++y) {
+			_matrix->getRow(_top + y, tmp);
+			tmp.getSubArray(_left, _width, row);
+			matrix.setRow(y, row);
+		}
 	}
 	if (_inverted) {
 		matrix.flipAll();
@@ -95,9 +106,7 @@ BitWrapperBinarizer::canCrop() const
 std::shared_ptr<Binarizer>
 BitWrapperBinarizer::cropped(int left, int top, int width, int height) const
 {
-	auto result = std::make_shared<BitWrapperBinarizer>();
-	result->_bits
-	return createBinarizer(_source->cropped(left, top, width, height));
+	return std::make_shared<BitWrapperBinarizer>(_matrix, left + _left, top + _top, width, height, _inverted);
 }
 
 bool

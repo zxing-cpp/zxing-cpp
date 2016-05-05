@@ -30,6 +30,7 @@ class BitWrapperBinarizer : public Binarizer
 public:
 	BitWrapperBinarizer(const BitMatrix& bits, bool whitePixels);
 	BitWrapperBinarizer(const std::shared_ptr<const BitMatrix>& bits, bool whitePixels);
+	BitWrapperBinarizer(const std::shared_ptr<const BitMatrix>& bits, int left, int top, int width, int height, bool inverted);
 
 	virtual int width() const override;
 	virtual int height() const override;
@@ -42,8 +43,6 @@ public:
 	virtual std::shared_ptr<Binarizer> rotatedCCW45() const override;
 
 private:
-	BitWrapperBinarizer() {}
-
 	std::shared_ptr<const BitMatrix> _matrix;
 	int _left;
 	int _top;

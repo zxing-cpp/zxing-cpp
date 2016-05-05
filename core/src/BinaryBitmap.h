@@ -33,7 +33,7 @@ enum class ErrorStatus;
 class BinaryBitmap
 {
 public:
-	explicit BinaryBitmap(const std::shared_ptr<Binarizer>& binarizer);
+	explicit BinaryBitmap(const std::shared_ptr<const Binarizer>& binarizer);
 
 	/**
 	* @return The width of the bitmap.

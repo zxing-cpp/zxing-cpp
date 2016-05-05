@@ -1,4 +1,3 @@
-#pragma once
 /*
 * Copyright 2016 ZXing authors
 *
@@ -15,23 +14,37 @@
 * limitations under the License.
 */
 
-#include <string>
+#include "BarcodeFormat.h"
 
-namespace Gdiplus {
-	class Bitmap;
-}
+#include <type_traits>
 
 namespace ZXing {
 
-class BarcodeScanner
+const char * ToString(BarcodeFormat format)
 {
-public:
-	struct ScanResult {
-		std::string format;
-		std::string text;
+	static const char* FORMAT_STR[] = {
+		"AZTEC",
+		"CODABAR",
+		"CODE_39",
+		"CODE_93",
+		"CODE_128",
+		"DATA_MATRIX",
+		"EAN_8",
+		"EAN_13",
+		"ITF",
+		"MAXICODE",
+		"PDF_417",
+		"QR_CODE",
+		"RSS_14",
+		"RSS_EXPANDED",
+		"UPC_A",
+		"UPC_E",
+		"UPC_EAN_EXTENSION",
 	};
-	
-	static ScanResult Scan(Gdiplus::Bitmap& bitmap);
-};
+
+	static_assert(std::extent<decltype(FORMAT_STR)>::value == (int)BarcodeFormat::UPC_EAN_EXTENSION + 1, "FORMAT_STR array is out of sync with BarcodeFormat");
+
+	return FORMAT_STR[(int)format];
+}
 
 } // ZXing

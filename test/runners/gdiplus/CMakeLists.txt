@@ -23,8 +23,17 @@ include_directories (
 	${BARCODESCANNER_INCLUDE}
 )
 
+set (LOCAL_DEFINES
+	"GDIPVER=0x0110"
+)
+
 add_executable (ReaderTest
 	TestMain.cpp
+)
+	
+set_target_properties (ReaderTest PROPERTIES
+	COMPILE_DEFINITIONS "${LOCAL_DEFINES}"
+	LINK_FLAGS "/link setargv.obj"
 )
 
 target_link_libraries (ReaderTest BarcodeScanner)

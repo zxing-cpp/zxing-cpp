@@ -407,5 +407,11 @@ String::Iterator::read() const
 	return readCodePoint(m_ptr, m_end);
 }
 
+void
+String::appendLatin1(const std::string& latin1)
+{
+	auto p = reinterpret_cast<const uint8_t*>(latin1.data());
+	appendUtf32(std::vector<uint32_t>(p, p + latin1.size()));
+}
 
 } // ZXing

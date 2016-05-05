@@ -16,7 +16,14 @@
 
 #include "BarcodeScanner.h"
 #include "StringCodecs.h"
+#include "RGBLuminanceSource.h"
+#include "HybridBinarizer.h"
+#include "BinaryBitmap.h"
+#include "MultiFormatReader.h"
+#include "Result.h"
 
+#include <windows.h>
+#include <gdiplus.h>
 #include <mutex>
 
 namespace ZXing {
@@ -28,27 +35,56 @@ static void InitStringCodecs()
 }
 
 
-static std::shared_ptr<Binarizer> CreateLuminanceSource(const BitmapData& bitmap)
+static std::shared_ptr<LuminanceSource>
+CreateLuminanceSource(Gdiplus::Bitmap& bitmap, const Gdiplus::BitmapData& data)
 {
-	switch (bitmap.PixelFormat)
+	switch (bitmap.GetPixelFormat())
 	{
 	case PixelFormat24bppRGB:
-		return std::make_shared<RGBLuminanceSource>(bitmap.Scan0, bitmap.Width, bitmap.Height, bitmap.Stride, 3, 2, 1, 0);
+		return std::make_shared<RGBLuminanceSource>(data.Scan0, data.Width, data.Height, data.Stride, 3, 2, 1, 0);
 	case PixelFormat32bppARGB:
 	case PixelFormat32bppRGB:
-		return std::make_shared<RGBLuminanceSource>(bitmap.Scan0, bitmap.Width, bitmap.Height, bitmap.Stride, 4, 2, 1, 0);
+		return std::make_shared<RGBLuminanceSource>(data.Scan0, data.Width, data.Height, data.Stride, 4, 2, 1, 0);
 	}
 	throw std::invalid_argument("Unsupported format");
 }
 
+static std::shared_ptr<Binarizer>
+CreateBinarizer(Gdiplus::Bitmap& bitmap, const Gdiplus::BitmapData& data)
+{
+	return std::make_shared<HybridBinarizer>(CreateLuminanceSource(bitmap, data));
+}
+
 
 BarcodeScanner::ScanResult
-BarcodeScanner::Scan(const Gdiplus::Bitmap& bitmap)
+BarcodeScanner::Scan(Gdiplus::Bitmap& bitmap)
 {
 	static std::once_flag s_once;
 	std::call_once(s_once, InitStringCodecs);
 
+	Result result(ErrorStatus::NotFound);
+	{
+		Gdiplus::BitmapData data;
+		bitmap.LockBits(nullptr, Gdiplus::ImageLockModeRead, bitmap.GetPixelFormat(), &data);
+		try
+		{
+			auto binarizer = CreateBinarizer(bitmap, data);
+			BinaryBitmap binImg(binarizer);
+			MultiFormatReader reader;
+			result = reader.decode(binImg);
+			bitmap.UnlockBits(&data);
+		}
+		catch (...)
+		{
+			bitmap.UnlockBits(&data);
+			throw;
+		}
+	}
 
+	if (result.isValid()) {
+		return{ ToString(result.format()), result.text().toStdString() };
+	}
+	return ScanResult();
 }
 
 } // ZXing

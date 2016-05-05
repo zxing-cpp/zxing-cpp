@@ -59,7 +59,7 @@ public:
 	* @return true iff bit i is set
 	*/
 	bool get(int i) const {
-		return (_bits[i / 32] & (1 << (i & 0x1F))) != 0;
+		return (_bits.at(i / 32) & (1 << (i & 0x1F))) != 0;
 	}
 
 	/**
@@ -68,7 +68,7 @@ public:
 	* @param i bit to set
 	*/
 	void set(int i) {
-		_bits[i / 32] |= 1 << (i & 0x1F);
+		_bits.at(i / 32) |= 1 << (i & 0x1F);
 	}
 
 	/**
@@ -77,7 +77,7 @@ public:
 	* @param i bit to set
 	*/
 	void flip(int i) {
-		_bits[i / 32] ^= 1 << (i & 0x1F);
+		_bits.at(i / 32) ^= 1 << (i & 0x1F);
 	}
 
 	void flipAll();

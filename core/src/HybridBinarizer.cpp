@@ -34,7 +34,7 @@ static const int BLOCK_SIZE_MASK = BLOCK_SIZE - 1;   // ...0011...11
 static const int MINIMUM_DIMENSION = BLOCK_SIZE * 5;
 static const int MIN_DYNAMIC_RANGE = 24;
 
-HybridBinarizer::HybridBinarizer(const std::shared_ptr<LuminanceSource>& source) : GlobalHistogramBinarizer(source)
+HybridBinarizer::HybridBinarizer(const std::shared_ptr<const LuminanceSource>& source) : GlobalHistogramBinarizer(source)
 {
 }
 
@@ -203,7 +203,7 @@ HybridBinarizer::getBlackMatrix(BitMatrix& outMatrix) const
 }
 
 std::shared_ptr<Binarizer>
-HybridBinarizer::createBinarizer(const std::shared_ptr<LuminanceSource>& source) const
+HybridBinarizer::createBinarizer(const std::shared_ptr<const LuminanceSource>& source) const
 {
 	return std::make_shared<HybridBinarizer>(source);
 }

@@ -35,10 +35,10 @@ class LuminanceSource;
 class GlobalHistogramBinarizer : public Binarizer
 {
 protected:
-	std::shared_ptr<LuminanceSource> _source;
+	std::shared_ptr<const LuminanceSource> _source;
 
 public:
-	GlobalHistogramBinarizer(const std::shared_ptr<LuminanceSource>& source);
+	GlobalHistogramBinarizer(const std::shared_ptr<const LuminanceSource>& source);
 
 	virtual int width() const override;
 	virtual int height() const override;
@@ -50,7 +50,7 @@ public:
 	virtual std::shared_ptr<Binarizer> rotatedCCW90() const override;
 	virtual std::shared_ptr<Binarizer> rotatedCCW45() const override;
 
-	virtual std::shared_ptr<Binarizer> createBinarizer(const std::shared_ptr<LuminanceSource>& source) const;
+	virtual std::shared_ptr<Binarizer> createBinarizer(const std::shared_ptr<const LuminanceSource>& source) const;
 };
 
 } // ZXing

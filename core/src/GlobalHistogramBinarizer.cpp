@@ -30,7 +30,7 @@ static const int LUMINANCE_SHIFT = 8 - LUMINANCE_BITS;
 static const int LUMINANCE_BUCKETS = 1 << LUMINANCE_BITS;
 
 
-GlobalHistogramBinarizer::GlobalHistogramBinarizer(const std::shared_ptr<LuminanceSource>& source) : _source(source)
+GlobalHistogramBinarizer::GlobalHistogramBinarizer(const std::shared_ptr<const LuminanceSource>& source) : _source(source)
 {
 }
 
@@ -216,7 +216,7 @@ GlobalHistogramBinarizer::rotatedCCW45() const
 }
 
 std::shared_ptr<Binarizer>
-GlobalHistogramBinarizer::createBinarizer(const std::shared_ptr<LuminanceSource>& source) const
+GlobalHistogramBinarizer::createBinarizer(const std::shared_ptr<const LuminanceSource>& source) const
 {
 	return std::make_shared<GlobalHistogramBinarizer>(source);
 }

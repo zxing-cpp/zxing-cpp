@@ -113,8 +113,11 @@ EAN13Reader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resu
 	}
 	int middleRangeBegin, middleRangeEnd;
 	status = FindGuardPattern(row, rowOffset, true, MIDDLE_PATTERN, middleRangeBegin, middleRangeEnd);
-	rowOffset = middleRangeEnd;
+	if (StatusIsError(status)) {
+		return status;
+	}
 
+	rowOffset = middleRangeEnd;
 	for (int x = 0; x < 6 && rowOffset < end; x++) {
 		int bestMatch = 0;
 		status = DecodeDigit(row, rowOffset, L_PATTERNS, counters, bestMatch);

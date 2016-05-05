@@ -159,8 +159,9 @@ UPCEANReader::FindStartGuardPattern(const BitArray& row, int& begin, int& end)
 	while (!foundStart) {
 		std::fill(counters.begin(), counters.end(), 0);
 		auto status = DoFindGuardPattern(row, nextStart, false, START_END_PATTERN.data(), counters.data(), START_END_PATTERN.size(), start, nextStart);
-		if (StatusIsError(status))
+		if (StatusIsError(status)) {
 			return status;
+		}
 		// Make sure there is a quiet zone at least as big as the start pattern before the barcode.
 		// If this check would run off the left edge of the image, do not accept this barcode,
 		// as it is very likely to be a false positive.

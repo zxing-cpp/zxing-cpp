@@ -76,5 +76,7 @@ enum class BarcodeFormat : int
 	UPC_EAN_EXTENSION,
 };
 
+const char* ToString(BarcodeFormat format);
+
 } // ZXing
 

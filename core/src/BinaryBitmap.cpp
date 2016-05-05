@@ -25,7 +25,7 @@ namespace ZXing {
 class BinaryBitmap::Private
 {
 public:
-	std::shared_ptr<Binarizer> binarizer;
+	std::shared_ptr<const Binarizer> binarizer;
 	BitMatrix matrix;
 	std::once_flag matrixOnce;
 	ErrorStatus matrixStatus;
@@ -37,7 +37,7 @@ public:
 };
 
 
-BinaryBitmap::BinaryBitmap(const std::shared_ptr<Binarizer>& binarizer)
+BinaryBitmap::BinaryBitmap(const std::shared_ptr<const Binarizer>& binarizer)
 {
 	if (binarizer == nullptr) {
 		throw std::invalid_argument("Binarizer must be non-null.");

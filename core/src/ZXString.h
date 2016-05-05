@@ -112,6 +112,8 @@ public:
 	void appendUtf32(const uint32_t* utf32, int len);
 	void appendUtf32(const std::vector<uint32_t>& utf32);
 
+	void appendLatin1(const std::string& str);
+
 	void prependUtf8(char c)									{ m_utf8.insert(m_utf8.begin(), c); }
 
 	const char* utf8() const { return m_utf8.c_str(); }
@@ -124,6 +126,8 @@ public:
 	{
 		return m_utf8;
 	}
+
+	static String FromLatin1(const std::string& latin1)			{ String s; s.appendLatin1(latin1); return s; }
 
 	bool operator==(const String& other) const
 	{

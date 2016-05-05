@@ -243,8 +243,9 @@ UPCEANExtensionSupport::DecodeRow(int rowNumber, const BitArray& row, int rowOff
 {
 	int extStartRangeBegin, extStartRangeEnd;
 	auto status = UPCEANReader::FindGuardPattern(row, rowOffset, false, EXTENSION_START_PATTERN, extStartRangeBegin, extStartRangeEnd);
-	if (StatusIsError(status))
+	if (StatusIsError(status)) {
 		return Result(status);
+	}
 	Result result = UPCEANExtension5Support::DecodeRow(rowNumber, row, extStartRangeBegin, extStartRangeEnd);
 	if (!result.isValid()) {
 		result = UPCEANExtension2Support::DecodeRow(rowNumber, row, extStartRangeBegin, extStartRangeEnd);
