@@ -68,8 +68,9 @@ CreateBinaryBitmap(Gdiplus::Bitmap& bitmap)
 	bitmap.LockBits(nullptr, Gdiplus::ImageLockModeRead, bitmap.GetPixelFormat(), &data);
 	try
 	{
-		return std::make_shared<HybridBinarizer>(CreateLuminanceSource(bitmap, data));
+		auto result = std::make_shared<HybridBinarizer>(CreateLuminanceSource(bitmap, data));
 		bitmap.UnlockBits(&data);
+		return result;
 	}
 	catch (...)
 	{
