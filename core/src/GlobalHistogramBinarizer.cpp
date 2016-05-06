@@ -30,8 +30,16 @@ static const int LUMINANCE_SHIFT = 8 - LUMINANCE_BITS;
 static const int LUMINANCE_BUCKETS = 1 << LUMINANCE_BITS;
 
 
-GlobalHistogramBinarizer::GlobalHistogramBinarizer(const std::shared_ptr<const LuminanceSource>& source) : _source(source)
+GlobalHistogramBinarizer::GlobalHistogramBinarizer(const std::shared_ptr<const LuminanceSource>& source, bool pureBarcode) :
+	_source(source),
+	_pureBarcode(pureBarcode)
 {
+}
+
+bool
+GlobalHistogramBinarizer::isPureBarcode() const
+{
+	return _pureBarcode;
 }
 
 int
@@ -191,10 +199,10 @@ GlobalHistogramBinarizer::canCrop() const
 	return _source->canCrop();
 }
 
-std::shared_ptr<Binarizer>
+std::shared_ptr<BinaryBitmap>
 GlobalHistogramBinarizer::cropped(int left, int top, int width, int height) const
 {
-	return createBinarizer(_source->cropped(left, top, width, height));
+	return newInstance(_source->cropped(left, top, width, height));
 }
 
 bool
@@ -203,22 +211,16 @@ GlobalHistogramBinarizer::canRotate() const
 	return _source->canRotate();
 }
 
-std::shared_ptr<Binarizer>
-GlobalHistogramBinarizer::rotatedCCW90() const
+std::shared_ptr<BinaryBitmap>
+GlobalHistogramBinarizer::rotated(int degreeCW) const
 {
-	return createBinarizer(_source->rotatedCCW90());
+	return newInstance(_source->rotated(degreeCW));
 }
 
-std::shared_ptr<Binarizer>
-GlobalHistogramBinarizer::rotatedCCW45() const
+std::shared_ptr<BinaryBitmap>
+GlobalHistogramBinarizer::newInstance(const std::shared_ptr<const LuminanceSource>& source) const
 {
-	return createBinarizer(_source->rotatedCCW45());
-}
-
-std::shared_ptr<Binarizer>
-GlobalHistogramBinarizer::createBinarizer(const std::shared_ptr<const LuminanceSource>& source) const
-{
-	return std::make_shared<GlobalHistogramBinarizer>(source);
+	return std::make_shared<GlobalHistogramBinarizer>(source, _pureBarcode);
 }
 
 

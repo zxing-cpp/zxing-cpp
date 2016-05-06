@@ -31,11 +31,12 @@ namespace RSS { class Pair; }
 class RSS14Reader : public RowReader
 {
 public:
-	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) override;
+	virtual Result decodeRow(int rowNumber, const BitArray& row) const override;
 
 private:
-	std::list<RSS::Pair> _possibleLeftPairs;
-	std::list<RSS::Pair> _possibleRightPairs;
+	// TODO: This prevents the whole engine to be thread-safe
+	mutable std::list<RSS::Pair> _possibleLeftPairs;
+	mutable std::list<RSS::Pair> _possibleRightPairs;
 };
 
 } // OneD

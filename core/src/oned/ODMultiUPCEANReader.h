@@ -23,6 +23,7 @@
 
 namespace ZXing {
 
+class DecodeHints;
 enum class BarcodeFormat;
 
 namespace OneD {
@@ -39,12 +40,13 @@ class UPCEANReader;
 class MultiUPCEANReader : public RowReader
 {
 public:
-	MultiUPCEANReader(const std::unordered_set<BarcodeFormat> &formats);
+	explicit MultiUPCEANReader(const DecodeHints& hints);
 
-	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) override;
+	virtual Result decodeRow(int rowNumber, const BitArray& row) const override;
 
 private:
-	std::vector<std::shared_ptr<UPCEANReader>> _readers;
+	std::vector<std::shared_ptr<const UPCEANReader>> _readers;
+	std::unordered_set<BarcodeFormat> _formats;
 };
 
 } // OneD

@@ -303,8 +303,16 @@ ITFReader::DecodeEnd(const BitArray& row_, int narrowLineWidth, int& patternStar
 	return status;
 }
 
+ITFReader::ITFReader(const DecodeHints& hints) :
+	_allowedLengths(hints.allowedLengths())
+{
+	if (_allowedLengths.empty()) {
+		_allowedLengths.assign(DEFAULT_ALLOWED_LENGTHS.begin(), DEFAULT_ALLOWED_LENGTHS.end());
+	}
+}
+
 Result
-ITFReader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints)
+ITFReader::decodeRow(int rowNumber, const BitArray& row) const
 {
 	// Find out where the Middle section (payload) starts & ends
 	int narrowLineWidth = -1;
@@ -324,20 +332,12 @@ ITFReader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hint
 		return Result(status);
 	}
 
-	std::vector<int> allowedLengths;
-	if (hints != nullptr) {
-		allowedLengths = hints->getIntegerList(DecodeHint::ALLOWED_LENGTHS);
-	}
-	if (allowedLengths.empty()) {
-		allowedLengths.assign(DEFAULT_ALLOWED_LENGTHS.begin(), DEFAULT_ALLOWED_LENGTHS.end());
-	}
-
 	// To avoid false positives with 2D barcodes (and other patterns), make
 	// an assumption that the decoded string must be a 'standard' length if it's short
 	int length = static_cast<int>(result.length());
 	bool lengthOK = false;
 	int maxAllowedLength = 0;
-	for (int allowedLength : allowedLengths) {
+	for (int allowedLength : _allowedLengths) {
 		if (length == allowedLength) {
 			lengthOK = true;
 			break;

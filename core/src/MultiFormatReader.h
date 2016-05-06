@@ -15,11 +15,15 @@
 * limitations under the License.
 */
 
-#include "Reader.h"
+#include "DecodeHints.h"
 #include <vector>
 #include <memory>
 
 namespace ZXing {
+
+class Result;
+class Reader;
+class BinaryBitmap;
 
 /**
 * MultiFormatReader is a convenience class and the main entry point into the library for most uses.
@@ -29,18 +33,15 @@ namespace ZXing {
 * @author Sean Owen
 * @author dswitkin@google.com (Daniel Switkin)
 */
-class MultiFormatReader : public Reader
+class MultiFormatReader
 {
 public:
-	/**
-	* Construct a reader.
-	// Only POSSIBLE_FORMATS is read here, and the same hint is ignored in decode().
-	*/
-	explicit MultiFormatReader(const DecodeHints* hints = nullptr);
+	explicit MultiFormatReader(const DecodeHints& hints);
 
-	virtual Result decode(const BinaryBitmap& image, const DecodeHints* hints = nullptr) const override;
+	Result read(const BinaryBitmap& image) const;
 
 private:
+	DecodeHints _hints;
 	std::vector<std::shared_ptr<Reader>> _readers;
 };
 

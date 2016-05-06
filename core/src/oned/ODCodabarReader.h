@@ -19,6 +19,8 @@
 
 namespace ZXing {
 
+class DecodeHints;
+
 namespace OneD {
 
 /**
@@ -30,7 +32,11 @@ namespace OneD {
 class CodabarReader : public RowReader
 {
 public:
-	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) override;
+	explicit CodabarReader(const DecodeHints& hints);
+	virtual Result decodeRow(int rowNumber, const BitArray& row) const override;
+
+private:
+	bool _shouldReturnStartEnd;
 };
 
 } // OneD

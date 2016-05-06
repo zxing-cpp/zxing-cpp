@@ -39,10 +39,10 @@ namespace ZXing {
 class HybridBinarizer : public GlobalHistogramBinarizer
 {
 public:
-	HybridBinarizer(const std::shared_ptr<const LuminanceSource>& source);
+	explicit HybridBinarizer(const std::shared_ptr<const LuminanceSource>& source, bool pureBarcode = false);
 
 	virtual ErrorStatus getBlackMatrix(BitMatrix& outMatrix) const override;
-	virtual std::shared_ptr<Binarizer> createBinarizer(const std::shared_ptr<const LuminanceSource>& source) const override;
+	virtual std::shared_ptr<BinaryBitmap> newInstance(const std::shared_ptr<const LuminanceSource>& source) const override;
 };
 
 } // ZXing

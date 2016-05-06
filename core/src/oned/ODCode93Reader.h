@@ -29,7 +29,7 @@ namespace OneD {
 class Code93Reader : public RowReader
 {
 public:
-	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) override;
+	virtual Result decodeRow(int rowNumber, const BitArray& row) const override;
 };
 
 } // OneD

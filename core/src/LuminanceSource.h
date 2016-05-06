@@ -98,15 +98,7 @@ public:
 	*
 	* @return A rotated version of this object.
 	*/
-	virtual std::shared_ptr<LuminanceSource> rotatedCCW90() const;
-
-	/**
-	* Returns a new object with rotated image data by 45 degrees counterclockwise.
-	* Only callable if {@link #isRotateSupported()} is true.
-	*
-	* @return A rotated version of this object.
-	*/
-	virtual std::shared_ptr<LuminanceSource> rotatedCCW45() const;
+	virtual std::shared_ptr<LuminanceSource> rotated(int degreeCW) const;
 
 	//@Override
 	//	public final String toString() {

@@ -763,7 +763,7 @@ ConstructResult(const std::list<ExpandedPair>& pairs)
 }
 
 Result
-RSSExpandedReader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints)
+RSSExpandedReader::decodeRow(int rowNumber, const BitArray& row) const
 {
 	// Rows can start with even pattern in case in prev rows there where odd number of patters.
 	// So lets try twice

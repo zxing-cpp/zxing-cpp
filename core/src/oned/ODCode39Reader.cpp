@@ -222,10 +222,15 @@ static int IndexOf(const char* str, char c)
 	return s != nullptr ? (s - str) : -1;
 }
 
-Result
-Code39Reader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints)
+Code39Reader::Code39Reader(const DecodeHints& hints, bool extendedMode) :
+	_usingCheckDigit(hints.shouldAssumeCode39CheckDigit()),
+	_extendedMode(extendedMode)
 {
+}
 
+Result
+Code39Reader::decodeRow(int rowNumber, const BitArray& row) const
+{
 	CounterContainer theCounters = {};
 	std::string result;
 	result.reserve(20);
@@ -277,8 +282,7 @@ Code39Reader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* h
 		return Result(ErrorStatus::NotFound);
 	}
 
-	bool usingCheckDigit = hints != nullptr && hints->getFlag(DecodeHint::ASSUME_CODE_39_CHECK_DIGIT);
-	if (usingCheckDigit) {
+	if (_usingCheckDigit) {
 		int max = static_cast<int>(result.length()) - 1;
 		int total = 0;
 		for (int i = 0; i < max; i++) {

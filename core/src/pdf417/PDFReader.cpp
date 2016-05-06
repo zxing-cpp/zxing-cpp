@@ -56,10 +56,10 @@ static int GetMaxCodewordWidth(const std::array<Nullable<ResultPoint>, 8>& p)
 					std::max(GetMaxWidth(p[1], p[5]), GetMaxWidth(p[7], p[3]) * Common::MODULES_IN_CODEWORD / Common::MODULES_IN_STOP_PATTERN));
 }
 
-ErrorStatus DoDecode(const BinaryBitmap& image, const DecodeHints* hints, bool multiple, std::list<Result>& results)
+ErrorStatus DoDecode(const BinaryBitmap& image, bool multiple, std::list<Result>& results)
 {
 	Detector::Result detectorResult;
-	ErrorStatus status = Detector::Detect(image, hints, multiple, detectorResult);
+	ErrorStatus status = Detector::Detect(image, multiple, detectorResult);
 	if (StatusIsError(status)) {
 		return status;
 	}
@@ -113,10 +113,10 @@ ErrorStatus DoDecode(const BinaryBitmap& image, const DecodeHints* hints, bool m
 //}
 
 Result
-Reader::decode(const BinaryBitmap& image, const DecodeHints* hints) const
+Reader::decode(const BinaryBitmap& image) const
 {
 	std::list<Result> results;
-	ErrorStatus status = DoDecode(image, hints, false, results);
+	ErrorStatus status = DoDecode(image, false, results);
 	if (StatusIsOK(status)) {
 		return results.front();
 	}

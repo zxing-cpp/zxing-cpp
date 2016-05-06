@@ -19,9 +19,11 @@
 
 #include <string>
 #include <array>
+#include <vector>
 
 namespace ZXing {
 
+class DecodeHints;
 enum class BarcodeFormat;
 enum class ErrorStatus;
 
@@ -38,7 +40,7 @@ namespace OneD {
 class UPCEANReader : public RowReader
 {
 public:
-	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) override;
+	virtual Result decodeRow(int rowNumber, const BitArray& row) const override;
 
 	/**
 	* <p>Like {@link #decodeRow(int, BitArray, java.util.Map)}, but
@@ -54,9 +56,10 @@ public:
 	* @throws ChecksumException if a potential barcode is found but does not pass its checksum
 	* @throws FormatException if a potential barcode is found but format is invalid
 	*/
-	virtual Result decodeRow(int rowNumber, const BitArray& row, int startGuardBegin, int startGuardEnd, const DecodeHints* hints);
+	virtual Result decodeRow(int rowNumber, const BitArray& row, int startGuardBegin, int startGuardEnd) const;
 
 protected:
+	UPCEANReader(const DecodeHints& hints);
 
 	/**
 	* Get the format of this decoder.
@@ -72,17 +75,17 @@ protected:
 	* @param resultString {@link StringBuilder} to append decoded chars to
 	* @throws NotFoundException if decoding could not complete successfully
 	*/
-	virtual ErrorStatus decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) = 0;
+	virtual ErrorStatus decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const = 0;
 
 	/**
 	* @param s string of digits to check
 	* @return {@link #checkStandardUPCEANChecksum(CharSequence)}
 	* @throws FormatException if the string does not contain only digits
 	*/
-	virtual	ErrorStatus checkChecksum(const std::string& s);
+	virtual	ErrorStatus checkChecksum(const std::string& s) const;
 
 
-	virtual ErrorStatus decodeEnd(const BitArray& row, int endStart, int& begin, int& end);
+	virtual ErrorStatus decodeEnd(const BitArray& row, int endStart, int& begin, int& end) const;
 
 public:
 	static ErrorStatus FindStartGuardPattern(const BitArray& row, int& begin, int& end);
@@ -135,6 +138,8 @@ public:
 	static const std::array<std::array<int, 4>, 20> L_AND_G_PATTERNS;
 
 private:
+	std::vector<int> _allowedExtensions;
+
 	static ErrorStatus FindGuardPattern(const BitArray& row, int rowOffset, bool whiteFirst, const int* pattern, size_t length, int& begin, int& end);
 	static ErrorStatus DecodeDigit(const BitArray& row, int rowOffset, const std::array<int, 4>* patterns, size_t patternCount, std::array<int, 4>& counters, int &resultOffset);
 	static ErrorStatus DoFindGuardPattern(const BitArray& row, int rowOffset, bool whiteFirst, const int* pattern, int* counters, size_t length, int& begin, int& end);

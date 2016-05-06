@@ -164,7 +164,7 @@ DecodeKanjiSegment(BitSource& bits, int count, String& result)
 }
 
 static ErrorStatus
-DecodeByteSegment(BitSource& bits, int count, CharacterSet charset, const DecodeHints* hints, String& result, std::list<ByteArray>& byteSegments)
+DecodeByteSegment(BitSource& bits, int count, CharacterSet currentCharset, const std::string& hintedCharset, String& result, std::list<ByteArray>& byteSegments)
 {
 	// Don't crash trying to read more bits than we have available.
 	if (8 * count > bits.available()) {
@@ -176,25 +176,22 @@ DecodeByteSegment(BitSource& bits, int count, CharacterSet charset, const Decode
 		readBytes[i] = static_cast<uint8_t>(bits.readBits(8));
 	}
 	const char* encoding = nullptr;
-	if (charset == CharacterSet::Unknown) {
+	if (currentCharset == CharacterSet::Unknown) {
 		// The spec isn't clear on this mode; see
 		// section 6.4.5: t does not say which encoding to assuming
 		// upon decoding. I have seen ISO-8859-1 used as well as
 		// Shift_JIS -- without anything like an ECI designator to
 		// give a hint.
-		if (hints != nullptr) {
-			auto encoding = hints->getString(DecodeHint::CHARACTER_SET);
-			if (!encoding.empty())
-			{
-				charset = CharacterSetECI::CharsetFromName(encoding.utf8());
-			}
-		}
-		if (charset == CharacterSet::Unknown)
+		if (!hintedCharset.empty())
 		{
-			charset = StringCodecs::GuessEncoding(readBytes.data(), readBytes.length());
+			currentCharset = CharacterSetECI::CharsetFromName(hintedCharset.c_str());
+		}
+		if (currentCharset == CharacterSet::Unknown)
+		{
+			currentCharset = StringCodecs::GuessEncoding(readBytes.data(), readBytes.length());
 		}
 	}
-	result += StringCodecs::Instance()->toUnicode(readBytes.data(), readBytes.length(), charset);
+	result += StringCodecs::Instance()->toUnicode(readBytes.data(), readBytes.length(), currentCharset);
 	byteSegments.push_back(readBytes);
 	return ErrorStatus::NoError;
 }
@@ -337,7 +334,7 @@ ParseECIValue(BitSource& bits, int &outValue)
 * <p>See ISO 18004:2006, 6.4.3 - 6.4.7</p>
 */
 static ErrorStatus
-DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionLevel ecLevel, const DecodeHints* hints, DecoderResult& decodeResult)
+DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionLevel ecLevel, const std::string& hintedCharset, DecoderResult& decodeResult)
 {
 	BitSource bits(bytes);
 	String result;
@@ -411,7 +408,7 @@ DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionL
 							status = DecodeAlphanumericSegment(bits, count, fc1InEffect, result);
 						}
 						else if (mode == DecodeMode::BYTE) {
-							status = DecodeByteSegment(bits, count, currentCharset, hints, result, byteSegments);
+							status = DecodeByteSegment(bits, count, currentCharset, hintedCharset, result, byteSegments);
 						}
 						else if (mode == DecodeMode::KANJI) {
 							status = DecodeKanjiSegment(bits, count, result);
@@ -447,7 +444,7 @@ DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionL
 
 
 static ErrorStatus
-DoDecode(const BitMatrix& bits, const Version& version, const FormatInformation& formatInfo, const DecodeHints* hints, DecoderResult& result)
+DoDecode(const BitMatrix& bits, const Version& version, const FormatInformation& formatInfo, const std::string& hintedCharset, DecoderResult& result)
 {
 	auto ecLevel = formatInfo.errorCorrectionLevel();
 
@@ -487,7 +484,7 @@ DoDecode(const BitMatrix& bits, const Version& version, const FormatInformation&
 	}
 
 	// Decode the contents of that stream of bytes
-	return DecodeBitStream(resultBytes, version, ecLevel, hints, result);
+	return DecodeBitStream(resultBytes, version, ecLevel, hintedCharset, result);
 }
 
 static void
@@ -499,7 +496,7 @@ ReMask(BitMatrix& bitMatrix, const FormatInformation& formatInfo)
 
 
 ErrorStatus
-Decoder::Decode(const BitMatrix& bits_, const DecodeHints* hints, DecoderResult& result)
+Decoder::Decode(const BitMatrix& bits_, const std::string& hintedCharset, DecoderResult& result)
 {
 	BitMatrix bits = bits_;
 	// Construct a parser and read version, error-correction level
@@ -510,7 +507,7 @@ Decoder::Decode(const BitMatrix& bits_, const DecodeHints* hints, DecoderResult&
 	if (StatusIsOK(status))
 	{
 		ReMask(bits, formatInfo);
-		status = DoDecode(bits, *version, formatInfo, hints, result);
+		status = DoDecode(bits, *version, formatInfo, hintedCharset, result);
 		if (StatusIsOK(status)) {
 			return status;
 		}
@@ -535,7 +532,7 @@ Decoder::Decode(const BitMatrix& bits_, const DecodeHints* hints, DecoderResult&
 		bits.mirror();
 
 		ReMask(bits, formatInfo);
-		status = DoDecode(bits, *version, formatInfo, hints, result);
+		status = DoDecode(bits, *version, formatInfo, hintedCharset, result);
 		if (StatusIsOK(status))
 		{
 			result.setExtra(std::make_shared<DecoderMetadata>(true));

@@ -232,11 +232,14 @@ DecodeCode(const BitArray& row, std::vector<int>& counters, int rowOffset, int& 
 	return ErrorStatus::NotFound;
 }
 
-Result
-Code128Reader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints)
+Code128Reader::Code128Reader(const DecodeHints& hints) :
+	_convertFNC1(hints.shouldAssumeGS1())
 {
-	bool convertFNC1 = hints != nullptr && hints->getFlag(DecodeHint::ASSUME_GS1);
+}
 
+Result
+Code128Reader::decodeRow(int rowNumber, const BitArray& row) const
+{
 	int patternStart, patternEnd, startCode;
 	ErrorStatus status = FindStartPattern(row, patternStart, patternEnd, startCode);
 	if (StatusIsError(status)) {
@@ -350,7 +353,7 @@ Code128Reader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* 
 				}
 				switch (code) {
 				case CODE_FNC_1:
-					if (convertFNC1) {
+					if (_convertFNC1) {
 						if (result.empty()) {
 							// GS1 specification 5.4.3.7. and 5.4.6.4. If the first char after the start code
 							// is FNC1 then this is GS1-128. We add the symbology identifier.
@@ -411,7 +414,7 @@ Code128Reader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* 
 				}
 				switch (code) {
 				case CODE_FNC_1:
-					if (convertFNC1) {
+					if (_convertFNC1) {
 						if (result.empty()) {
 							// GS1 specification 5.4.3.7. and 5.4.6.4. If the first char after the start code
 							// is FNC1 then this is GS1-128. We add the symbology identifier.
@@ -469,7 +472,7 @@ Code128Reader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* 
 				}
 				switch (code) {
 				case CODE_FNC_1:
-					if (convertFNC1) {
+					if (_convertFNC1) {
 						if (result.empty()) {
 							// GS1 specification 5.4.3.7. and 5.4.6.4. If the first char after the start code
 							// is FNC1 then this is GS1-128. We add the symbology identifier.

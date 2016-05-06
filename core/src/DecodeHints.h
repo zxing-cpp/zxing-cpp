@@ -15,78 +15,104 @@
 * limitations under the License.
 */
 
-#include <map>
 #include <memory>
-#include <functional>
 #include <vector>
+#include <string>
 
 namespace ZXing {
 
 class String;
 enum class BarcodeFormat;
-typedef std::function<void(float x, float y)> PointCallback;
+//typedef std::function<void(float x, float y)> PointCallback;
 
-enum class DecodeHint
+class DecodeHints
 {
-	/**
-	* Unspecified, application-specific hint. Maps to an unspecified {@link Object}.
-	*/
-	OTHER, //(Object.class),
+public:
+	DecodeHints() {};
 
-	/**
-	* Image is a pure monochrome image of a barcode. Doesn't matter what it maps to;
-	* use {@link Boolean#TRUE}.
-	*/
-	PURE_BARCODE, //(Void.class),
-
-	/**
-	* Image is known to be of one of a few possible formats.
-	* Maps to a {@link List} of {@link BarcodeFormat}s.
-	*/
-	POSSIBLE_FORMATS, //(List.class),
+	std::vector<BarcodeFormat> possibleFormats() const;
+	void setPossibleFormats(const std::vector<BarcodeFormat>& formats);
 
 	/**
 	* Spend more time to try to find a barcode; optimize for accuracy, not speed.
-	* Doesn't matter what it maps to; use {@link Boolean#TRUE}.
 	*/
-	TRY_HARDER, //(Void.class),
+	bool shouldTryHarder() const {
+		return (m_flags & TRY_HARDER) != 0;
+	}
+
+	void setShouldTryHarder(bool v) {
+		setFlag(TRY_HARDER, v);
+	}
 
 	/**
-	* Specifies what character encoding to use when decoding, where applicable (type String)
+	* Specifies what character encoding to use when decoding, where applicable.
 	*/
-	CHARACTER_SET, //(String.class),
+	std::string characterSet() const {
+		return m_charset;
+	}
+
+	void setCharacterSet(const std::string& charset) {
+		m_charset = charset;
+	}
 
 	/**
-	* Allowed lengths of encoded data -- reject anything else. Maps to an {@code int[]}.
+	* The caller needs to be notified via callback when a possible {@link ResultPoint}
+	* is found.
 	*/
-	ALLOWED_LENGTHS, //(int[].class),
+	/*PointCallback resultPointCallback() const {
+		return m_callback;
+	}*/
+
+	/*void setResultPointCallback(const PointCallback& callback) {
+		m_callback = callback;
+	}*/
 
 	/**
-	* Assume Code 39 codes employ a check digit. Doesn't matter what it maps to;
-	* use {@link Boolean#TRUE}.
+	* Allowed lengths of encoded data -- reject anything else..
 	*/
-	ASSUME_CODE_39_CHECK_DIGIT, //(Void.class),
+	std::vector<int> allowedLengths() const {
+		return m_lengths;
+	}
+
+	void setAllowLengths(const std::vector<int>& lengths) {
+		m_lengths = lengths;
+	}
+
+	/**
+	* Assume Code 39 codes employ a check digit.
+	*/
+	bool shouldAssumeCode39CheckDigit() const {
+		return (m_flags & ASSUME_CODE_39_CHECK_DIGIT) != 0;
+	}
+
+	void setShouldAssumeCode39CheckDigit(bool v) {
+		setFlag(ASSUME_CODE_39_CHECK_DIGIT, v);
+	}
 
 	/**
 	* Assume the barcode is being processed as a GS1 barcode, and modify behavior as needed.
-	* For example this affects FNC1 handling for Code 128 (aka GS1-128). Doesn't matter what it maps to;
-	* use {@link Boolean#TRUE}.
+	* For example this affects FNC1 handling for Code 128 (aka GS1-128).
 	*/
-	ASSUME_GS1, //(Void.class),
+	bool shouldAssumeGS1() const {
+		return (m_flags & ASSUME_GS1) != 0;
+	}
+
+	void setShouldAssumeGS1(bool v) {
+		setFlag(ASSUME_GS1, v);
+	}
 
 	/**
 	* If true, return the start and end digits in a Codabar barcode instead of stripping them. They
 	* are alpha, whereas the rest are numeric. By default, they are stripped, but this causes them
-	* to not be. Doesn't matter what it maps to; use {@link Boolean#TRUE}.
+	* to not be.
 	*/
-	RETURN_CODABAR_START_END, //(Void.class),
+	bool shouldReturnCodabarStartEnd() const {
+		return (m_flags & RETURN_CODABAR_START_END) != 0;
+	}
 
-	/**
-	* The caller needs to be notified via callback when a possible {@link ResultPoint}
-	* is found. Maps to a {@link ResultPointCallback}.
-	*/
-	NEED_RESULT_POINT_CALLBACK, //(ResultPointCallback.class),
-
+	void setShouldReturnCodabarStartEnd(bool v) {
+		setFlag(RETURN_CODABAR_START_END, v);
+	}
 
 	/**
 	* Allowed extension lengths for EAN or UPC barcodes. Other formats will ignore this.
@@ -95,35 +121,36 @@ enum class DecodeHint
 	* and a UPC or EAN barcode is found but an extension is not, then no result will be returned
 	* at all.
 	*/
-	ALLOWED_EAN_EXTENSIONS, //(int[].class),
-};
+	std::vector<int> allowedEanExtensions() const {
+		return m_eanExts;
+	}
 
-class DecodeHints
-{
-public:
-	bool getFlag(DecodeHint hint) const;
-	String getString(DecodeHint hint) const;
-	std::vector<int> getIntegerList(DecodeHint hint) const;
-	std::vector<BarcodeFormat> getFormatList(DecodeHint hint) const;
-	PointCallback getPointCallback(DecodeHint hint) const;
-
-	void put(DecodeHint hint, bool value);
-	void put(DecodeHint hint, const String& value);
-	void put(DecodeHint hint, const std::vector<int>& list);
-	void put(DecodeHint hint, const std::vector<BarcodeFormat>& formats);
-	void put(DecodeHint hint, const PointCallback& callback);
-
-	void remove(DecodeHint hint);
+	void setAllowedEanExtensions(const std::vector<int>& extensions) {
+		m_eanExts = extensions;
+	}
 
 private:
-	struct HintValue;
-	struct BooleanHintValue;
-	struct StringHintValue;
-	struct IntegerListValue;
-	struct FormatListValue;
-	struct PointCallbackValue;
+	uint32_t m_flags = 0;
+	std::string m_charset;
+	//PointCallback m_callback;
+	std::vector<int> m_lengths;
+	std::vector<int> m_eanExts;
 
-	std::map<DecodeHint, std::shared_ptr<HintValue>> _contents;
+	enum HintFlag
+	{
+		TRY_HARDER = 24,
+		ASSUME_CODE_39_CHECK_DIGIT,
+		ASSUME_GS1,
+		RETURN_CODABAR_START_END,
+	};
+
+	void setFlag(int f, bool v)
+	{
+		if (v)
+			m_flags |= f;
+		else
+			m_flags &= ~f;
+	}
 };
 
 } // ZXing

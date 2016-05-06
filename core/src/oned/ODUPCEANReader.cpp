@@ -84,15 +84,11 @@ UPCEANReader::L_AND_G_PATTERNS = {
 	2, 1, 1, 3, // 19
 };
 
-//	private final StringBuilder decodeRowStringBuffer;
-//	private final UPCEANExtensionSupport extensionReader;
-//	private final EANManufacturerOrgSupport eanManSupport;
 
-	//protected UPCEANReader() {
-	//	decodeRowStringBuffer = new StringBuilder(20);
-	//	extensionReader = new UPCEANExtensionSupport();
-	//	eanManSupport = new EANManufacturerOrgSupport();
-	//}
+UPCEANReader::UPCEANReader(const DecodeHints& hints) :
+	_allowedExtensions(hints.allowedEanExtensions())
+{
+}
 
 /**
 * @param row row of black/white values to search
@@ -176,29 +172,29 @@ UPCEANReader::FindStartGuardPattern(const BitArray& row, int& begin, int& end)
 }
 
 Result
-UPCEANReader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints)
+UPCEANReader::decodeRow(int rowNumber, const BitArray& row) const
 {
 	int begin, end;
 	auto status = FindStartGuardPattern(row, begin, end);
 	if (StatusIsError(status))
 		return Result(status);
 
-	return decodeRow(rowNumber, row, begin, end, hints);
+	return decodeRow(rowNumber, row, begin, end);
 }
 
 ErrorStatus
-UPCEANReader::decodeEnd(const BitArray& row, int endStart, int& begin, int& end)
+UPCEANReader::decodeEnd(const BitArray& row, int endStart, int& begin, int& end) const
 {
 	return FindGuardPattern(row, endStart, false, START_END_PATTERN.data(), START_END_PATTERN.size(), begin, end);
 }
 
 Result
-UPCEANReader::decodeRow(int rowNumber, const BitArray& row, int startGuardBegin, int startGuardEnd, const DecodeHints* hints)
+UPCEANReader::decodeRow(int rowNumber, const BitArray& row, int startGuardBegin, int startGuardEnd) const
 {
-	auto pointCallback = hints != nullptr ? hints->getPointCallback(DecodeHint::NEED_RESULT_POINT_CALLBACK) : nullptr;
-	if (pointCallback != nullptr) {
-		pointCallback(0.5f * (startGuardBegin + startGuardEnd), static_cast<float>(rowNumber));
-	}
+	//auto pointCallback = hints.resultPointCallback();
+	//if (pointCallback != nullptr) {
+	//	pointCallback(0.5f * (startGuardBegin + startGuardEnd), static_cast<float>(rowNumber));
+	//}
 
 	std::string result;
 	result.reserve(20);
@@ -207,18 +203,18 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, int startGuardBegin,
 	if (StatusIsError(status))
 		return Result(status);
 
-	if (pointCallback != nullptr) {
+	/*if (pointCallback != nullptr) {
 		pointCallback(static_cast<float>(endStart), static_cast<float>(rowNumber));
-	}
+	}*/
 
 	int endRangeBegin, endRangeEnd;
 	status = decodeEnd(row, endStart, endRangeBegin, endRangeEnd);
 	if (StatusIsError(status))
 		return Result(status);
 
-	if (pointCallback != nullptr) {
+	/*if (pointCallback != nullptr) {
 		pointCallback(0.5f * (endRangeBegin + endRangeEnd), static_cast<float>(rowNumber));
-	}
+	}*/
 
 	// Make sure there is a quiet zone at least as big as the end pattern after the barcode. The
 	// spec might want more whitespace, but in practice this is the maximum we can count on.
@@ -252,10 +248,9 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, int startGuardBegin,
 		extensionLength = extensionResult.text().charCount();
 	}
 
-	auto allowedExtensions = hints != nullptr ? hints->getIntegerList(DecodeHint::ALLOWED_EAN_EXTENSIONS) : std::vector<int>();
-	if (!allowedExtensions.empty()) {
+	if (!_allowedExtensions.empty()) {
 		bool valid = false;
-		for (int length : allowedExtensions) {
+		for (int length : _allowedExtensions) {
 			if (extensionLength == length) {
 				valid = true;
 				break;
@@ -277,7 +272,7 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, int startGuardBegin,
 }
 
 ErrorStatus
-UPCEANReader::checkChecksum(const std::string& s)
+UPCEANReader::checkChecksum(const std::string& s) const
 {
 	return CheckStandardUPCEANChecksum(s);
 }

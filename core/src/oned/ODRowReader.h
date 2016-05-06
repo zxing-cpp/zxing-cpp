@@ -20,7 +20,6 @@
 namespace ZXing {
 
 class Result;
-class DecodeHints;
 class BitArray;
 enum class ErrorStatus;
 
@@ -52,7 +51,7 @@ public:
 	* @throws ChecksumException if a potential barcode is found but does not pass its checksum
 	* @throws FormatException if a potential barcode is found but format is invalid
 	*/
-	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) = 0;
+	virtual Result decodeRow(int rowNumber, const BitArray& row) const = 0;
 
 	/**
 	* Records the size of successive runs of white and black pixels in a row, starting at a given point.

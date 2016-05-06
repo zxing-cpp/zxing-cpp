@@ -20,7 +20,6 @@
 #include "ErrorStatus.h"
 
 namespace ZXing {
-
 namespace OneD {
 
 // For an EAN-13 barcode, the first digit is represented by the parities used
@@ -85,7 +84,7 @@ EAN13Reader::expectedFormat() const
 }
 
 ErrorStatus
-EAN13Reader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString)
+EAN13Reader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const
 {
 	std::array<int, 4> counters = {};
 	int end = row.size();

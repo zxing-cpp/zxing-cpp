@@ -15,15 +15,13 @@
 * limitations under the License.
 */
 
-#include <functional>
 #include <array>
 #include <vector>
 
 namespace ZXing {
 
 class BitMatrix;
-typedef std::function<void(float x, float y)> PointCallback;
-class DecodeHints;
+//typedef std::function<void(float x, float y)> PointCallback;
 enum class ErrorStatus;
 
 namespace QRCode {
@@ -44,7 +42,7 @@ class FinderPatternFinder
 public:
 	typedef std::array<int, 5> StateCount;
 
-	static ErrorStatus Find(const BitMatrix& image, const PointCallback& pointCallback, const DecodeHints* hints, FinderPatternInfo& outInfo);
+	static ErrorStatus Find(const BitMatrix& image, /*const PointCallback& pointCallback,*/ bool pureBarcode, bool tryHarder, FinderPatternInfo& outInfo);
 
 	/**
 	* @param stateCount count of black/white/black/white/black pixels just read
@@ -72,7 +70,7 @@ public:
 	* @param pureBarcode true if in "pure barcode" mode
 	* @return true if a finder pattern candidate was found this time
 	*/
-	static bool HandlePossibleCenter(const BitMatrix& image, const StateCount& stateCount, int i, int j, bool pureBarcode, const PointCallback& pointCallback, std::vector<FinderPattern>& possibleCenters);
+	static bool HandlePossibleCenter(const BitMatrix& image, const StateCount& stateCount, int i, int j, bool pureBarcode, /*const PointCallback& pointCallback,*/ std::vector<FinderPattern>& possibleCenters);
 };
 
 } // QRCode

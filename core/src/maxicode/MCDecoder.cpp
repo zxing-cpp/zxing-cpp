@@ -274,7 +274,7 @@ namespace DecodedBitStreamParser
 } // DecodedBitStreamParser
 
 ErrorStatus
-Decoder::Decode(const BitMatrix& bits, const DecodeHints* hints, DecoderResult& result)
+Decoder::Decode(const BitMatrix& bits, DecoderResult& result)
 {
 	ByteArray codewords;
 	BitMatrixParser::ReadCodewords(bits, codewords);

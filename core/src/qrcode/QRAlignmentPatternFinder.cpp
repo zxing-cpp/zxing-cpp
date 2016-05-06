@@ -122,7 +122,7 @@ static float CrossCheckVertical(const BitMatrix& image, int startI, int centerJ,
 * @param j end of possible alignment pattern in row
 * @return {@link AlignmentPattern} if we have found the same pattern twice, or null if not
 */
-static bool HandlePossibleCenter(const BitMatrix& image, const StateCount& stateCount, int i, int j, float moduleSize, const PointCallback& pointCallback, AlignmentPattern& confirm, std::vector<AlignmentPattern>& possibleCenters)
+static bool HandlePossibleCenter(const BitMatrix& image, const StateCount& stateCount, int i, int j, float moduleSize, /*const PointCallback& pointCallback,*/ AlignmentPattern& confirm, std::vector<AlignmentPattern>& possibleCenters)
 {
 	int stateCountTotal = stateCount[0] + stateCount[1] + stateCount[2];
 	float centerJ = CenterFromEnd(stateCount, j);
@@ -138,16 +138,16 @@ static bool HandlePossibleCenter(const BitMatrix& image, const StateCount& state
 		}
 		// Hadn't found this before; save it
 		possibleCenters.emplace_back(centerJ, centerI, estimatedModuleSize);
-		if (pointCallback != nullptr) {
+		/*if (pointCallback != nullptr) {
 			const ResultPoint& p = possibleCenters.back();
 			pointCallback(p.x(), p.y());
-		}
+		}*/
 	}
 	return false;
 }
 
 ErrorStatus
-AlignmentPatternFinder::Find(const BitMatrix& image, int startX, int startY, int width, int height, float moduleSize, const PointCallback& pointCallback, AlignmentPattern &result)
+AlignmentPatternFinder::Find(const BitMatrix& image, int startX, int startY, int width, int height, float moduleSize, /*const PointCallback& pointCallback,*/ AlignmentPattern &result)
 {
 	int maxJ = startX + width;
 	int middleI = startY + (height / 2);
@@ -177,7 +177,7 @@ AlignmentPatternFinder::Find(const BitMatrix& image, int startX, int startY, int
 				else { // Counting white pixels
 					if (currentState == 2) { // A winner?
 						if (FoundPatternCross(stateCount, moduleSize)) { // Yes
-							if (HandlePossibleCenter(image, stateCount, i, j, moduleSize, pointCallback, result, possibleCenters)) {
+							if (HandlePossibleCenter(image, stateCount, i, j, moduleSize, /*pointCallback,*/ result, possibleCenters)) {
 								return ErrorStatus::NoError;
 							}
 						}
@@ -200,7 +200,7 @@ AlignmentPatternFinder::Find(const BitMatrix& image, int startX, int startY, int
 			j++;
 		}
 		if (FoundPatternCross(stateCount, moduleSize)) {
-			if (HandlePossibleCenter(image, stateCount, i, maxJ, moduleSize, pointCallback, result, possibleCenters)) {
+			if (HandlePossibleCenter(image, stateCount, i, maxJ, moduleSize, /*pointCallback,*/ result, possibleCenters)) {
 				return ErrorStatus::NoError;
 			}
 		}

@@ -17,7 +17,12 @@
 
 #include "oned/ODRowReader.h"
 
+#include <vector>
+
 namespace ZXing {
+
+class DecodeHints;
+
 namespace OneD {
 
 /**
@@ -39,9 +44,12 @@ namespace OneD {
 class ITFReader : public RowReader
 {
 public:
-	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) override;
+	explicit ITFReader(const DecodeHints& hints);
+	virtual Result decodeRow(int rowNumber, const BitArray& row) const override;
 
 private:
+	std::vector<int> _allowedLengths;
+
 	static ErrorStatus FindGuardPattern(const BitArray& row, int rowOffset, const int* pattern, size_t patternLength, int& begin, int& end);
 
 	template <typename Container>

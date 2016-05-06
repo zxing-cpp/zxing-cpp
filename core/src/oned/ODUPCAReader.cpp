@@ -18,7 +18,6 @@
 #include "Result.h"
 
 namespace ZXing {
-
 namespace OneD {
 
 static Result MaybeReturnResult(const Result& result)
@@ -33,15 +32,15 @@ static Result MaybeReturnResult(const Result& result)
 }
 
 Result
-UPCAReader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints)
+UPCAReader::decodeRow(int rowNumber, const BitArray& row) const
 {
-	return MaybeReturnResult(_reader.decodeRow(rowNumber, row, hints));
+	return MaybeReturnResult(_reader.decodeRow(rowNumber, row));
 }
 
 Result
-UPCAReader::decodeRow(int rowNumber, const BitArray& row, int startGuardBegin, int startGuardEnd, const DecodeHints* hints)
+UPCAReader::decodeRow(int rowNumber, const BitArray& row, int startGuardBegin, int startGuardEnd) const
 {
-	return MaybeReturnResult(_reader.decodeRow(rowNumber, row, startGuardBegin, startGuardEnd, hints));
+	return MaybeReturnResult(_reader.decodeRow(rowNumber, row, startGuardBegin, startGuardEnd));
 }
 
 BarcodeFormat
@@ -51,7 +50,7 @@ UPCAReader::expectedFormat() const
 }
 
 ErrorStatus
-UPCAReader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString)
+UPCAReader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const
 {
 	return _reader.decodeMiddle(row, rowOffset, resultString);
 }

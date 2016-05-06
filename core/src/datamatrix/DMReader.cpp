@@ -93,7 +93,7 @@ ExtractPureBits(const BitMatrix& image, BitMatrix& outBits)
 * @throws ChecksumException if error correction fails
 */
 Result
-Reader::decode(const BinaryBitmap& image, const DecodeHints* hints) const
+Reader::decode(const BinaryBitmap& image) const
 {
 	BitMatrix binImg;
 	auto status = image.getBlackMatrix(binImg);
@@ -103,7 +103,7 @@ Reader::decode(const BinaryBitmap& image, const DecodeHints* hints) const
 
 	DecoderResult decoderResult;
 	std::vector<ResultPoint> points;
-	if (hints != nullptr && hints->getFlag(DecodeHint::PURE_BARCODE)) {
+	if (image.isPureBarcode()) {
 		BitMatrix bits;
 		status = ExtractPureBits(binImg, bits);
 		if (StatusIsOK(status)) {

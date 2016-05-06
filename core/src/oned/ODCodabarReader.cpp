@@ -225,9 +225,13 @@ ValidatePattern(const std::vector<int>& charOffsets, const std::vector<int>& cou
 	return true;
 }
 
+CodabarReader::CodabarReader(const DecodeHints& hints)
+{
+	_shouldReturnStartEnd = hints.shouldReturnCodabarStartEnd();
+}
 
 Result
-CodabarReader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints)
+CodabarReader::decodeRow(int rowNumber, const BitArray& row) const
 {
 	std::vector<int> counters;
 	counters.reserve(80);
@@ -296,7 +300,7 @@ CodabarReader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* 
 		return Result(ErrorStatus::NotFound);
 	}
 
-	if (hints == nullptr || !hints->getFlag(DecodeHint::RETURN_CODABAR_START_END)) {
+	if (!_shouldReturnStartEnd) {
 		decodeRowResult = decodeRowResult.substr(1, decodeRowResult.size() - 2);
 	}
 

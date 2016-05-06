@@ -33,51 +33,49 @@
 
 namespace ZXing {
 
-MultiFormatReader::MultiFormatReader(const DecodeHints* hints)
+MultiFormatReader::MultiFormatReader(const DecodeHints& hints) :
+	_hints(hints)
 {
 	_readers.reserve(6);
-	bool tryHarder = false;
-	if (hints != nullptr) {
-		tryHarder = hints->getFlag(DecodeHint::TRY_HARDER);
-		auto possibleFormats = hints->getFormatList(DecodeHint::POSSIBLE_FORMATS);
-		if (!possibleFormats.empty()) {
-			std::unordered_set<BarcodeFormat> formats(possibleFormats.begin(), possibleFormats.end());
-			bool addOneDReader =
-				formats.find(BarcodeFormat::UPC_A) != formats.end() ||
-				formats.find(BarcodeFormat::UPC_E) != formats.end() ||
-				formats.find(BarcodeFormat::EAN_13) != formats.end() ||
-				formats.find(BarcodeFormat::EAN_8) != formats.end() ||
-				formats.find(BarcodeFormat::CODABAR) != formats.end() ||
-				formats.find(BarcodeFormat::CODE_39) != formats.end() ||
-				formats.find(BarcodeFormat::CODE_93) != formats.end() ||
-				formats.find(BarcodeFormat::CODE_128) != formats.end() ||
-				formats.find(BarcodeFormat::ITF) != formats.end() ||
-				formats.find(BarcodeFormat::RSS_14) != formats.end() ||
-				formats.find(BarcodeFormat::RSS_EXPANDED) != formats.end();
+	bool tryHarder = hints.shouldTryHarder();
+	auto possibleFormats = hints.possibleFormats();
+	if (!possibleFormats.empty()) {
+		std::unordered_set<BarcodeFormat> formats(possibleFormats.begin(), possibleFormats.end());
+		bool addOneDReader =
+			formats.find(BarcodeFormat::UPC_A) != formats.end() ||
+			formats.find(BarcodeFormat::UPC_E) != formats.end() ||
+			formats.find(BarcodeFormat::EAN_13) != formats.end() ||
+			formats.find(BarcodeFormat::EAN_8) != formats.end() ||
+			formats.find(BarcodeFormat::CODABAR) != formats.end() ||
+			formats.find(BarcodeFormat::CODE_39) != formats.end() ||
+			formats.find(BarcodeFormat::CODE_93) != formats.end() ||
+			formats.find(BarcodeFormat::CODE_128) != formats.end() ||
+			formats.find(BarcodeFormat::ITF) != formats.end() ||
+			formats.find(BarcodeFormat::RSS_14) != formats.end() ||
+			formats.find(BarcodeFormat::RSS_EXPANDED) != formats.end();
 
-			// Put 1D readers upfront in "normal" mode
-			if (addOneDReader && !tryHarder) {
-				_readers.push_back(std::make_shared<OneD::Reader>(hints));
-			}
-			if (formats.find(BarcodeFormat::QR_CODE) != formats.end()) {
-				_readers.push_back(std::make_shared<QRCode::Reader>());
-			}
-			if (formats.find(BarcodeFormat::DATA_MATRIX) != formats.end()) {
-				_readers.push_back(std::make_shared<DataMatrix::Reader>());
-			}
-			if (formats.find(BarcodeFormat::AZTEC) != formats.end()) {
-				_readers.push_back(std::make_shared<Aztec::Reader>());
-			}
-			if (formats.find(BarcodeFormat::PDF_417) != formats.end()) {
-				_readers.push_back(std::make_shared<Pdf417::Reader>());
-			}
-			if (formats.find(BarcodeFormat::MAXICODE) != formats.end()) {
-				_readers.push_back(std::make_shared<MaxiCode::Reader>());
-			}
-			// At end in "try harder" mode
-			if (addOneDReader && tryHarder) {
-				_readers.push_back(std::make_shared<OneD::Reader>(hints));
-			}
+		// Put 1D readers upfront in "normal" mode
+		if (addOneDReader && !tryHarder) {
+			_readers.push_back(std::make_shared<OneD::Reader>(hints));
+		}
+		if (formats.find(BarcodeFormat::QR_CODE) != formats.end()) {
+			_readers.push_back(std::make_shared<QRCode::Reader>(hints));
+		}
+		if (formats.find(BarcodeFormat::DATA_MATRIX) != formats.end()) {
+			_readers.push_back(std::make_shared<DataMatrix::Reader>());
+		}
+		if (formats.find(BarcodeFormat::AZTEC) != formats.end()) {
+			_readers.push_back(std::make_shared<Aztec::Reader>());
+		}
+		if (formats.find(BarcodeFormat::PDF_417) != formats.end()) {
+			_readers.push_back(std::make_shared<Pdf417::Reader>());
+		}
+		if (formats.find(BarcodeFormat::MAXICODE) != formats.end()) {
+			_readers.push_back(std::make_shared<MaxiCode::Reader>());
+		}
+		// At end in "try harder" mode
+		if (addOneDReader && tryHarder) {
+			_readers.push_back(std::make_shared<OneD::Reader>(hints));
 		}
 	}
 
@@ -85,7 +83,7 @@ MultiFormatReader::MultiFormatReader(const DecodeHints* hints)
 		if (!tryHarder) {
 			_readers.push_back(std::make_shared<OneD::Reader>(hints));
 		}
-		_readers.push_back(std::make_shared<QRCode::Reader>());
+		_readers.push_back(std::make_shared<QRCode::Reader>(hints));
 		_readers.push_back(std::make_shared<DataMatrix::Reader>());
 		_readers.push_back(std::make_shared<Aztec::Reader>());
 		_readers.push_back(std::make_shared<Pdf417::Reader>());
@@ -97,10 +95,10 @@ MultiFormatReader::MultiFormatReader(const DecodeHints* hints)
 }
 
 Result
-MultiFormatReader::decode(const BinaryBitmap& image, const DecodeHints* hints) const
+MultiFormatReader::read(const BinaryBitmap& image) const
 {
 	for (const auto& reader : _readers) {
-		Result r = reader->decode(image, hints);
+		Result r = reader->decode(image);
 		if (r.isValid())
 			return r;
 	}

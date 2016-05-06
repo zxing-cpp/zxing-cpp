@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-#include "Binarizer.h"
+#include "BinaryBitmap.h"
 
 namespace ZXing {
 
@@ -32,25 +32,26 @@ class LuminanceSource;
 * @author dswitkin@google.com (Daniel Switkin)
 * @author Sean Owen
 */
-class GlobalHistogramBinarizer : public Binarizer
+class GlobalHistogramBinarizer : public BinaryBitmap
 {
 protected:
 	std::shared_ptr<const LuminanceSource> _source;
+	bool _pureBarcode;
 
 public:
-	GlobalHistogramBinarizer(const std::shared_ptr<const LuminanceSource>& source);
+	explicit GlobalHistogramBinarizer(const std::shared_ptr<const LuminanceSource>& source, bool pureBarcode = false);
 
+	virtual bool isPureBarcode() const override;
 	virtual int width() const override;
 	virtual int height() const override;
 	virtual ErrorStatus getBlackRow(int y, BitArray& outArray) const override;
 	virtual ErrorStatus getBlackMatrix(BitMatrix& outMatrix) const override;
 	virtual bool canCrop() const override;
-	virtual std::shared_ptr<Binarizer> cropped(int left, int top, int width, int height) const override;
+	virtual std::shared_ptr<BinaryBitmap> cropped(int left, int top, int width, int height) const override;
 	virtual bool canRotate() const override;
-	virtual std::shared_ptr<Binarizer> rotatedCCW90() const override;
-	virtual std::shared_ptr<Binarizer> rotatedCCW45() const override;
+	virtual std::shared_ptr<BinaryBitmap> rotated(int degreeCW) const override;
 
-	virtual std::shared_ptr<Binarizer> createBinarizer(const std::shared_ptr<const LuminanceSource>& source) const;
+	virtual std::shared_ptr<BinaryBitmap> newInstance(const std::shared_ptr<const LuminanceSource>& source) const;
 };
 
 } // ZXing

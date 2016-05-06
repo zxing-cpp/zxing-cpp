@@ -74,6 +74,11 @@ enum class BarcodeFormat : int
 
 	/** UPC/EAN extension format. Not a stand-alone format. */
 	UPC_EAN_EXTENSION,
+
+
+
+	// Not valid value, used to count the number of formats, thus should be always the last listed here
+	FORMAT_COUNT,
 };
 
 const char* ToString(BarcodeFormat format);

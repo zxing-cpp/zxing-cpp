@@ -18,7 +18,6 @@
 #include "oned/ODEAN13Reader.h"
 
 namespace ZXing {
-
 namespace OneD {
 
 /**
@@ -30,12 +29,14 @@ namespace OneD {
 class UPCAReader : public UPCEANReader
 {
 public:
-	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) override;
-	virtual Result decodeRow(int rowNumber, const BitArray& row, int startGuardBegin, int startGuardEnd, const DecodeHints* hints) override;
+	explicit UPCAReader(const DecodeHints& hints) : UPCEANReader(hints), _reader(hints) {}
+
+	virtual Result decodeRow(int rowNumber, const BitArray& row) const override;
+	virtual Result decodeRow(int rowNumber, const BitArray& row, int startGuardBegin, int startGuardEnd) const override;
 
 protected:
 	virtual BarcodeFormat expectedFormat() const override;
-	virtual ErrorStatus decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) override;
+	virtual ErrorStatus decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const override;
 
 private:
 	EAN13Reader _reader;

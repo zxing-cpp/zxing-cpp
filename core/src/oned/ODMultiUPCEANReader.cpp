@@ -30,33 +30,35 @@ namespace ZXing {
 
 namespace OneD {
 
-MultiUPCEANReader::MultiUPCEANReader(const std::unordered_set<BarcodeFormat> &formats)
+MultiUPCEANReader::MultiUPCEANReader(const DecodeHints& hints)
 {
+	auto formats = hints.possibleFormats();
 	if (formats.empty()) {
-		_readers.push_back(std::make_shared<EAN13Reader>());
+		_readers.push_back(std::make_shared<EAN13Reader>(hints));
 		// UPC-A is covered by EAN-13
-		_readers.push_back(std::make_shared<EAN8Reader>());
-		_readers.push_back(std::make_shared<UPCEReader>());
+		_readers.push_back(std::make_shared<EAN8Reader>(hints));
+		_readers.push_back(std::make_shared<UPCEReader>(hints));
 	}
 	else
 	{
-		if (formats.find(BarcodeFormat::EAN_13) != formats.end()) {
-			_readers.push_back(std::make_shared<EAN13Reader>());
+		_formats.insert(formats.begin(), formats.end());
+		if (_formats.find(BarcodeFormat::EAN_13) != _formats.end()) {
+			_readers.push_back(std::make_shared<EAN13Reader>(hints));
 		}
-		else if (formats.find(BarcodeFormat::UPC_A) != formats.end()) {
-			_readers.push_back(std::make_shared<UPCAReader>());
+		else if (_formats.find(BarcodeFormat::UPC_A) != _formats.end()) {
+			_readers.push_back(std::make_shared<UPCAReader>(hints));
 		}
-		if (formats.find(BarcodeFormat::EAN_8) != formats.end()) {
-			_readers.push_back(std::make_shared<EAN8Reader>());
+		if (_formats.find(BarcodeFormat::EAN_8) != _formats.end()) {
+			_readers.push_back(std::make_shared<EAN8Reader>(hints));
 		}
-		if (formats.find(BarcodeFormat::UPC_E) != formats.end()) {
-			_readers.push_back(std::make_shared<UPCEReader>());
+		if (_formats.find(BarcodeFormat::UPC_E) != _formats.end()) {
+			_readers.push_back(std::make_shared<UPCEReader>(hints));
 		}
 	}
 }
 
 Result
-MultiUPCEANReader::decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints)
+MultiUPCEANReader::decodeRow(int rowNumber, const BitArray& row) const
 {
 	// Compute this location once and reuse it on multiple implementations
 	int startGuardPatternBegin, startGuardPatternEnd;
@@ -65,7 +67,7 @@ MultiUPCEANReader::decodeRow(int rowNumber, const BitArray& row, const DecodeHin
 		return Result(status);
 
 	for (auto& reader : _readers) {
-		Result result = reader->decodeRow(rowNumber, row, startGuardPatternBegin, startGuardPatternEnd, hints);
+		Result result = reader->decodeRow(rowNumber, row, startGuardPatternBegin, startGuardPatternEnd);
 		if (!result.isValid())
 		{
 			if (StatusIsKindOf(result.status(), ErrorStatus::ReaderError))
@@ -87,11 +89,7 @@ MultiUPCEANReader::decodeRow(int rowNumber, const BitArray& row, const DecodeHin
 		//
 		// But, don't return UPC-A if UPC-A was not a requested format!
 		bool ean13MayBeUPCA = result.format() == BarcodeFormat::EAN_13 && result.text().charAt(0) == '0';
-		bool canReturnUPCA = true;
-		if (hints != nullptr) {
-			auto possibleFormats = hints->getFormatList(DecodeHint::POSSIBLE_FORMATS);
-			canReturnUPCA = possibleFormats.empty() || std::find(possibleFormats.begin(), possibleFormats.end(), BarcodeFormat::UPC_A) != possibleFormats.end();
-		}
+		bool canReturnUPCA = _formats.empty() || _formats.find(BarcodeFormat::UPC_A) != _formats.end();
 		if (ean13MayBeUPCA && canReturnUPCA) {
 			// Transfer the metdata across
 			Result resultUPCA(result.text().substring(1), result.rawBytes(), result.resultPoints(), BarcodeFormat::UPC_A);

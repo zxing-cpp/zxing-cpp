@@ -28,34 +28,28 @@
 #include "BinaryBitmap.h"
 #include "DecodeHints.h"
 
+#include <unordered_set>
+
 namespace ZXing {
 namespace OneD {
 
 
-Reader::Reader(const DecodeHints* hints)
+Reader::Reader(const DecodeHints& hints) :
+	_tryHarder(hints.shouldTryHarder())
 {
-	if (hints != nullptr)
-	{
-		auto possibleFormats = hints->getFormatList(DecodeHint::POSSIBLE_FORMATS);
-		if (!possibleFormats.empty())
-		{
-			_formats.insert(possibleFormats.begin(), possibleFormats.end());
-		}
-	}
-}
+	_readers.reserve(8);
 
-static void
-BuildReaders(const std::unordered_set<BarcodeFormat>& formats, std::vector<std::shared_ptr<RowReader>>& readers)
-{
-	readers.reserve(8);
+	auto possibleFormats = hints.possibleFormats();
+	std::unordered_set<BarcodeFormat> formats(possibleFormats.begin(), possibleFormats.end());
+
 	if (formats.empty()) {
-		readers.insert(readers.end(), {
-			std::make_shared<MultiUPCEANReader>(formats),
-			std::make_shared<Code39Reader>(),
-			std::make_shared<CodabarReader>(),
+		_readers.insert(_readers.end(), {
+			std::make_shared<MultiUPCEANReader>(hints),
+			std::make_shared<Code39Reader>(hints),
+			std::make_shared<CodabarReader>(hints),
 			std::make_shared<Code93Reader>(),
-			std::make_shared<Code128Reader>(),
-			std::make_shared<ITFReader>(),
+			std::make_shared<Code128Reader>(hints),
+			std::make_shared<ITFReader>(hints),
 			std::make_shared<RSS14Reader>(),
 			std::make_shared<RSSExpandedReader>(),
 		});
@@ -65,28 +59,28 @@ BuildReaders(const std::unordered_set<BarcodeFormat>& formats, std::vector<std::
 			formats.find(BarcodeFormat::UPC_A) != formats.end() ||
 			formats.find(BarcodeFormat::EAN_8) != formats.end() ||
 			formats.find(BarcodeFormat::UPC_E) != formats.end()) {
-			readers.push_back(std::make_shared<MultiUPCEANReader>(formats));
+			_readers.push_back(std::make_shared<MultiUPCEANReader>(hints));
 		}
 		if (formats.find(BarcodeFormat::CODE_39) != formats.end()) {
-			readers.push_back(std::make_shared<Code39Reader>());
+			_readers.push_back(std::make_shared<Code39Reader>(hints));
 		}
 		if (formats.find(BarcodeFormat::CODE_93) != formats.end()) {
-			readers.push_back(std::make_shared<Code93Reader>());
+			_readers.push_back(std::make_shared<Code93Reader>());
 		}
 		if (formats.find(BarcodeFormat::CODE_128) != formats.end()) {
-			readers.push_back(std::make_shared<Code128Reader>());
+			_readers.push_back(std::make_shared<Code128Reader>(hints));
 		}
 		if (formats.find(BarcodeFormat::ITF) != formats.end()) {
-			readers.push_back(std::make_shared<ITFReader>());
+			_readers.push_back(std::make_shared<ITFReader>(hints));
 		}
 		if (formats.find(BarcodeFormat::CODABAR) != formats.end()) {
-			readers.push_back(std::make_shared<CodabarReader>());
+			_readers.push_back(std::make_shared<CodabarReader>(hints));
 		}
 		if (formats.find(BarcodeFormat::RSS_14) != formats.end()) {
-			readers.push_back(std::make_shared<RSS14Reader>());
+			_readers.push_back(std::make_shared<RSS14Reader>());
 		}
 		if (formats.find(BarcodeFormat::RSS_EXPANDED) != formats.end()) {
-			readers.push_back(std::make_shared<RSSExpandedReader>());
+			_readers.push_back(std::make_shared<RSSExpandedReader>());
 		}
 	}
 }
@@ -106,21 +100,18 @@ BuildReaders(const std::unordered_set<BarcodeFormat>& formats, std::vector<std::
 * @throws NotFoundException Any spontaneous errors which occur
 */
 static Result
-DoDecode(const std::vector<std::shared_ptr<RowReader>>& readers, const BinaryBitmap& image, const DecodeHints* hints)
+DoDecode(const std::vector<std::shared_ptr<RowReader>>& readers, const BinaryBitmap& image, bool tryHarder)
 {
 	int width = image.width();
 	int height = image.height();
 
 	int middle = height >> 1;
-	bool tryHarder = hints != nullptr && hints->getFlag(DecodeHint::TRY_HARDER);
 	int rowStep = std::max(1, height >> (tryHarder ? 8 : 5));
 	int maxLines = tryHarder ?
 		height :	// Look at the whole image, not just the center
 		15;			// 15 rows spaced 1/32 apart is roughly the middle half of the image
 
 	BitArray row(width);
-	DecodeHints copyHints;
-	const DecodeHints* currentHints = hints;
 	for (int x = 0; x < maxLines; x++) {
 
 		// Scanning from the middle out. Determine which row we're looking at next:
@@ -140,21 +131,20 @@ DoDecode(const std::vector<std::shared_ptr<RowReader>>& readers, const BinaryBit
 		// While we have the image data in a BitArray, it's fairly cheap to reverse it in place to
 		// handle decoding upside down barcodes.
 		for (int attempt = 0; attempt < 2; attempt++) {
-			if (attempt == 1) { // trying again?
-				row.reverse(); // reverse the row and continue
-							   // This means we will only ever draw result points *once* in the life of this method
-							   // since we want to avoid drawing the wrong points after flipping the row, and,
-							   // don't want to clutter with noise from every single row scan -- just the scans
-							   // that start on the center line.
-				if (currentHints != nullptr && currentHints->getPointCallback(DecodeHint::NEED_RESULT_POINT_CALLBACK) != nullptr) {
-					copyHints = *currentHints;
-					copyHints.remove(DecodeHint::NEED_RESULT_POINT_CALLBACK);
-					currentHints = &copyHints;
-				}
+			// trying again?
+			if (attempt == 1) {
+				// reverse the row and continue
+				row.reverse();
+
+				// This means we will only ever draw result points *once* in the life of this method
+				// since we want to avoid drawing the wrong points after flipping the row, and,
+				// don't want to clutter with noise from every single row scan -- just the scans
+				// that start on the center line.
+				//currentHints.setResultPointCallback(nullptr);
 			}
 			// Look for a barcode
 			for (auto& reader : readers) {
-				Result result = reader->decodeRow(rowNumber, row, currentHints);
+				Result result = reader->decodeRow(rowNumber, row);
 				if (result.isValid()) {
 					// We found our barcode
 					if (attempt == 1) {
@@ -179,20 +169,16 @@ DoDecode(const std::vector<std::shared_ptr<RowReader>>& readers, const BinaryBit
 
 // Note that we don't try rotation without the try harder flag, even if rotation was supported.
 Result
-Reader::decode(const BinaryBitmap& image, const DecodeHints* hints) const
+Reader::decode(const BinaryBitmap& image) const
 {
-	std::vector<std::shared_ptr<RowReader>> readers;
-	BuildReaders(_formats, readers);
-
-	Result result = DoDecode(readers, image, hints);
+	Result result = DoDecode(_readers, image, _tryHarder);
 	if (result.isValid()) {
 		return result;
 	}
 
-	bool tryHarder = hints != nullptr && hints->getFlag(DecodeHint::TRY_HARDER);
-	if (tryHarder && image.canRotate()) {
-		BinaryBitmap rotatedImage = image.rotatedCCW90();
-		result = DoDecode(readers, rotatedImage, hints);
+	if (_tryHarder && image.canRotate()) {
+		auto rotatedImage = image.rotated(270);
+		result = DoDecode(_readers, *rotatedImage, _tryHarder);
 		if (result.isValid()) {
 			// Record that we found it rotated 90 degrees CCW / 270 degrees CW
 			auto& metadata = result.metadata();
@@ -200,7 +186,7 @@ Reader::decode(const BinaryBitmap& image, const DecodeHints* hints) const
 			// Update result points
 			auto points = result.resultPoints();
 			if (!points.empty()) {
-				int height = rotatedImage.height();
+				int height = rotatedImage->height();
 				for (auto& p : points) {
 					p = ResultPoint(height - p.y() - 1, p.x());
 				}

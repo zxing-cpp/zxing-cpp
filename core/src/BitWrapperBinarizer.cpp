@@ -21,25 +21,33 @@
 
 namespace ZXing {
 
-BitWrapperBinarizer::BitWrapperBinarizer(const BitMatrix& bits, bool whitePixels) :
-	BitWrapperBinarizer(std::make_shared<BitMatrix>(bits), whitePixels)
+BitWrapperBinarizer::BitWrapperBinarizer(const BitMatrix& bits, bool whitePixels, bool pureBarcode) :
+	BitWrapperBinarizer(std::make_shared<BitMatrix>(bits), whitePixels, pureBarcode)
 {
 }
 
-BitWrapperBinarizer::BitWrapperBinarizer(const std::shared_ptr<const BitMatrix>& bits, bool whitePixels) :
-	BitWrapperBinarizer(bits, 0, 0, bits->width(), bits->height(), whitePixels)
+BitWrapperBinarizer::BitWrapperBinarizer(const std::shared_ptr<const BitMatrix>& bits, bool whitePixels, bool pureBarcode) :
+	BitWrapperBinarizer(bits, 0, 0, bits->width(), bits->height(), whitePixels, pureBarcode)
 {
 }
 
-BitWrapperBinarizer::BitWrapperBinarizer(const std::shared_ptr<const BitMatrix>& bits, int left, int top, int width, int height, bool inverted) :
+BitWrapperBinarizer::BitWrapperBinarizer(const std::shared_ptr<const BitMatrix>& bits, int left, int top, int width, int height, bool inverted, bool pureBarcode) :
 	_matrix(bits),
 	_left(left),
 	_top(top),
 	_width(width),
 	_height(height),
-	_inverted(inverted)
+	_inverted(inverted),
+	_pureBarcode(pureBarcode)
 {
 }
+
+bool
+BitWrapperBinarizer::isPureBarcode() const
+{
+	return _pureBarcode;
+}
+
 int
 BitWrapperBinarizer::width() const
 {
@@ -103,7 +111,7 @@ BitWrapperBinarizer::canCrop() const
 	return true;
 }
 
-std::shared_ptr<Binarizer>
+std::shared_ptr<BinaryBitmap>
 BitWrapperBinarizer::cropped(int left, int top, int width, int height) const
 {
 	return std::make_shared<BitWrapperBinarizer>(_matrix, left + _left, top + _top, width, height, _inverted);
@@ -115,16 +123,10 @@ BitWrapperBinarizer::canRotate() const
 	return false;
 }
 
-std::shared_ptr<Binarizer>
-BitWrapperBinarizer::rotatedCCW90() const
+std::shared_ptr<BinaryBitmap>
+BitWrapperBinarizer::rotated(int degreeCW) const
 {
 	throw std::runtime_error("This binarizer source does not support rotation by 90 degrees.");
-}
-
-std::shared_ptr<Binarizer>
-BitWrapperBinarizer::rotatedCCW45() const
-{
-	throw std::runtime_error("This binarizer source does not support rotation by 45 degrees.");
 }
 
 } // ZXing

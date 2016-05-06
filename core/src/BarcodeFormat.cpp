@@ -42,7 +42,7 @@ const char * ToString(BarcodeFormat format)
 		"UPC_EAN_EXTENSION",
 	};
 
-	static_assert(std::extent<decltype(FORMAT_STR)>::value == (int)BarcodeFormat::UPC_EAN_EXTENSION + 1, "FORMAT_STR array is out of sync with BarcodeFormat");
+	static_assert(std::extent<decltype(FORMAT_STR)>::value == (int)BarcodeFormat::FORMAT_COUNT, "FORMAT_STR array is out of sync with BarcodeFormat");
 
 	return FORMAT_STR[(int)format];
 }

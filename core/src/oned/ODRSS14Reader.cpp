@@ -364,7 +364,7 @@ DecodeDataCharacter(const BitArray& row, const RSS::FinderPattern& pattern, bool
 }
 
 static RSS::Pair
-DecodePair(const BitArray& row, bool right, int rowNumber, const DecodeHints* hints)
+DecodePair(const BitArray& row, bool right, int rowNumber)
 {
 	FinderCounters finderCounters = {};
 	int patternStart, patternEnd;
@@ -372,15 +372,15 @@ DecodePair(const BitArray& row, bool right, int rowNumber, const DecodeHints* hi
 	if (StatusIsOK(status)) {
 		auto pattern = ParseFoundFinderPattern(row, rowNumber, right, patternStart, patternEnd, finderCounters);
 		if (pattern.isValid()) {
-			PointCallback resultPointCallback = hints != nullptr ? hints->getPointCallback(DecodeHint::NEED_RESULT_POINT_CALLBACK) : nullptr;
-			if (resultPointCallback != nullptr) {
-				float center = 0.5f * static_cast<float>(patternStart + patternEnd);
-				if (right) {
-					// row is actually reversed
-					center = row.size() - 1 - center;
-				}
-				resultPointCallback(center, static_cast<float>(rowNumber));
-			}
+			//PointCallback resultPointCallback = hints.resultPointCallback();
+			//if (resultPointCallback != nullptr) {
+			//	float center = 0.5f * static_cast<float>(patternStart + patternEnd);
+			//	if (right) {
+			//		// row is actually reversed
+			//		center = row.size() - 1 - center;
+			//	}
+			//	resultPointCallback(center, static_cast<float>(rowNumber));
+			//}
 
 			auto outside = DecodeDataCharacter(row, pattern, true);
 			if (outside.isValid()) {
@@ -453,12 +453,12 @@ ConstructResult(const RSS::Pair& leftPair, const RSS::Pair& rightPair)
 }
 
 Result
-RSS14Reader::decodeRow(int rowNumber, const BitArray& row_, const DecodeHints* hints)
+RSS14Reader::decodeRow(int rowNumber, const BitArray& row_) const
 {
 	BitArray row = row_;
-	AddOrTally(_possibleLeftPairs, DecodePair(row, false, rowNumber, hints));
+	AddOrTally(_possibleLeftPairs, DecodePair(row, false, rowNumber));
 	row.reverse();
-	AddOrTally(_possibleRightPairs, DecodePair(row, true, rowNumber, hints));
+	AddOrTally(_possibleRightPairs, DecodePair(row, true, rowNumber));
 	row.reverse();
 
 	for (const auto& left : _possibleLeftPairs) {

@@ -16,12 +16,15 @@
 */
 
 #include <string>
+#include <memory>
 
 namespace Gdiplus {
 	class Bitmap;
 }
 
 namespace ZXing {
+
+class MultiFormatReader;
 
 class BarcodeScanner
 {
@@ -30,8 +33,15 @@ public:
 		std::string format;
 		std::string text;
 	};
-	
-	static ScanResult Scan(Gdiplus::Bitmap& bitmap);
+
+	explicit BarcodeScanner(bool tryHarder = false);
+	BarcodeScanner(const BarcodeScanner &) = delete;
+	BarcodeScanner& operator=(const BarcodeScanner &) = delete;
+
+	ScanResult scan(Gdiplus::Bitmap& bitmap);
+
+private:
+	std::shared_ptr<MultiFormatReader> _reader;
 };
 
 } // ZXing

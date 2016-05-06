@@ -18,6 +18,9 @@
 #include "oned/ODRowReader.h"
 
 namespace ZXing {
+
+class DecodeHints;
+
 namespace OneD {
 
 /**
@@ -28,8 +31,6 @@ namespace OneD {
 */
 class Code39Reader : public RowReader
 {
-	bool _extendedMode;
-
 public:
 	/**
 	* Creates a reader that can be configured to check the last character as a check digit,
@@ -41,9 +42,13 @@ public:
 	* @param extendedMode if true, will attempt to decode extended Code 39 sequences in the
 	* text.
 	*/
-	explicit Code39Reader(bool extendedMode = false) : _extendedMode(extendedMode) {}
+	explicit Code39Reader(const DecodeHints& hints, bool extendedMode = false);
 	
-	virtual Result decodeRow(int rowNumber, const BitArray& row, const DecodeHints* hints) override;
+	virtual Result decodeRow(int rowNumber, const BitArray& row) const override;
+
+private:
+	bool _extendedMode;
+	bool _usingCheckDigit;
 };
 
 } // OneD

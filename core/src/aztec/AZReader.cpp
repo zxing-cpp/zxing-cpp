@@ -28,7 +28,7 @@ namespace ZXing {
 namespace Aztec {
 
 Result
-Reader::decode(const BinaryBitmap& image, const DecodeHints* hints) const
+Reader::decode(const BinaryBitmap& image) const
 {
 	BitMatrix binImg;
 	ErrorStatus status = image.getBlackMatrix(binImg);
@@ -58,14 +58,12 @@ Reader::decode(const BinaryBitmap& image, const DecodeHints* hints) const
 		}
 	}
 
-	if (hints != nullptr) {
-		auto rpcb = hints->getPointCallback(DecodeHint::NEED_RESULT_POINT_CALLBACK);
-		if (rpcb != nullptr) {
-			for (auto& p : points) {
-				rpcb(p.x(), p.y());
-			}
-		}
-	}
+	//auto rpcb = hints.resultPointCallback();
+	//if (rpcb != nullptr) {
+	//	for (auto& p : points) {
+	//		rpcb(p.x(), p.y());
+	//	}
+	//}
 
 	Result result(decodeResult.text(), decodeResult.rawBytes(), points, BarcodeFormat::AZTEC);
 	auto& byteSegments = decodeResult.byteSegments();

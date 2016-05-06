@@ -22,7 +22,6 @@
 #include <array>
 
 namespace ZXing {
-
 namespace OneD {
 
 // For an UPC-E barcode, the final digit is represented by the parities used
@@ -90,7 +89,7 @@ DetermineNumSysAndCheckDigit(std::string& resultString, int lgPatternFound)
 }
 
 ErrorStatus
-UPCEReader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString)
+UPCEReader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const
 {
 	std::array<int, 4> counters = {};
 	int end = row.size();
@@ -113,13 +112,13 @@ UPCEReader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resul
 }
 
 ErrorStatus
-UPCEReader::checkChecksum(const std::string& s)
+UPCEReader::checkChecksum(const std::string& s) const
 {
 	return UPCEANReader::checkChecksum(ConvertUPCEtoUPCA(s));
 }
 
 ErrorStatus
-UPCEReader::decodeEnd(const BitArray& row, int endStart, int& begin, int& end)
+UPCEReader::decodeEnd(const BitArray& row, int endStart, int& begin, int& end) const
 {
 	return FindGuardPattern(row, endStart, true, MIDDLE_END_PATTERN, begin, end);
 }

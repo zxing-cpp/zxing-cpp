@@ -16,13 +16,17 @@
 */
 
 #include "Reader.h"
-#include <unordered_set>
+#include <vector>
+#include <memory>
 
 namespace ZXing {
 
 enum class BarcodeFormat;
+class DecodeHints;
 
 namespace OneD {
+
+class RowReader;
 
 /**
 * @author dswitkin@google.com (Daniel Switkin)
@@ -32,12 +36,13 @@ class Reader : public ZXing::Reader
 {
 public:
 	// Only POSSIBLE_FORMATS is read here, and the same hint is ignored in decode().
-	Reader(const DecodeHints* hints = nullptr);
+	explicit Reader(const DecodeHints& hints);
 
-	virtual Result decode(const BinaryBitmap& image, const DecodeHints* hints = nullptr) const override;
+	virtual Result decode(const BinaryBitmap& image) const override;
 
 private:
-	std::unordered_set<BarcodeFormat> _formats;
+	std::vector<std::shared_ptr<RowReader>> _readers;
+	bool _tryHarder;
 };
 
 } // OneD

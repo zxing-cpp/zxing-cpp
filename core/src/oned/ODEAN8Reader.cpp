@@ -20,7 +20,6 @@
 #include "ErrorStatus.h"
 
 namespace ZXing {
-
 namespace OneD {
 
 BarcodeFormat
@@ -30,7 +29,7 @@ EAN8Reader::expectedFormat() const
 }
 
 ErrorStatus
-EAN8Reader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString)
+EAN8Reader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const
 {
 	std::array<int, 4> counters = {};
 	int end = row.size();

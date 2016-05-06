@@ -64,7 +64,10 @@ int main(int argc, char** argv)
 				}
 			}
 
-			auto result = ZXing::BarcodeScanner::Scan(bitmap);
+			auto result = ZXing::BarcodeScanner(false).scan(bitmap);
+			if (result.format.empty()) {
+				result = ZXing::BarcodeScanner(true).scan(bitmap);
+			}
 
 			if (result.format.empty()) {
 				std::cout << "Not found";

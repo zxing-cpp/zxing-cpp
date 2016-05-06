@@ -16,7 +16,7 @@
 
 #include "BarcodeScanner.h"
 #include "StringCodecs.h"
-#include "RGBLuminanceSource.h"
+#include "GenericLuminanceSource.h"
 #include "HybridBinarizer.h"
 #include "BinaryBitmap.h"
 #include "MultiFormatReader.h"
@@ -35,6 +35,17 @@ static void InitStringCodecs()
 
 }
 
+BarcodeScanner::BarcodeScanner(bool tryHarder)
+{
+	static std::once_flag s_once;
+	std::call_once(s_once, InitStringCodecs);
+
+	DecodeHints hints;
+	hints.setShouldTryHarder(tryHarder);
+
+	_reader = std::make_shared<MultiFormatReader>(hints);
+}
+
 
 static std::shared_ptr<LuminanceSource>
 CreateLuminanceSource(Gdiplus::Bitmap& bitmap, const Gdiplus::BitmapData& data)
@@ -42,51 +53,37 @@ CreateLuminanceSource(Gdiplus::Bitmap& bitmap, const Gdiplus::BitmapData& data)
 	switch (bitmap.GetPixelFormat())
 	{
 	case PixelFormat24bppRGB:
-		return std::make_shared<RGBLuminanceSource>(data.Scan0, data.Width, data.Height, data.Stride, 3, 2, 1, 0);
+		return std::make_shared<GenericLuminanceSource>(data.Width, data.Height, data.Scan0, data.Stride, 3, 2, 1, 0);
 	case PixelFormat32bppARGB:
 	case PixelFormat32bppRGB:
-		return std::make_shared<RGBLuminanceSource>(data.Scan0, data.Width, data.Height, data.Stride, 4, 2, 1, 0);
+		return std::make_shared<GenericLuminanceSource>(data.Width, data.Height, data.Scan0, data.Stride, 4, 2, 1, 0);
 	}
 	throw std::invalid_argument("Unsupported format");
 }
 
-static std::shared_ptr<Binarizer>
-CreateBinarizer(Gdiplus::Bitmap& bitmap, const Gdiplus::BitmapData& data)
+static std::shared_ptr<BinaryBitmap>
+CreateBinaryBitmap(Gdiplus::Bitmap& bitmap)
 {
-	return std::make_shared<HybridBinarizer>(CreateLuminanceSource(bitmap, data));
+	Gdiplus::BitmapData data;
+	bitmap.LockBits(nullptr, Gdiplus::ImageLockModeRead, bitmap.GetPixelFormat(), &data);
+	try
+	{
+		return std::make_shared<HybridBinarizer>(CreateLuminanceSource(bitmap, data));
+		bitmap.UnlockBits(&data);
+	}
+	catch (...)
+	{
+		bitmap.UnlockBits(&data);
+		throw;
+	}
 }
 
-
 BarcodeScanner::ScanResult
-BarcodeScanner::Scan(Gdiplus::Bitmap& bitmap)
+BarcodeScanner::scan(Gdiplus::Bitmap& bitmap)
 {
-	static std::once_flag s_once;
-	std::call_once(s_once, InitStringCodecs);
-
-	Result result(ErrorStatus::NotFound);
-	{
-		Gdiplus::BitmapData data;
-		bitmap.LockBits(nullptr, Gdiplus::ImageLockModeRead, bitmap.GetPixelFormat(), &data);
-		try
-		{
-			auto binarizer = CreateBinarizer(bitmap, data);
-			BinaryBitmap binImg(binarizer);
-			MultiFormatReader reader;
-			result = reader.decode(binImg);
-			if (!result.isValid()) {
-				DecodeHints hints;
-				hints.put(DecodeHint::TRY_HARDER, true);
-				result = reader.decode(binImg, &hints);
-			}
-			bitmap.UnlockBits(&data);
-		}
-		catch (...)
-		{
-			bitmap.UnlockBits(&data);
-			throw;
-		}
-	}
-
+	auto binImg = CreateBinaryBitmap(bitmap);
+	binImg = binImg->rotated(180);
+	auto result = _reader->read(*binImg);
 	if (result.isValid()) {
 		return{ ToString(result.format()), result.text().toStdString() };
 	}

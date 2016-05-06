@@ -311,7 +311,7 @@ static void DetectBarcode(const BitMatrix& bitMatrix, bool multiple, std::list<s
 * @throws NotFoundException if no PDF417 Code can be found
 */
 ErrorStatus
-Detector::Detect(const BinaryBitmap& image, const DecodeHints* hints, bool multiple, Result& result)
+Detector::Detect(const BinaryBitmap& image, bool multiple, Result& result)
 {
 	// TODO detection improvement, tryHarder could try several different luminance thresholds/blackpoints or even 
 	// different binarizers

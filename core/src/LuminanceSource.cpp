@@ -79,14 +79,9 @@ public:
 		return _src->canRotate();
 	}
 
-	virtual std::shared_ptr<LuminanceSource> rotatedCCW90() const override
+	virtual std::shared_ptr<LuminanceSource> rotated(int degreeCW) const override
 	{
-		return CreateInverted(_src->rotatedCCW90());
-	}
-
-	virtual std::shared_ptr<LuminanceSource> rotatedCCW45() const override
-	{
-		return CreateInverted(_src->rotatedCCW45());
+		return CreateInverted(_src->rotated(degreeCW));
 	}
 
 protected:
@@ -125,21 +120,9 @@ LuminanceSource::canRotate() const
 * @return A rotated version of this object.
 */
 std::shared_ptr<LuminanceSource>
-LuminanceSource::rotatedCCW90() const
+LuminanceSource::rotated(int degreeCW) const
 {
 	throw std::runtime_error("This luminance source does not support rotation by 90 degrees.");
-}
-
-/**
-* Returns a new object with rotated image data by 45 degrees counterclockwise.
-* Only callable if {@link #isRotateSupported()} is true.
-*
-* @return A rotated version of this object.
-*/
-std::shared_ptr<LuminanceSource>
-LuminanceSource::rotatedCCW45() const
-{
-	throw std::runtime_error("This luminance source does not support rotation by 45 degrees.");
 }
 
 //@Override

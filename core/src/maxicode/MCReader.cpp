@@ -21,6 +21,7 @@
 #include "Result.h"
 #include "DecoderResult.h"
 #include "BinaryBitmap.h"
+#include "BitMatrix.h"
 
 namespace ZXing {
 namespace MaxiCode {
@@ -57,9 +58,9 @@ static bool ExtractPureBits(const BitMatrix& image, BitMatrix& bits)
 }
 
 Result
-Reader::decode(const BinaryBitmap& image, const DecodeHints* hints) const
+Reader::decode(const BinaryBitmap& image) const
 {
-	if (hints == nullptr || !hints->getFlag(DecodeHint::PURE_BARCODE)) {
+	if (!image.isPureBarcode()) {
 		return Result(ErrorStatus::NotFound);
 	}
 
@@ -75,7 +76,7 @@ Reader::decode(const BinaryBitmap& image, const DecodeHints* hints) const
 	}
 
 	DecoderResult decoderResult;
-	status = Decoder::Decode(bits, hints, decoderResult);
+	status = Decoder::Decode(bits, decoderResult);
 	if (StatusIsError(status)) {
 		return Result(status);
 	}

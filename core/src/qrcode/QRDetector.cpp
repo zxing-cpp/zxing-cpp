@@ -191,7 +191,7 @@ static float CalculateModuleSize(const BitMatrix& image, const ResultPoint& topL
 * @return {@link AlignmentPattern} if found, or null otherwise
 * @throws NotFoundException if an unexpected error occurs during detection
 */
-ErrorStatus FindAlignmentInRegion(const BitMatrix& image, float overallEstModuleSize, int estAlignmentX, int estAlignmentY, float allowanceFactor, const PointCallback& pointCallback, AlignmentPattern& result)
+ErrorStatus FindAlignmentInRegion(const BitMatrix& image, float overallEstModuleSize, int estAlignmentX, int estAlignmentY, float allowanceFactor, /*const PointCallback& pointCallback,*/ AlignmentPattern& result)
 {
 	// Look for an alignment pattern (3 modules in size) around where it
 	// should be
@@ -208,7 +208,7 @@ ErrorStatus FindAlignmentInRegion(const BitMatrix& image, float overallEstModule
 		return ErrorStatus::NotFound;
 	}
 
-	return AlignmentPatternFinder::Find(image, alignmentAreaLeftX, alignmentAreaTopY, alignmentAreaRightX - alignmentAreaLeftX, alignmentAreaBottomY - alignmentAreaTopY, overallEstModuleSize, pointCallback, result);
+	return AlignmentPatternFinder::Find(image, alignmentAreaLeftX, alignmentAreaTopY, alignmentAreaRightX - alignmentAreaLeftX, alignmentAreaBottomY - alignmentAreaTopY, overallEstModuleSize, /*pointCallback,*/ result);
 }
 
 static PerspectiveTransform CreateTransform(const ResultPoint& topLeft, const ResultPoint& topRight, const ResultPoint& bottomLeft, const ResultPoint* alignmentPattern, int dimension)
@@ -277,7 +277,7 @@ static int ComputeDimension(const ResultPoint& topLeft, const ResultPoint& topRi
 	return -1; // to signal error;
 }
 
-static ErrorStatus ProcessFinderPatternInfo(const BitMatrix& image, const FinderPatternInfo& info, const PointCallback& pointCallback, DetectorResult& result)
+static ErrorStatus ProcessFinderPatternInfo(const BitMatrix& image, const FinderPatternInfo& info, /*const PointCallback& pointCallback, */DetectorResult& result)
 {
 	//FinderPattern topLeft = info.getTopLeft();
 	//FinderPattern topRight = info.getTopRight();
@@ -315,7 +315,7 @@ static ErrorStatus ProcessFinderPatternInfo(const BitMatrix& image, const Finder
 
 		// Kind of arbitrary -- expand search radius before giving up
 		for (int i = 4; i <= 16; i <<= 1) {
-			if (StatusIsOK(FindAlignmentInRegion(image, moduleSize, estAlignmentX, estAlignmentY, static_cast<float>(i), pointCallback, alignmentPattern))) {
+			if (StatusIsOK(FindAlignmentInRegion(image, moduleSize, estAlignmentX, estAlignmentY, static_cast<float>(i), /*pointCallback,*/ alignmentPattern))) {
 				haveAlignPattern = true;
 				break;
 			}
@@ -342,16 +342,16 @@ static ErrorStatus ProcessFinderPatternInfo(const BitMatrix& image, const Finder
 }
 
 ErrorStatus
-Detector::Detect(const BitMatrix& image, const DecodeHints* hints, DetectorResult& result)
+Detector::Detect(const BitMatrix& image, bool pureBarcode, bool tryHarder, DetectorResult& result)
 {
-	PointCallback pointCallback = hints != nullptr ? hints->getPointCallback(DecodeHint::NEED_RESULT_POINT_CALLBACK) : nullptr;
+	/*PointCallback pointCallback = hints.resultPointCallback();*/
 
 	FinderPatternInfo info;
-	auto status = FinderPatternFinder::Find(image, pointCallback, hints, info);
+	auto status = FinderPatternFinder::Find(image, /*pointCallback,*/ pureBarcode, tryHarder, info);
 	if (StatusIsError(status))
 		return status;
 	
-	return ProcessFinderPatternInfo(image, info, pointCallback, result);
+	return ProcessFinderPatternInfo(image, info, /*pointCallback,*/ result);
 }
 
 } // QRCode
