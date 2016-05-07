@@ -16,6 +16,7 @@
 */
 
 #include <cstddef>
+#include <memory>
 
 namespace ZXing {
 
@@ -29,14 +30,19 @@ namespace OneD {
 * Encapsulates functionality and implementation that is common to all families
 * of one-dimensional barcodes.
 *
-* Normally RowReader instance is NOT thread-safe.
-*
 * @author dswitkin@google.com (Daniel Switkin)
 * @author Sean Owen
 */
 class RowReader
 {
 public:
+
+	struct DecodingState
+	{
+		virtual ~DecodingState() {}
+	};
+
+
 	virtual ~RowReader() {}
 
 	/**
@@ -51,7 +57,7 @@ public:
 	* @throws ChecksumException if a potential barcode is found but does not pass its checksum
 	* @throws FormatException if a potential barcode is found but format is invalid
 	*/
-	virtual Result decodeRow(int rowNumber, const BitArray& row) const = 0;
+	virtual Result decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const = 0;
 
 	/**
 	* Records the size of successive runs of white and black pixels in a row, starting at a given point.

@@ -29,6 +29,7 @@
 #include "DecodeHints.h"
 
 #include <unordered_set>
+#include <algorithm>
 
 namespace ZXing {
 namespace OneD {
@@ -102,6 +103,8 @@ Reader::Reader(const DecodeHints& hints) :
 static Result
 DoDecode(const std::vector<std::shared_ptr<RowReader>>& readers, const BinaryBitmap& image, bool tryHarder)
 {
+	std::vector<std::unique_ptr<RowReader::DecodingState>> decodingState(readers.size());
+
 	int width = image.width();
 	int height = image.height();
 
@@ -143,8 +146,8 @@ DoDecode(const std::vector<std::shared_ptr<RowReader>>& readers, const BinaryBit
 				//currentHints.setResultPointCallback(nullptr);
 			}
 			// Look for a barcode
-			for (auto& reader : readers) {
-				Result result = reader->decodeRow(rowNumber, row);
+			for (size_t r = 0; r < readers.size(); ++r) {
+				Result result = readers[r]->decodeRow(rowNumber, row, decodingState[r]);
 				if (result.isValid()) {
 					// We found our barcode
 					if (attempt == 1) {

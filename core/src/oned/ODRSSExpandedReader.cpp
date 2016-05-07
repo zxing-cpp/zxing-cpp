@@ -17,9 +17,11 @@
 #include "oned/ODRSSExpandedReader.h"
 #include "oned/rss/ODRSSReaderHelper.h"
 #include "oned/rss/ODRSSExpandedBinaryDecoder.h"
+#include "oned/rss/ODRSSExpandedRow.h"
 #include "Result.h"
 #include "BitArray.h"
 
+#include <list>
 #include <array>
 #include <vector>
 #include <numeric>
@@ -86,10 +88,12 @@ static const std::array<std::vector<int>, 10> FINDER_PATTERN_SEQUENCES = { {
 	{ FINDER_PAT_A, FINDER_PAT_A, FINDER_PAT_B, FINDER_PAT_B, FINDER_PAT_C, FINDER_PAT_D, FINDER_PAT_D, FINDER_PAT_E, FINDER_PAT_E, FINDER_PAT_F, FINDER_PAT_F },
 } };
 
-//private final List<ExpandedPair> pairs = new ArrayList<>(MAX_PAIRS);
-//private final List<ExpandedRow> rows = new ArrayList<>();
-//private final int[] startEnd = new int[2];
-//private boolean startFromEven;
+
+struct RSSExpandedDecodingState : public RowReader::DecodingState
+{
+	std::list<RSS::ExpandedRow> rows;
+};
+
 
 using namespace RSS;
 
@@ -763,13 +767,25 @@ ConstructResult(const std::list<ExpandedPair>& pairs)
 }
 
 Result
-RSSExpandedReader::decodeRow(int rowNumber, const BitArray& row) const
+RSSExpandedReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const
 {
+	RSSExpandedDecodingState* prevState = nullptr;
+	if (state == nullptr) {
+		state.reset(prevState = new RSSExpandedDecodingState);
+	}
+	else {
+		prevState = dynamic_cast<RSSExpandedDecodingState*>(state.get());
+	}
+
+	if (prevState == nullptr) {
+		throw std::runtime_error("Invalid state");
+	}
+
 	// Rows can start with even pattern in case in prev rows there where odd number of patters.
 	// So lets try twice
-	Result r = ConstructResult(DecodeRow2Pairs(rowNumber, row, false, _rows));
+	Result r = ConstructResult(DecodeRow2Pairs(rowNumber, row, false, prevState->rows));
 	if (!r.isValid()) {
-		r = ConstructResult(DecodeRow2Pairs(rowNumber, row, true, _rows));
+		r = ConstructResult(DecodeRow2Pairs(rowNumber, row, true, prevState->rows));
 	}
 	return r;
 }

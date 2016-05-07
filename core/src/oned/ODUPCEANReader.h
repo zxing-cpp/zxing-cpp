@@ -40,7 +40,7 @@ namespace OneD {
 class UPCEANReader : public RowReader
 {
 public:
-	virtual Result decodeRow(int rowNumber, const BitArray& row) const override;
+	virtual Result decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const override;
 
 	/**
 	* <p>Like {@link #decodeRow(int, BitArray, java.util.Map)}, but

@@ -312,7 +312,7 @@ ITFReader::ITFReader(const DecodeHints& hints) :
 }
 
 Result
-ITFReader::decodeRow(int rowNumber, const BitArray& row) const
+ITFReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const
 {
 	// Find out where the Middle section (payload) starts & ends
 	int narrowLineWidth = -1;

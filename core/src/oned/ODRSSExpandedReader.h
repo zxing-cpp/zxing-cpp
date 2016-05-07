@@ -16,14 +16,9 @@
 */
 
 #include "oned/ODRowReader.h"
-#include "oned/rss/ODRSSExpandedRow.h"
-
-#include <list>
 
 namespace ZXing {
 namespace OneD {
-
-namespace RSS { class ExpandedRow; }
 
 /**
 * @author Pablo Orduña, University of Deusto(pablo.orduna@deusto.es)
@@ -32,12 +27,7 @@ namespace RSS { class ExpandedRow; }
 class RSSExpandedReader : public RowReader
 {
 public:
-	virtual Result decodeRow(int rowNumber, const BitArray& row) const override;
-
-private:
-
-	// TODO: This prevents the whole engine to be thread-safe
-	mutable std::list<RSS::ExpandedRow> _rows;
+	virtual Result decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const override;
 };
 
 } // OneD

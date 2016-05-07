@@ -16,10 +16,12 @@
 
 #include "oned/ODRSS14Reader.h"
 #include "oned/rss/ODRSSReaderHelper.h"
+#include "oned/rss/ODRSSPair.h"
 #include "BitArray.h"
 #include "Result.h"
 #include "DecodeHints.h"
 
+#include <list>
 #include <array>
 #include <algorithm>
 #include <numeric>
@@ -27,7 +29,6 @@
 #include <iomanip>
 
 namespace ZXing {
-
 namespace OneD {
 
 static const int OUTSIDE_EVEN_TOTAL_SUBSET[] = { 1,10,34,70,126 };
@@ -49,6 +50,12 @@ static const std::array<FinderCounters, 9> FINDER_PATTERNS = {
 	2,3,8,1,
 	1,5,7,1,
 	1,3,9,1,
+};
+
+struct RSS14DecodingState : public RowReader::DecodingState
+{
+	std::list<RSS::Pair> possibleLeftPairs;
+	std::list<RSS::Pair> possibleRightPairs;
 };
 
 //private final List<Pair> possibleLeftPairs;
@@ -453,17 +460,29 @@ ConstructResult(const RSS::Pair& leftPair, const RSS::Pair& rightPair)
 }
 
 Result
-RSS14Reader::decodeRow(int rowNumber, const BitArray& row_) const
+RSS14Reader::decodeRow(int rowNumber, const BitArray& row_, std::unique_ptr<DecodingState>& state) const
 {
+	RSS14DecodingState* prevState = nullptr;
+	if (state == nullptr) {
+		state.reset(prevState = new RSS14DecodingState);
+	}
+	else {
+		prevState = dynamic_cast<RSS14DecodingState*>(state.get());
+	}
+
+	if (prevState == nullptr) {
+		throw std::runtime_error("Invalid state");
+	}
+
 	BitArray row = row_;
-	AddOrTally(_possibleLeftPairs, DecodePair(row, false, rowNumber));
+	AddOrTally(prevState->possibleLeftPairs, DecodePair(row, false, rowNumber));
 	row.reverse();
-	AddOrTally(_possibleRightPairs, DecodePair(row, true, rowNumber));
+	AddOrTally(prevState->possibleRightPairs, DecodePair(row, true, rowNumber));
 	row.reverse();
 
-	for (const auto& left : _possibleLeftPairs) {
+	for (const auto& left : prevState->possibleLeftPairs) {
 		if (left.count() > 1) {
-			for (const auto& right : _possibleRightPairs) {
+			for (const auto& right : prevState->possibleRightPairs) {
 				if (right.count() > 1) {
 					if (CheckChecksum(left, right)) {
 						return ConstructResult(left, right);

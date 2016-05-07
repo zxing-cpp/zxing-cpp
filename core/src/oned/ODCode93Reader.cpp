@@ -239,7 +239,7 @@ CheckChecksums(const std::string& result)
 
 
 Result
-Code93Reader::decodeRow(int rowNumber, const BitArray& row) const
+Code93Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const
 {
 	int patternStart, patternEnd;
 	ErrorStatus status = FindAsteriskPattern(row, patternStart, patternEnd);

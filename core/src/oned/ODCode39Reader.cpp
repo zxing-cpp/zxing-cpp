@@ -229,7 +229,7 @@ Code39Reader::Code39Reader(const DecodeHints& hints, bool extendedMode) :
 }
 
 Result
-Code39Reader::decodeRow(int rowNumber, const BitArray& row) const
+Code39Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const
 {
 	CounterContainer theCounters = {};
 	std::string result;

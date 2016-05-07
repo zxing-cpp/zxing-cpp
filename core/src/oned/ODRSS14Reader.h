@@ -16,14 +16,9 @@
 */
 
 #include "oned/ODRowReader.h"
-#include "oned/rss/ODRSSPair.h"
-
-#include <list>
 
 namespace ZXing {
 namespace OneD {
-
-namespace RSS { class Pair; }
 
 /**
 * Decodes RSS-14, including truncated and stacked variants. See ISO/IEC 24724:2006.
@@ -31,12 +26,7 @@ namespace RSS { class Pair; }
 class RSS14Reader : public RowReader
 {
 public:
-	virtual Result decodeRow(int rowNumber, const BitArray& row) const override;
-
-private:
-	// TODO: This prevents the whole engine to be thread-safe
-	mutable std::list<RSS::Pair> _possibleLeftPairs;
-	mutable std::list<RSS::Pair> _possibleRightPairs;
+	virtual Result decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const override;
 };
 
 } // OneD

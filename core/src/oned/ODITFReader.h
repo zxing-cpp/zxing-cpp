@@ -45,7 +45,7 @@ class ITFReader : public RowReader
 {
 public:
 	explicit ITFReader(const DecodeHints& hints);
-	virtual Result decodeRow(int rowNumber, const BitArray& row) const override;
+	virtual Result decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const override;
 
 private:
 	std::vector<int> _allowedLengths;

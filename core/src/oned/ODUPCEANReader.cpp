@@ -172,7 +172,7 @@ UPCEANReader::FindStartGuardPattern(const BitArray& row, int& begin, int& end)
 }
 
 Result
-UPCEANReader::decodeRow(int rowNumber, const BitArray& row) const
+UPCEANReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const
 {
 	int begin, end;
 	auto status = FindStartGuardPattern(row, begin, end);

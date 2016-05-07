@@ -238,7 +238,7 @@ Code128Reader::Code128Reader(const DecodeHints& hints) :
 }
 
 Result
-Code128Reader::decodeRow(int rowNumber, const BitArray& row) const
+Code128Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const
 {
 	int patternStart, patternEnd, startCode;
 	ErrorStatus status = FindStartPattern(row, patternStart, patternEnd, startCode);

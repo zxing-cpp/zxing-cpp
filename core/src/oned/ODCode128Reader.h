@@ -32,7 +32,7 @@ class Code128Reader : public RowReader
 {
 public:
 	explicit Code128Reader(const DecodeHints& hints);
-	virtual Result decodeRow(int rowNumber, const BitArray& row) const override;
+	virtual Result decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const override;
 
 private:
 	bool _convertFNC1;
