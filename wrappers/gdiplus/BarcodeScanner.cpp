@@ -35,7 +35,8 @@ static void InitStringCodecs()
 
 }
 
-BarcodeScanner::BarcodeScanner(bool tryHarder)
+BarcodeScanner::BarcodeScanner(bool tryHarder, bool autoRotate)
+	: _autoRotate(autoRotate)
 {
 	static std::once_flag s_once;
 	std::call_once(s_once, InitStringCodecs);
@@ -83,8 +84,19 @@ BarcodeScanner::ScanResult
 BarcodeScanner::scan(Gdiplus::Bitmap& bitmap)
 {
 	auto binImg = CreateBinaryBitmap(bitmap);
-	binImg = binImg->rotated(180);
 	auto result = _reader->read(*binImg);
+	if (_autoRotate && !result.isValid()) {
+		binImg = binImg->rotated(180);
+		result = _reader->read(*binImg);
+	}
+	//if (_autoRotate && !result.isValid()) {
+	//	binImg = binImg->rotated(90);
+	//	result = _reader->read(*binImg);
+	//}
+	//if (_autoRotate && !result.isValid()) {
+	//	binImg = binImg->rotated(180);
+	//	result = _reader->read(*binImg);
+	//}
 	if (result.isValid()) {
 		return{ ToString(result.format()), result.text().toStdString() };
 	}

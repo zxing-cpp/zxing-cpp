@@ -64,9 +64,12 @@ int main(int argc, char** argv)
 				}
 			}
 
-			auto result = ZXing::BarcodeScanner(false).scan(bitmap);
+			auto result = ZXing::BarcodeScanner(false, true).scan(bitmap);
 			if (result.format.empty()) {
-				result = ZXing::BarcodeScanner(true).scan(bitmap);
+				result = ZXing::BarcodeScanner(true, true).scan(bitmap);
+			}
+			if (result.format.empty()) {
+
 			}
 
 			if (result.format.empty()) {

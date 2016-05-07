@@ -142,7 +142,7 @@ ErrorStatus
 UPCEANReader::FindGuardPattern(const BitArray& row, int rowOffset, bool whiteFirst, const int* pattern, size_t length, int& begin, int& end)
 {
 	std::vector<int> counters(length, 0);
-	return DoFindGuardPattern(row, rowOffset, false, pattern, counters.data(), length, begin, end);
+	return DoFindGuardPattern(row, rowOffset, whiteFirst, pattern, counters.data(), length, begin, end);
 }
 
 ErrorStatus

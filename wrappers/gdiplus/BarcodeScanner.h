@@ -34,7 +34,7 @@ public:
 		std::string text;
 	};
 
-	explicit BarcodeScanner(bool tryHarder = false);
+	explicit BarcodeScanner(bool tryHarder = false, bool autoRotate = false);
 	BarcodeScanner(const BarcodeScanner &) = delete;
 	BarcodeScanner& operator=(const BarcodeScanner &) = delete;
 
@@ -42,6 +42,7 @@ public:
 
 private:
 	std::shared_ptr<MultiFormatReader> _reader;
+	bool _autoRotate;
 };
 
 } // ZXing
