@@ -264,7 +264,7 @@ namespace DecodedBitStreamParser
 				break;
 		}
 		decodeResult.setRawBytes(bytes);
-		decodeResult.setText(result);
+		decodeResult.setText(String::FromLatin1(result));
 		decodeResult.setEcLevel(std::to_string(mode)); // really???
 		return ErrorStatus::NoError;
 	}

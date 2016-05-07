@@ -551,7 +551,7 @@ namespace DecodedBitStreamParser {
 			result.append(resultTrailer);
 		}
 		decodeResult.setRawBytes(bytes);
-		decodeResult.setText(result);
+		decodeResult.setText(String::FromLatin1(result));
 		decodeResult.setByteSegments(byteSegments);
 		return ErrorStatus::NoError;
 	}

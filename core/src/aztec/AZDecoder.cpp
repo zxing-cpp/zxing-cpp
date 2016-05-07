@@ -174,7 +174,7 @@ static bool CorrectBits(const DetectorResult& ddata, const std::vector<bool>& ra
 		dataWords[i] = ReadCode(rawbits, offset, codewordSize);
 	}
 
-	if (!StatusIsError(ReedSolomonDecoder(*gf).decode(dataWords, numECCodewords))) {
+	if (StatusIsError(ReedSolomonDecoder(*gf).decode(dataWords, numECCodewords))) {
 		return false;
 	}
 
@@ -329,7 +329,7 @@ Decoder::Decode(const DetectorResult& detectorResult, DecoderResult& result)
 	std::vector<bool> correctedBits;
 	if (CorrectBits(detectorResult, rawbits, correctedBits)) {
 		auto resultString = GetEncodedData(correctedBits);
-		result.setText(resultString);
+		result.setText(String::FromLatin1(resultString));
 		return ErrorStatus::NoError;
 	}
 	else {
