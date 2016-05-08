@@ -34,15 +34,42 @@ public:
 		std::string text;
 	};
 
-	explicit BarcodeScanner(bool tryHarder = false, bool autoRotate = false);
+	enum Rotation {
+		Rotation0 = 1,
+		RotationCW90 = 2,
+		Rotation180 = 4,
+		RotationCCW90 = 8,
+	};
+
+	/**
+	 Supported formats are:
+	 "AZTEC",
+	 "CODABAR",
+	 "CODE_39",
+	 "CODE_93",
+	 "CODE_128",
+	 "DATA_MATRIX",
+	 "EAN_8",
+	 "EAN_13",
+	 "ITF",
+	 "MAXICODE",
+	 "PDF_417",
+	 "QR_CODE",
+	 "RSS_14",
+	 "RSS_EXPANDED",
+	 "UPC_A",
+	 "UPC_E",
+	 "UPC_EAN_EXTENSION",
+	*/
+	explicit BarcodeScanner(bool tryHarder = false, bool tryRotate = false, const std::string& format = std::string());
 	BarcodeScanner(const BarcodeScanner &) = delete;
 	BarcodeScanner& operator=(const BarcodeScanner &) = delete;
 
-	ScanResult scan(Gdiplus::Bitmap& bitmap);
+	ScanResult scan(Gdiplus::Bitmap& bitmap, int rotations = Rotation0);
 
 private:
 	std::shared_ptr<MultiFormatReader> _reader;
-	bool _autoRotate;
+	std::string _format;
 };
 
 } // ZXing

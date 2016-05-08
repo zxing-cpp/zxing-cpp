@@ -45,6 +45,17 @@ public:
 	}
 
 	/**
+	* For 1D readers only, should try to rotate image 90 CCW if not barcode found.
+	*/
+	bool shouldTryRotate() const {
+		return (m_flags & TRY_ROTATE) != 0;
+	}
+
+	void setShouldTryRotate(bool v) {
+		setFlag(TRY_ROTATE, v);
+	}
+
+	/**
 	* Specifies what character encoding to use when decoding, where applicable.
 	*/
 	std::string characterSet() const {
@@ -139,6 +150,7 @@ private:
 	enum HintFlag
 	{
 		TRY_HARDER = 24,
+		TRY_ROTATE,
 		ASSUME_CODE_39_CHECK_DIGIT,
 		ASSUME_GS1,
 		RETURN_CODABAR_START_END,

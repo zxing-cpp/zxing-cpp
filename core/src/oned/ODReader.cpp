@@ -36,7 +36,8 @@ namespace OneD {
 
 
 Reader::Reader(const DecodeHints& hints) :
-	_tryHarder(hints.shouldTryHarder())
+	_tryHarder(hints.shouldTryHarder()),
+	_tryRotate(hints.shouldTryRotate())
 {
 	_readers.reserve(8);
 
@@ -179,7 +180,7 @@ Reader::decode(const BinaryBitmap& image) const
 		return result;
 	}
 
-	if (_tryHarder && image.canRotate()) {
+	if (_tryRotate && image.canRotate()) {
 		auto rotatedImage = image.rotated(270);
 		result = DoDecode(_readers, *rotatedImage, _tryHarder);
 		if (result.isValid()) {

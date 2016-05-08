@@ -83,5 +83,8 @@ enum class BarcodeFormat : int
 
 const char* ToString(BarcodeFormat format);
 
+// Return FORMAT_COUNT if str is unexpected
+BarcodeFormat FromString(const char* str);
+
 } // ZXing
 

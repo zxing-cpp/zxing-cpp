@@ -35,18 +35,23 @@ static void InitStringCodecs()
 
 }
 
-BarcodeScanner::BarcodeScanner(bool tryHarder, bool autoRotate)
-	: _autoRotate(autoRotate)
+BarcodeScanner::BarcodeScanner(bool tryHarder, bool tryRotate, const std::string& format) :
+	_format(format)
 {
 	static std::once_flag s_once;
 	std::call_once(s_once, InitStringCodecs);
 
 	DecodeHints hints;
 	hints.setShouldTryHarder(tryHarder);
-
+	hints.setShouldTryRotate(tryRotate);
+	if (!_format.empty()) {
+		BarcodeFormat f = FromString(format.c_str());
+		if (f != BarcodeFormat::FORMAT_COUNT) {
+			hints.setPossibleFormats({ f });
+		}
+	}
 	_reader = std::make_shared<MultiFormatReader>(hints);
 }
-
 
 static std::shared_ptr<LuminanceSource>
 CreateLuminanceSource(Gdiplus::Bitmap& bitmap, const Gdiplus::BitmapData& data)
@@ -81,22 +86,23 @@ CreateBinaryBitmap(Gdiplus::Bitmap& bitmap)
 }
 
 BarcodeScanner::ScanResult
-BarcodeScanner::scan(Gdiplus::Bitmap& bitmap)
+BarcodeScanner::scan(Gdiplus::Bitmap& bitmap, int rotations)
 {
+	Result result(ErrorStatus::NotFound);
 	auto binImg = CreateBinaryBitmap(bitmap);
-	auto result = _reader->read(*binImg);
-	if (_autoRotate && !result.isValid()) {
-		binImg = binImg->rotated(180);
+	
+	if ((rotations & Rotation0) != 0) {
 		result = _reader->read(*binImg);
 	}
-	//if (_autoRotate && !result.isValid()) {
-	//	binImg = binImg->rotated(90);
-	//	result = _reader->read(*binImg);
-	//}
-	//if (_autoRotate && !result.isValid()) {
-	//	binImg = binImg->rotated(180);
-	//	result = _reader->read(*binImg);
-	//}
+	if (!result.isValid() && (rotations & Rotation180) != 0) {
+		result = _reader->read(*binImg->rotated(180));
+	}
+	if (!result.isValid() && (rotations & RotationCW90) != 0) {
+		result = _reader->read(*binImg->rotated(90));
+	}
+	if (!result.isValid() && (rotations & RotationCCW90) != 0) {
+		result = _reader->read(*binImg->rotated(270));
+	}
 	if (result.isValid()) {
 		return{ ToString(result.format()), result.text().toStdString() };
 	}

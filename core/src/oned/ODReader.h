@@ -43,6 +43,7 @@ public:
 private:
 	std::vector<std::shared_ptr<RowReader>> _readers;
 	bool _tryHarder;
+	bool _tryRotate;
 };
 
 } // OneD
