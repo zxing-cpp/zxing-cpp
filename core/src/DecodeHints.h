@@ -37,7 +37,7 @@ public:
 	* Spend more time to try to find a barcode; optimize for accuracy, not speed.
 	*/
 	bool shouldTryHarder() const {
-		return (m_flags & TRY_HARDER) != 0;
+		return getFlag(TRY_HARDER);
 	}
 
 	void setShouldTryHarder(bool v) {
@@ -48,7 +48,7 @@ public:
 	* For 1D readers only, should try to rotate image 90 CCW if not barcode found.
 	*/
 	bool shouldTryRotate() const {
-		return (m_flags & TRY_ROTATE) != 0;
+		return getFlag(TRY_ROTATE);
 	}
 
 	void setShouldTryRotate(bool v) {
@@ -93,7 +93,7 @@ public:
 	* Assume Code 39 codes employ a check digit.
 	*/
 	bool shouldAssumeCode39CheckDigit() const {
-		return (m_flags & ASSUME_CODE_39_CHECK_DIGIT) != 0;
+		return getFlag(ASSUME_CODE_39_CHECK_DIGIT);
 	}
 
 	void setShouldAssumeCode39CheckDigit(bool v) {
@@ -105,7 +105,7 @@ public:
 	* For example this affects FNC1 handling for Code 128 (aka GS1-128).
 	*/
 	bool shouldAssumeGS1() const {
-		return (m_flags & ASSUME_GS1) != 0;
+		return getFlag(ASSUME_GS1);
 	}
 
 	void setShouldAssumeGS1(bool v) {
@@ -118,7 +118,7 @@ public:
 	* to not be.
 	*/
 	bool shouldReturnCodabarStartEnd() const {
-		return (m_flags & RETURN_CODABAR_START_END) != 0;
+		return getFlag(RETURN_CODABAR_START_END);
 	}
 
 	void setShouldReturnCodabarStartEnd(bool v) {
@@ -156,12 +156,16 @@ private:
 		RETURN_CODABAR_START_END,
 	};
 
+	bool getFlag(int f) const {
+		return (m_flags & (1 << f)) != 0;
+	}
+
 	void setFlag(int f, bool v)
 	{
 		if (v)
-			m_flags |= f;
+			m_flags |= (1 << f);
 		else
-			m_flags &= ~f;
+			m_flags &= ~(1 << f);
 	}
 };
 
