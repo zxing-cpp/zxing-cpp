@@ -505,12 +505,9 @@ ParseBlocks(const BitArray& bits, ParsingState& state, std::string& buffer)
 }
 
 static DecodedInformation
-DoDecodeGeneralPurposeField(const BitArray& bits, int pos, const std::string& prefix)
+DoDecodeGeneralPurposeField(ParsingState& state, const BitArray& bits, const std::string& prefix)
 {
 	std::string buffer = prefix;
-	ParsingState state;
-	state.position = pos;
-
 	DecodedInformation lastDecoded = ParseBlocks(bits, state, buffer);
 	if (lastDecoded.isValid() && lastDecoded.isRemaining()) {
 		return DecodedInformation(state.position, buffer, lastDecoded.remainingValue);
@@ -523,7 +520,9 @@ GenericAppIdDecoder::DecodeGeneralPurposeField(const BitArray& bits, int pos, st
 {
 	try
 	{
-		result += DoDecodeGeneralPurposeField(bits, pos, std::string()).newString;
+		ParsingState state;
+		state.position = pos;
+		result += DoDecodeGeneralPurposeField(state, bits, std::string()).newString;
 		return ErrorStatus::NoError;
 	}
 	catch (const std::exception &)
@@ -537,9 +536,11 @@ GenericAppIdDecoder::DecodeAllCodes(const BitArray& bits, int pos, std::string& 
 {
 	try
 	{
+		ParsingState state;
 		std::string remaining;
 		while (true) {
-			DecodedInformation info = DoDecodeGeneralPurposeField(bits, pos, remaining);
+			state.position = pos;
+			DecodedInformation info = DoDecodeGeneralPurposeField(state, bits, remaining);
 			std::string parsedFields;
 			auto status = FieldParser::ParseFieldsInGeneralPurpose(info.newString, parsedFields);
 			if (StatusIsError(status)) {

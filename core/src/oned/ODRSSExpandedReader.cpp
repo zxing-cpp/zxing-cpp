@@ -535,9 +535,11 @@ IsPartialRow(const std::list<ExpandedPair>& pairs, const std::list<ExpandedRow>&
 static void
 RemovePartialRows(std::list<ExpandedRow>& rows, const std::list<ExpandedPair>& pairs)
 {
-	for (std::list<ExpandedRow>::iterator it = rows.begin(); it != rows.end(); ++it) {
+	std::list<ExpandedRow>::iterator it = rows.begin();
+	while (it != rows.end()) {
 		//ExpandedRow r = iterator.next();
 		if (it->pairs().size() == pairs.size()) {
+			++it;
 			continue;
 		}
 		bool allFound = true;
@@ -559,7 +561,9 @@ RemovePartialRows(std::list<ExpandedRow>& rows, const std::list<ExpandedPair>& p
 			auto remPos = it;
 			++it;
 			rows.erase(remPos);
-			--it;
+		}
+		else {
+			++it;
 		}
 	}
 }
