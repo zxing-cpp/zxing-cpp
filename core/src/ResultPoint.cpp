@@ -59,41 +59,41 @@ float ResultPoint::Distance(int aX, int aY, int bX, int bY)
 	return std::sqrt(dx * dx + dy * dy);
 }
 
-void ResultPoint::OrderByBestPatterns(ResultPoint patterns[3])
+void ResultPoint::OrderByBestPatterns(ResultPoint& p0, ResultPoint& p1, ResultPoint& p2)
 {
-	ResultPoint copyPatterns[3] = { patterns[0], patterns[1], patterns[2] };
+	ResultPoint copyPatterns[3] = { p0, p1, p2 };
 	const ResultPoint* ordered[3] = { &copyPatterns[0], &copyPatterns[1] , &copyPatterns[2] };
-	OrderByBestPatterns(ordered);
-	patterns[0] = *ordered[0];
-	patterns[1] = *ordered[1];
-	patterns[2] = *ordered[2];
+	OrderByBestPatterns(ordered[0], ordered[1], ordered[2]);
+	p0 = *ordered[0];
+	p1 = *ordered[1];
+	p2 = *ordered[2];
 }
 
-void ResultPoint::OrderByBestPatterns(const ResultPoint* patterns[3])
+void ResultPoint::OrderByBestPatterns(const ResultPoint*& p0, const ResultPoint*& p1, const ResultPoint*& p2)
 {
 	// Find distances between pattern centers
-	float zeroOneDistance = Distance(*patterns[0], *patterns[1]);
-	float oneTwoDistance = Distance(*patterns[1], *patterns[2]);
-	float zeroTwoDistance = Distance(*patterns[0], *patterns[2]);
+	float zeroOneDistance = Distance(*p0, *p1);
+	float oneTwoDistance = Distance(*p1, *p2);
+	float zeroTwoDistance = Distance(*p0, *p2);
 
 	const ResultPoint* pointA;
 	const ResultPoint* pointB;
 	const ResultPoint* pointC;
 	// Assume one closest to other two is B; A and C will just be guesses at first
 	if (oneTwoDistance >= zeroOneDistance && oneTwoDistance >= zeroTwoDistance) {
-		pointB = patterns[0];
-		pointA = patterns[1];
-		pointC = patterns[2];
+		pointB = p0;
+		pointA = p1;
+		pointC = p2;
 	}
 	else if (zeroTwoDistance >= oneTwoDistance && zeroTwoDistance >= zeroOneDistance) {
-		pointB = patterns[1];
-		pointA = patterns[0];
-		pointC = patterns[2];
+		pointB = p1;
+		pointA = p0;
+		pointC = p2;
 	}
 	else {
-		pointB = patterns[2];
-		pointA = patterns[0];
-		pointC = patterns[1];
+		pointB = p2;
+		pointA = p0;
+		pointC = p1;
 	}
 
 	// Use cross product to figure out whether A and C are correct or flipped.
@@ -104,9 +104,9 @@ void ResultPoint::OrderByBestPatterns(const ResultPoint* patterns[3])
 		std::swap(pointA, pointC);
 	}
 
-	patterns[0] = pointA;
-	patterns[1] = pointB;
-	patterns[2] = pointC;
+	p0 = pointA;
+	p1 = pointB;
+	p2 = pointC;
 }
 
 

@@ -250,7 +250,7 @@ Detector::Detect(const BitMatrix& image, DetectorResult& result)
 	// Bottom left is correct but top left and bottom right might be switched
 	const ResultPoint* corners[] = { maybeTopLeft, bottomLeft, maybeBottomRight };
 	// Use the dot product trick to sort them out
-	ResultPoint::OrderByBestPatterns(corners);
+	ResultPoint::OrderByBestPatterns(corners[0], corners[1], corners[2]);
 
 	// Now we know which is which:
 	const ResultPoint* bottomRight = corners[0];

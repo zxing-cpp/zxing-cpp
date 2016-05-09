@@ -531,7 +531,7 @@ FinderPatternFinder::Find(const BitMatrix& image, /*const PointCallback& pointCa
 	if (StatusIsError(status))
 		return status;
 
-	ResultPoint::OrderByBestPatterns(possibleCenters.data());
+	ResultPoint::OrderByBestPatterns(possibleCenters[0], possibleCenters[1], possibleCenters[2]);
 
 	outInfo.bottomLeft = possibleCenters[0];
 	outInfo.topLeft = possibleCenters[1];
