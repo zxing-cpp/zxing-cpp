@@ -2,6 +2,7 @@
 #include <gdiplus.h>
 #include <iostream>
 #include <fstream>
+#include <streambuf>
 #include <string>
 #include <memory>
 #include <vector>
@@ -42,7 +43,7 @@ static std::vector<std::string> GetImagesInDirectory(const std::string& dirPath)
 	HANDLE hFind = FindFirstFileA(BuildPath(dirPath, "*.png").c_str(), &data);
 	if (hFind != INVALID_HANDLE_VALUE) {
 		do {
-		//if (strcmp(data.cFileName, "06.png") == 0)
+		//if (strcmp(data.cFileName, "10.png") == 0)
 			result.push_back(data.cFileName);
 		} while (FindNextFileA(hFind, &data));
 		FindClose(hFind);
@@ -98,15 +99,15 @@ bool CheckResult(std::string imgPath, const std::string& expectedFormat, const Z
 	}
 
 	imgPath.replace(imgPath.size() - 4, 4, ".txt");
-	std::string expected;
-	if (std::getline(std::ifstream(imgPath), expected)) {
+	std::ifstream stream(imgPath, std::ios::binary);
+	if (stream) {
+		std::string expected((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
 		if (result.text != expected) {
 			log += "Content mismatch: expected " + expected + " but got " + result.text + "\n";
 			return false;
 		}
 		return true;
 	}
-
 	log += "Error reading file\n";
 	return false;
 }
@@ -436,6 +437,16 @@ int main(int argc, char** argv)
 		runTests("blackbox/rssexpanded-3", "RSS_EXPANDED", {
 			{ 117, 117, 0 },
 			{ 117, 117, 180 },
+		});
+
+		runTests("blackbox/rssexpandedstacked-1", "RSS_EXPANDED", {
+			{ 59, 64, 0 },
+			{ 59, 64, 180 },
+		});
+
+		runTests("blackbox/rssexpandedstacked-2", "RSS_EXPANDED", {
+			{ 2, 7, 0 },
+			{ 2, 7, 180 },
 		});
 
 		runTests("blackbox/qrcode-1", "QR_CODE", {

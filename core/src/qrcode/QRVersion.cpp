@@ -392,5 +392,13 @@ Version::buildFunctionPattern(BitMatrix &bitMatrix) const
 	}
 }
 
+const ECBlocks &
+Version::ecBlocksForLevel(ErrorCorrectionLevel ecLevel) const
+{
+	static const int indexes[] = { 1, 0, 3, 2 };
+	return _ecBlocks[indexes[(int)ecLevel]];
+}
+
+
 } // QRCode
 } // ZXing

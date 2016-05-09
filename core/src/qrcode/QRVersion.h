@@ -51,9 +51,7 @@ public:
 		return 17 + 4 * _versionNumber;
 	}
 	
-	const ECBlocks & ecBlocksForLevel(ErrorCorrectionLevel ecLevel) const {
-		return _ecBlocks[(int)ecLevel];
-	}
+	const ECBlocks & ecBlocksForLevel(ErrorCorrectionLevel ecLevel) const;
 
 	void buildFunctionPattern(BitMatrix &bitMatrix) const;
 	
