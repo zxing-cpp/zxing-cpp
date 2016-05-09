@@ -325,8 +325,8 @@ static ErrorStatus ProcessFinderPatternInfo(const BitMatrix& image, const Finder
 
 	PerspectiveTransform transform = CreateTransform(info.topLeft, info.topRight, info.bottomLeft, haveAlignPattern ? &alignmentPattern : nullptr, dimension);
 
-	BitMatrix bits;
-	auto status = GridSampler::Instance()->sampleGrid(image, dimension, dimension, transform, bits);
+	auto bits = std::make_shared<BitMatrix>();
+	auto status = GridSampler::Instance()->sampleGrid(image, dimension, dimension, transform, *bits);
 	if (StatusIsError(status))
 		return status;
 

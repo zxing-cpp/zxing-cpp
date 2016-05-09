@@ -23,6 +23,7 @@
 #include "WhiteRectDetector.h"
 #include "GridSampler.h"
 #include "ErrorStatus.h"
+#include "BitMatrix.h"
 
 #include <array>
 
@@ -543,8 +544,8 @@ Detector::Detect(const BitMatrix& image, bool isMirror, DetectorResult& result)
 	}
 
 	// 4. Sample the grid
-	BitMatrix bits;
-	auto status = SampleGrid(image, bullsEyeCorners[shift % 4], bullsEyeCorners[(shift + 1) % 4], bullsEyeCorners[(shift + 2) % 4], bullsEyeCorners[(shift + 3) % 4], compact, nbLayers, nbCenterLayers, bits);
+	auto bits = std::make_shared<BitMatrix>();
+	auto status = SampleGrid(image, bullsEyeCorners[shift % 4], bullsEyeCorners[(shift + 1) % 4], bullsEyeCorners[(shift + 2) % 4], bullsEyeCorners[(shift + 3) % 4], compact, nbLayers, nbCenterLayers, *bits);
 	if (StatusIsError(status)) {
 		return status;
 	}

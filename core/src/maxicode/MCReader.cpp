@@ -64,19 +64,18 @@ Reader::decode(const BinaryBitmap& image) const
 		return Result(ErrorStatus::NotFound);
 	}
 
-	BitMatrix binImg;
-	ErrorStatus status = image.getBlackMatrix(binImg);
-	if (StatusIsError(status)) {
-		return Result(status);
+	auto binImg = image.getBlackMatrix();
+	if (binImg == nullptr) {
+		return Result(ErrorStatus::NotFound);
 	}
 
 	BitMatrix bits;
-	if (!ExtractPureBits(binImg, bits)) {
+	if (!ExtractPureBits(*binImg, bits)) {
 		return Result(ErrorStatus::NotFound);
 	}
 
 	DecoderResult decoderResult;
-	status = Decoder::Decode(bits, decoderResult);
+	ErrorStatus status = Decoder::Decode(bits, decoderResult);
 	if (StatusIsError(status)) {
 		return Result(status);
 	}

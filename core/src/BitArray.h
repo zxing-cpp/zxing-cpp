@@ -41,10 +41,11 @@ public:
 
 	explicit BitArray(int size) : _size(size), _bits((size + 31) / 32, 0) {}
 
-	void init(int size) {
+	void init(int size, bool clearAfter = true) {
 		_size = size;
 		_bits.resize((size + 31) / 32);
-		clear();
+		if (clearAfter)
+			clear();
 	}
 
 	int size() const {

@@ -66,7 +66,7 @@ ErrorStatus DoDecode(const BinaryBitmap& image, bool multiple, std::list<Result>
 
 	for (const auto& points : detectorResult.points) {
 		DecoderResult decoderResult;
-		ErrorStatus status = ScanningDecoder::Decode(detectorResult.bits, points[4], points[5], points[6], points[7], GetMinCodewordWidth(points), GetMaxCodewordWidth(points), decoderResult);
+		ErrorStatus status = ScanningDecoder::Decode(*detectorResult.bits, points[4], points[5], points[6], points[7], GetMinCodewordWidth(points), GetMaxCodewordWidth(points), decoderResult);
 		if (StatusIsOK(status)) {
 			std::vector<ResultPoint> foundPoints(points.size());
 			std::transform(points.begin(), points.end(), foundPoints.begin(), [](const Nullable<ResultPoint>& p) { return p.value(); });

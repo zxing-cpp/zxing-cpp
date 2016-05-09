@@ -296,7 +296,7 @@ Detector::Detect(const BitMatrix& image, DetectorResult& result)
 	}
 	dimensionRight += 2;
 
-	BitMatrix bits;
+	auto bits = std::make_shared<BitMatrix>();
 	ResultPoint correctedTopRight;
 
 	// Rectanguar symbols are 6x16, 6x28, 10x24, 10x32, 14x32, or 14x44. If one dimension is more
@@ -322,7 +322,7 @@ Detector::Detect(const BitMatrix& image, DetectorResult& result)
 			dimensionRight++;
 		}
 
-		status = SampleGrid(image, *topLeft, *bottomLeft, *bottomRight, correctedTopRight, dimensionTop, dimensionRight, bits);
+		status = SampleGrid(image, *topLeft, *bottomLeft, *bottomRight, correctedTopRight, dimensionTop, dimensionRight, *bits);
 		if (StatusIsError(status)) {
 			return status;
 		}
@@ -344,7 +344,7 @@ Detector::Detect(const BitMatrix& image, DetectorResult& result)
 			dimensionCorrected++;
 		}
 
-		status = SampleGrid(image, *topLeft, *bottomLeft, *bottomRight, correctedTopRight, dimensionCorrected, dimensionCorrected, bits);
+		status = SampleGrid(image, *topLeft, *bottomLeft, *bottomRight, correctedTopRight, dimensionCorrected, dimensionCorrected, *bits);
 		if (StatusIsError(status)) {
 			return status;
 		}

@@ -440,10 +440,9 @@ FinderPatternFinder::Find(const BitMatrix& image, /*const PointCallback& pointCa
 	std::vector<FinderPattern> possibleCenters;
 
 	bool done = false;
-	StateCount stateCount = { 0, 0, 0, 0, 0 };
 	for (int i = iSkip - 1; i < maxI && !done; i += iSkip) {
 		// Get a row of black/white values
-		StateCount stateCount = { 0, 0, 0, 0, 0 };
+		StateCount stateCount = {};
 		int currentState = 0;
 		for (int j = 0; j < maxJ; j++) {
 			if (image.get(j, i)) {

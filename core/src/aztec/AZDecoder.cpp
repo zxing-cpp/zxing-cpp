@@ -20,6 +20,7 @@
 #include "ReedSolomonDecoder.h"
 #include "GenericGF.h"
 #include "ErrorStatus.h"
+#include "BitMatrix.h"
 
 #include <numeric>
 
@@ -90,7 +91,7 @@ static void ExtractBits(const DetectorResult& ddata, std::vector<bool>& rawbits)
 			alignmentMap[origCenter + i] = center + newOffset + 1;
 		}
 	}
-	const BitMatrix& matrix = ddata.bits();
+	auto matrix = ddata.bits();
 	rawbits.resize(TotalBitsInLayer(layers, compact));
 	for (int i = 0, rowOffset = 0; i < layers; i++) {
 		int rowSize = (layers - i) * 4 + (compact ? 9 : 12);
@@ -104,16 +105,16 @@ static void ExtractBits(const DetectorResult& ddata, std::vector<bool>& rawbits)
 			for (int k = 0; k < 2; k++) {
 				// left column
 				rawbits[rowOffset + columnOffset + k] =
-					matrix.get(alignmentMap[low + k], alignmentMap[low + j]);
+					matrix->get(alignmentMap[low + k], alignmentMap[low + j]);
 				// bottom row
 				rawbits[rowOffset + 2 * rowSize + columnOffset + k] =
-					matrix.get(alignmentMap[low + j], alignmentMap[high - k]);
+					matrix->get(alignmentMap[low + j], alignmentMap[high - k]);
 				// right column
 				rawbits[rowOffset + 4 * rowSize + columnOffset + k] =
-					matrix.get(alignmentMap[high - k], alignmentMap[high - j]);
+					matrix->get(alignmentMap[high - k], alignmentMap[high - j]);
 				// top row
 				rawbits[rowOffset + 6 * rowSize + columnOffset + k] =
-					matrix.get(alignmentMap[high - j], alignmentMap[low + k]);
+					matrix->get(alignmentMap[high - j], alignmentMap[low + k]);
 			}
 		}
 		rowOffset += rowSize * 8;

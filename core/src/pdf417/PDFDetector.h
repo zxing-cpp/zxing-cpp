@@ -15,15 +15,16 @@
 * limitations under the License.
 */
 
-#include "BitMatrix.h"
 #include "ResultPoint.h"
 #include "ZXNullable.h"
 
 #include <list>
 #include <array>
+#include <memory>
 
 namespace ZXing {
 
+class BitMatrix;
 class BinaryBitmap;
 enum class ErrorStatus;
 
@@ -42,7 +43,7 @@ class Detector
 public:
 	struct Result
 	{
-		BitMatrix bits;
+		std::shared_ptr<const BitMatrix> bits;
 		std::list<std::array<Nullable<ResultPoint>, 8>> points;
 	};
 

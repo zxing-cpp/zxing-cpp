@@ -147,13 +147,12 @@ GlobalHistogramBinarizer::getBlackRow(int y, BitArray& row) const
 	return ErrorStatus::NotFound;
 }
 
-// Does not sharpen the data, as this call is intended to only be used by 2D Readers.
-ErrorStatus
-GlobalHistogramBinarizer::getBlackMatrix(BitMatrix& matrix) const
+static void InitBlackMatrix(const LuminanceSource& source, std::shared_ptr<const BitMatrix>& outMatrix)
 {
-	int width = _source->width();
-	int height = _source->height();
-	matrix.init(width, height);
+	auto matrix = std::make_shared<BitMatrix>();
+	int width = source.width();
+	int height = source.height();
+	matrix->init(width, height);
 
 	// Quickly calculates the histogram by sampling four rows from the image. This proved to be
 	// more robust on the blackbox tests than sampling a diagonal as we used to do.
@@ -162,7 +161,7 @@ GlobalHistogramBinarizer::getBlackMatrix(BitMatrix& matrix) const
 		ByteArray buffer;
 		for (int y = 1; y < 5; y++) {
 			int row = height * y / 5;
-			const uint8_t* luminances = _source->getRow(row, buffer);
+			const uint8_t* luminances = source.getRow(row, buffer);
 			int right = (width * 4) / 5;
 			for (int x = width / 5; x < right; x++) {
 				int pixel = luminances[x] & 0xff;
@@ -178,19 +177,26 @@ GlobalHistogramBinarizer::getBlackMatrix(BitMatrix& matrix) const
 		// "fail quickly" which is necessary for continuous scanning.
 		ByteArray buffer;
 		int stride;
-		const uint8_t* luminances = _source->getMatrix(buffer, stride);
+		const uint8_t* luminances = source.getMatrix(buffer, stride);
 		for (int y = 0; y < height; y++) {
 			int offset = y * stride;
 			for (int x = 0; x < width; x++) {
 				int pixel = luminances[offset + x] & 0xff;
 				if (pixel < blackPoint) {
-					matrix.set(x, y);
+					matrix->set(x, y);
 				}
 			}
 		}
-		return ErrorStatus::NoError;
+		outMatrix = matrix;
 	}
-	return ErrorStatus::NotFound;
+}
+
+// Does not sharpen the data, as this call is intended to only be used by 2D Readers.
+std::shared_ptr<const BitMatrix>
+GlobalHistogramBinarizer::getBlackMatrix() const
+{
+	std::call_once(_matrixOnce, &InitBlackMatrix, *_source, _matrix);
+	return _matrix;
 }
 
 bool

@@ -95,6 +95,24 @@ BitMatrix::BitMatrix(int width, int height) :
 	_bits.resize(_rowSize * _height, 0);
 }
 
+BitMatrix::BitMatrix(BitMatrix&& other) :
+	_width(other._width),
+	_height(other._height),
+	_rowSize(other._rowSize),
+	_bits(std::move(other._bits))
+{
+}
+
+BitMatrix &
+BitMatrix::operator=(BitMatrix&& other)
+{
+	_width = other._width;
+	_height = other._height;
+	_rowSize = other._rowSize;
+	_bits = std::move(other._bits);
+	return *this;
+}
+
 void
 BitMatrix::init(int width, int height)
 {
@@ -103,6 +121,15 @@ BitMatrix::init(int width, int height)
 	_rowSize = (width + 31) / 32;
 	_bits.resize(_rowSize * _height);
 	std::fill(_bits.begin(), _bits.end(), 0);
+}
+
+void
+BitMatrix::copyTo(BitMatrix& other) const
+{
+	other._width = _width;
+	other._height = _height;
+	other._rowSize = _rowSize;
+	other._bits = _bits;
 }
 
 int
@@ -176,7 +203,7 @@ BitMatrix::getRow(int y, BitArray& row) const
 	if (y < 0 || y >= _height) {
 		throw std::out_of_range("Requested row is outside the matrix");
 	}
-	row.init(_width);
+	row.init(_width, false);
 	auto it = _bits.begin() + y * _rowSize;
 	std::copy(it, it + _rowSize, row._bits.begin());
 }
@@ -222,8 +249,8 @@ BitMatrix::setRegion(int left, int top, int width, int height)
 void
 BitMatrix::rotate180()
 {
+	BitArray topRow(_width), bottomRow(_width);
 	for (int i = 0; i < (_height + 1) / 2; i++) {
-		BitArray topRow, bottomRow;
 		getRow(i, topRow);
 		getRow(_height - 1 - i, bottomRow);
 		topRow.reverse();

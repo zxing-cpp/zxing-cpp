@@ -174,32 +174,42 @@ static void CalculateThresholdForBlock(const uint8_t* luminances, int subWidth, 
 * constructor instead, but there are some advantages to doing it lazily, such as making
 * profiling easier, and not doing heavy lifting when callers don't expect it.
 */
-ErrorStatus
-HybridBinarizer::getBlackMatrix(BitMatrix& outMatrix) const
+static void InitBlackMatrix(const LuminanceSource& source, std::shared_ptr<const BitMatrix>& outMatrix)
+{
+	int width = source.width();
+	int height = source.height();
+	ByteArray buffer;
+	int stride;
+	const uint8_t* luminances = source.getMatrix(buffer, stride);
+	int subWidth = width >> BLOCK_SIZE_POWER;
+	if ((width & BLOCK_SIZE_MASK) != 0) {
+		subWidth++;
+	}
+	int subHeight = height >> BLOCK_SIZE_POWER;
+	if ((height & BLOCK_SIZE_MASK) != 0) {
+		subHeight++;
+	}
+	std::vector<std::vector<int>> blackPoints;
+	CalculateBlackPoints(luminances, subWidth, subHeight, width, height, stride, blackPoints);
+
+	auto matrix = std::make_shared<BitMatrix>();
+	matrix->init(width, height);
+	CalculateThresholdForBlock(luminances, subWidth, subHeight, width, height, stride, blackPoints, *matrix);
+	outMatrix = matrix;
+}
+
+std::shared_ptr<const BitMatrix>
+HybridBinarizer::getBlackMatrix() const
 {
 	int width = _source->width();
 	int height = _source->height();
 	if (width >= MINIMUM_DIMENSION && height >= MINIMUM_DIMENSION) {
-		ByteArray buffer;
-		int stride;
-		const uint8_t* luminances = _source->getMatrix(buffer, stride);
-		int subWidth = width >> BLOCK_SIZE_POWER;
-		if ((width & BLOCK_SIZE_MASK) != 0) {
-			subWidth++;
-		}
-		int subHeight = height >> BLOCK_SIZE_POWER;
-		if ((height & BLOCK_SIZE_MASK) != 0) {
-			subHeight++;
-		}
-		std::vector<std::vector<int>> blackPoints;
-		CalculateBlackPoints(luminances, subWidth, subHeight, width, height, stride, blackPoints);
-		outMatrix.init(width, height);
-		CalculateThresholdForBlock(luminances, subWidth, subHeight, width, height, stride, blackPoints, outMatrix);
-		return ErrorStatus::NoError;
+		std::call_once(_matrixOnce, &InitBlackMatrix, *_source, _matrix);
+		return _matrix;
 	}
 	else {
 		// If the image is too small, fall back to the global histogram approach.
-		return GlobalHistogramBinarizer::getBlackMatrix(outMatrix);
+		return GlobalHistogramBinarizer::getBlackMatrix();
 	}
 }
 

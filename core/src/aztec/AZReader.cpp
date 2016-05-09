@@ -30,14 +30,13 @@ namespace Aztec {
 Result
 Reader::decode(const BinaryBitmap& image) const
 {
-	BitMatrix binImg;
-	ErrorStatus status = image.getBlackMatrix(binImg);
-	if (StatusIsError(status)) {
-		return Result(status);
+	auto binImg = image.getBlackMatrix();
+	if (binImg == nullptr) {
+		return Result(ErrorStatus::NotFound);
 	}
 
 	DetectorResult detectResult;
-	status = Detector::Detect(binImg, false, detectResult);
+	ErrorStatus status = Detector::Detect(*binImg, false, detectResult);
 	DecoderResult decodeResult;
 	std::vector<ResultPoint> points;
 	if (StatusIsOK(status)) {
@@ -45,7 +44,7 @@ Reader::decode(const BinaryBitmap& image) const
 		status = Decoder::Decode(detectResult, decodeResult);
 	}
 	if (StatusIsError(status)) {
-		auto status2 = Detector::Detect(binImg, true, detectResult);
+		auto status2 = Detector::Detect(*binImg, true, detectResult);
 		if (StatusIsOK(status2)) {
 			points = detectResult.points();
 			status2 = Decoder::Decode(detectResult, decodeResult);

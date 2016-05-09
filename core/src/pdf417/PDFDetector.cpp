@@ -317,21 +317,25 @@ Detector::Detect(const BinaryBitmap& image, bool multiple, Result& result)
 	// different binarizers
 	//boolean tryHarder = hints != null && hints.containsKey(DecodeHintType.TRY_HARDER);
 
-	ErrorStatus status = image.getBlackMatrix(result.bits);
-	if (StatusIsError(status)) {
-		return status;
+	auto binImg = image.getBlackMatrix();
+	if (binImg == nullptr) {
+		return ErrorStatus::NotFound;
 	}
 
 	std::list<std::array<Nullable<ResultPoint>, 8>> barcodeCoordinates;
-	DetectBarcode(result.bits, multiple, barcodeCoordinates);
+	DetectBarcode(*binImg, multiple, barcodeCoordinates);
 	if (barcodeCoordinates.empty()) {
-		result.bits.rotate180();
-		DetectBarcode(result.bits, multiple, barcodeCoordinates);
+		auto newBits = std::make_shared<BitMatrix>();
+		binImg->copyTo(*newBits);
+		newBits->rotate180();
+		binImg = newBits;
+		DetectBarcode(*binImg, multiple, barcodeCoordinates);
 	}
 	if (barcodeCoordinates.empty()) {
 		return ErrorStatus::NotFound;
 	}
 	result.points = barcodeCoordinates;
+	result.bits = binImg;
 	return ErrorStatus::NoError;
 }
 

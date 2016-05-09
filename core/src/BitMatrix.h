@@ -49,6 +49,15 @@ public:
 	BitMatrix(int width, int height);
 	explicit BitMatrix(int dimension) : BitMatrix(dimension, dimension) {} // Construct a square matrix.
 
+	BitMatrix(BitMatrix&& other);
+	BitMatrix& operator=(BitMatrix&&);
+
+	void copyTo(BitMatrix& other) const;
+
+	// There is nothing wrong to support this but disable to make it explicit since we may copy something very big here.
+	BitMatrix(const BitMatrix&) = delete;
+	BitMatrix& operator=(const BitMatrix&) = delete;
+
 	//void parse(const std::string& stringRepresentation, const std::string& setString, const std::string& unsetString);
 
 	/**

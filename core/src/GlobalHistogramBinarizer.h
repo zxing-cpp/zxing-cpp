@@ -16,6 +16,7 @@
 */
 
 #include "BinaryBitmap.h"
+#include <mutex>
 
 namespace ZXing {
 
@@ -45,13 +46,17 @@ public:
 	virtual int width() const override;
 	virtual int height() const override;
 	virtual ErrorStatus getBlackRow(int y, BitArray& outArray) const override;
-	virtual ErrorStatus getBlackMatrix(BitMatrix& outMatrix) const override;
+	virtual std::shared_ptr<const BitMatrix> getBlackMatrix() const override;
 	virtual bool canCrop() const override;
 	virtual std::shared_ptr<BinaryBitmap> cropped(int left, int top, int width, int height) const override;
 	virtual bool canRotate() const override;
 	virtual std::shared_ptr<BinaryBitmap> rotated(int degreeCW) const override;
 
 	virtual std::shared_ptr<BinaryBitmap> newInstance(const std::shared_ptr<const LuminanceSource>& source) const;
+
+private:
+	mutable std::once_flag _matrixOnce;
+	mutable std::shared_ptr<const BitMatrix> _matrix;
 };
 
 } // ZXing

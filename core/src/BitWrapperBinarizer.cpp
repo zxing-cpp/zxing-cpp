@@ -21,23 +21,17 @@
 
 namespace ZXing {
 
-BitWrapperBinarizer::BitWrapperBinarizer(const BitMatrix& bits, bool whitePixels, bool pureBarcode) :
-	BitWrapperBinarizer(std::make_shared<BitMatrix>(bits), whitePixels, pureBarcode)
+BitWrapperBinarizer::BitWrapperBinarizer(const std::shared_ptr<const BitMatrix>& bits, bool pureBarcode) :
+	BitWrapperBinarizer(bits, 0, 0, bits->width(), bits->height(), pureBarcode)
 {
 }
 
-BitWrapperBinarizer::BitWrapperBinarizer(const std::shared_ptr<const BitMatrix>& bits, bool whitePixels, bool pureBarcode) :
-	BitWrapperBinarizer(bits, 0, 0, bits->width(), bits->height(), whitePixels, pureBarcode)
-{
-}
-
-BitWrapperBinarizer::BitWrapperBinarizer(const std::shared_ptr<const BitMatrix>& bits, int left, int top, int width, int height, bool inverted, bool pureBarcode) :
+BitWrapperBinarizer::BitWrapperBinarizer(const std::shared_ptr<const BitMatrix>& bits, int left, int top, int width, int height, bool pureBarcode) :
 	_matrix(bits),
 	_left(left),
 	_top(top),
 	_width(width),
 	_height(height),
-	_inverted(inverted),
 	_pureBarcode(pureBarcode)
 {
 }
@@ -76,33 +70,28 @@ BitWrapperBinarizer::getBlackRow(int y, BitArray& row) const
 		_matrix->getRow(_top + y, tmp);
 		tmp.getSubArray(_left, _width, row);
 	}
-	if (_inverted) {
-		row.flipAll();
-	}
 	return ErrorStatus::NoError;
 }
 
 // Does not sharpen the data, as this call is intended to only be used by 2D Readers.
-ErrorStatus
-BitWrapperBinarizer::getBlackMatrix(BitMatrix& matrix) const
+std::shared_ptr<const BitMatrix>
+BitWrapperBinarizer::getBlackMatrix() const
 {
 	if (_width == _matrix->width() && _height == _matrix->height()) {
-		matrix = *_matrix;
+		return _matrix;
 	}
 	else {
-		matrix.init(_width, _height);
+		auto matrix = std::make_shared<BitMatrix>();
+		matrix->init(_width, _height);
 		BitArray tmp;
 		BitArray row;
 		for (int y = 0; y < _height; ++y) {
 			_matrix->getRow(_top + y, tmp);
 			tmp.getSubArray(_left, _width, row);
-			matrix.setRow(y, row);
+			matrix->setRow(y, row);
 		}
+		return matrix;
 	}
-	if (_inverted) {
-		matrix.flipAll();
-	}
-	return ErrorStatus::NoError;
 }
 
 bool
@@ -114,7 +103,7 @@ BitWrapperBinarizer::canCrop() const
 std::shared_ptr<BinaryBitmap>
 BitWrapperBinarizer::cropped(int left, int top, int width, int height) const
 {
-	return std::make_shared<BitWrapperBinarizer>(_matrix, left + _left, top + _top, width, height, _inverted);
+	return std::make_shared<BitWrapperBinarizer>(_matrix, left + _left, top + _top, width, height);
 }
 
 bool

@@ -26,15 +26,14 @@ namespace ZXing {
 class BitWrapperBinarizer : public BinaryBitmap
 {
 public:
-	BitWrapperBinarizer(const BitMatrix& bits, bool whitePixels, bool pureBarcode = false);
-	BitWrapperBinarizer(const std::shared_ptr<const BitMatrix>& bits, bool whitePixels, bool pureBarcode = false);
-	BitWrapperBinarizer(const std::shared_ptr<const BitMatrix>& bits, int left, int top, int width, int height, bool inverted, bool pureBarcode = false);
+	explicit BitWrapperBinarizer(const std::shared_ptr<const BitMatrix>& bits, bool pureBarcode = false);
+	BitWrapperBinarizer(const std::shared_ptr<const BitMatrix>& bits, int left, int top, int width, int height, bool pureBarcode = false);
 
 	virtual bool isPureBarcode() const override;
 	virtual int width() const override;
 	virtual int height() const override;
 	virtual ErrorStatus getBlackRow(int y, BitArray& outArray) const override;
-	virtual ErrorStatus getBlackMatrix(BitMatrix& outMatrix) const override;
+	virtual std::shared_ptr<const BitMatrix> getBlackMatrix() const override;
 	virtual bool canCrop() const override;
 	virtual std::shared_ptr<BinaryBitmap> cropped(int left, int top, int width, int height) const override;
 	virtual bool canRotate() const override;
@@ -46,7 +45,6 @@ private:
 	int _top;
 	int _width;
 	int _height;
-	bool _inverted;
 	bool _pureBarcode;
 };
 

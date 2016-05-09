@@ -67,9 +67,9 @@ public:
 	* identical to one fetched using getBlackRow(), so don't mix and match between them.
 	*
 	* @return The 2D array of bits for the image (true means black).
-	* @throws NotFoundException if image can't be binarized to make a matrix
+	* @return null if image can't be binarized to make a matrix
 	*/
-	virtual ErrorStatus getBlackMatrix(BitMatrix& outMatrix) const = 0;
+	virtual std::shared_ptr<const BitMatrix> getBlackMatrix() const = 0;
 
 	/**
 	* @return Whether this bitmap can be cropped.

@@ -95,26 +95,26 @@ ExtractPureBits(const BitMatrix& image, BitMatrix& outBits)
 Result
 Reader::decode(const BinaryBitmap& image) const
 {
-	BitMatrix binImg;
-	auto status = image.getBlackMatrix(binImg);
-	if (StatusIsError(status)) {
-		return Result(status);
+	auto binImg = image.getBlackMatrix();
+	if (binImg == nullptr) {
+		return Result(ErrorStatus::NotFound);
 	}
 
 	DecoderResult decoderResult;
 	std::vector<ResultPoint> points;
+	ErrorStatus status;
 	if (image.isPureBarcode()) {
 		BitMatrix bits;
-		status = ExtractPureBits(binImg, bits);
+		status = ExtractPureBits(*binImg, bits);
 		if (StatusIsOK(status)) {
 			status = Decoder::Decode(bits, decoderResult);
 		}
 	}
 	else {
 		DetectorResult detectorResult;
-		status = Detector::Detect(binImg, detectorResult);
+		status = Detector::Detect(*binImg, detectorResult);
 		if (StatusIsOK(status)) {
-			status = Decoder::Decode(detectorResult.bits(), decoderResult);
+			status = Decoder::Decode(*detectorResult.bits(), decoderResult);
 			points = detectorResult.points();
 		}
 	}
