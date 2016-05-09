@@ -36,7 +36,7 @@ public:
 	}
 
 	int count() const {
-		return 0;
+		return _count;
 	}
 
 	void incrementCount() {

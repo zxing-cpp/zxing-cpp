@@ -323,6 +323,7 @@ AdjustOddEvenCounts(int numModules, std::array<int, 4>& oddCounts, std::array<in
 		if (decrementEven) {
 			return false;
 		}
+		//evenCounts[std::max_element(oddRoundingErrors.begin(), oddRoundingErrors.end()) - oddRoundingErrors.begin()] += 1;	// This is according to Java's code, but likely a bug!
 		evenCounts[std::max_element(evenRoundingErrors.begin(), evenRoundingErrors.end()) - evenRoundingErrors.begin()] += 1;
 	}
 	if (decrementEven) {

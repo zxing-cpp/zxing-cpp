@@ -360,7 +360,7 @@ static int ByteCompaction(int mode, const std::vector<int>& codewords, Character
 		// Total number of Byte Compaction characters to be encoded
 		// is not a multiple of 6
 		int count = 0;
-		long value = 0;
+		int64_t value = 0;
 		std::array<int, 6> byteCompactedCodewords = {};
 		bool end = false;
 		int nextCode = codewords[codeIndex++];
@@ -410,7 +410,7 @@ static int ByteCompaction(int mode, const std::vector<int>& codewords, Character
 		// Total number of Byte Compaction characters to be encoded
 		// is an integer multiple of 6
 		int count = 0;
-		long value = 0;
+		int64_t value = 0;
 		bool end = false;
 		while (codeIndex < codewords[0] && !end) {
 			int code = codewords[codeIndex++];

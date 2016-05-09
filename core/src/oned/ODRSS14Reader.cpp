@@ -439,7 +439,7 @@ CheckChecksum(const RSS::Pair& leftPair, const RSS::Pair& rightPair)
 static Result
 ConstructResult(const RSS::Pair& leftPair, const RSS::Pair& rightPair)
 {
-	long symbolValue = 4537077L * leftPair.value() + rightPair.value();
+	int64_t symbolValue = 4537077 * static_cast<int64_t>(leftPair.value()) + rightPair.value();
 	std::stringstream buffer;
 	buffer << std::setw(13) << std::setfill('0') << symbolValue;
 

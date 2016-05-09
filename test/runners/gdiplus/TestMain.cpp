@@ -413,6 +413,31 @@ int main(int argc, char** argv)
 			{ 6, 8, 180 },
 		});
 
+		runTests("blackbox/rss14-1", "RSS_14", {
+			{ 6, 6, 0 },
+			{ 6, 6, 180 },
+		});
+
+		runTests("blackbox/rss14-2", "RSS_14", {
+			{ 4, 8, 1, 2, 0 },
+			{ 2, 8, 0, 2, 180 },
+		});
+
+		runTests("blackbox/rssexpanded-1", "RSS_EXPANDED", {
+			{ 32, 32, 0 },
+			{ 32, 32, 180 },
+		});
+
+		runTests("blackbox/rssexpanded-2", "RSS_EXPANDED", {
+			{ 21, 23, 0 },
+			{ 21, 23, 180 },
+		});
+
+		runTests("blackbox/rssexpanded-3", "RSS_EXPANDED", {
+			{ 117, 117, 0 },
+			{ 117, 117, 180 },
+		});
+
 		runTests("blackbox/qrcode-1", "QR_CODE", {
 			{ 17, 17, 0 },
 			{ 14, 14, 90 },

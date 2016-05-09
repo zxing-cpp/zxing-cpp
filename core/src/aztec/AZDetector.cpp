@@ -120,7 +120,7 @@ static int SampleLine(const BitMatrix& image, const ResultPoint& p1, const Resul
 * @param parameterData parameter bits
 * @param compact true if this is a compact Aztec code
 */
-static bool GetCorrectedParameterData(long parameterData, bool compact, int& result)
+static bool GetCorrectedParameterData(int64_t parameterData, bool compact, int& result)
 {
 	int numCodewords;
 	int numDataCodewords;
@@ -183,7 +183,7 @@ static bool ExtractParameters(const BitMatrix& image, const std::array<ResultPoi
 	}
 
 	// Flatten the parameter bits into a single 28- or 40-bit long
-	long parameterData = 0;
+	int64_t parameterData = 0;
 	for (int i = 0; i < 4; i++) {
 		int side = sides[(shift + i) % 4];
 		if (compact) {
