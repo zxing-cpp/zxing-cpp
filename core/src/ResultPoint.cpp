@@ -20,18 +20,6 @@
 
 namespace ZXing {
 
-namespace {
-
-/**
-* Returns the z component of the cross product between vectors BC and BA.
-*/
-static float CrossProductZ(const ResultPoint& a, const ResultPoint& b, const ResultPoint& c)
-{
-	return (c.x() - b.x())*(a.y() - b.y()) - (c.y() - b.y())*(a.x() - b.x());
-}
-
-} // anonymous
-
   /**
   * @param pattern1 first pattern
   * @param pattern2 second pattern
@@ -58,56 +46,5 @@ float ResultPoint::Distance(int aX, int aY, int bX, int bY)
 	float dy = static_cast<float>(aY - bY);
 	return std::sqrt(dx * dx + dy * dy);
 }
-
-void ResultPoint::OrderByBestPatterns(ResultPoint& p0, ResultPoint& p1, ResultPoint& p2)
-{
-	ResultPoint copyPatterns[3] = { p0, p1, p2 };
-	const ResultPoint* ordered[3] = { &copyPatterns[0], &copyPatterns[1] , &copyPatterns[2] };
-	OrderByBestPatterns(ordered[0], ordered[1], ordered[2]);
-	p0 = *ordered[0];
-	p1 = *ordered[1];
-	p2 = *ordered[2];
-}
-
-void ResultPoint::OrderByBestPatterns(const ResultPoint*& p0, const ResultPoint*& p1, const ResultPoint*& p2)
-{
-	// Find distances between pattern centers
-	float zeroOneDistance = Distance(*p0, *p1);
-	float oneTwoDistance = Distance(*p1, *p2);
-	float zeroTwoDistance = Distance(*p0, *p2);
-
-	const ResultPoint* pointA;
-	const ResultPoint* pointB;
-	const ResultPoint* pointC;
-	// Assume one closest to other two is B; A and C will just be guesses at first
-	if (oneTwoDistance >= zeroOneDistance && oneTwoDistance >= zeroTwoDistance) {
-		pointB = p0;
-		pointA = p1;
-		pointC = p2;
-	}
-	else if (zeroTwoDistance >= oneTwoDistance && zeroTwoDistance >= zeroOneDistance) {
-		pointB = p1;
-		pointA = p0;
-		pointC = p2;
-	}
-	else {
-		pointB = p2;
-		pointA = p0;
-		pointC = p1;
-	}
-
-	// Use cross product to figure out whether A and C are correct or flipped.
-	// This asks whether BC x BA has a positive z component, which is the arrangement
-	// we want for A, B, C. If it's negative, then we've got it flipped around and
-	// should swap A and C.
-	if (CrossProductZ(*pointA, *pointB, *pointC) < 0.0f) {
-		std::swap(pointA, pointC);
-	}
-
-	p0 = pointA;
-	p1 = pointB;
-	p2 = pointC;
-}
-
 
 } // ZXing

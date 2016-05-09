@@ -60,15 +60,6 @@ public:
 	//	return result.toString();
 	//}
 
-	/**
-	* Orders an array of three ResultPoints in an order [A,B,C] such that AB is less than AC
-	* and BC is less than AC, and the angle between BC and BA is less than 180 degrees.
-	*
-	* @param patterns array of three {@code ResultPoint} to order
-	*/
-	static void OrderByBestPatterns(ResultPoint& p0, ResultPoint& p1, ResultPoint& p2);
-	static void OrderByBestPatterns(const ResultPoint*& p0, const ResultPoint*& p1, const ResultPoint*& p2);
-
 	static float Distance(const ResultPoint& a, const ResultPoint& b);
 	static float Distance(float aX, float aY, float bX, float bY);
 	static float Distance(int aX, int aY, int bX, int bY);

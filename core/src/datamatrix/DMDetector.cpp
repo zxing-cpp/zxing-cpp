@@ -191,6 +191,59 @@ SampleGrid(const BitMatrix& image, const ResultPoint& topLeft, const ResultPoint
 		result);
 }
 
+/**
+* Returns the z component of the cross product between vectors BC and BA.
+*/
+static float CrossProductZ(const ResultPoint& a, const ResultPoint& b, const ResultPoint& c)
+{
+	return (c.x() - b.x())*(a.y() - b.y()) - (c.y() - b.y())*(a.x() - b.x());
+}
+
+/**
+* Orders an array of three ResultPoints in an order [A,B,C] such that AB is less than AC
+* and BC is less than AC, and the angle between BC and BA is less than 180 degrees.
+*
+* @param patterns array of three {@code ResultPoint} to order
+*/
+void OrderByBestPatterns(const ResultPoint*& p0, const ResultPoint*& p1, const ResultPoint*& p2)
+{
+	// Find distances between pattern centers
+	float zeroOneDistance = ResultPoint::Distance(*p0, *p1);
+	float oneTwoDistance = ResultPoint::Distance(*p1, *p2);
+	float zeroTwoDistance = ResultPoint::Distance(*p0, *p2);
+
+	const ResultPoint* pointA;
+	const ResultPoint* pointB;
+	const ResultPoint* pointC;
+	// Assume one closest to other two is B; A and C will just be guesses at first
+	if (oneTwoDistance >= zeroOneDistance && oneTwoDistance >= zeroTwoDistance) {
+		pointB = p0;
+		pointA = p1;
+		pointC = p2;
+	}
+	else if (zeroTwoDistance >= oneTwoDistance && zeroTwoDistance >= zeroOneDistance) {
+		pointB = p1;
+		pointA = p0;
+		pointC = p2;
+	}
+	else {
+		pointB = p2;
+		pointA = p0;
+		pointC = p1;
+	}
+
+	// Use cross product to figure out whether A and C are correct or flipped.
+	// This asks whether BC x BA has a positive z component, which is the arrangement
+	// we want for A, B, C. If it's negative, then we've got it flipped around and
+	// should swap A and C.
+	if (CrossProductZ(*pointA, *pointB, *pointC) < 0.0f) {
+		std::swap(pointA, pointC);
+	}
+
+	p0 = pointA;
+	p1 = pointB;
+	p2 = pointC;
+}
 
 ErrorStatus
 Detector::Detect(const BitMatrix& image, DetectorResult& result)
@@ -225,37 +278,31 @@ Detector::Detect(const BitMatrix& image, DetectorResult& result)
 	pointCount[lSideTwo.from] += 1;
 	pointCount[lSideTwo.to] += 1;
 
-	const ResultPoint* maybeTopLeft = nullptr;
+	const ResultPoint* bottomRight = nullptr;
 	const ResultPoint* bottomLeft = nullptr;
-	const ResultPoint* maybeBottomRight = nullptr;
+	const ResultPoint* topLeft = nullptr;
 	for (const auto& entry : pointCount) {
 		if (entry.second == 2) {
 			bottomLeft = entry.first; // this is definitely the bottom left, then -- end of two L sides
 		}
 		else {
 			// Otherwise it's either top left or bottom right -- just assign the two arbitrarily now
-			if (maybeTopLeft == nullptr) {
-				maybeTopLeft = entry.first;
+			if (bottomRight == nullptr) {
+				bottomRight = entry.first;
 			}
 			else {
-				maybeBottomRight = entry.first;
+				topLeft = entry.first;
 			}
 		}
 	}
 
-	if (maybeTopLeft == nullptr || bottomLeft == nullptr || maybeBottomRight == nullptr) {
+	if (bottomRight == nullptr || bottomLeft == nullptr || topLeft == nullptr) {
 		return ErrorStatus::NotFound;
 	}
 
 	// Bottom left is correct but top left and bottom right might be switched
-	const ResultPoint* corners[] = { maybeTopLeft, bottomLeft, maybeBottomRight };
 	// Use the dot product trick to sort them out
-	ResultPoint::OrderByBestPatterns(corners[0], corners[1], corners[2]);
-
-	// Now we know which is which:
-	const ResultPoint* bottomRight = corners[0];
-	bottomLeft = corners[1];
-	const ResultPoint* topLeft = corners[2];
+	OrderByBestPatterns(bottomRight, bottomLeft, topLeft);
 
 	// Which point didn't we find in relation to the "L" sides? that's the top right corner
 	const ResultPoint* topRight;
