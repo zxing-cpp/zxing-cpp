@@ -39,7 +39,7 @@ BoundingBox::Create(int imgWidth, int imgHeight, const Nullable<ResultPoint>& to
 	result._topLeft = topLeft;
 	result._bottomLeft = bottomLeft;
 	result._topRight = topRight;
-	result._bottomRight = bottomLeft;
+	result._bottomRight = bottomRight;
 	result.calculateMinMaxValues();
 	return true;
 }

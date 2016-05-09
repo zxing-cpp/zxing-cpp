@@ -129,8 +129,9 @@ DoDecode(const std::vector<std::shared_ptr<RowReader>>& readers, const BinaryBit
 
 		// Estimate black point for this row and load it:
 		auto status = image.getBlackRow(rowNumber, row);
-		if (StatusIsError(status))
+		if (StatusIsError(status)) {
 			continue;
+		}
 
 		// While we have the image data in a BitArray, it's fairly cheap to reverse it in place to
 		// handle decoding upside down barcodes.
@@ -158,7 +159,7 @@ DoDecode(const std::vector<std::shared_ptr<RowReader>>& readers, const BinaryBit
 						auto points = result.resultPoints();
 						if (!points.empty()) {
 							for (auto& p : points) {
-								p = ResultPoint(width - p.x() - 1, p.y());
+								p.set(width - p.x() - 1, p.y());
 							}
 							result.setResultPoints(points);
 						}

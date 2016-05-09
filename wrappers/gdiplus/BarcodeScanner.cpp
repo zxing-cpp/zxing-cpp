@@ -35,8 +35,7 @@ static void InitStringCodecs()
 
 }
 
-BarcodeScanner::BarcodeScanner(bool tryHarder, bool tryRotate, const std::string& format) :
-	_format(format)
+BarcodeScanner::BarcodeScanner(bool tryHarder, bool tryRotate, const std::string& format)
 {
 	static std::once_flag s_once;
 	std::call_once(s_once, InitStringCodecs);
@@ -44,7 +43,7 @@ BarcodeScanner::BarcodeScanner(bool tryHarder, bool tryRotate, const std::string
 	DecodeHints hints;
 	hints.setShouldTryHarder(tryHarder);
 	hints.setShouldTryRotate(tryRotate);
-	if (!_format.empty()) {
+	if (!format.empty()) {
 		BarcodeFormat f = FromString(format.c_str());
 		if (f != BarcodeFormat::FORMAT_COUNT) {
 			hints.setPossibleFormats({ f });

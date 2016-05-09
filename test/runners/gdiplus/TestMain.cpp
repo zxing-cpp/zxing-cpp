@@ -42,6 +42,7 @@ static std::vector<std::string> GetImagesInDirectory(const std::string& dirPath)
 	HANDLE hFind = FindFirstFileA(BuildPath(dirPath, "*.png").c_str(), &data);
 	if (hFind != INVALID_HANDLE_VALUE) {
 		do {
+		//if (strcmp(data.cFileName, "06.png") == 0)
 			result.push_back(data.cFileName);
 		} while (FindNextFileA(hFind, &data));
 		FindClose(hFind);
@@ -141,12 +142,12 @@ static void DoRunTests(std::ostream& output, const char* directory, const char* 
 		std::unordered_set<std::string> notFound[2];
 		std::unordered_set<std::string> misRead[2];
 
-		for (int i = 0; i < 2; ++i) {
-			ZXing::BarcodeScanner scanner(i != 0, false, format);
-			for (size_t j = 0; j < images.size(); ++j) {
-				auto imagePath = BuildPath(dirPath, images[j]);
-				Gdiplus::Bitmap bitmap(std::wstring(imagePath.begin(), imagePath.end()).c_str());
-				FixeBitmapFormat(bitmap);
+		for (size_t j = 0; j < images.size(); ++j) {
+			auto imagePath = BuildPath(dirPath, images[j]);
+			Gdiplus::Bitmap bitmap(std::wstring(imagePath.begin(), imagePath.end()).c_str());
+			FixeBitmapFormat(bitmap);
+			for (int i = 0; i < 2; ++i) {
+				ZXing::BarcodeScanner scanner(i != 0, i != 0);
 				auto result = scanner.scan(bitmap, GetRotationEnum(test.rotation));
 				if (!result.format.empty()) {
 					if (CheckResult(imagePath, format, result, logTexts[j])) {

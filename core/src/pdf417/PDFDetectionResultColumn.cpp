@@ -35,6 +35,9 @@ DetectionResultColumn::DetectionResultColumn(const BoundingBox& boundingBox, Row
 	_boundingBox(boundingBox),
 	_rowIndicator(rowIndicator)
 {
+	if (boundingBox.maxY() < boundingBox.minY()) {
+		throw std::invalid_argument("Invalid bounding box");
+	}
 	_codewords.resize(boundingBox.maxY() - boundingBox.minY() + 1);
 }
 

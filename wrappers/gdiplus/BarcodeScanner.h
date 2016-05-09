@@ -61,7 +61,7 @@ public:
 	 "UPC_E",
 	 "UPC_EAN_EXTENSION",
 	*/
-	explicit BarcodeScanner(bool tryHarder = false, bool tryRotate = false, const std::string& format = std::string());
+	explicit BarcodeScanner(bool tryHarder = false, bool tryRotate = true, const std::string& format = std::string());
 	BarcodeScanner(const BarcodeScanner &) = delete;
 	BarcodeScanner& operator=(const BarcodeScanner &) = delete;
 
@@ -69,7 +69,6 @@ public:
 
 private:
 	std::shared_ptr<MultiFormatReader> _reader;
-	std::string _format;
 };
 
 } // ZXing

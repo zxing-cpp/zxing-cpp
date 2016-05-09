@@ -635,7 +635,10 @@ Decoder::Decode(const BitMatrix& bits, DecoderResult& result)
 		const auto& dataBlock = dataBlocks[j];
 		ByteArray codewordBytes = dataBlock.codewords();
 		int numDataCodewords = dataBlock.numDataCodewords();
-		CorrectErrors(codewordBytes, numDataCodewords);
+		status = CorrectErrors(codewordBytes, numDataCodewords);
+		if (StatusIsError(status)) {
+			return status;
+		}
 		for (int i = 0; i < numDataCodewords; i++) {
 			// De-interlace data blocks.
 			resultBytes[i * dataBlocksCount + j] = codewordBytes[i];
