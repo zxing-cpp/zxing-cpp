@@ -135,48 +135,63 @@ static void DoRunTests(std::ostream& output, const char* directory, const char* 
 	auto folderName = GetFileName(directory);
 	//auto format = GetFormatFromFolderName(folderName);
 
+	ZXing::BarcodeScanner scanners[2] = { ZXing::BarcodeScanner(false, false), ZXing::BarcodeScanner(true, true) };
+
 	for (auto& test : tests)
 	{
 		int passCount[2] = { 0, 0 };
+		int misReadCount[2] = { 0, 0 };
 		std::vector<std::string> logTexts(images.size());
-		std::unordered_set<std::string> notFound[2];
-		std::unordered_set<std::string> misRead[2];
+		std::unordered_set<std::string> notDetectedFiles[2];
+		std::unordered_set<std::string> misReadFiles[2];
 
 		for (size_t j = 0; j < images.size(); ++j) {
 			auto imagePath = BuildPath(dirPath, images[j]);
 			Gdiplus::Bitmap bitmap(std::wstring(imagePath.begin(), imagePath.end()).c_str());
 			FixeBitmapFormat(bitmap);
 			for (int i = 0; i < 2; ++i) {
-				ZXing::BarcodeScanner scanner(i != 0, i != 0);
-				auto result = scanner.scan(bitmap, GetRotationEnum(test.rotation));
+				auto result = scanners[i].scan(bitmap, GetRotationEnum(test.rotation));
 				if (!result.format.empty()) {
 					if (CheckResult(imagePath, format, result, logTexts[j])) {
 						passCount[i]++;
 					}
 					else {
-						misRead[i].insert(images[j]);
+						misReadCount[i]++;
+						misReadFiles[i].insert(images[j]);
 					}
 				}
 				else {
-					notFound[i].insert(images[j]);
+					notDetectedFiles[i].insert(images[j]);
 				}
 			}
 		}
 
-		output << "Test: " << folderName << ", rotation: " << test.rotation << std::endl;
+		output << "Test: " << folderName << ", rotation: " << test.rotation << ", total: " << images.size() << std::endl;
 		output << "[Fast] Must pass: " << test.mustPassCount
-			<< "; passed: " << passCount[0] << "/" << images.size()
+			<< "; passed: " << passCount[0]
 			<< " => " << (passCount[0] >= test.mustPassCount ? "OK" : "Failed!!!")
 			<< std::endl;
 		output << "[Slow] Must pass: " << test.tryHarderCount
-			<< "; passed: " << passCount[1] << "/" << images.size()
+			<< "; passed: " << passCount[1]
 			<< " => " << (passCount[1] >= test.tryHarderCount ? "OK" : "Failed!!!")
 			<< std::endl;
+		if (test.maxMisreads > 0) {
+			output << "[Fast] Max misread: " << test.maxMisreads
+				<< "; misread: " << misReadCount[0]
+				<< " => " << (test.maxMisreads >= misReadCount[0] ? "OK" : "Failed!!!")
+				<< std::endl;
+		}
+		if (test.maxTryHarderMisreads > 0) {
+			output << "[Slow] Max misread: " << test.maxTryHarderMisreads
+				<< "; misread: " << misReadCount[1]
+				<< " => " << (test.maxTryHarderMisreads >= misReadCount[1] ? "OK" : "Failed!!!")
+				<< std::endl;
+		}
 
 		for (int i = 0; i < 2; ++i) {
-			if (!notFound[i].empty()) {
+			if (!notDetectedFiles[i].empty()) {
 				output << "Not detected [" << (i == 0 ? "fast" : "slow") << "]:";
-				for (const auto& f : notFound[i]) {
+				for (const auto& f : notDetectedFiles[i]) {
 					output << ' ' << f;
 				}
 				output << std::endl;
@@ -184,9 +199,9 @@ static void DoRunTests(std::ostream& output, const char* directory, const char* 
 		}
 
 		for (int i = 0; i < 2; ++i) {
-			if (!misRead[i].empty()) {
+			if (!misReadFiles[i].empty()) {
 				output << "Read error [" << (i == 0 ? "fast" : "slow") << "]:";
-				for (const auto& f : misRead[i]) {
+				for (const auto& f : misReadFiles[i]) {
 					output << ' ' << f;
 				}
 				output << std::endl;
@@ -226,8 +241,14 @@ int main(int argc, char** argv)
 		}
 	}
 
+	auto removeExtension = [](const std::string& s) {
+		auto pos = s.find_last_of('-');
+		return pos != std::string::npos ? s.substr(0, pos) : s;
+	};
+
 	auto runTests = [&](const char* directory, const char* format, const std::vector<TestCase>& tests) {
-		if (includedTests.empty() || includedTests.find(GetFileName(directory)) != includedTests.end()) {
+		std::string dirName = GetFileName(directory);
+		if (includedTests.empty() || (includedTests.find(dirName) != includedTests.end() || includedTests.find(removeExtension(dirName)) != includedTests.end())) {
 			DoRunTests(std::cout, directory, format, tests);
 		}
 	};
@@ -272,7 +293,7 @@ int main(int argc, char** argv)
 			{ 4, 4, 180 },
 		});
 
-		// need extended 
+		// need extended mode
 		//RunTests("blackbox/code39-2", "CODE_39", {
 		//	{ 2, 2, 0 },
 		//	{ 2, 2, 180 },
@@ -328,6 +349,111 @@ int main(int argc, char** argv)
 			{ 7, 13, 1, 1, 180 },
 		});
 
+		runTests("blackbox/ean13-5", "EAN_13", {
+			{ 0, 0, 0 },
+			{ 0, 0, 180 },
+		});
+
+		runTests("blackbox/itf-1", "ITF", {
+			{ 9,  13, 0 },
+			{ 12, 13, 180 },
+		});
+
+		runTests("blackbox/itf-2", "ITF", {
+			{ 13, 13, 0 },
+			{ 13, 13, 180 },
+		});
+
+		runTests("blackbox/upca-1", "UPC_A", {
+			{ 14, 18, 0, 1, 0 },
+			{ 16, 18, 0, 1, 180 },
+		});
+
+		runTests("blackbox/upca-2", "UPC_A", {
+			{ 28, 36, 0, 2, 0 },
+			{ 29, 36, 0, 2, 180 },
+		});
+
+		runTests("blackbox/upca-3", "UPC_A", {
+			{ 7, 9, 0, 2, 0 },
+			{ 8, 9, 0, 2, 180 },
+		});
+
+		runTests("blackbox/upca-4", "UPC_A", {
+			{ 9, 11, 0, 1, 0 },
+			{ 9, 11, 0, 1, 180 },
+		});
+
+		runTests("blackbox/upca-5", "UPC_A", {
+			{ 20, 23, 0, 0, 0 },
+			{ 22, 23, 0, 0, 180 },
+		});
+		
+		runTests("blackbox/upca-6", "UPC_A", {
+			{ 0, 0, 0 },
+			{ 0, 0, 180 },
+		});
+
+		runTests("blackbox/upcean-extension-1", "EAN_13", {
+			{ 2, 2, 0 },
+		});
+
+		runTests("blackbox/upce-1", "UPC_E", {
+			{ 3, 3, 0 },
+			{ 3, 3, 180 },
+		});
+
+		runTests("blackbox/upce-2", "UPC_E", {
+			{ 31, 35, 0, 1, 0 },
+			{ 31, 35, 1, 1, 180 },
+		});
+
+		runTests("blackbox/upce-3", "UPC_E", {
+			{ 6, 8, 0 },
+			{ 6, 8, 180 },
+		});
+
+		runTests("blackbox/qrcode-1", "QR_CODE", {
+			{ 17, 17, 0 },
+			{ 14, 14, 90 },
+			{ 17, 17, 180 },
+			{ 14, 14, 270 },
+		});
+
+		runTests("blackbox/qrcode-2", "QR_CODE", {
+			{ 30, 30, 0 },
+			{ 29, 29, 90 },
+			{ 30, 30, 180 },
+			{ 29, 29, 270 },
+		});
+
+		runTests("blackbox/qrcode-3", "QR_CODE", {
+			{ 38, 38, 0 },
+			{ 38, 38, 90 },
+			{ 36, 36, 180 },
+			{ 39, 39, 270 },
+		});
+
+		runTests("blackbox/qrcode-4", "QR_CODE", {
+			{ 36, 36, 0 },
+			{ 35, 35, 90 },
+			{ 35, 35, 180 },
+			{ 35, 35, 270 },
+		});
+
+		runTests("blackbox/qrcode-5", "QR_CODE", {
+			{ 19, 19, 0 },
+			{ 19, 19, 90 },
+			{ 19, 19, 180 },
+			{ 18, 18, 270 },
+		});
+
+		runTests("blackbox/qrcode-6", "QR_CODE", {
+			{ 15, 15, 0 },
+			{ 14, 14, 90 },
+			{ 12, 13, 180 },
+			{ 14, 14, 270 },
+		});
 	}
 	catch (const std::exception& e)
 	{

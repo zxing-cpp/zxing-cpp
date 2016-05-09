@@ -62,8 +62,6 @@ public:
 	 "UPC_EAN_EXTENSION",
 	*/
 	explicit BarcodeScanner(bool tryHarder = false, bool tryRotate = true, const std::string& format = std::string());
-	BarcodeScanner(const BarcodeScanner &) = delete;
-	BarcodeScanner& operator=(const BarcodeScanner &) = delete;
 
 	ScanResult scan(Gdiplus::Bitmap& bitmap, int rotations = Rotation0);
 
