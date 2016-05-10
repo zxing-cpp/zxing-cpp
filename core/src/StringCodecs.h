@@ -54,6 +54,8 @@ enum class CharacterSet
 	GB18030,
 	EUC_JP,
 	EUC_KR,
+
+	CharsetCount
 };
 
 /**

@@ -31,7 +31,7 @@ class BarcodeScanner
 public:
 	struct ScanResult {
 		std::string format;
-		std::string text;
+		std::string text;	// in UTF-8
 	};
 
 	enum Rotation {

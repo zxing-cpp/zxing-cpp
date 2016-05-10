@@ -24,6 +24,8 @@ include_directories (
 file (GLOB LOCAL_FILES
 	BarcodeScanner.h
 	BarcodeScanner.cpp
+	iconv.h
+	win_iconv.c
 )
 
 source_group (Sources FILES ${LOCAL_FILES})
