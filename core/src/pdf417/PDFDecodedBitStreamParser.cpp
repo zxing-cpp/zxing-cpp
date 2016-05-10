@@ -145,7 +145,7 @@ static void DecodeTextCompaction(const std::vector<int>& textCompactionData, con
 					subMode = Mode::PUNCT_SHIFT;
 				}
 				else if (subModeCh == MODE_SHIFT_TO_BYTE_COMPACTION_MODE) {
-					result.appendUtf8((char)byteCompactionData[i]);
+					result.appendUtf32((uint16_t)byteCompactionData[i]);
 				}
 				else if (subModeCh == TEXT_COMPACTION_MODE_LATCH) {
 					subMode = Mode::ALPHA;
@@ -177,7 +177,7 @@ static void DecodeTextCompaction(const std::vector<int>& textCompactionData, con
 				}
 				else if (subModeCh == MODE_SHIFT_TO_BYTE_COMPACTION_MODE) {
 					// TODO Does this need to use the current character encoding? See other occurrences below
-					result.appendUtf8((char)byteCompactionData[i]);
+					result.appendUtf32((uint16_t)byteCompactionData[i]);
 				}
 				else if (subModeCh == TEXT_COMPACTION_MODE_LATCH) {
 					subMode = Mode::ALPHA;
@@ -209,7 +209,7 @@ static void DecodeTextCompaction(const std::vector<int>& textCompactionData, con
 					subMode = Mode::PUNCT_SHIFT;
 				}
 				else if (subModeCh == MODE_SHIFT_TO_BYTE_COMPACTION_MODE) {
-					result.appendUtf8((char)byteCompactionData[i]);
+					result.appendUtf32((uint16_t)byteCompactionData[i]);
 				}
 				else if (subModeCh == TEXT_COMPACTION_MODE_LATCH) {
 					subMode = Mode::ALPHA;
@@ -227,7 +227,7 @@ static void DecodeTextCompaction(const std::vector<int>& textCompactionData, con
 					subMode = Mode::ALPHA;
 				}
 				else if (subModeCh == MODE_SHIFT_TO_BYTE_COMPACTION_MODE) {
-					result.appendUtf8((char)byteCompactionData[i]);
+					result.appendUtf32((uint16_t)byteCompactionData[i]);
 				}
 				else if (subModeCh == TEXT_COMPACTION_MODE_LATCH) {
 					subMode = Mode::ALPHA;
@@ -264,7 +264,7 @@ static void DecodeTextCompaction(const std::vector<int>& textCompactionData, con
 				else if (subModeCh == MODE_SHIFT_TO_BYTE_COMPACTION_MODE) {
 					// PS before Shift-to-Byte is used as a padding character, 
 					// see 5.4.2.4 of the specification
-					result.appendUtf8((char)byteCompactionData[i]);
+					result.appendUtf32((uint16_t)byteCompactionData[i]);
 				}
 				else if (subModeCh == TEXT_COMPACTION_MODE_LATCH) {
 					subMode = Mode::ALPHA;
@@ -274,7 +274,7 @@ static void DecodeTextCompaction(const std::vector<int>& textCompactionData, con
 		}
 		if (ch != 0) {
 			// Append decoded character to result
-			result.appendUtf8(ch);
+			result.appendUtf32((uint8_t)ch);
 		}
 		i++;
 	}
@@ -639,7 +639,7 @@ DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel, D
 			codeIndex = ByteCompaction(code, codewords, encoding, codeIndex, resultString);
 			break;
 		case MODE_SHIFT_TO_BYTE_COMPACTION_MODE:
-			resultString.appendUtf8((char)codewords[codeIndex++]);
+			resultString.appendUtf32((uint16_t)codewords[codeIndex++]);
 			break;
 		case NUMERIC_COMPACTION_MODE_LATCH:
 			status = NumericCompaction(codewords, codeIndex, resultString, codeIndex);

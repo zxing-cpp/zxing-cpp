@@ -252,7 +252,7 @@ DecodeAlphanumericSegment(BitSource& bits, int count, bool fc1InEffect, String& 
 			}
 		}
 	}
-	result.appendUtf8(buffer.c_str());
+	result.appendUtf8(buffer);
 	return ErrorStatus::NoError;
 }
 
@@ -299,7 +299,7 @@ DecodeNumericSegment(BitSource& bits, int count, String& result)
 		buffer += ToAlphaNumericChar(digitBits);
 	}
 
-	result.appendUtf8(buffer.c_str());
+	result.appendUtf8(buffer);
 	return ErrorStatus::NoError;
 }
 

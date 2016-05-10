@@ -9,6 +9,7 @@
 #include <unordered_set>
 
 #include "BarcodeScanner.h"
+#include "../../core/src/ZXString.h"
 
 const char* GetFileName(const char* filePath)
 {
@@ -99,9 +100,20 @@ bool CheckResult(std::string imgPath, const std::string& expectedFormat, const Z
 	}
 
 	imgPath.replace(imgPath.size() - 4, 4, ".txt");
-	std::ifstream stream(imgPath, std::ios::binary);
-	if (stream) {
-		std::string expected((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
+	std::ifstream utf8Stream(imgPath, std::ios::binary);
+	if (utf8Stream) {
+		std::string expected((std::istreambuf_iterator<char>(utf8Stream)), std::istreambuf_iterator<char>());
+		if (result.text != expected) {
+			log += "Content mismatch: expected " + expected + " but got " + result.text + "\n";
+			return false;
+		}
+		return true;
+	}
+	imgPath.replace(imgPath.size() - 4, 4, ".bin");
+	std::ifstream latin1Stream(imgPath, std::ios::binary);
+	if (latin1Stream) {
+		std::string rawStr((std::istreambuf_iterator<char>(latin1Stream)), std::istreambuf_iterator<char>());
+		std::string expected = ZXing::String::FromLatin1(rawStr).toStdString();
 		if (result.text != expected) {
 			log += "Content mismatch: expected " + expected + " but got " + result.text + "\n";
 			return false;
