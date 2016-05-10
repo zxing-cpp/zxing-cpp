@@ -40,13 +40,14 @@ class HybridBinarizer : public GlobalHistogramBinarizer
 {
 public:
 	explicit HybridBinarizer(const std::shared_ptr<const LuminanceSource>& source, bool pureBarcode = false);
+	virtual ~HybridBinarizer();
 
 	virtual std::shared_ptr<const BitMatrix> getBlackMatrix() const override;
 	virtual std::shared_ptr<BinaryBitmap> newInstance(const std::shared_ptr<const LuminanceSource>& source) const override;
 
 private:
-	mutable std::once_flag _matrixOnce;
-	mutable std::shared_ptr<const BitMatrix> _matrix;
+	struct DataCache;
+	std::unique_ptr<DataCache> m_cache;
 };
 
 } // ZXing

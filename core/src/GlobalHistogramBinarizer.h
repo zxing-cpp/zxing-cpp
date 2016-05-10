@@ -16,7 +16,6 @@
 */
 
 #include "BinaryBitmap.h"
-#include <mutex>
 
 namespace ZXing {
 
@@ -41,6 +40,7 @@ protected:
 
 public:
 	explicit GlobalHistogramBinarizer(const std::shared_ptr<const LuminanceSource>& source, bool pureBarcode = false);
+	virtual ~GlobalHistogramBinarizer();
 
 	virtual bool isPureBarcode() const override;
 	virtual int width() const override;
@@ -55,8 +55,8 @@ public:
 	virtual std::shared_ptr<BinaryBitmap> newInstance(const std::shared_ptr<const LuminanceSource>& source) const;
 
 private:
-	mutable std::once_flag _matrixOnce;
-	mutable std::shared_ptr<const BitMatrix> _matrix;
+	struct DataCache;
+	std::unique_ptr<DataCache> _cache;
 };
 
 } // ZXing

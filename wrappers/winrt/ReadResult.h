@@ -15,34 +15,31 @@
 * limitations under the License.
 */
 
-#include "Reader.h"
-
-#include <memory>
-#include <string>
-
 namespace ZXing {
+namespace BarcodeScanner {
 
-class DecodeHints;
-class StringCodecs;
-
-namespace QRCode {
-
-/**
-* This implementation can detect and decode QR Codes in an image.
-*
-* @author Sean Owen
-*/
-class Reader : public ZXing::Reader
+public ref class ReadResult sealed
 {
 public:
-	explicit Reader(const DecodeHints& hints, const std::shared_ptr<const StringCodecs>& codec);
-	virtual Result decode(const BinaryBitmap& image) const override;
+	property Platform::String^ Format {
+		Platform::String^ get() {
+			return m_format;
+		}
+	}
+
+	property Platform::String^ Text {
+		Platform::String^ get() {
+			return m_text;
+		}
+	}
+
+internal:
+	ReadResult(Platform::String^ format, Platform::String^ text) : m_format(format), m_text(text) {}
 
 private:
-	bool _tryHarder;
-	std::string _charset;
-	std::shared_ptr<const StringCodecs> _codec;
+	Platform::String^ m_format;
+	Platform::String^ m_text;
 };
 
-} // QRCode
+} // BarcodeScanner
 } // ZXing

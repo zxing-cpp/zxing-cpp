@@ -353,7 +353,7 @@ static int TextCompaction(const std::vector<int>& codewords, int codeIndex, Stri
 * @param result    The decoded data is appended to the result.
 * @return The next index into the codeword array.
 */
-static int ByteCompaction(int mode, const std::vector<int>& codewords, CharacterSet encoding, int codeIndex, String& result)
+static int ByteCompaction(int mode, const std::vector<int>& codewords, CharacterSet encoding, int codeIndex, const StringCodecs& codec, String& result)
 {
 	ByteArray decodedBytes;
 	if (mode == BYTE_COMPACTION_MODE_LATCH) {
@@ -442,7 +442,7 @@ static int ByteCompaction(int mode, const std::vector<int>& codewords, Character
 			}
 		}
 	}
-	result += StringCodecs::Instance()->toUnicode(decodedBytes.data(), decodedBytes.length(), encoding);
+	result += codec.toUnicode(decodedBytes.data(), decodedBytes.length(), encoding);
 	return codeIndex;
 }
 
@@ -620,7 +620,7 @@ static ErrorStatus DecodeMacroBlock(const std::vector<int>& codewords, int codeI
 }
 
 ErrorStatus
-DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel, DecoderResult& result)
+DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel, const StringCodecs& codec, DecoderResult& result)
 {
 	String resultString;
 	auto encoding = DEFAULT_ENCODING;
@@ -636,7 +636,7 @@ DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel, D
 			break;
 		case BYTE_COMPACTION_MODE_LATCH:
 		case BYTE_COMPACTION_MODE_LATCH_6:
-			codeIndex = ByteCompaction(code, codewords, encoding, codeIndex, resultString);
+			codeIndex = ByteCompaction(code, codewords, encoding, codeIndex, codec, resultString);
 			break;
 		case MODE_SHIFT_TO_BYTE_COMPACTION_MODE:
 			resultString.appendUtf32((uint16_t)codewords[codeIndex++]);

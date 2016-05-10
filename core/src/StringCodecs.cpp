@@ -19,37 +19,6 @@
 
 namespace ZXing {
 
-namespace {
-
-	class DummyConverter : public StringCodecs
-	{
-	public:
-		virtual String toUnicode(const uint8_t* bytes, size_t length, CharacterSet codec) const override
-		{
-			return String(reinterpret_cast<const char*>(bytes), length);
-		}
-
-		virtual CharacterSet defaultEncoding() const override
-		{
-			return CharacterSet::ISO8859_1;
-		}
-	};
-}
-
-static std::shared_ptr<StringCodecs> globalInstance = std::make_shared<DummyConverter>();
-
-std::shared_ptr<StringCodecs>
-StringCodecs::Instance()
-{
-	return globalInstance;
-}
-
-void
-StringCodecs::SetInstance(const std::shared_ptr<StringCodecs>& inst)
-{
-	globalInstance = inst;
-}
-
 /**
 * @param bytes bytes encoding a string, whose encoding should be guessed
 * @param hints decode hints if applicable
@@ -58,7 +27,7 @@ StringCodecs::SetInstance(const std::shared_ptr<StringCodecs>& inst)
 *  default encoding if none of these can possibly be correct
 */
 CharacterSet
-StringCodecs::GuessEncoding(const uint8_t* bytes, size_t length)
+StringCodecs::GuessEncoding(const uint8_t* bytes, size_t length, CharacterSet fallback)
 {
 	// For now, merely tries to distinguish ISO-8859-1, UTF-8 and Shift_JIS,
 	// which should be by far the most common encodings.
@@ -194,9 +163,7 @@ StringCodecs::GuessEncoding(const uint8_t* bytes, size_t length)
 		return CharacterSet::UTF8;
 	}
 
-	static CharacterSet defaultEnc = Instance()->defaultEncoding();
-
-	bool assumeShiftJIS = defaultEnc == CharacterSet::Shift_JIS || defaultEnc == CharacterSet::EUC_JP;
+	bool assumeShiftJIS = fallback == CharacterSet::Shift_JIS || fallback == CharacterSet::EUC_JP;
 	// Easy -- if assuming Shift_JIS or at least 3 valid consecutive not-ascii characters (and no evidence it can't be), done
 	if (canBeShiftJIS && (assumeShiftJIS || sjisMaxKatakanaWordLength >= 3 || sjisMaxDoubleBytesWordLength >= 3)) {
 		return CharacterSet::Shift_JIS;
@@ -222,7 +189,7 @@ StringCodecs::GuessEncoding(const uint8_t* bytes, size_t length)
 		return CharacterSet::UTF8;
 	}
 	// Otherwise, we take a wild guess with platform encoding
-	return defaultEnc;
+	return fallback;
 }
 
 } // ZXing

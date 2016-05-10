@@ -71,8 +71,9 @@ public:
 		uint32_t read() const;
 	};
 
+	String() {}
 	String(const std::string& other) : m_utf8(other) {;}
-	String(const char* i_utf8 = nullptr, int i_len = -1) {
+	String(const char* i_utf8, int i_len = -1) {
 		if (i_utf8 != nullptr) {
 			if (i_len >= 0) {
 				m_utf8.append(i_utf8, i_len);

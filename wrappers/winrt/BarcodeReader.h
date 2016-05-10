@@ -1,6 +1,6 @@
 #pragma once
 /*
-* Copyright 2016 Huy Cuong Nguyen
+* Copyright 2016 ZXing authors
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -15,14 +15,17 @@
 * limitations under the License.
 */
 
-#include <cstddef>
 #include <memory>
 
 namespace ZXing {
 
-class String;
+class MultiFormatReader;
 
-enum class CharacterSet
+namespace BarcodeScanner {
+
+ref class ReadResult;
+
+public enum class CharEncoding
 {
 	Unknown,
 	Cp437,
@@ -54,25 +57,24 @@ enum class CharacterSet
 	GB18030,
 	EUC_JP,
 	EUC_KR,
-
-	CharsetCount
 };
 
-/**
-* <p>This provides an easy abstraction to read bits at a time from a sequence of bytes, where the
-* number of bits read is not often a multiple of 8.</p>
-*
-* <p>This class is thread-safe but not reentrant -- unless the caller modifies the bytes array
-* it passed in, in which case all bets are off.</p>
-*/
-class StringCodecs
+public delegate Platform::String^ StringConverter(const Platform::Array<uint8>^, CharEncoding charset);
+class InternalStringDecoder;
+
+public ref class BarcodeReader sealed
 {
 public:
-	virtual ~StringCodecs() {}
-	virtual String toUnicode(const uint8_t* bytes, size_t length, CharacterSet codec) const = 0;
-	virtual CharacterSet defaultEncoding() const = 0;
+	BarcodeReader(StringConverter^ codec, bool tryHarder);
 
-	static CharacterSet GuessEncoding(const uint8_t* bytes, size_t length, CharacterSet fallback);
+	ReadResult^ Read(Windows::Graphics::Imaging::SoftwareBitmap^ bitmap);
+
+private:
+	~BarcodeReader();
+
+	std::unique_ptr<MultiFormatReader> m_reader;
+	std::shared_ptr<InternalStringDecoder> m_decoder;
 };
 
+} // BarcodeScanner
 } // ZXing

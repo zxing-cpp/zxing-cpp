@@ -1,0 +1,67 @@
+#
+# This will create a Windows Runtime Component that can be consummed by any WinRT or UWP project.
+# You need to specify -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0 at command line
+# to generate correctly UWP projects. You can also use Toolchain-Win10.cmake as tool chain file
+# which defined these for you.
+#
+# You can add EXTENSION_SDK_OUTPUT variable to deploy the build as UWP Extension SDK
+# e.g. -DEXTENSION_SDK_OUTPUT:STRING=<path_to_folder_parent_of_SDKManifest.xml>
+#
+cmake_minimum_required (VERSION 3.4.0)
+
+project (BarcodeScanner)
+
+set (CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE)
+set (WINRT ON)
+set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /INCREMENTAL:NO" )
+
+add_definitions (-DUNICODE -D_UNICODE)
+
+if (MSVC)
+	add_definitions (
+		-DNOMINMAX
+	)
+endif()
+
+include(TargetArch.cmake)
+get_target_architecture (TARGET_ARCHITECTURE)
+set (TARGET_ARCHITECTURE ${TARGET_ARCHITECTURE} CACHE INTERNAL "")
+message (STATUS "Building for " ${TARGET_ARCHITECTURE})
+
+if (NOT DEFINED EXTENSION_SDK_OUTPUT)
+	set (EXTENSION_SDK_OUTPUT "" CACHE PATH "Path to folder parent of SDKManifest")
+endif()
+
+add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/../../core ${CMAKE_BINARY_DIR}/ZXingCore)
+
+file (GLOB SOURCE_FILES *.cpp)
+file (GLOB HEADER_FILES *.h)
+
+include_directories (
+	${ZXING_CORE_INCLUDE}
+)
+
+set (ROOT_NAMESPACE "ZXing.BarcodeScanner")
+set (OUTPUT_FILE_BASE_NAME "${ROOT_NAMESPACE}")
+
+add_library (BarcodeScanner SHARED ${HEADER_FILES} ${SOURCE_FILES})
+target_link_libraries (BarcodeScanner ZXingCore)
+set_target_properties (BarcodeScanner PROPERTIES
+	COMPILE_FLAGS "/ZW"		# Consume Windows Runtime Extension
+	LINK_FLAGS "/WINMD"		# Generate Windows Metadata
+	COMPILE_DEFINITIONS "${IMAGEPROC_DEFINES};_WINRT_DLL"
+	VS_GLOBAL_ROOTNAMESPACE "${ROOT_NAMESPACE}"
+	OUTPUT_NAME ${OUTPUT_FILE_BASE_NAME}
+)
+
+set_target_properties (BarcodeScanner ZXingCore PROPERTIES
+	VS_WINDOWS_TARGET_PLATFORM_MIN_VERSION "10.0.10240.0"
+)
+
+if (EXTENSION_SDK_OUTPUT)
+	add_custom_command (TARGET BarcodeScanner POST_BUILD
+		COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different "$<TARGET_FILE:BarcodeScanner>" "${EXTENSION_SDK_OUTPUT}/Redist/$<$<CONFIG:Release>:Retail>$<$<CONFIG:Debug>:Debug>/${TARGET_ARCHITECTURE}/$<TARGET_FILE_NAME:BarcodeScanner>"
+		COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different "$<TARGET_FILE_DIR:BarcodeScanner>/${OUTPUT_FILE_BASE_NAME}.winmd" "${EXTENSION_SDK_OUTPUT}/References/CommonConfiguration/Neutral/${OUTPUT_FILE_BASE_NAME}.winmd"
+		COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different "$<TARGET_FILE_DIR:BarcodeScanner>/${OUTPUT_FILE_BASE_NAME}.pri" "${EXTENSION_SDK_OUTPUT}/References/CommonConfiguration/Neutral/${OUTPUT_FILE_BASE_NAME}.pri"
+	)
+endif()

@@ -22,6 +22,7 @@
 #include "ErrorStatus.h"
 
 #include <array>
+#include <mutex>
 
 namespace ZXing {
 
@@ -30,9 +31,20 @@ static const int LUMINANCE_SHIFT = 8 - LUMINANCE_BITS;
 static const int LUMINANCE_BUCKETS = 1 << LUMINANCE_BITS;
 
 
+struct GlobalHistogramBinarizer::DataCache
+{
+	std::once_flag once;
+	std::shared_ptr<const BitMatrix> matrix;
+};
+
 GlobalHistogramBinarizer::GlobalHistogramBinarizer(const std::shared_ptr<const LuminanceSource>& source, bool pureBarcode) :
 	_source(source),
-	_pureBarcode(pureBarcode)
+	_pureBarcode(pureBarcode),
+	_cache(new DataCache)
+{
+}
+
+GlobalHistogramBinarizer::~GlobalHistogramBinarizer()
 {
 }
 
@@ -195,8 +207,8 @@ static void InitBlackMatrix(const LuminanceSource& source, std::shared_ptr<const
 std::shared_ptr<const BitMatrix>
 GlobalHistogramBinarizer::getBlackMatrix() const
 {
-	std::call_once(_matrixOnce, &InitBlackMatrix, *_source, _matrix);
-	return _matrix;
+	std::call_once(_cache->once, &InitBlackMatrix, *_source, _cache->matrix);
+	return _cache->matrix;
 }
 
 bool

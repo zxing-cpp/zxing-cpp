@@ -21,6 +21,7 @@ enum class ErrorStatus;
 class BitMatrix;
 class ResultPoint;
 class DecoderResult;
+class StringCodecs;
 template <typename T> class Nullable;
 
 namespace Pdf417 {
@@ -34,7 +35,7 @@ public:
 	static ErrorStatus Decode(const BitMatrix& image,
 		const Nullable<ResultPoint>& imageTopLeft, const Nullable<ResultPoint>& imageBottomLeft,
 		const Nullable<ResultPoint>& imageTopRight, const Nullable<ResultPoint>& imageBottomRight,
-		int minCodewordWidth, int maxCodewordWidth, DecoderResult& result);
+		int minCodewordWidth, int maxCodewordWidth, const StringCodecs& codec, DecoderResult& result);
 };
 
 } // Pdf417

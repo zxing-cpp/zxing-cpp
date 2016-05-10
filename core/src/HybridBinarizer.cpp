@@ -23,6 +23,7 @@
 #include "ZXNumeric.h"
 
 #include <array>
+#include <mutex>
 
 namespace ZXing {
 
@@ -34,8 +35,19 @@ static const int BLOCK_SIZE_MASK = BLOCK_SIZE - 1;   // ...0011...11
 static const int MINIMUM_DIMENSION = BLOCK_SIZE * 5;
 static const int MIN_DYNAMIC_RANGE = 24;
 
+struct HybridBinarizer::DataCache
+{
+	std::once_flag once;
+	std::shared_ptr<const BitMatrix> matrix;
+};
+
 HybridBinarizer::HybridBinarizer(const std::shared_ptr<const LuminanceSource>& source, bool pureBarcode) :
-	GlobalHistogramBinarizer(source, pureBarcode)
+	GlobalHistogramBinarizer(source, pureBarcode),
+	m_cache(new DataCache)
+{
+}
+
+HybridBinarizer::~HybridBinarizer()
 {
 }
 
@@ -204,8 +216,8 @@ HybridBinarizer::getBlackMatrix() const
 	int width = _source->width();
 	int height = _source->height();
 	if (width >= MINIMUM_DIMENSION && height >= MINIMUM_DIMENSION) {
-		std::call_once(_matrixOnce, &InitBlackMatrix, *_source, _matrix);
-		return _matrix;
+		std::call_once(m_cache->once, &InitBlackMatrix, *_source, m_cache->matrix);
+		return m_cache->matrix;
 	}
 	else {
 		// If the image is too small, fall back to the global histogram approach.

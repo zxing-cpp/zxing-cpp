@@ -418,7 +418,7 @@ static ErrorStatus VerifyCodewordCount(std::vector<int>& codewords, int numECCod
 	return ErrorStatus::NoError;
 }
 
-static ErrorStatus DecodeCodewords(std::vector<int>& codewords, int ecLevel, const std::vector<int>& erasures, DecoderResult& result)
+static ErrorStatus DecodeCodewords(std::vector<int>& codewords, int ecLevel, const std::vector<int>& erasures, const StringCodecs& codec, DecoderResult& result)
 {
 	if (codewords.empty()) {
 		return ErrorStatus::FormatError;
@@ -431,7 +431,7 @@ static ErrorStatus DecodeCodewords(std::vector<int>& codewords, int ecLevel, con
 		status = VerifyCodewordCount(codewords, numECCodewords);
 		if (StatusIsOK(status)) {
 			// Decode the codewords
-			status = DecodedBitStreamParser::Decode(codewords, ecLevel, result);
+			status = DecodedBitStreamParser::Decode(codewords, ecLevel, codec, result);
 			if (StatusIsOK(status)) {
 				result.setErrorsCorrected(correctedErrorsCount);
 				result.setErasures(erasures.size());
@@ -456,7 +456,7 @@ static ErrorStatus DecodeCodewords(std::vector<int>& codewords, int ecLevel, con
 * @param ambiguousIndexValues two dimensional array that contains the ambiguous values. The first dimension must
 * be the same length as the ambiguousIndexes array
 */
-static ErrorStatus CreateDecoderResultFromAmbiguousValues(int ecLevel, std::vector<int>& codewords, const std::vector<int>& erasureArray, const std::vector<int>& ambiguousIndexes, const std::vector<std::vector<int>>& ambiguousIndexValues, DecoderResult& result)
+static ErrorStatus CreateDecoderResultFromAmbiguousValues(int ecLevel, std::vector<int>& codewords, const std::vector<int>& erasureArray, const std::vector<int>& ambiguousIndexes, const std::vector<std::vector<int>>& ambiguousIndexValues, const StringCodecs& codec, DecoderResult& result)
 {
 	std::vector<int> ambiguousIndexCount(ambiguousIndexes.size(), 0);
 
@@ -465,7 +465,7 @@ static ErrorStatus CreateDecoderResultFromAmbiguousValues(int ecLevel, std::vect
 		for (size_t i = 0; i < ambiguousIndexCount.size(); i++) {
 			codewords[ambiguousIndexes[i]] = ambiguousIndexValues[i][ambiguousIndexCount[i]];
 		}
-		auto status = DecodeCodewords(codewords, ecLevel, erasureArray, result);
+		auto status = DecodeCodewords(codewords, ecLevel, erasureArray, codec, result);
 		if (status != ErrorStatus::ChecksumError) {
 			return status;
 		}
@@ -490,7 +490,7 @@ static ErrorStatus CreateDecoderResultFromAmbiguousValues(int ecLevel, std::vect
 }
 
 
-static ErrorStatus CreateDecoderResult(DetectionResult& detectionResult, DecoderResult& result)
+static ErrorStatus CreateDecoderResult(DetectionResult& detectionResult, const StringCodecs& codec, DecoderResult& result)
 {
 	std::vector<std::vector<BarcodeValue>> barcodeMatrix;
 	CreateBarcodeMatrix(detectionResult, barcodeMatrix);
@@ -517,7 +517,7 @@ static ErrorStatus CreateDecoderResult(DetectionResult& detectionResult, Decoder
 			}
 		}
 	}
-	return CreateDecoderResultFromAmbiguousValues(detectionResult.barcodeECLevel(), codewords, erasures, ambiguousIndexesList, ambiguousIndexValues, result);
+	return CreateDecoderResultFromAmbiguousValues(detectionResult.barcodeECLevel(), codewords, erasures, ambiguousIndexesList, ambiguousIndexValues, codec, result);
 }
 
 
@@ -528,7 +528,7 @@ static ErrorStatus CreateDecoderResult(DetectionResult& detectionResult, Decoder
 ErrorStatus
 ScanningDecoder::Decode(const BitMatrix& image, const Nullable<ResultPoint>& imageTopLeft, const Nullable<ResultPoint>& imageBottomLeft,
 	const Nullable<ResultPoint>& imageTopRight, const Nullable<ResultPoint>& imageBottomRight,
-	int minCodewordWidth, int maxCodewordWidth, DecoderResult& result)
+	int minCodewordWidth, int maxCodewordWidth, const StringCodecs& codec, DecoderResult& result)
 {
 	BoundingBox boundingBox;
 	if (!BoundingBox::Create(image.width(), image.height(), imageTopLeft, imageBottomLeft, imageTopRight, imageBottomRight, boundingBox)) {
@@ -589,7 +589,7 @@ ScanningDecoder::Decode(const BitMatrix& image, const Nullable<ResultPoint>& ima
 			}
 		}
 	}
-	return CreateDecoderResult(detectionResult, result);
+	return CreateDecoderResult(detectionResult, codec, result);
 }
 
 //

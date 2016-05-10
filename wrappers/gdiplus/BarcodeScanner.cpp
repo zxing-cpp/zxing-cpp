@@ -26,7 +26,6 @@
 
 #include <windows.h>
 #include <gdiplus.h>
-#include <mutex>
 #include <type_traits>
 
 namespace ZXing {
@@ -112,16 +111,8 @@ public:
 
 } // anonymous
 
-static void InitStringCodecs()
-{
-	StringCodecs::SetInstance(std::make_shared<IconvCodecs>());
-}
-
 BarcodeScanner::BarcodeScanner(bool tryHarder, bool tryRotate, const std::string& format)
 {
-	static std::once_flag s_once;
-	std::call_once(s_once, InitStringCodecs);
-
 	DecodeHints hints;
 	hints.setShouldTryHarder(tryHarder);
 	hints.setShouldTryRotate(tryRotate);
@@ -131,7 +122,7 @@ BarcodeScanner::BarcodeScanner(bool tryHarder, bool tryRotate, const std::string
 			hints.setPossibleFormats({ f });
 		}
 	}
-	_reader = std::make_shared<MultiFormatReader>(hints);
+	_reader = std::make_shared<MultiFormatReader>(hints, std::make_shared<IconvCodecs>());
 }
 
 static std::shared_ptr<LuminanceSource>

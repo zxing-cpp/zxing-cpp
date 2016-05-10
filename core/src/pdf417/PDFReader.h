@@ -16,8 +16,12 @@
 */
 
 #include "Reader.h"
+#include <memory>
 
 namespace ZXing {
+
+class StringCodecs;
+
 namespace Pdf417 {
 
 /**
@@ -28,7 +32,12 @@ namespace Pdf417 {
 class Reader : public ZXing::Reader
 {
 public:
+	explicit Reader(const std::shared_ptr<const StringCodecs>& codec);
+
 	virtual Result decode(const BinaryBitmap& image) const override;
+
+public:
+	std::shared_ptr<const StringCodecs> _codec;
 };
 
 } // Pdf417

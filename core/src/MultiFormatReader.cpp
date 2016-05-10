@@ -33,8 +33,7 @@
 
 namespace ZXing {
 
-MultiFormatReader::MultiFormatReader(const DecodeHints& hints) :
-	_hints(hints)
+MultiFormatReader::MultiFormatReader(const DecodeHints& hints, const std::shared_ptr<const StringCodecs>& codec)
 {
 	_readers.reserve(6);
 	bool tryHarder = hints.shouldTryHarder();
@@ -59,7 +58,7 @@ MultiFormatReader::MultiFormatReader(const DecodeHints& hints) :
 			_readers.push_back(std::make_shared<OneD::Reader>(hints));
 		}
 		if (formats.find(BarcodeFormat::QR_CODE) != formats.end()) {
-			_readers.push_back(std::make_shared<QRCode::Reader>(hints));
+			_readers.push_back(std::make_shared<QRCode::Reader>(hints, codec));
 		}
 		if (formats.find(BarcodeFormat::DATA_MATRIX) != formats.end()) {
 			_readers.push_back(std::make_shared<DataMatrix::Reader>());
@@ -68,7 +67,7 @@ MultiFormatReader::MultiFormatReader(const DecodeHints& hints) :
 			_readers.push_back(std::make_shared<Aztec::Reader>());
 		}
 		if (formats.find(BarcodeFormat::PDF_417) != formats.end()) {
-			_readers.push_back(std::make_shared<Pdf417::Reader>());
+			_readers.push_back(std::make_shared<Pdf417::Reader>(codec));
 		}
 		if (formats.find(BarcodeFormat::MAXICODE) != formats.end()) {
 			_readers.push_back(std::make_shared<MaxiCode::Reader>());
@@ -83,10 +82,10 @@ MultiFormatReader::MultiFormatReader(const DecodeHints& hints) :
 		if (!tryHarder) {
 			_readers.push_back(std::make_shared<OneD::Reader>(hints));
 		}
-		_readers.push_back(std::make_shared<QRCode::Reader>(hints));
+		_readers.push_back(std::make_shared<QRCode::Reader>(hints, codec));
 		_readers.push_back(std::make_shared<DataMatrix::Reader>());
 		_readers.push_back(std::make_shared<Aztec::Reader>());
-		_readers.push_back(std::make_shared<Pdf417::Reader>());
+		_readers.push_back(std::make_shared<Pdf417::Reader>(codec));
 		_readers.push_back(std::make_shared<MaxiCode::Reader>());
 		if (tryHarder) {
 			_readers.push_back(std::make_shared<OneD::Reader>(hints));
