@@ -632,8 +632,8 @@ Decoder::Decode(const BitMatrix& bits, DecoderResult& result)
 	// Error-correct and copy data blocks together into a stream of bytes
 	int dataBlocksCount = static_cast<int>(dataBlocks.size());
 	for (int j = 0; j < dataBlocksCount; j++) {
-		const auto& dataBlock = dataBlocks[j];
-		ByteArray codewordBytes = dataBlock.codewords();
+		auto& dataBlock = dataBlocks[j];
+		ByteArray& codewordBytes = dataBlock.codewords();
 		int numDataCodewords = dataBlock.numDataCodewords();
 		status = CorrectErrors(codewordBytes, numDataCodewords);
 		if (StatusIsError(status)) {

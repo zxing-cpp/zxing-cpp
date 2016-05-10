@@ -17,11 +17,9 @@
 
 #include <cstdint>
 #include <vector>
-#include <string>
+#include <cstring>
 
 namespace ZXing {
-
-class ByteArray;
 
 /**
 * <p>A simple, fast array of bits, represented compactly by an array of ints internally.</p>
@@ -40,12 +38,29 @@ public:
 	BitArray() : _size(0) {}
 
 	explicit BitArray(int size) : _size(size), _bits((size + 31) / 32, 0) {}
+	
+	BitArray(BitArray &&other) : _size(other._size), _bits(std::move(other._bits)) {}
 
-	void init(int size, bool clearAfter = true) {
+	BitArray& operator=(BitArray &&other) {
+		_size = other._size;
+		_bits = std::move(other._bits);
+		return *this;
+	}
+
+	// Nothing wrong to support it, just to make it explicit, instead of by mistake.
+	// Use copyTo() below.
+	BitArray(const BitArray &) = delete;
+	BitArray& operator=(const BitArray &) = delete;
+
+	void copyTo(BitArray& other) const {
+		other._size = _size;
+		other._bits = _bits;
+	}
+
+	void init(int size) {
 		_size = size;
 		_bits.resize((size + 31) / 32);
-		if (clearAfter)
-			clear();
+		std::memset(_bits.data(), 0, sizeof(uint32_t) * _bits.size());
 	}
 
 	int size() const {
@@ -82,7 +97,11 @@ public:
 		_bits.at(i / 32) ^= 1 << (i & 0x1F);
 	}
 
-	void flipAll();
+	void flipAll() {
+		for (auto it = _bits.begin(); it != _bits.end(); ++it) {
+			*it = ~(*it);
+		}
+	}
 
 	/**
 	* @param from first bit to check
@@ -123,7 +142,9 @@ public:
 	/**
 	* Clears all bits (sets to false).
 	*/
-	void clear();
+	void clear() {
+		std::memset(_bits.data(), 0, sizeof(uint32_t) * _bits.size());
+	}
 
 	/**
 	* Efficient method to check if a range of bits is set, or not set.
@@ -161,7 +182,7 @@ public:
 	* @param offset position in array to start writing
 	* @param numBytes how many bytes to write
 	*/
-	ByteArray toBytes(int bitOffset, int offset, int numBytes) const;
+	//ByteArray toBytes(int bitOffset, int offset, int numBytes) const;
 
 	/**
 	* @return underlying array of ints. The first element holds the first 32 bits, and the least
@@ -179,7 +200,7 @@ public:
 		return a._size == b._size && b._bits == b._bits;
 	}
 
-	std::string toString() const;
+	//std::string toString() const;
 
 private:
 	void ensureCapacity(int size)

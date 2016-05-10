@@ -15,7 +15,6 @@
 */
 
 #include "BitArray.h"
-#include "ByteArray.h"
 #include "BitHacks.h"
 
 #include <algorithm>
@@ -93,12 +92,6 @@ BitArray::setRange(int start, int end)
 	}
 }
 
-void
-BitArray::clear()
-{
-	std::fill(_bits.begin(), _bits.end(), 0);
-}
-
 bool
 BitArray::isRange(int start, int end, bool value) const
 {
@@ -160,7 +153,7 @@ void
 BitArray::appendBitArray(const BitArray& other)
 {
 	if (_bits.empty()) {
-		*this = other;
+		other.copyTo(*this);
 	}
 	else if (other._size > 0) {
 		unsigned offset = _bits.size() * 32 - _size;
@@ -191,30 +184,22 @@ BitArray::xor(const BitArray& other)
 	}
 }
 
-ByteArray
-BitArray::toBytes(int bitOffset, int offset, int numBytes) const
-{
-	ByteArray result(numBytes);
-	for (int i = 0; i < numBytes; i++) {
-		int theByte = 0;
-		for (int j = 0; j < 8; j++) {
-			if (get(bitOffset)) {
-				theByte |= 1 << (7 - j);
-			}
-			bitOffset++;
-		}
-		result[offset + i] = (uint8_t)theByte;
-	}
-	return result;
-}
-
-void
-BitArray::flipAll()
-{
-	for (auto it = _bits.begin(); it != _bits.end(); ++it) {
-		*it = ~(*it);
-	}
-}
+//ByteArray
+//BitArray::toBytes(int bitOffset, int offset, int numBytes) const
+//{
+//	ByteArray result(numBytes);
+//	for (int i = 0; i < numBytes; i++) {
+//		int theByte = 0;
+//		for (int j = 0; j < 8; j++) {
+//			if (get(bitOffset)) {
+//				theByte |= 1 << (7 - j);
+//			}
+//			bitOffset++;
+//		}
+//		result[offset + i] = (uint8_t)theByte;
+//	}
+//	return result;
+//}
 
 void
 BitArray::reverse()
@@ -279,19 +264,19 @@ BitArray::getSubArray(int offset, int length, BitArray& result) const
 	}
 }
 
-std::string
-BitArray::toString() const
-{
-	std::string result;
-	result.reserve(_size);
-	for (int i = 0; i < _size; ++i) {
-		if ((i & 0x07) == 0) {
-			result.push_back(' ');
-		}
-		result.push_back(get(i) ? 'X' : '.');
-	}
-	return result;
-}
-
+//std::string
+//BitArray::toString() const
+//{
+//	std::string result;
+//	result.reserve(_size);
+//	for (int i = 0; i < _size; ++i) {
+//		if ((i & 0x07) == 0) {
+//			result.push_back(' ');
+//		}
+//		result.push_back(get(i) ? 'X' : '.');
+//	}
+//	return result;
+//}
+//
 
 } // ZXing

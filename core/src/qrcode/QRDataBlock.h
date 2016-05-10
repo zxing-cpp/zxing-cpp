@@ -46,6 +46,10 @@ public:
 		return _codewords;
 	}
 
+	ByteArray& codewords() {
+		return _codewords;
+	}
+
 	/**
 	* <p>When QR Codes use multiple data blocks, they are actually interleaved.
 	* That is, the first byte of data block 1 to n is written, then the second bytes, and so on. This

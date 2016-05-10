@@ -278,7 +278,8 @@ ITFReader::DecodeStart(const BitArray& row, int& narrowLineWidth, int& patternEn
 ErrorStatus
 ITFReader::DecodeEnd(const BitArray& row_, int narrowLineWidth, int& patternStart)
 {
-	BitArray row = row_;
+	BitArray row;
+	row_.copyTo(row);
 	// For convenience, reverse the row and then
 	// search from 'the start' for the end block
 	row.reverse();

@@ -43,6 +43,10 @@ public:
 		return _codewords;
 	}
 
+	ByteArray& codewords() {
+		return _codewords;
+	}
+
 	/**
 	* <p>When Data Matrix Codes use multiple data blocks, they actually interleave the bytes of each of them.
 	* That is, the first byte of data block 1 to n is written, then the second bytes, and so on. This

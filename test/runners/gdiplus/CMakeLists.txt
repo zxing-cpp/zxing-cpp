@@ -33,7 +33,7 @@ add_executable (ReaderTest
 	
 set_target_properties (ReaderTest PROPERTIES
 	COMPILE_DEFINITIONS "${LOCAL_DEFINES}"
-	LINK_FLAGS "/link setargv.obj"
+#	LINK_FLAGS "/link setargv.obj"
 )
 
 target_link_libraries (ReaderTest BarcodeScanner)

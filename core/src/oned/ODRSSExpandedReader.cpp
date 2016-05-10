@@ -708,19 +708,16 @@ DecodeRow2Pairs(int rowNumber, const BitArray& row, bool startFromEven, std::lis
 * @author Pablo Orduña, University of Deusto (pablo.orduna@deusto.es)
 * @author Eduardo Castillejo, University of Deusto (eduardo.castillejo@deusto.es)
 */
-static BitArray
-BuildBitArray(const std::list<ExpandedPair>& pairs)
+static void
+BuildBitArray(const std::list<ExpandedPair>& pairs, BitArray& binary)
 {
 	int charNumber = (pairs.size() * 2) - 1;
 	if (pairs.back().mustBeLast()) {
 		charNumber -= 1;
 	}
 
-	int size = 12 * charNumber;
-
-	BitArray binary(size);
+	binary.init(12 * charNumber);
 	int accPos = 0;
-
 	auto it = pairs.begin();
 	int firstValue = it->rightChar().value();
 	for (int i = 11; i >= 0; --i) {
@@ -749,7 +746,6 @@ BuildBitArray(const std::list<ExpandedPair>& pairs)
 			}
 		}
 	}
-	return binary;
 }
 
 // Not private for unit testing
@@ -760,7 +756,9 @@ ConstructResult(const std::list<ExpandedPair>& pairs)
 		return Result(ErrorStatus::NotFound);
 	}
 
-	auto resultString = ExpandedBinaryDecoder::Decode(BuildBitArray(pairs));
+	BitArray binary;
+	BuildBitArray(pairs, binary);
+	auto resultString = ExpandedBinaryDecoder::Decode(binary);
 	if (resultString.empty()) {
 		return Result(ErrorStatus::NotFound);
 	}

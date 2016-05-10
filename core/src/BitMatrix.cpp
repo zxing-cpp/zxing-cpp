@@ -81,38 +81,6 @@ namespace ZXing {
 //	return matrix;
 //}
 
-BitMatrix::BitMatrix() :
-	_width(0),
-	_height(0),
-	_rowSize(0)
-{}
-
-BitMatrix::BitMatrix(int width, int height) :
-	_width(width),
-	_height(height),
-	_rowSize((width + 31) / 32)
-{
-	_bits.resize(_rowSize * _height, 0);
-}
-
-BitMatrix::BitMatrix(BitMatrix&& other) :
-	_width(other._width),
-	_height(other._height),
-	_rowSize(other._rowSize),
-	_bits(std::move(other._bits))
-{
-}
-
-BitMatrix &
-BitMatrix::operator=(BitMatrix&& other)
-{
-	_width = other._width;
-	_height = other._height;
-	_rowSize = other._rowSize;
-	_bits = std::move(other._bits);
-	return *this;
-}
-
 void
 BitMatrix::init(int width, int height)
 {
@@ -120,61 +88,16 @@ BitMatrix::init(int width, int height)
 	_height = height;
 	_rowSize = (width + 31) / 32;
 	_bits.resize(_rowSize * _height);
-	std::fill(_bits.begin(), _bits.end(), 0);
+	std::memset(_bits.data(), 0, sizeof(uint32_t) * _bits.size());
 }
 
 void
-BitMatrix::copyTo(BitMatrix& other) const
-{
-	other._width = _width;
-	other._height = _height;
-	other._rowSize = _rowSize;
-	other._bits = _bits;
-}
-
-int
-BitMatrix::checkBounds(int offset) const
-{
-	if (offset < 0 || offset >= static_cast<int>(_bits.size()))
-	{
-		throw std::out_of_range("BitMatrix: index out of range");
-	}
-	return offset;
-}
-
-bool
-BitMatrix::get(int x, int y) const
-{
-	int offset = checkBounds(y * _rowSize + (x / 32));
-	return ((_bits[offset] >> (x & 0x1f)) & 1) != 0;
-}
-
-void
-BitMatrix::set(int x, int y)
-{
-	int offset = checkBounds(y * _rowSize + (x / 32));
-	_bits[offset] |= 1 << (x & 0x1f);
-}
-
-void
-BitMatrix::unset(int x, int y)
-{
-	int offset = checkBounds(y * _rowSize + (x / 32));
-	_bits[offset] &= ~(1 << (x & 0x1f));
-}
-
-void
-BitMatrix::flip(int x, int y)
-{
-	int offset = checkBounds(y * _rowSize + (x / 32));
-	_bits[offset] ^= 1 << (x & 0x1f);
-}
-
-void
-BitMatrix::flipAll()
-{
-	for (auto it = _bits.begin(); it != _bits.end(); ++it) {
-		*it = ~(*it);
+BitMatrix::copyTo(BitMatrix& other) const {
+	if (this != &other) {
+		other._width = _width;
+		other._height = _height;
+		other._rowSize = _rowSize;
+		other._bits = _bits;
 	}
 }
 
@@ -192,18 +115,12 @@ BitMatrix::xor(const BitMatrix& mask)
 }
 
 void
-BitMatrix::clear()
-{
-	std::fill(_bits.begin(), _bits.end(), 0);
-}
-
-void
 BitMatrix::getRow(int y, BitArray& row) const
 {
 	if (y < 0 || y >= _height) {
 		throw std::out_of_range("Requested row is outside the matrix");
 	}
-	row.init(_width, false);
+	row.init(_width);
 	auto it = _bits.begin() + y * _rowSize;
 	std::copy(it, it + _rowSize, row._bits.begin());
 }

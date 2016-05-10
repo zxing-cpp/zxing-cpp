@@ -21,10 +21,11 @@ namespace ZXing {
 
 inline static uint8_t RGBToGray(unsigned r, unsigned g, unsigned b)
 {
-	if (r == g && g == b) {
-		// Image is already greyscale, so pick any channel.
-		return static_cast<uint8_t>(r);
-	}
+	// This optimization is not necessary as the computation below is cheap enough.
+	//if (r == g && g == b) {
+	//	// Image is already greyscale, so pick any channel.
+	//	return static_cast<uint8_t>(r);
+	//}
 
 	// .299R + 0.587G + 0.114B (YUV/YIQ for PAL and NTSC), 
 	// (306*R) >> 10 is approximately equal to R*0.299, and so on.
@@ -44,7 +45,7 @@ static std::shared_ptr<ByteArray> MakeCopy(const ByteArray& pixels, int rowBytes
 	const uint8_t *srcRow = pixels.data() + top * rowBytes + left;
 	uint8_t *destRow = result->data();
 	for (int y = 0; y < height; ++y, srcRow += rowBytes, destRow += width) {
-		memcpy(destRow, srcRow, width);
+		std::memcpy(destRow, srcRow, width);
 	}
 	return result;
 }
@@ -89,7 +90,7 @@ GenericLuminanceSource::GenericLuminanceSource(int left, int top, int width, int
 	const uint8_t *srcRow = static_cast<const uint8_t*>(bytes) + top * rowBytes + left;
 	uint8_t *destRow = pixels->data();
 	for (int y = 0; y < height; ++y, srcRow += rowBytes, destRow += width) {
-		memcpy(destRow, srcRow, width);
+		std::memcpy(destRow, srcRow, width);
 	}
 	_pixels = pixels;
 }
@@ -135,7 +136,7 @@ GenericLuminanceSource::getRow(int y, ByteArray& buffer, bool forceCopy) const
 	}
 
 	buffer.resize(_width);
-	memcpy(buffer.data(), row, _width);
+	std::memcpy(buffer.data(), row, _width);
 	return buffer.data();
 }
 
@@ -152,7 +153,7 @@ GenericLuminanceSource::getMatrix(ByteArray& buffer, int& outRowBytes, bool forc
 	buffer.resize(_width * _height);
 	uint8_t* dest = buffer.data();
 	for (int y = 0; y < _height; ++y, row += _rowBytes, dest += _width) {
-		memcpy(dest, row, _width);
+		std::memcpy(dest, row, _width);
 	}
 	return buffer.data();
 }

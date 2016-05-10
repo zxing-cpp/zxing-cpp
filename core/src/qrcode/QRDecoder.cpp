@@ -462,16 +462,16 @@ DoDecode(const BitMatrix& bits, const Version& version, const FormatInformation&
 	}
 	// Count total number of data bytes
 	int totalBytes = 0;
-	for (DataBlock dataBlock : dataBlocks) {
+	for (const auto& dataBlock : dataBlocks) {
 		totalBytes += dataBlock.numDataCodewords();
 	}
 	ByteArray resultBytes(totalBytes);
 	int resultOffset = 0;
 
 	// Error-correct and copy data blocks together into a stream of bytes
-	for (const DataBlock& dataBlock : dataBlocks)
+	for (auto& dataBlock : dataBlocks)
 	{
-		ByteArray codewordBytes = dataBlock.codewords();
+		ByteArray& codewordBytes = dataBlock.codewords();
 		int numDataCodewords = dataBlock.numDataCodewords();
 		
 		status = CorrectErrors(codewordBytes, numDataCodewords);

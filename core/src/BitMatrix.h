@@ -16,6 +16,7 @@
 */
 
 #include <cstdint>
+#include <cstring>
 #include <vector>
 
 namespace ZXing {
@@ -45,18 +46,32 @@ class BitMatrix
 	std::vector<uint32_t> _bits;
 
 public:
-	BitMatrix();
-	BitMatrix(int width, int height);
+	BitMatrix() : _width(0), _height(0), _rowSize(0) {}
+	BitMatrix(int width, int height) : _width(width), _height(height), _rowSize((width + 31) / 32), _bits(((width + 31) / 32) * _height, 0) {}
+
 	explicit BitMatrix(int dimension) : BitMatrix(dimension, dimension) {} // Construct a square matrix.
 
-	BitMatrix(BitMatrix&& other);
-	BitMatrix& operator=(BitMatrix&&);
-
-	void copyTo(BitMatrix& other) const;
+	BitMatrix(BitMatrix&& other) : _width(other._width), _height(other._height), _rowSize(other._rowSize), _bits(std::move(other._bits)) {}
+	
+	BitMatrix& operator=(BitMatrix&& other) {
+		_width = other._width;
+		_height = other._height;
+		_rowSize = other._rowSize;
+		_bits = std::move(other._bits);
+		return *this;
+	}
 
 	// There is nothing wrong to support this but disable to make it explicit since we may copy something very big here.
+	// Use copyTo() below
 	BitMatrix(const BitMatrix&) = delete;
 	BitMatrix& operator=(const BitMatrix&) = delete;
+
+	/**
+	* Re-init the matrix with given size and clear all bits.
+	*/
+	void init(int width, int height);
+
+	void copyTo(BitMatrix& other) const;
 
 	//void parse(const std::string& stringRepresentation, const std::string& setString, const std::string& unsetString);
 
@@ -67,7 +82,9 @@ public:
 	* @param y The vertical component (i.e. which row)
 	* @return value of given bit in matrix
 	*/
-	bool get(int x, int y) const;
+	bool get(int x, int y) const {
+		return ((_bits.at(y * _rowSize + (x / 32)) >> (x & 0x1f)) & 1) != 0;
+	}
 
 	/**
 	* <p>Sets the given bit to true.</p>
@@ -75,9 +92,13 @@ public:
 	* @param x The horizontal component (i.e. which column)
 	* @param y The vertical component (i.e. which row)
 	*/
-	void set(int x, int y);
+	void set(int x, int y) {
+		_bits.at(y * _rowSize + (x / 32)) |= 1 << (x & 0x1f);
+	}
 
-	void unset(int x, int y);
+	void unset(int x, int y) {
+		_bits.at(y * _rowSize + (x / 32)) &= ~(1 << (x & 0x1f));
+	}
 
 	/**
 	* <p>Flips the given bit.</p>
@@ -85,9 +106,15 @@ public:
 	* @param x The horizontal component (i.e. which column)
 	* @param y The vertical component (i.e. which row)
 	*/
-	void flip(int x, int y);
+	void flip(int x, int y) {
+		_bits.at(y * _rowSize + (x / 32)) ^= 1 << (x & 0x1f);
+	}
 
-	void flipAll();
+	void flipAll() {
+		for (auto it = _bits.begin(); it != _bits.end(); ++it) {
+			*it = ~(*it);
+		}
+	}
 
 	/**
 	* Exclusive-or (XOR): Flip the bit in this {@code BitMatrix} if the corresponding
@@ -100,7 +127,9 @@ public:
 	/**
 	* Clears all bits (sets to false).
 	*/
-	void clear();
+	void clear() {
+		std::memset(_bits.data(), 0, sizeof(uint32_t) * _bits.size());
+	}
 
 	/**
 	* <p>Sets a square region of the bit matrix to true.</p>
@@ -172,19 +201,10 @@ public:
 		return _rowSize;
 	}
 
-	/**
-	* Re-init the matrix with given size and clear all bits.
-	*/
-	void init(int width, int height);
-
-
 	friend bool operator==(const BitMatrix& a, const BitMatrix& b)
 	{
 		return a._width == b._width && a._height == b._height && a._rowSize == b._rowSize && a._bits == b._bits;
 	}
-
-private:
-	int checkBounds(int offset) const;
 };
 
 } // ZXing
