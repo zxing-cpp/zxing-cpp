@@ -43,7 +43,7 @@ static std::vector<std::string> GetImagesInDirectory(const std::string& dirPath)
 	HANDLE hFind = FindFirstFileA(BuildPath(dirPath, "*.png").c_str(), &data);
 	if (hFind != INVALID_HANDLE_VALUE) {
 		do {
-		//if (strcmp(data.cFileName, "10.png") == 0)
+//if (strcmp(data.cFileName, "09.png") == 0)
 			result.push_back(data.cFileName);
 		} while (FindNextFileA(hFind, &data));
 		FindClose(hFind);
@@ -489,6 +489,21 @@ int main(int argc, char** argv)
 			{ 14, 14, 90 },
 			{ 12, 13, 180 },
 			{ 14, 14, 270 },
+		});
+
+		runTests("blackbox/pdf417-1", "PDF_417", {
+			{ 10, 10, 0 },
+			{ 10, 10, 180 },
+		});
+
+		runTests("blackbox/pdf417-2", "PDF_417", {
+			{ 25, 25, 0 },
+			{ 25, 25, 180 },
+		});
+
+		runTests("blackbox/pdf417-3", "PDF_417", {
+			{ 18, 18, 0 },
+			{ 18, 18, 180 },
 		});
 	}
 	catch (const std::exception& e)

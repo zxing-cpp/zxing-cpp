@@ -75,6 +75,10 @@ public:
 
 	virtual String toUnicode(const uint8_t* bytes, size_t length, CharacterSet codec) const override
 	{
+		if (codec == CharacterSet::ISO8859_1) {
+			return String::FromLatin1(bytes, length);
+		}
+
 		iconv_t cd = iconv_open("UTF-8", CHARSET_NAMES[(int)codec]);
 		if (cd == (iconv_t)-1) {
 			return String(reinterpret_cast<const char*>(bytes), length);

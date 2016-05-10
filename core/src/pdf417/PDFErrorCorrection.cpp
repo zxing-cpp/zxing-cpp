@@ -70,7 +70,7 @@ static bool RunEuclideanAlgorithm(ModulusPoly a, ModulusPoly b, int R, ModulusPo
 	int inverse = field.inverse(sigmaTildeAtZero);
 	sigma = t.multiply(inverse);
 	omega = r.multiply(inverse);
-	return false;
+	return true;
 }
 
 static bool FindErrorLocations(const ModulusPoly& errorLocator, std::vector<int>& result)
@@ -126,7 +126,8 @@ ErrorCorrection::Decode(std::vector<int>& received, int numECCodewords, const st
 	}
 
 	if (!error) {
-		return 0;
+		nbErrors = 0;
+		return true;
 	}
 
 	ModulusPoly knownErrors = field.one();

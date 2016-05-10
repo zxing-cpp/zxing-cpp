@@ -223,7 +223,7 @@ String::String(const wchar_t* i_begin, const wchar_t* i_end) : String(i_begin, i
 {
 }
 
-String::String(const wchar_t* i_wstr, int i_len)
+String::String(const wchar_t* i_wstr, size_t i_len)
 {
 	if (sizeof(wchar_t) == 2)
 	{
@@ -257,11 +257,11 @@ String::charCount() const
 }
 
 void
-String::appendUcs2(const uint16_t* ucs2, int len)
+String::appendUcs2(const uint16_t* ucs2, size_t len)
 {
 	m_utf8.reserve(m_utf8.size() + CountUtf8BytesFromUCS2(ucs2, len));
 	char buffer[4];
-	for (int i = 0; i < len; ++i)
+	for (size_t i = 0; i < len; ++i)
 	{
 		int length = Utf8::Encode(static_cast<uint32_t>(ucs2[i]), buffer);
 		m_utf8.append(buffer, length);
@@ -289,14 +289,14 @@ String::appendUtf32(const std::vector<uint32_t>& utf32)
 }
 
 void
-String::appendUtf16(const uint16_t* utf16, int len)
+String::appendUtf16(const uint16_t* utf16, size_t len)
 {
 	m_utf8.reserve(m_utf8.size() + CountUtf8Bytes(utf16, len));
 	stringAppendUtf16(m_utf8, utf16, utf16 + len);
 }
 
 void
-String::appendUtf32(const uint32_t* utf32, int len)
+String::appendUtf32(const uint32_t* utf32, size_t len)
 {
 	m_utf8.reserve(m_utf8.size() + Utf8::CountBytes(utf32, len));
 	stringAppendUtf32(m_utf8, utf32, utf32 + len);
@@ -408,10 +408,19 @@ String::Iterator::read() const
 }
 
 void
-String::appendLatin1(const std::string& latin1)
+String::appendLatin1(const uint8_t* str, size_t len)
 {
-	auto p = reinterpret_cast<const uint8_t*>(latin1.data());
-	appendUtf32(std::vector<uint32_t>(p, p + latin1.size()));
+	int count = 0;
+	for (size_t i = 0; i < len; ++i) {
+		if (str[i] >= 128) {
+			count += 2;
+		}
+		else {
+			count += 1;
+		}
+	}
+	m_utf8.reserve(count);
+	stringAppendUtf32(m_utf8, str, str + len);
 }
 
 } // ZXing

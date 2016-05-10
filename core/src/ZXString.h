@@ -85,7 +85,7 @@ public:
 
 	String(const wchar_t* i_wstr);
 	String(const wchar_t* i_begin, const wchar_t* i_end);
-	String(const wchar_t* i_wstr, int i_len);
+	String(const wchar_t* i_wstr, size_t i_len);
 
 	bool empty() const											{ return m_utf8.empty(); }
 	int byteCount() const										{ return static_cast<int>(m_utf8.length()); }
@@ -100,19 +100,21 @@ public:
 
 	void appendUtf8(char c)										{ m_utf8.append(1, c); }
 	void appendUtf8(const char* str)							{ m_utf8.append(str); }
-	void appendUtf8(const char* str, int len)					{ m_utf8.append(str, len); }
+	void appendUtf8(const char* str, size_t len)				{ m_utf8.append(str, len); }
 	void appendUtf8(const std::string& str)						{ m_utf8.append(str.data(), static_cast<int>(str.length())); }
 	void appendUtf8(const uint8_t* str)							{ m_utf8.append((const char*)str); }
-	void appendUtf8(const uint8_t* str, int len)				{ m_utf8.append((const char*)str, len); }
+	void appendUtf8(const uint8_t* str, size_t len)				{ m_utf8.append((const char*)str, len); }
 	void appendUcs2(const uint16_t* ucs2);
-	void appendUcs2(const uint16_t* ucs2, int len);
-	void appendUtf16(const uint16_t* utf16, int len);
+	void appendUcs2(const uint16_t* ucs2, size_t len);
+	void appendUtf16(const uint16_t* utf16, size_t len);
 	void appendUtf16(const std::vector<uint16_t>& utf16);
 	void appendUtf32(uint32_t utf32);
-	void appendUtf32(const uint32_t* utf32, int len);
+	void appendUtf32(const uint32_t* utf32, size_t len);
 	void appendUtf32(const std::vector<uint32_t>& utf32);
 
-	void appendLatin1(const std::string& str);
+	void appendLatin1(const uint8_t* str, size_t len);
+	void appendLatin1(const char* str, size_t len)				{ appendLatin1((const uint8_t*)str, len); }
+	void appendLatin1(const std::string& str)					{ appendLatin1(str.data(), str.length()); }
 
 	void prependUtf8(char c)									{ m_utf8.insert(m_utf8.begin(), c); }
 
@@ -128,6 +130,8 @@ public:
 	}
 
 	static String FromLatin1(const std::string& latin1)			{ String s; s.appendLatin1(latin1); return s; }
+	static String FromLatin1(const uint8_t* str, size_t len)	{ String s; s.appendLatin1(str, len); return s; }
+	static String FromLatin1(const char* str, size_t len)		{ String s; s.appendLatin1(str, len); return s; }
 
 	bool operator==(const String& other) const
 	{
