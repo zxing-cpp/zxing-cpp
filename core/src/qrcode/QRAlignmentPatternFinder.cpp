@@ -152,7 +152,7 @@ AlignmentPatternFinder::Find(const BitMatrix& image, int startX, int startY, int
 	int maxJ = startX + width;
 	int middleI = startY + (height / 2);
 	std::vector<AlignmentPattern> possibleCenters;
-	possibleCenters.resize(5);
+	possibleCenters.reserve(5);
 
 	// We are looking for black/white/black modules in 1:1:1 ratio;
 	// this tracks the number of black/white/black modules seen so far

@@ -70,7 +70,7 @@ void
 FormatInformation::set(int formatInfo)
 {
 	// Bits 3,4
-	_errorCorrectionLevel = static_cast<ErrorCorrectionLevel>((formatInfo >> 3) & 0x03);
+	_errorCorrectionLevel = ECLevelFromBits((formatInfo >> 3) & 0x03);
 	// Bottom 3 bits
 	_dataMask = static_cast<uint8_t>(formatInfo & 0x07);
 }

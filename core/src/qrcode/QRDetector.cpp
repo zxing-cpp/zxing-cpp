@@ -263,16 +263,11 @@ static int ComputeDimension(const ResultPoint& topLeft, const ResultPoint& topRi
 	int dimension = ((tltrCentersDimension + tlblCentersDimension) / 2) + 7;
 	switch (dimension & 0x03) { // mod 4
 	case 0:
-		dimension++;
-		break;
+		return ++dimension;
 	case 1:
 		return dimension;
-		break;
 	case 2:
-		dimension--;
-		break;
-	default: // 3
-		break;
+		return --dimension;
 	}
 	return -1; // to signal error;
 }

@@ -26,5 +26,12 @@ const char* ToString(ErrorCorrectionLevel l)
 	return LEVEL_STR[static_cast<int>(l)];
 }
 
+ErrorCorrectionLevel ECLevelFromBits(int bits)
+{
+	static const ErrorCorrectionLevel LEVEL_FOR_BITS[] = { ErrorCorrectionLevel::Medium, ErrorCorrectionLevel::Low, ErrorCorrectionLevel::High, ErrorCorrectionLevel::Quality };
+	return LEVEL_FOR_BITS[bits & 0x3];
+}
+
+
 } // QRCode
 } // ZXing

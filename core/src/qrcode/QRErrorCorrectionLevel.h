@@ -26,13 +26,14 @@ namespace QRCode {
 */
 enum class ErrorCorrectionLevel
 {
-	Medium,			// M = ~15% correction
 	Low,			// L = ~7 % correction
-	High,			// H = ~30% correction
+	Medium,			// M = ~15% correction
 	Quality,		// Q = ~25% correction
+	High,			// H = ~30% correction
 };
 
 const char* ToString(ErrorCorrectionLevel l);
+ErrorCorrectionLevel ECLevelFromBits(int bits);
 
 } // QRCode
 } // ZXing
