@@ -23,7 +23,7 @@ Result::Result(ErrorStatus status) :
 {
 }
 
-Result::Result(const String& text, const ByteArray& rawBytes, const std::vector<ResultPoint>& resultPoints, BarcodeFormat format, time_point tt) :
+Result::Result(const std::wstring& text, const ByteArray& rawBytes, const std::vector<ResultPoint>& resultPoints, BarcodeFormat format, time_point tt) :
 	_status(ErrorStatus::NoError),
 	_text(text),
 	_rawBytes(rawBytes),

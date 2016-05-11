@@ -15,14 +15,13 @@
 */
 
 #include "qrcode/QRErrorCorrectionLevel.h"
-#include "ZXString.h"
 
 namespace ZXing {
 namespace QRCode {
 
-const char* ToString(ErrorCorrectionLevel l)
+const wchar_t* ToString(ErrorCorrectionLevel l)
 {
-	static const char* const LEVEL_STR[] = { "M", "L", "H", "Q" };
+	static const wchar_t* const LEVEL_STR[] = { L"M", L"L", L"H", L"Q" };
 	return LEVEL_STR[static_cast<int>(l)];
 }
 

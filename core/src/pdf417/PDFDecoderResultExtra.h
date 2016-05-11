@@ -16,7 +16,8 @@
 */
 
 #include "CustomData.h"
-#include "ZXString.h"
+
+#include <string>
 #include <vector>
 
 namespace ZXing {
@@ -28,7 +29,7 @@ namespace Pdf417 {
 class DecoderResultExtra : public CustomData
 {
 	int _segmentIndex;
-	String _fileId;
+	std::string _fileId;
 	std::vector<int> _optionalData;
 	bool _lastSegment;
 
@@ -42,11 +43,11 @@ public:
 		_segmentIndex = segmentIndex;
 	}
 
-	String fileId() const {
+	std::string fileId() const {
 		return _fileId;
 	}
 
-	void setFileId(const String& fileId) {
+	void setFileId(const std::string& fileId) {
 		_fileId = fileId;
 	}
 

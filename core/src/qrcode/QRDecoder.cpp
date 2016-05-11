@@ -26,7 +26,6 @@
 #include "BitMatrix.h"
 #include "ReedSolomonDecoder.h"
 #include "GenericGF.h"
-#include "ZXString.h"
 #include "BitSource.h"
 #include "StringCodecs.h"
 #include "CharacterSetECI.h"
@@ -98,7 +97,7 @@ CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
 * See specification GBT 18284-2000
 */
 static ErrorStatus
-DecodeHanziSegment(BitSource& bits, int count, const StringCodecs& codec, String& result)
+DecodeHanziSegment(BitSource& bits, int count, std::wstring& result)
 {
 	// Don't crash trying to read more bits than we have available.
 	if (count * 13 > bits.available()) {
@@ -126,12 +125,12 @@ DecodeHanziSegment(BitSource& bits, int count, const StringCodecs& codec, String
 		count--;
 	}
 
-	result += codec.toUnicode(buffer.data(), buffer.length(), CharacterSet::GB2312);
+	StringCodecs::Append(result, buffer.data(), buffer.length(), CharacterSet::GB2312);
 	return ErrorStatus::NoError;
 }
 
 static ErrorStatus
-DecodeKanjiSegment(BitSource& bits, int count, const StringCodecs& codec, String& result)
+DecodeKanjiSegment(BitSource& bits, int count, std::wstring& result)
 {
 	// Don't crash trying to read more bits than we have available.
 	if (count * 13 > bits.available()) {
@@ -159,12 +158,12 @@ DecodeKanjiSegment(BitSource& bits, int count, const StringCodecs& codec, String
 		count--;
 	}
 
-	result += codec.toUnicode(buffer.data(), buffer.length(), CharacterSet::Shift_JIS);
+	StringCodecs::Append(result, buffer.data(), buffer.length(), CharacterSet::Shift_JIS);
 	return ErrorStatus::NoError;
 }
 
 static ErrorStatus
-DecodeByteSegment(BitSource& bits, int count, CharacterSet currentCharset, const std::string& hintedCharset, const StringCodecs& codec, String& result, std::list<ByteArray>& byteSegments)
+DecodeByteSegment(BitSource& bits, int count, CharacterSet currentCharset, const std::string& hintedCharset, std::wstring& result, std::list<ByteArray>& byteSegments)
 {
 	// Don't crash trying to read more bits than we have available.
 	if (8 * count > bits.available()) {
@@ -188,10 +187,10 @@ DecodeByteSegment(BitSource& bits, int count, CharacterSet currentCharset, const
 		}
 		if (currentCharset == CharacterSet::Unknown)
 		{
-			currentCharset = StringCodecs::GuessEncoding(readBytes.data(), readBytes.length(), codec.defaultEncoding());
+			currentCharset = StringCodecs::GuessEncoding(readBytes.data(), readBytes.length());
 		}
 	}
-	result += codec.toUnicode(readBytes.data(), readBytes.length(), currentCharset);
+	StringCodecs::Append(result, readBytes.data(), readBytes.length(), currentCharset);
 	byteSegments.push_back(readBytes);
 	return ErrorStatus::NoError;
 }
@@ -216,7 +215,7 @@ ToAlphaNumericChar(int value)
 }
 
 static ErrorStatus
-DecodeAlphanumericSegment(BitSource& bits, int count, bool fc1InEffect, String& result)
+DecodeAlphanumericSegment(BitSource& bits, int count, bool fc1InEffect, std::wstring& result)
 {
 	// Read two characters at a time
 	std::string buffer;
@@ -252,12 +251,12 @@ DecodeAlphanumericSegment(BitSource& bits, int count, bool fc1InEffect, String& 
 			}
 		}
 	}
-	result.appendUtf8(buffer);
+	result.append(buffer.begin(), buffer.end());
 	return ErrorStatus::NoError;
 }
 
 static ErrorStatus
-DecodeNumericSegment(BitSource& bits, int count, String& result)
+DecodeNumericSegment(BitSource& bits, int count, std::wstring& result)
 {
 	// Read three digits at a time
 	std::string buffer;
@@ -299,7 +298,7 @@ DecodeNumericSegment(BitSource& bits, int count, String& result)
 		buffer += ToAlphaNumericChar(digitBits);
 	}
 
-	result.appendUtf8(buffer);
+	result.append(buffer.begin(), buffer.end());
 	return ErrorStatus::NoError;
 }
 
@@ -334,10 +333,10 @@ ParseECIValue(BitSource& bits, int &outValue)
 * <p>See ISO 18004:2006, 6.4.3 - 6.4.7</p>
 */
 static ErrorStatus
-DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionLevel ecLevel, const std::string& hintedCharset, const StringCodecs& codec, DecoderResult& decodeResult)
+DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionLevel ecLevel, const std::string& hintedCharset, DecoderResult& decodeResult)
 {
 	BitSource bits(bytes);
-	String result;
+	std::wstring result;
 	std::list<ByteArray> byteSegments;
 	int symbolSequence = -1;
 	int parityData = -1;
@@ -390,7 +389,7 @@ DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionL
 						int subset = bits.readBits(4);
 						int countHanzi = bits.readBits(DecodeMode::CharacterCountBits(mode, version));
 						if (subset == GB2312_SUBSET) {
-							auto status = DecodeHanziSegment(bits, countHanzi, codec, result);
+							auto status = DecodeHanziSegment(bits, countHanzi, result);
 							if (StatusIsError(status)) {
 								return status;
 							}
@@ -408,10 +407,10 @@ DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionL
 							status = DecodeAlphanumericSegment(bits, count, fc1InEffect, result);
 						}
 						else if (mode == DecodeMode::BYTE) {
-							status = DecodeByteSegment(bits, count, currentCharset, hintedCharset, codec, result, byteSegments);
+							status = DecodeByteSegment(bits, count, currentCharset, hintedCharset, result, byteSegments);
 						}
 						else if (mode == DecodeMode::KANJI) {
-							status = DecodeKanjiSegment(bits, count, codec, result);
+							status = DecodeKanjiSegment(bits, count, result);
 						}
 						else {
 							status = ErrorStatus::FormatError;
@@ -444,7 +443,7 @@ DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionL
 
 
 static ErrorStatus
-DoDecode(const BitMatrix& bits, const Version& version, const FormatInformation& formatInfo, const std::string& hintedCharset, const StringCodecs& codec, DecoderResult& result)
+DoDecode(const BitMatrix& bits, const Version& version, const FormatInformation& formatInfo, const std::string& hintedCharset, DecoderResult& result)
 {
 	auto ecLevel = formatInfo.errorCorrectionLevel();
 
@@ -484,7 +483,7 @@ DoDecode(const BitMatrix& bits, const Version& version, const FormatInformation&
 	}
 
 	// Decode the contents of that stream of bytes
-	return DecodeBitStream(resultBytes, version, ecLevel, hintedCharset, codec, result);
+	return DecodeBitStream(resultBytes, version, ecLevel, hintedCharset, result);
 }
 
 static void
@@ -496,7 +495,7 @@ ReMask(BitMatrix& bitMatrix, const FormatInformation& formatInfo)
 
 
 ErrorStatus
-Decoder::Decode(const BitMatrix& bits_, const std::string& hintedCharset, const StringCodecs& codec, DecoderResult& result)
+Decoder::Decode(const BitMatrix& bits_, const std::string& hintedCharset, DecoderResult& result)
 {
 	BitMatrix bits;
 	bits_.copyTo(bits);
@@ -508,7 +507,7 @@ Decoder::Decode(const BitMatrix& bits_, const std::string& hintedCharset, const 
 	if (StatusIsOK(status))
 	{
 		ReMask(bits, formatInfo);
-		status = DoDecode(bits, *version, formatInfo, hintedCharset, codec, result);
+		status = DoDecode(bits, *version, formatInfo, hintedCharset, result);
 		if (StatusIsOK(status)) {
 			return status;
 		}
@@ -533,7 +532,7 @@ Decoder::Decode(const BitMatrix& bits_, const std::string& hintedCharset, const 
 		bits.mirror();
 
 		ReMask(bits, formatInfo);
-		status = DoDecode(bits, *version, formatInfo, hintedCharset, codec, result);
+		status = DoDecode(bits, *version, formatInfo, hintedCharset, result);
 		if (StatusIsOK(status))
 		{
 			result.setExtra(std::make_shared<DecoderMetadata>(true));

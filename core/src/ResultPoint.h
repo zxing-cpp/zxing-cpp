@@ -50,16 +50,6 @@ public:
 		_y = y;
 	}
 
-	//String toString() {
-	//	StringBuilder result = new StringBuilder(25);
-	//	result.append('(');
-	//	result.append(x);
-	//	result.append(',');
-	//	result.append(y);
-	//	result.append(')');
-	//	return result.toString();
-	//}
-
 	static float Distance(const ResultPoint& a, const ResultPoint& b);
 	static float Distance(float aX, float aY, float bX, float bY);
 	static float Distance(int aX, int aY, int bX, int bY);

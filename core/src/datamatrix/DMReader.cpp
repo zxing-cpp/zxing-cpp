@@ -87,7 +87,7 @@ ExtractPureBits(const BitMatrix& image, BitMatrix& outBits)
 /**
 * Locates and decodes a Data Matrix code in an image.
 *
-* @return a String representing the content encoded by the Data Matrix code
+* @return a string representing the content encoded by the Data Matrix code
 * @throws NotFoundException if a Data Matrix code cannot be found
 * @throws FormatException if a Data Matrix code cannot be decoded
 * @throws ChecksumException if error correction fails

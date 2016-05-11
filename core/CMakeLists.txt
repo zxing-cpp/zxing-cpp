@@ -77,6 +77,11 @@ file (GLOB QRCODE_FILES
 	src/qrcode/*.cpp
 )
 
+file (GLOB TEXT_CODEC_FILES
+	src/textcodec/*.h
+	src/textcodec/*.cpp
+)
+
 source_group (Sources FILES ${COMMON_FILES})
 source_group (Sources\\aztec FILES ${AZTEC_FILES})
 source_group (Sources\\datamatrix FILES ${DATAMATRIX_FILES})
@@ -85,6 +90,7 @@ source_group (Sources\\oned FILES ${ONED_FILES})
 source_group (Sources\\oned\\rss FILES ${ONED_RSS_FILES})
 source_group (Sources\\pdf417 FILES ${PDF417_FILES})
 source_group (Sources\\qrcode FILES ${QRCODE_FILES})
+source_group (Sources\\textcodec FILES ${TEXT_CODEC_FILES})
 
 add_library (ZXingCore
 	${COMMON_FILES}
@@ -95,6 +101,7 @@ add_library (ZXingCore
 	${ONED_RSS_FILES}
 	${PDF417_FILES}
 	${QRCODE_FILES}
+	${TEXT_CODEC_FILES}
 )
 
 set_target_properties (ZXingCore PROPERTIES COMPILE_DEFINITIONS "${ZXING_DEFINES_LOCAL}")

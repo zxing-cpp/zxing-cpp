@@ -26,7 +26,6 @@
 #include "BinaryBitmap.h"
 #include "BitMatrix.h"
 #include "ZXNumeric.h"
-#include "StringCodecs.h"
 
 namespace ZXing {
 namespace QRCode {
@@ -138,32 +137,10 @@ ExtractPureBits(const BitMatrix& image, BitMatrix& outBits)
 	return ErrorStatus::NoError;
 }
 
-namespace {
-
-class FallbackConverter : public StringCodecs
-{
-public:
-	virtual String toUnicode(const uint8_t* bytes, size_t length, CharacterSet codec) const override
-	{
-		return String::FromLatin1(bytes, length);
-	}
-
-	virtual CharacterSet defaultEncoding() const override
-	{
-		return CharacterSet::ISO8859_1;
-	}
-};
-
-}
-
-Reader::Reader(const DecodeHints& hints, const std::shared_ptr<const StringCodecs>& codec) :
+Reader::Reader(const DecodeHints& hints) :
 	_tryHarder(hints.shouldTryHarder()),
-	_charset(hints.characterSet()),
-	_codec(codec)
+	_charset(hints.characterSet())
 {
-	if (_codec == nullptr) {
-		_codec = std::make_shared<FallbackConverter>();
-	}
 }
 
 Result
@@ -181,14 +158,14 @@ Reader::decode(const BinaryBitmap& image) const
 		BitMatrix bits;
 		status = ExtractPureBits(*binImg, bits);
 		if (StatusIsOK(status)) {
-			status = Decoder::Decode(bits, _charset, *_codec, decoderResult);
+			status = Decoder::Decode(bits, _charset, decoderResult);
 		}
 	}
 	else {
 		DetectorResult detectorResult;
 		status = Detector::Detect(*binImg, image.isPureBarcode(), _tryHarder, detectorResult);
 		if (StatusIsOK(status)) {
-			status = Decoder::Decode(*detectorResult.bits(), _charset, *_codec, decoderResult);
+			status = Decoder::Decode(*detectorResult.bits(), _charset, decoderResult);
 			points = detectorResult.points();
 		}
 	}

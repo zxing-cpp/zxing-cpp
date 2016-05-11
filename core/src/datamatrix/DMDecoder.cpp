@@ -22,7 +22,6 @@
 #include "ReedSolomonDecoder.h"
 #include "GenericGF.h"
 #include "BitSource.h"
-#include "ZXString.h"
 #include "ErrorStatus.h"
 
 #include <array>
@@ -499,10 +498,7 @@ namespace DecodedBitStreamParser {
 		byteSegments.push_back(bytes);
 
 		// bytes is in ISO-8859-1
-		String buf;
-		buf.appendUtf32({ bytes.begin(), bytes.end() });
-		result.append(buf.toStdString());
-
+		result.append(bytes.charPtr(), bytes.size());
 		return true;
 	}
 
@@ -551,7 +547,7 @@ namespace DecodedBitStreamParser {
 			result.append(resultTrailer);
 		}
 		decodeResult.setRawBytes(bytes);
-		decodeResult.setText(String::FromLatin1(result));
+		decodeResult.setText(std::wstring(result.begin(), result.end()));
 		decodeResult.setByteSegments(byteSegments);
 		return ErrorStatus::NoError;
 	}

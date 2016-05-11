@@ -440,8 +440,8 @@ static Result
 ConstructResult(const RSS::Pair& leftPair, const RSS::Pair& rightPair)
 {
 	int64_t symbolValue = 4537077 * static_cast<int64_t>(leftPair.value()) + rightPair.value();
-	std::stringstream buffer;
-	buffer << std::setw(13) << std::setfill('0') << symbolValue;
+	std::wstringstream buffer;
+	buffer << std::setw(13) << std::setfill(L'0') << symbolValue;
 
 	int checkDigit = 0;
 	for (int i = 0; i < 13; i++) {
@@ -452,7 +452,7 @@ ConstructResult(const RSS::Pair& leftPair, const RSS::Pair& rightPair)
 	if (checkDigit == 10) {
 		checkDigit = 0;
 	}
-	buffer.put((char)(checkDigit + '0'));
+	buffer.put((wchar_t)(checkDigit + '0'));
 
 	auto& leftPoints = leftPair.finderPattern().points();
 	auto& rightPoints = rightPair.finderPattern().points();

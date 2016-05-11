@@ -21,7 +21,6 @@ namespace ZXing {
 
 class DecoderResult;
 class BitMatrix;
-class StringCodecs;
 enum class ErrorStatus;
 
 namespace QRCode {
@@ -57,7 +56,7 @@ public:
 	* @throws FormatException if the QR Code cannot be decoded
 	* @throws ChecksumException if error correction fails
 	*/
-	static ErrorStatus Decode(const BitMatrix& bits, const std::string& hintedCharset, const StringCodecs& codec, DecoderResult& result);
+	static ErrorStatus Decode(const BitMatrix& bits, const std::string& hintedCharset, DecoderResult& result);
 };
 
 } // QRCode

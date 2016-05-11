@@ -23,7 +23,6 @@ namespace ZXing {
 class Result;
 class Reader;
 class BinaryBitmap;
-class StringCodecs;
 class DecodeHints;
 
 /**
@@ -40,7 +39,7 @@ public:
 	/**
 	* The codec may be nullptr, in such case, if needed, conversion from Latin1 will be used.
 	*/
-	explicit MultiFormatReader(const DecodeHints& hints, const std::shared_ptr<const StringCodecs>& codec);
+	explicit MultiFormatReader(const DecodeHints& hints);
 
 	Result read(const BinaryBitmap& image) const;
 

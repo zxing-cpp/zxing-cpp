@@ -22,7 +22,6 @@
 #include "ErrorStatus.h"
 #include "DecoderResult.h"
 #include "Result.h"
-#include "StringCodecs.h"
 
 #include <vector>
 
@@ -57,7 +56,7 @@ static int GetMaxCodewordWidth(const std::array<Nullable<ResultPoint>, 8>& p)
 					std::max(GetMaxWidth(p[1], p[5]), GetMaxWidth(p[7], p[3]) * Common::MODULES_IN_CODEWORD / Common::MODULES_IN_STOP_PATTERN));
 }
 
-ErrorStatus DoDecode(const BinaryBitmap& image, bool multiple, const StringCodecs& codec, std::list<Result>& results)
+ErrorStatus DoDecode(const BinaryBitmap& image, bool multiple, std::list<Result>& results)
 {
 	Detector::Result detectorResult;
 	ErrorStatus status = Detector::Detect(image, multiple, detectorResult);
@@ -67,7 +66,7 @@ ErrorStatus DoDecode(const BinaryBitmap& image, bool multiple, const StringCodec
 
 	for (const auto& points : detectorResult.points) {
 		DecoderResult decoderResult;
-		ErrorStatus status = ScanningDecoder::Decode(*detectorResult.bits, points[4], points[5], points[6], points[7], GetMinCodewordWidth(points), GetMaxCodewordWidth(points), codec, decoderResult);
+		ErrorStatus status = ScanningDecoder::Decode(*detectorResult.bits, points[4], points[5], points[6], points[7], GetMinCodewordWidth(points), GetMaxCodewordWidth(points), decoderResult);
 		if (StatusIsOK(status)) {
 			std::vector<ResultPoint> foundPoints(points.size());
 			std::transform(points.begin(), points.end(), foundPoints.begin(), [](const Nullable<ResultPoint>& p) { return p.value(); });
@@ -113,37 +112,11 @@ ErrorStatus DoDecode(const BinaryBitmap& image, bool multiple, const StringCodec
 //	}
 //}
 
-namespace {
-
-class FallbackConverter : public StringCodecs
-{
-public:
-	virtual String toUnicode(const uint8_t* bytes, size_t length, CharacterSet codec) const override
-	{
-		return String::FromLatin1(bytes, length);
-	}
-
-	virtual CharacterSet defaultEncoding() const override
-	{
-		return CharacterSet::ISO8859_1;
-	}
-};
-
-}
-
-Reader::Reader(const std::shared_ptr<const StringCodecs>& codec) :
-	_codec(codec)
-{
-	if (_codec == nullptr) {
-		_codec = std::make_shared<FallbackConverter>();
-	}
-}
-
 Result
 Reader::decode(const BinaryBitmap& image) const
 {
 	std::list<Result> results;
-	ErrorStatus status = DoDecode(image, false, *_codec, results);
+	ErrorStatus status = DoDecode(image, false, results);
 	if (StatusIsOK(status)) {
 		return results.front();
 	}

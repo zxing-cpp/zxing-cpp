@@ -22,7 +22,7 @@ class Result;
 
 /**
 * Implementations of this interface can decode an image of a barcode in some format into
-* the String it encodes. For example, {@link com.google.zxing.qrcode.QRCodeReader} can
+* the string it encodes. For example, {@link com.google.zxing.qrcode.QRCodeReader} can
 * decode a QR code. The decoder may optionally receive hints from the caller which may help
 * it decode more quickly or accurately.
 *
@@ -48,7 +48,7 @@ public:
 	* to arbitrary data. The
 	* meaning of the data depends upon the hint type. The implementation may or may not do
 	* anything with these hints.
-	* @return String which the barcode encodes
+	* @return string which the barcode encodes
 	* @throws NotFoundException if no potential barcode is found
 	* @throws ChecksumException if a potential barcode is found but does not pass its checksum
 	* @throws FormatException if a potential barcode is found but format is invalid

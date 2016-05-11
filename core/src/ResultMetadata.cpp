@@ -15,8 +15,6 @@
 */
 
 #include "ResultMetadata.h"
-
-#include "ZXString.h"
 #include "ByteArray.h"
 
 namespace ZXing {
@@ -27,8 +25,8 @@ struct ResultMetadata::Value
 	virtual int toInteger(int fallback) const {
 		return fallback;
 	}
-	virtual String toString() const {
-		return String();
+	virtual std::wstring toString() const {
+		return std::wstring();
 	}
 	virtual std::list<ByteArray> toByteArrayList() const {
 		return std::list<ByteArray>();
@@ -49,9 +47,9 @@ struct ResultMetadata::IntegerValue : public Value
 
 struct ResultMetadata::StringValue : public Value
 {
-	String value;
-	StringValue(const String& v) : value(v) {}
-	virtual String toString() const override {
+	std::wstring value;
+	StringValue(const std::wstring& v) : value(v) {}
+	virtual std::wstring toString() const override {
 		return value;
 	}
 };
@@ -81,11 +79,11 @@ ResultMetadata::getInt(Key key, int fallback) const
 	return it != _contents.end() ? it->second->toInteger(fallback) : fallback;
 }
 
-String
+std::wstring
 ResultMetadata::getString(Key key) const
 {
 	auto it = _contents.find(key);
-	return it != _contents.end() ? it->second->toString() : String();
+	return it != _contents.end() ? it->second->toString() : std::wstring();
 }
 
 std::list<ByteArray>
@@ -109,7 +107,7 @@ ResultMetadata::put(Key key, int value)
 }
 
 void
-ResultMetadata::put(Key key, const String& value)
+ResultMetadata::put(Key key, const std::wstring& value)
 {
 	_contents[key] = std::make_shared<StringValue>(value);
 }

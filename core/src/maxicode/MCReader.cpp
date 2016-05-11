@@ -81,7 +81,7 @@ Reader::decode(const BinaryBitmap& image) const
 	}
 	Result result(decoderResult.text(), decoderResult.rawBytes(), std::vector<ResultPoint>(), BarcodeFormat::MAXICODE);
 
-	std::string ecLevel = decoderResult.ecLevel();
+	auto ecLevel = decoderResult.ecLevel();
 	if (!ecLevel.empty()) {
 		result.metadata().put(ResultMetadata::ERROR_CORRECTION_LEVEL, ecLevel);
 	}

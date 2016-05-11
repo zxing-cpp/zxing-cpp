@@ -19,7 +19,6 @@
 #include "CharacterSetECI.h"
 #include "StringCodecs.h"
 #include "ZXBigInteger.h"
-#include "ZXString.h"
 #include "ByteArray.h"
 #include "ErrorStatus.h"
 #include "DecoderResult.h"
@@ -111,7 +110,7 @@ static const int NUMBER_OF_SEQUENCE_CODEWORDS = 2;
 * @param length             The size of the text compaction and byte compaction data.
 * @param result             The decoded data is appended to the result.
 */
-static void DecodeTextCompaction(const std::vector<int>& textCompactionData, const std::vector<int>& byteCompactionData, int length, String& result) {
+static void DecodeTextCompaction(const std::vector<int>& textCompactionData, const std::vector<int>& byteCompactionData, int length, std::string& result) {
 	// Beginning from an initial state of the Alpha sub-mode
 	// The default compaction mode for PDF417 in effect at the start of each symbol shall always be Text
 	// Compaction mode Alpha sub-mode (uppercase alphabetic). A latch codeword from another mode to the Text
@@ -145,7 +144,7 @@ static void DecodeTextCompaction(const std::vector<int>& textCompactionData, con
 					subMode = Mode::PUNCT_SHIFT;
 				}
 				else if (subModeCh == MODE_SHIFT_TO_BYTE_COMPACTION_MODE) {
-					result.appendUtf32((uint16_t)byteCompactionData[i]);
+					result.push_back((char)byteCompactionData[i]);
 				}
 				else if (subModeCh == TEXT_COMPACTION_MODE_LATCH) {
 					subMode = Mode::ALPHA;
@@ -177,7 +176,7 @@ static void DecodeTextCompaction(const std::vector<int>& textCompactionData, con
 				}
 				else if (subModeCh == MODE_SHIFT_TO_BYTE_COMPACTION_MODE) {
 					// TODO Does this need to use the current character encoding? See other occurrences below
-					result.appendUtf32((uint16_t)byteCompactionData[i]);
+					result.push_back((char)byteCompactionData[i]);
 				}
 				else if (subModeCh == TEXT_COMPACTION_MODE_LATCH) {
 					subMode = Mode::ALPHA;
@@ -209,7 +208,7 @@ static void DecodeTextCompaction(const std::vector<int>& textCompactionData, con
 					subMode = Mode::PUNCT_SHIFT;
 				}
 				else if (subModeCh == MODE_SHIFT_TO_BYTE_COMPACTION_MODE) {
-					result.appendUtf32((uint16_t)byteCompactionData[i]);
+					result.push_back((char)byteCompactionData[i]);
 				}
 				else if (subModeCh == TEXT_COMPACTION_MODE_LATCH) {
 					subMode = Mode::ALPHA;
@@ -227,7 +226,7 @@ static void DecodeTextCompaction(const std::vector<int>& textCompactionData, con
 					subMode = Mode::ALPHA;
 				}
 				else if (subModeCh == MODE_SHIFT_TO_BYTE_COMPACTION_MODE) {
-					result.appendUtf32((uint16_t)byteCompactionData[i]);
+					result.push_back((char)byteCompactionData[i]);
 				}
 				else if (subModeCh == TEXT_COMPACTION_MODE_LATCH) {
 					subMode = Mode::ALPHA;
@@ -264,7 +263,7 @@ static void DecodeTextCompaction(const std::vector<int>& textCompactionData, con
 				else if (subModeCh == MODE_SHIFT_TO_BYTE_COMPACTION_MODE) {
 					// PS before Shift-to-Byte is used as a padding character, 
 					// see 5.4.2.4 of the specification
-					result.appendUtf32((uint16_t)byteCompactionData[i]);
+					result.push_back((char)byteCompactionData[i]);
 				}
 				else if (subModeCh == TEXT_COMPACTION_MODE_LATCH) {
 					subMode = Mode::ALPHA;
@@ -274,7 +273,7 @@ static void DecodeTextCompaction(const std::vector<int>& textCompactionData, con
 		}
 		if (ch != 0) {
 			// Append decoded character to result
-			result.appendUtf32((uint8_t)ch);
+			result.push_back(ch);
 		}
 		i++;
 	}
@@ -290,7 +289,7 @@ static void DecodeTextCompaction(const std::vector<int>& textCompactionData, con
 * @param result    The decoded data is appended to the result.
 * @return The next index into the codeword array.
 */
-static int TextCompaction(const std::vector<int>& codewords, int codeIndex, String& result)
+static int TextCompaction(const std::vector<int>& codewords, int codeIndex, std::string& result)
 {
 	// 2 character per codeword
 	std::vector<int> textCompactionData((codewords[0] - codeIndex) * 2, 0);
@@ -353,7 +352,7 @@ static int TextCompaction(const std::vector<int>& codewords, int codeIndex, Stri
 * @param result    The decoded data is appended to the result.
 * @return The next index into the codeword array.
 */
-static int ByteCompaction(int mode, const std::vector<int>& codewords, CharacterSet encoding, int codeIndex, const StringCodecs& codec, String& result)
+static int ByteCompaction(int mode, const std::vector<int>& codewords, CharacterSet encoding, int codeIndex, std::wstring& result)
 {
 	ByteArray decodedBytes;
 	if (mode == BYTE_COMPACTION_MODE_LATCH) {
@@ -442,7 +441,7 @@ static int ByteCompaction(int mode, const std::vector<int>& codewords, Character
 			}
 		}
 	}
-	result += codec.toUnicode(decodedBytes.data(), decodedBytes.length(), encoding);
+	StringCodecs::Append(result, decodedBytes.data(), decodedBytes.length(), encoding);
 	return codeIndex;
 }
 
@@ -513,7 +512,7 @@ static ErrorStatus DecodeBase900toBase10(const std::vector<int>& codewords, int 
 * @param result    The decoded data is appended to the result.
 * @return The next index into the codeword array.
 */
-static ErrorStatus NumericCompaction(const std::vector<int>& codewords, int codeIndex, String& result, int& next)
+static ErrorStatus NumericCompaction(const std::vector<int>& codewords, int codeIndex, std::wstring& result, int& next)
 {
 	int count = 0;
 	bool end = false;
@@ -551,7 +550,7 @@ static ErrorStatus NumericCompaction(const std::vector<int>& codewords, int code
 				if (StatusIsError(status)) {
 					return status;
 				}
-				result.appendUtf8(tmp);
+				result.append(tmp.begin(), tmp.end());
 				count = 0;
 			}
 		}
@@ -580,7 +579,7 @@ static ErrorStatus DecodeMacroBlock(const std::vector<int>& codewords, int codeI
 
 	resultMetadata.setSegmentIndex(std::stoi(strBuf));
 
-	String fileId;
+	std::string fileId;
 	codeIndex = TextCompaction(codewords, codeIndex, fileId);
 	resultMetadata.setFileId(fileId);
 
@@ -620,9 +619,9 @@ static ErrorStatus DecodeMacroBlock(const std::vector<int>& codewords, int codeI
 }
 
 ErrorStatus
-DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel, const StringCodecs& codec, DecoderResult& result)
+DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel, DecoderResult& result)
 {
-	String resultString;
+	std::wstring resultString;
 	auto encoding = DEFAULT_ENCODING;
 	// Get compaction mode
 	int codeIndex = 1;
@@ -632,14 +631,18 @@ DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel, c
 	while (codeIndex < codewords[0] && status == ErrorStatus::NoError) {
 		switch (code) {
 		case TEXT_COMPACTION_MODE_LATCH:
-			codeIndex = TextCompaction(codewords, codeIndex, resultString);
+		{
+			std::string buf;
+			codeIndex = TextCompaction(codewords, codeIndex, buf);
+			resultString.append(buf.begin(), buf.end());
 			break;
+		}
 		case BYTE_COMPACTION_MODE_LATCH:
 		case BYTE_COMPACTION_MODE_LATCH_6:
-			codeIndex = ByteCompaction(code, codewords, encoding, codeIndex, codec, resultString);
+			codeIndex = ByteCompaction(code, codewords, encoding, codeIndex, resultString);
 			break;
 		case MODE_SHIFT_TO_BYTE_COMPACTION_MODE:
-			resultString.appendUtf32((uint16_t)codewords[codeIndex++]);
+			resultString.push_back((wchar_t)codewords[codeIndex++]);
 			break;
 		case NUMERIC_COMPACTION_MODE_LATCH:
 			status = NumericCompaction(codewords, codeIndex, resultString, codeIndex);
@@ -664,12 +667,16 @@ DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel, c
 			status = ErrorStatus::FormatError;
 			break;
 		default:
+		{
 			// Default to text compaction. During testing numerous barcodes
 			// appeared to be missing the starting mode. In these cases defaulting
 			// to text compaction seems to work.
 			codeIndex--;
-			codeIndex = TextCompaction(codewords, codeIndex, resultString);
+			std::string buf;
+			codeIndex = TextCompaction(codewords, codeIndex, buf);
+			resultString.append(buf.begin(), buf.end());
 			break;
+		}
 		}
 		if (codeIndex < (int)codewords.size()) {
 			code = codewords[codeIndex++];
@@ -684,7 +691,7 @@ DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel, c
 
 	if (StatusIsOK(status)) {
 		result.setText(resultString);
-		result.setEcLevel(std::to_string(ecLevel));
+		result.setEcLevel(std::to_wstring(ecLevel));
 		result.setExtra(resultMetadata);
 	}
 	return status;

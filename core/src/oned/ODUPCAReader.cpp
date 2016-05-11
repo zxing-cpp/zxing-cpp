@@ -22,9 +22,9 @@ namespace OneD {
 
 static Result MaybeReturnResult(const Result& result)
 {
-	String text = result.text();
-	if (text.charAt(0) == '0') {
-		return Result(text.substring(1), ByteArray(), result.resultPoints(), BarcodeFormat::UPC_A);
+	std::wstring text = result.text();
+	if (!text.empty() && text[0] == '0') {
+		return Result(text.substr(1), ByteArray(), result.resultPoints(), BarcodeFormat::UPC_A);
 	}
 	else {
 		return Result(ErrorStatus::FormatError);

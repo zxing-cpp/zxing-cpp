@@ -15,10 +15,8 @@
 */
 
 #include "oned/ODEANManufacturerOrgSupport.h"
-#include "ZXString.h"
 
 #include <algorithm>
-#include <string>
 #include <type_traits>
 
 namespace ZXing {
@@ -144,10 +142,10 @@ static const CountryId COUNTRIES[] = {
 	{958, 958, "MO"},
 };
 
-String
-EANManufacturerOrgSupport::LookupCountryIdentifier(const String& productCode)
+std::string
+EANManufacturerOrgSupport::LookupCountryIdentifier(const std::string& productCode)
 {
-	int prefix = std::stoi(productCode.toStdString().substr(0, 3));
+	int prefix = std::stoi(productCode.substr(0, 3));
 	auto count = std::extent<decltype(COUNTRIES)>::value;
 	auto it = std::lower_bound(COUNTRIES, COUNTRIES + count, CountryId{ prefix });
 	if (it != COUNTRIES + count)
@@ -155,7 +153,7 @@ EANManufacturerOrgSupport::LookupCountryIdentifier(const String& productCode)
 		if (prefix >= it->first && it->last)
 			return it->id;
 	}
-	return String();
+	return std::string();
 }
 
 } // OneD

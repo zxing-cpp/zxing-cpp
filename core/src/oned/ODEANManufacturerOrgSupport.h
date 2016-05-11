@@ -15,10 +15,9 @@
 * limitations under the License.
 */
 
+#include <string>
+
 namespace ZXing {
-
-class String;
-
 namespace OneD {
 
 /**
@@ -33,7 +32,7 @@ namespace OneD {
 class EANManufacturerOrgSupport
 {
 public:
-	static String LookupCountryIdentifier(const String& productCode);
+	static std::string LookupCountryIdentifier(const std::string& productCode);
 };
 
 } // OneD

@@ -32,7 +32,7 @@ enum class ErrorCorrectionLevel
 	High,			// H = ~30% correction
 };
 
-const char* ToString(ErrorCorrectionLevel l);
+const wchar_t* ToString(ErrorCorrectionLevel l);
 ErrorCorrectionLevel ECLevelFromBits(int bits);
 
 } // QRCode

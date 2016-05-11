@@ -16,10 +16,10 @@
 */
 
 #include "ByteArray.h"
-#include "ZXString.h"
 
 #include <memory>
 #include <list>
+#include <string>
 
 namespace ZXing {
 
@@ -28,16 +28,16 @@ class CustomData;
 /**
 * <p>Encapsulates the result of decoding a matrix of bits. This typically
 * applies to 2D barcode formats. For now it contains the raw bytes obtained,
-* as well as a String interpretation of those bytes, if applicable.</p>
+* as well as a string interpretation of those bytes, if applicable.</p>
 *
 * @author Sean Owen
 */
 class DecoderResult
 {
 	ByteArray _rawBytes;
-	String _text;
+	std::wstring _text;
 	std::list<ByteArray> _byteSegments;
-	std::string _ecLevel;
+	std::wstring _ecLevel;
 	int _errorsCorrected = -1;
 	int _erasures = -1;
 	int _structuredAppendSequenceNumber = 0;
@@ -55,14 +55,14 @@ public:
 	const ByteArray& rawBytes() const { return _rawBytes; }
 	void setRawBytes(const ByteArray& bytes) { _rawBytes = bytes; }
 
-	const String& text() const { return _text; }
-	void setText(const String& txt) { _text = txt; }
+	const std::wstring& text() const { return _text; }
+	void setText(const std::wstring& txt) { _text = txt; }
 
 	const std::list<ByteArray>& byteSegments() const { return _byteSegments; }
 	void setByteSegments(const std::list<ByteArray>& segments) { _byteSegments = segments; }
 
-	std::string ecLevel() const { return _ecLevel; }
-	void setEcLevel(const std::string& level) { _ecLevel = level; }
+	std::wstring ecLevel() const { return _ecLevel; }
+	void setEcLevel(const std::wstring& level) { _ecLevel = level; }
 
 	int errorsCorrected() const { return _errorsCorrected; }
 	void setErrorsCorrected(int ec) { _errorsCorrected = ec; }

@@ -237,7 +237,7 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, int startGuardBegin,
 	BarcodeFormat format = expectedFormat();
 	float ypos = static_cast<float>(rowNumber);
 
-	Result decodeResult(result, ByteArray(), { ResultPoint(left, ypos), ResultPoint(right, ypos) }, format);
+	Result decodeResult(std::wstring(result.begin(), result.end()), ByteArray(), { ResultPoint(left, ypos), ResultPoint(right, ypos) }, format);
 	int extensionLength = 0;
 	Result extensionResult = UPCEANExtensionSupport::DecodeRow(rowNumber, row, endRangeEnd);
 	if (extensionResult.isValid())
@@ -245,7 +245,7 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, int startGuardBegin,
 		decodeResult.metadata().put(ResultMetadata::UPC_EAN_EXTENSION, extensionResult.text());
 		decodeResult.metadata().putAll(extensionResult.metadata());
 		decodeResult.addResultPoints(extensionResult.resultPoints());
-		extensionLength = extensionResult.text().charCount();
+		extensionLength = static_cast<int>(extensionResult.text().length());
 	}
 
 	if (!_allowedExtensions.empty()) {
@@ -262,9 +262,9 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, int startGuardBegin,
 	}
 
 	if (format == BarcodeFormat::EAN_13 || format == BarcodeFormat::UPC_A) {
-		String countryID = EANManufacturerOrgSupport::LookupCountryIdentifier(result);
+		std::string countryID = EANManufacturerOrgSupport::LookupCountryIdentifier(result);
 		if (!countryID.empty()) {
-			decodeResult.metadata().put(ResultMetadata::POSSIBLE_COUNTRY, countryID);
+			decodeResult.metadata().put(ResultMetadata::POSSIBLE_COUNTRY, std::wstring(countryID.begin(), countryID.end()));
 		}
 	}
 

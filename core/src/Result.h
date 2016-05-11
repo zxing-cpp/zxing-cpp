@@ -15,13 +15,13 @@
 * limitations under the License.
 */
 
-#include "ZXString.h"
 #include "ByteArray.h"
 #include "BarcodeFormat.h"
 #include "ResultPoint.h"
 #include "ResultMetadata.h"
 #include "ErrorStatus.h"
 
+#include <string>
 #include <chrono>
 #include <vector>
 
@@ -40,7 +40,7 @@ public:
 	typedef std::chrono::steady_clock::time_point time_point;
 
 	explicit Result(ErrorStatus status);
-	Result(const String& text, const ByteArray& rawBytes, const std::vector<ResultPoint>& resultPoints, BarcodeFormat format, time_point tt = std::chrono::steady_clock::now());
+	Result(const std::wstring& text, const ByteArray& rawBytes, const std::vector<ResultPoint>& resultPoints, BarcodeFormat format, time_point tt = std::chrono::steady_clock::now());
 
 	bool isValid() const {
 		return StatusIsOK(_status);
@@ -50,7 +50,7 @@ public:
 		return _status;
 	}
 
-	const String& text() const {
+	const std::wstring& text() const {
 		return _text;
 	}
 
@@ -86,7 +86,7 @@ public:
 
 private:
 	ErrorStatus _status;
-	String _text;
+	std::wstring _text;
 	ByteArray _rawBytes;
 	std::vector<ResultPoint> _resultPoints;
 	BarcodeFormat _format;

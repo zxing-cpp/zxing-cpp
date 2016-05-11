@@ -330,7 +330,7 @@ Decoder::Decode(const DetectorResult& detectorResult, DecoderResult& result)
 	std::vector<bool> correctedBits;
 	if (CorrectBits(detectorResult, rawbits, correctedBits)) {
 		auto resultString = GetEncodedData(correctedBits);
-		result.setText(String::FromLatin1(resultString));
+		result.setText(std::wstring(resultString.begin(), resultString.end()));
 		return ErrorStatus::NoError;
 	}
 	else {

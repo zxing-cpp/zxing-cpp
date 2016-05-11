@@ -311,7 +311,7 @@ Code93Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 	float left = 0.5f * static_cast<float>(patternStart + patternEnd);
 	float right = static_cast<float>(lastStart) + 0.5f * static_cast<float>(lastPatternSize);
 	float ypos = static_cast<float>(rowNumber);
-	return Result(resultString, ByteArray(), { ResultPoint(left, ypos), ResultPoint(right, ypos) }, BarcodeFormat::CODE_93);
+	return Result(std::wstring(resultString.begin(), resultString.end()), ByteArray(), { ResultPoint(left, ypos), ResultPoint(right, ypos) }, BarcodeFormat::CODE_93);
 }
 
 

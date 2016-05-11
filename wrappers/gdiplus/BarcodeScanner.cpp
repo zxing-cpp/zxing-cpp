@@ -22,94 +22,12 @@
 #include "MultiFormatReader.h"
 #include "Result.h"
 #include "DecodeHints.h"
-#include "iconv.h"
 
 #include <windows.h>
 #include <gdiplus.h>
 #include <type_traits>
 
 namespace ZXing {
-
-namespace {
-
-static const char* CHARSET_NAMES[] = {
-	"ISO-8859-1",	// default to latin1 if unknown
-	"CP437",
-	"ISO-8859-1",
-	"ISO-8859-2",
-	"ISO-8859-3",
-	"ISO-8859-4",
-	"ISO-8859-5",
-	"ISO-8859-6",
-	"ISO-8859-7",
-	"ISO-8859-8",
-	"ISO-8859-9",
-	"ISO-8859-10",
-	"ISO-8859-11",
-	"ISO-8859-13",
-	"ISO-8859-14",
-	"ISO-8859-15",
-	"ISO-8859-16",
-	"SJIS",
-	"CP1250",
-	"CP1251",
-	"CP1252",
-	"CP1256",
-	"UCS-2BE",
-	"UTF-8",
-	"ASCII",
-	"BIG5",
-	"GB2312",
-	"GB18030",
-	"EUC-JP",
-	"EUC-KR",
-};
-
-static_assert(std::extent<decltype(CHARSET_NAMES)>::value == (int)CharacterSet::CharsetCount, "CHARSET_NAMES out of sync");
-
-
-class IconvCodecs : public StringCodecs
-{
-public:
-
-	virtual String toUnicode(const uint8_t* bytes, size_t length, CharacterSet codec) const override
-	{
-		if (codec == CharacterSet::ISO8859_1) {
-			return String::FromLatin1(bytes, length);
-		}
-
-		iconv_t cd = iconv_open("UTF-8", CHARSET_NAMES[(int)codec]);
-		if (cd == (iconv_t)-1) {
-			return String(reinterpret_cast<const char*>(bytes), length);
-		}
-
-		std::vector<char> bufOut;
-		bufOut.resize(4 * length + 1);
-
-		char *fromPtr = (char *)bytes;
-		size_t nFrom = length;
-		char *toPtr = bufOut.data();
-		size_t nTo = bufOut.size();
-
-		while (nFrom > 0) {
-			size_t oneway = iconv(cd, &fromPtr, &nFrom, &toPtr, &nTo);
-			if (oneway == (size_t)(-1)) {
-				iconv_close(cd);
-				return String(reinterpret_cast<const char*>(bytes), length);
-			}
-		}
-		iconv_close(cd);
-		return String(bufOut.data(), bufOut.size() - nTo);
-	}
-	
-	virtual CharacterSet defaultEncoding() const override
-	{
-		return CharacterSet::ISO8859_1;
-	}
-
-};
-
-} // anonymous
 
 BarcodeScanner::BarcodeScanner(bool tryHarder, bool tryRotate, const std::string& format)
 {
@@ -122,7 +40,7 @@ BarcodeScanner::BarcodeScanner(bool tryHarder, bool tryRotate, const std::string
 			hints.setPossibleFormats({ f });
 		}
 	}
-	_reader = std::make_shared<MultiFormatReader>(hints, std::make_shared<IconvCodecs>());
+	_reader = std::make_shared<MultiFormatReader>(hints);
 }
 
 static std::shared_ptr<LuminanceSource>
@@ -176,7 +94,9 @@ BarcodeScanner::scan(Gdiplus::Bitmap& bitmap, int rotations)
 		result = _reader->read(*binImg->rotated(270));
 	}
 	if (result.isValid()) {
-		return{ ToString(result.format()), result.text().toStdString() };
+		std::string text;
+		StringCodecs::ToUtf8(result.text(), text);
+		return{ ToString(result.format()), text };
 	}
 	return ScanResult();
 }

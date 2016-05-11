@@ -147,7 +147,7 @@ namespace UPCEANExtension5Support
 		if (raw.length() == 5) {
 			std::string value = ParseExtension5String(raw);
 			if (!value.empty()) {
-				result.metadata().put(ResultMetadata::SUGGESTED_PRICE, value);
+				result.metadata().put(ResultMetadata::SUGGESTED_PRICE, std::wstring(value.begin(), value.end()));
 			}
 		}
 	}
@@ -166,7 +166,7 @@ namespace UPCEANExtension5Support
 		float y = static_cast<float>(rowNumber);
 		float x1 = 0.5f * static_cast<float>(extStartRangeBegin + extStartRangeEnd);
 		float x2 = static_cast<float>(end);
-		Result result(resultString, ByteArray(), { ResultPoint(x1, y), ResultPoint(x2, y) }, BarcodeFormat::UPC_EAN_EXTENSION);
+		Result result(std::wstring(resultString.begin(), resultString.end()), ByteArray(), { ResultPoint(x1, y), ResultPoint(x2, y) }, BarcodeFormat::UPC_EAN_EXTENSION);
 		ParseExtensionString(resultString, result);
 		return result;
 	}
@@ -227,7 +227,7 @@ namespace UPCEANExtension2Support
 		float x1 = 0.5f * static_cast<float>(extStartRangeBegin + extStartRangeEnd);
 		float x2 = static_cast<float>(end);
 
-		Result result(resultString, ByteArray(), { ResultPoint(x1, y), ResultPoint(x2, y) }, BarcodeFormat::UPC_EAN_EXTENSION);
+		Result result(std::wstring(resultString.begin(), resultString.end()), ByteArray(), { ResultPoint(x1, y), ResultPoint(x2, y) }, BarcodeFormat::UPC_EAN_EXTENSION);
 		if (resultString.length() == 2) {
 			result.metadata().put(ResultMetadata::ISSUE_NUMBER, std::stoi(resultString));
 		}

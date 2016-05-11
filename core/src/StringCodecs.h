@@ -16,16 +16,14 @@
 */
 
 #include <cstddef>
-#include <memory>
+#include <string>
 
 namespace ZXing {
-
-class String;
 
 enum class CharacterSet
 {
 	Unknown,
-	Cp437,
+	ASCII,
 	ISO8859_1,
 	ISO8859_2,
 	ISO8859_3,
@@ -41,19 +39,20 @@ enum class CharacterSet
 	ISO8859_14,
 	ISO8859_15,
 	ISO8859_16,
-	Shift_JIS,
+	Cp437,
 	Cp1250,
 	Cp1251,
 	Cp1252,
 	Cp1256,
-	UnicodeBig,
-	UTF8,
-	ASCII,
+
+	Shift_JIS,
 	Big5,
 	GB2312,
 	GB18030,
 	EUC_JP,
 	EUC_KR,
+	UnicodeBig,
+	UTF8,
 
 	CharsetCount
 };
@@ -68,11 +67,31 @@ enum class CharacterSet
 class StringCodecs
 {
 public:
-	virtual ~StringCodecs() {}
-	virtual String toUnicode(const uint8_t* bytes, size_t length, CharacterSet codec) const = 0;
-	virtual CharacterSet defaultEncoding() const = 0;
+	static void Append(std::wstring& str, const uint8_t* bytes, size_t length, CharacterSet codec);
+	static CharacterSet DefaultEncoding();
+	static CharacterSet GuessEncoding(const uint8_t* bytes, size_t length, CharacterSet fallback = DefaultEncoding());
 
-	static CharacterSet GuessEncoding(const uint8_t* bytes, size_t length, CharacterSet fallback);
+	static void ToUtf8(const std::wstring& str, std::string& utf8);
+	static void AppendUtf16(std::wstring& str, const uint16_t* utf16, size_t length);
+
+
+	template <typename T>
+	static bool IsUtf16HighSurrogate(T c)
+	{
+		return (c & 0xfc00) == 0xd800;
+	}
+
+	template <typename T>
+	static bool IsUtf16LowSurrogate(T c)
+	{
+		return (c & 0xfc00) == 0xdc00;
+	}
+
+	template <typename T>
+	static uint32_t CodePointFromUtf16Surrogates(T high, T low)
+	{
+		return (uint32_t(high) << 10) + low - 0x35fdc00;
+	}
 };
 
 } // ZXing

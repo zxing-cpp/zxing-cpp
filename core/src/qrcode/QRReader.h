@@ -17,13 +17,11 @@
 
 #include "Reader.h"
 
-#include <memory>
 #include <string>
 
 namespace ZXing {
 
 class DecodeHints;
-class StringCodecs;
 
 namespace QRCode {
 
@@ -35,13 +33,12 @@ namespace QRCode {
 class Reader : public ZXing::Reader
 {
 public:
-	explicit Reader(const DecodeHints& hints, const std::shared_ptr<const StringCodecs>& codec);
+	explicit Reader(const DecodeHints& hints);
 	virtual Result decode(const BinaryBitmap& image) const override;
 
 private:
 	bool _tryHarder;
 	std::string _charset;
-	std::shared_ptr<const StringCodecs> _codec;
 };
 
 } // QRCode

@@ -21,7 +21,6 @@
 
 namespace ZXing {
 
-class String;
 enum class BarcodeFormat;
 //typedef std::function<void(float x, float y)> PointCallback;
 
