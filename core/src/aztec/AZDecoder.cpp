@@ -162,7 +162,7 @@ static bool CorrectBits(const DetectorResult& ddata, const std::vector<bool>& ra
 	}
 
 	int numDataCodewords = ddata.nbDatablocks();
-	int numCodewords = rawbits.size() / codewordSize;
+	int numCodewords = static_cast<int>(rawbits.size()) / codewordSize;
 	if (numCodewords < numDataCodewords) {
 		return false;
 	}

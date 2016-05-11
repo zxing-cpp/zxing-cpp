@@ -34,7 +34,7 @@ namespace UPCEANExtension5Support
 	static int
 	ExtensionChecksum(const std::string& s)
 	{
-		int length = s.length();
+		int length = static_cast<int>(s.length());
 		int sum = 0;
 		for (int i = length - 2; i >= 0; i -= 2) {
 			sum += (int)s[i] - (int) '0';

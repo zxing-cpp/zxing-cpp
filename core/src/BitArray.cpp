@@ -156,7 +156,7 @@ BitArray::appendBitArray(const BitArray& other)
 		other.copyTo(*this);
 	}
 	else if (other._size > 0) {
-		unsigned offset = _bits.size() * 32 - _size;
+		unsigned offset = static_cast<unsigned>(_bits.size()) * 32 - _size;
 		if (offset > 0) {
 			auto buffer = other._bits;
 			_bits.back() = (_bits.back() & (0xffffffff >> offset)) | (buffer.front() << (32 - offset));
@@ -209,7 +209,7 @@ BitArray::reverse()
 	std::transform(_bits.begin(), _bits.end(), _bits.begin(), [](uint32_t val) { return BitHacks::Reverse(val); });
 
 	// now correct the int's if the bit size isn't a multiple of 32
-	unsigned offset = _bits.size() * 32 - _size;
+	unsigned offset = static_cast<unsigned>(_bits.size()) * 32 - _size;
 	if (offset > 0) {
 		ShiftRight(offset, _bits);
 	}

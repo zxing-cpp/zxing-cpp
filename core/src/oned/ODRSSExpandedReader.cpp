@@ -711,7 +711,7 @@ DecodeRow2Pairs(int rowNumber, const BitArray& row, bool startFromEven, std::lis
 static void
 BuildBitArray(const std::list<ExpandedPair>& pairs, BitArray& binary)
 {
-	int charNumber = (pairs.size() * 2) - 1;
+	int charNumber = (static_cast<int>(pairs.size()) * 2) - 1;
 	if (pairs.back().mustBeLast()) {
 		charNumber -= 1;
 	}

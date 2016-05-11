@@ -783,7 +783,7 @@ win_iconv(iconv_t _cd, char **inbuf, size_t *inbytesleft, char **outbuf, size_t 
         if (outbuf != NULL && *outbuf != NULL && cd->to.flush != NULL)
         {
             tomode = cd->to.mode;
-            outsize = cd->to.flush(&cd->to, (uchar *)*outbuf, *outbytesleft);
+            outsize = cd->to.flush(&cd->to, (uchar *)*outbuf, (int)*outbytesleft);
             if (outsize == -1)
             {
                 if ((cd->to.flags & FLAG_IGNORE) && errno != E2BIG)
@@ -810,7 +810,7 @@ win_iconv(iconv_t _cd, char **inbuf, size_t *inbytesleft, char **outbuf, size_t 
         tomode = cd->to.mode;
         wsize = MB_CHAR_MAX;
 
-        insize = cd->from.mbtowc(&cd->from, (const uchar *)*inbuf, *inbytesleft, wbuf, &wsize);
+        insize = cd->from.mbtowc(&cd->from, (const uchar *)*inbuf, (int)*inbytesleft, wbuf, &wsize);
         if (insize == -1)
         {
             if (cd->to.flags & FLAG_IGNORE)
@@ -861,7 +861,7 @@ win_iconv(iconv_t _cd, char **inbuf, size_t *inbytesleft, char **outbuf, size_t 
             }
         }
 
-        outsize = cd->to.wctomb(&cd->to, wbuf, wsize, (uchar *)*outbuf, *outbytesleft);
+        outsize = cd->to.wctomb(&cd->to, wbuf, wsize, (uchar *)*outbuf, (int)*outbytesleft);
         if (outsize == -1)
         {
             if ((cd->to.flags & FLAG_IGNORE) && errno != E2BIG)
@@ -1083,7 +1083,7 @@ must_use_null_useddefaultchar(int codepage)
 static char *
 strrstr(const char *str, const char *token)
 {
-    int len = strlen(token);
+    int len = (int)strlen(token);
     const char *p = str + strlen(str);
 
     while (str <= --p)

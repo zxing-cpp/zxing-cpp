@@ -523,7 +523,7 @@ Code128Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Dec
 	}
 
 	// Need to pull out the check digits from string
-	int resultLength = result.length();
+	size_t resultLength = result.length();
 	if (resultLength == 0) {
 		// false positive
 		return Result(ErrorStatus::NotFound);
@@ -533,7 +533,7 @@ Code128Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Dec
 	// be a printable character. If it was just interpreted as a control code, nothing to remove.
 	if (resultLength > 0 && lastCharacterWasPrintable) {
 		if (codeSet == CODE_CODE_C) {
-			result.resize(resultLength - 2);
+			result.resize(resultLength >= 2 ? resultLength - 2 : 0);
 		}
 		else {
 			result.resize(resultLength - 1);

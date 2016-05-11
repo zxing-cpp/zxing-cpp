@@ -434,7 +434,7 @@ static ErrorStatus DecodeCodewords(std::vector<int>& codewords, int ecLevel, con
 			status = DecodedBitStreamParser::Decode(codewords, ecLevel, codec, result);
 			if (StatusIsOK(status)) {
 				result.setErrorsCorrected(correctedErrorsCount);
-				result.setErasures(erasures.size());
+				result.setErasures(static_cast<int>(erasures.size()));
 				return ErrorStatus::NoError;
 			}
 		}

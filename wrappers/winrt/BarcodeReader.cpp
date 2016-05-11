@@ -159,10 +159,18 @@ static Platform::String^ ToPlatformString(const String& str)
 ReadResult^
 BarcodeReader::Read(SoftwareBitmap^ bitmap)
 {
-	auto binImg = CreateBinaryBitmap(bitmap);
-	auto result = m_reader->read(*binImg);
-	if (result.isValid()) {
-		return ref new ReadResult(ToPlatformString(ZXing::ToString(result.format())), ToPlatformString(result.text()));
+	try {
+		auto binImg = CreateBinaryBitmap(bitmap);
+		auto result = m_reader->read(*binImg);
+		if (result.isValid()) {
+			return ref new ReadResult(ToPlatformString(ZXing::ToString(result.format())), ToPlatformString(result.text()));
+		}
+	}
+	catch (const std::exception& e) {
+		OutputDebugString(e.what());
+	}
+	catch (...) {
+		
 	}
 	return nullptr;
 }

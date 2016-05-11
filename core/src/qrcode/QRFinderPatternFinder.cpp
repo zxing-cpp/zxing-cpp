@@ -370,7 +370,7 @@ struct CenterComparator
 */
 ErrorStatus SelectBestPatterns(std::vector<FinderPattern>& possibleCenters)
 {
-	int startSize = possibleCenters.size();
+	int startSize = static_cast<int>(possibleCenters.size());
 	if (startSize < 3) {
 		// Couldn't find enough finder patterns
 		return ErrorStatus::NotFound;

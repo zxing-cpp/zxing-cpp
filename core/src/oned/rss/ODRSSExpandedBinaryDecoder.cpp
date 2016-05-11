@@ -110,7 +110,7 @@ DecodeAI01AndOtherAIs(const BitArray& bits)
 													  //the second one is the encodation method, and the other two are for the variable length
 	std::string buffer;
 	buffer.append("(01)");
-	size_t initialGtinPosition = buffer.length();
+	int initialGtinPosition = static_cast<int>(buffer.length());
 	int firstGtinDigit = GenericAppIdDecoder::ExtractNumeric(bits, HEADER_SIZE, 4);
 	buffer.append(std::to_string(firstGtinDigit));
 

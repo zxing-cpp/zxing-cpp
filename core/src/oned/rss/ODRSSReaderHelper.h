@@ -37,7 +37,7 @@ public:
 	{
 		for (size_t value = 0; value < finderPatterns.size(); ++value) {
 			if (RowReader::PatternMatchVariance(counters, finderPatterns[value], MAX_INDIVIDUAL_VARIANCE) < MAX_AVG_VARIANCE) {
-				return value;
+				return static_cast<int>(value);
 			}
 		}
 		return -1;

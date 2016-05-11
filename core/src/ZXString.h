@@ -73,14 +73,14 @@ public:
 
 	String() {}
 	String(const std::string& other) : m_utf8(other) {;}
-	String(const char* i_utf8, int i_len = -1) {
+	String(const char* i_utf8) {
 		if (i_utf8 != nullptr) {
-			if (i_len >= 0) {
-				m_utf8.append(i_utf8, i_len);
-			}
-			else {
-				m_utf8.append(i_utf8);
-			}
+			m_utf8.append(i_utf8);
+		}
+	}
+	String(const char* i_utf8, size_t i_len) {
+		if (i_utf8 != nullptr) {
+			m_utf8.append(i_utf8, i_len);
 		}
 	}
 

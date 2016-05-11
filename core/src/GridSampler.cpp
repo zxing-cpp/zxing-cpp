@@ -119,20 +119,20 @@ public:
 			false;
 		}
 		result.init(dimensionX, dimensionY);
-		std::vector<float> points(2 * dimensionX);
+		int max = 2 * dimensionX;
+		std::vector<float> points(max);
 		for (int y = 0; y < dimensionY; y++) {
-			size_t max = points.size();
 			float iValue = (float)y + 0.5f;
-			for (size_t x = 0; x < max; x += 2) {
+			for (int x = 0; x < max; x += 2) {
 				points[x] = static_cast<float>(x / 2) + 0.5f;
 				points[x + 1] = iValue;
 			}
-			transform.transformPoints(points.data(), points.size());
+			transform.transformPoints(points.data(), max);
 			// Quick check to see if points transformed to something inside the image;
 			// sufficient to check the endpoints
 			CheckAndNudgePoints(image, points);
 			try {
-				for (size_t x = 0; x+1 < max; x += 2) {
+				for (int x = 0; x < max; x += 2) {
 					if (image.get(static_cast<int>(points[x]), static_cast<int>(points[x + 1]))) {
 						// Black(-ish) pixel
 						result.set(x / 2, y);

@@ -56,7 +56,7 @@ public:
 	* @return degree of this polynomial
 	*/
 	int degree() const {
-		return _coefficients.size() - 1;
+		return static_cast<int>(_coefficients.size()) - 1;
 	}
 
 	/**
