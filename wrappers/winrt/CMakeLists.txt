@@ -11,7 +11,7 @@ cmake_minimum_required (VERSION 3.4.0)
 
 project (BarcodeScanner)
 
-set (CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE)
+set (CMAKE_CONFIGURATION_TYPES "RelWithDebInfo;Release" CACHE STRING "" FORCE)
 set (WINRT ON)
 set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /INCREMENTAL:NO" )
 
@@ -60,7 +60,7 @@ set_target_properties (BarcodeScanner ZXingCore PROPERTIES
 
 if (EXTENSION_SDK_OUTPUT)
 	add_custom_command (TARGET BarcodeScanner POST_BUILD
-		COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different "$<TARGET_FILE:BarcodeScanner>" "${EXTENSION_SDK_OUTPUT}/Redist/$<$<CONFIG:Release>:Retail>$<$<CONFIG:Debug>:Debug>/${TARGET_ARCHITECTURE}/$<TARGET_FILE_NAME:BarcodeScanner>"
+		COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different "$<TARGET_FILE:BarcodeScanner>" "${EXTENSION_SDK_OUTPUT}/Redist/$<$<CONFIG:Release>:Retail>$<$<CONFIG:RelWithDebInfo>:Debug>/${TARGET_ARCHITECTURE}/$<TARGET_FILE_NAME:BarcodeScanner>"
 		COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different "$<TARGET_FILE_DIR:BarcodeScanner>/${OUTPUT_FILE_BASE_NAME}.winmd" "${EXTENSION_SDK_OUTPUT}/References/CommonConfiguration/Neutral/${OUTPUT_FILE_BASE_NAME}.winmd"
 		COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different "$<TARGET_FILE_DIR:BarcodeScanner>/${OUTPUT_FILE_BASE_NAME}.pri" "${EXTENSION_SDK_OUTPUT}/References/CommonConfiguration/Neutral/${OUTPUT_FILE_BASE_NAME}.pri"
 	)

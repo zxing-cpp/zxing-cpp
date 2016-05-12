@@ -1,7 +1,7 @@
 @echo off
 rem Path to folder where the result should be copied to
 rem This should be the path to the folder containing SDKManifest.xml
-set DESTINATION=%~dp0..\..\..\path_to_folder_of_SDKManifest.xml
+set DESTINATION="path to Extension SDK to deploy"
 
 
 pushd %DESTINATION%
@@ -13,6 +13,7 @@ md %BUILD_LOC%
 pushd %BUILD_LOC%
 cmake -G "Visual Studio 14 2015" -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0 -DEXTENSION_SDK_OUTPUT="%DESTINATION%" ..\wrappers\winrt
 cmake --build . --config Release
+cmake --build . --config RelWithDebInfo
 popd
 rd /s /q %BUILD_LOC%
 
@@ -21,6 +22,7 @@ md %BUILD_LOC%
 pushd %BUILD_LOC%
 cmake -G "Visual Studio 14 2015 Win64" -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0 -DEXTENSION_SDK_OUTPUT="%DESTINATION%" ..\wrappers\winrt
 cmake --build . --config Release
+cmake --build . --config RelWithDebInfo
 popd
 rd /s /q %BUILD_LOC%
 
@@ -29,5 +31,6 @@ md %BUILD_LOC%
 pushd %BUILD_LOC%
 cmake -G "Visual Studio 14 2015 ARM" -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0 -DEXTENSION_SDK_OUTPUT="%DESTINATION%" ..\wrappers\winrt
 cmake --build . --config Release
+cmake --build . --config RelWithDebInfo
 popd
 rd /s /q %BUILD_LOC%
