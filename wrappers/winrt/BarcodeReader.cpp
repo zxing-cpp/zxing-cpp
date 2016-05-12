@@ -26,6 +26,7 @@
 
 #include <wrl.h>
 #include <MemoryBuffer.h>
+#include <algorithm>
 
 using namespace Microsoft::WRL;
 using namespace Windows::Foundation;
@@ -47,8 +48,13 @@ BarcodeReader::~BarcodeReader()
 }
 
 static std::shared_ptr<BinaryBitmap>
-CreateBinaryBitmap(SoftwareBitmap^ bitmap)
+CreateBinaryBitmap(SoftwareBitmap^ bitmap, int cropWidth, int cropHeight)
 {
+	cropWidth = cropWidth <= 0 ? bitmap->PixelWidth : std::min(bitmap->PixelWidth, cropWidth);
+	cropHeight = cropHeight <= 0 ? bitmap->PixelHeight : std::min(bitmap->PixelHeight, cropHeight);
+	int cropLeft = (bitmap->PixelWidth - cropWidth) / 2;
+	int cropTop = (bitmap->PixelHeight - cropHeight) / 2;
+
 	auto inBuffer = bitmap->LockBuffer(BitmapBufferAccessMode::Read);
 	auto inMemRef = inBuffer->CreateReference();
 	ComPtr<IMemoryBufferByteAccess> inBufferAccess;
@@ -62,13 +68,13 @@ CreateBinaryBitmap(SoftwareBitmap^ bitmap)
 		switch (bitmap->BitmapPixelFormat)
 		{
 		case BitmapPixelFormat::Gray8:
-			luminance = std::make_shared<GenericLuminanceSource>(bitmap->PixelWidth, bitmap->PixelHeight, inBytes, inBuffer->GetPlaneDescription(0).Stride);
+			luminance = std::make_shared<GenericLuminanceSource>(cropLeft, cropTop, cropWidth, cropHeight, inBytes, inBuffer->GetPlaneDescription(0).Stride);
 			break;
 		case BitmapPixelFormat::Bgra8:
-			luminance = std::make_shared<GenericLuminanceSource>(bitmap->PixelWidth, bitmap->PixelHeight, inBytes, inBuffer->GetPlaneDescription(0).Stride, 4, 2, 1, 0);
+			luminance = std::make_shared<GenericLuminanceSource>(cropLeft, cropTop, cropWidth, cropHeight, inBytes, inBuffer->GetPlaneDescription(0).Stride, 4, 2, 1, 0);
 			break;
 		case BitmapPixelFormat::Rgba8:
-			luminance = std::make_shared<GenericLuminanceSource>(bitmap->PixelWidth, bitmap->PixelHeight, inBytes, inBuffer->GetPlaneDescription(0).Stride, 4, 0, 1, 2);
+			luminance = std::make_shared<GenericLuminanceSource>(cropLeft, cropTop, cropWidth, cropHeight, inBytes, inBuffer->GetPlaneDescription(0).Stride, 4, 0, 1, 2);
 			break;
 		default:
 			throw std::runtime_error("Unsupported format");
@@ -93,10 +99,10 @@ static Platform::String^ ToPlatformString(const std::string& str)
 }
 
 ReadResult^
-BarcodeReader::Read(SoftwareBitmap^ bitmap)
+BarcodeReader::Read(SoftwareBitmap^ bitmap, int cropWidth, int cropHeight)
 {
 	try {
-		auto binImg = CreateBinaryBitmap(bitmap);
+		auto binImg = CreateBinaryBitmap(bitmap, cropWidth, cropHeight);
 		auto result = m_reader->read(*binImg);
 		if (result.isValid()) {
 			return ref new ReadResult(ToPlatformString(ZXing::ToString(result.format())), ToPlatformString(result.text()));

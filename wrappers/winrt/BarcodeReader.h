@@ -30,7 +30,7 @@ public ref class BarcodeReader sealed
 public:
 	BarcodeReader(bool tryHarder);
 
-	ReadResult^ Read(Windows::Graphics::Imaging::SoftwareBitmap^ bitmap);
+	ReadResult^ Read(Windows::Graphics::Imaging::SoftwareBitmap^ bitmap, int cropWidth, int cropHeight);
 
 private:
 	~BarcodeReader();
