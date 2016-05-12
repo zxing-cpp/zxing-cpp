@@ -64,7 +64,7 @@ enum class CharacterSet
 * <p>This class is thread-safe but not reentrant -- unless the caller modifies the bytes array
 * it passed in, in which case all bets are off.</p>
 */
-class StringCodecs
+class TextCodec
 {
 public:
 	static void Append(std::wstring& str, const uint8_t* bytes, size_t length, CharacterSet codec);
@@ -73,7 +73,16 @@ public:
 
 	static void ToUtf8(const std::wstring& str, std::string& utf8);
 	static void AppendUtf16(std::wstring& str, const uint16_t* utf16, size_t length);
-
+	
+	static void AppendLatin1(std::wstring& str, const std::string& latin1) {
+		auto ptr = (const uint8_t*)latin1.data();
+		str.append(ptr, ptr + latin1.length());
+	}
+	
+	static std::wstring FromLatin1(std::string& latin1) {
+		auto ptr = (const uint8_t*)latin1.data();
+		return std::wstring(ptr, ptr + latin1.length());
+	}
 
 	template <typename T>
 	static bool IsUtf16HighSurrogate(T c)

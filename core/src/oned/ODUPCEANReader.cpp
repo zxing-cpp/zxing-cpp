@@ -20,6 +20,7 @@
 #include "Result.h"
 #include "BitArray.h"
 #include "DecodeHints.h"
+#include "TextCodec.h"
 
 #include <algorithm>
 
@@ -237,7 +238,7 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, int startGuardBegin,
 	BarcodeFormat format = expectedFormat();
 	float ypos = static_cast<float>(rowNumber);
 
-	Result decodeResult(std::wstring(result.begin(), result.end()), ByteArray(), { ResultPoint(left, ypos), ResultPoint(right, ypos) }, format);
+	Result decodeResult(TextCodec::FromLatin1(result), ByteArray(), { ResultPoint(left, ypos), ResultPoint(right, ypos) }, format);
 	int extensionLength = 0;
 	Result extensionResult = UPCEANExtensionSupport::DecodeRow(rowNumber, row, endRangeEnd);
 	if (extensionResult.isValid())
@@ -264,7 +265,7 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, int startGuardBegin,
 	if (format == BarcodeFormat::EAN_13 || format == BarcodeFormat::UPC_A) {
 		std::string countryID = EANManufacturerOrgSupport::LookupCountryIdentifier(result);
 		if (!countryID.empty()) {
-			decodeResult.metadata().put(ResultMetadata::POSSIBLE_COUNTRY, std::wstring(countryID.begin(), countryID.end()));
+			decodeResult.metadata().put(ResultMetadata::POSSIBLE_COUNTRY, TextCodec::FromLatin1(countryID));
 		}
 	}
 

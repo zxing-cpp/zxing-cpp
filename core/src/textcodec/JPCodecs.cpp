@@ -35,8 +35,7 @@
 // a.k.a. Junji Takagi, and is included in Qt with the author's permission,
 // and the grateful thanks of the Qt team.
 
-#include "JPCodecs.h"
-#include <vector>
+#include "textcodec/JPCodecs.h"
 
 /*
 * This data is derived from Unicode 1.1,
@@ -2702,7 +2701,7 @@ JPCodecs::AppendEUCJP(std::vector<uint16_t>& result, const uint8_t* bytes, size_
 	int nbuf = 0;
 	int invalid = 0;
 
-	for (int i = 0; i<length; ++i) {
+	for (size_t i = 0; i<length; ++i) {
 		uint8_t ch = bytes[i];
 		switch (nbuf) {
 		case 0:

@@ -21,6 +21,7 @@
 #include "GenericGF.h"
 #include "ErrorStatus.h"
 #include "BitMatrix.h"
+#include "TextCodec.h"
 
 #include <numeric>
 
@@ -329,8 +330,7 @@ Decoder::Decode(const DetectorResult& detectorResult, DecoderResult& result)
 	ExtractBits(detectorResult, rawbits);
 	std::vector<bool> correctedBits;
 	if (CorrectBits(detectorResult, rawbits, correctedBits)) {
-		auto resultString = GetEncodedData(correctedBits);
-		result.setText(std::wstring(resultString.begin(), resultString.end()));
+		result.setText(TextCodec::FromLatin1(GetEncodedData(correctedBits)));
 		return ErrorStatus::NoError;
 	}
 	else {

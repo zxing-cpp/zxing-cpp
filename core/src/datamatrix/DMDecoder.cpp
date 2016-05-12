@@ -23,6 +23,7 @@
 #include "GenericGF.h"
 #include "BitSource.h"
 #include "ErrorStatus.h"
+#include "TextCodec.h"
 
 #include <array>
 
@@ -547,7 +548,7 @@ namespace DecodedBitStreamParser {
 			result.append(resultTrailer);
 		}
 		decodeResult.setRawBytes(bytes);
-		decodeResult.setText(std::wstring(result.begin(), result.end()));
+		decodeResult.setText(TextCodec::FromLatin1(result));
 		decodeResult.setByteSegments(byteSegments);
 		return ErrorStatus::NoError;
 	}

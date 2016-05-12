@@ -14,8 +14,11 @@
 * limitations under the License.
 */
 
-#include "StringCodecs.h"
+#include "TextCodec.h"
 #include "textcodec/JPCodecs.h"
+#include "textcodec/GBCodecs.h"
+#include "textcodec/Big5Codecs.h"
+#include "textcodec/KRCodecs.h"
 
 namespace ZXing {
 
@@ -235,12 +238,6 @@ static void AppendCp437(std::wstring& str, const uint8_t* bytes, size_t length)
 	}
 }
 
-static void AppendLatin1(std::wstring& str, const uint8_t* bytes, size_t length)
-{
-	str.append(bytes, bytes + length);
-}
-
-
 // George Pollard:
 // http://porg.es/blog/counting-characters-in-utf-8-strings-is-faster
 static size_t Utf8CountCodePoints(const uint8_t *utf8, size_t length)
@@ -399,7 +396,7 @@ Utf8CountBytes(const WCharT* utf16, size_t length, typename std::enable_if<(size
 		{
 			result += 2;
 		}
-		else if (StringCodecs::IsUtf16HighSurrogate(codePoint))
+		else if (TextCodec::IsUtf16HighSurrogate(codePoint))
 		{
 			result += 4;
 			++i;
@@ -447,9 +444,9 @@ static void ConvertToUtf8(const std::basic_string<WCharT>& str, std::string& utf
 	int bufLength;
 	for (size_t i = 0; i < str.length(); ++i)
 	{
-		if (i + 1 < str.length() && StringCodecs::IsUtf16HighSurrogate(str[i]) && StringCodecs::IsUtf16LowSurrogate(str[i + 1]))
+		if (i + 1 < str.length() && TextCodec::IsUtf16HighSurrogate(str[i]) && TextCodec::IsUtf16LowSurrogate(str[i + 1]))
 		{
-			bufLength = Utf8Encode(StringCodecs::CodePointFromUtf16Surrogates(str[i], str[i + 1]), buffer);
+			bufLength = Utf8Encode(TextCodec::CodePointFromUtf16Surrogates(str[i], str[i + 1]), buffer);
 			++i;
 		}
 		else
@@ -477,7 +474,7 @@ static void ConvertToUtf8(const std::basic_string<WCharT>& str, std::string& utf
 
 
 void
-StringCodecs::Append(std::wstring& str, const uint8_t* bytes, size_t length, CharacterSet codec)
+TextCodec::Append(std::wstring& str, const uint8_t* bytes, size_t length, CharacterSet codec)
 {
 	switch (codec)
 	{
@@ -526,14 +523,26 @@ StringCodecs::Append(std::wstring& str, const uint8_t* bytes, size_t length, Cha
 		break;
 	}
 	case CharacterSet::Big5:
+	{
+		std::vector<uint16_t> buf;
+		Big5Codecs::AppendBig5(buf, bytes, length);
+		AppendUtf16(str, buf.data(), buf.size());
 		break;
-
+	}
 	case CharacterSet::GB2312:
+	{
+		std::vector<uint16_t> buf;
+		GBCodecs::AppendGB2312(buf, bytes, length);
+		AppendUtf16(str, buf.data(), buf.size());
 		break;
-
+	}
 	case CharacterSet::GB18030:
+	{
+		std::vector<uint16_t> buf;
+		GBCodecs::AppendGB18030(buf, bytes, length);
+		AppendUtf16(str, buf.data(), buf.size());
 		break;
-
+	}
 	case CharacterSet::EUC_JP:
 	{
 		std::vector<uint16_t> buf;
@@ -542,19 +551,26 @@ StringCodecs::Append(std::wstring& str, const uint8_t* bytes, size_t length, Cha
 		break;
 	}
 	case CharacterSet::EUC_KR:
+	{
+		std::vector<uint16_t> buf;
+		KRCodecs::AppendEucKr(buf, bytes, length);
+		AppendUtf16(str, buf.data(), buf.size());
 		break;
-
+		break;
+	}
 	case CharacterSet::UnicodeBig:
-		str.reserve(str.length() + length/2);
-		for (size_t i = 0; i+1 < length; i += 2) {
+	{
+		str.reserve(str.length() + length / 2);
+		for (size_t i = 0; i + 1 < length; i += 2) {
 			str.push_back((static_cast<wchar_t>(bytes[i]) << 8) + bytes[i + 1]);
 		}
 		break;
-
+	}
 	case CharacterSet::UTF8:
+	{
 		Codecs::ConvertFromUtf8(bytes, length, str);
 		break;
-
+	}
 	default:
 		break;
 	}
@@ -568,7 +584,7 @@ StringCodecs::Append(std::wstring& str, const uint8_t* bytes, size_t length, Cha
 *  default encoding if none of these can possibly be correct
 */
 CharacterSet
-StringCodecs::GuessEncoding(const uint8_t* bytes, size_t length, CharacterSet fallback)
+TextCodec::GuessEncoding(const uint8_t* bytes, size_t length, CharacterSet fallback)
 {
 	// For now, merely tries to distinguish ISO-8859-1, UTF-8 and Shift_JIS,
 	// which should be by far the most common encodings.
@@ -734,20 +750,20 @@ StringCodecs::GuessEncoding(const uint8_t* bytes, size_t length, CharacterSet fa
 }
 
 CharacterSet
-StringCodecs::DefaultEncoding()
+TextCodec::DefaultEncoding()
 {
 	return CharacterSet::ISO8859_1;
 }
 
 void
-StringCodecs::ToUtf8(const std::wstring& str, std::string& utf8)
+TextCodec::ToUtf8(const std::wstring& str, std::string& utf8)
 {
 	utf8.reserve(str.length() + Codecs::Utf8CountBytes(str.data(), str.length()));
 	Codecs::ConvertToUtf8(str, utf8);
 }
 
 void
-StringCodecs::AppendUtf16(std::wstring& str, const uint16_t* utf16, size_t length)
+TextCodec::AppendUtf16(std::wstring& str, const uint16_t* utf16, size_t length)
 {
 	str.reserve(str.length() + length);
 	for (size_t i = 0; i < length; ++i)
@@ -765,6 +781,5 @@ StringCodecs::AppendUtf16(std::wstring& str, const uint16_t* utf16, size_t lengt
 		str.push_back(static_cast<wchar_t>(u));
 	}
 }
-
 
 } // ZXing

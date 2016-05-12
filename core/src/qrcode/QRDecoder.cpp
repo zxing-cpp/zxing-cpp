@@ -27,7 +27,7 @@
 #include "ReedSolomonDecoder.h"
 #include "GenericGF.h"
 #include "BitSource.h"
-#include "StringCodecs.h"
+#include "TextCodec.h"
 #include "CharacterSetECI.h"
 #include "DecodeHints.h"
 #include "ErrorStatus.h"
@@ -125,7 +125,7 @@ DecodeHanziSegment(BitSource& bits, int count, std::wstring& result)
 		count--;
 	}
 
-	StringCodecs::Append(result, buffer.data(), buffer.length(), CharacterSet::GB2312);
+	TextCodec::Append(result, buffer.data(), buffer.length(), CharacterSet::GB2312);
 	return ErrorStatus::NoError;
 }
 
@@ -158,7 +158,7 @@ DecodeKanjiSegment(BitSource& bits, int count, std::wstring& result)
 		count--;
 	}
 
-	StringCodecs::Append(result, buffer.data(), buffer.length(), CharacterSet::Shift_JIS);
+	TextCodec::Append(result, buffer.data(), buffer.length(), CharacterSet::Shift_JIS);
 	return ErrorStatus::NoError;
 }
 
@@ -187,10 +187,10 @@ DecodeByteSegment(BitSource& bits, int count, CharacterSet currentCharset, const
 		}
 		if (currentCharset == CharacterSet::Unknown)
 		{
-			currentCharset = StringCodecs::GuessEncoding(readBytes.data(), readBytes.length());
+			currentCharset = TextCodec::GuessEncoding(readBytes.data(), readBytes.length());
 		}
 	}
-	StringCodecs::Append(result, readBytes.data(), readBytes.length(), currentCharset);
+	TextCodec::Append(result, readBytes.data(), readBytes.length(), currentCharset);
 	byteSegments.push_back(readBytes);
 	return ErrorStatus::NoError;
 }
@@ -251,7 +251,7 @@ DecodeAlphanumericSegment(BitSource& bits, int count, bool fc1InEffect, std::wst
 			}
 		}
 	}
-	result.append(buffer.begin(), buffer.end());
+	TextCodec::AppendLatin1(result, buffer);
 	return ErrorStatus::NoError;
 }
 
@@ -298,7 +298,7 @@ DecodeNumericSegment(BitSource& bits, int count, std::wstring& result)
 		buffer += ToAlphaNumericChar(digitBits);
 	}
 
-	result.append(buffer.begin(), buffer.end());
+	TextCodec::AppendLatin1(result, buffer);
 	return ErrorStatus::NoError;
 }
 

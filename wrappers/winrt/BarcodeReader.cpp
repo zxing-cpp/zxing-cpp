@@ -15,7 +15,6 @@
 */
 
 #include "BarcodeReader.h"
-#include "StringCodecs.h"
 #include "GenericLuminanceSource.h"
 #include "HybridBinarizer.h"
 #include "BinaryBitmap.h"
@@ -35,80 +34,12 @@ using namespace Windows::Graphics::Imaging;
 namespace ZXing {
 namespace BarcodeScanner {
 
-//static int CODE_PAGES[] = {
-//	28591,	// ISO-8859-1	// default to latin1 if unknown
-//	437,	// CP437
-//	28591,	// ISO-8859-1
-//	28592,	// ISO-8859-2
-//	28593,	// ISO-8859-3
-//	28594,	// ISO-8859-4
-//	28595,	// ISO-8859-5
-//	28596,	// ISO-8859-6
-//	28597,	// ISO-8859-7
-//	28598,	// ISO-8859-8
-//	28599,	// ISO-8859-9
-//	28600,	// ISO-8859-10
-//	28601,	// ISO-8859-11
-//	28603,	// ISO-8859-13
-//	28604,	// ISO-8859-14
-//	28605,	// ISO-8859-15
-//	28606,	// ISO-8859-16
-//	932,	// Shift_JIS
-//	1250,	// CP1250
-//	1251,	// CP1251
-//	1252,	// CP1252
-//	1256,	// CP1256
-//	1201,	// UnicodeBig
-//	65001,	// UTF-8
-//	20127,	// ASCII
-//	950,	// BIG5
-//	936,	// GB2312
-//	54936,	// GB18030
-//	20932,	// EUC-JP
-//	51949,	// EUC-KR
-//};
-//
-//static_assert(std::extent<decltype(CODE_PAGES)>::value == (int)CharacterSet::CharsetCount, "CHARSET_NAMES out of sync");
-
-class InternalStringDecoder : public StringCodecs
+BarcodeReader::BarcodeReader(bool tryHarder)
 {
-public:
-	InternalStringDecoder(StringConverter^ conv) : m_converter(conv) {}
-
-	virtual String toUnicode(const uint8_t* bytes, size_t length, CharacterSet codec) const override
-	{
-		if (codec == CharacterSet::ISO8859_1) {
-			return String::FromLatin1(bytes, length);
-		}
-		else if (codec == CharacterSet::UTF8) {
-			return String((const char*)bytes, length);
-		}
-
-		auto str = m_converter->Invoke(ref new Platform::Array<uint8>((uint8*)bytes, (unsigned)length), (CharEncoding)(int)codec);
-		if (!str->IsEmpty())
-		{
-			return String(str->Begin(), str->End());
-		}
-		return String();
-	}
-
-	virtual CharacterSet defaultEncoding() const override
-	{
-		return CharacterSet::ISO8859_1;
-	}
-
-private:
-	StringConverter^ m_converter;
-};
-
-BarcodeReader::BarcodeReader(StringConverter^ codec, bool tryHarder)
-{
-	m_decoder = std::make_shared<InternalStringDecoder>(codec);
-
 	DecodeHints hints;
 	hints.setShouldTryHarder(tryHarder);
 	hints.setShouldTryRotate(tryHarder);
-	m_reader.reset(new MultiFormatReader(hints, m_decoder));
+	m_reader.reset(new MultiFormatReader(hints));
 }
 
 BarcodeReader::~BarcodeReader()
@@ -150,10 +81,15 @@ CreateBinaryBitmap(SoftwareBitmap^ bitmap)
 	}
 }
 
-static Platform::String^ ToPlatformString(const String& str)
+static Platform::String^ ToPlatformString(const std::wstring& str)
 {
-	auto tmp = str.toWString();
-	return ref new Platform::String(tmp.c_str(), (unsigned)tmp.length());
+	return ref new Platform::String(str.c_str(), (unsigned)str.length());
+}
+
+static Platform::String^ ToPlatformString(const std::string& str)
+{
+	auto ptr = (const uint8_t*)str.data();
+	return ToPlatformString(std::wstring(ptr, ptr + str.length()));
 }
 
 ReadResult^
@@ -167,7 +103,7 @@ BarcodeReader::Read(SoftwareBitmap^ bitmap)
 		}
 	}
 	catch (const std::exception& e) {
-		OutputDebugString(e.what());
+		OutputDebugStringA(e.what());
 	}
 	catch (...) {
 		

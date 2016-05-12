@@ -15,7 +15,7 @@
 */
 
 #include "BarcodeScanner.h"
-#include "StringCodecs.h"
+#include "TextCodec.h"
 #include "GenericLuminanceSource.h"
 #include "HybridBinarizer.h"
 #include "BinaryBitmap.h"
@@ -95,7 +95,7 @@ BarcodeScanner::scan(Gdiplus::Bitmap& bitmap, int rotations)
 	}
 	if (result.isValid()) {
 		std::string text;
-		StringCodecs::ToUtf8(result.text(), text);
+		TextCodec::ToUtf8(result.text(), text);
 		return{ ToString(result.format()), text };
 	}
 	return ScanResult();

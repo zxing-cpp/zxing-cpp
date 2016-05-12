@@ -88,7 +88,7 @@ MultiUPCEANReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr
 		// result if appropriate.
 		//
 		// But, don't return UPC-A if UPC-A was not a requested format!
-		std::wstring resultText = result.text();
+		const std::wstring& resultText = result.text();
 		bool ean13MayBeUPCA = result.format() == BarcodeFormat::EAN_13 && !resultText.empty() && resultText[0] == '0';
 		bool canReturnUPCA = _formats.empty() || _formats.find(BarcodeFormat::UPC_A) != _formats.end();
 		if (ean13MayBeUPCA && canReturnUPCA) {

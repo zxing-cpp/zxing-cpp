@@ -21,6 +21,7 @@
 #include "ReedSolomonDecoder.h"
 #include "GenericGF.h"
 #include "ErrorStatus.h"
+#include "TextCodec.h"
 
 #include <array>
 #include <sstream>
@@ -264,7 +265,7 @@ namespace DecodedBitStreamParser
 				break;
 		}
 		decodeResult.setRawBytes(bytes);
-		decodeResult.setText(std::wstring(result.begin(), result.end()));
+		decodeResult.setText(TextCodec::FromLatin1(result));
 		decodeResult.setEcLevel(std::to_wstring(mode)); // really???
 		return ErrorStatus::NoError;
 	}

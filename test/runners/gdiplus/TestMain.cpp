@@ -9,7 +9,7 @@
 #include <unordered_set>
 
 #include "BarcodeScanner.h"
-#include "../../core/src/ZXString.h"
+#include "../../core/src/TextCodec.h"
 
 const char* GetFileName(const char* filePath)
 {
@@ -44,7 +44,7 @@ static std::vector<std::string> GetImagesInDirectory(const std::string& dirPath)
 	HANDLE hFind = FindFirstFileA(BuildPath(dirPath, "*.png").c_str(), &data);
 	if (hFind != INVALID_HANDLE_VALUE) {
 		do {
-//if (strcmp(data.cFileName, "09.png") == 0)
+//if (strcmp(data.cFileName, "24.png") == 0)
 			result.push_back(data.cFileName);
 		} while (FindNextFileA(hFind, &data));
 		FindClose(hFind);
@@ -112,8 +112,9 @@ bool CheckResult(std::string imgPath, const std::string& expectedFormat, const Z
 	imgPath.replace(imgPath.size() - 4, 4, ".bin");
 	std::ifstream latin1Stream(imgPath, std::ios::binary);
 	if (latin1Stream) {
-		std::string rawStr((std::istreambuf_iterator<char>(latin1Stream)), std::istreambuf_iterator<char>());
-		std::string expected = ZXing::String::FromLatin1(rawStr).toStdString();
+		std::wstring rawStr = ZXing::TextCodec::FromLatin1(std::string((std::istreambuf_iterator<char>(latin1Stream)), std::istreambuf_iterator<char>()));
+		std::string expected;
+		ZXing::TextCodec::ToUtf8(rawStr, expected);
 		if (result.text != expected) {
 			log += "Content mismatch: expected " + expected + " but got " + result.text + "\n";
 			return false;

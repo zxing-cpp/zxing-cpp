@@ -20,6 +20,7 @@
 #include "oned/rss/ODRSSExpandedRow.h"
 #include "Result.h"
 #include "BitArray.h"
+#include "TextCodec.h"
 
 #include <list>
 #include <array>
@@ -766,7 +767,7 @@ ConstructResult(const std::list<ExpandedPair>& pairs)
 	auto& firstPoints = pairs.front().finderPattern().points();
 	auto& lastPoints = pairs.back().finderPattern().points();
 
-	return Result(std::wstring(resultString.begin(), resultString.end()), ByteArray(), { firstPoints[0], firstPoints[1], lastPoints[0], lastPoints[1] }, BarcodeFormat::RSS_EXPANDED);
+	return Result(TextCodec::FromLatin1(resultString), ByteArray(), { firstPoints[0], firstPoints[1], lastPoints[0], lastPoints[1] }, BarcodeFormat::RSS_EXPANDED);
 }
 
 Result
