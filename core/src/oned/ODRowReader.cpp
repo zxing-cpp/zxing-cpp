@@ -120,10 +120,8 @@ RowReader::PatternMatchVariance(const int *counters, const int* pattern, size_t 
 	maxIndividualVariance *= unitBarWidth;
 
 	float totalVariance = 0.0f;
-	for (size_t x = 0; x < length; x++) {
-		int counter = counters[x];
-		float scaledPattern = pattern[x] * unitBarWidth;
-		float variance = counter > scaledPattern ? counter - scaledPattern : scaledPattern - counter;
+	for (size_t x = 0; x < length; ++x) {
+		float variance = std::abs(counters[x] - pattern[x] * unitBarWidth);
 		if (variance > maxIndividualVariance) {
 			return std::numeric_limits<float>::max();
 		}
