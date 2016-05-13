@@ -29,11 +29,6 @@ namespace ZXing {
 */
 class BitArray
 {
-	int _size;
-	std::vector<uint32_t> _bits;
-	
-	friend class BitMatrix;
-
 public:
 
 	class Iterator
@@ -102,7 +97,7 @@ public:
 	* @return true iff bit i is set
 	*/
 	bool get(int i) const {
-		return (_bits.at(i / 32) & (1 << (i & 0x1F))) != 0;
+		return (_bits.at(i >> 5) & (1 << (i & 0x1F))) != 0;
 	}
 
 	// If you know exactly how may bits you are going to iterate
@@ -110,11 +105,11 @@ public:
 	// However, be extremly careful since there is no check so whatever
 	// (performance is reason to theses iterators to exist at the first place!)
 	Iterator iterAt(int i) const {
-		return Iterator(_bits.data() + (i / 32), 1 << (i & 0x1F));
+		return Iterator(_bits.data() + (i >> 5), 1 << (i & 0x1F));
 	}
 
 	BackwardIterator backIterAt(int i) const {
-		return BackwardIterator(_bits.data() + (i / 32), 1 << (i & 0x1F));
+		return BackwardIterator(_bits.data() + (i >> 5), 1 << (i & 0x1F));
 	}
 
 	/**
@@ -123,7 +118,7 @@ public:
 	* @param i bit to set
 	*/
 	void set(int i) {
-		_bits.at(i / 32) |= 1 << (i & 0x1F);
+		_bits.at(i >> 5) |= 1 << (i & 0x1F);
 	}
 
 	/**
@@ -132,7 +127,7 @@ public:
 	* @param i bit to set
 	*/
 	void flip(int i) {
-		_bits.at(i / 32) ^= 1 << (i & 0x1F);
+		_bits.at(i >> 5) ^= 1 << (i & 0x1F);
 	}
 
 	void flipAll() {
@@ -156,16 +151,6 @@ public:
 	*/
 	int getNextUnset(int from) const;
 
-	/**
-	* Sets a block of 32 bits, starting at bit i.
-	*
-	* @param i first bit to set
-	* @param newBits the new value of the next 32 bits. Note again that the least-significant bit
-	* corresponds to bit i, the next-least-significant to i+1, and so on.
-	*/
-	//void setBulk(int i, uint32_t newBits) {
-	//	_bits[i / 32] = newBits;
-	//}
 
 	void getSubArray(int offset, int length, BitArray& result) const;
 
@@ -194,9 +179,6 @@ public:
 	* @throws IllegalArgumentException if end is less than or equal to start
 	*/
 	bool isRange(int start, int end, bool value) const;
-
-
-	void appendBit(bool bit);
 
 	/**
 	* Appends the least-significant bits, from value, in order from most-significant to
@@ -238,15 +220,13 @@ public:
 		return a._size == b._size && b._bits == b._bits;
 	}
 
-	//std::string toString() const;
-
 private:
-	void ensureCapacity(int size)
-	{
-		_bits.resize((size + 31) / 32);
-	}
+	int _size;
+	std::vector<uint32_t> _bits;
 
 	static void ShiftRight(unsigned offset, std::vector<uint32_t>& bits);
+
+	friend class BitMatrix;
 };
 
 } // ZXing

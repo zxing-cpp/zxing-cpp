@@ -20,9 +20,6 @@
 namespace ZXing {
 
 class MultiFormatReader;
-
-namespace BarcodeScanner {
-
 ref class ReadResult;
 
 public ref class BarcodeReader sealed
@@ -38,5 +35,4 @@ private:
 	std::unique_ptr<MultiFormatReader> m_reader;
 };
 
-} // BarcodeScanner
 } // ZXing

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<FileList
+    DisplayName="ZXing Barcode Scanner Library"
+    ProductFamilyName="ZXingWinRT"
+    MoreInfo="https://github.com/huycn/zxing-cpp"
+    MinVSVersion="14.0"
+    AppliesTo="WindowsAppContainer"
+    SupportsMultipleVersions="Error"
+    SupportedArchitectures="x86;x64;ARM">
+	<File Reference="ZXing.winmd" Implementation="ZXingWinRT.dll" />
+</FileList>

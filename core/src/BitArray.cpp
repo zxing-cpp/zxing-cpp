@@ -129,24 +129,17 @@ BitArray::isRange(int start, int end, bool value) const
 }
 
 void
-BitArray::appendBit(bool bit)
-{
-	ensureCapacity(_size + 1);
-	if (bit) {
-		_bits[_size / 32] |= 1 << (_size & 0x1F);
-	}
-	_size++;
-}
-
-void
 BitArray::appendBits(int value, int numBits)
 {
 	if (numBits < 0 || numBits > 32) {
 		throw std::invalid_argument("BitArray::appendBits(): Num bits must be between 0 and 32");
 	}
-	ensureCapacity(_size + numBits);
-	for (int numBitsLeft = numBits; numBitsLeft > 0; numBitsLeft--) {
-		appendBit(((value >> (numBitsLeft - 1)) & 0x01) == 1);
+	int i = _size;
+	_size += numBits;
+	_bits.resize((_size + 31) / 32, 0);
+
+	for (--numBits; numBits >= 0; --numBits, ++i) {
+		_bits[i / 32] |= ((value >> numBits) & 1) << (i & 0x1F);
 	}
 }
 

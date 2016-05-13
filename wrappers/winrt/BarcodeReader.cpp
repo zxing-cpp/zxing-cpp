@@ -33,7 +33,6 @@ using namespace Windows::Foundation;
 using namespace Windows::Graphics::Imaging;
 
 namespace ZXing {
-namespace BarcodeScanner {
 
 BarcodeReader::BarcodeReader(bool tryHarder)
 {
@@ -117,5 +116,4 @@ BarcodeReader::Read(SoftwareBitmap^ bitmap, int cropWidth, int cropHeight)
 	return nullptr;
 }
 
-} // BarcodeScanner
 } // ZXing

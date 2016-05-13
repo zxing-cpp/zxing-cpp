@@ -16,7 +16,6 @@
 */
 
 namespace ZXing {
-namespace BarcodeScanner {
 
 public ref class ReadResult sealed
 {
@@ -41,5 +40,4 @@ private:
 	Platform::String^ m_text;
 };
 
-} // BarcodeScanner
 } // ZXing

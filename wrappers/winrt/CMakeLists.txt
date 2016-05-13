@@ -9,7 +9,7 @@
 #
 cmake_minimum_required (VERSION 3.4.0)
 
-project (BarcodeScanner)
+project (ZXingWinRT)
 
 set (CMAKE_CONFIGURATION_TYPES "RelWithDebInfo;Release" CACHE STRING "" FORCE)
 set (WINRT ON)
@@ -41,12 +41,12 @@ include_directories (
 	${ZXING_CORE_INCLUDE}
 )
 
-set (ROOT_NAMESPACE "ZXing.BarcodeScanner")
-set (OUTPUT_FILE_BASE_NAME "${ROOT_NAMESPACE}")
+set (ROOT_NAMESPACE "ZXing")
+set (OUTPUT_FILE_BASE_NAME "ZXingWinRT")
 
-add_library (BarcodeScanner SHARED ${HEADER_FILES} ${SOURCE_FILES})
-target_link_libraries (BarcodeScanner ZXingCore)
-set_target_properties (BarcodeScanner PROPERTIES
+add_library (ZXingWinRT SHARED ${HEADER_FILES} ${SOURCE_FILES})
+target_link_libraries (ZXingWinRT ZXingCore)
+set_target_properties (ZXingWinRT PROPERTIES
 	COMPILE_FLAGS "/ZW"		# Consume Windows Runtime Extension
 	LINK_FLAGS "/WINMD"		# Generate Windows Metadata
 	COMPILE_DEFINITIONS "${IMAGEPROC_DEFINES};_WINRT_DLL"
@@ -54,14 +54,14 @@ set_target_properties (BarcodeScanner PROPERTIES
 	OUTPUT_NAME ${OUTPUT_FILE_BASE_NAME}
 )
 
-set_target_properties (BarcodeScanner ZXingCore PROPERTIES
+set_target_properties (ZXingWinRT ZXingCore PROPERTIES
 	VS_WINDOWS_TARGET_PLATFORM_MIN_VERSION "10.0.10240.0"
 )
 
 if (EXTENSION_SDK_OUTPUT)
-	add_custom_command (TARGET BarcodeScanner POST_BUILD
-		COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different "$<TARGET_FILE:BarcodeScanner>" "${EXTENSION_SDK_OUTPUT}/Redist/$<$<CONFIG:Release>:Retail>$<$<CONFIG:RelWithDebInfo>:Debug>/${TARGET_ARCHITECTURE}/$<TARGET_FILE_NAME:BarcodeScanner>"
-		COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different "$<TARGET_FILE_DIR:BarcodeScanner>/${OUTPUT_FILE_BASE_NAME}.winmd" "${EXTENSION_SDK_OUTPUT}/References/CommonConfiguration/Neutral/${OUTPUT_FILE_BASE_NAME}.winmd"
-		COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different "$<TARGET_FILE_DIR:BarcodeScanner>/${OUTPUT_FILE_BASE_NAME}.pri" "${EXTENSION_SDK_OUTPUT}/References/CommonConfiguration/Neutral/${OUTPUT_FILE_BASE_NAME}.pri"
+	add_custom_command (TARGET ZXingWinRT POST_BUILD
+		COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different "$<TARGET_FILE:ZXingWinRT>" "${EXTENSION_SDK_OUTPUT}/Redist/$<$<CONFIG:Release>:Retail>$<$<CONFIG:RelWithDebInfo>:Debug>/${TARGET_ARCHITECTURE}/$<TARGET_FILE_NAME:ZXingWinRT>"
+		COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different "$<TARGET_FILE_DIR:ZXingWinRT>/${ROOT_NAMESPACE}.winmd" "${EXTENSION_SDK_OUTPUT}/References/CommonConfiguration/Neutral/${ROOT_NAMESPACE}.winmd"
+		COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different "$<TARGET_FILE_DIR:ZXingWinRT>/${ROOT_NAMESPACE}.pri" "${EXTENSION_SDK_OUTPUT}/References/CommonConfiguration/Neutral/${ROOT_NAMESPACE}.pri"
 	)
 endif()
