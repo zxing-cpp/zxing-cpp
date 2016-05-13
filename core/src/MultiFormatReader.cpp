@@ -1,5 +1,5 @@
-#pragma once
 /*
+* Copyright 2016 Nu-book Inc.
 * Copyright 2016 ZXing authors
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
