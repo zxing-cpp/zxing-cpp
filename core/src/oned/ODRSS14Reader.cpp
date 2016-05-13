@@ -67,31 +67,31 @@ struct RSS14DecodingState : public RowReader::DecodingState
 //}
 
 static ErrorStatus
-FindFinderPattern(const BitArray& row, int rowOffset, bool rightFinderPattern, FinderCounters& counters, int& start, int& end)
+FindFinderPattern(const BitArray& row, int offset, bool rightFinderPattern, FinderCounters& counters, int& start, int& end)
 {
 	std::fill(counters.begin(), counters.end(), 0);
 	int width = row.size();
 	bool isWhite = false;
-	while (rowOffset < width) {
-		isWhite = !row.get(rowOffset);
+	auto bitIter = row.iterAt(offset);
+	for (; offset < width; ++offset, ++bitIter) {
+		isWhite = !*bitIter;
 		if (rightFinderPattern == isWhite) {
 			// Will encounter white first when searching for right finder pattern
 			break;
 		}
-		rowOffset++;
 	}
 
 	int counterPosition = 0;
-	int patternStart = rowOffset;
-	for (int x = rowOffset; x < width; x++) {
-		if (row.get(x) ^ isWhite) {
+	int patternStart = offset;
+	for (; offset < width; ++offset, ++bitIter) {
+		if (*bitIter ^ isWhite) {
 			counters[counterPosition]++;
 		}
 		else {
 			if (counterPosition == 3) {
 				if (RSS::ReaderHelper::IsFinderPattern(counters)) {
 					start = patternStart;
-					end = x;
+					end = offset;
 					return ErrorStatus::NoError;
 				}
 				patternStart += counters[0] + counters[1];
@@ -116,11 +116,14 @@ static RSS::FinderPattern
 ParseFoundFinderPattern(const BitArray& row, int rowNumber, bool right, int startRange, int endRange, FinderCounters& finderCounters)
 {
 	// Actually we found elements 2-5
-	bool firstIsBlack = row.get(startRange);
+	auto bitIter = row.backIterAt(startRange);
+	bool firstIsBlack = *bitIter;
 	int firstElementStart = startRange - 1;
+	--bitIter;
 	// Locate element 1
-	while (firstElementStart >= 0 && firstIsBlack ^ row.get(firstElementStart)) {
-		firstElementStart--;
+	while (firstElementStart >= 0 && firstIsBlack ^ *bitIter) {
+		--firstElementStart;
+		--bitIter;
 	}
 	firstElementStart++;
 	int firstCounter = startRange - firstElementStart;

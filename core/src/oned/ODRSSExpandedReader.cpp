@@ -119,18 +119,18 @@ FindNextPair(const BitArray& row, const std::list<ExpandedPair>& previousPairs, 
 	}
 
 	bool isWhite = false;
-	while (rowOffset < width) {
-		isWhite = !row.get(rowOffset);
+	auto bitIter = row.iterAt(rowOffset);
+	for (; rowOffset < width; ++rowOffset, ++bitIter) {
+		isWhite = !*bitIter;
 		if (!isWhite) {
 			break;
 		}
-		rowOffset++;
 	}
 
 	int counterPosition = 0;
 	int patternStart = rowOffset;
-	for (int x = rowOffset; x < width; x++) {
-		if (row.get(x) ^ isWhite) {
+	for (; rowOffset < width; ++rowOffset, ++bitIter) {
+		if (*bitIter ^ isWhite) {
 			counters[counterPosition]++;
 		}
 		else {
@@ -141,7 +141,7 @@ FindNextPair(const BitArray& row, const std::list<ExpandedPair>& previousPairs, 
 
 				if (ReaderHelper::IsFinderPattern(counters)) {
 					patternStart_ = patternStart;
-					patternEnd = x;
+					patternEnd = rowOffset;
 					return true;
 				}
 
@@ -177,9 +177,11 @@ ParseFoundFinderPattern(const BitArray& row, int rowNumber, bool oddPattern, int
 		// If pattern number is odd, we need to locate element 1 *before* the current block.
 
 		int firstElementStart = patternStart - 1;
+		auto bitIter = row.backIterAt(firstElementStart);
 		// Locate element 1
-		while (firstElementStart >= 0 && !row.get(firstElementStart)) {
-			firstElementStart--;
+		while (firstElementStart >= 0 && !*bitIter) {
+			--firstElementStart;
+			--bitIter;
 		}
 
 		firstElementStart++;

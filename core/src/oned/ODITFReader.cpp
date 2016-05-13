@@ -150,23 +150,24 @@ static ErrorStatus DecodeMiddle(const BitArray& row, int payloadStart, int paylo
 * @throws NotFoundException if pattern is not found
 */
 ErrorStatus
-ITFReader::FindGuardPattern(const BitArray& row, int rowOffset, const int* pattern, size_t patternLength, int& begin, int& end)
+ITFReader::FindGuardPattern(const BitArray& row, int offset, const int* pattern, size_t patternLength, int& begin, int& end)
 {
 	std::vector<int> counters(patternLength, 0);
 	int width = row.size();
 	bool isWhite = false;
 
 	int counterPosition = 0;
-	int patternStart = rowOffset;
-	for (int x = rowOffset; x < width; x++) {
-		if (row.get(x) ^ isWhite) {
+	int patternStart = offset;
+	auto bitIter = row.iterAt(offset);
+	for (; offset < width; ++offset, ++bitIter) {
+		if (*bitIter ^ isWhite) {
 			counters[counterPosition]++;
 		}
 		else {
 			if (counterPosition == patternLength - 1) {
 				if (PatternMatchVariance(counters.data(), pattern, patternLength, MAX_INDIVIDUAL_VARIANCE) < MAX_AVG_VARIANCE) {
 					begin = patternStart;
-					end = x;
+					end = offset;
 					return ErrorStatus::NoError;
 				}
 				patternStart += counters[0] + counters[1];
@@ -224,11 +225,12 @@ ValidateQuietZone(const BitArray& row, int startPattern, int narrowLineWidth)
 
 	int quietCount = narrowLineWidth * 10;  // expect to find this many pixels of quiet zone
 
-											// if there are not so many pixel at all let's try as many as possible
+	// if there are not so many pixel at all let's try as many as possible
 	quietCount = quietCount < startPattern ? quietCount : startPattern;
 
-	for (int i = startPattern - 1; quietCount > 0 && i >= 0; i--) {
-		if (row.get(i)) {
+	auto bitIter = row.backIterAt(--startPattern);
+	for (; quietCount > 0 && startPattern >= 0; --startPattern, --bitIter) {
+		if (*bitIter) {
 			break;
 		}
 		quietCount--;

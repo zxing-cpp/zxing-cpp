@@ -7,6 +7,8 @@
 #include <memory>
 #include <vector>
 #include <unordered_set>
+#include <chrono>
+#include <sstream>
 
 #include "BarcodeScanner.h"
 #include "../../core/src/TextCodec.h"
@@ -260,15 +262,21 @@ int main(int argc, char** argv)
 		return pos != std::string::npos ? s.substr(0, pos) : s;
 	};
 
+	std::stringstream outbuf;
+
+	std::ostream& out = std::cout;
+
 	auto runTests = [&](const char* directory, const char* format, const std::vector<TestCase>& tests) {
 		std::string dirName = GetFileName(directory);
 		if (includedTests.empty() || (includedTests.find(dirName) != includedTests.end() || includedTests.find(removeExtension(dirName)) != includedTests.end())) {
-			DoRunTests(std::cout, directory, format, tests);
+			DoRunTests(out, directory, format, tests);
 		}
 	};
 
 	try
 	{
+		auto startTime = std::chrono::steady_clock::now();
+		
 		runTests("blackbox/aztec-1", "AZTEC", {
 			{ 12, 12, 0   },
 			{ 12, 12, 90  },
@@ -518,6 +526,11 @@ int main(int argc, char** argv)
 			{ 18, 18, 0 },
 			{ 18, 18, 180 },
 		});
+
+		auto duration = std::chrono::steady_clock::now() - startTime;
+
+		std::cout << outbuf.str() << std::endl;
+		std::cout << "Total time: " << std::chrono::duration_cast<std::chrono::seconds>(duration).count() << " seconds." << std::endl;
 	}
 	catch (const std::exception& e)
 	{
@@ -527,7 +540,6 @@ int main(int argc, char** argv)
 	{
 		std::cout << "Internal error";
 	}
-	std::cout << std::endl;
 
 	Gdiplus::GdiplusShutdown(gdiplusToken);
 }

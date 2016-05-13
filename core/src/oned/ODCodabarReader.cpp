@@ -74,8 +74,9 @@ InitCounters(const BitArray& row, std::vector<int>& counters)
 	}
 	bool isWhite = true;
 	int count = 0;
-	while (i < end) {
-		if (row.get(i) ^ isWhite) { // that is, exactly one is true
+	auto bitIter = row.iterAt(i);
+	for (; i < end; ++i, ++bitIter) {
+		if (*bitIter ^ isWhite) { // that is, exactly one is true
 			count++;
 		}
 		else {
@@ -83,7 +84,6 @@ InitCounters(const BitArray& row, std::vector<int>& counters)
 			count = 1;
 			isWhite = !isWhite;
 		}
-		i++;
 	}
 	counters.push_back(count);
 	return true;

@@ -78,23 +78,22 @@ static ErrorStatus
 FindAsteriskPattern(const BitArray& row, int& outPatternStart, int& outPatternEnd)
 {
 	int width = row.size();
-	int rowOffset = row.getNextSet(0);
-
+	int offset = row.getNextSet(0);
 	CounterContainer theCounters = {};
-	int patternStart = rowOffset;
+	int patternStart = offset;
 	bool isWhite = false;
 	int patternLength = static_cast<int>(theCounters.size());
-
 	int counterPosition = 0;
-	for (int i = rowOffset; i < width; i++) {
-		if (row.get(i) ^ isWhite) {
+	auto bitIter = row.iterAt(offset);
+	for (; offset < width; ++offset, ++bitIter) {
+		if (*bitIter ^ isWhite) {
 			theCounters[counterPosition]++;
 		}
 		else {
 			if (counterPosition == patternLength - 1) {
 				if (ToPattern(theCounters) == ASTERISK_ENCODING) {
 					outPatternStart = patternStart;
-					outPatternEnd = i;
+					outPatternEnd = offset;
 					return ErrorStatus::NoError;
 				}
 				patternStart += theCounters[0] + theCounters[1];

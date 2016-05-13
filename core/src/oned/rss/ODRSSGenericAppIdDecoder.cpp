@@ -29,8 +29,9 @@ int
 GenericAppIdDecoder::ExtractNumeric(const BitArray& bits, int pos, int count)
 {
 	int value = 0;
-	for (int i = 0; i < count; ++i) {
-		value = (value << 1) | static_cast<int>(bits.get(pos + i));
+	auto bitIter = bits.iterAt(pos);
+	for (int i = 0; i < count; ++i, ++bitIter) {
+		value = (value << 1) | static_cast<int>(*bitIter);
 	}
 	return value;
 }
@@ -185,13 +186,13 @@ IsStillNumeric(const BitArray& bits, int pos)
 	if (pos + 7 > bits.size()) {
 		return pos + 4 <= bits.size();
 	}
-
-	for (int i = pos; i < pos + 3; ++i) {
-		if (bits.get(i)) {
+	auto bitIter = bits.iterAt(pos);
+	for (int i = 0; i < 4; ++i, ++bitIter) {
+		if (*bitIter) {
 			return true;
 		}
 	}
-	return bits.get(pos + 3);
+	return false;
 }
 
 static DecodedChar
@@ -261,8 +262,9 @@ IsAlphaOr646ToNumericLatch(const BitArray& bits, int pos)
 	if (pos + 3 > bits.size()) {
 		return false;
 	}
-	for (int i = pos; i < pos + 3; ++i) {
-		if (bits.get(i)) {
+	auto bitIter = bits.iterAt(pos);
+	for (int i = 0; i < 3; ++i, ++bitIter) {
+		if (*bitIter) {
 			return false;
 		}
 	}
@@ -277,8 +279,10 @@ IsNumericToAlphaNumericLatch(const BitArray& bits, int pos)
 	if (pos + 1 > bits.size()) {
 		return false;
 	}
-	for (int i = 0; i < 4 && i + pos < bits.size(); ++i) {
-		if (bits.get(pos + i)) {
+
+	auto bitIter = bits.iterAt(pos);
+	for (int i = 0; i < 4 && i + pos < bits.size(); ++i, ++bitIter) {
+		if (*bitIter) {
 			return false;
 		}
 	}

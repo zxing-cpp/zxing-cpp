@@ -110,15 +110,16 @@ UPCEANReader::DoFindGuardPattern(const BitArray& row, int rowOffset, bool whiteF
 	rowOffset = whiteFirst ? row.getNextUnset(rowOffset) : row.getNextSet(rowOffset);
 	int counterPosition = 0;
 	int patternStart = rowOffset;
-	for (int x = rowOffset; x < width; x++) {
-		if (row.get(x) ^ isWhite) {
+	auto bitIter = row.iterAt(rowOffset);
+	for (; rowOffset < width; ++rowOffset, ++bitIter) {
+		if (*bitIter ^ isWhite) {
 			counters[counterPosition]++;
 		}
 		else {
 			if (counterPosition == length - 1) {
 				if (PatternMatchVariance(counters, pattern, length, MAX_INDIVIDUAL_VARIANCE) < MAX_AVG_VARIANCE) {
 					begin = patternStart;
-					end = x;
+					end = rowOffset;
 					return ErrorStatus::NoError;
 				}
 				patternStart += counters[0] + counters[1];

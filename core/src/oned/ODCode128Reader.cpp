@@ -161,16 +161,15 @@ static ErrorStatus
 FindStartPattern(const BitArray& row, int& begin, int& end, int& startCode)
 {
 	int width = row.size();
-	int rowOffset = row.getNextSet(0);
-
+	int offset = row.getNextSet(0);
 	int counterPosition = 0;
 	std::vector<int> counters(6, 0);
-	int patternStart = rowOffset;
+	int patternStart = offset;
 	bool isWhite = false;
 	int patternLength = static_cast<int>(counters.size());
-
-	for (int i = rowOffset; i < width; i++) {
-		if (row.get(i) ^ isWhite) {
+	auto bitIter = row.iterAt(offset);
+	for (; offset < width; ++offset, ++bitIter) {
+		if (*bitIter ^ isWhite) {
 			counters[counterPosition]++;
 		}
 		else {
@@ -186,9 +185,9 @@ FindStartPattern(const BitArray& row, int& begin, int& end, int& startCode)
 				}
 				// Look for whitespace before start pattern, >= 50% of width of start pattern
 				if (bestMatch >= 0 &&
-					row.isRange(std::max(0, patternStart - (i - patternStart) / 2), patternStart, false)) {
+					row.isRange(std::max(0, patternStart - (offset - patternStart) / 2), patternStart, false)) {
 					begin = patternStart;
-					end = i;
+					end = offset;
 					startCode = bestMatch;
 					return ErrorStatus::NoError;
 				}

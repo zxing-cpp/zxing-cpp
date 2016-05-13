@@ -44,11 +44,11 @@ RowReader::RecordPattern(const BitArray& row, int start, int* counters, size_t l
 	if (start >= end) {
 		return ErrorStatus::NotFound;
 	}
-	bool isWhite = !row.get(start);
+	auto bitIter = row.iterAt(start);
+	bool isWhite = !*bitIter;
 	size_t counterPosition = 0;
-	int i = start;
-	while (i < end) {
-		if (row.get(i) ^ isWhite) { // that is, exactly one is true
+	for (; start < end; ++start, ++bitIter) {
+		if (*bitIter ^ isWhite) { // that is, exactly one is true
 			counters[counterPosition]++;
 		}
 		else {
@@ -61,11 +61,10 @@ RowReader::RecordPattern(const BitArray& row, int start, int* counters, size_t l
 				isWhite = !isWhite;
 			}
 		}
-		i++;
 	}
 	// If we read fully the last section of pixels and filled up our counters -- or filled
 	// the last counter but ran off the side of the image, OK. Otherwise, a problem.
-	if (!(counterPosition == length || (counterPosition + 1 == length && i == end))) {
+	if (!(counterPosition == length || (counterPosition + 1 == length && start == end))) {
 		return ErrorStatus::NotFound;
 	}
 	return ErrorStatus::NoError;
@@ -76,9 +75,12 @@ RowReader::RecordPatternInReverse(const BitArray& row, int start, int* counters,
 {
 	// This could be more efficient I guess
 	int numTransitionsLeft = static_cast<int>(length);
-	bool last = row.get(start);
+	auto bitIter = row.backIterAt(start);
+	bool last = *bitIter;
 	while (start > 0 && numTransitionsLeft >= 0) {
-		if (row.get(--start) != last) {
+		--start;
+		--bitIter;
+		if (*bitIter != last) {
 			numTransitionsLeft--;
 			last = !last;
 		}

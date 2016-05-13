@@ -100,24 +100,23 @@ static ErrorStatus
 FindAsteriskPattern(const BitArray& row, CounterContainer& counters, int& outPatternStart, int& outPatternEnd)
 {
 	int width = row.size();
-	int rowOffset = row.getNextSet(0);
-
+	int offset = row.getNextSet(0);
 	int counterPosition = 0;
-	int patternStart = rowOffset;
+	int patternStart = offset;
 	bool isWhite = false;
 	int patternLength = static_cast<int>(counters.size());
-
-	for (int i = rowOffset; i < width; i++) {
-		if (row.get(i) ^ isWhite) {
+	auto bitIter = row.iterAt(offset);
+	for (; offset < width; ++offset, ++bitIter) {
+		if (*bitIter ^ isWhite) {
 			counters[counterPosition]++;
 		}
 		else {
 			if (counterPosition == patternLength - 1) {
 				// Look for whitespace before start pattern, >= 50% of width of start pattern
 				if (ToNarrowWidePattern(counters) == ASTERISK_ENCODING &&
-					row.isRange(std::max(0, patternStart - ((i - patternStart) / 2)), patternStart, false)) {
+					row.isRange(std::max(0, patternStart - ((offset - patternStart) / 2)), patternStart, false)) {
 					outPatternStart = patternStart;
-					outPatternEnd = i;
+					outPatternEnd = offset;
 					return ErrorStatus::NoError;
 				}
 				patternStart += counters[0] + counters[1];

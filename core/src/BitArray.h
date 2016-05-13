@@ -35,6 +35,31 @@ class BitArray
 
 public:
 
+	class Iterator
+	{
+	public:
+		bool operator*() const { return (*_value & _mask) != 0; }
+		void operator++() { if ((_mask <<= 1) == 0) { _mask = 1; ++_value; } }
+	private:
+		Iterator(const uint32_t* p, uint32_t m) : _value(p), _mask(m) {}
+		const uint32_t* _value;
+		uint32_t _mask;
+		friend class BitArray;
+	};
+
+	class BackwardIterator
+	{
+	public:
+		bool operator*() const { return (*_value & _mask) != 0; }
+		void operator--() { if ((_mask >>= 1) == 0) { _mask = 0x80000000; --_value; } }
+	private:
+		BackwardIterator(const uint32_t* p, uint32_t m) : _value(p), _mask(m) {}
+		const uint32_t* _value;
+		uint32_t _mask;
+		friend class BitArray;
+	};
+
+
 	BitArray() : _size(0) {}
 
 	explicit BitArray(int size) : _size(size), _bits((size + 31) / 32, 0) {}
@@ -77,6 +102,18 @@ public:
 	*/
 	bool get(int i) const {
 		return (_bits.at(i / 32) & (1 << (i & 0x1F))) != 0;
+	}
+
+	// If you know exactly how may bits you are going to iterate
+	// and that you access bit in sequence, iterator is faster than get().
+	// However, be extremly careful since there is no check so whatever
+	// (performance is reason to theses iterators to exist at the first place!)
+	Iterator iterAt(int i) const {
+		return Iterator(_bits.data() + (i / 32), 1 << (i & 0x1F));
+	}
+
+	BackwardIterator backIterAt(int i) const {
+		return BackwardIterator(_bits.data() + (i / 32), 1 << (i & 0x1F));
 	}
 
 	/**
