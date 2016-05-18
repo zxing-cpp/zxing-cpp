@@ -238,34 +238,29 @@ static void AppendCp437(std::wstring& str, const uint8_t* bytes, size_t length)
 	}
 }
 
-// George Pollard:
-// http://porg.es/blog/counting-characters-in-utf-8-strings-is-faster
 static size_t Utf8CountCodePoints(const uint8_t *utf8, size_t length)
 {
 	size_t i = 0;
-	size_t ibefore = 0;
 	size_t count = 0;
-	const signed char *s = (const signed char *)utf8;
 
-	/* using signed chars so ascii bytes are positive */
-	while (i < length && s[i] > 0) {
-	ascii:
-		i++;
-	}
-
-	count += (i - ibefore);
 	while (i < length) {
-		if (s[i] > 0) {
-			ibefore = i;
-			goto ascii;
+		if (utf8[i] < 128) {
+			++i;
 		}
 		else {
-			switch (s[i] & 0xf0) {
-			case 0xc0: case 0xd0: i += 2; break;
-			case 0xe0: i += 3; break;
-			case 0xf0: i += 4; break;
+			switch (utf8[i] & 0xf0) {
+			case 0xc0:
+			case 0xd0:
+				i += 2; break;
+			case 0xe0:
+				i += 3; break;
+			case 0xf0:
+				i += 4; break;
 			default: // we are in middle of a sequence
-				while ((s[++i] & 0xc0) == 0x80); break;
+				++i;
+				while (i < length && (utf8[i] & 0xc0) == 0x80)
+					++i;
+				break;
 			}
 		}
 		++count;
