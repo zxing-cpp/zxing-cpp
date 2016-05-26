@@ -27,6 +27,7 @@
 #include "BinaryBitmap.h"
 #include "BitMatrix.h"
 #include "ZXNumeric.h"
+#include "ZXConfig.h"
 
 namespace ZXing {
 namespace QRCode {
@@ -176,9 +177,17 @@ Reader::decode(const BinaryBitmap& image) const
 	}
 
 	// If the code was mirrored: swap the bottom-left and the top-right points.
+#if !defined(ZX_HAVE_CONFIG)
+	#error "You need to include ZXConfig.h"
+#elif !defined(ZX_NO_RTTI)
 	if (auto extra = std::dynamic_pointer_cast<DecoderMetadata>(decoderResult.extra())) {
 		extra->applyMirroredCorrection(points.begin(), points.end());
 	}
+#else
+	if (auto extra = decoderResult.extra()) {
+		static_cast<DecoderMetadata*>(extra.get())->applyMirroredCorrection(points.begin(), points.end());
+	}
+#endif
 
 	Result result(decoderResult.text(), decoderResult.rawBytes(), points, BarcodeFormat::QR_CODE);
 	auto& byteSegments = decoderResult.byteSegments();

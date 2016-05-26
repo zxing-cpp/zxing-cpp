@@ -1,4 +1,4 @@
-# About
+# ZXing-C++
 
 This project is a C++ port of ZXing Library (https://github.com/zxing/zxing).
 

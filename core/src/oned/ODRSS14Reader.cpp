@@ -21,6 +21,7 @@
 #include "BitArray.h"
 #include "Result.h"
 #include "DecodeHints.h"
+#include "ZXConfig.h"
 
 #include <list>
 #include <array>
@@ -471,7 +472,13 @@ RSS14Reader::decodeRow(int rowNumber, const BitArray& row_, std::unique_ptr<Deco
 		state.reset(prevState = new RSS14DecodingState);
 	}
 	else {
+#if !defined(ZX_HAVE_CONFIG)
+		#error "You need to include ZXConfig.h"
+#elif !defined(ZX_NO_RTTI)
 		prevState = dynamic_cast<RSS14DecodingState*>(state.get());
+#else
+		prevState = static_cast<RSS14DecodingState*>(state.get());
+#endif
 	}
 
 	if (prevState == nullptr) {

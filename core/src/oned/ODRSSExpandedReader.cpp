@@ -22,6 +22,7 @@
 #include "Result.h"
 #include "BitArray.h"
 #include "TextCodec.h"
+#include "ZXConfig.h"
 
 #include <list>
 #include <array>
@@ -781,7 +782,13 @@ RSSExpandedReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr
 		state.reset(prevState = new RSSExpandedDecodingState);
 	}
 	else {
+#if !defined(ZX_HAVE_CONFIG)
+		#error "You need to include ZXConfig.h"
+#elif !defined(ZX_NO_RTTI)
 		prevState = dynamic_cast<RSSExpandedDecodingState*>(state.get());
+#else
+		prevState = static_cast<RSSExpandedDecodingState*>(state.get());
+#endif
 	}
 
 	if (prevState == nullptr) {

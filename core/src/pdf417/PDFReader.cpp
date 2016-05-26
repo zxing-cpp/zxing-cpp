@@ -73,7 +73,7 @@ ErrorStatus DoDecode(const BinaryBitmap& image, bool multiple, std::list<Result>
 			std::transform(points.begin(), points.end(), foundPoints.begin(), [](const Nullable<ResultPoint>& p) { return p.value(); });
 			Result result(decoderResult.text(), decoderResult.rawBytes(), foundPoints, BarcodeFormat::PDF_417);
 			result.metadata().put(ResultMetadata::ERROR_CORRECTION_LEVEL, decoderResult.ecLevel());
-			if (auto extra = std::dynamic_pointer_cast<DecoderResultExtra>(decoderResult.extra())) {
+			if (auto extra = decoderResult.extra()) {
 				result.metadata().put(ResultMetadata::PDF417_EXTRA_METADATA, extra);
 			}
 			results.push_back(result);

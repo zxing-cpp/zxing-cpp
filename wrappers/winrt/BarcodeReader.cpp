@@ -17,7 +17,6 @@
 #include "BarcodeReader.h"
 #include "GenericLuminanceSource.h"
 #include "HybridBinarizer.h"
-#include "BinaryBitmap.h"
 #include "MultiFormatReader.h"
 #include "Result.h"
 #include "DecodeHints.h"
