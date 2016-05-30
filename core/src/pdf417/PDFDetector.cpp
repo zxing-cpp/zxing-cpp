@@ -23,6 +23,8 @@
 
 #include <list>
 #include <array>
+#include <limits>
+#include <cstdlib>
 
 namespace ZXing {
 namespace Pdf417 {

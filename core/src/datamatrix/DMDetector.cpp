@@ -89,21 +89,30 @@ inline static bool IsValidPoint(const ResultPoint& p, int imgWidth, int imgHeigh
 	return p.x() >= 0 && p.x() < imgWidth && p.y() > 0 && p.y() < imgHeight;
 }
 
+inline static float RoundToNearest(float x)
+{
+#if defined(__ANDROID__) && defined(__GNUC__)
+	return static_cast<int>(round(x));
+#else
+	return static_cast<int>(std::round(x));
+#endif
+}
+
 /**
 * Calculates the position of the white top right module using the output of the rectangle detector
 * for a rectangular matrix
 */
 static bool CorrectTopRightRectangular(const BitMatrix& image, const ResultPoint& bottomLeft, const ResultPoint& bottomRight, const ResultPoint& topLeft, const ResultPoint& topRight, int dimensionTop, int dimensionRight, ResultPoint& result)
 {
-	float corr = std::round(ResultPoint::Distance(bottomLeft, bottomRight)) / static_cast<float>(dimensionTop);
-	float norm = std::round(ResultPoint::Distance(topLeft, topRight));
+	float corr = RoundToNearest(ResultPoint::Distance(bottomLeft, bottomRight)) / static_cast<float>(dimensionTop);
+	float norm = RoundToNearest(ResultPoint::Distance(topLeft, topRight));
 	float cos = (topRight.x() - topLeft.x()) / norm;
 	float sin = (topRight.y() - topLeft.y()) / norm;
 
 	ResultPoint c1(topRight.x() + corr*cos, topRight.y() + corr*sin);
 
-	corr = std::round(ResultPoint::Distance(bottomLeft, topLeft)) / (float)dimensionRight;
-	norm = std::round(ResultPoint::Distance(bottomRight, topRight));
+	corr = RoundToNearest(ResultPoint::Distance(bottomLeft, topLeft)) / (float)dimensionRight;
+	norm = RoundToNearest(ResultPoint::Distance(bottomRight, topRight));
 	cos = (topRight.x() - bottomRight.x()) / norm;
 	sin = (topRight.y() - bottomRight.y()) / norm;
 
@@ -134,15 +143,15 @@ static bool CorrectTopRightRectangular(const BitMatrix& image, const ResultPoint
 */
 static bool CorrectTopRight(const BitMatrix& image, const ResultPoint& bottomLeft, const ResultPoint& bottomRight, const ResultPoint& topLeft, const ResultPoint& topRight, int dimension, ResultPoint& result)
 {
-	float corr = std::round(ResultPoint::Distance(bottomLeft, bottomRight)) / (float)dimension;
-	float norm = std::round(ResultPoint::Distance(topLeft, topRight));
+	float corr = RoundToNearest(ResultPoint::Distance(bottomLeft, bottomRight)) / (float)dimension;
+	float norm = RoundToNearest(ResultPoint::Distance(topLeft, topRight));
 	float cos = (topRight.x() - topLeft.x()) / norm;
 	float sin = (topRight.y() - topLeft.y()) / norm;
 
 	ResultPoint c1(topRight.x() + corr * cos, topRight.y() + corr * sin);
 
-	corr = std::round(ResultPoint::Distance(bottomLeft, topLeft)) / (float)dimension;
-	norm = std::round(ResultPoint::Distance(bottomRight, topRight));
+	corr = RoundToNearest(ResultPoint::Distance(bottomLeft, topLeft)) / (float)dimension;
+	norm = RoundToNearest(ResultPoint::Distance(bottomRight, topRight));
 	cos = (topRight.x() - bottomRight.x()) / norm;
 	sin = (topRight.y() - bottomRight.y()) / norm;
 
@@ -264,7 +273,7 @@ Detector::Detect(const BitMatrix& image, DetectorResult& result)
 		TransitionsBetween(image, pointB, pointD),
 		TransitionsBetween(image, pointC, pointD),
 	};
-	std::sort(transitions.begin(), transitions.end(), [](const auto& a, const auto& b) { return a.transitions < b.transitions; });
+	std::sort(transitions.begin(), transitions.end(), [](const ResultPointsAndTransitions& a, const ResultPointsAndTransitions& b) { return a.transitions < b.transitions; });
 
 	// Sort by number of transitions. First two will be the two solid sides; last two
 	// will be the two alternating black/white sides

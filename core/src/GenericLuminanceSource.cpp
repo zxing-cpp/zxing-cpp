@@ -18,6 +18,9 @@
 #include "GenericLuminanceSource.h"
 #include "ByteArray.h"
 
+#include <cstring>
+#include <algorithm>
+
 namespace ZXing {
 
 inline static uint8_t RGBToGray(unsigned r, unsigned g, unsigned b)
@@ -37,7 +40,7 @@ inline static uint8_t RGBToGray(unsigned r, unsigned g, unsigned b)
 
 static std::shared_ptr<ByteArray> MakeCopy(const ByteArray& pixels, int rowBytes, int left, int top, int width, int height)
 {
-	if (top == 0 && left == 0 && width * height == pixels.size()) {
+	if (top == 0 && left == 0 && width * height == (int)pixels.size()) {
 		return std::make_shared<ByteArray>(pixels);
 	}
 

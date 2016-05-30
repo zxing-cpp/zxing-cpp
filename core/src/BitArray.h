@@ -192,7 +192,7 @@ public:
 
 	void appendBitArray(const BitArray& other);
 
-	void xor(const BitArray& other);
+	//void xor(const BitArray& other);
 
 	/**
 	*

@@ -19,6 +19,7 @@
 #include <android/log.h>
 
 #include <memory>
+#include <string>
 
 #define ZX_LOG_TAG "ZXing"
 
@@ -28,11 +29,10 @@
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, ZX_LOG_TAG, __VA_ARGS__)
 
 namespace ZXing {
-
 class BinaryBitmap;
+}
 
 // Create BinaryBitmap from Android's Bitmap
-std::shared_ptr<BinaryBitmap> CreateBinaryBitmap(JNIEnv* env, jobject bitmap, int cropWidth, int cropHeight);
+std::shared_ptr<ZXing::BinaryBitmap> BinaryBitmapFromJavaBitmap(JNIEnv* env, jobject bitmap, int cropLeft, int cropTop, int cropWidth, int cropHeight);
 void ThrowJavaException(JNIEnv* env, const char* message);
-
-} // ZXing
+jstring ToJavaString(JNIEnv* env, const std::wstring& str);

@@ -18,6 +18,8 @@
 #include "pdf417/PDFErrorCorrection.h"
 #include "PDFModulusGF.h"
 
+#include <cstdint>
+
 namespace ZXing {
 namespace Pdf417 {
 

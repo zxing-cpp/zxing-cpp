@@ -17,6 +17,7 @@
 */
 
 #include "oned/ODRowReader.h"
+#include "BarcodeFormat.h"
 
 #include <vector>
 #include <memory>
@@ -47,7 +48,7 @@ public:
 
 private:
 	std::vector<std::shared_ptr<const UPCEANReader>> _readers;
-	std::unordered_set<BarcodeFormat> _formats;
+	std::unordered_set<BarcodeFormat, BarcodeFormatHasher> _formats;
 };
 
 } // OneD

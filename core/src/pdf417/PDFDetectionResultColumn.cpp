@@ -139,7 +139,7 @@ DetectionResultColumn::adjustCompleteIndicatorColumnRowNumbers(const BarcodeMeta
 	int lastRow = imageRowToCodewordIndex((int)bottom.value().y());
 	// We need to be careful using the average row height. Barcode could be skewed so that we have smaller and 
 	// taller rows
-	float averageRowHeight = (lastRow - firstRow) / (float)barcodeMetadata.rowCount();
+	//float averageRowHeight = (lastRow - firstRow) / (float)barcodeMetadata.rowCount();
 	int barcodeRow = -1;
 	int maxRowHeight = 1;
 	int currentRowHeight = 0;
@@ -215,7 +215,7 @@ DetectionResultColumn::adjustIncompleteIndicatorColumnRowNumbers(const BarcodeMe
 	auto bottom = isLeftRowIndicator() ? bb.bottomLeft() : bb.bottomRight();
 	int firstRow = imageRowToCodewordIndex((int)top.value().y());
 	int lastRow = imageRowToCodewordIndex((int)bottom.value().y());
-	float averageRowHeight = (lastRow - firstRow) / (float)barcodeMetadata.rowCount();
+	//float averageRowHeight = (lastRow - firstRow) / (float)barcodeMetadata.rowCount();
 	auto& codewords = allCodewords();
 	int barcodeRow = -1;
 	int maxRowHeight = 1;

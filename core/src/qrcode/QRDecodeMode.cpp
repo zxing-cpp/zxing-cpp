@@ -47,7 +47,7 @@ static const int CHAR_COUNT_PER_MODE[] = {
 DecodeMode::Mode
 DecodeMode::ModeForBits(int bits)
 {
-	if (bits >= 0x00 && bits <= 0x05 || bits >= 0x07 && bits <= 0x09 || bits == 0x0d)
+	if ((bits >= 0x00 && bits <= 0x05) || (bits >= 0x07 && bits <= 0x09) || bits == 0x0d)
 	{
 		return static_cast<Mode>(bits);
 	}

@@ -15,6 +15,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+#include <cstdint>
 
 namespace ZXing {
 
@@ -86,6 +87,11 @@ const char* ToString(BarcodeFormat format);
 
 // Return FORMAT_COUNT if str is unexpected
 BarcodeFormat FromString(const char* str);
+
+struct BarcodeFormatHasher
+{
+	size_t operator()(BarcodeFormat f) const;
+};
 
 } // ZXing
 

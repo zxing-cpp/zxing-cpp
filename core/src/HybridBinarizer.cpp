@@ -217,7 +217,7 @@ HybridBinarizer::getBlackMatrix() const
 	int width = _source->width();
 	int height = _source->height();
 	if (width >= MINIMUM_DIMENSION && height >= MINIMUM_DIMENSION) {
-		std::call_once(m_cache->once, &InitBlackMatrix, *_source, m_cache->matrix);
+		std::call_once(m_cache->once, &InitBlackMatrix, std::cref(*_source), std::ref(m_cache->matrix));
 		return m_cache->matrix;
 	}
 	else {

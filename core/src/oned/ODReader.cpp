@@ -35,7 +35,6 @@
 namespace ZXing {
 namespace OneD {
 
-
 Reader::Reader(const DecodeHints& hints) :
 	_tryHarder(hints.shouldTryHarder()),
 	_tryRotate(hints.shouldTryRotate())
@@ -43,7 +42,7 @@ Reader::Reader(const DecodeHints& hints) :
 	_readers.reserve(8);
 
 	auto possibleFormats = hints.possibleFormats();
-	std::unordered_set<BarcodeFormat> formats(possibleFormats.begin(), possibleFormats.end());
+	std::unordered_set<BarcodeFormat, BarcodeFormatHasher> formats(possibleFormats.begin(), possibleFormats.end());
 
 	if (formats.empty()) {
 		_readers.insert(_readers.end(), {

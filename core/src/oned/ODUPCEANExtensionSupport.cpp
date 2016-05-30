@@ -20,6 +20,7 @@
 #include "Result.h"
 #include "BitArray.h"
 #include "TextCodec.h"
+#include "ZXStrConvWorkaround.h"
 
 #include <array>
 #include <sstream>

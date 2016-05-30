@@ -21,6 +21,9 @@
 #include "ErrorStatus.h"
 
 #include <array>
+#include <cmath>
+#include <cstdlib>
+#include <limits>
 
 namespace ZXing {
 namespace QRCode {
@@ -46,7 +49,7 @@ static bool FoundPatternCross(const StateCount& stateCount, float moduleSize)
 {
 	float maxVariance = moduleSize / 2.0f;
 	for (int i = 0; i < 3; i++) {
-		if (std::abs(moduleSize - stateCount[i]) >= maxVariance) {
+		if (std::fabs(moduleSize - stateCount[i]) >= maxVariance) {
 			return false;
 		}
 	}

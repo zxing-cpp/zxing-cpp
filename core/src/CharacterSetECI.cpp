@@ -19,6 +19,7 @@
 #include "TextCodec.h"
 
 #include <map>
+#include <cstring>
 
 namespace ZXing {
 

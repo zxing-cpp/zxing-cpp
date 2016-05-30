@@ -25,6 +25,7 @@
 #include "BitSource.h"
 #include "ErrorStatus.h"
 #include "TextCodec.h"
+#include "ZXStrConvWorkaround.h"
 
 #include <array>
 
@@ -207,7 +208,7 @@ namespace DecodedBitStreamParser {
 					if (cValue < 3) {
 						shift = cValue + 1;
 					}
-					else if (cValue < std::extent<decltype(C40_BASIC_SET_CHARS)>::value) {
+					else if (cValue < (int)std::extent<decltype(C40_BASIC_SET_CHARS)>::value) {
 						char c40char = C40_BASIC_SET_CHARS[cValue];
 						if (upperShift) {
 							result.push_back((char)(c40char + 128));
@@ -232,7 +233,7 @@ namespace DecodedBitStreamParser {
 					shift = 0;
 					break;
 				case 2:
-					if (cValue < std::extent<decltype(C40_SHIFT2_SET_CHARS)>::value) {
+					if (cValue < (int)std::extent<decltype(C40_SHIFT2_SET_CHARS)>::value) {
 						char c40char = C40_SHIFT2_SET_CHARS[cValue];
 						if (upperShift) {
 							result.push_back((char)(c40char + 128));
@@ -302,7 +303,7 @@ namespace DecodedBitStreamParser {
 					if (cValue < 3) {
 						shift = cValue + 1;
 					}
-					else if (cValue < std::extent<decltype(TEXT_BASIC_SET_CHARS)>::value) {
+					else if (cValue < (int)std::extent<decltype(TEXT_BASIC_SET_CHARS)>::value) {
 						char textChar = TEXT_BASIC_SET_CHARS[cValue];
 						if (upperShift) {
 							result.push_back((char)(textChar + 128));
@@ -328,7 +329,7 @@ namespace DecodedBitStreamParser {
 					break;
 				case 2:
 					// Shift 2 for Text is the same encoding as C40
-					if (cValue < std::extent<decltype(TEXT_SHIFT2_SET_CHARS)>::value) {
+					if (cValue < (int)std::extent<decltype(TEXT_SHIFT2_SET_CHARS)>::value) {
 						char textChar = TEXT_SHIFT2_SET_CHARS[cValue];
 						if (upperShift) {
 							result.push_back((char)(textChar + 128));
@@ -350,7 +351,7 @@ namespace DecodedBitStreamParser {
 					shift = 0;
 					break;
 				case 3:
-					if (cValue < std::extent<decltype(TEXT_SHIFT3_SET_CHARS)>::value) {
+					if (cValue < (int)std::extent<decltype(TEXT_SHIFT3_SET_CHARS)>::value) {
 						char textChar = TEXT_SHIFT3_SET_CHARS[cValue];
 						if (upperShift) {
 							result.push_back((char)(textChar + 128));

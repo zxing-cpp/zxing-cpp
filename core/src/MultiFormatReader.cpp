@@ -39,7 +39,7 @@ MultiFormatReader::MultiFormatReader(const DecodeHints& hints)
 	bool tryHarder = hints.shouldTryHarder();
 	auto possibleFormats = hints.possibleFormats();
 	if (!possibleFormats.empty()) {
-		std::unordered_set<BarcodeFormat> formats(possibleFormats.begin(), possibleFormats.end());
+		std::unordered_set<BarcodeFormat, BarcodeFormatHasher> formats(possibleFormats.begin(), possibleFormats.end());
 		bool addOneDReader =
 			formats.find(BarcodeFormat::UPC_A) != formats.end() ||
 			formats.find(BarcodeFormat::UPC_E) != formats.end() ||

@@ -34,6 +34,7 @@
 
 #include <numeric>
 #include <array>
+#include <algorithm>
 
 namespace ZXing {
 namespace Pdf417 {

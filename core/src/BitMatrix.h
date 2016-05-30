@@ -123,7 +123,7 @@ public:
 	*
 	* @param mask XOR mask
 	*/
-	void xor(const BitMatrix& mask);
+	//void xor(const BitMatrix& mask);
 
 	/**
 	* Clears all bits (sets to false).

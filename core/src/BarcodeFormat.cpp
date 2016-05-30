@@ -19,6 +19,8 @@
 
 #include <type_traits>
 #include <string>
+#include <cstring>
+#include <functional>
 
 namespace ZXing {
 
@@ -60,5 +62,9 @@ BarcodeFormat FromString(const char* str)
 	return BarcodeFormat::FORMAT_COUNT;
 }
 
+size_t BarcodeFormatHasher::operator()(BarcodeFormat f) const
+{
+	return std::hash<int>()(static_cast<int>(f));
+}
 
 } // ZXing

@@ -29,6 +29,7 @@
 #include "oned/rss/ODRSSGenericAppIdDecoder.h"
 #include "BitArray.h"
 #include "ErrorStatus.h"
+#include "ZXStrConvWorkaround.h"
 
 #include <functional>
 

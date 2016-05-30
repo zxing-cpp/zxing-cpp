@@ -208,7 +208,7 @@ static void InitBlackMatrix(const LuminanceSource& source, std::shared_ptr<const
 std::shared_ptr<const BitMatrix>
 GlobalHistogramBinarizer::getBlackMatrix() const
 {
-	std::call_once(_cache->once, &InitBlackMatrix, *_source, _cache->matrix);
+	std::call_once(_cache->once, &InitBlackMatrix, std::cref(*_source), std::ref(_cache->matrix));
 	return _cache->matrix;
 }
 

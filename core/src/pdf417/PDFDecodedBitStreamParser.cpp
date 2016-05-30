@@ -24,6 +24,7 @@
 #include "ErrorStatus.h"
 #include "DecoderResult.h"
 #include "TextCodec.h"
+#include "ZXStrConvWorkaround.h"
 
 #include <array>
 

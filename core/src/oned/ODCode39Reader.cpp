@@ -222,8 +222,8 @@ static int IndexOf(const char* str, char c)
 }
 
 Code39Reader::Code39Reader(const DecodeHints& hints, bool extendedMode) :
-	_usingCheckDigit(hints.shouldAssumeCode39CheckDigit()),
-	_extendedMode(extendedMode)
+	_extendedMode(extendedMode),
+	_usingCheckDigit(hints.shouldAssumeCode39CheckDigit())
 {
 }
 
@@ -233,7 +233,7 @@ Code39Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 	CounterContainer theCounters = {};
 	std::string result;
 	result.reserve(20);
-	int patternStart, patternEnd;
+	int patternStart = 0, patternEnd = 0;
 	ErrorStatus status = FindAsteriskPattern(row, theCounters, patternStart, patternEnd);
 	if (StatusIsError(status)) {
 		return Result(status);

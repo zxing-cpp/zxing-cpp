@@ -62,6 +62,7 @@
  */
 
 #include <vector>
+#include <cstdint>
 
 class JPCodecs
 {

@@ -454,17 +454,6 @@ BigInteger::Multiply(const BigInteger &a, const BigInteger &b, BigInteger& c)
 	MulMag(a.mag, b.mag, c.mag);
 }
 
-static int GetBitLen(uint32_t x)
-{
-	return x == 0 ? 0 : BitHacks::HighestBitSet(x) + 1;
-	int len = 0;
-	while (x > 0) {
-		x >>= 1;
-		len++;
-	}
-	return len;
-}
-
 size_t ceilingDiv(size_t a, size_t b) {
 	return (a + b - 1) / b;
 }

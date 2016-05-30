@@ -20,6 +20,7 @@
 #include "BitArray.h"
 #include "DecodeHints.h"
 #include "TextCodec.h"
+#include "ZXStrConvWorkaround.h"
 
 #include <algorithm>
 #include <string>
@@ -241,7 +242,7 @@ Code128Reader::Code128Reader(const DecodeHints& hints) :
 Result
 Code128Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const
 {
-	int patternStart, patternEnd, startCode;
+	int patternStart = 0, patternEnd = 0, startCode = 0;
 	ErrorStatus status = FindStartPattern(row, patternStart, patternEnd, startCode);
 	if (StatusIsError(status)) {
 		return Result(status);

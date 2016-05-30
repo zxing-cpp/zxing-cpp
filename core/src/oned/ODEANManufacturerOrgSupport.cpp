@@ -16,9 +16,11 @@
 */
 
 #include "oned/ODEANManufacturerOrgSupport.h"
+#include "ZXStrConvWorkaround.h"
 
 #include <algorithm>
 #include <type_traits>
+#include <string>
 
 namespace ZXing {
 namespace OneD {

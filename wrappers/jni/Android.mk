@@ -8,11 +8,13 @@ LOCAL_CFLAGS += -Wall
 LOCAL_CPPFLAGS += -std=c++11
 
 LOCAL_SRC_FILES := \
+	JNIUtils.cpp \
 	BarcodeReader.cpp
 
 LOCAL_CPP_FEATURES += rtti exceptions
 
 LOCAL_STATIC_LIBRARIES := zxing_core
+LOCAL_LDLIBS := -llog -ljnigraphics
 
 include $(BUILD_SHARED_LIBRARY)
 

@@ -21,6 +21,11 @@
 #include "DecodeHints.h"
 #include "ErrorStatus.h"
 
+#include <cmath>
+#include <cstdlib>
+#include <limits>
+#include <algorithm>
+
 namespace ZXing {
 namespace QRCode {
 

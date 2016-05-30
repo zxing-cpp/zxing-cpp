@@ -19,6 +19,7 @@
 #include "BitHacks.h"
 
 #include <array>
+#include <limits>
 
 namespace ZXing {
 namespace QRCode {

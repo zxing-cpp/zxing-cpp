@@ -20,6 +20,8 @@
 #include "BitHacks.h"
 #include "BitMatrix.h"
 
+#include <limits>
+
 namespace ZXing {
 namespace QRCode {
 

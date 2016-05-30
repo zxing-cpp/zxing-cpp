@@ -16,6 +16,8 @@
 */
 
 #include <utility>
+#include <cstddef>
+#include <stdexcept>
 
 namespace ZXing {
 
@@ -29,7 +31,7 @@ public:
 	Nullable() : m_hasValue(false) {}
 	Nullable(const T &value) : m_hasValue(true), m_value(value) {}
 	Nullable(T &&value) : m_hasValue(true), m_value(std::move(value)) {}
-	Nullable(nullptr_t) : m_hasValue(false) {}
+	Nullable(std::nullptr_t) : m_hasValue(false) {}
 	
 	Nullable<T> & operator=(const T &value) {
 		m_hasValue = true;
@@ -43,7 +45,7 @@ public:
 		return *this;
 	}
 
-	Nullable<T> & operator=(nullptr_t) {
+	Nullable<T> & operator=(std::nullptr_t) {
 		m_hasValue = false;
 		m_value = T();
 		return *this;
@@ -89,17 +91,17 @@ public:
 		return !(v == a);
 	}
 
-	friend inline bool operator==(const Nullable &a, nullptr_t) {
+	friend inline bool operator==(const Nullable &a, std::nullptr_t) {
 		return !a.m_hasValue;
 	}
-	friend inline bool operator!=(const Nullable &a, nullptr_t) {
+	friend inline bool operator!=(const Nullable &a, std::nullptr_t) {
 		return a.m_hasValue;
 	}
 
-	friend inline bool operator==(nullptr_t, const Nullable &a) {
+	friend inline bool operator==(std::nullptr_t, const Nullable &a) {
 		return !a.m_hasValue;
 	}
-	friend inline bool operator!=(nullptr_t, const Nullable &a) {
+	friend inline bool operator!=(std::nullptr_t, const Nullable &a) {
 		return a.m_hasValue;
 	}
 

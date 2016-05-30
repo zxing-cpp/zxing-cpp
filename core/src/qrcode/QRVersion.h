@@ -69,9 +69,7 @@ public:
 	
 	static const Version* VersionForNumber(int versionNumber);
 
-	static const Version* Version::DecodeVersionInformation(int versionBits);
-
-
+	static const Version* DecodeVersionInformation(int versionBits);
 	
 private:
 	int _versionNumber;

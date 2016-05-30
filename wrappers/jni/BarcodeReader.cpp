@@ -15,14 +15,37 @@
 */
 
 #include "JNIUtils.h"
+#include "MultiFormatReader.h"
+#include "DecodeHints.h"
+#include "Result.h"
 
-extern "C" JNIEXPORT jobject JNICALL
-Java_com_zxing_BarcodeReader_read(JNIEnv* env, jobject thiz, jobject bitmap, int cropWidth, int cropHeight)
+#include <vector>
+
+static std::vector<ZXing::BarcodeFormat> GetFormats(JNIEnv* env, jintArray formats)
 {
-	jobject result = nullptr;
+	std::vector<ZXing::BarcodeFormat> result;
+	jsize len = env->GetArrayLength(formats);
+	if (len > 0) {
+		std::vector<jint> elems(len);
+		env->GetIntArrayRegion(formats, 0, elems.size(), elems.data());
+		result.resize(len);
+		for (jsize i = 0; i < len; ++i) {
+			result[i] = ZXing::BarcodeFormat(elems[i]);
+		}
+	}
+	return result;
+}
+
+extern "C" JNIEXPORT jlong JNICALL
+Java_com_zxing_BarcodeReader_createInstance(JNIEnv* env, jobject thiz, jintArray formats)
+{
 	try
 	{
-		
+		ZXing::DecodeHints hints;
+		if (formats != nullptr) {
+			hints.setPossibleFormats(GetFormats(env, formats));
+		}
+		return reinterpret_cast<jlong>(new ZXing::MultiFormatReader(hints));
 	}
 	catch (const std::exception& e)
 	{
@@ -32,5 +55,46 @@ Java_com_zxing_BarcodeReader_read(JNIEnv* env, jobject thiz, jobject bitmap, int
 	{
 		ThrowJavaException(env, "Unknown exception");
 	}
-	return result;
+	return 0;
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_zxing_BarcodeReader_destroyInstance(JNIEnv* env, jobject thiz, jlong objPtr)
+{
+	try
+	{
+		delete reinterpret_cast<ZXing::MultiFormatReader*>(objPtr);
+	}
+	catch (const std::exception& e)
+	{
+		ThrowJavaException(env, e.what());
+	}
+	catch (...)
+	{
+		ThrowJavaException(env, "Unknown exception");
+	}
+}
+
+extern "C" JNIEXPORT jint JNICALL
+Java_com_zxing_BarcodeReader_readBarcode(JNIEnv* env, jobject thiz, jlong objPtr, jobject bitmap, jint left, jint top, jint width, jint height, jobjectArray result)
+{
+	try
+	{
+		auto reader = reinterpret_cast<ZXing::MultiFormatReader*>(objPtr);
+		auto binImage = BinaryBitmapFromJavaBitmap(env, bitmap, left, top, width, height);
+		auto readResult = reader->read(*binImage);
+		if (readResult.isValid()) {
+			env->SetObjectArrayElement(result, 0, ToJavaString(env, readResult.text()));
+			return static_cast<int>(readResult.format());
+		}
+	}
+	catch (const std::exception& e)
+	{
+		ThrowJavaException(env, e.what());
+	}
+	catch (...)
+	{
+		ThrowJavaException(env, "Unknown exception");
+	}
+	return -1;
 }

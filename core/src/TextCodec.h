@@ -79,7 +79,7 @@ public:
 		str.append(ptr, ptr + latin1.length());
 	}
 	
-	static std::wstring FromLatin1(std::string& latin1) {
+	static std::wstring FromLatin1(const std::string& latin1) {
 		auto ptr = (const uint8_t*)latin1.data();
 		return std::wstring(ptr, ptr + latin1.length());
 	}

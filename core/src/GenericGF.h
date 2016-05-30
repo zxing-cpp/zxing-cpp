@@ -18,6 +18,7 @@
 
 #include "GenericGFPoly.h"
 #include <vector>
+#include <stdexcept>
 
 namespace ZXing {
 

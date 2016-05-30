@@ -18,6 +18,8 @@
 #include "BitMatrix.h"
 #include "BitArray.h"
 
+#include <stdexcept>
+
 namespace ZXing {
 
 void
@@ -40,18 +42,18 @@ BitMatrix::copyTo(BitMatrix& other) const {
 	}
 }
 
-void
-BitMatrix::xor(const BitMatrix& mask)
-{
-	if (_width != mask._width || _height != mask._height || _rowSize != mask._rowSize)
-	{
-		throw std::invalid_argument("BitMatrix::xor(): input matrix dimensions do not match");
-	}
-	
-	for (size_t i = 0; i < _bits.size(); ++i) {
-		_bits[i] ^= mask._bits[i];
-	}
-}
+//void
+//BitMatrix::xor(const BitMatrix& mask)
+//{
+//	if (_width != mask._width || _height != mask._height || _rowSize != mask._rowSize)
+//	{
+//		throw std::invalid_argument("BitMatrix::xor(): input matrix dimensions do not match");
+//	}
+//	
+//	for (size_t i = 0; i < _bits.size(); ++i) {
+//		_bits[i] ^= mask._bits[i];
+//	}
+//}
 
 void
 BitMatrix::getRow(int y, BitArray& row) const
@@ -71,7 +73,7 @@ BitMatrix::getRow(int y, BitArray& row) const
 void
 BitMatrix::setRow(int y, const BitArray& row)
 {
-	if (row._bits.size() != _rowSize) {
+	if (int(row._bits.size()) != _rowSize) {
 		throw std::invalid_argument("BitMatrix::setRegion(): row sizes do not match");
 	}
 	std::copy(row._bits.begin(), row._bits.end(), _bits.begin() + y *_rowSize);
@@ -193,7 +195,7 @@ BitMatrix::getTopLeftOnBit(int& left, int& top) const
 	while (bitsOffset < (int)_bits.size() && _bits[bitsOffset] == 0) {
 		bitsOffset++;
 	}
-	if (bitsOffset == _bits.size()) {
+	if (bitsOffset == (int)_bits.size()) {
 		return false;
 	}
 	top = bitsOffset / _rowSize;

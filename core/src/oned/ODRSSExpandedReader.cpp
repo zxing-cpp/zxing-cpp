@@ -28,6 +28,7 @@
 #include <array>
 #include <vector>
 #include <numeric>
+#include <algorithm>
 
 namespace ZXing {
 namespace OneD {
@@ -450,7 +451,7 @@ RetrieveNextPair(const BitArray& row, const std::list<ExpandedPair>& previousPai
 	bool keepFinding = true;
 	int forcedOffset = -1;
 	do {
-		int patternStart, patternEnd;
+		int patternStart = 0, patternEnd = 0;
 		std::array<int, 4> counters = {};
 		if (FindNextPair(row, previousPairs, forcedOffset, startFromEven, counters, patternStart, patternEnd)) {
 			pattern = ParseFoundFinderPattern(row, rowNumber, isOddPattern, patternStart, patternEnd, counters);
@@ -605,6 +606,19 @@ StoreRow(std::list<ExpandedRow>& rows, const std::list<ExpandedPair>& pairs, int
 	RemovePartialRows(rows, pairs);
 }
 
+// Whether the pairs form a valid find pattern seqience,
+// either complete or a prefix
+static bool
+IsValidSequence(const std::list<ExpandedPair>& pairs)
+{
+	for (auto& sequence : FINDER_PATTERN_SEQUENCES) {
+		if (pairs.size() <= sequence.size() && std::equal(pairs.begin(), pairs.end(), sequence.begin(), [](const ExpandedPair& p, int seq) { return p.finderPattern().value() == seq; })) {
+			return true;
+		}
+	}
+	return false;
+}
+
 // Try to construct a valid rows sequence
 // Recursion is used to implement backtracking
 template <typename RowIterator>
@@ -656,21 +670,6 @@ CheckRows(std::list<ExpandedRow>& rows, bool reverse) {
 		CheckRows(rows.rbegin(), rows.rend(), std::list<ExpandedRow>()) :
 		CheckRows(rows.begin(), rows.end(), std::list<ExpandedRow>());
 }
-
-// Whether the pairs form a valid find pattern seqience,
-// either complete or a prefix
-static bool
-IsValidSequence(const std::list<ExpandedPair>& pairs)
-{
-	for (auto& sequence : FINDER_PATTERN_SEQUENCES) {
-		if (pairs.size() <= sequence.size() && std::equal(pairs.begin(), pairs.end(), sequence.begin(), [](const ExpandedPair& p, int seq) { return p.finderPattern().value() == seq; })) {
-			return true;
-		}
-	}
-	return false;
-}
-
-
 
 // Not private for testing
 static std::list<ExpandedPair>

@@ -165,7 +165,7 @@ ITFReader::FindGuardPattern(const BitArray& row, int offset, const int* pattern,
 			counters[counterPosition]++;
 		}
 		else {
-			if (counterPosition == patternLength - 1) {
+			if (counterPosition == int(patternLength) - 1) {
 				if (PatternMatchVariance(counters.data(), pattern, patternLength, MAX_INDIVIDUAL_VARIANCE) < MAX_AVG_VARIANCE) {
 					begin = patternStart;
 					end = offset;

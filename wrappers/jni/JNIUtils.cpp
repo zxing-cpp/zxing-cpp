@@ -14,13 +14,12 @@
 * limitations under the License.
 */
 #include "JNIUtils.h"
-#include "GenericLumuninanceSource.h"
+#include "GenericLuminanceSource.h"
 #include "HybridBinarizer.h"
 
 #include <android/bitmap.h>
 #include <stdexcept>
-
-namespace ZXing {
+#include <vector>
 
 namespace {
 
@@ -37,15 +36,17 @@ namespace {
 
 } // anonymous
 
-std::shared_ptr<BinaryBitmap> CreateBinaryBitmap(JNIEnv* env, jobject bitmap, int cropWidth, int cropHeight)
+std::shared_ptr<ZXing::BinaryBitmap> BinaryBitmapFromJavaBitmap(JNIEnv* env, jobject bitmap, int cropLeft, int cropTop, int cropWidth, int cropHeight)
 {
+	using namespace ZXing;
+	
 	AndroidBitmapInfo bmInfo;
 	AndroidBitmap_getInfo(env, bitmap, &bmInfo);
 
-	cropWidth = cropWidth <= 0 ? (int)bmInfo.width : std::min((int)bmInfo.width, cropWidth);
-	cropHeight = cropHeight <= 0 ? (int)bmInfo.height : std::min((int)bmInfo.height, cropHeight);
-	int cropLeft = ((int)bmInfo.width - cropWidth) / 2;
-	int cropTop = ((int)bmInfo.height - cropHeight) / 2;
+	cropLeft = std::max(0, cropLeft);
+	cropTop = std::max(0, cropTop);
+	cropWidth = cropWidth < 0 ? ((int)bmInfo.width - cropLeft) : std::min((int)bmInfo.width - cropLeft, cropWidth);
+	cropHeight = cropHeight < 0 ? ((int)bmInfo.height - cropTop) : std::min((int)bmInfo.height - cropTop, cropHeight);
 
 	void *pixels = nullptr;
 	if (AndroidBitmap_lockPixels(env, bitmap, &pixels) == ANDROID_BITMAP_RESUT_SUCCESS)
@@ -56,10 +57,10 @@ std::shared_ptr<BinaryBitmap> CreateBinaryBitmap(JNIEnv* env, jobject bitmap, in
 		switch (bmInfo.format)
 		{
 			case ANDROID_BITMAP_FORMAT_A_8:
-				luminance = std::make_shared<GenericLuminanceSource>(cropLeft, cropTop, cropWidth, cropHeight, inBytes, inBuffer->GetPlaneDescription(0).Stride);
+				luminance = std::make_shared<GenericLuminanceSource>(cropLeft, cropTop, cropWidth, cropHeight, pixels, bmInfo.stride);
 				break;
 			case ANDROID_BITMAP_FORMAT_RGBA_8888:
-				luminance = std::make_shared<GenericLuminanceSource>(cropLeft, cropTop, cropWidth, cropHeight, inBytes, inBuffer->GetPlaneDescription(0).Stride, 4, 0, 1, 2);
+				luminance = std::make_shared<GenericLuminanceSource>(cropLeft, cropTop, cropWidth, cropHeight, pixels, bmInfo.stride, 4, 0, 1, 2);
 				break;
 			default:
 				throw std::runtime_error("Unsupported format");
@@ -78,4 +79,48 @@ void ThrowJavaException(JNIEnv* env, const char* message)
 	env->ThrowNew(jcls, message);
 }
 
-} // ZXing
+static bool RequiresSurrogates(uint32_t ucs4)
+{
+	return ucs4 >= 0x10000;
+}
+
+static uint16_t HighSurrogate(uint32_t ucs4)
+{
+	return uint16_t((ucs4 >> 10) + 0xd7c0);
+}
+
+static uint16_t LowSurrogate(uint32_t ucs4)
+{
+	return uint16_t(ucs4 % 0x400 + 0xdc00);
+}
+	
+static void Utf32toUtf16(const uint32_t* utf32, size_t length, std::vector<uint16_t>& result)
+{
+	result.clear();
+	result.reserve(length);
+	for (size_t i = 0; i < length; ++i)
+	{
+		uint32_t c = utf32[i];
+		if (RequiresSurrogates(c))
+		{
+			result.push_back(HighSurrogate(c));
+			result.push_back(LowSurrogate(c));
+		}
+		else
+		{
+			result.push_back(c);
+		}
+	}
+}
+
+jstring ToJavaString(JNIEnv* env, const std::wstring& str)
+{
+	if (sizeof(wchar_t) == 2) {
+		return env->NewString((const jchar*)str.data(), str.size());
+	}
+	else {
+		std::vector<uint16_t> buffer;
+		Utf32toUtf16((const uint32_t*)str.data(), str.size(), buffer);
+		return env->NewString((const jchar*)buffer.data(), buffer.size());
+	}
+}

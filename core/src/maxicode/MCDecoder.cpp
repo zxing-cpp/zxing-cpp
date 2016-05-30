@@ -23,10 +23,12 @@
 #include "GenericGF.h"
 #include "ErrorStatus.h"
 #include "TextCodec.h"
+#include "ZXStrConvWorkaround.h"
 
 #include <array>
 #include <sstream>
 #include <iomanip>
+#include <algorithm>
 
 namespace ZXing {
 namespace MaxiCode {
@@ -221,7 +223,8 @@ namespace DecodedBitStreamParser
 				shift = 3;
 				break;
 			case NS:
-				sb.append(ToString((bytes[++i] << 24) + (bytes[++i] << 18) + (bytes[++i] << 12) + (bytes[++i] << 6) + bytes[++i], 9));
+				sb.append(ToString((bytes[i+1] << 24) + (bytes[i+2] << 18) + (bytes[i+3] << 12) + (bytes[i+4] << 6) + bytes[i+5], 9));
+				i += 5;
 				break;
 			case LOCK:
 				shift = -1;

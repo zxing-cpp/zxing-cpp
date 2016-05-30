@@ -25,6 +25,8 @@
 #include "Result.h"
 
 #include <vector>
+#include <cstdlib>
+#include <algorithm>
 
 namespace ZXing {
 namespace Pdf417 {

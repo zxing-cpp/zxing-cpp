@@ -117,7 +117,7 @@ UPCEANReader::DoFindGuardPattern(const BitArray& row, int rowOffset, bool whiteF
 			counters[counterPosition]++;
 		}
 		else {
-			if (counterPosition == length - 1) {
+			if (counterPosition == int(length) - 1) {
 				if (PatternMatchVariance(counters, pattern, length, MAX_INDIVIDUAL_VARIANCE) < MAX_AVG_VARIANCE) {
 					begin = patternStart;
 					end = rowOffset;

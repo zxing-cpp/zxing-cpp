@@ -92,7 +92,6 @@ CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
 	return status;
 }
 
-#pragma region DecodedBitStreamParser
 
 /**
 * See specification GBT 18284-2000
@@ -175,8 +174,7 @@ DecodeByteSegment(BitSource& bits, int count, CharacterSet currentCharset, const
 	for (int i = 0; i < count; i++) {
 		readBytes[i] = static_cast<uint8_t>(bits.readBits(8));
 	}
-	const char* encoding = nullptr;
-	if (currentCharset == CharacterSet::Unknown) {
+ 	if (currentCharset == CharacterSet::Unknown) {
 		// The spec isn't clear on this mode; see
 		// section 6.4.5: t does not say which encoding to assuming
 		// upon decoding. I have seen ISO-8859-1 used as well as
@@ -439,8 +437,6 @@ DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionL
 	decodeResult.setStructuredAppendParity(parityData);
 	return ErrorStatus::NoError;
 }
-
-#pragma endregion
 
 
 static ErrorStatus

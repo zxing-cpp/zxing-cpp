@@ -18,6 +18,8 @@
 
 #include "PDFModulusPoly.h"
 
+#include <stdexcept>
+
 namespace ZXing {
 namespace Pdf417 {
 

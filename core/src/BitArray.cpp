@@ -19,6 +19,7 @@
 #include "BitHacks.h"
 
 #include <algorithm>
+#include <stdexcept>
 
 namespace ZXing {
 
@@ -34,7 +35,7 @@ BitArray::getNextSet(int from) const
 	// mask off lesser bits first
 	currentBits &= ~((1 << (from & 0x1F)) - 1);
 	while (currentBits == 0) {
-		if (++bitsOffset == _bits.size()) {
+		if (++bitsOffset == (int)_bits.size()) {
 			return _size;
 		}
 		currentBits = _bits[bitsOffset];
@@ -55,7 +56,7 @@ BitArray::getNextUnset(int from) const
 	// mask off lesser bits first
 	currentBits &= ~((1 << (from & 0x1F)) - 1);
 	while (currentBits == 0) {
-		if (++bitsOffset == _bits.size()) {
+		if (++bitsOffset == (int)_bits.size()) {
 			return _size;
 		}
 		currentBits = ~_bits[bitsOffset];
@@ -108,9 +109,9 @@ BitArray::isRange(int start, int end, bool value) const
 	for (int i = firstInt; i <= lastInt; i++) {
 		int firstBit = i > firstInt ? 0 : start & 0x1F;
 		int lastBit = i < lastInt ? 31 : end & 0x1F;
-		int mask;
+		uint32_t mask;
 		if (firstBit == 0 && lastBit == 31) {
-			mask = -1;
+			mask = 0xffffffff;
 		}
 		else {
 			mask = 0;
@@ -121,7 +122,7 @@ BitArray::isRange(int start, int end, bool value) const
 
 		// Return false if we're looking for 1s and the masked bits[i] isn't all 1s (that is,
 		// equals the mask, or we're looking for 0s and the masked portion is not all 0s
-		if ((_bits[i] & mask) != (value ? mask : 0)) {
+		if ((_bits[i] & mask) != (value ? mask : 0U)) {
 			return false;
 		}
 	}
@@ -167,16 +168,16 @@ BitArray::appendBitArray(const BitArray& other)
 	}
 }
 
-void
-BitArray::xor(const BitArray& other)
-{
-	if (_bits.size() != other._bits.size()) {
-		throw std::invalid_argument("BitArray::xor(): Sizes don't match");
-	}
-	for (size_t i = 0; i < _bits.size(); i++) {
-		_bits[i] ^= other._bits[i];
-	}
-}
+//void
+//BitArray::xor(const BitArray& other)
+//{
+//	if (_bits.size() != other._bits.size()) {
+//		throw std::invalid_argument("BitArray::xor(): Sizes don't match");
+//	}
+//	for (size_t i = 0; i < _bits.size(); i++) {
+//		_bits[i] ^= other._bits[i];
+//	}
+//}
 
 //ByteArray
 //BitArray::toBytes(int bitOffset, int offset, int numBytes) const

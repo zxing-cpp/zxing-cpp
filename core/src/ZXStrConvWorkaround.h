@@ -1,3 +1,4 @@
+#pragma once
 /*
 * Copyright 2016 Nu-book Inc.
 *
@@ -13,17 +14,31 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+#if defined(__ANDROID__) && defined(__GNUC__)
 
-#include "ErrorStatus.h"
-#include "BitHacks.h"
+#include <sstream>
+#include <cstdlib>
 
-namespace ZXing {
-
-bool
-StatusIsKindOf(ErrorStatus status, ErrorStatus group)
+namespace std
 {
-	int shift = BitHacks::NumberOfTrailingZeros(static_cast<uint32_t>(group));
-	return (static_cast<uint32_t>(status) >> shift) == (static_cast<uint32_t>(group) >> shift);
+	template <typename T>
+	inline std::string to_string(T x) {
+		std::stringstream buf;
+		buf << x;
+		return buf.str();
+	}
+	
+	template <typename T>
+	inline std::wstring to_wstring(T x) {
+		std::wstringstream buf;
+		buf << x;
+		return buf.str();
+	}
+	
+	inline int stoi(const std::string& s) {
+		return atoi(s.c_str());
+	}
 }
 
-} // ZXing
+
+#endif

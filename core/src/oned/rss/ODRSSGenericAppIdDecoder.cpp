@@ -19,8 +19,10 @@
 #include "oned/rss/ODRSSFieldParser.h"
 #include "BitArray.h"
 #include "ErrorStatus.h"
+#include "ZXStrConvWorkaround.h"
 
 #include <algorithm>
+#include <stdexcept>
 
 namespace ZXing {
 namespace OneD {

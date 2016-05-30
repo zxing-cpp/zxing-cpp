@@ -20,6 +20,7 @@
 
 #include <vector>
 #include <numeric>
+#include <limits>
 
 namespace ZXing {
 namespace Pdf417 {
@@ -62,7 +63,7 @@ static void SampleBitCounts(const ModuleBitCountType& moduleBitCount, ModuleBitC
 		if (sumPreviousBits + moduleBitCount[bitCountIndex] <= sampleIndex) {
 			sumPreviousBits += moduleBitCount[bitCountIndex];
 			bitCountIndex++;
-			if (bitCountIndex == moduleBitCount.size()) { // this check is not done in original code, so I guess this should not happen?
+			if (bitCountIndex == (int)moduleBitCount.size()) { // this check is not done in original code, so I guess this should not happen?
 				break;
 			}
 		}

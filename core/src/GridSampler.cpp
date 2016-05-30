@@ -75,7 +75,7 @@ static ErrorStatus CheckAndNudgePoints(const BitMatrix& image, std::vector<float
 		int x = (int)points[offset];
 		int y = (int)points[offset + 1];
 		if (x < -1 || x > width || y < -1 || y > height) {
-			false;
+			return ErrorStatus::NotFound;
 		}
 		nudged = false;
 		if (x == -1) {
@@ -117,7 +117,7 @@ public:
 	virtual ErrorStatus sampleGrid(const BitMatrix& image, int dimensionX, int dimensionY, const PerspectiveTransform& transform, BitMatrix& result) const override
 	{
 		if (dimensionX <= 0 || dimensionY <= 0) {
-			false;
+			return ErrorStatus::NotFound;
 		}
 		result.init(dimensionX, dimensionY);
 		int max = 2 * dimensionX;
