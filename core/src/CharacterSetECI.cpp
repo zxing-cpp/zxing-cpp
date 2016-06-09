@@ -16,7 +16,7 @@
 */
 
 #include "CharacterSetECI.h"
-#include "TextCodec.h"
+#include "CharacterSet.h"
 
 #include <map>
 #include <cstring>

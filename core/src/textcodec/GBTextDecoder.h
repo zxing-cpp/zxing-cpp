@@ -35,8 +35,9 @@
 #include <vector>
 #include <cstdint>
 
-class Big5Codecs
+class GBTextDecoder
 {
 public:
-	static void AppendBig5(std::vector<uint16_t>& utf16, const uint8_t* bytes, size_t length);
+	static void AppendGB18030(std::vector<uint16_t>& utf16, const uint8_t* bytes, size_t length);
+	static void AppendGB2312(std::vector<uint16_t>& utf16, const uint8_t* bytes, size_t length);
 };

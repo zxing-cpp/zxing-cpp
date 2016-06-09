@@ -22,7 +22,7 @@
 #include "ReedSolomonDecoder.h"
 #include "GenericGF.h"
 #include "ErrorStatus.h"
-#include "TextCodec.h"
+#include "TextDecoder.h"
 #include "ZXStrConvWorkaround.h"
 
 #include <array>
@@ -269,7 +269,7 @@ namespace DecodedBitStreamParser
 				break;
 		}
 		decodeResult.setRawBytes(bytes);
-		decodeResult.setText(TextCodec::FromLatin1(result));
+		decodeResult.setText(TextDecoder::FromLatin1(result));
 		decodeResult.setEcLevel(std::to_wstring(mode)); // really???
 		return ErrorStatus::NoError;
 	}

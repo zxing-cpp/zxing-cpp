@@ -27,7 +27,8 @@
 #include <sstream>
 
 #include "BarcodeScanner.h"
-#include "../../core/src/TextCodec.h"
+#include "../../core/src/TextDecoder.h"
+#include "../../core/src/TextUtfEncoding.h"
 
 const char* GetFileName(const char* filePath)
 {
@@ -130,9 +131,9 @@ bool CheckResult(std::string imgPath, const std::string& expectedFormat, const Z
 	imgPath.replace(imgPath.size() - 4, 4, ".bin");
 	std::ifstream latin1Stream(imgPath, std::ios::binary);
 	if (latin1Stream) {
-		std::wstring rawStr = ZXing::TextCodec::FromLatin1(std::string((std::istreambuf_iterator<char>(latin1Stream)), std::istreambuf_iterator<char>()));
+		std::wstring rawStr = ZXing::TextDecoder::FromLatin1(std::string((std::istreambuf_iterator<char>(latin1Stream)), std::istreambuf_iterator<char>()));
 		std::string expected;
-		ZXing::TextCodec::ToUtf8(rawStr, expected);
+		ZXing::TextUtfEncoding::ToUtf8(rawStr, expected);
 		if (result.text != expected) {
 			log += "Content mismatch: expected " + expected + " but got " + result.text + "\n";
 			return false;

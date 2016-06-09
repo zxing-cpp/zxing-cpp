@@ -19,7 +19,7 @@
 #include "Result.h"
 #include "BitArray.h"
 #include "DecodeHints.h"
-#include "TextCodec.h"
+#include "TextDecoder.h"
 
 #include <array>
 
@@ -316,7 +316,7 @@ CodabarReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Dec
 	}
 	float right = static_cast<float>(runningCount);
 	float ypos = static_cast<float>(rowNumber);
-	return Result(TextCodec::FromLatin1(decodeRowResult), ByteArray(), { ResultPoint(left, ypos), ResultPoint(right, ypos) }, BarcodeFormat::CODABAR);
+	return Result(TextDecoder::FromLatin1(decodeRowResult), ByteArray(), { ResultPoint(left, ypos), ResultPoint(right, ypos) }, BarcodeFormat::CODABAR);
 }
 
 } // OneD

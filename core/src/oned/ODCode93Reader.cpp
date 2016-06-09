@@ -19,7 +19,7 @@
 #include "Result.h"
 #include "BitArray.h"
 #include "ZXNumeric.h"
-#include "TextCodec.h"
+#include "TextDecoder.h"
 
 #include <array>
 
@@ -312,7 +312,7 @@ Code93Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 	float left = 0.5f * static_cast<float>(patternStart + patternEnd);
 	float right = static_cast<float>(lastStart) + 0.5f * static_cast<float>(lastPatternSize);
 	float ypos = static_cast<float>(rowNumber);
-	return Result(TextCodec::FromLatin1(resultString), ByteArray(), { ResultPoint(left, ypos), ResultPoint(right, ypos) }, BarcodeFormat::CODE_93);
+	return Result(TextDecoder::FromLatin1(resultString), ByteArray(), { ResultPoint(left, ypos), ResultPoint(right, ypos) }, BarcodeFormat::CODE_93);
 }
 
 

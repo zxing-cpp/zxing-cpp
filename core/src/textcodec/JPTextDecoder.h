@@ -64,7 +64,7 @@
 #include <vector>
 #include <cstdint>
 
-class JPCodecs
+class JPTextDecoder
 {
 public:
 	static void AppendShiftJIS(std::vector<uint16_t>& utf16, const uint8_t* bytes, size_t length);

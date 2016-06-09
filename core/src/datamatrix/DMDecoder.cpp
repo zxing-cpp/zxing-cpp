@@ -24,7 +24,7 @@
 #include "GenericGF.h"
 #include "BitSource.h"
 #include "ErrorStatus.h"
-#include "TextCodec.h"
+#include "TextDecoder.h"
 #include "ZXStrConvWorkaround.h"
 
 #include <array>
@@ -550,7 +550,7 @@ namespace DecodedBitStreamParser {
 			result.append(resultTrailer);
 		}
 		decodeResult.setRawBytes(bytes);
-		decodeResult.setText(TextCodec::FromLatin1(result));
+		decodeResult.setText(TextDecoder::FromLatin1(result));
 		decodeResult.setByteSegments(byteSegments);
 		return ErrorStatus::NoError;
 	}

@@ -357,7 +357,7 @@ Version::DecodeVersionInformation(int versionBits)
 * See ISO 18004:2006 Annex E
 */
 void
-Version::buildFunctionPattern(BitMatrix &bitMatrix) const
+Version::buildFunctionPattern(BitMatrix& bitMatrix) const
 {
 	int dimension = dimensionForVersion();
 	bitMatrix.init(dimension, dimension);

@@ -28,7 +28,8 @@
 #include "ReedSolomonDecoder.h"
 #include "GenericGF.h"
 #include "BitSource.h"
-#include "TextCodec.h"
+#include "TextDecoder.h"
+#include "CharacterSet.h"
 #include "CharacterSetECI.h"
 #include "DecodeHints.h"
 #include "ErrorStatus.h"
@@ -38,25 +39,6 @@
 
 namespace ZXing {
 namespace QRCode {
-
-//
-//public DecoderResult decode(boolean[][] image, Map<DecodeHintType, ? > hints)
-//throws ChecksumException, FormatException{
-//	int dimension = image.length;
-//BitMatrix bits = new BitMatrix(dimension);
-//for (int i = 0; i < dimension; i++) {
-//	for (int j = 0; j < dimension; j++) {
-//		if (image[i][j]) {
-//			bits.set(j, i);
-//		}
-//	}
-//}
-//return decode(bits, hints);
-//}
-//
-//public DecoderResult decode(BitMatrix bits) throws ChecksumException, FormatException{
-//	return decode(bits, null);
-//}
 
 /**
 * <p>Given data and error-correction codewords received, possibly corrupted by errors, attempts to
@@ -125,7 +107,7 @@ DecodeHanziSegment(BitSource& bits, int count, std::wstring& result)
 		count--;
 	}
 
-	TextCodec::Append(result, buffer.data(), buffer.length(), CharacterSet::GB2312);
+	TextDecoder::Append(result, buffer.data(), buffer.length(), CharacterSet::GB2312);
 	return ErrorStatus::NoError;
 }
 
@@ -158,7 +140,7 @@ DecodeKanjiSegment(BitSource& bits, int count, std::wstring& result)
 		count--;
 	}
 
-	TextCodec::Append(result, buffer.data(), buffer.length(), CharacterSet::Shift_JIS);
+	TextDecoder::Append(result, buffer.data(), buffer.length(), CharacterSet::Shift_JIS);
 	return ErrorStatus::NoError;
 }
 
@@ -186,10 +168,10 @@ DecodeByteSegment(BitSource& bits, int count, CharacterSet currentCharset, const
 		}
 		if (currentCharset == CharacterSet::Unknown)
 		{
-			currentCharset = TextCodec::GuessEncoding(readBytes.data(), readBytes.length());
+			currentCharset = TextDecoder::GuessEncoding(readBytes.data(), readBytes.length());
 		}
 	}
-	TextCodec::Append(result, readBytes.data(), readBytes.length(), currentCharset);
+	TextDecoder::Append(result, readBytes.data(), readBytes.length(), currentCharset);
 	byteSegments.push_back(readBytes);
 	return ErrorStatus::NoError;
 }
@@ -250,7 +232,7 @@ DecodeAlphanumericSegment(BitSource& bits, int count, bool fc1InEffect, std::wst
 			}
 		}
 	}
-	TextCodec::AppendLatin1(result, buffer);
+	TextDecoder::AppendLatin1(result, buffer);
 	return ErrorStatus::NoError;
 }
 
@@ -297,7 +279,7 @@ DecodeNumericSegment(BitSource& bits, int count, std::wstring& result)
 		buffer += ToAlphaNumericChar(digitBits);
 	}
 
-	TextCodec::AppendLatin1(result, buffer);
+	TextDecoder::AppendLatin1(result, buffer);
 	return ErrorStatus::NoError;
 }
 

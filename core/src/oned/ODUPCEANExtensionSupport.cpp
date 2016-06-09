@@ -19,7 +19,7 @@
 #include "oned/ODUPCEANReader.h"
 #include "Result.h"
 #include "BitArray.h"
-#include "TextCodec.h"
+#include "TextDecoder.h"
 #include "ZXStrConvWorkaround.h"
 
 #include <array>
@@ -150,7 +150,7 @@ namespace UPCEANExtension5Support
 		if (raw.length() == 5) {
 			std::string value = ParseExtension5String(raw);
 			if (!value.empty()) {
-				result.metadata().put(ResultMetadata::SUGGESTED_PRICE, TextCodec::FromLatin1(value));
+				result.metadata().put(ResultMetadata::SUGGESTED_PRICE, TextDecoder::FromLatin1(value));
 			}
 		}
 	}
@@ -169,7 +169,7 @@ namespace UPCEANExtension5Support
 		float y = static_cast<float>(rowNumber);
 		float x1 = 0.5f * static_cast<float>(extStartRangeBegin + extStartRangeEnd);
 		float x2 = static_cast<float>(end);
-		Result result(TextCodec::FromLatin1(resultString), ByteArray(), { ResultPoint(x1, y), ResultPoint(x2, y) }, BarcodeFormat::UPC_EAN_EXTENSION);
+		Result result(TextDecoder::FromLatin1(resultString), ByteArray(), { ResultPoint(x1, y), ResultPoint(x2, y) }, BarcodeFormat::UPC_EAN_EXTENSION);
 		ParseExtensionString(resultString, result);
 		return result;
 	}
@@ -230,7 +230,7 @@ namespace UPCEANExtension2Support
 		float x1 = 0.5f * static_cast<float>(extStartRangeBegin + extStartRangeEnd);
 		float x2 = static_cast<float>(end);
 
-		Result result(TextCodec::FromLatin1(resultString), ByteArray(), { ResultPoint(x1, y), ResultPoint(x2, y) }, BarcodeFormat::UPC_EAN_EXTENSION);
+		Result result(TextDecoder::FromLatin1(resultString), ByteArray(), { ResultPoint(x1, y), ResultPoint(x2, y) }, BarcodeFormat::UPC_EAN_EXTENSION);
 		if (resultString.length() == 2) {
 			result.metadata().put(ResultMetadata::ISSUE_NUMBER, std::stoi(resultString));
 		}

@@ -6,13 +6,13 @@ This project is a C++ port of ZXing Library (https://github.com/zxing/zxing).
 
 * In pure C++11, no third-party dependencies
 * Stateless, thread-safe readers
-* Built as UWP WinRT component
+* Wrapper to create WinRT component
+* Wrapper for Android NDK
 
 ### Work in progress
 
 Currently all readers are working with all original blackbox tests (from ZXing project) passed.
 Encoders are comming soon.
-More wrappers comming soon.
 
 ## Supported Formats
 

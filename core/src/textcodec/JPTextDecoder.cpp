@@ -35,7 +35,7 @@
 // a.k.a. Junji Takagi, and is included in Qt with the author's permission,
 // and the grateful thanks of the Qt team.
 
-#include "textcodec/JPCodecs.h"
+#include "textcodec/JPTextDecoder.h"
 
 /*
 * This data is derived from Unicode 1.1,
@@ -2602,11 +2602,6 @@ static inline unsigned jisx0201ToUnicode(unsigned jis)
 	return jisx0201ToUnicode((jis & 0xff00) >> 8, (jis & 0x00ff));
 }
 
-static inline bool IsSjisIBMVDCChar1(unsigned c)
-{
-	return c >= 0xfa && c <= 0xfc;
-}
-
 static unsigned sjisToJisx0208(unsigned h, unsigned l)
 {
 	if ((((0x81 <= h) && (h <= 0x9f)) || ((0xe0 <= h) && (h <= 0xef))) &&
@@ -2635,7 +2630,7 @@ static inline unsigned sjisToUnicode(unsigned h, unsigned l)
 }
 
 void
-JPCodecs::AppendShiftJIS(std::vector<uint16_t>& result, const uint8_t* bytes, size_t length)
+JPTextDecoder::AppendShiftJIS(std::vector<uint16_t>& result, const uint8_t* bytes, size_t length)
 {
 	uint8_t buf[1] = { 0 };
 	int nbuf = 0;
@@ -2692,7 +2687,7 @@ static inline bool IsEucChar(unsigned c)
 }
 
 void
-JPCodecs::AppendEUCJP(std::vector<uint16_t>& result, const uint8_t* bytes, size_t length)
+JPTextDecoder::AppendEUCJP(std::vector<uint16_t>& result, const uint8_t* bytes, size_t length)
 {
 	static const uint8_t Ss2 = 0x8e;        // Single Shift 2
 	static const uint8_t Ss3 = 0x8f;        // Single Shift 3

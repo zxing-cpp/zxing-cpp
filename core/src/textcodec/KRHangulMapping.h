@@ -32,11 +32,7 @@
 **
 ****************************************************************************/
 
-#include <vector>
 #include <cstdint>
 
-class KRCodecs
-{
-public:
-	static void AppendEucKr(std::vector<uint16_t>& utf16, const uint8_t* bytes, size_t length);
-};
+/* Table including ksc5601 hangul to unicode */
+extern const uint16_t ksc5601_hangul_to_unicode[2350];

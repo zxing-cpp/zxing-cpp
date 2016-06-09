@@ -18,12 +18,12 @@
 #include "pdf417/PDFDecodedBitStreamParser.h"
 #include "pdf417/PDFDecoderResultExtra.h"
 #include "CharacterSetECI.h"
-#include "TextCodec.h"
+#include "CharacterSet.h"
+#include "TextDecoder.h"
 #include "ZXBigInteger.h"
 #include "ByteArray.h"
 #include "ErrorStatus.h"
 #include "DecoderResult.h"
-#include "TextCodec.h"
 #include "ZXStrConvWorkaround.h"
 
 #include <array>
@@ -444,7 +444,7 @@ static int ByteCompaction(int mode, const std::vector<int>& codewords, Character
 			}
 		}
 	}
-	TextCodec::Append(result, decodedBytes.data(), decodedBytes.length(), encoding);
+	TextDecoder::Append(result, decodedBytes.data(), decodedBytes.length(), encoding);
 	return codeIndex;
 }
 
@@ -553,7 +553,7 @@ static ErrorStatus NumericCompaction(const std::vector<int>& codewords, int code
 				if (StatusIsError(status)) {
 					return status;
 				}
-				TextCodec::AppendLatin1(result, tmp);
+				TextDecoder::AppendLatin1(result, tmp);
 				count = 0;
 			}
 		}
@@ -637,7 +637,7 @@ DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel, D
 		{
 			std::string buf;
 			codeIndex = TextCompaction(codewords, codeIndex, buf);
-			TextCodec::AppendLatin1(resultString, buf);
+			TextDecoder::AppendLatin1(resultString, buf);
 			break;
 		}
 		case BYTE_COMPACTION_MODE_LATCH:
@@ -677,7 +677,7 @@ DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel, D
 			codeIndex--;
 			std::string buf;
 			codeIndex = TextCompaction(codewords, codeIndex, buf);
-			TextCodec::AppendLatin1(resultString, buf);
+			TextDecoder::AppendLatin1(resultString, buf);
 			break;
 		}
 		}

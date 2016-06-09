@@ -19,7 +19,7 @@
 #include "Result.h"
 #include "BitArray.h"
 #include "DecodeHints.h"
-#include "TextCodec.h"
+#include "TextDecoder.h"
 
 #include <array>
 
@@ -362,7 +362,7 @@ ITFReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Decodin
 	float x2 = static_cast<float>(endRangeBegin);
 	float ypos = static_cast<float>(rowNumber);
 
-	return Result(TextCodec::FromLatin1(result), ByteArray(), { ResultPoint(x1, ypos), ResultPoint(x2, ypos) }, BarcodeFormat::ITF);
+	return Result(TextDecoder::FromLatin1(result), ByteArray(), { ResultPoint(x1, ypos), ResultPoint(x2, ypos) }, BarcodeFormat::ITF);
 }
 
 } // OneD

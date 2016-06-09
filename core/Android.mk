@@ -15,7 +15,6 @@ COMMON_FILES :=	\
 	src/BitArray.cpp \
 	src/BitMatrix.cpp \
 	src/BitSource.cpp \
-	src/BitWrapperBinarizer.cpp \
 	src/CharacterSetECI.cpp \
 	src/DecodeHints.cpp \
 	src/ErrorStatus.cpp \
@@ -32,7 +31,8 @@ COMMON_FILES :=	\
 	src/Result.cpp \
 	src/ResultMetadata.cpp \
 	src/ResultPoint.cpp \
-	src/TextCodec.cpp \
+	src/TextDecoder.cpp \
+	src/TextUtfEncoding.cpp \
 	src/WhiteRectDetector.cpp \
 	src/ZXBigInteger.cpp
 
@@ -111,10 +111,12 @@ QRCODE_FILES := \
 	src/qrcode/QRVersion.cpp
 
 TEXT_CODEC_FILES := \
-	src/textcodec/Big5Codecs.cpp \
-	src/textcodec/GBCodecs.cpp \
-	src/textcodec/JPCodecs.cpp \
-	src/textcodec/KRCodecs.cpp
+	src/textcodec/Big5MapTable.cpp \
+	src/textcodec/Big5TextDecoder.cpp \
+	src/textcodec/GBTextDecoder.cpp \
+	src/textcodec/JPTextDecoder.cpp \
+	src/textcodec/KRHangulMapping.cpp \
+	src/textcodec/KRTextDecoder.cpp
 
 LOCAL_SRC_FILES := \
 	$(COMMON_FILES) \

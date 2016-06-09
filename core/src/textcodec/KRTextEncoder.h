@@ -32,12 +32,10 @@
 **
 ****************************************************************************/
 
-#include <vector>
-#include <cstdint>
+#include <string>
 
-class GBCodecs
+class KRTextDecoder
 {
 public:
-	static void AppendGB18030(std::vector<uint16_t>& utf16, const uint8_t* bytes, size_t length);
-	static void AppendGB2312(std::vector<uint16_t>& utf16, const uint8_t* bytes, size_t length);
+	static void EncodeEucKr(const std::wstring& str, std::string& bytes);
 };
