@@ -16,7 +16,6 @@
 * limitations under the License.
 */
 
-#include <memory>
 #include <vector>
 #include <string>
 
@@ -28,7 +27,6 @@ enum class BarcodeFormat;
 class DecodeHints
 {
 public:
-	DecodeHints() {};
 
 	std::vector<BarcodeFormat> possibleFormats() const;
 	void setPossibleFormats(const std::vector<BarcodeFormat>& formats);
@@ -59,11 +57,11 @@ public:
 	* Specifies what character encoding to use when decoding, where applicable.
 	*/
 	std::string characterSet() const {
-		return m_charset;
+		return _charset;
 	}
 
 	void setCharacterSet(const std::string& charset) {
-		m_charset = charset;
+		_charset = charset;
 	}
 
 	/**
@@ -82,11 +80,11 @@ public:
 	* Allowed lengths of encoded data -- reject anything else..
 	*/
 	std::vector<int> allowedLengths() const {
-		return m_lengths;
+		return _lengths;
 	}
 
 	void setAllowLengths(const std::vector<int>& lengths) {
-		m_lengths = lengths;
+		_lengths = lengths;
 	}
 
 	/**
@@ -133,19 +131,19 @@ public:
 	* at all.
 	*/
 	std::vector<int> allowedEanExtensions() const {
-		return m_eanExts;
+		return _eanExts;
 	}
 
 	void setAllowedEanExtensions(const std::vector<int>& extensions) {
-		m_eanExts = extensions;
+		_eanExts = extensions;
 	}
 
 private:
-	uint32_t m_flags = 0;
-	std::string m_charset;
-	//PointCallback m_callback;
-	std::vector<int> m_lengths;
-	std::vector<int> m_eanExts;
+	uint32_t _flags = 0;
+	std::string _charset;
+	//PointCallback _callback;
+	std::vector<int> _lengths;
+	std::vector<int> _eanExts;
 
 	enum HintFlag
 	{
@@ -157,15 +155,15 @@ private:
 	};
 
 	bool getFlag(int f) const {
-		return (m_flags & (1 << f)) != 0;
+		return (_flags & (1 << f)) != 0;
 	}
 
 	void setFlag(int f, bool v)
 	{
 		if (v)
-			m_flags |= (1 << f);
+			_flags |= (1 << f);
 		else
-			m_flags &= ~(1 << f);
+			_flags &= ~(1 << f);
 	}
 };
 

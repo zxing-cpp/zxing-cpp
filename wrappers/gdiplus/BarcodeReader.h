@@ -26,7 +26,7 @@ namespace ZXing {
 
 class MultiFormatReader;
 
-class BarcodeScanner
+class BarcodeReader
 {
 public:
 	struct ScanResult {
@@ -61,7 +61,7 @@ public:
 	 "UPC_E",
 	 "UPC_EAN_EXTENSION",
 	*/
-	explicit BarcodeScanner(bool tryHarder = false, bool tryRotate = true, const std::string& format = std::string());
+	explicit BarcodeReader(bool tryHarder = false, bool tryRotate = true, const std::string& format = std::string());
 
 	ScanResult scan(Gdiplus::Bitmap& bitmap, int rotations = Rotation0);
 

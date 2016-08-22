@@ -16,33 +16,33 @@
 * limitations under the License.
 */
 
-#include <vector>
+#include <string>
 #include <memory>
+#include <vector>
 
 namespace ZXing {
 
-class Result;
-class Reader;
-class BinaryBitmap;
-class DecodeHints;
+class BitMatrix;
+class String;
+class EncodeHints;
+class Writer;
+enum class BarcodeFormat;
 
 /**
-* MultiFormatReader is a convenience class and the main entry point into the library for most uses.
-* By default it attempts to decode all barcode formats that the library supports. Optionally, you
-* can provide a hints object to request different behavior, for example only decoding QR codes.
+* This is a factory class which finds the appropriate Writer subclass for the BarcodeFormat
+* requested and encodes the barcode with the supplied contents.
 *
-* @author Sean Owen
 * @author dswitkin@google.com (Daniel Switkin)
 */
-class MultiFormatReader
+class MultiFormatWriter
 {
 public:
-	explicit MultiFormatReader(const DecodeHints& hints);
+	explicit MultiFormatWriter(const EncodeHints& hints);
 
-	Result read(const BinaryBitmap& image) const;
+	bool encode(const std::wstring& contents, BarcodeFormat format, int width, int height, BitMatrix& result) const;
 
 private:
-	std::vector<std::shared_ptr<Reader>> _readers;
+	std::vector<std::shared_ptr<Writer>> _writers;
 };
 
 } // ZXing

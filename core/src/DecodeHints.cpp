@@ -28,10 +28,10 @@ DecodeHints::possibleFormats() const
 
 	std::vector<BarcodeFormat> result;
 	int formatCount = (int)BarcodeFormat::FORMAT_COUNT;
-	result.reserve(BitHacks::CountBitsSet(m_flags & ~(0xffffffff << formatCount)));
+	result.reserve(BitHacks::CountBitsSet(_flags & ~(0xffffffff << formatCount)));
 
 	for (int i = 0; i < formatCount; ++i) {
-		if (m_flags & (1 << i)) {
+		if (_flags & (1 << i)) {
 			result.push_back((BarcodeFormat)i);
 		}
 	}
@@ -41,9 +41,9 @@ DecodeHints::possibleFormats() const
 void
 DecodeHints::setPossibleFormats(const std::vector<BarcodeFormat>& formats)
 {
-	m_flags &= (0xffffffff << (int)BarcodeFormat::FORMAT_COUNT);
+	_flags &= (0xffffffff << (int)BarcodeFormat::FORMAT_COUNT);
 	for (BarcodeFormat format : formats) {
-		m_flags |= (1 << (int)format);
+		_flags |= (1 << (int)format);
 	}
 }
 

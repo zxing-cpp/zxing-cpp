@@ -14,7 +14,7 @@
 * limitations under the License.
 */
 
-#include "BarcodeScanner.h"
+#include "BarcodeReader.h"
 #include "TextUtfEncoding.h"
 #include "GenericLuminanceSource.h"
 #include "HybridBinarizer.h"
@@ -29,7 +29,7 @@
 
 namespace ZXing {
 
-BarcodeScanner::BarcodeScanner(bool tryHarder, bool tryRotate, const std::string& format)
+BarcodeReader::BarcodeReader(bool tryHarder, bool tryRotate, const std::string& format)
 {
 	DecodeHints hints;
 	hints.setShouldTryHarder(tryHarder);
@@ -75,8 +75,8 @@ CreateBinaryBitmap(Gdiplus::Bitmap& bitmap)
 	}
 }
 
-BarcodeScanner::ScanResult
-BarcodeScanner::scan(Gdiplus::Bitmap& bitmap, int rotations)
+BarcodeReader::ScanResult
+BarcodeReader::scan(Gdiplus::Bitmap& bitmap, int rotations)
 {
 	Result result(ErrorStatus::NotFound);
 	auto binImg = CreateBinaryBitmap(bitmap);

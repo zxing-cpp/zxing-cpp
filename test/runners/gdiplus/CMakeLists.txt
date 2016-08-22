@@ -1,6 +1,9 @@
 cmake_minimum_required (VERSION 2.8.9)
 
-project (ReaderTest)
+project (ZXingTest)
+
+set (ENABLE_ENCODERS OFF CACHE BOOL "Check to include encoders")
+set (ENABLE_DECODERS ON CACHE BOOL "Check to include decoders")
 
 add_definitions (-DUNICODE -D_UNICODE)
 
@@ -17,7 +20,7 @@ else()
 	endif()
 endif()
 
-add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/../../../wrappers/gdiplus ${CMAKE_BINARY_DIR}/BarcodeScanner)
+add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/../../../wrappers/gdiplus ${CMAKE_BINARY_DIR}/ZXingGdiPlus)
 	
 include_directories (
 	${BARCODESCANNER_INCLUDE}
@@ -27,13 +30,28 @@ set (LOCAL_DEFINES
 	"GDIPVER=0x0110"
 )
 
-add_executable (ReaderTest
-	TestMain.cpp
-)
-	
-set_target_properties (ReaderTest PROPERTIES
-	COMPILE_DEFINITIONS "${LOCAL_DEFINES}"
-#	LINK_FLAGS "/link setargv.obj"
-)
+if (ENABLE_DECODERS)
+	add_executable (ReaderTest
+		TestReaderMain.cpp
+	)
+		
+	set_target_properties (ReaderTest PROPERTIES
+		COMPILE_DEFINITIONS "${LOCAL_DEFINES}"
+	#	LINK_FLAGS "/link setargv.obj"
+	)
 
-target_link_libraries (ReaderTest BarcodeScanner)
+	target_link_libraries (ReaderTest ZXingGdiPlus)
+endif()
+
+if (ENABLE_ENCODERS)
+	add_executable (WriterTest
+		TestWriterMain.cpp
+	)
+		
+	set_target_properties (WriterTest PROPERTIES
+		COMPILE_DEFINITIONS "${LOCAL_DEFINES}"
+	#	LINK_FLAGS "/link setargv.obj"
+	)
+
+	target_link_libraries (WriterTest ZXingGdiPlus)
+endif()

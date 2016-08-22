@@ -19,6 +19,16 @@ if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 		endif()
 	endif()
 	
+	set (ENABLE_ENCODERS OFF CACHE BOOL "Check to include encoders")
+	set (ENABLE_DECODERS ON CACHE BOOL "Check to include decoders")
+endif()
+
+if (NOT DEFINED ENABLE_ENCODERS)
+	set (ENABLE_ENCODERS OFF)
+endif()
+
+if (NOT DEFINED ENABLE_DECODERS)
+	set (ENABLE_DECODERS ON)
 endif()
 
 set (ZXING_CORE_INCLUDE
@@ -37,50 +47,332 @@ include_directories (
 	${ZXING_CORE_INCLUDE}
 )
 
-file (GLOB COMMON_FILES
-	src/*.h
-	src/*.cpp
+set (COMMON_FILES
+	src/BarcodeFormat.h
+	src/BarcodeFormat.cpp
+	src/BitArray.h
+	src/BitArray.cpp
+	src/BitHacks.h
+	src/BitMatrix.h
+	src/BitMatrix.cpp
+	src/ByteArray.h
+	src/CharacterSet.h
+	src/CharacterSetECI.h
+	src/CharacterSetECI.cpp
+	src/CustomData.h
+	src/TextUtfEncoding.h
+	src/TextUtfEncoding.cpp
+	src/ZXBigInteger.h
+	src/ZXBigInteger.cpp
+	src/ZXConfig.h
+	src/ZXNullable.h
+	src/ZXNumeric.h
+	src/ZXStrConvWorkaround.h
 )
+if (ENABLE_DECODERS)
+	set (COMMON_FILES ${COMMON_FILES}
+		src/BinaryBitmap.h
+		src/BitSource.h
+		src/BitSource.cpp
+		src/BitWrapperBinarizer.h
+		src/BitWrapperBinarizer.cpp
+		src/DecodeHints.h
+		src/DecodeHints.cpp
+		src/DecoderResult.h
+		src/DetectorResult.h
+		src/ErrorStatus.h
+		src/ErrorStatus.cpp
+		src/GenericGF.h
+		src/GenericGF.cpp
+		src/GenericGFPoly.h
+		src/GenericGFPoly.cpp
+		src/GenericLuminanceSource.h
+		src/GenericLuminanceSource.cpp
+		src/GlobalHistogramBinarizer.h
+		src/GlobalHistogramBinarizer.cpp
+		src/GridSampler.h
+		src/GridSampler.cpp
+		src/HybridBinarizer.h
+		src/HybridBinarizer.cpp
+		src/LuminanceSource.h
+		src/LuminanceSource.cpp
+		src/MultiFormatReader.h
+		src/MultiFormatReader.cpp
+		src/PerspectiveTransform.h
+		src/PerspectiveTransform.cpp
+		src/Reader.h
+		src/ReedSolomonDecoder.h
+		src/ReedSolomonDecoder.cpp
+		src/Result.h
+		src/Result.cpp
+		src/ResultMetadata.h
+		src/ResultMetadata.cpp
+		src/ResultPoint.h
+		src/ResultPoint.cpp
+		src/TextDecoder.h
+		src/TextDecoder.cpp
+		src/WhiteRectDetector.h
+		src/WhiteRectDetector.cpp
+	)
+endif()
+if (ENABLE_ENCODERS)
+	set (COMMON_FILES ${COMMON_FILES}
+		src/EncodeHints.h
+		src/MultiFormatWriter.h
+		src/MultiFormatWriter.cpp
+		src/TextEncoder.h
+		src/TextEncoder.cpp
+	)
+endif()
 
-file (GLOB AZTEC_FILES
-	src/aztec/*.h
-	src/aztec/*.cpp
-)
 
-file (GLOB DATAMATRIX_FILES
-	src/datamatrix/*.h
-	src/datamatrix/*.cpp
+set (AZTEC_FILES
 )
+if (ENABLE_DECODERS)
+	set (AZTEC_FILES ${AZTEC_FILES}
+		src/aztec/AZDecoder.h
+		src/aztec/AZDecoder.cpp
+		src/aztec/AZDetector.h
+		src/aztec/AZDetector.cpp
+		src/aztec/AZDetectorResult.h
+		src/aztec/AZReader.h
+		src/aztec/AZReader.cpp
+	)
+endif()
+if (ENABLE_ENCODERS)
+	set (AZTEC_FILES ${AZTEC_FILES}
+	)
+endif()
 
-file (GLOB MAXICODE_FILES
-	src/maxicode/*.h
-	src/maxicode/*.cpp
-)
 
-file (GLOB ONED_FILES
-	src/oned/*.h
-	src/oned/*.cpp
+set (DATAMATRIX_FILES
+	src/datamatrix/DMECB.h
 )
+if (ENABLE_DECODERS)
+	set (DATAMATRIX_FILES ${DATAMATRIX_FILES}
+		src/datamatrix/DMBitMatrixParser.h
+		src/datamatrix/DMBitMatrixParser.cpp
+		src/datamatrix/DMDataBlock.h
+		src/datamatrix/DMDataBlock.cpp
+		src/datamatrix/DMDecoder.h
+		src/datamatrix/DMDecoder.cpp
+		src/datamatrix/DMDetector.h
+		src/datamatrix/DMDetector.cpp
+		src/datamatrix/DMReader.h
+		src/datamatrix/DMReader.cpp
+		src/datamatrix/DMVersion.h
+		src/datamatrix/DMVersion.cpp
+	)
+endif()
+if (ENABLE_ENCODERS)
+	set (DATAMATRIX_FILES ${DATAMATRIX_FILES}
+	)
+endif()
 
-file (GLOB ONED_RSS_FILES
-	src/oned/rss/*.h
-	src/oned/rss/*.cpp
-)
 
-file (GLOB PDF417_FILES
-	src/pdf417/*.h
-	src/pdf417/*.cpp
+set (MAXICODE_FILES
 )
+if (ENABLE_DECODERS)
+	set (MAXICODE_FILES ${MAXICODE_FILES}
+		src/maxicode/MCBitMatrixParser.h
+		src/maxicode/MCBitMatrixParser.cpp
+		src/maxicode/MCDecoder.h
+		src/maxicode/MCDecoder.cpp
+		src/maxicode/MCReader.h
+		src/maxicode/MCReader.cpp
+	)
+endif()
+if (ENABLE_ENCODERS)
+	set (MAXICODE_FILES ${MAXICODE_FILES}
+	)
+endif()
 
-file (GLOB QRCODE_FILES
-	src/qrcode/*.h
-	src/qrcode/*.cpp
-)
 
-file (GLOB TEXT_CODEC_FILES
-	src/textcodec/*.h
-	src/textcodec/*.cpp
+set (ONED_FILES
 )
+if (ENABLE_DECODERS)
+	set (ONED_FILES ${ONED_FILES}
+		src/oned/ODCodabarReader.h
+		src/oned/ODCodabarReader.cpp
+		src/oned/ODCode39Reader.h
+		src/oned/ODCode39Reader.cpp
+		src/oned/ODCode93Reader.h
+		src/oned/ODCode93Reader.cpp
+		src/oned/ODCode128Reader.h
+		src/oned/ODCode128Reader.cpp
+		src/oned/ODEAN8Reader.h
+		src/oned/ODEAN8Reader.cpp
+		src/oned/ODEAN13Reader.h
+		src/oned/ODEAN13Reader.cpp
+		src/oned/ODEANManufacturerOrgSupport.h
+		src/oned/ODEANManufacturerOrgSupport.cpp
+		src/oned/ODITFReader.h
+		src/oned/ODITFReader.cpp
+		src/oned/ODMultiUPCEANReader.h
+		src/oned/ODMultiUPCEANReader.cpp
+		src/oned/ODReader.h
+		src/oned/ODReader.cpp
+		src/oned/ODRowReader.h
+		src/oned/ODRowReader.cpp
+		src/oned/ODRSS14Reader.h
+		src/oned/ODRSS14Reader.cpp
+		src/oned/ODRSSExpandedReader.h
+		src/oned/ODRSSExpandedReader.cpp
+		src/oned/ODUPCAReader.h
+		src/oned/ODUPCAReader.cpp
+		src/oned/ODUPCEANExtensionSupport.h
+		src/oned/ODUPCEANExtensionSupport.cpp
+		src/oned/ODUPCEANReader.h
+		src/oned/ODUPCEANReader.cpp
+		src/oned/ODUPCEReader.h
+		src/oned/ODUPCEReader.cpp
+	)
+endif()
+if (ENABLE_ENCODERS)
+	set (ONED_FILES ${ONED_FILES}
+	)
+endif()
+
+
+set (ONED_RSS_FILES
+)
+if (ENABLE_DECODERS)
+	set (ONED_RSS_FILES ${ONED_RSS_FILES}
+		src/oned/rss/ODRSSDataCharacter.h
+		src/oned/rss/ODRSSExpandedBinaryDecoder.h
+		src/oned/rss/ODRSSExpandedBinaryDecoder.cpp
+		src/oned/rss/ODRSSExpandedPair.h
+		src/oned/rss/ODRSSExpandedRow.h
+		src/oned/rss/ODRSSFieldParser.h
+		src/oned/rss/ODRSSFieldParser.cpp
+		src/oned/rss/ODRSSFinderPattern.h
+		src/oned/rss/ODRSSGenericAppIdDecoder.h
+		src/oned/rss/ODRSSGenericAppIdDecoder.cpp
+		src/oned/rss/ODRSSPair.h
+		src/oned/rss/ODRSSReaderHelper.h
+		src/oned/rss/ODRSSReaderHelper.cpp
+	)
+endif()
+if (ENABLE_ENCODERS)
+	set (ONED_RSS_FILES ${ONED_RSS_FILES}
+	)
+endif()
+
+
+set (PDF417_FILES
+	src/pdf417/PDFCommon.h
+	src/pdf417/PDFCommon.cpp
+	src/pdf417/PDFErrorCorrection.h
+	src/pdf417/PDFErrorCorrection.cpp
+)
+if (ENABLE_DECODERS)
+	set (PDF417_FILES ${PDF417_FILES}
+		src/pdf417/PDFBarcodeMetadata.h
+		src/pdf417/PDFBarcodeValue.h
+		src/pdf417/PDFBarcodeValue.cpp
+		src/pdf417/PDFBoundingBox.h
+		src/pdf417/PDFBoundingBox.cpp
+		src/pdf417/PDFCodeword.h
+		src/pdf417/PDFCodewordDecoder.h
+		src/pdf417/PDFCodewordDecoder.cpp
+		src/pdf417/PDFDecodedBitStreamParser.h
+		src/pdf417/PDFDecodedBitStreamParser.cpp
+		src/pdf417/PDFDecoderResultExtra.h
+		src/pdf417/PDFDetectionResult.h
+		src/pdf417/PDFDetectionResult.cpp
+		src/pdf417/PDFDetectionResultColumn.h
+		src/pdf417/PDFDetectionResultColumn.cpp
+		src/pdf417/PDFDetector.h
+		src/pdf417/PDFDetector.cpp
+		src/pdf417/PDFModulusGF.h
+		src/pdf417/PDFModulusGF.cpp
+		src/pdf417/PDFModulusPoly.h
+		src/pdf417/PDFModulusPoly.cpp
+		src/pdf417/PDFReader.h
+		src/pdf417/PDFReader.cpp
+		src/pdf417/PDFScanningDecoder.h
+		src/pdf417/PDFScanningDecoder.cpp
+	)
+endif()
+if (ENABLE_ENCODERS)
+	set (PDF417_FILES ${PDF417_FILES}
+	)
+endif()
+
+
+set (QRCODE_FILES
+	src/qrcode/QRErrorCorrectionLevel.h
+	src/qrcode/QRErrorCorrectionLevel.cpp
+)
+if (ENABLE_DECODERS)
+	set (QRCODE_FILES ${QRCODE_FILES}
+		src/qrcode/QRAlignmentPattern.h
+		src/qrcode/QRAlignmentPattern.cpp
+		src/qrcode/QRAlignmentPatternFinder.h
+		src/qrcode/QRAlignmentPatternFinder.cpp
+		src/qrcode/QRBitMatrixParser.h
+		src/qrcode/QRBitMatrixParser.cpp
+		src/qrcode/QRDataBlock.h
+		src/qrcode/QRDataBlock.cpp
+		src/qrcode/QRDataMask.h
+		src/qrcode/QRDataMask.cpp
+		src/qrcode/QRDecodeMode.h
+		src/qrcode/QRDecodeMode.cpp
+		src/qrcode/QRDecoder.h
+		src/qrcode/QRDecoder.cpp
+		src/qrcode/QRDecoderMetadata.h
+		src/qrcode/QRDetector.h
+		src/qrcode/QRDetector.cpp
+		src/qrcode/QRECB.h
+		src/qrcode/QRFinderPattern.h
+		src/qrcode/QRFinderPattern.cpp
+		src/qrcode/QRFinderPatternFinder.h
+		src/qrcode/QRFinderPatternFinder.cpp
+		src/qrcode/QRFinderPatternInfo.h
+		src/qrcode/QRFormatInformation.h
+		src/qrcode/QRFormatInformation.cpp
+		src/qrcode/QRReader.h
+		src/qrcode/QRReader.cpp
+		src/qrcode/QRVersion.h
+		src/qrcode/QRVersion.cpp
+	)
+endif()
+if (ENABLE_ENCODERS)
+	set (QRCODE_FILES ${QRCODE_FILES}
+	)
+endif()
+
+
+set (TEXT_CODEC_FILES
+	src/textcodec/Big5MapTable.h
+	src/textcodec/Big5MapTable.cpp
+	src/textcodec/KRHangulMapping.h
+	src/textcodec/KRHangulMapping.cpp
+)
+if (ENABLE_DECODERS)
+	set (TEXT_CODEC_FILES ${TEXT_CODEC_FILES}
+		src/textcodec/Big5TextDecoder.h
+		src/textcodec/Big5TextDecoder.cpp
+		src/textcodec/GBTextDecoder.h
+		src/textcodec/GBTextDecoder.cpp
+		src/textcodec/JPTextDecoder.h
+		src/textcodec/JPTextDecoder.cpp
+		src/textcodec/KRTextDecoder.h
+		src/textcodec/KRTextDecoder.cpp
+	)
+endif()
+if (ENABLE_ENCODERS)
+	set (TEXT_CODEC_FILES ${TEXT_CODEC_FILES}
+		src/textcodec/Big5TextEncoder.h
+		src/textcodec/Big5TextEncoder.cpp
+		src/textcodec/GBTextEncoder.h
+		src/textcodec/GBTextEncoder.cpp
+		src/textcodec/JPTextEncoder.h
+		src/textcodec/JPTextEncoder.cpp
+		src/textcodec/KRTextEncoder.h
+		src/textcodec/KRTextEncoder.cpp
+	)
+endif()
 
 source_group (Sources FILES ${COMMON_FILES})
 source_group (Sources\\aztec FILES ${AZTEC_FILES})
