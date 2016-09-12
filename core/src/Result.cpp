@@ -19,13 +19,13 @@
 
 namespace ZXing {
 
-Result::Result(ErrorStatus status) :
+Result::Result(DecodeStatus status) :
 	_status(status)
 {
 }
 
 Result::Result(const std::wstring& text, const ByteArray& rawBytes, const std::vector<ResultPoint>& resultPoints, BarcodeFormat format, time_point tt) :
-	_status(ErrorStatus::NoError),
+	_status(DecodeStatus::NoError),
 	_text(text),
 	_rawBytes(rawBytes),
 	_resultPoints(resultPoints),

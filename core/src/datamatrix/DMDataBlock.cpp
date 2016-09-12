@@ -17,12 +17,12 @@
 
 #include "datamatrix/DMDataBlock.h"
 #include "datamatrix/DMVersion.h"
-#include "ErrorStatus.h"
+#include "DecodeStatus.h"
 
 namespace ZXing {
 namespace DataMatrix {
 
-ErrorStatus
+DecodeStatus
 DataBlock::GetDataBlocks(const ByteArray& rawCodewords, const Version& version, std::vector<DataBlock>& result)
 {
 	// First count the total number of data blocks
@@ -72,7 +72,7 @@ DataBlock::GetDataBlocks(const ByteArray& rawCodewords, const Version& version, 
 		}
 	}
 
-	return rawCodewordsOffset == rawCodewords.length() ? ErrorStatus::NoError : ErrorStatus::FormatError;
+	return rawCodewordsOffset == rawCodewords.length() ? DecodeStatus::NoError : DecodeStatus::FormatError;
 }
 
 } // DataMatrix

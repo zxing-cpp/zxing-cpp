@@ -71,7 +71,7 @@ MultiUPCEANReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr
 		Result result = reader->decodeRow(rowNumber, row, startGuardPatternBegin, startGuardPatternEnd);
 		if (!result.isValid())
 		{
-			if (StatusIsKindOf(result.status(), ErrorStatus::ReaderError))
+			if (StatusIsKindOf(result.status(), DecodeStatus::ReaderError))
 				continue;
 			else
 				return result;
@@ -100,7 +100,7 @@ MultiUPCEANReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr
 		}
 		return result;
 	}
-	return Result(ErrorStatus::NotFound);
+	return Result(DecodeStatus::NotFound);
 }
 
 } // OneD

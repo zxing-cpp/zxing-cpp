@@ -16,41 +16,15 @@
 */
 
 #include "oned/ODUPCEReader.h"
+#include "oned/ODUPCEANPatterns.h"
 #include "BarcodeFormat.h"
 #include "BitArray.h"
-#include "ErrorStatus.h"
+#include "DecodeStatus.h"
 
 #include <array>
 
 namespace ZXing {
 namespace OneD {
-
-// For an UPC-E barcode, the final digit is represented by the parities used
-// to encode the middle six digits, according to the table below.
-//
-//                Parity of next 6 digits
-//    Digit   0     1     2     3     4     5
-//       0    Even   Even  Even Odd  Odd   Odd
-//       1    Even   Even  Odd  Even Odd   Odd
-//       2    Even   Even  Odd  Odd  Even  Odd
-//       3    Even   Even  Odd  Odd  Odd   Even
-//       4    Even   Odd   Even Even Odd   Odd
-//       5    Even   Odd   Odd  Even Even  Odd
-//       6    Even   Odd   Odd  Odd  Even  Even
-//       7    Even   Odd   Even Odd  Even  Odd
-//       8    Even   Odd   Even Odd  Odd   Even
-//       9    Even   Odd   Odd  Even Odd   Even
-//
-// The encoding is represented by the following array, which is a bit pattern
-// using Odd = 0 and Even = 1. For example, 5 is represented by:
-//
-//              Odd Even Even Odd Odd Even
-// in binary:
-//                0    1    1   0   0    1   == 0x19
-//
-//static final int[] CHECK_DIGIT_ENCODINGS = {
-//	0x38, 0x34, 0x32, 0x31, 0x2C, 0x26, 0x23, 0x2A, 0x29, 0x25
-//};
 
 /**
 * The pattern that marks the middle, and end, of a UPC-E pattern.
@@ -74,7 +48,7 @@ UPCEReader::expectedFormat() const
 	return BarcodeFormat::UPC_E;
 }
 
-static ErrorStatus
+static DecodeStatus
 DetermineNumSysAndCheckDigit(std::string& resultString, int lgPatternFound)
 {
 	for (size_t numSys = 0; numSys < NUMSYS_AND_CHECK_DIGIT_PATTERNS.size(); numSys++) {
@@ -82,14 +56,14 @@ DetermineNumSysAndCheckDigit(std::string& resultString, int lgPatternFound)
 			if (lgPatternFound == NUMSYS_AND_CHECK_DIGIT_PATTERNS[numSys][d]) {
 				resultString.insert(0, 1, (char)('0' + numSys));
 				resultString.push_back((char)('0' + d));
-				return ErrorStatus::NoError;
+				return DecodeStatus::NoError;
 			}
 		}
 	}
-	return ErrorStatus::NotFound;
+	return DecodeStatus::NotFound;
 }
 
-ErrorStatus
+DecodeStatus
 UPCEReader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const
 {
 	std::array<int, 4> counters = {};
@@ -97,7 +71,7 @@ UPCEReader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resul
 	int lgPatternFound = 0;
 	for (int x = 0; x < 6 && rowOffset < end; x++) {
 		int bestMatch = 0;
-		auto status = DecodeDigit(row, rowOffset, L_AND_G_PATTERNS, counters, bestMatch);
+		auto status = DecodeDigit(row, rowOffset, UPCEANPatterns::L_AND_G_PATTERNS, counters, bestMatch);
 		if (StatusIsError(status)) {
 			return status;
 		}
@@ -112,13 +86,13 @@ UPCEReader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resul
 	return DetermineNumSysAndCheckDigit(resultString, lgPatternFound);
 }
 
-ErrorStatus
+DecodeStatus
 UPCEReader::checkChecksum(const std::string& s) const
 {
 	return UPCEANReader::checkChecksum(ConvertUPCEtoUPCA(s));
 }
 
-ErrorStatus
+DecodeStatus
 UPCEReader::decodeEnd(const BitArray& row, int endStart, int& begin, int& end) const
 {
 	return FindGuardPattern(row, endStart, true, MIDDLE_END_PATTERN, begin, end);

@@ -17,7 +17,7 @@
 
 #include "pdf417/PDFDetector.h"
 #include "BinaryBitmap.h"
-#include "ErrorStatus.h"
+#include "DecodeStatus.h"
 #include "BitMatrix.h"
 #include "ZXNullable.h"
 
@@ -313,7 +313,7 @@ static void DetectBarcode(const BitMatrix& bitMatrix, bool multiple, std::list<s
 * @return {@link PDF417DetectorResult} encapsulating results of detecting a PDF417 code
 * @throws NotFoundException if no PDF417 Code can be found
 */
-ErrorStatus
+DecodeStatus
 Detector::Detect(const BinaryBitmap& image, bool multiple, Result& result)
 {
 	// TODO detection improvement, tryHarder could try several different luminance thresholds/blackpoints or even 
@@ -322,7 +322,7 @@ Detector::Detect(const BinaryBitmap& image, bool multiple, Result& result)
 
 	auto binImg = image.getBlackMatrix();
 	if (binImg == nullptr) {
-		return ErrorStatus::NotFound;
+		return DecodeStatus::NotFound;
 	}
 
 	std::list<std::array<Nullable<ResultPoint>, 8>> barcodeCoordinates;
@@ -335,11 +335,11 @@ Detector::Detect(const BinaryBitmap& image, bool multiple, Result& result)
 		DetectBarcode(*binImg, multiple, barcodeCoordinates);
 	}
 	if (barcodeCoordinates.empty()) {
-		return ErrorStatus::NotFound;
+		return DecodeStatus::NotFound;
 	}
 	result.points = barcodeCoordinates;
 	result.bits = binImg;
-	return ErrorStatus::NoError;
+	return DecodeStatus::NoError;
 }
 
 } // Pdf417

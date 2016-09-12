@@ -46,7 +46,7 @@ class DecoderResult
 	std::shared_ptr<CustomData> _extra;
 
 public:
-	//explicit DecoderResult(ErrorStatus status);
+	//explicit DecoderResult(DecodeStatus status);
 	//DecoderResult(const ByteArray& rawBytes, const String& text, std::list<ByteArray>& byteSegments, const std::string& ecLevel, int saSequence, int saParity);
 	//DecoderResult(const ByteArray& rawBytes, const String& text, std::list<ByteArray>& byteSegments, const std::string& ecLevel);
 	DecoderResult() {}

@@ -159,7 +159,7 @@ static const int CODE_START_B = 104;
 static const int CODE_START_C = 105;
 static const int CODE_STOP = 106;
 
-static ErrorStatus
+static DecodeStatus
 FindStartPattern(const BitArray& row, int& begin, int& end, int& startCode)
 {
 	int width = row.size();
@@ -191,7 +191,7 @@ FindStartPattern(const BitArray& row, int& begin, int& end, int& startCode)
 					begin = patternStart;
 					end = offset;
 					startCode = bestMatch;
-					return ErrorStatus::NoError;
+					return DecodeStatus::NoError;
 				}
 				patternStart += counters[0] + counters[1];
 				std::copy(counters.begin() + 2, counters.end(), counters.begin());
@@ -206,13 +206,13 @@ FindStartPattern(const BitArray& row, int& begin, int& end, int& startCode)
 			isWhite = !isWhite;
 		}
 	}
-	return ErrorStatus::NotFound;
+	return DecodeStatus::NotFound;
 }
 
-static ErrorStatus
+static DecodeStatus
 DecodeCode(const BitArray& row, std::vector<int>& counters, int rowOffset, int& outCode)
 {
-	ErrorStatus status = RowReader::RecordPattern(row, rowOffset, counters);
+	DecodeStatus status = RowReader::RecordPattern(row, rowOffset, counters);
 	if (StatusIsError(status)) {
 		return status;
 	}
@@ -229,9 +229,9 @@ DecodeCode(const BitArray& row, std::vector<int>& counters, int rowOffset, int& 
 	// TODO We're overlooking the fact that the STOP pattern has 7 values, not 6.
 	if (bestMatch >= 0) {
 		outCode = bestMatch;
-		return ErrorStatus::NoError;
+		return DecodeStatus::NoError;
 	}
-	return ErrorStatus::NotFound;
+	return DecodeStatus::NotFound;
 }
 
 Code128Reader::Code128Reader(const DecodeHints& hints) :
@@ -243,7 +243,7 @@ Result
 Code128Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const
 {
 	int patternStart = 0, patternEnd = 0, startCode = 0;
-	ErrorStatus status = FindStartPattern(row, patternStart, patternEnd, startCode);
+	DecodeStatus status = FindStartPattern(row, patternStart, patternEnd, startCode);
 	if (StatusIsError(status)) {
 		return Result(status);
 	}
@@ -264,7 +264,7 @@ Code128Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Dec
 		codeSet = CODE_CODE_C;
 		break;
 	default:
-		return Result(ErrorStatus::FormatError);
+		return Result(DecodeStatus::FormatError);
 	}
 
 	bool done = false;
@@ -323,7 +323,7 @@ Code128Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Dec
 		case CODE_START_A:
 		case CODE_START_B:
 		case CODE_START_C:
-			return Result(ErrorStatus::FormatError);
+			return Result(DecodeStatus::FormatError);
 		}
 
 		switch (codeSet) {
@@ -514,21 +514,21 @@ Code128Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Dec
 	// to read off. Would be slightly better to properly read. Here we just skip it:
 	nextStart = row.getNextUnset(nextStart);
 	if (!row.isRange(nextStart, std::min(row.size(), nextStart + (nextStart - lastStart) / 2), false)) {
-		return Result(ErrorStatus::NotFound);
+		return Result(DecodeStatus::NotFound);
 	}
 
 	// Pull out from sum the value of the penultimate check code
 	checksumTotal -= multiplier * lastCode;
 	// lastCode is the checksum then:
 	if (checksumTotal % 103 != lastCode) {
-		return Result(ErrorStatus::ChecksumError);
+		return Result(DecodeStatus::ChecksumError);
 	}
 
 	// Need to pull out the check digits from string
 	size_t resultLength = result.length();
 	if (resultLength == 0) {
 		// false positive
-		return Result(ErrorStatus::NotFound);
+		return Result(DecodeStatus::NotFound);
 	}
 
 	// Only bother if the result had at least one character, and if the checksum digit happened to

@@ -22,7 +22,7 @@
 
 namespace ZXing {
 
-enum class ErrorStatus;
+enum class DecodeStatus;
 
 namespace QRCode {
 
@@ -62,7 +62,7 @@ public:
 	* @return DataBlocks containing original bytes, "de-interleaved" from representation in the
 	*         QR Code
 	*/
-	static ErrorStatus GetDataBlocks(const ByteArray& rawCodewords, const Version& version, ErrorCorrectionLevel ecLevel, std::vector<DataBlock>& result);
+	static DecodeStatus GetDataBlocks(const ByteArray& rawCodewords, const Version& version, ErrorCorrectionLevel ecLevel, std::vector<DataBlock>& result);
 
 private:
 	int _numDataCodewords = 0;

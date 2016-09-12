@@ -9,7 +9,7 @@ def write_files(relPath, fileName, className, namespaces):
 	fileContents = '\
 #pragma once\n\
 /*\n\
-* Copyright 2016 Nu-book Inc.\n\
+* Copyright 2016 Huy Cuong Nguyen\n\
 * Copyright 2016 ZXing authors\n\
 *\n\
 * Licensed under the Apache License, Version 2.0 (the "License");\n\
@@ -40,6 +40,7 @@ namespace ZXing {\n';
 	
 	fileContents = '\
 /*\n\
+* Copyright 2016 Huy Cuong Nguyen\n\
 * Copyright 2016 ZXing authors\n\
 *\n\
 * Licensed under the Apache License, Version 2.0 (the "License");\n\

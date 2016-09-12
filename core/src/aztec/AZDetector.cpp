@@ -23,7 +23,7 @@
 #include "GenericGF.h"
 #include "WhiteRectDetector.h"
 #include "GridSampler.h"
-#include "ErrorStatus.h"
+#include "DecodeStatus.h"
 #include "BitMatrix.h"
 
 #include <array>
@@ -141,7 +141,7 @@ static bool GetCorrectedParameterData(int64_t parameterData, bool compact, int& 
 		parameterWords[i] = (int)parameterData & 0xF;
 		parameterData >>= 4;
 	}
-	ErrorStatus status = ReedSolomonDecoder(GenericGF::AztecParam()).decode(parameterWords, numECCodewords);
+	DecodeStatus status = ReedSolomonDecoder(GenericGF::AztecParam()).decode(parameterWords, numECCodewords);
 	if (StatusIsError(status)) {
 		return false;
 	}
@@ -431,7 +431,7 @@ static PixelPoint GetMatrixCenter(const BitMatrix& image)
 {
 	//Get a white rectangle that can be the border of the matrix in center bull's eye or
 	ResultPoint pointA, pointB, pointC, pointD;
-	ErrorStatus status = WhiteRectDetector::Detect(image, pointA, pointB, pointC, pointD);
+	DecodeStatus status = WhiteRectDetector::Detect(image, pointA, pointB, pointC, pointD);
 	if (StatusIsError(status)) {
 		// This exception can be in case the initial rectangle is white
 		// In that case, surely in the bull's eye, we try to expand the rectangle.
@@ -495,7 +495,7 @@ static void GetMatrixCornerPoints(std::array<ResultPoint, 4>& bullsEyeCorners, b
 * topLeft, topRight, bottomRight, and bottomLeft are the centers of the squares on the
 * diagonal just outside the bull's eye.
 */
-static ErrorStatus SampleGrid(const BitMatrix& image, const ResultPoint& topLeft, const ResultPoint& topRight, const ResultPoint& bottomRight, const ResultPoint& bottomLeft, bool compact, int nbLayers, int nbCenterLayers, BitMatrix& result)
+static DecodeStatus SampleGrid(const BitMatrix& image, const ResultPoint& topLeft, const ResultPoint& topRight, const ResultPoint& bottomRight, const ResultPoint& bottomLeft, bool compact, int nbLayers, int nbCenterLayers, BitMatrix& result)
 {
 	int dimension = GetDimension(compact, nbLayers);
 
@@ -517,7 +517,7 @@ static ErrorStatus SampleGrid(const BitMatrix& image, const ResultPoint& topLeft
 }
 
 
-ErrorStatus
+DecodeStatus
 Detector::Detect(const BitMatrix& image, bool isMirror, DetectorResult& result)
 {
 	// 1. Get the center of the aztec matrix
@@ -529,7 +529,7 @@ Detector::Detect(const BitMatrix& image, bool isMirror, DetectorResult& result)
 	bool compact = false;
 	int nbCenterLayers = 0;
 	if (!GetBullsEyeCorners(image, pCenter, bullsEyeCorners, compact, nbCenterLayers)) {
-		return ErrorStatus::NotFound;
+		return DecodeStatus::NotFound;
 	}
 
 	if (isMirror) {
@@ -541,7 +541,7 @@ Detector::Detect(const BitMatrix& image, bool isMirror, DetectorResult& result)
 	int nbDataBlocks = 0;
 	int shift = 0;
 	if (!ExtractParameters(image, bullsEyeCorners, compact, nbCenterLayers, nbLayers, nbDataBlocks, shift)) {
-		return ErrorStatus::NotFound;
+		return DecodeStatus::NotFound;
 	}
 
 	// 4. Sample the grid
@@ -559,7 +559,7 @@ Detector::Detect(const BitMatrix& image, bool isMirror, DetectorResult& result)
 	result.setCompact(compact);
 	result.setNbDatablocks(nbDataBlocks);
 	result.setNbLayers(nbLayers);
-	return ErrorStatus::NoError;
+	return DecodeStatus::NoError;
 }
 
 } // Aztec

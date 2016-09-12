@@ -23,7 +23,7 @@
 #include "ReedSolomonDecoder.h"
 #include "GenericGF.h"
 #include "BitSource.h"
-#include "ErrorStatus.h"
+#include "DecodeStatus.h"
 #include "TextDecoder.h"
 #include "ZXStrConvWorkaround.h"
 
@@ -505,7 +505,7 @@ namespace DecodedBitStreamParser {
 		return true;
 	}
 
-	static ErrorStatus Decode(const ByteArray& bytes, DecoderResult& decodeResult)
+	static DecodeStatus Decode(const ByteArray& bytes, DecoderResult& decodeResult)
 	{
 		BitSource bits(bytes);
 		std::string result;
@@ -540,7 +540,7 @@ namespace DecodedBitStreamParser {
 					break;
 				}
 				if (!decodeOK) {
-					return ErrorStatus::FormatError;
+					return DecodeStatus::FormatError;
 				}
 				mode = Mode::ASCII_ENCODE;
 			}
@@ -552,7 +552,7 @@ namespace DecodedBitStreamParser {
 		decodeResult.setRawBytes(bytes);
 		decodeResult.setText(TextDecoder::FromLatin1(result));
 		decodeResult.setByteSegments(byteSegments);
-		return ErrorStatus::NoError;
+		return DecodeStatus::NoError;
 	}
 
 } // namespace DecodedBitStreamParser
@@ -578,7 +578,7 @@ namespace DecodedBitStreamParser {
 * @param numDataCodewords number of codewords that are data bytes
 * @throws ChecksumException if error correction fails
 */
-static ErrorStatus
+static DecodeStatus
 CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
 {
 	// First read into an array of ints
@@ -592,24 +592,24 @@ CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
 			codewordBytes[i] = static_cast<uint8_t>(codewordsInts[i]);
 		}
 	}
-	else if (StatusIsKindOf(status, ErrorStatus::ReedSolomonError)) {
-		return ErrorStatus::ChecksumError;
+	else if (StatusIsKindOf(status, DecodeStatus::ReedSolomonError)) {
+		return DecodeStatus::ChecksumError;
 	}
 	return status;
 }
 
-ErrorStatus
+DecodeStatus
 Decoder::Decode(const BitMatrix& bits, DecoderResult& result)
 {
 	// Construct a parser and read version, error-correction level
 	const Version* version = BitMatrixParser::ReadVersion(bits);
 	if (version == nullptr) {
-		return ErrorStatus::FormatError;
+		return DecodeStatus::FormatError;
 	}
 	
 	// Read codewords
 	ByteArray codewords;
-	ErrorStatus status = BitMatrixParser::ReadCodewords(bits, codewords);
+	DecodeStatus status = BitMatrixParser::ReadCodewords(bits, codewords);
 	if (StatusIsError(status)) {
 		return status;
 	}

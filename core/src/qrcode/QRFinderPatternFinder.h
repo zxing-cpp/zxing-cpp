@@ -23,7 +23,7 @@ namespace ZXing {
 
 class BitMatrix;
 //typedef std::function<void(float x, float y)> PointCallback;
-enum class ErrorStatus;
+enum class DecodeStatus;
 
 namespace QRCode {
 
@@ -43,7 +43,7 @@ class FinderPatternFinder
 public:
 	typedef std::array<int, 5> StateCount;
 
-	static ErrorStatus Find(const BitMatrix& image, /*const PointCallback& pointCallback,*/ bool pureBarcode, bool tryHarder, FinderPatternInfo& outInfo);
+	static DecodeStatus Find(const BitMatrix& image, /*const PointCallback& pointCallback,*/ bool pureBarcode, bool tryHarder, FinderPatternInfo& outInfo);
 
 	/**
 	* @param stateCount count of black/white/black/white/black pixels just read

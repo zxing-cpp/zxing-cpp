@@ -20,7 +20,7 @@
 #include "DetectorResult.h"
 #include "WhiteRectDetector.h"
 #include "GridSampler.h"
-#include "ErrorStatus.h"
+#include "DecodeStatus.h"
 
 #include <array>
 #include <algorithm>
@@ -175,7 +175,7 @@ static bool CorrectTopRight(const BitMatrix& image, const ResultPoint& bottomLef
 	return true;
 }
 
-static ErrorStatus
+static DecodeStatus
 SampleGrid(const BitMatrix& image, const ResultPoint& topLeft, const ResultPoint& bottomLeft, const ResultPoint& bottomRight, const ResultPoint& topRight, int dimensionX, int dimensionY, BitMatrix& result)
 {
 	return GridSampler::Instance()->sampleGrid(
@@ -255,11 +255,11 @@ void OrderByBestPatterns(const ResultPoint*& p0, const ResultPoint*& p1, const R
 	p2 = pointC;
 }
 
-ErrorStatus
+DecodeStatus
 Detector::Detect(const BitMatrix& image, DetectorResult& result)
 {
 	ResultPoint pointA, pointB, pointC, pointD;
-	ErrorStatus status = WhiteRectDetector::Detect(image, pointA, pointB, pointC, pointD);
+	DecodeStatus status = WhiteRectDetector::Detect(image, pointA, pointB, pointC, pointD);
 	if (StatusIsError(status)) {
 		return status;
 	}
@@ -307,7 +307,7 @@ Detector::Detect(const BitMatrix& image, DetectorResult& result)
 	}
 
 	if (bottomRight == nullptr || bottomLeft == nullptr || topLeft == nullptr) {
-		return ErrorStatus::NotFound;
+		return DecodeStatus::NotFound;
 	}
 
 	// Bottom left is correct but top left and bottom right might be switched
@@ -408,7 +408,7 @@ Detector::Detect(const BitMatrix& image, DetectorResult& result)
 	}
 	result.setBits(bits);
 	result.setPoints({ *topLeft, *bottomLeft, *bottomRight, correctedTopRight });
-	return ErrorStatus::NoError;
+	return DecodeStatus::NoError;
 }
 
 

@@ -20,7 +20,7 @@
 #include "pdf417/PDFScanningDecoder.h"
 #include "pdf417/PDFCommon.h"
 #include "pdf417/PDFDecoderResultExtra.h"
-#include "ErrorStatus.h"
+#include "DecodeStatus.h"
 #include "DecoderResult.h"
 #include "Result.h"
 
@@ -59,17 +59,17 @@ static int GetMaxCodewordWidth(const std::array<Nullable<ResultPoint>, 8>& p)
 					std::max(GetMaxWidth(p[1], p[5]), GetMaxWidth(p[7], p[3]) * Common::MODULES_IN_CODEWORD / Common::MODULES_IN_STOP_PATTERN));
 }
 
-ErrorStatus DoDecode(const BinaryBitmap& image, bool multiple, std::list<Result>& results)
+DecodeStatus DoDecode(const BinaryBitmap& image, bool multiple, std::list<Result>& results)
 {
 	Detector::Result detectorResult;
-	ErrorStatus status = Detector::Detect(image, multiple, detectorResult);
+	DecodeStatus status = Detector::Detect(image, multiple, detectorResult);
 	if (StatusIsError(status)) {
 		return status;
 	}
 
 	for (const auto& points : detectorResult.points) {
 		DecoderResult decoderResult;
-		ErrorStatus status = ScanningDecoder::Decode(*detectorResult.bits, points[4], points[5], points[6], points[7], GetMinCodewordWidth(points), GetMaxCodewordWidth(points), decoderResult);
+		DecodeStatus status = ScanningDecoder::Decode(*detectorResult.bits, points[4], points[5], points[6], points[7], GetMinCodewordWidth(points), GetMaxCodewordWidth(points), decoderResult);
 		if (StatusIsOK(status)) {
 			std::vector<ResultPoint> foundPoints(points.size());
 			std::transform(points.begin(), points.end(), foundPoints.begin(), [](const Nullable<ResultPoint>& p) { return p.value(); });
@@ -80,14 +80,14 @@ ErrorStatus DoDecode(const BinaryBitmap& image, bool multiple, std::list<Result>
 			}
 			results.push_back(result);
 			if (!multiple) {
-				return ErrorStatus::NoError;
+				return DecodeStatus::NoError;
 			}
 		}
 		else if (!multiple) {
 			return status;
 		}
 	}
-	return results.empty() ? ErrorStatus::NotFound : ErrorStatus::NoError;
+	return results.empty() ? DecodeStatus::NotFound : DecodeStatus::NoError;
 }
 
 //@Override
@@ -119,7 +119,7 @@ Result
 Reader::decode(const BinaryBitmap& image) const
 {
 	std::list<Result> results;
-	ErrorStatus status = DoDecode(image, false, results);
+	DecodeStatus status = DoDecode(image, false, results);
 	if (StatusIsOK(status)) {
 		return results.front();
 	}

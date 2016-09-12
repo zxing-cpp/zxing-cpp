@@ -20,7 +20,7 @@
 #include "ByteArray.h"
 #include "BitArray.h"
 #include "BitMatrix.h"
-#include "ErrorStatus.h"
+#include "DecodeStatus.h"
 #include "ZXNumeric.h"
 
 #include <array>

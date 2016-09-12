@@ -27,7 +27,7 @@
 #include "PerspectiveTransform.h"
 #include "GridSampler.h"
 #include "ZXNumeric.h"
-#include "ErrorStatus.h"
+#include "DecodeStatus.h"
 
 namespace ZXing {
 namespace QRCode {
@@ -192,7 +192,7 @@ static float CalculateModuleSize(const BitMatrix& image, const ResultPoint& topL
 * @return {@link AlignmentPattern} if found, or null otherwise
 * @throws NotFoundException if an unexpected error occurs during detection
 */
-ErrorStatus FindAlignmentInRegion(const BitMatrix& image, float overallEstModuleSize, int estAlignmentX, int estAlignmentY, float allowanceFactor, /*const PointCallback& pointCallback,*/ AlignmentPattern& result)
+DecodeStatus FindAlignmentInRegion(const BitMatrix& image, float overallEstModuleSize, int estAlignmentX, int estAlignmentY, float allowanceFactor, /*const PointCallback& pointCallback,*/ AlignmentPattern& result)
 {
 	// Look for an alignment pattern (3 modules in size) around where it
 	// should be
@@ -200,13 +200,13 @@ ErrorStatus FindAlignmentInRegion(const BitMatrix& image, float overallEstModule
 	int alignmentAreaLeftX = std::max(0, estAlignmentX - allowance);
 	int alignmentAreaRightX = std::min(image.width() - 1, estAlignmentX + allowance);
 	if (alignmentAreaRightX - alignmentAreaLeftX < overallEstModuleSize * 3) {
-		return ErrorStatus::NotFound;
+		return DecodeStatus::NotFound;
 	}
 
 	int alignmentAreaTopY = std::max(0, estAlignmentY - allowance);
 	int alignmentAreaBottomY = std::min(image.height() - 1, estAlignmentY + allowance);
 	if (alignmentAreaBottomY - alignmentAreaTopY < overallEstModuleSize * 3) {
-		return ErrorStatus::NotFound;
+		return DecodeStatus::NotFound;
 	}
 
 	return AlignmentPatternFinder::Find(image, alignmentAreaLeftX, alignmentAreaTopY, alignmentAreaRightX - alignmentAreaLeftX, alignmentAreaBottomY - alignmentAreaTopY, overallEstModuleSize, /*pointCallback,*/ result);
@@ -273,7 +273,7 @@ static int ComputeDimension(const ResultPoint& topLeft, const ResultPoint& topRi
 	return -1; // to signal error;
 }
 
-static ErrorStatus ProcessFinderPatternInfo(const BitMatrix& image, const FinderPatternInfo& info, /*const PointCallback& pointCallback, */DetectorResult& result)
+static DecodeStatus ProcessFinderPatternInfo(const BitMatrix& image, const FinderPatternInfo& info, /*const PointCallback& pointCallback, */DetectorResult& result)
 {
 	//FinderPattern topLeft = info.getTopLeft();
 	//FinderPattern topRight = info.getTopRight();
@@ -281,15 +281,15 @@ static ErrorStatus ProcessFinderPatternInfo(const BitMatrix& image, const Finder
 
 	float moduleSize = CalculateModuleSize(image, info.topLeft, info.topRight, info.bottomLeft);
 	if (moduleSize < 1.0f) {
-		return ErrorStatus::NotFound;
+		return DecodeStatus::NotFound;
 	}
 	int dimension = ComputeDimension(info.topLeft, info.topRight, info.bottomLeft, moduleSize);
 	if (dimension < 0)
-		return ErrorStatus::NotFound;
+		return DecodeStatus::NotFound;
 
 	const Version* provisionalVersion = Version::ProvisionalVersionForDimension(dimension);
 	if (provisionalVersion == nullptr)
-		return ErrorStatus::NotFound;
+		return DecodeStatus::NotFound;
 
 	int modulesBetweenFPCenters = provisionalVersion->dimensionForVersion() - 7;
 
@@ -334,10 +334,10 @@ static ErrorStatus ProcessFinderPatternInfo(const BitMatrix& image, const Finder
 		result.setBits(bits);
 		result.setPoints({ info.bottomLeft, info.topLeft, info.topRight, alignmentPattern });
 	}
-	return ErrorStatus::NoError;
+	return DecodeStatus::NoError;
 }
 
-ErrorStatus
+DecodeStatus
 Detector::Detect(const BitMatrix& image, bool pureBarcode, bool tryHarder, DetectorResult& result)
 {
 	/*PointCallback pointCallback = hints.resultPointCallback();*/

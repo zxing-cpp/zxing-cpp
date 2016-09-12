@@ -20,7 +20,7 @@
 
 namespace ZXing {
 
-enum class ErrorStatus;
+enum class DecodeStatus;
 
 namespace DataMatrix {
 
@@ -58,7 +58,7 @@ public:
 	* @return DataBlocks containing original bytes, "de-interleaved" from representation in the
 	*         Data Matrix Code
 	*/
-	static ErrorStatus GetDataBlocks(const ByteArray& rawCodewords, const Version& version, std::vector<DataBlock>& result);
+	static DecodeStatus GetDataBlocks(const ByteArray& rawCodewords, const Version& version, std::vector<DataBlock>& result);
 
 private:
 	int _numDataCodewords = 0;

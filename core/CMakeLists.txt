@@ -78,10 +78,10 @@ if (ENABLE_DECODERS)
 		src/BitWrapperBinarizer.cpp
 		src/DecodeHints.h
 		src/DecodeHints.cpp
+		src/DecodeStatus.h
+		src/DecodeStatus.cpp
 		src/DecoderResult.h
 		src/DetectorResult.h
-		src/ErrorStatus.h
-		src/ErrorStatus.cpp
 		src/GenericGF.h
 		src/GenericGF.cpp
 		src/GenericGFPoly.h
@@ -118,6 +118,7 @@ endif()
 if (ENABLE_ENCODERS)
 	set (COMMON_FILES ${COMMON_FILES}
 		src/EncodeHints.h
+		src/EncodeStatus.h
 		src/MultiFormatWriter.h
 		src/MultiFormatWriter.cpp
 		src/TextEncoder.h
@@ -189,6 +190,7 @@ endif()
 
 
 set (ONED_FILES
+	src/oned/ODUPCEANPatterns.h
 )
 if (ENABLE_DECODERS)
 	set (ONED_FILES ${ONED_FILES}
@@ -230,6 +232,16 @@ if (ENABLE_DECODERS)
 endif()
 if (ENABLE_ENCODERS)
 	set (ONED_FILES ${ONED_FILES}
+		src/oned/ODEAN8Writer.h
+		src/oned/ODEAN8Writer.cpp
+		src/oned/ODEAN13Writer.h
+		src/oned/ODEAN13Writer.cpp
+		src/oned/ODUPCEWriter.h
+		src/oned/ODUPCEWriter.cpp
+		src/oned/ODUPCAWriter.h
+		src/oned/ODUPCAWriter.cpp
+		src/oned/ODWriterHelper.h
+		src/oned/ODWriterHelper.cpp
 	)
 endif()
 

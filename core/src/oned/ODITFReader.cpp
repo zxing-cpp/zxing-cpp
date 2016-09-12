@@ -69,7 +69,7 @@ static const std::array<std::array<int, 5>, 10> PATTERNS = {
 * @return The decoded digit
 * @throws NotFoundException if digit cannot be decoded
 */
-static ErrorStatus
+static DecodeStatus
 DecodeDigit(const std::array<int, 5>& counters, int& outCode)
 {
 	float bestVariance = MAX_AVG_VARIANCE; // worst variance we'll accept
@@ -84,9 +84,9 @@ DecodeDigit(const std::array<int, 5>& counters, int& outCode)
 	}
 	if (bestMatch >= 0) {
 		outCode = bestMatch;
-		return ErrorStatus::NoError;
+		return DecodeStatus::NoError;
 	}
-	return ErrorStatus::NotFound;
+	return DecodeStatus::NotFound;
 }
 
 /**
@@ -95,7 +95,7 @@ DecodeDigit(const std::array<int, 5>& counters, int& outCode)
 * @param resultString {@link StringBuilder} to append decoded chars to
 * @throws NotFoundException if decoding could not complete successfully
 */
-static ErrorStatus DecodeMiddle(const BitArray& row, int payloadStart, int payloadEnd, std::string& resultString)
+static DecodeStatus DecodeMiddle(const BitArray& row, int payloadStart, int payloadEnd, std::string& resultString)
 {
 	// Digits are interleaved in pairs - 5 black lines for one digit, and the
 	// 5
@@ -106,7 +106,7 @@ static ErrorStatus DecodeMiddle(const BitArray& row, int payloadStart, int paylo
 	std::array<int, 5> counterBlack = {};
 	std::array<int, 5> counterWhite = {};
 
-	ErrorStatus status;
+	DecodeStatus status;
 
 	while (payloadStart < payloadEnd) {
 
@@ -138,7 +138,7 @@ static ErrorStatus DecodeMiddle(const BitArray& row, int payloadStart, int paylo
 			payloadStart += counterDigit;
 		}
 	}
-	return ErrorStatus::NoError;
+	return DecodeStatus::NoError;
 }
 
 /**
@@ -150,7 +150,7 @@ static ErrorStatus DecodeMiddle(const BitArray& row, int payloadStart, int paylo
 *         ints
 * @throws NotFoundException if pattern is not found
 */
-ErrorStatus
+DecodeStatus
 ITFReader::FindGuardPattern(const BitArray& row, int offset, const int* pattern, size_t patternLength, int& begin, int& end)
 {
 	std::vector<int> counters(patternLength, 0);
@@ -169,7 +169,7 @@ ITFReader::FindGuardPattern(const BitArray& row, int offset, const int* pattern,
 				if (PatternMatchVariance(counters.data(), pattern, patternLength, MAX_INDIVIDUAL_VARIANCE) < MAX_AVG_VARIANCE) {
 					begin = patternStart;
 					end = offset;
-					return ErrorStatus::NoError;
+					return DecodeStatus::NoError;
 				}
 				patternStart += counters[0] + counters[1];
 				std::copy(counters.begin() + 2, counters.end(), counters.begin());
@@ -184,7 +184,7 @@ ITFReader::FindGuardPattern(const BitArray& row, int offset, const int* pattern,
 			isWhite = !isWhite;
 		}
 	}
-	return ErrorStatus::NotFound;
+	return DecodeStatus::NotFound;
 }
 
 /**
@@ -194,15 +194,15 @@ ITFReader::FindGuardPattern(const BitArray& row, int offset, const int* pattern,
 * @return index of the first black line.
 * @throws NotFoundException Throws exception if no black lines are found in the row
 */
-static ErrorStatus
+static DecodeStatus
 SkipWhiteSpace(const BitArray& row, int& index)
 {
 	int width = row.size();
 	index = row.getNextSet(0);
 	if (index == width) {
-		return ErrorStatus::NotFound;
+		return DecodeStatus::NotFound;
 	}
-	return ErrorStatus::NoError;
+	return DecodeStatus::NoError;
 }
 
 /**
@@ -220,7 +220,7 @@ SkipWhiteSpace(const BitArray& row, int& index)
 * @param startPattern index into row of the start or end pattern.
 * @throws NotFoundException if the quiet zone cannot be found, a ReaderException is thrown.
 */
-static ErrorStatus
+static DecodeStatus
 ValidateQuietZone(const BitArray& row, int startPattern, int narrowLineWidth)
 {
 
@@ -238,9 +238,9 @@ ValidateQuietZone(const BitArray& row, int startPattern, int narrowLineWidth)
 	}
 	if (quietCount != 0) {
 		// Unable to find the necessary number of quiet zone pixels.
-		return ErrorStatus::NotFound;
+		return DecodeStatus::NotFound;
 	}
-	return ErrorStatus::NoError;
+	return DecodeStatus::NoError;
 }
 
 /**
@@ -251,11 +251,11 @@ ValidateQuietZone(const BitArray& row, int startPattern, int narrowLineWidth)
 *         'start block'
 * @throws NotFoundException
 */
-ErrorStatus
+DecodeStatus
 ITFReader::DecodeStart(const BitArray& row, int& narrowLineWidth, int& patternEnd)
 {
 	int endStart = 0;
-	ErrorStatus status = SkipWhiteSpace(row, endStart);
+	DecodeStatus status = SkipWhiteSpace(row, endStart);
 	if (StatusIsOK(status)) {
 		int patternStart;
 		status = FindGuardPattern(row, endStart, START_PATTERN, patternStart, patternEnd);
@@ -279,7 +279,7 @@ ITFReader::DecodeStart(const BitArray& row, int& narrowLineWidth, int& patternEn
 *         block'
 * @throws NotFoundException
 */
-ErrorStatus
+DecodeStatus
 ITFReader::DecodeEnd(const BitArray& row_, int narrowLineWidth, int& patternStart)
 {
 	BitArray row;
@@ -288,7 +288,7 @@ ITFReader::DecodeEnd(const BitArray& row_, int narrowLineWidth, int& patternStar
 	// search from 'the start' for the end block
 	row.reverse();
 	int endStart = 0;
-	ErrorStatus status = SkipWhiteSpace(row, endStart);
+	DecodeStatus status = SkipWhiteSpace(row, endStart);
 	if (StatusIsOK(status)) {
 		int patternEnd;
 		status = FindGuardPattern(row, endStart, END_PATTERN_REVERSED, patternStart, patternEnd);
@@ -322,7 +322,7 @@ ITFReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Decodin
 	// Find out where the Middle section (payload) starts & ends
 	int narrowLineWidth = -1;
 	int startRangeEnd, endRangeBegin;
-	ErrorStatus status = DecodeStart(row, narrowLineWidth, startRangeEnd);
+	DecodeStatus status = DecodeStart(row, narrowLineWidth, startRangeEnd);
 	if (StatusIsOK(status))
 		status = DecodeEnd(row, narrowLineWidth, endRangeBegin);
 
@@ -355,7 +355,7 @@ ITFReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Decodin
 		lengthOK = true;
 	}
 	if (!lengthOK) {
-		return Result(ErrorStatus::FormatError);
+		return Result(DecodeStatus::FormatError);
 	}
 
 	float x1 = static_cast<float>(startRangeEnd);

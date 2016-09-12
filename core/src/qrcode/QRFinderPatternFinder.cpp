@@ -19,7 +19,7 @@
 #include "qrcode/QRFinderPatternInfo.h"
 #include "BitMatrix.h"
 #include "DecodeHints.h"
-#include "ErrorStatus.h"
+#include "DecodeStatus.h"
 
 #include <cmath>
 #include <cstdlib>
@@ -374,12 +374,12 @@ struct CenterComparator
 *         size differs from the average among those patterns the least
 * @throws NotFoundException if 3 such finder patterns do not exist
 */
-ErrorStatus SelectBestPatterns(std::vector<FinderPattern>& possibleCenters)
+DecodeStatus SelectBestPatterns(std::vector<FinderPattern>& possibleCenters)
 {
 	int startSize = static_cast<int>(possibleCenters.size());
 	if (startSize < 3) {
 		// Couldn't find enough finder patterns
-		return ErrorStatus::NotFound;
+		return DecodeStatus::NotFound;
 	}
 
 	// Filter outlier possibilities whose module size is too different
@@ -422,7 +422,7 @@ ErrorStatus SelectBestPatterns(std::vector<FinderPattern>& possibleCenters)
 
 		possibleCenters.resize(3);
 	}
-	return ErrorStatus::NoError;
+	return DecodeStatus::NoError;
 }
 
 /**
@@ -480,7 +480,7 @@ static void OrderByBestPatterns(FinderPattern& p0, FinderPattern& p1, FinderPatt
 }
 
 
-ErrorStatus
+DecodeStatus
 FinderPatternFinder::Find(const BitMatrix& image, /*const PointCallback& pointCallback,*/ bool pureBarcode, bool tryHarder, FinderPatternInfo& outInfo)
 {
 	int maxI = image.height();
@@ -598,7 +598,7 @@ FinderPatternFinder::Find(const BitMatrix& image, /*const PointCallback& pointCa
 	outInfo.topLeft = possibleCenters[1];
 	outInfo.topRight = possibleCenters[2];
 	
-	return ErrorStatus::NoError;
+	return DecodeStatus::NoError;
 }
 
 

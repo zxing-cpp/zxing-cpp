@@ -28,7 +28,7 @@ static Result MaybeReturnResult(const Result& result)
 		return Result(text.substr(1), ByteArray(), result.resultPoints(), BarcodeFormat::UPC_A);
 	}
 	else {
-		return Result(ErrorStatus::FormatError);
+		return Result(DecodeStatus::FormatError);
 	}
 }
 
@@ -50,7 +50,7 @@ UPCAReader::expectedFormat() const
 	return BarcodeFormat::UPC_A;
 }
 
-ErrorStatus
+DecodeStatus
 UPCAReader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const
 {
 	return _reader.decodeMiddle(row, rowOffset, resultString);

@@ -27,7 +27,7 @@ namespace ZXing {
 
 class BitMatrix;
 class BinaryBitmap;
-enum class ErrorStatus;
+enum class DecodeStatus;
 
 namespace Pdf417 {
 
@@ -48,7 +48,7 @@ public:
 		std::list<std::array<Nullable<ResultPoint>, 8>> points;
 	};
 
-	static ErrorStatus Detect(const BinaryBitmap& image, bool multiple, Result& result);
+	static DecodeStatus Detect(const BinaryBitmap& image, bool multiple, Result& result);
 };
 
 } // Pdf417

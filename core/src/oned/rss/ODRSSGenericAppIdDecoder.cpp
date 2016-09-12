@@ -18,7 +18,7 @@
 #include "oned/rss/ODRSSGenericAppIdDecoder.h"
 #include "oned/rss/ODRSSFieldParser.h"
 #include "BitArray.h"
-#include "ErrorStatus.h"
+#include "DecodeStatus.h"
 #include "ZXStrConvWorkaround.h"
 
 #include <algorithm>
@@ -522,7 +522,7 @@ DoDecodeGeneralPurposeField(ParsingState& state, const BitArray& bits, const std
 	return DecodedInformation(state.position, buffer);
 }
 
-ErrorStatus
+DecodeStatus
 GenericAppIdDecoder::DecodeGeneralPurposeField(const BitArray& bits, int pos, std::string& result)
 {
 	try
@@ -530,15 +530,15 @@ GenericAppIdDecoder::DecodeGeneralPurposeField(const BitArray& bits, int pos, st
 		ParsingState state;
 		state.position = pos;
 		result += DoDecodeGeneralPurposeField(state, bits, std::string()).newString;
-		return ErrorStatus::NoError;
+		return DecodeStatus::NoError;
 	}
 	catch (const std::exception &)
 	{
 	}
-	return ErrorStatus::FormatError;
+	return DecodeStatus::FormatError;
 }
 
-ErrorStatus
+DecodeStatus
 GenericAppIdDecoder::DecodeAllCodes(const BitArray& bits, int pos, std::string& result)
 {
 	try
@@ -566,12 +566,12 @@ GenericAppIdDecoder::DecodeAllCodes(const BitArray& bits, int pos, std::string& 
 			}
 			pos = info.newPosition;
 		};
-		return ErrorStatus::NoError;
+		return DecodeStatus::NoError;
 	}
 	catch (const std::exception &)
 	{
 	}
-	return ErrorStatus::FormatError;
+	return DecodeStatus::FormatError;
 }
 
 } // RSS

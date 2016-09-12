@@ -97,7 +97,7 @@ ToNarrowWidePattern(const CounterContainer& counters)
 	return -1;
 }
 
-static ErrorStatus
+static DecodeStatus
 FindAsteriskPattern(const BitArray& row, CounterContainer& counters, int& outPatternStart, int& outPatternEnd)
 {
 	int width = row.size();
@@ -118,7 +118,7 @@ FindAsteriskPattern(const BitArray& row, CounterContainer& counters, int& outPat
 					row.isRange(std::max(0, patternStart - ((offset - patternStart) / 2)), patternStart, false)) {
 					outPatternStart = patternStart;
 					outPatternEnd = offset;
-					return ErrorStatus::NoError;
+					return DecodeStatus::NoError;
 				}
 				patternStart += counters[0] + counters[1];
 				std::copy(counters.begin() + 2, counters.end(), counters.begin());
@@ -133,7 +133,7 @@ FindAsteriskPattern(const BitArray& row, CounterContainer& counters, int& outPat
 			isWhite = !isWhite;
 		}
 	}
-	return ErrorStatus::NotFound;
+	return DecodeStatus::NotFound;
 }
 
 static char
@@ -147,7 +147,7 @@ PatternToChar(int pattern)
 	return 0;
 }
 
-static ErrorStatus
+static DecodeStatus
 DecodeExtended(const std::string& encoded, std::string& decoded)
 {
 	size_t length = encoded.length();
@@ -156,7 +156,7 @@ DecodeExtended(const std::string& encoded, std::string& decoded)
 		char c = encoded[i];
 		if (c == '+' || c == '$' || c == '%' || c == '/') {
 			if (i+1 >= length) {
-				return ErrorStatus::FormatError;
+				return DecodeStatus::FormatError;
 			}
 			char next = encoded[i + 1];
 			char decodedChar = '\0';
@@ -167,7 +167,7 @@ DecodeExtended(const std::string& encoded, std::string& decoded)
 					decodedChar = (char)(next + 32);
 				}
 				else {
-					return ErrorStatus::FormatError;
+					return DecodeStatus::FormatError;
 				}
 				break;
 			case '$':
@@ -176,7 +176,7 @@ DecodeExtended(const std::string& encoded, std::string& decoded)
 					decodedChar = (char)(next - 64);
 				}
 				else {
-					return ErrorStatus::FormatError;
+					return DecodeStatus::FormatError;
 				}
 				break;
 			case '%':
@@ -188,7 +188,7 @@ DecodeExtended(const std::string& encoded, std::string& decoded)
 					decodedChar = (char)(next - 11);
 				}
 				else {
-					return ErrorStatus::FormatError;
+					return DecodeStatus::FormatError;
 				}
 				break;
 			case '/':
@@ -200,7 +200,7 @@ DecodeExtended(const std::string& encoded, std::string& decoded)
 					decodedChar = ':';
 				}
 				else {
-					return ErrorStatus::FormatError;
+					return DecodeStatus::FormatError;
 				}
 				break;
 			}
@@ -212,7 +212,7 @@ DecodeExtended(const std::string& encoded, std::string& decoded)
 			decoded += c;
 		}
 	}
-	return ErrorStatus::NoError;
+	return DecodeStatus::NoError;
 }
 
 static int IndexOf(const char* str, char c)
@@ -234,7 +234,7 @@ Code39Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 	std::string result;
 	result.reserve(20);
 	int patternStart = 0, patternEnd = 0;
-	ErrorStatus status = FindAsteriskPattern(row, theCounters, patternStart, patternEnd);
+	DecodeStatus status = FindAsteriskPattern(row, theCounters, patternStart, patternEnd);
 	if (StatusIsError(status)) {
 		return Result(status);
 	}
@@ -251,12 +251,12 @@ Code39Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 		}
 		int pattern = ToNarrowWidePattern(theCounters);
 		if (pattern < 0) {
-			return Result(ErrorStatus::NotFound);
+			return Result(DecodeStatus::NotFound);
 		}
 		
 		decodedChar = PatternToChar(pattern);
 		if (decodedChar == 0) {
-			return Result(ErrorStatus::NotFound);
+			return Result(DecodeStatus::NotFound);
 		}
 		result += decodedChar;
 		lastStart = nextStart;
@@ -278,7 +278,7 @@ Code39Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 	// If 50% of last pattern size, following last pattern, is not whitespace, fail
 	// (but if it's whitespace to the very end of the image, that's OK)
 	if (nextStart != end && (whiteSpaceAfterEnd * 2) < lastPatternSize) {
-		return Result(ErrorStatus::NotFound);
+		return Result(DecodeStatus::NotFound);
 	}
 
 	if (_usingCheckDigit) {
@@ -288,14 +288,14 @@ Code39Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 			total += IndexOf(CHECK_DIGIT_STRING, result[i]);
 		}
 		if (total < 0 || result[max] != CHECK_DIGIT_STRING[total % CHECK_DIGIT_COUNT]) {
-			return Result(ErrorStatus::ChecksumError);
+			return Result(DecodeStatus::ChecksumError);
 		}
 		result.resize(max);
 	}
 
 	if (result.empty()) {
 		// false positive
-		return Result(ErrorStatus::NotFound);
+		return Result(DecodeStatus::NotFound);
 	}
 
 	std::string resultString;

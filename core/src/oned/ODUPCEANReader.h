@@ -26,7 +26,7 @@ namespace ZXing {
 
 class DecodeHints;
 enum class BarcodeFormat;
-enum class ErrorStatus;
+enum class DecodeStatus;
 
 namespace OneD {
 
@@ -76,23 +76,23 @@ protected:
 	* @param resultString {@link StringBuilder} to append decoded chars to
 	* @throws NotFoundException if decoding could not complete successfully
 	*/
-	virtual ErrorStatus decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const = 0;
+	virtual DecodeStatus decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const = 0;
 
 	/**
 	* @param s string of digits to check
 	* @return {@link #checkStandardUPCEANChecksum(CharSequence)}
 	* @throws FormatException if the string does not contain only digits
 	*/
-	virtual	ErrorStatus checkChecksum(const std::string& s) const;
+	virtual	DecodeStatus checkChecksum(const std::string& s) const;
 
 
-	virtual ErrorStatus decodeEnd(const BitArray& row, int endStart, int& begin, int& end) const;
+	virtual DecodeStatus decodeEnd(const BitArray& row, int endStart, int& begin, int& end) const;
 
 public:
-	static ErrorStatus FindStartGuardPattern(const BitArray& row, int& begin, int& end);
+	static DecodeStatus FindStartGuardPattern(const BitArray& row, int& begin, int& end);
 
 	template <typename Container>
-	static ErrorStatus FindGuardPattern(const BitArray& row, int rowOffset, bool whiteFirst, const Container& pattern, int& begin, int& end) {
+	static DecodeStatus FindGuardPattern(const BitArray& row, int rowOffset, bool whiteFirst, const Container& pattern, int& begin, int& end) {
 		return FindGuardPattern(row, rowOffset, whiteFirst, pattern.data(), pattern.size(), begin, end);
 	}
 
@@ -104,7 +104,7 @@ public:
 	* @return true iff string of digits passes the UPC/EAN checksum algorithm
 	* @throws FormatException if the string does not contain only digits
 	*/
-	static ErrorStatus CheckStandardUPCEANChecksum(const std::string& s);
+	static DecodeStatus CheckStandardUPCEANChecksum(const std::string& s);
 
 	/**
 	* Attempts to decode a single UPC/EAN-encoded digit.
@@ -119,31 +119,16 @@ public:
 	* @throws NotFoundException if digit cannot be decoded
 	*/
 	template <typename Container>
-	static ErrorStatus DecodeDigit(const BitArray& row, int rowOffset, const Container& patterns, std::array<int, 4>& counters, int &resultOffset) {
+	static DecodeStatus DecodeDigit(const BitArray& row, int rowOffset, const Container& patterns, std::array<int, 4>& counters, int &resultOffset) {
 		return DecodeDigit(row, rowOffset, patterns.data(), patterns.size(), counters, resultOffset);
 	}
 	
-	/**
-	* Pattern marking the middle of a UPC/EAN pattern, separating the two halves.
-	*/
-	static const std::array<int, 5> MIDDLE_PATTERN;
-	
-	/**
-	* "Odd", or "L" patterns used to encode UPC/EAN digits.
-	*/
-	static const std::array<std::array<int, 4>, 10> L_PATTERNS;
-
-	/**
-	* As above but also including the "even", or "G" patterns used to encode UPC/EAN digits.
-	*/
-	static const std::array<std::array<int, 4>, 20> L_AND_G_PATTERNS;
-
 private:
 	std::vector<int> _allowedExtensions;
 
-	static ErrorStatus FindGuardPattern(const BitArray& row, int rowOffset, bool whiteFirst, const int* pattern, size_t length, int& begin, int& end);
-	static ErrorStatus DecodeDigit(const BitArray& row, int rowOffset, const std::array<int, 4>* patterns, size_t patternCount, std::array<int, 4>& counters, int &resultOffset);
-	static ErrorStatus DoFindGuardPattern(const BitArray& row, int rowOffset, bool whiteFirst, const int* pattern, int* counters, size_t length, int& begin, int& end);
+	static DecodeStatus FindGuardPattern(const BitArray& row, int rowOffset, bool whiteFirst, const int* pattern, size_t length, int& begin, int& end);
+	static DecodeStatus DecodeDigit(const BitArray& row, int rowOffset, const std::array<int, 4>* patterns, size_t patternCount, std::array<int, 4>& counters, int &resultOffset);
+	static DecodeStatus DoFindGuardPattern(const BitArray& row, int rowOffset, bool whiteFirst, const int* pattern, int* counters, size_t length, int& begin, int& end);
 };
 
 } // OneD

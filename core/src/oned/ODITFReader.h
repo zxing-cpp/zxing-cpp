@@ -51,15 +51,15 @@ public:
 private:
 	std::vector<int> _allowedLengths;
 
-	static ErrorStatus FindGuardPattern(const BitArray& row, int rowOffset, const int* pattern, size_t patternLength, int& begin, int& end);
+	static DecodeStatus FindGuardPattern(const BitArray& row, int rowOffset, const int* pattern, size_t patternLength, int& begin, int& end);
 
 	template <typename Container>
-	static ErrorStatus FindGuardPattern(const BitArray& row, int rowOffset, const Container& pattern, int& begin, int& end) {
+	static DecodeStatus FindGuardPattern(const BitArray& row, int rowOffset, const Container& pattern, int& begin, int& end) {
 		return FindGuardPattern(row, rowOffset, pattern.data(), pattern.size(), begin, end);
 	}
 
-	static ErrorStatus DecodeStart(const BitArray& row, int& narrowLineWidth, int& patternEnd);
-	static ErrorStatus DecodeEnd(const BitArray& row_, int narrowLineWidth, int& patternStart);
+	static DecodeStatus DecodeStart(const BitArray& row, int& narrowLineWidth, int& patternEnd);
+	static DecodeStatus DecodeEnd(const BitArray& row_, int narrowLineWidth, int& patternStart);
 };
 
 } // OneD

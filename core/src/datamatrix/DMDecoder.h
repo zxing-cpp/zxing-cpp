@@ -20,7 +20,7 @@ namespace ZXing {
 
 class DecoderResult;
 class BitMatrix;
-enum class ErrorStatus;
+enum class DecodeStatus;
 
 namespace DataMatrix {
 
@@ -53,7 +53,7 @@ public:
 	* @throws FormatException if the Data Matrix Code cannot be decoded
 	* @throws ChecksumException if error correction fails
 	*/
-	static ErrorStatus Decode(const BitMatrix& bits, DecoderResult& result);
+	static DecodeStatus Decode(const BitMatrix& bits, DecoderResult& result);
 };
 
 } // DataMatrix

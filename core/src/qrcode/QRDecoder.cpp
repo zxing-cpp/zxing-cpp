@@ -32,7 +32,7 @@
 #include "CharacterSet.h"
 #include "CharacterSetECI.h"
 #include "DecodeHints.h"
-#include "ErrorStatus.h"
+#include "DecodeStatus.h"
 
 #include <list>
 #include <type_traits>
@@ -48,7 +48,7 @@ namespace QRCode {
 * @param numDataCodewords number of codewords that are data bytes
 * @throws ChecksumException if error correction fails
 */
-static ErrorStatus
+static DecodeStatus
 CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
 {
 	int numCodewords = codewordBytes.length();
@@ -67,9 +67,9 @@ CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
 			codewordBytes[i] = static_cast<uint8_t>(codewordsInts[i]);
 		}
 	}
-	else if (StatusIsKindOf(status, ErrorStatus::ReedSolomonError))
+	else if (StatusIsKindOf(status, DecodeStatus::ReedSolomonError))
 	{
-		status = ErrorStatus::ChecksumError;
+		status = DecodeStatus::ChecksumError;
 	}
 	return status;
 }
@@ -78,12 +78,12 @@ CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
 /**
 * See specification GBT 18284-2000
 */
-static ErrorStatus
+static DecodeStatus
 DecodeHanziSegment(BitSource& bits, int count, std::wstring& result)
 {
 	// Don't crash trying to read more bits than we have available.
 	if (count * 13 > bits.available()) {
-		return ErrorStatus::FormatError;
+		return DecodeStatus::FormatError;
 	}
 
 	// Each character will require 2 bytes. Read the characters as 2-byte pairs
@@ -108,15 +108,15 @@ DecodeHanziSegment(BitSource& bits, int count, std::wstring& result)
 	}
 
 	TextDecoder::Append(result, buffer.data(), buffer.length(), CharacterSet::GB2312);
-	return ErrorStatus::NoError;
+	return DecodeStatus::NoError;
 }
 
-static ErrorStatus
+static DecodeStatus
 DecodeKanjiSegment(BitSource& bits, int count, std::wstring& result)
 {
 	// Don't crash trying to read more bits than we have available.
 	if (count * 13 > bits.available()) {
-		return ErrorStatus::FormatError;
+		return DecodeStatus::FormatError;
 	}
 
 	// Each character will require 2 bytes. Read the characters as 2-byte pairs
@@ -141,15 +141,15 @@ DecodeKanjiSegment(BitSource& bits, int count, std::wstring& result)
 	}
 
 	TextDecoder::Append(result, buffer.data(), buffer.length(), CharacterSet::Shift_JIS);
-	return ErrorStatus::NoError;
+	return DecodeStatus::NoError;
 }
 
-static ErrorStatus
+static DecodeStatus
 DecodeByteSegment(BitSource& bits, int count, CharacterSet currentCharset, const std::string& hintedCharset, std::wstring& result, std::list<ByteArray>& byteSegments)
 {
 	// Don't crash trying to read more bits than we have available.
 	if (8 * count > bits.available()) {
-		return ErrorStatus::FormatError;
+		return DecodeStatus::FormatError;
 	}
 
 	ByteArray readBytes(count);
@@ -173,7 +173,7 @@ DecodeByteSegment(BitSource& bits, int count, CharacterSet currentCharset, const
 	}
 	TextDecoder::Append(result, readBytes.data(), readBytes.length(), currentCharset);
 	byteSegments.push_back(readBytes);
-	return ErrorStatus::NoError;
+	return DecodeStatus::NoError;
 }
 
 static char
@@ -195,14 +195,14 @@ ToAlphaNumericChar(int value)
 	return ALPHANUMERIC_CHARS[value];
 }
 
-static ErrorStatus
+static DecodeStatus
 DecodeAlphanumericSegment(BitSource& bits, int count, bool fc1InEffect, std::wstring& result)
 {
 	// Read two characters at a time
 	std::string buffer;
 	while (count > 1) {
 		if (bits.available() < 11) {
-			return ErrorStatus::FormatError;
+			return DecodeStatus::FormatError;
 		}
 		int nextTwoCharsBits = bits.readBits(11);
 		buffer += ToAlphaNumericChar(nextTwoCharsBits / 45);
@@ -212,7 +212,7 @@ DecodeAlphanumericSegment(BitSource& bits, int count, bool fc1InEffect, std::wst
 	if (count == 1) {
 		// special case: one character left
 		if (bits.available() < 6) {
-			return ErrorStatus::FormatError;
+			return DecodeStatus::FormatError;
 		}
 		buffer += ToAlphaNumericChar(bits.readBits(6));
 	}
@@ -233,10 +233,10 @@ DecodeAlphanumericSegment(BitSource& bits, int count, bool fc1InEffect, std::wst
 		}
 	}
 	TextDecoder::AppendLatin1(result, buffer);
-	return ErrorStatus::NoError;
+	return DecodeStatus::NoError;
 }
 
-static ErrorStatus
+static DecodeStatus
 DecodeNumericSegment(BitSource& bits, int count, std::wstring& result)
 {
 	// Read three digits at a time
@@ -244,11 +244,11 @@ DecodeNumericSegment(BitSource& bits, int count, std::wstring& result)
 	while (count >= 3) {
 		// Each 10 bits encodes three digits
 		if (bits.available() < 10) {
-			return ErrorStatus::FormatError;
+			return DecodeStatus::FormatError;
 		}
 		int threeDigitsBits = bits.readBits(10);
 		if (threeDigitsBits >= 1000) {
-			return ErrorStatus::FormatError;
+			return DecodeStatus::FormatError;
 		}
 		buffer += ToAlphaNumericChar(threeDigitsBits / 100);
 		buffer += ToAlphaNumericChar((threeDigitsBits / 10) % 10);
@@ -258,11 +258,11 @@ DecodeNumericSegment(BitSource& bits, int count, std::wstring& result)
 	if (count == 2) {
 		// Two digits left over to read, encoded in 7 bits
 		if (bits.available() < 7) {
-			return ErrorStatus::FormatError;
+			return DecodeStatus::FormatError;
 		}
 		int twoDigitsBits = bits.readBits(7);
 		if (twoDigitsBits >= 100) {
-			return ErrorStatus::FormatError;
+			return DecodeStatus::FormatError;
 		}
 		buffer += ToAlphaNumericChar(twoDigitsBits / 10);
 		buffer += ToAlphaNumericChar(twoDigitsBits % 10);
@@ -270,41 +270,41 @@ DecodeNumericSegment(BitSource& bits, int count, std::wstring& result)
 	else if (count == 1) {
 		// One digit left over to read
 		if (bits.available() < 4) {
-			return ErrorStatus::FormatError;
+			return DecodeStatus::FormatError;
 		}
 		int digitBits = bits.readBits(4);
 		if (digitBits >= 10) {
-			return ErrorStatus::FormatError;
+			return DecodeStatus::FormatError;
 		}
 		buffer += ToAlphaNumericChar(digitBits);
 	}
 
 	TextDecoder::AppendLatin1(result, buffer);
-	return ErrorStatus::NoError;
+	return DecodeStatus::NoError;
 }
 
-static ErrorStatus
+static DecodeStatus
 ParseECIValue(BitSource& bits, int &outValue)
 {
 	int firstByte = bits.readBits(8);
 	if ((firstByte & 0x80) == 0) {
 		// just one byte
 		outValue = firstByte & 0x7F;
-		return ErrorStatus::NoError;
+		return DecodeStatus::NoError;
 	}
 	if ((firstByte & 0xC0) == 0x80) {
 		// two bytes
 		int secondByte = bits.readBits(8);
 		outValue = ((firstByte & 0x3F) << 8) | secondByte;
-		return ErrorStatus::NoError;
+		return DecodeStatus::NoError;
 	}
 	if ((firstByte & 0xE0) == 0xC0) {
 		// three bytes
 		int secondThirdBytes = bits.readBits(16);
 		outValue = ((firstByte & 0x1F) << 16) | secondThirdBytes;
-		return ErrorStatus::NoError;
+		return DecodeStatus::NoError;
 	}
-	return ErrorStatus::FormatError;
+	return DecodeStatus::FormatError;
 }
 
 /**
@@ -313,7 +313,7 @@ ParseECIValue(BitSource& bits, int &outValue)
 *
 * <p>See ISO 18004:2006, 6.4.3 - 6.4.7</p>
 */
-static ErrorStatus
+static DecodeStatus
 DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionLevel ecLevel, const std::string& hintedCharset, DecoderResult& decodeResult)
 {
 	BitSource bits(bytes);
@@ -344,7 +344,7 @@ DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionL
 				}
 				else if (mode == DecodeMode::STRUCTURED_APPEND) {
 					if (bits.available() < 16) {
-						return ErrorStatus::FormatError;
+						return DecodeStatus::FormatError;
 					}
 					// sequence number and parity is added later to the result metadata
 					// Read next 8 bits (symbol sequence #) and 8 bits (parity data), then continue
@@ -360,7 +360,7 @@ DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionL
 					}
 					currentCharset = CharacterSetECI::CharsetFromValue(value);
 					if (currentCharset == CharacterSet::Unknown) {
-						return ErrorStatus::FormatError;
+						return DecodeStatus::FormatError;
 					}
 				}
 				else {
@@ -380,7 +380,7 @@ DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionL
 						// "Normal" QR code modes:
 						// How many characters will follow, encoded in this mode?
 						int count = bits.readBits(DecodeMode::CharacterCountBits(mode, version));
-						ErrorStatus status;
+						DecodeStatus status;
 						if (mode == DecodeMode::NUMERIC) {
 							status = DecodeNumericSegment(bits, count, result);
 						}
@@ -394,7 +394,7 @@ DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionL
 							status = DecodeKanjiSegment(bits, count, result);
 						}
 						else {
-							status = ErrorStatus::FormatError;
+							status = DecodeStatus::FormatError;
 						}
 
 						if (StatusIsError(status)) {
@@ -408,7 +408,7 @@ DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionL
 	catch (const std::exception &)
 	{
 		// from readBits() calls
-		return ErrorStatus::FormatError;
+		return DecodeStatus::FormatError;
 	}
 	
 	decodeResult.setRawBytes(bytes);
@@ -417,18 +417,18 @@ DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionL
 	decodeResult.setEcLevel(ToString(ecLevel));
 	decodeResult.setStructuredAppendSequenceNumber(symbolSequence);
 	decodeResult.setStructuredAppendParity(parityData);
-	return ErrorStatus::NoError;
+	return DecodeStatus::NoError;
 }
 
 
-static ErrorStatus
+static DecodeStatus
 DoDecode(const BitMatrix& bits, const Version& version, const FormatInformation& formatInfo, const std::string& hintedCharset, DecoderResult& result)
 {
 	auto ecLevel = formatInfo.errorCorrectionLevel();
 
 	// Read codewords
 	ByteArray codewords;
-	ErrorStatus status = BitMatrixParser::ReadCodewords(bits, version, codewords);
+	DecodeStatus status = BitMatrixParser::ReadCodewords(bits, version, codewords);
 	if (StatusIsError(status)) {
 		return status;
 	}
@@ -473,7 +473,7 @@ ReMask(BitMatrix& bitMatrix, const FormatInformation& formatInfo)
 }
 
 
-ErrorStatus
+DecodeStatus
 Decoder::Decode(const BitMatrix& bits_, const std::string& hintedCharset, DecoderResult& result)
 {
 	BitMatrix bits;
@@ -482,7 +482,7 @@ Decoder::Decode(const BitMatrix& bits_, const std::string& hintedCharset, Decode
 	const Version* version;
 	FormatInformation formatInfo;
 
-	ErrorStatus status = BitMatrixParser::ParseVersionInfo(bits, false, version, formatInfo);
+	DecodeStatus status = BitMatrixParser::ParseVersionInfo(bits, false, version, formatInfo);
 	if (StatusIsOK(status))
 	{
 		ReMask(bits, formatInfo);

@@ -20,7 +20,7 @@
 #include "qrcode/QRFormatInformation.h"
 #include "BitMatrix.h"
 #include "ByteArray.h"
-#include "ErrorStatus.h"
+#include "DecodeStatus.h"
 
 namespace ZXing {
 namespace QRCode {
@@ -85,7 +85,7 @@ const Version* ReadVersion(const BitMatrix& bitMatrix, bool mirrored)
 * @throws FormatException if both format information locations cannot be parsed as
 * the valid encoding of format information
 */
-ErrorStatus ReadFormatInformation(const BitMatrix& bitMatrix, bool mirrored, FormatInformation &out)
+DecodeStatus ReadFormatInformation(const BitMatrix& bitMatrix, bool mirrored, FormatInformation &out)
 {
 	// Read top-left format info bits
 	int formatInfoBits1 = 0;
@@ -113,19 +113,19 @@ ErrorStatus ReadFormatInformation(const BitMatrix& bitMatrix, bool mirrored, For
 	}
 
 	if (out.decode(formatInfoBits1, formatInfoBits2))
-		return ErrorStatus::NoError;
-	return ErrorStatus::FormatError;
+		return DecodeStatus::NoError;
+	return DecodeStatus::FormatError;
 }
 
 
 } // anonymous
 
-ErrorStatus
+DecodeStatus
 BitMatrixParser::ParseVersionInfo(const BitMatrix& bitMatrix, bool mirrored, const Version*& parsedVersion, FormatInformation& parsedFormatInfo)
 {
 	int dimension = bitMatrix.height();
 	if (dimension < 21 || (dimension & 0x03) != 1) {
-		return ErrorStatus::FormatError;
+		return DecodeStatus::FormatError;
 	}
 
 	parsedVersion = ReadVersion(bitMatrix, mirrored);
@@ -133,7 +133,7 @@ BitMatrixParser::ParseVersionInfo(const BitMatrix& bitMatrix, bool mirrored, con
 	{
 		return ReadFormatInformation(bitMatrix, mirrored, parsedFormatInfo);
 	}
-	return ErrorStatus::FormatError;
+	return DecodeStatus::FormatError;
 }
 
 /**
@@ -144,12 +144,12 @@ BitMatrixParser::ParseVersionInfo(const BitMatrix& bitMatrix, bool mirrored, con
 * @return bytes encoded within the QR Code
 * @throws FormatException if the exact number of bytes expected is not read
 */
-ErrorStatus
+DecodeStatus
 BitMatrixParser::ReadCodewords(const BitMatrix& bitMatrix, const Version& version, ByteArray& result)
 {
 	int dimension = bitMatrix.height();
 	if (dimension < 21 || (dimension & 0x03) != 1) {
-		return ErrorStatus::FormatError;
+		return DecodeStatus::FormatError;
 	}
 
 	BitMatrix functionPattern;
@@ -187,7 +187,7 @@ BitMatrixParser::ReadCodewords(const BitMatrix& bitMatrix, const Version& versio
 		}
 		readingUp ^= true; // readingUp = !readingUp; // switch directions
 	}
-	return resultOffset == version.totalCodewords() ? ErrorStatus::NoError : ErrorStatus::FormatError;
+	return resultOffset == version.totalCodewords() ? DecodeStatus::NoError : DecodeStatus::FormatError;
 }
 
 } // QRCode

@@ -22,7 +22,7 @@ namespace ZXing {
 
 class BitMatrix;
 class PerspectiveTransform;
-enum class ErrorStatus;
+enum class DecodeStatus;
 
 /**
 * Implementations of this class can, given locations of finder patterns for a QR code in an
@@ -71,12 +71,12 @@ public:
 	* @throws NotFoundException if image can't be sampled, for example, if the transformation defined
 	*   by the given points is invalid or results in sampling outside the image boundaries
 	*/
-	virtual ErrorStatus sampleGrid(const BitMatrix& image, int dimensionX, int dimensionY,
+	virtual DecodeStatus sampleGrid(const BitMatrix& image, int dimensionX, int dimensionY,
 		float p1ToX, float p1ToY, float p2ToX, float p2ToY, float p3ToX, float p3ToY, float p4ToX, float p4ToY,
 		float p1FromX, float p1FromY, float p2FromX, float p2FromY, float p3FromX, float p3FromY, float p4FromX, float p4FromY,
 		BitMatrix& result) const = 0;
 
-	virtual ErrorStatus sampleGrid(const BitMatrix& image, int dimensionX, int dimensionY, const PerspectiveTransform& transform, BitMatrix& result) const = 0;
+	virtual DecodeStatus sampleGrid(const BitMatrix& image, int dimensionX, int dimensionY, const PerspectiveTransform& transform, BitMatrix& result) const = 0;
 
 	static std::shared_ptr<GridSampler> Instance();
 	static void SetInstance(const std::shared_ptr<GridSampler>& inst);

@@ -21,7 +21,7 @@
 #include "DecoderResult.h"
 #include "ReedSolomonDecoder.h"
 #include "GenericGF.h"
-#include "ErrorStatus.h"
+#include "DecodeStatus.h"
 #include "TextDecoder.h"
 #include "ZXStrConvWorkaround.h"
 
@@ -242,7 +242,7 @@ namespace DecodedBitStreamParser
 		return sb;
 	}
 
-	static ErrorStatus Decode(const ByteArray& bytes, int mode, DecoderResult& decodeResult)
+	static DecodeStatus Decode(const ByteArray& bytes, int mode, DecoderResult& decodeResult)
 	{
 		std::string result;
 		result.reserve(144);
@@ -271,21 +271,21 @@ namespace DecodedBitStreamParser
 		decodeResult.setRawBytes(bytes);
 		decodeResult.setText(TextDecoder::FromLatin1(result));
 		decodeResult.setEcLevel(std::to_wstring(mode)); // really???
-		return ErrorStatus::NoError;
+		return DecodeStatus::NoError;
 	}
 
 
 
 } // DecodedBitStreamParser
 
-ErrorStatus
+DecodeStatus
 Decoder::Decode(const BitMatrix& bits, DecoderResult& result)
 {
 	ByteArray codewords;
 	BitMatrixParser::ReadCodewords(bits, codewords);
 
 	if (!CorrectErrors(codewords, 0, 10, 10, ALL)) {
-		return ErrorStatus::ChecksumError;
+		return DecodeStatus::ChecksumError;
 	}
 	int mode = codewords[0] & 0x0F;
 	ByteArray datawords;
@@ -297,7 +297,7 @@ Decoder::Decode(const BitMatrix& bits, DecoderResult& result)
 				datawords.resize(94, 0);
 			}
 			else {
-				return ErrorStatus::ChecksumError;
+				return DecodeStatus::ChecksumError;
 			}
 			break;
 		case 5:
@@ -305,11 +305,11 @@ Decoder::Decode(const BitMatrix& bits, DecoderResult& result)
 				datawords.resize(78, 0);
 			}
 			else {
-				return ErrorStatus::ChecksumError;
+				return DecodeStatus::ChecksumError;
 			}
 			break;
 		default:
-			return ErrorStatus::FormatError;
+			return DecodeStatus::FormatError;
 	}
 
 	std::copy_n(codewords.begin(), 10, datawords.begin());

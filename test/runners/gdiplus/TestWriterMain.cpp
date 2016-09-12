@@ -26,7 +26,7 @@
 #include <chrono>
 #include <sstream>
 
-#include "BarcodeScanner.h"
+#include "BarcodeReader.h"
 #include "../../core/src/TextDecoder.h"
 #include "../../core/src/TextUtfEncoding.h"
 
@@ -89,13 +89,13 @@ static int GetRotationEnum(int degree)
 {
 	switch (degree) {
 	case 90:
-		return ZXing::BarcodeScanner::RotationCW90;
+		return ZXing::BarcodeReader::RotationCW90;
 	case 180:
-		return ZXing::BarcodeScanner::Rotation180;
+		return ZXing::BarcodeReader::Rotation180;
 	case 270:
-		return ZXing::BarcodeScanner::RotationCCW90;
+		return ZXing::BarcodeReader::RotationCCW90;
 	default:
-		return ZXing::BarcodeScanner::Rotation0;
+		return ZXing::BarcodeReader::Rotation0;
 	}
 }
 
@@ -111,7 +111,7 @@ struct TestCase
 	TestCase(int mpc, int thc, int mm, int mt, int r) : mustPassCount(mpc), tryHarderCount(thc), maxMisreads(mm), maxTryHarderMisreads(mt), rotation(r) {}
 };
 
-bool CheckResult(std::string imgPath, const std::string& expectedFormat, const ZXing::BarcodeScanner::ScanResult& result, std::string& log)
+bool CheckResult(std::string imgPath, const std::string& expectedFormat, const ZXing::BarcodeReader::ScanResult& result, std::string& log)
 {
 	if (expectedFormat != result.format) {
 		log += "Format mismatch: expected " + expectedFormat + " but got " + result.format + "\n";
@@ -160,7 +160,7 @@ std::string GetFormatFromFolderName(const char* folderName)
 }
 
 static std::string PathPrefix;
-static ZXing::BarcodeScanner scanners[2] = { ZXing::BarcodeScanner(false, false), ZXing::BarcodeScanner(true, true) };
+static ZXing::BarcodeReader scanners[2] = { ZXing::BarcodeReader(false, false), ZXing::BarcodeReader(true, true) };
 
 static const char* GOOD = "OK";
 static const char* BAD = "!!!!!! FAILED !!!!!!";

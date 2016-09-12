@@ -20,7 +20,7 @@ namespace ZXing {
 
 class DetectorResult;
 class BitMatrix;
-enum class ErrorStatus;
+enum class DecodeStatus;
 
 namespace QRCode {
 
@@ -41,7 +41,7 @@ public:
 	* @throws NotFoundException if QR Code cannot be found
 	* @throws FormatException if a QR Code cannot be decoded
 	*/
-	static ErrorStatus Detect(const BitMatrix& image, bool pureBarcode, bool tryHarder, DetectorResult& result);
+	static DecodeStatus Detect(const BitMatrix& image, bool pureBarcode, bool tryHarder, DetectorResult& result);
 };
 
 } // QRCode

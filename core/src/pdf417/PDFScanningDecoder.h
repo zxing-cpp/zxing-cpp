@@ -18,7 +18,7 @@
 
 namespace ZXing {
 
-enum class ErrorStatus;
+enum class DecodeStatus;
 class BitMatrix;
 class ResultPoint;
 class DecoderResult;
@@ -32,7 +32,7 @@ namespace Pdf417 {
 class ScanningDecoder
 {
 public:
-	static ErrorStatus Decode(const BitMatrix& image,
+	static DecodeStatus Decode(const BitMatrix& image,
 		const Nullable<ResultPoint>& imageTopLeft, const Nullable<ResultPoint>& imageBottomLeft,
 		const Nullable<ResultPoint>& imageTopRight, const Nullable<ResultPoint>& imageBottomRight,
 		int minCodewordWidth, int maxCodewordWidth, DecoderResult& result);

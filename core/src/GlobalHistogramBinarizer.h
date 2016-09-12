@@ -46,7 +46,7 @@ public:
 	virtual bool isPureBarcode() const override;
 	virtual int width() const override;
 	virtual int height() const override;
-	virtual ErrorStatus getBlackRow(int y, BitArray& outArray) const override;
+	virtual DecodeStatus getBlackRow(int y, BitArray& outArray) const override;
 	virtual std::shared_ptr<const BitMatrix> getBlackMatrix() const override;
 	virtual bool canCrop() const override;
 	virtual std::shared_ptr<BinaryBitmap> cropped(int left, int top, int width, int height) const override;

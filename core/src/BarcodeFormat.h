@@ -24,7 +24,7 @@ namespace ZXing {
 *
 * @author Sean Owen
 */
-enum class BarcodeFormat : int
+enum class BarcodeFormat
 {
 	/** Aztec 2D barcode format. */
 	AZTEC,

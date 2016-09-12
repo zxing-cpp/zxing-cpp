@@ -68,7 +68,7 @@ struct RSS14DecodingState : public RowReader::DecodingState
 //	possibleRightPairs = new ArrayList<>();
 //}
 
-static ErrorStatus
+static DecodeStatus
 FindFinderPattern(const BitArray& row, int offset, bool rightFinderPattern, FinderCounters& counters, int& start, int& end)
 {
 	std::fill(counters.begin(), counters.end(), 0);
@@ -94,7 +94,7 @@ FindFinderPattern(const BitArray& row, int offset, bool rightFinderPattern, Find
 				if (RSS::ReaderHelper::IsFinderPattern(counters)) {
 					start = patternStart;
 					end = offset;
-					return ErrorStatus::NoError;
+					return DecodeStatus::NoError;
 				}
 				patternStart += counters[0] + counters[1];
 				counters[0] = counters[2];
@@ -110,7 +110,7 @@ FindFinderPattern(const BitArray& row, int offset, bool rightFinderPattern, Find
 			isWhite = !isWhite;
 		}
 	}
-	return ErrorStatus::NotFound;
+	return DecodeStatus::NotFound;
 }
 
 
@@ -285,7 +285,7 @@ DecodeDataCharacter(const BitArray& row, const RSS::FinderPattern& pattern, bool
 {
 	std::array<int, 8> counters = {};
 
-	ErrorStatus status;
+	DecodeStatus status;
 	if (outsideChar) {
 		status = RowReader::RecordPatternInReverse(row, pattern.startPos(), counters);
 	}
@@ -380,7 +380,7 @@ DecodePair(const BitArray& row, bool right, int rowNumber)
 {
 	FinderCounters finderCounters = {};
 	int patternStart, patternEnd;
-	ErrorStatus status = FindFinderPattern(row, 0, right, finderCounters, patternStart, patternEnd);
+	DecodeStatus status = FindFinderPattern(row, 0, right, finderCounters, patternStart, patternEnd);
 	if (StatusIsOK(status)) {
 		auto pattern = ParseFoundFinderPattern(row, rowNumber, right, patternStart, patternEnd, finderCounters);
 		if (pattern.isValid()) {
@@ -503,7 +503,7 @@ RSS14Reader::decodeRow(int rowNumber, const BitArray& row_, std::unique_ptr<Deco
 			}
 		}
 	}
-	return Result(ErrorStatus::NotFound);
+	return Result(DecodeStatus::NotFound);
 }
 
 } // OneD

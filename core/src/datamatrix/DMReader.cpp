@@ -50,19 +50,19 @@ GetModuleSize(int x, int y, const BitMatrix& image)
 *
 * @see com.google.zxing.qrcode.QRCodeReader#extractPureBits(BitMatrix)
 */
-static ErrorStatus
+static DecodeStatus
 ExtractPureBits(const BitMatrix& image, BitMatrix& outBits)
 {
 	int left, top, right, bottom;
 	if (!image.getTopLeftOnBit(left, top) || !image.getBottomRightOnBit(right, bottom)) {
-		return ErrorStatus::NotFound;
+		return DecodeStatus::NotFound;
 	}
 
 	int moduleSize = GetModuleSize(left, top, image);
 	int matrixWidth = (right - left + 1) / moduleSize;
 	int matrixHeight = (bottom - top + 1) / moduleSize;
 	if (matrixWidth <= 0 || matrixHeight <= 0) {
-		return ErrorStatus::NotFound;
+		return DecodeStatus::NotFound;
 	}
 
 	// Push in the "border" by half the module width so that we start
@@ -82,7 +82,7 @@ ExtractPureBits(const BitMatrix& image, BitMatrix& outBits)
 			}
 		}
 	}
-	return ErrorStatus::NoError;
+	return DecodeStatus::NoError;
 }
 
 /**
@@ -98,12 +98,12 @@ Reader::decode(const BinaryBitmap& image) const
 {
 	auto binImg = image.getBlackMatrix();
 	if (binImg == nullptr) {
-		return Result(ErrorStatus::NotFound);
+		return Result(DecodeStatus::NotFound);
 	}
 
 	DecoderResult decoderResult;
 	std::vector<ResultPoint> points;
-	ErrorStatus status;
+	DecodeStatus status;
 	if (image.isPureBarcode()) {
 		BitMatrix bits;
 		status = ExtractPureBits(*binImg, bits);

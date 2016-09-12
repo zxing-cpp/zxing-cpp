@@ -16,9 +16,10 @@
 */
 
 #include "oned/ODEAN13Reader.h"
+#include "oned/ODUPCEANPatterns.h"
 #include "BarcodeFormat.h"
 #include "BitArray.h"
-#include "ErrorStatus.h"
+#include "DecodeStatus.h"
 
 namespace ZXing {
 namespace OneD {
@@ -66,15 +67,15 @@ static const int FIRST_DIGIT_ENCODINGS[] = {
 *  encode digits
 * @throws NotFoundException if first digit cannot be determined
 */
-static ErrorStatus DetermineFirstDigit(std::string& resultString, int lgPatternFound)
+static DecodeStatus DetermineFirstDigit(std::string& resultString, int lgPatternFound)
 {
 	for (int d = 0; d < 10; d++) {
 		if (lgPatternFound == FIRST_DIGIT_ENCODINGS[d]) {
 			resultString.insert(0, 1, (char)('0' + d));
-			return ErrorStatus::NoError;
+			return DecodeStatus::NoError;
 		}
 	}
-	return ErrorStatus::NotFound;
+	return DecodeStatus::NotFound;
 }
 
 
@@ -84,17 +85,17 @@ EAN13Reader::expectedFormat() const
 	return BarcodeFormat::EAN_13;
 }
 
-ErrorStatus
+DecodeStatus
 EAN13Reader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const
 {
 	std::array<int, 4> counters = {};
 	int end = row.size();
-	ErrorStatus status;
+	DecodeStatus status;
 	int lgPatternFound = 0;
 
 	for (int x = 0; x < 6 && rowOffset < end; x++) {
 		int bestMatch = 0;
-		status = DecodeDigit(row, rowOffset, L_AND_G_PATTERNS, counters, bestMatch);
+		status = DecodeDigit(row, rowOffset, UPCEANPatterns::L_AND_G_PATTERNS, counters, bestMatch);
 		if (StatusIsError(status)) {
 			return status;
 		}
@@ -112,7 +113,7 @@ EAN13Reader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resu
 		return status;
 	}
 	int middleRangeBegin, middleRangeEnd;
-	status = FindGuardPattern(row, rowOffset, true, MIDDLE_PATTERN, middleRangeBegin, middleRangeEnd);
+	status = FindGuardPattern(row, rowOffset, true, UPCEANPatterns::MIDDLE_PATTERN, middleRangeBegin, middleRangeEnd);
 	if (StatusIsError(status)) {
 		return status;
 	}
@@ -120,7 +121,7 @@ EAN13Reader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resu
 	rowOffset = middleRangeEnd;
 	for (int x = 0; x < 6 && rowOffset < end; x++) {
 		int bestMatch = 0;
-		status = DecodeDigit(row, rowOffset, L_PATTERNS, counters, bestMatch);
+		status = DecodeDigit(row, rowOffset, UPCEANPatterns::L_PATTERNS, counters, bestMatch);
 		if (StatusIsError(status)) {
 			return status;
 		}
@@ -129,7 +130,7 @@ EAN13Reader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resu
 			rowOffset += counter;
 		}
 	}
-	return ErrorStatus::NoError;
+	return DecodeStatus::NoError;
 }
 
 } // OneD

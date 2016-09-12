@@ -17,6 +17,7 @@
 
 #include "oned/ODUPCEANExtensionSupport.h"
 #include "oned/ODUPCEANReader.h"
+#include "oned/ODUPCEANPatterns.h"
 #include "Result.h"
 #include "BitArray.h"
 #include "TextDecoder.h"
@@ -64,7 +65,7 @@ namespace UPCEANExtension5Support
 		return -1;
 	}
 
-	static ErrorStatus
+	static DecodeStatus
 	DecodeMiddle(const BitArray& row, int startRangeBegin, int startRangeEnd, std::string& resultString, int& outRowOffset)
 	{
 		std::array<int, 4> counters = {};
@@ -73,7 +74,7 @@ namespace UPCEANExtension5Support
 		int lgPatternFound = 0;
 		for (int x = 0; x < 5 && rowOffset < end; x++) {
 			int bestMatch = 0;
-			auto status = UPCEANReader::DecodeDigit(row, rowOffset, UPCEANReader::L_AND_G_PATTERNS, counters, bestMatch);
+			auto status = UPCEANReader::DecodeDigit(row, rowOffset, UPCEANPatterns::L_AND_G_PATTERNS, counters, bestMatch);
 			if (StatusIsError(status)) {
 				return status;
 			}
@@ -92,15 +93,15 @@ namespace UPCEANExtension5Support
 		}
 
 		if (resultString.length() != 5) {
-			return ErrorStatus::NotFound;
+			return DecodeStatus::NotFound;
 		}
 
 		int checkDigit = DetermineCheckDigit(lgPatternFound);
 		if (checkDigit < 0 || ExtensionChecksum(resultString) != checkDigit) {
-			return ErrorStatus::NotFound;
+			return DecodeStatus::NotFound;
 		}
 		outRowOffset = rowOffset;
-		return ErrorStatus::NoError;
+		return DecodeStatus::NoError;
 	}
 
 	static std::string
@@ -161,7 +162,7 @@ namespace UPCEANExtension5Support
 	{
 		std::string resultString;
 		int end = 0;
-		ErrorStatus status = DecodeMiddle(row, extStartRangeBegin, extStartRangeEnd, resultString, end);
+		DecodeStatus status = DecodeMiddle(row, extStartRangeBegin, extStartRangeEnd, resultString, end);
 		if (StatusIsError(status)) {
 			return Result(status);
 		}
@@ -178,7 +179,7 @@ namespace UPCEANExtension5Support
 
 namespace UPCEANExtension2Support
 {
-	static ErrorStatus
+	static DecodeStatus
 	DecodeMiddle(const BitArray& row, int startRangeBegin, int startRangeEnd, std::string& resultString, int& outRowOffset)
 	{
 		std::array<int, 4> counters = {};
@@ -187,7 +188,7 @@ namespace UPCEANExtension2Support
 		int checkParity = 0;
 		for (int x = 0; x < 2 && rowOffset < end; x++) {
 			int bestMatch = 0;
-			auto status = UPCEANReader::DecodeDigit(row, rowOffset, UPCEANReader::L_AND_G_PATTERNS, counters, bestMatch);
+			auto status = UPCEANReader::DecodeDigit(row, rowOffset, UPCEANPatterns::L_AND_G_PATTERNS, counters, bestMatch);
 			if (StatusIsError(status)) {
 				return status;
 			}
@@ -206,14 +207,14 @@ namespace UPCEANExtension2Support
 		}
 
 		if (resultString.length() != 2) {
-			return ErrorStatus::NotFound;
+			return DecodeStatus::NotFound;
 		}
 
 		if (std::stoi(resultString) % 4 != checkParity) {
-			return ErrorStatus::NotFound;
+			return DecodeStatus::NotFound;
 		}
 		outRowOffset = rowOffset;
-		return ErrorStatus::NoError;
+		return DecodeStatus::NoError;
 	}
 
 	static Result
@@ -221,7 +222,7 @@ namespace UPCEANExtension2Support
 	{
 		std::string resultString;;
 		int end = 0;
-		ErrorStatus status = DecodeMiddle(row, extStartRangeBegin, extStartRangeEnd, resultString, end);
+		DecodeStatus status = DecodeMiddle(row, extStartRangeBegin, extStartRangeEnd, resultString, end);
 		if (StatusIsError(status)) {
 			return Result(status);
 		}

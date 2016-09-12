@@ -22,7 +22,7 @@ namespace ZXing {
 
 class BitArray;
 class BitMatrix;
-enum class ErrorStatus;
+enum class DecodeStatus;
 
 /**
 * This class is the core bitmap class used by ZXing to represent 1 bit data. Reader objects
@@ -60,7 +60,7 @@ public:
 	* @return The array of bits for this row (true means black).
 	* @throws NotFoundException if row can't be binarized
 	*/
-	virtual ErrorStatus getBlackRow(int y, BitArray& outArray) const = 0;
+	virtual DecodeStatus getBlackRow(int y, BitArray& outArray) const = 0;
 
 	/**
 	* Converts a 2D array of luminance data to 1 bit. This method is intended for decoding 2D

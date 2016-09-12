@@ -35,9 +35,9 @@ public:
 
 protected:
 	virtual BarcodeFormat expectedFormat() const override;
-	virtual ErrorStatus decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const override;
-	virtual	ErrorStatus checkChecksum(const std::string& s) const override;
-	virtual ErrorStatus decodeEnd(const BitArray& row, int endStart, int& begin, int& end) const override;
+	virtual DecodeStatus decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const override;
+	virtual	DecodeStatus checkChecksum(const std::string& s) const override;
+	virtual DecodeStatus decodeEnd(const BitArray& row, int endStart, int& begin, int& end) const override;
 
 
 public:

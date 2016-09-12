@@ -33,11 +33,11 @@ Reader::decode(const BinaryBitmap& image) const
 {
 	auto binImg = image.getBlackMatrix();
 	if (binImg == nullptr) {
-		return Result(ErrorStatus::NotFound);
+		return Result(DecodeStatus::NotFound);
 	}
 
 	DetectorResult detectResult;
-	ErrorStatus status = Detector::Detect(*binImg, false, detectResult);
+	DecodeStatus status = Detector::Detect(*binImg, false, detectResult);
 	DecoderResult decodeResult;
 	std::vector<ResultPoint> points;
 	if (StatusIsOK(status)) {

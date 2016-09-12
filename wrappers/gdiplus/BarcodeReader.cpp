@@ -78,7 +78,7 @@ CreateBinaryBitmap(Gdiplus::Bitmap& bitmap)
 BarcodeReader::ScanResult
 BarcodeReader::scan(Gdiplus::Bitmap& bitmap, int rotations)
 {
-	Result result(ErrorStatus::NotFound);
+	Result result(DecodeStatus::NotFound);
 	auto binImg = CreateBinaryBitmap(bitmap);
 	
 	if ((rotations & Rotation0) != 0) {

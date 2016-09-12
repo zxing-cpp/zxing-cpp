@@ -62,21 +62,21 @@ Result
 Reader::decode(const BinaryBitmap& image) const
 {
 	if (!image.isPureBarcode()) {
-		return Result(ErrorStatus::NotFound);
+		return Result(DecodeStatus::NotFound);
 	}
 
 	auto binImg = image.getBlackMatrix();
 	if (binImg == nullptr) {
-		return Result(ErrorStatus::NotFound);
+		return Result(DecodeStatus::NotFound);
 	}
 
 	BitMatrix bits;
 	if (!ExtractPureBits(*binImg, bits)) {
-		return Result(ErrorStatus::NotFound);
+		return Result(DecodeStatus::NotFound);
 	}
 
 	DecoderResult decoderResult;
-	ErrorStatus status = Decoder::Decode(bits, decoderResult);
+	DecodeStatus status = Decoder::Decode(bits, decoderResult);
 	if (StatusIsError(status)) {
 		return Result(status);
 	}

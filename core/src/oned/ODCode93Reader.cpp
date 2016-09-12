@@ -75,7 +75,7 @@ static int ToPattern(const CounterContainer& counters)
 	return pattern;
 }
 
-static ErrorStatus
+static DecodeStatus
 FindAsteriskPattern(const BitArray& row, int& outPatternStart, int& outPatternEnd)
 {
 	int width = row.size();
@@ -95,7 +95,7 @@ FindAsteriskPattern(const BitArray& row, int& outPatternStart, int& outPatternEn
 				if (ToPattern(theCounters) == ASTERISK_ENCODING) {
 					outPatternStart = patternStart;
 					outPatternEnd = offset;
-					return ErrorStatus::NoError;
+					return DecodeStatus::NoError;
 				}
 				patternStart += theCounters[0] + theCounters[1];
 				std::copy(theCounters.begin() + 2, theCounters.end(), theCounters.begin());
@@ -110,7 +110,7 @@ FindAsteriskPattern(const BitArray& row, int& outPatternStart, int& outPatternEn
 			isWhite = !isWhite;
 		}
 	}
-	return ErrorStatus::NotFound;
+	return DecodeStatus::NotFound;
 }
 
 static char
@@ -124,7 +124,7 @@ PatternToChar(int pattern)
 	return 0;
 }
 
-static ErrorStatus
+static DecodeStatus
 DecodeExtended(const std::string& encoded, std::string& decoded)
 {
 	size_t length = encoded.length();
@@ -133,7 +133,7 @@ DecodeExtended(const std::string& encoded, std::string& decoded)
 		char c = encoded[i];
 		if (c >= 'a' && c <= 'd') {
 			if (i+1 >= length) {
-				return ErrorStatus::FormatError;
+				return DecodeStatus::FormatError;
 			}
 			char next = encoded[i + 1];
 			char decodedChar = '\0';
@@ -144,7 +144,7 @@ DecodeExtended(const std::string& encoded, std::string& decoded)
 					decodedChar = (char)(next + 32);
 				}
 				else {
-					return ErrorStatus::FormatError;
+					return DecodeStatus::FormatError;
 				}
 				break;
 			case 'a':
@@ -153,7 +153,7 @@ DecodeExtended(const std::string& encoded, std::string& decoded)
 					decodedChar = (char)(next - 64);
 				}
 				else {
-					return ErrorStatus::FormatError;
+					return DecodeStatus::FormatError;
 				}
 				break;
 			case 'b':
@@ -178,7 +178,7 @@ DecodeExtended(const std::string& encoded, std::string& decoded)
 					decodedChar = 127;
 				}
 				else {
-					return ErrorStatus::FormatError;
+					return DecodeStatus::FormatError;
 				}
 				break;
 			case 'c':
@@ -190,7 +190,7 @@ DecodeExtended(const std::string& encoded, std::string& decoded)
 					decodedChar = ':';
 				}
 				else {
-					return ErrorStatus::FormatError;
+					return DecodeStatus::FormatError;
 				}
 				break;
 			}
@@ -202,7 +202,7 @@ DecodeExtended(const std::string& encoded, std::string& decoded)
 			decoded += c;
 		}
 	}
-	return ErrorStatus::NoError;
+	return DecodeStatus::NoError;
 }
 
 static int IndexOf(const char* str, char c)
@@ -228,14 +228,14 @@ CheckOneChecksum(const std::string& result, int checkPosition, int weightMax)
 	return true;
 }
 
-static ErrorStatus
+static DecodeStatus
 CheckChecksums(const std::string& result) 
 {
 	int length = static_cast<int>(result.length());
 	if (CheckOneChecksum(result, length - 2, 20) && CheckOneChecksum(result, length - 1, 15)) {
-		return ErrorStatus::NoError;
+		return DecodeStatus::NoError;
 	}
-	return ErrorStatus::ChecksumError;
+	return DecodeStatus::ChecksumError;
 }
 
 
@@ -243,7 +243,7 @@ Result
 Code93Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const
 {
 	int patternStart = 0, patternEnd = 0;
-	ErrorStatus status = FindAsteriskPattern(row, patternStart, patternEnd);
+	DecodeStatus status = FindAsteriskPattern(row, patternStart, patternEnd);
 	if (StatusIsError(status)) {
 		return Result(status);
 	}
@@ -264,11 +264,11 @@ Code93Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 		}
 		int pattern = ToPattern(theCounters);
 		if (pattern < 0) {
-			return Result(ErrorStatus::NotFound);
+			return Result(DecodeStatus::NotFound);
 		}
 		decodedChar = PatternToChar(pattern);
 		if (decodedChar == 0) {
-			return Result(ErrorStatus::NotFound);
+			return Result(DecodeStatus::NotFound);
 		}
 		result.push_back(decodedChar);
 		lastStart = nextStart;
@@ -288,12 +288,12 @@ Code93Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 
 	// Should be at least one more black module
 	if (nextStart == end || !row.get(nextStart)) {
-		return Result(ErrorStatus::NotFound);
+		return Result(DecodeStatus::NotFound);
 	}
 
 	if (result.length() < 2) {
 		// false positive -- need at least 2 checksum digits
-		return Result(ErrorStatus::NotFound);
+		return Result(DecodeStatus::NotFound);
 	}
 
 	status = CheckChecksums(result);

@@ -238,11 +238,11 @@ CodabarReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Dec
 	std::vector<int> counters;
 	counters.reserve(80);
 	if (!InitCounters(row, counters)) {
-		return Result(ErrorStatus::NotFound);
+		return Result(DecodeStatus::NotFound);
 	}
 	int startOffset = FindStartPattern(counters);
 	if (startOffset < 0) {
-		return Result(ErrorStatus::NotFound);
+		return Result(DecodeStatus::NotFound);
 	}
 
 	int nextStart = startOffset;
@@ -251,7 +251,7 @@ CodabarReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Dec
 	do {
 		int charOffset = ToNarrowWidePattern(counters, nextStart);
 		if (charOffset < 0) {
-			return Result(ErrorStatus::NotFound);
+			return Result(DecodeStatus::NotFound);
 		}
 		// Hack: We store the position in the alphabet table into a
 		// StringBuilder, so that we can access the decoded patterns in
@@ -275,11 +275,11 @@ CodabarReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Dec
 	// otherwise this is probably a false positive. The exception is if we are
 	// at the end of the row. (I.e. the barcode barely fits.)
 	if (nextStart < static_cast<int>(counters.size()) && trailingWhitespace < lastPatternSize / 2) {
-		return Result(ErrorStatus::NotFound);
+		return Result(DecodeStatus::NotFound);
 	}
 
 	if (!ValidatePattern(charOffsets, counters, startOffset)) {
-		return Result(ErrorStatus::NotFound);
+		return Result(DecodeStatus::NotFound);
 	}
 
 	// Translate character table offsets to actual characters.
@@ -290,16 +290,16 @@ CodabarReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Dec
 	}
 	// Ensure a valid start and end character
 	if (IndexOf(STARTEND_ENCODING, decodeRowResult.front()) < 0) {
-		return Result(ErrorStatus::NotFound);
+		return Result(DecodeStatus::NotFound);
 	}
 	if (IndexOf(STARTEND_ENCODING, decodeRowResult.back()) < 0) {
-		return Result(ErrorStatus::NotFound);
+		return Result(DecodeStatus::NotFound);
 	}
 
 	// remove stop/start characters character and check if a long enough string is contained
 	if (static_cast<int>(decodeRowResult.length()) <= MIN_CHARACTER_LENGTH) {
 		// Almost surely a false positive ( start + stop + at least 1 character)
-		return Result(ErrorStatus::NotFound);
+		return Result(DecodeStatus::NotFound);
 	}
 
 	if (!_shouldReturnStartEnd) {

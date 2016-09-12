@@ -14,13 +14,13 @@
 * limitations under the License.
 */
 
-#include "ErrorStatus.h"
+#include "DecodeStatus.h"
 #include "BitHacks.h"
 
 namespace ZXing {
 
 bool
-StatusIsKindOf(ErrorStatus status, ErrorStatus group)
+StatusIsKindOf(DecodeStatus status, DecodeStatus group)
 {
 	int shift = BitHacks::NumberOfTrailingZeros(static_cast<uint32_t>(group));
 	return (static_cast<uint32_t>(status) >> shift) == (static_cast<uint32_t>(group) >> shift);

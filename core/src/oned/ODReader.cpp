@@ -169,7 +169,7 @@ DoDecode(const std::vector<std::shared_ptr<RowReader>>& readers, const BinaryBit
 			}
 		}
 	}
-	return Result(ErrorStatus::NotFound);
+	return Result(DecodeStatus::NotFound);
 }
 
 // Note that we don't try rotation without the try harder flag, even if rotation was supported.

@@ -18,7 +18,7 @@
 
 namespace ZXing {
 
-enum class ErrorStatus;
+enum class DecodeStatus;
 class BitMatrix;
 class ByteArray;
 
@@ -29,7 +29,7 @@ class Version;
 class BitMatrixParser
 {
 public:
-	static ErrorStatus ReadCodewords(const BitMatrix& bits, ByteArray& result);
+	static DecodeStatus ReadCodewords(const BitMatrix& bits, ByteArray& result);
 	static const Version* ReadVersion(const BitMatrix& bits);
 };
 

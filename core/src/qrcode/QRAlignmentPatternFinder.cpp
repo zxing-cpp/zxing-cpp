@@ -18,7 +18,7 @@
 #include "qrcode/QRAlignmentPatternFinder.h"
 #include "qrcode/QRAlignmentPattern.h"
 #include "BitMatrix.h"
-#include "ErrorStatus.h"
+#include "DecodeStatus.h"
 
 #include <array>
 #include <cmath>
@@ -150,7 +150,7 @@ static bool HandlePossibleCenter(const BitMatrix& image, const StateCount& state
 	return false;
 }
 
-ErrorStatus
+DecodeStatus
 AlignmentPatternFinder::Find(const BitMatrix& image, int startX, int startY, int width, int height, float moduleSize, /*const PointCallback& pointCallback,*/ AlignmentPattern &result)
 {
 	int maxJ = startX + width;
@@ -182,7 +182,7 @@ AlignmentPatternFinder::Find(const BitMatrix& image, int startX, int startY, int
 					if (currentState == 2) { // A winner?
 						if (FoundPatternCross(stateCount, moduleSize)) { // Yes
 							if (HandlePossibleCenter(image, stateCount, i, j, moduleSize, /*pointCallback,*/ result, possibleCenters)) {
-								return ErrorStatus::NoError;
+								return DecodeStatus::NoError;
 							}
 						}
 						stateCount[0] = stateCount[2];
@@ -205,7 +205,7 @@ AlignmentPatternFinder::Find(const BitMatrix& image, int startX, int startY, int
 		}
 		if (FoundPatternCross(stateCount, moduleSize)) {
 			if (HandlePossibleCenter(image, stateCount, i, maxJ, moduleSize, /*pointCallback,*/ result, possibleCenters)) {
-				return ErrorStatus::NoError;
+				return DecodeStatus::NoError;
 			}
 		}
 
@@ -215,10 +215,10 @@ AlignmentPatternFinder::Find(const BitMatrix& image, int startX, int startY, int
 	// any guess at all, return it.
 	if (!possibleCenters.empty()) {
 		result = possibleCenters.front();
-		return ErrorStatus::NoError;
+		return DecodeStatus::NoError;
 	}
 
-	return ErrorStatus::NotFound;
+	return DecodeStatus::NotFound;
 }
 
 } // QRCode

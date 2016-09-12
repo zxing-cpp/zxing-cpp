@@ -16,7 +16,7 @@
 */
 
 #include "oned/rss/ODRSSFieldParser.h"
-#include "ErrorStatus.h"
+#include "DecodeStatus.h"
 
 #include <cstdlib>
 #include <algorithm>
@@ -176,7 +176,7 @@ static const DigitLength FOUR_DIGIT_DATA_LENGTH[] = {
 	{ "8200", -70 },
 };
 
-static ErrorStatus
+static DecodeStatus
 ProcessVariableAI(int aiSize, int variableFieldSize, const std::string& rawInfo, std::string& result)
 {
 	auto ai = rawInfo.substr(0, aiSize);
@@ -191,17 +191,17 @@ ProcessVariableAI(int aiSize, int variableFieldSize, const std::string& rawInfo,
 }
 
 
-static ErrorStatus
+static DecodeStatus
 ProcessFixedAI(int aiSize, int fieldSize, const std::string& rawInfo, std::string& result)
 {
 	if ((int)rawInfo.length() < aiSize) {
-		return ErrorStatus::NotFound;
+		return DecodeStatus::NotFound;
 	}
 
 	auto ai = rawInfo.substr(0, aiSize);
 
 	if ((int)rawInfo.length() < aiSize + fieldSize) {
-		return ErrorStatus::NotFound;
+		return DecodeStatus::NotFound;
 	}
 
 	auto field = rawInfo.substr(aiSize, fieldSize);
@@ -213,17 +213,17 @@ ProcessFixedAI(int aiSize, int fieldSize, const std::string& rawInfo, std::strin
 	return status;
 }
 
-ErrorStatus
+DecodeStatus
 FieldParser::ParseFieldsInGeneralPurpose(const std::string &rawInfo, std::string& result)
 {
 	if (rawInfo.empty()) {
-		return ErrorStatus::NoError;
+		return DecodeStatus::NoError;
 	}
 
 	// Processing 2-digit AIs
 
 	if (rawInfo.length() < 2) {
-		return ErrorStatus::NotFound;
+		return DecodeStatus::NotFound;
 	}
 
 	const DigitLength* dataLengthSets[] = { TWO_DIGIT_DATA_LENGTH, THREE_DIGIT_DATA_LENGTH, THREE_DIGIT_PLUS_DIGIT_DATA_LENGTH, FOUR_DIGIT_DATA_LENGTH };
@@ -238,7 +238,7 @@ FieldParser::ParseFieldsInGeneralPurpose(const std::string &rawInfo, std::string
 
 	for (int i = 0; i < 4; ++i) {
 		if (rawInfo.length() < digitSizes[i]) {
-			return ErrorStatus::NotFound;
+			return DecodeStatus::NotFound;
 		}
 		auto firstDigits = rawInfo.substr(0, digitSizes[i]);
 		for (size_t j = 0; j < dataSetSizes[i]; ++j) {
@@ -251,7 +251,7 @@ FieldParser::ParseFieldsInGeneralPurpose(const std::string &rawInfo, std::string
 			}
 		}
 	}
-	return ErrorStatus::NotFound;
+	return DecodeStatus::NotFound;
 }
 
 

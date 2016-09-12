@@ -343,7 +343,7 @@ DecodeDataCharacter(const BitArray& row, const FinderPattern& pattern, bool isOd
 {
 	std::array<int, 8> counters = {};
 
-	ErrorStatus status;
+	DecodeStatus status;
 	if (leftChar) {
 		status = RowReader::RecordPatternInReverse(row, pattern.startPos(), counters);
 	}
@@ -757,14 +757,14 @@ static Result
 ConstructResult(const std::list<ExpandedPair>& pairs)
 {
 	if (pairs.empty()) {
-		return Result(ErrorStatus::NotFound);
+		return Result(DecodeStatus::NotFound);
 	}
 
 	BitArray binary;
 	BuildBitArray(pairs, binary);
 	auto resultString = ExpandedBinaryDecoder::Decode(binary);
 	if (resultString.empty()) {
-		return Result(ErrorStatus::NotFound);
+		return Result(DecodeStatus::NotFound);
 	}
 
 	auto& firstPoints = pairs.front().finderPattern().points();

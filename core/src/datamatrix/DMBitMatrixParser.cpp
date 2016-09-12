@@ -18,7 +18,7 @@
 #include "datamatrix/DMBitMatrixParser.h"
 #include "datamatrix/DMVersion.h"
 #include "BitMatrix.h"
-#include "ErrorStatus.h"
+#include "DecodeStatus.h"
 #include "ByteArray.h"
 
 namespace ZXing {
@@ -352,12 +352,12 @@ public:
 * @return bytes encoded within the Data Matrix Code
 * @throws FormatException if the exact number of bytes expected is not read
 */
-ErrorStatus
+DecodeStatus
 BitMatrixParser::ReadCodewords(const BitMatrix& bits, ByteArray& result)
 {
 	const Version* version = ReadVersion(bits);
 	if (version == nullptr) {
-		return ErrorStatus::FormatError;
+		return DecodeStatus::FormatError;
 	}
 
 	BitMatrix mappingBitMatrix;
@@ -431,7 +431,7 @@ BitMatrixParser::ReadCodewords(const BitMatrix& bits, ByteArray& result)
 		}
 	} while ((row < numRows) || (column < numColumns));
 
-	return resultOffset == version->totalCodewords() ? ErrorStatus::NoError : ErrorStatus::FormatError;
+	return resultOffset == version->totalCodewords() ? DecodeStatus::NoError : DecodeStatus::FormatError;
 }
 
 } // DataMatrix

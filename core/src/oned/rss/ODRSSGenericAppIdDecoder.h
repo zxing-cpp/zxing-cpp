@@ -21,7 +21,7 @@
 namespace ZXing {
 
 class BitArray;
-enum class ErrorStatus;
+enum class DecodeStatus;
 
 namespace OneD {
 namespace RSS {
@@ -34,8 +34,8 @@ class GenericAppIdDecoder
 {
 public:
 	static int ExtractNumeric(const BitArray& bits, int pos, int count);
-	static ErrorStatus DecodeGeneralPurposeField(const BitArray& bits, int pos, std::string& result);
-	static ErrorStatus DecodeAllCodes(const BitArray& bits, int initialPosition, std::string& result);
+	static DecodeStatus DecodeGeneralPurposeField(const BitArray& bits, int pos, std::string& result);
+	static DecodeStatus DecodeAllCodes(const BitArray& bits, int initialPosition, std::string& result);
 };
 
 } // RSS

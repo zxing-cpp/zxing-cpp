@@ -15,17 +15,13 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-
 #include <string>
-#include <memory>
-#include <vector>
 
 namespace ZXing {
 
 class BitMatrix;
-class String;
 class EncodeHints;
-class Writer;
+class EncodeStatus;
 enum class BarcodeFormat;
 
 /**
@@ -37,12 +33,7 @@ enum class BarcodeFormat;
 class MultiFormatWriter
 {
 public:
-	explicit MultiFormatWriter(const EncodeHints& hints);
-
-	bool encode(const std::wstring& contents, BarcodeFormat format, int width, int height, BitMatrix& result) const;
-
-private:
-	std::vector<std::shared_ptr<Writer>> _writers;
+	static EncodeStatus Encode(const std::wstring& contents, BarcodeFormat format, int width, int height, const EncodeHints& hints, BitMatrix& output);
 };
 
 } // ZXing

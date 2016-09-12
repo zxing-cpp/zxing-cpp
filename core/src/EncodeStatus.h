@@ -14,35 +14,30 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+#include <string>
 
 namespace ZXing {
 
-enum class ErrorStatus
+class EncodeStatus
 {
-	NoError = 0,
+public:
+	static EncodeStatus WithError(const std::string& error) {
+		return EncodeStatus(error);
+	}
 
-	ReaderError = 0x10,
-	NotFound,
-	FormatError,
-	ChecksumError,
+	static EncodeStatus Success() {
+		return EncodeStatus();
+	}
 
-	ReedSolomonError = 0x20,
-	ReedSolomonAlgoFailed,		// r_{i-1} was zero
-	ReedSolomonBadLocation,		// Bad error location
-	ReedSolomonDegreeMismatch,	// Error locator degree does not match number of roots
-	ReedSolomonSigmaTildeZero,	// sigmaTilde(0) was zero
+	std::string errorMessage() const {
+		return _error;
+	}
+
+private:
+	std::string _error;
+
+	EncodeStatus() {}
+	EncodeStatus(const std::string& err) : _error(err) {}
 };
-
-inline bool StatusIsOK(ErrorStatus status)
-{
-	return status == ErrorStatus::NoError;
-}
-
-inline bool StatusIsError(ErrorStatus status)
-{
-	return status != ErrorStatus::NoError;
-}
-
-bool StatusIsKindOf(ErrorStatus status, ErrorStatus group);
 
 } // ZXing

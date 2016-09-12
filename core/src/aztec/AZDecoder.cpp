@@ -20,7 +20,7 @@
 #include "DecoderResult.h"
 #include "ReedSolomonDecoder.h"
 #include "GenericGF.h"
-#include "ErrorStatus.h"
+#include "DecodeStatus.h"
 #include "BitMatrix.h"
 #include "TextDecoder.h"
 
@@ -324,7 +324,7 @@ static std::string GetEncodedData(const std::vector<bool>& correctedBits) {
 	return result;
 }
 
-ErrorStatus
+DecodeStatus
 Decoder::Decode(const DetectorResult& detectorResult, DecoderResult& result)
 {
 	std::vector<bool> rawbits;
@@ -332,10 +332,10 @@ Decoder::Decode(const DetectorResult& detectorResult, DecoderResult& result)
 	std::vector<bool> correctedBits;
 	if (CorrectBits(detectorResult, rawbits, correctedBits)) {
 		result.setText(TextDecoder::FromLatin1(GetEncodedData(correctedBits)));
-		return ErrorStatus::NoError;
+		return DecodeStatus::NoError;
 	}
 	else {
-		return ErrorStatus::FormatError;
+		return DecodeStatus::FormatError;
 	}
 }
 

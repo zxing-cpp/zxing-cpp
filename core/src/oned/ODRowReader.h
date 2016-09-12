@@ -23,7 +23,7 @@ namespace ZXing {
 
 class Result;
 class BitArray;
-enum class ErrorStatus;
+enum class DecodeStatus;
 
 namespace OneD {
 
@@ -74,12 +74,12 @@ public:
 	*  of pixels
 	*/
 	template <typename Container>
-	static ErrorStatus RecordPattern(const BitArray& row, int start, Container& counters) {
+	static DecodeStatus RecordPattern(const BitArray& row, int start, Container& counters) {
 		return RecordPattern(row, start, counters.data(), counters.size());
 	}
 
 	template <typename Container>
-	static ErrorStatus RecordPatternInReverse(const BitArray& row, int start, Container& counters) {
+	static DecodeStatus RecordPatternInReverse(const BitArray& row, int start, Container& counters) {
 		return RecordPatternInReverse(row, start, counters.data(), counters.size());
 	}
 
@@ -99,8 +99,8 @@ public:
 	}
 
 private:
-	static ErrorStatus RecordPattern(const BitArray& row, int start, int* counters, size_t length);
-	static ErrorStatus RecordPatternInReverse(const BitArray& row, int start, int* counters, size_t length);
+	static DecodeStatus RecordPattern(const BitArray& row, int start, int* counters, size_t length);
+	static DecodeStatus RecordPatternInReverse(const BitArray& row, int start, int* counters, size_t length);
 
 protected:
 	static float PatternMatchVariance(const int *counters, const int* pattern, size_t length, float maxIndividualVariance);

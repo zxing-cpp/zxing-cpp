@@ -64,22 +64,22 @@ GetModuleSize(int x, int y, const BitMatrix& image)
 *
 * @see com.google.zxing.datamatrix.DataMatrixReader#extractPureBits(BitMatrix)
 */
-static ErrorStatus
+static DecodeStatus
 ExtractPureBits(const BitMatrix& image, BitMatrix& outBits)
 {
 	int left, top, right, bottom;
 	if (!image.getTopLeftOnBit(left, top) || !image.getBottomRightOnBit(right, bottom)) {
-		return ErrorStatus::NotFound;
+		return DecodeStatus::NotFound;
 	}
 
 	float moduleSize = GetModuleSize(left, top, image);
 	if (moduleSize <= 0.0f) {
-		return ErrorStatus::NotFound;
+		return DecodeStatus::NotFound;
 	}
 
 	// Sanity check!
 	if (left >= right || top >= bottom) {
-		return ErrorStatus::NotFound;
+		return DecodeStatus::NotFound;
 	}
 
 	if (bottom - top != right - left) {
@@ -91,11 +91,11 @@ ExtractPureBits(const BitMatrix& image, BitMatrix& outBits)
 	int matrixWidth = RoundToNearest((right - left + 1) / moduleSize);
 	int matrixHeight = RoundToNearest((bottom - top + 1) / moduleSize);
 	if (matrixWidth <= 0 || matrixHeight <= 0) {
-		return ErrorStatus::NotFound;
+		return DecodeStatus::NotFound;
 	}
 	if (matrixHeight != matrixWidth) {
 		// Only possibly decode square regions
-		return ErrorStatus::NotFound;
+		return DecodeStatus::NotFound;
 	}
 
 	// Push in the "border" by half the module width so that we start
@@ -112,7 +112,7 @@ ExtractPureBits(const BitMatrix& image, BitMatrix& outBits)
 	if (nudgedTooFarRight > 0) {
 		if (nudgedTooFarRight > nudge) {
 			// Neither way fits; abort
-			return ErrorStatus::NotFound;
+			return DecodeStatus::NotFound;
 		}
 		left -= nudgedTooFarRight;
 	}
@@ -121,7 +121,7 @@ ExtractPureBits(const BitMatrix& image, BitMatrix& outBits)
 	if (nudgedTooFarDown > 0) {
 		if (nudgedTooFarDown > nudge) {
 			// Neither way fits; abort
-			return ErrorStatus::NotFound;
+			return DecodeStatus::NotFound;
 		}
 		top -= nudgedTooFarDown;
 	}
@@ -136,7 +136,7 @@ ExtractPureBits(const BitMatrix& image, BitMatrix& outBits)
 			}
 		}
 	}
-	return ErrorStatus::NoError;
+	return DecodeStatus::NoError;
 }
 
 Reader::Reader(const DecodeHints& hints) :
@@ -150,12 +150,12 @@ Reader::decode(const BinaryBitmap& image) const
 {
 	auto binImg = image.getBlackMatrix();
 	if (binImg == nullptr) {
-		return Result(ErrorStatus::NotFound);
+		return Result(DecodeStatus::NotFound);
 	}
 
 	DecoderResult decoderResult;
 	std::vector<ResultPoint> points;
-	ErrorStatus status;
+	DecodeStatus status;
 	if (image.isPureBarcode()) {
 		BitMatrix bits;
 		status = ExtractPureBits(*binImg, bits);

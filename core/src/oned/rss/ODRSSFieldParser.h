@@ -20,7 +20,7 @@
 
 namespace ZXing {
 
-enum class ErrorStatus;
+enum class DecodeStatus;
 
 namespace OneD {
 namespace RSS {
@@ -28,7 +28,7 @@ namespace RSS {
 class FieldParser
 {
 public:
-	static ErrorStatus ParseFieldsInGeneralPurpose(const std::string &rawInfo, std::string& result);
+	static DecodeStatus ParseFieldsInGeneralPurpose(const std::string &rawInfo, std::string& result);
 };
 
 } // RSS

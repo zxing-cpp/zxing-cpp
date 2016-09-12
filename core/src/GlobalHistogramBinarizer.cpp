@@ -20,7 +20,7 @@
 #include "BitArray.h"
 #include "BitMatrix.h"
 #include "ByteArray.h"
-#include "ErrorStatus.h"
+#include "DecodeStatus.h"
 
 #include <array>
 #include <mutex>
@@ -127,7 +127,7 @@ static int EstimateBlackPoint(const std::array<int, LUMINANCE_BUCKETS>& buckets)
 }
 
 // Applies simple sharpening to the row data to improve performance of the 1D Readers.
-ErrorStatus
+DecodeStatus
 GlobalHistogramBinarizer::getBlackRow(int y, BitArray& row) const
 {
 	int width = _source->width();
@@ -155,9 +155,9 @@ GlobalHistogramBinarizer::getBlackRow(int y, BitArray& row) const
 			left = center;
 			center = right;
 		}
-		return ErrorStatus::NoError;
+		return DecodeStatus::NoError;
 	}
-	return ErrorStatus::NotFound;
+	return DecodeStatus::NotFound;
 }
 
 static void InitBlackMatrix(const LuminanceSource& source, std::shared_ptr<const BitMatrix>& outMatrix)

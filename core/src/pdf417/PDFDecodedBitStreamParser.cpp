@@ -22,7 +22,7 @@
 #include "TextDecoder.h"
 #include "ZXBigInteger.h"
 #include "ByteArray.h"
-#include "ErrorStatus.h"
+#include "DecodeStatus.h"
 #include "DecoderResult.h"
 #include "ZXStrConvWorkaround.h"
 
@@ -492,7 +492,7 @@ Decode the above codewords involves
 
 Remove leading 1 =>  Result is 000213298174000
 */
-static ErrorStatus DecodeBase900toBase10(const std::vector<int>& codewords, int count, std::string& resultString)
+static DecodeStatus DecodeBase900toBase10(const std::vector<int>& codewords, int count, std::string& resultString)
 {
 	BigInteger result;
 	for (int i = 0; i < count; i++) {
@@ -501,9 +501,9 @@ static ErrorStatus DecodeBase900toBase10(const std::vector<int>& codewords, int 
 	resultString = result.toString();
 	if (!resultString.empty() && resultString.front() == '1') {
 		resultString = resultString.substr(1);
-		return ErrorStatus::NoError;
+		return DecodeStatus::NoError;
 	}
-	return ErrorStatus::FormatError;
+	return DecodeStatus::FormatError;
 }
 
 
@@ -515,7 +515,7 @@ static ErrorStatus DecodeBase900toBase10(const std::vector<int>& codewords, int 
 * @param result    The decoded data is appended to the result.
 * @return The next index into the codeword array.
 */
-static ErrorStatus NumericCompaction(const std::vector<int>& codewords, int codeIndex, std::wstring& result, int& next)
+static DecodeStatus NumericCompaction(const std::vector<int>& codewords, int codeIndex, std::wstring& result, int& next)
 {
 	int count = 0;
 	bool end = false;
@@ -559,15 +559,15 @@ static ErrorStatus NumericCompaction(const std::vector<int>& codewords, int code
 		}
 	}
 	next = codeIndex;
-	return ErrorStatus::NoError;
+	return DecodeStatus::NoError;
 }
 
 
-static ErrorStatus DecodeMacroBlock(const std::vector<int>& codewords, int codeIndex, DecoderResultExtra& resultMetadata, int& next)
+static DecodeStatus DecodeMacroBlock(const std::vector<int>& codewords, int codeIndex, DecoderResultExtra& resultMetadata, int& next)
 {
 	if (codeIndex + NUMBER_OF_SEQUENCE_CODEWORDS > codewords[0]) {
 		// we must have at least two bytes left for the segment index
-		return ErrorStatus::FormatError;
+		return DecodeStatus::FormatError;
 	}
 	std::vector<int> segmentIndexArray(NUMBER_OF_SEQUENCE_CODEWORDS);
 	for (int i = 0; i < NUMBER_OF_SEQUENCE_CODEWORDS; i++, codeIndex++) {
@@ -575,7 +575,7 @@ static ErrorStatus DecodeMacroBlock(const std::vector<int>& codewords, int codeI
 	}
 
 	std::string strBuf;
-	ErrorStatus status = DecodeBase900toBase10(segmentIndexArray, NUMBER_OF_SEQUENCE_CODEWORDS, strBuf);
+	DecodeStatus status = DecodeBase900toBase10(segmentIndexArray, NUMBER_OF_SEQUENCE_CODEWORDS, strBuf);
 	if (StatusIsError(status)) {
 		return status;
 	}
@@ -605,7 +605,7 @@ static ErrorStatus DecodeMacroBlock(const std::vector<int>& codewords, int codeI
 					end = true;
 					break;
 				default:
-					return ErrorStatus::FormatError;
+					return DecodeStatus::FormatError;
 				}
 			}
 		}
@@ -618,10 +618,10 @@ static ErrorStatus DecodeMacroBlock(const std::vector<int>& codewords, int codeI
 	}
 
 	next = codeIndex;
-	return ErrorStatus::NoError;
+	return DecodeStatus::NoError;
 }
 
-ErrorStatus
+DecodeStatus
 DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel, DecoderResult& result)
 {
 	std::wstring resultString;
@@ -630,8 +630,8 @@ DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel, D
 	int codeIndex = 1;
 	int code = codewords[codeIndex++];
 	auto resultMetadata = std::make_shared<DecoderResultExtra>();
-	ErrorStatus status = ErrorStatus::NoError;
-	while (codeIndex < codewords[0] && status == ErrorStatus::NoError) {
+	DecodeStatus status = DecodeStatus::NoError;
+	while (codeIndex < codewords[0] && status == DecodeStatus::NoError) {
 		switch (code) {
 		case TEXT_COMPACTION_MODE_LATCH:
 		{
@@ -667,7 +667,7 @@ DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel, D
 		case BEGIN_MACRO_PDF417_OPTIONAL_FIELD:
 		case MACRO_PDF417_TERMINATOR:
 			// Should not see these outside a macro block
-			status = ErrorStatus::FormatError;
+			status = DecodeStatus::FormatError;
 			break;
 		default:
 		{
@@ -685,11 +685,11 @@ DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel, D
 			code = codewords[codeIndex++];
 		}
 		else {
-			status = ErrorStatus::FormatError;
+			status = DecodeStatus::FormatError;
 		}
 	}
 	if (resultString.empty()) {
-		status = ErrorStatus::FormatError;
+		status = DecodeStatus::FormatError;
 	}
 
 	if (StatusIsOK(status)) {

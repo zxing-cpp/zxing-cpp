@@ -101,7 +101,7 @@ MultiFormatReader::read(const BinaryBitmap& image) const
 		if (r.isValid())
 			return r;
 	}
-	return Result(ErrorStatus::NotFound);
+	return Result(DecodeStatus::NotFound);
 }
 
 } // ZXing

@@ -18,6 +18,7 @@
 #include "oned/ODUPCEANReader.h"
 #include "oned/ODUPCEANExtensionSupport.h"
 #include "oned/ODEANManufacturerOrgSupport.h"
+#include "oned/ODUPCEANPatterns.h"
 #include "Result.h"
 #include "BitArray.h"
 #include "DecodeHints.h"
@@ -35,58 +36,6 @@ namespace OneD {
 static const float MAX_AVG_VARIANCE = 0.48f;
 static const float MAX_INDIVIDUAL_VARIANCE = 0.7f;
 
-/**
-* Start/end guard pattern.
-*/
-static const std::array<int, 3> START_END_PATTERN = { 1, 1, 1 };
-
-const std::array<int, 5> UPCEANReader::MIDDLE_PATTERN = { 1, 1, 1, 1, 1 };
-
-/**
-* end guard pattern.
-*/
-//static const std::array<int, 6> END_PATTERN = { 1, 1, 1, 1, 1, 1 };
-
-const std::array<std::array<int, 4>, 10>
-UPCEANReader::L_PATTERNS = {
-	3, 2, 1, 1, // 0
-	2, 2, 2, 1, // 1
-	2, 1, 2, 2, // 2
-	1, 4, 1, 1, // 3
-	1, 1, 3, 2, // 4
-	1, 2, 3, 1, // 5
-	1, 1, 1, 4, // 6
-	1, 3, 1, 2, // 7
-	1, 2, 1, 3, // 8
-	3, 1, 1, 2, // 9
-};
-
-const std::array<std::array<int, 4>, 20>
-UPCEANReader::L_AND_G_PATTERNS = {
-	3, 2, 1, 1, // 0
-	2, 2, 2, 1, // 1
-	2, 1, 2, 2, // 2
-	1, 4, 1, 1, // 3
-	1, 1, 3, 2, // 4
-	1, 2, 3, 1, // 5
-	1, 1, 1, 4, // 6
-	1, 3, 1, 2, // 7
-	1, 2, 1, 3, // 8
-	3, 1, 1, 2, // 9
-	// reversed
-	1, 1, 2, 3, // 10
-	1, 2, 2, 2, // 11
-	2, 2, 1, 2, // 12
-	1, 1, 4, 1, // 13
-	2, 3, 1, 1, // 14
-	1, 3, 2, 1, // 15
-	4, 1, 1, 1, // 16
-	2, 1, 3, 1, // 17
-	3, 1, 2, 1, // 18
-	2, 1, 1, 3, // 19
-};
-
-
 UPCEANReader::UPCEANReader(const DecodeHints& hints) :
 	_allowedExtensions(hints.allowedEanExtensions())
 {
@@ -103,7 +52,7 @@ UPCEANReader::UPCEANReader(const DecodeHints& hints) :
 * @return start/end horizontal offset of guard pattern, as an array of two ints
 * @throws NotFoundException if pattern is not found
 */
-ErrorStatus
+DecodeStatus
 UPCEANReader::DoFindGuardPattern(const BitArray& row, int rowOffset, bool whiteFirst, const int* pattern, int* counters, size_t length, int& begin, int& end)
 {
 	int width = row.size();
@@ -121,7 +70,7 @@ UPCEANReader::DoFindGuardPattern(const BitArray& row, int rowOffset, bool whiteF
 				if (PatternMatchVariance(counters, pattern, length, MAX_INDIVIDUAL_VARIANCE) < MAX_AVG_VARIANCE) {
 					begin = patternStart;
 					end = rowOffset;
-					return ErrorStatus::NoError;
+					return DecodeStatus::NoError;
 				}
 				patternStart += counters[0] + counters[1];
 				for (size_t i = 2; i < length; ++i) {
@@ -138,26 +87,26 @@ UPCEANReader::DoFindGuardPattern(const BitArray& row, int rowOffset, bool whiteF
 			isWhite = !isWhite;
 		}
 	}
-	return ErrorStatus::NotFound;
+	return DecodeStatus::NotFound;
 }
 
-ErrorStatus
+DecodeStatus
 UPCEANReader::FindGuardPattern(const BitArray& row, int rowOffset, bool whiteFirst, const int* pattern, size_t length, int& begin, int& end)
 {
 	std::vector<int> counters(length, 0);
 	return DoFindGuardPattern(row, rowOffset, whiteFirst, pattern, counters.data(), length, begin, end);
 }
 
-ErrorStatus
+DecodeStatus
 UPCEANReader::FindStartGuardPattern(const BitArray& row, int& begin, int& end)
 {
 	bool foundStart = false;
 	int start = 0;
 	int nextStart = 0;
-	std::vector<int> counters(START_END_PATTERN.size());
+	std::vector<int> counters(UPCEANPatterns::START_END_PATTERN.size());
 	while (!foundStart) {
 		std::fill(counters.begin(), counters.end(), 0);
-		auto status = DoFindGuardPattern(row, nextStart, false, START_END_PATTERN.data(), counters.data(), START_END_PATTERN.size(), start, nextStart);
+		auto status = DoFindGuardPattern(row, nextStart, false, UPCEANPatterns::START_END_PATTERN.data(), counters.data(), UPCEANPatterns::START_END_PATTERN.size(), start, nextStart);
 		if (StatusIsError(status)) {
 			return status;
 		}
@@ -171,7 +120,7 @@ UPCEANReader::FindStartGuardPattern(const BitArray& row, int& begin, int& end)
 	}
 	begin = start;
 	end = nextStart;
-	return ErrorStatus::NoError;
+	return DecodeStatus::NoError;
 }
 
 Result
@@ -185,10 +134,10 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 	return decodeRow(rowNumber, row, begin, end);
 }
 
-ErrorStatus
+DecodeStatus
 UPCEANReader::decodeEnd(const BitArray& row, int endStart, int& begin, int& end) const
 {
-	return FindGuardPattern(row, endStart, false, START_END_PATTERN.data(), START_END_PATTERN.size(), begin, end);
+	return FindGuardPattern(row, endStart, false, UPCEANPatterns::START_END_PATTERN.data(), UPCEANPatterns::START_END_PATTERN.size(), begin, end);
 }
 
 Result
@@ -224,12 +173,12 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, int startGuardBegin,
 	int end = endRangeEnd;
 	int quietEnd = end + (end - endRangeBegin);
 	if (quietEnd >= row.size() || !row.isRange(end, quietEnd, false)) {
-		return Result(ErrorStatus::NotFound);
+		return Result(DecodeStatus::NotFound);
 	}
 
 	// UPC/EAN should never be less than 8 chars anyway
 	if (result.length() < 8) {
-		return Result(ErrorStatus::FormatError);
+		return Result(DecodeStatus::FormatError);
 	}
 	status = checkChecksum(result);
 	if (StatusIsError(status))
@@ -260,7 +209,7 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, int startGuardBegin,
 			}
 		}
 		if (!valid) {
-			return Result(ErrorStatus::NotFound);
+			return Result(DecodeStatus::NotFound);
 		}
 	}
 
@@ -274,7 +223,7 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, int startGuardBegin,
 	return decodeResult;
 }
 
-ErrorStatus
+DecodeStatus
 UPCEANReader::checkChecksum(const std::string& s) const
 {
 	return CheckStandardUPCEANChecksum(s);
@@ -288,32 +237,31 @@ UPCEANReader::checkChecksum(const std::string& s) const
 * @return true iff string of digits passes the UPC/EAN checksum algorithm
 * @throws FormatException if the string does not contain only digits
 */
-ErrorStatus
+DecodeStatus
 UPCEANReader::CheckStandardUPCEANChecksum(const std::string& s)
 {
 	int length = static_cast<int>(s.length());
 	if (length == 0) {
-		return ErrorStatus::ChecksumError;
+		return DecodeStatus::ChecksumError;
 	}
 
 	int sum = 0;
-	int zero = static_cast<int>('0');
 	for (int i = length - 2; i >= 0; i -= 2) {
-		int digit = static_cast<int>(s[i]) - zero;
+		int digit = s[i] - '0';
 		if (digit < 0 || digit > 9) {
-			return ErrorStatus::FormatError;
+			return DecodeStatus::FormatError;
 		}
 		sum += digit;
 	}
 	sum *= 3;
 	for (int i = length - 1; i >= 0; i -= 2) {
-		int digit = static_cast<int>(s[i]) - zero;
+		int digit = s[i] - '0';
 		if (digit < 0 || digit > 9) {
-			return ErrorStatus::FormatError;
+			return DecodeStatus::FormatError;
 		}
 		sum += digit;
 	}
-	return sum % 10 == 0 ? ErrorStatus::NoError : ErrorStatus::ChecksumError;
+	return sum % 10 == 0 ? DecodeStatus::NoError : DecodeStatus::ChecksumError;
 }
 
 /**
@@ -328,10 +276,10 @@ UPCEANReader::CheckStandardUPCEANChecksum(const std::string& s)
 * @return horizontal offset of first pixel beyond the decoded digit
 * @throws NotFoundException if digit cannot be decoded
 */
-ErrorStatus
+DecodeStatus
 UPCEANReader::DecodeDigit(const BitArray& row, int rowOffset, const std::array<int, 4>* patterns, size_t patternCount, std::array<int, 4>& counters, int &resultOffset)
 {
-	ErrorStatus status = RowReader::RecordPattern(row, rowOffset, counters);
+	DecodeStatus status = RowReader::RecordPattern(row, rowOffset, counters);
 	if (StatusIsOK(status)) {
 		float bestVariance = MAX_AVG_VARIANCE; // worst variance we'll accept
 		int bestMatch = -1;
@@ -347,7 +295,7 @@ UPCEANReader::DecodeDigit(const BitArray& row, int rowOffset, const std::array<i
 			resultOffset = bestMatch;
 		}
 		else {
-			status = ErrorStatus::NotFound;
+			status = DecodeStatus::NotFound;
 		}
 	}
 	return status;

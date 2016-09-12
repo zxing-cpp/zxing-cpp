@@ -17,7 +17,7 @@ COMMON_FILES :=	\
 	src/BitSource.cpp \
 	src/CharacterSetECI.cpp \
 	src/DecodeHints.cpp \
-	src/ErrorStatus.cpp \
+	src/DecodeStatus.cpp \
 	src/GenericGF.cpp \
 	src/GenericGFPoly.cpp \
 	src/GenericLuminanceSource.cpp \

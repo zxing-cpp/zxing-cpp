@@ -37,13 +37,13 @@ namespace OneD {
 * @throws NotFoundException if counters cannot be filled entirely from row before running out
 *  of pixels
 */
-ErrorStatus
+DecodeStatus
 RowReader::RecordPattern(const BitArray& row, int start, int* counters, size_t length)
 {
 	std::fill_n(counters, length, 0);
 	int end = row.size();
 	if (start >= end) {
-		return ErrorStatus::NotFound;
+		return DecodeStatus::NotFound;
 	}
 	auto bitIter = row.iterAt(start);
 	bool isWhite = !*bitIter;
@@ -66,12 +66,12 @@ RowReader::RecordPattern(const BitArray& row, int start, int* counters, size_t l
 	// If we read fully the last section of pixels and filled up our counters -- or filled
 	// the last counter but ran off the side of the image, OK. Otherwise, a problem.
 	if (!(counterPosition == length || (counterPosition + 1 == length && start == end))) {
-		return ErrorStatus::NotFound;
+		return DecodeStatus::NotFound;
 	}
-	return ErrorStatus::NoError;
+	return DecodeStatus::NoError;
 }
 
-ErrorStatus
+DecodeStatus
 RowReader::RecordPatternInReverse(const BitArray& row, int start, int* counters, size_t length)
 {
 	// This could be more efficient I guess
@@ -87,7 +87,7 @@ RowReader::RecordPatternInReverse(const BitArray& row, int start, int* counters,
 		}
 	}
 	if (numTransitionsLeft >= 0) {
-		return ErrorStatus::NotFound;
+		return DecodeStatus::NotFound;
 	}
 	return RecordPattern(row, start + 1, counters, length);
 }
