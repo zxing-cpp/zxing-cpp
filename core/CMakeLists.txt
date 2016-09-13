@@ -191,6 +191,8 @@ endif()
 
 set (ONED_FILES
 	src/oned/ODUPCEANPatterns.h
+	src/oned/ODCode128Patterns.h
+	src/oned/ODCode128Patterns.cpp
 )
 if (ENABLE_DECODERS)
 	set (ONED_FILES ${ONED_FILES}
@@ -232,10 +234,20 @@ if (ENABLE_DECODERS)
 endif()
 if (ENABLE_ENCODERS)
 	set (ONED_FILES ${ONED_FILES}
+		src/oned/ODCodabarWriter.h
+		src/oned/ODCodabarWriter.cpp
+		src/oned/ODCode39Writer.h
+		src/oned/ODCode39Writer.cpp
+		src/oned/ODCode93Writer.h
+		src/oned/ODCode93Writer.cpp
+		src/oned/ODCode128Writer.h
+		src/oned/ODCode128Writer.cpp
 		src/oned/ODEAN8Writer.h
 		src/oned/ODEAN8Writer.cpp
 		src/oned/ODEAN13Writer.h
 		src/oned/ODEAN13Writer.cpp
+		src/oned/ODITFWriter.h
+		src/oned/ODITFWriter.cpp
 		src/oned/ODUPCEWriter.h
 		src/oned/ODUPCEWriter.cpp
 		src/oned/ODUPCAWriter.h

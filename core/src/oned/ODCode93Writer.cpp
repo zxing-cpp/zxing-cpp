@@ -1,0 +1,134 @@
+/*
+* Copyright 2016 Huy Cuong Nguyen
+* Copyright 2016 ZXing authors
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*      http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+
+#include "oned/ODCode93Writer.h"
+#include "oned/ODWriterHelper.h"
+#include "EncodeHints.h"
+#include "EncodeStatus.h"
+
+#include <array>
+
+namespace ZXing {
+namespace OneD {
+
+static const char* ALPHABET_STRING = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%abcd*";
+
+/**
+* These represent the encodings of characters, as patterns of wide and narrow bars.
+* The 9 least-significant bits of each int correspond to the pattern of wide and narrow.
+*/
+static const int CHARACTER_ENCODINGS[] = {
+	0x114, 0x148, 0x144, 0x142, 0x128, 0x124, 0x122, 0x150, 0x112, 0x10A, // 0-9
+	0x1A8, 0x1A4, 0x1A2, 0x194, 0x192, 0x18A, 0x168, 0x164, 0x162, 0x134, // A-J
+	0x11A, 0x158, 0x14C, 0x146, 0x12C, 0x116, 0x1B4, 0x1B2, 0x1AC, 0x1A6, // K-T
+	0x196, 0x19A, 0x16C, 0x166, 0x136, 0x13A, // U-Z
+	0x12E, 0x1D4, 0x1D2, 0x1CA, 0x16E, 0x176, 0x1AE, // - - %
+	0x126, 0x1DA, 0x1D6, 0x132, 0x15E, // Control chars? $-*
+};
+
+static void ToIntArray(int a, std::array<int, 9>& toReturn) {
+	for (int i = 0; i < 9; ++i) {
+		toReturn[i] = (a & (1 << (8 - i))) == 0 ? 0 : 1;
+	}
+}
+
+int AppendPattern(std::vector<bool>& target, int pos, const std::array<int, 9>& pattern) {
+	for (size_t i = 0; i < pattern.size(); ++i) {
+		target[pos++] = pattern[i] != 0;
+	}
+	return 9;
+}
+
+static inline int IndexOf(const char* str, int c)
+{
+	auto s = strchr(str, c);
+	return s != nullptr ? static_cast<int>(s - str) : -1;
+}
+
+static int ComputeChecksumIndex(const std::wstring& contents, int maxWeight) {
+	int weight = 1;
+	int total = 0;
+
+	for (int i = contents.length() - 1; i >= 0; i--) {
+		int indexInString = IndexOf(ALPHABET_STRING, contents[i]);
+		total += indexInString * weight;
+		if (++weight > maxWeight) {
+			weight = 1;
+		}
+	}
+	return total % 47;
+}
+
+EncodeStatus
+Code93Writer::Encode(const std::wstring& contents_, int width, int height, const EncodeHints& hints, BitMatrix& output)
+{
+	std::wstring contents = contents_;
+	size_t length = contents.length();
+	if (length > 80) {
+		return EncodeStatus::WithError("Requested contents should be less than 80 digits long");
+	}
+
+	//each character is encoded by 9 of 0/1's
+	std::array<int, 9> widths = {};
+
+	//lenght of code + 2 start/stop characters + 2 checksums, each of 9 bits, plus a termination bar
+	size_t codeWidth = (contents.length() + 2 + 2) * 9 + 1;
+
+	std::vector<bool> result(codeWidth, false);
+
+	//start character (*)
+	ToIntArray(CHARACTER_ENCODINGS[47], widths);
+	int pos = AppendPattern(result, 0, widths);
+
+	for (size_t i = 0; i < length; i++) {
+		int indexInString = IndexOf(ALPHABET_STRING, contents[i]);
+		ToIntArray(CHARACTER_ENCODINGS[indexInString], widths);
+		pos += AppendPattern(result, pos, widths);
+	}
+
+	//add two checksums
+	int check1 = ComputeChecksumIndex(contents, 20);
+	ToIntArray(CHARACTER_ENCODINGS[check1], widths);
+	pos += AppendPattern(result, pos, widths);
+
+	//append the contents to reflect the first checksum added
+	contents += static_cast<wchar_t>(ALPHABET_STRING[check1]);
+
+	int check2 = ComputeChecksumIndex(contents, 15);
+	ToIntArray(CHARACTER_ENCODINGS[check2], widths);
+	pos += AppendPattern(result, pos, widths);
+
+	//end character (*)
+	ToIntArray(CHARACTER_ENCODINGS[47], widths);
+	pos += AppendPattern(result, pos, widths);
+
+	//termination bar (single black bar)
+	result[pos] = true;
+
+	int sidesMargin = hints.margin();
+	if (sidesMargin < 0)
+	{
+		sidesMargin = 10;
+	}
+	WriterHelper::RenderResult(result, width, height, sidesMargin, output);
+
+	return EncodeStatus::Success();
+}
+
+
+} // OneD
+} // ZXing

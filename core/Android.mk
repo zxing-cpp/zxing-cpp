@@ -56,6 +56,7 @@ MAXICODE_FILES := \
 	
 ONED_FILES := \
 	src/oned/ODCodabarReader.cpp \
+	src/oned/ODCode128Patterns.cpp \
 	src/oned/ODCode128Reader.cpp \
 	src/oned/ODCode39Reader.cpp \
 	src/oned/ODCode93Reader.cpp \

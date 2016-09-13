@@ -16,6 +16,7 @@
 */
 
 #include "oned/ODCode128Reader.h"
+#include "oned/ODCode128Patterns.h"
 #include "Result.h"
 #include "BitArray.h"
 #include "DecodeHints.h"
@@ -28,116 +29,6 @@
 
 namespace ZXing {
 namespace OneD {
-
-static const std::array<std::vector<int>, 107> CODE_PATTERNS = { {
-	{ 2, 1, 2, 2, 2, 2 }, // 0
-	{ 2, 2, 2, 1, 2, 2 },
-	{ 2, 2, 2, 2, 2, 1 },
-	{ 1, 2, 1, 2, 2, 3 },
-	{ 1, 2, 1, 3, 2, 2 },
-	{ 1, 3, 1, 2, 2, 2 }, // 5
-	{ 1, 2, 2, 2, 1, 3 },
-	{ 1, 2, 2, 3, 1, 2 },
-	{ 1, 3, 2, 2, 1, 2 },
-	{ 2, 2, 1, 2, 1, 3 },
-	{ 2, 2, 1, 3, 1, 2 }, // 10
-	{ 2, 3, 1, 2, 1, 2 },
-	{ 1, 1, 2, 2, 3, 2 },
-	{ 1, 2, 2, 1, 3, 2 },
-	{ 1, 2, 2, 2, 3, 1 },
-	{ 1, 1, 3, 2, 2, 2 }, // 15
-	{ 1, 2, 3, 1, 2, 2 },
-	{ 1, 2, 3, 2, 2, 1 },
-	{ 2, 2, 3, 2, 1, 1 },
-	{ 2, 2, 1, 1, 3, 2 },
-	{ 2, 2, 1, 2, 3, 1 }, // 20
-	{ 2, 1, 3, 2, 1, 2 },
-	{ 2, 2, 3, 1, 1, 2 },
-	{ 3, 1, 2, 1, 3, 1 },
-	{ 3, 1, 1, 2, 2, 2 },
-	{ 3, 2, 1, 1, 2, 2 }, // 25
-	{ 3, 2, 1, 2, 2, 1 },
-	{ 3, 1, 2, 2, 1, 2 },
-	{ 3, 2, 2, 1, 1, 2 },
-	{ 3, 2, 2, 2, 1, 1 },
-	{ 2, 1, 2, 1, 2, 3 }, // 30
-	{ 2, 1, 2, 3, 2, 1 },
-	{ 2, 3, 2, 1, 2, 1 },
-	{ 1, 1, 1, 3, 2, 3 },
-	{ 1, 3, 1, 1, 2, 3 },
-	{ 1, 3, 1, 3, 2, 1 }, // 35
-	{ 1, 1, 2, 3, 1, 3 },
-	{ 1, 3, 2, 1, 1, 3 },
-	{ 1, 3, 2, 3, 1, 1 },
-	{ 2, 1, 1, 3, 1, 3 },
-	{ 2, 3, 1, 1, 1, 3 }, // 40
-	{ 2, 3, 1, 3, 1, 1 },
-	{ 1, 1, 2, 1, 3, 3 },
-	{ 1, 1, 2, 3, 3, 1 },
-	{ 1, 3, 2, 1, 3, 1 },
-	{ 1, 1, 3, 1, 2, 3 }, // 45
-	{ 1, 1, 3, 3, 2, 1 },
-	{ 1, 3, 3, 1, 2, 1 },
-	{ 3, 1, 3, 1, 2, 1 },
-	{ 2, 1, 1, 3, 3, 1 },
-	{ 2, 3, 1, 1, 3, 1 }, // 50
-	{ 2, 1, 3, 1, 1, 3 },
-	{ 2, 1, 3, 3, 1, 1 },
-	{ 2, 1, 3, 1, 3, 1 },
-	{ 3, 1, 1, 1, 2, 3 },
-	{ 3, 1, 1, 3, 2, 1 }, // 55
-	{ 3, 3, 1, 1, 2, 1 },
-	{ 3, 1, 2, 1, 1, 3 },
-	{ 3, 1, 2, 3, 1, 1 },
-	{ 3, 3, 2, 1, 1, 1 },
-	{ 3, 1, 4, 1, 1, 1 }, // 60
-	{ 2, 2, 1, 4, 1, 1 },
-	{ 4, 3, 1, 1, 1, 1 },
-	{ 1, 1, 1, 2, 2, 4 },
-	{ 1, 1, 1, 4, 2, 2 },
-	{ 1, 2, 1, 1, 2, 4 }, // 65
-	{ 1, 2, 1, 4, 2, 1 },
-	{ 1, 4, 1, 1, 2, 2 },
-	{ 1, 4, 1, 2, 2, 1 },
-	{ 1, 1, 2, 2, 1, 4 },
-	{ 1, 1, 2, 4, 1, 2 }, // 70
-	{ 1, 2, 2, 1, 1, 4 },
-	{ 1, 2, 2, 4, 1, 1 },
-	{ 1, 4, 2, 1, 1, 2 },
-	{ 1, 4, 2, 2, 1, 1 },
-	{ 2, 4, 1, 2, 1, 1 }, // 75
-	{ 2, 2, 1, 1, 1, 4 },
-	{ 4, 1, 3, 1, 1, 1 },
-	{ 2, 4, 1, 1, 1, 2 },
-	{ 1, 3, 4, 1, 1, 1 },
-	{ 1, 1, 1, 2, 4, 2 }, // 80
-	{ 1, 2, 1, 1, 4, 2 },
-	{ 1, 2, 1, 2, 4, 1 },
-	{ 1, 1, 4, 2, 1, 2 },
-	{ 1, 2, 4, 1, 1, 2 },
-	{ 1, 2, 4, 2, 1, 1 }, // 85
-	{ 4, 1, 1, 2, 1, 2 },
-	{ 4, 2, 1, 1, 1, 2 },
-	{ 4, 2, 1, 2, 1, 1 },
-	{ 2, 1, 2, 1, 4, 1 },
-	{ 2, 1, 4, 1, 2, 1 }, // 90
-	{ 4, 1, 2, 1, 2, 1 },
-	{ 1, 1, 1, 1, 4, 3 },
-	{ 1, 1, 1, 3, 4, 1 },
-	{ 1, 3, 1, 1, 4, 1 },
-	{ 1, 1, 4, 1, 1, 3 }, // 95
-	{ 1, 1, 4, 3, 1, 1 },
-	{ 4, 1, 1, 1, 1, 3 },
-	{ 4, 1, 1, 3, 1, 1 },
-	{ 1, 1, 3, 1, 4, 1 },
-	{ 1, 1, 4, 1, 3, 1 }, // 100
-	{ 3, 1, 1, 1, 4, 1 },
-	{ 4, 1, 1, 1, 3, 1 },
-	{ 2, 1, 1, 4, 1, 2 },
-	{ 2, 1, 1, 2, 1, 4 },
-	{ 2, 1, 1, 2, 3, 2 }, // 105
-	{ 2, 3, 3, 1, 1, 1, 2 }
-} };
 
 static const float MAX_AVG_VARIANCE = 0.25f;
 static const float MAX_INDIVIDUAL_VARIANCE = 0.7f;
@@ -179,7 +70,7 @@ FindStartPattern(const BitArray& row, int& begin, int& end, int& startCode)
 				float bestVariance = MAX_AVG_VARIANCE;
 				int bestMatch = -1;
 				for (int startCode = CODE_START_A; startCode <= CODE_START_C; startCode++) {
-					float variance = RowReader::PatternMatchVariance(counters, CODE_PATTERNS[startCode], MAX_INDIVIDUAL_VARIANCE);
+					float variance = RowReader::PatternMatchVariance(counters, Code128::CODE_PATTERNS[startCode], MAX_INDIVIDUAL_VARIANCE);
 					if (variance < bestVariance) {
 						bestVariance = variance;
 						bestMatch = startCode;
@@ -218,8 +109,8 @@ DecodeCode(const BitArray& row, std::vector<int>& counters, int rowOffset, int& 
 	}
 	float bestVariance = MAX_AVG_VARIANCE; // worst variance we'll accept
 	int bestMatch = -1;
-	for (size_t d = 0; d < CODE_PATTERNS.size(); d++) {
-		auto& pattern = CODE_PATTERNS[d];
+	for (size_t d = 0; d < Code128::CODE_PATTERNS.size(); d++) {
+		auto& pattern = Code128::CODE_PATTERNS[d];
 		float variance = RowReader::PatternMatchVariance(counters, pattern, MAX_INDIVIDUAL_VARIANCE);
 		if (variance < bestVariance) {
 			bestVariance = variance;

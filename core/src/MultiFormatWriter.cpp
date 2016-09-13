@@ -19,8 +19,13 @@
 #include "BarcodeFormat.h"
 #include "EncodeStatus.h"
 
+#include "oned/ODCodabarWriter.h"
+#include "oned/ODCode39Writer.h"
+#include "oned/ODCode93Writer.h"
+#include "oned/ODCode128Writer.h"
 #include "oned/ODEAN8Writer.h"
 #include "oned/ODEAN13Writer.h"
+#include "oned/ODITFWriter.h"
 #include "oned/ODUPCEWriter.h"
 #include "oned/ODUPCAWriter.h"
 
@@ -41,24 +46,19 @@ MultiFormatWriter::Encode(const std::wstring& contents, BarcodeFormat format, in
 		//case BarcodeFormat::QR_CODE:
 		//	writer = new QRCodeWriter();
 		//	break;
-		//case BarcodeFormat::CODE_39:
-		//	writer = new Code39Writer();
-		//	break;
-		//case BarcodeFormat::CODE_93:
-		//	writer = new Code93Writer();
-		//	break;
-		//case BarcodeFormat::CODE_128:
-		//	writer = new Code128Writer();
-		//	break;
-		//case BarcodeFormat::ITF:
-		//	writer = new ITFWriter();
-		//	break;
+		case BarcodeFormat::CODE_39:
+			return OneD::Code39Writer::Encode(contents, width, height, hints, output);
+		case BarcodeFormat::CODE_93:
+			return OneD::Code93Writer::Encode(contents, width, height, hints, output);
+		case BarcodeFormat::CODE_128:
+			return OneD::Code128Writer::Encode(contents, width, height, hints, output);
+		case BarcodeFormat::ITF:
+			return OneD::ITFWriter::Encode(contents, width, height, hints, output);
 		//case BarcodeFormat::PDF_417:
 		//	writer = new PDF417Writer();
 		//	break;
-		//case BarcodeFormat::CODABAR:
-		//	writer = new CodaBarWriter();
-		//	break;
+		case BarcodeFormat::CODABAR:
+			return OneD::CodabarWriter::Encode(contents, width, height, hints, output);
 		//case BarcodeFormat::DATA_MATRIX:
 		//	writer = new DataMatrixWriter();
 		//	break;
