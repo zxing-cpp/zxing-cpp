@@ -165,7 +165,7 @@ public:
 	/**
 	* Clears all bits (sets to false).
 	*/
-	void clear() {
+	void clearBits() {
 		std::memset(_bits.data(), 0, sizeof(uint32_t) * _bits.size());
 	}
 
@@ -190,19 +190,20 @@ public:
 	*/
 	void appendBits(int value, int numBits);
 
+	void appendBit(bool bit);
+
 	void appendBitArray(const BitArray& other);
 
-	//void xor(const BitArray& other);
+	void bitwiseXOR(const BitArray& other);
 
 	/**
 	*
 	* @param bitOffset first bit to start writing
-	* @param array array to write into. Bytes are written most-significant byte first. This is the opposite
+	* @param ouput array to write into. Bytes are written most-significant byte first. This is the opposite
 	*  of the internal representation, which is exposed by {@link #getBitArray()}
-	* @param offset position in array to start writing
 	* @param numBytes how many bytes to write
 	*/
-	//ByteArray toBytes(int bitOffset, int offset, int numBytes) const;
+	void toBytes(int bitOffset, uint8_t* ouput, int numBytes) const;
 
 	/**
 	* @return underlying array of ints. The first element holds the first 32 bits, and the least

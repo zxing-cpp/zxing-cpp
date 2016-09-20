@@ -22,7 +22,7 @@
 #include "qrcode/QRDecoderMetadata.h"
 #include "qrcode/QRDataMask.h"
 #include "qrcode/QRDataBlock.h"
-#include "qrcode/QRDecodeMode.h"
+#include "qrcode/QRCodecMode.h"
 #include "DecoderResult.h"
 #include "BitMatrix.h"
 #include "ReedSolomonDecoder.h"
@@ -327,22 +327,22 @@ DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionL
 	{
 		CharacterSet currentCharset = CharacterSet::Unknown;
 		bool fc1InEffect = false;
-		DecodeMode::Mode mode;
+		CodecMode::Mode mode;
 		do {
 			// While still another segment to read...
 			if (bits.available() < 4) {
 				// OK, assume we're done. Really, a TERMINATOR mode should have been recorded here
-				mode = DecodeMode::TERMINATOR;
+				mode = CodecMode::TERMINATOR;
 			}
 			else {
-				mode = DecodeMode::ModeForBits(bits.readBits(4)); // mode is encoded by 4 bits
+				mode = CodecMode::ModeForBits(bits.readBits(4)); // mode is encoded by 4 bits
 			}
-			if (mode != DecodeMode::TERMINATOR) {
-				if (mode == DecodeMode::FNC1_FIRST_POSITION || mode == DecodeMode::FNC1_SECOND_POSITION) {
+			if (mode != CodecMode::TERMINATOR) {
+				if (mode == CodecMode::FNC1_FIRST_POSITION || mode == CodecMode::FNC1_SECOND_POSITION) {
 					// We do little with FNC1 except alter the parsed result a bit according to the spec
 					fc1InEffect = true;
 				}
-				else if (mode == DecodeMode::STRUCTURED_APPEND) {
+				else if (mode == CodecMode::STRUCTURED_APPEND) {
 					if (bits.available() < 16) {
 						return DecodeStatus::FormatError;
 					}
@@ -351,7 +351,7 @@ DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionL
 					symbolSequence = bits.readBits(8);
 					parityData = bits.readBits(8);
 				}
-				else if (mode == DecodeMode::ECI) {
+				else if (mode == CodecMode::ECI) {
 					// Count doesn't apply to ECI
 					int value;
 					auto status = ParseECIValue(bits, value);
@@ -365,10 +365,10 @@ DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionL
 				}
 				else {
 					// First handle Hanzi mode which does not start with character count
-					if (mode == DecodeMode::HANZI) {
+					if (mode == CodecMode::HANZI) {
 						//chinese mode contains a sub set indicator right after mode indicator
 						int subset = bits.readBits(4);
-						int countHanzi = bits.readBits(DecodeMode::CharacterCountBits(mode, version));
+						int countHanzi = bits.readBits(CodecMode::CharacterCountBits(mode, version));
 						if (subset == GB2312_SUBSET) {
 							auto status = DecodeHanziSegment(bits, countHanzi, result);
 							if (StatusIsError(status)) {
@@ -379,18 +379,18 @@ DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionL
 					else {
 						// "Normal" QR code modes:
 						// How many characters will follow, encoded in this mode?
-						int count = bits.readBits(DecodeMode::CharacterCountBits(mode, version));
+						int count = bits.readBits(CodecMode::CharacterCountBits(mode, version));
 						DecodeStatus status;
-						if (mode == DecodeMode::NUMERIC) {
+						if (mode == CodecMode::NUMERIC) {
 							status = DecodeNumericSegment(bits, count, result);
 						}
-						else if (mode == DecodeMode::ALPHANUMERIC) {
+						else if (mode == CodecMode::ALPHANUMERIC) {
 							status = DecodeAlphanumericSegment(bits, count, fc1InEffect, result);
 						}
-						else if (mode == DecodeMode::BYTE) {
+						else if (mode == CodecMode::BYTE) {
 							status = DecodeByteSegment(bits, count, currentCharset, hintedCharset, result, byteSegments);
 						}
-						else if (mode == DecodeMode::KANJI) {
+						else if (mode == CodecMode::KANJI) {
 							status = DecodeKanjiSegment(bits, count, result);
 						}
 						else {
@@ -403,7 +403,7 @@ DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionL
 					}
 				}
 			}
-		} while (mode != DecodeMode::TERMINATOR);
+		} while (mode != CodecMode::TERMINATOR);
 	}
 	catch (const std::exception &)
 	{

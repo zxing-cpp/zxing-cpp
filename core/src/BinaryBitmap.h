@@ -56,7 +56,7 @@ public:
 	*
 	* @param y The row to fetch, which must be in [0, bitmap height)
 	* @param row An optional preallocated array. If null or too small, it will be ignored.
-	*            If used, the Binarizer will call BitArray.clear(). Always use the returned object.
+	*            If used, the Binarizer will call BitArray.clearBits(). Always use the returned object.
 	* @return The array of bits for this row (true means black).
 	* @throws NotFoundException if row can't be binarized
 	*/

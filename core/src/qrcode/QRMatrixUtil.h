@@ -1,6 +1,7 @@
 #pragma once
 /*
-* Copyright 2016 Nu-book Inc.
+* Copyright 2016 Huy Cuong Nguyen
+* Copyright 2016 ZXing authors
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -15,23 +16,25 @@
 * limitations under the License.
 */
 
-#include <vector>
-#include <cstdint>
-
 namespace ZXing {
 
-/**
-	ByteArray is an extension of std::vector<unsigned char>.
-*/
-class ByteArray : public std::vector<uint8_t>
+class EncodeStatus;
+class BitArray;
+
+namespace QRCode {
+
+enum class ErrorCorrectionLevel;
+class Version;
+class ByteMatrix;
+
+class MatrixUtil
 {
 public:
-	ByteArray()																	{}
-	ByteArray(std::initializer_list<uint8_t> list) : std::vector<uint8_t>(list) {}
-	explicit ByteArray(int len) : std::vector<uint8_t>(len, 0)					{}
-	int length() const															{ return static_cast<int>(size()); }
-	const char* charPtr() const													{ return reinterpret_cast<const char*>(data()); }
-	char* charPtr()																{ return reinterpret_cast<char*>(data()); }
+	static const int NUM_MASK_PATTERNS = 8;
+
+
+	static EncodeStatus BuildMatrix(const BitArray& dataBits, ErrorCorrectionLevel ecLevel, const Version& version, int maskPattern, ByteMatrix& matrix);
 };
 
+} // QRCode
 } // ZXing

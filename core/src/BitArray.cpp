@@ -145,6 +145,17 @@ BitArray::appendBits(int value, int numBits)
 }
 
 void
+BitArray::appendBit(bool bit)
+{
+	_bits.resize((_size + 1 + 31) / 32, 0);
+	if (bit) {
+		_bits[_size / 32] |= 1 << (_size & 0x1F);
+	}
+	_size++;
+}
+
+
+void
 BitArray::appendBitArray(const BitArray& other)
 {
 	if (_bits.empty()) {
@@ -168,33 +179,31 @@ BitArray::appendBitArray(const BitArray& other)
 	}
 }
 
-//void
-//BitArray::xor(const BitArray& other)
-//{
-//	if (_bits.size() != other._bits.size()) {
-//		throw std::invalid_argument("BitArray::xor(): Sizes don't match");
-//	}
-//	for (size_t i = 0; i < _bits.size(); i++) {
-//		_bits[i] ^= other._bits[i];
-//	}
-//}
+void
+BitArray::bitwiseXOR(const BitArray& other)
+{
+	if (_bits.size() != other._bits.size()) {
+		throw std::invalid_argument("BitArray::xor(): Sizes don't match");
+	}
+	for (size_t i = 0; i < _bits.size(); i++) {
+		_bits[i] ^= other._bits[i];
+	}
+}
 
-//ByteArray
-//BitArray::toBytes(int bitOffset, int offset, int numBytes) const
-//{
-//	ByteArray result(numBytes);
-//	for (int i = 0; i < numBytes; i++) {
-//		int theByte = 0;
-//		for (int j = 0; j < 8; j++) {
-//			if (get(bitOffset)) {
-//				theByte |= 1 << (7 - j);
-//			}
-//			bitOffset++;
-//		}
-//		result[offset + i] = (uint8_t)theByte;
-//	}
-//	return result;
-//}
+void
+BitArray::toBytes(int bitOffset, uint8_t* output, int numBytes) const
+{
+	for (int i = 0; i < numBytes; i++) {
+		int theByte = 0;
+		for (int j = 0; j < 8; j++) {
+			if (get(bitOffset)) {
+				theByte |= 1 << (7 - j);
+			}
+			bitOffset++;
+		}
+		output[i] = (uint8_t)theByte;
+	}
+}
 
 void
 BitArray::reverse()

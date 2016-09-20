@@ -32,6 +32,11 @@ ErrorCorrectionLevel ECLevelFromBits(int bits)
 	return LEVEL_FOR_BITS[bits & 0x3];
 }
 
+int BitsFromECLevel(ErrorCorrectionLevel l)
+{
+	static const int BITS[] = { 1, 0, 3, 2 };
+	return BITS[(int)l];
+}
 
 } // QRCode
 } // ZXing

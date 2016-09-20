@@ -33,6 +33,10 @@ public:
 		return _error;
 	}
 
+	bool isOK() const {
+		return _error.empty();
+	}
+
 private:
 	std::string _error;
 

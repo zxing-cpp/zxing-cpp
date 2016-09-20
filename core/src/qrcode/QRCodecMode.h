@@ -27,7 +27,7 @@ class Version;
 *
 * @author Sean Owen
 */
-class DecodeMode
+class CodecMode
 {
 public:
 	enum Mode

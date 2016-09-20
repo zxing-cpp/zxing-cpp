@@ -28,6 +28,7 @@
 #include "oned/ODITFWriter.h"
 #include "oned/ODUPCEWriter.h"
 #include "oned/ODUPCAWriter.h"
+#include "qrcode/QRWriter.h"
 
 namespace ZXing {
 
@@ -43,9 +44,8 @@ MultiFormatWriter::Encode(const std::wstring& contents, BarcodeFormat format, in
 			return OneD::EAN13Writer::Encode(contents, width, height, hints, output);
 		case BarcodeFormat::UPC_A:
 			return OneD::UPCAWriter::Encode(contents, width, height, hints, output);
-		//case BarcodeFormat::QR_CODE:
-		//	writer = new QRCodeWriter();
-		//	break;
+		case BarcodeFormat::QR_CODE:
+			return QRCode::Writer::Encode(contents, width, height, hints, output);
 		case BarcodeFormat::CODE_39:
 			return OneD::Code39Writer::Encode(contents, width, height, hints, output);
 		case BarcodeFormat::CODE_93:

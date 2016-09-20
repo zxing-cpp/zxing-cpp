@@ -37,6 +37,8 @@ public:
 	*/
 	static CharacterSet CharsetFromValue(int value);
 
+	static int ValueForCharset(CharacterSet charset);
+
 	/**
 	* @param name character set ECI encoding name
 	* @return CharacterSetECI representing ECI for character encoding, or null if it is legal

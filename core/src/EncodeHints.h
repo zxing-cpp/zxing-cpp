@@ -22,6 +22,14 @@ namespace ZXing {
 
 class EncodeHints
 {
+	int _ecLevel = -1;
+	std::string _charset;
+	int _margin = -1;
+	int _aztecLayers = 0;
+	bool _pdf417Compact = false;
+	int _pdf417Compaction = 0;
+	int _pdf417Dimens[4] = {};
+
 public:
 
 	/**
@@ -110,15 +118,6 @@ public:
 	void setAztecLayers(int nbLayers) {
 		_aztecLayers = nbLayers;
 	}
-
-private:
-	int _ecLevel = -1;
-	std::string _charset;
-	int _margin = -1;
-	int _aztecLayers = 0;
-	bool _pdf417Compact = false;
-	int _pdf417Compaction = 0;
-	int _pdf417Dimens[4] = {};
 };
 
 } // ZXing

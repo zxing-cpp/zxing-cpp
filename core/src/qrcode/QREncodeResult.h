@@ -1,6 +1,6 @@
 #pragma once
 /*
-* Copyright 2016 Nu-book Inc.
+* Copyright 2016 Huy Cuong Nguyen
 * Copyright 2016 ZXing authors
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,27 +15,30 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+#include "ByteArray.h"
+#include "qrcode/QRCodecMode.h"
+#include "qrcode/QRVersion.h"
+#include "qrcode/QRByteMatrix.h"
 
 namespace ZXing {
 namespace QRCode {
 
 /**
-* <p>See ISO 18004:2006, 6.5.1. This enum encapsulates the four error correction levels
-* defined by the QR code standard.</p>
+* @author satorux@google.com (Satoru Takabayashi) - creator
+* @author dswitkin@google.com (Daniel Switkin) - ported from C++
 *
-* @author Sean Owen
+* Original class name in Java was QRCode, as this name is taken already for the namespace,
+* so it's renamed here EncodeResult.
 */
-enum class ErrorCorrectionLevel
+class EncodeResult
 {
-	Low,			// L = ~7 % correction
-	Medium,			// M = ~15% correction
-	Quality,		// Q = ~25% correction
-	High,			// H = ~30% correction
+public:
+	ErrorCorrectionLevel ecLevel = ErrorCorrectionLevel::Low;
+	CodecMode::Mode mode = CodecMode::TERMINATOR;
+	const Version* version = nullptr;
+	int maskPattern = -1;
+	ByteMatrix matrix;
 };
-
-const wchar_t* ToString(ErrorCorrectionLevel l);
-ErrorCorrectionLevel ECLevelFromBits(int bits);
-int BitsFromECLevel(ErrorCorrectionLevel l);
 
 } // QRCode
 } // ZXing

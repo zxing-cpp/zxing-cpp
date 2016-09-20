@@ -1,6 +1,6 @@
 #pragma once
 /*
-* Copyright 2016 Nu-book Inc.
+* Copyright 2016 Huy Cuong Nguyen
 * Copyright 2016 ZXing authors
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,27 +15,30 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+#include <string>
 
 namespace ZXing {
+
+class EncodeStatus;
+class EncodeHints;
+
 namespace QRCode {
 
-/**
-* <p>See ISO 18004:2006, 6.5.1. This enum encapsulates the four error correction levels
-* defined by the QR code standard.</p>
-*
-* @author Sean Owen
-*/
-enum class ErrorCorrectionLevel
-{
-	Low,			// L = ~7 % correction
-	Medium,			// M = ~15% correction
-	Quality,		// Q = ~25% correction
-	High,			// H = ~30% correction
-};
+enum class ErrorCorrectionLevel;
+class EncodeResult;
 
-const wchar_t* ToString(ErrorCorrectionLevel l);
-ErrorCorrectionLevel ECLevelFromBits(int bits);
-int BitsFromECLevel(ErrorCorrectionLevel l);
+class Encoder
+{
+public:
+	/**
+	* @param content text to encode
+	* @param ecLevel error correction level to use
+	* @return {@link QRCode} representing the encoded QR code
+	* @throws WriterException if encoding can't succeed, because of for example invalid content
+	*   or configuration
+	*/
+	static EncodeStatus Encode(const std::wstring& content, ErrorCorrectionLevel ecLevel, const EncodeHints& hints, EncodeResult& output);
+};
 
 } // QRCode
 } // ZXing

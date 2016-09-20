@@ -99,9 +99,9 @@ QRCODE_FILES := \
 	src/qrcode/QRAlignmentPattern.cpp \
 	src/qrcode/QRAlignmentPatternFinder.cpp \
 	src/qrcode/QRBitMatrixParser.cpp \
+	src/qrcode/QRCodecMode.cpp \
 	src/qrcode/QRDataBlock.cpp \
 	src/qrcode/QRDataMask.cpp \
-	src/qrcode/QRDecodeMode.cpp \
 	src/qrcode/QRDecoder.cpp \
 	src/qrcode/QRDetector.cpp \
 	src/qrcode/QRErrorCorrectionLevel.cpp \

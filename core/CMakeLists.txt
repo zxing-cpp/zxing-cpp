@@ -60,6 +60,10 @@ set (COMMON_FILES
 	src/CharacterSetECI.h
 	src/CharacterSetECI.cpp
 	src/CustomData.h
+	src/GenericGF.h
+	src/GenericGF.cpp
+	src/GenericGFPoly.h
+	src/GenericGFPoly.cpp
 	src/TextUtfEncoding.h
 	src/TextUtfEncoding.cpp
 	src/ZXBigInteger.h
@@ -82,10 +86,6 @@ if (ENABLE_DECODERS)
 		src/DecodeStatus.cpp
 		src/DecoderResult.h
 		src/DetectorResult.h
-		src/GenericGF.h
-		src/GenericGF.cpp
-		src/GenericGFPoly.h
-		src/GenericGFPoly.cpp
 		src/GenericLuminanceSource.h
 		src/GenericLuminanceSource.cpp
 		src/GlobalHistogramBinarizer.h
@@ -121,6 +121,8 @@ if (ENABLE_ENCODERS)
 		src/EncodeStatus.h
 		src/MultiFormatWriter.h
 		src/MultiFormatWriter.cpp
+		src/ReedSolomonEncoder.h
+		src/ReedSolomonEncoder.cpp
 		src/TextEncoder.h
 		src/TextEncoder.cpp
 	)
@@ -325,8 +327,12 @@ endif()
 
 
 set (QRCODE_FILES
+	src/qrcode/QRCodecMode.h
+	src/qrcode/QRCodecMode.cpp
 	src/qrcode/QRErrorCorrectionLevel.h
 	src/qrcode/QRErrorCorrectionLevel.cpp
+	src/qrcode/QRVersion.h
+	src/qrcode/QRVersion.cpp
 )
 if (ENABLE_DECODERS)
 	set (QRCODE_FILES ${QRCODE_FILES}
@@ -340,8 +346,6 @@ if (ENABLE_DECODERS)
 		src/qrcode/QRDataBlock.cpp
 		src/qrcode/QRDataMask.h
 		src/qrcode/QRDataMask.cpp
-		src/qrcode/QRDecodeMode.h
-		src/qrcode/QRDecodeMode.cpp
 		src/qrcode/QRDecoder.h
 		src/qrcode/QRDecoder.cpp
 		src/qrcode/QRDecoderMetadata.h
@@ -357,12 +361,20 @@ if (ENABLE_DECODERS)
 		src/qrcode/QRFormatInformation.cpp
 		src/qrcode/QRReader.h
 		src/qrcode/QRReader.cpp
-		src/qrcode/QRVersion.h
-		src/qrcode/QRVersion.cpp
 	)
 endif()
 if (ENABLE_ENCODERS)
 	set (QRCODE_FILES ${QRCODE_FILES}
+		src/qrcode/QRByteMatrix.h
+		src/qrcode/QREncoder.h
+		src/qrcode/QREncoder.cpp
+		src/qrcode/QREncodeResult.h
+		src/qrcode/QRMaskUtil.h
+		src/qrcode/QRMaskUtil.cpp
+		src/qrcode/QRMatrixUtil.h
+		src/qrcode/QRMatrixUtil.cpp
+		src/qrcode/QRWriter.h
+		src/qrcode/QRWriter.cpp
 	)
 endif()
 

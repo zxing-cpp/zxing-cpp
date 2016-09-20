@@ -136,6 +136,19 @@ CharacterSetECI::CharsetFromValue(int value)
 	return CharacterSet::Unknown;
 }
 
+int
+CharacterSetECI::ValueForCharset(CharacterSet charset)
+{
+	for (auto& entry : ECI_VALUE_TO_CHARSET)
+	{
+		if (entry.second == charset)
+		{
+			return entry.first;
+		}
+	}
+	return 0;
+}
+
 CharacterSet
 CharacterSetECI::CharsetFromName(const char* name)
 {

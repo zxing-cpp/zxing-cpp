@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-#include "qrcode/QRDecodeMode.h"
+#include "qrcode/QRCodecMode.h"
 #include "qrcode/QRVersion.h"
 
 #include <stdexcept>
@@ -44,8 +44,8 @@ static const int CHAR_COUNT_PER_MODE[] = {
 
 } // anonymous
 
-DecodeMode::Mode
-DecodeMode::ModeForBits(int bits)
+CodecMode::Mode
+CodecMode::ModeForBits(int bits)
 {
 	if ((bits >= 0x00 && bits <= 0x05) || (bits >= 0x07 && bits <= 0x09) || bits == 0x0d)
 	{
@@ -55,7 +55,7 @@ DecodeMode::ModeForBits(int bits)
 }
 
 int
-DecodeMode::CharacterCountBits(Mode mode, Version version)
+CodecMode::CharacterCountBits(Mode mode, Version version)
 {
 	int number = version.versionNumber();
 	int offset;

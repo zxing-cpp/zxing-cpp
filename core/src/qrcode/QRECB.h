@@ -51,9 +51,9 @@ struct ECBlocks
 		return blocks[0].count + blocks[1].count;
 	}
 
-	//int totalCodewords() const {
-	//	return codewordsPerBlock * numBlocks();
-	//}
+	int totalCodewords() const {
+		return codewordsPerBlock * numBlocks();
+	}
 
 	int totalDataCodewords() const {
 		return blocks[0].count * (blocks[0].dataCodewords + codewordsPerBlock)
