@@ -18,14 +18,14 @@
 #include "pdf417/PDFDetectionResultColumn.h"
 #include "pdf417/PDFBarcodeMetadata.h"
 #include "pdf417/PDFBarcodeValue.h"
-#include "pdf417/PDFCommon.h"
-
 #include <algorithm>
 
 namespace ZXing {
 namespace Pdf417 {
 
 static const int MAX_NEARBY_DISTANCE = 5;
+static const int MIN_ROWS_IN_BARCODE = 3;
+static const int MAX_ROWS_IN_BARCODE = 90;
 
 DetectionResultColumn::DetectionResultColumn() :
 	_rowIndicator(RowIndicator::None)
@@ -319,7 +319,7 @@ DetectionResultColumn::getBarcodeMetadata(BarcodeMetadata& result)
 	auto rcu = barcodeRowCountUpperPart.value();
 	auto rcl = barcodeRowCountLowerPart.value();
 	auto ec = barcodeECLevel.value();
-	if (cc.empty() || rcu.empty() || rcl.empty() || ec.empty() || cc[0] < 1 || rcu[0] + rcl[0] < Common::MIN_ROWS_IN_BARCODE || rcu[0] + rcl[0] > Common::MAX_ROWS_IN_BARCODE) {
+	if (cc.empty() || rcu.empty() || rcl.empty() || ec.empty() || cc[0] < 1 || rcu[0] + rcl[0] < MIN_ROWS_IN_BARCODE || rcu[0] + rcl[0] > MAX_ROWS_IN_BARCODE) {
 		return false;
 	}
 	result = { cc[0], rcu[0], rcl[0], ec[0] };

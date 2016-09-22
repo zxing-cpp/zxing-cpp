@@ -1,0 +1,197 @@
+#pragma once
+/*
+* Copyright 2016 Huy Cuong Nguyen
+* Copyright 2016 ZXing authors
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*      http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+#include "CharacterSet.h"
+#include <string>
+#include <vector>
+
+namespace ZXing {
+
+class EncodeStatus;
+
+namespace Pdf417 {
+
+enum class Compaction {
+	AUTO,
+	TEXT,
+	BYTE,
+	NUMERIC
+};
+
+/**
+* @author Jacob Haynes
+*/
+class BarcodeRow
+{
+	std::vector<bool> _row;
+	int _currentLocation; // A tacker for position in the bar
+
+public:
+	explicit BarcodeRow(int width = 0) : _row(width, false), _currentLocation(0) {}
+
+	void init(int width) {
+		_row.resize(width, false);
+		_currentLocation = 0;
+	}
+
+	void set(int x, bool black) {
+		_row[x] = black;
+	}
+
+	/**
+	* @param black A boolean which is true if the bar black false if it is white
+	* @param width How many spots wide the bar is.
+	*/
+	void addBar(bool black, int width) {
+		for (int ii = 0; ii < width; ii++) {
+			_row[_currentLocation++] = black;
+		}
+	}
+
+	/**
+	* This function scales the row
+	*
+	* @param scale How much you want the image to be scaled, must be greater than or equal to 1.
+	* @return the scaled row
+	*/
+	void getScaledRow(int scale, std::vector<bool>& output) const {
+		output.resize(_row.size() * scale);
+		for (size_t i = 0; i < output.size(); ++i) {
+			output[i] = _row[i / scale];
+		}
+	}
+};
+
+/**
+* Holds all of the information for a barcode in a format where it can be easily accessable
+*
+* @author Jacob Haynes
+*/
+class BarcodeMatrix
+{
+	std::vector<BarcodeRow> _matrix;
+	int _width;
+	int _currentRow;
+
+public:
+	BarcodeMatrix() : _width(0), _currentRow(-1) {}
+
+	/**
+	* @param height the height of the matrix (Rows)
+	* @param width  the width of the matrix (Cols)
+	*/
+	BarcodeMatrix(int height, int width) {
+		init(height, width);
+	}
+
+	void init(int height, int width) {
+		_matrix.resize(height);
+		for (int i = 0; i < height; ++i) {
+			_matrix[i].init((width + 4) * 17 + 1);
+		}
+		_width = width * 17;
+		_currentRow = -1;
+	}
+
+	void set(int x, int y, bool value) {
+		_matrix[y].set(x, value);
+	}
+
+	void startRow() {
+		++_currentRow;
+	}
+
+	const BarcodeRow& currentRow() const {
+		return _matrix[_currentRow];
+	}
+
+	BarcodeRow& currentRow() {
+		return _matrix[_currentRow];
+	}
+
+	void getScaledMatrix(int xScale, int yScale, std::vector<std::vector<bool>>& output)
+	{
+		output.resize(_matrix.size() * yScale);
+		int yMax = static_cast<int>(output.size());
+		for (int i = 0; i < yMax; i++) {
+			_matrix[i / yScale].getScaledRow(xScale, output[yMax - i - 1]);
+		}
+	}
+};
+
+/**
+* Top-level class for the logic part of the PDF417 implementation.
+* C++ port: this class was named PDF417 in Java code. Since that name
+* does say much in the context of PDF417 writer, it's renamed here Encoder
+* to follow the same naming convention with other modules.
+*/
+class Encoder
+{
+public:
+	explicit Encoder(bool compact = false) : _compact(compact)  {}
+	EncodeStatus generateBarcodeLogic(const std::wstring& msg, int errorCorrectionLevel, BarcodeMatrix& output);
+
+	/**
+	* Sets max/min row/col values
+	*
+	* @param maxCols maximum allowed columns
+	* @param minCols minimum allowed columns
+	* @param maxRows maximum allowed rows
+	* @param minRows minimum allowed rows
+	*/
+	void setDimensions(int maxCols, int minCols, int maxRows, int minRows) {
+		_maxCols = maxCols;
+		_minCols = minCols;
+		_maxRows = maxRows;
+		_minRows = minRows;
+	}
+
+	/**
+	* @param compaction compaction mode to use
+	*/
+	void setCompaction(Compaction compaction) {
+		_compaction = compaction;
+	}
+
+	/**
+	* @param compact if true, enables compaction
+	*/
+	void setCompact(bool compact) {
+		_compact = compact;
+	}
+
+	/**
+	* @param encoding sets character encoding to use
+	*/
+	void setEncoding(CharacterSet encoding) {
+		_encoding = encoding;
+	}
+
+	static int GetRecommendedMinimumErrorCorrectionLevel(int n);
+
+private:
+	bool _compact;
+	Compaction _compaction = Compaction::AUTO;
+	CharacterSet _encoding = CharacterSet::ISO8859_1;
+	int _minCols = 2;
+	int _maxCols = 30;
+	int _maxRows = 30;
+	int _minRows = 2;
+};
+
+} // Pdf417
+} // ZXing

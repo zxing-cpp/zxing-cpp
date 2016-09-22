@@ -2,6 +2,7 @@
 /*
 * Copyright 2016 Huy Cuong Nguyen
 * Copyright 2016 ZXing authors
+* Copyright 2006 Jeremias Maerki
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -16,33 +17,26 @@
 * limitations under the License.
 */
 #include <string>
+#include <vector>
 
 namespace ZXing {
 
 class EncodeStatus;
-class EncodeHints;
+enum class CharacterSet;
 
-namespace QRCode {
+namespace Pdf417 {
 
-enum class ErrorCorrectionLevel;
-class EncodeResult;
+enum class Compaction;
 
 /**
-* @author satorux@google.com (Satoru Takabayashi) - creator
-* @author dswitkin@google.com (Daniel Switkin) - ported from C++
+* PDF417 high-level encoder following the algorithm described in ISO/IEC 15438:2001(E) in
+* annex P.
 */
-class Encoder
+class HighLevelEncoder
 {
 public:
-	/**
-	* @param content text to encode
-	* @param ecLevel error correction level to use
-	* @return {@link QRCode} representing the encoded QR code
-	* @throws WriterException if encoding can't succeed, because of for example invalid content
-	*   or configuration
-	*/
-	static EncodeStatus Encode(const std::wstring& content, ErrorCorrectionLevel ecLevel, const EncodeHints& hints, EncodeResult& output);
+	static EncodeStatus EncodeHighLevel(const std::wstring& msg, Compaction compaction, CharacterSet encoding, std::vector<int>& highLevel);
 };
 
-} // QRCode
+} // Pdf417
 } // ZXing

@@ -16,17 +16,9 @@
 */
 
 #include "pdf417/PDFModulusGF.h"
-#include "pdf417/PDFCommon.h"
 
 namespace ZXing {
 namespace Pdf417 {
-
-const ModulusGF &
-ModulusGF::PDF417()
-{
-	static const ModulusGF inst(Common::NUMBER_OF_CODEWORDS, 3);
-	return inst;
-}
 
 ModulusGF::ModulusGF(int modulus, int generator) :
 	_modulus(modulus),

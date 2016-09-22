@@ -16,7 +16,8 @@
 */
 
 #include "pdf417/PDFDetectionResult.h"
-#include "pdf417/PDFCommon.h"
+#include "pdf417/PDFCodewordDecoder.h"
+#include <array>
 
 namespace ZXing {
 namespace Pdf417 {
@@ -241,7 +242,7 @@ DetectionResult::allColumns()
 {
 	AdjustIndicatorColumnRowNumbers(_detectionResultColumns.front(), _barcodeMetadata);
 	AdjustIndicatorColumnRowNumbers(_detectionResultColumns.back(), _barcodeMetadata);
-	int unadjustedCodewordCount = Common::MAX_CODEWORDS_IN_BARCODE;
+	int unadjustedCodewordCount = CodewordDecoder::MAX_CODEWORDS_IN_BARCODE;
 	int previousUnadjustedCount;
 	do {
 		previousUnadjustedCount = unadjustedCodewordCount;

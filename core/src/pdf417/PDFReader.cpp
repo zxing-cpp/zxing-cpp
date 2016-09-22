@@ -18,7 +18,7 @@
 #include "pdf417/PDFReader.h"
 #include "pdf417/PDFDetector.h"
 #include "pdf417/PDFScanningDecoder.h"
-#include "pdf417/PDFCommon.h"
+#include "pdf417/PDFCodewordDecoder.h"
 #include "pdf417/PDFDecoderResultExtra.h"
 #include "DecodeStatus.h"
 #include "DecoderResult.h"
@@ -31,6 +31,8 @@
 namespace ZXing {
 namespace Pdf417 {
 
+static const int MODULES_IN_STOP_PATTERN = 18;
+
 static int GetMinWidth(const Nullable<ResultPoint>& p1, const Nullable<ResultPoint>& p2)
 {
 	if (p1 == nullptr || p2 == nullptr) {
@@ -41,8 +43,8 @@ static int GetMinWidth(const Nullable<ResultPoint>& p1, const Nullable<ResultPoi
 
 static int GetMinCodewordWidth(const std::array<Nullable<ResultPoint>, 8>& p)
 {
-	return std::min(std::min(GetMinWidth(p[0], p[4]), GetMinWidth(p[6], p[2]) * Common::MODULES_IN_CODEWORD / Common::MODULES_IN_STOP_PATTERN),
-					std::min(GetMinWidth(p[1], p[5]), GetMinWidth(p[7], p[3]) * Common::MODULES_IN_CODEWORD / Common::MODULES_IN_STOP_PATTERN));
+	return std::min(std::min(GetMinWidth(p[0], p[4]), GetMinWidth(p[6], p[2]) * CodewordDecoder::MODULES_IN_CODEWORD / MODULES_IN_STOP_PATTERN),
+					std::min(GetMinWidth(p[1], p[5]), GetMinWidth(p[7], p[3]) * CodewordDecoder::MODULES_IN_CODEWORD / MODULES_IN_STOP_PATTERN));
 }
 
 static int GetMaxWidth(const Nullable<ResultPoint>& p1, const Nullable<ResultPoint>& p2)
@@ -55,8 +57,8 @@ static int GetMaxWidth(const Nullable<ResultPoint>& p1, const Nullable<ResultPoi
 
 static int GetMaxCodewordWidth(const std::array<Nullable<ResultPoint>, 8>& p)
 {
-	return std::max(std::max(GetMaxWidth(p[0], p[4]), GetMaxWidth(p[6], p[2]) * Common::MODULES_IN_CODEWORD / Common::MODULES_IN_STOP_PATTERN),
-					std::max(GetMaxWidth(p[1], p[5]), GetMaxWidth(p[7], p[3]) * Common::MODULES_IN_CODEWORD / Common::MODULES_IN_STOP_PATTERN));
+	return std::max(std::max(GetMaxWidth(p[0], p[4]), GetMaxWidth(p[6], p[2]) * CodewordDecoder::MODULES_IN_CODEWORD / MODULES_IN_STOP_PATTERN),
+					std::max(GetMaxWidth(p[1], p[5]), GetMaxWidth(p[7], p[3]) * CodewordDecoder::MODULES_IN_CODEWORD / MODULES_IN_STOP_PATTERN));
 }
 
 DecodeStatus DoDecode(const BinaryBitmap& image, bool multiple, std::list<Result>& results)

@@ -37,10 +37,8 @@ class ModulusGF
 	ModulusPoly _zero;
 	ModulusPoly _one;
 
-	ModulusGF(int modulus, int generator);
-
 public:
-	static const ModulusGF& PDF417();
+	ModulusGF(int modulus, int generator);
 
 	const ModulusPoly& zero() const {
 		return _zero;

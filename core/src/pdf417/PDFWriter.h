@@ -20,29 +20,20 @@
 namespace ZXing {
 
 class EncodeStatus;
+class BitMatrix;
 class EncodeHints;
 
-namespace QRCode {
-
-enum class ErrorCorrectionLevel;
-class EncodeResult;
+namespace Pdf417 {
 
 /**
-* @author satorux@google.com (Satoru Takabayashi) - creator
-* @author dswitkin@google.com (Daniel Switkin) - ported from C++
+* @author Jacob Haynes
+* @author qwandor@google.com (Andrew Walbran)
 */
-class Encoder
+class Writer
 {
 public:
-	/**
-	* @param content text to encode
-	* @param ecLevel error correction level to use
-	* @return {@link QRCode} representing the encoded QR code
-	* @throws WriterException if encoding can't succeed, because of for example invalid content
-	*   or configuration
-	*/
-	static EncodeStatus Encode(const std::wstring& content, ErrorCorrectionLevel ecLevel, const EncodeHints& hints, EncodeResult& output);
+	static EncodeStatus Encode(const std::wstring& contents, int width, int height, const EncodeHints& hints, BitMatrix& output);
 };
 
-} // QRCode
+} // Pdf417
 } // ZXing

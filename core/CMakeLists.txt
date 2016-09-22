@@ -286,10 +286,6 @@ endif()
 
 
 set (PDF417_FILES
-	src/pdf417/PDFCommon.h
-	src/pdf417/PDFCommon.cpp
-	src/pdf417/PDFErrorCorrection.h
-	src/pdf417/PDFErrorCorrection.cpp
 )
 if (ENABLE_DECODERS)
 	set (PDF417_FILES ${PDF417_FILES}
@@ -322,6 +318,12 @@ if (ENABLE_DECODERS)
 endif()
 if (ENABLE_ENCODERS)
 	set (PDF417_FILES ${PDF417_FILES}
+		src/pdf417/PDFEncoder.h
+		src/pdf417/PDFEncoder.cpp
+		src/pdf417/PDFHighLevelEncoder.h
+		src/pdf417/PDFHighLevelEncoder.cpp
+		src/pdf417/PDFWriter.h
+		src/pdf417/PDFWriter.cpp
 	)
 endif()
 

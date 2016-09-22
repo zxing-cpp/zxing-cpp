@@ -84,12 +84,10 @@ PDF417_FILES := \
 	src/pdf417/PDFBarcodeValue.cpp \
 	src/pdf417/PDFBoundingBox.cpp \
 	src/pdf417/PDFCodewordDecoder.cpp \
-	src/pdf417/PDFCommon.cpp \
 	src/pdf417/PDFDecodedBitStreamParser.cpp \
 	src/pdf417/PDFDetectionResult.cpp \
 	src/pdf417/PDFDetectionResultColumn.cpp \
 	src/pdf417/PDFDetector.cpp \
-	src/pdf417/PDFErrorCorrection.cpp \
 	src/pdf417/PDFModulusGF.cpp \
 	src/pdf417/PDFModulusPoly.cpp \
 	src/pdf417/PDFReader.cpp \
