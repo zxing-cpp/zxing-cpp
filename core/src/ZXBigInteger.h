@@ -43,7 +43,13 @@ public:
 	template <typename T>
 	BigInteger(T x, typename std::enable_if<std::is_integral<T>::value && std::is_signed<T>::value>::type* = nullptr) : negative(x < 0), mag(1, std::abs(x)) {}
 
+	static bool TryParse(const std::string& str, BigInteger& result);
+	static bool TryParse(const std::wstring& str, BigInteger& result);
+
+	bool isZero() const { return mag.empty(); }
+
 	std::string toString() const;
+	int toInt() const;
 
 	friend inline BigInteger operator+(const BigInteger& a, const BigInteger& b) {
 		BigInteger c;
@@ -70,6 +76,7 @@ public:
 	static void Add(const BigInteger& a, const BigInteger &b, BigInteger& c);
 	static void Subtract(const BigInteger& a, const BigInteger &b, BigInteger& c);
 	static void Multiply(const BigInteger& a, const BigInteger &b, BigInteger& c);
+	static void Divide(const BigInteger& a, const BigInteger &b, BigInteger& quotient, BigInteger& remainder);
 
 private:
 	bool negative = false;

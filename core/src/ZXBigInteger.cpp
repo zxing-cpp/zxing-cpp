@@ -17,6 +17,7 @@
 #include "ZXBigInteger.h"
 #include "BitHacks.h"
 #include <algorithm>
+#include <cctype>
 
 namespace ZXing {
 
@@ -203,7 +204,7 @@ static void MulMag(const Magnetude& a, const Magnetude& b, Magnetude& c)
 * "modWithQuotient" might be a better name for this function, but I would
 * rather not change the name now.
 */
-void DivideWithRemainder(const Magnetude& a, const Magnetude& b, Magnetude& qq, Magnetude& rr)
+static void DivideWithRemainder(const Magnetude& a, const Magnetude& b, Magnetude& qq, Magnetude& rr)
 {
 	/* Defending against aliased calls is more complex than usual because we
 	* are writing to both r and q.
@@ -370,6 +371,47 @@ static int CompareMag(const Magnetude& a, const Magnetude& b)
 	}
 }
 
+template <typename StrT>
+static bool ParseFromString(const StrT& str, std::vector<Block>& mag, bool& negative)
+{
+	auto iter = str.begin();
+	auto end = str.end();
+	while (iter != end && std::isspace(*iter)) ++iter;
+	if (iter != end) {
+		mag.clear();
+		negative = false;
+		if (*iter == '-') {
+			negative = true;
+			++iter;
+		}
+		else if (*iter == '+') {
+			++iter;
+		}
+
+		Magnetude ten(1, 10);
+		Magnetude tmp(1, 0);
+		for (int c; iter != end && std::isdigit(c = *iter); ++iter) {
+			tmp[0] = c - '0';
+			MulMag(mag, ten, mag);
+			AddMag(mag, tmp, mag);
+		}
+		return !mag.empty();
+	}
+	return false;
+}
+
+bool
+BigInteger::TryParse(const std::string& str, BigInteger& result)
+{
+	return ParseFromString(str, result.mag, result.negative);
+}
+
+bool
+BigInteger::TryParse(const std::wstring& str, BigInteger& result)
+{
+	return ParseFromString(str, result.mag, result.negative);
+}
+
 void
 BigInteger::Add(const BigInteger& a, const BigInteger &b, BigInteger& c)
 {
@@ -454,6 +496,90 @@ BigInteger::Multiply(const BigInteger &a, const BigInteger &b, BigInteger& c)
 	MulMag(a.mag, b.mag, c.mag);
 }
 
+
+/*
+* DIVISION WITH REMAINDER
+* Please read the comments before the definition of
+* `BigUnsigned::divideWithRemainder' in `BigUnsigned.cc' for lots of
+* information you should know before reading this function.
+*
+* Following Knuth, I decree that x / y is to be
+* 0 if y==0 and floor(real-number x / y) if y!=0.
+* Then x % y shall be x - y*(integer x / y).
+*
+* Note that x = y * (x / y) + (x % y) always holds.
+* In addition, (x % y) is from 0 to y - 1 if y > 0,
+* and from -(|y| - 1) to 0 if y < 0.  (x % y) = x if y = 0.
+*
+* Examples: (q = a / b, r = a % b)
+*	a	b	q	r
+*	===	===	===	===
+*	4	3	1	1
+*	-4	3	-2	2
+*	4	-3	-2	-2
+*	-4	-3	1	-1
+*/
+void
+BigInteger::Divide(const BigInteger &a, const BigInteger &b, BigInteger &quotient, BigInteger& remainder)
+{
+	if (b.mag.empty() || a.mag.size() < b.mag.size()) {
+		quotient.mag.clear();
+		quotient.negative = false;
+		remainder = a;
+		return;
+	}
+
+	// Do the operands have the same sign?
+	if (a.negative == b.negative) {
+		// Yes: easy case.  Quotient is zero or positive.
+		quotient.negative = false;
+		DivideWithRemainder(a.mag, b.mag, quotient.mag, remainder.mag);
+	}
+	else {
+		// No: harder case.  Quotient is negative.
+		quotient.negative = true;
+		// Decrease the magnitude of the dividend by one.
+		Magnetude one{ 1 };
+		Magnetude aa;
+		SubMag(a.mag, one, aa);
+		/*
+		* We tinker with the dividend before and with the
+		* quotient and remainder after so that the result
+		* comes out right.  To see why it works, consider the following
+		* list of examples, where A is the magnitude-decreased
+		* a, Q and R are the results of BigUnsigned division
+		* with remainder on A and |b|, and q and r are the
+		* final results we want:
+		*
+		*	a	A	b	Q	R	q	r
+		*	-3	-2	3	0	2	-1	0
+		*	-4	-3	3	1	0	-2	2
+		*	-5	-4	3	1	1	-2	1
+		*	-6	-5	3	1	2	-2	0
+		*
+		* It appears that we need a total of 3 corrections:
+		* Decrease the magnitude of a to get A.  Increase the
+		* magnitude of Q to get q (and make it negative).
+		* Find r = (b - 1) - R and give it the desired sign.
+		*/
+		DivideWithRemainder(aa, b.mag, quotient.mag, remainder.mag);
+
+		AddMag(quotient.mag, one, quotient.mag);
+		// Modify the remainder.
+		SubMag(b.mag, remainder.mag, remainder.mag);
+		SubMag(remainder.mag, one, remainder.mag);
+	}
+
+	// Sign of the remainder is always the sign of the divisor b.
+	remainder.negative = b.negative;
+
+	// Set signs to zero as necessary.  (Thanks David Allen!)
+	if (remainder.mag.empty())
+		remainder.negative = false;
+	if (quotient.mag.empty())
+		quotient.negative = false;
+}
+
 size_t ceilingDiv(size_t a, size_t b) {
 	return (a + b - 1) / b;
 }
@@ -493,6 +619,17 @@ BigInteger::toString() const
 	result.resize(offset + buffer.size());
 	std::transform(buffer.rbegin(), buffer.rend(), result.begin() + offset, [](uint8_t c) { return static_cast<char>('0' + c); });
 	return result;
+}
+
+int
+BigInteger::toInt() const
+{
+	if (mag.empty())
+		return 0;
+	else if (negative)
+		return -static_cast<int>(mag.back());
+	else
+		return static_cast<int>(mag.back());
 }
 
 } // ZXing

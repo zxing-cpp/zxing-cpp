@@ -19,8 +19,15 @@
 #include "pdf417/PDFHighLevelEncoder.h"
 #include "pdf417/PDFEncoder.h"
 #include "EncodeStatus.h"
+#include "CharacterSetECI.h"
+#include "TextEncoder.h"
+#include "ZXBigInteger.h"
+
 #include <cstdint>
 #include <array>
+#include <algorithm>
+
+#define CHECK_STATUS(x) if (!((status = x).isOK())) return status;
 
 namespace ZXing {
 namespace Pdf417 {
@@ -154,6 +161,352 @@ static const int8_t PUNCTUATION[] = {
 	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 26, 21, 27,  9, -1,
 };
 
+static EncodeStatus EncodingECI(int eci, std::vector<int>& buffer)
+{
+	if (eci >= 0 && eci < 900) {
+		buffer.push_back(ECI_CHARSET);
+		buffer.push_back(eci);
+	}
+	else if (eci < 810900) {
+		buffer.push_back(ECI_GENERAL_PURPOSE);
+		buffer.push_back(eci / 900 - 1);
+		buffer.push_back(eci % 900);
+	}
+	else if (eci < 811800) {
+		buffer.push_back(ECI_USER_DEFINED);
+		buffer.push_back(810900 - eci);
+	}
+	else {
+		return EncodeStatus::WithError("ECI number not in valid range from 0..811799");
+	}
+	return EncodeStatus::Success();
+}
+
+static inline bool IsDigit(int ch)
+{
+	return ch >= '0' && ch <= '9';
+}
+
+static inline bool IsAlphaUpper(int ch)
+{
+	return ch == ' ' || (ch >= 'A' && ch <= 'Z');
+}
+
+static inline bool IsAlphaLower(int ch)
+{
+	return ch == ' ' || (ch >= 'a' && ch <= 'z');
+}
+
+static bool IsMixed(int ch)
+{
+	return (ch & 0x7f) == ch && MIXED[ch] != -1;
+}
+
+static bool IsPunctuation(int ch)
+{
+	return (ch & 0x7f) == ch && PUNCTUATION[ch] != -1;
+}
+
+static bool IsText(int ch)
+{
+	return ch == '\t' || ch == '\n' || ch == '\r' || (ch >= 32 && ch <= 126);
+}
+
+
+/**
+* Encode parts of the message using Text Compaction as described in ISO/IEC 15438:2001(E),
+* chapter 4.4.2.
+*
+* @param msg            the message
+* @param startpos       the start position within the message
+* @param count          the number of characters to encode
+* @param sb             receives the encoded codewords
+* @param initialSubmode should normally be SUBMODE_ALPHA
+* @return the text submode in which this method ends
+*/
+static int EncodeText(const std::wstring& msg, int startpos, int count, int submode, std::vector<int>& output)
+{
+	std::vector<int> tmp;
+	tmp.reserve(count);
+	int idx = 0;
+	while (true) {
+		int ch = msg[startpos + idx];
+		switch (submode) {
+			case SUBMODE_ALPHA:
+				if (IsAlphaUpper(ch)) {
+					tmp.push_back(ch == ' ' ? 26 : (ch - 65)); //space
+				}
+				else if (IsAlphaLower(ch)) {
+					submode = SUBMODE_LOWER;
+					tmp.push_back(27); //ll
+					continue;
+				}
+				else if (IsMixed(ch)) {
+					submode = SUBMODE_MIXED;
+					tmp.push_back(28); //ml
+					continue;
+				}
+				else {
+					tmp.push_back(29); //ps
+					tmp.push_back(PUNCTUATION[ch]);
+				}
+				break;
+			case SUBMODE_LOWER:
+				if (IsAlphaLower(ch)) {
+					tmp.push_back(ch == ' ' ? 26 : (ch - 97)); //space
+				}
+				else if (IsAlphaUpper(ch)) {
+					tmp.push_back(27); //as
+					tmp.push_back(ch - 65);
+					//space cannot happen here, it is also in "Lower"
+				}
+				else if (IsMixed(ch)) {
+					submode = SUBMODE_MIXED;
+					tmp.push_back(28); //ml
+					continue;
+				}
+				else {
+					tmp.push_back(29); //ps
+					tmp.push_back(PUNCTUATION[ch]);
+				}
+				break;
+			case SUBMODE_MIXED:
+				if (IsMixed(ch)) {
+					tmp.push_back(MIXED[ch]);
+				}
+				else if (IsAlphaUpper(ch)) {
+					submode = SUBMODE_ALPHA;
+					tmp.push_back(28); //al
+					continue;
+				}
+				else if (IsAlphaLower(ch)) {
+					submode = SUBMODE_LOWER;
+					tmp.push_back(27); //ll
+					continue;
+				}
+				else {
+					if (startpos + idx + 1 < count) {
+						int next = msg[startpos + idx + 1];
+						if (IsPunctuation(next)) {
+							submode = SUBMODE_PUNCTUATION;
+							tmp.push_back(25); //pl
+							continue;
+						}
+					}
+					tmp.push_back(29); //ps
+					tmp.push_back(PUNCTUATION[ch]);
+				}
+				break;
+			default: //SUBMODE_PUNCTUATION
+				if (IsPunctuation(ch)) {
+					tmp.push_back(PUNCTUATION[ch]);
+				}
+				else {
+					submode = SUBMODE_ALPHA;
+					tmp.push_back(29); //al
+					continue;
+				}
+		}
+		idx++;
+		if (idx >= count) {
+			break;
+		}
+	}
+	int h = 0;
+	size_t len = tmp.size();
+	for (size_t i = 0; i < len; i++) {
+		bool odd = (i % 2) != 0;
+		if (odd) {
+			h = (h * 30) + tmp[i];
+			output.push_back(h);
+		}
+		else {
+			h = tmp[i];
+		}
+	}
+	if ((len % 2) != 0) {
+		output.push_back((h * 30) + 29); //ps
+	}
+	return submode;
+}
+
+
+/**
+* Encode parts of the message using Byte Compaction as described in ISO/IEC 15438:2001(E),
+* chapter 4.4.3. The Unicode characters will be converted to binary using the cp437
+* codepage.
+*
+* @param bytes     the message converted to a byte array
+* @param startpos  the start position within the message
+* @param count     the number of bytes to encode
+* @param startmode the mode from which this method starts
+* @param sb        receives the encoded codewords
+*/
+static void EncodeBinary(const std::string& bytes, int startpos, int count, int startmode, std::vector<int>& output)
+{
+	if (count == 1 && startmode == TEXT_COMPACTION) {
+		output.push_back(SHIFT_TO_BYTE);
+	}
+	else {
+		if ((count % 6) == 0) {
+			output.push_back(LATCH_TO_BYTE);
+		}
+		else {
+			output.push_back(LATCH_TO_BYTE_PADDED);
+		}
+	}
+
+	int idx = startpos;
+	// Encode sixpacks
+	if (count >= 6) {
+		int chars[5];
+		while ((startpos + count - idx) >= 6) {
+			long t = 0;
+			for (int i = 0; i < 6; i++) {
+				t <<= 8;
+				t += bytes[idx + i] & 0xff;
+			}
+			for (int i = 0; i < 5; i++) {
+				chars[i] = t % 900;
+				t /= 900;
+			}
+			for (int i = 4; i >= 0; i--) {
+				output.push_back(chars[i]);
+			}
+			idx += 6;
+		}
+	}
+	//Encode rest (remaining n<5 bytes if any)
+	for (int i = idx; i < startpos + count; i++) {
+		int ch = bytes[i] & 0xff;
+		output.push_back(ch);
+	}
+}
+
+
+static void EncodeNumeric(const std::wstring& msg, int startpos, int count, std::vector<int>& output)
+{
+	int idx = 0;
+	std::vector<int> tmp;
+	tmp.reserve(count / 3 + 1);
+	BigInteger num900(900);
+	while (idx < count) {
+		tmp.clear();
+		int len = std::min(44, count - idx);
+		auto part = L"1" + msg.substr(startpos + idx, len);
+
+		BigInteger bigint;
+		BigInteger::TryParse(part, bigint);
+		BigInteger q, r;
+		do {
+			BigInteger::Divide(bigint, num900, q, r);
+			tmp.push_back(r.toInt());
+			bigint = q;
+		} while (!bigint.isZero());
+
+		//Reverse temporary string
+		output.insert(output.end(), tmp.rbegin(), tmp.rend());
+		idx += len;
+	}
+}
+
+
+/**
+* Determines the number of consecutive characters that are encodable using numeric compaction.
+*
+* @param msg      the message
+* @param startpos the start position within the message
+* @return the requested character count
+*/
+static int DetermineConsecutiveDigitCount(const std::wstring& msg, int startpos)
+{
+	int count = 0;
+	size_t len = msg.length();
+	size_t idx = startpos;
+	if (idx < len) {
+		int ch = msg[idx];
+		while (IsDigit(ch) && idx < len) {
+			count++;
+			idx++;
+			if (idx < len) {
+				ch = msg[idx];
+			}
+		}
+	}
+	return count;
+}
+
+/**
+* Determines the number of consecutive characters that are encodable using text compaction.
+*
+* @param msg      the message
+* @param startpos the start position within the message
+* @return the requested character count
+*/
+static int DetermineConsecutiveTextCount(const std::wstring& msg, int startpos)
+{
+	size_t len = msg.length();
+	size_t idx = startpos;
+	while (idx < len) {
+		int ch = msg[idx];
+		int numericCount = 0;
+		while (numericCount < 13 && IsDigit(ch) && idx < len) {
+			numericCount++;
+			idx++;
+			if (idx < len) {
+				ch = msg[idx];
+			}
+		}
+		if (numericCount >= 13) {
+			return static_cast<int>(idx - startpos - numericCount);
+		}
+		if (numericCount > 0) {
+			//Heuristic: All text-encodable chars or digits are binary encodable
+			continue;
+		}
+		ch = msg[idx];
+
+		//Check if character is encodable
+		if (!IsText(ch)) {
+			break;
+		}
+		idx++;
+	}
+	return static_cast<int>(idx - startpos);
+}
+
+/**
+* Determines the number of consecutive characters that are encodable using binary compaction.
+*
+* @param msg      the message
+* @param startpos the start position within the message
+* @param encoding the charset used to convert the message to a byte array
+* @return the requested character count
+*/
+static int DetermineConsecutiveBinaryCount(const std::wstring& msg, int startpos)
+{
+	size_t len = msg.length();
+	size_t idx = startpos;
+	while (idx < len) {
+		int ch = msg[idx];
+		int numericCount = 0;
+
+		while (numericCount < 13 && IsDigit(ch)) {
+			numericCount++;
+			//textCount++;
+			size_t i = idx + numericCount;
+			if (i >= len) {
+				break;
+			}
+			ch = msg[i];
+		}
+		if (numericCount >= 13) {
+			return static_cast<int>(idx - startpos);
+		}
+		idx++;
+	}
+	return idx - startpos;
+}
 
 /**
 * Performs high-level encoding of a PDF417 message using the algorithm described in annex P
@@ -169,73 +522,70 @@ static const int8_t PUNCTUATION[] = {
 EncodeStatus
 HighLevelEncoder::EncodeHighLevel(const std::wstring& msg, Compaction compaction, CharacterSet encoding, std::vector<int>& highLevel)
 {
+	EncodeStatus status = EncodeStatus::Success();
+
+	highLevel.reserve(highLevel.size() + msg.length());
+
 	//the codewords 0..928 are encoded as Unicode characters
-	StringBuilder sb = new StringBuilder(msg.length());
-
-	if (encoding == null) {
-		encoding = DEFAULT_ENCODING;
-	}
-	else if (!DEFAULT_ENCODING.equals(encoding)) {
-		CharacterSetECI eci = CharacterSetECI.getCharacterSetECIByName(encoding.name());
-		if (eci != null) {
-			encodingECI(eci.getValue(), sb);
-		}
+	if (encoding != CharacterSet::ISO8859_1) {		
+		CHECK_STATUS(EncodingECI(CharacterSetECI::ValueForCharset(encoding), highLevel));
 	}
 
-	int len = msg.length();
+	int len = static_cast<int>(msg.length());
 	int p = 0;
 	int textSubMode = SUBMODE_ALPHA;
 
 	// User selected encoding mode
-	if (compaction == Compaction.TEXT) {
-		encodeText(msg, p, len, sb, textSubMode);
+	if (compaction == Compaction::TEXT) {
+		EncodeText(msg, p, len, textSubMode, highLevel);
 
 	}
-	else if (compaction == Compaction.BYTE) {
-		byte[] bytes = msg.getBytes(encoding);
-		encodeBinary(bytes, p, bytes.length, BYTE_COMPACTION, sb);
-
+	else if (compaction == Compaction::BYTE) {
+		std::string bytes;
+		TextEncoder::GetBytes(msg, encoding, bytes);
+		EncodeBinary(bytes, p, static_cast<int>(bytes.length()), BYTE_COMPACTION, highLevel);
 	}
-	else if (compaction == Compaction.NUMERIC) {
-		sb.append((char)LATCH_TO_NUMERIC);
-		encodeNumeric(msg, p, len, sb);
+	else if (compaction == Compaction::NUMERIC) {
+		highLevel.push_back(LATCH_TO_NUMERIC);
+		EncodeNumeric(msg, p, len, highLevel);
 
 	}
 	else {
 		int encodingMode = TEXT_COMPACTION; //Default mode, see 4.4.2.1
 		while (p < len) {
-			int n = determineConsecutiveDigitCount(msg, p);
+			int n = DetermineConsecutiveDigitCount(msg, p);
 			if (n >= 13) {
-				sb.append((char)LATCH_TO_NUMERIC);
+				highLevel.push_back(LATCH_TO_NUMERIC);
 				encodingMode = NUMERIC_COMPACTION;
 				textSubMode = SUBMODE_ALPHA; //Reset after latch
-				encodeNumeric(msg, p, n, sb);
+				EncodeNumeric(msg, p, n, highLevel);
 				p += n;
 			}
 			else {
-				int t = determineConsecutiveTextCount(msg, p);
+				int t = DetermineConsecutiveTextCount(msg, p);
 				if (t >= 5 || n == len) {
 					if (encodingMode != TEXT_COMPACTION) {
-						sb.append((char)LATCH_TO_TEXT);
+						highLevel.push_back(LATCH_TO_TEXT);
 						encodingMode = TEXT_COMPACTION;
 						textSubMode = SUBMODE_ALPHA; //start with submode alpha after latch
 					}
-					textSubMode = encodeText(msg, p, t, sb, textSubMode);
+					textSubMode = EncodeText(msg, p, t, textSubMode, highLevel);
 					p += t;
 				}
 				else {
-					int b = determineConsecutiveBinaryCount(msg, p, encoding);
+					int b = DetermineConsecutiveBinaryCount(msg, p);
 					if (b == 0) {
 						b = 1;
 					}
-					byte[] bytes = msg.substring(p, p + b).getBytes(encoding);
-					if (bytes.length == 1 && encodingMode == TEXT_COMPACTION) {
+					std::string bytes;
+					TextEncoder::GetBytes(msg.substr(p, b), encoding, bytes);
+					if (bytes.length() == 1 && encodingMode == TEXT_COMPACTION) {
 						//Switch for one byte (instead of latch)
-						encodeBinary(bytes, 0, 1, TEXT_COMPACTION, sb);
+						EncodeBinary(bytes, 0, 1, TEXT_COMPACTION, highLevel);
 					}
 					else {
 						//Mode latch performed by encodeBinary()
-						encodeBinary(bytes, 0, bytes.length, encodingMode, sb);
+						EncodeBinary(bytes, 0, static_cast<int>(bytes.length()), encodingMode, highLevel);
 						encodingMode = BYTE_COMPACTION;
 						textSubMode = SUBMODE_ALPHA; //Reset after latch
 					}
@@ -244,371 +594,9 @@ HighLevelEncoder::EncodeHighLevel(const std::wstring& msg, Compaction compaction
 			}
 		}
 	}
-
-	return sb.toString();
+	return status;
 }
 
-/**
-* Encode parts of the message using Text Compaction as described in ISO/IEC 15438:2001(E),
-* chapter 4.4.2.
-*
-* @param msg            the message
-* @param startpos       the start position within the message
-* @param count          the number of characters to encode
-* @param sb             receives the encoded codewords
-* @param initialSubmode should normally be SUBMODE_ALPHA
-* @return the text submode in which this method ends
-*/
-private static int encodeText(CharSequence msg,
-	int startpos,
-	int count,
-	StringBuilder sb,
-	int initialSubmode) {
-	StringBuilder tmp = new StringBuilder(count);
-	int submode = initialSubmode;
-	int idx = 0;
-	while (true) {
-		char ch = msg.charAt(startpos + idx);
-		switch (submode) {
-		case SUBMODE_ALPHA:
-			if (isAlphaUpper(ch)) {
-				if (ch == ' ') {
-					tmp.append((char)26); //space
-				}
-				else {
-					tmp.append((char)(ch - 65));
-				}
-			}
-			else {
-				if (isAlphaLower(ch)) {
-					submode = SUBMODE_LOWER;
-					tmp.append((char)27); //ll
-					continue;
-				}
-				else if (isMixed(ch)) {
-					submode = SUBMODE_MIXED;
-					tmp.append((char)28); //ml
-					continue;
-				}
-				else {
-					tmp.append((char)29); //ps
-					tmp.append((char)PUNCTUATION[ch]);
-					break;
-				}
-			}
-			break;
-		case SUBMODE_LOWER:
-			if (isAlphaLower(ch)) {
-				if (ch == ' ') {
-					tmp.append((char)26); //space
-				}
-				else {
-					tmp.append((char)(ch - 97));
-				}
-			}
-			else {
-				if (isAlphaUpper(ch)) {
-					tmp.append((char)27); //as
-					tmp.append((char)(ch - 65));
-					//space cannot happen here, it is also in "Lower"
-					break;
-				}
-				else if (isMixed(ch)) {
-					submode = SUBMODE_MIXED;
-					tmp.append((char)28); //ml
-					continue;
-				}
-				else {
-					tmp.append((char)29); //ps
-					tmp.append((char)PUNCTUATION[ch]);
-					break;
-				}
-			}
-			break;
-		case SUBMODE_MIXED:
-			if (isMixed(ch)) {
-				tmp.append((char)MIXED[ch]);
-			}
-			else {
-				if (isAlphaUpper(ch)) {
-					submode = SUBMODE_ALPHA;
-					tmp.append((char)28); //al
-					continue;
-				}
-				else if (isAlphaLower(ch)) {
-					submode = SUBMODE_LOWER;
-					tmp.append((char)27); //ll
-					continue;
-				}
-				else {
-					if (startpos + idx + 1 < count) {
-						char next = msg.charAt(startpos + idx + 1);
-						if (isPunctuation(next)) {
-							submode = SUBMODE_PUNCTUATION;
-							tmp.append((char)25); //pl
-							continue;
-						}
-					}
-					tmp.append((char)29); //ps
-					tmp.append((char)PUNCTUATION[ch]);
-				}
-			}
-			break;
-		default: //SUBMODE_PUNCTUATION
-			if (isPunctuation(ch)) {
-				tmp.append((char)PUNCTUATION[ch]);
-			}
-			else {
-				submode = SUBMODE_ALPHA;
-				tmp.append((char)29); //al
-				continue;
-			}
-		}
-		idx++;
-		if (idx >= count) {
-			break;
-		}
-	}
-	char h = 0;
-	int len = tmp.length();
-	for (int i = 0; i < len; i++) {
-		boolean odd = (i % 2) != 0;
-		if (odd) {
-			h = (char)((h * 30) + tmp.charAt(i));
-			sb.append(h);
-		}
-		else {
-			h = tmp.charAt(i);
-		}
-	}
-	if ((len % 2) != 0) {
-		sb.append((char)((h * 30) + 29)); //ps
-	}
-	return submode;
-}
-
-/**
-* Encode parts of the message using Byte Compaction as described in ISO/IEC 15438:2001(E),
-* chapter 4.4.3. The Unicode characters will be converted to binary using the cp437
-* codepage.
-*
-* @param bytes     the message converted to a byte array
-* @param startpos  the start position within the message
-* @param count     the number of bytes to encode
-* @param startmode the mode from which this method starts
-* @param sb        receives the encoded codewords
-*/
-private static void encodeBinary(byte[] bytes,
-	int startpos,
-	int count,
-	int startmode,
-	StringBuilder sb) {
-	if (count == 1 && startmode == TEXT_COMPACTION) {
-		sb.append((char)SHIFT_TO_BYTE);
-	}
-	else {
-		if ((count % 6) == 0) {
-			sb.append((char)LATCH_TO_BYTE);
-		}
-		else {
-			sb.append((char)LATCH_TO_BYTE_PADDED);
-		}
-	}
-
-	int idx = startpos;
-	// Encode sixpacks
-	if (count >= 6) {
-		char[] chars = new char[5];
-		while ((startpos + count - idx) >= 6) {
-			long t = 0;
-			for (int i = 0; i < 6; i++) {
-				t <<= 8;
-				t += bytes[idx + i] & 0xff;
-			}
-			for (int i = 0; i < 5; i++) {
-				chars[i] = (char)(t % 900);
-				t /= 900;
-			}
-			for (int i = chars.length - 1; i >= 0; i--) {
-				sb.append(chars[i]);
-			}
-			idx += 6;
-		}
-	}
-	//Encode rest (remaining n<5 bytes if any)
-	for (int i = idx; i < startpos + count; i++) {
-		int ch = bytes[i] & 0xff;
-		sb.append((char)ch);
-	}
-}
-
-private static void encodeNumeric(String msg, int startpos, int count, StringBuilder sb) {
-	int idx = 0;
-	StringBuilder tmp = new StringBuilder(count / 3 + 1);
-	BigInteger num900 = BigInteger.valueOf(900);
-	BigInteger num0 = BigInteger.valueOf(0);
-	while (idx < count) {
-		tmp.setLength(0);
-		int len = Math.min(44, count - idx);
-		String part = '1' + msg.substring(startpos + idx, startpos + idx + len);
-		BigInteger bigint = new BigInteger(part);
-		do {
-			tmp.append((char)bigint.mod(num900).intValue());
-			bigint = bigint.divide(num900);
-		} while (!bigint.equals(num0));
-
-		//Reverse temporary string
-		for (int i = tmp.length() - 1; i >= 0; i--) {
-			sb.append(tmp.charAt(i));
-		}
-		idx += len;
-	}
-}
-
-
-private static boolean isDigit(char ch) {
-	return ch >= '0' && ch <= '9';
-}
-
-private static boolean isAlphaUpper(char ch) {
-	return ch == ' ' || (ch >= 'A' && ch <= 'Z');
-}
-
-private static boolean isAlphaLower(char ch) {
-	return ch == ' ' || (ch >= 'a' && ch <= 'z');
-}
-
-private static boolean isMixed(char ch) {
-	return MIXED[ch] != -1;
-}
-
-private static boolean isPunctuation(char ch) {
-	return PUNCTUATION[ch] != -1;
-}
-
-private static boolean isText(char ch) {
-	return ch == '\t' || ch == '\n' || ch == '\r' || (ch >= 32 && ch <= 126);
-}
-
-/**
-* Determines the number of consecutive characters that are encodable using numeric compaction.
-*
-* @param msg      the message
-* @param startpos the start position within the message
-* @return the requested character count
-*/
-private static int determineConsecutiveDigitCount(CharSequence msg, int startpos) {
-	int count = 0;
-	int len = msg.length();
-	int idx = startpos;
-	if (idx < len) {
-		char ch = msg.charAt(idx);
-		while (isDigit(ch) && idx < len) {
-			count++;
-			idx++;
-			if (idx < len) {
-				ch = msg.charAt(idx);
-			}
-		}
-	}
-	return count;
-}
-
-/**
-* Determines the number of consecutive characters that are encodable using text compaction.
-*
-* @param msg      the message
-* @param startpos the start position within the message
-* @return the requested character count
-*/
-private static int determineConsecutiveTextCount(CharSequence msg, int startpos) {
-	int len = msg.length();
-	int idx = startpos;
-	while (idx < len) {
-		char ch = msg.charAt(idx);
-		int numericCount = 0;
-		while (numericCount < 13 && isDigit(ch) && idx < len) {
-			numericCount++;
-			idx++;
-			if (idx < len) {
-				ch = msg.charAt(idx);
-			}
-		}
-		if (numericCount >= 13) {
-			return idx - startpos - numericCount;
-		}
-		if (numericCount > 0) {
-			//Heuristic: All text-encodable chars or digits are binary encodable
-			continue;
-		}
-		ch = msg.charAt(idx);
-
-		//Check if character is encodable
-		if (!isText(ch)) {
-			break;
-		}
-		idx++;
-	}
-	return idx - startpos;
-}
-
-/**
-* Determines the number of consecutive characters that are encodable using binary compaction.
-*
-* @param msg      the message
-* @param startpos the start position within the message
-* @param encoding the charset used to convert the message to a byte array
-* @return the requested character count
-*/
-private static int determineConsecutiveBinaryCount(String msg, int startpos, Charset encoding)
-throws WriterException {
-	CharsetEncoder encoder = encoding.newEncoder();
-	int len = msg.length();
-	int idx = startpos;
-	while (idx < len) {
-		char ch = msg.charAt(idx);
-		int numericCount = 0;
-
-		while (numericCount < 13 && isDigit(ch)) {
-			numericCount++;
-			//textCount++;
-			int i = idx + numericCount;
-			if (i >= len) {
-				break;
-			}
-			ch = msg.charAt(i);
-		}
-		if (numericCount >= 13) {
-			return idx - startpos;
-		}
-		ch = msg.charAt(idx);
-
-		if (!encoder.canEncode(ch)) {
-			throw new WriterException("Non-encodable character detected: " + ch + " (Unicode: " + (int)ch + ')');
-		}
-		idx++;
-	}
-	return idx - startpos;
-}
-
-private static void encodingECI(int eci, StringBuilder sb) throws WriterException {
-	if (eci >= 0 && eci < 900) {
-		sb.append((char)ECI_CHARSET);
-		sb.append((char)eci);
-	}
-	else if (eci < 810900) {
-		sb.append((char)ECI_GENERAL_PURPOSE);
-		sb.append((char)(eci / 900 - 1));
-		sb.append((char)(eci % 900));
-	}
-	else if (eci < 811800) {
-		sb.append((char)ECI_USER_DEFINED);
-		sb.append((char)(810900 - eci));
-	}
-	else {
-		throw new WriterException("ECI number not in valid range from 0..811799, but was " + eci);
-	}
-}
 
 
 } // Pdf417
