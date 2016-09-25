@@ -16,9 +16,11 @@
 */
 
 #include "pdf417/PDFWriter.h"
+#include "pdf417/PDFEncoder.h"
 #include "EncodeHints.h"
 #include "EncodeStatus.h"
 #include "BitMatrix.h"
+#include "CharacterSetECI.h"
 
 namespace ZXing {
 namespace Pdf417 {
@@ -36,17 +38,21 @@ static const int DEFAULT_ERROR_CORRECTION_LEVEL = 2;
 /**
 * Takes and rotates the it 90 degrees
 */
-static byte[][] rotateArray(byte[][] bitarray) {
-	byte[][] temp = new byte[bitarray[0].length][bitarray.length];
-	for (int ii = 0; ii < bitarray.length; ii++) {
-		// This makes the direction consistent on screen when rotating the
-		// screen;
-		int inverseii = bitarray.length - ii - 1;
-		for (int jj = 0; jj < bitarray[0].length; jj++) {
-			temp[jj][inverseii] = bitarray[ii][jj];
+static void RotateArray(const std::vector<std::vector<bool>>& input, std::vector<std::vector<bool>>& output)
+{
+	size_t height = input.size();
+	size_t width = input[0].size();
+	output.resize(width);
+	for (size_t i = 0; i < width; ++i) {
+		output[i].resize(height);
+	}
+	for (size_t ii = 0; ii < height; ++ii) {
+		// This makes the direction consistent on screen when rotating the screen
+		size_t inverseii = height - ii - 1;
+		for (size_t jj = 0; jj < width; ++jj) {
+			output[jj][inverseii] = input[ii][jj];
 		}
 	}
-	return temp;
 }
 
 /**
@@ -56,92 +62,93 @@ static byte[][] rotateArray(byte[][] bitarray) {
 * @param margin border around the barcode
 * @return BitMatrix of the input
 */
-static BitMatrix bitMatrixFrombitArray(byte[][] input, int margin) {
+static void BitMatrixFromBitArray(const std::vector<std::vector<bool>>& input, int margin, BitMatrix& output)
+{
 	// Creates the bitmatrix with extra space for whitespace
-	BitMatrix output = new BitMatrix(input[0].length + 2 * margin, input.length + 2 * margin);
-	output.clear();
-	for (int y = 0, yOutput = output.getHeight() - margin - 1; y < input.length; y++, yOutput--) {
-		for (int x = 0; x < input[0].length; x++) {
+	output.init(input[0].size() + 2 * margin, input.size() + 2 * margin);
+	for (size_t y = 0, yOutput = output.height() - margin - 1; y < input.size(); y++, yOutput--) {
+		for (size_t x = 0; x < input[0].size(); ++x) {
 			// Zero is white in the bytematrix
-			if (input[y][x] == 1) {
+			if (input[y][x]) {
 				output.set(x + margin, yOutput);
 			}
 		}
 	}
-	return output;
 }
 
 /**
 * Takes encoder, accounts for width/height, and retrieves bit matrix
 */
-static EncodeStatus DoEncode(PDF417 encoder, String contents, int errorCorrectionLevel, int width, int height, int margin, BitMatrix& output)
+static EncodeStatus DoEncode(const Encoder& encoder, const std::wstring contents, int errorCorrectionLevel, int width, int height, int margin, BitMatrix& output)
 {
-	encoder.generateBarcodeLogic(contents, errorCorrectionLevel);
-
-	int aspectRatio = 4;
-	byte[][] originalScale = encoder.getBarcodeMatrix().getScaledMatrix(1, aspectRatio);
-	boolean rotated = false;
-	if ((height > width) ^ (originalScale[0].length < originalScale.length)) {
-		originalScale = rotateArray(originalScale);
-		rotated = true;
-	}
-
-	int scaleX = width / originalScale[0].length;
-	int scaleY = height / originalScale.length;
-
-	int scale;
-	if (scaleX < scaleY) {
-		scale = scaleX;
-	}
-	else {
-		scale = scaleY;
-	}
-
-	if (scale > 1) {
-		byte[][] scaledMatrix =
-			encoder.getBarcodeMatrix().getScaledMatrix(scale, scale * aspectRatio);
-		if (rotated) {
-			scaledMatrix = rotateArray(scaledMatrix);
+	BarcodeMatrix resultMatrix;
+	EncodeStatus status = encoder.generateBarcodeLogic(contents, errorCorrectionLevel, resultMatrix);
+	if (status.isOK()) {
+		int aspectRatio = 4;
+		std::vector<std::vector<bool>> originalScale;
+		resultMatrix.getScaledMatrix(1, aspectRatio, originalScale);
+		bool rotated = false;
+		if ((height > width) ^ (originalScale[0].size() < originalScale.size())) {
+			std::vector<std::vector<bool>> temp;
+			RotateArray(originalScale, temp);
+			originalScale = temp;
+			rotated = true;
 		}
-		return bitMatrixFrombitArray(scaledMatrix, margin);
+
+		int scaleX = width / static_cast<int>(originalScale[0].size());
+		int scaleY = height / static_cast<int>(originalScale.size());
+
+		int scale;
+		if (scaleX < scaleY) {
+			scale = scaleX;
+		}
+		else {
+			scale = scaleY;
+		}
+
+		if (scale > 1) {
+			std::vector<std::vector<bool>> scaledMatrix;
+			resultMatrix.getScaledMatrix(scale, scale * aspectRatio, scaledMatrix);
+			if (rotated) {
+				std::vector<std::vector<bool>> temp;
+				RotateArray(scaledMatrix, temp);
+				scaledMatrix = temp;
+			}
+			BitMatrixFromBitArray(scaledMatrix, margin, output);
+		}
+		else {
+			BitMatrixFromBitArray(originalScale, margin, output);
+		}
 	}
-	return bitMatrixFrombitArray(originalScale, margin);
+	return status;
 }
 
 EncodeStatus
 Writer::Encode(const std::wstring& contents, int width, int height, const EncodeHints& hints, BitMatrix& output)
 {
-	PDF417 encoder = new PDF417();
-	int margin = WHITE_SPACE;
-	int errorCorrectionLevel = DEFAULT_ERROR_CORRECTION_LEVEL;
-
-	if (hints != null) {
-		if (hints.containsKey(EncodeHintType.PDF417_COMPACT)) {
-			encoder.setCompact(Boolean.valueOf(hints.get(EncodeHintType.PDF417_COMPACT).toString()));
-		}
-		if (hints.containsKey(EncodeHintType.PDF417_COMPACTION)) {
-			encoder.setCompaction(Compaction.valueOf(hints.get(EncodeHintType.PDF417_COMPACTION).toString()));
-		}
-		if (hints.containsKey(EncodeHintType.PDF417_DIMENSIONS)) {
-			Dimensions dimensions = (Dimensions)hints.get(EncodeHintType.PDF417_DIMENSIONS);
-			encoder.setDimensions(dimensions.getMaxCols(),
-				dimensions.getMinCols(),
-				dimensions.getMaxRows(),
-				dimensions.getMinRows());
-		}
-		if (hints.containsKey(EncodeHintType.MARGIN)) {
-			margin = Integer.parseInt(hints.get(EncodeHintType.MARGIN).toString());
-		}
-		if (hints.containsKey(EncodeHintType.ERROR_CORRECTION)) {
-			errorCorrectionLevel = Integer.parseInt(hints.get(EncodeHintType.ERROR_CORRECTION).toString());
-		}
-		if (hints.containsKey(EncodeHintType.CHARACTER_SET)) {
-			Charset encoding = Charset.forName(hints.get(EncodeHintType.CHARACTER_SET).toString());
+	Encoder encoder;
+	encoder.setCompact(hints.pdf417Compact());
+	encoder.setCompaction(Compaction(hints.pdf417Compaction()));
+	const int* dim = hints.pdf417Dimensions();
+	if (dim[0] != 0 || dim[1] != 0 || dim[2] != 0 || dim[3] != 0) {
+		encoder.setDimensions(dim[0], dim[1], dim[2], dim[3]);
+	}
+	int margin = hints.margin();
+	if (margin == -1) {
+		margin = WHITE_SPACE;
+	}
+	int errorCorrectionLevel = hints.errorCorrection();
+	if (errorCorrectionLevel < 0) {
+		errorCorrectionLevel = DEFAULT_ERROR_CORRECTION_LEVEL;
+	}
+	std::string charset = hints.characterSet();
+	if (!charset.empty()) {
+		auto encoding = CharacterSetECI::CharsetFromName(charset.c_str());
+		if (encoding != CharacterSet::Unknown) {
 			encoder.setEncoding(encoding);
 		}
 	}
-
-	return DoEncode(encoder, contents, errorCorrectionLevel, width, height, margin);
+	return DoEncode(encoder, contents, errorCorrectionLevel, width, height, margin, output);
 }
 
 

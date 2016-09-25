@@ -29,6 +29,7 @@
 #include "oned/ODUPCEWriter.h"
 #include "oned/ODUPCAWriter.h"
 #include "qrcode/QRWriter.h"
+#include "pdf417/PDFWriter.h"
 
 namespace ZXing {
 
@@ -54,9 +55,8 @@ MultiFormatWriter::Encode(const std::wstring& contents, BarcodeFormat format, in
 			return OneD::Code128Writer::Encode(contents, width, height, hints, output);
 		case BarcodeFormat::ITF:
 			return OneD::ITFWriter::Encode(contents, width, height, hints, output);
-		//case BarcodeFormat::PDF_417:
-		//	writer = new PDF417Writer();
-		//	break;
+		case BarcodeFormat::PDF_417:
+			return Pdf417::Writer::Encode(contents, width, height, hints, output);
 		case BarcodeFormat::CODABAR:
 			return OneD::CodabarWriter::Encode(contents, width, height, hints, output);
 		//case BarcodeFormat::DATA_MATRIX:

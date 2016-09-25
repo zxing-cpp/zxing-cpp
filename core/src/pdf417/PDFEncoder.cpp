@@ -509,7 +509,7 @@ static EncodeStatus DetermineDimensions(int minCols, int maxCols, int minRows, i
 * @throws WriterException if the contents cannot be encoded in this format
 */
 EncodeStatus
-Encoder::generateBarcodeLogic(const std::wstring& msg, int errorCorrectionLevel, BarcodeMatrix& output)
+Encoder::generateBarcodeLogic(const std::wstring& msg, int errorCorrectionLevel, BarcodeMatrix& output) const
 {
 	EncodeStatus status = EncodeStatus::Success();
 

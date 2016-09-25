@@ -143,7 +143,7 @@ class Encoder
 {
 public:
 	explicit Encoder(bool compact = false) : _compact(compact)  {}
-	EncodeStatus generateBarcodeLogic(const std::wstring& msg, int errorCorrectionLevel, BarcodeMatrix& output);
+	EncodeStatus generateBarcodeLogic(const std::wstring& msg, int errorCorrectionLevel, BarcodeMatrix& output) const;
 
 	/**
 	* Sets max/min row/col values
@@ -153,11 +153,11 @@ public:
 	* @param maxRows maximum allowed rows
 	* @param minRows minimum allowed rows
 	*/
-	void setDimensions(int maxCols, int minCols, int maxRows, int minRows) {
-		_maxCols = maxCols;
+	void setDimensions(int minCols, int maxCols, int minRows, int maxRows) {
 		_minCols = minCols;
-		_maxRows = maxRows;
+		_maxCols = maxCols;
 		_minRows = minRows;
+		_maxRows = maxRows;
 	}
 
 	/**
@@ -189,8 +189,8 @@ private:
 	CharacterSet _encoding = CharacterSet::ISO8859_1;
 	int _minCols = 2;
 	int _maxCols = 30;
-	int _maxRows = 30;
 	int _minRows = 2;
+	int _maxRows = 30;
 };
 
 } // Pdf417
