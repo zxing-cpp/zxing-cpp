@@ -18,11 +18,8 @@
 
 #include "pdf417/PDFEncoder.h"
 #include "pdf417/PDFHighLevelEncoder.h"
-#include "EncodeStatus.h"
 #include <array>
 #include <vector>
-
-#define CHECK_STATUS(x) if (!((status = x).isOK())) return status;
 
 namespace ZXing {
 namespace Pdf417 {
@@ -459,7 +456,7 @@ static void EncodeLowLevel(const std::vector<int>& fullCodewords, int c, int r, 
 * @param errorCorrectionCodeWords number of error correction code words
 * @return dimension object containing cols as width and rows as height
 */
-static EncodeStatus DetermineDimensions(int minCols, int maxCols, int minRows, int maxRows, int sourceCodeWords, int errorCorrectionCodeWords, int& outCols, int& outRows)
+static void DetermineDimensions(int minCols, int maxCols, int minRows, int maxRows, int sourceCodeWords, int errorCorrectionCodeWords, int& outCols, int& outRows)
 {
 	float ratio = 0.0f;
 	bool haveDimension = false;
@@ -497,9 +494,10 @@ static EncodeStatus DetermineDimensions(int minCols, int maxCols, int minRows, i
 			outRows = minRows;
 			haveDimension = true;
 		}
+		else {
+			throw std::invalid_argument("Unable to fit message in columns");
+		}
 	}
-
-	return haveDimension ? EncodeStatus::Success() : EncodeStatus::WithError("Unable to fit message in columns");
 }
 
 
@@ -508,30 +506,28 @@ static EncodeStatus DetermineDimensions(int minCols, int maxCols, int minRows, i
 * @param errorCorrectionLevel PDF417 error correction level to use
 * @throws WriterException if the contents cannot be encoded in this format
 */
-EncodeStatus
+void
 Encoder::generateBarcodeLogic(const std::wstring& msg, int errorCorrectionLevel, BarcodeMatrix& output) const
 {
-	EncodeStatus status = EncodeStatus::Success();
-
 	if (errorCorrectionLevel < 0 || errorCorrectionLevel > 8) {
-		return EncodeStatus::WithError("Error correction level must be between 0 and 8!");
+		throw std::invalid_argument("Error correction level must be between 0 and 8!");
 	}
 
 	//1. step: High-level encoding
 	int errorCorrectionCodeWords = GetErrorCorrectionCodewordCount(errorCorrectionLevel);
 	std::vector<int> highLevel;
-	CHECK_STATUS(HighLevelEncoder::EncodeHighLevel(msg, _compaction, _encoding, highLevel));
+	HighLevelEncoder::EncodeHighLevel(msg, _compaction, _encoding, highLevel);
 	
 	int sourceCodeWords = static_cast<int>(highLevel.size());
 
 	int cols, rows;
-	CHECK_STATUS(DetermineDimensions(_minCols, _maxCols, _minRows, _maxRows, sourceCodeWords, errorCorrectionCodeWords, cols, rows));
+	DetermineDimensions(_minCols, _maxCols, _minRows, _maxRows, sourceCodeWords, errorCorrectionCodeWords, cols, rows);
 
 	int pad = GetNumberOfPadCodewords(sourceCodeWords, errorCorrectionCodeWords, cols, rows);
 
 	//2. step: construct data codewords
 	if (sourceCodeWords + errorCorrectionCodeWords + 1 > 929) { // +1 for symbol length CW
-		return EncodeStatus::WithError("Encoded message contains to many code words, message to big");
+		throw std::invalid_argument("Encoded message contains to many code words, message too big");
 	}
 	int n = sourceCodeWords + pad + 1;
 	std::vector<int> dataCodewords;
@@ -548,8 +544,6 @@ Encoder::generateBarcodeLogic(const std::wstring& msg, int errorCorrectionLevel,
 	//4. step: low-level encoding
 	output.init(rows, cols);
 	EncodeLowLevel(dataCodewords, cols, rows, errorCorrectionLevel, _compact, output);
-
-	return status;
 }
 
 /**

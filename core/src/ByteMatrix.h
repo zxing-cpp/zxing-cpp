@@ -16,9 +16,9 @@
 * limitations under the License.
 */
 #include <vector>
+#include <cstdint>
 
 namespace ZXing {
-namespace QRCode {
 
 class ByteMatrix
 {
@@ -27,15 +27,16 @@ class ByteMatrix
 	std::vector<int8_t> _data;
 
 public:
-	ByteMatrix(int width, int height) : _width(width), _height(height), _data(_width * _height, 0) { }
+	ByteMatrix(int width, int height, int val = 0) : _width(width), _height(height), _data(_width * _height, val) { }
 
 	ByteMatrix() : _width(0), _height(0) { }
 
-	void init(int width, int height)
+	void init(int width, int height, int val = 0)
 	{
 		_width = width;
 		_height = height;
-		_data.resize(_width * _height, 0);
+		_data.clear();
+		_data.resize(_width * _height, val);
 	}
 
 	int height() const {
@@ -78,5 +79,4 @@ public:
 	}
 };
 
-} // QRCode
 } // ZXing

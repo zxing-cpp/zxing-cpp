@@ -1,7 +1,7 @@
 #pragma once
 /*
 * Copyright 2016 Huy Cuong Nguyen
-* Copyright 2016 ZXing authors
+* Copyright 2006-2007 Jeremias Maerki.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -16,37 +16,22 @@
 * limitations under the License.
 */
 #include <string>
+#include <vector>
 
 namespace ZXing {
+namespace DataMatrix {
 
-class BitMatrix;
-enum class CharacterSet;
-
-namespace QRCode {
-
-enum class ErrorCorrectionLevel;
+enum class SymbolShape;
 
 /**
-* This object renders a QR Code as a BitMatrix 2D array of greyscale values.
-*
-* @author dswitkin@google.com (Daniel Switkin)
+* DataMatrix ECC 200 data encoder following the algorithm described in ISO/IEC 16022:200(E) in
+* annex S.
 */
-class Writer
+class HighLevelEncoder
 {
 public:
-	Writer();
-
-	Writer& setMargin(int margin);
-	Writer& setErrorCorrectionLevel(ErrorCorrectionLevel ecLevel);
-	Writer& setEncoding(CharacterSet encoding);
-
-	void encode(const std::wstring& contents, int width, int height, BitMatrix& output) const;
-
-private:
-	int _margin;
-	ErrorCorrectionLevel _ecLevel;
-	CharacterSet _encoding;
+	static void Encode(const std::wstring& msg, SymbolShape shape, int minWdith, int minHeight, int maxWidth, int maxHeight, std::vector<int>& output);
 };
 
-} // QRCode
+} // DataMatrix
 } // ZXing

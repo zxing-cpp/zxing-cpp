@@ -16,9 +16,9 @@
 * limitations under the License.
 */
 #include "ByteArray.h"
+#include "ByteMatrix.h"
 #include "qrcode/QRCodecMode.h"
 #include "qrcode/QRVersion.h"
-#include "qrcode/QRByteMatrix.h"
 
 namespace ZXing {
 namespace QRCode {

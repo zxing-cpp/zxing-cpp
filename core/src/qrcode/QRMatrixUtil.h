@@ -18,22 +18,20 @@
 
 namespace ZXing {
 
-class EncodeStatus;
 class BitArray;
+class ByteMatrix;
 
 namespace QRCode {
 
 enum class ErrorCorrectionLevel;
 class Version;
-class ByteMatrix;
 
 class MatrixUtil
 {
 public:
 	static const int NUM_MASK_PATTERNS = 8;
 
-
-	static EncodeStatus BuildMatrix(const BitArray& dataBits, ErrorCorrectionLevel ecLevel, const Version& version, int maskPattern, ByteMatrix& matrix);
+	static void BuildMatrix(const BitArray& dataBits, ErrorCorrectionLevel ecLevel, const Version& version, int maskPattern, ByteMatrix& matrix);
 };
 
 } // QRCode

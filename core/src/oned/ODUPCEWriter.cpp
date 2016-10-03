@@ -18,8 +18,6 @@
 #include "oned/ODUPCEWriter.h"
 #include "oned/ODUPCEANPatterns.h"
 #include "oned/ODWriterHelper.h"
-#include "EncodeStatus.h"
-#include "EncodeHints.h"
 
 #include <vector>
 
@@ -57,16 +55,20 @@ static const int CODE_WIDTH = 3 + // start guard
                               (7 * 6) + // bars
                               6; // end guard
 
-EncodeStatus
-UPCEWriter::Encode(const std::wstring& contents, int width, int height, const EncodeHints& hints, BitMatrix& output)
+void
+UPCEWriter::encode(const std::wstring& contents, int width, int height, BitMatrix& output) const
 {
-	if (contents.length() != 8) {
-		return EncodeStatus::WithError("Requested contents should be 8 digits long");
+	size_t length = contents.length();
+	if (length == 0) {
+		throw std::invalid_argument("Found empty contents");
+	}
+	if (length != 8) {
+		throw std::invalid_argument("Requested contents should be 8 digits long");
 	}
 
 	for (size_t i = 0; i < contents.length(); ++i) {
 		if (contents[i] < '0' && contents[i] > '9') {
-			return EncodeStatus::WithError("Contents should contain only digits: 0-9");
+			throw std::invalid_argument("Contents should contain only digits: 0-9");
 		}
 	}
 
@@ -87,14 +89,12 @@ UPCEWriter::Encode(const std::wstring& contents, int width, int height, const En
 
 	WriterHelper::AppendPattern(result, pos, UPCEANPatterns::END_PATTERN, false);
 
-	int sidesMargin = hints.margin();
+	int sidesMargin = _sidesMargin;
 	if (sidesMargin < 0)
 	{
 		sidesMargin = static_cast<int>(UPCEANPatterns::START_END_PATTERN.size());
 	}
 	WriterHelper::RenderResult(result, width, height, sidesMargin, output);
-
-	return EncodeStatus::Success();
 }
 
 

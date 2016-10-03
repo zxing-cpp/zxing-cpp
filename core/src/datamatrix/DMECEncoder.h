@@ -1,7 +1,7 @@
 #pragma once
 /*
 * Copyright 2016 Huy Cuong Nguyen
-* Copyright 2016 ZXing authors
+* Copyright 2006 Jeremias Maerki.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -15,38 +15,28 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#include <string>
+#include <vector>
 
 namespace ZXing {
+namespace DataMatrix {
 
-class BitMatrix;
-enum class CharacterSet;
-
-namespace QRCode {
-
-enum class ErrorCorrectionLevel;
+class SymbolInfo;
 
 /**
-* This object renders a QR Code as a BitMatrix 2D array of greyscale values.
-*
-* @author dswitkin@google.com (Daniel Switkin)
+* Error Correction Code for ECC200.
 */
-class Writer
+class ECEncoder
 {
 public:
-	Writer();
-
-	Writer& setMargin(int margin);
-	Writer& setErrorCorrectionLevel(ErrorCorrectionLevel ecLevel);
-	Writer& setEncoding(CharacterSet encoding);
-
-	void encode(const std::wstring& contents, int width, int height, BitMatrix& output) const;
-
-private:
-	int _margin;
-	ErrorCorrectionLevel _ecLevel;
-	CharacterSet _encoding;
+	/**
+	* Creates the ECC200 error correction for an encoded message.
+	*
+	* @param codewords  the codewords
+	* @param symbolInfo information about the symbol to be encoded
+	* @return the codewords with interleaved error correction.
+	*/
+	static void EncodeECC200(std::vector<int>& codewords, const SymbolInfo& symbolInfo);
 };
 
-} // QRCode
+} // DataMatrix
 } // ZXing

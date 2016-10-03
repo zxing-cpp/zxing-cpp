@@ -16,8 +16,6 @@
 */
 #include "oned/ODITFWriter.h"
 #include "oned/ODWriterHelper.h"
-#include "EncodeHints.h"
-#include "EncodeStatus.h"
 
 #include <array>
 
@@ -46,15 +44,18 @@ static const std::array<std::array<int, 5>, 10> PATTERNS = {
 	N, W, N, W, N,  // 9
 };
 
-EncodeStatus
-ITFWriter::Encode(const std::wstring& contents, int width, int height, const EncodeHints& hints, BitMatrix& output)
+void
+ITFWriter::encode(const std::wstring& contents, int width, int height, BitMatrix& output) const
 {
 	size_t length = contents.length();
+	if (length == 0) {
+		throw std::invalid_argument("Found empty contents");
+	}
 	if (length % 2 != 0) {
-		return EncodeStatus::WithError("The length of the input should be even");
+		throw std::invalid_argument("The length of the input should be even");
 	}
 	if (length > 80) {
-		return EncodeStatus::WithError("Requested contents should be less than 80 digits long");
+		throw std::invalid_argument("Requested contents should be less than 80 digits long");
 	}
 
 	std::vector<bool> result(9 + 9 * length, false);
@@ -70,15 +71,7 @@ ITFWriter::Encode(const std::wstring& contents, int width, int height, const Enc
 		pos += WriterHelper::AppendPattern(result, pos, encoding, true);
 	}
 	WriterHelper::AppendPattern(result, pos, END_PATTERN, true);
-
-	int sidesMargin = hints.margin();
-	if (sidesMargin < 0)
-	{
-		sidesMargin = 10;
-	}
-	WriterHelper::RenderResult(result, width, height, sidesMargin, output);
-
-	return EncodeStatus::Success();
+	WriterHelper::RenderResult(result, width, height, _sidesMargin >= 0 ? _sidesMargin : 10, output);
 }
 
 } // OneD

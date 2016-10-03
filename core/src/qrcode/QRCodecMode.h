@@ -57,7 +57,7 @@ public:
 	* @return number of bits used, in this QR Code symbol {@link Version}, to encode the
 	*         count of characters that will follow encoded in this Mode
 	*/
-	static int CharacterCountBits(Mode mode, Version version);
+	static int CharacterCountBits(Mode mode, const Version& version);
 };
 
 } // QRCode

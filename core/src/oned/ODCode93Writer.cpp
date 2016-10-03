@@ -17,8 +17,6 @@
 
 #include "oned/ODCode93Writer.h"
 #include "oned/ODWriterHelper.h"
-#include "EncodeHints.h"
-#include "EncodeStatus.h"
 
 #include <array>
 
@@ -73,13 +71,16 @@ static int ComputeChecksumIndex(const std::wstring& contents, int maxWeight) {
 	return total % 47;
 }
 
-EncodeStatus
-Code93Writer::Encode(const std::wstring& contents_, int width, int height, const EncodeHints& hints, BitMatrix& output)
+void
+Code93Writer::encode(const std::wstring& contents_, int width, int height, BitMatrix& output) const
 {
 	std::wstring contents = contents_;
 	size_t length = contents.length();
+	if (length == 0) {
+		throw std::invalid_argument("Found empty contents");
+	}
 	if (length > 80) {
-		return EncodeStatus::WithError("Requested contents should be less than 80 digits long");
+		throw std::invalid_argument("Requested contents should be less than 80 digits long");
 	}
 
 	//each character is encoded by 9 of 0/1's
@@ -119,14 +120,7 @@ Code93Writer::Encode(const std::wstring& contents_, int width, int height, const
 	//termination bar (single black bar)
 	result[pos] = true;
 
-	int sidesMargin = hints.margin();
-	if (sidesMargin < 0)
-	{
-		sidesMargin = 10;
-	}
-	WriterHelper::RenderResult(result, width, height, sidesMargin, output);
-
-	return EncodeStatus::Success();
+	WriterHelper::RenderResult(result, width, height, _sidesMargin >= 0 ? _sidesMargin : 10, output);
 }
 
 

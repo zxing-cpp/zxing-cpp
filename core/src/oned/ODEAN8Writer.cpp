@@ -18,8 +18,6 @@
 #include "oned/ODEAN8Writer.h"
 #include "oned/ODUPCEANPatterns.h"
 #include "oned/ODWriterHelper.h"
-#include "EncodeStatus.h"
-#include "EncodeHints.h"
 
 #include <vector>
 
@@ -32,16 +30,16 @@ static const int CODE_WIDTH = 3 + // start guard
                               (7 * 4) + // right bars
                               3; // end guard
 
-EncodeStatus
-EAN8Writer::Encode(const std::wstring& contents, int width, int height, const EncodeHints& hints, BitMatrix& output)
+void
+EAN8Writer::encode(const std::wstring& contents, int width, int height,  BitMatrix& output) const
 {
 	if (contents.length() != 8) {
-		return EncodeStatus::WithError("Requested contents should be 8 digits long");
+		throw std::invalid_argument("Requested contents should be 8 digits long");
 	}
 
 	for (size_t i = 0; i < contents.length(); ++i) {
 		if (contents[i] < '0' && contents[i] > '9') {
-			return EncodeStatus::WithError("Contents should contain only digits: 0-9");
+			throw std::invalid_argument("Contents should contain only digits: 0-9");
 		}
 	}
 
@@ -63,14 +61,12 @@ EAN8Writer::Encode(const std::wstring& contents, int width, int height, const En
 	}
 	WriterHelper::AppendPattern(result, pos, UPCEANPatterns::START_END_PATTERN, true);
 
-	int sidesMargin = hints.margin();
+	int sidesMargin = _sidesMargin;
 	if (sidesMargin < 0)
 	{
 		sidesMargin = static_cast<int>(UPCEANPatterns::START_END_PATTERN.size());
 	}
 	WriterHelper::RenderResult(result, width, height, sidesMargin, output);
-
-	return EncodeStatus::Success();
 }
 
 } // OneD

@@ -18,8 +18,6 @@
 #include "oned/ODEAN13Writer.h"
 #include "oned/ODUPCEANPatterns.h"
 #include "oned/ODWriterHelper.h"
-#include "EncodeStatus.h"
-#include "EncodeHints.h"
 
 namespace ZXing {
 namespace OneD {
@@ -34,23 +32,23 @@ static const int CODE_WIDTH = 3 + // start guard
                               (7 * 6) + // right bars
                               3; // end guard
 
-EncodeStatus
-EAN13Writer::Encode(const std::wstring& contents, int width, int height, const EncodeHints& hints, BitMatrix& output)
+void
+EAN13Writer::encode(const std::wstring& contents, int width, int height, BitMatrix& output) const
 {
 	if (contents.length() != 13) {
-		return EncodeStatus::WithError("Requested contents should be 13 digits long");
+		throw std::invalid_argument("Requested contents should be 13 digits long");
 	}
 
 	int sum = 0;
 	for (size_t i = 0; i < contents.length(); ++i) {
-		int digit = contents[i];
+		int digit = contents[i] - '0';
 		if (digit < 0 && digit > 9) {
-			return EncodeStatus::WithError("Contents should contain only digits: 0-9");
+			throw std::invalid_argument("Contents should contain only digits: 0-9");
 		}
 		sum += digit * (i % 2 == 0 ? 3 : 1);
 	}
 	if (sum % 10 != 0) {
-		return EncodeStatus::WithError("Contents do not pass checksum");
+		throw std::invalid_argument("Contents do not pass checksum");
 	}
 
 
@@ -78,14 +76,12 @@ EAN13Writer::Encode(const std::wstring& contents, int width, int height, const E
 	}
 	WriterHelper::AppendPattern(result, pos, UPCEANPatterns::START_END_PATTERN, true);
 
-	int sidesMargin = hints.margin();
+	int sidesMargin = _sidesMargin;
 	if (sidesMargin < 0)
 	{
 		sidesMargin = static_cast<int>(UPCEANPatterns::START_END_PATTERN.size());
 	}
 	WriterHelper::RenderResult(result, width, height, sidesMargin, output);
-
-	return EncodeStatus::Success();
 }
 
 } // OneD

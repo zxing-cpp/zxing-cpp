@@ -17,8 +17,6 @@
 
 #include "pdf417/PDFWriter.h"
 #include "pdf417/PDFEncoder.h"
-#include "EncodeHints.h"
-#include "EncodeStatus.h"
 #include "BitMatrix.h"
 #include "CharacterSetECI.h"
 
@@ -76,79 +74,92 @@ static void BitMatrixFromBitArray(const std::vector<std::vector<bool>>& input, i
 	}
 }
 
-/**
-* Takes encoder, accounts for width/height, and retrieves bit matrix
-*/
-static EncodeStatus DoEncode(const Encoder& encoder, const std::wstring contents, int errorCorrectionLevel, int width, int height, int margin, BitMatrix& output)
+void
+Writer::encode(const std::wstring& contents, int width, int height, BitMatrix& output) const
 {
+	int margin = _margin >= 0 ? _margin : WHITE_SPACE;
+	int ecLevel = _ecLevel >= 0 ? _ecLevel : DEFAULT_ERROR_CORRECTION_LEVEL;
+
 	BarcodeMatrix resultMatrix;
-	EncodeStatus status = encoder.generateBarcodeLogic(contents, errorCorrectionLevel, resultMatrix);
-	if (status.isOK()) {
-		int aspectRatio = 4;
-		std::vector<std::vector<bool>> originalScale;
-		resultMatrix.getScaledMatrix(1, aspectRatio, originalScale);
-		bool rotated = false;
-		if ((height > width) ^ (originalScale[0].size() < originalScale.size())) {
-			std::vector<std::vector<bool>> temp;
-			RotateArray(originalScale, temp);
-			originalScale = temp;
-			rotated = true;
-		}
-
-		int scaleX = width / static_cast<int>(originalScale[0].size());
-		int scaleY = height / static_cast<int>(originalScale.size());
-
-		int scale;
-		if (scaleX < scaleY) {
-			scale = scaleX;
-		}
-		else {
-			scale = scaleY;
-		}
-
-		if (scale > 1) {
-			std::vector<std::vector<bool>> scaledMatrix;
-			resultMatrix.getScaledMatrix(scale, scale * aspectRatio, scaledMatrix);
-			if (rotated) {
-				std::vector<std::vector<bool>> temp;
-				RotateArray(scaledMatrix, temp);
-				scaledMatrix = temp;
-			}
-			BitMatrixFromBitArray(scaledMatrix, margin, output);
-		}
-		else {
-			BitMatrixFromBitArray(originalScale, margin, output);
-		}
+	_encoder->generateBarcodeLogic(contents, ecLevel, resultMatrix);
+	int aspectRatio = 4;
+	std::vector<std::vector<bool>> originalScale;
+	resultMatrix.getScaledMatrix(1, aspectRatio, originalScale);
+	bool rotated = false;
+	if ((height > width) ^ (originalScale[0].size() < originalScale.size())) {
+		std::vector<std::vector<bool>> temp;
+		RotateArray(originalScale, temp);
+		originalScale = temp;
+		rotated = true;
 	}
-	return status;
+
+	int scaleX = width / static_cast<int>(originalScale[0].size());
+	int scaleY = height / static_cast<int>(originalScale.size());
+
+	int scale;
+	if (scaleX < scaleY) {
+		scale = scaleX;
+	}
+	else {
+		scale = scaleY;
+	}
+
+	if (scale > 1) {
+		std::vector<std::vector<bool>> scaledMatrix;
+		resultMatrix.getScaledMatrix(scale, scale * aspectRatio, scaledMatrix);
+		if (rotated) {
+			std::vector<std::vector<bool>> temp;
+			RotateArray(scaledMatrix, temp);
+			scaledMatrix = temp;
+		}
+		BitMatrixFromBitArray(scaledMatrix, margin, output);
+	}
+	else {
+		BitMatrixFromBitArray(originalScale, margin, output);
+	}
 }
 
-EncodeStatus
-Writer::Encode(const std::wstring& contents, int width, int height, const EncodeHints& hints, BitMatrix& output)
+Writer::Writer()
 {
-	Encoder encoder;
-	encoder.setCompact(hints.pdf417Compact());
-	encoder.setCompaction(Compaction(hints.pdf417Compaction()));
-	const int* dim = hints.pdf417Dimensions();
-	if (dim[0] != 0 || dim[1] != 0 || dim[2] != 0 || dim[3] != 0) {
-		encoder.setDimensions(dim[0], dim[1], dim[2], dim[3]);
-	}
-	int margin = hints.margin();
-	if (margin == -1) {
-		margin = WHITE_SPACE;
-	}
-	int errorCorrectionLevel = hints.errorCorrection();
-	if (errorCorrectionLevel < 0) {
-		errorCorrectionLevel = DEFAULT_ERROR_CORRECTION_LEVEL;
-	}
-	std::string charset = hints.characterSet();
-	if (!charset.empty()) {
-		auto encoding = CharacterSetECI::CharsetFromName(charset.c_str());
-		if (encoding != CharacterSet::Unknown) {
-			encoder.setEncoding(encoding);
-		}
-	}
-	return DoEncode(encoder, contents, errorCorrectionLevel, width, height, margin, output);
+	_encoder.reset(new Encoder);
+}
+
+Writer::~Writer()
+{
+}
+
+Writer&
+Writer::setDimensions(int minCols, int maxCols, int minRows, int maxRows)
+{
+	_encoder->setDimensions(minCols, maxCols, minRows, maxRows);
+	return *this;
+}
+
+Writer&
+Writer::setCompaction(Compaction compaction)
+{
+	_encoder->setCompaction(compaction);
+	return *this;
+}
+
+/**
+* @param compact if true, enables compaction
+*/
+Writer&
+Writer::setCompact(bool compact)
+{
+	_encoder->setCompact(compact);
+	return *this;
+}
+
+/**
+* @param encoding sets character encoding to use
+*/
+Writer&
+Writer::setEncoding(CharacterSet encoding)
+{
+	_encoder->setEncoding(encoding);
+	return *this;
 }
 
 

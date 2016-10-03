@@ -16,11 +16,11 @@
 * limitations under the License.
 */
 #include <string>
+#include "CharacterSet.h"
 
 namespace ZXing {
 
-class EncodeStatus;
-class EncodeHints;
+enum class CharacterSet;
 
 namespace QRCode {
 
@@ -34,6 +34,8 @@ class EncodeResult;
 class Encoder
 {
 public:
+	static const CharacterSet DEFAULT_BYTE_MODE_ENCODING = CharacterSet::ISO8859_1;
+
 	/**
 	* @param content text to encode
 	* @param ecLevel error correction level to use
@@ -41,7 +43,7 @@ public:
 	* @throws WriterException if encoding can't succeed, because of for example invalid content
 	*   or configuration
 	*/
-	static EncodeStatus Encode(const std::wstring& content, ErrorCorrectionLevel ecLevel, const EncodeHints& hints, EncodeResult& output);
+	static void Encode(const std::wstring& content, ErrorCorrectionLevel ecLevel, CharacterSet encoding, EncodeResult& output);
 };
 
 } // QRCode

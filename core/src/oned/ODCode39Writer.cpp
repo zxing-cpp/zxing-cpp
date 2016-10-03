@@ -17,8 +17,6 @@
 
 #include "oned/ODCode39Writer.h"
 #include "oned/ODWriterHelper.h"
-#include "EncodeHints.h"
-#include "EncodeStatus.h"
 
 #include <array>
 
@@ -54,12 +52,15 @@ static void ToIntArray(int a, std::array<int, 9>& toReturn) {
 	}
 }
 
-EncodeStatus
-Code39Writer::Encode(const std::wstring& contents, int width, int height, const EncodeHints& hints, BitMatrix& output)
+void
+Code39Writer::encode(const std::wstring& contents, int width, int height, BitMatrix& output) const
 {
 	size_t length = contents.length();
+	if (length == 0) {
+		throw std::invalid_argument("Found empty contents");
+	}
 	if (length > 80) {
-		return EncodeStatus::WithError("Requested contents should be less than 80 digits long");
+		throw std::invalid_argument("Requested contents should be less than 80 digits long");
 	}
 
 	std::array<int, 9> widths = {};
@@ -67,7 +68,7 @@ Code39Writer::Encode(const std::wstring& contents, int width, int height, const 
 	for (size_t i = 0; i < length; ++i) {
 		int indexInString = IndexOf(ALPHABET_STRING, contents[i]);
 		if (indexInString < 0) {
-			return EncodeStatus::WithError("Bad contents");
+			throw std::invalid_argument("Bad contents");
 		}
 		ToIntArray(CHARACTER_ENCODINGS[indexInString], widths);
 		for (int width : widths) {
@@ -89,15 +90,7 @@ Code39Writer::Encode(const std::wstring& contents, int width, int height, const 
 	}
 	ToIntArray(ASTERISK_ENCODING, widths);
 	WriterHelper::AppendPattern(result, pos, widths, true);
-
-	int sidesMargin = hints.margin();
-	if (sidesMargin < 0)
-	{
-		sidesMargin = 10;
-	}
-	WriterHelper::RenderResult(result, width, height, sidesMargin, output);
-
-	return EncodeStatus::Success();
+	WriterHelper::RenderResult(result, width, height, _sidesMargin >= 0 ? _sidesMargin : 10, output);
 }
 
 

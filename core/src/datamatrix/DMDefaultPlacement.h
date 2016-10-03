@@ -1,7 +1,7 @@
 #pragma once
 /*
 * Copyright 2016 Huy Cuong Nguyen
-* Copyright 2016 ZXing authors
+* Copyright 2006 Jeremias Maerki.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -15,38 +15,22 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#include <string>
+#include <vector>
 
 namespace ZXing {
 
-class BitMatrix;
-enum class CharacterSet;
+class ByteMatrix;
 
-namespace QRCode {
-
-enum class ErrorCorrectionLevel;
+namespace DataMatrix {
 
 /**
-* This object renders a QR Code as a BitMatrix 2D array of greyscale values.
-*
-* @author dswitkin@google.com (Daniel Switkin)
+* Symbol Character Placement Program. Adapted from Annex M.1 in ISO/IEC 16022:2000(E).
 */
-class Writer
+class DefaultPlacement
 {
 public:
-	Writer();
-
-	Writer& setMargin(int margin);
-	Writer& setErrorCorrectionLevel(ErrorCorrectionLevel ecLevel);
-	Writer& setEncoding(CharacterSet encoding);
-
-	void encode(const std::wstring& contents, int width, int height, BitMatrix& output) const;
-
-private:
-	int _margin;
-	ErrorCorrectionLevel _ecLevel;
-	CharacterSet _encoding;
+	static void Place(const std::vector<int>& codewords, int numcols, int numrows, ByteMatrix& output);
 };
 
-} // QRCode
+} // DataMatrix
 } // ZXing

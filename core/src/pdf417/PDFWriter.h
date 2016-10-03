@@ -16,14 +16,17 @@
 * limitations under the License.
 */
 #include <string>
+#include <memory>
 
 namespace ZXing {
 
-class EncodeStatus;
 class BitMatrix;
-class EncodeHints;
+enum class CharacterSet;
 
 namespace Pdf417 {
+
+enum class Compaction;
+class Encoder;
 
 /**
 * @author Jacob Haynes
@@ -32,7 +35,45 @@ namespace Pdf417 {
 class Writer
 {
 public:
-	static EncodeStatus Encode(const std::wstring& contents, int width, int height, const EncodeHints& hints, BitMatrix& output);
+	Writer();
+	~Writer();
+
+	Writer& setMargin(int margin) { _margin = margin; return *this; }
+
+	Writer& setErrorCorrectionLevel(int ecLevel) { _ecLevel = ecLevel; return *this; }
+
+	/**
+	* Sets max/min row/col values
+	*
+	* @param maxCols maximum allowed columns
+	* @param minCols minimum allowed columns
+	* @param maxRows maximum allowed rows
+	* @param minRows minimum allowed rows
+	*/
+	Writer& setDimensions(int minCols, int maxCols, int minRows, int maxRows);
+
+	/**
+	* @param compaction compaction mode to use
+	*/
+	Writer& setCompaction(Compaction compaction);
+
+	/**
+	* @param compact if true, enables compaction
+	*/
+	Writer& setCompact(bool compact);
+
+	/**
+	* @param encoding sets character encoding to use
+	*/
+	Writer& setEncoding(CharacterSet encoding);
+
+
+	void encode(const std::wstring& contents, int width, int height, BitMatrix& output) const;
+
+private:
+	int _margin = -1;
+	int _ecLevel = -1;
+	std::unique_ptr<Encoder> _encoder;
 };
 
 } // Pdf417

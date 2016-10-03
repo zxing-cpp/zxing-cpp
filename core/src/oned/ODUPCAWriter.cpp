@@ -17,13 +17,12 @@
 
 #include "oned/ODUPCAWriter.h"
 #include "oned/ODEAN13Writer.h"
-#include "EncodeStatus.h"
 
 namespace ZXing {
 namespace OneD {
 
-EncodeStatus
-UPCAWriter::Encode(const std::wstring& contents, int width, int height, const EncodeHints& hints, BitMatrix& output)
+void
+UPCAWriter::encode(const std::wstring& contents, int width, int height, BitMatrix& output) const
 {
 	// Transform a UPC-A code into the equivalent EAN-13 code, and add a check digit if it is not already present.
 	int length = contents.length();
@@ -33,12 +32,12 @@ UPCAWriter::Encode(const std::wstring& contents, int width, int height, const En
 		for (int i = 0; i < 11; ++i) {
 			sum += (contents[i] - '0') * (i % 2 == 0 ? 3 : 1);
 		}
-		return EAN13Writer::Encode(contents + static_cast<wchar_t>('0' + ((1000 - sum) % 10)), width, height, hints, output);
+		return EAN13Writer().setMargin(_sidesMargin).encode(contents + static_cast<wchar_t>('0' + ((1000 - sum) % 10)), width, height, output);
 	}
 	else if (length == 12) {
-		return EAN13Writer::Encode(L'0' + contents, width, height, hints, output);
+		return EAN13Writer().setMargin(_sidesMargin).encode(L'0' + contents, width, height, output);
 	}
-	return EncodeStatus::WithError("Requested contents should be 11 or 12 digits long");
+	throw std::invalid_argument("Requested contents should be 11 or 12 digits long");
 }
 
 } // OneD

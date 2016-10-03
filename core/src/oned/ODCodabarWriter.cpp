@@ -17,8 +17,6 @@
 
 #include "oned/ODCodabarWriter.h"
 #include "oned/ODWriterHelper.h"
-#include "EncodeHints.h"
-#include "EncodeStatus.h"
 
 #include <cctype>
 
@@ -47,10 +45,13 @@ static inline bool Contains(const char* str, int c)
 	return strchr(str, c) != nullptr;
 }
 
-EncodeStatus
-CodabarWriter::Encode(const std::wstring& contents_, int width, int height, const EncodeHints& hints, BitMatrix& output)
+void
+CodabarWriter::encode(const std::wstring& contents_, int width, int height, BitMatrix& output) const
 {
 	std::wstring contents = contents_;
+	if (contents.empty()) {
+		throw std::invalid_argument("Found empty contents");
+	}
 	if (contents.length() < 2) {
 		// Can't have a start/end guard, so tentatively add default guards
 		contents = DEFAULT_GUARD + contents + DEFAULT_GUARD;
@@ -65,20 +66,20 @@ CodabarWriter::Encode(const std::wstring& contents_, int width, int height, cons
 		bool endsAlt = Contains(ALT_START_END_CHARS, lastChar);
 		if (startsNormal) {
 			if (!endsNormal) {
-				return EncodeStatus::WithError("Invalid start/end guards");
+				throw std::invalid_argument("Invalid start/end guards");
 			}
 			// else already has valid start/end
 		}
 		else if (startsAlt) {
 			if (!endsAlt) {
-				return EncodeStatus::WithError("Invalid start/end guards");
+				throw std::invalid_argument("Invalid start/end guards");
 			}
 			// else already has valid start/end
 		}
 		else {
 			// Doesn't start with a guard
 			if (endsNormal || endsAlt) {
-				return EncodeStatus::WithError("Invalid start/end guards");
+				throw std::invalid_argument("Invalid start/end guards");
 			}
 			// else doesn't end with guard either, so add a default
 			contents = DEFAULT_GUARD + contents + DEFAULT_GUARD;
@@ -96,7 +97,7 @@ CodabarWriter::Encode(const std::wstring& contents_, int width, int height, cons
 			resultLength += 10;
 		}
 		else {
-			return EncodeStatus::WithError(std::string("Cannot encode : '") + static_cast<char>(c) + std::string("'"));
+			throw std::invalid_argument(std::string("Cannot encode : '") + static_cast<char>(c) + std::string("'"));
 		}
 	}
 	// A blank is placed between each character.
@@ -152,14 +153,7 @@ CodabarWriter::Encode(const std::wstring& contents_, int width, int height, cons
 		}
 	}
 
-	int sidesMargin = hints.margin();
-	if (sidesMargin < 0)
-	{
-		sidesMargin = 10;
-	}
-	WriterHelper::RenderResult(result, width, height, sidesMargin, output);
-
-	return EncodeStatus::Success();
+	WriterHelper::RenderResult(result, width, height, _sidesMargin >= 0 ? _sidesMargin : 10, output);
 }
 
 } // OneD

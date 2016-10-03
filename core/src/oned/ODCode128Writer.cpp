@@ -18,8 +18,6 @@
 #include "oned/ODCode128Writer.h"
 #include "oned/ODWriterHelper.h"
 #include "oned/ODCode128Patterns.h"
-#include "EncodeHints.h"
-#include "EncodeStatus.h"
 
 #include <list>
 #include <numeric>
@@ -59,13 +57,13 @@ static bool AreDigits(const std::wstring& value, int start, int length) {
 	return end <= last; // end > last if we've run out of string
 }
 
-EncodeStatus
-Code128Writer::Encode(const std::wstring& contents, int width, int height, const EncodeHints& hints, BitMatrix& output)
+void
+Code128Writer::encode(const std::wstring& contents, int width, int height, BitMatrix& output) const
 {
 	// Check length
 	int length = static_cast<int>(contents.length());
 	if (length < 1 || length > 80) {
-		return EncodeStatus::WithError("Contents length should be between 1 and 80 characters");
+		throw std::invalid_argument("Contents length should be between 1 and 80 characters");
 	}
 
 	// Check content
@@ -79,7 +77,7 @@ Code128Writer::Encode(const std::wstring& contents, int width, int height, const
 			case ESCAPE_FNC_4:
 				break;
 			default:
-				return EncodeStatus::WithError("Bad character in input: " + static_cast<char>(c));
+				throw std::invalid_argument("Bad character in input: " + static_cast<char>(c));
 			}
 		}
 	}
@@ -181,14 +179,7 @@ Code128Writer::Encode(const std::wstring& contents, int width, int height, const
 		pos += WriterHelper::AppendPattern(result, pos, pattern, true);
 	}
 
-	int sidesMargin = hints.margin();
-	if (sidesMargin < 0)
-	{
-		sidesMargin = 10;
-	}
-	WriterHelper::RenderResult(result, width, height, sidesMargin, output);
-
-	return EncodeStatus::Success();
+	WriterHelper::RenderResult(result, width, height, _sidesMargin >= 0 ? _sidesMargin : 10, output);
 }
 
 } // OneD

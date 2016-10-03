@@ -25,14 +25,10 @@
 #include "BitArray.h"
 #include "CharacterSet.h"
 #include "CharacterSetECI.h"
-#include "EncodeHints.h"
 #include "TextEncoder.h"
-#include "EncodeStatus.h"
 #include "ZXStrConvWorkaround.h"
 
 #include <array>
-
-#define CHECK_STATUS(x) if (!((status = x).isOK())) return status;
 
 namespace ZXing {
 namespace QRCode {
@@ -46,8 +42,6 @@ static const std::array<int, 16*6> ALPHANUMERIC_TABLE = {
 	-1, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,  // 0x40-0x4f
 	25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, -1, -1, -1, -1, -1,  // 0x50-0x5f
 };
-
-static const CharacterSet DEFAULT_BYTE_MODE_ENCODING = CharacterSet::ISO8859_1;
 
 // The mask penalty calculation is complicated.  See Table 21 of JISX0510:2004 (p.45) for details.
 // Basically it applies four rules and summate all penalties.
@@ -140,17 +134,16 @@ static void AppendModeInfo(CodecMode::Mode mode, BitArray& bits)
 /**
 * Append length info. On success, store the result in "bits".
 */
-static EncodeStatus AppendLengthInfo(int numLetters, const Version& version, CodecMode::Mode mode, BitArray& bits)
+static void AppendLengthInfo(int numLetters, const Version& version, CodecMode::Mode mode, BitArray& bits)
 {
 	int numBits = CodecMode::CharacterCountBits(mode, version);
 	if (numLetters >= (1 << numBits)) {
-		return EncodeStatus::WithError(std::to_string(numLetters) + " is bigger than " + std::to_string((1 << numBits) - 1));
+		return throw std::invalid_argument(std::to_string(numLetters) + " is bigger than " + std::to_string((1 << numBits) - 1));
 	}
 	bits.appendBits(numLetters, numBits);
-	return EncodeStatus::Success();
 }
 
-static EncodeStatus AppendNumericBytes(const std::wstring& content, BitArray& bits)
+static void AppendNumericBytes(const std::wstring& content, BitArray& bits)
 {
 	size_t length = content.length();
 	size_t i = 0;
@@ -175,22 +168,21 @@ static EncodeStatus AppendNumericBytes(const std::wstring& content, BitArray& bi
 			i++;
 		}
 	}
-	return EncodeStatus::Success();
 }
 
-static EncodeStatus AppendAlphanumericBytes(const std::wstring& content, BitArray& bits)
+static void AppendAlphanumericBytes(const std::wstring& content, BitArray& bits)
 {
 	size_t length = content.length();
 	size_t i = 0;
 	while (i < length) {
 		int code1 = GetAlphanumericCode(content[i]);
 		if (code1 == -1) {
-			return EncodeStatus::WithError("???");
+			throw std::invalid_argument("Unexpected contents");
 		}
 		if (i + 1 < length) {
 			int code2 = GetAlphanumericCode(content[i + 1]);
 			if (code2 == -1) {
-				return EncodeStatus::WithError("???");
+				throw std::invalid_argument("Unexpected contents");
 			}
 			// Encode two alphanumeric letters in 11 bits.
 			bits.appendBits(code1 * 45 + code2, 11);
@@ -202,20 +194,18 @@ static EncodeStatus AppendAlphanumericBytes(const std::wstring& content, BitArra
 			i++;
 		}
 	}
-	return EncodeStatus::Success();
 }
 
-static EncodeStatus Append8BitBytes(const std::wstring& content, CharacterSet encoding, BitArray& bits)
+static void Append8BitBytes(const std::wstring& content, CharacterSet encoding, BitArray& bits)
 {
 	std::string bytes;
 	TextEncoder::GetBytes(content, encoding, bytes);
 	for (char b : bytes) {
 		bits.appendBits(b, 8);
 	}
-	return EncodeStatus::Success();
 }
 
-static EncodeStatus AppendKanjiBytes(const std::wstring& content, BitArray& bits)
+static void AppendKanjiBytes(const std::wstring& content, BitArray& bits)
 {
 	std::string bytes;
 	TextEncoder::GetBytes(content, CharacterSet::Shift_JIS, bytes);
@@ -232,33 +222,36 @@ static EncodeStatus AppendKanjiBytes(const std::wstring& content, BitArray& bits
 			subtracted = code - 0xc140;
 		}
 		if (subtracted == -1) {
-			return EncodeStatus::WithError("Invalid byte sequence");
+			throw std::invalid_argument("Invalid byte sequence");
 		}
 		int encoded = ((subtracted >> 8) * 0xc0) + (subtracted & 0xff);
 		bits.appendBits(encoded, 13);
 	}
-	return EncodeStatus::Success();
 }
 /**
 * Append "bytes" in "mode" mode (encoding) into "bits". On success, store the result in "bits".
 */
-static EncodeStatus AppendBytes(const std::wstring& content, CodecMode::Mode mode, CharacterSet encoding, BitArray& bits)
+static void AppendBytes(const std::wstring& content, CodecMode::Mode mode, CharacterSet encoding, BitArray& bits)
 {
 	switch (mode) {
 		case CodecMode::NUMERIC:
-			return AppendNumericBytes(content, bits);
+			AppendNumericBytes(content, bits);
+			break;
 		case CodecMode::ALPHANUMERIC:
-			return AppendAlphanumericBytes(content, bits);
+			AppendAlphanumericBytes(content, bits);
+			break;
 		case CodecMode::BYTE:
-			return Append8BitBytes(content, encoding, bits);
+			Append8BitBytes(content, encoding, bits);
+			break;
 		case CodecMode::KANJI:
-			return AppendKanjiBytes(content, bits);
+			AppendKanjiBytes(content, bits);
+			break;
 		default:
-		return EncodeStatus::WithError("Invalid mode");
+			throw std::invalid_argument("Invalid mode: " + std::to_string(mode));
 	}
 }
 
-static const Version* ChooseVersion(int numInputBits, ErrorCorrectionLevel ecLevel)
+static const Version& ChooseVersion(int numInputBits, ErrorCorrectionLevel ecLevel)
 {
 	// In the following comments, we use numbers of Version 7-H.
 	for (int versionNum = 1; versionNum <= 40; versionNum++) {
@@ -272,20 +265,20 @@ static const Version* ChooseVersion(int numInputBits, ErrorCorrectionLevel ecLev
 		int numDataBytes = numBytes - numEcBytes;
 		int totalInputBytes = (numInputBits + 7) / 8;
 		if (numDataBytes >= totalInputBytes) {
-			return version;
+			return *version;
 		}
 	}
-	return nullptr;
+	throw std::invalid_argument("Data too big");
 }
 
 /**
 * Terminate bits as described in 8.4.8 and 8.4.9 of JISX0510:2004 (p.24).
 */
-static EncodeStatus TerminateBits(int numDataBytes, BitArray& bits)
+static void TerminateBits(int numDataBytes, BitArray& bits)
 {
 	int capacity = numDataBytes * 8;
 	if (bits.size() > capacity) {
-		return EncodeStatus::WithError("data bits cannot fit in the QR Code");
+		throw std::invalid_argument("data bits cannot fit in the QR Code" + std::to_string(bits.size()) + " > " + std::to_string(capacity));
 	}
 	for (int i = 0; i < 4 && bits.size() < capacity; ++i) {
 		bits.appendBit(false);
@@ -304,9 +297,8 @@ static EncodeStatus TerminateBits(int numDataBytes, BitArray& bits)
 		bits.appendBits((i & 0x01) == 0 ? 0xEC : 0x11, 8);
 	}
 	if (bits.size() != capacity) {
-		return EncodeStatus::WithError("Bits size does not equal capacity");
+		throw std::invalid_argument("Bits size does not equal capacity");
 	}
-	return EncodeStatus::Success();
 }
 
 struct BlockPair
@@ -322,10 +314,10 @@ struct BlockPair
 * the result in "numDataBytesInBlock", and "numECBytesInBlock". See table 12 in 8.5.1 of
 * JISX0510:2004 (p.30)
 */
-static EncodeStatus GetNumDataBytesAndNumECBytesForBlockID(int numTotalBytes, int numDataBytes, int numRSBlocks, int blockID,  int& numDataBytesInBlock, int& numECBytesInBlock)
+static void GetNumDataBytesAndNumECBytesForBlockID(int numTotalBytes, int numDataBytes, int numRSBlocks, int blockID,  int& numDataBytesInBlock, int& numECBytesInBlock)
 {
 	if (blockID >= numRSBlocks) {
-		return EncodeStatus::WithError("Block ID too large");
+		throw std::invalid_argument("Block ID too large");
 	}
 	// numRsBlocksInGroup2 = 196 % 5 = 1
 	int numRsBlocksInGroup2 = numTotalBytes % numRSBlocks;
@@ -346,11 +338,11 @@ static EncodeStatus GetNumDataBytesAndNumECBytesForBlockID(int numTotalBytes, in
 	// Sanity checks.
 	// 26 = 26
 	if (numEcBytesInGroup1 != numEcBytesInGroup2) {
-		return EncodeStatus::WithError("EC bytes mismatch");
+		throw std::invalid_argument("EC bytes mismatch");
 	}
 	// 5 = 4 + 1.
 	if (numRSBlocks != numRsBlocksInGroup1 + numRsBlocksInGroup2) {
-		return EncodeStatus::WithError("RS blocks mismatch");
+		throw std::invalid_argument("RS blocks mismatch");
 	}
 	// 196 = (13 + 26) * 4 + (14 + 26) * 1
 	if (numTotalBytes !=
@@ -358,7 +350,7 @@ static EncodeStatus GetNumDataBytesAndNumECBytesForBlockID(int numTotalBytes, in
 			numRsBlocksInGroup1) +
 			((numDataBytesInGroup2 + numEcBytesInGroup2) *
 				numRsBlocksInGroup2)) {
-		return EncodeStatus::WithError("Total bytes mismatch");
+		throw std::invalid_argument("Total bytes mismatch");
 	}
 
 	if (blockID < numRsBlocksInGroup1) {
@@ -369,27 +361,21 @@ static EncodeStatus GetNumDataBytesAndNumECBytesForBlockID(int numTotalBytes, in
 		numDataBytesInBlock = numDataBytesInGroup2;
 		numECBytesInBlock = numEcBytesInGroup2;
 	}
-
-	return EncodeStatus::Success();
 }
 
-
-static EncodeStatus GenerateECBytes(const ByteArray& dataBytes, int numEcBytesInBlock, ByteArray& ecBytes)
+static void GenerateECBytes(const ByteArray& dataBytes, int numEcBytesInBlock, ByteArray& ecBytes)
 {
-	EncodeStatus status = EncodeStatus::Success();
 	size_t numDataBytes = dataBytes.size();
 	std::vector<int> toEncode(numDataBytes + numEcBytesInBlock, 0);
 	for (size_t i = 0; i < numDataBytes; i++) {
 		toEncode[i] = dataBytes[i] & 0xFF;
 	}
-	CHECK_STATUS(ReedSolomonEncoder(GenericGF::QRCodeField256()).encode(toEncode, numEcBytesInBlock));
+	ReedSolomonEncoder(GenericGF::QRCodeField256()).encode(toEncode, numEcBytesInBlock);
 
 	ecBytes.resize(numEcBytesInBlock);
 	for (int i = 0; i < numEcBytesInBlock; i++) {
 		ecBytes[i] = static_cast<uint8_t>(toEncode[numDataBytes + i]);
 	}
-
-	return status;
 }
 
 
@@ -397,11 +383,11 @@ static EncodeStatus GenerateECBytes(const ByteArray& dataBytes, int numEcBytesIn
 * Interleave "bits" with corresponding error correction bytes. On success, store the result in
 * "result". The interleave rule is complicated. See 8.6 of JISX0510:2004 (p.37) for details.
 */
-static EncodeStatus InterleaveWithECBytes(const BitArray& bits, int numTotalBytes, int numDataBytes, int numRSBlocks, BitArray& output)
+static void InterleaveWithECBytes(const BitArray& bits, int numTotalBytes, int numDataBytes, int numRSBlocks, BitArray& output)
 {
 	// "bits" must have "getNumDataBytes" bytes of data.
 	if (bits.sizeInBytes() != numDataBytes) {
-		return EncodeStatus::WithError("Number of bits and data bytes does not match");
+		throw std::invalid_argument("Number of bits and data bytes does not match");
 	}
 
 	// Step 1.  Divide data bytes into blocks and generate error correction bytes for them. We'll
@@ -413,23 +399,22 @@ static EncodeStatus InterleaveWithECBytes(const BitArray& bits, int numTotalByte
 	// Since, we know the number of reedsolmon blocks, we can initialize the vector with the number.
 	std::vector<BlockPair> blocks(numRSBlocks);
 
-	EncodeStatus status = EncodeStatus::Success();
 	for (int i = 0; i < numRSBlocks; ++i) {
 		int numDataBytesInBlock = 0;
 		int numEcBytesInBlock = 0;
-		CHECK_STATUS(GetNumDataBytesAndNumECBytesForBlockID(numTotalBytes, numDataBytes, numRSBlocks, i, numDataBytesInBlock, numEcBytesInBlock));
+		GetNumDataBytesAndNumECBytesForBlockID(numTotalBytes, numDataBytes, numRSBlocks, i, numDataBytesInBlock, numEcBytesInBlock);
 
 		int size = numDataBytesInBlock;
 		blocks[i].dataBytes.resize(size);
 		bits.toBytes(8 * dataBytesOffset, blocks[i].dataBytes.data(), size);
-		CHECK_STATUS(GenerateECBytes(blocks[i].dataBytes, numEcBytesInBlock, blocks[i].ecBytes));
+		GenerateECBytes(blocks[i].dataBytes, numEcBytesInBlock, blocks[i].ecBytes);
 
 		maxNumDataBytes = std::max(maxNumDataBytes, size);
 		maxNumEcBytes = std::max(maxNumEcBytes, (int)blocks[i].ecBytes.size());
 		dataBytesOffset += numDataBytesInBlock;
 	}
 	if (numDataBytes != dataBytesOffset) {
-		return EncodeStatus::WithError("Data bytes does not match offset");
+		throw std::invalid_argument("Data bytes does not match offset");
 	}
 
 	// First, place data blocks.
@@ -449,40 +434,30 @@ static EncodeStatus InterleaveWithECBytes(const BitArray& bits, int numTotalByte
 		}
 	}
 	if (numTotalBytes != output.sizeInBytes()) {  // Should be same.
-		return EncodeStatus::WithError("Interleaving error");
+		throw std::invalid_argument("Interleaving error: " + std::to_string(numTotalBytes) + " and " + std::to_string(output.sizeInBytes()) + " differ.");
 	}
-
-	return status;
 }
 
 
-static EncodeStatus ChooseMaskPattern(const BitArray& bits, ErrorCorrectionLevel ecLevel, const Version& version, ByteMatrix& matrix, int& bestMaskPattern)
+static int ChooseMaskPattern(const BitArray& bits, ErrorCorrectionLevel ecLevel, const Version& version, ByteMatrix& matrix)
 {
-	EncodeStatus status = EncodeStatus::Success();
-
 	int minPenalty = std::numeric_limits<int>::max();  // Lower penalty is better.
-	bestMaskPattern = -1;
+	int bestMaskPattern = -1;
 	// We try all mask patterns to choose the best one.
 	for (int maskPattern = 0; maskPattern < MatrixUtil::NUM_MASK_PATTERNS; maskPattern++) {
-		CHECK_STATUS(MatrixUtil::BuildMatrix(bits, ecLevel, version, maskPattern, matrix));
+		MatrixUtil::BuildMatrix(bits, ecLevel, version, maskPattern, matrix);
 		int penalty = CalculateMaskPenalty(matrix);
 		if (penalty < minPenalty) {
 			minPenalty = penalty;
 			bestMaskPattern = maskPattern;
 		}
 	}
-	return status;
+	return bestMaskPattern;
 }
 
-EncodeStatus Encoder::Encode(const std::wstring& content, ErrorCorrectionLevel ecLevel, const EncodeHints& hints, EncodeResult& output)
+void
+Encoder::Encode(const std::wstring& content, ErrorCorrectionLevel ecLevel, CharacterSet charset, EncodeResult& output)
 {
-	EncodeStatus status = EncodeStatus::Success();
-
-	auto charset = CharacterSetECI::CharsetFromName(hints.characterSet().c_str());
-	if (charset == CharacterSet::Unknown) {
-		charset = DEFAULT_BYTE_MODE_ENCODING;
-	}
-
 	// Pick an encoding mode appropriate for the content. Note that this will not attempt to use
 	// multiple modes / segments even if that were more efficient. Twould be nice.
 	CodecMode::Mode mode = ChooseMode(content, charset);
@@ -502,7 +477,7 @@ EncodeStatus Encoder::Encode(const std::wstring& content, ErrorCorrectionLevel e
 	// Collect data within the main segment, separately, to count its size if needed. Don't add it to
 	// main payload yet.
 	BitArray dataBits;
-	CHECK_STATUS(AppendBytes(content, mode, charset, dataBits));
+	AppendBytes(content, mode, charset, dataBits);
 
 	// Hard part: need to know version to know how many bits length takes. But need to know how many
 	// bits it takes to know version. First we take a guess at version by assuming version will be
@@ -511,54 +486,44 @@ EncodeStatus Encoder::Encode(const std::wstring& content, ErrorCorrectionLevel e
 	int provisionalBitsNeeded = headerBits.size()
 		+ CodecMode::CharacterCountBits(mode, *Version::VersionForNumber(1))
 		+ dataBits.size();
-	const Version* provisionalVersion = ChooseVersion(provisionalBitsNeeded, ecLevel);
-	if (provisionalVersion == nullptr) {
-		return EncodeStatus::WithError("Data too big");
-	}
+	const Version& provisionalVersion = ChooseVersion(provisionalBitsNeeded, ecLevel);
 
 	// Use that guess to calculate the right version. I am still not sure this works in 100% of cases.
 
 	int bitsNeeded = headerBits.size()
-		+ CodecMode::CharacterCountBits(mode, *provisionalVersion)
+		+ CodecMode::CharacterCountBits(mode, provisionalVersion)
 		+ dataBits.size();
-	const Version* version = ChooseVersion(bitsNeeded, ecLevel);
-	if (version == nullptr) {
-		return EncodeStatus::WithError("Data too big");
-	}
+	const Version& version = ChooseVersion(bitsNeeded, ecLevel);
 
 	BitArray headerAndDataBits;
 	headerAndDataBits.appendBitArray(headerBits);
 	// Find "length" of main segment and write it
 	int numLetters = mode == CodecMode::BYTE ? dataBits.sizeInBytes() : content.length();
-	CHECK_STATUS(AppendLengthInfo(numLetters, *version, mode, headerAndDataBits));
+	AppendLengthInfo(numLetters, version, mode, headerAndDataBits);
 	// Put data together into the overall payload
 	headerAndDataBits.appendBitArray(dataBits);
 
-	auto& ecBlocks = version->ecBlocksForLevel(ecLevel);
-	int numDataBytes = version->totalCodewords() - ecBlocks.totalCodewords();
+	auto& ecBlocks = version.ecBlocksForLevel(ecLevel);
+	int numDataBytes = version.totalCodewords() - ecBlocks.totalCodewords();
 
 	// Terminate the bits properly.
-	CHECK_STATUS(TerminateBits(numDataBytes, headerAndDataBits));
+	TerminateBits(numDataBytes, headerAndDataBits);
 
 	// Interleave data bits with error correction code.
 	BitArray finalBits;
-	CHECK_STATUS(InterleaveWithECBytes(headerAndDataBits, version->totalCodewords(), numDataBytes, ecBlocks.numBlocks(), finalBits));
+	InterleaveWithECBytes(headerAndDataBits, version.totalCodewords(), numDataBytes, ecBlocks.numBlocks(), finalBits);
 
 	output.ecLevel = ecLevel;
 	output.mode = mode;
-	output.version = version;
+	output.version = &version;
 
 	//  Choose the mask pattern and set to "qrCode".
-	int dimension = version->dimensionForVersion();
+	int dimension = version.dimensionForVersion();
 	output.matrix.init(dimension, dimension);
-	int maskPattern;
-	CHECK_STATUS(ChooseMaskPattern(finalBits, ecLevel, *version, output.matrix, maskPattern));
-	output.maskPattern = maskPattern;
+	output.maskPattern = ChooseMaskPattern(finalBits, ecLevel, version, output.matrix);
 
 	// Build the matrix and set it to "qrCode".
-	MatrixUtil::BuildMatrix(finalBits, ecLevel, *version, maskPattern, output.matrix);
-
-	return status;
+	MatrixUtil::BuildMatrix(finalBits, ecLevel, version, output.maskPattern, output.matrix);
 }
 
 } // QRCode

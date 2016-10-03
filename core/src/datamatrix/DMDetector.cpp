@@ -411,6 +411,5 @@ Detector::Detect(const BitMatrix& image, DetectorResult& result)
 	return DecodeStatus::NoError;
 }
 
-
 } // DataMatrix
 } // ZXing

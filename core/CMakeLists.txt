@@ -117,10 +117,7 @@ if (ENABLE_DECODERS)
 endif()
 if (ENABLE_ENCODERS)
 	set (COMMON_FILES ${COMMON_FILES}
-		src/EncodeHints.h
-		src/EncodeStatus.h
-		src/MultiFormatWriter.h
-		src/MultiFormatWriter.cpp
+		src/ByteMatrix.h
 		src/ReedSolomonEncoder.h
 		src/ReedSolomonEncoder.cpp
 		src/TextEncoder.h
@@ -149,26 +146,38 @@ endif()
 
 
 set (DATAMATRIX_FILES
-	src/datamatrix/DMECB.h
 )
 if (ENABLE_DECODERS)
 	set (DATAMATRIX_FILES ${DATAMATRIX_FILES}
 		src/datamatrix/DMBitMatrixParser.h
 		src/datamatrix/DMBitMatrixParser.cpp
+		src/datamatrix/DMECB.h
 		src/datamatrix/DMDataBlock.h
 		src/datamatrix/DMDataBlock.cpp
 		src/datamatrix/DMDecoder.h
 		src/datamatrix/DMDecoder.cpp
 		src/datamatrix/DMDetector.h
 		src/datamatrix/DMDetector.cpp
-		src/datamatrix/DMReader.h
-		src/datamatrix/DMReader.cpp
 		src/datamatrix/DMVersion.h
 		src/datamatrix/DMVersion.cpp
+		src/datamatrix/DMReader.h
+		src/datamatrix/DMReader.cpp
 	)
 endif()
 if (ENABLE_ENCODERS)
 	set (DATAMATRIX_FILES ${DATAMATRIX_FILES}
+		src/datamatrix/DMECEncoder.h
+		src/datamatrix/DMECEncoder.cpp
+		src/datamatrix/DMEncoderContext.h
+		src/datamatrix/DMDefaultPlacement.h
+		src/datamatrix/DMDefaultPlacement.cpp
+		src/datamatrix/DMHighLevelEncoder.h
+		src/datamatrix/DMHighLevelEncoder.cpp
+		src/datamatrix/DMSymbolInfo.h
+		src/datamatrix/DMSymbolInfo.cpp
+		src/datamatrix/DMSymbolShape.h
+		src/datamatrix/DMWriter.h
+		src/datamatrix/DMWriter.cpp
 	)
 endif()
 
@@ -318,6 +327,7 @@ if (ENABLE_DECODERS)
 endif()
 if (ENABLE_ENCODERS)
 	set (PDF417_FILES ${PDF417_FILES}
+		src/pdf417/PDFCompaction.h
 		src/pdf417/PDFEncoder.h
 		src/pdf417/PDFEncoder.cpp
 		src/pdf417/PDFHighLevelEncoder.h
@@ -367,7 +377,6 @@ if (ENABLE_DECODERS)
 endif()
 if (ENABLE_ENCODERS)
 	set (QRCODE_FILES ${QRCODE_FILES}
-		src/qrcode/QRByteMatrix.h
 		src/qrcode/QREncoder.h
 		src/qrcode/QREncoder.cpp
 		src/qrcode/QREncodeResult.h

@@ -16,13 +16,14 @@
 */
 
 #include "qrcode/QRMatrixUtil.h"
-#include "qrcode/QRByteMatrix.h"
 #include "qrcode/QRErrorCorrectionLevel.h"
 #include "qrcode/QRVersion.h"
 #include "BitArray.h"
-#include "EncodeStatus.h"
+#include "ByteMatrix.h"
+#include "ZXStrConvWorkaround.h"
 
 #include <array>
+#include <string>
 
 namespace ZXing {
 namespace QRCode {
@@ -47,7 +48,7 @@ static const std::array<std::array<int8_t, 5>, 5> POSITION_ADJUSTMENT_PATTERN = 
 
 // From Appendix E. Table 1, JIS0510X:2004 (p 71). The table was double-checked by komatsu.
 static const std::array<std::array<int16_t, 7>, 40> POSITION_ADJUSTMENT_PATTERN_COORDINATE_TABLE = {
-	-1, -1, -1, -1,  -1,  -1, -1,  // Version 1
+   -1, -1, -1, -1,  -1,  -1,  -1,  // Version 1
 	6, 18, -1, -1,  -1,  -1,  -1,  // Version 2
 	6, 22, -1, -1,  -1,  -1,  -1,  // Version 3
 	6, 26, -1, -1,  -1,  -1,  -1,  // Version 4
@@ -124,8 +125,6 @@ static void makeEmpty(ByteMatrix& matrix)
 	matrix.clear(-1);
 }
 
-#define CHECK_STATUS(x) if (!((status = x).isOK())) return status;
-
 // Check if "value" is empty.
 static inline bool IsEmpty(int8_t value) {
 	return value == -1;
@@ -197,32 +196,28 @@ static void EmbedPositionDetectionPattern(int xStart, int yStart, ByteMatrix& ma
 }
 
 
-static EncodeStatus EmbedHorizontalSeparationPattern(int xStart, int yStart, ByteMatrix& matrix) {
+static void EmbedHorizontalSeparationPattern(int xStart, int yStart, ByteMatrix& matrix) {
 	for (int x = 0; x < 8; ++x) {
 		if (!IsEmpty(matrix.get(xStart + x, yStart))) {
-			return EncodeStatus::WithError("wtf?");
+			throw std::invalid_argument("Unexpected input");
 		}
 		matrix.set(xStart + x, yStart, 0);
 	}
-	return EncodeStatus::Success();
 }
 
-static EncodeStatus EmbedVerticalSeparationPattern(int xStart, int yStart, ByteMatrix& matrix)
+static void EmbedVerticalSeparationPattern(int xStart, int yStart, ByteMatrix& matrix)
 {
 	for (int y = 0; y < 7; ++y) {
 		if (!IsEmpty(matrix.get(xStart, yStart + y))) {
-			return EncodeStatus::WithError("wtf?");
+			throw std::invalid_argument("Unexpected input");
 		}
 		matrix.set(xStart, yStart + y, 0);
 	}
-	return EncodeStatus::Success();
 }
 
 // Embed position detection patterns and surrounding vertical/horizontal separators.
-static EncodeStatus EmbedPositionDetectionPatternsAndSeparators(ByteMatrix& matrix)
+static void EmbedPositionDetectionPatternsAndSeparators(ByteMatrix& matrix)
 {
-	EncodeStatus status = EncodeStatus::Success();
-
 	// Embed three big squares at corners.
 	int pdpWidth = static_cast<int>(POSITION_DETECTION_PATTERN[0].size());
 	// Left top corner.
@@ -235,33 +230,30 @@ static EncodeStatus EmbedPositionDetectionPatternsAndSeparators(ByteMatrix& matr
 	// Embed horizontal separation patterns around the squares.
 	int hspWidth = 8;
 	// Left top corner.
-	CHECK_STATUS(EmbedHorizontalSeparationPattern(0, hspWidth - 1, matrix));
+	EmbedHorizontalSeparationPattern(0, hspWidth - 1, matrix);
 	// Right top corner.
-	CHECK_STATUS(EmbedHorizontalSeparationPattern(matrix.width() - hspWidth, hspWidth - 1, matrix));
+	EmbedHorizontalSeparationPattern(matrix.width() - hspWidth, hspWidth - 1, matrix);
 	// Left bottom corner.
-	CHECK_STATUS(EmbedHorizontalSeparationPattern(0, matrix.width() - hspWidth, matrix));
+	EmbedHorizontalSeparationPattern(0, matrix.width() - hspWidth, matrix);
 
 	// Embed vertical separation patterns around the squares.
 	int vspSize = 7;
 	// Left top corner.
-	CHECK_STATUS(EmbedVerticalSeparationPattern(vspSize, 0, matrix));
+	EmbedVerticalSeparationPattern(vspSize, 0, matrix);
 	// Right top corner.
-	CHECK_STATUS(EmbedVerticalSeparationPattern(matrix.height() - vspSize - 1, 0, matrix));
+	EmbedVerticalSeparationPattern(matrix.height() - vspSize - 1, 0, matrix);
 	// Left bottom corner.
-	CHECK_STATUS(EmbedVerticalSeparationPattern(vspSize, matrix.height() - vspSize, matrix));
-
-	return status;
+	EmbedVerticalSeparationPattern(vspSize, matrix.height() - vspSize, matrix);
 }
 
 
 // Embed the lonely dark dot at left bottom corner. JISX0510:2004 (p.46)
-static EncodeStatus EmbedDarkDotAtLeftBottomCorner(ByteMatrix& matrix)
+static void EmbedDarkDotAtLeftBottomCorner(ByteMatrix& matrix)
 {
 	if (matrix.get(8, matrix.height() - 8) == 0) {
-		return EncodeStatus::WithError("wtf?");
+		throw std::invalid_argument("Unexpected input");
 	}
 	matrix.set(8, matrix.height() - 8, 1);
-	return EncodeStatus::Success();
 }
 
 // Embed basic patterns. On success, modify the matrix and return true.
@@ -270,20 +262,17 @@ static EncodeStatus EmbedDarkDotAtLeftBottomCorner(ByteMatrix& matrix)
 // - Timing patterns
 // - Dark dot at the left bottom corner
 // - Position adjustment patterns, if need be
-static EncodeStatus EmbedBasicPatterns(const Version& version, ByteMatrix& matrix)
+static void EmbedBasicPatterns(const Version& version, ByteMatrix& matrix)
 {
-	EncodeStatus status = EncodeStatus::Success();
 	// Let's get started with embedding big squares at corners.
-	CHECK_STATUS(EmbedPositionDetectionPatternsAndSeparators(matrix));
+	EmbedPositionDetectionPatternsAndSeparators(matrix);
 	// Then, embed the dark dot at the left bottom corner.
-	CHECK_STATUS(EmbedDarkDotAtLeftBottomCorner(matrix));
+	EmbedDarkDotAtLeftBottomCorner(matrix);
 
 	// Position adjustment patterns appear if version >= 2.
 	MaybeEmbedPositionAdjustmentPatterns(version, matrix);
 	// Timing patterns should be embedded after position adj. patterns.
 	EmbedTimingPatterns(matrix);
-
-	return status;
 }
 
 
@@ -343,10 +332,10 @@ static int CalculateBCHCode(int value, int poly) {
 // Make bit vector of type information. On success, store the result in "bits" and return true.
 // Encode error correction level and mask pattern. See 8.9 of
 // JISX0510:2004 (p.45) for details.
-static EncodeStatus MakeTypeInfoBits(ErrorCorrectionLevel ecLevel, int maskPattern, BitArray& bits)
+static void MakeTypeInfoBits(ErrorCorrectionLevel ecLevel, int maskPattern, BitArray& bits)
 {
 	if (maskPattern < 0 || maskPattern >= MatrixUtil::NUM_MASK_PATTERNS) {
-		return EncodeStatus::WithError("Invalid mask pattern");
+		throw std::invalid_argument("Invalid mask pattern");
 	}
 
 	int typeInfo = (BitsFromECLevel(ecLevel) << 3) | maskPattern;
@@ -360,17 +349,15 @@ static EncodeStatus MakeTypeInfoBits(ErrorCorrectionLevel ecLevel, int maskPatte
 	bits.bitwiseXOR(maskBits);
 
 	if (bits.size() != 15) {  // Just in case.
-		return EncodeStatus::WithError("Internal error makeTypeInfoBits");
+		throw std::logic_error("Should not happen but we got: " + std::to_string(bits.size()));
 	}
-	return EncodeStatus::Success();
 }
 
 // Embed type information. On success, modify the matrix.
-static EncodeStatus EmbedTypeInfo(ErrorCorrectionLevel ecLevel, int maskPattern, ByteMatrix& matrix)
+static void EmbedTypeInfo(ErrorCorrectionLevel ecLevel, int maskPattern, ByteMatrix& matrix)
 {
-	EncodeStatus status = EncodeStatus::Success();
 	BitArray typeInfoBits;
-	CHECK_STATUS(MakeTypeInfoBits(ecLevel, maskPattern, typeInfoBits));
+	MakeTypeInfoBits(ecLevel, maskPattern, typeInfoBits);
 
 	for (int i = 0; i < typeInfoBits.size(); ++i) {
 		// Place bits in LSB to MSB order.  LSB (least significant bit) is the last value in
@@ -395,34 +382,31 @@ static EncodeStatus EmbedTypeInfo(ErrorCorrectionLevel ecLevel, int maskPattern,
 			matrix.set(x2, y2, bit);
 		}
 	}
-	return status;
 }
 
 // Make bit vector of version information. On success, store the result in "bits" and return true.
 // See 8.10 of JISX0510:2004 (p.45) for details.
-static EncodeStatus MakeVersionInfoBits(const Version& version, BitArray& bits)
+static void MakeVersionInfoBits(const Version& version, BitArray& bits)
 {
 	bits.appendBits(version.versionNumber(), 6);
 	int bchCode = CalculateBCHCode(version.versionNumber(), VERSION_INFO_POLY);
 	bits.appendBits(bchCode, 12);
 
 	if (bits.size() != 18) {  // Just in case.
-		return EncodeStatus::WithError("Internal error makeVersionInfoBits");
+		throw std::logic_error("Should not happen but we got: " + std::to_string(bits.size()));
 	}
-	return EncodeStatus::Success();
 }
 
 // Embed version information if need be. On success, modify the matrix and return true.
 // See 8.10 of JISX0510:2004 (p.47) for how to embed version information.
-static EncodeStatus MaybeEmbedVersionInfo(const Version& version, ByteMatrix& matrix)
+static void MaybeEmbedVersionInfo(const Version& version, ByteMatrix& matrix)
 {
-	EncodeStatus status = EncodeStatus::Success();
 	if (version.versionNumber() < 7) {  // Version info is necessary if version >= 7.
-		return status;  // Don't need version info.
+		return;  // Don't need version info.
 	}
 
 	BitArray versionInfoBits;
-	CHECK_STATUS(MakeVersionInfoBits(version, versionInfoBits));
+	MakeVersionInfoBits(version, versionInfoBits);
 
 	int bitIndex = 6 * 3 - 1;  // It will decrease from 17 to 0.
 	for (int i = 0; i < 6; ++i) {
@@ -436,7 +420,6 @@ static EncodeStatus MaybeEmbedVersionInfo(const Version& version, ByteMatrix& ma
 			matrix.set(matrix.height() - 11 + j, i, bit);
 		}
 	}
-	return status;
 }
 
 /**
@@ -475,6 +458,8 @@ static bool GetDataMaskBit(int maskPattern, int x, int y)
 		temp = y * x;
 		intermediate = ((temp % 3) + ((y + x) & 0x1)) & 0x1;
 		break;
+	default:
+		throw std::invalid_argument("Invalid mask pattern: " + std::to_string(maskPattern));
 	}
 	return intermediate == 0;
 }
@@ -482,7 +467,7 @@ static bool GetDataMaskBit(int maskPattern, int x, int y)
 // Embed "dataBits" using "getMaskPattern". On success, modify the matrix and return true.
 // For debugging purposes, it skips masking process if "getMaskPattern" is -1.
 // See 8.7 of JISX0510:2004 (p.38) for how to embed data bits.
-static EncodeStatus EmbedDataBits(const BitArray& dataBits, int maskPattern, ByteMatrix& matrix)
+static void EmbedDataBits(const BitArray& dataBits, int maskPattern, ByteMatrix& matrix)
 {
 	int bitIndex = 0;
 	int direction = -1;
@@ -526,25 +511,23 @@ static EncodeStatus EmbedDataBits(const BitArray& dataBits, int maskPattern, Byt
 	}
 	// All bits should be consumed.
 	if (bitIndex != dataBits.size()) {
-		return EncodeStatus::WithError("Not all bits consumed");
+		throw std::invalid_argument("Not all bits consumed: " + std::to_string(bitIndex) + '/' + std::to_string(dataBits.size()));
 	}
-	return EncodeStatus::Success();
 }
 
 // Build 2D matrix of QR Code from "dataBits" with "ecLevel", "version" and "getMaskPattern". On
 // success, store the result in "matrix" and return true.
-EncodeStatus MatrixUtil::BuildMatrix(const BitArray& dataBits, ErrorCorrectionLevel ecLevel, const Version& version, int maskPattern, ByteMatrix& matrix)
+void
+MatrixUtil::BuildMatrix(const BitArray& dataBits, ErrorCorrectionLevel ecLevel, const Version& version, int maskPattern, ByteMatrix& matrix)
 {
-	EncodeStatus status = EncodeStatus::Success();
 	makeEmpty(matrix);
-	CHECK_STATUS(EmbedBasicPatterns(version, matrix));
+	EmbedBasicPatterns(version, matrix);
 	// Type information appear with any version.
-	CHECK_STATUS(EmbedTypeInfo(ecLevel, maskPattern, matrix));
+	EmbedTypeInfo(ecLevel, maskPattern, matrix);
 	// Version info appear if version >= 7.
-	CHECK_STATUS(MaybeEmbedVersionInfo(version, matrix));
+	MaybeEmbedVersionInfo(version, matrix);
 	// Data should be embedded at end.
-	CHECK_STATUS(EmbedDataBits(dataBits, maskPattern, matrix));
-	return status;
+	EmbedDataBits(dataBits, maskPattern, matrix);
 }
 
 } // QRCode

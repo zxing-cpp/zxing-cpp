@@ -20,33 +20,38 @@
 namespace ZXing {
 
 class BitMatrix;
-enum class CharacterSet;
 
-namespace QRCode {
+namespace DataMatrix {
 
-enum class ErrorCorrectionLevel;
+enum class SymbolShape;
 
-/**
-* This object renders a QR Code as a BitMatrix 2D array of greyscale values.
-*
-* @author dswitkin@google.com (Daniel Switkin)
-*/
 class Writer
 {
 public:
 	Writer();
 
-	Writer& setMargin(int margin);
-	Writer& setErrorCorrectionLevel(ErrorCorrectionLevel ecLevel);
-	Writer& setEncoding(CharacterSet encoding);
+	Writer& setShapeHint(SymbolShape shape) {
+		_shapeHint = shape; return *this;
+	}
+
+	Writer& setMinSize(int width, int height) {
+		_minWidth = width;
+		_minHeight = height;
+		return *this;
+	}
+
+	Writer& setMaxSize(int width, int height) {
+		_maxWidth = width;
+		_maxHeight = height;
+		return *this;
+	}
 
 	void encode(const std::wstring& contents, int width, int height, BitMatrix& output) const;
 
 private:
-	int _margin;
-	ErrorCorrectionLevel _ecLevel;
-	CharacterSet _encoding;
+	SymbolShape _shapeHint;
+	int _minWidth, _minHeight, _maxWidth, _maxHeight;
 };
 
-} // QRCode
+} // DataMatrix
 } // ZXing

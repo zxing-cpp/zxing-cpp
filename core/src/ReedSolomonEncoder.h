@@ -20,14 +20,12 @@
 
 namespace ZXing {
 
-class EncodeStatus;
-
 class ReedSolomonEncoder
 {
 public:
 	ReedSolomonEncoder(const GenericGF& field);
 
-	EncodeStatus encode(std::vector<int>& toEncode, int ecBytes);
+	void encode(std::vector<int>& toEncode, int ecBytes);
 
 private:
 	const GenericGF* _field;

@@ -53,7 +53,7 @@ public:
 
 	operator T() const {
 		if (!m_hasValue) {
-			throw std::runtime_error("Access empty value");
+			throw std::logic_error("Access empty value");
 		}
 		return m_value;
 	}

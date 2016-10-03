@@ -17,9 +17,10 @@
 */
 
 namespace ZXing {
-namespace QRCode {
 
 class ByteMatrix;
+
+namespace QRCode {
 
 class MaskUtil
 {

@@ -16,21 +16,13 @@
 * limitations under the License.
 */
 #include "CharacterSet.h"
+#include "pdf417/PDFCompaction.h"
 #include <string>
 #include <vector>
 
 namespace ZXing {
 
-class EncodeStatus;
-
 namespace Pdf417 {
-
-enum class Compaction {
-	AUTO,
-	TEXT,
-	BYTE,
-	NUMERIC
-};
 
 /**
 * @author Jacob Haynes
@@ -49,7 +41,7 @@ public:
 	}
 
 	void set(int x, bool black) {
-		_row[x] = black;
+		_row.at(x) = black;
 	}
 
 	/**
@@ -58,7 +50,7 @@ public:
 	*/
 	void addBar(bool black, int width) {
 		for (int ii = 0; ii < width; ii++) {
-			_row[_currentLocation++] = black;
+			_row.at(_currentLocation++) = black;
 		}
 	}
 
@@ -143,7 +135,8 @@ class Encoder
 {
 public:
 	explicit Encoder(bool compact = false) : _compact(compact)  {}
-	EncodeStatus generateBarcodeLogic(const std::wstring& msg, int errorCorrectionLevel, BarcodeMatrix& output) const;
+	
+	void generateBarcodeLogic(const std::wstring& msg, int errorCorrectionLevel, BarcodeMatrix& output) const;
 
 	/**
 	* Sets max/min row/col values

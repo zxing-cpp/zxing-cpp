@@ -1,6 +1,7 @@
 #pragma once
 /*
-* Copyright 2016 Nu-book Inc.
+* Copyright 2016 Huy Cuong Nguyen
+* Copyright 2016 ZXing authors
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -14,34 +15,15 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#include <string>
 
 namespace ZXing {
+namespace DataMatrix {
 
-class EncodeStatus
-{
-public:
-	static EncodeStatus WithError(const std::string& error) {
-		return EncodeStatus(error);
-	}
-
-	static EncodeStatus Success() {
-		return EncodeStatus();
-	}
-
-	std::string errorMessage() const {
-		return _error;
-	}
-
-	bool isOK() const {
-		return _error.empty();
-	}
-
-private:
-	std::string _error;
-
-	EncodeStatus() {}
-	EncodeStatus(const std::string& err) : _error(err) {}
+enum class SymbolShape {
+	NONE,
+	SQUARE,
+	RECTANGLE,
 };
 
+} // DataMatrix
 } // ZXing

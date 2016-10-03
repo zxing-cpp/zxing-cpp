@@ -17,7 +17,6 @@
 
 #include "ReedSolomonEncoder.h"
 #include "GenericGF.h"
-#include "EncodeStatus.h"
 
 namespace ZXing {
 
@@ -44,15 +43,15 @@ ReedSolomonEncoder::buildGenerator(int degree)
 	return *iter;
 }
 
-EncodeStatus
+void
 ReedSolomonEncoder::encode(std::vector<int>& toEncode, int ecBytes)
 {
 	if (ecBytes == 0) {
-		return EncodeStatus::WithError("No error correction bytes");
+		throw std::invalid_argument("No error correction bytes");
 	}
 	int dataBytes = static_cast<int>(toEncode.size()) - ecBytes;
 	if (dataBytes <= 0) {
-		return EncodeStatus::WithError("No data bytes provided");
+		throw std::invalid_argument("No data bytes provided");
 	}
 	GenericGFPoly generator = buildGenerator(ecBytes);
 	toEncode.resize(dataBytes);
@@ -61,7 +60,7 @@ ReedSolomonEncoder::encode(std::vector<int>& toEncode, int ecBytes)
 	GenericGFPoly _, remainder;
 	info.divide(generator, _, remainder);
 	auto& coefficients = remainder.coefficients();
-	int numZeroCoefficients = ecBytes - (int)coefficients.size();
+	int numZeroCoefficients = ecBytes - static_cast<int>(coefficients.size());
 	toEncode.resize(dataBytes + ecBytes);
 	for (int i = 0; i < numZeroCoefficients; i++) {
 		toEncode[dataBytes + i] = 0;

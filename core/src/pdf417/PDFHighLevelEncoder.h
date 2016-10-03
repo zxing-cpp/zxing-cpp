@@ -21,7 +21,6 @@
 
 namespace ZXing {
 
-class EncodeStatus;
 enum class CharacterSet;
 
 namespace Pdf417 {
@@ -35,7 +34,7 @@ enum class Compaction;
 class HighLevelEncoder
 {
 public:
-	static EncodeStatus EncodeHighLevel(const std::wstring& msg, Compaction compaction, CharacterSet encoding, std::vector<int>& highLevel);
+	static void EncodeHighLevel(const std::wstring& msg, Compaction compaction, CharacterSet encoding, std::vector<int>& highLevel);
 };
 
 } // Pdf417

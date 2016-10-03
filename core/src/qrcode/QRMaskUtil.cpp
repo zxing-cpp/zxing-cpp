@@ -16,7 +16,7 @@
 */
 
 #include "qrcode/QRMaskUtil.h"
-#include "qrcode/QRByteMatrix.h"
+#include "ByteMatrix.h"
 
 #include <algorithm>
 #include <cstdlib>

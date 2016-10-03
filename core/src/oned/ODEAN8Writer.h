@@ -19,9 +19,7 @@
 
 namespace ZXing {
 
-class EncodeStatus;
 class BitMatrix;
-class EncodeHints;
 
 namespace OneD {
 
@@ -33,7 +31,11 @@ namespace OneD {
 class EAN8Writer
 {
 public:
-	static EncodeStatus Encode(const std::wstring& contents, int width, int height, const EncodeHints& hints, BitMatrix& output);
+	EAN8Writer& setMargin(int sidesMargin) { _sidesMargin = sidesMargin; return *this; }
+	void encode(const std::wstring& contents, int width, int height, BitMatrix& output) const;
+
+private:
+	int _sidesMargin = -1;
 };
 
 } // OneD

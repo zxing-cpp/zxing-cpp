@@ -17,8 +17,8 @@
 */
 
 #include "pdf417/PDFHighLevelEncoder.h"
-#include "pdf417/PDFEncoder.h"
-#include "EncodeStatus.h"
+#include "pdf417/PDFCompaction.h"
+#include "CharacterSet.h"
 #include "CharacterSetECI.h"
 #include "TextEncoder.h"
 #include "ZXBigInteger.h"
@@ -26,8 +26,6 @@
 #include <cstdint>
 #include <array>
 #include <algorithm>
-
-#define CHECK_STATUS(x) if (!((status = x).isOK())) return status;
 
 namespace ZXing {
 namespace Pdf417 {
@@ -161,7 +159,7 @@ static const int8_t PUNCTUATION[] = {
 	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 26, 21, 27,  9, -1,
 };
 
-static EncodeStatus EncodingECI(int eci, std::vector<int>& buffer)
+static void EncodingECI(int eci, std::vector<int>& buffer)
 {
 	if (eci >= 0 && eci < 900) {
 		buffer.push_back(ECI_CHARSET);
@@ -177,9 +175,8 @@ static EncodeStatus EncodingECI(int eci, std::vector<int>& buffer)
 		buffer.push_back(810900 - eci);
 	}
 	else {
-		return EncodeStatus::WithError("ECI number not in valid range from 0..811799");
+		throw std::invalid_argument("ECI number not in valid range from 0..811799");
 	}
-	return EncodeStatus::Success();
 }
 
 static inline bool IsDigit(int ch)
@@ -519,16 +516,14 @@ static int DetermineConsecutiveBinaryCount(const std::wstring& msg, int startpos
 *  or {@code null} for default / not applicable
 * @return the encoded message (the char values range from 0 to 928)
 */
-EncodeStatus
+void
 HighLevelEncoder::EncodeHighLevel(const std::wstring& msg, Compaction compaction, CharacterSet encoding, std::vector<int>& highLevel)
 {
-	EncodeStatus status = EncodeStatus::Success();
-
 	highLevel.reserve(highLevel.size() + msg.length());
 
 	//the codewords 0..928 are encoded as Unicode characters
 	if (encoding != CharacterSet::ISO8859_1) {		
-		CHECK_STATUS(EncodingECI(CharacterSetECI::ValueForCharset(encoding), highLevel));
+		EncodingECI(CharacterSetECI::ValueForCharset(encoding), highLevel);
 	}
 
 	int len = static_cast<int>(msg.length());
@@ -594,7 +589,6 @@ HighLevelEncoder::EncodeHighLevel(const std::wstring& msg, Compaction compaction
 			}
 		}
 	}
-	return status;
 }
 
 

@@ -55,7 +55,7 @@ CodecMode::ModeForBits(int bits)
 }
 
 int
-CodecMode::CharacterCountBits(Mode mode, Version version)
+CodecMode::CharacterCountBits(Mode mode, const Version& version)
 {
 	int number = version.versionNumber();
 	int offset;

@@ -19,8 +19,6 @@
 #include "qrcode/QRErrorCorrectionLevel.h"
 #include "qrcode/QREncoder.h"
 #include "qrcode/QREncodeResult.h"
-#include "EncodeHints.h"
-#include "EncodeStatus.h"
 #include "BitMatrix.h"
 
 namespace ZXing {
@@ -58,28 +56,47 @@ static void RenderResult(const EncodeResult& code, int width, int height, int qu
 	}
 }
 
-EncodeStatus
-Writer::Encode(const std::wstring& contents, int width, int height, const EncodeHints& hints, BitMatrix& output)
+Writer::Writer() :
+	_margin(QUIET_ZONE_SIZE),
+	_ecLevel(ErrorCorrectionLevel::Low),
+	_encoding(Encoder::DEFAULT_BYTE_MODE_ENCODING)
+{
+}
+
+Writer&
+Writer::setMargin(int margin)
+{
+	_margin = margin;
+	return *this;
+}
+
+Writer&
+Writer::setErrorCorrectionLevel(ErrorCorrectionLevel ecLevel)
+{
+	_ecLevel = ecLevel;
+	return *this;
+}
+
+Writer& Writer::setEncoding(CharacterSet encoding)
+{
+	_encoding = encoding;
+	return *this;
+}
+
+void
+Writer::encode(const std::wstring& contents, int width, int height, BitMatrix& output) const
 {
 	if (contents.empty()) {
-		return EncodeStatus::WithError("Found empty contents");
+		throw std::invalid_argument("Found empty contents");
 	}
 
 	if (width < 0 || height < 0) {
-		return EncodeStatus::WithError("Requested dimensions are invalid");
+		throw std::invalid_argument("Requested dimensions are invalid");
 	}
-
-	int level = hints.errorCorrection();
-	ErrorCorrectionLevel ecLevel = level >= 0 ? (ErrorCorrectionLevel)level : ErrorCorrectionLevel::Low;
-	int margin = hints.margin();
-	int quietZone = margin >= 0 ? margin : QUIET_ZONE_SIZE;
 
 	EncodeResult code;
-	if (Encoder::Encode(contents, ecLevel, hints, code).isOK())
-	{
-		RenderResult(code, width, height, quietZone, output);
-	}
-	return EncodeStatus::Success();
+	Encoder::Encode(contents, _ecLevel, _encoding, code);
+	RenderResult(code, width, height, _margin, output);
 }
 
 } // QRCode
