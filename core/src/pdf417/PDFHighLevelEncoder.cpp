@@ -502,7 +502,7 @@ static int DetermineConsecutiveBinaryCount(const std::wstring& msg, int startpos
 		}
 		idx++;
 	}
-	return idx - startpos;
+	return static_cast<int>(idx - startpos);
 }
 
 /**

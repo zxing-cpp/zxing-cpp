@@ -44,7 +44,7 @@ static const int CODE_FNC_4_B = 100; // Code B
 
 static bool AreDigits(const std::wstring& value, int start, int length) {
 	int end = start + length;
-	int last = value.length();
+	int last = static_cast<int>(value.length());
 	for (int i = start; i < end && i < last; i++) {
 		int c = value[i];
 		if (c < '0' || c > '9') {

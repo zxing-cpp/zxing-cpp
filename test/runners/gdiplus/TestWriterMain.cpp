@@ -146,7 +146,7 @@ bool CheckResult(std::string imgPath, const std::string& expectedFormat, const Z
 
 std::string GetFormatFromFolderName(const char* folderName)
 {
-	int len = std::strlen(folderName);
+	int len = static_cast<int>(std::strlen(folderName));
 	while (--len > 0) {
 		if (folderName[len] == '-') {
 			break;

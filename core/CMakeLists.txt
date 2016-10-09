@@ -141,6 +141,15 @@ if (ENABLE_DECODERS)
 endif()
 if (ENABLE_ENCODERS)
 	set (AZTEC_FILES ${AZTEC_FILES}
+		src/aztec/AZEncodingState.h
+		src/aztec/AZEncoder.h
+		src/aztec/AZEncoder.cpp
+		src/aztec/AZHighLevelEncoder.h
+		src/aztec/AZHighLevelEncoder.cpp
+		src/aztec/AZToken.h
+		src/aztec/AZToken.cpp
+		src/aztec/AZWriter.h
+		src/aztec/AZWriter.cpp
 	)
 endif()
 

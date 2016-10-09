@@ -168,7 +168,7 @@ static void MaybeEmbedPositionAdjustmentPatterns(const Version& version, ByteMat
 	}
 	int index = version.versionNumber() - 1;
 	auto& coordinates = POSITION_ADJUSTMENT_PATTERN_COORDINATE_TABLE[index];
-	int numCoordinates = coordinates.size();
+	int numCoordinates = static_cast<int>(coordinates.size());
 	for (int i = 0; i < numCoordinates; ++i) {
 		for (int j = 0; j < numCoordinates; ++j) {
 			int y = coordinates[i];

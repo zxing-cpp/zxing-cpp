@@ -61,7 +61,7 @@ static int ComputeChecksumIndex(const std::wstring& contents, int maxWeight) {
 	int weight = 1;
 	int total = 0;
 
-	for (int i = contents.length() - 1; i >= 0; i--) {
+	for (int i = static_cast<int>(contents.length()) - 1; i >= 0; i--) {
 		int indexInString = IndexOf(ALPHABET_STRING, contents[i]);
 		total += indexInString * weight;
 		if (++weight > maxWeight) {

@@ -63,9 +63,11 @@ static void RotateArray(const std::vector<std::vector<bool>>& input, std::vector
 static void BitMatrixFromBitArray(const std::vector<std::vector<bool>>& input, int margin, BitMatrix& output)
 {
 	// Creates the bitmatrix with extra space for whitespace
-	output.init(input[0].size() + 2 * margin, input.size() + 2 * margin);
-	for (size_t y = 0, yOutput = output.height() - margin - 1; y < input.size(); y++, yOutput--) {
-		for (size_t x = 0; x < input[0].size(); ++x) {
+	int width = static_cast<int>(input[0].size());
+	int height = static_cast<int>(input.size());
+	output.init(width + 2 * margin, height + 2 * margin);
+	for (int y = 0, yOutput = static_cast<int>(output.height()) - margin - 1; y < height; y++, yOutput--) {
+		for (int x = 0; x < width; ++x) {
 			// Zero is white in the bytematrix
 			if (input[y][x]) {
 				output.set(x + margin, yOutput);

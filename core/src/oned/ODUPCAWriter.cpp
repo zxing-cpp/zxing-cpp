@@ -25,7 +25,7 @@ void
 UPCAWriter::encode(const std::wstring& contents, int width, int height, BitMatrix& output) const
 {
 	// Transform a UPC-A code into the equivalent EAN-13 code, and add a check digit if it is not already present.
-	int length = contents.length();
+	size_t length = contents.length();
 	if (length == 11) {
 		// No check digit present, calculate it and add it
 		int sum = 0;

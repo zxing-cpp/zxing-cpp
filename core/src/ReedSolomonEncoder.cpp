@@ -29,9 +29,10 @@ ReedSolomonEncoder::ReedSolomonEncoder(const GenericGF& field)
 GenericGFPoly
 ReedSolomonEncoder::buildGenerator(int degree)
 {
-	if (degree >= (int)_cachedGenerators.size()) {
+	int cachedGenSize = static_cast<int>(_cachedGenerators.size());
+	if (degree >= cachedGenSize) {
 		GenericGFPoly lastGenerator = _cachedGenerators.back();
-		for (int d = _cachedGenerators.size(); d <= degree; d++) {
+		for (int d = cachedGenSize; d <= degree; d++) {
 			GenericGFPoly nextGenerator = lastGenerator.multiply(GenericGFPoly(*_field, { 1, _field->exp(d - 1 + _field->generatorBase()) }));
 			_cachedGenerators.push_back(nextGenerator);
 			lastGenerator = nextGenerator;

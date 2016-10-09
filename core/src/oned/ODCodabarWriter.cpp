@@ -101,7 +101,7 @@ CodabarWriter::encode(const std::wstring& contents_, int width, int height, BitM
 		}
 	}
 	// A blank is placed between each character.
-	resultLength += contents.length() - 1;
+	resultLength += static_cast<int>(contents.length()) - 1;
 
 	std::vector<bool> result(resultLength, false);
 	int position = 0;

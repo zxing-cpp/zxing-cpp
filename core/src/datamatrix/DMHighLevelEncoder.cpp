@@ -519,8 +519,7 @@ namespace C40Encoder {
 				break;
 			}
 
-			int count = buffer.length();
-			if ((count % 3) == 0) {
+			if ((buffer.length() % 3) == 0) {
 				int newMode = LookAheadTest(context.message(), context.currentPos(), encodingMode);
 				if (newMode != encodingMode) {
 					context.setNewEncoding(newMode);
@@ -638,7 +637,7 @@ namespace X12Encoder {
 		int codewordCount = context.codewordCount();
 		auto symbolInfo = context.updateSymbolInfo(codewordCount);
 		int available = symbolInfo->dataCapacity() - codewordCount;
-		context.setCurrentPos(context.currentPos() - buffer.length());
+		context.setCurrentPos(context.currentPos() - static_cast<int>(buffer.length()));
 		if (context.remainingCharacters() > 1 || available > 1 || context.remainingCharacters() != available) {
 			context.addCodeword(X12_UNLATCH);
 		}
@@ -832,7 +831,7 @@ namespace Base256Encoder {
 				break;
 			}
 		}
-		int dataCount = buffer.length() - 1;
+		int dataCount = static_cast<int>(buffer.length()) - 1;
 		int lengthFieldSize = 1;
 		int currentSize = context.codewordCount() + dataCount + lengthFieldSize;
 		auto symbolInfo = context.updateSymbolInfo(currentSize);
