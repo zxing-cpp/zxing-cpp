@@ -68,7 +68,7 @@ BitArray::getNextUnset(int from) const
 void
 BitArray::setRange(int start, int end)
 {
-	if (end < start) {
+	if (end < start || start < 0 || end > _size) {
 		throw std::invalid_argument("BitArray::setRange(): Invalid range");
 	}
 	if (end == start) {
@@ -80,16 +80,8 @@ BitArray::setRange(int start, int end)
 	for (int i = firstInt; i <= lastInt; i++) {
 		int firstBit = i > firstInt ? 0 : start & 0x1F;
 		int lastBit = i < lastInt ? 31 : end & 0x1F;
-		int mask;
-		if (firstBit == 0 && lastBit == 31) {
-			mask = -1;
-		}
-		else {
-			mask = 0;
-			for (int j = firstBit; j <= lastBit; j++) {
-				mask |= 1 << j;
-			}
-		}
+		// Ones from firstBit to lastBit, inclusive
+		int mask = (2 << lastBit) - (1 << firstBit);
 		_bits[i] |= mask;
 	}
 }
@@ -97,7 +89,7 @@ BitArray::setRange(int start, int end)
 bool
 BitArray::isRange(int start, int end, bool value) const
 {
-	if (end < start) {
+	if (end < start || start < 0 || end > _size) {
 		throw std::invalid_argument("BitArray::isRange(): Invalid range");
 	}
 	if (end == start) {
@@ -109,17 +101,8 @@ BitArray::isRange(int start, int end, bool value) const
 	for (int i = firstInt; i <= lastInt; i++) {
 		int firstBit = i > firstInt ? 0 : start & 0x1F;
 		int lastBit = i < lastInt ? 31 : end & 0x1F;
-		uint32_t mask;
-		if (firstBit == 0 && lastBit == 31) {
-			mask = 0xffffffff;
-		}
-		else {
-			mask = 0;
-			for (int j = firstBit; j <= lastBit; j++) {
-				mask |= 1 << j;
-			}
-		}
-
+		// Ones from firstBit to lastBit, inclusive
+		int mask = (2 << lastBit) - (1 << firstBit);
 		// Return false if we're looking for 1s and the masked bits[i] isn't all 1s (that is,
 		// equals the mask, or we're looking for 0s and the masked portion is not all 0s
 		if ((_bits[i] & mask) != (value ? mask : 0U)) {
@@ -182,10 +165,12 @@ BitArray::appendBitArray(const BitArray& other)
 void
 BitArray::bitwiseXOR(const BitArray& other)
 {
-	if (_bits.size() != other._bits.size()) {
+	if (_size != other._size) {
 		throw std::invalid_argument("BitArray::xor(): Sizes don't match");
 	}
 	for (size_t i = 0; i < _bits.size(); i++) {
+		// The last int could be incomplete (i.e. not have 32 bits in
+		// it) but there is no problem since 0 XOR 0 == 0.
 		_bits[i] ^= other._bits[i];
 	}
 }

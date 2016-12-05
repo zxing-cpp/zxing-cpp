@@ -840,7 +840,7 @@ namespace Base256Encoder {
 			if (dataCount <= 249) {
 				buffer.at(0) = (char)dataCount;
 			}
-			else if (dataCount > 249 && dataCount <= 1555) {
+			else if (dataCount <= 1555) {
 				buffer.at(0) = (char)((dataCount / 250) + 249);
 				buffer.insert(1, 1, (char)(dataCount % 250));
 			}

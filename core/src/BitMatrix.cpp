@@ -178,9 +178,12 @@ BitMatrix::getEnclosingRectangle(int &left, int& top, int& width, int& height) c
 			}
 		}
 	}
-	width = right - left;
-	height = bottom - top;
-	return width >= 0 && height >= 0;
+	if (right < left || bottom < top) {
+		return false;
+	}
+	width = right - left + 1;
+	height = bottom - top + 1;
+	return true;
 }
 
 /**

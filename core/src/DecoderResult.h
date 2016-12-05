@@ -36,6 +36,7 @@ class CustomData;
 class DecoderResult
 {
 	ByteArray _rawBytes;
+	int _numBits = 0;
 	std::wstring _text;
 	std::list<ByteArray> _byteSegments;
 	std::wstring _ecLevel;
@@ -54,7 +55,9 @@ public:
 	DecoderResult& operator=(const DecoderResult &) = delete;
 
 	const ByteArray& rawBytes() const { return _rawBytes; }
-	void setRawBytes(const ByteArray& bytes) { _rawBytes = bytes; }
+	void setRawBytes(const ByteArray& bytes) { _rawBytes = bytes; _numBits = 8 * bytes.length(); }
+	int numBits() const { return _numBits; }
+	void setNumBits(int numBits) { _numBits = numBits; }
 
 	const std::wstring& text() const { return _text; }
 	void setText(const std::wstring& txt) { _text = txt; }

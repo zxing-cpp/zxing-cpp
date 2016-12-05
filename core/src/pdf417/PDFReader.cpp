@@ -92,31 +92,6 @@ DecodeStatus DoDecode(const BinaryBitmap& image, bool multiple, std::list<Result
 	return results.empty() ? DecodeStatus::NotFound : DecodeStatus::NoError;
 }
 
-//@Override
-//public Result decode(BinaryBitmap image, Map<DecodeHintType, ? > hints) throws NotFoundException, FormatException,
-//ChecksumException{
-//	Result[] result = decode(image, hints, false);
-//if (result == null || result.length == 0 || result[0] == null) {
-//	throw NotFoundException.getNotFoundInstance();
-//}
-//return result[0];
-//}
-//
-//@Override
-//public Result[] decodeMultiple(BinaryBitmap image) throws NotFoundException {
-//	return decodeMultiple(image, null);
-//}
-//
-//@Override
-//public Result[] decodeMultiple(BinaryBitmap image, Map<DecodeHintType, ? > hints) throws NotFoundException {
-//	try {
-//		return decode(image, hints, true);
-//	}
-//	catch (FormatException | ChecksumException ignored) {
-//		throw NotFoundException.getNotFoundInstance();
-//	}
-//}
-
 Result
 Reader::decode(const BinaryBitmap& image) const
 {

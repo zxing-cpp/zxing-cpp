@@ -266,7 +266,8 @@ static const char* GetCharacter(Table table, int code)
 *
 * @return the decoded string
 */
-static std::string GetEncodedData(const std::vector<bool>& correctedBits) {
+static std::string GetEncodedData(const std::vector<bool>& correctedBits)
+{
 	int endIndex = static_cast<int>(correctedBits.size());
 	Table latchTable = Table::UPPER; // table most recently latched to
 	Table shiftTable = Table::UPPER; // table to use for the next read
@@ -309,6 +310,10 @@ static std::string GetEncodedData(const std::vector<bool>& correctedBits) {
 			const char* str = GetCharacter(shiftTable, code);
 			if (std::strncmp(str, "CTRL_", 5) == 0) {
 				// Table changes
+				// ISO/IEC 24778:2008 prescibes ending a shift sequence in the mode from which it was invoked.
+				// That's including when that mode is a shift.
+				// Our test case dlusbs.png for issue #642 exercises that.
+				latchTable = shiftTable;  // Latch the current mode, so as to return to Upper after U/S B/S
 				shiftTable = GetTable(str[5]);
 				if (str[6] == 'L') {
 					latchTable = shiftTable;
@@ -324,6 +329,30 @@ static std::string GetEncodedData(const std::vector<bool>& correctedBits) {
 	return result;
 }
 
+/**
+* Reads a code of length 8 in an array of bits, padding with zeros
+*/
+static uint8_t ReadByte(const std::vector<bool>& rawbits, int startIndex)
+{
+	int n = static_cast<int>(rawbits.size()) - startIndex;
+	if (n >= 8) {
+		return static_cast<uint8_t>(ReadCode(rawbits, startIndex, 8));
+	}
+	return static_cast<uint8_t>(ReadCode(rawbits, startIndex, n) << (8 - n));
+}
+
+/**
+* Packs a bit array into bytes, most significant bit first
+*/
+static ByteArray ConvertBoolArrayToByteArray(const std::vector<bool>& boolArr)
+{
+	ByteArray byteArr(((int)boolArr.size() + 7) / 8);
+	for (int i = 0; i < byteArr.length(); ++i) {
+		byteArr[i] = ReadByte(boolArr, 8 * i);
+	}
+	return byteArr;
+}
+
 DecodeStatus
 Decoder::Decode(const DetectorResult& detectorResult, DecoderResult& result)
 {
@@ -332,6 +361,8 @@ Decoder::Decode(const DetectorResult& detectorResult, DecoderResult& result)
 	std::vector<bool> correctedBits;
 	if (CorrectBits(detectorResult, rawbits, correctedBits)) {
 		result.setText(TextDecoder::FromLatin1(GetEncodedData(correctedBits)));
+		result.setRawBytes(ConvertBoolArrayToByteArray(correctedBits));
+		result.setNumBits(static_cast<int>(correctedBits.size()));
 		return DecodeStatus::NoError;
 	}
 	else {

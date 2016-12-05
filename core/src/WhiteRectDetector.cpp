@@ -259,11 +259,8 @@ WhiteRectDetector::Detect(const BitMatrix& image, int initSize, int x, int y, Re
 
 		ResultPoint z;
 		bool found = false;
-		for (int i = 1; i < maxSize; i++) {
-			if (GetBlackPointOnSegment(image, left, down - i, left + i, down, z)) {
-				found = true;
-				break;
-			}
+		for (int i = 1; !found && i < maxSize; i++) {
+			found = GetBlackPointOnSegment(image, left, down - i, left + i, down, z);
 		}
 
 		if (!found) {
@@ -273,11 +270,8 @@ WhiteRectDetector::Detect(const BitMatrix& image, int initSize, int x, int y, Re
 		ResultPoint t;
 		found = false;
 		//go down right
-		for (int i = 1; i < maxSize; i++) {
-			if (GetBlackPointOnSegment(image, left, up + i, left + i, up, t)) {
-				found = true;
-				break;
-			}
+		for (int i = 1; !found && i < maxSize; i++) {
+			found = GetBlackPointOnSegment(image, left, up + i, left + i, up, t);
 		}
 
 		if (!found) {
@@ -287,11 +281,8 @@ WhiteRectDetector::Detect(const BitMatrix& image, int initSize, int x, int y, Re
 		ResultPoint x;
 		found = false;
 		//go down left
-		for (int i = 1; i < maxSize; i++) {
-			if (GetBlackPointOnSegment(image, right, up + i, right - i, up, x)) {
-				found = true;
-				break;
-			}
+		for (int i = 1; !found && i < maxSize; i++) {
+			found = GetBlackPointOnSegment(image, right, up + i, right - i, up, x);
 		}
 
 		if (!found) {
@@ -301,11 +292,8 @@ WhiteRectDetector::Detect(const BitMatrix& image, int initSize, int x, int y, Re
 		ResultPoint y;
 		found = false;
 		//go up left
-		for (int i = 1; i < maxSize; i++) {
-			if (GetBlackPointOnSegment(image, right, down - i, right - i, down, y)) {
-				found = true;
-				break;
-			}
+		for (int i = 1; !found && i < maxSize; i++) {
+			found = GetBlackPointOnSegment(image, right, down - i, right - i, down, y);
 		}
 
 		if (!found) {

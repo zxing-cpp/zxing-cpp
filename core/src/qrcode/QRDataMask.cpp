@@ -67,28 +67,29 @@ bool DataMask100(int i, int j)
 
 /**
 * 101: mask bits for which xy mod 2 + xy mod 3 == 0
+* equivalently, such that xy mod 6 == 0
 */
 bool DataMask101(int i, int j)
 {
-	int temp = i * j;
-	return (temp & 0x01) + (temp % 3) == 0;
+	return (i * j) % 6 == 0;
 }
 
 /**
 * 110: mask bits for which (xy mod 2 + xy mod 3) mod 2 == 0
+* equivalently, such that xy mod 6 < 3
 */
 bool DataMask110(int i, int j)
 {
-	int temp = i * j;
-	return (((temp & 0x01) + (temp % 3)) & 0x01) == 0;
+	return ((i * j) % 6) < 3;
 }
 
 /**
 * 111: mask bits for which ((x+y)mod 2 + xy mod 3) mod 2 == 0
+* equivalently, such that (x + y + xy mod 3) mod 2 == 0
 */
 bool DataMask111(int i, int j)
 {
-	return ((((i + j) & 0x01) + ((i * j) % 3)) & 0x01) == 0;
+	return ((i + j + ((i * j) % 3)) & 0x01) == 0;
 }
 
 typedef bool(*IsMaskedFunc)(int, int);

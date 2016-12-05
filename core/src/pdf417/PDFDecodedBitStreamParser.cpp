@@ -61,16 +61,8 @@ static const int AL = 28;
 static const int PS = 29;
 static const int PAL = 29;
 
-static const char PUNCT_CHARS[] = {
-	';', '<', '>', '@', '[', '\\', ']', '_', '`', '~', '!',
-	'\r', '\t', ',', ':', '\n', '-', '.', '$', '/', '"', '|', '*',
-	'(', ')', '?', '{', '}', '\'' };
-
-static const char MIXED_CHARS[] = {
-	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '&',
-	'\r', '\t', ',', ':', '#', '-', '.', '$', '/', '+', '%', '*',
-	'=', '^' };
-
+static const char* PUNCT_CHARS = ";<>@[\\]_`~!\r\t,:\n-.$/\"|*()?{}'";
+static const char* MIXED_CHARS = "0123456789&\r\t,:#-.$/+%*=^";
 static const CharacterSet DEFAULT_ENCODING = CharacterSet::ISO8859_1;
 
 /**

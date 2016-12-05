@@ -33,6 +33,8 @@
 namespace ZXing {
 namespace QRCode {
 
+static const CharacterSet DEFAULT_BYTE_MODE_ENCODING = CharacterSet::ISO8859_1;
+
 // The original table is defined in the table 5 of JISX0510:2004 (p.19).
 static const std::array<int, 16*6> ALPHANUMERIC_TABLE = {
 	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  // 0x00-0x0f
@@ -251,20 +253,28 @@ static void AppendBytes(const std::wstring& content, CodecMode::Mode mode, Chara
 	}
 }
 
+/**
+* @return true if the number of input bits will fit in a code with the specified version and
+* error correction level.
+*/
+static bool WillFit(int numInputBits, const Version& version, ErrorCorrectionLevel ecLevel) {
+	// In the following comments, we use numbers of Version 7-H.
+	// numBytes = 196
+	int numBytes = version.totalCodewords();
+	// getNumECBytes = 130
+	auto ecBlocks = version.ecBlocksForLevel(ecLevel);
+	int numEcBytes = ecBlocks.totalCodewords();
+	// getNumDataBytes = 196 - 130 = 66
+	int numDataBytes = numBytes - numEcBytes;
+	int totalInputBytes = (numInputBits + 7) / 8;
+	return numDataBytes >= totalInputBytes;
+}
+
 static const Version& ChooseVersion(int numInputBits, ErrorCorrectionLevel ecLevel)
 {
-	// In the following comments, we use numbers of Version 7-H.
 	for (int versionNum = 1; versionNum <= 40; versionNum++) {
 		const Version* version = Version::VersionForNumber(versionNum);
-		// numBytes = 196
-		int numBytes = version->totalCodewords();
-		// getNumECBytes = 130
-		auto& ecBlocks = version->ecBlocksForLevel(ecLevel);
-		int numEcBytes = ecBlocks.totalCodewords();
-		// getNumDataBytes = 196 - 130 = 66
-		int numDataBytes = numBytes - numEcBytes;
-		int totalInputBytes = (numInputBits + 7) / 8;
-		if (numDataBytes >= totalInputBytes) {
+		if (WillFit(numInputBits, *version, ecLevel)) {
 			return *version;
 		}
 	}
@@ -455,9 +465,36 @@ static int ChooseMaskPattern(const BitArray& bits, ErrorCorrectionLevel ecLevel,
 	return bestMaskPattern;
 }
 
-void
-Encoder::Encode(const std::wstring& content, ErrorCorrectionLevel ecLevel, CharacterSet charset, EncodeResult& output)
+static int CalculateBitsNeeded(CodecMode::Mode mode, const BitArray& headerBits, const BitArray& dataBits, const Version& version)
 {
+	return headerBits.size() + CodecMode::CharacterCountBits(mode, version) + dataBits.size();
+}
+
+/**
+* Decides the smallest version of QR code that will contain all of the provided data.
+* @throws WriterException if the data cannot fit in any version
+*/
+static const Version& RecommendVersion(ErrorCorrectionLevel ecLevel, CodecMode::Mode mode, const BitArray& headerBits, const BitArray& dataBits)
+{
+	// Hard part: need to know version to know how many bits length takes. But need to know how many
+	// bits it takes to know version. First we take a guess at version by assuming version will be
+	// the minimum, 1:
+	int provisionalBitsNeeded = CalculateBitsNeeded(mode, headerBits, dataBits, *Version::VersionForNumber(1));
+	const Version& provisionalVersion = ChooseVersion(provisionalBitsNeeded, ecLevel);
+
+	// Use that guess to calculate the right version. I am still not sure this works in 100% of cases.
+	int bitsNeeded = CalculateBitsNeeded(mode, headerBits, dataBits, provisionalVersion);
+	return ChooseVersion(bitsNeeded, ecLevel);
+}
+
+void
+Encoder::Encode(const std::wstring& content, ErrorCorrectionLevel ecLevel, CharacterSet charset, int versionNumber, EncodeResult& output)
+{
+	bool charsetWasUnknown = charset == CharacterSet::Unknown;
+	if (charsetWasUnknown) {
+		charset = DEFAULT_BYTE_MODE_ENCODING;
+	}
+
 	// Pick an encoding mode appropriate for the content. Note that this will not attempt to use
 	// multiple modes / segments even if that were more efficient. Twould be nice.
 	CodecMode::Mode mode = ChooseMode(content, charset);
@@ -467,7 +504,7 @@ Encoder::Encode(const std::wstring& content, ErrorCorrectionLevel ecLevel, Chara
 	BitArray headerBits;
 
 	// Append ECI segment if applicable
-	if (mode == CodecMode::BYTE && charset != DEFAULT_BYTE_MODE_ENCODING) {
+	if (mode == CodecMode::BYTE && !charsetWasUnknown) {
 		AppendECI(charset, headerBits);
 	}
 
@@ -479,51 +516,52 @@ Encoder::Encode(const std::wstring& content, ErrorCorrectionLevel ecLevel, Chara
 	BitArray dataBits;
 	AppendBytes(content, mode, charset, dataBits);
 
-	// Hard part: need to know version to know how many bits length takes. But need to know how many
-	// bits it takes to know version. First we take a guess at version by assuming version will be
-	// the minimum, 1:
-
-	int provisionalBitsNeeded = headerBits.size()
-		+ CodecMode::CharacterCountBits(mode, *Version::VersionForNumber(1))
-		+ dataBits.size();
-	const Version& provisionalVersion = ChooseVersion(provisionalBitsNeeded, ecLevel);
-
-	// Use that guess to calculate the right version. I am still not sure this works in 100% of cases.
-
-	int bitsNeeded = headerBits.size()
-		+ CodecMode::CharacterCountBits(mode, provisionalVersion)
-		+ dataBits.size();
-	const Version& version = ChooseVersion(bitsNeeded, ecLevel);
+	const Version* version;
+	if (versionNumber > 0) {
+		version = Version::VersionForNumber(versionNumber);
+		if (version != nullptr) {
+			int bitsNeeded = CalculateBitsNeeded(mode, headerBits, dataBits, *version);
+			if (!WillFit(bitsNeeded, *version, ecLevel)) {
+				throw std::invalid_argument("Data too big for requested version");
+			}
+		}
+		else {
+			version = &RecommendVersion(ecLevel, mode, headerBits, dataBits);
+		}
+	}
+	else {
+		version = &RecommendVersion(ecLevel, mode, headerBits, dataBits);
+	}
 
 	BitArray headerAndDataBits;
 	headerAndDataBits.appendBitArray(headerBits);
 	// Find "length" of main segment and write it
 	int numLetters = mode == CodecMode::BYTE ? dataBits.sizeInBytes() : static_cast<int>(content.length());
-	AppendLengthInfo(numLetters, version, mode, headerAndDataBits);
+	AppendLengthInfo(numLetters, *version, mode, headerAndDataBits);
 	// Put data together into the overall payload
 	headerAndDataBits.appendBitArray(dataBits);
 
-	auto& ecBlocks = version.ecBlocksForLevel(ecLevel);
-	int numDataBytes = version.totalCodewords() - ecBlocks.totalCodewords();
+	auto& ecBlocks = version->ecBlocksForLevel(ecLevel);
+	int numDataBytes = version->totalCodewords() - ecBlocks.totalCodewords();
 
 	// Terminate the bits properly.
 	TerminateBits(numDataBytes, headerAndDataBits);
 
 	// Interleave data bits with error correction code.
 	BitArray finalBits;
-	InterleaveWithECBytes(headerAndDataBits, version.totalCodewords(), numDataBytes, ecBlocks.numBlocks(), finalBits);
+	InterleaveWithECBytes(headerAndDataBits, version->totalCodewords(), numDataBytes, ecBlocks.numBlocks(), finalBits);
 
 	output.ecLevel = ecLevel;
 	output.mode = mode;
-	output.version = &version;
+	output.version = version;
 
 	//  Choose the mask pattern and set to "qrCode".
-	int dimension = version.dimensionForVersion();
+	int dimension = version->dimensionForVersion();
 	output.matrix.init(dimension, dimension);
-	output.maskPattern = ChooseMaskPattern(finalBits, ecLevel, version, output.matrix);
+	output.maskPattern = ChooseMaskPattern(finalBits, ecLevel, *version, output.matrix);
 
 	// Build the matrix and set it to "qrCode".
-	MatrixUtil::BuildMatrix(finalBits, ecLevel, version, output.maskPattern, output.matrix);
+	MatrixUtil::BuildMatrix(finalBits, ecLevel, *version, output.maskPattern, output.matrix);
 }
 
 } // QRCode

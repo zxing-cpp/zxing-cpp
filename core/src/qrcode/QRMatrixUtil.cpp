@@ -20,6 +20,7 @@
 #include "qrcode/QRVersion.h"
 #include "BitArray.h"
 #include "ByteMatrix.h"
+#include "BitHacks.h"
 #include "ZXStrConvWorkaround.h"
 
 #include <array>
@@ -283,12 +284,7 @@ static void EmbedBasicPatterns(const Version& version, ByteMatrix& matrix)
 // - findMSBSet(255) => 8
 static int FindMSBSet(unsigned value)
 {
-	int numDigits = 0;
-	while (value != 0) {
-		value >>= 1;
-		++numDigits;
-	}
-	return numDigits;
+	return 32 - BitHacks::NumberOfLeadingZeros(value);
 }
 
 // Calculate BCH (Bose-Chaudhuri-Hocquenghem) code for "value" using polynomial "poly". The BCH

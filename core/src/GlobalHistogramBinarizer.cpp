@@ -142,18 +142,26 @@ GlobalHistogramBinarizer::getBlackRow(int y, BitArray& row) const
 	}
 	int blackPoint = EstimateBlackPoint(buckets);
 	if (blackPoint >= 0) {
-
-		int left = luminances[0];
-		int center = luminances[1];
-		for (int x = 1; x < width - 1; x++) {
-			int right = luminances[x + 1];
-			// A simple -1 4 -1 box filter with a weight of 2.
-			int luminance = ((center * 4) - left - right) / 2;
-			if (luminance < blackPoint) {
-				row.set(x);
+		if (width < 3) {
+			// Special case for very small images
+			for (int x = 0; x < width; x++) {
+				if ((luminances[x] & 0xff) < blackPoint) {
+					row.set(x);
+				}
 			}
-			left = center;
-			center = right;
+		}
+		else {
+			int left = luminances[0] & 0xff;
+			int center = luminances[1] & 0xff;
+			for (int x = 1; x < width - 1; x++) {
+				int right = luminances[x + 1] & 0xff;
+				// A simple -1 4 -1 box filter with a weight of 2.
+				if (((center * 4) - left - right) / 2 < blackPoint) {
+					row.set(x);
+				}
+				left = center;
+				center = right;
+			}
 		}
 		return DecodeStatus::NoError;
 	}

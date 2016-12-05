@@ -34,6 +34,17 @@ Result::Result(const std::wstring& text, const ByteArray& rawBytes, const std::v
 {
 }
 
+Result::Result(const std::wstring& text, const ByteArray& rawBytes, int numBits, const std::vector<ResultPoint>& resultPoints, BarcodeFormat format, time_point tt) :
+	_status(DecodeStatus::NoError),
+	_text(text),
+	_rawBytes(rawBytes),
+	_numBits(numBits),
+	_resultPoints(resultPoints),
+	_format(format),
+	_timestamp(tt)
+{
+}
+
 void
 Result::addResultPoints(const std::vector<ResultPoint>& points)
 {

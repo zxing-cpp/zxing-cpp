@@ -27,6 +27,22 @@ class BitHacks
 {
 public:
 	/// <summary>
+	/// Compute the number of zero bits on the left.
+	/// </summary>
+	static int NumberOfLeadingZeros(uint32_t x)
+	{
+		if (x == 0)
+			return 32;
+		int n = 0;
+		if ((x & 0xFFFF0000) == 0) { n = n + 16; x = x << 16; }
+		if ((x & 0xFF000000) == 0) { n = n + 8; x = x << 8; }
+		if ((x & 0xF0000000) == 0) { n = n + 4; x = x << 4; }
+		if ((x & 0xC0000000) == 0) { n = n + 2; x = x << 2; }
+		if ((x & 0x80000000) == 0) { n = n + 1; }
+		return n;
+	}
+
+	/// <summary>
 	/// Compute the number of zero bits on the right.
 	/// </summary>
 	static int NumberOfTrailingZeros(uint32_t v)

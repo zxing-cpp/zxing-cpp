@@ -20,6 +20,7 @@
 #include "qrcode/QREncoder.h"
 #include "qrcode/QREncodeResult.h"
 #include "BitMatrix.h"
+#include "CharacterSet.h"
 
 namespace ZXing {
 namespace QRCode {
@@ -59,7 +60,8 @@ static void RenderResult(const EncodeResult& code, int width, int height, int qu
 Writer::Writer() :
 	_margin(QUIET_ZONE_SIZE),
 	_ecLevel(ErrorCorrectionLevel::Low),
-	_encoding(Encoder::DEFAULT_BYTE_MODE_ENCODING)
+	_encoding(CharacterSet::Unknown),
+	_version(0)
 {
 }
 
@@ -77,9 +79,17 @@ Writer::setErrorCorrectionLevel(ErrorCorrectionLevel ecLevel)
 	return *this;
 }
 
-Writer& Writer::setEncoding(CharacterSet encoding)
+Writer&
+Writer::setEncoding(CharacterSet encoding)
 {
 	_encoding = encoding;
+	return *this;
+}
+
+Writer&
+Writer::setVersion(int versionNumber)
+{
+	_version = versionNumber;
 	return *this;
 }
 
@@ -95,7 +105,7 @@ Writer::encode(const std::wstring& contents, int width, int height, BitMatrix& o
 	}
 
 	EncodeResult code;
-	Encoder::Encode(contents, _ecLevel, _encoding, code);
+	Encoder::Encode(contents, _ecLevel, _encoding, _version, code);
 	RenderResult(code, width, height, _margin, output);
 }
 

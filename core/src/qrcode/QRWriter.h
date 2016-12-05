@@ -39,6 +39,7 @@ public:
 	Writer& setMargin(int margin);
 	Writer& setErrorCorrectionLevel(ErrorCorrectionLevel ecLevel);
 	Writer& setEncoding(CharacterSet encoding);
+	Writer& setVersion(int versioNumber);
 
 	void encode(const std::wstring& contents, int width, int height, BitMatrix& output) const;
 
@@ -46,6 +47,7 @@ private:
 	int _margin;
 	ErrorCorrectionLevel _ecLevel;
 	CharacterSet _encoding;
+	int _version;
 };
 
 } // QRCode

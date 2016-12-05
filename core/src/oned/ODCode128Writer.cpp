@@ -42,19 +42,83 @@ static const int CODE_FNC_2 = 97;    // Code A, Code B
 static const int CODE_FNC_3 = 96;    // Code A, Code B
 static const int CODE_FNC_4_B = 100; // Code B
 
-static bool AreDigits(const std::wstring& value, int start, int length) {
-	int end = start + length;
+ // Results of minimal lookahead for code C
+enum class CType {
+	UNCODABLE,
+	ONE_DIGIT,
+	TWO_DIGITS,
+	FNC_1
+};
+
+static CType FindCType(const std::wstring& value, int start)
+{
 	int last = static_cast<int>(value.length());
-	for (int i = start; i < end && i < last; i++) {
-		int c = value[i];
-		if (c < '0' || c > '9') {
-			if (c != ESCAPE_FNC_1) {
-				return false;
-			}
-			end++; // ignore FNC_1
-		}
+	if (start >= last) {
+		return CType::UNCODABLE;
 	}
-	return end <= last; // end > last if we've run out of string
+	wchar_t c = value[start];
+	if (c == ESCAPE_FNC_1) {
+		return CType::FNC_1;
+	}
+	if (c < '0' || c > '9') {
+		return CType::UNCODABLE;
+	}
+	if (start + 1 >= last) {
+		return CType::ONE_DIGIT;
+	}
+	c = value[start + 1];
+	if (c < '0' || c > '9') {
+		return CType::ONE_DIGIT;
+	}
+	return CType::TWO_DIGITS;
+}
+
+static int ChooseCode(const std::wstring& value, int start, int oldCode)
+{
+	CType lookahead = FindCType(value, start);
+	if (lookahead == CType::UNCODABLE || lookahead == CType::ONE_DIGIT) {
+		return CODE_CODE_B; // no choice
+	}
+	if (oldCode == CODE_CODE_C) { // can continue in code C
+		return oldCode;
+	}
+	if (oldCode == CODE_CODE_B) {
+		if (lookahead == CType::FNC_1) {
+			return oldCode; // can continue in code B
+		}
+		// Seen two consecutive digits, see what follows
+		lookahead = FindCType(value, start + 2);
+		if (lookahead == CType::UNCODABLE || lookahead == CType::ONE_DIGIT) {
+			return oldCode; // not worth switching now
+		}
+		if (lookahead == CType::FNC_1) { // two digits, then FNC_1...
+			lookahead = FindCType(value, start + 3);
+			if (lookahead == CType::TWO_DIGITS) { // then two more digits, switch
+				return CODE_CODE_C;
+			}
+			else {
+				return CODE_CODE_B; // otherwise not worth switching
+			}
+		}
+		// At this point, there are at least 4 consecutive digits.
+		// Look ahead to choose whether to switch now or on the next round.
+		int index = start + 4;
+		while ((lookahead = FindCType(value, index)) == CType::TWO_DIGITS) {
+			index += 2;
+		}
+		if (lookahead == CType::ONE_DIGIT) { // odd number of digits, switch later
+			return CODE_CODE_B;
+		}
+		return CODE_CODE_C; // even number of digits, switch now
+	}
+	// Here oldCode == 0, which means we are choosing the initial code
+	if (lookahead == CType::FNC_1) { // ignore FNC_1
+		lookahead = FindCType(value, start + 1);
+	}
+	if (lookahead == CType::TWO_DIGITS) { // at least two digits, start in code C
+		return CODE_CODE_C;
+	}
+	return CODE_CODE_B;
 }
 
 void
@@ -90,14 +154,7 @@ Code128Writer::encode(const std::wstring& contents, int width, int height, BitMa
 
 	while (position < length) {
 		//Select code to use
-		int requiredDigitCount = codeSet == CODE_CODE_C ? 2 : 4;
-		int newCodeSet;
-		if (AreDigits(contents, position, requiredDigitCount)) {
-			newCodeSet = CODE_CODE_C;
-		}
-		else {
-			newCodeSet = CODE_CODE_B;
-		}
+		int newCodeSet = ChooseCode(contents, position, codeSet);
 
 		//Get the pattern index
 		int patternIndex;

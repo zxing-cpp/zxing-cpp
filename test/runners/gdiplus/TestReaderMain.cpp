@@ -397,10 +397,10 @@ int main(int argc, char** argv)
 		});
 
 		runTests("blackbox/datamatrix-1", "DATA_MATRIX", 18, {
-			{ 18, 18, 0   },
-			{ 18, 18, 90  },
-			{ 18, 18, 180 },
-			{ 18, 18, 270 },
+			{ 21, 21, 0   },
+			{ 21, 21, 90  },
+			{ 21, 21, 180 },
+			{ 21, 21, 270 },
 		});
 
 		runTests("blackbox/datamatrix-2", "DATA_MATRIX", 18, {
@@ -583,7 +583,7 @@ int main(int argc, char** argv)
 		});
 
 		runTests("blackbox/qrcode-2", "QR_CODE", 34, {
-			{ 30, 30, 0   },
+			{ 31, 31, 0   },
 			{ 29, 29, 90  },
 			{ 30, 30, 180 },
 			{ 29, 29, 270 },

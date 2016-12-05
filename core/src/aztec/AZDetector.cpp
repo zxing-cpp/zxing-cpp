@@ -250,8 +250,8 @@ static int GetColor(const BitMatrix& image, const PixelPoint& p1, const PixelPoi
 	float py = static_cast<float>(p1.y);
 
 	bool colorModel = image.get(p1.x, p1.y);
-
-	for (int i = 0; i < d; i++) {
+	int iMax = (int)std::ceil(d);
+	for (int i = 0; i < iMax; i++) {
 		px += dx;
 		py += dy;
 		if (image.get(RoundToNearest(px), RoundToNearest(py)) != colorModel) {

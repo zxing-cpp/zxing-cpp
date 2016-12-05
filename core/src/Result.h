@@ -42,6 +42,7 @@ public:
 
 	explicit Result(DecodeStatus status);
 	Result(const std::wstring& text, const ByteArray& rawBytes, const std::vector<ResultPoint>& resultPoints, BarcodeFormat format, time_point tt = std::chrono::steady_clock::now());
+	Result(const std::wstring& text, const ByteArray& rawBytes, int numBits, const std::vector<ResultPoint>& resultPoints, BarcodeFormat format, time_point tt = std::chrono::steady_clock::now());
 
 	bool isValid() const {
 		return StatusIsOK(_status);
@@ -57,6 +58,10 @@ public:
 
 	const ByteArray& rawBytes() const {
 		return _rawBytes;
+	}
+	
+	int numBits() const {
+		return _numBits;
 	}
 
 	const std::vector<ResultPoint>& resultPoints() const {
@@ -89,6 +94,7 @@ private:
 	DecodeStatus _status;
 	std::wstring _text;
 	ByteArray _rawBytes;
+	int _numBits;
 	std::vector<ResultPoint> _resultPoints;
 	BarcodeFormat _format;
 	time_point _timestamp;
