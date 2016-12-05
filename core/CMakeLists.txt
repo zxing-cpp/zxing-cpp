@@ -203,10 +203,6 @@ if (ENABLE_DECODERS)
 		src/maxicode/MCReader.cpp
 	)
 endif()
-if (ENABLE_ENCODERS)
-	set (MAXICODE_FILES ${MAXICODE_FILES}
-	)
-endif()
 
 
 set (ONED_FILES
@@ -295,10 +291,6 @@ if (ENABLE_DECODERS)
 		src/oned/rss/ODRSSPair.h
 		src/oned/rss/ODRSSReaderHelper.h
 		src/oned/rss/ODRSSReaderHelper.cpp
-	)
-endif()
-if (ENABLE_ENCODERS)
-	set (ONED_RSS_FILES ${ONED_RSS_FILES}
 	)
 endif()
 
