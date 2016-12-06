@@ -382,11 +382,11 @@ int main(int argc, char** argv)
 	{
 		auto startTime = std::chrono::steady_clock::now();
 		
-		runTests("blackbox/aztec-1", "AZTEC", 12, {
-			{ 12, 12, 0   },
-			{ 12, 12, 90  },
-			{ 12, 12, 180 },
-			{ 12, 12, 270 },
+		runTests("blackbox/aztec-1", "AZTEC", 13, {
+			{ 13, 13, 0   },
+			{ 13, 13, 90  },
+			{ 13, 13, 180 },
+			{ 13, 13, 270 },
 		});
 
 		runTests("blackbox/aztec-2", "AZTEC", 22, {
@@ -396,7 +396,7 @@ int main(int argc, char** argv)
 			{ 3, 3, 270 },
 		});
 
-		runTests("blackbox/datamatrix-1", "DATA_MATRIX", 18, {
+		runTests("blackbox/datamatrix-1", "DATA_MATRIX", 21, {
 			{ 21, 21, 0   },
 			{ 21, 21, 90  },
 			{ 21, 21, 180 },
