@@ -133,7 +133,7 @@ FindNextPair(const BitArray& row, const std::list<ExpandedPair>& previousPairs, 
 	int counterPosition = 0;
 	int patternStart = rowOffset;
 	for (; rowOffset < width; ++rowOffset, ++bitIter) {
-		if (*bitIter ^ isWhite) {
+		if (*bitIter != isWhite) {
 			counters[counterPosition]++;
 		}
 		else {

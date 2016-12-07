@@ -38,17 +38,6 @@ protected:
 	virtual DecodeStatus decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const override;
 	virtual	DecodeStatus checkChecksum(const std::string& s) const override;
 	virtual DecodeStatus decodeEnd(const BitArray& row, int endStart, int& begin, int& end) const override;
-
-
-public:
-	/**
-	* Expands a UPC-E value back into its full, equivalent UPC-A code value.
-	*
-	* @param upce UPC-E code as string of digits
-	* @return equivalent UPC-A code as string of digits
-	*/
-	static std::string ConvertUPCEtoUPCA(const std::string& upce);
-
 };
 
 } // OneD

@@ -161,7 +161,7 @@ ITFReader::FindGuardPattern(const BitArray& row, int offset, const int* pattern,
 	int patternStart = offset;
 	auto bitIter = row.iterAt(offset);
 	for (; offset < width; ++offset, ++bitIter) {
-		if (*bitIter ^ isWhite) {
+		if (*bitIter != isWhite) {
 			counters[counterPosition]++;
 		}
 		else {

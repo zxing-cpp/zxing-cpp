@@ -95,71 +95,67 @@ static Mode DecodeAsciiSegment(BitSource& bits, std::string& result, std::string
 	bool upperShift = false;
 	do {
 		int oneByte = bits.readBits(8);
-		if (oneByte == 0) {
+		switch (oneByte) {
+		case 0:
 			return Mode::FORMAT_ERROR;
-		}
-		else if (oneByte <= 128) {  // ASCII data (ASCII value + 1)
-			if (upperShift) {
-				oneByte += 128;
-				//upperShift = false;
-			}
-			result.push_back((char)(oneByte - 1));
-			return Mode::ASCII_ENCODE;
-		}
-		else if (oneByte == 129) {  // Pad
+		case 129: // Pad
 			return Mode::PAD_ENCODE;
-		}
-		else if (oneByte <= 229) {  // 2-digit data 00-99 (Numeric Value + 130)
-			int value = oneByte - 130;
-			if (value < 10) { // pad with '0' for single digit values
-				result.push_back('0');
-			}
-			result.append(std::to_string(value));
-		}
-		else if (oneByte == 230) {  // Latch to C40 encodation
+		case 230: // Latch to C40 encodation
 			return Mode::C40_ENCODE;
-		}
-		else if (oneByte == 231) {  // Latch to Base 256 encodation
+		case 231: // Latch to Base 256 encodation
 			return Mode::BASE256_ENCODE;
-		}
-		else if (oneByte == 232) {
-			// FNC1
+		case 232: // FNC1
 			result.push_back((char)29); // translate as ASCII 29
-		}
-		else if (oneByte == 233 || oneByte == 234) {
+			break;
+		case 233:
+		case 234:
 			// Structured Append, Reader Programming
 			// Ignore these symbols for now
 			//throw ReaderException.getInstance();
-		}
-		else if (oneByte == 235) {  // Upper Shift (shift to Extended ASCII)
+			break;
+		case 235: // Upper Shift (shift to Extended ASCII)
 			upperShift = true;
-		}
-		else if (oneByte == 236) {  // 05 Macro
+			break;
+		case 236: // 05 Macro
 			result.append("[)>\x1E").append("05\x1D");
 			resultTrailer.insert(0, "\x1E\x04");
-		}
-		else if (oneByte == 237) {  // 06 Macro
+			break;
+		case 237: // 06 Macro
 			result.append("[)>\x1E").append("06\x1D");
 			resultTrailer.insert(0, "\x1E\x04");
-		}
-		else if (oneByte == 238) {  // Latch to ANSI X12 encodation
+			break;
+		case 238: // Latch to ANSI X12 encodation
 			return Mode::ANSIX12_ENCODE;
-		}
-		else if (oneByte == 239) {  // Latch to Text encodation
+		case 239: // Latch to Text encodation
 			return Mode::TEXT_ENCODE;
-		}
-		else if (oneByte == 240) {  // Latch to EDIFACT encodation
+		case 240: // Latch to EDIFACT encodation
 			return Mode::EDIFACT_ENCODE;
-		}
-		else if (oneByte == 241) {  // ECI Character
-									// TODO(bbrown): I think we need to support ECI
-									//throw ReaderException.getInstance();
-									// Ignore this symbol for now
-		}
-		else if (oneByte >= 242) {  // Not to be used in ASCII encodation
+		case 241:  // ECI Character
+					// TODO(bbrown): I think we need to support ECI
+					//throw ReaderException.getInstance();
+					// Ignore this symbol for now
+			break;
+		default:
+			if (oneByte <= 128) {  // ASCII data (ASCII value + 1)
+				if (upperShift) {
+					oneByte += 128;
+					//upperShift = false;
+				}
+				result.push_back((char)(oneByte - 1));
+				return Mode::ASCII_ENCODE;
+			}
+			else if (oneByte <= 229) {  // 2-digit data 00-99 (Numeric Value + 130)
+				int value = oneByte - 130;
+				if (value < 10) { // pad with '0' for single digit values
+					result.push_back('0');
+				}
+				result.append(std::to_string(value));
+			}
+			else if (oneByte >= 242) {  // Not to be used in ASCII encodation
 									// ... but work around encoders that end with 254, latch back to ASCII
-			if (oneByte != 254 || bits.available() != 0) {
-				return Mode::FORMAT_ERROR;
+				if (oneByte != 254 || bits.available() != 0) {
+					return Mode::FORMAT_ERROR;
+				}
 			}
 		}
 	} while (bits.available() > 0);

@@ -26,18 +26,10 @@ UPCAWriter::encode(const std::wstring& contents, int width, int height, BitMatri
 {
 	// Transform a UPC-A code into the equivalent EAN-13 code, and add a check digit if it is not already present.
 	size_t length = contents.length();
-	if (length == 11) {
-		// No check digit present, calculate it and add it
-		int sum = 0;
-		for (int i = 0; i < 11; ++i) {
-			sum += (contents[i] - '0') * (i % 2 == 0 ? 3 : 1);
-		}
-		return EAN13Writer().setMargin(_sidesMargin).encode(contents + static_cast<wchar_t>('0' + ((1000 - sum) % 10)), width, height, output);
+	if (length != 11 && length != 12) {
+		throw std::invalid_argument("Requested contents should be 11 or 12 digits long");
 	}
-	else if (length == 12) {
-		return EAN13Writer().setMargin(_sidesMargin).encode(L'0' + contents, width, height, output);
-	}
-	throw std::invalid_argument("Requested contents should be 11 or 12 digits long");
+	return EAN13Writer().setMargin(_sidesMargin).encode(L'0' + contents, width, height, output);
 }
 
 } // OneD

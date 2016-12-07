@@ -16,7 +16,7 @@
 */
 
 #include "oned/ODEAN8Reader.h"
-#include "oned/ODUPCEANPatterns.h"
+#include "oned/ODUPCEANCommon.h"
 #include "BitArray.h"
 #include "BarcodeFormat.h"
 #include "DecodeStatus.h"
@@ -39,7 +39,7 @@ EAN8Reader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resul
 
 	for (int x = 0; x < 4 && rowOffset < end; x++) {
 		int bestMatch = 0;
-		status = DecodeDigit(row, rowOffset, UPCEANPatterns::L_PATTERNS, counters, bestMatch);
+		status = DecodeDigit(row, rowOffset, UPCEANCommon::L_PATTERNS, counters, bestMatch);
 		if (StatusIsError(status)) {
 			return status;
 		}
@@ -50,7 +50,7 @@ EAN8Reader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resul
 	}
 
 	int middleRangeBegin, middleRangeEnd;
-	status = FindGuardPattern(row, rowOffset, true, UPCEANPatterns::MIDDLE_PATTERN, middleRangeBegin, middleRangeEnd);
+	status = FindGuardPattern(row, rowOffset, true, UPCEANCommon::MIDDLE_PATTERN, middleRangeBegin, middleRangeEnd);
 	if (StatusIsError(status)) {
 		return status;
 	}
@@ -58,7 +58,7 @@ EAN8Reader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resul
 	rowOffset = middleRangeEnd;
 	for (int x = 0; x < 4 && rowOffset < end; x++) {
 		int bestMatch = 0;
-		status = DecodeDigit(row, rowOffset, UPCEANPatterns::L_PATTERNS, counters, bestMatch);
+		status = DecodeDigit(row, rowOffset, UPCEANCommon::L_PATTERNS, counters, bestMatch);
 		if (StatusIsError(status)) {
 			return status;
 		}

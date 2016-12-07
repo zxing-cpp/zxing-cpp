@@ -16,7 +16,7 @@
 */
 
 #include "oned/ODEAN8Writer.h"
-#include "oned/ODUPCEANPatterns.h"
+#include "oned/ODUPCEANCommon.h"
 #include "oned/ODWriterHelper.h"
 
 #include <vector>
@@ -33,40 +33,42 @@ static const int CODE_WIDTH = 3 + // start guard
 void
 EAN8Writer::encode(const std::wstring& contents, int width, int height,  BitMatrix& output) const
 {
-	if (contents.length() != 8) {
-		throw std::invalid_argument("Requested contents should be 8 digits long");
+	size_t length = contents.length();
+	if (length != 7 && length != 8) {
+		throw std::invalid_argument("Requested contents should be 7 or 8 digits long");
 	}
 
-	for (size_t i = 0; i < contents.length(); ++i) {
-		if (contents[i] < '0' && contents[i] > '9') {
+	std::array<int, 8> digits;
+	for (size_t i = 0; i < length; ++i) {
+		digits[i] = contents[i] - '0';
+		if (digits[i] < 0 && digits[i] > 9) {
 			throw std::invalid_argument("Contents should contain only digits: 0-9");
 		}
+	}
+
+	if (length == 7) {
+		digits[7] = UPCEANCommon::ComputeChecksum(digits);
+	}
+	else if (digits[7] != UPCEANCommon::ComputeChecksum(digits)) {
+		throw std::invalid_argument("Contents do not pass checksum");
 	}
 
 	std::vector<bool> result(CODE_WIDTH, false);
 	int pos = 0;
 
-	pos += WriterHelper::AppendPattern(result, pos, UPCEANPatterns::START_END_PATTERN, true);
+	pos += WriterHelper::AppendPattern(result, pos, UPCEANCommon::START_END_PATTERN, true);
 
 	for (int i = 0; i <= 3; i++) {
-		int digit = contents[i] - '0';
-		pos += WriterHelper::AppendPattern(result, pos, UPCEANPatterns::L_PATTERNS[digit], false);
+		pos += WriterHelper::AppendPattern(result, pos, UPCEANCommon::L_PATTERNS[digits[i]], false);
 	}
 
-	pos += WriterHelper::AppendPattern(result, pos, UPCEANPatterns::MIDDLE_PATTERN, false);
+	pos += WriterHelper::AppendPattern(result, pos, UPCEANCommon::MIDDLE_PATTERN, false);
 
 	for (int i = 4; i <= 7; i++) {
-		int digit = contents[i] - '0';
-		pos += WriterHelper::AppendPattern(result, pos, UPCEANPatterns::L_PATTERNS[digit], true);
+		pos += WriterHelper::AppendPattern(result, pos, UPCEANCommon::L_PATTERNS[digits[i]], true);
 	}
-	WriterHelper::AppendPattern(result, pos, UPCEANPatterns::START_END_PATTERN, true);
-
-	int sidesMargin = _sidesMargin;
-	if (sidesMargin < 0)
-	{
-		sidesMargin = static_cast<int>(UPCEANPatterns::START_END_PATTERN.size());
-	}
-	WriterHelper::RenderResult(result, width, height, sidesMargin, output);
+	WriterHelper::AppendPattern(result, pos, UPCEANCommon::START_END_PATTERN, true);
+	WriterHelper::RenderResult(result, width, height, _sidesMargin >= 0 ? _sidesMargin : 9, output);
 }
 
 } // OneD

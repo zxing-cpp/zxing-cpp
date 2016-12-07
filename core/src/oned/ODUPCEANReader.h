@@ -97,16 +97,6 @@ public:
 	}
 
 	/**
-	* Computes the UPC/EAN checksum on a string of digits, and reports
-	* whether the checksum is correct or not.
-	*
-	* @param s string of digits to check
-	* @return true iff string of digits passes the UPC/EAN checksum algorithm
-	* @throws FormatException if the string does not contain only digits
-	*/
-	static DecodeStatus CheckStandardUPCEANChecksum(const std::string& s);
-
-	/**
 	* Attempts to decode a single UPC/EAN-encoded digit.
 	*
 	* @param row row of black/white values to decode

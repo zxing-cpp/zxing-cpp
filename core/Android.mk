@@ -70,6 +70,7 @@ ONED_FILES := \
 	src/oned/ODReader.cpp \
 	src/oned/ODRowReader.cpp \
 	src/oned/ODUPCAReader.cpp \
+    src/oned/ODUPCEANCommon.cpp \
 	src/oned/ODUPCEANExtensionSupport.cpp \
 	src/oned/ODUPCEANReader.cpp \
 	src/oned/ODUPCEReader.cpp

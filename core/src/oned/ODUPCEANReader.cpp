@@ -18,7 +18,7 @@
 #include "oned/ODUPCEANReader.h"
 #include "oned/ODUPCEANExtensionSupport.h"
 #include "oned/ODEANManufacturerOrgSupport.h"
-#include "oned/ODUPCEANPatterns.h"
+#include "oned/ODUPCEANCommon.h"
 #include "Result.h"
 #include "BitArray.h"
 #include "DecodeHints.h"
@@ -62,7 +62,7 @@ UPCEANReader::DoFindGuardPattern(const BitArray& row, int rowOffset, bool whiteF
 	int patternStart = rowOffset;
 	auto bitIter = row.iterAt(rowOffset);
 	for (; rowOffset < width; ++rowOffset, ++bitIter) {
-		if (*bitIter ^ isWhite) {
+		if (*bitIter != isWhite) {
 			counters[counterPosition]++;
 		}
 		else {
@@ -103,10 +103,10 @@ UPCEANReader::FindStartGuardPattern(const BitArray& row, int& begin, int& end)
 	bool foundStart = false;
 	int start = 0;
 	int nextStart = 0;
-	std::vector<int> counters(UPCEANPatterns::START_END_PATTERN.size());
+	std::vector<int> counters(UPCEANCommon::START_END_PATTERN.size());
 	while (!foundStart) {
 		std::fill(counters.begin(), counters.end(), 0);
-		auto status = DoFindGuardPattern(row, nextStart, false, UPCEANPatterns::START_END_PATTERN.data(), counters.data(), UPCEANPatterns::START_END_PATTERN.size(), start, nextStart);
+		auto status = DoFindGuardPattern(row, nextStart, false, UPCEANCommon::START_END_PATTERN.data(), counters.data(), UPCEANCommon::START_END_PATTERN.size(), start, nextStart);
 		if (StatusIsError(status)) {
 			return status;
 		}
@@ -137,7 +137,7 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 DecodeStatus
 UPCEANReader::decodeEnd(const BitArray& row, int endStart, int& begin, int& end) const
 {
-	return FindGuardPattern(row, endStart, false, UPCEANPatterns::START_END_PATTERN.data(), UPCEANPatterns::START_END_PATTERN.size(), begin, end);
+	return FindGuardPattern(row, endStart, false, UPCEANCommon::START_END_PATTERN.data(), UPCEANCommon::START_END_PATTERN.size(), begin, end);
 }
 
 Result
@@ -223,12 +223,6 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, int startGuardBegin,
 	return decodeResult;
 }
 
-DecodeStatus
-UPCEANReader::checkChecksum(const std::string& s) const
-{
-	return CheckStandardUPCEANChecksum(s);
-}
-
 /**
 * Computes the UPC/EAN checksum on a string of digits, and reports
 * whether the checksum is correct or not.
@@ -238,7 +232,7 @@ UPCEANReader::checkChecksum(const std::string& s) const
 * @throws FormatException if the string does not contain only digits
 */
 DecodeStatus
-UPCEANReader::CheckStandardUPCEANChecksum(const std::string& s)
+UPCEANReader::checkChecksum(const std::string& s) const
 {
 	int length = static_cast<int>(s.length());
 	if (length == 0) {

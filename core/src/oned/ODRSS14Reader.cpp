@@ -86,7 +86,7 @@ FindFinderPattern(const BitArray& row, int offset, bool rightFinderPattern, Find
 	int counterPosition = 0;
 	int patternStart = offset;
 	for (; offset < width; ++offset, ++bitIter) {
-		if (*bitIter ^ isWhite) {
+		if (*bitIter != isWhite) {
 			counters[counterPosition]++;
 		}
 		else {
@@ -123,7 +123,7 @@ ParseFoundFinderPattern(const BitArray& row, int rowNumber, bool right, int star
 	int firstElementStart = startRange - 1;
 	--bitIter;
 	// Locate element 1
-	while (firstElementStart >= 0 && firstIsBlack ^ *bitIter) {
+	while (firstElementStart >= 0 && firstIsBlack != *bitIter) {
 		--firstElementStart;
 		--bitIter;
 	}

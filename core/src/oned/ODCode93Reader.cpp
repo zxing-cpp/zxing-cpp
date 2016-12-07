@@ -87,7 +87,7 @@ FindAsteriskPattern(const BitArray& row, int& outPatternStart, int& outPatternEn
 	int counterPosition = 0;
 	auto bitIter = row.iterAt(offset);
 	for (; offset < width; ++offset, ++bitIter) {
-		if (*bitIter ^ isWhite) {
+		if (*bitIter != isWhite) {
 			theCounters[counterPosition]++;
 		}
 		else {

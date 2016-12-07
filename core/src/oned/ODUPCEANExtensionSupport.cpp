@@ -17,7 +17,7 @@
 
 #include "oned/ODUPCEANExtensionSupport.h"
 #include "oned/ODUPCEANReader.h"
-#include "oned/ODUPCEANPatterns.h"
+#include "oned/ODUPCEANCommon.h"
 #include "Result.h"
 #include "BitArray.h"
 #include "TextDecoder.h"
@@ -74,7 +74,7 @@ namespace UPCEANExtension5Support
 		int lgPatternFound = 0;
 		for (int x = 0; x < 5 && rowOffset < end; x++) {
 			int bestMatch = 0;
-			auto status = UPCEANReader::DecodeDigit(row, rowOffset, UPCEANPatterns::L_AND_G_PATTERNS, counters, bestMatch);
+			auto status = UPCEANReader::DecodeDigit(row, rowOffset, UPCEANCommon::L_AND_G_PATTERNS, counters, bestMatch);
 			if (StatusIsError(status)) {
 				return status;
 			}
@@ -188,7 +188,7 @@ namespace UPCEANExtension2Support
 		int checkParity = 0;
 		for (int x = 0; x < 2 && rowOffset < end; x++) {
 			int bestMatch = 0;
-			auto status = UPCEANReader::DecodeDigit(row, rowOffset, UPCEANPatterns::L_AND_G_PATTERNS, counters, bestMatch);
+			auto status = UPCEANReader::DecodeDigit(row, rowOffset, UPCEANCommon::L_AND_G_PATTERNS, counters, bestMatch);
 			if (StatusIsError(status)) {
 				return status;
 			}

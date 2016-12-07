@@ -16,8 +16,9 @@
 */
 
 #include "oned/ODEAN13Writer.h"
-#include "oned/ODUPCEANPatterns.h"
+#include "oned/ODUPCEANCommon.h"
 #include "oned/ODWriterHelper.h"
+#include <array>
 
 namespace ZXing {
 namespace OneD {
@@ -35,53 +36,48 @@ static const int CODE_WIDTH = 3 + // start guard
 void
 EAN13Writer::encode(const std::wstring& contents, int width, int height, BitMatrix& output) const
 {
-	if (contents.length() != 13) {
-		throw std::invalid_argument("Requested contents should be 13 digits long");
+	size_t length = contents.length();
+	if (length != 12 && length != 13) {
+		throw std::invalid_argument("Requested contents should be 12 or 13 digits long");
 	}
 
-	int sum = 0;
-	for (size_t i = 0; i < contents.length(); ++i) {
-		int digit = contents[i] - '0';
-		if (digit < 0 && digit > 9) {
+	std::array<int, 13> digits;
+	for (size_t i = 0; i < length; ++i) {
+		digits[i] = contents[i] - '0';
+		if (digits[i] < 0 && digits[i] > 9) {
 			throw std::invalid_argument("Contents should contain only digits: 0-9");
 		}
-		sum += digit * (i % 2 == 0 ? 3 : 1);
 	}
-	if (sum % 10 != 0) {
+
+	if (length == 12) {
+		digits[12] = UPCEANCommon::ComputeChecksum(digits);
+	}
+	else if (digits[12] != UPCEANCommon::ComputeChecksum(digits)) {
 		throw std::invalid_argument("Contents do not pass checksum");
 	}
 
-
-	int firstDigit = contents[0] - '0';
-	int parities = FIRST_DIGIT_ENCODINGS[firstDigit];
+	int parities = FIRST_DIGIT_ENCODINGS[digits[0]];
 	std::vector<bool> result(CODE_WIDTH, false);
 	int pos = 0;
 
-	pos += WriterHelper::AppendPattern(result, pos, UPCEANPatterns::START_END_PATTERN, true);
+	pos += WriterHelper::AppendPattern(result, pos, UPCEANCommon::START_END_PATTERN, true);
 
 	// See {@link #EAN13Reader} for a description of how the first digit & left bars are encoded
 	for (int i = 1; i <= 6; i++) {
-		int digit = contents[i] - '0';
+		int digit = digits[i];
 		if ((parities >> (6 - i) & 1) == 1) {
 			digit += 10;
 		}
-		pos += WriterHelper::AppendPattern(result, pos, UPCEANPatterns::L_AND_G_PATTERNS[digit], false);
+		pos += WriterHelper::AppendPattern(result, pos, UPCEANCommon::L_AND_G_PATTERNS[digit], false);
 	}
 
-	pos += WriterHelper::AppendPattern(result, pos, UPCEANPatterns::MIDDLE_PATTERN, false);
+	pos += WriterHelper::AppendPattern(result, pos, UPCEANCommon::MIDDLE_PATTERN, false);
 
 	for (int i = 7; i <= 12; i++) {
-		int digit = contents[i] - '0';
-		pos += WriterHelper::AppendPattern(result, pos, UPCEANPatterns::L_PATTERNS[digit], true);
+		pos += WriterHelper::AppendPattern(result, pos, UPCEANCommon::L_PATTERNS[digits[i]], true);
 	}
-	WriterHelper::AppendPattern(result, pos, UPCEANPatterns::START_END_PATTERN, true);
-
-	int sidesMargin = _sidesMargin;
-	if (sidesMargin < 0)
-	{
-		sidesMargin = static_cast<int>(UPCEANPatterns::START_END_PATTERN.size());
-	}
-	WriterHelper::RenderResult(result, width, height, sidesMargin, output);
+	WriterHelper::AppendPattern(result, pos, UPCEANCommon::START_END_PATTERN, true);
+	WriterHelper::RenderResult(result, width, height, _sidesMargin >= 0 ? _sidesMargin : 9, output);
 }
 
 } // OneD

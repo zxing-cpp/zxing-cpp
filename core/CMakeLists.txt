@@ -206,7 +206,8 @@ endif()
 
 
 set (ONED_FILES
-	src/oned/ODUPCEANPatterns.h
+	src/oned/ODUPCEANCommon.h
+	src/oned/ODUPCEANCommon.cpp
 	src/oned/ODCode128Patterns.h
 	src/oned/ODCode128Patterns.cpp
 )

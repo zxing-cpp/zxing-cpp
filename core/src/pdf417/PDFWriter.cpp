@@ -88,7 +88,7 @@ Writer::encode(const std::wstring& contents, int width, int height, BitMatrix& o
 	std::vector<std::vector<bool>> originalScale;
 	resultMatrix.getScaledMatrix(1, aspectRatio, originalScale);
 	bool rotated = false;
-	if ((height > width) ^ (originalScale[0].size() < originalScale.size())) {
+	if ((height > width) != (originalScale[0].size() < originalScale.size())) {
 		std::vector<std::vector<bool>> temp;
 		RotateArray(originalScale, temp);
 		originalScale = temp;

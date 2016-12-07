@@ -583,7 +583,7 @@ int main(int argc, char** argv)
 		});
 
 		runTests("blackbox/qrcode-2", "QR_CODE", 34, {
-			{ 31, 31, 0   },
+			{ 30, 30, 0   },
 			{ 29, 29, 90  },
 			{ 30, 30, 180 },
 			{ 29, 29, 270 },

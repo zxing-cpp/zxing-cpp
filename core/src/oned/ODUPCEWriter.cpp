@@ -16,7 +16,7 @@
 */
 
 #include "oned/ODUPCEWriter.h"
-#include "oned/ODUPCEANPatterns.h"
+#include "oned/ODUPCEANCommon.h"
 #include "oned/ODWriterHelper.h"
 
 #include <vector>
@@ -55,48 +55,57 @@ static const int CODE_WIDTH = 3 + // start guard
                               (7 * 6) + // bars
                               6; // end guard
 
+static void GetDigits(const std::wstring& contents, std::array<int, 8>& digits)
+{
+	for (size_t i = 0; i < contents.length(); ++i) {
+		digits[i] = contents[i] - '0';
+		if (digits[i] < 0 && digits[i] > 9) {
+			throw std::invalid_argument("Contents should contain only digits: 0-9");
+		}
+	}
+}
+
 void
 UPCEWriter::encode(const std::wstring& contents, int width, int height, BitMatrix& output) const
 {
 	size_t length = contents.length();
-	if (length == 0) {
-		throw std::invalid_argument("Found empty contents");
-	}
-	if (length != 8) {
-		throw std::invalid_argument("Requested contents should be 8 digits long");
+	if (length != 7 && length != 8) {
+		throw std::invalid_argument("Requested contents should be 7 or 8 digits long");
 	}
 
-	for (size_t i = 0; i < contents.length(); ++i) {
-		if (contents[i] < '0' && contents[i] > '9') {
-			throw std::invalid_argument("Contents should contain only digits: 0-9");
-		}
+	std::array<int, 8> digits;
+	GetDigits(contents, digits);
+
+	if (length == 7) {
+		std::array<int, 8> upceDigits;
+		GetDigits(UPCEANCommon::ConvertUPCEtoUPCA(contents), upceDigits);
+		digits[7] = UPCEANCommon::ComputeChecksum(upceDigits);
+	}
+	else if (digits[7] != UPCEANCommon::ComputeChecksum(digits)) {
+		throw std::invalid_argument("Contents do not pass checksum");
+	}
+	
+	if (digits[0] != 0 && digits[0] != 1) {
+		throw std::invalid_argument("Number system must be 0 or 1");
 	}
 
-	int checkDigit = contents[7] - '0';
-	int parities = CHECK_DIGIT_ENCODINGS[checkDigit];
+	int parities = CHECK_DIGIT_ENCODINGS[digits[7]];
 	std::vector<bool> result(CODE_WIDTH, false);
 	int pos = 0;
 
-	pos += WriterHelper::AppendPattern(result, pos, UPCEANPatterns::START_END_PATTERN, true);
+	pos += WriterHelper::AppendPattern(result, pos, UPCEANCommon::START_END_PATTERN, true);
 
 	for (int i = 1; i <= 6; i++) {
-		int digit = contents[i] - '0';
+		int digit = digits[i];
 		if ((parities >> (6 - i) & 1) == 1) {
 			digit += 10;
 		}
-		pos += WriterHelper::AppendPattern(result, pos, UPCEANPatterns::L_AND_G_PATTERNS[digit], false);
+		pos += WriterHelper::AppendPattern(result, pos, UPCEANCommon::L_AND_G_PATTERNS[digit], false);
 	}
 
-	WriterHelper::AppendPattern(result, pos, UPCEANPatterns::END_PATTERN, false);
-
-	int sidesMargin = _sidesMargin;
-	if (sidesMargin < 0)
-	{
-		sidesMargin = static_cast<int>(UPCEANPatterns::START_END_PATTERN.size());
-	}
-	WriterHelper::RenderResult(result, width, height, sidesMargin, output);
+	WriterHelper::AppendPattern(result, pos, UPCEANCommon::END_PATTERN, false);
+	WriterHelper::RenderResult(result, width, height, _sidesMargin >= 0 ? _sidesMargin : 9, output);
 }
-
 
 } // OneD
 } // ZXing

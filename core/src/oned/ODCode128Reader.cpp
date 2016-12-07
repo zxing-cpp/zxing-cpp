@@ -62,7 +62,7 @@ FindStartPattern(const BitArray& row, int& begin, int& end, int& startCode)
 	int patternLength = static_cast<int>(counters.size());
 	auto bitIter = row.iterAt(offset);
 	for (; offset < width; ++offset, ++bitIter) {
-		if (*bitIter ^ isWhite) {
+		if (*bitIter != isWhite) {
 			counters[counterPosition]++;
 		}
 		else {

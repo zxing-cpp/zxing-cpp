@@ -16,7 +16,7 @@
 */
 
 #include "oned/ODUPCEReader.h"
-#include "oned/ODUPCEANPatterns.h"
+#include "oned/ODUPCEANCommon.h"
 #include "BarcodeFormat.h"
 #include "BitArray.h"
 #include "DecodeStatus.h"
@@ -71,7 +71,7 @@ UPCEReader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resul
 	int lgPatternFound = 0;
 	for (int x = 0; x < 6 && rowOffset < end; x++) {
 		int bestMatch = 0;
-		auto status = DecodeDigit(row, rowOffset, UPCEANPatterns::L_AND_G_PATTERNS, counters, bestMatch);
+		auto status = DecodeDigit(row, rowOffset, UPCEANCommon::L_AND_G_PATTERNS, counters, bestMatch);
 		if (StatusIsError(status)) {
 			return status;
 		}
@@ -89,54 +89,13 @@ UPCEReader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resul
 DecodeStatus
 UPCEReader::checkChecksum(const std::string& s) const
 {
-	return UPCEANReader::checkChecksum(ConvertUPCEtoUPCA(s));
+	return UPCEANReader::checkChecksum(UPCEANCommon::ConvertUPCEtoUPCA(s));
 }
 
 DecodeStatus
 UPCEReader::decodeEnd(const BitArray& row, int endStart, int& begin, int& end) const
 {
 	return FindGuardPattern(row, endStart, true, MIDDLE_END_PATTERN, begin, end);
-}
-
-std::string
-UPCEReader::ConvertUPCEtoUPCA(const std::string& upce)
-{
-	if (upce.length() < 8)
-		return upce;
-
-	auto upceChars = upce.substr(1, 6);
-
-	std::string result;
-	result.reserve(12);
-	result += upce[0];
-	char lastChar = upceChars[5];
-	switch (lastChar) {
-	case '0':
-	case '1':
-	case '2':
-		result += upceChars.substr(0, 2);
-		result += lastChar;
-		result += "0000";
-		result += upceChars.substr(2, 3);
-		break;
-	case '3':
-		result += upceChars.substr(0, 3);
-		result += "00000";
-		result += upceChars.substr(3, 2);
-		break;
-	case '4':
-		result += upceChars.substr(0, 4);
-		result += "00000";
-		result += upceChars[4];
-		break;
-	default:
-		result += upceChars.substr(0, 5);
-		result += "0000";
-		result += lastChar;
-		break;
-	}
-	result += upce[7];
-	return result;
 }
 
 } // OneD

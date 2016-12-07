@@ -49,7 +49,7 @@ RowReader::RecordPattern(const BitArray& row, int start, int* counters, size_t l
 	bool isWhite = !*bitIter;
 	size_t counterPosition = 0;
 	for (; start < end; ++start, ++bitIter) {
-		if (*bitIter ^ isWhite) { // that is, exactly one is true
+		if (*bitIter != isWhite) {
 			counters[counterPosition]++;
 		}
 		else {

@@ -121,7 +121,7 @@ FindGuardPattern(const BitMatrix& matrix, int column, int row, int width, bool w
 	int counterPosition = 0;
 	for (; x < width; x++) {
 		bool pixel = matrix.get(x, row);
-		if (pixel ^ isWhite) {
+		if (pixel != isWhite) {
 			counters[counterPosition]++;
 		}
 		else {

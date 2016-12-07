@@ -608,26 +608,30 @@ namespace X12Encoder {
 
 	static int EncodeChar(int c, std::string& sb)
 	{
-		if (c == '\r') {
+		switch (c) {
+		case '\r':
 			sb.push_back('\0');
-		}
-		else if (c == '*') {
+			break;
+		case '*':
 			sb.push_back('\1');
-		}
-		else if (c == '>') {
+			break;
+		case '>':
 			sb.push_back('\2');
-		}
-		else if (c == ' ') {
+			break;
+		case ' ':
 			sb.push_back('\3');
-		}
-		else if (c >= '0' && c <= '9') {
-			sb.push_back((char)(c - 48 + 4));
-		}
-		else if (c >= 'A' && c <= 'Z') {
-			sb.push_back((char)(c - 65 + 14));
-		}
-		else {
-			throw std::invalid_argument("Illegal character: " + ToHexString(c));
+			break;
+		default:
+			if (c >= '0' && c <= '9') {
+				sb.push_back((char)(c - 48 + 4));
+			}
+			else if (c >= 'A' && c <= 'Z') {
+				sb.push_back((char)(c - 65 + 14));
+			}
+			else {
+				throw std::invalid_argument("Illegal character: " + ToHexString(c));
+			}
+			break;
 		}
 		return 1;
 	}

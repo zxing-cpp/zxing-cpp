@@ -337,71 +337,74 @@ DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionL
 			else {
 				mode = CodecMode::ModeForBits(bits.readBits(4)); // mode is encoded by 4 bits
 			}
-			if (mode != CodecMode::TERMINATOR) {
-				if (mode == CodecMode::FNC1_FIRST_POSITION || mode == CodecMode::FNC1_SECOND_POSITION) {
-					// We do little with FNC1 except alter the parsed result a bit according to the spec
-					fc1InEffect = true;
+			switch (mode) {
+			case CodecMode::TERMINATOR:
+				break;
+			case CodecMode::FNC1_FIRST_POSITION:
+			case CodecMode::FNC1_SECOND_POSITION:
+				// We do little with FNC1 except alter the parsed result a bit according to the spec
+				fc1InEffect = true;
+			case CodecMode::STRUCTURED_APPEND:
+				if (bits.available() < 16) {
+					return DecodeStatus::FormatError;
 				}
-				else if (mode == CodecMode::STRUCTURED_APPEND) {
-					if (bits.available() < 16) {
-						return DecodeStatus::FormatError;
-					}
-					// sequence number and parity is added later to the result metadata
-					// Read next 8 bits (symbol sequence #) and 8 bits (parity data), then continue
-					symbolSequence = bits.readBits(8);
-					parityData = bits.readBits(8);
+				// sequence number and parity is added later to the result metadata
+				// Read next 8 bits (symbol sequence #) and 8 bits (parity data), then continue
+				symbolSequence = bits.readBits(8);
+				parityData = bits.readBits(8);
+				break;
+			case CodecMode::ECI: {
+				// Count doesn't apply to ECI
+				int value;
+				auto status = ParseECIValue(bits, value);
+				if (StatusIsError(status)) {
+					return status;
 				}
-				else if (mode == CodecMode::ECI) {
-					// Count doesn't apply to ECI
-					int value;
-					auto status = ParseECIValue(bits, value);
+				currentCharset = CharacterSetECI::CharsetFromValue(value);
+				if (currentCharset == CharacterSet::Unknown) {
+					return DecodeStatus::FormatError;
+				}
+				break;
+			}
+			case CodecMode::HANZI: {
+				// First handle Hanzi mode which does not start with character count
+				// chinese mode contains a sub set indicator right after mode indicator
+				int subset = bits.readBits(4);
+				int countHanzi = bits.readBits(CodecMode::CharacterCountBits(mode, version));
+				if (subset == GB2312_SUBSET) {
+					auto status = DecodeHanziSegment(bits, countHanzi, result);
 					if (StatusIsError(status)) {
 						return status;
 					}
-					currentCharset = CharacterSetECI::CharsetFromValue(value);
-					if (currentCharset == CharacterSet::Unknown) {
-						return DecodeStatus::FormatError;
-					}
 				}
-				else {
-					// First handle Hanzi mode which does not start with character count
-					if (mode == CodecMode::HANZI) {
-						//chinese mode contains a sub set indicator right after mode indicator
-						int subset = bits.readBits(4);
-						int countHanzi = bits.readBits(CodecMode::CharacterCountBits(mode, version));
-						if (subset == GB2312_SUBSET) {
-							auto status = DecodeHanziSegment(bits, countHanzi, result);
-							if (StatusIsError(status)) {
-								return status;
-							}
-						}
-					}
-					else {
-						// "Normal" QR code modes:
-						// How many characters will follow, encoded in this mode?
-						int count = bits.readBits(CodecMode::CharacterCountBits(mode, version));
-						DecodeStatus status;
-						if (mode == CodecMode::NUMERIC) {
-							status = DecodeNumericSegment(bits, count, result);
-						}
-						else if (mode == CodecMode::ALPHANUMERIC) {
-							status = DecodeAlphanumericSegment(bits, count, fc1InEffect, result);
-						}
-						else if (mode == CodecMode::BYTE) {
-							status = DecodeByteSegment(bits, count, currentCharset, hintedCharset, result, byteSegments);
-						}
-						else if (mode == CodecMode::KANJI) {
-							status = DecodeKanjiSegment(bits, count, result);
-						}
-						else {
-							status = DecodeStatus::FormatError;
-						}
-
-						if (StatusIsError(status)) {
-							return status;
-						}
-					}
+				break;
+			}
+			default: {
+				// "Normal" QR code modes:
+				// How many characters will follow, encoded in this mode?
+				int count = bits.readBits(CodecMode::CharacterCountBits(mode, version));
+				DecodeStatus status;
+				switch (mode) {
+				case CodecMode::NUMERIC:
+					status = DecodeNumericSegment(bits, count, result);
+					break;
+				case CodecMode::ALPHANUMERIC:
+					status = DecodeAlphanumericSegment(bits, count, fc1InEffect, result);
+					break;
+				case CodecMode::BYTE:
+					status = DecodeByteSegment(bits, count, currentCharset, hintedCharset, result, byteSegments);
+					break;
+				case CodecMode::KANJI:
+					status = DecodeKanjiSegment(bits, count, result);
+					break;
+				default:
+					status = DecodeStatus::FormatError;
 				}
+				if (StatusIsError(status)) {
+					return status;
+				}
+				break;
+			}
 			}
 		} while (mode != CodecMode::TERMINATOR);
 	}
