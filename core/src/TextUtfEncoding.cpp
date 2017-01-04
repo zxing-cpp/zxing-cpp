@@ -49,7 +49,6 @@ static size_t Utf8CountCodePoints(const uint8_t *utf8, size_t length)
 }
 
 static const uint32_t kAccepted = 0;
-static const uint32_t kRejected = 1;
 
 /// <summary>
 /// Copyright (c) 2008-2009 Bjoern Hoehrmann <bjoern@hoehrmann.de>

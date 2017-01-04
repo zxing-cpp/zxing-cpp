@@ -27,3 +27,33 @@ Same as ZXing, following barcode are supported:
 |            | ITF           |
 |            | RSS-14        |
 |            | RSS-Expanded  |
+
+## Install
+A nuget package is available for WinRT: https://www.nuget.org/packages/huycn.zxingcpp.winrt
+To install it, run the following command in the Package Manager Console
+```sh
+PM> Install-Package huycn.zxingcpp.winrt
+```
+
+## Build instructions
+### For Windows Desktop with VS
+1. Download and install CMake (https://cmake.org) if it's not already installed.
+2. Open CMake GUI, specify "<path_to_code_source>\wrappers\gdiplus" as source folder in the first input, specify the build output in the second input, and click on Generate.
+3. At prompt, select "Visual Studio 14 2015" (or "Visual Studio 14 2015 Win64" if you want to build for x64 platform); leave the second input (Optional toolset...) empty; leave "Use default native compilers" checked; and click on Finish to generate the VS project. At the end, you will get a solution (.sln) in your binary output directory that you can open in VS. The project ZXingGdiPlus in the solution will generate a static library.
+
+### For Windows Universal Platform
+1. Download and install CMake (https://cmake.org) 3.4 or more recent if it's not already installed.
+2. Edit the file wrappers\winrt\BuildWinCom.bat to adjust the path to your CMake installation.
+3. Double-click on the batch script to run it.
+4. If the build succeeds, it will put the results in the folder UAP which is ready-to-use SDK extension.
+
+### For Android NDK
+Note: The original Java-only ZXing project has a very good support for Android, whether you want to use it
+as external app via Intent or directly integrated into your app. You should consider using it first before
+trying this project since involving with NDK is always more complex than Java-only code. For performance matter
+except for specific usecase, you won't notice the difference.
+
+1. Check wrappers/android/jni/Application.mk and adjust for your project.
+2. In command line, cd to wrappers/android and type `ndk-build` (or `ndk-build -j <number of your CPU cores>`)
+
+The results will be in `libs` folder. Java interfaces are in `java` folder.

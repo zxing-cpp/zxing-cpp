@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>huycn.zxingcpp.winrt</id>
+    <version>1.0.0</version>
+    <title>ZXingWinRT</title>
+    <authors>Huy Cuong Nguyen</authors>
+    <owners>Huy Cuong Nguyen</owners>
+    <licenseUrl>https://github.com/huycn/zxing-cpp/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/huycn/zxing-cpp</projectUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>C++ port of ZXing barcode scanner library</description>
+    <releaseNotes>Readers are full functional and well tested.</releaseNotes>
+    <copyright>Copyright 2017 Huy Cuong Nguyen</copyright>
+    <tags>zxing barcode scanner qrcode</tags>
+  </metadata>
+  <files>
+    <file src="..\UAP\v0.8.0.0\ExtensionSDKs\ZXingWinRT\1.0.0.0\References\CommonConfiguration\Neutral\ZXing.winmd" target="lib\uap10.0"/>
+    <file src="..\UAP\v0.8.0.0\ExtensionSDKs\ZXingWinRT\1.0.0.0\References\CommonConfiguration\Neutral\ZXing.pri" target="runtimes\win10-arm\native"/>
+    <file src="..\UAP\v0.8.0.0\ExtensionSDKs\ZXingWinRT\1.0.0.0\Redist\Retail\ARM\ZXingWinRT.dll" target="runtimes\win10-arm\native"/>
+    <file src="..\UAP\v0.8.0.0\ExtensionSDKs\ZXingWinRT\1.0.0.0\References\CommonConfiguration\Neutral\ZXing.pri" target="runtimes\win10-x64\native"/>
+    <file src="..\UAP\v0.8.0.0\ExtensionSDKs\ZXingWinRT\1.0.0.0\Redist\Retail\x64\ZXingWinRT.dll" target="runtimes\win10-x64\native"/>
+    <file src="..\UAP\v0.8.0.0\ExtensionSDKs\ZXingWinRT\1.0.0.0\References\CommonConfiguration\Neutral\ZXing.pri" target="runtimes\win10-x86\native"/>
+    <file src="..\UAP\v0.8.0.0\ExtensionSDKs\ZXingWinRT\1.0.0.0\Redist\Retail\x86\ZXingWinRT.dll" target="runtimes\win10-x86\native"/>
+    <file src="ZXingWinRT.targets" target="build\native"/>  
+  </files>
+</package>

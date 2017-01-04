@@ -91,7 +91,6 @@ GenericGF::MaxiCodeField64()
 */
 GenericGF::GenericGF(int primitive, int size, int b) :
 	_size(size),
-	_primitive(primitive),
 	_generatorBase(b),
 	_zero(*this, { 0 }),
 	_one(*this, { 1 })

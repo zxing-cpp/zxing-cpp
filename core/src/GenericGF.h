@@ -115,7 +115,6 @@ public:
 
 private:
 	int _size;
-	int _primitive;
 	int _generatorBase;
 	std::vector<int> _expTable;
 	std::vector<int> _logTable;

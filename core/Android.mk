@@ -4,8 +4,9 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE := zxing_core
 
-LOCAL_CFLAGS += -Wall
 LOCAL_CPPFLAGS += -std=c++11
+LOCAL_CFLAGS += -Wall
+LOCAL_CPPFLAGS += -Wno-missing-braces  # Seems to be a bug in clang https://llvm.org/bugs/show_bug.cgi?id=21629
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/src
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/src

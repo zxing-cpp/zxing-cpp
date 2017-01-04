@@ -110,7 +110,7 @@ namespace UPCEANExtension5Support
 		std::string currency;
 		switch (raw.front()) {
 		case '0':
-			currency = "£";
+			currency = "\xa3";
 			break;
 		case '5':
 			currency = "$";

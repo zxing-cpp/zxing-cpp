@@ -16,6 +16,10 @@ LOCAL_CPP_FEATURES += rtti exceptions
 LOCAL_STATIC_LIBRARIES := zxing_core
 LOCAL_LDLIBS := -llog -ljnigraphics
 
+ifeq ($(TARGET_ARCH_ABI), armeabi)
+    LOCAL_LDLIBS += -latomic
+endif
+
 include $(BUILD_SHARED_LIBRARY)
 
-include $(LOCAL_PATH)/../../core/Android.mk
+include $(LOCAL_PATH)/../../../core/Android.mk
