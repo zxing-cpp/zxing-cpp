@@ -50,10 +50,9 @@ PM> Install-Package huycn.zxingcpp.winrt
 ### For Android NDK
 Note: The original Java-only ZXing project has a very good support for Android, whether you want to use it
 as external app via Intent or directly integrated into your app. You should consider using it first before
-trying this project since involving with NDK is always more complex than Java-only code. For performance matter
-except for specific usecase, you won't notice the difference.
+trying this library since involving with native code is always more complex than Java-only code. Performance-wise, 
+except for specific usecases, you won't notice the difference!
 
-1. Check wrappers/android/jni/Application.mk and adjust for your project.
-2. In command line, cd to wrappers/android and type `ndk-build` (or `ndk-build -j <number of your CPU cores>`)
-
-The results will be in `libs` folder. Java interfaces are in `java` folder.
+1. Edit wrappers/android/jni/Application.mk and adjust for your project.
+2. On command line, being in wrappers/android, type `ndk-build` (or `ndk-build -j <number of your CPU cores>`)
+3. Copy files in `libs` and `java` into corresponding folders of your Android project.
