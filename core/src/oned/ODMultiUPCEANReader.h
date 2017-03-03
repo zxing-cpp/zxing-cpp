@@ -43,11 +43,12 @@ class MultiUPCEANReader : public RowReader
 {
 public:
 	explicit MultiUPCEANReader(const DecodeHints& hints);
+	virtual ~MultiUPCEANReader();
 
 	virtual Result decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const override;
 
 private:
-	std::vector<std::shared_ptr<const UPCEANReader>> _readers;
+	std::vector<std::unique_ptr<const UPCEANReader>> _readers;
 	std::unordered_set<BarcodeFormat, BarcodeFormatHasher> _formats;
 };
 

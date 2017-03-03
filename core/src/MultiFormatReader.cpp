@@ -27,7 +27,6 @@
 #include "maxicode/MCReader.h"
 #include "pdf417/PDFReader.h"
 
-#include <vector>
 #include <memory>
 #include <unordered_set>
 
@@ -55,42 +54,46 @@ MultiFormatReader::MultiFormatReader(const DecodeHints& hints)
 
 		// Put 1D readers upfront in "normal" mode
 		if (addOneDReader && !tryHarder) {
-			_readers.push_back(std::make_shared<OneD::Reader>(hints));
+			_readers.emplace_back(new OneD::Reader(hints));
 		}
 		if (formats.find(BarcodeFormat::QR_CODE) != formats.end()) {
-			_readers.push_back(std::make_shared<QRCode::Reader>(hints));
+			_readers.emplace_back(new QRCode::Reader(hints));
 		}
 		if (formats.find(BarcodeFormat::DATA_MATRIX) != formats.end()) {
-			_readers.push_back(std::make_shared<DataMatrix::Reader>());
+			_readers.emplace_back(new DataMatrix::Reader());
 		}
 		if (formats.find(BarcodeFormat::AZTEC) != formats.end()) {
-			_readers.push_back(std::make_shared<Aztec::Reader>());
+			_readers.emplace_back(new Aztec::Reader());
 		}
 		if (formats.find(BarcodeFormat::PDF_417) != formats.end()) {
-			_readers.push_back(std::make_shared<Pdf417::Reader>());
+			_readers.emplace_back(new Pdf417::Reader());
 		}
 		if (formats.find(BarcodeFormat::MAXICODE) != formats.end()) {
-			_readers.push_back(std::make_shared<MaxiCode::Reader>());
+			_readers.emplace_back(new MaxiCode::Reader());
 		}
 		// At end in "try harder" mode
 		if (addOneDReader && tryHarder) {
-			_readers.push_back(std::make_shared<OneD::Reader>(hints));
+			_readers.emplace_back(new OneD::Reader(hints));
 		}
 	}
 
 	if (_readers.empty()) {
 		if (!tryHarder) {
-			_readers.push_back(std::make_shared<OneD::Reader>(hints));
+			_readers.push_back(std::unique_ptr<Reader>(new OneD::Reader(hints)));
 		}
-		_readers.push_back(std::make_shared<QRCode::Reader>(hints));
-		_readers.push_back(std::make_shared<DataMatrix::Reader>());
-		_readers.push_back(std::make_shared<Aztec::Reader>());
-		_readers.push_back(std::make_shared<Pdf417::Reader>());
-		_readers.push_back(std::make_shared<MaxiCode::Reader>());
+		_readers.emplace_back(new QRCode::Reader(hints));
+		_readers.emplace_back(new DataMatrix::Reader());
+		_readers.emplace_back(new Aztec::Reader());
+		_readers.emplace_back(new Pdf417::Reader());
+		_readers.emplace_back(new MaxiCode::Reader());
 		if (tryHarder) {
-			_readers.push_back(std::make_shared<OneD::Reader>(hints));
+			_readers.emplace_back(new OneD::Reader(hints));
 		}
 	}
+}
+
+MultiFormatReader::~MultiFormatReader()
+{
 }
 
 Result

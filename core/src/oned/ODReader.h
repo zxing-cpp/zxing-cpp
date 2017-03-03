@@ -38,11 +38,12 @@ class Reader : public ZXing::Reader
 public:
 	// Only POSSIBLE_FORMATS is read here, and the same hint is ignored in decode().
 	explicit Reader(const DecodeHints& hints);
+    virtual ~Reader();
 
 	virtual Result decode(const BinaryBitmap& image) const override;
 
 private:
-	std::vector<std::shared_ptr<RowReader>> _readers;
+	std::vector<std::unique_ptr<RowReader>> _readers;
 	bool _tryHarder;
 	bool _tryRotate;
 };
