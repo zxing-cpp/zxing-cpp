@@ -35,27 +35,31 @@ MultiUPCEANReader::MultiUPCEANReader(const DecodeHints& hints)
 {
 	auto formats = hints.possibleFormats();
 	if (formats.empty()) {
-		_readers.push_back(std::make_shared<EAN13Reader>(hints));
+		_readers.emplace_back(new EAN13Reader(hints));
 		// UPC-A is covered by EAN-13
-		_readers.push_back(std::make_shared<EAN8Reader>(hints));
-		_readers.push_back(std::make_shared<UPCEReader>(hints));
+		_readers.emplace_back(new EAN8Reader(hints));
+		_readers.emplace_back(new UPCEReader(hints));
 	}
 	else
 	{
 		_formats.insert(formats.begin(), formats.end());
 		if (_formats.find(BarcodeFormat::EAN_13) != _formats.end()) {
-			_readers.push_back(std::make_shared<EAN13Reader>(hints));
+			_readers.emplace_back(new EAN13Reader(hints));
 		}
 		else if (_formats.find(BarcodeFormat::UPC_A) != _formats.end()) {
-			_readers.push_back(std::make_shared<UPCAReader>(hints));
+			_readers.emplace_back(new UPCAReader(hints));
 		}
 		if (_formats.find(BarcodeFormat::EAN_8) != _formats.end()) {
-			_readers.push_back(std::make_shared<EAN8Reader>(hints));
+			_readers.emplace_back(new EAN8Reader(hints));
 		}
 		if (_formats.find(BarcodeFormat::UPC_E) != _formats.end()) {
-			_readers.push_back(std::make_shared<UPCEReader>(hints));
+			_readers.emplace_back(new UPCEReader(hints));
 		}
 	}
+}
+
+MultiUPCEANReader::~MultiUPCEANReader()
+{
 }
 
 Result

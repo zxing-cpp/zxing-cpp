@@ -45,46 +45,48 @@ Reader::Reader(const DecodeHints& hints) :
 	std::unordered_set<BarcodeFormat, BarcodeFormatHasher> formats(possibleFormats.begin(), possibleFormats.end());
 
 	if (formats.empty()) {
-		_readers.insert(_readers.end(), {
-			std::make_shared<MultiUPCEANReader>(hints),
-			std::make_shared<Code39Reader>(hints),
-			std::make_shared<CodabarReader>(hints),
-			std::make_shared<Code93Reader>(),
-			std::make_shared<Code128Reader>(hints),
-			std::make_shared<ITFReader>(hints),
-			std::make_shared<RSS14Reader>(),
-			std::make_shared<RSSExpandedReader>(),
-		});
+		_readers.emplace_back(new MultiUPCEANReader(hints));
+		_readers.emplace_back(new Code39Reader(hints));
+		_readers.emplace_back(new CodabarReader(hints));
+		_readers.emplace_back(new Code93Reader());
+		_readers.emplace_back(new Code128Reader(hints));
+		_readers.emplace_back(new ITFReader(hints));
+		_readers.emplace_back(new RSS14Reader());
+		_readers.emplace_back(new RSSExpandedReader());
 	}
 	else {
 		if (formats.find(BarcodeFormat::EAN_13) != formats.end() ||
 			formats.find(BarcodeFormat::UPC_A) != formats.end() ||
 			formats.find(BarcodeFormat::EAN_8) != formats.end() ||
 			formats.find(BarcodeFormat::UPC_E) != formats.end()) {
-			_readers.push_back(std::make_shared<MultiUPCEANReader>(hints));
+			_readers.emplace_back(new MultiUPCEANReader(hints));
 		}
 		if (formats.find(BarcodeFormat::CODE_39) != formats.end()) {
-			_readers.push_back(std::make_shared<Code39Reader>(hints));
+			_readers.emplace_back(new Code39Reader(hints));
 		}
 		if (formats.find(BarcodeFormat::CODE_93) != formats.end()) {
-			_readers.push_back(std::make_shared<Code93Reader>());
+			_readers.emplace_back(new Code93Reader());
 		}
 		if (formats.find(BarcodeFormat::CODE_128) != formats.end()) {
-			_readers.push_back(std::make_shared<Code128Reader>(hints));
+			_readers.emplace_back(new Code128Reader(hints));
 		}
 		if (formats.find(BarcodeFormat::ITF) != formats.end()) {
-			_readers.push_back(std::make_shared<ITFReader>(hints));
+			_readers.emplace_back(new ITFReader(hints));
 		}
 		if (formats.find(BarcodeFormat::CODABAR) != formats.end()) {
-			_readers.push_back(std::make_shared<CodabarReader>(hints));
+			_readers.emplace_back(new CodabarReader(hints));
 		}
 		if (formats.find(BarcodeFormat::RSS_14) != formats.end()) {
-			_readers.push_back(std::make_shared<RSS14Reader>());
+			_readers.emplace_back(new RSS14Reader());
 		}
 		if (formats.find(BarcodeFormat::RSS_EXPANDED) != formats.end()) {
-			_readers.push_back(std::make_shared<RSSExpandedReader>());
+			_readers.emplace_back(new RSSExpandedReader());
 		}
 	}
+}
+
+Reader::~Reader()
+{
 }
 
 /**
@@ -102,7 +104,7 @@ Reader::Reader(const DecodeHints& hints) :
 * @throws NotFoundException Any spontaneous errors which occur
 */
 static Result
-DoDecode(const std::vector<std::shared_ptr<RowReader>>& readers, const BinaryBitmap& image, bool tryHarder)
+DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, const BinaryBitmap& image, bool tryHarder)
 {
 	std::vector<std::unique_ptr<RowReader::DecodingState>> decodingState(readers.size());
 

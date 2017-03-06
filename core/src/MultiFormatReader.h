@@ -38,11 +38,12 @@ class MultiFormatReader
 {
 public:
 	explicit MultiFormatReader(const DecodeHints& hints);
+    ~MultiFormatReader();
 
 	Result read(const BinaryBitmap& image) const;
 
 private:
-	std::vector<std::shared_ptr<Reader>> _readers;
+	std::vector<std::unique_ptr<Reader>> _readers;
 };
 
 } // ZXing
