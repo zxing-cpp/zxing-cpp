@@ -55,7 +55,7 @@ CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
 	// First read into an array of ints
 	std::vector<int> codewordsInts(numCodewords);
 	for (int i = 0; i < numCodewords; i++) {
-		codewordsInts[i] = codewordBytes[i] & 0xFF;
+		codewordsInts[i] = codewordBytes[i];
 	}
 	int numECCodewords = codewordBytes.length() - numDataCodewords;
 	auto status = ReedSolomonDecoder(GenericGF::QRCodeField256()).decode(codewordsInts, numECCodewords);

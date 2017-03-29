@@ -137,7 +137,7 @@ GlobalHistogramBinarizer::getBlackRow(int y, BitArray& row) const
 	const uint8_t* luminances = _source->getRow(y, buffer);
 	std::array<int, LUMINANCE_BUCKETS> buckets = {};
 	for (int x = 0; x < width; x++) {
-		int pixel = luminances[x] & 0xff;
+		int pixel = luminances[x];
 		buckets[pixel >> LUMINANCE_SHIFT]++;
 	}
 	int blackPoint = EstimateBlackPoint(buckets);

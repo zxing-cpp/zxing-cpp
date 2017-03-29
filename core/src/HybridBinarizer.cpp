@@ -81,7 +81,7 @@ static void CalculateBlackPoints(const uint8_t* luminances, int subWidth, int su
 			int max = 0;
 			for (int yy = 0, offset = yoffset * stride + xoffset; yy < BLOCK_SIZE; yy++, offset += stride) {
 				for (int xx = 0; xx < BLOCK_SIZE; xx++) {
-					int pixel = luminances[offset + xx] & 0xFF;
+					int pixel = luminances[offset + xx];
 					sum += pixel;
 					// still looking for good contrast
 					if (pixel < min) {
@@ -96,7 +96,7 @@ static void CalculateBlackPoints(const uint8_t* luminances, int subWidth, int su
 					// finish the rest of the rows quickly
 					for (yy++, offset += stride; yy < BLOCK_SIZE; yy++, offset += stride) {
 						for (int xx = 0; xx < BLOCK_SIZE; xx++) {
-							sum += luminances[offset + xx] & 0xFF;
+							sum += luminances[offset + xx];
 						}
 					}
 				}
@@ -142,7 +142,7 @@ static void ThresholdBlock(const uint8_t* luminances, int xoffset, int yoffset, 
 	for (int y = 0, offset = yoffset * stride + xoffset; y < BLOCK_SIZE; y++, offset += stride) {
 		for (int x = 0; x < BLOCK_SIZE; x++) {
 			// Comparison needs to be <= so that black == 0 pixels are black even if the threshold is 0.
-			if ((luminances[offset + x] & 0xFF) <= threshold) {
+			if (luminances[offset + x] <= threshold) {
 				matrix.set(xoffset + x, yoffset + y);
 			}
 		}
