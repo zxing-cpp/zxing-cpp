@@ -362,7 +362,7 @@ TextDecoder::GuessEncoding(const uint8_t* bytes, size_t length, CharacterSet fal
 
 	for (size_t i = 0; i < length && (canBeISO88591 || canBeShiftJIS || canBeUTF8); ++i)
 	{
-		int value = bytes[i] & 0xFF;
+		int value = bytes[i];
 
 		// UTF-8 stuff
 		if (canBeUTF8) {

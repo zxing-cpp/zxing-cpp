@@ -55,7 +55,7 @@ BitSource::readBits(int numBits)
 	// Next read whole bytes
 	if (numBits > 0) {
 		while (numBits >= 8) {
-			result = (result << 8) | (_bytes[_byteOffset] & 0xFF);
+			result = (result << 8) | _bytes[_byteOffset];
 			_byteOffset++;
 			numBits -= 8;
 		}

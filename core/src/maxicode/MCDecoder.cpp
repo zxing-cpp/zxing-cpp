@@ -48,7 +48,7 @@ static bool CorrectErrors(ByteArray& codewordBytes, int start, int dataCodewords
 	std::vector<int> codewordsInts(codewords / divisor, 0);
 	for (int i = 0; i < codewords; i++) {
 		if ((mode == ALL) || (i % 2 == (mode - 1))) {
-			codewordsInts[i / divisor] = codewordBytes[i + start] & 0xFF;
+			codewordsInts[i / divisor] = codewordBytes[i + start];
 		}
 	}
 

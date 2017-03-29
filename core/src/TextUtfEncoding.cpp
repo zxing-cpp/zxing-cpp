@@ -234,10 +234,8 @@ template <typename WCharT>
 static void ConvertToUtf8(const std::basic_string<WCharT>& str, std::string& utf8, typename std::enable_if<(sizeof(WCharT) == 4)>::type* = nullptr)
 {
 	char buffer[4];
-	int bufLength;
-	for (size_t i = 0; i < str.length(); ++i)
-	{
-		bufLength = Utf8Encode(str[i], buffer);
+	for (auto c : str) {
+		auto bufLength = Utf8Encode(c, buffer);
 		utf8.append(buffer, bufLength);
 	}
 }
