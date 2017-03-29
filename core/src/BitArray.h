@@ -131,8 +131,8 @@ public:
 	}
 
 	void flipAll() {
-		for (auto it = _bits.begin(); it != _bits.end(); ++it) {
-			*it = ~(*it);
+		for (auto& i : _bits) {
+			i = ~i;
 		}
 	}
 
