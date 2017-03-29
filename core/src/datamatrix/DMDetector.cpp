@@ -51,12 +51,8 @@ static ResultPointsAndTransitions TransitionsBetween(const BitMatrix& image, con
 	int toY = static_cast<int>(to.y());
 	bool steep = std::abs(toY - fromY) > std::abs(toX - fromX);
 	if (steep) {
-		int temp = fromX;
-		fromX = fromY;
-		fromY = temp;
-		temp = toX;
-		toX = toY;
-		toY = temp;
+		std::swap(fromX, fromY);
+		std::swap(toX, toY);
 	}
 
 	int dx = std::abs(toX - fromX);
