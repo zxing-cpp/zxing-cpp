@@ -22,12 +22,12 @@ namespace Aztec {
 
 class DetectorResult : public ZXing::DetectorResult
 {
-	bool _compact;
-	int _nbDatablocks;
-	int _nbLayers;
+	bool _compact = false;
+	int _nbDatablocks = 0;
+	int _nbLayers = 0;
 
 public:
-	DetectorResult() : _compact(false), _nbDatablocks(0), _nbLayers(0) {}
+	DetectorResult() {}
 	/*DetectorResult(const BitMatrix& bits, const std::vector<ResultPoint>& points, bool compact, int nbDatablocks, int nbLayers) :
 		ZXing::DetectorResult(bits, points),
 		_compact(compact),

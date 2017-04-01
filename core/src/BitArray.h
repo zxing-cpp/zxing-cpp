@@ -55,7 +55,7 @@ public:
 	};
 
 
-	BitArray() : _size(0) {}
+	BitArray() {}
 
 	explicit BitArray(int size) : _size(size), _bits((size + 31) / 32, 0) {}
 	
@@ -221,7 +221,7 @@ public:
 	}
 
 private:
-	int _size;
+	int _size = 0;
 	std::vector<uint32_t> _bits;
 
 	static void ShiftRight(unsigned offset, std::vector<uint32_t>& bits);

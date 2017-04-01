@@ -40,13 +40,13 @@ class BitArray;
 */
 class BitMatrix
 {
-	int _width;
-	int _height;
-	int _rowSize;
+	int _width = 0;
+	int _height = 0;
+	int _rowSize = 0;
 	std::vector<uint32_t> _bits;
 
 public:
-	BitMatrix() : _width(0), _height(0), _rowSize(0) {}
+	BitMatrix() {}
 	BitMatrix(int width, int height) : _width(width), _height(height), _rowSize((width + 31) / 32), _bits(((width + 31) / 32) * _height, 0) {}
 
 	explicit BitMatrix(int dimension) : BitMatrix(dimension, dimension) {} // Construct a square matrix.

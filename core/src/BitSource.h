@@ -32,8 +32,8 @@ class ByteArray;
 class BitSource
 {
 	const ByteArray& _bytes;
-	int _byteOffset;
-	int _bitOffset;
+	int _byteOffset = 0;
+	int _bitOffset = 0;
 
 public:
 	/**
@@ -41,7 +41,7 @@ public:
 	* Bits are read within a byte from most-significant to least-significant bit.
 	* IMPORTANT: Bit source DOES NOT copy data byte, thus make sure that the bytes outlive the bit source object.
 	*/
-	explicit BitSource(const ByteArray& bytes) : _bytes(bytes), _byteOffset(0), _bitOffset(0) {}
+	explicit BitSource(const ByteArray& bytes) : _bytes(bytes) {}
 	
 	BitSource(BitSource &) = delete;
 	BitSource& operator=(const BitSource &) = delete;

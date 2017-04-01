@@ -24,11 +24,11 @@ namespace RSS {
 
 class DataCharacter
 {
-	int _value;
-	int _checksumPortion;
+	int _value = std::numeric_limits<int>::max();
+	int _checksumPortion = 0;
 
 public:
-	DataCharacter() : _value(std::numeric_limits<int>::max()), _checksumPortion(0) {}
+	DataCharacter() {}
 	DataCharacter(int value, int checksumPortion) : _value(value), _checksumPortion(checksumPortion) {}
 
 	bool isValid() const {

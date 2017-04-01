@@ -26,11 +26,11 @@ namespace RSS {
 class Pair : public DataCharacter
 {
 	FinderPattern _finderPattern;
-	int _count;
+	int _count = 0;
 
 public:
-	Pair() : _count(0) {}
-	Pair(int value, int checksumPortion, const FinderPattern& finderPattern) : DataCharacter(value, checksumPortion), _finderPattern(finderPattern), _count(0) {}
+	Pair() {}
+	Pair(int value, int checksumPortion, const FinderPattern& finderPattern) : DataCharacter(value, checksumPortion), _finderPattern(finderPattern) {}
 
 	const FinderPattern& finderPattern() const {
 		return _finderPattern;
