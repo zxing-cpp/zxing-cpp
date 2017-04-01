@@ -67,11 +67,6 @@ public:
 	BitMatrix(const BitMatrix&) = delete;
 	BitMatrix& operator=(const BitMatrix&) = delete;
 
-	/**
-	* Re-init the matrix with given size and clear all bits.
-	*/
-	void init(int width, int height);
-
 	void copyTo(BitMatrix& other) const;
 
 	//void parse(const std::string& stringRepresentation, const std::string& setString, const std::string& unsetString);

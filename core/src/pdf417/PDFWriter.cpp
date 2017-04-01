@@ -65,7 +65,7 @@ static void BitMatrixFromBitArray(const std::vector<std::vector<bool>>& input, i
 	// Creates the bitmatrix with extra space for whitespace
 	int width = static_cast<int>(input[0].size());
 	int height = static_cast<int>(input.size());
-	output.init(width + 2 * margin, height + 2 * margin);
+	output = BitMatrix(width + 2 * margin, height + 2 * margin);
 	for (int y = 0, yOutput = static_cast<int>(output.height()) - margin - 1; y < height; y++, yOutput--) {
 		for (int x = 0; x < width; ++x) {
 			// Zero is white in the bytematrix

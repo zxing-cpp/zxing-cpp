@@ -73,7 +73,7 @@ ExtractPureBits(const BitMatrix& image, BitMatrix& outBits)
 	left += nudge;
 
 	// Now just read off the bits
-	outBits.init(matrixWidth, matrixHeight);
+	outBits = BitMatrix(matrixWidth, matrixHeight);
 	for (int y = 0; y < matrixHeight; y++) {
 		int iOffset = top + y * moduleSize;
 		for (int x = 0; x < matrixWidth; x++) {

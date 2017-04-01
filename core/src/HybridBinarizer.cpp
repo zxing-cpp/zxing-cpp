@@ -205,8 +205,7 @@ static void InitBlackMatrix(const LuminanceSource& source, std::shared_ptr<const
 	std::vector<std::vector<int>> blackPoints;
 	CalculateBlackPoints(luminances, subWidth, subHeight, width, height, stride, blackPoints);
 
-	auto matrix = std::make_shared<BitMatrix>();
-	matrix->init(width, height);
+	auto matrix = std::make_shared<BitMatrix>(width, height);
 	CalculateThresholdForBlock(luminances, subWidth, subHeight, width, height, stride, blackPoints, *matrix);
 	outMatrix = matrix;
 }

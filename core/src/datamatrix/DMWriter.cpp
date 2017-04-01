@@ -82,7 +82,7 @@ static void EncodeLowLevel(const ByteMatrix& placement, const SymbolInfo& symbol
 		}
 	}
 
-	output.init(matrix.width(), matrix.height());
+	output = BitMatrix(matrix.width(), matrix.height());
 	for (int j = 0; j < matrix.height(); j++) {
 		for (int i = 0; i < matrix.width(); i++) {
 			// Zero is white in the bytematrix

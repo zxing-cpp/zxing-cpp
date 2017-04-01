@@ -296,8 +296,8 @@ Encoder::Encode(const std::string& data, int minECCPercent, int userSpecifiedLay
 	output.layers = layers;
 	output.codeWords = messageSizeInWords;
 
+	output.matrix = BitMatrix(matrixSize);
 	BitMatrix& matrix = output.matrix;
-	matrix.init(matrixSize, matrixSize);
 
 	// draw data bits
 	for (int i = 0, rowOffset = 0; i < layers; i++) {

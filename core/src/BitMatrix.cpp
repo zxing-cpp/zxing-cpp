@@ -23,16 +23,6 @@
 namespace ZXing {
 
 void
-BitMatrix::init(int width, int height)
-{
-	_width = width;
-	_height = height;
-	_rowSize = (width + 31) / 32;
-	_bits.resize(_rowSize * _height);
-	std::memset(_bits.data(), 0, sizeof(uint32_t) * _bits.size());
-}
-
-void
 BitMatrix::copyTo(BitMatrix& other) const {
 	if (this != &other) {
 		other._width = _width;

@@ -170,10 +170,9 @@ GlobalHistogramBinarizer::getBlackRow(int y, BitArray& row) const
 
 static void InitBlackMatrix(const LuminanceSource& source, std::shared_ptr<const BitMatrix>& outMatrix)
 {
-	auto matrix = std::make_shared<BitMatrix>();
 	int width = source.width();
 	int height = source.height();
-	matrix->init(width, height);
+	auto matrix = std::make_shared<BitMatrix>(width, height);
 
 	// Quickly calculates the histogram by sampling four rows from the image. This proved to be
 	// more robust on the blackbox tests than sampling a diagonal as we used to do.

@@ -119,7 +119,7 @@ public:
 		if (dimensionX <= 0 || dimensionY <= 0) {
 			return DecodeStatus::NotFound;
 		}
-		result.init(dimensionX, dimensionY);
+		result = BitMatrix(dimensionX, dimensionY);
 		int max = 2 * dimensionX;
 		std::vector<float> points(max);
 		for (int y = 0; y < dimensionY; y++) {

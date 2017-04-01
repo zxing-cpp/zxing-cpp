@@ -37,7 +37,7 @@ static void RenderResult(const EncodeResult& code, int width, int height, BitMat
 	int leftPadding = (outputWidth - (inputWidth * multiple)) / 2;
 	int topPadding = (outputHeight - (inputHeight * multiple)) / 2;
 
-	output.init(outputWidth, outputHeight);
+	output = BitMatrix(outputWidth, outputHeight);
 
 	for (int inputY = 0, outputY = topPadding; inputY < inputHeight; inputY++, outputY += multiple) {
 		// Write the contents of this row of the barcode

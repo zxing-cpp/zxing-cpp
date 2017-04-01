@@ -64,7 +64,7 @@ ExtractDataRegion(const Version& version, const BitMatrix& bitMatrix, BitMatrix&
 	int sizeDataRegionRow = numDataRegionsRow * dataRegionSizeRows;
 	int sizeDataRegionColumn = numDataRegionsColumn * dataRegionSizeColumns;
 
-	result.init(sizeDataRegionColumn, sizeDataRegionRow);
+	result = BitMatrix(sizeDataRegionColumn, sizeDataRegionRow);
 	for (int dataRegionRow = 0; dataRegionRow < numDataRegionsRow; ++dataRegionRow) {
 		int dataRegionRowOffset = dataRegionRow * dataRegionSizeRows;
 		for (int dataRegionColumn = 0; dataRegionColumn < numDataRegionsColumn; ++dataRegionColumn) {
