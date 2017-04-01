@@ -19,7 +19,6 @@
 
 #include <type_traits>
 #include <string>
-#include <cstring>
 #include <functional>
 
 namespace ZXing {
@@ -51,15 +50,10 @@ const char * ToString(BarcodeFormat format)
 	return FORMAT_STR[(int)format];
 }
 
-BarcodeFormat FromString(const char* str)
+BarcodeFormat FromString(const std::string& str)
 {
-	int length = (int)BarcodeFormat::FORMAT_COUNT;
-	for (int i = 0; i < length; ++i) {
-		if (std::strcmp(FORMAT_STR[i], str) == 0) {
-			return BarcodeFormat(i);
-		}
-	}
-	return BarcodeFormat::FORMAT_COUNT;
+	return BarcodeFormat(std::distance(std::begin(FORMAT_STR),
+	                                   std::find(std::begin(FORMAT_STR), std::end(FORMAT_STR), str)));
 }
 
 size_t BarcodeFormatHasher::operator()(BarcodeFormat f) const

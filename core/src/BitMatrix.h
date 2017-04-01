@@ -17,7 +17,6 @@
 */
 
 #include <cstdint>
-#include <cstring>
 #include <vector>
 
 namespace ZXing {
@@ -124,7 +123,7 @@ public:
 	* Clears all bits (sets to false).
 	*/
 	void clear() {
-		std::memset(_bits.data(), 0, sizeof(uint32_t) * _bits.size());
+		std::fill(_bits.begin(), _bits.end(), 0);
 	}
 
 	/**

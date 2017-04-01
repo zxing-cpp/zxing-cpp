@@ -18,7 +18,6 @@
 
 #include <cstdint>
 #include <vector>
-#include <cstring>
 
 namespace ZXing {
 
@@ -81,7 +80,7 @@ public:
 	void init(int size) {
 		_size = size;
 		_bits.resize((size + 31) / 32);
-		std::memset(_bits.data(), 0, sizeof(uint32_t) * _bits.size());
+		std::fill_n(_bits.data(), _bits.size(), 0);
 	}
 
 	int size() const {
@@ -166,7 +165,7 @@ public:
 	* Clears all bits (sets to false).
 	*/
 	void clearBits() {
-		std::memset(_bits.data(), 0, sizeof(uint32_t) * _bits.size());
+		std::fill(_bits.begin(), _bits.end(), 0);
 	}
 
 	/**

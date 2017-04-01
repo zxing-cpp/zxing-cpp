@@ -18,7 +18,6 @@
 #include "GenericLuminanceSource.h"
 #include "ByteArray.h"
 
-#include <cstring>
 #include <algorithm>
 
 namespace ZXing {
@@ -37,21 +36,24 @@ inline static uint8_t RGBToGray(unsigned r, unsigned g, unsigned b)
 	return static_cast<uint8_t>((306 * r + 601 * g + 117 * b + 0x200) >> 10);
 }
 
+static std::shared_ptr<ByteArray> MakeCopy(const void* src, int rowBytes, int left, int top, int width, int height)
+{
+	auto result = std::make_shared<ByteArray>();
+	result->resize(width * height);
+	const uint8_t* srcRow = static_cast<const uint8_t*>(src) + top * rowBytes + left;
+	uint8_t* destRow = result->data();
+	for (int y = 0; y < height; ++y, srcRow += rowBytes, destRow += width) {
+		std::copy_n(srcRow, width, destRow);
+	}
+	return result;
+}
 
 static std::shared_ptr<ByteArray> MakeCopy(const ByteArray& pixels, int rowBytes, int left, int top, int width, int height)
 {
 	if (top == 0 && left == 0 && width * height == (int)pixels.size()) {
 		return std::make_shared<ByteArray>(pixels);
 	}
-
-	auto result = std::make_shared<ByteArray>();
-	result->resize(width * height);
-	const uint8_t *srcRow = pixels.data() + top * rowBytes + left;
-	uint8_t *destRow = result->data();
-	for (int y = 0; y < height; ++y, srcRow += rowBytes, destRow += width) {
-		std::memcpy(destRow, srcRow, width);
-	}
-	return result;
+	return MakeCopy(pixels.data(), rowBytes, left, top, width, height);
 }
 
 GenericLuminanceSource::GenericLuminanceSource(int left, int top, int width, int height, const void* bytes, int rowBytes, int pixelBytes, int redIndex, int greenIndex, int blueIndex) :
@@ -89,14 +91,7 @@ GenericLuminanceSource::GenericLuminanceSource(int left, int top, int width, int
 		throw std::out_of_range("Requested offset is outside the image");
 	}
 
-	auto pixels = std::make_shared<ByteArray>();
-	pixels->resize(width * height);
-	const uint8_t *srcRow = static_cast<const uint8_t*>(bytes) + top * rowBytes + left;
-	uint8_t *destRow = pixels->data();
-	for (int y = 0; y < height; ++y, srcRow += rowBytes, destRow += width) {
-		std::memcpy(destRow, srcRow, width);
-	}
-	_pixels = pixels;
+	_pixels = MakeCopy(bytes, rowBytes, left, top, width, height);
 }
 
 GenericLuminanceSource::GenericLuminanceSource(int left, int top, int width, int height, const std::shared_ptr<const ByteArray>& pixels, int rowBytes) :
