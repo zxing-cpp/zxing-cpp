@@ -713,21 +713,21 @@ DecodeRow2Pairs(int rowNumber, const BitArray& row, bool startFromEven, std::lis
 * @author Pablo Orduña, University of Deusto (pablo.orduna@deusto.es)
 * @author Eduardo Castillejo, University of Deusto (eduardo.castillejo@deusto.es)
 */
-static void
-BuildBitArray(const std::list<ExpandedPair>& pairs, BitArray& binary)
+static BitArray
+BuildBitArray(const std::list<ExpandedPair>& pairs)
 {
 	int charNumber = (static_cast<int>(pairs.size()) * 2) - 1;
 	if (pairs.back().mustBeLast()) {
 		charNumber -= 1;
 	}
 
-	binary = BitArray(12 * charNumber);
+	BitArray result(12 * charNumber);
 	int accPos = 0;
 	auto it = pairs.begin();
 	int firstValue = it->rightChar().value();
 	for (int i = 11; i >= 0; --i) {
 		if ((firstValue & (1 << i)) != 0) {
-			binary.set(accPos);
+			result.set(accPos);
 		}
 		accPos++;
 	}
@@ -736,7 +736,7 @@ BuildBitArray(const std::list<ExpandedPair>& pairs, BitArray& binary)
 		int leftValue = it->leftChar().value();
 		for (int j = 11; j >= 0; --j) {
 			if ((leftValue & (1 << j)) != 0) {
-				binary.set(accPos);
+				result.set(accPos);
 			}
 			accPos++;
 		}
@@ -745,12 +745,13 @@ BuildBitArray(const std::list<ExpandedPair>& pairs, BitArray& binary)
 			int rightValue = it->rightChar().value();
 			for (int j = 11; j >= 0; --j) {
 				if ((rightValue & (1 << j)) != 0) {
-					binary.set(accPos);
+					result.set(accPos);
 				}
 				accPos++;
 			}
 		}
 	}
+	return result;
 }
 
 // Not private for unit testing
@@ -761,8 +762,7 @@ ConstructResult(const std::list<ExpandedPair>& pairs)
 		return Result(DecodeStatus::NotFound);
 	}
 
-	BitArray binary;
-	BuildBitArray(pairs, binary);
+	BitArray binary = BuildBitArray(pairs);
 	auto resultString = ExpandedBinaryDecoder::Decode(binary);
 	if (resultString.empty()) {
 		return Result(DecodeStatus::NotFound);
