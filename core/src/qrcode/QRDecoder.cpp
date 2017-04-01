@@ -51,21 +51,16 @@ namespace QRCode {
 static DecodeStatus
 CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
 {
-	int numCodewords = codewordBytes.length();
 	// First read into an array of ints
-	std::vector<int> codewordsInts(numCodewords);
-	for (int i = 0; i < numCodewords; i++) {
-		codewordsInts[i] = codewordBytes[i];
-	}
+	std::vector<int> codewordsInts(codewordBytes.begin(), codewordBytes.end());
+
 	int numECCodewords = codewordBytes.length() - numDataCodewords;
 	auto status = ReedSolomonDecoder(GenericGF::QRCodeField256()).decode(codewordsInts, numECCodewords);
 	if (StatusIsOK(status))
 	{
 		// Copy back into array of bytes -- only need to worry about the bytes that were data
 		// We don't care about errors in the error-correction codewords
-		for (int i = 0; i < numDataCodewords; ++i) {
-			codewordBytes[i] = static_cast<uint8_t>(codewordsInts[i]);
-		}
+		std::copy_n(codewordsInts.begin(), numDataCodewords, codewordBytes.begin());
 	}
 	else if (StatusIsKindOf(status, DecodeStatus::ReedSolomonError))
 	{
