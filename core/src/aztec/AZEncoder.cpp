@@ -22,6 +22,8 @@
 #include "GenericGF.h"
 #include "ZXStrConvWorkaround.h"
 
+#include <cstdlib>
+
 namespace ZXing {
 namespace Aztec {
 

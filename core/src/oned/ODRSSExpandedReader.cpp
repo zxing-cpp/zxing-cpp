@@ -24,6 +24,7 @@
 #include "TextDecoder.h"
 #include "ZXConfig.h"
 
+#include <cmath>
 #include <list>
 #include <array>
 #include <vector>

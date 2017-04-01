@@ -16,6 +16,8 @@
 * limitations under the License.
 */
 
+#include <cstddef>
+
 namespace ZXing {
 namespace DataMatrix {
 
