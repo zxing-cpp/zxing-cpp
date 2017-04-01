@@ -232,12 +232,13 @@ CopyToResult(std::array<Nullable<ResultPoint>, 8>& result, const std::array<Null
 *           vertices[6] x, y top right codeword area
 *           vertices[7] x, y bottom right codeword area
 */
-static void FindVertices(const BitMatrix& matrix, int startRow, int startColumn, std::array<Nullable<ResultPoint>, 8>& result)
+static std::array<Nullable<ResultPoint>, 8> FindVertices(const BitMatrix& matrix, int startRow, int startColumn)
 {
 	int width = matrix.width();
 	int height = matrix.height();
 
 	std::array<Nullable<ResultPoint>, 4> tmp;
+	std::array<Nullable<ResultPoint>, 8> result;
 	CopyToResult(result, FindRowsWithPattern(matrix, height, width, startRow, startColumn, START_PATTERN, tmp), INDEXES_START_PATTERN);
 
 	if (result[4] != nullptr) {
@@ -245,6 +246,7 @@ static void FindVertices(const BitMatrix& matrix, int startRow, int startColumn,
 		startRow = static_cast<int>(result[4].value().y());
 	}
 	CopyToResult(result, FindRowsWithPattern(matrix, height, width, startRow, startColumn, STOP_PATTERN, tmp), INDEXES_STOP_PATTERN);
+	return result;
 }
 
 /**
@@ -254,15 +256,15 @@ static void FindVertices(const BitMatrix& matrix, int startRow, int startColumn,
 * @param bitMatrix bit matrix to detect barcodes in
 * @return List of ResultPoint arrays containing the coordinates of found barcodes
 */
-static void DetectBarcode(const BitMatrix& bitMatrix, bool multiple, std::list<std::array<Nullable<ResultPoint>, 8>>& barcodeCoordinates)
+static std::list<std::array<Nullable<ResultPoint>, 8>> DetectBarcode(const BitMatrix& bitMatrix, bool multiple)
 {
 	int row = 0;
 	int column = 0;
 	bool foundBarcodeInRow = false;
+	std::list<std::array<Nullable<ResultPoint>, 8>> barcodeCoordinates;
 
 	while (row < bitMatrix.height()) {
-		std::array<Nullable<ResultPoint>, 8> vertices;
-		FindVertices(bitMatrix, row, column, vertices);
+		auto vertices = FindVertices(bitMatrix, row, column);
 
 		if (vertices[0] == nullptr && vertices[3] == nullptr) {
 			if (!foundBarcodeInRow) {
@@ -300,6 +302,7 @@ static void DetectBarcode(const BitMatrix& bitMatrix, bool multiple, std::list<s
 			row = static_cast<int>(vertices[4].value().y());
 		}
 	}
+	return barcodeCoordinates;
 }
 
 
@@ -325,14 +328,13 @@ Detector::Detect(const BinaryBitmap& image, bool multiple, Result& result)
 		return DecodeStatus::NotFound;
 	}
 
-	std::list<std::array<Nullable<ResultPoint>, 8>> barcodeCoordinates;
-	DetectBarcode(*binImg, multiple, barcodeCoordinates);
+	auto barcodeCoordinates = DetectBarcode(*binImg, multiple);
 	if (barcodeCoordinates.empty()) {
 		auto newBits = std::make_shared<BitMatrix>();
 		binImg->copyTo(*newBits);
 		newBits->rotate180();
 		binImg = newBits;
-		DetectBarcode(*binImg, multiple, barcodeCoordinates);
+		barcodeCoordinates = DetectBarcode(*binImg, multiple);
 	}
 	if (barcodeCoordinates.empty()) {
 		return DecodeStatus::NotFound;

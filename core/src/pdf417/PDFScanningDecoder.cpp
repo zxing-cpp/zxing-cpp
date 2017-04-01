@@ -91,9 +91,10 @@ static bool CheckCodewordSkew(int codewordSize, int minCodewordWidth, int maxCod
 }
 
 
-static void GetBitCountForCodeword(int codeword, ModuleBitCountType& result)
+static ModuleBitCountType GetBitCountForCodeword(int codeword)
 {
-	std::fill(result.begin(), result.end(), 0);
+    ModuleBitCountType result;
+    result.fill(0);
 	int previousValue = 0;
 	int i = static_cast<int>(result.size()) - 1;
 	while (true) {
@@ -107,6 +108,7 @@ static void GetBitCountForCodeword(int codeword, ModuleBitCountType& result)
 		result[i]++;
 		codeword >>= 1;
 	}
+	return result;
 }
 
 static int GetCodewordBucketNumber(const ModuleBitCountType& moduleBitCount)
@@ -116,9 +118,7 @@ static int GetCodewordBucketNumber(const ModuleBitCountType& moduleBitCount)
 
 static int GetCodewordBucketNumber(int codeword)
 {
-	ModuleBitCountType bitcount = {};
-	GetBitCountForCodeword(codeword, bitcount);
-	return GetCodewordBucketNumber(bitcount);
+	return GetCodewordBucketNumber(GetBitCountForCodeword(codeword));
 }
 
 static Nullable<Codeword> DetectCodeword(const BitMatrix& image, int minColumn, int maxColumn, bool leftToRight, int startColumn, int imageRow, int minCodewordWidth, int maxCodewordWidth)
@@ -321,9 +321,9 @@ static int GetStartColumn(const DetectionResult& detectionResult, int barcodeCol
 	return leftToRight ? detectionResult.getBoundingBox().value().minX() : detectionResult.getBoundingBox().value().maxX();
 }
 
-static void CreateBarcodeMatrix(DetectionResult& detectionResult, std::vector<std::vector<BarcodeValue>>& barcodeMatrix)
+static std::vector<std::vector<BarcodeValue>> CreateBarcodeMatrix(DetectionResult& detectionResult)
 {
-	barcodeMatrix.resize(detectionResult.barcodeRowCount());
+	std::vector<std::vector<BarcodeValue>> barcodeMatrix(detectionResult.barcodeRowCount());
 	for (auto& row : barcodeMatrix) {
 		row.resize(detectionResult.barcodeColumnCount() + 2);
 	}
@@ -346,6 +346,7 @@ static void CreateBarcodeMatrix(DetectionResult& detectionResult, std::vector<st
 		}
 		column++;
 	}
+	return barcodeMatrix;
 }
 
 static int GetNumberOfECCodeWords(int barcodeECLevel)
@@ -446,7 +447,7 @@ static bool FindErrorLocations(const ModulusPoly& errorLocator, std::vector<int>
 	return e == numErrors;
 }
 
-static void FindErrorMagnitudes(const ModulusPoly& errorEvaluator, const ModulusPoly& errorLocator, const std::vector<int>& errorLocations, std::vector<int>& result)
+static std::vector<int> FindErrorMagnitudes(const ModulusPoly& errorEvaluator, const ModulusPoly& errorLocator, const std::vector<int>& errorLocations)
 {
 	const ModulusGF& field = GetModulusGF();
 	int errorLocatorDegree = errorLocator.degree();
@@ -457,14 +458,14 @@ static void FindErrorMagnitudes(const ModulusPoly& errorEvaluator, const Modulus
 
 	ModulusPoly formalDerivative(field, formalDerivativeCoefficients);
 	// This is directly applying Forney's Formula
-	size_t s = errorLocations.size();
-	result.resize(s);
-	for (size_t i = 0; i < s; i++) {
+	std::vector<int> result(errorLocations.size());
+	for (size_t i = 0; i < result.size(); i++) {
 		int xiInverse = field.inverse(errorLocations[i]);
 		int numerator = field.subtract(0, errorEvaluator.evaluateAt(xiInverse));
 		int denominator = field.inverse(formalDerivative.evaluateAt(xiInverse));
 		result[i] = field.multiply(numerator, denominator);
 	}
+	return result;
 }
 
 /**
@@ -516,8 +517,7 @@ static bool DecodeErrorCorrection(std::vector<int>& received, int numECCodewords
 		return false;
 	}
 
-	std::vector<int> errorMagnitudes;
-	FindErrorMagnitudes(omega, sigma, errorLocations, errorMagnitudes);
+	std::vector<int> errorMagnitudes = FindErrorMagnitudes(omega, sigma, errorLocations);
 
 	int receivedSize = static_cast<int>(received.size());
 	for (size_t i = 0; i < errorLocations.size(); i++) {
@@ -656,8 +656,7 @@ static DecodeStatus CreateDecoderResultFromAmbiguousValues(int ecLevel, std::vec
 
 static DecodeStatus CreateDecoderResult(DetectionResult& detectionResult, DecoderResult& result)
 {
-	std::vector<std::vector<BarcodeValue>> barcodeMatrix;
-	CreateBarcodeMatrix(detectionResult, barcodeMatrix);
+	auto barcodeMatrix = CreateBarcodeMatrix(detectionResult);
 	if (!AdjustCodewordCount(detectionResult, barcodeMatrix)) {
 		return DecodeStatus::NotFound;
 	}

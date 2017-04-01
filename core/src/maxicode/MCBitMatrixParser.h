@@ -30,7 +30,7 @@ namespace MaxiCode {
 class BitMatrixParser
 {
 public:
-	static void ReadCodewords(const BitMatrix& image, ByteArray& result);
+	static ByteArray ReadCodewords(const BitMatrix& image);
 
 	static const int MATRIX_WIDTH = 30;
 	static const int MATRIX_HEIGHT = 33;

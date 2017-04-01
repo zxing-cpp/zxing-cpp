@@ -45,8 +45,7 @@ BitMatrixParser::ReadVersion(const BitMatrix& bits)
 * @param bitMatrix Original {@link BitMatrix} with alignment patterns
 * @return BitMatrix that has the alignment patterns removed
 */
-static void
-ExtractDataRegion(const Version& version, const BitMatrix& bitMatrix, BitMatrix& result)
+static BitMatrix ExtractDataRegion(const Version& version, const BitMatrix& bitMatrix)
 {
 	int symbolSizeRows = version.symbolSizeRows();
 	int symbolSizeColumns = version.symbolSizeColumns();
@@ -64,7 +63,7 @@ ExtractDataRegion(const Version& version, const BitMatrix& bitMatrix, BitMatrix&
 	int sizeDataRegionRow = numDataRegionsRow * dataRegionSizeRows;
 	int sizeDataRegionColumn = numDataRegionsColumn * dataRegionSizeColumns;
 
-	result = BitMatrix(sizeDataRegionColumn, sizeDataRegionRow);
+	BitMatrix result(sizeDataRegionColumn, sizeDataRegionRow);
 	for (int dataRegionRow = 0; dataRegionRow < numDataRegionsRow; ++dataRegionRow) {
 		int dataRegionRowOffset = dataRegionRow * dataRegionSizeRows;
 		for (int dataRegionColumn = 0; dataRegionColumn < numDataRegionsColumn; ++dataRegionColumn) {
@@ -82,6 +81,7 @@ ExtractDataRegion(const Version& version, const BitMatrix& bitMatrix, BitMatrix&
 			}
 		}
 	}
+	return result;
 }
 
 class CodewordReadHelper
@@ -360,8 +360,7 @@ BitMatrixParser::ReadCodewords(const BitMatrix& bits, ByteArray& result)
 		return DecodeStatus::FormatError;
 	}
 
-	BitMatrix mappingBitMatrix;
-	ExtractDataRegion(*version, bits, mappingBitMatrix);
+	BitMatrix mappingBitMatrix = ExtractDataRegion(*version, bits);
 	BitMatrix readMappingMatrix(mappingBitMatrix.width(), mappingBitMatrix.height());
 
 	result.resize(version->totalCodewords());

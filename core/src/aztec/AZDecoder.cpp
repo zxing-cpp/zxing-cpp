@@ -73,7 +73,7 @@ inline static int TotalBitsInLayer(int layers, bool compact)
 *
 * @return the array of bits
 */
-static void ExtractBits(const DetectorResult& ddata, std::vector<bool>& rawbits)
+static std::vector<bool> ExtractBits(const DetectorResult& ddata)
 {
 	bool compact = ddata.isCompact();
 	int layers = ddata.nbLayers();
@@ -94,7 +94,7 @@ static void ExtractBits(const DetectorResult& ddata, std::vector<bool>& rawbits)
 		}
 	}
 	auto matrix = ddata.bits();
-	rawbits.resize(TotalBitsInLayer(layers, compact));
+	std::vector<bool> rawbits(TotalBitsInLayer(layers, compact));
 	for (int i = 0, rowOffset = 0; i < layers; i++) {
 		int rowSize = (layers - i) * 4 + (compact ? 9 : 12);
 		// The top-left most point of this layer is <low, low> (not including alignment lines)
@@ -121,6 +121,7 @@ static void ExtractBits(const DetectorResult& ddata, std::vector<bool>& rawbits)
 		}
 		rowOffset += rowSize * 8;
 	}
+	return rawbits;
 }
 
 /**
@@ -356,8 +357,7 @@ static ByteArray ConvertBoolArrayToByteArray(const std::vector<bool>& boolArr)
 DecodeStatus
 Decoder::Decode(const DetectorResult& detectorResult, DecoderResult& result)
 {
-	std::vector<bool> rawbits;
-	ExtractBits(detectorResult, rawbits);
+	std::vector<bool> rawbits = ExtractBits(detectorResult);
 	std::vector<bool> correctedBits;
 	if (CorrectBits(detectorResult, rawbits, correctedBits)) {
 		result.setText(TextDecoder::FromLatin1(GetEncodedData(correctedBits)));

@@ -281,8 +281,7 @@ namespace DecodedBitStreamParser
 DecodeStatus
 Decoder::Decode(const BitMatrix& bits, DecoderResult& result)
 {
-	ByteArray codewords;
-	BitMatrixParser::ReadCodewords(bits, codewords);
+	ByteArray codewords = BitMatrixParser::ReadCodewords(bits);
 
 	if (!CorrectErrors(codewords, 0, 10, 10, ALL)) {
 		return DecodeStatus::ChecksumError;
