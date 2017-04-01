@@ -214,7 +214,7 @@ static bool IsBetterThanOrEqualTo(const EncodingState& state, const EncodingStat
 static void ToBitArray(const EncodingState& state, const std::string& text, BitArray& bitArray)
 {
 	auto endState = EndBinaryShift(state, static_cast<int>(text.length()));
-	bitArray.init(0);
+	bitArray = BitArray();
 	// Add each token to the result.
 	for (const Token& symbol : endState.tokens) {
 		symbol.appendTo(bitArray, text);

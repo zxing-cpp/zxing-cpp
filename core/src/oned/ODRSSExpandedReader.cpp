@@ -721,7 +721,7 @@ BuildBitArray(const std::list<ExpandedPair>& pairs, BitArray& binary)
 		charNumber -= 1;
 	}
 
-	binary.init(12 * charNumber);
+	binary = BitArray(12 * charNumber);
 	int accPos = 0;
 	auto it = pairs.begin();
 	int firstValue = it->rightChar().value();

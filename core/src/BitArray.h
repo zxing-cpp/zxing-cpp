@@ -77,12 +77,6 @@ public:
 		other._bits = _bits;
 	}
 
-	void init(int size) {
-		_size = size;
-		_bits.resize((size + 31) / 32);
-		std::fill_n(_bits.data(), _bits.size(), 0);
-	}
-
 	int size() const {
 		return _size;
 	}
