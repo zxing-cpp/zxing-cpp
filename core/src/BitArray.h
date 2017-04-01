@@ -218,8 +218,6 @@ private:
 	int _size = 0;
 	std::vector<uint32_t> _bits;
 
-	static void ShiftRight(unsigned offset, std::vector<uint32_t>& bits);
-
 	friend class BitMatrix;
 };
 

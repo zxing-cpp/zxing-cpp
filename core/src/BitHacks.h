@@ -16,6 +16,8 @@
 */
 
 #include <cstdint>
+#include <cassert>
+#include <vector>
 
 namespace ZXing {
 
@@ -90,6 +92,32 @@ public:
 		shift = (v > 0x3   ) << 1; v >>= shift; r |= shift;
 		                                        r |= (v >> 1);
 		return r;
+	}
+
+	// shift a whole array of bits by offset bits to the right
+	static void ShiftRight(std::vector<uint32_t>& bits, size_t offset)
+	{
+		assert(offset < 32);
+
+		if (offset == 0 || bits.empty())
+			return;
+
+		size_t leftOffset = 32 - offset;
+		for (size_t i = 0; i + 1 < bits.size(); ++i) {
+			bits[i] = (bits[i] >> offset) | (bits[i + 1] << leftOffset);
+		}
+		bits.back() >>= offset;
+	}
+
+	// reverse a whole array of bits. padding is the number of 'dummy' bits at the end of the array
+	static void Reverse(std::vector<uint32_t>& bits, size_t padding)
+	{
+		// reverse all int's first
+		std::reverse(bits.begin(), bits.end());
+		std::transform(bits.begin(), bits.end(), bits.begin(), [](uint32_t val) { return BitHacks::Reverse(val); });
+
+		// now correct the int's if the bit size isn't a multiple of 32
+		ShiftRight(bits, padding);
 	}
 };
 

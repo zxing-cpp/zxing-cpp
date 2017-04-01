@@ -17,6 +17,7 @@
 
 #include "BitMatrix.h"
 #include "BitArray.h"
+#include "BitHacks.h"
 
 #include <stdexcept>
 
@@ -96,15 +97,7 @@ BitMatrix::setRegion(int left, int top, int width, int height)
 void
 BitMatrix::rotate180()
 {
-	BitArray topRow(_width), bottomRow(_width);
-	for (int i = 0; i < (_height + 1) / 2; i++) {
-		getRow(i, topRow);
-		getRow(_height - 1 - i, bottomRow);
-		topRow.reverse();
-		bottomRow.reverse();
-		setRow(i, bottomRow);
-		setRow(_height - 1 - i, topRow);
-	}
+	BitHacks::Reverse(_bits, _rowSize * 32 - _width);
 }
 
 void
