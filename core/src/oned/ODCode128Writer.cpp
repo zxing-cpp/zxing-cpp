@@ -141,7 +141,7 @@ Code128Writer::encode(const std::wstring& contents, int width, int height, BitMa
 			case ESCAPE_FNC_4:
 				break;
 			default:
-				throw std::invalid_argument("Bad character in input: " + static_cast<char>(c));
+				throw std::invalid_argument(std::string("Bad character in input: ") + static_cast<char>(c));
 			}
 		}
 	}
