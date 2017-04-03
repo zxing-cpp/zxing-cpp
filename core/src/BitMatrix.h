@@ -51,9 +51,9 @@ public:
 
 	explicit BitMatrix(int dimension) : BitMatrix(dimension, dimension) {} // Construct a square matrix.
 
-	BitMatrix(BitMatrix&& other) : _width(other._width), _height(other._height), _rowSize(other._rowSize), _bits(std::move(other._bits)) {}
-	
-	BitMatrix& operator=(BitMatrix&& other) {
+	BitMatrix(BitMatrix&& other) noexcept : _width(other._width), _height(other._height), _rowSize(other._rowSize), _bits(std::move(other._bits)) {}
+
+	BitMatrix& operator=(BitMatrix&& other) noexcept {
 		_width = other._width;
 		_height = other._height;
 		_rowSize = other._rowSize;

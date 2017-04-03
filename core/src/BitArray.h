@@ -58,10 +58,10 @@ public:
 	BitArray() {}
 
 	explicit BitArray(int size) : _size(size), _bits((size + 31) / 32, 0) {}
-	
-	BitArray(BitArray &&other) : _size(other._size), _bits(std::move(other._bits)) {}
 
-	BitArray& operator=(BitArray &&other) {
+	BitArray(BitArray&& other) noexcept : _size(other._size), _bits(std::move(other._bits)) {}
+
+	BitArray& operator=(BitArray&& other) noexcept {
 		_size = other._size;
 		_bits = std::move(other._bits);
 		return *this;
