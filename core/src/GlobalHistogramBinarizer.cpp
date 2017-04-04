@@ -72,18 +72,10 @@ GlobalHistogramBinarizer::height() const
 static int EstimateBlackPoint(const std::array<int, LUMINANCE_BUCKETS>& buckets)
 {
 	// Find the tallest peak in the histogram.
-	int maxBucketCount = 0;
-	int firstPeak = 0;
-	int firstPeakSize = 0;
-	for (int x = 0; x < LUMINANCE_BUCKETS; x++) {
-		if (buckets[x] > firstPeakSize) {
-			firstPeak = x;
-			firstPeakSize = buckets[x];
-		}
-		if (buckets[x] > maxBucketCount) {
-			maxBucketCount = buckets[x];
-		}
-	}
+	auto firstPeakPos = std::max_element(buckets.begin(), buckets.end());
+	int firstPeak = firstPeakPos - buckets.begin();
+	int firstPeakSize = *firstPeakPos;
+	int maxBucketCount = firstPeakSize;
 
 	// Find the second-tallest peak which is somewhat far from the tallest peak.
 	int secondPeak = 0;
@@ -100,9 +92,7 @@ static int EstimateBlackPoint(const std::array<int, LUMINANCE_BUCKETS>& buckets)
 
 	// Make sure firstPeak corresponds to the black peak.
 	if (firstPeak > secondPeak) {
-		int temp = firstPeak;
-		firstPeak = secondPeak;
-		secondPeak = temp;
+		std::swap(firstPeak, secondPeak);
 	}
 
 	// If there is too little contrast in the image to pick a meaningful black point, throw rather

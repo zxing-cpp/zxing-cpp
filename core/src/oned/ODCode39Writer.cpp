@@ -17,6 +17,7 @@
 
 #include "oned/ODCode39Writer.h"
 #include "oned/ODWriterHelper.h"
+#include "ZXContainerAlgorithms.h"
 
 #include <array>
 
@@ -71,9 +72,7 @@ Code39Writer::encode(const std::wstring& contents, int width, int height, BitMat
 			throw std::invalid_argument("Bad contents");
 		}
 		ToIntArray(CHARACTER_ENCODINGS[indexInString], widths);
-		for (int width : widths) {
-			codeWidth += width;
-		}
+		codeWidth = Accumulate(widths, codeWidth);
 	}
 
 	std::vector<bool> result(codeWidth, false);

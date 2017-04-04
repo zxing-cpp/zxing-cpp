@@ -20,6 +20,7 @@
 #include "BitArray.h"
 #include "DecodeHints.h"
 #include "TextDecoder.h"
+#include "ZXContainerAlgorithms.h"
 
 #include <array>
 
@@ -134,9 +135,7 @@ static DecodeStatus DecodeMiddle(const BitArray& row, int payloadStart, int payl
 			return status;
 		}
 		resultString.push_back((char)('0' + bestMatch));
-		for (int counterDigit : counterDigitPair) {
-			payloadStart += counterDigit;
-		}
+		payloadStart = Accumulate(counterDigitPair, payloadStart);
 	}
 	return DecodeStatus::NoError;
 }
@@ -340,22 +339,10 @@ ITFReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Decodin
 	// To avoid false positives with 2D barcodes (and other patterns), make
 	// an assumption that the decoded string must be a 'standard' length if it's short
 	int length = static_cast<int>(result.length());
-	bool lengthOK = false;
-	int maxAllowedLength = 0;
-	for (int allowedLength : _allowedLengths) {
-		if (length == allowedLength) {
-			lengthOK = true;
-			break;
-		}
-		if (allowedLength > maxAllowedLength) {
-			maxAllowedLength = allowedLength;
-		}
-	}
-	if (!lengthOK && length > maxAllowedLength) {
-		lengthOK = true;
-	}
-	if (!lengthOK) {
-		return Result(DecodeStatus::FormatError);
+	if (!_allowedLengths.empty() && !Contains(_allowedLengths, length)) {
+		int maxAllowedLength = *std::max_element(_allowedLengths.begin(), _allowedLengths.end());
+		if (length < maxAllowedLength)
+			return Result(DecodeStatus::FormatError);
 	}
 
 	float x1 = static_cast<float>(startRangeEnd);

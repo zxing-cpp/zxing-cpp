@@ -20,6 +20,7 @@
 #include "BitArray.h"
 #include "DecodeHints.h"
 #include "TextDecoder.h"
+#include "ZXContainerAlgorithms.h"
 
 #include <algorithm>
 #include <array>
@@ -260,9 +261,7 @@ Code39Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 		}
 		result += decodedChar;
 		lastStart = nextStart;
-		for (int counter : theCounters) {
-			nextStart += counter;
-		}
+		nextStart = Accumulate(theCounters, nextStart);
 		// Read off white space
 		nextStart = row.getNextSet(nextStart);
 	} while (decodedChar != '*');
@@ -270,10 +269,7 @@ Code39Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 	result.resize(result.length() - 1); // remove asterisk
 
 	// Look for whitespace after pattern:
-	int lastPatternSize = 0;
-	for (int counter : theCounters) {
-		lastPatternSize += counter;
-	}
+	int lastPatternSize = Accumulate(theCounters, 0);
 	int whiteSpaceAfterEnd = nextStart - lastStart - lastPatternSize;
 	// If 50% of last pattern size, following last pattern, is not whitespace, fail
 	// (but if it's whitespace to the very end of the image, that's OK)

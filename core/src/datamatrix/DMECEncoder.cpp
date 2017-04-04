@@ -18,6 +18,7 @@
 #include "datamatrix/DMECEncoder.h"
 #include "datamatrix/DMSymbolInfo.h"
 #include "ZXStrConvWorkaround.h"
+#include "ZXContainerAlgorithms.h"
 
 #include <stdexcept>
 #include <string>
@@ -106,18 +107,11 @@ static const uint8_t ALOG[] = {
 
 static void CreateECCBlock(std::vector<int>& codewords, size_t start, size_t len, int numECWords)
 {
-	bool found = false;
-	int tableOffset = 0;
-	for (int count : FACTOR_SETS) {
-		if (count == numECWords) {
-			found = true;
-			break;
-		}
-		tableOffset += count;
-	}
-	if (!found) {
+	if (!Contains(FACTOR_SETS, numECWords)) {
 		throw std::invalid_argument("Illegal number of error correction codewords specified: " + std::to_string(numECWords));
 	}
+
+	int tableOffset = std::accumulate(std::begin(FACTOR_SETS), Find(FACTOR_SETS, numECWords), 0);
 	const uint8_t* poly = FACTORS + tableOffset;
 	std::vector<int> ecc(numECWords, 0);
 	for (size_t i = start; i < start + len; i++) {

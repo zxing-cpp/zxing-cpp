@@ -21,6 +21,7 @@
 #include "Result.h"
 #include "BitArray.h"
 #include "TextDecoder.h"
+#include "ZXContainerAlgorithms.h"
 #include "ZXStrConvWorkaround.h"
 
 #include <array>
@@ -79,9 +80,7 @@ namespace UPCEANExtension5Support
 				return status;
 			}
 			resultString.push_back((char)('0' + bestMatch % 10));
-			for (int counter : counters) {
-				rowOffset += counter;
-			}
+			rowOffset = Accumulate(counters, rowOffset);
 			if (bestMatch >= 10) {
 				lgPatternFound |= 1 << (4 - x);
 			}
@@ -193,9 +192,7 @@ namespace UPCEANExtension2Support
 				return status;
 			}
 			resultString.push_back((char)('0' + bestMatch % 10));
-			for (int counter : counters) {
-				rowOffset += counter;
-			}
+			rowOffset = Accumulate(counters, rowOffset);
 			if (bestMatch >= 10) {
 				checkParity |= 1 << (1 - x);
 			}

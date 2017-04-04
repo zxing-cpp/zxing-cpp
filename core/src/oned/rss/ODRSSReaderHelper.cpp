@@ -16,6 +16,7 @@
 */
 
 #include "oned/rss/ODRSSReaderHelper.h"
+#include "ZXContainerAlgorithms.h"
 
 #include <limits>
 
@@ -86,10 +87,7 @@ int
 ReaderHelper::GetRSSvalue(const std::array<int, 4>& widths, int maxWidth, bool noNarrow)
 {
 	int elements = static_cast<int>(widths.size());
-	int n = 0;
-	for (int width : widths) {
-		n += width;
-	}
+	int n = Accumulate(widths, 0);
 	int val = 0;
 	int narrowMask = 0;
 	for (int bar = 0; bar < elements - 1; bar++) {
