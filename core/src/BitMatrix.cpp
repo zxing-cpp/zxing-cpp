@@ -52,7 +52,8 @@ BitMatrix::getRow(int y, BitArray& row) const
 	if (y < 0 || y >= _height) {
 		throw std::out_of_range("Requested row is outside the matrix");
 	}
-	row = BitArray(_width);
+	if (row.size() != _width)
+		row = BitArray(_width);
 	std::copy_n(_bits.begin() + y * _rowSize, _rowSize, row._bits.begin());
 }
 

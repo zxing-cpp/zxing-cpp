@@ -121,7 +121,10 @@ DecodeStatus
 GlobalHistogramBinarizer::getBlackRow(int y, BitArray& row) const
 {
 	int width = _source->width();
-	row = BitArray(width);
+	if (row.size() != width)
+		row = BitArray(width);
+	else
+		row.clearBits();
 
 	ByteArray buffer;
 	const uint8_t* luminances = _source->getRow(y, buffer);
