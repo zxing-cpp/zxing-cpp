@@ -19,6 +19,10 @@
 #include <cassert>
 #include <vector>
 
+#ifdef __clang__
+#define ZX_HAS_GCC_BUILTINS
+#endif
+
 namespace ZXing {
 
 /**
@@ -35,6 +39,9 @@ public:
 	{
 		if (x == 0)
 			return 32;
+#ifdef ZX_HAS_GCC_BUILTINS
+		return __builtin_ctz(x);
+#else
 		int n = 0;
 		if ((x & 0xFFFF0000) == 0) { n = n + 16; x = x << 16; }
 		if ((x & 0xFF000000) == 0) { n = n + 8; x = x << 8; }
@@ -42,6 +49,7 @@ public:
 		if ((x & 0xC0000000) == 0) { n = n + 2; x = x << 2; }
 		if ((x & 0x80000000) == 0) { n = n + 1; }
 		return n;
+#endif
 	}
 
 	/// <summary>
@@ -49,6 +57,9 @@ public:
 	/// </summary>
 	static int NumberOfTrailingZeros(uint32_t v)
 	{
+#ifdef ZX_HAS_GCC_BUILTINS
+		return __builtin_ctz(v);
+#else
 		int c = 32;
 		v &= -int32_t(v);
 		if (v) c--;
@@ -58,10 +69,14 @@ public:
 		if (v & 0x33333333) c -= 2;
 		if (v & 0x55555555) c -= 1;
 		return c;
+#endif
 	}
 
 	static uint32_t Reverse(uint32_t v)
 	{
+#if 0
+        return __builtin_bitreverse32(v);
+#else
 		v = ((v >> 1) & 0x55555555) | ((v & 0x55555555) << 1);
 		// swap consecutive pairs
 		v = ((v >> 2) & 0x33333333) | ((v & 0x33333333) << 2);
@@ -72,13 +87,18 @@ public:
 		// swap 2-byte long pairs
 		v = (v >> 16) | (v << 16);
 		return v;
+#endif
 	}
 
 	static int CountBitsSet(uint32_t v)
 	{
+#ifdef ZX_HAS_GCC_BUILTINS
+		return __builtin_popcount(v);
+#else
 		v = v - ((v >> 1) & 0x55555555);							// reuse input as temporary
 		v = (v & 0x33333333) + ((v >> 2) & 0x33333333);				// temp
 		return (((v + (v >> 4)) & 0xF0F0F0F) * 0x1010101) >> 24;	// count
+#endif
 	}
 
 	// this is the same as log base 2 of v
@@ -111,10 +131,6 @@ public:
 
 	// reverse a whole array of bits. padding is the number of 'dummy' bits at the end of the array
 	static void Reverse(std::vector<uint32_t>& bits, size_t padding)
-	{
-		// reverse all int's first
-		std::reverse(bits.begin(), bits.end());
-		std::transform(bits.begin(), bits.end(), bits.begin(), [](uint32_t val) { return BitHacks::Reverse(val); });
 
 		// now correct the int's if the bit size isn't a multiple of 32
 		ShiftRight(bits, padding);
