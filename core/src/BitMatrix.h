@@ -17,7 +17,6 @@
 */
 
 #include <cstdint>
-#include <cstring>
 #include <vector>
 
 namespace ZXing {
@@ -41,20 +40,20 @@ class BitArray;
 */
 class BitMatrix
 {
-	int _width;
-	int _height;
-	int _rowSize;
+	int _width = 0;
+	int _height = 0;
+	int _rowSize = 0;
 	std::vector<uint32_t> _bits;
 
 public:
-	BitMatrix() : _width(0), _height(0), _rowSize(0) {}
+	BitMatrix() {}
 	BitMatrix(int width, int height) : _width(width), _height(height), _rowSize((width + 31) / 32), _bits(((width + 31) / 32) * _height, 0) {}
 
 	explicit BitMatrix(int dimension) : BitMatrix(dimension, dimension) {} // Construct a square matrix.
 
-	BitMatrix(BitMatrix&& other) : _width(other._width), _height(other._height), _rowSize(other._rowSize), _bits(std::move(other._bits)) {}
-	
-	BitMatrix& operator=(BitMatrix&& other) {
+	BitMatrix(BitMatrix&& other) noexcept : _width(other._width), _height(other._height), _rowSize(other._rowSize), _bits(std::move(other._bits)) {}
+
+	BitMatrix& operator=(BitMatrix&& other) noexcept {
 		_width = other._width;
 		_height = other._height;
 		_rowSize = other._rowSize;
@@ -66,11 +65,6 @@ public:
 	// Use copyTo() below
 	BitMatrix(const BitMatrix&) = delete;
 	BitMatrix& operator=(const BitMatrix&) = delete;
-
-	/**
-	* Re-init the matrix with given size and clear all bits.
-	*/
-	void init(int width, int height);
 
 	void copyTo(BitMatrix& other) const;
 
@@ -129,7 +123,7 @@ public:
 	* Clears all bits (sets to false).
 	*/
 	void clear() {
-		std::memset(_bits.data(), 0, sizeof(uint32_t) * _bits.size());
+		std::fill(_bits.begin(), _bits.end(), 0);
 	}
 
 	/**

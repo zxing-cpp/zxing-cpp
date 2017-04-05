@@ -17,20 +17,11 @@
 
 #include "BitMatrix.h"
 #include "BitArray.h"
+#include "BitHacks.h"
 
 #include <stdexcept>
 
 namespace ZXing {
-
-void
-BitMatrix::init(int width, int height)
-{
-	_width = width;
-	_height = height;
-	_rowSize = (width + 31) / 32;
-	_bits.resize(_rowSize * _height);
-	std::memset(_bits.data(), 0, sizeof(uint32_t) * _bits.size());
-}
 
 void
 BitMatrix::copyTo(BitMatrix& other) const {
@@ -61,9 +52,9 @@ BitMatrix::getRow(int y, BitArray& row) const
 	if (y < 0 || y >= _height) {
 		throw std::out_of_range("Requested row is outside the matrix");
 	}
-	row.init(_width);
-	auto it = _bits.begin() + y * _rowSize;
-	std::copy(it, it + _rowSize, row._bits.begin());
+	if (row.size() != _width)
+		row = BitArray(_width);
+	std::copy_n(_bits.begin() + y * _rowSize, _rowSize, row._bits.begin());
 }
 
 /**
@@ -107,15 +98,7 @@ BitMatrix::setRegion(int left, int top, int width, int height)
 void
 BitMatrix::rotate180()
 {
-	BitArray topRow(_width), bottomRow(_width);
-	for (int i = 0; i < (_height + 1) / 2; i++) {
-		getRow(i, topRow);
-		getRow(_height - 1 - i, bottomRow);
-		topRow.reverse();
-		bottomRow.reverse();
-		setRow(i, bottomRow);
-		setRow(_height - 1 - i, topRow);
-	}
+	BitHacks::Reverse(_bits, _rowSize * 32 - _width);
 }
 
 void

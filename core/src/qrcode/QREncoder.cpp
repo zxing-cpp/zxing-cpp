@@ -65,7 +65,7 @@ static bool IsOnlyDoubleByteKanji(const std::wstring& content)
 		return false;
 	}
 	for (size_t i = 0; i < length; i += 2) {
-		int byte1 = bytes[i] & 0xFF;
+		int byte1 = bytes[i];
 		if ((byte1 < 0x81 || byte1 > 0x9F) && (byte1 < 0xE0 || byte1 > 0xEB)) {
 			return false;
 		}
@@ -213,8 +213,8 @@ static void AppendKanjiBytes(const std::wstring& content, BitArray& bits)
 	TextEncoder::GetBytes(content, CharacterSet::Shift_JIS, bytes);
 	size_t length = bytes.size();
 	for (size_t i = 0; i < length; i += 2) {
-		int byte1 = bytes[i] & 0xFF;
-		int byte2 = bytes[i + 1] & 0xFF;
+		int byte1 = bytes[i];
+		int byte2 = bytes[i + 1];
 		int code = (byte1 << 8) | byte2;
 		int subtracted = -1;
 		if (code >= 0x8140 && code <= 0x9ffc) {
@@ -377,9 +377,7 @@ static void GenerateECBytes(const ByteArray& dataBytes, int numEcBytesInBlock, B
 {
 	size_t numDataBytes = dataBytes.size();
 	std::vector<int> toEncode(numDataBytes + numEcBytesInBlock, 0);
-	for (size_t i = 0; i < numDataBytes; i++) {
-		toEncode[i] = dataBytes[i] & 0xFF;
-	}
+	std::copy(dataBytes.begin(), dataBytes.end(), toEncode.begin());
 	ReedSolomonEncoder(GenericGF::QRCodeField256()).encode(toEncode, numEcBytesInBlock);
 
 	ecBytes.resize(numEcBytesInBlock);

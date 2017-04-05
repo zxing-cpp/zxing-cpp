@@ -32,10 +32,10 @@ static const int CODE_CODE_C = 99;
 static const int CODE_STOP = 106;
 
 // Dummy characters used to specify control characters in input
-static const char ESCAPE_FNC_1 = '\u00f1';
-static const char ESCAPE_FNC_2 = '\u00f2';
-static const char ESCAPE_FNC_3 = '\u00f3';
-static const char ESCAPE_FNC_4 = '\u00f4';
+static const auto ESCAPE_FNC_1 = L'\u00f1';
+static const auto ESCAPE_FNC_2 = L'\u00f2';
+static const auto ESCAPE_FNC_3 = L'\u00f3';
+static const auto ESCAPE_FNC_4 = L'\u00f4';
 
 static const int CODE_FNC_1 = 102;   // Code A, Code B, Code C
 static const int CODE_FNC_2 = 97;    // Code A, Code B
@@ -141,7 +141,7 @@ Code128Writer::encode(const std::wstring& contents, int width, int height, BitMa
 			case ESCAPE_FNC_4:
 				break;
 			default:
-				throw std::invalid_argument("Bad character in input: " + static_cast<char>(c));
+				throw std::invalid_argument(std::string("Bad character in input: ") + static_cast<char>(c));
 			}
 		}
 	}

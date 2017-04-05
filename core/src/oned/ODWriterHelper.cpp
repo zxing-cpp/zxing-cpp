@@ -37,7 +37,7 @@ WriterHelper::RenderResult(const std::vector<bool>& code, int width, int height,
 	int multiple = outputWidth / fullWidth;
 	int leftPadding = (outputWidth - (inputWidth * multiple)) / 2;
 
-	output.init(outputWidth, outputHeight);
+	output = BitMatrix(outputWidth, outputHeight);
 	for (int inputX = 0, outputX = leftPadding; inputX < inputWidth; inputX++, outputX += multiple) {
 		if (code[inputX]) {
 			output.setRegion(outputX, 0, multiple, outputHeight);

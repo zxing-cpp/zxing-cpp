@@ -21,6 +21,7 @@
 #include "BitArray.h"
 #include "DecodeHints.h"
 #include "TextDecoder.h"
+#include "ZXContainerAlgorithms.h"
 #include "ZXStrConvWorkaround.h"
 
 #include <algorithm>
@@ -205,9 +206,7 @@ Code128Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Dec
 
 		// Advance to where the next code will to start
 		lastStart = nextStart;
-		for (int counter : counters) {
-			nextStart += counter;
-		}
+		nextStart = Accumulate(counters, nextStart);
 
 		// Take care of illegal start codes
 		switch (code) {

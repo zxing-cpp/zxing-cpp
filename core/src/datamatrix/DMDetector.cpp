@@ -22,6 +22,8 @@
 #include "GridSampler.h"
 #include "DecodeStatus.h"
 
+#include <cstdlib>
+#include <cmath>
 #include <array>
 #include <algorithm>
 #include <map>

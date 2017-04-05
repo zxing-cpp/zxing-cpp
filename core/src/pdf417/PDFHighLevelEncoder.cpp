@@ -361,7 +361,7 @@ static void EncodeBinary(const std::string& bytes, int startpos, int count, int 
 			long t = 0;
 			for (int i = 0; i < 6; i++) {
 				t <<= 8;
-				t += bytes[idx + i] & 0xff;
+				t += bytes[idx + i];
 			}
 			for (int i = 0; i < 5; i++) {
 				chars[i] = t % 900;
@@ -375,7 +375,7 @@ static void EncodeBinary(const std::string& bytes, int startpos, int count, int 
 	}
 	//Encode rest (remaining n<5 bytes if any)
 	for (int i = idx; i < startpos + count; i++) {
-		int ch = bytes[i] & 0xff;
+		int ch = bytes[i];
 		output.push_back(ch);
 	}
 }

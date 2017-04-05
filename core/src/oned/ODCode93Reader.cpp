@@ -20,6 +20,7 @@
 #include "BitArray.h"
 #include "ZXNumeric.h"
 #include "TextDecoder.h"
+#include "ZXContainerAlgorithms.h"
 
 #include <array>
 
@@ -53,10 +54,7 @@ typedef std::array<int, 6> CounterContainer;
 static int ToPattern(const CounterContainer& counters)
 {
 	int max = static_cast<int>(counters.size());
-	int sum = 0;
-	for (int counter : counters) {
-		sum += counter;
-	}
+	int sum = Accumulate(counters, 0);
 	int pattern = 0;
 	for (int i = 0; i < max; i++) {
 		int scaled = RoundToNearest(counters[i] * 9.0f / sum);
@@ -272,19 +270,14 @@ Code93Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 		}
 		result.push_back(decodedChar);
 		lastStart = nextStart;
-		for (int counter : theCounters) {
-			nextStart += counter;
-		}
+		nextStart = Accumulate(theCounters, nextStart);
 		// Read off white space
 		nextStart = row.getNextSet(nextStart);
 	} while (decodedChar != '*');
 	
 	result.resize(result.length() - 1); // remove asterisk
 
-	int lastPatternSize = 0;
-	for (int counter : theCounters) {
-		lastPatternSize += counter;
-	}
+	int lastPatternSize = Accumulate(theCounters, 0);
 
 	// Should be at least one more black module
 	if (nextStart == end || !row.get(nextStart)) {

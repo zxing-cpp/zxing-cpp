@@ -72,18 +72,10 @@ GlobalHistogramBinarizer::height() const
 static int EstimateBlackPoint(const std::array<int, LUMINANCE_BUCKETS>& buckets)
 {
 	// Find the tallest peak in the histogram.
-	int maxBucketCount = 0;
-	int firstPeak = 0;
-	int firstPeakSize = 0;
-	for (int x = 0; x < LUMINANCE_BUCKETS; x++) {
-		if (buckets[x] > firstPeakSize) {
-			firstPeak = x;
-			firstPeakSize = buckets[x];
-		}
-		if (buckets[x] > maxBucketCount) {
-			maxBucketCount = buckets[x];
-		}
-	}
+	auto firstPeakPos = std::max_element(buckets.begin(), buckets.end());
+	int firstPeak = firstPeakPos - buckets.begin();
+	int firstPeakSize = *firstPeakPos;
+	int maxBucketCount = firstPeakSize;
 
 	// Find the second-tallest peak which is somewhat far from the tallest peak.
 	int secondPeak = 0;
@@ -100,9 +92,7 @@ static int EstimateBlackPoint(const std::array<int, LUMINANCE_BUCKETS>& buckets)
 
 	// Make sure firstPeak corresponds to the black peak.
 	if (firstPeak > secondPeak) {
-		int temp = firstPeak;
-		firstPeak = secondPeak;
-		secondPeak = temp;
+		std::swap(firstPeak, secondPeak);
 	}
 
 	// If there is too little contrast in the image to pick a meaningful black point, throw rather
@@ -131,7 +121,10 @@ DecodeStatus
 GlobalHistogramBinarizer::getBlackRow(int y, BitArray& row) const
 {
 	int width = _source->width();
-	row.init(width);
+	if (row.size() != width)
+		row = BitArray(width);
+	else
+		row.clearBits();
 
 	ByteArray buffer;
 	const uint8_t* luminances = _source->getRow(y, buffer);
@@ -145,16 +138,16 @@ GlobalHistogramBinarizer::getBlackRow(int y, BitArray& row) const
 		if (width < 3) {
 			// Special case for very small images
 			for (int x = 0; x < width; x++) {
-				if ((luminances[x] & 0xff) < blackPoint) {
+				if (luminances[x] < blackPoint) {
 					row.set(x);
 				}
 			}
 		}
 		else {
-			int left = luminances[0] & 0xff;
-			int center = luminances[1] & 0xff;
+			int left = luminances[0];
+			int center = luminances[1];
 			for (int x = 1; x < width - 1; x++) {
-				int right = luminances[x + 1] & 0xff;
+				int right = luminances[x + 1];
 				// A simple -1 4 -1 box filter with a weight of 2.
 				if (((center * 4) - left - right) / 2 < blackPoint) {
 					row.set(x);
@@ -170,10 +163,9 @@ GlobalHistogramBinarizer::getBlackRow(int y, BitArray& row) const
 
 static void InitBlackMatrix(const LuminanceSource& source, std::shared_ptr<const BitMatrix>& outMatrix)
 {
-	auto matrix = std::make_shared<BitMatrix>();
 	int width = source.width();
 	int height = source.height();
-	matrix->init(width, height);
+	auto matrix = std::make_shared<BitMatrix>(width, height);
 
 	// Quickly calculates the histogram by sampling four rows from the image. This proved to be
 	// more robust on the blackbox tests than sampling a diagonal as we used to do.
@@ -185,7 +177,7 @@ static void InitBlackMatrix(const LuminanceSource& source, std::shared_ptr<const
 			const uint8_t* luminances = source.getRow(row, buffer);
 			int right = (width * 4) / 5;
 			for (int x = width / 5; x < right; x++) {
-				int pixel = luminances[x] & 0xff;
+				int pixel = luminances[x];
 				localBuckets[pixel >> LUMINANCE_SHIFT]++;
 			}
 		}
@@ -202,7 +194,7 @@ static void InitBlackMatrix(const LuminanceSource& source, std::shared_ptr<const
 		for (int y = 0; y < height; y++) {
 			int offset = y * stride;
 			for (int x = 0; x < width; x++) {
-				int pixel = luminances[offset + x] & 0xff;
+				int pixel = luminances[offset + x];
 				if (pixel < blackPoint) {
 					matrix->set(x, y);
 				}

@@ -20,6 +20,7 @@
 #include "BarcodeFormat.h"
 #include "BitArray.h"
 #include "DecodeStatus.h"
+#include "ZXContainerAlgorithms.h"
 
 namespace ZXing {
 namespace OneD {
@@ -100,9 +101,7 @@ EAN13Reader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resu
 			return status;
 		}
 		resultString.push_back((char)('0' + bestMatch % 10));
-		for (int counter : counters) {
-			rowOffset += counter;
-		}
+		rowOffset = Accumulate(counters, rowOffset);
 		if (bestMatch >= 10) {
 			lgPatternFound |= 1 << (5 - x);
 		}
@@ -126,9 +125,7 @@ EAN13Reader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resu
 			return status;
 		}
 		resultString.push_back((char)('0' + bestMatch));
-		for (int counter : counters) {
-			rowOffset += counter;
-		}
+		rowOffset = Accumulate(counters, rowOffset);
 	}
 	return DecodeStatus::NoError;
 }

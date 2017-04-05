@@ -22,6 +22,8 @@
 #include "GenericGF.h"
 #include "ZXStrConvWorkaround.h"
 
+#include <cstdlib>
+
 namespace ZXing {
 namespace Aztec {
 
@@ -94,7 +96,7 @@ static void GenerateCheckWords(const BitArray& bitArray, int totalBits, int word
 	std::vector<int> messageWords = BitsToWords(bitArray, wordSize, totalWords);
 	rs.encode(messageWords, totalWords - messageSizeInWords);
 	int startPad = totalBits % wordSize;
-	messageBits.init(0);
+	messageBits = BitArray();
 	messageBits.appendBits(0, startPad);
 	for (int messageWord : messageWords) {
 		messageBits.appendBits(messageWord, wordSize);
@@ -103,7 +105,7 @@ static void GenerateCheckWords(const BitArray& bitArray, int totalBits, int word
 
 static void GenerateModeMessage(bool compact, int layers, int messageSizeInWords, BitArray& modeMessage)
 {
-	modeMessage.init(0);
+	modeMessage = BitArray();
 	if (compact) {
 		modeMessage.appendBits(layers - 1, 2);
 		modeMessage.appendBits(messageSizeInWords - 1, 6);
@@ -157,7 +159,7 @@ static void DrawModeMessage(BitMatrix& matrix, bool compact, int matrixSize, con
 
 static void StuffBits(const BitArray& bits, int wordSize, BitArray& out)
 {
-	out.init(0);
+	out = BitArray();
 	int n = bits.size();
 	int mask = (1 << wordSize) - 2;
 	for (int i = 0; i < n; i += wordSize) {
@@ -294,8 +296,8 @@ Encoder::Encode(const std::string& data, int minECCPercent, int userSpecifiedLay
 	output.layers = layers;
 	output.codeWords = messageSizeInWords;
 
+	output.matrix = BitMatrix(matrixSize);
 	BitMatrix& matrix = output.matrix;
-	matrix.init(matrixSize, matrixSize);
 
 	// draw data bits
 	for (int i = 0, rowOffset = 0; i < layers; i++) {

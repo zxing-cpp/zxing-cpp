@@ -60,10 +60,9 @@ static const std::array<std::array<int, BitMatrixParser::MATRIX_WIDTH>, BitMatri
 	737,736,743,742,749,748,755,754,761,760,767,766,773,772,779,778,785,784,791,790,797,796,803,802,809,808,815,814,863,862,
 };
 
-void
-BitMatrixParser::ReadCodewords(const BitMatrix& image, ByteArray& result)
+ByteArray BitMatrixParser::ReadCodewords(const BitMatrix& image)
 {
-	result.resize(144, 0);
+	ByteArray result(144);
 	int height = image.height();
 	int width = image.width();
 	for (int y = 0; y < height; y++) {
@@ -74,6 +73,7 @@ BitMatrixParser::ReadCodewords(const BitMatrix& image, ByteArray& result)
 			}
 		}
 	}
+	return result;
 }
 
 

@@ -18,7 +18,6 @@
 
 #include <cstdint>
 #include <vector>
-#include <cstring>
 
 namespace ZXing {
 
@@ -56,13 +55,13 @@ public:
 	};
 
 
-	BitArray() : _size(0) {}
+	BitArray() {}
 
 	explicit BitArray(int size) : _size(size), _bits((size + 31) / 32, 0) {}
-	
-	BitArray(BitArray &&other) : _size(other._size), _bits(std::move(other._bits)) {}
 
-	BitArray& operator=(BitArray &&other) {
+	BitArray(BitArray&& other) noexcept : _size(other._size), _bits(std::move(other._bits)) {}
+
+	BitArray& operator=(BitArray&& other) noexcept {
 		_size = other._size;
 		_bits = std::move(other._bits);
 		return *this;
@@ -76,12 +75,6 @@ public:
 	void copyTo(BitArray& other) const {
 		other._size = _size;
 		other._bits = _bits;
-	}
-
-	void init(int size) {
-		_size = size;
-		_bits.resize((size + 31) / 32);
-		std::memset(_bits.data(), 0, sizeof(uint32_t) * _bits.size());
 	}
 
 	int size() const {
@@ -166,7 +159,7 @@ public:
 	* Clears all bits (sets to false).
 	*/
 	void clearBits() {
-		std::memset(_bits.data(), 0, sizeof(uint32_t) * _bits.size());
+		std::fill(_bits.begin(), _bits.end(), 0);
 	}
 
 	/**
@@ -222,10 +215,8 @@ public:
 	}
 
 private:
-	int _size;
+	int _size = 0;
 	std::vector<uint32_t> _bits;
-
-	static void ShiftRight(unsigned offset, std::vector<uint32_t>& bits);
 
 	friend class BitMatrix;
 };

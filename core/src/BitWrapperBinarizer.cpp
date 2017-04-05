@@ -81,8 +81,7 @@ BitWrapperBinarizer::getBlackMatrix() const
 		return _matrix;
 	}
 	else {
-		auto matrix = std::make_shared<BitMatrix>();
-		matrix->init(_width, _height);
+		auto matrix = std::make_shared<BitMatrix>(_width, _height);
 		BitArray tmp;
 		BitArray row;
 		for (int y = 0; y < _height; ++y) {

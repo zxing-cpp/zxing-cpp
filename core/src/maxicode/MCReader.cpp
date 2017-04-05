@@ -45,7 +45,7 @@ static bool ExtractPureBits(const BitMatrix& image, BitMatrix& bits)
 	}
 
 	// Now just read off the bits
-	bits.init(BitMatrixParser::MATRIX_WIDTH, BitMatrixParser::MATRIX_HEIGHT);
+	bits = BitMatrix(BitMatrixParser::MATRIX_WIDTH, BitMatrixParser::MATRIX_HEIGHT);
 	for (int y = 0; y < BitMatrixParser::MATRIX_HEIGHT; y++) {
 		int iy = top + (y * height + height / 2) / BitMatrixParser::MATRIX_HEIGHT;
 		for (int x = 0; x < BitMatrixParser::MATRIX_WIDTH; x++) {

@@ -149,7 +149,7 @@ BitArray::appendBitArray(const BitArray& other)
 		if (offset > 0) {
 			auto buffer = other._bits;
 			_bits.back() = (_bits.back() & (0xffffffff >> offset)) | (buffer.front() << (32 - offset));
-			ShiftRight(offset, buffer);
+			BitHacks::ShiftRight(buffer, offset);
 			size_t prevBlockSize = _bits.size();
 			_size += other._size;
 			_bits.resize((_size + 31) / 32);
@@ -193,33 +193,7 @@ BitArray::toBytes(int bitOffset, uint8_t* output, int numBytes) const
 void
 BitArray::reverse()
 {
-	// reverse all int's first
-	std::reverse(_bits.begin(), _bits.end());
-	std::transform(_bits.begin(), _bits.end(), _bits.begin(), [](uint32_t val) { return BitHacks::Reverse(val); });
-
-	// now correct the int's if the bit size isn't a multiple of 32
-	unsigned offset = static_cast<unsigned>(_bits.size()) * 32 - _size;
-	if (offset > 0) {
-		ShiftRight(offset, _bits);
-	}
-}
-
-/**
-* I't matter of convention that "right" here makes sense.
-* If you see consider the array from left to right, the shift here is left-shift from we move bits from right to left.
-* However since the least significant bit is at right, it's more clear to see the array element starts from right, goes to left.
-* In that case, the shift is right-shift.
-*/
-void
-BitArray::ShiftRight(unsigned offset, std::vector<uint32_t>& bits)
-{
-	if (!bits.empty()) {
-		unsigned leftOffset = 32 - offset;
-		for (size_t i = 0; i + 1 < bits.size(); ++i) {
-			bits[i] = (bits[i] >> offset) | (bits[i + 1] << leftOffset);
-		}
-		bits.back() >>= offset;
-	}
+	BitHacks::Reverse(_bits, _bits.size() * 32 - _size);
 }
 
 void
@@ -246,7 +220,7 @@ BitArray::getSubArray(int offset, int length, BitArray& result) const
 
 		unsigned rightOffset = offset % 32;
 		if (rightOffset > 0) {
-			ShiftRight(rightOffset, result._bits);
+			BitHacks::ShiftRight(result._bits, rightOffset);
 			result._bits.resize((length + 31) / 32);
 		}
 		result._bits.back() &= (0xffffffff >> (result._bits.size() * 32 - result._size));

@@ -71,6 +71,7 @@ set (COMMON_FILES
 	src/ZXConfig.h
 	src/ZXNullable.h
 	src/ZXNumeric.h
+	src/ZXContainerAlgorithms.h
 	src/ZXStrConvWorkaround.h
 )
 if (ENABLE_DECODERS)

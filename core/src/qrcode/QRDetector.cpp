@@ -29,6 +29,8 @@
 #include "ZXNumeric.h"
 #include "DecodeStatus.h"
 
+#include <cstdlib>
+
 namespace ZXing {
 namespace QRCode {
 

@@ -162,15 +162,14 @@ static Mode DecodeAsciiSegment(BitSource& bits, std::string& result, std::string
 	return Mode::ASCII_ENCODE;
 }
 
-static void ParseTwoBytes(int firstByte, int secondByte, std::array<int, 3>& result)
+static std::array<int, 3> ParseTwoBytes(int firstByte, int secondByte)
 {
 	int fullBitValue = (firstByte << 8) + secondByte - 1;
-	int temp = fullBitValue / 1600;
-	result[0] = temp;
-	fullBitValue -= temp * 1600;
-	temp = fullBitValue / 40;
-	result[1] = temp;
-	result[2] = fullBitValue - temp * 40;
+	int a = fullBitValue / 1600;
+	fullBitValue -= a * 1600;
+	int b = fullBitValue / 40;
+	int c = fullBitValue - b * 40;
+	return {a, b, c};
 }
 
 /**
@@ -183,7 +182,6 @@ static bool DecodeC40Segment(BitSource& bits, std::string& result)
 	// TODO(bbrown): The Upper Shift with C40 doesn't work in the 4 value scenario all the time
 	bool upperShift = false;
 
-	std::array<int, 3> cValues = {};
 	int shift = 0;
 	do {
 		// If there is only one byte left then it will be encoded as ASCII
@@ -195,10 +193,7 @@ static bool DecodeC40Segment(BitSource& bits, std::string& result)
 			return true;
 		}
 
-		ParseTwoBytes(firstByte, bits.readBits(8), cValues);
-
-		for (int i = 0; i < 3; i++) {
-			int cValue = cValues[i];
+		for (int cValue : ParseTwoBytes(firstByte, bits.readBits(8))) {
 			switch (shift) {
 			case 0:
 				if (cValue < 3) {
@@ -278,7 +273,6 @@ static bool DecodeTextSegment(BitSource& bits, std::string& result)
 	// TODO(bbrown): The Upper Shift with Text doesn't work in the 4 value scenario all the time
 	bool upperShift = false;
 
-	std::array<int, 3> cValues = {};
 	int shift = 0;
 	do {
 		// If there is only one byte left then it will be encoded as ASCII
@@ -290,10 +284,7 @@ static bool DecodeTextSegment(BitSource& bits, std::string& result)
 			return true;
 		}
 
-		ParseTwoBytes(firstByte, bits.readBits(8), cValues);
-
-		for (int i = 0; i < 3; i++) {
-			int cValue = cValues[i];
+		for (int cValue : ParseTwoBytes(firstByte, bits.readBits(8))) {
 			switch (shift) {
 			case 0:
 				if (cValue < 3) {
@@ -378,7 +369,6 @@ static bool DecodeAnsiX12Segment(BitSource& bits, std::string& result)
 	// Three ANSI X12 values are encoded in a 16-bit value as
 	// (1600 * C1) + (40 * C2) + C3 + 1
 
-	std::array<int, 3> cValues = {};
 	do {
 		// If there is only one byte left then it will be encoded as ASCII
 		if (bits.available() == 8) {
@@ -389,10 +379,7 @@ static bool DecodeAnsiX12Segment(BitSource& bits, std::string& result)
 			return true;
 		}
 
-		ParseTwoBytes(firstByte, bits.readBits(8), cValues);
-
-		for (int i = 0; i < 3; i++) {
-			int cValue = cValues[i];
+		for (auto cValue : ParseTwoBytes(firstByte, bits.readBits(8))) {
 			if (cValue == 0) {  // X12 segment terminator <CR>
 				result.push_back('\r');
 			}

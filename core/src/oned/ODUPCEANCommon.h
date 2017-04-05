@@ -49,7 +49,7 @@ public:
 	static const std::array<std::array<int, 4>, 20> L_AND_G_PATTERNS;
 
 
-	template <int N>
+	template <size_t N>
 	static int ComputeChecksum(const std::array<int, N>& digits)
 	{
 		int sum = 0;

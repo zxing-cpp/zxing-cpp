@@ -23,6 +23,7 @@
 #include "BitArray.h"
 #include "DecodeHints.h"
 #include "TextDecoder.h"
+#include "ZXContainerAlgorithms.h"
 
 #include <algorithm>
 
@@ -200,17 +201,8 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, int startGuardBegin,
 		extensionLength = static_cast<int>(extensionResult.text().length());
 	}
 
-	if (!_allowedExtensions.empty()) {
-		bool valid = false;
-		for (int length : _allowedExtensions) {
-			if (extensionLength == length) {
-				valid = true;
-				break;
-			}
-		}
-		if (!valid) {
-			return Result(DecodeStatus::NotFound);
-		}
+	if (!_allowedExtensions.empty() && !Contains(_allowedExtensions, extensionLength)) {
+		return Result(DecodeStatus::NotFound);
 	}
 
 	if (format == BarcodeFormat::EAN_13 || format == BarcodeFormat::UPC_A) {

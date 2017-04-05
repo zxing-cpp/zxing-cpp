@@ -360,7 +360,7 @@ void
 Version::buildFunctionPattern(BitMatrix& bitMatrix) const
 {
 	int dimension = dimensionForVersion();
-	bitMatrix.init(dimension, dimension);
+	bitMatrix = BitMatrix(dimension, dimension);
 
 	// Top left finder pattern + separator + format
 	bitMatrix.setRegion(0, 0, 9, 9);

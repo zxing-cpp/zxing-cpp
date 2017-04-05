@@ -15,7 +15,8 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#include <cstdint>
+#include <cstddef>
+#include <string>
 
 namespace ZXing {
 
@@ -86,7 +87,7 @@ enum class BarcodeFormat
 const char* ToString(BarcodeFormat format);
 
 // Return FORMAT_COUNT if str is unexpected
-BarcodeFormat FromString(const char* str);
+BarcodeFormat FromString(const std::string& str);
 
 struct BarcodeFormatHasher
 {

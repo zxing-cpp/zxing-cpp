@@ -19,6 +19,7 @@
 #include "pdf417/PDFEncoder.h"
 #include "pdf417/PDFHighLevelEncoder.h"
 #include <array>
+#include <cmath>
 #include <vector>
 
 namespace ZXing {

@@ -442,10 +442,11 @@ static const RatioTableType& GetRatioTable()
 	return ref;
 }
 
-static void SampleBitCounts(const ModuleBitCountType& moduleBitCount, ModuleBitCountType& result)
+static ModuleBitCountType SampleBitCounts(const ModuleBitCountType& moduleBitCount)
 {
 	float bitCountSum = static_cast<float>(std::accumulate(moduleBitCount.begin(), moduleBitCount.end(), 0));
-	std::fill(result.begin(), result.end(), 0);
+	ModuleBitCountType result;
+	result.fill(0);
 	int bitCountIndex = 0;
 	int sumPreviousBits = 0;
 	for (int i = 0; i < CodewordDecoder::MODULES_IN_CODEWORD; i++) {
@@ -459,6 +460,7 @@ static void SampleBitCounts(const ModuleBitCountType& moduleBitCount, ModuleBitC
 		}
 		result[bitCountIndex]++;
 	}
+	return result;
 }
 
 
@@ -511,9 +513,7 @@ static int GetClosestDecodedValue(const ModuleBitCountType& moduleBitCount)
 int
 CodewordDecoder::GetDecodedValue(const std::array<int, BARS_IN_MODULE>& moduleBitCount)
 {
-	ModuleBitCountType sampled = {};
-	SampleBitCounts(moduleBitCount, sampled);
-	int decodedValue = GetDecodedCodewordValue(sampled);
+	int decodedValue = GetDecodedCodewordValue(SampleBitCounts(moduleBitCount));
 	if (decodedValue != -1) {
 		return decodedValue;
 	}
