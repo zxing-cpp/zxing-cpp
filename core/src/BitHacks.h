@@ -1,6 +1,7 @@
 #pragma once
 /*
 * Copyright 2016 Huy Cuong Nguyen
+* Copyright 2017 Axel Waggershauser
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -131,6 +132,16 @@ public:
 
 	// reverse a whole array of bits. padding is the number of 'dummy' bits at the end of the array
 	static void Reverse(std::vector<uint32_t>& bits, size_t padding)
+	{			
+		// reverse all int's first (reversing the ints in the array and the bits in the ints at the same time)
+		auto first = bits.begin(), last = bits.end();
+		for (; first < --last; ++first) {
+			auto t = *first;
+			*first = BitHacks::Reverse(*last);
+			*last = BitHacks::Reverse(t);
+		}
+		if (first == last)
+			*last = BitHacks::Reverse(*last);
 
 		// now correct the int's if the bit size isn't a multiple of 32
 		ShiftRight(bits, padding);
