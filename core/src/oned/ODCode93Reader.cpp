@@ -73,42 +73,16 @@ static int ToPattern(const CounterContainer& counters)
 	return pattern;
 }
 
-static DecodeStatus
-FindAsteriskPattern(const BitArray& row, int& outPatternStart, int& outPatternEnd)
+static BitArray::Range
+FindAsteriskPattern(const BitArray& row)
 {
-	int width = row.size();
-	int offset = row.getNextSet(0);
-	CounterContainer theCounters = {};
-	int patternStart = offset;
-	bool isWhite = false;
-	int patternLength = static_cast<int>(theCounters.size());
-	int counterPosition = 0;
-	auto bitIter = row.iterAt(offset);
-	for (; offset < width; ++offset, ++bitIter) {
-		if (*bitIter != isWhite) {
-			theCounters[counterPosition]++;
-		}
-		else {
-			if (counterPosition == patternLength - 1) {
-				if (ToPattern(theCounters) == ASTERISK_ENCODING) {
-					outPatternStart = patternStart;
-					outPatternEnd = offset;
-					return DecodeStatus::NoError;
-				}
-				patternStart += theCounters[0] + theCounters[1];
-				std::copy(theCounters.begin() + 2, theCounters.end(), theCounters.begin());
-				theCounters[patternLength - 2] = 0;
-				theCounters[patternLength - 1] = 0;
-				counterPosition--;
-			}
-			else {
-				counterPosition++;
-			}
-			theCounters[counterPosition] = 1;
-			isWhite = !isWhite;
-		}
-	}
-	return DecodeStatus::NotFound;
+	CounterContainer counters;
+
+	return RowReader::FindPattern(
+	    row.getNextSet(row.begin()), row.end(), counters,
+	    [](BitArray::Iterator begin, BitArray::Iterator end, const CounterContainer& counters) {
+		    return ToPattern(counters) == ASTERISK_ENCODING;
+	    });
 }
 
 static char
@@ -240,47 +214,36 @@ CheckChecksums(const std::string& result)
 Result
 Code93Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const
 {
-	int patternStart = 0, patternEnd = 0;
-	DecodeStatus status = FindAsteriskPattern(row, patternStart, patternEnd);
-	if (StatusIsError(status)) {
-		return Result(status);
-	}
-	// Read off white space    
-	int nextStart = row.getNextSet(patternEnd);
-	int end = row.size();
+	auto range = FindAsteriskPattern(row);
+	if (!range)
+		return Result(DecodeStatus::NotFound);
 
+	float left = (range.begin - row.begin()) + 0.5f * range.size();
 	CounterContainer theCounters = {};
 	std::string result;
 	result.reserve(20);
 
-	char decodedChar;
-	int lastStart;
 	do {
-		status = RecordPattern(row, nextStart, theCounters);
-		if (StatusIsError(status)) {
-			return Result(status);
-		}
+		// Read off white space
+		range = RecordPattern(row.getNextSet(range.end), row.end(), theCounters);
+		if (!range)
+			return Result(DecodeStatus::NotFound);
+
 		int pattern = ToPattern(theCounters);
 		if (pattern < 0) {
 			return Result(DecodeStatus::NotFound);
 		}
-		decodedChar = PatternToChar(pattern);
+		char decodedChar = PatternToChar(pattern);
 		if (decodedChar == 0) {
 			return Result(DecodeStatus::NotFound);
 		}
 		result.push_back(decodedChar);
-		lastStart = nextStart;
-		nextStart = Accumulate(theCounters, nextStart);
-		// Read off white space
-		nextStart = row.getNextSet(nextStart);
-	} while (decodedChar != '*');
-	
-	result.resize(result.length() - 1); // remove asterisk
+	} while (result.back() != '*');
 
-	int lastPatternSize = Accumulate(theCounters, 0);
+	result.pop_back(); // remove asterisk
 
 	// Should be at least one more black module
-	if (nextStart == end || !row.get(nextStart)) {
+	if (range.end == row.end() || !*range.end) {
 		return Result(DecodeStatus::NotFound);
 	}
 
@@ -289,7 +252,7 @@ Code93Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 		return Result(DecodeStatus::NotFound);
 	}
 
-	status = CheckChecksums(result);
+	auto status = CheckChecksums(result);
 	if (StatusIsError(status)) {
 		return Result(status);
 	}
@@ -302,8 +265,7 @@ Code93Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 		return Result(status);
 	}
 
-	float left = 0.5f * static_cast<float>(patternStart + patternEnd);
-	float right = static_cast<float>(lastStart) + 0.5f * static_cast<float>(lastPatternSize);
+	float right = (range.begin - row.begin()) + 0.5f * range.size();
 	float ypos = static_cast<float>(rowNumber);
 	return Result(TextDecoder::FromLatin1(resultString), ByteArray(), { ResultPoint(left, ypos), ResultPoint(right, ypos) }, BarcodeFormat::CODE_93);
 }

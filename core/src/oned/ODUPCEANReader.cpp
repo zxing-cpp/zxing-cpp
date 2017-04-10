@@ -56,13 +56,10 @@ UPCEANReader::UPCEANReader(const DecodeHints& hints) :
 DecodeStatus
 UPCEANReader::DoFindGuardPattern(const BitArray& row, int rowOffset, bool whiteFirst, const int* pattern, int* counters, size_t length, int& begin, int& end)
 {
-	int width = row.size();
 	bool isWhite = whiteFirst;
-	rowOffset = whiteFirst ? row.getNextUnset(rowOffset) : row.getNextSet(rowOffset);
+	int patternStart = whiteFirst ? row.getNextUnset(rowOffset) : row.getNextSet(rowOffset);
 	int counterPosition = 0;
-	int patternStart = rowOffset;
-	auto bitIter = row.iterAt(rowOffset);
-	for (; rowOffset < width; ++rowOffset, ++bitIter) {
+	for (auto bitIter = row.iterAt(patternStart); bitIter != row.end(); ++bitIter) {
 		if (*bitIter != isWhite) {
 			counters[counterPosition]++;
 		}
@@ -70,7 +67,7 @@ UPCEANReader::DoFindGuardPattern(const BitArray& row, int rowOffset, bool whiteF
 			if (counterPosition == int(length) - 1) {
 				if (PatternMatchVariance(counters, pattern, length, MAX_INDIVIDUAL_VARIANCE) < MAX_AVG_VARIANCE) {
 					begin = patternStart;
-					end = rowOffset;
+					end = bitIter - row.begin();
 					return DecodeStatus::NoError;
 				}
 				patternStart += counters[0] + counters[1];

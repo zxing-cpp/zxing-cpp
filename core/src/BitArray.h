@@ -2,6 +2,7 @@
 /*
 * Copyright 2016 Nu-book Inc.
 * Copyright 2016 ZXing authors
+* Copyright 2017 Axel Waggershauser
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -16,10 +17,20 @@
 * limitations under the License.
 */
 
+#include "BitHacks.h"
+
 #include <cstdint>
+#include <iterator>
 #include <vector>
 
 namespace ZXing {
+
+template <typename Iterator>
+struct Range {
+	Iterator begin, end;
+	operator bool() const { return begin != end; }
+	int size() const { return end - begin; }
+};
 
 /**
 * <p>A simple, fast array of bits, represented compactly by an array of ints internally.</p>
@@ -30,11 +41,44 @@ class BitArray
 {
 public:
 
-	class Iterator
+	class Iterator : public std::iterator<std::bidirectional_iterator_tag, bool, int, bool*, bool>
 	{
 	public:
 		bool operator*() const { return (*_value & _mask) != 0; }
-		void operator++() { if ((_mask <<= 1) == 0) { _mask = 1; ++_value; } }
+
+		Iterator& operator++()
+		{
+			if ((_mask <<= 1) == 0) {
+				_mask = 1;
+				++_value;
+			}
+			return *this;
+		}
+
+		Iterator& operator--()
+		{
+			if ((_mask >>= 1) == 0) {
+				_mask = 0x80000000;
+				--_value;
+			}
+			return *this;
+		}
+
+		int operator-(const Iterator& rhs) const
+		{
+			int32_t maskDiff = _mask - rhs._mask;
+			return (_value - rhs._value) * 32 +
+			       (maskDiff >= 0 ? BitHacks::CountBitsSet(maskDiff) : -BitHacks::CountBitsSet(-maskDiff));
+		}
+
+		bool operator==(const Iterator& rhs) const { return _mask == rhs._mask && _value == rhs._value; }
+		bool operator!=(const Iterator& rhs) const { return !(*this == rhs); }
+
+		bool operator<(const Iterator& rhs) const
+		{
+			return _value < rhs._value || (_value == rhs._value && _mask < rhs._mask);
+		}
+
 	private:
 		Iterator(const uint32_t* p, uint32_t m) : _value(p), _mask(m) {}
 		const uint32_t* _value;
@@ -42,18 +86,8 @@ public:
 		friend class BitArray;
 	};
 
-	class BackwardIterator
-	{
-	public:
-		bool operator*() const { return (*_value & _mask) != 0; }
-		void operator--() { if ((_mask >>= 1) == 0) { _mask = 0x80000000; --_value; } }
-	private:
-		BackwardIterator(const uint32_t* p, uint32_t m) : _value(p), _mask(m) {}
-		const uint32_t* _value;
-		uint32_t _mask;
-		friend class BitArray;
-	};
-
+	using ReverseIterator = std::reverse_iterator<Iterator>;
+	using Range = Range<Iterator>;
 
 	BitArray() {}
 
@@ -95,15 +129,32 @@ public:
 
 	// If you know exactly how may bits you are going to iterate
 	// and that you access bit in sequence, iterator is faster than get().
-	// However, be extremly careful since there is no check so whatever
-	// (performance is reason to theses iterators to exist at the first place!)
-	Iterator iterAt(int i) const {
-		return Iterator(_bits.data() + (i >> 5), 1 << (i & 0x1F));
+	// However, be extremly careful since there is no check whatsoever.
+	// (Performance is the reason for the iterator to exist int the first place!)
+	Iterator iterAt(int i) const noexcept { return Iterator(_bits.data() + (i >> 5), 1 << (i & 0x1F)); }
+
+	Iterator begin() const noexcept { return iterAt(0); }
+	Iterator end() const noexcept { return iterAt(_size); }
+	ReverseIterator rbegin() const noexcept { return ReverseIterator(end()); }
+	ReverseIterator rend() const noexcept { return ReverseIterator(begin()); }
+
+	Iterator getNextSetTo(Iterator i, bool v) const {
+		// mask off lesser bits first
+		int32_t currentBits = (v ? *i._value : ~*i._value) & ~(i._mask - 1);
+		auto e = end();
+
+		while (currentBits == 0) {
+			if (++i._value == e._value) {
+				return e;
+			}
+			currentBits = v ? *i._value : ~*i._value;
+		}
+		i._mask = 1 << BitHacks::NumberOfTrailingZeros(currentBits);
+		return i;
 	}
 
-	BackwardIterator backIterAt(int i) const {
-		return BackwardIterator(_bits.data() + (i >> 5), 1 << (i & 0x1F));
-	}
+	Iterator getNextSet(Iterator i) const { return getNextSetTo(i, true); }
+	Iterator getNextUnset(Iterator i) const { return getNextSetTo(i, false); }
 
 	/**
 	* Sets bit i.
@@ -172,6 +223,20 @@ public:
 	* @throws IllegalArgumentException if end is less than or equal to start
 	*/
 	bool isRange(int start, int end, bool value) const;
+
+	// Little helper method to make common isRange use case more readable.
+	// Pass positive zone size to look for quite zone after i and negative for zone in front of i
+	bool hasQuiteZone(Iterator i, int signedZoneSize, bool value = false) const {
+		int index = i - begin();
+		if (signedZoneSize > 0)
+			return isRange(index, std::min(size(), index + signedZoneSize), value);
+		else
+			return isRange(std::max(0, index + signedZoneSize), index, value);
+	}
+
+	bool hasQuiteZone(ReverseIterator i, int signedZoneSize, bool value = false) const {
+		return hasQuiteZone(i.base(), -signedZoneSize, value);
+	}
 
 	/**
 	* Appends the least-significant bits, from value, in order from most-significant to

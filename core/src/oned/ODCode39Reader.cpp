@@ -20,7 +20,6 @@
 #include "BitArray.h"
 #include "DecodeHints.h"
 #include "TextDecoder.h"
-#include "ZXContainerAlgorithms.h"
 
 #include <algorithm>
 #include <array>
@@ -98,43 +97,18 @@ ToNarrowWidePattern(const CounterContainer& counters)
 	return -1;
 }
 
-static DecodeStatus
-FindAsteriskPattern(const BitArray& row, CounterContainer& counters, int& outPatternStart, int& outPatternEnd)
+static BitArray::Range
+FindAsteriskPattern(const BitArray& row)
 {
-	int width = row.size();
-	int offset = row.getNextSet(0);
-	int counterPosition = 0;
-	int patternStart = offset;
-	bool isWhite = false;
-	int patternLength = static_cast<int>(counters.size());
-	auto bitIter = row.iterAt(offset);
-	for (; offset < width; ++offset, ++bitIter) {
-		if (*bitIter != isWhite) {
-			counters[counterPosition]++;
-		}
-		else {
-			if (counterPosition == patternLength - 1) {
-				// Look for whitespace before start pattern, >= 50% of width of start pattern
-				if (ToNarrowWidePattern(counters) == ASTERISK_ENCODING &&
-					row.isRange(std::max(0, patternStart - ((offset - patternStart) / 2)), patternStart, false)) {
-					outPatternStart = patternStart;
-					outPatternEnd = offset;
-					return DecodeStatus::NoError;
-				}
-				patternStart += counters[0] + counters[1];
-				std::copy(counters.begin() + 2, counters.end(), counters.begin());
-				counters[patternLength - 2] = 0;
-				counters[patternLength - 1] = 0;
-				counterPosition--;
-			}
-			else {
-				counterPosition++;
-			}
-			counters[counterPosition] = 1;
-			isWhite = !isWhite;
-		}
-	}
-	return DecodeStatus::NotFound;
+	CounterContainer counters;
+
+	return RowReader::FindPattern(
+	    row.getNextSet(row.begin()), row.end(), counters,
+	    [&row](BitArray::Iterator begin, BitArray::Iterator end, const CounterContainer& counters) {
+		    // Look for whitespace before start pattern, >= 50% of width of start pattern
+		    return ToNarrowWidePattern(counters) == ASTERISK_ENCODING &&
+		           row.hasQuiteZone(begin, - (end - begin) / 2);
+	    });
 }
 
 static char
@@ -231,49 +205,40 @@ Code39Reader::Code39Reader(const DecodeHints& hints, bool extendedMode) :
 Result
 Code39Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const
 {
+	auto range = FindAsteriskPattern(row);
+	if (!range)
+		return Result(DecodeStatus::NotFound);
+
+	float left = (range.begin - row.begin()) + 0.5f * range.size();
 	CounterContainer theCounters = {};
 	std::string result;
 	result.reserve(20);
-	int patternStart = 0, patternEnd = 0;
-	DecodeStatus status = FindAsteriskPattern(row, theCounters, patternStart, patternEnd);
-	if (StatusIsError(status)) {
-		return Result(status);
-	}
-	// Read off white space    
-	int nextStart = row.getNextSet(patternEnd);
-	int end = row.size();
 
-	char decodedChar;
-	int lastStart;
 	do {
-		status = RecordPattern(row, nextStart, theCounters);
-		if (StatusIsError(status)) {
-			return Result(status);
-		}
-		int pattern = ToNarrowWidePattern(theCounters);
-		if (pattern < 0) {
+		// Read off white space
+		range = RecordPattern(row.getNextSet(range.end), row.end(), theCounters);
+		if (!range)
 			return Result(DecodeStatus::NotFound);
-		}
-		
-		decodedChar = PatternToChar(pattern);
+
+		int pattern = ToNarrowWidePattern(theCounters);
+		if (pattern < 0)
+			return Result(DecodeStatus::NotFound);
+
+		char decodedChar = PatternToChar(pattern);
 		if (decodedChar == 0) {
 			return Result(DecodeStatus::NotFound);
 		}
 		result += decodedChar;
-		lastStart = nextStart;
-		nextStart = Accumulate(theCounters, nextStart);
-		// Read off white space
-		nextStart = row.getNextSet(nextStart);
-	} while (decodedChar != '*');
+	} while (result.back() != '*');
 
-	result.resize(result.length() - 1); // remove asterisk
+	result.pop_back(); // remove asterisk
 
 	// Look for whitespace after pattern:
-	int lastPatternSize = Accumulate(theCounters, 0);
-	int whiteSpaceAfterEnd = nextStart - lastStart - lastPatternSize;
+	auto nextStart = row.getNextSet(range.end);
+	int whiteSpaceAfterEnd = nextStart - range.begin;
 	// If 50% of last pattern size, following last pattern, is not whitespace, fail
 	// (but if it's whitespace to the very end of the image, that's OK)
-	if (nextStart != end && (whiteSpaceAfterEnd * 2) < lastPatternSize) {
+	if (nextStart != row.end() && (whiteSpaceAfterEnd * 2) < range.size()) {
 		return Result(DecodeStatus::NotFound);
 	}
 
@@ -296,7 +261,7 @@ Code39Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 
 	std::string resultString;
 	if (_extendedMode) {
-		status = DecodeExtended(result, resultString);
+		auto status = DecodeExtended(result, resultString);
 		if (StatusIsError(status)) {
 			return Result(status);
 		}
@@ -305,8 +270,7 @@ Code39Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 		resultString = result;
 	}
 
-	float left = 0.5f * static_cast<float>(patternStart + patternEnd);
-	float right = static_cast<float>(lastStart) + 0.5f * static_cast<float>(lastPatternSize);
+	float right = (range.begin - row.begin()) + 0.5f * range.size();
 	float ypos = static_cast<float>(rowNumber);
 	return Result(TextDecoder::FromLatin1(resultString), ByteArray(), { ResultPoint(left, ypos), ResultPoint(right, ypos) }, BarcodeFormat::CODE_39);
 }
