@@ -92,7 +92,7 @@ ModulusPoly::add(const ModulusPoly& other) const
 	size_t lengthDiff = largerCoefficients->size() - smallerCoefficients->size();
 
 	// Copy high-order terms only found in higher-degree polynomial's coefficients
-	std::copy(largerCoefficients->begin(), largerCoefficients->begin() + lengthDiff, sumDiff.begin());
+	std::copy_n(largerCoefficients->begin(), lengthDiff, sumDiff.begin());
 	for (size_t i = lengthDiff; i < largerCoefficients->size(); i++) {
 		sumDiff[i] = _field->add((*smallerCoefficients)[i - lengthDiff], (*largerCoefficients)[i]);
 	}

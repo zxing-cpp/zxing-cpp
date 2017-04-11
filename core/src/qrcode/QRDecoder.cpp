@@ -442,7 +442,7 @@ DoDecode(const BitMatrix& bits, const Version& version, const FormatInformation&
 		totalBytes += dataBlock.numDataCodewords();
 	}
 	ByteArray resultBytes(totalBytes);
-	int resultOffset = 0;
+	auto resultIterator = resultBytes.begin();
 
 	// Error-correct and copy data blocks together into a stream of bytes
 	for (auto& dataBlock : dataBlocks)
@@ -454,9 +454,7 @@ DoDecode(const BitMatrix& bits, const Version& version, const FormatInformation&
 		if (StatusIsError(status)) {
 			return status;
 		}
-		for (int i = 0; i < numDataCodewords; i++) {
-			resultBytes[resultOffset++] = codewordBytes[i];
-		}
+		resultIterator = std::copy_n(codewordBytes.begin(), numDataCodewords, resultIterator);
 	}
 
 	// Decode the contents of that stream of bytes

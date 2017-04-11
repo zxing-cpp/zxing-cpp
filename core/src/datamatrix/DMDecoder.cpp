@@ -571,9 +571,7 @@ CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
 	if (StatusIsOK(status)) {
 		// Copy back into array of bytes -- only need to worry about the bytes that were data
 		// We don't care about errors in the error-correction codewords
-		for (int i = 0; i < numDataCodewords; i++) {
-			codewordBytes[i] = static_cast<uint8_t>(codewordsInts[i]);
-		}
+		std::copy_n(codewordsInts.begin(), numDataCodewords, codewordBytes.begin());
 	}
 	else if (StatusIsKindOf(status, DecodeStatus::ReedSolomonError)) {
 		return DecodeStatus::ChecksumError;
