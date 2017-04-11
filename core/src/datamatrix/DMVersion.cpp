@@ -85,7 +85,7 @@ Version::Version(int versionNumber, int symbolSizeRows, int symbolSizeColumns, i
 const Version *
 Version::VersionForDimensions(int numRows, int numColumns)
 {
-	if ((numRows & 0x01) != 0 || (numColumns & 0x01) != 0) {
+	if ((numRows & 0x01) != 0 || (numColumns & 0x01) != 0 || numRows < 8 || numRows > 144) {
 		return nullptr;
 	}
 
