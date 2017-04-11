@@ -25,9 +25,7 @@
 namespace ZXing {
 namespace QRCode {
 
-namespace {
-
-inline int copyBit(const BitMatrix& bitMatrix, int i, int j, int versionBits, bool mirrored)
+static inline int copyBit(const BitMatrix& bitMatrix, int i, int j, int versionBits, bool mirrored)
 {
 	bool bit = mirrored ? bitMatrix.get(j, i) : bitMatrix.get(i, j);
 	return (versionBits << 1) | static_cast<int>(bit);
@@ -40,7 +38,7 @@ inline int copyBit(const BitMatrix& bitMatrix, int i, int j, int versionBits, bo
 * @throws FormatException if both version information locations cannot be parsed as
 * the valid encoding of version information
 */
-const Version* ReadVersion(const BitMatrix& bitMatrix, bool mirrored)
+static const Version* ReadVersion(const BitMatrix& bitMatrix, bool mirrored)
 {
 	int dimension = bitMatrix.height();
 
@@ -85,7 +83,7 @@ const Version* ReadVersion(const BitMatrix& bitMatrix, bool mirrored)
 * @throws FormatException if both format information locations cannot be parsed as
 * the valid encoding of format information
 */
-DecodeStatus ReadFormatInformation(const BitMatrix& bitMatrix, bool mirrored, FormatInformation &out)
+static DecodeStatus ReadFormatInformation(const BitMatrix& bitMatrix, bool mirrored, FormatInformation &out)
 {
 	// Read top-left format info bits
 	int formatInfoBits1 = 0;
@@ -116,9 +114,6 @@ DecodeStatus ReadFormatInformation(const BitMatrix& bitMatrix, bool mirrored, Fo
 		return DecodeStatus::NoError;
 	return DecodeStatus::FormatError;
 }
-
-
-} // anonymous
 
 DecodeStatus
 BitMatrixParser::ParseVersionInfo(const BitMatrix& bitMatrix, bool mirrored, const Version*& parsedVersion, FormatInformation& parsedFormatInfo)

@@ -23,10 +23,8 @@
 
 namespace ZXing {
 
-namespace {
-
 // May throw ReedSolomonException
-DecodeStatus
+static DecodeStatus
 RunEuclideanAlgorithm(const GenericGF& field, GenericGFPoly a, GenericGFPoly b, int R, GenericGFPoly& sigma, GenericGFPoly& omega)
 {
 	// Assume a's degree is >= b's
@@ -82,7 +80,7 @@ RunEuclideanAlgorithm(const GenericGF& field, GenericGFPoly a, GenericGFPoly b, 
 }
 
 // May throw ReedSolomonException
-DecodeStatus
+static DecodeStatus
 FindErrorLocations(const GenericGF& field, const GenericGFPoly& errorLocator, std::vector<int>& outLocations)
 {
 	// This is a direct application of Chien's search
@@ -105,7 +103,8 @@ FindErrorLocations(const GenericGF& field, const GenericGFPoly& errorLocator, st
 	return DecodeStatus::NoError;
 }
 
-void FindErrorMagnitudes(const GenericGF& field, const GenericGFPoly& errorEvaluator, const std::vector<int>& errorLocations, std::vector<int>& outMagnitudes)
+static void FindErrorMagnitudes(const GenericGF& field, const GenericGFPoly& errorEvaluator,
+                                const std::vector<int>& errorLocations, std::vector<int>& outMagnitudes)
 {
 	// This is directly applying Forney's Formula
 	size_t s = errorLocations.size();
@@ -131,8 +130,6 @@ void FindErrorMagnitudes(const GenericGF& field, const GenericGFPoly& errorEvalu
 	}
 }
 
-
-} // anonymous
 
 DecodeStatus
 ReedSolomonDecoder::decode(std::vector<int>& received, int twoS) const
