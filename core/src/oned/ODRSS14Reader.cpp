@@ -490,7 +490,7 @@ RSS14Reader::decodeRow(int rowNumber, const BitArray& row_, std::unique_ptr<Deco
 	AddOrTally(prevState->possibleLeftPairs, DecodePair(row, false, rowNumber));
 	row.reverse();
 	AddOrTally(prevState->possibleRightPairs, DecodePair(row, true, rowNumber));
-	row.reverse();
+//	row.reverse();
 
 	for (const auto& left : prevState->possibleLeftPairs) {
 		if (left.count() > 1) {
