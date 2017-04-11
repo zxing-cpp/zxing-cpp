@@ -88,9 +88,8 @@ public:
 
 	friend void swap(GenericGFPoly& a, GenericGFPoly& b)
 	{
-		using std::swap;
-		swap(a._field, b._field);
-		swap(a._coefficients, b._coefficients);
+		std::swap(a._field, b._field);
+		std::swap(a._coefficients, b._coefficients);
 	}
 
 private:

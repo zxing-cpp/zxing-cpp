@@ -79,9 +79,8 @@ public:
 
 	friend void swap(ModulusPoly& a, ModulusPoly& b)
 	{
-		using std::swap;
-		swap(a._field, b._field);
-		swap(a._coefficients, b._coefficients);
+		std::swap(a._field, b._field);
+		std::swap(a._coefficients, b._coefficients);
 	}
 };
 

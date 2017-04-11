@@ -54,11 +54,12 @@ public:
 	template <typename Iter>
 	void applyMirroredCorrection(Iter first, Iter end) const
 	{
-		using std::swap;
 		if (!_mirrored)
 			return;
 		if (std::distance(first, end) < 3)
 			return;
+
+		using std::swap;
 		swap(*first, *(first + 2));
 		// No need to 'fix' top-left and alignment pattern.
 	}

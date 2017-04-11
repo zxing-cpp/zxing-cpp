@@ -29,8 +29,6 @@ namespace {
 DecodeStatus
 RunEuclideanAlgorithm(const GenericGF& field, GenericGFPoly a, GenericGFPoly b, int R, GenericGFPoly& sigma, GenericGFPoly& omega)
 {
-	using std::swap;
-
 	// Assume a's degree is >= b's
 	if (a.degree() < b.degree()) {
 		swap(a, b);

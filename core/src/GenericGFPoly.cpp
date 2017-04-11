@@ -77,8 +77,6 @@ GenericGFPoly::evaluateAt(int a) const
 GenericGFPoly
 GenericGFPoly::addOrSubtract(const GenericGFPoly& other) const
 {
-	using std::swap;
-
 	if (_field != other._field) {
 		throw std::invalid_argument("GenericGFPolys do not have same GenericGF field");
 	}
@@ -94,7 +92,7 @@ GenericGFPoly::addOrSubtract(const GenericGFPoly& other) const
 	auto smallerCoefficients = &_coefficients;
 	auto largerCoefficients = &other._coefficients;
 	if (smallerCoefficients->size() > largerCoefficients->size()) {
-		swap(smallerCoefficients, largerCoefficients);
+		std::swap(smallerCoefficients, largerCoefficients);
 	}
 
 	std::vector<int> sumDiff(largerCoefficients->size(), 0);
