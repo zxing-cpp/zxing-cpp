@@ -70,7 +70,7 @@ static const int FIRST_DIGIT_ENCODINGS[] = {
 */
 static DecodeStatus DetermineFirstDigit(std::string& resultString, int lgPatternFound)
 {
-	for (int d = 0; d < 10; d++) {
+	for (int d = 0; d < Length(FIRST_DIGIT_ENCODINGS); d++) {
 		if (lgPatternFound == FIRST_DIGIT_ENCODINGS[d]) {
 			resultString.insert(0, 1, (char)('0' + d));
 			return DecodeStatus::NoError;

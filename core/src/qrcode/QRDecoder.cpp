@@ -33,6 +33,7 @@
 #include "CharacterSetECI.h"
 #include "DecodeHints.h"
 #include "DecodeStatus.h"
+#include "ZXContainerAlgorithms.h"
 
 #include <list>
 #include <type_traits>
@@ -184,7 +185,7 @@ ToAlphaNumericChar(int value)
 		' ', '$', '%', '*', '+', '-', '.', '/', ':'
 	};
 
-	if (value < 0 || value >= (int)std::extent<decltype(ALPHANUMERIC_CHARS)>::value) {
+	if (value < 0 || value >= Length(ALPHANUMERIC_CHARS)) {
 		throw std::out_of_range("ToAlphaNumericChar: out of range");
 	}
 	return ALPHANUMERIC_CHARS[value];

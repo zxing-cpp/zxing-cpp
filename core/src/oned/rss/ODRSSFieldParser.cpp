@@ -17,6 +17,7 @@
 
 #include "oned/rss/ODRSSFieldParser.h"
 #include "DecodeStatus.h"
+#include "ZXContainerAlgorithms.h"
 
 #include <cstdlib>
 #include <algorithm>
@@ -228,10 +229,10 @@ FieldParser::ParseFieldsInGeneralPurpose(const std::string &rawInfo, std::string
 
 	const DigitLength* dataLengthSets[] = { TWO_DIGIT_DATA_LENGTH, THREE_DIGIT_DATA_LENGTH, THREE_DIGIT_PLUS_DIGIT_DATA_LENGTH, FOUR_DIGIT_DATA_LENGTH };
 	size_t dataSetSizes[] = {
-		std::extent<decltype(TWO_DIGIT_DATA_LENGTH)>::value,
-		std::extent<decltype(THREE_DIGIT_DATA_LENGTH)>::value,
-		std::extent<decltype(THREE_DIGIT_PLUS_DIGIT_DATA_LENGTH)>::value,
-		std::extent<decltype(FOUR_DIGIT_DATA_LENGTH)>::value,
+		Length(TWO_DIGIT_DATA_LENGTH),
+		Length(THREE_DIGIT_DATA_LENGTH),
+		Length(THREE_DIGIT_PLUS_DIGIT_DATA_LENGTH),
+		Length(FOUR_DIGIT_DATA_LENGTH),
 	};
 	size_t digitSizes[] = { 2, 3, 3, 4 };
 	int aiSizes[] = { 2, 3, 4, 4 };

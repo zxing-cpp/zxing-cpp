@@ -17,6 +17,7 @@
 
 #include "oned/ODCodabarWriter.h"
 #include "oned/ODWriterHelper.h"
+#include "ZXContainerAlgorithms.h"
 
 #include <cctype>
 
@@ -28,8 +29,7 @@ static const char* ALT_START_END_CHARS = "TN*E";
 static const char* CHARS_WHICH_ARE_TEN_LENGTH_EACH_AFTER_DECODED = "/:+.";
 static const wchar_t DEFAULT_GUARD = START_END_CHARS[0];
 
-static const int ALPHABET_COUNT = 20;
-static const char* ALPHABET = "0123456789-$:/.+ABCD";
+static const char ALPHABET[] = "0123456789-$:/.+ABCD";
 
 /**
 * These represent the encodings of characters, as patterns of wide and narrow bars. The 7 least-significant bits of
@@ -39,6 +39,8 @@ static const int CHARACTER_ENCODINGS[] = {
 	0x003, 0x006, 0x009, 0x060, 0x012, 0x042, 0x021, 0x024, 0x030, 0x048, // 0-9
 	0x00c, 0x018, 0x045, 0x051, 0x054, 0x015, 0x01A, 0x029, 0x00B, 0x00E, // -$:/.+ABCD
 };
+
+static_assert(Length(ALPHABET) - 1 == Length(CHARACTER_ENCODINGS), "table size mismatch");
 
 static inline bool Contains(const char* str, int c)
 {
@@ -125,7 +127,7 @@ CodabarWriter::encode(const std::wstring& contents_, int width, int height, BitM
 			}
 		}
 		int code = 0;
-		for (int i = 0; i < ALPHABET_COUNT; i++) {
+		for (int i = 0; i < Length(CHARACTER_ENCODINGS); i++) {
 			// Found any, because I checked above.
 			if (c == ALPHABET[i]) {
 				code = CHARACTER_ENCODINGS[i];

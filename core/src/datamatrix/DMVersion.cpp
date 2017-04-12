@@ -16,15 +16,37 @@
 */
 
 #include "datamatrix/DMVersion.h"
+#include "ZXContainerAlgorithms.h"
 
 namespace ZXing {
 namespace DataMatrix {
 
-static const int VERION_COUNT = 30;
-
-const Version*
-Version::AllVersions()
+Version::Version(int versionNumber, int symbolSizeRows, int symbolSizeColumns, int dataRegionSizeRows, int dataRegionSizeColumns, const ECBlocks& ecBlocks) :
+	_versionNumber(versionNumber),
+	_symbolSizeRows(symbolSizeRows),
+	_symbolSizeColumns(symbolSizeColumns),
+	_dataRegionSizeRows(dataRegionSizeRows),
+	_dataRegionSizeColumns(dataRegionSizeColumns),
+	_ecBlocks(ecBlocks),
+	_totalCodewords(ecBlocks.totalDataCodewords())
 {
+}
+
+/**
+* <p>Deduces version information from Data Matrix dimensions.</p>
+*
+* @param numRows Number of rows in modules
+* @param numColumns Number of columns in modules
+* @return Version for a Data Matrix Code of those dimensions
+* @throws FormatException if dimensions do correspond to a valid Data Matrix size
+*/
+const Version *
+Version::VersionForDimensions(int numRows, int numColumns)
+{
+	if ((numRows & 0x01) != 0 || (numColumns & 0x01) != 0 || numRows < 8 || numRows > 144) {
+		return nullptr;
+	}
+
 	/**
 	* See ISO 16022:2006 5.5.1 Table 7
 	*/
@@ -60,37 +82,8 @@ Version::AllVersions()
 			{29, 16, 36, 14, 16,   {24, 1, 32 , 0, 0}},
 			{30, 16, 48, 14, 22,   {28, 1, 49 , 0, 0}},
 	};
-	return allVersions;
-}
 
-Version::Version(int versionNumber, int symbolSizeRows, int symbolSizeColumns, int dataRegionSizeRows, int dataRegionSizeColumns, const ECBlocks& ecBlocks) :
-	_versionNumber(versionNumber),
-	_symbolSizeRows(symbolSizeRows),
-	_symbolSizeColumns(symbolSizeColumns),
-	_dataRegionSizeRows(dataRegionSizeRows),
-	_dataRegionSizeColumns(dataRegionSizeColumns),
-	_ecBlocks(ecBlocks),
-	_totalCodewords(ecBlocks.totalDataCodewords())
-{
-}
-
-/**
-* <p>Deduces version information from Data Matrix dimensions.</p>
-*
-* @param numRows Number of rows in modules
-* @param numColumns Number of columns in modules
-* @return Version for a Data Matrix Code of those dimensions
-* @throws FormatException if dimensions do correspond to a valid Data Matrix size
-*/
-const Version *
-Version::VersionForDimensions(int numRows, int numColumns)
-{
-	if ((numRows & 0x01) != 0 || (numColumns & 0x01) != 0 || numRows < 8 || numRows > 144) {
-		return nullptr;
-	}
-
-	const Version* allVersions = AllVersions();
-	for (int i = 0; i < VERION_COUNT; ++i) {
+	for (int i = 0; i < Length(allVersions); ++i) {
 		if (allVersions[i]._symbolSizeRows == numRows && allVersions[i]._symbolSizeColumns == numColumns) {
 			return allVersions + i;
 		}

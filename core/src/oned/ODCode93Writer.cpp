@@ -17,13 +17,14 @@
 
 #include "oned/ODCode93Writer.h"
 #include "oned/ODWriterHelper.h"
+#include "ZXContainerAlgorithms.h"
 
 #include <array>
 
 namespace ZXing {
 namespace OneD {
 
-static const char* ALPHABET_STRING = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%abcd*";
+static const char ALPHABET_STRING[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%abcd*";
 
 /**
 * These represent the encodings of characters, as patterns of wide and narrow bars.
@@ -37,6 +38,8 @@ static const int CHARACTER_ENCODINGS[] = {
 	0x12E, 0x1D4, 0x1D2, 0x1CA, 0x16E, 0x176, 0x1AE, // - - %
 	0x126, 0x1DA, 0x1D6, 0x132, 0x15E, // Control chars? $-*
 };
+
+static_assert(Length(ALPHABET_STRING) - 1 == Length(CHARACTER_ENCODINGS), "table size mismatch");
 
 static void ToIntArray(int a, std::array<int, 9>& toReturn) {
 	for (int i = 0; i < 9; ++i) {

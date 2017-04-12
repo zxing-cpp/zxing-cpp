@@ -24,7 +24,7 @@
 namespace ZXing {
 namespace OneD {
 
-static const char* ALPHABET_STRING = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. *$/+%";
+static const char ALPHABET_STRING[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. *$/+%";
 
 /**
 * These represent the encodings of characters, as patterns of wide and narrow bars.
@@ -38,6 +38,8 @@ static const int CHARACTER_ENCODINGS[] = {
 	0x181, 0x0C1, 0x1C0, 0x091, 0x190, 0x0D0, 0x085, 0x184, 0x0C4, 0x094, // U-*
 	0x0A8, 0x0A2, 0x08A, 0x02A // $-%
 };
+
+static_assert(Length(ALPHABET_STRING) - 1 == Length(CHARACTER_ENCODINGS), "table size mismatch");
 
 static const int ASTERISK_ENCODING = CHARACTER_ENCODINGS[39];
 

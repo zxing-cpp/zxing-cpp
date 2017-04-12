@@ -21,6 +21,7 @@
 #include "textcodec/Big5TextEncoder.h"
 #include "textcodec/GBTextEncoder.h"
 #include "textcodec/KRTextEncoder.h"
+#include "ZXContainerAlgorithms.h"
 
 #include <stdexcept>
 #include <algorithm>
@@ -196,7 +197,7 @@ static void mapFromUnicode(const std::wstring& str, const MapEntry* entries, siz
 	}
 }
 
-#define CONVERT_USING(table, str, bytes) mapFromUnicode(str, table, std::extent<decltype(table)>::value, bytes)
+#define CONVERT_USING(table, str, bytes) mapFromUnicode(str, table, Length(table), bytes)
 
 } // anonymous
 

@@ -29,12 +29,10 @@ namespace ZXing {
 
 namespace OneD {
 
-static const int SYMBOL_COUNT = 44;
-static const char* ALPHABET_STRING = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. *$/+%";
+static const char ALPHABET_STRING[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. *$/+%";
 
 // Note this lacks '*' compared to ALPHABET_STRING
-static const char* CHECK_DIGIT_STRING = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%";
-static const int CHECK_DIGIT_COUNT = SYMBOL_COUNT - 1;
+static const char CHECK_DIGIT_STRING[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%";
 
 /**
 * These represent the encodings of characters, as patterns of wide and narrow bars.
@@ -48,6 +46,8 @@ static const int CHARACTER_ENCODINGS[] = {
 	0x181, 0x0C1, 0x1C0, 0x091, 0x190, 0x0D0, 0x085, 0x184, 0x0C4, 0x094, // U-*
 	0x0A8, 0x0A2, 0x08A, 0x02A // $-%
 };
+
+static_assert(Length(ALPHABET_STRING) - 1 == Length(CHARACTER_ENCODINGS), "table size mismatch");
 
 static const int ASTERISK_ENCODING = CHARACTER_ENCODINGS[39];
 
@@ -140,7 +140,7 @@ FindAsteriskPattern(const BitArray& row, CounterContainer& counters, int& outPat
 static char
 PatternToChar(int pattern)
 {
-	for (size_t i = 0; i < SYMBOL_COUNT; i++) {
+	for (size_t i = 0; i < Length(CHARACTER_ENCODINGS); i++) {
 		if (CHARACTER_ENCODINGS[i] == pattern) {
 			return ALPHABET_STRING[i];
 		}
@@ -283,7 +283,7 @@ Code39Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 		for (int i = 0; i < max; i++) {
 			total += IndexOf(CHECK_DIGIT_STRING, result[i]);
 		}
-		if (total < 0 || result[max] != CHECK_DIGIT_STRING[total % CHECK_DIGIT_COUNT]) {
+		if (total < 0 || result[max] != CHECK_DIGIT_STRING[total % (Length(CHECK_DIGIT_STRING)-1)]) {
 			return Result(DecodeStatus::ChecksumError);
 		}
 		result.resize(max);

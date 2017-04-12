@@ -17,6 +17,8 @@
 
 #include "datamatrix/DMSymbolInfo.h"
 #include "datamatrix/DMSymbolShape.h"
+#include "ZXContainerAlgorithms.h"
+
 #include <type_traits>
 #include <stdexcept>
 
@@ -60,7 +62,7 @@ static const SymbolInfo PROD_SYMBOLS[] = {
 };
 
 static const SymbolInfo* s_symbols = PROD_SYMBOLS;
-static size_t s_symbolCount = std::extent<decltype(PROD_SYMBOLS)>::value;
+static size_t s_symbolCount = Length(PROD_SYMBOLS);
 
 void
 SymbolInfo::OverrideSymbolSet(const SymbolInfo* symbols, size_t count)

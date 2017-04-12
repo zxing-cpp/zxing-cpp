@@ -35,4 +35,9 @@ Value Accumulate(const Container& c, Value v = Value(0)) {
     return std::accumulate(std::begin(c), std::end(c), v);
 }
 
+template <typename T, typename S = int>
+constexpr S Length(const T&) {
+	return static_cast<S>(std::extent<T>::value);
+}
+
 } // ZXing
