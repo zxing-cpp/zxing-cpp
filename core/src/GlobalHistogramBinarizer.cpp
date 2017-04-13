@@ -73,7 +73,7 @@ static int EstimateBlackPoint(const std::array<int, LUMINANCE_BUCKETS>& buckets)
 {
 	// Find the tallest peak in the histogram.
 	auto firstPeakPos = std::max_element(buckets.begin(), buckets.end());
-	int firstPeak = firstPeakPos - buckets.begin();
+	int firstPeak = static_cast<int>(firstPeakPos - buckets.begin());
 	int firstPeakSize = *firstPeakPos;
 	int maxBucketCount = firstPeakSize;
 

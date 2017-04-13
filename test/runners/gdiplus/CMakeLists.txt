@@ -8,50 +8,52 @@ set (ENABLE_DECODERS ON CACHE BOOL "Check to include decoders")
 add_definitions (-DUNICODE -D_UNICODE)
 
 if (MSVC)
-	set (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /Oi /GS-")
-	set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Oi /GS-")
+    set (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /Oi /GS-")
+    set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Oi /GS-")
 else()
-	set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG")
-	set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
-	if (APPLE)
-		set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
-	elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
-		set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-	endif()
+    set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG")
+    set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
+    if (APPLE)
+        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
+    elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
+        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+    endif()
 endif()
 
 add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/../../../wrappers/gdiplus ${CMAKE_BINARY_DIR}/ZXingGdiPlus)
-	
-include_directories (
-	${BARCODESCANNER_INCLUDE}
-)
 
 set (LOCAL_DEFINES
-	"GDIPVER=0x0110"
+    -DGDIPVER=0x0110
 )
 
 if (ENABLE_DECODERS)
-	add_executable (ReaderTest
-		TestReaderMain.cpp
-	)
-		
-	set_target_properties (ReaderTest PROPERTIES
-		COMPILE_DEFINITIONS "${LOCAL_DEFINES}"
-	#	LINK_FLAGS "/link setargv.obj"
-	)
+    add_executable (ReaderTest
+        TestReaderMain.cpp
+    )
 
-	target_link_libraries (ReaderTest ZXingGdiPlus)
+    target_compile_options (ReaderTest
+        PRIVATE ${LOCAL_DEFINES}
+    )
+        
+    #set_target_properties (ReaderTest PROPERTIES
+    #   LINK_FLAGS "/link setargv.obj"
+    #)
+
+    target_link_libraries (ReaderTest ZXingGdiPlus)
 endif()
 
 if (ENABLE_ENCODERS)
-	add_executable (WriterTest
-		TestWriterMain.cpp
-	)
-		
-	set_target_properties (WriterTest PROPERTIES
-		COMPILE_DEFINITIONS "${LOCAL_DEFINES}"
-	#	LINK_FLAGS "/link setargv.obj"
-	)
+    add_executable (WriterTest
+        TestWriterMain.cpp
+    )
+        
+    target_compile_options (WriterTest
+        PRIVATE ${LOCAL_DEFINES}
+    )
 
-	target_link_libraries (WriterTest ZXingGdiPlus)
+    #set_target_properties (WriterTest PROPERTIES
+    #   LINK_FLAGS "/link setargv.obj"
+    #)
+
+    target_link_libraries (WriterTest ZXingGdiPlus)
 endif()
