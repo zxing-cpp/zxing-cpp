@@ -228,7 +228,7 @@ FieldParser::ParseFieldsInGeneralPurpose(const std::string &rawInfo, std::string
 	}
 
 	const DigitLength* dataLengthSets[] = { TWO_DIGIT_DATA_LENGTH, THREE_DIGIT_DATA_LENGTH, THREE_DIGIT_PLUS_DIGIT_DATA_LENGTH, FOUR_DIGIT_DATA_LENGTH };
-	size_t dataSetSizes[] = {
+	int dataSetSizes[] = {
 		Length(TWO_DIGIT_DATA_LENGTH),
 		Length(THREE_DIGIT_DATA_LENGTH),
 		Length(THREE_DIGIT_PLUS_DIGIT_DATA_LENGTH),
@@ -242,7 +242,7 @@ FieldParser::ParseFieldsInGeneralPurpose(const std::string &rawInfo, std::string
 			return DecodeStatus::NotFound;
 		}
 		auto firstDigits = rawInfo.substr(0, digitSizes[i]);
-		for (size_t j = 0; j < dataSetSizes[i]; ++j) {
+		for (int j = 0; j < dataSetSizes[i]; ++j) {
 			auto &dataLength = dataLengthSets[i][j];
 			if (firstDigits == dataLength.digits) {
 				if (dataLength.length < 0) {

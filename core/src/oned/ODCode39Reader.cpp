@@ -140,7 +140,7 @@ FindAsteriskPattern(const BitArray& row, CounterContainer& counters, int& outPat
 static char
 PatternToChar(int pattern)
 {
-	for (size_t i = 0; i < Length(CHARACTER_ENCODINGS); i++) {
+	for (int i = 0; i < Length(CHARACTER_ENCODINGS); i++) {
 		if (CHARACTER_ENCODINGS[i] == pattern) {
 			return ALPHABET_STRING[i];
 		}
