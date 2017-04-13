@@ -77,8 +77,6 @@ GenericGFPoly::evaluateAt(int a) const
 GenericGFPoly
 GenericGFPoly::addOrSubtract(const GenericGFPoly& other) const
 {
-	using std::swap;
-
 	if (_field != other._field) {
 		throw std::invalid_argument("GenericGFPolys do not have same GenericGF field");
 	}
@@ -94,14 +92,14 @@ GenericGFPoly::addOrSubtract(const GenericGFPoly& other) const
 	auto smallerCoefficients = &_coefficients;
 	auto largerCoefficients = &other._coefficients;
 	if (smallerCoefficients->size() > largerCoefficients->size()) {
-		swap(smallerCoefficients, largerCoefficients);
+		std::swap(smallerCoefficients, largerCoefficients);
 	}
 
 	std::vector<int> sumDiff(largerCoefficients->size(), 0);
 	int lengthDiff = static_cast<int>(largerCoefficients->size() - smallerCoefficients->size());
 
 	// Copy high-order terms only found in higher-degree polynomial's coefficients
-	std::copy(largerCoefficients->begin(), largerCoefficients->begin() + lengthDiff, sumDiff.begin());
+	std::copy_n(largerCoefficients->begin(), lengthDiff, sumDiff.begin());
 
 	for (size_t i = lengthDiff; i < largerCoefficients->size(); ++i)
 	{

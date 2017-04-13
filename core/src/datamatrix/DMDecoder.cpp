@@ -25,6 +25,7 @@
 #include "BitSource.h"
 #include "DecodeStatus.h"
 #include "TextDecoder.h"
+#include "ZXContainerAlgorithms.h"
 #include "ZXStrConvWorkaround.h"
 
 #include <array>
@@ -199,7 +200,7 @@ static bool DecodeC40Segment(BitSource& bits, std::string& result)
 				if (cValue < 3) {
 					shift = cValue + 1;
 				}
-				else if (cValue < (int)std::extent<decltype(C40_BASIC_SET_CHARS)>::value) {
+				else if (cValue < Length(C40_BASIC_SET_CHARS)) {
 					char c40char = C40_BASIC_SET_CHARS[cValue];
 					if (upperShift) {
 						result.push_back((char)(c40char + 128));
@@ -224,7 +225,7 @@ static bool DecodeC40Segment(BitSource& bits, std::string& result)
 				shift = 0;
 				break;
 			case 2:
-				if (cValue < (int)std::extent<decltype(C40_SHIFT2_SET_CHARS)>::value) {
+				if (cValue < Length(C40_SHIFT2_SET_CHARS)) {
 					char c40char = C40_SHIFT2_SET_CHARS[cValue];
 					if (upperShift) {
 						result.push_back((char)(c40char + 128));
@@ -290,7 +291,7 @@ static bool DecodeTextSegment(BitSource& bits, std::string& result)
 				if (cValue < 3) {
 					shift = cValue + 1;
 				}
-				else if (cValue < (int)std::extent<decltype(TEXT_BASIC_SET_CHARS)>::value) {
+				else if (cValue < Length(TEXT_BASIC_SET_CHARS)) {
 					char textChar = TEXT_BASIC_SET_CHARS[cValue];
 					if (upperShift) {
 						result.push_back((char)(textChar + 128));
@@ -316,7 +317,7 @@ static bool DecodeTextSegment(BitSource& bits, std::string& result)
 				break;
 			case 2:
 				// Shift 2 for Text is the same encoding as C40
-				if (cValue < (int)std::extent<decltype(TEXT_SHIFT2_SET_CHARS)>::value) {
+				if (cValue < Length(TEXT_SHIFT2_SET_CHARS)) {
 					char textChar = TEXT_SHIFT2_SET_CHARS[cValue];
 					if (upperShift) {
 						result.push_back((char)(textChar + 128));
@@ -338,7 +339,7 @@ static bool DecodeTextSegment(BitSource& bits, std::string& result)
 				shift = 0;
 				break;
 			case 3:
-				if (cValue < (int)std::extent<decltype(TEXT_SHIFT3_SET_CHARS)>::value) {
+				if (cValue < Length(TEXT_SHIFT3_SET_CHARS)) {
 					char textChar = TEXT_SHIFT3_SET_CHARS[cValue];
 					if (upperShift) {
 						result.push_back((char)(textChar + 128));
@@ -571,9 +572,7 @@ CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
 	if (StatusIsOK(status)) {
 		// Copy back into array of bytes -- only need to worry about the bytes that were data
 		// We don't care about errors in the error-correction codewords
-		for (int i = 0; i < numDataCodewords; i++) {
-			codewordBytes[i] = static_cast<uint8_t>(codewordsInts[i]);
-		}
+		std::copy_n(codewordsInts.begin(), numDataCodewords, codewordBytes.begin());
 	}
 	else if (StatusIsKindOf(status, DecodeStatus::ReedSolomonError)) {
 		return DecodeStatus::ChecksumError;

@@ -20,6 +20,7 @@
 #include "BitArray.h"
 #include "DecodeHints.h"
 #include "TextDecoder.h"
+#include "ZXContainerAlgorithms.h"
 
 #include <array>
 
@@ -33,8 +34,7 @@ namespace OneD {
 static const float MAX_ACCEPTABLE = 2.0f;
 static const float PADDING = 1.5f;
 
-static const int SYMBOL_COUNT = 20;
-static const char* ALPHABET = "0123456789-$:/.+ABCD";
+static const char ALPHABET[] = "0123456789-$:/.+ABCD";
 
 /**
 * These represent the encodings of characters, as patterns of wide and narrow bars. The 7 least-significant bits of
@@ -44,6 +44,8 @@ static const int CHARACTER_ENCODINGS[] = {
 	0x003, 0x006, 0x009, 0x060, 0x012, 0x042, 0x021, 0x024, 0x030, 0x048, // 0-9
 	0x00c, 0x018, 0x045, 0x051, 0x054, 0x015, 0x01A, 0x029, 0x00B, 0x00E, // -$:/.+ABCD
 };
+
+static_assert(Length(ALPHABET) - 1 == Length(CHARACTER_ENCODINGS), "table size mismatch");
 
 // minimal number of characters that should be present (inclusing start and stop characters)
 // under normal circumstances this should be set to 3, but can be set higher
@@ -136,7 +138,7 @@ ToNarrowWidePattern(const std::vector<int>& counters, int position)
 		}
 	}
 
-	for (int i = 0; i < SYMBOL_COUNT; i++) {
+	for (int i = 0; i < Length(CHARACTER_ENCODINGS); i++) {
 		if (CHARACTER_ENCODINGS[i] == pattern) {
 			return i;
 		}

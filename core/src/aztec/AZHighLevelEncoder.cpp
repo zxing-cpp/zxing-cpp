@@ -19,6 +19,7 @@
 #include "aztec/AZEncodingState.h"
 #include "aztec/AZToken.h"
 #include "BitArray.h"
+#include "ZXContainerAlgorithms.h"
 
 #include <array>
 #include <type_traits>
@@ -96,7 +97,7 @@ static const std::array<std::array<int8_t, 256>, 5>& InitCharMap()
 		0x0b, 0x0c, 0x0d, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f, 0x40, 0x5c, 0x5e,
 		0x5f, 0x60, 0x7c, 0x7d, 0x7f,
 	};
-	for (uint8_t i = 0; i < std::extent<decltype(mixedTable)>::value; i++) {
+	for (uint8_t i = 0; i < Length(mixedTable); i++) {
 		charmap[MODE_MIXED][mixedTable[i]] = i;
 	}
 	const char punctTable[] = {
@@ -104,7 +105,7 @@ static const std::array<std::array<int8_t, 256>, 5>& InitCharMap()
 		'(', ')', '*', '+', ',', '-', '.', '/', ':', ';', '<', '=', '>', '?',
 		'[', ']', '{', '}'
 	};
-	for (uint8_t i = 0; i < std::extent<decltype(punctTable)>::value; i++) {
+	for (uint8_t i = 0; i < Length(punctTable); i++) {
 		if (punctTable[i] > 0) {
 			charmap[MODE_PUNCT][punctTable[i]] = i;
 		}

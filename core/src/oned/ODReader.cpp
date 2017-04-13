@@ -137,9 +137,9 @@ DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, const BinaryBit
 
 		// While we have the image data in a BitArray, it's fairly cheap to reverse it in place to
 		// handle decoding upside down barcodes.
-		for (int attempt = 0; attempt < 2; attempt++) {
+		for (bool upsideDown : {false, true}) {
 			// trying again?
-			if (attempt == 1) {
+			if (upsideDown) {
 				// reverse the row and continue
 				row.reverse();
 
@@ -154,7 +154,7 @@ DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, const BinaryBit
 				Result result = readers[r]->decodeRow(rowNumber, row, decodingState[r]);
 				if (result.isValid()) {
 					// We found our barcode
-					if (attempt == 1) {
+					if (upsideDown) {
 						// But it was upside down, so note that
 						result.metadata().put(ResultMetadata::ORIENTATION, 180);
 						// And remember to flip the result points horizontally.

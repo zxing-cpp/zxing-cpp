@@ -31,10 +31,6 @@ namespace DataMatrix {
 const Version*
 BitMatrixParser::ReadVersion(const BitMatrix& bits)
 {
-	int dimension = bits.height();
-	if (dimension < 8 || dimension > 144 || (dimension & 0x01) != 0) {
-		return nullptr;
-	}
 	return Version::VersionForDimensions(bits.height(), bits.width());
 }
 

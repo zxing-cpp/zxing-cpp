@@ -149,9 +149,8 @@ std::string
 EANManufacturerOrgSupport::LookupCountryIdentifier(const std::string& productCode)
 {
 	int prefix = std::stoi(productCode.substr(0, 3));
-	auto count = std::extent<decltype(COUNTRIES)>::value;
-	auto it = std::lower_bound(COUNTRIES, COUNTRIES + count, CountryId{ prefix });
-	if (it != COUNTRIES + count)
+	auto it = std::lower_bound(std::begin(COUNTRIES), std::end(COUNTRIES), CountryId{ prefix });
+	if (it != std::end(COUNTRIES))
 	{
 		if (prefix >= it->first && it->last)
 			return it->id;

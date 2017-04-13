@@ -16,6 +16,7 @@
 */
 
 #include "BarcodeFormat.h"
+#include "ZXContainerAlgorithms.h"
 
 #include <type_traits>
 #include <string>
@@ -43,7 +44,7 @@ static const char* FORMAT_STR[] = {
 	"UPC_EAN_EXTENSION",
 };
 
-static_assert(std::extent<decltype(FORMAT_STR)>::value == (int)BarcodeFormat::FORMAT_COUNT, "FORMAT_STR array is out of sync with BarcodeFormat");
+static_assert(Length(FORMAT_STR) == (int)BarcodeFormat::FORMAT_COUNT, "FORMAT_STR array is out of sync with BarcodeFormat");
 
 const char * ToString(BarcodeFormat format)
 {

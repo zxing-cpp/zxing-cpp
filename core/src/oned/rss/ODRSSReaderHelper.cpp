@@ -39,18 +39,8 @@ ReaderHelper::IsFinderPattern(const int* counters, size_t length)
 	float ratio = (float)firstTwoSum / (float)sum;
 	if (ratio >= MIN_FINDER_PATTERN_RATIO && ratio <= MAX_FINDER_PATTERN_RATIO) {
 		// passes ratio test in spec, but see if the counts are unreasonable
-		int minCounter = std::numeric_limits<int>::max();
-		int maxCounter = std::numeric_limits<int>::min();
-		for (size_t i = 0; i < length; ++i) {
-			int counter = counters[i];
-			if (counter > maxCounter) {
-				maxCounter = counter;
-			}
-			if (counter < minCounter) {
-				minCounter = counter;
-			}
-		}
-		return maxCounter < 10 * minCounter;
+		auto minmax = std::minmax_element(counters, counters + length);
+		return *minmax.second < 10 * *minmax.first;
 	}
 	return false;
 }

@@ -78,7 +78,6 @@ private:
 	int _totalCodewords;
 
 	Version(int versionNumber, int symbolSizeRows, int symbolSizeColumns, int dataRegionSizeRows, int dataRegionSizeColumns, const ECBlocks& ecBlocks);
-	static const Version* AllVersions();
 };
 
 } // DataMatrix

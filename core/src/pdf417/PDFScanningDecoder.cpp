@@ -380,8 +380,6 @@ static const ModulusGF& GetModulusGF()
 
 static bool RunEuclideanAlgorithm(ModulusPoly a, ModulusPoly b, int R, ModulusPoly& sigma, ModulusPoly& omega)
 {
-	using std::swap;
-
 	const ModulusGF& field = GetModulusGF();
 
 	// Assume a's degree is >= b's

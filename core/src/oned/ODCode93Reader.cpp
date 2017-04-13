@@ -28,10 +28,8 @@ namespace ZXing {
 
 namespace OneD {
 
-static const int SYMBOL_COUNT = 48;
-
 // Note that 'abcd' are dummy characters in place of control characters.
-static const char* ALPHABET_STRING = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%abcd*";
+static const char ALPHABET_STRING[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%abcd*";
 //static final char[] ALPHABET = ALPHABET_STRING.toCharArray();
 
 /**
@@ -46,6 +44,8 @@ static const int CHARACTER_ENCODINGS[] = {
 	0x12E, 0x1D4, 0x1D2, 0x1CA, 0x16E, 0x176, 0x1AE, // - - %
 	0x126, 0x1DA, 0x1D6, 0x132, 0x15E, // Control chars? $-*
 };
+
+static_assert(Length(ALPHABET_STRING) - 1 == Length(CHARACTER_ENCODINGS), "table size mismatch");
 
 static const int ASTERISK_ENCODING = CHARACTER_ENCODINGS[47];
 
@@ -114,7 +114,7 @@ FindAsteriskPattern(const BitArray& row, int& outPatternStart, int& outPatternEn
 static char
 PatternToChar(int pattern)
 {
-	for (int i = 0; i < SYMBOL_COUNT; i++) {
+	for (int i = 0; i < Length(CHARACTER_ENCODINGS); i++) {
 		if (CHARACTER_ENCODINGS[i] == pattern) {
 			return ALPHABET_STRING[i];
 		}
