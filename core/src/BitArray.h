@@ -143,7 +143,8 @@ public:
 		// mask off lesser bits first
 		int32_t currentBits = (v ? *i._value : ~*i._value) & ~(i._mask - 1);
 		auto e = end();
-
+		if (currentBits == 0 && i._value == e._value)
+			return e;
 		while (currentBits == 0) {
 			if (++i._value == e._value) {
 				return e;
