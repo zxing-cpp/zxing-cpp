@@ -22,6 +22,7 @@
 #include <cstdint>
 #include <iterator>
 #include <vector>
+#include <algorithm>
 
 namespace ZXing {
 
@@ -67,7 +68,7 @@ public:
 		int operator-(const Iterator& rhs) const
 		{
 			int32_t maskDiff = _mask - rhs._mask;
-			return (_value - rhs._value) * 32 +
+			return static_cast<int>(_value - rhs._value) * 32 +
 			       (maskDiff >= 0 ? BitHacks::CountBitsSet(maskDiff) : -BitHacks::CountBitsSet(-maskDiff));
 		}
 

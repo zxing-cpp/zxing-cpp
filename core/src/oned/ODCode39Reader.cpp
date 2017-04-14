@@ -20,6 +20,7 @@
 #include "BitArray.h"
 #include "DecodeHints.h"
 #include "TextDecoder.h"
+#include "ZXContainerAlgorithms.h"
 
 #include <algorithm>
 #include <array>

@@ -168,8 +168,8 @@ FindRowsWithPattern(const BitMatrix& matrix, int height, int width, int startRow
 					break;
 				}
 			}
-			result[0] = ResultPoint(static_cast<float>(startPos), static_cast<float>(startRow));
-			result[1] = ResultPoint(static_cast<float>(endPos), static_cast<float>(startRow));
+			result[0] = ResultPoint(startPos, startRow);
+			result[1] = ResultPoint(endPos, startRow);
 			found = true;
 			break;
 		}
@@ -200,8 +200,8 @@ FindRowsWithPattern(const BitMatrix& matrix, int height, int width, int startRow
 			}
 		}
 		stopRow -= skippedRowCount + 1;
-		result[2] = ResultPoint(static_cast<float>(previousRowStart), static_cast<float>(stopRow));
-		result[3] = ResultPoint(static_cast<float>(previousRowEnd), static_cast<float>(stopRow));
+		result[2] = ResultPoint(previousRowStart, stopRow);
+		result[3] = ResultPoint(previousRowEnd, stopRow);
 	}
 	if (stopRow - startRow < BARCODE_MIN_HEIGHT) {
 		std::fill(result.begin(), result.end(), nullptr);

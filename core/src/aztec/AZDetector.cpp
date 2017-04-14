@@ -224,7 +224,7 @@ struct PixelPoint
 	int x;
 	int y;
 
-	ResultPoint toResultPoint() const { return ResultPoint(static_cast<float>(x), static_cast<float>(y)); }
+	ResultPoint toResultPoint() const { return ResultPoint(x, y); }
 };
 
 

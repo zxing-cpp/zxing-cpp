@@ -243,8 +243,8 @@ ITFReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Decodin
 			return Result(DecodeStatus::FormatError);
 	}
 
-	float x1 = startRange.end - row.begin();
-	float x2 = endRange.begin - row.begin();
+	float x1 = static_cast<float>(startRange.end - row.begin());
+	float x2 = static_cast<float>(endRange.begin - row.begin());
 	float ypos = static_cast<float>(rowNumber);
 
 	return Result(TextDecoder::FromLatin1(result), ByteArray(), { ResultPoint(x1, ypos), ResultPoint(x2, ypos) }, BarcodeFormat::ITF);
