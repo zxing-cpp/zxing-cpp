@@ -24,3 +24,12 @@
 #if !__has_attribute(cxx_rtti) && !defined(__RTTI) && !defined(_CPPRTTI) && !defined(__GXX_RTTI) && !defined(__INTEL_RTTI__)
 	#define ZX_NO_RTTI
 #endif
+
+#ifdef __APPLE__
+// The Apple clang compiler until XCode 8 does not support c++11's thread_local.
+// The alternative 'static' makes the code (ReedSolomonDecoding) the thread unsafe.
+// If thread-safety is required, simply remove the 'static' keyword.
+#define ZX_THREAD_LOCAL static
+#else
+#define ZX_THREAD_LOCAL thread_local
+#endif

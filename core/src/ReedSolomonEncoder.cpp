@@ -26,26 +26,23 @@ ReedSolomonEncoder::ReedSolomonEncoder(const GenericGF& field)
 	_cachedGenerators.push_back(GenericGFPoly(field, { 1 }));
 }
 
-GenericGFPoly
+const GenericGFPoly&
 ReedSolomonEncoder::buildGenerator(int degree)
 {
 	int cachedGenSize = static_cast<int>(_cachedGenerators.size());
 	if (degree >= cachedGenSize) {
 		GenericGFPoly lastGenerator = _cachedGenerators.back();
 		for (int d = cachedGenSize; d <= degree; d++) {
-			GenericGFPoly nextGenerator = lastGenerator.multiply(GenericGFPoly(*_field, { 1, _field->exp(d - 1 + _field->generatorBase()) }));
-			_cachedGenerators.push_back(nextGenerator);
-			lastGenerator = nextGenerator;
+			lastGenerator.multiply(GenericGFPoly(*_field, { 1, _field->exp(d - 1 + _field->generatorBase()) }));
+			_cachedGenerators.push_back(std::move(lastGenerator));
 		}
 	}
 
-	auto iter = _cachedGenerators.begin();
-	std::advance(iter, degree);
-	return *iter;
+	return *std::next(_cachedGenerators.begin(), degree);
 }
 
 void
-ReedSolomonEncoder::encode(std::vector<int>& toEncode, int ecBytes)
+ReedSolomonEncoder::encode(std::vector<int>& toEncode, const int ecBytes)
 {
 	if (ecBytes == 0) {
 		throw std::invalid_argument("No error correction bytes");
@@ -54,18 +51,13 @@ ReedSolomonEncoder::encode(std::vector<int>& toEncode, int ecBytes)
 	if (dataBytes <= 0) {
 		throw std::invalid_argument("No data bytes provided");
 	}
-	GenericGFPoly generator = buildGenerator(ecBytes);
-	toEncode.resize(dataBytes);
-	GenericGFPoly info = GenericGFPoly(*_field, toEncode);
-	info = info.multiplyByMonomial(ecBytes, 1);
-	GenericGFPoly _, remainder;
-	info.divide(generator, _, remainder);
-	auto& coefficients = remainder.coefficients();
+	GenericGFPoly info = GenericGFPoly(*_field, std::vector<int>(toEncode.begin(), toEncode.begin() + dataBytes));
+	info.multiplyByMonomial(ecBytes, 1);
+	GenericGFPoly _;
+	info.divide(buildGenerator(ecBytes), _);
+	auto& coefficients = info.coefficients();
 	int numZeroCoefficients = ecBytes - static_cast<int>(coefficients.size());
-	toEncode.resize(dataBytes + ecBytes);
-	for (int i = 0; i < numZeroCoefficients; i++) {
-		toEncode[dataBytes + i] = 0;
-	}
+	std::fill_n(toEncode.begin() + dataBytes, numZeroCoefficients, 0);
 	std::copy(coefficients.begin(), coefficients.end(), toEncode.begin() + dataBytes + numZeroCoefficients);
 }
 

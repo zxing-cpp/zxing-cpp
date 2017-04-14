@@ -18,38 +18,10 @@
 #include "GenericGFPoly.h"
 #include "GenericGF.h"
 
+#include <cassert>
 #include <stdexcept>
 
 namespace ZXing {
-
-GenericGFPoly::GenericGFPoly(const GenericGF& field, const std::vector<int>& coefs) :
-	_field(&field)
-{
-	if (coefs.empty()) {
-		throw std::invalid_argument("GenericGFPoly: coefficients cannot be empty.");
-	}
-
-	int coefCount = static_cast<int>(coefs.size());
-	if (coefCount > 1 && coefs[0] == 0)
-	{
-		// Leading term must be non-zero for anything except the constant polynomial "0"
-		int firstNonZero = 1;
-		while (firstNonZero < coefCount && coefs[firstNonZero] == 0) {
-			firstNonZero++;
-		}
-		if (firstNonZero == coefCount) {
-			_coefficients.resize(1, 0);
-		}
-		else {
-			_coefficients.resize(coefCount - firstNonZero);
-			std::copy(coefs.begin() + firstNonZero, coefs.end(), _coefficients.begin());
-		}
-	}
-	else
-	{
-		_coefficients = coefs;
-	}
-}
 
 int
 GenericGFPoly::evaluateAt(int a) const
@@ -58,138 +30,156 @@ GenericGFPoly::evaluateAt(int a) const
 		// Just return the x^0 coefficient
 		return coefficient(0);
 	}
-	int size = static_cast<int>(_coefficients.size());
 	if (a == 1) {
 		// Just the sum of the coefficients
 		int result = 0;
 		for (int coef : _coefficients) {
-			result = GenericGF::AddOrSubtract(result, coef);
+			result = _field->addOrSubtract(result, coef);
 		}
 		return result;
 	}
 	int result = _coefficients[0];
-	for (int i = 1; i < size; i++) {
-		result = GenericGF::AddOrSubtract(_field->multiply(a, result), _coefficients[i]);
+	for (size_t i = 1; i < _coefficients.size(); ++i) {
+		result = _field->addOrSubtract(_field->multiply(a, result), _coefficients[i]);
 	}
 	return result;
 }
 
-GenericGFPoly
-GenericGFPoly::addOrSubtract(const GenericGFPoly& other) const
+GenericGFPoly& GenericGFPoly::addOrSubtract(GenericGFPoly& other)
 {
-	if (_field != other._field) {
-		throw std::invalid_argument("GenericGFPolys do not have same GenericGF field");
-	}
+	assert(_field == other._field); // "GenericGFPolys do not have same GenericGF field"
 	
 	if (isZero()) {
-		return other;
+		swap(*this, other);
+		return *this;
 	}
 	
 	if (other.isZero()) {
 		return *this;
 	}
 
-	auto smallerCoefficients = &_coefficients;
-	auto largerCoefficients = &other._coefficients;
-	if (smallerCoefficients->size() > largerCoefficients->size()) {
-		std::swap(smallerCoefficients, largerCoefficients);
-	}
+	auto& smallerCoefs = other._coefficients;
+	auto& largerCoefs = _coefficients;
+	if (smallerCoefs.size() > largerCoefs.size())
+		std::swap(smallerCoefs, largerCoefs);
 
-	std::vector<int> sumDiff(largerCoefficients->size(), 0);
-	int lengthDiff = static_cast<int>(largerCoefficients->size() - smallerCoefficients->size());
+	size_t lengthDiff = largerCoefs.size() - smallerCoefs.size();
 
-	// Copy high-order terms only found in higher-degree polynomial's coefficients
-	std::copy_n(largerCoefficients->begin(), lengthDiff, sumDiff.begin());
+	// high-order terms only found in higher-degree polynomial's coefficients stay untouched
+	for (size_t i = lengthDiff; i < largerCoefs.size(); ++i)
+		largerCoefs[i] = _field->addOrSubtract(smallerCoefs[i - lengthDiff], largerCoefs[i]);
 
-	for (size_t i = lengthDiff; i < largerCoefficients->size(); ++i)
-	{
-		sumDiff[i] = GenericGF::AddOrSubtract((*smallerCoefficients)[i - lengthDiff], (*largerCoefficients)[i]);
-	}
-
-	return GenericGFPoly(*_field, sumDiff);
+	normalize();
+	return *this;
 }
 
-GenericGFPoly
-GenericGFPoly::multiply(const GenericGFPoly& other) const
+GenericGFPoly&
+GenericGFPoly::multiply(const GenericGFPoly& other)
 {
-	if (_field != other._field) {
-		throw std::invalid_argument("GenericGFPolys do not have same GenericGF field");
-	}
-	if (isZero() || other.isZero()) {
-		return _field->zero();
-	}
-	auto& aCoefficients = _coefficients;
-	size_t aLength = aCoefficients.size();
-	auto& bCoefficients = other._coefficients;
-	size_t bLength = bCoefficients.size();
-	std::vector<int> product(aLength + bLength - 1, 0);
-	for (size_t i = 0; i < aLength; ++i) {
-		int aCoeff = aCoefficients[i];
-		for (size_t j = 0; j < bLength; ++j) {
-			product[i + j] = GenericGF::AddOrSubtract(product[i + j], _field->multiply(aCoeff, bCoefficients[j]));
+	assert(_field == other._field); // "GenericGFPolys do not have same GenericGF field"
+
+	if (isZero() || other.isZero())
+		return _field->setZero(*this);
+
+	auto& a = _coefficients;
+	auto& b = other._coefficients;
+
+	// To disable the use of the malloc cache, simply uncomment:
+	// Coefficients _cache;
+	_cache.resize(a.size() + b.size() - 1);
+	std::fill(_cache.begin(), _cache.end(), 0);
+	for (size_t i = 0; i < a.size(); ++i) {
+		for (size_t j = 0; j < b.size(); ++j) {
+			_cache[i + j] = _field->addOrSubtract(_cache[i + j], _field->multiply(a[i], b[j]));
 		}
 	}
 
-	return GenericGFPoly(*_field, product);
+	_coefficients.swap(_cache);
+
+	normalize();
+	return *this;
 }
 
-GenericGFPoly
-GenericGFPoly::multiply(int scalar) const
+GenericGFPoly&
+GenericGFPoly::multiply(int scalar)
 {
 	if (scalar == 0) {
-		return _field->zero();
+		return _field->setZero(*this);
 	}
 	if (scalar == 1) {
 		return *this;
 	}
-	size_t size = _coefficients.size();
-	std::vector<int> product(size);
-	for (size_t i = 0; i < size; ++i) {
-		product[i] = _field->multiply(_coefficients[i], scalar);
+
+	for (int& c : _coefficients) {
+		c = _field->multiply(c, scalar);
 	}
-	return GenericGFPoly(*_field, product);
+
+	normalize();
+	return *this;
 }
 
-GenericGFPoly
-GenericGFPoly::multiplyByMonomial(int degree, int coefficient) const
+GenericGFPoly&
+GenericGFPoly::multiplyByMonomial(int degree, int coefficient)
 {
-	if (degree < 0) {
-		throw std::invalid_argument("GenericGF::buildMonomial: degree cannot be negative.");
-	}
+	assert(degree >= 0);
+
 	if (coefficient == 0) {
-		return _field->zero();
+		return _field->setZero(*this);
 	}
 	size_t size = _coefficients.size();
-	std::vector<int> product(size + degree, 0);
 	for (size_t i = 0; i < size; ++i) {
-		product[i] = _field->multiply(_coefficients[i], coefficient);
+		_coefficients[i] = _field->multiply(_coefficients[i], coefficient);
 	}
-	return GenericGFPoly(*_field, product);
+	_coefficients.resize(size + degree, 0);
+
+	normalize();
+	return *this;
 }
 
-void
-GenericGFPoly::divide(const GenericGFPoly& other, GenericGFPoly& quotient, GenericGFPoly& remainder) const
+GenericGFPoly&
+GenericGFPoly::divide(const GenericGFPoly& other, GenericGFPoly& quotient)
 {
-	if (_field != other._field) {
-		throw std::invalid_argument("GenericGFPolys do not have same GenericGF field");
-	}
+	assert(_field == other._field); // "GenericGFPolys do not have same GenericGF field"
+
 	if (other.isZero()) {
 		throw std::invalid_argument("Divide by 0");
 	}
 
-	quotient = _field->zero();
-	remainder = *this;
+	_field->setZero(quotient);
+	auto& remainder = *this;
 
 	int denominatorLeadingTerm = other.coefficient(other.degree());
 	int inverseDenominatorLeadingTerm = _field->inverse(denominatorLeadingTerm);
 
+	ZX_THREAD_LOCAL GenericGFPoly temp;
+
 	while (remainder.degree() >= other.degree() && !remainder.isZero()) {
 		int degreeDifference = remainder.degree() - other.degree();
 		int scale = _field->multiply(remainder.coefficient(remainder.degree()), inverseDenominatorLeadingTerm);
-		auto term = other.multiplyByMonomial(degreeDifference, scale);
-		auto iterationQuotient = _field->buildMonomial(degreeDifference, scale);
-		quotient = quotient.addOrSubtract(iterationQuotient);
-		remainder = remainder.addOrSubtract(term);
+		_field->setMonomial(temp, degreeDifference, scale);
+		quotient.addOrSubtract(temp);
+		temp = other;
+		temp.multiplyByMonomial(degreeDifference, scale);
+		remainder.addOrSubtract(temp);
+	}
+
+	return *this;
+}
+
+void GenericGFPoly::normalize()
+{
+	auto& coefs = _coefficients;
+	auto firstNonZero = std::find_if(coefs.cbegin(), coefs.cend(), [](int c){ return c != 0; });
+	// Leading term must be non-zero for anything except the constant polynomial "0"
+	if (firstNonZero != coefs.cbegin())
+	{
+		if (firstNonZero == coefs.end()) {
+			coefs.resize(1, 0);
+		}
+		else {
+			std::copy(firstNonZero, coefs.cend(), coefs.begin());
+			coefs.resize(coefs.cend() - firstNonZero);
+		}
 	}
 }
 

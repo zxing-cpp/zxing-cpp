@@ -17,6 +17,8 @@
 */
 
 #include "GenericGFPoly.h"
+
+#include <cassert>
 #include <vector>
 #include <stdexcept>
 
@@ -45,25 +47,38 @@ public:
 	static const GenericGF& AztecData8();
 	static const GenericGF& MaxiCodeField64();
 
-	GenericGFPoly zero() const {
-		return _zero;
-	}
-
-	GenericGFPoly one() const {
-		return _one;
-	}
-
 	/**
 	* @return the monomial representing coefficient * x^degree
 	*/
-	GenericGFPoly buildMonomial(int degree, int coefficient) const;
+	GenericGFPoly& setMonomial(GenericGFPoly& poly, int degree, int coefficient) const
+	{
+		assert(degree >= 0);
+
+		if (coefficient == 0)
+			degree = 0;
+
+		poly._field = this;
+		poly._coefficients.resize(degree + 1);
+		std::fill(poly._coefficients.begin(), poly._coefficients.end(), 0);
+		poly._coefficients.front() = coefficient;
+
+		return poly;
+	}
+
+	GenericGFPoly& setZero(GenericGFPoly& poly) const {
+		return setMonomial(poly, 0, 0);
+	}
+
+	GenericGFPoly& setOne(GenericGFPoly& poly) const {
+		return setMonomial(poly, 0, 1);
+	}
 
 	/**
 	* Implements both addition and subtraction -- they are the same in GF(size).
 	*
 	* @return sum/difference of a and b
 	*/
-	static int AddOrSubtract(int a, int b) {
+	int addOrSubtract(int a, int b) const {
 		return a ^ b;
 	}
 
@@ -118,8 +133,6 @@ private:
 	int _generatorBase;
 	std::vector<int> _expTable;
 	std::vector<int> _logTable;
-	GenericGFPoly _zero;
-	GenericGFPoly _one;
 
 	/**
 	* Create a representation of GF(size) using the given primitive polynomial.
