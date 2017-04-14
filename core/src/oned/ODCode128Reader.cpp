@@ -51,63 +51,35 @@ static const int CODE_START_B = 104;
 static const int CODE_START_C = 105;
 static const int CODE_STOP = 106;
 
-static DecodeStatus
-FindStartPattern(const BitArray& row, int& begin, int& end, int& startCode)
+static BitArray::Range
+FindStartPattern(const BitArray& row, int* startCode)
 {
-	int width = row.size();
-	int offset = row.getNextSet(0);
-	int counterPosition = 0;
-	std::vector<int> counters(6, 0);
-	int patternStart = offset;
-	bool isWhite = false;
-	int patternLength = static_cast<int>(counters.size());
-	auto bitIter = row.iterAt(offset);
-	for (; offset < width; ++offset, ++bitIter) {
-		if (*bitIter != isWhite) {
-			counters[counterPosition]++;
-		}
-		else {
-			if (counterPosition == patternLength - 1) {
-				float bestVariance = MAX_AVG_VARIANCE;
-				int bestMatch = -1;
-				for (int startCode = CODE_START_A; startCode <= CODE_START_C; startCode++) {
-					float variance = RowReader::PatternMatchVariance(counters, Code128::CODE_PATTERNS[startCode], MAX_INDIVIDUAL_VARIANCE);
-					if (variance < bestVariance) {
-						bestVariance = variance;
-						bestMatch = startCode;
-					}
-				}
-				// Look for whitespace before start pattern, >= 50% of width of start pattern
-				if (bestMatch >= 0 &&
-					row.isRange(std::max(0, patternStart - (offset - patternStart) / 2), patternStart, false)) {
-					begin = patternStart;
-					end = offset;
-					startCode = bestMatch;
-					return DecodeStatus::NoError;
-				}
-				patternStart += counters[0] + counters[1];
-				std::copy(counters.begin() + 2, counters.end(), counters.begin());
-				counters[patternLength - 2] = 0;
-				counters[patternLength - 1] = 0;
-				counterPosition--;
-			}
-			else {
-				counterPosition++;
-			}
-			counters[counterPosition] = 1;
-			isWhite = !isWhite;
-		}
-	}
-	return DecodeStatus::NotFound;
+	assert(startCode != nullptr);
+
+	using Counters = std::vector<int>;
+	Counters counters(Code128::CODE_PATTERNS[0].size());
+
+	return RowReader::FindPattern(
+	    row.getNextSet(row.begin()), row.end(), counters,
+	    [&row, startCode](BitArray::Iterator begin, BitArray::Iterator end, const Counters& counters) {
+		    float bestVariance = MAX_AVG_VARIANCE;
+		    for (int code = CODE_START_A; code <= CODE_START_C; code++) {
+			    float variance =
+			        RowReader::PatternMatchVariance(counters, Code128::CODE_PATTERNS[code], MAX_INDIVIDUAL_VARIANCE);
+			    if (variance < bestVariance) {
+				    bestVariance = variance;
+				    *startCode = code;
+			    }
+		    }
+		    // Look for whitespace before start pattern, >= 50% of width of start pattern
+		    return bestVariance < MAX_AVG_VARIANCE && row.hasQuiteZone(begin, -(end - begin) / 2);
+	    });
 }
 
-static DecodeStatus
-DecodeCode(const BitArray& row, std::vector<int>& counters, int rowOffset, int& outCode)
+static bool DecodeCode(std::vector<int>& counters, int* outCode)
 {
-	DecodeStatus status = RowReader::RecordPattern(row, rowOffset, counters);
-	if (StatusIsError(status)) {
-		return status;
-	}
+	assert(outCode != nullptr);
+
 	float bestVariance = MAX_AVG_VARIANCE; // worst variance we'll accept
 	int bestMatch = -1;
 	for (size_t d = 0; d < Code128::CODE_PATTERNS.size(); d++) {
@@ -120,10 +92,10 @@ DecodeCode(const BitArray& row, std::vector<int>& counters, int rowOffset, int& 
 	}
 	// TODO We're overlooking the fact that the STOP pattern has 7 values, not 6.
 	if (bestMatch >= 0) {
-		outCode = bestMatch;
-		return DecodeStatus::NoError;
+		*outCode = bestMatch;
+		return true;
 	}
-	return DecodeStatus::NotFound;
+	return false;
 }
 
 Code128Reader::Code128Reader(const DecodeHints& hints) :
@@ -134,12 +106,13 @@ Code128Reader::Code128Reader(const DecodeHints& hints) :
 Result
 Code128Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const
 {
-	int patternStart = 0, patternEnd = 0, startCode = 0;
-	DecodeStatus status = FindStartPattern(row, patternStart, patternEnd, startCode);
-	if (StatusIsError(status)) {
-		return Result(status);
+	int startCode = 0;
+	auto range = FindStartPattern(row, &startCode);
+	if (!range) {
+		return Result(DecodeStatus::NotFound);
 	}
 
+	float left = (range.begin - row.begin()) + 0.5f * range.size();
 	ByteArray rawCodes;
 	rawCodes.reserve(20);
 	rawCodes.push_back(static_cast<uint8_t>(startCode));
@@ -164,9 +137,6 @@ Code128Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Dec
 
 	std::string result;
 	result.reserve(20);
-
-	int lastStart = patternStart;
-	int nextStart = patternEnd;
 	std::vector<int> counters(6, 0);
 
 	int lastCode = 0;
@@ -185,11 +155,13 @@ Code128Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Dec
 		// Save off last code
 		lastCode = code;
 
+		range = RecordPattern(range.end, row.end(), counters);
+		if (!range)
+			return Result(DecodeStatus::NotFound);
+
 		// Decode another code from image
-		status = DecodeCode(row, counters, nextStart, code);
-		if (StatusIsError(status)) {
-			return Result(status);
-		}
+		if (!DecodeCode(counters, &code))
+			return Result(DecodeStatus::NotFound);
 
 		rawCodes.push_back(static_cast<uint8_t>(code));
 
@@ -203,10 +175,6 @@ Code128Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Dec
 			multiplier++;
 			checksumTotal += multiplier * code;
 		}
-
-		// Advance to where the next code will to start
-		lastStart = nextStart;
-		nextStart = Accumulate(counters, nextStart);
 
 		// Take care of illegal start codes
 		switch (code) {
@@ -397,15 +365,12 @@ Code128Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Dec
 
 	}
 
-	int lastPatternSize = nextStart - lastStart;
-
 	// Check for ample whitespace following pattern, but, to do this we first need to remember that
 	// we fudged decoding CODE_STOP since it actually has 7 bars, not 6. There is a black bar left
 	// to read off. Would be slightly better to properly read. Here we just skip it:
-	nextStart = row.getNextUnset(nextStart);
-	if (!row.isRange(nextStart, std::min(row.size(), nextStart + (nextStart - lastStart) / 2), false)) {
+	range.end = row.getNextUnset(range.end);
+	if (!row.hasQuiteZone(range.end, range.size() / 2))
 		return Result(DecodeStatus::NotFound);
-	}
 
 	// Pull out from sum the value of the penultimate check code
 	checksumTotal -= multiplier * lastCode;
@@ -432,8 +397,7 @@ Code128Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Dec
 		}
 	}
 
-	float left = 0.5f * static_cast<float>(patternStart + patternEnd);
-	float right = static_cast<float>(lastStart) + 0.5f * static_cast<float>(lastPatternSize);
+	float right = (range.begin - row.begin()) + 0.5f * range.size();
 	float ypos = static_cast<float>(rowNumber);
 	return Result(TextDecoder::FromLatin1(result), rawCodes, { ResultPoint(left, ypos), ResultPoint(right, ypos) }, BarcodeFormat::CODE_128);
 }

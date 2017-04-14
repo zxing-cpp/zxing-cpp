@@ -68,84 +68,45 @@ struct RSS14DecodingState : public RowReader::DecodingState
 //	possibleRightPairs = new ArrayList<>();
 //}
 
-static DecodeStatus
-FindFinderPattern(const BitArray& row, int offset, bool rightFinderPattern, FinderCounters& counters, int& start, int& end)
+static BitArray::Range
+FindFinderPattern(const BitArray& row, bool rightFinderPattern, FinderCounters& counters)
 {
-	std::fill(counters.begin(), counters.end(), 0);
-	int width = row.size();
-	bool isWhite = false;
-	auto bitIter = row.iterAt(offset);
-	for (; offset < width; ++offset, ++bitIter) {
-		isWhite = !*bitIter;
-		if (rightFinderPattern == isWhite) {
-			// Will encounter white first when searching for right finder pattern
-			break;
-		}
-	}
-
-	int counterPosition = 0;
-	int patternStart = offset;
-	for (; offset < width; ++offset, ++bitIter) {
-		if (*bitIter != isWhite) {
-			counters[counterPosition]++;
-		}
-		else {
-			if (counterPosition == 3) {
-				if (RSS::ReaderHelper::IsFinderPattern(counters)) {
-					start = patternStart;
-					end = offset;
-					return DecodeStatus::NoError;
-				}
-				patternStart += counters[0] + counters[1];
-				counters[0] = counters[2];
-				counters[1] = counters[3];
-				counters[2] = 0;
-				counters[3] = 0;
-				counterPosition--;
-			}
-			else {
-				counterPosition++;
-			}
-			counters[counterPosition] = 1;
-			isWhite = !isWhite;
-		}
-	}
-	return DecodeStatus::NotFound;
+	return RowReader::FindPattern(
+	    // Will encounter white first when searching for right finder pattern
+	    row.getNextSetTo(row.begin(), !rightFinderPattern), row.end(), counters,
+	    [](BitArray::Iterator begin, BitArray::Iterator end, const FinderCounters& counters) {
+		    return RSS::ReaderHelper::IsFinderPattern(counters);
+	    });
 }
 
-
 static RSS::FinderPattern
-ParseFoundFinderPattern(const BitArray& row, int rowNumber, bool right, int startRange, int endRange, FinderCounters& finderCounters)
+ParseFoundFinderPattern(const BitArray& row, int rowNumber, bool right, BitArray::Range range, FinderCounters& finderCounters)
 {
-	// Actually we found elements 2-5
-	auto bitIter = row.backIterAt(startRange);
-	bool firstIsBlack = *bitIter;
-	int firstElementStart = startRange - 1;
-	--bitIter;
-	// Locate element 1
-	while (firstElementStart >= 0 && firstIsBlack != *bitIter) {
-		--firstElementStart;
-		--bitIter;
-	}
-	firstElementStart++;
-	int firstCounter = startRange - firstElementStart;
+	if (!range || range.begin == row.begin())
+		return RSS::FinderPattern();
+
+	// Actually we found elements 2-5 -> Locate element 1
+	auto i = std::find(BitArray::ReverseIterator(range.begin), row.rend(), *range.begin);
+	int firstCounter = range.begin - i.base();
+	range.begin = i.base();
+
 	// Make 'counters' hold 1-4
 	std::copy_backward(finderCounters.begin(), finderCounters.end() - 1, finderCounters.end());
 	finderCounters[0] = firstCounter;
 	int value = RSS::ReaderHelper::ParseFinderValue(finderCounters, FINDER_PATTERNS);
-	if (value >= 0)
-	{
-		int start = firstElementStart;
-		int end = endRange;
-		if (right) {
-			// row is actually reversed
-			start = row.size() - 1 - start;
-			end = row.size() - 1 - end;
-		}
-		float ypos = static_cast<float>(rowNumber);
-		return RSS::FinderPattern(value, firstElementStart, endRange, { ResultPoint(static_cast<float>(start), ypos), ResultPoint(static_cast<float>(end), ypos) });
+	if (value < 0)
+		return RSS::FinderPattern();
+
+	int start = range.begin - row.begin();
+	int end = range.end - row.begin();
+	if (right) {
+		// row is actually reversed
+		start = row.size() - 1 - start;
+		end = row.size() - 1 - end;
 	}
-	return RSS::FinderPattern();
+
+	return RSS::FinderPattern(value, range.begin - row.begin(), range.end - row.begin(),
+	                          {ResultPoint(start, rowNumber), ResultPoint(end, rowNumber)});
 }
 
 static bool
@@ -285,17 +246,14 @@ DecodeDataCharacter(const BitArray& row, const RSS::FinderPattern& pattern, bool
 {
 	std::array<int, 8> counters = {};
 
-	DecodeStatus status;
 	if (outsideChar) {
-		status = RowReader::RecordPatternInReverse(row, pattern.startPos(), counters);
+		if (!RowReader::RecordPatternInReverse(row.begin(), row.iterAt(pattern.startPos()), counters))
+			return RSS::DataCharacter();
 	}
 	else {
-		status = RowReader::RecordPattern(row, pattern.endPos() + 1, counters);
+		if (!RowReader::RecordPattern(row.iterAt(pattern.endPos() + 1), row.end(), counters))
+			return RSS::DataCharacter();
 		std::reverse(counters.begin(), counters.end());
-	}
-
-	if (StatusIsError(status)) {
-		return RSS::DataCharacter();
 	}
 
 	int numModules = outsideChar ? 16 : 15;
@@ -379,27 +337,25 @@ static RSS::Pair
 DecodePair(const BitArray& row, bool right, int rowNumber)
 {
 	FinderCounters finderCounters = {};
-	int patternStart, patternEnd;
-	DecodeStatus status = FindFinderPattern(row, 0, right, finderCounters, patternStart, patternEnd);
-	if (StatusIsOK(status)) {
-		auto pattern = ParseFoundFinderPattern(row, rowNumber, right, patternStart, patternEnd, finderCounters);
-		if (pattern.isValid()) {
-			//PointCallback resultPointCallback = hints.resultPointCallback();
-			//if (resultPointCallback != nullptr) {
-			//	float center = 0.5f * static_cast<float>(patternStart + patternEnd);
-			//	if (right) {
-			//		// row is actually reversed
-			//		center = row.size() - 1 - center;
-			//	}
-			//	resultPointCallback(center, static_cast<float>(rowNumber));
-			//}
 
-			auto outside = DecodeDataCharacter(row, pattern, true);
-			if (outside.isValid()) {
-				auto inside = DecodeDataCharacter(row, pattern, false);
-				if (inside.isValid()) {
-					return RSS::Pair(1597 * outside.value() + inside.value(), outside.checksumPortion() + 4 * inside.checksumPortion(), pattern);
-				}
+	auto range = FindFinderPattern(row, right, finderCounters);
+	auto pattern = ParseFoundFinderPattern(row, rowNumber, right, range, finderCounters);
+	if (pattern.isValid()) {
+		//PointCallback resultPointCallback = hints.resultPointCallback();
+		//if (resultPointCallback != nullptr) {
+		//	float center = 0.5f * static_cast<float>(patternStart + patternEnd);
+		//	if (right) {
+		//		// row is actually reversed
+		//		center = row.size() - 1 - center;
+		//	}
+		//	resultPointCallback(center, static_cast<float>(rowNumber));
+		//}
+
+		auto outside = DecodeDataCharacter(row, pattern, true);
+		if (outside.isValid()) {
+			auto inside = DecodeDataCharacter(row, pattern, false);
+			if (inside.isValid()) {
+				return RSS::Pair(1597 * outside.value() + inside.value(), outside.checksumPortion() + 4 * inside.checksumPortion(), pattern);
 			}
 		}
 	}

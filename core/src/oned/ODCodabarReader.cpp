@@ -70,22 +70,20 @@ static bool
 InitCounters(const BitArray& row, std::vector<int>& counters)
 {
 	// Start from the first white bit.
-	int i = row.getNextUnset(0);
-	int end = row.size();
-	if (i >= end) {
+	auto i = row.getNextUnset(row.begin());
+	if (i == row.end())
 		return false;
-	}
-	bool isWhite = true;
+
+	bool currentValue = *i;
 	int count = 0;
-	auto bitIter = row.iterAt(i);
-	for (; i < end; ++i, ++bitIter) {
-		if (*bitIter != isWhite) {
-			count++;
+	for (; i != row.end(); ++i) {
+		if (*i == currentValue) {
+			++count;
 		}
 		else {
 			counters.push_back(count);
 			count = 1;
-			isWhite = !isWhite;
+			currentValue = !currentValue;
 		}
 	}
 	counters.push_back(count);

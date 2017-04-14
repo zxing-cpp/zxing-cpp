@@ -16,14 +16,15 @@
 * limitations under the License.
 */
 
+#include "BitArray.h"
+#include "DecodeStatus.h"
+
 #include <cstddef>
 #include <memory>
 
 namespace ZXing {
 
 class Result;
-class BitArray;
-enum class DecodeStatus;
 
 namespace OneD {
 
@@ -61,6 +62,45 @@ public:
 	virtual Result decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const = 0;
 
 	/**
+	* Scans the given bit range for a pattern identified by evaluating the function object match for each
+	* successive run of counters.size() bars. If the pattern is found, it returns the bit range with the
+	* pattern. Otherwise an empty range is returned.
+	*
+	* @param begin/end bit range to scan for pattern
+	* @param counters array into which to record counts
+	* @param match predicate that gets evaluated to identify the pattern
+	* @throws NotFoundException if counters cannot be filled entirely from row before running out
+	*  of pixels
+	*/
+	template <typename Iterator, typename Container, typename Predicate>
+	static Range<Iterator> FindPattern(Iterator begin, Iterator end, Container& counters, Predicate match) {
+		if (begin == end)
+			return {end, end};
+		bool lastValue = *begin;
+		auto currentCounter = counters.begin();
+		*currentCounter = 1;
+		for (auto i = std::next(begin); i != end; ++i) {
+			if (*i == lastValue) {
+				++*currentCounter;
+			}
+			else {
+				if (++currentCounter == counters.end()) {
+					if (match(begin, i, counters)) {
+						return {begin, i};
+					}
+					std::advance(begin, counters[0] + counters[1]);
+					std::copy(counters.begin() + 2, counters.end(), counters.begin());
+					std::fill_n(counters.rbegin(), 2, 0);
+					std::advance(currentCounter, -2);
+				}
+				*currentCounter = 1;
+				lastValue = !lastValue;
+			}
+		}
+		return {end, end};
+	}
+
+	/**
 	* Records the size of successive runs of white and black pixels in a row, starting at a given point.
 	* The values are recorded in the given array, and the number of runs recorded is equal to the size
 	* of the array. If the row starts on a white pixel at the given start point, then the first count
@@ -73,14 +113,34 @@ public:
 	* @throws NotFoundException if counters cannot be filled entirely from row before running out
 	*  of pixels
 	*/
-	template <typename Container>
-	static DecodeStatus RecordPattern(const BitArray& row, int start, Container& counters) {
-		return RecordPattern(row, start, counters.data(), counters.size());
+	template <typename Iterator, typename Container>
+	static Range<Iterator> RecordPattern(Iterator begin, Iterator end, Container& counters) {
+		// mark the last counter-slot as empty
+		counters.back() = 0;
+
+		auto range = FindPattern(begin, end, counters, [](Iterator, Iterator, Container&) { return true; });
+
+		// If we reached the end iterator but touched the last counter-slot, we accept the result.
+		if (range.end == end && counters.back() != 0)
+			return {begin, end};
+		else
+			return range;
 	}
 
+	// deprecated wrapper
 	template <typename Container>
-	static DecodeStatus RecordPatternInReverse(const BitArray& row, int start, Container& counters) {
-		return RecordPatternInReverse(row, start, counters.data(), counters.size());
+	static DecodeStatus RecordPattern(const BitArray& row, int start, Container& counters) {
+		const auto range = RecordPattern(row.iterAt(start), row.end(), counters);
+		return range ? DecodeStatus::NoError : DecodeStatus::NotFound;
+	}
+
+
+	template <typename Iterator, typename Container>
+	static Range<Iterator> RecordPatternInReverse(Iterator begin, Iterator end, Container& counters) {
+		std::reverse_iterator<Iterator> rbegin(end), rend(begin);
+		auto range = RecordPattern(rbegin, rend, counters);
+		std::reverse(counters.begin(), counters.end());
+		return {range.end.base(), range.begin.base()};
 	}
 
 	/**
@@ -97,10 +157,6 @@ public:
 	static float PatternMatchVariance(const Container& counters, const Container& pattern, float maxIndividualVariance) {
 		return PatternMatchVariance(counters.data(), pattern.data(), counters.size(), maxIndividualVariance);
 	}
-
-private:
-	static DecodeStatus RecordPattern(const BitArray& row, int start, int* counters, size_t length);
-	static DecodeStatus RecordPatternInReverse(const BitArray& row, int start, int* counters, size_t length);
 
 protected:
 	static float PatternMatchVariance(const int *counters, const int* pattern, size_t length, float maxIndividualVariance);

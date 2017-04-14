@@ -103,10 +103,9 @@ struct RSSExpandedDecodingState : public RowReader::DecodingState
 using namespace RSS;
 
 
-static bool
-FindNextPair(const BitArray& row, const std::list<ExpandedPair>& previousPairs, int forcedOffset, bool startFromEven, std::array<int, 4>& counters, int& patternStart_, int& patternEnd)
+static BitArray::Range
+FindNextPair(const BitArray& row, const std::list<ExpandedPair>& previousPairs, int forcedOffset, bool startFromEven, std::array<int, 4>& counters)
 {
-	int width = row.size();
 	int rowOffset;
 	if (forcedOffset >= 0) {
 		rowOffset = forcedOffset;
@@ -122,96 +121,53 @@ FindNextPair(const BitArray& row, const std::list<ExpandedPair>& previousPairs, 
 		searchingEvenPair = !searchingEvenPair;
 	}
 
-	bool isWhite = false;
-	auto bitIter = row.iterAt(rowOffset);
-	for (; rowOffset < width; ++rowOffset, ++bitIter) {
-		isWhite = !*bitIter;
-		if (!isWhite) {
-			break;
-		}
-	}
-
-	int counterPosition = 0;
-	int patternStart = rowOffset;
-	for (; rowOffset < width; ++rowOffset, ++bitIter) {
-		if (*bitIter != isWhite) {
-			counters[counterPosition]++;
-		}
-		else {
-			if (counterPosition == 3) {
-				if (searchingEvenPair) {
-					std::reverse(counters.begin(), counters.end());
-				}
-
-				if (ReaderHelper::IsFinderPattern(counters)) {
-					patternStart_ = patternStart;
-					patternEnd = rowOffset;
-					return true;
-				}
-
-				if (searchingEvenPair) {
-					std::reverse(counters.begin(), counters.end());
-				}
-
-				patternStart += counters[0] + counters[1];
-				counters[0] = counters[2];
-				counters[1] = counters[3];
-				counters[2] = 0;
-				counters[3] = 0;
-				counterPosition--;
-			}
-			else {
-				counterPosition++;
-			}
-			counters[counterPosition] = 1;
-			isWhite = !isWhite;
-		}
-	}
-	return false;
+	return RowReader::FindPattern(
+	    // find
+	    row.getNextSet(row.iterAt(rowOffset)), row.end(), counters,
+	    [searchingEvenPair](BitArray::Iterator begin, BitArray::Iterator end, std::array<int, 4>& counters) {
+		    if (searchingEvenPair) {
+			    std::reverse(counters.begin(), counters.end());
+		    }
+		    if (RSS::ReaderHelper::IsFinderPattern(counters))
+				return true;
+		    if (searchingEvenPair) {
+			    std::reverse(counters.begin(), counters.end());
+		    }
+		    return false;
+	    });
 }
 
 static FinderPattern
-ParseFoundFinderPattern(const BitArray& row, int rowNumber, bool oddPattern, int patternStart, int patternEnd, std::array<int, 4>& counters) {
+ParseFoundFinderPattern(const BitArray& row, int rowNumber, bool oddPattern, BitArray::Range range, std::array<int, 4>& counters) {
 	// Actually we found elements 2-5.
 	int firstCounter;
-	int start;
-	int end;
 
 	if (oddPattern) {
 		// If pattern number is odd, we need to locate element 1 *before* the current block.
 
-		int firstElementStart = patternStart - 1;
-		auto bitIter = row.backIterAt(firstElementStart);
-		// Locate element 1
-		while (firstElementStart >= 0 && !*bitIter) {
-			--firstElementStart;
-			--bitIter;
-		}
-
-		firstElementStart++;
-		firstCounter = patternStart - firstElementStart;
-		start = firstElementStart;
-		end = patternEnd;
-
+		auto i = std::find(BitArray::ReverseIterator(range.begin), row.rend(), *range.begin);
+		firstCounter = range.begin - i.base();
+		range.begin = i.base();
 	}
 	else {
 		// If pattern number is even, the pattern is reversed, so we need to locate element 1 *after* the current block.
 
-		start = patternStart;
-
-		end = row.getNextUnset(patternEnd + 1);
-		firstCounter = end - patternEnd;
+		auto i = row.getNextUnset(std::next(range.end)); // +1?
+		firstCounter = i - range.end;
+		range.end = i;
 	}
+
+	int start = range.begin - row.begin();
+	int end = range.end - row.begin();
 
 	// Make 'counters' hold 1-4
 	std::copy_backward(counters.begin(), counters.end() - 1, counters.end());
 	counters[0] = firstCounter;
 	int value = ReaderHelper::ParseFinderValue(counters, FINDER_PATTERNS);
-	if (value >= 0) {
-		float ypos = static_cast<float>(rowNumber);
-		return FinderPattern(value, start, end, { ResultPoint(static_cast<float>(start), ypos), ResultPoint(static_cast<float>(end), ypos) });
-	}
-	return FinderPattern();
+	if (value < 0)
+		return FinderPattern();
+
+	return RSS::FinderPattern(value, start, end, {ResultPoint(start, rowNumber), ResultPoint(end, rowNumber)});
 }
 
 static int
@@ -344,17 +300,14 @@ DecodeDataCharacter(const BitArray& row, const FinderPattern& pattern, bool isOd
 {
 	std::array<int, 8> counters = {};
 
-	DecodeStatus status;
 	if (leftChar) {
-		status = RowReader::RecordPatternInReverse(row, pattern.startPos(), counters);
+		if (!RowReader::RecordPatternInReverse(row.begin(), row.iterAt(pattern.startPos()), counters))
+			return DataCharacter();
 	}
 	else {
-		status = RowReader::RecordPattern(row, pattern.endPos(), counters);
+		if (!RowReader::RecordPattern(row.iterAt(pattern.endPos()), row.end(), counters))
+			return DataCharacter();
 		std::reverse(counters.begin(), counters.end());
-	}//counters[] has the pixels of the module
-
-	if (StatusIsError(status)) {
-		return DataCharacter();
 	}
 
 	int numModules = 17; //left and right data characters have all the same length
@@ -452,19 +405,17 @@ RetrieveNextPair(const BitArray& row, const std::list<ExpandedPair>& previousPai
 	bool keepFinding = true;
 	int forcedOffset = -1;
 	do {
-		int patternStart = 0, patternEnd = 0;
 		std::array<int, 4> counters = {};
-		if (FindNextPair(row, previousPairs, forcedOffset, startFromEven, counters, patternStart, patternEnd)) {
-			pattern = ParseFoundFinderPattern(row, rowNumber, isOddPattern, patternStart, patternEnd, counters);
-			if (!pattern.isValid()) {
-				forcedOffset = GetNextSecondBar(row, patternStart);
-			}
-			else {
-				keepFinding = false;
-			}
+		auto range = FindNextPair(row, previousPairs, forcedOffset, startFromEven, counters);
+		if (!range)
+			return false;
+
+		pattern = ParseFoundFinderPattern(row, rowNumber, isOddPattern, range, counters);
+		if (!pattern.isValid()) {
+			forcedOffset = GetNextSecondBar(row, range.begin - row.begin());
 		}
 		else {
-			return false;
+			keepFinding = false;
 		}
 	} while (keepFinding);
 
