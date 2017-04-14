@@ -72,6 +72,8 @@ static const std::array<std::array<int, 5>, 10> PATTERNS = {
 */
 static bool DecodeDigit(const std::array<int, 5>& counters, int* outCode)
 {
+	assert(outCode != nullptr);
+
 	float bestVariance = MAX_AVG_VARIANCE; // worst variance we'll accept
 	int bestMatch = -1;
 	for (size_t i = 0; i < PATTERNS.size(); i++) {
@@ -95,8 +97,11 @@ static bool DecodeDigit(const std::array<int, 5>& counters, int* outCode)
 * @param resultString {@link StringBuilder} to append decoded chars to
 * @throws NotFoundException if decoding could not complete successfully
 */
-static bool DecodeMiddle(BitArray::Iterator begin, BitArray::Iterator end, std::string* resultString)
+static std::string DecodeMiddle(BitArray::Iterator begin, BitArray::Iterator end)
 {
+	std::string resultString;
+	resultString.reserve(20);
+
 	// Digits are interleaved in pairs - 5 black lines for one digit, and the 5
 	// interleaved white lines for the second digit.
 	// Therefore, need to scan 10 lines and then
@@ -110,7 +115,7 @@ static bool DecodeMiddle(BitArray::Iterator begin, BitArray::Iterator end, std::
 		// Get 10 runs of black/white.
 		auto range = RowReader::RecordPattern(begin, end, counterDigitPair);
 		if (!range)
-			return false;
+			return {};
 
 		// Split them into each array
 		for (int k = 0; k < 5; k++) {
@@ -121,18 +126,18 @@ static bool DecodeMiddle(BitArray::Iterator begin, BitArray::Iterator end, std::
 
 		int bestMatch = 0;
 		if (!DecodeDigit(counterBlack, &bestMatch))
-			return false;
+			return {};
 
-		resultString->push_back((char)('0' + bestMatch));
+		resultString.push_back((char)('0' + bestMatch));
 
 		if (!DecodeDigit(counterWhite, &bestMatch))
-			return false;
+			return {};
 
-		resultString->push_back((char)('0' + bestMatch));
+		resultString.push_back((char)('0' + bestMatch));
 
 		begin = range.end;
 	}
-	return true;
+	return resultString;
 }
 
 /**
@@ -225,9 +230,8 @@ ITFReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Decodin
 	if (!endRange)
 		return Result(DecodeStatus::NotFound);
 
-	std::string result;
-	result.reserve(20);
-	if (!DecodeMiddle(startRange.end, endRange.begin, &result))
+	std::string result = DecodeMiddle(startRange.end, endRange.begin);
+	if (result.empty())
 		return Result(DecodeStatus::NotFound);
 
 	// To avoid false positives with 2D barcodes (and other patterns), make

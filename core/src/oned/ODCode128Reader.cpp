@@ -54,6 +54,8 @@ static const int CODE_STOP = 106;
 static BitArray::Range
 FindStartPattern(const BitArray& row, int* startCode)
 {
+	assert(startCode != nullptr);
+
 	using Counters = std::vector<int>;
 	Counters counters(Code128::CODE_PATTERNS[0].size());
 
@@ -76,6 +78,8 @@ FindStartPattern(const BitArray& row, int* startCode)
 
 static bool DecodeCode(std::vector<int>& counters, int* outCode)
 {
+	assert(outCode != nullptr);
+
 	float bestVariance = MAX_AVG_VARIANCE; // worst variance we'll accept
 	int bestMatch = -1;
 	for (size_t d = 0; d < Code128::CODE_PATTERNS.size(); d++) {
