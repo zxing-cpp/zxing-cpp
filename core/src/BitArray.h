@@ -81,8 +81,8 @@ public:
 		}
 
 	private:
-		Iterator(const uint32_t* p, uint32_t m) : _value(p), _mask(m) {}
-		const uint32_t* _value;
+		Iterator(std::vector<uint32_t>::const_iterator p, uint32_t m) : _value(p), _mask(m) {}
+		std::vector<uint32_t>::const_iterator _value;
 		uint32_t _mask;
 		friend class BitArray;
 	};
@@ -132,7 +132,7 @@ public:
 	// and that you access bit in sequence, iterator is faster than get().
 	// However, be extremly careful since there is no check whatsoever.
 	// (Performance is the reason for the iterator to exist int the first place!)
-	Iterator iterAt(int i) const noexcept { return Iterator(_bits.data() + (i >> 5), 1 << (i & 0x1F)); }
+	Iterator iterAt(int i) const noexcept { return Iterator(_bits.cbegin() + (i >> 5), 1 << (i & 0x1F)); }
 
 	Iterator begin() const noexcept { return iterAt(0); }
 	Iterator end() const noexcept { return iterAt(_size); }
@@ -140,14 +140,13 @@ public:
 	ReverseIterator rend() const noexcept { return ReverseIterator(begin()); }
 
 	Iterator getNextSetTo(Iterator i, bool v) const {
+		if (i._value >= _bits.end())
+			return end();
 		// mask off lesser bits first
 		int32_t currentBits = (v ? *i._value : ~*i._value) & ~(i._mask - 1);
-		auto e = end();
-		if (currentBits == 0 && i._value == e._value)
-			return e;
 		while (currentBits == 0) {
-			if (++i._value == e._value) {
-				return e;
+			if (++i._value == _bits.end()) {
+				return end();
 			}
 			currentBits = v ? *i._value : ~*i._value;
 		}
