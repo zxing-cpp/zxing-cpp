@@ -420,7 +420,6 @@ namespace C40Encoder {
 
 	static int BacktrackOneCharacter(EncoderContext& context, std::string& buffer, std::string& removed, int lastCharSize)
 	{
-		int count = static_cast<int>(buffer.length());
 		buffer.resize(buffer.size() - lastCharSize);
 		context.setCurrentPos(context.currentPos() - 1);
 		int c = context.currentChar();
