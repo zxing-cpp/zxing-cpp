@@ -65,7 +65,7 @@ struct HybridBinarizer::DataCache
 
 HybridBinarizer::HybridBinarizer(const std::shared_ptr<const LuminanceSource>& source, bool pureBarcode) :
 	GlobalHistogramBinarizer(source, pureBarcode),
-	m_cache(new DataCache)
+	_cache(new DataCache)
 {
 }
 
@@ -236,8 +236,8 @@ HybridBinarizer::getBlackMatrix() const
 	int width = _source->width();
 	int height = _source->height();
 	if (width >= MINIMUM_DIMENSION && height >= MINIMUM_DIMENSION) {
-		std::call_once(m_cache->once, &InitBlackMatrix, std::cref(*_source), std::ref(m_cache->matrix));
-		return m_cache->matrix;
+		std::call_once(_cache->once, &InitBlackMatrix, std::cref(*_source), std::ref(_cache->matrix));
+		return _cache->matrix;
 	}
 	else {
 		// If the image is too small, fall back to the global histogram approach.

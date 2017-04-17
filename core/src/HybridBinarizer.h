@@ -48,7 +48,7 @@ public:
 
 private:
 	struct DataCache;
-	std::unique_ptr<DataCache> m_cache;
+	std::unique_ptr<DataCache> _cache;
 };
 
 } // ZXing
