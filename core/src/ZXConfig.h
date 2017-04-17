@@ -25,11 +25,8 @@
 	#define ZX_NO_RTTI
 #endif
 
-#ifdef __APPLE__
-// The Apple clang compiler until XCode 8 does not support c++11's thread_local.
-// The alternative 'static' makes the code (ReedSolomonDecoding) the thread unsafe.
-// If thread-safety is required, simply remove the 'static' keyword.
-#define ZX_THREAD_LOCAL static
-#else
-#define ZX_THREAD_LOCAL thread_local
-#endif
+// Thread local or static memory may be used to reduce the number of (re-)allocations of temporary variables
+// in e.g. the ReedSolomonDecoder. It is desabled by default. It can be enabled by modifying the following define.
+// Note: The Apple clang compiler until XCode 8 does not support c++11's thread_local.
+// The alternative 'static' makes the code thread unsafe.
+#define ZX_THREAD_LOCAL // 'thread_local' or 'static'
