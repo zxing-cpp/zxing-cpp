@@ -29,7 +29,7 @@ namespace ZXing {
 template <typename Iterator>
 struct Range {
 	Iterator begin, end;
-	operator bool() const { return begin != end; }
+	operator bool() const { return begin < end; }
 	int size() const { return end - begin; }
 };
 
@@ -79,6 +79,12 @@ public:
 		{
 			return _value < rhs._value || (_value == rhs._value && _mask < rhs._mask);
 		}
+		bool operator<=(const Iterator& rhs) const
+		{
+			return _value < rhs._value || (_value == rhs._value && _mask <= rhs._mask);
+		}
+		bool operator>(const Iterator& rhs) const { return !(*this <= rhs); }
+		bool operator>=(const Iterator& rhs) const { return !(*this < rhs); }
 
 	private:
 		Iterator(std::vector<uint32_t>::const_iterator p, uint32_t m) : _value(p), _mask(m) {}

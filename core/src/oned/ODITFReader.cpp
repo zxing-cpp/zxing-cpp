@@ -228,7 +228,7 @@ ITFReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Decodin
 		return Result(DecodeStatus::NotFound);
 
 	auto endRange = DecodeEnd(row);
-	if (!endRange)
+	if (!endRange || !(startRange.end < endRange.begin))
 		return Result(DecodeStatus::NotFound);
 
 	std::string result = DecodeMiddle(startRange.end, endRange.begin);
