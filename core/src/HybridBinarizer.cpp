@@ -23,6 +23,7 @@
 #include "DecodeStatus.h"
 #include "ZXNumeric.h"
 
+#include <cassert>
 #include <array>
 #include <mutex>
 
@@ -35,6 +36,26 @@ static const int BLOCK_SIZE = 1 << BLOCK_SIZE_POWER; // ...0100...00
 static const int BLOCK_SIZE_MASK = BLOCK_SIZE - 1;   // ...0011...11
 static const int MINIMUM_DIMENSION = BLOCK_SIZE * 5;
 static const int MIN_DYNAMIC_RANGE = 24;
+
+template <typename T>
+class Matrix : std::vector<T>
+{
+	int _width, _height;
+
+public:
+	Matrix(int width, int height) : std::vector<T>(width*height), _width(width), _height(height) {}
+
+	T& operator()(int x, int y)
+	{
+		assert(x < _width && y < _height);
+		return std::vector<T>::operator[](y* _width + x);
+	}
+	const T& operator()(int x, int y) const
+	{
+		assert(x < _width && y < _height);
+		return std::vector<T>::operator[](y* _width + x);
+	}
+};
 
 struct HybridBinarizer::DataCache
 {
@@ -57,12 +78,9 @@ HybridBinarizer::~HybridBinarizer()
 * See the following thread for a discussion of this algorithm:
 *  http://groups.google.com/group/zxing/browse_thread/thread/d06efa2c35a7ddc0
 */
-static void CalculateBlackPoints(const uint8_t* luminances, int subWidth, int subHeight, int width, int height, int stride, std::vector<std::vector<int>>& blackPoints)
+static Matrix<int> CalculateBlackPoints(const uint8_t* luminances, int subWidth, int subHeight, int width, int height, int stride)
 {
-	blackPoints.resize(subHeight);
-	for (auto& row : blackPoints) {
-		row.resize(subWidth);
-	}
+	Matrix<int>	blackPoints(subWidth, subHeight);
 
 	for (int y = 0; y < subHeight; y++) {
 		int yoffset = y << BLOCK_SIZE_POWER;
@@ -122,15 +140,16 @@ static void CalculateBlackPoints(const uint8_t* luminances, int subWidth, int su
 
 					// The (min < bp) is arbitrary but works better than other heuristics that were tried.
 					int averageNeighborBlackPoint =
-						(blackPoints[y - 1][x] + (2 * blackPoints[y][x - 1]) + blackPoints[y - 1][x - 1]) / 4;
+						(blackPoints(x, y - 1) + (2 * blackPoints(x - 1, y)) + blackPoints(x - 1, y - 1)) / 4;
 					if (min < averageNeighborBlackPoint) {
 						average = averageNeighborBlackPoint;
 					}
 				}
 			}
-			blackPoints[y][x] = average;
+			blackPoints(x, y) = average;
 		}
 	}
+	return blackPoints;
 }
 
 
@@ -154,8 +173,9 @@ static void ThresholdBlock(const uint8_t* luminances, int xoffset, int yoffset, 
 * of the blocks around it. Also handles the corner cases (fractional blocks are computed based
 * on the last pixels in the row/column which are also used in the previous block).
 */
-static void CalculateThresholdForBlock(const uint8_t* luminances, int subWidth, int subHeight, int width, int height, int stride,
-										const std::vector<std::vector<int>>& blackPoints, BitMatrix& matrix) {
+static void CalculateThresholdForBlock(const uint8_t* luminances, int subWidth, int subHeight, int width, int height,
+                                       int stride, const Matrix<int>& blackPoints, BitMatrix& matrix)
+{
 	for (int y = 0; y < subHeight; y++) {
 		int yoffset = y << BLOCK_SIZE_POWER;
 		int maxYOffset = height - BLOCK_SIZE;
@@ -171,9 +191,10 @@ static void CalculateThresholdForBlock(const uint8_t* luminances, int subWidth, 
 			int left = Clamp(x, 2, subWidth - 3);
 			int top = Clamp(y, 2, subHeight - 3);
 			int sum = 0;
-			for (int z = -2; z <= 2; z++) {
-				auto& blackRow = blackPoints[top + z];
-				sum += blackRow[left - 2] + blackRow[left - 1] + blackRow[left] + blackRow[left + 1] + blackRow[left + 2];
+			for (int dy = -2; dy <= 2; ++dy) {
+				for (int dx = -2; dx <= 2; ++dx) {
+					sum += blackPoints(left + dx, top + dy);
+				}
 			}
 			int average = sum / 25;
 			ThresholdBlock(luminances, xoffset, yoffset, average, stride, matrix);
@@ -202,8 +223,7 @@ static void InitBlackMatrix(const LuminanceSource& source, std::shared_ptr<const
 	if ((height & BLOCK_SIZE_MASK) != 0) {
 		subHeight++;
 	}
-	std::vector<std::vector<int>> blackPoints;
-	CalculateBlackPoints(luminances, subWidth, subHeight, width, height, stride, blackPoints);
+	auto blackPoints = CalculateBlackPoints(luminances, subWidth, subHeight, width, height, stride);
 
 	auto matrix = std::make_shared<BitMatrix>(width, height);
 	CalculateThresholdForBlock(luminances, subWidth, subHeight, width, height, stride, blackPoints, *matrix);

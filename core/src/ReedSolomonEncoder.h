@@ -25,13 +25,13 @@ class ReedSolomonEncoder
 public:
 	ReedSolomonEncoder(const GenericGF& field);
 
-	void encode(std::vector<int>& toEncode, int ecBytes);
+	void encode(std::vector<int>& toEncode, const int ecBytes);
 
 private:
 	const GenericGF* _field;
 	std::list<GenericGFPoly> _cachedGenerators;
 
-	GenericGFPoly buildGenerator(int degree);
+	const GenericGFPoly& buildGenerator(int degree);
 };
 
 } // ZXing

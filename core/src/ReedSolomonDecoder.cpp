@@ -25,24 +25,26 @@ namespace ZXing {
 
 // May throw ReedSolomonException
 static DecodeStatus
-RunEuclideanAlgorithm(const GenericGF& field, GenericGFPoly a, GenericGFPoly b, int R, GenericGFPoly& sigma, GenericGFPoly& omega)
+RunEuclideanAlgorithm(const GenericGF& field, std::vector<int>&& rCoefs, int R, GenericGFPoly& sigma, GenericGFPoly& omega)
 {
-	// Assume a's degree is >= b's
-	if (a.degree() < b.degree()) {
-		swap(a, b);
-	}
+	GenericGFPoly r(field, std::move(rCoefs));
+	GenericGFPoly& tLast = omega;
+	GenericGFPoly& t = sigma;
+	ZX_THREAD_LOCAL GenericGFPoly q, rLast;
 
-	GenericGFPoly rLast = a;
-	GenericGFPoly r = b;
-	GenericGFPoly tLast = field.zero();
-	GenericGFPoly t = field.one();
+	field.setMonomial(rLast, R, 1);
+	field.setZero(tLast);
+	field.setOne(t);
+
+	// Assume r's degree is < rLast's
+	if (r.degree() >= rLast.degree()) {
+		swap(r, rLast);
+	}
 
 	// Run Euclidean algorithm until r's degree is less than R/2
 	while (r.degree() >= R / 2) {
-		GenericGFPoly rLastLast = rLast;
-		GenericGFPoly tLastLast = tLast;
-		rLast = r;
-		tLast = t;
+		swap(tLast, t);
+		swap(rLast, r);
 
 		// Divide rLastLast by rLast, with quotient in q and remainder in r
 		if (rLast.isZero()) {
@@ -50,18 +52,12 @@ RunEuclideanAlgorithm(const GenericGF& field, GenericGFPoly a, GenericGFPoly b, 
 			//throw ReedSolomonException("r_{i-1} was zero");
 			return DecodeStatus::ReedSolomonAlgoFailed;
 		}
-		r = rLastLast;
-		GenericGFPoly q = field.zero();
-		int denominatorLeadingTerm = rLast.coefficient(rLast.degree());
-		int dltInverse = field.inverse(denominatorLeadingTerm);
-		while (r.degree() >= rLast.degree() && !r.isZero()) {
-			int degreeDiff = r.degree() - rLast.degree();
-			int scale = field.multiply(r.coefficient(r.degree()), dltInverse);
-			q = q.addOrSubtract(field.buildMonomial(degreeDiff, scale));
-			r = r.addOrSubtract(rLast.multiplyByMonomial(degreeDiff, scale));
-		}
 
-		t = q.multiply(tLast).addOrSubtract(tLastLast);
+		r.divide(rLast, q);
+
+		q.multiply(tLast);
+		q.addOrSubtract(t);
+		swap(t, q); // t = q
 
 		if (r.degree() >= rLast.degree()) {
 			throw std::runtime_error("Division algorithm failed to reduce polynomial?");
@@ -74,8 +70,11 @@ RunEuclideanAlgorithm(const GenericGF& field, GenericGFPoly a, GenericGFPoly b, 
 	}
 
 	int inverse = field.inverse(sigmaTildeAtZero);
-	sigma = t.multiply(inverse);
-	omega = r.multiply(inverse);
+	t.multiply(inverse);
+	r.multiply(inverse);
+
+	// sigma is t
+	omega = std::move(r);
 	return DecodeStatus::NoError;
 }
 
@@ -148,10 +147,9 @@ ReedSolomonDecoder::decode(std::vector<int>& received, int twoS) const
 		return DecodeStatus::NoError;
 	}
 
-	GenericGFPoly syndrome(*_field, syndromeCoefficients);
-	GenericGFPoly sigma, omega;
+	ZX_THREAD_LOCAL GenericGFPoly sigma, omega;
 
-	auto errStat = RunEuclideanAlgorithm(*_field, _field->buildMonomial(twoS, 1), syndrome, twoS, sigma, omega);
+	auto errStat = RunEuclideanAlgorithm(*_field, std::move(syndromeCoefficients), twoS, sigma, omega);
 	if (StatusIsError(errStat)) {
 		return errStat;
 	}
@@ -168,7 +166,7 @@ ReedSolomonDecoder::decode(std::vector<int>& received, int twoS) const
 		if (position < 0) {
 			return DecodeStatus::ReedSolomonBadLocation;
 		}
-		received[position] = GenericGF::AddOrSubtract(received[position], errorMagnitudes[i]);
+		received[position] = _field->addOrSubtract(received[position], errorMagnitudes[i]);
 	}
 	return DecodeStatus::NoError;
 }

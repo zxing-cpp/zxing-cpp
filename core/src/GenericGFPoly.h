@@ -16,7 +16,11 @@
 * limitations under the License.
 */
 
+#include "ZXConfig.h"
+
+#include <cassert>
 #include <vector>
+#include <utility>
 
 namespace ZXing {
 
@@ -33,6 +37,27 @@ class GenericGF;
 */
 class GenericGFPoly
 {
+	struct Coefficients : public std::vector<int>
+	{
+		void reserve(size_t s)
+		{
+			if (capacity() < s)
+				std::vector<int>::reserve(std::max(32ul, s));
+		}
+
+		void resize(size_t s)
+		{
+			reserve(s);
+			std::vector<int>::resize(s);
+		}
+
+		void resize(size_t s, int i)
+		{
+			reserve(s);
+			std::vector<int>::resize(s, i);
+		}
+	};
+
 public:
 	// Build a invalid object, so that this can be used in container or return by reference,
 	// any access to invalid object is undefined behavior.
@@ -47,7 +72,28 @@ public:
 	* or if leading coefficient is 0 and this is not a
 	* constant polynomial (that is, it is not the monomial "0").
 	*/
-	GenericGFPoly(const GenericGF& field, const std::vector<int>& coefficients);
+	GenericGFPoly(const GenericGF& field, std::vector<int>&& coefficients) : _field(&field)
+	{
+		assert(!coefficients.empty());
+		_coefficients.swap(coefficients); // _coefficients = coefficients
+		normalize();
+	}
+	GenericGFPoly(const GenericGF& field, const std::vector<int>& coefficients) : GenericGFPoly(field, std::vector<int>(coefficients)) {}
+
+	GenericGFPoly& operator=(GenericGFPoly&& other) = default;
+	GenericGFPoly(GenericGFPoly&& other) = default;
+
+	GenericGFPoly& operator=(const GenericGFPoly& other) {
+		assert(_field == other._field);
+		_coefficients.reserve(other._coefficients.size());
+		_coefficients = other._coefficients;
+		return *this;
+	}
+
+	GenericGFPoly(const GenericGFPoly& other) {
+		_field = other._field;
+		*this = other;
+	}
 
 	const std::vector<int>& coefficients() const {
 		return _coefficients;
@@ -79,12 +125,11 @@ public:
 	*/
 	int evaluateAt(int a) const;
 
-	GenericGFPoly addOrSubtract(const GenericGFPoly& other) const;
-	GenericGFPoly multiply(const GenericGFPoly& other) const;
-	GenericGFPoly multiply(int scalar) const;
-	GenericGFPoly multiplyByMonomial(int degree, int coefficient) const;
-	void divide(const GenericGFPoly& other, GenericGFPoly& quotient, GenericGFPoly& remainder) const;
-
+	GenericGFPoly& addOrSubtract(GenericGFPoly& other);
+	GenericGFPoly& multiply(const GenericGFPoly& other);
+	GenericGFPoly& multiply(int scalar);
+	GenericGFPoly& multiplyByMonomial(int degree, int coefficient);
+	GenericGFPoly& divide(const GenericGFPoly& other, GenericGFPoly& quotient);
 
 	friend void swap(GenericGFPoly& a, GenericGFPoly& b)
 	{
@@ -93,8 +138,12 @@ public:
 	}
 
 private:
+	friend class GenericGF;
+
+	void normalize();
+
 	const GenericGF* _field;
-	std::vector<int> _coefficients;
+	Coefficients _coefficients, _cache; // _cache is used for malloc caching
 };
 
 } // ZXing
