@@ -64,7 +64,7 @@ static std::shared_ptr<LuminanceSource> readPNM(FILE* f)
 
 static std::shared_ptr<LuminanceSource> readImage(const fs::path& filename)
 {
-	std::string cmd = "convert " + filename.native() + " pgm:-";
+	std::string cmd = "convert " + filename.native() + " -intensity Rec601Luma -colorspace gray pgm:-";
 	bool pipe = filename.extension() != ".pgm";
 	FILE* f = pipe ? popen(cmd.c_str(), "r") : fopen(filename.c_str(), "r");
 	if (!f)
