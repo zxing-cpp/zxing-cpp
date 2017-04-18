@@ -211,6 +211,9 @@ GenericLuminanceSource::rotated(int degreeCW) const
 		}
 		return std::make_shared<GenericLuminanceSource>(0, 0, _height, _width, pixels, _height);
 	}
+	else if (degreeCW == 0) {
+		return std::make_shared<GenericLuminanceSource>(0, 0, _width, _height, _pixels, _width);
+	}
 	throw std::invalid_argument("Unsupported rotation");
 }
 
