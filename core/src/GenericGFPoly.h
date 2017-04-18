@@ -21,6 +21,7 @@
 #include <cassert>
 #include <vector>
 #include <utility>
+#include <algorithm>
 
 namespace ZXing {
 
@@ -42,7 +43,7 @@ class GenericGFPoly
 		void reserve(size_t s)
 		{
 			if (capacity() < s)
-				std::vector<int>::reserve(std::max(32ul, s));
+				std::vector<int>::reserve(std::max(size_t(32), s));
 		}
 
 		void resize(size_t s)
