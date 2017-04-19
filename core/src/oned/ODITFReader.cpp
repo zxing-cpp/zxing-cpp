@@ -29,9 +29,10 @@ namespace ZXing {
 namespace OneD {
 
 static const float MAX_AVG_VARIANCE = 0.38f;
-static const float MAX_INDIVIDUAL_VARIANCE = 0.78f;
+static const float MAX_INDIVIDUAL_VARIANCE = 0.5f;
 
-static const int W = 3; // Pixel width of a wide line
+static const int W = 3; // Pixel width of a 3x wide line
+static const int w = 2; // Pixel width of a 2x wide line
 static const int N = 1; // Pixed width of a narrow line
 
 /** Valid ITF lengths. Anything longer than the largest value is also allowed. */
@@ -44,12 +45,26 @@ static const std::array<int, 5> DEFAULT_ALLOWED_LENGTHS = { 6, 8, 10, 12, 14 };
 * searching for the END_PATTERN
 */
 static const std::array<int, 4> START_PATTERN = { N, N, N, N };
-static const std::array<int, 3> END_PATTERN_REVERSED = { N, N, W };
+static const std::array<std::array<int, 3>, 2> END_PATTERN_REVERSED = {
+	N, N, w, // 2x
+	N, N, W, // 3x
+};
 
 /**
 * Patterns of Wide / Narrow lines to indicate each digit
 */
-static const std::array<std::array<int, 5>, 10> PATTERNS = {
+static const std::array<std::array<int, 5>, 20> PATTERNS = {
+	N, N, w, w, N, // 0
+	w, N, N, N, w, // 1
+	N, w, N, N, w, // 2
+	w, w, N, N, N, // 3
+	N, N, w, N, w, // 4
+	w, N, w, N, N, // 5
+	N, w, w, N, N, // 6
+	N, N, N, w, w, // 7
+	w, N, N, w, N, // 8
+	N, w, N, w, N, // 9
+
 	N, N, W, W, N, // 0
 	W, N, N, N, W, // 1
 	N, W, N, N, W, // 2
@@ -59,7 +74,7 @@ static const std::array<std::array<int, 5>, 10> PATTERNS = {
 	N, W, W, N, N, // 6
 	N, N, N, W, W, // 7
 	W, N, N, W, N, // 8
-	N, W, N, W, N,  // 9
+	N, W, N, W, N, // 9
 };
 
 /**
@@ -75,17 +90,21 @@ static bool DecodeDigit(const std::array<int, 5>& counters, int* outCode)
 	assert(outCode != nullptr);
 
 	float bestVariance = MAX_AVG_VARIANCE; // worst variance we'll accept
-	int bestMatch = -1;
+	constexpr int INVALID_MATCH = -1;
+	int bestMatch = INVALID_MATCH;
 	for (size_t i = 0; i < PATTERNS.size(); i++) {
 		auto& pattern = PATTERNS[i];
 		float variance = RowReader::PatternMatchVariance(counters, pattern, MAX_INDIVIDUAL_VARIANCE);
 		if (variance < bestVariance) {
 			bestVariance = variance;
 			bestMatch = static_cast<int>(i);
+		} else if (variance == bestVariance) {
+			// if we find a second 'best match' with the same variance, we can not reliably report to have a suitable match
+			bestMatch = INVALID_MATCH;
 		}
 	}
-	if (bestMatch >= 0) {
-		*outCode = bestMatch;
+	if (bestMatch != INVALID_MATCH) {
+		*outCode = bestMatch % 10;
 		return true;
 	}
 	return false;
@@ -203,7 +222,9 @@ static BitArray::Range DecodeEnd(const BitArray& row)
 	// For convenience, reverse the row and then
 	// search from 'the start' for the end block
 	revRow.reverse();
-	auto range = FindGuardPattern(revRow, END_PATTERN_REVERSED);
+	auto range = FindGuardPattern(revRow, END_PATTERN_REVERSED[0]);
+	if (!range)
+		range = FindGuardPattern(revRow, END_PATTERN_REVERSED[1]);
 
 	// Now recalculate the indices of where the 'endblock' starts & stops to accommodate
 	// the reversed nature of the search
