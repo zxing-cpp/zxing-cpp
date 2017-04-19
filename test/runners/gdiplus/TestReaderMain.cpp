@@ -482,8 +482,8 @@ int main(int argc, char** argv)
 		});
 
 		runTests("blackbox/itf-1", "ITF", 14, {
-			{ 9,  13, 0   },
-			{ 12, 13, 180 },
+			{ 14, 14, 0   },
+			{ 14, 14, 180 },
 		});
 
 		runTests("blackbox/itf-2", "ITF", 13, {
