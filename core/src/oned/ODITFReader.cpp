@@ -75,17 +75,21 @@ static bool DecodeDigit(const std::array<int, 5>& counters, int* outCode)
 	assert(outCode != nullptr);
 
 	float bestVariance = MAX_AVG_VARIANCE; // worst variance we'll accept
-	int bestMatch = -1;
+	constexpr int INVALID_MATCH = -1;
+	int bestMatch = INVALID_MATCH;
 	for (size_t i = 0; i < PATTERNS.size(); i++) {
 		auto& pattern = PATTERNS[i];
 		float variance = RowReader::PatternMatchVariance(counters, pattern, MAX_INDIVIDUAL_VARIANCE);
 		if (variance < bestVariance) {
 			bestVariance = variance;
 			bestMatch = static_cast<int>(i);
+		} else if (variance == bestVariance) {
+			// if we find a second 'best match' with the same variance, we can not reliably report to have a suitable match
+			bestMatch = INVALID_MATCH;
 		}
 	}
-	if (bestMatch >= 0) {
 		*outCode = bestMatch;
+	if (bestMatch != INVALID_MATCH) {
 		return true;
 	}
 	return false;
