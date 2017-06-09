@@ -18,6 +18,7 @@
 
 #include <cstdint>
 #include <vector>
+#include <iosfwd>
 
 namespace ZXing {
 
@@ -200,6 +201,8 @@ public:
 	{
 		return a._width == b._width && a._height == b._height && a._rowSize == b._rowSize && a._bits == b._bits;
 	}
+
+	void writePBM(std::ostream& out) const;
 };
 
 } // ZXing

@@ -20,6 +20,7 @@
 #include "BitHacks.h"
 
 #include <stdexcept>
+#include <iostream>
 
 namespace ZXing {
 
@@ -218,6 +219,27 @@ BitMatrix::getBottomRightOnBit(int& right, int& bottom) const
 	right += bit;
 	return true;
 }
+
+void
+BitMatrix::writePBM(std::ostream& out) const
+{
+	out << "P1\n" << _width << ' ' << _height << '\n';
+	for (int y = 0; y < _height; ++y) {
+		uint32_t mask = 1;
+		const uint32_t* p = _bits.data() + y * _rowSize;
+		int i = 0;
+		while (i < _rowSize) {
+			out << ((*p & mask) != 0 ? '1' : '0');
+			++i;
+			out << (i < _rowSize ? ' ' : '\n');
+			if ((mask <<= 1) == 0) {
+				mask = 1;
+				++p;
+			}
+		}
+	}
+}
+
 
 } // ZXing
 
