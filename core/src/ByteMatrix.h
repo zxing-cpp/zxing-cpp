@@ -28,8 +28,12 @@ class ByteMatrix
 
 public:
 	ByteMatrix(int width, int height, int val = 0) : _width(width), _height(height), _data(_width * _height, val) { }
-
 	ByteMatrix() : _width(0), _height(0) { }
+
+	// Nothing wrong to support it, just to make it explicit, instead of by mistake.
+	// Use copyTo() below.
+	ByteMatrix(const ByteMatrix &) = delete;
+	ByteMatrix& operator=(const ByteMatrix &) = delete;
 
 	void init(int width, int height, int val = 0)
 	{
@@ -37,6 +41,12 @@ public:
 		_height = height;
 		_data.clear();
 		_data.resize(_width * _height, val);
+	}
+
+	void copyTo(ByteMatrix& other) const {
+		other._width = _width;
+		other._height = _height;
+		other._data = _data;
 	}
 
 	int height() const {

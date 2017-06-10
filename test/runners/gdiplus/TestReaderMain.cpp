@@ -160,7 +160,7 @@ std::string GetFormatFromFolderName(const char* folderName)
 }
 
 static std::string PathPrefix;
-static ZXing::BarcodeReader scanners[2] = { ZXing::BarcodeReader(false, false), ZXing::BarcodeReader(true, true) };
+static ZXing::BarcodeReader Scanners[2] = { ZXing::BarcodeReader(false, false), ZXing::BarcodeReader(true, true) };
 
 static const char* GOOD = "OK";
 static const char* BAD = "!!!!!! FAILED !!!!!!";
@@ -194,7 +194,7 @@ static void DoRunTests(std::ostream& output, const char* directory, const char* 
 			Gdiplus::Bitmap bitmap(std::wstring(imagePath.begin(), imagePath.end()).c_str());
 			FixeBitmapFormat(bitmap);
 			for (int i = 0; i < 2; ++i) {
-				auto result = scanners[i].scan(bitmap, GetRotationEnum(test.rotation));
+				auto result = Scanners[i].scan(bitmap, GetRotationEnum(test.rotation));
 				if (!result.format.empty()) {
 					if (CheckResult(imagePath, format, result, logTexts[j])) {
 						passCount[i]++;
@@ -302,7 +302,7 @@ static void DoRunFalsePositiveTests(std::ostream& output, const char* directory,
 			Gdiplus::Bitmap bitmap(std::wstring(imagePath.begin(), imagePath.end()).c_str());
 			FixeBitmapFormat(bitmap);
 			for (int i = 0; i < 2; ++i) {
-				auto result = scanners[i].scan(bitmap, GetRotationEnum(test.rotation));
+				auto result = Scanners[i].scan(bitmap, GetRotationEnum(test.rotation));
 				if (!result.format.empty()) {
 					positives[i]++;
 					misReadFiles[i].insert(images[j]);

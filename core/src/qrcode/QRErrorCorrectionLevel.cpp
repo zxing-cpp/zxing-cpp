@@ -26,6 +26,18 @@ const wchar_t* ToString(ErrorCorrectionLevel l)
 	return LEVEL_STR[static_cast<int>(l)];
 }
 
+ErrorCorrectionLevel FromString(const char* str)
+{
+	switch (str[0])
+	{
+		case 'M': return ErrorCorrectionLevel::Medium;
+		case 'L': return ErrorCorrectionLevel::Low;
+		case 'H': return ErrorCorrectionLevel::High;
+		case 'Q': return ErrorCorrectionLevel::Quality;
+		default: return ErrorCorrectionLevel::Medium;
+	}
+}
+
 ErrorCorrectionLevel ECLevelFromBits(int bits)
 {
 	static const ErrorCorrectionLevel LEVEL_FOR_BITS[] = { ErrorCorrectionLevel::Medium, ErrorCorrectionLevel::Low, ErrorCorrectionLevel::High, ErrorCorrectionLevel::Quality };

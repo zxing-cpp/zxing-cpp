@@ -131,7 +131,7 @@ static inline bool IsEmpty(int8_t value) {
 	return value == -1;
 }
 
-static void EmbedTimingPatterns(ByteMatrix matrix)
+static void EmbedTimingPatterns(ByteMatrix& matrix)
 {
 	// -8 is for skipping position detection patterns (size 7), and two horizontal/vertical
 	// separation patterns (size 1). Thus, 8 = 7 + 1.
@@ -426,7 +426,7 @@ static bool GetDataMaskBit(int maskPattern, int x, int y)
 {
 	int intermediate;
 	int temp;
-	switch (maskPattern & 0x7) {
+	switch (maskPattern) {
 	case 0:
 		intermediate = (y + x) & 0x1;
 		break;

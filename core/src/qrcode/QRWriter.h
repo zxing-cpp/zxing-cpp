@@ -39,7 +39,7 @@ public:
 	Writer& setMargin(int margin);
 	Writer& setErrorCorrectionLevel(ErrorCorrectionLevel ecLevel);
 	Writer& setEncoding(CharacterSet encoding);
-	Writer& setVersion(int versioNumber);
+	Writer& setVersion(int versionNumber);
 
 	void encode(const std::wstring& contents, int width, int height, BitMatrix& output) const;
 

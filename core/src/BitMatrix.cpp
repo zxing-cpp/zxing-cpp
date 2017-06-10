@@ -228,10 +228,10 @@ BitMatrix::writePBM(std::ostream& out) const
 		uint32_t mask = 1;
 		const uint32_t* p = _bits.data() + y * _rowSize;
 		int i = 0;
-		while (i < _rowSize) {
+		while (i < _width) {
 			out << ((*p & mask) != 0 ? '1' : '0');
 			++i;
-			out << (i < _rowSize ? ' ' : '\n');
+			out << (i < _width ? ' ' : '\n');
 			if ((mask <<= 1) == 0) {
 				mask = 1;
 				++p;
