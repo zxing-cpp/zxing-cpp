@@ -201,7 +201,7 @@ CheckOneChecksum(const std::string& result, int checkPosition, int weightMax)
 }
 
 static DecodeStatus
-CheckChecksums(const std::string& result) 
+CheckChecksums(const std::string& result)
 {
 	int length = static_cast<int>(result.length());
 	if (CheckOneChecksum(result, length - 2, 20) && CheckOneChecksum(result, length - 1, 15)) {
