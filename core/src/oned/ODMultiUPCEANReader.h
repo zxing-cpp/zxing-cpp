@@ -43,9 +43,9 @@ class MultiUPCEANReader : public RowReader
 {
 public:
 	explicit MultiUPCEANReader(const DecodeHints& hints);
-	virtual ~MultiUPCEANReader();
+	~MultiUPCEANReader() override;
 
-	virtual Result decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const override;
+	Result decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const override;
 
 private:
 	std::vector<std::unique_ptr<const UPCEANReader>> _readers;

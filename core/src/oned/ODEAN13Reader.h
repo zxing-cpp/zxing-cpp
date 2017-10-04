@@ -33,8 +33,8 @@ class EAN13Reader : public UPCEANReader
 public:
 	explicit EAN13Reader(const DecodeHints& hints) : UPCEANReader(hints) {}
 
-	virtual BarcodeFormat expectedFormat() const override;
-	virtual DecodeStatus decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const override;
+	BarcodeFormat expectedFormat() const override;
+	DecodeStatus decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const override;
 };
 
 } // OneD

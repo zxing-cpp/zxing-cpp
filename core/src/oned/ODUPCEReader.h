@@ -34,10 +34,10 @@ public:
 	explicit UPCEReader(const DecodeHints& hints) : UPCEANReader(hints) {}
 
 protected:
-	virtual BarcodeFormat expectedFormat() const override;
-	virtual DecodeStatus decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const override;
-	virtual	DecodeStatus checkChecksum(const std::string& s) const override;
-	virtual DecodeStatus decodeEnd(const BitArray& row, int endStart, int& begin, int& end) const override;
+	BarcodeFormat expectedFormat() const override;
+	DecodeStatus decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const override;
+	DecodeStatus checkChecksum(const std::string& s) const override;
+	DecodeStatus decodeEnd(const BitArray& row, int endStart, int& begin, int& end) const override;
 };
 
 } // OneD

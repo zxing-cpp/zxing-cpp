@@ -35,7 +35,7 @@ class Reader : public ZXing::Reader
 {
 public:
 	explicit Reader(const DecodeHints& hints);
-	virtual Result decode(const BinaryBitmap& image) const override;
+	Result decode(const BinaryBitmap& image) const override;
 
 private:
 	bool _tryHarder;

@@ -32,8 +32,8 @@ public:
 	explicit EAN8Reader(const DecodeHints& hints) : UPCEANReader(hints) {}
 
 protected:
-	virtual BarcodeFormat expectedFormat() const override;
-	virtual DecodeStatus decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const override;
+	BarcodeFormat expectedFormat() const override;
+	DecodeStatus decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const override;
 };
 
 } // OneD

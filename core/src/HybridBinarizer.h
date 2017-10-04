@@ -41,10 +41,10 @@ class HybridBinarizer : public GlobalHistogramBinarizer
 {
 public:
 	explicit HybridBinarizer(const std::shared_ptr<const LuminanceSource>& source, bool pureBarcode = false);
-	virtual ~HybridBinarizer();
+	~HybridBinarizer() override;
 
-	virtual std::shared_ptr<const BitMatrix> getBlackMatrix() const override;
-	virtual std::shared_ptr<BinaryBitmap> newInstance(const std::shared_ptr<const LuminanceSource>& source) const override;
+	std::shared_ptr<const BitMatrix> getBlackMatrix() const override;
+	std::shared_ptr<BinaryBitmap> newInstance(const std::shared_ptr<const LuminanceSource>& source) const override;
 
 private:
 	struct DataCache;

@@ -27,7 +27,7 @@ namespace OneD {
 class RSS14Reader : public RowReader
 {
 public:
-	virtual Result decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const override;
+	Result decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const override;
 };
 
 } // OneD
