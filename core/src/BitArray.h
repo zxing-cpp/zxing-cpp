@@ -283,7 +283,7 @@ public:
 
 	friend bool operator==(const BitArray& a, const BitArray& b)
 	{
-		return a._size == b._size && b._bits == b._bits;
+		return a._size == b._size && a._bits == b._bits;
 	}
 
 private:
