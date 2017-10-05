@@ -60,7 +60,7 @@ public:
 	virtual Result decodeRow(int rowNumber, const BitArray& row, int startGuardBegin, int startGuardEnd) const;
 
 protected:
-	UPCEANReader(const DecodeHints& hints);
+	explicit UPCEANReader(const DecodeHints& hints);
 
 	/**
 	* Get the format of this decoder.

@@ -40,7 +40,7 @@ public:
 	};
 
 	DetectionResultColumn();
-	DetectionResultColumn(const BoundingBox& boundingBox, RowIndicator rowInd = RowIndicator::None);
+	explicit DetectionResultColumn(const BoundingBox& boundingBox, RowIndicator rowInd = RowIndicator::None);
 
 	bool isRowIndicator() const {
 		return _rowIndicator != RowIndicator::None;

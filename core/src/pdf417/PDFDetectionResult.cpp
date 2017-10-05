@@ -26,7 +26,7 @@ static const int ADJUST_ROW_NUMBER_SKIP = 2;
 
 DetectionResult::DetectionResult(const BarcodeMetadata& barcodeMetadata, const Nullable<BoundingBox>& boundingBox) :
 	_barcodeMetadata(barcodeMetadata),
-	_detectionResultColumns(barcodeMetadata.columnCount() + 2, 0),
+	_detectionResultColumns(barcodeMetadata.columnCount() + 2),
 	_boundingBox(boundingBox)
 {
 }

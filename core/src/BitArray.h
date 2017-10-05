@@ -29,7 +29,7 @@ namespace ZXing {
 template <typename Iterator>
 struct Range {
 	Iterator begin, end;
-	operator bool() const { return begin < end; }
+	explicit operator bool() const { return begin < end; }
 	int size() const { return end - begin; }
 };
 

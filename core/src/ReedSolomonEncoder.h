@@ -23,7 +23,7 @@ namespace ZXing {
 class ReedSolomonEncoder
 {
 public:
-	ReedSolomonEncoder(const GenericGF& field);
+	explicit ReedSolomonEncoder(const GenericGF& field);
 
 	void encode(std::vector<int>& toEncode, const int ecBytes);
 
