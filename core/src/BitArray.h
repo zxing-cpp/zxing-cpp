@@ -268,7 +268,7 @@ public:
 	*  of the internal representation, which is exposed by {@link #getBitArray()}
 	* @param numBytes how many bytes to write
 	*/
-	void toBytes(int bitOffset, uint8_t* ouput, int numBytes) const;
+	void toBytes(int bitOffset, uint8_t* output, int numBytes) const;
 
 	/**
 	* @return underlying array of ints. The first element holds the first 32 bits, and the least

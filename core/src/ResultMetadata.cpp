@@ -74,10 +74,10 @@ struct ResultMetadata::CustomDataValue : public Value
 };
 
 int
-ResultMetadata::getInt(Key key, int fallback) const
+ResultMetadata::getInt(Key key, int fallbackValue) const
 {
 	auto it = _contents.find(key);
-	return it != _contents.end() ? it->second->toInteger(fallback) : fallback;
+	return it != _contents.end() ? it->second->toInteger(fallbackValue) : fallbackValue;
 }
 
 std::wstring
