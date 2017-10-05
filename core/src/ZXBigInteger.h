@@ -29,7 +29,7 @@ namespace ZXing {
 class BigInteger
 {
 public:
-	typedef size_t Block;
+	using Block = size_t;
 
 	// The number of bits in a block
 	//static const unsigned int N = 8 * sizeof(Block);

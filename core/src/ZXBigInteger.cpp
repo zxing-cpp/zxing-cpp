@@ -21,8 +21,8 @@
 
 namespace ZXing {
 
-typedef BigInteger::Block Block;
-typedef std::vector<Block> Magnetude;
+using Block = BigInteger::Block;
+using Magnetude = std::vector<Block>;
 
 static const size_t NB_BITS = 8 * sizeof(Block);
 

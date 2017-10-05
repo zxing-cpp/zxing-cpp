@@ -49,7 +49,7 @@ static_assert(Length(ALPHABET_STRING) - 1 == Length(CHARACTER_ENCODINGS), "table
 
 static const int ASTERISK_ENCODING = CHARACTER_ENCODINGS[47];
 
-typedef std::array<int, 6> CounterContainer;
+using CounterContainer = std::array<int, 6>;
 
 static int ToPattern(const CounterContainer& counters)
 {

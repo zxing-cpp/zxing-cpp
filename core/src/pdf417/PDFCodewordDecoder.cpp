@@ -415,8 +415,8 @@ static const std::array<uint16_t, 2787> CODEWORD_TABLE = {
 };
 
 
-typedef std::array<std::array<float, CodewordDecoder::BARS_IN_MODULE>, SYMBOL_COUNT> RatioTableType;
-typedef std::array<int, CodewordDecoder::BARS_IN_MODULE> ModuleBitCountType;
+using RatioTableType = std::array<std::array<float, CodewordDecoder::BARS_IN_MODULE>, SYMBOL_COUNT>;
+using ModuleBitCountType = std::array<int, CodewordDecoder::BARS_IN_MODULE>;
 
 static const RatioTableType& GetRatioTable()
 {

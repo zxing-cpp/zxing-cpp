@@ -41,7 +41,7 @@ class FinderPatternInfo;
 class FinderPatternFinder
 {
 public:
-	typedef std::array<int, 5> StateCount;
+	using StateCount = std::array<int, 5>;
 
 	static DecodeStatus Find(const BitMatrix& image, /*const PointCallback& pointCallback,*/ bool pureBarcode, bool tryHarder, FinderPatternInfo& outInfo);
 

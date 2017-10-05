@@ -40,7 +40,7 @@ static const int INSIDE_GSUM[] = { 0,336,1036,1516 };
 static const int OUTSIDE_ODD_WIDEST[] = { 8,6,4,3,1 };
 static const int INSIDE_ODD_WIDEST[] = { 2,4,6,8 };
 
-typedef std::array<int, 4> FinderCounters;
+using FinderCounters = std::array<int, 4>;
 
 static const std::array<FinderCounters, 9> FINDER_PATTERNS = {
 	3,8,2,1,

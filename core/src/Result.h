@@ -38,7 +38,7 @@ class ResultMetadata;
 class Result
 {
 public:
-	typedef std::chrono::steady_clock::time_point time_point;
+	using time_point = std::chrono::steady_clock::time_point;
 
 	explicit Result(DecodeStatus status);
 	Result(const std::wstring& text, const ByteArray& rawBytes, const std::vector<ResultPoint>& resultPoints, BarcodeFormat format, time_point tt = std::chrono::steady_clock::now());
