@@ -83,7 +83,7 @@ public:
 	void setStructuredAppendSequenceNumber(int s) { _structuredAppendSequenceNumber = s; }
 
 	std::shared_ptr<CustomData> extra() const { return _extra; }
-	void setExtra(const std::shared_ptr<CustomData> e) { _extra = e; }
+	void setExtra(const std::shared_ptr<CustomData>& e) { _extra = e; }
 };
 
 } // ZXing

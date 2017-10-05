@@ -493,7 +493,7 @@ IsPartialRow(const std::list<ExpandedPair>& pairs, const std::list<ExpandedRow>&
 static void
 RemovePartialRows(std::list<ExpandedRow>& rows, const std::list<ExpandedPair>& pairs)
 {
-	std::list<ExpandedRow>::iterator it = rows.begin();
+	auto it = rows.begin();
 	while (it != rows.end()) {
 		//ExpandedRow r = iterator.next();
 		if (it->pairs().size() == pairs.size()) {
@@ -532,7 +532,7 @@ StoreRow(std::list<ExpandedRow>& rows, const std::list<ExpandedPair>& pairs, int
 	// Discard if duplicate above or below; otherwise insert in order by row number.
 	bool prevIsSame = false;
 	bool nextIsSame = false;
-	std::list<ExpandedRow>::iterator insertPos = rows.begin();
+	auto insertPos = rows.begin();
 	for (; insertPos != rows.end(); ++insertPos) {
 		if (insertPos->rowNumber() > rowNumber) {
 			nextIsSame = insertPos->isEquivalent(pairs);

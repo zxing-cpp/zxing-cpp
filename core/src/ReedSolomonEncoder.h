@@ -25,7 +25,7 @@ class ReedSolomonEncoder
 public:
 	explicit ReedSolomonEncoder(const GenericGF& field);
 
-	void encode(std::vector<int>& toEncode, const int ecBytes);
+	void encode(std::vector<int>& toEncode, int ecBytes);
 
 private:
 	const GenericGF* _field;

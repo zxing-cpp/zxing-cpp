@@ -36,15 +36,15 @@ ResultPoint::Distance(const ResultPoint& a, const ResultPoint& b)
 
 float ResultPoint::Distance(float aX, float aY, float bX, float bY)
 {
-	float dx = aX - bX;
-	float dy = aY - bY;
+	auto dx = aX - bX;
+	auto dy = aY - bY;
 	return std::sqrt(dx * dx + dy * dy);
 }
 
 float ResultPoint::Distance(int aX, int aY, int bX, int bY)
 {
-	float dx = static_cast<float>(aX - bX);
-	float dy = static_cast<float>(aY - bY);
+	auto dx = static_cast<float>(aX - bX);
+	auto dy = static_cast<float>(aY - bY);
 	return std::sqrt(dx * dx + dy * dy);
 }
 
