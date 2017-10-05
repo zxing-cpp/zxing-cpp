@@ -40,7 +40,7 @@ protected:
 	bool _pureBarcode;
 
 public:
-	explicit GlobalHistogramBinarizer(const std::shared_ptr<const LuminanceSource>& source, bool pureBarcode = false);
+	explicit GlobalHistogramBinarizer(std::shared_ptr<const LuminanceSource> source, bool pureBarcode = false);
 	~GlobalHistogramBinarizer() override;
 
 	bool isPureBarcode() const override;

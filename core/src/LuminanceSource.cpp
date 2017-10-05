@@ -36,7 +36,7 @@ class InvertedLuminanceSource : public LuminanceSource
 	std::shared_ptr<LuminanceSource> _src;
 
 public:
-	explicit InvertedLuminanceSource(const std::shared_ptr<LuminanceSource>& src) : _src(src) {}
+	explicit InvertedLuminanceSource(std::shared_ptr<LuminanceSource> src) : _src(std::move(src)) {}
 
 	const uint8_t* getRow(int y, ByteArray& outBytes, bool forceCopy) const override
 	{

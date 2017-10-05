@@ -26,8 +26,8 @@ BitWrapperBinarizer::BitWrapperBinarizer(const std::shared_ptr<const BitMatrix>&
 {
 }
 
-BitWrapperBinarizer::BitWrapperBinarizer(const std::shared_ptr<const BitMatrix>& bits, int left, int top, int width, int height, bool pureBarcode) :
-	_matrix(bits),
+BitWrapperBinarizer::BitWrapperBinarizer(std::shared_ptr<const BitMatrix> bits, int left, int top, int width, int height, bool pureBarcode) :
+	_matrix(std::move(bits)),
 	_left(left),
 	_top(top),
 	_width(width),

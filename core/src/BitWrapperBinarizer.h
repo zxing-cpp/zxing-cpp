@@ -27,7 +27,7 @@ class BitWrapperBinarizer : public BinaryBitmap
 {
 public:
 	explicit BitWrapperBinarizer(const std::shared_ptr<const BitMatrix>& bits, bool pureBarcode = false);
-	BitWrapperBinarizer(const std::shared_ptr<const BitMatrix>& bits, int left, int top, int width, int height, bool pureBarcode = false);
+	BitWrapperBinarizer(std::shared_ptr<const BitMatrix> bits, int left, int top, int width, int height, bool pureBarcode = false);
 
 	bool isPureBarcode() const override;
 	int width() const override;

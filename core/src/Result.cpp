@@ -24,22 +24,22 @@ Result::Result(DecodeStatus status) :
 {
 }
 
-Result::Result(const std::wstring& text, const ByteArray& rawBytes, const std::vector<ResultPoint>& resultPoints, BarcodeFormat format, time_point tt) :
+Result::Result(std::wstring text, ByteArray rawBytes, std::vector<ResultPoint> resultPoints, BarcodeFormat format, time_point tt) :
 	_status(DecodeStatus::NoError),
-	_text(text),
-	_rawBytes(rawBytes),
-	_resultPoints(resultPoints),
+	_text(std::move(text)),
+	_rawBytes(std::move(rawBytes)),
+	_resultPoints(std::move(resultPoints)),
 	_format(format),
 	_timestamp(tt)
 {
 }
 
-Result::Result(const std::wstring& text, const ByteArray& rawBytes, int numBits, const std::vector<ResultPoint>& resultPoints, BarcodeFormat format, time_point tt) :
+Result::Result(std::wstring text, ByteArray rawBytes, int numBits, std::vector<ResultPoint> resultPoints, BarcodeFormat format, time_point tt) :
 	_status(DecodeStatus::NoError),
-	_text(text),
-	_rawBytes(rawBytes),
+	_text(std::move(text)),
+	_rawBytes(std::move(rawBytes)),
 	_numBits(numBits),
-	_resultPoints(resultPoints),
+	_resultPoints(std::move(resultPoints)),
 	_format(format),
 	_timestamp(tt)
 {

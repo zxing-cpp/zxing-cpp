@@ -41,8 +41,8 @@ public:
 	using time_point = std::chrono::steady_clock::time_point;
 
 	explicit Result(DecodeStatus status);
-	Result(const std::wstring& text, const ByteArray& rawBytes, const std::vector<ResultPoint>& resultPoints, BarcodeFormat format, time_point tt = std::chrono::steady_clock::now());
-	Result(const std::wstring& text, const ByteArray& rawBytes, int numBits, const std::vector<ResultPoint>& resultPoints, BarcodeFormat format, time_point tt = std::chrono::steady_clock::now());
+	Result(std::wstring text, ByteArray rawBytes, std::vector<ResultPoint> resultPoints, BarcodeFormat format, time_point tt = std::chrono::steady_clock::now());
+	Result(std::wstring text, ByteArray rawBytes, int numBits, std::vector<ResultPoint> resultPoints, BarcodeFormat format, time_point tt = std::chrono::steady_clock::now());
 
 	bool isValid() const {
 		return StatusIsOK(_status);

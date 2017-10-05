@@ -52,7 +52,7 @@ public:
 	/**
 	* Init with a grayscale source, left, top, with, height specify the subregion area in orignal image; 'bytes' should still point the begining of image buffer (i.e. pixel (0,0)).
 	*/
-	GenericLuminanceSource(int left, int top, int width, int height, const std::shared_ptr<const ByteArray>& pixels, int rowBytes);
+	GenericLuminanceSource(int left, int top, int width, int height, std::shared_ptr<const ByteArray> pixels, int rowBytes);
 
 	virtual int width() const override;
 	virtual int height() const override;
