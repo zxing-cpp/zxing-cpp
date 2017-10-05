@@ -138,7 +138,7 @@ public:
 	// and that you access bit in sequence, iterator is faster than get().
 	// However, be extremly careful since there is no check whatsoever.
 	// (Performance is the reason for the iterator to exist int the first place!)
-	Iterator iterAt(int i) const noexcept { return Iterator(_bits.cbegin() + (i >> 5), 1 << (i & 0x1F)); }
+	Iterator iterAt(int i) const noexcept { return {_bits.cbegin() + (i >> 5), 1U << (i & 0x1F)}; }
 
 	Iterator begin() const noexcept { return iterAt(0); }
 	Iterator end() const noexcept { return iterAt(_size); }

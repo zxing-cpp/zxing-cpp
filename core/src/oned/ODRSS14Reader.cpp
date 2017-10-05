@@ -83,7 +83,7 @@ static RSS::FinderPattern
 ParseFoundFinderPattern(const BitArray& row, int rowNumber, bool right, BitArray::Range range, FinderCounters& finderCounters)
 {
 	if (!range || range.begin == row.begin())
-		return RSS::FinderPattern();
+		return {};
 
 	// Actually we found elements 2-5 -> Locate element 1
 	auto i = std::find(BitArray::ReverseIterator(range.begin), row.rend(), *range.begin);
@@ -95,7 +95,7 @@ ParseFoundFinderPattern(const BitArray& row, int rowNumber, bool right, BitArray
 	finderCounters[0] = firstCounter;
 	int value = RSS::ReaderHelper::ParseFinderValue(finderCounters, FINDER_PATTERNS);
 	if (value < 0)
-		return RSS::FinderPattern();
+		return {};
 
 	int start = range.begin - row.begin();
 	int end = range.end - row.begin();
@@ -105,8 +105,10 @@ ParseFoundFinderPattern(const BitArray& row, int rowNumber, bool right, BitArray
 		end = row.size() - 1 - end;
 	}
 
-	return RSS::FinderPattern(value, range.begin - row.begin(), range.end - row.begin(),
-	                          {ResultPoint(start, rowNumber), ResultPoint(end, rowNumber)});
+	return {value,
+			range.begin - row.begin(),
+			range.end - row.begin(),
+			{ResultPoint(start, rowNumber), ResultPoint(end, rowNumber)}};
 }
 
 static bool
@@ -248,11 +250,11 @@ DecodeDataCharacter(const BitArray& row, const RSS::FinderPattern& pattern, bool
 
 	if (outsideChar) {
 		if (!RowReader::RecordPatternInReverse(row.begin(), row.iterAt(pattern.startPos()), counters))
-			return RSS::DataCharacter();
+			return {};
 	}
 	else {
 		if (!RowReader::RecordPattern(row.iterAt(pattern.endPos() + 1), row.end(), counters))
-			return RSS::DataCharacter();
+			return {};
 		std::reverse(counters.begin(), counters.end());
 	}
 
@@ -285,7 +287,7 @@ DecodeDataCharacter(const BitArray& row, const RSS::FinderPattern& pattern, bool
 	}
 
 	if (!AdjustOddEvenCounts(outsideChar, numModules, oddCounts, evenCounts, oddRoundingErrors, evenRoundingErrors)) {
-		return RSS::DataCharacter();
+		return {};
 	}
 
 	int oddSum = 0;
@@ -306,7 +308,7 @@ DecodeDataCharacter(const BitArray& row, const RSS::FinderPattern& pattern, bool
 
 	if (outsideChar) {
 		if ((oddSum & 0x01) != 0 || oddSum > 12 || oddSum < 4) {
-			return RSS::DataCharacter();
+			return {};
 		}
 		int group = (12 - oddSum) / 2;
 		int oddWidest = OUTSIDE_ODD_WIDEST[group];
@@ -315,11 +317,11 @@ DecodeDataCharacter(const BitArray& row, const RSS::FinderPattern& pattern, bool
 		int vEven = RSS::ReaderHelper::GetRSSvalue(evenCounts, evenWidest, true);
 		int tEven = OUTSIDE_EVEN_TOTAL_SUBSET[group];
 		int gSum = OUTSIDE_GSUM[group];
-		return RSS::DataCharacter(vOdd * tEven + vEven + gSum, checksumPortion);
+		return {vOdd * tEven + vEven + gSum, checksumPortion};
 	}
 	else {
 		if ((evenSum & 0x01) != 0 || evenSum > 10 || evenSum < 4) {
-			return RSS::DataCharacter();
+			return {};
 		}
 		int group = (10 - evenSum) / 2;
 		int oddWidest = INSIDE_ODD_WIDEST[group];
@@ -328,7 +330,7 @@ DecodeDataCharacter(const BitArray& row, const RSS::FinderPattern& pattern, bool
 		int vEven = RSS::ReaderHelper::GetRSSvalue(evenCounts, evenWidest, false);
 		int tOdd = INSIDE_ODD_TOTAL_SUBSET[group];
 		int gSum = INSIDE_GSUM[group];
-		return RSS::DataCharacter(vEven * tOdd + vOdd + gSum, checksumPortion);
+		return {vEven * tOdd + vOdd + gSum, checksumPortion};
 	}
 
 }
@@ -355,11 +357,11 @@ DecodePair(const BitArray& row, bool right, int rowNumber)
 		if (outside.isValid()) {
 			auto inside = DecodeDataCharacter(row, pattern, false);
 			if (inside.isValid()) {
-				return RSS::Pair(1597 * outside.value() + inside.value(), outside.checksumPortion() + 4 * inside.checksumPortion(), pattern);
+				return {1597 * outside.value() + inside.value(), outside.checksumPortion() + 4 * inside.checksumPortion(), pattern};
 			}
 		}
 	}
-	return RSS::Pair();
+	return {};
 }
 
 static void

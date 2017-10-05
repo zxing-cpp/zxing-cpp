@@ -224,7 +224,7 @@ struct PixelPoint
 	int x;
 	int y;
 
-	ResultPoint toResultPoint() const { return ResultPoint(x, y); }
+	ResultPoint toResultPoint() const { return {x, y}; }
 };
 
 

@@ -29,11 +29,11 @@ public:
 	void appendTo(BitArray& bitArray, const std::string& text) const;
 
 	static Token CreateSimple(int value, int bitCount) {
-		return Token(value, -bitCount);
-	};
+		return {value, -bitCount};
+	}
 	
 	static Token CreateBinaryShift(int start, int byteCount) {
-		return Token(start, byteCount);
+		return {start, byteCount};
 	}
 
 private:
