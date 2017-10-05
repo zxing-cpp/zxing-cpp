@@ -24,14 +24,14 @@ namespace ZXing {
 template <typename T>
 class Nullable final
 {
-	bool m_hasValue;
+	bool m_hasValue = false;
 	T m_value;
 
 public:
-	Nullable() : m_hasValue(false) {}
+	Nullable() {}
 	Nullable(const T &value) : m_hasValue(true), m_value(value) {}
 	Nullable(T &&value) : m_hasValue(true), m_value(std::move(value)) {}
-	Nullable(std::nullptr_t) : m_hasValue(false) {}
+	Nullable(std::nullptr_t) {}
 	
 	Nullable<T> & operator=(const T &value) {
 		m_hasValue = true;

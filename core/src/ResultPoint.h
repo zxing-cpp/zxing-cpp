@@ -26,11 +26,11 @@ namespace ZXing {
 */
 class ResultPoint
 {
-	float _x;
-	float _y;
+	float _x = 0.f;
+	float _y = 0.f;
 
 public:
-	ResultPoint() : _x(0), _y(0) {}
+	ResultPoint() {}
 	ResultPoint(float x, float y) : _x(x), _y(y) {}
 	ResultPoint(int x, int y) : _x(static_cast<float>(x)), _y(static_cast<float>(y)) {}
 

@@ -62,7 +62,7 @@ class GenericGFPoly
 public:
 	// Build a invalid object, so that this can be used in container or return by reference,
 	// any access to invalid object is undefined behavior.
-	GenericGFPoly() : _field(nullptr) {}
+	GenericGFPoly() {}
 
 	/**
 	* @param field the {@link GenericGF} instance representing the field to use
@@ -143,7 +143,7 @@ private:
 
 	void normalize();
 
-	const GenericGF* _field;
+	const GenericGF* _field = nullptr;
 	Coefficients _coefficients, _cache; // _cache is used for malloc caching
 };
 

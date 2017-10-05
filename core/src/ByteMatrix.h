@@ -22,13 +22,13 @@ namespace ZXing {
 
 class ByteMatrix
 {
-	int _width;
-	int _height;
+	int _width = 0;
+	int _height = 0;
 	std::vector<int8_t> _data;
 
 public:
 	ByteMatrix(int width, int height, int val = 0) : _width(width), _height(height), _data(_width * _height, val) { }
-	ByteMatrix() : _width(0), _height(0) { }
+	ByteMatrix() {}
 
 	// Nothing wrong to support it, just to make it explicit, instead of by mistake.
 	// Use copyTo() below.

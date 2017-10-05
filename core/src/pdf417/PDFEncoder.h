@@ -30,10 +30,10 @@ namespace Pdf417 {
 class BarcodeRow
 {
 	std::vector<bool> _row;
-	int _currentLocation; // A tacker for position in the bar
+	int _currentLocation = 0; // A tacker for position in the bar
 
 public:
-	explicit BarcodeRow(int width = 0) : _row(width, false), _currentLocation(0) {}
+	explicit BarcodeRow(int width = 0) : _row(width, false) {}
 
 	void init(int width) {
 		_row.resize(width, false);
@@ -76,11 +76,11 @@ public:
 class BarcodeMatrix
 {
 	std::vector<BarcodeRow> _matrix;
-	int _width;
-	int _currentRow;
+	int _width = 0;
+	int _currentRow = -1;
 
 public:
-	BarcodeMatrix() : _width(0), _currentRow(-1) {}
+	BarcodeMatrix() {}
 
 	/**
 	* @param height the height of the matrix (Rows)

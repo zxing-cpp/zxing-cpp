@@ -94,9 +94,9 @@ private:
 	DecodeStatus _status;
 	std::wstring _text;
 	ByteArray _rawBytes;
-	int _numBits;
+	int _numBits = 0;
 	std::vector<ResultPoint> _resultPoints;
-	BarcodeFormat _format;
+	BarcodeFormat _format = BarcodeFormat::FORMAT_COUNT;
 	time_point _timestamp;
 	ResultMetadata _metadata;
 };
