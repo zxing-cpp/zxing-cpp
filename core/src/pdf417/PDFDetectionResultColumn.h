@@ -39,8 +39,8 @@ public:
 		Right,
 	};
 
-	DetectionResultColumn();
-	DetectionResultColumn(const BoundingBox& boundingBox, RowIndicator rowInd = RowIndicator::None);
+	DetectionResultColumn() {}
+	explicit DetectionResultColumn(const BoundingBox& boundingBox, RowIndicator rowInd = RowIndicator::None);
 
 	bool isRowIndicator() const {
 		return _rowIndicator != RowIndicator::None;
@@ -83,7 +83,7 @@ public:
 private:
 	BoundingBox _boundingBox;
 	std::vector<Nullable<Codeword>> _codewords;
-	RowIndicator _rowIndicator;
+	RowIndicator _rowIndicator = RowIndicator::None;
 
 	void setRowNumbers();
 	void adjustIncompleteIndicatorColumnRowNumbers(const BarcodeMetadata& barcodeMetadata);

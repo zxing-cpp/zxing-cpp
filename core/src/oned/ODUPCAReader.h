@@ -32,12 +32,12 @@ class UPCAReader : public UPCEANReader
 public:
 	explicit UPCAReader(const DecodeHints& hints) : UPCEANReader(hints), _reader(hints) {}
 
-	virtual Result decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const override;
-	virtual Result decodeRow(int rowNumber, const BitArray& row, int startGuardBegin, int startGuardEnd) const override;
+	Result decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const override;
+	Result decodeRow(int rowNumber, const BitArray& row, int startGuardBegin, int startGuardEnd) const override;
 
 protected:
-	virtual BarcodeFormat expectedFormat() const override;
-	virtual DecodeStatus decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const override;
+	BarcodeFormat expectedFormat() const override;
+	DecodeStatus decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const override;
 
 private:
 	EAN13Reader _reader;

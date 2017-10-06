@@ -33,7 +33,7 @@ static const int CENTER_QUORUM = 2;
 static const int MIN_SKIP = 3; // 1 pixel/module times 3 modules/center
 static const int MAX_MODULES = 57; // support up to version 10 for mobile clients
 
-typedef FinderPatternFinder::StateCount StateCount;
+using StateCount = FinderPatternFinder::StateCount;
 
 /**
 * Given a count of black/white/black/white/black pixels just seen and an end position,

@@ -165,9 +165,9 @@ ParseFoundFinderPattern(const BitArray& row, int rowNumber, bool oddPattern, Bit
 	counters[0] = firstCounter;
 	int value = ReaderHelper::ParseFinderValue(counters, FINDER_PATTERNS);
 	if (value < 0)
-		return FinderPattern();
+		return {};
 
-	return RSS::FinderPattern(value, start, end, {ResultPoint(start, rowNumber), ResultPoint(end, rowNumber)});
+	return {value, start, end, {ResultPoint(start, rowNumber), ResultPoint(end, rowNumber)}};
 }
 
 static int
@@ -302,11 +302,11 @@ DecodeDataCharacter(const BitArray& row, const FinderPattern& pattern, bool isOd
 
 	if (leftChar) {
 		if (!RowReader::RecordPatternInReverse(row.begin(), row.iterAt(pattern.startPos()), counters))
-			return DataCharacter();
+			return {};
 	}
 	else {
 		if (!RowReader::RecordPattern(row.iterAt(pattern.endPos()), row.end(), counters))
-			return DataCharacter();
+			return {};
 		std::reverse(counters.begin(), counters.end());
 	}
 
@@ -316,7 +316,7 @@ DecodeDataCharacter(const BitArray& row, const FinderPattern& pattern, bool isOd
 	// Sanity check: element width for pattern and the character should match
 	float expectedElementWidth = static_cast<float>(pattern.endPos() - pattern.startPos()) / 15.0f;
 	if (std::abs(elementWidth - expectedElementWidth) / expectedElementWidth > 0.3f) {
-		return DataCharacter();
+		return {};
 	}
 
 	std::array<int, 4> oddCounts;
@@ -329,13 +329,13 @@ DecodeDataCharacter(const BitArray& row, const FinderPattern& pattern, bool isOd
 		int count = (int)(value + 0.5f); // Round
 		if (count < 1) {
 			if (value < 0.3f) {
-				return DataCharacter();
+				return {};
 			}
 			count = 1;
 		}
 		else if (count > 8) {
 			if (value > 8.7f) {
-				return DataCharacter();
+				return {};
 			}
 			count = 8;
 		}
@@ -351,7 +351,7 @@ DecodeDataCharacter(const BitArray& row, const FinderPattern& pattern, bool isOd
 	}
 
 	if (!AdjustOddEvenCounts(numModules, oddCounts, evenCounts, oddRoundingErrors, evenRoundingErrors)) {
-		return DataCharacter();
+		return {};
 	}
 
 	int weightRowNumber = 4 * pattern.value() + (isOddPattern ? 0 : 2) + (leftChar ? 0 : 1) - 1;
@@ -377,7 +377,7 @@ DecodeDataCharacter(const BitArray& row, const FinderPattern& pattern, bool isOd
 	int checksumPortion = oddChecksumPortion + evenChecksumPortion;
 
 	if ((oddSum & 0x01) != 0 || oddSum > 13 || oddSum < 4) {
-		return DataCharacter();
+		return {};
 	}
 
 	int group = (13 - oddSum) / 2;
@@ -389,7 +389,7 @@ DecodeDataCharacter(const BitArray& row, const FinderPattern& pattern, bool isOd
 	int gSum = GSUM[group];
 	int value = vOdd * tEven + vEven + gSum;
 
-	return DataCharacter(value, checksumPortion);
+	return {value, checksumPortion};
 }
 
 // not private for testing
@@ -493,7 +493,7 @@ IsPartialRow(const std::list<ExpandedPair>& pairs, const std::list<ExpandedRow>&
 static void
 RemovePartialRows(std::list<ExpandedRow>& rows, const std::list<ExpandedPair>& pairs)
 {
-	std::list<ExpandedRow>::iterator it = rows.begin();
+	auto it = rows.begin();
 	while (it != rows.end()) {
 		//ExpandedRow r = iterator.next();
 		if (it->pairs().size() == pairs.size()) {
@@ -532,7 +532,7 @@ StoreRow(std::list<ExpandedRow>& rows, const std::list<ExpandedPair>& pairs, int
 	// Discard if duplicate above or below; otherwise insert in order by row number.
 	bool prevIsSame = false;
 	bool nextIsSame = false;
-	std::list<ExpandedRow>::iterator insertPos = rows.begin();
+	auto insertPos = rows.begin();
 	for (; insertPos != rows.end(); ++insertPos) {
 		if (insertPos->rowNumber() > rowNumber) {
 			nextIsSame = insertPos->isEquivalent(pairs);

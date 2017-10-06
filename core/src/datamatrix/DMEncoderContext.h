@@ -16,6 +16,7 @@
 * limitations under the License.
 */
 #include <string>
+#include <utility>
 #include <vector>
 #include <stdexcept>
 #include "datamatrix/DMSymbolShape.h"
@@ -41,10 +42,10 @@ class EncoderContext
 	int _skipAtEnd = 0;
 
 public:
-	explicit EncoderContext(const std::string& msg) : _msg(msg) { _codewords.reserve(_msg.length()); }
+	explicit EncoderContext(std::string  msg) : _msg(std::move(msg)) { _codewords.reserve(_msg.length()); }
 
 	void setSymbolShape(SymbolShape shape) {
-		shape = shape;
+		_shape = shape;
 	}
 
 	void setSizeConstraints(int minWidth, int minHeight, int maxWidth, int maxHeight) {

@@ -93,7 +93,7 @@ bool DataMask111(int i, int j)
 	return ((i + j + ((i * j) % 3)) & 0x01) == 0;
 }
 
-typedef bool(*IsMaskedFunc)(int, int);
+using IsMaskedFunc = bool (*)(int, int);
 
 /**
 * See ISO 18004:2006 6.8.1

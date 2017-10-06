@@ -40,18 +40,18 @@ protected:
 	bool _pureBarcode;
 
 public:
-	explicit GlobalHistogramBinarizer(const std::shared_ptr<const LuminanceSource>& source, bool pureBarcode = false);
-	virtual ~GlobalHistogramBinarizer();
+	explicit GlobalHistogramBinarizer(std::shared_ptr<const LuminanceSource> source, bool pureBarcode = false);
+	~GlobalHistogramBinarizer() override;
 
-	virtual bool isPureBarcode() const override;
-	virtual int width() const override;
-	virtual int height() const override;
-	virtual DecodeStatus getBlackRow(int y, BitArray& outArray) const override;
-	virtual std::shared_ptr<const BitMatrix> getBlackMatrix() const override;
-	virtual bool canCrop() const override;
-	virtual std::shared_ptr<BinaryBitmap> cropped(int left, int top, int width, int height) const override;
-	virtual bool canRotate() const override;
-	virtual std::shared_ptr<BinaryBitmap> rotated(int degreeCW) const override;
+	bool isPureBarcode() const override;
+	int width() const override;
+	int height() const override;
+	DecodeStatus getBlackRow(int y, BitArray& row) const override;
+	std::shared_ptr<const BitMatrix> getBlackMatrix() const override;
+	bool canCrop() const override;
+	std::shared_ptr<BinaryBitmap> cropped(int left, int top, int width, int height) const override;
+	bool canRotate() const override;
+	std::shared_ptr<BinaryBitmap> rotated(int degreeCW) const override;
 
 	virtual std::shared_ptr<BinaryBitmap> newInstance(const std::shared_ptr<const LuminanceSource>& source) const;
 

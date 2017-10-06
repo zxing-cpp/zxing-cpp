@@ -27,17 +27,17 @@ class BitWrapperBinarizer : public BinaryBitmap
 {
 public:
 	explicit BitWrapperBinarizer(const std::shared_ptr<const BitMatrix>& bits, bool pureBarcode = false);
-	BitWrapperBinarizer(const std::shared_ptr<const BitMatrix>& bits, int left, int top, int width, int height, bool pureBarcode = false);
+	BitWrapperBinarizer(std::shared_ptr<const BitMatrix> bits, int left, int top, int width, int height, bool pureBarcode = false);
 
-	virtual bool isPureBarcode() const override;
-	virtual int width() const override;
-	virtual int height() const override;
-	virtual DecodeStatus getBlackRow(int y, BitArray& outArray) const override;
-	virtual std::shared_ptr<const BitMatrix> getBlackMatrix() const override;
-	virtual bool canCrop() const override;
-	virtual std::shared_ptr<BinaryBitmap> cropped(int left, int top, int width, int height) const override;
-	virtual bool canRotate() const override;
-	virtual std::shared_ptr<BinaryBitmap> rotated(int degreeCW) const override;
+	bool isPureBarcode() const override;
+	int width() const override;
+	int height() const override;
+	DecodeStatus getBlackRow(int y, BitArray& row) const override;
+	std::shared_ptr<const BitMatrix> getBlackMatrix() const override;
+	bool canCrop() const override;
+	std::shared_ptr<BinaryBitmap> cropped(int left, int top, int width, int height) const override;
+	bool canRotate() const override;
+	std::shared_ptr<BinaryBitmap> rotated(int degreeCW) const override;
 
 private:
 	std::shared_ptr<const BitMatrix> _matrix;

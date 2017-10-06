@@ -94,8 +94,8 @@ GenericLuminanceSource::GenericLuminanceSource(int left, int top, int width, int
 	_pixels = MakeCopy(bytes, rowBytes, left, top, width, height);
 }
 
-GenericLuminanceSource::GenericLuminanceSource(int left, int top, int width, int height, const std::shared_ptr<const ByteArray>& pixels, int rowBytes) :
-	_pixels(pixels),
+GenericLuminanceSource::GenericLuminanceSource(int left, int top, int width, int height, std::shared_ptr<const ByteArray> pixels, int rowBytes) :
+	_pixels(std::move(pixels)),
 	_left(left),
 	_top(top),
 	_width(width),

@@ -47,7 +47,7 @@ AlignmentPattern::combineEstimate(float i, float j, float newModuleSize) const {
 	float combinedX = (x() + j) / 2.0f;
 	float combinedY = (y() + i) / 2.0f;
 	float combinedModuleSize = (_estimatedModuleSize + newModuleSize) / 2.0f;
-	return AlignmentPattern(combinedX, combinedY, combinedModuleSize);
+	return {combinedX, combinedY, combinedModuleSize};
 }
 
 } // QRCode

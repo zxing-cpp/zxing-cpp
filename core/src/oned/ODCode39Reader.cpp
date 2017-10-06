@@ -51,7 +51,7 @@ static_assert(Length(ALPHABET_STRING) - 1 == Length(CHARACTER_ENCODINGS), "table
 
 static const int ASTERISK_ENCODING = CHARACTER_ENCODINGS[39];
 
-typedef std::array<int, 9> CounterContainer;
+using CounterContainer = std::array<int, 9>;
 
 // For efficiency, returns -1 on failure. Not throwing here saved as many as 700 exceptions
 // per image when using some of our blackbox images.

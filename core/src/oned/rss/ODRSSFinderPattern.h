@@ -26,13 +26,13 @@ namespace RSS {
 
 class FinderPattern
 {
-	int _value;
-	int _start;
-	int _end;
+	int _value = -1;
+	int _start = -1;
+	int _end = -1;
 	std::array<ResultPoint, 2> _points;
 
 public:
-	FinderPattern() : _value(-1) {}
+	FinderPattern() {}
 	FinderPattern(int value, int start, int end, const std::array<ResultPoint, 2>& points) :
 		_value(value), _start(start), _end(end), _points(points) {}
 

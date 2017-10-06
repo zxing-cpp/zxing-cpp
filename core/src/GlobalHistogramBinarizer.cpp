@@ -38,8 +38,8 @@ struct GlobalHistogramBinarizer::DataCache
 	std::shared_ptr<const BitMatrix> matrix;
 };
 
-GlobalHistogramBinarizer::GlobalHistogramBinarizer(const std::shared_ptr<const LuminanceSource>& source, bool pureBarcode) :
-	_source(source),
+GlobalHistogramBinarizer::GlobalHistogramBinarizer(std::shared_ptr<const LuminanceSource> source, bool pureBarcode) :
+	_source(std::move(source)),
 	_pureBarcode(pureBarcode),
 	_cache(new DataCache)
 {

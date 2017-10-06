@@ -38,11 +38,11 @@ class ResultMetadata;
 class Result
 {
 public:
-	typedef std::chrono::steady_clock::time_point time_point;
+	using time_point = std::chrono::steady_clock::time_point;
 
 	explicit Result(DecodeStatus status);
-	Result(const std::wstring& text, const ByteArray& rawBytes, const std::vector<ResultPoint>& resultPoints, BarcodeFormat format, time_point tt = std::chrono::steady_clock::now());
-	Result(const std::wstring& text, const ByteArray& rawBytes, int numBits, const std::vector<ResultPoint>& resultPoints, BarcodeFormat format, time_point tt = std::chrono::steady_clock::now());
+	Result(std::wstring text, ByteArray rawBytes, std::vector<ResultPoint> resultPoints, BarcodeFormat format, time_point tt = std::chrono::steady_clock::now());
+	Result(std::wstring text, ByteArray rawBytes, int numBits, std::vector<ResultPoint> resultPoints, BarcodeFormat format, time_point tt = std::chrono::steady_clock::now());
 
 	bool isValid() const {
 		return StatusIsOK(_status);
@@ -94,9 +94,9 @@ private:
 	DecodeStatus _status;
 	std::wstring _text;
 	ByteArray _rawBytes;
-	int _numBits;
+	int _numBits = 0;
 	std::vector<ResultPoint> _resultPoints;
-	BarcodeFormat _format;
+	BarcodeFormat _format = BarcodeFormat::FORMAT_COUNT;
 	time_point _timestamp;
 	ResultMetadata _metadata;
 };

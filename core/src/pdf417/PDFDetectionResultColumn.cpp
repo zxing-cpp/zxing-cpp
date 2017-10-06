@@ -27,11 +27,6 @@ static const int MAX_NEARBY_DISTANCE = 5;
 static const int MIN_ROWS_IN_BARCODE = 3;
 static const int MAX_ROWS_IN_BARCODE = 90;
 
-DetectionResultColumn::DetectionResultColumn() :
-	_rowIndicator(RowIndicator::None)
-{
-}
-
 DetectionResultColumn::DetectionResultColumn(const BoundingBox& boundingBox, RowIndicator rowIndicator) :
 	_boundingBox(boundingBox),
 	_rowIndicator(rowIndicator)
@@ -64,7 +59,7 @@ DetectionResultColumn::codewordNearby(int imageRow) const
 			}
 		}
 	}
-	return Nullable<Codeword>();
+	return nullptr;
 }
 
 void

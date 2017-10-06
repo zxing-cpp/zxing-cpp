@@ -36,23 +36,23 @@ class InvertedLuminanceSource : public LuminanceSource
 	std::shared_ptr<LuminanceSource> _src;
 
 public:
-	explicit InvertedLuminanceSource(const std::shared_ptr<LuminanceSource>& src) : _src(src) {}
+	explicit InvertedLuminanceSource(std::shared_ptr<LuminanceSource> src) : _src(std::move(src)) {}
 
-	virtual const uint8_t* getRow(int y, ByteArray& outBytes, bool forceCopy) const override
+	const uint8_t* getRow(int y, ByteArray& outBytes, bool forceCopy) const override
 	{
 		_src->getRow(y, outBytes, true);
 		std::transform(outBytes.begin(), outBytes.end(), outBytes.begin(), [](uint8_t b) { return 255 - b; });
 		return outBytes.data();
 	}
 
-	virtual const uint8_t* getMatrix(ByteArray& outBytes, int& outRowBytes, bool forceCopy) const override
+	const uint8_t* getMatrix(ByteArray& outBytes, int& outRowBytes, bool forceCopy) const override
 	{
 		_src->getMatrix(outBytes, outRowBytes, true);
 		std::transform(outBytes.begin(), outBytes.end(), outBytes.begin(), [](uint8_t b) { return 255 - b; });
 		return outBytes.data();
 	}
 
-	virtual int width() const override
+	int width() const override
 	{
 		return _src->width();
 	}
@@ -60,33 +60,33 @@ public:
 	/**
 	* @return The height of the bitmap.
 	*/
-	virtual int height() const override
+	int height() const override
 	{
 		return _src->height();
 	}
 
-	virtual bool canCrop() const override
+	bool canCrop() const override
 	{
 		return _src->canCrop();
 	}
 
-	virtual std::shared_ptr<LuminanceSource> cropped(int left, int top, int width, int height) const override
+	std::shared_ptr<LuminanceSource> cropped(int left, int top, int width, int height) const override
 	{
 		return CreateInverted(_src->cropped(left, top, width, height));
 	}
 
-	virtual bool canRotate() const override
+	bool canRotate() const override
 	{
 		return _src->canRotate();
 	}
 
-	virtual std::shared_ptr<LuminanceSource> rotated(int degreeCW) const override
+	std::shared_ptr<LuminanceSource> rotated(int degreeCW) const override
 	{
 		return CreateInverted(_src->rotated(degreeCW));
 	}
 
 protected:
-	virtual std::shared_ptr<LuminanceSource> getInverted() const override
+	std::shared_ptr<LuminanceSource> getInverted() const override
 	{
 		return _src;
 	}

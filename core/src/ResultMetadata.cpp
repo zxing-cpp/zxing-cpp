@@ -40,8 +40,8 @@ struct ResultMetadata::Value
 struct ResultMetadata::IntegerValue : public Value
 {
 	int value;
-	IntegerValue(int v) : value(v) {}
-	virtual int toInteger(int fallback) const override {
+	explicit IntegerValue(int v) : value(v) {}
+	int toInteger(int fallback) const override {
 		return value;
 	}
 };
@@ -49,8 +49,8 @@ struct ResultMetadata::IntegerValue : public Value
 struct ResultMetadata::StringValue : public Value
 {
 	std::wstring value;
-	StringValue(const std::wstring& v) : value(v) {}
-	virtual std::wstring toString() const override {
+	explicit StringValue(std::wstring v) : value(std::move(v)) {}
+	std::wstring toString() const override {
 		return value;
 	}
 };
@@ -58,8 +58,8 @@ struct ResultMetadata::StringValue : public Value
 struct ResultMetadata::ByteArrayListValue : public Value
 {
 	std::list<ByteArray> value;
-	ByteArrayListValue(const std::list<ByteArray>& v) : value(v) {}
-	virtual std::list<ByteArray> toByteArrayList() const override {
+	explicit ByteArrayListValue(std::list<ByteArray> v) : value(std::move(v)) {}
+	std::list<ByteArray> toByteArrayList() const override {
 		return value;
 	}
 };
@@ -67,17 +67,17 @@ struct ResultMetadata::ByteArrayListValue : public Value
 struct ResultMetadata::CustomDataValue : public Value
 {
 	std::shared_ptr<CustomData> value;
-	CustomDataValue(const std::shared_ptr<CustomData>& v) : value(v) {}
-	virtual std::shared_ptr<CustomData> toCustomData() const override {
+	explicit CustomDataValue(std::shared_ptr<CustomData> v) : value(std::move(v)) {}
+	std::shared_ptr<CustomData> toCustomData() const override {
 		return value;
 	}
 };
 
 int
-ResultMetadata::getInt(Key key, int fallback) const
+ResultMetadata::getInt(Key key, int fallbackValue) const
 {
 	auto it = _contents.find(key);
-	return it != _contents.end() ? it->second->toInteger(fallback) : fallback;
+	return it != _contents.end() ? it->second->toInteger(fallbackValue) : fallbackValue;
 }
 
 std::wstring

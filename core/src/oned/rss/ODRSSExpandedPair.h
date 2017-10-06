@@ -31,10 +31,10 @@ class ExpandedPair
 	DataCharacter _leftChar;
 	DataCharacter _rightChar;
 	FinderPattern _finderPattern;
-	bool _mayBeLast;
+	bool _mayBeLast = false;
 
 public:
-	ExpandedPair() : _mayBeLast(false) {}
+	ExpandedPair() {}
 	ExpandedPair(const DataCharacter& leftChar, const DataCharacter& rightChar, const FinderPattern& finderPattern, bool mayBeLast) :
 		_leftChar(leftChar), _rightChar(rightChar), _finderPattern(finderPattern), _mayBeLast(mayBeLast) {}
 

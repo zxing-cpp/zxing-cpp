@@ -29,7 +29,7 @@ namespace ZXing {
 namespace QRCode {
 
 
-typedef std::array<int, 3> StateCount;
+using StateCount = std::array<int, 3>;
 
 /**
 * Given a count of black/white/black pixels just seen and an end position,

@@ -29,7 +29,7 @@ namespace ZXing {
 template <typename Iterator>
 struct Range {
 	Iterator begin, end;
-	operator bool() const { return begin < end; }
+	explicit operator bool() const { return begin < end; }
 	int size() const { return end - begin; }
 };
 
@@ -138,7 +138,7 @@ public:
 	// and that you access bit in sequence, iterator is faster than get().
 	// However, be extremly careful since there is no check whatsoever.
 	// (Performance is the reason for the iterator to exist int the first place!)
-	Iterator iterAt(int i) const noexcept { return Iterator(_bits.cbegin() + (i >> 5), 1 << (i & 0x1F)); }
+	Iterator iterAt(int i) const noexcept { return {_bits.cbegin() + (i >> 5), 1U << (i & 0x1F)}; }
 
 	Iterator begin() const noexcept { return iterAt(0); }
 	Iterator end() const noexcept { return iterAt(_size); }
@@ -268,7 +268,7 @@ public:
 	*  of the internal representation, which is exposed by {@link #getBitArray()}
 	* @param numBytes how many bytes to write
 	*/
-	void toBytes(int bitOffset, uint8_t* ouput, int numBytes) const;
+	void toBytes(int bitOffset, uint8_t* output, int numBytes) const;
 
 	/**
 	* @return underlying array of ints. The first element holds the first 32 bits, and the least
@@ -283,7 +283,7 @@ public:
 
 	friend bool operator==(const BitArray& a, const BitArray& b)
 	{
-		return a._size == b._size && b._bits == b._bits;
+		return a._size == b._size && a._bits == b._bits;
 	}
 
 private:

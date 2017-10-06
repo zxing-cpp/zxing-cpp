@@ -55,7 +55,7 @@ FinderPattern::combineEstimate(float i, float j, float newModuleSize) const
 	float combinedX = (_count * x() + j) / combinedCount;
 	float combinedY = (_count * y() + i) / combinedCount;
 	float combinedModuleSize = (_count * _estimatedModuleSize + newModuleSize) / combinedCount;
-	return FinderPattern(combinedX, combinedY, combinedModuleSize, combinedCount);
+	return {combinedX, combinedY, combinedModuleSize, combinedCount};
 }
 
 } // QRCode

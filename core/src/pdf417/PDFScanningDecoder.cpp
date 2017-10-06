@@ -43,7 +43,7 @@ static const int CODEWORD_SKEW_SIZE = 2;
 static const int MAX_ERRORS = 3;
 static const int MAX_EC_CODEWORDS = 512;
 
-typedef std::array<int, CodewordDecoder::BARS_IN_MODULE> ModuleBitCountType;
+using ModuleBitCountType = std::array<int, CodewordDecoder::BARS_IN_MODULE>;
 
 static int AdjustCodewordStartColumn(const BitMatrix& image, int minColumn, int maxColumn, bool leftToRight, int codewordStartColumn, int imageRow)
 {

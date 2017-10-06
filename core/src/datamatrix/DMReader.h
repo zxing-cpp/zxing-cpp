@@ -29,7 +29,7 @@ namespace DataMatrix {
 class Reader : public ZXing::Reader
 {
 public:
-	virtual Result decode(const BinaryBitmap& image) const override;
+	Result decode(const BinaryBitmap& image) const override;
 };
 
 } // DataMatrix

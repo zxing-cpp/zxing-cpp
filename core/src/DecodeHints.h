@@ -69,11 +69,11 @@ public:
 	* is found.
 	*/
 	/*PointCallback resultPointCallback() const {
-		return m_callback;
+		return _callback;
 	}*/
 
 	/*void setResultPointCallback(const PointCallback& callback) {
-		m_callback = callback;
+		_callback = callback;
 	}*/
 
 	/**
