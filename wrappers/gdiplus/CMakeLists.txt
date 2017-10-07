@@ -28,17 +28,33 @@ endif()
 
 add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/../../core ${CMAKE_BINARY_DIR}/ZXingCore)
     
+set (LOCAL_COMMON_FILES
+    GdiplusInit.h
+    GdiplusInit.cpp
+)
 if (ENABLE_DECODERS)
-    set (LOCAL_FILES
+    set (DECODERS_FILES
         BarcodeReader.h
         BarcodeReader.cpp
     )
 endif()
+if (ENABLE_ENCODERS)
+	set (ENCODERS_FILES
+		ImageWriter.h
+		ImageWriter.cpp
+	)
+endif()
 
-source_group (Sources FILES ${LOCAL_FILES})
+source_group (Sources FILES
+    ${LOCAL_COMMON_FILES}
+	${DECODERS_FILES}
+	${ENCODERS_FILES}
+)
 
 add_library (ZXingGdiPlus
-    ${LOCAL_FILES}
+    ${LOCAL_COMMON_FILES}
+    ${DECODERS_FILES}
+    ${ENCODERS_FILES}
 )
 
 target_include_directories (ZXingGdiPlus
@@ -48,3 +64,8 @@ target_include_directories (ZXingGdiPlus
 target_link_libraries (ZXingGdiPlus
     PUBLIC ZXingCore gdiplus.lib
 )
+
+target_compile_options (ZXingGdiPlus
+    PUBLIC -DGDIPVER=0x0110
+)
+

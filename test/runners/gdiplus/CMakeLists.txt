@@ -22,19 +22,11 @@ endif()
 
 add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/../../../wrappers/gdiplus ${CMAKE_BINARY_DIR}/ZXingGdiPlus)
 
-set (LOCAL_DEFINES
-    -DGDIPVER=0x0110
-)
-
 if (ENABLE_DECODERS)
     add_executable (ReaderTest
         TestReaderMain.cpp
     )
 
-    target_compile_options (ReaderTest
-        PRIVATE ${LOCAL_DEFINES}
-    )
-        
     #set_target_properties (ReaderTest PROPERTIES
     #   LINK_FLAGS "/link setargv.obj"
     #)
@@ -47,10 +39,6 @@ if (ENABLE_ENCODERS)
         TestWriterMain.cpp
     )
         
-    target_compile_options (WriterTest
-        PRIVATE ${LOCAL_DEFINES}
-    )
-
     #set_target_properties (WriterTest PROPERTIES
     #   LINK_FLAGS "/link setargv.obj"
     #)

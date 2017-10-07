@@ -14,11 +14,16 @@
 * limitations under the License.
 */
 
+#include <windows.h>
+#include <gdiplus.h>
 #include <iostream>
+
 #include "qrcode/QRWriter.h"
 #include "qrcode/QRErrorCorrectionLevel.h"
 #include "BitMatrix.h"
 #include "CharacterSet.h"
+#include "ImageWriter.h"
+#include "GdiplusInit.h"
 
 #include <sstream>
 
@@ -26,8 +31,57 @@ using namespace ZXing;
 
 //static std::wstring LoadSample()
 
+int GetEncoderClsid(const WCHAR* format, CLSID* pClsid)
+{
+	using namespace Gdiplus;
+	
+	UINT  num = 0;          // number of image encoders
+	UINT  size = 0;         // size of the image encoder array in bytes
+
+	ImageCodecInfo* pImageCodecInfo = NULL;
+
+	GetImageEncodersSize(&num, &size);
+	if (size == 0)
+		return -1;  // Failure
+
+	pImageCodecInfo = (ImageCodecInfo*)(malloc(size));
+	if (pImageCodecInfo == NULL)
+		return -1;  // Failure
+
+	GetImageEncoders(num, size, pImageCodecInfo);
+
+	for (UINT j = 0; j < num; ++j)
+	{
+		if (wcscmp(pImageCodecInfo[j].MimeType, format) == 0)
+		{
+			*pClsid = pImageCodecInfo[j].Clsid;
+			free(pImageCodecInfo);
+			return j;  // Success
+		}
+	}
+
+	free(pImageCodecInfo);
+	return -1;  // Failure
+}
+
+void savePng(Gdiplus::Bitmap& bitmap, const std::wstring& filePath)
+{
+	using namespace Gdiplus;
+
+	CLSID pngClsid;
+	int result = GetEncoderClsid(L"image/png", &pngClsid);
+	if (result == -1)
+		throw std::runtime_error("GetEncoderClsid");
+	
+	auto saveResult = bitmap.Save(filePath.c_str(), &pngClsid, NULL);
+	if (saveResult != Ok)
+		throw std::runtime_error("Cannot save to PNG");
+}
+
 int main(int argc, char** argv)
 {
+	GdiplusInit gdiplusinit;
+
 	auto text = L"http://www.google.com/";
 	QRCode::Writer writer;
 	writer.setErrorCorrectionLevel(QRCode::ErrorCorrectionLevel::Medium);
@@ -35,4 +89,7 @@ int main(int argc, char** argv)
 	writer.encode(text, 99, 99, result);
 	std::ostringstream buffer;
 	result.writePBM(buffer);
+	
+	auto image = ImageWriter::CreateImage(result);
+	savePng(*image, L"R:/test.png");
 }
