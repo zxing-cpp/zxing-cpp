@@ -217,8 +217,7 @@ static BitArray::Range DecodeStart(const BitArray& row)
 */
 static BitArray::Range DecodeEnd(const BitArray& row)
 {
-	BitArray revRow;
-	row.copyTo(revRow);
+	BitArray revRow = row.copy();
 	// For convenience, reverse the row and then
 	// search from 'the start' for the end block
 	revRow.reverse();

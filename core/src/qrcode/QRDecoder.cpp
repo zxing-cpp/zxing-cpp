@@ -473,8 +473,7 @@ ReMask(BitMatrix& bitMatrix, const FormatInformation& formatInfo)
 DecodeStatus
 Decoder::Decode(const BitMatrix& bits_, const std::string& hintedCharset, DecoderResult& result)
 {
-	BitMatrix bits;
-	bits_.copyTo(bits);
+	BitMatrix bits = bits_.copy();
 	// Construct a parser and read version, error-correction level
 	const Version* version;
 	FormatInformation formatInfo;

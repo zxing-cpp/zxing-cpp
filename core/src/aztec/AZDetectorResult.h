@@ -28,13 +28,6 @@ class DetectorResult : public ZXing::DetectorResult
 
 public:
 	DetectorResult() {}
-	/*DetectorResult(const BitMatrix& bits, const std::vector<ResultPoint>& points, bool compact, int nbDatablocks, int nbLayers) :
-		ZXing::DetectorResult(bits, points),
-		_compact(compact),
-		_nbDatablocks(nbDatablocks),
-		_nbLayers(nbLayers)
-	{
-	}*/
 
 	bool isCompact() const { return _compact; }
 	void setCompact(bool compact) { _compact = compact; }

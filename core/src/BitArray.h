@@ -109,10 +109,16 @@ public:
 	}
 
 	// Nothing wrong to support it, just to make it explicit, instead of by mistake.
-	// Use copyTo() below.
+	// Use copy() or copyTo() below.
 	BitArray(const BitArray &) = delete;
 	BitArray& operator=(const BitArray &) = delete;
 
+	BitArray copy() const {
+		BitArray r;
+		copyTo(r);
+		return r;
+	}
+	
 	void copyTo(BitArray& other) const {
 		other._size = _size;
 		other._bits = _bits;

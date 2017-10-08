@@ -260,6 +260,9 @@ static std::list<EncodingState> SimplifyStates(const std::list<EncodingState>& s
 			if (IsBetterThanOrEqualTo(newState, oldState)) {
 				iterator = result.erase(iterator);
 			}
+			else {
+				++iterator;
+			}
 		}
 		if (add) {
 			result.push_back(newState);
@@ -329,7 +332,7 @@ static std::list<EncodingState> UpdateStateListForChar(const std::list<EncodingS
 	for (auto& state : states) {
 		UpdateStateForChar(state, text, index, result);
 	}
-	return SimplifyStates(result);
+	return result.size() > 1 ? SimplifyStates(result) : result;
 }
 
 /**

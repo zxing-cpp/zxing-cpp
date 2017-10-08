@@ -39,7 +39,6 @@ class DetectorResult
 
 public:
 	DetectorResult() {}
-	//DetectorResult(const BitMatrix& bits, const std::vector<ResultPoint>& points) : _bits(bits), _points(points) {}
 	DetectorResult(const DetectorResult&) = delete;
 	DetectorResult& operator=(const DetectorResult&) = delete;
 
