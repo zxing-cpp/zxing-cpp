@@ -5,53 +5,38 @@ project (ZXingTest)
 set (ENABLE_ENCODERS OFF CACHE BOOL "Check to include encoders")
 set (ENABLE_DECODERS ON CACHE BOOL "Check to include decoders")
 
-find_package(Boost COMPONENTS system filesystem REQUIRED)
-
 add_definitions (-DUNICODE -D_UNICODE)
 
 if (MSVC)
-	set (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /Oi /GS-")
-	set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Oi /GS-")
+    set (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /Oi /GS-")
+    set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Oi /GS-")
 else()
-	set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG")
-	set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
-	if (APPLE)
-		set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
-	elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
-		set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-	endif()
+    set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG")
+    set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
+    if (APPLE)
+        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
+    elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
+        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+    endif()
 endif()
-
-#add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/../../../wrappers/gdiplus ${CMAKE_BINARY_DIR}/ZXingGdiPlus)
 
 add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/../../../core ${CMAKE_BINARY_DIR}/ZXingCore)
 
-set (LOCAL_DEFINES
-	"${ZXING_CORE_DEFINES}"
-)
-
-include_directories (
-	${ZXING_CORE_INCLUDE}
-)
-	
 if (ENABLE_DECODERS)
-	add_executable (ReaderTest
-		TestReaderMain.cpp
-	)
-		
-	target_link_libraries (ReaderTest ZXingCore
-		${Boost_FILESYSTEM_LIBRARY}
-		${Boost_SYSTEM_LIBRARY}
-	)
+    find_package(Boost COMPONENTS system filesystem REQUIRED)
+    add_executable (ReaderTest
+        TestReaderMain.cpp
+    )
+    target_link_libraries (ReaderTest ZXingCore
+        ${Boost_FILESYSTEM_LIBRARY}
+        ${Boost_SYSTEM_LIBRARY}
+    )
 endif()
 
 #if (ENABLE_ENCODERS)
-#	add_executable (WriterTest
-#		TestWriterMain.cpp
-#	)
-#		
-#	target_link_libraries (WriterTest ZXingCore
-#		${Boost_FILESYSTEM_LIBRARY}
-#		${Boost_SYSTEM_LIBRARY}
-#	)
+#    add_executable (WriterTest
+#        TestWriterMain.cpp
+#    )
+#
+#    target_link_libraries (WriterTest ZXingCore)
 #endif()

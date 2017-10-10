@@ -49,7 +49,7 @@ public:
 private:
 	CharacterSet _encoding;
 	int _eccPercent;
-	int _layers;;
+	int _layers;
 };
 
 } // Aztec

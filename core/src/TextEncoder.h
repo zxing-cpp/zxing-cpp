@@ -25,6 +25,12 @@ class TextEncoder
 {
 public:
 	static void GetBytes(const std::wstring& str, CharacterSet charset, std::string& bytes);
+	
+	static std::string FromUnicode(const std::wstring& str, CharacterSet charset) {
+		std::string r;
+		GetBytes(str, charset, r);
+		return r;
+	}
 };
 
 } // ZXing

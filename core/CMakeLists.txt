@@ -85,6 +85,7 @@ set (COMMON_FILES
     src/ZXNumeric.h
     src/ZXContainerAlgorithms.h
     src/ZXStrConvWorkaround.h
+    src/ZXTestSupport.h
 )
 if (ENABLE_DECODERS)
     set (COMMON_FILES ${COMMON_FILES}

@@ -18,7 +18,6 @@
 
 #include <cstdint>
 #include <vector>
-#include <iosfwd>
 
 namespace ZXing {
 
@@ -63,13 +62,17 @@ public:
 	}
 
 	// There is nothing wrong to support this but disable to make it explicit since we may copy something very big here.
-	// Use copyTo() below
+	// Use copy() or copyTo() below
 	BitMatrix(const BitMatrix&) = delete;
 	BitMatrix& operator=(const BitMatrix&) = delete;
 
+	BitMatrix copy() const {
+		BitMatrix r;
+		copyTo(r);
+		return r;
+	}
+	
 	void copyTo(BitMatrix& other) const;
-
-	//void parse(const std::string& stringRepresentation, const std::string& setString, const std::string& unsetString);
 
 	/**
 	* <p>Gets the requested bit, where true means black.</p>
@@ -201,8 +204,6 @@ public:
 	{
 		return a._width == b._width && a._height == b._height && a._rowSize == b._rowSize && a._bits == b._bits;
 	}
-
-	void writePBM(std::ostream& out) const;
 };
 
 } // ZXing

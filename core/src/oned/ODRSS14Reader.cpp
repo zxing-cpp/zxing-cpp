@@ -443,8 +443,7 @@ RSS14Reader::decodeRow(int rowNumber, const BitArray& row_, std::unique_ptr<Deco
 		throw std::runtime_error("Invalid state");
 	}
 
-	BitArray row;
-	row_.copyTo(row);
+	BitArray row = row_.copy();
 	AddOrTally(prevState->possibleLeftPairs, DecodePair(row, false, rowNumber));
 	row.reverse();
 	AddOrTally(prevState->possibleRightPairs, DecodePair(row, true, rowNumber));

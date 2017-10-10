@@ -27,6 +27,7 @@
 #include <sstream>
 
 #include "BarcodeReader.h"
+#include "GdiplusInit.h"
 #include "../../core/src/TextDecoder.h"
 #include "../../core/src/TextUtfEncoding.h"
 
@@ -344,9 +345,7 @@ int main(int argc, char** argv)
 
 	PathPrefix = argv[1];
 
-	Gdiplus::GdiplusStartupInput gdiplusStartupInput;
-	ULONG_PTR gdiplusToken;
-	Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+	ZXing::GdiplusInit gdiplusInit;
 
 	std::unordered_set<std::string> includedTests;
 	for (int i = 2; i < argc; ++i) {
@@ -659,6 +658,4 @@ int main(int argc, char** argv)
 	{
 		std::cout << "Internal error";
 	}
-
-	Gdiplus::GdiplusShutdown(gdiplusToken);
 }

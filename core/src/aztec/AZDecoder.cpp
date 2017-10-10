@@ -23,6 +23,7 @@
 #include "DecodeStatus.h"
 #include "BitMatrix.h"
 #include "TextDecoder.h"
+#include "ZXTestSupport.h"
 
 #include <numeric>
 
@@ -267,7 +268,8 @@ static const char* GetCharacter(Table table, int code)
 *
 * @return the decoded string
 */
-static std::string GetEncodedData(const std::vector<bool>& correctedBits)
+ZXING_EXPORT_TEST_ONLY
+std::string GetEncodedData(const std::vector<bool>& correctedBits)
 {
 	int endIndex = static_cast<int>(correctedBits.size());
 	Table latchTable = Table::UPPER; // table most recently latched to
