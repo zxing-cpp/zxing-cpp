@@ -21,6 +21,7 @@
 #include "ReedSolomonEncoder.h"
 #include "GenericGF.h"
 #include "ZXStrConvWorkaround.h"
+#include "ZXTestSupport.h"
 
 #include <cstdlib>
 
@@ -103,7 +104,8 @@ static void GenerateCheckWords(const BitArray& bitArray, int totalBits, int word
 	}
 }
 
-static void GenerateModeMessage(bool compact, int layers, int messageSizeInWords, BitArray& modeMessage)
+ZXING_EXPORT_TEST_ONLY
+void GenerateModeMessage(bool compact, int layers, int messageSizeInWords, BitArray& modeMessage)
 {
 	modeMessage = BitArray();
 	if (compact) {
@@ -157,7 +159,8 @@ static void DrawModeMessage(BitMatrix& matrix, bool compact, int matrixSize, con
 	}
 }
 
-static void StuffBits(const BitArray& bits, int wordSize, BitArray& out)
+ZXING_EXPORT_TEST_ONLY
+void StuffBits(const BitArray& bits, int wordSize, BitArray& out)
 {
 	out = BitArray();
 	int n = bits.size();

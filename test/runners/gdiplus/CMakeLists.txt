@@ -36,9 +36,15 @@ endif()
 
 if (ENABLE_ENCODERS)
     add_executable (WriterTest
+		../../common/BitMatrixUtility.h
+		../../common/BitMatrixUtility.cpp
         TestWriterMain.cpp
     )
-        
+
+	target_include_directories (WriterTest
+		PRIVATE ../../common
+	)
+    
     #set_target_properties (WriterTest PROPERTIES
     #   LINK_FLAGS "/link setargv.obj"
     #)

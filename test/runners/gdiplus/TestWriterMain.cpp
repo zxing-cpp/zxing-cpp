@@ -24,6 +24,7 @@
 #include "CharacterSet.h"
 #include "ImageWriter.h"
 #include "GdiplusInit.h"
+#include "BitMatrixUtility.h"
 
 #include <sstream>
 
@@ -88,7 +89,7 @@ int main(int argc, char** argv)
 	BitMatrix result;
 	writer.encode(text, 99, 99, result);
 	std::ostringstream buffer;
-	result.writePBM(buffer);
+	Utility::WriteBitMatrixAsPBM(result, buffer);
 	
 	auto image = ImageWriter::CreateImage(result);
 	savePng(*image, L"R:/test.png");
