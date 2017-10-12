@@ -79,10 +79,16 @@ static std::shared_ptr<LuminanceSource> readImage(const fs::path& filename)
 	}
 }
 
+#if 0
+using Binarizer = GlobalHistogramBinarizer;
+#else
+using Binarizer = HybridBinarizer;
+#endif
+
 class TestReader
 {
 	std::shared_ptr<MultiFormatReader> _reader;
-	static std::map<fs::path, std::shared_ptr<HybridBinarizer>> _cache;
+	static std::map<fs::path, std::shared_ptr<Binarizer>> _cache;
 public:
 	struct Result
 	{
@@ -105,7 +111,7 @@ public:
 	{
 		auto& binImg = _cache[filename];
 		if (!binImg)
-			binImg = std::make_shared<HybridBinarizer>(readImage(filename));
+			binImg = std::make_shared<Binarizer>(readImage(filename));
 		auto result = _reader->read(*binImg->rotated(rotation));
 		if (result.isValid()) {
 			std::string text;
@@ -118,7 +124,7 @@ public:
 	static void clearCache() { _cache.clear(); }
 };
 
-std::map<fs::path, std::shared_ptr<HybridBinarizer>> TestReader::_cache;
+std::map<fs::path, std::shared_ptr<Binarizer>> TestReader::_cache;
 
 struct TestCase
 {
