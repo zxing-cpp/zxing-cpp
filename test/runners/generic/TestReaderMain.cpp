@@ -93,6 +93,7 @@ public:
 	struct Result
 	{
 		std::string format, text;
+		operator bool() { return !format.empty(); }
 	};
 
 	TestReader(bool tryHarder, bool tryRotate, std::string format = "")
@@ -298,11 +299,16 @@ int main(int argc, char** argv)
 	if (pathPrefix.extension() == ".png" || pathPrefix.extension() == ".jpg" || pathPrefix.extension() == ".pgm") {
 #if 0
 		TestReader reader(false, false, "QR_CODE");
+		for (int i = 1; i < argc; ++i) {
+			auto result = reader.read(argv[i], 0);
+			if (argc == 2)
+				std::cout << result.format << ": " << result.text << "\n";
+			else if (!result)
+				std::cout << argv[i] << "\n";
+		}
 #else
 		TestReader reader(true, true);
 #endif
-		auto result = reader.read(pathPrefix, argc >= 3 ? std::stoi(argv[2]) : 0);
-		std::cout << result.format << ": " << result.text << std::endl;
 		return 0;
 	}
 
