@@ -67,7 +67,7 @@ DetermineNumSysAndCheckDigit(std::string& resultString, int lgPatternFound)
 DecodeStatus
 UPCEReader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const
 {
-	std::array<int, 4> counters = {};
+	Digit counters{};
 	int end = row.size();
 	int lgPatternFound = 0;
 	for (int x = 0; x < 6 && rowOffset < end; x++) {
@@ -91,10 +91,10 @@ UPCEReader::checkChecksum(const std::string& s) const
 	return UPCEANReader::checkChecksum(UPCEANCommon::ConvertUPCEtoUPCA(s));
 }
 
-DecodeStatus
-UPCEReader::decodeEnd(const BitArray& row, int endStart, int& begin, int& end) const
+BitArray::Range
+UPCEReader::decodeEnd(const BitArray& row, BitArray::Iterator begin) const
 {
-	return FindGuardPattern(row, endStart, true, MIDDLE_END_PATTERN, begin, end);
+	return FindGuardPattern(row, begin, true, MIDDLE_END_PATTERN);
 }
 
 } // OneD

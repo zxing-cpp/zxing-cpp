@@ -49,97 +49,63 @@ UPCEANReader::UPCEANReader(const DecodeHints& hints) :
 * pixel counts, otherwise, it is interpreted as black/white/black/...
 * @param pattern pattern of counts of number of black and white pixels that are being
 * searched for as a pattern
-* @param counters array of counters, as long as pattern, to re-use
 * @return start/end horizontal offset of guard pattern, as an array of two ints
 * @throws NotFoundException if pattern is not found
 */
-DecodeStatus
-UPCEANReader::DoFindGuardPattern(const BitArray& row, int rowOffset, bool whiteFirst, const int* pattern, int* counters, size_t length, int& begin, int& end)
+BitArray::Range
+UPCEANReader::FindGuardPattern(const BitArray& row, BitArray::Iterator begin, bool whiteFirst, const int* pattern, size_t length)
 {
-	bool isWhite = whiteFirst;
-	int patternStart = whiteFirst ? row.getNextUnset(rowOffset) : row.getNextSet(rowOffset);
-	int counterPosition = 0;
-	for (auto bitIter = row.iterAt(patternStart); bitIter != row.end(); ++bitIter) {
-		if (*bitIter != isWhite) {
-			counters[counterPosition]++;
-		}
-		else {
-			if (counterPosition == int(length) - 1) {
-				if (PatternMatchVariance(counters, pattern, length, MAX_INDIVIDUAL_VARIANCE) < MAX_AVG_VARIANCE) {
-					begin = patternStart;
-					end = bitIter - row.begin();
-					return DecodeStatus::NoError;
-				}
-				patternStart += counters[0] + counters[1];
-				for (size_t i = 2; i < length; ++i) {
-					counters[i - 2] = counters[i];
-				}
-				counters[length - 2] = 0;
-				counters[length - 1] = 0;
-				counterPosition--;
-			}
-			else {
-				counterPosition++;
-			}
-			counters[counterPosition] = 1;
-			isWhite = !isWhite;
-		}
-	}
-	return DecodeStatus::NotFound;
+	using Counters = std::vector<int>;
+	Counters counters(length, 0);
+
+	begin = whiteFirst ? row.getNextUnset(begin) : row.getNextSet(begin);
+
+	return RowReader::FindPattern(
+		begin, row.end(), counters,
+		[&pattern, &length](BitArray::Iterator begin, BitArray::Iterator end, Counters& counters) {
+			return RowReader::PatternMatchVariance(counters.data(), pattern, length, MAX_INDIVIDUAL_VARIANCE) < MAX_AVG_VARIANCE;
+		});
 }
 
-DecodeStatus
-UPCEANReader::FindGuardPattern(const BitArray& row, int rowOffset, bool whiteFirst, const int* pattern, size_t length, int& begin, int& end)
+BitArray::Range
+UPCEANReader::FindStartGuardPattern(const BitArray& row)
 {
-	std::vector<int> counters(length, 0);
-	return DoFindGuardPattern(row, rowOffset, whiteFirst, pattern, counters.data(), length, begin, end);
-}
+	const auto& pattern = UPCEANCommon::START_END_PATTERN;
+	using Counters = decltype(pattern);
+	auto counters = Counters{};
 
-DecodeStatus
-UPCEANReader::FindStartGuardPattern(const BitArray& row, int& begin, int& end)
-{
-	bool foundStart = false;
-	int start = 0;
-	int nextStart = 0;
-	std::vector<int> counters(UPCEANCommon::START_END_PATTERN.size());
-	while (!foundStart) {
-		std::fill(counters.begin(), counters.end(), 0);
-		auto status = DoFindGuardPattern(row, nextStart, false, UPCEANCommon::START_END_PATTERN.data(), counters.data(), UPCEANCommon::START_END_PATTERN.size(), start, nextStart);
-		if (StatusIsError(status)) {
-			return status;
-		}
-		// Make sure there is a quiet zone at least as big as the start pattern before the barcode.
-		// If this check would run off the left edge of the image, do not accept this barcode,
-		// as it is very likely to be a false positive.
-		int quietStart = start - (nextStart - start);
-		if (quietStart >= 0) {
-			foundStart = row.isRange(quietStart, start, false);
-		}
-	}
-	begin = start;
-	end = nextStart;
-	return DecodeStatus::NoError;
+	return RowReader::FindPattern(
+		row.getNextSet(row.begin()), row.end(), counters,
+		[&row, &pattern](BitArray::Iterator begin, BitArray::Iterator end, Counters& counters) {
+			if (!(RowReader::PatternMatchVariance(counters, pattern, MAX_INDIVIDUAL_VARIANCE) < MAX_AVG_VARIANCE))
+				return false;
+
+			// Make sure there is a quiet zone at least as big as the start pattern before the barcode.
+			// If this check would run off the left edge of the image, do not accept this barcode,
+			// as it is very likely to be a false positive.
+			int quietZoneWidth = end - begin;
+			return begin - row.begin() >= quietZoneWidth && row.hasQuiteZone(begin, -quietZoneWidth);
+		});
 }
 
 Result
 UPCEANReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const
 {
-	int begin, end;
-	auto status = FindStartGuardPattern(row, begin, end);
-	if (StatusIsError(status))
-		return Result(status);
+	auto range = FindStartGuardPattern(row);
+	if (!range)
+		return Result(DecodeStatus::NotFound);
 
-	return decodeRow(rowNumber, row, begin, end);
+	return decodeRow(rowNumber, row, range);
 }
 
-DecodeStatus
-UPCEANReader::decodeEnd(const BitArray& row, int endStart, int& begin, int& end) const
+BitArray::Range
+UPCEANReader::decodeEnd(const BitArray& row, BitArray::Iterator begin) const
 {
-	return FindGuardPattern(row, endStart, false, UPCEANCommon::START_END_PATTERN.data(), UPCEANCommon::START_END_PATTERN.size(), begin, end);
+	return FindGuardPattern(row, begin, false, UPCEANCommon::START_END_PATTERN);
 }
 
 Result
-UPCEANReader::decodeRow(int rowNumber, const BitArray& row, int startGuardBegin, int startGuardEnd) const
+UPCEANReader::decodeRow(int rowNumber, const BitArray& row, BitArray::Range startGuard) const
 {
 	//auto pointCallback = hints.resultPointCallback();
 	//if (pointCallback != nullptr) {
@@ -148,7 +114,7 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, int startGuardBegin,
 
 	std::string result;
 	result.reserve(20);
-	int endStart = startGuardEnd;
+	int endStart = startGuard.end - row.begin();
 	auto status = decodeMiddle(row, endStart, result);
 	if (StatusIsError(status))
 		return Result(status);
@@ -157,10 +123,9 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, int startGuardBegin,
 		pointCallback(static_cast<float>(endStart), static_cast<float>(rowNumber));
 	}*/
 
-	int endRangeBegin, endRangeEnd;
-	status = decodeEnd(row, endStart, endRangeBegin, endRangeEnd);
-	if (StatusIsError(status))
-		return Result(status);
+	auto endRange = decodeEnd(row, row.iterAt(endStart));
+	if (!endRange)
+		return Result(DecodeStatus::NotFound);
 
 	/*if (pointCallback != nullptr) {
 		pointCallback(0.5f * (endRangeBegin + endRangeEnd), static_cast<float>(rowNumber));
@@ -168,8 +133,8 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, int startGuardBegin,
 
 	// Make sure there is a quiet zone at least as big as the end pattern after the barcode. The
 	// spec might want more whitespace, but in practice this is the maximum we can count on.
-	int end = endRangeEnd;
-	int quietEnd = end + (end - endRangeBegin);
+	int end = endRange.end - row.begin();
+	int quietEnd = end + endRange.size();
 	if (quietEnd >= row.size() || !row.isRange(end, quietEnd, false)) {
 		return Result(DecodeStatus::NotFound);
 	}
@@ -182,14 +147,14 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, int startGuardBegin,
 	if (StatusIsError(status))
 		return Result(status);
 
-	float left = 0.5f * static_cast<float>(startGuardBegin + startGuardEnd);
-	float right = 0.5f * static_cast<float>(endRangeBegin + endRangeEnd);
+	float left = (startGuard.begin - row.begin()) + 0.5f * startGuard.size();
+	float right = (endRange.begin - row.begin()) + 0.5f * endRange.size();
 	BarcodeFormat format = expectedFormat();
 	float ypos = static_cast<float>(rowNumber);
 
 	Result decodeResult(TextDecoder::FromLatin1(result), ByteArray(), { ResultPoint(left, ypos), ResultPoint(right, ypos) }, format);
 	int extensionLength = 0;
-	Result extensionResult = UPCEANExtensionSupport::DecodeRow(rowNumber, row, endRangeEnd);
+	Result extensionResult = UPCEANExtensionSupport::DecodeRow(rowNumber, row, endRange.end - row.begin());
 	if (extensionResult.isValid())
 	{
 		decodeResult.metadata().put(ResultMetadata::UPC_EAN_EXTENSION, extensionResult.text());
@@ -260,7 +225,7 @@ UPCEANReader::checkChecksum(const std::string& s) const
 * @throws NotFoundException if digit cannot be decoded
 */
 DecodeStatus
-UPCEANReader::DecodeDigit(const BitArray& row, int rowOffset, const std::array<int, 4>* patterns, size_t patternCount, std::array<int, 4>& counters, int &resultOffset)
+UPCEANReader::DecodeDigit(const BitArray& row, int rowOffset, const Digit* patterns, size_t patternCount, Digit& counters, int &resultOffset)
 {
 	DecodeStatus status = RowReader::RecordPattern(row, rowOffset, counters);
 	if (StatusIsOK(status)) {

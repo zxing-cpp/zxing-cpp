@@ -39,9 +39,9 @@ UPCAReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Decodi
 }
 
 Result
-UPCAReader::decodeRow(int rowNumber, const BitArray& row, int startGuardBegin, int startGuardEnd) const
+UPCAReader::decodeRow(int rowNumber, const BitArray& row, BitArray::Range startGuard) const
 {
-	return MaybeReturnResult(_reader.decodeRow(rowNumber, row, startGuardBegin, startGuardEnd));
+	return MaybeReturnResult(_reader.decodeRow(rowNumber, row, startGuard));
 }
 
 BarcodeFormat

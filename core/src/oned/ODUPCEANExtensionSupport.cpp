@@ -67,7 +67,7 @@ namespace UPCEANExtension5Support
 	}
 
 	static DecodeStatus
-	DecodeMiddle(const BitArray& row, int startRangeBegin, int startRangeEnd, std::string& resultString, int& outRowOffset)
+	DecodeMiddle(const BitArray& row, int startRangeEnd, std::string& resultString, int& outRowOffset)
 	{
 		std::array<int, 4> counters = {};
 		int end = row.size();
@@ -161,7 +161,7 @@ namespace UPCEANExtension5Support
 	{
 		std::string resultString;
 		int end = 0;
-		DecodeStatus status = DecodeMiddle(row, extStartRangeBegin, extStartRangeEnd, resultString, end);
+		DecodeStatus status = DecodeMiddle(row, extStartRangeEnd, resultString, end);
 		if (StatusIsError(status)) {
 			return Result(status);
 		}
@@ -242,14 +242,13 @@ static const std::array<int, 3> EXTENSION_START_PATTERN = { 1,1,2 };
 Result
 UPCEANExtensionSupport::DecodeRow(int rowNumber, const BitArray& row, int rowOffset)
 {
-	int extStartRangeBegin, extStartRangeEnd;
-	auto status = UPCEANReader::FindGuardPattern(row, rowOffset, false, EXTENSION_START_PATTERN, extStartRangeBegin, extStartRangeEnd);
-	if (StatusIsError(status)) {
-		return Result(status);
-	}
-	Result result = UPCEANExtension5Support::DecodeRow(rowNumber, row, extStartRangeBegin, extStartRangeEnd);
+	auto extStartRange = UPCEANReader::FindGuardPattern(row, row.iterAt(rowOffset), false, EXTENSION_START_PATTERN);
+	if (!extStartRange)
+		return Result(DecodeStatus::NotFound);
+
+	Result result = UPCEANExtension5Support::DecodeRow(rowNumber, row, extStartRange.begin - row.begin(), extStartRange.end - row.begin());
 	if (!result.isValid()) {
-		result = UPCEANExtension2Support::DecodeRow(rowNumber, row, extStartRangeBegin, extStartRangeEnd);
+		result = UPCEANExtension2Support::DecodeRow(rowNumber, row, extStartRange.begin - row.begin(), extStartRange.end - row.begin());
 	}
 	return result;
 }

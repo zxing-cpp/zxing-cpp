@@ -57,7 +57,9 @@ public:
 	* @throws ChecksumException if a potential barcode is found but does not pass its checksum
 	* @throws FormatException if a potential barcode is found but format is invalid
 	*/
-	virtual Result decodeRow(int rowNumber, const BitArray& row, int startGuardBegin, int startGuardEnd) const;
+	virtual Result decodeRow(int rowNumber, const BitArray& row, BitArray::Range startGuard) const;
+
+	using Digit = std::array<int, 4>;
 
 protected:
 	explicit UPCEANReader(const DecodeHints& hints);
@@ -86,14 +88,14 @@ protected:
 	virtual	DecodeStatus checkChecksum(const std::string& s) const;
 
 
-	virtual DecodeStatus decodeEnd(const BitArray& row, int endStart, int& begin, int& end) const;
+	virtual BitArray::Range decodeEnd(const BitArray& row, BitArray::Iterator begin) const;
 
 public:
-	static DecodeStatus FindStartGuardPattern(const BitArray& row, int& begin, int& end);
+	static BitArray::Range FindStartGuardPattern(const BitArray& row);
 
 	template <typename Container>
-	static DecodeStatus FindGuardPattern(const BitArray& row, int rowOffset, bool whiteFirst, const Container& pattern, int& begin, int& end) {
-		return FindGuardPattern(row, rowOffset, whiteFirst, pattern.data(), pattern.size(), begin, end);
+	static BitArray::Range FindGuardPattern(const BitArray& row, BitArray::Iterator begin, bool whiteFirst, const Container& pattern) {
+		return FindGuardPattern(row, begin, whiteFirst, pattern.data(), pattern.size());
 	}
 
 	/**
@@ -108,17 +110,16 @@ public:
 	* @return horizontal offset of first pixel beyond the decoded digit
 	* @throws NotFoundException if digit cannot be decoded
 	*/
-	template <typename Container>
-	static DecodeStatus DecodeDigit(const BitArray& row, int rowOffset, const Container& patterns, std::array<int, 4>& counters, int &resultOffset) {
+	template <size_t N>
+	static DecodeStatus DecodeDigit(const BitArray& row, int rowOffset, const std::array<Digit, N>& patterns, Digit& counters, int &resultOffset) {
 		return DecodeDigit(row, rowOffset, patterns.data(), patterns.size(), counters, resultOffset);
 	}
 	
 private:
 	std::vector<int> _allowedExtensions;
 
-	static DecodeStatus FindGuardPattern(const BitArray& row, int rowOffset, bool whiteFirst, const int* pattern, size_t length, int& begin, int& end);
-	static DecodeStatus DecodeDigit(const BitArray& row, int rowOffset, const std::array<int, 4>* patterns, size_t patternCount, std::array<int, 4>& counters, int &resultOffset);
-	static DecodeStatus DoFindGuardPattern(const BitArray& row, int rowOffset, bool whiteFirst, const int* pattern, int* counters, size_t length, int& begin, int& end);
+	static BitArray::Range FindGuardPattern(const BitArray& row, BitArray::Iterator begin, bool whiteFirst, const int* pattern, size_t length);
+	static DecodeStatus DecodeDigit(const BitArray& row, int rowOffset, const Digit* patterns, size_t patternCount, Digit& counters, int &resultOffset);
 };
 
 } // OneD

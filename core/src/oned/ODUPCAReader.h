@@ -33,7 +33,7 @@ public:
 	explicit UPCAReader(const DecodeHints& hints) : UPCEANReader(hints), _reader(hints) {}
 
 	Result decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const override;
-	Result decodeRow(int rowNumber, const BitArray& row, int startGuardBegin, int startGuardEnd) const override;
+	Result decodeRow(int rowNumber, const BitArray& row, BitArray::Range startGuard) const override;
 
 protected:
 	BarcodeFormat expectedFormat() const override;

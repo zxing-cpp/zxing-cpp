@@ -34,7 +34,7 @@ EAN8Reader::expectedFormat() const
 DecodeStatus
 EAN8Reader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const
 {
-	std::array<int, 4> counters = {};
+	Digit counters = {};
 	int end = row.size();
 	DecodeStatus status;
 
@@ -48,13 +48,11 @@ EAN8Reader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resul
 		rowOffset = Accumulate(counters, rowOffset);
 	}
 
-	int middleRangeBegin, middleRangeEnd;
-	status = FindGuardPattern(row, rowOffset, true, UPCEANCommon::MIDDLE_PATTERN, middleRangeBegin, middleRangeEnd);
-	if (StatusIsError(status)) {
-		return status;
-	}
+	auto middleRange = FindGuardPattern(row, row.iterAt(rowOffset), true, UPCEANCommon::MIDDLE_PATTERN);
+	if (!middleRange)
+		return DecodeStatus::NotFound;
 
-	rowOffset = middleRangeEnd;
+	rowOffset = middleRange.end - row.begin();
 	for (int x = 0; x < 4 && rowOffset < end; x++) {
 		int bestMatch = 0;
 		status = DecodeDigit(row, rowOffset, UPCEANCommon::L_PATTERNS, counters, bestMatch);
