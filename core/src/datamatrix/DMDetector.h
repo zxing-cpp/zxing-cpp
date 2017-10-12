@@ -28,7 +28,7 @@ namespace DataMatrix {
 * <p>Encapsulates logic that can detect a Data Matrix Code in an image, even if the Data Matrix Code
 * is rotated or skewed, or partially obscured.</p>
 *
-* @author Sean Owen
+* @author Sean Owen, Axel Waggershauser
 */
 class Detector
 {
@@ -39,7 +39,7 @@ public:
 	* @return {@link DetectorResult} encapsulating results of detecting a Data Matrix Code
 	* @throws NotFoundException if no Data Matrix Code can be found
 	*/
-	static DecodeStatus Detect(const BitMatrix& image, DetectorResult& result);
+	static DecodeStatus Detect(const BitMatrix& image, bool tryHarder, bool tryRotate, DetectorResult& result);
 };
 
 } // DataMatrix

@@ -1,6 +1,7 @@
 /*
 * Copyright 2016 Nu-book Inc.
 * Copyright 2016 ZXing authors
+* Copyright 2017 Axel Waggershauser
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -15,6 +16,10 @@
 * limitations under the License.
 */
 
+#ifndef NDEBUG
+#define PRINT_DEBUG
+#endif
+
 #include "datamatrix/DMDetector.h"
 #include "BitMatrix.h"
 #include "DecodeStatus.h"
@@ -22,14 +27,42 @@
 #include "GridSampler.h"
 #include "WhiteRectDetector.h"
 
-#include <cstdlib>
-#include <cmath>
-#include <array>
 #include <algorithm>
+#include <array>
+#include <cassert>
+#include <cmath>
+#include <cstdlib>
 #include <map>
+#include <numeric>
+
+// c++14 exchange
+#if __cplusplus < 201402
+namespace std {
+
+template<class T, class U = T>
+T exchange(T& obj, U&& new_value)
+{
+    T old_value = std::move(obj);
+    obj = std::forward<U>(new_value);
+    return old_value;
+}
+
+}
+#endif
 
 namespace ZXing {
 namespace DataMatrix {
+
+/**
+* The following code is the 'old' code by Sean Owen based on the Java upstream project.
+* It looks for a white rectangle, then cuts the corners until it hits a black pixel, which
+* results in 4 corner points. Then it determines the dimension by counting transitions
+* between the upper and right corners and samples the grid.
+* This code has several limitations compared to the new code below but has one advantage:
+* it works on high resolution scans with noisy/rippled black/white-edges and potentially
+* on partly occluded locator patterns (the surrounding border of modules/pixels). It is
+* therefore kept as a fall-back.
+*/
 
 /**
 * Simply encapsulates two points and a number of transitions between them.
@@ -258,8 +291,7 @@ static void OrderByBestPatterns(const ResultPoint*& p0, const ResultPoint*& p1, 
 	p2 = pointC;
 }
 
-DecodeStatus
-Detector::Detect(const BitMatrix& image, DetectorResult& result)
+static DecodeStatus DetectOld(const BitMatrix& image, DetectorResult& result)
 {
 	ResultPoint pointA, pointB, pointC, pointD;
 	DecodeStatus status = WhiteRectDetector::Detect(image, pointA, pointB, pointC, pointD);
@@ -417,6 +449,638 @@ Detector::Detect(const BitMatrix& image, DetectorResult& result)
 	result.setBits(bits);
 	result.setPoints({ *topLeft, *bottomLeft, *bottomRight, correctedTopRight });
 	return DecodeStatus::NoError;
+}
+
+/**
+* The following code is the 'new' one implemented by Axel Waggershauser and is working completely different.
+* It is performing something like a (back) trace search along edges through the bit matrix, first looking for
+* the 'L'-pattern, then tracing the black/white borders at the top/right. Advantages over the old code are:
+*  * works with lower resolution scans (around 2 pixel per module), due to sub-pixel precision grid placement
+*  * works with real-world codes that have just one module wide quite-zone (which is perfectly in spec)
+*/
+
+template <typename T> struct PointT
+{
+	T x = 0, y = 0;
+	PointT() = default;
+	PointT(T x, T y) : x(x), y(y) {}
+	template <typename U>
+	explicit PointT(const PointT<U>& p) : x(p.x), y(p.y) {}
+	explicit PointT(const ResultPoint& p) : x(p.x()), y(p.y()) {}
+	operator ResultPoint() const { return {static_cast<float>(x), static_cast<float>(y)}; }
+};
+
+template <typename T> bool operator == (const PointT<T>& a, const PointT<T>& b)
+{
+	return a.x == b.x && a.y == b.y;
+}
+
+template <typename T> bool operator != (const PointT<T>& a, const PointT<T>& b)
+{
+	return !(a == b);
+}
+
+template <typename T, typename U> PointT<T> operator + (const PointT<T>& a, const PointT<U>& b)
+{
+	return {a.x + b.x, a.y + b.y};
+}
+
+template <typename T, typename U> PointT<T> operator - (const PointT<T>& a, const PointT<U>& b)
+{
+	return {a.x - b.x, a.y - b.y};
+}
+
+template <typename T, typename U> PointT<T> operator * (U s, const PointT<T>& a)
+{
+	return {s * a.x, s * a.y};
+}
+
+template <typename T, typename U> PointT<T> operator / (const PointT<T>& a, U d)
+{
+	return {a.x / d, a.y / d};
+}
+
+template <typename T> double operator * (const PointT<T>& a, const PointT<T>& b)
+{
+	return a.x * b.x + a.y * b.y;
+}
+
+template <typename T> double distance(PointT<T> a, PointT<T> b)
+{
+	auto d = a - b;
+	return std::sqrt(d * d);
+}
+
+using PointI = PointT<int>;
+using PointF = PointT<double>;
+
+PointI round(PointF p)
+{
+	return PointI(std::lround(p.x), std::lround(p.y));
+}
+
+class RegressionLine
+{
+	std::vector<PointI> _points;
+	PointF _directionInward;
+	double a = NAN, b = NAN, c = NAN;
+
+	friend PointF intersect(const RegressionLine& l1, const RegressionLine& l2);
+
+	void evaluate(const std::vector<PointI> ps)
+	{
+		auto mean = std::accumulate(ps.begin(), ps.end(), PointF()) / ps.size();
+		double sumXX = 0, sumYY = 0, sumXY = 0;
+		for (auto& p : ps) {
+			sumXX += (p.x - mean.x) * (p.x - mean.x);
+			sumYY += (p.y - mean.y) * (p.y - mean.y);
+			sumXY += (p.x - mean.x) * (p.y - mean.y);
+		}
+		if (sumYY >= sumXX) {
+			a = +sumYY / std::sqrt(sumYY * sumYY + sumXY * sumXY);
+			b = -sumXY / std::sqrt(sumYY * sumYY + sumXY * sumXY);
+		} else {
+			a = +sumXY / std::sqrt(sumXX * sumXX + sumXY * sumXY);
+			b = -sumXX / std::sqrt(sumXX * sumXX + sumXY * sumXY);
+		}
+		if (_directionInward * normal() < 0) {
+			a = -a;
+			b = -b;
+		}
+		c = normal() * mean; // (a*mean.x + b*mean.y);
+	}
+
+	template <typename Container, typename Filter>
+	static double average(const Container& c, Filter f)
+	{
+		double sum = 0;
+		int num = 0;
+		for (const auto& v : c)
+			if (f(v)) {
+				sum += v;
+				++num;
+			}
+		return sum / num;
+	}
+
+public:
+	const std::vector<PointI>& points() const { return _points; }
+	int length() const { return _points.size() >= 2 ? int(distance(_points.front(), _points.back())) : 0; }
+	bool isValid() const { return !std::isnan(a); }
+	PointF normal() const { return PointF(a, b); }
+	PointF project(PointF p) const { return p - (normal() * p - c) * normal(); }
+	PointF project(PointI p) const { return project(PointF(p)); }
+	double signedDistance(PointF p) const { return (normal() * p - c) / std::sqrt(a * a + b * b); }
+
+	void reverse() { std::reverse(_points.begin(), _points.end()); }
+
+	void add(PointI p) { _points.push_back(p); }
+
+	void setDirectionInward(PointF d) { _directionInward = d; }
+
+	void evaluate(bool clean = false)
+	{
+		auto ps = _points;
+		evaluate(ps);
+		if (clean) {
+			size_t old_points_size;
+			while (true) {
+				old_points_size = _points.size();
+				_points.erase(std::remove_if(_points.begin(), _points.end(),
+											 [this](PointI p) { return this->signedDistance(PointF(p)) > 1.5; }),
+							  _points.end());
+				if (old_points_size == _points.size())
+					break;
+#ifdef PRINT_DEBUG
+				printf("removed %zu points\n", old_points_size - _points.size());
+#endif
+				evaluate(_points);
+			}
+		}
+	}
+
+	double modules(PointF beg, PointF end) const
+	{
+		assert(_points.size() > 3);
+		std::vector<double> gapSizes;
+		gapSizes.reserve(_points.size());
+
+		// calculate the distance between the points projected onto the regression line
+		for (size_t i = 1; i < _points.size(); ++i)
+			gapSizes.push_back(distance(project(_points[i]), project(_points[i - 1])));
+
+		// calculate the (average) distance of two adjacent pixels
+		auto unitPixelDist = average(gapSizes, [](double dist){ return 0.75 < dist && dist < 1.5; });
+
+		// calculate the width of 2 modules (first black pixel to first black pixel)
+		double sum = distance(beg, project(_points.front())) - unitPixelDist;
+		auto i = gapSizes.begin();
+		for (auto dist : gapSizes) {
+			sum += dist;
+			if (dist > 1.9 * unitPixelDist)
+				*i++ = std::exchange(sum, 0.0);
+		}
+		*i++ = sum + distance(end, project(_points.back()));
+		gapSizes.erase(i, gapSizes.end());
+		auto lineLength = distance(beg, end) - unitPixelDist;
+		auto meanGapSize = lineLength / gapSizes.size();
+#ifdef PRINT_DEBUG
+		printf("unit pixel dist: %f\n", unitPixelDist);
+		printf("lineLength: %f, meanGapSize: %f, gaps: %lu\n", lineLength, meanGapSize, gapSizes.size());
+#endif
+		meanGapSize = average(gapSizes, [&](double dist){ return std::abs(dist - meanGapSize) < meanGapSize/2; });
+#ifdef PRINT_DEBUG
+		printf("lineLength: %f, meanGapSize: %f, gaps: %lu\n", lineLength, meanGapSize, gapSizes.size());
+#endif
+		return lineLength / meanGapSize;
+	}
+};
+
+PointF intersect(const RegressionLine& l1, const RegressionLine& l2)
+{
+	double x, y, d;
+	d = l1.a * l2.b - l1.b * l2.a;
+	x = (l1.c * l2.b - l1.b * l2.c) / d;
+	y = (l1.a * l2.c - l1.c * l2.a) / d;
+	return {x, y};
+}
+
+class EdgeTracer
+{
+	const BitMatrix& image;
+	PointF p; // current position
+	PointF d; // current direction
+
+	static PointF mainDirection(PointF d) { return std::abs(d.x) > std::abs(d.y) ? PointF(d.x, 0) : PointF(0, d.y); }
+
+	enum class StepResult { FOUND, OPEN_END, CLOSED_END };
+
+	StepResult traceStep(PointF dEdge, int maxStepSize, bool goodDirection)
+	{
+		dEdge = mainDirection(dEdge);
+		for (int breadth = 1; breadth <= (goodDirection ? 1 : (maxStepSize == 1 ? 2 : 3)); ++breadth)
+			for (int step = 1; step <= maxStepSize; ++step)
+				for (int i = 0; i <= 2*(step/4+1) * breadth; ++i) {
+					auto pEdge = p + step * d + (i&1 ? (i+1)/2 : -i/2) * dEdge;
+					log(pEdge);
+					try {
+						if (whiteAt(pEdge + dEdge))
+							continue;
+
+						// found black pixel -> go 'outward' until we hit the b/w border
+						for (int j = 0; j < std::max(maxStepSize, 3); ++j) {
+							if (whiteAt(pEdge)) {
+								p = PointF(round(pEdge));
+								return StepResult::FOUND;
+							}
+							pEdge = pEdge - dEdge;
+							if (blackAt(pEdge - d))
+								pEdge = pEdge - d;
+							log(pEdge);
+						}
+						// no valid b/w border found within reasonable range
+						return StepResult::CLOSED_END;
+					} catch (std::out_of_range) {}
+				}
+		return StepResult::OPEN_END;
+	}
+
+public:
+#ifdef PRINT_DEBUG
+	static BitMatrix _log;
+#endif
+
+	void log(PointF p) const
+	{
+#ifdef PRINT_DEBUG
+		if (_log.height() != image.height() || _log.width() != image.width())
+			_log = BitMatrix(image.width(), image.height());
+		auto q = round(p);
+		if (isIn(q))
+			_log.set(q.x, q.y);
+#endif
+	}
+
+	EdgeTracer(const BitMatrix& img, PointF p, PointF d) : image(img), p(p), d(d) {}
+	EdgeTracer& operator=(const EdgeTracer& other)
+	{
+		assert(&image == &other.image);
+		p = other.p;
+		d = other.d;
+		return *this;
+	}
+	EdgeTracer(const EdgeTracer&) = default;
+	~EdgeTracer() = default;
+	EdgeTracer(EdgeTracer&&) noexcept(true) = default;
+	EdgeTracer& operator=(EdgeTracer&&) = default;
+
+	bool step(int s = 1)
+	{
+		p = p + s * d;
+		log(p);
+		return isIn(p);
+	}
+
+	void setDirection(PointF dir) { d = dir / std::max(std::abs(dir.x), std::abs(dir.y)); }
+
+	bool updateDirectionFromOrigin(PointF origin)
+	{
+		auto old_d = d;
+		setDirection(p - origin);
+		// it the new direction is pointing "backward", i.e. angle(new, old) > pi/2 -> break
+		if (d * old_d < 0)
+			return false;
+		//printf("new dir: %f, %f\n", d.x, d.y);
+		// make sure d stays in the same quadrant to prevent an infinite loop
+		if (mainDirection(d) != mainDirection(old_d))
+			d = mainDirection(old_d) + 0.99 * mainDirection(d);
+		return true;
+	}
+
+	PointF front() const { return d; }
+	PointF back() const { return {-d.x, -d.y}; }
+	PointF right() const { return {-d.y, d.x}; }
+	PointF left() const { return {d.y, -d.x}; }
+
+	bool isIn(PointI p) const
+	{
+		const int b = 0;
+		return  b <= p.x && p.x < image.width()-b &&
+		        b <= p.y && p.y < image.height()-b;
+	}
+	bool isIn(PointF p) const { return isIn(round(p)); }
+	bool isIn() const { return isIn(p); }
+
+	bool blackAt(PointF p) const
+	{
+		if (!isIn(p))
+			throw std::out_of_range("BitMatrix out of bounds access");
+		auto q = round(p);
+		return image.get(q.x, q.y);
+	}
+
+	bool whiteAt(PointF p) const { return !blackAt(p); }
+	bool isEdge(PointF pos, PointF dir) const { return whiteAt(pos) && blackAt(pos + dir); }
+	bool isEdgeBehind() const { return isEdge(p, back()); }
+
+	bool traceLine(PointF dEdge, RegressionLine& line)
+	{
+		do {
+			log(p);
+			line.add(round(p));
+			if (line.points().size() % 30 == 10) {
+				line.evaluate();
+				if (!updateDirectionFromOrigin(p - line.project(p) + line.points().front()))
+					return false;
+			}
+			auto stepResult = traceStep(dEdge, 1, line.isValid());
+			if (stepResult != StepResult::FOUND)
+				return stepResult == StepResult::OPEN_END;
+		} while (true);
+	}
+
+	bool traceGaps(PointF dEdge, RegressionLine& line, int maxStepSize, const RegressionLine& finishLine)
+	{
+		line.setDirectionInward(dEdge);
+		int gaps = 0;
+		do {
+			log(p);
+			PointI next_p = round(p);
+			PointI diff = line.points().empty() ? PointI() : next_p - line.points().back();
+
+			if (line.points().empty() || line.points().back() != next_p)
+				line.add(next_p);
+
+			if (std::abs(diff * PointI(d)) > 1) {
+				++gaps;
+				if (line.length() > 5) {
+					line.evaluate(true);
+					if (!updateDirectionFromOrigin(p - line.project(p) + line.points().front()))
+						return false;
+				}
+				// the minimum size is 10x10 -> 4 gaps
+				//TODO: maybe switch to termination condition based on bottom line length
+				if (!finishLine.isValid() && gaps >= 4)
+					return true;
+			}
+			if (line.isValid()) {
+				// if we are drifting towards the inside of the code, pull the current position back out onto the line
+				if (line.signedDistance(p) > 2)
+					p = line.project(p) + d;
+			}
+
+			if (finishLine.isValid())
+				maxStepSize = std::min(maxStepSize, static_cast<int>(finishLine.signedDistance(p)));
+
+			auto stepResult = traceStep(dEdge, maxStepSize, line.isValid());
+			if (stepResult != StepResult::FOUND)
+				return stepResult == StepResult::OPEN_END;
+		} while (true);
+	}
+
+	PointF traceCorner(PointF dir)
+	{
+		step();
+		auto ret = p = PointF(round(p));
+		std::swap(d, dir);
+		traceStep(-1 * dir, 2, false);
+#ifdef PRINT_DEBUG
+		printf("turn: %f x %f -> %f, %f\n", p.x, p.y, d.x, d.y);
+#endif
+		return ret;
+	}
+};
+
+#ifdef PRINT_DEBUG
+
+BitMatrix EdgeTracer::_log;
+
+template <typename T>
+static void dumpDebugPPM(const BitMatrix& image, const char* fn, const std::vector<T>& points = {})
+{
+	FILE *f = fopen(fn, "wb");
+
+	// Write PPM header, P5 == grey, P6 == rgb
+	fprintf(f, "P6\n%d %d\n255\n", image.width(), image.height());
+
+	auto last = points.begin();
+
+	// Write pixels
+	for (int y = 0; y < image.height(); ++y)
+		for (int x = 0; x < image.width(); ++x) {
+			unsigned char c = image.get(x, y) ? 0 : 255;
+			auto i = find_if(last, points.end(), [&](T _p) {
+				PointF p(_p);
+				return std::lround(p.x) == x && std::lround(p.y) == y;
+			});
+			if (i != points.end())
+				c = 100 + c/4;
+			else if (EdgeTracer::_log.get(x, y))
+				c = c ? 230 : 50;
+			fwrite(&c, 1, 1, f);
+			fwrite(&c, 1, 1, f);
+			fwrite(&c, 1, 1, f);
+		}
+	fclose(f);
+}
+
+static void printBitMatrix(const BitMatrix& matrix)
+{
+	for (int y = 0; y < matrix.height(); ++y) {
+		for (int x = 0; x < matrix.width(); ++x)
+			printf("%c ", matrix.get(x, y) ? '+' : '.');
+		printf("\n");
+	}
+}
+#endif
+
+static BitMatrix SampleGrid(const BitMatrix& image, const ResultPoint& topLeft, const ResultPoint& bottomLeft,
+							const ResultPoint& bottomRight, const ResultPoint& topRight, int dimensionX, int dimensionY)
+{
+	PointF tl(topLeft), bl(bottomLeft), br(bottomRight), tr(topRight);
+
+	// shrink shape by half a pixel to go from center of white pixel outside of code to the edge between white and black
+	auto moveHalfAPixel = [](PointF& a, PointF& b) {
+		auto a2b = (b - a) / distance(a, b);
+		a = a + 0.5 * a2b;
+	};
+
+	// move every point towards tr by half a pixel
+	// reasoning: for very low res scans, the top and right border tend to be around half a pixel moved inward already.
+	// for high res scans this half a pixel makes no difference anyway.
+	moveHalfAPixel(tl, tr);
+	moveHalfAPixel(bl, tr);
+	moveHalfAPixel(br, tr);
+
+	for (auto* p : {&tl, &bl, &br, &tr})
+		*p = *p + PointF(0.5, 0.5);
+
+	auto border = 0.f;
+	BitMatrix result;
+
+	auto status = GridSampler::Instance()->sampleGrid(
+		image,
+		dimensionX, dimensionY,
+		border, border,
+		dimensionX - border, border,
+		dimensionX - border, dimensionY - border,
+		border,	dimensionY - border,
+		tl.x, tl.y,
+		tr.x, tr.y,
+        br.x, br.y,
+        bl.x, bl.y,
+		result);
+
+	if (StatusIsError(status))
+		result = BitMatrix();
+
+	return result;
+}
+
+static DecodeStatus DetectNew(const BitMatrix& image, bool tryRotate, DetectorResult& result)
+{
+	// walk to the left at first
+	for (auto startDirection : {PointF(-1, 0), PointF(1, 0), PointF(0, -1), PointF(0, 1)}) {
+		EdgeTracer startTracer(image, PointF(image.width()/2, image.height()/2), startDirection);
+		while (startTracer.step()) try {
+			// go forward until we reach a white/black border
+			if (!startTracer.isEdgeBehind())
+				continue;
+
+#ifdef PRINT_DEBUG
+#define continue { printf("broke at %d\n", __LINE__); continue; }
+#endif
+
+			PointF tl, bl, br, tr;
+			RegressionLine lineL, lineB, lineR, lineT;
+
+			auto t = startTracer;
+
+			// follow left leg upwards
+			t.setDirection(t.right());
+			if (!t.traceLine(t.right(), lineL))
+				continue;
+
+			tl = t.traceCorner(t.right());
+			lineL.reverse();
+			auto tlTracer = t;
+
+			// follow left leg downwards
+			t = startTracer;
+			t.setDirection(t.left());
+			if (!t.traceLine(t.left(), lineL))
+				continue;
+
+			if (!lineL.isValid())
+				t.updateDirectionFromOrigin(tl);
+			auto up = t.back();
+			bl = t.traceCorner(t.left());
+
+			tlTracer.setDirection(t.front());
+
+			// follow bottom leg right
+			if (!t.traceLine(t.left(), lineB))
+				continue;
+
+			if (!lineL.isValid())
+				t.updateDirectionFromOrigin(bl);
+			auto right = t.front();
+			br = t.traceCorner(t.left());
+
+			auto lenL = distance(tl, bl);
+			auto lenB = distance(bl, br);
+			if (lenL < 10 || lenB < 10 || lenB < lenL/4 || lenB > lenL*8)
+				continue;
+
+			auto maxStepSize = static_cast<int>(lenB / 5 + 1); // datamatrix dim is at least 10x10
+
+			// at this point we found a plausible L-shape and are now looking for the b/w pattern at the top and right:
+			// follow top row right 'half way' (4 gaps), see traceGaps break condition with 'invalid' line
+			tlTracer.setDirection(right);
+			if (!tlTracer.traceGaps(tlTracer.right(), lineT, maxStepSize, RegressionLine()))
+				continue;
+
+			maxStepSize = std::max(lineT.length() / 4, static_cast<int>(lenL / 5 + 1));
+
+			// follow up until we reach the top line
+			t.setDirection(up);
+			if (!t.traceGaps(t.left(), lineR, maxStepSize, lineT))
+				continue;
+
+			// continue top row right until we cross the right line
+			if (!tlTracer.traceGaps(tlTracer.right(), lineT, maxStepSize, lineR))
+				continue;
+
+			tr = t.traceCorner(t.left());
+
+			auto lenT = distance(tl, tr);
+			auto lenR = distance(tr, br);
+
+			if (std::abs(lenT - lenB) / lenB > 0.5 || std::abs(lenR - lenL) / lenL > 0.5 ||
+				lineT.points().size() < 5 || lineR.points().size() < 5)
+				continue;
+
+#ifdef PRINT_DEBUG
+			printf("L: %f, %f ^ %f, %f > %f, %f (%d : %d : %d : %d)\n", bl.x, bl.y,
+			       tl.x - bl.x, tl.y - bl.y, br.x - bl.x, br.y - bl.y, (int)lenL, (int)lenB, (int)lenT, (int)lenR);
+#endif
+
+			for (auto l : {&lineL, &lineB, &lineT, &lineR})
+				l->evaluate(true);
+
+			// find the bounding box corners of the code with sub-pixel precision by intersecting the 4 border lines
+			bl = intersect(lineB, lineL);
+			tl = intersect(lineT, lineL);
+			tr = intersect(lineT, lineR);
+			br = intersect(lineB, lineR);
+
+			int dimT, dimR;
+			double fracT, fracR;
+			auto splitDouble = [](double d, int* i, double* f) {
+				*i = std::isnormal(d) ? static_cast<int>(d + 0.5) : 0;
+				*f = std::isnormal(d) ? std::abs(d - *i) : INFINITY;
+			};
+			splitDouble(lineT.modules(tl, tr), &dimT, &fracT);
+			splitDouble(lineR.modules(br, tr), &dimR, &fracR);
+
+#ifdef PRINT_DEBUG
+			printf("L: %f, %f ^ %f, %f > %f, %f ^> %f, %f\n", bl.x, bl.y,
+			       tl.x - bl.x, tl.y - bl.y, br.x - bl.x, br.y - bl.y, tr.x, tr.y);
+			printf("dim: %d x %d\n", dimT, dimR);
+#endif
+
+			// if we have an invalid rectangular data matrix dimension, we try to parse it by assuming a square
+			// we use the dimension that is closer to an integral value
+			if (dimT < 2 * dimR || dimT > 4 * dimR)
+				dimT = dimR = fracR < fracT ? dimR : dimT;
+
+			// the dimension is 2x the number of black/white transitions
+			dimT *= 2;
+			dimR *= 2;
+
+			if (dimT < 10 || dimT > 144 || dimR < 8 || dimR > 144 )
+				continue;
+
+			auto bits = SampleGrid(image, tl, bl, br, tr, dimT, dimR);
+
+#ifdef PRINT_DEBUG
+			printf("modules top: %d, right: %d\n", dimT, dimR);
+			printBitMatrix(bits);
+
+			auto border = lineT.points();
+			border.insert(border.end(), lineR.points().begin(), lineR.points().end());
+			dumpDebugPPM(image, "binary.pnm", border);
+#endif
+
+			if (bits.empty())
+				continue;
+
+			result.setBits(std::make_shared<BitMatrix>(std::move(bits)));
+			result.setPoints({tl, bl, br, tr});
+
+			return DecodeStatus::NoError;
+		} catch(...) {
+			// reached border of image -> try next scan direction
+		}
+#ifndef PRINT_DEBUG
+		if (!tryRotate)
+#endif
+			break; // only test left direction
+	}
+
+#ifdef PRINT_DEBUG
+	dumpDebugPPM<PointF>(image, "binary.pnm");//, { tl, bl, br, tr });
+#endif
+
+	return DecodeStatus::NotFound;
+}
+
+DecodeStatus Detector::Detect(const BitMatrix& image, bool tryHarder, bool tryRotate, DetectorResult& result)
+{
+	auto status = DetectNew(image, tryRotate, result);
+	if (StatusIsError(status) && tryHarder)
+		status = DetectOld(image, result);
+	return status;
 }
 
 } // DataMatrix
