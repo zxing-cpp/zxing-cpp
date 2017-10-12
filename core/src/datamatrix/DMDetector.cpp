@@ -17,10 +17,10 @@
 
 #include "datamatrix/DMDetector.h"
 #include "BitMatrix.h"
-#include "DetectorResult.h"
-#include "WhiteRectDetector.h"
-#include "GridSampler.h"
 #include "DecodeStatus.h"
+#include "DetectorResult.h"
+#include "GridSampler.h"
+#include "WhiteRectDetector.h"
 
 #include <cstdlib>
 #include <cmath>
@@ -44,7 +44,8 @@ struct ResultPointsAndTransitions
 /**
 * Counts the number of black/white transitions between two points, using something like Bresenham's algorithm.
 */
-static ResultPointsAndTransitions TransitionsBetween(const BitMatrix& image, const ResultPoint& from, const ResultPoint& to)
+static ResultPointsAndTransitions TransitionsBetween(const BitMatrix& image, const ResultPoint& from,
+													 const ResultPoint& to)
 {
 	// See QR Code Detector, sizeOfBlackWhiteBlackRun()
 	int fromX = static_cast<int>(from.x());
@@ -100,7 +101,10 @@ inline static float RoundToNearest(float x)
 * Calculates the position of the white top right module using the output of the rectangle detector
 * for a rectangular matrix
 */
-static bool CorrectTopRightRectangular(const BitMatrix& image, const ResultPoint& bottomLeft, const ResultPoint& bottomRight, const ResultPoint& topLeft, const ResultPoint& topRight, int dimensionTop, int dimensionRight, ResultPoint& result)
+static bool CorrectTopRightRectangular(const BitMatrix& image, const ResultPoint& bottomLeft,
+									   const ResultPoint& bottomRight, const ResultPoint& topLeft,
+									   const ResultPoint& topRight, int dimensionTop, int dimensionRight,
+									   ResultPoint& result)
 {
 	float corr = RoundToNearest(ResultPoint::Distance(bottomLeft, bottomRight)) / static_cast<float>(dimensionTop);
 	float norm = RoundToNearest(ResultPoint::Distance(topLeft, topRight));
@@ -128,8 +132,10 @@ static bool CorrectTopRightRectangular(const BitMatrix& image, const ResultPoint
 		return true;
 	}
 
-	int l1 = std::abs(dimensionTop - TransitionsBetween(image, topLeft, c1).transitions) + std::abs(dimensionRight - TransitionsBetween(image, bottomRight, c1).transitions);
-	int l2 = std::abs(dimensionTop - TransitionsBetween(image, topLeft, c2).transitions) + std::abs(dimensionRight - TransitionsBetween(image, bottomRight, c2).transitions);
+	int l1 = std::abs(dimensionTop - TransitionsBetween(image, topLeft, c1).transitions) +
+			 std::abs(dimensionRight - TransitionsBetween(image, bottomRight, c1).transitions);
+	int l2 = std::abs(dimensionTop - TransitionsBetween(image, topLeft, c2).transitions) +
+			 std::abs(dimensionRight - TransitionsBetween(image, bottomRight, c2).transitions);
 
 	result = l1 <= l2 ? c1 : c2;
 	return true;
@@ -139,7 +145,8 @@ static bool CorrectTopRightRectangular(const BitMatrix& image, const ResultPoint
 * Calculates the position of the white top right module using the output of the rectangle detector
 * for a square matrix
 */
-static bool CorrectTopRight(const BitMatrix& image, const ResultPoint& bottomLeft, const ResultPoint& bottomRight, const ResultPoint& topLeft, const ResultPoint& topRight, int dimension, ResultPoint& result)
+static ResultPoint CorrectTopRight(const BitMatrix& image, const ResultPoint& bottomLeft, const ResultPoint& bottomRight,
+                                   const ResultPoint& topLeft, const ResultPoint& topRight, int dimension)
 {
 	float corr = RoundToNearest(ResultPoint::Distance(bottomLeft, bottomRight)) / (float)dimension;
 	float norm = RoundToNearest(ResultPoint::Distance(topLeft, topRight));
@@ -156,25 +163,23 @@ static bool CorrectTopRight(const BitMatrix& image, const ResultPoint& bottomLef
 	ResultPoint c2(topRight.x() + corr * cos, topRight.y() + corr * sin);
 
 	if (!IsValidPoint(c1, image.width(), image.height())) {
-		if (IsValidPoint(c2, image.width(), image.height())) {
-			result = c2;
-			return true;
-		}
-		return false;
+		if (!IsValidPoint(c2, image.width(), image.height()))
+			return topRight;
+		return c2;
 	}
-	if (!IsValidPoint(c2, image.width(), image.height())) {
-		result = c1;
-		return true;
-	}
+	if (!IsValidPoint(c2, image.width(), image.height()))
+		return c1;
 
-	int l1 = std::abs(TransitionsBetween(image, topLeft, c1).transitions - TransitionsBetween(image, bottomRight, c1).transitions);
-	int l2 = std::abs(TransitionsBetween(image, topLeft, c2).transitions - TransitionsBetween(image, bottomRight, c2).transitions);
-	result = l1 <= l2 ? c1 : c2;
-	return true;
+	int l1 = std::abs(TransitionsBetween(image, topLeft, c1).transitions -
+					  TransitionsBetween(image, bottomRight, c1).transitions);
+	int l2 = std::abs(TransitionsBetween(image, topLeft, c2).transitions -
+					  TransitionsBetween(image, bottomRight, c2).transitions);
+	return l1 <= l2 ? c1 : c2;
 }
 
-static DecodeStatus
-SampleGrid(const BitMatrix& image, const ResultPoint& topLeft, const ResultPoint& bottomLeft, const ResultPoint& bottomRight, const ResultPoint& topRight, int dimensionX, int dimensionY, BitMatrix& result)
+static DecodeStatus SampleGrid(const BitMatrix& image, const ResultPoint& topLeft, const ResultPoint& bottomLeft,
+							   const ResultPoint& bottomRight, const ResultPoint& topRight, int dimensionX,
+							   int dimensionY, BitMatrix& result)
 {
 	return GridSampler::Instance()->sampleGrid(
 		image,
@@ -213,7 +218,7 @@ static float CrossProductZ(const ResultPoint& a, const ResultPoint& b, const Res
 *
 * @param patterns array of three {@code ResultPoint} to order
 */
-void OrderByBestPatterns(const ResultPoint*& p0, const ResultPoint*& p1, const ResultPoint*& p2)
+static void OrderByBestPatterns(const ResultPoint*& p0, const ResultPoint*& p1, const ResultPoint*& p2)
 {
 	// Find distances between pattern centers
 	float zeroOneDistance = ResultPoint::Distance(*p0, *p1);
@@ -271,7 +276,10 @@ Detector::Detect(const BitMatrix& image, DetectorResult& result)
 		TransitionsBetween(image, pointB, pointD),
 		TransitionsBetween(image, pointC, pointD),
 	};
-	std::sort(transitions.begin(), transitions.end(), [](const ResultPointsAndTransitions& a, const ResultPointsAndTransitions& b) { return a.transitions < b.transitions; });
+	std::sort(transitions.begin(), transitions.end(),
+			  [](const ResultPointsAndTransitions& a, const ResultPointsAndTransitions& b) {
+				  return a.transitions < b.transitions;
+			  });
 
 	// Sort by number of transitions. First two will be the two solid sides; last two
 	// will be the two alternating black/white sides
@@ -360,7 +368,8 @@ Detector::Detect(const BitMatrix& image, DetectorResult& result)
 	if (4 * dimensionTop >= 7 * dimensionRight || 4 * dimensionRight >= 7 * dimensionTop) {
 		// The matrix is rectangular
 
-		if (!CorrectTopRightRectangular(image, *bottomLeft, *bottomRight, *topLeft, *topRight, dimensionTop, dimensionRight, correctedTopRight)) {
+		if (!CorrectTopRightRectangular(image, *bottomLeft, *bottomRight, *topLeft, *topRight, dimensionTop,
+										dimensionRight, correctedTopRight)) {
 			correctedTopRight = *topRight;
 		}
 
@@ -377,7 +386,8 @@ Detector::Detect(const BitMatrix& image, DetectorResult& result)
 			dimensionRight++;
 		}
 
-		status = SampleGrid(image, *topLeft, *bottomLeft, *bottomRight, correctedTopRight, dimensionTop, dimensionRight, *bits);
+		status = SampleGrid(image, *topLeft, *bottomLeft, *bottomRight, correctedTopRight, dimensionTop, dimensionRight,
+							*bits);
 		if (StatusIsError(status)) {
 			return status;
 		}
@@ -388,18 +398,18 @@ Detector::Detect(const BitMatrix& image, DetectorResult& result)
 
 		int dimension = std::min(dimensionRight, dimensionTop);
 		// correct top right point to match the white module
-		if (!CorrectTopRight(image, *bottomLeft, *bottomRight, *topLeft, *topRight, dimension, correctedTopRight)) {
-			correctedTopRight = *topRight;
-		}
+		correctedTopRight = CorrectTopRight(image, *bottomLeft, *bottomRight, *topLeft, *topRight, dimension);
 
 		// Redetermine the dimension using the corrected top right point
-		int dimensionCorrected = std::max(TransitionsBetween(image, *topLeft, correctedTopRight).transitions, TransitionsBetween(image, *bottomRight, correctedTopRight).transitions);
+		int dimensionCorrected = std::max(TransitionsBetween(image, *topLeft, correctedTopRight).transitions,
+		                                  TransitionsBetween(image, *bottomRight, correctedTopRight).transitions);
 		dimensionCorrected++;
 		if ((dimensionCorrected & 0x01) == 1) {
 			dimensionCorrected++;
 		}
 
-		status = SampleGrid(image, *topLeft, *bottomLeft, *bottomRight, correctedTopRight, dimensionCorrected, dimensionCorrected, *bits);
+		status = SampleGrid(image, *topLeft, *bottomLeft, *bottomRight, correctedTopRight, dimensionCorrected,
+							dimensionCorrected, *bits);
 		if (StatusIsError(status)) {
 			return status;
 		}
