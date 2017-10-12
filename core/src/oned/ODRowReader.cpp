@@ -21,6 +21,7 @@
 
 #include <cmath>
 #include <algorithm>
+#include <numeric>
 
 namespace ZXing {
 namespace OneD {
@@ -38,12 +39,8 @@ namespace OneD {
 float
 RowReader::PatternMatchVariance(const int *counters, const int* pattern, size_t length, float maxIndividualVariance)
 {
-	int total = 0;
-	int patternLength = 0;
-	for (size_t i = 0; i < length; i++) {
-		total += counters[i];
-		patternLength += pattern[i];
-	}
+	int total = std::accumulate(counters, counters+length, 0);
+	int patternLength = std::accumulate(pattern, pattern+length, 0);
 	if (total < patternLength) {
 		// If we don't even have one pixel per unit of bar width, assume this is too small
 		// to reliably match, so fail:

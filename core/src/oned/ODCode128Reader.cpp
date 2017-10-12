@@ -57,7 +57,7 @@ FindStartPattern(const BitArray& row, int* startCode)
 	assert(startCode != nullptr);
 
 	using Counters = std::vector<int>;
-	Counters counters(Code128::CODE_PATTERNS[0].size());
+	Counters counters(Code128::CODE_PATTERNS[CODE_START_A].size());
 
 	return RowReader::FindPattern(
 	    row.getNextSet(row.begin()), row.end(), counters,
@@ -76,14 +76,14 @@ FindStartPattern(const BitArray& row, int* startCode)
 	    });
 }
 
-static bool DecodeCode(std::vector<int>& counters, int* outCode)
+static bool DecodeCode(const std::vector<int>& counters, int* outCode)
 {
 	assert(outCode != nullptr);
 
 	float bestVariance = MAX_AVG_VARIANCE; // worst variance we'll accept
 	int bestMatch = -1;
 	for (size_t d = 0; d < Code128::CODE_PATTERNS.size(); d++) {
-		auto& pattern = Code128::CODE_PATTERNS[d];
+		const auto& pattern = Code128::CODE_PATTERNS[d];
 		float variance = RowReader::PatternMatchVariance(counters, pattern, MAX_INDIVIDUAL_VARIANCE);
 		if (variance < bestVariance) {
 			bestVariance = variance;
