@@ -37,7 +37,7 @@ public:
 
 protected:
 	BarcodeFormat expectedFormat() const override;
-	DecodeStatus decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const override;
+	BitArray::Range decodeMiddle(const BitArray& row, BitArray::Iterator begin, std::string& resultString) const override;
 
 private:
 	EAN13Reader _reader;

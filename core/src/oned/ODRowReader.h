@@ -127,14 +127,6 @@ public:
 			return range;
 	}
 
-	// deprecated wrapper
-	template <typename Container>
-	static DecodeStatus RecordPattern(const BitArray& row, int start, Container& counters) {
-		const auto range = RecordPattern(row.iterAt(start), row.end(), counters);
-		return range ? DecodeStatus::NoError : DecodeStatus::NotFound;
-	}
-
-
 	template <typename Iterator, typename Container>
 	static Range<Iterator> RecordPatternInReverse(Iterator begin, Iterator end, Container& counters) {
 		std::reverse_iterator<Iterator> rbegin(end), rend(begin);
@@ -157,6 +149,35 @@ public:
 	static float PatternMatchVariance(const Container& counters, const Container& pattern, float maxIndividualVariance) {
 		assert(counters.size() <= pattern.size()); //TODO: this should test for equality, see ODCode128Reader.cpp:93
 		return PatternMatchVariance(counters.data(), pattern.data(), counters.size(), maxIndividualVariance);
+	}
+
+	/**
+	* Attempts to decode a sequence of black/white lines into single
+	* digit.
+	*
+	* @param counters the counts of runs of observed black/white/black/... values
+	* @param patterns the list of patterns to compare the contens of counters to
+	* @param requireUnambiguousMatch the 'best match' must be better than all other matches
+	* @return The decoded digit index, -1 if no pattern matched
+	*/
+	template <typename Patterns, typename Counters>
+	static int DecodeDigit(const Counters& counters, const Patterns& patterns, float maxAvgVariance,
+						   float maxIndividualVariance, bool requireUnambiguousMatch = true)
+	{
+		float bestVariance = maxAvgVariance; // worst variance we'll accept
+		constexpr int INVALID_MATCH = -1;
+		int bestMatch = INVALID_MATCH;
+		for (size_t i = 0; i < patterns.size(); i++) {
+			float variance = PatternMatchVariance(counters, patterns[i], maxIndividualVariance);
+			if (variance < bestVariance) {
+				bestVariance = variance;
+				bestMatch = static_cast<int>(i);
+			} else if (requireUnambiguousMatch && variance == bestVariance) {
+				// if we find a second 'best match' with the same variance, we can not reliably report to have a suitable match
+				bestMatch = INVALID_MATCH;
+			}
+		}
+		return bestMatch;
 	}
 
 protected:

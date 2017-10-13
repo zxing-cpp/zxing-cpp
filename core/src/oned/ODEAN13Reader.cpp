@@ -64,22 +64,17 @@ EAN13Reader::expectedFormat() const
 	return BarcodeFormat::EAN_13;
 }
 
-DecodeStatus
-EAN13Reader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const
+BitArray::Range EAN13Reader::decodeMiddle(const BitArray& row, BitArray::Iterator begin, std::string& resultString) const
 {
-	Digit counters = {};
-	int end = row.size();
-	DecodeStatus status;
 	int lgPatternFound = 0;
+	BitArray::Range next = {begin, row.end()};
+	const BitArray::Range notFound = {begin, begin};
 
-	for (int x = 0; x < 6 && rowOffset < end; x++) {
-		int bestMatch = 0;
-		status = DecodeDigit(row, rowOffset, UPCEANCommon::L_AND_G_PATTERNS, counters, bestMatch);
-		if (StatusIsError(status)) {
-			return status;
-		}
-		resultString.push_back((char)('0' + bestMatch % 10));
-		rowOffset = Accumulate(counters, rowOffset);
+	for (int x = 0; x < 6 && next; x++) {
+		int bestMatch = DecodeDigit(&next, UPCEANCommon::L_AND_G_PATTERNS, &resultString);
+		if (bestMatch == -1)
+			return notFound;
+
 		if (bestMatch >= 10) {
 			lgPatternFound |= 1 << (5 - x);
 		}
@@ -92,24 +87,19 @@ EAN13Reader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resu
 	*/
 	auto index = Find(FIRST_DIGIT_ENCODINGS, lgPatternFound) - std::begin(FIRST_DIGIT_ENCODINGS);
 	if( index == Length(FIRST_DIGIT_ENCODINGS) )
-		return DecodeStatus::NotFound;
+		return notFound;
 	resultString.insert(0, 1, (char)('0' + index));
 
-	auto middleRange = FindGuardPattern(row, row.iterAt(rowOffset), true, UPCEANCommon::MIDDLE_PATTERN);
+	auto middleRange = FindGuardPattern(row, next.begin, true, UPCEANCommon::MIDDLE_PATTERN);
 	if (!middleRange)
-		return DecodeStatus::NotFound;
+		return notFound;
+	next.begin = middleRange.end;
 
-	rowOffset = middleRange.end - row.begin();
-	for (int x = 0; x < 6 && rowOffset < end; x++) {
-		int bestMatch = 0;
-		status = DecodeDigit(row, rowOffset, UPCEANCommon::L_PATTERNS, counters, bestMatch);
-		if (StatusIsError(status)) {
-			return status;
-		}
-		resultString.push_back((char)('0' + bestMatch));
-		rowOffset = Accumulate(counters, rowOffset);
+	for (int x = 0; x < 6 && next; x++) {
+		if (DecodeDigit(&next, UPCEANCommon::L_PATTERNS, &resultString) == -1)
+			return notFound;
 	}
-	return DecodeStatus::NoError;
+	return {begin, next.begin};
 }
 
 } // OneD

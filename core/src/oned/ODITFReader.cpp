@@ -78,39 +78,6 @@ static const std::array<std::array<int, 5>, 20> PATTERNS = {
 };
 
 /**
-* Attempts to decode a sequence of ITF black/white lines into single
-* digit.
-*
-* @param counters the counts of runs of observed black/white/black/... values
-* @return The decoded digit
-* @throws NotFoundException if digit cannot be decoded
-*/
-static bool DecodeDigit(const std::array<int, 5>& counters, int* outCode)
-{
-	assert(outCode != nullptr);
-
-	float bestVariance = MAX_AVG_VARIANCE; // worst variance we'll accept
-	constexpr int INVALID_MATCH = -1;
-	int bestMatch = INVALID_MATCH;
-	for (size_t i = 0; i < PATTERNS.size(); i++) {
-		auto& pattern = PATTERNS[i];
-		float variance = RowReader::PatternMatchVariance(counters, pattern, MAX_INDIVIDUAL_VARIANCE);
-		if (variance < bestVariance) {
-			bestVariance = variance;
-			bestMatch = static_cast<int>(i);
-		} else if (variance == bestVariance) {
-			// if we find a second 'best match' with the same variance, we can not reliably report to have a suitable match
-			bestMatch = INVALID_MATCH;
-		}
-	}
-	if (bestMatch != INVALID_MATCH) {
-		*outCode = bestMatch % 10;
-		return true;
-	}
-	return false;
-}
-
-/**
 * @param row          row of black/white values to search
 * @param payloadStart offset of start pattern
 * @param resultString {@link StringBuilder} to append decoded chars to
@@ -143,16 +110,17 @@ static std::string DecodeMiddle(BitArray::Iterator begin, BitArray::Iterator end
 			counterWhite[k] = counterDigitPair[twoK + 1];
 		}
 
-		int bestMatch = 0;
-		if (!DecodeDigit(counterBlack, &bestMatch))
+		int bestMatch = RowReader::DecodeDigit(counterBlack, PATTERNS, MAX_AVG_VARIANCE, MAX_INDIVIDUAL_VARIANCE);
+		if (bestMatch == -1)
 			return {};
 
-		resultString.push_back((char)('0' + bestMatch));
+		resultString.push_back((char)('0' + bestMatch % 10));
 
-		if (!DecodeDigit(counterWhite, &bestMatch))
+		bestMatch = RowReader::DecodeDigit(counterWhite, PATTERNS, MAX_AVG_VARIANCE, MAX_INDIVIDUAL_VARIANCE);
+		if (bestMatch == -1)
 			return {};
 
-		resultString.push_back((char)('0' + bestMatch));
+		resultString.push_back((char)('0' + bestMatch % 10));
 
 		begin = range.end;
 	}

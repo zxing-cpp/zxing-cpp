@@ -50,10 +50,10 @@ UPCAReader::expectedFormat() const
 	return BarcodeFormat::UPC_A;
 }
 
-DecodeStatus
-UPCAReader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const
+BitArray::Range
+UPCAReader::decodeMiddle(const BitArray& row, BitArray::Iterator begin, std::string& resultString) const
 {
-	return _reader.decodeMiddle(row, rowOffset, resultString);
+	return _reader.decodeMiddle(row, begin, resultString);
 }
 
 } // OneD

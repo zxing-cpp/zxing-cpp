@@ -31,12 +31,6 @@ namespace ZXing {
 
 namespace OneD {
 
-// These two values are critical for determining how permissive the decoding will be.
-// We've arrived at these values through a lot of trial and error. Setting them any higher
-// lets false positives creep in quickly.
-static const float MAX_AVG_VARIANCE = 0.48f;
-static const float MAX_INDIVIDUAL_VARIANCE = 0.7f;
-
 UPCEANReader::UPCEANReader(const DecodeHints& hints) :
 	_allowedExtensions(hints.allowedEanExtensions())
 {
@@ -114,17 +108,16 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, BitArray::Range star
 
 	std::string result;
 	result.reserve(20);
-	int endStart = startGuard.end - row.begin();
-	auto status = decodeMiddle(row, endStart, result);
-	if (StatusIsError(status))
-		return Result(status);
+	auto range = decodeMiddle(row, startGuard.end, result);
+	if (!range)
+		return Result(DecodeStatus::NotFound);
 
 	/*if (pointCallback != nullptr) {
 		pointCallback(static_cast<float>(endStart), static_cast<float>(rowNumber));
 	}*/
 
-	auto endRange = decodeEnd(row, row.iterAt(endStart));
-	if (!endRange)
+	auto stopGuard = decodeEnd(row, range.end);
+	if (!stopGuard)
 		return Result(DecodeStatus::NotFound);
 
 	/*if (pointCallback != nullptr) {
@@ -133,8 +126,8 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, BitArray::Range star
 
 	// Make sure there is a quiet zone at least as big as the end pattern after the barcode. The
 	// spec might want more whitespace, but in practice this is the maximum we can count on.
-	int end = endRange.end - row.begin();
-	int quietEnd = end + endRange.size();
+	int end = stopGuard.end - row.begin();
+	int quietEnd = end + stopGuard.size();
 	if (quietEnd >= row.size() || !row.isRange(end, quietEnd, false)) {
 		return Result(DecodeStatus::NotFound);
 	}
@@ -143,18 +136,18 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, BitArray::Range star
 	if (result.length() < 8) {
 		return Result(DecodeStatus::FormatError);
 	}
-	status = checkChecksum(result);
+	auto status = checkChecksum(result);
 	if (StatusIsError(status))
 		return Result(status);
 
 	float left = (startGuard.begin - row.begin()) + 0.5f * startGuard.size();
-	float right = (endRange.begin - row.begin()) + 0.5f * endRange.size();
+	float right = (stopGuard.begin - row.begin()) + 0.5f * stopGuard.size();
 	BarcodeFormat format = expectedFormat();
 	float ypos = static_cast<float>(rowNumber);
 
 	Result decodeResult(TextDecoder::FromLatin1(result), ByteArray(), { ResultPoint(left, ypos), ResultPoint(right, ypos) }, format);
 	int extensionLength = 0;
-	Result extensionResult = UPCEANExtensionSupport::DecodeRow(rowNumber, row, endRange.end - row.begin());
+	Result extensionResult = UPCEANExtensionSupport::DecodeRow(rowNumber, row, stopGuard.end - row.begin());
 	if (extensionResult.isValid())
 	{
 		decodeResult.metadata().put(ResultMetadata::UPC_EAN_EXTENSION, extensionResult.text());
@@ -210,43 +203,6 @@ UPCEANReader::checkChecksum(const std::string& s) const
 		sum += digit;
 	}
 	return sum % 10 == 0 ? DecodeStatus::NoError : DecodeStatus::ChecksumError;
-}
-
-/**
-* Attempts to decode a single UPC/EAN-encoded digit.
-*
-* @param row row of black/white values to decode
-* @param counters the counts of runs of observed black/white/black/... values
-* @param rowOffset horizontal offset to start decoding from
-* @param patterns the set of patterns to use to decode -- sometimes different encodings
-* for the digits 0-9 are used, and this indicates the encodings for 0 to 9 that should
-* be used
-* @return horizontal offset of first pixel beyond the decoded digit
-* @throws NotFoundException if digit cannot be decoded
-*/
-DecodeStatus
-UPCEANReader::DecodeDigit(const BitArray& row, int rowOffset, const Digit* patterns, size_t patternCount, Digit& counters, int &resultOffset)
-{
-	DecodeStatus status = RowReader::RecordPattern(row, rowOffset, counters);
-	if (StatusIsOK(status)) {
-		float bestVariance = MAX_AVG_VARIANCE; // worst variance we'll accept
-		int bestMatch = -1;
-		for (size_t i = 0; i < patternCount; i++) {
-			auto& pattern = patterns[i];
-			float variance = PatternMatchVariance(counters, pattern, MAX_INDIVIDUAL_VARIANCE);
-			if (variance < bestVariance) {
-				bestVariance = variance;
-				bestMatch = static_cast<int>(i);
-			}
-		}
-		if (bestMatch >= 0) {
-			resultOffset = bestMatch;
-		}
-		else {
-			status = DecodeStatus::NotFound;
-		}
-	}
-	return status;
 }
 
 } // OneD
