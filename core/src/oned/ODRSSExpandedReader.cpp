@@ -170,21 +170,6 @@ ParseFoundFinderPattern(const BitArray& row, int rowNumber, bool oddPattern, Bit
 	return {value, start, end, {ResultPoint(start, rowNumber), ResultPoint(end, rowNumber)}};
 }
 
-static int
-GetNextSecondBar(const BitArray& row, int initialPos)
-{
-	int currentPos;
-	if (row.get(initialPos)) {
-		currentPos = row.getNextUnset(initialPos);
-		currentPos = row.getNextSet(currentPos);
-	}
-	else {
-		currentPos = row.getNextSet(initialPos);
-		currentPos = row.getNextUnset(currentPos);
-	}
-	return currentPos;
-}
-
 static bool
 IsNotA1left(FinderPattern pattern, bool isOddPattern, bool leftChar)
 {
@@ -412,7 +397,10 @@ RetrieveNextPair(const BitArray& row, const std::list<ExpandedPair>& previousPai
 
 		pattern = ParseFoundFinderPattern(row, rowNumber, isOddPattern, range, counters);
 		if (!pattern.isValid()) {
-			forcedOffset = GetNextSecondBar(row, range.begin - row.begin());
+			// goto next bar of same color than current position
+			range.begin = row.getNextSetTo(range.begin, !*range.begin);
+			range.begin = row.getNextSetTo(range.begin, !*range.begin);
+			forcedOffset = range.begin - row.begin();
 		}
 		else {
 			keepFinding = false;
