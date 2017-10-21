@@ -151,19 +151,26 @@ public:
 	ReverseIterator rbegin() const noexcept { return ReverseIterator(end()); }
 	ReverseIterator rend() const noexcept { return ReverseIterator(begin()); }
 
-	Iterator getNextSetTo(Iterator i, bool v) const {
-		if (i._value >= _bits.end())
-			return end();
+	static Iterator getNextSetTo(Iterator begin, Iterator end, bool v) {
+		auto i = begin;
+		// reconstruct _bits.end()
+		auto bitsEnd = end._mask == 0x1 ? end._value : std::next(end._value);
+		if (i._value >= bitsEnd)
+			return end;
 		// mask off lesser bits first
-		int32_t currentBits = (v ? *i._value : ~*i._value) & ~(i._mask - 1);
+		auto currentBits = (v ? *i._value : ~*i._value) & ~(i._mask - 1);
 		while (currentBits == 0) {
-			if (++i._value == _bits.end()) {
-				return end();
+			if (++i._value == bitsEnd) {
+				return end;
 			}
 			currentBits = v ? *i._value : ~*i._value;
 		}
 		i._mask = 1 << BitHacks::NumberOfTrailingZeros(currentBits);
 		return i;
+	}
+
+	Iterator getNextSetTo(Iterator i, bool v) const {
+		return getNextSetTo(i, end(), v);
 	}
 
 	Iterator getNextSet(Iterator i) const { return getNextSetTo(i, true); }
