@@ -77,8 +77,7 @@ UPCEANReader::FindStartGuardPattern(const BitArray& row)
 			// Make sure there is a quiet zone at least as big as the start pattern before the barcode.
 			// If this check would run off the left edge of the image, do not accept this barcode,
 			// as it is very likely to be a false positive.
-			int quietZoneWidth = end - begin;
-			return begin - row.begin() >= quietZoneWidth && row.hasQuiteZone(begin, -quietZoneWidth);
+			return row.hasQuiteZone(begin, -(end - begin), false);
 		});
 }
 
@@ -126,11 +125,8 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, BitArray::Range star
 
 	// Make sure there is a quiet zone at least as big as the end pattern after the barcode. The
 	// spec might want more whitespace, but in practice this is the maximum we can count on.
-	int end = stopGuard.end - row.begin();
-	int quietEnd = end + stopGuard.size();
-	if (quietEnd >= row.size() || !row.isRange(end, quietEnd, false)) {
+	if (!row.hasQuiteZone(stopGuard.end, stopGuard.size(), false))
 		return Result(DecodeStatus::NotFound);
-	}
 
 	// UPC/EAN should never be less than 8 chars anyway
 	if (result.length() < 8) {

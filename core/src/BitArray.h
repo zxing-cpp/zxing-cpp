@@ -238,17 +238,23 @@ public:
 	bool isRange(int start, int end, bool value) const;
 
 	// Little helper method to make common isRange use case more readable.
-	// Pass positive zone size to look for quite zone after i and negative for zone in front of i
-	bool hasQuiteZone(Iterator i, int signedZoneSize, bool value = false) const {
+	// Pass positive zone size to look for quite zone after i and negative for zone in front of i.
+	// Set allowClippedZone to false if clipping the zone at the image border is not acceptable.
+	bool hasQuiteZone(Iterator i, int signedZoneSize, bool allowClippedZone = true) const {
 		int index = i - begin();
-		if (signedZoneSize > 0)
-			return isRange(index, std::min(size(), index + signedZoneSize), value);
-		else
-			return isRange(std::max(0, index + signedZoneSize), index, value);
+		if (signedZoneSize > 0) {
+			if (!allowClippedZone && index + signedZoneSize >= size())
+				return false;
+			return isRange(index, std::min(size(), index + signedZoneSize), false);
+		} else {
+			if (!allowClippedZone && index + signedZoneSize < 0)
+				return false;
+			return isRange(std::max(0, index + signedZoneSize), index, false);
+		}
 	}
 
-	bool hasQuiteZone(ReverseIterator i, int signedZoneSize, bool value = false) const {
-		return hasQuiteZone(i.base(), -signedZoneSize, value);
+	bool hasQuiteZone(ReverseIterator i, int signedZoneSize, bool allowClippedZone = true) const {
+		return hasQuiteZone(i.base(), -signedZoneSize, allowClippedZone);
 	}
 
 	/**
