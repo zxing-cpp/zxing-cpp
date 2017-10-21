@@ -52,10 +52,8 @@ UPCEANReader::FindGuardPattern(const BitArray& row, BitArray::Iterator begin, bo
 	using Counters = std::vector<int>;
 	Counters counters(length, 0);
 
-	begin = whiteFirst ? row.getNextUnset(begin) : row.getNextSet(begin);
-
 	return RowReader::FindPattern(
-		begin, row.end(), counters,
+		row.getNextSetTo(begin, !whiteFirst), row.end(), counters,
 		[&pattern, &length](BitArray::Iterator begin, BitArray::Iterator end, Counters& counters) {
 			return RowReader::PatternMatchVariance(counters.data(), pattern, length, MAX_INDIVIDUAL_VARIANCE) < MAX_AVG_VARIANCE;
 		});
