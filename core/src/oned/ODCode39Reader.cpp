@@ -234,14 +234,10 @@ Code39Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 
 	result.pop_back(); // remove asterisk
 
-	// Look for whitespace after pattern:
-	auto nextStart = row.getNextSet(range.end);
-	int whiteSpaceAfterEnd = nextStart - range.begin;
 	// If 50% of last pattern size, following last pattern, is not whitespace, fail
 	// (but if it's whitespace to the very end of the image, that's OK)
-	if (nextStart != row.end() && (whiteSpaceAfterEnd * 2) < range.size()) {
+	if (!row.hasQuiteZone(range.end, range.size()/2))
 		return Result(DecodeStatus::NotFound);
-	}
 
 	if (_usingCheckDigit) {
 		int max = static_cast<int>(result.length()) - 1;
