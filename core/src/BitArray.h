@@ -67,9 +67,9 @@ public:
 
 		int operator-(const Iterator& rhs) const
 		{
-			int32_t maskDiff = _mask - rhs._mask;
-			return static_cast<int>(_value - rhs._value) * 32 +
-			       (maskDiff >= 0 ? BitHacks::CountBitsSet(maskDiff) : -BitHacks::CountBitsSet(-maskDiff));
+			return static_cast<int>(_value - rhs._value) * 32 + (_mask >= rhs._mask
+																	 ? +BitHacks::CountBitsSet(_mask - rhs._mask)
+																	 : -BitHacks::CountBitsSet(rhs._mask - _mask));
 		}
 
 		bool operator==(const Iterator& rhs) const { return _mask == rhs._mask && _value == rhs._value; }
