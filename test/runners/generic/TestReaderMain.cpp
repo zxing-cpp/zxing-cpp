@@ -299,16 +299,17 @@ int main(int argc, char** argv)
 	if (pathPrefix.extension() == ".png" || pathPrefix.extension() == ".jpg" || pathPrefix.extension() == ".pgm") {
 #if 0
 		TestReader reader(false, false, "QR_CODE");
-		for (int i = 1; i < argc; ++i) {
-			auto result = reader.read(argv[i], 0);
-			if (argc == 2)
-				std::cout << result.format << ": " << result.text << "\n";
-			else if (!result)
-				std::cout << argv[i] << "\n";
-		}
 #else
 		TestReader reader(true, true);
 #endif
+		for (int i = 1; i < argc; ++i) {
+			auto result = reader.read(argv[i], 0);
+			std::cout << argv[i] << ": ";
+			if (result)
+				std::cout << result.format << ": " << result.text << "\n";
+			else
+				std::cout << "FAILED\n";
+		}
 		return 0;
 	}
 
