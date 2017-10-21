@@ -23,48 +23,6 @@
 
 namespace ZXing {
 
-int
-BitArray::getNextSet(int from) const
-{
-	if (from >= _size) {
-		return _size;
-	}
-	int bitsOffset = from / 32;
-	int32_t currentBits = _bits[bitsOffset];
-	
-	// mask off lesser bits first
-	currentBits &= ~((1 << (from & 0x1F)) - 1);
-	while (currentBits == 0) {
-		if (++bitsOffset == (int)_bits.size()) {
-			return _size;
-		}
-		currentBits = _bits[bitsOffset];
-	}
-	int result = (bitsOffset * 32) + BitHacks::NumberOfTrailingZeros(currentBits);
-	return result > _size ? _size : result;
-}
-
-int
-BitArray::getNextUnset(int from) const
-{
-	if (from >= _size) {
-		return _size;
-	}
-	int bitsOffset = from / 32;
-	int32_t currentBits = ~_bits[bitsOffset];
-	
-	// mask off lesser bits first
-	currentBits &= ~((1 << (from & 0x1F)) - 1);
-	while (currentBits == 0) {
-		if (++bitsOffset == (int)_bits.size()) {
-			return _size;
-		}
-		currentBits = ~_bits[bitsOffset];
-	}
-	int result = (bitsOffset * 32) + BitHacks::NumberOfTrailingZeros(currentBits);
-	return result > _size ? _size : result;
-}
-
 void
 BitArray::setRange(int start, int end)
 {

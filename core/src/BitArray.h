@@ -199,14 +199,18 @@ public:
 	*  at or beyond this given index
 	* @see #getNextUnset(int)
 	*/
-	int getNextSet(int from) const;
+	int getNextSet(int from) const {
+		return getNextSet(iterAt(from)) - begin();
+	}
 
 	/**
 	* @param from index to start looking for unset bit
 	* @return index of next unset bit, or {@code size} if none are unset until the end
 	* @see #getNextSet(int)
 	*/
-	int getNextUnset(int from) const;
+	int getNextUnset(int from) const {
+		return getNextUnset(iterAt(from)) - begin();
+	}
 
 
 	void getSubArray(int offset, int length, BitArray& result) const;
