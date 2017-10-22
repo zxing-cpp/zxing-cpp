@@ -655,6 +655,39 @@ class EdgeTracer
 
 	enum class StepResult { FOUND, OPEN_END, CLOSED_END };
 
+	bool isIn(PointI p) const
+	{
+		const int b = 0;
+		return  b <= p.x && p.x < image.width()-b &&
+		        b <= p.y && p.y < image.height()-b;
+	}
+	bool isIn(PointF p) const { return isIn(round(p)); }
+	bool isIn() const { return isIn(p); }
+
+	class Value
+	{
+		enum { INVALID, WHITE, BLACK };
+		int v = INVALID;
+	public:
+		Value() = default;
+		Value(bool isBlack) : v(isBlack ? BLACK : WHITE) {}
+		bool isValid() const { return v != INVALID; }
+		bool isWhite() const { return v == WHITE; }
+		bool isBlack() const { return v == BLACK; }
+	};
+
+	Value getAt(PointF p) const
+	{
+		if (!isIn(p))
+			return {};
+		auto q = round(p);
+		return {image.get(q.x, q.y)};
+	}
+
+	bool blackAt(PointF p) const { return getAt(p).isBlack(); }
+	bool whiteAt(PointF p) const { return getAt(p).isWhite(); }
+	bool isEdge(PointF pos, PointF dir) const { return whiteAt(pos) && blackAt(pos + dir); }
+
 	StepResult traceStep(PointF dEdge, int maxStepSize, bool goodDirection)
 	{
 		dEdge = mainDirection(dEdge);
@@ -663,24 +696,23 @@ class EdgeTracer
 				for (int i = 0; i <= 2*(step/4+1) * breadth; ++i) {
 					auto pEdge = p + step * d + (i&1 ? (i+1)/2 : -i/2) * dEdge;
 					log(pEdge);
-					try {
-						if (whiteAt(pEdge + dEdge))
-							continue;
 
-						// found black pixel -> go 'outward' until we hit the b/w border
-						for (int j = 0; j < std::max(maxStepSize, 3); ++j) {
-							if (whiteAt(pEdge)) {
-								p = PointF(round(pEdge));
-								return StepResult::FOUND;
-							}
-							pEdge = pEdge - dEdge;
-							if (blackAt(pEdge - d))
-								pEdge = pEdge - d;
-							log(pEdge);
+					if (!blackAt(pEdge + dEdge))
+						continue;
+
+					// found black pixel -> go 'outward' until we hit the b/w border
+					for (int j = 0; j < std::max(maxStepSize, 3) && isIn(pEdge); ++j) {
+						if (whiteAt(pEdge)) {
+							p = PointF(round(pEdge));
+							return StepResult::FOUND;
 						}
-						// no valid b/w border found within reasonable range
-						return StepResult::CLOSED_END;
-					} catch (std::out_of_range) {}
+						pEdge = pEdge - dEdge;
+						if (blackAt(pEdge - d))
+							pEdge = pEdge - d;
+						log(pEdge);
+					}
+					// no valid b/w border found within reasonable range
+					return StepResult::CLOSED_END;
 				}
 		return StepResult::OPEN_END;
 	}
@@ -742,25 +774,6 @@ public:
 	PointF right() const { return {-d.y, d.x}; }
 	PointF left() const { return {d.y, -d.x}; }
 
-	bool isIn(PointI p) const
-	{
-		const int b = 0;
-		return  b <= p.x && p.x < image.width()-b &&
-		        b <= p.y && p.y < image.height()-b;
-	}
-	bool isIn(PointF p) const { return isIn(round(p)); }
-	bool isIn() const { return isIn(p); }
-
-	bool blackAt(PointF p) const
-	{
-		if (!isIn(p))
-			throw std::out_of_range("BitMatrix out of bounds access");
-		auto q = round(p);
-		return image.get(q.x, q.y);
-	}
-
-	bool whiteAt(PointF p) const { return !blackAt(p); }
-	bool isEdge(PointF pos, PointF dir) const { return whiteAt(pos) && blackAt(pos + dir); }
 	bool isEdgeBehind() const { return isEdge(p, back()); }
 
 	bool traceLine(PointF dEdge, RegressionLine& line)
@@ -922,7 +935,7 @@ static DecodeStatus DetectNew(const BitMatrix& image, bool tryRotate, DetectorRe
 	// walk to the left at first
 	for (auto startDirection : {PointF(-1, 0), PointF(1, 0), PointF(0, -1), PointF(0, 1)}) {
 		EdgeTracer startTracer(image, PointF(image.width()/2, image.height()/2), startDirection);
-		while (startTracer.step()) try {
+		while (startTracer.step()) {
 			// go forward until we reach a white/black border
 			if (!startTracer.isEdgeBehind())
 				continue;
@@ -1059,9 +1072,8 @@ static DecodeStatus DetectNew(const BitMatrix& image, bool tryRotate, DetectorRe
 			result.setPoints({tl, bl, br, tr});
 
 			return DecodeStatus::NoError;
-		} catch(...) {
-			// reached border of image -> try next scan direction
 		}
+		// reached border of image -> try next scan direction
 #ifndef PRINT_DEBUG
 		if (!tryRotate)
 #endif
