@@ -495,7 +495,7 @@ static void GetMatrixCornerPoints(std::array<ResultPoint, 4>& bullsEyeCorners, b
 * topLeft, topRight, bottomRight, and bottomLeft are the centers of the squares on the
 * diagonal just outside the bull's eye.
 */
-static DecodeStatus SampleGrid(const BitMatrix& image, const ResultPoint& topLeft, const ResultPoint& topRight, const ResultPoint& bottomRight, const ResultPoint& bottomLeft, bool compact, int nbLayers, int nbCenterLayers, BitMatrix& result)
+static BitMatrix SampleGrid(const BitMatrix& image, const ResultPoint& topLeft, const ResultPoint& topRight, const ResultPoint& bottomRight, const ResultPoint& bottomLeft, bool compact, int nbLayers, int nbCenterLayers)
 {
 	int dimension = GetDimension(compact, nbLayers);
 
@@ -512,8 +512,7 @@ static DecodeStatus SampleGrid(const BitMatrix& image, const ResultPoint& topLef
 		topLeft.x(), topLeft.y(),
 		topRight.x(), topRight.y(),
 		bottomRight.x(), bottomRight.y(),
-		bottomLeft.x(), bottomLeft.y(),
-		result);
+		bottomLeft.x(), bottomLeft.y());
 }
 
 
@@ -545,16 +544,14 @@ Detector::Detect(const BitMatrix& image, bool isMirror, DetectorResult& result)
 	}
 
 	// 4. Sample the grid
-	auto bits = std::make_shared<BitMatrix>();
-	auto status = SampleGrid(image, bullsEyeCorners[shift % 4], bullsEyeCorners[(shift + 1) % 4], bullsEyeCorners[(shift + 2) % 4], bullsEyeCorners[(shift + 3) % 4], compact, nbLayers, nbCenterLayers, *bits);
-	if (StatusIsError(status)) {
-		return status;
-	}
+	auto bits = SampleGrid(image, bullsEyeCorners[shift % 4], bullsEyeCorners[(shift + 1) % 4], bullsEyeCorners[(shift + 2) % 4], bullsEyeCorners[(shift + 3) % 4], compact, nbLayers, nbCenterLayers);
+	if (bits.empty())
+		return DecodeStatus::NotFound;
 
 	// 5. Get the corners of the matrix.
 	GetMatrixCornerPoints(bullsEyeCorners, compact, nbLayers, nbCenterLayers);
 
-	result.setBits(bits);
+	result.setBits(std::make_shared<BitMatrix>(std::move(bits)));
 	result.setPoints({ bullsEyeCorners.begin(), bullsEyeCorners.end() });
 	result.setCompact(compact);
 	result.setNbDatablocks(nbDataBlocks);

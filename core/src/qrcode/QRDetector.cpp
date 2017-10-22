@@ -319,17 +319,15 @@ static DecodeStatus ProcessFinderPatternInfo(const BitMatrix& image, const Finde
 
 	PerspectiveTransform transform = CreateTransform(info.topLeft, info.topRight, info.bottomLeft, haveAlignPattern ? &alignmentPattern : nullptr, dimension);
 
-	auto bits = std::make_shared<BitMatrix>();
-	auto status = GridSampler::Instance()->sampleGrid(image, dimension, dimension, transform, *bits);
-	if (StatusIsError(status))
-		return status;
+	auto bits = GridSampler::Instance()->sampleGrid(image, dimension, dimension, transform);
+	if (bits.empty())
+		return DecodeStatus::NotFound;
 
+	result.setBits(std::make_shared<BitMatrix>(std::move(bits)));
 	if (!haveAlignPattern) {
-		result.setBits(bits);
 		result.setPoints({ info.bottomLeft, info.topLeft, info.topRight });
 	}
 	else {
-		result.setBits(bits);
 		result.setPoints({ info.bottomLeft, info.topLeft, info.topRight, alignmentPattern });
 	}
 	return DecodeStatus::NoError;
