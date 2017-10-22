@@ -39,7 +39,7 @@ namespace {
 * @param points actual points in x1,y1,...,xn,yn form
 * @throws NotFoundException if an endpoint is lies outside the image boundaries
 */
-static DecodeStatus CheckAndNudgePoints(const BitMatrix& image, std::vector<float>& points)
+static bool CheckAndNudgePoints(const BitMatrix& image, std::vector<float>& points)
 {
 	int width = image.width();
 	int height = image.height();
@@ -49,7 +49,7 @@ static DecodeStatus CheckAndNudgePoints(const BitMatrix& image, std::vector<floa
 		int x = (int)points[offset];
 		int y = (int)points[offset + 1];
 		if (x < -1 || x > width || y < -1 || y > height) {
-			return DecodeStatus::NotFound;
+			return false;
 		}
 		nudged = false;
 		if (x == -1) {
@@ -75,7 +75,7 @@ static DecodeStatus CheckAndNudgePoints(const BitMatrix& image, std::vector<floa
 		int x = (int)points[offset];
 		int y = (int)points[offset + 1];
 		if (x < -1 || x > width || y < -1 || y > height) {
-			return DecodeStatus::NotFound;
+			return false;
 		}
 		nudged = false;
 		if (x == -1) {
@@ -95,7 +95,7 @@ static DecodeStatus CheckAndNudgePoints(const BitMatrix& image, std::vector<floa
 			nudged = true;
 		}
 	}
-	return DecodeStatus::NoError;
+	return true;
 }
 
 class DefaultGridSampler : public GridSampler
@@ -131,7 +131,8 @@ public:
 			transform.transformPoints(points.data(), max);
 			// Quick check to see if points transformed to something inside the image;
 			// sufficient to check the endpoints
-			CheckAndNudgePoints(image, points);
+			if (!CheckAndNudgePoints(image, points))
+				return {};
 			try {
 				for (int x = 0; x < max; x += 2) {
 					if (image.get(static_cast<int>(points[x]), static_cast<int>(points[x + 1]))) {
