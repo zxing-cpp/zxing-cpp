@@ -19,9 +19,9 @@
 #include "datamatrix/DMDecoder.h"
 #include "datamatrix/DMDetector.h"
 #include "Result.h"
-#include "DecodeHints.h"
 #include "BitMatrix.h"
 #include "BinaryBitmap.h"
+#include "DecodeHints.h"
 #include "DecoderResult.h"
 #include "DetectorResult.h"
 
@@ -85,6 +85,10 @@ ExtractPureBits(const BitMatrix& image, BitMatrix& outBits)
 	return DecodeStatus::NoError;
 }
 
+Reader::Reader(const DecodeHints& hints) : _tryRotate(hints.shouldTryRotate()), _tryHarder(hints.shouldTryHarder())
+{
+}
+
 /**
 * Locates and decodes a Data Matrix code in an image.
 *
@@ -113,7 +117,7 @@ Reader::decode(const BinaryBitmap& image) const
 	}
 	else {
 		DetectorResult detectorResult;
-		status = Detector::Detect(*binImg, detectorResult);
+		status = Detector::Detect(*binImg, _tryHarder, _tryRotate, detectorResult);
 		if (StatusIsOK(status)) {
 			status = Decoder::Decode(*detectorResult.bits(), decoderResult);
 			points = detectorResult.points();

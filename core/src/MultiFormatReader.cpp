@@ -60,7 +60,7 @@ MultiFormatReader::MultiFormatReader(const DecodeHints& hints)
 			_readers.emplace_back(new QRCode::Reader(hints));
 		}
 		if (formats.find(BarcodeFormat::DATA_MATRIX) != formats.end()) {
-			_readers.emplace_back(new DataMatrix::Reader());
+			_readers.emplace_back(new DataMatrix::Reader(hints));
 		}
 		if (formats.find(BarcodeFormat::AZTEC) != formats.end()) {
 			_readers.emplace_back(new Aztec::Reader());
@@ -82,7 +82,7 @@ MultiFormatReader::MultiFormatReader(const DecodeHints& hints)
 			_readers.push_back(std::unique_ptr<Reader>(new OneD::Reader(hints)));
 		}
 		_readers.emplace_back(new QRCode::Reader(hints));
-		_readers.emplace_back(new DataMatrix::Reader());
+		_readers.emplace_back(new DataMatrix::Reader(hints));
 		_readers.emplace_back(new Aztec::Reader());
 		_readers.emplace_back(new Pdf417::Reader());
 		_readers.emplace_back(new MaxiCode::Reader());

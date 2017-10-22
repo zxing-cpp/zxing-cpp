@@ -19,6 +19,9 @@
 #include "Reader.h"
 
 namespace ZXing {
+
+class DecodeHints;
+
 namespace DataMatrix {
 
 /**
@@ -28,7 +31,9 @@ namespace DataMatrix {
 */
 class Reader : public ZXing::Reader
 {
+	bool _tryRotate, _tryHarder;
 public:
+	explicit Reader(const DecodeHints& hints);
 	Result decode(const BinaryBitmap& image) const override;
 };
 

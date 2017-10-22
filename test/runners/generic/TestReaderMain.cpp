@@ -64,7 +64,7 @@ static std::shared_ptr<LuminanceSource> readPNM(FILE* f)
 
 static std::shared_ptr<LuminanceSource> readImage(const fs::path& filename)
 {
-	std::string cmd = "convert " + filename.native() + " -intensity Rec601Luma -colorspace gray pgm:-";
+	std::string cmd = "convert '" + filename.native() + "' -intensity Rec601Luma -colorspace gray +set comment pgm:-";
 	bool pipe = filename.extension() != ".pgm";
 	FILE* f = pipe ? popen(cmd.c_str(), "r") : fopen(filename.c_str(), "r");
 	if (!f)
@@ -79,14 +79,21 @@ static std::shared_ptr<LuminanceSource> readImage(const fs::path& filename)
 	}
 }
 
+#if 0
+using Binarizer = GlobalHistogramBinarizer;
+#else
+using Binarizer = HybridBinarizer;
+#endif
+
 class TestReader
 {
 	std::shared_ptr<MultiFormatReader> _reader;
-	static std::map<fs::path, std::shared_ptr<HybridBinarizer>> _cache;
+	static std::map<fs::path, std::shared_ptr<Binarizer>> _cache;
 public:
 	struct Result
 	{
 		std::string format, text;
+		operator bool() { return !format.empty(); }
 	};
 
 	TestReader(bool tryHarder, bool tryRotate, std::string format = "")
@@ -105,7 +112,7 @@ public:
 	{
 		auto& binImg = _cache[filename];
 		if (!binImg)
-			binImg = std::make_shared<HybridBinarizer>(readImage(filename));
+			binImg = std::make_shared<Binarizer>(readImage(filename));
 		auto result = _reader->read(*binImg->rotated(rotation));
 		if (result.isValid()) {
 			std::string text;
@@ -118,7 +125,7 @@ public:
 	static void clearCache() { _cache.clear(); }
 };
 
-std::map<fs::path, std::shared_ptr<HybridBinarizer>> TestReader::_cache;
+std::map<fs::path, std::shared_ptr<Binarizer>> TestReader::_cache;
 
 struct TestCase
 {
@@ -295,8 +302,14 @@ int main(int argc, char** argv)
 #else
 		TestReader reader(true, true);
 #endif
-		auto result = reader.read(pathPrefix, argc >= 3 ? std::stoi(argv[2]) : 0);
-		std::cout << result.format << ": " << result.text << std::endl;
+		for (int i = 1; i < argc; ++i) {
+			auto result = reader.read(argv[i], 0);
+			std::cout << argv[i] << ": ";
+			if (result)
+				std::cout << result.format << ": " << result.text << "\n";
+			else
+				std::cout << "FAILED\n";
+		}
 		return 0;
 	}
 
@@ -345,16 +358,16 @@ int main(int argc, char** argv)
 
 		runTests("blackbox/datamatrix-1", "DATA_MATRIX", 21, {
 			{ 21, 21, 0   },
-			{ 21, 21, 90  },
-			{ 21, 21, 180 },
-			{ 21, 21, 270 },
+			{  0, 21, 90  },
+			{  0, 21, 180 },
+			{  0, 21, 270 },
 		});
 
 		runTests("blackbox/datamatrix-2", "DATA_MATRIX", 18, {
-			{ 8,  8,  0, 1, 0   },
-			{ 14, 14, 0, 1, 90  },
-			{ 14, 14, 0, 1, 180 },
-			{ 13, 13, 0, 1, 270 },
+			{ 18, 18, 0, 1, 0   },
+			{  0, 18, 0, 1, 90  },
+			{  0, 18, 0, 1, 180 },
+			{  0, 18, 0, 1, 270 },
 		});
 
 		runTests("blackbox/codabar-1", "CODABAR", 11, {

@@ -200,6 +200,10 @@ public:
 		return _rowSize;
 	}
 
+	bool empty() const {
+		return _bits.empty();
+	}
+
 	friend bool operator==(const BitMatrix& a, const BitMatrix& b)
 	{
 		return a._width == b._width && a._height == b._height && a._rowSize == b._rowSize && a._bits == b._bits;
