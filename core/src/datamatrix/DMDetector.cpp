@@ -668,7 +668,7 @@ class EdgeTracer
 							continue;
 
 						// found black pixel -> go 'outward' until we hit the b/w border
-						for (int j = 0; j < std::max(maxStepSize, 3); ++j) {
+						for (int j = 0; j < std::max(maxStepSize, 3) && isIn(pEdge); ++j) {
 							if (whiteAt(pEdge)) {
 								p = PointF(round(pEdge));
 								return StepResult::FOUND;
