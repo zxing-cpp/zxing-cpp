@@ -62,6 +62,27 @@ UPCEANReader::FindGuardPattern(const BitArray& row, BitArray::Iterator begin, bo
 BitArray::Range
 UPCEANReader::FindStartGuardPattern(const BitArray& row)
 {
+#if 0
+	// this is the way the upstream JAVA project implemented it: scan for a
+	// pattern 111 and look for a quite-zone of 3 after the fact. If there is no
+	// quite zone, then skip the whole pattern und start over. This fails to identify
+	// the valid start guard given the input: 49333... (falsepositives-2/14.png
+	// line 471)
+
+	BitArray::Range range{row.begin(), row.begin()};
+	while(range.end != row.end()) {
+		range = FindGuardPattern(row, range.end, false, UPCEANCommon::START_END_PATTERN.data(),
+								 UPCEANCommon::START_END_PATTERN.size());
+
+		// Make sure there is a quiet zone at least as big as the start pattern before the barcode.
+		// If this check would run off the left edge of the image, do not accept this barcode,
+		// as it is very likely to be a false positive.
+		if (row.hasQuiteZone(range.begin, -range.size(), false))
+			return range;
+	}
+	return {row.end(), row.end()};
+#else
+	// this is the 'right' way to do it: scan for a pattern of the form 3111, where 3 is the quitezone
 	const auto& pattern = UPCEANCommon::START_END_PATTERN;
 	using Counters = decltype(pattern);
 	auto counters = Counters{};
@@ -77,6 +98,7 @@ UPCEANReader::FindStartGuardPattern(const BitArray& row)
 			// as it is very likely to be a false positive.
 			return row.hasQuiteZone(begin, -(end - begin), false);
 		});
+#endif
 }
 
 Result

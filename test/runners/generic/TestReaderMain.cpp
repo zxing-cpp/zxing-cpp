@@ -600,10 +600,10 @@ int main(int argc, char** argv)
 		});
 
 		runFalsePositiveTests("blackbox/falsepositives-2", 25, {
-			{ 4, 0   },
-			{ 4, 90  },
-			{ 4, 180 },
-			{ 4, 270 },
+			{ 5, 0   },
+			{ 5, 90  },
+			{ 5, 180 },
+			{ 5, 270 },
 		});
 		// clang-format on
 
