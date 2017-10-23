@@ -39,6 +39,8 @@ public:
 		return _estimatedModuleSize;
 	}
 
+	bool isValid() const { return _estimatedModuleSize > 0.f; }
+
 	/**
 	* <p>Determines if this alignment pattern "about equals" an alignment pattern at the stated
 	* position and size -- meaning, it is at nearly the same center with nearly the same size.</p>

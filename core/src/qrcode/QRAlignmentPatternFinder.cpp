@@ -127,7 +127,8 @@ static float CrossCheckVertical(const BitMatrix& image, int startI, int centerJ,
 * @param j end of possible alignment pattern in row
 * @return {@link AlignmentPattern} if we have found the same pattern twice, or null if not
 */
-static bool HandlePossibleCenter(const BitMatrix& image, const StateCount& stateCount, int i, int j, float moduleSize, /*const PointCallback& pointCallback,*/ AlignmentPattern& confirm, std::vector<AlignmentPattern>& possibleCenters)
+static AlignmentPattern
+HandlePossibleCenter(const BitMatrix& image, const StateCount& stateCount, int i, int j, float moduleSize, /*const PointCallback& pointCallback,*/ std::vector<AlignmentPattern>& possibleCenters)
 {
 	int stateCountTotal = Accumulate(stateCount, 0);
 	float centerJ = CenterFromEnd(stateCount, j);
@@ -137,8 +138,7 @@ static bool HandlePossibleCenter(const BitMatrix& image, const StateCount& state
 		for (const AlignmentPattern& center : possibleCenters) {
 			// Look for about the same center and module size:
 			if (center.aboutEquals(estimatedModuleSize, centerI, centerJ)) {
-				confirm = center.combineEstimate(centerI, centerJ, estimatedModuleSize);
-				return true;
+				return center.combineEstimate(centerI, centerJ, estimatedModuleSize);
 			}
 		}
 		// Hadn't found this before; save it
@@ -148,11 +148,11 @@ static bool HandlePossibleCenter(const BitMatrix& image, const StateCount& state
 			pointCallback(p.x(), p.y());
 		}*/
 	}
-	return false;
+	return {};
 }
 
-DecodeStatus
-AlignmentPatternFinder::Find(const BitMatrix& image, int startX, int startY, int width, int height, float moduleSize, /*const PointCallback& pointCallback,*/ AlignmentPattern &result)
+AlignmentPattern
+AlignmentPatternFinder::Find(const BitMatrix& image, int startX, int startY, int width, int height, float moduleSize /*, const PointCallback& pointCallback*/)
 {
 	int maxJ = startX + width;
 	int middleI = startY + (height / 2);
@@ -182,9 +182,9 @@ AlignmentPatternFinder::Find(const BitMatrix& image, int startX, int startY, int
 				else { // Counting white pixels
 					if (currentState == 2) { // A winner?
 						if (FoundPatternCross(stateCount, moduleSize)) { // Yes
-							if (HandlePossibleCenter(image, stateCount, i, j, moduleSize, /*pointCallback,*/ result, possibleCenters)) {
-								return DecodeStatus::NoError;
-							}
+							auto result = HandlePossibleCenter(image, stateCount, i, j, moduleSize, /*pointCallback,*/ possibleCenters);
+							if (result.isValid())
+								return result;
 						}
 						stateCount[0] = stateCount[2];
 						stateCount[1] = 1;
@@ -205,9 +205,9 @@ AlignmentPatternFinder::Find(const BitMatrix& image, int startX, int startY, int
 			j++;
 		}
 		if (FoundPatternCross(stateCount, moduleSize)) {
-			if (HandlePossibleCenter(image, stateCount, i, maxJ, moduleSize, /*pointCallback,*/ result, possibleCenters)) {
-				return DecodeStatus::NoError;
-			}
+			auto result = HandlePossibleCenter(image, stateCount, i, maxJ, moduleSize, /*pointCallback,*/ possibleCenters);
+			if (result.isValid())
+				return result;
 		}
 
 	}
@@ -215,11 +215,10 @@ AlignmentPatternFinder::Find(const BitMatrix& image, int startX, int startY, int
 	// Hmm, nothing we saw was observed and confirmed twice. If we had
 	// any guess at all, return it.
 	if (!possibleCenters.empty()) {
-		result = possibleCenters.front();
-		return DecodeStatus::NoError;
+		return possibleCenters.front();
 	}
 
-	return DecodeStatus::NotFound;
+	return {};
 }
 
 } // QRCode
