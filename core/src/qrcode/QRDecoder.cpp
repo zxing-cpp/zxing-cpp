@@ -49,7 +49,7 @@ namespace QRCode {
 * @param numDataCodewords number of codewords that are data bytes
 * @throws ChecksumException if error correction fails
 */
-static DecodeStatus
+static bool
 CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
 {
 	// First read into an array of ints
@@ -57,12 +57,12 @@ CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
 
 	int numECCodewords = codewordBytes.length() - numDataCodewords;
 	if (!ReedSolomonDecoder::Decode(GenericGF::QRCodeField256(), codewordsInts, numECCodewords))
-		return DecodeStatus::ChecksumError;
+		return false;
 
 	// Copy back into array of bytes -- only need to worry about the bytes that were data
 	// We don't care about errors in the error-correction codewords
 	std::copy_n(codewordsInts.begin(), numDataCodewords, codewordBytes.begin());
-	return DecodeStatus::NoError;
+	return true;
 }
 
 
@@ -445,11 +445,10 @@ DoDecode(const BitMatrix& bits, const Version& version, const FormatInformation&
 	{
 		ByteArray& codewordBytes = dataBlock.codewords();
 		int numDataCodewords = dataBlock.numDataCodewords();
-		
-		status = CorrectErrors(codewordBytes, numDataCodewords);
-		if (StatusIsError(status)) {
-			return status;
-		}
+
+		if (!CorrectErrors(codewordBytes, numDataCodewords))
+			return DecodeStatus::ChecksumError;
+
 		resultIterator = std::copy_n(codewordBytes.begin(), numDataCodewords, resultIterator);
 	}
 
