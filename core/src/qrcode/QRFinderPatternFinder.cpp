@@ -60,7 +60,7 @@ static float CenterFromEnd(const StateCount& stateCount, int end)
 */
 static bool CrossCheckDiagonal(const BitMatrix& image, int startI, int centerJ, int maxCount, int originalStateCountTotal)
 {
-	StateCount stateCount = { 0, 0, 0, 0, 0 };
+	StateCount stateCount = {};
 
 	// Start counting up, left from center finding black center mass
 	int i = 0;
@@ -132,7 +132,7 @@ static bool CrossCheckDiagonal(const BitMatrix& image, int startI, int centerJ, 
 
 	// If we found a finder-pattern-like section, but its size is more than 100% different than
 	// the original, assume it's a false positive
-	int stateCountTotal = stateCount[0] + stateCount[1] + stateCount[2] + stateCount[3] + stateCount[4];
+	int stateCountTotal = Accumulate(stateCount, 0);
 	return std::abs(stateCountTotal - originalStateCountTotal) < 2 * originalStateCountTotal && FinderPatternFinder::FoundPatternCross(stateCount);
 }
 
@@ -149,7 +149,7 @@ static bool CrossCheckDiagonal(const BitMatrix& image, int startI, int centerJ, 
 */
 static float CrossCheckVertical(const BitMatrix& image, int startI, int centerJ, int maxCount, int originalStateCountTotal)
 {
-	StateCount stateCount = { 0, 0, 0, 0, 0 };
+	StateCount stateCount = {};
 	int maxI = image.height();
 
 	// Start counting up from center
@@ -203,7 +203,7 @@ static float CrossCheckVertical(const BitMatrix& image, int startI, int centerJ,
 
 	// If we found a finder-pattern-like section, but its size is more than 40% different than
 	// the original, assume it's a false positive
-	int stateCountTotal = stateCount[0] + stateCount[1] + stateCount[2] + stateCount[3] + stateCount[4];
+	int stateCountTotal = Accumulate(stateCount, 0);
 	if (5 * std::abs(stateCountTotal - originalStateCountTotal) >= 2 * originalStateCountTotal) {
 		return std::numeric_limits<float>::quiet_NaN();
 	}
@@ -218,7 +218,7 @@ static float CrossCheckVertical(const BitMatrix& image, int startI, int centerJ,
 */
 static float CrossCheckHorizontal(const BitMatrix& image, int startJ, int centerI, int maxCount, int originalStateCountTotal)
 {
-	StateCount stateCount = { 0, 0, 0, 0, 0 };
+	StateCount stateCount = {};
 	int maxJ = image.width();
 
 	int j = startJ;
@@ -269,7 +269,7 @@ static float CrossCheckHorizontal(const BitMatrix& image, int startJ, int center
 
 	// If we found a finder-pattern-like section, but its size is significantly different than
 	// the original, assume it's a false positive
-	int stateCountTotal = stateCount[0] + stateCount[1] + stateCount[2] + stateCount[3] + stateCount[4];
+	int stateCountTotal = Accumulate(stateCount, 0);
 	if (5 * std::abs(stateCountTotal - originalStateCountTotal) >= originalStateCountTotal) {
 		return std::numeric_limits<float>::quiet_NaN();
 	}
@@ -541,11 +541,7 @@ FinderPatternInfo FinderPatternFinder::Find(const BitMatrix& image, /*const Poin
 							}
 							// Clear state to start looking again
 							currentState = 0;
-							stateCount[0] = 0;
-							stateCount[1] = 0;
-							stateCount[2] = 0;
-							stateCount[3] = 0;
-							stateCount[4] = 0;
+							stateCount.fill(0);
 						}
 						else { // No, shift counts back by two
 							stateCount[0] = stateCount[2];
@@ -593,14 +589,7 @@ FinderPatternInfo FinderPatternFinder::Find(const BitMatrix& image, /*const Poin
 */
 bool
 FinderPatternFinder::FoundPatternCross(const StateCount& stateCount) {
-	int totalModuleSize = 0;
-	for (int i = 0; i < 5; i++) {
-		int count = stateCount[i];
-		if (count == 0) {
-			return false;
-		}
-		totalModuleSize += count;
-	}
+	int totalModuleSize = Accumulate(stateCount, 0);
 	if (totalModuleSize < 7) {
 		return false;
 	}
@@ -636,8 +625,7 @@ FinderPatternFinder::FoundPatternCross(const StateCount& stateCount) {
 bool
 FinderPatternFinder::HandlePossibleCenter(const BitMatrix& image, const StateCount& stateCount, int i, int j, bool pureBarcode, /*const PointCallback& pointCallback,*/ std::vector<FinderPattern>& possibleCenters)
 {
-	int stateCountTotal = stateCount[0] + stateCount[1] + stateCount[2] + stateCount[3] +
-		stateCount[4];
+	int stateCountTotal = Accumulate(stateCount, 0);
 	float centerJ = CenterFromEnd(stateCount, j);
 	float centerI = CrossCheckVertical(image, i, static_cast<int>(centerJ), stateCount[2], stateCountTotal);
 	if (std::isnan(centerI))

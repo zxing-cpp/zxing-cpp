@@ -19,6 +19,7 @@
 #include "qrcode/QRAlignmentPattern.h"
 #include "BitMatrix.h"
 #include "DecodeStatus.h"
+#include "ZXContainerAlgorithms.h"
 
 #include <array>
 #include <cmath>
@@ -70,7 +71,7 @@ static bool FoundPatternCross(const StateCount& stateCount, float moduleSize)
 static float CrossCheckVertical(const BitMatrix& image, int startI, int centerJ, int maxCount, int originalStateCountTotal, float moduleSize)
 {
 	int maxI = image.height();
-	StateCount stateCount = { 0, 0, 0 };
+	StateCount stateCount = {};
 
 	// Start counting up from center
 	int i = startI;
@@ -107,7 +108,7 @@ static float CrossCheckVertical(const BitMatrix& image, int startI, int centerJ,
 		return std::numeric_limits<float>::quiet_NaN();
 	}
 
-	int stateCountTotal = stateCount[0] + stateCount[1] + stateCount[2];
+	int stateCountTotal = Accumulate(stateCount, 0);
 	if (5 * std::abs(stateCountTotal - originalStateCountTotal) >= 2 * originalStateCountTotal) {
 		return std::numeric_limits<float>::quiet_NaN();
 	}
@@ -128,11 +129,11 @@ static float CrossCheckVertical(const BitMatrix& image, int startI, int centerJ,
 */
 static bool HandlePossibleCenter(const BitMatrix& image, const StateCount& stateCount, int i, int j, float moduleSize, /*const PointCallback& pointCallback,*/ AlignmentPattern& confirm, std::vector<AlignmentPattern>& possibleCenters)
 {
-	int stateCountTotal = stateCount[0] + stateCount[1] + stateCount[2];
+	int stateCountTotal = Accumulate(stateCount, 0);
 	float centerJ = CenterFromEnd(stateCount, j);
 	float centerI = CrossCheckVertical(image, i, static_cast<int>(centerJ), 2 * stateCount[1], stateCountTotal, moduleSize);
 	if (!std::isnan(centerI)) {
-		float estimatedModuleSize = (float)(stateCount[0] + stateCount[1] + stateCount[2]) / 3.0f;
+		float estimatedModuleSize = stateCountTotal / 3.0f;
 		for (const AlignmentPattern& center : possibleCenters) {
 			// Look for about the same center and module size:
 			if (center.aboutEquals(estimatedModuleSize, centerI, centerJ)) {
@@ -162,7 +163,7 @@ AlignmentPatternFinder::Find(const BitMatrix& image, int startX, int startY, int
 	// this tracks the number of black/white/black modules seen so far
 	for (int iGen = 0; iGen < height; iGen++) {
 		// Search from middle outwards
-		StateCount stateCount = { 0, 0, 0 };
+		StateCount stateCount = {};
 		int i = middleI + ((iGen & 0x01) == 0 ? (iGen + 1) / 2 : -((iGen + 1) / 2));
 		int j = startX;
 		// Burn off leading white pixels before anything else; if we start in the middle of
