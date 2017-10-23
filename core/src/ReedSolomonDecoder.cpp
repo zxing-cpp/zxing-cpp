@@ -102,12 +102,12 @@ FindErrorLocations(const GenericGF& field, const GenericGFPoly& errorLocator, st
 	return DecodeStatus::NoError;
 }
 
-static void FindErrorMagnitudes(const GenericGF& field, const GenericGFPoly& errorEvaluator,
-                                const std::vector<int>& errorLocations, std::vector<int>& outMagnitudes)
+static std::vector<int>
+FindErrorMagnitudes(const GenericGF& field, const GenericGFPoly& errorEvaluator, const std::vector<int>& errorLocations)
 {
 	// This is directly applying Forney's Formula
 	size_t s = errorLocations.size();
-	outMagnitudes.resize(s);
+	std::vector<int> outMagnitudes(s);
 	for (size_t i = 0; i < s; ++i) {
 		int xiInverse = field.inverse(errorLocations[i]);
 		int denominator = 1;
@@ -127,6 +127,7 @@ static void FindErrorMagnitudes(const GenericGF& field, const GenericGFPoly& err
 			outMagnitudes[i] = field.multiply(outMagnitudes[i], xiInverse);
 		}
 	}
+	return outMagnitudes;
 }
 
 
@@ -153,12 +154,12 @@ ReedSolomonDecoder::decode(std::vector<int>& received, int twoS) const
 	if (StatusIsError(errStat)) {
 		return errStat;
 	}
-	std::vector<int> errorLocations, errorMagnitudes;
+	std::vector<int> errorLocations;
 	errStat = FindErrorLocations(*_field, sigma, errorLocations);
 	if (StatusIsError(errStat)) {
 		return errStat;
 	}
-	FindErrorMagnitudes(*_field, omega, errorLocations, errorMagnitudes);
+	auto errorMagnitudes = FindErrorMagnitudes(*_field, omega, errorLocations);
 
 	int receivedCount = static_cast<int>(received.size());
 	for (size_t i = 0; i < errorLocations.size(); ++i) {
