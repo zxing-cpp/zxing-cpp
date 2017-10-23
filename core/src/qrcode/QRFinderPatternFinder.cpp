@@ -20,6 +20,7 @@
 #include "BitMatrix.h"
 #include "DecodeHints.h"
 #include "DecodeStatus.h"
+#include "ZXContainerAlgorithms.h"
 
 #include <cassert>
 #include <cmath>
@@ -639,33 +640,29 @@ FinderPatternFinder::HandlePossibleCenter(const BitMatrix& image, const StateCou
 		stateCount[4];
 	float centerJ = CenterFromEnd(stateCount, j);
 	float centerI = CrossCheckVertical(image, i, static_cast<int>(centerJ), stateCount[2], stateCountTotal);
-	if (!std::isnan(centerI)) {
-		// Re-cross check
-		centerJ = CrossCheckHorizontal(image, static_cast<int>(centerJ), static_cast<int>(centerI), stateCount[2], stateCountTotal);
-		if (!std::isnan(centerJ) &&
-			(!pureBarcode || CrossCheckDiagonal(image, static_cast<int>(centerI), static_cast<int>(centerJ), stateCount[2], stateCountTotal))) {
-			float estimatedModuleSize = (float)stateCountTotal / 7.0f;
-			bool found = false;
-			for (size_t index = 0; index < possibleCenters.size(); ++index) {
-				FinderPattern center = possibleCenters[index];
-				// Look for about the same center and module size:
-				if (center.aboutEquals(estimatedModuleSize, centerI, centerJ)) {
-					possibleCenters[index] = center.combineEstimate(centerI, centerJ, estimatedModuleSize);
-					found = true;
-					break;
-				}
-			}
-			if (!found) {
-				possibleCenters.emplace_back(centerJ, centerI, estimatedModuleSize);
-				//if (pointCallback != nullptr) {
-				//	const ResultPoint& p = possibleCenters.back();
-				//	pointCallback(p.x(), p.y());
-				//}
-			}
-			return true;
-		}
-	}
-	return false;
+	if (std::isnan(centerI))
+		return false;
+
+	// Re-cross check
+	centerJ = CrossCheckHorizontal(image, static_cast<int>(centerJ), static_cast<int>(centerI), stateCount[2],
+								   stateCountTotal);
+	if (std::isnan(centerJ))
+		return false;
+
+	if (pureBarcode &&
+		!CrossCheckDiagonal(image, static_cast<int>(centerI), static_cast<int>(centerJ), stateCount[2], stateCountTotal))
+		return false;
+
+	float estimatedModuleSize = stateCountTotal / 7.0f;
+	auto center = ZXing::FindIf(possibleCenters, [=](const FinderPattern& center) {
+		return center.aboutEquals(estimatedModuleSize, centerI, centerJ);
+	});
+	if (center != possibleCenters.end())
+		*center = center->combineEstimate(centerI, centerJ, estimatedModuleSize);
+	else
+		possibleCenters.emplace_back(centerJ, centerI, estimatedModuleSize);
+
+	return true;
 }
 
 } // QRCode
