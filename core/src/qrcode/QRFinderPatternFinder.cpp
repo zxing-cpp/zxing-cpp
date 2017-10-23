@@ -451,37 +451,21 @@ static void OrderBestPatterns(std::vector<FinderPattern>& patterns)
 	float oneTwoDistance = ResultPoint::Distance(p1, p2);
 	float zeroTwoDistance = ResultPoint::Distance(p0, p2);
 
-	FinderPattern pointA;
-	FinderPattern pointB;
-	FinderPattern pointC;
 	// Assume one closest to other two is B; A and C will just be guesses at first
-	if (oneTwoDistance >= zeroOneDistance && oneTwoDistance >= zeroTwoDistance) {
-		pointB = p0;
-		pointA = p1;
-		pointC = p2;
-	}
-	else if (zeroTwoDistance >= oneTwoDistance && zeroTwoDistance >= zeroOneDistance) {
-		pointB = p1;
-		pointA = p0;
-		pointC = p2;
-	}
-	else {
-		pointB = p2;
-		pointA = p0;
-		pointC = p1;
-	}
+	if (oneTwoDistance >= zeroOneDistance && oneTwoDistance >= zeroTwoDistance)
+		std::swap(p0, p1);
+	else if (zeroTwoDistance >= oneTwoDistance && zeroTwoDistance >= zeroOneDistance)
+		; // do nothing, the order is correct
+	else
+		std::swap(p1, p2);
 
 	// Use cross product to figure out whether A and C are correct or flipped.
 	// This asks whether BC x BA has a positive z component, which is the arrangement
 	// we want for A, B, C. If it's negative, then we've got it flipped around and
 	// should swap A and C.
-	if (CrossProductZ(pointA, pointB, pointC) < 0.0f) {
-		std::swap(pointA, pointC);
+	if (CrossProductZ(p0, p1, p2) < 0.0f) {
+		std::swap(p0, p2);
 	}
-
-	p0 = pointA;
-	p1 = pointB;
-	p2 = pointC;
 }
 
 
