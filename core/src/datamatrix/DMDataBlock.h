@@ -58,7 +58,7 @@ public:
 	* @return DataBlocks containing original bytes, "de-interleaved" from representation in the
 	*         Data Matrix Code
 	*/
-	static DecodeStatus GetDataBlocks(const ByteArray& rawCodewords, const Version& version, std::vector<DataBlock>& result);
+	static std::vector<DataBlock> GetDataBlocks(const ByteArray& rawCodewords, const Version& version);
 
 private:
 	int _numDataCodewords = 0;

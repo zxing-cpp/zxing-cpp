@@ -29,7 +29,7 @@ class Version;
 class BitMatrixParser
 {
 public:
-	static DecodeStatus ReadCodewords(const BitMatrix& bits, ByteArray& result);
+	static ByteArray ReadCodewords(const BitMatrix& bits);
 	static const Version* ReadVersion(const BitMatrix& bits);
 };
 

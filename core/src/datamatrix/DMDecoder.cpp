@@ -562,20 +562,20 @@ static DecodeStatus Decode(const ByteArray& bytes, DecoderResult& decodeResult)
 * @param numDataCodewords number of codewords that are data bytes
 * @throws ChecksumException if error correction fails
 */
-static DecodeStatus
+static bool
 CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
 {
 	// First read into an array of ints
 	std::vector<int> codewordsInts(codewordBytes.begin(), codewordBytes.end());
 	int numECCodewords = codewordBytes.length() - numDataCodewords;
 	if (!ReedSolomonDecoder::Decode(GenericGF::DataMatrixField256(), codewordsInts, numECCodewords))
-		return DecodeStatus::ChecksumError;
+		return false;
 
 	// Copy back into array of bytes -- only need to worry about the bytes that were data
 	// We don't care about errors in the error-correction codewords
 	std::copy_n(codewordsInts.begin(), numDataCodewords, codewordBytes.begin());
 
-	return DecodeStatus::NoError;
+	return true;
 }
 
 DecodeStatus
@@ -588,18 +588,14 @@ Decoder::Decode(const BitMatrix& bits, DecoderResult& result)
 	}
 
 	// Read codewords
-	ByteArray codewords;
-	DecodeStatus status = BitMatrixParser::ReadCodewords(bits, codewords);
-	if (StatusIsError(status)) {
-		return status;
-	}
+	ByteArray codewords = BitMatrixParser::ReadCodewords(bits);
+	if (codewords.empty())
+		return DecodeStatus::FormatError;
 
 	// Separate into data blocks
-	std::vector<DataBlock> dataBlocks;
-	status = DataBlock::GetDataBlocks(codewords, *version, dataBlocks);
-	if (StatusIsError(status)) {
-		return status;
-	}
+	std::vector<DataBlock> dataBlocks = DataBlock::GetDataBlocks(codewords, *version);
+	if (dataBlocks.empty())
+		return DecodeStatus::FormatError;
 
 	// Count total number of data bytes
 	int totalBytes = 0;
@@ -614,10 +610,9 @@ Decoder::Decode(const BitMatrix& bits, DecoderResult& result)
 		auto& dataBlock = dataBlocks[j];
 		ByteArray& codewordBytes = dataBlock.codewords();
 		int numDataCodewords = dataBlock.numDataCodewords();
-		status = CorrectErrors(codewordBytes, numDataCodewords);
-		if (StatusIsError(status)) {
-			return status;
-		}
+		if (!CorrectErrors(codewordBytes, numDataCodewords))
+			return DecodeStatus::ChecksumError;
+
 		for (int i = 0; i < numDataCodewords; i++) {
 			// De-interlace data blocks.
 			resultBytes[i * dataBlocksCount + j] = codewordBytes[i];

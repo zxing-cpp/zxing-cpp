@@ -348,18 +348,18 @@ public:
 * @return bytes encoded within the Data Matrix Code
 * @throws FormatException if the exact number of bytes expected is not read
 */
-DecodeStatus
-BitMatrixParser::ReadCodewords(const BitMatrix& bits, ByteArray& result)
+ByteArray
+BitMatrixParser::ReadCodewords(const BitMatrix& bits)
 {
 	const Version* version = ReadVersion(bits);
 	if (version == nullptr) {
-		return DecodeStatus::FormatError;
+		return {};
 	}
 
 	BitMatrix mappingBitMatrix = ExtractDataRegion(*version, bits);
 	BitMatrix readMappingMatrix(mappingBitMatrix.width(), mappingBitMatrix.height());
 
-	result.resize(version->totalCodewords());
+	ByteArray result(version->totalCodewords());
 	int resultOffset = 0;
 
 	int row = 4;
@@ -426,7 +426,10 @@ BitMatrixParser::ReadCodewords(const BitMatrix& bits, ByteArray& result)
 		}
 	} while ((row < numRows) || (column < numColumns));
 
-	return resultOffset == version->totalCodewords() ? DecodeStatus::NoError : DecodeStatus::FormatError;
+	if (resultOffset != version->totalCodewords())
+		return {};
+
+	return result;
 }
 
 } // DataMatrix
