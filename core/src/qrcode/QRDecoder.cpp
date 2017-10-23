@@ -56,7 +56,7 @@ CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
 	std::vector<int> codewordsInts(codewordBytes.begin(), codewordBytes.end());
 
 	int numECCodewords = codewordBytes.length() - numDataCodewords;
-	auto status = ReedSolomonDecoder(GenericGF::QRCodeField256()).decode(codewordsInts, numECCodewords);
+	auto status = ReedSolomonDecoder::Decode(GenericGF::QRCodeField256(), codewordsInts, numECCodewords);
 	if (StatusIsOK(status))
 	{
 		// Copy back into array of bytes -- only need to worry about the bytes that were data

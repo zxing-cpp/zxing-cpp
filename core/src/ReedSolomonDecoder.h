@@ -49,8 +49,6 @@ enum class DecodeStatus;
 class ReedSolomonDecoder
 {
 public:
-	explicit ReedSolomonDecoder(const GenericGF& field) : _field(&field) {}
-
 	/**
 	* <p>Decodes given set of received codewords, which include both data and error-correction
 	* codewords. Really, this means it uses Reed-Solomon to detect and correct errors, in-place,
@@ -60,10 +58,7 @@ public:
 	* @param twoS number of error-correction codewords available
 	* @throws ReedSolomonException if decoding fails for any reason
 	*/
-	DecodeStatus decode(std::vector<int>& received, int twoS) const;
-
-private:
-	const GenericGF* _field;
+	static DecodeStatus Decode(const GenericGF& field, std::vector<int>& received, int twoS);
 };
 
 //class ReedSolomonException : public std::exception

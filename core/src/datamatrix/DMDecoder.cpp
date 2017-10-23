@@ -568,7 +568,7 @@ CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
 	// First read into an array of ints
 	std::vector<int> codewordsInts(codewordBytes.begin(), codewordBytes.end());
 	int numECCodewords = codewordBytes.length() - numDataCodewords;
-	auto status = ReedSolomonDecoder(GenericGF::DataMatrixField256()).decode(codewordsInts, numECCodewords);
+	auto status = ReedSolomonDecoder::Decode(GenericGF::DataMatrixField256(), codewordsInts, numECCodewords);
 	if (StatusIsOK(status)) {
 		// Copy back into array of bytes -- only need to worry about the bytes that were data
 		// We don't care about errors in the error-correction codewords

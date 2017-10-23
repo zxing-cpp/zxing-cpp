@@ -132,13 +132,13 @@ FindErrorMagnitudes(const GenericGF& field, const GenericGFPoly& errorEvaluator,
 
 
 DecodeStatus
-ReedSolomonDecoder::decode(std::vector<int>& received, int twoS) const
+ReedSolomonDecoder::Decode(const GenericGF& field, std::vector<int>& received, int twoS)
 {
-	GenericGFPoly poly(*_field, received);
+	GenericGFPoly poly(field, received);
 	std::vector<int> syndromeCoefficients(twoS, 0);
 	bool noError = true;
 	for (int i = 0; i < twoS; i++) {
-		int eval = poly.evaluateAt(_field->exp(i + _field->generatorBase()));
+		int eval = poly.evaluateAt(field.exp(i + field.generatorBase()));
 		syndromeCoefficients[twoS - 1 - i] = eval;
 		if (eval != 0) {
 			noError = false;
@@ -150,24 +150,24 @@ ReedSolomonDecoder::decode(std::vector<int>& received, int twoS) const
 
 	ZX_THREAD_LOCAL GenericGFPoly sigma, omega;
 
-	auto errStat = RunEuclideanAlgorithm(*_field, std::move(syndromeCoefficients), twoS, sigma, omega);
+	auto errStat = RunEuclideanAlgorithm(field, std::move(syndromeCoefficients), twoS, sigma, omega);
 	if (StatusIsError(errStat)) {
 		return errStat;
 	}
 	std::vector<int> errorLocations;
-	errStat = FindErrorLocations(*_field, sigma, errorLocations);
+	errStat = FindErrorLocations(field, sigma, errorLocations);
 	if (StatusIsError(errStat)) {
 		return errStat;
 	}
-	auto errorMagnitudes = FindErrorMagnitudes(*_field, omega, errorLocations);
+	auto errorMagnitudes = FindErrorMagnitudes(field, omega, errorLocations);
 
 	int receivedCount = static_cast<int>(received.size());
 	for (size_t i = 0; i < errorLocations.size(); ++i) {
-		int position = receivedCount - 1 - _field->log(errorLocations[i]);
+		int position = receivedCount - 1 - field.log(errorLocations[i]);
 		if (position < 0) {
 			return DecodeStatus::ReedSolomonBadLocation;
 		}
-		received[position] = _field->addOrSubtract(received[position], errorMagnitudes[i]);
+		received[position] = field.addOrSubtract(received[position], errorMagnitudes[i]);
 	}
 	return DecodeStatus::NoError;
 }
