@@ -375,12 +375,12 @@ struct CenterComparator
 *         size differs from the average among those patterns the least
 * @throws NotFoundException if 3 such finder patterns do not exist
 */
-DecodeStatus SelectBestPatterns(std::vector<FinderPattern>& possibleCenters)
+static bool SelectBestPatterns(std::vector<FinderPattern>& possibleCenters)
 {
 	int startSize = static_cast<int>(possibleCenters.size());
 	if (startSize < 3) {
 		// Couldn't find enough finder patterns
-		return DecodeStatus::NotFound;
+		return false;
 	}
 
 	// Filter outlier possibilities whose module size is too different
@@ -423,7 +423,7 @@ DecodeStatus SelectBestPatterns(std::vector<FinderPattern>& possibleCenters)
 
 		possibleCenters.resize(3);
 	}
-	return DecodeStatus::NoError;
+	return true;
 }
 
 /**
@@ -592,9 +592,8 @@ FinderPatternInfo FinderPatternFinder::Find(const BitMatrix& image, /*const Poin
 		}
 	}
 
-	auto status = SelectBestPatterns(possibleCenters);
-	if (StatusIsError(status))
-		return status;
+	if (!SelectBestPatterns(possibleCenters))
+		return {};
 
 	OrderBestPatterns(possibleCenters);
 
