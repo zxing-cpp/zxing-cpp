@@ -19,11 +19,5 @@
 
 namespace ZXing {
 
-bool
-StatusIsKindOf(DecodeStatus status, DecodeStatus group)
-{
-	int shift = BitHacks::NumberOfTrailingZeros(static_cast<uint32_t>(group));
-	return (static_cast<uint32_t>(status) >> shift) == (static_cast<uint32_t>(group) >> shift);
-}
 
 } // ZXing

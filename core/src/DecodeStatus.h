@@ -20,8 +20,6 @@ namespace ZXing {
 enum class DecodeStatus
 {
 	NoError = 0,
-
-	ReaderError = 0x10,
 	NotFound,
 	FormatError,
 	ChecksumError,
@@ -36,7 +34,5 @@ inline bool StatusIsError(DecodeStatus status)
 {
 	return status != DecodeStatus::NoError;
 }
-
-bool StatusIsKindOf(DecodeStatus status, DecodeStatus group);
 
 } // ZXing

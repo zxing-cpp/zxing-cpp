@@ -74,7 +74,7 @@ MultiUPCEANReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr
 		Result result = reader->decodeRow(rowNumber, row, range);
 		if (!result.isValid())
 		{
-			if (StatusIsKindOf(result.status(), DecodeStatus::ReaderError))
+			if (StatusIsError(result.status()))
 				continue;
 			else
 				return result;
