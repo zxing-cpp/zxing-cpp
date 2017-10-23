@@ -21,6 +21,7 @@
 #include "DecodeHints.h"
 #include "DecodeStatus.h"
 
+#include <cassert>
 #include <cmath>
 #include <cstdlib>
 #include <limits>
@@ -439,8 +440,12 @@ static float CrossProductZ(const ResultPoint& a, const ResultPoint& b, const Res
 *
 * @param patterns array of three {@code ResultPoint} to order
 */
-static void OrderByBestPatterns(FinderPattern& p0, FinderPattern& p1, FinderPattern& p2)
+static void OrderBestPatterns(std::vector<FinderPattern>& patterns)
 {
+	assert(patterns.size() == 3);
+
+	auto &p0 = patterns[0], &p1 = patterns[1], &p2 = patterns[2];
+
 	// Find distances between pattern centers
 	float zeroOneDistance = ResultPoint::Distance(p0, p1);
 	float oneTwoDistance = ResultPoint::Distance(p1, p2);
@@ -591,7 +596,7 @@ FinderPatternInfo FinderPatternFinder::Find(const BitMatrix& image, /*const Poin
 	if (StatusIsError(status))
 		return status;
 
-	OrderByBestPatterns(possibleCenters[0], possibleCenters[1], possibleCenters[2]);
+	OrderBestPatterns(possibleCenters);
 
 	return {possibleCenters[0], possibleCenters[1], possibleCenters[2]};
 }
