@@ -52,17 +52,17 @@ static bool CorrectErrors(ByteArray& codewordBytes, int start, int dataCodewords
 		}
 	}
 
-	if (StatusIsOK(ReedSolomonDecoder::Decode(GenericGF::MaxiCodeField64(), codewordsInts, ecCodewords / divisor))) {
-		// Copy back into array of bytes -- only need to worry about the bytes that were data
-		// We don't care about errors in the error-correction codewords
-		for (int i = 0; i < dataCodewords; i++) {
-			if ((mode == ALL) || (i % 2 == (mode - 1))) {
-				codewordBytes[i + start] = static_cast<uint8_t>(codewordsInts[i / divisor]);
-			}
+	if (!ReedSolomonDecoder::Decode(GenericGF::MaxiCodeField64(), codewordsInts, ecCodewords / divisor))
+		return false;
+
+	// Copy back into array of bytes -- only need to worry about the bytes that were data
+	// We don't care about errors in the error-correction codewords
+	for (int i = 0; i < dataCodewords; i++) {
+		if ((mode == ALL) || (i % 2 == (mode - 1))) {
+			codewordBytes[i + start] = static_cast<uint8_t>(codewordsInts[i / divisor]);
 		}
-		return true;
 	}
-	return false;
+	return true;
 }
 
 /**

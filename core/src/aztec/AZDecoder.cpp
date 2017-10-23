@@ -179,9 +179,8 @@ static bool CorrectBits(const DetectorResult& ddata, const std::vector<bool>& ra
 		dataWords[i] = ReadCode(rawbits, offset, codewordSize);
 	}
 
-	if (StatusIsError(ReedSolomonDecoder::Decode(*gf, dataWords, numECCodewords))) {
+	if (!ReedSolomonDecoder::Decode(*gf, dataWords, numECCodewords))
 		return false;
-	}
 
 	// Now perform the unstuffing operation.
 	// First, count how many bits are going to be thrown out as stuffing

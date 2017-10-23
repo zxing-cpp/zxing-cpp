@@ -58,7 +58,7 @@ public:
 	* @param twoS number of error-correction codewords available
 	* @throws ReedSolomonException if decoding fails for any reason
 	*/
-	static DecodeStatus Decode(const GenericGF& field, std::vector<int>& received, int twoS);
+	static bool Decode(const GenericGF& field, std::vector<int>& received, int twoS);
 };
 
 //class ReedSolomonException : public std::exception

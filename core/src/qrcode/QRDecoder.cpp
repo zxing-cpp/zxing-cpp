@@ -56,18 +56,13 @@ CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
 	std::vector<int> codewordsInts(codewordBytes.begin(), codewordBytes.end());
 
 	int numECCodewords = codewordBytes.length() - numDataCodewords;
-	auto status = ReedSolomonDecoder::Decode(GenericGF::QRCodeField256(), codewordsInts, numECCodewords);
-	if (StatusIsOK(status))
-	{
-		// Copy back into array of bytes -- only need to worry about the bytes that were data
-		// We don't care about errors in the error-correction codewords
-		std::copy_n(codewordsInts.begin(), numDataCodewords, codewordBytes.begin());
-	}
-	else if (StatusIsKindOf(status, DecodeStatus::ReedSolomonError))
-	{
-		status = DecodeStatus::ChecksumError;
-	}
-	return status;
+	if (!ReedSolomonDecoder::Decode(GenericGF::QRCodeField256(), codewordsInts, numECCodewords))
+		return DecodeStatus::ChecksumError;
+
+	// Copy back into array of bytes -- only need to worry about the bytes that were data
+	// We don't care about errors in the error-correction codewords
+	std::copy_n(codewordsInts.begin(), numDataCodewords, codewordBytes.begin());
+	return DecodeStatus::NoError;
 }
 
 

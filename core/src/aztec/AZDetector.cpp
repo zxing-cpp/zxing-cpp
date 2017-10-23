@@ -141,10 +141,9 @@ static bool GetCorrectedParameterData(int64_t parameterData, bool compact, int& 
 		parameterWords[i] = (int)parameterData & 0xF;
 		parameterData >>= 4;
 	}
-	DecodeStatus status = ReedSolomonDecoder::Decode(GenericGF::AztecParam(), parameterWords, numECCodewords);
-	if (StatusIsError(status)) {
+	if (!ReedSolomonDecoder::Decode(GenericGF::AztecParam(), parameterWords, numECCodewords))
 		return false;
-	}
+
 	// Toss the error correction.  Just return the data as an integer
 	result = 0;
 	for (int i = 0; i < numDataCodewords; i++) {

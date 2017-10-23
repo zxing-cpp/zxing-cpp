@@ -25,12 +25,6 @@ enum class DecodeStatus
 	NotFound,
 	FormatError,
 	ChecksumError,
-
-	ReedSolomonError = 0x20,
-	ReedSolomonAlgoFailed,		// r_{i-1} was zero
-	ReedSolomonBadLocation,		// Bad error location
-	ReedSolomonDegreeMismatch,	// Error locator degree does not match number of roots
-	ReedSolomonSigmaTildeZero,	// sigmaTilde(0) was zero
 };
 
 inline bool StatusIsOK(DecodeStatus status)
