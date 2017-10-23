@@ -33,6 +33,8 @@ public:
 	FinderPattern bottomLeft;
 	FinderPattern topLeft;
 	FinderPattern topRight;
+
+	bool isValid() const { return bottomLeft.isValid() && topLeft.isValid() && topRight.isValid(); }
 };
 
 } // QRCode

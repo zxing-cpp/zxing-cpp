@@ -480,8 +480,7 @@ static void OrderByBestPatterns(FinderPattern& p0, FinderPattern& p1, FinderPatt
 }
 
 
-DecodeStatus
-FinderPatternFinder::Find(const BitMatrix& image, /*const PointCallback& pointCallback,*/ bool pureBarcode, bool tryHarder, FinderPatternInfo& outInfo)
+FinderPatternInfo FinderPatternFinder::Find(const BitMatrix& image, /*const PointCallback& pointCallback,*/ bool pureBarcode, bool tryHarder)
 {
 	int maxI = image.height();
 	int maxJ = image.width();
@@ -594,11 +593,7 @@ FinderPatternFinder::Find(const BitMatrix& image, /*const PointCallback& pointCa
 
 	OrderByBestPatterns(possibleCenters[0], possibleCenters[1], possibleCenters[2]);
 
-	outInfo.bottomLeft = possibleCenters[0];
-	outInfo.topLeft = possibleCenters[1];
-	outInfo.topRight = possibleCenters[2];
-	
-	return DecodeStatus::NoError;
+	return {possibleCenters[0], possibleCenters[1], possibleCenters[2]};
 }
 
 

@@ -338,10 +338,10 @@ Detector::Detect(const BitMatrix& image, bool pureBarcode, bool tryHarder, Detec
 {
 	/*PointCallback pointCallback = hints.resultPointCallback();*/
 
-	FinderPatternInfo info;
-	auto status = FinderPatternFinder::Find(image, /*pointCallback,*/ pureBarcode, tryHarder, info);
-	if (StatusIsError(status))
-		return status;
+	FinderPatternInfo info = FinderPatternFinder::Find(image, /*pointCallback,*/ pureBarcode, tryHarder);
+
+	if (!info.isValid())
+		return DecodeStatus::NotFound;
 	
 	return ProcessFinderPatternInfo(image, info, /*pointCallback,*/ result);
 }

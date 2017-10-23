@@ -45,6 +45,10 @@ public:
 		return _count;
 	}
 
+	bool isValid() const {
+		return _count > 0;
+	}
+
 	/**
 	* <p>Determines if this finder pattern "about equals" a finder pattern at the stated
 	* position and size -- meaning, it is at nearly the same center with nearly the same size.</p>

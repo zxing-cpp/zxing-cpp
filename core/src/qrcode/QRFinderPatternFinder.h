@@ -43,7 +43,7 @@ class FinderPatternFinder
 public:
 	using StateCount = std::array<int, 5>;
 
-	static DecodeStatus Find(const BitMatrix& image, /*const PointCallback& pointCallback,*/ bool pureBarcode, bool tryHarder, FinderPatternInfo& outInfo);
+	static FinderPatternInfo Find(const BitMatrix& image, /*const PointCallback& pointCallback,*/ bool pureBarcode, bool tryHarder);
 
 	/**
 	* @param stateCount count of black/white/black/white/black pixels just read
