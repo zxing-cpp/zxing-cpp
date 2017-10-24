@@ -117,7 +117,7 @@ static int EstimateBlackPoint(const std::array<int, LUMINANCE_BUCKETS>& buckets)
 }
 
 // Applies simple sharpening to the row data to improve performance of the 1D Readers.
-DecodeStatus
+bool
 GlobalHistogramBinarizer::getBlackRow(int y, BitArray& row) const
 {
 	int width = _source->width();
@@ -156,9 +156,9 @@ GlobalHistogramBinarizer::getBlackRow(int y, BitArray& row) const
 				center = right;
 			}
 		}
-		return DecodeStatus::NoError;
+		return true;
 	}
-	return DecodeStatus::NotFound;
+	return false;
 }
 
 static void InitBlackMatrix(const LuminanceSource& source, std::shared_ptr<const BitMatrix>& outMatrix)

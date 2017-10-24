@@ -130,8 +130,7 @@ DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, const BinaryBit
 		}
 
 		// Estimate black point for this row and load it:
-		auto status = image.getBlackRow(rowNumber, row);
-		if (StatusIsError(status)) {
+		if (!image.getBlackRow(rowNumber, row)) {
 			continue;
 		}
 
