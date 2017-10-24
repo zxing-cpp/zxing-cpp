@@ -292,8 +292,7 @@ static void OrderByBestPatterns(const ResultPoint*& p0, const ResultPoint*& p1, 
 static DetectorResult DetectOld(const BitMatrix& image)
 {
 	ResultPoint pointA, pointB, pointC, pointD;
-	DecodeStatus status = WhiteRectDetector::Detect(image, pointA, pointB, pointC, pointD);
-	if (StatusIsError(status)) {
+	if (!WhiteRectDetector::Detect(image, pointA, pointB, pointC, pointD)) {
 		return {};
 	}
 

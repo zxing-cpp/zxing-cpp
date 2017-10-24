@@ -430,8 +430,7 @@ static PixelPoint GetMatrixCenter(const BitMatrix& image)
 {
 	//Get a white rectangle that can be the border of the matrix in center bull's eye or
 	ResultPoint pointA, pointB, pointC, pointD;
-	DecodeStatus status = WhiteRectDetector::Detect(image, pointA, pointB, pointC, pointD);
-	if (StatusIsError(status)) {
+	if (!WhiteRectDetector::Detect(image, pointA, pointB, pointC, pointD)) {
 		// This exception can be in case the initial rectangle is white
 		// In that case, surely in the bull's eye, we try to expand the rectangle.
 		int cx = image.width() / 2;
@@ -449,8 +448,7 @@ static PixelPoint GetMatrixCenter(const BitMatrix& image)
 	// Redetermine the white rectangle starting from previously computed center.
 	// This will ensure that we end up with a white rectangle in center bull's eye
 	// in order to compute a more accurate center.
-	status = WhiteRectDetector::Detect(image, 15, cx, cy, pointA, pointB, pointC, pointD);
-	if (StatusIsError(status)) {
+	if (!WhiteRectDetector::Detect(image, 15, cx, cy, pointA, pointB, pointC, pointD)) {
 		// This exception can be in case the initial rectangle is white
 		// In that case we try to expand the rectangle.
 		pointA = GetFirstDifferent(image, { cx + 7, cy - 7 }, false, 1, -1).toResultPoint();

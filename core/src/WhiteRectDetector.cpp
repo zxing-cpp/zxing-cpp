@@ -26,8 +26,7 @@ namespace ZXing {
 static const int INIT_SIZE = 10;
 static const int CORR = 1;
 
-DecodeStatus
-WhiteRectDetector::Detect(const BitMatrix& image, ResultPoint& p0, ResultPoint& p1, ResultPoint& p2, ResultPoint& p3)
+bool WhiteRectDetector::Detect(const BitMatrix& image, ResultPoint& p0, ResultPoint& p1, ResultPoint& p2, ResultPoint& p3)
 {
 	return Detect(image, INIT_SIZE, image.width() / 2, image.height() / 2, p0, p1, p2, p3);
 }
@@ -136,8 +135,7 @@ static void CenterEdges(const ResultPoint& y, const ResultPoint& z, const Result
 *         leftmost and the third, the rightmost
 * @throws NotFoundException if no Data Matrix Code can be found
 */
-DecodeStatus
-WhiteRectDetector::Detect(const BitMatrix& image, int initSize, int x, int y, ResultPoint& p0, ResultPoint& p1, ResultPoint& p2, ResultPoint& p3)
+bool WhiteRectDetector::Detect(const BitMatrix& image, int initSize, int x, int y, ResultPoint& p0, ResultPoint& p1, ResultPoint& p2, ResultPoint& p3)
 {
 	int height = image.height();
 	int width = image.width();
@@ -147,7 +145,7 @@ WhiteRectDetector::Detect(const BitMatrix& image, int initSize, int x, int y, Re
 	int up = y - halfsize;
 	int down = y + halfsize;
 	if (up < 0 || left < 0 || down >= height || right >= width) {
-		return DecodeStatus::NotFound;
+		return false;
 	}
 
 	bool sizeExceeded = false;
@@ -264,7 +262,7 @@ WhiteRectDetector::Detect(const BitMatrix& image, int initSize, int x, int y, Re
 		}
 
 		if (!found) {
-			return DecodeStatus::NotFound;
+			return false;
 		}
 
 		ResultPoint t;
@@ -275,7 +273,7 @@ WhiteRectDetector::Detect(const BitMatrix& image, int initSize, int x, int y, Re
 		}
 
 		if (!found) {
-			return DecodeStatus::NotFound;
+			return false;
 		}
 
 		ResultPoint x;
@@ -286,7 +284,7 @@ WhiteRectDetector::Detect(const BitMatrix& image, int initSize, int x, int y, Re
 		}
 
 		if (!found) {
-			return DecodeStatus::NotFound;
+			return false;
 		}
 
 		ResultPoint y;
@@ -297,14 +295,14 @@ WhiteRectDetector::Detect(const BitMatrix& image, int initSize, int x, int y, Re
 		}
 
 		if (!found) {
-			return DecodeStatus::NotFound;
+			return false;
 		}
 
 		CenterEdges(y, z, x, t, width, p0, p1, p2, p3);
-		return DecodeStatus::NoError;
+		return true;
 	}
 	else {
-		return DecodeStatus::NotFound;
+		return false;
 	}
 }
 
