@@ -17,12 +17,15 @@
 
 #include "qrcode/QRErrorCorrectionLevel.h"
 
+#include <cassert>
+
 namespace ZXing {
 namespace QRCode {
 
 const wchar_t* ToString(ErrorCorrectionLevel l)
 {
-	static const wchar_t* const LEVEL_STR[] = { L"L", L"M", L"Q", L"H" };
+	assert(l != ErrorCorrectionLevel::Invalid);
+	static const wchar_t* const LEVEL_STR[] = { L"L", L"M", L"Q", L"H", nullptr };
 	return LEVEL_STR[static_cast<int>(l)];
 }
 
@@ -34,7 +37,7 @@ ErrorCorrectionLevel FromString(const char* str)
 		case 'M': return ErrorCorrectionLevel::Medium;
 		case 'Q': return ErrorCorrectionLevel::Quality;
 		case 'H': return ErrorCorrectionLevel::High;
-		default: return ErrorCorrectionLevel::Medium;
+		default:  return ErrorCorrectionLevel::Invalid;
 	}
 }
 
@@ -46,7 +49,8 @@ ErrorCorrectionLevel ECLevelFromBits(int bits)
 
 int BitsFromECLevel(ErrorCorrectionLevel l)
 {
-	static const int BITS[] = { 1, 0, 3, 2 };
+	assert(l != ErrorCorrectionLevel::Invalid);
+	static const int BITS[] = { 1, 0, 3, 2, -1 };
 	return BITS[(int)l];
 }
 

@@ -34,7 +34,9 @@ namespace QRCode {
 class FormatInformation
 {
 public:
-	bool decode(int maskedFormatInfo1, int maskedFormatInfo2);
+	FormatInformation() = default;
+
+	static FormatInformation DecodeFormatInformation(int maskedFormatInfo1, int maskedFormatInfo2);
 
 	ErrorCorrectionLevel errorCorrectionLevel() const {
 		return _errorCorrectionLevel;
@@ -44,12 +46,15 @@ public:
 		return _dataMask;
 	}
 
+	bool isValid() const { return _errorCorrectionLevel != ErrorCorrectionLevel::Invalid; }
+
 private:
-	ErrorCorrectionLevel _errorCorrectionLevel = ErrorCorrectionLevel::Medium;
+	ErrorCorrectionLevel _errorCorrectionLevel = ErrorCorrectionLevel::Invalid;
 	uint8_t _dataMask = 0;
 
-	void set(int formatInfo);
-	bool doDecode(int maskedFormatInfo1, int maskedFormatInfo2);
+	FormatInformation(int formatInfo);
+
+	static FormatInformation DoDecodeFormatInformation(int maskedFormatInfo1, int maskedFormatInfo2);
 };
 
 } // QRCode

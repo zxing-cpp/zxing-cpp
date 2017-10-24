@@ -468,29 +468,28 @@ DecodeStatus
 Decoder::Decode(const BitMatrix& bits_, const std::string& hintedCharset, DecoderResult& result)
 {
 	BitMatrix bits = bits_.copy();
-	// Construct a parser and read version, error-correction level
-	const Version* version;
-	FormatInformation formatInfo;
 
-	DecodeStatus status = BitMatrixParser::ParseVersionInfo(bits, false, version, formatInfo);
-	if (StatusIsOK(status))
-	{
+	// Construct a parser and read version, error-correction level
+	const Version* version = BitMatrixParser::ReadVersion(bits, false);
+	FormatInformation formatInfo = BitMatrixParser::ReadFormatInformation(bits, false);
+
+	if (version != nullptr && formatInfo.isValid()) {
 		ReMask(bits, formatInfo);
-		status = DoDecode(bits, *version, formatInfo, hintedCharset, result);
+		auto status = DoDecode(bits, *version, formatInfo, hintedCharset, result);
 		if (StatusIsOK(status)) {
 			return status;
 		}
 	}
 
-	if (version != nullptr)
-	{
+	if (version != nullptr) {
 		// Revert the bit matrix
 		ReMask(bits, formatInfo);
 	}
 
-	status = BitMatrixParser::ParseVersionInfo(bits, true, version, formatInfo);
-	if (StatusIsOK(status))
-	{
+	version = BitMatrixParser::ReadVersion(bits, true);
+	formatInfo = BitMatrixParser::ReadFormatInformation(bits, true);
+
+	if (version != nullptr && formatInfo.isValid()) {
 		/*
 		* Since we're here, this means we have successfully detected some kind
 		* of version and format information when mirrored. This is a good sign,
@@ -501,13 +500,14 @@ Decoder::Decode(const BitMatrix& bits_, const std::string& hintedCharset, Decode
 		bits.mirror();
 
 		ReMask(bits, formatInfo);
-		status = DoDecode(bits, *version, formatInfo, hintedCharset, result);
+		auto status = DoDecode(bits, *version, formatInfo, hintedCharset, result);
 		if (StatusIsOK(status))
 		{
 			result.setExtra(std::make_shared<DecoderMetadata>(true));
 		}
+		return status;
 	}
-	return status;
+	return DecodeStatus::FormatError;
 }
 
 } // QRCode

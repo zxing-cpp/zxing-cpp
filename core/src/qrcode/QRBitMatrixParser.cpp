@@ -31,6 +31,12 @@ static inline int copyBit(const BitMatrix& bitMatrix, int i, int j, int versionB
 	return (versionBits << 1) | static_cast<int>(bit);
 }
 
+static inline bool hasValidDimension(const BitMatrix& bitMatrix)
+{
+	int dimension = bitMatrix.height();
+	return !(dimension < 21 || (dimension & 0x03) != 1);
+}
+
 /**
 * <p>Reads version information from one of its two locations within the QR Code.</p>
 *
@@ -38,8 +44,11 @@ static inline int copyBit(const BitMatrix& bitMatrix, int i, int j, int versionB
 * @throws FormatException if both version information locations cannot be parsed as
 * the valid encoding of version information
 */
-static const Version* ReadVersion(const BitMatrix& bitMatrix, bool mirrored)
+const Version* BitMatrixParser::ReadVersion(const BitMatrix& bitMatrix, bool mirrored)
 {
+	if (!hasValidDimension(bitMatrix))
+		return nullptr;
+
 	int dimension = bitMatrix.height();
 
 	int provisionalVersion = (dimension - 17) / 4;
@@ -83,8 +92,12 @@ static const Version* ReadVersion(const BitMatrix& bitMatrix, bool mirrored)
 * @throws FormatException if both format information locations cannot be parsed as
 * the valid encoding of format information
 */
-static DecodeStatus ReadFormatInformation(const BitMatrix& bitMatrix, bool mirrored, FormatInformation &out)
+FormatInformation
+BitMatrixParser::ReadFormatInformation(const BitMatrix& bitMatrix, bool mirrored)
 {
+	if (!hasValidDimension(bitMatrix))
+		return {};
+
 	// Read top-left format info bits
 	int formatInfoBits1 = 0;
 	for (int i = 0; i < 6; i++) {
@@ -110,25 +123,7 @@ static DecodeStatus ReadFormatInformation(const BitMatrix& bitMatrix, bool mirro
 		formatInfoBits2 = copyBit(bitMatrix, i, 8, formatInfoBits2, mirrored);
 	}
 
-	if (out.decode(formatInfoBits1, formatInfoBits2))
-		return DecodeStatus::NoError;
-	return DecodeStatus::FormatError;
-}
-
-DecodeStatus
-BitMatrixParser::ParseVersionInfo(const BitMatrix& bitMatrix, bool mirrored, const Version*& parsedVersion, FormatInformation& parsedFormatInfo)
-{
-	int dimension = bitMatrix.height();
-	if (dimension < 21 || (dimension & 0x03) != 1) {
-		return DecodeStatus::FormatError;
-	}
-
-	parsedVersion = ReadVersion(bitMatrix, mirrored);
-	if (parsedVersion != nullptr)
-	{
-		return ReadFormatInformation(bitMatrix, mirrored, parsedFormatInfo);
-	}
-	return DecodeStatus::FormatError;
+	return FormatInformation::DecodeFormatInformation(formatInfoBits1, formatInfoBits2);
 }
 
 /**
@@ -142,10 +137,8 @@ BitMatrixParser::ParseVersionInfo(const BitMatrix& bitMatrix, bool mirrored, con
 DecodeStatus
 BitMatrixParser::ReadCodewords(const BitMatrix& bitMatrix, const Version& version, ByteArray& result)
 {
-	int dimension = bitMatrix.height();
-	if (dimension < 21 || (dimension & 0x03) != 1) {
+	if (!hasValidDimension(bitMatrix))
 		return DecodeStatus::FormatError;
-	}
 
 	BitMatrix functionPattern;
 	version.buildFunctionPattern(functionPattern);
@@ -155,6 +148,7 @@ BitMatrixParser::ReadCodewords(const BitMatrix& bitMatrix, const Version& versio
 	int resultOffset = 0;
 	int currentByte = 0;
 	int bitsRead = 0;
+	int dimension = bitMatrix.height();
 	// Read columns in pairs, from right to left
 	for (int j = dimension - 1; j > 0; j -= 2) {
 		if (j == 6) {

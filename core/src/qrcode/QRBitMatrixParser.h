@@ -37,7 +37,8 @@ public:
 	* @param bitMatrix {@link BitMatrix} to parse
 	* return false if dimension is not >= 21 and 1 mod 4
 	*/
-	static DecodeStatus ParseVersionInfo(const BitMatrix& bitMatrix, bool mirrored, const Version*& parsedVersion, FormatInformation& parsedFormatInfo);
+	static const Version* ReadVersion(const BitMatrix& bitMatrix, bool mirrored);
+	static FormatInformation ReadFormatInformation(const BitMatrix& bitMatrix, bool mirrored);
 
 	/**
 	* <p>Reads the bits in the {@link BitMatrix} representing the finder pattern in the
