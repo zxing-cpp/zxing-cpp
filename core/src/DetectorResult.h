@@ -17,13 +17,12 @@
 */
 
 #include "ResultPoint.h"
+#include "BitMatrix.h"
 
 #include <vector>
 #include <memory>
 
 namespace ZXing {
-
-class BitMatrix;
 
 /**
 * <p>Encapsulates the result of detecting a barcode in an image. This includes the raw
@@ -38,15 +37,19 @@ class DetectorResult
 	std::vector<ResultPoint> _points;
 
 public:
-	DetectorResult() {}
+	DetectorResult() = default;
 	DetectorResult(const DetectorResult&) = delete;
 	DetectorResult& operator=(const DetectorResult&) = delete;
+	DetectorResult(DetectorResult&&) = default;
+	DetectorResult& operator=(DetectorResult&&) = default;
 
 	std::shared_ptr<const BitMatrix> bits() const { return _bits; }
 	void setBits(const std::shared_ptr<const BitMatrix>& bits) { _bits = bits; }
 	const std::vector<ResultPoint>& points() const { return _points; }
 	void setPoints(const std::vector<ResultPoint>& points) { _points = points; }
 	void setPoints(std::initializer_list<ResultPoint> list) { _points.assign(list); }
+
+	bool isValid() const { return _bits && !_bits->empty(); }
 };
 
 } // ZXing

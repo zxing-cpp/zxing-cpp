@@ -116,12 +116,12 @@ Reader::decode(const BinaryBitmap& image) const
 		}
 	}
 	else {
-		DetectorResult detectorResult;
-		status = Detector::Detect(*binImg, _tryHarder, _tryRotate, detectorResult);
-		if (StatusIsOK(status)) {
-			status = Decoder::Decode(*detectorResult.bits(), decoderResult);
-			points = detectorResult.points();
-		}
+		DetectorResult detectorResult = Detector::Detect(*binImg, _tryHarder, _tryRotate);
+		if (!detectorResult.isValid())
+			return Result(DecodeStatus::NotFound);
+
+		status = Decoder::Decode(*detectorResult.bits(), decoderResult);
+		points = detectorResult.points();
 	}
 
 	if (StatusIsError(status)) {

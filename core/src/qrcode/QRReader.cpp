@@ -168,12 +168,12 @@ Reader::decode(const BinaryBitmap& image) const
 		status = Decoder::Decode(bits, _charset, decoderResult);
 	}
 	else {
-		DetectorResult detectorResult;
-		status = Detector::Detect(*binImg, image.isPureBarcode(), _tryHarder, detectorResult);
-		if (StatusIsOK(status)) {
-			status = Decoder::Decode(*detectorResult.bits(), _charset, decoderResult);
-			points = detectorResult.points();
-		}
+		DetectorResult detectorResult = Detector::Detect(*binImg, image.isPureBarcode(), _tryHarder);
+		if (!detectorResult.isValid())
+			return Result(DecodeStatus::NotFound);
+
+		status = Decoder::Decode(*detectorResult.bits(), _charset, decoderResult);
+		points = detectorResult.points();
 	}
 
 	if (StatusIsError(status)) {

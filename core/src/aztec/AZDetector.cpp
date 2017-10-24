@@ -515,8 +515,7 @@ static BitMatrix SampleGrid(const BitMatrix& image, const ResultPoint& topLeft, 
 }
 
 
-DecodeStatus
-Detector::Detect(const BitMatrix& image, bool isMirror, DetectorResult& result)
+DetectorResult Detector::Detect(const BitMatrix& image, bool isMirror)
 {
 	// 1. Get the center of the aztec matrix
 	auto pCenter = GetMatrixCenter(image);
@@ -527,7 +526,7 @@ Detector::Detect(const BitMatrix& image, bool isMirror, DetectorResult& result)
 	bool compact = false;
 	int nbCenterLayers = 0;
 	if (!GetBullsEyeCorners(image, pCenter, bullsEyeCorners, compact, nbCenterLayers)) {
-		return DecodeStatus::NotFound;
+		return {};
 	}
 
 	if (isMirror) {
@@ -539,23 +538,24 @@ Detector::Detect(const BitMatrix& image, bool isMirror, DetectorResult& result)
 	int nbDataBlocks = 0;
 	int shift = 0;
 	if (!ExtractParameters(image, bullsEyeCorners, compact, nbCenterLayers, nbLayers, nbDataBlocks, shift)) {
-		return DecodeStatus::NotFound;
+		return {};
 	}
 
 	// 4. Sample the grid
 	auto bits = SampleGrid(image, bullsEyeCorners[shift % 4], bullsEyeCorners[(shift + 1) % 4], bullsEyeCorners[(shift + 2) % 4], bullsEyeCorners[(shift + 3) % 4], compact, nbLayers, nbCenterLayers);
 	if (bits.empty())
-		return DecodeStatus::NotFound;
+		return {};
 
 	// 5. Get the corners of the matrix.
 	GetMatrixCornerPoints(bullsEyeCorners, compact, nbLayers, nbCenterLayers);
 
+	DetectorResult result;
 	result.setBits(std::make_shared<BitMatrix>(std::move(bits)));
 	result.setPoints({ bullsEyeCorners.begin(), bullsEyeCorners.end() });
 	result.setCompact(compact);
 	result.setNbDatablocks(nbDataBlocks);
 	result.setNbLayers(nbLayers);
-	return DecodeStatus::NoError;
+	return result;
 }
 
 } // Aztec

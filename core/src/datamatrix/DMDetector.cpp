@@ -289,12 +289,12 @@ static void OrderByBestPatterns(const ResultPoint*& p0, const ResultPoint*& p1, 
 	p2 = pointC;
 }
 
-static DecodeStatus DetectOld(const BitMatrix& image, DetectorResult& result)
+static DetectorResult DetectOld(const BitMatrix& image)
 {
 	ResultPoint pointA, pointB, pointC, pointD;
 	DecodeStatus status = WhiteRectDetector::Detect(image, pointA, pointB, pointC, pointD);
 	if (StatusIsError(status)) {
-		return status;
+		return {};
 	}
 
 	// Point A and D are across the diagonal from one another,
@@ -343,7 +343,7 @@ static DecodeStatus DetectOld(const BitMatrix& image, DetectorResult& result)
 	}
 
 	if (bottomRight == nullptr || bottomLeft == nullptr || topLeft == nullptr) {
-		return DecodeStatus::NotFound;
+		return {};
 	}
 
 	// Bottom left is correct but top left and bottom right might be switched
@@ -435,11 +435,12 @@ static DecodeStatus DetectOld(const BitMatrix& image, DetectorResult& result)
 
 	auto bits = SampleGrid(image, *topLeft, *bottomLeft, *bottomRight, correctedTopRight, dimensionTop, dimensionRight);
 	if (bits.empty())
-		return DecodeStatus::NotFound;
+		return {};
 
+	DetectorResult result;
 	result.setBits(std::make_shared<BitMatrix>(std::move(bits)));
 	result.setPoints({ *topLeft, *bottomLeft, *bottomRight, correctedTopRight });
-	return DecodeStatus::NoError;
+	return result;
 }
 
 /**
@@ -912,7 +913,7 @@ static BitMatrix SampleGrid(const BitMatrix& image, PointF tl, PointF bl, PointF
 		(float)bl.x, (float)bl.y);
 }
 
-static DecodeStatus DetectNew(const BitMatrix& image, bool tryRotate, DetectorResult& result)
+static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 {
 	// walk to the left at first
 	for (auto startDirection : {PointF(-1, 0), PointF(1, 0), PointF(0, -1), PointF(0, 1)}) {
@@ -1050,10 +1051,11 @@ static DecodeStatus DetectNew(const BitMatrix& image, bool tryRotate, DetectorRe
 			if (bits.empty())
 				continue;
 
+			DetectorResult result;
 			result.setBits(std::make_shared<BitMatrix>(std::move(bits)));
 			result.setPoints({tl, bl, br, tr});
 
-			return DecodeStatus::NoError;
+			return result;
 		}
 		// reached border of image -> try next scan direction
 #ifndef PRINT_DEBUG
@@ -1066,15 +1068,15 @@ static DecodeStatus DetectNew(const BitMatrix& image, bool tryRotate, DetectorRe
 	dumpDebugPPM<PointF>(image, "binary.pnm");//, { tl, bl, br, tr });
 #endif
 
-	return DecodeStatus::NotFound;
+	return {};
 }
 
-DecodeStatus Detector::Detect(const BitMatrix& image, bool tryHarder, bool tryRotate, DetectorResult& result)
+DetectorResult Detector::Detect(const BitMatrix& image, bool tryHarder, bool tryRotate)
 {
-	auto status = DetectNew(image, tryRotate, result);
-	if (StatusIsError(status) && tryHarder)
-		status = DetectOld(image, result);
-	return status;
+	auto result = DetectNew(image, tryRotate);
+	if (!result.isValid() && tryHarder)
+		result = DetectOld(image);
+	return result;
 }
 
 } // DataMatrix

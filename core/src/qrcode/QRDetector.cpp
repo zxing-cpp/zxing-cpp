@@ -271,7 +271,8 @@ static int ComputeDimension(const ResultPoint& topLeft, const ResultPoint& topRi
 	return -1; // to signal error;
 }
 
-static DecodeStatus ProcessFinderPatternInfo(const BitMatrix& image, const FinderPatternInfo& info, /*const PointCallback& pointCallback, */DetectorResult& result)
+static DetectorResult
+ProcessFinderPatternInfo(const BitMatrix& image, const FinderPatternInfo& info /*, const PointCallback& pointCallback*/)
 {
 	//FinderPattern topLeft = info.getTopLeft();
 	//FinderPattern topRight = info.getTopRight();
@@ -279,15 +280,15 @@ static DecodeStatus ProcessFinderPatternInfo(const BitMatrix& image, const Finde
 
 	float moduleSize = CalculateModuleSize(image, info.topLeft, info.topRight, info.bottomLeft);
 	if (moduleSize < 1.0f) {
-		return DecodeStatus::NotFound;
+		return {};
 	}
 	int dimension = ComputeDimension(info.topLeft, info.topRight, info.bottomLeft, moduleSize);
 	if (dimension < 0)
-		return DecodeStatus::NotFound;
+		return {};
 
 	const Version* provisionalVersion = Version::ProvisionalVersionForDimension(dimension);
 	if (provisionalVersion == nullptr)
-		return DecodeStatus::NotFound;
+		return {};
 
 	int modulesBetweenFPCenters = provisionalVersion->dimensionForVersion() - 7;
 
@@ -319,8 +320,9 @@ static DecodeStatus ProcessFinderPatternInfo(const BitMatrix& image, const Finde
 
 	auto bits = GridSampler::Instance()->sampleGrid(image, dimension, dimension, transform);
 	if (bits.empty())
-		return DecodeStatus::NotFound;
+		return {};
 
+	DetectorResult result;
 	result.setBits(std::make_shared<BitMatrix>(std::move(bits)));
 	if (!alignmentPattern.isValid()) {
 		result.setPoints({ info.bottomLeft, info.topLeft, info.topRight });
@@ -328,20 +330,19 @@ static DecodeStatus ProcessFinderPatternInfo(const BitMatrix& image, const Finde
 	else {
 		result.setPoints({ info.bottomLeft, info.topLeft, info.topRight, alignmentPattern });
 	}
-	return DecodeStatus::NoError;
+	return result;
 }
 
-DecodeStatus
-Detector::Detect(const BitMatrix& image, bool pureBarcode, bool tryHarder, DetectorResult& result)
+DetectorResult Detector::Detect(const BitMatrix& image, bool pureBarcode, bool tryHarder)
 {
 	/*PointCallback pointCallback = hints.resultPointCallback();*/
 
 	FinderPatternInfo info = FinderPatternFinder::Find(image, /*pointCallback,*/ pureBarcode, tryHarder);
 
 	if (!info.isValid())
-		return DecodeStatus::NotFound;
+		return {};
 	
-	return ProcessFinderPatternInfo(image, info, /*pointCallback,*/ result);
+	return ProcessFinderPatternInfo(image, info /*pointCallback,*/);
 }
 
 } // QRCode

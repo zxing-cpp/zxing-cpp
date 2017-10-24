@@ -39,7 +39,7 @@ public:
 	* @return {@link DetectorResult} encapsulating results of detecting a Data Matrix Code
 	* @throws NotFoundException if no Data Matrix Code can be found
 	*/
-	static DecodeStatus Detect(const BitMatrix& image, bool tryHarder, bool tryRotate, DetectorResult& result);
+	static DetectorResult Detect(const BitMatrix& image, bool tryHarder, bool tryRotate);
 };
 
 } // DataMatrix

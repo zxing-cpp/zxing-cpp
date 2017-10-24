@@ -41,7 +41,7 @@ public:
 	* @throws NotFoundException if QR Code cannot be found
 	* @throws FormatException if a QR Code cannot be decoded
 	*/
-	static DecodeStatus Detect(const BitMatrix& image, bool pureBarcode, bool tryHarder, DetectorResult& result);
+	static DetectorResult Detect(const BitMatrix& image, bool pureBarcode, bool tryHarder);
 };
 
 } // QRCode
