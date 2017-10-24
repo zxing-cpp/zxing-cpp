@@ -25,12 +25,10 @@
 namespace ZXing {
 namespace QRCode {
 
-DecodeStatus
-DataBlock::GetDataBlocks(const ByteArray& rawCodewords, const Version& version, ErrorCorrectionLevel ecLevel, std::vector<DataBlock>& result)
+std::vector<DataBlock> DataBlock::GetDataBlocks(const ByteArray& rawCodewords, const Version& version, ErrorCorrectionLevel ecLevel)
 {
-	if (rawCodewords.length() != version.totalCodewords()) {
-		return DecodeStatus::FormatError;
-	}
+	if (rawCodewords.length() != version.totalCodewords())
+		return {};
 
 	// Figure out the number and size of data blocks used by this version and
 	// error correction level
@@ -39,7 +37,7 @@ DataBlock::GetDataBlocks(const ByteArray& rawCodewords, const Version& version, 
 	// First count the total number of data blocks
 	int totalBlocks = ecBlocks.numBlocks();
 
-	result.resize(totalBlocks);;
+	std::vector<DataBlock> result(totalBlocks);
 	// Now establish DataBlocks of the appropriate size and number of data codewords
 	int numResultBlocks = 0;
 	for (auto& ecBlock : ecBlocks.blockArray()) {
@@ -84,7 +82,7 @@ DataBlock::GetDataBlocks(const ByteArray& rawCodewords, const Version& version, 
 			result[j]._codewords[iOffset] = rawCodewords[rawCodewordsOffset++];
 		}
 	}
-	return DecodeStatus::NoError;
+	return result;
 }
 
 } // QRCode

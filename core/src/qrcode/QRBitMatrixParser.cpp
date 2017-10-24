@@ -134,17 +134,17 @@ BitMatrixParser::ReadFormatInformation(const BitMatrix& bitMatrix, bool mirrored
 * @return bytes encoded within the QR Code
 * @throws FormatException if the exact number of bytes expected is not read
 */
-DecodeStatus
-BitMatrixParser::ReadCodewords(const BitMatrix& bitMatrix, const Version& version, ByteArray& result)
+ByteArray
+BitMatrixParser::ReadCodewords(const BitMatrix& bitMatrix, const Version& version)
 {
 	if (!hasValidDimension(bitMatrix))
-		return DecodeStatus::FormatError;
+		return {};
 
 	BitMatrix functionPattern;
 	version.buildFunctionPattern(functionPattern);
 
 	bool readingUp = true;
-	result.resize(version.totalCodewords());
+	ByteArray result(version.totalCodewords());
 	int resultOffset = 0;
 	int currentByte = 0;
 	int bitsRead = 0;
@@ -176,7 +176,10 @@ BitMatrixParser::ReadCodewords(const BitMatrix& bitMatrix, const Version& versio
 		}
 		readingUp ^= true; // readingUp = !readingUp; // switch directions
 	}
-	return resultOffset == version.totalCodewords() ? DecodeStatus::NoError : DecodeStatus::FormatError;
+	if (resultOffset != version.totalCodewords())
+		return {};
+
+	return result;
 }
 
 } // QRCode

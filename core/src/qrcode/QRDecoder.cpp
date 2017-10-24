@@ -421,17 +421,15 @@ DoDecode(const BitMatrix& bits, const Version& version, const FormatInformation&
 	auto ecLevel = formatInfo.errorCorrectionLevel();
 
 	// Read codewords
-	ByteArray codewords;
-	DecodeStatus status = BitMatrixParser::ReadCodewords(bits, version, codewords);
-	if (StatusIsError(status)) {
-		return status;
-	}
+	ByteArray codewords = BitMatrixParser::ReadCodewords(bits, version);
+	if (codewords.empty())
+		return DecodeStatus::FormatError;
+
 	// Separate into data blocks
-	std::vector<DataBlock> dataBlocks;
-	status = DataBlock::GetDataBlocks(codewords, version, ecLevel, dataBlocks);
-	if (StatusIsError(status)) {
-		return status;
-	}
+	std::vector<DataBlock> dataBlocks = DataBlock::GetDataBlocks(codewords, version, ecLevel);
+	if (dataBlocks.empty())
+		return DecodeStatus::FormatError;
+
 	// Count total number of data bytes
 	int totalBytes = 0;
 	for (const auto& dataBlock : dataBlocks) {
