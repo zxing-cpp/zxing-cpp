@@ -37,25 +37,25 @@ namespace MaxiCode {
 * @see com.google.zxing.datamatrix.DataMatrixReader#extractPureBits(BitMatrix)
 * @see com.google.zxing.qrcode.QRCodeReader#extractPureBits(BitMatrix)
 */
-static bool ExtractPureBits(const BitMatrix& image, BitMatrix& bits)
+static BitMatrix ExtractPureBits(const BitMatrix& image)
 {
 	int left, top, width, height;
 	if (!image.getEnclosingRectangle(left, top, width, height)) {
-		return false;
+		return {};
 	}
 
 	// Now just read off the bits
-	bits = BitMatrix(BitMatrixParser::MATRIX_WIDTH, BitMatrixParser::MATRIX_HEIGHT);
+	BitMatrix result(BitMatrixParser::MATRIX_WIDTH, BitMatrixParser::MATRIX_HEIGHT);
 	for (int y = 0; y < BitMatrixParser::MATRIX_HEIGHT; y++) {
 		int iy = top + (y * height + height / 2) / BitMatrixParser::MATRIX_HEIGHT;
 		for (int x = 0; x < BitMatrixParser::MATRIX_WIDTH; x++) {
 			int ix = left + (x * width + width / 2 + (y & 0x01) *  width / 2) / BitMatrixParser::MATRIX_WIDTH;
 			if (image.get(ix, iy)) {
-				bits.set(x, y);
+				result.set(x, y);
 			}
 		}
 	}
-	return true;
+	return result;
 }
 
 Result
@@ -70,8 +70,8 @@ Reader::decode(const BinaryBitmap& image) const
 		return Result(DecodeStatus::NotFound);
 	}
 
-	BitMatrix bits;
-	if (!ExtractPureBits(*binImg, bits)) {
+	BitMatrix bits = ExtractPureBits(*binImg);
+	if (bits.empty()) {
 		return Result(DecodeStatus::NotFound);
 	}
 
