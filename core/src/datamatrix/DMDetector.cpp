@@ -36,7 +36,7 @@
 #include <numeric>
 
 // c++14 exchange
-#if __cplusplus < 201402
+#if !defined(_MSC_VER) && __cplusplus < 201402
 namespace std {
 
 template<class T, class U = T>
@@ -465,7 +465,7 @@ template <typename T> struct PointT
 	PointT() = default;
 	PointT(T x, T y) : x(x), y(y) {}
 	template <typename U>
-	explicit PointT(const PointT<U>& p) : x(p.x), y(p.y) {}
+	explicit PointT(const PointT<U>& p) : x((T)p.x), y((T)p.y) {}
 	explicit PointT(const ResultPoint& p) : x(p.x()), y(p.y()) {}
 	operator ResultPoint() const { return {static_cast<float>(x), static_cast<float>(y)}; }
 };
@@ -918,10 +918,10 @@ static BitMatrix SampleGrid(const BitMatrix& image, const ResultPoint& topLeft, 
 		dimensionX - border, border,
 		dimensionX - border, dimensionY - border,
 		border,	dimensionY - border,
-		tl.x, tl.y,
-		tr.x, tr.y,
-        br.x, br.y,
-        bl.x, bl.y,
+		(float)tl.x, (float)tl.y,
+		(float)tr.x, (float)tr.y,
+		(float)br.x, (float)br.y,
+		(float)bl.x, (float)bl.y,
 		result);
 
 	if (StatusIsError(status))
