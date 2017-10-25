@@ -20,7 +20,6 @@
 
 namespace ZXing {
 
-enum class DecodeStatus;
 class DecoderResult;
 
 namespace Pdf417 {
@@ -34,7 +33,7 @@ namespace Pdf417 {
 class DecodedBitStreamParser
 {
 public:
-	static DecodeStatus Decode(const std::vector<int>& codewords, int ecLevel, DecoderResult& result);
+	static DecoderResult Decode(const std::vector<int>& codewords, int ecLevel);
 };
 
 } // Pdf417

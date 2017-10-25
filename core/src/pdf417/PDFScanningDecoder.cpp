@@ -580,7 +580,7 @@ static bool VerifyCodewordCount(std::vector<int>& codewords, int numECCodewords)
 	return true;
 }
 
-static DecodeStatus DecodeCodewords(std::vector<int>& codewords, int ecLevel, const std::vector<int>& erasures, DecoderResult& result)
+static DecoderResult DecodeCodewords(std::vector<int>& codewords, int ecLevel, const std::vector<int>& erasures)
 {
 	if (codewords.empty()) {
 		return DecodeStatus::FormatError;
@@ -595,12 +595,12 @@ static DecodeStatus DecodeCodewords(std::vector<int>& codewords, int ecLevel, co
 		return DecodeStatus::FormatError;
 
 	// Decode the codewords
-	auto status = DecodedBitStreamParser::Decode(codewords, ecLevel, result);
-	if (StatusIsOK(status)) {
+	auto result = DecodedBitStreamParser::Decode(codewords, ecLevel);
+	if (result.isValid()) {
 		result.setErrorsCorrected(correctedErrorsCount);
 		result.setErasures(static_cast<int>(erasures.size()));
 	}
-	return status;
+	return result;
 }
 
 
@@ -617,7 +617,7 @@ static DecodeStatus DecodeCodewords(std::vector<int>& codewords, int ecLevel, co
 * @param ambiguousIndexValues two dimensional array that contains the ambiguous values. The first dimension must
 * be the same length as the ambiguousIndexes array
 */
-static DecodeStatus CreateDecoderResultFromAmbiguousValues(int ecLevel, std::vector<int>& codewords, const std::vector<int>& erasureArray, const std::vector<int>& ambiguousIndexes, const std::vector<std::vector<int>>& ambiguousIndexValues, DecoderResult& result)
+static DecoderResult CreateDecoderResultFromAmbiguousValues(int ecLevel, std::vector<int>& codewords, const std::vector<int>& erasureArray, const std::vector<int>& ambiguousIndexes, const std::vector<std::vector<int>>& ambiguousIndexValues)
 {
 	std::vector<int> ambiguousIndexCount(ambiguousIndexes.size(), 0);
 
@@ -626,9 +626,9 @@ static DecodeStatus CreateDecoderResultFromAmbiguousValues(int ecLevel, std::vec
 		for (size_t i = 0; i < ambiguousIndexCount.size(); i++) {
 			codewords[ambiguousIndexes[i]] = ambiguousIndexValues[i][ambiguousIndexCount[i]];
 		}
-		auto status = DecodeCodewords(codewords, ecLevel, erasureArray, result);
-		if (status != DecodeStatus::ChecksumError) {
-			return status;
+		auto result = DecodeCodewords(codewords, ecLevel, erasureArray);
+		if (result.errorCode() != DecodeStatus::ChecksumError) {
+			return result;
 		}
 
 		if (ambiguousIndexCount.empty()) {
@@ -651,7 +651,7 @@ static DecodeStatus CreateDecoderResultFromAmbiguousValues(int ecLevel, std::vec
 }
 
 
-static DecodeStatus CreateDecoderResult(DetectionResult& detectionResult, DecoderResult& result)
+static DecoderResult CreateDecoderResult(DetectionResult& detectionResult)
 {
 	auto barcodeMatrix = CreateBarcodeMatrix(detectionResult);
 	if (!AdjustCodewordCount(detectionResult, barcodeMatrix)) {
@@ -677,7 +677,7 @@ static DecodeStatus CreateDecoderResult(DetectionResult& detectionResult, Decode
 			}
 		}
 	}
-	return CreateDecoderResultFromAmbiguousValues(detectionResult.barcodeECLevel(), codewords, erasures, ambiguousIndexesList, ambiguousIndexValues, result);
+	return CreateDecoderResultFromAmbiguousValues(detectionResult.barcodeECLevel(), codewords, erasures, ambiguousIndexesList, ambiguousIndexValues);
 }
 
 
@@ -685,10 +685,10 @@ static DecodeStatus CreateDecoderResult(DetectionResult& detectionResult, Decode
 // columns. That way width can be deducted from the pattern column.
 // This approach also allows to detect more details about the barcode, e.g. if a bar type (white or black) is wider 
 // than it should be. This can happen if the scanner used a bad blackpoint.
-DecodeStatus
+DecoderResult
 ScanningDecoder::Decode(const BitMatrix& image, const Nullable<ResultPoint>& imageTopLeft, const Nullable<ResultPoint>& imageBottomLeft,
 	const Nullable<ResultPoint>& imageTopRight, const Nullable<ResultPoint>& imageBottomRight,
-	int minCodewordWidth, int maxCodewordWidth, DecoderResult& result)
+	int minCodewordWidth, int maxCodewordWidth)
 {
 	BoundingBox boundingBox;
 	if (!BoundingBox::Create(image.width(), image.height(), imageTopLeft, imageBottomLeft, imageTopRight, imageBottomRight, boundingBox)) {
@@ -749,7 +749,7 @@ ScanningDecoder::Decode(const BitMatrix& image, const Nullable<ResultPoint>& ima
 			}
 		}
 	}
-	return CreateDecoderResult(detectionResult, result);
+	return CreateDecoderResult(detectionResult);
 }
 
 } // Pdf417
