@@ -22,7 +22,6 @@ namespace ZXing {
 
 class BitMatrix;
 class PerspectiveTransform;
-enum class DecodeStatus;
 
 /**
 * Implementations of this class can, given locations of finder patterns for a QR code in an

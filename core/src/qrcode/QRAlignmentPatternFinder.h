@@ -20,7 +20,6 @@ namespace ZXing {
 
 class BitMatrix;
 //typedef std::function<void(float x, float y)> PointCallback;
-enum class DecodeStatus;
 
 namespace QRCode {
 

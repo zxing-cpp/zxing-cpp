@@ -22,7 +22,6 @@
 namespace ZXing {
 
 class GenericGF;
-enum class DecodeStatus;
 
 /**
 * <p>Implements Reed-Solomon decoding, as the name implies.</p>

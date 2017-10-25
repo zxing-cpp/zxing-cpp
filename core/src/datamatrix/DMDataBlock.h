@@ -19,9 +19,6 @@
 #include "ByteArray.h"
 
 namespace ZXing {
-
-enum class DecodeStatus;
-
 namespace DataMatrix {
 
 class Version;

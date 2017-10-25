@@ -20,7 +20,6 @@ namespace ZXing {
 
 class BitMatrix;
 class DetectorResult;
-enum class DecodeStatus;
 
 namespace DataMatrix {
 

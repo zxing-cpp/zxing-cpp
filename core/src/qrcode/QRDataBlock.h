@@ -21,9 +21,6 @@
 #include <vector>
 
 namespace ZXing {
-
-enum class DecodeStatus;
-
 namespace QRCode {
 
 class Version;

@@ -18,7 +18,6 @@
 
 namespace ZXing {
 
-enum class DecodeStatus;
 class BitMatrix;
 class ByteArray;
 

@@ -19,7 +19,6 @@
 namespace ZXing {
 
 class BitMatrix;
-enum class DecodeStatus;
 
 namespace Aztec {
 

@@ -20,7 +20,6 @@ namespace ZXing {
 
 class BitMatrix;
 class ByteArray;
-enum class DecodeStatus;
 
 namespace QRCode {
 
