@@ -63,11 +63,11 @@ Reader::decode(const BinaryBitmap& image) const
 	//}
 
 	Result result(decodeResult.text(), decodeResult.rawBytes(), decodeResult.numBits(), points, BarcodeFormat::AZTEC);
-	auto& byteSegments = decodeResult.byteSegments();
+	const auto& byteSegments = decodeResult.byteSegments();
 	if (!byteSegments.empty()) {
 		result.metadata().put(ResultMetadata::BYTE_SEGMENTS, byteSegments);
 	}
-	auto ecLevel = decodeResult.ecLevel();
+	const auto& ecLevel = decodeResult.ecLevel();
 	if (!ecLevel.empty()) {
 		result.metadata().put(ResultMetadata::ERROR_CORRECTION_LEVEL, ecLevel);
 	}

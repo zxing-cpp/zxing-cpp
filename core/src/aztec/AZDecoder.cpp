@@ -360,11 +360,9 @@ DecoderResult Decoder::Decode(const DetectorResult& detectorResult)
 	std::vector<bool> rawbits = ExtractBits(detectorResult);
 	std::vector<bool> correctedBits;
 	if (CorrectBits(detectorResult, rawbits, correctedBits)) {
-		DecoderResult result;
-		result.setText(TextDecoder::FromLatin1(GetEncodedData(correctedBits)));
-		result.setRawBytes(ConvertBoolArrayToByteArray(correctedBits));
-		result.setNumBits(static_cast<int>(correctedBits.size()));
-		return result;
+		return DecoderResult(ConvertBoolArrayToByteArray(correctedBits),
+							 TextDecoder::FromLatin1(GetEncodedData(correctedBits)))
+		        .setNumBits(static_cast<int>(correctedBits.size()));
 	}
 	else {
 		return DecodeStatus::FormatError;

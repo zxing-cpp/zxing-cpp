@@ -128,11 +128,11 @@ Reader::decode(const BinaryBitmap& image) const
 	}
 
 	Result result(decoderResult.text(), decoderResult.rawBytes(), points, BarcodeFormat::DATA_MATRIX);
-	auto& byteSegments = decoderResult.byteSegments();
+	const auto& byteSegments = decoderResult.byteSegments();
 	if (!byteSegments.empty()) {
 		result.metadata().put(ResultMetadata::BYTE_SEGMENTS, byteSegments);
 	}
-	auto ecLevel = decoderResult.ecLevel();
+	const auto& ecLevel = decoderResult.ecLevel();
 	if (!ecLevel.empty()) {
 		result.metadata().put(ResultMetadata::ERROR_CORRECTION_LEVEL, ecLevel);
 	}

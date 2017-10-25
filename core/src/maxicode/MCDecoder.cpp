@@ -242,7 +242,7 @@ namespace DecodedBitStreamParser
 		return sb;
 	}
 
-	static DecoderResult Decode(const ByteArray& bytes, int mode)
+	static DecoderResult Decode(ByteArray&& bytes, int mode)
 	{
 		std::string result;
 		result.reserve(144);
@@ -268,11 +268,7 @@ namespace DecodedBitStreamParser
 				result.append(GetMessage(bytes, 1, 77));
 				break;
 		}
-		DecoderResult decodeResult;
-		decodeResult.setRawBytes(bytes);
-		decodeResult.setText(TextDecoder::FromLatin1(result));
-		decodeResult.setEcLevel(std::to_wstring(mode)); // really???
-		return decodeResult;
+		return DecoderResult(std::move(bytes), TextDecoder::FromLatin1(result)).setEcLevel(std::to_wstring(mode)); // really???
 	}
 
 
@@ -315,7 +311,7 @@ Decoder::Decode(const BitMatrix& bits)
 	std::copy_n(codewords.begin(), 10, datawords.begin());
 	std::copy_n(codewords.begin() + 20, datawords.size() - 10, datawords.begin() + 10);
 
-	return DecodedBitStreamParser::Decode(datawords, mode);
+	return DecodedBitStreamParser::Decode(std::move(datawords), mode);
 }
 
 } // MaxiCode

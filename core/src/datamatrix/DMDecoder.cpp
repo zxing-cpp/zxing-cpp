@@ -489,7 +489,7 @@ static bool DecodeBase256Segment(BitSource& bits, std::string& result, std::list
 	return true;
 }
 
-static DecoderResult Decode(const ByteArray& bytes)
+static DecoderResult Decode(ByteArray&& bytes)
 {
 	BitSource bits(bytes);
 	std::string result;
@@ -533,11 +533,8 @@ static DecoderResult Decode(const ByteArray& bytes)
 	if (resultTrailer.length() > 0) {
 		result.append(resultTrailer);
 	}
-	DecoderResult decodeResult;
-	decodeResult.setRawBytes(bytes);
-	decodeResult.setText(TextDecoder::FromLatin1(result));
-	decodeResult.setByteSegments(byteSegments);
-	return decodeResult;
+
+	return DecoderResult(std::move(bytes), TextDecoder::FromLatin1(result)).setByteSegments(std::move(byteSegments));
 }
 
 } // namespace DecodedBitStreamParser
@@ -620,7 +617,7 @@ DecoderResult Decoder::Decode(const BitMatrix& bits)
 	}
 
 	// Decode the contents of that stream of bytes
-	return DecodedBitStreamParser::Decode(resultBytes);
+	return DecodedBitStreamParser::Decode(std::move(resultBytes));
 }
 
 } // DataMatrix

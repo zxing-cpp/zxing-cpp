@@ -305,7 +305,7 @@ ParseECIValue(BitSource& bits, int &outValue)
 * <p>See ISO 18004:2006, 6.4.3 - 6.4.7</p>
 */
 static DecoderResult
-DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionLevel ecLevel, const std::string& hintedCharset)
+DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCorrectionLevel ecLevel, const std::string& hintedCharset)
 {
 	BitSource bits(bytes);
 	std::wstring result;
@@ -404,17 +404,13 @@ DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionL
 		// from readBits() calls
 		return DecodeStatus::FormatError;
 	}
-	
-	DecoderResult decodeResult;
-	decodeResult.setRawBytes(bytes);
-	decodeResult.setText(result);
-	decodeResult.setByteSegments(byteSegments);
-	decodeResult.setEcLevel(ToString(ecLevel));
-	decodeResult.setStructuredAppendSequenceNumber(symbolSequence);
-	decodeResult.setStructuredAppendParity(parityData);
-	return decodeResult;
-}
 
+	return DecoderResult(std::move(bytes), std::move(result))
+		.setByteSegments(std::move(byteSegments))
+		.setEcLevel(ToString(ecLevel))
+		.setStructuredAppendParity(parityData)
+		.setStructuredAppendSequenceNumber(symbolSequence);
+}
 
 static DecoderResult
 DoDecode(const BitMatrix& bits, const Version& version, const FormatInformation& formatInfo, const std::string& hintedCharset)
@@ -452,7 +448,7 @@ DoDecode(const BitMatrix& bits, const Version& version, const FormatInformation&
 	}
 
 	// Decode the contents of that stream of bytes
-	return DecodeBitStream(resultBytes, version, ecLevel, hintedCharset);
+	return DecodeBitStream(std::move(resultBytes), version, ecLevel, hintedCharset);
 }
 
 static void

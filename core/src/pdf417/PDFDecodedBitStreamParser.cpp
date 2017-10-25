@@ -686,13 +686,10 @@ DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel)
 	if (StatusIsError(status))
 		return status;
 
-	DecoderResult result;
-	result.setText(resultString);
-	result.setEcLevel(std::to_wstring(ecLevel));
-	result.setExtra(resultMetadata);
-	return result;
+	return DecoderResult(ByteArray(), std::move(resultString))
+		.setEcLevel(std::to_wstring(ecLevel))
+		.setExtra(resultMetadata);
 }
-
 
 } // Pdf417
 } // ZXing
