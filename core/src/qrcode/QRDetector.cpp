@@ -322,15 +322,10 @@ ProcessFinderPatternInfo(const BitMatrix& image, const FinderPatternInfo& info /
 	if (bits.empty())
 		return {};
 
-	DetectorResult result;
-	result.setBits(std::make_shared<BitMatrix>(std::move(bits)));
-	if (!alignmentPattern.isValid()) {
-		result.setPoints({ info.bottomLeft, info.topLeft, info.topRight });
-	}
-	else {
-		result.setPoints({ info.bottomLeft, info.topLeft, info.topRight, alignmentPattern });
-	}
-	return result;
+	if (alignmentPattern.isValid())
+		return {std::move(bits), {info.bottomLeft, info.topLeft, info.topRight, alignmentPattern}};
+	else
+		return {std::move(bits), {info.bottomLeft, info.topLeft, info.topRight}};
 }
 
 DetectorResult Detector::Detect(const BitMatrix& image, bool pureBarcode, bool tryHarder)

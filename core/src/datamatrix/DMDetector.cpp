@@ -436,10 +436,7 @@ static DetectorResult DetectOld(const BitMatrix& image)
 	if (bits.empty())
 		return {};
 
-	DetectorResult result;
-	result.setBits(std::make_shared<BitMatrix>(std::move(bits)));
-	result.setPoints({ *topLeft, *bottomLeft, *bottomRight, correctedTopRight });
-	return result;
+	return {std::move(bits), {*topLeft, *bottomLeft, *bottomRight, correctedTopRight}};
 }
 
 /**
@@ -1050,11 +1047,7 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 			if (bits.empty())
 				continue;
 
-			DetectorResult result;
-			result.setBits(std::make_shared<BitMatrix>(std::move(bits)));
-			result.setPoints({tl, bl, br, tr});
-
-			return result;
+			return {std::move(bits), {tl, bl, br, tr}};
 		}
 		// reached border of image -> try next scan direction
 #ifndef PRINT_DEBUG

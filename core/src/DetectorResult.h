@@ -20,7 +20,6 @@
 #include "BitMatrix.h"
 
 #include <vector>
-#include <memory>
 
 namespace ZXing {
 
@@ -33,23 +32,25 @@ namespace ZXing {
 */
 class DetectorResult
 {
-	std::shared_ptr<const BitMatrix> _bits;
+	BitMatrix _bits;
 	std::vector<ResultPoint> _points;
+
+	DetectorResult(const DetectorResult&) = delete;
+	DetectorResult& operator=(const DetectorResult&) = delete;
 
 public:
 	DetectorResult() = default;
-	DetectorResult(const DetectorResult&) = delete;
-	DetectorResult& operator=(const DetectorResult&) = delete;
 	DetectorResult(DetectorResult&&) = default;
 	DetectorResult& operator=(DetectorResult&&) = default;
 
-	std::shared_ptr<const BitMatrix> bits() const { return _bits; }
-	void setBits(const std::shared_ptr<const BitMatrix>& bits) { _bits = bits; }
-	const std::vector<ResultPoint>& points() const { return _points; }
-	void setPoints(const std::vector<ResultPoint>& points) { _points = points; }
-	void setPoints(std::initializer_list<ResultPoint> list) { _points.assign(list); }
+	DetectorResult(BitMatrix&& bits, std::vector<ResultPoint>&& points)
+		: _bits(std::move(bits)), _points(std::move(points))
+	{}
 
-	bool isValid() const { return _bits && !_bits->empty(); }
+	const BitMatrix& bits() const { return _bits; }
+	const std::vector<ResultPoint>& points() const { return _points; }
+
+	bool isValid() const { return !_bits.empty(); }
 };
 
 } // ZXing

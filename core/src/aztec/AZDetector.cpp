@@ -547,13 +547,7 @@ DetectorResult Detector::Detect(const BitMatrix& image, bool isMirror)
 	// 5. Get the corners of the matrix.
 	GetMatrixCornerPoints(bullsEyeCorners, compact, nbLayers, nbCenterLayers);
 
-	DetectorResult result;
-	result.setBits(std::make_shared<BitMatrix>(std::move(bits)));
-	result.setPoints({ bullsEyeCorners.begin(), bullsEyeCorners.end() });
-	result.setCompact(compact);
-	result.setNbDatablocks(nbDataBlocks);
-	result.setNbLayers(nbLayers);
-	return result;
+	return {std::move(bits), {bullsEyeCorners.begin(), bullsEyeCorners.end()}, compact, nbDataBlocks, nbLayers};
 }
 
 } // Aztec
