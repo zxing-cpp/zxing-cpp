@@ -304,8 +304,8 @@ ParseECIValue(BitSource& bits, int &outValue)
 *
 * <p>See ISO 18004:2006, 6.4.3 - 6.4.7</p>
 */
-static DecodeStatus
-DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionLevel ecLevel, const std::string& hintedCharset, DecoderResult& decodeResult)
+static DecoderResult
+DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionLevel ecLevel, const std::string& hintedCharset)
 {
 	BitSource bits(bytes);
 	std::wstring result;
@@ -405,18 +405,19 @@ DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionL
 		return DecodeStatus::FormatError;
 	}
 	
+	DecoderResult decodeResult;
 	decodeResult.setRawBytes(bytes);
 	decodeResult.setText(result);
 	decodeResult.setByteSegments(byteSegments);
 	decodeResult.setEcLevel(ToString(ecLevel));
 	decodeResult.setStructuredAppendSequenceNumber(symbolSequence);
 	decodeResult.setStructuredAppendParity(parityData);
-	return DecodeStatus::NoError;
+	return decodeResult;
 }
 
 
-static DecodeStatus
-DoDecode(const BitMatrix& bits, const Version& version, const FormatInformation& formatInfo, const std::string& hintedCharset, DecoderResult& result)
+static DecoderResult
+DoDecode(const BitMatrix& bits, const Version& version, const FormatInformation& formatInfo, const std::string& hintedCharset)
 {
 	auto ecLevel = formatInfo.errorCorrectionLevel();
 
@@ -451,7 +452,7 @@ DoDecode(const BitMatrix& bits, const Version& version, const FormatInformation&
 	}
 
 	// Decode the contents of that stream of bytes
-	return DecodeBitStream(resultBytes, version, ecLevel, hintedCharset, result);
+	return DecodeBitStream(resultBytes, version, ecLevel, hintedCharset);
 }
 
 static void
@@ -462,8 +463,8 @@ ReMask(BitMatrix& bitMatrix, const FormatInformation& formatInfo)
 }
 
 
-DecodeStatus
-Decoder::Decode(const BitMatrix& bits_, const std::string& hintedCharset, DecoderResult& result)
+DecoderResult
+Decoder::Decode(const BitMatrix& bits_, const std::string& hintedCharset)
 {
 	BitMatrix bits = bits_.copy();
 
@@ -473,9 +474,9 @@ Decoder::Decode(const BitMatrix& bits_, const std::string& hintedCharset, Decode
 
 	if (version != nullptr && formatInfo.isValid()) {
 		ReMask(bits, formatInfo);
-		auto status = DoDecode(bits, *version, formatInfo, hintedCharset, result);
-		if (StatusIsOK(status)) {
-			return status;
+		auto result = DoDecode(bits, *version, formatInfo, hintedCharset);
+		if (result.isValid()) {
+			return result;
 		}
 	}
 
@@ -498,12 +499,11 @@ Decoder::Decode(const BitMatrix& bits_, const std::string& hintedCharset, Decode
 		bits.mirror();
 
 		ReMask(bits, formatInfo);
-		auto status = DoDecode(bits, *version, formatInfo, hintedCharset, result);
-		if (StatusIsOK(status))
-		{
+		auto result = DoDecode(bits, *version, formatInfo, hintedCharset);
+		if (result.isValid())
 			result.setExtra(std::make_shared<DecoderMetadata>(true));
-		}
-		return status;
+
+		return result;
 	}
 	return DecodeStatus::FormatError;
 }

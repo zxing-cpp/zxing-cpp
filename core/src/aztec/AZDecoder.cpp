@@ -355,16 +355,16 @@ static ByteArray ConvertBoolArrayToByteArray(const std::vector<bool>& boolArr)
 	return byteArr;
 }
 
-DecodeStatus
-Decoder::Decode(const DetectorResult& detectorResult, DecoderResult& result)
+DecoderResult Decoder::Decode(const DetectorResult& detectorResult)
 {
 	std::vector<bool> rawbits = ExtractBits(detectorResult);
 	std::vector<bool> correctedBits;
 	if (CorrectBits(detectorResult, rawbits, correctedBits)) {
+		DecoderResult result;
 		result.setText(TextDecoder::FromLatin1(GetEncodedData(correctedBits)));
 		result.setRawBytes(ConvertBoolArrayToByteArray(correctedBits));
 		result.setNumBits(static_cast<int>(correctedBits.size()));
-		return DecodeStatus::NoError;
+		return result;
 	}
 	else {
 		return DecodeStatus::FormatError;

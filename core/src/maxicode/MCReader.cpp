@@ -75,10 +75,9 @@ Reader::decode(const BinaryBitmap& image) const
 		return Result(DecodeStatus::NotFound);
 	}
 
-	DecoderResult decoderResult;
-	DecodeStatus status = Decoder::Decode(bits, decoderResult);
-	if (StatusIsError(status)) {
-		return Result(status);
+	DecoderResult decoderResult = Decoder::Decode(bits);
+	if (!decoderResult.isValid()) {
+		return Result(decoderResult.errorCode());
 	}
 	Result result(decoderResult.text(), decoderResult.rawBytes(), std::vector<ResultPoint>(), BarcodeFormat::MAXICODE);
 

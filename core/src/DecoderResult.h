@@ -17,6 +17,7 @@
 */
 
 #include "ByteArray.h"
+#include "DecodeStatus.h"
 
 #include <memory>
 #include <list>
@@ -35,6 +36,7 @@ class CustomData;
 */
 class DecoderResult
 {
+	DecodeStatus _status = DecodeStatus::NoError;
 	ByteArray _rawBytes;
 	int _numBits = 0;
 	std::wstring _text;
@@ -50,9 +52,15 @@ public:
 	//explicit DecoderResult(DecodeStatus status);
 	//DecoderResult(const ByteArray& rawBytes, const String& text, std::list<ByteArray>& byteSegments, const std::string& ecLevel, int saSequence, int saParity);
 	//DecoderResult(const ByteArray& rawBytes, const String& text, std::list<ByteArray>& byteSegments, const std::string& ecLevel);
-	DecoderResult() {}
+	DecoderResult(DecodeStatus status) : _status(status) {}
+	DecoderResult() = default;
 	DecoderResult(const DecoderResult &) = delete;
 	DecoderResult& operator=(const DecoderResult &) = delete;
+	DecoderResult(DecoderResult&&) = default;
+	DecoderResult& operator=(DecoderResult&&) = default;
+
+	bool isValid() const { return StatusIsOK(_status); }
+	DecodeStatus errorCode() const { return _status; }
 
 	const ByteArray& rawBytes() const { return _rawBytes; }
 	void setRawBytes(const ByteArray& bytes) { _rawBytes = bytes; _numBits = 8 * bytes.length(); }
