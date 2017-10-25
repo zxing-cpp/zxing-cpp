@@ -183,7 +183,7 @@ static int IndexOf(const char* str, char c)
 	return s != nullptr ? static_cast<int>(s - str) : -1;
 }
 
-bool
+static bool
 CheckOneChecksum(const std::string& result, int checkPosition, int weightMax)
 {
 	int weight = 1;
@@ -194,20 +194,14 @@ CheckOneChecksum(const std::string& result, int checkPosition, int weightMax)
 			weight = 1;
 		}
 	}
-	if (total < 0 || result[checkPosition] != ALPHABET_STRING[total % 47]) {
-		return false;
-	}
-	return true;
+	return !(total < 0 || result[checkPosition] != ALPHABET_STRING[total % 47]);
 }
 
-static DecodeStatus
+static bool
 CheckChecksums(const std::string& result)
 {
 	int length = static_cast<int>(result.length());
-	if (CheckOneChecksum(result, length - 2, 20) && CheckOneChecksum(result, length - 1, 15)) {
-		return DecodeStatus::NoError;
-	}
-	return DecodeStatus::ChecksumError;
+	return CheckOneChecksum(result, length - 2, 20) && CheckOneChecksum(result, length - 1, 15);
 }
 
 
@@ -252,15 +246,14 @@ Code93Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 		return Result(DecodeStatus::NotFound);
 	}
 
-	auto status = CheckChecksums(result);
-	if (StatusIsError(status)) {
-		return Result(status);
-	}
+	if (!CheckChecksums(result))
+		return Result(DecodeStatus::ChecksumError);
+
 	// Remove checksum digits
 	result.resize(result.length() - 2);
 
 	std::string resultString;
-	status = DecodeExtended(result, resultString);
+	auto status = DecodeExtended(result, resultString);
 	if (StatusIsError(status)) {
 		return Result(status);
 	}

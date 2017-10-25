@@ -540,33 +540,33 @@ static bool DecodeErrorCorrection(std::vector<int>& received, int numECCodewords
 * @param numECCodewords number of error correction codewords that are available in codewords
 * @throws ChecksumException if error correction fails
 */
-static DecodeStatus CorrectErrors(std::vector<int>& codewords, const std::vector<int>& erasures, int numECCodewords, int& errorCount)
+static bool CorrectErrors(std::vector<int>& codewords, const std::vector<int>& erasures, int numECCodewords, int& errorCount)
 {
 	if ((int)erasures.size() > numECCodewords / 2 + MAX_ERRORS ||
 		numECCodewords < 0 ||
 		numECCodewords > MAX_EC_CODEWORDS) {
 		// Too many errors or EC Codewords is corrupted
-		return DecodeStatus::ChecksumError;
+		return false;
 	}
-	return DecodeErrorCorrection(codewords, numECCodewords, erasures, errorCount) ? DecodeStatus::NoError : DecodeStatus::ChecksumError;
+	return DecodeErrorCorrection(codewords, numECCodewords, erasures, errorCount);
 }
 
 /**
 * Verify that all is OK with the codeword array.
 */
-static DecodeStatus VerifyCodewordCount(std::vector<int>& codewords, int numECCodewords)
+static bool VerifyCodewordCount(std::vector<int>& codewords, int numECCodewords)
 {
 	if (codewords.size() < 4) {
 		// Codeword array size should be at least 4 allowing for
 		// Count CW, At least one Data CW, Error Correction CW, Error Correction CW
-		return DecodeStatus::FormatError;
+		return false;
 	}
 	// The first codeword, the Symbol Length Descriptor, shall always encode the total number of data
 	// codewords in the symbol, including the Symbol Length Descriptor itself, data codewords and pad
 	// codewords, but excluding the number of error correction codewords.
 	int numberOfCodewords = codewords[0];
 	if (numberOfCodewords > (int)codewords.size()) {
-		return DecodeStatus::FormatError;
+		return false;
 	}
 	if (numberOfCodewords == 0) {
 		// Reset to the length of the array - 8 (Allow for at least level 3 Error Correction (8 Error Codewords)
@@ -574,10 +574,10 @@ static DecodeStatus VerifyCodewordCount(std::vector<int>& codewords, int numECCo
 			codewords[0] = (int)codewords.size() - numECCodewords;
 		}
 		else {
-			return DecodeStatus::FormatError;
+			return false;
 		}
 	}
-	return DecodeStatus::NoError;
+	return true;
 }
 
 static DecodeStatus DecodeCodewords(std::vector<int>& codewords, int ecLevel, const std::vector<int>& erasures, DecoderResult& result)
@@ -588,18 +588,17 @@ static DecodeStatus DecodeCodewords(std::vector<int>& codewords, int ecLevel, co
 
 	int numECCodewords = 1 << (ecLevel + 1);
 	int correctedErrorsCount = 0;
-	DecodeStatus status = CorrectErrors(codewords, erasures, numECCodewords, correctedErrorsCount);
+	if (!CorrectErrors(codewords, erasures, numECCodewords, correctedErrorsCount))
+		return DecodeStatus::ChecksumError;
+
+	if (!VerifyCodewordCount(codewords, numECCodewords))
+		return DecodeStatus::FormatError;
+
+	// Decode the codewords
+	auto status = DecodedBitStreamParser::Decode(codewords, ecLevel, result);
 	if (StatusIsOK(status)) {
-		status = VerifyCodewordCount(codewords, numECCodewords);
-		if (StatusIsOK(status)) {
-			// Decode the codewords
-			status = DecodedBitStreamParser::Decode(codewords, ecLevel, result);
-			if (StatusIsOK(status)) {
-				result.setErrorsCorrected(correctedErrorsCount);
-				result.setErasures(static_cast<int>(erasures.size()));
-				return DecodeStatus::NoError;
-			}
-		}
+		result.setErrorsCorrected(correctedErrorsCount);
+		result.setErasures(static_cast<int>(erasures.size()));
 	}
 	return status;
 }
