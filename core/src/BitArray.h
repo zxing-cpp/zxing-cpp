@@ -67,9 +67,9 @@ public:
 
 		int operator-(const Iterator& rhs) const
 		{
-			int32_t maskDiff = _mask - rhs._mask;
-			return static_cast<int>(_value - rhs._value) * 32 +
-			       (maskDiff >= 0 ? BitHacks::CountBitsSet(maskDiff) : -BitHacks::CountBitsSet(-maskDiff));
+			return static_cast<int>(_value - rhs._value) * 32 + (_mask >= rhs._mask
+																	 ? +BitHacks::CountBitsSet(_mask - rhs._mask)
+																	 : -BitHacks::CountBitsSet(rhs._mask - _mask));
 		}
 
 		bool operator==(const Iterator& rhs) const { return _mask == rhs._mask && _value == rhs._value; }
@@ -151,19 +151,26 @@ public:
 	ReverseIterator rbegin() const noexcept { return ReverseIterator(end()); }
 	ReverseIterator rend() const noexcept { return ReverseIterator(begin()); }
 
-	Iterator getNextSetTo(Iterator i, bool v) const {
-		if (i._value >= _bits.end())
-			return end();
+	static Iterator getNextSetTo(Iterator begin, Iterator end, bool v) {
+		auto i = begin;
+		// reconstruct _bits.end()
+		auto bitsEnd = end._mask == 0x1 ? end._value : std::next(end._value);
+		if (i._value >= bitsEnd)
+			return end;
 		// mask off lesser bits first
-		int32_t currentBits = (v ? *i._value : ~*i._value) & ~(i._mask - 1);
+		auto currentBits = (v ? *i._value : ~*i._value) & ~(i._mask - 1);
 		while (currentBits == 0) {
-			if (++i._value == _bits.end()) {
-				return end();
+			if (++i._value == bitsEnd) {
+				return end;
 			}
 			currentBits = v ? *i._value : ~*i._value;
 		}
 		i._mask = 1 << BitHacks::NumberOfTrailingZeros(currentBits);
 		return i;
+	}
+
+	Iterator getNextSetTo(Iterator i, bool v) const {
+		return getNextSetTo(i, end(), v);
 	}
 
 	Iterator getNextSet(Iterator i) const { return getNextSetTo(i, true); }
@@ -199,14 +206,18 @@ public:
 	*  at or beyond this given index
 	* @see #getNextUnset(int)
 	*/
-	int getNextSet(int from) const;
+	int getNextSet(int from) const {
+		return getNextSet(iterAt(from)) - begin();
+	}
 
 	/**
 	* @param from index to start looking for unset bit
 	* @return index of next unset bit, or {@code size} if none are unset until the end
 	* @see #getNextSet(int)
 	*/
-	int getNextUnset(int from) const;
+	int getNextUnset(int from) const {
+		return getNextUnset(iterAt(from)) - begin();
+	}
 
 
 	void getSubArray(int offset, int length, BitArray& result) const;
@@ -238,17 +249,23 @@ public:
 	bool isRange(int start, int end, bool value) const;
 
 	// Little helper method to make common isRange use case more readable.
-	// Pass positive zone size to look for quite zone after i and negative for zone in front of i
-	bool hasQuiteZone(Iterator i, int signedZoneSize, bool value = false) const {
+	// Pass positive zone size to look for quite zone after i and negative for zone in front of i.
+	// Set allowClippedZone to false if clipping the zone at the image border is not acceptable.
+	bool hasQuiteZone(Iterator i, int signedZoneSize, bool allowClippedZone = true) const {
 		int index = i - begin();
-		if (signedZoneSize > 0)
-			return isRange(index, std::min(size(), index + signedZoneSize), value);
-		else
-			return isRange(std::max(0, index + signedZoneSize), index, value);
+		if (signedZoneSize > 0) {
+			if (!allowClippedZone && index + signedZoneSize >= size())
+				return false;
+			return isRange(index, std::min(size(), index + signedZoneSize), false);
+		} else {
+			if (!allowClippedZone && index + signedZoneSize < 0)
+				return false;
+			return isRange(std::max(0, index + signedZoneSize), index, false);
+		}
 	}
 
-	bool hasQuiteZone(ReverseIterator i, int signedZoneSize, bool value = false) const {
-		return hasQuiteZone(i.base(), -signedZoneSize, value);
+	bool hasQuiteZone(ReverseIterator i, int signedZoneSize, bool allowClippedZone = true) const {
+		return hasQuiteZone(i.base(), -signedZoneSize, allowClippedZone);
 	}
 
 	/**

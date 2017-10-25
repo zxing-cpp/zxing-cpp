@@ -49,40 +49,34 @@ UPCEReader::expectedFormat() const
 	return BarcodeFormat::UPC_E;
 }
 
-static DecodeStatus
-DetermineNumSysAndCheckDigit(std::string& resultString, int lgPatternFound)
+BitArray::Range
+UPCEReader::decodeMiddle(const BitArray& row, BitArray::Iterator begin, std::string& resultString) const
 {
-	for (size_t numSys = 0; numSys < NUMSYS_AND_CHECK_DIGIT_PATTERNS.size(); numSys++) {
-		for (size_t d = 0; d < NUMSYS_AND_CHECK_DIGIT_PATTERNS[0].size(); d++) {
-			if (lgPatternFound == NUMSYS_AND_CHECK_DIGIT_PATTERNS[numSys][d]) {
-				resultString.insert(0, 1, (char)('0' + numSys));
-				resultString.push_back((char)('0' + d));
-				return DecodeStatus::NoError;
-			}
-		}
-	}
-	return DecodeStatus::NotFound;
-}
-
-DecodeStatus
-UPCEReader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const
-{
-	std::array<int, 4> counters = {};
-	int end = row.size();
+	BitArray::Range next = {begin, row.end()};
+	const BitArray::Range notFound = {begin, begin};
 	int lgPatternFound = 0;
-	for (int x = 0; x < 6 && rowOffset < end; x++) {
-		int bestMatch = 0;
-		auto status = DecodeDigit(row, rowOffset, UPCEANCommon::L_AND_G_PATTERNS, counters, bestMatch);
-		if (StatusIsError(status)) {
-			return status;
-		}
-		resultString.push_back((char)('0' + bestMatch % 10));
-		rowOffset = Accumulate(counters, rowOffset);
+
+	for (int x = 0; x < 6 && next; x++) {
+		int bestMatch = DecodeDigit(&next, UPCEANCommon::L_AND_G_PATTERNS, &resultString);
+		if (bestMatch == -1)
+			return notFound;
+
 		if (bestMatch >= 10) {
 			lgPatternFound |= 1 << (5 - x);
 		}
 	}
-	return DetermineNumSysAndCheckDigit(resultString, lgPatternFound);
+
+	// DetermineNumSysAndCheckDigit(resultString, lgPatternFound)
+	for (size_t numSys = 0; numSys < NUMSYS_AND_CHECK_DIGIT_PATTERNS.size(); numSys++) {
+		for (size_t d = 0; d < NUMSYS_AND_CHECK_DIGIT_PATTERNS[numSys].size(); d++) {
+			if (lgPatternFound == NUMSYS_AND_CHECK_DIGIT_PATTERNS[numSys][d]) {
+				resultString.insert(0, 1, (char)('0' + numSys));
+				resultString.push_back((char)('0' + d));
+				return {begin, next.begin};
+			}
+		}
+	}
+	return notFound;
 }
 
 DecodeStatus
@@ -91,10 +85,10 @@ UPCEReader::checkChecksum(const std::string& s) const
 	return UPCEANReader::checkChecksum(UPCEANCommon::ConvertUPCEtoUPCA(s));
 }
 
-DecodeStatus
-UPCEReader::decodeEnd(const BitArray& row, int endStart, int& begin, int& end) const
+BitArray::Range
+UPCEReader::decodeEnd(const BitArray& row, BitArray::Iterator begin) const
 {
-	return FindGuardPattern(row, endStart, true, MIDDLE_END_PATTERN, begin, end);
+	return FindGuardPattern(row, begin, true, MIDDLE_END_PATTERN);
 }
 
 } // OneD

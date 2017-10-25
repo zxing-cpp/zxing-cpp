@@ -58,76 +58,48 @@ static const int FIRST_DIGIT_ENCODINGS[] = {
 	0x00, 0x0B, 0x0D, 0xE, 0x13, 0x19, 0x1C, 0x15, 0x16, 0x1A
 };
 
-/**
-* Based on pattern of odd-even ('L' and 'G') patterns used to encoded the explicitly-encoded
-* digits in a barcode, determines the implicitly encoded first digit and adds it to the
-* result string.
-*
-* @param resultString string to insert decoded first digit into
-* @param lgPatternFound int whose bits indicates the pattern of odd/even L/G patterns used to
-*  encode digits
-* @throws NotFoundException if first digit cannot be determined
-*/
-static DecodeStatus DetermineFirstDigit(std::string& resultString, int lgPatternFound)
-{
-	for (int d = 0; d < Length(FIRST_DIGIT_ENCODINGS); d++) {
-		if (lgPatternFound == FIRST_DIGIT_ENCODINGS[d]) {
-			resultString.insert(0, 1, (char)('0' + d));
-			return DecodeStatus::NoError;
-		}
-	}
-	return DecodeStatus::NotFound;
-}
-
-
 BarcodeFormat
 EAN13Reader::expectedFormat() const
 {
 	return BarcodeFormat::EAN_13;
 }
 
-DecodeStatus
-EAN13Reader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const
+BitArray::Range EAN13Reader::decodeMiddle(const BitArray& row, BitArray::Iterator begin, std::string& resultString) const
 {
-	std::array<int, 4> counters = {};
-	int end = row.size();
-	DecodeStatus status;
 	int lgPatternFound = 0;
+	BitArray::Range next = {begin, row.end()};
+	const BitArray::Range notFound = {begin, begin};
 
-	for (int x = 0; x < 6 && rowOffset < end; x++) {
-		int bestMatch = 0;
-		status = DecodeDigit(row, rowOffset, UPCEANCommon::L_AND_G_PATTERNS, counters, bestMatch);
-		if (StatusIsError(status)) {
-			return status;
-		}
-		resultString.push_back((char)('0' + bestMatch % 10));
-		rowOffset = Accumulate(counters, rowOffset);
+	for (int x = 0; x < 6 && next; x++) {
+		int bestMatch = DecodeDigit(&next, UPCEANCommon::L_AND_G_PATTERNS, &resultString);
+		if (bestMatch == -1)
+			return notFound;
+
 		if (bestMatch >= 10) {
 			lgPatternFound |= 1 << (5 - x);
 		}
 	}
 
-	status = DetermineFirstDigit(resultString, lgPatternFound);
-	if (StatusIsError(status)) {
-		return status;
-	}
-	int middleRangeBegin, middleRangeEnd;
-	status = FindGuardPattern(row, rowOffset, true, UPCEANCommon::MIDDLE_PATTERN, middleRangeBegin, middleRangeEnd);
-	if (StatusIsError(status)) {
-		return status;
-	}
+	/**
+	* Based on pattern of odd-even ('L' and 'G') patterns used to encoded the explicitly-encoded
+	* digits in a barcode, determines the implicitly encoded first digit and adds it to the
+	* result string.
+	*/
+	auto index = Find(FIRST_DIGIT_ENCODINGS, lgPatternFound) - std::begin(FIRST_DIGIT_ENCODINGS);
+	if( index == Length(FIRST_DIGIT_ENCODINGS) )
+		return notFound;
+	resultString.insert(0, 1, (char)('0' + index));
 
-	rowOffset = middleRangeEnd;
-	for (int x = 0; x < 6 && rowOffset < end; x++) {
-		int bestMatch = 0;
-		status = DecodeDigit(row, rowOffset, UPCEANCommon::L_PATTERNS, counters, bestMatch);
-		if (StatusIsError(status)) {
-			return status;
-		}
-		resultString.push_back((char)('0' + bestMatch));
-		rowOffset = Accumulate(counters, rowOffset);
+	auto middleRange = FindGuardPattern(row, next.begin, true, UPCEANCommon::MIDDLE_PATTERN);
+	if (!middleRange)
+		return notFound;
+	next.begin = middleRange.end;
+
+	for (int x = 0; x < 6 && next; x++) {
+		if (DecodeDigit(&next, UPCEANCommon::L_PATTERNS, &resultString) == -1)
+			return notFound;
 	}
-	return DecodeStatus::NoError;
+	return {begin, next.begin};
 }
 
 } // OneD

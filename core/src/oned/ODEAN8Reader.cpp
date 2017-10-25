@@ -31,40 +31,27 @@ EAN8Reader::expectedFormat() const
 	return BarcodeFormat::EAN_8;
 }
 
-DecodeStatus
-EAN8Reader::decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const
+BitArray::Range
+EAN8Reader::decodeMiddle(const BitArray& row, BitArray::Iterator begin, std::string& resultString) const
 {
-	std::array<int, 4> counters = {};
-	int end = row.size();
-	DecodeStatus status;
+	BitArray::Range next = {begin, row.end()};
+	const BitArray::Range notFound = {begin, begin};
 
-	for (int x = 0; x < 4 && rowOffset < end; x++) {
-		int bestMatch = 0;
-		status = DecodeDigit(row, rowOffset, UPCEANCommon::L_PATTERNS, counters, bestMatch);
-		if (StatusIsError(status)) {
-			return status;
-		}
-		resultString.push_back((char)('0' + bestMatch));
-		rowOffset = Accumulate(counters, rowOffset);
+	for (int x = 0; x < 4 && next; x++) {
+		if (DecodeDigit(&next, UPCEANCommon::L_PATTERNS, &resultString) == -1)
+			return notFound;
 	}
 
-	int middleRangeBegin, middleRangeEnd;
-	status = FindGuardPattern(row, rowOffset, true, UPCEANCommon::MIDDLE_PATTERN, middleRangeBegin, middleRangeEnd);
-	if (StatusIsError(status)) {
-		return status;
-	}
+	auto middleRange = FindGuardPattern(row, next.begin, true, UPCEANCommon::MIDDLE_PATTERN);
+	if (!middleRange)
+		return notFound;
+	next.begin = middleRange.end;
 
-	rowOffset = middleRangeEnd;
-	for (int x = 0; x < 4 && rowOffset < end; x++) {
-		int bestMatch = 0;
-		status = DecodeDigit(row, rowOffset, UPCEANCommon::L_PATTERNS, counters, bestMatch);
-		if (StatusIsError(status)) {
-			return status;
-		}
-		resultString.push_back((char)('0' + bestMatch));
-		rowOffset = Accumulate(counters, rowOffset);
+	for (int x = 0; x < 4 && next; x++) {
+		if (DecodeDigit(&next, UPCEANCommon::L_PATTERNS, &resultString) == -1)
+			return notFound;
 	}
-	return DecodeStatus::NoError;
+	return {begin, next.begin};
 }
 
 } // OneD

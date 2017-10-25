@@ -57,9 +57,17 @@ public:
 	* @throws ChecksumException if a potential barcode is found but does not pass its checksum
 	* @throws FormatException if a potential barcode is found but format is invalid
 	*/
-	virtual Result decodeRow(int rowNumber, const BitArray& row, int startGuardBegin, int startGuardEnd) const;
+	virtual Result decodeRow(int rowNumber, const BitArray& row, BitArray::Range startGuard) const;
+
+	using Digit = std::array<int, 4>;
 
 protected:
+	// These two values are critical for determining how permissive the decoding will be.
+	// We've arrived at these values through a lot of trial and error. Setting them any higher
+	// lets false positives creep in quickly.
+	static constexpr float MAX_AVG_VARIANCE = 0.48f;
+	static constexpr float MAX_INDIVIDUAL_VARIANCE = 0.7f;
+
 	explicit UPCEANReader(const DecodeHints& hints);
 
 	/**
@@ -76,7 +84,7 @@ protected:
 	* @param resultString {@link StringBuilder} to append decoded chars to
 	* @throws NotFoundException if decoding could not complete successfully
 	*/
-	virtual DecodeStatus decodeMiddle(const BitArray& row, int &rowOffset, std::string& resultString) const = 0;
+	virtual BitArray::Range decodeMiddle(const BitArray& row, BitArray::Iterator begin, std::string& resultString) const = 0;
 
 	/**
 	* @param s string of digits to check
@@ -86,39 +94,47 @@ protected:
 	virtual	DecodeStatus checkChecksum(const std::string& s) const;
 
 
-	virtual DecodeStatus decodeEnd(const BitArray& row, int endStart, int& begin, int& end) const;
+	virtual BitArray::Range decodeEnd(const BitArray& row, BitArray::Iterator begin) const;
 
 public:
-	static DecodeStatus FindStartGuardPattern(const BitArray& row, int& begin, int& end);
+	static BitArray::Range FindStartGuardPattern(const BitArray& row);
 
 	template <typename Container>
-	static DecodeStatus FindGuardPattern(const BitArray& row, int rowOffset, bool whiteFirst, const Container& pattern, int& begin, int& end) {
-		return FindGuardPattern(row, rowOffset, whiteFirst, pattern.data(), pattern.size(), begin, end);
+	static BitArray::Range FindGuardPattern(const BitArray& row, BitArray::Iterator begin, bool whiteFirst, const Container& pattern) {
+		return FindGuardPattern(row, begin, whiteFirst, pattern.data(), pattern.size());
 	}
 
 	/**
-	* Attempts to decode a single UPC/EAN-encoded digit.
+	* Attempts to read and decode a single UPC/EAN-encoded digit.
 	*
-	* @param row row of black/white values to decode
 	* @param counters the counts of runs of observed black/white/black/... values
-	* @param rowOffset horizontal offset to start decoding from
 	* @param patterns the set of patterns to use to decode -- sometimes different encodings
 	* for the digits 0-9 are used, and this indicates the encodings for 0 to 9 that should
 	* be used
-	* @return horizontal offset of first pixel beyond the decoded digit
+	* @return index best matching pattern, -1 if counters could not be matched
 	* @throws NotFoundException if digit cannot be decoded
 	*/
-	template <typename Container>
-	static DecodeStatus DecodeDigit(const BitArray& row, int rowOffset, const Container& patterns, std::array<int, 4>& counters, int &resultOffset) {
-		return DecodeDigit(row, rowOffset, patterns.data(), patterns.size(), counters, resultOffset);
+	template <size_t N>
+	static int DecodeDigit(BitArray::Range* next, const std::array<Digit, N>& patterns, std::string* resultString) {
+		assert(next && resultString);
+
+		Digit counters = {};
+		auto range = RowReader::RecordPattern(next->begin, next->end, counters);
+		if (!range)
+			return -1;
+		next->begin = range.end;
+
+		int bestMatch = RowReader::DecodeDigit(counters, patterns, MAX_AVG_VARIANCE, MAX_INDIVIDUAL_VARIANCE, false);
+		if (bestMatch != -1)
+			resultString->push_back((char)('0' + bestMatch % 10));
+
+		return bestMatch;
 	}
 	
 private:
 	std::vector<int> _allowedExtensions;
 
-	static DecodeStatus FindGuardPattern(const BitArray& row, int rowOffset, bool whiteFirst, const int* pattern, size_t length, int& begin, int& end);
-	static DecodeStatus DecodeDigit(const BitArray& row, int rowOffset, const std::array<int, 4>* patterns, size_t patternCount, std::array<int, 4>& counters, int &resultOffset);
-	static DecodeStatus DoFindGuardPattern(const BitArray& row, int rowOffset, bool whiteFirst, const int* pattern, int* counters, size_t length, int& begin, int& end);
+	static BitArray::Range FindGuardPattern(const BitArray& row, BitArray::Iterator begin, bool whiteFirst, const int* pattern, size_t length);
 };
 
 } // OneD

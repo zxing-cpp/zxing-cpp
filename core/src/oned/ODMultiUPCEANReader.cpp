@@ -66,13 +66,12 @@ Result
 MultiUPCEANReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const
 {
 	// Compute this location once and reuse it on multiple implementations
-	int startGuardPatternBegin, startGuardPatternEnd;
-	auto status = UPCEANReader::FindStartGuardPattern(row, startGuardPatternBegin, startGuardPatternEnd);
-	if (StatusIsError(status))
-		return Result(status);
+	auto range = UPCEANReader::FindStartGuardPattern(row);
+	if (!range)
+		return Result(DecodeStatus::NotFound);
 
 	for (auto& reader : _readers) {
-		Result result = reader->decodeRow(rowNumber, row, startGuardPatternBegin, startGuardPatternEnd);
+		Result result = reader->decodeRow(rowNumber, row, range);
 		if (!result.isValid())
 		{
 			if (StatusIsKindOf(result.status(), DecodeStatus::ReaderError))

@@ -31,7 +31,7 @@
 #include <string>
 #include <memory>
 #include <vector>
-#include <unordered_set>
+#include <set>
 #include <chrono>
 #include <stdexcept>
 
@@ -134,7 +134,7 @@ struct TestCase
 		const char* name;
 		int mustPassCount; // The number of images which must decode for the test to pass.
 		int maxMisreads;   // Maximum number of images which can fail due to successfully reading the wrong contents
-		std::unordered_set<std::string> notDetectedFiles;
+		std::set<std::string> notDetectedFiles;
 		std::map<std::string, std::string> misReadFiles;
 	};
 
@@ -174,11 +174,6 @@ static TestReader scanners[2] = {TestReader(false, false), TestReader(true, true
 static const char* GOOD = "OK";
 static const char* BAD = "!!!!!! FAILED !!!!!!";
 
-static const char* goodOrBad(bool test)
-{
-	return test ? GOOD : BAD;
-}
-
 static void doRunTests(std::ostream& cout, const fs::path& directory, const char* format, int imageCount,
                        const std::vector<TestCase>& tests)
 {
@@ -195,7 +190,7 @@ static void doRunTests(std::ostream& cout, const fs::path& directory, const char
 
 	for (auto& test : tests) {
 
-		cout << "TEST " << folderName << ", rotation: " << test.rotation << ", total: " << images.size() << "\n";
+		printf("%-20s @ %3d°, total: %3lu", folderName.c_str(), test.rotation, images.size());
 		for (int i = 0; i < Length(scanners); ++i) {
 			auto tc = test.tc[i];
 
@@ -212,24 +207,19 @@ static void doRunTests(std::ostream& cout, const fs::path& directory, const char
 
 			auto passCount = images.size() - tc.misReadFiles.size() - tc.notDetectedFiles.size();
 
-			cout << "    Must pass (" << tc.name << "): " << tc.mustPassCount << "; passed: " << passCount
-			     << " => " << goodOrBad(passCount >= tc.mustPassCount) << "\n";
-			if (tc.maxMisreads > 0) {
-				cout << "    Max misread (" << tc.name << "): " << tc.maxMisreads
-				     << "; misread: " << tc.misReadFiles.size()
-				     << " => " << goodOrBad(tc.maxMisreads >= tc.misReadFiles.size()) << "\n";
-			}
+			printf(", %s: %3lu of %3d, misread: %lu of %d", tc.name, passCount, tc.mustPassCount,
+				   tc.misReadFiles.size(), tc.maxMisreads);
 
 			if (passCount < tc.mustPassCount && !tc.notDetectedFiles.empty()) {
 //			if (!tc.notDetectedFiles.empty()) {
-				cout << "    Not detected (" << tc.name << "):";
+				cout << "\nFAILED: Not detected (" << tc.name << "):";
 				for (const auto& f : tc.notDetectedFiles)
 					cout << ' ' << f;
 				cout << "\n";
 			}
 
 			if (tc.misReadFiles.size() > tc.maxMisreads) {
-				cout << "    Read error (" << tc.name << "):";
+				cout << "FAILED: Read error (" << tc.name << "):";
 				for (const auto& f : tc.misReadFiles)
 					cout << "      " << f.first << ": " << f.second << "\n";
 				cout << "\n";
@@ -258,25 +248,23 @@ static void doRunFalsePositiveTests(std::ostream& cout, const fs::path& director
 	}
 
 	for (auto& test : tests) {
-		std::unordered_set<std::string> misReadFiles[2];
+		std::set<std::string> misReadFiles[2];
 
 		for (const fs::path& imagePath : images) {
 			for (int i = 0; i < Length(scanners); ++i) {
 				auto result = scanners[i].read(imagePath, test.rotation);
 				if (!result.format.empty())
-					misReadFiles[i].insert(imagePath.string());
+					misReadFiles[i].insert(imagePath.filename().string());
 			}
 		}
 
-		cout << "TEST " << folderName << ", rotation: " << test.rotation << ", total: " << images.size() << "\n";
-		cout << "    Max allowed (fast): " << test.maxAllowed << "; got: " << misReadFiles[0].size()
-		     << " => " << goodOrBad(test.maxAllowed >= misReadFiles[0].size()) << "\n";
-		cout << "    Max allowed (slow): " << test.maxAllowed << "; got: " << misReadFiles[1].size()
-		     << " => " << goodOrBad(test.maxAllowed >= misReadFiles[1].size()) << "\n";
+		printf("%-20s @ %3d°, total: %3lu", folderName.c_str(), test.rotation, images.size());
+		printf(", allowed: %2d, fast: %2lu, slow: %2lu", test.maxAllowed, misReadFiles[0].size(),
+			   misReadFiles[1].size());
 		if (test.maxAllowed < misReadFiles[0].size() || test.maxAllowed < misReadFiles[1].size()) {
 			for (int i = 0; i < 2; ++i) {
 				if (!misReadFiles[i].empty()) {
-					cout << "    Misread files (" << (i == 0 ? "fast" : "slow") << "):";
+					cout << "FAILED: Misread files (" << (i == 0 ? "fast" : "slow") << "):";
 					for (const auto& f : misReadFiles[i])
 						cout << ' ' << f;
 					cout << "\n";
@@ -313,7 +301,7 @@ int main(int argc, char** argv)
 		return 0;
 	}
 
-	std::unordered_set<std::string> includedTests;
+	std::set<std::string> includedTests;
 	for (int i = 2; i < argc; ++i) {
 		if (std::strlen(argv[i]) > 2 && argv[i][0] == '-' && argv[i][1] == 't')
 			includedTests.insert(argv[i] + 2);
@@ -600,10 +588,10 @@ int main(int argc, char** argv)
 		});
 
 		runFalsePositiveTests("blackbox/falsepositives-2", 25, {
-			{ 4, 0   },
-			{ 4, 90  },
-			{ 4, 180 },
-			{ 4, 270 },
+			{ 5, 0   },
+			{ 5, 90  },
+			{ 5, 180 },
+			{ 5, 270 },
 		});
 		// clang-format on
 

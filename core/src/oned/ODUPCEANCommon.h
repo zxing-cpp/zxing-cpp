@@ -15,6 +15,8 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+#include "ODUPCEANReader.h"
+
 #include <array>
 
 namespace ZXing {
@@ -36,7 +38,7 @@ public:
 	/**
 	* "Odd", or "L" patterns used to encode UPC/EAN digits.
 	*/
-	static const std::array<std::array<int, 4>, 10> L_PATTERNS;
+	static const std::array<UPCEANReader::Digit, 10> L_PATTERNS;
 
 	/**
 	* Pattern marking the middle of a UPC/EAN pattern, separating the two halves.
@@ -46,7 +48,7 @@ public:
 	/**
 	* As above but also including the "even", or "G" patterns used to encode UPC/EAN digits.
 	*/
-	static const std::array<std::array<int, 4>, 20> L_AND_G_PATTERNS;
+	static const std::array<UPCEANReader::Digit, 20> L_AND_G_PATTERNS;
 
 
 	template <size_t N>
