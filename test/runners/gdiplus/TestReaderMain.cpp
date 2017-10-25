@@ -397,16 +397,16 @@ int main(int argc, char** argv)
 
 		runTests("blackbox/datamatrix-1", "DATA_MATRIX", 21, {
 			{ 21, 21, 0   },
-			{ 21, 21, 90  },
-			{ 21, 21, 180 },
-			{ 21, 21, 270 },
+			{  0, 21, 90  },
+			{  0, 21, 180 },
+			{  0, 21, 270 },
 		});
 
 		runTests("blackbox/datamatrix-2", "DATA_MATRIX", 18, {
-			{ 8,  8,  0, 1, 0   },
-			{ 14, 14, 0, 1, 90  },
-			{ 14, 14, 0, 1, 180 },
-			{ 13, 13, 0, 1, 270 },
+			{ 18, 18, 0, 1, 0   },
+			{  0, 18, 0, 1, 90  },
+			{  0, 18, 0, 1, 180 },
+			{  0, 18, 0, 1, 270 },
 		});
 
 		runTests("blackbox/codabar-1", "CODABAR", 11, {
@@ -639,10 +639,10 @@ int main(int argc, char** argv)
 		});
 
 		runFalsePositiveTests("blackbox/falsepositives-2", 25, {
-			{ 4, 0   },
-			{ 4, 90  },
-			{ 4, 180 },
-			{ 4, 270 },
+			{ 5, 0   },
+			{ 5, 90  },
+			{ 5, 180 },
+			{ 5, 270 },
 		});
 
 		auto duration = std::chrono::steady_clock::now() - startTime;
