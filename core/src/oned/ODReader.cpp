@@ -152,12 +152,10 @@ DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, const BinaryBit
 						result.metadata().put(ResultMetadata::ORIENTATION, 180);
 						// And remember to flip the result points horizontally.
 						auto points = result.resultPoints();
-						if (!points.empty()) {
-							for (auto& p : points) {
-								p.set(width - p.x() - 1, p.y());
-							}
-							result.setResultPoints(points);
+						for (auto& p : points) {
+							p.set(width - p.x() - 1, p.y());
 						}
+						result.setResultPoints(std::move(points));
 					}
 					return result;
 				}
@@ -185,13 +183,11 @@ Reader::decode(const BinaryBitmap& image) const
 			metadata.put(ResultMetadata::ORIENTATION, (270 + metadata.getInt(ResultMetadata::ORIENTATION)) % 360);
 			// Update result points
 			auto points = result.resultPoints();
-			if (!points.empty()) {
-				int height = rotatedImage->height();
-				for (auto& p : points) {
-					p = ResultPoint(height - p.y() - 1, p.x());
-				}
-				result.setResultPoints(points);
+			int height = rotatedImage->height();
+			for (auto& p : points) {
+				p.set(height - p.y() - 1, p.x());
 			}
+			result.setResultPoints(std::move(points));
 		}
 	}
 	return result;

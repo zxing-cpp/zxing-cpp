@@ -96,10 +96,8 @@ MultiUPCEANReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr
 		bool ean13MayBeUPCA = result.format() == BarcodeFormat::EAN_13 && !resultText.empty() && resultText[0] == '0';
 		bool canReturnUPCA = _formats.empty() || _formats.find(BarcodeFormat::UPC_A) != _formats.end();
 		if (ean13MayBeUPCA && canReturnUPCA) {
-			// Transfer the metdata across
-			Result resultUPCA(resultText.substr(1), result.rawBytes(), result.resultPoints(), BarcodeFormat::UPC_A);
-			resultUPCA.metadata().putAll(result.metadata());
-			return resultUPCA;
+			result.setText(resultText.substr(1));
+			result.setFormat(BarcodeFormat::UPC_A);
 		}
 		return result;
 	}

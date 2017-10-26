@@ -43,19 +43,14 @@ public:
 
 	explicit Result(DecodeStatus status) : _status(status) {}
 
-	Result(std::wstring text, ByteArray rawBytes, int numBits, std::vector<ResultPoint> resultPoints,
-		   BarcodeFormat format)
-		: _text(std::move(text)),
+	Result(std::wstring&& text, ByteArray&& rawBytes, std::vector<ResultPoint>&& resultPoints, BarcodeFormat format)
+	    : _text(std::move(text)),
 	      _rawBytes(std::move(rawBytes)),
-	      _numBits(numBits),
 		  _resultPoints(std::move(resultPoints)),
 	      _format(format)
-	{}
-
-	Result(std::wstring text, ByteArray rawBytes, std::vector<ResultPoint> resultPoints, BarcodeFormat format)
-		: Result(std::move(text), std::move(rawBytes), static_cast<int>(rawBytes.size()) * 8, std::move(resultPoints),
-				 format)
-	{}
+	{
+		_numBits = static_cast<int>(_rawBytes.size()) * 8;
+	}
 
 	Result(DecoderResult&& decodeResult, std::vector<ResultPoint>&& resultPoints, BarcodeFormat format)
 		: _status(decodeResult.errorCode()),
@@ -95,6 +90,9 @@ public:
 	const std::wstring& text() const {
 		return _text;
 	}
+	void setText(std::wstring&& text) {
+		_text = std::move(text);
+	}
 
 	const ByteArray& rawBytes() const {
 		return _rawBytes;
@@ -108,14 +106,17 @@ public:
 		return _resultPoints;
 	}
 
-	void setResultPoints(const std::vector<ResultPoint>& points) {
-		_resultPoints = points;
+	void setResultPoints(std::vector<ResultPoint>&& points) {
+		_resultPoints = std::move(points);
 	}
 
 	void addResultPoints(const std::vector<ResultPoint>& points);
 
 	BarcodeFormat format() const {
 		return _format;
+	}
+	void setFormat(BarcodeFormat format) {
+		_format = format;
 	}
 
 	time_point timestamp() const {
