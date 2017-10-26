@@ -470,7 +470,7 @@ static void OrderBestPatterns(std::vector<FinderPattern>& patterns)
 }
 
 
-FinderPatternInfo FinderPatternFinder::Find(const BitMatrix& image, /*const PointCallback& pointCallback,*/ bool pureBarcode, bool tryHarder)
+FinderPatternInfo FinderPatternFinder::Find(const BitMatrix& image, bool pureBarcode, bool tryHarder)
 {
 	int maxI = image.height();
 	int maxJ = image.width();
@@ -506,7 +506,7 @@ FinderPatternInfo FinderPatternFinder::Find(const BitMatrix& image, /*const Poin
 				if ((currentState & 1) == 0) { // Counting black pixels
 					if (currentState == 4) { // A winner?
 						if (FoundPatternCross(stateCount)) { // Yes
-							bool confirmed = HandlePossibleCenter(image, stateCount, i, j, pureBarcode, /*pointCallback,*/ possibleCenters);
+							bool confirmed = HandlePossibleCenter(image, stateCount, i, j, pureBarcode, possibleCenters);
 							if (confirmed) {
 								// Start examining every other line. Checking each line turned out to be too
 								// expensive and didn't improve performance.
@@ -562,7 +562,7 @@ FinderPatternInfo FinderPatternFinder::Find(const BitMatrix& image, /*const Poin
 			}
 		}
 		if (FinderPatternFinder::FoundPatternCross(stateCount)) {
-			bool confirmed = FinderPatternFinder::HandlePossibleCenter(image, stateCount, i, maxJ, pureBarcode, /*pointCallback,*/ possibleCenters);
+			bool confirmed = FinderPatternFinder::HandlePossibleCenter(image, stateCount, i, maxJ, pureBarcode, possibleCenters);
 			if (confirmed) {
 				iSkip = stateCount[0];
 				if (hasSkipped) {
@@ -623,7 +623,7 @@ FinderPatternFinder::FoundPatternCross(const StateCount& stateCount) {
 * @return true if a finder pattern candidate was found this time
 */
 bool
-FinderPatternFinder::HandlePossibleCenter(const BitMatrix& image, const StateCount& stateCount, int i, int j, bool pureBarcode, /*const PointCallback& pointCallback,*/ std::vector<FinderPattern>& possibleCenters)
+FinderPatternFinder::HandlePossibleCenter(const BitMatrix& image, const StateCount& stateCount, int i, int j, bool pureBarcode, std::vector<FinderPattern>& possibleCenters)
 {
 	int stateCountTotal = Accumulate(stateCount, 0);
 	float centerJ = CenterFromEnd(stateCount, j);

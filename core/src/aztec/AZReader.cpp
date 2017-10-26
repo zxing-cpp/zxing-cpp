@@ -51,13 +51,6 @@ Reader::decode(const BinaryBitmap& image) const
 		}
 	}
 
-	//auto rpcb = hints.resultPointCallback();
-	//if (rpcb != nullptr) {
-	//	for (auto& p : points) {
-	//		rpcb(p.x(), p.y());
-	//	}
-	//}
-
 	return Result(std::move(decodeResult), std::move(points), BarcodeFormat::AZTEC);
 }
 

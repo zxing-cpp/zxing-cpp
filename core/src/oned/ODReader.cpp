@@ -141,12 +141,6 @@ DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, const BinaryBit
 			if (upsideDown) {
 				// reverse the row and continue
 				row.reverse();
-
-				// This means we will only ever draw result points *once* in the life of this method
-				// since we want to avoid drawing the wrong points after flipping the row, and,
-				// don't want to clutter with noise from every single row scan -- just the scans
-				// that start on the center line.
-				//currentHints.setResultPointCallback(nullptr);
 			}
 			// Look for a barcode
 			for (size_t r = 0; r < readers.size(); ++r) {

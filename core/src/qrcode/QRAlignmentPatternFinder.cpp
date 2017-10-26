@@ -128,7 +128,7 @@ static float CrossCheckVertical(const BitMatrix& image, int startI, int centerJ,
 * @return {@link AlignmentPattern} if we have found the same pattern twice, or null if not
 */
 static AlignmentPattern
-HandlePossibleCenter(const BitMatrix& image, const StateCount& stateCount, int i, int j, float moduleSize, /*const PointCallback& pointCallback,*/ std::vector<AlignmentPattern>& possibleCenters)
+HandlePossibleCenter(const BitMatrix& image, const StateCount& stateCount, int i, int j, float moduleSize, std::vector<AlignmentPattern>& possibleCenters)
 {
 	int stateCountTotal = Accumulate(stateCount, 0);
 	float centerJ = CenterFromEnd(stateCount, j);
@@ -143,16 +143,12 @@ HandlePossibleCenter(const BitMatrix& image, const StateCount& stateCount, int i
 		}
 		// Hadn't found this before; save it
 		possibleCenters.emplace_back(centerJ, centerI, estimatedModuleSize);
-		/*if (pointCallback != nullptr) {
-			const ResultPoint& p = possibleCenters.back();
-			pointCallback(p.x(), p.y());
-		}*/
 	}
 	return {};
 }
 
 AlignmentPattern
-AlignmentPatternFinder::Find(const BitMatrix& image, int startX, int startY, int width, int height, float moduleSize /*, const PointCallback& pointCallback*/)
+AlignmentPatternFinder::Find(const BitMatrix& image, int startX, int startY, int width, int height, float moduleSize)
 {
 	int maxJ = startX + width;
 	int middleI = startY + (height / 2);
@@ -182,7 +178,7 @@ AlignmentPatternFinder::Find(const BitMatrix& image, int startX, int startY, int
 				else { // Counting white pixels
 					if (currentState == 2) { // A winner?
 						if (FoundPatternCross(stateCount, moduleSize)) { // Yes
-							auto result = HandlePossibleCenter(image, stateCount, i, j, moduleSize, /*pointCallback,*/ possibleCenters);
+							auto result = HandlePossibleCenter(image, stateCount, i, j, moduleSize, possibleCenters);
 							if (result.isValid())
 								return result;
 						}
@@ -205,7 +201,7 @@ AlignmentPatternFinder::Find(const BitMatrix& image, int startX, int startY, int
 			j++;
 		}
 		if (FoundPatternCross(stateCount, moduleSize)) {
-			auto result = HandlePossibleCenter(image, stateCount, i, maxJ, moduleSize, /*pointCallback,*/ possibleCenters);
+			auto result = HandlePossibleCenter(image, stateCount, i, maxJ, moduleSize, possibleCenters);
 			if (result.isValid())
 				return result;
 		}
