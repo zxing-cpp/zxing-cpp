@@ -22,9 +22,7 @@ namespace ZXing {
 void
 Result::addResultPoints(const std::vector<ResultPoint>& points)
 {
-	size_t oldSize = _resultPoints.size();
-	_resultPoints.resize(oldSize + points.size());
-	std::copy(points.begin(), points.end(), _resultPoints.begin() + oldSize);
+	_resultPoints.insert(resultPoints().end(), points.begin(), points.end());
 }
 
 } // ZXing
