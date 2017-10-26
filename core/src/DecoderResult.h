@@ -64,8 +64,10 @@ public:
 	bool isValid() const { return StatusIsOK(_status); }
 	DecodeStatus errorCode() const { return _status; }
 
-	const ByteArray& rawBytes() const { return _rawBytes; }
-	const std::wstring& text() const { return _text; }
+	const ByteArray& rawBytes() const & { return _rawBytes; }
+	ByteArray&& rawBytes() && { return std::move(_rawBytes); }
+	const std::wstring& text() const & { return _text; }
+	std::wstring&& text() && { return std::move(_text); }
 
 	// Simple macro to set up getter/setter methods that save lots of boilerplate.
 	// It sets up a standard 'const & () const', 2 setters for setting lvalues via
@@ -75,7 +77,8 @@ public:
 	// return statement, e.g.
 	//    return DecoderResult(bytes, text).setEcLevel(level);
 #define PROPERTY(TYPE, GETTER, SETTER) \
-	const TYPE& GETTER() const { return _##GETTER; } \
+	const TYPE& GETTER() const & { return _##GETTER; } \
+	TYPE&& GETTER() && { return std::move(_##GETTER); } \
 	void SETTER(const TYPE& v) & { _##GETTER = v; } \
 	void SETTER(TYPE&& v) & { _##GETTER = std::move(v); } \
 	DecoderResult&& SETTER(const TYPE& v) && { _##GETTER = v; return std::move(*this); } \

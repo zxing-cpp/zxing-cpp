@@ -51,10 +51,6 @@ Reader::decode(const BinaryBitmap& image) const
 		}
 	}
 
-	if (!decodeResult.isValid()) {
-		return Result(decodeResult.errorCode());
-	}
-
 	//auto rpcb = hints.resultPointCallback();
 	//if (rpcb != nullptr) {
 	//	for (auto& p : points) {
@@ -62,16 +58,7 @@ Reader::decode(const BinaryBitmap& image) const
 	//	}
 	//}
 
-	Result result(decodeResult.text(), decodeResult.rawBytes(), decodeResult.numBits(), points, BarcodeFormat::AZTEC);
-	const auto& byteSegments = decodeResult.byteSegments();
-	if (!byteSegments.empty()) {
-		result.metadata().put(ResultMetadata::BYTE_SEGMENTS, byteSegments);
-	}
-	const auto& ecLevel = decodeResult.ecLevel();
-	if (!ecLevel.empty()) {
-		result.metadata().put(ResultMetadata::ERROR_CORRECTION_LEVEL, ecLevel);
-	}
-	return result;
+	return Result(std::move(decodeResult), std::move(points), BarcodeFormat::AZTEC);
 }
 
 } // Aztec

@@ -192,20 +192,7 @@ Reader::decode(const BinaryBitmap& image) const
 	}
 #endif
 
-	Result result(decoderResult.text(), decoderResult.rawBytes(), points, BarcodeFormat::QR_CODE);
-	const auto& byteSegments = decoderResult.byteSegments();
-	if (!byteSegments.empty()) {
-		result.metadata().put(ResultMetadata::BYTE_SEGMENTS, byteSegments);
-	}
-	const auto& ecLevel = decoderResult.ecLevel();
-	if (!ecLevel.empty()) {
-		result.metadata().put(ResultMetadata::ERROR_CORRECTION_LEVEL, ecLevel);
-	}
-	if (decoderResult.hasStructuredAppend()) {
-		result.metadata().put(ResultMetadata::STRUCTURED_APPEND_SEQUENCE, decoderResult.structuredAppendSequenceNumber());
-		result.metadata().put(ResultMetadata::STRUCTURED_APPEND_PARITY, decoderResult.structuredAppendParity());
-	}
-	return result;
+	return Result(std::move(decoderResult), std::move(points), BarcodeFormat::QR_CODE);
 }
 
 } // QRCode

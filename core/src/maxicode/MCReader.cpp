@@ -75,17 +75,7 @@ Reader::decode(const BinaryBitmap& image) const
 		return Result(DecodeStatus::NotFound);
 	}
 
-	DecoderResult decoderResult = Decoder::Decode(bits);
-	if (!decoderResult.isValid()) {
-		return Result(decoderResult.errorCode());
-	}
-	Result result(decoderResult.text(), decoderResult.rawBytes(), std::vector<ResultPoint>(), BarcodeFormat::MAXICODE);
-
-	const auto& ecLevel = decoderResult.ecLevel();
-	if (!ecLevel.empty()) {
-		result.metadata().put(ResultMetadata::ERROR_CORRECTION_LEVEL, ecLevel);
-	}
-	return result;
+	return Result(Decoder::Decode(bits), {}, BarcodeFormat::MAXICODE);
 }
 
 } // MaxiCode

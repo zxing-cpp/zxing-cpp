@@ -123,20 +123,7 @@ Reader::decode(const BinaryBitmap& image) const
 		points = detectorResult.points();
 	}
 
-	if (!decoderResult.isValid()) {
-		return Result(decoderResult.errorCode());
-	}
-
-	Result result(decoderResult.text(), decoderResult.rawBytes(), points, BarcodeFormat::DATA_MATRIX);
-	const auto& byteSegments = decoderResult.byteSegments();
-	if (!byteSegments.empty()) {
-		result.metadata().put(ResultMetadata::BYTE_SEGMENTS, byteSegments);
-	}
-	const auto& ecLevel = decoderResult.ecLevel();
-	if (!ecLevel.empty()) {
-		result.metadata().put(ResultMetadata::ERROR_CORRECTION_LEVEL, ecLevel);
-	}
-	return result;
+	return Result(std::move(decoderResult), std::move(points), BarcodeFormat::DATA_MATRIX);
 }
 
 } // DataMatrix

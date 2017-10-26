@@ -19,32 +19,6 @@
 
 namespace ZXing {
 
-Result::Result(DecodeStatus status) :
-	_status(status)
-{
-}
-
-Result::Result(std::wstring text, ByteArray rawBytes, std::vector<ResultPoint> resultPoints, BarcodeFormat format, time_point tt) :
-	_status(DecodeStatus::NoError),
-	_text(std::move(text)),
-	_rawBytes(std::move(rawBytes)),
-	_resultPoints(std::move(resultPoints)),
-	_format(format),
-	_timestamp(tt)
-{
-}
-
-Result::Result(std::wstring text, ByteArray rawBytes, int numBits, std::vector<ResultPoint> resultPoints, BarcodeFormat format, time_point tt) :
-	_status(DecodeStatus::NoError),
-	_text(std::move(text)),
-	_rawBytes(std::move(rawBytes)),
-	_numBits(numBits),
-	_resultPoints(std::move(resultPoints)),
-	_format(format),
-	_timestamp(tt)
-{
-}
-
 void
 Result::addResultPoints(const std::vector<ResultPoint>& points)
 {
