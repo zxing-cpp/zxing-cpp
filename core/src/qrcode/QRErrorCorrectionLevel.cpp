@@ -22,7 +22,7 @@ namespace QRCode {
 
 const wchar_t* ToString(ErrorCorrectionLevel l)
 {
-	static const wchar_t* const LEVEL_STR[] = { L"M", L"L", L"H", L"Q" };
+	static const wchar_t* const LEVEL_STR[] = { L"L", L"M", L"Q", L"H" };
 	return LEVEL_STR[static_cast<int>(l)];
 }
 
@@ -30,10 +30,10 @@ ErrorCorrectionLevel FromString(const char* str)
 {
 	switch (str[0])
 	{
-		case 'M': return ErrorCorrectionLevel::Medium;
 		case 'L': return ErrorCorrectionLevel::Low;
-		case 'H': return ErrorCorrectionLevel::High;
+		case 'M': return ErrorCorrectionLevel::Medium;
 		case 'Q': return ErrorCorrectionLevel::Quality;
+		case 'H': return ErrorCorrectionLevel::High;
 		default: return ErrorCorrectionLevel::Medium;
 	}
 }
