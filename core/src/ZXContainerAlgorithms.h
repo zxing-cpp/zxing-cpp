@@ -25,6 +25,11 @@ auto Find(const Container& c, const Value& v) -> decltype(std::begin(c)) {
     return std::find(std::begin(c), std::end(c), v);
 }
 
+template <typename Container, typename Predicate>
+auto FindIf(Container& c, Predicate p) -> decltype(std::begin(c)) {
+    return std::find_if(std::begin(c), std::end(c), p);
+}
+
 template <typename Container, typename Value>
 bool Contains(const Container& c, const Value& v) {
     return std::find(std::begin(c), std::end(c), v) != std::end(c);

@@ -17,13 +17,11 @@
 */
 
 #include "ResultPoint.h"
+#include "BitMatrix.h"
 
 #include <vector>
-#include <memory>
 
 namespace ZXing {
-
-class BitMatrix;
 
 /**
 * <p>Encapsulates the result of detecting a barcode in an image. This includes the raw
@@ -34,19 +32,25 @@ class BitMatrix;
 */
 class DetectorResult
 {
-	std::shared_ptr<const BitMatrix> _bits;
+	BitMatrix _bits;
 	std::vector<ResultPoint> _points;
 
-public:
-	DetectorResult() {}
 	DetectorResult(const DetectorResult&) = delete;
 	DetectorResult& operator=(const DetectorResult&) = delete;
 
-	std::shared_ptr<const BitMatrix> bits() const { return _bits; }
-	void setBits(const std::shared_ptr<const BitMatrix>& bits) { _bits = bits; }
+public:
+	DetectorResult() = default;
+	DetectorResult(DetectorResult&&) = default;
+	DetectorResult& operator=(DetectorResult&&) = default;
+
+	DetectorResult(BitMatrix&& bits, std::vector<ResultPoint>&& points)
+		: _bits(std::move(bits)), _points(std::move(points))
+	{}
+
+	const BitMatrix& bits() const { return _bits; }
 	const std::vector<ResultPoint>& points() const { return _points; }
-	void setPoints(const std::vector<ResultPoint>& points) { _points = points; }
-	void setPoints(std::initializer_list<ResultPoint> list) { _points.assign(list); }
+
+	bool isValid() const { return !_bits.empty(); }
 };
 
 } // ZXing

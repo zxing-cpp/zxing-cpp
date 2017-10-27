@@ -123,16 +123,18 @@ PatternToChar(int pattern)
 	return 0;
 }
 
-static DecodeStatus
-DecodeExtended(const std::string& encoded, std::string& decoded)
+/** Decode the extended string in place. Return false if FormatError occured. */
+static bool
+DecodeExtended(std::string& encoded)
 {
 	size_t length = encoded.length();
+	std::string decoded;
 	decoded.reserve(length);
 	for (size_t i = 0; i < length; i++) {
 		char c = encoded[i];
 		if (c == '+' || c == '$' || c == '%' || c == '/') {
 			if (i+1 >= length) {
-				return DecodeStatus::FormatError;
+				return false;
 			}
 			char next = encoded[i + 1];
 			char decodedChar = '\0';
@@ -143,7 +145,7 @@ DecodeExtended(const std::string& encoded, std::string& decoded)
 					decodedChar = (char)(next + 32);
 				}
 				else {
-					return DecodeStatus::FormatError;
+					return false;
 				}
 				break;
 			case '$':
@@ -152,7 +154,7 @@ DecodeExtended(const std::string& encoded, std::string& decoded)
 					decodedChar = (char)(next - 64);
 				}
 				else {
-					return DecodeStatus::FormatError;
+					return false;
 				}
 				break;
 			case '%':
@@ -164,7 +166,7 @@ DecodeExtended(const std::string& encoded, std::string& decoded)
 					decodedChar = (char)(next - 11);
 				}
 				else {
-					return DecodeStatus::FormatError;
+					return false;
 				}
 				break;
 			case '/':
@@ -176,7 +178,7 @@ DecodeExtended(const std::string& encoded, std::string& decoded)
 					decodedChar = ':';
 				}
 				else {
-					return DecodeStatus::FormatError;
+					return false;
 				}
 				break;
 			}
@@ -188,7 +190,8 @@ DecodeExtended(const std::string& encoded, std::string& decoded)
 			decoded += c;
 		}
 	}
-	return DecodeStatus::NoError;
+	std::swap(encoded, decoded);
+	return true;
 }
 
 static int IndexOf(const char* str, char c)
@@ -256,20 +259,12 @@ Code39Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 		return Result(DecodeStatus::NotFound);
 	}
 
-	std::string resultString;
-	if (_extendedMode) {
-		auto status = DecodeExtended(result, resultString);
-		if (StatusIsError(status)) {
-			return Result(status);
-		}
-	}
-	else {
-		resultString = result;
-	}
+	if (_extendedMode && !DecodeExtended(result))
+		return Result(DecodeStatus::FormatError);
 
 	float right = (range.begin - row.begin()) + 0.5f * range.size();
 	float ypos = static_cast<float>(rowNumber);
-	return Result(TextDecoder::FromLatin1(resultString), ByteArray(), { ResultPoint(left, ypos), ResultPoint(right, ypos) }, BarcodeFormat::CODE_39);
+	return Result(TextDecoder::FromLatin1(result), ByteArray(), { ResultPoint(left, ypos), ResultPoint(right, ypos) }, BarcodeFormat::CODE_39);
 }
 
 

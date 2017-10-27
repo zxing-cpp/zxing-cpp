@@ -343,16 +343,6 @@ DecodePair(const BitArray& row, bool right, int rowNumber)
 	auto range = FindFinderPattern(row, right, finderCounters);
 	auto pattern = ParseFoundFinderPattern(row, rowNumber, right, range, finderCounters);
 	if (pattern.isValid()) {
-		//PointCallback resultPointCallback = hints.resultPointCallback();
-		//if (resultPointCallback != nullptr) {
-		//	float center = 0.5f * static_cast<float>(patternStart + patternEnd);
-		//	if (right) {
-		//		// row is actually reversed
-		//		center = row.size() - 1 - center;
-		//	}
-		//	resultPointCallback(center, static_cast<float>(rowNumber));
-		//}
-
 		auto outside = DecodeDataCharacter(row, pattern, true);
 		if (outside.isValid()) {
 			auto inside = DecodeDataCharacter(row, pattern, false);

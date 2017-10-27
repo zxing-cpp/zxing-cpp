@@ -68,8 +68,7 @@ static const std::array<int, 2> FORMAT_INFO_DECODE_LOOKUP[] = {
 
 } // anonymous
 
-void
-FormatInformation::set(int formatInfo)
+FormatInformation::FormatInformation(int formatInfo)
 {
 	// Bits 3,4
 	_errorCorrectionLevel = ECLevelFromBits((formatInfo >> 3) & 0x03);
@@ -84,18 +83,22 @@ FormatInformation::set(int formatInfo)
 * @return information about the format it specifies, or {@code null}
 *  if doesn't seem to match any known pattern
 */
-bool
-FormatInformation::decode(int maskedFormatInfo1, int maskedFormatInfo2)
+FormatInformation
+FormatInformation::DecodeFormatInformation(int maskedFormatInfo1, int maskedFormatInfo2)
 {
-	return doDecode(maskedFormatInfo1, maskedFormatInfo2)
+	auto result = DoDecodeFormatInformation(maskedFormatInfo1, maskedFormatInfo2);
+
+	if (!result.isValid())
 		// Should return null, but, some QR codes apparently
 		// do not mask this info. Try again by actually masking the pattern
 		// first
-		|| doDecode(maskedFormatInfo1 ^ FORMAT_INFO_MASK_QR, maskedFormatInfo2 ^ FORMAT_INFO_MASK_QR);
+		result = DoDecodeFormatInformation(maskedFormatInfo1 ^ FORMAT_INFO_MASK_QR, maskedFormatInfo2 ^ FORMAT_INFO_MASK_QR);
+
+	return result;
 }
 
-bool
-FormatInformation::doDecode(int maskedFormatInfo1, int maskedFormatInfo2)
+FormatInformation
+FormatInformation::DoDecodeFormatInformation(int maskedFormatInfo1, int maskedFormatInfo2)
 {
 	// Find the int in FORMAT_INFO_DECODE_LOOKUP with fewest bits differing
 	int bestDifference = std::numeric_limits<int>::max();
@@ -104,8 +107,7 @@ FormatInformation::doDecode(int maskedFormatInfo1, int maskedFormatInfo2)
 		int targetInfo = decodeInfo[0];
 		if (targetInfo == maskedFormatInfo1 || targetInfo == maskedFormatInfo2) {
 			// Found an exact match
-			set(decodeInfo[1]);
-			return true;
+			return {decodeInfo[1]};
 		}
 		int bitsDifference = BitHacks::CountBitsSet(maskedFormatInfo1 ^ targetInfo);
 		if (bitsDifference < bestDifference) {
@@ -124,10 +126,9 @@ FormatInformation::doDecode(int maskedFormatInfo1, int maskedFormatInfo2)
 	// Hamming distance of the 32 masked codes is 7, by construction, so <= 3 bits
 	// differing means we found a match
 	if (bestDifference <= 3) {
-		set(bestFormatInfo);
-		return true;
+		return {bestFormatInfo};
 	}
-	return false;
+	return {};
 }
 
 } // QRCode

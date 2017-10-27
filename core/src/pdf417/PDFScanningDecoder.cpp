@@ -540,33 +540,33 @@ static bool DecodeErrorCorrection(std::vector<int>& received, int numECCodewords
 * @param numECCodewords number of error correction codewords that are available in codewords
 * @throws ChecksumException if error correction fails
 */
-static DecodeStatus CorrectErrors(std::vector<int>& codewords, const std::vector<int>& erasures, int numECCodewords, int& errorCount)
+static bool CorrectErrors(std::vector<int>& codewords, const std::vector<int>& erasures, int numECCodewords, int& errorCount)
 {
 	if ((int)erasures.size() > numECCodewords / 2 + MAX_ERRORS ||
 		numECCodewords < 0 ||
 		numECCodewords > MAX_EC_CODEWORDS) {
 		// Too many errors or EC Codewords is corrupted
-		return DecodeStatus::ChecksumError;
+		return false;
 	}
-	return DecodeErrorCorrection(codewords, numECCodewords, erasures, errorCount) ? DecodeStatus::NoError : DecodeStatus::ChecksumError;
+	return DecodeErrorCorrection(codewords, numECCodewords, erasures, errorCount);
 }
 
 /**
 * Verify that all is OK with the codeword array.
 */
-static DecodeStatus VerifyCodewordCount(std::vector<int>& codewords, int numECCodewords)
+static bool VerifyCodewordCount(std::vector<int>& codewords, int numECCodewords)
 {
 	if (codewords.size() < 4) {
 		// Codeword array size should be at least 4 allowing for
 		// Count CW, At least one Data CW, Error Correction CW, Error Correction CW
-		return DecodeStatus::FormatError;
+		return false;
 	}
 	// The first codeword, the Symbol Length Descriptor, shall always encode the total number of data
 	// codewords in the symbol, including the Symbol Length Descriptor itself, data codewords and pad
 	// codewords, but excluding the number of error correction codewords.
 	int numberOfCodewords = codewords[0];
 	if (numberOfCodewords > (int)codewords.size()) {
-		return DecodeStatus::FormatError;
+		return false;
 	}
 	if (numberOfCodewords == 0) {
 		// Reset to the length of the array - 8 (Allow for at least level 3 Error Correction (8 Error Codewords)
@@ -574,13 +574,13 @@ static DecodeStatus VerifyCodewordCount(std::vector<int>& codewords, int numECCo
 			codewords[0] = (int)codewords.size() - numECCodewords;
 		}
 		else {
-			return DecodeStatus::FormatError;
+			return false;
 		}
 	}
-	return DecodeStatus::NoError;
+	return true;
 }
 
-static DecodeStatus DecodeCodewords(std::vector<int>& codewords, int ecLevel, const std::vector<int>& erasures, DecoderResult& result)
+static DecoderResult DecodeCodewords(std::vector<int>& codewords, int ecLevel, const std::vector<int>& erasures)
 {
 	if (codewords.empty()) {
 		return DecodeStatus::FormatError;
@@ -588,20 +588,19 @@ static DecodeStatus DecodeCodewords(std::vector<int>& codewords, int ecLevel, co
 
 	int numECCodewords = 1 << (ecLevel + 1);
 	int correctedErrorsCount = 0;
-	DecodeStatus status = CorrectErrors(codewords, erasures, numECCodewords, correctedErrorsCount);
-	if (StatusIsOK(status)) {
-		status = VerifyCodewordCount(codewords, numECCodewords);
-		if (StatusIsOK(status)) {
-			// Decode the codewords
-			status = DecodedBitStreamParser::Decode(codewords, ecLevel, result);
-			if (StatusIsOK(status)) {
-				result.setErrorsCorrected(correctedErrorsCount);
-				result.setErasures(static_cast<int>(erasures.size()));
-				return DecodeStatus::NoError;
-			}
-		}
+	if (!CorrectErrors(codewords, erasures, numECCodewords, correctedErrorsCount))
+		return DecodeStatus::ChecksumError;
+
+	if (!VerifyCodewordCount(codewords, numECCodewords))
+		return DecodeStatus::FormatError;
+
+	// Decode the codewords
+	auto result = DecodedBitStreamParser::Decode(codewords, ecLevel);
+	if (result.isValid()) {
+		result.setErrorsCorrected(correctedErrorsCount);
+		result.setErasures(static_cast<int>(erasures.size()));
 	}
-	return status;
+	return result;
 }
 
 
@@ -618,7 +617,7 @@ static DecodeStatus DecodeCodewords(std::vector<int>& codewords, int ecLevel, co
 * @param ambiguousIndexValues two dimensional array that contains the ambiguous values. The first dimension must
 * be the same length as the ambiguousIndexes array
 */
-static DecodeStatus CreateDecoderResultFromAmbiguousValues(int ecLevel, std::vector<int>& codewords, const std::vector<int>& erasureArray, const std::vector<int>& ambiguousIndexes, const std::vector<std::vector<int>>& ambiguousIndexValues, DecoderResult& result)
+static DecoderResult CreateDecoderResultFromAmbiguousValues(int ecLevel, std::vector<int>& codewords, const std::vector<int>& erasureArray, const std::vector<int>& ambiguousIndexes, const std::vector<std::vector<int>>& ambiguousIndexValues)
 {
 	std::vector<int> ambiguousIndexCount(ambiguousIndexes.size(), 0);
 
@@ -627,9 +626,9 @@ static DecodeStatus CreateDecoderResultFromAmbiguousValues(int ecLevel, std::vec
 		for (size_t i = 0; i < ambiguousIndexCount.size(); i++) {
 			codewords[ambiguousIndexes[i]] = ambiguousIndexValues[i][ambiguousIndexCount[i]];
 		}
-		auto status = DecodeCodewords(codewords, ecLevel, erasureArray, result);
-		if (status != DecodeStatus::ChecksumError) {
-			return status;
+		auto result = DecodeCodewords(codewords, ecLevel, erasureArray);
+		if (result.errorCode() != DecodeStatus::ChecksumError) {
+			return result;
 		}
 
 		if (ambiguousIndexCount.empty()) {
@@ -652,7 +651,7 @@ static DecodeStatus CreateDecoderResultFromAmbiguousValues(int ecLevel, std::vec
 }
 
 
-static DecodeStatus CreateDecoderResult(DetectionResult& detectionResult, DecoderResult& result)
+static DecoderResult CreateDecoderResult(DetectionResult& detectionResult)
 {
 	auto barcodeMatrix = CreateBarcodeMatrix(detectionResult);
 	if (!AdjustCodewordCount(detectionResult, barcodeMatrix)) {
@@ -678,7 +677,7 @@ static DecodeStatus CreateDecoderResult(DetectionResult& detectionResult, Decode
 			}
 		}
 	}
-	return CreateDecoderResultFromAmbiguousValues(detectionResult.barcodeECLevel(), codewords, erasures, ambiguousIndexesList, ambiguousIndexValues, result);
+	return CreateDecoderResultFromAmbiguousValues(detectionResult.barcodeECLevel(), codewords, erasures, ambiguousIndexesList, ambiguousIndexValues);
 }
 
 
@@ -686,10 +685,10 @@ static DecodeStatus CreateDecoderResult(DetectionResult& detectionResult, Decode
 // columns. That way width can be deducted from the pattern column.
 // This approach also allows to detect more details about the barcode, e.g. if a bar type (white or black) is wider 
 // than it should be. This can happen if the scanner used a bad blackpoint.
-DecodeStatus
+DecoderResult
 ScanningDecoder::Decode(const BitMatrix& image, const Nullable<ResultPoint>& imageTopLeft, const Nullable<ResultPoint>& imageBottomLeft,
 	const Nullable<ResultPoint>& imageTopRight, const Nullable<ResultPoint>& imageBottomRight,
-	int minCodewordWidth, int maxCodewordWidth, DecoderResult& result)
+	int minCodewordWidth, int maxCodewordWidth)
 {
 	BoundingBox boundingBox;
 	if (!BoundingBox::Create(image.width(), image.height(), imageTopLeft, imageBottomLeft, imageTopRight, imageBottomRight, boundingBox)) {
@@ -750,7 +749,7 @@ ScanningDecoder::Decode(const BitMatrix& image, const Nullable<ResultPoint>& ima
 			}
 		}
 	}
-	return CreateDecoderResult(detectionResult, result);
+	return CreateDecoderResult(detectionResult);
 }
 
 } // Pdf417

@@ -94,7 +94,7 @@ static std::vector<bool> ExtractBits(const DetectorResult& ddata)
 			alignmentMap[origCenter + i] = center + newOffset + 1;
 		}
 	}
-	auto matrix = ddata.bits();
+	auto& matrix = ddata.bits();
 	std::vector<bool> rawbits(TotalBitsInLayer(layers, compact));
 	for (int i = 0, rowOffset = 0; i < layers; i++) {
 		int rowSize = (layers - i) * 4 + (compact ? 9 : 12);
@@ -108,16 +108,16 @@ static std::vector<bool> ExtractBits(const DetectorResult& ddata)
 			for (int k = 0; k < 2; k++) {
 				// left column
 				rawbits[rowOffset + columnOffset + k] =
-					matrix->get(alignmentMap[low + k], alignmentMap[low + j]);
+					matrix.get(alignmentMap[low + k], alignmentMap[low + j]);
 				// bottom row
 				rawbits[rowOffset + 2 * rowSize + columnOffset + k] =
-					matrix->get(alignmentMap[low + j], alignmentMap[high - k]);
+					matrix.get(alignmentMap[low + j], alignmentMap[high - k]);
 				// right column
 				rawbits[rowOffset + 4 * rowSize + columnOffset + k] =
-					matrix->get(alignmentMap[high - k], alignmentMap[high - j]);
+					matrix.get(alignmentMap[high - k], alignmentMap[high - j]);
 				// top row
 				rawbits[rowOffset + 6 * rowSize + columnOffset + k] =
-					matrix->get(alignmentMap[high - j], alignmentMap[low + k]);
+					matrix.get(alignmentMap[high - j], alignmentMap[low + k]);
 			}
 		}
 		rowOffset += rowSize * 8;
@@ -179,9 +179,8 @@ static bool CorrectBits(const DetectorResult& ddata, const std::vector<bool>& ra
 		dataWords[i] = ReadCode(rawbits, offset, codewordSize);
 	}
 
-	if (StatusIsError(ReedSolomonDecoder(*gf).decode(dataWords, numECCodewords))) {
+	if (!ReedSolomonDecoder::Decode(*gf, dataWords, numECCodewords))
 		return false;
-	}
 
 	// Now perform the unstuffing operation.
 	// First, count how many bits are going to be thrown out as stuffing
@@ -356,16 +355,14 @@ static ByteArray ConvertBoolArrayToByteArray(const std::vector<bool>& boolArr)
 	return byteArr;
 }
 
-DecodeStatus
-Decoder::Decode(const DetectorResult& detectorResult, DecoderResult& result)
+DecoderResult Decoder::Decode(const DetectorResult& detectorResult)
 {
 	std::vector<bool> rawbits = ExtractBits(detectorResult);
 	std::vector<bool> correctedBits;
 	if (CorrectBits(detectorResult, rawbits, correctedBits)) {
-		result.setText(TextDecoder::FromLatin1(GetEncodedData(correctedBits)));
-		result.setRawBytes(ConvertBoolArrayToByteArray(correctedBits));
-		result.setNumBits(static_cast<int>(correctedBits.size()));
-		return DecodeStatus::NoError;
+		return DecoderResult(ConvertBoolArrayToByteArray(correctedBits),
+							 TextDecoder::FromLatin1(GetEncodedData(correctedBits)))
+		        .setNumBits(static_cast<int>(correctedBits.size()));
 	}
 	else {
 		return DecodeStatus::FormatError;

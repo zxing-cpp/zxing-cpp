@@ -49,25 +49,20 @@ namespace QRCode {
 * @param numDataCodewords number of codewords that are data bytes
 * @throws ChecksumException if error correction fails
 */
-static DecodeStatus
+static bool
 CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
 {
 	// First read into an array of ints
 	std::vector<int> codewordsInts(codewordBytes.begin(), codewordBytes.end());
 
 	int numECCodewords = codewordBytes.length() - numDataCodewords;
-	auto status = ReedSolomonDecoder(GenericGF::QRCodeField256()).decode(codewordsInts, numECCodewords);
-	if (StatusIsOK(status))
-	{
-		// Copy back into array of bytes -- only need to worry about the bytes that were data
-		// We don't care about errors in the error-correction codewords
-		std::copy_n(codewordsInts.begin(), numDataCodewords, codewordBytes.begin());
-	}
-	else if (StatusIsKindOf(status, DecodeStatus::ReedSolomonError))
-	{
-		status = DecodeStatus::ChecksumError;
-	}
-	return status;
+	if (!ReedSolomonDecoder::Decode(GenericGF::QRCodeField256(), codewordsInts, numECCodewords))
+		return false;
+
+	// Copy back into array of bytes -- only need to worry about the bytes that were data
+	// We don't care about errors in the error-correction codewords
+	std::copy_n(codewordsInts.begin(), numDataCodewords, codewordBytes.begin());
+	return true;
 }
 
 
@@ -309,8 +304,8 @@ ParseECIValue(BitSource& bits, int &outValue)
 *
 * <p>See ISO 18004:2006, 6.4.3 - 6.4.7</p>
 */
-static DecodeStatus
-DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionLevel ecLevel, const std::string& hintedCharset, DecoderResult& decodeResult)
+static DecoderResult
+DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCorrectionLevel ecLevel, const std::string& hintedCharset)
 {
 	BitSource bits(bytes);
 	std::wstring result;
@@ -409,34 +404,29 @@ DecodeBitStream(const ByteArray& bytes, const Version& version, ErrorCorrectionL
 		// from readBits() calls
 		return DecodeStatus::FormatError;
 	}
-	
-	decodeResult.setRawBytes(bytes);
-	decodeResult.setText(result);
-	decodeResult.setByteSegments(byteSegments);
-	decodeResult.setEcLevel(ToString(ecLevel));
-	decodeResult.setStructuredAppendSequenceNumber(symbolSequence);
-	decodeResult.setStructuredAppendParity(parityData);
-	return DecodeStatus::NoError;
+
+	return DecoderResult(std::move(bytes), std::move(result))
+		.setByteSegments(std::move(byteSegments))
+		.setEcLevel(ToString(ecLevel))
+		.setStructuredAppendParity(parityData)
+		.setStructuredAppendSequenceNumber(symbolSequence);
 }
 
-
-static DecodeStatus
-DoDecode(const BitMatrix& bits, const Version& version, const FormatInformation& formatInfo, const std::string& hintedCharset, DecoderResult& result)
+static DecoderResult
+DoDecode(const BitMatrix& bits, const Version& version, const FormatInformation& formatInfo, const std::string& hintedCharset)
 {
 	auto ecLevel = formatInfo.errorCorrectionLevel();
 
 	// Read codewords
-	ByteArray codewords;
-	DecodeStatus status = BitMatrixParser::ReadCodewords(bits, version, codewords);
-	if (StatusIsError(status)) {
-		return status;
-	}
+	ByteArray codewords = BitMatrixParser::ReadCodewords(bits, version);
+	if (codewords.empty())
+		return DecodeStatus::FormatError;
+
 	// Separate into data blocks
-	std::vector<DataBlock> dataBlocks;
-	status = DataBlock::GetDataBlocks(codewords, version, ecLevel, dataBlocks);
-	if (StatusIsError(status)) {
-		return status;
-	}
+	std::vector<DataBlock> dataBlocks = DataBlock::GetDataBlocks(codewords, version, ecLevel);
+	if (dataBlocks.empty())
+		return DecodeStatus::FormatError;
+
 	// Count total number of data bytes
 	int totalBytes = 0;
 	for (const auto& dataBlock : dataBlocks) {
@@ -450,16 +440,15 @@ DoDecode(const BitMatrix& bits, const Version& version, const FormatInformation&
 	{
 		ByteArray& codewordBytes = dataBlock.codewords();
 		int numDataCodewords = dataBlock.numDataCodewords();
-		
-		status = CorrectErrors(codewordBytes, numDataCodewords);
-		if (StatusIsError(status)) {
-			return status;
-		}
+
+		if (!CorrectErrors(codewordBytes, numDataCodewords))
+			return DecodeStatus::ChecksumError;
+
 		resultIterator = std::copy_n(codewordBytes.begin(), numDataCodewords, resultIterator);
 	}
 
 	// Decode the contents of that stream of bytes
-	return DecodeBitStream(resultBytes, version, ecLevel, hintedCharset, result);
+	return DecodeBitStream(std::move(resultBytes), version, ecLevel, hintedCharset);
 }
 
 static void
@@ -470,33 +459,32 @@ ReMask(BitMatrix& bitMatrix, const FormatInformation& formatInfo)
 }
 
 
-DecodeStatus
-Decoder::Decode(const BitMatrix& bits_, const std::string& hintedCharset, DecoderResult& result)
+DecoderResult
+Decoder::Decode(const BitMatrix& bits_, const std::string& hintedCharset)
 {
 	BitMatrix bits = bits_.copy();
-	// Construct a parser and read version, error-correction level
-	const Version* version;
-	FormatInformation formatInfo;
 
-	DecodeStatus status = BitMatrixParser::ParseVersionInfo(bits, false, version, formatInfo);
-	if (StatusIsOK(status))
-	{
+	// Construct a parser and read version, error-correction level
+	const Version* version = BitMatrixParser::ReadVersion(bits, false);
+	FormatInformation formatInfo = BitMatrixParser::ReadFormatInformation(bits, false);
+
+	if (version != nullptr && formatInfo.isValid()) {
 		ReMask(bits, formatInfo);
-		status = DoDecode(bits, *version, formatInfo, hintedCharset, result);
-		if (StatusIsOK(status)) {
-			return status;
+		auto result = DoDecode(bits, *version, formatInfo, hintedCharset);
+		if (result.isValid()) {
+			return result;
 		}
 	}
 
-	if (version != nullptr)
-	{
+	if (version != nullptr) {
 		// Revert the bit matrix
 		ReMask(bits, formatInfo);
 	}
 
-	status = BitMatrixParser::ParseVersionInfo(bits, true, version, formatInfo);
-	if (StatusIsOK(status))
-	{
+	version = BitMatrixParser::ReadVersion(bits, true);
+	formatInfo = BitMatrixParser::ReadFormatInformation(bits, true);
+
+	if (version != nullptr && formatInfo.isValid()) {
 		/*
 		* Since we're here, this means we have successfully detected some kind
 		* of version and format information when mirrored. This is a good sign,
@@ -507,13 +495,13 @@ Decoder::Decode(const BitMatrix& bits_, const std::string& hintedCharset, Decode
 		bits.mirror();
 
 		ReMask(bits, formatInfo);
-		status = DoDecode(bits, *version, formatInfo, hintedCharset, result);
-		if (StatusIsOK(status))
-		{
+		auto result = DoDecode(bits, *version, formatInfo, hintedCharset);
+		if (result.isValid())
 			result.setExtra(std::make_shared<DecoderMetadata>(true));
-		}
+
+		return result;
 	}
-	return status;
+	return DecodeStatus::FormatError;
 }
 
 } // QRCode

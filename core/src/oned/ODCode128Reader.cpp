@@ -399,7 +399,7 @@ Code128Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Dec
 
 	float right = (range.begin - row.begin()) + 0.5f * range.size();
 	float ypos = static_cast<float>(rowNumber);
-	return Result(TextDecoder::FromLatin1(result), rawCodes, { ResultPoint(left, ypos), ResultPoint(right, ypos) }, BarcodeFormat::CODE_128);
+	return Result(TextDecoder::FromLatin1(result), std::move(rawCodes), { ResultPoint(left, ypos), ResultPoint(right, ypos) }, BarcodeFormat::CODE_128);
 }
 
 } // OneD

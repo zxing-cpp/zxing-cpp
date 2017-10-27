@@ -55,7 +55,7 @@ BitWrapperBinarizer::height() const
 }
 
 // Applies simple sharpening to the row data to improve performance of the 1D Readers.
-DecodeStatus
+bool
 BitWrapperBinarizer::getBlackRow(int y, BitArray& row) const
 {
 	if (y < 0 || y >= _height) {
@@ -70,7 +70,7 @@ BitWrapperBinarizer::getBlackRow(int y, BitArray& row) const
 		_matrix->getRow(_top + y, tmp);
 		tmp.getSubArray(_left, _width, row);
 	}
-	return DecodeStatus::NoError;
+	return true;
 }
 
 // Does not sharpen the data, as this call is intended to only be used by 2D Readers.

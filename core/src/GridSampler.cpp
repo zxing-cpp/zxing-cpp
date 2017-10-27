@@ -39,7 +39,7 @@ namespace {
 * @param points actual points in x1,y1,...,xn,yn form
 * @throws NotFoundException if an endpoint is lies outside the image boundaries
 */
-static DecodeStatus CheckAndNudgePoints(const BitMatrix& image, std::vector<float>& points)
+static bool CheckAndNudgePoints(const BitMatrix& image, std::vector<float>& points)
 {
 	int width = image.width();
 	int height = image.height();
@@ -49,7 +49,7 @@ static DecodeStatus CheckAndNudgePoints(const BitMatrix& image, std::vector<floa
 		int x = (int)points[offset];
 		int y = (int)points[offset + 1];
 		if (x < -1 || x > width || y < -1 || y > height) {
-			return DecodeStatus::NotFound;
+			return false;
 		}
 		nudged = false;
 		if (x == -1) {
@@ -75,7 +75,7 @@ static DecodeStatus CheckAndNudgePoints(const BitMatrix& image, std::vector<floa
 		int x = (int)points[offset];
 		int y = (int)points[offset + 1];
 		if (x < -1 || x > width || y < -1 || y > height) {
-			return DecodeStatus::NotFound;
+			return false;
 		}
 		nudged = false;
 		if (x == -1) {
@@ -95,31 +95,31 @@ static DecodeStatus CheckAndNudgePoints(const BitMatrix& image, std::vector<floa
 			nudged = true;
 		}
 	}
-	return DecodeStatus::NoError;
+	return true;
 }
 
 class DefaultGridSampler : public GridSampler
 {
 public:
 
-	DecodeStatus sampleGrid(const BitMatrix& image, int dimensionX, int dimensionY,
+	BitMatrix sampleGrid(const BitMatrix& image, int dimensionX, int dimensionY,
 		float p1ToX, float p1ToY, float p2ToX, float p2ToY, float p3ToX, float p3ToY, float p4ToX, float p4ToY,
-		float p1FromX, float p1FromY, float p2FromX, float p2FromY, float p3FromX, float p3FromY, float p4FromX, float p4FromY,
-		BitMatrix& result) const override
+		float p1FromX, float p1FromY, float p2FromX, float p2FromY, float p3FromX, float p3FromY, float p4FromX,
+		float p4FromY) const override
 	{
 		auto transform = PerspectiveTransform::QuadrilateralToQuadrilateral(
 			p1ToX, p1ToY, p2ToX, p2ToY, p3ToX, p3ToY, p4ToX, p4ToY,
 			p1FromX, p1FromY, p2FromX, p2FromY, p3FromX, p3FromY, p4FromX, p4FromY);
 
-		return sampleGrid(image, dimensionX, dimensionY, transform, result);
+		return sampleGrid(image, dimensionX, dimensionY, transform);
 	}
 
-	DecodeStatus sampleGrid(const BitMatrix& image, int dimensionX, int dimensionY, const PerspectiveTransform& transform, BitMatrix& result) const override
+	BitMatrix sampleGrid(const BitMatrix& image, int dimensionX, int dimensionY, const PerspectiveTransform& transform) const override
 	{
-		if (dimensionX <= 0 || dimensionY <= 0) {
-			return DecodeStatus::NotFound;
-		}
-		result = BitMatrix(dimensionX, dimensionY);
+		if (dimensionX <= 0 || dimensionY <= 0)
+			return {};
+
+		BitMatrix result(dimensionX, dimensionY);
 		int max = 2 * dimensionX;
 		std::vector<float> points(max);
 		for (int y = 0; y < dimensionY; y++) {
@@ -131,7 +131,8 @@ public:
 			transform.transformPoints(points.data(), max);
 			// Quick check to see if points transformed to something inside the image;
 			// sufficient to check the endpoints
-			CheckAndNudgePoints(image, points);
+			if (!CheckAndNudgePoints(image, points))
+				return {};
 			try {
 				for (int x = 0; x < max; x += 2) {
 					if (image.get(static_cast<int>(points[x]), static_cast<int>(points[x + 1]))) {
@@ -148,10 +149,10 @@ public:
 				// This results in an ugly runtime exception despite our clever checks above -- can't have
 				// that. We could check each point's coordinates but that feels duplicative. We settle for
 				// catching and wrapping ArrayIndexOutOfBoundsException.
-				return DecodeStatus::NotFound;
+				return {};
 			}
 		}
-		return DecodeStatus::NoError;
+		return result;
 	}
 };
 

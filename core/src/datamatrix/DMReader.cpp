@@ -50,19 +50,19 @@ GetModuleSize(int x, int y, const BitMatrix& image)
 *
 * @see com.google.zxing.qrcode.QRCodeReader#extractPureBits(BitMatrix)
 */
-static DecodeStatus
-ExtractPureBits(const BitMatrix& image, BitMatrix& outBits)
+static BitMatrix
+ExtractPureBits(const BitMatrix& image)
 {
 	int left, top, right, bottom;
 	if (!image.getTopLeftOnBit(left, top) || !image.getBottomRightOnBit(right, bottom)) {
-		return DecodeStatus::NotFound;
+		return {};
 	}
 
 	int moduleSize = GetModuleSize(left, top, image);
 	int matrixWidth = (right - left + 1) / moduleSize;
 	int matrixHeight = (bottom - top + 1) / moduleSize;
 	if (matrixWidth <= 0 || matrixHeight <= 0) {
-		return DecodeStatus::NotFound;
+		return {};
 	}
 
 	// Push in the "border" by half the module width so that we start
@@ -73,16 +73,16 @@ ExtractPureBits(const BitMatrix& image, BitMatrix& outBits)
 	left += nudge;
 
 	// Now just read off the bits
-	outBits = BitMatrix(matrixWidth, matrixHeight);
+	BitMatrix result(matrixWidth, matrixHeight);
 	for (int y = 0; y < matrixHeight; y++) {
 		int iOffset = top + y * moduleSize;
 		for (int x = 0; x < matrixWidth; x++) {
 			if (image.get(left + x * moduleSize, iOffset)) {
-				outBits.set(x, y);
+				result.set(x, y);
 			}
 		}
 	}
-	return DecodeStatus::NoError;
+	return result;
 }
 
 Reader::Reader(const DecodeHints& hints) : _tryRotate(hints.shouldTryRotate()), _tryHarder(hints.shouldTryHarder())
@@ -107,37 +107,23 @@ Reader::decode(const BinaryBitmap& image) const
 
 	DecoderResult decoderResult;
 	std::vector<ResultPoint> points;
-	DecodeStatus status;
 	if (image.isPureBarcode()) {
-		BitMatrix bits;
-		status = ExtractPureBits(*binImg, bits);
-		if (StatusIsOK(status)) {
-			status = Decoder::Decode(bits, decoderResult);
-		}
+		BitMatrix bits = ExtractPureBits(*binImg);
+		if (bits.empty())
+			return Result(DecodeStatus::NotFound);
+
+		decoderResult = Decoder::Decode(bits);
 	}
 	else {
-		DetectorResult detectorResult;
-		status = Detector::Detect(*binImg, _tryHarder, _tryRotate, detectorResult);
-		if (StatusIsOK(status)) {
-			status = Decoder::Decode(*detectorResult.bits(), decoderResult);
-			points = detectorResult.points();
-		}
+		DetectorResult detectorResult = Detector::Detect(*binImg, _tryHarder, _tryRotate);
+		if (!detectorResult.isValid())
+			return Result(DecodeStatus::NotFound);
+
+		decoderResult = Decoder::Decode(detectorResult.bits());
+		points = detectorResult.points();
 	}
 
-	if (StatusIsError(status)) {
-		return Result(status);
-	}
-
-	Result result(decoderResult.text(), decoderResult.rawBytes(), points, BarcodeFormat::DATA_MATRIX);
-	auto& byteSegments = decoderResult.byteSegments();
-	if (!byteSegments.empty()) {
-		result.metadata().put(ResultMetadata::BYTE_SEGMENTS, byteSegments);
-	}
-	auto ecLevel = decoderResult.ecLevel();
-	if (!ecLevel.empty()) {
-		result.metadata().put(ResultMetadata::ERROR_CORRECTION_LEVEL, ecLevel);
-	}
-	return result;
+	return Result(std::move(decoderResult), std::move(points), BarcodeFormat::DATA_MATRIX);
 }
 
 } // DataMatrix

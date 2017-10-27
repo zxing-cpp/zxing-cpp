@@ -36,45 +36,22 @@ Reader::decode(const BinaryBitmap& image) const
 		return Result(DecodeStatus::NotFound);
 	}
 
-	DetectorResult detectResult;
-	DecodeStatus status = Detector::Detect(*binImg, false, detectResult);
-	DecoderResult decodeResult;
+	DetectorResult detectResult = Detector::Detect(*binImg, false);
+	DecoderResult decodeResult = DecodeStatus::NotFound;
 	std::vector<ResultPoint> points;
-	if (StatusIsOK(status)) {
+	if (detectResult.isValid()) {
 		points = detectResult.points();
-		status = Decoder::Decode(detectResult, decodeResult);
+		decodeResult = Decoder::Decode(detectResult);
 	}
-	if (StatusIsError(status)) {
-		auto status2 = Detector::Detect(*binImg, true, detectResult);
-		if (StatusIsOK(status2)) {
+	if (!decodeResult.isValid()) {
+		detectResult = Detector::Detect(*binImg, true);
+		if (detectResult.isValid()) {
 			points = detectResult.points();
-			status2 = Decoder::Decode(detectResult, decodeResult);
-			if (StatusIsError(status2)) {
-				return Result(status);
-			}
-		}
-		else {
-			return Result(status);
+			decodeResult = Decoder::Decode(detectResult);
 		}
 	}
 
-	//auto rpcb = hints.resultPointCallback();
-	//if (rpcb != nullptr) {
-	//	for (auto& p : points) {
-	//		rpcb(p.x(), p.y());
-	//	}
-	//}
-
-	Result result(decodeResult.text(), decodeResult.rawBytes(), decodeResult.numBits(), points, BarcodeFormat::AZTEC);
-	auto& byteSegments = decodeResult.byteSegments();
-	if (!byteSegments.empty()) {
-		result.metadata().put(ResultMetadata::BYTE_SEGMENTS, byteSegments);
-	}
-	auto ecLevel = decodeResult.ecLevel();
-	if (!ecLevel.empty()) {
-		result.metadata().put(ResultMetadata::ERROR_CORRECTION_LEVEL, ecLevel);
-	}
-	return result;
+	return Result(std::move(decodeResult), std::move(points), BarcodeFormat::AZTEC);
 }
 
 } // Aztec

@@ -22,7 +22,6 @@
 namespace ZXing {
 
 enum class BarcodeFormat;
-//typedef std::function<void(float x, float y)> PointCallback;
 
 class DecodeHints
 {
@@ -63,18 +62,6 @@ public:
 	void setCharacterSet(const std::string& charset) {
 		_charset = charset;
 	}
-
-	/**
-	* The caller needs to be notified via callback when a possible {@link ResultPoint}
-	* is found.
-	*/
-	/*PointCallback resultPointCallback() const {
-		return _callback;
-	}*/
-
-	/*void setResultPointCallback(const PointCallback& callback) {
-		_callback = callback;
-	}*/
 
 	/**
 	* Allowed lengths of encoded data -- reject anything else..
@@ -141,7 +128,6 @@ public:
 private:
 	uint32_t _flags = 0;
 	std::string _charset;
-	//PointCallback _callback;
 	std::vector<int> _lengths;
 	std::vector<int> _eanExts;
 

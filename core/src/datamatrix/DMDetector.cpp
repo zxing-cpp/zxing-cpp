@@ -210,9 +210,8 @@ static ResultPoint CorrectTopRight(const BitMatrix& image, const ResultPoint& bo
 	return l1 <= l2 ? c1 : c2;
 }
 
-static DecodeStatus SampleGrid(const BitMatrix& image, const ResultPoint& topLeft, const ResultPoint& bottomLeft,
-							   const ResultPoint& bottomRight, const ResultPoint& topRight, int dimensionX,
-							   int dimensionY, BitMatrix& result)
+static BitMatrix SampleGrid(const BitMatrix& image, const ResultPoint& topLeft, const ResultPoint& bottomLeft,
+							const ResultPoint& bottomRight, const ResultPoint& topRight, int dimensionX, int dimensionY)
 {
 	return GridSampler::Instance()->sampleGrid(
 		image,
@@ -233,8 +232,7 @@ static DecodeStatus SampleGrid(const BitMatrix& image, const ResultPoint& topLef
 		bottomRight.x(),
 		bottomRight.y(),
 		bottomLeft.x(),
-		bottomLeft.y(),
-		result);
+		bottomLeft.y());
 }
 
 /**
@@ -291,12 +289,11 @@ static void OrderByBestPatterns(const ResultPoint*& p0, const ResultPoint*& p1, 
 	p2 = pointC;
 }
 
-static DecodeStatus DetectOld(const BitMatrix& image, DetectorResult& result)
+static DetectorResult DetectOld(const BitMatrix& image)
 {
 	ResultPoint pointA, pointB, pointC, pointD;
-	DecodeStatus status = WhiteRectDetector::Detect(image, pointA, pointB, pointC, pointD);
-	if (StatusIsError(status)) {
-		return status;
+	if (!WhiteRectDetector::Detect(image, pointA, pointB, pointC, pointD)) {
+		return {};
 	}
 
 	// Point A and D are across the diagonal from one another,
@@ -345,7 +342,7 @@ static DecodeStatus DetectOld(const BitMatrix& image, DetectorResult& result)
 	}
 
 	if (bottomRight == nullptr || bottomLeft == nullptr || topLeft == nullptr) {
-		return DecodeStatus::NotFound;
+		return {};
 	}
 
 	// Bottom left is correct but top left and bottom right might be switched
@@ -391,7 +388,6 @@ static DecodeStatus DetectOld(const BitMatrix& image, DetectorResult& result)
 	}
 	dimensionRight += 2;
 
-	auto bits = std::make_shared<BitMatrix>();
 	ResultPoint correctedTopRight;
 
 	// Rectanguar symbols are 6x16, 6x28, 10x24, 10x32, 14x32, or 14x44. If one dimension is more
@@ -417,13 +413,6 @@ static DecodeStatus DetectOld(const BitMatrix& image, DetectorResult& result)
 			// it can't be odd, so, round... up?
 			dimensionRight++;
 		}
-
-		status = SampleGrid(image, *topLeft, *bottomLeft, *bottomRight, correctedTopRight, dimensionTop, dimensionRight,
-							*bits);
-		if (StatusIsError(status)) {
-			return status;
-		}
-
 	}
 	else {
 		// The matrix is square
@@ -440,15 +429,14 @@ static DecodeStatus DetectOld(const BitMatrix& image, DetectorResult& result)
 			dimensionCorrected++;
 		}
 
-		status = SampleGrid(image, *topLeft, *bottomLeft, *bottomRight, correctedTopRight, dimensionCorrected,
-							dimensionCorrected, *bits);
-		if (StatusIsError(status)) {
-			return status;
-		}
+		dimensionTop = dimensionRight = dimension;
 	}
-	result.setBits(bits);
-	result.setPoints({ *topLeft, *bottomLeft, *bottomRight, correctedTopRight });
-	return DecodeStatus::NoError;
+
+	auto bits = SampleGrid(image, *topLeft, *bottomLeft, *bottomRight, correctedTopRight, dimensionTop, dimensionRight);
+	if (bits.empty())
+		return {};
+
+	return {std::move(bits), {*topLeft, *bottomLeft, *bottomRight, correctedTopRight}};
 }
 
 /**
@@ -887,11 +875,9 @@ static void printBitMatrix(const BitMatrix& matrix)
 }
 #endif
 
-static BitMatrix SampleGrid(const BitMatrix& image, const ResultPoint& topLeft, const ResultPoint& bottomLeft,
-							const ResultPoint& bottomRight, const ResultPoint& topRight, int dimensionX, int dimensionY)
+static BitMatrix SampleGrid(const BitMatrix& image, PointF tl, PointF bl, PointF br, PointF tr, int dimensionX,
+							int dimensionY)
 {
-	PointF tl(topLeft), bl(bottomLeft), br(bottomRight), tr(topRight);
-
 	// shrink shape by half a pixel to go from center of white pixel outside of code to the edge between white and black
 	auto moveHalfAPixel = [](PointF& a, PointF& b) {
 		auto a2b = (b - a) / distance(a, b);
@@ -909,9 +895,8 @@ static BitMatrix SampleGrid(const BitMatrix& image, const ResultPoint& topLeft, 
 		*p = *p + PointF(0.5, 0.5);
 
 	auto border = 0.f;
-	BitMatrix result;
 
-	auto status = GridSampler::Instance()->sampleGrid(
+	return GridSampler::Instance()->sampleGrid(
 		image,
 		dimensionX, dimensionY,
 		border, border,
@@ -921,16 +906,10 @@ static BitMatrix SampleGrid(const BitMatrix& image, const ResultPoint& topLeft, 
 		(float)tl.x, (float)tl.y,
 		(float)tr.x, (float)tr.y,
 		(float)br.x, (float)br.y,
-		(float)bl.x, (float)bl.y,
-		result);
-
-	if (StatusIsError(status))
-		result = BitMatrix();
-
-	return result;
+		(float)bl.x, (float)bl.y);
 }
 
-static DecodeStatus DetectNew(const BitMatrix& image, bool tryRotate, DetectorResult& result)
+static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 {
 	// walk to the left at first
 	for (auto startDirection : {PointF(-1, 0), PointF(1, 0), PointF(0, -1), PointF(0, 1)}) {
@@ -1068,10 +1047,7 @@ static DecodeStatus DetectNew(const BitMatrix& image, bool tryRotate, DetectorRe
 			if (bits.empty())
 				continue;
 
-			result.setBits(std::make_shared<BitMatrix>(std::move(bits)));
-			result.setPoints({tl, bl, br, tr});
-
-			return DecodeStatus::NoError;
+			return {std::move(bits), {tl, bl, br, tr}};
 		}
 		// reached border of image -> try next scan direction
 #ifndef PRINT_DEBUG
@@ -1084,15 +1060,15 @@ static DecodeStatus DetectNew(const BitMatrix& image, bool tryRotate, DetectorRe
 	dumpDebugPPM<PointF>(image, "binary.pnm");//, { tl, bl, br, tr });
 #endif
 
-	return DecodeStatus::NotFound;
+	return {};
 }
 
-DecodeStatus Detector::Detect(const BitMatrix& image, bool tryHarder, bool tryRotate, DetectorResult& result)
+DetectorResult Detector::Detect(const BitMatrix& image, bool tryHarder, bool tryRotate)
 {
-	auto status = DetectNew(image, tryRotate, result);
-	if (StatusIsError(status) && tryHarder)
-		status = DetectOld(image, result);
-	return status;
+	auto result = DetectNew(image, tryRotate);
+	if (!result.isValid() && tryHarder)
+		result = DetectOld(image);
+	return result;
 }
 
 } // DataMatrix

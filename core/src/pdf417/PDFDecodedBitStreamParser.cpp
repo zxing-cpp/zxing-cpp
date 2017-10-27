@@ -613,8 +613,8 @@ static DecodeStatus DecodeMacroBlock(const std::vector<int>& codewords, int code
 	return DecodeStatus::NoError;
 }
 
-DecodeStatus
-DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel, DecoderResult& result)
+DecoderResult
+DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel)
 {
 	std::wstring resultString;
 	auto encoding = DEFAULT_ENCODING;
@@ -680,18 +680,16 @@ DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel, D
 			status = DecodeStatus::FormatError;
 		}
 	}
-	if (resultString.empty()) {
-		status = DecodeStatus::FormatError;
-	}
+	if (resultString.empty())
+		return DecodeStatus::FormatError;
 
-	if (StatusIsOK(status)) {
-		result.setText(resultString);
-		result.setEcLevel(std::to_wstring(ecLevel));
-		result.setExtra(resultMetadata);
-	}
-	return status;
+	if (StatusIsError(status))
+		return status;
+
+	return DecoderResult(ByteArray(), std::move(resultString))
+		.setEcLevel(std::to_wstring(ecLevel))
+		.setExtra(resultMetadata);
 }
-
 
 } // Pdf417
 } // ZXing

@@ -20,7 +20,6 @@ namespace ZXing {
 
 class BitMatrix;
 class ByteArray;
-enum class DecodeStatus;
 
 namespace QRCode {
 
@@ -37,7 +36,8 @@ public:
 	* @param bitMatrix {@link BitMatrix} to parse
 	* return false if dimension is not >= 21 and 1 mod 4
 	*/
-	static DecodeStatus ParseVersionInfo(const BitMatrix& bitMatrix, bool mirrored, const Version*& parsedVersion, FormatInformation& parsedFormatInfo);
+	static const Version* ReadVersion(const BitMatrix& bitMatrix, bool mirrored);
+	static FormatInformation ReadFormatInformation(const BitMatrix& bitMatrix, bool mirrored);
 
 	/**
 	* <p>Reads the bits in the {@link BitMatrix} representing the finder pattern in the
@@ -47,7 +47,7 @@ public:
 	* @return bytes encoded within the QR Code
 	* or empty array if the exact number of bytes expected is not read
 	*/
-	static DecodeStatus ReadCodewords(const BitMatrix& bitMatrix, const Version& version, ByteArray& result);
+	static ByteArray ReadCodewords(const BitMatrix& bitMatrix, const Version& version);
 };
 
 } // QRCode

@@ -141,10 +141,9 @@ static bool GetCorrectedParameterData(int64_t parameterData, bool compact, int& 
 		parameterWords[i] = (int)parameterData & 0xF;
 		parameterData >>= 4;
 	}
-	DecodeStatus status = ReedSolomonDecoder(GenericGF::AztecParam()).decode(parameterWords, numECCodewords);
-	if (StatusIsError(status)) {
+	if (!ReedSolomonDecoder::Decode(GenericGF::AztecParam(), parameterWords, numECCodewords))
 		return false;
-	}
+
 	// Toss the error correction.  Just return the data as an integer
 	result = 0;
 	for (int i = 0; i < numDataCodewords; i++) {
@@ -431,8 +430,7 @@ static PixelPoint GetMatrixCenter(const BitMatrix& image)
 {
 	//Get a white rectangle that can be the border of the matrix in center bull's eye or
 	ResultPoint pointA, pointB, pointC, pointD;
-	DecodeStatus status = WhiteRectDetector::Detect(image, pointA, pointB, pointC, pointD);
-	if (StatusIsError(status)) {
+	if (!WhiteRectDetector::Detect(image, pointA, pointB, pointC, pointD)) {
 		// This exception can be in case the initial rectangle is white
 		// In that case, surely in the bull's eye, we try to expand the rectangle.
 		int cx = image.width() / 2;
@@ -450,8 +448,7 @@ static PixelPoint GetMatrixCenter(const BitMatrix& image)
 	// Redetermine the white rectangle starting from previously computed center.
 	// This will ensure that we end up with a white rectangle in center bull's eye
 	// in order to compute a more accurate center.
-	status = WhiteRectDetector::Detect(image, 15, cx, cy, pointA, pointB, pointC, pointD);
-	if (StatusIsError(status)) {
+	if (!WhiteRectDetector::Detect(image, 15, cx, cy, pointA, pointB, pointC, pointD)) {
 		// This exception can be in case the initial rectangle is white
 		// In that case we try to expand the rectangle.
 		pointA = GetFirstDifferent(image, { cx + 7, cy - 7 }, false, 1, -1).toResultPoint();
@@ -495,7 +492,7 @@ static void GetMatrixCornerPoints(std::array<ResultPoint, 4>& bullsEyeCorners, b
 * topLeft, topRight, bottomRight, and bottomLeft are the centers of the squares on the
 * diagonal just outside the bull's eye.
 */
-static DecodeStatus SampleGrid(const BitMatrix& image, const ResultPoint& topLeft, const ResultPoint& topRight, const ResultPoint& bottomRight, const ResultPoint& bottomLeft, bool compact, int nbLayers, int nbCenterLayers, BitMatrix& result)
+static BitMatrix SampleGrid(const BitMatrix& image, const ResultPoint& topLeft, const ResultPoint& topRight, const ResultPoint& bottomRight, const ResultPoint& bottomLeft, bool compact, int nbLayers, int nbCenterLayers)
 {
 	int dimension = GetDimension(compact, nbLayers);
 
@@ -512,13 +509,11 @@ static DecodeStatus SampleGrid(const BitMatrix& image, const ResultPoint& topLef
 		topLeft.x(), topLeft.y(),
 		topRight.x(), topRight.y(),
 		bottomRight.x(), bottomRight.y(),
-		bottomLeft.x(), bottomLeft.y(),
-		result);
+		bottomLeft.x(), bottomLeft.y());
 }
 
 
-DecodeStatus
-Detector::Detect(const BitMatrix& image, bool isMirror, DetectorResult& result)
+DetectorResult Detector::Detect(const BitMatrix& image, bool isMirror)
 {
 	// 1. Get the center of the aztec matrix
 	auto pCenter = GetMatrixCenter(image);
@@ -529,7 +524,7 @@ Detector::Detect(const BitMatrix& image, bool isMirror, DetectorResult& result)
 	bool compact = false;
 	int nbCenterLayers = 0;
 	if (!GetBullsEyeCorners(image, pCenter, bullsEyeCorners, compact, nbCenterLayers)) {
-		return DecodeStatus::NotFound;
+		return {};
 	}
 
 	if (isMirror) {
@@ -541,25 +536,18 @@ Detector::Detect(const BitMatrix& image, bool isMirror, DetectorResult& result)
 	int nbDataBlocks = 0;
 	int shift = 0;
 	if (!ExtractParameters(image, bullsEyeCorners, compact, nbCenterLayers, nbLayers, nbDataBlocks, shift)) {
-		return DecodeStatus::NotFound;
+		return {};
 	}
 
 	// 4. Sample the grid
-	auto bits = std::make_shared<BitMatrix>();
-	auto status = SampleGrid(image, bullsEyeCorners[shift % 4], bullsEyeCorners[(shift + 1) % 4], bullsEyeCorners[(shift + 2) % 4], bullsEyeCorners[(shift + 3) % 4], compact, nbLayers, nbCenterLayers, *bits);
-	if (StatusIsError(status)) {
-		return status;
-	}
+	auto bits = SampleGrid(image, bullsEyeCorners[shift % 4], bullsEyeCorners[(shift + 1) % 4], bullsEyeCorners[(shift + 2) % 4], bullsEyeCorners[(shift + 3) % 4], compact, nbLayers, nbCenterLayers);
+	if (bits.empty())
+		return {};
 
 	// 5. Get the corners of the matrix.
 	GetMatrixCornerPoints(bullsEyeCorners, compact, nbLayers, nbCenterLayers);
 
-	result.setBits(bits);
-	result.setPoints({ bullsEyeCorners.begin(), bullsEyeCorners.end() });
-	result.setCompact(compact);
-	result.setNbDatablocks(nbDataBlocks);
-	result.setNbLayers(nbLayers);
-	return DecodeStatus::NoError;
+	return {std::move(bits), {bullsEyeCorners.begin(), bullsEyeCorners.end()}, compact, nbDataBlocks, nbLayers};
 }
 
 } // Aztec

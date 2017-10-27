@@ -20,7 +20,9 @@
 #include "BitMatrix.h"
 #include "DecodeHints.h"
 #include "DecodeStatus.h"
+#include "ZXContainerAlgorithms.h"
 
+#include <cassert>
 #include <cmath>
 #include <cstdlib>
 #include <limits>
@@ -58,7 +60,7 @@ static float CenterFromEnd(const StateCount& stateCount, int end)
 */
 static bool CrossCheckDiagonal(const BitMatrix& image, int startI, int centerJ, int maxCount, int originalStateCountTotal)
 {
-	StateCount stateCount = { 0, 0, 0, 0, 0 };
+	StateCount stateCount = {};
 
 	// Start counting up, left from center finding black center mass
 	int i = 0;
@@ -130,7 +132,7 @@ static bool CrossCheckDiagonal(const BitMatrix& image, int startI, int centerJ, 
 
 	// If we found a finder-pattern-like section, but its size is more than 100% different than
 	// the original, assume it's a false positive
-	int stateCountTotal = stateCount[0] + stateCount[1] + stateCount[2] + stateCount[3] + stateCount[4];
+	int stateCountTotal = Accumulate(stateCount, 0);
 	return std::abs(stateCountTotal - originalStateCountTotal) < 2 * originalStateCountTotal && FinderPatternFinder::FoundPatternCross(stateCount);
 }
 
@@ -147,7 +149,7 @@ static bool CrossCheckDiagonal(const BitMatrix& image, int startI, int centerJ, 
 */
 static float CrossCheckVertical(const BitMatrix& image, int startI, int centerJ, int maxCount, int originalStateCountTotal)
 {
-	StateCount stateCount = { 0, 0, 0, 0, 0 };
+	StateCount stateCount = {};
 	int maxI = image.height();
 
 	// Start counting up from center
@@ -201,7 +203,7 @@ static float CrossCheckVertical(const BitMatrix& image, int startI, int centerJ,
 
 	// If we found a finder-pattern-like section, but its size is more than 40% different than
 	// the original, assume it's a false positive
-	int stateCountTotal = stateCount[0] + stateCount[1] + stateCount[2] + stateCount[3] + stateCount[4];
+	int stateCountTotal = Accumulate(stateCount, 0);
 	if (5 * std::abs(stateCountTotal - originalStateCountTotal) >= 2 * originalStateCountTotal) {
 		return std::numeric_limits<float>::quiet_NaN();
 	}
@@ -216,7 +218,7 @@ static float CrossCheckVertical(const BitMatrix& image, int startI, int centerJ,
 */
 static float CrossCheckHorizontal(const BitMatrix& image, int startJ, int centerI, int maxCount, int originalStateCountTotal)
 {
-	StateCount stateCount = { 0, 0, 0, 0, 0 };
+	StateCount stateCount = {};
 	int maxJ = image.width();
 
 	int j = startJ;
@@ -267,7 +269,7 @@ static float CrossCheckHorizontal(const BitMatrix& image, int startJ, int center
 
 	// If we found a finder-pattern-like section, but its size is significantly different than
 	// the original, assume it's a false positive
-	int stateCountTotal = stateCount[0] + stateCount[1] + stateCount[2] + stateCount[3] + stateCount[4];
+	int stateCountTotal = Accumulate(stateCount, 0);
 	if (5 * std::abs(stateCountTotal - originalStateCountTotal) >= originalStateCountTotal) {
 		return std::numeric_limits<float>::quiet_NaN();
 	}
@@ -374,12 +376,12 @@ struct CenterComparator
 *         size differs from the average among those patterns the least
 * @throws NotFoundException if 3 such finder patterns do not exist
 */
-DecodeStatus SelectBestPatterns(std::vector<FinderPattern>& possibleCenters)
+static bool SelectBestPatterns(std::vector<FinderPattern>& possibleCenters)
 {
 	int startSize = static_cast<int>(possibleCenters.size());
 	if (startSize < 3) {
 		// Couldn't find enough finder patterns
-		return DecodeStatus::NotFound;
+		return false;
 	}
 
 	// Filter outlier possibilities whose module size is too different
@@ -422,7 +424,7 @@ DecodeStatus SelectBestPatterns(std::vector<FinderPattern>& possibleCenters)
 
 		possibleCenters.resize(3);
 	}
-	return DecodeStatus::NoError;
+	return true;
 }
 
 /**
@@ -439,49 +441,36 @@ static float CrossProductZ(const ResultPoint& a, const ResultPoint& b, const Res
 *
 * @param patterns array of three {@code ResultPoint} to order
 */
-static void OrderByBestPatterns(FinderPattern& p0, FinderPattern& p1, FinderPattern& p2)
+static void OrderBestPatterns(std::vector<FinderPattern>& patterns)
 {
+	assert(patterns.size() == 3);
+
+	auto &p0 = patterns[0], &p1 = patterns[1], &p2 = patterns[2];
+
 	// Find distances between pattern centers
 	float zeroOneDistance = ResultPoint::Distance(p0, p1);
 	float oneTwoDistance = ResultPoint::Distance(p1, p2);
 	float zeroTwoDistance = ResultPoint::Distance(p0, p2);
 
-	FinderPattern pointA;
-	FinderPattern pointB;
-	FinderPattern pointC;
 	// Assume one closest to other two is B; A and C will just be guesses at first
-	if (oneTwoDistance >= zeroOneDistance && oneTwoDistance >= zeroTwoDistance) {
-		pointB = p0;
-		pointA = p1;
-		pointC = p2;
-	}
-	else if (zeroTwoDistance >= oneTwoDistance && zeroTwoDistance >= zeroOneDistance) {
-		pointB = p1;
-		pointA = p0;
-		pointC = p2;
-	}
-	else {
-		pointB = p2;
-		pointA = p0;
-		pointC = p1;
-	}
+	if (oneTwoDistance >= zeroOneDistance && oneTwoDistance >= zeroTwoDistance)
+		std::swap(p0, p1);
+	else if (zeroTwoDistance >= oneTwoDistance && zeroTwoDistance >= zeroOneDistance)
+		; // do nothing, the order is correct
+	else
+		std::swap(p1, p2);
 
 	// Use cross product to figure out whether A and C are correct or flipped.
 	// This asks whether BC x BA has a positive z component, which is the arrangement
 	// we want for A, B, C. If it's negative, then we've got it flipped around and
 	// should swap A and C.
-	if (CrossProductZ(pointA, pointB, pointC) < 0.0f) {
-		std::swap(pointA, pointC);
+	if (CrossProductZ(p0, p1, p2) < 0.0f) {
+		std::swap(p0, p2);
 	}
-
-	p0 = pointA;
-	p1 = pointB;
-	p2 = pointC;
 }
 
 
-DecodeStatus
-FinderPatternFinder::Find(const BitMatrix& image, /*const PointCallback& pointCallback,*/ bool pureBarcode, bool tryHarder, FinderPatternInfo& outInfo)
+FinderPatternInfo FinderPatternFinder::Find(const BitMatrix& image, bool pureBarcode, bool tryHarder)
 {
 	int maxI = image.height();
 	int maxJ = image.width();
@@ -517,7 +506,7 @@ FinderPatternFinder::Find(const BitMatrix& image, /*const PointCallback& pointCa
 				if ((currentState & 1) == 0) { // Counting black pixels
 					if (currentState == 4) { // A winner?
 						if (FoundPatternCross(stateCount)) { // Yes
-							bool confirmed = HandlePossibleCenter(image, stateCount, i, j, pureBarcode, /*pointCallback,*/ possibleCenters);
+							bool confirmed = HandlePossibleCenter(image, stateCount, i, j, pureBarcode, possibleCenters);
 							if (confirmed) {
 								// Start examining every other line. Checking each line turned out to be too
 								// expensive and didn't improve performance.
@@ -552,11 +541,7 @@ FinderPatternFinder::Find(const BitMatrix& image, /*const PointCallback& pointCa
 							}
 							// Clear state to start looking again
 							currentState = 0;
-							stateCount[0] = 0;
-							stateCount[1] = 0;
-							stateCount[2] = 0;
-							stateCount[3] = 0;
-							stateCount[4] = 0;
+							stateCount.fill(0);
 						}
 						else { // No, shift counts back by two
 							stateCount[0] = stateCount[2];
@@ -577,7 +562,7 @@ FinderPatternFinder::Find(const BitMatrix& image, /*const PointCallback& pointCa
 			}
 		}
 		if (FinderPatternFinder::FoundPatternCross(stateCount)) {
-			bool confirmed = FinderPatternFinder::HandlePossibleCenter(image, stateCount, i, maxJ, pureBarcode, /*pointCallback,*/ possibleCenters);
+			bool confirmed = FinderPatternFinder::HandlePossibleCenter(image, stateCount, i, maxJ, pureBarcode, possibleCenters);
 			if (confirmed) {
 				iSkip = stateCount[0];
 				if (hasSkipped) {
@@ -588,17 +573,12 @@ FinderPatternFinder::Find(const BitMatrix& image, /*const PointCallback& pointCa
 		}
 	}
 
-	auto status = SelectBestPatterns(possibleCenters);
-	if (StatusIsError(status))
-		return status;
+	if (!SelectBestPatterns(possibleCenters))
+		return {};
 
-	OrderByBestPatterns(possibleCenters[0], possibleCenters[1], possibleCenters[2]);
+	OrderBestPatterns(possibleCenters);
 
-	outInfo.bottomLeft = possibleCenters[0];
-	outInfo.topLeft = possibleCenters[1];
-	outInfo.topRight = possibleCenters[2];
-	
-	return DecodeStatus::NoError;
+	return {possibleCenters[0], possibleCenters[1], possibleCenters[2]};
 }
 
 
@@ -609,14 +589,7 @@ FinderPatternFinder::Find(const BitMatrix& image, /*const PointCallback& pointCa
 */
 bool
 FinderPatternFinder::FoundPatternCross(const StateCount& stateCount) {
-	int totalModuleSize = 0;
-	for (int i = 0; i < 5; i++) {
-		int count = stateCount[i];
-		if (count == 0) {
-			return false;
-		}
-		totalModuleSize += count;
-	}
+	int totalModuleSize = Accumulate(stateCount, 0);
 	if (totalModuleSize < 7) {
 		return false;
 	}
@@ -650,39 +623,34 @@ FinderPatternFinder::FoundPatternCross(const StateCount& stateCount) {
 * @return true if a finder pattern candidate was found this time
 */
 bool
-FinderPatternFinder::HandlePossibleCenter(const BitMatrix& image, const StateCount& stateCount, int i, int j, bool pureBarcode, /*const PointCallback& pointCallback,*/ std::vector<FinderPattern>& possibleCenters)
+FinderPatternFinder::HandlePossibleCenter(const BitMatrix& image, const StateCount& stateCount, int i, int j, bool pureBarcode, std::vector<FinderPattern>& possibleCenters)
 {
-	int stateCountTotal = stateCount[0] + stateCount[1] + stateCount[2] + stateCount[3] +
-		stateCount[4];
+	int stateCountTotal = Accumulate(stateCount, 0);
 	float centerJ = CenterFromEnd(stateCount, j);
 	float centerI = CrossCheckVertical(image, i, static_cast<int>(centerJ), stateCount[2], stateCountTotal);
-	if (!std::isnan(centerI)) {
-		// Re-cross check
-		centerJ = CrossCheckHorizontal(image, static_cast<int>(centerJ), static_cast<int>(centerI), stateCount[2], stateCountTotal);
-		if (!std::isnan(centerJ) &&
-			(!pureBarcode || CrossCheckDiagonal(image, static_cast<int>(centerI), static_cast<int>(centerJ), stateCount[2], stateCountTotal))) {
-			float estimatedModuleSize = (float)stateCountTotal / 7.0f;
-			bool found = false;
-			for (size_t index = 0; index < possibleCenters.size(); ++index) {
-				FinderPattern center = possibleCenters[index];
-				// Look for about the same center and module size:
-				if (center.aboutEquals(estimatedModuleSize, centerI, centerJ)) {
-					possibleCenters[index] = center.combineEstimate(centerI, centerJ, estimatedModuleSize);
-					found = true;
-					break;
-				}
-			}
-			if (!found) {
-				possibleCenters.emplace_back(centerJ, centerI, estimatedModuleSize);
-				//if (pointCallback != nullptr) {
-				//	const ResultPoint& p = possibleCenters.back();
-				//	pointCallback(p.x(), p.y());
-				//}
-			}
-			return true;
-		}
-	}
-	return false;
+	if (std::isnan(centerI))
+		return false;
+
+	// Re-cross check
+	centerJ = CrossCheckHorizontal(image, static_cast<int>(centerJ), static_cast<int>(centerI), stateCount[2],
+								   stateCountTotal);
+	if (std::isnan(centerJ))
+		return false;
+
+	if (pureBarcode &&
+		!CrossCheckDiagonal(image, static_cast<int>(centerI), static_cast<int>(centerJ), stateCount[2], stateCountTotal))
+		return false;
+
+	float estimatedModuleSize = stateCountTotal / 7.0f;
+	auto center = ZXing::FindIf(possibleCenters, [=](const FinderPattern& center) {
+		return center.aboutEquals(estimatedModuleSize, centerI, centerJ);
+	});
+	if (center != possibleCenters.end())
+		*center = center->combineEstimate(centerI, centerJ, estimatedModuleSize);
+	else
+		possibleCenters.emplace_back(centerJ, centerI, estimatedModuleSize);
+
+	return true;
 }
 
 } // QRCode

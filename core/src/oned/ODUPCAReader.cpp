@@ -21,11 +21,13 @@
 namespace ZXing {
 namespace OneD {
 
-static Result MaybeReturnResult(const Result& result)
+static Result MaybeReturnResult(Result&& result)
 {
 	const std::wstring& text = result.text();
 	if (!text.empty() && text[0] == '0') {
-		return Result(text.substr(1), ByteArray(), result.resultPoints(), BarcodeFormat::UPC_A);
+		result.setText(text.substr(1));
+		result.setFormat(BarcodeFormat::UPC_A);
+		return result;
 	}
 	else {
 		return Result(DecodeStatus::FormatError);

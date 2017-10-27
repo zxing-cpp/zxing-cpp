@@ -17,6 +17,7 @@
 */
 
 #include "ByteArray.h"
+#include "DecodeStatus.h"
 
 #include <memory>
 #include <list>
@@ -35,6 +36,7 @@ class CustomData;
 */
 class DecoderResult
 {
+	DecodeStatus _status = DecodeStatus::NoError;
 	ByteArray _rawBytes;
 	int _numBits = 0;
 	std::wstring _text;
@@ -46,44 +48,54 @@ class DecoderResult
 	int _structuredAppendParity = 0;
 	std::shared_ptr<CustomData> _extra;
 
-public:
-	//explicit DecoderResult(DecodeStatus status);
-	//DecoderResult(const ByteArray& rawBytes, const String& text, std::list<ByteArray>& byteSegments, const std::string& ecLevel, int saSequence, int saParity);
-	//DecoderResult(const ByteArray& rawBytes, const String& text, std::list<ByteArray>& byteSegments, const std::string& ecLevel);
-	DecoderResult() {}
 	DecoderResult(const DecoderResult &) = delete;
 	DecoderResult& operator=(const DecoderResult &) = delete;
 
-	const ByteArray& rawBytes() const { return _rawBytes; }
-	void setRawBytes(const ByteArray& bytes) { _rawBytes = bytes; _numBits = 8 * bytes.length(); }
-	int numBits() const { return _numBits; }
-	void setNumBits(int numBits) { _numBits = numBits; }
+public:
+	DecoderResult(DecodeStatus status) : _status(status) {}
+	DecoderResult(ByteArray&& rawBytes, std::wstring&& text) : _rawBytes(std::move(rawBytes)), _text(std::move(text)) {
+		_numBits = 8 * rawBytes.length();
+	}
 
-	const std::wstring& text() const { return _text; }
-	void setText(const std::wstring& txt) { _text = txt; }
+	DecoderResult() = default;
+	DecoderResult(DecoderResult&&) = default;
+	DecoderResult& operator=(DecoderResult&&) = default;
 
-	const std::list<ByteArray>& byteSegments() const { return _byteSegments; }
-	void setByteSegments(const std::list<ByteArray>& segments) { _byteSegments = segments; }
+	bool isValid() const { return StatusIsOK(_status); }
+	DecodeStatus errorCode() const { return _status; }
 
-	std::wstring ecLevel() const { return _ecLevel; }
-	void setEcLevel(const std::wstring& level) { _ecLevel = level; }
+	const ByteArray& rawBytes() const & { return _rawBytes; }
+	ByteArray&& rawBytes() && { return std::move(_rawBytes); }
+	const std::wstring& text() const & { return _text; }
+	std::wstring&& text() && { return std::move(_text); }
 
-	int errorsCorrected() const { return _errorsCorrected; }
-	void setErrorsCorrected(int ec) { _errorsCorrected = ec; }
+	// Simple macro to set up getter/setter methods that save lots of boilerplate.
+	// It sets up a standard 'const & () const', 2 setters for setting lvalues via
+	// copy and 2 for setting rvalues via move. They are provided each to work
+	// either on lvalues (normal 'void (...)') or on rvalues (returning '*this' as
+	// rvalue). The latter can be used to optionally initialize a temporary in a
+	// return statement, e.g.
+	//    return DecoderResult(bytes, text).setEcLevel(level);
+#define PROPERTY(TYPE, GETTER, SETTER) \
+	const TYPE& GETTER() const & { return _##GETTER; } \
+	TYPE&& GETTER() && { return std::move(_##GETTER); } \
+	void SETTER(const TYPE& v) & { _##GETTER = v; } \
+	void SETTER(TYPE&& v) & { _##GETTER = std::move(v); } \
+	DecoderResult&& SETTER(const TYPE& v) && { _##GETTER = v; return std::move(*this); } \
+	DecoderResult&& SETTER(TYPE&& v) && { _##GETTER = std::move(v); return std::move(*this); }
 
-	int erasures() const { return _erasures; }
-	void setErasures(int e) { _erasures = e; }
+	PROPERTY(int, numBits, setNumBits)
+	PROPERTY(std::list<ByteArray>, byteSegments, setByteSegments)
+	PROPERTY(std::wstring, ecLevel, setEcLevel)
+	PROPERTY(int, errorsCorrected, setErrorsCorrected)
+	PROPERTY(int, erasures, setErasures)
+	PROPERTY(int, structuredAppendParity, setStructuredAppendParity)
+	PROPERTY(int, structuredAppendSequenceNumber, setStructuredAppendSequenceNumber)
+	PROPERTY(std::shared_ptr<CustomData>, extra, setExtra)
+
+#undef PROPERTY
 
 	bool hasStructuredAppend() const { return _structuredAppendParity >= 0 && _structuredAppendSequenceNumber >= 0; }
-
-	int structuredAppendParity() const { return _structuredAppendParity; }
-	void setStructuredAppendParity(int p) { _structuredAppendParity = p; }
-
-	int structuredAppendSequenceNumber() const { return _structuredAppendSequenceNumber; }
-	void setStructuredAppendSequenceNumber(int s) { _structuredAppendSequenceNumber = s; }
-
-	std::shared_ptr<CustomData> extra() const { return _extra; }
-	void setExtra(const std::shared_ptr<CustomData>& e) { _extra = e; }
 };
 
 } // ZXing

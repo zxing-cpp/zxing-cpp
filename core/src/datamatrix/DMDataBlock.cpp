@@ -22,13 +22,12 @@
 namespace ZXing {
 namespace DataMatrix {
 
-DecodeStatus
-DataBlock::GetDataBlocks(const ByteArray& rawCodewords, const Version& version, std::vector<DataBlock>& result)
+std::vector<DataBlock> DataBlock::GetDataBlocks(const ByteArray& rawCodewords, const Version& version)
 {
 	// First count the total number of data blocks
 	// Now establish DataBlocks of the appropriate size and number of data codewords
 	auto& ecBlocks = version.ecBlocks();
-	result.resize(ecBlocks.numBlocks());
+	std::vector<DataBlock> result(ecBlocks.numBlocks());
 	int numResultBlocks = 0;
 	for (auto& ecBlock : ecBlocks.blockArray()) {
 		for (int i = 0; i < ecBlock.count; i++) {
@@ -72,7 +71,10 @@ DataBlock::GetDataBlocks(const ByteArray& rawCodewords, const Version& version, 
 		}
 	}
 
-	return rawCodewordsOffset == rawCodewords.length() ? DecodeStatus::NoError : DecodeStatus::FormatError;
+	if (rawCodewordsOffset != rawCodewords.length())
+		return {};
+
+	return result;
 }
 
 } // DataMatrix

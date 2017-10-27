@@ -33,7 +33,7 @@ namespace QRCode {
 class EncodeResult
 {
 public:
-	ErrorCorrectionLevel ecLevel = ErrorCorrectionLevel::Low;
+	ErrorCorrectionLevel ecLevel = ErrorCorrectionLevel::Invalid;
 	CodecMode::Mode mode = CodecMode::TERMINATOR;
 	const Version* version = nullptr;
 	int maskPattern = -1;

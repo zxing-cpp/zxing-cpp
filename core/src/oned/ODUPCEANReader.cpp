@@ -120,28 +120,15 @@ UPCEANReader::decodeEnd(const BitArray& row, BitArray::Iterator begin) const
 Result
 UPCEANReader::decodeRow(int rowNumber, const BitArray& row, BitArray::Range startGuard) const
 {
-	//auto pointCallback = hints.resultPointCallback();
-	//if (pointCallback != nullptr) {
-	//	pointCallback(0.5f * (startGuardBegin + startGuardEnd), static_cast<float>(rowNumber));
-	//}
-
 	std::string result;
 	result.reserve(20);
 	auto range = decodeMiddle(row, startGuard.end, result);
 	if (!range)
 		return Result(DecodeStatus::NotFound);
 
-	/*if (pointCallback != nullptr) {
-		pointCallback(static_cast<float>(endStart), static_cast<float>(rowNumber));
-	}*/
-
 	auto stopGuard = decodeEnd(row, range.end);
 	if (!stopGuard)
 		return Result(DecodeStatus::NotFound);
-
-	/*if (pointCallback != nullptr) {
-		pointCallback(0.5f * (endRangeBegin + endRangeEnd), static_cast<float>(rowNumber));
-	}*/
 
 	// Make sure there is a quiet zone at least as big as the end pattern after the barcode. The
 	// spec might want more whitespace, but in practice this is the maximum we can count on.

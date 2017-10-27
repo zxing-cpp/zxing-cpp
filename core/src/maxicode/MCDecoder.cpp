@@ -52,17 +52,17 @@ static bool CorrectErrors(ByteArray& codewordBytes, int start, int dataCodewords
 		}
 	}
 
-	if (StatusIsOK(ReedSolomonDecoder(GenericGF::MaxiCodeField64()).decode(codewordsInts, ecCodewords / divisor))) {
-		// Copy back into array of bytes -- only need to worry about the bytes that were data
-		// We don't care about errors in the error-correction codewords
-		for (int i = 0; i < dataCodewords; i++) {
-			if ((mode == ALL) || (i % 2 == (mode - 1))) {
-				codewordBytes[i + start] = static_cast<uint8_t>(codewordsInts[i / divisor]);
-			}
+	if (!ReedSolomonDecoder::Decode(GenericGF::MaxiCodeField64(), codewordsInts, ecCodewords / divisor))
+		return false;
+
+	// Copy back into array of bytes -- only need to worry about the bytes that were data
+	// We don't care about errors in the error-correction codewords
+	for (int i = 0; i < dataCodewords; i++) {
+		if ((mode == ALL) || (i % 2 == (mode - 1))) {
+			codewordBytes[i + start] = static_cast<uint8_t>(codewordsInts[i / divisor]);
 		}
-		return true;
 	}
-	return false;
+	return true;
 }
 
 /**
@@ -242,7 +242,7 @@ namespace DecodedBitStreamParser
 		return sb;
 	}
 
-	static DecodeStatus Decode(const ByteArray& bytes, int mode, DecoderResult& decodeResult)
+	static DecoderResult Decode(ByteArray&& bytes, int mode)
 	{
 		std::string result;
 		result.reserve(144);
@@ -268,18 +268,15 @@ namespace DecodedBitStreamParser
 				result.append(GetMessage(bytes, 1, 77));
 				break;
 		}
-		decodeResult.setRawBytes(bytes);
-		decodeResult.setText(TextDecoder::FromLatin1(result));
-		decodeResult.setEcLevel(std::to_wstring(mode)); // really???
-		return DecodeStatus::NoError;
+		return DecoderResult(std::move(bytes), TextDecoder::FromLatin1(result)).setEcLevel(std::to_wstring(mode)); // really???
 	}
 
 
 
 } // DecodedBitStreamParser
 
-DecodeStatus
-Decoder::Decode(const BitMatrix& bits, DecoderResult& result)
+DecoderResult
+Decoder::Decode(const BitMatrix& bits)
 {
 	ByteArray codewords = BitMatrixParser::ReadCodewords(bits);
 
@@ -314,7 +311,7 @@ Decoder::Decode(const BitMatrix& bits, DecoderResult& result)
 	std::copy_n(codewords.begin(), 10, datawords.begin());
 	std::copy_n(codewords.begin() + 20, datawords.size() - 10, datawords.begin() + 10);
 
-	return DecodedBitStreamParser::Decode(datawords, mode, result);
+	return DecodedBitStreamParser::Decode(std::move(datawords), mode);
 }
 
 } // MaxiCode

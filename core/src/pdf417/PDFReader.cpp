@@ -70,13 +70,13 @@ DecodeStatus DoDecode(const BinaryBitmap& image, bool multiple, std::list<Result
 	}
 
 	for (const auto& points : detectorResult.points) {
-		DecoderResult decoderResult;
-		DecodeStatus status = ScanningDecoder::Decode(*detectorResult.bits, points[4], points[5], points[6], points[7], GetMinCodewordWidth(points), GetMaxCodewordWidth(points), decoderResult);
-		if (StatusIsOK(status)) {
+		DecoderResult decoderResult =
+			ScanningDecoder::Decode(*detectorResult.bits, points[4], points[5], points[6], points[7],
+									GetMinCodewordWidth(points), GetMaxCodewordWidth(points));
+		if (decoderResult.isValid()) {
 			std::vector<ResultPoint> foundPoints(points.size());
 			std::transform(points.begin(), points.end(), foundPoints.begin(), [](const Nullable<ResultPoint>& p) { return p.value(); });
-			Result result(decoderResult.text(), decoderResult.rawBytes(), foundPoints, BarcodeFormat::PDF_417);
-			result.metadata().put(ResultMetadata::ERROR_CORRECTION_LEVEL, decoderResult.ecLevel());
+			Result result(std::move(decoderResult), std::move(foundPoints), BarcodeFormat::PDF_417);
 			if (auto extra = decoderResult.extra()) {
 				result.metadata().put(ResultMetadata::PDF417_EXTRA_METADATA, extra);
 			}
@@ -86,7 +86,7 @@ DecodeStatus DoDecode(const BinaryBitmap& image, bool multiple, std::list<Result
 			}
 		}
 		else if (!multiple) {
-			return status;
+			return decoderResult.errorCode();
 		}
 	}
 	return results.empty() ? DecodeStatus::NotFound : DecodeStatus::NoError;

@@ -64,22 +64,22 @@ GetModuleSize(int x, int y, const BitMatrix& image)
 *
 * @see com.google.zxing.datamatrix.DataMatrixReader#extractPureBits(BitMatrix)
 */
-static DecodeStatus
-ExtractPureBits(const BitMatrix& image, BitMatrix& outBits)
+static BitMatrix
+ExtractPureBits(const BitMatrix& image)
 {
 	int left, top, right, bottom;
 	if (!image.getTopLeftOnBit(left, top) || !image.getBottomRightOnBit(right, bottom)) {
-		return DecodeStatus::NotFound;
+		return {};
 	}
 
 	float moduleSize = GetModuleSize(left, top, image);
 	if (moduleSize <= 0.0f) {
-		return DecodeStatus::NotFound;
+		return {};
 	}
 
 	// Sanity check!
 	if (left >= right || top >= bottom) {
-		return DecodeStatus::NotFound;
+		return {};
 	}
 
 	if (bottom - top != right - left) {
@@ -88,18 +88,18 @@ ExtractPureBits(const BitMatrix& image, BitMatrix& outBits)
 		right = left + (bottom - top);
 		if (right >= image.width()) {
 			// Abort if that would not make sense -- off image
-			return DecodeStatus::NotFound;
+			return {};
 		}
 	}
 
 	int matrixWidth = RoundToNearest((right - left + 1) / moduleSize);
 	int matrixHeight = RoundToNearest((bottom - top + 1) / moduleSize);
 	if (matrixWidth <= 0 || matrixHeight <= 0) {
-		return DecodeStatus::NotFound;
+		return {};
 	}
 	if (matrixHeight != matrixWidth) {
 		// Only possibly decode square regions
-		return DecodeStatus::NotFound;
+		return {};
 	}
 
 	// Push in the "border" by half the module width so that we start
@@ -116,7 +116,7 @@ ExtractPureBits(const BitMatrix& image, BitMatrix& outBits)
 	if (nudgedTooFarRight > 0) {
 		if (nudgedTooFarRight > nudge) {
 			// Neither way fits; abort
-			return DecodeStatus::NotFound;
+			return {};
 		}
 		left -= nudgedTooFarRight;
 	}
@@ -125,22 +125,22 @@ ExtractPureBits(const BitMatrix& image, BitMatrix& outBits)
 	if (nudgedTooFarDown > 0) {
 		if (nudgedTooFarDown > nudge) {
 			// Neither way fits; abort
-			return DecodeStatus::NotFound;
+			return {};
 		}
 		top -= nudgedTooFarDown;
 	}
 
 	// Now just read off the bits
-	outBits = BitMatrix(matrixWidth, matrixHeight);
+	BitMatrix result(matrixWidth, matrixHeight);
 	for (int y = 0; y < matrixHeight; y++) {
 		int iOffset = top + (int)(y * moduleSize);
 		for (int x = 0; x < matrixWidth; x++) {
 			if (image.get(left + (int)(x * moduleSize), iOffset)) {
-				outBits.set(x, y);
+				result.set(x, y);
 			}
 		}
 	}
-	return DecodeStatus::NoError;
+	return result;
 }
 
 Reader::Reader(const DecodeHints& hints) :
@@ -159,25 +159,24 @@ Reader::decode(const BinaryBitmap& image) const
 
 	DecoderResult decoderResult;
 	std::vector<ResultPoint> points;
-	DecodeStatus status;
 	if (image.isPureBarcode()) {
-		BitMatrix bits;
-		status = ExtractPureBits(*binImg, bits);
-		if (StatusIsOK(status)) {
-			status = Decoder::Decode(bits, _charset, decoderResult);
-		}
+		BitMatrix bits = ExtractPureBits(*binImg);
+		if (bits.empty())
+			return Result(DecodeStatus::NotFound);
+
+		decoderResult = Decoder::Decode(bits, _charset);
 	}
 	else {
-		DetectorResult detectorResult;
-		status = Detector::Detect(*binImg, image.isPureBarcode(), _tryHarder, detectorResult);
-		if (StatusIsOK(status)) {
-			status = Decoder::Decode(*detectorResult.bits(), _charset, decoderResult);
-			points = detectorResult.points();
-		}
+		DetectorResult detectorResult = Detector::Detect(*binImg, image.isPureBarcode(), _tryHarder);
+		if (!detectorResult.isValid())
+			return Result(DecodeStatus::NotFound);
+
+		decoderResult = Decoder::Decode(detectorResult.bits(), _charset);
+		points = detectorResult.points();
 	}
 
-	if (StatusIsError(status)) {
-		return Result(status);
+	if (!decoderResult.isValid()) {
+		return Result(decoderResult.errorCode());
 	}
 
 	// If the code was mirrored: swap the bottom-left and the top-right points.
@@ -193,20 +192,7 @@ Reader::decode(const BinaryBitmap& image) const
 	}
 #endif
 
-	Result result(decoderResult.text(), decoderResult.rawBytes(), points, BarcodeFormat::QR_CODE);
-	auto& byteSegments = decoderResult.byteSegments();
-	if (!byteSegments.empty()) {
-		result.metadata().put(ResultMetadata::BYTE_SEGMENTS, byteSegments);
-	}
-	auto ecLevel = decoderResult.ecLevel();
-	if (!ecLevel.empty()) {
-		result.metadata().put(ResultMetadata::ERROR_CORRECTION_LEVEL, ecLevel);
-	}
-	if (decoderResult.hasStructuredAppend()) {
-		result.metadata().put(ResultMetadata::STRUCTURED_APPEND_SEQUENCE, decoderResult.structuredAppendSequenceNumber());
-		result.metadata().put(ResultMetadata::STRUCTURED_APPEND_PARITY, decoderResult.structuredAppendParity());
-	}
-	return result;
+	return Result(std::move(decoderResult), std::move(points), BarcodeFormat::QR_CODE);
 }
 
 } // QRCode

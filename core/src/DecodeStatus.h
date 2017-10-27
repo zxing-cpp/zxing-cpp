@@ -20,17 +20,9 @@ namespace ZXing {
 enum class DecodeStatus
 {
 	NoError = 0,
-
-	ReaderError = 0x10,
 	NotFound,
 	FormatError,
 	ChecksumError,
-
-	ReedSolomonError = 0x20,
-	ReedSolomonAlgoFailed,		// r_{i-1} was zero
-	ReedSolomonBadLocation,		// Bad error location
-	ReedSolomonDegreeMismatch,	// Error locator degree does not match number of roots
-	ReedSolomonSigmaTildeZero,	// sigmaTilde(0) was zero
 };
 
 inline bool StatusIsOK(DecodeStatus status)
@@ -42,7 +34,5 @@ inline bool StatusIsError(DecodeStatus status)
 {
 	return status != DecodeStatus::NoError;
 }
-
-bool StatusIsKindOf(DecodeStatus status, DecodeStatus group);
 
 } // ZXing

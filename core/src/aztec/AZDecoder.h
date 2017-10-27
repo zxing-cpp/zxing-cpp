@@ -19,7 +19,6 @@
 namespace ZXing {
 
 class DecoderResult;
-enum class DecodeStatus;
 
 namespace Aztec {
 
@@ -34,7 +33,7 @@ class DetectorResult;
 class Decoder
 {
 public:
-	static DecodeStatus Decode(const DetectorResult& detectorResult, DecoderResult& result);
+	static DecoderResult Decode(const DetectorResult& detectorResult);
 };
 
 } // Aztec

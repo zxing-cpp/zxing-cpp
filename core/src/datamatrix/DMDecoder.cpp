@@ -489,7 +489,7 @@ static bool DecodeBase256Segment(BitSource& bits, std::string& result, std::list
 	return true;
 }
 
-static DecodeStatus Decode(const ByteArray& bytes, DecoderResult& decodeResult)
+static DecoderResult Decode(ByteArray&& bytes)
 {
 	BitSource bits(bytes);
 	std::string result;
@@ -533,10 +533,8 @@ static DecodeStatus Decode(const ByteArray& bytes, DecoderResult& decodeResult)
 	if (resultTrailer.length() > 0) {
 		result.append(resultTrailer);
 	}
-	decodeResult.setRawBytes(bytes);
-	decodeResult.setText(TextDecoder::FromLatin1(result));
-	decodeResult.setByteSegments(byteSegments);
-	return DecodeStatus::NoError;
+
+	return DecoderResult(std::move(bytes), TextDecoder::FromLatin1(result)).setByteSegments(std::move(byteSegments));
 }
 
 } // namespace DecodedBitStreamParser
@@ -562,26 +560,23 @@ static DecodeStatus Decode(const ByteArray& bytes, DecoderResult& decodeResult)
 * @param numDataCodewords number of codewords that are data bytes
 * @throws ChecksumException if error correction fails
 */
-static DecodeStatus
+static bool
 CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
 {
 	// First read into an array of ints
 	std::vector<int> codewordsInts(codewordBytes.begin(), codewordBytes.end());
 	int numECCodewords = codewordBytes.length() - numDataCodewords;
-	auto status = ReedSolomonDecoder(GenericGF::DataMatrixField256()).decode(codewordsInts, numECCodewords);
-	if (StatusIsOK(status)) {
-		// Copy back into array of bytes -- only need to worry about the bytes that were data
-		// We don't care about errors in the error-correction codewords
-		std::copy_n(codewordsInts.begin(), numDataCodewords, codewordBytes.begin());
-	}
-	else if (StatusIsKindOf(status, DecodeStatus::ReedSolomonError)) {
-		return DecodeStatus::ChecksumError;
-	}
-	return status;
+	if (!ReedSolomonDecoder::Decode(GenericGF::DataMatrixField256(), codewordsInts, numECCodewords))
+		return false;
+
+	// Copy back into array of bytes -- only need to worry about the bytes that were data
+	// We don't care about errors in the error-correction codewords
+	std::copy_n(codewordsInts.begin(), numDataCodewords, codewordBytes.begin());
+
+	return true;
 }
 
-DecodeStatus
-Decoder::Decode(const BitMatrix& bits, DecoderResult& result)
+DecoderResult Decoder::Decode(const BitMatrix& bits)
 {
 	// Construct a parser and read version, error-correction level
 	const Version* version = BitMatrixParser::ReadVersion(bits);
@@ -590,18 +585,14 @@ Decoder::Decode(const BitMatrix& bits, DecoderResult& result)
 	}
 
 	// Read codewords
-	ByteArray codewords;
-	DecodeStatus status = BitMatrixParser::ReadCodewords(bits, codewords);
-	if (StatusIsError(status)) {
-		return status;
-	}
+	ByteArray codewords = BitMatrixParser::ReadCodewords(bits);
+	if (codewords.empty())
+		return DecodeStatus::FormatError;
 
 	// Separate into data blocks
-	std::vector<DataBlock> dataBlocks;
-	status = DataBlock::GetDataBlocks(codewords, *version, dataBlocks);
-	if (StatusIsError(status)) {
-		return status;
-	}
+	std::vector<DataBlock> dataBlocks = DataBlock::GetDataBlocks(codewords, *version);
+	if (dataBlocks.empty())
+		return DecodeStatus::FormatError;
 
 	// Count total number of data bytes
 	int totalBytes = 0;
@@ -616,10 +607,9 @@ Decoder::Decode(const BitMatrix& bits, DecoderResult& result)
 		auto& dataBlock = dataBlocks[j];
 		ByteArray& codewordBytes = dataBlock.codewords();
 		int numDataCodewords = dataBlock.numDataCodewords();
-		status = CorrectErrors(codewordBytes, numDataCodewords);
-		if (StatusIsError(status)) {
-			return status;
-		}
+		if (!CorrectErrors(codewordBytes, numDataCodewords))
+			return DecodeStatus::ChecksumError;
+
 		for (int i = 0; i < numDataCodewords; i++) {
 			// De-interlace data blocks.
 			resultBytes[i * dataBlocksCount + j] = codewordBytes[i];
@@ -627,7 +617,7 @@ Decoder::Decode(const BitMatrix& bits, DecoderResult& result)
 	}
 
 	// Decode the contents of that stream of bytes
-	return DecodedBitStreamParser::Decode(resultBytes, result);
+	return DecodedBitStreamParser::Decode(std::move(resultBytes));
 }
 
 } // DataMatrix
