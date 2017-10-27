@@ -24,7 +24,6 @@
 #include "DecodeStatus.h"
 
 #include <string>
-#include <chrono>
 #include <vector>
 
 namespace ZXing {
@@ -39,8 +38,6 @@ class ResultMetadata;
 class Result
 {
 public:
-	using time_point = std::chrono::steady_clock::time_point;
-
 	explicit Result(DecodeStatus status) : _status(status) {}
 
 	Result(std::wstring&& text, ByteArray&& rawBytes, std::vector<ResultPoint>&& resultPoints, BarcodeFormat format);
@@ -87,10 +84,6 @@ public:
 		_format = format;
 	}
 
-	time_point timestamp() const {
-		return _timestamp;
-	}
-
 	const ResultMetadata& metadata() const {
 		return _metadata;
 	}
@@ -106,7 +99,6 @@ private:
 	int _numBits = 0;
 	std::vector<ResultPoint> _resultPoints;
 	BarcodeFormat _format = BarcodeFormat::FORMAT_COUNT;
-	time_point _timestamp = std::chrono::steady_clock::now();
 	ResultMetadata _metadata;
 };
 
