@@ -1,4 +1,3 @@
-#include "gtest/gtest.h"
 #include "aztec/AZEncoder.h"
 #include "aztec/AZDetectorResult.h"
 #include "aztec/AZDecoder.h"
@@ -14,8 +13,6 @@
 
 #include <algorithm>
 
-using namespace ZXing;
-
 namespace testing {
 	namespace internal {
 		bool operator==(const std::string& a, const std::wstring& b) {
@@ -24,8 +21,12 @@ namespace testing {
 	}
 }
 
+#include "gtest/gtest.h"
+
+using namespace ZXing;
+
 namespace {
-	
+
 	void TestEncodeDecode(const std::string& data, bool compact, int layers) {
 
 		Aztec::EncodeResult aztec;
