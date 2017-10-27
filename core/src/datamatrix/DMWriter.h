@@ -46,7 +46,7 @@ public:
 		return *this;
 	}
 
-	void encode(const std::wstring& contents, int width, int height, BitMatrix& output) const;
+	BitMatrix encode(const std::wstring& contents, int width, int height) const;
 
 private:
 	SymbolShape _shapeHint;

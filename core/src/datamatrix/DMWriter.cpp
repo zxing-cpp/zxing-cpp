@@ -38,7 +38,7 @@ namespace DataMatrix {
 * @param symbolInfo The symbol info to encode.
 * @return The bit matrix generated.
 */
-static void EncodeLowLevel(const ByteMatrix& placement, const SymbolInfo& symbolInfo, BitMatrix& output) {
+static BitMatrix EncodeLowLevel(const ByteMatrix& placement, const SymbolInfo& symbolInfo) {
 	int symbolWidth = symbolInfo.symbolDataWidth();
 	int symbolHeight = symbolInfo.symbolDataHeight();
 
@@ -82,15 +82,16 @@ static void EncodeLowLevel(const ByteMatrix& placement, const SymbolInfo& symbol
 		}
 	}
 
-	output = BitMatrix(matrix.width(), matrix.height());
+	BitMatrix result(matrix.width(), matrix.height());
 	for (int j = 0; j < matrix.height(); j++) {
 		for (int i = 0; i < matrix.width(); i++) {
 			// Zero is white in the bytematrix
 			if (matrix.get(i, j) == 1) {
-				output.set(i, j);
+				result.set(i, j);
 			}
 		}
 	}
+	return result;
 }
 
 Writer::Writer() :
@@ -102,8 +103,8 @@ Writer::Writer() :
 {
 }
 
-void
-Writer::encode(const std::wstring& contents, int width, int height, BitMatrix& output) const
+BitMatrix
+Writer::encode(const std::wstring& contents, int width, int height) const
 {
 	if (contents.empty()) {
 		throw std::invalid_argument("Found empty contents");
@@ -114,8 +115,7 @@ Writer::encode(const std::wstring& contents, int width, int height, BitMatrix& o
 	}
 
 	//1. step: Data encodation
-	std::vector<int> codewords;
-	HighLevelEncoder::Encode(contents, _shapeHint, _minWidth, _minHeight, _maxWidth, _maxHeight, codewords);
+	std::vector<int> codewords = HighLevelEncoder::Encode(contents, _shapeHint, _minWidth, _minHeight, _maxWidth, _maxHeight);
 	const SymbolInfo* symbolInfo = SymbolInfo::Lookup(static_cast<int>(codewords.size()), _shapeHint, _minWidth, _minHeight, _maxWidth, _maxHeight);
 	if (symbolInfo == nullptr) {
 		throw std::invalid_argument("Can't find a symbol arrangement that matches the message. Data codewords: " + std::to_string(codewords.size()));
@@ -125,11 +125,10 @@ Writer::encode(const std::wstring& contents, int width, int height, BitMatrix& o
 	ECEncoder::EncodeECC200(codewords, *symbolInfo);
 
 	//3. step: Module placement in Matrix
-	ByteMatrix placement;
-	DefaultPlacement::Place(codewords, symbolInfo->symbolDataWidth(), symbolInfo->symbolDataHeight(), placement);
+	ByteMatrix placement = DefaultPlacement::Place(codewords, symbolInfo->symbolDataWidth(), symbolInfo->symbolDataHeight());
 
 	//4. step: low-level encoding
-	EncodeLowLevel(placement, *symbolInfo, output);
+	return EncodeLowLevel(placement, *symbolInfo);
 }
 
 } // DataMatrix
