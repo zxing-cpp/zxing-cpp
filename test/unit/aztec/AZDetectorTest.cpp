@@ -43,7 +43,7 @@ namespace {
 				}
 			}
 		}
-		result.copyTo(input);
+		input = std::move(result);
 	}
 
 	// Returns the transpose of a bit matrix, which is equivalent to rotating the
@@ -58,7 +58,7 @@ namespace {
 				}
 			}
 		}
-		result.copyTo(input);
+		input = std::move(result);
 	}
 
 	// Zooms a bit matrix so that each bit is factor x factor

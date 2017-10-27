@@ -26,14 +26,21 @@ class ByteMatrix
 	int _height = 0;
 	std::vector<int8_t> _data;
 
-public:
-	ByteMatrix(int width, int height, int val = 0) : _width(width), _height(height), _data(_width * _height, val) { }
-	ByteMatrix() {}
-
 	// Nothing wrong to support it, just to make it explicit, instead of by mistake.
-	// Use copyTo() below.
-	ByteMatrix(const ByteMatrix &) = delete;
+	// Use copy() below.
+	ByteMatrix(const ByteMatrix &) = default;
 	ByteMatrix& operator=(const ByteMatrix &) = delete;
+
+public:
+	ByteMatrix() = default;
+	ByteMatrix(int width, int height, int val = 0) : _width(width), _height(height), _data(_width * _height, val) { }
+
+	ByteMatrix(ByteMatrix&&) = default;
+	ByteMatrix& operator=(ByteMatrix&&) = default;
+
+	ByteMatrix copy() const {
+		return *this;
+	}
 
 	void init(int width, int height, int val = 0)
 	{
@@ -41,12 +48,6 @@ public:
 		_height = height;
 		_data.clear();
 		_data.resize(_width * _height, val);
-	}
-
-	void copyTo(ByteMatrix& other) const {
-		other._width = _width;
-		other._height = _height;
-		other._data = _data;
 	}
 
 	int height() const {

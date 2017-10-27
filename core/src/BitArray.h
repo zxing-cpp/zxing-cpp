@@ -40,6 +40,16 @@ struct Range {
 */
 class BitArray
 {
+	int _size = 0;
+	std::vector<uint32_t> _bits;
+
+	friend class BitMatrix;
+
+	// Nothing wrong to support it, just to make it explicit, instead of by mistake.
+	// Use copy() below.
+	BitArray(const BitArray &) = default;
+	BitArray& operator=(const BitArray &) = delete;
+
 public:
 
 	class Iterator : public std::iterator<std::bidirectional_iterator_tag, bool, int, bool*, bool>
@@ -108,20 +118,8 @@ public:
 		return *this;
 	}
 
-	// Nothing wrong to support it, just to make it explicit, instead of by mistake.
-	// Use copy() or copyTo() below.
-	BitArray(const BitArray &) = delete;
-	BitArray& operator=(const BitArray &) = delete;
-
 	BitArray copy() const {
-		BitArray r;
-		copyTo(r);
-		return r;
-	}
-	
-	void copyTo(BitArray& other) const {
-		other._size = _size;
-		other._bits = _bits;
+		return *this;
 	}
 
 	int size() const {
@@ -308,12 +306,6 @@ public:
 	{
 		return a._size == b._size && a._bits == b._bits;
 	}
-
-private:
-	int _size = 0;
-	std::vector<uint32_t> _bits;
-
-	friend class BitMatrix;
 };
 
 } // ZXing

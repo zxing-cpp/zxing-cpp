@@ -45,6 +45,11 @@ class BitMatrix
 	int _rowSize = 0;
 	std::vector<uint32_t> _bits;
 
+	// There is nothing wrong to support this but disable to make it explicit since we may copy something very big here.
+	// Use copy() below.
+	BitMatrix(const BitMatrix&) = default;
+	BitMatrix& operator=(const BitMatrix&) = delete;
+
 public:
 	BitMatrix() {}
 	BitMatrix(int width, int height) : _width(width), _height(height), _rowSize((width + 31) / 32), _bits(((width + 31) / 32) * _height, 0) {}
@@ -61,18 +66,9 @@ public:
 		return *this;
 	}
 
-	// There is nothing wrong to support this but disable to make it explicit since we may copy something very big here.
-	// Use copy() or copyTo() below
-	BitMatrix(const BitMatrix&) = delete;
-	BitMatrix& operator=(const BitMatrix&) = delete;
-
 	BitMatrix copy() const {
-		BitMatrix r;
-		copyTo(r);
-		return r;
+		return *this;
 	}
-	
-	void copyTo(BitMatrix& other) const;
 
 	/**
 	* <p>Gets the requested bit, where true means black.</p>
