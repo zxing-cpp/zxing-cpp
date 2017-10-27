@@ -86,8 +86,7 @@ int main(int argc, char** argv)
 	auto text = L"http://www.google.com/";
 	QRCode::Writer writer;
 	writer.setErrorCorrectionLevel(QRCode::ErrorCorrectionLevel::Medium);
-	BitMatrix result;
-	writer.encode(text, 99, 99, result);
+	BitMatrix result = writer.encode(text, 99, 99);
 	std::ostringstream buffer;
 	Utility::WriteBitMatrixAsPBM(result, buffer);
 	

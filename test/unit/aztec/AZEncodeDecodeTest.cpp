@@ -1,4 +1,3 @@
-#include "gtest/gtest.h"
 #include "aztec/AZEncoder.h"
 #include "aztec/AZDetectorResult.h"
 #include "aztec/AZDecoder.h"
@@ -14,8 +13,6 @@
 
 #include <algorithm>
 
-using namespace ZXing;
-
 namespace testing {
 	namespace internal {
 		bool operator==(const std::string& a, const std::wstring& b) {
@@ -24,24 +21,21 @@ namespace testing {
 	}
 }
 
+#include "gtest/gtest.h"
+
+using namespace ZXing;
+
 namespace {
-	
+
 	void TestEncodeDecode(const std::string& data, bool compact, int layers) {
 
-		Aztec::EncodeResult aztec;
-		Aztec::Encoder::Encode(data, 25, Aztec::Encoder::DEFAULT_AZTEC_LAYERS, aztec);
+		Aztec::EncodeResult aztec = Aztec::Encoder::Encode(data, 25, Aztec::Encoder::DEFAULT_AZTEC_LAYERS);
 		ASSERT_EQ(aztec.compact, compact) << "Unexpected symbol format (compact)";
 		ASSERT_EQ(aztec.layers, layers) << "Unexpected nr. of layers";
 
-		Aztec::DetectorResult r;
-		r.setBits(std::make_shared<BitMatrix>(aztec.matrix.copy()));
-		r.setCompact(aztec.compact);
-		r.setNbDatablocks(aztec.codeWords);
-		r.setNbLayers(aztec.layers);
-
-		DecoderResult res;
-		auto status = Aztec::Decoder::Decode(r, res);
-		ASSERT_EQ(status, DecodeStatus::NoError);
+		DecoderResult res =
+			Aztec::Decoder::Decode({aztec.matrix.copy(), {}, aztec.compact, aztec.codeWords, aztec.layers});
+		ASSERT_EQ(res.isValid(), true);
 		EXPECT_EQ(data, res.text());
 
 		// Check error correction by introducing a few minor errors
@@ -59,9 +53,9 @@ namespace {
 		x = matrix.width() - 2 + random.next(0, 1);
 		y = random.next(0, matrix.height() - 1);
 		matrix.flip(x, y);
-		r.setBits(std::make_shared<BitMatrix>(matrix.copy()));
-		status = Aztec::Decoder::Decode(r, res);
-		ASSERT_EQ(status, DecodeStatus::NoError);
+
+		res = Aztec::Decoder::Decode({std::move(matrix), {}, aztec.compact, aztec.codeWords, aztec.layers});
+		ASSERT_EQ(res.isValid(), true);
 		EXPECT_EQ(data, res.text());
 	}
 
@@ -74,24 +68,16 @@ namespace {
 		Aztec::Writer writer;
 		writer.setEncoding(charset);
 		writer.setEccPercent(eccPercent);
-		BitMatrix matrix;
-		writer.encode(data, 0, 0, matrix);
-		Aztec::EncodeResult aztec;
-		Aztec::Encoder::Encode(textBytes, eccPercent, Aztec::Encoder::DEFAULT_AZTEC_LAYERS, aztec);
+		BitMatrix matrix = writer.encode(data, 0, 0);
+		Aztec::EncodeResult aztec = Aztec::Encoder::Encode(textBytes, eccPercent, Aztec::Encoder::DEFAULT_AZTEC_LAYERS);
 		EXPECT_EQ(aztec.compact, compact) << "Unexpected symbol format (compact)";
 		EXPECT_EQ(aztec.layers, layers) << "Unexpected nr. of layers";
 
 		EXPECT_EQ(aztec.matrix, matrix);
 
 		std::wstring expectedData = TextDecoder::ToUnicode(textBytes, CharacterSet::ISO8859_1);
-		Aztec::DetectorResult r;
-		r.setBits(std::make_shared<BitMatrix>(matrix.copy()));
-		r.setCompact(aztec.compact);
-		r.setNbDatablocks(aztec.codeWords);
-		r.setNbLayers(aztec.layers);
-		DecoderResult res;
-		auto status = Aztec::Decoder::Decode(r, res);
-		EXPECT_EQ(status, DecodeStatus::NoError);
+		DecoderResult res = Aztec::Decoder::Decode({matrix.copy(), {}, aztec.compact, aztec.codeWords, aztec.layers});
+		EXPECT_EQ(res.isValid(), true);
 		EXPECT_EQ(res.text(), expectedData);
 
 		// Check error correction by introducing up to eccPercent/2 errors
@@ -107,9 +93,8 @@ namespace {
 				: matrix.height() - 1 - random.next(0, aztec.layers * 2 - 1);
 			matrix.flip(x, y);
 		}
-		r.setBits(std::make_shared<BitMatrix>(matrix.copy()));
-		status = Aztec::Decoder::Decode(r, res);
-		EXPECT_EQ(status, DecodeStatus::NoError);
+		res = Aztec::Decoder::Decode({std::move(matrix), {}, aztec.compact, aztec.codeWords, aztec.layers});
+		EXPECT_EQ(res.isValid(), true);
 		EXPECT_EQ(res.text(), expectedData);
 	}
 }
@@ -229,10 +214,9 @@ TEST(AZEncodeDecodeTest, AztecWriter)
 	// Test AztecWriter defaults
 	std::wstring data = L"In ut magna vel mauris malesuada";
 	Aztec::Writer writer;
-	BitMatrix matrix;
-	writer.encode(data, 0, 0, matrix);
-	Aztec::EncodeResult aztec;
-	Aztec::Encoder::Encode(TextEncoder::FromUnicode(data, CharacterSet::ISO8859_1),
-		Aztec::Encoder::DEFAULT_EC_PERCENT, Aztec::Encoder::DEFAULT_AZTEC_LAYERS, aztec);
+	BitMatrix matrix = writer.encode(data, 0, 0);
+	Aztec::EncodeResult aztec =
+		Aztec::Encoder::Encode(TextEncoder::FromUnicode(data, CharacterSet::ISO8859_1),
+							   Aztec::Encoder::DEFAULT_EC_PERCENT, Aztec::Encoder::DEFAULT_AZTEC_LAYERS);
 	EXPECT_EQ(matrix, aztec.matrix);
 }

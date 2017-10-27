@@ -15,12 +15,11 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+#include "BitMatrix.h"
+
 #include <vector>
 
 namespace ZXing {
-
-class BitMatrix;
-
 namespace OneD {
 
 /**
@@ -34,7 +33,7 @@ public:
 	/**
 	* @return a byte array of horizontal pixels (0 = white, 1 = black)
 	*/
-	static void RenderResult(const std::vector<bool>& code, int width, int height, int sidesMargin, BitMatrix& output);
+	static BitMatrix RenderResult(const std::vector<bool>& code, int width, int height, int sidesMargin);
 
 	/**
 	* @param target encode black/white pattern into this array

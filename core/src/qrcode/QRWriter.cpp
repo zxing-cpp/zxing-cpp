@@ -27,7 +27,7 @@ namespace QRCode {
 
 static const int QUIET_ZONE_SIZE = 4;
 
-static void RenderResult(const EncodeResult& code, int width, int height, int quietZone, BitMatrix& output)
+static BitMatrix RenderResult(const EncodeResult& code, int width, int height, int quietZone)
 {
 	const ByteMatrix& input = code.matrix;
 	int inputWidth = input.width();
@@ -45,16 +45,18 @@ static void RenderResult(const EncodeResult& code, int width, int height, int qu
 	int leftPadding = (outputWidth - (inputWidth * multiple)) / 2;
 	int topPadding = (outputHeight - (inputHeight * multiple)) / 2;
 
-	output = BitMatrix(outputWidth, outputHeight);
+	BitMatrix result(outputWidth, outputHeight);
 
 	for (int inputY = 0, outputY = topPadding; inputY < inputHeight; inputY++, outputY += multiple) {
 		// Write the contents of this row of the barcode
 		for (int inputX = 0, outputX = leftPadding; inputX < inputWidth; inputX++, outputX += multiple) {
 			if (input.get(inputX, inputY) == 1) {
-				output.setRegion(outputX, outputY, multiple, multiple);
+				result.setRegion(outputX, outputY, multiple, multiple);
 			}
 		}
 	}
+
+	return result;
 }
 
 Writer::Writer() :
@@ -93,8 +95,8 @@ Writer::setVersion(int versionNumber)
 	return *this;
 }
 
-void
-Writer::encode(const std::wstring& contents, int width, int height, BitMatrix& output) const
+BitMatrix
+Writer::encode(const std::wstring& contents, int width, int height) const
 {
 	if (contents.empty()) {
 		throw std::invalid_argument("Found empty contents");
@@ -104,9 +106,8 @@ Writer::encode(const std::wstring& contents, int width, int height, BitMatrix& o
 		throw std::invalid_argument("Requested dimensions are invalid");
 	}
 
-	EncodeResult code;
-	Encoder::Encode(contents, _ecLevel, _encoding, _version, code);
-	RenderResult(code, width, height, _margin, output);
+	EncodeResult code = Encoder::Encode(contents, _ecLevel, _encoding, _version);
+	return RenderResult(code, width, height, _margin);
 }
 
 } // QRCode

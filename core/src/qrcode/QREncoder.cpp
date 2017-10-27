@@ -391,7 +391,7 @@ static void GenerateECBytes(const ByteArray& dataBytes, int numEcBytesInBlock, B
 * Interleave "bits" with corresponding error correction bytes. On success, store the result in
 * "result". The interleave rule is complicated. See 8.6 of JISX0510:2004 (p.37) for details.
 */
-static void InterleaveWithECBytes(const BitArray& bits, int numTotalBytes, int numDataBytes, int numRSBlocks, BitArray& output)
+static BitArray InterleaveWithECBytes(const BitArray& bits, int numTotalBytes, int numDataBytes, int numRSBlocks)
 {
 	// "bits" must have "getNumDataBytes" bytes of data.
 	if (bits.sizeInBytes() != numDataBytes) {
@@ -425,6 +425,7 @@ static void InterleaveWithECBytes(const BitArray& bits, int numTotalBytes, int n
 		throw std::invalid_argument("Data bytes does not match offset");
 	}
 
+	BitArray output;
 	// First, place data blocks.
 	for (int i = 0; i < maxNumDataBytes; ++i) {
 		for (auto& block : blocks) {
@@ -444,6 +445,7 @@ static void InterleaveWithECBytes(const BitArray& bits, int numTotalBytes, int n
 	if (numTotalBytes != output.sizeInBytes()) {  // Should be same.
 		throw std::invalid_argument("Interleaving error: " + std::to_string(numTotalBytes) + " and " + std::to_string(output.sizeInBytes()) + " differ.");
 	}
+	return output;
 }
 
 
@@ -485,8 +487,8 @@ static const Version& RecommendVersion(ErrorCorrectionLevel ecLevel, CodecMode::
 	return ChooseVersion(bitsNeeded, ecLevel);
 }
 
-void
-Encoder::Encode(const std::wstring& content, ErrorCorrectionLevel ecLevel, CharacterSet charset, int versionNumber, EncodeResult& output)
+EncodeResult
+Encoder::Encode(const std::wstring& content, ErrorCorrectionLevel ecLevel, CharacterSet charset, int versionNumber)
 {
 	bool charsetWasUnknown = charset == CharacterSet::Unknown;
 	if (charsetWasUnknown) {
@@ -546,20 +548,23 @@ Encoder::Encode(const std::wstring& content, ErrorCorrectionLevel ecLevel, Chara
 	TerminateBits(numDataBytes, headerAndDataBits);
 
 	// Interleave data bits with error correction code.
-	BitArray finalBits;
-	InterleaveWithECBytes(headerAndDataBits, version->totalCodewords(), numDataBytes, ecBlocks.numBlocks(), finalBits);
+	BitArray finalBits =
+		InterleaveWithECBytes(headerAndDataBits, version->totalCodewords(), numDataBytes, ecBlocks.numBlocks());
 
+	EncodeResult output;
 	output.ecLevel = ecLevel;
 	output.mode = mode;
 	output.version = version;
 
 	//  Choose the mask pattern and set to "qrCode".
 	int dimension = version->dimensionForVersion();
-	output.matrix.init(dimension, dimension);
+	output.matrix = ByteMatrix(dimension, dimension);
 	output.maskPattern = ChooseMaskPattern(finalBits, ecLevel, *version, output.matrix);
 
 	// Build the matrix and set it to "qrCode".
 	MatrixUtil::BuildMatrix(finalBits, ecLevel, *version, output.maskPattern, output.matrix);
+
+	return output;
 }
 
 } // QRCode

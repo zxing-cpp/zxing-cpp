@@ -24,7 +24,6 @@
 #include "DecodeStatus.h"
 
 #include <string>
-#include <chrono>
 #include <vector>
 
 namespace ZXing {
@@ -39,45 +38,11 @@ class ResultMetadata;
 class Result
 {
 public:
-	using time_point = std::chrono::steady_clock::time_point;
-
 	explicit Result(DecodeStatus status) : _status(status) {}
 
-	Result(std::wstring&& text, ByteArray&& rawBytes, std::vector<ResultPoint>&& resultPoints, BarcodeFormat format)
-	    : _text(std::move(text)),
-	      _rawBytes(std::move(rawBytes)),
-		  _resultPoints(std::move(resultPoints)),
-	      _format(format)
-	{
-		_numBits = static_cast<int>(_rawBytes.size()) * 8;
-	}
+	Result(std::wstring&& text, ByteArray&& rawBytes, std::vector<ResultPoint>&& resultPoints, BarcodeFormat format);
 
-	Result(DecoderResult&& decodeResult, std::vector<ResultPoint>&& resultPoints, BarcodeFormat format)
-		: _status(decodeResult.errorCode()),
-	      _text(std::move(decodeResult).text()),
-		  _rawBytes(std::move(decodeResult).rawBytes()),
-	      _numBits(decodeResult.numBits()),
-		  _resultPoints(std::move(resultPoints)),
-	      _format(format)
-	{
-		if (!isValid())
-			return;
-
-		//TODO: change ResultMetadata::put interface, so we can move from decodeResult?
-		const auto& byteSegments = decodeResult.byteSegments();
-		if (!byteSegments.empty()) {
-			metadata().put(ResultMetadata::BYTE_SEGMENTS, byteSegments);
-		}
-		const auto& ecLevel = decodeResult.ecLevel();
-		if (!ecLevel.empty()) {
-			metadata().put(ResultMetadata::ERROR_CORRECTION_LEVEL, ecLevel);
-		}
-		if (decodeResult.hasStructuredAppend()) {
-			metadata().put(ResultMetadata::STRUCTURED_APPEND_SEQUENCE, decodeResult.structuredAppendSequenceNumber());
-			metadata().put(ResultMetadata::STRUCTURED_APPEND_PARITY, decodeResult.structuredAppendParity());
-		}
-		//TODO: what about the other optional data in DecoderResult?
-	}
+	Result(DecoderResult&& decodeResult, std::vector<ResultPoint>&& resultPoints, BarcodeFormat format);
 
 	bool isValid() const {
 		return StatusIsOK(_status);
@@ -119,10 +84,6 @@ public:
 		_format = format;
 	}
 
-	time_point timestamp() const {
-		return _timestamp;
-	}
-
 	const ResultMetadata& metadata() const {
 		return _metadata;
 	}
@@ -138,7 +99,6 @@ private:
 	int _numBits = 0;
 	std::vector<ResultPoint> _resultPoints;
 	BarcodeFormat _format = BarcodeFormat::FORMAT_COUNT;
-	time_point _timestamp = std::chrono::steady_clock::now();
 	ResultMetadata _metadata;
 };
 

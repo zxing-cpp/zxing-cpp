@@ -46,7 +46,7 @@ public:
 	static const int DEFAULT_EC_PERCENT = 33; // default minimal percentage of error check words
 	static const int DEFAULT_AZTEC_LAYERS = 0;
 
-	static void Encode(const std::string& data, int minECCPercent, int userSpecifiedLayers, EncodeResult& output);
+	static EncodeResult Encode(const std::string& data, int minECCPercent, int userSpecifiedLayers);
 };
 
 } // Aztec

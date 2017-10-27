@@ -879,8 +879,8 @@ static bool EndsWith(const std::wstring& s, const std::wstring& ss)
 * @param maxSize the maximum symbol size constraint or null for no constraint
 * @return the encoded message (the char values range from 0 to 255)
 */
-void
-HighLevelEncoder::Encode(const std::wstring& msg, SymbolShape shape, int minWdith, int minHeight, int maxWidth, int maxHeight, std::vector<int>& output)
+std::vector<int>
+HighLevelEncoder::Encode(const std::wstring& msg, SymbolShape shape, int minWdith, int minHeight, int maxWidth, int maxHeight)
 {
 	//the codewords 0..255 are encoded as Unicode characters
 	//Encoder[] encoders = {
@@ -936,7 +936,7 @@ HighLevelEncoder::Encode(const std::wstring& msg, SymbolShape shape, int minWdit
 		context.addCodeword(Randomize253State(PAD, context.codewordCount() + 1));
 	}
 
-	output = context.codewords();
+	return context.codewords();
 }
 
 } // DataMatrix

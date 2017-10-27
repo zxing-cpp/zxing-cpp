@@ -136,7 +136,7 @@ class Encoder
 public:
 	explicit Encoder(bool compact = false) : _compact(compact)  {}
 	
-	void generateBarcodeLogic(const std::wstring& msg, int errorCorrectionLevel, BarcodeMatrix& output) const;
+	BarcodeMatrix generateBarcodeLogic(const std::wstring& msg, int errorCorrectionLevel) const;
 
 	/**
 	* Sets max/min row/col values

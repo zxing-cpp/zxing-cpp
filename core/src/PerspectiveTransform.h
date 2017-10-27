@@ -38,7 +38,6 @@ class PerspectiveTransform
 	float a33 = 1.0f;
 
 public:
-	PerspectiveTransform() {};
 	PerspectiveTransform(float a11, float a21, float a31, float a12, float a22, float a32, float a13, float a23, float a33);
 
 	void transformPoints(float* points, int count) const;

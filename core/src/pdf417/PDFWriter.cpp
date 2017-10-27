@@ -60,30 +60,30 @@ static void RotateArray(const std::vector<std::vector<bool>>& input, std::vector
 * @param margin border around the barcode
 * @return BitMatrix of the input
 */
-static void BitMatrixFromBitArray(const std::vector<std::vector<bool>>& input, int margin, BitMatrix& output)
+static BitMatrix BitMatrixFromBitArray(const std::vector<std::vector<bool>>& input, int margin)
 {
 	// Creates the bitmatrix with extra space for whitespace
 	int width = static_cast<int>(input[0].size());
 	int height = static_cast<int>(input.size());
-	output = BitMatrix(width + 2 * margin, height + 2 * margin);
-	for (int y = 0, yOutput = static_cast<int>(output.height()) - margin - 1; y < height; y++, yOutput--) {
+	BitMatrix result(width + 2 * margin, height + 2 * margin);
+	for (int y = 0, yOutput = static_cast<int>(result.height()) - margin - 1; y < height; y++, yOutput--) {
 		for (int x = 0; x < width; ++x) {
 			// Zero is white in the bytematrix
 			if (input[y][x]) {
-				output.set(x + margin, yOutput);
+				result.set(x + margin, yOutput);
 			}
 		}
 	}
+	return result;
 }
 
-void
-Writer::encode(const std::wstring& contents, int width, int height, BitMatrix& output) const
+BitMatrix
+Writer::encode(const std::wstring& contents, int width, int height) const
 {
 	int margin = _margin >= 0 ? _margin : WHITE_SPACE;
 	int ecLevel = _ecLevel >= 0 ? _ecLevel : DEFAULT_ERROR_CORRECTION_LEVEL;
 
-	BarcodeMatrix resultMatrix;
-	_encoder->generateBarcodeLogic(contents, ecLevel, resultMatrix);
+	BarcodeMatrix resultMatrix = _encoder->generateBarcodeLogic(contents, ecLevel);
 	int aspectRatio = 4;
 	std::vector<std::vector<bool>> originalScale;
 	resultMatrix.getScaledMatrix(1, aspectRatio, originalScale);
@@ -114,10 +114,10 @@ Writer::encode(const std::wstring& contents, int width, int height, BitMatrix& o
 			RotateArray(scaledMatrix, temp);
 			scaledMatrix = temp;
 		}
-		BitMatrixFromBitArray(scaledMatrix, margin, output);
+		return BitMatrixFromBitArray(scaledMatrix, margin);
 	}
 	else {
-		BitMatrixFromBitArray(originalScale, margin, output);
+		return BitMatrixFromBitArray(originalScale, margin);
 	}
 }
 

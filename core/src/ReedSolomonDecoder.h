@@ -16,7 +16,6 @@
 * limitations under the License.
 */
 
-#include <exception>
 #include <vector>
 
 namespace ZXing {
@@ -59,11 +58,5 @@ public:
 	*/
 	static bool Decode(const GenericGF& field, std::vector<int>& received, int twoS);
 };
-
-//class ReedSolomonException : public std::exception
-//{
-//public:
-//	ReedSolomonException(const char* msg) : std::exception(msg) {}
-//};
 
 } // ZXing

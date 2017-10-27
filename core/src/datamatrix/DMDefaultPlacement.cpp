@@ -117,10 +117,9 @@ static void Corner4(const std::vector<int>& codewords, ByteMatrix& bits, int pos
 	Module(codewords, bits, 1, bits.width() - 1, pos, 8);
 }
 
-void
-DefaultPlacement::Place(const std::vector<int>& codewords, int numcols, int numrows, ByteMatrix& bits)
+ByteMatrix DefaultPlacement::Place(const std::vector<int>& codewords, int numcols, int numrows)
 {
-	bits.init(numcols, numrows, -1);
+	ByteMatrix bits(numcols, numrows, -1);
 
 	int pos = 0;
 	int row = 4;
@@ -170,6 +169,7 @@ DefaultPlacement::Place(const std::vector<int>& codewords, int numcols, int numr
 		bits.set(numcols - 1, numrows - 1, true);
 		bits.set(numcols - 2, numrows - 2, true);
 	}
+	return bits;
 }
 
 } // DataMatrix

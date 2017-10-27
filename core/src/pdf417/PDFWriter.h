@@ -68,7 +68,7 @@ public:
 	Writer& setEncoding(CharacterSet encoding);
 
 
-	void encode(const std::wstring& contents, int width, int height, BitMatrix& output) const;
+	BitMatrix encode(const std::wstring& contents, int width, int height) const;
 
 private:
 	int _margin = -1;

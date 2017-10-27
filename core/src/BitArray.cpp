@@ -100,7 +100,7 @@ void
 BitArray::appendBitArray(const BitArray& other)
 {
 	if (_bits.empty()) {
-		other.copyTo(*this);
+		*this = other.copy();
 	}
 	else if (other._size > 0) {
 		unsigned offset = static_cast<unsigned>(_bits.size()) * 32 - _size;

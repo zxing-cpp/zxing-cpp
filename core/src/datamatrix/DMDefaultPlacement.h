@@ -29,7 +29,7 @@ namespace DataMatrix {
 class DefaultPlacement
 {
 public:
-	static void Place(const std::vector<int>& codewords, int numcols, int numrows, ByteMatrix& output);
+	static ByteMatrix Place(const std::vector<int>& codewords, int numcols, int numrows);
 };
 
 } // DataMatrix

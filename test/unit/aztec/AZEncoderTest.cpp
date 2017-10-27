@@ -17,8 +17,7 @@ using namespace ZXing;
 namespace {
 	
 	void TestEncode(const std::string& data, bool compact, int layers, const BitMatrix& expected) {
-		Aztec::EncodeResult aztec;
-		Aztec::Encoder::Encode(data, 33, Aztec::Encoder::DEFAULT_AZTEC_LAYERS, aztec);
+		Aztec::EncodeResult aztec = Aztec::Encoder::Encode(data, 33, Aztec::Encoder::DEFAULT_AZTEC_LAYERS);
 		EXPECT_EQ(aztec.compact, compact) << "Unexpected symbol format (compact)";
 		EXPECT_EQ(aztec.layers, layers) << "Unexpected nr. of layers";
 		EXPECT_EQ(aztec.matrix, expected) << "encode() failed";
@@ -161,16 +160,16 @@ TEST(AZEncoderTest, UserSpecifiedLayers)
 {
 	std::string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	Aztec::EncodeResult aztec;
-	Aztec::Encoder::Encode(alphabet, 25, -2, aztec);
+	aztec = Aztec::Encoder::Encode(alphabet, 25, -2);
 	EXPECT_EQ(aztec.layers, 2);
 	EXPECT_TRUE(aztec.compact);
 
-	Aztec::Encoder::Encode(alphabet, 25, 32, aztec);
+	aztec = Aztec::Encoder::Encode(alphabet, 25, 32);
 	EXPECT_EQ(aztec.layers, 32);
 	EXPECT_FALSE(aztec.compact);
 
 	try {
-		Aztec::Encoder::Encode(alphabet, 25, 33, aztec);
+		aztec = Aztec::Encoder::Encode(alphabet, 25, 33);
 		FAIL() << "Encode should have failed.  No such thing as 33 layers";
 	}
 	catch (const std::invalid_argument&) {
@@ -178,7 +177,7 @@ TEST(AZEncoderTest, UserSpecifiedLayers)
 	}
 
 	try {
-		Aztec::Encoder::Encode(alphabet, 25, -1, aztec);
+		aztec = Aztec::Encoder::Encode(alphabet, 25, -1);
 		FAIL() << "Encode should have failed.  Text can't fit in 1-layer compact";
 	}
 	catch (const std::invalid_argument&) {
@@ -195,7 +194,7 @@ TEST(AZEncoderTest, BorderCompact4Case)
 	std::string alphabet4 = alphabet + alphabet + alphabet + alphabet;
 	Aztec::EncodeResult aztec;
 	try {
-		Aztec::Encoder::Encode(alphabet4, 0, -4, aztec);
+		aztec = Aztec::Encoder::Encode(alphabet4, 0, -4);
 		FAIL() << "Encode should have failed.  Text can't fit in 1-layer compact";
 	}
 	catch (const std::invalid_argument&) {
@@ -203,13 +202,13 @@ TEST(AZEncoderTest, BorderCompact4Case)
 	}
 
 	// If we just try to encode it normally, it will go to a non-compact 4 layer
-	Aztec::Encoder::Encode(alphabet4, 0, Aztec::Encoder::DEFAULT_AZTEC_LAYERS, aztec);
+	aztec = Aztec::Encoder::Encode(alphabet4, 0, Aztec::Encoder::DEFAULT_AZTEC_LAYERS);
 	EXPECT_FALSE(aztec.compact);
 	EXPECT_EQ(aztec.layers, 4);
 
 	// But shortening the string to 100 bytes (500 bits of data), compact works fine, even if we
 	// include more error checking.
-	Aztec::Encoder::Encode(alphabet4.substr(0, 100), 10, Aztec::Encoder::DEFAULT_AZTEC_LAYERS, aztec);
+	aztec = Aztec::Encoder::Encode(alphabet4.substr(0, 100), 10, Aztec::Encoder::DEFAULT_AZTEC_LAYERS);
 	EXPECT_TRUE(aztec.compact);
 	EXPECT_EQ(aztec.layers, 4);
 }

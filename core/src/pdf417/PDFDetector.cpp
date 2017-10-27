@@ -330,8 +330,7 @@ Detector::Detect(const BinaryBitmap& image, bool multiple, Result& result)
 
 	auto barcodeCoordinates = DetectBarcode(*binImg, multiple);
 	if (barcodeCoordinates.empty()) {
-		auto newBits = std::make_shared<BitMatrix>();
-		binImg->copyTo(*newBits);
+		auto newBits = std::make_shared<BitMatrix>(binImg->copy());
 		newBits->rotate180();
 		binImg = newBits;
 		barcodeCoordinates = DetectBarcode(*binImg, multiple);

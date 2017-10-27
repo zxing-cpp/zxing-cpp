@@ -23,16 +23,6 @@
 
 namespace ZXing {
 
-void
-BitMatrix::copyTo(BitMatrix& other) const {
-	if (this != &other) {
-		other._width = _width;
-		other._height = _height;
-		other._rowSize = _rowSize;
-		other._bits = _bits;
-	}
-}
-
 //void
 //BitMatrix::xor(const BitMatrix& mask)
 //{

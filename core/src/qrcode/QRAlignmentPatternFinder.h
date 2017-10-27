@@ -55,7 +55,6 @@ public:
 	* @throws NotFoundException if not found
 	*/
 	static AlignmentPattern Find(const BitMatrix& image, int startX, int startY, int width, int height, float moduleSize);
-
 };
 
 } // QRCode

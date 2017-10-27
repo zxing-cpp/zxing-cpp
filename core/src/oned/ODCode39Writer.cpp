@@ -55,8 +55,8 @@ static void ToIntArray(int a, std::array<int, 9>& toReturn) {
 	}
 }
 
-void
-Code39Writer::encode(const std::wstring& contents, int width, int height, BitMatrix& output) const
+BitMatrix
+Code39Writer::encode(const std::wstring& contents, int width, int height) const
 {
 	size_t length = contents.length();
 	if (length == 0) {
@@ -91,7 +91,7 @@ Code39Writer::encode(const std::wstring& contents, int width, int height, BitMat
 	}
 	ToIntArray(ASTERISK_ENCODING, widths);
 	WriterHelper::AppendPattern(result, pos, widths, true);
-	WriterHelper::RenderResult(result, width, height, _sidesMargin >= 0 ? _sidesMargin : 10, output);
+	return WriterHelper::RenderResult(result, width, height, _sidesMargin >= 0 ? _sidesMargin : 10);
 }
 
 

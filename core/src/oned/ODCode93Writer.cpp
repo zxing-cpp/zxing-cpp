@@ -74,8 +74,8 @@ static int ComputeChecksumIndex(const std::wstring& contents, int maxWeight) {
 	return total % 47;
 }
 
-void
-Code93Writer::encode(const std::wstring& contents_, int width, int height, BitMatrix& output) const
+BitMatrix
+Code93Writer::encode(const std::wstring& contents_, int width, int height) const
 {
 	std::wstring contents = contents_;
 	size_t length = contents.length();
@@ -123,7 +123,7 @@ Code93Writer::encode(const std::wstring& contents_, int width, int height, BitMa
 	//termination bar (single black bar)
 	result[pos] = true;
 
-	WriterHelper::RenderResult(result, width, height, _sidesMargin >= 0 ? _sidesMargin : 10, output);
+	return WriterHelper::RenderResult(result, width, height, _sidesMargin >= 0 ? _sidesMargin : 10);
 }
 
 

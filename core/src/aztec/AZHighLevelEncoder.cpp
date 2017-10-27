@@ -212,15 +212,16 @@ static bool IsBetterThanOrEqualTo(const EncodingState& state, const EncodingStat
 	return mySize <= other.bitCount;
 }
 
-static void ToBitArray(const EncodingState& state, const std::string& text, BitArray& bitArray)
+static BitArray ToBitArray(const EncodingState& state, const std::string& text)
 {
 	auto endState = EndBinaryShift(state, static_cast<int>(text.length()));
-	bitArray = BitArray();
+	BitArray bits;
 	// Add each token to the result.
 	for (const Token& symbol : endState.tokens) {
-		symbol.appendTo(bitArray, text);
+		symbol.appendTo(bits, text);
 	}
 	//assert bitArray.getSize() == this.bitCount;
+	return bits;
 }
 
 static void UpdateStateForPair(const EncodingState& state, int index, int pairCode, std::list<EncodingState>& result)
@@ -338,8 +339,8 @@ static std::list<EncodingState> UpdateStateListForChar(const std::list<EncodingS
 /**
 * @return text represented by this encoder encoded as a {@link BitArray}
 */
-void
-HighLevelEncoder::Encode(const std::string& text, BitArray& output)
+BitArray
+HighLevelEncoder::Encode(const std::string& text)
 {
 	std::list<EncodingState> states;
 	states.push_back(EncodingState{ std::vector<Token>(), MODE_UPPER, 0, 0 });
@@ -376,7 +377,7 @@ HighLevelEncoder::Encode(const std::string& text, BitArray& output)
 	// We are left with a set of states.  Find the shortest one.
 	EncodingState minState = *std::min_element(states.begin(), states.end(), [](const EncodingState& a, const EncodingState& b) { return a.bitCount < b.bitCount; });
 	// Convert it to a bit array, and return.
-	ToBitArray(minState, text, output);
+	return ToBitArray(minState, text);
 }
 
 } // Aztec

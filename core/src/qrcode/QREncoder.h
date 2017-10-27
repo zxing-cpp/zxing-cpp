@@ -40,7 +40,7 @@ public:
 	* @throws WriterException if encoding can't succeed, because of for example invalid content
 	*   or configuration
 	*/
-	static void Encode(const std::wstring& content, ErrorCorrectionLevel ecLevel, CharacterSet encoding, int versionNumber, EncodeResult& output);
+	static EncodeResult Encode(const std::wstring& content, ErrorCorrectionLevel ecLevel, CharacterSet encoding, int versionNumber);
 };
 
 } // QRCode

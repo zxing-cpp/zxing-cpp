@@ -30,7 +30,7 @@ enum class SymbolShape;
 class HighLevelEncoder
 {
 public:
-	static void Encode(const std::wstring& msg, SymbolShape shape, int minWdith, int minHeight, int maxWidth, int maxHeight, std::vector<int>& output);
+	static std::vector<int> Encode(const std::wstring& msg, SymbolShape shape, int minWdith, int minHeight, int maxWidth, int maxHeight);
 };
 
 } // DataMatrix

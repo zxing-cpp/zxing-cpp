@@ -30,8 +30,8 @@ static const int CODE_WIDTH = 3 + // start guard
                               (7 * 4) + // right bars
                               3; // end guard
 
-void
-EAN8Writer::encode(const std::wstring& contents, int width, int height,  BitMatrix& output) const
+BitMatrix
+EAN8Writer::encode(const std::wstring& contents, int width, int height) const
 {
 	size_t length = contents.length();
 	if (length != 7 && length != 8) {
@@ -68,7 +68,7 @@ EAN8Writer::encode(const std::wstring& contents, int width, int height,  BitMatr
 		pos += WriterHelper::AppendPattern(result, pos, UPCEANCommon::L_PATTERNS[digits[i]], true);
 	}
 	WriterHelper::AppendPattern(result, pos, UPCEANCommon::START_END_PATTERN, true);
-	WriterHelper::RenderResult(result, width, height, _sidesMargin >= 0 ? _sidesMargin : 9, output);
+	return WriterHelper::RenderResult(result, width, height, _sidesMargin >= 0 ? _sidesMargin : 9);
 }
 
 } // OneD
