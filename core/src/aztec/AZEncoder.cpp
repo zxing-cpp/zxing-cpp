@@ -200,12 +200,11 @@ static int TotalBitsInLayer(int layers, bool compact)
 * @param userSpecifiedLayers if non-zero, a user-specified value for the number of layers
 * @return Aztec symbol matrix with metadata
 */
-void
-Encoder::Encode(const std::string& data, int minECCPercent, int userSpecifiedLayers, EncodeResult& output)
+EncodeResult
+Encoder::Encode(const std::string& data, int minECCPercent, int userSpecifiedLayers)
 {
 	// High-level encode
-	BitArray bits;
-	HighLevelEncoder::Encode(data, bits);
+	BitArray bits = HighLevelEncoder::Encode(data);
 
 	// stuff bits and choose symbol size
 	int eccBits = bits.size() * minECCPercent / 100 + 11;
@@ -294,12 +293,8 @@ Encoder::Encode(const std::string& data, int minECCPercent, int userSpecifiedLay
 		}
 	}
 
-	output.compact = compact;
-	output.size = matrixSize;
-	output.layers = layers;
-	output.codeWords = messageSizeInWords;
+	EncodeResult output{compact, matrixSize, layers, messageSizeInWords, BitMatrix(matrixSize)};
 
-	output.matrix = BitMatrix(matrixSize);
 	BitMatrix& matrix = output.matrix;
 
 	// draw data bits
@@ -343,6 +338,7 @@ Encoder::Encode(const std::string& data, int minECCPercent, int userSpecifiedLay
 			}
 		}
 	}
+	return output;
 }
 
 } // Aztec

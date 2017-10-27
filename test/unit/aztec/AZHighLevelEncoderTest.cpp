@@ -25,15 +25,13 @@ namespace {
 	}
 
 	void TestHighLevelEncodeString(const std::string& s, const std::string& expectedBits) {
-		BitArray bits;
-		Aztec::HighLevelEncoder::Encode(s, bits);
+		BitArray bits = Aztec::HighLevelEncoder::Encode(s);
 		EXPECT_EQ(Utility::ToString(bits), StripSpaces(expectedBits)) << "highLevelEncode() failed for input string: " + s;
 		EXPECT_EQ(s, Aztec::GetEncodedData(ToBoolArray(bits)));
 	}
 
 	void TestHighLevelEncodeString(const std::string& s, int expectedReceivedBits) {
-		BitArray bits;
-		Aztec::HighLevelEncoder::Encode(s, bits);
+		BitArray bits = Aztec::HighLevelEncoder::Encode(s);
 		int receivedBitCount = (int)Utility::ToString(bits).length();
 		EXPECT_EQ(receivedBitCount, expectedReceivedBits) << "highLevelEncode() failed for input string: " + s;
 		EXPECT_EQ(s, Aztec::GetEncodedData(ToBoolArray(bits)));

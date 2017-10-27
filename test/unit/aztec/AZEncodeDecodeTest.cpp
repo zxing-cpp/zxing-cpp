@@ -29,8 +29,7 @@ namespace {
 
 	void TestEncodeDecode(const std::string& data, bool compact, int layers) {
 
-		Aztec::EncodeResult aztec;
-		Aztec::Encoder::Encode(data, 25, Aztec::Encoder::DEFAULT_AZTEC_LAYERS, aztec);
+		Aztec::EncodeResult aztec = Aztec::Encoder::Encode(data, 25, Aztec::Encoder::DEFAULT_AZTEC_LAYERS);
 		ASSERT_EQ(aztec.compact, compact) << "Unexpected symbol format (compact)";
 		ASSERT_EQ(aztec.layers, layers) << "Unexpected nr. of layers";
 
@@ -69,10 +68,8 @@ namespace {
 		Aztec::Writer writer;
 		writer.setEncoding(charset);
 		writer.setEccPercent(eccPercent);
-		BitMatrix matrix;
-		writer.encode(data, 0, 0, matrix);
-		Aztec::EncodeResult aztec;
-		Aztec::Encoder::Encode(textBytes, eccPercent, Aztec::Encoder::DEFAULT_AZTEC_LAYERS, aztec);
+		BitMatrix matrix = writer.encode(data, 0, 0);
+		Aztec::EncodeResult aztec = Aztec::Encoder::Encode(textBytes, eccPercent, Aztec::Encoder::DEFAULT_AZTEC_LAYERS);
 		EXPECT_EQ(aztec.compact, compact) << "Unexpected symbol format (compact)";
 		EXPECT_EQ(aztec.layers, layers) << "Unexpected nr. of layers";
 
@@ -217,10 +214,9 @@ TEST(AZEncodeDecodeTest, AztecWriter)
 	// Test AztecWriter defaults
 	std::wstring data = L"In ut magna vel mauris malesuada";
 	Aztec::Writer writer;
-	BitMatrix matrix;
-	writer.encode(data, 0, 0, matrix);
-	Aztec::EncodeResult aztec;
-	Aztec::Encoder::Encode(TextEncoder::FromUnicode(data, CharacterSet::ISO8859_1),
-		Aztec::Encoder::DEFAULT_EC_PERCENT, Aztec::Encoder::DEFAULT_AZTEC_LAYERS, aztec);
+	BitMatrix matrix = writer.encode(data, 0, 0);
+	Aztec::EncodeResult aztec =
+		Aztec::Encoder::Encode(TextEncoder::FromUnicode(data, CharacterSet::ISO8859_1),
+							   Aztec::Encoder::DEFAULT_EC_PERCENT, Aztec::Encoder::DEFAULT_AZTEC_LAYERS);
 	EXPECT_EQ(matrix, aztec.matrix);
 }
