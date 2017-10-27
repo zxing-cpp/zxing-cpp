@@ -516,9 +516,10 @@ static int DetermineConsecutiveBinaryCount(const std::wstring& msg, int startpos
 *  or {@code null} for default / not applicable
 * @return the encoded message (the char values range from 0 to 928)
 */
-void
-HighLevelEncoder::EncodeHighLevel(const std::wstring& msg, Compaction compaction, CharacterSet encoding, std::vector<int>& highLevel)
+std::vector<int>
+HighLevelEncoder::EncodeHighLevel(const std::wstring& msg, Compaction compaction, CharacterSet encoding)
 {
+	std::vector<int> highLevel;
 	highLevel.reserve(highLevel.size() + msg.length());
 
 	//the codewords 0..928 are encoded as Unicode characters
@@ -589,6 +590,7 @@ HighLevelEncoder::EncodeHighLevel(const std::wstring& msg, Compaction compaction
 			}
 		}
 	}
+	return highLevel;
 }
 
 

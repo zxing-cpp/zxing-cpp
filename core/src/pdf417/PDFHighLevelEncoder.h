@@ -34,7 +34,7 @@ enum class Compaction;
 class HighLevelEncoder
 {
 public:
-	static void EncodeHighLevel(const std::wstring& msg, Compaction compaction, CharacterSet encoding, std::vector<int>& highLevel);
+	static std::vector<int> EncodeHighLevel(const std::wstring& msg, Compaction compaction, CharacterSet encoding);
 };
 
 } // Pdf417

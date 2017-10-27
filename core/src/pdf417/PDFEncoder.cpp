@@ -320,7 +320,7 @@ static inline int GetErrorCorrectionCodewordCount(int errorCorrectionLevel)
 * @param errorCorrectionLevel the error correction level (0-8)
 * @return the String representing the error correction codewords
 */
-static void GenerateErrorCorrection(const std::vector<int>& dataCodewords, int errorCorrectionLevel, std::vector<int>& output)
+static void GenerateErrorCorrection(std::vector<int>& dataCodewords, int errorCorrectionLevel)
 {
 	int k = GetErrorCorrectionCodewordCount(errorCorrectionLevel);
 	std::vector<int> e(k, 0);
@@ -343,8 +343,7 @@ static void GenerateErrorCorrection(const std::vector<int>& dataCodewords, int e
 			e[j] = 929 - e[j];
 		}
 	}
-	output.reserve(output.size() + e.size());
-	output.insert(output.end(), e.rbegin(), e.rend());
+	dataCodewords.insert(dataCodewords.end(), e.rbegin(), e.rend());
 }
 
 
@@ -405,8 +404,11 @@ static void EncodeChar(int pattern, int len, BarcodeRow& logic)
 	logic.addBar(last, width);
 }
 
-static void EncodeLowLevel(const std::vector<int>& fullCodewords, int c, int r, int errorCorrectionLevel, bool compact, BarcodeMatrix& logic)
+static BarcodeMatrix EncodeLowLevel(const std::vector<int>& fullCodewords, int c, int r, int errorCorrectionLevel, bool compact)
 {
+	BarcodeMatrix logic;
+	logic.init(r, c);
+
 	int idx = 0;
 	for (int y = 0; y < r; y++) {
 		int cluster = y % 3;
@@ -446,6 +448,7 @@ static void EncodeLowLevel(const std::vector<int>& fullCodewords, int c, int r, 
 			EncodeChar(STOP_PATTERN, 18, logic.currentRow());
 		}
 	}
+	return logic;
 }
 
 /**
@@ -506,8 +509,8 @@ static void DetermineDimensions(int minCols, int maxCols, int minRows, int maxRo
 * @param errorCorrectionLevel PDF417 error correction level to use
 * @throws WriterException if the contents cannot be encoded in this format
 */
-void
-Encoder::generateBarcodeLogic(const std::wstring& msg, int errorCorrectionLevel, BarcodeMatrix& output) const
+BarcodeMatrix
+Encoder::generateBarcodeLogic(const std::wstring& msg, int errorCorrectionLevel) const
 {
 	if (errorCorrectionLevel < 0 || errorCorrectionLevel > 8) {
 		throw std::invalid_argument("Error correction level must be between 0 and 8!");
@@ -515,8 +518,7 @@ Encoder::generateBarcodeLogic(const std::wstring& msg, int errorCorrectionLevel,
 
 	//1. step: High-level encoding
 	int errorCorrectionCodeWords = GetErrorCorrectionCodewordCount(errorCorrectionLevel);
-	std::vector<int> highLevel;
-	HighLevelEncoder::EncodeHighLevel(msg, _compaction, _encoding, highLevel);
+	std::vector<int> highLevel = HighLevelEncoder::EncodeHighLevel(msg, _compaction, _encoding);
 	
 	int sourceCodeWords = static_cast<int>(highLevel.size());
 
@@ -539,11 +541,10 @@ Encoder::generateBarcodeLogic(const std::wstring& msg, int errorCorrectionLevel,
 	}
 
 	//3. step: Error correction
-	GenerateErrorCorrection(dataCodewords, errorCorrectionLevel, dataCodewords);
+	GenerateErrorCorrection(dataCodewords, errorCorrectionLevel);
 
 	//4. step: low-level encoding
-	output.init(rows, cols);
-	EncodeLowLevel(dataCodewords, cols, rows, errorCorrectionLevel, _compact, output);
+	return EncodeLowLevel(dataCodewords, cols, rows, errorCorrectionLevel, _compact);
 }
 
 /**
