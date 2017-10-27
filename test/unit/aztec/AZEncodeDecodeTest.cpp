@@ -33,15 +33,9 @@ namespace {
 		ASSERT_EQ(aztec.compact, compact) << "Unexpected symbol format (compact)";
 		ASSERT_EQ(aztec.layers, layers) << "Unexpected nr. of layers";
 
-		Aztec::DetectorResult r;
-		r.setBits(std::make_shared<BitMatrix>(aztec.matrix.copy()));
-		r.setCompact(aztec.compact);
-		r.setNbDatablocks(aztec.codeWords);
-		r.setNbLayers(aztec.layers);
-
-		DecoderResult res;
-		auto status = Aztec::Decoder::Decode(r, res);
-		ASSERT_EQ(status, DecodeStatus::NoError);
+		DecoderResult res =
+			Aztec::Decoder::Decode({aztec.matrix.copy(), {}, aztec.compact, aztec.codeWords, aztec.layers});
+		ASSERT_EQ(res.isValid(), true);
 		EXPECT_EQ(data, res.text());
 
 		// Check error correction by introducing a few minor errors
@@ -59,9 +53,9 @@ namespace {
 		x = matrix.width() - 2 + random.next(0, 1);
 		y = random.next(0, matrix.height() - 1);
 		matrix.flip(x, y);
-		r.setBits(std::make_shared<BitMatrix>(matrix.copy()));
-		status = Aztec::Decoder::Decode(r, res);
-		ASSERT_EQ(status, DecodeStatus::NoError);
+
+		res = Aztec::Decoder::Decode({std::move(matrix), {}, aztec.compact, aztec.codeWords, aztec.layers});
+		ASSERT_EQ(res.isValid(), true);
 		EXPECT_EQ(data, res.text());
 	}
 
@@ -84,14 +78,8 @@ namespace {
 		EXPECT_EQ(aztec.matrix, matrix);
 
 		std::wstring expectedData = TextDecoder::ToUnicode(textBytes, CharacterSet::ISO8859_1);
-		Aztec::DetectorResult r;
-		r.setBits(std::make_shared<BitMatrix>(matrix.copy()));
-		r.setCompact(aztec.compact);
-		r.setNbDatablocks(aztec.codeWords);
-		r.setNbLayers(aztec.layers);
-		DecoderResult res;
-		auto status = Aztec::Decoder::Decode(r, res);
-		EXPECT_EQ(status, DecodeStatus::NoError);
+		DecoderResult res = Aztec::Decoder::Decode({matrix.copy(), {}, aztec.compact, aztec.codeWords, aztec.layers});
+		EXPECT_EQ(res.isValid(), true);
 		EXPECT_EQ(res.text(), expectedData);
 
 		// Check error correction by introducing up to eccPercent/2 errors
@@ -107,9 +95,8 @@ namespace {
 				: matrix.height() - 1 - random.next(0, aztec.layers * 2 - 1);
 			matrix.flip(x, y);
 		}
-		r.setBits(std::make_shared<BitMatrix>(matrix.copy()));
-		status = Aztec::Decoder::Decode(r, res);
-		EXPECT_EQ(status, DecodeStatus::NoError);
+		res = Aztec::Decoder::Decode({std::move(matrix), {}, aztec.compact, aztec.codeWords, aztec.layers});
+		EXPECT_EQ(res.isValid(), true);
 		EXPECT_EQ(res.text(), expectedData);
 	}
 }

@@ -10,8 +10,7 @@ using namespace ZXing;
 
 TEST(AZDecoderTest, AztecResult)
 {
-	Aztec::DetectorResult dr;
-	dr.setBits(std::make_shared<BitMatrix>(Utility::ParseBitMatrix(
+	auto bits = Utility::ParseBitMatrix(
 		"X X X X X     X X X       X X X     X X X     \n"
 		"X X X     X X X     X X X X     X X X     X X \n"
 		"  X   X X       X   X   X X X X     X     X X \n"
@@ -35,16 +34,10 @@ TEST(AZDecoderTest, AztecResult)
 		"X X X   X X X X           X X X       X     X \n"
 		"X X     X X X     X X X X     X X X     X X   \n"
 		"    X X X     X X X       X X X     X X X X   \n"
-		, 'X', true)
-	));
+		, 'X', true);
 
-	dr.setCompact(false);
-	dr.setNbDatablocks(30);
-	dr.setNbLayers(2);
-
-	DecoderResult result;
-	auto status = Aztec::Decoder::Decode(dr, result);
-	EXPECT_EQ(status, DecodeStatus::NoError);
+	DecoderResult result = Aztec::Decoder::Decode({std::move(bits), {}, false, 30, 2});
+	EXPECT_EQ(result.isValid(), true);
 	EXPECT_EQ(result.text(), L"88888TTTTTTTTTTTTTTTTTTTTTTTTTTTTTT");
 	EXPECT_EQ(result.rawBytes(), ByteArray({
 		0xf5, 0x55, 0x55, 0x75, 0x6b, 0x5a, 0xd6, 0xb5, 0xad, 0x6b, 
@@ -55,8 +48,7 @@ TEST(AZDecoderTest, AztecResult)
 
 TEST(AZDecoderTest, DecodeTooManyErrors)
 {
-	Aztec::DetectorResult dr;
-	dr.setBits(std::make_shared<BitMatrix>(Utility::ParseBitMatrix(
+	auto bits = Utility::ParseBitMatrix(
 		"X X . X . . . X X . . . X . . X X X . X . X X X X X . \n"
 		"X X . . X X . . . . . X X . . . X X . . . X . X . . X \n"
 		"X . . . X X . . X X X . X X . X X X X . X X . . X . . \n"
@@ -84,22 +76,15 @@ TEST(AZDecoderTest, DecodeTooManyErrors)
 		"X . X . X . . X . X X X X X X X X . X X X X . . X X . \n"
 		"X X X X . . . X . . X X X . X X . . X . . . . X X X . \n"
 		"X X . X . X . . . X . X . . . . X X . X . . X X . . . \n"
-		, 'X', true)
-		));
+		, 'X', true);
 
-	dr.setCompact(true);
-	dr.setNbDatablocks(16);
-	dr.setNbLayers(4);
-
-	DecoderResult result;
-	auto status = Aztec::Decoder::Decode(dr, result);
-	EXPECT_EQ(status, DecodeStatus::FormatError);
+	DecoderResult result = Aztec::Decoder::Decode({std::move(bits), {}, true, 16, 4});
+	EXPECT_EQ(result.errorCode(), DecodeStatus::FormatError);
 }
 
 TEST(AZDecoderTest, DecodeTooManyErrors2)
 {
-	Aztec::DetectorResult dr;
-	dr.setBits(std::make_shared<BitMatrix>(Utility::ParseBitMatrix(
+	auto bits = Utility::ParseBitMatrix(
 		". X X . . X . X X . . . X . . X X X . . . X X . X X . \n"
 		"X X . X X . . X . . . X X . . . X X . X X X . X . X X \n"
 		". . . . X . . . X X X . X X . X X X X . X X . . X . . \n"
@@ -127,14 +112,8 @@ TEST(AZDecoderTest, DecodeTooManyErrors2)
 		"X . . . X X . X . X X X X X X X X . X X X X . . X X . \n"
 		". X X X X . . X . . X X X . X X . . X . . . . X X X . \n"
 		"X X . . . X X . . X . X . . . . X X . X . . X . X . X \n"
-		, 'X', true)
-		));
+		, 'X', true);
 
-	dr.setCompact(true);
-	dr.setNbDatablocks(16);
-	dr.setNbLayers(4);
-
-	DecoderResult result;
-	auto status = Aztec::Decoder::Decode(dr, result);
-	EXPECT_EQ(status, DecodeStatus::FormatError);
+	DecoderResult result = Aztec::Decoder::Decode({std::move(bits), {}, true, 16, 4});
+	EXPECT_EQ(result.errorCode(), DecodeStatus::FormatError);
 }
