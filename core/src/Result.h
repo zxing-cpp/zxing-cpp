@@ -43,41 +43,9 @@ public:
 
 	explicit Result(DecodeStatus status) : _status(status) {}
 
-	Result(std::wstring&& text, ByteArray&& rawBytes, std::vector<ResultPoint>&& resultPoints, BarcodeFormat format)
-	    : _text(std::move(text)),
-	      _rawBytes(std::move(rawBytes)),
-		  _resultPoints(std::move(resultPoints)),
-	      _format(format)
-	{
-		_numBits = static_cast<int>(_rawBytes.size()) * 8;
-	}
+	Result(std::wstring&& text, ByteArray&& rawBytes, std::vector<ResultPoint>&& resultPoints, BarcodeFormat format);
 
-	Result(DecoderResult&& decodeResult, std::vector<ResultPoint>&& resultPoints, BarcodeFormat format)
-		: _status(decodeResult.errorCode()),
-	      _text(std::move(decodeResult).text()),
-		  _rawBytes(std::move(decodeResult).rawBytes()),
-	      _numBits(decodeResult.numBits()),
-		  _resultPoints(std::move(resultPoints)),
-	      _format(format)
-	{
-		if (!isValid())
-			return;
-
-		//TODO: change ResultMetadata::put interface, so we can move from decodeResult?
-		const auto& byteSegments = decodeResult.byteSegments();
-		if (!byteSegments.empty()) {
-			metadata().put(ResultMetadata::BYTE_SEGMENTS, byteSegments);
-		}
-		const auto& ecLevel = decodeResult.ecLevel();
-		if (!ecLevel.empty()) {
-			metadata().put(ResultMetadata::ERROR_CORRECTION_LEVEL, ecLevel);
-		}
-		if (decodeResult.hasStructuredAppend()) {
-			metadata().put(ResultMetadata::STRUCTURED_APPEND_SEQUENCE, decodeResult.structuredAppendSequenceNumber());
-			metadata().put(ResultMetadata::STRUCTURED_APPEND_PARITY, decodeResult.structuredAppendParity());
-		}
-		//TODO: what about the other optional data in DecoderResult?
-	}
+	Result(DecoderResult&& decodeResult, std::vector<ResultPoint>&& resultPoints, BarcodeFormat format);
 
 	bool isValid() const {
 		return StatusIsOK(_status);
