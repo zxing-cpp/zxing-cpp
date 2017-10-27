@@ -47,8 +47,8 @@ static inline bool Contains(const char* str, int c)
 	return strchr(str, c) != nullptr;
 }
 
-void
-CodabarWriter::encode(const std::wstring& contents_, int width, int height, BitMatrix& output) const
+BitMatrix
+CodabarWriter::encode(const std::wstring& contents_, int width, int height) const
 {
 	std::wstring contents = contents_;
 	if (contents.empty()) {
@@ -155,7 +155,7 @@ CodabarWriter::encode(const std::wstring& contents_, int width, int height, BitM
 		}
 	}
 
-	WriterHelper::RenderResult(result, width, height, _sidesMargin >= 0 ? _sidesMargin : 10, output);
+	return WriterHelper::RenderResult(result, width, height, _sidesMargin >= 0 ? _sidesMargin : 10);
 }
 
 } // OneD

@@ -65,8 +65,8 @@ static void GetDigits(const std::wstring& contents, std::array<int, 8>& digits)
 	}
 }
 
-void
-UPCEWriter::encode(const std::wstring& contents, int width, int height, BitMatrix& output) const
+BitMatrix
+UPCEWriter::encode(const std::wstring& contents, int width, int height) const
 {
 	size_t length = contents.length();
 	if (length != 7 && length != 8) {
@@ -104,7 +104,7 @@ UPCEWriter::encode(const std::wstring& contents, int width, int height, BitMatri
 	}
 
 	WriterHelper::AppendPattern(result, pos, UPCEANCommon::END_PATTERN, false);
-	WriterHelper::RenderResult(result, width, height, _sidesMargin >= 0 ? _sidesMargin : 9, output);
+	return WriterHelper::RenderResult(result, width, height, _sidesMargin >= 0 ? _sidesMargin : 9);
 }
 
 } // OneD

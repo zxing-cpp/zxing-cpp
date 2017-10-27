@@ -25,8 +25,8 @@ namespace OneD {
 /**
 * @return a byte array of horizontal pixels (0 = white, 1 = black)
 */
-void
-WriterHelper::RenderResult(const std::vector<bool>& code, int width, int height, int sidesMargin, BitMatrix& output)
+BitMatrix
+WriterHelper::RenderResult(const std::vector<bool>& code, int width, int height, int sidesMargin)
 {
 	int inputWidth = static_cast<int>(code.size());
 	// Add quiet zone on both sides.
@@ -37,12 +37,13 @@ WriterHelper::RenderResult(const std::vector<bool>& code, int width, int height,
 	int multiple = outputWidth / fullWidth;
 	int leftPadding = (outputWidth - (inputWidth * multiple)) / 2;
 
-	output = BitMatrix(outputWidth, outputHeight);
+	BitMatrix result(outputWidth, outputHeight);
 	for (int inputX = 0, outputX = leftPadding; inputX < inputWidth; inputX++, outputX += multiple) {
 		if (code[inputX]) {
-			output.setRegion(outputX, 0, multiple, outputHeight);
+			result.setRegion(outputX, 0, multiple, outputHeight);
 		}
 	}
+	return result;
 }
 
 /**

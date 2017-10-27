@@ -44,8 +44,8 @@ static const std::array<std::array<int, 5>, 10> PATTERNS = {
 	N, W, N, W, N,  // 9
 };
 
-void
-ITFWriter::encode(const std::wstring& contents, int width, int height, BitMatrix& output) const
+BitMatrix
+ITFWriter::encode(const std::wstring& contents, int width, int height) const
 {
 	size_t length = contents.length();
 	if (length == 0) {
@@ -71,7 +71,7 @@ ITFWriter::encode(const std::wstring& contents, int width, int height, BitMatrix
 		pos += WriterHelper::AppendPattern(result, pos, encoding, true);
 	}
 	WriterHelper::AppendPattern(result, pos, END_PATTERN, true);
-	WriterHelper::RenderResult(result, width, height, _sidesMargin >= 0 ? _sidesMargin : 10, output);
+	return WriterHelper::RenderResult(result, width, height, _sidesMargin >= 0 ? _sidesMargin : 10);
 }
 
 } // OneD

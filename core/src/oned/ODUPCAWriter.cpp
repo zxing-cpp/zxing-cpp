@@ -15,21 +15,22 @@
 * limitations under the License.
 */
 
+#include "BitMatrix.h"
 #include "oned/ODUPCAWriter.h"
 #include "oned/ODEAN13Writer.h"
 
 namespace ZXing {
 namespace OneD {
 
-void
-UPCAWriter::encode(const std::wstring& contents, int width, int height, BitMatrix& output) const
+BitMatrix
+UPCAWriter::encode(const std::wstring& contents, int width, int height) const
 {
 	// Transform a UPC-A code into the equivalent EAN-13 code, and add a check digit if it is not already present.
 	size_t length = contents.length();
 	if (length != 11 && length != 12) {
 		throw std::invalid_argument("Requested contents should be 11 or 12 digits long");
 	}
-	return EAN13Writer().setMargin(_sidesMargin).encode(L'0' + contents, width, height, output);
+	return EAN13Writer().setMargin(_sidesMargin).encode(L'0' + contents, width, height);
 }
 
 } // OneD

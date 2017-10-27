@@ -30,7 +30,7 @@ class Code93Writer
 {
 public:
 	Code93Writer& setMargin(int sidesMargin) { _sidesMargin = sidesMargin; return *this; }
-	void encode(const std::wstring& contents, int width, int height, BitMatrix& output) const;
+	BitMatrix encode(const std::wstring& contents, int width, int height) const;
 
 private:
 	int _sidesMargin = -1;

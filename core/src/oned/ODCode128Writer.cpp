@@ -121,8 +121,8 @@ static int ChooseCode(const std::wstring& value, int start, int oldCode)
 	return CODE_CODE_B;
 }
 
-void
-Code128Writer::encode(const std::wstring& contents, int width, int height, BitMatrix& output) const
+BitMatrix
+Code128Writer::encode(const std::wstring& contents, int width, int height) const
 {
 	// Check length
 	int length = static_cast<int>(contents.length());
@@ -236,7 +236,7 @@ Code128Writer::encode(const std::wstring& contents, int width, int height, BitMa
 		pos += WriterHelper::AppendPattern(result, pos, pattern, true);
 	}
 
-	WriterHelper::RenderResult(result, width, height, _sidesMargin >= 0 ? _sidesMargin : 10, output);
+	return WriterHelper::RenderResult(result, width, height, _sidesMargin >= 0 ? _sidesMargin : 10);
 }
 
 } // OneD
