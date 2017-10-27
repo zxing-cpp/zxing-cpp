@@ -76,7 +76,7 @@ public:
 	// rvalue). The latter can be used to optionally initialize a temporary in a
 	// return statement, e.g.
 	//    return DecoderResult(bytes, text).setEcLevel(level);
-#define PROPERTY(TYPE, GETTER, SETTER) \
+#define ZX_PROPERTY(TYPE, GETTER, SETTER) \
 	const TYPE& GETTER() const & { return _##GETTER; } \
 	TYPE&& GETTER() && { return std::move(_##GETTER); } \
 	void SETTER(const TYPE& v) & { _##GETTER = v; } \
@@ -84,16 +84,16 @@ public:
 	DecoderResult&& SETTER(const TYPE& v) && { _##GETTER = v; return std::move(*this); } \
 	DecoderResult&& SETTER(TYPE&& v) && { _##GETTER = std::move(v); return std::move(*this); }
 
-	PROPERTY(int, numBits, setNumBits)
-	PROPERTY(std::list<ByteArray>, byteSegments, setByteSegments)
-	PROPERTY(std::wstring, ecLevel, setEcLevel)
-	PROPERTY(int, errorsCorrected, setErrorsCorrected)
-	PROPERTY(int, erasures, setErasures)
-	PROPERTY(int, structuredAppendParity, setStructuredAppendParity)
-	PROPERTY(int, structuredAppendSequenceNumber, setStructuredAppendSequenceNumber)
-	PROPERTY(std::shared_ptr<CustomData>, extra, setExtra)
+	ZX_PROPERTY(int, numBits, setNumBits)
+	ZX_PROPERTY(std::list<ByteArray>, byteSegments, setByteSegments)
+	ZX_PROPERTY(std::wstring, ecLevel, setEcLevel)
+	ZX_PROPERTY(int, errorsCorrected, setErrorsCorrected)
+	ZX_PROPERTY(int, erasures, setErasures)
+	ZX_PROPERTY(int, structuredAppendParity, setStructuredAppendParity)
+	ZX_PROPERTY(int, structuredAppendSequenceNumber, setStructuredAppendSequenceNumber)
+	ZX_PROPERTY(std::shared_ptr<CustomData>, extra, setExtra)
 
-#undef PROPERTY
+#undef ZX_PROPERTY
 
 	bool hasStructuredAppend() const { return _structuredAppendParity >= 0 && _structuredAppendSequenceNumber >= 0; }
 };
