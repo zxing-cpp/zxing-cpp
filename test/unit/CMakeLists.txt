@@ -70,6 +70,14 @@ add_executable (ZXingUnitTest
     datamatrix/DMPlacementTest.cpp
     datamatrix/DMSymbolInfoTest.cpp
     datamatrix/DMWriterTest.cpp
+    oned/ODCodaBarWriterTest.cpp
+    oned/ODCode39WriterTest.cpp
+    oned/ODCode93WriterTest.cpp
+    oned/ODCode128WriterTest.cpp
+    oned/ODEAN8WriterTest.cpp
+    oned/ODEAN13WriterTest.cpp
+    oned/ODUPCAWriterTest.cpp
+    oned/ODUPCEWriterTest.cpp
 )
 
 target_include_directories (ZXingUnitTest

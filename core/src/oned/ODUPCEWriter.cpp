@@ -55,7 +55,8 @@ static const int CODE_WIDTH = 3 + // start guard
                               (7 * 6) + // bars
                               6; // end guard
 
-static void GetDigits(const std::wstring& contents, std::array<int, 8>& digits)
+template <int N>
+static void GetDigits(const std::wstring& contents, std::array<int, N>& digits)
 {
 	for (size_t i = 0; i < contents.length(); ++i) {
 		digits[i] = contents[i] - '0';
@@ -77,7 +78,7 @@ UPCEWriter::encode(const std::wstring& contents, int width, int height) const
 	GetDigits(contents, digits);
 
 	if (length == 7) {
-		std::array<int, 8> upceDigits;
+		std::array<int, 12> upceDigits;
 		GetDigits(UPCEANCommon::ConvertUPCEtoUPCA(contents), upceDigits);
 		digits[7] = UPCEANCommon::ComputeChecksum(upceDigits);
 	}
