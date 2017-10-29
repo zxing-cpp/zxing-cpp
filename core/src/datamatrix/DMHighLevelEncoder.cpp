@@ -19,6 +19,7 @@
 #include "datamatrix/DMEncoderContext.h"
 #include "TextEncoder.h"
 #include "CharacterSet.h"
+#include "ByteArray.h"
 #include "ZXStrConvWorkaround.h"
 
 #include <string>
@@ -33,15 +34,15 @@
 namespace ZXing {
 namespace DataMatrix {
 
-static const int PAD = 129;
-static const int UPPER_SHIFT = 235;
-static const int MACRO_05 = 236;
-static const int MACRO_06 = 237;
-static const int C40_UNLATCH = 254;
-static const int X12_UNLATCH = 254;
+static const uint8_t PAD = 129;
+static const uint8_t UPPER_SHIFT = 235;
+static const uint8_t MACRO_05 = 236;
+static const uint8_t MACRO_06 = 237;
+static const uint8_t C40_UNLATCH = 254;
+static const uint8_t X12_UNLATCH = 254;
 
-static const std::wstring MACRO_05_HEADER = L"[)>\x1E05\x1D";
-static const std::wstring MACRO_06_HEADER = L"[)>\x1E06\x1D";
+static const std::wstring MACRO_05_HEADER = L"[)>\x1E""05\x1D";
+static const std::wstring MACRO_06_HEADER = L"[)>\x1E""06\x1D";
 static const std::wstring MACRO_TRAILER = L"\x1E\x04";
 
 enum
@@ -54,7 +55,7 @@ enum
 	BASE256_ENCODATION,
 };
 
-static const int LATCHES[] = {
+static const uint8_t LATCHES[] = {
 	0,	// ASCII mode, no latch needed
 	230, // LATCH_TO_C40
 	239, // LATCH_TO_TEXT
@@ -120,11 +121,11 @@ return msg.getBytes(Charset.forName("cp437")); //See 4.4.3 and annex B of ISO/IE
 }
 */
 
-static int Randomize253State(int ch, int codewordPosition)
+static uint8_t Randomize253State(uint8_t ch, int codewordPosition)
 {
 	int pseudoRandom = ((149 * codewordPosition) % 253) + 1;
 	int tempVariable = ch + pseudoRandom;
-	return tempVariable <= 254 ? tempVariable : (tempVariable - 254);
+	return static_cast<uint8_t>(tempVariable <= 254 ? tempVariable : (tempVariable - 254));
 }
 
 static int FindMinimums(const std::array<int, 6>& intCharCounts, int min, std::array<int, 6>& mins)
@@ -148,12 +149,15 @@ static int LookAheadTest(const std::string& msg, size_t startpos, int currentMod
 	if (startpos >= msg.length()) {
 		return currentMode;
 	}
-	std::array<float, 6> charCounts = { 0.5f, 1, 1, 1, 1, 1.25f };
+	std::array<float, 6> charCounts;
 	//step J
-	if (currentMode != ASCII_ENCODATION) {
-		std::transform(charCounts.begin(), charCounts.end(), charCounts.begin(), [](float x) { return x * 2; });
+	if (currentMode == ASCII_ENCODATION) {
+		charCounts = { 0, 1, 1, 1, 1, 1.25f };
 	}
-	charCounts[currentMode] = 0;
+	else {
+		charCounts = { 1, 2, 2, 2, 2, 2.25f };
+		charCounts[currentMode] = 0;
+	}
 
 	std::array<int, 6> mins;
 	std::array<int, 6> intCharCounts;
@@ -184,7 +188,7 @@ static int LookAheadTest(const std::string& msg, size_t startpos, int currentMod
 			return C40_ENCODATION;
 		}
 
-		int c = msg.at(startpos + charsProcessed);
+		int c = (uint8_t)msg.at(startpos + charsProcessed);
 		charsProcessed++;
 
 		//step L
@@ -328,11 +332,11 @@ namespace ASCIIEncoder {
 		return static_cast<int>(std::find_if_not(begin, msg.end(), IsDigit) - begin);
 	}
 
-	static int EncodeASCIIDigits(int digit1, int digit2)
+	static uint8_t EncodeASCIIDigits(int digit1, int digit2)
 	{
 		if (IsDigit(digit1) && IsDigit(digit2)) {
 			int num = (digit1 - '0') * 10 + (digit2 - '0');
-			return num + 130;
+			return static_cast<uint8_t>(num + 130);
 		}
 		return '?';
 	}
@@ -356,11 +360,11 @@ namespace ASCIIEncoder {
 			}
 			else if (IsExtendedASCII(c)) {
 				context.addCodeword(UPPER_SHIFT);
-				context.addCodeword(c - 128 + 1);
+				context.addCodeword(static_cast<uint8_t>(c - 128 + 1));
 				context.setCurrentPos(context.currentPos() + 1);
 			}
 			else {
-				context.addCodeword(c + 1);
+				context.addCodeword(static_cast<uint8_t>(c + 1));
 				context.setCurrentPos(context.currentPos() + 1);
 			}
 		}
@@ -433,8 +437,8 @@ namespace C40Encoder {
 		int c2 = sb.at(startPos + 1);
 		int c3 = sb.at(startPos + 2);
 		int v = (1600 * c1) + (40 * c2) + c3 + 1;
-		context.addCodeword(v / 256);
-		context.addCodeword(v % 256);
+		context.addCodeword(static_cast<uint8_t>(v / 256));
+		context.addCodeword(static_cast<uint8_t>(v % 256));
 	}
 
 	static void WriteNextTriplet(EncoderContext& context, std::string& buffer)
@@ -587,10 +591,10 @@ namespace DMTextEncoder {
 			sb.push_back((char)(c - 123 + 27));
 			return 2;
 		}
-		if (c >= '\x80') {
+		if (c >= 128) {
 			sb.append("\1\x1e"); //Shift 2, Upper Shift
 			int len = 2;
-			len += EncodeChar((char)(c - 128), sb);
+			len += EncodeChar(c - 128, sb);
 			return len;
 		}
 		throw std::invalid_argument("Illegal character: " + ToHexString(c));
@@ -598,7 +602,7 @@ namespace DMTextEncoder {
 
 	static void EncodeText(EncoderContext& context)
 	{
-		C40Encoder::EncodeC40(context, EncodeChar, C40_ENCODATION);
+		C40Encoder::EncodeC40(context, EncodeChar, TEXT_ENCODATION);
 	}
 
 } // DMTextEncoder
@@ -635,7 +639,7 @@ namespace X12Encoder {
 		return 1;
 	}
 
-	static void HandleEOD(EncoderContext context, std::string& buffer)
+	static void HandleEOD(EncoderContext& context, std::string& buffer)
 	{
 		int codewordCount = context.codewordCount();
 		auto symbolInfo = context.updateSymbolInfo(codewordCount);
@@ -688,7 +692,7 @@ namespace EdifactEncoder {
 		}
 	}
 
-	static std::vector<int> EncodeToCodewords(const std::string& sb, int startPos)
+	static ByteArray EncodeToCodewords(const std::string& sb, int startPos)
 	{
 		int len = static_cast<int>(sb.length()) - startPos;
 		if (len == 0) {
@@ -703,14 +707,14 @@ namespace EdifactEncoder {
 		int cw1 = (v >> 16) & 255;
 		int cw2 = (v >> 8) & 255;
 		int cw3 = v & 255;
-		std::vector<int> res;
+		ByteArray res;
 		res.reserve(3);
-		res.push_back(cw1);
+		res.push_back(static_cast<uint8_t>(cw1));
 		if (len >= 2) {
-			res.push_back(cw2);
+			res.push_back(static_cast<uint8_t>(cw2));
 		}
 		if (len >= 3) {
-			res.push_back(cw3);
+			res.push_back(static_cast<uint8_t>(cw3));
 		}
 		return res;
 	}
@@ -763,7 +767,7 @@ namespace EdifactEncoder {
 				context.setCurrentPos(context.currentPos() - restChars);
 			}
 			else {
-				for (int cw : encoded) {
+				for (uint8_t cw : encoded) {
 					context.addCodeword(cw);
 				}
 			}
@@ -786,7 +790,7 @@ namespace EdifactEncoder {
 
 			if (buffer.length() >= 4) {
 				auto codewords = EncodeToCodewords(buffer, 0);
-				for (int cw : codewords) {
+				for (uint8_t cw : codewords) {
 					context.addCodeword(cw);
 				}
 				buffer.erase(0, 4);
@@ -868,6 +872,12 @@ static bool EndsWith(const std::wstring& s, const std::wstring& ss)
 	return s.length() > ss.length() && s.compare(s.length() - ss.length(), ss.length(), ss) == 0;
 }
 
+ByteArray
+HighLevelEncoder::Encode(const std::wstring& msg)
+{
+	return Encode(msg, SymbolShape::NONE, -1, -1, -1, -1);
+}
+
 /**
 * Performs message encoding of a DataMatrix message using the algorithm described in annex P
 * of ISO/IEC 16022:2000(E).
@@ -879,7 +889,7 @@ static bool EndsWith(const std::wstring& s, const std::wstring& ss)
 * @param maxSize the maximum symbol size constraint or null for no constraint
 * @return the encoded message (the char values range from 0 to 255)
 */
-std::vector<int>
+ByteArray
 HighLevelEncoder::Encode(const std::wstring& msg, SymbolShape shape, int minWdith, int minHeight, int maxWidth, int maxHeight)
 {
 	//the codewords 0..255 are encoded as Unicode characters

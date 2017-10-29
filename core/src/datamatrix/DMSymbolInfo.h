@@ -105,9 +105,6 @@ public:
 	int errorLengthForInterleavedBlock() const {
 		return _rsBlockError;
 	}
-
-	static void OverrideSymbolSet(const SymbolInfo*, size_t count);
-
 };
 
 } // DataMatrix

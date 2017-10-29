@@ -19,6 +19,9 @@
 #include <vector>
 
 namespace ZXing {
+
+class ByteArray;
+
 namespace DataMatrix {
 
 enum class SymbolShape;
@@ -30,7 +33,8 @@ enum class SymbolShape;
 class HighLevelEncoder
 {
 public:
-	static std::vector<int> Encode(const std::wstring& msg, SymbolShape shape, int minWdith, int minHeight, int maxWidth, int maxHeight);
+	static ByteArray Encode(const std::wstring& msg);
+	static ByteArray Encode(const std::wstring& msg, SymbolShape shape, int minWdith, int minHeight, int maxWidth, int maxHeight);
 };
 
 } // DataMatrix

@@ -17,8 +17,8 @@
 */
 #include <string>
 #include <utility>
-#include <vector>
 #include <stdexcept>
+#include "ByteArray.h"
 #include "datamatrix/DMSymbolShape.h"
 #include "datamatrix/DMSymbolInfo.h"
 
@@ -35,14 +35,16 @@ class EncoderContext
 	int _minHeight = -1;
 	int _maxWidth = -1;
 	int _maxHeight = -1;
-	std::vector<int> _codewords;
+	ByteArray _codewords;
 	int _pos = 0;
 	int _newEncoding = -1;
 	const SymbolInfo* _symbolInfo = nullptr;
 	int _skipAtEnd = 0;
 
 public:
-	explicit EncoderContext(std::string  msg) : _msg(std::move(msg)) { _codewords.reserve(_msg.length()); }
+	explicit EncoderContext(std::string msg) : _msg(std::move(msg)) { _codewords.reserve(_msg.length()); }
+	
+	EncoderContext(const EncoderContext &) = delete;	// avoid copy by mistake
 
 	void setSymbolShape(SymbolShape shape) {
 		_shape = shape;
@@ -71,23 +73,23 @@ public:
 		_pos = pos;
 	}
 
-	char currentChar() const {
-		return _msg.at(_pos);
+	int currentChar() const {
+		return _msg.at(_pos) & 0xff;
 	}
 
-	char nextChar() const {
-		return _msg.at(_pos + 1);
+	int nextChar() const {
+		return _msg.at(_pos + 1) & 0xff;
 	}
 
-	const std::vector<int>& codewords() const {
+	const ByteArray& codewords() const {
 		return _codewords;
 	}
 
 	int codewordCount() const {
-		return static_cast<int>(_codewords.size());
+		return _codewords.size();
 	}
 
-	void addCodeword(int codeword) {
+	void addCodeword(uint8_t codeword) {
 		_codewords.push_back(codeword);
 	}
 

@@ -27,6 +27,7 @@
 #include "TextDecoder.h"
 #include "ZXContainerAlgorithms.h"
 #include "ZXStrConvWorkaround.h"
+#include "ZXTestSupport.h"
 
 #include <array>
 
@@ -118,11 +119,11 @@ static Mode DecodeAsciiSegment(BitSource& bits, std::string& result, std::string
 			upperShift = true;
 			break;
 		case 236: // 05 Macro
-			result.append("[)>\x1E").append("05\x1D");
+			result.append("[)>\x1E""05\x1D");
 			resultTrailer.insert(0, "\x1E\x04");
 			break;
 		case 237: // 06 Macro
-			result.append("[)>\x1E").append("06\x1D");
+			result.append("[)>\x1E""06\x1D");
 			resultTrailer.insert(0, "\x1E\x04");
 			break;
 		case 238: // Latch to ANSI X12 encodation
@@ -489,7 +490,8 @@ static bool DecodeBase256Segment(BitSource& bits, std::string& result, std::list
 	return true;
 }
 
-static DecoderResult Decode(ByteArray&& bytes)
+ZXING_EXPORT_TEST_ONLY
+DecoderResult Decode(ByteArray&& bytes)
 {
 	BitSource bits(bytes);
 	std::string result;

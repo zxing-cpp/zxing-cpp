@@ -59,11 +59,17 @@ SET (COMMON_TEST_UTILITY
 # Our executable
 add_executable (ZXingUnitTest
     ${COMMON_TEST_UTILITY}
+    ReedSolomonTest.cpp
     aztec/AZDetectorTest.cpp
     aztec/AZDecoderTest.cpp
     aztec/AZEncoderTest.cpp
     aztec/AZEncodeDecodeTest.cpp
     aztec/AZHighLevelEncoderTest.cpp
+    datamatrix/DMDecodedBitStreamParserTest.cpp
+    datamatrix/DMHighLevelEncodeTest.cpp
+    datamatrix/DMPlacementTest.cpp
+    datamatrix/DMSymbolInfoTest.cpp
+    datamatrix/DMWriterTest.cpp
 )
 
 target_include_directories (ZXingUnitTest

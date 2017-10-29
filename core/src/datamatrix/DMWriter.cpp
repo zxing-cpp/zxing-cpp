@@ -23,6 +23,7 @@
 #include "datamatrix/DMDefaultPlacement.h"
 #include "BitMatrix.h"
 #include "ByteMatrix.h"
+#include "ByteArray.h"
 #include "ZXStrConvWorkaround.h"
 
 #include <stdexcept>
@@ -115,7 +116,8 @@ Writer::encode(const std::wstring& contents, int width, int height) const
 	}
 
 	//1. step: Data encodation
-	std::vector<int> codewords = HighLevelEncoder::Encode(contents, _shapeHint, _minWidth, _minHeight, _maxWidth, _maxHeight);
+	auto encoded = HighLevelEncoder::Encode(contents, _shapeHint, _minWidth, _minHeight, _maxWidth, _maxHeight);
+	std::vector<int> codewords(encoded.begin(), encoded.end());
 	const SymbolInfo* symbolInfo = SymbolInfo::Lookup(static_cast<int>(codewords.size()), _shapeHint, _minWidth, _minHeight, _maxWidth, _maxHeight);
 	if (symbolInfo == nullptr) {
 		throw std::invalid_argument("Can't find a symbol arrangement that matches the message. Data codewords: " + std::to_string(codewords.size()));

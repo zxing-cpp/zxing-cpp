@@ -18,6 +18,7 @@
 #include "datamatrix/DMSymbolInfo.h"
 #include "datamatrix/DMSymbolShape.h"
 #include "ZXContainerAlgorithms.h"
+#include "ZXTestSupport.h"
 
 #include <type_traits>
 #include <stdexcept>
@@ -64,11 +65,18 @@ static const SymbolInfo PROD_SYMBOLS[] = {
 static const SymbolInfo* s_symbols = PROD_SYMBOLS;
 static size_t s_symbolCount = Length(PROD_SYMBOLS);
 
-void
-SymbolInfo::OverrideSymbolSet(const SymbolInfo* symbols, size_t count)
+ZXING_EXPORT_TEST_ONLY
+void OverrideSymbolSet(const SymbolInfo* symbols, size_t count)
 {
 	s_symbols = symbols;
 	s_symbolCount = count;
+}
+
+ZXING_EXPORT_TEST_ONLY
+void UseDefaultSymbolSet()
+{
+	s_symbols = PROD_SYMBOLS;
+	s_symbolCount = Length(PROD_SYMBOLS);
 }
 
 const SymbolInfo *
