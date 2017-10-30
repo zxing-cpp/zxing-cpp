@@ -55,7 +55,7 @@ static const int CODE_WIDTH = 3 + // start guard
                               (7 * 6) + // bars
                               6; // end guard
 
-template <int N>
+template <size_t N>
 static void GetDigits(const std::wstring& contents, std::array<int, N>& digits)
 {
 	for (size_t i = 0; i < contents.length(); ++i) {

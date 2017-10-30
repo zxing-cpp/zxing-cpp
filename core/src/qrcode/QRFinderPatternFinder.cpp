@@ -493,7 +493,7 @@ FinderPatternInfo FinderPatternFinder::Find(const BitMatrix& image, bool pureBar
 	for (int i = iSkip - 1; i < maxI && !done; i += iSkip) {
 		// Get a row of black/white values
 		StateCount stateCount = {};
-		int currentState = 0;
+		size_t currentState = 0;
 		for (int j = 0; j < maxJ; j++) {
 			if (image.get(j, i)) {
 				// Black pixel
