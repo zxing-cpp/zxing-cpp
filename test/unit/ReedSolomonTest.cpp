@@ -14,27 +14,29 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#include "gtest/gtest.h"
 #include "ReedSolomonDecoder.h"
 #include "ReedSolomonEncoder.h"
 #include "GenericGF.h"
 #include "PseudoRandom.h"
 
-using namespace ZXing;
-
-static std::ostream& operator<<(std::ostream& out, const GenericGF& field) {
+static std::ostream& operator<<(std::ostream& out, const ZXing::GenericGF& field) {
 	out << "GF(" << field.size() << ',' << field.generatorBase() << ')';
 	return out;
 }
+
+#include "gtest/gtest.h"
+
+using namespace ZXing;
 
 namespace {
 	static const int DECODER_RANDOM_TEST_ITERATIONS = 3;
 	static const int DECODER_TEST_ITERATIONS = 10;
 
 	std::vector<int> operator+(const std::vector<int>& a, const std::vector<int>& b) {
-		std::vector<int> c(a.size() + b.size());
-		std::copy(a.begin(), a.end(), c.begin());
-		std::copy(b.begin(), b.end(), c.begin() + a.size());
+		std::vector<int> c;
+		c.reserve(a.size() + b.size());
+		c.insert(c.end(), a.begin(), a.end());
+		c.insert(c.end(), b.begin(), b.end());
 		return c;
 	}
 
@@ -47,10 +49,10 @@ namespace {
 		EXPECT_EQ(message, messageExpected) << "Encode in " << field << " (" << dataWords.size() << ',' << ecWords.size() << ") failed";
 	}
 
-	void Corrupt(std::vector<int>& received, int howMany, PseudoRandom& random, int max) {
+	void Corrupt(std::vector<int>& received, size_t howMany, PseudoRandom& random, int max) {
 		std::vector<bool> corrupted(received.size(), false);
-		for (int j = 0; j < howMany; j++) {
-			int location = random.next(0, (int)received.size() - 1);
+		for (size_t j = 0; j < howMany; j++) {
+			auto location = random.next(0ul, received.size() - 1);
 			int value = random.next(0, max - 1);
 			if (corrupted[location] || received[location] == value) {
 				j--;
@@ -74,11 +76,11 @@ namespace {
 					i += ecWords.size() / 10;
 				}
 				auto message = dataWords + ecWords;
-				Corrupt(message, i, random, (int)field.size());
+				Corrupt(message, i, random, field.size());
 				bool success = ReedSolomonDecoder::Decode(field, message, (int)ecWords.size());
 				if (!success) {
 					// fail only if maxErrors exceeded
-					ASSERT_GT(i, maxErrors) << "Decode in " << field << " (" << dataWords.size() << ',' << ecWords.size() + ") failed at " << i;
+					ASSERT_GT(i, maxErrors) << "Decode in " << field << " (" << dataWords.size() << ',' << ecWords.size() << ") failed at " << i;
 					// else stop
 					break;
 				}

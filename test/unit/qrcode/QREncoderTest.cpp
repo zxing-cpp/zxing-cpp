@@ -347,7 +347,7 @@ TEST(QREncoderTest, AppendAlphanumericBytes)
 	EXPECT_EQ(Utility::ToString(bits), RemoveSpace(""));
 
 	// Invalid data.
-	EXPECT_THROW(AppendAlphanumericBytes(L"abc", BitArray()), std::invalid_argument);
+	EXPECT_THROW(AppendAlphanumericBytes(L"abc", bits), std::invalid_argument);
 }
 
 TEST(QREncoderTest, Append8BitBytes)
