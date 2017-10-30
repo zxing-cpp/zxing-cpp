@@ -30,6 +30,7 @@
 #include "DecoderResult.h"
 #include "DecodeStatus.h"
 #include "DecoderResult.h"
+#include "ZXTestSupport.h"
 
 #include <cstdlib>
 #include <numeric>
@@ -473,7 +474,8 @@ static std::vector<int> FindErrorMagnitudes(const ModulusPoly& errorEvaluator, c
 * @return number of errors
 * @throws ChecksumException if errors cannot be corrected, maybe because of too many errors
 */
-static bool DecodeErrorCorrection(std::vector<int>& received, int numECCodewords, const std::vector<int>& erasures, int& nbErrors)
+ZXING_EXPORT_TEST_ONLY
+bool DecodeErrorCorrection(std::vector<int>& received, int numECCodewords, const std::vector<int>& erasures, int& nbErrors)
 {
 	const ModulusGF& field = GetModulusGF();
 	ModulusPoly poly(field, received);

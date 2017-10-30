@@ -1,5 +1,0 @@
-EC=M
-Width=99
-Height=99
-
-http://www.google.com/

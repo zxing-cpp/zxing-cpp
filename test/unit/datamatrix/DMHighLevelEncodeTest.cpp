@@ -18,6 +18,7 @@
 #include "ByteArray.h"
 #include "datamatrix/DMHighLevelEncoder.h"
 #include "datamatrix/DMSymbolInfo.h"
+#include "ZXContainerAlgorithms.h"
 
 namespace ZXing {
 	namespace DataMatrix {
@@ -145,7 +146,7 @@ TEST(DMHighLevelEncodeTest, C40EncodationSpecialCases1)
 {
     //Special tests avoiding ultra-long test strings because these tests are only used
     //with the 16x48 symbol (47 data codewords)
-    DataMatrix::OverrideSymbolSet(TEST_SYMBOLS, sizeof(TEST_SYMBOLS));
+    DataMatrix::OverrideSymbolSet(TEST_SYMBOLS, Length(TEST_SYMBOLS));
 
 	std::string visualized = HighLevelEncode(L"AIMAIMAIMAIMAIMAIM");
     EXPECT_EQ(visualized, "230 91 11 91 11 91 11 91 11 91 11 91 11");

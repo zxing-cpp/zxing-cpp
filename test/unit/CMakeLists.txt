@@ -87,6 +87,10 @@ add_executable (ZXingUnitTest
     qrcode/QRFormatInformationTest.cpp
     qrcode/QRModeTest.cpp
     qrcode/QRVersionTest.cpp
+    qrcode/QRWriterTest.cpp
+    pdf417/PDF417ErrorCorrectionTest.cpp
+    pdf417/PDF417HighLevelEncoderTest.cpp
+    pdf417/PDF417WriterTest.cpp
 )
 
 target_include_directories (ZXingUnitTest
