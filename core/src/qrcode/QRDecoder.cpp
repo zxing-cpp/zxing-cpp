@@ -34,6 +34,7 @@
 #include "DecodeHints.h"
 #include "DecodeStatus.h"
 #include "ZXContainerAlgorithms.h"
+#include "ZXTestSupport.h"
 
 #include <list>
 #include <type_traits>
@@ -304,7 +305,7 @@ ParseECIValue(BitSource& bits, int &outValue)
 *
 * <p>See ISO 18004:2006, 6.4.3 - 6.4.7</p>
 */
-static DecoderResult
+ZXING_EXPORT_TEST_ONLY DecoderResult
 DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCorrectionLevel ecLevel, const std::string& hintedCharset)
 {
 	BitSource bits(bytes);

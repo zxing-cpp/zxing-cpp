@@ -48,6 +48,10 @@ public:
 
 	bool isValid() const { return _errorCorrectionLevel != ErrorCorrectionLevel::Invalid; }
 
+	bool operator==(const FormatInformation& other) const {
+		return _dataMask == other._dataMask && _errorCorrectionLevel == other._errorCorrectionLevel;
+	}
+
 private:
 	ErrorCorrectionLevel _errorCorrectionLevel = ErrorCorrectionLevel::Invalid;
 	uint8_t _dataMask = 0;

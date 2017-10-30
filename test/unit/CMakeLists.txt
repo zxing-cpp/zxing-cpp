@@ -53,6 +53,8 @@ SET (COMMON_TEST_UTILITY
     ../common/BitArrayUtility.cpp
     ../common/BitMatrixUtility.h
     ../common/BitMatrixUtility.cpp
+    ../common/ByteMatrixUtility.h
+    ../common/ByteMatrixUtility.cpp
     ../common/PseudoRandom.h
 )
 
@@ -78,6 +80,13 @@ add_executable (ZXingUnitTest
     oned/ODEAN13WriterTest.cpp
     oned/ODUPCAWriterTest.cpp
     oned/ODUPCEWriterTest.cpp
+    qrcode/QRDataMaskTest.cpp
+    qrcode/QRDecodedBitStreamParserTest.cpp
+    qrcode/QREncoderTest.cpp
+    qrcode/QRErrorCorrectionLevelTest.cpp
+    qrcode/QRFormatInformationTest.cpp
+    qrcode/QRModeTest.cpp
+    qrcode/QRVersionTest.cpp
 )
 
 target_include_directories (ZXingUnitTest

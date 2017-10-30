@@ -27,6 +27,7 @@
 #include "CharacterSetECI.h"
 #include "TextEncoder.h"
 #include "ZXStrConvWorkaround.h"
+#include "ZXTestSupport.h"
 
 #include <array>
 
@@ -65,7 +66,7 @@ static bool IsOnlyDoubleByteKanji(const std::wstring& content)
 		return false;
 	}
 	for (size_t i = 0; i < length; i += 2) {
-		int byte1 = bytes[i];
+		int byte1 = bytes[i] & 0xff;
 		if ((byte1 < 0x81 || byte1 > 0x9F) && (byte1 < 0xE0 || byte1 > 0xEB)) {
 			return false;
 		}
@@ -77,7 +78,8 @@ static bool IsOnlyDoubleByteKanji(const std::wstring& content)
 * @return the code point of the table used in alphanumeric mode or
 *  -1 if there is no corresponding code in the table.
 */
-static int GetAlphanumericCode(int code)
+ZXING_EXPORT_TEST_ONLY
+int GetAlphanumericCode(int code)
 {
 	if (code < (int)ALPHANUMERIC_TABLE.size()) {
 		return ALPHANUMERIC_TABLE[code];
@@ -89,7 +91,8 @@ static int GetAlphanumericCode(int code)
 * Choose the best mode by examining the content. Note that 'encoding' is used as a hint;
 * if it is Shift_JIS, and the input is only double-byte Kanji, then we return {@link Mode#KANJI}.
 */
-static CodecMode::Mode ChooseMode(const std::wstring& content, CharacterSet encoding)
+ZXING_EXPORT_TEST_ONLY
+CodecMode::Mode ChooseMode(const std::wstring& content, CharacterSet encoding)
 {
 	if (encoding == CharacterSet::Shift_JIS && IsOnlyDoubleByteKanji(content)) {
 		// Choose Kanji mode if all input are double-byte characters
@@ -127,7 +130,8 @@ static void AppendECI(CharacterSet eci, BitArray& bits)
 /**
 * Append mode info. On success, store the result in "bits".
 */
-static void AppendModeInfo(CodecMode::Mode mode, BitArray& bits)
+ZXING_EXPORT_TEST_ONLY
+void AppendModeInfo(CodecMode::Mode mode, BitArray& bits)
 {
 	bits.appendBits(mode, 4);
 }
@@ -136,7 +140,8 @@ static void AppendModeInfo(CodecMode::Mode mode, BitArray& bits)
 /**
 * Append length info. On success, store the result in "bits".
 */
-static void AppendLengthInfo(int numLetters, const Version& version, CodecMode::Mode mode, BitArray& bits)
+ZXING_EXPORT_TEST_ONLY
+void AppendLengthInfo(int numLetters, const Version& version, CodecMode::Mode mode, BitArray& bits)
 {
 	int numBits = CodecMode::CharacterCountBits(mode, version);
 	if (numLetters >= (1 << numBits)) {
@@ -145,7 +150,8 @@ static void AppendLengthInfo(int numLetters, const Version& version, CodecMode::
 	bits.appendBits(numLetters, numBits);
 }
 
-static void AppendNumericBytes(const std::wstring& content, BitArray& bits)
+ZXING_EXPORT_TEST_ONLY
+void AppendNumericBytes(const std::wstring& content, BitArray& bits)
 {
 	size_t length = content.length();
 	size_t i = 0;
@@ -172,7 +178,8 @@ static void AppendNumericBytes(const std::wstring& content, BitArray& bits)
 	}
 }
 
-static void AppendAlphanumericBytes(const std::wstring& content, BitArray& bits)
+ZXING_EXPORT_TEST_ONLY
+void AppendAlphanumericBytes(const std::wstring& content, BitArray& bits)
 {
 	size_t length = content.length();
 	size_t i = 0;
@@ -198,23 +205,25 @@ static void AppendAlphanumericBytes(const std::wstring& content, BitArray& bits)
 	}
 }
 
-static void Append8BitBytes(const std::wstring& content, CharacterSet encoding, BitArray& bits)
+ZXING_EXPORT_TEST_ONLY
+void Append8BitBytes(const std::wstring& content, CharacterSet encoding, BitArray& bits)
 {
 	std::string bytes;
 	TextEncoder::GetBytes(content, encoding, bytes);
 	for (char b : bytes) {
-		bits.appendBits(b, 8);
+		bits.appendBits(b & 0xff, 8);
 	}
 }
 
-static void AppendKanjiBytes(const std::wstring& content, BitArray& bits)
+ZXING_EXPORT_TEST_ONLY
+void AppendKanjiBytes(const std::wstring& content, BitArray& bits)
 {
 	std::string bytes;
 	TextEncoder::GetBytes(content, CharacterSet::Shift_JIS, bytes);
 	size_t length = bytes.size();
 	for (size_t i = 0; i < length; i += 2) {
-		int byte1 = bytes[i];
-		int byte2 = bytes[i + 1];
+		int byte1 = bytes[i] & 0xff;
+		int byte2 = bytes[i + 1] & 0xff;
 		int code = (byte1 << 8) | byte2;
 		int subtracted = -1;
 		if (code >= 0x8140 && code <= 0x9ffc) {
@@ -233,7 +242,8 @@ static void AppendKanjiBytes(const std::wstring& content, BitArray& bits)
 /**
 * Append "bytes" in "mode" mode (encoding) into "bits". On success, store the result in "bits".
 */
-static void AppendBytes(const std::wstring& content, CodecMode::Mode mode, CharacterSet encoding, BitArray& bits)
+ZXING_EXPORT_TEST_ONLY
+void AppendBytes(const std::wstring& content, CodecMode::Mode mode, CharacterSet encoding, BitArray& bits)
 {
 	switch (mode) {
 		case CodecMode::NUMERIC:
@@ -284,7 +294,8 @@ static const Version& ChooseVersion(int numInputBits, ErrorCorrectionLevel ecLev
 /**
 * Terminate bits as described in 8.4.8 and 8.4.9 of JISX0510:2004 (p.24).
 */
-static void TerminateBits(int numDataBytes, BitArray& bits)
+ZXING_EXPORT_TEST_ONLY
+void TerminateBits(int numDataBytes, BitArray& bits)
 {
 	int capacity = numDataBytes * 8;
 	if (bits.size() > capacity) {
@@ -324,7 +335,8 @@ struct BlockPair
 * the result in "numDataBytesInBlock", and "numECBytesInBlock". See table 12 in 8.5.1 of
 * JISX0510:2004 (p.30)
 */
-static void GetNumDataBytesAndNumECBytesForBlockID(int numTotalBytes, int numDataBytes, int numRSBlocks, int blockID,  int& numDataBytesInBlock, int& numECBytesInBlock)
+ZXING_EXPORT_TEST_ONLY
+void GetNumDataBytesAndNumECBytesForBlockID(int numTotalBytes, int numDataBytes, int numRSBlocks, int blockID,  int& numDataBytesInBlock, int& numECBytesInBlock)
 {
 	if (blockID >= numRSBlocks) {
 		throw std::invalid_argument("Block ID too large");
@@ -373,7 +385,8 @@ static void GetNumDataBytesAndNumECBytesForBlockID(int numTotalBytes, int numDat
 	}
 }
 
-static void GenerateECBytes(const ByteArray& dataBytes, int numEcBytesInBlock, ByteArray& ecBytes)
+ZXING_EXPORT_TEST_ONLY
+void GenerateECBytes(const ByteArray& dataBytes, int numEcBytesInBlock, ByteArray& ecBytes)
 {
 	size_t numDataBytes = dataBytes.size();
 	std::vector<int> toEncode(numDataBytes + numEcBytesInBlock, 0);
@@ -391,7 +404,8 @@ static void GenerateECBytes(const ByteArray& dataBytes, int numEcBytesInBlock, B
 * Interleave "bits" with corresponding error correction bytes. On success, store the result in
 * "result". The interleave rule is complicated. See 8.6 of JISX0510:2004 (p.37) for details.
 */
-static BitArray InterleaveWithECBytes(const BitArray& bits, int numTotalBytes, int numDataBytes, int numRSBlocks)
+ZXING_EXPORT_TEST_ONLY
+BitArray InterleaveWithECBytes(const BitArray& bits, int numTotalBytes, int numDataBytes, int numRSBlocks)
 {
 	// "bits" must have "getNumDataBytes" bytes of data.
 	if (bits.sizeInBytes() != numDataBytes) {

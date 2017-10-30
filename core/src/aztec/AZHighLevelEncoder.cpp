@@ -288,7 +288,7 @@ static std::list<EncodingState> UpdateStateListForPair(const std::list<EncodingS
 // the "result" list.
 static void UpdateStateForChar(const EncodingState& state, const std::string& text, int index, std::list<EncodingState>& result)
 {
-	int ch = (uint8_t)text[index];
+	int ch = text[index] & 0xff;
 	bool charInCurrentTable = CHAR_MAP[state.mode][ch] > 0;
 	EncodingState stateNoBinary;
 	bool firstTime = true;
