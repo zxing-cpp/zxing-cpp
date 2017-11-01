@@ -16,7 +16,6 @@
 */
 
 #include <utility>
-#include <cstddef>
 #include <stdexcept>
 
 namespace ZXing {
