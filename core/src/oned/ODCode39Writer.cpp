@@ -43,12 +43,6 @@ static_assert(Length(ALPHABET_STRING) - 1 == Length(CHARACTER_ENCODINGS), "table
 
 static const int ASTERISK_ENCODING = CHARACTER_ENCODINGS[39];
 
-static int IndexOf(const char* str, int c)
-{
-	auto s = strchr(str, c);
-	return s != nullptr ? static_cast<int>(s - str) : -1;
-}
-
 static void ToIntArray(int a, std::array<int, 9>& toReturn) {
 	for (int i = 0; i < 9; ++i) {
 		toReturn[i] = (a & (1 << (8 - i))) == 0 ? 1 : 2;

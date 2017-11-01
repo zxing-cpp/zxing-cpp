@@ -18,6 +18,8 @@
 #include "pdf417/PDFModulusPoly.h"
 #include "pdf417/PDFModulusGF.h"
 
+#include <algorithm>
+
 namespace ZXing {
 namespace Pdf417 {
 

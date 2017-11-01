@@ -144,12 +144,6 @@ ToNarrowWidePattern(const std::vector<int>& counters, int position)
 	return -1;
 }
 
-static int IndexOf(const char* str, char c)
-{
-	auto s = strchr(str, c);
-	return s != nullptr ? static_cast<int>(s - str) : -1;
-}
-
 static int
 FindStartPattern(const std::vector<int>& counters)
 {

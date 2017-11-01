@@ -135,7 +135,7 @@ GenericLuminanceSource::getRow(int y, ByteArray& buffer, bool forceCopy) const
 	}
 
 	buffer.resize(_width);
-	std::memcpy(buffer.data(), row, _width);
+	std::copy_n(row, _width, buffer.begin());
 	return buffer.data();
 }
 
@@ -152,7 +152,7 @@ GenericLuminanceSource::getMatrix(ByteArray& buffer, int& outRowBytes, bool forc
 	buffer.resize(_width * _height);
 	uint8_t* dest = buffer.data();
 	for (int y = 0; y < _height; ++y, row += _rowBytes, dest += _width) {
-		std::memcpy(dest, row, _width);
+		std::copy_n(row, _width, dest);
 	}
 	return buffer.data();
 }

@@ -20,6 +20,7 @@
 #include "ZXContainerAlgorithms.h"
 
 #include <cctype>
+#include <stdexcept>
 
 namespace ZXing {
 namespace OneD {
@@ -41,11 +42,6 @@ static const int CHARACTER_ENCODINGS[] = {
 };
 
 static_assert(Length(ALPHABET) - 1 == Length(CHARACTER_ENCODINGS), "table size mismatch");
-
-static inline bool Contains(const char* str, int c)
-{
-	return strchr(str, c) != nullptr;
-}
 
 BitMatrix
 CodabarWriter::encode(const std::wstring& contents_, int width, int height) const

@@ -19,6 +19,8 @@
 #include "GenericGF.h"
 #include "PseudoRandom.h"
 
+#include <ostream>
+
 static std::ostream& operator<<(std::ostream& out, const ZXing::GenericGF& field) {
 	out << "GF(" << field.size() << ',' << field.generatorBase() << ')';
 	return out;

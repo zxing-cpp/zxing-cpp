@@ -104,7 +104,7 @@ public:
 	};
 
 	using ReverseIterator = std::reverse_iterator<Iterator>;
-	using Range = Range<Iterator>;
+	using Range = ZXing::Range<Iterator>;
 
 	BitArray() {}
 

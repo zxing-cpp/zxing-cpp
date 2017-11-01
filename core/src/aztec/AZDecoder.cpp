@@ -26,6 +26,7 @@
 #include "ZXTestSupport.h"
 
 #include <numeric>
+#include <cstring>
 
 namespace ZXing {
 namespace Aztec {

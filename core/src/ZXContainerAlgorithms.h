@@ -17,6 +17,7 @@
 
 #include <algorithm>
 #include <numeric>
+#include <cstring>
 
 namespace ZXing {
 
@@ -31,8 +32,12 @@ auto FindIf(Container& c, Predicate p) -> decltype(std::begin(c)) {
 }
 
 template <typename Container, typename Value>
-bool Contains(const Container& c, const Value& v) {
+auto Contains(const Container& c, const Value& v) -> decltype(std::begin(c), bool()){
     return std::find(std::begin(c), std::end(c), v) != std::end(c);
+}
+
+inline bool Contains(const char* str, char c) {
+	return strchr(str, c) != nullptr;
 }
 
 template <typename Container, typename Value>
@@ -43,6 +48,11 @@ Value Accumulate(const Container& c, Value v = Value(0)) {
 template <typename T, typename S = int>
 constexpr S Length(const T&) {
 	return static_cast<S>(std::extent<T>::value);
+}
+
+inline int IndexOf(const char* str, int c) {
+	auto s = strchr(str, c);
+	return s != nullptr ? static_cast<int>(s - str) : -1;
 }
 
 } // ZXing
