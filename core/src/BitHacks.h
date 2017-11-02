@@ -40,7 +40,7 @@ inline int NumberOfLeadingZeros(uint32_t x)
 	if (x == 0)
 		return 32;
 #ifdef ZX_HAS_GCC_BUILTINS
-	return __builtin_ctz(x);
+	return __builtin_clz(x);
 #else
 	int n = 0;
 	if ((x & 0xFFFF0000) == 0) { n = n + 16; x = x << 16; }
