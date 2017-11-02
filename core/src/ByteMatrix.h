@@ -43,14 +43,6 @@ public:
 		return *this;
 	}
 
-	void init(int width, int height, int val = 0)
-	{
-		_width = width;
-		_height = height;
-		_data.clear();
-		_data.resize(_width * _height, val);
-	}
-
 	int height() const {
 		return _height;
 	}
@@ -59,7 +51,11 @@ public:
 		return _width;
 	}
 
-	int8_t get(int x, int y) const {
+	int size() const {
+		return static_cast<int>(_data.size());
+	}
+
+	const int8_t& get(int x, int y) const {
 		return _data[y *_width + x];
 	}
 
@@ -78,12 +74,13 @@ public:
 	/**
 	* @return an internal representation as bytes, in row-major order. array[y * width() + x] represents point (x,y)
 	*/
-	const int8_t* getArray() const {
+
+	const int8_t* begin() const {
 		return _data.data();
 	}
 
-	int8_t* getArray() {
-		return _data.data();
+	const int8_t* end() const {
+		return _data.data() + _width * _height;
 	}
 
 	void clear(int8_t value) {
