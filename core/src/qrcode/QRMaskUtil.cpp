@@ -19,7 +19,9 @@
 #include "ByteMatrix.h"
 
 #include <algorithm>
+#include <array>
 #include <cstdlib>
+#include <cassert>
 
 namespace ZXing {
 namespace QRCode {
@@ -40,12 +42,11 @@ static int ApplyMaskPenaltyRule1Internal(const ByteMatrix& matrix, bool isHorizo
 	int height = matrix.height();
 	int iLimit = isHorizontal ? height : width;
 	int jLimit = isHorizontal ? width : height;
-	const int8_t* arr = matrix.getArray();
 	for (int i = 0; i < iLimit; i++) {
 		int numSameBitCells = 0;
 		int prevBit = -1;
 		for (int j = 0; j < jLimit; j++) {
-			int bit = isHorizontal ? arr[i*width+j] : arr[j*width+i];
+			int bit = isHorizontal ? matrix.get(j, i) : matrix.get(i, j);
 			if (bit == prevBit) {
 				numSameBitCells++;
 			}
@@ -82,13 +83,12 @@ int MaskUtil::ApplyMaskPenaltyRule1(const ByteMatrix& matrix)
 int MaskUtil::ApplyMaskPenaltyRule2(const ByteMatrix& matrix)
 {
 	int penalty = 0;
-	const int8_t* arr = matrix.getArray();
 	int width = matrix.width();
 	int height = matrix.height();
 	for (int y = 0; y < height - 1; y++) {
 		for (int x = 0; x < width - 1; x++) {
-			int value = arr[y*width + x];
-			if (value == arr[y*width + x + 1] && value == arr[(y + 1)*width + x] && value == arr[(y + 1)*width + x + 1]) {
+			int value = matrix.get(x, y);
+			if (value == matrix.get(x+1, y) && value == matrix.get(x, y+1) && value == matrix.get(x+1, y+1)) {
 				penalty++;
 			}
 		}
@@ -96,22 +96,15 @@ int MaskUtil::ApplyMaskPenaltyRule2(const ByteMatrix& matrix)
 	return N2 * penalty;
 }
 
-static bool IsWhiteHorizontal(const int8_t* rowArray, int from, int to)
-{
-	for (int i = from; i < to; i++) {
-		if (rowArray[i] == 1) {
+template<size_t N>
+static bool HasPatternAt(const std::array<int8_t, N>& pattern, const int8_t* begin, int count, int stride) {
+	assert(std::abs(count) <= N);
+	auto end = begin + count * stride;
+	if (count < 0)
+		std::swap(begin, end);
+	for (auto a = begin, b = pattern.begin(); a < end && b != pattern.end(); a += stride, ++b)
+		if (*a != *b)
 			return false;
-		}
-	}
-	return true;
-}
-
-static bool IsWhiteVertical(const int8_t* array, int width, int col, int from, int to) {
-	for (int i = from; i < to; i++) {
-		if (array[i*width + col] == 1) {
-			return false;
-		}
-	}
 	return true;
 }
 
@@ -122,37 +115,25 @@ static bool IsWhiteVertical(const int8_t* array, int width, int col, int from, i
 */
 int MaskUtil::ApplyMaskPenaltyRule3(const ByteMatrix& matrix)
 {
+	const std::array<int8_t, 4> white = {0, 0, 0, 0};
+	const std::array<int8_t, 7> finder = {1, 0, 1, 1, 1, 0, 1};
+	const int whiteSize = white.size();
+	const int finderSize = finder.size();
+
 	int numPenalties = 0;
-	const int8_t* arr = matrix.getArray();
 	int width = matrix.width();
 	int height = matrix.height();
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
-			const int8_t* arrayY = arr + y*width;  // We can at least optimize this access
-			if (x + 6 < width &&
-				arrayY[x + 0] == 1 &&
-				arrayY[x + 1] == 0 &&
-				arrayY[x + 2] == 1 &&
-				arrayY[x + 3] == 1 &&
-				arrayY[x + 4] == 1 &&
-				arrayY[x + 5] == 0 &&
-				arrayY[x + 6] == 1 &&
-				(IsWhiteHorizontal(arrayY, std::max(x - 4, 0), x)
-					|| IsWhiteHorizontal(arrayY, x + 7, std::min(x + 11, width))))
-			{
+			auto i = &matrix.get(x, y);
+			if (x <= width - finderSize && HasPatternAt(finder, i, finderSize, 1) &&
+				(HasPatternAt(white, i, -std::min(x, whiteSize), 1) ||
+				 HasPatternAt(white, i + finderSize, std::min(width - x - finderSize, whiteSize), 1))) {
 				numPenalties++;
 			}
-			if (y + 6 < height &&
-				arr[(y + 0)*width + x] == 1 &&
-				arr[(y + 1)*width + x] == 0 &&
-				arr[(y + 2)*width + x] == 1 &&
-				arr[(y + 3)*width + x] == 1 &&
-				arr[(y + 4)*width + x] == 1 &&
-				arr[(y + 5)*width + x] == 0 &&
-				arr[(y + 6)*width + x] == 1 &&
-				(IsWhiteVertical(arr, width, x, std::max(y - 4, 0), y)
-					|| IsWhiteVertical(arr, width, x, y + 7, std::min(y + 11, height))))
-			{
+			if (y <= height - finderSize && HasPatternAt(finder, i, finderSize, width) &&
+				(HasPatternAt(white, i, -std::min(y, whiteSize), width) ||
+				 HasPatternAt(white, i + finderSize * width, std::min(height - y - finderSize, whiteSize), width))) {
 				numPenalties++;
 			}
 		}
@@ -166,20 +147,9 @@ int MaskUtil::ApplyMaskPenaltyRule3(const ByteMatrix& matrix)
 */
 int MaskUtil::ApplyMaskPenaltyRule4(const ByteMatrix& matrix)
 {
-	int numDarkCells = 0;
-	const int8_t* arr = matrix.getArray();
-	int width = matrix.width();
-	int height = matrix.height();
-	for (int y = 0; y < height; y++) {
-		const int8_t* arrayY = arr + y*width;
-		for (int x = 0; x < width; x++) {
-			if (arrayY[x] == 1) {
-				numDarkCells++;
-			}
-		}
-	}
-	int numTotalCells = height * width;
-	int fivePercentVariances = std::abs(numDarkCells * 2 - numTotalCells) * 10 / numTotalCells;
+	auto numDarkCells = std::count_if(matrix.begin(), matrix.end(), [](int8_t cell){ return cell == 1; });
+	auto numTotalCells = matrix.size();
+	auto fivePercentVariances = std::abs(numDarkCells * 2 - numTotalCells) * 10 / numTotalCells;
 	return fivePercentVariances * N4;
 }
 
