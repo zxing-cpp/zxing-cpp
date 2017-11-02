@@ -20,7 +20,7 @@
 #include <cassert>
 #include <vector>
 
-#ifdef __clang__
+#if defined(__clang__) || defined(__GNUC__)
 #define ZX_HAS_GCC_BUILTINS
 #endif
 
