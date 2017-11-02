@@ -34,6 +34,7 @@
 
 #include <vector>
 #include <cstdint>
+#include <cstddef>
 
 class Big5TextDecoder
 {

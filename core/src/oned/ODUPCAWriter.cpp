@@ -19,6 +19,8 @@
 #include "oned/ODUPCAWriter.h"
 #include "oned/ODEAN13Writer.h"
 
+#include <stdexcept>
+
 namespace ZXing {
 namespace OneD {
 

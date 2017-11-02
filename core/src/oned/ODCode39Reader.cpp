@@ -194,12 +194,6 @@ DecodeExtended(std::string& encoded)
 	return true;
 }
 
-static int IndexOf(const char* str, char c)
-{
-	auto s = strchr(str, c);
-	return s != nullptr ? static_cast<int>(s - str) : -1;
-}
-
 Code39Reader::Code39Reader(const DecodeHints& hints, bool extendedMode) :
 	_extendedMode(extendedMode),
 	_usingCheckDigit(hints.shouldAssumeCode39CheckDigit())

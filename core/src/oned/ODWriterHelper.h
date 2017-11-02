@@ -18,6 +18,7 @@
 #include "BitMatrix.h"
 
 #include <vector>
+#include <cstddef>
 
 namespace ZXing {
 namespace OneD {
@@ -29,6 +30,7 @@ namespace OneD {
 */
 class WriterHelper
 {
+	static int AppendPattern(std::vector<bool>& target, int pos, const int* pattern, size_t patternCount, bool startColor);
 public:
 	/**
 	* @return a byte array of horizontal pixels (0 = white, 1 = black)
@@ -46,7 +48,6 @@ public:
 	static int AppendPattern(std::vector<bool>& target, int pos, const Container& pattern, bool startColor) {
 		return AppendPattern(target, pos, pattern.data(), pattern.size(), startColor);
 	}
-	static int AppendPattern(std::vector<bool>& target, int pos, const int* pattern, size_t patternCount, bool startColor);
 };
 
 } // OneD

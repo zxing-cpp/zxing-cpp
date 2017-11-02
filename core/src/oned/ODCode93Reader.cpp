@@ -177,12 +177,6 @@ DecodeExtended(const std::string& encoded, std::string& decoded)
 	return DecodeStatus::NoError;
 }
 
-static int IndexOf(const char* str, char c)
-{
-	auto s = strchr(str, c);
-	return s != nullptr ? static_cast<int>(s - str) : -1;
-}
-
 static bool
 CheckOneChecksum(const std::string& result, int checkPosition, int weightMax)
 {

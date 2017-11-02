@@ -54,12 +54,6 @@ int AppendPattern(std::vector<bool>& target, int pos, const std::array<int, 9>& 
 	return 9;
 }
 
-static inline int IndexOf(const char* str, int c)
-{
-	auto s = strchr(str, c);
-	return s != nullptr ? static_cast<int>(s - str) : -1;
-}
-
 static int ComputeChecksumIndex(const std::wstring& contents, int maxWeight) {
 	int weight = 1;
 	int total = 0;
