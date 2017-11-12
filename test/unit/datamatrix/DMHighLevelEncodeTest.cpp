@@ -347,6 +347,12 @@ TEST(DMHighLevelEncodeTest, MacroCharacters)
 	EXPECT_EQ(visualized, "236 185 185 29 196 196 129 56");
 }
 
+TEST(DMHighLevelEncodeTest, EncodingWithStartAsX12AndLatchToEDIFACTInTheMiddle)
+{
+    std::string visualized = HighLevelEncode(L"*MEMANT-1F-MESTECH");
+    EXPECT_EQ(visualized, "238 10 99 164 204 254 240 82 220 70 180 209 83 80 80 200");
+}
+
 //  @Ignore
 //  @Test  
 //  public void testDataURL() {

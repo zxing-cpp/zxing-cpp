@@ -525,7 +525,8 @@ namespace C40Encoder {
 			if ((buffer.length() % 3) == 0) {
 				int newMode = LookAheadTest(context.message(), context.currentPos(), encodingMode);
 				if (newMode != encodingMode) {
-					context.setNewEncoding(newMode);
+					// Return to ASCII encodation, which will actually handle latch to new mode
+					context.setNewEncoding(ASCII_ENCODATION);
 					break;
 				}
 			}
@@ -667,7 +668,8 @@ namespace X12Encoder {
 
 				int newMode = LookAheadTest(context.message(), context.currentPos(), X12_ENCODATION);
 				if (newMode != X12_ENCODATION) {
-					context.setNewEncoding(newMode);
+					// Return to ASCII encodation, which will actually handle latch to new mode
+					context.setNewEncoding(ASCII_ENCODATION);
 					break;
 				}
 			}
@@ -797,6 +799,7 @@ namespace EdifactEncoder {
 
 				int newMode = LookAheadTest(context.message(), context.currentPos(), EDIFACT_ENCODATION);
 				if (newMode != EDIFACT_ENCODATION) {
+					// Return to ASCII encodation, which will actually handle latch to new mode
 					context.setNewEncoding(ASCII_ENCODATION);
 					break;
 				}
@@ -834,7 +837,8 @@ namespace Base256Encoder {
 
 			int newMode = LookAheadTest(context.message(), context.currentPos(), BASE256_ENCODATION);
 			if (newMode != BASE256_ENCODATION) {
-				context.setNewEncoding(newMode);
+				// Return to ASCII encodation, which will actually handle latch to new mode
+				context.setNewEncoding(ASCII_ENCODATION);
 				break;
 			}
 		}
