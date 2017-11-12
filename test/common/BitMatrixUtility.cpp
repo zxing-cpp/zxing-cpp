@@ -1,5 +1,6 @@
 /*
 * Copyright 2017 Huy Cuong Nguyen
+* Copyright 2017 Axel Waggershauser
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -16,46 +17,46 @@
 #include "BitMatrixUtility.h"
 #include "BitMatrix.h"
 #include "BitArray.h"
+#include "ByteMatrixUtility.h"
+#include "ByteMatrix.h"
 
 #include <iostream>
 
 namespace ZXing { namespace Utility {
 
-void WriteBitMatrixAsPBM(const BitMatrix& matrix, std::ostream& out)
+void WriteBitMatrixAsPBM(const BitMatrix& matrix, std::ostream& out, int quiteZone)
 {
-	int width = matrix.width();
-	out << "P1\n" << width << ' ' << matrix.height() << '\n';
-	for (int y = 0; y < matrix.height(); ++y) {
-		BitArray row;
-		matrix.getRow(y, row);
-		auto iter = row.begin();
-		for (int i = 0; i < width; ++i, ++iter) {
-			out << (*iter != 0 ? '1' : '0') << (i+1 < width ? ' ' : '\n');
-		}
-	}
+	ByteMatrix bytes(matrix.width() + 2 * quiteZone, matrix.height() + 2 * quiteZone, 0);
+	for (int y = 0; y < matrix.height(); ++y)
+		for (int x = 0; x < matrix.width(); ++x)
+			bytes.set(x + quiteZone, y + quiteZone, matrix.get(x, y));
+
+	out << "P1\n" << bytes.width() << ' ' << bytes.height() << '\n';
+	out << ToString(bytes);
 }
 
 std::string ToString(const BitMatrix& matrix)
 {
-	return ToString(matrix, 'X', '.', false);
+	return ToString(matrix, 'X', ' ', true);
 }
 
-std::string ToString(const BitMatrix& matrix, char one, char zero, bool addSpace)
+std::string ToString(const BitMatrix& matrix, char one, char zero, bool addSpace, bool printAsCString)
 {
 	std::string result;
 	result.reserve((addSpace ? 2 : 1) * (matrix.width() * matrix.height()) + matrix.height());
-	int width = matrix.width();
 	for (int y = 0; y < matrix.height(); ++y) {
 		BitArray row;
 		matrix.getRow(y, row);
-		auto iter = row.begin();
-		for (int i = 0; i < width; ++i, ++iter) {
-			result.push_back(*iter != 0 ? one : zero);
-			if (addSpace) {
-				result.push_back(' ');
-			}
+		if (printAsCString)
+			result += '"';
+		for (auto bit : row) {
+			result += bit ? one : zero;
+			if (addSpace)
+				result += ' ';
 		}
-		result.push_back('\n');
+		if (printAsCString)
+			result += "\\n\"";
+		result += '\n';
 	}
 	return result;
 }
@@ -68,26 +69,21 @@ BitMatrix ParseBitMatrix(const std::string& str)
 BitMatrix ParseBitMatrix(const std::string& str, char one, bool expectSpace)
 {
 	auto lineLength = str.find('\n');
-	if (lineLength != std::string::npos) {
-		int height = str.length() / (lineLength + 1);
-		int width = static_cast<int>(expectSpace ? lineLength / 2 : lineLength);
-		BitMatrix mat(width, height);
-		BitArray row(width);
-		for (int y = 0; y < height; ++y) {
-			int offset = y*(lineLength + 1);
-			auto iter = row.begin();
-			for (int x = 0; x < width; ++x, ++iter) {
-				if (str.at(offset) == one) {
-					row.set(x);
-				}
-				offset += expectSpace ? 2 : 1;
-			}
-			mat.setRow(y, row);
-			row.clearBits();
+	if (lineLength == std::string::npos)
+		return {};
+
+	int height = str.length() / (lineLength + 1);
+	int width = static_cast<int>(expectSpace ? lineLength / 2 : lineLength);
+	BitMatrix mat(width, height);
+	for (int y = 0; y < height; ++y) {
+		int offset = y * (lineLength + 1);
+		for (int x = 0; x < width; ++x) {
+			if (str.at(offset) == one)
+				mat.set(x, y);
+			offset += expectSpace ? 2 : 1;
 		}
-		return mat;
 	}
-	return BitMatrix();
+	return mat;
 }
 
 }} // ZXing::Utility
