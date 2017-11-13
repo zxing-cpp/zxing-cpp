@@ -68,6 +68,7 @@ add_executable (ZXingUnitTest
     aztec/AZEncodeDecodeTest.cpp
     aztec/AZHighLevelEncoderTest.cpp
     datamatrix/DMDecodedBitStreamParserTest.cpp
+    datamatrix/DMEncodeDecodeTest.cpp
     datamatrix/DMHighLevelEncodeTest.cpp
     datamatrix/DMPlacementTest.cpp
     datamatrix/DMSymbolInfoTest.cpp
