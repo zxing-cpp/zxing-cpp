@@ -124,10 +124,9 @@ Writer::encode(const std::wstring& contents, int width, int height) const
 
 	//2. step: ECC generation
 	ECEncoder::EncodeECC200(encoded, *symbolInfo);
-	std::vector<int> codewords(encoded.begin(), encoded.end());
 
 	//3. step: Module placement in Matrix
-	ByteMatrix placement = DefaultPlacement::Place(codewords, symbolInfo->symbolDataWidth(), symbolInfo->symbolDataHeight());
+	ByteMatrix placement = DefaultPlacement::Place(encoded, symbolInfo->symbolDataWidth(), symbolInfo->symbolDataHeight());
 
 	//4. step: low-level encoding
 	return EncodeLowLevel(placement, *symbolInfo);

@@ -16,41 +16,27 @@
 */
 #include "gtest/gtest.h"
 #include "ByteMatrix.h"
+#include "ByteMatrixUtility.h"
+#include "ByteArray.h"
 #include "datamatrix/DMDefaultPlacement.h"
+
+#include <sstream>
+#include <iterator>
 
   //private static final Pattern SPACE = Pattern.compile(" ");
 
+using namespace ZXing;
+using namespace ZXing::DataMatrix;
+
 namespace {
 
-	std::vector<int> Unvisualize(const std::string& visualized) {
-		std::vector<int> result;
-		std::string::size_type prev = 0;
-		auto index = visualized.find(' ');
-		while (index != std::string::npos) {
-			visualized.substr(prev, index - prev);
-			result.push_back(std::stoi(visualized.substr(prev, index - prev)));
-			prev = index + 1;
-			index = visualized.find(' ', prev);
-		}
-		result.push_back(std::stoi(visualized.substr(prev)));
-		return result;
-	}
-
-	std::string ToString(const ZXing::ByteMatrix& matrix)
-	{
-		std::string result;
-		result.reserve((matrix.width() + 1) * matrix.height());
-		for (int y = 0; y < matrix.height(); ++y) {
-			for (int x = 0; x < matrix.width(); ++x) {
-				result.push_back(matrix.get(x, y) == 1 ? '1' : '0');
-			}
-			result.push_back('\n');
-		}
+	ByteArray Unvisualize(const char* visualized) {
+		std::istringstream input(visualized);
+		ByteArray result;
+		std::copy(std::istream_iterator<int>(input), std::istream_iterator<int>(), std::back_inserter(result));
 		return result;
 	}
 }
-
-using namespace ZXing::DataMatrix;
 
 TEST(DMPlacementTest, Placement)
 {
@@ -69,5 +55,5 @@ TEST(DMPlacementTest, Placement)
         "100010010111\n"
         "011101011010\n"
         "001011001010\n";
-    EXPECT_EQ(expected, ToString(matrix));
+    EXPECT_EQ(expected, Utility::ToString(matrix, '1', '0', ' ', false));
   }
