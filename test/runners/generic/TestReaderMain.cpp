@@ -285,7 +285,7 @@ int main(int argc, char** argv)
 	pathPrefix = argv[1];
 	bool isPure = getenv("IS_PURE");
 
-	if (pathPrefix.extension() == ".png" || pathPrefix.extension() == ".jpg" || pathPrefix.extension() == ".pgm") {
+	if ( Contains(std::vector<std::string>{".png", ".jpg", ".pgm", ".gif"}, pathPrefix.extension()) ) {
 #if 0
 		TestReader reader(false, false, "QR_CODE");
 #else
