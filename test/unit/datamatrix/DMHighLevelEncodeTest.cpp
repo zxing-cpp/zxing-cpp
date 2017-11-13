@@ -18,6 +18,7 @@
 #include "ByteArray.h"
 #include "datamatrix/DMHighLevelEncoder.h"
 #include "datamatrix/DMSymbolInfo.h"
+#include "datamatrix/DMSymbolShape.h"
 #include "ZXContainerAlgorithms.h"
 
 namespace ZXing {
@@ -351,6 +352,14 @@ TEST(DMHighLevelEncodeTest, EncodingWithStartAsX12AndLatchToEDIFACTInTheMiddle)
 {
     std::string visualized = HighLevelEncode(L"*MEMANT-1F-MESTECH");
     EXPECT_EQ(visualized, "238 10 99 164 204 254 240 82 220 70 180 209 83 80 80 200");
+}
+
+TEST(DMHighLevelEncodeTest, EDIFACTWithEODBug)
+{
+	std::string visualized = Visualize(
+		DataMatrix::HighLevelEncoder::Encode(L"abc<->ABCDE", DataMatrix::SymbolShape::SQUARE, -1, -1, -1, -1));
+    // switch to EDIFACT on '<', uses 10 code words + 2 padding. Buggy code introduced invalid 254 after the 5
+    EXPECT_EQ(visualized, "98 99 100 240 242 223 129 8 49 5 129 147");
 }
 
 //  @Ignore

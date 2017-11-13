@@ -938,7 +938,7 @@ HighLevelEncoder::Encode(const std::wstring& msg, SymbolShape shape, int minWdit
 	auto symbolInfo = context.updateSymbolInfo(len);
 	int capacity = symbolInfo->dataCapacity();
 	if (len < capacity) {
-		if (encodingMode != ASCII_ENCODATION && encodingMode != BASE256_ENCODATION) {
+		if (encodingMode != ASCII_ENCODATION && encodingMode != BASE256_ENCODATION && encodingMode != EDIFACT_ENCODATION) {
 			context.addCodeword('\xfe'); //Unlatch (254)
 		}
 	}
