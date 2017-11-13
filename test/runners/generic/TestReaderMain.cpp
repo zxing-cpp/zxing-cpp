@@ -108,11 +108,11 @@ public:
 		_reader = std::make_shared<MultiFormatReader>(hints);
 	}
 
-	Result read(const fs::path& filename, int rotation = 0)
+	Result read(const fs::path& filename, int rotation = 0, bool isPure = false)
 	{
 		auto& binImg = _cache[filename];
 		if (!binImg)
-			binImg = std::make_shared<Binarizer>(readImage(filename));
+			binImg = std::make_shared<Binarizer>(readImage(filename), isPure);
 		auto result = _reader->read(*binImg->rotated(rotation));
 		if (result.isValid()) {
 			std::string text;
@@ -283,6 +283,7 @@ int main(int argc, char** argv)
 	}
 
 	pathPrefix = argv[1];
+	bool isPure = getenv("IS_PURE");
 
 	if (pathPrefix.extension() == ".png" || pathPrefix.extension() == ".jpg" || pathPrefix.extension() == ".pgm") {
 #if 0
@@ -291,7 +292,7 @@ int main(int argc, char** argv)
 		TestReader reader(true, true);
 #endif
 		for (int i = 1; i < argc; ++i) {
-			auto result = reader.read(argv[i], 0);
+			auto result = reader.read(argv[i], 0, isPure);
 			std::cout << argv[i] << ": ";
 			if (result)
 				std::cout << result.format << ": " << result.text << "\n";
