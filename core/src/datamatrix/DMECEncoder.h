@@ -15,9 +15,10 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#include <vector>
-
 namespace ZXing {
+
+class ByteArray;
+
 namespace DataMatrix {
 
 class SymbolInfo;
@@ -35,7 +36,7 @@ public:
 	* @param symbolInfo information about the symbol to be encoded
 	* @return the codewords with interleaved error correction.
 	*/
-	static void EncodeECC200(std::vector<int>& codewords, const SymbolInfo& symbolInfo);
+	static void EncodeECC200(ByteArray& codewords, const SymbolInfo& symbolInfo);
 };
 
 } // DataMatrix

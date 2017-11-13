@@ -117,14 +117,14 @@ Writer::encode(const std::wstring& contents, int width, int height) const
 
 	//1. step: Data encodation
 	auto encoded = HighLevelEncoder::Encode(contents, _shapeHint, _minWidth, _minHeight, _maxWidth, _maxHeight);
-	std::vector<int> codewords(encoded.begin(), encoded.end());
-	const SymbolInfo* symbolInfo = SymbolInfo::Lookup(static_cast<int>(codewords.size()), _shapeHint, _minWidth, _minHeight, _maxWidth, _maxHeight);
+	const SymbolInfo* symbolInfo = SymbolInfo::Lookup(static_cast<int>(encoded.size()), _shapeHint, _minWidth, _minHeight, _maxWidth, _maxHeight);
 	if (symbolInfo == nullptr) {
-		throw std::invalid_argument("Can't find a symbol arrangement that matches the message. Data codewords: " + std::to_string(codewords.size()));
+		throw std::invalid_argument("Can't find a symbol arrangement that matches the message. Data codewords: " + std::to_string(encoded.size()));
 	}
 
 	//2. step: ECC generation
-	ECEncoder::EncodeECC200(codewords, *symbolInfo);
+	ECEncoder::EncodeECC200(encoded, *symbolInfo);
+	std::vector<int> codewords(encoded.begin(), encoded.end());
 
 	//3. step: Module placement in Matrix
 	ByteMatrix placement = DefaultPlacement::Place(codewords, symbolInfo->symbolDataWidth(), symbolInfo->symbolDataHeight());
