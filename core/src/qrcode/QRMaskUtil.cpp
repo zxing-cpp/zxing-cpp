@@ -102,7 +102,8 @@ static bool HasPatternAt(const std::array<int8_t, N>& pattern, const int8_t* beg
 	auto end = begin + count * stride;
 	if (count < 0)
 		std::swap(begin, end);
-	for (auto a = begin, b = pattern.begin(); a < end && b != pattern.end(); a += stride, ++b)
+	auto a = begin;
+	for (auto b = pattern.begin(); a < end && b != pattern.end(); a += stride, ++b)
 		if (*a != *b)
 			return false;
 	return true;
