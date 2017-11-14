@@ -84,40 +84,8 @@ static BitMatrix EncodeLowLevel(const ByteMatrix& placement, const SymbolInfo& s
 		}
 	}
 
-	BitMatrix result(matrix.width(), matrix.height());
-	for (int j = 0; j < matrix.height(); j++) {
-		for (int i = 0; i < matrix.width(); i++) {
-			// Zero is white in the bytematrix
-			if (matrix.get(i, j) == 1) {
-				result.set(i, j);
-			}
-		}
-	}
-	return result;
-}
-
-static BitMatrix RenderResult(const BitMatrix &input, int width, int height)
-{
-	int inputWidth = input.width();
-	int inputHeight = input.height();
-	int outputWidth = std::max(width, inputWidth);
-	int outputHeight = std::max(height, inputHeight);
-	if (outputWidth == inputWidth && outputHeight == inputHeight)
-		return input.copy();
-
-	int multiple = std::min(outputWidth / inputWidth, outputHeight / inputHeight);
-	int leftPadding = (outputWidth - (inputWidth * multiple)) / 2;
-	int topPadding = (outputHeight - (inputHeight * multiple)) / 2;
-
-	BitMatrix result(outputWidth, outputHeight);
-	for (int inputY = 0, outputY = topPadding; inputY < inputHeight; inputY++, outputY += multiple) {
-		for (int inputX = 0, outputX = leftPadding; inputX < inputWidth; inputX++, outputX += multiple) {
-			if (input.get(inputX, inputY)) {
-				result.setRegion(outputX, outputY, multiple, multiple);
-			}
-		}
-	}
-	return result;
+	// Zero is white in the bytematrix
+	return BitMatrix(matrix, 1);
 }
 
 Writer::Writer() :
@@ -154,10 +122,10 @@ Writer::encode(const std::wstring& contents, int width, int height) const
 	ByteMatrix placement = DefaultPlacement::Place(encoded, symbolInfo->symbolDataWidth(), symbolInfo->symbolDataHeight());
 
 	//4. step: low-level encoding
-	auto result = EncodeLowLevel(placement, *symbolInfo);
+	BitMatrix result = EncodeLowLevel(placement, *symbolInfo);
 
-	//5. step: scale-up to requested size
-	return RenderResult(result, width, height);
+	//5. step: scale-up to requested size, minimum required quite zone is 1
+	return Inflate(std::move(result), width, height, 0);
 }
 
 } // DataMatrix

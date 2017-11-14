@@ -27,37 +27,6 @@ namespace QRCode {
 
 static const int QUIET_ZONE_SIZE = 4;
 
-static BitMatrix RenderResult(const ByteMatrix& input, int width, int height, int quietZone)
-{
-	int inputWidth = input.width();
-	int inputHeight = input.height();
-	int qrWidth = inputWidth + (quietZone * 2);
-	int qrHeight = inputHeight + (quietZone * 2);
-	int outputWidth = std::max(width, qrWidth);
-	int outputHeight = std::max(height, qrHeight);
-
-	int multiple = std::min(outputWidth / qrWidth, outputHeight / qrHeight);
-	// Padding includes both the quiet zone and the extra white pixels to accommodate the requested
-	// dimensions. For example, if input is 25x25 the QR will be 33x33 including the quiet zone.
-	// If the requested size is 200x160, the multiple will be 4, for a QR of 132x132. These will
-	// handle all the padding from 100x100 (the actual QR) up to 200x160.
-	int leftPadding = (outputWidth - (inputWidth * multiple)) / 2;
-	int topPadding = (outputHeight - (inputHeight * multiple)) / 2;
-
-	BitMatrix result(outputWidth, outputHeight);
-
-	for (int inputY = 0, outputY = topPadding; inputY < inputHeight; inputY++, outputY += multiple) {
-		// Write the contents of this row of the barcode
-		for (int inputX = 0, outputX = leftPadding; inputX < inputWidth; inputX++, outputX += multiple) {
-			if (input.get(inputX, inputY) == 1) {
-				result.setRegion(outputX, outputY, multiple, multiple);
-			}
-		}
-	}
-
-	return result;
-}
-
 Writer::Writer() :
 	_margin(QUIET_ZONE_SIZE),
 	_ecLevel(ErrorCorrectionLevel::Low),
@@ -78,7 +47,7 @@ Writer::encode(const std::wstring& contents, int width, int height) const
 	}
 
 	EncodeResult code = Encoder::Encode(contents, _ecLevel, _encoding, _version);
-	return RenderResult(code.matrix, width, height, _margin);
+	return Inflate(BitMatrix(code.matrix, 1), width, height, _margin);
 }
 
 } // QRCode
