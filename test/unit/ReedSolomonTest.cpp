@@ -110,8 +110,8 @@ namespace {
 		int iterations = field.size() > 256 ? 1 : DECODER_RANDOM_TEST_ITERATIONS;
 		for (int i = 0; i < iterations; i++) {
 			// generate random data
-			for (int k = 0; k < dataSize; k++) {
-				dataWords[k] = random.next(0, field.size() - 1);
+			for (auto& val : dataWords) {
+				val = random.next(0, field.size() - 1);
 			}
 			// generate ECC words
 			std::copy(dataWords.begin(), dataWords.end(), message.begin());

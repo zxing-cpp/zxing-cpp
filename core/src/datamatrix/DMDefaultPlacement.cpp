@@ -17,6 +17,9 @@
 
 #include "datamatrix/DMDefaultPlacement.h"
 #include "ByteMatrix.h"
+#include "ByteArray.h"
+
+#include <array>
 
 namespace ZXing {
 namespace DataMatrix {
@@ -34,115 +37,86 @@ namespace DataMatrix {
 //	return bits[row * numcols + col] >= 0;
 //}
 
-static void Module(const std::vector<int>& codewords, ByteMatrix& bits, int row, int col, int pos, int bit)
+namespace {
+
+struct Pos
 {
-	if (row < 0) {
-		row += bits.height();
-		col += 4 - ((bits.height() + 4) % 8);
-	}
-	if (col < 0) {
-		col += bits.width();
-		row += 4 - ((bits.width() + 4) % 8);
-	}
-	// Note the conversion:
-	int v = codewords.at(pos);
-	v &= 1 << (8 - bit);
-	bits.set(col, row, v != 0);
+	int row, col;
+};
+
+using PosArray = std::array<Pos, 8>;
+
+} // namespace
+
+inline static bool GetBit(uint8_t codeword, int bit)
+{
+	return codeword & (1 << (8 - bit));
+}
+
+/**
+* Places the 8 bits of one of the special corner symbols.
+*
+* @param pos the array describing the position of the 8 consecutive bits.
+*            Negative numbers mean 'counting from the right/bottom'
+*/
+static void Corner(uint8_t codeword, ByteMatrix& bits, const PosArray& pos)
+{
+	auto clamp = [](int i, int max) { return i < 0 ? i + max : i; };
+	int bit = 1;
+	for (auto p : pos)
+		bits.set(clamp(p.col, bits.width()), clamp(p.row, bits.height()), GetBit(codeword, bit++));
 }
 
 /**
 * Places the 8 bits of a utah-shaped symbol character in ECC200.
-*
-* @param row the row
-* @param col the column
-* @param pos character position
 */
-static void Utah(const std::vector<int>& codewords, ByteMatrix& bits, int row, int col, int pos)
+static void Utah(uint8_t codeword, ByteMatrix& bits, const int row, const int col)
 {
-	Module(codewords, bits, row - 2, col - 2, pos, 1);
-	Module(codewords, bits, row - 2, col - 1, pos, 2);
-	Module(codewords, bits, row - 1, col - 2, pos, 3);
-	Module(codewords, bits, row - 1, col - 1, pos, 4);
-	Module(codewords, bits, row - 1, col, pos, 5);
-	Module(codewords, bits, row, col - 2, pos, 6);
-	Module(codewords, bits, row, col - 1, pos, 7);
-	Module(codewords, bits, row, col, pos, 8);
+	const PosArray deltas = {{{-2, -2}, {-2, -1}, {-1, -2}, {-1, -1}, {-1, 0}, {0, -2}, {0, -1}, {0, 0}}};
+
+	int bit = 1;
+	for (auto delta : deltas) {
+		int r = row + delta.row;
+		int c = col + delta.col;
+		if (r < 0) {
+			r += bits.height();
+			c += 4 - ((bits.height() + 4) % 8);
+		}
+		if (c < 0) {
+			c += bits.width();
+			r += 4 - ((bits.width() + 4) % 8);
+		}
+		bits.set(c, r, GetBit(codeword, bit++));
+	}
 }
 
-static void Corner1(const std::vector<int>& codewords, ByteMatrix& bits, int pos)
-{
-	Module(codewords, bits, bits.height() - 1, 0, pos, 1);
-	Module(codewords, bits, bits.height() - 1, 1, pos, 2);
-	Module(codewords, bits, bits.height() - 1, 2, pos, 3);
-	Module(codewords, bits, 0, bits.width() - 2, pos, 4);
-	Module(codewords, bits, 0, bits.width() - 1, pos, 5);
-	Module(codewords, bits, 1, bits.width() - 1, pos, 6);
-	Module(codewords, bits, 2, bits.width() - 1, pos, 7);
-	Module(codewords, bits, 3, bits.width() - 1, pos, 8);
-}
-
-static void Corner2(const std::vector<int>& codewords, ByteMatrix& bits, int pos)
-{
-	Module(codewords, bits, bits.height() - 3, 0, pos, 1);
-	Module(codewords, bits, bits.height() - 2, 0, pos, 2);
-	Module(codewords, bits, bits.height() - 1, 0, pos, 3);
-	Module(codewords, bits, 0, bits.width() - 4, pos, 4);
-	Module(codewords, bits, 0, bits.width() - 3, pos, 5);
-	Module(codewords, bits, 0, bits.width() - 2, pos, 6);
-	Module(codewords, bits, 0, bits.width() - 1, pos, 7);
-	Module(codewords, bits, 1, bits.width() - 1, pos, 8);
-}
-
-static void Corner3(const std::vector<int>& codewords, ByteMatrix& bits, int pos)
-{
-	Module(codewords, bits, bits.height() - 3, 0, pos, 1);
-	Module(codewords, bits, bits.height() - 2, 0, pos, 2);
-	Module(codewords, bits, bits.height() - 1, 0, pos, 3);
-	Module(codewords, bits, 0, bits.width() - 2, pos, 4);
-	Module(codewords, bits, 0, bits.width() - 1, pos, 5);
-	Module(codewords, bits, 1, bits.width() - 1, pos, 6);
-	Module(codewords, bits, 2, bits.width() - 1, pos, 7);
-	Module(codewords, bits, 3, bits.width() - 1, pos, 8);
-}
-
-static void Corner4(const std::vector<int>& codewords, ByteMatrix& bits, int pos)
-{
-	Module(codewords, bits, bits.height() - 1, 0, pos, 1);
-	Module(codewords, bits, bits.height() - 1, bits.width() - 1, pos, 2);
-	Module(codewords, bits, 0, bits.width() - 3, pos, 3);
-	Module(codewords, bits, 0, bits.width() - 2, pos, 4);
-	Module(codewords, bits, 0, bits.width() - 1, pos, 5);
-	Module(codewords, bits, 1, bits.width() - 3, pos, 6);
-	Module(codewords, bits, 1, bits.width() - 2, pos, 7);
-	Module(codewords, bits, 1, bits.width() - 1, pos, 8);
-}
-
-ByteMatrix DefaultPlacement::Place(const std::vector<int>& codewords, int numcols, int numrows)
+ByteMatrix DefaultPlacement::Place(const ByteArray& codewords, int numcols, int numrows)
 {
 	ByteMatrix bits(numcols, numrows, -1);
 
-	int pos = 0;
+	auto codeword = codewords.begin();
+	auto nextCW = [&codeword](){ return *codeword++; };
 	int row = 4;
 	int col = 0;
 
 	do {
 		/* repeatedly first check for one of the special corner cases, then... */
 		if ((row == numrows) && (col == 0)) {
-			Corner1(codewords, bits, pos++);
+			Corner(nextCW(), bits, {{{-1, 0}, {-1, 1}, {-1, 2}, {0, -2}, {0, -1}, {1, -1}, {2, -1}, {3, -1}}});
 		}
 		if ((row == numrows - 2) && (col == 0) && ((numcols % 4) != 0)) {
-			Corner2(codewords, bits, pos++);
+			Corner(nextCW(), bits, {{{-3, 0}, {-2, 0}, {-1, 0}, {0, -4}, {0, -3}, {0, -2}, {0, -1}, {1, -1}}});
 		}
 		if ((row == numrows - 2) && (col == 0) && (numcols % 8 == 4)) {
-			Corner3(codewords, bits, pos++);
+			Corner(nextCW(), bits, {{{-3, 0}, {-2, 0}, {-1, 0}, {0, -2}, {0, -1}, {1, -1}, {2, -1}, {3, -1}}});
 		}
 		if ((row == numrows + 4) && (col == 2) && ((numcols % 8) == 0)) {
-			Corner4(codewords, bits, pos++);
+			Corner(nextCW(), bits, {{{-1, 0}, {-1, -1}, {0, -3}, {0, -2}, {0, -1}, {1, -3}, {1, -2}, {1, -1}}});
 		}
 		/* sweep upward diagonally, inserting successive characters... */
 		do {
 			if ((row < numrows) && (col >= 0) && bits.get(col, row) < 0) {
-				Utah(codewords, bits, row, col, pos++);
+				Utah(nextCW(), bits, row, col);
 			}
 			row -= 2;
 			col += 2;
@@ -153,7 +127,7 @@ ByteMatrix DefaultPlacement::Place(const std::vector<int>& codewords, int numcol
 		/* and then sweep downward diagonally, inserting successive characters, ... */
 		do {
 			if ((row >= 0) && (col < numcols) && bits.get(col, row) < 0) {
-				Utah(codewords, bits, row, col, pos++);
+				Utah(nextCW(), bits, row, col);
 			}
 			row += 2;
 			col -= 2;

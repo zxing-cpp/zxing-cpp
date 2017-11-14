@@ -20,6 +20,7 @@
 namespace ZXing {
 
 class ByteMatrix;
+class ByteArray;
 
 namespace DataMatrix {
 
@@ -29,7 +30,7 @@ namespace DataMatrix {
 class DefaultPlacement
 {
 public:
-	static ByteMatrix Place(const std::vector<int>& codewords, int numcols, int numrows);
+	static ByteMatrix Place(const ByteArray& codewords, int numcols, int numrows);
 };
 
 } // DataMatrix

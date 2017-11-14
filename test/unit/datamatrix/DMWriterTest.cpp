@@ -16,9 +16,11 @@
 */
 #include "gtest/gtest.h"
 #include "BitMatrix.h"
+#include "BitMatrixUtility.h"
 #include "datamatrix/DMWriter.h"
 #include "datamatrix/DMSymbolShape.h"
 
+using namespace ZXing;
 using namespace ZXing::DataMatrix;
 
 TEST(DMWriterTest, ImageWriter)
@@ -49,4 +51,102 @@ TEST(DMWriterTest, TooSmallSize)
 	auto matrix = writer.encode(L"http://www.google.com/", tooSmall, tooSmall);
 	EXPECT_GT(matrix.width(), tooSmall);
 	EXPECT_GT(matrix.height(), tooSmall);
+}
+
+static void DoTest(const std::wstring& text, SymbolShape shape, const char* expected)
+{
+	Writer writer;
+	writer.setShapeHint(shape);
+	auto matrix = writer.encode(text, 0, 0);
+	auto actual = Utility::ToString(matrix, 'X', ' ', true);
+	EXPECT_EQ(expected, actual);
+}
+
+TEST(DMWriterTest, Small)
+{
+	DoTest(L"0", SymbolShape::SQUARE,
+	       "X   X   X   X   X   \n"
+	       "X X   X X     X   X \n"
+	       "X       X X     X   \n"
+	       "X     X           X \n"
+	       "X     X   X X X X   \n"
+	       "X X X X X X       X \n"
+	       "X       X   X       \n"
+	       "X X     X X X   X X \n"
+	       "X   X       X       \n"
+	       "X X X X X X X X X X \n" );
+}
+
+TEST(DMWriterTest, Rectangle)
+{
+	DoTest(L"abcde", SymbolShape::RECTANGLE,
+	       "X   X   X   X   X   X   X   X   X   \n"
+	       "X   X X     X     X     X   X X   X \n"
+	       "X X       X X   X     X   X X       \n"
+	       "X   X X X     X     X X   X X   X X \n"
+	       "X     X X X   X X X X X X X X X     \n"
+	       "X   X X     X     X X X X       X X \n"
+	       "X X   X X X       X X X X X   X X   \n"
+	       "X X X X X X X X X X X X X X X X X X \n");
+}
+
+TEST(DMWriterTest, Large)
+{
+	auto text = L"123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-"
+				L"123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-"
+				L"123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-";
+	auto expected =
+		"X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   \n"
+		"X X     X     X   X   X     X X X X     X     X   X X     X X       X X X   X   X   X     X X       X X \n"
+		"X X                   X X X   X   X                 X X X X X   X X     X   X   X X   X X X X   X X     \n"
+		"X X     X X X     X X     X   X   X     X X X X X X X   X   X     X             X X X   X   X     X   X \n"
+		"X X       X   X   X               X       X     X   X   X   X     X X X X   X X     X   X   X           \n"
+		"X   X   X     X X   X X X     X X   X   X X       X X   X X X X     X   X     X         X X X   X X X X \n"
+		"X   X X   X X X       X   X   X X   X X   X X X X   X X   X   X     X   X     X X X X X   X       X X   \n"
+		"X   X X X   X   X   X     X X       X X     X     X X X   X   X     X X X X     X     X   X           X \n"
+		"X X     X   X   X X   X X X X   X X   X             X         X X X   X   X               X X   X X X   \n"
+		"X X             X X X   X   X     X   X     X X X X X     X X     X   X   X     X X X X       X   X X X \n"
+		"X X X X X   X X     X   X   X         X       X     X X   X               X       X           X X X     \n"
+		"X   X   X     X         X X X     X X   X   X     X X X X   X X X     X X   X   X         X X X   X   X \n"
+		"X   X   X     X X X X X   X   X   X X   X X   X X   X X       X   X   X X   X X   X   X     X   X X     \n"
+		"X   X X X X     X     X       X X       X X X   X X X   X   X     X X       X     X X       X X X X   X \n"
+		"X X   X   X               X X X X   X X     X   X   X   X X   X X X X   X X   X X X X   X   X     X X   \n"
+		"X X   X   X     X X X X X   X   X     X           X X   X X X   X   X     X X   X   X     X X   X X   X \n"
+		"X         X       X     X   X   X     X X X X   X   X X     X   X   X       X         X X   X X   X     \n"
+		"X     X X   X   X X         X X X X     X   X     X X X         X X X X         X X X     X X   X X   X \n"
+		"X X   X X   X X   X X X X X   X   X     X   X       X X X X X X   X   X X X X X   X   X     X X X   X   \n"
+		"X X X       X X     X     X   X   X     X X X X   X X   X     X   X     X     X     X X     X   X     X \n"
+		"X X X   X X   X                   X X X   X   X     X             X       X       X   X   X X X X X X   \n"
+		"X   X     X   X     X X X     X X     X   X   X   X X   X X X X   X     X             X     X X X   X X \n"
+		"X   X         X       X   X   X               X     X     X       X X X X X X   X   X   X X X   X X X   \n"
+		"X X X     X X   X   X     X X   X X X     X X   X X X   X     X X   X X X             X   X       X X X \n"
+		"X X   X   X X   X X   X X X       X   X   X X   X   X X   X   X X   X   X     X X X X X X     X   X     \n"
+		"X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X \n"
+		"X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   \n"
+		"X     X X       X X X   X   X   X     X X       X X X     X X     X   X X X X X X   X X   X X       X X \n"
+		"X X X X X   X X     X   X   X X   X X X X   X X     X X X X     X   X   X X           X       X X   X   \n"
+		"X   X   X     X             X X X   X   X     X X X X   X   X   X       X X           X X         X X X \n"
+		"X   X   X     X X X X   X X     X   X   X       X   X   X X X               X     X X X X   X   X   X   \n"
+		"X   X X X X     X   X     X         X X X X       X X         X     X   X     X X     X   X X   X     X \n"
+		"X X   X   X     X   X     X X X X X   X   X X X     X X   X   X         X X X   X X     X X     X   X   \n"
+		"X X   X   X     X X X X     X     X   X     X     X X X X X         X X   X   X     X X   X X X X     X \n"
+		"X         X X X   X   X               X     X X     X   X       X X X     X       X   X X   X     X     \n"
+		"X     X X     X   X   X     X X X X   X     X   X X X   X X     X   X       X X   X   X   X       X X X \n"
+		"X X   X               X       X       X X   X X X   X   X       X       X X X   X   X X     X X   X X   \n"
+		"X X X   X X X     X X   X   X     X X           X X X X     X X X X X   X     X X X   X     X         X \n"
+		"X X       X   X   X X   X X   X   X     X X X       X X   X X       X X X   X X     X   X     X   X X   \n"
+		"X   X   X     X X       X     X X     X X     X   X X X   X   X X   X           X X       X X X X   X X \n"
+		"X   X X   X X X X   X X   X X X X   X X   X X X     X     X X X           X       X X X X X X       X   \n"
+		"X   X X X   X   X     X X   X   X X   X         X X X           X X     X X X X     X X   X X         X \n"
+		"X X     X   X   X       X     X X       X X     X   X X   X     X X         X   X X X X X X   X     X   \n"
+		"X X         X X X X             X X X     X X X X X X         X X X   X X X X X X X X X X X       X   X \n"
+		"X X X X X X   X   X X X X X   X X     X X X   X     X       X     X X       X X X       X X   X     X   \n"
+		"X   X     X   X     X   X     X X X X     X X     X X     X X X   X   X X X X X X   X   X     X   X   X \n"
+		"X             X       X     X   X   X               X   X X   X X   X     X X           X X   X X X     \n"
+		"X   X X X X   X     X X X X   X     X     X   X X X X   X   X X X     X X   X             X X X   X   X \n"
+		"X     X       X           X     X X     X     X X   X     X X X       X   X       X   X   X     X       \n"
+		"X   X X   X X     X   X   X X   X   X X       X   X X         X X X X   X           X   X           X X \n"
+		"X X   X X X X X       X     X         X X X X X     X     X   X X         X X X     X     X   X X   X   \n"
+		"X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X \n";
+	DoTest(text, SymbolShape::SQUARE, expected);
 }

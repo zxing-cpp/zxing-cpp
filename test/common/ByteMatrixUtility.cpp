@@ -29,9 +29,8 @@ std::string ToString(const ByteMatrix& matrix, char one, char zero, char other, 
 {
 	std::string result;
 	result.reserve((addSpace ? 2 : 1) * (matrix.width() * matrix.height()) + matrix.height());
-	int width = matrix.width();
 	for (int y = 0; y < matrix.height(); ++y) {
-		for (int x = 0; x < width; ++x) {
+		for (int x = 0; x < matrix.width(); ++x) {
 			auto c = matrix.get(x, y);
 			if (c == 1)
 				result.push_back(one);
@@ -39,9 +38,8 @@ std::string ToString(const ByteMatrix& matrix, char one, char zero, char other, 
 				result.push_back(zero);
 			else
 				result.push_back(other);
-			if (addSpace) {
+			if (addSpace)
 				result.push_back(' ');
-			}
 		}
 		result.push_back('\n');
 	}
