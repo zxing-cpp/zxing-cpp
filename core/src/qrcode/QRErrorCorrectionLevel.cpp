@@ -29,7 +29,7 @@ const wchar_t* ToString(ErrorCorrectionLevel l)
 	return LEVEL_STR[static_cast<int>(l)];
 }
 
-ErrorCorrectionLevel FromString(const char* str)
+ErrorCorrectionLevel ECLevelFromString(const char* str)
 {
 	switch (str[0])
 	{

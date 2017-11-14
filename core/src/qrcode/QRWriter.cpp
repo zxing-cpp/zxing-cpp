@@ -27,9 +27,8 @@ namespace QRCode {
 
 static const int QUIET_ZONE_SIZE = 4;
 
-static BitMatrix RenderResult(const EncodeResult& code, int width, int height, int quietZone)
+static BitMatrix RenderResult(const ByteMatrix& input, int width, int height, int quietZone)
 {
-	const ByteMatrix& input = code.matrix;
 	int inputWidth = input.width();
 	int inputHeight = input.height();
 	int qrWidth = inputWidth + (quietZone * 2);
@@ -67,34 +66,6 @@ Writer::Writer() :
 {
 }
 
-Writer&
-Writer::setMargin(int margin)
-{
-	_margin = margin;
-	return *this;
-}
-
-Writer&
-Writer::setErrorCorrectionLevel(ErrorCorrectionLevel ecLevel)
-{
-	_ecLevel = ecLevel;
-	return *this;
-}
-
-Writer&
-Writer::setEncoding(CharacterSet encoding)
-{
-	_encoding = encoding;
-	return *this;
-}
-
-Writer&
-Writer::setVersion(int versionNumber)
-{
-	_version = versionNumber;
-	return *this;
-}
-
 BitMatrix
 Writer::encode(const std::wstring& contents, int width, int height) const
 {
@@ -107,7 +78,7 @@ Writer::encode(const std::wstring& contents, int width, int height) const
 	}
 
 	EncodeResult code = Encoder::Encode(contents, _ecLevel, _encoding, _version);
-	return RenderResult(code, width, height, _margin);
+	return RenderResult(code.matrix, width, height, _margin);
 }
 
 } // QRCode

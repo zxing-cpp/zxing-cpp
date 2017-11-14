@@ -42,6 +42,8 @@ if (ENABLE_ENCODERS)
 	set (ENCODERS_FILES
 		ImageWriter.h
 		ImageWriter.cpp
+        BarcodeGenerator.h
+        BarcodeGenerator.cpp
 	)
 endif()
 
@@ -62,7 +64,7 @@ target_include_directories (ZXingGdiPlus
 )
 
 target_link_libraries (ZXingGdiPlus
-    PUBLIC ZXingCore gdiplus.lib
+    PRIVATE ZXingCore gdiplus.lib
 )
 
 target_compile_options (ZXingGdiPlus

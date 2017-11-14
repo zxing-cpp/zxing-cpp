@@ -87,7 +87,7 @@ enum class BarcodeFormat
 const char* ToString(BarcodeFormat format);
 
 // Return FORMAT_COUNT if str is unexpected
-BarcodeFormat FromString(const std::string& str);
+BarcodeFormat BarcodeFormatFromString(const std::string& str);
 
 struct BarcodeFormatHasher
 {

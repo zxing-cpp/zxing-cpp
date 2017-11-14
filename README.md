@@ -5,14 +5,9 @@ This project is a C++ port of ZXing Library (https://github.com/zxing/zxing).
 ## Features
 
 * In pure C++11, no third-party dependencies
-* Stateless, thread-safe readers
+* Stateless, thread-safe readers/generators
 * Wrapper to create WinRT component
 * Wrapper for Android NDK
-
-### Work in progress
-
-Currently all readers are working with all original blackbox tests (from ZXing project) passed.
-Encoders are comming soon.
 
 ## Supported Formats
 
@@ -34,6 +29,11 @@ To install it, run the following command in the Package Manager Console
 ```sh
 PM> Install-Package huycn.zxingcpp.winrt
 ```
+
+## Getting Started
+The wrappers export very simple API to use, check BarcodeReader and BarcodeGenerator in each wrapper.
+For more fine-grain control in scanning process, check MultiFormatReader class. For more customization when generating particular barecode format, you need to instantiate appropriate writer, see MultiFormatWriter for more details.
+
 
 ## Build instructions
 ### For Windows Desktop with VS

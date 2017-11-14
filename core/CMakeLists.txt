@@ -136,6 +136,8 @@ if (ENABLE_ENCODERS)
         src/ReedSolomonEncoder.cpp
         src/TextEncoder.h
         src/TextEncoder.cpp
+        src/MultiFormatWriter.h
+        src/MultiFormatWriter.cpp
     )
 endif()
 

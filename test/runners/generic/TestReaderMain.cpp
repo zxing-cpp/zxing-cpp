@@ -101,7 +101,7 @@ public:
 		DecodeHints hints;
 		hints.setShouldTryHarder(tryHarder);
 		hints.setShouldTryRotate(tryRotate);
-		auto f = FromString(format.c_str());
+		auto f = BarcodeFormatFromString(format.c_str());
 		if (f != BarcodeFormat::FORMAT_COUNT)
 			hints.setPossibleFormats({f});
 

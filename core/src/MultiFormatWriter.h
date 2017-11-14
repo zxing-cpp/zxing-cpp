@@ -1,7 +1,6 @@
 #pragma once
 /*
-* Copyright 2016 Huy Cuong Nguyen
-* Copyright 2016 ZXing authors
+* Copyright 2017 Huy Cuong Nguyen
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -15,55 +14,46 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#include <string>
+#include "BarcodeFormat.h"
+#include "CharacterSet.h"
 
 namespace ZXing {
 
 class BitMatrix;
-enum class CharacterSet;
-
-namespace QRCode {
-
-enum class ErrorCorrectionLevel;
 
 /**
-* This object renders a QR Code as a BitMatrix 2D array of greyscale values.
-*
-* @author dswitkin@google.com (Daniel Switkin)
+* This class is here just for convenience as it offers single-point service
+* to generate barcodes for all supported formats. As a result, this class
+* offer very limited customization compared to what are available in each
+* individual encoder.
 */
-class Writer
+class MultiFormatWriter
 {
 public:
-	Writer();
+	explicit MultiFormatWriter(BarcodeFormat format) : _format(format) {}
 
-	Writer& setMargin(int margin) {
-		_margin = margin;
-		return *this;
-	}
-
-	Writer& setErrorCorrectionLevel(ErrorCorrectionLevel ecLevel) {
-		_ecLevel = ecLevel;
-		return *this;
-	}
-
-	Writer& setEncoding(CharacterSet encoding) {
+	/**
+	* Used for Aztec, PDF417, and QRCode only.
+	*/
+	MultiFormatWriter& setEncoding(CharacterSet encoding) {
 		_encoding = encoding;
 		return *this;
 	}
 
-	Writer& setVersion(int versionNumber) {
-		_version = versionNumber;
+	/**
+	* Used for all 1D formats, PDF417, and QRCode only.
+	*/
+	MultiFormatWriter& setMargin(int margin) {
+		_margin = margin;
 		return *this;
 	}
 
 	BitMatrix encode(const std::wstring& contents, int width, int height) const;
 
 private:
-	int _margin;
-	ErrorCorrectionLevel _ecLevel;
-	CharacterSet _encoding;
-	int _version;
+	BarcodeFormat _format;
+	CharacterSet _encoding = CharacterSet::Unknown;
+	int _margin = -1;
 };
 
-} // QRCode
 } // ZXing

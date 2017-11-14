@@ -28,6 +28,7 @@
 
 #include <stdexcept>
 #include <string>
+#include <algorithm>
 
 namespace ZXing {
 namespace DataMatrix {
@@ -95,6 +96,30 @@ static BitMatrix EncodeLowLevel(const ByteMatrix& placement, const SymbolInfo& s
 	return result;
 }
 
+static BitMatrix RenderResult(const BitMatrix &input, int width, int height)
+{
+	int inputWidth = input.width();
+	int inputHeight = input.height();
+	int outputWidth = std::max(width, inputWidth);
+	int outputHeight = std::max(height, inputHeight);
+	if (outputWidth == inputWidth && outputHeight == inputHeight)
+		return input.copy();
+
+	int multiple = std::min(outputWidth / inputWidth, outputHeight / inputHeight);
+	int leftPadding = (outputWidth - (inputWidth * multiple)) / 2;
+	int topPadding = (outputHeight - (inputHeight * multiple)) / 2;
+
+	BitMatrix result(outputWidth, outputHeight);
+	for (int inputY = 0, outputY = topPadding; inputY < inputHeight; inputY++, outputY += multiple) {
+		for (int inputX = 0, outputX = leftPadding; inputX < inputWidth; inputX++, outputX += multiple) {
+			if (input.get(inputX, inputY)) {
+				result.setRegion(outputX, outputY, multiple, multiple);
+			}
+		}
+	}
+	return result;
+}
+
 Writer::Writer() :
 	_shapeHint(SymbolShape::NONE),
 	_minWidth(-1),
@@ -129,7 +154,10 @@ Writer::encode(const std::wstring& contents, int width, int height) const
 	ByteMatrix placement = DefaultPlacement::Place(encoded, symbolInfo->symbolDataWidth(), symbolInfo->symbolDataHeight());
 
 	//4. step: low-level encoding
-	return EncodeLowLevel(placement, *symbolInfo);
+	auto result = EncodeLowLevel(placement, *symbolInfo);
+
+	//5. step: scale-up to requested size
+	return RenderResult(result, width, height);
 }
 
 } // DataMatrix

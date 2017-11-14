@@ -35,7 +35,7 @@ enum class ErrorCorrectionLevel
 };
 
 const wchar_t* ToString(ErrorCorrectionLevel l);
-ErrorCorrectionLevel FromString(const char* str);
+ErrorCorrectionLevel ECLevelFromString(const char* str);
 ErrorCorrectionLevel ECLevelFromBits(int bits);
 int BitsFromECLevel(ErrorCorrectionLevel l);
 

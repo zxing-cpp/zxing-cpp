@@ -17,14 +17,12 @@
 #include <windows.h>
 #include <gdiplus.h>
 #include <iostream>
+#include <vector>
 
 #include "qrcode/QRWriter.h"
 #include "qrcode/QRErrorCorrectionLevel.h"
-#include "BitMatrix.h"
-#include "CharacterSet.h"
-#include "ImageWriter.h"
+#include "BarcodeGenerator.h"
 #include "GdiplusInit.h"
-#include "BitMatrixUtility.h"
 
 #include <sstream>
 
@@ -83,13 +81,36 @@ int main(int argc, char** argv)
 {
 	GdiplusInit gdiplusinit;
 
-	auto text = L"http://www.google.com/";
-	QRCode::Writer writer;
-	writer.setErrorCorrectionLevel(QRCode::ErrorCorrectionLevel::Medium);
-	BitMatrix result = writer.encode(text, 99, 99);
-	std::ostringstream buffer;
-	Utility::WriteBitMatrixAsPBM(result, buffer);
-	
-	auto image = ImageWriter::CreateImage(result);
-	savePng(*image, L"R:/test.png");
+	std::wstring text = L"http://www.google.com/";
+	for (auto format : {
+		"AZTEC",
+		"DATA_MATRIX",
+		"PDF_417",
+		"QR_CODE" })
+	{
+		BarcodeGenerator generator(format);
+		auto bitmap = generator.generate(text, 199, 199);
+		savePng(*bitmap, std::wstring(format, format + strlen(format)) + std::wstring(L"_out.png"));
+	}
+
+	text = L"012345678901234567890123456789";
+	typedef std::vector<std::pair<const char*, size_t>> FormatSpecs;
+	for (auto spec : FormatSpecs({
+		{"CODABAR", 0},
+		{"CODE_39", 0},
+		{"CODE_93", 0},
+		{"CODE_128", 0},
+		{"EAN_8", 7},
+		{"EAN_13", 12},
+		{"ITF", 0},
+		{"UPC_A", 11 },
+		{"UPC_E", 7 } }))
+	{
+		auto format = spec.first;
+		BarcodeGenerator generator(format);
+		generator.setMargin(20);
+		auto input = spec.second > 0 ? text.substr(0, spec.second) : text;
+		auto bitmap = generator.generate(input, 100, 100);
+		savePng(*bitmap, std::wstring(format, format + strlen(format)) + std::wstring(L"_out.png"));
+	}
 }

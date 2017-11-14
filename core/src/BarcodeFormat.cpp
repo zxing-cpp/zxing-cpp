@@ -51,7 +51,7 @@ const char * ToString(BarcodeFormat format)
 	return FORMAT_STR[(int)format];
 }
 
-BarcodeFormat FromString(const std::string& str)
+BarcodeFormat BarcodeFormatFromString(const std::string& str)
 {
 	return BarcodeFormat(std::distance(std::begin(FORMAT_STR),
 	                                   std::find(std::begin(FORMAT_STR), std::end(FORMAT_STR), str)));

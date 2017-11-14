@@ -54,7 +54,7 @@ namespace {
 	void Corrupt(std::vector<int>& received, size_t howMany, PseudoRandom& random, int max) {
 		std::vector<bool> corrupted(received.size(), false);
 		for (size_t j = 0; j < howMany; j++) {
-			auto location = random.next(0ul, received.size() - 1);
+			auto location = random.next(size_t(0), received.size() - 1);
 			int value = random.next(0, max - 1);
 			if (corrupted[location] || received[location] == value) {
 				j--;

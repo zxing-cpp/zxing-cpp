@@ -35,7 +35,7 @@ BarcodeReader::BarcodeReader(bool tryHarder, bool tryRotate, const std::string& 
 	hints.setShouldTryHarder(tryHarder);
 	hints.setShouldTryRotate(tryRotate);
 	if (!format.empty()) {
-		BarcodeFormat f = FromString(format.c_str());
+		BarcodeFormat f = BarcodeFormatFromString(format.c_str());
 		if (f != BarcodeFormat::FORMAT_COUNT) {
 			hints.setPossibleFormats({ f });
 		}

@@ -36,8 +36,6 @@ endif()
 
 if (ENABLE_ENCODERS)
     add_executable (WriterTest
-		../../common/BitMatrixUtility.h
-		../../common/BitMatrixUtility.cpp
         TestWriterMain.cpp
     )
 

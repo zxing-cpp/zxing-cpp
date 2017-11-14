@@ -25,22 +25,21 @@
 namespace ZXing {
 namespace Aztec {
 
-static BitMatrix RenderResult(const EncodeResult& code, int width, int height)
+static BitMatrix RenderResult(const BitMatrix &input, int width, int height)
 {
-	const BitMatrix &input = code.matrix;
 	int inputWidth = input.width();
 	int inputHeight = input.height();
 	int outputWidth = std::max(width, inputWidth);
 	int outputHeight = std::max(height, inputHeight);
+	if (outputWidth == inputWidth && outputHeight == inputHeight)
+		return input.copy();
 
 	int multiple = std::min(outputWidth / inputWidth, outputHeight / inputHeight);
 	int leftPadding = (outputWidth - (inputWidth * multiple)) / 2;
 	int topPadding = (outputHeight - (inputHeight * multiple)) / 2;
 
 	BitMatrix result(outputWidth, outputHeight);
-
 	for (int inputY = 0, outputY = topPadding; inputY < inputHeight; inputY++, outputY += multiple) {
-		// Write the contents of this row of the barcode
 		for (int inputX = 0, outputX = leftPadding; inputX < inputWidth; inputX++, outputX += multiple) {
 			if (input.get(inputX, inputY)) {
 				result.setRegion(outputX, outputY, multiple, multiple);
@@ -63,7 +62,7 @@ Writer::encode(const std::wstring& contents, int width, int height) const
 	std::string bytes;
 	TextEncoder::GetBytes(contents, _encoding, bytes);
 	EncodeResult aztec = Encoder::Encode(bytes, _eccPercent, _layers);
-	return RenderResult(aztec, width, height);
+	return RenderResult(aztec.matrix, width, height);
 }
 
 } // Aztec

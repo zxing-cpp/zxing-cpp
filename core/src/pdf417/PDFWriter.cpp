@@ -126,6 +126,13 @@ Writer::Writer()
 	_encoder.reset(new Encoder);
 }
 
+Writer::Writer(Writer &&other) :
+	_margin(other._margin),
+	_ecLevel(other._ecLevel),
+	_encoder(std::move(other._encoder))
+{
+}
+
 Writer::~Writer()
 {
 }
