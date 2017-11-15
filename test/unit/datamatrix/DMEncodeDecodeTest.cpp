@@ -49,12 +49,15 @@ namespace {
 
 		DecoderResult res = DataMatrix::Decoder::Decode(matrix);
 #ifndef NDEBUG
-		if (!res.isValid())
+		if (!res.isValid() || data != res.text())
 			Utility::WriteBitMatrixAsPBM(matrix, std::ofstream("failed-datamatrix.pbm"), 4);
 #endif
-		ASSERT_EQ(res.isValid(), true) << "size: " << data.size() << "\n"
+		ASSERT_EQ(res.isValid(), true) << "text size: " << data.size() << ", code size: " << matrix.height() << "x"
+									   << matrix.width() << "\n"
 									   << (matrix.width() < 80 ? Utility::ToString(matrix) : std::string());
-		EXPECT_EQ(data, res.text()) << "size: " << data.size();
+		EXPECT_EQ(data, res.text()) << "text size: " << data.size() << ", code size: " << matrix.height() << "x"
+									<< matrix.width() << "\n"
+									<< (matrix.width() < 80 ? Utility::ToString(matrix) : std::string());
 	}
 }
 
@@ -108,10 +111,12 @@ TEST(DMEncodeDecodeTest, EncodeDecodeRectangle)
 	    L"Lorem ipsum. http://test/",
 	    L"AAAANAAAANAAAANAAAANAAAANAAAANAAAANAAAANAAAANAAAAN",
 	    L"http://test/~!@#*^%&)__ ;:'\"[]{}\\|-+-=`1029384",
+	    L"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
 	};
 
 	for (auto data : text)
-		TestEncodeDecode(data, DataMatrix::SymbolShape::RECTANGLE);
+		for (size_t len	= 1; len <= data.size(); ++len)
+			TestEncodeDecode(data.substr(0, len), DataMatrix::SymbolShape::RECTANGLE);
 }
 
 TEST(DMEncodeDecodeTest, EDIFACTWithEOD)
