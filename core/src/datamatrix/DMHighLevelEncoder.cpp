@@ -422,12 +422,12 @@ namespace C40Encoder {
 		throw std::invalid_argument("Illegal character: " + ToHexString(c));
 	}
 
-	static int BacktrackOneCharacter(EncoderContext& context, std::string& buffer, std::string& removed, int lastCharSize)
+	static int BacktrackOneCharacter(EncoderContext& context, std::string& buffer, std::string& removed, int lastCharSize, std::function<int (int, std::string&)> encodeChar)
 	{
 		buffer.resize(buffer.size() - lastCharSize);
 		context.setCurrentPos(context.currentPos() - 1);
 		int c = context.currentChar();
-		lastCharSize = EncodeChar(c, removed);
+		lastCharSize = encodeChar(c, removed);
 		context.resetSymbolInfo(); //Deal with possible reduction in symbol size
 		return lastCharSize;
 	}
@@ -513,11 +513,11 @@ namespace C40Encoder {
 				std::string removed;
 				if ((buffer.length() % 3) == 2) {
 					if (available < 2 || available > 2) {
-						lastCharSize = BacktrackOneCharacter(context, buffer, removed, lastCharSize);
+						lastCharSize = BacktrackOneCharacter(context, buffer, removed, lastCharSize, encodeChar);
 					}
 				}
 				while ((buffer.length() % 3) == 1 && ((lastCharSize <= 3 && available != 1) || lastCharSize > 3)) {
-					lastCharSize = BacktrackOneCharacter(context, buffer, removed, lastCharSize);
+					lastCharSize = BacktrackOneCharacter(context, buffer, removed, lastCharSize, encodeChar);
 				}
 				break;
 			}
