@@ -16,14 +16,13 @@
 * limitations under the License.
 */
 
+#include "BitMatrix.h"
 #include "ByteMatrix.h"
+#include "ByteArray.h"
 
 #include <array>
 
 namespace ZXing {
-
-class ByteArray;
-
 namespace DataMatrix {
 
 struct BitPos
@@ -34,36 +33,89 @@ struct BitPos
 using BitPosArray = std::array<BitPos, 8>;
 
 /**
- * <p>See ISO 16022:2006, Figure F.3 to F.6</p>
+ * VisitMatrix gets a functor/callback that is responsible for processing/visiting the bits in the matrix.
  */
-constexpr BitPosArray CORNER1 = {{{-1, 0}, {-1, 1}, {-1, 2}, {0, -2}, {0, -1}, {1, -1}, {2, -1}, {3, -1}}};
-constexpr BitPosArray CORNER2 = {{{-3, 0}, {-2, 0}, {-1, 0}, {0, -4}, {0, -3}, {0, -2}, {0, -1}, {1, -1}}};
-constexpr BitPosArray CORNER3 = {{{-1, 0}, {-1, -1}, {0, -3}, {0, -2}, {0, -1}, {1, -3}, {1, -2}, {1, -1}}};
-constexpr BitPosArray CORNER4 = {{{-3, 0}, {-2, 0}, {-1, 0}, {0, -2}, {0, -1}, {1, -1}, {2, -1}, {3, -1}}};
-
-template <class Matrix>
-BitPos GetCornerBitPos(const Matrix& matrix, int bit, const BitPosArray& corner)
+template <typename VisitFunc>
+void VisitMatrix(int numRows, int numCols, VisitFunc visit)
 {
-	auto clamp = [](int i, int max) { return i < 0 ? i + max : i; };
-	return {clamp(corner[bit].row, matrix.height()), clamp(corner[bit].col, matrix.width())};
-}
+	// <p>See ISO 16022:2006, Figure F.3 to F.6</p>
+	const BitPosArray CORNER1 = {{{-1, 0}, {-1, 1}, {-1, 2}, {0, -2}, {0, -1}, {1, -1}, {2, -1}, {3, -1}}};
+	const BitPosArray CORNER2 = {{{-3, 0}, {-2, 0}, {-1, 0}, {0, -4}, {0, -3}, {0, -2}, {0, -1}, {1, -1}}};
+	const BitPosArray CORNER3 = {{{-1, 0}, {-1,-1}, {0, -3}, {0, -2}, {0, -1}, {1, -3}, {1, -2}, {1, -1}}};
+	const BitPosArray CORNER4 = {{{-3, 0}, {-2, 0}, {-1, 0}, {0, -2}, {0, -1}, {1, -1}, {2, -1}, {3, -1}}};
 
-template <class Matrix>
-BitPos GetUtahBitPos(const Matrix& matrix, int bit, int row, int col)
-{
-	const BitPosArray delta = {{{-2, -2}, {-2, -1}, {-1, -2}, {-1, -1}, {-1, 0}, {0, -2}, {0, -1}, {0, 0}}};
+	BitMatrix visited(numCols, numRows);
+	auto logAccess = [&visited](BitPos p){ visited.set(p.col, p.row); };
 
-	row += delta[bit].row;
-	col += delta[bit].col;
-	if (row < 0) {
-		row += matrix.height();
-		col += 4 - ((matrix.height() + 4) % 8);
-	}
-	if (col < 0) {
-		col += matrix.width();
-		row += 4 - ((matrix.width() + 4) % 8);
-	}
-	return {row, col};
+	int row = 4;
+	int col = 0;
+
+	auto corner = [&numRows, &numCols, logAccess](const BitPosArray& corner) {
+		auto clamp = [](int i, int max) { return i < 0 ? i + max : i; };
+		BitPosArray result;
+		for (size_t bit = 0; bit < 8; ++bit) {
+			result[bit] = {clamp(corner[bit].row, numRows), clamp(corner[bit].col, numCols)};
+			logAccess(result[bit]);
+		}
+		return result;
+	};
+
+	auto utah = [&numRows, &numCols, logAccess](int row, int col) {
+		const BitPosArray delta = {{{-2, -2}, {-2, -1}, {-1, -2}, {-1, -1}, {-1, 0}, {0, -2}, {0, -1}, {0, 0}}};
+
+		BitPosArray result;
+		for (size_t bit = 0; bit < 8; ++bit) {
+			int r = row + delta[bit].row;
+			int c = col + delta[bit].col;
+			if (r < 0) {
+				r += numRows;
+				c += 4 - ((numRows + 4) % 8);
+			}
+			if (c < 0) {
+				c += numCols;
+				r += 4 - ((numCols + 4) % 8);
+			}
+			result[bit] = {r, c};
+			logAccess(result[bit]);
+		}
+		return result;
+	};
+
+	do {
+		// Check the four corner cases
+		if ((row == numRows) && (col == 0))
+			visit(corner(CORNER1));
+		else if ((row == numRows - 2) && (col == 0) && (numCols % 4 != 0))
+			visit(corner(CORNER2));
+		else if ((row == numRows + 4) && (col == 2) && (numCols % 8 == 0))
+			visit(corner(CORNER3));
+		else if ((row == numRows - 2) && (col == 0) && (numCols % 8 == 4))
+			visit(corner(CORNER4));
+
+		// Sweep upward diagonally to the right
+		do {
+			if ((row < numRows) && (col >= 0) && !visited.get(col, row))
+				visit(utah(row, col));
+
+			row -= 2;
+			col += 2;
+		} while (row >= 0 && col < numCols);
+
+		row += 1;
+		col += 3;
+
+		// Sweep downward diagonally to the left
+		do {
+			if ((row >= 0) && (col < numCols) && !visited.get(col, row))
+				visit(utah(row, col));
+
+			row += 2;
+			col -= 2;
+		} while ((row < numRows) && (col >= 0));
+
+		row += 3;
+		col += 1;
+	} while ((row < numRows) || (col < numCols));
 }
 
 /**

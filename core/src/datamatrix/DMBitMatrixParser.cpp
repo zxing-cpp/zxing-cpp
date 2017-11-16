@@ -81,19 +81,6 @@ static BitMatrix ExtractDataRegion(const Version& version, const BitMatrix& bitM
 	return result;
 }
 
-template <class GetBitPosFunc>
-static uint8_t ReadCodeword(const BitMatrix& matrix, BitMatrix& logMatrix, GetBitPosFunc getBitPos)
-{
-	uint8_t codeword = 0;
-	for (int bit = 0; bit < 8; ++bit) {
-		BitPos p = getBitPos(matrix, bit);
-		logMatrix.set(p.col, p.row);
-		if (matrix.get(p.col, p.row))
-			codeword |= (1 << (7 - bit));
-	}
-	return codeword;
-}
-
 /**
 * <p>Reads the bits in the {@link BitMatrix} representing the mapping matrix (No alignment patterns)
 * in the correct order in order to reconstitute the codewords bytes contained within the
@@ -110,64 +97,20 @@ BitMatrixParser::ReadCodewords(const BitMatrix& bits)
 		return {};
 	}
 
-	BitMatrix mappingBitMatrix = ExtractDataRegion(*version, bits);
-	BitMatrix readMappingMatrix(mappingBitMatrix.width(), mappingBitMatrix.height());
+	BitMatrix dataBits = ExtractDataRegion(*version, bits);
 
 	ByteArray result(version->totalCodewords());
 	auto codeword = result.begin();
 
-	int numRows = mappingBitMatrix.height();
-	int numCols = mappingBitMatrix.width();
-
-	// Read the 8 bits of one of the special corner symbols.
-	auto readCorner = [&](const BitPosArray& corner) {
-		return ReadCodeword(mappingBitMatrix, readMappingMatrix, [&](const BitMatrix& matrix, int bit){
-			return GetCornerBitPos(matrix, bit, corner);
-		});
-	};
-	// Read the 8 bits of a utah-shaped symbol character in ECC200.
-	auto readUtah = [&](int row, int col) {
-		return ReadCodeword(mappingBitMatrix, readMappingMatrix, [&](const BitMatrix& matrix, int bit){
-			return GetUtahBitPos(matrix, bit, row, col);
-		});
-	};
-
-	int row = 4;
-	int col = 0;
-
-	do {
-		// Check the four corner cases
-		if ((row == numRows) && (col == 0))
-			*codeword++ = readCorner(CORNER1);
-		else if ((row == numRows - 2) && (col == 0) && (numCols % 4 != 0))
-			*codeword++ = readCorner(CORNER2);
-		else if ((row == numRows + 4) && (col == 2) && (numCols % 8 == 0))
-			*codeword++ = readCorner(CORNER3);
-		else if ((row == numRows - 2) && (col == 0) && (numCols % 8 == 4))
-			*codeword++ = readCorner(CORNER4);
-
-		// Sweep upward diagonally to the right
-		do {
-			if ((row < numRows) && (col >= 0) && !readMappingMatrix.get(col, row)) {
-				*codeword++ = readUtah(row, col);
-			}
-			row -= 2;
-			col += 2;
-		} while (row >= 0 && col < numCols);
-		row += 1;
-		col += 3;
-
-		// Sweep downward diagonally to the left
-		do {
-			if ((row >= 0) && (col < numCols) && !readMappingMatrix.get(col, row)) {
-				*codeword++ = readUtah(row, col);
-			}
-			row += 2;
-			col -= 2;
-		} while ((row < numRows) && (col >= 0));
-		row += 3;
-		col += 1;
-	} while ((row < numRows) || (col < numCols));
+	VisitMatrix(dataBits.height(), dataBits.width(), [&codeword, &dataBits](const BitPosArray& bitPos) {
+		// Read the 8 bits of one of the special corner/utah symbols into the current codeword
+		*codeword = 0;
+		for (auto& p : bitPos) {
+			*codeword <<= 1;
+			*codeword |= dataBits.get(p.col, p.row);
+		}
+		++codeword;
+	});
 
 	if (codeword != result.end())
 		return {};
