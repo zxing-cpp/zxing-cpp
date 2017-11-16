@@ -47,9 +47,9 @@ static void PlaceCodeword(uint8_t codeword, ByteMatrix& matrix, GetBitPosFunc ge
 	}
 }
 
-ByteMatrix DefaultPlacement::Place(const ByteArray& codewords, int numcols, int numrows)
+ByteMatrix DefaultPlacement::Place(const ByteArray& codewords, int numCols, int numRows)
 {
-	ByteMatrix bits(numcols, numrows, -1);
+	ByteMatrix bits(numCols, numRows, -1);
 
 	auto codeword = codewords.begin();
 	// Places the 8 bits of one of the special corner symbols.
@@ -70,47 +70,42 @@ ByteMatrix DefaultPlacement::Place(const ByteArray& codewords, int numcols, int 
 
 	do {
 		/* repeatedly first check for one of the special corner cases, then... */
-		if ((row == numrows) && (col == 0)) {
+		if ((row == numRows) && (col == 0))
 			placeCorner(CORNER1);
-		}
-		if ((row == numrows - 2) && (col == 0) && ((numcols % 4) != 0)) {
+		else if ((row == numRows - 2) && (col == 0) && (numCols % 4 != 0))
 			placeCorner(CORNER2);
-		}
-		if ((row == numrows + 4) && (col == 2) && ((numcols % 8) == 0)) {
+		else if ((row == numRows + 4) && (col == 2) && (numCols % 8 == 0))
 			placeCorner(CORNER3);
-		}
-		if ((row == numrows - 2) && (col == 0) && (numcols % 8 == 4)) {
+		else if ((row == numRows - 2) && (col == 0) && (numCols % 8 == 4))
 			placeCorner(CORNER4);
-		}
+
 		/* sweep upward diagonally, inserting successive characters... */
 		do {
-			if ((row < numrows) && (col >= 0) && bits.get(col, row) < 0) {
+			if ((row < numRows) && (col >= 0) && bits.get(col, row) < 0) {
 				placeUtah(row, col);
 			}
 			row -= 2;
 			col += 2;
-		} while (row >= 0 && (col < numcols));
-		row++;
+		} while (row >= 0 && col < numCols);
+		row += 1;
 		col += 3;
 
 		/* and then sweep downward diagonally, inserting successive characters, ... */
 		do {
-			if ((row >= 0) && (col < numcols) && bits.get(col, row) < 0) {
+			if ((row >= 0) && (col < numCols) && bits.get(col, row) < 0) {
 				placeUtah(row, col);
 			}
 			row += 2;
 			col -= 2;
-		} while ((row < numrows) && (col >= 0));
+		} while ((row < numRows) && (col >= 0));
 		row += 3;
-		col++;
-
-		/* ...until the entire array is scanned */
-	} while ((row < numrows) || (col < numcols));
+		col += 1;
+	} while ((row < numRows) || (col < numCols));
 
 	/* Lastly, if the lower righthand corner is untouched, fill in fixed pattern */
-	if (bits.get(numcols - 1, numrows - 1) < 0) {
-		bits.set(numcols - 1, numrows - 1, true);
-		bits.set(numcols - 2, numrows - 2, true);
+	if (bits.get(numCols - 1, numRows - 1) < 0) {
+		bits.set(numCols - 1, numRows - 1, true);
+		bits.set(numCols - 2, numRows - 2, true);
 	}
 	return bits;
 }

@@ -116,16 +116,8 @@ BitMatrixParser::ReadCodewords(const BitMatrix& bits)
 	ByteArray result(version->totalCodewords());
 	auto codeword = result.begin();
 
-	int row = 4;
-	int col = 0;
-
 	int numRows = mappingBitMatrix.height();
 	int numCols = mappingBitMatrix.width();
-
-	bool corner1Read = false;
-	bool corner2Read = false;
-	bool corner3Read = false;
-	bool corner4Read = false;
 
 	// Read the 8 bits of one of the special corner symbols.
 	auto readCorner = [&](const BitPosArray& corner) {
@@ -140,55 +132,41 @@ BitMatrixParser::ReadCodewords(const BitMatrix& bits)
 		});
 	};
 
+	int row = 4;
+	int col = 0;
+
 	do {
 		// Check the four corner cases
-		if ((row == numRows) && (col == 0) && !corner1Read) {
+		if ((row == numRows) && (col == 0))
 			*codeword++ = readCorner(CORNER1);
-			row -= 2;
-			col += 2;
-			corner1Read = true;
-		}
-		else if ((row == numRows - 2) && (col == 0) && ((numCols & 0x03) != 0) && !corner2Read) {
+		else if ((row == numRows - 2) && (col == 0) && (numCols % 4 != 0))
 			*codeword++ = readCorner(CORNER2);
-			row -= 2;
-			col += 2;
-			corner2Read = true;
-		}
-		else if ((row == numRows + 4) && (col == 2) && ((numCols & 0x07) == 0) && !corner3Read) {
+		else if ((row == numRows + 4) && (col == 2) && (numCols % 8 == 0))
 			*codeword++ = readCorner(CORNER3);
-			row -= 2;
-			col += 2;
-			corner3Read = true;
-		}
-		else if ((row == numRows - 2) && (col == 0) && ((numCols & 0x07) == 4) && !corner4Read) {
+		else if ((row == numRows - 2) && (col == 0) && (numCols % 8 == 4))
 			*codeword++ = readCorner(CORNER4);
+
+		// Sweep upward diagonally to the right
+		do {
+			if ((row < numRows) && (col >= 0) && !readMappingMatrix.get(col, row)) {
+				*codeword++ = readUtah(row, col);
+			}
 			row -= 2;
 			col += 2;
-			corner4Read = true;
-		}
-		else {
-			// Sweep upward diagonally to the right
-			do {
-				if ((row < numRows) && (col >= 0) && !readMappingMatrix.get(col, row)) {
-					*codeword++ = readUtah(row, col);
-				}
-				row -= 2;
-				col += 2;
-			} while ((row >= 0) && (col < numCols));
-			row += 1;
-			col += 3;
+		} while (row >= 0 && col < numCols);
+		row += 1;
+		col += 3;
 
-			// Sweep downward diagonally to the left
-			do {
-				if ((row >= 0) && (col < numCols) && !readMappingMatrix.get(col, row)) {
-					*codeword++ = readUtah(row, col);
-				}
-				row += 2;
-				col -= 2;
-			} while ((row < numRows) && (col >= 0));
-			row += 3;
-			col += 1;
-		}
+		// Sweep downward diagonally to the left
+		do {
+			if ((row >= 0) && (col < numCols) && !readMappingMatrix.get(col, row)) {
+				*codeword++ = readUtah(row, col);
+			}
+			row += 2;
+			col -= 2;
+		} while ((row < numRows) && (col >= 0));
+		row += 3;
+		col += 1;
 	} while ((row < numRows) || (col < numCols));
 
 	if (codeword != result.end())
