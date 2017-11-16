@@ -16,6 +16,7 @@
 */
 
 #include "datamatrix/DMBitMatrixParser.h"
+#include "datamatrix/DMDefaultPlacement.h"
 #include "datamatrix/DMVersion.h"
 #include "BitMatrix.h"
 #include "DecodeStatus.h"
@@ -80,265 +81,18 @@ static BitMatrix ExtractDataRegion(const Version& version, const BitMatrix& bitM
 	return result;
 }
 
-class CodewordReadHelper
+template <class GetBitPosFunc>
+static uint8_t ReadCodeword(const BitMatrix& matrix, BitMatrix& logMatrix, GetBitPosFunc getBitPos)
 {
-	const BitMatrix& mappingBitMatrix;
-	BitMatrix& readMappingMatrix;
-
-public:
-	CodewordReadHelper(const BitMatrix& mapping, BitMatrix& readMapping) : mappingBitMatrix(mapping), readMappingMatrix(readMapping) {}
-
-	/**
-	* <p>Reads a bit of the mapping matrix accounting for boundary wrapping.</p>
-	*
-	* @param row Row to read in the mapping matrix
-	* @param column Column to read in the mapping matrix
-	* @param numRows Number of rows in the mapping matrix
-	* @param numColumns Number of columns in the mapping matrix
-	* @return value of the given bit in the mapping matrix
-	*/
-	bool readModule(int row, int column, int numRows, int numColumns) {
-		// Adjust the row and column indices based on boundary wrapping
-		if (row < 0) {
-			row += numRows;
-			column += 4 - ((numRows + 4) & 0x07);
-		}
-		if (column < 0) {
-			column += numColumns;
-			row += 4 - ((numColumns + 4) & 0x07);
-		}
-		readMappingMatrix.set(column, row);
-		return mappingBitMatrix.get(column, row);
+	uint8_t codeword = 0;
+	for (int bit = 0; bit < 8; ++bit) {
+		BitPos p = getBitPos(matrix, bit);
+		logMatrix.set(p.col, p.row);
+		if (matrix.get(p.col, p.row))
+			codeword |= (1 << (7 - bit));
 	}
-
-	/**
-	* <p>Reads the 8 bits of the standard Utah-shaped pattern.</p>
-	*
-	* <p>See ISO 16022:2006, 5.8.1 Figure 6</p>
-	*
-	* @param row Current row in the mapping matrix, anchored at the 8th bit (LSB) of the pattern
-	* @param column Current column in the mapping matrix, anchored at the 8th bit (LSB) of the pattern
-	* @param numRows Number of rows in the mapping matrix
-	* @param numColumns Number of columns in the mapping matrix
-	* @return byte from the utah shape
-	*/
-	int readUtah(int row, int column, int numRows, int numColumns) {
-		int currentByte = 0;
-		if (readModule(row - 2, column - 2, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		currentByte <<= 1;
-		if (readModule(row - 2, column - 1, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		currentByte <<= 1;
-		if (readModule(row - 1, column - 2, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		currentByte <<= 1;
-		if (readModule(row - 1, column - 1, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		currentByte <<= 1;
-		if (readModule(row - 1, column, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		currentByte <<= 1;
-		if (readModule(row, column - 2, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		currentByte <<= 1;
-		if (readModule(row, column - 1, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		currentByte <<= 1;
-		if (readModule(row, column, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		return currentByte;
-	}
-
-	/**
-	* <p>Reads the 8 bits of the special corner condition 1.</p>
-	*
-	* <p>See ISO 16022:2006, Figure F.3</p>
-	*
-	* @param numRows Number of rows in the mapping matrix
-	* @param numColumns Number of columns in the mapping matrix
-	* @return byte from the Corner condition 1
-	*/
-	int readCorner1(int numRows, int numColumns) {
-		int currentByte = 0;
-		if (readModule(numRows - 1, 0, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		currentByte <<= 1;
-		if (readModule(numRows - 1, 1, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		currentByte <<= 1;
-		if (readModule(numRows - 1, 2, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		currentByte <<= 1;
-		if (readModule(0, numColumns - 2, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		currentByte <<= 1;
-		if (readModule(0, numColumns - 1, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		currentByte <<= 1;
-		if (readModule(1, numColumns - 1, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		currentByte <<= 1;
-		if (readModule(2, numColumns - 1, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		currentByte <<= 1;
-		if (readModule(3, numColumns - 1, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		return currentByte;
-	}
-
-	/**
-	* <p>Reads the 8 bits of the special corner condition 2.</p>
-	*
-	* <p>See ISO 16022:2006, Figure F.4</p>
-	*
-	* @param numRows Number of rows in the mapping matrix
-	* @param numColumns Number of columns in the mapping matrix
-	* @return byte from the Corner condition 2
-	*/
-	int readCorner2(int numRows, int numColumns) {
-		int currentByte = 0;
-		if (readModule(numRows - 3, 0, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		currentByte <<= 1;
-		if (readModule(numRows - 2, 0, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		currentByte <<= 1;
-		if (readModule(numRows - 1, 0, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		currentByte <<= 1;
-		if (readModule(0, numColumns - 4, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		currentByte <<= 1;
-		if (readModule(0, numColumns - 3, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		currentByte <<= 1;
-		if (readModule(0, numColumns - 2, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		currentByte <<= 1;
-		if (readModule(0, numColumns - 1, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		currentByte <<= 1;
-		if (readModule(1, numColumns - 1, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		return currentByte;
-	}
-
-	/**
-	* <p>Reads the 8 bits of the special corner condition 3.</p>
-	*
-	* <p>See ISO 16022:2006, Figure F.5</p>
-	*
-	* @param numRows Number of rows in the mapping matrix
-	* @param numColumns Number of columns in the mapping matrix
-	* @return byte from the Corner condition 3
-	*/
-	int readCorner3(int numRows, int numColumns) {
-		int currentByte = 0;
-		if (readModule(numRows - 1, 0, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		currentByte <<= 1;
-		if (readModule(numRows - 1, numColumns - 1, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		currentByte <<= 1;
-		if (readModule(0, numColumns - 3, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		currentByte <<= 1;
-		if (readModule(0, numColumns - 2, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		currentByte <<= 1;
-		if (readModule(0, numColumns - 1, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		currentByte <<= 1;
-		if (readModule(1, numColumns - 3, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		currentByte <<= 1;
-		if (readModule(1, numColumns - 2, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		currentByte <<= 1;
-		if (readModule(1, numColumns - 1, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		return currentByte;
-	}
-
-	/**
-	* <p>Reads the 8 bits of the special corner condition 4.</p>
-	*
-	* <p>See ISO 16022:2006, Figure F.6</p>
-	*
-	* @param numRows Number of rows in the mapping matrix
-	* @param numColumns Number of columns in the mapping matrix
-	* @return byte from the Corner condition 4
-	*/
-	int readCorner4(int numRows, int numColumns) {
-		int currentByte = 0;
-		if (readModule(numRows - 3, 0, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		currentByte <<= 1;
-		if (readModule(numRows - 2, 0, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		currentByte <<= 1;
-		if (readModule(numRows - 1, 0, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		currentByte <<= 1;
-		if (readModule(0, numColumns - 2, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		currentByte <<= 1;
-		if (readModule(0, numColumns - 1, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		currentByte <<= 1;
-		if (readModule(1, numColumns - 1, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		currentByte <<= 1;
-		if (readModule(2, numColumns - 1, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		currentByte <<= 1;
-		if (readModule(3, numColumns - 1, numRows, numColumns)) {
-			currentByte |= 1;
-		}
-		return currentByte;
-	}
-};
-
+	return codeword;
+}
 
 /**
 * <p>Reads the bits in the {@link BitMatrix} representing the mapping matrix (No alignment patterns)
@@ -360,73 +114,84 @@ BitMatrixParser::ReadCodewords(const BitMatrix& bits)
 	BitMatrix readMappingMatrix(mappingBitMatrix.width(), mappingBitMatrix.height());
 
 	ByteArray result(version->totalCodewords());
-	int resultOffset = 0;
+	auto codeword = result.begin();
 
 	int row = 4;
-	int column = 0;
+	int col = 0;
 
 	int numRows = mappingBitMatrix.height();
-	int numColumns = mappingBitMatrix.width();
+	int numCols = mappingBitMatrix.width();
 
 	bool corner1Read = false;
 	bool corner2Read = false;
 	bool corner3Read = false;
 	bool corner4Read = false;
 
-	// Read all of the codewords
-	CodewordReadHelper helper(mappingBitMatrix, readMappingMatrix);
+	// Read the 8 bits of one of the special corner symbols.
+	auto readCorner = [&](const BitPosArray& corner) {
+		return ReadCodeword(mappingBitMatrix, readMappingMatrix, [&](const BitMatrix& matrix, int bit){
+			return GetCornerBitPos(matrix, bit, corner);
+		});
+	};
+	// Read the 8 bits of a utah-shaped symbol character in ECC200.
+	auto readUtah = [&](int row, int col) {
+		return ReadCodeword(mappingBitMatrix, readMappingMatrix, [&](const BitMatrix& matrix, int bit){
+			return GetUtahBitPos(matrix, bit, row, col);
+		});
+	};
+
 	do {
 		// Check the four corner cases
-		if ((row == numRows) && (column == 0) && !corner1Read) {
-			result[resultOffset++] = (uint8_t)helper.readCorner1(numRows, numColumns);
+		if ((row == numRows) && (col == 0) && !corner1Read) {
+			*codeword++ = readCorner(CORNER1);
 			row -= 2;
-			column += 2;
+			col += 2;
 			corner1Read = true;
 		}
-		else if ((row == numRows - 2) && (column == 0) && ((numColumns & 0x03) != 0) && !corner2Read) {
-			result[resultOffset++] = (uint8_t)helper.readCorner2(numRows, numColumns);
+		else if ((row == numRows - 2) && (col == 0) && ((numCols & 0x03) != 0) && !corner2Read) {
+			*codeword++ = readCorner(CORNER2);
 			row -= 2;
-			column += 2;
+			col += 2;
 			corner2Read = true;
 		}
-		else if ((row == numRows + 4) && (column == 2) && ((numColumns & 0x07) == 0) && !corner3Read) {
-			result[resultOffset++] = (uint8_t)helper.readCorner3(numRows, numColumns);
+		else if ((row == numRows + 4) && (col == 2) && ((numCols & 0x07) == 0) && !corner3Read) {
+			*codeword++ = readCorner(CORNER3);
 			row -= 2;
-			column += 2;
+			col += 2;
 			corner3Read = true;
 		}
-		else if ((row == numRows - 2) && (column == 0) && ((numColumns & 0x07) == 4) && !corner4Read) {
-			result[resultOffset++] = (uint8_t)helper.readCorner4(numRows, numColumns);
+		else if ((row == numRows - 2) && (col == 0) && ((numCols & 0x07) == 4) && !corner4Read) {
+			*codeword++ = readCorner(CORNER4);
 			row -= 2;
-			column += 2;
+			col += 2;
 			corner4Read = true;
 		}
 		else {
 			// Sweep upward diagonally to the right
 			do {
-				if ((row < numRows) && (column >= 0) && !readMappingMatrix.get(column, row)) {
-					result[resultOffset++] = (uint8_t)helper.readUtah(row, column, numRows, numColumns);
+				if ((row < numRows) && (col >= 0) && !readMappingMatrix.get(col, row)) {
+					*codeword++ = readUtah(row, col);
 				}
 				row -= 2;
-				column += 2;
-			} while ((row >= 0) && (column < numColumns));
+				col += 2;
+			} while ((row >= 0) && (col < numCols));
 			row += 1;
-			column += 3;
+			col += 3;
 
 			// Sweep downward diagonally to the left
 			do {
-				if ((row >= 0) && (column < numColumns) && !readMappingMatrix.get(column, row)) {
-					result[resultOffset++] = (uint8_t)helper.readUtah(row, column, numRows, numColumns);
+				if ((row >= 0) && (col < numCols) && !readMappingMatrix.get(col, row)) {
+					*codeword++ = readUtah(row, col);
 				}
 				row += 2;
-				column -= 2;
-			} while ((row < numRows) && (column >= 0));
+				col -= 2;
+			} while ((row < numRows) && (col >= 0));
 			row += 3;
-			column += 1;
+			col += 1;
 		}
-	} while ((row < numRows) || (column < numColumns));
+	} while ((row < numRows) || (col < numCols));
 
-	if (resultOffset != version->totalCodewords())
+	if (codeword != result.end())
 		return {};
 
 	return result;

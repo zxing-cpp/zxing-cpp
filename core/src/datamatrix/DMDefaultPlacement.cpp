@@ -37,56 +37,13 @@ namespace DataMatrix {
 //	return bits[row * numcols + col] >= 0;
 //}
 
-namespace {
-
-struct Pos
+template <class GetBitPosFunc>
+static void PlaceCodeword(uint8_t codeword, ByteMatrix& matrix, GetBitPosFunc getBitPos)
 {
-	int row, col;
-};
-
-using PosArray = std::array<Pos, 8>;
-
-} // namespace
-
-inline static bool GetBit(uint8_t codeword, int bit)
-{
-	return codeword & (1 << (8 - bit));
-}
-
-/**
-* Places the 8 bits of one of the special corner symbols.
-*
-* @param pos the array describing the position of the 8 consecutive bits.
-*            Negative numbers mean 'counting from the right/bottom'
-*/
-static void Corner(uint8_t codeword, ByteMatrix& bits, const PosArray& pos)
-{
-	auto clamp = [](int i, int max) { return i < 0 ? i + max : i; };
-	int bit = 1;
-	for (auto p : pos)
-		bits.set(clamp(p.col, bits.width()), clamp(p.row, bits.height()), GetBit(codeword, bit++));
-}
-
-/**
-* Places the 8 bits of a utah-shaped symbol character in ECC200.
-*/
-static void Utah(uint8_t codeword, ByteMatrix& bits, const int row, const int col)
-{
-	const PosArray deltas = {{{-2, -2}, {-2, -1}, {-1, -2}, {-1, -1}, {-1, 0}, {0, -2}, {0, -1}, {0, 0}}};
-
-	int bit = 1;
-	for (auto delta : deltas) {
-		int r = row + delta.row;
-		int c = col + delta.col;
-		if (r < 0) {
-			r += bits.height();
-			c += 4 - ((bits.height() + 4) % 8);
-		}
-		if (c < 0) {
-			c += bits.width();
-			r += 4 - ((bits.width() + 4) % 8);
-		}
-		bits.set(c, r, GetBit(codeword, bit++));
+	for (int bit = 0; bit < 8; ++bit) {
+		BitPos p = getBitPos(matrix, bit);
+		bool value = codeword & (1 << (7 - bit));
+		matrix.set(p.col, p.row, value);
 	}
 }
 
@@ -95,28 +52,40 @@ ByteMatrix DefaultPlacement::Place(const ByteArray& codewords, int numcols, int 
 	ByteMatrix bits(numcols, numrows, -1);
 
 	auto codeword = codewords.begin();
-	auto nextCW = [&codeword](){ return *codeword++; };
+	// Places the 8 bits of one of the special corner symbols.
+	auto placeCorner = [&](const BitPosArray& corner) {
+		PlaceCodeword(*codeword++, bits, [&](const ByteMatrix& matrix, int bit){
+			return GetCornerBitPos(matrix, bit, corner);
+		});
+	};
+	// Places the 8 bits of a utah-shaped symbol character in ECC200.
+	auto placeUtah = [&](int row, int col) {
+		PlaceCodeword(*codeword++, bits, [&](const ByteMatrix& matrix, int bit){
+			return GetUtahBitPos(matrix, bit, row, col);
+		});
+	};
+
 	int row = 4;
 	int col = 0;
 
 	do {
 		/* repeatedly first check for one of the special corner cases, then... */
 		if ((row == numrows) && (col == 0)) {
-			Corner(nextCW(), bits, {{{-1, 0}, {-1, 1}, {-1, 2}, {0, -2}, {0, -1}, {1, -1}, {2, -1}, {3, -1}}});
+			placeCorner(CORNER1);
 		}
 		if ((row == numrows - 2) && (col == 0) && ((numcols % 4) != 0)) {
-			Corner(nextCW(), bits, {{{-3, 0}, {-2, 0}, {-1, 0}, {0, -4}, {0, -3}, {0, -2}, {0, -1}, {1, -1}}});
-		}
-		if ((row == numrows - 2) && (col == 0) && (numcols % 8 == 4)) {
-			Corner(nextCW(), bits, {{{-3, 0}, {-2, 0}, {-1, 0}, {0, -2}, {0, -1}, {1, -1}, {2, -1}, {3, -1}}});
+			placeCorner(CORNER2);
 		}
 		if ((row == numrows + 4) && (col == 2) && ((numcols % 8) == 0)) {
-			Corner(nextCW(), bits, {{{-1, 0}, {-1, -1}, {0, -3}, {0, -2}, {0, -1}, {1, -3}, {1, -2}, {1, -1}}});
+			placeCorner(CORNER3);
+		}
+		if ((row == numrows - 2) && (col == 0) && (numcols % 8 == 4)) {
+			placeCorner(CORNER4);
 		}
 		/* sweep upward diagonally, inserting successive characters... */
 		do {
 			if ((row < numrows) && (col >= 0) && bits.get(col, row) < 0) {
-				Utah(nextCW(), bits, row, col);
+				placeUtah(row, col);
 			}
 			row -= 2;
 			col += 2;
@@ -127,7 +96,7 @@ ByteMatrix DefaultPlacement::Place(const ByteArray& codewords, int numcols, int 
 		/* and then sweep downward diagonally, inserting successive characters, ... */
 		do {
 			if ((row >= 0) && (col < numcols) && bits.get(col, row) < 0) {
-				Utah(nextCW(), bits, row, col);
+				placeUtah(row, col);
 			}
 			row += 2;
 			col -= 2;
