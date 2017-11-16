@@ -740,7 +740,7 @@ namespace EdifactEncoder {
 				auto symbolInfo = context.updateSymbolInfo(codewordCount);
 				int available = symbolInfo->dataCapacity() - codewordCount;
 				int remaining = context.remainingCharacters();
-				if (remaining == 0 && available <= 2) {
+				if (remaining <= available && available <= 2) {
 					return; //No unlatch
 				}
 			}

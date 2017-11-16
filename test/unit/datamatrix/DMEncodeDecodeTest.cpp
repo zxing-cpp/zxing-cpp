@@ -121,6 +121,7 @@ TEST(DMEncodeDecodeTest, EncodeDecodeRectangle)
 
 TEST(DMEncodeDecodeTest, EDIFACTWithEOD)
 {
+	TestEncodeDecode(L"https://test~[******]_");
 	TestEncodeDecode(L"abc<->ABCDE");
 }
 
