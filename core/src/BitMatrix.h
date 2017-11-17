@@ -22,6 +22,7 @@
 namespace ZXing {
 
 class BitArray;
+class ByteMatrix;
 
 /**
 * <p>Represents a 2D matrix of bits. In function arguments below, and throughout the common
@@ -55,6 +56,8 @@ public:
 	BitMatrix(int width, int height) : _width(width), _height(height), _rowSize((width + 31) / 32), _bits(((width + 31) / 32) * _height, 0) {}
 
 	explicit BitMatrix(int dimension) : BitMatrix(dimension, dimension) {} // Construct a square matrix.
+
+	BitMatrix(const ByteMatrix& other, int blackValue);
 
 	BitMatrix(BitMatrix&& other) noexcept : _width(other._width), _height(other._height), _rowSize(other._rowSize), _bits(std::move(other._bits)) {}
 
@@ -153,6 +156,11 @@ public:
 	void setRow(int y, const BitArray& row);
 
 	/**
+	* Modifies this {@code BitMatrix} to represent the same but rotated 90 degrees clockwise
+	*/
+	void rotate90();
+
+	/**
 	* Modifies this {@code BitMatrix} to represent the same but rotated 180 degrees
 	*/
 	void rotate180();
@@ -205,5 +213,27 @@ public:
 		return a._width == b._width && a._height == b._height && a._rowSize == b._rowSize && a._bits == b._bits;
 	}
 };
+
+/**
+ * @brief Inflate scales a BitMatrix up and adds a quite Zone plus padding
+ * @param matrix input to be expanded
+ * @param width new width in bits (pixel)
+ * @param height new height in bits (pixel)
+ * @param quietZone size of quite zone to add in modules
+ * @return expanded BitMatrix, maybe move(input) if size did not change
+ */
+BitMatrix Inflate(BitMatrix&& input, int width, int height, int quietZone);
+
+/**
+ * @brief Deflate (crop + subsample) a bit matrix
+ * @param matrix
+ * @param width new width
+ * @param height new height
+ * @param top cropping starts at top row
+ * @param left cropping starts at left col
+ * @param subSampling typically the module size
+ * @return deflated input
+ */
+BitMatrix Deflate(const BitMatrix& matrix, int width, int height, int top, int left, int subSampling);
 
 } // ZXing

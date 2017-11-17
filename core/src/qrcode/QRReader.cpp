@@ -130,17 +130,8 @@ ExtractPureBits(const BitMatrix& image)
 		top -= nudgedTooFarDown;
 	}
 
-	// Now just read off the bits
-	BitMatrix result(matrixWidth, matrixHeight);
-	for (int y = 0; y < matrixHeight; y++) {
-		int iOffset = top + (int)(y * moduleSize);
-		for (int x = 0; x < matrixWidth; x++) {
-			if (image.get(left + (int)(x * moduleSize), iOffset)) {
-				result.set(x, y);
-			}
-		}
-	}
-	return result;
+	// Now just read off the bits (this is a crop + subsample)
+	return Deflate(image, matrixWidth, matrixHeight, top, left, static_cast<int>(moduleSize));
 }
 
 Reader::Reader(const DecodeHints& hints) :

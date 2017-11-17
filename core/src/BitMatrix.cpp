@@ -17,6 +17,7 @@
 
 #include "BitMatrix.h"
 #include "BitArray.h"
+#include "ByteMatrix.h"
 #include "BitHacks.h"
 
 #include <stdexcept>
@@ -60,6 +61,14 @@ BitMatrix::setRow(int y, const BitArray& row)
 	std::copy(row._bits.begin(), row._bits.end(), _bits.begin() + y *_rowSize);
 }
 
+BitMatrix::BitMatrix(const ByteMatrix& other, int blackValue) : BitMatrix(other.width(), other.height())
+{
+	for (int y = 0; y < height(); ++y)
+		for (int x = 0; x < width(); ++x)
+			if (other.get(x, y) == blackValue)
+				set(x, y);
+}
+
 void
 BitMatrix::setRegion(int left, int top, int width, int height)
 {
@@ -82,9 +91,20 @@ BitMatrix::setRegion(int left, int top, int width, int height)
 	}
 }
 
-/**
-* Modifies this {@code BitMatrix} to represent the same but rotated 180 degrees
-*/
+void
+BitMatrix::rotate90()
+{
+	BitMatrix result(height(), width());
+	for (int x = 0; x < width(); ++x) {
+		for (int y = 0; y < height(); ++y) {
+			if (get(x, y)) {
+				result.set(y, width() - x - 1);
+			}
+		}
+	}
+	*this = std::move(result);
+}
+
 void
 BitMatrix::rotate180()
 {
@@ -207,6 +227,48 @@ BitMatrix::getBottomRightOnBit(int& right, int& bottom) const
 	}
 	right += bit;
 	return true;
+}
+
+BitMatrix Inflate(BitMatrix&& input, int width, int height, int quietZone)
+{
+	const int codeWidth = input.width() + (quietZone * 2);
+	const int codeHeight = input.height() + (quietZone * 2);
+	const int outputWidth = std::max(width, codeWidth);
+	const int outputHeight = std::max(height, codeHeight);
+
+	if (input.width() == outputWidth && input.height() == outputHeight)
+		return std::move(input);
+
+	const int scale = std::min(outputWidth / codeWidth, outputHeight / codeHeight);
+	// Padding includes both the quiet zone and the extra white pixels to
+	// accommodate the requested dimensions.
+	const int leftPadding = (outputWidth - (input.width() * scale)) / 2;
+	const int topPadding = (outputHeight - (input.height() * scale)) / 2;
+
+	BitMatrix result(outputWidth, outputHeight);
+
+	for (int inputY = 0, outputY = topPadding; inputY < input.height(); ++inputY, outputY += scale) {
+		for (int inputX = 0, outputX = leftPadding; inputX < input.width(); ++inputX, outputX += scale) {
+			if (input.get(inputX, inputY))
+				result.setRegion(outputX, outputY, scale, scale);
+		}
+	}
+
+	return result;
+}
+
+BitMatrix Deflate(const BitMatrix& input, int width, int height, int top, int left, int subSampling)
+{
+	BitMatrix result(width, height);
+	for (int y = 0; y < result.height(); y++) {
+		int yOffset = top + y * subSampling;
+		for (int x = 0; x < result.width(); x++) {
+			if (input.get(left + x * subSampling, yOffset))
+				result.set(x, y);
+		}
+	}
+	return result;
+
 }
 
 } // ZXing

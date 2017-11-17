@@ -48,47 +48,9 @@ namespace {
 		return result;
 	}
 
-	// Rotates a square BitMatrix to the right by 90 degrees
-	void RotateRight(BitMatrix& input) {
-		int width = input.width();
-		BitMatrix result(width);
-		for (int x = 0; x < width; x++) {
-			for (int y = 0; y < width; y++) {
-				if (input.get(x, y)) {
-					result.set(y, width - x - 1);
-				}
-			}
-		}
-		input = std::move(result);
-	}
-
-	// Returns the transpose of a bit matrix, which is equivalent to rotating the
-	// matrix to the right, and then flipping it left-to-right
-	void Transpose(BitMatrix& input) {
-		int width = input.width();
-		BitMatrix result(width);
-		for (int x = 0; x < width; x++) {
-			for (int y = 0; y < width; y++) {
-				if (input.get(x, y)) {
-					result.set(y, x);
-				}
-			}
-		}
-		input = std::move(result);
-	}
-
 	// Zooms a bit matrix so that each bit is factor x factor
 	BitMatrix MakeLarger(const BitMatrix& input, int factor) {
-		int width = input.width();
-		BitMatrix output(width * factor);
-		for (int inputY = 0; inputY < width; inputY++) {
-			for (int inputX = 0; inputX < width; inputX++) {
-				if (input.get(inputX, inputY)) {
-					output.setRegion(inputX * factor, inputY * factor, factor, factor);
-				}
-			}
-		}
-		return output;
+		return Inflate(input.copy(), factor * input.width(), factor * input.height(), 0);
 	}
 
 	// Test that we can tolerate errors in the parameter locator bits
@@ -104,7 +66,7 @@ namespace {
 					for (int error2 = error1; error2 < (int)orientationPoints.size(); error2++) {
 						BitMatrix copy = matrix.copy();
 						if (isMirror) {
-							Transpose(copy);
+							copy.mirror();
 						}
 						copy.flip(orientationPoints[error1].x, orientationPoints[error1].y);
 						if (error2 > error1) {
@@ -134,7 +96,7 @@ namespace {
 					EXPECT_EQ(r.isValid(), false);
 				}
 
-				RotateRight(matrix);
+				matrix.rotate90();
 			}
 		}
 	}
