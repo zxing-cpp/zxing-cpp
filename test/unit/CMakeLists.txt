@@ -79,6 +79,7 @@ add_executable (ZXingUnitTest
     oned/ODCode128WriterTest.cpp
     oned/ODEAN8WriterTest.cpp
     oned/ODEAN13WriterTest.cpp
+    oned/ODITFWriterTest.cpp
     oned/ODUPCAWriterTest.cpp
     oned/ODUPCEWriterTest.cpp
     qrcode/QRDataMaskTest.cpp
