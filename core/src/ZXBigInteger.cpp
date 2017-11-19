@@ -234,8 +234,8 @@ static void DivideWithRemainder(const Magnetude& a, const Magnetude& b, Magnetud
 	* a at all.  The quotient is 0 and *this is already the remainder (so leave it alone).
 	*/
 	if (b.empty() || a.size() < b.size()) {
-		q.clear();
-		r = a;
+		qq.clear();
+		rr = a;
 		return;
 	}
 
