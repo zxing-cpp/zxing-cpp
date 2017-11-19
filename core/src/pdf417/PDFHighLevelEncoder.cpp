@@ -392,13 +392,11 @@ static void EncodeNumeric(const std::wstring& msg, int startpos, int count, std:
 		int len = std::min(44, count - idx);
 		auto part = L"1" + msg.substr(startpos + idx, len);
 
-		BigInteger bigint;
+		BigInteger bigint, r;
 		BigInteger::TryParse(part, bigint);
-		BigInteger q, r;
 		do {
-			BigInteger::Divide(bigint, num900, q, r);
+			BigInteger::Divide(bigint, num900, bigint, r);
 			tmp.push_back(r.toInt());
-			bigint = q;
 		} while (!bigint.isZero());
 
 		//Reverse temporary string

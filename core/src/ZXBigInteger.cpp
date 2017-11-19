@@ -28,13 +28,10 @@ static const size_t NB_BITS = 8 * sizeof(Block);
 
 static void AddMag(const Magnetude& a, const Magnetude& b, Magnetude& c)
 {
-	Magnetude tmp;
-	Magnetude& r = &c == &a || &c == &b ? tmp : c;
-
 	// a2 points to the longer input, b2 points to the shorter
 	const Magnetude& a2 = a.size() >= b.size() ? a : b;
 	const Magnetude& b2 = a.size() >= b.size() ? b : a;
-	r.resize(a2.size() + 1);
+	c.resize(a2.size() + 1);
 	size_t i = 0;
 	bool carryIn = false;
 	for (; i < b2.size(); ++i) {
@@ -44,41 +41,34 @@ static void AddMag(const Magnetude& a, const Magnetude& b, Magnetude& c)
 			++temp;
 			carryOut |= (temp == 0);
 		}
-		r[i] = temp;
+		c[i] = temp;
 		carryIn = carryOut;
 	}
 	// If there is a carry left over, increase blocks until one does not roll over.
 	for (; i < a2.size() && carryIn; ++i) {
 		auto temp = a2[i] + 1;
 		carryIn = (temp == 0);
-		r[i] = temp;
+		c[i] = temp;
 	}
 	// If the carry was resolved but the larger number still has blocks, copy them over.
 	for (; i < a2.size(); ++i) {
-		r[i] = a2[i];
+		c[i] = a2[i];
 	}
 	// Set the extra block if there's still a carry, decrease length otherwise
 	if (carryIn) {
-		r[i] = 1;
+		c[i] = 1;
 	}
 	else {
-		r.resize(r.size() - 1);
+		c.pop_back();
 	}
-
-	c = r;
 }
 
 // Note that we DO NOT support the case where b is greater than a.
 static void SubMag(const Magnetude& a, const Magnetude& b, Magnetude& c)
 {
-	Magnetude tmp;
-	Magnetude& r = &c == &a || &c == &b ? tmp : c;
+	assert(a.size() >= b.size());
 
-	//if (a.size() < b.size()) {
-	// throw error;
-	//}
-
-	r.resize(a.size());
+	c.resize(a.size());
 	size_t i = 0;
 	bool borrowIn = false;
 	for (; i < b.size(); ++i) {
@@ -89,28 +79,26 @@ static void SubMag(const Magnetude& a, const Magnetude& b, Magnetude& c)
 			borrowOut |= (temp == 0);
 			temp--;
 		}
-		r[i] = temp;
+		c[i] = temp;
 		borrowIn = borrowOut;
 	}
 	// If there is a borrow left over, decrease blocks until one does not reverse rollover.
 	for (; i < a.size() && borrowIn; ++i) {
 		borrowIn = (a[i] == 0);
-		r[i] = a[i] - 1;
+		c[i] = a[i] - 1;
 	}
 	//if (borrowIn) {
 	//throw error;
 	//}
 	// Copy over the rest of the blocks
 	for (; i < a.size(); ++i) {
-		r[i] = a[i];
+		c[i] = a[i];
 	}
 
 	// Zap leading zeros
-	while (!r.empty() && r.back() == 0) {
-		r.resize(r.size() - 1);
+	while (!c.empty() && c.back() == 0) {
+		c.pop_back();
 	}
-
-	c = r;
 }
 
 static inline Block GetShiftedBlock(const Magnetude& num, size_t x, size_t y)
@@ -187,10 +175,11 @@ static void MulMag(const Magnetude& a, const Magnetude& b, Magnetude& c)
 	}
 	// Zap possible leading zero
 	if (r.back() == 0) {
-		r.resize(r.size() - 1);
+		r.pop_back();
 	}
 
-	c = r;
+	if (&c != &r)
+		c = std::move(r);
 }
 
 /*
@@ -211,14 +200,11 @@ static void DivideWithRemainder(const Magnetude& a, const Magnetude& b, Magnetud
 	*
 	* It would be silly to try to write quotient and remainder to the
 	* same variable.  Rule that out right away. */
-	//if (&rr == &qq) {
-	//	throw std::invalid_argument("Quotient and remainder should be the same destination");
-	//}
+	assert(&rr != &qq);
 
 	Magnetude tmp, tmp2;
 	Magnetude& q = &qq == &a || &qq == &b ? tmp : qq;
 	Magnetude& r = &rr == &b ? tmp2 : rr;
-
 
 	/*
 	* Knuth's definition of mod (which this function uses) is somewhat
@@ -272,11 +258,11 @@ static void DivideWithRemainder(const Magnetude& a, const Magnetude& b, Magnetud
 	* extra zero block ensures sensible behavior; we need
 	* an extra block in `subtractBuf' for exactly the same reason.
 	*/
-	r.resize(a.size() + 1);
 	if (&r != &a) {
-		std::copy(a.begin(), a.end(), r.begin());
+		r.reserve(a.size() + 1);
+		r = a;
 	}
-	r.back() = 0;
+	r.push_back(0);
 
 	Magnetude subtractBuf(r.size());
 
@@ -341,15 +327,17 @@ static void DivideWithRemainder(const Magnetude& a, const Magnetude& b, Magnetud
 	}
 	// Zap possible leading zero in quotient
 	if (q.back() == 0)
-		q.resize(q.size() - 1);
+		q.pop_back();
 	
 	// Zap any/all leading zeros in remainder
 	while (!r.empty() && r.back() == 0) {
-		r.resize(r.size() - 1);
+		r.pop_back();
 	}
 
-	qq = q;
-	rr = r;
+	if (&qq != &q)
+		qq = std::move(q);
+	if (&rr != &r)
+		rr = std::move(r);
 }
 
 static int CompareMag(const Magnetude& a, const Magnetude& b)
@@ -388,8 +376,8 @@ static bool ParseFromString(const StrT& str, std::vector<Block>& mag, bool& nega
 			++iter;
 		}
 
-		Magnetude ten(1, 10);
-		Magnetude tmp(1, 0);
+		Magnetude ten{10};
+		Magnetude tmp{0};
 		for (int c; iter != end && std::isdigit(c = *iter); ++iter) {
 			tmp[0] = c - '0';
 			MulMag(mag, ten, mag);
@@ -604,7 +592,7 @@ BigInteger::toString() const
 	buffer.reserve(maxDigitLenOfX);
 
 	Magnetude x2 = mag;
-	Magnetude buBase(1, base);
+	Magnetude buBase{base};
 	Magnetude lastDigit;
 	lastDigit.reserve(1);
 

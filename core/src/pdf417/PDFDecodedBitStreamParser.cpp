@@ -27,6 +27,7 @@
 #include "ZXStrConvWorkaround.h"
 
 #include <array>
+#include <cassert>
 
 namespace ZXing {
 namespace Pdf417 {
@@ -64,27 +65,6 @@ static const int PAL = 29;
 static const char* PUNCT_CHARS = ";<>@[\\]_`~!\r\t,:\n-.$/\"|*()?{}'";
 static const char* MIXED_CHARS = "0123456789&\r\t,:#-.$/+%*=^";
 static const CharacterSet DEFAULT_ENCODING = CharacterSet::ISO8859_1;
-
-/**
-* Table containing values for the exponent of 900.
-* This is used in the numeric compaction decode algorithm.
-*/
-static const std::array<BigInteger, 16>& EXP900()
-{
-	auto initInstance = [](std::array<BigInteger, 16>& table)->std::array<BigInteger, 16>& {
-		table[0] = BigInteger(1);
-		BigInteger nineHundred(900);
-		table[1] = nineHundred;
-		for (size_t i = 2; i < table.size(); ++i) {
-			BigInteger::Multiply(table[i - 1], nineHundred, table[i]);
-		}
-		return table;
-	};
-
-	static std::array<BigInteger, 16> instance;
-	static const std::array<BigInteger, 16>& ref = initInstance(instance);
-	return ref;
-}
 
 static const int NUMBER_OF_SEQUENCE_CODEWORDS = 2;
 
@@ -486,9 +466,20 @@ Remove leading 1 =>  Result is 000213298174000
 */
 static DecodeStatus DecodeBase900toBase10(const std::vector<int>& codewords, int count, std::string& resultString)
 {
+	// Table containing values for the exponent of 900.
+	static const auto EXP900 = []() {
+		std::array<BigInteger, 16> table = {1, 900};
+		for (size_t i = 2; i < table.size(); ++i) {
+			table[i] = table[i - 1] * 900;
+		}
+		return table;
+	}();
+
+	assert(count <= 16);
+
 	BigInteger result;
 	for (int i = 0; i < count; i++) {
-		result = result + (EXP900()[count - i - 1] * codewords[i]);
+		result += EXP900[count - i - 1] * codewords[i];
 	}
 	resultString = result.toString();
 	if (!resultString.empty() && resultString.front() == '1') {
