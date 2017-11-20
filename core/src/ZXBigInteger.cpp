@@ -31,10 +31,14 @@ static void AddMag(const Magnitude& a, const Magnitude& b, Magnitude& c)
 	// a2 points to the longer input, b2 points to the shorter
 	const Magnitude& a2 = a.size() >= b.size() ? a : b;
 	const Magnitude& b2 = a.size() >= b.size() ? b : a;
-	c.resize(a2.size() + 1);
+
+	// need to store the old sizes of a and b, in case c aliases either of them
+	const size_t a2Size = a2.size(), b2Size = b2.size();
+
+	c.resize(a2Size + 1);
 	size_t i = 0;
 	bool carryIn = false;
-	for (; i < b2.size(); ++i) {
+	for (; i < b2Size; ++i) {
 		auto temp = a2[i] + b2[i];
 		bool carryOut = (temp < a2[i]);
 		if (carryIn) {
@@ -45,13 +49,13 @@ static void AddMag(const Magnitude& a, const Magnitude& b, Magnitude& c)
 		carryIn = carryOut;
 	}
 	// If there is a carry left over, increase blocks until one does not roll over.
-	for (; i < a2.size() && carryIn; ++i) {
+	for (; i < a2Size && carryIn; ++i) {
 		auto temp = a2[i] + 1;
 		carryIn = (temp == 0);
 		c[i] = temp;
 	}
 	// If the carry was resolved but the larger number still has blocks, copy them over.
-	for (; i < a2.size(); ++i) {
+	for (; i < a2Size; ++i) {
 		c[i] = a2[i];
 	}
 	// Set the extra block if there's still a carry, decrease length otherwise
@@ -68,10 +72,13 @@ static void SubMag(const Magnitude& a, const Magnitude& b, Magnitude& c)
 {
 	assert(a.size() >= b.size());
 
-	c.resize(a.size());
+	// need to store the old sizes of a and b, in case c aliases either of them
+	const size_t aSize = a.size(), bSize = b.size();
+
+	c.resize(aSize);
 	size_t i = 0;
 	bool borrowIn = false;
-	for (; i < b.size(); ++i) {
+	for (; i < bSize; ++i) {
 		auto temp = a[i] - b[i];
 		// If a reverse rollover occurred, the result is greater than the block from a.
 		bool borrowOut = (temp > a[i]);
@@ -83,7 +90,7 @@ static void SubMag(const Magnitude& a, const Magnitude& b, Magnitude& c)
 		borrowIn = borrowOut;
 	}
 	// If there is a borrow left over, decrease blocks until one does not reverse rollover.
-	for (; i < a.size() && borrowIn; ++i) {
+	for (; i < aSize && borrowIn; ++i) {
 		borrowIn = (a[i] == 0);
 		c[i] = a[i] - 1;
 	}
@@ -91,7 +98,7 @@ static void SubMag(const Magnitude& a, const Magnitude& b, Magnitude& c)
 	//throw error;
 	//}
 	// Copy over the rest of the blocks
-	for (; i < a.size(); ++i) {
+	for (; i < aSize; ++i) {
 		c[i] = a[i];
 	}
 
