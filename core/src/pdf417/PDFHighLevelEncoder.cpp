@@ -537,8 +537,7 @@ HighLevelEncoder::EncodeHighLevel(const std::wstring& msg, Compaction compaction
 
 	}
 	else if (compaction == Compaction::BYTE) {
-		std::string bytes;
-		TextEncoder::GetBytes(msg, encoding, bytes);
+		std::string bytes = TextEncoder::FromUnicode(msg, encoding);
 		EncodeBinary(bytes, p, static_cast<int>(bytes.length()), BYTE_COMPACTION, highLevel);
 	}
 	else if (compaction == Compaction::NUMERIC) {
@@ -573,8 +572,7 @@ HighLevelEncoder::EncodeHighLevel(const std::wstring& msg, Compaction compaction
 					if (b == 0) {
 						b = 1;
 					}
-					std::string bytes;
-					TextEncoder::GetBytes(msg.substr(p, b), encoding, bytes);
+					std::string bytes = TextEncoder::FromUnicode(msg.substr(p, b), encoding);
 					if (bytes.length() == 1 && encodingMode == TEXT_COMPACTION) {
 						//Switch for one byte (instead of latch)
 						EncodeBinary(bytes, 0, 1, TEXT_COMPACTION, highLevel);

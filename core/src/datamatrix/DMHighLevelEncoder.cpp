@@ -902,9 +902,7 @@ HighLevelEncoder::Encode(const std::wstring& msg, SymbolShape shape, int minWdit
 	//	new X12Encoder(), new EdifactEncoder(),  new Base256Encoder()
 	//};
 
-	std::string bytes;
-	TextEncoder::GetBytes(msg, CharacterSet::ISO8859_1, bytes);
-	EncoderContext context(bytes);
+	EncoderContext context(TextEncoder::FromUnicode(msg, CharacterSet::ISO8859_1));
 	context.setSymbolShape(shape);
 	context.setSizeConstraints(minWdith, minHeight, maxWidth, maxHeight);
 
