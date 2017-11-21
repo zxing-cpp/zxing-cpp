@@ -35,7 +35,7 @@ public:
 	//static const unsigned int N = 8 * sizeof(Block);
 
 	// Constructs zero.
-	BigInteger() {}
+	BigInteger() = default;
 
 	template <typename T>
 	BigInteger(T x, typename std::enable_if<std::is_integral<T>::value && std::is_unsigned<T>::value>::type* = nullptr) : mag(1, x) {}
@@ -50,6 +50,14 @@ public:
 
 	std::string toString() const;
 	int toInt() const;
+
+	inline BigInteger& operator+=(BigInteger&& a) {
+		if (mag.empty())
+			*this = std::move(a);
+		else
+			Add(*this, a, *this);
+		return *this;
+	}
 
 	friend inline BigInteger operator+(const BigInteger& a, const BigInteger& b) {
 		BigInteger c;

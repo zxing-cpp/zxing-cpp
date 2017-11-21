@@ -22,66 +22,63 @@
 namespace ZXing {
 
 using Block = BigInteger::Block;
-using Magnetude = std::vector<Block>;
+using Magnitude = std::vector<Block>;
 
 static const size_t NB_BITS = 8 * sizeof(Block);
 
-static void AddMag(const Magnetude& a, const Magnetude& b, Magnetude& c)
+static void AddMag(const Magnitude& a, const Magnitude& b, Magnitude& c)
 {
-	Magnetude tmp;
-	Magnetude& r = &c == &a || &c == &b ? tmp : c;
-
 	// a2 points to the longer input, b2 points to the shorter
-	const Magnetude& a2 = a.size() >= b.size() ? a : b;
-	const Magnetude& b2 = a.size() >= b.size() ? b : a;
-	r.resize(a2.size() + 1);
+	const Magnitude& a2 = a.size() >= b.size() ? a : b;
+	const Magnitude& b2 = a.size() >= b.size() ? b : a;
+
+	// need to store the old sizes of a and b, in case c aliases either of them
+	const size_t a2Size = a2.size(), b2Size = b2.size();
+
+	c.resize(a2Size + 1);
 	size_t i = 0;
 	bool carryIn = false;
-	for (; i < b2.size(); ++i) {
+	for (; i < b2Size; ++i) {
 		auto temp = a2[i] + b2[i];
 		bool carryOut = (temp < a2[i]);
 		if (carryIn) {
 			++temp;
 			carryOut |= (temp == 0);
 		}
-		r[i] = temp;
+		c[i] = temp;
 		carryIn = carryOut;
 	}
 	// If there is a carry left over, increase blocks until one does not roll over.
-	for (; i < a2.size() && carryIn; ++i) {
+	for (; i < a2Size && carryIn; ++i) {
 		auto temp = a2[i] + 1;
 		carryIn = (temp == 0);
-		r[i] = temp;
+		c[i] = temp;
 	}
 	// If the carry was resolved but the larger number still has blocks, copy them over.
-	for (; i < a2.size(); ++i) {
-		r[i] = a2[i];
+	for (; i < a2Size; ++i) {
+		c[i] = a2[i];
 	}
 	// Set the extra block if there's still a carry, decrease length otherwise
 	if (carryIn) {
-		r[i] = 1;
+		c[i] = 1;
 	}
 	else {
-		r.resize(r.size() - 1);
+		c.pop_back();
 	}
-
-	c = r;
 }
 
 // Note that we DO NOT support the case where b is greater than a.
-static void SubMag(const Magnetude& a, const Magnetude& b, Magnetude& c)
+static void SubMag(const Magnitude& a, const Magnitude& b, Magnitude& c)
 {
-	Magnetude tmp;
-	Magnetude& r = &c == &a || &c == &b ? tmp : c;
+	assert(a.size() >= b.size());
 
-	//if (a.size() < b.size()) {
-	// throw error;
-	//}
+	// need to store the old sizes of a and b, in case c aliases either of them
+	const size_t aSize = a.size(), bSize = b.size();
 
-	r.resize(a.size());
+	c.resize(aSize);
 	size_t i = 0;
 	bool borrowIn = false;
-	for (; i < b.size(); ++i) {
+	for (; i < bSize; ++i) {
 		auto temp = a[i] - b[i];
 		// If a reverse rollover occurred, the result is greater than the block from a.
 		bool borrowOut = (temp > a[i]);
@@ -89,38 +86,36 @@ static void SubMag(const Magnetude& a, const Magnetude& b, Magnetude& c)
 			borrowOut |= (temp == 0);
 			temp--;
 		}
-		r[i] = temp;
+		c[i] = temp;
 		borrowIn = borrowOut;
 	}
 	// If there is a borrow left over, decrease blocks until one does not reverse rollover.
-	for (; i < a.size() && borrowIn; ++i) {
+	for (; i < aSize && borrowIn; ++i) {
 		borrowIn = (a[i] == 0);
-		r[i] = a[i] - 1;
+		c[i] = a[i] - 1;
 	}
 	//if (borrowIn) {
 	//throw error;
 	//}
 	// Copy over the rest of the blocks
-	for (; i < a.size(); ++i) {
-		r[i] = a[i];
+	for (; i < aSize; ++i) {
+		c[i] = a[i];
 	}
 
 	// Zap leading zeros
-	while (!r.empty() && r.back() == 0) {
-		r.resize(r.size() - 1);
+	while (!c.empty() && c.back() == 0) {
+		c.pop_back();
 	}
-
-	c = r;
 }
 
-static inline Block GetShiftedBlock(const Magnetude& num, size_t x, size_t y)
+static inline Block GetShiftedBlock(const Magnitude& num, size_t x, size_t y)
 {
 	Block part1 = (x == 0 || y == 0) ? Block(0) : (num[x - 1] >> (NB_BITS - y));
 	Block part2 = (x == num.size()) ? Block(0) : (num[x] << y);
 	return part1 | part2;
 }
 
-static void MulMag(const Magnetude& a, const Magnetude& b, Magnetude& c)
+static void MulMag(const Magnitude& a, const Magnitude& b, Magnitude& c)
 {
 	// If either a or b is zero, set to zero.
 	if (a.empty() || b.empty()) {
@@ -128,8 +123,8 @@ static void MulMag(const Magnetude& a, const Magnetude& b, Magnetude& c)
 		return;
 	}
 
-	Magnetude tmp;
-	Magnetude& r = &c == &a || &c == &b ? tmp : c;
+	Magnitude tmp;
+	Magnitude& r = &c == &a || &c == &b ? tmp : c;
 
 	/*
 	* Overall method:
@@ -187,10 +182,11 @@ static void MulMag(const Magnetude& a, const Magnetude& b, Magnetude& c)
 	}
 	// Zap possible leading zero
 	if (r.back() == 0) {
-		r.resize(r.size() - 1);
+		r.pop_back();
 	}
 
-	c = r;
+	if (&c != &r)
+		c = std::move(r);
 }
 
 /*
@@ -204,21 +200,18 @@ static void MulMag(const Magnetude& a, const Magnetude& b, Magnetude& c)
 * "modWithQuotient" might be a better name for this function, but I would
 * rather not change the name now.
 */
-static void DivideWithRemainder(const Magnetude& a, const Magnetude& b, Magnetude& qq, Magnetude& rr)
+static void DivideWithRemainder(const Magnitude& a, const Magnitude& b, Magnitude& qq, Magnitude& rr)
 {
 	/* Defending against aliased calls is more complex than usual because we
 	* are writing to both r and q.
 	*
 	* It would be silly to try to write quotient and remainder to the
 	* same variable.  Rule that out right away. */
-	//if (&rr == &qq) {
-	//	throw std::invalid_argument("Quotient and remainder should be the same destination");
-	//}
+	assert(&rr != &qq);
 
-	Magnetude tmp, tmp2;
-	Magnetude& q = &qq == &a || &qq == &b ? tmp : qq;
-	Magnetude& r = &rr == &b ? tmp2 : rr;
-
+	Magnitude tmp, tmp2;
+	Magnitude& q = &qq == &a || &qq == &b ? tmp : qq;
+	Magnitude& r = &rr == &b ? tmp2 : rr;
 
 	/*
 	* Knuth's definition of mod (which this function uses) is somewhat
@@ -234,8 +227,8 @@ static void DivideWithRemainder(const Magnetude& a, const Magnetude& b, Magnetud
 	* a at all.  The quotient is 0 and *this is already the remainder (so leave it alone).
 	*/
 	if (b.empty() || a.size() < b.size()) {
-		q.clear();
-		r = a;
+		qq.clear();
+		rr = a;
 		return;
 	}
 
@@ -272,13 +265,13 @@ static void DivideWithRemainder(const Magnetude& a, const Magnetude& b, Magnetud
 	* extra zero block ensures sensible behavior; we need
 	* an extra block in `subtractBuf' for exactly the same reason.
 	*/
-	r.resize(a.size() + 1);
 	if (&r != &a) {
-		std::copy(a.begin(), a.end(), r.begin());
+		r.reserve(a.size() + 1);
+		r = a;
 	}
-	r.back() = 0;
+	r.push_back(0);
 
-	Magnetude subtractBuf(r.size());
+	Magnitude subtractBuf(r.size());
 
 	// Set preliminary length for quotient and make room
 	q.resize(a.size() - b.size() + 1);
@@ -341,18 +334,20 @@ static void DivideWithRemainder(const Magnetude& a, const Magnetude& b, Magnetud
 	}
 	// Zap possible leading zero in quotient
 	if (q.back() == 0)
-		q.resize(q.size() - 1);
+		q.pop_back();
 	
 	// Zap any/all leading zeros in remainder
 	while (!r.empty() && r.back() == 0) {
-		r.resize(r.size() - 1);
+		r.pop_back();
 	}
 
-	qq = q;
-	rr = r;
+	if (&qq != &q)
+		qq = std::move(q);
+	if (&rr != &r)
+		rr = std::move(r);
 }
 
-static int CompareMag(const Magnetude& a, const Magnetude& b)
+static int CompareMag(const Magnitude& a, const Magnitude& b)
 {
 	// A bigger length implies a bigger number.
 	if (a.size() < b.size()) {
@@ -388,8 +383,8 @@ static bool ParseFromString(const StrT& str, std::vector<Block>& mag, bool& nega
 			++iter;
 		}
 
-		Magnetude ten(1, 10);
-		Magnetude tmp(1, 0);
+		Magnitude ten{10};
+		Magnitude tmp{0};
 		for (int c; iter != end && std::isdigit(c = *iter); ++iter) {
 			tmp[0] = c - '0';
 			MulMag(mag, ten, mag);
@@ -539,8 +534,8 @@ BigInteger::Divide(const BigInteger &a, const BigInteger &b, BigInteger &quotien
 		// No: harder case.  Quotient is negative.
 		quotient.negative = true;
 		// Decrease the magnitude of the dividend by one.
-		Magnetude one{ 1 };
-		Magnetude aa;
+		Magnitude one{ 1 };
+		Magnitude aa;
 		SubMag(a.mag, one, aa);
 		/*
 		* We tinker with the dividend before and with the
@@ -603,9 +598,9 @@ BigInteger::toString() const
 	std::vector<uint8_t> buffer;
 	buffer.reserve(maxDigitLenOfX);
 
-	Magnetude x2 = mag;
-	Magnetude buBase(1, base);
-	Magnetude lastDigit;
+	Magnitude x2 = mag;
+	Magnitude buBase{base};
+	Magnitude lastDigit;
 	lastDigit.reserve(1);
 
 	while (!x2.empty()) {
