@@ -42,7 +42,7 @@ class EncoderContext
 	int _skipAtEnd = 0;
 
 public:
-	explicit EncoderContext(std::string msg) : _msg(std::move(msg)) { _codewords.reserve(_msg.length()); }
+	explicit EncoderContext(std::string&& msg) : _msg(std::move(msg)) { _codewords.reserve(_msg.length()); }
 	
 	EncoderContext(const EncoderContext &) = delete;	// avoid copy by mistake
 

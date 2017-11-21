@@ -59,8 +59,7 @@ static int CalculateMaskPenalty(const ByteMatrix& matrix)
 
 static bool IsOnlyDoubleByteKanji(const std::wstring& content)
 {
-	std::string bytes;
-	TextEncoder::GetBytes(content, CharacterSet::Shift_JIS, bytes);
+	std::string bytes = TextEncoder::FromUnicode(content, CharacterSet::Shift_JIS);
 	size_t length = bytes.length();
 	if (length % 2 != 0) {
 		return false;
@@ -208,18 +207,15 @@ void AppendAlphanumericBytes(const std::wstring& content, BitArray& bits)
 ZXING_EXPORT_TEST_ONLY
 void Append8BitBytes(const std::wstring& content, CharacterSet encoding, BitArray& bits)
 {
-	std::string bytes;
-	TextEncoder::GetBytes(content, encoding, bytes);
-	for (char b : bytes) {
-		bits.appendBits(b & 0xff, 8);
+	for (char b : TextEncoder::FromUnicode(content, encoding)) {
+		bits.appendBits(b, 8);
 	}
 }
 
 ZXING_EXPORT_TEST_ONLY
 void AppendKanjiBytes(const std::wstring& content, BitArray& bits)
 {
-	std::string bytes;
-	TextEncoder::GetBytes(content, CharacterSet::Shift_JIS, bytes);
+	std::string bytes = TextEncoder::FromUnicode(content, CharacterSet::Shift_JIS);
 	size_t length = bytes.size();
 	for (size_t i = 0; i < length; i += 2) {
 		int byte1 = bytes[i] & 0xff;

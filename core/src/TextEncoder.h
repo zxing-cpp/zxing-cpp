@@ -23,9 +23,8 @@ enum class CharacterSet;
 
 class TextEncoder
 {
-public:
 	static void GetBytes(const std::wstring& str, CharacterSet charset, std::string& bytes);
-	
+public:
 	static std::string FromUnicode(const std::wstring& str, CharacterSet charset) {
 		std::string r;
 		GetBytes(str, charset, r);

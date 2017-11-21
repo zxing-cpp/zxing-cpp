@@ -22,7 +22,8 @@
 #include "Result.h"
 #include "DecodeHints.h"
 #include "TextDecoder.h"
-#include "TextUtfEncoding.h"
+#include "TextEncoder.h"
+#include "CharacterSet.h"
 #include "ZXContainerAlgorithms.h"
 
 #include <iostream>
@@ -115,9 +116,7 @@ public:
 			binImg = std::make_shared<Binarizer>(readImage(filename), isPure);
 		auto result = _reader->read(*binImg->rotated(rotation));
 		if (result.isValid()) {
-			std::string text;
-			TextUtfEncoding::ToUtf8(result.text(), text);
-			return {ToString(result.format()), text};
+			return {ToString(result.format()), TextEncoder::FromUnicode(result.text(), CharacterSet::UTF8)};
 		}
 		return {};
 	}
@@ -159,10 +158,9 @@ static std::string checkResult(fs::path imgPath, const std::string& expectedForm
 	imgPath.replace_extension(".bin");
 	std::ifstream latin1Stream(imgPath.native(), std::ios::binary);
 	if (latin1Stream) {
-		std::wstring rawStr = ZXing::TextDecoder::FromLatin1(
+		std::wstring rawStr = TextDecoder::FromLatin1(
 		    std::string((std::istreambuf_iterator<char>(latin1Stream)), std::istreambuf_iterator<char>()));
-		std::string expected;
-		ZXing::TextUtfEncoding::ToUtf8(rawStr, expected);
+		std::string expected = TextEncoder::FromUnicode(rawStr, CharacterSet::UTF8);
 		return result.text != expected ? "Content mismatch: expected " + expected + " but got " + result.text : "";
 	}
 	return "Error reading file";
