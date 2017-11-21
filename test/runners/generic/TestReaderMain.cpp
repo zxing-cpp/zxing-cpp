@@ -560,7 +560,7 @@ int main(int argc, char** argv)
 		runTests("blackbox/qrcode-6", "QR_CODE", 15, {
 			{ 15, 15, 0   },
 			{ 14, 14, 90  },
-			{ 12, 13, 180 },
+			{ 13, 13, 180 },
 			{ 14, 14, 270 },
 		});
 
