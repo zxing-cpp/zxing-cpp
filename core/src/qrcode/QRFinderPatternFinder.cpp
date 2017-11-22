@@ -33,7 +33,7 @@ namespace QRCode {
 
 static const int CENTER_QUORUM = 2;
 static const int MIN_SKIP = 3; // 1 pixel/module times 3 modules/center
-static const int MAX_MODULES = 57; // support up to version 10 for mobile clients
+static const int MAX_MODULES = 97; // support up to version 20 for mobile clients
 
 using StateCount = FinderPatternFinder::StateCount;
 
