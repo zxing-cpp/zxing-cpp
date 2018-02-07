@@ -558,7 +558,7 @@ public:
 	PointF normal() const { return PointF(a, b); }
 	PointF project(PointF p) const { return p - (normal() * p - c) * normal(); }
 	PointF project(PointI p) const { return project(PointF(p)); }
-	double signedDistance(PointF p) const { return (normal() * p - c) / std::sqrt(a * a + b * b); }
+	double signedDistance(PointF p) const { return normal() * p - c; }
 
 	void reverse() { std::reverse(_points.begin(), _points.end()); }
 
@@ -626,6 +626,7 @@ public:
 
 PointF intersect(const RegressionLine& l1, const RegressionLine& l2)
 {
+	assert(l1.isValid() && l2.isValid());
 	double x, y, d;
 	d = l1.a * l2.b - l1.b * l2.a;
 	x = (l1.c * l2.b - l1.b * l2.c) / d;
@@ -747,10 +748,9 @@ public:
 	{
 		auto old_d = d;
 		setDirection(p - origin);
-		// it the new direction is pointing "backward", i.e. angle(new, old) > pi/2 -> break
+		// if the new direction is pointing "backward", i.e. angle(new, old) > pi/2 -> break
 		if (d * old_d < 0)
 			return false;
-		//printf("new dir: %f, %f\n", d.x, d.y);
 		// make sure d stays in the same quadrant to prevent an infinite loop
 		if (mainDirection(d) != mainDirection(old_d))
 			d = mainDirection(old_d) + 0.99 * mainDirection(d);
