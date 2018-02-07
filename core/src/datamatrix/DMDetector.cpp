@@ -945,7 +945,7 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 
 			// follow left leg downwards
 			t = startTracer;
-			t.setDirection(t.left());
+			t.setDirection(tlTracer.right());
 			if (!t.traceLine(t.left(), lineL))
 				continue;
 
