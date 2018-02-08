@@ -781,8 +781,7 @@ public:
 		} while (true);
 	}
 
-	bool traceGaps(PointF dEdge, RegressionLine& line, int maxStepSize, const RegressionLine& startLine,
-				   const RegressionLine& finishLine)
+	bool traceGaps(PointF dEdge, RegressionLine& line, int maxStepSize, const RegressionLine& finishLine)
 	{
 		line.setDirectionInward(dEdge);
 		int gaps = 0;
@@ -796,10 +795,6 @@ public:
 
 			if (std::abs(diff * PointI(d)) > 1) {
 				++gaps;
-				// check if we ended up 'behind' the startLine. might happen with random data due to the
-				// 'go outward' step in traceStep.
-				if (startLine.signedDistance(p) < 0)
-					return false;
 				if (line.length() > 5) {
 					line.evaluate(true);
 					if (!updateDirectionFromOrigin(p - line.project(p) + line.points().front()))
@@ -954,10 +949,8 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 			if (!t.traceLine(t.left(), lineL))
 				continue;
 
-			if (!lineL.isValid()) {
+			if (!lineL.isValid())
 				t.updateDirectionFromOrigin(tl);
-				lineL.evaluate();
-			}
 			auto up = t.back();
 			bl = t.traceCorner(t.left());
 
@@ -967,10 +960,8 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 			if (!t.traceLine(t.left(), lineB))
 				continue;
 
-			if (!lineB.isValid()) {
+			if (!lineB.isValid())
 				t.updateDirectionFromOrigin(bl);
-				lineB.evaluate();
-			}
 			auto right = t.front();
 			br = t.traceCorner(t.left());
 
@@ -984,18 +975,18 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 			// at this point we found a plausible L-shape and are now looking for the b/w pattern at the top and right:
 			// follow top row right 'half way' (4 gaps), see traceGaps break condition with 'invalid' line
 			tlTracer.setDirection(right);
-			if (!tlTracer.traceGaps(tlTracer.right(), lineT, maxStepSize, lineL, RegressionLine()))
+			if (!tlTracer.traceGaps(tlTracer.right(), lineT, maxStepSize, RegressionLine()))
 				continue;
 
 			maxStepSize = std::max(lineT.length() / 4, static_cast<int>(lenL / 5 + 1));
 
 			// follow up until we reach the top line
 			t.setDirection(up);
-			if (!t.traceGaps(t.left(), lineR, maxStepSize, lineB, lineT))
+			if (!t.traceGaps(t.left(), lineR, maxStepSize, lineT))
 				continue;
 
 			// continue top row right until we cross the right line
-			if (!tlTracer.traceGaps(tlTracer.right(), lineT, maxStepSize, lineL, lineR))
+			if (!tlTracer.traceGaps(tlTracer.right(), lineT, maxStepSize, lineR))
 				continue;
 
 			tr = t.traceCorner(t.left());
