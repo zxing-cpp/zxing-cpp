@@ -556,9 +556,9 @@ public:
 	int length() const { return _points.size() >= 2 ? int(distance(_points.front(), _points.back())) : 0; }
 	bool isValid() const { return !std::isnan(a); }
 	PointF normal() const { return PointF(a, b); }
-	PointF project(PointF p) const { return p - (normal() * p - c) * normal(); }
-	PointF project(PointI p) const { return project(PointF(p)); }
 	double signedDistance(PointF p) const { return normal() * p - c; }
+	PointF project(PointF p) const { return p - signedDistance(p) * normal(); }
+	PointF project(PointI p) const { return project(PointF(p)); }
 
 	void reverse() { std::reverse(_points.begin(), _points.end()); }
 
