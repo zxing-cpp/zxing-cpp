@@ -810,10 +810,15 @@ public:
 				if (!finishLine.isValid() && gaps >= 4)
 					return true;
 			}
-			if (line.isValid()) {
-				// if we are drifting towards the inside of the code, pull the current position back out onto the line
-				if (line.signedDistance(p) > 2)
-					p = line.project(p) + d;
+			// if we are drifting towards the inside of the code, pull the current position back out onto the line
+			if (line.isValid() && line.signedDistance(p) > 2) {
+				// The current direction d and the line we are tracing are supposed to be roughly parallel.
+				// In case the 'go outward' step in traceStep lead us astray, we might end up with a line
+				// that is almost perpendicular to d. Then the back-projection below can result in an
+				// endless loop. Break if the angle between d and line is greater than 45 deg.
+				if (d * line.normal() / distance(d, {}) > 0.7) // thresh is approx. sin(45 deg)
+					return false;
+				p = line.project(p) + d;
 			}
 
 			if (finishLine.isValid())
