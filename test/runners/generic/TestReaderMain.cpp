@@ -282,6 +282,7 @@ int main(int argc, char** argv)
 
 	pathPrefix = argv[1];
 	bool isPure = getenv("IS_PURE");
+	int rotation = getenv("ROTATION") ? atoi(getenv("ROTATION")) : 0;
 
 	if ( Contains(std::vector<std::string>{".png", ".jpg", ".pgm", ".gif"}, pathPrefix.extension()) ) {
 #if 0
@@ -290,7 +291,7 @@ int main(int argc, char** argv)
 		TestReader reader(true, true);
 #endif
 		for (int i = 1; i < argc; ++i) {
-			auto result = reader.read(argv[i], 0, isPure);
+			auto result = reader.read(argv[i], rotation, isPure);
 			std::cout << argv[i] << ": ";
 			if (result)
 				std::cout << result.format << ": " << result.text << "\n";

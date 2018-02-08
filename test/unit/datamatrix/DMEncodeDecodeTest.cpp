@@ -109,6 +109,7 @@ TEST(DMEncodeDecodeTest, EncodeDecodeRectangle)
 	std::wstring text[] = {
 	    L"Abc123!",
 	    L"Lorem ipsum. http://test/",
+	    L"3i0QnD^RcZO[\\#!]1,9zIJ{1z3qrvsq",
 	    L"AAAANAAAANAAAANAAAANAAAANAAAANAAAANAAAANAAAANAAAAN",
 	    L"http://test/~!@#*^%&)__ ;:'\"[]{}\\|-+-=`1029384",
 	    L"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
@@ -123,5 +124,7 @@ TEST(DMEncodeDecodeTest, EDIFACTWithEOD)
 {
 	TestEncodeDecode(L"https://test~[******]_");
 	TestEncodeDecode(L"abc<->ABCDE");
+	TestEncodeDecode(L"<ABCDEFG><ABCDEFGK>");
+	TestEncodeDecode(L"*CH/GN1/022/00");
 }
 
