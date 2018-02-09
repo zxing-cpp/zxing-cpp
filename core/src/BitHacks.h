@@ -105,14 +105,7 @@ inline int CountBitsSet(uint32_t v)
 // this is the same as log base 2 of v
 inline int HighestBitSet(uint32_t v)
 {
-	uint32_t r;
-	uint32_t shift;
-	r =     (v > 0xFFFF) << 4; v >>= r;
-	shift = (v > 0xFF  ) << 3; v >>= shift; r |= shift;
-	shift = (v > 0xF   ) << 2; v >>= shift; r |= shift;
-	shift = (v > 0x3   ) << 1; v >>= shift; r |= shift;
-	r |= (v >> 1);
-	return r;
+	return 31 - NumberOfLeadingZeros(v);
 }
 
 // shift a whole array of bits by offset bits to the right (thinking of the array as a contiguous stream of bits
