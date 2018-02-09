@@ -39,7 +39,7 @@ BitArray::setRange(int start, int end)
 		int firstBit = i > firstInt ? 0 : start & 0x1F;
 		int lastBit = i < lastInt ? 31 : end & 0x1F;
 		// Ones from firstBit to lastBit, inclusive
-		int mask = (2 << lastBit) - (1 << firstBit);
+		uint32_t mask = (2UL << lastBit) - (1UL << firstBit);
 		_bits[i] |= mask;
 	}
 }
@@ -60,7 +60,7 @@ BitArray::isRange(int start, int end, bool value) const
 		int firstBit = i > firstInt ? 0 : start & 0x1F;
 		int lastBit = i < lastInt ? 31 : end & 0x1F;
 		// Ones from firstBit to lastBit, inclusive
-		int mask = (2 << lastBit) - (1 << firstBit);
+		uint32_t mask = (2UL << lastBit) - (1UL << firstBit);
 		// Return false if we're looking for 1s and the masked bits[i] isn't all 1s (that is,
 		// equals the mask, or we're looking for 0s and the masked portion is not all 0s
 		if ((_bits[i] & mask) != (value ? mask : 0U)) {

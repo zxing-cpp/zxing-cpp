@@ -36,7 +36,8 @@ static const int MODULES_IN_STOP_PATTERN = 18;
 static int GetMinWidth(const Nullable<ResultPoint>& p1, const Nullable<ResultPoint>& p2)
 {
 	if (p1 == nullptr || p2 == nullptr) {
-		return std::numeric_limits<int>::max();
+		// the division prevents an integer overflow (see below). 120 million is still sufficiently large.
+		return std::numeric_limits<int>::max() / CodewordDecoder::MODULES_IN_CODEWORD;
 	}
 	return std::abs(static_cast<int>(p1.value().x()) - static_cast<int>(p2.value().x()));
 }
