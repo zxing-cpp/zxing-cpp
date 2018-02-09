@@ -58,6 +58,7 @@ inline int NumberOfLeadingZeros(uint32_t x)
 inline int NumberOfTrailingZeros(uint32_t v)
 {
 #ifdef ZX_HAS_GCC_BUILTINS
+	assert(v != 0);
 	return __builtin_ctz(v);
 #else
 	int c = 32;
@@ -135,6 +136,8 @@ void ShiftRight(std::vector<T>& bits, size_t offset)
 template <typename T>
 void Reverse(std::vector<T>& bits, size_t padding)
 {
+	static_assert(sizeof(T) == sizeof(uint32_t), "Reverse only implemented for 32 bit types");
+
 	// reverse all int's first (reversing the ints in the array and the bits in the ints at the same time)
 	auto first = bits.begin(), last = bits.end();
 	for (; first < --last; ++first) {

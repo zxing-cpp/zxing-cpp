@@ -93,6 +93,7 @@ add_executable (ZXingUnitTest
     pdf417/PDF417ErrorCorrectionTest.cpp
     pdf417/PDF417HighLevelEncoderTest.cpp
     pdf417/PDF417WriterTest.cpp
+    BitHacksTest.cpp
 )
 
 target_include_directories (ZXingUnitTest
