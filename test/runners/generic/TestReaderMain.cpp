@@ -36,9 +36,13 @@
 #include <chrono>
 #include <stdexcept>
 
+#ifdef __GNUC__
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
 #include <boost/filesystem.hpp>
-
 namespace fs = boost::filesystem;
+#endif
 
 using namespace ZXing;
 
