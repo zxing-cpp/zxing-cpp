@@ -36,7 +36,7 @@
 #include <chrono>
 #include <stdexcept>
 
-#ifdef __GNUC__
+#if defined(__GNUC__) && ! defined(__clang__)
 #include <experimental/filesystem>
 namespace fs = std::experimental::filesystem;
 #else
