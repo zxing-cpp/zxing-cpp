@@ -468,12 +468,12 @@ template <typename T> bool operator != (const PointT<T>& a, const PointT<T>& b)
 	return !(a == b);
 }
 
-template <typename T, typename U> PointT<T> operator + (const PointT<T>& a, const PointT<U>& b)
+template <typename T, typename U> auto operator + (const PointT<T>& a, const PointT<U>& b) -> PointT<decltype(a.x + b.x)>
 {
 	return {a.x + b.x, a.y + b.y};
 }
 
-template <typename T, typename U> PointT<T> operator - (const PointT<T>& a, const PointT<U>& b)
+template <typename T, typename U> auto operator - (const PointT<T>& a, const PointT<U>& b) -> PointT<decltype(a.x - b.x)>
 {
 	return {a.x - b.x, a.y - b.y};
 }
@@ -488,9 +488,9 @@ template <typename T, typename U> PointT<T> operator / (const PointT<T>& a, U d)
 	return {a.x / d, a.y / d};
 }
 
-template <typename T> double operator * (const PointT<T>& a, const PointT<T>& b)
+template <typename T, typename U> double operator * (const PointT<T>& a, const PointT<U>& b)
 {
-	return a.x * b.x + a.y * b.y;
+	return double(a.x) * b.x + a.y * b.y;
 }
 
 template <typename T> double distance(PointT<T> a, PointT<T> b)
