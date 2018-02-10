@@ -640,7 +640,11 @@ class EdgeTracer
 	PointF p; // current position
 	PointF d; // current direction
 
-	static PointF mainDirection(PointF d) { return std::abs(d.x) > std::abs(d.y) ? PointF(d.x, 0) : PointF(0, d.y); }
+	static PointF mainDirection(PointF d)
+	{
+		assert(std::abs(d.x) != std::abs(d.y));
+		return std::abs(d.x) > std::abs(d.y) ? PointF(d.x, 0) : PointF(0, d.y);
+	}
 
 	enum class StepResult { FOUND, OPEN_END, CLOSED_END };
 
@@ -752,7 +756,9 @@ public:
 		if (d * old_d < 0)
 			return false;
 		// make sure d stays in the same quadrant to prevent an infinite loop
-		if (mainDirection(d) != mainDirection(old_d))
+		if (std::abs(d.x) == std::abs(d.y))
+			d = mainDirection(old_d) + 0.99 * (d - mainDirection(old_d));
+		else if (mainDirection(d) != mainDirection(old_d))
 			d = mainDirection(old_d) + 0.99 * mainDirection(d);
 		return true;
 	}
