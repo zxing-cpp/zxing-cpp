@@ -556,9 +556,8 @@ public:
 	int length() const { return _points.size() >= 2 ? int(distance(_points.front(), _points.back())) : 0; }
 	bool isValid() const { return !std::isnan(a); }
 	PointF normal() const { return PointF(a, b); }
-	double signedDistance(PointF p) const { return normal() * p - c; }
-	PointF project(PointF p) const { return p - signedDistance(p) * normal(); }
-	PointF project(PointI p) const { return project(PointF(p)); }
+	double signedDistance(PointI p) const { return normal() * p - c; }
+	PointF project(PointI p) const { return p - signedDistance(p) * normal(); }
 
 	void reverse() { std::reverse(_points.begin(), _points.end()); }
 
@@ -575,7 +574,7 @@ public:
 			while (true) {
 				old_points_size = _points.size();
 				_points.erase(std::remove_if(_points.begin(), _points.end(),
-											 [this](PointI p) { return this->signedDistance(PointF(p)) > 1.5; }),
+											 [this](PointI p) { return this->signedDistance(p) > 1.5; }),
 							  _points.end());
 				if (old_points_size == _points.size())
 					break;
@@ -637,7 +636,7 @@ PointF intersect(const RegressionLine& l1, const RegressionLine& l2)
 class EdgeTracer
 {
 	const BitMatrix& image;
-	PointF p; // current position
+	PointI p; // current position
 	PointF d; // current direction
 
 	static PointF mainDirection(PointF d)
@@ -688,7 +687,7 @@ class EdgeTracer
 			for (int step = 1; step <= maxStepSize; ++step)
 				for (int i = 0; i <= 2*(step/4+1) * breadth; ++i) {
 					auto pEdge = p + step * d + (i&1 ? (i+1)/2 : -i/2) * dEdge;
-					log(pEdge);
+					log(round(pEdge));
 
 					if (!blackAt(pEdge + dEdge))
 						continue;
@@ -696,13 +695,13 @@ class EdgeTracer
 					// found black pixel -> go 'outward' until we hit the b/w border
 					for (int j = 0; j < std::max(maxStepSize, 3) && isIn(pEdge); ++j) {
 						if (whiteAt(pEdge)) {
-							p = PointF(round(pEdge));
+							p = round(pEdge);
 							return StepResult::FOUND;
 						}
 						pEdge = pEdge - dEdge;
 						if (blackAt(pEdge - d))
 							pEdge = pEdge - d;
-						log(pEdge);
+						log(round(pEdge));
 					}
 					// no valid b/w border found within reasonable range
 					return StepResult::CLOSED_END;
@@ -715,14 +714,13 @@ public:
 	static BitMatrix _log;
 #endif
 
-	void log(PointF p) const
+	void log(PointI p) const
 	{
 #ifdef PRINT_DEBUG
 		if (_log.height() != image.height() || _log.width() != image.width())
 			_log = BitMatrix(image.width(), image.height());
-		auto q = round(p);
-		if (isIn(q))
-			_log.set(q.x, q.y);
+		if (isIn(p))
+			_log.set(p.x, p.y);
 #endif
 	}
 
@@ -741,7 +739,7 @@ public:
 
 	bool step(int s = 1)
 	{
-		p = p + s * d;
+		p = round(p + s * d);
 		log(p);
 		return isIn(p);
 	}
@@ -768,14 +766,14 @@ public:
 	PointF right() const { return {-d.y, d.x}; }
 	PointF left() const { return {d.y, -d.x}; }
 
-	bool isEdgeBehind() const { return isEdge(p, back()); }
+	bool isEdgeBehind() const { return isEdge(PointF(p), back()); }
 
 	bool traceLine(PointF dEdge, RegressionLine& line)
 	{
 		line.setDirectionInward(dEdge);
 		do {
 			log(p);
-			line.add(round(p));
+			line.add(p);
 			if (line.points().size() % 30 == 10) {
 				line.evaluate();
 				if (!updateDirectionFromOrigin(p - line.project(p) + line.points().front()))
@@ -793,11 +791,10 @@ public:
 		int gaps = 0;
 		do {
 			log(p);
-			PointI next_p = round(p);
-			PointI diff = line.points().empty() ? PointI() : next_p - line.points().back();
+			PointI diff = line.points().empty() ? PointI() : p - line.points().back();
 
-			if (line.points().empty() || line.points().back() != next_p)
-				line.add(next_p);
+			if (line.points().empty() || p != line.points().back())
+				line.add(p);
 
 			if (std::abs(diff * PointI(d)) > 1) {
 				++gaps;
@@ -819,7 +816,7 @@ public:
 				// endless loop. Break if the angle between d and line is greater than 45 deg.
 				if (d * line.normal() / distance(d, {}) > 0.7) // thresh is approx. sin(45 deg)
 					return false;
-				p = line.project(p) + d;
+				p = round(line.project(p) + d);
 			}
 
 			if (finishLine.isValid())
@@ -834,11 +831,11 @@ public:
 	PointF traceCorner(PointF dir)
 	{
 		step();
-		auto ret = p = PointF(round(p));
+		auto ret = PointF(p);
 		std::swap(d, dir);
 		traceStep(-1 * dir, 2, false);
 #ifdef PRINT_DEBUG
-		printf("turn: %f x %f -> %f, %f\n", p.x, p.y, d.x, d.y);
+		printf("turn: %d x %d -> %.2f, %.2f\n", p.x, p.y, d.x, d.y);
 #endif
 		return ret;
 	}
