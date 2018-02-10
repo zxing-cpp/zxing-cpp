@@ -695,6 +695,8 @@ class EdgeTracer
 					// found black pixel -> go 'outward' until we hit the b/w border
 					for (int j = 0; j < std::max(maxStepSize, 3) && isIn(pEdge); ++j) {
 						if (whiteAt(pEdge)) {
+							// if we are not making any progress, we still have another endless loop bug
+							assert(p != round(pEdge));
 							p = round(pEdge);
 							return StepResult::FOUND;
 						}
@@ -793,8 +795,8 @@ public:
 			log(p);
 			PointI diff = line.points().empty() ? PointI() : p - line.points().back();
 
-			if (line.points().empty() || p != line.points().back())
-				line.add(p);
+			assert(line.points().empty() || p != line.points().back());
+			line.add(p);
 
 			if (std::abs(diff * PointI(d)) > 1) {
 				++gaps;
@@ -803,10 +805,6 @@ public:
 					if (!updateDirectionFromOrigin(p - line.project(p) + line.points().front()))
 						return false;
 				}
-				// the minimum size is 10x10 -> 4 gaps
-				//TODO: maybe switch to termination condition based on bottom line length
-				if (!finishLine.isValid() && gaps >= 4)
-					return true;
 			}
 			// if we are drifting towards the inside of the code, pull the current position back out onto the line
 			if (line.isValid() && line.signedDistance(p) > 2) {
@@ -823,8 +821,14 @@ public:
 				maxStepSize = std::min(maxStepSize, static_cast<int>(finishLine.signedDistance(p)));
 
 			auto stepResult = traceStep(dEdge, maxStepSize, line.isValid());
+
+			// the minimum size is 10x10 -> 4 gaps
+			//TODO: maybe switch to termination condition based on bottom line length
+			if (!finishLine.isValid() && gaps == 4)
+				return stepResult == StepResult::FOUND;
+
 			if (stepResult != StepResult::FOUND)
-				return stepResult == StepResult::OPEN_END;
+				return stepResult == StepResult::OPEN_END && finishLine.isValid();
 		} while (true);
 	}
 
