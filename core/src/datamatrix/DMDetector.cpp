@@ -16,9 +16,9 @@
 * limitations under the License.
 */
 
-#ifndef NDEBUG
-#define PRINT_DEBUG
-#endif
+//#ifndef NDEBUG
+//#define PRINT_DEBUG
+//#endif
 
 #include "datamatrix/DMDetector.h"
 #include "BitMatrix.h"
