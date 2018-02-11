@@ -35,14 +35,8 @@
 #include <set>
 #include <chrono>
 #include <stdexcept>
-
-#if defined(__GNUC__) && ! defined(__clang__)
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
-#else
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
-#endif
 
 using namespace ZXing;
 

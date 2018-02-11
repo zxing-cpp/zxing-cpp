@@ -111,15 +111,15 @@ inline int HighestBitSet(uint32_t v)
 // shift a whole array of bits by offset bits to the right (thinking of the array as a contiguous stream of bits
 // starting with the LSB of the first int and ending with the MSB of the last int, this is actually a left shift)
 template <typename T>
-void ShiftRight(std::vector<T>& bits, size_t offset)
+void ShiftRight(std::vector<T>& bits, std::size_t offset)
 {
 	assert(offset < sizeof(T) * 8);
 
 	if (offset == 0 || bits.empty())
 		return;
 
-	size_t leftOffset = sizeof(T) * 8 - offset;
-	for (size_t i = 0; i < bits.size() - 1; ++i) {
+	std::size_t leftOffset = sizeof(T) * 8 - offset;
+	for (std::size_t i = 0; i < bits.size() - 1; ++i) {
 		bits[i] = (bits[i] >> offset) | (bits[i + 1] << leftOffset);
 	}
 	bits.back() >>= offset;
@@ -127,7 +127,7 @@ void ShiftRight(std::vector<T>& bits, size_t offset)
 
 // reverse a whole array of bits. padding is the number of 'dummy' bits at the end of the array
 template <typename T>
-void Reverse(std::vector<T>& bits, size_t padding)
+void Reverse(std::vector<T>& bits, std::size_t padding)
 {
 	static_assert(sizeof(T) == sizeof(uint32_t), "Reverse only implemented for 32 bit types");
 

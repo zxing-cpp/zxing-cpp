@@ -107,7 +107,7 @@ BitMatrixParser::ReadCodewords(const BitMatrix& bits)
 		*codeword = 0;
 		for (auto& p : bitPos) {
 			*codeword <<= 1;
-			*codeword |= dataBits.get(p.col, p.row);
+			*codeword |= static_cast<uint8_t>(dataBits.get(p.col, p.row));
 		}
 		++codeword;
 	});
