@@ -502,6 +502,11 @@ template <typename T> double distance(PointT<T> a, PointT<T> b)
 using PointI = PointT<int>;
 using PointF = PointT<double>;
 
+template <typename T> PointF normalized(PointT<T> a)
+{
+	return PointF(a) / distance(a, {});
+}
+
 PointI round(PointF p)
 {
 	return PointI(std::lround(p.x), std::lround(p.y));
@@ -515,7 +520,7 @@ class RegressionLine
 
 	friend PointF intersect(const RegressionLine& l1, const RegressionLine& l2);
 
-	void evaluate(const std::vector<PointI> ps)
+	bool evaluate(const std::vector<PointI> ps)
 	{
 		auto mean = std::accumulate(ps.begin(), ps.end(), PointF()) / ps.size();
 		double sumXX = 0, sumYY = 0, sumXY = 0;
@@ -536,6 +541,7 @@ class RegressionLine
 			b = -b;
 		}
 		c = normal() * mean; // (a*mean.x + b*mean.y);
+		return _directionInward * normal() > 0.5; // angle between original and new direction is at most 60 degree
 	}
 
 	template <typename Container, typename Filter>
@@ -555,7 +561,7 @@ public:
 	const std::vector<PointI>& points() const { return _points; }
 	int length() const { return _points.size() >= 2 ? int(distance(_points.front(), _points.back())) : 0; }
 	bool isValid() const { return !std::isnan(a); }
-	PointF normal() const { return PointF(a, b); }
+	PointF normal() const { return {a, b}; }
 	double signedDistance(PointI p) const { return normal() * p - c; }
 	PointF project(PointI p) const { return p - signedDistance(p) * normal(); }
 
@@ -563,12 +569,12 @@ public:
 
 	void add(PointI p) { _points.push_back(p); }
 
-	void setDirectionInward(PointF d) { _directionInward = d; }
+	void setDirectionInward(PointF d) { _directionInward = normalized(d); }
 
-	void evaluate(bool clean = false)
+	bool evaluate(bool clean = false)
 	{
 		auto ps = _points;
-		evaluate(ps);
+		bool ret = evaluate(ps);
 		if (clean) {
 			size_t old_points_size;
 			while (true) {
@@ -581,9 +587,10 @@ public:
 #ifdef PRINT_DEBUG
 				printf("removed %zu points\n", old_points_size - _points.size());
 #endif
-				evaluate(_points);
+				ret = evaluate(_points);
 			}
 		}
+		return ret;
 	}
 
 	double modules(PointF beg, PointF end) const
@@ -752,7 +759,7 @@ public:
 	{
 		auto old_d = d;
 		setDirection(p - origin);
-		// if the new direction is pointing "backward", i.e. angle(new, old) > pi/2 -> break
+		// if the new direction is pointing "backward", i.e. angle(new, old) > 90 deg -> break
 		if (d * old_d < 0)
 			return false;
 		// make sure d stays in the same quadrant to prevent an infinite loop
@@ -777,7 +784,8 @@ public:
 			log(p);
 			line.add(p);
 			if (line.points().size() % 30 == 10) {
-				line.evaluate();
+				if (!line.evaluate())
+					return false;
 				if (!updateDirectionFromOrigin(p - line.project(p) + line.points().front()))
 					return false;
 			}
@@ -801,20 +809,25 @@ public:
 			if (std::abs(diff * PointI(d)) > 1) {
 				++gaps;
 				if (line.length() > 5) {
-					line.evaluate(true);
+					if (!line.evaluate(true))
+						return false;
 					if (!updateDirectionFromOrigin(p - line.project(p) + line.points().front()))
+						return false;
+					// The current direction d and the line we are tracing are supposed to be roughly parallel.
+					// In case the 'go outward' step in traceStep lead us astray, we might end up with a line
+					// that is almost perpendicular to d. Then the back-projection below can result in an
+					// endless loop. Break if the angle between d and line is greater than 45 deg.
+					if (std::abs(normalized(d) * line.normal()) > 0.7) // thresh is approx. sin(45 deg)
 						return false;
 				}
 			}
-			// if we are drifting towards the inside of the code, pull the current position back out onto the line
-			if (line.isValid() && line.signedDistance(p) > 2) {
-				// The current direction d and the line we are tracing are supposed to be roughly parallel.
-				// In case the 'go outward' step in traceStep lead us astray, we might end up with a line
-				// that is almost perpendicular to d. Then the back-projection below can result in an
-				// endless loop. Break if the angle between d and line is greater than 45 deg.
-				if (d * line.normal() / distance(d, {}) > 0.7) // thresh is approx. sin(45 deg)
+			if (line.isValid()) {
+				// if we drifted too far outside of the code, break
+				if (line.signedDistance(p) < -5)
 					return false;
-				p = round(line.project(p) + d);
+				// if we are drifting towards the inside of the code, pull the current position back out onto the line
+				if (line.signedDistance(p) > 2)
+					p = round(line.project(p) + d);
 			}
 
 			if (finishLine.isValid())
@@ -992,10 +1005,6 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 			if (!t.traceGaps(t.left(), lineR, maxStepSize, lineT))
 				continue;
 
-			// continue top row right until we cross the right line
-			if (!tlTracer.traceGaps(tlTracer.right(), lineT, maxStepSize, lineR))
-				continue;
-
 			tr = t.traceCorner(t.left());
 
 			auto lenT = distance(tl, tr);
@@ -1003,6 +1012,10 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 
 			if (std::abs(lenT - lenB) / lenB > 0.5 || std::abs(lenR - lenL) / lenL > 0.5 ||
 				lineT.points().size() < 5 || lineR.points().size() < 5)
+				continue;
+
+			// continue top row right until we cross the right line
+			if (!tlTracer.traceGaps(tlTracer.right(), lineT, maxStepSize, lineR))
 				continue;
 
 #ifdef PRINT_DEBUG
