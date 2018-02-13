@@ -565,26 +565,31 @@ public:
 	const std::vector<PointI>& points() const { return _points; }
 	int length() const { return _points.size() >= 2 ? int(distance(_points.front(), _points.back())) : 0; }
 	bool isValid() const { return !std::isnan(a); }
-	PointF normal() const { return {a, b}; }
+	PointF normal() const { return isValid() ? PointF(a, b) : _directionInward; }
 	double signedDistance(PointI p) const { return normal() * p - c; }
 	PointF project(PointI p) const { return p - signedDistance(p) * normal(); }
 
 	void reverse() { std::reverse(_points.begin(), _points.end()); }
 
-	void add(PointI p) { _points.push_back(p); }
+	void add(PointI p) {
+		assert(_directionInward != PointF());
+		_points.push_back(p);
+		if (_points.size() == 1)
+			c = normal() * p;
+	}
 
 	void setDirectionInward(PointF d) { _directionInward = normalized(d); }
 
-	bool evaluate(bool clean = false)
+	bool evaluate(double maxDist = -1)
 	{
 		auto ps = _points;
 		bool ret = evaluate(ps);
-		if (clean) {
+		if (maxDist > 0) {
 			size_t old_points_size;
 			while (true) {
 				old_points_size = _points.size();
 				_points.erase(std::remove_if(_points.begin(), _points.end(),
-											 [this](PointI p) { return this->signedDistance(p) > 1.5; }),
+											 [this, maxDist](PointI p) { return this->signedDistance(p) > maxDist; }),
 							  _points.end());
 				if (old_points_size == _points.size())
 					break;
@@ -804,34 +809,35 @@ public:
 		line.setDirectionInward(dEdge);
 		int gaps = 0;
 		do {
-			log(p);
-			PointI diff = line.points().empty() ? PointI() : p - line.points().back();
-
 			assert(line.points().empty() || p != line.points().back());
-			line.add(p);
+			log(p);
 
-			if (std::abs(diff * PointI(d)) > 1) {
-				++gaps;
-				if (line.length() > 5) {
-					if (!line.evaluate(true))
-						return false;
-					if (!updateDirectionFromOrigin(p - line.project(p) + line.points().front()))
-						return false;
-					// The current direction d and the line we are tracing are supposed to be roughly parallel.
-					// In case the 'go outward' step in traceStep lead us astray, we might end up with a line
-					// that is almost perpendicular to d. Then the back-projection below can result in an
-					// endless loop. Break if the angle between d and line is greater than 45 deg.
-					if (std::abs(normalized(d) * line.normal()) > 0.7) // thresh is approx. sin(45 deg)
-						return false;
+			// if we drifted too far outside of the code, break
+			if (line.isValid() && line.signedDistance(p) < -5 && (!line.evaluate() || line.signedDistance(p) < -5))
+				return false;
+
+			// if we are drifting towards the inside of the code, pull the current position back out onto the line
+			if (line.signedDistance(p) > (line.isValid() ? 2 : 4))
+				p = round(line.project(p));
+			else {
+				auto stepLengthInMainDir = line.points().empty() ? 0.0 : mainDirection(d) * (p - line.points().back());
+				line.add(p);
+
+				if (stepLengthInMainDir > 1) {
+					++gaps;
+					if (gaps >= 2 || line.points().size() > 5) {
+						if (!line.evaluate(1.5))
+							return false;
+						if (!updateDirectionFromOrigin(p - line.project(p) + line.points().front()))
+							return false;
+						// The current direction d and the line we are tracing are supposed to be roughly parallel.
+						// In case the 'go outward' step in traceStep lead us astray, we might end up with a line
+						// that is almost perpendicular to d. Then the back-projection below can result in an
+						// endless loop. Break if the angle between d and line is greater than 45 deg.
+						if (std::abs(normalized(d) * line.normal()) > 0.7) // thresh is approx. sin(45 deg)
+							return false;
+					}
 				}
-			}
-			if (line.isValid()) {
-				// if we drifted too far outside of the code, break
-				if (line.signedDistance(p) < -5)
-					return false;
-				// if we are drifting towards the inside of the code, pull the current position back out onto the line
-				if (line.signedDistance(p) > 2)
-					p = round(line.project(p) + d);
 			}
 
 			if (finishLine.isValid())
@@ -914,19 +920,22 @@ static void printBitMatrix(const BitMatrix& matrix)
 static BitMatrix SampleGrid(const BitMatrix& image, PointF tl, PointF bl, PointF br, PointF tr, int dimensionX,
 							int dimensionY)
 {
-	// shrink shape by half a pixel to go from center of white pixel outside of code to the edge between white and black
-	auto moveHalfAPixel = [](PointF& a, PointF& b) {
-		auto a2b = (b - a) / distance(a, b);
-		a = a + 0.5 * a2b;
+	auto moveTowardsBy = [](PointF& a, const PointF& b, double d) {
+		auto a2b = normalized(b - a);
+		a = a + d * a2b;
 	};
 
-	// move every point towards tr by half a pixel
-	// reasoning: for very low res scans, the top and right border tend to be around half a pixel moved inward already.
-	// for high res scans this half a pixel makes no difference anyway.
-	moveHalfAPixel(tl, tr);
-	moveHalfAPixel(bl, tr);
-	moveHalfAPixel(br, tr);
+	// shrink shape by half a pixel to go from center of white pixel outside of code to the edge between white and black
+	moveTowardsBy(tl, br, 0.5);
+	moveTowardsBy(br, tl, 0.5);
+	moveTowardsBy(bl, tr, 0.5);
+	// move the tr point a little less because the jagged top and right line tend to be statistically slightly
+	// inclined toward the center anyway.
+	moveTowardsBy(tr, bl, 0.3);
 
+	// work around a missing 'round' in GridSampler.
+	// TODO: the correct location for the rounding is after the transformation in GridSampler
+	// but that would currently break other 2D encoders
 	for (auto* p : {&tl, &bl, &br, &tr})
 		*p = *p + PointF(0.5, 0.5);
 
@@ -999,9 +1008,9 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 			auto right = t.front();
 			br = t.traceCorner(t.left());
 
-			auto lenL = distance(tl, bl);
-			auto lenB = distance(bl, br);
-			if (lenL < 10 || lenB < 10 || lenB < lenL/4 || lenB > lenL*8)
+			auto lenL = distance(tl, bl) - 1;
+			auto lenB = distance(bl, br) - 1;
+			if (lenL < 10 || lenB < 10 || lenB < lenL / 4 || lenB > lenL * 8)
 				continue;
 
 			auto maxStepSize = static_cast<int>(lenB / 5 + 1); // datamatrix dim is at least 10x10
@@ -1021,11 +1030,11 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 
 			tr = t.traceCorner(t.left());
 
-			auto lenT = distance(tl, tr);
-			auto lenR = distance(tr, br);
+			auto lenT = distance(tl, tr) - 1;
+			auto lenR = distance(tr, br) - 1;
 
 			if (std::abs(lenT - lenB) / lenB > 0.5 || std::abs(lenR - lenL) / lenL > 0.5 ||
-				lineT.points().size() < 5 || lineR.points().size() < 5)
+			        lineT.points().size() < 5 || lineR.points().size() < 5)
 				continue;
 
 			// continue top row right until we cross the right line
@@ -1037,8 +1046,8 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 			       tl.x - bl.x, tl.y - bl.y, br.x - bl.x, br.y - bl.y, (int)lenL, (int)lenB, (int)lenT, (int)lenR);
 #endif
 
-			for (auto l : {&lineL, &lineB, &lineT, &lineR})
-				l->evaluate(true);
+			for (RegressionLine* l : {&lineL, &lineB, &lineT, &lineR})
+				l->evaluate(0.75);
 
 			// find the bounding box corners of the code with sub-pixel precision by intersecting the 4 border lines
 			bl = intersect(lineB, lineL);
