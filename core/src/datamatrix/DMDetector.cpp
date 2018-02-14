@@ -819,7 +819,7 @@ public:
 				return false;
 
 			// if we are drifting towards the inside of the code, pull the current position back out onto the line
-			if (line.isValid() && line.signedDistance(p) > 2)
+			if (line.isValid() && line.signedDistance(p) > 3)
 				p = round(line.project(p));
 			else {
 				auto stepLengthInMainDir = line.points().empty() ? 0.0 : mainDirection(d) * (p - line.points().back());
@@ -1029,7 +1029,7 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 			if (!tlTracer.traceGaps(tlTracer.right(), lineT, maxStepSize, RegressionLine()))
 				continue;
 
-			maxStepSize = std::min(lineT.length() / 3, static_cast<int>(lenL / 5)) + 1;
+			maxStepSize = std::min(lineT.length() / 3, static_cast<int>(lenL / 5)) * 2;
 
 			// follow up until we reach the top line
 			t.setDirection(up);
@@ -1055,7 +1055,7 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 #endif
 
 			for (RegressionLine* l : {&lineL, &lineB, &lineT, &lineR})
-				l->evaluate(0.75);
+				l->evaluate(1.0);
 
 			// find the bounding box corners of the code with sub-pixel precision by intersecting the 4 border lines
 			bl = intersect(lineB, lineL);
