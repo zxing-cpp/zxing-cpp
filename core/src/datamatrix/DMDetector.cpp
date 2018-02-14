@@ -819,7 +819,7 @@ public:
 				return false;
 
 			// if we are drifting towards the inside of the code, pull the current position back out onto the line
-			if (line.signedDistance(p) > (line.isValid() ? 2 : 4))
+			if (line.isValid() && line.signedDistance(p) > 2)
 				p = round(line.project(p));
 			else {
 				auto stepLengthInMainDir = line.points().empty() ? 0.0 : mainDirection(d) * (p - line.points().back());
