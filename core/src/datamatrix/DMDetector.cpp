@@ -819,8 +819,15 @@ public:
 				return false;
 
 			// if we are drifting towards the inside of the code, pull the current position back out onto the line
-			if (line.isValid() && line.signedDistance(p) > 3)
-				p = round(line.project(p));
+			if (line.isValid() && line.signedDistance(p) > 3) {
+				auto np = line.project(p);
+				// make sure we are making progress even when back-projecting:
+				// consider a 90deg corner, rotated 45deg. we step away perpendicular from the line and get
+				// back projected where we left off the line.
+				if (distance(np, line.project(line.points().back())) < 1)
+					np = np + d;
+				p = round(np);
+			}
 			else {
 				auto stepLengthInMainDir = line.points().empty() ? 0.0 : mainDirection(d) * (p - line.points().back());
 				line.add(p);
