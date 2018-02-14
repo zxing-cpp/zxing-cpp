@@ -849,7 +849,8 @@ public:
 							return true;
 						}
 					}
-				}
+				} else if (gaps == 0 && line.points().size() >= 2 * maxStepSize)
+					return false; // no point in following a line that has no gaps
 			}
 
 			if (finishLine.isValid())
@@ -1006,8 +1007,6 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 			auto up = t.back();
 			bl = t.traceCorner(t.left());
 
-			tlTracer.setDirection(t.front());
-
 			// follow bottom leg right
 			if (!t.traceLine(t.left(), lineB))
 				continue;
@@ -1030,7 +1029,7 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 			if (!tlTracer.traceGaps(tlTracer.right(), lineT, maxStepSize, RegressionLine()))
 				continue;
 
-			maxStepSize = std::max(lineT.length() / 4, static_cast<int>(lenL / 5 + 1));
+			maxStepSize = std::min(lineT.length() / 3, static_cast<int>(lenL / 5)) + 1;
 
 			// follow up until we reach the top line
 			t.setDirection(up);
