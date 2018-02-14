@@ -578,6 +578,8 @@ public:
 			c = normal() * p;
 	}
 
+	void pop_back() { _points.pop_back(); }
+
 	void setDirectionInward(PointF d) { _directionInward = normalized(d); }
 
 	bool evaluate(double maxDist = -1)
@@ -836,6 +838,16 @@ public:
 						// endless loop. Break if the angle between d and line is greater than 45 deg.
 						if (std::abs(normalized(d) * line.normal()) > 0.7) // thresh is approx. sin(45 deg)
 							return false;
+						// check if the first half of the top-line trace is complete.
+						// the minimum code size is 10x10 -> every code has at least 4 gaps
+						//TODO: maybe switch to termination condition based on bottom line length to get a better
+						// finishLine for the right line trace
+						if (!finishLine.isValid() && gaps == 4) {
+							// undo the last insert, it will be inserted again after the restart
+							line.pop_back();
+							--gaps;
+							return true;
+						}
 					}
 				}
 			}
@@ -845,13 +857,10 @@ public:
 
 			auto stepResult = traceStep(dEdge, maxStepSize, line.isValid());
 
-			// the minimum size is 10x10 -> 4 gaps
-			//TODO: maybe switch to termination condition based on bottom line length
-			if (!finishLine.isValid() && gaps == 4)
-				return stepResult == StepResult::FOUND;
-
 			if (stepResult != StepResult::FOUND)
-				return stepResult == StepResult::OPEN_END && finishLine.isValid();
+				// we are successful iff we found an open end across a valid finishLine
+				return stepResult == StepResult::OPEN_END && finishLine.isValid() &&
+					   static_cast<int>(finishLine.signedDistance(p)) <= maxStepSize + 1;
 		} while (true);
 	}
 
