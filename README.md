@@ -56,3 +56,18 @@ except for specific usecases, you won't notice the difference!
 1. Edit wrappers/android/jni/Application.mk and adjust for your project.
 2. On command line, being in wrappers/android, type `ndk-build` (or `ndk-build -j <number of your CPU cores>`)
 3. Copy files in `libs` and `java` into corresponding folders of your Android project.
+
+### For other platforms
+Wrappers are provided as convenient way to work with native image format. You still can use the library without a wrapper.
+
+##### To read barcodes:
+1. Create a `LuminanceSource` instance. This interface abstracts image source. You will need a third-party library to read your images. If you already have the image uncompressed in memory and you know its layout, you can easily go with `GenericLuminanceSource`. Otherwise, you will need to come up with your own implementation of the interface.
+2. Use the `LuminanceSource` instance above to create an instance of `BinaryBitmap`. You have choices between `HybridBinarizer` or `GlobalHistogramBinarizer`. See class document in header files for more details on theses choices.
+3. Create an instance of `MultiFormatReader` with appropriate hints. Pay attention to `possibleFormats()`, `shouldTryHarder()`, `shouldTryRotate()`. These parameters will affect accuracy as well as reader's speed.
+4. Call `MultiFormatReader::read()` with the `BinaryImage` created above to read your barcodes.
+
+##### To write barcodes:
+1. Create a `MultiFormatWriter` instance with the format you want to generate. Set encoding and margins if needed.
+2. Call `encode()` with text content and the image size. This returns an `BitMatrix` which kind of binary image of the barcode where `true` == visual black and `false` == visual white.
+3. Convert the bit matrix to your native image format.
+
