@@ -740,6 +740,9 @@ namespace EdifactEncoder {
 				auto symbolInfo = context.updateSymbolInfo(codewordCount);
 				int available = symbolInfo->dataCapacity() - codewordCount;
 				int remaining = context.remainingCharacters();
+				// The following two lines are a hack inspired by the 'fix' from https://sourceforge.net/p/barcode4j/svn/221/
+				if (remaining > available)
+					available = context.updateSymbolInfo(codewordCount+1)->dataCapacity() - codewordCount;
 				if (remaining <= available && available <= 2) {
 					return; //No unlatch
 				}

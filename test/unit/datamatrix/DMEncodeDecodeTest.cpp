@@ -40,7 +40,7 @@ using namespace ZXing;
 
 namespace {
 
-	void TestEncodeDecode(const std::wstring& data, DataMatrix::SymbolShape shape = DataMatrix::SymbolShape::SQUARE)
+	void TestEncodeDecode(const std::wstring& data, DataMatrix::SymbolShape shape = DataMatrix::SymbolShape::NONE)
 	{
 		DataMatrix::Writer writer;
 		writer.setShapeHint(shape);
@@ -53,10 +53,10 @@ namespace {
 			Utility::WriteBitMatrixAsPBM(matrix, std::ofstream("failed-datamatrix.pbm"), 4);
 #endif
 		ASSERT_EQ(res.isValid(), true) << "text size: " << data.size() << ", code size: " << matrix.height() << "x"
-									   << matrix.width() << "\n"
+									   << matrix.width() << ", shape: " << static_cast<int>(shape) << "\n"
 									   << (matrix.width() < 80 ? Utility::ToString(matrix) : std::string());
 		EXPECT_EQ(data, res.text()) << "text size: " << data.size() << ", code size: " << matrix.height() << "x"
-									<< matrix.width() << "\n"
+									<< matrix.width() << ", shape: " << static_cast<int>(shape) << "\n"
 									<< (matrix.width() < 80 ? Utility::ToString(matrix) : std::string());
 	}
 }
@@ -101,7 +101,7 @@ TEST(DMEncodeDecodeTest, EncodeDecodeSquare)
 	};
 
 	for (auto data : text)
-		TestEncodeDecode(data);
+		TestEncodeDecode(data, DataMatrix::SymbolShape::SQUARE);
 }
 
 TEST(DMEncodeDecodeTest, EncodeDecodeRectangle)
@@ -122,9 +122,15 @@ TEST(DMEncodeDecodeTest, EncodeDecodeRectangle)
 
 TEST(DMEncodeDecodeTest, EDIFACTWithEOD)
 {
-	TestEncodeDecode(L"https://test~[******]_");
-	TestEncodeDecode(L"abc<->ABCDE");
-	TestEncodeDecode(L"<ABCDEFG><ABCDEFGK>");
-	TestEncodeDecode(L"*CH/GN1/022/00");
+	using namespace DataMatrix;
+	std::wstring text[] = {
+	    L"https://test~[******]_",
+		L"abc<->ABCDE",
+		L"<ABCDEFG><ABCDEFGK>",
+		L"*CH/GN1/022/00",
+	};
+	for (auto data : text)
+		for (auto shape : {SymbolShape::NONE, SymbolShape::SQUARE, SymbolShape::RECTANGLE})
+			TestEncodeDecode(data, shape);
 }
 
