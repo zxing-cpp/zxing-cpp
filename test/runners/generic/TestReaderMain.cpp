@@ -22,9 +22,11 @@
 #include "Result.h"
 #include "DecodeHints.h"
 #include "TextDecoder.h"
-#include "TextEncoder.h"
+#include "TextUtfEncoding.h"
 #include "CharacterSet.h"
 #include "ZXContainerAlgorithms.h"
+
+#include "lodepng.h"
 
 #include <iostream>
 #include <fstream>
@@ -55,33 +57,15 @@ static std::vector<fs::path> getImagesInDirectory(const fs::path& dirPath)
 	return result;
 }
 
-static std::shared_ptr<LuminanceSource> readPNM(FILE* f)
-{
-	int w, h;
-	if (fscanf(f, "P5\n%d %d\n255\n", &w, &h) != 2)
-		throw std::runtime_error("Failed to parse PNM file header.");
-	auto ba = std::make_shared<ByteArray>(w * h);
-	auto read = fread(ba->data(), sizeof(uint8_t), w*h, f);
-//	if (read != w * h)
-//		throw std::runtime_error("Failed to read PNM file data: " + std::to_string(read) + " != " + std::to_string(w * h) + " -> " + std::to_string(feof(f)));
-	return std::make_shared<GenericLuminanceSource>(0, 0, w, h, ba, w);
-}
-
 static std::shared_ptr<LuminanceSource> readImage(const fs::path& filename)
 {
-	std::string cmd = "convert '" + filename.native() + "' -intensity Rec601Luma -colorspace gray +set comment pgm:-";
-	bool pipe = filename.extension() != ".pgm";
-	FILE* f = pipe ? popen(cmd.c_str(), "r") : fopen(filename.c_str(), "r");
-	if (!f)
-		throw std::runtime_error("Failed to open pipe '" + cmd + "': " + std::strerror(errno));
-	try {
-		auto res = readPNM(f);
-		pipe ? pclose(f) : fclose(f);
-		return res;
-	} catch (std::runtime_error& e) {
-		pipe ? pclose(f) : fclose(f);
-		throw std::runtime_error("Failed to read pipe '" + cmd + "': " + e.what());
+	std::vector<unsigned char> buffer;
+	unsigned width, height;
+  	unsigned error = lodepng::decode(buffer, width, height, filename.native());
+	if (error) {
+		throw std::runtime_error("Failed to read image");
 	}
+	return std::make_shared<GenericLuminanceSource>((int)width, (int)height, buffer.data(), width*4, 4, 0, 1, 2);
 }
 
 #if 0
@@ -120,7 +104,9 @@ public:
 			binImg = std::make_shared<Binarizer>(readImage(filename), isPure);
 		auto result = _reader->read(*binImg->rotated(rotation));
 		if (result.isValid()) {
-			return {ToString(result.format()), TextEncoder::FromUnicode(result.text(), CharacterSet::UTF8)};
+			std::string text;
+			TextUtfEncoding::ToUtf8(result.text(), text);
+			return {ToString(result.format()), text};
 		}
 		return {};
 	}
@@ -164,7 +150,8 @@ static std::string checkResult(fs::path imgPath, const std::string& expectedForm
 	if (latin1Stream) {
 		std::wstring rawStr = TextDecoder::FromLatin1(
 		    std::string((std::istreambuf_iterator<char>(latin1Stream)), std::istreambuf_iterator<char>()));
-		std::string expected = TextEncoder::FromUnicode(rawStr, CharacterSet::UTF8);
+		std::string expected;
+		TextUtfEncoding::ToUtf8(rawStr, expected);
 		return result.text != expected ? "Content mismatch: expected " + expected + " but got " + result.text : "";
 	}
 	return "Error reading file";
@@ -188,11 +175,11 @@ static void doRunTests(std::ostream& cout, const fs::path& directory, const char
 		cout << "TEST " << folderName << " => Expected number of tests: " << imageCount
 		     << ", got: " << images.size() << " => " << BAD << std::endl;
 
-	TestReader scanners[2] = {TestReader(false, false, format), TestReader(true, true, format)};
+	//TestReader scanners[2] = {TestReader(false, false, format), TestReader(true, true, format)};
 
 	for (auto& test : tests) {
 
-		printf("%-20s @ %3d°, total: %3lu", folderName.c_str(), test.rotation, images.size());
+		printf("%-20s @ %3d°, total: %3u", folderName.c_str(), test.rotation, images.size());
 		for (int i = 0; i < Length(scanners); ++i) {
 			auto tc = test.tc[i];
 
@@ -209,7 +196,7 @@ static void doRunTests(std::ostream& cout, const fs::path& directory, const char
 
 			auto passCount = images.size() - tc.misReadFiles.size() - tc.notDetectedFiles.size();
 
-			printf(", %s: %3lu of %3d, misread: %lu of %d", tc.name, passCount, tc.mustPassCount,
+			printf(", %s: %3u of %3d, misread: %u of %d", tc.name, passCount, tc.mustPassCount,
 				   tc.misReadFiles.size(), tc.maxMisreads);
 
 			if (passCount < tc.mustPassCount && !tc.notDetectedFiles.empty()) {
@@ -260,8 +247,8 @@ static void doRunFalsePositiveTests(std::ostream& cout, const fs::path& director
 			}
 		}
 
-		printf("%-20s @ %3d°, total: %3lu", folderName.c_str(), test.rotation, images.size());
-		printf(", allowed: %2d, fast: %2lu, slow: %2lu", test.maxAllowed, misReadFiles[0].size(),
+		printf("%-20s @ %3d°, total: %3u", folderName.c_str(), test.rotation, images.size());
+		printf(", allowed: %2d, fast: %2u, slow: %2u", test.maxAllowed, misReadFiles[0].size(),
 			   misReadFiles[1].size());
 		if (test.maxAllowed < misReadFiles[0].size() || test.maxAllowed < misReadFiles[1].size()) {
 			for (int i = 0; i < 2; ++i) {

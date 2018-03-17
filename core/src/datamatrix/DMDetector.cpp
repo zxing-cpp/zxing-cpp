@@ -856,7 +856,7 @@ public:
 							return true;
 						}
 					}
-				} else if (gaps == 0 && line.points().size() >= 2 * maxStepSize)
+				} else if (gaps == 0 && line.points().size() >= 2u * maxStepSize)
 					return false; // no point in following a line that has no gaps
 			}
 

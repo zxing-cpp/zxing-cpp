@@ -26,6 +26,8 @@ if (ENABLE_DECODERS)
     find_package(Boost COMPONENTS system filesystem REQUIRED)
     add_executable (ReaderTest
         TestReaderMain.cpp
+        lodepng.cpp
+        lodepng.h
     )
     target_link_libraries (ReaderTest ZXingCore
         ${Boost_FILESYSTEM_LIBRARY}
