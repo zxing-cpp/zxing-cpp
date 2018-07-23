@@ -41,6 +41,8 @@
 
 // c++14 exchange
 #if !defined(_MSC_VER) && __cplusplus < 201402
+#if defined(__ANDROID__) && defined(__GNUC__)
+#else
 namespace std {
 
 template<class T, class U = T>
@@ -52,6 +54,7 @@ T exchange(T& obj, U&& new_value)
 }
 
 }
+#endif
 #endif
 
 namespace ZXing {
@@ -513,7 +516,11 @@ template <typename T> PointF normalized(PointT<T> a)
 
 PointI round(PointF p)
 {
+#if defined(__ANDROID__) && defined(__GNUC__)
+    return PointI(lround(p.x), lround(p.y));
+#else
 	return PointI(std::lround(p.x), std::lround(p.y));
+#endif
 }
 
 class RegressionLine
