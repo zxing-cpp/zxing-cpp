@@ -180,7 +180,7 @@ public:
 		return bestMatch;
 	}
 
-protected:
+public:
 	static float PatternMatchVariance(const int *counters, const int* pattern, size_t length, float maxIndividualVariance);
 };
 
