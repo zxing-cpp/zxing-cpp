@@ -27,8 +27,7 @@ Version::Version(int versionNumber, int symbolSizeRows, int symbolSizeColumns, i
 	_symbolSizeColumns(symbolSizeColumns),
 	_dataRegionSizeRows(dataRegionSizeRows),
 	_dataRegionSizeColumns(dataRegionSizeColumns),
-	_ecBlocks(ecBlocks),
-	_totalCodewords(ecBlocks.totalDataCodewords())
+	_ecBlocks(ecBlocks)
 {
 }
 
@@ -83,9 +82,9 @@ Version::VersionForDimensions(int numRows, int numColumns)
 			{30, 16, 48, 14, 22,   {28, 1, 49 , 0, 0}},
 	};
 
-	for (int i = 0; i < Length(allVersions); ++i) {
-		if (allVersions[i]._symbolSizeRows == numRows && allVersions[i]._symbolSizeColumns == numColumns) {
-			return allVersions + i;
+	for (auto& version : allVersions) {
+		if (version._symbolSizeRows == numRows && version._symbolSizeColumns == numColumns) {
+			return &version;
 		}
 	}
 	return nullptr;

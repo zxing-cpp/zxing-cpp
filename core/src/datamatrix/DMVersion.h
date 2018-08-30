@@ -51,7 +51,7 @@ public:
 	}
 
 	int totalCodewords() const {
-		return _totalCodewords;
+		return _ecBlocks.totalDataCodewords();
 	}
 
 	const ECBlocks& ecBlocks() const {
@@ -75,7 +75,6 @@ private:
 	int _dataRegionSizeRows;
 	int _dataRegionSizeColumns;
 	ECBlocks _ecBlocks;
-	int _totalCodewords;
 
 	Version(int versionNumber, int symbolSizeRows, int symbolSizeColumns, int dataRegionSizeRows, int dataRegionSizeColumns, const ECBlocks& ecBlocks);
 };
