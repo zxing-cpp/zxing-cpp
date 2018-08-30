@@ -5,7 +5,7 @@ project (ZXingTest)
 set (ENABLE_ENCODERS OFF CACHE BOOL "Check to include encoders")
 set (ENABLE_DECODERS ON CACHE BOOL "Check to include decoders")
 
-add_definitions (-DUNICODE -D_UNICODE)
+add_definitions (-DUNICODE -D_UNICODE -DLODEPNG_NO_COMPILE_ENCODER)
 
 if (MSVC)
     set (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /Oi /GS-")
