@@ -39,24 +39,6 @@
 #include <map>
 #include <numeric>
 
-// c++14 exchange
-#if !defined(_MSC_VER) && __cplusplus < 201402
-#if defined(__ANDROID__) && defined(__GNUC__)
-#else
-namespace std {
-
-template<class T, class U = T>
-T exchange(T& obj, U&& new_value)
-{
-    T old_value = std::move(obj);
-    obj = std::forward<U>(new_value);
-    return old_value;
-}
-
-}
-#endif
-#endif
-
 namespace ZXing {
 namespace DataMatrix {
 
@@ -516,11 +498,7 @@ template <typename T> PointF normalized(PointT<T> a)
 
 PointI round(PointF p)
 {
-#if defined(__ANDROID__) && defined(__GNUC__)
-    return PointI(lround(p.x), lround(p.y));
-#else
-	return PointI(std::lround(p.x), std::lround(p.y));
-#endif
+    return PointI(::lround(p.x), ::lround(p.y));
 }
 
 class RegressionLine
@@ -629,8 +607,11 @@ public:
 		auto i = gapSizes.begin();
 		for (auto dist : gapSizes) {
 			sum += dist;
-			if (dist > 1.9 * unitPixelDist)
-				*i++ = std::exchange(sum, 0.0);
+			if (dist > 1.9 * unitPixelDist) {
+				// c++14: *i++ = std::exchange(sum, 0.0);
+				*i++ = sum;
+				sum = 0.0;
+			}
 		}
 		*i++ = sum + distance(end, project(_points.back()));
 		gapSizes.erase(i, gapSizes.end());
