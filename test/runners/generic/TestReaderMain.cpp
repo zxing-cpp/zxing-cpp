@@ -179,7 +179,7 @@ static void doRunTests(std::ostream& cout, const fs::path& directory, const char
 
 	for (auto& test : tests) {
 
-		printf("%-20s @ %3d°, total: %3u", folderName.c_str(), test.rotation, images.size());
+		printf("%-20s @ %3d°, total: %3d", folderName.c_str(), test.rotation, (int)images.size());
 		for (int i = 0; i < Length(scanners); ++i) {
 			auto tc = test.tc[i];
 
@@ -196,8 +196,8 @@ static void doRunTests(std::ostream& cout, const fs::path& directory, const char
 
 			auto passCount = images.size() - tc.misReadFiles.size() - tc.notDetectedFiles.size();
 
-			printf(", %s: %3u of %3d, misread: %u of %d", tc.name, passCount, tc.mustPassCount,
-				   tc.misReadFiles.size(), tc.maxMisreads);
+			printf(", %s: %3d of %3d, misread: %d of %d", tc.name, (int)passCount, tc.mustPassCount,
+				   (int)tc.misReadFiles.size(), tc.maxMisreads);
 
 			if (passCount < tc.mustPassCount && !tc.notDetectedFiles.empty()) {
 //			if (!tc.notDetectedFiles.empty()) {
@@ -247,9 +247,8 @@ static void doRunFalsePositiveTests(std::ostream& cout, const fs::path& director
 			}
 		}
 
-		printf("%-20s @ %3d°, total: %3u", folderName.c_str(), test.rotation, images.size());
-		printf(", allowed: %2d, fast: %2u, slow: %2u", test.maxAllowed, misReadFiles[0].size(),
-			   misReadFiles[1].size());
+		printf("%-20s @ %3d°, total: %3d, allowed: %2d, fast: %2d, slow: %2d", folderName.c_str(), test.rotation,
+			   (int)images.size(), test.maxAllowed, (int)misReadFiles[0].size(), (int)misReadFiles[1].size());
 		if (test.maxAllowed < misReadFiles[0].size() || test.maxAllowed < misReadFiles[1].size()) {
 			for (int i = 0; i < 2; ++i) {
 				if (!misReadFiles[i].empty()) {
