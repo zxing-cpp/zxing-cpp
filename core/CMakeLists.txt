@@ -462,10 +462,33 @@ add_library (ZXingCore
 )
 
 target_include_directories (ZXingCore
-    PUBLIC src
+    PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>"
+    INTERFACE "$<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>"
 )
 
 target_compile_options (ZXingCore
     PUBLIC ${ZXING_CORE_DEFINES}
     PRIVATE ${ZXING_CORE_LOCAL_DEFINES}
 )
+
+add_library(ZXing::Core ALIAS ZXingCore)
+set_target_properties(ZXingCore PROPERTIES EXPORT_NAME Core)
+
+set(CMAKECONFIG_INSTALL_DIR "lib/cmake/ZXing")
+install(TARGETS ZXingCore EXPORT ZXingTargets
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION bin
+    ARCHIVE DESTINATION lib
+    INCLUDES DESTINATION include
+)
+install(EXPORT ZXingTargets DESTINATION ${CMAKECONFIG_INSTALL_DIR} NAMESPACE ZXing::)
+
+install(
+    DIRECTORY src/
+    DESTINATION include/ZXing
+    FILES_MATCHING PATTERN "*.h"
+)
+
+include(CMakePackageConfigHelpers)
+configure_package_config_file(ZXingConfig.cmake.in ZXingConfig.cmake INSTALL_DESTINATION ${CMAKECONFIG_INSTALL_DIR})
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ZXingConfig.cmake DESTINATION ${CMAKECONFIG_INSTALL_DIR})
