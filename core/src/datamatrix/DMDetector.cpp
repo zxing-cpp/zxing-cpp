@@ -808,6 +808,13 @@ public:
 
 			// if we are drifting towards the inside of the code, pull the current position back out onto the line
 			if (line.isValid() && line.signedDistance(p) > 3) {
+				// The current direction d and the line we are tracing are supposed to be roughly parallel.
+				// In case the 'go outward' step in traceStep lead us astray, we might end up with a line
+				// that is almost perpendicular to d. Then the back-projection below can result in an
+				// endless loop. Break if the angle between d and line is greater than 45 deg.
+				if (std::abs(normalized(d) * line.normal()) > 0.7) // thresh is approx. sin(45 deg)
+					return false;
+
 				auto np = line.project(p);
 				// make sure we are making progress even when back-projecting:
 				// consider a 90deg corner, rotated 45deg. we step away perpendicular from the line and get
@@ -826,12 +833,6 @@ public:
 						if (!line.evaluate(1.5))
 							return false;
 						if (!updateDirectionFromOrigin(p - line.project(p) + line.points().front()))
-							return false;
-						// The current direction d and the line we are tracing are supposed to be roughly parallel.
-						// In case the 'go outward' step in traceStep lead us astray, we might end up with a line
-						// that is almost perpendicular to d. Then the back-projection below can result in an
-						// endless loop. Break if the angle between d and line is greater than 45 deg.
-						if (std::abs(normalized(d) * line.normal()) > 0.7) // thresh is approx. sin(45 deg)
 							return false;
 						// check if the first half of the top-line trace is complete.
 						// the minimum code size is 10x10 -> every code has at least 4 gaps
