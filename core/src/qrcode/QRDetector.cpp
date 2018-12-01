@@ -324,9 +324,9 @@ ProcessFinderPatternInfo(const BitMatrix& image, const FinderPatternInfo& info)
 		return {std::move(bits), {info.bottomLeft, info.topLeft, info.topRight}};
 }
 
-DetectorResult Detector::Detect(const BitMatrix& image, bool pureBarcode, bool tryHarder)
+DetectorResult Detector::Detect(const BitMatrix& image, bool tryHarder)
 {
-	FinderPatternInfo info = FinderPatternFinder::Find(image, pureBarcode, tryHarder);
+	FinderPatternInfo info = FinderPatternFinder::Find(image, tryHarder);
 
 	if (!info.isValid())
 		return {};

@@ -47,96 +47,6 @@ static float CenterFromEnd(const StateCount& stateCount, int end)
 }
 
 /**
-* After a vertical and horizontal scan finds a potential finder pattern, this method
-* "cross-cross-cross-checks" by scanning down diagonally through the center of the possible
-* finder pattern to see if the same proportion is detected.
-*
-* @param startI row where a finder pattern was detected
-* @param centerJ center of the section that appears to cross a finder pattern
-* @param maxCount maximum reasonable number of modules that should be
-*  observed in any reading state, based on the results of the horizontal scan
-* @param originalStateCountTotal The original state count total.
-* @return true if proportions are withing expected limits
-*/
-static bool CrossCheckDiagonal(const BitMatrix& image, int startI, int centerJ, int maxCount, int originalStateCountTotal)
-{
-	StateCount stateCount = {};
-
-	// Start counting up, left from center finding black center mass
-	int i = 0;
-	while (startI >= i && centerJ >= i && image.get(centerJ - i, startI - i)) {
-		stateCount[2]++;
-		i++;
-	}
-
-	if (startI < i || centerJ < i) {
-		return false;
-	}
-
-	// Continue up, left finding white space
-	while (startI >= i && centerJ >= i && !image.get(centerJ - i, startI - i) &&
-		stateCount[1] <= maxCount) {
-		stateCount[1]++;
-		i++;
-	}
-
-	// If already too many modules in this state or ran off the edge:
-	if (startI < i || centerJ < i || stateCount[1] > maxCount) {
-		return false;
-	}
-
-	// Continue up, left finding black border
-	while (startI >= i && centerJ >= i && image.get(centerJ - i, startI - i) &&
-		stateCount[0] <= maxCount) {
-		stateCount[0]++;
-		i++;
-	}
-	if (stateCount[0] > maxCount) {
-		return false;
-	}
-
-	int maxI = image.height();
-	int maxJ = image.width();
-
-	// Now also count down, right from center
-	i = 1;
-	while (startI + i < maxI && centerJ + i < maxJ && image.get(centerJ + i, startI + i)) {
-		stateCount[2]++;
-		i++;
-	}
-
-	// Ran off the edge?
-	if (startI + i >= maxI || centerJ + i >= maxJ) {
-		return false;
-	}
-
-	while (startI + i < maxI && centerJ + i < maxJ && !image.get(centerJ + i, startI + i) &&
-		stateCount[3] < maxCount) {
-		stateCount[3]++;
-		i++;
-	}
-
-	if (startI + i >= maxI || centerJ + i >= maxJ || stateCount[3] >= maxCount) {
-		return false;
-	}
-
-	while (startI + i < maxI && centerJ + i < maxJ && image.get(centerJ + i, startI + i) &&
-		stateCount[4] < maxCount) {
-		stateCount[4]++;
-		i++;
-	}
-
-	if (stateCount[4] >= maxCount) {
-		return false;
-	}
-
-	// If we found a finder-pattern-like section, but its size is more than 100% different than
-	// the original, assume it's a false positive
-	int stateCountTotal = Accumulate(stateCount, 0);
-	return std::abs(stateCountTotal - originalStateCountTotal) < 2 * originalStateCountTotal && FinderPatternFinder::FoundPatternCross(stateCount);
-}
-
-/**
 * <p>After a horizontal scan finds a potential finder pattern, this method
 * "cross-checks" by scanning down vertically through the center of the possible
 * finder pattern to see if the same proportion is detected.</p>
@@ -470,7 +380,7 @@ static void OrderBestPatterns(std::vector<FinderPattern>& patterns)
 }
 
 
-FinderPatternInfo FinderPatternFinder::Find(const BitMatrix& image, bool pureBarcode, bool tryHarder)
+FinderPatternInfo FinderPatternFinder::Find(const BitMatrix& image, bool tryHarder)
 {
 	int maxI = image.height();
 	int maxJ = image.width();
@@ -506,7 +416,7 @@ FinderPatternInfo FinderPatternFinder::Find(const BitMatrix& image, bool pureBar
 				if ((currentState & 1) == 0) { // Counting black pixels
 					if (currentState == 4) { // A winner?
 						if (FoundPatternCross(stateCount)) { // Yes
-							bool confirmed = HandlePossibleCenter(image, stateCount, i, j, pureBarcode, possibleCenters);
+							bool confirmed = HandlePossibleCenter(image, stateCount, i, j, possibleCenters);
 							if (confirmed) {
 								// Start examining every other line. Checking each line turned out to be too
 								// expensive and didn't improve performance.
@@ -562,7 +472,7 @@ FinderPatternInfo FinderPatternFinder::Find(const BitMatrix& image, bool pureBar
 			}
 		}
 		if (FinderPatternFinder::FoundPatternCross(stateCount)) {
-			bool confirmed = FinderPatternFinder::HandlePossibleCenter(image, stateCount, i, maxJ, pureBarcode, possibleCenters);
+			bool confirmed = FinderPatternFinder::HandlePossibleCenter(image, stateCount, i, maxJ, possibleCenters);
 			if (confirmed) {
 				iSkip = stateCount[0];
 				if (hasSkipped) {
@@ -623,7 +533,7 @@ FinderPatternFinder::FoundPatternCross(const StateCount& stateCount) {
 * @return true if a finder pattern candidate was found this time
 */
 bool
-FinderPatternFinder::HandlePossibleCenter(const BitMatrix& image, const StateCount& stateCount, int i, int j, bool pureBarcode, std::vector<FinderPattern>& possibleCenters)
+FinderPatternFinder::HandlePossibleCenter(const BitMatrix& image, const StateCount& stateCount, int i, int j, std::vector<FinderPattern>& possibleCenters)
 {
 	int stateCountTotal = Accumulate(stateCount, 0);
 	float centerJ = CenterFromEnd(stateCount, j);
@@ -635,10 +545,6 @@ FinderPatternFinder::HandlePossibleCenter(const BitMatrix& image, const StateCou
 	centerJ = CrossCheckHorizontal(image, static_cast<int>(centerJ), static_cast<int>(centerI), stateCount[2],
 								   stateCountTotal);
 	if (std::isnan(centerJ))
-		return false;
-
-	if (pureBarcode &&
-		!CrossCheckDiagonal(image, static_cast<int>(centerI), static_cast<int>(centerJ), stateCount[2], stateCountTotal))
 		return false;
 
 	float estimatedModuleSize = stateCountTotal / 7.0f;

@@ -158,7 +158,7 @@ Reader::decode(const BinaryBitmap& image) const
 		decoderResult = Decoder::Decode(bits, _charset);
 	}
 	else {
-		DetectorResult detectorResult = Detector::Detect(*binImg, image.isPureBarcode(), _tryHarder);
+		DetectorResult detectorResult = Detector::Detect(*binImg, _tryHarder);
 		if (!detectorResult.isValid())
 			return Result(DecodeStatus::NotFound);
 
