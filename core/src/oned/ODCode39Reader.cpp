@@ -165,8 +165,26 @@ DecodeExtended(std::string& encoded)
 				if (next >= 'A' && next <= 'E') {
 					decodedChar = (char)(next - 38);
 				}
-				else if (next >= 'F' && next <= 'W') {
+				else if (next >= 'F' && next <= 'J') {
 					decodedChar = (char)(next - 11);
+				}
+				else if (next >= 'K' && next <= 'O') {
+					decodedChar = (char)(next + 16);
+				}
+				else if (next >= 'P' && next <= 'T') {
+					decodedChar = (char)(next + 43);
+				}
+				else if (next == 'U') {
+					decodedChar = (char)0;
+				}
+				else if (next == 'V') {
+					decodedChar = '@';
+				}
+				else if (next == 'W') {
+					decodedChar = '`';
+				}
+				else if (next == 'X' || next == 'Y' || next == 'Z') {
+					decodedChar = (char)127;
 				}
 				else {
 					return false;

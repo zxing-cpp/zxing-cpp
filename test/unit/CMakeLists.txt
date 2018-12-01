@@ -74,6 +74,7 @@ add_executable (ZXingUnitTest
     datamatrix/DMSymbolInfoTest.cpp
     datamatrix/DMWriterTest.cpp
     oned/ODCodaBarWriterTest.cpp
+    oned/ODCode39ExtendedModeTest.cpp
     oned/ODCode39WriterTest.cpp
     oned/ODCode93WriterTest.cpp
     oned/ODCode128WriterTest.cpp
