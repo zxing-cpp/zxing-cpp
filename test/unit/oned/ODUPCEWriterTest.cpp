@@ -37,6 +37,13 @@ TEST(ODUPCEWriterTest, Encode1)
 	EXPECT_EQ(Encode(toEncode, expected.length()), expected);
 }
 
+TEST(ODUPCEWriterTest, EncodeSystem1)
+{
+	std::wstring toEncode = L"12345670";
+	std::string expected = "0000000000010100100110111101010001101110010000101001000101010100000000000";
+	EXPECT_EQ(Encode(toEncode, expected.length()), expected);
+}
+
 TEST(ODUPCEWriterTest, AddChecksumAndEncode)
 {
 	std::wstring toEncode = L"0509689";

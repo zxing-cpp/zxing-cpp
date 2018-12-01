@@ -47,8 +47,9 @@ namespace OneD {
 // in binary:
 //                0    1    1   0   0    1   == 0x19
 //
-static const int CHECK_DIGIT_ENCODINGS[] = {
-	0x38, 0x34, 0x32, 0x31, 0x2C, 0x26, 0x23, 0x2A, 0x29, 0x25
+static const std::array<std::array<int, 10>, 2> NUMSYS_AND_CHECK_DIGIT_PATTERNS = {
+	0x38, 0x34, 0x32, 0x31, 0x2C, 0x26, 0x23, 0x2A, 0x29, 0x25,
+	0x07, 0x0B, 0x0D, 0x0E, 0x13, 0x19, 0x1C, 0x15, 0x16, 0x1A,
 };
 
 static const int CODE_WIDTH = 3 + // start guard
@@ -86,11 +87,12 @@ UPCEWriter::encode(const std::wstring& contents, int width, int height) const
 		throw std::invalid_argument("Contents do not pass checksum");
 	}
 	
-	if (digits[0] != 0 && digits[0] != 1) {
+	int firstDigit = digits[0];
+	if (firstDigit != 0 && firstDigit != 1) {
 		throw std::invalid_argument("Number system must be 0 or 1");
 	}
 
-	int parities = CHECK_DIGIT_ENCODINGS[digits[7]];
+	int parities = NUMSYS_AND_CHECK_DIGIT_PATTERNS[firstDigit][digits[7]];
 	std::vector<bool> result(CODE_WIDTH, false);
 	int pos = 0;
 
