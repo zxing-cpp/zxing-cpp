@@ -49,6 +49,83 @@ static void ToIntArray(int a, std::array<int, 9>& toReturn) {
 	}
 }
 
+static std::string ToHexString(int c)
+{
+	const char* digits = "0123456789abcdef";
+	std::string val(4, '0');
+	val[1] = 'x';
+	val[2] = digits[(c >> 4) & 0xf];
+	val[3] = digits[c & 0xf];
+	return val;
+}
+
+static std::string TryToConvertToExtendedMode(const std::wstring& contents) {
+	int length = contents.length();
+	std::string extendedContent;
+	extendedContent.reserve(contents.length() * 2);
+
+	for (int i = 0; i < length; i++) {
+		int character = contents[i];
+		switch (character) {
+		case '\u0000':
+			extendedContent.append("%U");
+			break;
+		case ' ':
+		case '-':
+		case '.':
+			extendedContent.push_back((char)character);
+			break;
+		case '@':
+			extendedContent.append("%V");
+			break;
+		case '`':
+			extendedContent.append("%W");
+			break;
+		default:
+			if (character > 0 && character < 27) {
+				extendedContent.push_back('$');
+				extendedContent.push_back((char)('A' + (character - 1)));
+			}
+			else if (character > 26 && character < ' ') {
+				extendedContent.push_back('%');
+				extendedContent.push_back((char)('A' + (character - 27)));
+			}
+			else if ((character > ' ' && character < '-') || character == '/' || character == ':') {
+				extendedContent.push_back('/');
+				extendedContent.push_back((char)('A' + (character - 33)));
+			}
+			else if (character > '/' && character < ':') {
+				extendedContent.push_back((char)('0' + (character - 48)));
+			}
+			else if (character > ':' && character < '@') {
+				extendedContent.push_back('%');
+				extendedContent.push_back((char)('F' + (character - 59)));
+			}
+			else if (character > '@' && character < '[') {
+				extendedContent.push_back((char)('A' + (character - 65)));
+			}
+			else if (character > 'Z' && character < '`') {
+				extendedContent.push_back('%');
+				extendedContent.push_back((char)('K' + (character - 91)));
+			}
+			else if (character > '`' && character < '{') {
+				extendedContent.push_back('+');
+				extendedContent.push_back((char)('A' + (character - 97)));
+			}
+			else if (character > 'z' && character < 128) {
+				extendedContent.push_back('%');
+				extendedContent.push_back((char)('P' + (character - 123)));
+			}
+			else {
+				throw std::invalid_argument("Requested content contains a non-encodable character: '" + ToHexString(character) + "'");
+			}
+			break;
+		}
+	}
+
+	return extendedContent;
+}
+
 BitMatrix
 Code39Writer::encode(const std::wstring& contents, int width, int height) const
 {
@@ -60,13 +137,27 @@ Code39Writer::encode(const std::wstring& contents, int width, int height) const
 		throw std::invalid_argument("Requested contents should be less than 80 digits long");
 	}
 
+	std::string extendedContent;
+	for (size_t i = 0; i < length; i++) {
+		int indexInString = IndexOf(ALPHABET_STRING, contents[i]);
+		if (indexInString < 0) {
+			extendedContent = TryToConvertToExtendedMode(contents);
+			length = extendedContent.length();
+			if (length > 80) {
+				throw std::invalid_argument("Requested contents should be less than 80 digits long, but got " + std::to_string(length) + " (extended full ASCII mode)");
+			}
+			break;
+		}
+	}
+	
+	if (extendedContent.empty()) {
+		extendedContent.append(contents.begin(), contents.end());
+	}
+
 	std::array<int, 9> widths = {};
 	size_t codeWidth = 24 + 1 + length;
 	for (size_t i = 0; i < length; ++i) {
-		int indexInString = IndexOf(ALPHABET_STRING, contents[i]);
-		if (indexInString < 0) {
-			throw std::invalid_argument("Bad contents");
-		}
+		int indexInString = IndexOf(ALPHABET_STRING, extendedContent[i]);
 		ToIntArray(CHARACTER_ENCODINGS[indexInString], widths);
 		codeWidth = Accumulate(widths, codeWidth);
 	}
@@ -78,7 +169,7 @@ Code39Writer::encode(const std::wstring& contents, int width, int height) const
 	pos += WriterHelper::AppendPattern(result, pos, narrowWhite, false);
 	//append next character to byte matrix
 	for (size_t i = 0; i < length; ++i) {
-		int indexInString = IndexOf(ALPHABET_STRING, contents[i]);
+		int indexInString = IndexOf(ALPHABET_STRING, extendedContent[i]);
 		ToIntArray(CHARACTER_ENCODINGS[indexInString], widths);
 		pos += WriterHelper::AppendPattern(result, pos, widths, true);
 		pos += WriterHelper::AppendPattern(result, pos, narrowWhite, false);
