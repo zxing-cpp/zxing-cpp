@@ -29,8 +29,10 @@ static const std::string FNC1 = "11110101110";
 static const std::string FNC2 = "11110101000";
 static const std::string FNC3 = "10111100010";
 static const std::string FNC4 = "10111101110";
+static const std::string START_CODE_A = "11010000100";
 static const std::string START_CODE_B = "11010010000";
 static const std::string START_CODE_C = "11010011100";
+static const std::string SWITCH_CODE_A = "11101011110";
 static const std::string SWITCH_CODE_B = "10111101110";
 static const std::string QUIET_SPACE = "00000";
 static const std::string STOP = "1100011101011";
@@ -97,4 +99,34 @@ TEST(ODCode128Writer, Roundtrip)
     auto encResult = Code128Writer().encode(toEncode, 0, 0);
 	auto actual = Decode(encResult).text();
 	EXPECT_EQ(actual, expected);
+}
+
+TEST(ODCode128Writer, EncodeSwitchCodesetFromAToB)
+{
+	// start with A switch to B and back to A
+	auto toEncode = std::wstring(L"\0ABab\u0010", 6);
+	//                                           "\0"            "A"             "B"             Switch to B     "a"             "b"             Switch to A     "\u0010"        check digit
+	auto expected = QUIET_SPACE + START_CODE_A + "10100001100" + "10100011000" + "10001011000" + SWITCH_CODE_B + "10010110000" + "10010000110" + SWITCH_CODE_A + "10100111100" + "11001110100" + STOP + QUIET_SPACE;
+
+	auto encoded = Code128Writer().encode(toEncode, 0, 0);
+	auto actual = LineMatrixToString(encoded);
+	EXPECT_EQ(actual, expected);
+
+	auto actualRoundTrip = Decode(encoded).text();
+	EXPECT_EQ(actualRoundTrip, toEncode);
+}
+
+TEST(ODCode128Writer, EncodeSwitchCodesetFromBToA)
+{
+	// start with B switch to A and back to B
+	auto toEncode = std::wstring(L"ab\0ab", 5);
+	//                                           "a"             "b"             Switch to A     "\0             "Switch to B"   "a"             "b"             check digit
+	auto expected = QUIET_SPACE + START_CODE_B + "10010110000" + "10010000110" + SWITCH_CODE_A + "10100001100" + SWITCH_CODE_B + "10010110000" + "10010000110" + "11010001110" + STOP + QUIET_SPACE;
+
+	auto encoded = Code128Writer().encode(toEncode, 0, 0);
+	auto actual = LineMatrixToString(encoded);
+	EXPECT_EQ(actual, expected);
+
+	auto actualRoundTrip = Decode(encoded).text();
+	EXPECT_EQ(actualRoundTrip, toEncode);
 }
