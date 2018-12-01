@@ -29,7 +29,7 @@ namespace ZXing {
 
 namespace OneD {
 
-static const char ALPHABET_STRING[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. *$/+%";
+static const char ALPHABET_STRING[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%";
 
 // Note this lacks '*' compared to ALPHABET_STRING
 static const char CHECK_DIGIT_STRING[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%";
@@ -43,13 +43,13 @@ static const int CHARACTER_ENCODINGS[] = {
 	0x034, 0x121, 0x061, 0x160, 0x031, 0x130, 0x070, 0x025, 0x124, 0x064, // 0-9
 	0x109, 0x049, 0x148, 0x019, 0x118, 0x058, 0x00D, 0x10C, 0x04C, 0x01C, // A-J
 	0x103, 0x043, 0x142, 0x013, 0x112, 0x052, 0x007, 0x106, 0x046, 0x016, // K-T
-	0x181, 0x0C1, 0x1C0, 0x091, 0x190, 0x0D0, 0x085, 0x184, 0x0C4, 0x094, // U-*
-	0x0A8, 0x0A2, 0x08A, 0x02A // $-%
+	0x181, 0x0C1, 0x1C0, 0x091, 0x190, 0x0D0, 0x085, 0x184, 0x0C4, 0x0A8, // U-$
+	0x0A2, 0x08A, 0x02A // /-%
 };
 
 static_assert(Length(ALPHABET_STRING) - 1 == Length(CHARACTER_ENCODINGS), "table size mismatch");
 
-static const int ASTERISK_ENCODING = CHARACTER_ENCODINGS[39];
+static const int ASTERISK_ENCODING = 0x094;
 
 using CounterContainer = std::array<int, 9>;
 
@@ -119,6 +119,9 @@ PatternToChar(int pattern)
 		if (CHARACTER_ENCODINGS[i] == pattern) {
 			return ALPHABET_STRING[i];
 		}
+	}
+	if (pattern == ASTERISK_ENCODING) {
+		return '*';
 	}
 	return 0;
 }
@@ -240,9 +243,9 @@ Code39Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 		int max = static_cast<int>(result.length()) - 1;
 		int total = 0;
 		for (int i = 0; i < max; i++) {
-			total += IndexOf(CHECK_DIGIT_STRING, result[i]);
+			total += IndexOf(ALPHABET_STRING, result[i]);
 		}
-		if (total < 0 || result[max] != CHECK_DIGIT_STRING[total % (Length(CHECK_DIGIT_STRING)-1)]) {
+		if (total < 0 || result[max] != ALPHABET_STRING[total % (Length(ALPHABET_STRING)-1)]) {
 			return Result(DecodeStatus::ChecksumError);
 		}
 		result.resize(max);
