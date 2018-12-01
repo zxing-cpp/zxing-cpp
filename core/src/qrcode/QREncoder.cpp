@@ -498,7 +498,7 @@ static const Version& RecommendVersion(ErrorCorrectionLevel ecLevel, CodecMode::
 }
 
 EncodeResult
-Encoder::Encode(const std::wstring& content, ErrorCorrectionLevel ecLevel, CharacterSet charset, int versionNumber)
+Encoder::Encode(const std::wstring& content, ErrorCorrectionLevel ecLevel, CharacterSet charset, int versionNumber, bool useGs1Format)
 {
 	bool charsetWasUnknown = charset == CharacterSet::Unknown;
 	if (charsetWasUnknown) {
@@ -516,6 +516,12 @@ Encoder::Encode(const std::wstring& content, ErrorCorrectionLevel ecLevel, Chara
 	// Append ECI segment if applicable
 	if (mode == CodecMode::BYTE && !charsetWasUnknown) {
 		AppendECI(charset, headerBits);
+	}
+
+	// Append the FNC1 mode header for GS1 formatted data if applicable
+	if (useGs1Format) {
+		// GS1 formatted codes are prefixed with a FNC1 in first position mode header
+		AppendModeInfo(CodecMode::FNC1_FIRST_POSITION, headerBits);
 	}
 
 	// (With ECI in place,) Write the mode marker

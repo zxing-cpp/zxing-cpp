@@ -56,6 +56,11 @@ public:
 		return *this;
 	}
 
+	Writer& useGS1Format() {
+		_useGs1Format = true;
+		return *this;
+	}
+
 	BitMatrix encode(const std::wstring& contents, int width, int height) const;
 
 private:
@@ -63,6 +68,7 @@ private:
 	ErrorCorrectionLevel _ecLevel;
 	CharacterSet _encoding;
 	int _version;
+	bool _useGs1Format;
 };
 
 } // QRCode

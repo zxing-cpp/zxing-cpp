@@ -31,7 +31,8 @@ Writer::Writer() :
 	_margin(QUIET_ZONE_SIZE),
 	_ecLevel(ErrorCorrectionLevel::Low),
 	_encoding(CharacterSet::Unknown),
-	_version(0)
+	_version(0),
+	_useGs1Format(false)
 {
 }
 
@@ -46,7 +47,7 @@ Writer::encode(const std::wstring& contents, int width, int height) const
 		throw std::invalid_argument("Requested dimensions are invalid");
 	}
 
-	EncodeResult code = Encoder::Encode(contents, _ecLevel, _encoding, _version);
+	EncodeResult code = Encoder::Encode(contents, _ecLevel, _encoding, _version, _useGs1Format);
 	return Inflate(BitMatrix(code.matrix, 1), width, height, _margin);
 }
 
