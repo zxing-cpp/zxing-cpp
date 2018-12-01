@@ -63,7 +63,7 @@ ITFWriter::encode(const std::wstring& contents, int width, int height) const
 	for (size_t i = 0; i < length; i += 2) {
 		int one = contents[i] - '0';
 		int two = contents[i + 1] - '0';
-		std::array<int, 18> encoding = {};
+		std::array<int, 10> encoding = {};
 		for (int j = 0; j < 5; j++) {
 			encoding[2 * j] = PATTERNS[one][j];
 			encoding[2 * j + 1] = PATTERNS[two][j];
