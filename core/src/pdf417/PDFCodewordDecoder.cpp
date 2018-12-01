@@ -485,10 +485,12 @@ static int GetClosestDecodedValue(const ModuleBitCountType& moduleBitCount)
 {
 	static const RatioTableType& ratioTable = GetRatioTable();
 
-	float bitCountSum = (float)std::accumulate(moduleBitCount.begin(), moduleBitCount.end(), 0);
-	std::array<float, CodewordDecoder::BARS_IN_MODULE> bitCountRatios;
-	for (int i = 0; i < CodewordDecoder::BARS_IN_MODULE; i++) {
-		bitCountRatios[i] = moduleBitCount[i] / bitCountSum;
+	int bitCountSum = std::accumulate(moduleBitCount.begin(), moduleBitCount.end(), 0);
+	std::array<float, CodewordDecoder::BARS_IN_MODULE> bitCountRatios = {};
+	if (bitCountSum > 1) {
+		for (int i = 0; i < CodewordDecoder::BARS_IN_MODULE; i++) {
+			bitCountRatios[i] = moduleBitCount[i] / (float)bitCountSum;
+		}
 	}
 	float bestMatchError = std::numeric_limits<float>::max();
 	int bestMatch = -1;
