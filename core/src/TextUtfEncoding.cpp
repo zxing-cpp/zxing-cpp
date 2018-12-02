@@ -248,6 +248,14 @@ TextUtfEncoding::ToUtf8(const std::wstring& str, std::string& utf8)
 	ConvertToUtf8(str, utf8);
 }
 
+std::string
+TextUtfEncoding::ToUtf8(const std::wstring& str)
+{
+	std::string utf8;
+	ToUtf8(str, utf8);
+	return utf8;
+}
+
 void
 TextUtfEncoding::AppendUtf16(std::wstring& str, const uint16_t* utf16, size_t length)
 {

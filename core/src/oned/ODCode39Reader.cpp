@@ -215,8 +215,8 @@ DecodeExtended(std::string& encoded)
 	return true;
 }
 
-Code39Reader::Code39Reader(const DecodeHints& hints, bool extendedMode) :
-	_extendedMode(extendedMode),
+Code39Reader::Code39Reader(const DecodeHints& hints) :
+	_extendedMode(hints.shouldTryCode39ExtendedMode()),
 	_usingCheckDigit(hints.shouldAssumeCode39CheckDigit())
 {
 }

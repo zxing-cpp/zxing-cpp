@@ -23,6 +23,7 @@ namespace ZXing {
 class TextUtfEncoding
 {
 public:
+	static std::string ToUtf8(const std::wstring& str);
 	static void ToUtf8(const std::wstring& str, std::string& utf8);
 
 	static void AppendUtf16(std::wstring& str, const uint16_t* utf16, size_t length);

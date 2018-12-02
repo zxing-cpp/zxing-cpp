@@ -25,6 +25,12 @@ add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/../../../wrappers/gdiplus ${CMAKE_
 if (ENABLE_DECODERS)
     add_executable (ReaderTest
         TestReaderMain.cpp
+        ../../common/TestReader.cpp
+        ../../common/BlackboxTestRunner.cpp
+    )
+
+    target_include_directories (ReaderTest
+        PRIVATE ../../common
     )
 
     #set_target_properties (ReaderTest PROPERTIES

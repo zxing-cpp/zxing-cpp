@@ -34,6 +34,8 @@ set (LOCAL_COMMON_FILES
 )
 if (ENABLE_DECODERS)
     set (DECODERS_FILES
+        ImageReader.h
+        ImageReader.cpp
         BarcodeReader.h
         BarcodeReader.cpp
     )

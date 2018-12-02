@@ -43,7 +43,7 @@ public:
 	* @param extendedMode if true, will attempt to decode extended Code 39 sequences in the
 	* text.
 	*/
-	explicit Code39Reader(const DecodeHints& hints, bool extendedMode = false);
+	explicit Code39Reader(const DecodeHints& hints);
 	
 	Result decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const override;
 

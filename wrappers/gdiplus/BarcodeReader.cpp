@@ -16,16 +16,12 @@
 
 #include "BarcodeReader.h"
 #include "TextUtfEncoding.h"
-#include "GenericLuminanceSource.h"
 #include "HybridBinarizer.h"
 #include "BinaryBitmap.h"
 #include "MultiFormatReader.h"
 #include "Result.h"
 #include "DecodeHints.h"
-
-#include <windows.h>
-#include <gdiplus.h>
-#include <type_traits>
+#include "ImageReader.h"
 
 namespace ZXing {
 
@@ -43,43 +39,11 @@ BarcodeReader::BarcodeReader(bool tryHarder, bool tryRotate, const std::string& 
 	_reader = std::make_shared<MultiFormatReader>(hints);
 }
 
-static std::shared_ptr<LuminanceSource>
-CreateLuminanceSource(Gdiplus::Bitmap& bitmap, const Gdiplus::BitmapData& data)
-{
-	switch (bitmap.GetPixelFormat())
-	{
-	case PixelFormat24bppRGB:
-		return std::make_shared<GenericLuminanceSource>(data.Width, data.Height, data.Scan0, data.Stride, 3, 2, 1, 0);
-	case PixelFormat32bppARGB:
-	case PixelFormat32bppRGB:
-		return std::make_shared<GenericLuminanceSource>(data.Width, data.Height, data.Scan0, data.Stride, 4, 2, 1, 0);
-	}
-	throw std::invalid_argument("Unsupported format");
-}
-
-static std::shared_ptr<BinaryBitmap>
-CreateBinaryBitmap(Gdiplus::Bitmap& bitmap)
-{
-	Gdiplus::BitmapData data;
-	bitmap.LockBits(nullptr, Gdiplus::ImageLockModeRead, bitmap.GetPixelFormat(), &data);
-	try
-	{
-		auto result = std::make_shared<HybridBinarizer>(CreateLuminanceSource(bitmap, data));
-		bitmap.UnlockBits(&data);
-		return result;
-	}
-	catch (...)
-	{
-		bitmap.UnlockBits(&data);
-		throw;
-	}
-}
-
 BarcodeReader::ScanResult
 BarcodeReader::scan(Gdiplus::Bitmap& bitmap, int rotations)
 {
 	Result result(DecodeStatus::NotFound);
-	auto binImg = CreateBinaryBitmap(bitmap);
+	auto binImg = std::make_shared<HybridBinarizer>(ImageReader::Read(bitmap));
 	
 	if ((rotations & Rotation0) != 0) {
 		result = _reader->read(*binImg);
@@ -94,9 +58,7 @@ BarcodeReader::scan(Gdiplus::Bitmap& bitmap, int rotations)
 		result = _reader->read(*binImg->rotated(270));
 	}
 	if (result.isValid()) {
-		std::string text;
-		TextUtfEncoding::ToUtf8(result.text(), text);
-		return{ ToString(result.format()), text };
+		return{ ToString(result.format()), TextUtfEncoding::ToUtf8(result.text()) };
 	}
 	return ScanResult();
 }

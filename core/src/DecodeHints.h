@@ -75,12 +75,21 @@ public:
 	}
 
 	/**
+	* If true, the CODE-39 reader will try to read extended mode.
+	*/
+	bool shouldTryCode39ExtendedMode() const {
+		return getFlag(WITH_CODE_39_EXTENDED);
+	}
+	void setShouldTryCode39ExtendedMode(bool v) {
+		setFlag(WITH_CODE_39_EXTENDED, v);
+	}
+
+	/**
 	* Assume Code 39 codes employ a check digit.
 	*/
 	bool shouldAssumeCode39CheckDigit() const {
 		return getFlag(ASSUME_CODE_39_CHECK_DIGIT);
 	}
-
 	void setShouldAssumeCode39CheckDigit(bool v) {
 		setFlag(ASSUME_CODE_39_CHECK_DIGIT, v);
 	}
@@ -92,7 +101,6 @@ public:
 	bool shouldAssumeGS1() const {
 		return getFlag(ASSUME_GS1);
 	}
-
 	void setShouldAssumeGS1(bool v) {
 		setFlag(ASSUME_GS1, v);
 	}
@@ -105,7 +113,6 @@ public:
 	bool shouldReturnCodabarStartEnd() const {
 		return getFlag(RETURN_CODABAR_START_END);
 	}
-
 	void setShouldReturnCodabarStartEnd(bool v) {
 		setFlag(RETURN_CODABAR_START_END, v);
 	}
@@ -135,6 +142,7 @@ private:
 	{
 		TRY_HARDER = 24,
 		TRY_ROTATE,
+		WITH_CODE_39_EXTENDED,
 		ASSUME_CODE_39_CHECK_DIGIT,
 		ASSUME_GS1,
 		RETURN_CODABAR_START_END,
