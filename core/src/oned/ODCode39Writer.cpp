@@ -65,61 +65,61 @@ static std::string TryToConvertToExtendedMode(const std::wstring& contents) {
 	extendedContent.reserve(contents.length() * 2);
 
 	for (int i = 0; i < length; i++) {
-		int character = contents[i];
+		unsigned int character = contents[i];
 		switch (character) {
-		case '\u0000':
-			extendedContent.append("%U");
-			break;
-		case ' ':
-		case '-':
-		case '.':
-			extendedContent.push_back((char)character);
-			break;
-		case '@':
-			extendedContent.append("%V");
-			break;
-		case '`':
-			extendedContent.append("%W");
-			break;
-		default:
-			if (character > 0 && character < 27) {
-				extendedContent.push_back('$');
-				extendedContent.push_back((char)('A' + (character - 1)));
-			}
-			else if (character > 26 && character < ' ') {
-				extendedContent.push_back('%');
-				extendedContent.push_back((char)('A' + (character - 27)));
-			}
-			else if ((character > ' ' && character < '-') || character == '/' || character == ':') {
-				extendedContent.push_back('/');
-				extendedContent.push_back((char)('A' + (character - 33)));
-			}
-			else if (character > '/' && character < ':') {
-				extendedContent.push_back((char)('0' + (character - 48)));
-			}
-			else if (character > ':' && character < '@') {
-				extendedContent.push_back('%');
-				extendedContent.push_back((char)('F' + (character - 59)));
-			}
-			else if (character > '@' && character < '[') {
-				extendedContent.push_back((char)('A' + (character - 65)));
-			}
-			else if (character > 'Z' && character < '`') {
-				extendedContent.push_back('%');
-				extendedContent.push_back((char)('K' + (character - 91)));
-			}
-			else if (character > '`' && character < '{') {
-				extendedContent.push_back('+');
-				extendedContent.push_back((char)('A' + (character - 97)));
-			}
-			else if (character > 'z' && character < 128) {
-				extendedContent.push_back('%');
-				extendedContent.push_back((char)('P' + (character - 123)));
-			}
-			else {
-				throw std::invalid_argument("Requested content contains a non-encodable character: '" + ToHexString(character) + "'");
-			}
-			break;
+			case '\0':
+				extendedContent.append("%U");
+				break;
+			case ' ':
+			case '-':
+			case '.':
+				extendedContent.push_back((char)character);
+				break;
+			case '@':
+				extendedContent.append("%V");
+				break;
+			case '`':
+				extendedContent.append("%W");
+				break;
+			default:
+				if (character > 0 && character < 27) {
+					extendedContent.push_back('$');
+					extendedContent.push_back((char)('A' + (character - 1)));
+				}
+				else if (character > 26 && character < ' ') {
+					extendedContent.push_back('%');
+					extendedContent.push_back((char)('A' + (character - 27)));
+				}
+				else if ((character > ' ' && character < '-') || character == '/' || character == ':') {
+					extendedContent.push_back('/');
+					extendedContent.push_back((char)('A' + (character - 33)));
+				}
+				else if (character > '/' && character < ':') {
+					extendedContent.push_back((char)('0' + (character - 48)));
+				}
+				else if (character > ':' && character < '@') {
+					extendedContent.push_back('%');
+					extendedContent.push_back((char)('F' + (character - 59)));
+				}
+				else if (character > '@' && character < '[') {
+					extendedContent.push_back((char)('A' + (character - 65)));
+				}
+				else if (character > 'Z' && character < '`') {
+					extendedContent.push_back('%');
+					extendedContent.push_back((char)('K' + (character - 91)));
+				}
+				else if (character > '`' && character < '{') {
+					extendedContent.push_back('+');
+					extendedContent.push_back((char)('A' + (character - 97)));
+				}
+				else if (character > 'z' && character < 128) {
+					extendedContent.push_back('%');
+					extendedContent.push_back((char)('P' + (character - 123)));
+				}
+				else {
+					throw std::invalid_argument("Requested content contains a non-encodable character: '" + ToHexString(character) + "'");
+				}
+				break;
 		}
 	}
 
