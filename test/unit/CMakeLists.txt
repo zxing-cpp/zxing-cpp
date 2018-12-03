@@ -91,6 +91,7 @@ add_executable (ZXingUnitTest
     qrcode/QRModeTest.cpp
     qrcode/QRVersionTest.cpp
     qrcode/QRWriterTest.cpp
+    pdf417/PDF417DecoderTest.cpp
     pdf417/PDF417ErrorCorrectionTest.cpp
     pdf417/PDF417HighLevelEncoderTest.cpp
     pdf417/PDF417WriterTest.cpp

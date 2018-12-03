@@ -29,10 +29,17 @@ namespace Pdf417 {
 */
 class DecoderResultExtra : public CustomData
 {
-	int _segmentIndex;
+	int _segmentIndex = 0;
 	std::string _fileId;
 	std::vector<int> _optionalData;
-	bool _lastSegment;
+	bool _lastSegment = false;
+	int _segmentCount = -1;
+	std::string _sender;
+	std::string _addressee;
+	std::string _fileName;
+	int64_t _fileSize = -1;
+	int64_t _timestamp = -1;
+	int _checksum = -1;
 
 public:
 
@@ -52,7 +59,7 @@ public:
 		_fileId = fileId;
 	}
 
-	const std::vector<int>& getOptionalData() const {
+	const std::vector<int>& optionalData() const {
 		return _optionalData;
 	}
 
@@ -66,6 +73,65 @@ public:
 
 	void setLastSegment(bool lastSegment) {
 		_lastSegment = lastSegment;
+	}
+
+	int segmentCount() const {
+		return _segmentCount;
+	}
+
+	void setSegmentCount(int segmentCount) {
+		_segmentCount = segmentCount;
+	}
+
+	std::string sender() const {
+		return _sender;
+	}
+
+	void setSender(const std::string& sender) {
+		_sender = sender;
+	}
+
+	std::string addressee() const {
+		return _addressee;
+	}
+
+	void setAddressee(const std::string& addressee) {
+		_addressee = addressee;
+	}
+
+	std::string fileName() const {
+		return _fileName;
+	}
+
+	void setFileName(const std::string& fileName) {
+		_fileName = fileName;
+	}
+
+	// -1 if not set
+	int64_t fileSize() const {
+		return _fileSize;
+	}
+
+	void setFileSize(int64_t fileSize) {
+		_fileSize = fileSize;
+	}
+
+	 // 16-bit CRC checksum using CCITT-16, -1 if not set
+	int checksum() const {
+		return _checksum;
+	}
+
+	void setChecksum(int checksum) {
+		_checksum = checksum;
+	}
+
+	// Unix epock timestamp, elapsed seconds since 1970-01-01, -1 if not set
+	int64_t timestamp() const {
+		return _timestamp;
+	}
+
+	void setTimestamp(int64_t timestamp) {
+		_timestamp = timestamp;
 	}
 };
 

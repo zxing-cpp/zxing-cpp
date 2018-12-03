@@ -539,13 +539,13 @@ BlackboxTestRunner::run(const std::set<std::string>& includedTests)
 			{ 25, 25, 180 },
 		});
 
-		runTests("blackbox/pdf417-3", "PDF_417", 18, {
-			{ 19, 18, 0   },
-			{ 19, 18, 180 },
+		runTests("blackbox/pdf417-3", "PDF_417", 19, {
+			{ 19, 19, 0   },
+			{ 19, 19, 180 },
 		});
 
 		//runTests("blackbox/pdf417-4", "PDF_417", 3, {
-		//	{ 2, 2, 0   },
+		//	{ 3, 3, 0   },
 		//});
 
 		runFalsePositiveTests("blackbox/falsepositives-1", 22, {

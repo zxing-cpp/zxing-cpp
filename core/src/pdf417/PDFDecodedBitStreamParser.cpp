@@ -25,6 +25,7 @@
 #include "DecodeStatus.h"
 #include "DecoderResult.h"
 #include "ZXStrConvWorkaround.h"
+#include "ZXTestSupport.h"
 
 #include <array>
 #include <cassert>
@@ -53,6 +54,14 @@ static const int BEGIN_MACRO_PDF417_OPTIONAL_FIELD = 923;
 static const int MACRO_PDF417_TERMINATOR = 922;
 static const int MODE_SHIFT_TO_BYTE_COMPACTION_MODE = 913;
 static const int MAX_NUMERIC_CODEWORDS = 15;
+
+static const int MACRO_PDF417_OPTIONAL_FIELD_FILE_NAME = 0;
+static const int MACRO_PDF417_OPTIONAL_FIELD_SEGMENT_COUNT = 1;
+static const int MACRO_PDF417_OPTIONAL_FIELD_TIME_STAMP = 2;
+static const int MACRO_PDF417_OPTIONAL_FIELD_SENDER = 3;
+static const int MACRO_PDF417_OPTIONAL_FIELD_ADDRESSEE = 4;
+static const int MACRO_PDF417_OPTIONAL_FIELD_FILE_SIZE = 5;
+static const int MACRO_PDF417_OPTIONAL_FIELD_CHECKSUM = 6;
 
 static const int PL = 25;
 static const int LL = 27;
@@ -498,7 +507,7 @@ static DecodeStatus DecodeBase900toBase10(const std::vector<int>& codewords, int
 * @param result    The decoded data is appended to the result.
 * @return The next index into the codeword array.
 */
-static DecodeStatus NumericCompaction(const std::vector<int>& codewords, int codeIndex, std::wstring& result, int& next)
+static DecodeStatus NumericCompaction(const std::vector<int>& codewords, int codeIndex, std::string& result, int& next)
 {
 	int count = 0;
 	bool end = false;
@@ -536,7 +545,7 @@ static DecodeStatus NumericCompaction(const std::vector<int>& codewords, int cod
 				if (StatusIsError(status)) {
 					return status;
 				}
-				TextDecoder::AppendLatin1(result, tmp);
+				result += tmp;
 				count = 0;
 			}
 		}
@@ -545,8 +554,8 @@ static DecodeStatus NumericCompaction(const std::vector<int>& codewords, int cod
 	return DecodeStatus::NoError;
 }
 
-
-static DecodeStatus DecodeMacroBlock(const std::vector<int>& codewords, int codeIndex, DecoderResultExtra& resultMetadata, int& next)
+ZXING_EXPORT_TEST_ONLY
+DecodeStatus DecodeMacroBlock(const std::vector<int>& codewords, int codeIndex, DecoderResultExtra& resultMetadata, int& next)
 {
 	if (codeIndex + NUMBER_OF_SEQUENCE_CODEWORDS > codewords[0]) {
 		// we must have at least two bytes left for the segment index
@@ -569,35 +578,89 @@ static DecodeStatus DecodeMacroBlock(const std::vector<int>& codewords, int code
 	codeIndex = TextCompaction(codewords, codeIndex, fileId);
 	resultMetadata.setFileId(fileId);
 
+	int optionalFieldsStart = -1;
 	if (codewords[codeIndex] == BEGIN_MACRO_PDF417_OPTIONAL_FIELD) {
-		codeIndex++;
-		std::vector<int> additionalOptionCodeWords;
-		additionalOptionCodeWords.reserve(codewords[0] - codeIndex);
+		optionalFieldsStart = codeIndex + 1;
+	}
 
-		bool end = false;
-		while ((codeIndex < codewords[0]) && !end) {
-			int code = codewords[codeIndex++];
-			if (code < TEXT_COMPACTION_MODE_LATCH) {
-				additionalOptionCodeWords.push_back(code);
-			}
-			else {
-				switch (code) {
-				case MACRO_PDF417_TERMINATOR:
-					resultMetadata.setLastSegment(true);
-					codeIndex++;
-					end = true;
-					break;
-				default:
-					return DecodeStatus::FormatError;
+	while (codeIndex < codewords[0]) {
+		switch (codewords[codeIndex]) {
+			case BEGIN_MACRO_PDF417_OPTIONAL_FIELD: {
+				codeIndex++;
+				switch (codewords[codeIndex]) {
+					case MACRO_PDF417_OPTIONAL_FIELD_FILE_NAME: {
+						std::string fileName;
+						codeIndex = TextCompaction(codewords, codeIndex + 1, fileName);
+						resultMetadata.setFileName(fileName);
+						break;
+					}
+					case MACRO_PDF417_OPTIONAL_FIELD_SENDER: {
+						std::string sender;
+						codeIndex = TextCompaction(codewords, codeIndex + 1, sender);
+						resultMetadata.setSender(sender);
+						break;
+					}
+					case MACRO_PDF417_OPTIONAL_FIELD_ADDRESSEE: {
+						std::string addressee;
+						codeIndex = TextCompaction(codewords, codeIndex + 1, addressee);
+						resultMetadata.setAddressee(addressee);
+						break;
+					}
+					case MACRO_PDF417_OPTIONAL_FIELD_SEGMENT_COUNT: {
+						std::string segmentCount;
+						status = NumericCompaction(codewords, codeIndex + 1, segmentCount, codeIndex);
+						resultMetadata.setSegmentCount(std::stoi(segmentCount));
+						break;
+					}
+					case MACRO_PDF417_OPTIONAL_FIELD_TIME_STAMP: {
+						std::string timestamp;
+						status = NumericCompaction(codewords, codeIndex + 1, timestamp, codeIndex);
+						resultMetadata.setTimestamp(std::stoll(timestamp));
+						break;
+					}
+					case MACRO_PDF417_OPTIONAL_FIELD_CHECKSUM: {
+						std::string checksum;
+						status = NumericCompaction(codewords, codeIndex + 1, checksum, codeIndex);
+						resultMetadata.setChecksum(std::stoi(checksum));
+						break;
+					}
+					case MACRO_PDF417_OPTIONAL_FIELD_FILE_SIZE: {
+						std::string fileSize;
+						status = NumericCompaction(codewords, codeIndex + 1, fileSize, codeIndex);
+						resultMetadata.setFileSize(std::stoll(fileSize));
+						break;
+					}
+					default: {
+						status = DecodeStatus::FormatError;
+						break;
+					}
 				}
+				break;
+			}
+			case MACRO_PDF417_TERMINATOR: {
+				codeIndex++;
+				resultMetadata.setLastSegment(true);
+				break;
+			}
+			default: {
+				status = DecodeStatus::FormatError;
+				break;
+			}
+
+			if (StatusIsError(status)) {
+				return status;
 			}
 		}
-
-		resultMetadata.setOptionalData(additionalOptionCodeWords);
 	}
-	else if (codewords[codeIndex] == MACRO_PDF417_TERMINATOR) {
-		resultMetadata.setLastSegment(true);
-		codeIndex++;
+
+	// copy optional fields to additional options
+	if (optionalFieldsStart != -1) {
+		int optionalFieldsLength = codeIndex - optionalFieldsStart;
+		if (resultMetadata.isLastSegment()) {
+			// do not include terminator
+			optionalFieldsLength--;
+		}
+		resultMetadata.setOptionalData(std::vector<int>(codewords.begin() + optionalFieldsStart, codewords.begin() + optionalFieldsStart + optionalFieldsLength));
 	}
 
 	next = codeIndex;
@@ -631,8 +694,12 @@ DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel)
 			resultString.push_back((wchar_t)codewords[codeIndex++]);
 			break;
 		case NUMERIC_COMPACTION_MODE_LATCH:
-			status = NumericCompaction(codewords, codeIndex, resultString, codeIndex);
+		{
+			std::string buf;
+			status = NumericCompaction(codewords, codeIndex, buf, codeIndex);
+			TextDecoder::AppendLatin1(resultString, buf);
 			break;
+		}
 		case ECI_CHARSET:
 			encoding = CharacterSetECI::CharsetFromValue(codewords[codeIndex++]);
 			break;
