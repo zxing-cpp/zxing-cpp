@@ -100,7 +100,7 @@ int main(int argc, char** argv)
 			auto result = reader.read(fs::path(argv[i]).generic_wstring(), rotation, isPure);
 			std::cout << argv[i] << ": ";
 			if (result)
-				std::cout << result.format << ": " << result.text << "\n";
+				std::cout << result.format << ": " << toUtf8(result.text) << "\n";
 			else
 				std::cout << "FAILED\n";
 		}
