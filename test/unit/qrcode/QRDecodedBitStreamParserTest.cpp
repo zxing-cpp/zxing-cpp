@@ -124,3 +124,15 @@ TEST(QRDecodedBitStreamParserTest, Hanzi)
 	auto result = DecodeBitStream(builder.toByteArray(), *Version::VersionForNumber(1), ErrorCorrectionLevel::Medium, "").text();
 	EXPECT_EQ(L"\u963f", result);
 }
+
+TEST(QRDecodedBitStreamParserTest, HanziLevel1)
+{
+	BitSourceBuilder builder;
+	builder.write(0x0D, 4); // Hanzi mode
+	builder.write(0x01, 4); // Subset 1 = GB2312 encoding
+	builder.write(0x01, 8); // 1 characters
+	// A5A2 (U+30A2) => A5A2 - A1A1 = 401, 4*60 + 01 = 0181
+	builder.write(0x0181, 13);
+	auto result = DecodeBitStream(builder.toByteArray(), *Version::VersionForNumber(1), ErrorCorrectionLevel::Medium, "").text();
+	EXPECT_EQ(L"\u30a2", result);
+}
