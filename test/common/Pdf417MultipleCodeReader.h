@@ -16,39 +16,31 @@
 */
 
 #include <string>
-#include <map>
+#include <vector>
 #include <memory>
+#include "TestReader.h"
 
 namespace ZXing {
-
-class DecodeHints;
-class MultiFormatReader;
-class BinaryBitmap;
 
 namespace Test {
 
 class ImageLoader;
-    
-class TestReader
+
+class Pdf417MultipleCodeReader
 {
 public:
-    struct ReadResult
-    {
-		std::string format;
-		std::wstring text;
-        operator bool() const { return !format.empty(); }
-    };
+    struct ReadResult : public TestReader::ReadResult
+	{
+        std::vector<std::string> fileIds;
+	};
 
-    TestReader(const std::shared_ptr<ImageLoader>& imgLoader, const DecodeHints& hints);
+	Pdf417MultipleCodeReader(const std::shared_ptr<ImageLoader>& imgLoader);
 
-    ReadResult read(const std::wstring& filename, int rotation = 0, bool isPure = false) const;
+	ReadResult readMultiple(const std::vector<std::wstring>& filenames, int rotation = 0) const;
 
-    static void clearCache();
-    
 private:
-    std::shared_ptr<ImageLoader> _imageLoader;
-    std::shared_ptr<MultiFormatReader> _reader;
-    static std::map<std::wstring, std::shared_ptr<BinaryBitmap>> _cache;
+	std::shared_ptr<ImageLoader> _imageLoader;
 };
+
 
 }} // ZXing::Test

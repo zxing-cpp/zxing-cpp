@@ -46,7 +46,7 @@ static std::string toUtf8(const std::wstring& s)
 class GenericImageLoader : public ImageLoader
 {
 public:
-	virtual std::shared_ptr<LuminanceSource> load(const std::wstring& filename)
+	virtual std::shared_ptr<LuminanceSource> load(const std::wstring& filename) const override
 	{
 		std::vector<unsigned char> buffer;
 		unsigned width, height;

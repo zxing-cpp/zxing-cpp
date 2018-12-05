@@ -21,11 +21,12 @@
 #include "Result.h"
 #include "ImageLoader.h"
 #include "TestReader.h"
+#include "Pdf417MultipleCodeReader.h"
 
 #include <iostream>
 #include <fstream>
 #include <chrono>
-#include <array>
+#include <vector>
 #include <functional>
 
 namespace ZXing { namespace Test {
@@ -112,15 +113,16 @@ static std::string checkResult(const std::wstring& pathPrefix, std::wstring imgP
 	std::ifstream utf8Stream(asNativePath(buildPath(pathPrefix, imgPath)), std::ios::binary);
 	if (utf8Stream) {
 		std::string expected((std::istreambuf_iterator<char>(utf8Stream)), std::istreambuf_iterator<char>());
-		return result.text != expected ? "Content mismatch: expected " + expected + " but got " + result.text : "";
+		auto utf8Result = toUtf8(result.text);
+		return utf8Result != expected ? "Content mismatch: expected " + expected + " but got " + utf8Result : "";
 	}
 
 	imgPath = replaceExtension(imgPath, L".bin");
 	std::ifstream latin1Stream(asNativePath(buildPath(pathPrefix, imgPath)), std::ios::binary);
 	if (latin1Stream) {
-		std::wstring rawStr = TextDecoder::FromLatin1(std::string((std::istreambuf_iterator<char>(latin1Stream)), std::istreambuf_iterator<char>()));
-		std::string expected = toUtf8(rawStr);
-		return result.text != expected ? "Content mismatch: expected " + expected + " but got " + result.text : "";
+		std::string expected((std::istreambuf_iterator<char>(latin1Stream)), std::istreambuf_iterator<char>());
+		std::string latin1Result(result.text.begin(), result.text.end());
+		return latin1Result != expected ? "Content mismatch: expected " + expected + " but got " + latin1Result : "";
 	}
 	return "Error reading file";
 }
@@ -128,7 +130,30 @@ static std::string checkResult(const std::wstring& pathPrefix, std::wstring imgP
 static const char* GOOD = "OK";
 static const char* BAD = "!!!!!! FAILED !!!!!!";
 
-static void doRunTests(BlackboxTestRunner& runner, const std::array<TestReader, 2>& readers,
+
+static void printPositiveTestStats(int imageCount, const TestCase::TC& tc)
+{
+	int passCount = imageCount - (int)tc.misReadFiles.size() - (int)tc.notDetectedFiles.size();
+
+	printf(", %s: %3d of %3d, misread: %d of %d", tc.name, (int)passCount, tc.mustPassCount,
+		(int)tc.misReadFiles.size(), tc.maxMisreads);
+
+	if (passCount < tc.mustPassCount && !tc.notDetectedFiles.empty()) {
+		std::cout << "\nFAILED: Not detected (" << tc.name << "):";
+		for (const auto& f : tc.notDetectedFiles)
+			std::cout << ' ' << toUtf8(f);
+		std::cout << "\n";
+	}
+
+	if ((int)tc.misReadFiles.size() > tc.maxMisreads) {
+		std::cout << "FAILED: Read error (" << tc.name << "):";
+		for (const auto& f : tc.misReadFiles)
+			std::cout << "      " << toUtf8(f.first) << ": " << f.second << "\n";
+		std::cout << "\n";
+	}
+}
+
+static void doRunTests(BlackboxTestRunner& runner, const std::vector<TestReader>& readers,
 	const std::string& directory, const char* format, int imageCount, const std::vector<TestCase>& tests)
 {
 	TestReader::clearCache();
@@ -157,31 +182,14 @@ static void doRunTests(BlackboxTestRunner& runner, const std::array<TestReader, 
 				}
 			}
 
-			int passCount = (int)images.size() - (int)tc.misReadFiles.size() - (int)tc.notDetectedFiles.size();
-
-			printf(", %s: %3d of %3d, misread: %d of %d", tc.name, (int)passCount, tc.mustPassCount,
-				   (int)tc.misReadFiles.size(), tc.maxMisreads);
-
-			if (passCount < tc.mustPassCount && !tc.notDetectedFiles.empty()) {
-				std::cout << "\nFAILED: Not detected (" << tc.name << "):";
-				for (const auto& f : tc.notDetectedFiles)
-					std::cout << ' ' << toUtf8(f);
-				std::cout << "\n";
-			}
-
-			if ((int)tc.misReadFiles.size() > tc.maxMisreads) {
-				std::cout << "FAILED: Read error (" << tc.name << "):";
-				for (const auto& f : tc.misReadFiles)
-					std::cout << "      " << toUtf8(f.first) << ": " << f.second << "\n";
-				std::cout << "\n";
-			}
+			printPositiveTestStats((int)images.size(), tc);
 		}
 
 		std::cout << std::endl;
 	}
 }
 
-static void doRunFalsePositiveTests(BlackboxTestRunner& runner, const std::array<TestReader, 2>& readers,
+static void doRunFalsePositiveTests(BlackboxTestRunner& runner, const std::vector<TestReader>& readers,
 	const std::string& directory, int totalTests, const std::vector<FalsePositiveTestCase>& tests)
 {
 	auto images = runner.getImagesInDirectory(std::wstring(directory.begin(), directory.end()));
@@ -218,6 +226,59 @@ static void doRunFalsePositiveTests(BlackboxTestRunner& runner, const std::array
 		std::cout << std::endl;
 	}
 }
+
+static std::pair<std::wstring, std::wstring> splitFileName(const std::wstring& filePath, wchar_t c)
+{
+	for (int i = (int)filePath.length() - 1; i >= 0; --i) {
+		if (filePath[i] == c)
+			return std::make_pair(filePath.substr(0, i), filePath.substr(i + 1));
+		if (filePath[i] == '/' || filePath[i] == '\\')
+			break;
+	}
+	return std::make_pair(filePath, std::wstring());
+}
+
+static void doRunPdf417MultipleResultsTest(BlackboxTestRunner& runner, const std::vector<Pdf417MultipleCodeReader>& readers,
+	const std::string& directory, const char* format, int totalTests, const std::vector<TestCase>& tests)
+{
+	auto images = runner.getImagesInDirectory(std::wstring(directory.begin(), directory.end()));
+	auto folderName = getBaseName(directory);
+
+	std::map<std::wstring, std::vector<std::wstring>> imageGroups;
+	for (const auto& path : images) {
+		imageGroups[splitFileName(path, '-').first].push_back(buildPath(runner.pathPrefix(), path));
+	}
+
+	if (imageGroups.size() != totalTests) {
+		std::cout << "TEST " << folderName << " => Expected number of tests: " << totalTests
+			<< ", got: " << imageGroups.size() << " => " << BAD << std::endl;
+	}
+
+	for (auto& test : tests) {
+		printf("%-20s @ %3d, total: %3d", folderName.c_str(), test.rotation, (int)images.size());
+		for (size_t i = 0; i < readers.size(); ++i) {
+			auto tc = test.tc[i];
+
+			for (const auto& imageGroup : imageGroups) {
+				auto imagePath = imageGroup.first;
+				auto result = readers[i].readMultiple(imageGroup.second, test.rotation);
+				if (!result.format.empty()) {
+					auto error = checkResult(runner.pathPrefix(), imageGroup.first, format, result);
+					if (!error.empty())
+						tc.misReadFiles[imagePath] = error;
+				}
+				else {
+					tc.notDetectedFiles.insert(imagePath);
+				}
+			}
+
+			printPositiveTestStats((int)imageGroups.size(), tc);
+		}
+
+		std::cout << std::endl;
+	}
+}
+
 
 static DecodeHints createNewHints(DecodeHints hints, bool tryHarder, bool tryRotate)
 {
@@ -270,7 +331,7 @@ BlackboxTestRunner::run(const std::set<std::string>& includedTests)
 	auto runTests = [&](const std::string& directory, const char* format, int total,
 					    const std::vector<TestCase>& tests, const DecodeHints& hints = DecodeHints()) {
 		if (hasTest(directory)) {
-			std::array<TestReader, 2> readers = {
+			std::vector<TestReader> readers {
 				TestReader(_imageLoader, createNewHints(hints, false, false)),
 				TestReader(_imageLoader, createNewHints(hints, true, true))
 			};
@@ -281,11 +342,18 @@ BlackboxTestRunner::run(const std::set<std::string>& includedTests)
 	auto runFalsePositiveTests = [&](const std::string& directory, int total,
 	                                 const std::vector<FalsePositiveTestCase>& tests, const DecodeHints& hints = DecodeHints()) {
 		if (hasTest(directory)) {
-			std::array<TestReader, 2> readers = {
+			std::vector<TestReader> readers {
 				TestReader(_imageLoader, createNewHints(hints, false, false)),
 				TestReader(_imageLoader, createNewHints(hints, true, true))
 			};
 			doRunFalsePositiveTests(*this, readers, directory, total, tests);
+		}
+	};
+
+	auto runPdf417MultipleResultTest = [&](const std::string& directory, const char* format, int total, const std::vector<TestCase>& tests) {
+		if (hasTest(directory)) {
+			Pdf417MultipleCodeReader reader(_imageLoader);
+			doRunPdf417MultipleResultsTest(*this, { reader }, directory, format, total, tests);
 		}
 	};
 
@@ -544,9 +612,9 @@ BlackboxTestRunner::run(const std::set<std::string>& includedTests)
 			{ 19, 19, 180 },
 		});
 
-		//runTests("blackbox/pdf417-4", "PDF_417", 3, {
-		//	{ 3, 3, 0   },
-		//});
+		runPdf417MultipleResultTest("blackbox/pdf417-4", "PDF_417", 3, {
+			{ 3, 3, 0   },
+		});
 
 		runFalsePositiveTests("blackbox/falsepositives-1", 22, {
 			{ 2, 0   },

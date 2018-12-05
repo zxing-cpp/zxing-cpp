@@ -15,7 +15,6 @@
 */
 
 #include "TestReader.h"
-#include "TextUtfEncoding.h"
 #include "HybridBinarizer.h"
 #include "MultiFormatReader.h"
 #include "DecodeHints.h"
@@ -43,10 +42,6 @@ TestReader::TestReader(const std::shared_ptr<ImageLoader>& imgLoader, const Deco
 {
 }
 
-TestReader::~TestReader()
-{
-}
-
 TestReader::ReadResult
 TestReader::read(const std::wstring& filename, int rotation, bool isPure) const
 {
@@ -55,7 +50,7 @@ TestReader::read(const std::wstring& filename, int rotation, bool isPure) const
         binImg = std::make_shared<Binarizer>(_imageLoader->load(filename), isPure);
     auto result = _reader->read(*binImg->rotated(rotation));
     if (result.isValid()) {
-        return { ToString(result.format()), TextUtfEncoding::ToUtf8(result.text()) };
+        return { ToString(result.format()), result.text() };
     }
     return {};
 }

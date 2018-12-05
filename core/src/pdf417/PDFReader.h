@@ -17,6 +17,7 @@
 */
 
 #include "Reader.h"
+#include <list>
 
 namespace ZXing {
 namespace Pdf417 {
@@ -30,6 +31,7 @@ class Reader : public ZXing::Reader
 {
 public:
 	Result decode(const BinaryBitmap& image) const override;
+	std::list<Result> decodeMultiple(const BinaryBitmap& image) const;
 };
 
 } // Pdf417

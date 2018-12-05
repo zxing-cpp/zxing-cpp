@@ -25,7 +25,11 @@ add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/../../../wrappers/gdiplus ${CMAKE_
 if (ENABLE_DECODERS)
     add_executable (ReaderTest
         TestReaderMain.cpp
+        ../../common/TestReader.h
         ../../common/TestReader.cpp
+        ../../common/Pdf417MultipleCodeReader.h
+        ../../common/Pdf417MultipleCodeReader.cpp
+        ../../common/BlackboxTestRunner.h
         ../../common/BlackboxTestRunner.cpp
     )
 

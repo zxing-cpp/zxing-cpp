@@ -57,7 +57,7 @@ static void FixeBitmapFormat(Gdiplus::Bitmap& bitmap)
 class GdiImageLoader : public ImageLoader
 {
 public:
-	virtual std::shared_ptr<LuminanceSource> load(const std::wstring& filename)
+	virtual std::shared_ptr<LuminanceSource> load(const std::wstring& filename) const override
 	{
 		Gdiplus::Bitmap bitmap(filename.c_str());
 		FixeBitmapFormat(bitmap);

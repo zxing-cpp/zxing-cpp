@@ -26,7 +26,11 @@ if (ENABLE_DECODERS)
     find_package(Boost COMPONENTS system filesystem REQUIRED)
     add_executable (ReaderTest
         TestReaderMain.cpp
+        ../../common/TestReader.h
         ../../common/TestReader.cpp
+        ../../common/Pdf417MultipleCodeReader.h
+        ../../common/Pdf417MultipleCodeReader.cpp
+        ../../common/BlackboxTestRunner.h
         ../../common/BlackboxTestRunner.cpp
         ../../common/lodepng.cpp
     )

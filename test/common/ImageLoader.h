@@ -28,7 +28,7 @@ class ImageLoader
 {
 public:
 	virtual ~ImageLoader() {}
-	virtual std::shared_ptr<LuminanceSource> load(const std::wstring& filename) = 0;
+	virtual std::shared_ptr<LuminanceSource> load(const std::wstring& filename) const = 0;
 };
 
 }} // ZXing::Test
