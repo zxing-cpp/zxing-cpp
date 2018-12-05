@@ -63,6 +63,9 @@ ITFWriter::encode(const std::wstring& contents, int width, int height) const
 	for (size_t i = 0; i < length; i += 2) {
 		int one = contents[i] - '0';
 		int two = contents[i + 1] - '0';
+		if (one < 0 || one > 9 || two < 0 || two > 9) {
+			throw std::invalid_argument("Contents should contain only digits: 0-9");
+		}
 		std::array<int, 10> encoding = {};
 		for (int j = 0; j < 5; j++) {
 			encoding[2 * j] = PATTERNS[one][j];

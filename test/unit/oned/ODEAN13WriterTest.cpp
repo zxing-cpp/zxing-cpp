@@ -43,3 +43,8 @@ TEST(ODEAN13WriterTest, AddChecksumAndEncode)
 	std::string expected = "00001010001011010011101100110010011011110100111010101011001101101100100001010111001001110100010010100000";
 	EXPECT_EQ(Encode(toEncode, expected.length()), expected);
 }
+
+TEST(ODEAN13WriterTest, EncodeIllegalCharacters)
+{
+	EXPECT_THROW({ Encode(L"5901234123abc", 100); }, std::invalid_argument);
+}

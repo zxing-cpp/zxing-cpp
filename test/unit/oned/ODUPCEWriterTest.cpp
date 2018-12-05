@@ -50,3 +50,8 @@ TEST(ODUPCEWriterTest, AddChecksumAndEncode)
 	std::string expected = "0000000000010101110010100111000101101011110110111001011101010100000000000";
 	EXPECT_EQ(Encode(toEncode, expected.length()), expected);
 }
+
+TEST(ODUPCEWriterTest, EncodeIllegalCharacters)
+{
+	EXPECT_THROW(Encode(L"05096abc", 100), std::invalid_argument);
+}
