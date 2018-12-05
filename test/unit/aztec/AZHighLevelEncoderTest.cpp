@@ -137,6 +137,38 @@ TEST(AZHighLevelEncoderTest, HighLevelEncodeBinary)
 		// A lower case letter at both ends will enough to latch us into LOWER.
 		TestHighLevelEncodeString('a' + sb.substr(0, i) + 'b', expectedLength + 15);
 	}
+
+	sb.clear();
+	for (int i = 0; i < 32; i++) {
+		sb.push_back('\xA7'); // § forces binary encoding
+	}
+	sb[1] = 'A';
+	// expect B/S(1) A B/S(30)
+	TestHighLevelEncodeString(sb, 5 + 20 + 31 * 8);
+	
+	sb.clear();
+	for (int i = 0; i < 31; i++) {
+		sb.push_back('\xA7');
+	}
+	sb[1] = 'A';
+	// expect B/S(31)
+	TestHighLevelEncodeString(sb, 10 + 31 * 8);
+
+	sb.clear();
+	for (int i = 0; i < 34; i++) {
+		sb.push_back('\xA7');
+	}
+	sb[1] = 'A';
+	// expect B/S(31) B/S(3)
+	TestHighLevelEncodeString(sb, 20 + 34 * 8);
+
+	sb.clear();
+	for (int i = 0; i < 64; i++) {
+		sb.push_back('\xA7');
+	}
+	sb[30] = 'A';
+	// expect B/S(64)
+	TestHighLevelEncodeString(sb, 21 + 64 * 8);
 }
 
 TEST(AZHighLevelEncoderTest, HighLevelEncodePairs)
