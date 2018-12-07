@@ -18,6 +18,7 @@
 #include "oned/ODCode93Writer.h"
 #include "oned/ODWriterHelper.h"
 #include "ZXContainerAlgorithms.h"
+#include "ZXTestSupport.h"
 
 #include <array>
 
@@ -41,20 +42,20 @@ static const int CHARACTER_ENCODINGS[] = {
 
 static_assert(Length(ALPHABET_STRING) - 1 == Length(CHARACTER_ENCODINGS), "table size mismatch");
 
-static void ToIntArray(int a, std::array<int, 9>& toReturn) {
-	for (int i = 0; i < 9; ++i) {
-		toReturn[i] = (a & (1 << (8 - i))) == 0 ? 0 : 1;
-	}
-}
+static const int ASTERISK_ENCODING = CHARACTER_ENCODINGS[47];
 
-int AppendPattern(std::vector<bool>& target, int pos, const std::array<int, 9>& pattern) {
-	for (size_t i = 0; i < pattern.size(); ++i) {
-		target[pos++] = pattern[i] != 0;
+static int AppendPattern(std::vector<bool>& target, int pos, int a)
+{
+	for (int i = 0; i < 9; i++) {
+		int temp = a & (1 << (8 - i));
+		target[pos + i] = temp != 0;
 	}
 	return 9;
 }
 
-static int ComputeChecksumIndex(const std::wstring& contents, int maxWeight) {
+
+static int ComputeChecksumIndex(const std::string& contents, int maxWeight)
+{
 	int weight = 1;
 	int total = 0;
 
@@ -68,20 +69,98 @@ static int ComputeChecksumIndex(const std::wstring& contents, int maxWeight) {
 	return total % 47;
 }
 
+
+ZXING_EXPORT_TEST_ONLY
+std::string Code93ConvertToExtended(const std::wstring& contents)
+{
+	size_t length = contents.length();
+	std::string extendedContent;
+	extendedContent.reserve(length * 2);
+
+	for (size_t i = 0; i < length; i++) {
+		int character = contents[i];
+		// ($)=a, (%)=b, (/)=c, (+)=d. see Code93Reader.ALPHABET_STRING
+		if (character == 0) {
+			// NUL: (%)U
+			extendedContent.append("bU");
+		}
+		else if (character <= 26) {
+			// SOH - SUB: ($)A - ($)Z
+			extendedContent.push_back('a');
+			extendedContent.push_back((char)('A' + character - 1));
+		}
+		else if (character <= 31) {
+			// ESC - US: (%)A - (%)E
+			extendedContent.push_back('b');
+			extendedContent.push_back((char)('A' + character - 27));
+		}
+		else if (character == ' ' || character == '$' || character == '%' || character == '+') {
+			// space $ % +
+			extendedContent.push_back(character);
+		}
+		else if (character <= ',') {
+			// ! " # & ' ( ) * ,: (/)A - (/)L
+			extendedContent.push_back('c');
+			extendedContent.push_back((char)('A' + character - '!'));
+		}
+		else if (character <= '9') {
+			extendedContent.push_back(character);
+		}
+		else if (character == ':') {
+			// :: (/)Z
+			extendedContent.append("cZ");
+		}
+		else if (character <= '?') {
+			// ; - ?: (%)F - (%)J
+			extendedContent.push_back('b');
+			extendedContent.push_back((char)('F' + character - ';'));
+		}
+		else if (character == '@') {
+			// @: (%)V
+			extendedContent.append("bV");
+		}
+		else if (character <= 'Z') {
+			// A - Z
+			extendedContent.push_back(character);
+		}
+		else if (character <= '_') {
+			// [ - _: (%)K - (%)O
+			extendedContent.push_back('b');
+			extendedContent.push_back((char)('K' + character - '['));
+		}
+		else if (character == '`') {
+			// `: (%)W
+			extendedContent.append("bW");
+		}
+		else if (character <= 'z') {
+			// a - z: (*)A - (*)Z
+			extendedContent.push_back('d');
+			extendedContent.push_back((char)('A' + character - 'a'));
+		}
+		else if (character <= 127) {
+			// { - DEL: (%)P - (%)T
+			extendedContent.push_back('b');
+			extendedContent.push_back((char)('P' + character - '{'));
+		}
+		else {
+			throw std::invalid_argument("Requested content contains a non-encodable character: '" + (char)character + std::string("'"));
+		}
+	}
+	return extendedContent;
+}
+
 BitMatrix
 Code93Writer::encode(const std::wstring& contents_, int width, int height) const
 {
-	std::wstring contents = contents_;
+	std::string contents = Code93ConvertToExtended(contents_);
+
 	size_t length = contents.length();
 	if (length == 0) {
 		throw std::invalid_argument("Found empty contents");
 	}
 	if (length > 80) {
-		throw std::invalid_argument("Requested contents should be less than 80 digits long");
+		throw std::invalid_argument("Requested contents should be less than 80 digits long after converting to extended encoding");
 	}
-
-	//each character is encoded by 9 of 0/1's
-	std::array<int, 9> widths = {};
 
 	//lenght of code + 2 start/stop characters + 2 checksums, each of 9 bits, plus a termination bar
 	size_t codeWidth = (contents.length() + 2 + 2) * 9 + 1;
@@ -89,30 +168,25 @@ Code93Writer::encode(const std::wstring& contents_, int width, int height) const
 	std::vector<bool> result(codeWidth, false);
 
 	//start character (*)
-	ToIntArray(CHARACTER_ENCODINGS[47], widths);
-	int pos = AppendPattern(result, 0, widths);
+	int pos = AppendPattern(result, 0, ASTERISK_ENCODING);
 
 	for (size_t i = 0; i < length; i++) {
 		int indexInString = IndexOf(ALPHABET_STRING, contents[i]);
-		ToIntArray(CHARACTER_ENCODINGS[indexInString], widths);
-		pos += AppendPattern(result, pos, widths);
+		pos += AppendPattern(result, pos, CHARACTER_ENCODINGS[indexInString]);
 	}
 
 	//add two checksums
 	int check1 = ComputeChecksumIndex(contents, 20);
-	ToIntArray(CHARACTER_ENCODINGS[check1], widths);
-	pos += AppendPattern(result, pos, widths);
+	pos += AppendPattern(result, pos, CHARACTER_ENCODINGS[check1]);
 
 	//append the contents to reflect the first checksum added
 	contents += static_cast<wchar_t>(ALPHABET_STRING[check1]);
 
 	int check2 = ComputeChecksumIndex(contents, 15);
-	ToIntArray(CHARACTER_ENCODINGS[check2], widths);
-	pos += AppendPattern(result, pos, widths);
+	pos += AppendPattern(result, pos, CHARACTER_ENCODINGS[check2]);
 
 	//end character (*)
-	ToIntArray(CHARACTER_ENCODINGS[47], widths);
-	pos += AppendPattern(result, pos, widths);
+	pos += AppendPattern(result, pos, ASTERISK_ENCODING);
 
 	//termination bar (single black bar)
 	result[pos] = true;

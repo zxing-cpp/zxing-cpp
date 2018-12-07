@@ -60,12 +60,12 @@ static std::string ToHexString(int c)
 }
 
 static std::string TryToConvertToExtendedMode(const std::wstring& contents) {
-	int length = contents.length();
+	size_t length = contents.length();
 	std::string extendedContent;
-	extendedContent.reserve(contents.length() * 2);
+	extendedContent.reserve(length * 2);
 
-	for (int i = 0; i < length; i++) {
-		unsigned int character = contents[i];
+	for (size_t i = 0; i < length; i++) {
+		int character = contents[i];
 		switch (character) {
 			case '\0':
 				extendedContent.append("%U");
