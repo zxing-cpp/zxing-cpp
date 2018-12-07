@@ -155,12 +155,7 @@ Code39Writer::encode(const std::wstring& contents, int width, int height) const
 	}
 
 	std::array<int, 9> widths = {};
-	size_t codeWidth = 24 + 1 + length;
-	for (size_t i = 0; i < length; ++i) {
-		int indexInString = IndexOf(ALPHABET_STRING, extendedContent[i]);
-		ToIntArray(CHARACTER_ENCODINGS[indexInString], widths);
-		codeWidth = Accumulate(widths, codeWidth);
-	}
+	size_t codeWidth = 24 + 1 + (13 * length);
 
 	std::vector<bool> result(codeWidth, false);
 	ToIntArray(ASTERISK_ENCODING, widths);
