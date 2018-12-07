@@ -28,7 +28,8 @@ using namespace ZXing::OneD;
 static const std::string FNC1 = "11110101110";
 static const std::string FNC2 = "11110101000";
 static const std::string FNC3 = "10111100010";
-static const std::string FNC4 = "10111101110";
+static const std::string FNC4A = "11101011110";
+static const std::string FNC4B = "10111101110";
 static const std::string START_CODE_A = "11010000100";
 static const std::string START_CODE_B = "11010010000";
 static const std::string START_CODE_C = "11010011100";
@@ -36,6 +37,7 @@ static const std::string SWITCH_CODE_A = "11101011110";
 static const std::string SWITCH_CODE_B = "10111101110";
 static const std::string QUIET_SPACE = "00000";
 static const std::string STOP = "1100011101011";
+static const std::string LF = "10000110010";
 
 static std::string LineMatrixToString(const BitMatrix& matrix)
 {
@@ -85,8 +87,16 @@ TEST(ODCode128Writer, EncodeWithFunc4)
 {
 	auto toEncode = L"\xf4""123";
 	//                                                       "1"            "2"             "3"          check digit 59
-	auto expected = QUIET_SPACE + START_CODE_B + FNC4 + "10011100110" + "11001110010" + "11001011100" + "11100011010" + STOP + QUIET_SPACE;
+	auto expected = QUIET_SPACE + START_CODE_B + FNC4B + "10011100110" + "11001110010" + "11001011100" + "11100011010" + STOP + QUIET_SPACE;
 
+	auto actual = LineMatrixToString(Code128Writer().encode(toEncode, 0, 0));
+	EXPECT_EQ(actual, expected);
+}
+
+TEST(ODCode128Writer, EncodeWithFncsAndNumberInCodesetA)
+{
+	auto toEncode = L"\n" "\xf1" "\xf4" "1" "\n";
+	auto expected = QUIET_SPACE + START_CODE_A + LF + FNC1 + FNC4A + "10011100110" + LF + "10101111000" + STOP + QUIET_SPACE;
 	auto actual = LineMatrixToString(Code128Writer().encode(toEncode, 0, 0));
 	EXPECT_EQ(actual, expected);
 }
