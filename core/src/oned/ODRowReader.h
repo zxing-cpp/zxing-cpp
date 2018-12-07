@@ -44,6 +44,7 @@ public:
 		virtual ~DecodingState() {}
 	};
 
+	Result decodeSingleRow(int rowNumber, const BitArray& row) const;
 
 	virtual ~RowReader() {}
 

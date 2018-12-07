@@ -49,6 +49,17 @@ static const int CHARACTER_ENCODINGS[] = {
 
 static_assert(Length(ALPHABET_STRING) - 1 == Length(CHARACTER_ENCODINGS), "table size mismatch");
 
+
+static const char PERCENTAGE_MAPPING[26] = {
+	'A' - 38, 'B' - 38, 'C' - 38, 'D' - 38, 'E' - 38,	// %A to %E map to control codes ESC to USep
+	'F' - 11, 'G' - 11, 'H' - 11, 'I' - 11, 'J' - 11,	// %F to %J map to ; < = > ?
+	'K' + 16, 'L' + 16, 'M' + 16, 'N' + 16, 'O' + 16,	// %K to %O map to [ \ ] ^ _
+	'P' + 43, 'Q' + 43, 'R' + 43, 'S' + 43, 'T' + 43,	// %P to %T map to { | } ~ DEL
+	'\0', '@', '`',										// %U map to NUL, %V map to @, %W map to `
+	127, 127, 127										// %X to %Z all map to DEL (127)
+};
+
+
 static const int ASTERISK_ENCODING = 0x094;
 
 using CounterContainer = std::array<int, 9>;
@@ -161,30 +172,8 @@ DecodeExtended(std::string& encoded)
 					}
 					break;
 				case '%':
-					// %A to %E map to control codes ESC to US
-					if (next >= 'A' && next <= 'E') {
-						decodedChar = (char)(next - 38);
-					}
-					else if (next >= 'F' && next <= 'J') {
-						decodedChar = (char)(next - 11);
-					}
-					else if (next >= 'K' && next <= 'O') {
-						decodedChar = (char)(next + 16);
-					}
-					else if (next >= 'P' && next <= 'T') {
-						decodedChar = (char)(next + 43);
-					}
-					else if (next == 'U') {
-						decodedChar = (char)0;
-					}
-					else if (next == 'V') {
-						decodedChar = '@';
-					}
-					else if (next == 'W') {
-						decodedChar = '`';
-					}
-					else if (next == 'X' || next == 'Y' || next == 'Z') {
-						decodedChar = (char)127;
+					if (next >= 'A' && next <= 'Z') {
+						decodedChar = PERCENTAGE_MAPPING[next - 'A'];
 					}
 					else {
 						return false;

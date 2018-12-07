@@ -49,6 +49,16 @@ static_assert(Length(ALPHABET_STRING) - 1 == Length(CHARACTER_ENCODINGS), "table
 
 static const int ASTERISK_ENCODING = CHARACTER_ENCODINGS[47];
 
+static const char PERCENTAGE_MAPPING[26] = {
+	'A' - 38, 'B' - 38, 'C' - 38, 'D' - 38, 'E' - 38,	// %A to %E map to control codes ESC to USep
+	'F' - 11, 'G' - 11, 'H' - 11, 'I' - 11, 'J' - 11,	// %F to %J map to ; < = > ?
+	'K' + 16, 'L' + 16, 'M' + 16, 'N' + 16, 'O' + 16,	// %K to %O map to [ \ ] ^ _
+	'P' + 43, 'Q' + 43, 'R' + 43, 'S' + 43, 'T' + 43,	// %P to %T map to { | } ~ DEL
+	'\0', '@', '`',										// %U map to NUL, %V map to @, %W map to `
+	127, 127, 127										// %X to %Z all map to DEL (127)
+};
+
+
 using CounterContainer = std::array<int, 6>;
 
 static int ToPattern(const CounterContainer& counters)
@@ -129,25 +139,8 @@ DecodeExtended(const std::string& encoded, std::string& decoded)
 				}
 				break;
 			case 'b':
-				if (next >= 'A' && next <= 'E') {
-					// %A to %E map to control codes ESC to USep
-					decodedChar = (char)(next - 38);
-				}
-				else if (next >= 'F' && next <= 'J') {
-					// %F to %J map to ; < = > ?
-					decodedChar = (char)(next - 11);
-				}
-				else if (next >= 'K' && next <= 'O') {
-					// %K to %O map to [ \ ] ^ _
-					decodedChar = (char)(next + 16);
-				}
-				else if (next >= 'P' && next <= 'S') {
-					// %P to %S map to { | } ~
-					decodedChar = (char)(next + 43);
-				}
-				else if (next >= 'T' && next <= 'Z') {
-					// %T to %Z all map to DEL (127)
-					decodedChar = 127;
+				if (next >= 'A' && next <= 'Z') {
+					decodedChar = PERCENTAGE_MAPPING[next - 'A'];
 				}
 				else {
 					return DecodeStatus::FormatError;

@@ -26,6 +26,13 @@
 namespace ZXing {
 namespace OneD {
 
+Result
+RowReader::decodeSingleRow(int rowNumber, const BitArray& row) const
+{
+	std::unique_ptr<DecodingState> state;
+	return decodeRow(rowNumber, row, state);
+}
+
 /**
 * Determines how closely a set of observed counts of runs of black/white values matches a given
 * target pattern. This is reported as the ratio of the total variance from the expected pattern

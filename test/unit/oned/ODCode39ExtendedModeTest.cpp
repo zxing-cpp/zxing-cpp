@@ -32,8 +32,7 @@ namespace {
 		hints.setShouldTryCode39ExtendedMode(true);
 		Code39Reader sut(hints);
 		BitArray row = Utility::ParseBitArray(encoded, '1');
-		std::unique_ptr<RowReader::DecodingState> state;
-		Result result = sut.decodeRow(0, row, state);
+		Result result = sut.decodeSingleRow(0, row);
 		return result.text();
 	}
 }

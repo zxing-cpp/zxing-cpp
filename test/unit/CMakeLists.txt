@@ -76,6 +76,7 @@ add_executable (ZXingUnitTest
     oned/ODCodaBarWriterTest.cpp
     oned/ODCode39ExtendedModeTest.cpp
     oned/ODCode39WriterTest.cpp
+    oned/ODCode93ReaderTest.cpp
     oned/ODCode93WriterTest.cpp
     oned/ODCode128WriterTest.cpp
     oned/ODEAN8WriterTest.cpp
