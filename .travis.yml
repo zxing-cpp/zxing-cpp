@@ -21,4 +21,4 @@ script:
  - mkdir build-test && cd build-test
  - cmake ../test/runners/generic/
  - make
- - ./ReaderTest
+ - ./ReaderTest ../test/
