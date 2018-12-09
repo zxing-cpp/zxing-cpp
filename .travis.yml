@@ -9,6 +9,10 @@ addons:
       - libboost-filesystem-dev
       - libboost-system-dev
 
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install -y libboost-dev libboost-filesystem-dev libboost-system-dev
+
 script:
  - mkdir build && cd build
  - cmake ../core
