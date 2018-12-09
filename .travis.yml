@@ -2,6 +2,11 @@ language: cpp
 dist: bionic
 os:
  - linux
+addons:
+  apt:
+    packages:
+      - libboost-filesystem-dev
+      - libboost-system-dev
 script:
  - mkdir build
  - cd build
