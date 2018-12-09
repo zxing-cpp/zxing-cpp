@@ -5,11 +5,12 @@ os:
 addons:
   apt:
     packages:
+      - libboost-dev
       - libboost-filesystem-dev
       - libboost-system-dev
+
 script:
- - mkdir build
- - cd build
+ - mkdir build && cd build
  - cmake ../core
  - make -j10
  - cd ..
