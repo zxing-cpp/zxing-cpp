@@ -1,0 +1,9 @@
+language: cpp
+dist: bionic
+os:
+-linux
+script:
+- mkdir build
+- cd build
+- cmake ..
+- make -j10
