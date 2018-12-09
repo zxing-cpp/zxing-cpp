@@ -1,9 +1,9 @@
 language: cpp
 dist: bionic
 os:
--linux
+ - linux
 script:
-- mkdir build
-- cd build
-- cmake ..
-- make -j10
+ - mkdir build
+ - cd build
+ - cmake ..
+ - make -j10
