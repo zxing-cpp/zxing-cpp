@@ -18,6 +18,11 @@ script:
  - cmake ../core
  - make -j10
  - cd ..
+ - mkdir build-unit && cd build-unit
+ - cmake ../test/unit
+ - make
+ - ./ZXingUnitTest
+ - cd ..
  - mkdir build-test && cd build-test
  - cmake ../test/runners/generic/
  - make
