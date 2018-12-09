@@ -5,5 +5,6 @@ os:
 script:
  - mkdir build
  - cd build
- - cmake ..
+ - cmake ../core
  - make -j10
+
