@@ -38,14 +38,14 @@ class InvertedLuminanceSource : public LuminanceSource
 public:
 	explicit InvertedLuminanceSource(std::shared_ptr<LuminanceSource> src) : _src(std::move(src)) {}
 
-	const uint8_t* getRow(int y, ByteArray& outBytes, bool forceCopy) const override
+	const uint8_t* getRow(int y, ByteArray& outBytes, bool) const override
 	{
 		_src->getRow(y, outBytes, true);
 		std::transform(outBytes.begin(), outBytes.end(), outBytes.begin(), [](uint8_t b) { return 255 - b; });
 		return outBytes.data();
 	}
 
-	const uint8_t* getMatrix(ByteArray& outBytes, int& outRowBytes, bool forceCopy) const override
+	const uint8_t* getMatrix(ByteArray& outBytes, int& outRowBytes, bool) const override
 	{
 		_src->getMatrix(outBytes, outRowBytes, true);
 		std::transform(outBytes.begin(), outBytes.end(), outBytes.begin(), [](uint8_t b) { return 255 - b; });
@@ -103,7 +103,7 @@ LuminanceSource::canCrop() const
 }
 
 std::shared_ptr<LuminanceSource>
-LuminanceSource::cropped(int left, int top, int width, int height) const
+LuminanceSource::cropped(int, int, int, int) const
 {
 	throw std::runtime_error("This luminance source does not support cropping.");
 }
@@ -121,7 +121,7 @@ LuminanceSource::canRotate() const
 * @return A rotated version of this object.
 */
 std::shared_ptr<LuminanceSource>
-LuminanceSource::rotated(int degreeCW) const
+LuminanceSource::rotated(int) const
 {
 	throw std::runtime_error("This luminance source does not support rotation by 90 degrees.");
 }

@@ -74,7 +74,7 @@ FindFinderPattern(const BitArray& row, bool rightFinderPattern, FinderCounters& 
 	return RowReader::FindPattern(
 	    // Will encounter white first when searching for right finder pattern
 	    row.getNextSetTo(row.begin(), !rightFinderPattern), row.end(), counters,
-	    [](BitArray::Iterator begin, BitArray::Iterator end, const FinderCounters& counters) {
+	    [](BitArray::Iterator, BitArray::Iterator, const FinderCounters& counters) {
 		    return RSS::ReaderHelper::IsFinderPattern(counters);
 	    });
 }

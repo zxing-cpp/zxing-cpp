@@ -124,7 +124,7 @@ FindNextPair(const BitArray& row, const std::list<ExpandedPair>& previousPairs, 
 	return RowReader::FindPattern(
 	    // find
 	    row.getNextSet(row.iterAt(rowOffset)), row.end(), counters,
-	    [searchingEvenPair](BitArray::Iterator begin, BitArray::Iterator end, std::array<int, 4>& counters) {
+	    [searchingEvenPair](BitArray::Iterator, BitArray::Iterator, std::array<int, 4>& counters) {
 		    if (searchingEvenPair) {
 			    std::reverse(counters.begin(), counters.end());
 		    }

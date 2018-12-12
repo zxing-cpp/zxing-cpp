@@ -720,17 +720,16 @@ class EdgeTracer
 public:
 #ifdef PRINT_DEBUG
 	static ByteMatrix _log;
-#endif
-
-	void log(PointI p) const
+	void log(const PointI& p) const
 	{
-#ifdef PRINT_DEBUG
 		if (_log.height() != image.height() || _log.width() != image.width())
 			_log = ByteMatrix(image.width(), image.height());
 		if (isIn(p))
 			_log.set(p.x, p.y, 1);
-#endif
 	}
+#else
+	void log(const PointI&) const {}
+#endif
 
 	EdgeTracer(const BitMatrix& img, PointF p, PointF d) : image(img), p(p), d(d) {}
 	EdgeTracer& operator=(const EdgeTracer& other)

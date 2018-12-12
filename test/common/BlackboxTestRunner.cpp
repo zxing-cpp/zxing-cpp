@@ -93,7 +93,7 @@ namespace {
 		TC tc[2];
 		int rotation; // The rotation in degrees clockwise to use for this test.
 
-		TestCase(int mpc, int thc, int mm, int mt, int r) : tc{ {"fast", mpc, mm}, {"slow", thc, mt} }, rotation(r) {}
+		TestCase(int mpc, int thc, int mm, int mt, int r) : tc{ {"fast", mpc, mm, {}, {}}, {"slow", thc, mt, {}, {}} }, rotation(r) {}
 		TestCase(int mpc, int thc, int r) : TestCase(mpc, thc, 0, 0, r) {}
 	};
 
@@ -127,7 +127,6 @@ static std::string checkResult(const std::wstring& pathPrefix, std::wstring imgP
 	return "Error reading file";
 }
 
-static const char* GOOD = "OK";
 static const char* BAD = "!!!!!! FAILED !!!!!!";
 
 
@@ -161,7 +160,7 @@ static void doRunTests(BlackboxTestRunner& runner, const std::vector<TestReader>
 	auto images = runner.getImagesInDirectory(std::wstring(directory.begin(), directory.end()));
 	auto folderName = getBaseName(directory);
 	
-	if (images.size() != imageCount)
+	if (images.size() != (size_t)imageCount)
 		std::cout << "TEST " << folderName << " => Expected number of tests: " << imageCount
 		     << ", got: " << images.size() << " => " << BAD << std::endl;
 
@@ -195,7 +194,7 @@ static void doRunFalsePositiveTests(BlackboxTestRunner& runner, const std::vecto
 	auto images = runner.getImagesInDirectory(std::wstring(directory.begin(), directory.end()));
 	auto folderName = getBaseName(directory);
 
-	if (images.size() != totalTests) {
+	if (images.size() != (size_t)totalTests) {
 		std::cout << "TEST " << folderName << " => Expected number of tests: " << totalTests
 		    << ", got: " << images.size() << " => " << BAD << std::endl;
 	}
@@ -249,7 +248,7 @@ static void doRunPdf417MultipleResultsTest(BlackboxTestRunner& runner, const std
 		imageGroups[splitFileName(path, '-').first].push_back(buildPath(runner.pathPrefix(), path));
 	}
 
-	if (imageGroups.size() != totalTests) {
+	if (imageGroups.size() != (size_t)totalTests) {
 		std::cout << "TEST " << folderName << " => Expected number of tests: " << totalTests
 			<< ", got: " << imageGroups.size() << " => " << BAD << std::endl;
 	}

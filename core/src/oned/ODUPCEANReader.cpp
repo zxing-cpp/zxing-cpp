@@ -54,8 +54,8 @@ UPCEANReader::FindGuardPattern(const BitArray& row, BitArray::Iterator begin, bo
 
 	return RowReader::FindPattern(
 		row.getNextSetTo(begin, !whiteFirst), row.end(), counters,
-		[&pattern, &length](BitArray::Iterator begin, BitArray::Iterator end, Counters& counters) {
-			return RowReader::PatternMatchVariance(counters.data(), pattern, length, MAX_INDIVIDUAL_VARIANCE) < MAX_AVG_VARIANCE;
+		[pattern, length](BitArray::Iterator, BitArray::Iterator, const Counters& cntrs) {
+			return RowReader::PatternMatchVariance(cntrs.data(), pattern, length, MAX_INDIVIDUAL_VARIANCE) < MAX_AVG_VARIANCE;
 		});
 }
 
@@ -89,8 +89,8 @@ UPCEANReader::FindStartGuardPattern(const BitArray& row)
 
 	return RowReader::FindPattern(
 		row.getNextSet(row.begin()), row.end(), counters,
-		[&row, &pattern](BitArray::Iterator begin, BitArray::Iterator end, Counters& counters) {
-			if (!(RowReader::PatternMatchVariance(counters, pattern, MAX_INDIVIDUAL_VARIANCE) < MAX_AVG_VARIANCE))
+		[&row, &pattern](BitArray::Iterator begin, BitArray::Iterator end, const Counters& cntrs) {
+			if (!(RowReader::PatternMatchVariance(cntrs, pattern, MAX_INDIVIDUAL_VARIANCE) < MAX_AVG_VARIANCE))
 				return false;
 
 			// Make sure there is a quiet zone at least as big as the start pattern before the barcode.
@@ -102,7 +102,7 @@ UPCEANReader::FindStartGuardPattern(const BitArray& row)
 }
 
 Result
-UPCEANReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const
+UPCEANReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>&) const
 {
 	auto range = FindStartGuardPattern(row);
 	if (!range)

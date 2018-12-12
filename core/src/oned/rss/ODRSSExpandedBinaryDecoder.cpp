@@ -148,7 +148,7 @@ DecodeAI013103(const BitArray& bits)
 	AI01EncodeCompressedGtin(buffer, bits, HEADER_SIZE);
 	AI01EncodeCompressedWeight(buffer, bits, HEADER_SIZE + AI01_GTIN_SIZE, WEIGHT_SIZE,
 		// addWeightCode
-		[](std::string& buf, int weight) { buf.append("(3103)"); },
+		[](std::string& buf, int) { buf.append("(3103)"); },
 		// checkWeight
 		[](int weight) { return weight; });
 

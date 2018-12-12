@@ -112,7 +112,7 @@ BitWrapperBinarizer::canRotate() const
 }
 
 std::shared_ptr<BinaryBitmap>
-BitWrapperBinarizer::rotated(int degreeCW) const
+BitWrapperBinarizer::rotated(int) const
 {
 	throw std::runtime_error("This binarizer source does not support rotation by 90 degrees.");
 }

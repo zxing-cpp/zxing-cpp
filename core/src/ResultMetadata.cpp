@@ -41,7 +41,7 @@ struct ResultMetadata::IntegerValue : public Value
 {
 	int value;
 	explicit IntegerValue(int v) : value(v) {}
-	int toInteger(int fallback) const override {
+	int toInteger(int) const override {
 		return value;
 	}
 };

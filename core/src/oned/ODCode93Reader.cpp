@@ -61,7 +61,8 @@ static const char PERCENTAGE_MAPPING[26] = {
 
 using CounterContainer = std::array<int, 6>;
 
-static int ToPattern(const CounterContainer& counters)
+static int
+ToPattern(const CounterContainer& counters)
 {
 	int max = static_cast<int>(counters.size());
 	int sum = Accumulate(counters, 0);
@@ -90,7 +91,7 @@ FindAsteriskPattern(const BitArray& row)
 
 	return RowReader::FindPattern(
 	    row.getNextSet(row.begin()), row.end(), counters,
-	    [](BitArray::Iterator begin, BitArray::Iterator end, const CounterContainer& counters) {
+	    [](BitArray::Iterator, BitArray::Iterator, const CounterContainer& counters) {
 		    return ToPattern(counters) == ASTERISK_ENCODING;
 	    });
 }
@@ -193,7 +194,7 @@ CheckChecksums(const std::string& result)
 
 
 Result
-Code93Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const
+Code93Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>&) const
 {
 	auto range = FindAsteriskPattern(row);
 	if (!range)

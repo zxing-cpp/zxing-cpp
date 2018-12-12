@@ -139,7 +139,7 @@ template <typename Container>
 static BitArray::Range
 FindGuardPattern(const BitArray& row, const Container& pattern)
 {
-	Container counters;
+	Container counters = {};
 
 	return RowReader::FindPattern(
 	    row.getNextSet(row.begin()), row.end(), counters,
@@ -208,7 +208,7 @@ ITFReader::ITFReader(const DecodeHints& hints) :
 }
 
 Result
-ITFReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const
+ITFReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>&) const
 {
 	// Find out where the Middle section (payload) starts & ends
 	auto startRange = DecodeStart(row);

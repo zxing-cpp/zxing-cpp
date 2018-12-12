@@ -37,7 +37,7 @@ bool DataMask000(int i, int j)
 /**
 * 001: mask bits for which x mod 2 == 0
 */
-bool DataMask001(int i, int j)
+bool DataMask001(int i, int)
 {
 	return (i & 0x01) == 0;
 }
@@ -45,7 +45,7 @@ bool DataMask001(int i, int j)
 /**
 * 010: mask bits for which y mod 3 == 0
 */
-bool DataMask010(int i, int j)
+bool DataMask010(int, int j)
 {
 	return j % 3 == 0;
 }
