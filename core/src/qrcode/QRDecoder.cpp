@@ -336,6 +336,7 @@ DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCorrectionLevel 
 			case CodecMode::FNC1_SECOND_POSITION:
 				// We do little with FNC1 except alter the parsed result a bit according to the spec
 				fc1InEffect = true;
+				break;
 			case CodecMode::STRUCTURED_APPEND:
 				if (bits.available() < 16) {
 					return DecodeStatus::FormatError;
