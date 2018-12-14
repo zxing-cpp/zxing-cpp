@@ -24,6 +24,6 @@ script:
  - ./ZXingUnitTest
  - cd ..
  - mkdir build-test && cd build-test
- - cmake ../test/runners/generic/
+ - cmake -DCMAKE_BUILD_TYPE=Release ../test/runners/generic/
  - make
  - ./ReaderTest ../test/
