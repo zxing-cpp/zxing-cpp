@@ -22,11 +22,6 @@ if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
     else()
         set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG")
         set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
-        if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
-            set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-        elseif (APPLE)
-            set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
-        endif()
     endif()
     
 endif()
@@ -470,6 +465,18 @@ target_compile_options (ZXingCore
     PUBLIC ${ZXING_CORE_DEFINES}
     PRIVATE ${ZXING_CORE_LOCAL_DEFINES}
 )
+
+if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
+    target_compile_options (ZXingCore PRIVATE
+        -std=c++11
+        -ffloat-store   # same float point precision in all optimization levels
+    )
+elseif (APPLE)
+    target_compile_options (ZXingCore PRIVATE
+        -std=c++11
+        -stdlib=libc++
+    )
+endif()
 
 add_library(ZXing::Core ALIAS ZXingCore)
 set_target_properties(ZXingCore PROPERTIES EXPORT_NAME Core)
