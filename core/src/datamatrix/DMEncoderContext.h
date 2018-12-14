@@ -86,7 +86,7 @@ public:
 	}
 
 	int codewordCount() const {
-		return _codewords.size();
+		return (int)_codewords.size();
 	}
 
 	void addCodeword(uint8_t codeword) {

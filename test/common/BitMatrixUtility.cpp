@@ -72,11 +72,11 @@ BitMatrix ParseBitMatrix(const std::string& str, char one, bool expectSpace)
 	if (lineLength == std::string::npos)
 		return {};
 
-	int height = str.length() / (lineLength + 1);
+	int height = static_cast<int>(str.length() / (lineLength + 1));
 	int width = static_cast<int>(expectSpace ? lineLength / 2 : lineLength);
 	BitMatrix mat(width, height);
 	for (int y = 0; y < height; ++y) {
-		int offset = y * (lineLength + 1);
+		size_t offset = y * (lineLength + 1);
 		for (int x = 0; x < width; ++x) {
 			if (str.at(offset) == one)
 				mat.set(x, y);

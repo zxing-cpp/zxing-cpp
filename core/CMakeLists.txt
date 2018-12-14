@@ -1,7 +1,7 @@
+cmake_minimum_required (VERSION 3.1.3)
+
 if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
     # this is the top level project
-    cmake_minimum_required (VERSION 2.8.12)
-
     project (ZXingCpp)
     
     set (ENABLE_ENCODERS OFF CACHE BOOL "Check to include encoders")
@@ -444,6 +444,8 @@ source_group (Sources\\pdf417 FILES ${PDF417_FILES})
 source_group (Sources\\qrcode FILES ${QRCODE_FILES})
 source_group (Sources\\textcodec FILES ${TEXT_CODEC_FILES})
 
+find_package (Threads)
+
 add_library (ZXingCore
     ${COMMON_FILES}
     ${AZTEC_FILES}
@@ -469,7 +471,7 @@ target_compile_options (ZXingCore
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
     target_compile_options (ZXingCore PRIVATE
         -std=c++11
-        -ffloat-store   # same float point precision in all optimization levels
+        -ffloat-store   # same floating point precision in all optimization levels
     )
 elseif (APPLE)
     target_compile_options (ZXingCore PRIVATE
@@ -477,6 +479,8 @@ elseif (APPLE)
         -stdlib=libc++
     )
 endif()
+
+target_link_libraries (ZXingCore PUBLIC ${CMAKE_THREAD_LIBS_INIT})
 
 add_library(ZXing::Core ALIAS ZXingCore)
 set_target_properties(ZXingCore PROPERTIES EXPORT_NAME Core)

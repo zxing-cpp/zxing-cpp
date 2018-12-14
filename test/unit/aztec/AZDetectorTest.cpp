@@ -89,7 +89,7 @@ namespace {
 					while (errors.size() < 3) {
 						errors.insert(random.next(size_t(0), orientationPoints.size() - 1));
 					}
-					for (int error : errors) {
+					for (auto error : errors) {
 						copy.flip(orientationPoints[error].x, orientationPoints[error].y);
 					}
 					Aztec::DetectorResult r = Aztec::Detector::Detect(MakeLarger(copy, 3), false);

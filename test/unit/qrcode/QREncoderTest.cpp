@@ -584,7 +584,7 @@ TEST(QREncoderTest, InterleaveWithECBytes)
     };
 	ASSERT_EQ(expected.size(), out.sizeInBytes());
 	std::vector<uint8_t> outArray(expected.size());
-    out.toBytes(0, outArray.data(), expected.size());
+    out.toBytes(0, outArray.data(), (int)expected.size());
 	EXPECT_EQ(outArray, expected);
 
 	// Numbers are from http://www.swetake.com/qr/qr8.html
@@ -619,7 +619,7 @@ TEST(QREncoderTest, InterleaveWithECBytes)
     };
 	EXPECT_EQ(expected.size(), out.sizeInBytes());
     outArray.resize(expected.size());
-    out.toBytes(0, outArray.data(), expected.size());
+    out.toBytes(0, outArray.data(), (int)expected.size());
 	EXPECT_EQ(outArray, expected);
 }
 

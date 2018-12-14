@@ -118,8 +118,8 @@ int MaskUtil::ApplyMaskPenaltyRule3(const ByteMatrix& matrix)
 {
 	const std::array<int8_t, 4> white = {0, 0, 0, 0};
 	const std::array<int8_t, 7> finder = {1, 0, 1, 1, 1, 0, 1};
-	const int whiteSize = white.size();
-	const int finderSize = finder.size();
+	const int whiteSize = (int)white.size();
+	const int finderSize = (int)finder.size();
 
 	int numPenalties = 0;
 	int width = matrix.width();
@@ -151,7 +151,7 @@ int MaskUtil::ApplyMaskPenaltyRule4(const ByteMatrix& matrix)
 	auto numDarkCells = std::count_if(matrix.begin(), matrix.end(), [](int8_t cell){ return cell == 1; });
 	auto numTotalCells = matrix.size();
 	auto fivePercentVariances = std::abs(numDarkCells * 2 - numTotalCells) * 10 / numTotalCells;
-	return fivePercentVariances * N4;
+	return static_cast<int>(fivePercentVariances * N4);
 }
 
 } // QRCode

@@ -24,8 +24,9 @@ class TextUtfEncoding
 {
 public:
 	static std::string ToUtf8(const std::wstring& str);
-	static void ToUtf8(const std::wstring& str, std::string& utf8);
+	static std::wstring FromUtf8(const std::string& utf8);
 
+	static void ToUtf8(const std::wstring& str, std::string& utf8);
 	static void AppendUtf16(std::wstring& str, const uint16_t* utf16, size_t length);
 	static void AppendUtf8(std::wstring& str, const uint8_t* utf8, size_t length);
 

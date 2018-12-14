@@ -27,20 +27,42 @@
 #include <iostream>
 #include <set>
 
-#if defined(__APPLE__) && defined(__GNUC__) && ! defined(__clang__)
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
+#if defined(__cpp_lib_filesystem)
+#   define FILESYSTEM_IS_EXPERIMENTAL 0
+#elif defined(__cpp_lib_experimental_filesystem)
+#   define FILESYSTEM_IS_EXPERIMENTAL 1
+#elif __has_include(<filesystem>)
+#   define FILESYSTEM_IS_EXPERIMENTAL 0
+#elif __has_include(<experimental/filesystem>)
+#   define FILESYSTEM_IS_EXPERIMENTAL 1
+#elif defined(__APPLE__) && defined(__GNUC__) && !defined(__clang__)
+#   define FILESYSTEM_IS_EXPERIMENTAL 1
+#elif __has_include(<dirent.h>)
+#   define ZXING_HAVE_DIRENT_H 1
 #else
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
+#   error <filesystem> feature is required
+#endif
+
+#if !defined(ZXING_HAVE_DIRENT_H)
+#    define ZXING_HAVE_DIRENT_H 0
+#endif
+
+#if ZXING_HAVE_DIRENT_H
+	#include <dirent.h>
+#elif FILESYSTEM_IS_EXPERIMENTAL
+    #include <experimental/filesystem>
+    namespace fs = std::experimental::filesystem;
+#else
+    #include <filesystem>
+    namespace fs = std::filesystem;
 #endif
 
 using namespace ZXing;
 using namespace ZXing::Test;
 
-static std::string toUtf8(const std::wstring& s)
+static bool HasSuffix(const std::string& s, const std::string& suffix)
 {
-	return TextUtfEncoding::ToUtf8(s);
+	return s.size() >= suffix.size() && std::equal(suffix.rbegin(), suffix.rend(), s.rbegin());
 }
 
 class GenericImageLoader : public ImageLoader
@@ -50,7 +72,7 @@ public:
 	{
 		std::vector<unsigned char> buffer;
 		unsigned width, height;
-		unsigned error = lodepng::decode(buffer, width, height, toUtf8(filename));
+		unsigned error = lodepng::decode(buffer, width, height, TextUtfEncoding::ToUtf8(filename));
 		if (error) {
 			throw std::runtime_error("Failed to read image");
 		}
@@ -69,9 +91,23 @@ public:
 	virtual std::vector<std::wstring> getImagesInDirectory(const std::wstring& dirPath) override
 	{
 		std::vector<std::wstring> result;
-		for (fs::directory_iterator i(fs::path(pathPrefix())/dirPath); i != fs::directory_iterator(); ++i)
-			if (is_regular_file(i->status()) && i->path().extension() == ".png")
-				result.push_back(dirPath + L"/" + i->path().filename().generic_wstring());
+#if ZXING_HAVE_DIRENT_H
+		if (auto dir = opendir(TextUtfEncoding::ToUtf8(pathPrefix() + L"/" + dirPath).c_str())) {
+			while (auto entry = readdir(dir)) {
+				if (HasSuffix(entry->d_name, ".png")) {
+					result.push_back(dirPath + L"/" + TextUtfEncoding::FromUtf8(entry->d_name));
+				}
+			}
+			closedir(dir);
+		}
+		else {
+			std::cerr << "Error open dir " << TextUtfEncoding::ToUtf8(dirPath) << std::endl;
+		}
+#else
+		for (const auto& entry : fs::directory_iterator(fs::path(pathPrefix()) / dirPath))
+			if (fs::is_regular_file(entry.status()) && entry.path().extension() == ".png")
+				result.push_back(dirPath + L"/" + entry.path().filename().generic_wstring());
+#endif
 		return result;
 	}
 };
@@ -85,9 +121,9 @@ int main(int argc, char** argv)
 
 	std::string pathPrefix = argv[1];
 
-	GenericBlackboxTestRunner runner(std::wstring(pathPrefix.begin(), pathPrefix.end()));
+	GenericBlackboxTestRunner runner(TextUtfEncoding::FromUtf8(pathPrefix));
 
-	if ( Contains(std::vector<std::string>{".png", ".jpg", ".pgm", ".gif"}, fs::path(pathPrefix).extension()) ) {
+	if (HasSuffix(pathPrefix, ".png")) {
 #if 0
 		TestReader reader = runner.createReader(false, false, "QR_CODE");
 #else
@@ -97,10 +133,10 @@ int main(int argc, char** argv)
 		int rotation = getenv("ROTATION") ? atoi(getenv("ROTATION")) : 0;
 
 		for (int i = 1; i < argc; ++i) {
-			auto result = reader.read(fs::path(argv[i]).generic_wstring(), rotation, isPure);
+			auto result = reader.read(TextUtfEncoding::FromUtf8(argv[i]), rotation, isPure);
 			std::cout << argv[i] << ": ";
 			if (result)
-				std::cout << result.format << ": " << toUtf8(result.text) << "\n";
+				std::cout << result.format << ": " << TextUtfEncoding::ToUtf8(result.text) << "\n";
 			else
 				std::cout << "FAILED\n";
 		}

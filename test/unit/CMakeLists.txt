@@ -1,10 +1,10 @@
-cmake_minimum_required (VERSION 2.8.11)
+cmake_minimum_required (VERSION 3.1.3)
 
 project (ZXingUnitTest)
 
 # Enable both reader and writer for testing
-set (ENABLE_ENCODERS ON CACHE BOOL "Include encoders" FORCE)
-set (ENABLE_DECODERS ON CACHE BOOL "include decoders" FORCE)
+set (ENABLE_ENCODERS ON CACHE INTERNAL "Include encoders" FORCE)
+set (ENABLE_DECODERS ON CACHE INTERNAL "include decoders" FORCE)
 
 add_definitions (-DUNICODE -D_UNICODE -DZXING_BUILD_FOR_TEST)
 
@@ -14,11 +14,6 @@ if (MSVC)
 else()
     set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG")
     set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
-    if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
-        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-    elseif (APPLE)
-        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
-    endif()
 endif()
 
 
@@ -102,6 +97,12 @@ add_executable (ZXingUnitTest
 target_include_directories (ZXingUnitTest
     PRIVATE ../common
 )
+
+if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
+    target_compile_options (ZXingUnitTest PRIVATE -std=c++11)
+elseif (APPLE)
+    target_compile_options (ZXingUnitTest PRIVATE -std=c++11 -stdlib=libc++)
+endif()
 
 target_link_libraries (ZXingUnitTest
     gtest_main
