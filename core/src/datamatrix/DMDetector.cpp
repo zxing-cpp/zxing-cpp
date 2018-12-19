@@ -676,9 +676,9 @@ class EdgeTracer
 
 	Value getAt(PointF p) const
 	{
-		if (!isIn(p))
-			return {};
 		auto q = round(p);
+		if (!isIn(q))
+			return {};
 		return {image.get(q.x, q.y)};
 	}
 
@@ -860,16 +860,16 @@ public:
 		} while (true);
 	}
 
-	PointF traceCorner(PointF dir)
+	bool traceCorner(PointF dir, PointF& corner)
 	{
 		step();
-		auto ret = PointF(p);
+		corner = PointF(p);
 		std::swap(d, dir);
 		traceStep(-1 * dir, 2, false);
 #ifdef PRINT_DEBUG
 		printf("turn: %d x %d -> %.2f, %.2f\n", p.x, p.y, d.x, d.y);
 #endif
-		return ret;
+		return isIn(corner) && isIn(p);
 	}
 };
 
@@ -982,7 +982,8 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 			if (!t.traceLine(t.right(), lineL))
 				continue;
 
-			tl = t.traceCorner(t.right());
+			if (!t.traceCorner(t.right(), tl))
+				continue;
 			lineL.reverse();
 			auto tlTracer = t;
 
@@ -995,7 +996,8 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 			if (!lineL.isValid())
 				t.updateDirectionFromOrigin(tl);
 			auto up = t.back();
-			bl = t.traceCorner(t.left());
+			if (!t.traceCorner(t.left(), bl))
+				continue;
 
 			// follow bottom leg right
 			if (!t.traceLine(t.left(), lineB))
@@ -1004,7 +1006,8 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 			if (!lineB.isValid())
 				t.updateDirectionFromOrigin(bl);
 			auto right = t.front();
-			br = t.traceCorner(t.left());
+			if (!t.traceCorner(t.left(), br))
+				continue;
 
 			auto lenL = distance(tl, bl) - 1;
 			auto lenB = distance(bl, br) - 1;
@@ -1026,7 +1029,8 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 			if (!t.traceGaps(t.left(), lineR, maxStepSize, lineT))
 				continue;
 
-			tr = t.traceCorner(t.left());
+			if (!t.traceCorner(t.left(), tr))
+				continue;
 
 			auto lenT = distance(tl, tr) - 1;
 			auto lenR = distance(tr, br) - 1;
