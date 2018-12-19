@@ -231,19 +231,19 @@ BitMatrix::getBottomRightOnBit(int& right, int& bottom) const
 
 BitMatrix Inflate(BitMatrix&& input, int width, int height, int quietZone)
 {
-	const int codeWidth = input.width() + (quietZone * 2);
-	const int codeHeight = input.height() + (quietZone * 2);
-	const int outputWidth = std::max(width, codeWidth);
-	const int outputHeight = std::max(height, codeHeight);
+	const int codeWidth = input.width();
+	const int codeHeight = input.height();
+	const int outputWidth = std::max(width, codeWidth + 2 * quietZone);
+	const int outputHeight = std::max(height, codeHeight + 2 * quietZone);
 
 	if (input.width() == outputWidth && input.height() == outputHeight)
 		return std::move(input);
 
-	const int scale = std::min(outputWidth / codeWidth, outputHeight / codeHeight);
+	const int scale = std::min((outputWidth - 2*quietZone) / codeWidth, (outputHeight - 2*quietZone) / codeHeight);
 	// Padding includes both the quiet zone and the extra white pixels to
 	// accommodate the requested dimensions.
-	const int leftPadding = (outputWidth - (input.width() * scale)) / 2;
-	const int topPadding = (outputHeight - (input.height() * scale)) / 2;
+	const int leftPadding = (outputWidth - (codeWidth * scale)) / 2;
+	const int topPadding = (outputHeight - (codeHeight * scale)) / 2;
 
 	BitMatrix result(outputWidth, outputHeight);
 

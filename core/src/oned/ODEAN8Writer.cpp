@@ -41,7 +41,7 @@ EAN8Writer::encode(const std::wstring& contents, int width, int height) const
 	std::array<int, 8> digits;
 	for (size_t i = 0; i < length; ++i) {
 		digits[i] = contents[i] - '0';
-		if (digits[i] < 0 && digits[i] > 9) {
+		if (digits[i] < 0 || digits[i] > 9) {
 			throw std::invalid_argument("Contents should contain only digits: 0-9");
 		}
 	}

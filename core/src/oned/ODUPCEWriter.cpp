@@ -61,7 +61,7 @@ static void GetDigits(const std::wstring& contents, std::array<int, N>& digits)
 {
 	for (size_t i = 0; i < contents.length(); ++i) {
 		digits[i] = contents[i] - '0';
-		if (digits[i] < 0 && digits[i] > 9) {
+		if (digits[i] < 0 || digits[i] > 9) {
 			throw std::invalid_argument("Contents should contain only digits: 0-9");
 		}
 	}
