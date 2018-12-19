@@ -98,7 +98,7 @@ int MaskUtil::ApplyMaskPenaltyRule2(const ByteMatrix& matrix)
 
 template<size_t N>
 static bool HasPatternAt(const std::array<int8_t, N>& pattern, const int8_t* begin, int count, int stride) {
-	assert(std::abs(count) <= N);
+	assert(std::abs(count) <= (int)N);
 	auto end = begin + count * stride;
 	if (count < 0)
 		std::swap(begin, end);

@@ -101,7 +101,7 @@ static inline bool IsNativeEDIFACT(int ch)
 	return ch >= ' ' && ch <= '^';
 }
 
-static inline bool IsSpecialB256(int ch)
+static inline bool IsSpecialB256(int /*ch*/)
 {
 	return false; //TODO NOT IMPLEMENTED YET!!!
 }
@@ -374,7 +374,7 @@ namespace ASCIIEncoder {
 
 namespace C40Encoder {
 
-	static int EncodeChar(char c, std::string& sb)
+	static int EncodeChar(int c, std::string& sb)
 	{
 		if (c == ' ') {
 			sb.push_back('\3');

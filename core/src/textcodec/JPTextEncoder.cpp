@@ -2016,22 +2016,6 @@ static inline bool IsLatin(unsigned c)
 #define        JISX0201_OVERLINE        0x007e
 #define        UNICODE_OVERLINE        0x203e
 
-static unsigned sjisToJisx0208(unsigned h, unsigned l)
-{
-	if ((((0x81 <= h) && (h <= 0x9f)) || ((0xe0 <= h) && (h <= 0xef))) &&
-		((0x40 <= l) && (l != 0x7f) && (l <= 0xfc))) {
-		if (l < 0x9f) {
-			return (((h << 1) - ((h <= 0x9f) ? 0x00e1 : 0x0161)) << 8) |
-				(l - ((l <= 0x7f) ? 0x1f : 0x20));
-		}
-		else {
-			return (((h << 1) - ((h <= 0x9f) ? 0x00e1 : 0x0161) + 1) << 8) |
-				(l - 0x7e);
-		}
-	}
-	return 0x0000;
-}
-
 static inline unsigned Hi(unsigned c)
 {
 	return (c >> 8) & 0xff;

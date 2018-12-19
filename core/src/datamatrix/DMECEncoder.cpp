@@ -138,7 +138,7 @@ static void CreateECCBlock(ByteArray& data, int codeOffset, int codeLength, int 
 void
 ECEncoder::EncodeECC200(ByteArray& codewords, const SymbolInfo& symbolInfo)
 {
-	if (codewords.size() != symbolInfo.dataCapacity()) {
+	if (codewords.size() != (size_t)symbolInfo.dataCapacity()) {
 		throw std::invalid_argument("The number of codewords does not match the selected symbol");
 	}
 	codewords.resize(symbolInfo.codewordCount(), 0);

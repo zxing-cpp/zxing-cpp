@@ -65,6 +65,8 @@ static const SymbolInfo PROD_SYMBOLS[] = {
 static const SymbolInfo* s_symbols = PROD_SYMBOLS;
 static size_t s_symbolCount = Length(PROD_SYMBOLS);
 
+#if ZXING_BUILD_FOR_TEST
+
 ZXING_EXPORT_TEST_ONLY
 void OverrideSymbolSet(const SymbolInfo* symbols, size_t count)
 {
@@ -78,6 +80,8 @@ void UseDefaultSymbolSet()
 	s_symbols = PROD_SYMBOLS;
 	s_symbolCount = Length(PROD_SYMBOLS);
 }
+
+#endif // ZXING_BUILD_FOR_TEST
 
 const SymbolInfo *
 SymbolInfo::Lookup(int dataCodewords)
