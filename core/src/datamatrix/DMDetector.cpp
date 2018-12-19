@@ -877,15 +877,10 @@ public:
 
 ByteMatrix EdgeTracer::_log;
 
-static int coord(PointI p, int i) { return i ? p.y : p.x; }
-static int coord(ResultPoint p, int i) { return i ? p.y() : p.x(); }
-
-// T might be PointT or ResultPoint, see GridSampler
-template <typename T>
-static void log(const std::vector<T>& points, int color = 2)
+static void log(const std::vector<PointI>& points, int color = 2)
 {
 	for (auto p : points)
-		EdgeTracer::_log.set(coord(p, 0), coord(p, 1), color);
+		EdgeTracer::_log.set(p.x, p.y, color);
 }
 
 static void dumpDebugPPM(const BitMatrix& image, const char* fn )
