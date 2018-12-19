@@ -143,7 +143,7 @@ std::string Code93ConvertToExtended(const std::wstring& contents)
 			extendedContent.push_back((char)('P' + character - '{'));
 		}
 		else {
-			throw std::invalid_argument("Requested content contains a non-encodable character: '" + (char)character + std::string("'"));
+			throw std::invalid_argument(std::string("Requested content contains a non-encodable character: '") + (char)character + "'");
 		}
 	}
 	return extendedContent;
