@@ -21,20 +21,20 @@ endif()
 add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/../core ${CMAKE_BINARY_DIR}/ZXingCore)
 
 if (ENABLE_DECODERS)
-    add_executable (parse_png
-        parse_png.cpp
+    add_executable (scan_png
+        scan_png.cpp
         lodepng.cpp
     )
     
-    target_compile_options (parse_png PRIVATE -DLODEPNG_NO_COMPILE_ENCODER)
+    target_compile_options (scan_png PRIVATE -DLODEPNG_NO_COMPILE_ENCODER)
 
     if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
-        target_compile_options (parse_png PRIVATE -std=c++11)
+        target_compile_options (scan_png PRIVATE -std=c++11)
     elseif (APPLE)
-        target_compile_options (parse_png PRIVATE -std=c++11 -stdlib=libc++)
+        target_compile_options (scan_png PRIVATE -std=c++11 -stdlib=libc++)
     endif()
 
-    target_link_libraries (parse_png ZXingCore)
+    target_link_libraries (scan_png ZXingCore)
 
 endif()
 
