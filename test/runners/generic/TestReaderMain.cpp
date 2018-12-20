@@ -27,35 +27,35 @@
 #include <iostream>
 #include <set>
 
-#if defined(__cpp_lib_filesystem)
-#   define FILESYSTEM_IS_EXPERIMENTAL 0
-#elif defined(__cpp_lib_experimental_filesystem)
-#   define FILESYSTEM_IS_EXPERIMENTAL 1
-#elif __has_include(<filesystem>)
-#   define FILESYSTEM_IS_EXPERIMENTAL 0
-#elif __has_include(<experimental/filesystem>)
-#   define FILESYSTEM_IS_EXPERIMENTAL 1
-#elif defined(__APPLE__) && defined(__GNUC__) && !defined(__clang__)
-#   define FILESYSTEM_IS_EXPERIMENTAL 1
-#elif __has_include(<dirent.h>)
-#   define ZXING_HAVE_DIRENT_H 1
-#else
-#   error <filesystem> feature is required
+#if __has_include(<filesystem>)
+#  include <filesystem>
+#  ifdef __cpp_lib_filesystem
+     namespace fs = std::filesystem;
+#    define ZXING_HAS_FILESYSTEM
+#  endif
+#endif
+#if !defined(ZXING_HAS_FILESYSTEM) && __has_include(<experimental/filesystem>)
+#  include <experimental/filesystem>
+#  ifdef __cpp_lib_experimental_filesystem
+     namespace fs = std::experimental::filesystem;
+#    define ZXING_HAS_FILESYSTEM
+#  endif
+#endif
+#if defined(__APPLE__) && !defined(__clang__) &&                                                                       \
+	__has_include(<dirent.h>) && defined(__SANITIZE_ADDRESS__) && defined(ZXING_HAS_FILESYSTEM)
+#  warning detected gcc + macos + <filesystem> + address_sanitizer == bad -> disable <filesystem>
+#  undef ZXING_HAS_FILESYSTEM
+#endif
+#if !defined(ZXING_HAS_FILESYSTEM)
+#  if __has_include(<dirent.h>)
+#    include <dirent.h>
+#  else
+#    error need <filesystem> or <dirent.h>
+#  endif
 #endif
 
-#if !defined(ZXING_HAVE_DIRENT_H)
-#    define ZXING_HAVE_DIRENT_H 0
-#endif
-
-#if ZXING_HAVE_DIRENT_H
-	#include <dirent.h>
-#elif FILESYSTEM_IS_EXPERIMENTAL
-    #include <experimental/filesystem>
-    namespace fs = std::experimental::filesystem;
-#else
-    #include <filesystem>
-    namespace fs = std::filesystem;
-#endif
+// compiling this with clang (e.g. version 6) might require linking against libc++experimental.a or libc++fs.a.
+// E.g.: CMAKE_EXE_LINKER_FLAGS = -L/usr/local/Cellar/llvm/6.0.1/lib -lc++experimental
 
 using namespace ZXing;
 using namespace ZXing::Test;
@@ -91,7 +91,7 @@ public:
 	virtual std::vector<std::wstring> getImagesInDirectory(const std::wstring& dirPath) override
 	{
 		std::vector<std::wstring> result;
-#if ZXING_HAVE_DIRENT_H
+#ifndef ZXING_HAS_FILESYSTEM
 		if (auto dir = opendir(TextUtfEncoding::ToUtf8(pathPrefix() + L"/" + dirPath).c_str())) {
 			while (auto entry = readdir(dir)) {
 				if (HasSuffix(entry->d_name, ".png")) {
