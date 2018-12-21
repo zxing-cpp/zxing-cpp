@@ -84,12 +84,12 @@ UPCEANReader::FindStartGuardPattern(const BitArray& row)
 #else
 	// this is the 'right' way to do it: scan for a pattern of the form 3111, where 3 is the quitezone
 	const auto& pattern = UPCEANCommon::START_END_PATTERN;
-	using Counters = decltype(pattern);
-	auto counters = Counters{};
+	using Counters = std::decay<decltype(pattern)>::type;
+	Counters counters{};
 
 	return RowReader::FindPattern(
 		row.getNextSet(row.begin()), row.end(), counters,
-		[&row, &pattern](BitArray::Iterator begin, BitArray::Iterator end, const Counters& cntrs) {
+		[&row](BitArray::Iterator begin, BitArray::Iterator end, const Counters& cntrs) {
 			if (!(RowReader::PatternMatchVariance(cntrs, pattern, MAX_INDIVIDUAL_VARIANCE) < MAX_AVG_VARIANCE))
 				return false;
 
