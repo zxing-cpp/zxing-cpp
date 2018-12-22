@@ -89,7 +89,7 @@ UPCEANReader::FindStartGuardPattern(const BitArray& row)
 
 	return RowReader::FindPattern(
 		row.getNextSet(row.begin()), row.end(), counters,
-		[&row](BitArray::Iterator begin, BitArray::Iterator end, const Counters& cntrs) {
+		[&row, &pattern](BitArray::Iterator begin, BitArray::Iterator end, const Counters& cntrs) {
 			if (!(RowReader::PatternMatchVariance(cntrs, pattern, MAX_INDIVIDUAL_VARIANCE) < MAX_AVG_VARIANCE))
 				return false;
 
