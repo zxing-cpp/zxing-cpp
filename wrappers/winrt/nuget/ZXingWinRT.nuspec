@@ -1,17 +1,17 @@
 <?xml version="1.0"?>
-<package >
+<package>
   <metadata>
     <id>huycn.zxingcpp.winrt</id>
-    <version>1.0.0</version>
+    <version>1.0.2</version>
     <title>ZXingWinRT</title>
     <authors>Huy Cuong Nguyen</authors>
     <owners>Huy Cuong Nguyen</owners>
-    <licenseUrl>https://github.com/huycn/zxing-cpp/blob/master/LICENSE</licenseUrl>
-    <projectUrl>https://github.com/huycn/zxing-cpp</projectUrl>
+    <licenseUrl>https://github.com/nu-book/zxing-cpp/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/nu-book/zxing-cpp</projectUrl>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <description>C++ port of ZXing barcode scanner library</description>
-    <releaseNotes>Readers are full functional and well tested.</releaseNotes>
-    <copyright>Copyright 2017 Huy Cuong Nguyen</copyright>
+    <releaseNotes>Bug fixes and improvements for many readers and decoders</releaseNotes>
+    <copyright>Copyright 2018 Nu-book Inc.</copyright>
     <tags>zxing barcode scanner qrcode</tags>
   </metadata>
   <files>
