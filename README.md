@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/nu-book/zxing-cpp.svg?branch=master)](https://travis-ci.org/nu-book/zxing-cpp)
+
 # ZXing-C++
 
 This project is a C++ port of ZXing Library (https://github.com/zxing/zxing).
