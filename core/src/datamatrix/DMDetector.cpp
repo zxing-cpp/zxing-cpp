@@ -377,6 +377,9 @@ static DetectorResult DetectOld(const BitMatrix& image)
 	}
 	dimensionRight += 2;
 
+	if (dimensionTop < 10 || dimensionTop > 144 || dimensionRight < 8 || dimensionRight > 144 )
+		return {};
+
 	ResultPoint correctedTopRight;
 
 	// Rectanguar symbols are 6x16, 6x28, 10x24, 10x32, 14x32, or 14x44. If one dimension is more
@@ -789,7 +792,7 @@ public:
 			}
 			auto stepResult = traceStep(dEdge, 1, line.isValid());
 			if (stepResult != StepResult::FOUND)
-				return stepResult == StepResult::OPEN_END;
+				return stepResult == StepResult::OPEN_END && line.points().size() > 1;
 		} while (true);
 	}
 
