@@ -216,8 +216,12 @@ ZXING_EXPORT_TEST_ONLY
 void AppendKanjiBytes(const std::wstring& content, BitArray& bits)
 {
 	std::string bytes = TextEncoder::FromUnicode(content, CharacterSet::Shift_JIS);
-	size_t length = bytes.size();
-	for (size_t i = 0; i < length; i += 2) {
+	int length = (int)bytes.size();
+	if (length % 2 != 0) {
+		throw std::invalid_argument("Kanji byte size not even");
+	}
+	--length;
+	for (int i = 0; i < length; i += 2) {
 		int byte1 = bytes[i] & 0xff;
 		int byte2 = bytes[i + 1] & 0xff;
 		int code = (byte1 << 8) | byte2;
@@ -235,6 +239,7 @@ void AppendKanjiBytes(const std::wstring& content, BitArray& bits)
 		bits.appendBits(encoded, 13);
 	}
 }
+
 /**
 * Append "bytes" in "mode" mode (encoding) into "bits". On success, store the result in "bits".
 */
