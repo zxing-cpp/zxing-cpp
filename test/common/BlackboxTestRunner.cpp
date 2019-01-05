@@ -383,10 +383,10 @@ BlackboxTestRunner::run(const std::set<std::string>& includedTests)
 		});
 
 		runTests("blackbox/datamatrix-2", "DATA_MATRIX", 18, {
-			{ 18, 18, 0, 1, 0   },
-			{  0, 18, 0, 1, 90  },
-			{  0, 18, 0, 1, 180 },
-			{  0, 18, 0, 1, 270 },
+			{ 18, 18, 0   },
+			{  0, 18, 90  },
+			{  0, 18, 180 },
+			{  0, 18, 270 },
 		});
 
 		runTests("blackbox/codabar-1", "CODABAR", 11, {
