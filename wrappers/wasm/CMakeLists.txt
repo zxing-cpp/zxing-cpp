@@ -29,9 +29,10 @@ add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/../../core ${CMAKE_BINARY_DIR}/ZXi
 
 add_executable (zxing
     BarcodeReader.cpp
+    BarcodeWriter.cpp
     lodepng.cpp
 )
 
-set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --bind")
+set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --bind -s DISABLE_EXCEPTION_CATCHING=0")
 
 target_link_libraries (zxing ZXingCore)
