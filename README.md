@@ -25,7 +25,7 @@ Same as ZXing, following barcode are supported:
 |            | RSS-14        |
 |            | RSS-Expanded  |
 
-## Install
+## WinRT package
 A nuget package is available for WinRT: https://www.nuget.org/packages/huycn.zxingcpp.winrt
 To install it, run the following command in the Package Manager Console
 ```sh
@@ -58,6 +58,20 @@ except for specific usecases, you won't notice the difference!
 1. Edit wrappers/android/jni/Application.mk and adjust for your project.
 2. On command line, being in wrappers/android, type `ndk-build` (or `ndk-build -j <number of your CPU cores>`)
 3. Copy files in `libs` and `java` into corresponding folders of your Android project.
+
+### For web browser (WebAssembly)
+1. Install Emscripten if not done already. See instructions here: https://kripken.github.io/emscripten-site/docs/getting_started/
+2. In a empty build folder, invoke `cmake` from `emconfigure` create Makefile, using `wrappers/wasm/Toolchain-Emscripten.cmake` as toolchain file. For example:
+```
+EMSCRIPTEN_PATH=<path to your Emscripten installation, e.g. ~/emsdk/emscripten/tag-1.38.21>
+SOURCE_BASEDIR=<zxing-cpp-dir/wrappers/wasm>
+emconfigure cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$SOURCE_BASEDIR/Toolchain-Emscripten.cmake" -DEMSCRIPTEN_ROOT_PATH="$EMSCRIPTEN_PATH" "$SOURCE_BASEDIR"
+```
+3. Invoke emmake to create `zxing.js` and `zxing.wasm`
+```
+emmake make
+```
+4. Copy these two files to your web folder and create HTML page that includes `zxing.js`. See `demo/wrappers/wasm/demo/zxing.html` for example and exported functions.
 
 ### For other platforms
 Wrappers are provided as convenient way to work with native image format. You still can use the library without a wrapper.
