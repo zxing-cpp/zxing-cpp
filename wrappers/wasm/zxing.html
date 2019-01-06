@@ -1,0 +1,86 @@
+<html>
+<head>
+<title>ZXing in Javascript example</title>
+<script src="zxing.js"></script>
+<script>
+
+function scanPng(file) {
+    var reader = new FileReader();
+    reader.onloadend = function(evt) {
+
+        var fileData = new Uint8Array(evt.target.result);
+        var buffer = Module._malloc(fileData.length);
+        Module.HEAPU8.set(fileData, buffer);
+
+        var result = Module.readBarcodeFromPng(buffer, fileData.length, true, "");
+        window.Module._free(buffer);
+        printResult(result);
+    }
+    reader.readAsArrayBuffer(file);
+}
+
+function printResult(result) {
+    document.getElementById("result_format").innerHTML = result.format;
+    document.getElementById("result_text").innerHTML = result.text;
+    document.getElementById("result_error").innerHTML = result.error;
+}
+
+function dragOverHandler(ev) {
+  ev.preventDefault();
+}
+
+function dropHandler(ev) {
+  ev.preventDefault();
+
+  if (ev.dataTransfer.items) {
+    for (var i = 0; i < ev.dataTransfer.items.length; i++) {
+      if (ev.dataTransfer.items[i].kind === 'file') {
+        var file = ev.dataTransfer.items[i].getAsFile();
+        scanPng(file);
+        break;
+      }
+    }
+  } else {
+    // Use DataTransfer interface to access the file(s)
+    for (var i = 0; i < ev.dataTransfer.files.length; i++) {
+      scanPng(file);
+      break;
+    }
+  }
+  
+  // Pass event to removeDragData for cleanup
+  removeDragData(ev)
+}
+
+function removeDragData(ev) {
+  if (ev.dataTransfer.items) {
+    ev.dataTransfer.items.clear();
+  } else {
+    ev.dataTransfer.clearData();
+  }
+}
+
+</script>
+<style>
+#drop_zone {
+  border: 2px solid blue;
+  width:  200px;
+  height: 100px;
+}
+</style>
+</head>
+<body>
+<p>
+<h3>This shows example of WebAssembly build (using Emcripten) of zxing-cpp (https://github.com/nu-book/zxing-cpp)</h3>
+</p>
+<p></p>
+<div id="drop_zone" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);">
+  <p>Drag your PNG image here...</p>
+</div>
+<p>
+Format: <span id="result_format"></span><br/>
+Text: <span id="result_text"></span><br/>
+Error: <span id="result_error"></span><br/>
+</p>
+</body>
+</html>
