@@ -70,12 +70,12 @@ ReadResult readBarcodeFromPng(int bufferPtr, int bufferLength, bool tryHarder, s
 		return { "", L"", e.what() };
 	}
 	catch (...) {
-		
+		return { "", L"", "Unknown error" };
 	}
 	return {};
 }
 
-EMSCRIPTEN_BINDINGS(XZing)
+EMSCRIPTEN_BINDINGS(BarcodeReader)
 {
     using namespace emscripten;
     

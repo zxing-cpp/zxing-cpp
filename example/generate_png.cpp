@@ -15,7 +15,6 @@
 */
 
 #include "BarcodeFormat.h"
-#include "DecodeHints.h"
 #include "MultiFormatWriter.h"
 #include "BitMatrix.h"
 #include "TextUtfEncoding.h"
