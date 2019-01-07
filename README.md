@@ -73,7 +73,7 @@ emmake make
 ```
 4. Copy these two files to your web folder and create HTML page that includes `zxing.js`.
 
-See `https://nu-book.github.io/zxing-cpp/demo.html` for a demo.
+See usage example of exported functions from a demo here: https://nu-book.github.io/zxing-cpp/demo.html.
 
 ### For other platforms
 Wrappers are provided as convenient way to work with native image format. You still can use the library without a wrapper.
