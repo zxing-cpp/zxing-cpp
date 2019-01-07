@@ -71,7 +71,9 @@ emconfigure cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHA
 ```
 emmake make
 ```
-4. Copy these two files to your web folder and create HTML page that includes `zxing.js`. See `demo/wrappers/wasm/demo/zxing.html` for example and exported functions.
+4. Copy these two files to your web folder and create HTML page that includes `zxing.js`.
+
+See `https://nu-book.github.io/zxing-cpp/demo.html` for a demo.
 
 ### For other platforms
 Wrappers are provided as convenient way to work with native image format. You still can use the library without a wrapper.
