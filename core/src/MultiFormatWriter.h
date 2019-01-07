@@ -41,6 +41,14 @@ public:
 	}
 
 	/**
+	* Used for Aztec, PDF417, and QRCode only, [0-8].
+	*/
+	MultiFormatWriter& setEccLevel(int level) {
+		_eccLevel = level;
+		return *this;
+	}
+
+	/**
 	* Used for all 1D formats, PDF417, and QRCode only.
 	*/
 	MultiFormatWriter& setMargin(int margin) {
@@ -54,6 +62,7 @@ private:
 	BarcodeFormat _format;
 	CharacterSet _encoding = CharacterSet::Unknown;
 	int _margin = -1;
+	int _eccLevel = -1;
 };
 
 } // ZXing

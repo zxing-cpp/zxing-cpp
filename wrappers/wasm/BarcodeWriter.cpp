@@ -46,7 +46,7 @@ public:
     }
 };
 
-WriteResult generateBarcode(std::wstring text, std::string format, std::string encoding, int margin, int width, int height)
+WriteResult generateBarcode(std::wstring text, std::string format, std::string encoding, int margin, int width, int height, int eccLevel)
 {
     using namespace ZXing;
 	try {
@@ -61,6 +61,10 @@ WriteResult generateBarcode(std::wstring text, std::string format, std::string e
         CharacterSet charset = CharacterSetECI::CharsetFromName(encoding.c_str());
         if (charset != CharacterSet::Unknown) {
             writer.setEncoding(charset);
+        }
+
+        if (eccLevel >= 0 && eccLevel <= 8) {
+            writer.setEccLevel(eccLevel);
         }
 
 		auto matrix = writer.encode(text, width, height);

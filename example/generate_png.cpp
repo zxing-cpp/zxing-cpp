@@ -32,10 +32,11 @@ using namespace ZXing;
 
 static void PrintUsage(const char* exePath)
 {
-    std::cout << "Usage: " << exePath << " [-size <width>x<height>] [-margin <margin>] [-encoding <encoding>] <format> <text> <output>" << std::endl
+    std::cout << "Usage: " << exePath << " [-size <width>x<height>] [-margin <margin>] [-encoding <encoding>] [-ecc <level>] <format> <text> <output>" << std::endl
 		<< "    -size      Size of generated image" << std::endl
 		<< "    -margin    Margin around barcode" << std::endl
 		<< "    -encoding  Encoding used to encode input text" << std::endl
+        << "    -ecc       Error correction level, [0-8]"
 		<< std::endl
 		<< "Supported formats are:" << std::endl
 		<< "    AZTEC" << std::endl
@@ -84,7 +85,7 @@ static bool ParseSize(std::string str, int* width, int* height)
 	return false;
 }
 
-static bool ParseOptions(int argc, char* argv[], int* width, int* height, int* margin, std::string* format, std::string* text, std::string* filePath)
+static bool ParseOptions(int argc, char* argv[], int* width, int* height, int* margin, int* eccLevel, std::string* format, std::string* text, std::string* filePath)
 {
 	int nonOptArgCount = 0;
 	for (int i = 1; i < argc; ++i) {
@@ -104,6 +105,15 @@ static bool ParseOptions(int argc, char* argv[], int* width, int* height, int* m
 			if (i + 1 < argc) {
 				++i;
 				*margin = std::stoi(argv[i]);
+			}
+			else {
+				return false;
+			}
+		}
+		else if (strcmp(argv[i], "-ecc") == 0) {
+			if (i + 1 < argc) {
+				++i;
+				*eccLevel = std::stoi(argv[i]);
 			}
 			else {
 				return false;
@@ -142,9 +152,10 @@ int main(int argc, char* argv[])
 
 	int width = 100, height = 100;
 	int margin = 10;
+	int eccLevel = -1;
 	std::string format, text, filePath;
 
-	if (!ParseOptions(argc, argv, &width, &height, &margin, &format, &text, &filePath)) {
+	if (!ParseOptions(argc, argv, &width, &height, &margin, &eccLevel, &format, &text, &filePath)) {
 		PrintUsage(argv[0]);
 		return -1;
 	}
@@ -157,6 +168,8 @@ int main(int argc, char* argv[])
 		MultiFormatWriter writer(barcodeFormat);
 		if (margin >= 0)
 			writer.setMargin(margin);
+		if (eccLevel >= 0)
+			writer.setEccLevel(eccLevel);
 
 		auto matrix = writer.encode(TextUtfEncoding::FromUtf8(text), width, height);
 
