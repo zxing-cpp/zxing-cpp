@@ -7,5 +7,5 @@
     AppliesTo="WindowsAppContainer"
     SupportsMultipleVersions="Error"
     SupportedArchitectures="x86;x64;ARM">
-	<File Reference="ZXing.winmd" Implementation="ZXingWinRT.dll" />
+	<File Reference="ZXing.winmd" Implementation="ZXing.dll" />
 </FileList>

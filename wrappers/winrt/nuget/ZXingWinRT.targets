@@ -6,8 +6,8 @@
     </PropertyGroup>
     <ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'UAP'">
         <Reference Include="$(MSBuildThisFileDirectory)..\..\lib\uap10.0\ZXing.winmd">
-            <Implementation>ZXingWinRT.dll</Implementation>
+            <Implementation>ZXing.dll</Implementation>
         </Reference>
-        <ReferenceCopyLocalPaths Include="$(MSBuildThisFileDirectory)..\..\runtimes\win10-$(ZXingCpp-Platform)\native\ZXingWinRT.dll" />
+        <ReferenceCopyLocalPaths Include="$(MSBuildThisFileDirectory)..\..\runtimes\win10-$(ZXingCpp-Platform)\native\ZXing.dll" />
     </ItemGroup>
 </Project>

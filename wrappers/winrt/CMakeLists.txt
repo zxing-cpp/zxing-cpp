@@ -38,7 +38,7 @@ file (GLOB SOURCE_FILES *.cpp)
 file (GLOB HEADER_FILES *.h)
 
 set (ROOT_NAMESPACE "ZXing")
-set (OUTPUT_FILE_BASE_NAME "ZXingWinRT")
+set (OUTPUT_FILE_BASE_NAME "ZXing")
 
 add_library (ZXingWinRT SHARED ${HEADER_FILES} ${SOURCE_FILES})
 

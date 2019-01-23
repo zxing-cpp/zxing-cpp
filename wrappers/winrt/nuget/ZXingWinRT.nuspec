@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>huycn.zxingcpp.winrt</id>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
     <title>ZXingWinRT</title>
     <authors>Huy Cuong Nguyen</authors>
     <owners>Huy Cuong Nguyen</owners>
@@ -17,11 +17,11 @@
   <files>
     <file src="..\UAP\v0.8.0.0\ExtensionSDKs\ZXingWinRT\1.0.0.0\References\CommonConfiguration\Neutral\ZXing.winmd" target="lib\uap10.0"/>
     <file src="..\UAP\v0.8.0.0\ExtensionSDKs\ZXingWinRT\1.0.0.0\References\CommonConfiguration\Neutral\ZXing.pri" target="runtimes\win10-arm\native"/>
-    <file src="..\UAP\v0.8.0.0\ExtensionSDKs\ZXingWinRT\1.0.0.0\Redist\Retail\ARM\ZXingWinRT.dll" target="runtimes\win10-arm\native"/>
+    <file src="..\UAP\v0.8.0.0\ExtensionSDKs\ZXingWinRT\1.0.0.0\Redist\Retail\ARM\ZXing.dll" target="runtimes\win10-arm\native"/>
     <file src="..\UAP\v0.8.0.0\ExtensionSDKs\ZXingWinRT\1.0.0.0\References\CommonConfiguration\Neutral\ZXing.pri" target="runtimes\win10-x64\native"/>
-    <file src="..\UAP\v0.8.0.0\ExtensionSDKs\ZXingWinRT\1.0.0.0\Redist\Retail\x64\ZXingWinRT.dll" target="runtimes\win10-x64\native"/>
+    <file src="..\UAP\v0.8.0.0\ExtensionSDKs\ZXingWinRT\1.0.0.0\Redist\Retail\x64\ZXing.dll" target="runtimes\win10-x64\native"/>
     <file src="..\UAP\v0.8.0.0\ExtensionSDKs\ZXingWinRT\1.0.0.0\References\CommonConfiguration\Neutral\ZXing.pri" target="runtimes\win10-x86\native"/>
-    <file src="..\UAP\v0.8.0.0\ExtensionSDKs\ZXingWinRT\1.0.0.0\Redist\Retail\x86\ZXingWinRT.dll" target="runtimes\win10-x86\native"/>
+    <file src="..\UAP\v0.8.0.0\ExtensionSDKs\ZXingWinRT\1.0.0.0\Redist\Retail\x86\ZXing.dll" target="runtimes\win10-x86\native"/>
     <file src="ZXingWinRT.targets" target="build\native"/>  
   </files>
 </package>
