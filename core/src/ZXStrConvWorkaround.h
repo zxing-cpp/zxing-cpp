@@ -14,7 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#if defined(__ANDROID__) && defined(__GNUC__)
+#if defined(__ANDROID__) && defined(__GNUC__) && !defined(__clang__)
 
 #include <sstream>
 #include <cstdlib>
