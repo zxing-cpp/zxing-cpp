@@ -153,10 +153,8 @@ FindGuardPattern(const BitArray& row, const Container& pattern)
 		    // quiet zone pixels.
 		    // ref: http://www.barcode-1.net/i25code.html
 
-			// Determine the width of a narrow line in pixels. We can do this by
-			// getting the width of the start pattern and dividing by 4 because its
-			// made up of 4 narrow lines.
-			int narrowLineWidth = (end - begin) / 4;
+			// Determine the width of a narrow line in pixels. See definition of START and END patterns above
+			int narrowLineWidth = (end - begin) / Accumulate(pattern, 0);
 			int quietZoneWidth = 10 * narrowLineWidth;
 		    return row.hasQuiteZone(begin, -quietZoneWidth);
 	    });
