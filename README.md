@@ -29,6 +29,7 @@ Same as ZXing, following barcode are supported:
 ## Web Demos
 - [Scan barcodes](https://nu-book.github.io/zxing-cpp/demo_reader.html)
 - [Generate barcodes](https://nu-book.github.io/zxing-cpp/demo_writer.html)
+- [Scan with camera](https://nu-book.github.io/zxing-cpp/zxing_viddemo.html)
 
 
 ## WinRT Package
