@@ -1,0 +1,49 @@
+initrd vs initramfs
+
+Monolithic vs Modular kernel vs MicroKernel
+
+Monolithic:
+    All drivers, operations and code to perform kernel related tasks are compilied into the kernel.  Interactions with kernel are done through system calls.
+    advantages:
+        1)  Less code = less complexity
+        2)  Less code = smaller size
+        3)  Less code = fewer bugs and security issues
+    disadvantages
+        1)  difficult to patch and test
+        2)  bugs can affect large parts of system
+  
+Microkernel
+    Only the fundamental tasks and drives are handled by the kernel - memory management, passing messages between processes.  
+    All other tasks are handled in user space by "servers" or "user-mode servers."
+    advantages
+        1)  easier to maintain
+        2)  testing is easier - can swap patches in and out
+    disadvantages
+        1)  Larger running footprint
+        2)  More complex to interact with - port calls from user-mode servers
+        3)  Process management can be more complex
+        
+Modular Kernel
+    A monolithic kernel with binary modules/drivers that can me dynamically loaded or unloaded.
+    advantages:
+        1)  Faster and easier development for drivers that can operate as modules
+        2)  Easier to added drivers/services via modules
+    disadvantages
+        1)  More interfaces to pass through increases possibility of bugs
+        2)  Maintaining modules can be more difficult
+        
+
+To be clear, loading a module dynamically into the kernel can incure some overhead compared to having the module compiled into the kernel.  But, 
+this can be offset by having an overall smaller footprint in the monolithic kernel due to not having unnecessary code compiled into the kernel.  This 
+is chiefly beneficial to embedded systems.
+        
+        
+        
+        
+        
+Resources 
+
+http://www.systhread.net/texts/200510kdiff.php
+http://en.wikipedia.org/wiki/Microkernel
+http://en.wikipedia.org/wiki/Monolithic_kernel
+http://en.wikipedia.org/wiki/Initramfs

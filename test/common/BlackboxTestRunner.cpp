@@ -22,6 +22,7 @@
 #include "ImageLoader.h"
 #include "TestReader.h"
 #include "Pdf417MultipleCodeReader.h"
+#include "QRCodeStructuredAppendReader.h"
 
 #include <iostream>
 #include <fstream>
@@ -237,7 +238,8 @@ static std::pair<std::wstring, std::wstring> splitFileName(const std::wstring& f
 	return std::make_pair(filePath, std::wstring());
 }
 
-static void doRunPdf417MultipleResultsTest(BlackboxTestRunner& runner, const std::vector<Pdf417MultipleCodeReader>& readers,
+template <typename ReaderT>
+static void doRunStructuredAppendTest(BlackboxTestRunner& runner, const std::vector<ReaderT>& readers,
 	const std::string& directory, const char* format, int totalTests, const std::vector<TestCase>& tests)
 {
 	auto images = runner.getImagesInDirectory(std::wstring(directory.begin(), directory.end()));
@@ -349,10 +351,17 @@ BlackboxTestRunner::run(const std::set<std::string>& includedTests)
 		}
 	};
 
-	auto runPdf417MultipleResultTest = [&](const std::string& directory, const char* format, int total, const std::vector<TestCase>& tests) {
+	auto runPdf417StructuredAppendTest = [&](const std::string& directory, const char* format, int total, const std::vector<TestCase>& tests) {
 		if (hasTest(directory)) {
 			Pdf417MultipleCodeReader reader(_imageLoader);
-			doRunPdf417MultipleResultsTest(*this, { reader }, directory, format, total, tests);
+			doRunStructuredAppendTest<Pdf417MultipleCodeReader>(*this, { reader }, directory, format, total, tests);
+		}
+	};
+
+	auto runQRCodeStructuredAppendTest = [&](const std::string& directory, const char* format, int total, const std::vector<TestCase>& tests) {
+		if (hasTest(directory)) {
+			QRCodeStructuredAppendReader reader(_imageLoader);
+			doRunStructuredAppendTest<QRCodeStructuredAppendReader>(*this, { reader }, directory, format, total, tests);
 		}
 	};
 
@@ -596,6 +605,10 @@ BlackboxTestRunner::run(const std::set<std::string>& includedTests)
 			{ 14, 14, 270 },
 		});
 
+		runQRCodeStructuredAppendTest("blackbox/qrcode-7", "QR_CODE", 1, {
+			{ 1, 1, 0   },
+		});
+
 		runTests("blackbox/pdf417-1", "PDF_417", 10, {
 			{ 10, 10, 0   },
 			{ 10, 10, 180 },
@@ -611,7 +624,7 @@ BlackboxTestRunner::run(const std::set<std::string>& includedTests)
 			{ 19, 19, 180 },
 		});
 
-		runPdf417MultipleResultTest("blackbox/pdf417-4", "PDF_417", 3, {
+		runPdf417StructuredAppendTest("blackbox/pdf417-4", "PDF_417", 3, {
 			{ 3, 3, 0   },
 		});
 

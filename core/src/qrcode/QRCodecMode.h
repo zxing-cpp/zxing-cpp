@@ -35,7 +35,7 @@ public:
 		TERMINATOR = 0x00, // Not really a mode...
 		NUMERIC = 0x01,
 		ALPHANUMERIC = 0x02,
-		STRUCTURED_APPEND = 0x03, // Not supported
+		STRUCTURED_APPEND = 0x03,
 		BYTE = 0x04,
 		FNC1_FIRST_POSITION = 0x05,
 		ECI = 0x07, // character counts don't apply

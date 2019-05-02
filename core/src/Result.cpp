@@ -30,8 +30,8 @@ Result::Result(std::wstring&& text, ByteArray&& rawBytes, std::vector<ResultPoin
 
 Result::Result(DecoderResult&& decodeResult, std::vector<ResultPoint>&& resultPoints, BarcodeFormat format)
     : _status(decodeResult.errorCode()),
-      _text(std::move(decodeResult).text()),
-      _rawBytes(std::move(decodeResult).rawBytes()),
+      _text(std::move(decodeResult.text())),
+      _rawBytes(std::move(decodeResult.rawBytes())),
       _numBits(decodeResult.numBits()),
       _resultPoints(std::move(resultPoints)),
       _format(format)
@@ -50,6 +50,7 @@ Result::Result(DecoderResult&& decodeResult, std::vector<ResultPoint>&& resultPo
 	}
 	if (decodeResult.hasStructuredAppend()) {
 		metadata().put(ResultMetadata::STRUCTURED_APPEND_SEQUENCE, decodeResult.structuredAppendSequenceNumber());
+		metadata().put(ResultMetadata::STRUCTURED_APPEND_CODE_COUNT, decodeResult.structuredAppendCodeCount());
 		metadata().put(ResultMetadata::STRUCTURED_APPEND_PARITY, decodeResult.structuredAppendParity());
 	}
 	//TODO: what about the other optional data in DecoderResult?

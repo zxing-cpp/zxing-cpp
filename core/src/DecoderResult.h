@@ -45,6 +45,7 @@ class DecoderResult
 	int _errorsCorrected = -1;
 	int _erasures = -1;
 	int _structuredAppendSequenceNumber = 0;
+	int _structuredAppendCodeCount = 0;
 	int _structuredAppendParity = 0;
 	std::shared_ptr<CustomData> _extra;
 
@@ -91,6 +92,7 @@ public:
 	ZX_PROPERTY(int, erasures, setErasures)
 	ZX_PROPERTY(int, structuredAppendParity, setStructuredAppendParity)
 	ZX_PROPERTY(int, structuredAppendSequenceNumber, setStructuredAppendSequenceNumber)
+	ZX_PROPERTY(int, structuredAppendCodeCount, setStructuredAppendCodeCount)
 	ZX_PROPERTY(std::shared_ptr<CustomData>, extra, setExtra)
 
 #undef ZX_PROPERTY
