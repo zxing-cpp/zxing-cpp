@@ -53,8 +53,7 @@ Pdf417MultipleCodeReader::readMultiple(const std::vector<std::wstring>& filename
 	if (!allResults.empty()) {
 		result.format = "PDF_417";
 		for (const auto& r : allResults) {
-			auto txt = r.text();
-			result.text.append(txt);
+			result.text.append(r.text());
 			auto meta = std::dynamic_pointer_cast<Pdf417::DecoderResultExtra>(r.metadata().getCustomData(ResultMetadata::PDF417_EXTRA_METADATA));
 			result.fileIds.push_back(meta->fileId());
 		}

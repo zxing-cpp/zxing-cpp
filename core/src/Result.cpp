@@ -30,8 +30,8 @@ Result::Result(std::wstring&& text, ByteArray&& rawBytes, std::vector<ResultPoin
 
 Result::Result(DecoderResult&& decodeResult, std::vector<ResultPoint>&& resultPoints, BarcodeFormat format)
     : _status(decodeResult.errorCode()),
-      _text(std::move(decodeResult.text())),
-      _rawBytes(std::move(decodeResult.rawBytes())),
+      _text(std::move(decodeResult).text()),
+      _rawBytes(std::move(decodeResult).rawBytes()),
       _numBits(decodeResult.numBits()),
       _resultPoints(std::move(resultPoints)),
       _format(format)

@@ -38,7 +38,7 @@ QRCodeStructuredAppendReader::readMultiple(const std::vector<std::wstring>& file
 	DecodeHints hints;
 	QRCode::Reader reader(hints);
 	std::list<Result> allResults;
-	int prevParity = 0;
+	int prevParity = -1;
 	for (const auto& imagePath : filenames) {
 		auto image = _imageLoader->load(imagePath);
 		ZXing::HybridBinarizer binarizer(image, false);
@@ -46,8 +46,8 @@ QRCodeStructuredAppendReader::readMultiple(const std::vector<std::wstring>& file
 		if (r.metadata().getInt(ResultMetadata::STRUCTURED_APPEND_CODE_COUNT, 0) != filenames.size()) {
 			return TestReader::ReadResult();
 		}
-		auto parity = r.metadata().getInt(ResultMetadata::STRUCTURED_APPEND_PARITY, 0);
-		if (prevParity != 0 && prevParity != parity) {
+		auto parity = r.metadata().getInt(ResultMetadata::STRUCTURED_APPEND_PARITY, -1);
+		if (prevParity != -1 && prevParity != parity) {
 			return TestReader::ReadResult();
 		}
 		prevParity = parity;
@@ -63,8 +63,7 @@ QRCodeStructuredAppendReader::readMultiple(const std::vector<std::wstring>& file
 	if (!allResults.empty()) {
 		result.format = "QR_CODE";
 		for (const auto& r : allResults) {
-			auto txt = r.text();
-			result.text.append(txt);
+			result.text.append(r.text());
 		}
 	}
 	return result;
