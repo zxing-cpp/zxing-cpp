@@ -14,48 +14,56 @@
 * limitations under the License.
 */
 
-#include "Pdf417MultipleCodeReader.h"
+#include "QRCodeStructuredAppendReader.h"
 #include "HybridBinarizer.h"
 #include "TextUtfEncoding.h"
 #include "Result.h"
-#include "pdf417/PDFReader.h"
-#include "pdf417/PDFDecoderResultExtra.h"
+#include "DecodeHints.h"
+#include "qrcode/QRReader.h"
 #include "ImageLoader.h"
 
 #include <algorithm>
 
 namespace ZXing { namespace Test {
 
-Pdf417MultipleCodeReader::Pdf417MultipleCodeReader(const std::shared_ptr<ImageLoader>& imgLoader)
+QRCodeStructuredAppendReader::QRCodeStructuredAppendReader(const std::shared_ptr<ImageLoader>& imgLoader)
 : _imageLoader(imgLoader)
 {
 }
 
-Pdf417MultipleCodeReader::ReadResult
-Pdf417MultipleCodeReader::readMultiple(const std::vector<std::wstring>& filenames, int rotation) const
+TestReader::ReadResult
+QRCodeStructuredAppendReader::readMultiple(const std::vector<std::wstring>& filenames, int rotation) const
 {
-	Pdf417::Reader reader;
+	TestReader::ReadResult result;
+	DecodeHints hints;
+	QRCode::Reader reader(hints);
 	std::list<Result> allResults;
+	int prevParity = -1;
 	for (const auto& imagePath : filenames) {
 		auto image = _imageLoader->load(imagePath);
 		ZXing::HybridBinarizer binarizer(image, false);
-		auto results = reader.decodeMultiple(*binarizer.rotated(rotation));
-		allResults.insert(allResults.end(), results.begin(), results.end());
+		auto r = reader.decode(*binarizer.rotated(rotation));
+		if (r.metadata().getInt(ResultMetadata::STRUCTURED_APPEND_CODE_COUNT, 0) != filenames.size()) {
+			return TestReader::ReadResult();
+		}
+		auto parity = r.metadata().getInt(ResultMetadata::STRUCTURED_APPEND_PARITY, -1);
+		if (prevParity != -1 && prevParity != parity) {
+			return TestReader::ReadResult();
+		}
+		prevParity = parity;
+		allResults.push_back(r);
 	}
 
 	allResults.sort([](const Result &r1, const Result &r2) {
-		auto m1 = std::dynamic_pointer_cast<Pdf417::DecoderResultExtra>(r1.metadata().getCustomData(ResultMetadata::PDF417_EXTRA_METADATA));
-		auto m2 = std::dynamic_pointer_cast<Pdf417::DecoderResultExtra>(r2.metadata().getCustomData(ResultMetadata::PDF417_EXTRA_METADATA));
-		return m1->segmentIndex() < m2->segmentIndex();
+		auto s1 = r1.metadata().getInt(ResultMetadata::STRUCTURED_APPEND_SEQUENCE, -1);
+		auto s2 = r2.metadata().getInt(ResultMetadata::STRUCTURED_APPEND_SEQUENCE, -1);
+		return s1 < s2;
 	});
 
-	ReadResult result;
 	if (!allResults.empty()) {
-		result.format = "PDF_417";
+		result.format = "QR_CODE";
 		for (const auto& r : allResults) {
 			result.text.append(r.text());
-			auto meta = std::dynamic_pointer_cast<Pdf417::DecoderResultExtra>(r.metadata().getCustomData(ResultMetadata::PDF417_EXTRA_METADATA));
-			result.fileIds.push_back(meta->fileId());
 		}
 	}
 	return result;

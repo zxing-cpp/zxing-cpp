@@ -50,6 +50,7 @@ Result::Result(DecoderResult&& decodeResult, std::vector<ResultPoint>&& resultPo
 	}
 	if (decodeResult.hasStructuredAppend()) {
 		metadata().put(ResultMetadata::STRUCTURED_APPEND_SEQUENCE, decodeResult.structuredAppendSequenceNumber());
+		metadata().put(ResultMetadata::STRUCTURED_APPEND_CODE_COUNT, decodeResult.structuredAppendCodeCount());
 		metadata().put(ResultMetadata::STRUCTURED_APPEND_PARITY, decodeResult.structuredAppendParity());
 	}
 	//TODO: what about the other optional data in DecoderResult?

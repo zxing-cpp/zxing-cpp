@@ -27,6 +27,8 @@ if (ENABLE_DECODERS)
         ../../common/TestReader.cpp
         ../../common/Pdf417MultipleCodeReader.h
         ../../common/Pdf417MultipleCodeReader.cpp
+        ../../common/QRCodeStructuredAppendReader.h
+        ../../common/QRCodeStructuredAppendReader.cpp
         ../../common/BlackboxTestRunner.h
         ../../common/BlackboxTestRunner.cpp
         ../../common/lodepng.cpp

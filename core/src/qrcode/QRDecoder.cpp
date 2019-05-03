@@ -311,7 +311,8 @@ DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCorrectionLevel 
 	BitSource bits(bytes);
 	std::wstring result;
 	std::list<ByteArray> byteSegments;
-	int symbolSequence = -1;
+	int codeSequence = -1;
+	int codeCount = -1;
 	int parityData = -1;
 	static const int GB2312_SUBSET = 1;
 
@@ -342,8 +343,9 @@ DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCorrectionLevel 
 					return DecodeStatus::FormatError;
 				}
 				// sequence number and parity is added later to the result metadata
-				// Read next 8 bits (symbol sequence #) and 8 bits (parity data), then continue
-				symbolSequence = bits.readBits(8);
+				// Read next 4 bits of sequence #, 4 bits of code count, and 8 bits of parity data, then continue
+				codeSequence = bits.readBits(4);
+				codeCount = bits.readBits(4) + 1;
 				parityData = bits.readBits(8);
 				break;
 			case CodecMode::ECI: {
@@ -411,7 +413,8 @@ DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCorrectionLevel 
 		.setByteSegments(std::move(byteSegments))
 		.setEcLevel(ToString(ecLevel))
 		.setStructuredAppendParity(parityData)
-		.setStructuredAppendSequenceNumber(symbolSequence);
+		.setStructuredAppendSequenceNumber(codeSequence)
+		.setStructuredAppendCodeCount(codeCount);
 }
 
 static DecoderResult

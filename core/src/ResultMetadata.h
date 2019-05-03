@@ -105,6 +105,12 @@ public:
 
 		/**
 		* If the code format supports structured append and the current scanned code is part of one then the
+		* total code count is given with it.
+		*/
+		STRUCTURED_APPEND_CODE_COUNT,
+
+		/**
+		* If the code format supports structured append and the current scanned code is part of one then the
 		* parity is given with it.
 		*/
 		STRUCTURED_APPEND_PARITY,
