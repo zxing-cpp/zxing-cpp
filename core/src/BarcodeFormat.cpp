@@ -19,6 +19,7 @@
 #include "ZXContainerAlgorithms.h"
 
 #include <type_traits>
+#include <sstream>
 #include <string>
 #include <functional>
 

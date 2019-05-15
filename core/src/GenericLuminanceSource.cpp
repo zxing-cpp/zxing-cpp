@@ -19,6 +19,7 @@
 #include "ByteArray.h"
 
 #include <algorithm>
+#include <stdexcept>
 
 namespace ZXing {
 

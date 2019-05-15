@@ -14,6 +14,11 @@
 * limitations under the License.
 */
 
+
+#if (_MSC_VER >= 1915)
+#define no_init_all deprecated
+#endif
+
 #include "BarcodeReader.h"
 #include "GenericLuminanceSource.h"
 #include "HybridBinarizer.h"
@@ -26,6 +31,7 @@
 #include <wrl.h>
 #include <MemoryBuffer.h>
 #include <algorithm>
+#include <stdexcept>
 
 using namespace Microsoft::WRL;
 using namespace Windows::Foundation;
