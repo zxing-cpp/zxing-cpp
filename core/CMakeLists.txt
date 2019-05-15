@@ -7,6 +7,7 @@ if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
     set (ENABLE_ENCODERS OFF CACHE BOOL "Check to include encoders")
     set (ENABLE_DECODERS ON CACHE BOOL "Check to include decoders")
     set (LINK_CPP_STATICALLY OFF CACHE BOOL "MSVC only, check to link statically standard library (/MT and /MTd)")
+    set (BUILD_SHARED_LIBRARY OFF CACHE BOOL "Check to build ZXingCore as shared library")
 
     add_definitions (-DUNICODE -D_UNICODE)
     
@@ -446,7 +447,11 @@ source_group (Sources\\textcodec FILES ${TEXT_CODEC_FILES})
 
 find_package (Threads)
 
-add_library (ZXingCore
+if (BUILD_SHARED_LIBRARY AND NOT DEFINED SHARED_FLAG)
+    set (SHARED_FLAG "SHARED")
+endif()
+
+add_library (ZXingCore ${SHARED_FLAG}
     ${COMMON_FILES}
     ${AZTEC_FILES}
     ${DATAMATRIX_FILES}
