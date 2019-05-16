@@ -24,7 +24,7 @@
 // Version numbering
 #define ZXING_VERSION_MAJOR 1
 #define ZXING_VERSION_MINOR 0
-#define ZXING_VERSION_PATCH 4
+#define ZXING_VERSION_PATCH 5
 
 #if !__has_attribute(cxx_rtti) && !defined(__RTTI) && !defined(_CPPRTTI) && !defined(__GXX_RTTI) && !defined(__INTEL_RTTI__)
 	#define ZX_NO_RTTI
