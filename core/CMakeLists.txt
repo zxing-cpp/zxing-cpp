@@ -1,32 +1,5 @@
 cmake_minimum_required (VERSION 3.1.3)
 
-if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
-    # this is the top level project
-    project (ZXingCpp)
-    
-    set (ENABLE_ENCODERS OFF CACHE BOOL "Check to include encoders")
-    set (ENABLE_DECODERS ON CACHE BOOL "Check to include decoders")
-    set (LINK_CPP_STATICALLY OFF CACHE BOOL "MSVC only, check to link statically standard library (/MT and /MTd)")
-    set (BUILD_SHARED_LIBRARY OFF CACHE BOOL "Check to build ZXingCore as shared library")
-
-    add_definitions (-DUNICODE -D_UNICODE)
-    
-    if (MSVC)
-        set (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /Oi /GS-")
-        set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Oi /GS-")
-        if (LINK_CPP_STATICALLY)
-            set (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /MT")
-            set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
-            set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /MTd")
-            set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
-        endif()
-    else()
-        set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG")
-        set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
-    endif()
-    
-endif()
-
 if (NOT DEFINED ENABLE_ENCODERS)
     set (ENABLE_ENCODERS OFF)
 endif()
@@ -473,14 +446,24 @@ target_compile_options (ZXingCore
     PRIVATE ${ZXING_CORE_LOCAL_DEFINES}
 )
 
-if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
-    target_compile_options (ZXingCore PRIVATE
+include (CheckCXXCompilerFlag)
+
+CHECK_CXX_COMPILER_FLAG ("-std=c++11" COMPILER_SUPPORTS_CXX11)
+if (COMPILER_SUPPORTS_CXX11)
+    target_compile_options(ZXingCore PRIVATE
         -std=c++11
+    )
+endif()
+
+CHECK_CXX_COMPILER_FLAG ("-ffloat-store" COMPILER_NEEDS_FLOAT_STORE)
+if (COMPILER_NEEDS_FLOAT_STORE)
+    target_compile_options(ZXingCore PRIVATE
         -ffloat-store   # same floating point precision in all optimization levels
     )
-elseif (APPLE)
+endif()
+
+if (APPLE)
     target_compile_options (ZXingCore PRIVATE
-        -std=c++11
         -stdlib=libc++
     )
 endif()
@@ -490,21 +473,13 @@ target_link_libraries (ZXingCore PUBLIC ${CMAKE_THREAD_LIBS_INIT})
 add_library(ZXing::Core ALIAS ZXingCore)
 set_target_properties(ZXingCore PROPERTIES EXPORT_NAME Core)
 
-set(CMAKECONFIG_INSTALL_DIR "lib/cmake/ZXing")
-install(TARGETS ZXingCore EXPORT ZXingTargets
-    LIBRARY DESTINATION lib
-    RUNTIME DESTINATION bin
-    ARCHIVE DESTINATION lib
+include (GNUInstallDirs)
+
+# Once we can require cmake 1.13, then we can move this to ../CMakeLists.txt, see: https://gitlab.kitware.com/cmake/cmake/merge_requests/2152
+install (
+    TARGETS ZXingCore EXPORT ZXingTargets
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     INCLUDES DESTINATION include
 )
-install(EXPORT ZXingTargets DESTINATION ${CMAKECONFIG_INSTALL_DIR} NAMESPACE ZXing::)
-
-install(
-    DIRECTORY src/
-    DESTINATION include/ZXing
-    FILES_MATCHING PATTERN "*.h"
-)
-
-include(CMakePackageConfigHelpers)
-configure_package_config_file(ZXingConfig.cmake.in ZXingConfig.cmake INSTALL_DESTINATION ${CMAKECONFIG_INSTALL_DIR})
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ZXingConfig.cmake DESTINATION ${CMAKECONFIG_INSTALL_DIR})
