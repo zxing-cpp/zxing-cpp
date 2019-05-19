@@ -6,7 +6,7 @@ set (ZXING_VERSION_PATCH 5)
 
 project (ZXingCpp VERSION ${ZXING_VERSION_MAJOR}.${ZXING_VERSION_MINOR}.${ZXING_VERSION_PATCH})
 
-set (ENABLE_ENCODERS OFF CACHE BOOL "Check to include encoders")
+set (ENABLE_ENCODERS ON CACHE BOOL "Check to include encoders")
 set (ENABLE_DECODERS ON CACHE BOOL "Check to include decoders")
 set (LINK_CPP_STATICALLY OFF CACHE BOOL "MSVC only, check to link statically standard library (/MT and /MTd)")
 set (BUILD_SHARED_LIBRARY OFF CACHE BOOL "Check to build ZXingCore as shared library")
@@ -40,7 +40,7 @@ add_subdirectory (core)
 set_target_properties (ZXingCore PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties (ZXingCore PROPERTIES SOVERSION ${ZXING_VERSION_MAJOR})
 
-set (CMAKECONFIG_INSTALL_DIR "lib/cmake/ZXing")
+set (CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/ZXing")
 
 install (
     EXPORT ZXingTargets
