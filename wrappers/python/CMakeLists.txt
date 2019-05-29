@@ -7,6 +7,7 @@ execute_process(COMMAND tar -xzf ${CMAKE_CURRENT_BINARY_DIR}/pybind11.tar.gz -C 
 add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/pybind11-2.2.4 EXCLUDE_FROM_ALL)
 
 # build the main library
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../.. xzing-cpp EXCLUDE_FROM_ALL)
 
 # build the python module and link the other libs
