@@ -9,7 +9,6 @@
 #include "GenericLuminanceSource.h"
 #include "HybridBinarizer.h"
 #include "Result.h"
-#include "TextUtfEncoding.h"
 
 using namespace ZXing;
 namespace py = pybind11;
@@ -38,8 +37,8 @@ Result decode(const Image& image, BarcodeFormat format, bool fastMode, bool tryR
 	}
 }
 
-PYBIND11_MODULE(zxingcpp, m) {
-	m.doc() = "python bindings for zxingcpp";
+PYBIND11_MODULE(zxing, m) {
+	m.doc() = "python bindings for zxing-cpp";
 	py::enum_<BarcodeFormat>(m, "BarcodeFormat")
 		.value("AZTEC", BarcodeFormat::AZTEC)
 		.value("CODABAR", BarcodeFormat::CODABAR)
