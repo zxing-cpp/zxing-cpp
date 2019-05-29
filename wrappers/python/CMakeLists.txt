@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 2.8.12)
+project(zxing)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../.. xzing-cpp EXCLUDE_FROM_ALL)
+add_subdirectory(pybind11 EXCLUDE_FROM_ALL)
+pybind11_add_module(zxing zxing.cpp)
+target_link_libraries(zxing PRIVATE ZXingCore)
