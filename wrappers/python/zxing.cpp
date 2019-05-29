@@ -12,20 +12,12 @@
 #include "TextUtfEncoding.h"
 
 using namespace ZXing;
-
-#if 0
-using Binarizer = GlobalHistogramBinarizer;
-#else
-using Binarizer = HybridBinarizer;
-#endif
-
 namespace py = pybind11;
-
 
 // Note: Image is a Numpy array in BGR format (the default opencv format)
 using Image = py::array_t<uint8_t, py::array::c_style>;
 
-Result decode(const Image& image, bool fastMode, bool tryRotate, BarcodeFormat format) {
+Result decode(const Image& image, BarcodeFormat format, bool fastMode, bool tryRotate, bool hybridBinarizer) {
 	DecodeHints hints;
 	hints.setShouldTryHarder(!fastMode);
 	hints.setShouldTryRotate(tryRotate);
@@ -38,8 +30,12 @@ Result decode(const Image& image, bool fastMode, bool tryRotate, BarcodeFormat f
 	const auto channels = image.shape(2);
 	const auto bytes = image.data();
 	GenericLuminanceSource source(width, height, bytes, width*channels, channels, 2, 1, 0);
-	Binarizer binImage(std::shared_ptr<LuminanceSource>(&source, [](void*) {}));
-	return reader.read(binImage);
+	auto noop = [](void*) {};
+	if (hybridBinarizer) {
+		return reader.read(HybridBinarizer(std::shared_ptr<LuminanceSource>(&source, noop)));
+	} else {
+		return reader.read(GlobalHistogramBinarizer(std::shared_ptr<LuminanceSource>(&source, noop)));
+	}
 }
 
 PYBIND11_MODULE(zxingcpp, m) {
