@@ -1,5 +1,6 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
+#include <pybind11/stl.h>
 #include <iostream>
 #include <string>
 #include "BarcodeFormat.h"
@@ -63,14 +64,19 @@ PYBIND11_MODULE(zxingcpp, m) {
 		.value("UPC_EAN_EXTENSION", BarcodeFormat::UPC_EAN_EXTENSION)
 		.value("FORMAT_COUNT", BarcodeFormat::FORMAT_COUNT)
 		.export_values();
+	py::class_<ResultPoint>(m, "ResultPoint")
+		.def_property_readonly("x", &ResultPoint::x)
+		.def_property_readonly("y", &ResultPoint::y);
 	py::class_<Result>(m, "Result")
 		.def_property_readonly("valid", &Result::isValid)
 		.def_property_readonly("text", &Result::text)
-		.def_property_readonly("format", &Result::format);
+		.def_property_readonly("format", &Result::format)
+		.def_property_readonly("points", &Result::resultPoints);
 	m.def("decode", &decode, "Decode a barcode from a numpy BGR image array",
 		py::arg("image"),
+		py::arg("format")=BarcodeFormat::FORMAT_COUNT,
 		py::arg("fastMode")=false,
 		py::arg("tryRoate")=true,
-		py::arg("format")=BarcodeFormat::FORMAT_COUNT
+		py::arg("hybridBinarizer")=true
 	);
 }
