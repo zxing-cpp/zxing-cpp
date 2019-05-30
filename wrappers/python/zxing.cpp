@@ -75,7 +75,7 @@ PYBIND11_MODULE(zxing, m) {
 		.def_property_readonly("text", &Result::text)
 		.def_property_readonly("format", &Result::format)
 		.def_property_readonly("points", &Result::resultPoints);
-	m.def("decode", &decode, "Decode a barcode from a numpy BGR image array",
+	m.def("decode", &decode, "Decode a barcode from a numpy BGR or grayscale image array",
 		py::arg("image"),
 		py::arg("format")=BarcodeFormat::FORMAT_COUNT,
 		py::arg("fastMode")=false,
