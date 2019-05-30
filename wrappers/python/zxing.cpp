@@ -13,7 +13,7 @@
 using namespace ZXing;
 namespace py = pybind11;
 
-// Note: Image is a Numpy array in BGR format (the default opencv format)
+// Numpy array wrapper class for images (either BGR or GRAYSCALE)
 using Image = py::array_t<uint8_t, py::array::c_style>;
 
 Result decode(const Image& image, BarcodeFormat format, bool fastMode, bool tryRotate, bool hybridBinarizer) {
@@ -26,14 +26,22 @@ Result decode(const Image& image, BarcodeFormat format, bool fastMode, bool tryR
 	MultiFormatReader reader(hints);
 	const auto height = image.shape(0);
 	const auto width = image.shape(1);
-	const auto channels = image.shape(2);
 	const auto bytes = image.data();
-	GenericLuminanceSource source(width, height, bytes, width*channels, channels, 2, 1, 0);
-	auto noop = [](void*) {};
-	if (hybridBinarizer) {
-		return reader.read(HybridBinarizer(std::shared_ptr<LuminanceSource>(&source, noop)));
+	std::shared_ptr<LuminanceSource> source;
+
+	if (image.ndim() == 2) {
+		// Grayscale image
+		source = std::make_shared<GenericLuminanceSource>(width, height, bytes, width);
 	} else {
-		return reader.read(GlobalHistogramBinarizer(std::shared_ptr<LuminanceSource>(&source, noop)));
+		// BGR image
+		const auto channels = image.shape(2);
+		source = std::make_shared<GenericLuminanceSource>(width, height, bytes, width*channels, channels, 2, 1, 0);
+	}
+
+	if (hybridBinarizer) {
+		return reader.read(HybridBinarizer(source));
+	} else {
+		return reader.read(GlobalHistogramBinarizer(source));
 	}
 }
 
