@@ -32,12 +32,20 @@ public:
 		}
 	}
 
+	property BarcodeType Type {
+		BarcodeType get() {
+			return m_barcode_type;
+		}
+	}
+
 internal:
-	ReadResult(Platform::String^ format, Platform::String^ text) : m_format(format), m_text(text) {}
+	ReadResult(Platform::String^ format, Platform::String^ text, BarcodeType type) : m_format(format), m_text(text), m_barcode_type(type) {}
 
 private:
 	Platform::String^ m_format;
 	Platform::String^ m_text;
+
+	BarcodeType m_barcode_type;
 };
 
 } // ZXing

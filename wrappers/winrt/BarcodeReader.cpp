@@ -115,8 +115,50 @@ BarcodeFormat BarcodeReader::ConvertRuntimeToNative(BarcodeType type)
 		return BarcodeFormat::UPC_EAN_EXTENSION;
 	default:
 		std::wstring typeAsString = type.ToString()->Begin();
-		throw std::invalid_argument("Unknown Barcode Format: "
+		throw std::invalid_argument("Unknown Barcode Type: "
 			+ std::string( typeAsString.begin(), typeAsString.end()));
+	}
+}
+
+BarcodeType BarcodeReader::ConvertNativeToRuntime(BarcodeFormat format)
+{
+	switch (format) {
+	case BarcodeFormat::AZTEC:
+		return BarcodeType::AZTEC;
+	case BarcodeFormat::CODABAR:
+		return BarcodeType::CODABAR;
+	case BarcodeFormat::CODE_128:
+		return BarcodeType::CODE_128;
+	case BarcodeFormat::CODE_39:
+		return BarcodeType::CODE_39;
+	case BarcodeFormat::CODE_93:
+		return BarcodeType::CODE_93;
+	case BarcodeFormat::DATA_MATRIX:
+		return BarcodeType::DATA_MATRIX;
+	case BarcodeFormat::EAN_13:
+		return BarcodeType::EAN_13;
+	case BarcodeFormat::EAN_8:
+		return BarcodeType::EAN_8;
+	case BarcodeFormat::ITF:
+		return BarcodeType::ITF;
+	case BarcodeFormat::MAXICODE:
+		return BarcodeType::MAXICODE;
+	case BarcodeFormat::PDF_417:
+		return BarcodeType::PDF_417;
+	case BarcodeFormat::QR_CODE:
+		return BarcodeType::QR_CODE;
+	case BarcodeFormat::RSS_14:
+		return BarcodeType::RSS_14;
+	case BarcodeFormat::RSS_EXPANDED:
+		return BarcodeType::RSS_EXPANDED;
+	case BarcodeFormat::UPC_A:
+		return BarcodeType::UPC_A;
+	case BarcodeFormat::UPC_E:
+		return BarcodeType::UPC_E;
+	case BarcodeFormat::UPC_EAN_EXTENSION:
+		return BarcodeType::UPC_EAN_EXTENSION;
+	default:
+		throw std::invalid_argument("Unknown Barcode Format ");
 	}
 }
 
@@ -178,7 +220,7 @@ BarcodeReader::Read(SoftwareBitmap^ bitmap, int cropWidth, int cropHeight)
 		auto binImg = CreateBinaryBitmap(bitmap, cropWidth, cropHeight);
 		auto result = m_reader->read(*binImg);
 		if (result.isValid()) {
-			return ref new ReadResult(ToPlatformString(ZXing::ToString(result.format())), ToPlatformString(result.text()));
+			return ref new ReadResult(ToPlatformString(ZXing::ToString(result.format())), ToPlatformString(result.text()), ConvertNativeToRuntime(result.format()));
 		}
 	}
 	catch (const std::exception& e) {

@@ -15,7 +15,6 @@
 * limitations under the License.
 */
 #include "BarcodeFormat.h"
-#include "ReadResult.h"
 
 namespace ZXing {
 
@@ -36,8 +35,7 @@ public enum class BarcodeType : int {
 	RSS_EXPANDED,
 	UPC_A,
 	UPC_E,
-	UPC_EAN_EXTENSION,
-	FORMAT_COUNT,
+	UPC_EAN_EXTENSION
 };
 
 class MultiFormatReader;
@@ -56,6 +54,7 @@ private:
 	~BarcodeReader();
 
 	static BarcodeFormat ConvertRuntimeToNative(BarcodeType type);
+	static BarcodeType ConvertNativeToRuntime(BarcodeFormat format);
 
 	std::unique_ptr<MultiFormatReader> m_reader;
 };
