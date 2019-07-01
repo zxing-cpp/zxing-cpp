@@ -14,10 +14,29 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-
-#include <memory>
+#include "BarcodeFormat.h"
 
 namespace ZXing {
+
+public enum class BarcodeType : int {
+	AZTEC,
+	CODABAR,
+	CODE_39,
+	CODE_93,
+	CODE_128,
+	DATA_MATRIX,
+	EAN_8,
+	EAN_13,
+	ITF,
+	MAXICODE,
+	PDF_417,
+	QR_CODE,
+	RSS_14,
+	RSS_EXPANDED,
+	UPC_A,
+	UPC_E,
+	UPC_EAN_EXTENSION
+};
 
 class MultiFormatReader;
 ref class ReadResult;
@@ -25,12 +44,19 @@ ref class ReadResult;
 public ref class BarcodeReader sealed
 {
 public:
+	BarcodeReader(bool tryHarder, bool tryRotate, const Platform::Array<BarcodeType>^ types);
+	BarcodeReader(bool tryHarder, bool tryRotate);
 	BarcodeReader(bool tryHarder);
 
 	ReadResult^ Read(Windows::Graphics::Imaging::SoftwareBitmap^ bitmap, int cropWidth, int cropHeight);
 
 private:
 	~BarcodeReader();
+
+	void init(bool tryHarder, bool tryRotate, const Platform::Array<BarcodeType>^ types);
+
+	static BarcodeFormat ConvertRuntimeToNative(BarcodeType type);
+	static BarcodeType ConvertNativeToRuntime(BarcodeFormat format);
 
 	std::unique_ptr<MultiFormatReader> m_reader;
 };
