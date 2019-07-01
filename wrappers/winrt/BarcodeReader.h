@@ -53,6 +53,8 @@ public:
 private:
 	~BarcodeReader();
 
+	void init(bool tryHarder, bool tryRotate, const Platform::Array<BarcodeType>^ types);
+
 	static BarcodeFormat ConvertRuntimeToNative(BarcodeType type);
 	static BarcodeType ConvertNativeToRuntime(BarcodeFormat format);
 

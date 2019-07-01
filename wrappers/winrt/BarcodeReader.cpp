@@ -27,6 +27,7 @@
 #include "MultiFormatReader.h"
 #include "ReadResult.h"
 #include "Result.h"
+#include "TextUtfEncoding.h"
 
 #include <algorithm>
 #include <MemoryBuffer.h>
@@ -41,6 +42,22 @@ namespace ZXing {
 
 BarcodeReader::BarcodeReader(bool tryHarder, bool tryRotate, const Platform::Array<BarcodeType>^ types)
 {
+	init(tryHarder, tryRotate, types);
+}
+
+BarcodeReader::BarcodeReader(bool tryHarder, bool tryRotate)
+{
+	init(tryHarder, tryRotate, nullptr);
+}
+
+BarcodeReader::BarcodeReader(bool tryHarder)
+{
+	init(tryHarder, tryHarder, nullptr);
+}
+
+void
+BarcodeReader::init(bool tryHarder, bool tryRotate, const Platform::Array<BarcodeType>^ types)
+{
 	DecodeHints hints;
 	hints.setShouldTryHarder(tryHarder);
 	hints.setShouldTryRotate(tryRotate);
@@ -53,22 +70,6 @@ BarcodeReader::BarcodeReader(bool tryHarder, bool tryRotate, const Platform::Arr
 		hints.setPossibleFormats(barcodeFormats);
 	}
 
-	m_reader.reset(new MultiFormatReader(hints));
-}
-
-BarcodeReader::BarcodeReader(bool tryHarder, bool tryRotate)
-{
-	DecodeHints hints;
-	hints.setShouldTryHarder(tryHarder);
-	hints.setShouldTryRotate(tryRotate);
-	m_reader.reset(new MultiFormatReader(hints));
-}
-
-BarcodeReader::BarcodeReader(bool tryHarder)
-{
-	DecodeHints hints;
-	hints.setShouldTryHarder(tryHarder);
-	hints.setShouldTryRotate(tryHarder);
 	m_reader.reset(new MultiFormatReader(hints));
 }
 
@@ -115,8 +116,7 @@ BarcodeFormat BarcodeReader::ConvertRuntimeToNative(BarcodeType type)
 		return BarcodeFormat::UPC_EAN_EXTENSION;
 	default:
 		std::wstring typeAsString = type.ToString()->Begin();
-		throw std::invalid_argument("Unknown Barcode Type: "
-			+ std::string( typeAsString.begin(), typeAsString.end()));
+		throw std::invalid_argument("Unknown Barcode Type: " + TextUtfEncoding::ToUtf8(typeAsString));
 	}
 }
 
