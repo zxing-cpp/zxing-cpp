@@ -16,12 +16,12 @@ namespace py = pybind11;
 // Numpy array wrapper class for images (either BGR or GRAYSCALE)
 using Image = py::array_t<uint8_t, py::array::c_style>;
 
-Result decode(const Image& image, BarcodeFormat format, bool fastMode, bool tryRotate, bool hybridBinarizer) {
+Result decode(const Image& image, std::vector<BarcodeFormat> formats, bool fastMode, bool tryRotate, bool hybridBinarizer) {
 	DecodeHints hints;
 	hints.setShouldTryHarder(!fastMode);
 	hints.setShouldTryRotate(tryRotate);
-	if (format != BarcodeFormat::FORMAT_COUNT) {
-		hints.setPossibleFormats({ format });
+	if (formats.size()>0) {
+		hints.setPossibleFormats(formats);
 	}
 	MultiFormatReader reader(hints);
 	const auto height = image.shape(0);
@@ -42,6 +42,15 @@ Result decode(const Image& image, BarcodeFormat format, bool fastMode, bool tryR
 		return reader.read(HybridBinarizer(source));
 	} else {
 		return reader.read(GlobalHistogramBinarizer(source));
+	}
+}
+
+Result decode(const Image& image, BarcodeFormat format, bool fastMode, bool tryRotate, bool hybridBinarizer) {
+	if (format != BarcodeFormat::FORMAT_COUNT) {
+		return decode(image, std::vector<BarcodeFormat>({format}), fastMode, tryRotate, hybridBinarizer);
+	}
+	else {
+		return decode(image, std::vector<BarcodeFormat>({}), fastMode, tryRotate, hybridBinarizer);
 	}
 }
 
@@ -75,7 +84,13 @@ PYBIND11_MODULE(zxing, m) {
 		.def_property_readonly("text", &Result::text)
 		.def_property_readonly("format", &Result::format)
 		.def_property_readonly("points", &Result::resultPoints);
-	m.def("decode", &decode, "Decode a barcode from a numpy BGR or grayscale image array",
+	m.def("decode", (Result (*)(const Image&, std::vector<BarcodeFormat>, bool, bool, bool))&decode, "Decode a barcode from a numpy BGR or grayscale image array",
+		py::arg("image"),
+		py::arg("format")=std::vector<BarcodeFormat>({}),
+		py::arg("fastMode")=false,
+		py::arg("tryRoate")=true,
+		py::arg("hybridBinarizer")=true
+	).def("decode", (Result (*)(const Image&, BarcodeFormat, bool, bool, bool))&decode, "Decode a barcode from a numpy BGR or grayscale image array",
 		py::arg("image"),
 		py::arg("format")=BarcodeFormat::FORMAT_COUNT,
 		py::arg("fastMode")=false,
