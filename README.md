@@ -11,6 +11,7 @@ This project is a C++ port of [ZXing Library](https://github.com/zxing/zxing).
 * Wrapper to create WinRT component
 * Wrapper for Android
 * Wrapper for WebAssembly
+* Python binding
 
 ## Supported Formats
 
