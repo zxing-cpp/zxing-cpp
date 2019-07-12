@@ -35,6 +35,11 @@ if (NOT CMAKE_BUILD_TYPE)
     set_property (CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
+if (BUILD_SHARED_LIBRARY)
+    set (BUILD_SHARED_LIBS ON)
+    set (CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif()
+
 add_subdirectory (core)
 
 set_target_properties (ZXingCore PROPERTIES VERSION ${PROJECT_VERSION})

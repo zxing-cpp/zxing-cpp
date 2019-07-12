@@ -420,11 +420,7 @@ source_group (Sources\\textcodec FILES ${TEXT_CODEC_FILES})
 
 find_package (Threads)
 
-if (BUILD_SHARED_LIBRARY AND NOT DEFINED SHARED_FLAG)
-    set (SHARED_FLAG "SHARED")
-endif()
-
-add_library (ZXingCore ${SHARED_FLAG}
+add_library (ZXingCore
     ${COMMON_FILES}
     ${AZTEC_FILES}
     ${DATAMATRIX_FILES}

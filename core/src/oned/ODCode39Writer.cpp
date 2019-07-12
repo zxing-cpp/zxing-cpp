@@ -18,6 +18,8 @@
 #include "oned/ODCode39Writer.h"
 #include "oned/ODWriterHelper.h"
 #include "ZXContainerAlgorithms.h"
+#include "TextEncoder.h"
+#include "CharacterSet.h"
 
 #include <array>
 
@@ -151,7 +153,7 @@ Code39Writer::encode(const std::wstring& contents, int width, int height) const
 	}
 	
 	if (extendedContent.empty()) {
-		extendedContent.append(contents.begin(), contents.end());
+		extendedContent = TextEncoder::FromUnicode(contents, CharacterSet::ISO8859_1);
 	}
 
 	std::array<int, 9> widths = {};
