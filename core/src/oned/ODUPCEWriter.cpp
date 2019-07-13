@@ -78,12 +78,12 @@ UPCEWriter::encode(const std::wstring& contents, int width, int height) const
 	std::array<int, 8> digits;
 	GetDigits(contents, digits);
 
+	std::array<int, 12> upceDigits;
+	GetDigits(UPCEANCommon::ConvertUPCEtoUPCA(contents), upceDigits);
 	if (length == 7) {
-		std::array<int, 12> upceDigits;
-		GetDigits(UPCEANCommon::ConvertUPCEtoUPCA(contents), upceDigits);
 		digits[7] = UPCEANCommon::ComputeChecksum(upceDigits);
 	}
-	else if (digits[7] != UPCEANCommon::ComputeChecksum(digits)) {
+	else if (digits[7] != UPCEANCommon::ComputeChecksum(upceDigits)) {
 		throw std::invalid_argument("Contents do not pass checksum");
 	}
 	
