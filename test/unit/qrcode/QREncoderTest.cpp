@@ -118,7 +118,7 @@ TEST(QREncoderTest, ChooseMode)
 
 TEST(QREncoderTest, Encode)
 {
-    auto qrCode = Encoder::Encode(L"ABCDEF", ErrorCorrectionLevel::High, CharacterSet::Unknown, 0, false);
+    auto qrCode = Encoder::Encode(L"ABCDEF", ErrorCorrectionLevel::High, CharacterSet::Unknown, 0, false, -1);
 	EXPECT_EQ(qrCode.mode, CodecMode::ALPHANUMERIC);
 	EXPECT_EQ(qrCode.ecLevel, ErrorCorrectionLevel::High);
 	ASSERT_NE(qrCode.version, nullptr);
@@ -150,7 +150,7 @@ TEST(QREncoderTest, Encode)
   
 TEST(QREncoderTest, EncodeWithVersion)
 {
-    auto qrCode = Encoder::Encode(L"ABCDEF", ErrorCorrectionLevel::High, CharacterSet::Unknown, 7, false);
+    auto qrCode = Encoder::Encode(L"ABCDEF", ErrorCorrectionLevel::High, CharacterSet::Unknown, 7, false, -1);
 	ASSERT_NE(qrCode.version, nullptr);
 	EXPECT_EQ(qrCode.version->versionNumber(), 7);
 }
@@ -158,13 +158,13 @@ TEST(QREncoderTest, EncodeWithVersion)
 TEST(QREncoderTest, EncodeWithVersionTooSmall)
 {
 	EXPECT_THROW(
-		Encoder::Encode(L"THISMESSAGEISTOOLONGFORAQRCODEVERSION3", ErrorCorrectionLevel::High, CharacterSet::Unknown, 3, false)
+		Encoder::Encode(L"THISMESSAGEISTOOLONGFORAQRCODEVERSION3", ErrorCorrectionLevel::High, CharacterSet::Unknown, 3, false, -1)
 	, std::invalid_argument);
 }
 
 TEST(QREncoderTest, SimpleUTF8ECI)
 {
-	auto qrCode = Encoder::Encode(L"hello", ErrorCorrectionLevel::High, CharacterSet::UTF8, 0, false);
+	auto qrCode = Encoder::Encode(L"hello", ErrorCorrectionLevel::High, CharacterSet::UTF8, 0, false, -1);
 	EXPECT_EQ(qrCode.mode, CodecMode::BYTE);
 	EXPECT_EQ(qrCode.ecLevel, ErrorCorrectionLevel::High);
 	ASSERT_NE(qrCode.version, nullptr);
@@ -196,7 +196,7 @@ TEST(QREncoderTest, SimpleUTF8ECI)
 
 TEST(QREncoderTest, EncodeKanjiMode)
 {
-	auto qrCode = Encoder::Encode(L"\u65e5\u672c", ErrorCorrectionLevel::Medium, CharacterSet::Shift_JIS, 0, false);
+	auto qrCode = Encoder::Encode(L"\u65e5\u672c", ErrorCorrectionLevel::Medium, CharacterSet::Shift_JIS, 0, false, -1);
 	EXPECT_EQ(qrCode.mode, CodecMode::KANJI);
 	EXPECT_EQ(qrCode.ecLevel, ErrorCorrectionLevel::Medium);
 	ASSERT_NE(qrCode.version, nullptr);
@@ -228,7 +228,7 @@ TEST(QREncoderTest, EncodeKanjiMode)
 
 TEST(QREncoderTest, EncodeShiftjisNumeric)
 {
-	auto qrCode = Encoder::Encode(L"0123", ErrorCorrectionLevel::Medium, CharacterSet::Shift_JIS, 0, false);
+	auto qrCode = Encoder::Encode(L"0123", ErrorCorrectionLevel::Medium, CharacterSet::Shift_JIS, 0, false, -1);
 	EXPECT_EQ(qrCode.mode, CodecMode::NUMERIC);
 	EXPECT_EQ(qrCode.ecLevel, ErrorCorrectionLevel::Medium);
 	ASSERT_NE(qrCode.version, nullptr);
@@ -260,7 +260,7 @@ TEST(QREncoderTest, EncodeShiftjisNumeric)
 
 TEST(QREncoderTest, EncodeGS1)
 {
-	auto qrCode = Encoder::Encode(L"100001%11171218", ErrorCorrectionLevel::High, CharacterSet::Unknown, 0, true);
+	auto qrCode = Encoder::Encode(L"100001%11171218", ErrorCorrectionLevel::High, CharacterSet::Unknown, 0, true, -1);
 	EXPECT_EQ(qrCode.mode, CodecMode::ALPHANUMERIC);
 	EXPECT_EQ(qrCode.ecLevel, ErrorCorrectionLevel::High);
 	ASSERT_NE(qrCode.version, nullptr);
@@ -296,7 +296,7 @@ TEST(QREncoderTest, EncodeGS1)
 
 TEST(QREncoderTest, EncodeGS1ModeHeaderWithECI)
 {
-	auto qrCode = Encoder::Encode(L"hello", ErrorCorrectionLevel::High, CharacterSet::UTF8, 0, true);
+	auto qrCode = Encoder::Encode(L"hello", ErrorCorrectionLevel::High, CharacterSet::UTF8, 0, true, -1);
 	EXPECT_EQ(qrCode.mode, CodecMode::BYTE);
 	EXPECT_EQ(qrCode.ecLevel, ErrorCorrectionLevel::High);
 	ASSERT_NE(qrCode.version, nullptr);
@@ -653,5 +653,5 @@ TEST(QREncoderTest, BugInBitVectorNumBytes)
     //   - To be precise, it needs 11727 + 4 (getMode info) + 14 (length info) =
     //     11745 bits = 1468.125 bytes are needed (i.e. cannot fit in 1468
     //     bytes).
-    Encoder::Encode(std::wstring(3518, L'0'), ErrorCorrectionLevel::Low, CharacterSet::Unknown, 0, false);
+    Encoder::Encode(std::wstring(3518, L'0'), ErrorCorrectionLevel::Low, CharacterSet::Unknown, 0, false, -1);
 }
