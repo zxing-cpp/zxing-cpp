@@ -61,6 +61,10 @@ public:
 		return *this;
 	}
 
+	Writer& setMaskPattern(int pattern) {
+		_maskPattern = pattern;
+	}
+
 	BitMatrix encode(const std::wstring& contents, int width, int height) const;
 
 private:
@@ -69,6 +73,7 @@ private:
 	CharacterSet _encoding;
 	int _version;
 	bool _useGs1Format;
+	int _maskPattern;
 };
 
 } // QRCode

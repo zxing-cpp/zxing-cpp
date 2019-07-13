@@ -253,7 +253,7 @@ DecodeDataCharacter(const BitArray& row, const RSS::FinderPattern& pattern, bool
 			return {};
 	}
 	else {
-		if (!RowReader::RecordPattern(row.iterAt(pattern.endPos() + 1), row.end(), counters))
+		if (!RowReader::RecordPattern(row.iterAt(pattern.endPos()), row.end(), counters))
 			return {};
 		std::reverse(counters.begin(), counters.end());
 	}

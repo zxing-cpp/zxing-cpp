@@ -393,33 +393,30 @@ namespace C40Encoder {
 			sb.push_back(c);
 			return 2;
 		}
-		if (c >= '!' && c <= '/') {
+		if (c <= '/') {
 			sb.push_back('\1'); //Shift 2 Set
 			sb.push_back((char)(c - 33));
 			return 2;
 		}
-		if (c >= ':' && c <= '@') {
+		if (c <= '@') {
 			sb.push_back('\1'); //Shift 2 Set
 			sb.push_back((char)(c - 58 + 15));
 			return 2;
 		}
-		if (c >= '[' && c <= '_') {
+		if (c <= '_') {
 			sb.push_back('\1'); //Shift 2 Set
 			sb.push_back((char)(c - 91 + 22));
 			return 2;
 		}
-		if (c >= '\x60' && c <= '\x7f') {
+		if (c <= '\x7f') {
 			sb.push_back('\2'); //Shift 3 Set
 			sb.push_back((char)(c - 96));
 			return 2;
 		}
-		if (c >= '\x80') {
-			sb.append("\1\x1e"); //Shift 2, Upper Shift
-			int len = 2;
-			len += EncodeChar((char)(c - 0x80), sb);
-			return len;
-		}
-		throw std::invalid_argument("Illegal character: " + ToHexString(c));
+		sb.append("\1\x1e"); //Shift 2, Upper Shift
+		int len = 2;
+		len += EncodeChar((char)(c - 0x80), sb);
+		return len;
 	}
 
 	static int BacktrackOneCharacter(EncoderContext& context, std::string& buffer, std::string& removed, int lastCharSize, std::function<int (int, std::string&)> encodeChar)
@@ -511,10 +508,8 @@ namespace C40Encoder {
 			if (!context.hasMoreCharacters()) {
 				//Avoid having a single C40 value in the last triplet
 				std::string removed;
-				if ((buffer.length() % 3) == 2) {
-					if (available < 2 || available > 2) {
-						lastCharSize = BacktrackOneCharacter(context, buffer, removed, lastCharSize, encodeChar);
-					}
+				if ((buffer.length() % 3) == 2 && available != 2) {
+					lastCharSize = BacktrackOneCharacter(context, buffer, removed, lastCharSize, encodeChar);
 				}
 				while ((buffer.length() % 3) == 1 && ((lastCharSize <= 3 && available != 1) || lastCharSize > 3)) {
 					lastCharSize = BacktrackOneCharacter(context, buffer, removed, lastCharSize, encodeChar);
@@ -562,12 +557,12 @@ namespace DMTextEncoder {
 			sb.push_back(c);
 			return 2;
 		}
-		if (c >= '!' && c <= '/') {
+		if (c <= '/') {
 			sb.push_back('\1'); //Shift 2 Set
 			sb.push_back((char)(c - 33));
 			return 2;
 		}
-		if (c >= ':' && c <= '@') {
+		if (c <= '@') {
 			sb.push_back('\1'); //Shift 2 Set
 			sb.push_back((char)(c - 58 + 15));
 			return 2;
@@ -582,23 +577,20 @@ namespace DMTextEncoder {
 			sb.push_back((char)(c - 96));
 			return 2;
 		}
-		if (c >= 'A' && c <= 'Z') {
+		if (c <= 'Z') {
 			sb.push_back('\2'); //Shift 3 Set
 			sb.push_back((char)(c - 65 + 1));
 			return 2;
 		}
-		if (c >= '{' && c <= '\x7f') {
+		if (c <= '\x7f') {
 			sb.push_back('\2'); //Shift 3 Set
 			sb.push_back((char)(c - 123 + 27));
 			return 2;
 		}
-		if (c >= 128) {
-			sb.append("\1\x1e"); //Shift 2, Upper Shift
-			int len = 2;
-			len += EncodeChar(c - 128, sb);
-			return len;
-		}
-		throw std::invalid_argument("Illegal character: " + ToHexString(c));
+		sb.append("\1\x1e"); //Shift 2, Upper Shift
+		int len = 2;
+		len += EncodeChar(c - 128, sb);
+		return len;
 	}
 
 	static void EncodeText(EncoderContext& context)

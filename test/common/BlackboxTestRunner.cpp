@@ -122,7 +122,10 @@ static std::string checkResult(const std::wstring& pathPrefix, std::wstring imgP
 	std::ifstream latin1Stream(asNativePath(buildPath(pathPrefix, imgPath)), std::ios::binary);
 	if (latin1Stream) {
 		std::string expected((std::istreambuf_iterator<char>(latin1Stream)), std::istreambuf_iterator<char>());
-		std::string latin1Result(result.text.begin(), result.text.end());
+		std::string latin1Result;
+		for (wchar_t c : result.text) {
+			latin1Result.push_back(static_cast<char>(c));
+		}
 		return latin1Result != expected ? "Content mismatch: expected " + expected + " but got " + latin1Result : "";
 	}
 	return "Error reading file";
@@ -535,7 +538,7 @@ BlackboxTestRunner::run(const std::set<std::string>& includedTests)
 
 		runTests("blackbox/rss14-2", "RSS_14", 24, {
 			{ 4, 8, 1, 2, 0   },
-			{ 2, 8, 0, 2, 180 },
+			{ 3, 8, 0, 2, 180 },
 		});
 
 		runTests("blackbox/rssexpanded-1", "RSS_EXPANDED", 32, {
@@ -571,8 +574,8 @@ BlackboxTestRunner::run(const std::set<std::string>& includedTests)
 		});
 
 		runTests("blackbox/qrcode-2", "QR_CODE", 34, {
-			{ 30, 30, 0   },
-			{ 29, 29, 90  },
+			{ 31, 31, 0   },
+			{ 30, 30, 90  },
 			{ 30, 30, 180 },
 			{ 30, 30, 270 },
 		});

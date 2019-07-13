@@ -503,7 +503,7 @@ static const Version& RecommendVersion(ErrorCorrectionLevel ecLevel, CodecMode::
 }
 
 EncodeResult
-Encoder::Encode(const std::wstring& content, ErrorCorrectionLevel ecLevel, CharacterSet charset, int versionNumber, bool useGs1Format)
+Encoder::Encode(const std::wstring& content, ErrorCorrectionLevel ecLevel, CharacterSet charset, int versionNumber, bool useGs1Format, int maskPattern)
 {
 	bool charsetWasUnknown = charset == CharacterSet::Unknown;
 	if (charsetWasUnknown) {
@@ -580,7 +580,7 @@ Encoder::Encode(const std::wstring& content, ErrorCorrectionLevel ecLevel, Chara
 	//  Choose the mask pattern and set to "qrCode".
 	int dimension = version->dimensionForVersion();
 	output.matrix = ByteMatrix(dimension, dimension);
-	output.maskPattern = ChooseMaskPattern(finalBits, ecLevel, *version, output.matrix);
+	output.maskPattern = maskPattern != -1 ? maskPattern : ChooseMaskPattern(finalBits, ecLevel, *version, output.matrix);
 
 	// Build the matrix and set it to "qrCode".
 	MatrixUtil::BuildMatrix(finalBits, ecLevel, *version, output.maskPattern, output.matrix);

@@ -364,78 +364,73 @@ struct FurthestFromAverageComparator
 };
 
 /**
-* <p>Orders by {@link FinderPattern#getCount()}, descending.</p>
+* <p>Orders by {@link FinderPatternFinder#estimatedModuleSize()}, descending.</p>
 */
-struct CenterComparator
+struct EstimatedModuleComparator
 {
-	float average;
-
 	bool operator()(const FinderPattern& center1, const FinderPattern& center2) const {
-		if (center2.count() == center1.count()) {
-			return std::abs(center1.estimatedModuleSize() - average) < std::abs(center2.estimatedModuleSize() - average);
-		}
-		else {
-			return center1.count() > center2.count();
-		}
+		return center1.estimatedModuleSize() < center2.estimatedModuleSize();
 	}
 };
 
-
 /**
 * @return the 3 best {@link FinderPattern}s from our list of candidates. The "best" are
-*         those that have been detected at least {@link #CENTER_QUORUM} times, and whose module
-*         size differs from the average among those patterns the least
-* @throws NotFoundException if 3 such finder patterns do not exist
+*         those have similar module size and form a shape closer to a isosceles right triangle.
+* Return empty if 3 such finder patterns do not exist
 */
-static bool SelectBestPatterns(std::vector<FinderPattern>& possibleCenters)
+static std::vector<FinderPattern> SelectBestPatterns(std::vector<FinderPattern> possibleCenters)
 {
-	int startSize = static_cast<int>(possibleCenters.size());
-	if (startSize < 3) {
+	std::vector<FinderPattern> bestPatterns;
+	int nbPossibleCenters = static_cast<int>(possibleCenters.size());
+	if (nbPossibleCenters < 3) {
 		// Couldn't find enough finder patterns
-		return false;
+		return bestPatterns;
 	}
 
-	// Filter outlier possibilities whose module size is too different
-	if (startSize > 3) {
-		// But we can only afford to do so if we have at least 4 possibilities to choose from
-		float totalModuleSize = 0.0f;
-		float square = 0.0f;
-		for (const FinderPattern& center : possibleCenters) {
-			float size = center.estimatedModuleSize();
-			totalModuleSize += size;
-			square += size * size;
-		}
-		float average = totalModuleSize / static_cast<float>(startSize);
-		float stdDev = std::sqrt(square / startSize - average * average);
+	std::sort(possibleCenters.begin(), possibleCenters.end(), EstimatedModuleComparator());
 
-		std::sort(possibleCenters.begin(), possibleCenters.end(), FurthestFromAverageComparator{ average });
+	double distortion = std::numeric_limits<double>::max();
+	std::array<double, 3> squares;
 
-		float limit = std::max(0.2f * average, stdDev);
+	for (int i = 0; i < nbPossibleCenters - 2; i++) {
+		auto& fpi = possibleCenters[i];
+		float minModuleSize = fpi.estimatedModuleSize();
 
-		for (int i = 0; i < int(possibleCenters.size()) && possibleCenters.size() > 3; i++) {
-			const FinderPattern& pattern = possibleCenters[i];
-			if (std::abs(pattern.estimatedModuleSize() - average) > limit) {
-				possibleCenters.erase(possibleCenters.begin() + i);
-				i--;
+		for (int j = i + 1; j < nbPossibleCenters - 1; j++) {
+			auto& fpj = possibleCenters[j];
+			double squares0 = ResultPoint::SquaredDistance(fpi, fpj);
+
+			for (int k = j + 1; k < nbPossibleCenters; k++) {
+				auto& fpk = possibleCenters[k];
+				float maxModuleSize = fpk.estimatedModuleSize();
+				if (maxModuleSize > minModuleSize * 1.4f) {
+					// module size is not similar
+					continue;
+				}
+
+				squares[0] = squares0;
+				squares[1] = ResultPoint::SquaredDistance(fpj, fpk);
+				squares[2] = ResultPoint::SquaredDistance(fpi, fpk);
+				std::sort(squares.begin(), squares.end());
+
+				// a^2 + b^2 = c^2 (Pythagorean theorem), and a = b (isosceles triangle).
+				// Since any right triangle satisfies the formula c^2 - b^2 - a^2 = 0,
+				// we need to check both two equal sides separately.
+				// The value of |c^2 - 2 * b^2| + |c^2 - 2 * a^2| increases as dissimilarity
+				// from isosceles right triangle.
+				double d = std::abs(squares[2] - 2 * squares[1]) + std::abs(squares[2] - 2 * squares[0]);
+				if (d < distortion) {
+					distortion = d;
+					bestPatterns.resize(3);
+					bestPatterns[0] = fpi;
+					bestPatterns[1] = fpj;
+					bestPatterns[2] = fpk;
+				}
 			}
 		}
 	}
 
-	if (possibleCenters.size() > 3) {
-		// Throw away all but those first size candidate points we found.
-
-		float totalModuleSize = 0.0f;
-		for (const FinderPattern& possibleCenter : possibleCenters) {
-			totalModuleSize += possibleCenter.estimatedModuleSize();
-		}
-
-		float average = totalModuleSize / static_cast<float>(possibleCenters.size());
-
-		std::sort(possibleCenters.begin(), possibleCenters.end(), CenterComparator{ average });
-
-		possibleCenters.resize(3);
-	}
-	return true;
+	return bestPatterns;
 }
 
 /**
@@ -584,12 +579,13 @@ FinderPatternInfo FinderPatternFinder::Find(const BitMatrix& image, bool tryHard
 		}
 	}
 
-	if (!SelectBestPatterns(possibleCenters))
+	auto bestPatterns = SelectBestPatterns(possibleCenters);
+	if (bestPatterns.empty())
 		return {};
 
-	OrderBestPatterns(possibleCenters);
+	OrderBestPatterns(bestPatterns);
 
-	return {possibleCenters[0], possibleCenters[1], possibleCenters[2]};
+	return { bestPatterns[0], bestPatterns[1], bestPatterns[2]};
 }
 
 
