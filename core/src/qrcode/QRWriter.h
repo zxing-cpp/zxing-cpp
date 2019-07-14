@@ -63,6 +63,7 @@ public:
 
 	Writer& setMaskPattern(int pattern) {
 		_maskPattern = pattern;
+		return *this;
 	}
 
 	BitMatrix encode(const std::wstring& contents, int width, int height) const;
