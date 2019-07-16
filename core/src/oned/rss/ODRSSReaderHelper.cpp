@@ -16,34 +16,12 @@
 */
 
 #include "oned/rss/ODRSSReaderHelper.h"
-#include "ZXContainerAlgorithms.h"
 
 #include <limits>
 
 namespace ZXing {
 namespace OneD {
 namespace RSS {
-
-const float ReaderHelper::MAX_AVG_VARIANCE = 0.2f;
-const float ReaderHelper::MAX_INDIVIDUAL_VARIANCE = 0.45f;
-
-const float ReaderHelper::MIN_FINDER_PATTERN_RATIO = 9.5f / 12.0f;
-const float ReaderHelper::MAX_FINDER_PATTERN_RATIO = 12.5f / 14.0f;
-
-
-bool
-ReaderHelper::IsFinderPattern(const int* counters, size_t length)
-{
-	int firstTwoSum = counters[0] + counters[1];
-	int sum = firstTwoSum + counters[2] + counters[3];
-	float ratio = (float)firstTwoSum / (float)sum;
-	if (ratio >= MIN_FINDER_PATTERN_RATIO && ratio <= MAX_FINDER_PATTERN_RATIO) {
-		// passes ratio test in spec, but see if the counts are unreasonable
-		auto minmax = std::minmax_element(counters, counters + length);
-		return *minmax.second < 10 * *minmax.first;
-	}
-	return false;
-}
 
 static int combins(int n, int r)
 {

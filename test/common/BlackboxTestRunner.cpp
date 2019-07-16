@@ -490,8 +490,8 @@ BlackboxTestRunner::run(const std::set<std::string>& includedTests)
 		});
 
 		runTests("blackbox/rss14-2", "RSS_14", 24, {
-			{ 4, 8, 1, 2, 0   },
-			{ 3, 8, 0, 2, 180 },
+			{ 7, 10, 1, 2, 0   },
+			{ 8, 10, 0, 2, 180 },
 		});
 
 		runTests("blackbox/rssexpanded-1", "RSS_EXPANDED", 32, {

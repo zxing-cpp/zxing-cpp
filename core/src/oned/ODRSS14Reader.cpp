@@ -40,7 +40,7 @@ static const int INSIDE_GSUM[] = { 0,336,1036,1516 };
 static const int OUTSIDE_ODD_WIDEST[] = { 8,6,4,3,1 };
 static const int INSIDE_ODD_WIDEST[] = { 2,4,6,8 };
 
-using FinderCounters = std::array<int, 4>;
+using namespace RSS;
 
 static const std::array<FinderCounters, 9> FINDER_PATTERNS = {
 	3,8,2,1,
@@ -73,10 +73,12 @@ FindFinderPattern(const BitArray& row, bool rightFinderPattern, FinderCounters& 
 {
 	return RowReader::FindPattern(
 	    // Will encounter white first when searching for right finder pattern
-	    row.getNextSetTo(row.begin(), !rightFinderPattern), row.end(), counters,
-	    [](BitArray::Iterator, BitArray::Iterator, const FinderCounters& counters) {
-		    return RSS::ReaderHelper::IsFinderPattern(counters);
-	    });
+		// The finder pattern is inside the code, i.e. there must be at least 18 pixels on both sides
+		row.getNextSetTo(row.iterAt(18), !rightFinderPattern), row.end(), counters,
+		[&](BitArray::Iterator b, BitArray::Iterator e, const FinderCounters& counters) {
+			// The finder pattern must have more pixels left and right that it is wide.
+			return ReaderHelper::IsFinderPattern(counters) && (b - row.begin()) > (e - b) && (row.end() - e) > (e-b);
+		});
 }
 
 static RSS::FinderPattern
@@ -361,7 +363,7 @@ AddOrTally(std::list<RSS::Pair>& possiblePairs, const RSS::Pair& pair)
 		return;
 	}
 	for (RSS::Pair& other : possiblePairs) {
-		if (other.value() == pair.value()) {
+		if (other == pair) {
 			other.incrementCount();
 			return;
 		}
@@ -439,6 +441,10 @@ RSS14Reader::decodeRow(int rowNumber, const BitArray& row_, std::unique_ptr<Deco
 	AddOrTally(prevState->possibleRightPairs, DecodePair(row, true, rowNumber));
 //	row.reverse();
 
+	// To be able to detect "stacked" RSS codes (split over multiple lines)
+	// we need to store the parts we found and try all possible left/right
+	// combinations. To prevent lots of false positives, we require each
+	// pair to have been seen in at least two lines.
 	for (const auto& left : prevState->possibleLeftPairs) {
 		if (left.count() > 1) {
 			for (const auto& right : prevState->possibleRightPairs) {

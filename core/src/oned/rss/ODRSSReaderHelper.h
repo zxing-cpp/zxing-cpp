@@ -19,18 +19,21 @@
 #include "oned/ODRowReader.h"
 
 #include <array>
+#include <algorithm>
 
 namespace ZXing {
 namespace OneD {
 namespace RSS {
 
+using FinderCounters = std::array<int, 4>;
+
 class ReaderHelper
 {
-	static const float MAX_AVG_VARIANCE;
-	static const float MAX_INDIVIDUAL_VARIANCE;
+	static constexpr float MAX_AVG_VARIANCE = 0.2f;
+	static constexpr float MAX_INDIVIDUAL_VARIANCE = 0.45f;
 
-	static const float MIN_FINDER_PATTERN_RATIO;
-	static const float MAX_FINDER_PATTERN_RATIO;
+	static constexpr float MIN_FINDER_PATTERN_RATIO = 9.5f / 12.0f;
+	static constexpr float MAX_FINDER_PATTERN_RATIO = 12.5f / 14.0f;
 
 public:
 	template <typename C, typename P>
@@ -44,15 +47,33 @@ public:
 		return -1;
 	}
 
-	template <typename C>
-	static bool IsFinderPattern(const C& counters) {
-		return IsFinderPattern(counters.data(), counters.size());
+	static bool IsFinderPatternExtended( const FinderCounters& counters, bool reversed )
+	{
+		int sumA = counters[0] + counters[1];
+		int sumB = counters[2] + counters[3];
+		float sum = sumA + sumB;
+		float ratio = (reversed ? sumB : sumA) / sum;
+		if (ratio >= MIN_FINDER_PATTERN_RATIO && ratio <= MAX_FINDER_PATTERN_RATIO) {
+			// passes ratio test in spec, but see if the counts are unreasonable
+			auto minmax = std::minmax_element(counters.begin(), counters.end());
+			return *minmax.second < 10 * *minmax.first;
+		}
+		return false;
+	}
+
+	static bool IsFinderPattern( const FinderCounters& counters )
+	{
+		// Rhe RSS14 finder pattern is 5 counts long, the FINDER_PATTERNS array contains only the first 4
+		// of those. The 5th is '1' (same as the forth). The 4 counters passed here are 2nd to 5th.
+		// The first 2 of those 4 is 10 to 12 times as wide as both of the last two.
+		int a = counters[0] + counters[1];
+		int b = counters[2];
+		int c = counters[3];
+
+		return a > 8 * b && a < 14 * b && a > 8 * c && a < 14 * c;
 	}
 
 	static int GetRSSvalue(const std::array<int, 4>& widths, int maxWidth, bool noNarrow);
-
-private:
-	static bool IsFinderPattern(const int* counters, size_t length);
 };
 
 } // RSS

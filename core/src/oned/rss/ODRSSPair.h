@@ -30,7 +30,7 @@ class Pair : public DataCharacter
 
 public:
 	Pair() {}
-	Pair(int value, int checksumPortion, const FinderPattern& finderPattern) : DataCharacter(value, checksumPortion), _finderPattern(finderPattern) {}
+	Pair(int value, int checksumPortion, const FinderPattern& finderPattern) : DataCharacter(value, checksumPortion), _finderPattern(finderPattern), _count(1) {}
 
 	const FinderPattern& finderPattern() const {
 		return _finderPattern;
@@ -42,6 +42,10 @@ public:
 
 	void incrementCount() {
 		_count++;
+	}
+
+	bool operator==(const Pair& other) const {
+		return DataCharacter::operator==(other) && other.finderPattern().value() == finderPattern().value();
 	}
 };
 

@@ -102,9 +102,8 @@ struct RSSExpandedDecodingState : public RowReader::DecodingState
 
 using namespace RSS;
 
-
 static BitArray::Range
-FindNextPair(const BitArray& row, const std::list<ExpandedPair>& previousPairs, int forcedOffset, bool startFromEven, std::array<int, 4>& counters)
+FindNextPair(const BitArray& row, const std::list<ExpandedPair>& previousPairs, int forcedOffset, bool startFromEven, FinderCounters& counters)
 {
 	int rowOffset;
 	if (forcedOffset >= 0) {
@@ -122,23 +121,20 @@ FindNextPair(const BitArray& row, const std::list<ExpandedPair>& previousPairs, 
 	}
 
 	return RowReader::FindPattern(
-	    // find
-	    row.getNextSet(row.iterAt(rowOffset)), row.end(), counters,
-	    [searchingEvenPair](BitArray::Iterator, BitArray::Iterator, std::array<int, 4>& counters) {
-		    if (searchingEvenPair) {
-			    std::reverse(counters.begin(), counters.end());
-		    }
-		    if (RSS::ReaderHelper::IsFinderPattern(counters))
+		// find
+		row.getNextSet(row.iterAt(rowOffset)), row.end(), counters,
+		[searchingEvenPair](BitArray::Iterator, BitArray::Iterator, FinderCounters& counters) {
+			if (ReaderHelper::IsFinderPatternExtended(counters, searchingEvenPair)) {
+				if (searchingEvenPair)
+					std::reverse(counters.begin(), counters.end());
 				return true;
-		    if (searchingEvenPair) {
-			    std::reverse(counters.begin(), counters.end());
-		    }
-		    return false;
-	    });
+			}
+			return false;
+		});
 }
 
 static FinderPattern
-ParseFoundFinderPattern(const BitArray& row, int rowNumber, bool oddPattern, BitArray::Range range, std::array<int, 4>& counters) {
+ParseFoundFinderPattern(const BitArray& row, int rowNumber, bool oddPattern, BitArray::Range range, FinderCounters& counters) {
 	// Actually we found elements 2-5.
 	int firstCounter;
 
@@ -390,7 +386,7 @@ RetrieveNextPair(const BitArray& row, const std::list<ExpandedPair>& previousPai
 	bool keepFinding = true;
 	int forcedOffset = -1;
 	do {
-		std::array<int, 4> counters = {};
+		FinderCounters counters = {};
 		auto range = FindNextPair(row, previousPairs, forcedOffset, startFromEven, counters);
 		if (!range)
 			return false;
