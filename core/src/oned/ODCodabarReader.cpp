@@ -74,19 +74,13 @@ InitCounters(const BitArray& row, std::vector<int>& counters)
 	if (i == row.end())
 		return false;
 
-	bool currentValue = *i;
-	int count = 0;
-	for (; i != row.end(); ++i) {
-		if (*i == currentValue) {
-			++count;
-		}
-		else {
-			counters.push_back(count);
-			count = 1;
-			currentValue = !currentValue;
-		}
+	auto li = i;
+	while ((i = row.getNextSetTo(i, !*i)) != row.end()) {
+		counters.push_back(i - li);
+		li = i;
 	}
-	counters.push_back(count);
+	counters.push_back(i - li);
+
 	return true;
 }
 

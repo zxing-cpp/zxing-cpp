@@ -77,27 +77,24 @@ public:
 	static Range<Iterator> FindPattern(Iterator begin, Iterator end, Container& counters, Predicate match) {
 		if (begin == end)
 			return {end, end};
-		bool lastValue = *begin;
+
+		Iterator li = begin, i = begin;
 		auto currentCounter = counters.begin();
-		*currentCounter = 1;
-		for (auto i = std::next(begin); i != end; ++i) {
-			if (*i == lastValue) {
-				++*currentCounter;
-			}
-			else {
-				if (++currentCounter == counters.end()) {
-					if (match(begin, i, counters)) {
-						return {begin, i};
-					}
-					std::advance(begin, counters[0] + counters[1]);
-					std::copy(counters.begin() + 2, counters.end(), counters.begin());
-					std::fill_n(counters.rbegin(), 2, 0);
-					std::advance(currentCounter, -2);
+		while ((i = BitArray::getNextSetTo(i, end, !*i)) != end) {
+			*currentCounter = i - li;
+			if (++currentCounter == counters.end()) {
+				if (match(begin, i, counters)) {
+					return {begin, i};
 				}
-				*currentCounter = 1;
-				lastValue = !lastValue;
+				std::advance(begin, counters[0] + counters[1]);
+				std::copy(counters.begin() + 2, counters.end(), counters.begin());
+				std::advance(currentCounter, -2);
 			}
+			li = i;
 		}
+		// if we ran into the end, still set the currentCounter. see RecordPattern.
+		*currentCounter = i - li;
+
 		return {end, end};
 	}
 
