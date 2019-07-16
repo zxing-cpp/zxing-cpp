@@ -17,6 +17,7 @@
 * limitations under the License.
 */
 
+#include "ZXConfig.h"
 #include "BitHacks.h"
 
 #include <cstdint>
@@ -40,8 +41,12 @@ struct Range {
 */
 class BitArray
 {
+#ifdef ZX_FAST_BIT_STORAGE
+	std::vector<uint8_t> _bits;
+#else
 	int _size = 0;
 	std::vector<uint32_t> _bits;
+#endif
 
 	friend class BitMatrix;
 
@@ -52,6 +57,9 @@ class BitArray
 
 public:
 
+#ifdef ZX_FAST_BIT_STORAGE
+	using Iterator = std::vector<uint8_t>::const_iterator;
+#else
 	class Iterator : public std::iterator<std::bidirectional_iterator_tag, bool, int, bool*, bool>
 	{
 	public:
@@ -102,18 +110,30 @@ public:
 		uint32_t _mask;
 		friend class BitArray;
 	};
+#endif
 
 	using ReverseIterator = std::reverse_iterator<Iterator>;
 	using Range = ZXing::Range<Iterator>;
 
 	BitArray() {}
 
-	explicit BitArray(int size) : _size(size), _bits((size + 31) / 32, 0) {}
+	explicit BitArray(int size) :
+#ifdef ZX_FAST_BIT_STORAGE
+								  _bits(size, 0) {}
+#else
+								  _size(size), _bits((size + 31) / 32, 0) {}
+#endif
 
-	BitArray(BitArray&& other) noexcept : _size(other._size), _bits(std::move(other._bits)) {}
+	BitArray(BitArray&& other) noexcept :
+#ifndef ZX_FAST_BIT_STORAGE
+										  _size(other._size),
+#endif
+										  _bits(std::move(other._bits)) {}
 
 	BitArray& operator=(BitArray&& other) noexcept {
+#ifndef ZX_FAST_BIT_STORAGE
 		_size = other._size;
+#endif
 		_bits = std::move(other._bits);
 		return *this;
 	}
@@ -122,12 +142,16 @@ public:
 		return *this;
 	}
 
-	int size() const {
+	int size() const noexcept {
+#ifdef ZX_FAST_BIT_STORAGE
+		return _bits.size();
+#else
 		return _size;
+#endif
 	}
 	
-	int sizeInBytes() const {
-		return (_size + 7) / 8;
+	int sizeInBytes() const noexcept {
+		return (size() + 7) / 8;
 	}
 
 	/**
@@ -135,19 +159,32 @@ public:
 	* @return true iff bit i is set
 	*/
 	bool get(int i) const {
+#ifdef ZX_FAST_BIT_STORAGE
+		return _bits.at(i) != 0;
+#else
 		return (_bits.at(i >> 5) & (1 << (i & 0x1F))) != 0;
+#endif
 	}
 
 	// If you know exactly how may bits you are going to iterate
 	// and that you access bit in sequence, iterator is faster than get().
 	// However, be extremly careful since there is no check whatsoever.
 	// (Performance is the reason for the iterator to exist int the first place!)
-	Iterator iterAt(int i) const noexcept { return {_bits.cbegin() + (i >> 5), 1U << (i & 0x1F)}; }
+#ifdef ZX_FAST_BIT_STORAGE
+	Iterator iterAt(int i) const noexcept { return {_bits.cbegin() + i}; }
+	Iterator begin() const noexcept { return _bits.cbegin(); }
+	Iterator end() const noexcept { return _bits.cend(); }
 
+	template <typename ITER>
+	static ITER getNextSetTo(ITER begin, ITER end, bool v) noexcept {
+		while( begin != end && *begin != v )
+			++begin;
+		return begin;
+	}
+#else
+	Iterator iterAt(int i) const noexcept { return {_bits.cbegin() + (i >> 5), 1U << (i & 0x1F)}; }
 	Iterator begin() const noexcept { return iterAt(0); }
 	Iterator end() const noexcept { return iterAt(_size); }
-	ReverseIterator rbegin() const noexcept { return ReverseIterator(end()); }
-	ReverseIterator rend() const noexcept { return ReverseIterator(begin()); }
 
 	static Iterator getNextSetTo(Iterator begin, Iterator end, bool v) {
 		auto i = begin;
@@ -172,6 +209,8 @@ public:
 			++begin;
 		return begin;
 	}
+#endif
+
 	Iterator getNextSetTo(Iterator i, bool v) const {
 		return getNextSetTo(i, end(), v);
 	}
@@ -179,15 +218,23 @@ public:
 	Iterator getNextSet(Iterator i) const { return getNextSetTo(i, true); }
 	Iterator getNextUnset(Iterator i) const { return getNextSetTo(i, false); }
 
+	ReverseIterator rbegin() const noexcept { return ReverseIterator(end()); }
+	ReverseIterator rend() const noexcept { return ReverseIterator(begin()); }
+
 	/**
 	* Sets bit i.
 	*
 	* @param i bit to set
 	*/
 	void set(int i) {
+#ifdef ZX_FAST_BIT_STORAGE
+		_bits.at(i) = 1;
+#else
 		_bits.at(i >> 5) |= 1 << (i & 0x1F);
+#endif
 	}
 
+#if 0 // deprecated / unused code
 	/**
 	* Flips bit i.
 	*
@@ -222,9 +269,6 @@ public:
 		return getNextUnset(iterAt(from)) - begin();
 	}
 
-
-	void getSubArray(int offset, int length, BitArray& result) const;
-
 	/**
 	* Sets a range of bits.
 	*
@@ -232,6 +276,10 @@ public:
 	* @param end end of range, exclusive
 	*/
 	void setRange(int start, int end);
+#endif
+
+	// TODO: this method is used in BitWrapperBinerizer but never linked?!?
+	void getSubArray(int offset, int length, BitArray& result) const;
 
 	/**
 	* Clears all bits (sets to false).
@@ -249,7 +297,13 @@ public:
 	* @return true iff all bits are set or not set in range, according to value argument
 	* @throws IllegalArgumentException if end is less than or equal to start
 	*/
+#ifdef ZX_FAST_BIT_STORAGE
+	bool isRange(int start, int end, bool value) const {
+		return std::all_of(&_bits[start], &_bits[end], [value](uint8_t v) {return v == value;});
+	}
+#else
 	bool isRange(int start, int end, bool value) const;
+#endif
 
 	// Little helper method to make common isRange use case more readable.
 	// Pass positive zone size to look for quite zone after i and negative for zone in front of i.
@@ -279,11 +333,40 @@ public:
 	* @param value {@code int} containing bits to append
 	* @param numBits bits from value to append
 	*/
+#ifdef ZX_FAST_BIT_STORAGE
+	void appendBits(int value, int numBits) {
+		for (; numBits; --numBits)
+			_bits.push_back((value >> (numBits-1)) & 1);
+	}
+
+	void appendBit(bool bit) {
+		_bits.push_back(bit);
+	}
+
+	void appendBitArray(const BitArray& other) {
+		_bits.insert(_bits.end(), other.begin(), other.end());
+	}
+
+	/**
+	* Reverses all bits in the array.
+	*/
+	void reverse() {
+		std::reverse(_bits.begin(), _bits.end());
+	}
+#else
 	void appendBits(int value, int numBits);
 
 	void appendBit(bool bit);
 
 	void appendBitArray(const BitArray& other);
+
+	/**
+	* Reverses all bits in the array.
+	*/
+	void reverse() {
+		BitHacks::Reverse(_bits, _bits.size() * 32 - _size);
+	}
+#endif
 
 	void bitwiseXOR(const BitArray& other);
 
@@ -302,15 +385,15 @@ public:
 	*/
 	//const std::vector<uint32_t>& bitArray() const { return _bits; }
 
-	/**
-	* Reverses all bits in the array.
-	*/
-	void reverse();
-
 	friend bool operator==(const BitArray& a, const BitArray& b)
 	{
-		return a._size == b._size && a._bits == b._bits;
+		return
+#ifndef ZX_FAST_BIT_STORAGE
+			a._size == b._size &&
+#endif
+			a._bits == b._bits;
 	}
 };
+
 
 } // ZXing

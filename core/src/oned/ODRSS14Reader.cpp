@@ -108,8 +108,8 @@ ParseFoundFinderPattern(const BitArray& row, int rowNumber, bool right, BitArray
 	}
 
 	return {value,
-			range.begin - row.begin(),
-			range.end - row.begin(),
+			static_cast<int>(range.begin - row.begin()),
+			static_cast<int>(range.end - row.begin()),
 			{ResultPoint(start, rowNumber), ResultPoint(end, rowNumber)}};
 }
 
@@ -368,6 +368,7 @@ AddOrTally(std::list<RSS::Pair>& possiblePairs, const RSS::Pair& pair)
 			return;
 		}
 	}
+//	printf("found new pair\n"); fflush(stdout);
 	possiblePairs.push_back(pair);
 }
 

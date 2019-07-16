@@ -30,3 +30,10 @@
 // Note: The Apple clang compiler until XCode 8 does not support c++11's thread_local.
 // The alternative 'static' makes the code thread unsafe.
 #define ZX_THREAD_LOCAL // 'thread_local' or 'static'
+
+// The two basic data structures for storing bits (BitArray and BitMatrix) can be operated by storing one bit
+// of information either in one bit or one byte. Storing it in one byte is considerably faster, while obviously
+// using more memory. The effect of the memory usage while running the TestRunner is virtually invisible.
+// On embedded/mobile systems this might be of importance. Note: the BitMatrix in 'fast' mode still requires
+// only 1/3 of the same image in RGB.
+#define ZX_FAST_BIT_STORAGE // undef to disable

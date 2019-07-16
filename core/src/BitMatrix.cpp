@@ -86,7 +86,11 @@ BitMatrix::setRegion(int left, int top, int width, int height)
 	for (int y = top; y < bottom; y++) {
 		int offset = y * _rowSize;
 		for (int x = left; x < right; x++) {
+#ifdef ZX_FAST_BIT_STORAGE
+			_bits[offset + x] = 1;
+#else
 			_bits[offset + (x / 32)] |= 1 << (x & 0x1f);
+#endif
 		}
 	}
 }
@@ -108,7 +112,11 @@ BitMatrix::rotate90()
 void
 BitMatrix::rotate180()
 {
+#ifdef ZX_FAST_BIT_STORAGE
+	std::reverse(_bits.begin(), _bits.end());
+#else
 	BitHacks::Reverse(_bits, _rowSize * 32 - _width);
+#endif
 }
 
 void

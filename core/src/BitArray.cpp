@@ -23,6 +23,9 @@
 
 namespace ZXing {
 
+#ifndef ZX_FAST_BIT_STORAGE
+
+#if 0 // unused code
 void
 BitArray::setRange(int start, int end)
 {
@@ -43,6 +46,7 @@ BitArray::setRange(int start, int end)
 		_bits[i] |= mask;
 	}
 }
+#endif
 
 bool
 BitArray::isRange(int start, int end, bool value) const
@@ -121,40 +125,6 @@ BitArray::appendBitArray(const BitArray& other)
 }
 
 void
-BitArray::bitwiseXOR(const BitArray& other)
-{
-	if (_size != other._size) {
-		throw std::invalid_argument("BitArray::xor(): Sizes don't match");
-	}
-	for (size_t i = 0; i < _bits.size(); i++) {
-		// The last int could be incomplete (i.e. not have 32 bits in
-		// it) but there is no problem since 0 XOR 0 == 0.
-		_bits[i] ^= other._bits[i];
-	}
-}
-
-void
-BitArray::toBytes(int bitOffset, uint8_t* output, int numBytes) const
-{
-	for (int i = 0; i < numBytes; i++) {
-		int theByte = 0;
-		for (int j = 0; j < 8; j++) {
-			if (get(bitOffset)) {
-				theByte |= 1 << (7 - j);
-			}
-			bitOffset++;
-		}
-		output[i] = (uint8_t)theByte;
-	}
-}
-
-void
-BitArray::reverse()
-{
-	BitHacks::Reverse(_bits, _bits.size() * 32 - _size);
-}
-
-void
 BitArray::getSubArray(int offset, int length, BitArray& result) const
 {
 	if (offset < 0 || offset + length > _size) {
@@ -182,6 +152,35 @@ BitArray::getSubArray(int offset, int length, BitArray& result) const
 			result._bits.resize((length + 31) / 32);
 		}
 		result._bits.back() &= (0xffffffff >> (result._bits.size() * 32 - result._size));
+	}
+}
+#endif
+
+void
+BitArray::bitwiseXOR(const BitArray& other)
+{
+	if (size() != other.size()) {
+		throw std::invalid_argument("BitArray::xor(): Sizes don't match");
+	}
+	for (size_t i = 0; i < _bits.size(); i++) {
+		// The last int could be incomplete (i.e. not have 32 bits in
+		// it) but there is no problem since 0 XOR 0 == 0.
+		_bits[i] ^= other._bits[i];
+	}
+}
+
+void
+BitArray::toBytes(int bitOffset, uint8_t* output, int numBytes) const
+{
+	for (int i = 0; i < numBytes; i++) {
+		int theByte = 0;
+		for (int j = 0; j < 8; j++) {
+			if (get(bitOffset)) {
+				theByte |= 1 << (7 - j);
+			}
+			bitOffset++;
+		}
+		output[i] = (uint8_t)theByte;
 	}
 }
 

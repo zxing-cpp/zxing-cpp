@@ -19,6 +19,8 @@
 #include <cstdint>
 #include <vector>
 
+#include "ZXConfig.h"
+
 namespace ZXing {
 
 class BitArray;
@@ -44,8 +46,11 @@ class BitMatrix
 	int _width = 0;
 	int _height = 0;
 	int _rowSize = 0;
+#ifdef ZX_FAST_BIT_STORAGE
+	std::vector<uint8_t> _bits;
+#else
 	std::vector<uint32_t> _bits;
-
+#endif
 	// There is nothing wrong to support this but disable to make it explicit since we may copy something very big here.
 	// Use copy() below.
 	BitMatrix(const BitMatrix&) = default;
@@ -53,7 +58,11 @@ class BitMatrix
 
 public:
 	BitMatrix() {}
+#ifdef ZX_FAST_BIT_STORAGE
+	BitMatrix(int width, int height) : _width(width), _height(height), _rowSize(width), _bits(width * height, 0) {}
+#else
 	BitMatrix(int width, int height) : _width(width), _height(height), _rowSize((width + 31) / 32), _bits(((width + 31) / 32) * _height, 0) {}
+#endif
 
 	explicit BitMatrix(int dimension) : BitMatrix(dimension, dimension) {} // Construct a square matrix.
 
@@ -81,7 +90,11 @@ public:
 	* @return value of given bit in matrix
 	*/
 	bool get(int x, int y) const {
+#ifdef ZX_FAST_BIT_STORAGE
+		return _bits.at(y * _width + x) != 0;
+#else
 		return ((_bits.at(y * _rowSize + (x / 32)) >> (x & 0x1f)) & 1) != 0;
+#endif
 	}
 
 	/**
@@ -91,11 +104,19 @@ public:
 	* @param y The vertical component (i.e. which row)
 	*/
 	void set(int x, int y) {
+#ifdef ZX_FAST_BIT_STORAGE
+		_bits.at(y * _width + x) = 1;
+#else
 		_bits.at(y * _rowSize + (x / 32)) |= 1 << (x & 0x1f);
+#endif
 	}
 
 	void unset(int x, int y) {
+#ifdef ZX_FAST_BIT_STORAGE
+		_bits.at(y * _width + x) = 0;
+#else
 		_bits.at(y * _rowSize + (x / 32)) &= ~(1 << (x & 0x1f));
+#endif
 	}
 
 	/**
@@ -105,7 +126,12 @@ public:
 	* @param y The vertical component (i.e. which row)
 	*/
 	void flip(int x, int y) {
+#ifdef ZX_FAST_BIT_STORAGE
+		auto& v =_bits.at(y * _width + x);
+		v = !v;
+#else
 		_bits.at(y * _rowSize + (x / 32)) ^= 1 << (x & 0x1f);
+#endif
 	}
 
 	void flipAll() {
