@@ -43,7 +43,7 @@ QRCodeStructuredAppendReader::readMultiple(const std::vector<std::wstring>& file
 		auto image = _imageLoader->load(imagePath);
 		ZXing::HybridBinarizer binarizer(image, false);
 		auto r = reader.decode(*binarizer.rotated(rotation));
-		if (r.metadata().getInt(ResultMetadata::STRUCTURED_APPEND_CODE_COUNT, 0) != filenames.size()) {
+		if (r.metadata().getInt(ResultMetadata::STRUCTURED_APPEND_CODE_COUNT, 0) != static_cast<int>(filenames.size())) {
 			return TestReader::ReadResult();
 		}
 		auto parity = r.metadata().getInt(ResultMetadata::STRUCTURED_APPEND_PARITY, -1);
