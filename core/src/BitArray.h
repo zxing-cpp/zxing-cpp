@@ -167,6 +167,11 @@ public:
 		return i;
 	}
 
+	static ReverseIterator getNextSetTo(ReverseIterator begin, ReverseIterator end, bool v) {
+		while( begin != end && *begin != v )
+			++begin;
+		return begin;
+	}
 	Iterator getNextSetTo(Iterator i, bool v) const {
 		return getNextSetTo(i, end(), v);
 	}
