@@ -90,13 +90,11 @@ UPCEANReader::FindStartGuardPattern(const BitArray& row)
 	return RowReader::FindPattern(
 		row.getNextSet(row.begin()), row.end(), counters,
 		[&row, &pattern](BitArray::Iterator begin, BitArray::Iterator end, const Counters& cntrs) {
-			if (!(RowReader::PatternMatchVariance(cntrs, pattern, MAX_INDIVIDUAL_VARIANCE) < MAX_AVG_VARIANCE))
-				return false;
-
 			// Make sure there is a quiet zone at least as big as the start pattern before the barcode.
 			// If this check would run off the left edge of the image, do not accept this barcode,
 			// as it is very likely to be a false positive.
-			return row.hasQuiteZone(begin, -(end - begin), false);
+			return row.hasQuiteZone(begin, -(end - begin), false) &&
+				RowReader::PatternMatchVariance(cntrs, pattern, MAX_INDIVIDUAL_VARIANCE) < MAX_AVG_VARIANCE;
 		});
 #endif
 }

@@ -118,8 +118,8 @@ FindAsteriskPattern(const BitArray& row)
 	    row.getNextSet(row.begin()), row.end(), counters,
 	    [&row](BitArray::Iterator begin, BitArray::Iterator end, const CounterContainer& counters) {
 		    // Look for whitespace before start pattern, >= 50% of width of start pattern
-		    return ToNarrowWidePattern(counters) == ASTERISK_ENCODING &&
-		           row.hasQuiteZone(begin, - (end - begin) / 2);
+		    return row.hasQuiteZone(begin, - (end - begin) / 2) &&
+				ToNarrowWidePattern(counters) == ASTERISK_ENCODING;
 	    });
 }
 

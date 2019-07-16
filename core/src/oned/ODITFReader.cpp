@@ -140,13 +140,11 @@ static BitArray::Range
 FindGuardPattern(const BitArray& row, const Container& pattern)
 {
 	Container counters = {};
+	auto pat_sum = Accumulate(pattern, 0);
 
 	return RowReader::FindPattern(
 	    row.getNextSet(row.begin()), row.end(), counters,
-	    [&row, &pattern](BitArray::Iterator begin, BitArray::Iterator end, const Container& counters) {
-		    if (!(RowReader::PatternMatchVariance(counters, pattern, MAX_INDIVIDUAL_VARIANCE) < MAX_AVG_VARIANCE))
-			    return false;
-
+	    [&row, &pattern, pat_sum](BitArray::Iterator begin, BitArray::Iterator end, const Container& counters) {
 		    // The start & end patterns must be pre/post fixed by a quiet zone. This
 		    // zone must be at least 10 times the width of a narrow line.  Scan back until
 		    // we either get to the start of the barcode or match the necessary number of
@@ -154,9 +152,9 @@ FindGuardPattern(const BitArray& row, const Container& pattern)
 		    // ref: http://www.barcode-1.net/i25code.html
 
 			// Determine the width of a narrow line in pixels. See definition of START and END patterns above
-			int narrowLineWidth = (end - begin) / Accumulate(pattern, 0);
-			int quietZoneWidth = 10 * narrowLineWidth;
-		    return row.hasQuiteZone(begin, -quietZoneWidth);
+			int quietZoneWidth = 10 * (end - begin) / pat_sum; // 10 * narrowLineWidth;
+			return row.hasQuiteZone(begin, -quietZoneWidth) &&
+				RowReader::PatternMatchVariance(counters, pattern, MAX_INDIVIDUAL_VARIANCE) < MAX_AVG_VARIANCE;
 	    });
 }
 

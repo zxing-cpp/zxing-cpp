@@ -62,7 +62,10 @@ FindStartPattern(const BitArray& row, int* startCode)
 	return RowReader::FindPattern(
 	    row.getNextSet(row.begin()), row.end(), counters,
 	    [&row, startCode](BitArray::Iterator begin, BitArray::Iterator end, const Counters& counters) {
-		    float bestVariance = MAX_AVG_VARIANCE;
+			// Look for whitespace before start pattern, >= 50% of width of start pattern
+			if (!row.hasQuiteZone(begin, -(end - begin) / 2))
+				return false;
+			float bestVariance = MAX_AVG_VARIANCE;
 		    for (int code = CODE_START_A; code <= CODE_START_C; code++) {
 			    float variance =
 			        RowReader::PatternMatchVariance(counters, Code128::CODE_PATTERNS[code], MAX_INDIVIDUAL_VARIANCE);
@@ -71,8 +74,7 @@ FindStartPattern(const BitArray& row, int* startCode)
 				    *startCode = code;
 			    }
 		    }
-		    // Look for whitespace before start pattern, >= 50% of width of start pattern
-		    return bestVariance < MAX_AVG_VARIANCE && row.hasQuiteZone(begin, -(end - begin) / 2);
+		    return bestVariance < MAX_AVG_VARIANCE;
 	    });
 }
 
