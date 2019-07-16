@@ -169,7 +169,7 @@ static void doRunTests(BlackboxTestRunner& runner, const std::vector<TestReader>
 		     << ", got: " << images.size() << " => " << BAD << std::endl;
 
 	for (auto& test : tests) {
-
+		auto startTime = std::chrono::steady_clock::now();
 		printf("%-20s @ %3d, total: %3d", folderName.c_str(), test.rotation, (int)images.size());
 		for (size_t i = 0; i < readers.size(); ++i) {
 			auto tc = test.tc[i];
@@ -188,44 +188,8 @@ static void doRunTests(BlackboxTestRunner& runner, const std::vector<TestReader>
 			printPositiveTestStats((int)images.size(), tc);
 		}
 
-		std::cout << std::endl;
-	}
-}
-
-static void doRunFalsePositiveTests(BlackboxTestRunner& runner, const std::vector<TestReader>& readers,
-	const std::string& directory, int totalTests, const std::vector<FalsePositiveTestCase>& tests)
-{
-	auto images = runner.getImagesInDirectory(std::wstring(directory.begin(), directory.end()));
-	auto folderName = getBaseName(directory);
-
-	if (images.size() != (size_t)totalTests) {
-		std::cout << "TEST " << folderName << " => Expected number of tests: " << totalTests
-		    << ", got: " << images.size() << " => " << BAD << std::endl;
-	}
-
-	for (auto& test : tests) {
-		std::set<std::wstring> misReadFiles[2];
-
-		for (const auto& imagePath : images) {
-			for (size_t i = 0; i < readers.size(); ++i) {
-				auto result = readers[i].read(buildPath(runner.pathPrefix(), imagePath), test.rotation);
-				if (!result.format.empty())
-					misReadFiles[i].insert(imagePath);
-			}
-		}
-
-		printf("%-20s @ %3d, total: %3d, allowed: %2d, fast: %2d, slow: %2d", folderName.c_str(), test.rotation,
-			   (int)images.size(), test.maxAllowed, (int)misReadFiles[0].size(), (int)misReadFiles[1].size());
-		if (test.maxAllowed < (int)misReadFiles[0].size() || test.maxAllowed < (int)misReadFiles[1].size()) {
-			for (int i = 0; i < 2; ++i) {
-				if (!misReadFiles[i].empty()) {
-					std::cout << "FAILED: Misread files (" << (i == 0 ? "fast" : "slow") << "):";
-					for (const auto& f : misReadFiles[i])
-						std::cout << ' ' << toUtf8(f);
-					std::cout << "\n";
-				}
-			}
-		}
+		auto duration = std::chrono::steady_clock::now() - startTime;
+		printf(", time: %4d ms", (int)std::chrono::duration_cast<std::chrono::milliseconds>(duration).count());
 		std::cout << std::endl;
 	}
 }
@@ -340,17 +304,6 @@ BlackboxTestRunner::run(const std::set<std::string>& includedTests)
 				TestReader(_imageLoader, createNewHints(hints, true, true))
 			};
 			doRunTests(*this, readers, directory, format, total, tests);
-		}
-	};
-
-	auto runFalsePositiveTests = [&](const std::string& directory, int total,
-	                                 const std::vector<FalsePositiveTestCase>& tests, const DecodeHints& hints = DecodeHints()) {
-		if (hasTest(directory)) {
-			std::vector<TestReader> readers {
-				TestReader(_imageLoader, createNewHints(hints, false, false)),
-				TestReader(_imageLoader, createNewHints(hints, true, true))
-			};
-			doRunFalsePositiveTests(*this, readers, directory, total, tests);
 		}
 	};
 
@@ -631,18 +584,18 @@ BlackboxTestRunner::run(const std::set<std::string>& includedTests)
 			{ 3, 3, 0   },
 		});
 
-		runFalsePositiveTests("blackbox/falsepositives-1", 22, {
-			{ 2, 0   },
-			{ 2, 90  },
-			{ 2, 180 },
-			{ 2, 270 },
+		runTests("blackbox/falsepositives-1", "NONE", 22, {
+			{ 0, 0, 0, 2, 0   },
+			{ 0, 0, 0, 2, 90  },
+			{ 0, 0, 0, 2, 180 },
+			{ 0, 0, 0, 2, 270 },
 		});
 
-		runFalsePositiveTests("blackbox/falsepositives-2", 25, {
-			{ 5, 0   },
-			{ 5, 90  },
-			{ 5, 180 },
-			{ 5, 270 },
+		runTests("blackbox/falsepositives-2", "NONE", 25, {
+			{ 0, 0, 2, 5, 0   },
+			{ 0, 0, 0, 5, 90  },
+			{ 0, 0, 1, 5, 180 },
+			{ 0, 0, 0, 5, 270 },
 		});
 		// clang-format on
 
