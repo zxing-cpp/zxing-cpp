@@ -144,6 +144,8 @@ GlobalHistogramBinarizer::getBlackRow(int y, BitArray& row) const
 			}
 		}
 		else {
+			if (luminances[0] < blackPoint)
+				row.set(0);
 			int left = luminances[0];
 			int center = luminances[1];
 			for (int x = 1; x < width - 1; x++) {
@@ -155,6 +157,8 @@ GlobalHistogramBinarizer::getBlackRow(int y, BitArray& row) const
 				left = center;
 				center = right;
 			}
+			if (luminances[width-1] < blackPoint)
+				row.set(width-1);
 		}
 		return true;
 	}
