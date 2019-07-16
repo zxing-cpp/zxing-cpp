@@ -16,6 +16,7 @@
 */
 
 #include "oned/rss/ODRSSReaderHelper.h"
+#include "ZXContainerAlgorithms.h"
 
 #include <limits>
 
