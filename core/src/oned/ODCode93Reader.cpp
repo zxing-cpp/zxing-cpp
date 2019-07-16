@@ -64,22 +64,15 @@ using CounterContainer = std::array<int, 6>;
 static int
 ToPattern(const CounterContainer& counters)
 {
-	int max = static_cast<int>(counters.size());
 	int sum = Accumulate(counters, 0);
 	int pattern = 0;
-	for (int i = 0; i < max; i++) {
-		int scaled = RoundToNearest(counters[i] * 9.0f / sum);
+	for (size_t i = 0; i < counters.size(); i++) {
+		int scaled = (counters[i] * 9 + (sum/2)) / sum; // non-float version of RoundToNearest(counters[i] * 9.0f / sum);
 		if (scaled < 1 || scaled > 4) {
 			return -1;
 		}
-		if ((i & 0x01) == 0) {
-			for (int j = 0; j < scaled; j++) {
-				pattern = (pattern << 1) | 0x01;
-			}
-		}
-		else {
-			pattern <<= scaled;
-		}
+		pattern <<= scaled;
+		pattern |= ~(0xffffffff << scaled) * (~i & 1);
 	}
 	return pattern;
 }
