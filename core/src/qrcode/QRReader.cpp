@@ -166,22 +166,11 @@ Reader::decode(const BinaryBitmap& image) const
 		points = detectorResult.points();
 	}
 
-	if (!decoderResult.isValid()) {
-		return Result(decoderResult.errorCode());
-	}
-
 	// If the code was mirrored: swap the bottom-left and the top-right points.
-#if !defined(ZX_HAVE_CONFIG)
-	#error "You need to include ZXConfig.h"
-#elif !defined(ZX_NO_RTTI)
-	if (auto extra = std::dynamic_pointer_cast<DecoderMetadata>(decoderResult.extra())) {
-		extra->applyMirroredCorrection(points.begin(), points.end());
+	// No need to 'fix' top-left and alignment pattern.
+	if (points.size() >= 3 && decoderResult.extra() && static_cast<DecoderMetadata*>(decoderResult.extra().get())->isMirrored()) {
+		std::swap(points.at(0), points.at(2));
 	}
-#else
-	if (auto extra = decoderResult.extra()) {
-		static_cast<DecoderMetadata*>(extra.get())->applyMirroredCorrection(points.begin(), points.end());
-	}
-#endif
 
 	return Result(std::move(decoderResult), std::move(points), BarcodeFormat::QR_CODE);
 }

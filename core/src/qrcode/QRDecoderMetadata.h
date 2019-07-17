@@ -45,24 +45,6 @@ public:
 	bool isMirrored() const {
 		return _mirrored;
 	}
-
-	/**
-	* Apply the result points' order correction due to mirroring.
-	*
-	* @param points Array of points to apply mirror correction to.
-	*/
-	template <typename Iter>
-	void applyMirroredCorrection(Iter first, Iter end) const
-	{
-		if (!_mirrored)
-			return;
-		if (std::distance(first, end) < 3)
-			return;
-
-		using std::swap;
-		swap(*first, *(first + 2));
-		// No need to 'fix' top-left and alignment pattern.
-	}
 };
 
 } // QRCode
