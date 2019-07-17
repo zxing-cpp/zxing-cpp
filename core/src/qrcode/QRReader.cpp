@@ -166,6 +166,10 @@ Reader::decode(const BinaryBitmap& image) const
 		points = detectorResult.points();
 	}
 
+	if (points.size() > 2){
+		return Result(std::move(decoderResult), std::move(points), BarcodeFormat::QR_CODE);
+	}
+
 	if (!decoderResult.isValid()) {
 		return Result(decoderResult.errorCode());
 	}

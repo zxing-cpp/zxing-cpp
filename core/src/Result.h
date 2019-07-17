@@ -48,6 +48,10 @@ public:
 		return StatusIsOK(_status);
 	}
 
+	bool isBlurry() const {
+		return resultPoints().size() > 2;
+	}
+
 	DecodeStatus status() const {
 		return _status;
 	}
