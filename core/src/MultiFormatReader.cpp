@@ -34,7 +34,6 @@ namespace ZXing {
 
 MultiFormatReader::MultiFormatReader(const DecodeHints& hints)
 {
-	_readers.reserve(6);
 	bool tryHarder = hints.shouldTryHarder();
 	auto possibleFormats = hints.possibleFormats();
 	if (!possibleFormats.empty()) {
@@ -99,6 +98,11 @@ MultiFormatReader::~MultiFormatReader()
 Result
 MultiFormatReader::read(const BinaryBitmap& image) const
 {
+	// If we have only one reader in our list, just return whatever that decoded.
+	// This preserves information (e.g. ChecksumError) instead of just returning 'NotFound'.
+	if (_readers.size() == 1)
+		return _readers.front()->decode(image);
+
 	for (const auto& reader : _readers) {
 		Result r = reader->decode(image);
   		if (r.isValid())
