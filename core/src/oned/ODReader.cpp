@@ -136,6 +136,11 @@ DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, const BinaryBit
 
 		// While we have the image data in a BitArray, it's fairly cheap to reverse it in place to
 		// handle decoding upside down barcodes.
+		// Note: the RSSExpanded decoder depends on seeing each line from both directions. This
+		// 'surprising' and inconsistent. It also requires the decoderState to be shared between
+		// normal and reversed scans, which makes no sense in general because it would mix partial
+		// detetection data from two codes of the same type next to each other. TODO..
+		// See also https://github.com/nu-book/zxing-cpp/issues/87
 		for (bool upsideDown : {false, true}) {
 			// trying again?
 			if (upsideDown) {
