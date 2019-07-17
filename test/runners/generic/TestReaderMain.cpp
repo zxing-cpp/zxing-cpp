@@ -68,7 +68,7 @@ static bool HasSuffix(const std::string& s, const std::string& suffix)
 class GenericImageLoader : public ImageLoader
 {
 public:
-	virtual std::shared_ptr<LuminanceSource> load(const std::wstring& filename) const override
+	std::shared_ptr<LuminanceSource> load(const std::wstring& filename) const final
 	{
 		std::vector<unsigned char> buffer;
 		unsigned width, height;
@@ -88,7 +88,7 @@ public:
 	{
 	}
 
-	virtual std::vector<std::wstring> getImagesInDirectory(const std::wstring& dirPath) override
+	std::vector<std::wstring> getImagesInDirectory(const std::wstring& dirPath) final
 	{
 		std::vector<std::wstring> result;
 #ifndef ZXING_HAS_FILESYSTEM
