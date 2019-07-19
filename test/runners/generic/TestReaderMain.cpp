@@ -180,6 +180,12 @@ int main(int argc, char** argv)
 				std::cout << result.format << ": " << TextUtfEncoding::ToUtf8(result.text) << "\n";
 			else
 				std::cout << "FAILED\n";
+#ifdef ZXING_HAS_FILESYSTEM
+			if (result && getenv("WRITE_TEXT")) {
+				std::ofstream f(fs::path(argv[i]).replace_extension(".txt"));
+				f << TextUtfEncoding::ToUtf8(result.text);
+			}
+#endif
 		}
 		return 0;
 	}
