@@ -15,6 +15,7 @@
 * limitations under the License.
 */
 
+#include "ByteArray.h"
 #include "BlackboxTestRunner.h"
 #include "ImageLoader.h"
 #include "TestReader.h"
@@ -25,6 +26,7 @@
 #include "lodepng.h"
 
 #include <iostream>
+#include <fstream>
 #include <set>
 
 #if __has_include(<filesystem>)
@@ -60,9 +62,53 @@
 using namespace ZXing;
 using namespace ZXing::Test;
 
-static bool HasSuffix(const std::string& s, const std::string& suffix)
+static std::string getExtension(const std::string& fn)
 {
-	return s.size() >= suffix.size() && std::equal(suffix.rbegin(), suffix.rend(), s.rbegin());
+	auto p = fn.find_last_of(".");
+	return p != std::string::npos ?	fn.substr(p) : "";
+}
+
+static std::shared_ptr<LuminanceSource> readPNM(FILE* f)
+{
+	int w, h;
+	if (fscanf(f, "P5\n%d %d\n255\n", &w, &h) != 2)
+		throw std::runtime_error("Failed to parse PNM file header.");
+	auto ba = std::make_shared<ByteArray>(w * h);
+	auto read = fread(ba->data(), sizeof(uint8_t), w*h, f);
+//	if (read != w * h)
+//		throw std::runtime_error("Failed to read PNM file data: " + std::to_string(read) + " != " + std::to_string(w * h) + " -> " + std::to_string(feof(f)));
+	return std::make_shared<GenericLuminanceSource>(0, 0, w, h, ba, w);
+}
+
+static std::shared_ptr<LuminanceSource> readPNG(const std::string& filename)
+{
+	std::vector<unsigned char> buffer;
+	unsigned width, height;
+	unsigned error = lodepng::decode(buffer, width, height, filename);
+	if (error) {
+		throw std::runtime_error("Failed to read image");
+	}
+	return std::make_shared<GenericLuminanceSource>((int)width, (int)height, buffer.data(), width*4, 4, 0, 1, 2);
+}
+
+static std::shared_ptr<LuminanceSource> readImage(const std::string& filename)
+{
+	if( getExtension(filename) == ".png" )
+		return readPNG(filename);
+
+	std::string cmd = "convert '" + filename + "' -intensity Rec601Luma -colorspace gray +set comment pgm:-";
+	bool pipe = getExtension(filename) != ".pgm";
+	FILE* f = pipe ? popen(cmd.c_str(), "r") : fopen(filename.c_str(), "r");
+	if (!f)
+		throw std::runtime_error("Failed to open pipe '" + cmd + "': " + std::strerror(errno));
+	try {
+		auto res = readPNM(f);
+		pipe ? pclose(f) : fclose(f);
+		return res;
+	} catch (std::runtime_error& e) {
+		pipe ? pclose(f) : fclose(f);
+		throw std::runtime_error("Failed to read pipe '" + cmd + "': " + e.what());
+	}
 }
 
 class GenericImageLoader : public ImageLoader
@@ -70,13 +116,7 @@ class GenericImageLoader : public ImageLoader
 public:
 	std::shared_ptr<LuminanceSource> load(const std::wstring& filename) const final
 	{
-		std::vector<unsigned char> buffer;
-		unsigned width, height;
-		unsigned error = lodepng::decode(buffer, width, height, TextUtfEncoding::ToUtf8(filename));
-		if (error) {
-			throw std::runtime_error("Failed to read image");
-		}
-		return std::make_shared<GenericLuminanceSource>((int)width, (int)height, buffer.data(), width*4, 4, 0, 1, 2);
+		return readImage(TextUtfEncoding::ToUtf8(filename));
 	}
 };
 
@@ -94,7 +134,7 @@ public:
 #ifndef ZXING_HAS_FILESYSTEM
 		if (auto dir = opendir(TextUtfEncoding::ToUtf8(pathPrefix() + L"/" + dirPath).c_str())) {
 			while (auto entry = readdir(dir)) {
-				if (HasSuffix(entry->d_name, ".png")) {
+				if (Contains({".png", ".jpg", ".pgm", ".gif"}, getExtension(entry->d_name))) {
 					result.push_back(dirPath + L"/" + TextUtfEncoding::FromUtf8(entry->d_name));
 				}
 			}
@@ -105,7 +145,8 @@ public:
 		}
 #else
 		for (const auto& entry : fs::directory_iterator(fs::path(pathPrefix()) / dirPath))
-			if (fs::is_regular_file(entry.status()) && entry.path().extension() == ".png")
+			if (fs::is_regular_file(entry.status()) &&
+			        Contains({".png", ".jpg", ".pgm", ".gif"}, entry.path().extension()))
 				result.push_back(dirPath + L"/" + entry.path().filename().generic_wstring());
 #endif
 		return result;
@@ -123,7 +164,7 @@ int main(int argc, char** argv)
 
 	GenericBlackboxTestRunner runner(TextUtfEncoding::FromUtf8(pathPrefix));
 
-	if (HasSuffix(pathPrefix, ".png")) {
+	if (Contains({".png", ".jpg", ".pgm", ".gif"}, getExtension(pathPrefix))) {
 #if 0
 		TestReader reader = runner.createReader(false, false, "QR_CODE");
 #else
