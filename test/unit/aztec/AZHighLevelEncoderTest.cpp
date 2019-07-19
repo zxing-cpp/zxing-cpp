@@ -140,7 +140,7 @@ TEST(AZHighLevelEncoderTest, HighLevelEncodeBinary)
 
 	sb.clear();
 	for (int i = 0; i < 32; i++) {
-		sb.push_back('\xA7'); // ง forces binary encoding
+		sb.push_back('\xA7'); // ยง forces binary encoding
 	}
 	sb[1] = 'A';
 	// expect B/S(1) A B/S(30)

@@ -49,7 +49,7 @@ struct DecodedValue
 };
 
 /**
-* @author Pablo Orduña, University of Deusto (pablo.orduna@deusto.es)
+* @author Pablo OrduÃ±a, University of Deusto (pablo.orduna@deusto.es)
 * @author Eduardo Castillejo, University of Deusto (eduardo.castillejo@deusto.es)
 */
 struct DecodedChar : public DecodedValue
@@ -65,7 +65,7 @@ struct DecodedChar : public DecodedValue
 };
 
 /**
-* @author Pablo Orduña, University of Deusto (pablo.orduna@deusto.es)
+* @author Pablo OrduÃ±a, University of Deusto (pablo.orduna@deusto.es)
 * @author Eduardo Castillejo, University of Deusto (eduardo.castillejo@deusto.es)
 */
 struct DecodedInformation : public DecodedValue
@@ -81,7 +81,7 @@ struct DecodedInformation : public DecodedValue
 };
 
 /**
-* @author Pablo Orduña, University of Deusto (pablo.orduna@deusto.es)
+* @author Pablo OrduÃ±a, University of Deusto (pablo.orduna@deusto.es)
 * @author Eduardo Castillejo, University of Deusto (eduardo.castillejo@deusto.es)
 */
 struct DecodedNumeric : public DecodedValue

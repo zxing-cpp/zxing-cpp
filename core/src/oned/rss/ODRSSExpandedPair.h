@@ -24,7 +24,7 @@ namespace OneD {
 namespace RSS {
 
 /**
-* @author Pablo Orduña, University of Deusto (pablo.orduna@deusto.es)
+* @author Pablo OrduÃ±a, University of Deusto (pablo.orduna@deusto.es)
 */
 class ExpandedPair
 {

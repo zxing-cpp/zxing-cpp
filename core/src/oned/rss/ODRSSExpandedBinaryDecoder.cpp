@@ -102,7 +102,7 @@ static void AI01EncodeCompressedWeight(std::string& buffer, const BitArray& bits
 }
 
 /**
-* @author Pablo Orduña, University of Deusto (pablo.orduna@deusto.es)
+* @author Pablo OrduÃ±a, University of Deusto (pablo.orduna@deusto.es)
 * @author Eduardo Castillejo, University of Deusto (eduardo.castillejo@deusto.es)
 */
 static std::string

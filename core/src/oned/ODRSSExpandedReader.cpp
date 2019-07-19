@@ -645,7 +645,7 @@ DecodeRow2Pairs(int rowNumber, const BitArray& row, bool startFromEven, std::lis
 }
 
 /**
-* @author Pablo Orduña, University of Deusto (pablo.orduna@deusto.es)
+* @author Pablo OrduÃ±a, University of Deusto (pablo.orduna@deusto.es)
 * @author Eduardo Castillejo, University of Deusto (eduardo.castillejo@deusto.es)
 */
 static BitArray
