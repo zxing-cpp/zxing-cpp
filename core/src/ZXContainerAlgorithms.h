@@ -16,6 +16,7 @@
 */
 
 #include <algorithm>
+#include <initializer_list>
 #include <numeric>
 #include <cstring>
 
@@ -33,6 +34,11 @@ auto FindIf(Container& c, Predicate p) -> decltype(std::begin(c)) {
 
 template <typename Container, typename Value>
 auto Contains(const Container& c, const Value& v) -> decltype(std::begin(c), bool()){
+    return std::find(std::begin(c), std::end(c), v) != std::end(c);
+}
+
+template <typename ListType, typename Value>
+auto Contains(const std::initializer_list<ListType>& c, const Value& v) -> decltype(std::begin(c), bool()){
     return std::find(std::begin(c), std::end(c), v) != std::end(c);
 }
 
