@@ -29,7 +29,6 @@
 #include "BinaryBitmap.h"
 #include "DecodeHints.h"
 
-#include <unordered_set>
 #include <algorithm>
 
 namespace ZXing {
@@ -41,10 +40,7 @@ Reader::Reader(const DecodeHints& hints) :
 {
 	_readers.reserve(8);
 
-	auto possibleFormats = hints.possibleFormats();
-	std::unordered_set<BarcodeFormat, BarcodeFormatHasher> formats(possibleFormats.begin(), possibleFormats.end());
-
-	if (formats.empty()) {
+	if (hints.hasNoFormat()) {
 		_readers.emplace_back(new MultiUPCEANReader(hints));
 		_readers.emplace_back(new Code39Reader(hints));
 		_readers.emplace_back(new CodabarReader(hints));
@@ -55,31 +51,31 @@ Reader::Reader(const DecodeHints& hints) :
 		_readers.emplace_back(new RSSExpandedReader());
 	}
 	else {
-		if (formats.find(BarcodeFormat::EAN_13) != formats.end() ||
-			formats.find(BarcodeFormat::UPC_A) != formats.end() ||
-			formats.find(BarcodeFormat::EAN_8) != formats.end() ||
-			formats.find(BarcodeFormat::UPC_E) != formats.end()) {
+		if (hints.hasFormat(BarcodeFormat::EAN_13) ||
+			hints.hasFormat(BarcodeFormat::UPC_A) ||
+			hints.hasFormat(BarcodeFormat::EAN_8) ||
+			hints.hasFormat(BarcodeFormat::UPC_E)) {
 			_readers.emplace_back(new MultiUPCEANReader(hints));
 		}
-		if (formats.find(BarcodeFormat::CODE_39) != formats.end()) {
+		if (hints.hasFormat(BarcodeFormat::CODE_39)) {
 			_readers.emplace_back(new Code39Reader(hints));
 		}
-		if (formats.find(BarcodeFormat::CODE_93) != formats.end()) {
+		if (hints.hasFormat(BarcodeFormat::CODE_93)) {
 			_readers.emplace_back(new Code93Reader());
 		}
-		if (formats.find(BarcodeFormat::CODE_128) != formats.end()) {
+		if (hints.hasFormat(BarcodeFormat::CODE_128)) {
 			_readers.emplace_back(new Code128Reader(hints));
 		}
-		if (formats.find(BarcodeFormat::ITF) != formats.end()) {
+		if (hints.hasFormat(BarcodeFormat::ITF)) {
 			_readers.emplace_back(new ITFReader(hints));
 		}
-		if (formats.find(BarcodeFormat::CODABAR) != formats.end()) {
+		if (hints.hasFormat(BarcodeFormat::CODABAR)) {
 			_readers.emplace_back(new CodabarReader(hints));
 		}
-		if (formats.find(BarcodeFormat::RSS_14) != formats.end()) {
+		if (hints.hasFormat(BarcodeFormat::RSS_14)) {
 			_readers.emplace_back(new RSS14Reader());
 		}
-		if (formats.find(BarcodeFormat::RSS_EXPANDED) != formats.end()) {
+		if (hints.hasFormat(BarcodeFormat::RSS_EXPANDED)) {
 			_readers.emplace_back(new RSSExpandedReader());
 		}
 	}

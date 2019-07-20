@@ -58,9 +58,4 @@ BarcodeFormat BarcodeFormatFromString(const std::string& str)
 	                                   std::find(std::begin(FORMAT_STR), std::end(FORMAT_STR), str)));
 }
 
-size_t BarcodeFormatHasher::operator()(BarcodeFormat f) const
-{
-	return std::hash<int>()(static_cast<int>(f));
-}
-
 } // ZXing

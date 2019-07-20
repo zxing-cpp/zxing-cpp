@@ -24,8 +24,6 @@ namespace ZXing {
 std::vector<BarcodeFormat>
 DecodeHints::possibleFormats() const
 {
-	static_assert((int)DecodeHints::TRY_HARDER >= (int)BarcodeFormat::FORMAT_COUNT, "Need to update HintFlag");
-
 	std::vector<BarcodeFormat> result;
 	int formatCount = (int)BarcodeFormat::FORMAT_COUNT;
 	result.reserve(BitHacks::CountBitsSet(_flags & ~(0xffffffff << formatCount)));

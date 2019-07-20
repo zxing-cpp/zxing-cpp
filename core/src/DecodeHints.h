@@ -20,9 +20,9 @@
 #include <sstream>
 #include <string>
 
-namespace ZXing {
+#include "BarcodeFormat.h"
 
-enum class BarcodeFormat;
+namespace ZXing {
 
 class DecodeHints
 {
@@ -30,6 +30,14 @@ public:
 
 	std::vector<BarcodeFormat> possibleFormats() const;
 	void setPossibleFormats(const std::vector<BarcodeFormat>& formats);
+
+	bool hasFormat(BarcodeFormat f) const noexcept {
+		return getFlag((int)f);
+	}
+
+	bool hasNoFormat() const noexcept {
+		return (_flags & ~(0xffffffff << (int)BarcodeFormat::FORMAT_COUNT)) == 0;
+	}
 
 	/**
 	* Spend more time to try to find a barcode; optimize for accuracy, not speed.
@@ -56,7 +64,7 @@ public:
 	/**
 	* Specifies what character encoding to use when decoding, where applicable.
 	*/
-	std::string characterSet() const {
+	const std::string& characterSet() const {
 		return _charset;
 	}
 
@@ -67,7 +75,7 @@ public:
 	/**
 	* Allowed lengths of encoded data -- reject anything else..
 	*/
-	std::vector<int> allowedLengths() const {
+	const std::vector<int>& allowedLengths() const {
 		return _lengths;
 	}
 
@@ -125,7 +133,7 @@ public:
 	* and a UPC or EAN barcode is found but an extension is not, then no result will be returned
 	* at all.
 	*/
-	std::vector<int> allowedEanExtensions() const {
+	const std::vector<int>& allowedEanExtensions() const {
 		return _eanExts;
 	}
 
@@ -141,13 +149,16 @@ private:
 
 	enum HintFlag
 	{
-		TRY_HARDER = 24,
+		TRY_HARDER = static_cast<int>(BarcodeFormat::FORMAT_COUNT) + 1,
 		TRY_ROTATE,
 		WITH_CODE_39_EXTENDED,
 		ASSUME_CODE_39_CHECK_DIGIT,
 		ASSUME_GS1,
 		RETURN_CODABAR_START_END,
+		FLAG_COUNT
 	};
+
+	static_assert(FLAG_COUNT < 8 * sizeof(_flags), "HintFlag overflow");
 
 	bool getFlag(int f) const {
 		return (_flags & (1 << f)) != 0;

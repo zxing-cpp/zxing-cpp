@@ -28,46 +28,43 @@
 #include "pdf417/PDFReader.h"
 
 #include <memory>
-#include <unordered_set>
 
 namespace ZXing {
 
 MultiFormatReader::MultiFormatReader(const DecodeHints& hints)
 {
 	bool tryHarder = hints.shouldTryHarder();
-	auto possibleFormats = hints.possibleFormats();
-	if (!possibleFormats.empty()) {
-		std::unordered_set<BarcodeFormat, BarcodeFormatHasher> formats(possibleFormats.begin(), possibleFormats.end());
+	if (hints.hasNoFormat()) {
 		bool addOneDReader =
-			formats.find(BarcodeFormat::UPC_A) != formats.end() ||
-			formats.find(BarcodeFormat::UPC_E) != formats.end() ||
-			formats.find(BarcodeFormat::EAN_13) != formats.end() ||
-			formats.find(BarcodeFormat::EAN_8) != formats.end() ||
-			formats.find(BarcodeFormat::CODABAR) != formats.end() ||
-			formats.find(BarcodeFormat::CODE_39) != formats.end() ||
-			formats.find(BarcodeFormat::CODE_93) != formats.end() ||
-			formats.find(BarcodeFormat::CODE_128) != formats.end() ||
-			formats.find(BarcodeFormat::ITF) != formats.end() ||
-			formats.find(BarcodeFormat::RSS_14) != formats.end() ||
-			formats.find(BarcodeFormat::RSS_EXPANDED) != formats.end();
+			hints.hasFormat(BarcodeFormat::UPC_A) ||
+			hints.hasFormat(BarcodeFormat::UPC_E) ||
+			hints.hasFormat(BarcodeFormat::EAN_13) ||
+			hints.hasFormat(BarcodeFormat::EAN_8) ||
+			hints.hasFormat(BarcodeFormat::CODABAR) ||
+			hints.hasFormat(BarcodeFormat::CODE_39) ||
+			hints.hasFormat(BarcodeFormat::CODE_93) ||
+			hints.hasFormat(BarcodeFormat::CODE_128) ||
+			hints.hasFormat(BarcodeFormat::ITF) ||
+			hints.hasFormat(BarcodeFormat::RSS_14) ||
+			hints.hasFormat(BarcodeFormat::RSS_EXPANDED);
 
 		// Put 1D readers upfront in "normal" mode
 		if (addOneDReader && !tryHarder) {
 			_readers.emplace_back(new OneD::Reader(hints));
 		}
-		if (formats.find(BarcodeFormat::QR_CODE) != formats.end()) {
+		if (hints.hasFormat(BarcodeFormat::QR_CODE)) {
 			_readers.emplace_back(new QRCode::Reader(hints));
 		}
-		if (formats.find(BarcodeFormat::DATA_MATRIX) != formats.end()) {
+		if (hints.hasFormat(BarcodeFormat::DATA_MATRIX)) {
 			_readers.emplace_back(new DataMatrix::Reader(hints));
 		}
-		if (formats.find(BarcodeFormat::AZTEC) != formats.end()) {
+		if (hints.hasFormat(BarcodeFormat::AZTEC)) {
 			_readers.emplace_back(new Aztec::Reader());
 		}
-		if (formats.find(BarcodeFormat::PDF_417) != formats.end()) {
+		if (hints.hasFormat(BarcodeFormat::PDF_417)) {
 			_readers.emplace_back(new Pdf417::Reader());
 		}
-		if (formats.find(BarcodeFormat::MAXICODE) != formats.end()) {
+		if (hints.hasFormat(BarcodeFormat::MAXICODE)) {
 			_readers.emplace_back(new MaxiCode::Reader());
 		}
 		// At end in "try harder" mode
@@ -78,7 +75,7 @@ MultiFormatReader::MultiFormatReader(const DecodeHints& hints)
 
 	if (_readers.empty()) {
 		if (!tryHarder) {
-			_readers.push_back(std::unique_ptr<Reader>(new OneD::Reader(hints)));
+			_readers.emplace_back(new OneD::Reader(hints));
 		}
 		_readers.emplace_back(new QRCode::Reader(hints));
 		_readers.emplace_back(new DataMatrix::Reader(hints));

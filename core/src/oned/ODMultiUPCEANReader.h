@@ -21,7 +21,6 @@
 
 #include <vector>
 #include <memory>
-#include <unordered_set>
 
 namespace ZXing {
 
@@ -49,7 +48,7 @@ public:
 
 private:
 	std::vector<std::unique_ptr<const UPCEANReader>> _readers;
-	std::unordered_set<BarcodeFormat, BarcodeFormatHasher> _formats;
+	bool _canReturnUPCA = false;
 };
 
 } // OneD

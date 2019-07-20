@@ -90,10 +90,5 @@ const char* ToString(BarcodeFormat format);
 // Return FORMAT_COUNT if str is unexpected
 BarcodeFormat BarcodeFormatFromString(const std::string& str);
 
-struct BarcodeFormatHasher
-{
-	size_t operator()(BarcodeFormat f) const;
-};
-
 } // ZXing
 

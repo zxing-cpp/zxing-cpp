@@ -25,36 +25,30 @@
 #include "BarcodeFormat.h"
 #include "Result.h"
 
-#include <unordered_set>
-
 namespace ZXing {
 
 namespace OneD {
 
 MultiUPCEANReader::MultiUPCEANReader(const DecodeHints& hints)
 {
-	auto formats = hints.possibleFormats();
-	if (formats.empty()) {
-		_readers.emplace_back(new EAN13Reader(hints));
+	_canReturnUPCA = hints.hasNoFormat() || hints.hasFormat(BarcodeFormat::UPC_A);
+	DecodeHints _hints = hints;
+	if (_hints.hasNoFormat()) {
+		_hints.setPossibleFormats({BarcodeFormat::EAN_13, BarcodeFormat::EAN_8, BarcodeFormat::UPC_E});
 		// UPC-A is covered by EAN-13
-		_readers.emplace_back(new EAN8Reader(hints));
-		_readers.emplace_back(new UPCEReader(hints));
 	}
-	else
-	{
-		_formats.insert(formats.begin(), formats.end());
-		if (_formats.find(BarcodeFormat::EAN_13) != _formats.end()) {
-			_readers.emplace_back(new EAN13Reader(hints));
-		}
-		else if (_formats.find(BarcodeFormat::UPC_A) != _formats.end()) {
-			_readers.emplace_back(new UPCAReader(hints));
-		}
-		if (_formats.find(BarcodeFormat::EAN_8) != _formats.end()) {
-			_readers.emplace_back(new EAN8Reader(hints));
-		}
-		if (_formats.find(BarcodeFormat::UPC_E) != _formats.end()) {
-			_readers.emplace_back(new UPCEReader(hints));
-		}
+
+	if (_hints.hasFormat(BarcodeFormat::EAN_13)) {
+		_readers.emplace_back(new EAN13Reader(hints));
+	}
+	else if (_hints.hasFormat(BarcodeFormat::UPC_A)) {
+		_readers.emplace_back(new UPCAReader(hints));
+	}
+	if (_hints.hasFormat(BarcodeFormat::EAN_8)) {
+		_readers.emplace_back(new EAN8Reader(hints));
+	}
+	if (_hints.hasFormat(BarcodeFormat::UPC_E)) {
+		_readers.emplace_back(new UPCEReader(hints));
 	}
 }
 
@@ -94,8 +88,7 @@ MultiUPCEANReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr
 		// But, don't return UPC-A if UPC-A was not a requested format!
 		const std::wstring& resultText = result.text();
 		bool ean13MayBeUPCA = result.format() == BarcodeFormat::EAN_13 && !resultText.empty() && resultText[0] == '0';
-		bool canReturnUPCA = _formats.empty() || _formats.find(BarcodeFormat::UPC_A) != _formats.end();
-		if (ean13MayBeUPCA && canReturnUPCA) {
+		if (ean13MayBeUPCA && _canReturnUPCA) {
 			result.setText(resultText.substr(1));
 			result.setFormat(BarcodeFormat::UPC_A);
 		}
