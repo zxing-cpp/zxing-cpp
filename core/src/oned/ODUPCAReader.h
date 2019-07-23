@@ -32,7 +32,7 @@ class UPCAReader : public UPCEANReader
 public:
 	explicit UPCAReader(const DecodeHints& hints) : UPCEANReader(hints), _reader(hints) {}
 
-	Result decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const override;
+	Result decodeRow(int rowNumber, const BitArray& row) const override;
 	Result decodeRow(int rowNumber, const BitArray& row, BitArray::Range startGuard) const override;
 
 protected:

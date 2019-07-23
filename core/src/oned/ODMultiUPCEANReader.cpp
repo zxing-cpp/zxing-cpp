@@ -57,7 +57,7 @@ MultiUPCEANReader::~MultiUPCEANReader()
 }
 
 Result
-MultiUPCEANReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>&) const
+MultiUPCEANReader::decodeRow(int rowNumber, const BitArray& row) const
 {
 	// Compute this location once and reuse it on multiple implementations
 	auto range = UPCEANReader::FindStartGuardPattern(row);

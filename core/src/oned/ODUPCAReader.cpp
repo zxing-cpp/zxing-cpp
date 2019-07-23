@@ -35,9 +35,9 @@ static Result MaybeReturnResult(Result&& result)
 }
 
 Result
-UPCAReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const
+UPCAReader::decodeRow(int rowNumber, const BitArray& row) const
 {
-	return MaybeReturnResult(_reader.decodeRow(rowNumber, row, state));
+	return MaybeReturnResult(_reader.decodeRow(rowNumber, row));
 }
 
 Result

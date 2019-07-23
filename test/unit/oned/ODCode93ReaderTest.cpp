@@ -28,7 +28,7 @@ namespace {
 	{
 		Code93Reader sut;
 		auto row = Utility::ParseBitArray(input, '1');
-		auto result = sut.decodeSingleRow(0, row);
+		auto result = sut.decodeRow(0, row);
 		return result.text();
 	}
 }

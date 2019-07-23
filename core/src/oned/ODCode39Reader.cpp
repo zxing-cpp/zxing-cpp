@@ -212,7 +212,7 @@ Code39Reader::Code39Reader(const DecodeHints& hints) :
 }
 
 Result
-Code39Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>&) const
+Code39Reader::decodeRow(int rowNumber, const BitArray& row) const
 {
 	auto range = FindAsteriskPattern(row);
 	if (!range)

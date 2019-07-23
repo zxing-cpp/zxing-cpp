@@ -221,7 +221,7 @@ CodabarReader::CodabarReader(const DecodeHints& hints)
 }
 
 Result
-CodabarReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>&) const
+CodabarReader::decodeRow(int rowNumber, const BitArray& row) const
 {
 	std::vector<int> counters;
 	counters.reserve(80);

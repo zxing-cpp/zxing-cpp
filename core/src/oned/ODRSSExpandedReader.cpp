@@ -25,7 +25,6 @@
 #include "ZXConfig.h"
 
 #include <cmath>
-#include <list>
 #include <array>
 #include <vector>
 #include <numeric>
@@ -92,12 +91,6 @@ static const std::array<std::vector<int>, 10> FINDER_PATTERN_SEQUENCES = { {
 	{ FINDER_PAT_A, FINDER_PAT_A, FINDER_PAT_B, FINDER_PAT_B, FINDER_PAT_C, FINDER_PAT_C, FINDER_PAT_D, FINDER_PAT_E, FINDER_PAT_F, FINDER_PAT_F },
 	{ FINDER_PAT_A, FINDER_PAT_A, FINDER_PAT_B, FINDER_PAT_B, FINDER_PAT_C, FINDER_PAT_D, FINDER_PAT_D, FINDER_PAT_E, FINDER_PAT_E, FINDER_PAT_F, FINDER_PAT_F },
 } };
-
-
-struct RSSExpandedDecodingState : public RowReader::DecodingState
-{
-	std::list<RSS::ExpandedRow> rows;
-};
 
 
 using namespace RSS;
@@ -710,31 +703,13 @@ ConstructResult(const std::list<ExpandedPair>& pairs)
 }
 
 Result
-RSSExpandedReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const
+RSSExpandedReader::decodeRow(int rowNumber, const BitArray& row) const
 {
-	RSSExpandedDecodingState* prevState = nullptr;
-	if (state == nullptr) {
-		state.reset(prevState = new RSSExpandedDecodingState);
-	}
-	else {
-#if !defined(ZX_HAVE_CONFIG)
-		#error "You need to include ZXConfig.h"
-#elif !defined(ZX_NO_RTTI)
-		prevState = dynamic_cast<RSSExpandedDecodingState*>(state.get());
-#else
-		prevState = static_cast<RSSExpandedDecodingState*>(state.get());
-#endif
-	}
-
-	if (prevState == nullptr) {
-		throw std::runtime_error("Invalid state");
-	}
-
 	// Rows can start with even pattern in case in prev rows there where odd number of patters.
 	// So lets try twice
-	Result r = ConstructResult(DecodeRow2Pairs(rowNumber, row, false, prevState->rows));
+	Result r = ConstructResult(DecodeRow2Pairs(rowNumber, row, false, rows));
 	if (!r.isValid()) {
-		r = ConstructResult(DecodeRow2Pairs(rowNumber, row, true, prevState->rows));
+		r = ConstructResult(DecodeRow2Pairs(rowNumber, row, true, rows));
 	}
 	return r;
 }

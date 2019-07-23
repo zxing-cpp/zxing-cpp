@@ -187,7 +187,7 @@ CheckChecksums(const std::string& result)
 
 
 Result
-Code93Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>&) const
+Code93Reader::decodeRow(int rowNumber, const BitArray& row) const
 {
 	auto range = FindAsteriskPattern(row);
 	if (!range)

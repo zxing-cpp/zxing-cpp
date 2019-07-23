@@ -32,7 +32,7 @@ namespace {
 		hints.setShouldTryCode39ExtendedMode(true);
 		Code39Reader sut(hints);
 		BitArray row = Utility::ParseBitArray(encoded, '1');
-		Result result = sut.decodeSingleRow(0, row);
+		Result result = sut.decodeRow(0, row);
 		return result.text();
 	}
 }

@@ -204,7 +204,7 @@ ITFReader::ITFReader(const DecodeHints& hints) :
 }
 
 Result
-ITFReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>&) const
+ITFReader::decodeRow(int rowNumber, const BitArray& row) const
 {
 	// Find out where the Middle section (payload) starts & ends
 	auto startRange = DecodeStart(row);

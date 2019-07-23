@@ -102,8 +102,6 @@ Reader::~Reader()
 static Result
 DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, const BinaryBitmap& image, bool tryHarder)
 {
-	std::vector<std::unique_ptr<RowReader::DecodingState>> decodingState(readers.size());
-
 	int width = image.width();
 	int height = image.height();
 
@@ -112,6 +110,9 @@ DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, const BinaryBit
 	int maxLines = tryHarder ?
 		height :	// Look at the whole image, not just the center
 		15;			// 15 rows spaced 1/32 apart is roughly the middle half of the image
+
+	for (auto& reader : readers)
+		reader->reset();
 
 	BitArray row(width);
 	for (int x = 0; x < maxLines; x++) {
@@ -132,10 +133,10 @@ DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, const BinaryBit
 
 		// While we have the image data in a BitArray, it's fairly cheap to reverse it in place to
 		// handle decoding upside down barcodes.
-		// Note: the RSSExpanded decoder depends on seeing each line from both directions. This
-		// 'surprising' and inconsistent. It also requires the decoderState to be shared between
-		// normal and reversed scans, which makes no sense in general because it would mix partial
-		// detetection data from two codes of the same type next to each other. TODO..
+		// Note: the RSSExpanded decoder depends on seeing each line from both directions. This is
+		// 'surprising' and inconsistent. It also requires to share the internal state (info about
+		// previous rows) across normal and reversed scans, which makes no sense in general because
+		// it would mix partial detetection data from two codes of the same type next to each other. TODO..
 		// See also https://github.com/nu-book/zxing-cpp/issues/87
 		for (bool upsideDown : {false, true}) {
 			// trying again?
@@ -144,8 +145,8 @@ DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, const BinaryBit
 				row.reverse();
 			}
 			// Look for a barcode
-			for (size_t r = 0; r < readers.size(); ++r) {
-				Result result = readers[r]->decodeRow(rowNumber, row, decodingState[r]);
+			for (auto& reader : readers) {
+				Result result = reader->decodeRow(rowNumber, row);
 				if (result.isValid()) {
 					// We found our barcode
 					if (upsideDown) {

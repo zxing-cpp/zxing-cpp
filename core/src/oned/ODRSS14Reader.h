@@ -17,6 +17,9 @@
 */
 
 #include "oned/ODRowReader.h"
+#include "oned/rss/ODRSSPair.h"
+
+#include <vector>
 
 namespace ZXing {
 namespace OneD {
@@ -26,8 +29,16 @@ namespace OneD {
 */
 class RSS14Reader : public RowReader
 {
+	mutable std::vector<RSS::Pair> possibleLeftPairs;
+	mutable std::vector<RSS::Pair> possibleRightPairs;
+
 public:
-	Result decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const override;
+	Result decodeRow(int rowNumber, const BitArray& row) const override;
+
+	void reset() override {
+		possibleLeftPairs.clear();
+		possibleRightPairs.clear();
+	}
 };
 
 } // OneD
