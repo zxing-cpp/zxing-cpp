@@ -30,13 +30,13 @@ namespace OneD {
 */
 class RSSExpandedReader : public RowReader
 {
-	mutable std::list<RSS::ExpandedRow> rows;
+	mutable ThreadLocal<std::list<RSS::ExpandedRow>> rows;
 
 public:
 	Result decodeRow(int rowNumber, const BitArray& row) const override;
 
 	void reset() override {
-		rows.clear();
+		rows().clear();
 	}
 };
 

@@ -707,6 +707,7 @@ RSSExpandedReader::decodeRow(int rowNumber, const BitArray& row) const
 {
 	// Rows can start with even pattern in case in prev rows there where odd number of patters.
 	// So lets try twice
+	auto& rows = this->rows();
 	Result r = ConstructResult(DecodeRow2Pairs(rowNumber, row, false, rows));
 	if (!r.isValid()) {
 		r = ConstructResult(DecodeRow2Pairs(rowNumber, row, true, rows));

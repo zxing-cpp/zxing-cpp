@@ -403,19 +403,20 @@ ConstructResult(const RSS::Pair& leftPair, const RSS::Pair& rightPair)
 Result
 RSS14Reader::decodeRow(int rowNumber, const BitArray& row_) const
 {
+	auto& possiblePairs = state();
 	BitArray row = row_.copy();
-	AddOrTally(possibleLeftPairs, DecodePair(row, false, rowNumber));
+	AddOrTally(possiblePairs.left, DecodePair(row, false, rowNumber));
 	row.reverse();
-	AddOrTally(possibleRightPairs, DecodePair(row, true, rowNumber));
+	AddOrTally(possiblePairs.right, DecodePair(row, true, rowNumber));
 //	row.reverse();
 
 	// To be able to detect "stacked" RSS codes (split over multiple lines)
 	// we need to store the parts we found and try all possible left/right
 	// combinations. To prevent lots of false positives, we require each
 	// pair to have been seen in at least two lines.
-	for (const auto& left : possibleLeftPairs) {
+	for (const auto& left : possiblePairs.left) {
 		if (left.count() > 1) {
-			for (const auto& right : possibleRightPairs) {
+			for (const auto& right : possiblePairs.right) {
 				if (right.count() > 1) {
 					if (CheckChecksum(left, right)) {
 						return ConstructResult(left, right);

@@ -22,6 +22,10 @@
 #include <cstddef>
 #include <memory>
 
+#include <thread>
+#include <mutex>
+#include <map>
+
 namespace ZXing {
 
 class Result;
@@ -37,12 +41,29 @@ namespace OneD {
 */
 class RowReader
 {
+protected:
+	/**
+	 * @brief Helper template for thread local type storage for per image state data of multi-line "1D" readers (like RSS)
+	 */
+	template<typename T>
+	class ThreadLocal
+	{
+		std::map<std::thread::id, T> store;
+		std::mutex mut;
+	public:
+		T& operator()()
+		{
+			std::lock_guard<std::mutex> lock(mut);
+			return store[std::this_thread::get_id()];
+		}
+	};
+
 public:
 
 	virtual ~RowReader() {}
 
 	/**
-	 * @brief resets the internal state which some readers have to be able to decode multi-line variantes (e.g. RSS).
+	 * @brief resets the internal state which some readers have to be able to decode multi-line variants (e.g. RSS).
 	 *
 	 * Call before starting to process a new image.
 	 */

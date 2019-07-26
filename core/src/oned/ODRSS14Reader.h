@@ -29,15 +29,20 @@ namespace OneD {
 */
 class RSS14Reader : public RowReader
 {
-	mutable std::vector<RSS::Pair> possibleLeftPairs;
-	mutable std::vector<RSS::Pair> possibleRightPairs;
+	struct State
+	{
+		std::vector<RSS::Pair> left, right;
+	};
+
+	mutable ThreadLocal<State> state;
 
 public:
 	Result decodeRow(int rowNumber, const BitArray& row) const override;
 
 	void reset() override {
-		possibleLeftPairs.clear();
-		possibleRightPairs.clear();
+		auto& possiblePairs = state();
+		possiblePairs.left.clear();
+		possiblePairs.right.clear();
 	}
 };
 
