@@ -418,23 +418,10 @@ ConstructResult(const RSS::Pair& leftPair, const RSS::Pair& rightPair)
 Result
 RSS14Reader::decodeRow(int rowNumber, const BitArray& row_, std::unique_ptr<DecodingState>& state) const
 {
-	RSS14DecodingState* prevState = nullptr;
-	if (state == nullptr) {
-		state.reset(prevState = new RSS14DecodingState);
+	if (!state) {
+		state.reset(new RSS14DecodingState);
 	}
-	else {
-#if !defined(ZX_HAVE_CONFIG)
-		#error "You need to include ZXConfig.h"
-#elif !defined(ZX_NO_RTTI)
-		prevState = dynamic_cast<RSS14DecodingState*>(state.get());
-#else
-		prevState = static_cast<RSS14DecodingState*>(state.get());
-#endif
-	}
-
-	if (prevState == nullptr) {
-		throw std::runtime_error("Invalid state");
-	}
+	auto* prevState = static_cast<RSS14DecodingState*>(state.get());
 
 	BitArray row = row_.copy();
 	AddOrTally(prevState->possibleLeftPairs, DecodePair(row, false, rowNumber));
