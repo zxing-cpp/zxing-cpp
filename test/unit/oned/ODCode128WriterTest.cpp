@@ -49,8 +49,7 @@ static ZXing::Result Decode(const BitMatrix &matrix)
 {
 	BitArray row;
 	matrix.getRow(0, row);
-	std::unique_ptr<RowReader::DecodingState> state;
-	return Code128Reader(DecodeHints()).decodeRow(0, row, state);
+	return Code128Reader(DecodeHints()).decodeSingleRow(0, row);
 }
 
 TEST(ODCode128Writer, EncodeWithFunc1)
