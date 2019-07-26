@@ -17,9 +17,6 @@
 */
 
 #include "oned/ODRowReader.h"
-#include "oned/rss/ODRSSExpandedRow.h"
-
-#include <list>
 
 namespace ZXing {
 namespace OneD {
@@ -30,14 +27,8 @@ namespace OneD {
 */
 class RSSExpandedReader : public RowReader
 {
-	mutable std::list<RSS::ExpandedRow> rows;
-
 public:
-	Result decodeRow(int rowNumber, const BitArray& row) const override;
-
-	void reset() override {
-		rows.clear();
-	}
+	Result decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const override;
 };
 
 } // OneD

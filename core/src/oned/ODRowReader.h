@@ -39,14 +39,14 @@ class RowReader
 {
 public:
 
-	virtual ~RowReader() {}
+	struct DecodingState
+	{
+		virtual ~DecodingState() {}
+	};
 
-	/**
-	 * @brief resets the internal state which some readers have to be able to decode multi-line variantes (e.g. RSS).
-	 *
-	 * Call before starting to process a new image.
-	 */
-	virtual void reset() {}
+	Result decodeSingleRow(int rowNumber, const BitArray& row) const;
+
+	virtual ~RowReader() {}
 
 	/**
 	* <p>Attempts to decode a one-dimensional barcode format given a single row of
@@ -60,7 +60,7 @@ public:
 	* @throws ChecksumException if a potential barcode is found but does not pass its checksum
 	* @throws FormatException if a potential barcode is found but format is invalid
 	*/
-	virtual Result decodeRow(int rowNumber, const BitArray& row) const = 0;
+	virtual Result decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const = 0;
 
 	/**
 	* Scans the given bit range for a pattern identified by evaluating the function object match for each

@@ -30,7 +30,7 @@ namespace OneD {
 class Code93Reader : public RowReader
 {
 public:
-	Result decodeRow(int rowNumber, const BitArray& row) const override;
+	Result decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const override;
 };
 
 } // OneD

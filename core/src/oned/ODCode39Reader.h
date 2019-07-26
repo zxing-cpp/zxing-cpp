@@ -45,7 +45,7 @@ public:
 	*/
 	explicit Code39Reader(const DecodeHints& hints);
 	
-	Result decodeRow(int rowNumber, const BitArray& row) const override;
+	Result decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const override;
 
 private:
 	bool _extendedMode;
