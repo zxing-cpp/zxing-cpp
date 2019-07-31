@@ -21,6 +21,7 @@
 #include "ByteArray.h"
 #include "datamatrix/DMSymbolShape.h"
 #include "datamatrix/DMSymbolInfo.h"
+#include "ZXStrConvWorkaround.h"
 
 namespace ZXing {
 namespace DataMatrix {
