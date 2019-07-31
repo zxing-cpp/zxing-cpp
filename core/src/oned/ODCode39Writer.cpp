@@ -20,6 +20,7 @@
 #include "ZXContainerAlgorithms.h"
 #include "TextEncoder.h"
 #include "CharacterSet.h"
+#include "ZXStrConvWorkaround.h"
 
 #include <array>
 

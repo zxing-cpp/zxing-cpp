@@ -38,6 +38,10 @@ namespace std
 	inline int stoi(const std::string& s) {
 		return atoi(s.c_str());
 	}
+
+	inline long long stoll(const std::string& s) {
+		return atoll(s.c_str());
+	}
 }
 
 
