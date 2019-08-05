@@ -28,13 +28,14 @@ namespace RSS {
 
 	//private static final Object VARIABLE_LENGTH = new Object();
 
-struct DigitLength
+struct AiInfo
 {
-	const char *digits;
-	int length;	// if negative, the length is variable and abs(length) give the max size
+	const char* aiPrefix;
+	int fieldSize;	// if negative, the length is variable and abs(length) give the max size
 };
 
-static const DigitLength TWO_DIGIT_DATA_LENGTH[] = {
+static const AiInfo aiInfos[] = {
+// TWO_DIGIT_DATA_LENGTH
 	{ "00", 18 },
 	{ "01", 14 },
 	{ "02", 14 },
@@ -64,9 +65,8 @@ static const DigitLength TWO_DIGIT_DATA_LENGTH[] = {
 	{ "97", -30 },
 	{ "98", -30 },
 	{ "99", -30 },
-};
 
-static const DigitLength THREE_DIGIT_DATA_LENGTH[] = {
+//THREE_DIGIT_DATA_LENGTH
 	{ "240", -30 },
 	{ "241", -30 },
 	{ "242", -6 },
@@ -91,9 +91,8 @@ static const DigitLength THREE_DIGIT_DATA_LENGTH[] = {
 	{ "424", 3 },
 	{ "425", 3 },
 	{ "426", 3 },
-};
 
-static const DigitLength THREE_DIGIT_PLUS_DIGIT_DATA_LENGTH[] = {
+//THREE_DIGIT_PLUS_DIGIT_DATA_LENGTH
 	{ "310", 6 },
 	{ "311", 6 },
 	{ "312", 6 },
@@ -151,11 +150,8 @@ static const DigitLength THREE_DIGIT_PLUS_DIGIT_DATA_LENGTH[] = {
 	{ "392", -15 },
 	{ "393", -18 },
 	{ "703", -30 },
-};
 
-static const DigitLength FOUR_DIGIT_DATA_LENGTH[] = {
-	// Same format as above
-
+//FOUR_DIGIT_DATA_LENGTH
 	{ "7001", 13 },
 	{ "7002", -30 },
 	{ "7003", 10 },
@@ -177,42 +173,15 @@ static const DigitLength FOUR_DIGIT_DATA_LENGTH[] = {
 	{ "8200", -70 },
 };
 
-static DecodeStatus
-ProcessVariableAI(int aiSize, int variableFieldSize, const std::string& rawInfo, std::string& result)
+static size_t
+AiSize(const char* aiPrefix)
 {
-	auto ai = rawInfo.substr(0, aiSize);
-	int maxSize = std::min((int)rawInfo.length(), aiSize + variableFieldSize);
-	auto field = rawInfo.substr(aiSize, maxSize - aiSize);
-	auto remaining = rawInfo.substr(maxSize);
-	result = '(' + ai + ')' + field;
-	std::string parsedAI;
-	auto status = FieldParser::ParseFieldsInGeneralPurpose(remaining, parsedAI);
-	result += parsedAI;
-	return status;
+	if ((aiPrefix[0] == '3' && Contains("1234569", aiPrefix[1])) || std::string(aiPrefix) == "703")
+		return 4;
+	else
+		return strlen(aiPrefix);
 }
 
-
-static DecodeStatus
-ProcessFixedAI(int aiSize, int fieldSize, const std::string& rawInfo, std::string& result)
-{
-	if ((int)rawInfo.length() < aiSize) {
-		return DecodeStatus::NotFound;
-	}
-
-	auto ai = rawInfo.substr(0, aiSize);
-
-	if ((int)rawInfo.length() < aiSize + fieldSize) {
-		return DecodeStatus::NotFound;
-	}
-
-	auto field = rawInfo.substr(aiSize, fieldSize);
-	auto remaining = rawInfo.substr(aiSize + fieldSize);
-	result = '(' + ai + ')' + field;
-	std::string parsedAI;
-	auto status = FieldParser::ParseFieldsInGeneralPurpose(remaining, parsedAI);
-	result += parsedAI;
-	return status;
-}
 
 DecodeStatus
 FieldParser::ParseFieldsInGeneralPurpose(const std::string &rawInfo, std::string& result)
@@ -221,38 +190,30 @@ FieldParser::ParseFieldsInGeneralPurpose(const std::string &rawInfo, std::string
 		return DecodeStatus::NoError;
 	}
 
-	// Processing 2-digit AIs
+	auto starts_with =
+		[](const std::string& str, const char* pre) { return strncmp(pre, str.data(), strlen(pre)) == 0; };
 
-	if (rawInfo.length() < 2) {
+	const AiInfo* aiInfo = FindIf(aiInfos, [&](const AiInfo& i) { return starts_with(rawInfo, i.aiPrefix); });
+	if (aiInfo == std::end(aiInfos))
 		return DecodeStatus::NotFound;
-	}
 
-	const DigitLength* dataLengthSets[] = { TWO_DIGIT_DATA_LENGTH, THREE_DIGIT_DATA_LENGTH, THREE_DIGIT_PLUS_DIGIT_DATA_LENGTH, FOUR_DIGIT_DATA_LENGTH };
-	int dataSetSizes[] = {
-		Length(TWO_DIGIT_DATA_LENGTH),
-		Length(THREE_DIGIT_DATA_LENGTH),
-		Length(THREE_DIGIT_PLUS_DIGIT_DATA_LENGTH),
-		Length(FOUR_DIGIT_DATA_LENGTH),
-	};
-	size_t digitSizes[] = { 2, 3, 3, 4 };
-	int aiSizes[] = { 2, 3, 4, 4 };
+	size_t aiSize = AiSize(aiInfo->aiPrefix);
 
-	for (int i = 0; i < 4; ++i) {
-		if (rawInfo.length() < digitSizes[i]) {
-			return DecodeStatus::NotFound;
-		}
-		auto firstDigits = rawInfo.substr(0, digitSizes[i]);
-		for (int j = 0; j < dataSetSizes[i]; ++j) {
-			auto &dataLength = dataLengthSets[i][j];
-			if (firstDigits == dataLength.digits) {
-				if (dataLength.length < 0) {
-					return ProcessVariableAI(aiSizes[i], std::abs(dataLength.length), rawInfo, result);
-				}
-				return ProcessFixedAI(aiSizes[i], dataLength.length, rawInfo, result);
-			}
-		}
-	}
-	return DecodeStatus::NotFound;
+	// require at least one character in the variable field size case
+	if (rawInfo.length() < aiSize + std::max(1, aiInfo->fieldSize))
+		return DecodeStatus::NotFound;
+
+	size_t fieldSize = aiInfo->fieldSize >= 0
+						   ? size_t(aiInfo->fieldSize)                                        // fixed
+						   : std::min(rawInfo.length() - aiSize, size_t(-aiInfo->fieldSize)); // variable
+
+	auto ai = rawInfo.substr(0, aiSize);
+	auto field = rawInfo.substr(aiSize, fieldSize);
+	auto remaining = rawInfo.substr(aiSize + fieldSize);
+	std::string parsedRemaining;
+	auto status = FieldParser::ParseFieldsInGeneralPurpose(remaining, parsedRemaining);
+	result = '(' + ai + ')' + field + parsedRemaining;
+	return status;
 }
 
 

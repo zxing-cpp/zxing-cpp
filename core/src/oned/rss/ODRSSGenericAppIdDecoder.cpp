@@ -216,26 +216,12 @@ DecodeAlphanumeric(const BitArray& bits, int pos)
 		return DecodedChar(pos + 6, (char)(sixBitValue + 33));
 	}
 
-	char c;
-	switch (sixBitValue) {
-	case 58:
-		c = '*';
-		break;
-	case 59:
-		c = ',';
-		break;
-	case 60:
-		c = '-';
-		break;
-	case 61:
-		c = '.';
-		break;
-	case 62:
-		c = '/';
-		break;
-	default:
+	if (sixBitValue < 58 || sixBitValue > 62)
 		throw std::runtime_error("Decoding invalid alphanumeric value");
-	}
+
+	constexpr char const* lut58to62 = R"(*,-./)";
+	char c = lut58to62[sixBitValue - 58];
+
 	return DecodedChar(pos + 6, c);
 }
 
@@ -344,74 +330,12 @@ DecodeIsoIec646(const BitArray& bits, int pos)
 	}
 
 	int eightBitValue = ExtractNumeric(bits, pos, 8);
-	char c;
-	switch (eightBitValue) {
-	case 232:
-		c = '!';
-		break;
-	case 233:
-		c = '"';
-		break;
-	case 234:
-		c = '%';
-		break;
-	case 235:
-		c = '&';
-		break;
-	case 236:
-		c = '\'';
-		break;
-	case 237:
-		c = '(';
-		break;
-	case 238:
-		c = ')';
-		break;
-	case 239:
-		c = '*';
-		break;
-	case 240:
-		c = '+';
-		break;
-	case 241:
-		c = ',';
-		break;
-	case 242:
-		c = '-';
-		break;
-	case 243:
-		c = '.';
-		break;
-	case 244:
-		c = '/';
-		break;
-	case 245:
-		c = ':';
-		break;
-	case 246:
-		c = ';';
-		break;
-	case 247:
-		c = '<';
-		break;
-	case 248:
-		c = '=';
-		break;
-	case 249:
-		c = '>';
-		break;
-	case 250:
-		c = '?';
-		break;
-	case 251:
-		c = '_';
-		break;
-	case 252:
-		c = ' ';
-		break;
-	default:
-		throw std::runtime_error("Decoding invalid ISO-IEC-646 value");;
-	}
+	if (eightBitValue < 232 || eightBitValue > 252)
+		throw std::runtime_error("Decoding invalid ISO-IEC-646 value");
+
+	constexpr char const* lut232to252 = R"(!"%&'()*+,-./:;<=>?_ )";
+	char c = lut232to252[eightBitValue - 232];
+
 	return DecodedChar(pos + 8, c);
 }
 
@@ -512,14 +436,13 @@ ParseBlocks(const BitArray& bits, ParsingState& state, std::string& buffer)
 }
 
 static DecodedInformation
-DoDecodeGeneralPurposeField(ParsingState& state, const BitArray& bits, const std::string& prefix)
+DoDecodeGeneralPurposeField(ParsingState& state, const BitArray& bits, std::string prefix)
 {
-	std::string buffer = prefix;
-	DecodedInformation lastDecoded = ParseBlocks(bits, state, buffer);
+	DecodedInformation lastDecoded = ParseBlocks(bits, state, prefix);
 	if (lastDecoded.isValid() && lastDecoded.isRemaining()) {
-		return DecodedInformation(state.position, buffer, lastDecoded.remainingValue);
+		return DecodedInformation(state.position, prefix, lastDecoded.remainingValue);
 	}
-	return DecodedInformation(state.position, buffer);
+	return DecodedInformation(state.position, prefix);
 }
 
 DecodeStatus
