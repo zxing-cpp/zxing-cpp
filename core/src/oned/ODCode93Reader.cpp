@@ -30,11 +30,13 @@ namespace OneD {
 
 // Note that 'abcd' are dummy characters in place of control characters.
 static const char ALPHABET_STRING[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%abcd*";
-//static final char[] ALPHABET = ALPHABET_STRING.toCharArray();
 
 /**
-* These represent the encodings of characters, as patterns of wide and narrow bars.
-* The 9 least-significant bits of each int correspond to the pattern of wide and narrow.
+* Each character consist of 3 bars and 3 spaces and is 9 modules wide in total.
+* Each bar and space is from 1 to 4 modules wide.
+* These represent the encodings of characters. Each module is asigned 1 bit.
+* The 9 least-significant bits of each int correspond to the 9 modules in a symbol.
+* Note: bit 9 (the first) is always 1, bit 1 (the last) is always 0.
 */
 static const int CHARACTER_ENCODINGS[] = {
 	0x114, 0x148, 0x144, 0x142, 0x128, 0x124, 0x122, 0x150, 0x112, 0x10A, // 0-9
@@ -42,28 +44,19 @@ static const int CHARACTER_ENCODINGS[] = {
 	0x11A, 0x158, 0x14C, 0x146, 0x12C, 0x116, 0x1B4, 0x1B2, 0x1AC, 0x1A6, // K-T
 	0x196, 0x19A, 0x16C, 0x166, 0x136, 0x13A, // U-Z
 	0x12E, 0x1D4, 0x1D2, 0x1CA, 0x16E, 0x176, 0x1AE, // - - %
-	0x126, 0x1DA, 0x1D6, 0x132, 0x15E, // Control chars? $-*
+	0x126, 0x1DA, 0x1D6, 0x132, 0x15E, // Control chars ($)==a, (%)==b, (/)==c, (+)==d, *
 };
 
 static_assert(Length(ALPHABET_STRING) - 1 == Length(CHARACTER_ENCODINGS), "table size mismatch");
 
-static const int ASTERISK_ENCODING = CHARACTER_ENCODINGS[47];
-
-static const char PERCENTAGE_MAPPING[26] = {
-	'A' - 38, 'B' - 38, 'C' - 38, 'D' - 38, 'E' - 38,	// %A to %E map to control codes ESC to USep
-	'F' - 11, 'G' - 11, 'H' - 11, 'I' - 11, 'J' - 11,	// %F to %J map to ; < = > ?
-	'K' + 16, 'L' + 16, 'M' + 16, 'N' + 16, 'O' + 16,	// %K to %O map to [ \ ] ^ _
-	'P' + 43, 'Q' + 43, 'R' + 43, 'S' + 43, 'T' + 43,	// %P to %T map to { | } ~ DEL
-	'\0', '@', '`',										// %U map to NUL, %V map to @, %W map to `
-	127, 127, 127										// %X to %Z all map to DEL (127)
-};
-
+static const int ASTERISK_ENCODING = 0x15E;
 
 using CounterContainer = std::array<int, 6>;
 
 static int
 ToPattern(const CounterContainer& counters)
 {
+	// each bar/space is 1-4 modules wide, the sum of all is 9 modules wide
 	int sum = Accumulate(counters, 0);
 	int pattern = 0;
 	for (size_t i = 0; i < counters.size(); i++) {
@@ -89,93 +82,18 @@ FindAsteriskPattern(const BitArray& row)
 	    });
 }
 
-static char
-PatternToChar(int pattern)
-{
-	for (int i = 0; i < Length(CHARACTER_ENCODINGS); i++) {
-		if (CHARACTER_ENCODINGS[i] == pattern) {
-			return ALPHABET_STRING[i];
-		}
-	}
-	return 0;
-}
-
-static DecodeStatus
-DecodeExtended(const std::string& encoded, std::string& decoded)
-{
-	size_t length = encoded.length();
-	decoded.reserve(length);
-	for (size_t i = 0; i < length; i++) {
-		char c = encoded[i];
-		if (c >= 'a' && c <= 'd') {
-			if (i+1 >= length) {
-				return DecodeStatus::FormatError;
-			}
-			char next = encoded[i + 1];
-			char decodedChar = '\0';
-			switch (c) {
-			case 'd':
-				// +A to +Z map to a to z
-				if (next >= 'A' && next <= 'Z') {
-					decodedChar = (char)(next + 32);
-				}
-				else {
-					return DecodeStatus::FormatError;
-				}
-				break;
-			case 'a':
-				// $A to $Z map to control codes SH to SB
-				if (next >= 'A' && next <= 'Z') {
-					decodedChar = (char)(next - 64);
-				}
-				else {
-					return DecodeStatus::FormatError;
-				}
-				break;
-			case 'b':
-				if (next >= 'A' && next <= 'Z') {
-					decodedChar = PERCENTAGE_MAPPING[next - 'A'];
-				}
-				else {
-					return DecodeStatus::FormatError;
-				}
-				break;
-			case 'c':
-				// /A to /O map to ! to , and /Z maps to :
-				if (next >= 'A' && next <= 'O') {
-					decodedChar = (char)(next - 32);
-				}
-				else if (next == 'Z') {
-					decodedChar = ':';
-				}
-				else {
-					return DecodeStatus::FormatError;
-				}
-				break;
-			}
-			decoded += decodedChar;
-			// bump up i again since we read two characters
-			i++;
-		}
-		else {
-			decoded += c;
-		}
-	}
-	return DecodeStatus::NoError;
-}
-
 static bool
 CheckOneChecksum(const std::string& result, int checkPosition, int weightMax)
 {
 	int weight = 1;
-	int total = 0;
+	int checkSum = 0;
 	for (int i = checkPosition - 1; i >= 0; i--) {
-		total += weight * IndexOf(ALPHABET_STRING, result[i]);
+		checkSum += weight * IndexOf(ALPHABET_STRING, result[i]);
 		if (++weight > weightMax) {
 			weight = 1;
 		}
 	}
-	return !(total < 0 || result[checkPosition] != ALPHABET_STRING[total % 47]);
+	return result[checkPosition] == ALPHABET_STRING[checkSum % 47];
 }
 
 static bool
@@ -185,6 +103,8 @@ CheckChecksums(const std::string& result)
 	return CheckOneChecksum(result, length - 2, 20) && CheckOneChecksum(result, length - 1, 15);
 }
 
+// forward declare here. see ODCode39Reader.cpp. Not put in header to not pollute the public facing API
+bool DecodeExtendedCode39AndCode93(std::string& encoded, const char ctrl[4]);
 
 Result
 Code93Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>&) const
@@ -205,14 +125,14 @@ Code93Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 			return Result(DecodeStatus::NotFound);
 
 		int pattern = ToPattern(theCounters);
-		if (pattern < 0) {
+		if (pattern < 0)
 			return Result(DecodeStatus::NotFound);
-		}
-		char decodedChar = PatternToChar(pattern);
-		if (decodedChar == 0) {
+
+		int i = IndexOf(CHARACTER_ENCODINGS, pattern);
+		if (i < 0)
 			return Result(DecodeStatus::NotFound);
-		}
-		result.push_back(decodedChar);
+
+		result += ALPHABET_STRING[i];
 	} while (result.back() != '*');
 
 	result.pop_back(); // remove asterisk
@@ -222,10 +142,9 @@ Code93Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 		return Result(DecodeStatus::NotFound);
 	}
 
-	if (result.length() < 2) {
-		// false positive -- need at least 2 checksum digits
+	// Need at least 2 checksum + 1 payload characters
+	if (result.length() < 3)
 		return Result(DecodeStatus::NotFound);
-	}
 
 	if (!CheckChecksums(result))
 		return Result(DecodeStatus::ChecksumError);
@@ -233,15 +152,12 @@ Code93Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 	// Remove checksum digits
 	result.resize(result.length() - 2);
 
-	std::string resultString;
-	auto status = DecodeExtended(result, resultString);
-	if (StatusIsError(status)) {
-		return Result(status);
-	}
+	if (!DecodeExtendedCode39AndCode93(result, "abcd"))
+		return Result(DecodeStatus::FormatError);
 
 	float right = (range.begin - row.begin()) + 0.5f * range.size();
 	float ypos = static_cast<float>(rowNumber);
-	return Result(TextDecoder::FromLatin1(resultString), ByteArray(), { ResultPoint(left, ypos), ResultPoint(right, ypos) }, BarcodeFormat::CODE_93);
+	return Result(TextDecoder::FromLatin1(result), ByteArray(), { ResultPoint(left, ypos), ResultPoint(right, ypos) }, BarcodeFormat::CODE_93);
 }
 
 

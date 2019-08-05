@@ -67,4 +67,11 @@ inline int IndexOf(const char* str, char c) {
 	return s != nullptr ? static_cast<int>(s - str) : -1;
 }
 
+template <typename Container, typename Value, class UnaryOp>
+Value TransformReduce(const Container& c, Value s, UnaryOp op) {
+	for (const auto& v : c)
+		s += op(v);
+	return s;
+}
+
 } // ZXing

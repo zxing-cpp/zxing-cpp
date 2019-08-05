@@ -29,26 +29,26 @@ namespace ZXing {
 
 namespace OneD {
 
-static const char ALPHABET_STRING[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%";
-
-// Note this lacks '*' compared to ALPHABET_STRING
-static const char CHECK_DIGIT_STRING[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%";
+static const char ALPHABET_STRING[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%*";
 
 /**
+* Each character consists of 5 bars and 4 spaces, 3 of which are wide (i.e. 6 are narrow).
+* Each character is followed by a narrow space. The narrow to wide ratio is between 1:2 and 1:3.
 * These represent the encodings of characters, as patterns of wide and narrow bars.
 * The 9 least-significant bits of each int correspond to the pattern of wide and narrow,
-* with 1s representing "wide" and 0s representing narrow.
+* with 1s representing "wide" and 0s representing "narrow".
 */
 static const int CHARACTER_ENCODINGS[] = {
 	0x034, 0x121, 0x061, 0x160, 0x031, 0x130, 0x070, 0x025, 0x124, 0x064, // 0-9
 	0x109, 0x049, 0x148, 0x019, 0x118, 0x058, 0x00D, 0x10C, 0x04C, 0x01C, // A-J
 	0x103, 0x043, 0x142, 0x013, 0x112, 0x052, 0x007, 0x106, 0x046, 0x016, // K-T
 	0x181, 0x0C1, 0x1C0, 0x091, 0x190, 0x0D0, 0x085, 0x184, 0x0C4, 0x0A8, // U-$
-	0x0A2, 0x08A, 0x02A // /-%
+	0x0A2, 0x08A, 0x02A, 0x094 // /-% , *
 };
 
 static_assert(Length(ALPHABET_STRING) - 1 == Length(CHARACTER_ENCODINGS), "table size mismatch");
 
+static const int ASTERISK_ENCODING = 0x094;
 
 static const char PERCENTAGE_MAPPING[26] = {
 	'A' - 38, 'B' - 38, 'C' - 38, 'D' - 38, 'E' - 38,	// %A to %E map to control codes ESC to USep
@@ -58,9 +58,6 @@ static const char PERCENTAGE_MAPPING[26] = {
 	'\0', '@', '`',										// %U map to NUL, %V map to @, %W map to `
 	127, 127, 127										// %X to %Z all map to DEL (127)
 };
-
-
-static const int ASTERISK_ENCODING = 0x094;
 
 using CounterContainer = std::array<int, 9>;
 
@@ -123,87 +120,33 @@ FindAsteriskPattern(const BitArray& row)
 	    });
 }
 
-static char
-PatternToChar(int pattern)
+/** Decode the extended string in place. Return false if FormatError occured.
+ * ctrl is either "$%/+" for code39 or "abcd" for code93. */
+bool
+DecodeExtendedCode39AndCode93(std::string& encoded, const char ctrl[4])
 {
-	for (int i = 0; i < Length(CHARACTER_ENCODINGS); i++) {
-		if (CHARACTER_ENCODINGS[i] == pattern) {
-			return ALPHABET_STRING[i];
-		}
-	}
-	if (pattern == ASTERISK_ENCODING) {
-		return '*';
-	}
-	return 0;
-}
-
-/** Decode the extended string in place. Return false if FormatError occured. */
-static bool
-DecodeExtended(std::string& encoded)
-{
-	size_t length = encoded.length();
-	std::string decoded;
-	decoded.reserve(length);
-	for (size_t i = 0; i < length; i++) {
-		int c = (unsigned char)encoded[i];
-		if (c == '+' || c == '$' || c == '%' || c == '/') {
-			if (i+1 >= length) {
+	auto out = encoded.begin();
+	for (auto in = encoded.cbegin(); in != encoded.cend(); ++in) {
+		char c = *in;
+		if (Contains(ctrl, c)) {
+			char next = *++in; // if in is one short of cend(), then next == 0
+			if (next < 'A' || next > 'Z')
 				return false;
-			}
-			int next = (unsigned char)encoded[i + 1];
-			char decodedChar = '\0';
-			switch (c) {
-				case '+':
-					// +A to +Z map to a to z
-					if (next >= 'A' && next <= 'Z') {
-						decodedChar = (char)(next + 32);
-					}
-					else {
-						return false;
-					}
-					break;
-				case '$':
-					// $A to $Z map to control codes SH to SB
-					if (next >= 'A' && next <= 'Z') {
-						decodedChar = (char)(next - 64);
-					}
-					else {
-						return false;
-					}
-					break;
-				case '%':
-					if (next >= 'A' && next <= 'Z') {
-						decodedChar = PERCENTAGE_MAPPING[next - 'A'];
-					}
-					else {
-						return false;
-					}
-					break;
-				case '/':
-					// /A to /O map to ! to , and /Z maps to :
-					if (next >= 'A' && next <= 'O') {
-						decodedChar = (char)(next - 32);
-					}
-					else if (next == 'Z') {
-						decodedChar = ':';
-					}
-					else {
-						return false;
-					}
-					break;
-			}
-			decoded.push_back(decodedChar);
-			// bump up i again since we read two characters
-			i++;
+			if (c == ctrl[0])
+				c = next - 64; // $A to $Z map to control codes SH to SB
+			else if (c == ctrl[1])
+				c = PERCENTAGE_MAPPING[next - 'A'];
+			else if (c == ctrl[2])
+				c = next - 32; // /A to /O map to ! to , and /Z maps to :
+			else
+				c = next + 32; // +A to +Z map to a to z
 		}
-		else {
-			decoded.push_back((char)c);
-		}
+		*out++ = c;
 	}
-
-	encoded = decoded;
+	encoded.erase(out, encoded.end());
 	return true;
 }
+
 
 Code39Reader::Code39Reader(const DecodeHints& hints) :
 	_extendedMode(hints.shouldTryCode39ExtendedMode()),
@@ -233,38 +176,30 @@ Code39Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 		if (pattern < 0)
 			return Result(DecodeStatus::NotFound);
 
-		char decodedChar = PatternToChar(pattern);
-		if (decodedChar == 0) {
+		int i = IndexOf(CHARACTER_ENCODINGS, pattern);
+		if (i < 0)
 			return Result(DecodeStatus::NotFound);
-		}
-		result += decodedChar;
+
+		result += ALPHABET_STRING[i];
 	} while (result.back() != '*');
 
 	result.pop_back(); // remove asterisk
 
-	// If 50% of last pattern size, following last pattern, is not whitespace, fail
-	// (but if it's whitespace to the very end of the image, that's OK)
-	if (!row.hasQuiteZone(range.end, range.size()/2))
+	// Require at least one payload character and a quite zone of half the last pattern size.
+	if (result.size() < (_usingCheckDigit ? 2 : 1) || !row.hasQuiteZone(range.end, range.size() / 2)) {
 		return Result(DecodeStatus::NotFound);
+	}
 
 	if (_usingCheckDigit) {
-		int max = static_cast<int>(result.length()) - 1;
-		int total = 0;
-		for (int i = 0; i < max; i++) {
-			total += IndexOf(ALPHABET_STRING, result[i]);
-		}
-		if (total < 0 || result[max] != ALPHABET_STRING[total % (Length(ALPHABET_STRING)-1)]) {
+		auto checkDigit = result.back();
+		result.pop_back();
+		int checksum = TransformReduce(result, 0, [](char c) { return IndexOf(ALPHABET_STRING, c); });
+		if (checkDigit != ALPHABET_STRING[checksum % 43]) {
 			return Result(DecodeStatus::ChecksumError);
 		}
-		result.resize(max);
 	}
 
-	if (result.empty()) {
-		// false positive
-		return Result(DecodeStatus::NotFound);
-	}
-
-	if (_extendedMode && !DecodeExtended(result))
+	if (_extendedMode && !DecodeExtendedCode39AndCode93(result, "$%/+"))
 		return Result(DecodeStatus::FormatError);
 
 	float right = (range.begin - row.begin()) + 0.5f * range.size();
