@@ -66,7 +66,7 @@ FindStartPattern(const BitArray& row, int* startCode)
 			if (!row.hasQuiteZone(begin, -(end - begin) / 2))
 				return false;
 			float bestVariance = MAX_AVG_VARIANCE;
-		    for (int code = CODE_START_A; code <= CODE_START_C; code++) {
+			for (int code : {CODE_START_A, CODE_START_B, CODE_START_C}) {
 			    float variance =
 			        RowReader::PatternMatchVariance(counters, Code128::CODE_PATTERNS[code], MAX_INDIVIDUAL_VARIANCE);
 			    if (variance < bestVariance) {
@@ -76,28 +76,6 @@ FindStartPattern(const BitArray& row, int* startCode)
 		    }
 		    return bestVariance < MAX_AVG_VARIANCE;
 	    });
-}
-
-static bool DecodeCode(const std::vector<int>& counters, int* outCode)
-{
-	assert(outCode != nullptr);
-
-	float bestVariance = MAX_AVG_VARIANCE; // worst variance we'll accept
-	int bestMatch = -1;
-	for (size_t d = 0; d < Code128::CODE_PATTERNS.size(); d++) {
-		const auto& pattern = Code128::CODE_PATTERNS[d];
-		float variance = RowReader::PatternMatchVariance(counters, pattern, MAX_INDIVIDUAL_VARIANCE);
-		if (variance < bestVariance) {
-			bestVariance = variance;
-			bestMatch = static_cast<int>(d);
-		}
-	}
-	// TODO We're overlooking the fact that the STOP pattern has 7 values, not 6.
-	if (bestMatch >= 0) {
-		*outCode = bestMatch;
-		return true;
-	}
-	return false;
 }
 
 Code128Reader::Code128Reader(const DecodeHints& hints) :
@@ -162,7 +140,8 @@ Code128Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Dec
 			return Result(DecodeStatus::NotFound);
 
 		// Decode another code from image
-		if (!DecodeCode(counters, &code))
+		code = RowReader::DecodeDigit(counters, Code128::CODE_PATTERNS, MAX_AVG_VARIANCE, MAX_INDIVIDUAL_VARIANCE);
+		if (code == -1)
 			return Result(DecodeStatus::NotFound);
 
 		rawCodes.push_back(static_cast<uint8_t>(code));

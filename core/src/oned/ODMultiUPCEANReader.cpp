@@ -67,12 +67,7 @@ MultiUPCEANReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr
 	for (auto& reader : _readers) {
 		Result result = reader->decodeRow(rowNumber, row, range);
 		if (!result.isValid())
-		{
-			if (StatusIsError(result.status()))
-				continue;
-			else
-				return result;
-		}
+			continue;
 
 		// Special case: a 12-digit code encoded in UPC-A is identical to a "0"
 		// followed by those 12 digits encoded as EAN-13. Each will recognize such a code,

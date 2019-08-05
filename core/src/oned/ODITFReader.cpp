@@ -105,9 +105,8 @@ static std::string DecodeMiddle(BitArray::Iterator begin, BitArray::Iterator end
 
 		// Split them into each array
 		for (int k = 0; k < 5; k++) {
-			int twoK = 2 * k;
-			counterBlack[k] = counterDigitPair[twoK];
-			counterWhite[k] = counterDigitPair[twoK + 1];
+			counterBlack[k] = counterDigitPair[2 * k];
+			counterWhite[k] = counterDigitPair[2 * k + 1];
 		}
 
 		int bestMatch = RowReader::DecodeDigit(counterBlack, PATTERNS, MAX_AVG_VARIANCE, MAX_INDIVIDUAL_VARIANCE);

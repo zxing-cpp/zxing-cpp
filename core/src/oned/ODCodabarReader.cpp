@@ -130,12 +130,7 @@ ToNarrowWidePattern(const std::vector<int>& counters, int position)
 		}
 	}
 
-	for (int i = 0; i < Length(CHARACTER_ENCODINGS); i++) {
-		if (CHARACTER_ENCODINGS[i] == pattern) {
-			return i;
-		}
-	}
-	return -1;
+	return IndexOf(CHARACTER_ENCODINGS, pattern);
 }
 
 static int
