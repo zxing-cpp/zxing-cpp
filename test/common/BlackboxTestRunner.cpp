@@ -110,12 +110,21 @@ static std::string checkResult(const std::wstring& pathPrefix, std::wstring imgP
 	if (expectedFormat != result.format)
 		return "Format mismatch: expected " + expectedFormat + " but got " + result.format;
 
+	std::ifstream metaStream(asNativePath(buildPath(pathPrefix, replaceExtension(imgPath, L".metadata.txt"))),
+							 std::ios::binary);
+	if (metaStream) {
+		std::string expected((std::istreambuf_iterator<char>(metaStream)), std::istreambuf_iterator<char>());
+		auto utf8Metatata = toUtf8(result.metadata);
+		if (utf8Metatata != expected)
+			return "Metadata mismatch: expected '" + expected + "' but got '" + utf8Metatata + "'";
+	}
+
 	imgPath = replaceExtension(imgPath, L".txt");
 	std::ifstream utf8Stream(asNativePath(buildPath(pathPrefix, imgPath)), std::ios::binary);
 	if (utf8Stream) {
 		std::string expected((std::istreambuf_iterator<char>(utf8Stream)), std::istreambuf_iterator<char>());
 		auto utf8Result = toUtf8(result.text);
-		return utf8Result != expected ? "Content mismatch: expected " + expected + " but got " + utf8Result : "";
+		return utf8Result != expected ? "Content mismatch: expected '" + expected + "' but got '" + utf8Result + "'" : "";
 	}
 
 	imgPath = replaceExtension(imgPath, L".bin");
@@ -126,8 +135,9 @@ static std::string checkResult(const std::wstring& pathPrefix, std::wstring imgP
 		for (wchar_t c : result.text) {
 			latin1Result.push_back(static_cast<char>(c));
 		}
-		return latin1Result != expected ? "Content mismatch: expected " + expected + " but got " + latin1Result : "";
+		return latin1Result != expected ? "Content mismatch: expected '" + expected + "' but got '" + latin1Result + "'" : "";
 	}
+
 	return "Error reading file";
 }
 

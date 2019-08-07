@@ -177,7 +177,7 @@ int main(int argc, char** argv)
 			auto result = reader.read(TextUtfEncoding::FromUtf8(argv[i]), rotation, isPure);
 			std::cout << argv[i] << ": ";
 			if (result)
-				std::cout << result.format << ": " << TextUtfEncoding::ToUtf8(result.text) << "\n";
+				std::cout << result.format << ": " << TextUtfEncoding::ToUtf8(result.text) << " " << TextUtfEncoding::ToUtf8(result.metadata) << "\n";
 			else
 				std::cout << "FAILED\n";
 #ifdef ZXING_HAS_FILESYSTEM

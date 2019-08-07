@@ -44,6 +44,9 @@ struct ResultMetadata::IntegerValue : public Value
 	int toInteger(int) const override {
 		return value;
 	}
+	std::wstring toString() const override {
+		return std::to_wstring(value);
+	}
 };
 
 struct ResultMetadata::StringValue : public Value

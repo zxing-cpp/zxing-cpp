@@ -20,6 +20,7 @@
 #include "DecodeHints.h"
 #include "Result.h"
 #include "ImageLoader.h"
+#include "ZXContainerAlgorithms.h"
 
 #if 0
 using Binarizer = ZXing::GlobalHistogramBinarizer;
@@ -50,7 +51,17 @@ TestReader::read(const std::wstring& filename, int rotation, bool isPure) const
         binImg = std::make_shared<Binarizer>(_imageLoader->load(filename), isPure);
     auto result = _reader->read(*binImg->rotated(rotation));
     if (result.isValid()) {
-        return { ToString(result.format()), result.text() };
+        constexpr ResultMetadata::Key keys[] = {ResultMetadata::SUGGESTED_PRICE, ResultMetadata::ISSUE_NUMBER, ResultMetadata::UPC_EAN_EXTENSION};
+        constexpr wchar_t const * prefixs[] = {L"SUGGESTED_PRICE", L"ISSUE_NUMBER", L"UPC_EAN_EXTENSION"};
+        static_assert(Length(keys) == Length(prefixs), "lut size mismatch");
+
+        std::wstring metadata;
+        for (int i = 0; i < Length(keys) && metadata.empty(); ++i) {
+            metadata = result.metadata().getString(keys[i]);
+            if (metadata.size())
+                metadata.insert(0, std::wstring(prefixs[i]) + L"=");
+        }
+        return { ToString(result.format()), result.text(), metadata };
     }
     return {};
 }

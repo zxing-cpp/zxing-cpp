@@ -35,7 +35,7 @@ public:
     struct ReadResult
     {
 		std::string format;
-		std::wstring text;
+		std::wstring text, metadata;
         operator bool() const { return !format.empty(); }
     };
 
