@@ -406,8 +406,8 @@ BlackboxTestRunner::run(const std::set<std::string>& includedTests)
 		});
 
 		runTests("blackbox/ean13-2", "EAN_13", 28, {
-			{ 12, 17, 0, 1, 0   },
-			{ 11, 17, 0, 1, 180 },
+			{ 12, 17, 0   },
+			{ 11, 17, 180 },
 		});
 
 		runTests("blackbox/ean13-3", "EAN_13", 55, {
