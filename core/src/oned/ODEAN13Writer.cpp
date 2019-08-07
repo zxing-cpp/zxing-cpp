@@ -36,25 +36,7 @@ static const int CODE_WIDTH = 3 + // start guard
 BitMatrix
 EAN13Writer::encode(const std::wstring& contents, int width, int height) const
 {
-	size_t length = contents.length();
-	if (length != 12 && length != 13) {
-		throw std::invalid_argument("Requested contents should be 12 or 13 digits long");
-	}
-
-	std::array<int, 13> digits;
-	for (size_t i = 0; i < length; ++i) {
-		digits[i] = contents[i] - '0';
-		if (digits[i] < 0 || digits[i] > 9) {
-			throw std::invalid_argument("Contents should contain only digits: 0-9");
-		}
-	}
-
-	if (length == 12) {
-		digits[12] = UPCEANCommon::ComputeChecksum(digits);
-	}
-	else if (digits[12] != UPCEANCommon::ComputeChecksum(digits)) {
-		throw std::invalid_argument("Contents do not pass checksum");
-	}
+	auto digits = UPCEANCommon::DigitString2IntArray<13>(contents);
 
 	int parities = FIRST_DIGIT_ENCODINGS[digits[0]];
 	std::vector<bool> result(CODE_WIDTH, false);

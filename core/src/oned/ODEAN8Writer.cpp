@@ -33,25 +33,7 @@ static const int CODE_WIDTH = 3 + // start guard
 BitMatrix
 EAN8Writer::encode(const std::wstring& contents, int width, int height) const
 {
-	size_t length = contents.length();
-	if (length != 7 && length != 8) {
-		throw std::invalid_argument("Requested contents should be 7 or 8 digits long");
-	}
-
-	std::array<int, 8> digits;
-	for (size_t i = 0; i < length; ++i) {
-		digits[i] = contents[i] - '0';
-		if (digits[i] < 0 || digits[i] > 9) {
-			throw std::invalid_argument("Contents should contain only digits: 0-9");
-		}
-	}
-
-	if (length == 7) {
-		digits[7] = UPCEANCommon::ComputeChecksum(digits);
-	}
-	else if (digits[7] != UPCEANCommon::ComputeChecksum(digits)) {
-		throw std::invalid_argument("Contents do not pass checksum");
-	}
+	auto digits = UPCEANCommon::DigitString2IntArray<8>(contents);
 
 	std::vector<bool> result(CODE_WIDTH, false);
 	int pos = 0;

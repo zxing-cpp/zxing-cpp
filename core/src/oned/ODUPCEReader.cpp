@@ -58,8 +58,7 @@ UPCEReader::decodeMiddle(const BitArray& row, BitArray::Iterator begin, std::str
 	return {begin, next.begin};
 }
 
-DecodeStatus
-UPCEReader::checkChecksum(const std::string& s) const
+bool UPCEReader::checkChecksum(const std::string& s) const
 {
 	return UPCEANReader::checkChecksum(UPCEANCommon::ConvertUPCEtoUPCA(s));
 }

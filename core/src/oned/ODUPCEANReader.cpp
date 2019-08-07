@@ -112,9 +112,8 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, BitArray::Range star
 	if (!row.hasQuiteZone(stopGuard.end, stopGuard.size(), false))
 		return Result(DecodeStatus::NotFound);
 
-	auto status = checkChecksum(result);
-	if (StatusIsError(status))
-		return Result(status);
+	if (!checkChecksum(result))
+		return Result(DecodeStatus::ChecksumError);
 
 	float left = (startGuard.begin - row.begin()) + 0.5f * startGuard.size();
 	float right = (stopGuard.begin - row.begin()) + 0.5f * stopGuard.size();
@@ -154,31 +153,10 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, BitArray::Range star
 * @return true iff string of digits passes the UPC/EAN checksum algorithm
 * @throws FormatException if the string does not contain only digits
 */
-DecodeStatus
+bool
 UPCEANReader::checkChecksum(const std::string& s) const
 {
-	int length = static_cast<int>(s.length());
-	if (length == 0) {
-		return DecodeStatus::ChecksumError;
-	}
-
-	int sum = 0;
-	for (int i = length - 2; i >= 0; i -= 2) {
-		int digit = s[i] - '0';
-		if (digit < 0 || digit > 9) {
-			return DecodeStatus::FormatError;
-		}
-		sum += digit;
-	}
-	sum *= 3;
-	for (int i = length - 1; i >= 0; i -= 2) {
-		int digit = s[i] - '0';
-		if (digit < 0 || digit > 9) {
-			return DecodeStatus::FormatError;
-		}
-		sum += digit;
-	}
-	return sum % 10 == 0 ? DecodeStatus::NoError : DecodeStatus::ChecksumError;
+	return UPCEANCommon::ComputeChecksum(s, 1) == s.back() - '0';
 }
 
 } // OneD

@@ -91,7 +91,7 @@ protected:
 	* @return {@link #checkStandardUPCEANChecksum(CharSequence)}
 	* @throws FormatException if the string does not contain only digits
 	*/
-	virtual	DecodeStatus checkChecksum(const std::string& s) const;
+	virtual	bool checkChecksum(const std::string& s) const;
 
 
 	virtual BitArray::Range decodeEnd(const BitArray& row, BitArray::Iterator begin) const;

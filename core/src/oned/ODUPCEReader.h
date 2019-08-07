@@ -36,7 +36,7 @@ public:
 protected:
 	BarcodeFormat expectedFormat() const override;
 	BitArray::Range decodeMiddle(const BitArray& row, BitArray::Iterator, std::string& resultString) const override;
-	DecodeStatus checkChecksum(const std::string& s) const override;
+	bool checkChecksum(const std::string& s) const override;
 	BitArray::Range decodeEnd(const BitArray& row, BitArray::Iterator begin) const override;
 };
 
