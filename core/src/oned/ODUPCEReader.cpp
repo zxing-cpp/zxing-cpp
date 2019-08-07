@@ -36,9 +36,9 @@ static const std::array<int, 6> MIDDLE_END_PATTERN = { 1, 1, 1, 1, 1, 1 };
 /**
 * See {@link #L_AND_G_PATTERNS}; these values similarly represent patterns of
 * even-odd parity encodings of digits that imply both the number system (0 or 1)
-* used, and the check digit.
+* used (index / 10), and the check digit (index % 10).
 */
-static const std::array<std::array<int, 10>, 2> NUMSYS_AND_CHECK_DIGIT_PATTERNS = {
+static const std::array<int, 20> NUMSYS_AND_CHECK_DIGIT_PATTERNS = {
 	0x38, 0x34, 0x32, 0x31, 0x2C, 0x26, 0x23, 0x2A, 0x29, 0x25,
 	0x07, 0x0B, 0x0D, 0x0E, 0x13, 0x19, 0x1C, 0x15, 0x16, 0x1A,
 };
@@ -66,17 +66,12 @@ UPCEReader::decodeMiddle(const BitArray& row, BitArray::Iterator begin, std::str
 		}
 	}
 
-	// DetermineNumSysAndCheckDigit(resultString, lgPatternFound)
-	for (size_t numSys = 0; numSys < NUMSYS_AND_CHECK_DIGIT_PATTERNS.size(); numSys++) {
-		for (size_t d = 0; d < NUMSYS_AND_CHECK_DIGIT_PATTERNS[numSys].size(); d++) {
-			if (lgPatternFound == NUMSYS_AND_CHECK_DIGIT_PATTERNS[numSys][d]) {
-				resultString.insert(0, 1, (char)('0' + numSys));
-				resultString.push_back((char)('0' + d));
-				return {begin, next.begin};
-			}
-		}
-	}
-	return notFound;
+	int i = IndexOf(NUMSYS_AND_CHECK_DIGIT_PATTERNS, lgPatternFound);
+	if (i == -1)
+		return notFound;
+
+	resultString = std::to_string(i/10) + resultString + std::to_string(i % 10);
+	return {begin, next.begin};
 }
 
 DecodeStatus

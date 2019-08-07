@@ -52,20 +52,6 @@ namespace UPCEANExtension5Support
 		return sum % 10;
 	}
 
-	static int
-	DetermineCheckDigit(int lgPatternFound)
-	{
-		static const int CHECK_DIGIT_ENCODINGS[] = {
-			0x18, 0x14, 0x12, 0x11, 0x0C, 0x06, 0x03, 0x0A, 0x09, 0x05
-		};
-		for (int d = 0; d < 10; d++) {
-			if (lgPatternFound == CHECK_DIGIT_ENCODINGS[d]) {
-				return d;
-			}
-		}
-		return -1;
-	}
-
 	static BitArray::Range
 	DecodeMiddle(const BitArray& row, BitArray::Iterator begin, std::string& resultString)
 	{
@@ -88,11 +74,9 @@ namespace UPCEANExtension5Support
 			}
 		}
 
+		constexpr int CHECK_DIGIT_ENCODINGS[] = {0x18, 0x14, 0x12, 0x11, 0x0C, 0x06, 0x03, 0x0A, 0x09, 0x05};
+		if (ExtensionChecksum(resultString) != IndexOf(CHECK_DIGIT_ENCODINGS, lgPatternFound))
 			return notFound;
-		}
-
-		int checkDigit = DetermineCheckDigit(lgPatternFound);
-		if (checkDigit < 0 || ExtensionChecksum(resultString) != checkDigit) {
 
 		return {begin, next.begin};
 	}
