@@ -130,10 +130,9 @@ DecodeMiddle(BitArray::Range* next_, int N)
 static const std::array<int, 3> EXTENSION_START_PATTERN = { 1,1,2 };
 
 Result
-UPCEANExtensionSupport::DecodeRow(int rowNumber, const BitArray& row, int rowOffset)
+UPCEANExtensionSupport::DecodeRow(int rowNumber, const BitArray& row, BitArray::Iterator begin)
 {
-	BitArray::Iterator extStartBegin = row.getNextSet(row.iterAt(rowOffset));
-	BitArray::Range next = {extStartBegin, row.end()};
+	BitArray::Range next = {row.getNextSet(begin), row.end()};
 
 	float y = rowNumber;
 	float x1 = next.begin - row.begin();

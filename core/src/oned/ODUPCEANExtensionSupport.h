@@ -16,17 +16,18 @@
 * limitations under the License.
 */
 
+#include "BitArray.h"
+
 namespace ZXing {
 
 class Result;
-class BitArray;
 
 namespace OneD {
 
 class UPCEANExtensionSupport
 {
 public:
-	static Result DecodeRow(int rowNumber, const BitArray& row, int rowOffset);
+	static Result DecodeRow(int rowNumber, const BitArray& row, BitArray::Iterator begin);
 };
 
 

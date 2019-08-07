@@ -118,20 +118,18 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, BitArray::Range star
 	float left = (startGuard.begin - row.begin()) + 0.5f * startGuard.size();
 	float right = (stopGuard.begin - row.begin()) + 0.5f * stopGuard.size();
 	BarcodeFormat format = expectedFormat();
-	float ypos = static_cast<float>(rowNumber);
+	float ypos = rowNumber;
 
 	Result decodeResult(TextDecoder::FromLatin1(result), ByteArray(), { ResultPoint(left, ypos), ResultPoint(right, ypos) }, format);
-	int extensionLength = 0;
-	Result extensionResult = UPCEANExtensionSupport::DecodeRow(rowNumber, row, stopGuard.end - row.begin());
+	Result extensionResult = UPCEANExtensionSupport::DecodeRow(rowNumber, row, stopGuard.end);
 	if (extensionResult.isValid())
 	{
 		decodeResult.metadata().put(ResultMetadata::UPC_EAN_EXTENSION, extensionResult.text());
 		decodeResult.metadata().putAll(extensionResult.metadata());
 		decodeResult.addResultPoints(extensionResult.resultPoints());
-		extensionLength = static_cast<int>(extensionResult.text().length());
 	}
 
-	if (!_allowedExtensions.empty() && !Contains(_allowedExtensions, extensionLength)) {
+	if (!_allowedExtensions.empty() && !Contains(_allowedExtensions, extensionResult.text().size())) {
 		return Result(DecodeStatus::NotFound);
 	}
 
