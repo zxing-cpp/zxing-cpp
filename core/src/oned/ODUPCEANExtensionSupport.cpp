@@ -87,9 +87,13 @@ namespace UPCEANExtension5Support
 		std::string currency;
 		switch (raw.front()) {
 		case '0':
+		case '1':
 			currency = "\xa3";
 			break;
-		case '5':
+		case '3': // AUS
+		case '4': // NZ
+		case '5': // US
+		case '6': // CA
 			currency = "$";
 			break;
 		case '9':
