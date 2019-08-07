@@ -36,29 +36,6 @@ UPCEANReader::UPCEANReader(const DecodeHints& hints) :
 {
 }
 
-/**
-* @param row row of black/white values to search
-* @param rowOffset position to start search
-* @param whiteFirst if true, indicates that the pattern specifies white/black/white/...
-* pixel counts, otherwise, it is interpreted as black/white/black/...
-* @param pattern pattern of counts of number of black and white pixels that are being
-* searched for as a pattern
-* @return start/end horizontal offset of guard pattern, as an array of two ints
-* @throws NotFoundException if pattern is not found
-*/
-BitArray::Range
-UPCEANReader::FindGuardPattern(const BitArray& row, BitArray::Iterator begin, bool whiteFirst, const int* pattern, size_t length)
-{
-	using Counters = std::vector<int>;
-	Counters counters(length, 0);
-
-	return RowReader::FindPattern(
-		row.getNextSetTo(begin, !whiteFirst), row.end(), counters,
-		[pattern, length](BitArray::Iterator, BitArray::Iterator, const Counters& cntrs) {
-			return RowReader::PatternMatchVariance(cntrs.data(), pattern, length, MAX_INDIVIDUAL_VARIANCE) < MAX_AVG_VARIANCE;
-		});
-}
-
 BitArray::Range
 UPCEANReader::FindStartGuardPattern(const BitArray& row)
 {
@@ -112,7 +89,9 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 BitArray::Range
 UPCEANReader::decodeEnd(const BitArray& row, BitArray::Iterator begin) const
 {
-	return FindGuardPattern(row, begin, false, UPCEANCommon::START_END_PATTERN);
+	BitArray::Range next = {begin, row.end()};
+	ReadGuardPattern(&next, UPCEANCommon::START_END_PATTERN);
+	return {begin, next.begin};
 }
 
 Result

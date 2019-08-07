@@ -213,13 +213,14 @@ static const std::array<int, 3> EXTENSION_START_PATTERN = { 1,1,2 };
 Result
 UPCEANExtensionSupport::DecodeRow(int rowNumber, const BitArray& row, int rowOffset)
 {
-	auto extStartRange = UPCEANReader::FindGuardPattern(row, row.iterAt(rowOffset), false, EXTENSION_START_PATTERN);
-	if (!extStartRange)
+	BitArray::Iterator extStartBegin = row.getNextSet(row.iterAt(rowOffset));
+	BitArray::Range next = {extStartBegin, row.end()};
+	if (!UPCEANReader::ReadGuardPattern(&next, EXTENSION_START_PATTERN))
 		return Result(DecodeStatus::NotFound);
 
-	Result result = UPCEANExtension5Support::DecodeRow(rowNumber, row, extStartRange.begin - row.begin(), extStartRange.end - row.begin());
+	Result result = UPCEANExtension5Support::DecodeRow(rowNumber, row, extStartBegin - row.begin(), next.begin - row.begin());
 	if (!result.isValid()) {
-		result = UPCEANExtension2Support::DecodeRow(rowNumber, row, extStartRange.begin - row.begin(), extStartRange.end - row.begin());
+		result = UPCEANExtension2Support::DecodeRow(rowNumber, row, extStartBegin - row.begin(), next.begin - row.begin());
 	}
 	return result;
 }

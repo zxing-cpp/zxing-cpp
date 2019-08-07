@@ -67,7 +67,9 @@ UPCEReader::checkChecksum(const std::string& s) const
 BitArray::Range
 UPCEReader::decodeEnd(const BitArray& row, BitArray::Iterator begin) const
 {
-	return FindGuardPattern(row, begin, true, UPCEANCommon::UPCE_END_PATTERN);
+	BitArray::Range next = {begin, row.end()};
+	ReadGuardPattern(&next, UPCEANCommon::UPCE_END_PATTERN);
+	return {begin, next.begin};
 }
 
 } // OneD

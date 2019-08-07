@@ -90,10 +90,8 @@ BitArray::Range EAN13Reader::decodeMiddle(const BitArray& row, BitArray::Iterato
 		return notFound;
 	resultString.insert(0, 1, (char)('0' + index));
 
-	auto middleRange = FindGuardPattern(row, next.begin, true, UPCEANCommon::MIDDLE_PATTERN);
-	if (!middleRange)
+	if (!ReadGuardPattern(&next, UPCEANCommon::MIDDLE_PATTERN))
 		return notFound;
-	next.begin = middleRange.end;
 
 	for (int x = 0; x < 6; x++) {
 		if (DecodeDigit(&next, UPCEANCommon::L_PATTERNS, &resultString) == -1)

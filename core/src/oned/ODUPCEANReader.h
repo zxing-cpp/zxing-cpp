@@ -99,11 +99,6 @@ protected:
 public:
 	static BitArray::Range FindStartGuardPattern(const BitArray& row);
 
-	template <typename Container>
-	static BitArray::Range FindGuardPattern(const BitArray& row, BitArray::Iterator begin, bool whiteFirst, const Container& pattern) {
-		return FindGuardPattern(row, begin, whiteFirst, pattern.data(), pattern.size());
-	}
-
 	/**
 	* Attempts to read and decode a single UPC/EAN-encoded digit.
 	*
@@ -130,11 +125,24 @@ public:
 
 		return bestMatch;
 	}
-	
+
+	/**
+	 * Similar to DecodeDigit. Detects a single guard pattern instead of a digit.
+	 * */
+	template <size_t N>
+	static bool ReadGuardPattern(BitArray::Range* next, const std::array<int, N>& pattern) {
+		assert(next);
+
+		std::array<int, N> counters = {};
+		auto range = RowReader::RecordPattern(next->begin, next->end, counters);
+		if (!range || RowReader::PatternMatchVariance(counters, pattern, MAX_INDIVIDUAL_VARIANCE) >= MAX_AVG_VARIANCE)
+			return false;
+
+		next->begin = range.end;
+		return true;
+	}
 private:
 	std::vector<int> _allowedExtensions;
-
-	static BitArray::Range FindGuardPattern(const BitArray& row, BitArray::Iterator begin, bool whiteFirst, const int* pattern, size_t length);
 };
 
 } // OneD

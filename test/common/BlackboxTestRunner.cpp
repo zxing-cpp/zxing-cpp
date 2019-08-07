@@ -426,8 +426,8 @@ BlackboxTestRunner::run(const std::set<std::string>& includedTests)
 		});
 
 		runTests("blackbox/ean13-4", "EAN_13", 22, {
-			{ 6, 13, 1, 1, 0   },
-			{ 7, 13, 1, 1, 180 },
+			{ 7, 14, 0   },
+			{ 8, 14, 180 },
 		});
 
 		runTests("blackbox/ean13-5", "EAN_13", 18, {
@@ -456,13 +456,13 @@ BlackboxTestRunner::run(const std::set<std::string>& includedTests)
 		});
 
 		runTests("blackbox/upca-2", "UPC_A", 52, {
-			{ 28, 36, 0, 2, 0   },
-			{ 29, 36, 0, 2, 180 },
+			{ 28, 36, 0   },
+			{ 29, 36, 180 },
 		});
 
 		runTests("blackbox/upca-3", "UPC_A", 21, {
-			{ 7, 9, 0, 2, 0   },
-			{ 8, 9, 0, 2, 180 },
+			{ 7, 10, 0, 1, 0   },
+			{ 8, 10, 0, 1, 180 },
 		});
 
 		runTests("blackbox/upca-4", "UPC_A", 19, {
@@ -601,17 +601,17 @@ BlackboxTestRunner::run(const std::set<std::string>& includedTests)
 		});
 
 		runTests("blackbox/falsepositives-1", "NONE", 22, {
+			{ 0, 0, 0, 0, 0   },
+			{ 0, 0, 0, 0, 90  },
+			{ 0, 0, 0, 0, 180 },
+			{ 0, 0, 0, 0, 270 },
+		});
+
+		runTests("blackbox/falsepositives-2", "NONE", 25, {
 			{ 0, 0, 0, 2, 0   },
 			{ 0, 0, 0, 2, 90  },
 			{ 0, 0, 0, 2, 180 },
 			{ 0, 0, 0, 2, 270 },
-		});
-
-		runTests("blackbox/falsepositives-2", "NONE", 25, {
-			{ 0, 0, 2, 5, 0   },
-			{ 0, 0, 0, 5, 90  },
-			{ 0, 0, 1, 5, 180 },
-			{ 0, 0, 0, 5, 270 },
 		});
 		// clang-format on
 
