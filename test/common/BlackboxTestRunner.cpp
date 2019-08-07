@@ -435,6 +435,11 @@ BlackboxTestRunner::run(const std::set<std::string>& includedTests)
 			{ 0, 0, 180 },
 		});
 
+		runTests("blackbox/ean13-extension-1", "EAN_13", 2, {
+			{ 2, 2, 0 },
+			{ 2, 2, 180 },
+		});
+
 		runTests("blackbox/itf-1", "ITF", 14, {
 			{ 14, 14, 0   },
 			{ 14, 14, 180 },
@@ -445,9 +450,9 @@ BlackboxTestRunner::run(const std::set<std::string>& includedTests)
 			{ 13, 13, 180 },
 		});
 
-		runTests("blackbox/upca-1", "UPC_A", 21, {
-			{ 14, 18, 0, 1, 0   },
-			{ 16, 18, 0, 1, 180 },
+		runTests("blackbox/upca-1", "UPC_A", 15, {
+			{ 10, 12, 0, 1, 0   },
+			{ 12, 12, 0, 1, 180 },
 		});
 
 		runTests("blackbox/upca-2", "UPC_A", 52, {
@@ -475,8 +480,9 @@ BlackboxTestRunner::run(const std::set<std::string>& includedTests)
 			{ 0, 0, 180 },
 		});
 
-		runTests("blackbox/upcean-extension-1", "EAN_13", 2, {
-			{ 2, 2, 0 },
+		runTests("blackbox/upca-extension-1", "UPC_A", 6, {
+			{ 2, 4, 2, 2, 0 },
+			{ 2, 4, 2, 2, 180 },
 		});
 
 		runTests("blackbox/upce-1", "UPC_E", 3, {
