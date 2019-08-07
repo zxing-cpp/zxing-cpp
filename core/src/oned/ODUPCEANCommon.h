@@ -31,11 +31,6 @@ public:
 	static const std::array<int, 3> START_END_PATTERN;
 
 	/**
-	* end guard pattern.
-	*/
-	static const std::array<int, 6> END_PATTERN;
-
-	/**
 	* "Odd", or "L" patterns used to encode UPC/EAN digits.
 	*/
 	static const std::array<UPCEANReader::Digit, 10> L_PATTERNS;
@@ -50,6 +45,17 @@ public:
 	*/
 	static const std::array<UPCEANReader::Digit, 20> L_AND_G_PATTERNS;
 
+	/**
+	* UPCE end guard pattern (== MIDDLE_PATTERN + single module black bar)
+	*/
+	static const std::array<int, 6> UPCE_END_PATTERN;
+
+	/**
+	* See {@link #L_AND_G_PATTERNS}; these values similarly represent patterns of
+	* even-odd parity encodings of digits that imply both the number system (0 or 1)
+	* used (index / 10), and the check digit (index % 10).
+	*/
+	static const std::array<int, 20> NUMSYS_AND_CHECK_DIGIT_PATTERNS;
 
 	template <size_t N>
 	static int ComputeChecksum(const std::array<int, N>& digits)

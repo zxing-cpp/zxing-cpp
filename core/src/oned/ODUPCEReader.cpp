@@ -27,22 +27,6 @@
 namespace ZXing {
 namespace OneD {
 
-/**
-* The pattern that marks the middle, and end, of a UPC-E pattern.
-* There is no "second half" to a UPC-E barcode.
-*/
-static const std::array<int, 6> MIDDLE_END_PATTERN = { 1, 1, 1, 1, 1, 1 };
-
-/**
-* See {@link #L_AND_G_PATTERNS}; these values similarly represent patterns of
-* even-odd parity encodings of digits that imply both the number system (0 or 1)
-* used (index / 10), and the check digit (index % 10).
-*/
-static const std::array<int, 20> NUMSYS_AND_CHECK_DIGIT_PATTERNS = {
-	0x38, 0x34, 0x32, 0x31, 0x2C, 0x26, 0x23, 0x2A, 0x29, 0x25,
-	0x07, 0x0B, 0x0D, 0x0E, 0x13, 0x19, 0x1C, 0x15, 0x16, 0x1A,
-};
-
 BarcodeFormat
 UPCEReader::expectedFormat() const
 {
@@ -66,7 +50,7 @@ UPCEReader::decodeMiddle(const BitArray& row, BitArray::Iterator begin, std::str
 		}
 	}
 
-	int i = IndexOf(NUMSYS_AND_CHECK_DIGIT_PATTERNS, lgPatternFound);
+	int i = IndexOf(UPCEANCommon::NUMSYS_AND_CHECK_DIGIT_PATTERNS, lgPatternFound);
 	if (i == -1)
 		return notFound;
 
@@ -83,7 +67,7 @@ UPCEReader::checkChecksum(const std::string& s) const
 BitArray::Range
 UPCEReader::decodeEnd(const BitArray& row, BitArray::Iterator begin) const
 {
-	return FindGuardPattern(row, begin, true, MIDDLE_END_PATTERN);
+	return FindGuardPattern(row, begin, true, UPCEANCommon::UPCE_END_PATTERN);
 }
 
 } // OneD

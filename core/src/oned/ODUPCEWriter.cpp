@@ -24,34 +24,6 @@
 namespace ZXing {
 namespace OneD {
 
-// For an UPC-E barcode, the final digit is represented by the parities used
-// to encode the middle six digits, according to the table below.
-//
-//                Parity of next 6 digits
-//    Digit   0     1     2     3     4     5
-//       0    Even   Even  Even Odd  Odd   Odd
-//       1    Even   Even  Odd  Even Odd   Odd
-//       2    Even   Even  Odd  Odd  Even  Odd
-//       3    Even   Even  Odd  Odd  Odd   Even
-//       4    Even   Odd   Even Even Odd   Odd
-//       5    Even   Odd   Odd  Even Even  Odd
-//       6    Even   Odd   Odd  Odd  Even  Even
-//       7    Even   Odd   Even Odd  Even  Odd
-//       8    Even   Odd   Even Odd  Odd   Even
-//       9    Even   Odd   Odd  Even Odd   Even
-//
-// The encoding is represented by the following array, which is a bit pattern
-// using Odd = 0 and Even = 1. For example, 5 is represented by:
-//
-//              Odd Even Even Odd Odd Even
-// in binary:
-//                0    1    1   0   0    1   == 0x19
-//
-static const std::array<std::array<int, 10>, 2> NUMSYS_AND_CHECK_DIGIT_PATTERNS = {
-	0x38, 0x34, 0x32, 0x31, 0x2C, 0x26, 0x23, 0x2A, 0x29, 0x25,
-	0x07, 0x0B, 0x0D, 0x0E, 0x13, 0x19, 0x1C, 0x15, 0x16, 0x1A,
-};
-
 static const int CODE_WIDTH = 3 + // start guard
                               (7 * 6) + // bars
                               6; // end guard
@@ -92,7 +64,7 @@ UPCEWriter::encode(const std::wstring& contents, int width, int height) const
 		throw std::invalid_argument("Number system must be 0 or 1");
 	}
 
-	int parities = NUMSYS_AND_CHECK_DIGIT_PATTERNS[firstDigit][digits[7]];
+	int parities = UPCEANCommon::NUMSYS_AND_CHECK_DIGIT_PATTERNS[firstDigit * 10 + digits[7]];
 	std::vector<bool> result(CODE_WIDTH, false);
 	int pos = 0;
 
@@ -106,7 +78,7 @@ UPCEWriter::encode(const std::wstring& contents, int width, int height) const
 		pos += WriterHelper::AppendPattern(result, pos, UPCEANCommon::L_AND_G_PATTERNS[digit], false);
 	}
 
-	WriterHelper::AppendPattern(result, pos, UPCEANCommon::END_PATTERN, false);
+	WriterHelper::AppendPattern(result, pos, UPCEANCommon::UPCE_END_PATTERN, false);
 	return WriterHelper::RenderResult(result, width, height, _sidesMargin >= 0 ? _sidesMargin : 9);
 }
 
