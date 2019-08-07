@@ -56,7 +56,7 @@ UPCEReader::decodeMiddle(const BitArray& row, BitArray::Iterator begin, std::str
 	const BitArray::Range notFound = {begin, begin};
 	int lgPatternFound = 0;
 
-	for (int x = 0; x < 6 && next; x++) {
+	for (int x = 0; x < 6; x++) {
 		int bestMatch = DecodeDigit(&next, UPCEANCommon::L_AND_G_PATTERNS, &resultString);
 		if (bestMatch == -1)
 			return notFound;

@@ -73,7 +73,7 @@ namespace UPCEANExtension5Support
 		const BitArray::Range notFound = {begin, begin};
 		int lgPatternFound = 0;
 
-		for (int x = 0; x < 5 && next; x++) {
+		for (int x = 0; x < 5; x++) {
 			int bestMatch = UPCEANReader::DecodeDigit(&next, UPCEANCommon::L_AND_G_PATTERNS, &resultString);
 			if (bestMatch == -1)
 				return notFound;
@@ -88,14 +88,11 @@ namespace UPCEANExtension5Support
 			}
 		}
 
-		if (resultString.length() != 5) {
 			return notFound;
 		}
 
 		int checkDigit = DetermineCheckDigit(lgPatternFound);
 		if (checkDigit < 0 || ExtensionChecksum(resultString) != checkDigit) {
-			return notFound;
-		}
 
 		return {begin, next.begin};
 	}
@@ -180,7 +177,7 @@ namespace UPCEANExtension2Support
 		const BitArray::Range notFound = {begin, begin};
 		int lgPatternFound = 0;
 
-		for (int x = 0; x < 2 && next; x++) {
+		for (int x = 0; x < 2; x++) {
 			int bestMatch = UPCEANReader::DecodeDigit(&next, UPCEANCommon::L_AND_G_PATTERNS, &resultString);
 			if (bestMatch == -1)
 				return notFound;
@@ -193,10 +190,6 @@ namespace UPCEANExtension2Support
 				next.begin = row.getNextSet(next.begin);
 				next.begin = row.getNextUnset(next.begin);
 			}
-		}
-
-		if (resultString.length() != 2) {
-			return notFound;
 		}
 
 		if (std::stoi(resultString) % 4 != lgPatternFound) {

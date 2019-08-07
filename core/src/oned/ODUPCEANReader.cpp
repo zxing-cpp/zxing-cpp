@@ -133,10 +133,6 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, BitArray::Range star
 	if (!row.hasQuiteZone(stopGuard.end, stopGuard.size(), false))
 		return Result(DecodeStatus::NotFound);
 
-	// UPC/EAN should never be less than 8 chars anyway
-	if (result.length() < 8) {
-		return Result(DecodeStatus::FormatError);
-	}
 	auto status = checkChecksum(result);
 	if (StatusIsError(status))
 		return Result(status);

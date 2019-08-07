@@ -70,7 +70,7 @@ BitArray::Range EAN13Reader::decodeMiddle(const BitArray& row, BitArray::Iterato
 	BitArray::Range next = {begin, row.end()};
 	const BitArray::Range notFound = {begin, begin};
 
-	for (int x = 0; x < 6 && next; x++) {
+	for (int x = 0; x < 6; x++) {
 		int bestMatch = DecodeDigit(&next, UPCEANCommon::L_AND_G_PATTERNS, &resultString);
 		if (bestMatch == -1)
 			return notFound;
@@ -95,7 +95,7 @@ BitArray::Range EAN13Reader::decodeMiddle(const BitArray& row, BitArray::Iterato
 		return notFound;
 	next.begin = middleRange.end;
 
-	for (int x = 0; x < 6 && next; x++) {
+	for (int x = 0; x < 6; x++) {
 		if (DecodeDigit(&next, UPCEANCommon::L_PATTERNS, &resultString) == -1)
 			return notFound;
 	}
