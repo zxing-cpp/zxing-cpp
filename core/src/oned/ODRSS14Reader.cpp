@@ -72,6 +72,9 @@ struct RSS14DecodingState : public RowReader::DecodingState
 static BitArray::Range
 FindFinderPattern(const BitArray& row, bool rightFinderPattern, FinderCounters& counters)
 {
+	if (row.size() < 2 * 18 + 14)
+		return {row.end(), row.end()};
+
 	return RowReader::FindPattern(
 	    // Will encounter white first when searching for right finder pattern
 		// The finder pattern is inside the code, i.e. there must be at least 18 pixels on both sides
