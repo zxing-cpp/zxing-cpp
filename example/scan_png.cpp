@@ -99,6 +99,12 @@ using Binarizer = ZXing::HybridBinarizer;
 #endif
 
 
+std::ostream& operator<<(std::ostream& os, const std::vector<ResultPoint>& points) {
+	for (const auto& p : points)
+		os << int(p.x() + .5f) << "x" << int(p.y() + .5f) << " ";
+	return os;
+}
+
 int main(int argc, char* argv[])
 {
 	if (argc <= 1) {
@@ -137,7 +143,8 @@ int main(int argc, char* argv[])
 	auto result = reader.read(binImage);
 	if (result.isValid()) {
 		std::cout << "Text:     " << TextUtfEncoding::ToUtf8(result.text()) << "\n"
-		          << "Format:   " << ToString(result.format()) << "\n";
+		          << "Format:   " << ToString(result.format()) << "\n"
+		          << "Position: " << result.resultPoints() << "\n";
 		auto errLevel = result.metadata().getString(ResultMetadata::Key::ERROR_CORRECTION_LEVEL);
 		if (!errLevel.empty()) {
 			std::cout << "EC Level: " << TextUtfEncoding::ToUtf8(errLevel) << "\n";
