@@ -600,7 +600,7 @@ BlackboxTestRunner::run(const std::set<std::string>& includedTests)
 			{ 3, 3, 0   },
 		});
 
-		runTests("blackbox/falsepositives-1", "NONE", 22, {
+		runTests("blackbox/falsepositives-1", "NONE", 24, {
 			{ 0, 0, 0, 0, 0   },
 			{ 0, 0, 0, 0, 90  },
 			{ 0, 0, 0, 0, 180 },
