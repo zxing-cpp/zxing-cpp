@@ -19,7 +19,6 @@
 #include "Result.h"
 #include "BitArray.h"
 #include "DecodeHints.h"
-#include "TextDecoder.h"
 #include "ZXContainerAlgorithms.h"
 
 #include <array>
@@ -293,13 +292,12 @@ CodabarReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Dec
 	for (int i = 0; i < startOffset; i++) {
 		runningCount += counters[i];
 	}
-	float left = static_cast<float>(runningCount);
+	int xStart = runningCount;
 	for (int i = startOffset; i < nextStart - 1; i++) {
 		runningCount += counters[i];
 	}
-	float right = static_cast<float>(runningCount);
-	float ypos = static_cast<float>(rowNumber);
-	return Result(TextDecoder::FromLatin1(decodeRowResult), ByteArray(), { ResultPoint(left, ypos), ResultPoint(right, ypos) }, BarcodeFormat::CODABAR);
+	int xStop = runningCount;
+	return Result(decodeRowResult, rowNumber, xStart, xStop, BarcodeFormat::CODABAR);
 }
 
 } // OneD

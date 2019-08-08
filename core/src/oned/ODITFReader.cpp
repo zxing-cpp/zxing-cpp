@@ -19,7 +19,6 @@
 #include "Result.h"
 #include "BitArray.h"
 #include "DecodeHints.h"
-#include "TextDecoder.h"
 #include "ZXContainerAlgorithms.h"
 
 #include <array>
@@ -227,11 +226,9 @@ ITFReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Decodin
 			return Result(DecodeStatus::FormatError);
 	}
 
-	float x1 = static_cast<float>(startRange.end - row.begin());
-	float x2 = static_cast<float>(endRange.begin - row.begin());
-	float ypos = static_cast<float>(rowNumber);
-
-	return Result(TextDecoder::FromLatin1(result), ByteArray(), { ResultPoint(x1, ypos), ResultPoint(x2, ypos) }, BarcodeFormat::ITF);
+	int xStart = startRange.begin - row.begin();
+	int xStop = endRange.end - row.begin() - 1;
+	return Result(result, rowNumber, xStart, xStop, BarcodeFormat::ITF);
 }
 
 } // OneD

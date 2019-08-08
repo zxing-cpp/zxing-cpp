@@ -19,7 +19,6 @@
 #include "Result.h"
 #include "BitArray.h"
 #include "ZXNumeric.h"
-#include "TextDecoder.h"
 #include "ZXContainerAlgorithms.h"
 
 #include <array>
@@ -113,7 +112,7 @@ Code93Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 	if (!range)
 		return Result(DecodeStatus::NotFound);
 
-	float left = (range.begin - row.begin()) + 0.5f * range.size();
+	int xStart = range.begin - row.begin();
 	CounterContainer theCounters = {};
 	std::string result;
 	result.reserve(20);
@@ -155,9 +154,8 @@ Code93Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 	if (!DecodeExtendedCode39AndCode93(result, "abcd"))
 		return Result(DecodeStatus::FormatError);
 
-	float right = (range.begin - row.begin()) + 0.5f * range.size();
-	float ypos = static_cast<float>(rowNumber);
-	return Result(TextDecoder::FromLatin1(result), ByteArray(), { ResultPoint(left, ypos), ResultPoint(right, ypos) }, BarcodeFormat::CODE_93);
+	int xStop = range.end - row.begin() - 1;
+	return Result(result, rowNumber, xStart, xStop, BarcodeFormat::CODE_93);
 }
 
 

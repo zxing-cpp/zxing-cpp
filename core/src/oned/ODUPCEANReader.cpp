@@ -115,12 +115,11 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, BitArray::Range star
 	if (!checkChecksum(result))
 		return Result(DecodeStatus::ChecksumError);
 
-	float left = (startGuard.begin - row.begin()) + 0.5f * startGuard.size();
-	float right = (stopGuard.begin - row.begin()) + 0.5f * stopGuard.size();
 	BarcodeFormat format = expectedFormat();
-	float ypos = rowNumber;
+	int xStart = startGuard.begin - row.begin();
+	int xStop = stopGuard.end - row.begin() - 1;
 
-	Result decodeResult(TextDecoder::FromLatin1(result), ByteArray(), { ResultPoint(left, ypos), ResultPoint(right, ypos) }, format);
+	Result decodeResult(result, rowNumber, xStart, xStop, format);
 	Result extensionResult = UPCEANExtensionSupport::DecodeRow(rowNumber, row, stopGuard.end);
 	if (extensionResult.isValid())
 	{

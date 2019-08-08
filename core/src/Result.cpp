@@ -16,10 +16,11 @@
 */
 
 #include "Result.h"
+#include "TextDecoder.h"
 
 namespace ZXing {
 
-Result::Result(std::wstring&& text, ByteArray&& rawBytes, std::vector<ResultPoint>&& resultPoints, BarcodeFormat format)
+Result::Result(std::wstring&& text, std::vector<ResultPoint>&& resultPoints, BarcodeFormat format, ByteArray&& rawBytes)
     : _text(std::move(text)),
       _rawBytes(std::move(rawBytes)),
       _resultPoints(std::move(resultPoints)),
@@ -27,6 +28,10 @@ Result::Result(std::wstring&& text, ByteArray&& rawBytes, std::vector<ResultPoin
 {
 	_numBits = static_cast<int>(_rawBytes.size()) * 8;
 }
+
+Result::Result(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format, ByteArray&& rawBytes)
+    : Result(TextDecoder::FromLatin1(text), {ResultPoint(xStart, y), ResultPoint(xStop, y)}, format, std::move(rawBytes))
+{}
 
 Result::Result(DecoderResult&& decodeResult, std::vector<ResultPoint>&& resultPoints, BarcodeFormat format)
     : _status(decodeResult.errorCode()),

@@ -20,7 +20,6 @@
 #include "Result.h"
 #include "BitArray.h"
 #include "DecodeHints.h"
-#include "TextDecoder.h"
 #include "ZXContainerAlgorithms.h"
 #include "ZXStrConvWorkaround.h"
 
@@ -90,7 +89,7 @@ Code128Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Dec
 		return Result(DecodeStatus::NotFound);
 	}
 
-	float left = (range.begin - row.begin()) + 0.5f * range.size();
+	int xStart = range.begin - row.begin();
 	ByteArray rawCodes;
 	rawCodes.reserve(20);
 	std::string result;
@@ -215,9 +214,8 @@ Code128Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Dec
 	// be a printable character).
 	result.resize(lastResultSize);
 
-	float right = (range.begin - row.begin()) + 0.5f * range.size();
-	float ypos = static_cast<float>(rowNumber);
-	return Result(TextDecoder::FromLatin1(result), std::move(rawCodes), { ResultPoint(left, ypos), ResultPoint(right, ypos) }, BarcodeFormat::CODE_128);
+	int xStop = range.end - row.begin() - 1;
+	return Result(result, rowNumber, xStart, xStop, BarcodeFormat::CODE_128, std::move(rawCodes));
 }
 
 } // OneD
