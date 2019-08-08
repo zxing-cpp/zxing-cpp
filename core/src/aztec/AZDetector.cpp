@@ -240,6 +240,10 @@ inline static float Distance(const PixelPoint& a, const PixelPoint& b)
 */
 static int GetColor(const BitMatrix& image, const PixelPoint& p1, const PixelPoint& p2)
 {
+	if (!IsValidPoint(p1.x, p1.y, image.width(), image.height()) ||
+		!IsValidPoint(p2.x, p2.y, image.width(), image.height()))
+		return 0;
+
 	float d = Distance(p1, p2);
 	float dx = (p2.x - p1.x) / d;
 	float dy = (p2.y - p1.y) / d;
