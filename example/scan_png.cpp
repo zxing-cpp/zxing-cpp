@@ -34,14 +34,14 @@ using namespace ZXing;
 
 static void PrintUsage(const char* exePath)
 {
-    std::cout << "Usage: " << exePath << " [-fast] [-rotate] [-format <FORMAT>] <png image path>" << std::endl
-		<< "    -fast    Do not try harder to detect, thus faster" << std::endl
-		<< "    -rotate  Try to rotate image of 90 degrees if it fails to detect barcode" << std::endl
-		<< "    -format  Try to read given format only. Supported formats are:" << std::endl;
+    std::cout << "Usage: " << exePath << " [-fast] [-rotate] [-format <FORMAT>] <png image path>\n"
+		<< "    -fast    Do not try harder to detect, thus faster\n"
+		<< "    -rotate  Try to rotate image of 90 degrees if it fails to detect barcode\n"
+		<< "    -format  Try to read given format only. Supported formats are:\n";
 	for (int i = 0; i < (int)BarcodeFormat::FORMAT_COUNT; ++i) {
-		std::cout << "        " << ToString((BarcodeFormat)i) << std::endl;
+		std::cout << "        " << ToString((BarcodeFormat)i) << "\n";
 	}
-	std::cout << "    Formats can be lowercase letters, with or without underscore." << std::endl;
+	std::cout << "    Formats can be lowercase letters, with or without underscore.\n";
 }
 
 static std::string FormatClean(std::string str)
@@ -76,7 +76,7 @@ static bool ParseOptions(int argc, char* argv[], bool* fastMode, bool* tryRotate
 				++i;
 				*format = ParseFormat(argv[i]);
 				if (format->empty()) {
-					std::cerr << "Unreconigned format: " << argv[i] << std::endl;
+					std::cerr << "Unreconigned format: " << argv[i] << "\n";
 					return false;
 				}
 			}
@@ -127,8 +127,8 @@ int main(int argc, char* argv[])
 	unsigned width, height;
 	unsigned error = lodepng::decode(buffer, width, height, filePath);
 	if (error) {
-		std::cerr << "Error: " << lodepng_error_text(error) << std::endl
-				<< "Failed to read image: " << filePath << std::endl;
+		std::cerr << "Error: " << lodepng_error_text(error) << "\n"
+		          << "Failed to read image: " << filePath << "\n";
 		return -1;
 	}
 	GenericLuminanceSource source((int)width, (int)height, buffer.data(), width * 4, 4, 0, 1, 2);
@@ -136,11 +136,11 @@ int main(int argc, char* argv[])
 
 	auto result = reader.read(binImage);
 	if (result.isValid()) {
-		std::cout << "Text:     " << TextUtfEncoding::ToUtf8(result.text()) << std::endl
-			<< "Format:   " << ToString(result.format()) << std::endl;
+		std::cout << "Text:     " << TextUtfEncoding::ToUtf8(result.text()) << "\n"
+		          << "Format:   " << ToString(result.format()) << "\n";
 		auto errLevel = result.metadata().getString(ResultMetadata::Key::ERROR_CORRECTION_LEVEL);
 		if (!errLevel.empty()) {
-			std::cout << "EC Level: " << TextUtfEncoding::ToUtf8(errLevel) << std::endl;
+			std::cout << "EC Level: " << TextUtfEncoding::ToUtf8(errLevel) << "\n";
 		}
 		return 0;
 	}
