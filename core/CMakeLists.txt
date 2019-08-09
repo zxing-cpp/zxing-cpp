@@ -61,8 +61,6 @@ if (ENABLE_DECODERS)
         src/BinaryBitmap.h
         src/BitSource.h
         src/BitSource.cpp
-        src/BitWrapperBinarizer.h
-        src/BitWrapperBinarizer.cpp
         src/DecodeHints.h
         src/DecodeHints.cpp
         src/DecodeStatus.h
