@@ -410,9 +410,9 @@ BlackboxTestRunner::run(const std::set<std::string>& includedTests)
 			{ 3, 3, 180 },
 		});
 
-		runTests("blackbox/ean13-1", "EAN_13", 34, {
-			{ 30, 32, 0   },
-			{ 27, 32, 180 },
+		runTests("blackbox/ean13-1", "EAN_13", 31, {
+			{ 27, 29, 0   },
+			{ 24, 29, 180 },
 		});
 
 		runTests("blackbox/ean13-2", "EAN_13", 28, {
@@ -435,9 +435,9 @@ BlackboxTestRunner::run(const std::set<std::string>& includedTests)
 			{ 0, 0, 180 },
 		});
 
-		runTests("blackbox/ean13-extension-1", "EAN_13", 2, {
-			{ 2, 2, 0 },
-			{ 2, 2, 180 },
+		runTests("blackbox/ean13-extension-1", "EAN_13", 5, {
+			{ 5, 5, 0, 0, 0 },
+			{ 5, 5, 1, 0, 180 },
 		});
 
 		runTests("blackbox/itf-1", "ITF", 14, {
