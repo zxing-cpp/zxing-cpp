@@ -34,7 +34,7 @@ namespace ZXing {
 MultiFormatReader::MultiFormatReader(const DecodeHints& hints)
 {
 	bool tryHarder = hints.shouldTryHarder();
-	if (hints.hasNoFormat()) {
+	if (!hints.hasNoFormat()) {
 		bool addOneDReader =
 			hints.hasFormat(BarcodeFormat::UPC_A) ||
 			hints.hasFormat(BarcodeFormat::UPC_E) ||
