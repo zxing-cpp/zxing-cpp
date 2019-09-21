@@ -22,13 +22,15 @@
 #include "Result.h"
 #include "ResultMetadata.h"
 #include "TextUtfEncoding.h"
-#include "lodepng.h"
 
 #include <iostream>
 #include <cstring>
 #include <string>
 #include <algorithm>
 #include <cctype>
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 using namespace ZXing;
 
@@ -129,15 +131,16 @@ int main(int argc, char* argv[])
 		hints.setPossibleFormats({ format });
 	MultiFormatReader reader(hints);
 
-	std::vector<unsigned char> buffer;
-	unsigned width, height;
-	unsigned error = lodepng::decode(buffer, width, height, filePath);
-	if (error) {
-		std::cerr << "Error: " << lodepng_error_text(error) << "\n"
-		          << "Failed to read image: " << filePath << "\n";
+	int width, height, channels;
+    stbi_uc* buffer = stbi_load(filePath.c_str(), &width, &height, &channels, 4);
+	if (buffer == nullptr) {
+		std::cerr << "Failed to read image: " << filePath << "\n";
 		return -1;
 	}
-	GenericLuminanceSource source((int)width, (int)height, buffer.data(), width * 4, 4, 0, 1, 2);
+	GenericLuminanceSource source(width, height, buffer, width * 4, 4, 0, 1, 2);
+    
+    stbi_image_free(buffer);
+
 	Binarizer binImage(std::shared_ptr<LuminanceSource>(&source, [](void*) {}));
 
 	auto result = reader.read(binImage);

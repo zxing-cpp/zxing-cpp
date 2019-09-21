@@ -21,37 +21,35 @@ endif()
 add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/../core ${CMAKE_BINARY_DIR}/ZXingCore)
 
 if (ENABLE_DECODERS)
-    add_executable (scan_png
-        scan_png.cpp
-        lodepng.cpp
+    add_executable (scan_image
+        scan_image.cpp
     )
     
-    target_compile_options (scan_png PRIVATE -DLODEPNG_NO_COMPILE_ENCODER)
+    target_compile_options (scan_image PRIVATE -DLODEPNG_NO_COMPILE_ENCODER)
 
     if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
-        target_compile_options (scan_png PRIVATE -std=c++11)
+        target_compile_options (scan_image PRIVATE -std=c++11)
     elseif (APPLE)
-        target_compile_options (scan_png PRIVATE -std=c++11 -stdlib=libc++)
+        target_compile_options (scan_image PRIVATE -std=c++11 -stdlib=libc++)
     endif()
 
-    target_link_libraries (scan_png ZXingCore)
+    target_link_libraries (scan_image ZXingCore)
 
 endif()
 
 if (ENABLE_ENCODERS)
-    add_executable (generate_png
-        generate_png.cpp
-        lodepng.cpp
+    add_executable (generate_image
+        generate_image.cpp
     )
     
-    target_compile_options (generate_png PRIVATE -DLODEPNG_NO_COMPILE_DECODER)
+    target_compile_options (generate_image PRIVATE -DLODEPNG_NO_COMPILE_DECODER)
     
     if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
-        target_compile_options (generate_png PRIVATE -std=c++11)
+        target_compile_options (generate_image PRIVATE -std=c++11)
     elseif (APPLE)
-        target_compile_options (generate_png PRIVATE -std=c++11 -stdlib=libc++)
+        target_compile_options (generate_image PRIVATE -std=c++11 -stdlib=libc++)
     endif()
 
-    target_link_libraries (generate_png ZXingCore)
+    target_link_libraries (generate_image ZXingCore)
 
 endif()

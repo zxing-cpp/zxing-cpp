@@ -23,11 +23,13 @@
 #include "HybridBinarizer.h"
 #include "TextUtfEncoding.h"
 #include "ZXContainerAlgorithms.h"
-#include "lodepng.h"
 
 #include <iostream>
 #include <fstream>
 #include <set>
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 #if __has_include(<filesystem>)
 #  include <filesystem>
@@ -68,47 +70,16 @@ static std::string getExtension(const std::string& fn)
 	return p != std::string::npos ?	fn.substr(p) : "";
 }
 
-static std::shared_ptr<LuminanceSource> readPNM(FILE* f)
-{
-	int w, h;
-	if (fscanf(f, "P5\n%d %d\n255\n", &w, &h) != 2)
-		throw std::runtime_error("Failed to parse PNM file header.");
-	auto ba = std::make_shared<ByteArray>(w * h);
-	auto read = fread(ba->data(), sizeof(uint8_t), w*h, f);
-//	if (read != w * h)
-//		throw std::runtime_error("Failed to read PNM file data: " + std::to_string(read) + " != " + std::to_string(w * h) + " -> " + std::to_string(feof(f)));
-	return std::make_shared<GenericLuminanceSource>(0, 0, w, h, ba, w);
-}
-
-static std::shared_ptr<LuminanceSource> readPNG(const std::string& filename)
-{
-	std::vector<unsigned char> buffer;
-	unsigned width, height;
-	unsigned error = lodepng::decode(buffer, width, height, filename);
-	if (error) {
-		throw std::runtime_error("Failed to read image");
-	}
-	return std::make_shared<GenericLuminanceSource>((int)width, (int)height, buffer.data(), width*4, 4, 0, 1, 2);
-}
-
 static std::shared_ptr<LuminanceSource> readImage(const std::string& filename)
 {
-	if( getExtension(filename) == ".png" )
-		return readPNG(filename);
-
-	std::string cmd = "convert '" + filename + "' -intensity Rec601Luma -colorspace gray +set comment pgm:-";
-	bool pipe = getExtension(filename) != ".pgm";
-	FILE* f = pipe ? popen(cmd.c_str(), "r") : fopen(filename.c_str(), "r");
-	if (!f)
-		throw std::runtime_error("Failed to open pipe '" + cmd + "': " + std::strerror(errno));
-	try {
-		auto res = readPNM(f);
-		pipe ? pclose(f) : fclose(f);
-		return res;
-	} catch (std::runtime_error& e) {
-		pipe ? pclose(f) : fclose(f);
-		throw std::runtime_error("Failed to read pipe '" + cmd + "': " + e.what());
-	}
+    int width, height, channels;
+    auto buffer = stbi_load(filename.c_str(), &width, &height, &channels, 4);
+    if (buffer == nullptr) {
+        throw std::runtime_error("Failed to read image");
+    }
+    auto lumSrc = std::make_shared<GenericLuminanceSource>(width, height, buffer, width * 4, 4, 0, 1, 2);
+    stbi_image_free(buffer);
+    return lumSrc;
 }
 
 class GenericImageLoader : public ImageLoader

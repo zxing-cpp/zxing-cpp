@@ -20,11 +20,13 @@
 #include "Result.h"
 #include "DecodeHints.h"
 #include "BarcodeFormat.h"
-#include "lodepng.h"
 
 #include <string>
 #include <memory>
 #include <emscripten/bind.h>
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 #if 0
 using Binarizer = ZXing::GlobalHistogramBinarizer;
@@ -39,7 +41,7 @@ struct ReadResult
     std::string error;
 };
 
-ReadResult readBarcodeFromPng(int bufferPtr, int bufferLength, bool tryHarder, std::string format)
+ReadResult readBarcodeFromImage(int bufferPtr, int bufferLength, bool tryHarder, std::string format)
 {
     using namespace ZXing;
 	try {
@@ -51,14 +53,16 @@ ReadResult readBarcodeFromPng(int bufferPtr, int bufferLength, bool tryHarder, s
             hints.setPossibleFormats({ fixedFormat });
         MultiFormatReader reader(hints);
 
-        std::vector<unsigned char> bitmap;
-        unsigned width, height;
-        unsigned error = lodepng::decode(bitmap, width, height, reinterpret_cast<const unsigned char*>(bufferPtr), size_t(bufferLength));
-        if (error) {
-            return { "", L"", lodepng_error_text(error) };
+        int width, height, channels;
+        stbi_uc* bitmap = stbi_load_from_memory(reinterpret_cast<const unsigned char*>(bufferPtr), bufferLength, &width, &height, &channels, 4);
+        if (bitmap == nullptr) {
+            return { "", L"", "Error loading image" };
         }
 
-        GenericLuminanceSource source((int)width, (int)height, bitmap.data(), width * 4, 4, 0, 1, 2);
+        GenericLuminanceSource source(width, height, bitmap, width * 4, 4, 0, 1, 2);
+        
+        stbi_image_free(bitmap);
+        
         Binarizer binImage(std::shared_ptr<LuminanceSource>(&source, [](void*) {}));
 
         auto result = reader.read(binImage);
@@ -85,5 +89,6 @@ EMSCRIPTEN_BINDINGS(BarcodeReader)
         .field("error", &ReadResult::error)
         ;
         
-    function("readBarcodeFromPng", &readBarcodeFromPng);
+    function("readBarcodeFromPng", &readBarcodeFromImage);
+    function("readBarcode", &readBarcodeFromImage);
 }

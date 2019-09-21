@@ -81,7 +81,7 @@ public:
 
 		Iterator li = begin, i = begin;
 		auto currentCounter = counters.begin();
-		typedef std::decay<decltype(*currentCounter)>::type CounterValue;
+		typedef typename std::decay<decltype(*currentCounter)>::type CounterValue;
 		while ((i = BitArray::getNextSetTo(i, end, !*i)) != end) {
 			*currentCounter = static_cast<CounterValue>(i - li);
 			if (++currentCounter == counters.end()) {

@@ -31,7 +31,6 @@ if (ENABLE_DECODERS)
         ../../common/QRCodeStructuredAppendReader.cpp
         ../../common/BlackboxTestRunner.h
         ../../common/BlackboxTestRunner.cpp
-        ../../common/lodepng.cpp
     )
     
     target_include_directories (ReaderTest

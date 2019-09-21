@@ -18,20 +18,32 @@
 #include "MultiFormatWriter.h"
 #include "BitMatrix.h"
 #include "CharacterSetECI.h"
-#include "lodepng.h"
 
 #include <string>
 #include <memory>
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
+
+class ImageData
+{
+public:
+    unsigned char* const buffer;
+    const int length;
+
+    ImageData(unsigned char* buf, int len) : buffer(buf), length(len) {}
+    ~ImageData() { STBIW_FREE(buffer); }
+};
+
 class WriteResult
 {
-    std::shared_ptr<std::vector<unsigned char>> _pixmapBuffer;
+    std::shared_ptr<ImageData> _pixmapBuffer;
     std::string _error;
     
 public:
-    WriteResult(const std::shared_ptr<std::vector<unsigned char>>& pixmap) : _pixmapBuffer(pixmap) {}
+    WriteResult(const std::shared_ptr<ImageData>& pixmap) : _pixmapBuffer(pixmap) {}
     WriteResult(const std::string& error) : _error(error) {}
     
     std::string error() const {
@@ -40,7 +52,7 @@ public:
     
     emscripten::val pixmapBytes() const {
         if (_pixmapBuffer != nullptr)
-            return emscripten::val(emscripten::typed_memory_view(_pixmapBuffer->size(), _pixmapBuffer->data()));
+            return emscripten::val(emscripten::typed_memory_view(_pixmapBuffer->length, _pixmapBuffer->buffer));
         else
             return emscripten::val::null();
     }
@@ -49,14 +61,14 @@ public:
 WriteResult generateBarcode(std::wstring text, std::string format, std::string encoding, int margin, int width, int height, int eccLevel)
 {
     using namespace ZXing;
-	try {
-		auto barcodeFormat = BarcodeFormatFromString(format);
-		if (barcodeFormat == BarcodeFormat::FORMAT_COUNT)
-			throw std::invalid_argument("Unsupported format: " + format);
-		
-		MultiFormatWriter writer(barcodeFormat);
-		if (margin >= 0)
-			writer.setMargin(margin);
+    try {
+        auto barcodeFormat = BarcodeFormatFromString(format);
+        if (barcodeFormat == BarcodeFormat::FORMAT_COUNT)
+            throw std::invalid_argument("Unsupported format: " + format);
+        
+        MultiFormatWriter writer(barcodeFormat);
+        if (margin >= 0)
+            writer.setMargin(margin);
         
         CharacterSet charset = CharacterSetECI::CharsetFromName(encoding.c_str());
         if (charset != CharacterSet::Unknown) {
@@ -67,28 +79,28 @@ WriteResult generateBarcode(std::wstring text, std::string format, std::string e
             writer.setEccLevel(eccLevel);
         }
 
-		auto matrix = writer.encode(text, width, height);
+        auto matrix = writer.encode(text, width, height);
 
-		std::vector<unsigned char> buffer(matrix.width() * matrix.height(), '\0');
-		unsigned char black = 0;
-		unsigned char white = 255;
-		for (int y = 0; y < matrix.height(); ++y) {
-			for (int x = 0; x < matrix.width(); ++x) {
-				buffer[y * matrix.width() + x] = matrix.get(x, y) ? black : white;
-			}
-		}
+        std::vector<unsigned char> buffer(matrix.width() * matrix.height(), '\0');
+        unsigned char black = 0;
+        unsigned char white = 255;
+        for (int y = 0; y < matrix.height(); ++y) {
+            for (int x = 0; x < matrix.width(); ++x) {
+                buffer[y * matrix.width() + x] = matrix.get(x, y) ? black : white;
+            }
+        }
 
-		auto outputBuffer = std::make_shared<std::vector<unsigned char>>();
-		unsigned error = lodepng::encode(*outputBuffer, buffer, matrix.width(), matrix.height(), LCT_GREY);
-		if (error) {
-			return WriteResult(lodepng_error_text(error));
-		}
+        int len;
+        unsigned char *bytes = stbi_write_png_to_mem(buffer.data(), 0, matrix.width(), matrix.height(), 1, &len);
+        if (bytes == nullptr) {
+            return WriteResult(std::string("Unknown error"));
+        }
 
-        return WriteResult(outputBuffer);
-	}
-	catch (const std::exception& e) {
+        return WriteResult(std::make_shared<ImageData>(bytes, len));
+    }
+    catch (const std::exception& e) {
         return WriteResult(std::string(e.what()));
-	}
+    }
     catch (...) {
         return WriteResult(std::string("Unknown error"));
     }
