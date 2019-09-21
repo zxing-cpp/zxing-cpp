@@ -31,7 +31,7 @@ template <typename Iterator>
 struct Range {
 	Iterator begin, end;
 	explicit operator bool() const { return begin < end; }
-	int size() const { return end - begin; }
+	int size() const { return static_cast<int>(end - begin); }
 };
 
 /**
@@ -144,7 +144,7 @@ public:
 
 	int size() const noexcept {
 #ifdef ZX_FAST_BIT_STORAGE
-		return _bits.size();
+		return static_cast<int>(_bits.size());
 #else
 		return _size;
 #endif
@@ -177,7 +177,7 @@ public:
 
 	template <typename ITER>
 	static ITER getNextSetTo(ITER begin, ITER end, bool v) noexcept {
-		while( begin != end && *begin != v )
+		while( begin != end && *begin != static_cast<int>(v) )
 			++begin;
 		return begin;
 	}
@@ -299,7 +299,7 @@ public:
 	*/
 #ifdef ZX_FAST_BIT_STORAGE
 	bool isRange(int start, int end, bool value) const {
-		return std::all_of(&_bits[start], &_bits[end], [value](uint8_t v) {return v == value;});
+		return std::all_of(&_bits[start], &_bits[end], [value](uint8_t v) { return v == static_cast<int>(value); });
 	}
 #else
 	bool isRange(int start, int end, bool value) const;
@@ -309,7 +309,7 @@ public:
 	// Pass positive zone size to look for quite zone after i and negative for zone in front of i.
 	// Set allowClippedZone to false if clipping the zone at the image border is not acceptable.
 	bool hasQuiteZone(Iterator i, int signedZoneSize, bool allowClippedZone = true) const {
-		int index = i - begin();
+		int index = static_cast<int>(i - begin());
 		if (signedZoneSize > 0) {
 			if (!allowClippedZone && index + signedZoneSize >= size())
 				return false;

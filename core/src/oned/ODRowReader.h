@@ -21,6 +21,7 @@
 
 #include <cstddef>
 #include <memory>
+#include <type_traits>
 
 namespace ZXing {
 
@@ -80,8 +81,9 @@ public:
 
 		Iterator li = begin, i = begin;
 		auto currentCounter = counters.begin();
+		typedef std::decay<decltype(*currentCounter)>::type CounterValue;
 		while ((i = BitArray::getNextSetTo(i, end, !*i)) != end) {
-			*currentCounter = i - li;
+			*currentCounter = static_cast<CounterValue>(i - li);
 			if (++currentCounter == counters.end()) {
 				if (match(begin, i, counters)) {
 					return {begin, i};
@@ -93,7 +95,7 @@ public:
 			li = i;
 		}
 		// if we ran into the end, still set the currentCounter. see RecordPattern.
-		*currentCounter = i - li;
+		*currentCounter = static_cast<CounterValue>(i - li);
 
 		return {end, end};
 	}

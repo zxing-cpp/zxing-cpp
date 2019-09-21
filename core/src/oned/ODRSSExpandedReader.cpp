@@ -142,19 +142,19 @@ ParseFoundFinderPattern(const BitArray& row, int rowNumber, bool oddPattern, Bit
 		// If pattern number is odd, we need to locate element 1 *before* the current block.
 
 		auto i = std::find(BitArray::ReverseIterator(range.begin), row.rend(), *range.begin);
-		firstCounter = range.begin - i.base();
+		firstCounter = static_cast<int>(range.begin - i.base());
 		range.begin = i.base();
 	}
 	else {
 		// If pattern number is even, the pattern is reversed, so we need to locate element 1 *after* the current block.
 
 		auto i = row.getNextUnset(std::next(range.end)); // +1?
-		firstCounter = i - range.end;
+		firstCounter = static_cast<int>(i - range.end);
 		range.end = i;
 	}
 
-	int start = range.begin - row.begin();
-	int end = range.end - row.begin();
+	int start = static_cast<int>(range.begin - row.begin());
+	int end = static_cast<int>(range.end - row.begin());
 
 	// Make 'counters' hold 1-4
 	std::copy_backward(counters.begin(), counters.end() - 1, counters.end());
@@ -396,7 +396,7 @@ RetrieveNextPair(const BitArray& row, const std::list<ExpandedPair>& previousPai
 			// goto next bar of same color than current position
 			range.begin = row.getNextSetTo(range.begin, !*range.begin);
 			range.begin = row.getNextSetTo(range.begin, !*range.begin);
-			forcedOffset = range.begin - row.begin();
+			forcedOffset = static_cast<int>(range.begin - row.begin());
 		}
 		else {
 			keepFinding = false;

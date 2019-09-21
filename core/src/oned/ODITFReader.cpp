@@ -150,7 +150,7 @@ FindGuardPattern(const BitArray& row, const Container& pattern)
 		    // ref: http://www.barcode-1.net/i25code.html
 
 			// Determine the width of a narrow line in pixels. See definition of START and END patterns above
-			int quietZoneWidth = 10 * (end - begin) / pat_sum; // 10 * narrowLineWidth;
+			int quietZoneWidth = 10 * static_cast<int>(end - begin) / pat_sum; // 10 * narrowLineWidth;
 			return row.hasQuiteZone(begin, -quietZoneWidth) &&
 				RowReader::PatternMatchVariance(counters, pattern, MAX_INDIVIDUAL_VARIANCE) < MAX_AVG_VARIANCE;
 	    });
@@ -189,8 +189,9 @@ static BitArray::Range DecodeEnd(const BitArray& row)
 
 	// Now recalculate the indices of where the 'endblock' starts & stops to accommodate
 	// the reversed nature of the search
-	return {row.iterAt(row.size() - (range.end - revRow.begin())),
-	        row.iterAt(row.size() - (range.begin - revRow.begin()))};
+	auto rowSize = static_cast<int>(row.size());
+	return {row.iterAt(rowSize - static_cast<int>(range.end - revRow.begin())),
+	        row.iterAt(rowSize - static_cast<int>(range.begin - revRow.begin()))};
 }
 
 ITFReader::ITFReader(const DecodeHints& hints) :
@@ -226,8 +227,8 @@ ITFReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Decodin
 			return Result(DecodeStatus::FormatError);
 	}
 
-	int xStart = startRange.begin - row.begin();
-	int xStop = endRange.end - row.begin() - 1;
+	int xStart = static_cast<int>(startRange.begin - row.begin());
+	int xStop = static_cast<int>(endRange.end - row.begin() - 1);
 	return Result(result, rowNumber, xStart, xStop, BarcodeFormat::ITF);
 }
 

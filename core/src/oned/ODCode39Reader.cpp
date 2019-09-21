@@ -114,7 +114,7 @@ FindAsteriskPattern(const BitArray& row)
 	    row.getNextSet(row.begin()), row.end(), counters,
 	    [&row](BitArray::Iterator begin, BitArray::Iterator end, const CounterContainer& counters) {
 		    // Look for whitespace before start pattern, >= 50% of width of start pattern
-		    return row.hasQuiteZone(begin, - (end - begin) / 2) &&
+		    return row.hasQuiteZone(begin, static_cast<int>(-(end-begin)/2)) &&
 				ToNarrowWidePattern(counters) == ASTERISK_ENCODING;
 	    });
 }
@@ -160,7 +160,7 @@ Code39Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 	if (!range)
 		return Result(DecodeStatus::NotFound);
 
-	int xStart = range.begin - row.begin();
+	int xStart = static_cast<int>(range.begin - row.begin());
 	CounterContainer theCounters = {};
 	std::string result;
 	result.reserve(20);
@@ -185,7 +185,7 @@ Code39Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 	result.pop_back(); // remove asterisk
 
 	// Require at least one payload character and a quite zone of half the last pattern size.
-	if (result.size() < (_usingCheckDigit ? 2 : 1) || !row.hasQuiteZone(range.end, range.size() / 2)) {
+	if (result.size() < (_usingCheckDigit ? 2u : 1u) || !row.hasQuiteZone(range.end, range.size() / 2)) {
 		return Result(DecodeStatus::NotFound);
 	}
 
@@ -201,7 +201,7 @@ Code39Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 	if (_extendedMode && !DecodeExtendedCode39AndCode93(result, "$%/+"))
 		return Result(DecodeStatus::FormatError);
 
-	int xStop = range.end - row.begin() - 1;
+	int xStop = static_cast<int>(range.end - row.begin() - 1);
 	return Result(result, rowNumber, xStart, xStop, BarcodeFormat::CODE_39);
 }
 

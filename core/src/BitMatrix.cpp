@@ -84,7 +84,7 @@ BitMatrix::setRegion(int left, int top, int width, int height)
 		throw std::invalid_argument("BitMatrix::setRegion(): The region must fit inside the matrix");
 	}
 	for (int y = top; y < bottom; y++) {
-		int offset = y * _rowSize;
+		size_t offset = y * _rowSize;
 		for (int x = left; x < right; x++) {
 #ifdef ZX_FAST_BIT_STORAGE
 			_bits[offset + x] = 1;

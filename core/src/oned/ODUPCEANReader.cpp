@@ -70,7 +70,7 @@ UPCEANReader::FindStartGuardPattern(const BitArray& row)
 			// Make sure there is a quiet zone at least as big as the start pattern before the barcode.
 			// If this check would run off the left edge of the image, do not accept this barcode,
 			// as it is very likely to be a false positive.
-			return row.hasQuiteZone(begin, -(end - begin), false) &&
+			return row.hasQuiteZone(begin, static_cast<int>(-(end-begin)), false) &&
 				RowReader::PatternMatchVariance(cntrs, pattern, MAX_INDIVIDUAL_VARIANCE) < MAX_AVG_VARIANCE;
 		});
 #endif
@@ -116,8 +116,8 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, BitArray::Range star
 		return Result(DecodeStatus::ChecksumError);
 
 	BarcodeFormat format = expectedFormat();
-	int xStart = startGuard.begin - row.begin();
-	int xStop = stopGuard.end - row.begin() - 1;
+	int xStart = static_cast<int>(startGuard.begin - row.begin());
+	int xStop = static_cast<int>(stopGuard.end - row.begin() - 1);
 
 	Result decodeResult(result, rowNumber, xStart, xStop, format);
 	Result extensionResult = UPCEANExtensionSupport::DecodeRow(rowNumber, row, stopGuard.end);

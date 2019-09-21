@@ -51,7 +51,7 @@ public:
 	{
 		int sumA = counters[0] + counters[1];
 		int sumB = counters[2] + counters[3];
-		float sum = sumA + sumB;
+		float sum = static_cast<float>(sumA + sumB);
 		float ratio = (reversed ? sumB : sumA) / sum;
 		if (ratio >= MIN_FINDER_PATTERN_RATIO && ratio <= MAX_FINDER_PATTERN_RATIO) {
 			// passes ratio test in spec, but see if the counts are unreasonable

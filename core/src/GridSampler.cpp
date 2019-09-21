@@ -143,7 +143,7 @@ public:
 					}
 				}
 			}
-			catch (const std::out_of_range& aioobe) {
+			catch (const std::out_of_range&) {
 				// This feels wrong, but, sometimes if the finder patterns are misidentified, the resulting
 				// transform gets "twisted" such that it maps a straight line of points to a set of points
 				// whose endpoints are in bounds, but others are not. There is probably some mathematical

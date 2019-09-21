@@ -134,7 +134,7 @@ UPCEANExtensionSupport::DecodeRow(int rowNumber, const BitArray& row, BitArray::
 {
 	BitArray::Range next = {row.getNextSet(begin), row.end()};
 
-	int xStart = next.begin - row.begin();
+	int xStart = static_cast<int>(next.begin - row.begin());
 
 	if (!UPCEANReader::ReadGuardPattern(&next, EXTENSION_START_PATTERN))
 		return Result(DecodeStatus::NotFound);
@@ -146,7 +146,7 @@ UPCEANExtensionSupport::DecodeRow(int rowNumber, const BitArray& row, BitArray::
 	if (resultString.empty())
 		return Result(DecodeStatus::NotFound);
 
-	int xStop = next.begin - row.begin() - 1;
+	int xStop = static_cast<int>(next.begin - row.begin() - 1);
 
 	Result result(resultString, rowNumber, xStart, xStop, BarcodeFormat::UPC_EAN_EXTENSION);
 

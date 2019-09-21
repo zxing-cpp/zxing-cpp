@@ -93,7 +93,7 @@ ParseFoundFinderPattern(const BitArray& row, int rowNumber, bool right, BitArray
 
 	// Actually we found elements 2-5 -> Locate element 1
 	auto i = std::find(BitArray::ReverseIterator(range.begin), row.rend(), *range.begin);
-	int firstCounter = range.begin - i.base();
+	int firstCounter = static_cast<int>(range.begin - i.base());
 	range.begin = i.base();
 
 	// Make 'counters' hold 1-4
@@ -103,8 +103,8 @@ ParseFoundFinderPattern(const BitArray& row, int rowNumber, bool right, BitArray
 	if (value < 0)
 		return {};
 
-	int start = range.begin - row.begin();
-	int end = range.end - row.begin();
+	int start = static_cast<int>(range.begin - row.begin());
+	int end = static_cast<int>(range.end - row.begin());
 	if (right) {
 		// row is actually reversed
 		start = row.size() - 1 - start;

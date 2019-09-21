@@ -75,10 +75,10 @@ InitCounters(const BitArray& row, std::vector<int>& counters)
 
 	auto li = i;
 	while ((i = row.getNextSetTo(i, !*i)) != row.end()) {
-		counters.push_back(i - li);
+		counters.push_back(static_cast<int>(i - li));
 		li = i;
 	}
-	counters.push_back(i - li);
+	counters.push_back(static_cast<int>(i - li));
 
 	return true;
 }

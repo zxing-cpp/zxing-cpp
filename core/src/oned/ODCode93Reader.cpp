@@ -58,7 +58,7 @@ ToPattern(const CounterContainer& counters)
 	// each bar/space is 1-4 modules wide, the sum of all is 9 modules wide
 	int sum = Accumulate(counters, 0);
 	int pattern = 0;
-	for (size_t i = 0; i < counters.size(); i++) {
+	for (int i = 0, count = (int)counters.size(); i < count; ++i) {
 		int scaled = (counters[i] * 9 + (sum/2)) / sum; // non-float version of RoundToNearest(counters[i] * 9.0f / sum);
 		if (scaled < 1 || scaled > 4) {
 			return -1;
@@ -112,7 +112,7 @@ Code93Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 	if (!range)
 		return Result(DecodeStatus::NotFound);
 
-	int xStart = range.begin - row.begin();
+	int xStart = static_cast<int>(range.begin - row.begin());
 	CounterContainer theCounters = {};
 	std::string result;
 	result.reserve(20);
@@ -154,7 +154,7 @@ Code93Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 	if (!DecodeExtendedCode39AndCode93(result, "abcd"))
 		return Result(DecodeStatus::FormatError);
 
-	int xStop = range.end - row.begin() - 1;
+	int xStop = static_cast<int>(range.end - row.begin() - 1);
 	return Result(result, rowNumber, xStart, xStop, BarcodeFormat::CODE_93);
 }
 
