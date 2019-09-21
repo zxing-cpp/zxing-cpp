@@ -83,7 +83,7 @@ emmake make
 
 See usage example of exported functions from [demos](https://nu-book.github.io/zxing-cpp/).
 
-By default, both encoder and decoder are included. If you don't plan to use either of them, you can disable it to reduce generated code size. To do so, in the line `emconfigure cmake ...` above, pass `-ENABLE_ENCODERS=0` to disable encoders or `-ENABLE_DECODERS=0` to disable decoders.
+By default, both encoder and decoder are included. If you don't plan to use either of them, you can disable it to reduce generated code size. To do so, in the line `emconfigure cmake ...` above, pass `-DENABLE_ENCODERS=0` to disable encoders or `-DENABLE_DECODERS=0` to disable decoders.
 
 ### For other platforms
 Wrappers are provided as convenient way to work with native image format. You still can use the library without a wrapper.
