@@ -9,8 +9,11 @@ project (ZXingCpp VERSION ${ZXING_VERSION_MAJOR}.${ZXING_VERSION_MINOR}.${ZXING_
 set (ENABLE_ENCODERS ON CACHE BOOL "Check to include encoders")
 set (ENABLE_DECODERS ON CACHE BOOL "Check to include decoders")
 set (LINK_CPP_STATICALLY OFF CACHE BOOL "MSVC only, check to link statically standard library (/MT and /MTd)")
+IF (NOT WIN32)
+set (BUILD_SHARED_LIBRARY ON CACHE BOOL "Check to build ZXingCore as shared library")
+ELSE ()
 set (BUILD_SHARED_LIBRARY OFF CACHE BOOL "Check to build ZXingCore as shared library")
-
+ENDIF ()
 add_definitions (-DUNICODE -D_UNICODE)
 
 if (MSVC)
@@ -42,8 +45,10 @@ endif()
 
 add_subdirectory (core)
 
-set_target_properties (ZXingCore PROPERTIES VERSION ${PROJECT_VERSION})
-set_target_properties (ZXingCore PROPERTIES SOVERSION ${ZXING_VERSION_MAJOR})
+set(TARGET_ZXING "ZXingCore" CACHE STRING "The name for the ZXing library")
+
+set_target_properties (${TARGET_ZXING} PROPERTIES VERSION ${PROJECT_VERSION})
+set_target_properties (${TARGET_ZXING} PROPERTIES SOVERSION ${ZXING_VERSION_MAJOR})
 
 set (CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/ZXing")
 
@@ -67,6 +72,17 @@ install (
     FILES "${CMAKE_CURRENT_BINARY_DIR}/ZXVersion.h"
     DESTINATION include/ZXing
 )
+
+# PC file generation.
+if (NOT DEFINED INSTALLDIR)
+	set (INSTALLDIR ${CMAKE_INSTALL_PREFIX})
+	get_filename_component(INSTALLDIR ${INSTALLDIR} ABSOLUTE)
+endif()
+
+IF (NOT WIN32)
+    configure_file(zxing.pc.in zxing.pc @ONLY)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/zxing.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+ENDIF()
 
 include (CMakePackageConfigHelpers)
 

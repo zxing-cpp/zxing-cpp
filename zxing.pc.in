@@ -1,0 +1,10 @@
+prefix=@INSTALLDIR@
+exec_prefix=${prefix}
+libdir=${exec_prefix}/@CMAKE_INSTALL_LIBDIR@
+includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+
+Name: ZXing
+Description: ZXing library set
+Version: @VERSION@
+Libs: -L${libdir} -l@TARGET_ZXING@ 
+Cflags: -I${includedir} -I${includedir}/ZXing
