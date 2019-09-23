@@ -25,6 +25,10 @@ if (ENABLE_DECODERS)
         scan_image.cpp
     )
     
+    target_include_directories (scan_image
+        PRIVATE ../thirdparty/stb
+    )
+
     target_compile_options (scan_image PRIVATE -DLODEPNG_NO_COMPILE_ENCODER)
 
     if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
@@ -42,6 +46,10 @@ if (ENABLE_ENCODERS)
         generate_image.cpp
     )
     
+    target_include_directories (generate_image
+        PRIVATE ../thirdparty/stb
+    )
+
     target_compile_options (generate_image PRIVATE -DLODEPNG_NO_COMPILE_DECODER)
     
     if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")

@@ -23,11 +23,17 @@ if (ENABLE_DECODERS AND ENABLE_ENCODERS)
         BarcodeReader.cpp
         BarcodeWriter.cpp
     )
+    target_include_directories (zxing
+        PRIVATE ../../thirdparty/stb
+    )
 	target_link_libraries (zxing ZXingCore)
 
 elseif (ENABLE_DECODERS)
 	add_executable (zxing_reader
         BarcodeReader.cpp
+    )
+    target_include_directories (zxing_reader
+        PRIVATE ../../thirdparty/stb
     )
     target_compile_options (zxing_reader PRIVATE -DLODEPNG_NO_COMPILE_ENCODER)
 	target_link_libraries (zxing_reader ZXingCore)
@@ -35,6 +41,9 @@ elseif (ENABLE_DECODERS)
 elseif (ENABLE_ENCODERS)
 	add_executable (zxing_writer
         BarcodeWriter.cpp
+    )
+    target_include_directories (zxing_writer
+        PRIVATE ../../thirdparty/stb
     )
 	target_compile_options (zxing_writer PRIVATE -DLODEPNG_NO_COMPILE_DECODER)
 	target_link_libraries (zxing_writer ZXingCore)

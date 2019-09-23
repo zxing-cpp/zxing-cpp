@@ -35,6 +35,7 @@ if (ENABLE_DECODERS)
     
     target_include_directories (ReaderTest
         PRIVATE ../../common
+        PRIVATE ../../../thirdparty/stb
     )
 
     if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
