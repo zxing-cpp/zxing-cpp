@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-#include "oned/ODCodabarReader.h"
+#include "ODCodabarReader.h"
 #include "Result.h"
 #include "BitArray.h"
 #include "DecodeHints.h"

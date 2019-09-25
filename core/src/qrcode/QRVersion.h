@@ -16,8 +16,8 @@
 * limitations under the License.
 */
 
-#include "qrcode/QRECB.h"
-#include "qrcode/QRErrorCorrectionLevel.h"
+#include "QRECB.h"
+#include "QRErrorCorrectionLevel.h"
 
 #include <initializer_list>
 #include <vector>

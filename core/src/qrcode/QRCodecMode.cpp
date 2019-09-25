@@ -15,8 +15,8 @@
 * limitations under the License.
 */
 
-#include "qrcode/QRCodecMode.h"
-#include "qrcode/QRVersion.h"
+#include "QRCodecMode.h"
+#include "QRVersion.h"
 
 #include <stdexcept>
 

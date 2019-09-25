@@ -31,7 +31,7 @@
 **
 ****************************************************************************/
 
-#include "textcodec/GBTextDecoder.h"
+#include "GBTextDecoder.h"
 
 struct indexTbl_t
 {

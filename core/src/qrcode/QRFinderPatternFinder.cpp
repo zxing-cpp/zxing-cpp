@@ -15,8 +15,8 @@
 * limitations under the License.
 */
 
-#include "qrcode/QRFinderPatternFinder.h"
-#include "qrcode/QRFinderPatternInfo.h"
+#include "QRFinderPatternFinder.h"
+#include "QRFinderPatternInfo.h"
 #include "BitMatrix.h"
 #include "DecodeHints.h"
 #include "DecodeStatus.h"

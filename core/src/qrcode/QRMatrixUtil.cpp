@@ -15,9 +15,9 @@
 * limitations under the License.
 */
 
-#include "qrcode/QRMatrixUtil.h"
-#include "qrcode/QRErrorCorrectionLevel.h"
-#include "qrcode/QRVersion.h"
+#include "QRMatrixUtil.h"
+#include "QRErrorCorrectionLevel.h"
+#include "QRVersion.h"
 #include "BitArray.h"
 #include "ByteMatrix.h"
 #include "BitHacks.h"

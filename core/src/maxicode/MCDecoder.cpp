@@ -15,8 +15,8 @@
 * limitations under the License.
 */
 
-#include "maxicode/MCDecoder.h"
-#include "maxicode/MCBitMatrixParser.h"
+#include "MCDecoder.h"
+#include "MCBitMatrixParser.h"
 #include "ByteArray.h"
 #include "DecoderResult.h"
 #include "ReedSolomonDecoder.h"

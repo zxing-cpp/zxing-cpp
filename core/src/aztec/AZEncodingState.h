@@ -15,7 +15,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#include "aztec/AZToken.h"
+#include "AZToken.h"
 #include <vector>
 
 namespace ZXing {

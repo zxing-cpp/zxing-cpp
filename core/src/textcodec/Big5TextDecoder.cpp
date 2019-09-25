@@ -31,8 +31,8 @@
 **
 ****************************************************************************/
 
-#include "textcodec/Big5TextDecoder.h"
-#include "textcodec/Big5MapTable.h"
+#include "Big5TextDecoder.h"
+#include "Big5MapTable.h"
 
 static const uint16_t big5hkscs_to_ucs[] = {
 	/* Big5-HKSCS 0x8140 .. 0x817E */

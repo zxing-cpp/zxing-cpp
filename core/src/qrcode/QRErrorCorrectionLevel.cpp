@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-#include "qrcode/QRErrorCorrectionLevel.h"
+#include "QRErrorCorrectionLevel.h"
 
 #include <cassert>
 

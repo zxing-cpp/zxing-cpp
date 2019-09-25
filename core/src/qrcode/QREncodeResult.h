@@ -17,8 +17,8 @@
 */
 #include "ByteArray.h"
 #include "ByteMatrix.h"
-#include "qrcode/QRCodecMode.h"
-#include "qrcode/QRVersion.h"
+#include "QRCodecMode.h"
+#include "QRVersion.h"
 
 namespace ZXing {
 namespace QRCode {

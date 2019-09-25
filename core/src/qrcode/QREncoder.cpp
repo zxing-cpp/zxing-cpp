@@ -15,11 +15,11 @@
 * limitations under the License.
 */
 
-#include "qrcode/QREncoder.h"
-#include "qrcode/QRMaskUtil.h"
-#include "qrcode/QRMatrixUtil.h"
-#include "qrcode/QRErrorCorrectionLevel.h"
-#include "qrcode/QREncodeResult.h"
+#include "QREncoder.h"
+#include "QRMaskUtil.h"
+#include "QRMatrixUtil.h"
+#include "QRErrorCorrectionLevel.h"
+#include "QREncodeResult.h"
 #include "GenericGF.h"
 #include "ReedSolomonEncoder.h"
 #include "BitArray.h"

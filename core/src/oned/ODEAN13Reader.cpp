@@ -15,8 +15,8 @@
 * limitations under the License.
 */
 
-#include "oned/ODEAN13Reader.h"
-#include "oned/ODUPCEANCommon.h"
+#include "ODEAN13Reader.h"
+#include "ODUPCEANCommon.h"
 #include "BarcodeFormat.h"
 #include "BitArray.h"
 #include "DecodeStatus.h"

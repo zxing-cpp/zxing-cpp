@@ -15,14 +15,14 @@
 * limitations under the License.
 */
 
-#include "qrcode/QRDecoder.h"
-#include "qrcode/QRBitMatrixParser.h"
-#include "qrcode/QRVersion.h"
-#include "qrcode/QRFormatInformation.h"
-#include "qrcode/QRDecoderMetadata.h"
-#include "qrcode/QRDataMask.h"
-#include "qrcode/QRDataBlock.h"
-#include "qrcode/QRCodecMode.h"
+#include "QRDecoder.h"
+#include "QRBitMatrixParser.h"
+#include "QRVersion.h"
+#include "QRFormatInformation.h"
+#include "QRDecoderMetadata.h"
+#include "QRDataMask.h"
+#include "QRDataBlock.h"
+#include "QRCodecMode.h"
 #include "DecoderResult.h"
 #include "BitMatrix.h"
 #include "ReedSolomonDecoder.h"

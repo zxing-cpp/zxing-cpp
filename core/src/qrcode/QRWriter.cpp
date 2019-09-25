@@ -15,10 +15,10 @@
 * limitations under the License.
 */
 
-#include "qrcode/QRWriter.h"
-#include "qrcode/QRErrorCorrectionLevel.h"
-#include "qrcode/QREncoder.h"
-#include "qrcode/QREncodeResult.h"
+#include "QRWriter.h"
+#include "QRErrorCorrectionLevel.h"
+#include "QREncoder.h"
+#include "QREncodeResult.h"
 #include "BitMatrix.h"
 #include "CharacterSet.h"
 

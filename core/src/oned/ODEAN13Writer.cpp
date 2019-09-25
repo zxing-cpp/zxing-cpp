@@ -15,9 +15,9 @@
 * limitations under the License.
 */
 
-#include "oned/ODEAN13Writer.h"
-#include "oned/ODUPCEANCommon.h"
-#include "oned/ODWriterHelper.h"
+#include "ODEAN13Writer.h"
+#include "ODUPCEANCommon.h"
+#include "ODWriterHelper.h"
 #include <array>
 
 namespace ZXing {

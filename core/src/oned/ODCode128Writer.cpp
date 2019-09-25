@@ -15,9 +15,9 @@
 * limitations under the License.
 */
 
-#include "oned/ODCode128Writer.h"
-#include "oned/ODWriterHelper.h"
-#include "oned/ODCode128Patterns.h"
+#include "ODCode128Writer.h"
+#include "ODWriterHelper.h"
+#include "ODCode128Patterns.h"
 
 #include <list>
 #include <numeric>

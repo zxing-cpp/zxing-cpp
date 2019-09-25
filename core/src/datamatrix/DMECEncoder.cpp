@@ -15,8 +15,8 @@
 * limitations under the License.
 */
 
-#include "datamatrix/DMECEncoder.h"
-#include "datamatrix/DMSymbolInfo.h"
+#include "DMECEncoder.h"
+#include "DMSymbolInfo.h"
 #include "ByteArray.h"
 #include "ZXStrConvWorkaround.h"
 

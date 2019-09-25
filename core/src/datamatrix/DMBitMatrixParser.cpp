@@ -15,9 +15,9 @@
 * limitations under the License.
 */
 
-#include "datamatrix/DMBitMatrixParser.h"
-#include "datamatrix/DMDefaultPlacement.h"
-#include "datamatrix/DMVersion.h"
+#include "DMBitMatrixParser.h"
+#include "DMDefaultPlacement.h"
+#include "DMVersion.h"
 #include "BitMatrix.h"
 #include "DecodeStatus.h"
 #include "ByteArray.h"

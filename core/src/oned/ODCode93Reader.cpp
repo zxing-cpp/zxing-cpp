@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-#include "oned/ODCode93Reader.h"
+#include "ODCode93Reader.h"
 #include "Result.h"
 #include "BitArray.h"
 #include "ZXNumeric.h"

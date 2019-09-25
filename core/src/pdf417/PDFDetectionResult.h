@@ -16,9 +16,9 @@
 * limitations under the License.
 */
 
-#include "pdf417/PDFBarcodeMetadata.h"
-#include "pdf417/PDFBoundingBox.h"
-#include "pdf417/PDFDetectionResultColumn.h"
+#include "PDFBarcodeMetadata.h"
+#include "PDFBoundingBox.h"
+#include "PDFDetectionResultColumn.h"
 #include "ZXNullable.h"
 #include <vector>
 

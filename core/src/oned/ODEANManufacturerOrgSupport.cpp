@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-#include "oned/ODEANManufacturerOrgSupport.h"
+#include "ODEANManufacturerOrgSupport.h"
 #include "ZXStrConvWorkaround.h"
 
 #include <algorithm>

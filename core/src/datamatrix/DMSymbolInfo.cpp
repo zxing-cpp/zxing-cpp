@@ -15,8 +15,8 @@
 * limitations under the License.
 */
 
-#include "datamatrix/DMSymbolInfo.h"
-#include "datamatrix/DMSymbolShape.h"
+#include "DMSymbolInfo.h"
+#include "DMSymbolShape.h"
 #include "ZXContainerAlgorithms.h"
 #include "ZXTestSupport.h"
 

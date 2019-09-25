@@ -16,7 +16,7 @@
 * limitations under the License.
 */
 
-#include "oned/ODUPCEANReader.h"
+#include "ODUPCEANReader.h"
 
 namespace ZXing {
 namespace OneD {

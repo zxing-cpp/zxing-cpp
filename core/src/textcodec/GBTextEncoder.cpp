@@ -31,7 +31,7 @@
 **
 ****************************************************************************/
 
-#include "textcodec/GBTextEncoder.h"
+#include "GBTextEncoder.h"
 #include "TextUtfEncoding.h"
 
 struct indexTbl_t

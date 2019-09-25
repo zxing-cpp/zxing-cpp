@@ -31,8 +31,8 @@
 **
 ****************************************************************************/
 
-#include "textcodec/Big5TextEncoder.h"
-#include "textcodec/Big5MapTable.h"
+#include "Big5TextEncoder.h"
+#include "Big5MapTable.h"
 
 /*
  * ucs4 to big5hkscs convert routing

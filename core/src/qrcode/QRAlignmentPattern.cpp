@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-#include "qrcode/QRAlignmentPattern.h"
+#include "QRAlignmentPattern.h"
 
 #include <cmath>
 

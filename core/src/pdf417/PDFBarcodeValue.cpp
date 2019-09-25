@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-#include "pdf417/PDFBarcodeValue.h"
+#include "PDFBarcodeValue.h"
 
 namespace ZXing {
 namespace Pdf417 {

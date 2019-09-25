@@ -15,8 +15,8 @@
 * limitations under the License.
 */
 
-#include "pdf417/PDFDecodedBitStreamParser.h"
-#include "pdf417/PDFDecoderResultExtra.h"
+#include "PDFDecodedBitStreamParser.h"
+#include "PDFDecoderResultExtra.h"
 #include "CharacterSetECI.h"
 #include "CharacterSet.h"
 #include "TextDecoder.h"

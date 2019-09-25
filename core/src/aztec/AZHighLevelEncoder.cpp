@@ -15,9 +15,9 @@
 * limitations under the License.
 */
 
-#include "aztec/AZHighLevelEncoder.h"
-#include "aztec/AZEncodingState.h"
-#include "aztec/AZToken.h"
+#include "AZHighLevelEncoder.h"
+#include "AZEncodingState.h"
+#include "AZToken.h"
 #include "BitArray.h"
 #include "ZXContainerAlgorithms.h"
 

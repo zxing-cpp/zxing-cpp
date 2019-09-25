@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-#include "oned/ODCode128Patterns.h"
+#include "ODCode128Patterns.h"
 
 namespace ZXing {
 namespace OneD {

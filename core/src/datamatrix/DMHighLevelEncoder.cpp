@@ -15,8 +15,8 @@
 * limitations under the License.
 */
 
-#include "datamatrix/DMHighLevelEncoder.h"
-#include "datamatrix/DMEncoderContext.h"
+#include "DMHighLevelEncoder.h"
+#include "DMEncoderContext.h"
 #include "TextEncoder.h"
 #include "CharacterSet.h"
 #include "ByteArray.h"

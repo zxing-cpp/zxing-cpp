@@ -15,9 +15,9 @@
 * limitations under the License.
 */
 
-#include "datamatrix/DMReader.h"
-#include "datamatrix/DMDecoder.h"
-#include "datamatrix/DMDetector.h"
+#include "DMReader.h"
+#include "DMDecoder.h"
+#include "DMDetector.h"
 #include "Result.h"
 #include "BitMatrix.h"
 #include "BinaryBitmap.h"

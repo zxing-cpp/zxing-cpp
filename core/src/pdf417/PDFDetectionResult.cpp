@@ -15,8 +15,8 @@
 * limitations under the License.
 */
 
-#include "pdf417/PDFDetectionResult.h"
-#include "pdf417/PDFCodewordDecoder.h"
+#include "PDFDetectionResult.h"
+#include "PDFCodewordDecoder.h"
 #include <array>
 
 namespace ZXing {

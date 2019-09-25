@@ -15,12 +15,12 @@
 * limitations under the License.
 */
 
-#include "datamatrix/DMWriter.h"
-#include "datamatrix/DMSymbolShape.h"
-#include "datamatrix/DMHighLevelEncoder.h"
-#include "datamatrix/DMSymbolInfo.h"
-#include "datamatrix/DMECEncoder.h"
-#include "datamatrix/DMDefaultPlacement.h"
+#include "DMWriter.h"
+#include "DMSymbolShape.h"
+#include "DMHighLevelEncoder.h"
+#include "DMSymbolInfo.h"
+#include "DMECEncoder.h"
+#include "DMDefaultPlacement.h"
 #include "BitMatrix.h"
 #include "ByteMatrix.h"
 #include "ByteArray.h"

@@ -15,8 +15,8 @@
 * limitations under the License.
 */
 
-#include "aztec/AZDecoder.h"
-#include "aztec/AZDetectorResult.h"
+#include "AZDecoder.h"
+#include "AZDetectorResult.h"
 #include "DecoderResult.h"
 #include "ReedSolomonDecoder.h"
 #include "GenericGF.h"

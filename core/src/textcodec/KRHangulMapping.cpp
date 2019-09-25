@@ -34,7 +34,7 @@
 // Most of the cp949 code was originally written by Joon-Kyu Park, and is included
 // in Qt with the author's permission and the grateful thanks of the Qt team.
 
-#include "textcodec/KRHangulMapping.h"
+#include "KRHangulMapping.h"
 
 /* Table including ksc5601 hangul to unicode */
 const uint16_t ksc5601_hangul_to_unicode[2350] =

@@ -15,10 +15,10 @@
 * limitations under the License.
 */
 
-#include "qrcode/QRReader.h"
-#include "qrcode/QRDecoder.h"
-#include "qrcode/QRDetector.h"
-#include "qrcode/QRDecoderMetadata.h"
+#include "QRReader.h"
+#include "QRDecoder.h"
+#include "QRDetector.h"
+#include "QRDecoderMetadata.h"
 #include "Result.h"
 #include "DecoderResult.h"
 #include "DetectorResult.h"

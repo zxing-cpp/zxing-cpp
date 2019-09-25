@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-#include "oned/ODITFReader.h"
+#include "ODITFReader.h"
 #include "Result.h"
 #include "BitArray.h"
 #include "DecodeHints.h"

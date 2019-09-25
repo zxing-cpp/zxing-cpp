@@ -15,8 +15,8 @@
 * limitations under the License.
 */
 
-#include "aztec/AZDetector.h"
-#include "aztec/AZDetectorResult.h"
+#include "AZDetector.h"
+#include "AZDetectorResult.h"
 #include "BitHacks.h"
 #include "ZXNumeric.h"
 #include "ReedSolomonDecoder.h"

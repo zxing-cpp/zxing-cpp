@@ -15,12 +15,12 @@
 * limitations under the License.
 */
 
-#include "qrcode/QRDetector.h"
-#include "qrcode/QRFinderPatternFinder.h"
-#include "qrcode/QRFinderPatternInfo.h"
-#include "qrcode/QRAlignmentPattern.h"
-#include "qrcode/QRAlignmentPatternFinder.h"
-#include "qrcode/QRVersion.h"
+#include "QRDetector.h"
+#include "QRFinderPatternFinder.h"
+#include "QRFinderPatternInfo.h"
+#include "QRAlignmentPattern.h"
+#include "QRAlignmentPatternFinder.h"
+#include "QRVersion.h"
 #include "BitMatrix.h"
 #include "DecodeHints.h"
 #include "DetectorResult.h"

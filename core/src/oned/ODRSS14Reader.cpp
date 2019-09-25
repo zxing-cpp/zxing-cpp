@@ -15,9 +15,9 @@
 * limitations under the License.
 */
 
-#include "oned/ODRSS14Reader.h"
-#include "oned/rss/ODRSSReaderHelper.h"
-#include "oned/rss/ODRSSPair.h"
+#include "ODRSS14Reader.h"
+#include "rss/ODRSSReaderHelper.h"
+#include "rss/ODRSSPair.h"
 #include "BitArray.h"
 #include "Result.h"
 #include "DecodeHints.h"

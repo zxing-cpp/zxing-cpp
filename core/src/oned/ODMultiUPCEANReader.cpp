@@ -15,12 +15,12 @@
 * limitations under the License.
 */
 
-#include "oned/ODMultiUPCEANReader.h"
-#include "oned/ODUPCEANReader.h"
-#include "oned/ODEAN13Reader.h"
-#include "oned/ODEAN8Reader.h"
-#include "oned/ODUPCAReader.h"
-#include "oned/ODUPCEReader.h"
+#include "ODMultiUPCEANReader.h"
+#include "ODUPCEANReader.h"
+#include "ODEAN13Reader.h"
+#include "ODEAN8Reader.h"
+#include "ODUPCAReader.h"
+#include "ODUPCEReader.h"
 #include "DecodeHints.h"
 #include "BarcodeFormat.h"
 #include "Result.h"

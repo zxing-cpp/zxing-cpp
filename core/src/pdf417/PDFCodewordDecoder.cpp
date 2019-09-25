@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-#include "pdf417/PDFCodewordDecoder.h"
+#include "PDFCodewordDecoder.h"
 
 #include <vector>
 #include <numeric>

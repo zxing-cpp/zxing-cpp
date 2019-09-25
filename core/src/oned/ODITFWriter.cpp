@@ -14,8 +14,8 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#include "oned/ODITFWriter.h"
-#include "oned/ODWriterHelper.h"
+#include "ODITFWriter.h"
+#include "ODWriterHelper.h"
 
 #include <array>
 

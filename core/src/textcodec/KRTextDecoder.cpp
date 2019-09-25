@@ -34,8 +34,8 @@
 // Most of the cp949 code was originally written by Joon-Kyu Park, and is included
 // in Qt with the author's permission and the grateful thanks of the Qt team.
 
-#include "textcodec/KRTextDecoder.h"
-#include "textcodec/KRHangulMapping.h"
+#include "KRTextDecoder.h"
+#include "KRHangulMapping.h"
 
 static const uint16_t cp949_icode_to_unicode[8822] = {
 	0xac02, 0xac03, 0xac05, 0xac06, 0xac0b, 0xac0c, 0xac0d, 0xac0e, 0xac0f, 0xac18, 0xac1e, 0xac1f, 0xac21, 0xac22, 0xac23, 0xac25,

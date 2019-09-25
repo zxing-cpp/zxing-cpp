@@ -15,9 +15,9 @@
 * limitations under the License.
 */
 
-#include "qrcode/QRDataBlock.h"
-#include "qrcode/QRVersion.h"
-#include "qrcode/QRErrorCorrectionLevel.h"
+#include "QRDataBlock.h"
+#include "QRVersion.h"
+#include "QRErrorCorrectionLevel.h"
 #include "DecodeStatus.h"
 
 #include <utility>

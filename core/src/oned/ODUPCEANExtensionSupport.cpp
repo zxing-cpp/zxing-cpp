@@ -15,9 +15,9 @@
 * limitations under the License.
 */
 
-#include "oned/ODUPCEANExtensionSupport.h"
-#include "oned/ODUPCEANReader.h"
-#include "oned/ODUPCEANCommon.h"
+#include "ODUPCEANExtensionSupport.h"
+#include "ODUPCEANReader.h"
+#include "ODUPCEANCommon.h"
 #include "Result.h"
 #include "BitArray.h"
 #include "TextDecoder.h"

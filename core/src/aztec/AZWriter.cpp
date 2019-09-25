@@ -15,8 +15,8 @@
 * limitations under the License.
 */
 
-#include "aztec/AZWriter.h"
-#include "aztec/AZEncoder.h"
+#include "AZWriter.h"
+#include "AZEncoder.h"
 #include "CharacterSet.h"
 #include "TextEncoder.h"
 

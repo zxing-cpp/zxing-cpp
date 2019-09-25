@@ -20,7 +20,7 @@
 //#define PRINT_DEBUG
 //#endif
 
-#include "datamatrix/DMDetector.h"
+#include "DMDetector.h"
 #include "BitMatrix.h"
 #include "DecodeStatus.h"
 #include "DetectorResult.h"

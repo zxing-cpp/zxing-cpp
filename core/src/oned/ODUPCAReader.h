@@ -16,7 +16,7 @@
 * limitations under the License.
 */
 
-#include "oned/ODEAN13Reader.h"
+#include "ODEAN13Reader.h"
 
 namespace ZXing {
 namespace OneD {

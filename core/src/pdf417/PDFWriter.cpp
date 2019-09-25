@@ -15,8 +15,8 @@
 * limitations under the License.
 */
 
-#include "pdf417/PDFWriter.h"
-#include "pdf417/PDFEncoder.h"
+#include "PDFWriter.h"
+#include "PDFEncoder.h"
 #include "BitMatrix.h"
 #include "CharacterSetECI.h"
 

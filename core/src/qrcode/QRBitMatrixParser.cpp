@@ -15,9 +15,9 @@
 * limitations under the License.
 */
 
-#include "qrcode/QRBitMatrixParser.h"
-#include "qrcode/QRVersion.h"
-#include "qrcode/QRFormatInformation.h"
+#include "QRBitMatrixParser.h"
+#include "QRVersion.h"
+#include "QRFormatInformation.h"
 #include "BitMatrix.h"
 #include "ByteArray.h"
 #include "DecodeStatus.h"

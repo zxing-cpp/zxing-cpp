@@ -15,9 +15,9 @@
 * limitations under the License.
 */
 
-#include "maxicode/MCReader.h"
-#include "maxicode/MCDecoder.h"
-#include "maxicode/MCBitMatrixParser.h"
+#include "MCReader.h"
+#include "MCDecoder.h"
+#include "MCBitMatrixParser.h"
 #include "DecodeHints.h"
 #include "Result.h"
 #include "DecoderResult.h"

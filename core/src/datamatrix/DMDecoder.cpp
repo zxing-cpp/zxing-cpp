@@ -15,9 +15,9 @@
 * limitations under the License.
 */
 
-#include "datamatrix/DMDecoder.h"
-#include "datamatrix/DMBitMatrixParser.h"
-#include "datamatrix/DMDataBlock.h"
+#include "DMDecoder.h"
+#include "DMBitMatrixParser.h"
+#include "DMDataBlock.h"
 #include "DecoderResult.h"
 #include "BitMatrix.h"
 #include "ReedSolomonDecoder.h"

@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-#include "oned/ODUPCEANCommon.h"
+#include "ODUPCEANCommon.h"
 
 namespace ZXing {
 namespace OneD {

@@ -16,8 +16,8 @@
 */
 
 #include "BitMatrix.h"
-#include "oned/ODUPCAWriter.h"
-#include "oned/ODEAN13Writer.h"
+#include "ODUPCAWriter.h"
+#include "ODEAN13Writer.h"
 
 #include <stdexcept>
 

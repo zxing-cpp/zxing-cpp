@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-#include "datamatrix/DMDefaultPlacement.h"
+#include "DMDefaultPlacement.h"
 #include "ByteMatrix.h"
 #include "ByteArray.h"
 

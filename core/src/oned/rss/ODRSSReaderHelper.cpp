@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-#include "oned/rss/ODRSSReaderHelper.h"
+#include "ODRSSReaderHelper.h"
 #include "ZXContainerAlgorithms.h"
 
 #include <limits>

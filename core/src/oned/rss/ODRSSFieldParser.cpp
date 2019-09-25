@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-#include "oned/rss/ODRSSFieldParser.h"
+#include "ODRSSFieldParser.h"
 #include "DecodeStatus.h"
 #include "ZXContainerAlgorithms.h"
 

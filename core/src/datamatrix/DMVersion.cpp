@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-#include "datamatrix/DMVersion.h"
+#include "DMVersion.h"
 #include "ZXContainerAlgorithms.h"
 
 namespace ZXing {

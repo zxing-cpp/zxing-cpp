@@ -35,7 +35,7 @@
 // a.k.a. Junji Takagi, and is included in Qt with the author's permission,
 // and the grateful thanks of the Qt team.
 
-#include "textcodec/JPTextDecoder.h"
+#include "JPTextDecoder.h"
 
 /*
 * This data is derived from Unicode 1.1,

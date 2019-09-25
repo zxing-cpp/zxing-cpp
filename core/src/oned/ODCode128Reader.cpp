@@ -15,8 +15,8 @@
 * limitations under the License.
 */
 
-#include "oned/ODCode128Reader.h"
-#include "oned/ODCode128Patterns.h"
+#include "ODCode128Reader.h"
+#include "ODCode128Patterns.h"
 #include "Result.h"
 #include "BitArray.h"
 #include "DecodeHints.h"

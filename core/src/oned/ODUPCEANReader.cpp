@@ -15,10 +15,10 @@
 * limitations under the License.
 */
 
-#include "oned/ODUPCEANReader.h"
-#include "oned/ODUPCEANExtensionSupport.h"
-#include "oned/ODEANManufacturerOrgSupport.h"
-#include "oned/ODUPCEANCommon.h"
+#include "ODUPCEANReader.h"
+#include "ODUPCEANExtensionSupport.h"
+#include "ODEANManufacturerOrgSupport.h"
+#include "ODUPCEANCommon.h"
 #include "Result.h"
 #include "BitArray.h"
 #include "DecodeHints.h"

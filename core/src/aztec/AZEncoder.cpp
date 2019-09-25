@@ -15,8 +15,8 @@
 * limitations under the License.
 */
 
-#include "aztec/AZEncoder.h"
-#include "aztec/AZHighLevelEncoder.h"
+#include "AZEncoder.h"
+#include "AZHighLevelEncoder.h"
 #include "BitArray.h"
 #include "ReedSolomonEncoder.h"
 #include "GenericGF.h"

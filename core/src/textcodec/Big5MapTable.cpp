@@ -30,7 +30,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "textcodec/Big5MapTable.h"
+#include "Big5MapTable.h"
 
 #include <type_traits>
 

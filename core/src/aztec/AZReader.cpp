@@ -15,10 +15,10 @@
 * limitations under the License.
 */
 
-#include "aztec/AZReader.h"
-#include "aztec/AZDetector.h"
-#include "aztec/AZDetectorResult.h"
-#include "aztec/AZDecoder.h"
+#include "AZReader.h"
+#include "AZDetector.h"
+#include "AZDetectorResult.h"
+#include "AZDecoder.h"
 #include "Result.h"
 #include "BitMatrix.h"
 #include "BinaryBitmap.h"

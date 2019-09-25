@@ -16,7 +16,7 @@
 * limitations under the License.
 */
 
-#include "qrcode/QRFinderPattern.h"
+#include "QRFinderPattern.h"
 
 namespace ZXing {
 namespace QRCode {

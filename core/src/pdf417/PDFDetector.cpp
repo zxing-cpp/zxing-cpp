@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-#include "pdf417/PDFDetector.h"
+#include "PDFDetector.h"
 #include "BinaryBitmap.h"
 #include "DecodeStatus.h"
 #include "BitMatrix.h"

@@ -15,8 +15,8 @@
 * limitations under the License.
 */
 
-#include "oned/ODCode39Writer.h"
-#include "oned/ODWriterHelper.h"
+#include "ODCode39Writer.h"
+#include "ODWriterHelper.h"
 #include "ZXContainerAlgorithms.h"
 #include "TextEncoder.h"
 #include "CharacterSet.h"

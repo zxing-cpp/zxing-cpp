@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-#include "oned/ODCode39Reader.h"
+#include "ODCode39Reader.h"
 #include "Result.h"
 #include "BitArray.h"
 #include "DecodeHints.h"

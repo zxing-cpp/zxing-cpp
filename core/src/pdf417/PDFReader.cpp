@@ -15,11 +15,11 @@
 * limitations under the License.
 */
 
-#include "pdf417/PDFReader.h"
-#include "pdf417/PDFDetector.h"
-#include "pdf417/PDFScanningDecoder.h"
-#include "pdf417/PDFCodewordDecoder.h"
-#include "pdf417/PDFDecoderResultExtra.h"
+#include "PDFReader.h"
+#include "PDFDetector.h"
+#include "PDFScanningDecoder.h"
+#include "PDFCodewordDecoder.h"
+#include "PDFDecoderResultExtra.h"
 #include "DecodeStatus.h"
 #include "DecoderResult.h"
 #include "Result.h"

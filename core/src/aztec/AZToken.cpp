@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-#include "aztec/AZToken.h"
+#include "AZToken.h"
 #include "BitArray.h"
 #include <algorithm>
 

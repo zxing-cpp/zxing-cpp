@@ -15,10 +15,10 @@
 * limitations under the License.
 */
 
-#include "oned/ODRSSExpandedReader.h"
-#include "oned/rss/ODRSSReaderHelper.h"
-#include "oned/rss/ODRSSExpandedBinaryDecoder.h"
-#include "oned/rss/ODRSSExpandedRow.h"
+#include "ODRSSExpandedReader.h"
+#include "rss/ODRSSReaderHelper.h"
+#include "rss/ODRSSExpandedBinaryDecoder.h"
+#include "rss/ODRSSExpandedRow.h"
 #include "Result.h"
 #include "BitArray.h"
 #include "TextDecoder.h"

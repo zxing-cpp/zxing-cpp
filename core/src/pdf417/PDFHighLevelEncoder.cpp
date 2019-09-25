@@ -16,8 +16,8 @@
 * limitations under the License.
 */
 
-#include "pdf417/PDFHighLevelEncoder.h"
-#include "pdf417/PDFCompaction.h"
+#include "PDFHighLevelEncoder.h"
+#include "PDFCompaction.h"
 #include "CharacterSet.h"
 #include "CharacterSetECI.h"
 #include "TextEncoder.h"
