@@ -17,6 +17,7 @@
 */
 #include <array>
 #include <algorithm>
+#include "../ODRowReader.h"
 
 namespace ZXing {
 namespace OneD {
