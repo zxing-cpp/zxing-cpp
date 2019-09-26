@@ -299,7 +299,7 @@ public:
 	*/
 #ifdef ZX_FAST_BIT_STORAGE
 	bool isRange(int start, int end, bool value) const {
-		return std::all_of(&_bits[start], &_bits[end], [value](uint8_t v) { return v == static_cast<int>(value); });
+		return std::all_of(std::begin(_bits) + start, std::begin(_bits) + end, [value](uint8_t v) { return v == static_cast<int>(value); });
 	}
 #else
 	bool isRange(int start, int end, bool value) const;
