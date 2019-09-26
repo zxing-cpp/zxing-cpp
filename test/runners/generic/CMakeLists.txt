@@ -5,7 +5,7 @@ project (ZXingTest)
 set (ENABLE_ENCODERS OFF CACHE BOOL "Check to include encoders")
 set (ENABLE_DECODERS ON CACHE BOOL "Check to include decoders")
 
-add_definitions (-DUNICODE -D_UNICODE -DLODEPNG_NO_COMPILE_ENCODER)
+add_definitions (-DUNICODE -D_UNICODE)
 
 if (MSVC)
     add_definitions (-D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS -DNOMINMAX )
