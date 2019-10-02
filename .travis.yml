@@ -10,10 +10,10 @@ script:
  - cd ..
  - mkdir build-unit && cd build-unit
  - cmake ../test/unit
- - make
+ - make -j10
  - ./ZXingUnitTest
  - cd ..
  - mkdir build-test && cd build-test
  - cmake -DCMAKE_BUILD_TYPE=Release ../test/runners/generic/
- - make
- - ./ReaderTest ../test/
+ - make -j10
+ - ./ReaderTest ../test/samples

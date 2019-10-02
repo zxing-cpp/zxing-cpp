@@ -250,40 +250,40 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		auto startTime = std::chrono::steady_clock::now();
 
 		// clang-format off
-		runTests("blackbox/aztec-1", "AZTEC", 13, {
+		runTests("aztec-1", "AZTEC", 13, {
 			{ 13, 13, 0   },
 			{ 13, 13, 90  },
 			{ 13, 13, 180 },
 			{ 13, 13, 270 },
 		});
 
-		runTests("blackbox/aztec-2", "AZTEC", 22, {
+		runTests("aztec-2", "AZTEC", 22, {
 			{ 5, 5, 0   },
 			{ 4, 4, 90  },
 			{ 6, 6, 180 },
 			{ 3, 3, 270 },
 		});
 
-		runTests("blackbox/datamatrix-1", "DATA_MATRIX", 21, {
+		runTests("datamatrix-1", "DATA_MATRIX", 21, {
 			{ 21, 21, 0   },
 			{  0, 21, 90  },
 			{  0, 21, 180 },
 			{  0, 21, 270 },
 		});
 
-		runTests("blackbox/datamatrix-2", "DATA_MATRIX", 18, {
+		runTests("datamatrix-2", "DATA_MATRIX", 18, {
 			{ 18, 18, 0   },
 			{  0, 18, 90  },
 			{  0, 18, 180 },
 			{  0, 18, 270 },
 		});
 
-		runTests("blackbox/codabar-1", "CODABAR", 11, {
+		runTests("codabar-1", "CODABAR", 11, {
 			{ 11, 11, 0   },
 			{ 11, 11, 180 },
 		});
 
-		runTests("blackbox/code39-1", "CODE_39", 4, {
+		runTests("code39-1", "CODE_39", 4, {
 			{ 4, 4, 0   },
 			{ 4, 4, 180 },
 		});
@@ -291,239 +291,239 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		DecodeHints code39ExtendedModeHints;
 		code39ExtendedModeHints.setShouldTryCode39ExtendedMode(true);
 		code39ExtendedModeHints.setPossibleFormats({BarcodeFormat::CODE_39});
-		runTests("blackbox/code39-2", "CODE_39", 2, {
+		runTests("code39-2", "CODE_39", 2, {
 			{ 2, 2, 0   },
 			{ 2, 2, 180 },
 		}, code39ExtendedModeHints);
 
-		runTests("blackbox/code39-3", "CODE_39", 17, {
+		runTests("code39-3", "CODE_39", 17, {
 			{ 17, 17, 0   },
 			{ 17, 17, 180 },
 		});
 
-		runTests("blackbox/code93-1", "CODE_93", 3, {
+		runTests("code93-1", "CODE_93", 3, {
 			{ 3, 3, 0   },
 			{ 3, 3, 180 },
 		});
 
-		runTests("blackbox/code128-1", "CODE_128", 6, {
+		runTests("code128-1", "CODE_128", 6, {
 			{ 6, 6, 0   },
 			{ 6, 6, 180 },
 		});
 
-		runTests("blackbox/code128-2", "CODE_128", 40, {
+		runTests("code128-2", "CODE_128", 40, {
 			{ 36, 39, 0   },
 			{ 36, 39, 180 },
 		});
 
-		runTests("blackbox/code128-3", "CODE_128", 2, {
+		runTests("code128-3", "CODE_128", 2, {
 			{ 2, 2, 0   },
 			{ 2, 2, 180 },
 		});
 
-		runTests("blackbox/ean8-1", "EAN_8", 8, {
+		runTests("ean8-1", "EAN_8", 8, {
 			{ 3, 3, 0   },
 			{ 3, 3, 180 },
 		});
 
-		runTests("blackbox/ean13-1", "EAN_13", 31, {
+		runTests("ean13-1", "EAN_13", 31, {
 			{ 27, 29, 0   },
 			{ 24, 29, 180 },
 		});
 
-		runTests("blackbox/ean13-2", "EAN_13", 28, {
+		runTests("ean13-2", "EAN_13", 28, {
 			{ 12, 17, 0   },
 			{ 11, 17, 180 },
 		});
 
-		runTests("blackbox/ean13-3", "EAN_13", 55, {
+		runTests("ean13-3", "EAN_13", 55, {
 			{ 53, 55, 0   },
 			{ 55, 55, 180 },
 		});
 
-		runTests("blackbox/ean13-4", "EAN_13", 22, {
+		runTests("ean13-4", "EAN_13", 22, {
 			{ 7, 14, 0   },
 			{ 8, 14, 180 },
 		});
 
-		runTests("blackbox/ean13-5", "EAN_13", 18, {
+		runTests("ean13-5", "EAN_13", 18, {
 			{ 0, 0, 0   },
 			{ 0, 0, 180 },
 		});
 
-		runTests("blackbox/ean13-extension-1", "EAN_13", 5, {
+		runTests("ean13-extension-1", "EAN_13", 5, {
 			{ 5, 5, 0, 0, 0 },
 			{ 5, 5, 1, 0, 180 },
 		});
 
-		runTests("blackbox/itf-1", "ITF", 14, {
+		runTests("itf-1", "ITF", 14, {
 			{ 14, 14, 0   },
 			{ 14, 14, 180 },
 		});
 
-		runTests("blackbox/itf-2", "ITF", 13, {
+		runTests("itf-2", "ITF", 13, {
 			{ 13, 13, 0   },
 			{ 13, 13, 180 },
 		});
 
-		runTests("blackbox/upca-1", "UPC_A", 15, {
+		runTests("upca-1", "UPC_A", 15, {
 			{ 10, 12, 0, 1, 0   },
 			{ 12, 12, 0, 1, 180 },
 		});
 
-		runTests("blackbox/upca-2", "UPC_A", 52, {
+		runTests("upca-2", "UPC_A", 52, {
 			{ 28, 36, 0   },
 			{ 29, 36, 180 },
 		});
 
-		runTests("blackbox/upca-3", "UPC_A", 21, {
+		runTests("upca-3", "UPC_A", 21, {
 			{ 7, 10, 0, 1, 0   },
 			{ 8, 10, 0, 1, 180 },
 		});
 
-		runTests("blackbox/upca-4", "UPC_A", 19, {
+		runTests("upca-4", "UPC_A", 19, {
 			{ 9, 11, 0, 1, 0   },
 			{ 9, 11, 0, 1, 180 },
 		});
 
-		runTests("blackbox/upca-5", "UPC_A", 35, {
+		runTests("upca-5", "UPC_A", 35, {
 			{ 20, 23, 0, 0, 0   },
 			{ 22, 23, 0, 0, 180 },
 		});
 		
-		runTests("blackbox/upca-6", "UPC_A", 19, {
+		runTests("upca-6", "UPC_A", 19, {
 			{ 0, 0, 0   },
 			{ 0, 0, 180 },
 		});
 
-		runTests("blackbox/upca-extension-1", "UPC_A", 6, {
+		runTests("upca-extension-1", "UPC_A", 6, {
 			{ 2, 4, 2, 2, 0 },
 			{ 2, 4, 2, 2, 180 },
 		});
 
-		runTests("blackbox/upce-1", "UPC_E", 3, {
+		runTests("upce-1", "UPC_E", 3, {
 			{ 3, 3, 0   },
 			{ 3, 3, 180 },
 		});
 
-		runTests("blackbox/upce-2", "UPC_E", 41, {
+		runTests("upce-2", "UPC_E", 41, {
 			{ 31, 35, 0, 1, 0   },
 			{ 31, 35, 1, 1, 180 },
 		});
 
-		runTests("blackbox/upce-3", "UPC_E", 11, {
+		runTests("upce-3", "UPC_E", 11, {
 			{ 6, 8, 0   },
 			{ 6, 8, 180 },
 		});
 
-		runTests("blackbox/rss14-1", "RSS_14", 6, {
+		runTests("rss14-1", "RSS_14", 6, {
 			{ 6, 6, 0   },
 			{ 6, 6, 180 },
 		});
 
-		runTests("blackbox/rss14-2", "RSS_14", 20, {
+		runTests("rss14-2", "RSS_14", 20, {
 			{ 7, 10, 1, 1, 0   },
 			{ 8, 10, 0, 1, 180 },
 		});
 
-		runTests("blackbox/rssexpanded-1", "RSS_EXPANDED", 32, {
+		runTests("rssexpanded-1", "RSS_EXPANDED", 32, {
 			{ 32, 32, 0   },
 			{ 32, 32, 180 },
 		});
 
-		runTests("blackbox/rssexpanded-2", "RSS_EXPANDED", 23, {
+		runTests("rssexpanded-2", "RSS_EXPANDED", 23, {
 			{ 21, 23, 0   },
 			{ 21, 23, 180 },
 		});
 
-		runTests("blackbox/rssexpanded-3", "RSS_EXPANDED", 117, {
+		runTests("rssexpanded-3", "RSS_EXPANDED", 117, {
 			{ 117, 117, 0   },
 			{ 117, 117, 180 },
 		});
 
-		runTests("blackbox/rssexpandedstacked-1", "RSS_EXPANDED", 64, {
+		runTests("rssexpandedstacked-1", "RSS_EXPANDED", 64, {
 			{ 59, 64, 0   },
 			{ 59, 64, 180 },
 		});
 
-		runTests("blackbox/rssexpandedstacked-2", "RSS_EXPANDED", 7, {
+		runTests("rssexpandedstacked-2", "RSS_EXPANDED", 7, {
 			{ 2, 7, 0   },
 			{ 2, 7, 180 },
 		});
 
-		runTests("blackbox/qrcode-1", "QR_CODE", 20, {
+		runTests("qrcode-1", "QR_CODE", 20, {
 			{ 17, 17, 0   },
 			{ 14, 14, 90  },
 			{ 17, 17, 180 },
 			{ 14, 14, 270 },
 		});
 
-		runTests("blackbox/qrcode-2", "QR_CODE", 34, {
+		runTests("qrcode-2", "QR_CODE", 34, {
 			{ 31, 31, 0   },
 			{ 30, 30, 90  },
 			{ 30, 30, 180 },
 			{ 30, 30, 270 },
 		});
 
-		runTests("blackbox/qrcode-3", "QR_CODE", 42, {
+		runTests("qrcode-3", "QR_CODE", 42, {
 			{ 38, 38, 0   },
 			{ 39, 39, 90  },
 			{ 36, 36, 180 },
 			{ 39, 39, 270 },
 		});
 
-		runTests("blackbox/qrcode-4", "QR_CODE", 48, {
+		runTests("qrcode-4", "QR_CODE", 48, {
 			{ 36, 36, 0   },
 			{ 35, 35, 90  },
 			{ 35, 35, 180 },
 			{ 35, 35, 270 },
 		});
 
-		runTests("blackbox/qrcode-5", "QR_CODE", 19, {
+		runTests("qrcode-5", "QR_CODE", 19, {
 			{ 19, 19, 0   },
 			{ 19, 19, 90  },
 			{ 19, 19, 180 },
 			{ 19, 19, 270 },
 		});
 
-		runTests("blackbox/qrcode-6", "QR_CODE", 15, {
+		runTests("qrcode-6", "QR_CODE", 15, {
 			{ 15, 15, 0   },
 			{ 14, 14, 90  },
 			{ 13, 13, 180 },
 			{ 14, 14, 270 },
 		});
 
-		runQRCodeStructuredAppendTest("blackbox/qrcode-7", "QR_CODE", 1, {
+		runQRCodeStructuredAppendTest("qrcode-7", "QR_CODE", 1, {
 			{ 1, 1, 0   },
 		});
 
-		runTests("blackbox/pdf417-1", "PDF_417", 10, {
+		runTests("pdf417-1", "PDF_417", 10, {
 			{ 10, 10, 0   },
 			{ 10, 10, 180 },
 		});
 
-		runTests("blackbox/pdf417-2", "PDF_417", 25, {
+		runTests("pdf417-2", "PDF_417", 25, {
 			{ 25, 25, 0   },
 			{ 25, 25, 180 },
 		});
 
-		runTests("blackbox/pdf417-3", "PDF_417", 19, {
+		runTests("pdf417-3", "PDF_417", 19, {
 			{ 19, 19, 0   },
 			{ 19, 19, 180 },
 		});
 
-		runPdf417StructuredAppendTest("blackbox/pdf417-4", "PDF_417", 3, {
+		runPdf417StructuredAppendTest("pdf417-4", "PDF_417", 3, {
 			{ 3, 3, 0   },
 		});
 
-		runTests("blackbox/falsepositives-1", "NONE", 24, {
+		runTests("falsepositives-1", "NONE", 24, {
 			{ 0, 0, 0, 0, 0   },
 			{ 0, 0, 0, 0, 90  },
 			{ 0, 0, 0, 0, 180 },
 			{ 0, 0, 0, 0, 270 },
 		});
 
-		runTests("blackbox/falsepositives-2", "NONE", 25, {
+		runTests("falsepositives-2", "NONE", 25, {
 			{ 0, 0, 0, 2, 0   },
 			{ 0, 0, 0, 2, 90  },
 			{ 0, 0, 0, 2, 180 },
