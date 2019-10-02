@@ -73,9 +73,9 @@ struct DecodedInformation : public DecodedValue
 	std::string newString;
 	int remainingValue = -1;
 
-	DecodedInformation() {}
-	DecodedInformation(int np, const std::string& s) : DecodedValue(np), newString(s) {}
-	DecodedInformation(int np, const std::string& s, int r) : DecodedValue(np), newString(s), remainingValue(r) {}
+	DecodedInformation() = default;
+	DecodedInformation(int np, std::string s) : DecodedValue(np), newString(std::move(s)) {}
+	DecodedInformation(int np, std::string s, int r) : DecodedValue(np), newString(std::move(s)), remainingValue(r) {}
 
 	bool isRemaining() const { return remainingValue >= 0; }
 };
