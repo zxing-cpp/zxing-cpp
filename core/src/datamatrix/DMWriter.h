@@ -30,6 +30,11 @@ class Writer
 public:
 	Writer();
 
+	Writer& setMargin(int margin) {
+		_quiteZone = margin;
+		return *this;
+	}
+
 	Writer& setShapeHint(SymbolShape shape) {
 		_shapeHint = shape;
 		return *this;

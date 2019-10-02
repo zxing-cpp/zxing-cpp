@@ -121,7 +121,7 @@ Writer::encode(const std::wstring& contents, int width, int height) const
 	BitMatrix result = EncodeLowLevel(placement, *symbolInfo);
 
 	//5. step: scale-up to requested size, minimum required quite zone is 1
-	return Inflate(std::move(result), width, height, 0);
+	return Inflate(std::move(result), width, height, _quiteZone);
 }
 
 } // DataMatrix

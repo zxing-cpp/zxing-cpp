@@ -104,7 +104,7 @@ MultiFormatWriter::encode(const std::wstring& contents, int width, int height) c
 	case BarcodeFormat::AZTEC:
 		return CreateWriter<Aztec::Writer, AztecEccConverter>(_encoding, _eccLevel).encode(contents, width, height);
 	case BarcodeFormat::DATA_MATRIX:
-		return DataMatrix::Writer().encode(contents, width, height);
+		return CreateWriter<DataMatrix::Writer>(_margin).encode(contents, width, height);
 	case BarcodeFormat::PDF_417:
 		return CreateWriter<Pdf417::Writer, Pdf417EccConverter>(_encoding, _margin, _eccLevel).encode(contents, width, height);
 	case BarcodeFormat::QR_CODE:
