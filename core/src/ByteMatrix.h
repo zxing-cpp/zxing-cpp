@@ -74,6 +74,9 @@ public:
 	/**
 	* @return an internal representation as bytes, in row-major order. array[y * width() + x] represents point (x,y)
 	*/
+	const int8_t* data() const {
+		return _data.data();
+	}
 
 	const int8_t* begin() const {
 		return _data.data();

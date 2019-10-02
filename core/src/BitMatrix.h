@@ -82,6 +82,8 @@ public:
 		return *this;
 	}
 
+	ByteMatrix toByteMatrix(int black = 0, int white = 255) const;
+
 	/**
 	* <p>Gets the requested bit, where true means black.</p>
 	*

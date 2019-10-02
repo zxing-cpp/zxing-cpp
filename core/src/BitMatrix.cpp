@@ -69,6 +69,15 @@ BitMatrix::BitMatrix(const ByteMatrix& other, int blackValue) : BitMatrix(other.
 				set(x, y);
 }
 
+ByteMatrix BitMatrix::toByteMatrix(int black, int white) const
+{
+	ByteMatrix res(width(), height());
+	for (int y = 0; y < height(); ++y)
+		for (int x = 0; x < width(); ++x)
+			res.set(x, y, get(x, y) ? black : white);
+	return res;
+}
+
 void
 BitMatrix::setRegion(int left, int top, int width, int height)
 {

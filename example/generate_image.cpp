@@ -17,6 +17,7 @@
 #include "BarcodeFormat.h"
 #include "MultiFormatWriter.h"
 #include "BitMatrix.h"
+#include "ByteMatrix.h"
 #include "TextUtfEncoding.h"
 #include "ZXStrConvWorkaround.h"
 
@@ -183,24 +184,15 @@ int main(int argc, char* argv[])
         if (eccLevel >= 0)
             writer.setEccLevel(eccLevel);
 
-        auto matrix = writer.encode(TextUtfEncoding::FromUtf8(text), width, height);
-
-        std::vector<unsigned char> buffer(matrix.width() * matrix.height(), '\0');
-        unsigned char black = 0;
-        unsigned char white = 255;
-        for (int y = 0; y < matrix.height(); ++y) {
-            for (int x = 0; x < matrix.width(); ++x) {
-                buffer[y * matrix.width() + x] = matrix.get(x, y) ? black : white;
-            }
-        }
+        auto bitmap = writer.encode(TextUtfEncoding::FromUtf8(text), width, height).toByteMatrix();
 
         auto ext = GetExtension(filePath);
         int success = 0;
         if (ext == "" || ext == "png") {
-            success = stbi_write_png(filePath.c_str(), matrix.width(), matrix.height(), 1, buffer.data(), 0);
+            success = stbi_write_png(filePath.c_str(), bitmap.width(), bitmap.height(), 1, bitmap.data(), 0);
         }
         else if (ext == "jpg" || ext == "jpeg") {
-            success = stbi_write_jpg(filePath.c_str(), matrix.width(), matrix.height(), 1, buffer.data(), 0);
+            success = stbi_write_jpg(filePath.c_str(), bitmap.width(), bitmap.height(), 1, bitmap.data(), 0);
         }
  
         if (!success) {
