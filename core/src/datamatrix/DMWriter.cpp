@@ -89,11 +89,7 @@ static BitMatrix EncodeLowLevel(const ByteMatrix& placement, const SymbolInfo& s
 }
 
 Writer::Writer() :
-	_shapeHint(SymbolShape::NONE),
-	_minWidth(-1),
-	_minHeight(-1),
-	_maxWidth(-1),
-	_maxHeight(-1)
+	_shapeHint(SymbolShape::NONE)
 {
 }
 

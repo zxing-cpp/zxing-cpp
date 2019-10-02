@@ -31,7 +31,8 @@ public:
 	Writer();
 
 	Writer& setShapeHint(SymbolShape shape) {
-		_shapeHint = shape; return *this;
+		_shapeHint = shape;
+		return *this;
 	}
 
 	Writer& setMinSize(int width, int height) {
@@ -50,7 +51,7 @@ public:
 
 private:
 	SymbolShape _shapeHint;
-	int _minWidth, _minHeight, _maxWidth, _maxHeight;
+	int _quiteZone = 1, _minWidth = -1, _minHeight = -1, _maxWidth = -1, _maxHeight = -1;
 };
 
 } // DataMatrix
