@@ -8,6 +8,8 @@ set (ENABLE_DECODERS ON CACHE INTERNAL "include decoders" FORCE)
 
 add_definitions (-DUNICODE -D_UNICODE -DZXING_BUILD_FOR_TEST)
 
+set (CMAKE_CXX_STANDARD 14)
+
 if (MSVC)
     set (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /Oi /GS-")
     set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Oi /GS-")
@@ -43,19 +45,17 @@ add_subdirectory (${CMAKE_BINARY_DIR}/googletest-src ${CMAKE_BINARY_DIR}/googlet
 # Add ZXingCore dependency
 add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/../../core ${CMAKE_BINARY_DIR}/ZXingCore)
 
-SET (COMMON_TEST_UTILITY
-    ../common/BitArrayUtility.h
-    ../common/BitArrayUtility.cpp
-    ../common/BitMatrixUtility.h
-    ../common/BitMatrixUtility.cpp
-    ../common/ByteMatrixUtility.h
-    ../common/ByteMatrixUtility.cpp
-    ../common/PseudoRandom.h
-)
 
 # Our executable
 add_executable (ZXingUnitTest
-    ${COMMON_TEST_UTILITY}
+    BitArrayUtility.h
+    BitArrayUtility.cpp
+    BitMatrixUtility.h
+    BitMatrixUtility.cpp
+    ByteMatrixUtility.h
+    ByteMatrixUtility.cpp
+    PseudoRandom.h
+    BitHacksTest.cpp
     ReedSolomonTest.cpp
     aztec/AZDetectorTest.cpp
     aztec/AZDecoderTest.cpp
@@ -91,18 +91,15 @@ add_executable (ZXingUnitTest
     pdf417/PDF417ErrorCorrectionTest.cpp
     pdf417/PDF417HighLevelEncoderTest.cpp
     pdf417/PDF417WriterTest.cpp
-    BitHacksTest.cpp
 )
+
+#if (APPLE)
+#    target_compile_options (ZXingUnitTest PRIVATE -stdlib=libc++)
+#endif()
 
 target_include_directories (ZXingUnitTest
-    PRIVATE ../common
+    PRIVATE .
 )
-
-if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
-    target_compile_options (ZXingUnitTest PRIVATE -std=c++11)
-elseif (APPLE)
-    target_compile_options (ZXingUnitTest PRIVATE -std=c++11 -stdlib=libc++)
-endif()
 
 target_link_libraries (ZXingUnitTest
     gtest_main
