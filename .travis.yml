@@ -17,3 +17,5 @@ script:
  - cmake -DCMAKE_BUILD_TYPE=Release ../test/blackbox
  - make -j10
  - ./ReaderTest ../test/samples
+ - ./WriterTest
+ - ./ReaderTest *.png

@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.1.3)
 
 project (ZXingTest)
 
-set (ENABLE_ENCODERS OFF CACHE BOOL "Check to include encoders")
+set (ENABLE_ENCODERS ON CACHE BOOL "Check to include encoders")
 set (ENABLE_DECODERS ON CACHE BOOL "Check to include decoders")
 
 set (CMAKE_CXX_STANDARD 17)
