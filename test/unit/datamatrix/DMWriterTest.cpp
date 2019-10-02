@@ -27,7 +27,7 @@ TEST(DMWriterTest, ImageWriter)
 {
     int bigEnough = 64;
 	Writer writer;
-	writer.setShapeHint(SymbolShape::SQUARE);
+	writer.setMargin(0).setShapeHint(SymbolShape::SQUARE);
 	auto matrix = writer.encode(L"Hello Google", bigEnough, bigEnough);
     EXPECT_LE(matrix.width(), bigEnough);
 	EXPECT_LE(matrix.height(), bigEnough);
@@ -37,7 +37,7 @@ TEST(DMWriterTest, Writer2)
 {
 	int bigEnough = 14;
 	Writer writer;
-	writer.setShapeHint(SymbolShape::SQUARE);
+	writer.setMargin(0).setShapeHint(SymbolShape::SQUARE);
 	auto matrix = writer.encode(L"Hello Me", bigEnough, bigEnough);
 	EXPECT_EQ(matrix.width(), bigEnough);
 	EXPECT_EQ(matrix.height(), bigEnough);
@@ -48,6 +48,7 @@ TEST(DMWriterTest, TooSmallSize)
     // The DataMatrix will not fit in this size, so the matrix should come back bigger
     int tooSmall = 8;
 	Writer writer;
+	writer.setMargin(0);
 	auto matrix = writer.encode(L"http://www.google.com/", tooSmall, tooSmall);
 	EXPECT_GT(matrix.width(), tooSmall);
 	EXPECT_GT(matrix.height(), tooSmall);
@@ -56,7 +57,7 @@ TEST(DMWriterTest, TooSmallSize)
 static void DoTest(const std::wstring& text, SymbolShape shape, const char* expected)
 {
 	Writer writer;
-	writer.setShapeHint(shape);
+	writer.setMargin(0).setShapeHint(shape);
 	auto matrix = writer.encode(text, 0, 0);
 	auto actual = Utility::ToString(matrix, 'X', ' ', true);
 	EXPECT_EQ(expected, actual);

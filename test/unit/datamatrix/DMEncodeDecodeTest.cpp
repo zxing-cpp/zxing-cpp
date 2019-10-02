@@ -43,6 +43,7 @@ namespace {
 	void TestEncodeDecode(const std::wstring& data, DataMatrix::SymbolShape shape = DataMatrix::SymbolShape::NONE)
 	{
 		DataMatrix::Writer writer;
+		writer.setMargin(0);
 		writer.setShapeHint(shape);
 		BitMatrix matrix = writer.encode(data, 0, 0);
 		ASSERT_EQ(matrix.empty(), false);
