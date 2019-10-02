@@ -80,8 +80,8 @@ AI01EncodeCompressedGtin(std::string& buffer, const BitArray& bits, int currentP
 	AI01EncodeCompressedGtinWithoutAI(buffer, bits, currentPos, initialPosition);
 }
 
-typedef const std::function<void(std::string&, int)> AddWeightCodeFunc;
-typedef const std::function<int(int)> CheckWeightFunc;
+using AddWeightCodeFunc = const std::function<void(std::string&, int)>;
+using CheckWeightFunc = const std::function<int (int)>;
 
 static void AI01EncodeCompressedWeight(std::string& buffer, const BitArray& bits, int currentPos, int weightSize,
 	const AddWeightCodeFunc& addWeightCode, const CheckWeightFunc& checkWeight)
