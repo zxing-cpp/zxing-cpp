@@ -49,10 +49,15 @@ if (ENABLE_DECODERS)
 
 endif()
 
-#if (ENABLE_ENCODERS)
-#    add_executable (WriterTest
-#        TestWriterMain.cpp
-#    )
-#
-#    target_link_libraries (WriterTest ZXingCore)
-#endif()
+if (ENABLE_ENCODERS)
+	add_executable (WriterTest
+		TestWriterMain.cpp
+	)
+
+	target_include_directories (WriterTest
+		PRIVATE ../../common
+		PRIVATE ../../../thirdparty/stb
+	)
+
+	target_link_libraries (WriterTest ZXingCore)
+endif()
