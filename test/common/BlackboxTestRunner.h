@@ -15,8 +15,10 @@
 * limitations under the License.
 */
 
+#include "ZXFilesystem.h"
+
 #include <set>
-#include <filesystem>
+#include <string>
 
 namespace ZXing {
 
@@ -26,6 +28,6 @@ namespace Test {
 
 std::string metadataToUtf8(const Result& result);
 
-int runBlackBoxTests(const std::filesystem::path& blackboxPath, const std::set<std::string>& includedTests);
+int runBlackBoxTests(const fs::path& blackboxPath, const std::set<std::string>& includedTests);
 
 }} // ZXing::Test

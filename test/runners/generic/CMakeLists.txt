@@ -41,7 +41,7 @@ if (ENABLE_DECODERS)
     )
 
     if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
-#        target_link_libraries (ReaderTest stdc++fs) # To use std::filesystem
+        target_link_libraries (ReaderTest stdc++fs) # To use std::experimental::filesystem
     elseif (APPLE)
         target_compile_options (ReaderTest PRIVATE -stdlib=libc++)
     endif()

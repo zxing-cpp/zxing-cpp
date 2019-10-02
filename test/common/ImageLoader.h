@@ -15,11 +15,10 @@
 * limitations under the License.
 */
 
+#include "ZXFilesystem.h"
+
 #include <memory>
 #include <map>
-#include <filesystem>
-
-namespace fs = std::filesystem;
 
 namespace ZXing {
 

@@ -31,9 +31,6 @@
 #include <fstream>
 #include <chrono>
 #include <vector>
-#include <filesystem>
-
-namespace fs = std::filesystem;
 
 namespace ZXing::Test {
 
