@@ -81,9 +81,7 @@ Reader::Reader(const DecodeHints& hints) :
 	}
 }
 
-Reader::~Reader()
-{
-}
+Reader::~Reader() = default;
 
 /**
 * We're going to examine rows from the middle outward, searching alternately above and below the

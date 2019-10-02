@@ -115,7 +115,7 @@ public:
 	using ReverseIterator = std::reverse_iterator<Iterator>;
 	using Range = ZXing::Range<Iterator>;
 
-	BitArray() {}
+	BitArray() = default;
 
 	explicit BitArray(int size) :
 #ifdef ZX_FAST_BIT_STORAGE

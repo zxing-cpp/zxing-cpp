@@ -30,7 +30,7 @@ class BarcodeMetadata
 	int _rowCountLowerPart = 0;
 
 public:
-	BarcodeMetadata() {}
+	BarcodeMetadata() = default;
 	BarcodeMetadata(int columnCount, int rowCountUpperPart, int rowCountLowerPart, int errorCorrectionLevel)
 	    : _columnCount(columnCount), _errorCorrectionLevel(errorCorrectionLevel), _rowCountUpperPart(rowCountUpperPart),
 	      _rowCountLowerPart(rowCountLowerPart)

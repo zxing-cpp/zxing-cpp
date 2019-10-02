@@ -52,9 +52,7 @@ MultiUPCEANReader::MultiUPCEANReader(const DecodeHints& hints)
 	}
 }
 
-MultiUPCEANReader::~MultiUPCEANReader()
-{
-}
+MultiUPCEANReader::~MultiUPCEANReader() = default;
 
 Result
 MultiUPCEANReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>&) const

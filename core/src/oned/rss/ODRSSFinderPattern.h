@@ -32,7 +32,7 @@ class FinderPattern
 	std::array<ResultPoint, 2> _points;
 
 public:
-	FinderPattern() {}
+	FinderPattern() = default;
 	FinderPattern(int value, int start, int end, const std::array<ResultPoint, 2>& points) :
 		_value(value), _start(start), _end(end), _points(points) {}
 

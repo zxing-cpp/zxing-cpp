@@ -29,7 +29,7 @@ class Pair : public DataCharacter
 	int _count = 0;
 
 public:
-	Pair() {}
+	Pair() = default;
 	Pair(int value, int checksumPortion, const FinderPattern& finderPattern) : DataCharacter(value, checksumPortion), _finderPattern(finderPattern), _count(1) {}
 
 	const FinderPattern& finderPattern() const {

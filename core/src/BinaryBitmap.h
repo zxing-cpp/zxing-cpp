@@ -32,7 +32,7 @@ class BitMatrix;
 class BinaryBitmap
 {
 public:
-	virtual ~BinaryBitmap() {}
+	virtual ~BinaryBitmap() = default;
 
 	/**
 	* Image is a pure monochrome image of a barcode.

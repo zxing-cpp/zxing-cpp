@@ -35,7 +35,7 @@ class DetectionResult
 	Nullable<BoundingBox> _boundingBox;
 
 public:
-	DetectionResult() {}
+	DetectionResult() = default;
 	DetectionResult(const BarcodeMetadata& barcodeMetadata, const Nullable<BoundingBox>& boundingBox);
 
 	void init(const BarcodeMetadata& barcodeMetadata, const Nullable<BoundingBox>& boundingBox);

@@ -34,7 +34,7 @@ class FinderPattern : public ResultPoint
 	int _count = 0;
 
 public:
-	FinderPattern() {}
+	FinderPattern() = default;
 	FinderPattern(float posX, float posY, float estimatedModuleSize, int count = 1);
 
 	float estimatedModuleSize() const {

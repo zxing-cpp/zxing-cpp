@@ -57,7 +57,7 @@ class BitMatrix
 	BitMatrix& operator=(const BitMatrix&) = delete;
 
 public:
-	BitMatrix() {}
+	BitMatrix() = default;
 #ifdef ZX_FAST_BIT_STORAGE
 	BitMatrix(int width, int height) : _width(width), _height(height), _rowSize(width), _bits(width * height, 0) {}
 #else

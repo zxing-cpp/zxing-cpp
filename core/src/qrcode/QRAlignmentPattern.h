@@ -32,7 +32,7 @@ class AlignmentPattern : public ResultPoint
 	float _estimatedModuleSize = 0;
 
 public:
-	AlignmentPattern() {}
+	AlignmentPattern() = default;
 	AlignmentPattern(float posX, float posY, float estimatedModuleSize);
 
 	float estimatedModuleSize() const {

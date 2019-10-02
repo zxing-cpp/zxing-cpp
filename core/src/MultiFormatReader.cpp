@@ -88,9 +88,7 @@ MultiFormatReader::MultiFormatReader(const DecodeHints& hints)
 	}
 }
 
-MultiFormatReader::~MultiFormatReader()
-{
-}
+MultiFormatReader::~MultiFormatReader() = default;
 
 Result
 MultiFormatReader::read(const BinaryBitmap& image) const

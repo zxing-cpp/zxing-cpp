@@ -38,7 +38,7 @@ class Result;
 class Reader
 {
 public:
-	virtual ~Reader() {}
+	virtual ~Reader() = default;
 
 	/**
 	* Locates and decodes a barcode in some format within an image. This method also accepts

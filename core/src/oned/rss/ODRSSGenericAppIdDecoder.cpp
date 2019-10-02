@@ -43,7 +43,7 @@ struct DecodedValue
 {
 	int newPosition = std::numeric_limits<int>::max();
 	
-	DecodedValue() {}
+	DecodedValue() = default;
 	explicit DecodedValue(int np) : newPosition(np) {}
 	bool isValid() const { return newPosition != std::numeric_limits<int>::max(); }
 };
@@ -58,7 +58,7 @@ struct DecodedChar : public DecodedValue
 
 	char value = '\0';
 
-	DecodedChar() {}
+	DecodedChar() = default;
 	DecodedChar(int np, char c) : DecodedValue(np), value(c) {}
 	
 	bool isFNC1() const { return value == FNC1; }
@@ -91,7 +91,7 @@ struct DecodedNumeric : public DecodedValue
 	int firstDigit = 0;
 	int secondDigit = 0;
 
-	DecodedNumeric() {}
+	DecodedNumeric() = default;
 	DecodedNumeric(int newPosition, int first, int second) : DecodedValue(newPosition), firstDigit(first), secondDigit(second) {
 		if (firstDigit < 0 || firstDigit > 10 || secondDigit < 0 || secondDigit > 10) {
 			*this = DecodedNumeric();

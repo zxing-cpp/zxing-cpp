@@ -35,7 +35,7 @@ class ModulusPoly
 public:
 	// Build a invalid object, so that this can be used in container or return by reference,
 	// any access to invalid object is undefined behavior.
-	ModulusPoly() {}
+	ModulusPoly() = default;
 
 	ModulusPoly(const ModulusGF& field, const std::vector<int>& coefficients);
 

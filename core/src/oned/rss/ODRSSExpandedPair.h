@@ -34,7 +34,7 @@ class ExpandedPair
 	bool _mayBeLast = false;
 
 public:
-	ExpandedPair() {}
+	ExpandedPair() = default;
 	ExpandedPair(const DataCharacter& leftChar, const DataCharacter& rightChar, const FinderPattern& finderPattern, bool mayBeLast) :
 		_leftChar(leftChar), _rightChar(rightChar), _finderPattern(finderPattern), _mayBeLast(mayBeLast) {}
 

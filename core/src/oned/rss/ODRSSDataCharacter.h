@@ -28,7 +28,7 @@ class DataCharacter
 	int _checksumPortion = 0;
 
 public:
-	DataCharacter() {}
+	DataCharacter() = default;
 	DataCharacter(int value, int checksumPortion) : _value(value), _checksumPortion(checksumPortion) {}
 
 	bool isValid() const {

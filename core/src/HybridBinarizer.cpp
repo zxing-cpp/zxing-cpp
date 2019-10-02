@@ -69,9 +69,7 @@ HybridBinarizer::HybridBinarizer(const std::shared_ptr<const LuminanceSource>& s
 {
 }
 
-HybridBinarizer::~HybridBinarizer()
-{
-}
+HybridBinarizer::~HybridBinarizer() = default;
 
 /**
 * Calculates a single black point for each block of pixels and saves it away.

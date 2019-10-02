@@ -30,7 +30,7 @@ class ResultPoint
 	float _y = 0.f;
 
 public:
-	ResultPoint() {}
+	ResultPoint() = default;
 	ResultPoint(float x, float y) : _x(x), _y(y) {}
 	ResultPoint(int x, int y) : _x(static_cast<float>(x)), _y(static_cast<float>(y)) {}
 

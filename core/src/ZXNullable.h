@@ -27,7 +27,7 @@ class Nullable final
 	T m_value;
 
 public:
-	Nullable() {}
+	Nullable() = default;
 	Nullable(const T &value) : m_hasValue(true), m_value(value) {}
 	Nullable(T &&value) : m_hasValue(true), m_value(std::move(value)) {}
 	Nullable(std::nullptr_t) {}

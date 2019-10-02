@@ -45,9 +45,7 @@ GlobalHistogramBinarizer::GlobalHistogramBinarizer(std::shared_ptr<const Luminan
 {
 }
 
-GlobalHistogramBinarizer::~GlobalHistogramBinarizer()
-{
-}
+GlobalHistogramBinarizer::~GlobalHistogramBinarizer() = default;
 
 bool
 GlobalHistogramBinarizer::isPureBarcode() const

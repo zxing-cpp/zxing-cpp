@@ -34,7 +34,7 @@ class ByteArray;
 class LuminanceSource
 {
 public:
-	virtual ~LuminanceSource() {}
+	virtual ~LuminanceSource() = default;
 
 	/**
 	* @return The width of the bitmap.

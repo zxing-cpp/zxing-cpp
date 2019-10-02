@@ -42,7 +42,7 @@ public:
 
 	struct DecodingState
 	{
-		virtual ~DecodingState() {}
+		virtual ~DecodingState() = default;
 	};
 
 	Result decodeSingleRow(int rowNumber, const BitArray& row) const;
