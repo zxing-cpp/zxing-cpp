@@ -15,33 +15,27 @@
 */
 
 #include "Pdf417MultipleCodeReader.h"
-#include "HybridBinarizer.h"
+#include "BinaryBitmap.h"
 #include "TextUtfEncoding.h"
-#include "Result.h"
 #include "pdf417/PDFReader.h"
 #include "pdf417/PDFDecoderResultExtra.h"
 #include "ImageLoader.h"
 
 #include <algorithm>
 
-namespace ZXing { namespace Test {
+namespace ZXing::Test {
 
-Pdf417MultipleCodeReader::Pdf417MultipleCodeReader(const std::shared_ptr<ImageLoader>& imgLoader)
-: _imageLoader(imgLoader)
-{
-}
-
-Pdf417MultipleCodeReader::ReadResult
-Pdf417MultipleCodeReader::readMultiple(const std::vector<std::wstring>& filenames, int rotation) const
+Result Pdf417MultipleCodeReader::readMultiple(const std::vector<fs::path>& imgPaths, int rotation)
 {
 	Pdf417::Reader reader;
 	std::list<Result> allResults;
-	for (const auto& imagePath : filenames) {
-		auto image = _imageLoader->load(imagePath);
-		ZXing::HybridBinarizer binarizer(image, false);
-		auto results = reader.decodeMultiple(*binarizer.rotated(rotation));
+	for (const auto& imgPath : imgPaths) {
+		auto results = reader.decodeMultiple(*ImageLoader::load(imgPath).rotated(rotation));
 		allResults.insert(allResults.end(), results.begin(), results.end());
 	}
+
+	if (allResults.empty())
+		return Result(DecodeStatus::NotFound);
 
 	allResults.sort([](const Result &r1, const Result &r2) {
 		auto m1 = std::dynamic_pointer_cast<Pdf417::DecoderResultExtra>(r1.metadata().getCustomData(ResultMetadata::PDF417_EXTRA_METADATA));
@@ -49,16 +43,11 @@ Pdf417MultipleCodeReader::readMultiple(const std::vector<std::wstring>& filename
 		return m1->segmentIndex() < m2->segmentIndex();
 	});
 
-	ReadResult result;
-	if (!allResults.empty()) {
-		result.format = "PDF_417";
-		for (const auto& r : allResults) {
-			result.text.append(r.text());
-			auto meta = std::dynamic_pointer_cast<Pdf417::DecoderResultExtra>(r.metadata().getCustomData(ResultMetadata::PDF417_EXTRA_METADATA));
-			result.fileIds.push_back(meta->fileId());
-		}
-	}
-	return result;
+	std::wstring text;
+	for (const auto& r : allResults)
+		text.append(r.text());
+
+	return {std::move(text), {}, BarcodeFormat::PDF_417};
 }
 
-}} // ZXing::Test
+} // ZXing::Test

@@ -24,35 +24,26 @@
 
 #include <algorithm>
 
-namespace ZXing { namespace Test {
+namespace ZXing::Test {
 
-QRCodeStructuredAppendReader::QRCodeStructuredAppendReader(const std::shared_ptr<ImageLoader>& imgLoader)
-: _imageLoader(imgLoader)
+Result QRCodeStructuredAppendReader::readMultiple(const std::vector<fs::path>& imgPaths, int rotation)
 {
-}
-
-TestReader::ReadResult
-QRCodeStructuredAppendReader::readMultiple(const std::vector<std::wstring>& filenames, int rotation) const
-{
-	TestReader::ReadResult result;
-	DecodeHints hints;
-	QRCode::Reader reader(hints);
+	QRCode::Reader reader({});
 	std::list<Result> allResults;
 	int prevParity = -1;
-	for (const auto& imagePath : filenames) {
-		auto image = _imageLoader->load(imagePath);
-		ZXing::HybridBinarizer binarizer(image, false);
-		auto r = reader.decode(*binarizer.rotated(rotation));
-		if (r.metadata().getInt(ResultMetadata::STRUCTURED_APPEND_CODE_COUNT, 0) != static_cast<int>(filenames.size())) {
-			return TestReader::ReadResult();
-		}
+	for (const auto& imgPath : imgPaths) {
+		auto r = reader.decode(*ImageLoader::load(imgPath).rotated(rotation));
+		if (r.metadata().getInt(ResultMetadata::STRUCTURED_APPEND_CODE_COUNT, 0) != static_cast<int>(imgPaths.size()))
+			return Result(DecodeStatus::FormatError);
 		auto parity = r.metadata().getInt(ResultMetadata::STRUCTURED_APPEND_PARITY, -1);
-		if (prevParity != -1 && prevParity != parity) {
-			return TestReader::ReadResult();
-		}
+		if (prevParity != -1 && prevParity != parity)
+			return Result(DecodeStatus::FormatError);
 		prevParity = parity;
 		allResults.push_back(r);
 	}
+
+	if (allResults.empty())
+		return Result(DecodeStatus::NotFound);
 
 	allResults.sort([](const Result &r1, const Result &r2) {
 		auto s1 = r1.metadata().getInt(ResultMetadata::STRUCTURED_APPEND_SEQUENCE, -1);
@@ -60,13 +51,11 @@ QRCodeStructuredAppendReader::readMultiple(const std::vector<std::wstring>& file
 		return s1 < s2;
 	});
 
-	if (!allResults.empty()) {
-		result.format = "QR_CODE";
-		for (const auto& r : allResults) {
-			result.text.append(r.text());
-		}
-	}
-	return result;
+	std::wstring text;
+	for (const auto& r : allResults)
+		text.append(r.text());
+
+	return {std::move(text), {}, BarcodeFormat::QR_CODE};
 }
 
-}} // ZXing::Test
+} // ZXing::Test

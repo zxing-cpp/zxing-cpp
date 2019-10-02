@@ -15,41 +15,17 @@
 * limitations under the License.
 */
 
-#include <string>
-#include <vector>
 #include <set>
-#include <memory>
+#include <filesystem>
 
 namespace ZXing {
 
-class LuminanceSource;
+class Result;
 
 namespace Test {
 
-class ImageLoader;
-class TestReader;
+std::string metadataToUtf8(const Result& result);
 
-class BlackboxTestRunner
-{
-public:
-	virtual ~BlackboxTestRunner();
-
-	virtual std::vector<std::wstring> getImagesInDirectory(const std::wstring& dirPath) = 0;
-
-	std::wstring pathPrefix() const {
-		return _pathPrefix;
-	}
-
-	void run(const std::set<std::string>& includedTests);
-
-	TestReader createReader(bool tryHarder, bool tryRotate, const std::string& format = std::string());
-
-protected:
-	BlackboxTestRunner(const std::wstring& pathPrefix, const std::shared_ptr<ImageLoader>& imageLoader);
-
-private:
-	std::wstring _pathPrefix;
-	std::shared_ptr<ImageLoader> _imageLoader;
-};
+int runBlackBoxTests(const std::filesystem::path& blackboxPath, const std::set<std::string>& includedTests);
 
 }} // ZXing::Test

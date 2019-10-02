@@ -15,20 +15,25 @@
 * limitations under the License.
 */
 
-#include <string>
 #include <memory>
+#include <map>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 namespace ZXing {
 
-class LuminanceSource;
+class BinaryBitmap;
 
 namespace Test {
 
 class ImageLoader
 {
 public:
-	virtual ~ImageLoader() {}
-	virtual std::shared_ptr<LuminanceSource> load(const std::wstring& filename) const = 0;
+	static std::map<fs::path, std::unique_ptr<BinaryBitmap>> cache;
+
+	static const BinaryBitmap& load(const fs::path& imgPath, bool isPure = false);
 };
+
 
 }} // ZXing::Test

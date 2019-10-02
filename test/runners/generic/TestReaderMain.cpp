@@ -18,9 +18,11 @@
 #include "ByteArray.h"
 #include "BlackboxTestRunner.h"
 #include "ImageLoader.h"
-#include "TestReader.h"
-#include "GenericLuminanceSource.h"
-#include "HybridBinarizer.h"
+#include "MultiFormatReader.h"
+#include "Result.h"
+#include "BinaryBitmap.h"
+#include "ImageLoader.h"
+#include "DecodeHints.h"
 #include "TextUtfEncoding.h"
 #include "ZXContainerAlgorithms.h"
 
@@ -28,33 +30,16 @@
 #include <fstream>
 #include <set>
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-
 #if __has_include(<filesystem>)
 #  include <filesystem>
 #  ifdef __cpp_lib_filesystem
      namespace fs = std::filesystem;
-#    define ZXING_HAS_FILESYSTEM
 #  endif
 #endif
-#if !defined(ZXING_HAS_FILESYSTEM) && __has_include(<experimental/filesystem>)
+#if !defined(__cpp_lib_filesystem) && __has_include(<experimental/filesystem>)
 #  include <experimental/filesystem>
 #  ifdef __cpp_lib_experimental_filesystem
      namespace fs = std::experimental::filesystem;
-#    define ZXING_HAS_FILESYSTEM
-#  endif
-#endif
-#if defined(__APPLE__) && !defined(__clang__) &&                                                                       \
-	__has_include(<dirent.h>) && defined(__SANITIZE_ADDRESS__) && defined(ZXING_HAS_FILESYSTEM)
-#  warning detected gcc + macos + <filesystem> + address_sanitizer == bad -> disable <filesystem>
-#  undef ZXING_HAS_FILESYSTEM
-#endif
-#if !defined(ZXING_HAS_FILESYSTEM)
-#  if __has_include(<dirent.h>)
-#    include <dirent.h>
-#  else
-#    error need <filesystem> or <dirent.h>
 #  endif
 #endif
 
@@ -64,66 +49,6 @@
 using namespace ZXing;
 using namespace ZXing::Test;
 
-static std::string getExtension(const std::string& fn)
-{
-	auto p = fn.find_last_of(".");
-	return p != std::string::npos ?	fn.substr(p) : "";
-}
-
-static std::shared_ptr<LuminanceSource> readImage(const std::string& filename)
-{
-    int width, height, channels;
-    auto buffer = stbi_load(filename.c_str(), &width, &height, &channels, 4);
-    if (buffer == nullptr) {
-        throw std::runtime_error("Failed to read image");
-    }
-    auto lumSrc = std::make_shared<GenericLuminanceSource>(width, height, buffer, width * 4, 4, 0, 1, 2);
-    stbi_image_free(buffer);
-    return lumSrc;
-}
-
-class GenericImageLoader : public ImageLoader
-{
-public:
-	std::shared_ptr<LuminanceSource> load(const std::wstring& filename) const final
-	{
-		return readImage(TextUtfEncoding::ToUtf8(filename));
-	}
-};
-
-class GenericBlackboxTestRunner : public BlackboxTestRunner
-{
-public:
-	GenericBlackboxTestRunner(const std::wstring& pathPrefix)
-		: BlackboxTestRunner(pathPrefix, std::make_shared<GenericImageLoader>())
-	{
-	}
-
-	std::vector<std::wstring> getImagesInDirectory(const std::wstring& dirPath) final
-	{
-		std::vector<std::wstring> result;
-#ifndef ZXING_HAS_FILESYSTEM
-		if (auto dir = opendir(TextUtfEncoding::ToUtf8(pathPrefix() + L"/" + dirPath).c_str())) {
-			while (auto entry = readdir(dir)) {
-				if (Contains({".png", ".jpg", ".pgm", ".gif"}, getExtension(entry->d_name))) {
-					result.push_back(dirPath + L"/" + TextUtfEncoding::FromUtf8(entry->d_name));
-				}
-			}
-			closedir(dir);
-		}
-		else {
-			std::cerr << "Error open dir " << TextUtfEncoding::ToUtf8(dirPath) << std::endl;
-		}
-#else
-		for (const auto& entry : fs::directory_iterator(fs::path(pathPrefix()) / dirPath))
-			if (fs::is_regular_file(entry.status()) &&
-			        Contains({".png", ".jpg", ".pgm", ".gif"}, entry.path().extension()))
-				result.push_back(dirPath + L"/" + entry.path().filename().generic_wstring());
-#endif
-		return result;
-	}
-};
-
 int main(int argc, char** argv)
 {
 	if (argc <= 1) {
@@ -131,42 +56,38 @@ int main(int argc, char** argv)
 		return 0;
 	}
 
-	std::string pathPrefix = argv[1];
+	fs::path pathPrefix = argv[1];
 
-	GenericBlackboxTestRunner runner(TextUtfEncoding::FromUtf8(pathPrefix));
-
-	if (Contains({".png", ".jpg", ".pgm", ".gif"}, getExtension(pathPrefix))) {
-#if 0
-		TestReader reader = runner.createReader(false, false, "QR_CODE");
-#else
-		TestReader reader = runner.createReader(true, true);
-#endif
+	if (Contains({".png", ".jpg", ".pgm", ".gif"}, pathPrefix.extension())) {
+		DecodeHints hints;
+		hints.setShouldTryHarder(true);
+		hints.setShouldTryRotate(true);
+//		hints.setPossibleFormats(BarcodeFormatFromString("QR_CODE"));
+		MultiFormatReader reader(hints);
 		bool isPure = getenv("IS_PURE");
 		int rotation = getenv("ROTATION") ? atoi(getenv("ROTATION")) : 0;
 
 		for (int i = 1; i < argc; ++i) {
-			auto result = reader.read(TextUtfEncoding::FromUtf8(argv[i]), rotation, isPure);
+			Result result = reader.read(*ImageLoader::load(argv[i], isPure).rotated(rotation));
 			std::cout << argv[i] << ": ";
-			if (result)
-				std::cout << result.format << ": " << TextUtfEncoding::ToUtf8(result.text) << " " << TextUtfEncoding::ToUtf8(result.metadata) << "\n";
+			if (result.isValid())
+				std::cout << ToString(result.format()) << ": " << TextUtfEncoding::ToUtf8(result.text()) << " " << metadataToUtf8(result) << "\n";
 			else
 				std::cout << "FAILED\n";
-#ifdef ZXING_HAS_FILESYSTEM
-			if (result && getenv("WRITE_TEXT")) {
+			if (result.isValid() && getenv("WRITE_TEXT")) {
 				std::ofstream f(fs::path(argv[i]).replace_extension(".txt"));
-				f << TextUtfEncoding::ToUtf8(result.text);
+				f << TextUtfEncoding::ToUtf8(result.text());
 			}
-#endif
 		}
 		return 0;
-	}
-
-	std::set<std::string> includedTests;
-	for (int i = 2; i < argc; ++i) {
-		if (std::strlen(argv[i]) > 2 && argv[i][0] == '-' && argv[i][1] == 't') {
-			includedTests.insert(argv[i] + 2);
+	} else {
+		std::set<std::string> includedTests;
+		for (int i = 2; i < argc; ++i) {
+			if (std::strlen(argv[i]) > 2 && argv[i][0] == '-' && argv[i][1] == 't') {
+				includedTests.insert(argv[i] + 2);
+			}
 		}
-	}
 
-	runner.run(includedTests);
+		return runBlackBoxTests(pathPrefix, includedTests);
+	}
 }

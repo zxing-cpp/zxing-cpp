@@ -15,31 +15,21 @@
 * limitations under the License.
 */
 
+#include "Result.h"
+#include "ImageLoader.h"
+
 #include <string>
 #include <vector>
 #include <memory>
-#include "TestReader.h"
 
 namespace ZXing {
 
 namespace Test {
 
-class ImageLoader;
-
 class Pdf417MultipleCodeReader
 {
 public:
-    struct ReadResult : public TestReader::ReadResult
-	{
-        std::vector<std::string> fileIds;
-	};
-
-	Pdf417MultipleCodeReader(const std::shared_ptr<ImageLoader>& imgLoader);
-
-	ReadResult readMultiple(const std::vector<std::wstring>& filenames, int rotation = 0) const;
-
-private:
-	std::shared_ptr<ImageLoader> _imageLoader;
+    static Result readMultiple(const std::vector<fs::path>& imgPaths, int rotation = 0);
 };
 
 

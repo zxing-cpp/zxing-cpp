@@ -1,5 +1,6 @@
 /*
 * Copyright 2016 Nu-book Inc.
+* Copyright 2019 Axel Waggershauser
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -19,64 +20,22 @@
 #include "TextUtfEncoding.h"
 #include "DecodeHints.h"
 #include "Result.h"
+#include "MultiFormatReader.h"
 #include "ImageLoader.h"
-#include "TestReader.h"
+#include "BinaryBitmap.h"
 #include "Pdf417MultipleCodeReader.h"
 #include "QRCodeStructuredAppendReader.h"
+#include "ZXContainerAlgorithms.h"
 
 #include <iostream>
 #include <fstream>
 #include <chrono>
 #include <vector>
-#include <functional>
+#include <filesystem>
 
-namespace ZXing { namespace Test {
+namespace fs = std::filesystem;
 
-static std::wstring buildPath(const std::wstring& dir, const std::wstring& name)
-{
-	if (dir.empty())
-		return name;
-	if (name.empty())
-		return dir;
-	if (dir.back() == '/' || name.front() == '/')
-		return dir + name;
-	return dir + L"/" + name;
-}
-
-template <typename StrT>
-static StrT getBaseName(const StrT& path)
-{
-	for (int i = (int)path.size(); i >= 0; --i) {
-		if (path[i] == '\\' || path[i] == '/')
-			return path.substr(i + 1);
-	}
-	return path;
-}
-
-static std::wstring replaceExtension(const std::wstring& filePath, const std::wstring& newExt)
-{
-	for (int i = (int)filePath.size(); i >= 0; --i) {
-		if (filePath[i] == '.')
-			return filePath.substr(0, !newExt.empty() && newExt[0] != '.' ? i + 1 : i) + newExt;
-		if (filePath[i] == '\\' || filePath[i] == '/')
-			break;
-	}
-	if (filePath.empty() || newExt.empty())
-		return filePath;
-	return filePath + (newExt[0] != '.' ? L"." : L"") + newExt;
-}
-
-static std::string toUtf8(const std::wstring& s)
-{
-	return TextUtfEncoding::ToUtf8(s);
-}
-
-#ifdef _WIN32
-    #define asNativePath(x) x
-#else
-	static std::string asNativePath(const std::wstring& path) { return toUtf8(path); }
-#endif
-
+namespace ZXing::Test {
 
 namespace {
 
@@ -84,18 +43,18 @@ namespace {
 	{
 		struct TC
 		{
-			const char* name;
-			int mustPassCount; // The number of images which must decode for the test to pass.
-			int maxMisreads;   // Maximum number of images which can fail due to successfully reading the wrong contents
-			std::set<std::wstring> notDetectedFiles;
-			std::map<std::wstring, std::string> misReadFiles;
+			std::string name;
+			size_t mustPassCount; // The number of images which must decode for the test to pass.
+			size_t maxMisreads;   // Maximum number of images which can fail due to successfully reading the wrong contents
+			std::set<fs::path> notDetectedFiles;
+			std::map<fs::path, std::string> misReadFiles;
 		};
 
 		TC tc[2];
 		int rotation; // The rotation in degrees clockwise to use for this test.
 
-		TestCase(int mpc, int thc, int mm, int mt, int r) : tc{ {"fast", mpc, mm, {}, {}}, {"slow", thc, mt, {}, {}} }, rotation(r) {}
-		TestCase(int mpc, int thc, int r) : TestCase(mpc, thc, 0, 0, r) {}
+		TestCase(size_t mpc, size_t thc, size_t mm, size_t mt, int r) : tc{ {"fast", mpc, mm, {}, {}}, {"slow", thc, mt, {}, {}} }, rotation(r) {}
+		TestCase(size_t mpc, size_t thc, int r) : TestCase(mpc, thc, 0, 0, r) {}
 	};
 
 	struct FalsePositiveTestCase
@@ -105,97 +64,117 @@ namespace {
 	};
 }
 
-static std::string checkResult(const std::wstring& pathPrefix, std::wstring imgPath, const std::string& expectedFormat, const TestReader::ReadResult& result)
+std::string metadataToUtf8(const Result& result)
 {
-	if (expectedFormat != result.format)
-		return "Format mismatch: expected " + expectedFormat + " but got " + result.format;
+	constexpr ResultMetadata::Key keys[] = {ResultMetadata::SUGGESTED_PRICE, ResultMetadata::ISSUE_NUMBER, ResultMetadata::UPC_EAN_EXTENSION};
+	constexpr char const * prefixs[] = {"SUGGESTED_PRICE", "ISSUE_NUMBER", "UPC_EAN_EXTENSION"};
+	static_assert(Length(keys) == Length(prefixs), "lut size mismatch");
 
-	std::ifstream metaStream(asNativePath(buildPath(pathPrefix, replaceExtension(imgPath, L".metadata.txt"))),
-							 std::ios::binary);
-	if (metaStream) {
-		std::string expected((std::istreambuf_iterator<char>(metaStream)), std::istreambuf_iterator<char>());
-		auto utf8Metatata = toUtf8(result.metadata);
-		if (utf8Metatata != expected)
-			return "Metadata mismatch: expected '" + expected + "' but got '" + utf8Metatata + "'";
-	}
-
-	imgPath = replaceExtension(imgPath, L".txt");
-	std::ifstream utf8Stream(asNativePath(buildPath(pathPrefix, imgPath)), std::ios::binary);
-	if (utf8Stream) {
-		std::string expected((std::istreambuf_iterator<char>(utf8Stream)), std::istreambuf_iterator<char>());
-		auto utf8Result = toUtf8(result.text);
-		return utf8Result != expected ? "Content mismatch: expected '" + expected + "' but got '" + utf8Result + "'" : "";
-	}
-
-	imgPath = replaceExtension(imgPath, L".bin");
-	std::ifstream latin1Stream(asNativePath(buildPath(pathPrefix, imgPath)), std::ios::binary);
-	if (latin1Stream) {
-		std::string expected((std::istreambuf_iterator<char>(latin1Stream)), std::istreambuf_iterator<char>());
-		std::string latin1Result;
-		for (wchar_t c : result.text) {
-			latin1Result.push_back(static_cast<char>(c));
+	for (int i = 0; i < Length(keys); ++i) {
+		auto res = TextUtfEncoding::ToUtf8(result.metadata().getString(keys[i]));
+		if (res.size()) {
+			res.insert(0, std::string(prefixs[i]) + "=");
+			return res;
 		}
-		return latin1Result != expected ? "Content mismatch: expected '" + expected + "' but got '" + latin1Result + "'" : "";
+	}
+
+	return {};
+}
+
+static std::string checkResult(const fs::path& imgPath, const char* expectedFormat, const Result& result)
+{
+	using namespace std::literals;
+
+	if (std::string format = ToString(result.format()); expectedFormat != format)
+		return "Format mismatch: expected '"s + expectedFormat + "' but got '" + format + "'";
+
+	auto readFile = [imgPath](const char* ending) {
+		std::ifstream ifs(fs::path(imgPath).replace_extension(ending), std::ios::binary);
+		return ifs ? std::optional(std::string(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>())) : std::nullopt;
+	};
+
+	if (auto expected = readFile(".metadata.txt")) {
+		auto metadata = metadataToUtf8(result);
+		if (metadata != *expected)
+			return "Metadata mismatch: expected '" + *expected + "' but got '" + metadata + "'";
+	}
+
+	if (auto expected = readFile(".txt")) {
+		auto utf8Result = TextUtfEncoding::ToUtf8(result.text());
+		return utf8Result != *expected ? "Content mismatch: expected '" + *expected + "' but got '" + utf8Result + "'" : "";
+	}
+
+	if (auto expected = readFile(".bin")) {
+		std::string latin1Result(result.text().begin(), result.text().end());
+		return latin1Result != *expected ? "Content mismatch: expected '" + *expected + "' but got '" + latin1Result + "'" : "";
 	}
 
 	return "Error reading file";
 }
 
-static const char* BAD = "!!!!!! FAILED !!!!!!";
-
-
-static void printPositiveTestStats(int imageCount, const TestCase::TC& tc)
+static void printPositiveTestStats(size_t imageCount, const TestCase::TC& tc)
 {
-	int passCount = imageCount - (int)tc.misReadFiles.size() - (int)tc.notDetectedFiles.size();
+	size_t passCount = imageCount - tc.misReadFiles.size() - tc.notDetectedFiles.size();
 
-	printf(", %s: %3d of %3d, misread: %d of %d", tc.name, (int)passCount, tc.mustPassCount,
-		(int)tc.misReadFiles.size(), tc.maxMisreads);
+	printf(", %s: %3d of %3d, misread: %d of %d", tc.name.c_str(), (int)passCount, (int)tc.mustPassCount,
+		(int)tc.misReadFiles.size(), (int)tc.maxMisreads);
 
 	if (passCount < tc.mustPassCount && !tc.notDetectedFiles.empty()) {
 		std::cout << "\nFAILED: Not detected (" << tc.name << "):";
 		for (const auto& f : tc.notDetectedFiles)
-			std::cout << ' ' << toUtf8(f);
+			std::cout << ' ' << f.filename();
 		std::cout << "\n";
 	}
 
-	if ((int)tc.misReadFiles.size() > tc.maxMisreads) {
+	if (tc.misReadFiles.size() > tc.maxMisreads) {
 		std::cout << "FAILED: Read error (" << tc.name << "):";
-		for (const auto& f : tc.misReadFiles)
-			std::cout << "      " << toUtf8(f.first) << ": " << f.second << "\n";
+		for (const auto& [path, error] : tc.misReadFiles)
+			std::cout << "      " << path.filename() << ": " << error << "\n";
 		std::cout << "\n";
 	}
 }
 
-static void doRunTests(BlackboxTestRunner& runner, const std::vector<TestReader>& readers,
-	const std::string& directory, const char* format, int imageCount, const std::vector<TestCase>& tests)
+static std::vector<fs::path> getImagesInDirectory(const fs::path& directory)
 {
-	TestReader::clearCache();
+	std::vector<fs::path> result;
+	for (const auto& entry : fs::directory_iterator(directory))
+		if (fs::is_regular_file(entry.status()) &&
+				Contains({".png", ".jpg", ".pgm", ".gif"}, entry.path().extension()))
+			result.push_back(entry.path());
+	return result;
+}
 
-	auto images = runner.getImagesInDirectory(std::wstring(directory.begin(), directory.end()));
-	auto folderName = getBaseName(directory);
-	
-	if (images.size() != (size_t)imageCount)
-		std::cout << "TEST " << folderName << " => Expected number of tests: " << imageCount
-		     << ", got: " << images.size() << " => " << BAD << std::endl;
+static void doRunTests(
+	const fs::path& directory, const char* format, size_t totalTests, const std::vector<TestCase>& tests, DecodeHints hints)
+{
+	ImageLoader::cache.clear();
+
+	auto images = getImagesInDirectory(directory);
+	auto folderName = directory.stem();
+
+	if (images.size() != totalTests)
+		std::cout << "TEST " << folderName << " => Expected number of tests: " << totalTests
+			 << ", got: " << images.size() << " => FAILED!" << std::endl;
 
 	for (auto& test : tests) {
 		auto startTime = std::chrono::steady_clock::now();
-		printf("%-20s @ %3d, total: %3d", folderName.c_str(), test.rotation, (int)images.size());
-		for (size_t i = 0; i < readers.size(); ++i) {
-			auto tc = test.tc[i];
-
-			for (const auto& imagePath : images) {
-				auto result = readers[i].read(buildPath(runner.pathPrefix(), imagePath), test.rotation);
-				if (!result.format.empty()) {
-					auto error = checkResult(runner.pathPrefix(), imagePath, format, result);
+		printf("%-20s @ %3d, total: %3d", folderName.string().c_str(), test.rotation, (int)images.size());
+		for (auto tc : test.tc) {
+			hints.setShouldTryHarder(tc.name == "slow");
+			hints.setShouldTryRotate(tc.name == "slow");
+			MultiFormatReader reader(hints);
+			for (const auto& imgPath : images) {
+				auto result = reader.read(*ImageLoader::load(imgPath).rotated(test.rotation));
+				if (result.isValid()) {
+					auto error = checkResult(imgPath, format, result);
 					if (!error.empty())
-						tc.misReadFiles[imagePath] = error;
+						tc.misReadFiles[imgPath] = error;
 				} else {
-					tc.notDetectedFiles.insert(imagePath);
+					tc.notDetectedFiles.insert(imgPath);
 				}
 			}
 
-			printPositiveTestStats((int)images.size(), tc);
+			printPositiveTestStats(images.size(), tc);
 		}
 
 		auto duration = std::chrono::steady_clock::now() - startTime;
@@ -204,131 +183,69 @@ static void doRunTests(BlackboxTestRunner& runner, const std::vector<TestReader>
 	}
 }
 
-static std::pair<std::wstring, std::wstring> splitFileName(const std::wstring& filePath, wchar_t c)
-{
-	for (int i = (int)filePath.length() - 1; i >= 0; --i) {
-		if (filePath[i] == c)
-			return std::make_pair(filePath.substr(0, i), filePath.substr(i + 1));
-		if (filePath[i] == '/' || filePath[i] == '\\')
-			break;
-	}
-	return std::make_pair(filePath, std::wstring());
-}
-
 template <typename ReaderT>
-static void doRunStructuredAppendTest(BlackboxTestRunner& runner, const std::vector<ReaderT>& readers,
-	const std::string& directory, const char* format, int totalTests, const std::vector<TestCase>& tests)
+static void doRunStructuredAppendTest(
+	const fs::path& directory, [[maybe_unused]]const char* format, size_t totalTests, const std::vector<TestCase>& tests)
 {
-	auto images = runner.getImagesInDirectory(std::wstring(directory.begin(), directory.end()));
-	auto folderName = getBaseName(directory);
+	auto imgPaths = getImagesInDirectory(directory);
+	auto folderName = directory.stem();
 
-	std::map<std::wstring, std::vector<std::wstring>> imageGroups;
-	for (const auto& path : images) {
-		imageGroups[splitFileName(path, '-').first].push_back(buildPath(runner.pathPrefix(), path));
+	std::map<fs::path, std::vector<fs::path>> imageGroups;
+	for (const auto& imgPath : imgPaths) {
+		std::string fn = imgPath.filename().string();
+		auto p = fn.find_last_of('-');
+		imageGroups[imgPath.parent_path() / fn.substr(0, p)].push_back(imgPath);
 	}
 
 	if (imageGroups.size() != (size_t)totalTests) {
 		std::cout << "TEST " << folderName << " => Expected number of tests: " << totalTests
-			<< ", got: " << imageGroups.size() << " => " << BAD << std::endl;
+			<< ", got: " << imageGroups.size() << " => FAILED!" << std::endl;
 	}
 
 	for (auto& test : tests) {
-		printf("%-20s @ %3d, total: %3d", folderName.c_str(), test.rotation, (int)images.size());
-		for (size_t i = 0; i < readers.size(); ++i) {
-			auto tc = test.tc[i];
+		printf("%-20s @ %3d, total: %3d", folderName.string().c_str(), test.rotation, (int)imgPaths.size());
+		auto tc = test.tc[0];
 
-			for (const auto& imageGroup : imageGroups) {
-				auto imagePath = imageGroup.first;
-				auto result = readers[i].readMultiple(imageGroup.second, test.rotation);
-				if (!result.format.empty()) {
-					auto error = checkResult(runner.pathPrefix(), imageGroup.first, format, result);
-					if (!error.empty())
-						tc.misReadFiles[imagePath] = error;
-				}
-				else {
-					tc.notDetectedFiles.insert(imagePath);
-				}
+		for (const auto& [testPath, testImgPaths] : imageGroups) {
+			auto result = ReaderT::readMultiple(testImgPaths, test.rotation);
+			if (result.isValid()) {
+				auto error = checkResult(testPath, format, result);
+				if (!error.empty())
+					tc.misReadFiles[testPath] = error;
 			}
-
-			printPositiveTestStats((int)imageGroups.size(), tc);
+			else {
+				tc.notDetectedFiles.insert(testPath);
+			}
 		}
+
+		printPositiveTestStats(imageGroups.size(), tc);
 
 		std::cout << std::endl;
 	}
 }
 
-
-static DecodeHints createNewHints(DecodeHints hints, bool tryHarder, bool tryRotate)
+int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>& includedTests)
 {
-	hints.setShouldTryHarder(tryHarder);
-	hints.setShouldTryRotate(tryRotate);
-	return hints;
-}
-
-static DecodeHints createHintsForFormat(const std::string& format)
-{
-	DecodeHints hints;
-	auto f = BarcodeFormatFromString(format);
-	if (f != BarcodeFormat::FORMAT_COUNT)
-		hints.setPossibleFormats({ f });
-	else
-		std::cout << "\"" + format + "\" is unrecognized as barcode format" << std::endl;
-	return hints;
-}
-
-static DecodeHints apply(DecodeHints hints, std::function<void (DecodeHints&)> f)
-{
-	f(hints);
-	return hints;
-}
-
-BlackboxTestRunner::BlackboxTestRunner(const std::wstring& pathPrefix, const std::shared_ptr<ImageLoader>& imageLoader)
-: _pathPrefix(pathPrefix), _imageLoader(imageLoader)
-{
-}
-
-BlackboxTestRunner::~BlackboxTestRunner()
-{
-}
-
-TestReader
-BlackboxTestRunner::createReader(bool tryHarder, bool tryRotate, const std::string& format)
-{
-	return TestReader(_imageLoader, createNewHints(!format.empty() ? createHintsForFormat(format) : DecodeHints(), tryHarder, tryRotate));
-}
-
-void
-BlackboxTestRunner::run(const std::set<std::string>& includedTests)
-{
-	auto hasTest = [&includedTests](const std::string& dir) {
-		auto stem = getBaseName(dir);
-		return includedTests.empty() || includedTests.find(stem) != includedTests.end() ||
-		       includedTests.find(stem.substr(0, stem.size() - 2)) != includedTests.end();
+	auto hasTest = [&includedTests](const fs::path& dir) {
+		auto stem = dir.stem().string();
+		return includedTests.empty() || Contains(includedTests, stem) ||
+				Contains(includedTests, stem.substr(0, stem.size() - 2));
 	};
 
-	auto runTests = [&](const std::string& directory, const char* format, int total,
+	auto runTests = [&](std::string_view directory, const char* format, size_t total,
 					    const std::vector<TestCase>& tests, const DecodeHints& hints = DecodeHints()) {
-		if (hasTest(directory)) {
-			std::vector<TestReader> readers {
-				TestReader(_imageLoader, createNewHints(hints, false, false)),
-				TestReader(_imageLoader, createNewHints(hints, true, true))
-			};
-			doRunTests(*this, readers, directory, format, total, tests);
-		}
+		if (hasTest(directory))
+			doRunTests(testPathPrefix / directory, format, total, tests, hints);
 	};
 
-	auto runPdf417StructuredAppendTest = [&](const std::string& directory, const char* format, int total, const std::vector<TestCase>& tests) {
-		if (hasTest(directory)) {
-			Pdf417MultipleCodeReader reader(_imageLoader);
-			doRunStructuredAppendTest<Pdf417MultipleCodeReader>(*this, { reader }, directory, format, total, tests);
-		}
+	auto runPdf417StructuredAppendTest = [&](std::string_view directory, const char* format, size_t total, const std::vector<TestCase>& tests) {
+		if (hasTest(directory))
+			doRunStructuredAppendTest<Pdf417MultipleCodeReader>(testPathPrefix / directory, format, total, tests);
 	};
 
-	auto runQRCodeStructuredAppendTest = [&](const std::string& directory, const char* format, int total, const std::vector<TestCase>& tests) {
-		if (hasTest(directory)) {
-			QRCodeStructuredAppendReader reader(_imageLoader);
-			doRunStructuredAppendTest<QRCodeStructuredAppendReader>(*this, { reader }, directory, format, total, tests);
-		}
+	auto runQRCodeStructuredAppendTest = [&](std::string_view directory, const char* format, size_t total, const std::vector<TestCase>& tests) {
+		if (hasTest(directory))
+			doRunStructuredAppendTest<QRCodeStructuredAppendReader>(testPathPrefix / directory, format, total, tests);
 	};
 
 	try
@@ -374,11 +291,13 @@ BlackboxTestRunner::run(const std::set<std::string>& includedTests)
 			{ 4, 4, 180 },
 		});
 
+		DecodeHints code39ExtendedModeHints;
+		code39ExtendedModeHints.setShouldTryCode39ExtendedMode(true);
+		code39ExtendedModeHints.setPossibleFormats({BarcodeFormat::CODE_39});
 		runTests("blackbox/code39-2", "CODE_39", 2, {
 			{ 2, 2, 0   },
 			{ 2, 2, 180 },
-		},
-		apply(createHintsForFormat("CODE_39"), [](DecodeHints& h) { h.setShouldTryCode39ExtendedMode(true); }));
+		}, code39ExtendedModeHints);
 
 		runTests("blackbox/code39-3", "CODE_39", 17, {
 			{ 17, 17, 0   },
@@ -617,6 +536,7 @@ BlackboxTestRunner::run(const std::set<std::string>& includedTests)
 
 		auto duration = std::chrono::steady_clock::now() - startTime;
 		std::cout << "Total time: " << std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() << " ms." << std::endl;
+		return 0;
 	}
 	catch (const std::exception& e) {
 		std::cout << e.what() << std::endl;
@@ -624,6 +544,7 @@ BlackboxTestRunner::run(const std::set<std::string>& includedTests)
 	catch (...) {
 		std::cout << "Internal error" << std::endl;
 	}
+	return -1;
 }
 
-}} // ZXing::Test
+} // ZXing::Test

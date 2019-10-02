@@ -15,27 +15,19 @@
 * limitations under the License.
 */
 
-#include <string>
+#include "Result.h"
+#include "ImageLoader.h"
+
 #include <vector>
 #include <memory>
-#include "TestReader.h"
 
-namespace ZXing {
-
-namespace Test {
-
-class ImageLoader;
+namespace ZXing::Test {
 
 class QRCodeStructuredAppendReader
 {
 public:
-	QRCodeStructuredAppendReader(const std::shared_ptr<ImageLoader>& imgLoader);
-
-	TestReader::ReadResult readMultiple(const std::vector<std::wstring>& filenames, int rotation = 0) const;
-
-private:
-	std::shared_ptr<ImageLoader> _imageLoader;
+    static Result readMultiple(const std::vector<fs::path>& imgPaths, int rotation = 0);
 };
 
 
-}} // ZXing::Test
+} // ZXing::Test

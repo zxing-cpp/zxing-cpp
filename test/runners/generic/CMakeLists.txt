@@ -5,6 +5,8 @@ project (ZXingTest)
 set (ENABLE_ENCODERS OFF CACHE BOOL "Check to include encoders")
 set (ENABLE_DECODERS ON CACHE BOOL "Check to include decoders")
 
+set (CMAKE_CXX_STANDARD 17)
+
 add_definitions (-DUNICODE -D_UNICODE)
 
 if (MSVC)
@@ -23,8 +25,8 @@ add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/../../../core ${CMAKE_BINARY_DIR}/
 if (ENABLE_DECODERS)
     add_executable (ReaderTest
         TestReaderMain.cpp
-        ../../common/TestReader.h
-        ../../common/TestReader.cpp
+        ../../common/ImageLoader.h
+        ../../common/ImageLoader.cpp
         ../../common/Pdf417MultipleCodeReader.h
         ../../common/Pdf417MultipleCodeReader.cpp
         ../../common/QRCodeStructuredAppendReader.h
@@ -32,17 +34,16 @@ if (ENABLE_DECODERS)
         ../../common/BlackboxTestRunner.h
         ../../common/BlackboxTestRunner.cpp
     )
-    
+
     target_include_directories (ReaderTest
         PRIVATE ../../common
         PRIVATE ../../../thirdparty/stb
     )
 
     if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
-        target_compile_options (ReaderTest PRIVATE -std=c++11)
-        target_link_libraries (ReaderTest stdc++fs) # To use std::filesystem
+#        target_link_libraries (ReaderTest stdc++fs) # To use std::filesystem
     elseif (APPLE)
-        target_compile_options (ReaderTest PRIVATE -std=c++11 -stdlib=libc++)
+        target_compile_options (ReaderTest PRIVATE -stdlib=libc++)
     endif()
 
     target_link_libraries (ReaderTest ZXingCore)
