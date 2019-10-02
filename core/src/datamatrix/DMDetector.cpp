@@ -512,7 +512,7 @@ class RegressionLine
 
 	friend PointF intersect(const RegressionLine& l1, const RegressionLine& l2);
 
-	bool evaluate(const std::vector<PointI> ps)
+	bool evaluate(const std::vector<PointI>& ps)
 	{
 		auto mean = std::accumulate(ps.begin(), ps.end(), PointF()) / ps.size();
 		double sumXX = 0, sumYY = 0, sumXY = 0;
