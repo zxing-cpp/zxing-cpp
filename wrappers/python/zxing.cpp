@@ -86,13 +86,13 @@ PYBIND11_MODULE(zxing, m) {
 		py::arg("image"),
 		py::arg("format")=std::vector<BarcodeFormat>({}),
 		py::arg("fastMode")=false,
-		py::arg("tryRoate")=true,
+		py::arg("tryRotate")=true,
 		py::arg("hybridBinarizer")=true
 	).def("decode", (Result (*)(const Image&, BarcodeFormat, bool, bool, bool))&decode, "Decode a barcode from a numpy BGR or grayscale image array",
 		py::arg("image"),
 		py::arg("format")=BarcodeFormat::FORMAT_COUNT,
 		py::arg("fastMode")=false,
-		py::arg("tryRoate")=true,
+		py::arg("tryRotate")=true,
 		py::arg("hybridBinarizer")=true
 	);
 }
