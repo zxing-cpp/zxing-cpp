@@ -59,8 +59,8 @@ void
 BarcodeReader::init(bool tryHarder, bool tryRotate, const Platform::Array<BarcodeType>^ types)
 {
 	DecodeHints hints;
-	hints.setShouldTryHarder(tryHarder);
-	hints.setShouldTryRotate(tryRotate);
+	hints.setTryHarder(tryHarder);
+	hints.setTryRotate(tryRotate);
 
 	if (types != nullptr && types->Length > 0) {
 		std::vector<BarcodeFormat> barcodeFormats;

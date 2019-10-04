@@ -44,9 +44,7 @@ int main(int argc, char** argv)
 	fs::path pathPrefix = argv[1];
 
 	if (Contains({".png", ".jpg", ".pgm", ".gif"}, pathPrefix.extension())) {
-		DecodeHints hints;
-		hints.setShouldTryHarder(true);
-		hints.setShouldTryRotate(true);
+		auto hints = DecodeHints().setTryHarder(true).setTryRotate(true);
 //		hints.setPossibleFormats(BarcodeFormatFromString("QR_CODE"));
 		MultiFormatReader reader(hints);
 		bool isPure = getenv("IS_PURE");

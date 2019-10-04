@@ -135,7 +135,7 @@ ExtractPureBits(const BitMatrix& image)
 }
 
 Reader::Reader(const DecodeHints& hints) :
-	_tryHarder(hints.shouldTryHarder()),
+	_tryHarder(hints.tryHarder()),
 	_charset(hints.characterSet())
 {
 }

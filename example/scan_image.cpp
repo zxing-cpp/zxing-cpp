@@ -124,8 +124,8 @@ int main(int argc, char* argv[])
 	}
 
 	DecodeHints hints;
-	hints.setShouldTryHarder(!fastMode);
-	hints.setShouldTryRotate(tryRotate);
+	hints.setTryHarder(!fastMode);
+	hints.setTryRotate(tryRotate);
 	auto format = BarcodeFormatFromString(singleFormat);
 	if (format != BarcodeFormat::FORMAT_COUNT)
 		hints.setPossibleFormats({ format });

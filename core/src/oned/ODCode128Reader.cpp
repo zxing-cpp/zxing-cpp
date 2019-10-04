@@ -76,7 +76,7 @@ FindStartPattern(const BitArray& row, int* startCode)
 }
 
 Code128Reader::Code128Reader(const DecodeHints& hints) :
-	_convertFNC1(hints.shouldAssumeGS1())
+	_convertFNC1(hints.assumeGS1())
 {
 }
 

@@ -28,9 +28,7 @@ namespace {
 
 	std::wstring Decode(const std::string& encoded)
 	{
-		DecodeHints hints;
-		hints.setShouldTryCode39ExtendedMode(true);
-		Code39Reader sut(hints);
+		Code39Reader sut(DecodeHints().setTryCode39ExtendedMode(true));
 		BitArray row = Utility::ParseBitArray(encoded, '1');
 		Result result = sut.decodeSingleRow(0, row);
 		return result.text();

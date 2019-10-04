@@ -46,8 +46,8 @@ ReadResult readBarcodeFromImage(int bufferPtr, int bufferLength, bool tryHarder,
     using namespace ZXing;
 	try {
        	DecodeHints hints;
-        hints.setShouldTryHarder(tryHarder);
-        hints.setShouldTryRotate(tryHarder);
+        hints.setTryHarder(tryHarder);
+        hints.setTryRotate(tryHarder);
         auto fixedFormat = BarcodeFormatFromString(format);
         if (fixedFormat != BarcodeFormat::FORMAT_COUNT)
             hints.setPossibleFormats({ fixedFormat });

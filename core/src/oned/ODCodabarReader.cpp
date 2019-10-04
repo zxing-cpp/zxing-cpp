@@ -211,7 +211,7 @@ ValidatePattern(const std::vector<int>& charOffsets, const std::vector<int>& cou
 
 CodabarReader::CodabarReader(const DecodeHints& hints)
 {
-	_shouldReturnStartEnd = hints.shouldReturnCodabarStartEnd();
+	_returnStartEnd = hints.returnCodabarStartEnd();
 }
 
 Result
@@ -284,7 +284,7 @@ CodabarReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Dec
 		return Result(DecodeStatus::NotFound);
 	}
 
-	if (!_shouldReturnStartEnd) {
+	if (!_returnStartEnd) {
 		decodeRowResult = decodeRowResult.substr(1, decodeRowResult.size() - 2);
 	}
 

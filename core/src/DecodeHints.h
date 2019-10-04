@@ -29,7 +29,7 @@ class DecodeHints
 public:
 
 	std::vector<BarcodeFormat> possibleFormats() const;
-	void setPossibleFormats(const std::vector<BarcodeFormat>& formats);
+	DecodeHints& setPossibleFormats(const std::vector<BarcodeFormat>& formats);
 
 	bool hasFormat(BarcodeFormat f) const noexcept {
 		return getFlag((int)f);
@@ -42,23 +42,25 @@ public:
 	/**
 	* Spend more time to try to find a barcode; optimize for accuracy, not speed.
 	*/
-	bool shouldTryHarder() const {
+	bool tryHarder() const {
 		return getFlag(TRY_HARDER);
 	}
 
-	void setShouldTryHarder(bool v) {
+	DecodeHints& setTryHarder(bool v) {
 		setFlag(TRY_HARDER, v);
+		return *this;
 	}
 
 	/**
 	* For 1D readers only, should try to rotate image 90 CCW if not barcode found.
 	*/
-	bool shouldTryRotate() const {
+	bool tryRotate() const {
 		return getFlag(TRY_ROTATE);
 	}
 
-	void setShouldTryRotate(bool v) {
+	DecodeHints& setTryRotate(bool v) {
 		setFlag(TRY_ROTATE, v);
+		return *this;
 	}
 
 	/**
@@ -68,8 +70,9 @@ public:
 		return _charset;
 	}
 
-	void setCharacterSet(const std::string& charset) {
+	DecodeHints& setCharacterSet(const std::string& charset) {
 		_charset = charset;
+		return *this;
 	}
 
 	/**
@@ -79,39 +82,43 @@ public:
 		return _lengths;
 	}
 
-	void setAllowLengths(const std::vector<int>& lengths) {
+	DecodeHints& setAllowLengths(const std::vector<int>& lengths) {
 		_lengths = lengths;
+		return *this;
 	}
 
 	/**
 	* If true, the CODE-39 reader will try to read extended mode.
 	*/
-	bool shouldTryCode39ExtendedMode() const {
+	bool tryCode39ExtendedMode() const {
 		return getFlag(WITH_CODE_39_EXTENDED);
 	}
-	void setShouldTryCode39ExtendedMode(bool v) {
+	DecodeHints& setTryCode39ExtendedMode(bool v) {
 		setFlag(WITH_CODE_39_EXTENDED, v);
+		return *this;
 	}
 
 	/**
 	* Assume Code 39 codes employ a check digit.
 	*/
-	bool shouldAssumeCode39CheckDigit() const {
+	bool assumeCode39CheckDigit() const {
 		return getFlag(ASSUME_CODE_39_CHECK_DIGIT);
 	}
-	void setShouldAssumeCode39CheckDigit(bool v) {
+	DecodeHints& setAssumeCode39CheckDigit(bool v) {
 		setFlag(ASSUME_CODE_39_CHECK_DIGIT, v);
+		return *this;
 	}
 
 	/**
 	* Assume the barcode is being processed as a GS1 barcode, and modify behavior as needed.
 	* For example this affects FNC1 handling for Code 128 (aka GS1-128).
 	*/
-	bool shouldAssumeGS1() const {
+	bool assumeGS1() const {
 		return getFlag(ASSUME_GS1);
 	}
-	void setShouldAssumeGS1(bool v) {
+	DecodeHints& setAssumeGS1(bool v) {
 		setFlag(ASSUME_GS1, v);
+		return *this;
 	}
 
 	/**
@@ -119,11 +126,12 @@ public:
 	* are alpha, whereas the rest are numeric. By default, they are stripped, but this causes them
 	* to not be.
 	*/
-	bool shouldReturnCodabarStartEnd() const {
+	bool returnCodabarStartEnd() const {
 		return getFlag(RETURN_CODABAR_START_END);
 	}
-	void setShouldReturnCodabarStartEnd(bool v) {
+	DecodeHints& setReturnCodabarStartEnd(bool v) {
 		setFlag(RETURN_CODABAR_START_END, v);
+		return *this;
 	}
 
 	/**
@@ -137,8 +145,9 @@ public:
 		return _eanExts;
 	}
 
-	void setAllowedEanExtensions(const std::vector<int>& extensions) {
+	DecodeHints& setAllowedEanExtensions(const std::vector<int>& extensions) {
 		_eanExts = extensions;
+		return *this;
 	}
 
 private:

@@ -35,8 +35,8 @@ namespace ZXing {
 namespace OneD {
 
 Reader::Reader(const DecodeHints& hints) :
-	_tryHarder(hints.shouldTryHarder()),
-	_tryRotate(hints.shouldTryRotate())
+	_tryHarder(hints.tryHarder()),
+	_tryRotate(hints.tryRotate())
 {
 	_readers.reserve(8);
 

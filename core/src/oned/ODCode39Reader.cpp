@@ -148,8 +148,8 @@ DecodeExtendedCode39AndCode93(std::string& encoded, const char ctrl[4])
 
 
 Code39Reader::Code39Reader(const DecodeHints& hints) :
-	_extendedMode(hints.shouldTryCode39ExtendedMode()),
-	_usingCheckDigit(hints.shouldAssumeCode39CheckDigit())
+	_extendedMode(hints.tryCode39ExtendedMode()),
+	_usingCheckDigit(hints.assumeCode39CheckDigit())
 {
 }
 

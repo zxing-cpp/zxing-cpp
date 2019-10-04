@@ -18,11 +18,9 @@ using Image = py::array_t<uint8_t, py::array::c_style>;
 
 Result decode(const Image& image, std::vector<BarcodeFormat> formats, bool fastMode, bool tryRotate, bool hybridBinarizer) {
 	DecodeHints hints;
-	hints.setShouldTryHarder(!fastMode);
-	hints.setShouldTryRotate(tryRotate);
-	if (formats.size()>0) {
-		hints.setPossibleFormats(formats);
-	}
+	hints.setTryHarder(!fastMode);
+	hints.setTryRotate(tryRotate);
+	hints.setPossibleFormats(formats);
 	MultiFormatReader reader(hints);
 	const auto height = image.shape(0);
 	const auto width = image.shape(1);

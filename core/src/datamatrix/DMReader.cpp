@@ -76,7 +76,7 @@ ExtractPureBits(const BitMatrix& image)
 	return Deflate(image, matrixWidth, matrixHeight, top, left, moduleSize);
 }
 
-Reader::Reader(const DecodeHints& hints) : _tryRotate(hints.shouldTryRotate()), _tryHarder(hints.shouldTryHarder())
+Reader::Reader(const DecodeHints& hints) : _tryRotate(hints.tryRotate()), _tryHarder(hints.tryHarder())
 {
 }
 

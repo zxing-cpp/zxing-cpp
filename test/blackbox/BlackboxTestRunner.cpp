@@ -157,8 +157,8 @@ static void doRunTests(
 		auto startTime = std::chrono::steady_clock::now();
 		printf("%-20s @ %3d, total: %3d", folderName.string().c_str(), test.rotation, (int)images.size());
 		for (auto tc : test.tc) {
-			hints.setShouldTryHarder(tc.name == "slow");
-			hints.setShouldTryRotate(tc.name == "slow");
+			hints.setTryHarder(tc.name == "slow");
+			hints.setTryRotate(tc.name == "slow");
 			MultiFormatReader reader(hints);
 			for (const auto& imgPath : images) {
 				auto result = reader.read(*ImageLoader::load(imgPath).rotated(test.rotation));
@@ -288,13 +288,10 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 4, 4, 180 },
 		});
 
-		DecodeHints code39ExtendedModeHints;
-		code39ExtendedModeHints.setShouldTryCode39ExtendedMode(true);
-		code39ExtendedModeHints.setPossibleFormats({BarcodeFormat::CODE_39});
 		runTests("code39-2", "CODE_39", 2, {
 			{ 2, 2, 0   },
 			{ 2, 2, 180 },
-		}, code39ExtendedModeHints);
+		}, DecodeHints().setTryCode39ExtendedMode(true).setPossibleFormats({BarcodeFormat::CODE_39}));
 
 		runTests("code39-3", "CODE_39", 17, {
 			{ 17, 17, 0   },

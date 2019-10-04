@@ -36,13 +36,13 @@ DecodeHints::possibleFormats() const
 	return result;
 }
 
-void
-DecodeHints::setPossibleFormats(const std::vector<BarcodeFormat>& formats)
+DecodeHints& DecodeHints::setPossibleFormats(const std::vector<BarcodeFormat>& formats)
 {
 	_flags &= (0xffffffff << (int)BarcodeFormat::FORMAT_COUNT);
 	for (BarcodeFormat format : formats) {
 		_flags |= (1 << (int)format);
 	}
+	return *this;
 }
 
 } // ZXing

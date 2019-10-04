@@ -28,8 +28,8 @@ namespace ZXing {
 BarcodeReader::BarcodeReader(bool tryHarder, bool tryRotate, const std::string& format)
 {
 	DecodeHints hints;
-	hints.setShouldTryHarder(tryHarder);
-	hints.setShouldTryRotate(tryRotate);
+	hints.setTryHarder(tryHarder);
+	hints.setTryRotate(tryRotate);
 	if (!format.empty()) {
 		BarcodeFormat f = BarcodeFormatFromString(format.c_str());
 		if (f != BarcodeFormat::FORMAT_COUNT) {

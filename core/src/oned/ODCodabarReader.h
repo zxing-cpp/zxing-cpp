@@ -37,7 +37,7 @@ public:
 	Result decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const override;
 
 private:
-	bool _shouldReturnStartEnd;
+	bool _returnStartEnd;
 };
 
 } // OneD
