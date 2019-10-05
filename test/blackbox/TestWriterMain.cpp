@@ -30,8 +30,8 @@ using namespace std::literals;
 
 void savePng(const BitMatrix& matrix, BarcodeFormat format)
 {
-    auto bitmap = matrix.toByteMatrix();
-    stbi_write_png((ToString(format) + ".png"s).c_str(), bitmap.width(), bitmap.height(), 1, bitmap.data(), 0);
+	auto bitmap = matrix.toByteMatrix();
+	stbi_write_png((ToString(format) + ".png"s).c_str(), bitmap.width(), bitmap.height(), 1, bitmap.data(), 0);
 }
 
 int main()

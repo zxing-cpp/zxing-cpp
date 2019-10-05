@@ -36,34 +36,34 @@ using Binarizer = ZXing::HybridBinarizer;
 
 struct ReadResult
 {
-    std::string format;
-    std::wstring text;
-    std::string error;
+	std::string format;
+	std::wstring text;
+	std::string error;
 };
 
 ReadResult readBarcodeFromImage(int bufferPtr, int bufferLength, bool tryHarder, std::string format)
 {
-    using namespace ZXing;
+	using namespace ZXing;
 	try {
-       	DecodeHints hints;
-        hints.setTryHarder(tryHarder);
-        hints.setTryRotate(tryHarder);
-        hints.setPossibleFormats({BarcodeFormatFromString(format)});
-        MultiFormatReader reader(hints);
+		DecodeHints hints;
+		hints.setTryHarder(tryHarder);
+		hints.setTryRotate(tryHarder);
+		hints.setPossibleFormats({BarcodeFormatFromString(format)});
+		MultiFormatReader reader(hints);
 
-        int width, height, channels;
-        stbi_uc* bitmap = stbi_load_from_memory(reinterpret_cast<const unsigned char*>(bufferPtr), bufferLength, &width, &height, &channels, 4);
-        if (bitmap == nullptr) {
-            return { "", L"", "Error loading image" };
-        }
+		int width, height, channels;
+		stbi_uc* bitmap = stbi_load_from_memory(reinterpret_cast<const unsigned char*>(bufferPtr), bufferLength, &width, &height, &channels, 4);
+		if (bitmap == nullptr) {
+			return { "", L"", "Error loading image" };
+		}
 
-        GenericLuminanceSource source(width, height, bitmap, width * 4, 4, 0, 1, 2);
-        
-        stbi_image_free(bitmap);
-        
-        Binarizer binImage(std::shared_ptr<LuminanceSource>(&source, [](void*) {}));
+		GenericLuminanceSource source(width, height, bitmap, width * 4, 4, 0, 1, 2);
 
-        auto result = reader.read(binImage);
+		stbi_image_free(bitmap);
+
+		Binarizer binImage(std::shared_ptr<LuminanceSource>(&source, [](void*) {}));
+
+		auto result = reader.read(binImage);
 		if (result.isValid()) {
 			return { ToString(result.format()), result.text(), "" };
 		}
@@ -79,14 +79,14 @@ ReadResult readBarcodeFromImage(int bufferPtr, int bufferLength, bool tryHarder,
 
 EMSCRIPTEN_BINDINGS(BarcodeReader)
 {
-    using namespace emscripten;
-    
-    value_object<ReadResult>("ReadResult")
-        .field("format", &ReadResult::format)
-        .field("text", &ReadResult::text)
-        .field("error", &ReadResult::error)
-        ;
-        
-    function("readBarcodeFromPng", &readBarcodeFromImage);
-    function("readBarcode", &readBarcodeFromImage);
+	using namespace emscripten;
+
+	value_object<ReadResult>("ReadResult")
+	        .field("format", &ReadResult::format)
+	        .field("text", &ReadResult::text)
+	        .field("error", &ReadResult::error)
+	        ;
+
+	function("readBarcodeFromPng", &readBarcodeFromImage);
+	function("readBarcode", &readBarcodeFromImage);
 }
