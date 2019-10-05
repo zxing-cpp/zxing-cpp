@@ -35,28 +35,29 @@ using namespace ZXing;
 
 static void PrintUsage(const char* exePath)
 {
-	std::cout << "Usage: " << exePath << " [-size <width>x<height>] [-margin <margin>] [-encoding <encoding>] [-ecc <level>] <format> <text> <output>" << std::endl
-	          << "    -size      Size of generated image" << std::endl
-	          << "    -margin    Margin around barcode" << std::endl
-	          << "    -encoding  Encoding used to encode input text" << std::endl
-	          << "    -ecc       Error correction level, [0-8]"
-	          << std::endl
-	          << "Supported formats are:" << std::endl
-	          << "    AZTEC" << std::endl
-	          << "    CODABAR" << std::endl
-	          << "    CODE_39" << std::endl
-	          << "    CODE_93" << std::endl
-	          << "    CODE_128" << std::endl
-	          << "    DATA_MATRIX" << std::endl
-	          << "    EAN_8" << std::endl
-	          << "    EAN_13" << std::endl
-	          << "    ITF" << std::endl
-	          << "    PDF_417" << std::endl
-	          << "    QR_CODE" << std::endl
-	          << "    UPC_A" << std::endl
-	          << "    UPC_E" << std::endl
-	          << "Formats can be lowercase letters, with or without underscore." << std::endl;
+	std::cout << "Usage: " << exePath << " [-size <width>x<height>] [-margin <margin>] [-encoding <encoding>] [-ecc <level>] <format> <text> <output>\n"
+	          << "    -size      Size of generated image\n"
+	          << "    -margin    Margin around barcode\n"
+	          << "    -encoding  Encoding used to encode input text\n"
+	          << "    -ecc       Error correction level, [0-8]\n"
+	          << "\n"
+	          << "Supported formats are:\n"
+	          << "    AZTEC\n"
+	          << "    CODABAR\n"
+	          << "    CODE_39\n"
+	          << "    CODE_93\n"
+	          << "    CODE_128\n"
+	          << "    DATA_MATRIX\n"
+	          << "    EAN_8\n"
+	          << "    EAN_13\n"
+	          << "    ITF\n"
+	          << "    PDF_417\n"
+	          << "    QR_CODE\n"
+	          << "    UPC_A\n"
+	          << "    UPC_E\n"
+	          << "Formats can be lowercase letters, with or without underscore.\n";
 }
+
 
 static std::string FormatClean(std::string str)
 {
