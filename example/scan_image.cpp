@@ -14,13 +14,7 @@
 * limitations under the License.
 */
 
-#include "BarcodeFormat.h"
-#include "DecodeHints.h"
-#include "MultiFormatReader.h"
-#include "GenericLuminanceSource.h"
-#include "HybridBinarizer.h"
-#include "Result.h"
-#include "ResultMetadata.h"
+#include "ReadBarcode.h"
 #include "TextUtfEncoding.h"
 
 #include <iostream>
@@ -36,7 +30,7 @@ using namespace ZXing;
 
 static void PrintUsage(const char* exePath)
 {
-    std::cout << "Usage: " << exePath << " [-fast] [-rotate] [-format <FORMAT>] <png image path>\n"
+	std::cout << "Usage: " << exePath << " [-fast] [-rotate] [-format <FORMAT>] <png image path>\n"
 		<< "    -fast    Do not try harder to detect, thus faster\n"
 		<< "    -rotate  Try to rotate image of 90 degrees if it fails to detect barcode\n"
 		<< "    -format  Try to read given format only. Supported formats are:\n";
@@ -94,13 +88,6 @@ static bool ParseOptions(int argc, char* argv[], bool* fastMode, bool* tryRotate
 	return !filePath->empty();
 }
 
-#if 0
-using Binarizer = ZXing::GlobalHistogramBinarizer;
-#else
-using Binarizer = ZXing::HybridBinarizer;
-#endif
-
-
 std::ostream& operator<<(std::ostream& os, const std::vector<ResultPoint>& points) {
 	for (const auto& p : points)
 		os << int(p.x() + .5f) << "x" << int(p.y() + .5f) << " ";
@@ -123,29 +110,21 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
-	DecodeHints hints;
-	hints.setTryHarder(!fastMode);
-	hints.setTryRotate(tryRotate);
-	hints.setPossibleFormats({BarcodeFormatFromString(singleFormat)});
-	MultiFormatReader reader(hints);
-
 	int width, height, channels;
-    stbi_uc* buffer = stbi_load(filePath.c_str(), &width, &height, &channels, 4);
+	stbi_uc* buffer = stbi_load(filePath.c_str(), &width, &height, &channels, 4);
 	if (buffer == nullptr) {
 		std::cerr << "Failed to read image: " << filePath << "\n";
 		return -1;
 	}
-	GenericLuminanceSource source(width, height, buffer, width * 4, 4, 0, 1, 2);
-    
-    stbi_image_free(buffer);
 
-	Binarizer binImage(std::shared_ptr<LuminanceSource>(&source, [](void*) {}));
+	auto result = ReadBarcode(width, height, buffer, width * 4, 4, 0, 1, 2, {BarcodeFormatFromString(singleFormat)}, tryRotate, !fastMode);
 
-	auto result = reader.read(binImage);
+	stbi_image_free(buffer);
+
 	if (result.isValid()) {
 		std::cout << "Text:     " << TextUtfEncoding::ToUtf8(result.text()) << "\n"
-		          << "Format:   " << ToString(result.format()) << "\n"
-		          << "Position: " << result.resultPoints() << "\n";
+				  << "Format:   " << ToString(result.format()) << "\n"
+				  << "Position: " << result.resultPoints() << "\n";
 		auto errLevel = result.metadata().getString(ResultMetadata::Key::ERROR_CORRECTION_LEVEL);
 		if (!errLevel.empty()) {
 			std::cout << "EC Level: " << TextUtfEncoding::ToUtf8(errLevel) << "\n";

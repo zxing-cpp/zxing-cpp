@@ -82,6 +82,8 @@ if (ENABLE_DECODERS)
         src/PerspectiveTransform.h
         src/PerspectiveTransform.cpp
         src/Reader.h
+        src/ReadBarcode.h
+        src/ReadBarcode.cpp
         src/ReedSolomonDecoder.h
         src/ReedSolomonDecoder.cpp
         src/Result.h
