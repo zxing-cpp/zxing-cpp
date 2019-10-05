@@ -81,7 +81,10 @@ enum class BarcodeFormat
 
 
 
-	// Not valid value, used to count the number of formats, thus should be always the last listed here
+	// Used to count the number of formats, thus it needs to be always the last listed here.
+	// Setting the format to this value has no effect, i.e. if this is the only value, the
+	// resulting list is empty, which means every format is accepted. So this effectively means
+	// "look for all formats".
 	FORMAT_COUNT,
 };
 

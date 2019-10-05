@@ -48,9 +48,7 @@ ReadResult readBarcodeFromImage(int bufferPtr, int bufferLength, bool tryHarder,
        	DecodeHints hints;
         hints.setTryHarder(tryHarder);
         hints.setTryRotate(tryHarder);
-        auto fixedFormat = BarcodeFormatFromString(format);
-        if (fixedFormat != BarcodeFormat::FORMAT_COUNT)
-            hints.setPossibleFormats({ fixedFormat });
+        hints.setPossibleFormats({BarcodeFormatFromString(format)});
         MultiFormatReader reader(hints);
 
         int width, height, channels;

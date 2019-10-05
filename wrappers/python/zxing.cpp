@@ -44,12 +44,7 @@ Result decode(const Image& image, std::vector<BarcodeFormat> formats, bool fastM
 }
 
 Result decode(const Image& image, BarcodeFormat format, bool fastMode, bool tryRotate, bool hybridBinarizer) {
-	if (format != BarcodeFormat::FORMAT_COUNT) {
-		return decode(image, std::vector<BarcodeFormat>({format}), fastMode, tryRotate, hybridBinarizer);
-	}
-	else {
-		return decode(image, std::vector<BarcodeFormat>({}), fastMode, tryRotate, hybridBinarizer);
-	}
+	return decode(image, {format}, fastMode, tryRotate, hybridBinarizer);
 }
 
 PYBIND11_MODULE(zxing, m) {
