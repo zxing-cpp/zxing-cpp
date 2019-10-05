@@ -111,15 +111,13 @@ int main(int argc, char* argv[])
 	}
 
 	int width, height, channels;
-	stbi_uc* buffer = stbi_load(filePath.c_str(), &width, &height, &channels, 4);
+	std::unique_ptr<stbi_uc, void(*)(void*)> buffer(stbi_load(filePath.c_str(), &width, &height, &channels, 4), stbi_image_free);
 	if (buffer == nullptr) {
 		std::cerr << "Failed to read image: " << filePath << "\n";
 		return -1;
 	}
 
-	auto result = ReadBarcode(width, height, buffer, width * 4, 4, 0, 1, 2, {BarcodeFormatFromString(singleFormat)}, tryRotate, !fastMode);
-
-	stbi_image_free(buffer);
+	auto result = ReadBarcode(width, height, buffer.get(), width * 4, 4, 0, 1, 2, {BarcodeFormatFromString(singleFormat)}, tryRotate, !fastMode);
 
 	if (result.isValid()) {
 		std::cout << "Text:     " << TextUtfEncoding::ToUtf8(result.text()) << "\n"
