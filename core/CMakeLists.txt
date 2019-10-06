@@ -9,7 +9,6 @@ if (NOT DEFINED ENABLE_DECODERS)
 endif()
 
 set (ZXING_CORE_DEFINES)
-
 if (WINRT)
     set (ZXING_CORE_DEFINES ${ZXING_CORE_DEFINES}
         -DWINRT
@@ -24,7 +23,13 @@ if (MSVC)
         -D_CRT_NONSTDC_NO_WARNINGS
         -DNOMINMAX
     )
+else()
+    set (ZXING_CORE_LOCAL_DEFINES ${ZXING_CORE_LOCAL_DEFINES}
+        -Wall -Wextra -Wno-missing-braces)
 endif()
+
+set (CMAKE_CXX_STANDARD 14)
+
 
 ################# Source files
 
@@ -50,6 +55,7 @@ set (COMMON_FILES
     src/ZXBigInteger.h
     src/ZXBigInteger.cpp
     src/ZXConfig.h
+    src/ZXFilesystem.h
     src/ZXNullable.h
     src/ZXNumeric.h
     src/ZXContainerAlgorithms.h
@@ -444,23 +450,10 @@ target_compile_options (ZXingCore
 
 include (CheckCXXCompilerFlag)
 
-CHECK_CXX_COMPILER_FLAG ("-std=c++11" COMPILER_SUPPORTS_CXX11)
-if (COMPILER_SUPPORTS_CXX11)
-    target_compile_options(ZXingCore PRIVATE
-        -std=c++11
-    )
-endif()
-
 CHECK_CXX_COMPILER_FLAG ("-ffloat-store" COMPILER_NEEDS_FLOAT_STORE)
 if (COMPILER_NEEDS_FLOAT_STORE)
     target_compile_options(ZXingCore PRIVATE
         -ffloat-store   # same floating point precision in all optimization levels
-    )
-endif()
-
-if (APPLE)
-    target_compile_options (ZXingCore PRIVATE
-        -stdlib=libc++
     )
 endif()
 

@@ -6,16 +6,14 @@ project (ZXingUnitTest)
 set (ENABLE_ENCODERS ON CACHE INTERNAL "Include encoders" FORCE)
 set (ENABLE_DECODERS ON CACHE INTERNAL "include decoders" FORCE)
 
-add_definitions (-DUNICODE -D_UNICODE -DZXING_BUILD_FOR_TEST)
+add_definitions (-DZXING_BUILD_FOR_TEST)
 
 set (CMAKE_CXX_STANDARD 14)
 
 if (MSVC)
+    add_definitions (-DUNICODE -D_UNICODE)
     set (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /Oi /GS-")
     set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Oi /GS-")
-else()
-    set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG")
-    set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
 endif()
 
 
@@ -92,10 +90,6 @@ add_executable (ZXingUnitTest
     pdf417/PDF417HighLevelEncoderTest.cpp
     pdf417/PDF417WriterTest.cpp
 )
-
-#if (APPLE)
-#    target_compile_options (ZXingUnitTest PRIVATE -stdlib=libc++)
-#endif()
 
 target_include_directories (ZXingUnitTest
     PRIVATE .

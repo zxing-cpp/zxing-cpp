@@ -8,15 +8,16 @@ project (ZXingCpp VERSION ${ZXING_VERSION_MAJOR}.${ZXING_VERSION_MINOR}.${ZXING_
 
 set (ENABLE_ENCODERS ON CACHE BOOL "Check to include encoders")
 set (ENABLE_DECODERS ON CACHE BOOL "Check to include decoders")
-set (LINK_CPP_STATICALLY OFF CACHE BOOL "MSVC only, check to link statically standard library (/MT and /MTd)")
 IF (NOT WIN32)
 set (BUILD_SHARED_LIBRARY ON CACHE BOOL "Check to build ZXingCore as shared library")
 ELSE ()
 set (BUILD_SHARED_LIBRARY OFF CACHE BOOL "Check to build ZXingCore as shared library")
 ENDIF ()
-add_definitions (-DUNICODE -D_UNICODE)
 
 if (MSVC)
+    set (LINK_CPP_STATICALLY OFF CACHE BOOL "MSVC only, check to link statically standard library (/MT and /MTd)")
+
+    add_definitions (-DUNICODE -D_UNICODE)
     set (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /Oi /GS-")
     set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Oi /GS-")
     if (LINK_CPP_STATICALLY)
