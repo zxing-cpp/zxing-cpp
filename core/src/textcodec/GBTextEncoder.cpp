@@ -3990,7 +3990,7 @@ void GBTextEncoder::EncodeGB18030(const std::wstring& str, std::string& bytes)
 			if (ZXing::TextUtfEncoding::IsUtf16LowSurrogate(ch)) {
 				// valid surrogate pair
 				++i;
-				unsigned u = ZXing::TextUtfEncoding::CodePointFromUtf16Surrogates((unsigned)high, ch);
+				unsigned u = ZXing::TextUtfEncoding::CodePointFromUtf16Surrogates(high, ch);
 				len = qt_UnicodeToGb18030(u, buf);
 				if (len >= 2) {
 					for (int j = 0; j<len; j++)
@@ -4000,13 +4000,13 @@ void GBTextEncoder::EncodeGB18030(const std::wstring& str, std::string& bytes)
 					bytes[index++] = replacement;
 					++invalid;
 				}
-				high = static_cast<unsigned>(-1);
+				high = 0;
 				continue;
 			}
 			else {
 				bytes[index++] = replacement;
 				++invalid;
-				high = static_cast<unsigned>(-1);
+				high = 0;
 			}
 		}
 
