@@ -41,16 +41,16 @@ public:
 	const uint8_t* getRow(int y, ByteArray& outBytes, bool) const override
 	{
 		_src->getRow(y, outBytes, true);
-        for (auto& b : outBytes)
-            b = 255 - b;
+		for (auto& b : outBytes)
+			b = 255 - b;
 		return outBytes.data();
 	}
 
 	const uint8_t* getMatrix(ByteArray& outBytes, int& outRowBytes, bool) const override
 	{
 		_src->getMatrix(outBytes, outRowBytes, true);
-        for (auto& b : outBytes)
-            b = 255 - b;
+		for (auto& b : outBytes)
+			b = 255 - b;
 		return outBytes.data();
 	}
 

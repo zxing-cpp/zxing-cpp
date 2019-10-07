@@ -660,7 +660,7 @@ class EdgeTracer
 	{
 		const int b = 0;
 		return  b <= p_.x && p_.x < image.width()-b &&
-		        b <= p_.y && p_.y < image.height()-b;
+				b <= p_.y && p_.y < image.height()-b;
 	}
 	bool isIn(PointF p_) const { return isIn(round(p_)); }
 	bool isIn() const { return isIn(p); }
