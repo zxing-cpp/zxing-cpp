@@ -656,13 +656,13 @@ class EdgeTracer
 
 	enum class StepResult { FOUND, OPEN_END, CLOSED_END };
 
-	bool isIn(PointI p) const
+	bool isIn(PointI p_) const
 	{
 		const int b = 0;
-		return  b <= p.x && p.x < image.width()-b &&
-		        b <= p.y && p.y < image.height()-b;
+		return  b <= p_.x && p_.x < image.width()-b &&
+		        b <= p_.y && p_.y < image.height()-b;
 	}
-	bool isIn(PointF p) const { return isIn(round(p)); }
+	bool isIn(PointF p_) const { return isIn(round(p_)); }
 	bool isIn() const { return isIn(p); }
 
 	class Value
@@ -677,16 +677,16 @@ class EdgeTracer
 		bool isBlack() const { return v == BLACK; }
 	};
 
-	Value getAt(PointF p) const
+	Value getAt(PointF p_) const
 	{
-		auto q = round(p);
+		auto q = round(p_);
 		if (!isIn(q))
 			return {};
 		return {image.get(q.x, q.y)};
 	}
 
-	bool blackAt(PointF p) const { return getAt(p).isBlack(); }
-	bool whiteAt(PointF p) const { return getAt(p).isWhite(); }
+	bool blackAt(PointF p_) const { return getAt(p_).isBlack(); }
+	bool whiteAt(PointF p_) const { return getAt(p_).isWhite(); }
 	bool isEdge(PointF pos, PointF dir) const { return whiteAt(pos) && blackAt(pos + dir); }
 
 	StepResult traceStep(PointF dEdge, int maxStepSize, bool goodDirection)

@@ -181,15 +181,15 @@ FindRowsWithPattern(const BitMatrix& matrix, int height, int width, int startRow
 		int previousRowStart = static_cast<int>(result[0].value().x());
 		int previousRowEnd = static_cast<int>(result[1].value().x());
 		for (; stopRow < height; stopRow++) {
-			int startPos, endPos;
-			found = FindGuardPattern(matrix, previousRowStart, stopRow, width, false, pattern, counters, startPos, endPos);
+			int startPos_, endPos_;
+			found = FindGuardPattern(matrix, previousRowStart, stopRow, width, false, pattern, counters, startPos_, endPos_);
 			// a found pattern is only considered to belong to the same barcode if the start and end positions
 			// don't differ too much. Pattern drift should be not bigger than two for consecutive rows. With
 			// a higher number of skipped rows drift could be larger. To keep it simple for now, we allow a slightly
 			// larger drift and don't check for skipped rows.
-			if (found && std::abs(previousRowStart - startPos) < MAX_PATTERN_DRIFT && std::abs(previousRowEnd - endPos) < MAX_PATTERN_DRIFT) {
-				previousRowStart = startPos;
-				previousRowEnd = endPos;
+			if (found && std::abs(previousRowStart - startPos_) < MAX_PATTERN_DRIFT && std::abs(previousRowEnd - endPos_) < MAX_PATTERN_DRIFT) {
+				previousRowStart = startPos_;
+				previousRowEnd = endPos_;
 				skippedRowCount = 0;
 			}
 			else if (skippedRowCount > SKIPPED_ROW_COUNT_MAX) {
