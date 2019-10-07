@@ -390,7 +390,7 @@ namespace C40Encoder {
 		}
 		if (c >= '\0' && c <= '\x1f') {
 			sb.push_back('\0'); //Shift 1 Set
-			sb.push_back(c);
+			sb.push_back(static_cast<char>(c));
 			return 2;
 		}
 		if (c <= '/') {
@@ -554,7 +554,7 @@ namespace DMTextEncoder {
 		}
 		if (c >= '\0' && c <= '\x1f') {
 			sb.push_back('\0'); //Shift 1 Set
-			sb.push_back(c);
+			sb.push_back(static_cast<char>(c));
 			return 2;
 		}
 		if (c <= '/') {
@@ -676,7 +676,7 @@ namespace EdifactEncoder {
 	static void EncodeChar(int c, std::string& sb)
 	{
 		if (c >= ' ' && c <= '?') {
-			sb.push_back(c);
+			sb.push_back(static_cast<char>(c));
 		}
 		else if (c >= '@' && c <= '^') {
 			sb.push_back((char)(c - 64));
@@ -826,7 +826,7 @@ namespace Base256Encoder {
 		buffer.push_back('\0'); //Initialize length field
 		while (context.hasMoreCharacters()) {
 			int c = context.currentChar();
-			buffer.push_back(c);
+			buffer.push_back(static_cast<char>(c));
 
 			context.setCurrentPos(context.currentPos() + 1);
 
@@ -855,7 +855,7 @@ namespace Base256Encoder {
 			}
 		}
 		for (char c : buffer) {
-			context.addCodeword(Randomize255State(c, context.codewordCount() + 1));
+			context.addCodeword(static_cast<uint8_t>(Randomize255State(c, context.codewordCount() + 1)));
 		}
 	}
 
@@ -932,7 +932,7 @@ HighLevelEncoder::Encode(const std::wstring& msg, SymbolShape shape, int minWdit
 	int capacity = symbolInfo->dataCapacity();
 	if (len < capacity) {
 		if (encodingMode != ASCII_ENCODATION && encodingMode != BASE256_ENCODATION && encodingMode != EDIFACT_ENCODATION) {
-			context.addCodeword('\xfe'); //Unlatch (254)
+			context.addCodeword(static_cast<uint8_t>('\xfe')); //Unlatch (254)
 		}
 	}
 	//Padding

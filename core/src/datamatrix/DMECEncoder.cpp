@@ -121,8 +121,8 @@ static void CreateECCBlock(ByteArray& data, int codeOffset, int codeLength, int 
 	for (int i = 0; i < codeLength; ++i) {
 		const auto m = ecc.back() ^ data[codeOffset + i * stride];
 		for (size_t k = ecc.size() - 1; k > 0; k--)
-			ecc[k] = ecc[k - 1] ^ mult(m, poly[k]);
-		ecc[0] = mult(m, poly[0]);
+			ecc[k] = ecc[k - 1] ^ mult(static_cast<uint8_t const>(m), poly[k]);
+		ecc[0] = mult(static_cast<uint8_t const>(m), poly[0]);
 	}
 	for (int i = 0; i < eccLength; ++i)
 		data[eccOffset + i * stride] = ecc[eccLength - 1 - i];

@@ -96,7 +96,7 @@ std::string Code93ConvertToExtended(const std::wstring& contents)
 		}
 		else if (character == ' ' || character == '$' || character == '%' || character == '+') {
 			// space $ % +
-			extendedContent.push_back(character);
+			extendedContent.push_back(static_cast<char>(character));
 		}
 		else if (character <= ',') {
 			// ! " # & ' ( ) * ,: (/)A - (/)L
@@ -104,7 +104,7 @@ std::string Code93ConvertToExtended(const std::wstring& contents)
 			extendedContent.push_back((char)('A' + character - '!'));
 		}
 		else if (character <= '9') {
-			extendedContent.push_back(character);
+			extendedContent.push_back(static_cast<char>(character));
 		}
 		else if (character == ':') {
 			// :: (/)Z
@@ -121,7 +121,7 @@ std::string Code93ConvertToExtended(const std::wstring& contents)
 		}
 		else if (character <= 'Z') {
 			// A - Z
-			extendedContent.push_back(character);
+			extendedContent.push_back(static_cast<char>(character));
 		}
 		else if (character <= '_') {
 			// [ - _: (%)K - (%)O

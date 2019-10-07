@@ -62,7 +62,7 @@ CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
 
 	// Copy back into array of bytes -- only need to worry about the bytes that were data
 	// We don't care about errors in the error-correction codewords
-	std::copy_n(codewordsInts.begin(), numDataCodewords, codewordBytes.begin());
+    std::transform(codewordsInts.begin(), codewordsInts.begin() + numDataCodewords, codewordBytes.begin(), [](int const& cw) { return static_cast<uint8_t>(cw); });
 	return true;
 }
 

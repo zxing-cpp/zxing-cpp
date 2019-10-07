@@ -178,7 +178,7 @@ static uint8_t unicodeToCharcode(uint16_t unicode, const MapEntry* entries, size
 		--it;
 		if (unicode < it->unicode + it->count)
 		{
-			return it->charcode + (unicode - it->unicode) + 128;
+			return static_cast<uint8_t>(it->charcode + (unicode - it->unicode) + 128);
 		}
 	}
 	throw std::invalid_argument("Unexpected charcode");

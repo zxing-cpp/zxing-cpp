@@ -80,15 +80,15 @@ static const std::array<std::array<int8_t, 256>, 5>& InitCharMap()
 	static std::array<std::array<int8_t, 256>, 5> charmap = {};
 	charmap[MODE_UPPER][' '] = 1;
 	for (int c = 'A'; c <= 'Z'; c++) {
-		charmap[MODE_UPPER][c] = c - 'A' + 2;
+		charmap[MODE_UPPER][c] = static_cast<uint8_t>(c - 'A' + 2);
 	}
 	charmap[MODE_LOWER][' '] = 1;
 	for (int c = 'a'; c <= 'z'; c++) {
-		charmap[MODE_LOWER][c] = c - 'a' + 2;
+		charmap[MODE_LOWER][c] = static_cast<uint8_t>(c - 'a' + 2);
 	}
 	charmap[MODE_DIGIT][' '] = 1;
 	for (int c = '0'; c <= '9'; c++) {
-		charmap[MODE_DIGIT][c] = c - '0' + 2;
+		charmap[MODE_DIGIT][c] = static_cast<uint8_t>(c - '0' + 2);
 	}
 	charmap[MODE_DIGIT][','] = 12;
 	charmap[MODE_DIGIT]['.'] = 13;
@@ -120,7 +120,7 @@ static const std::array<std::array<int8_t, 6>, 6>& InitShiftTable()
 	static std::array<std::array<int8_t, 6>, 6> table;
 
 	for (auto& row : table) {
-		std::fill(row.begin(), row.end(), -1);
+		std::fill(row.begin(), row.end(), static_cast<uint8_t>(-1));
 	}
 	table[MODE_UPPER][MODE_PUNCT] = 0;
 	table[MODE_LOWER][MODE_PUNCT] = 0;

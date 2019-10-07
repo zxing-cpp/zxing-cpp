@@ -3844,7 +3844,7 @@ static int qt_UnicodeToGb18030(unsigned uni, uint8_t *gbchar) {
 				// 4-byte GB18030 stored in a special compact format
 				uint8_t        a, b;
 				a = 0x81;
-				b = 0x30 + (tblEntry >> 11);
+				b = static_cast<uint8_t>(0x30 + (tblEntry >> 11));
 				if (tblEntry >= 0x7000) {
 					a += 3;
 					b -= 14;
@@ -4000,13 +4000,13 @@ void GBTextEncoder::EncodeGB18030(const std::wstring& str, std::string& bytes)
 					bytes[index++] = replacement;
 					++invalid;
 				}
-				high = -1;
+				high = static_cast<unsigned>(-1);
 				continue;
 			}
 			else {
 				bytes[index++] = replacement;
 				++invalid;
-				high = -1;
+				high = static_cast<unsigned>(-1);
 			}
 		}
 

@@ -91,7 +91,7 @@ CodabarWriter::encode(const std::wstring& contents_, int width, int height) cons
 		if ((c >= '0' && c <= '9') || c == '-' || c == '$') {
 			resultLength += 9;
 		}
-		else if (Contains(CHARS_WHICH_ARE_TEN_LENGTH_EACH_AFTER_DECODED, c)) {
+		else if (Contains(CHARS_WHICH_ARE_TEN_LENGTH_EACH_AFTER_DECODED, static_cast<char>(c))) {
 			resultLength += 10;
 		}
 		else {

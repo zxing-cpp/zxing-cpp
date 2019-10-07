@@ -660,8 +660,8 @@ static uint16_t unicode2ksc(unsigned unicode)
 			else if (unicode > c2)
 				lo = mid + 1;
 			else { // unicode == c2
-				s[0] = (mid / 94) + 0x30;
-				s[1] = (mid % 94) + 0x21;
+				s[0] = static_cast<uint8_t>((mid / 94) + 0x30);
+				s[1] = static_cast<uint8_t>((mid % 94) + 0x21);
 
 				return ((s[0] << 8) | s[1]);
 			}

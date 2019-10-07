@@ -154,7 +154,7 @@ public:
 	* Clears all bits (sets to false).
 	*/
 	void clear() {
-		std::fill(_bits.begin(), _bits.end(), 0);
+        std::fill(_bits.begin(), _bits.end(), uint8_t{});
 	}
 
 	/**
