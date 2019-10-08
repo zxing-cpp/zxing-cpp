@@ -58,9 +58,6 @@ CodabarWriter::encode(const std::wstring& contents_, int width, int height) cons
 	}
 	else {
 		// Verify input and calculate decoded length.
-		// TODO: this toupper modification seems of questionable use
-		contents.front() = std::towupper(contents.front());
-		contents.back() = std::towupper(contents.back());
 		bool startsNormal = Contains(START_END_CHARS, contents.front());
 		bool endsNormal = Contains(START_END_CHARS, contents.back());
 		bool startsAlt = Contains(ALT_START_END_CHARS, contents.front());

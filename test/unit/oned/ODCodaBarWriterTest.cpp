@@ -69,6 +69,5 @@ TEST(ODCodaBarWriterTest, FullCircle)
 TEST(ODCodaBarWriterTest, InvalidChars)
 {
 	EXPECT_THROW({Encode(L"AxA");}, std::invalid_argument );
-// Implementation currently supports lowercase guard characters. see also https://github.com/nu-book/zxing-cpp/issues/107
-//	EXPECT_THROW({Encode(L"a0a");}, std::invalid_argument );
+	EXPECT_THROW({Encode(L"a0a");}, std::invalid_argument );
 }
