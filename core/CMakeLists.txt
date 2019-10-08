@@ -23,6 +23,7 @@ if (MSVC)
         -D_CRT_NONSTDC_NO_WARNINGS
         -DNOMINMAX
     )
+	add_compile_options(/wd4244)
 else()
     set (ZXING_CORE_LOCAL_DEFINES ${ZXING_CORE_LOCAL_DEFINES}
         -Wall -Wextra -Wno-missing-braces)
