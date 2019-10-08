@@ -19,18 +19,20 @@
 #include "ODWriterHelper.h"
 #include "ZXContainerAlgorithms.h"
 
-#include <cctype>
 #include <stdexcept>
+#include <cwctype>
 
 namespace ZXing {
 namespace OneD {
 
-static const char* START_END_CHARS =  "ABCD";
-static const char* ALT_START_END_CHARS = "TN*E";
-static const char* CHARS_WHICH_ARE_TEN_LENGTH_EACH_AFTER_DECODED = "/:+.";
-static const wchar_t DEFAULT_GUARD = START_END_CHARS[0];
+static constexpr wchar_t START_END_CHARS[] =  L"ABCD";
+static constexpr wchar_t ALT_START_END_CHARS[] = L"TN*E";
+static constexpr wchar_t CHARS_WHICH_ARE_TEN_LENGTH_EACH_AFTER_DECODED[] = L"/:+.";
+static constexpr wchar_t DEFAULT_GUARD = START_END_CHARS[0];
 
-static const char ALPHABET[] = "0123456789-$:/.+ABCD";
+static constexpr wchar_t ALPHABET[] = L"0123456789-$:/.+ABCD";
+
+static constexpr int WIDE_TO_NARROW_BAR_RATIO = 2; //TODO: spec says 2.25 to 3 is the valid range. So this is technically illformed.
 
 /**
 * These represent the encodings of characters, as patterns of wide and narrow bars. The 7 least-significant bits of
@@ -56,12 +58,13 @@ CodabarWriter::encode(const std::wstring& contents_, int width, int height) cons
 	}
 	else {
 		// Verify input and calculate decoded length.
-		char firstChar = std::toupper(contents[0]);
-		char lastChar = std::toupper(contents[contents.length() - 1]);
-		bool startsNormal = Contains(START_END_CHARS, firstChar);
-		bool endsNormal = Contains(START_END_CHARS, lastChar);
-		bool startsAlt = Contains(ALT_START_END_CHARS, firstChar);
-		bool endsAlt = Contains(ALT_START_END_CHARS, lastChar);
+		// TODO: this toupper modification seems of questionable use
+		contents.front() = std::towupper(contents.front());
+		contents.back() = std::towupper(contents.back());
+		bool startsNormal = Contains(START_END_CHARS, contents.front());
+		bool endsNormal = Contains(START_END_CHARS, contents.back());
+		bool startsAlt = Contains(ALT_START_END_CHARS, contents.front());
+		bool endsAlt = Contains(ALT_START_END_CHARS, contents.back());
 		if (startsNormal) {
 			if (!endsNormal) {
 				throw std::invalid_argument("Invalid start/end guards");
@@ -73,6 +76,18 @@ CodabarWriter::encode(const std::wstring& contents_, int width, int height) cons
 				throw std::invalid_argument("Invalid start/end guards");
 			}
 			// else already has valid start/end
+
+			// map alt characters to normal once so they are found in the ALPHABET
+			auto map_alt_guard_char = [](wchar_t& c) {
+				switch (c) {
+				case 'T': c = 'A'; break;
+				case 'N': c = 'B'; break;
+				case '*': c = 'C'; break;
+				case 'E': c = 'D'; break;
+				}
+			};
+			map_alt_guard_char(contents.front());
+			map_alt_guard_char(contents.back());
 		}
 		else {
 			// Doesn't start with a guard
@@ -85,9 +100,9 @@ CodabarWriter::encode(const std::wstring& contents_, int width, int height) cons
 	}
 
 	// The start character and the end character are decoded to 10 length each.
-	int resultLength = 20;
+	size_t resultLength = 20;
 	for (size_t i = 1; i + 1 < contents.length(); ++i) {
-		int c = contents[i];
+		auto c = contents[i];
 		if ((c >= '0' && c <= '9') || c == '-' || c == '$') {
 			resultLength += 9;
 		}
@@ -99,55 +114,26 @@ CodabarWriter::encode(const std::wstring& contents_, int width, int height) cons
 		}
 	}
 	// A blank is placed between each character.
-	resultLength += static_cast<int>(contents.length()) - 1;
+	resultLength += contents.length() - 1;
 
 	std::vector<bool> result(resultLength, false);
-	int position = 0;
-	for (size_t index = 0; index < contents.length(); ++index) {
-		int c = std::toupper(contents[index]);
-		if (index == 0 || index == contents.length() - 1) {
-			// The start/end chars are not in the CodaBarReader.ALPHABET.
-			switch (c) {
-			case 'T':
-				c = 'A';
-				break;
-			case 'N':
-				c = 'B';
-				break;
-			case '*':
-				c = 'C';
-				break;
-			case 'E':
-				c = 'D';
-				break;
-			}
-		}
-		int code = 0;
-		for (int i = 0; i < Length(CHARACTER_ENCODINGS); i++) {
-			// Found any, because I checked above.
-			if (c == ALPHABET[i]) {
-				code = CHARACTER_ENCODINGS[i];
-				break;
-			}
-		}
-		bool color = true;
-		int counter = 0;
+	auto position = result.begin();
+	for (wchar_t c : contents) {
+		int code = CHARACTER_ENCODINGS[IndexOf(ALPHABET, c)]; // c is checked above to be in ALPHABET
+		bool isBlack = true;
+		int counter = 0; // count the width of the current bar
 		int bit = 0;
 		while (bit < 7) { // A character consists of 7 digit.
-			result[position] = color;
-			position++;
-			if (((code >> (6 - bit)) & 1) == 0 || counter == 1) {
-				color = !color; // Flip the color.
+			*position++ = isBlack;
+			++counter;
+			if (((code >> (6 - bit)) & 1) == 0 || counter == WIDE_TO_NARROW_BAR_RATIO) { // if current bar is short or we
+				isBlack = !isBlack; // Flip the color.
 				bit++;
 				counter = 0;
 			}
-			else {
-				counter++;
-			}
 		}
-		if (index < contents.length() - 1) {
-			result[position] = false;
-			position++;
+		if (position != result.end()) {
+			*position++ = false; // inter character whitespace
 		}
 	}
 

@@ -15,9 +15,13 @@
 * limitations under the License.
 */
 #include "gtest/gtest.h"
+#include "BitArray.h"
 #include "BitMatrix.h"
 #include "BitMatrixUtility.h"
 #include "oned/ODCodabarWriter.h"
+#include "oned/ODCodabarReader.h"
+#include "DecodeHints.h"
+#include "Result.h"
 
 using namespace ZXing;
 using namespace ZXing::OneD;
@@ -50,4 +54,21 @@ TEST(ODCodaBarWriterTest, Encode2)
 TEST(ODCodaBarWriterTest, AltStartEnd)
 {
 	EXPECT_EQ(Encode(L"T123456789-$T"), Encode(L"A123456789-$A"));
+}
+
+TEST(ODCodaBarWriterTest, FullCircle)
+{
+	std::wstring text = L"A0123456789-$:/.+A";
+	BitArray row;
+	CodabarWriter().encode(text, 0, 0).getRow(0, row);
+	std::unique_ptr<RowReader::DecodingState> state;
+	Result res = CodabarReader(DecodeHints().setReturnCodabarStartEnd(true)).decodeRow(0, row, state);
+	EXPECT_EQ(text, res.text());
+}
+
+TEST(ODCodaBarWriterTest, InvalidChars)
+{
+	EXPECT_THROW({Encode(L"AxA");}, std::invalid_argument );
+// Implementation currently supports lowercase guard characters. see also https://github.com/nu-book/zxing-cpp/issues/107
+//	EXPECT_THROW({Encode(L"a0a");}, std::invalid_argument );
 }
