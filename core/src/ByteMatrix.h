@@ -63,14 +63,6 @@ public:
 		_data[y *_width + x] = value;
 	}
 
-	void set(int x, int y, int value) {
-		_data[y *_width + x] = static_cast<int8_t>(value);
-	}
-
-	void set(int x, int y, bool value) {
-		_data[y * _width + x] = static_cast<int8_t>(value);
-	}
-
 	/**
 	* @return an internal representation as bytes, in row-major order. array[y * width() + x] represents point (x,y)
 	*/
