@@ -34,7 +34,7 @@ class ByteMatrix
 
 public:
 	ByteMatrix() = default;
-	ByteMatrix(int width, int height, int val = 0) : _width(width), _height(height), _data(_width * _height, val) { }
+	ByteMatrix(int width, int height, int8_t val = 0) : _width(width), _height(height), _data(_width * _height, val) { }
 
 	ByteMatrix(ByteMatrix&&) = default;
 	ByteMatrix& operator=(ByteMatrix&&) = default;
