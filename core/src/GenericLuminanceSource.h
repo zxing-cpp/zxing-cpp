@@ -33,7 +33,7 @@ public:
 		GenericLuminanceSource(0, 0, width, height, bytes, rowBytes, pixelBytes, redIndex, greenIndex, blueIndex) {}
 
 	/**
-	* Init with a RGB source, left, top, with, height specify the subregion area in orignal image; 'bytes' should still point the begining of image buffer (i.e. pixel (0,0)).
+	* Init with a RGB source, left, top, width, height specify the subregion area in orignal image; 'bytes' should still point the begining of image buffer (i.e. pixel (0,0)).
 	*/
 	GenericLuminanceSource(int left, int top, int width, int height, const void* bytes, int rowBytes, int pixelBytes, int redIndex, int greenIndex, int blueIndex);
 
@@ -44,13 +44,13 @@ public:
 		GenericLuminanceSource(0, 0, width, height, bytes, rowBytes) {}
 
 	/**
-	* Init with a grayscale source, left, top, with, height specify the subregion area in orignal image; 'bytes' should still point the begining of image buffer (i.e. pixel (0,0)).
+	* Init with a grayscale source, left, top, width, height specify the subregion area in orignal image; 'bytes' should still point the begining of image buffer (i.e. pixel (0,0)).
 	*/
 	GenericLuminanceSource(int left, int top, int width, int height, const void* bytes, int rowBytes);
 
 
 	/**
-	* Init with a grayscale source, left, top, with, height specify the subregion area in orignal image; 'bytes' should still point the begining of image buffer (i.e. pixel (0,0)).
+	* Init with a grayscale source, left, top, width, height specify the subregion area in orignal image; 'bytes' should still point the begining of image buffer (i.e. pixel (0,0)).
 	*/
 	GenericLuminanceSource(int left, int top, int width, int height, std::shared_ptr<const ByteArray> pixels, int rowBytes);
 

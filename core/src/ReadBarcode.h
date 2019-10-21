@@ -23,9 +23,17 @@
 
 namespace ZXing {
 
+/**
+ * Standalone API to read barcode from a grayscale buffer
+ *
+ */
 Result ReadBarcode(int width, int height, unsigned char* data, int rowStride,
 				   std::vector<BarcodeFormat> formats = {}, bool tryRotate = true, bool tryHarder = true);
 
+/**
+ * Standalone API to read barcode from a RGB buffer
+ *
+ */
 Result ReadBarcode(int width, int height, unsigned char* data, int rowStride, int pixelStride, int rIndex, int gIndex, int bIndex,
 				   std::vector<BarcodeFormat> formats = {}, bool tryRotate = true, bool tryHarder = true);
 
