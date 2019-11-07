@@ -212,7 +212,7 @@ TextEncoder::GetBytes(const std::wstring& str, CharacterSet charset, std::string
 	case CharacterSet::ISO8859_1:
 		bytes.reserve(str.length());
 		for (wchar_t c : str) {
-			if (c < 0xff) {
+			if (c <= 0xff) {
 				bytes.push_back(static_cast<char>(c));
 			}
 			else {
