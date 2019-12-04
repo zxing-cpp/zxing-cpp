@@ -77,6 +77,33 @@ ReadResult readBarcodeFromImage(int bufferPtr, int bufferLength, bool tryHarder,
 	return {};
 }
 
+ReadResult readBarcodeFromPixmap(int bufferPtr, int imgWidth, int imgHeight, bool tryHarder, std::string format)
+{
+	using namespace ZXing;
+	try {
+		DecodeHints hints;
+		hints.setTryHarder(tryHarder);
+		hints.setTryRotate(tryHarder);
+		hints.setPossibleFormats({BarcodeFormatFromString(format)});
+		MultiFormatReader reader(hints);
+
+		GenericLuminanceSource source(imgWidth, imgHeight, reinterpret_cast<void*>(bufferPtr), imgWidth * 4, 4, 0, 1, 2);
+		Binarizer binImage(std::shared_ptr<LuminanceSource>(&source, [](void*) {}));
+
+		auto result = reader.read(binImage);
+		if (result.isValid()) {
+			return { ToString(result.format()), result.text(), "" };
+		}
+	}
+	catch (const std::exception& e) {
+		return { "", L"", e.what() };
+	}
+	catch (...) {
+		return { "", L"", "Unknown error" };
+	}
+	return {};
+}
+
 EMSCRIPTEN_BINDINGS(BarcodeReader)
 {
 	using namespace emscripten;
@@ -87,6 +114,10 @@ EMSCRIPTEN_BINDINGS(BarcodeReader)
 	        .field("error", &ReadResult::error)
 	        ;
 
-	function("readBarcodeFromPng", &readBarcodeFromImage);
+	function("readBarcodeFromImage", &readBarcodeFromImage);
+	function("readBarcodeFromPixmap", &readBarcodeFromPixmap);
+
+	// obsoletes
 	function("readBarcode", &readBarcodeFromImage);
+	function("readBarcodeFromPng", &readBarcodeFromImage);
 }
