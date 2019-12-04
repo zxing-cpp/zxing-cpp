@@ -20,6 +20,7 @@
 #include <vector>
 #include <numeric>
 #include <limits>
+#include <stdexcept>
 
 namespace ZXing {
 namespace Pdf417 {

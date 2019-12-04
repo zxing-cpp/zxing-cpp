@@ -22,6 +22,8 @@
 #include "BitMatrix.h"
 #include "CharacterSet.h"
 
+#include <stdexcept>
+
 namespace ZXing {
 namespace QRCode {
 

@@ -21,6 +21,7 @@
 #include "ZXTestSupport.h"
 
 #include <array>
+#include <stdexcept>
 
 namespace ZXing {
 namespace OneD {
