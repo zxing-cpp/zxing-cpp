@@ -21,6 +21,7 @@
 #include <array>
 #include <cmath>
 #include <vector>
+#include <stdexcept>
 
 namespace ZXing {
 namespace Pdf417 {

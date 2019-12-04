@@ -22,6 +22,8 @@
 #include "DecodeStatus.h"
 #include "ByteArray.h"
 
+#include <stdexcept>
+
 namespace ZXing {
 namespace DataMatrix {
 
