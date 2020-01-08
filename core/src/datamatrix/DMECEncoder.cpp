@@ -31,7 +31,7 @@ namespace DataMatrix {
 /**
 * Precomputed polynomial factors for ECC 200.
 */
-static std::array<ByteArray, 16> FACTORS = {{
+static const std::array<ByteArray, 16> FACTORS = {{
 	/*set  1*/ {228, 48, 15, 111, 62},
 	/*set  2*/ {23, 68, 144, 134, 240, 92, 254},
 	/*set  3*/ {28, 24, 185, 166, 223, 248, 116, 255, 110, 61},
