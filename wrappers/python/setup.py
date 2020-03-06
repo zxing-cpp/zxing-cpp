@@ -57,7 +57,7 @@ class CMakeBuild(build_ext):
 
 setup(
     name='zxing',
-    version='0.0.1',
+    version='0.0.2',
     description='Python bindings for the zxing-cpp barcode library',
     long_description='',
     author='Timothy Rae',

@@ -9,6 +9,10 @@
 #include "GenericLuminanceSource.h"
 #include "HybridBinarizer.h"
 #include "Result.h"
+#include "TextUtfEncoding.h"
+#include "BitMatrix.h"
+#include "ByteMatrix.h"
+#include "MultiFormatWriter.h"
 
 using namespace ZXing;
 namespace py = pybind11;
@@ -45,6 +49,30 @@ Result decode(const Image& image, std::vector<BarcodeFormat> formats, bool fastM
 
 Result decode(const Image& image, BarcodeFormat format, bool fastMode, bool tryRotate, bool hybridBinarizer) {
 	return decode(image, {format}, fastMode, tryRotate, hybridBinarizer);
+}
+
+Image encode(std::string text, int width, int height, BarcodeFormat format, int margin, int eccLevel) {
+	MultiFormatWriter writer(format);
+	if (margin >= 0)
+		writer.setMargin(margin);
+	if (eccLevel >= 0)
+		writer.setEccLevel(eccLevel);
+
+	auto bitmap = writer.encode(TextUtfEncoding::FromUtf8(text), width, height).toByteMatrix();
+
+	auto bitmapWidth = bitmap.width();
+	auto bitmapHeight = bitmap.height();
+
+	py::array_t<uint8_t> result = py::array_t<uint8_t>(bitmapWidth * bitmapHeight * sizeof(uint8_t));
+	auto buf3 = result.request();
+	int8_t *ptr3 = (int8_t *) buf3.ptr;
+	for (int y = 0; y < bitmapHeight; ++y) {
+		for (int x = 0; x < bitmapWidth; ++x) {
+			ptr3[y * bitmapWidth + x]  = bitmap.get(x, y) ? 255 : 0;
+		}
+	}
+	result.resize({bitmapHeight, bitmapWidth});
+	return result;
 }
 
 PYBIND11_MODULE(zxing, m) {
@@ -89,5 +117,13 @@ PYBIND11_MODULE(zxing, m) {
 		py::arg("fastMode")=false,
 		py::arg("tryRotate")=true,
 		py::arg("hybridBinarizer")=true
+	);
+	m.def("encode", (Image (*)(std::string, int, int, BarcodeFormat, int, int))&encode, "Encode a barcode from a text and return numpy image array",
+		py::arg("text"),
+		py::arg("width")=100,
+		py::arg("height")=100,
+		py::arg("format")=BarcodeFormat::PDF_417,
+		py::arg("margin")=10,
+		py::arg("eccLevel")=-1
 	);
 }
