@@ -27,7 +27,7 @@ static Result MaybeReturnResult(Result&& result)
 	if (!text.empty() && text[0] == '0') {
 		result.setText(text.substr(1));
 		result.setFormat(BarcodeFormat::UPC_A);
-		return result;
+		return std::move(result);
 	}
 	else {
 		return Result(DecodeStatus::FormatError);
