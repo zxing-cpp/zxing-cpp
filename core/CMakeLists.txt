@@ -440,7 +440,7 @@ add_library (ZXingCore
 
 target_include_directories (ZXingCore
     PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>"
-    INTERFACE "$<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>"
+    INTERFACE "$<INSTALL_INTERFACE:include>"
 )
 
 target_compile_options (ZXingCore
