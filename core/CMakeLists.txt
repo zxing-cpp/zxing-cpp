@@ -462,13 +462,12 @@ target_link_libraries (ZXingCore PUBLIC ${CMAKE_THREAD_LIBS_INIT})
 add_library(ZXing::Core ALIAS ZXingCore)
 set_target_properties(ZXingCore PROPERTIES EXPORT_NAME Core)
 
-include (GNUInstallDirs)
-
+set(CMAKE_INSTALL_LIBDIR "lib" PARENT_SCOPE)
 # Once we can require cmake 1.13, then we can move this to ../CMakeLists.txt, see: https://gitlab.kitware.com/cmake/cmake/merge_requests/2152
 install (
     TARGETS ZXingCore EXPORT ZXingTargets
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION "bin"
     INCLUDES DESTINATION include
 )
