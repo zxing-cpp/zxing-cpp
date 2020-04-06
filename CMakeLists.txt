@@ -8,11 +8,7 @@ project (ZXingCpp VERSION ${ZXING_VERSION_MAJOR}.${ZXING_VERSION_MINOR}.${ZXING_
 
 set (ENABLE_ENCODERS ON CACHE BOOL "Check to include encoders")
 set (ENABLE_DECODERS ON CACHE BOOL "Check to include decoders")
-IF (NOT WIN32)
-set (BUILD_SHARED_LIBRARY ON CACHE BOOL "Check to build ZXingCore as shared library")
-ELSE ()
 set (BUILD_SHARED_LIBRARY OFF CACHE BOOL "Check to build ZXingCore as shared library")
-ENDIF ()
 
 if (MSVC)
     set (LINK_CPP_STATICALLY OFF CACHE BOOL "MSVC only, check to link statically standard library (/MT and /MTd)")
