@@ -468,3 +468,12 @@ install (
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     INCLUDES DESTINATION include
 )
+
+if(MSVC)
+    set_target_properties(ZXing PROPERTIES
+        COMPILE_PDB_NAME ZXing
+        COMPILE_PDB_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR})
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ZXing.pdb
+            DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            CONFIGURATIONS Debug RelWithDebInfo)
+endif()
