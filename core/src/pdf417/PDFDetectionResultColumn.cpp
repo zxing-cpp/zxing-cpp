@@ -19,6 +19,7 @@
 #include "PDFBarcodeMetadata.h"
 #include "PDFBarcodeValue.h"
 #include <algorithm>
+#include <stdexcept>
 
 namespace ZXing {
 namespace Pdf417 {

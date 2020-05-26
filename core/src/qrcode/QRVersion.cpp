@@ -21,6 +21,7 @@
 #include "BitMatrix.h"
 
 #include <limits>
+#include <stdexcept>
 
 namespace ZXing {
 namespace QRCode {

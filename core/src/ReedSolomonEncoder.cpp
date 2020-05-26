@@ -18,6 +18,8 @@
 #include "ReedSolomonEncoder.h"
 #include "GenericGF.h"
 
+#include <stdexcept>
+
 namespace ZXing {
 
 ReedSolomonEncoder::ReedSolomonEncoder(const GenericGF& field)
