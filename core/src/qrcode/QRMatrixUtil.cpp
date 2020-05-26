@@ -25,6 +25,7 @@
 
 #include <array>
 #include <string>
+#include <stdexcept>
 
 namespace ZXing {
 namespace QRCode {

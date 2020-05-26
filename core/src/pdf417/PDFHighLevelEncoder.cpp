@@ -26,6 +26,7 @@
 #include <cstdint>
 #include <array>
 #include <algorithm>
+#include <stdexcept>
 
 namespace ZXing {
 namespace Pdf417 {

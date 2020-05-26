@@ -14,6 +14,8 @@
 * limitations under the License.
 */
 
+#include <stdexcept>
+
 #include "MultiFormatWriter.h"
 #include "BitMatrix.h"
 #include "aztec/AZWriter.h"

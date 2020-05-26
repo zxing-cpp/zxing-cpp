@@ -21,6 +21,7 @@
 
 #include <string>
 #include <memory>
+#include <stdexcept>
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
 

@@ -24,6 +24,7 @@
 #include "ZXTestSupport.h"
 
 #include <cstdlib>
+#include <stdexcept>
 
 namespace ZXing {
 namespace Aztec {

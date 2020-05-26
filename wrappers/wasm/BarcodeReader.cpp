@@ -23,6 +23,7 @@
 
 #include <string>
 #include <memory>
+#include <stdexcept>
 #include <emscripten/bind.h>
 
 #define STB_IMAGE_IMPLEMENTATION
