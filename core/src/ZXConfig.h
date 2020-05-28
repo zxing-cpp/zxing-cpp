@@ -15,10 +15,6 @@
 * limitations under the License.
 */
 
-#ifndef __has_attribute
-#define __has_attribute(x) 0
-#endif
-
 #define ZX_HAVE_CONFIG
 
 // Thread local or static memory may be used to reduce the number of (re-)allocations of temporary variables
