@@ -30,6 +30,7 @@
 #include "DecodeHints.h"
 
 #include <algorithm>
+#include <utility>
 
 namespace ZXing {
 namespace OneD {

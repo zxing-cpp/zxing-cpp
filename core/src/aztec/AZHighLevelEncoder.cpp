@@ -22,8 +22,10 @@
 #include "ZXContainerAlgorithms.h"
 
 #include <array>
-#include <type_traits>
+#include <cstdint>
+#include <algorithm>
 #include <list>
+#include <vector>
 
 namespace ZXing {
 namespace Aztec {

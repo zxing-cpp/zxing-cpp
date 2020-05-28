@@ -23,6 +23,8 @@
 #include "textcodec/KRTextEncoder.h"
 #include "ZXContainerAlgorithms.h"
 
+#include <cstddef>
+#include <cstdint>
 #include <stdexcept>
 #include <algorithm>
 

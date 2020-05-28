@@ -27,6 +27,8 @@
 #include "ZXContainerAlgorithms.h"
 #include "ZXFilesystem.h"
 
+#include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include <fstream>
 #include <set>

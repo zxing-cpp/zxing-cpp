@@ -20,7 +20,7 @@
 #include "CharacterSet.h"
 #include "TextEncoder.h"
 
-#include <algorithm>
+#include <utility>
 
 namespace ZXing {
 namespace Aztec {

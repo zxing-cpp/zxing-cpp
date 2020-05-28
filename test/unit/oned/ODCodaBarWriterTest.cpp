@@ -23,6 +23,8 @@
 #include "DecodeHints.h"
 #include "Result.h"
 
+#include <stdexcept>
+
 using namespace ZXing;
 using namespace ZXing::OneD;
 

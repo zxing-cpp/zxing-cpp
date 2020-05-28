@@ -21,10 +21,12 @@
 #include "BitMatrix.h"
 #include "ZXNullable.h"
 
-#include <list>
+#include <algorithm>
 #include <array>
-#include <limits>
 #include <cstdlib>
+#include <limits>
+#include <list>
+#include <vector>
 
 namespace ZXing {
 namespace Pdf417 {

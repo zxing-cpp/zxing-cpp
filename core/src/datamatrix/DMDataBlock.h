@@ -18,6 +18,8 @@
 
 #include "ByteArray.h"
 
+#include <vector>
+
 namespace ZXing {
 namespace DataMatrix {
 

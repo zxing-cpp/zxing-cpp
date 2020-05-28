@@ -21,7 +21,7 @@
 #include "DecodeHints.h"
 #include "ZXContainerAlgorithms.h"
 
-#include <algorithm>
+#include <limits>
 #include <array>
 
 namespace ZXing {

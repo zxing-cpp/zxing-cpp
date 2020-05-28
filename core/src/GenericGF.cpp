@@ -17,8 +17,6 @@
 
 #include "GenericGF.h"
 
-#include <stdexcept>
-
 namespace ZXing {
 
 const GenericGF &

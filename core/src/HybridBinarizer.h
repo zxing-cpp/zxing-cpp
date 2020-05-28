@@ -18,6 +18,8 @@
 
 #include "GlobalHistogramBinarizer.h"
 
+#include <memory>
+
 namespace ZXing {
 
 /**

@@ -18,6 +18,8 @@
 
 #include "BinaryBitmap.h"
 
+#include <memory>
+
 namespace ZXing {
 
 class LuminanceSource;

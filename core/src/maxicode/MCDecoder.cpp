@@ -26,9 +26,13 @@
 #include "ZXStrConvWorkaround.h"
 
 #include <array>
+#include <cstdint>
 #include <sstream>
+#include <string>
 #include <iomanip>
 #include <algorithm>
+#include <utility>
+#include <vector>
 
 namespace ZXing {
 namespace MaxiCode {

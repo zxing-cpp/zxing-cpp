@@ -16,6 +16,8 @@
 
 #include "TextUtfEncoding.h"
 
+#include <type_traits>
+
 namespace ZXing {
 
 static size_t Utf8CountCodePoints(const uint8_t *utf8, size_t length)

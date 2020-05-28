@@ -22,6 +22,7 @@
 #include <memory>
 #include <list>
 #include <string>
+#include <utility>
 
 namespace ZXing {
 

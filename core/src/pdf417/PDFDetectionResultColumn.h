@@ -19,8 +19,8 @@
 #include "PDFBoundingBox.h"
 #include "PDFCodeword.h"
 #include "ZXNullable.h"
+
 #include <vector>
-#include <memory>
 
 namespace ZXing {
 namespace Pdf417 {

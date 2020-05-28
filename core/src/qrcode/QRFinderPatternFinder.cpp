@@ -18,8 +18,6 @@
 #include "QRFinderPatternFinder.h"
 #include "QRFinderPatternInfo.h"
 #include "BitMatrix.h"
-#include "DecodeHints.h"
-#include "DecodeStatus.h"
 #include "ZXContainerAlgorithms.h"
 
 #include <cassert>

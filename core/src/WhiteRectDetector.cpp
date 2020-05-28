@@ -17,7 +17,6 @@
 
 #include "WhiteRectDetector.h"
 #include "BitMatrix.h"
-#include "DecodeStatus.h"
 #include "ZXNumeric.h"
 #include "ResultPoint.h"
 

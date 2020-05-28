@@ -20,7 +20,7 @@
 #include "ZXContainerAlgorithms.h"
 
 #include <stdexcept>
-#include <cwctype>
+#include <vector>
 
 namespace ZXing {
 namespace OneD {

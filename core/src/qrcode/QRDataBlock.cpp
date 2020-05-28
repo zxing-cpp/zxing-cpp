@@ -20,8 +20,6 @@
 #include "QRErrorCorrectionLevel.h"
 #include "DecodeStatus.h"
 
-#include <utility>
-
 namespace ZXing {
 namespace QRCode {
 

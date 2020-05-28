@@ -16,12 +16,10 @@
 * limitations under the License.
 */
 
-#include "ZXConfig.h"
-
+#include <algorithm>
+#include <cstddef>
 #include <cassert>
 #include <vector>
-#include <utility>
-#include <algorithm>
 
 namespace ZXing {
 

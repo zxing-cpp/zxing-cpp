@@ -18,12 +18,15 @@
 */
 
 #include "ZXConfig.h"
+#ifndef ZX_FAST_BIT_STORAGE
 #include "BitHacks.h"
+#endif
 
 #include <cstdint>
 #include <iterator>
 #include <vector>
 #include <algorithm>
+#include <utility>
 
 namespace ZXing {
 

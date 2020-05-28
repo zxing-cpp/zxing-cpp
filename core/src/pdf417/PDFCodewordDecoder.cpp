@@ -17,10 +17,10 @@
 
 #include "PDFCodewordDecoder.h"
 
-#include <vector>
+#include <array>
+#include <algorithm>
 #include <numeric>
 #include <limits>
-#include <stdexcept>
 
 namespace ZXing {
 namespace Pdf417 {

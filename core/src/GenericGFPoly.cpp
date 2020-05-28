@@ -17,6 +17,7 @@
 
 #include "GenericGFPoly.h"
 #include "GenericGF.h"
+#include "ZXConfig.h"
 
 #include <cassert>
 #include <stdexcept>

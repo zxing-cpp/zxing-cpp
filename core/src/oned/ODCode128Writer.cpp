@@ -22,6 +22,7 @@
 #include <list>
 #include <numeric>
 #include <stdexcept>
+#include <vector>
 
 namespace ZXing {
 namespace OneD {

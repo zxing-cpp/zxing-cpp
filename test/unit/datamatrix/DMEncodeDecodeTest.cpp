@@ -16,15 +16,14 @@
 */
 #include "datamatrix/DMWriter.h"
 #include "datamatrix/DMDecoder.h"
-#include "datamatrix/DMEncoderContext.h"
+#include "datamatrix/DMSymbolShape.h"
 #include "DecoderResult.h"
-#include "DecodeStatus.h"
 #include "BitMatrix.h"
 #include "BitMatrixUtility.h"
-#include "PseudoRandom.h"
-#include "ZXContainerAlgorithms.h"
 
-#include "fstream"
+#ifndef NDEBUG
+#include <fstream>
+#endif
 
 namespace testing {
 	namespace internal {

@@ -21,6 +21,9 @@
 #include "BitMatrixUtility.h"
 #include "BitArrayUtility.h"
 
+#include <algorithm>
+#include <stdexcept>
+
 namespace ZXing {
 	namespace Aztec {
 		void GenerateModeMessage(bool compact, int layers, int messageSizeInWords, BitArray& modeMessage);

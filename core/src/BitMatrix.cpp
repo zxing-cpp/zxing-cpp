@@ -18,7 +18,10 @@
 #include "BitMatrix.h"
 #include "BitArray.h"
 #include "ByteMatrix.h"
+
+#ifndef ZX_FAST_BIT_STORAGE
 #include "BitHacks.h"
+#endif
 
 #include <stdexcept>
 

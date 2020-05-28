@@ -18,7 +18,6 @@
 #include "QRAlignmentPatternFinder.h"
 #include "QRAlignmentPattern.h"
 #include "BitMatrix.h"
-#include "DecodeStatus.h"
 #include "ZXContainerAlgorithms.h"
 
 #include <array>

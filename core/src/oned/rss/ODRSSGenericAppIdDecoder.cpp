@@ -21,7 +21,6 @@
 #include "DecodeStatus.h"
 #include "ZXStrConvWorkaround.h"
 
-#include <algorithm>
 #include <stdexcept>
 
 namespace ZXing {

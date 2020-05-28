@@ -16,11 +16,11 @@
 * limitations under the License.
 */
 
-#include <vector>
-#include <sstream>
-#include <string>
-
 #include "BarcodeFormat.h"
+
+#include <cstdint>
+#include <vector>
+#include <string>
 
 namespace ZXing {
 

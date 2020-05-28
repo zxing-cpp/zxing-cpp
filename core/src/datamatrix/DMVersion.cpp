@@ -16,7 +16,6 @@
 */
 
 #include "DMVersion.h"
-#include "ZXContainerAlgorithms.h"
 
 namespace ZXing {
 namespace DataMatrix {

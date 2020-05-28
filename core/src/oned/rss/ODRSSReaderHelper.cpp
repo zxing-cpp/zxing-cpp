@@ -18,7 +18,7 @@
 #include "ODRSSReaderHelper.h"
 #include "ZXContainerAlgorithms.h"
 
-#include <limits>
+#include <array>
 
 namespace ZXing {
 namespace OneD {

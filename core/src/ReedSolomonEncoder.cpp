@@ -19,6 +19,8 @@
 #include "GenericGF.h"
 
 #include <stdexcept>
+#include <algorithm>
+#include <iterator>
 
 namespace ZXing {
 

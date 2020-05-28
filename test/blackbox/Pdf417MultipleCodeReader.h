@@ -16,11 +16,9 @@
 */
 
 #include "Result.h"
-#include "ImageLoader.h"
+#include "ZXFilesystem.h"
 
-#include <string>
 #include <vector>
-#include <memory>
 
 namespace ZXing {
 

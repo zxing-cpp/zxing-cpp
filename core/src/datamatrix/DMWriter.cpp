@@ -28,7 +28,7 @@
 
 #include <stdexcept>
 #include <string>
-#include <algorithm>
+#include <utility>
 
 namespace ZXing {
 namespace DataMatrix {

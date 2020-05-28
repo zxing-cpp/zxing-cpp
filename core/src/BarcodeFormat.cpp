@@ -18,10 +18,9 @@
 #include "BarcodeFormat.h"
 #include "ZXContainerAlgorithms.h"
 
-#include <type_traits>
-#include <sstream>
+#include <algorithm>
+#include <iterator>
 #include <string>
-#include <functional>
 
 namespace ZXing {
 

@@ -17,7 +17,6 @@
 
 #include "QRDecoder.h"
 #include "QRBitMatrixParser.h"
-#include "QRVersion.h"
 #include "QRFormatInformation.h"
 #include "QRDecoderMetadata.h"
 #include "QRDataMask.h"
@@ -31,13 +30,12 @@
 #include "TextDecoder.h"
 #include "CharacterSet.h"
 #include "CharacterSetECI.h"
-#include "DecodeHints.h"
 #include "DecodeStatus.h"
 #include "ZXContainerAlgorithms.h"
 #include "ZXTestSupport.h"
 
 #include <list>
-#include <type_traits>
+#include <vector>
 
 namespace ZXing {
 namespace QRCode {

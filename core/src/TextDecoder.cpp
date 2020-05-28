@@ -22,6 +22,8 @@
 #include "textcodec/Big5TextDecoder.h"
 #include "textcodec/KRTextDecoder.h"
 
+#include <vector>
+
 namespace ZXing {
 
 namespace Codecs {

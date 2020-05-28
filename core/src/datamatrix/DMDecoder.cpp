@@ -19,7 +19,6 @@
 #include "DMBitMatrixParser.h"
 #include "DMDataBlock.h"
 #include "DecoderResult.h"
-#include "BitMatrix.h"
 #include "ReedSolomonDecoder.h"
 #include "GenericGF.h"
 #include "BitSource.h"
@@ -30,6 +29,11 @@
 #include "ZXTestSupport.h"
 
 #include <array>
+#include <algorithm>
+#include <list>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace ZXing {
 namespace DataMatrix {

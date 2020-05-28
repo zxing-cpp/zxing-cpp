@@ -18,9 +18,9 @@
 #include <cstdlib>
 #include <type_traits>
 #include <vector>
-#include <sstream>
 #include <string>
 #include <iosfwd>
+#include <utility>
 
 namespace ZXing {
 

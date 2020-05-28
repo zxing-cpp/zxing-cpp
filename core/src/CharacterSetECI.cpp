@@ -20,6 +20,7 @@
 
 #include <map>
 #include <cstring>
+#include <utility>
 
 namespace ZXing {
 

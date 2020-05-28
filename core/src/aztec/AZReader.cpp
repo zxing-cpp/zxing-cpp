@@ -19,11 +19,13 @@
 #include "AZDetector.h"
 #include "AZDetectorResult.h"
 #include "AZDecoder.h"
+
+#include <memory>
+#include <utility>
+#include <vector>
 #include "Result.h"
-#include "BitMatrix.h"
 #include "BinaryBitmap.h"
 #include "DecoderResult.h"
-#include "DecodeHints.h"
 
 namespace ZXing {
 namespace Aztec {

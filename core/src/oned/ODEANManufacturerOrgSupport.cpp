@@ -19,7 +19,7 @@
 #include "ZXStrConvWorkaround.h"
 
 #include <algorithm>
-#include <type_traits>
+#include <iterator>
 #include <string>
 
 namespace ZXing {

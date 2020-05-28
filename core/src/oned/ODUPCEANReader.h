@@ -18,6 +18,7 @@
 
 #include "ODRowReader.h"
 
+#include <cassert>
 #include <string>
 #include <array>
 #include <vector>

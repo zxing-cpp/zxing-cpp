@@ -15,7 +15,6 @@
 */
 
 #include "DecodeStatus.h"
-#include "BitHacks.h"
 
 namespace ZXing {
 

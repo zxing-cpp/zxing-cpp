@@ -25,7 +25,8 @@
 #include "TextDecoder.h"
 #include "ZXContainerAlgorithms.h"
 
-#include <algorithm>
+#include <string>
+#include <type_traits>
 
 namespace ZXing {
 

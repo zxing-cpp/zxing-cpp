@@ -16,10 +16,14 @@
 */
 
 #include "BitArray.h"
-#include "BitHacks.h"
 
-#include <algorithm>
+#include <cstddef>
 #include <stdexcept>
+
+#ifndef ZX_FAST_BIT_STORAGE
+#include "BitHacks.h"
+#include <algorithm>
+#endif
 
 namespace ZXing {
 

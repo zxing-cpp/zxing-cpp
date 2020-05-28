@@ -17,7 +17,8 @@
 
 #include "DMDataBlock.h"
 #include "DMVersion.h"
-#include "DecodeStatus.h"
+
+#include <vector>
 
 namespace ZXing {
 namespace DataMatrix {

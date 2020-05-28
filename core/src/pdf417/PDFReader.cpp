@@ -27,6 +27,7 @@
 #include <vector>
 #include <cstdlib>
 #include <algorithm>
+#include <limits>
 
 namespace ZXing {
 namespace Pdf417 {

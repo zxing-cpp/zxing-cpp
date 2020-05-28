@@ -18,7 +18,9 @@
 #include "ODUPCEANReader.h"
 
 #include <array>
+#include <cstddef>
 #include <stdexcept>
+#include <string>
 
 namespace ZXing {
 namespace OneD {

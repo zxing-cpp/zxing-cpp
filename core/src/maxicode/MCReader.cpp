@@ -18,7 +18,6 @@
 #include "MCReader.h"
 #include "MCDecoder.h"
 #include "MCBitMatrixParser.h"
-#include "DecodeHints.h"
 #include "Result.h"
 #include "DecoderResult.h"
 #include "BinaryBitmap.h"

@@ -18,7 +18,6 @@
 #include "aztec/AZDetector.h"
 #include "aztec/AZDetectorResult.h"
 #include "BitMatrix.h"
-#include "DecodeStatus.h"
 #include "BitMatrixUtility.h"
 #include "PseudoRandom.h"
 

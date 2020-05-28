@@ -19,6 +19,7 @@
 #include "ODUPCEANCommon.h"
 #include "ODWriterHelper.h"
 
+#include <stdexcept>
 #include <vector>
 
 namespace ZXing {

@@ -22,7 +22,6 @@
 
 #include "DMDetector.h"
 #include "BitMatrix.h"
-#include "DecodeStatus.h"
 #include "DetectorResult.h"
 #include "GridSampler.h"
 #include "WhiteRectDetector.h"
@@ -38,6 +37,8 @@
 #include <cstdlib>
 #include <map>
 #include <numeric>
+#include <utility>
+#include <vector>
 
 namespace ZXing {
 namespace DataMatrix {

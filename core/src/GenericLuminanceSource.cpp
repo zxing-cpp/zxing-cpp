@@ -19,7 +19,10 @@
 #include "ByteArray.h"
 
 #include <algorithm>
+#include <cstdint>
+#include <memory>
 #include <stdexcept>
+#include <utility>
 
 namespace ZXing {
 

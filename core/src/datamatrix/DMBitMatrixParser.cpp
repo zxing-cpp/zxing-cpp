@@ -19,9 +19,9 @@
 #include "DMDefaultPlacement.h"
 #include "DMVersion.h"
 #include "BitMatrix.h"
-#include "DecodeStatus.h"
 #include "ByteArray.h"
 
+#include <cstdint>
 #include <stdexcept>
 
 namespace ZXing {

@@ -19,7 +19,8 @@
 #include "ByteMatrix.h"
 #include "ByteArray.h"
 
-#include <array>
+#include <cstdint>
+#include <vector>
 
 namespace ZXing {
 namespace DataMatrix {

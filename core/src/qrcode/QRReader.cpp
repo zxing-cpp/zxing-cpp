@@ -27,7 +27,6 @@
 #include "BinaryBitmap.h"
 #include "BitMatrix.h"
 #include "ZXNumeric.h"
-#include "ZXConfig.h"
 
 namespace ZXing {
 namespace QRCode {

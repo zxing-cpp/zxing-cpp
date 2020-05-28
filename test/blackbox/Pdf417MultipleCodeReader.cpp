@@ -21,7 +21,8 @@
 #include "pdf417/PDFDecoderResultExtra.h"
 #include "ImageLoader.h"
 
-#include <algorithm>
+#include <list>
+#include <utility>
 
 namespace ZXing::Test {
 

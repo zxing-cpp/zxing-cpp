@@ -25,8 +25,12 @@
 #include "TextDecoder.h"
 #include "ZXTestSupport.h"
 
-#include <numeric>
+#include <algorithm>
+#include <cstdint>
 #include <cstring>
+#include <numeric>
+#include <string>
+#include <vector>
 
 namespace ZXing {
 namespace Aztec {

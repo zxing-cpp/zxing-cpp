@@ -21,6 +21,7 @@
 #include "ByteArray.h"
 
 #include <array>
+#include <cstddef>
 
 namespace ZXing {
 namespace DataMatrix {

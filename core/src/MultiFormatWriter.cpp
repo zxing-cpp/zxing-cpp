@@ -14,8 +14,6 @@
 * limitations under the License.
 */
 
-#include <stdexcept>
-
 #include "MultiFormatWriter.h"
 #include "BitMatrix.h"
 #include "aztec/AZWriter.h"
@@ -32,6 +30,8 @@
 #include "oned/ODITFWriter.h"
 #include "oned/ODUPCAWriter.h"
 #include "oned/ODUPCEWriter.h"
+
+#include <stdexcept>
 
 namespace ZXing {
 

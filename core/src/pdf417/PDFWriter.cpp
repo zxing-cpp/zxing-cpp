@@ -18,7 +18,6 @@
 #include "PDFWriter.h"
 #include "PDFEncoder.h"
 #include "BitMatrix.h"
-#include "CharacterSetECI.h"
 
 namespace ZXing {
 namespace Pdf417 {

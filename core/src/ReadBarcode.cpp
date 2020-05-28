@@ -20,6 +20,8 @@
 #include "GenericLuminanceSource.h"
 #include "HybridBinarizer.h"
 
+#include <memory>
+
 namespace ZXing {
 
 static Result ReadBarcode(GenericLuminanceSource&& source, std::vector<ZXing::BarcodeFormat> formats, bool tryRotate, bool tryHarder)

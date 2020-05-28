@@ -24,12 +24,12 @@
 #include "TextDecoder.h"
 #include "ZXConfig.h"
 
-#include <cmath>
-#include <list>
-#include <array>
-#include <vector>
-#include <numeric>
 #include <algorithm>
+#include <array>
+#include <iterator>
+#include <list>
+#include <numeric>
+#include <vector>
 
 namespace ZXing {
 namespace OneD {

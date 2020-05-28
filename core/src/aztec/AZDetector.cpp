@@ -23,7 +23,6 @@
 #include "GenericGF.h"
 #include "WhiteRectDetector.h"
 #include "GridSampler.h"
-#include "DecodeStatus.h"
 #include "BitMatrix.h"
 
 #include <array>

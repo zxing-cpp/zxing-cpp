@@ -16,7 +16,10 @@
 */
 
 #include "Result.h"
+#include "DecoderResult.h"
 #include "TextDecoder.h"
+
+#include <utility>
 
 namespace ZXing {
 

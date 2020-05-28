@@ -17,7 +17,6 @@
 
 #include "ResultPoint.h"
 #include <cmath>
-#include <utility>
 
 namespace ZXing {
 

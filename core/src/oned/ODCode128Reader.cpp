@@ -23,9 +23,14 @@
 #include "ZXContainerAlgorithms.h"
 #include "ZXStrConvWorkaround.h"
 
-#include <algorithm>
-#include <string>
 #include <array>
+#include <cassert>
+#include <cstddef>
+#include <cstdint>
+#include <initializer_list>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace ZXing {
 namespace OneD {

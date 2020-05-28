@@ -19,6 +19,7 @@
 
 #include <array>
 #include <stdexcept>
+#include <vector>
 
 namespace ZXing {
 namespace OneD {

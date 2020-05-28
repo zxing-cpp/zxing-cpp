@@ -18,7 +18,6 @@
 
 #include "Reader.h"
 
-#include <sstream>
 #include <string>
 
 namespace ZXing {

@@ -20,7 +20,6 @@
 #include "QRFormatInformation.h"
 #include "BitMatrix.h"
 #include "ByteArray.h"
-#include "DecodeStatus.h"
 
 namespace ZXing {
 namespace QRCode {

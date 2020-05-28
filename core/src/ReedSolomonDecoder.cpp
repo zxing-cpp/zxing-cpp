@@ -16,10 +16,12 @@
 */
 
 #include "ReedSolomonDecoder.h"
+#include "ZXConfig.h"
 #include "GenericGF.h"
-#include "DecodeStatus.h"
 
-#include <memory>
+#include <cstddef>
+#include <stdexcept>
+#include <utility>
 
 namespace ZXing {
 

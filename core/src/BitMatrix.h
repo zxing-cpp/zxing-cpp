@@ -16,7 +16,9 @@
 * limitations under the License.
 */
 
+#include <algorithm>
 #include <cstdint>
+#include <utility>
 #include <vector>
 
 #include "ZXConfig.h"

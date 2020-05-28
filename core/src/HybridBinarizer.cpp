@@ -18,14 +18,15 @@
 #include "HybridBinarizer.h"
 #include "LuminanceSource.h"
 #include "ByteArray.h"
-#include "BitArray.h"
 #include "BitMatrix.h"
-#include "DecodeStatus.h"
 #include "ZXNumeric.h"
 
 #include <cassert>
-#include <array>
+#include <cstdint>
+#include <functional>
+#include <memory>
 #include <mutex>
+#include <vector>
 
 namespace ZXing {
 

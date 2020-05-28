@@ -18,7 +18,9 @@
 #include "ODEAN13Writer.h"
 #include "ODUPCEANCommon.h"
 #include "ODWriterHelper.h"
+
 #include <array>
+#include <vector>
 
 namespace ZXing {
 namespace OneD {

@@ -20,7 +20,7 @@
 #include "ZXContainerAlgorithms.h"
 #include "ZXTestSupport.h"
 
-#include <type_traits>
+#include <cstddef>
 #include <stdexcept>
 
 namespace ZXing {

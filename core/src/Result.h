@@ -20,13 +20,15 @@
 #include "BarcodeFormat.h"
 #include "ResultPoint.h"
 #include "ResultMetadata.h"
-#include "DecoderResult.h"
 #include "DecodeStatus.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace ZXing {
+
+class DecoderResult;
 
 /**
 * <p>Encapsulates the result of decoding a barcode within an image.</p>

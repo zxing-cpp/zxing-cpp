@@ -16,8 +16,6 @@
 #include "ByteMatrixUtility.h"
 #include "ByteMatrix.h"
 
-#include <iostream>
-
 namespace ZXing { namespace Utility {
 
 std::string ToString(const ByteMatrix& matrix)

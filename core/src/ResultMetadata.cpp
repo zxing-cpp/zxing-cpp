@@ -18,6 +18,8 @@
 #include "ResultMetadata.h"
 #include "ByteArray.h"
 
+#include <utility>
+
 namespace ZXing {
 
 struct ResultMetadata::Value

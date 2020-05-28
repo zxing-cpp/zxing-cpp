@@ -18,6 +18,9 @@
 
 #include "LuminanceSource.h"
 
+#include <cstdint>
+#include <memory>
+
 namespace ZXing {
 
 /**

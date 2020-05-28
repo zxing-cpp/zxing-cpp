@@ -27,9 +27,12 @@
 #include "QRCodeStructuredAppendReader.h"
 #include "ZXContainerAlgorithms.h"
 
+#include <chrono>
 #include <iostream>
 #include <fstream>
-#include <chrono>
+#include <map>
+#include <set>
+#include <string>
 #include <vector>
 
 namespace ZXing::Test {

@@ -20,10 +20,12 @@
 #include "BitArray.h"
 #include "BitMatrix.h"
 #include "ByteArray.h"
-#include "DecodeStatus.h"
 
+#include <algorithm>
 #include <array>
+#include <functional>
 #include <mutex>
+#include <utility>
 
 namespace ZXing {
 

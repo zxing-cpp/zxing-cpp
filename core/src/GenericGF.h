@@ -18,6 +18,7 @@
 
 #include "GenericGFPoly.h"
 
+#include <algorithm>
 #include <cassert>
 #include <vector>
 #include <stdexcept>

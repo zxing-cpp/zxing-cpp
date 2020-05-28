@@ -25,6 +25,9 @@
 #include "DecoderResult.h"
 #include "DetectorResult.h"
 
+#include <utility>
+#include <vector>
+
 namespace ZXing {
 namespace DataMatrix {
 

@@ -22,12 +22,10 @@
 #include "QRAlignmentPatternFinder.h"
 #include "QRVersion.h"
 #include "BitMatrix.h"
-#include "DecodeHints.h"
 #include "DetectorResult.h"
 #include "PerspectiveTransform.h"
 #include "GridSampler.h"
 #include "ZXNumeric.h"
-#include "DecodeStatus.h"
 
 #include <cstdlib>
 

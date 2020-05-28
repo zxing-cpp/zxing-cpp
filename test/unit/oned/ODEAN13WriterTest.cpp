@@ -19,6 +19,8 @@
 #include "BitMatrixUtility.h"
 #include "oned/ODEAN13Writer.h"
 
+#include <stdexcept>
+
 using namespace ZXing;
 using namespace ZXing::OneD;
 

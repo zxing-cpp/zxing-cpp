@@ -22,6 +22,8 @@
 #include "ByteArray.h"
 #include "ZXStrConvWorkaround.h"
 
+#include <cstddef>
+#include <cstdint>
 #include <string>
 #include <algorithm>
 #include <array>

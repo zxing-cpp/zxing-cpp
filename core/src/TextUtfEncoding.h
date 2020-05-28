@@ -16,6 +16,7 @@
 */
 
 #include <cstdint>
+#include <cstddef>
 #include <string>
 
 namespace ZXing {

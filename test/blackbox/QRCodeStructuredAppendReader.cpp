@@ -22,7 +22,9 @@
 #include "qrcode/QRReader.h"
 #include "ImageLoader.h"
 
-#include <algorithm>
+#include <list>
+#include <string>
+#include <utility>
 
 namespace ZXing::Test {
 

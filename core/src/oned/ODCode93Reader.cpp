@@ -22,6 +22,7 @@
 #include "ZXContainerAlgorithms.h"
 
 #include <array>
+#include <string>
 
 namespace ZXing {
 

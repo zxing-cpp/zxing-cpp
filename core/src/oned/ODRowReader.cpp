@@ -19,9 +19,9 @@
 #include "Result.h"
 #include "BitArray.h"
 
-#include <cmath>
-#include <algorithm>
+#include <limits>
 #include <numeric>
+#include <memory>
 
 namespace ZXing {
 namespace OneD {

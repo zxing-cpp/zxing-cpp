@@ -24,8 +24,8 @@
 #include "ZXBigInteger.h"
 
 #include <cstdint>
-#include <array>
 #include <algorithm>
+#include <string>
 #include <stdexcept>
 
 namespace ZXing {

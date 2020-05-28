@@ -18,7 +18,7 @@
 #include "GridSampler.h"
 #include "PerspectiveTransform.h"
 #include "BitMatrix.h"
-#include "DecodeStatus.h"
+
 #include <stdexcept>
 #include <vector>
 

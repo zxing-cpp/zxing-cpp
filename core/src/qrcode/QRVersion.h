@@ -19,6 +19,7 @@
 #include "QRECB.h"
 #include "QRErrorCorrectionLevel.h"
 
+#include <array>
 #include <initializer_list>
 #include <vector>
 
