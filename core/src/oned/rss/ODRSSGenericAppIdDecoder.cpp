@@ -21,6 +21,7 @@
 #include "DecodeStatus.h"
 #include "ZXStrConvWorkaround.h"
 
+#include <limits>
 #include <stdexcept>
 #include <utility>
 

@@ -31,6 +31,7 @@
 
 #include <algorithm>
 #include <array>
+#include <limits>
 #include <stdexcept>
 
 namespace ZXing {
