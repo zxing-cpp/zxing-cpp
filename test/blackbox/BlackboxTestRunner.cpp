@@ -28,6 +28,7 @@
 #include "ZXContainerAlgorithms.h"
 
 #include <chrono>
+#include <exception>
 #include <iostream>
 #include <fstream>
 #include <map>

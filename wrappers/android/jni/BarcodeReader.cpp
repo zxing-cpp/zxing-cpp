@@ -19,6 +19,7 @@
 #include "DecodeHints.h"
 #include "Result.h"
 
+#include <exception>
 #include <vector>
 
 static std::vector<ZXing::BarcodeFormat> GetFormats(JNIEnv* env, jintArray formats)
