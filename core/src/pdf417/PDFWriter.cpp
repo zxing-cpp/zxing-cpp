@@ -19,6 +19,8 @@
 #include "PDFEncoder.h"
 #include "BitMatrix.h"
 
+#include <utility>
+
 namespace ZXing {
 namespace Pdf417 {
 

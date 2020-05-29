@@ -17,6 +17,8 @@
 */
 #include "DetectorResult.h"
 
+#include <utility>
+
 namespace ZXing {
 namespace Aztec {
 

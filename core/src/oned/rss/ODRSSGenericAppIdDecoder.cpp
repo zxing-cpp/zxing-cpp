@@ -22,6 +22,7 @@
 #include "ZXStrConvWorkaround.h"
 
 #include <stdexcept>
+#include <utility>
 
 namespace ZXing {
 namespace OneD {

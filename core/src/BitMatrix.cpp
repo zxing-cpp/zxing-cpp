@@ -24,6 +24,7 @@
 #endif
 
 #include <stdexcept>
+#include <utility>
 
 namespace ZXing {
 

@@ -29,6 +29,7 @@
 
 #include <array>
 #include <cassert>
+#include <utility>
 
 namespace ZXing {
 namespace Pdf417 {

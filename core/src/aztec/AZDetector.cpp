@@ -26,6 +26,7 @@
 #include "BitMatrix.h"
 
 #include <array>
+#include <utility>
 
 namespace ZXing {
 namespace Aztec {

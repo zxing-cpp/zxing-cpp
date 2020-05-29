@@ -20,6 +20,7 @@
 
 #include <stdexcept>
 #include <algorithm>
+#include <utility>
 
 namespace ZXing {
 

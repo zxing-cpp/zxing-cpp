@@ -28,6 +28,7 @@
 #include <cstdlib>
 #include <algorithm>
 #include <limits>
+#include <utility>
 
 namespace ZXing {
 namespace Pdf417 {

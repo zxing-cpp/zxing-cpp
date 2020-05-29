@@ -20,6 +20,7 @@
 #include "BitMatrix.h"
 
 #include <vector>
+#include <utility>
 
 namespace ZXing {
 

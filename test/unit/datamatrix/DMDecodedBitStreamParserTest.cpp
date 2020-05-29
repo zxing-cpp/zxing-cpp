@@ -18,6 +18,8 @@
 #include "DecoderResult.h"
 #include "ByteArray.h"
 
+#include <utility>
+
 namespace ZXing {
 	namespace DataMatrix {
 		namespace DecodedBitStreamParser {

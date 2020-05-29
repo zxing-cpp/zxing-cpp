@@ -18,6 +18,8 @@
 #include "ODUPCAReader.h"
 #include "Result.h"
 
+#include <utility>
+
 namespace ZXing {
 namespace OneD {
 

@@ -37,6 +37,7 @@
 #include <list>
 #include <stdexcept>
 #include <vector>
+#include <utility>
 
 namespace ZXing {
 namespace QRCode {

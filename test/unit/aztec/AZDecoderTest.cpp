@@ -22,6 +22,8 @@
 #include "DecodeStatus.h"
 #include "BitMatrixUtility.h"
 
+#include <utility>
+
 using namespace ZXing;
 
 TEST(AZDecoderTest, AztecResult)

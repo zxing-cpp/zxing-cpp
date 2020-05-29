@@ -28,6 +28,8 @@
 #include "BitMatrix.h"
 #include "ZXNumeric.h"
 
+#include <utility>
+
 namespace ZXing {
 namespace QRCode {
 

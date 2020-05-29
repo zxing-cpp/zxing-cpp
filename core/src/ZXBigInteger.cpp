@@ -21,6 +21,7 @@
 #include <cassert>
 #include <cctype>
 #include <cstdint>
+#include <utility>
 
 namespace ZXing {
 

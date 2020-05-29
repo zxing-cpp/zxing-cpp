@@ -26,6 +26,7 @@
 #include "TextDecoder.h"
 
 #include <algorithm>
+#include <utility>
 
 namespace testing {
 	namespace internal {
