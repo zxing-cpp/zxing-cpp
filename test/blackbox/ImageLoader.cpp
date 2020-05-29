@@ -19,6 +19,9 @@
 #include "BinaryBitmap.h"
 #include "GenericLuminanceSource.h"
 
+#include <memory>
+#include <stdexcept>
+
 #if 0
 #include "GlobalHistogramBinarizer.h"
 using Binarizer = ZXing::GlobalHistogramBinarizer;

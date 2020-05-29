@@ -35,6 +35,7 @@
 #include "ZXTestSupport.h"
 
 #include <list>
+#include <stdexcept>
 #include <vector>
 
 namespace ZXing {
