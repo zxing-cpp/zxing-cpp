@@ -19,6 +19,7 @@
 #include "GenericGF.h"
 #include "PseudoRandom.h"
 
+#include <algorithm>
 #include <ostream>
 
 static std::ostream& operator<<(std::ostream& out, const ZXing::GenericGF& field) {

@@ -27,6 +27,7 @@
 #include "GridSampler.h"
 #include "ZXNumeric.h"
 
+#include <algorithm>
 #include <cstdlib>
 #include <utility>
 

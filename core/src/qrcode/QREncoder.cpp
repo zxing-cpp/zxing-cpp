@@ -29,6 +29,7 @@
 #include "ZXStrConvWorkaround.h"
 #include "ZXTestSupport.h"
 
+#include <algorithm>
 #include <array>
 #include <stdexcept>
 

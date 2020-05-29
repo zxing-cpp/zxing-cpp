@@ -17,6 +17,8 @@
 
 #include "PDFDetectionResult.h"
 #include "PDFCodewordDecoder.h"
+
+#include <algorithm>
 #include <array>
 
 namespace ZXing {

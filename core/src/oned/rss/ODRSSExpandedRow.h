@@ -18,6 +18,7 @@
 
 #include "ODRSSExpandedPair.h"
 
+#include <algorithm>
 #include <vector>
 
 namespace ZXing {

@@ -20,6 +20,7 @@
 #include "ByteArray.h"
 #include "datamatrix/DMDefaultPlacement.h"
 
+#include <algorithm>
 #include <sstream>
 #include <iterator>
 

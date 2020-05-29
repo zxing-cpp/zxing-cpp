@@ -21,6 +21,7 @@
 #include "BitMatrix.h"
 #include "BitMatrixUtility.h"
 
+#include <algorithm>
 #ifndef NDEBUG
 #include <fstream>
 #endif

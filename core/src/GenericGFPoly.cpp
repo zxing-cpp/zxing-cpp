@@ -19,6 +19,7 @@
 #include "GenericGF.h"
 #include "ZXConfig.h"
 
+#include <algorithm>
 #include <cassert>
 #include <stdexcept>
 

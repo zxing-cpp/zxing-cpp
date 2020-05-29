@@ -23,6 +23,7 @@
 #include "BitHacks.h"
 #endif
 
+#include <algorithm>
 #include <stdexcept>
 #include <utility>
 

@@ -19,6 +19,8 @@
 #include "BitArray.h"
 #include "BitArrayUtility.h"
 
+#include <algorithm>
+
 namespace ZXing {
 	namespace Aztec {
 		std::string GetEncodedData(const std::vector<bool>& correctedBits);

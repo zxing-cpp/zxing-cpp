@@ -34,6 +34,7 @@
 #include "ZXContainerAlgorithms.h"
 #include "ZXTestSupport.h"
 
+#include <algorithm>
 #include <list>
 #include <stdexcept>
 #include <vector>
