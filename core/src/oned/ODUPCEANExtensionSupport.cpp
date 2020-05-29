@@ -25,6 +25,7 @@
 #include "ZXStrConvWorkaround.h"
 
 #include <array>
+#include <cassert>
 #include <sstream>
 #include <iomanip>
 
