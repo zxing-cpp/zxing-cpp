@@ -28,6 +28,7 @@
 #include "ZXNumeric.h"
 
 #include <algorithm>
+#include <cmath>
 #include <cstdlib>
 #include <utility>
 
