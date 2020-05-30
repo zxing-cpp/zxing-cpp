@@ -461,6 +461,10 @@ target_link_libraries (ZXingCore PUBLIC ${CMAKE_THREAD_LIBS_INIT})
 
 add_library(ZXing::Core ALIAS ZXingCore)
 set_target_properties(ZXingCore PROPERTIES EXPORT_NAME Core)
+if (PROJECT_VERSION)
+    set_target_properties(ZXingCore PROPERTIES VERSION ${PROJECT_VERSION})
+    set_target_properties(ZXingCore PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
+endif()
 
 include (GNUInstallDirs)
 

@@ -1,10 +1,6 @@
 cmake_minimum_required (VERSION 3.1.3)
 
-set (ZXING_VERSION_MAJOR 1)
-set (ZXING_VERSION_MINOR 0)
-set (ZXING_VERSION_PATCH 8)
-
-project (ZXingCpp VERSION ${ZXING_VERSION_MAJOR}.${ZXING_VERSION_MINOR}.${ZXING_VERSION_PATCH})
+project (ZXingCpp VERSION "1.0.8" LANGUAGES CXX)
 
 set (ENABLE_ENCODERS ON CACHE BOOL "Check to include encoders")
 set (ENABLE_DECODERS ON CACHE BOOL "Check to include decoders")
@@ -26,9 +22,6 @@ if (MSVC)
         set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /MTd")
         set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
     endif()
-else()
-    set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG")
-    set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
 endif()
 
 set (DEFAULT_BUILD_TYPE "Release")
@@ -45,11 +38,6 @@ if (BUILD_SHARED_LIBRARY)
 endif()
 
 add_subdirectory (core)
-
-set(TARGET_ZXING "ZXingCore" CACHE STRING "The name for the ZXing library")
-
-set_target_properties (${TARGET_ZXING} PROPERTIES VERSION ${PROJECT_VERSION})
-set_target_properties (${TARGET_ZXING} PROPERTIES SOVERSION ${ZXING_VERSION_MAJOR})
 
 set (CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/ZXing")
 

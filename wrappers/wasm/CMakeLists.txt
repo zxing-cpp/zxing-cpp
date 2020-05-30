@@ -5,8 +5,6 @@ project (ZXingWasm)
 set (ENABLE_ENCODERS ON CACHE BOOL "Check to include encoders")
 set (ENABLE_DECODERS ON CACHE BOOL "Check to include decoders")
 
-add_definitions (-DUNICODE -D_UNICODE)
-
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra  -Wno-missing-braces")
 
 include (CheckCXXCompilerFlag)
@@ -35,7 +33,6 @@ elseif (ENABLE_DECODERS)
     target_include_directories (zxing_reader
         PRIVATE ../../thirdparty/stb
     )
-    target_compile_options (zxing_reader PRIVATE -DLODEPNG_NO_COMPILE_ENCODER)
 	target_link_libraries (zxing_reader ZXingCore)
 
 elseif (ENABLE_ENCODERS)
@@ -45,7 +42,6 @@ elseif (ENABLE_ENCODERS)
     target_include_directories (zxing_writer
         PRIVATE ../../thirdparty/stb
     )
-	target_compile_options (zxing_writer PRIVATE -DLODEPNG_NO_COMPILE_DECODER)
 	target_link_libraries (zxing_writer ZXingCore)
 endif()
 
