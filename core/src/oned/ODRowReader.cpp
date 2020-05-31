@@ -19,6 +19,7 @@
 #include "Result.h"
 #include "BitArray.h"
 
+#include <cmath>
 #include <limits>
 #include <numeric>
 #include <memory>

@@ -19,6 +19,7 @@
 #include "PDFEncoder.h"
 #include "PDFHighLevelEncoder.h"
 #include <array>
+#include <cmath>
 #include <vector>
 #include <stdexcept>
 
