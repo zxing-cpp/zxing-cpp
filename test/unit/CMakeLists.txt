@@ -1,33 +1,15 @@
-cmake_minimum_required (VERSION 3.10)
-
-project (ZXingUnitTest)
-
-# Enable both reader and writer for testing
-set (ENABLE_ENCODERS ON CACHE INTERNAL "Include encoders" FORCE)
-set (ENABLE_DECODERS ON CACHE INTERNAL "include decoders" FORCE)
-
-add_definitions (-DZXING_BUILD_FOR_TEST)
-
-set (CMAKE_CXX_STANDARD 14)
-
-if (MSVC)
-    add_definitions (-DUNICODE -D_UNICODE)
-    set (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /Oi /GS-")
-    set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Oi /GS-")
-endif()
-
 
 # Download and unpack googletest at configure time
 configure_file (CMakeLists.txt.in googletest-download/CMakeLists.txt)
 execute_process (COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
   RESULT_VARIABLE result
-  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download )
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download )
 if (result)
   message (FATAL_ERROR "CMake step for googletest failed: ${result}")
 endif()
 execute_process (COMMAND ${CMAKE_COMMAND} --build .
   RESULT_VARIABLE result
-  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download )
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download )
 if (result)
   message (FATAL_ERROR "Build step for googletest failed: ${result}")
 endif()
@@ -38,14 +20,11 @@ set (gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
 # Add googletest directly to our build. This defines
 # the gtest and gtest_main targets.
-add_subdirectory (${CMAKE_BINARY_DIR}/googletest-src ${CMAKE_BINARY_DIR}/googletest-build)
-
-# Add ZXingCore dependency
-add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/../../core ${CMAKE_BINARY_DIR}/ZXingCore)
+add_subdirectory (${CMAKE_CURRENT_BINARY_DIR}/googletest-src ${CMAKE_CURRENT_BINARY_DIR}/googletest-build)
 
 
 # Our executable
-add_executable (ZXingUnitTest
+add_executable (UnitTest
     BitArrayUtility.h
     BitArrayUtility.cpp
     BitMatrixUtility.h
@@ -91,11 +70,6 @@ add_executable (ZXingUnitTest
     pdf417/PDF417WriterTest.cpp
 )
 
-target_include_directories (ZXingUnitTest
-    PRIVATE .
-)
+target_include_directories (UnitTest PRIVATE .)
 
-target_link_libraries (ZXingUnitTest
-    gtest_main
-    ZXingCore
-)
+target_link_libraries (UnitTest ZXing::Core gtest_main)

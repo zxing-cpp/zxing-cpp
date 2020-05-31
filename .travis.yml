@@ -5,16 +5,12 @@ os:
 
 script:
  - mkdir build && cd build
- - cmake ..
+ - cmake -DBUILD_UNIT_TESTS=ON ..
  - make -j10
  - ./example/generate_image QR_CODE QRCodeTestText test.png
  - ./example/scan_image test.png
  - ./test/blackbox/ReaderTest ../test/samples
  - ./test/blackbox/WriterTest
  - ./test/blackbox/ReaderTest *.png
- - cd ..
- - mkdir build-unit && cd build-unit
- - cmake ../test/unit
- - make -j10
- - ./ZXingUnitTest
+ - ./test/unit/UnitTest
  

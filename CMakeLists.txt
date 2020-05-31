@@ -6,6 +6,7 @@ option (ENABLE_ENCODERS "Build with encoders" ON)
 option (ENABLE_DECODERS "Build with decoders" ON)
 option (BUILD_EXAMPLES "Build the example barcode reader/writer applicatons" ON)
 option (BUILD_BLACKBOX_TESTS "Build the black box reader/writer tests" ON)
+option (BUILD_UNIT_TESTS "Build the unit tests (don't enable for production builds)" OFF)
 
 if (WIN32)
     option (BUILD_SHARED_LIBS "Build and link as shared library" OFF)
@@ -40,13 +41,22 @@ endif()
 
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+if (BUILD_UNIT_TESTS)
+    add_definitions (-DZXING_BUILD_FOR_TEST)
+    set (ENABLE_ENCODERS ON)
+    set (ENABLE_DECODERS ON)
+endif()
+
 add_subdirectory (core)
 
 if (BUILD_EXAMPLES)
-	add_subdirectory (example)
+    add_subdirectory (example)
 endif()
 if (BUILD_BLACKBOX_TESTS)
-	add_subdirectory (test/blackbox)
+    add_subdirectory (test/blackbox)
+endif()
+if (BUILD_UNIT_TESTS)
+    add_subdirectory (test/unit)
 endif()
 
 set (CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/ZXing")
