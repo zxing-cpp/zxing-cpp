@@ -21,6 +21,8 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest, macOS-latest]
+      # don't cancel all jobs just because one of them failed
+      fail-fast: false
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
