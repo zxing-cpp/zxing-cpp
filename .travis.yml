@@ -7,10 +7,10 @@ script:
  - mkdir build && cd build
  - cmake -DBUILD_UNIT_TESTS=ON ..
  - make -j10
- - ./example/generate_image QR_CODE QRCodeTestText test.png
- - ./example/scan_image test.png
+ - ./test/unit/UnitTest
  - ./test/blackbox/ReaderTest ../test/samples
  - ./test/blackbox/WriterTest
  - ./test/blackbox/ReaderTest *.png
- - ./test/unit/UnitTest
- 
+ - ./example/generate_image QR_CODE QRCodeTestText test.png
+ - ./example/scan_image test.png
+
