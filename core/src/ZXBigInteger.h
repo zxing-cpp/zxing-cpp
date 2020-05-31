@@ -19,7 +19,6 @@
 #include <type_traits>
 #include <vector>
 #include <string>
-#include <iosfwd>
 #include <utility>
 
 namespace ZXing {
@@ -76,10 +75,6 @@ public:
 		BigInteger c;
 		BigInteger::Multiply(a, b, c);
 		return c;
-	}
-
-	friend inline std::ostream& operator<<(std::ostream& out, const BigInteger& x) {
-		return out << x.toString();
 	}
 
 	static void Add(const BigInteger& a, const BigInteger &b, BigInteger& c);
