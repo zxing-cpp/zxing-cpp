@@ -1,4 +1,3 @@
-set (CMAKE_CXX_STANDARD 17)
 
 if (ENABLE_DECODERS)
     add_executable (ReaderTest
@@ -13,6 +12,8 @@ if (ENABLE_DECODERS)
         BlackboxTestRunner.cpp
         ZXFilesystem.h
     )
+
+    target_compile_features(ReaderTest PRIVATE cxx_std_17)
 
     target_include_directories (ReaderTest PRIVATE ../../thirdparty/stb)
 
