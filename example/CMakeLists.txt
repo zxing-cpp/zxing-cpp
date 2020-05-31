@@ -1,3 +1,6 @@
+#show that it is possible to use the library (in its simples form) with a c++-11 compiler
+set (CMAKE_CXX_STANDARD 11)
+
 if (ENABLE_DECODERS)
     add_executable (scan_image scan_image.cpp)
 

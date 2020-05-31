@@ -28,8 +28,6 @@ else()
         -Wall -Wextra -Wno-missing-braces)
 endif()
 
-set (CMAKE_CXX_STANDARD 14)
-
 
 ################# Source files
 
@@ -455,6 +453,9 @@ if (COMPILER_NEEDS_FLOAT_STORE)
         -ffloat-store   # same floating point precision in all optimization levels
     )
 endif()
+
+# the lib needs a c++-14 compiler but can be used with a c++-11 compiler (see examples)
+target_compile_features(ZXingCore PRIVATE cxx_std_14 INTERFACE cxx_std_11)
 
 target_link_libraries (ZXingCore PUBLIC ${CMAKE_THREAD_LIBS_INIT})
 
