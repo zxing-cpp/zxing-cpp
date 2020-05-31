@@ -1,5 +1,3 @@
-cmake_minimum_required (VERSION 3.1.3)
-
 if (ENABLE_DECODERS)
     add_executable (scan_image scan_image.cpp)
 

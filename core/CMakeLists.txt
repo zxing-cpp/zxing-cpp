@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.1.3)
+cmake_minimum_required (VERSION 3.10)
 
 if (NOT DEFINED ENABLE_ENCODERS)
     set (ENABLE_ENCODERS OFF)
