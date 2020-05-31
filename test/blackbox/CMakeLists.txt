@@ -1,3 +1,10 @@
+set (CMAKE_CXX_STANDARD 17)
+
+if (MSVC)
+    # line above has no effect on the current github-actions
+    # combination of cmake and VisualStudio -> use 'manual' workaround
+    add_compile_options("/std:c++17")
+endif()
 
 if (ENABLE_DECODERS)
     add_executable (ReaderTest
@@ -12,12 +19,6 @@ if (ENABLE_DECODERS)
         BlackboxTestRunner.cpp
         ZXFilesystem.h
     )
-
-    target_compile_features(ReaderTest PRIVATE cxx_std_17)
-    # the above line seems to have no effect on the current github-actions combination of cmake and VisualStudio
-    if (MSVC_VERSION GREATER_EQUAL "1900")
-        target_compile_options(ReaderTest PRIVATE "/std:c++17")
-    endif()
 
     target_include_directories (ReaderTest PRIVATE ../../thirdparty/stb)
 
