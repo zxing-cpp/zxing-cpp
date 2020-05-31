@@ -2,19 +2,19 @@ cmake_minimum_required (VERSION 3.10)
 
 project (ZXingCpp VERSION "1.0.8" LANGUAGES CXX)
 
-set (ENABLE_ENCODERS ON CACHE BOOL "Check to include encoders")
-set (ENABLE_DECODERS ON CACHE BOOL "Check to include decoders")
-IF (NOT WIN32)
-set (BUILD_SHARED_LIBRARY ON CACHE BOOL "Check to build ZXingCore as shared library")
-ELSE ()
-set (BUILD_SHARED_LIBRARY OFF CACHE BOOL "Check to build ZXingCore as shared library")
-ENDIF ()
-
+option (ENABLE_ENCODERS "Build with encoders" ON)
+option (ENABLE_DECODERS "Build with decoders" ON)
 option (BUILD_EXAMPLES "Build the example barcode reader/writer applicatons" ON)
 option (BUILD_BLACKBOX_TESTS "Build the black box reader/writer tests" ON)
 
+if (WIN32)
+    option (BUILD_SHARED_LIBS "Build and link as shared library" OFF)
+else()
+    option (BUILD_SHARED_LIBS "Build and link as shared library" ON)
+endif()
+
 if (MSVC)
-    set (LINK_CPP_STATICALLY OFF CACHE BOOL "MSVC only, check to link statically standard library (/MT and /MTd)")
+    option (LINK_CPP_STATICALLY "MSVC only, link standard library statically (/MT and /MTd)" OFF)
 
     add_definitions (-DUNICODE -D_UNICODE)
     set (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /Oi /GS-")
@@ -34,8 +34,7 @@ if (NOT CMAKE_BUILD_TYPE)
     set_property (CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
-if (BUILD_SHARED_LIBRARY)
-    set (BUILD_SHARED_LIBS ON)
+if (BUILD_SHARED_LIBS)
     set (CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif()
 
