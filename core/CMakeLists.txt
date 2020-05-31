@@ -55,7 +55,6 @@ set (COMMON_FILES
     src/ZXBigInteger.h
     src/ZXBigInteger.cpp
     src/ZXConfig.h
-    src/ZXFilesystem.h
     src/ZXNullable.h
     src/ZXNumeric.h
     src/ZXContainerAlgorithms.h

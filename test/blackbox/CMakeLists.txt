@@ -11,6 +11,7 @@ if (ENABLE_DECODERS)
         QRCodeStructuredAppendReader.cpp
         BlackboxTestRunner.h
         BlackboxTestRunner.cpp
+        ZXFilesystem.h
     )
 
     target_include_directories (ReaderTest PRIVATE ../../thirdparty/stb)
