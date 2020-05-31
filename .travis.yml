@@ -5,17 +5,16 @@ os:
 
 script:
  - mkdir build && cd build
- - cmake ../core
+ - cmake ..
  - make -j10
+ - ./example/generate_image QR_CODE QRCodeTestText test.png
+ - ./example/scan_image test.png
+ - ./test/blackbox/ReaderTest ../test/samples
+ - ./test/blackbox/WriterTest
+ - ./test/blackbox/ReaderTest *.png
  - cd ..
  - mkdir build-unit && cd build-unit
  - cmake ../test/unit
  - make -j10
  - ./ZXingUnitTest
- - cd ..
- - mkdir build-test && cd build-test
- - cmake -DCMAKE_BUILD_TYPE=Release ../test/blackbox
- - make -j10
- - ./ReaderTest ../test/samples
- - ./WriterTest
- - ./ReaderTest *.png
+ 

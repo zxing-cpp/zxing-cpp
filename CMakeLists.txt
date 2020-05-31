@@ -10,6 +10,9 @@ ELSE ()
 set (BUILD_SHARED_LIBRARY OFF CACHE BOOL "Check to build ZXingCore as shared library")
 ENDIF ()
 
+option (BUILD_EXAMPLES "Build the example barcode reader/writer applicatons" ON)
+option (BUILD_BLACKBOX_TESTS "Build the black box reader/writer tests" ON)
+
 if (MSVC)
     set (LINK_CPP_STATICALLY OFF CACHE BOOL "MSVC only, check to link statically standard library (/MT and /MTd)")
 
@@ -24,9 +27,8 @@ if (MSVC)
     endif()
 endif()
 
-set (DEFAULT_BUILD_TYPE "Release")
-
 if (NOT CMAKE_BUILD_TYPE)
+	set (DEFAULT_BUILD_TYPE "Release")
 	message (STATUS "Setting build type to '${DEFAULT_BUILD_TYPE}' as none was specified.")
 	set (CMAKE_BUILD_TYPE "${DEFAULT_BUILD_TYPE}" CACHE STRING "Choose the type of build." FORCE)
     set_property (CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
@@ -37,7 +39,16 @@ if (BUILD_SHARED_LIBRARY)
     set (CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif()
 
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 add_subdirectory (core)
+
+if (BUILD_EXAMPLES)
+	add_subdirectory (example)
+endif()
+if (BUILD_BLACKBOX_TESTS)
+	add_subdirectory (test/blackbox)
+endif()
 
 set (CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/ZXing")
 
