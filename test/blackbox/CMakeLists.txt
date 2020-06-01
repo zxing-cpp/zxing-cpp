@@ -1,11 +1,5 @@
 set (CMAKE_CXX_STANDARD 17)
 
-if (MSVC)
-    # line above has no effect on the current github-actions
-    # combination of cmake and VisualStudio -> use 'manual' workaround
-    add_compile_options("/std:c++17")
-endif()
-
 if (ENABLE_DECODERS)
     add_executable (ReaderTest
         TestReaderMain.cpp
