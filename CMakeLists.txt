@@ -51,6 +51,8 @@ endif()
 
 add_subdirectory (core)
 
+enable_testing()
+
 if (BUILD_EXAMPLES)
     add_subdirectory (example)
 endif()

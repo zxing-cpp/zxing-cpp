@@ -20,6 +20,8 @@ if (ENABLE_DECODERS)
         ZXing::Core
         $<$<AND:$<CXX_COMPILER_ID:GNU>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,9.0>>:stdc++fs>
     )
+
+    add_test(NAME ReaderTest COMMAND ReaderTest ${CMAKE_CURRENT_SOURCE_DIR}/../samples)
 endif()
 
 if (ENABLE_ENCODERS)
@@ -28,4 +30,6 @@ if (ENABLE_ENCODERS)
     target_include_directories (WriterTest PRIVATE ../../thirdparty/stb)
 
     target_link_libraries (WriterTest ZXingCore)
+
+    add_test(NAME WriterTest COMMAND WriterTest)
 endif()
