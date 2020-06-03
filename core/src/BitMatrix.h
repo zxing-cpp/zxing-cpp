@@ -123,6 +123,14 @@ public:
 #endif
 	}
 
+	void set(int x, int y, bool val) {
+#ifdef ZX_FAST_BIT_STORAGE
+		_bits.at(y * _width + x) = val;
+#else
+		val ? set(x, y) : unset(x, y);
+#endif
+	}
+
 	/**
 	* <p>Flips the given bit.</p>
 	*

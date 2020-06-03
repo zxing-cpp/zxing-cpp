@@ -17,7 +17,6 @@
 */
 
 #include "BitMatrix.h"
-#include "ByteMatrix.h"
 #include "ByteArray.h"
 
 #include <array>
@@ -35,9 +34,10 @@ using BitPosArray = std::array<BitPos, 8>;
 
 /**
  * VisitMatrix gets a functor/callback that is responsible for processing/visiting the bits in the matrix.
+ * The return value contains a BitMatrix where each bit that has been visited is set.
  */
 template <typename VisitFunc>
-void VisitMatrix(int numRows, int numCols, VisitFunc visit)
+BitMatrix VisitMatrix(int numRows, int numCols, VisitFunc visit)
 {
 	// <p>See ISO 16022:2006, Figure F.3 to F.6</p>
 	const BitPosArray CORNER1 = {{{-1, 0}, {-1, 1}, {-1, 2}, {0, -2}, {0, -1}, {1, -1}, {2, -1}, {3, -1}}};
@@ -117,6 +117,8 @@ void VisitMatrix(int numRows, int numCols, VisitFunc visit)
 		row += 3;
 		col += 1;
 	} while ((row < numRows) || (col < numCols));
+
+	return visited;
 }
 
 /**
@@ -125,7 +127,7 @@ void VisitMatrix(int numRows, int numCols, VisitFunc visit)
 class DefaultPlacement
 {
 public:
-	static ByteMatrix Place(const ByteArray& codewords, int numcols, int numrows);
+	static BitMatrix Place(const ByteArray& codewords, int numcols, int numrows);
 };
 
 } // DataMatrix

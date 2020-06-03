@@ -22,7 +22,6 @@
 #include "DMECEncoder.h"
 #include "DMDefaultPlacement.h"
 #include "BitMatrix.h"
-#include "ByteMatrix.h"
 #include "ByteArray.h"
 #include "ZXStrConvWorkaround.h"
 
@@ -40,11 +39,11 @@ namespace DataMatrix {
 * @param symbolInfo The symbol info to encode.
 * @return The bit matrix generated.
 */
-static BitMatrix EncodeLowLevel(const ByteMatrix& placement, const SymbolInfo& symbolInfo) {
+static BitMatrix EncodeLowLevel(const BitMatrix& placement, const SymbolInfo& symbolInfo) {
 	int symbolWidth = symbolInfo.symbolDataWidth();
 	int symbolHeight = symbolInfo.symbolDataHeight();
 
-	ByteMatrix matrix(symbolInfo.symbolWidth(), symbolInfo.symbolHeight());
+	BitMatrix matrix(symbolInfo.symbolWidth(), symbolInfo.symbolHeight());
 	int matrixY = 0;
 	for (int y = 0; y < symbolHeight; y++) {
 		// Fill the top edge with alternate 0 / 1
@@ -84,8 +83,7 @@ static BitMatrix EncodeLowLevel(const ByteMatrix& placement, const SymbolInfo& s
 		}
 	}
 
-	// Zero is white in the bytematrix
-	return BitMatrix(matrix, 1);
+	return matrix;
 }
 
 Writer::Writer() :
@@ -115,7 +113,7 @@ Writer::encode(const std::wstring& contents, int width, int height) const
 	ECEncoder::EncodeECC200(encoded, *symbolInfo);
 
 	//3. step: Module placement in Matrix
-	ByteMatrix placement = DefaultPlacement::Place(encoded, symbolInfo->symbolDataWidth(), symbolInfo->symbolDataHeight());
+	BitMatrix placement = DefaultPlacement::Place(encoded, symbolInfo->symbolDataWidth(), symbolInfo->symbolDataHeight());
 
 	//4. step: low-level encoding
 	BitMatrix result = EncodeLowLevel(placement, *symbolInfo);

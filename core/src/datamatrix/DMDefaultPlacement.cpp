@@ -16,7 +16,6 @@
 */
 
 #include "DMDefaultPlacement.h"
-#include "ByteMatrix.h"
 #include "ByteArray.h"
 
 #include <cstdint>
@@ -25,18 +24,18 @@
 namespace ZXing {
 namespace DataMatrix {
 
-ByteMatrix DefaultPlacement::Place(const ByteArray& codewords, int numCols, int numRows)
+BitMatrix DefaultPlacement::Place(const ByteArray& codewords, int numCols, int numRows)
 {
-	ByteMatrix result(numCols, numRows, -1);
+	BitMatrix result(numCols, numRows);
 
 	auto codeword = codewords.begin();
 
-	VisitMatrix(numRows, numCols, [&codeword, &result](const BitPosArray& bitPos) {
+	auto visited = VisitMatrix(numRows, numCols, [&codeword, &result](const BitPosArray& bitPos) {
 		// Places the 8 bits of a corner or the utah-shaped symbol character in the result matrix
 		uint8_t mask = 0x80;
 		for (auto& p : bitPos) {
-			bool value = *codeword & mask;
-			result.set(p.col, p.row, value);
+			if (*codeword & mask)
+				result.set(p.col, p.row);
 			mask >>= 1;
 		}
 		++codeword;
@@ -46,9 +45,9 @@ ByteMatrix DefaultPlacement::Place(const ByteArray& codewords, int numCols, int 
 		return {};
 
 	// Lastly, if the lower righthand corner is untouched, fill in fixed pattern
-	if (result.get(numCols - 1, numRows - 1) < 0) {
-		result.set(numCols - 1, numRows - 1, true);
-		result.set(numCols - 2, numRows - 2, true);
+	if (!visited.get(numCols - 1, numRows - 1)) {
+		result.set(numCols - 1, numRows - 1);
+		result.set(numCols - 2, numRows - 2);
 	}
 
 	return result;
