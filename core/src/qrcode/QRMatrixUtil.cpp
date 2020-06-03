@@ -30,7 +30,7 @@
 namespace ZXing {
 namespace QRCode {
 
-static const std::array<std::array<int8_t, 7>, 7> POSITION_DETECTION_PATTERN = {
+static const std::array<std::array<bool, 7>, 7> POSITION_DETECTION_PATTERN = {
 	1, 1, 1, 1, 1, 1, 1,
 	1, 0, 0, 0, 0, 0, 1,
 	1, 0, 1, 1, 1, 0, 1,
@@ -40,7 +40,7 @@ static const std::array<std::array<int8_t, 7>, 7> POSITION_DETECTION_PATTERN = {
 	1, 1, 1, 1, 1, 1, 1,
 };
 
-static const std::array<std::array<int8_t, 5>, 5> POSITION_ADJUSTMENT_PATTERN = {
+static const std::array<std::array<bool, 5>, 5> POSITION_ADJUSTMENT_PATTERN = {
 	1, 1, 1, 1, 1,
 	1, 0, 0, 0, 1,
 	1, 0, 1, 0, 1,
@@ -119,9 +119,11 @@ static const int TYPE_INFO_POLY = 0x537;
 static const int TYPE_INFO_MASK_PATTERN = 0x5412;
 
 // Set all cells to -1.  -1 means that the cell is empty (not set yet).
+// The other two used values are 0 and 1 for white and black.
 //
 // JAVAPORT: We shouldn't need to do this at all. The code should be rewritten to begin encoding
 // with the ByteMatrix initialized all to zero.
+// EDIT: this is partly done. Ony one remaining check for IsEmpty left.
 static void makeEmpty(ByteMatrix& matrix)
 {
 	matrix.clear(-1);
@@ -139,13 +141,9 @@ static void EmbedTimingPatterns(ByteMatrix& matrix)
 	for (int i = 8; i < matrix.width() - 8; ++i) {
 		bool bit = (i + 1) % 2;
 		// Horizontal line.
-		if (IsEmpty(matrix.get(i, 6))) {
-			matrix.set(i, 6, bit);
-		}
+		matrix.set(i, 6, bit);
 		// Vertical line.
-		if (IsEmpty(matrix.get(6, i))) {
-			matrix.set(6, i, bit);
-		}
+		matrix.set(6, i, bit);
 	}
 }
 
@@ -175,15 +173,14 @@ static void MaybeEmbedPositionAdjustmentPatterns(const Version& version, ByteMat
 		for (int j = 0; j < numCoordinates; ++j) {
 			int y = coordinates[i];
 			int x = coordinates[j];
-			if (x == -1 || y == -1) {
+			// Check x/y is valid: don't place alignment patterns intersecting with the 3 finder patterns
+			if (x == -1 || y == -1 || (x == 6 && y == 6) || (x == 6 && y == matrix.height() - 7)
+				|| (x == matrix.width() - 7 && y == 6)) {
 				continue;
 			}
-			// If the cell is unset, we embed the position adjustment pattern here.
-			if (IsEmpty(matrix.get(x, y))) {
-				// -2 is necessary since the x/y coordinates point to the center of the pattern, not the
-				// left top corner.
-				EmbedPositionAdjustmentPattern(x - 2, y - 2, matrix);
-			}
+			// -2 is necessary since the x/y coordinates point to the center of the pattern, not the
+			// left top corner.
+			EmbedPositionAdjustmentPattern(x - 2, y - 2, matrix);
 		}
 	}
 }
@@ -195,25 +192,18 @@ static void EmbedPositionDetectionPattern(int xStart, int yStart, ByteMatrix& ma
 			matrix.set(xStart + x, yStart + y, POSITION_DETECTION_PATTERN[y][x]);
 		}
 	}
-}
 
+	// Surround the 7x7 pattern with one line of white space (sepration pattern)
+	auto setIfInside = [&](int x, int y) {
+		if( x >= 0 && x < matrix.width() && y >= 0 && y < matrix.height())
+			matrix.set(x, y, 0);
+	};
 
-static void EmbedHorizontalSeparationPattern(int xStart, int yStart, ByteMatrix& matrix) {
-	for (int x = 0; x < 8; ++x) {
-		if (!IsEmpty(matrix.get(xStart + x, yStart))) {
-			throw std::invalid_argument("Unexpected input");
-		}
-		matrix.set(xStart + x, yStart, 0);
-	}
-}
-
-static void EmbedVerticalSeparationPattern(int xStart, int yStart, ByteMatrix& matrix)
-{
-	for (int y = 0; y < 7; ++y) {
-		if (!IsEmpty(matrix.get(xStart, yStart + y))) {
-			throw std::invalid_argument("Unexpected input");
-		}
-		matrix.set(xStart, yStart + y, 0);
+	for (int i = -1; i < 8; ++i) {
+		setIfInside(xStart + i, yStart - 1); // top
+		setIfInside(xStart + i, yStart + 7); // bottom
+		setIfInside(xStart - 1, yStart + i); // left
+		setIfInside(xStart + 7, yStart + i); // right
 	}
 }
 
@@ -228,33 +218,12 @@ static void EmbedPositionDetectionPatternsAndSeparators(ByteMatrix& matrix)
 	EmbedPositionDetectionPattern(matrix.width() - pdpWidth, 0, matrix);
 	// Left bottom corner.
 	EmbedPositionDetectionPattern(0, matrix.width() - pdpWidth, matrix);
-
-	// Embed horizontal separation patterns around the squares.
-	int hspWidth = 8;
-	// Left top corner.
-	EmbedHorizontalSeparationPattern(0, hspWidth - 1, matrix);
-	// Right top corner.
-	EmbedHorizontalSeparationPattern(matrix.width() - hspWidth, hspWidth - 1, matrix);
-	// Left bottom corner.
-	EmbedHorizontalSeparationPattern(0, matrix.width() - hspWidth, matrix);
-
-	// Embed vertical separation patterns around the squares.
-	int vspSize = 7;
-	// Left top corner.
-	EmbedVerticalSeparationPattern(vspSize, 0, matrix);
-	// Right top corner.
-	EmbedVerticalSeparationPattern(matrix.height() - vspSize - 1, 0, matrix);
-	// Left bottom corner.
-	EmbedVerticalSeparationPattern(vspSize, matrix.height() - vspSize, matrix);
 }
 
 
 // Embed the lonely dark dot at left bottom corner. JISX0510:2004 (p.46)
 static void EmbedDarkDotAtLeftBottomCorner(ByteMatrix& matrix)
 {
-	if (matrix.get(8, matrix.height() - 8) == 0) {
-		throw std::invalid_argument("Unexpected input");
-	}
 	matrix.set(8, matrix.height() - 8, 1);
 }
 
@@ -477,22 +446,15 @@ static void EmbedDataBits(const BitArray& dataBits, int maskPattern, ByteMatrix&
 			x -= 1;
 		}
 		while (y >= 0 && y < matrix.height()) {
-			for (int i = 0; i < 2; ++i) {
-				int xx = x - i;
+			for (int xx = x; xx > x - 2; --xx) {
 				// Skip the cell if it's not empty.
 				if (!IsEmpty(matrix.get(xx, y))) {
 					continue;
 				}
-				bool bit;
-				if (bitIndex < dataBits.size()) {
-					bit = dataBits.get(bitIndex);
-					++bitIndex;
-				}
-				else {
-					// Padding bit. If there is no bit left, we'll fill the left cells with 0, as described
-					// in 8.4.9 of JISX0510:2004 (p. 24).
-					bit = false;
-				}
+				// Padding bit. If there is no bit left, we'll fill the left cells with 0, as described
+				// in 8.4.9 of JISX0510:2004 (p. 24).
+				bool bit = bitIndex < dataBits.size() ? dataBits.get(bitIndex) : false;
+				++bitIndex;
 
 				// Skip masking if mask_pattern is -1.
 				if (maskPattern != -1 && GetDataMaskBit(maskPattern, xx, y)) {
@@ -507,7 +469,7 @@ static void EmbedDataBits(const BitArray& dataBits, int maskPattern, ByteMatrix&
 		x -= 2;  // Move to the left.
 	}
 	// All bits should be consumed.
-	if (bitIndex != dataBits.size()) {
+	if (bitIndex < dataBits.size()) {
 		throw std::invalid_argument("Not all bits consumed: " + std::to_string(bitIndex) + '/' + std::to_string(dataBits.size()));
 	}
 }
