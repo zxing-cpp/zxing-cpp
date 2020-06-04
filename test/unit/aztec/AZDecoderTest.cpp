@@ -18,9 +18,8 @@
 #include "aztec/AZDecoder.h"
 #include "aztec/AZDetectorResult.h"
 #include "DecoderResult.h"
-#include "BitMatrix.h"
+#include "BitMatrixIO.h"
 #include "DecodeStatus.h"
-#include "BitMatrixUtility.h"
 
 #include <utility>
 
@@ -28,7 +27,7 @@ using namespace ZXing;
 
 TEST(AZDecoderTest, AztecResult)
 {
-	auto bits = Utility::ParseBitMatrix(
+	auto bits = ParseBitMatrix(
 		"X X X X X     X X X       X X X     X X X     \n"
 		"X X X     X X X     X X X X     X X X     X X \n"
 		"  X   X X       X   X   X X X X     X     X X \n"
@@ -66,7 +65,7 @@ TEST(AZDecoderTest, AztecResult)
 
 TEST(AZDecoderTest, DecodeTooManyErrors)
 {
-	auto bits = Utility::ParseBitMatrix(
+	auto bits = ParseBitMatrix(
 		"X X . X . . . X X . . . X . . X X X . X . X X X X X . \n"
 		"X X . . X X . . . . . X X . . . X X . . . X . X . . X \n"
 		"X . . . X X . . X X X . X X . X X X X . X X . . X . . \n"
@@ -102,7 +101,7 @@ TEST(AZDecoderTest, DecodeTooManyErrors)
 
 TEST(AZDecoderTest, DecodeTooManyErrors2)
 {
-	auto bits = Utility::ParseBitMatrix(
+	auto bits = ParseBitMatrix(
 		". X X . . X . X X . . . X . . X X X . . . X X . X X . \n"
 		"X X . X X . . X . . . X X . . . X X . X X X . X . X X \n"
 		". . . . X . . . X X X . X X . X X X X . X X . . X . . \n"

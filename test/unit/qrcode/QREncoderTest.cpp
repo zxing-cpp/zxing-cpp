@@ -20,8 +20,7 @@
 #include "qrcode/QREncodeResult.h"
 #include "CharacterSet.h"
 #include "TextDecoder.h"
-#include "BitMatrix.h"
-#include "BitMatrixUtility.h"
+#include "BitMatrixIO.h"
 #include "BitArray.h"
 #include "BitArrayUtility.h"
 
@@ -45,6 +44,7 @@ namespace ZXing {
 
 using namespace ZXing;
 using namespace ZXing::QRCode;
+using namespace ZXing::Utility;
 
 namespace {
 	std::wstring ShiftJISString(const std::vector<uint8_t>& bytes)
@@ -124,7 +124,7 @@ TEST(QREncoderTest, Encode)
 	ASSERT_NE(qrCode.version, nullptr);
 	EXPECT_EQ(qrCode.version->versionNumber(), 1);
 	EXPECT_EQ(qrCode.maskPattern, 4);
-	EXPECT_EQ(Utility::ToString(qrCode.matrix),
+	EXPECT_EQ(ToString(qrCode.matrix),
 		"X X X X X X X     X   X     X X X X X X X \n"
 		"X           X   X   X   X   X           X \n"
 		"X   X X X   X               X   X X X   X \n"
@@ -170,7 +170,7 @@ TEST(QREncoderTest, SimpleUTF8ECI)
 	ASSERT_NE(qrCode.version, nullptr);
 	EXPECT_EQ(qrCode.version->versionNumber(), 1);
 	EXPECT_EQ(qrCode.maskPattern, 6);
-	EXPECT_EQ(Utility::ToString(qrCode.matrix),
+	EXPECT_EQ(ToString(qrCode.matrix),
         "X X X X X X X       X X     X X X X X X X \n"
         "X           X       X X     X           X \n"
         "X   X X X   X   X     X X   X   X X X   X \n"
@@ -202,7 +202,7 @@ TEST(QREncoderTest, EncodeKanjiMode)
 	ASSERT_NE(qrCode.version, nullptr);
 	EXPECT_EQ(qrCode.version->versionNumber(), 1);
 	EXPECT_EQ(qrCode.maskPattern, 0);
-	EXPECT_EQ(Utility::ToString(qrCode.matrix),
+	EXPECT_EQ(ToString(qrCode.matrix),
 		"X X X X X X X     X   X     X X X X X X X \n"
 		"X           X   X X         X           X \n"
 		"X   X X X   X     X X X X   X   X X X   X \n"
@@ -234,7 +234,7 @@ TEST(QREncoderTest, EncodeShiftjisNumeric)
 	ASSERT_NE(qrCode.version, nullptr);
 	EXPECT_EQ(qrCode.version->versionNumber(), 1);
 	EXPECT_EQ(qrCode.maskPattern, 2);
-	EXPECT_EQ(Utility::ToString(qrCode.matrix),
+	EXPECT_EQ(ToString(qrCode.matrix),
 		"X X X X X X X     X X   X   X X X X X X X \n"
 		"X           X     X     X   X           X \n"
 		"X   X X X   X   X           X   X X X   X \n"
@@ -266,7 +266,7 @@ TEST(QREncoderTest, EncodeGS1)
 	ASSERT_NE(qrCode.version, nullptr);
 	EXPECT_EQ(qrCode.version->versionNumber(), 2);
 	EXPECT_EQ(qrCode.maskPattern, 4);
-	EXPECT_EQ(Utility::ToString(qrCode.matrix),
+	EXPECT_EQ(ToString(qrCode.matrix),
 		"X X X X X X X     X X X X   X   X   X X X X X X X \n"
 		"X           X   X X           X X   X           X \n"
 		"X   X X X   X           X X X   X   X   X X X   X \n"
@@ -302,7 +302,7 @@ TEST(QREncoderTest, EncodeGS1ModeHeaderWithECI)
 	ASSERT_NE(qrCode.version, nullptr);
 	EXPECT_EQ(qrCode.version->versionNumber(), 1);
 	EXPECT_EQ(qrCode.maskPattern, 5);
-	EXPECT_EQ(Utility::ToString(qrCode.matrix),
+	EXPECT_EQ(ToString(qrCode.matrix),
 		"X X X X X X X   X   X X     X X X X X X X \n"
 		"X           X     X X       X           X \n"
 		"X   X X X   X   X X X       X   X X X   X \n"
@@ -330,7 +330,7 @@ TEST(QREncoderTest, AppendModeInfo)
 {
 	BitArray bits;
 	AppendModeInfo(CodecMode::NUMERIC, bits);
-	EXPECT_EQ(Utility::ToString(bits), "...X");
+	EXPECT_EQ(ToString(bits), "...X");
 }
 
 TEST(QREncoderTest, AppendLengthInfo)
@@ -340,28 +340,28 @@ TEST(QREncoderTest, AppendLengthInfo)
 		*Version::VersionForNumber(1),
 		CodecMode::NUMERIC,
 		bits);
-	EXPECT_EQ(Utility::ToString(bits), RemoveSpace("........ .X"));  // 10 bits.
+	EXPECT_EQ(ToString(bits), RemoveSpace("........ .X"));  // 10 bits.
     
 	bits = BitArray();
     AppendLengthInfo(2,  // 2 letters (2/1).
 		*Version::VersionForNumber(10),
 		CodecMode::ALPHANUMERIC,
         bits);
-	EXPECT_EQ(Utility::ToString(bits), RemoveSpace("........ .X."));  // 11 bits.
+	EXPECT_EQ(ToString(bits), RemoveSpace("........ .X."));  // 11 bits.
     
 	bits = BitArray();
     AppendLengthInfo(255,  // 255 letter (255/1).
 		*Version::VersionForNumber(27),
 		CodecMode::BYTE,
         bits);
-	EXPECT_EQ(Utility::ToString(bits), RemoveSpace("........ XXXXXXXX"));  // 16 bits.
+	EXPECT_EQ(ToString(bits), RemoveSpace("........ XXXXXXXX"));  // 16 bits.
     
 	bits = BitArray();
     AppendLengthInfo(512,  // 512 letters (1024/2).
 		*Version::VersionForNumber(40),
 		CodecMode::KANJI,
         bits);
-	EXPECT_EQ(Utility::ToString(bits), RemoveSpace("..X..... ...."));  // 12 bits.
+	EXPECT_EQ(ToString(bits), RemoveSpace("..X..... ...."));  // 12 bits.
 }
 
 TEST(QREncoderTest, AppendNumericBytes)
@@ -369,27 +369,27 @@ TEST(QREncoderTest, AppendNumericBytes)
 	// 1 = 01 = 0001 in 4 bits.
 	BitArray bits;
 	AppendNumericBytes(L"1", bits);
-	EXPECT_EQ(Utility::ToString(bits), RemoveSpace("...X"));
+	EXPECT_EQ(ToString(bits), RemoveSpace("...X"));
 
 	// 12 = 0xc = 0001100 in 7 bits.
 	bits = BitArray();
 	AppendNumericBytes(L"12", bits);
-	EXPECT_EQ(Utility::ToString(bits), RemoveSpace("...XX.."));
+	EXPECT_EQ(ToString(bits), RemoveSpace("...XX.."));
 
 	// 123 = 0x7b = 0001111011 in 10 bits.
 	bits = BitArray();
 	AppendNumericBytes(L"123", bits);
-	EXPECT_EQ(Utility::ToString(bits), RemoveSpace("...XXXX. XX"));
+	EXPECT_EQ(ToString(bits), RemoveSpace("...XXXX. XX"));
 
 	// 1234 = "123" + "4" = 0001111011 + 0100
 	bits = BitArray();
 	AppendNumericBytes(L"1234", bits);
-	EXPECT_EQ(Utility::ToString(bits), RemoveSpace("...XXXX. XX.X.."));
+	EXPECT_EQ(ToString(bits), RemoveSpace("...XXXX. XX.X.."));
 
 	// Empty.
 	bits = BitArray();
 	AppendNumericBytes(L"", bits);
-	EXPECT_EQ(Utility::ToString(bits), RemoveSpace(""));
+	EXPECT_EQ(ToString(bits), RemoveSpace(""));
 }
 
 TEST(QREncoderTest, AppendAlphanumericBytes)
@@ -397,22 +397,22 @@ TEST(QREncoderTest, AppendAlphanumericBytes)
 	// A = 10 = 0xa = 001010 in 6 bits
 	BitArray bits;
 	AppendAlphanumericBytes(L"A", bits);
-	EXPECT_EQ(Utility::ToString(bits), RemoveSpace("..X.X."));
+	EXPECT_EQ(ToString(bits), RemoveSpace("..X.X."));
 
 	// AB = 10 * 45 + 11 = 461 = 0x1cd = 00111001101 in 11 bits
 	bits = BitArray();
 	AppendAlphanumericBytes(L"AB", bits);
-	EXPECT_EQ(Utility::ToString(bits), RemoveSpace("..XXX..X X.X"));
+	EXPECT_EQ(ToString(bits), RemoveSpace("..XXX..X X.X"));
 
 	// ABC = "AB" + "C" = 00111001101 + 001100
 	bits = BitArray();
 	AppendAlphanumericBytes(L"ABC", bits);
-	EXPECT_EQ(Utility::ToString(bits), RemoveSpace("..XXX..X X.X..XX. ."));
+	EXPECT_EQ(ToString(bits), RemoveSpace("..XXX..X X.X..XX. ."));
 
 	// Empty.
 	bits = BitArray();
 	AppendAlphanumericBytes(L"", bits);
-	EXPECT_EQ(Utility::ToString(bits), RemoveSpace(""));
+	EXPECT_EQ(ToString(bits), RemoveSpace(""));
 
 	// Invalid data.
 	EXPECT_THROW(AppendAlphanumericBytes(L"abc", bits), std::invalid_argument);
@@ -423,12 +423,12 @@ TEST(QREncoderTest, Append8BitBytes)
 	// 0x61, 0x62, 0x63
 	BitArray bits;
 	Append8BitBytes(L"abc", CharacterSet::Unknown, bits);
-	EXPECT_EQ(Utility::ToString(bits), RemoveSpace(".XX....X .XX...X. .XX...XX"));
+	EXPECT_EQ(ToString(bits), RemoveSpace(".XX....X .XX...X. .XX...XX"));
 	
 	// Empty.
 	bits = BitArray();
 	Append8BitBytes(L"", CharacterSet::Unknown, bits);
-	EXPECT_EQ(Utility::ToString(bits), RemoveSpace(""));
+	EXPECT_EQ(ToString(bits), RemoveSpace(""));
 }
 
 // Numbers are from page 21 of JISX0510:2004
@@ -436,10 +436,10 @@ TEST(QREncoderTest, AppendKanjiBytes)
 {
 	BitArray bits;
 	AppendKanjiBytes(ShiftJISString({ 0x93, 0x5f }), bits);
-	EXPECT_EQ(Utility::ToString(bits), RemoveSpace(".XX.XX.. XXXXX"));
+	EXPECT_EQ(ToString(bits), RemoveSpace(".XX.XX.. XXXXX"));
 	
 	AppendKanjiBytes(ShiftJISString({ 0xe4, 0xaa }), bits);
-	EXPECT_EQ(Utility::ToString(bits), RemoveSpace(".XX.XX.. XXXXXXX. X.X.X.X. X."));
+	EXPECT_EQ(ToString(bits), RemoveSpace(".XX.XX.. XXXXXXX. X.X.X.X. X."));
 }
 
 TEST(QREncoderTest, AppendBytes)
@@ -448,13 +448,13 @@ TEST(QREncoderTest, AppendBytes)
     // 1 = 01 = 0001 in 4 bits.
     BitArray bits;
     AppendBytes(L"1", CodecMode::NUMERIC, CharacterSet::Unknown, bits);
-	EXPECT_EQ(Utility::ToString(bits), RemoveSpace("...X"));
+	EXPECT_EQ(ToString(bits), RemoveSpace("...X"));
 
 	// Should use appendAlphanumericBytes.
     // A = 10 = 0xa = 001010 in 6 bits
 	bits = BitArray();
     AppendBytes(L"A", CodecMode::ALPHANUMERIC, CharacterSet::Unknown, bits);
-	EXPECT_EQ(Utility::ToString(bits), RemoveSpace("..X.X."));
+	EXPECT_EQ(ToString(bits), RemoveSpace("..X.X."));
     
 	// Lower letters such as 'a' cannot be encoded in MODE_ALPHANUMERIC.
 	bits = BitArray();
@@ -464,7 +464,7 @@ TEST(QREncoderTest, AppendBytes)
     // 0x61, 0x62, 0x63
     bits = BitArray();
     AppendBytes(L"abc", CodecMode::BYTE, CharacterSet::Unknown, bits);
-	EXPECT_EQ(Utility::ToString(bits), RemoveSpace(".XX....X .XX...X. .XX...XX"));
+	EXPECT_EQ(ToString(bits), RemoveSpace(".XX....X .XX...X. .XX...XX"));
     
 	// Anything can be encoded in QRCode.MODE_8BIT_BYTE.
     AppendBytes(L"\0", CodecMode::BYTE, CharacterSet::Unknown, bits);
@@ -473,42 +473,42 @@ TEST(QREncoderTest, AppendBytes)
     // 0x93, 0x5f
     bits = BitArray();
     AppendBytes(ShiftJISString({ 0x93, 0x5f }), CodecMode::KANJI, CharacterSet::Unknown, bits);
-	EXPECT_EQ(Utility::ToString(bits), RemoveSpace(".XX.XX.. XXXXX"));
+	EXPECT_EQ(ToString(bits), RemoveSpace(".XX.XX.. XXXXX"));
 }
 
 TEST(QREncoderTest, TerminateBits)
 {
     BitArray v;
     TerminateBits(0, v);
-	EXPECT_EQ(Utility::ToString(v), RemoveSpace(""));
+	EXPECT_EQ(ToString(v), RemoveSpace(""));
     
 	v = BitArray();
     TerminateBits(1, v);
-	EXPECT_EQ(Utility::ToString(v), RemoveSpace("........"));
+	EXPECT_EQ(ToString(v), RemoveSpace("........"));
     
 	v = BitArray();
     v.appendBits(0, 3);  // Append 000
     TerminateBits(1, v);
-	EXPECT_EQ(Utility::ToString(v), RemoveSpace("........"));
+	EXPECT_EQ(ToString(v), RemoveSpace("........"));
     
 	v = BitArray();
     v.appendBits(0, 5);  // Append 00000
     TerminateBits(1, v);
-	EXPECT_EQ(Utility::ToString(v), RemoveSpace("........"));
+	EXPECT_EQ(ToString(v), RemoveSpace("........"));
     
 	v = BitArray();
     v.appendBits(0, 8);  // Append 00000000
     TerminateBits(1, v);
-	EXPECT_EQ(Utility::ToString(v), RemoveSpace("........"));
+	EXPECT_EQ(ToString(v), RemoveSpace("........"));
     
 	v = BitArray();
     TerminateBits(2, v);
-	EXPECT_EQ(Utility::ToString(v), RemoveSpace("........ XXX.XX.."));
+	EXPECT_EQ(ToString(v), RemoveSpace("........ XXX.XX.."));
     
 	v = BitArray();
     v.appendBits(0, 1);  // Append 0
     TerminateBits(3, v);
-	EXPECT_EQ(Utility::ToString(v), RemoveSpace("........ XXX.XX.. ...X...X"));
+	EXPECT_EQ(ToString(v), RemoveSpace("........ XXX.XX.. ...X...X"));
 }
 
 TEST(QREncoderTest, GetNumDataBytesAndNumECBytesForBlockID)

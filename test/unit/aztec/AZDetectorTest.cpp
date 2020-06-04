@@ -17,8 +17,7 @@
 #include "gtest/gtest.h"
 #include "aztec/AZDetector.h"
 #include "aztec/AZDetectorResult.h"
-#include "BitMatrix.h"
-#include "BitMatrixUtility.h"
+#include "BitMatrixIO.h"
 #include "PseudoRandom.h"
 
 #include <vector>
@@ -105,7 +104,7 @@ TEST(AZDetectorTest, ErrorInParameterLocatorZeroZero)
 {
 	// Layers=1, CodeWords=1.  So the parameter info and its Reed-Solomon info
 	// will be completely zero!
-	TestErrorInParameterLocator("X", 1, true, Utility::ParseBitMatrix(
+	TestErrorInParameterLocator("X", 1, true, ParseBitMatrix(
 		"    X X X X X X X   X X X X X \n"
 		"X X X X   X     X X         X \n"
 		"    X X                 X   X \n"
@@ -127,7 +126,7 @@ TEST(AZDetectorTest, ErrorInParameterLocatorZeroZero)
 
 TEST(AZDetectorTest, ErrorInParameterLocatorCompact)
 {
-	TestErrorInParameterLocator("This is an example Aztec symbol for Wikipedia.", 3, true, Utility::ParseBitMatrix(
+	TestErrorInParameterLocator("This is an example Aztec symbol for Wikipedia.", 3, true, ParseBitMatrix(
 		"X     X X       X     X X     X     X         \n"
 		"X         X     X X     X   X X   X X       X \n"
 		"X X   X X X X X   X X X                 X     \n"
@@ -158,7 +157,7 @@ TEST(AZDetectorTest, ErrorInParameterLocatorCompact)
 TEST(AZDetectorTest, ErrorInParameterLocatorNotCompact)
 {
 	std::string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYabcdefghijklmnopqrstuvwxyz";
-	TestErrorInParameterLocator(alphabet + alphabet + alphabet, 6, false, Utility::ParseBitMatrix(
+	TestErrorInParameterLocator(alphabet + alphabet + alphabet, 6, false, ParseBitMatrix(
 		"    X   X     X     X     X   X X X X   X   X   X     X X     X X       X X X X   \n"
 		"  X         X   X         X X X X X   X   X X X   X   X X X X X   X X X       X   \n"
 		"    X   X       X X X X X   X X X X   X X   X X X X X   X X X     X   X X X   X   \n"

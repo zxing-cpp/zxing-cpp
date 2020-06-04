@@ -17,8 +17,7 @@
 #include "gtest/gtest.h"
 #include "qrcode/QRWriter.h"
 #include "qrcode/QRErrorCorrectionLevel.h"
-#include "BitMatrix.h"
-#include "BitMatrixUtility.h"
+#include "BitMatrixIO.h"
 
 using namespace ZXing;
 using namespace ZXing::QRCode;
@@ -29,7 +28,7 @@ namespace {
 		Writer writer;
 		writer.setErrorCorrectionLevel(ecLevel);
 		auto matrix = writer.encode(contents, resolution, resolution);
-		auto actual = Utility::ToString(matrix, 'X', ' ', true);
+		auto actual = ToString(matrix, 'X', ' ', true);
 		EXPECT_EQ(matrix.width(), resolution);
 		EXPECT_EQ(matrix.height(), resolution);
 		EXPECT_EQ(actual, expected);

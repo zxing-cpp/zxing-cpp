@@ -27,8 +27,6 @@ add_subdirectory (${CMAKE_CURRENT_BINARY_DIR}/googletest-src ${CMAKE_CURRENT_BIN
 add_executable (UnitTest
     BitArrayUtility.h
     BitArrayUtility.cpp
-    BitMatrixUtility.h
-    BitMatrixUtility.cpp
     PseudoRandom.h
     BitHacksTest.cpp
     ReedSolomonTest.cpp

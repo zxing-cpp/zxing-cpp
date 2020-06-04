@@ -18,8 +18,7 @@
 #include "datamatrix/DMDecoder.h"
 #include "datamatrix/DMSymbolShape.h"
 #include "DecoderResult.h"
-#include "BitMatrix.h"
-#include "BitMatrixUtility.h"
+#include "BitMatrixIO.h"
 
 #include <algorithm>
 #ifndef NDEBUG
@@ -51,14 +50,14 @@ namespace {
 		DecoderResult res = DataMatrix::Decoder::Decode(matrix);
 #ifndef NDEBUG
 		if (!res.isValid() || data != res.text())
-			Utility::WriteBitMatrixAsPBM(matrix, std::ofstream("failed-datamatrix.pbm"), 4);
+			SaveAsPBM(matrix, "failed-datamatrix.pbm", 4);
 #endif
 		ASSERT_EQ(res.isValid(), true) << "text size: " << data.size() << ", code size: " << matrix.height() << "x"
 									   << matrix.width() << ", shape: " << static_cast<int>(shape) << "\n"
-									   << (matrix.width() < 80 ? Utility::ToString(matrix) : std::string());
+									   << (matrix.width() < 80 ? ToString(matrix) : std::string());
 		EXPECT_EQ(data, res.text()) << "text size: " << data.size() << ", code size: " << matrix.height() << "x"
 									<< matrix.width() << ", shape: " << static_cast<int>(shape) << "\n"
-									<< (matrix.width() < 80 ? Utility::ToString(matrix) : std::string());
+									<< (matrix.width() < 80 ? ToString(matrix) : std::string());
 	}
 }
 

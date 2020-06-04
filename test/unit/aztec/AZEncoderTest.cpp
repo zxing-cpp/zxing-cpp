@@ -16,9 +16,8 @@
 */
 #include "gtest/gtest.h"
 #include "aztec/AZEncoder.h"
-#include "BitMatrix.h"
+#include "BitMatrixIO.h"
 #include "BitArray.h"
-#include "BitMatrixUtility.h"
 #include "BitArrayUtility.h"
 
 #include <algorithm>
@@ -95,7 +94,7 @@ TEST(AZEncoderTest, Encode1)
 {
 	TestEncode(
 		"This is an example Aztec symbol for Wikipedia.",
-		true, 3, Utility::ParseBitMatrix(
+		true, 3, ParseBitMatrix(
 			"X     X X       X     X X     X     X         \n"
 			"X         X     X X     X   X X   X X       X \n"
 			"X X   X X X X X   X X X                 X     \n"
@@ -129,7 +128,7 @@ TEST(AZEncoderTest, Encode2)
 		"Aztec Code is a public domain 2D matrix barcode symbology"
 		" of nominally square symbols built on a square grid with a "
 		"distinctive square bullseye pattern at their center.",
-		false, 6, Utility::ParseBitMatrix(
+		false, 6, ParseBitMatrix(
 			"        X X     X X     X     X     X   X X X         X   X         X   X X       \n"
 			"  X       X X     X   X X   X X       X             X     X   X X   X           X \n"
 			"  X   X X X     X   X   X X     X X X   X   X X               X X       X X     X \n"

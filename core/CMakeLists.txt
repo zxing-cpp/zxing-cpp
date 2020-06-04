@@ -39,6 +39,8 @@ set (COMMON_FILES
     src/BitHacks.h
     src/BitMatrix.h
     src/BitMatrix.cpp
+    src/BitMatrixIO.h
+    src/BitMatrixIO.cpp
     src/ByteArray.h
     src/ByteMatrix.h
     src/CharacterSet.h

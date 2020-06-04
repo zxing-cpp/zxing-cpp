@@ -28,6 +28,7 @@
 
 #ifdef PRINT_DEBUG
 #include "Matrix.h"
+#include "BitMatrixIO.h"
 #include <cstdint>
 using LogBuffer = ZXing::Matrix<uint8_t>;
 static LogBuffer _log;
@@ -910,15 +911,6 @@ static void dumpDebugPPM(const BitMatrix& image, const char* fn )
 		}
 	fclose(f);
 }
-
-static void printBitMatrix(const BitMatrix& matrix)
-{
-	for (int y = 0; y < matrix.height(); ++y) {
-		for (int x = 0; x < matrix.width(); ++x)
-			printf("%c ", matrix.get(x, y) ? '+' : '.');
-		printf("\n");
-	}
-}
 #endif
 
 static BitMatrix SampleGrid(const BitMatrix& image, PointF tl, PointF bl, PointF br, PointF tr, int dimensionX,
@@ -1092,7 +1084,7 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 
 #ifdef PRINT_DEBUG
 			printf("modules top: %d, right: %d\n", dimT, dimR);
-			printBitMatrix(bits);
+			printf("%s", ToString(bits).c_str());
 
 			for (RegressionLine* l : {&lineL, &lineB, &lineT, &lineR})
 				log(l->points());

@@ -16,8 +16,7 @@
 */
 #include "gtest/gtest.h"
 #include "BitArray.h"
-#include "BitMatrix.h"
-#include "BitMatrixUtility.h"
+#include "BitMatrixIO.h"
 #include "oned/ODCodabarWriter.h"
 #include "oned/ODCodabarReader.h"
 #include "DecodeHints.h"
@@ -31,7 +30,7 @@ using namespace ZXing::OneD;
 namespace {
 	std::string Encode(const std::wstring& input)
 	{
-		auto result = Utility::ToString(CodabarWriter().encode(input, 0, 0), '1', '0', false);
+		auto result = ToString(CodabarWriter().encode(input, 0, 0), '1', '0', false);
 		return result.substr(0, result.size() - 1);	// remove the \n at the end
 	}
 }

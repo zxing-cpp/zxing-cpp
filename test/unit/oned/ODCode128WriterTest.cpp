@@ -15,8 +15,7 @@
 * limitations under the License.
 */
 #include "gtest/gtest.h"
-#include "BitMatrix.h"
-#include "BitMatrixUtility.h"
+#include "BitMatrixIO.h"
 #include "oned/ODCode128Writer.h"
 #include "oned/ODCode128Reader.h"
 #include "DecodeHints.h"
@@ -41,7 +40,7 @@ static const std::string LF = "10000110010";
 
 static std::string LineMatrixToString(const BitMatrix& matrix)
 {
-	auto result = Utility::ToString(matrix, '1', '0', false);
+	auto result = ToString(matrix, '1', '0', false);
 	return result.substr(0, result.size() - 1);
 }
 

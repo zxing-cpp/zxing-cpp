@@ -14,25 +14,12 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#include "BitMatrixUtility.h"
-#include "BitMatrix.h"
+#include "BitMatrixIO.h"
 #include "BitArray.h"
 
-#include <iostream>
+#include <fstream>
 
-namespace ZXing { namespace Utility {
-
-void WriteBitMatrixAsPBM(const BitMatrix& matrix, std::ostream& out, int quiteZone)
-{
-	auto paddedMatrix = Inflate(matrix.copy(), 0, 0, quiteZone);
-	out << "P1\n" << paddedMatrix.width() << ' ' << paddedMatrix.height() << '\n';
-	out << ToString(paddedMatrix, '1', '0', true);
-}
-
-std::string ToString(const BitMatrix& matrix)
-{
-	return ToString(matrix, 'X', ' ', true);
-}
+namespace ZXing {
 
 std::string ToString(const BitMatrix& matrix, char one, char zero, bool addSpace, bool printAsCString)
 {
@@ -55,11 +42,6 @@ std::string ToString(const BitMatrix& matrix, char one, char zero, bool addSpace
 	return result;
 }
 
-BitMatrix ParseBitMatrix(const std::string& str)
-{
-	return ParseBitMatrix(str, 'X', false);
-}
-
 BitMatrix ParseBitMatrix(const std::string& str, char one, bool expectSpace)
 {
 	auto lineLength = str.find('\n');
@@ -80,4 +62,12 @@ BitMatrix ParseBitMatrix(const std::string& str, char one, bool expectSpace)
 	return mat;
 }
 
-}} // ZXing::Utility
+void SaveAsPBM(const BitMatrix& matrix, const std::string filename, int quiteZone)
+{
+	auto out = Inflate(matrix.copy(), 0, 0, quiteZone);
+	std::ofstream file(filename);
+	file << "P1\n" << out.width() << ' ' << out.height() << '\n';
+	file << ToString(out, '1', '0', true);
+}
+
+} // ZXing

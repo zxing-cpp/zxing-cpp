@@ -16,8 +16,7 @@
 */
 #include "gtest/gtest.h"
 #include "pdf417/PDFWriter.h"
-#include "BitMatrix.h"
-#include "BitMatrixUtility.h"
+#include "BitMatrixIO.h"
 
 using namespace ZXing;
 using namespace ZXing::Pdf417;
@@ -28,7 +27,7 @@ TEST(PDF417WriterTest, DataMatrixImageWriter)
 	writer.setMargin(0);
     int size = 64;
     BitMatrix matrix = writer.encode(L"Hello Google", size, size);
-	auto actual = Utility::ToString(matrix, 'X', ' ', true);
+	auto actual = ToString(matrix, 'X', ' ', true);
 	EXPECT_EQ(actual,
         "X X X X X X X X   X   X   X       X X X X   X   X   X X X X         X X   X   X           X X         X X X X   X X     X     X X X     X X   X           X       X X     X X X X X   X   X   X X X X X     X X X X X X X   X       X   X     X \n"
         "X X X X X X X X   X   X   X       X X X X   X   X   X X X X         X X   X   X           X X         X X X X   X X     X     X X X     X X   X           X       X X     X X X X X   X   X   X X X X X     X X X X X X X   X       X   X     X \n"

@@ -15,8 +15,7 @@
 * limitations under the License.
 */
 #include "gtest/gtest.h"
-#include "BitMatrix.h"
-#include "BitMatrixUtility.h"
+#include "BitMatrixIO.h"
 #include "datamatrix/DMWriter.h"
 #include "datamatrix/DMSymbolShape.h"
 
@@ -59,7 +58,7 @@ static void DoTest(const std::wstring& text, SymbolShape shape, const char* expe
 	Writer writer;
 	writer.setMargin(0).setShapeHint(shape);
 	auto matrix = writer.encode(text, 0, 0);
-	auto actual = Utility::ToString(matrix, 'X', ' ', true);
+	auto actual = ToString(matrix, 'X', ' ', true);
 	EXPECT_EQ(expected, actual);
 }
 
