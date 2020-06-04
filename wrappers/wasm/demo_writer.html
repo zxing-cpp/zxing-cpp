@@ -1,0 +1,167 @@
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>ZXing in Javascript demo</title>
+	<script src="zxing_writer.js"></script>
+	<script src="base64ArrayBuffer.js"></script>
+	<script>
+var zxing = ZXing().then(function(instance) {
+	zxing = instance; // this line is supposedly not required but with current emsdk it is :-/
+});
+
+function generateBarcode() {
+	var text = document.getElementById("input_text").value;
+	var format = document.getElementById("input_format").value;
+	var charset = document.getElementById("input_charset").value;
+	var margin = parseInt(document.getElementById("input_margin").value);
+	var width = parseInt(document.getElementById("input_width").value);
+	var height = parseInt(document.getElementById("input_height").value);
+	var eccLevel = parseInt(document.getElementById("input_ecclevel").value);
+
+	var container = document.getElementById("write_result")
+	var result = zxing.generateBarcode(text, format, charset, margin, width, height, eccLevel);
+	if (result.image) {
+		showImage(container, result.image);
+	} else {
+		container.innerHTML = '<font color="red">Error: ' + result.error + '</font>';
+		container.style.width = '300px';
+	}
+	result.delete();
+}
+
+function showImage(container, fileData) {
+	container.innerHTML = '';
+	var img = document.createElement("img");
+	img.addEventListener('load', function() {
+		container.style.width = img.width + 'px';
+		container.style.height = img.height + 'px';
+	});
+	img.src = "data:image/png;base64," + base64ArrayBuffer(fileData);
+	container.appendChild(img);
+}
+	</script>
+	<style>
+#input_text {
+	width: 240px;
+}
+
+select,
+input {
+	margin: 3px 0px;
+	width: 120px;
+}
+
+tr td:first-child {
+	text-align: right;
+}
+
+div {
+	float: left;
+	margin: 0.5em;
+}
+	</style>
+</head>
+
+<body>
+	<h3>Generate barcodes</h3>
+	<p>
+		This is a simple demo of WebAssembly build (using Emcripten) of <a href="https://github.com/nu-book/zxing-cpp">zxing-cpp</a>
+	</p>
+	<p></p>
+	<div>
+		Enter your text here:<br />
+		<textarea id="input_text"></textarea>
+		<br />
+		<table>
+			<tr>
+				<td>Format:</td>
+				<td>
+					<select id="input_format">
+						<option value="AZTEC">AZTEC</option>
+						<option value="CODABAR">CODABAR</option>
+						<option value="CODE_39">CODE_39</option>
+						<option value="CODE_93">CODE_93</option>
+						<option value="CODE_128">CODE_128</option>
+						<option value="DATA_MATRIX">DATA_MATRIX</option>
+						<option value="EAN_8">EAN_8</option>
+						<option value="EAN_13">EAN_13</option>
+						<option value="ITF">ITF</option>
+						<option value="PDF_417">PDF_417</option>
+						<option value="QR_CODE" selected="">QR_CODE</option>
+						<option value="UPC_A">UPC_A</option>
+						<option value="UPC_E">UPC_E</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td>Encoding:</td>
+				<td>
+					<select id="input_charset">
+						<option value="Cp437">Cp437</option>
+						<option value="ISO-8859-1">ISO-8859-1</option>
+						<option value="ISO-8859-2">ISO-8859-2</option>
+						<option value="ISO-8859-3">ISO-8859-3</option>
+						<option value="ISO-8859-4">ISO-8859-4</option>
+						<option value="ISO-8859-5">ISO-8859-5</option>
+						<option value="ISO-8859-6">ISO-8859-6</option>
+						<option value="ISO-8859-7">ISO-8859-7</option>
+						<option value="ISO-8859-8">ISO-8859-8</option>
+						<option value="ISO-8859-9">ISO-8859-9</option>
+						<option value="ISO-8859-10">ISO-8859-10</option>
+						<option value="ISO-8859-11">ISO-8859-11</option>
+						<option value="ISO-8859-13">ISO-8859-13</option>
+						<option value="ISO-8859-14">ISO-8859-14</option>
+						<option value="ISO-8859-15">ISO-8859-15</option>
+						<option value="ISO-8859-16">ISO-8859-16</option>
+						<option value="Shift_JIS">Shift_JIS</option>
+						<option value="windows-1250">windows-1250</option>
+						<option value="windows-1251">windows-1251</option>
+						<option value="windows-1252">windows-1252</option>
+						<option value="windows-1256">windows-1256</option>
+						<option value="UTF-16BE">UTF-16BE</option>
+						<option value="UTF-8" selected="">UTF-8</option>
+						<option value="ASCII">ASCII</option>
+						<option value="Big5">Big5</option>
+						<option value="GB2312">GB2312</option>
+						<option value="GB18030">GB18030</option>
+						<option value="EUC-CN">EUC-CN</option>
+						<option value="GBK">GBK</option>
+						<option value="EUC-KR">EUC-KR</option>
+					</select>
+				</td>
+			</tr>
+			<td>ECC Level:</td>
+			<td>
+				<select id="input_ecclevel">
+					<option value="-1">Default</option>
+					<option value="0">0</option>
+					<option value="1">1</option>
+					<option value="2">2</option>
+					<option value="3">3</option>
+					<option value="4">4</option>
+					<option value="5">5</option>
+					<option value="6">6</option>
+					<option value="7">7</option>
+					<option value="8">8</option>
+				</select>
+			</td>
+			</tr>
+			<td>Quiet Zone:</td>
+			<td><input id="input_margin" type="number" value="10" /></td>
+			</tr>
+			<td>Image Width:</td>
+			<td><input id="input_width" type="number" value="200" /></td>
+			</tr>
+			<td>Image Height:</td>
+			<td><input id="input_height" type="number" value="200" /></td>
+			</tr>
+		</table>
+		<br />
+		<input type="button" value="Generate" onclick="generateBarcode()" />
+	</div>
+	<div id="write_result"></div>
+</body>
+
+</html>

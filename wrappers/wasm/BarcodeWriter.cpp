@@ -21,7 +21,7 @@
 
 #include <string>
 #include <memory>
-#include <stdexcept>
+#include <exception>
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
 
@@ -31,29 +31,28 @@
 class ImageData
 {
 public:
-	unsigned char* const buffer;
+	uint8_t* const buffer;
 	const int length;
 
-	ImageData(unsigned char* buf, int len) : buffer(buf), length(len) {}
+	ImageData(uint8_t* buf, int len) : buffer(buf), length(len) {}
 	~ImageData() { STBIW_FREE(buffer); }
 };
 
 class WriteResult
 {
-	std::shared_ptr<ImageData> _pixmapBuffer;
+	std::shared_ptr<ImageData> _image;
 	std::string _error;
 
 public:
-	WriteResult(const std::shared_ptr<ImageData>& pixmap) : _pixmapBuffer(pixmap) {}
-	WriteResult(const std::string& error) : _error(error) {}
+	WriteResult(const std::shared_ptr<ImageData>& image) : _image(image) {}
+	WriteResult(std::string error) : _error(std::move(error)) {}
 
-	std::string error() const {
-		return _error;
-	}
+	std::string error() const { return _error; }
 
-	emscripten::val pixmapBytes() const {
-		if (_pixmapBuffer != nullptr)
-			return emscripten::val(emscripten::typed_memory_view(_pixmapBuffer->length, _pixmapBuffer->buffer));
+	emscripten::val image() const
+	{
+		if (_image != nullptr)
+			return emscripten::val(emscripten::typed_memory_view(_image->length, _image->buffer));
 		else
 			return emscripten::val::null();
 	}
@@ -65,45 +64,31 @@ WriteResult generateBarcode(std::wstring text, std::string format, std::string e
 	try {
 		auto barcodeFormat = BarcodeFormatFromString(format);
 		if (barcodeFormat == BarcodeFormat::FORMAT_COUNT)
-			throw std::invalid_argument("Unsupported format: " + format);
+			return {"Unsupported format: " + format};
 
 		MultiFormatWriter writer(barcodeFormat);
 		if (margin >= 0)
 			writer.setMargin(margin);
 
 		CharacterSet charset = CharacterSetECI::CharsetFromName(encoding.c_str());
-		if (charset != CharacterSet::Unknown) {
+		if (charset != CharacterSet::Unknown)
 			writer.setEncoding(charset);
-		}
 
-		if (eccLevel >= 0 && eccLevel <= 8) {
+		if (eccLevel >= 0 && eccLevel <= 8)
 			writer.setEccLevel(eccLevel);
-		}
 
-		auto matrix = writer.encode(text, width, height);
-
-		std::vector<unsigned char> buffer(matrix.width() * matrix.height(), '\0');
-		unsigned char black = 0;
-		unsigned char white = 255;
-		for (int y = 0; y < matrix.height(); ++y) {
-			for (int x = 0; x < matrix.width(); ++x) {
-				buffer[y * matrix.width() + x] = matrix.get(x, y) ? black : white;
-			}
-		}
+		auto buffer = ToMatrix<uint8_t>(writer.encode(text, width, height));
 
 		int len;
-		unsigned char *bytes = stbi_write_png_to_mem(buffer.data(), 0, matrix.width(), matrix.height(), 1, &len);
-		if (bytes == nullptr) {
-			return WriteResult(std::string("Unknown error"));
-		}
+		uint8_t* bytes = stbi_write_png_to_mem(buffer.data(), 0, buffer.width(), buffer.height(), 1, &len);
+		if (bytes == nullptr)
+			return {"Unknown error"};
 
-		return WriteResult(std::make_shared<ImageData>(bytes, len));
-	}
-	catch (const std::exception& e) {
-		return WriteResult(std::string(e.what()));
-	}
-	catch (...) {
-		return WriteResult(std::string("Unknown error"));
+		return {std::make_shared<ImageData>(bytes, len)};
+	} catch (const std::exception& e) {
+		return {e.what()};
+	} catch (...) {
+		return {"Unknown error"};
 	}
 }
 
@@ -112,7 +97,7 @@ EMSCRIPTEN_BINDINGS(BarcodeWriter)
 	using namespace emscripten;
 
 	class_<WriteResult>("WriteResult")
-	    .property("pixmap", &WriteResult::pixmapBytes)
+	    .property("image", &WriteResult::image)
 	    .property("error", &WriteResult::error)
 	    ;
 

@@ -69,21 +69,11 @@ except for specific usecases, you won't notice the difference!
 
 ### For web browser (WebAssembly)
 1. [Install Emscripten](https://kripken.github.io/emscripten-site/docs/getting_started/) if not done already.
-2. In a empty build folder, invoke `cmake` from `emconfigure` create Makefile, using [`wrappers/wasm/Toolchain-Emscripten.cmake`](wrappers/wasm/Toolchain-Emscripten.cmake) as toolchain file. For example:
-```
-EMSCRIPTEN_PATH=<path to your Emscripten installation, e.g. ~/emsdk/emscripten/tag-1.38.21>
-SOURCE_BASEDIR=<zxing-cpp-dir/wrappers/wasm>
-emconfigure cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$SOURCE_BASEDIR/Toolchain-Emscripten.cmake" -DEMSCRIPTEN_ROOT_PATH="$EMSCRIPTEN_PATH" "$SOURCE_BASEDIR"
-```
-3. Invoke emmake to create `zxing.js` and `zxing.wasm`
-```
-emmake make
-```
-4. Copy these two files to your web folder and create HTML page that includes `zxing.js`.
+2. In an empty build folder, invoke `emcmake cmake <path to zxing-cpp.git/wrappers/wasm>`.
+3. Invoke `cmake --bulid .` to create `zxing.js` and `zxing.wasm` (and `_reader`/`_writer` versions).
+4. Copy these two files to your web folder and create an HTML page that includes `zxing.js`.
 
-See usage example of exported functions from [demos](https://nu-book.github.io/zxing-cpp/).
-
-By default, both encoder and decoder are included. If you don't plan to use either of them, you can disable it to reduce generated code size. To do so, in the line `emconfigure cmake ...` above, pass `-DENABLE_ENCODERS=0` to disable encoders or `-DENABLE_DECODERS=0` to disable decoders.
+For usage examples see [reader](wrappers/wasm/demo_reader.html) and [writer](wrappers/wasm/demo_writer.html) demos or the [live demos](https://nu-book.github.io/zxing-cpp/).
 
 ### For other platforms
 Wrappers are provided as convenient way to work with native image format. You still can use the library without a wrapper.

@@ -1,0 +1,163 @@
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>ZXing in Javascript demo</title>
+	<script src="zxing_reader.js"></script>
+	<script src="base64ArrayBuffer.js"></script>
+	<script>
+var zxing = ZXing().then(function(instance) {
+	zxing = instance; // this line is supposedly not required but with current emsdk it is :-/
+});
+
+function scanBarcode(file) {
+	var reader = new FileReader();
+	reader.onloadend = function(evt) {
+		var format = document.getElementById("scan_format").value;
+		var fileData = new Uint8Array(evt.target.result);
+		showImage(document.getElementById("drop_zone"), fileData, file.type);
+
+		var buffer = zxing._malloc(fileData.length);
+		zxing.HEAPU8.set(fileData, buffer);
+		var result = zxing.readBarcode(buffer, fileData.length, true, format);
+		zxing._free(buffer);
+
+		showScanResult(result);
+	}
+	reader.readAsArrayBuffer(file);
+}
+
+function showImage(container, fileData, fileType) {
+	fileType = fileType || "image/jpeg";
+	container.innerHTML = "";
+	var img = document.createElement("img");
+	img.addEventListener('load', function() {
+		container.style.width = img.width + 'px';
+		container.style.height = img.height + 'px';
+	});
+	img.src = "data:" + fileType + ";base64," + base64ArrayBuffer(fileData);
+	container.appendChild(img);
+}
+
+function showScanResult(result) {
+	if (result.error) {
+		document.getElementById("scan_result").innerHTML = '<font color="red">Error: ' + result.error + '</font>';
+	} else if (result.format) {
+		document.getElementById("scan_result").innerHTML = "Format: <strong>" + result.format + "</strong><pre>" + result.text + "</pre>";
+	} else {
+		document.getElementById("scan_result").innerHTML = "No " + (document.getElementById("scan_format").value || "barcode") + " found";
+	}
+}
+
+function dragOverHandler(ev) {
+	ev.preventDefault();
+}
+
+function dropHandler(ev) {
+	ev.preventDefault();
+
+	if (ev.dataTransfer.items) {
+		for (var i = 0; i < ev.dataTransfer.items.length; i++) {
+			if (ev.dataTransfer.items[i].kind === 'file') {
+				var file = ev.dataTransfer.items[i].getAsFile();
+				scanBarcode(file);
+				break;
+			}
+		}
+	} else {
+		// Use DataTransfer interface to access the file(s)
+		for (var i = 0; i < ev.dataTransfer.files.length; i++) {
+			scanBarcode(file);
+			break;
+		}
+	}
+
+	// Pass event to removeDragData for cleanup
+	removeDragData(ev)
+}
+
+function removeDragData(ev) {
+	if (ev.dataTransfer.items) {
+		ev.dataTransfer.items.clear();
+	} else {
+		ev.dataTransfer.clearData();
+	}
+}
+
+function fileSelected(input) {
+	scanBarcode(input.files[0]);
+}
+
+function clearScanImage() {
+	document.getElementById("drop_zone").innerHTML = "Drag your image here...";
+}
+	</script>
+	<style>
+#drop_zone {
+	border: 1px solid blue;
+	width: 220px;
+	height: 150px;
+	line-height: 150px;
+	text-align: center;
+}
+
+#input_text {
+	width: 220px;
+}
+
+select {
+	margin: 3px 0px;
+	width: 120px;
+}
+
+input {
+	margin: 3px 0px;
+}
+
+tr td:first-child {
+	text-align: right;
+}
+
+body>div {
+	float: left;
+	margin: 0.5em;
+}
+	</style>
+</head>
+
+<body>
+	<h3>Read barcodes</h3>
+	<p>
+		This is a simple demo of WebAssembly build (using Emcripten) of <a href="https://github.com/nu-book/zxing-cpp">zxing-cpp</a>
+	</p>
+	<p></p>
+	<div>
+		Scan Format:
+		<select id="scan_format" onchange="clearScanImage()">
+			<option value="" selected="">Any</option>
+			<option value="AZTEC">AZTEC</option>
+			<option value="CODABAR">CODABAR</option>
+			<option value="CODE_39">CODE_39</option>
+			<option value="CODE_93">CODE_93</option>
+			<option value="CODE_128">CODE_128</option>
+			<option value="DATA_MATRIX">DATA_MATRIX</option>
+			<option value="EAN_8">EAN_8</option>
+			<option value="EAN_13">EAN_13</option>
+			<option value="ITF">ITF</option>
+			<option value="PDF_417">PDF_417</option>
+			<option value="QR_CODE">QR_CODE</option>
+			<option value="UPC_A">UPC_A</option>
+			<option value="UPC_E">UPC_E</option>
+		</select>
+		<br />
+		<div id="drop_zone" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);">
+			Drag your image here...
+		</div>
+		Or <input type="file" accept="image/png, image/jpeg" onchange="fileSelected(this)" />
+		<br />
+		<div id="scan_result"></div>
+	</div>
+</body>
+
+</html>
