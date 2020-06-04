@@ -1,7 +1,6 @@
 #pragma once
 /*
-* Copyright 2016 Huy Cuong Nguyen
-* Copyright 2016 ZXing authors
+* Copyright 2020 Axel Waggershauser
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -16,24 +15,25 @@
 * limitations under the License.
 */
 
-#include "TritMatrix.h"
+#include "Matrix.h"
+
+#include <cstdint>
 
 namespace ZXing {
 
-class BitArray;
-
-namespace QRCode {
-
-enum class ErrorCorrectionLevel;
-class Version;
-
-class MatrixUtil
+/**
+ * @brief Represent a tri-state value false/true/empty
+ */
+class Trit
 {
 public:
-	static const int NUM_MASK_PATTERNS = 8;
-
-	static void BuildMatrix(const BitArray& dataBits, ErrorCorrectionLevel ecLevel, const Version& version, int maskPattern, TritMatrix& matrix);
+	enum value_t : uint8_t {false_v, true_v, empty_v} value = empty_v;
+	Trit() = default;
+	Trit(bool v) : value(static_cast<value_t>(v)) {}
+	operator bool() const { return value == true_v; }
+	bool isEmpty() const { return value == empty_v; }
 };
 
-} // QRCode
+using TritMatrix = Matrix<Trit>;
+
 } // ZXing

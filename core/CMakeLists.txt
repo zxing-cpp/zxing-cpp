@@ -40,6 +40,7 @@ set (COMMON_FILES
     src/BitMatrix.h
     src/BitMatrix.cpp
     src/ByteArray.h
+    src/ByteMatrix.h
     src/CharacterSet.h
     src/CharacterSetECI.h
     src/CharacterSetECI.cpp
@@ -48,8 +49,10 @@ set (COMMON_FILES
     src/GenericGF.cpp
     src/GenericGFPoly.h
     src/GenericGFPoly.cpp
+    src/Matrix.h
     src/TextUtfEncoding.h
     src/TextUtfEncoding.cpp
+    src/TritMatrix.h
     src/ZXBigInteger.h
     src/ZXBigInteger.cpp
     src/ZXConfig.h

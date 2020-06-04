@@ -16,7 +16,6 @@
 */
 
 #include "QRMaskUtil.h"
-#include "ByteMatrix.h"
 
 #include <algorithm>
 #include <array>
@@ -25,6 +24,7 @@
 
 namespace ZXing {
 namespace QRCode {
+namespace MaskUtil {
 
 // Penalty weights from section 6.8.2.1
 static const int N1 = 3;
@@ -36,7 +36,7 @@ static const int N4 = 10;
 * Helper function for applyMaskPenaltyRule1. We need this for doing this calculation in both
 * vertical and horizontal orders respectively.
 */
-static int ApplyMaskPenaltyRule1Internal(const ByteMatrix& matrix, bool isHorizontal) {
+static int ApplyMaskPenaltyRule1Internal(const TritMatrix& matrix, bool isHorizontal) {
 	int penalty = 0;
 	int width = matrix.width();
 	int height = matrix.height();
@@ -70,7 +70,7 @@ static int ApplyMaskPenaltyRule1Internal(const ByteMatrix& matrix, bool isHorizo
 * Apply mask penalty rule 1 and return the penalty. Find repetitive cells with the same color and
 * give penalty to them. Example: 00000 or 11111.
 */
-int MaskUtil::ApplyMaskPenaltyRule1(const ByteMatrix& matrix)
+static int ApplyMaskPenaltyRule1(const TritMatrix& matrix)
 {
 	return ApplyMaskPenaltyRule1Internal(matrix, true) + ApplyMaskPenaltyRule1Internal(matrix, false);
 }
@@ -80,7 +80,7 @@ int MaskUtil::ApplyMaskPenaltyRule1(const ByteMatrix& matrix)
 * penalty to them. This is actually equivalent to the spec's rule, which is to find MxN blocks and give a
 * penalty proportional to (M-1)x(N-1), because this is the number of 2x2 blocks inside such a block.
 */
-int MaskUtil::ApplyMaskPenaltyRule2(const ByteMatrix& matrix)
+static int ApplyMaskPenaltyRule2(const TritMatrix& matrix)
 {
 	int penalty = 0;
 	int width = matrix.width();
@@ -97,7 +97,7 @@ int MaskUtil::ApplyMaskPenaltyRule2(const ByteMatrix& matrix)
 }
 
 template<size_t N>
-static bool HasPatternAt(const std::array<int8_t, N>& pattern, const int8_t* begin, int count, int stride) {
+static bool HasPatternAt(const std::array<bool, N>& pattern, const Trit* begin, int count, int stride) {
 	assert(std::abs(count) <= (int)N);
 	auto end = begin + count * stride;
 	if (count < 0)
@@ -114,10 +114,10 @@ static bool HasPatternAt(const std::array<int8_t, N>& pattern, const int8_t* beg
 * starting with black, or 4:1:1:3:1:1 starting with white, and give penalty to them.  If we
 * find patterns like 000010111010000, we give penalty once.
 */
-int MaskUtil::ApplyMaskPenaltyRule3(const ByteMatrix& matrix)
+static int ApplyMaskPenaltyRule3(const TritMatrix& matrix)
 {
-	const std::array<int8_t, 4> white = {0, 0, 0, 0};
-	const std::array<int8_t, 7> finder = {1, 0, 1, 1, 1, 0, 1};
+	const std::array<bool, 4> white = {0, 0, 0, 0};
+	const std::array<bool, 7> finder = {1, 0, 1, 1, 1, 0, 1};
 	const int whiteSize = (int)white.size();
 	const int finderSize = (int)finder.size();
 
@@ -146,7 +146,7 @@ int MaskUtil::ApplyMaskPenaltyRule3(const ByteMatrix& matrix)
 * Apply mask penalty rule 4 and return the penalty. Calculate the ratio of dark cells and give
 * penalty if the ratio is far from 50%. It gives 10 penalty for 5% distance.
 */
-int MaskUtil::ApplyMaskPenaltyRule4(const ByteMatrix& matrix)
+static int ApplyMaskPenaltyRule4(const TritMatrix& matrix)
 {
 	auto numDarkCells = std::count_if(matrix.begin(), matrix.end(), [](int8_t cell){ return cell == 1; });
 	auto numTotalCells = matrix.size();
@@ -154,5 +154,16 @@ int MaskUtil::ApplyMaskPenaltyRule4(const ByteMatrix& matrix)
 	return static_cast<int>(fivePercentVariances * N4);
 }
 
+// The mask penalty calculation is complicated.  See Table 21 of JISX0510:2004 (p.45) for details.
+// Basically it applies four rules and summate all penalties.
+int CalculateMaskPenalty(const TritMatrix& matrix)
+{
+	return MaskUtil::ApplyMaskPenaltyRule1(matrix)
+		   + MaskUtil::ApplyMaskPenaltyRule2(matrix)
+		   + MaskUtil::ApplyMaskPenaltyRule3(matrix)
+		   + MaskUtil::ApplyMaskPenaltyRule4(matrix);
+}
+
+} // MaskUtil
 } // QRCode
 } // ZXing

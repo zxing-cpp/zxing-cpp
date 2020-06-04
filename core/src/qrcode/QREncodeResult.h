@@ -16,7 +16,7 @@
 * limitations under the License.
 */
 #include "ByteArray.h"
-#include "ByteMatrix.h"
+#include "BitMatrix.h"
 #include "QRCodecMode.h"
 #include "QRVersion.h"
 
@@ -37,7 +37,7 @@ public:
 	CodecMode::Mode mode = CodecMode::TERMINATOR;
 	const Version* version = nullptr;
 	int maskPattern = -1;
-	ByteMatrix matrix;
+	BitMatrix matrix;
 };
 
 } // QRCode

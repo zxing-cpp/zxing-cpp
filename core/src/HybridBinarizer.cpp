@@ -19,6 +19,7 @@
 #include "LuminanceSource.h"
 #include "ByteArray.h"
 #include "BitMatrix.h"
+#include "Matrix.h"
 #include "ZXNumeric.h"
 
 #include <cassert>
@@ -37,26 +38,6 @@ static const int BLOCK_SIZE = 1 << BLOCK_SIZE_POWER; // ...0100...00
 static const int BLOCK_SIZE_MASK = BLOCK_SIZE - 1;   // ...0011...11
 static const int MINIMUM_DIMENSION = BLOCK_SIZE * 5;
 static const int MIN_DYNAMIC_RANGE = 24;
-
-template <typename T>
-class Matrix : std::vector<T>
-{
-	int _width, _height;
-
-public:
-	Matrix(int width, int height) : std::vector<T>(width*height), _width(width), _height(height) {}
-
-	T& operator()(int x, int y)
-	{
-		assert(x < _width && y < _height);
-		return std::vector<T>::operator[](y* _width + x);
-	}
-	const T& operator()(int x, int y) const
-	{
-		assert(x < _width && y < _height);
-		return std::vector<T>::operator[](y* _width + x);
-	}
-};
 
 struct HybridBinarizer::DataCache
 {

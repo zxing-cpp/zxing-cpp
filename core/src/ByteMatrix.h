@@ -15,72 +15,20 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#include <vector>
+#include "Matrix.h"
+
 #include <cstdint>
-#include <cstring>
 
 namespace ZXing {
 
-class ByteMatrix
+// TODO: If kept at all, this should be replaced by `using ByteMatrix = Matrix<uint8_t>;` to be consistent with ByteArray
+// This non-template class is kept for now to stay source-compatible with oder versions of the library.
+
+struct ByteMatrix : public Matrix<int8_t>
 {
-	int _width = 0;
-	int _height = 0;
-	std::vector<int8_t> _data;
-
-	// Nothing wrong to support it, just to make it explicit, instead of by mistake.
-	// Use copy() below.
-	ByteMatrix(const ByteMatrix &) = default;
-	ByteMatrix& operator=(const ByteMatrix &) = delete;
-
-public:
-	ByteMatrix() = default;
-	ByteMatrix(int width, int height, int8_t val = 0) : _width(width), _height(height), _data(_width * _height, val) { }
-
+	ByteMatrix(int width, int height, int8_t val = 0) : Matrix<int8_t>(width, height, val) {}
 	ByteMatrix(ByteMatrix&&) = default;
 	ByteMatrix& operator=(ByteMatrix&&) = default;
-
-	ByteMatrix copy() const {
-		return *this;
-	}
-
-	int height() const {
-		return _height;
-	}
-
-	int width() const {
-		return _width;
-	}
-
-	int size() const {
-		return static_cast<int>(_data.size());
-	}
-
-	const int8_t& get(int x, int y) const {
-		return _data[y *_width + x];
-	}
-
-	void set(int x, int y, int8_t value) {
-		_data[y *_width + x] = value;
-	}
-
-	/**
-	* @return an internal representation as bytes, in row-major order. array[y * width() + x] represents point (x,y)
-	*/
-	const int8_t* data() const {
-		return _data.data();
-	}
-
-	const int8_t* begin() const {
-		return _data.data();
-	}
-
-	const int8_t* end() const {
-		return _data.data() + _width * _height;
-	}
-
-	void clear(int8_t value) {
-		memset(_data.data(), value, _data.size());
-	}
 };
 
 } // ZXing

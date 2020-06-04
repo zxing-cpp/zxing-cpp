@@ -49,17 +49,6 @@ static const std::array<int, 16*6> ALPHANUMERIC_TABLE = {
 	25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, -1, -1, -1, -1, -1,  // 0x50-0x5f
 };
 
-// The mask penalty calculation is complicated.  See Table 21 of JISX0510:2004 (p.45) for details.
-// Basically it applies four rules and summate all penalties.
-static int CalculateMaskPenalty(const ByteMatrix& matrix)
-{
-	return MaskUtil::ApplyMaskPenaltyRule1(matrix)
-		+ MaskUtil::ApplyMaskPenaltyRule2(matrix)
-		+ MaskUtil::ApplyMaskPenaltyRule3(matrix)
-		+ MaskUtil::ApplyMaskPenaltyRule4(matrix);
-}
-
-
 static bool IsOnlyDoubleByteKanji(const std::wstring& content)
 {
 	std::string bytes = TextEncoder::FromUnicode(content, CharacterSet::Shift_JIS);
@@ -467,14 +456,14 @@ BitArray InterleaveWithECBytes(const BitArray& bits, int numTotalBytes, int numD
 }
 
 
-static int ChooseMaskPattern(const BitArray& bits, ErrorCorrectionLevel ecLevel, const Version& version, ByteMatrix& matrix)
+static int ChooseMaskPattern(const BitArray& bits, ErrorCorrectionLevel ecLevel, const Version& version, TritMatrix& matrix)
 {
 	int minPenalty = std::numeric_limits<int>::max();  // Lower penalty is better.
 	int bestMaskPattern = -1;
 	// We try all mask patterns to choose the best one.
 	for (int maskPattern = 0; maskPattern < MatrixUtil::NUM_MASK_PATTERNS; maskPattern++) {
 		MatrixUtil::BuildMatrix(bits, ecLevel, version, maskPattern, matrix);
-		int penalty = CalculateMaskPenalty(matrix);
+		int penalty = MaskUtil::CalculateMaskPenalty(matrix);
 		if (penalty < minPenalty) {
 			minPenalty = penalty;
 			bestMaskPattern = maskPattern;
@@ -582,11 +571,13 @@ Encoder::Encode(const std::wstring& content, ErrorCorrectionLevel ecLevel, Chara
 
 	//  Choose the mask pattern and set to "qrCode".
 	int dimension = version->dimensionForVersion();
-	output.matrix = ByteMatrix(dimension, dimension);
-	output.maskPattern = maskPattern != -1 ? maskPattern : ChooseMaskPattern(finalBits, ecLevel, *version, output.matrix);
+	TritMatrix matrix(dimension, dimension);
+	output.maskPattern = maskPattern != -1 ? maskPattern : ChooseMaskPattern(finalBits, ecLevel, *version, matrix);
 
 	// Build the matrix and set it to "qrCode".
-	MatrixUtil::BuildMatrix(finalBits, ecLevel, *version, output.maskPattern, output.matrix);
+	MatrixUtil::BuildMatrix(finalBits, ecLevel, *version, output.maskPattern, matrix);
+
+	output.matrix = ToBitMatrix(matrix);
 
 	return output;
 }

@@ -17,8 +17,6 @@
 #include "BitMatrixUtility.h"
 #include "BitMatrix.h"
 #include "BitArray.h"
-#include "ByteMatrixUtility.h"
-#include "ByteMatrix.h"
 
 #include <iostream>
 
@@ -26,13 +24,9 @@ namespace ZXing { namespace Utility {
 
 void WriteBitMatrixAsPBM(const BitMatrix& matrix, std::ostream& out, int quiteZone)
 {
-	ByteMatrix bytes(matrix.width() + 2 * quiteZone, matrix.height() + 2 * quiteZone, 0);
-	for (int y = 0; y < matrix.height(); ++y)
-		for (int x = 0; x < matrix.width(); ++x)
-			bytes.set(x + quiteZone, y + quiteZone, matrix.get(x, y));
-
-	out << "P1\n" << bytes.width() << ' ' << bytes.height() << '\n';
-	out << ToString(bytes);
+	auto paddedMatrix = Inflate(matrix.copy(), 0, 0, quiteZone);
+	out << "P1\n" << paddedMatrix.width() << ' ' << paddedMatrix.height() << '\n';
+	out << ToString(paddedMatrix, '1', '0', true);
 }
 
 std::string ToString(const BitMatrix& matrix)

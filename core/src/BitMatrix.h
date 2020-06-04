@@ -21,6 +21,7 @@
 #include <utility>
 #include <vector>
 
+#include "Matrix.h"
 #include "ZXConfig.h"
 
 namespace ZXing {
@@ -68,8 +69,6 @@ public:
 
 	explicit BitMatrix(int dimension) : BitMatrix(dimension, dimension) {} // Construct a square matrix.
 
-	BitMatrix(const ByteMatrix& other, int blackValue);
-
 	BitMatrix(BitMatrix&& other) noexcept : _width(other._width), _height(other._height), _rowSize(other._rowSize), _bits(std::move(other._bits)) {}
 
 	BitMatrix& operator=(BitMatrix&& other) noexcept {
@@ -84,6 +83,7 @@ public:
 		return *this;
 	}
 
+	[[deprecated]]
 	ByteMatrix toByteMatrix(int black = 0, int white = 255) const;
 
 	/**
@@ -273,5 +273,26 @@ BitMatrix Inflate(BitMatrix&& input, int width, int height, int quietZone);
  * @return deflated input
  */
 BitMatrix Deflate(const BitMatrix& matrix, int width, int height, int top, int left, int subSampling);
+
+template<typename T>
+BitMatrix ToBitMatrix(const Matrix<T>& in, T trueValue = {true})
+{
+	BitMatrix out(in.width(), in.height());
+	for (int y = 0; y < in.height(); ++y)
+		for (int x = 0; x < in.width(); ++x)
+			if (in.get(x, y) == trueValue)
+				out.set(x, y);
+	return out;
+}
+
+template<typename T>
+Matrix<T> ToMatrix(const BitMatrix& in, T black = 0, T white = ~0)
+{
+	Matrix<T> res(in.width(), in.height());
+	for (int y = 0; y < in.height(); ++y)
+		for (int x = 0; x < in.width(); ++x)
+			res.set(x, y, in.get(x, y) ? black : white);
+	return res;
+}
 
 } // ZXing

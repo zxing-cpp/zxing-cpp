@@ -186,7 +186,7 @@ int main(int argc, char* argv[])
 		if (eccLevel >= 0)
 			writer.setEccLevel(eccLevel);
 
-		auto bitmap = writer.encode(TextUtfEncoding::FromUtf8(text), width, height).toByteMatrix();
+		auto bitmap = ToMatrix<uint8_t>(writer.encode(TextUtfEncoding::FromUtf8(text), width, height));
 
 		auto ext = GetExtension(filePath);
 		int success = 0;

@@ -23,6 +23,7 @@
 #include "CharacterSet.h"
 
 #include <stdexcept>
+#include <utility>
 
 namespace ZXing {
 namespace QRCode {
@@ -51,7 +52,7 @@ Writer::encode(const std::wstring& contents, int width, int height) const
 	}
 
 	EncodeResult code = Encoder::Encode(contents, _ecLevel, _encoding, _version, _useGs1Format, _maskPattern);
-	return Inflate(BitMatrix(code.matrix, 1), width, height, _margin);
+	return Inflate(std::move(code.matrix), width, height, _margin);
 }
 
 } // QRCode

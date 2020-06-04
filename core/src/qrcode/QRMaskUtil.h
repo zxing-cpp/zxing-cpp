@@ -16,20 +16,12 @@
 * limitations under the License.
 */
 
+#include "TritMatrix.h"
+
 namespace ZXing {
-
-class ByteMatrix;
-
 namespace QRCode {
-
-class MaskUtil
-{
-public:
-	static int ApplyMaskPenaltyRule1(const ByteMatrix& matrix);
-	static int ApplyMaskPenaltyRule2(const ByteMatrix& matrix);
-	static int ApplyMaskPenaltyRule3(const ByteMatrix& matrix);
-	static int ApplyMaskPenaltyRule4(const ByteMatrix& matrix);
-};
-
+namespace MaskUtil {
+	int CalculateMaskPenalty(const TritMatrix& matrix);
+}
 } // QRCode
 } // ZXing

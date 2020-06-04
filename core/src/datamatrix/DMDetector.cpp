@@ -27,7 +27,10 @@
 #include "WhiteRectDetector.h"
 
 #ifdef PRINT_DEBUG
-#include "ByteMatrix.h"
+#include "Matrix.h"
+#include <cstdint>
+using LogBuffer = ZXing::Matrix<uint8_t>;
+static LogBuffer _log;
 #endif
 
 #include <algorithm>
@@ -723,11 +726,10 @@ class EdgeTracer
 
 public:
 #ifdef PRINT_DEBUG
-	static ByteMatrix _log;
 	void log(const PointI& p) const
 	{
 		if (_log.height() != image.height() || _log.width() != image.width())
-			_log = ByteMatrix(image.width(), image.height());
+			_log = LogBuffer(image.width(), image.height());
 		if (isIn(p))
 			_log.set(p.x, p.y, 1);
 	}
@@ -879,12 +881,10 @@ public:
 
 #ifdef PRINT_DEBUG
 
-ByteMatrix EdgeTracer::_log;
-
 static void log(const std::vector<PointI>& points, int color = 2)
 {
 	for (auto p : points)
-		EdgeTracer::_log.set(p.x, p.y, color);
+		_log.set(p.x, p.y, color);
 }
 
 static void dumpDebugPPM(const BitMatrix& image, const char* fn )
@@ -899,7 +899,7 @@ static void dumpDebugPPM(const BitMatrix& image, const char* fn )
 		for (int x = 0; x < image.width(); ++x) {
 			unsigned char r, g, b;
 			r = g = b = image.get(x, y) ? 0 : 255;
-			switch (EdgeTracer::_log.get(x, y)) {
+			switch (_log.get(x, y)) {
 			case 1: r = g = b = r ? 230 : 50; break;
 			case 2: r = b = 50, g = 220; break;
 			case 3: g = r = 100, b = 250; break;

@@ -19,7 +19,6 @@
 #include "QRErrorCorrectionLevel.h"
 #include "QRVersion.h"
 #include "BitArray.h"
-#include "ByteMatrix.h"
 #include "BitHacks.h"
 #include "ZXStrConvWorkaround.h"
 
@@ -118,23 +117,7 @@ static const int VERSION_INFO_POLY = 0x1f25;  // 1 1111 0010 0101
 static const int TYPE_INFO_POLY = 0x537;
 static const int TYPE_INFO_MASK_PATTERN = 0x5412;
 
-// Set all cells to -1.  -1 means that the cell is empty (not set yet).
-// The other two used values are 0 and 1 for white and black.
-//
-// JAVAPORT: We shouldn't need to do this at all. The code should be rewritten to begin encoding
-// with the ByteMatrix initialized all to zero.
-// EDIT: this is partly done. Ony one remaining check for IsEmpty left.
-static void makeEmpty(ByteMatrix& matrix)
-{
-	matrix.clear(-1);
-}
-
-// Check if "value" is empty.
-static inline bool IsEmpty(int8_t value) {
-	return value == -1;
-}
-
-static void EmbedTimingPatterns(ByteMatrix& matrix)
+static void EmbedTimingPatterns(TritMatrix& matrix)
 {
 	// -8 is for skipping position detection patterns (size 7), and two horizontal/vertical
 	// separation patterns (size 1). Thus, 8 = 7 + 1.
@@ -151,7 +134,7 @@ static void EmbedTimingPatterns(ByteMatrix& matrix)
 // Note that we cannot unify the function with embedPositionDetectionPattern() despite they are
 // almost identical, since we cannot write a function that takes 2D arrays in different sizes in
 // C/C++. We should live with the fact.
-static void EmbedPositionAdjustmentPattern(int xStart, int yStart, ByteMatrix& matrix)
+static void EmbedPositionAdjustmentPattern(int xStart, int yStart, TritMatrix& matrix)
 {
 	for (int y = 0; y < 5; ++y) {
 		for (int x = 0; x < 5; ++x) {
@@ -161,7 +144,7 @@ static void EmbedPositionAdjustmentPattern(int xStart, int yStart, ByteMatrix& m
 }
 
 // Embed position adjustment patterns if need be.
-static void MaybeEmbedPositionAdjustmentPatterns(const Version& version, ByteMatrix& matrix)
+static void MaybeEmbedPositionAdjustmentPatterns(const Version& version, TritMatrix& matrix)
 {
 	if (version.versionNumber() < 2) {  // The patterns appear if version >= 2
 		return;
@@ -185,7 +168,7 @@ static void MaybeEmbedPositionAdjustmentPatterns(const Version& version, ByteMat
 	}
 }
 
-static void EmbedPositionDetectionPattern(int xStart, int yStart, ByteMatrix& matrix)
+static void EmbedPositionDetectionPattern(int xStart, int yStart, TritMatrix& matrix)
 {
 	for (int y = 0; y < 7; ++y) {
 		for (int x = 0; x < 7; ++x) {
@@ -208,7 +191,7 @@ static void EmbedPositionDetectionPattern(int xStart, int yStart, ByteMatrix& ma
 }
 
 // Embed position detection patterns and surrounding vertical/horizontal separators.
-static void EmbedPositionDetectionPatternsAndSeparators(ByteMatrix& matrix)
+static void EmbedPositionDetectionPatternsAndSeparators(TritMatrix& matrix)
 {
 	// Embed three big squares at corners.
 	int pdpWidth = static_cast<int>(POSITION_DETECTION_PATTERN[0].size());
@@ -222,7 +205,7 @@ static void EmbedPositionDetectionPatternsAndSeparators(ByteMatrix& matrix)
 
 
 // Embed the lonely dark dot at left bottom corner. JISX0510:2004 (p.46)
-static void EmbedDarkDotAtLeftBottomCorner(ByteMatrix& matrix)
+static void EmbedDarkDotAtLeftBottomCorner(TritMatrix& matrix)
 {
 	matrix.set(8, matrix.height() - 8, 1);
 }
@@ -233,7 +216,7 @@ static void EmbedDarkDotAtLeftBottomCorner(ByteMatrix& matrix)
 // - Timing patterns
 // - Dark dot at the left bottom corner
 // - Position adjustment patterns, if need be
-static void EmbedBasicPatterns(const Version& version, ByteMatrix& matrix)
+static void EmbedBasicPatterns(const Version& version, TritMatrix& matrix)
 {
 	// Let's get started with embedding big squares at corners.
 	EmbedPositionDetectionPatternsAndSeparators(matrix);
@@ -320,7 +303,7 @@ static void MakeTypeInfoBits(ErrorCorrectionLevel ecLevel, int maskPattern, BitA
 }
 
 // Embed type information. On success, modify the matrix.
-static void EmbedTypeInfo(ErrorCorrectionLevel ecLevel, int maskPattern, ByteMatrix& matrix)
+static void EmbedTypeInfo(ErrorCorrectionLevel ecLevel, int maskPattern, TritMatrix& matrix)
 {
 	BitArray typeInfoBits;
 	MakeTypeInfoBits(ecLevel, maskPattern, typeInfoBits);
@@ -365,7 +348,7 @@ static void MakeVersionInfoBits(const Version& version, BitArray& bits)
 
 // Embed version information if need be. On success, modify the matrix and return true.
 // See 8.10 of JISX0510:2004 (p.47) for how to embed version information.
-static void MaybeEmbedVersionInfo(const Version& version, ByteMatrix& matrix)
+static void MaybeEmbedVersionInfo(const Version& version, TritMatrix& matrix)
 {
 	if (version.versionNumber() < 7) {  // Version info is necessary if version >= 7.
 		return;  // Don't need version info.
@@ -433,7 +416,7 @@ static bool GetDataMaskBit(int maskPattern, int x, int y)
 // Embed "dataBits" using "getMaskPattern". On success, modify the matrix and return true.
 // For debugging purposes, it skips masking process if "getMaskPattern" is -1.
 // See 8.7 of JISX0510:2004 (p.38) for how to embed data bits.
-static void EmbedDataBits(const BitArray& dataBits, int maskPattern, ByteMatrix& matrix)
+static void EmbedDataBits(const BitArray& dataBits, int maskPattern, TritMatrix& matrix)
 {
 	int bitIndex = 0;
 	int direction = -1;
@@ -448,7 +431,7 @@ static void EmbedDataBits(const BitArray& dataBits, int maskPattern, ByteMatrix&
 		while (y >= 0 && y < matrix.height()) {
 			for (int xx = x; xx > x - 2; --xx) {
 				// Skip the cell if it's not empty.
-				if (!IsEmpty(matrix.get(xx, y))) {
+				if (!matrix.get(xx, y).isEmpty()) {
 					continue;
 				}
 				// Padding bit. If there is no bit left, we'll fill the left cells with 0, as described
@@ -477,9 +460,9 @@ static void EmbedDataBits(const BitArray& dataBits, int maskPattern, ByteMatrix&
 // Build 2D matrix of QR Code from "dataBits" with "ecLevel", "version" and "getMaskPattern". On
 // success, store the result in "matrix" and return true.
 void
-MatrixUtil::BuildMatrix(const BitArray& dataBits, ErrorCorrectionLevel ecLevel, const Version& version, int maskPattern, ByteMatrix& matrix)
+MatrixUtil::BuildMatrix(const BitArray& dataBits, ErrorCorrectionLevel ecLevel, const Version& version, int maskPattern, TritMatrix& matrix)
 {
-	makeEmpty(matrix);
+	matrix.clear();
 	EmbedBasicPatterns(version, matrix);
 	// Type information appear with any version.
 	EmbedTypeInfo(ecLevel, maskPattern, matrix);

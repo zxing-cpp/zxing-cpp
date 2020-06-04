@@ -66,14 +66,6 @@ BitMatrix::setRow(int y, const BitArray& row)
 	std::copy(row._bits.begin(), row._bits.end(), _bits.begin() + y *_rowSize);
 }
 
-BitMatrix::BitMatrix(const ByteMatrix& other, int blackValue) : BitMatrix(other.width(), other.height())
-{
-	for (int y = 0; y < height(); ++y)
-		for (int x = 0; x < width(); ++x)
-			if (other.get(x, y) == blackValue)
-				set(x, y);
-}
-
 ByteMatrix BitMatrix::toByteMatrix(int black, int white) const
 {
 	ByteMatrix res(width(), height());

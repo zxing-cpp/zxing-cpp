@@ -29,8 +29,6 @@ add_executable (UnitTest
     BitArrayUtility.cpp
     BitMatrixUtility.h
     BitMatrixUtility.cpp
-    ByteMatrixUtility.h
-    ByteMatrixUtility.cpp
     PseudoRandom.h
     BitHacksTest.cpp
     ReedSolomonTest.cpp
