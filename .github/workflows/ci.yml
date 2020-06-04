@@ -54,3 +54,17 @@ jobs:
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest -V -C $BUILD_TYPE
 
+  build-wasm:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - uses: mymindstorm/setup-emsdk@v5
+
+    - name: Configure
+      run: emcmake cmake -Swrappers/wasm -Bbuild
+
+    - name: Build
+      run: cmake --build build -j4
+
+#    - name: Test
+#      run: node build/EmGlueTests.js
