@@ -83,11 +83,9 @@ static int ApplyMaskPenaltyRule1(const TritMatrix& matrix)
 static int ApplyMaskPenaltyRule2(const TritMatrix& matrix)
 {
 	int penalty = 0;
-	int width = matrix.width();
-	int height = matrix.height();
-	for (int y = 0; y < height - 1; y++) {
-		for (int x = 0; x < width - 1; x++) {
-			int value = matrix.get(x, y);
+	for (int y = 0; y < matrix.height() - 1; y++) {
+		for (int x = 0; x < matrix.width() - 1; x++) {
+			auto value = matrix.get(x, y);
 			if (value == matrix.get(x+1, y) && value == matrix.get(x, y+1) && value == matrix.get(x+1, y+1)) {
 				penalty++;
 			}

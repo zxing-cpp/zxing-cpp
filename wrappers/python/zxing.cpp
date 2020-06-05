@@ -24,8 +24,8 @@ Result decode(const Image& image, std::vector<BarcodeFormat> formats, bool fastM
 	hints.setTryRotate(tryRotate);
 	hints.setPossibleFormats(formats);
 	MultiFormatReader reader(hints);
-	const auto height = image.shape(0);
-	const auto width = image.shape(1);
+	const auto height = static_cast<int>(image.shape(0));
+	const auto width = static_cast<int>(image.shape(1));
 	const auto bytes = image.data();
 	std::shared_ptr<LuminanceSource> source;
 
