@@ -2,8 +2,8 @@ cmake_minimum_required (VERSION 3.10)
 
 project (ZXingCpp VERSION "1.0.8" LANGUAGES CXX)
 
-option (ENABLE_ENCODERS "Build with encoders" ON)
-option (ENABLE_DECODERS "Build with decoders" ON)
+option (BUILD_WRITERS "Build with writer support (encoders)" ON)
+option (BUILD_READERS "Build with reader support (decoders)" ON)
 option (BUILD_EXAMPLES "Build the example barcode reader/writer applicatons" ON)
 option (BUILD_BLACKBOX_TESTS "Build the black box reader/writer tests" ON)
 option (BUILD_UNIT_TESTS "Build the unit tests (don't enable for production builds)" OFF)
@@ -46,8 +46,8 @@ set (CMAKE_CXX_EXTENSIONS OFF)
 
 if (BUILD_UNIT_TESTS)
     add_definitions (-DZXING_BUILD_FOR_TEST)
-    set (ENABLE_ENCODERS ON)
-    set (ENABLE_DECODERS ON)
+    set (BUILD_WRITERS ON)
+    set (BUILD_READERS ON)
 endif()
 
 add_subdirectory (core)

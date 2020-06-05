@@ -1,6 +1,6 @@
 set (CMAKE_CXX_STANDARD 17)
 
-if (ENABLE_DECODERS)
+if (BUILD_READERS)
     add_executable (ReaderTest
         TestReaderMain.cpp
         ImageLoader.h
@@ -24,7 +24,7 @@ if (ENABLE_DECODERS)
     add_test(NAME ReaderTest COMMAND ReaderTest ${CMAKE_CURRENT_SOURCE_DIR}/../samples)
 endif()
 
-if (ENABLE_ENCODERS)
+if (BUILD_WRITERS)
     add_executable (WriterTest TestWriterMain.cpp)
 
     target_include_directories (WriterTest PRIVATE ../../thirdparty/stb)

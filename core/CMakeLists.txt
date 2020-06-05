@@ -1,11 +1,11 @@
 cmake_minimum_required (VERSION 3.10)
 
-if (NOT DEFINED ENABLE_ENCODERS)
-    set (ENABLE_ENCODERS OFF)
+if (NOT DEFINED BUILD_WRITERS)
+    set (BUILD_WRITERS OFF)
 endif()
 
-if (NOT DEFINED ENABLE_DECODERS)
-    set (ENABLE_DECODERS ON)
+if (NOT DEFINED BUILD_READERS)
+    set (BUILD_READERS ON)
 endif()
 
 set (ZXING_CORE_DEFINES)
@@ -64,7 +64,7 @@ set (COMMON_FILES
     src/ZXStrConvWorkaround.h
     src/ZXTestSupport.h
 )
-if (ENABLE_DECODERS)
+if (BUILD_READERS)
     set (COMMON_FILES ${COMMON_FILES}
         src/BinaryBitmap.h
         src/BitSource.h
@@ -106,7 +106,7 @@ if (ENABLE_DECODERS)
         src/WhiteRectDetector.cpp
     )
 endif()
-if (ENABLE_ENCODERS)
+if (BUILD_WRITERS)
     set (COMMON_FILES ${COMMON_FILES}
         src/ByteMatrix.h
         src/ReedSolomonEncoder.h
@@ -121,7 +121,7 @@ endif()
 
 set (AZTEC_FILES
 )
-if (ENABLE_DECODERS)
+if (BUILD_READERS)
     set (AZTEC_FILES ${AZTEC_FILES}
         src/aztec/AZDecoder.h
         src/aztec/AZDecoder.cpp
@@ -132,7 +132,7 @@ if (ENABLE_DECODERS)
         src/aztec/AZReader.cpp
     )
 endif()
-if (ENABLE_ENCODERS)
+if (BUILD_WRITERS)
     set (AZTEC_FILES ${AZTEC_FILES}
         src/aztec/AZEncodingState.h
         src/aztec/AZEncoder.h
@@ -149,7 +149,7 @@ endif()
 
 set (DATAMATRIX_FILES
 )
-if (ENABLE_DECODERS)
+if (BUILD_READERS)
     set (DATAMATRIX_FILES ${DATAMATRIX_FILES}
         src/datamatrix/DMBitMatrixParser.h
         src/datamatrix/DMBitMatrixParser.cpp
@@ -166,7 +166,7 @@ if (ENABLE_DECODERS)
         src/datamatrix/DMReader.cpp
     )
 endif()
-if (ENABLE_ENCODERS)
+if (BUILD_WRITERS)
     set (DATAMATRIX_FILES ${DATAMATRIX_FILES}
         src/datamatrix/DMECEncoder.h
         src/datamatrix/DMECEncoder.cpp
@@ -186,7 +186,7 @@ endif()
 
 set (MAXICODE_FILES
 )
-if (ENABLE_DECODERS)
+if (BUILD_READERS)
     set (MAXICODE_FILES ${MAXICODE_FILES}
         src/maxicode/MCBitMatrixParser.h
         src/maxicode/MCBitMatrixParser.cpp
@@ -204,7 +204,7 @@ set (ONED_FILES
     src/oned/ODCode128Patterns.h
     src/oned/ODCode128Patterns.cpp
 )
-if (ENABLE_DECODERS)
+if (BUILD_READERS)
     set (ONED_FILES ${ONED_FILES}
         src/oned/ODCodabarReader.h
         src/oned/ODCodabarReader.cpp
@@ -242,7 +242,7 @@ if (ENABLE_DECODERS)
         src/oned/ODUPCEReader.cpp
     )
 endif()
-if (ENABLE_ENCODERS)
+if (BUILD_WRITERS)
     set (ONED_FILES ${ONED_FILES}
         src/oned/ODCodabarWriter.h
         src/oned/ODCodabarWriter.cpp
@@ -270,7 +270,7 @@ endif()
 
 set (ONED_RSS_FILES
 )
-if (ENABLE_DECODERS)
+if (BUILD_READERS)
     set (ONED_RSS_FILES ${ONED_RSS_FILES}
         src/oned/rss/ODRSSDataCharacter.h
         src/oned/rss/ODRSSExpandedBinaryDecoder.h
@@ -291,7 +291,7 @@ endif()
 
 set (PDF417_FILES
 )
-if (ENABLE_DECODERS)
+if (BUILD_READERS)
     set (PDF417_FILES ${PDF417_FILES}
         src/pdf417/PDFBarcodeMetadata.h
         src/pdf417/PDFBarcodeValue.h
@@ -320,7 +320,7 @@ if (ENABLE_DECODERS)
         src/pdf417/PDFScanningDecoder.cpp
     )
 endif()
-if (ENABLE_ENCODERS)
+if (BUILD_WRITERS)
     set (PDF417_FILES ${PDF417_FILES}
         src/pdf417/PDFCompaction.h
         src/pdf417/PDFEncoder.h
@@ -341,7 +341,7 @@ set (QRCODE_FILES
     src/qrcode/QRVersion.h
     src/qrcode/QRVersion.cpp
 )
-if (ENABLE_DECODERS)
+if (BUILD_READERS)
     set (QRCODE_FILES ${QRCODE_FILES}
         src/qrcode/QRAlignmentPattern.h
         src/qrcode/QRAlignmentPattern.cpp
@@ -370,7 +370,7 @@ if (ENABLE_DECODERS)
         src/qrcode/QRReader.cpp
     )
 endif()
-if (ENABLE_ENCODERS)
+if (BUILD_WRITERS)
     set (QRCODE_FILES ${QRCODE_FILES}
         src/qrcode/QREncoder.h
         src/qrcode/QREncoder.cpp
@@ -391,7 +391,7 @@ set (TEXT_CODEC_FILES
     src/textcodec/KRHangulMapping.h
     src/textcodec/KRHangulMapping.cpp
 )
-if (ENABLE_DECODERS)
+if (BUILD_READERS)
     set (TEXT_CODEC_FILES ${TEXT_CODEC_FILES}
         src/textcodec/Big5TextDecoder.h
         src/textcodec/Big5TextDecoder.cpp
@@ -403,7 +403,7 @@ if (ENABLE_DECODERS)
         src/textcodec/KRTextDecoder.cpp
     )
 endif()
-if (ENABLE_ENCODERS)
+if (BUILD_WRITERS)
     set (TEXT_CODEC_FILES ${TEXT_CODEC_FILES}
         src/textcodec/Big5TextEncoder.h
         src/textcodec/Big5TextEncoder.cpp
