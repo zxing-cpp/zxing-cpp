@@ -25,6 +25,7 @@ add_subdirectory (${CMAKE_CURRENT_BINARY_DIR}/googletest-src ${CMAKE_CURRENT_BIN
 
 # Our executable
 add_executable (UnitTest
+    BarcodeFormatTest.cpp
     BitArrayUtility.h
     BitArrayUtility.cpp
     PseudoRandom.h

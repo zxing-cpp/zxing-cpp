@@ -101,7 +101,7 @@ private:
 	ByteArray _rawBytes;
 	int _numBits = 0;
 	std::vector<ResultPoint> _resultPoints;
-	BarcodeFormat _format = BarcodeFormat::FORMAT_COUNT;
+	BarcodeFormat _format = BarcodeFormat::INVALID;
 	ResultMetadata _metadata;
 };
 

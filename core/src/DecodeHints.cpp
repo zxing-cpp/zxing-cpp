@@ -21,10 +21,9 @@
 
 namespace ZXing {
 
-std::vector<BarcodeFormat>
-DecodeHints::possibleFormats() const
+BarcodeFormats DecodeHints::possibleFormats() const
 {
-	std::vector<BarcodeFormat> result;
+	BarcodeFormats result;
 	int formatCount = (int)BarcodeFormat::FORMAT_COUNT;
 	result.reserve(BitHacks::CountBitsSet(_flags & ~(0xffffffff << formatCount)));
 
@@ -36,7 +35,7 @@ DecodeHints::possibleFormats() const
 	return result;
 }
 
-DecodeHints& DecodeHints::setPossibleFormats(const std::vector<BarcodeFormat>& formats)
+DecodeHints& DecodeHints::setPossibleFormats(const BarcodeFormats& formats)
 {
 	_flags &= (0xffffffff << (int)BarcodeFormat::FORMAT_COUNT);
 	for (BarcodeFormat format : formats) {

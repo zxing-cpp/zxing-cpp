@@ -28,8 +28,8 @@ class DecodeHints
 {
 public:
 
-	std::vector<BarcodeFormat> possibleFormats() const;
-	DecodeHints& setPossibleFormats(const std::vector<BarcodeFormat>& formats);
+	BarcodeFormats possibleFormats() const;
+	DecodeHints& setPossibleFormats(const BarcodeFormats& formats);
 
 	bool hasFormat(BarcodeFormat f) const noexcept {
 		return getFlag((int)f);

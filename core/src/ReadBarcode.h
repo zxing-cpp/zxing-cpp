@@ -27,7 +27,7 @@ namespace ZXing {
  * Read barcode from a grayscale buffer
  *
  * <p>Use {@link #ReadBarcode(int width, int height, unsigned char* data, int rowStride,
-				   std::vector<BarcodeFormat> formats = {}, bool tryRotate = true, bool tryHarder = true) to read a bar code from a buffer.
+				   BarcodeFormats formats = {}, bool tryRotate = true, bool tryHarder = true) to read a bar code from a buffer.
  *
  * @param width image width
  * @param height image height
@@ -40,13 +40,13 @@ namespace ZXing {
  * @since             0.x
  */
 Result ReadBarcode(int width, int height, unsigned char* data, int rowStride,
-				   std::vector<BarcodeFormat> formats = {}, bool tryRotate = true, bool tryHarder = true);
+				   BarcodeFormats formats = {}, bool tryRotate = true, bool tryHarder = true);
 
 /**
  * Read barcode from a RGB buffer
  *
  * <p>Use {@link #ReadBarcode(int width, int height, unsigned char* data, int rowStride, int pixelStride, int rIndex, int gIndex, int bIndex,
-				   std::vector<BarcodeFormat> formats = {}, bool tryRotate = true, bool tryHarder = true) to read a bar code from a buffer.
+				   BarcodeFormats formats = {}, bool tryRotate = true, bool tryHarder = true) to read a bar code from a buffer.
  *
  * @param width image width
  * @param height image height
@@ -63,7 +63,7 @@ Result ReadBarcode(int width, int height, unsigned char* data, int rowStride,
  * @since             0.x
  */
 Result ReadBarcode(int width, int height, unsigned char* data, int rowStride, int pixelStride, int rIndex, int gIndex, int bIndex,
-				   std::vector<BarcodeFormat> formats = {}, bool tryRotate = true, bool tryHarder = true);
+				   BarcodeFormats formats = {}, bool tryRotate = true, bool tryHarder = true);
 
 } // ZXing
 

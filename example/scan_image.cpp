@@ -30,35 +30,19 @@ using namespace ZXing;
 
 static void PrintUsage(const char* exePath)
 {
-	std::cout << "Usage: " << exePath << " [-fast] [-rotate] [-format <FORMAT>] <png image path>\n"
-	    << "    -fast    Do not try harder to detect, thus faster\n"
-	    << "    -rotate  Try to rotate image of 90 degrees if it fails to detect barcode\n"
-	    << "    -format  Try to read given format only. Supported formats are:\n";
+	std::cout << "Usage: " << exePath << " [-fast] [-rotate] [-format <FORMAT[,...]>] <png image path>\n"
+			  << "    -fast    Do not try harder to detect, thus faster\n"
+			  << "    -rotate  Try to rotate image of 90 degrees if it fails to detect barcode\n"
+			  << "    -format  Try to read given format(s) only.\n"
+			  << "\n"
+			  << "Supported formats are:\n";
 	for (int i = 0; i < (int)BarcodeFormat::FORMAT_COUNT; ++i) {
-		std::cout << "        " << ToString((BarcodeFormat)i) << "\n";
+		std::cout << "    " << ToString((BarcodeFormat)i) << "\n";
 	}
-	std::cout << "    Formats can be lowercase letters, with or without underscore.\n";
+	std::cout << "Formats can be lowercase letters, with or without underscore, separated by ',' and/or ' '\n";
 }
 
-static std::string FormatClean(std::string str)
-{
-	std::transform(str.begin(), str.end(), str.begin(), [](char c) { return (char)std::tolower(c); });
-	str.erase(std::remove(str.begin(), str.end(), '_'), str.end());
-	return str;
-}
-
-static std::string ParseFormat(std::string str)
-{
-	str = FormatClean(str);
-	for (int i = 0; i < (int)BarcodeFormat::FORMAT_COUNT; ++i) {
-		auto standardForm = ToString((BarcodeFormat)i);
-		if (str == FormatClean(standardForm))
-			return standardForm;
-	}
-	return std::string();
-}
-
-static bool ParseOptions(int argc, char* argv[], bool* fastMode, bool* tryRotate, std::string* format, std::string* filePath)
+static bool ParseOptions(int argc, char* argv[], bool* fastMode, bool* tryRotate, BarcodeFormats* formats, std::string* filePath)
 {
 	for (int i = 1; i < argc; ++i) {
 		if (strcmp(argv[i], "-fast") == 0) {
@@ -68,11 +52,11 @@ static bool ParseOptions(int argc, char* argv[], bool* fastMode, bool* tryRotate
 			*tryRotate = true;
 		}
 		else if (strcmp(argv[i], "-format") == 0) {
-			if (i + 1 < argc) {
-				++i;
-				*format = ParseFormat(argv[i]);
-				if (format->empty()) {
-					std::cerr << "Unreconigned format: " << argv[i] << "\n";
+			if (++i < argc) {
+				try {
+					*formats = BarcodeFormatsFromString(argv[i]);
+				} catch (const std::exception& e) {
+					std::cerr << e.what() << "\n";
 					return false;
 				}
 			}
@@ -103,9 +87,10 @@ int main(int argc, char* argv[])
 
 	bool fastMode = false;
 	bool tryRotate = false;
-	std::string singleFormat, filePath;
+	std::string filePath;
+	BarcodeFormats formats;
 
-	if (!ParseOptions(argc, argv, &fastMode, &tryRotate, &singleFormat, &filePath)) {
+	if (!ParseOptions(argc, argv, &fastMode, &tryRotate, &formats, &filePath)) {
 		PrintUsage(argv[0]);
 		return -1;
 	}
@@ -117,7 +102,7 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
-	auto result = ReadBarcode(width, height, buffer.get(), width * 4, 4, 0, 1, 2, {BarcodeFormatFromString(singleFormat)}, tryRotate, !fastMode);
+	auto result = ReadBarcode(width, height, buffer.get(), width * 4, 4, 0, 1, 2, formats, tryRotate, !fastMode);
 
 	if (result.isValid()) {
 		std::cout << "Text:     " << TextUtfEncoding::ToUtf8(result.text()) << "\n"

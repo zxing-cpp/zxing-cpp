@@ -21,6 +21,8 @@
 #include <algorithm>
 #include <iterator>
 #include <string>
+#include <sstream>
+#include <stdexcept>
 
 namespace ZXing {
 
@@ -51,10 +53,41 @@ const char * ToString(BarcodeFormat format)
 	return FORMAT_STR[(int)format];
 }
 
-BarcodeFormat BarcodeFormatFromString(const std::string& str)
+static std::string NormalizeFormatString(std::string str)
+{
+	std::transform(str.begin(), str.end(), str.begin(), [](char c) { return (char)std::tolower(c); });
+	str.erase(std::remove(str.begin(), str.end(), '_'), str.end());
+	return str;
+}
+
+static BarcodeFormat ParseFormatString(const std::string& str)
 {
 	return BarcodeFormat(std::distance(std::begin(FORMAT_STR),
-	                                   std::find(std::begin(FORMAT_STR), std::end(FORMAT_STR), str)));
+									   std::find_if(std::begin(FORMAT_STR), std::end(FORMAT_STR), [str](auto fmt) {
+										   return NormalizeFormatString(fmt) == str;
+									   })));
+}
+
+BarcodeFormat BarcodeFormatFromString(const std::string& str)
+{
+	return ParseFormatString(NormalizeFormatString(str));
+}
+
+BarcodeFormats BarcodeFormatsFromString(const std::string& str)
+{
+	auto normalized = NormalizeFormatString(str);
+	std::replace(normalized.begin(), normalized.end(), ' ', ',');
+	std::istringstream input(normalized);
+	BarcodeFormats res;
+	for (std::string token; std::getline(input, token, ',');) {
+		if(!token.empty()) {
+			auto bc = ParseFormatString(token);
+			if (bc == BarcodeFormat::INVALID)
+				throw std::invalid_argument("This is not a valid barcode format: " + token);
+			res.push_back(bc);
+		}
+	}
+	return res;
 }
 
 } // ZXing

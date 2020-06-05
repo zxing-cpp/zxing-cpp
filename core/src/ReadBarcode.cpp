@@ -24,21 +24,20 @@
 
 namespace ZXing {
 
-static Result ReadBarcode(GenericLuminanceSource&& source, std::vector<ZXing::BarcodeFormat> formats, bool tryRotate, bool tryHarder)
+static Result ReadBarcode(GenericLuminanceSource&& source, BarcodeFormats formats, bool tryRotate, bool tryHarder)
 {
 	HybridBinarizer binImage(std::shared_ptr<LuminanceSource>(&source, [](void*) {}));
 	MultiFormatReader reader(DecodeHints().setTryHarder(tryHarder).setTryRotate(tryRotate).setPossibleFormats(formats));
 	return reader.read(binImage);
 }
 
-Result ReadBarcode(int width, int height, unsigned char* data, int rowStride,
-				   std::vector<ZXing::BarcodeFormat> formats, bool tryRotate, bool tryHarder)
+Result ReadBarcode(int width, int height, unsigned char* data, int rowStride, BarcodeFormats formats, bool tryRotate, bool tryHarder)
 {
 	return ReadBarcode({width, height, data, rowStride}, formats, tryRotate, tryHarder);
 }
 
 Result ReadBarcode(int width, int height, unsigned char* data, int rowStride, int pixelStride, int rIndex, int gIndex, int bIndex,
-				   std::vector<BarcodeFormat> formats, bool tryRotate, bool tryHarder)
+				   BarcodeFormats formats, bool tryRotate, bool tryHarder)
 {
 	return ReadBarcode({width, height, data, rowStride, pixelStride, rIndex, gIndex, bIndex}, formats, tryRotate, tryHarder);
 }

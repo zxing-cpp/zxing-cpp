@@ -42,40 +42,11 @@ static void PrintUsage(const char* exePath)
 	          << "    -encoding  Encoding used to encode input text\n"
 	          << "    -ecc       Error correction level, [0-8]\n"
 	          << "\n"
-	          << "Supported formats are:\n"
-	          << "    AZTEC\n"
-	          << "    CODABAR\n"
-	          << "    CODE_39\n"
-	          << "    CODE_93\n"
-	          << "    CODE_128\n"
-	          << "    DATA_MATRIX\n"
-	          << "    EAN_8\n"
-	          << "    EAN_13\n"
-	          << "    ITF\n"
-	          << "    PDF_417\n"
-	          << "    QR_CODE\n"
-	          << "    UPC_A\n"
-	          << "    UPC_E\n"
-	          << "Formats can be lowercase letters, with or without underscore.\n";
-}
-
-
-static std::string FormatClean(std::string str)
-{
-	std::transform(str.begin(), str.end(), str.begin(), [](char c) { return (char)std::tolower(c); });
-	str.erase(std::remove(str.begin(), str.end(), '_'), str.end());
-	return str;
-}
-
-static std::string ParseFormat(std::string str)
-{
-	str = FormatClean(str);
+			  << "Supported formats are:\n";
 	for (int i = 0; i < (int)BarcodeFormat::FORMAT_COUNT; ++i) {
-		auto standardForm = ToString((BarcodeFormat)i);
-		if (str == FormatClean(standardForm))
-			return standardForm;
+		std::cout << "    " << ToString((BarcodeFormat)i) << "\n";
 	}
-	return std::string();
+	std::cout << "Format can be lowercase letters, with or without underscore.\n";
 }
 
 static bool ParseSize(std::string str, int* width, int* height)
@@ -90,8 +61,9 @@ static bool ParseSize(std::string str, int* width, int* height)
 	return false;
 }
 
-static bool ParseOptions(int argc, char* argv[], int* width, int* height, int* margin, int* eccLevel, std::string* format, std::string* text, std::string* filePath)
+static bool ParseOptions(int argc, char* argv[], int* width, int* height, int* margin, int* eccLevel, BarcodeFormat* format, std::string* text, std::string* filePath)
 {
+	*format = BarcodeFormat::INVALID;
 	int nonOptArgCount = 0;
 	for (int i = 1; i < argc; ++i) {
 		if (strcmp(argv[i], "-size") == 0) {
@@ -125,9 +97,9 @@ static bool ParseOptions(int argc, char* argv[], int* width, int* height, int* m
 			}
 		}
 		else if (nonOptArgCount == 0) {
-			*format = ParseFormat(argv[i]);
-			if (format->empty()) {
-				std::cerr << "Unreconigned format: " << argv[i] << std::endl;
+			*format = BarcodeFormatFromString(argv[i]);
+			if (*format == BarcodeFormat::INVALID) {
+				std::cerr << "Unrecognized format: " << argv[i] << std::endl;
 				return false;
 			}
 			++nonOptArgCount;
@@ -145,7 +117,7 @@ static bool ParseOptions(int argc, char* argv[], int* width, int* height, int* m
 		}
 	}
 
-	return !format->empty() && !text->empty() && !filePath->empty();
+	return *format != BarcodeFormat::INVALID && !text->empty() && !filePath->empty();
 }
 
 static std::string GetExtension(const std::string& path)
@@ -168,7 +140,8 @@ int main(int argc, char* argv[])
 	int width = 100, height = 100;
 	int margin = 10;
 	int eccLevel = -1;
-	std::string format, text, filePath;
+	std::string text, filePath;
+	BarcodeFormat format;
 
 	if (!ParseOptions(argc, argv, &width, &height, &margin, &eccLevel, &format, &text, &filePath)) {
 		PrintUsage(argv[0]);
@@ -176,11 +149,7 @@ int main(int argc, char* argv[])
 	}
 
 	try {
-		auto barcodeFormat = BarcodeFormatFromString(format);
-		if (barcodeFormat == BarcodeFormat::FORMAT_COUNT)
-			throw std::invalid_argument("Unsupported format: " + format);
-
-		MultiFormatWriter writer(barcodeFormat);
+		MultiFormatWriter writer(format);
 		if (margin >= 0)
 			writer.setMargin(margin);
 		if (eccLevel >= 0)

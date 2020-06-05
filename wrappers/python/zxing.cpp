@@ -17,7 +17,7 @@ namespace py = pybind11;
 // Numpy array wrapper class for images (either BGR or GRAYSCALE)
 using Image = py::array_t<uint8_t, py::array::c_style>;
 
-Result decode(const Image& image, std::vector<BarcodeFormat> formats, bool fastMode, bool tryRotate, bool hybridBinarizer)
+Result decode(const Image& image, BarcodeFormats formats, bool fastMode, bool tryRotate, bool hybridBinarizer)
 {
 	DecodeHints hints;
 	hints.setTryHarder(!fastMode);
@@ -81,10 +81,10 @@ PYBIND11_MODULE(zxing, m)
 		.def_property_readonly("text", &Result::text)
 		.def_property_readonly("format", &Result::format)
 		.def_property_readonly("points", &Result::resultPoints);
-	m.def("decode", (Result (*)(const Image&, std::vector<BarcodeFormat>, bool, bool, bool))&decode,
+	m.def("decode", (Result (*)(const Image&, BarcodeFormats, bool, bool, bool))&decode,
 		"Decode a barcode from a numpy BGR or grayscale image array",
 		py::arg("image"),
-		py::arg("format") = std::vector<BarcodeFormat>({}),
+		py::arg("format") = BarcodeFormats{},
 		py::arg("fastMode") = false,
 		py::arg("tryRotate") = true,
 		py::arg("hybridBinarizer") = true

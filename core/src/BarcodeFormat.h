@@ -16,6 +16,7 @@
 * limitations under the License.
 */
 #include <string>
+#include <vector>
 
 namespace ZXing {
 
@@ -84,12 +85,22 @@ enum class BarcodeFormat
 	// resulting list is empty, which means every format is accepted. So this effectively means
 	// "look for all formats".
 	FORMAT_COUNT,
+	// For the return value use case, the INVALID label is provided.
+	INVALID = FORMAT_COUNT,
 };
 
 const char* ToString(BarcodeFormat format);
 
 // Return FORMAT_COUNT if str is unexpected
 BarcodeFormat BarcodeFormatFromString(const std::string& str);
+
+using BarcodeFormats = std::vector<BarcodeFormat>;
+
+// Parse a string into a list of BarcodeFormats. Separators can be ',' or ' '.
+// Underscors are optional and input can be lower case.
+// e.g. "EAN_8 qrcode, Itf" would be parsed into [EAN_8, QR_CODE, ITF].
+// Throws if the string can not fully parsed.
+BarcodeFormats BarcodeFormatsFromString(const std::string& str);
 
 } // ZXing
 
