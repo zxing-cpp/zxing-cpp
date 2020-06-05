@@ -29,6 +29,11 @@ class Writer
 public:
 	Writer();
 
+	Writer& setMargin(int margin) {
+		_margin = margin;
+		return *this;
+	}
+
 	Writer& setEncoding(CharacterSet encoding) {
 		_encoding = encoding;
 		return *this;
@@ -50,6 +55,7 @@ private:
 	CharacterSet _encoding;
 	int _eccPercent;
 	int _layers;
+	int _margin = 0;
 };
 
 } // Aztec

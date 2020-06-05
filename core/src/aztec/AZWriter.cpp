@@ -37,8 +37,7 @@ Writer::encode(const std::wstring& contents, int width, int height) const
 {
 	std::string bytes = TextEncoder::FromUnicode(contents, _encoding);
 	EncodeResult aztec = Encoder::Encode(bytes, _eccPercent, _layers);
-	// Minimum required quite zone for Aztec is 0
-	return Inflate(std::move(aztec.matrix), width, height, 0);
+	return Inflate(std::move(aztec.matrix), width, height, _margin);
 }
 
 } // Aztec
