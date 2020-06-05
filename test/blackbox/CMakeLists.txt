@@ -17,7 +17,7 @@ if (BUILD_READERS)
     target_include_directories (ReaderTest PRIVATE ../../thirdparty/stb)
 
     target_link_libraries(ReaderTest
-        ZXing::Core
+        ZXing::ZXing
         $<$<AND:$<CXX_COMPILER_ID:GNU>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,9.0>>:stdc++fs>
     )
 
@@ -29,7 +29,7 @@ if (BUILD_WRITERS)
 
     target_include_directories (WriterTest PRIVATE ../../thirdparty/stb)
 
-    target_link_libraries (WriterTest ZXingCore)
+    target_link_libraries (WriterTest ZXing::ZXing)
 
     add_test(NAME WriterTest COMMAND WriterTest)
 endif()

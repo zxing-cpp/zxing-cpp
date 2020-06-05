@@ -26,7 +26,7 @@ if (NOT DEFINED BUILD_READERS)
     set (BUILD_READERS ON)
 endif()
 
-add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/../../core ${CMAKE_BINARY_DIR}/ZXingCore)
+add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/../../core ${CMAKE_BINARY_DIR}/ZXing)
     
 set (LOCAL_COMMON_FILES
     GdiplusInit.h
@@ -66,7 +66,7 @@ target_include_directories (ZXingGdiPlus
 )
 
 target_link_libraries (ZXingGdiPlus
-    PRIVATE ZXingCore gdiplus.lib
+    PRIVATE ZXing::ZXing gdiplus.lib
 )
 
 target_compile_options (ZXingGdiPlus

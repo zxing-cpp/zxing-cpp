@@ -69,6 +69,6 @@ add_executable (UnitTest
 
 target_include_directories (UnitTest PRIVATE .)
 
-target_link_libraries (UnitTest ZXing::Core gtest_main)
+target_link_libraries (UnitTest ZXing::ZXing gtest_main)
 
 add_test(NAME UnitTest COMMAND UnitTest)

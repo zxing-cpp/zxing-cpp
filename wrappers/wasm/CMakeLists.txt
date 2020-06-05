@@ -11,7 +11,7 @@ endif()
 
 add_definitions ("-s DISABLE_EXCEPTION_CATCHING=0")
 
-add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/../../core ${CMAKE_BINARY_DIR}/ZXingCore)
+add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/../../core ${CMAKE_BINARY_DIR}/ZXing)
 
 include_directories ("../../thirdparty/stb")
 
@@ -19,16 +19,16 @@ set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --bind -s ENVIRONMENT=web
 
 if (BUILD_READERS AND BUILD_WRITERS)
 	add_executable (zxing BarcodeReader.cpp BarcodeWriter.cpp)
-	target_link_libraries (zxing ZXing::Core)
+	target_link_libraries (zxing ZXing::ZXing)
 endif()
 
 if (BUILD_READERS)
 	add_executable (zxing_reader BarcodeReader.cpp)
-	target_link_libraries (zxing_reader ZXing::Core)
+	target_link_libraries (zxing_reader ZXing::ZXing)
 endif()
 
 if (BUILD_WRITERS)
 	add_executable (zxing_writer BarcodeWriter.cpp )
-	target_link_libraries (zxing_writer ZXing::Core)
+	target_link_libraries (zxing_writer ZXing::ZXing)
 endif()
 

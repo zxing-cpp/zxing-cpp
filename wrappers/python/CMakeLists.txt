@@ -16,9 +16,9 @@ if (NOT hasParent)
 	if (NOT BUILD_SHARED_LIBS)
 		set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 	endif()
-	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../core ZXingCore EXCLUDE_FROM_ALL)
+	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../core ZXing EXCLUDE_FROM_ALL)
 endif()
 
 # build the python module
 pybind11_add_module(zxing zxing.cpp)
-target_link_libraries(zxing PRIVATE ZXing::Core)
+target_link_libraries(zxing PRIVATE ZXing::ZXing)

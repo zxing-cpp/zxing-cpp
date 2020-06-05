@@ -6,7 +6,7 @@ if (BUILD_READERS)
 
     target_include_directories (ZXingReader PRIVATE ../thirdparty/stb)
 
-    target_link_libraries (ZXingReader ZXing::Core)
+    target_link_libraries (ZXingReader ZXing::ZXing)
 endif()
 
 if (BUILD_WRITERS)
@@ -14,5 +14,5 @@ if (BUILD_WRITERS)
 
     target_include_directories (ZXingWriter PRIVATE ../thirdparty/stb)
 
-    target_link_libraries (ZXingWriter ZXing::Core)
+    target_link_libraries (ZXingWriter ZXing::ZXing)
 endif()

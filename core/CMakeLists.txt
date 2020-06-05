@@ -428,7 +428,7 @@ source_group (Sources\\textcodec FILES ${TEXT_CODEC_FILES})
 
 find_package (Threads)
 
-add_library (ZXingCore
+add_library (ZXing
     ${COMMON_FILES}
     ${AZTEC_FILES}
     ${DATAMATRIX_FILES}
@@ -440,12 +440,12 @@ add_library (ZXingCore
     ${TEXT_CODEC_FILES}
 )
 
-target_include_directories (ZXingCore
+target_include_directories (ZXing
     PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>"
     INTERFACE "$<INSTALL_INTERFACE:include>"
 )
 
-target_compile_options (ZXingCore
+target_compile_options (ZXing
     PUBLIC ${ZXING_CORE_DEFINES}
     PRIVATE ${ZXING_CORE_LOCAL_DEFINES}
 )
@@ -454,28 +454,30 @@ include (CheckCXXCompilerFlag)
 
 CHECK_CXX_COMPILER_FLAG ("-ffloat-store" COMPILER_NEEDS_FLOAT_STORE)
 if (COMPILER_NEEDS_FLOAT_STORE)
-    target_compile_options(ZXingCore PRIVATE
+    target_compile_options(ZXing PRIVATE
         -ffloat-store   # same floating point precision in all optimization levels
     )
 endif()
 
 # the lib needs a c++-14 compiler but can be used with a c++-11 compiler (see examples)
-target_compile_features(ZXingCore PRIVATE cxx_std_14 INTERFACE cxx_std_11)
+target_compile_features(ZXing PRIVATE cxx_std_14 INTERFACE cxx_std_11)
 
-target_link_libraries (ZXingCore PUBLIC ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries (ZXing PUBLIC ${CMAKE_THREAD_LIBS_INIT})
 
-add_library(ZXing::Core ALIAS ZXingCore)
-set_target_properties(ZXingCore PROPERTIES EXPORT_NAME Core)
+add_library(ZXing::ZXing ALIAS ZXing)
+# add the old alias as well, to keep old clients compiling
+add_library(ZXing::Core ALIAS ZXing)
+set_target_properties(ZXing PROPERTIES EXPORT_NAME ZXing)
 if (PROJECT_VERSION)
-    set_target_properties(ZXingCore PROPERTIES VERSION ${PROJECT_VERSION})
-    set_target_properties(ZXingCore PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
+    set_target_properties(ZXing PROPERTIES VERSION ${PROJECT_VERSION})
+    set_target_properties(ZXing PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
 endif()
 
 include (GNUInstallDirs)
 
 # Once we can require cmake 1.13, then we can move this to ../CMakeLists.txt, see: https://gitlab.kitware.com/cmake/cmake/merge_requests/2152
 install (
-    TARGETS ZXingCore EXPORT ZXingTargets
+    TARGETS ZXing EXPORT ZXingTargets
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

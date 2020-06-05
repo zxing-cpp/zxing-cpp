@@ -32,7 +32,7 @@ if (NOT DEFINED EXTENSION_SDK_OUTPUT)
     set (EXTENSION_SDK_OUTPUT "" CACHE PATH "Path to folder parent of SDKManifest")
 endif()
 
-add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/../../core ${CMAKE_BINARY_DIR}/ZXingCore)
+add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/../../core ${CMAKE_BINARY_DIR}/ZXing)
 
 file (GLOB SOURCE_FILES *.cpp)
 file (GLOB HEADER_FILES *.h)
@@ -43,7 +43,7 @@ set (OUTPUT_FILE_BASE_NAME "ZXing")
 add_library (ZXingWinRT SHARED ${HEADER_FILES} ${SOURCE_FILES})
 
 target_link_libraries (ZXingWinRT
-    PRIVATE ZXingCore
+    PRIVATE ZXing::ZXing
 )
 
 target_compile_options (ZXingWinRT PRIVATE
@@ -57,7 +57,7 @@ set_target_properties (ZXingWinRT PROPERTIES
     OUTPUT_NAME ${OUTPUT_FILE_BASE_NAME}
 )
 
-set_target_properties (ZXingWinRT ZXingCore PROPERTIES
+set_target_properties (ZXingWinRT ZXing PROPERTIES
     VS_WINDOWS_TARGET_PLATFORM_MIN_VERSION "10.0.10240.0"
 )
 
