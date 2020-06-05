@@ -51,7 +51,7 @@ public:
 	}
 
 	/**
-	* Used for all 1D formats, PDF417, and QRCode only.
+	* Used for all formats, sets the minimum number of quite zone pixels.
 	*/
 	MultiFormatWriter& setMargin(int margin) {
 		_margin = margin;

@@ -35,102 +35,44 @@
 
 namespace ZXing {
 
-namespace {
-	
-	template <typename Writer, typename EccConverter>
-	Writer CreateWriter(CharacterSet encoding, int eccLevel)
-	{
-		Writer writer;
-		if (encoding != CharacterSet::Unknown)
-			writer.setEncoding(encoding);
-		if (eccLevel >= 0 && eccLevel <= 8)
-			writer.setEccPercent(EccConverter()(eccLevel));
-		return writer;
-	}
-
-	template <typename Writer>
-	Writer CreateWriter(int margin)
-	{
-		Writer writer;
-		if (margin >= 0)
-			writer.setMargin(margin);
-		return writer;
-	}
-
-	template <typename Writer, typename EccConverter>
-	Writer CreateWriter(CharacterSet encoding, int margin, int eccLevel)
-	{
-		Writer writer;
-		if (encoding != CharacterSet::Unknown)
-			writer.setEncoding(encoding);
-		if (margin >= 0)
-			writer.setMargin(margin);
-		if (eccLevel >= 0 && eccLevel <= 8)
-			writer.setErrorCorrectionLevel(EccConverter()(eccLevel));
-		return writer;
-	}
-
-	struct AztecEccConverter {
-		int operator()(int eccLevel) const {
-			// Aztec supports levels 0 to 100 in percentage
-			return eccLevel * 100 / 8;
-		}
-	};
-
-	struct Pdf417EccConverter {
-		int operator()(int eccLevel) const {
-			return eccLevel;
-		}
-	};
-
-	struct QRCodeEccConverter {
-		QRCode::ErrorCorrectionLevel operator()(int eccPercent) const {
-			if (eccPercent <= 1)
-				return QRCode::ErrorCorrectionLevel::Low;
-			else if (eccPercent <= 4)
-				return QRCode::ErrorCorrectionLevel::Medium;
-			else if (eccPercent <= 6)
-				return QRCode::ErrorCorrectionLevel::Quality;
-			else
-				return QRCode::ErrorCorrectionLevel::High;
-		}
-	};
-
-} // anonymous
-
 BitMatrix
 MultiFormatWriter::encode(const std::wstring& contents, int width, int height) const
 {
-	switch (_format)
-	{
-	case BarcodeFormat::AZTEC:
-		return CreateWriter<Aztec::Writer, AztecEccConverter>(_encoding, _eccLevel).encode(contents, width, height);
-	case BarcodeFormat::DATA_MATRIX:
-		return CreateWriter<DataMatrix::Writer>(_margin).encode(contents, width, height);
-	case BarcodeFormat::PDF_417:
-		return CreateWriter<Pdf417::Writer, Pdf417EccConverter>(_encoding, _margin, _eccLevel).encode(contents, width, height);
-	case BarcodeFormat::QR_CODE:
-		return CreateWriter<QRCode::Writer, QRCodeEccConverter>(_encoding, _margin, _eccLevel).encode(contents, width, height);
-	case BarcodeFormat::CODABAR:
-		return CreateWriter<OneD::CodabarWriter>(_margin).encode(contents, width, height);
-	case BarcodeFormat::CODE_39:
-		return CreateWriter<OneD::Code39Writer>(_margin).encode(contents, width, height);
-	case BarcodeFormat::CODE_93:
-		return CreateWriter<OneD::Code93Writer>(_margin).encode(contents, width, height);
-	case BarcodeFormat::CODE_128:
-		return CreateWriter<OneD::Code128Writer>(_margin).encode(contents, width, height);
-	case BarcodeFormat::EAN_8:
-		return CreateWriter<OneD::EAN8Writer>(_margin).encode(contents, width, height);
-	case BarcodeFormat::EAN_13:
-		return CreateWriter<OneD::EAN13Writer>(_margin).encode(contents, width, height);
-	case BarcodeFormat::ITF:
-		return CreateWriter<OneD::ITFWriter>(_margin).encode(contents, width, height);
-	case BarcodeFormat::UPC_A:
-		return CreateWriter<OneD::UPCAWriter>(_margin).encode(contents, width, height);
-	case BarcodeFormat::UPC_E:
-		return CreateWriter<OneD::UPCEWriter>(_margin).encode(contents, width, height);
-	default:
-		throw std::invalid_argument(std::string("Unsupported format: ") + ToString(_format));
+	auto exec0 = [&](auto&& writer) {
+		if (_margin >=0)
+			writer.setMargin(_margin);
+		return writer.encode(contents, width, height);
+	};
+
+	auto AztecEccLevel = [&](Aztec::Writer& writer, int eccLevel) { writer.setEccPercent(eccLevel * 100 / 8); };
+	auto Pdf417EccLevel = [&](Pdf417::Writer& writer, int eccLevel) { writer.setErrorCorrectionLevel(eccLevel); };
+	auto QRCodeEccLevel = [&](QRCode::Writer& writer, int eccLevel) {
+		writer.setErrorCorrectionLevel(static_cast<QRCode::ErrorCorrectionLevel>(--eccLevel / 2));
+	};
+
+	auto exec1 = [&](auto&& writer, auto setEccLevel) {
+		if (_encoding != CharacterSet::Unknown)
+			writer.setEncoding(_encoding);
+		if (_eccLevel >= 0 && _eccLevel <= 8)
+			setEccLevel(writer, _eccLevel);
+		return exec0(std::move(writer));
+	};
+
+	switch (_format) {
+	case BarcodeFormat::AZTEC: return exec1(Aztec::Writer(), AztecEccLevel);
+	case BarcodeFormat::DATA_MATRIX: return exec0(DataMatrix::Writer());
+	case BarcodeFormat::PDF_417: return exec1(Pdf417::Writer(), Pdf417EccLevel);
+	case BarcodeFormat::QR_CODE: return exec1(QRCode::Writer(), QRCodeEccLevel);
+	case BarcodeFormat::CODABAR: return exec0(OneD::CodabarWriter());
+	case BarcodeFormat::CODE_39: return exec0(OneD::Code39Writer());
+	case BarcodeFormat::CODE_93: return exec0(OneD::Code93Writer());
+	case BarcodeFormat::CODE_128: return exec0(OneD::Code128Writer());
+	case BarcodeFormat::EAN_8: return exec0(OneD::EAN8Writer());
+	case BarcodeFormat::EAN_13: return exec0(OneD::EAN13Writer());
+	case BarcodeFormat::ITF: return exec0(OneD::ITFWriter());
+	case BarcodeFormat::UPC_A: return exec0(OneD::UPCAWriter());
+	case BarcodeFormat::UPC_E: return exec0(OneD::UPCEWriter());
+	default: throw std::invalid_argument(std::string("Unsupported format: ") + ToString(_format));
 	}
 }
 
