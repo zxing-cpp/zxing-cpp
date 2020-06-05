@@ -67,34 +67,22 @@ static bool ParseOptions(int argc, char* argv[], int* width, int* height, int* m
 	int nonOptArgCount = 0;
 	for (int i = 1; i < argc; ++i) {
 		if (strcmp(argv[i], "-size") == 0) {
-			if (i + 1 < argc) {
-				++i;
-				if (!ParseSize(argv[i], width, height)) {
-					std::cerr << "Invalid size specification: " << argv[i] << std::endl;
-					return false;
-				}
-			}
-			else {
+			if (++i == argc)
+				return false;
+			if (!ParseSize(argv[i], width, height)) {
+				std::cerr << "Invalid size specification: " << argv[i] << std::endl;
 				return false;
 			}
 		}
 		else if (strcmp(argv[i], "-margin") == 0) {
-			if (i + 1 < argc) {
-				++i;
-				*margin = std::stoi(argv[i]);
-			}
-			else {
+			if (++i == argc)
 				return false;
-			}
+			*margin = std::stoi(argv[i]);
 		}
 		else if (strcmp(argv[i], "-ecc") == 0) {
-			if (i + 1 < argc) {
-				++i;
-				*eccLevel = std::stoi(argv[i]);
-			}
-			else {
+			if (++i == argc)
 				return false;
-			}
+			*eccLevel = std::stoi(argv[i]);
 		}
 		else if (nonOptArgCount == 0) {
 			*format = BarcodeFormatFromString(argv[i]);
