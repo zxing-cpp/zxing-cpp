@@ -76,17 +76,14 @@ except for specific usecases, you won't notice the difference!
 For usage examples see [reader](wrappers/wasm/demo_reader.html) and [writer](wrappers/wasm/demo_writer.html) demos or the [live demos](https://nu-book.github.io/zxing-cpp/).
 
 ### For other platforms
-Wrappers are provided as convenient way to work with native image format. You still can use the library without a wrapper.
 
 ##### To read barcodes:
-As an example, have a look at [`scan_image.cpp`](example/scan_image.cpp).
-1. Create a [`LuminanceSource`](core/src/LuminanceSource.h) instance. This interface abstracts an image source. You will need a third-party library to read your images. If you already have an image uncompressed in memory and you know its layout, you can easily go with [`GenericLuminanceSource`](core/src/GenericLuminanceSource.h). Otherwise, you will need to come up with your own implementation of the interface.
-2. Use the `LuminanceSource` instance above to create an instance of [`BinaryBitmap`](core/src/BinaryBitmap.h). You have choices between [`HybridBinarizer`](core/src/HybridBinarizer.h) or [`GlobalHistogramBinarizer`](core/src/GlobalHistogramBinarizer.h). See class document in header files for more details on theses choices.
-3. Create an instance of [`MultiFormatReader`](core/src/MultiFormatReader.h) with appropriate hints. Pay attention to `possibleFormats()`, `tryHarder()` and `tryRotate()`. These parameters will affect accuracy as well as reader's speed.
-4. Call `MultiFormatReader::read()` with the `BinaryBitmap` created above to read your barcodes.
+As an example, have a look at [`ZXingReader.cpp`](example/ZXingReader.cpp).
+1. Load your image into memory (3rd-party library required).
+2. Call `ReadBarcode()` from [`ReadBarcode.h`](core/src/ReadBarcode.h), the simplest API to get a `Result`.
 
 ##### To write barcodes:
-As an example, have a look at [`generate_image.cpp`](example/generate_image.cpp).
+As an example, have a look at [`ZXingWriter.cpp`](example/ZXingWriter.cpp).
 1. Create a [`MultiFormatWriter`](core/src/MultiFormatWriter.h) instance with the format you want to generate. Set encoding and margins if needed.
 2. Call `encode()` with text content and the image size. This returns a [`BitMatrix`](core/src/BitMatrix.h) which is a binary image of the barcode where `true` == visual black and `false` == visual white.
-3. Convert the bit matrix to your native image format. See also the `toByteMatrix` helper method.
+3. Convert the bit matrix to your native image format. See also the `ToMatrix<T>(BitMatrix&)` helper function.

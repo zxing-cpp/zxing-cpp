@@ -2,17 +2,17 @@
 set (CMAKE_CXX_STANDARD 11)
 
 if (ENABLE_DECODERS)
-    add_executable (scan_image scan_image.cpp)
+    add_executable (ZXingReader ZXingReader.cpp)
 
-    target_include_directories (scan_image PRIVATE ../thirdparty/stb)
+    target_include_directories (ZXingReader PRIVATE ../thirdparty/stb)
 
-    target_link_libraries (scan_image ZXing::Core)
+    target_link_libraries (ZXingReader ZXing::Core)
 endif()
 
 if (ENABLE_ENCODERS)
-    add_executable (generate_image generate_image.cpp)
+    add_executable (ZXingWriter ZXingWriter.cpp)
 
-    target_include_directories (generate_image PRIVATE ../thirdparty/stb)
+    target_include_directories (ZXingWriter PRIVATE ../thirdparty/stb)
 
-    target_link_libraries (generate_image ZXing::Core)
+    target_link_libraries (ZXingWriter ZXing::Core)
 endif()
