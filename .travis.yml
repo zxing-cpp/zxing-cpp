@@ -11,6 +11,5 @@ script:
  - ./test/blackbox/ReaderTest ../test/samples
  - ./test/blackbox/WriterTest
  - ./test/blackbox/ReaderTest *.png
- - ./example/generate_image QR_CODE QRCodeTestText test.png
- - ./example/scan_image test.png
-
+ - ./example/ZXingWriter QR_CODE QRCodeTestText test.png
+ - ./example/ZXingReader test.png
