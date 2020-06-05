@@ -1,8 +1,3 @@
-#include <pybind11/pybind11.h>
-#include <pybind11/numpy.h>
-#include <pybind11/stl.h>
-#include <iostream>
-#include <string>
 #include "BarcodeFormat.h"
 #include "DecodeHints.h"
 #include "MultiFormatReader.h"
@@ -10,13 +5,20 @@
 #include "HybridBinarizer.h"
 #include "Result.h"
 
+#include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
+#include <pybind11/stl.h>
+#include <memory>
+#include <vector>
+
 using namespace ZXing;
 namespace py = pybind11;
 
 // Numpy array wrapper class for images (either BGR or GRAYSCALE)
 using Image = py::array_t<uint8_t, py::array::c_style>;
 
-Result decode(const Image& image, std::vector<BarcodeFormat> formats, bool fastMode, bool tryRotate, bool hybridBinarizer) {
+Result decode(const Image& image, std::vector<BarcodeFormat> formats, bool fastMode, bool tryRotate, bool hybridBinarizer)
+{
 	DecodeHints hints;
 	hints.setTryHarder(!fastMode);
 	hints.setTryRotate(tryRotate);
@@ -33,7 +35,7 @@ Result decode(const Image& image, std::vector<BarcodeFormat> formats, bool fastM
 	} else {
 		// BGR image
 		const auto channels = image.shape(2);
-		source = std::make_shared<GenericLuminanceSource>(width, height, bytes, width*channels, channels, 2, 1, 0);
+		source = std::make_shared<GenericLuminanceSource>(width, height, bytes, width * channels, channels, 2, 1, 0);
 	}
 
 	if (hybridBinarizer) {
@@ -43,11 +45,13 @@ Result decode(const Image& image, std::vector<BarcodeFormat> formats, bool fastM
 	}
 }
 
-Result decode(const Image& image, BarcodeFormat format, bool fastMode, bool tryRotate, bool hybridBinarizer) {
+Result decode(const Image& image, BarcodeFormat format, bool fastMode, bool tryRotate, bool hybridBinarizer)
+{
 	return decode(image, {format}, fastMode, tryRotate, hybridBinarizer);
 }
 
-PYBIND11_MODULE(zxing, m) {
+PYBIND11_MODULE(zxing, m)
+{
 	m.doc() = "python bindings for zxing-cpp";
 	py::enum_<BarcodeFormat>(m, "BarcodeFormat")
 		.value("AZTEC", BarcodeFormat::AZTEC)
@@ -77,17 +81,19 @@ PYBIND11_MODULE(zxing, m) {
 		.def_property_readonly("text", &Result::text)
 		.def_property_readonly("format", &Result::format)
 		.def_property_readonly("points", &Result::resultPoints);
-	m.def("decode", (Result (*)(const Image&, std::vector<BarcodeFormat>, bool, bool, bool))&decode, "Decode a barcode from a numpy BGR or grayscale image array",
+	m.def("decode", (Result (*)(const Image&, std::vector<BarcodeFormat>, bool, bool, bool))&decode,
+		"Decode a barcode from a numpy BGR or grayscale image array",
 		py::arg("image"),
-		py::arg("format")=std::vector<BarcodeFormat>({}),
-		py::arg("fastMode")=false,
-		py::arg("tryRotate")=true,
-		py::arg("hybridBinarizer")=true
-	).def("decode", (Result (*)(const Image&, BarcodeFormat, bool, bool, bool))&decode, "Decode a barcode from a numpy BGR or grayscale image array",
+		py::arg("format") = std::vector<BarcodeFormat>({}),
+		py::arg("fastMode") = false,
+		py::arg("tryRotate") = true,
+		py::arg("hybridBinarizer") = true
+	).def("decode", (Result (*)(const Image&, BarcodeFormat, bool, bool, bool))&decode,
+		"Decode a barcode from a numpy BGR or grayscale image array",
 		py::arg("image"),
-		py::arg("format")=BarcodeFormat::FORMAT_COUNT,
-		py::arg("fastMode")=false,
-		py::arg("tryRotate")=true,
-		py::arg("hybridBinarizer")=true
+		py::arg("format") = BarcodeFormat::FORMAT_COUNT,
+		py::arg("fastMode") = false,
+		py::arg("tryRotate") = true,
+		py::arg("hybridBinarizer") = true
 	);
 }
