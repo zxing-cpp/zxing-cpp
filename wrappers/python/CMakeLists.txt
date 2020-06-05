@@ -1,10 +1,11 @@
-cmake_minimum_required(VERSION 3.1.0)
-project(zxing)
+cmake_minimum_required(VERSION 3.14)
+project(ZXingPython)
 
-# download and include pybind11
-execute_process(COMMAND wget https://github.com/pybind/pybind11/archive/v2.2.4.tar.gz -O ${CMAKE_CURRENT_BINARY_DIR}/pybind11.tar.gz)
-execute_process(COMMAND tar -xzf ${CMAKE_CURRENT_BINARY_DIR}/pybind11.tar.gz -C ${CMAKE_CURRENT_BINARY_DIR})
-add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/pybind11-2.2.4 EXCLUDE_FROM_ALL)
+# get pybind11
+include(FetchContent)
+set(FETCHCONTENT_QUIET Off)
+FetchContent_Declare (pybind11 GIT_REPOSITORY https://github.com/pybind/pybind11.git GIT_TAG v2.5.0)
+FetchContent_MakeAvailable (pybind11)
 
 # build the main library
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
