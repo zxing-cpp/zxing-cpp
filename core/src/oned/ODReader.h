@@ -22,7 +22,6 @@
 
 namespace ZXing {
 
-enum class BarcodeFormat;
 class DecodeHints;
 
 namespace OneD {
