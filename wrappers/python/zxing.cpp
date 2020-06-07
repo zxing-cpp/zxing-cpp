@@ -96,9 +96,11 @@ PYBIND11_MODULE(zxing, m)
 		.def_property_readonly("text", &Result::text)
 		.def_property_readonly("format", &Result::format)
 		.def_property_readonly("points", &Result::resultPoints);
+	m.def("barcode_format_from_str", &BarcodeFormatFromString, "Convert string to BarcodeFormat", py::arg("str"));
+	m.def("barcode_formats_from_str", &BarcodeFormatsFromString, "Convert string to BarcodeFormats", py::arg("str"));
 	m.def("read_barcode", &read_barcode, "Read (decode) a barcode from a numpy BGR or grayscale image array",
 		py::arg("image"),
-		py::arg("format") = BarcodeFormats{},
+		py::arg("formats") = BarcodeFormats{},
 		py::arg("fastMode") = false,
 		py::arg("tryRotate") = true,
 		py::arg("hybridBinarizer") = true
