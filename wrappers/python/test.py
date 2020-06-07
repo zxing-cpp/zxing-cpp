@@ -1,5 +1,8 @@
 import unittest
 import zxing
+import importlib
+
+has_numpy = importlib.util.find_spec('numpy') is not None
 
 BF = zxing.BarcodeFormat
 
@@ -9,6 +12,7 @@ class Test(unittest.TestCase):
 		self.assertEqual(zxing.barcode_format_from_str('qrcode'), BF.QR_CODE)
 		self.assertEqual(zxing.barcode_formats_from_str('qrcode, ITF'), [BF.QR_CODE, BF.ITF])
 
+	@unittest.skipIf(not has_numpy, "need numpy for read/write tests")
 	def test_write_read_cycle(self):
 		format = BF.QR_CODE
 		text = "I have the best words."
@@ -19,12 +23,8 @@ class Test(unittest.TestCase):
 		self.assertEqual(res.format, format)
 		self.assertEqual(res.text, text)
 
+	@unittest.skipIf(not has_numpy, "need numpy for read/write tests")
 	def test_failed_read(self):
-		# skip this test if numpy is not available
-		import importlib
-		if importlib.util.find_spec('numpy') is None:
-			return
-
 		import numpy as np
 		res = zxing.read_barcode(np.zeros((100, 100), np.uint8))
 
