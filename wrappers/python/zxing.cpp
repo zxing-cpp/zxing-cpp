@@ -87,6 +87,7 @@ PYBIND11_MODULE(zxing, m)
 		.value("UPC_E", BarcodeFormat::UPC_E)
 		.value("UPC_EAN_EXTENSION", BarcodeFormat::UPC_EAN_EXTENSION)
 		.value("FORMAT_COUNT", BarcodeFormat::FORMAT_COUNT)
+		.value("INVALID", BarcodeFormat::INVALID)
 		.export_values();
 	py::class_<ResultPoint>(m, "ResultPoint")
 		.def_property_readonly("x", &ResultPoint::x)

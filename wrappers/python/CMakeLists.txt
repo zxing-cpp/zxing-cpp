@@ -19,8 +19,13 @@ if (NOT hasParent)
 		set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 	endif()
 	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../core ZXing EXCLUDE_FROM_ALL)
+
+	enable_testing()
 endif()
 
 # build the python module
 pybind11_add_module(zxing zxing.cpp)
 target_link_libraries(zxing PRIVATE ZXing::ZXing)
+
+add_test(NAME PythonTest COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/test.py)
+set_property(TEST PythonTest PROPERTY ENVIRONMENT PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR})
