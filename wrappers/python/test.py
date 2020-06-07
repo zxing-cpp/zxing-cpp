@@ -1,6 +1,5 @@
 import unittest
 import zxing
-from numpy import *
 
 BF = zxing.BarcodeFormat
 
@@ -21,7 +20,13 @@ class Test(unittest.TestCase):
 		self.assertEqual(res.text, text)
 
 	def test_failed_read(self):
-		res = zxing.read_barcode(zeros((100, 100), uint8))
+		# skip this test if numpy is not available
+		import importlib
+		if importlib.util.find_spec('numpy') is None:
+			return
+
+		import numpy as np
+		res = zxing.read_barcode(np.zeros((100, 100), np.uint8))
 
 		self.assertFalse(res.valid)
 		self.assertEqual(res.format, BF.INVALID)
