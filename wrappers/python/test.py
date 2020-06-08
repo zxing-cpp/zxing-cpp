@@ -1,6 +1,6 @@
 import unittest
 import zxing
-import importlib
+import importlib.util
 
 has_numpy = importlib.util.find_spec('numpy') is not None
 
