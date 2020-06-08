@@ -24,6 +24,12 @@ namespace py = pybind11;
 // Numpy array wrapper class for images (either BGR or GRAYSCALE)
 using Image = py::array_t<uint8_t, py::array::c_style>;
 
+template<typename OUT, typename IN>
+OUT narrow(IN in)
+{
+	return static_cast<OUT>(in);
+}
+
 Result read_barcode(const Image& image, BarcodeFormats formats, bool fastMode, bool tryRotate, bool hybridBinarizer)
 {
 	DecodeHints hints;
@@ -31,8 +37,8 @@ Result read_barcode(const Image& image, BarcodeFormats formats, bool fastMode, b
 	hints.setTryRotate(tryRotate);
 	hints.setPossibleFormats(formats);
 	MultiFormatReader reader(hints);
-	const auto height = static_cast<int>(image.shape(0));
-	const auto width = static_cast<int>(image.shape(1));
+	const auto height = narrow<int>(image.shape(0));
+	const auto width = narrow<int>(image.shape(1));
 	const auto bytes = image.data();
 	std::shared_ptr<LuminanceSource> source;
 
@@ -61,7 +67,7 @@ Image write_barcode(BarcodeFormat format, std::string text, int width, int heigh
 	auto r = result.mutable_unchecked<2>();
 	for (ssize_t y = 0; y < r.shape(0); y++)
 		for (ssize_t x = 0; x < r.shape(1); x++)
-			r(y, x) = bitmap.get(x, y) ? 0 : 255;
+			r(y, x) = bitmap.get(narrow<int>(x), narrow<int>(y)) ? 0 : 255;
 	return result;
 }
 
