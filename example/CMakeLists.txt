@@ -7,6 +7,8 @@ if (BUILD_READERS)
     target_include_directories (ZXingReader PRIVATE ../thirdparty/stb)
 
     target_link_libraries (ZXingReader ZXing::ZXing)
+
+    add_test(NAME ZXingReaderTest COMMAND ZXingReader -fast -format qrcode "${CMAKE_SOURCE_DIR}/test/samples/qrcode-1/1.png")
 endif()
 
 if (BUILD_WRITERS)
@@ -15,4 +17,6 @@ if (BUILD_WRITERS)
     target_include_directories (ZXingWriter PRIVATE ../thirdparty/stb)
 
     target_link_libraries (ZXingWriter ZXing::ZXing)
+
+    add_test(NAME ZXingWriterTest COMMAND ZXingWriter qrcode "I have the best words." test.png)
 endif()
