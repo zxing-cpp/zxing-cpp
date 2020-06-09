@@ -30,9 +30,9 @@ if (MSVC)
 endif()
 
 if (NOT CMAKE_BUILD_TYPE)
-	set (DEFAULT_BUILD_TYPE "Release")
-	message (STATUS "Setting build type to '${DEFAULT_BUILD_TYPE}' as none was specified.")
-	set (CMAKE_BUILD_TYPE "${DEFAULT_BUILD_TYPE}" CACHE STRING "Choose the type of build." FORCE)
+    set (DEFAULT_BUILD_TYPE "Release")
+    message (STATUS "Setting build type to '${DEFAULT_BUILD_TYPE}' as none was specified.")
+    set (CMAKE_BUILD_TYPE "${DEFAULT_BUILD_TYPE}" CACHE STRING "Choose the type of build." FORCE)
     set_property (CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
@@ -92,8 +92,8 @@ install (
 
 # PC file generation.
 if (NOT DEFINED INSTALLDIR)
-	set (INSTALLDIR ${CMAKE_INSTALL_PREFIX})
-	get_filename_component(INSTALLDIR ${INSTALLDIR} ABSOLUTE)
+    set (INSTALLDIR ${CMAKE_INSTALL_PREFIX})
+    get_filename_component(INSTALLDIR ${INSTALLDIR} ABSOLUTE)
 endif()
 
 IF (NOT WIN32)

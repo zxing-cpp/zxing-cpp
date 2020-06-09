@@ -41,18 +41,18 @@ if (BUILD_READERS)
     )
 endif()
 if (BUILD_WRITERS)
-	set (ENCODERS_FILES
-		ImageWriter.h
-		ImageWriter.cpp
+    set (ENCODERS_FILES
+        ImageWriter.h
+        ImageWriter.cpp
         BarcodeGenerator.h
         BarcodeGenerator.cpp
-	)
+    )
 endif()
 
 source_group (Sources FILES
     ${LOCAL_COMMON_FILES}
-	${DECODERS_FILES}
-	${ENCODERS_FILES}
+    ${DECODERS_FILES}
+    ${ENCODERS_FILES}
 )
 
 add_library (ZXingGdiPlus
