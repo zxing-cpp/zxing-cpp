@@ -52,15 +52,12 @@ static bool ParseOptions(int argc, char* argv[], bool* fastMode, bool* tryRotate
 			*tryRotate = true;
 		}
 		else if (strcmp(argv[i], "-format") == 0) {
-			if (++i < argc) {
-				try {
-					*formats = BarcodeFormatsFromString(argv[i]);
-				} catch (const std::exception& e) {
-					std::cerr << e.what() << "\n";
-					return false;
-				}
-			}
-			else {
+			if (++i == argc)
+				return false;
+			try {
+				*formats = BarcodeFormatsFromString(argv[i]);
+			} catch (const std::exception& e) {
+				std::cerr << e.what() << "\n";
 				return false;
 			}
 		}

@@ -63,7 +63,6 @@ static bool ParseSize(std::string str, int* width, int* height)
 
 static bool ParseOptions(int argc, char* argv[], int* width, int* height, int* margin, int* eccLevel, BarcodeFormat* format, std::string* text, std::string* filePath)
 {
-	*format = BarcodeFormat::INVALID;
 	int nonOptArgCount = 0;
 	for (int i = 1; i < argc; ++i) {
 		if (strcmp(argv[i], "-size") == 0) {
@@ -105,7 +104,7 @@ static bool ParseOptions(int argc, char* argv[], int* width, int* height, int* m
 		}
 	}
 
-	return *format != BarcodeFormat::INVALID && !text->empty() && !filePath->empty();
+	return nonOptArgCount == 3;
 }
 
 static std::string GetExtension(const std::string& path)
@@ -114,17 +113,12 @@ static std::string GetExtension(const std::string& path)
 	auto fileName = fileNameStart == std::string::npos ? path : path.substr(fileNameStart + 1);
 	auto extStart = fileName.find_last_of('.');
 	auto ext = extStart == std::string::npos ? "" : fileName.substr(extStart + 1);
-	std::transform(ext.begin(), ext.end(), ext.begin(), [](unsigned char c) { return std::tolower(c); });
+	std::transform(ext.begin(), ext.end(), ext.begin(), [](char c) { return std::tolower(c); });
 	return ext;
 }
 
 int main(int argc, char* argv[])
 {
-	if (argc <= 2) {
-		PrintUsage(argv[0]);
-		return 0;
-	}
-
 	int width = 100, height = 100;
 	int margin = 10;
 	int eccLevel = -1;
@@ -137,12 +131,7 @@ int main(int argc, char* argv[])
 	}
 
 	try {
-		MultiFormatWriter writer(format);
-		if (margin >= 0)
-			writer.setMargin(margin);
-		if (eccLevel >= 0)
-			writer.setEccLevel(eccLevel);
-
+		auto writer = MultiFormatWriter(format).setMargin(margin).setEccLevel(eccLevel);
 		auto bitmap = ToMatrix<uint8_t>(writer.encode(TextUtfEncoding::FromUtf8(text), width, height));
 
 		auto ext = GetExtension(filePath);
