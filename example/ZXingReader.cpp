@@ -31,9 +31,9 @@ using namespace ZXing;
 static void PrintUsage(const char* exePath)
 {
 	std::cout << "Usage: " << exePath << " [-fast] [-rotate] [-format <FORMAT[,...]>] <png image path>\n"
-			  << "    -fast    Do not try harder to detect, thus faster\n"
-			  << "    -rotate  Try to rotate image of 90 degrees if it fails to detect barcode\n"
-			  << "    -format  Try to read given format(s) only.\n"
+			  << "    -fast    Skip some lines/pixels during detection\n"
+			  << "    -rotate  Also try rotated image during detection\n"
+			  << "    -format  Only detect given format(s)\n"
 			  << "\n"
 			  << "Supported formats are:\n";
 	for (int i = 0; i < (int)BarcodeFormat::FORMAT_COUNT; ++i) {
