@@ -77,11 +77,6 @@ std::ostream& operator<<(std::ostream& os, const std::vector<ResultPoint>& point
 
 int main(int argc, char* argv[])
 {
-	if (argc <= 1) {
-		PrintUsage(argv[0]);
-		return 0;
-	}
-
 	bool fastMode = false;
 	bool tryRotate = false;
 	std::string filePath;
