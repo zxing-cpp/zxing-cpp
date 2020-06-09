@@ -76,7 +76,8 @@ BarcodeFormat BarcodeFormatFromString(const std::string& str)
 BarcodeFormats BarcodeFormatsFromString(const std::string& str)
 {
 	auto normalized = NormalizeFormatString(str);
-	std::replace(normalized.begin(), normalized.end(), ' ', ',');
+	std::replace_if(
+		normalized.begin(), normalized.end(), [](char c) { return Contains(" |", c); }, ',');
 	std::istringstream input(normalized);
 	BarcodeFormats res;
 	for (std::string token; std::getline(input, token, ',');) {

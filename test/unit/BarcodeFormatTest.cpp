@@ -1,5 +1,5 @@
 /*
-* Copyright 2018 Axel Waggershauser
+* Copyright 2020 Axel Waggershauser
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ TEST(BarcodeFormatTest, BarcodeFormat)
 	EXPECT_EQ(barcodes, BarcodeFormatsFromString("EAN_8,ITF"));
 	EXPECT_EQ(barcodes, BarcodeFormatsFromString("EAN_8, ITF"));
 	EXPECT_EQ(barcodes, BarcodeFormatsFromString("EAN_8 ITF"));
-	EXPECT_EQ(barcodes, BarcodeFormatsFromString("ean8,itf"));
+	EXPECT_EQ(barcodes, BarcodeFormatsFromString("ean8|itf"));
 
 	EXPECT_THROW(BarcodeFormatsFromString("ITF, invalid-string"), std::invalid_argument);
 }
