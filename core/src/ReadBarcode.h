@@ -39,7 +39,7 @@ namespace ZXing {
  * @return            #Result structure
  * @since             0.x
  */
-Result ReadBarcode(int width, int height, unsigned char* data, int rowStride,
+Result ReadBarcode(int width, int height, const unsigned char* data, int rowStride,
 				   BarcodeFormats formats = {}, bool tryRotate = true, bool tryHarder = true);
 
 /**
@@ -62,7 +62,7 @@ Result ReadBarcode(int width, int height, unsigned char* data, int rowStride,
  * @return            #Result structure
  * @since             0.x
  */
-Result ReadBarcode(int width, int height, unsigned char* data, int rowStride, int pixelStride, int rIndex, int gIndex, int bIndex,
+Result ReadBarcode(int width, int height, const unsigned char* data, int rowStride, int pixelStride, int rIndex, int gIndex, int bIndex,
 				   BarcodeFormats formats = {}, bool tryRotate = true, bool tryHarder = true);
 
 } // ZXing
