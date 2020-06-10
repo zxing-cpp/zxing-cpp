@@ -19,50 +19,42 @@
 #include "Result.h"
 #include "BarcodeFormat.h"
 
-#include <vector>
+#include <cstdint>
 
 namespace ZXing {
 
 /**
  * Read barcode from a grayscale buffer
  *
- * <p>Use {@link #ReadBarcode(int width, int height, unsigned char* data, int rowStride,
-				   BarcodeFormats formats = {}, bool tryRotate = true, bool tryHarder = true) to read a bar code from a buffer.
- *
- * @param width image width
- * @param height image height
- * @param data   image buffer
- * @param rowstride  row stride
- * @param formats   A list of format to search for ( faster)
- * @param tryRotate   try to rotate the buffer to find the barcode (slower)
- * @param tryHarder   try harder to find the barcode(slower). TODO needs to explain
- * @return            #Result structure
- * @since             0.x
+ * @param width  image width in pixels
+ * @param height  image height in pixels
+ * @param data  image buffer
+ * @param rowStride  row stride in bytes
+ * @param formats  list of formats to search for (faster)
+ * @param tryRotate  rotate the buffer if necessary to find the barcode (slower)
+ * @param tryHarder  dense scan of the image to detect the barcode (slower). Setting this to false, will skip some lines.
+ * @return #Result structure
  */
-Result ReadBarcode(int width, int height, const unsigned char* data, int rowStride,
+Result ReadBarcode(int width, int height, const uint8_t* data, int rowStride,
 				   BarcodeFormats formats = {}, bool tryRotate = true, bool tryHarder = true);
 
 /**
  * Read barcode from a RGB buffer
  *
- * <p>Use {@link #ReadBarcode(int width, int height, unsigned char* data, int rowStride, int pixelStride, int rIndex, int gIndex, int bIndex,
-				   BarcodeFormats formats = {}, bool tryRotate = true, bool tryHarder = true) to read a bar code from a buffer.
- *
- * @param width image width
- * @param height image height
- * @param data   image buffer
- * @param rowstride  row stride
- * @param pixelstride  pixel stride (ie 4 for 32 bits)
- * @param rIndex  red index
- * @param gIndex  green index
- * @param bIndex  blue index
- * @param formats   A list of format to search for ( faster)
- * @param tryRotate   try to rotate the buffer to find the barcode (slower)
- * @param tryHarder   try harder to find the barcode(slower). TODO needs to explain
- * @return            #Result structure
- * @since             0.x
+ * @param width  image width in pixels
+ * @param height  image height in pixels
+ * @param data  image buffer
+ * @param rowStride  row stride in bytes
+ * @param pixelStride  pixel stride in bytes (e.g. 4 for 32 bits)
+ * @param rIndex  index of red channel
+ * @param gIndex  index of green channel
+ * @param bIndex  index of blue channel
+ * @param formats  list of formats to search for (faster)
+ * @param tryRotate  rotate the buffer if necessary to find the barcode (slower)
+ * @param tryHarder  dense scan of the image to detect the barcode (slower). Setting this to false, will skip some lines.
+ * @return #Result structure
  */
-Result ReadBarcode(int width, int height, const unsigned char* data, int rowStride, int pixelStride, int rIndex, int gIndex, int bIndex,
+Result ReadBarcode(int width, int height, const uint8_t* data, int rowStride, int pixelStride, int rIndex, int gIndex, int bIndex,
 				   BarcodeFormats formats = {}, bool tryRotate = true, bool tryHarder = true);
 
 } // ZXing

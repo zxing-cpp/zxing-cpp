@@ -31,12 +31,12 @@ static Result ReadBarcode(GenericLuminanceSource&& source, BarcodeFormats format
 	return reader.read(binImage);
 }
 
-Result ReadBarcode(int width, int height, const unsigned char* data, int rowStride, BarcodeFormats formats, bool tryRotate, bool tryHarder)
+Result ReadBarcode(int width, int height, const uint8_t* data, int rowStride, BarcodeFormats formats, bool tryRotate, bool tryHarder)
 {
 	return ReadBarcode({width, height, data, rowStride}, formats, tryRotate, tryHarder);
 }
 
-Result ReadBarcode(int width, int height, const unsigned char* data, int rowStride, int pixelStride, int rIndex, int gIndex, int bIndex,
+Result ReadBarcode(int width, int height, const uint8_t* data, int rowStride, int pixelStride, int rIndex, int gIndex, int bIndex,
 				   BarcodeFormats formats, bool tryRotate, bool tryHarder)
 {
 	return ReadBarcode({width, height, data, rowStride, pixelStride, rIndex, gIndex, bIndex}, formats, tryRotate, tryHarder);
