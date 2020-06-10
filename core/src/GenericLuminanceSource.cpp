@@ -71,31 +71,20 @@ GenericLuminanceSource::GenericLuminanceSource(int left, int top, int width, int
 		throw std::out_of_range("Requested offset is outside the image");
 	}
 
-	auto pixels = std::make_shared<ByteArray>();
-	pixels->resize(width * height);
-	const uint8_t *rgbSource = static_cast<const uint8_t*>(bytes) + top * rowBytes;
-	uint8_t *destRow = pixels->data();
-	for (int y = 0; y < height; ++y, rgbSource += rowBytes, destRow += width) {
-		const uint8_t *src = rgbSource + left * pixelBytes;
-		for (int x = 0; x < width; ++x, src += pixelBytes) {
-			destRow[x] = RGBToGray(src[redIndex], src[greenIndex], src[blueIndex]);
+	if (pixelBytes == 1)
+		_pixels = MakeCopy(bytes, rowBytes, left, top, width, height);
+	else {
+		auto pixels = std::make_shared<ByteArray>(width * height);
+		const uint8_t *rgbSource = static_cast<const uint8_t*>(bytes) + top * rowBytes;
+		uint8_t *destRow = pixels->data();
+		for (int y = 0; y < height; ++y, rgbSource += rowBytes, destRow += width) {
+			const uint8_t *src = rgbSource + left * pixelBytes;
+			for (int x = 0; x < width; ++x, src += pixelBytes) {
+				destRow[x] = RGBToGray(src[redIndex], src[greenIndex], src[blueIndex]);
+			}
 		}
+		_pixels = std::move(pixels);
 	}
-	_pixels = pixels;
-}
-
-GenericLuminanceSource::GenericLuminanceSource(int left, int top, int width, int height, const void* bytes, int rowBytes) :
-	_left(0),	// since we copy the pixels
-	_top(0),
-	_width(width),
-	_height(height),
-	_rowBytes(width)
-{
-	if (left < 0 || top < 0 || width < 0 || height < 0) {
-		throw std::out_of_range("Requested offset is outside the image");
-	}
-
-	_pixels = MakeCopy(bytes, rowBytes, left, top, width, height);
 }
 
 GenericLuminanceSource::GenericLuminanceSource(int left, int top, int width, int height, std::shared_ptr<const ByteArray> pixels, int rowBytes) :
