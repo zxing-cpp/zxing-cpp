@@ -17,45 +17,74 @@
 #pragma once
 
 #include "Result.h"
-#include "BarcodeFormat.h"
+#include "DecodeHints.h"
 
 #include <cstdint>
 
 namespace ZXing {
 
-/**
- * Read barcode from a grayscale buffer
- *
- * @param width  image width in pixels
- * @param height  image height in pixels
- * @param data  image buffer
- * @param rowStride  row stride in bytes
- * @param formats  list of formats to search for (faster)
- * @param tryRotate  rotate the buffer if necessary to find the barcode (slower)
- * @param tryHarder  dense scan of the image to detect the barcode (slower). Setting this to false, will skip some lines.
- * @return #Result structure
- */
-Result ReadBarcode(int width, int height, const uint8_t* data, int rowStride,
-				   BarcodeFormats formats = {}, bool tryRotate = true, bool tryHarder = true);
+enum class ImageFormat : uint32_t
+{
+	None = 0,
+	Lum  = 0x01000000,
+	RGB  = 0x03000102,
+	BGR  = 0x03020100,
+	RGBX = 0x04000102,
+	XRGB = 0x04010203,
+	BGRX = 0x04020100,
+	XBGR = 0x04030201,
+};
+
+inline int PixStride(ImageFormat format) { return (static_cast<uint32_t>(format) >> 3*8) & 0xFF; }
+inline int RedIndex(ImageFormat format) { return (static_cast<uint32_t>(format) >> 2*8) & 0xFF; }
+inline int GreenIndex(ImageFormat format) { return (static_cast<uint32_t>(format) >> 1*8) & 0xFF; }
+inline int BlueIndex(ImageFormat format) { return (static_cast<uint32_t>(format) >> 0*8) & 0xFF; }
 
 /**
- * Read barcode from a RGB buffer
+ * Simple class that stores a non-owning const pointer to image data plus layout and format information.
+ */
+class ImageView
+{
+	const uint8_t* _data = nullptr;
+	ImageFormat _format;
+	int _width = 0, _height = 0, _pixStride = 0, _rowStride = 0;
+
+	friend Result ReadBarcode(const ImageView&, const DecodeHints&);
+
+public:
+	/**
+	 * ImageView contructor
+	 *
+	 * @param data  pointer to image buffer
+	 * @param width  image width in pixels
+	 * @param height  image height in pixels
+	 * @param format  image/pixel format
+	 * @param rowStride  optional row stride in bytes, default is width * pixStride
+	 * @param pixStride  optional pixel stride in bytes, default is calculated from format
+	 */
+	ImageView(const uint8_t* data, int width, int height, ImageFormat format, int rowStride = 0, int pixStride = 0)
+		: _data(data), _format(format), _width(width), _height(height),
+		  _pixStride(pixStride ? pixStride : PixStride(format)), _rowStride(rowStride ? rowStride : width * _pixStride)
+	{}
+};
+
+/**
+ * Read barcode from an ImageView
  *
- * @param width  image width in pixels
- * @param height  image height in pixels
- * @param data  image buffer
- * @param rowStride  row stride in bytes
- * @param pixelStride  pixel stride in bytes (e.g. 4 for 32 bits)
- * @param rIndex  index of red channel
- * @param gIndex  index of green channel
- * @param bIndex  index of blue channel
- * @param formats  list of formats to search for (faster)
- * @param tryRotate  rotate the buffer if necessary to find the barcode (slower)
- * @param tryHarder  dense scan of the image to detect the barcode (slower). Setting this to false, will skip some lines.
+ * @param buffer  view of the image data including layout and format
+ * @param hints  optional DecodeHints to parameterize / speed up decoding
  * @return #Result structure
  */
+Result ReadBarcode(const ImageView& buffer, const DecodeHints& hints = {});
+
+
+[[deprecated]]
+Result ReadBarcode(int width, int height, const uint8_t* data, int rowStride,
+			BarcodeFormats formats = {}, bool tryRotate = true, bool tryHarder = true);
+
+[[deprecated]]
 Result ReadBarcode(int width, int height, const uint8_t* data, int rowStride, int pixelStride, int rIndex, int gIndex, int bIndex,
-				   BarcodeFormats formats = {}, bool tryRotate = true, bool tryHarder = true);
+			BarcodeFormats formats = {}, bool tryRotate = true, bool tryHarder = true);
 
 } // ZXing
 

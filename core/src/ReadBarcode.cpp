@@ -24,22 +24,41 @@
 
 namespace ZXing {
 
-static Result ReadBarcode(GenericLuminanceSource&& source, BarcodeFormats formats, bool tryRotate, bool tryHarder)
+static Result ReadBarcode(GenericLuminanceSource&& source, const DecodeHints& hints)
 {
 	HybridBinarizer binImage(std::shared_ptr<LuminanceSource>(&source, [](void*) {}));
-	MultiFormatReader reader(DecodeHints().setTryHarder(tryHarder).setTryRotate(tryRotate).setPossibleFormats(formats));
+	MultiFormatReader reader(hints);
 	return reader.read(binImage);
 }
 
-Result ReadBarcode(int width, int height, const uint8_t* data, int rowStride, BarcodeFormats formats, bool tryRotate, bool tryHarder)
+Result ReadBarcode(const ImageView& iv, const DecodeHints& hints)
 {
-	return ReadBarcode({width, height, data, rowStride}, formats, tryRotate, tryHarder);
+	return ReadBarcode(
+		{
+			iv._width,
+			iv._height,
+			iv._data,
+			iv._rowStride,
+			iv._pixStride,
+			RedIndex(iv._format),
+			GreenIndex(iv._format),
+			BlueIndex(iv._format),
+		},
+		hints);
 }
 
-Result ReadBarcode(int width, int height, const uint8_t* data, int rowStride, int pixelStride, int rIndex, int gIndex, int bIndex,
-				   BarcodeFormats formats, bool tryRotate, bool tryHarder)
+Result ReadBarcode(int width, int height, const uint8_t* data, int rowStride, BarcodeFormats formats, bool tryRotate,
+				   bool tryHarder)
 {
-	return ReadBarcode({width, height, data, rowStride, pixelStride, rIndex, gIndex, bIndex}, formats, tryRotate, tryHarder);
+	return ReadBarcode({width, height, data, rowStride},
+					   DecodeHints().setTryHarder(tryHarder).setTryRotate(tryRotate).setFormats(formats));
+}
+
+Result ReadBarcode(int width, int height, const uint8_t* data, int rowStride, int pixelStride, int rIndex, int gIndex,
+				   int bIndex, BarcodeFormats formats, bool tryRotate, bool tryHarder)
+{
+	return ReadBarcode({width, height, data, rowStride, pixelStride, rIndex, gIndex, bIndex},
+					   DecodeHints().setTryHarder(tryHarder).setTryRotate(tryRotate).setFormats(formats));
 }
 
 } // ZXing

@@ -93,7 +93,7 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
-	auto result = ReadBarcode(width, height, buffer.get(), width * 4, 4, 0, 1, 2, formats, tryRotate, !fastMode);
+	auto result = ReadBarcode({buffer.get(), width, height, ImageFormat::RGBX}, hints);
 
 	if (result.isValid()) {
 		std::cout << "Text:     " << TextUtfEncoding::ToUtf8(result.text()) << "\n"
