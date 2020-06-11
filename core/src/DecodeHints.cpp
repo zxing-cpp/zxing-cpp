@@ -16,32 +16,7 @@
 */
 
 #include "DecodeHints.h"
-#include "BarcodeFormat.h"
-#include "BitHacks.h"
 
 namespace ZXing {
-
-BarcodeFormats DecodeHints::possibleFormats() const
-{
-	BarcodeFormats result;
-	int formatCount = (int)BarcodeFormat::FORMAT_COUNT;
-	result.reserve(BitHacks::CountBitsSet(_flags & ~(0xffffffff << formatCount)));
-
-	for (int i = 0; i < formatCount; ++i) {
-		if (_flags & (1 << i)) {
-			result.push_back((BarcodeFormat)i);
-		}
-	}
-	return result;
-}
-
-DecodeHints& DecodeHints::setPossibleFormats(const BarcodeFormats& formats)
-{
-	_flags &= (0xffffffff << (int)BarcodeFormat::FORMAT_COUNT);
-	for (BarcodeFormat format : formats) {
-		_flags |= (1 << (int)format);
-	}
-	return *this;
-}
 
 } // ZXing

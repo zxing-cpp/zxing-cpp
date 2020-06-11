@@ -15,92 +15,66 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+
+#include "ZXFlags.h"
+
 #include <string>
 #include <vector>
 
 namespace ZXing {
 
 /**
-* Enumerates barcode formats known to this package. Please keep alphabetized.
-*
-* @author Sean Owen
+* Enumerates barcode formats known to this package.
 */
 enum class BarcodeFormat
 {
-	/** Aztec 2D barcode format. */
-	AZTEC,
+	// The values are an implementation detail. The c++ use-case (ZXFlags) could have been designed to such that, it
+	// would not have been necessary to explicitly set the values to single bit constants. This has been done to ease
+	// the interoperability with C-like interfaces, the python and the Qt wrapper.
+	INVALID           = 0,         ///< Used as a return value if no valid barcode has been detected
+	AZTEC             = (1 << 0),  ///< Aztec (2D)
+	CODABAR           = (1 << 1),  ///< CODABAR (1D)
+	CODE_39           = (1 << 2),  ///< Code 39 (1D)
+	CODE_93           = (1 << 3),  ///< Code 93 (1D)
+	CODE_128          = (1 << 4),  ///< Code 128 (1D)
+	DATA_MATRIX       = (1 << 5),  ///< Data Matrix (2D)
+	EAN_8             = (1 << 6),  ///< EAN-8 (1D)
+	EAN_13            = (1 << 7),  ///< EAN-13 (1D)
+	ITF               = (1 << 8),  ///< ITF (Interleaved Two of Five) (1D)
+	MAXICODE          = (1 << 9),  ///< MaxiCode (2D)
+	PDF_417           = (1 << 10), ///< PDF417 (1D) or (2D)
+	QR_CODE           = (1 << 11), ///< QR Code (2D)
+	RSS_14            = (1 << 12), ///< RSS 14
+	RSS_EXPANDED      = (1 << 13), ///< RSS EXPANDED
+	UPC_A             = (1 << 14), ///< UPC-A (1D)
+	UPC_E             = (1 << 15), ///< UPC-E (1D)
+	UPC_EAN_EXTENSION = (1 << 16), ///< UPC/EAN extension (1D). Not a stand-alone format.
 
-	/** CODABAR 1D format. */
-	CODABAR,
-
-	/** Code 39 1D format. */
-	CODE_39,
-
-	/** Code 93 1D format. */
-	CODE_93,
-
-	/** Code 128 1D format. */
-	CODE_128,
-
-	/** Data Matrix 2D barcode format. */
-	DATA_MATRIX,
-
-	/** EAN-8 1D format. */
-	EAN_8,
-
-	/** EAN-13 1D format. */
-	EAN_13,
-
-	/** ITF (Interleaved Two of Five) 1D format. */
-	ITF,
-
-	/** MaxiCode 2D barcode format. */
-	MAXICODE,
-
-	/** PDF417 format. */
-	PDF_417,
-
-	/** QR Code 2D barcode format. */
-	QR_CODE,
-
-	/** RSS 14 */
-	RSS_14,
-
-	/** RSS EXPANDED */
-	RSS_EXPANDED,
-
-	/** UPC-A 1D format. */
-	UPC_A,
-
-	/** UPC-E 1D format. */
-	UPC_E,
-
-	/** UPC/EAN extension format. Not a stand-alone format. */
-	UPC_EAN_EXTENSION,
-
-
-
-	// Used to count the number of formats, thus it needs to be always the last listed here.
-	// Setting the format to this value has no effect, i.e. if this is the only value, the
-	// resulting list is empty, which means every format is accepted. So this effectively means
-	// "look for all formats".
-	FORMAT_COUNT,
-	// For the return value use case, the INVALID label is provided.
-	INVALID = FORMAT_COUNT,
+	// used for internal purpuses, check after adding new formats
+	LAST_FORMAT = UPC_EAN_EXTENSION,
+	// Used to count the number of formats, now deprecated
+	FORMAT_COUNT = INVALID,
 };
+
+ZX_DECLARE_FLAGS(BarcodeFormats, BarcodeFormat)
+
+std::vector<BarcodeFormat> ListBarcodeFormats(BarcodeFormats formats = BarcodeFormat(-1));
 
 const char* ToString(BarcodeFormat format);
 
-// Return FORMAT_COUNT if str is unexpected
+/**
+ * @brief Parse a string into a BarcodeFormat.
+ * @return INVALID if str can not be parsed as a valid enum value
+ */
 BarcodeFormat BarcodeFormatFromString(const std::string& str);
 
-using BarcodeFormats = std::vector<BarcodeFormat>;
-
-// Parse a string into a list of BarcodeFormats. Separators can be ',' or ' '.
-// Underscors are optional and input can be lower case.
-// e.g. "EAN_8 qrcode, Itf" would be parsed into [EAN_8, QR_CODE, ITF].
-// Throws if the string can not fully parsed.
+/**
+ * @brief Parse a string into a set of BarcodeFormats.
+ * Separators can be (any combination of) '|', ',' or ' '.
+ * Underscors are optional and input can be lower case.
+ * e.g. "EAN_8 qrcode, Itf" would be parsed into [EAN_8, QR_CODE, ITF].
+ * @throws std::invalid_parameter Throws if the string can not be fully parsed.
+ */
 BarcodeFormats BarcodeFormatsFromString(const std::string& str);
 
 } // ZXing
-

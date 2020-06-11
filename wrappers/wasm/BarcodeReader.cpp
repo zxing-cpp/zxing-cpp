@@ -49,7 +49,7 @@ ReadResult readBarcodeFromImage(int bufferPtr, int bufferLength, bool tryHarder,
 		DecodeHints hints;
 		hints.setTryHarder(tryHarder);
 		hints.setTryRotate(tryHarder);
-		hints.setPossibleFormats({BarcodeFormatFromString(format)});
+		hints.setFormats(BarcodeFormatsFromString(format));
 		MultiFormatReader reader(hints);
 
 		int width, height, channels;
@@ -85,7 +85,7 @@ ReadResult readBarcodeFromPixmap(int bufferPtr, int imgWidth, int imgHeight, boo
 		DecodeHints hints;
 		hints.setTryHarder(tryHarder);
 		hints.setTryRotate(tryHarder);
-		hints.setPossibleFormats({BarcodeFormatFromString(format)});
+		hints.setFormats(BarcodeFormatsFromString(format));
 		MultiFormatReader reader(hints);
 
 		GenericLuminanceSource source(imgWidth, imgHeight, reinterpret_cast<void*>(bufferPtr), imgWidth * 4, 4, 0, 1, 2);

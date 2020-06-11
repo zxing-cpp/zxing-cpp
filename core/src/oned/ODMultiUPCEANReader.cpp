@@ -34,7 +34,7 @@ MultiUPCEANReader::MultiUPCEANReader(const DecodeHints& hints)
 	_canReturnUPCA = hints.hasNoFormat() || hints.hasFormat(BarcodeFormat::UPC_A);
 	DecodeHints _hints = hints;
 	if (_hints.hasNoFormat()) {
-		_hints.setPossibleFormats({BarcodeFormat::EAN_13, BarcodeFormat::EAN_8, BarcodeFormat::UPC_E});
+		_hints.setFormats(BarcodeFormat::EAN_13 | BarcodeFormat::EAN_8 | BarcodeFormat::UPC_E);
 		// UPC-A is covered by EAN-13
 	}
 

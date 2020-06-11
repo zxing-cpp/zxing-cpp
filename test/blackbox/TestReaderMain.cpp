@@ -47,7 +47,7 @@ int main(int argc, char** argv)
 
 	if (Contains({".png", ".jpg", ".pgm", ".gif"}, pathPrefix.extension())) {
 		auto hints = DecodeHints().setTryHarder(true).setTryRotate(true);
-//		hints.setPossibleFormats(BarcodeFormatFromString("QR_CODE"));
+//		hints.setFormats(BarcodeFormat::QR_CODE);
 		MultiFormatReader reader(hints);
 		bool isPure = getenv("IS_PURE");
 		int rotation = getenv("ROTATION") ? atoi(getenv("ROTATION")) : 0;

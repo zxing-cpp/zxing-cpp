@@ -23,16 +23,18 @@ using namespace ZXing;
 
 TEST(BarcodeFormatTest, BarcodeFormat)
 {
+	EXPECT_EQ(ToString(BarcodeFormat::QR_CODE), std::string("QR_CODE"));
+
 	EXPECT_EQ(BarcodeFormat::EAN_8, BarcodeFormatFromString("EAN_8"));
 	EXPECT_EQ(BarcodeFormat::EAN_8, BarcodeFormatFromString("EAN8"));
 	EXPECT_EQ(BarcodeFormat::EAN_8, BarcodeFormatFromString("ean8"));
 	EXPECT_EQ(BarcodeFormat::INVALID, BarcodeFormatFromString("invalid-string"));
 
-	auto barcodes = BarcodeFormats{BarcodeFormat::EAN_8, BarcodeFormat::ITF};
-	EXPECT_EQ(barcodes, BarcodeFormatsFromString("EAN_8,ITF"));
-	EXPECT_EQ(barcodes, BarcodeFormatsFromString("EAN_8, ITF"));
-	EXPECT_EQ(barcodes, BarcodeFormatsFromString("EAN_8 ITF"));
-	EXPECT_EQ(barcodes, BarcodeFormatsFromString("ean8|itf"));
+	auto formats = BarcodeFormat::EAN_8 | BarcodeFormat::ITF;
+	EXPECT_EQ(formats, BarcodeFormatsFromString("EAN_8,ITF"));
+	EXPECT_EQ(formats, BarcodeFormatsFromString("EAN_8, ITF"));
+	EXPECT_EQ(formats, BarcodeFormatsFromString("EAN_8 ITF"));
+	EXPECT_EQ(formats, BarcodeFormatsFromString("ean8|itf"));
 
 	EXPECT_THROW(BarcodeFormatsFromString("ITF, invalid-string"), std::invalid_argument);
 }

@@ -10,7 +10,7 @@ class Test(unittest.TestCase):
 
 	def test_format(self):
 		self.assertEqual(zxing.barcode_format_from_str('qrcode'), BF.QR_CODE)
-		self.assertEqual(zxing.barcode_formats_from_str('qrcode, ITF'), [BF.QR_CODE, BF.ITF])
+		self.assertEqual(zxing.barcode_formats_from_str('ITF, qrcode'), [BF.ITF, BF.QR_CODE])
 
 	@unittest.skipIf(not has_numpy, "need numpy for read/write tests")
 	def test_write_read_cycle(self):
@@ -26,7 +26,7 @@ class Test(unittest.TestCase):
 	@unittest.skipIf(not has_numpy, "need numpy for read/write tests")
 	def test_failed_read(self):
 		import numpy as np
-		res = zxing.read_barcode(np.zeros((100, 100), np.uint8))
+		res = zxing.read_barcode(np.zeros((100, 100), np.uint8), formats = [BF.EAN_8, BF.AZTEC])
 
 		self.assertFalse(res.valid)
 		self.assertEqual(res.format, BF.INVALID)

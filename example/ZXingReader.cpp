@@ -36,26 +36,27 @@ static void PrintUsage(const char* exePath)
 			  << "    -format  Only detect given format(s)\n"
 			  << "\n"
 			  << "Supported formats are:\n";
-	for (int i = 0; i < (int)BarcodeFormat::FORMAT_COUNT; ++i) {
-		std::cout << "    " << ToString((BarcodeFormat)i) << "\n";
+	for (auto f : ListBarcodeFormats()) {
+		std::cout << "    " << ToString(f) << "\n";
 	}
 	std::cout << "Formats can be lowercase, with or without underscore, separated by ',', '|' and/or ' '\n";
 }
 
-static bool ParseOptions(int argc, char* argv[], bool* fastMode, bool* tryRotate, BarcodeFormats* formats, std::string* filePath)
+static bool ParseOptions(int argc, char* argv[], DecodeHints* hints, std::string* filePath)
 {
+	hints->setTryHarder(true);
 	for (int i = 1; i < argc; ++i) {
 		if (strcmp(argv[i], "-fast") == 0) {
-			*fastMode = true;
+			hints->setTryHarder(false);
 		}
 		else if (strcmp(argv[i], "-rotate") == 0) {
-			*tryRotate = true;
+			hints->setTryRotate(true);
 		}
 		else if (strcmp(argv[i], "-format") == 0) {
 			if (++i == argc)
 				return false;
 			try {
-				*formats = BarcodeFormatsFromString(argv[i]);
+				hints->setFormats(BarcodeFormatsFromString(argv[i]));
 			} catch (const std::exception& e) {
 				std::cerr << e.what() << "\n";
 				return false;
@@ -77,12 +78,10 @@ std::ostream& operator<<(std::ostream& os, const std::vector<ResultPoint>& point
 
 int main(int argc, char* argv[])
 {
-	bool fastMode = false;
-	bool tryRotate = false;
+	DecodeHints hints;
 	std::string filePath;
-	BarcodeFormats formats;
 
-	if (!ParseOptions(argc, argv, &fastMode, &tryRotate, &formats, &filePath)) {
+	if (!ParseOptions(argc, argv, &hints, &filePath)) {
 		PrintUsage(argv[0]);
 		return -1;
 	}

@@ -296,7 +296,7 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		runTests("code39-2", "CODE_39", 2, {
 			{ 2, 2, 0   },
 			{ 2, 2, 180 },
-		}, DecodeHints().setTryCode39ExtendedMode(true).setPossibleFormats({BarcodeFormat::CODE_39}));
+		}, DecodeHints().setTryCode39ExtendedMode(true).setFormats(BarcodeFormat::CODE_39));
 
 		runTests("code39-3", "CODE_39", 17, {
 			{ 17, 17, 0   },

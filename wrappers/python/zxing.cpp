@@ -30,7 +30,16 @@ OUT narrow(IN in)
 	return static_cast<OUT>(in);
 }
 
-Result read_barcode(const Image& image, BarcodeFormats formats, bool fastMode, bool tryRotate, bool hybridBinarizer)
+// The intension was to use the flag based BarcodeFormats here but that failed due to a pybind11 bug:
+// https://github.com/pybind/pybind11/issues/2221
+using FormatList = std::vector<BarcodeFormat>;
+
+FormatList barcode_formats_from_str(const std::string& str)
+{
+	return ListBarcodeFormats(BarcodeFormatsFromString(str));
+};
+
+Result read_barcode(const Image& image, const FormatList& formats, bool fastMode, bool tryRotate, bool hybridBinarizer)
 {
 	DecodeHints hints;
 	hints.setTryHarder(!fastMode);
@@ -104,10 +113,10 @@ PYBIND11_MODULE(zxing, m)
 		.def_property_readonly("format", &Result::format)
 		.def_property_readonly("points", &Result::resultPoints);
 	m.def("barcode_format_from_str", &BarcodeFormatFromString, "Convert string to BarcodeFormat", py::arg("str"));
-	m.def("barcode_formats_from_str", &BarcodeFormatsFromString, "Convert string to BarcodeFormats", py::arg("str"));
+	m.def("barcode_formats_from_str", &barcode_formats_from_str, "Convert string to BarcodeFormats", py::arg("str"));
 	m.def("read_barcode", &read_barcode, "Read (decode) a barcode from a numpy BGR or grayscale image array",
 		py::arg("image"),
-		py::arg("formats") = BarcodeFormats{},
+		py::arg("formats") = FormatList{},
 		py::arg("fastMode") = false,
 		py::arg("tryRotate") = true,
 		py::arg("hybridBinarizer") = true
