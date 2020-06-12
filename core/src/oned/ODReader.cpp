@@ -165,7 +165,6 @@ DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, const BinaryBit
 	return Result(DecodeStatus::NotFound);
 }
 
-// Note that we don't try rotation without the try harder flag, even if rotation was supported.
 Result
 Reader::decode(const BinaryBitmap& image) const
 {

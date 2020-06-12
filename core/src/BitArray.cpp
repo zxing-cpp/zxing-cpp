@@ -30,29 +30,6 @@ namespace ZXing {
 
 #ifndef ZX_FAST_BIT_STORAGE
 
-#if 0 // unused code
-void
-BitArray::setRange(int start, int end)
-{
-	if (end < start || start < 0 || end > _size) {
-		throw std::invalid_argument("BitArray::setRange(): Invalid range");
-	}
-	if (end == start) {
-		return;
-	}
-	end--; // will be easier to treat this as the last actually set bit -- inclusive
-	int firstInt = start / 32;
-	int lastInt = end / 32;
-	for (int i = firstInt; i <= lastInt; i++) {
-		int firstBit = i > firstInt ? 0 : start & 0x1F;
-		int lastBit = i < lastInt ? 31 : end & 0x1F;
-		// Ones from firstBit to lastBit, inclusive
-		uint32_t mask = (2UL << lastBit) - (1UL << firstBit);
-		_bits[i] |= mask;
-	}
-}
-#endif
-
 bool
 BitArray::isRange(int start, int end, bool value) const
 {
@@ -128,37 +105,6 @@ BitArray::appendBitArray(const BitArray& other)
 		}
 	}
 }
-
-void
-BitArray::getSubArray(int offset, int length, BitArray& result) const
-{
-	if (offset < 0 || offset + length > _size) {
-		throw std::invalid_argument("Invalid range");
-	}
-	if (length < 0) {
-		length = _size - offset;
-	}
-	if (length == 0) {
-		result._size = 0;
-		result._bits.clear();
-	}
-	else {
-		result._size = length;
-
-		int startIndex = offset / 32;
-		int endIndex = (offset + length + 31) / 32;
-
-		result._bits.resize(endIndex - startIndex);
-		std::copy_n(_bits.begin() + startIndex, result._bits.size(), result._bits.begin());
-
-		unsigned rightOffset = offset % 32;
-		if (rightOffset > 0) {
-			BitHacks::ShiftRight(result._bits, rightOffset);
-			result._bits.resize((length + 31) / 32);
-		}
-		result._bits.back() &= (0xffffffff >> (result._bits.size() * 32 - result._size));
-	}
-}
 #endif
 
 void
@@ -182,20 +128,5 @@ ByteArray BitArray::toBytes(int bitOffset, int numBytes) const
 			(res[i] <<= 1) |= get(bitOffset++);
 	return res;
 }
-
-//std::string
-//BitArray::toString() const
-//{
-//	std::string result;
-//	result.reserve(_size);
-//	for (int i = 0; i < _size; ++i) {
-//		if ((i & 0x07) == 0) {
-//			result.push_back(' ');
-//		}
-//		result.push_back(get(i) ? 'X' : '.');
-//	}
-//	return result;
-//}
-//
 
 } // ZXing

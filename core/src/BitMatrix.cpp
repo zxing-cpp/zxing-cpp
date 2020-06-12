@@ -29,19 +29,6 @@
 
 namespace ZXing {
 
-//void
-//BitMatrix::xor(const BitMatrix& mask)
-//{
-//	if (_width != mask._width || _height != mask._height || _rowSize != mask._rowSize)
-//	{
-//		throw std::invalid_argument("BitMatrix::xor(): input matrix dimensions do not match");
-//	}
-//	
-//	for (size_t i = 0; i < _bits.size(); ++i) {
-//		_bits[i] ^= mask._bits[i];
-//	}
-//}
-
 void
 BitMatrix::getRow(int y, BitArray& row) const
 {
@@ -53,10 +40,6 @@ BitMatrix::getRow(int y, BitArray& row) const
 	std::copy_n(_bits.begin() + y * _rowSize, _rowSize, row._bits.begin());
 }
 
-/**
-* @param y row to set
-* @param row {@link BitArray} to copy from
-*/
 void
 BitMatrix::setRow(int y, const BitArray& row)
 {
@@ -138,11 +121,6 @@ BitMatrix::mirror()
 	}
 }
 
-/**
-* This is useful in detecting the enclosing rectangle of a 'pure' barcode.
-*
-* @return {@code left,top,width,height} enclosing rectangle of all 1 bits, or null if it is all white
-*/
 bool
 BitMatrix::getEnclosingRectangle(int &left, int& top, int& width, int& height) const
 {
@@ -193,11 +171,6 @@ BitMatrix::getEnclosingRectangle(int &left, int& top, int& width, int& height) c
 	return true;
 }
 
-/**
-* This is useful in detecting a corner of a 'pure' barcode.
-*
-* @return {@code x,y} coordinate of top-left-most 1 bit, or null if it is all white
-*/
 bool
 BitMatrix::getTopLeftOnBit(int& left, int& top) const
 {

@@ -153,14 +153,6 @@ public:
 	}
 
 	/**
-	* Exclusive-or (XOR): Flip the bit in this {@code BitMatrix} if the corresponding
-	* mask bit is set.
-	*
-	* @param mask XOR mask
-	*/
-	//void xor(const BitMatrix& mask);
-
-	/**
 	* Clears all bits (sets to false).
 	*/
 	void clear() {
