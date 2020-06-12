@@ -30,6 +30,8 @@ TEST(BarcodeFormatTest, BarcodeFormat)
 	EXPECT_EQ(BarcodeFormat::EAN_8, BarcodeFormatFromString("ean8"));
 	EXPECT_EQ(BarcodeFormat::INVALID, BarcodeFormatFromString("invalid-string"));
 
+	EXPECT_EQ(BarcodeFormat::INVALID, BarcodeFormatsFromString(""));
+
 	auto formats = BarcodeFormat::EAN_8 | BarcodeFormat::ITF;
 	EXPECT_EQ(formats, BarcodeFormatsFromString("EAN_8,ITF"));
 	EXPECT_EQ(formats, BarcodeFormatsFromString("EAN_8, ITF"));

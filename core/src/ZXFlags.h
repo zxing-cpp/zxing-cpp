@@ -85,8 +85,10 @@ private:
 
 #define ZX_DECLARE_FLAGS(FLAGS, ENUM) \
 	using FLAGS = ZXFlags<ENUM>; \
-	constexpr inline FLAGS operator|(FLAGS::enum_type f1, FLAGS::enum_type f2) noexcept { return FLAGS(f1) | f2; } \
-	constexpr inline FLAGS operator|(FLAGS::enum_type f1, FLAGS f2) noexcept { return f2 | f1; }
+	constexpr inline FLAGS operator|(FLAGS::enum_type e1, FLAGS::enum_type e2) noexcept { return FLAGS(e1) | e2; } \
+	constexpr inline FLAGS operator|(FLAGS::enum_type e, FLAGS f) noexcept { return f | e; } \
+	constexpr inline bool operator==(FLAGS::enum_type e, FLAGS f) noexcept { return FLAGS(e) == f; } \
+	constexpr inline bool operator==(FLAGS f, FLAGS::enum_type e) noexcept { return FLAGS(e) == f; }
 
 } // ZXing
 
