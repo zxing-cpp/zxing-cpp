@@ -583,9 +583,7 @@ TEST(QREncoderTest, InterleaveWithECBytes)
         237, 85, 224, 96, 74, 219, 61,
     };
 	ASSERT_EQ(expected.size(), out.sizeInBytes());
-	std::vector<uint8_t> outArray(expected.size());
-    out.toBytes(0, outArray.data(), (int)expected.size());
-	EXPECT_EQ(outArray, expected);
+	EXPECT_EQ(expected, out.toBytes(0, (int)expected.size()));
 
 	// Numbers are from http://www.swetake.com/qr/qr8.html
     in = BitArray();
@@ -618,9 +616,7 @@ TEST(QREncoderTest, InterleaveWithECBytes)
         187, 49, 156, 214,
     };
 	EXPECT_EQ(expected.size(), out.sizeInBytes());
-    outArray.resize(expected.size());
-    out.toBytes(0, outArray.data(), (int)expected.size());
-	EXPECT_EQ(outArray, expected);
+	EXPECT_EQ(expected, out.toBytes(0, (int)expected.size()));
 }
 
 TEST(QREncoderTest, BugInBitVectorNumBytes)

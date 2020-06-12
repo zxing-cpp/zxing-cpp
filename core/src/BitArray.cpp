@@ -16,6 +16,7 @@
 */
 
 #include "BitArray.h"
+#include "ByteArray.h"
 
 #include <cstddef>
 #include <stdexcept>
@@ -173,19 +174,13 @@ BitArray::bitwiseXOR(const BitArray& other)
 	}
 }
 
-void
-BitArray::toBytes(int bitOffset, uint8_t* output, int numBytes) const
+ByteArray BitArray::toBytes(int bitOffset, int numBytes) const
 {
-	for (int i = 0; i < numBytes; i++) {
-		int theByte = 0;
-		for (int j = 0; j < 8; j++) {
-			if (get(bitOffset)) {
-				theByte |= 1 << (7 - j);
-			}
-			bitOffset++;
-		}
-		output[i] = (uint8_t)theByte;
-	}
+	ByteArray res(numBytes);
+	for (int i = 0; i < numBytes; i++)
+		for (int j = 0; j < 8; j++)
+			(res[i] <<= 1) |= get(bitOffset++);
+	return res;
 }
 
 //std::string

@@ -420,8 +420,7 @@ BitArray InterleaveWithECBytes(const BitArray& bits, int numTotalBytes, int numD
 		GetNumDataBytesAndNumECBytesForBlockID(numTotalBytes, numDataBytes, numRSBlocks, i, numDataBytesInBlock, numEcBytesInBlock);
 
 		int size = numDataBytesInBlock;
-		blocks[i].dataBytes.resize(size);
-		bits.toBytes(8 * dataBytesOffset, blocks[i].dataBytes.data(), size);
+		blocks[i].dataBytes = bits.toBytes(8 * dataBytesOffset, size);
 		GenerateECBytes(blocks[i].dataBytes, numEcBytesInBlock, blocks[i].ecBytes);
 
 		maxNumDataBytes = std::max(maxNumDataBytes, size);

@@ -30,6 +30,8 @@
 
 namespace ZXing {
 
+class ByteArray;
+
 template <typename Iterator>
 struct Range {
 	Iterator begin, end;
@@ -376,11 +378,11 @@ public:
 	/**
 	*
 	* @param bitOffset first bit to start writing
-	* @param ouput array to write into. Bytes are written most-significant byte first. This is the opposite
-	*  of the internal representation, which is exposed by {@link #getBitArray()}
 	* @param numBytes how many bytes to write
+	* @return Bytes are written most-significant bit first. This is the opposite
+	*  of the internal representation, which is exposed by {@link #getBitArray()}
 	*/
-	void toBytes(int bitOffset, uint8_t* output, int numBytes) const;
+	ByteArray toBytes(int bitOffset, int numBytes) const;
 
 	/**
 	* @return underlying array of ints. The first element holds the first 32 bits, and the least
