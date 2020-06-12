@@ -63,7 +63,8 @@ std::vector<BarcodeFormat> ListBarcodeFormats(BarcodeFormats formats)
 
 const char* ToString(BarcodeFormat format)
 {
-	return FORMAT_STR[BitHacks::NumberOfTrailingZeros(static_cast<int>(format))];
+	return format == BarcodeFormat::INVALID ? "INVALID"
+											: FORMAT_STR[BitHacks::NumberOfTrailingZeros(static_cast<int>(format))];
 }
 
 static std::string NormalizeFormatString(std::string str)

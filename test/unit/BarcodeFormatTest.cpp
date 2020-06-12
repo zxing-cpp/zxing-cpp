@@ -24,6 +24,7 @@ using namespace ZXing;
 TEST(BarcodeFormatTest, BarcodeFormat)
 {
 	EXPECT_EQ(ToString(BarcodeFormat::QR_CODE), std::string("QR_CODE"));
+	EXPECT_EQ(ToString(BarcodeFormat::INVALID), std::string("INVALID"));
 
 	EXPECT_EQ(BarcodeFormat::EAN_8, BarcodeFormatFromString("EAN_8"));
 	EXPECT_EQ(BarcodeFormat::EAN_8, BarcodeFormatFromString("EAN8"));
