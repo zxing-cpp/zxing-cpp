@@ -14,12 +14,7 @@
 * limitations under the License.
 */
 
-#include "GenericLuminanceSource.h"
-#include "HybridBinarizer.h"
-#include "MultiFormatReader.h"
-#include "Result.h"
-#include "DecodeHints.h"
-#include "BarcodeFormat.h"
+#include "ReadBarcode.h"
 
 #include <string>
 #include <memory>
@@ -28,12 +23,6 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
-
-#if 0
-using Binarizer = ZXing::GlobalHistogramBinarizer;
-#else
-using Binarizer = ZXing::HybridBinarizer;
-#endif
 
 struct ReadResult
 {
@@ -50,21 +39,17 @@ ReadResult readBarcodeFromImage(int bufferPtr, int bufferLength, bool tryHarder,
 		hints.setTryHarder(tryHarder);
 		hints.setTryRotate(tryHarder);
 		hints.setFormats(BarcodeFormatsFromString(format));
-		MultiFormatReader reader(hints);
 
 		int width, height, channels;
-		stbi_uc* bitmap = stbi_load_from_memory(reinterpret_cast<const unsigned char*>(bufferPtr), bufferLength, &width, &height, &channels, 4);
-		if (bitmap == nullptr) {
+		std::unique_ptr<stbi_uc, void (*)(void*)> buffer(
+			stbi_load_from_memory(reinterpret_cast<const unsigned char*>(bufferPtr), bufferLength, &width, &height,
+								  &channels, 4),
+			stbi_image_free);
+		if (buffer == nullptr) {
 			return { "", L"", "Error loading image" };
 		}
 
-		GenericLuminanceSource source(width, height, bitmap, width * 4, 4, 0, 1, 2);
-
-		stbi_image_free(bitmap);
-
-		Binarizer binImage(std::shared_ptr<LuminanceSource>(&source, [](void*) {}));
-
-		auto result = reader.read(binImage);
+		auto result = ReadBarcode({buffer.get(), width, height, ImageFormat::RGBX}, hints);
 		if (result.isValid()) {
 			return { ToString(result.format()), result.text(), "" };
 		}
@@ -86,12 +71,10 @@ ReadResult readBarcodeFromPixmap(int bufferPtr, int imgWidth, int imgHeight, boo
 		hints.setTryHarder(tryHarder);
 		hints.setTryRotate(tryHarder);
 		hints.setFormats(BarcodeFormatsFromString(format));
-		MultiFormatReader reader(hints);
 
-		GenericLuminanceSource source(imgWidth, imgHeight, reinterpret_cast<void*>(bufferPtr), imgWidth * 4, 4, 0, 1, 2);
-		Binarizer binImage(std::shared_ptr<LuminanceSource>(&source, [](void*) {}));
+		auto result =
+			ReadBarcode({reinterpret_cast<uint8_t*>(bufferPtr), imgWidth, imgHeight, ImageFormat::RGBX}, hints);
 
-		auto result = reader.read(binImage);
 		if (result.isValid()) {
 			return { ToString(result.format()), result.text(), "" };
 		}
