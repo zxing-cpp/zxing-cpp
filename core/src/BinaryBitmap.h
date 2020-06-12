@@ -37,7 +37,7 @@ public:
 	/**
 	* Image is a pure monochrome image of a barcode.
 	*/
-	virtual bool isPureBarcode() const = 0;
+	virtual bool isPureBarcode() const { return false; }
 
 	/**
 	* @return The width of the bitmap.
@@ -74,7 +74,7 @@ public:
 	/**
 	* @return Whether this bitmap can be cropped.
 	*/
-	virtual bool canCrop() const = 0;
+	virtual bool canCrop() const { return false; }
 
 	/**
 	* Returns a new object with cropped image data. Implementations may keep a reference to the
@@ -86,12 +86,15 @@ public:
 	* @param height The height of the rectangle to crop.
 	* @return A cropped version of this object.
 	*/
-	virtual std::shared_ptr<BinaryBitmap> cropped(int left, int top, int width, int height) const = 0;
+	virtual std::shared_ptr<BinaryBitmap> cropped(int /*left*/, int /*top*/, int /*width*/, int /*height*/) const
+	{
+		throw std::runtime_error("This binarizer does not support cropping.");
+	}
 
 	/**
 	* @return Whether this bitmap supports counter-clockwise rotation.
 	*/
-	virtual bool canRotate() const = 0;
+	virtual bool canRotate() const { return false; }
 
 	/**
 	* Returns a new object with rotated image data by 90 degrees clockwise.
@@ -100,7 +103,10 @@ public:
 	* @param degreeCW degree in clockwise direction, possible values are 90, 180 and 270
 	* @return A rotated version of this object.
 	*/
-	virtual std::shared_ptr<BinaryBitmap> rotated(int degreeCW) const = 0;
+	virtual std::shared_ptr<BinaryBitmap> rotated(int /*degreeCW*/) const
+	{
+		throw std::runtime_error("This binarizer does not support rotation.");
+	}
 };
 
 } // ZXing

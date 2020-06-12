@@ -50,6 +50,7 @@ class ImageView
 	int _width = 0, _height = 0, _pixStride = 0, _rowStride = 0;
 
 	friend Result ReadBarcode(const ImageView&, const DecodeHints&);
+	friend class ThresholdBinarizer;
 
 public:
 	/**
@@ -66,6 +67,8 @@ public:
 		: _data(data), _format(format), _width(width), _height(height),
 		  _pixStride(pixStride ? pixStride : PixStride(format)), _rowStride(rowStride ? rowStride : width * _pixStride)
 	{}
+
+	const uint8_t* data(int x, int y) const { return _data + y * _rowStride + x * _pixStride; }
 };
 
 /**

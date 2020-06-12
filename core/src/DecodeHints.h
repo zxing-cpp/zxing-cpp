@@ -23,6 +23,21 @@
 
 namespace ZXing {
 
+/**
+ * @brief The Binarizer enum
+ *
+ * Specify which algorithm to use for the grayscale to binary transformation.
+ * The difference is how to get to a threshold value T which results in a bit
+ * value R = L <= T.
+ */
+enum class Binarizer
+{
+	LocalAverage,    ///< T = average of neighboring pixels for 2D and GlobalHistogram for 1D (HybridBinarizer)
+	GlobalHistogram, ///< T = valley between the 2 largest peaks in the histogram (per line in 1D case)
+	FixedThreshold,  ///< T = 127
+	BoolCast,        ///< T = 0, fastest possible
+};
+
 class DecodeHints
 {
 	bool _tryHarder : 1;
@@ -31,6 +46,7 @@ class DecodeHints
 	bool _assumeCode39CheckDigit : 1;
 	bool _assumeGS1 : 1;
 	bool _returnCodabarStartEnd : 1;
+	Binarizer _binarizer : 2;
 
 	BarcodeFormats _formats = BarcodeFormat::INVALID;
 	std::string _characterSet;
@@ -51,6 +67,9 @@ public:
 
 	/// Also try detecting code in 90, 180 and 270 degree rotated images.
 	ZX_PROPERTY(bool, tryRotate, setTryRotate)
+
+	/// Binarizer to use internally when using the ReadBarcode function
+	ZX_PROPERTY(Binarizer, binarizer, setBinarizer)
 
 	/// Specifies what character encoding to use when decoding, where applicable.
 	ZX_PROPERTY(std::string, characterSet, setCharacterSet)
