@@ -96,7 +96,7 @@ int main(int argc, char* argv[])
 	auto result = ReadBarcode({buffer.get(), width, height, ImageFormat::RGBX}, hints);
 
 	if (result.isValid()) {
-		std::cout << "Text:     " << TextUtfEncoding::ToUtf8(result.text()) << "\n"
+		std::cout << "Text:     \"" << TextUtfEncoding::ToUtf8(result.text()) << "\"\n"
 		          << "Format:   " << ToString(result.format()) << "\n"
 		          << "Position: " << result.resultPoints() << "\n";
 		auto errLevel = result.metadata().getString(ResultMetadata::Key::ERROR_CORRECTION_LEVEL);
