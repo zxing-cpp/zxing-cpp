@@ -125,7 +125,7 @@ ByteArray BitArray::toBytes(int bitOffset, int numBytes) const
 	ByteArray res(numBytes);
 	for (int i = 0; i < numBytes; i++)
 		for (int j = 0; j < 8; j++)
-			(res[i] <<= 1) |= get(bitOffset++);
+			(res[i] <<= 1) |= (get(bitOffset++) ? 1 : 0);
 	return res;
 }
 
