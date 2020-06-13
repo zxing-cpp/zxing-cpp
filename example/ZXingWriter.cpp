@@ -43,7 +43,7 @@ static void PrintUsage(const char* exePath)
 	          << "    -ecc       Error correction level, [0-8]\n"
 	          << "\n"
 			  << "Supported formats are:\n";
-	for (auto f : ListBarcodeFormats()) {
+	for (auto f : BarcodeFormats::all()) {
 		std::cout << "    " << ToString(f) << "\n";
 	}
 	std::cout << "Format can be lowercase letters, with or without underscore.\n";

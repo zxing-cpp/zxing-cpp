@@ -15,7 +15,10 @@
 * limitations under the License.
 */
 
+#include "BitHacks.h"
+
 #include <type_traits>
+#include <iterator>
 
 namespace ZXing {
 
@@ -28,6 +31,7 @@ class ZXFlags
 	Int i = 0;
 
 	constexpr inline ZXFlags(Int other) : i(other) {}
+	constexpr static inline unsigned numberOfBits(Int x) noexcept { return x < 2 ? x : 1 + numberOfBits(x >> 1); }
 
 public:
 	using enum_type = Enum;
@@ -38,6 +42,29 @@ public:
 //	constexpr inline ZXFlags(std::initializer_list<Enum> flags) noexcept
 //		: i(initializer_list_helper(flags.begin(), flags.end()))
 //	{}
+
+	class iterator : public std::iterator<std::input_iterator_tag, Enum>
+	{
+		friend class ZXFlags;
+		const Int _flags = 0;
+		int _pos = 0;
+		iterator(Int i, int p) : _flags(i), _pos(p) {}
+	public:
+		Enum operator*() const noexcept { return Enum(1 << _pos); }
+
+		iterator& operator++() noexcept
+		{
+			while (++_pos < BitHacks::HighestBitSet(_flags) && !(_pos & _flags))
+				;
+			return *this;
+		}
+
+		bool operator==(const iterator& rhs) const noexcept { return _pos == rhs._pos; }
+		bool operator!=(const iterator& rhs) const noexcept { return !(*this == rhs); }
+	};
+
+	iterator begin() const noexcept { return {i, BitHacks::NumberOfTrailingZeros(i)}; }
+	iterator end() const noexcept { return {i, BitHacks::HighestBitSet(i) + 1}; }
 
 	constexpr inline bool operator==(ZXFlags other) const noexcept { return i == other.i; }
 
@@ -58,7 +85,7 @@ public:
 
 //	constexpr inline operator Int() const noexcept { return i; }
 //	constexpr inline bool operator!() const noexcept { return !i; }
-	constexpr inline Int asInt() const noexcept { return i; }
+//	constexpr inline Int asInt() const noexcept { return i; }
 
 	constexpr inline bool testFlag(Enum flag) const noexcept
 	{
@@ -68,11 +95,10 @@ public:
 	{
 		return on ? (*this |= flag) : (*this &= ~Int(flag));
 	}
-	inline ZXFlags clear() noexcept
-	{
-		i = 0;
-		return *this;
-	}
+	inline void clear() noexcept { i = 0; }
+
+	constexpr static unsigned bitIndex(Enum flag) noexcept { return numberOfBits(Int(flag)); }
+	constexpr static ZXFlags all() noexcept { return ~(unsigned(~0) << numberOfBits(Int(Enum::_max))); }
 
 private:
 //	constexpr static inline Int

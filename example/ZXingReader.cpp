@@ -36,7 +36,7 @@ static void PrintUsage(const char* exePath)
 			  << "    -format  Only detect given format(s)\n"
 			  << "\n"
 			  << "Supported formats are:\n";
-	for (auto f : ListBarcodeFormats()) {
+	for (auto f : BarcodeFormats::all()) {
 		std::cout << "    " << ToString(f) << "\n";
 	}
 	std::cout << "Formats can be lowercase, with or without underscore, separated by ',', '|' and/or ' '\n";

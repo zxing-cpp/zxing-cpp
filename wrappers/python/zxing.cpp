@@ -36,7 +36,8 @@ using FormatList = std::vector<BarcodeFormat>;
 
 FormatList barcode_formats_from_str(const std::string& str)
 {
-	return ListBarcodeFormats(BarcodeFormatsFromString(str));
+	auto formats = BarcodeFormatsFromString(str);
+	return FormatList(formats.begin(), formats.end());
 };
 
 Result read_barcode(const Image& image, const FormatList& formats, bool fastMode, bool tryRotate, bool hybridBinarizer)

@@ -28,7 +28,7 @@ namespace ZXing {
 */
 enum class BarcodeFormat
 {
-	// The values are an implementation detail. The c++ use-case (ZXFlags) could have been designed to such that, it
+	// The values are an implementation detail. The c++ use-case (ZXFlags) could have been designed such that it
 	// would not have been necessary to explicitly set the values to single bit constants. This has been done to ease
 	// the interoperability with C-like interfaces, the python and the Qt wrapper.
 	INVALID           = 0,         ///< Used as a return value if no valid barcode has been detected
@@ -50,15 +50,11 @@ enum class BarcodeFormat
 	UPC_E             = (1 << 15), ///< UPC-E (1D)
 	UPC_EAN_EXTENSION = (1 << 16), ///< UPC/EAN extension (1D). Not a stand-alone format.
 
-	// used for internal purpuses, check after adding new formats
-	LAST_FORMAT = UPC_EAN_EXTENSION,
-	// Used to count the number of formats, now deprecated
-	FORMAT_COUNT = INVALID,
+	FORMAT_COUNT = INVALID,           ///> DEPRECATED: Used to count the number of formats
+	_max         = UPC_EAN_EXTENSION, ///> implementation detail, don't use
 };
 
 ZX_DECLARE_FLAGS(BarcodeFormats, BarcodeFormat)
-
-std::vector<BarcodeFormat> ListBarcodeFormats(BarcodeFormats formats = BarcodeFormat(-1));
 
 const char* ToString(BarcodeFormat format);
 

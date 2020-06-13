@@ -28,6 +28,7 @@
 namespace ZXing {
 
 static const char* FORMAT_STR[] = {
+	"INVALID",
 	"AZTEC",
 	"CODABAR",
 	"CODE_39",
@@ -47,24 +48,12 @@ static const char* FORMAT_STR[] = {
 	"UPC_EAN_EXTENSION",
 };
 
-static_assert(1 << (Length(FORMAT_STR) - 1) == (int)BarcodeFormat::LAST_FORMAT,
+static_assert(Length(FORMAT_STR) == (int)BarcodeFormats::bitIndex(BarcodeFormat::_max) + 1,
 			  "FORMAT_STR array is out of sync with BarcodeFormat");
-
-std::vector<BarcodeFormat> ListBarcodeFormats(BarcodeFormats formats)
-{
-	std::vector<BarcodeFormat> res;
-	for (int i = 1; i <= static_cast<int>(BarcodeFormat::LAST_FORMAT); i <<= 1) {
-		auto f = BarcodeFormat(i);
-		if (formats.testFlag(f))
-			res.push_back(f);
-	}
-	return res;
-}
 
 const char* ToString(BarcodeFormat format)
 {
-	return format == BarcodeFormat::INVALID ? "INVALID"
-											: FORMAT_STR[BitHacks::NumberOfTrailingZeros(static_cast<int>(format))];
+	return FORMAT_STR[BarcodeFormats::bitIndex(format)];
 }
 
 static std::string NormalizeFormatString(std::string str)
@@ -79,7 +68,7 @@ static BarcodeFormat ParseFormatString(const std::string& str)
 	auto pos = std::find_if(std::begin(FORMAT_STR), std::end(FORMAT_STR),
 							[str](auto fmt) { return NormalizeFormatString(fmt) == str; });
 	return pos == std::end(FORMAT_STR) ? BarcodeFormat::INVALID
-									   : BarcodeFormat(1 << std::distance(std::begin(FORMAT_STR), pos));
+									   : BarcodeFormat(1 << (std::distance(std::begin(FORMAT_STR), pos) - 1));
 }
 
 BarcodeFormat BarcodeFormatFromString(const std::string& str)
