@@ -35,12 +35,8 @@ static int
 GetModuleSize(int x, int y, const BitMatrix& image)
 {
 	int oldX = x;
-	int width = image.width();
-	while (x < width && image.get(x, y)) {
+	while (x < image.width() && image.get(x, y)) {
 		x++;
-	}
-	if (x == width) {
-		return 0;
 	}
 	return x - oldX;
 }
@@ -56,15 +52,17 @@ GetModuleSize(int x, int y, const BitMatrix& image)
 static BitMatrix
 ExtractPureBits(const BitMatrix& image)
 {
+	const int MIN_SIZE = 8; // datamatrix codes are at least 8x8 modules
 	int left, top, right, bottom;
-	if (!image.getTopLeftOnBit(left, top) || !image.getBottomRightOnBit(right, bottom)) {
+	if (!image.getTopLeftOnBit(left, top) || !image.getBottomRightOnBit(right, bottom)
+		|| right - left < MIN_SIZE || bottom - top < MIN_SIZE) {
 		return {};
 	}
 
 	int moduleSize = GetModuleSize(left, top, image);
 	int matrixWidth = (right - left + 1) / moduleSize;
 	int matrixHeight = (bottom - top + 1) / moduleSize;
-	if (matrixWidth <= 0 || matrixHeight <= 0) {
+	if (matrixWidth < MIN_SIZE || matrixHeight < MIN_SIZE) {
 		return {};
 	}
 
