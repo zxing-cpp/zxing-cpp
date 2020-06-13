@@ -20,3 +20,9 @@ if (BUILD_WRITERS)
 
     add_test(NAME ZXingWriterTest COMMAND ZXingWriter qrcode "I have the best words." test.png)
 endif()
+
+find_package (Qt5 5.5 COMPONENTS Gui)
+if (TARGET Qt5::Gui)
+    add_executable (ZXingQtReader ZXingQtReader.cpp)
+    target_link_libraries(ZXingQtReader ZXing::ZXing Qt5::Gui)
+endif()
