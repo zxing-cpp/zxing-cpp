@@ -54,6 +54,11 @@ class DecodeHints
 	std::vector<int> _allowedEanExtensions;
 
 public:
+	// bitfields don't get default initialized to 0.
+	DecodeHints()
+		: _tryHarder(0), _tryRotate(0), _tryCode39ExtendedMode(0), _assumeCode39CheckDigit(0), _assumeGS1(0),
+		  _returnCodabarStartEnd(0), _binarizer(Binarizer::LocalAverage)
+	{}
 
 #define ZX_PROPERTY(TYPE, GETTER, SETTER) \
 	inline TYPE GETTER() const noexcept { return _##GETTER; } \
