@@ -95,16 +95,14 @@ int main(int argc, char* argv[])
 
 	auto result = ReadBarcode({buffer.get(), width, height, ImageFormat::RGBX}, hints);
 
-	if (result.isValid()) {
-		std::cout << "Text:     \"" << TextUtfEncoding::ToUtf8(result.text()) << "\"\n"
-		          << "Format:   " << ToString(result.format()) << "\n"
-		          << "Position: " << result.resultPoints() << "\n";
-		auto errLevel = result.metadata().getString(ResultMetadata::Key::ERROR_CORRECTION_LEVEL);
-		if (!errLevel.empty()) {
-			std::cout << "EC Level: " << TextUtfEncoding::ToUtf8(errLevel) << "\n";
-		}
-		return 0;
+	std::cout << "Text:     \"" << TextUtfEncoding::ToUtf8(result.text()) << "\"\n"
+			  << "Format:   " << ToString(result.format()) << "\n"
+			  << "Position: " << result.resultPoints() << "\n"
+			  << "Error:    " << ToString(result.status()) << "\n";
+	auto errLevel = result.metadata().getString(ResultMetadata::Key::ERROR_CORRECTION_LEVEL);
+	if (!errLevel.empty()) {
+		std::cout << "EC Level: " << TextUtfEncoding::ToUtf8(errLevel) << "\n";
 	}
 
-	return 1;
+	return static_cast<int>(result.status());
 }

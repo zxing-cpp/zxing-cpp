@@ -29,9 +29,10 @@ using ZXing::BarcodeFormat;
 using ZXing::BarcodeFormats;
 using ZXing::Binarizer;
 
-QDebug operator<<(QDebug dbg, BarcodeFormat f)
+template <typename T, typename _ = decltype(ToString(T()))>
+QDebug operator<<(QDebug dbg, const T& v)
 {
-	return dbg.noquote() << QString::fromStdString(ToString(f));
+	return dbg.noquote() << QString::fromStdString(ToString(v));
 }
 
 class Result : private ZXing::Result
@@ -41,6 +42,7 @@ public:
 
 	using ZXing::Result::format;
 	using ZXing::Result::isValid;
+	using ZXing::Result::status;
 
 	inline QString text() const { return QString::fromWCharArray(ZXing::Result::text().c_str()); }
 };
@@ -87,9 +89,9 @@ int main(int argc, char* argv[])
 
 	auto result = ReadBarcode(QImage(filePath), hints);
 
-	qDebug() << "Is Valid:" << result.isValid();
-	qDebug() << "Text:    " << result.text();
-	qDebug() << "Format:  " << result.format();
+	qDebug() << "Text:   " << result.text();
+	qDebug() << "Format: " << result.format();
+	qDebug() << "Error:  " << result.status();
 
 	return result.isValid() ? 0 : 1;
 }
