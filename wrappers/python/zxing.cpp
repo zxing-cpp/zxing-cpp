@@ -1,11 +1,7 @@
 #include "BarcodeFormat.h"
 
 // Reader
-#include "DecodeHints.h"
-#include "GenericLuminanceSource.h"
-#include "HybridBinarizer.h"
-#include "MultiFormatReader.h"
-#include "Result.h"
+#include "ReadBarcode.h"
 
 // Writer
 #include "BitMatrix.h"
@@ -46,26 +42,14 @@ Result read_barcode(const Image& image, const FormatList& formats, bool fastMode
 	hints.setTryHarder(!fastMode);
 	hints.setTryRotate(tryRotate);
 	hints.setPossibleFormats(formats);
-	MultiFormatReader reader(hints);
+	hints.setBinarizer(hybridBinarizer ? Binarizer::LocalAverage : Binarizer::GlobalHistogram);
 	const auto height = narrow<int>(image.shape(0));
 	const auto width = narrow<int>(image.shape(1));
+	const auto channels = image.ndim() == 2 ? 1 : narrow<int>(image.shape(2));
 	const auto bytes = image.data();
-	std::shared_ptr<LuminanceSource> source;
+	const auto imgfmt = channels == 1 ? ImageFormat::Lum : ImageFormat::BGR;
 
-	if (image.ndim() == 2) {
-		// Grayscale image
-		source = std::make_shared<GenericLuminanceSource>(width, height, bytes, width);
-	} else {
-		// BGR image
-		const auto channels = image.shape(2);
-		source = std::make_shared<GenericLuminanceSource>(width, height, bytes, width * channels, channels, 2, 1, 0);
-	}
-
-	if (hybridBinarizer) {
-		return reader.read(HybridBinarizer(source));
-	} else {
-		return reader.read(GlobalHistogramBinarizer(source));
-	}
+	return ReadBarcode({bytes, width, height, imgfmt, width * channels, channels}, hints);
 }
 
 Image write_barcode(BarcodeFormat format, std::string text, int width, int height, int margin, int eccLevel)
