@@ -36,6 +36,12 @@
 using namespace ZXing;
 using namespace ZXing::Test;
 
+int getEnv(const char* name, int fallback = 0)
+{
+	auto var = getenv(name);
+	return var ? atoi(var) : fallback;
+}
+
 int main(int argc, char** argv)
 {
 	if (argc <= 1) {
@@ -46,10 +52,10 @@ int main(int argc, char** argv)
 	fs::path pathPrefix = argv[1];
 
 	if (Contains({".png", ".jpg", ".pgm", ".gif"}, pathPrefix.extension())) {
-		auto hints = DecodeHints().setTryHarder(true).setTryRotate(true).setIsPure(getenv("IS_PURE"));
+		auto hints = DecodeHints().setTryHarder(true).setTryRotate(true).setIsPure(getEnv("IS_PURE"));
 //		hints.setFormats(BarcodeFormat::QR_CODE);
 		MultiFormatReader reader(hints);
-		int rotation = getenv("ROTATION") ? atoi(getenv("ROTATION")) : 0;
+		int rotation = getEnv("ROTATION");
 
 		for (int i = 1; i < argc; ++i) {
 			Result result = reader.read(*ImageLoader::load(argv[i]).rotated(rotation));
