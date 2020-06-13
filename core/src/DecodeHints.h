@@ -30,7 +30,7 @@ namespace ZXing {
  * The difference is how to get to a threshold value T which results in a bit
  * value R = L <= T.
  */
-enum class Binarizer
+enum class Binarizer : unsigned char // needs to unsigned for the bitfield below to work, uint8_t fails as well
 {
 	LocalAverage,    ///< T = average of neighboring pixels for 2D and GlobalHistogram for 1D (HybridBinarizer)
 	GlobalHistogram, ///< T = valley between the 2 largest peaks in the histogram (per line in 1D case)
