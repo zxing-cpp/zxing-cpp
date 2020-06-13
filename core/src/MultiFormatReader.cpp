@@ -65,7 +65,7 @@ MultiFormatReader::MultiFormatReader(const DecodeHints& hints)
 			_readers.emplace_back(new Pdf417::Reader());
 		}
 		if (hints.hasFormat(BarcodeFormat::MAXICODE)) {
-			_readers.emplace_back(new MaxiCode::Reader());
+			_readers.emplace_back(new MaxiCode::Reader(hints));
 		}
 		// At end in "try harder" mode
 		if (addOneDReader && tryHarder) {
@@ -81,7 +81,7 @@ MultiFormatReader::MultiFormatReader(const DecodeHints& hints)
 		_readers.emplace_back(new DataMatrix::Reader(hints));
 		_readers.emplace_back(new Aztec::Reader());
 		_readers.emplace_back(new Pdf417::Reader());
-		_readers.emplace_back(new MaxiCode::Reader());
+		_readers.emplace_back(new MaxiCode::Reader(hints));
 		if (tryHarder) {
 			_readers.emplace_back(new OneD::Reader(hints));
 		}

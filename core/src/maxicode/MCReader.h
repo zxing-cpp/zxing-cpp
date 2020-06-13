@@ -19,11 +19,17 @@
 #include "Reader.h"
 
 namespace ZXing {
+
+class DecodeHints;
+
 namespace MaxiCode {
 
 class Reader : public ZXing::Reader
 {
+	bool _isPure;
+
 public:
+	explicit Reader(const DecodeHints& hints);
 	Result decode(const BinaryBitmap& image) const override;
 };
 

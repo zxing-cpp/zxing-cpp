@@ -49,11 +49,11 @@ static std::shared_ptr<GenericLuminanceSource> readImage(const fs::path& imgPath
 	return lumSrc;
 }
 
-const BinaryBitmap& ImageLoader::load(const fs::path& imgPath, bool isPure)
+const BinaryBitmap& ImageLoader::load(const fs::path& imgPath)
 {
 	auto& binImg = cache[imgPath];
 	if (binImg == nullptr)
-		binImg = std::make_unique<Binarizer>(readImage(imgPath), isPure);
+		binImg = std::make_unique<Binarizer>(readImage(imgPath));
 	return *binImg;
 }
 

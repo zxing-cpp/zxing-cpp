@@ -40,20 +40,13 @@ struct GlobalHistogramBinarizer::DataCache
 	std::shared_ptr<const BitMatrix> matrix;
 };
 
-GlobalHistogramBinarizer::GlobalHistogramBinarizer(std::shared_ptr<const LuminanceSource> source, bool pureBarcode) :
+GlobalHistogramBinarizer::GlobalHistogramBinarizer(std::shared_ptr<const LuminanceSource> source) :
 	_source(std::move(source)),
-	_pureBarcode(pureBarcode),
 	_cache(new DataCache)
 {
 }
 
 GlobalHistogramBinarizer::~GlobalHistogramBinarizer() = default;
-
-bool
-GlobalHistogramBinarizer::isPureBarcode() const
-{
-	return _pureBarcode;
-}
 
 int
 GlobalHistogramBinarizer::width() const
@@ -243,7 +236,7 @@ GlobalHistogramBinarizer::rotated(int degreeCW) const
 std::shared_ptr<BinaryBitmap>
 GlobalHistogramBinarizer::newInstance(const std::shared_ptr<const LuminanceSource>& source) const
 {
-	return std::make_shared<GlobalHistogramBinarizer>(source, _pureBarcode);
+	return std::make_shared<GlobalHistogramBinarizer>(source);
 }
 
 

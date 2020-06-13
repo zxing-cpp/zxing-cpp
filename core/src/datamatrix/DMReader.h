@@ -31,7 +31,7 @@ namespace DataMatrix {
 */
 class Reader : public ZXing::Reader
 {
-	bool _tryRotate, _tryHarder;
+	bool _tryRotate, _tryHarder, _isPure;
 public:
 	explicit Reader(const DecodeHints& hints);
 	Result decode(const BinaryBitmap& image) const override;

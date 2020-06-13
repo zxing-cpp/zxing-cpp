@@ -46,14 +46,13 @@ int main(int argc, char** argv)
 	fs::path pathPrefix = argv[1];
 
 	if (Contains({".png", ".jpg", ".pgm", ".gif"}, pathPrefix.extension())) {
-		auto hints = DecodeHints().setTryHarder(true).setTryRotate(true);
+		auto hints = DecodeHints().setTryHarder(true).setTryRotate(true).setIsPure(getenv("IS_PURE"));
 //		hints.setFormats(BarcodeFormat::QR_CODE);
 		MultiFormatReader reader(hints);
-		bool isPure = getenv("IS_PURE");
 		int rotation = getenv("ROTATION") ? atoi(getenv("ROTATION")) : 0;
 
 		for (int i = 1; i < argc; ++i) {
-			Result result = reader.read(*ImageLoader::load(argv[i], isPure).rotated(rotation));
+			Result result = reader.read(*ImageLoader::load(argv[i]).rotated(rotation));
 			std::cout << argv[i] << ": ";
 			if (result.isValid())
 				std::cout << ToString(result.format()) << ": " << TextUtfEncoding::ToUtf8(result.text()) << " " << metadataToUtf8(result) << "\n";

@@ -135,9 +135,8 @@ ExtractPureBits(const BitMatrix& image)
 	return Deflate(image, matrixWidth, matrixHeight, top, left, static_cast<int>(moduleSize));
 }
 
-Reader::Reader(const DecodeHints& hints) :
-	_tryHarder(hints.tryHarder()),
-	_charset(hints.characterSet())
+Reader::Reader(const DecodeHints& hints)
+	: _tryHarder(hints.tryHarder()), _isPure(hints.isPure()), _charset(hints.characterSet())
 {
 }
 
@@ -151,7 +150,7 @@ Reader::decode(const BinaryBitmap& image) const
 
 	DecoderResult decoderResult;
 	std::vector<ResultPoint> points;
-	if (image.isPureBarcode()) {
+	if (_isPure) {
 		BitMatrix bits = ExtractPureBits(*binImg);
 		if (bits.empty())
 			return Result(DecodeStatus::NotFound);

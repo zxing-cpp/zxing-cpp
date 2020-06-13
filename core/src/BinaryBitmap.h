@@ -38,6 +38,7 @@ public:
 	/**
 	* Image is a pure monochrome image of a barcode.
 	*/
+	[[deprecated]]
 	virtual bool isPureBarcode() const { return false; }
 
 	/**

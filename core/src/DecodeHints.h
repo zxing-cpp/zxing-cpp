@@ -42,6 +42,7 @@ class DecodeHints
 {
 	bool _tryHarder : 1;
 	bool _tryRotate : 1;
+	bool _isPure : 1;
 	bool _tryCode39ExtendedMode : 1;
 	bool _assumeCode39CheckDigit : 1;
 	bool _assumeGS1 : 1;
@@ -56,8 +57,8 @@ class DecodeHints
 public:
 	// bitfields don't get default initialized to 0.
 	DecodeHints()
-		: _tryHarder(0), _tryRotate(0), _tryCode39ExtendedMode(0), _assumeCode39CheckDigit(0), _assumeGS1(0),
-		  _returnCodabarStartEnd(0), _binarizer(Binarizer::LocalAverage)
+		: _tryHarder(0), _tryRotate(0), _isPure(0), _tryCode39ExtendedMode(0), _assumeCode39CheckDigit(0),
+		  _assumeGS1(0), _returnCodabarStartEnd(0), _binarizer(Binarizer::LocalAverage)
 	{}
 
 #define ZX_PROPERTY(TYPE, GETTER, SETTER) \
@@ -75,6 +76,9 @@ public:
 
 	/// Binarizer to use internally when using the ReadBarcode function
 	ZX_PROPERTY(Binarizer, binarizer, setBinarizer)
+
+	/// Set to true if the input contains nothing but a perfectly aligned barcode (generated image)
+	ZX_PROPERTY(bool, isPure, setIsPure)
 
 	/// Specifies what character encoding to use when decoding, where applicable.
 	ZX_PROPERTY(std::string, characterSet, setCharacterSet)

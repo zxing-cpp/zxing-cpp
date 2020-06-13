@@ -19,6 +19,7 @@
 #include "MCDecoder.h"
 #include "MCBitMatrixParser.h"
 #include "Result.h"
+#include "DecodeHints.h"
 #include "DecoderResult.h"
 #include "BinaryBitmap.h"
 #include "BitMatrix.h"
@@ -57,10 +58,12 @@ static BitMatrix ExtractPureBits(const BitMatrix& image)
 	return result;
 }
 
+Reader::Reader(const DecodeHints& hints) : _isPure(hints.isPure()) {}
+
 Result
 Reader::decode(const BinaryBitmap& image) const
 {
-	if (!image.isPureBarcode()) {
+	if (!_isPure) {
 		return Result(DecodeStatus::NotFound);
 	}
 
@@ -69,6 +72,7 @@ Reader::decode(const BinaryBitmap& image) const
 		return Result(DecodeStatus::NotFound);
 	}
 
+	//TODO: this only works with effectively 'pure' barcodes. Needs proper detector.
 	BitMatrix bits = ExtractPureBits(*binImg);
 	if (bits.empty()) {
 		return Result(DecodeStatus::NotFound);

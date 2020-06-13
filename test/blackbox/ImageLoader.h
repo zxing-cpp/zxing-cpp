@@ -31,7 +31,7 @@ class ImageLoader
 public:
 	static std::map<fs::path, std::unique_ptr<BinaryBitmap>> cache;
 
-	static const BinaryBitmap& load(const fs::path& imgPath, bool isPure = false);
+	static const BinaryBitmap& load(const fs::path& imgPath);
 };
 
 

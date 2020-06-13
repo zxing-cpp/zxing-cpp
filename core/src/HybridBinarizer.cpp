@@ -45,8 +45,8 @@ struct HybridBinarizer::DataCache
 	std::shared_ptr<const BitMatrix> matrix;
 };
 
-HybridBinarizer::HybridBinarizer(const std::shared_ptr<const LuminanceSource>& source, bool pureBarcode) :
-	GlobalHistogramBinarizer(source, pureBarcode),
+HybridBinarizer::HybridBinarizer(const std::shared_ptr<const LuminanceSource>& source) :
+	GlobalHistogramBinarizer(source),
 	_cache(new DataCache)
 {
 }
@@ -228,7 +228,7 @@ HybridBinarizer::getBlackMatrix() const
 std::shared_ptr<BinaryBitmap>
 HybridBinarizer::newInstance(const std::shared_ptr<const LuminanceSource>& source) const
 {
-	return std::make_shared<HybridBinarizer>(source, _pureBarcode);
+	return std::make_shared<HybridBinarizer>(source);
 }
 
 } // ZXing
