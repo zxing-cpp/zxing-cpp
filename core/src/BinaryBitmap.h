@@ -17,6 +17,7 @@
 */
 
 #include <memory>
+#include <stdexcept>
 
 namespace ZXing {
 
