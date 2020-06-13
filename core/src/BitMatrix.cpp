@@ -142,6 +142,12 @@ BitMatrix::getEnclosingRectangle(int &left, int& top, int& width, int& height) c
 				if (y > bottom) {
 					bottom = y;
 				}
+#ifdef ZX_FAST_BIT_STORAGE
+				if (x32 < left)
+					left = x32;
+				if (x32 > right)
+					right = x32;
+#else
 				if (x32 * 32 < left) {
 					int bit = 0;
 					while ((theBits << (31 - bit)) == 0) {
@@ -160,6 +166,7 @@ BitMatrix::getEnclosingRectangle(int &left, int& top, int& width, int& height) c
 						right = x32 * 32 + bit;
 					}
 				}
+#endif
 			}
 		}
 	}
@@ -174,45 +181,33 @@ BitMatrix::getEnclosingRectangle(int &left, int& top, int& width, int& height) c
 bool
 BitMatrix::getTopLeftOnBit(int& left, int& top) const
 {
-	int bitsOffset = 0;
-	while (bitsOffset < (int)_bits.size() && _bits[bitsOffset] == 0) {
-		bitsOffset++;
-	}
+	int bitsOffset = std::distance(_bits.begin(), std::find_if(_bits.begin(), _bits.end(), [](auto v) { return v; }));
 	if (bitsOffset == (int)_bits.size()) {
 		return false;
 	}
 	top = bitsOffset / _rowSize;
-	left = (bitsOffset % _rowSize) * 32;
-
-	uint32_t theBits = _bits[bitsOffset];
-	int bit = 0;
-	while ((theBits << (31 - bit)) == 0) {
-		bit++;
-	}
-	left += bit;
+	left = (bitsOffset % _rowSize);
+#ifndef ZX_FAST_BIT_STORAGE
+	left = left * 32 + BitHacks::NumberOfTrailingZeros(_bits[bitsOffset]);
+#endif
 	return true;
 }
 
 bool
 BitMatrix::getBottomRightOnBit(int& right, int& bottom) const
 {
-	int bitsOffset = int(_bits.size()) - 1;
-	while (bitsOffset >= 0 && _bits[bitsOffset] == 0) {
-		bitsOffset--;
-	}
+	int bitsOffset =
+		_bits.size() - 1 -
+		std::distance(_bits.rbegin(), std::find_if(_bits.rbegin(), _bits.rend(), [](auto v) { return v; }));
 	if (bitsOffset < 0) {
 		return false;
 	}
 
 	bottom = bitsOffset / _rowSize;
-	right = (bitsOffset % _rowSize) * 32;
-
-	uint32_t theBits = _bits[bitsOffset];
-	int bit = 31;
-	while ((theBits >> bit) == 0) {
-		bit--;
-	}
-	right += bit;
+	right = (bitsOffset % _rowSize);
+#ifndef ZX_FAST_BIT_STORAGE
+	right = right * 32 + 31 - BitHacks::NumberOfLeadingZeros(_bits[bitsOffset]);
+#endif
 	return true;
 }
 
