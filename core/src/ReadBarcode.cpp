@@ -33,6 +33,7 @@ class ThresholdBinarizer : public BinaryBitmap
 {
 	ImageView _buffer;
 	uint8_t _threshold = 0;
+	mutable std::shared_ptr<const BitMatrix> _cache;
 
 public:
 	ThresholdBinarizer(const ImageView& buffer, uint8_t threshold = 1) : _buffer(buffer), _threshold(threshold) {}
@@ -58,12 +59,15 @@ public:
 
 	std::shared_ptr<const BitMatrix> getBlackMatrix() const override
 	{
-		const int channel = GreenIndex(_buffer._format);
-		BitMatrix res(width(), height());
-		for (int y = 0; y < res.height(); ++y)
-			for (int x = 0; x < res.width(); ++x)
-				res.set(x, y, _buffer.data(x, y)[channel] <= _threshold);
-		return std::make_shared<const BitMatrix>(std::move(res));
+		if (!_cache) {
+			const int channel = GreenIndex(_buffer._format);
+			BitMatrix res(width(), height());
+			for (int y = 0; y < res.height(); ++y)
+				for (int x = 0; x < res.width(); ++x)
+					res.set(x, y, _buffer.data(x, y)[channel] <= _threshold);
+			_cache = std::make_shared<const BitMatrix>(std::move(res));
+		}
+		return _cache;
 	}
 };
 
