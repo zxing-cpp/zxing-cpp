@@ -15,8 +15,8 @@
 */
 
 #include "QRCodeStructuredAppendReader.h"
-#include "HybridBinarizer.h"
 #include "TextUtfEncoding.h"
+#include "BinaryBitmap.h"
 #include "Result.h"
 #include "DecodeHints.h"
 #include "qrcode/QRReader.h"
