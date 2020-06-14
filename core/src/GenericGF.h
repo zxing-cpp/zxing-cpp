@@ -117,7 +117,12 @@ public:
 		if (a == 0 || b == 0) {
 			return 0;
 		}
-		return _expTable[(_logTable[a] + _logTable[b]) % (_size - 1)];
+		auto fast_mod = [](const int input, const int ceil) {
+			// avoid using the '%' modulo operator => ReedSolomon computation is more than twice as fast
+			// see also https://stackoverflow.com/a/33333636/2088798
+			return input < ceil ? input : input - ceil;
+		};
+		return _expTable[fast_mod(_logTable[a] + _logTable[b], _size - 1)];
 	}
 
 	
@@ -130,7 +135,7 @@ public:
 	}
 
 private:
-	int _size;
+	const int _size;
 	int _generatorBase;
 	std::vector<int> _expTable;
 	std::vector<int> _logTable;
