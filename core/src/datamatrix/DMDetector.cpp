@@ -1111,8 +1111,48 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 	return {};
 }
 
-DetectorResult Detector::Detect(const BitMatrix& image, bool tryHarder, bool tryRotate)
+/**
+* This method detects a code in a "pure" image -- that is, pure monochrome image
+* which contains only an unrotated, unskewed, image of a code, with some white border
+* around it. This is a specialized method that works exceptionally fast in this special
+* case.
+*/
+static DetectorResult DetectPure(const BitMatrix& image)
 {
+	const int minSize = 8; // datamatrix codes are at least 8x8 modules
+	int left, top, width, height;
+	if (!image.findBoundingBox(left, top, width, height, minSize)) {
+		return {};
+	}
+
+	// find the first white pixel on the diagonal
+	int moduleSize = 1;
+	while (moduleSize < width / minSize && image.get(left + moduleSize, top))
+		++moduleSize;
+
+	int matrixWidth = width / moduleSize;
+	int matrixHeight = height / moduleSize;
+	if (matrixWidth < minSize || matrixHeight < minSize) {
+		return {};
+	}
+
+	// Push in the "border" by half the module width so that we start
+	// sampling in the middle of the module. Just in case the image is a
+	// little off, this will help recover.
+	int msh    = moduleSize / 2;
+	int right  = left + width - 1;
+	int bottom = top + height - 1;
+
+	// Now just read off the bits (this is a crop + subsample)
+	return {Deflate(image, matrixWidth, matrixHeight, top + msh, left + msh, moduleSize),
+			{{left, top}, {right, top}, {right, bottom}, {left, bottom}}};
+}
+
+DetectorResult Detector::Detect(const BitMatrix& image, bool tryHarder, bool tryRotate, bool isPure)
+{
+	if (isPure)
+		return DetectPure(image);
+
 	auto result = DetectNew(image, tryRotate);
 	if (!result.isValid() && tryHarder)
 		result = DetectOld(image);

@@ -48,8 +48,10 @@ public:
 		: _bits(std::move(bits)), _points(std::move(points))
 	{}
 
-	const BitMatrix& bits() const { return _bits; }
-	const std::vector<ResultPoint>& points() const { return _points; }
+	const BitMatrix& bits() const & { return _bits; }
+	BitMatrix&& bits() && { return std::move(_bits); }
+	const std::vector<ResultPoint>& points() const & { return _points; }
+	std::vector<ResultPoint>&& points() && { return std::move(_points); }
 
 	bool isValid() const { return !_bits.empty(); }
 };

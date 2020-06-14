@@ -33,14 +33,11 @@ namespace MaxiCode {
 * which contains only an unrotated, unskewed, image of a code, with some white border
 * around it. This is a specialized method that works exceptionally fast in this special
 * case.
-*
-* @see com.google.zxing.datamatrix.DataMatrixReader#extractPureBits(BitMatrix)
-* @see com.google.zxing.qrcode.QRCodeReader#extractPureBits(BitMatrix)
 */
 static BitMatrix ExtractPureBits(const BitMatrix& image)
 {
 	int left, top, width, height;
-	if (!image.getEnclosingRectangle(left, top, width, height)) {
+	if (!image.findBoundingBox(left, top, width, height, BitMatrixParser::MATRIX_WIDTH)) {
 		return {};
 	}
 

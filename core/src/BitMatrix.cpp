@@ -122,7 +122,7 @@ BitMatrix::mirror()
 }
 
 bool
-BitMatrix::getEnclosingRectangle(int &left, int& top, int& width, int& height) const
+BitMatrix::findBoundingBox(int &left, int& top, int& width, int& height, int minSize) const
 {
 	left = _width;
 	top = _height;
@@ -170,12 +170,9 @@ BitMatrix::getEnclosingRectangle(int &left, int& top, int& width, int& height) c
 			}
 		}
 	}
-	if (right < left || bottom < top) {
-		return false;
-	}
 	width = right - left + 1;
 	height = bottom - top + 1;
-	return true;
+	return width >= minSize && height >= minSize;
 }
 
 bool

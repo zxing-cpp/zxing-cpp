@@ -198,11 +198,11 @@ public:
 	void mirror();
 
 	/**
-	* This is useful in detecting the enclosing rectangle of a 'pure' barcode.
+	* Find the rectangle that contains all non-white pixels. Useful for detection of 'pure' barcodes.
 	*
-	* @return {@code left,top,width,height} enclosing rectangle of all 1 bits, or null if it is all white
+	* @return True iff this rectangle is at least minWidth x minHeight pixels big
 	*/
-	bool getEnclosingRectangle(int &left, int& top, int& width, int& height) const;
+	bool findBoundingBox(int &left, int& top, int& width, int& height, int minSize = 1) const;
 
 	/**
 	* This is useful in detecting a corner of a 'pure' barcode.
