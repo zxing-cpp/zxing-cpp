@@ -34,6 +34,7 @@ static void PrintUsage(const char* exePath)
 			  << "    -fast    Skip some lines/pixels during detection\n"
 			  << "    -rotate  Also try rotated image during detection\n"
 			  << "    -format  Only detect given format(s)\n"
+			  << "    -ispure  Assume the image contains only a 'pure'/perfect code\n"
 			  << "\n"
 			  << "Supported formats are:\n";
 	for (auto f : BarcodeFormats::all()) {
@@ -51,6 +52,10 @@ static bool ParseOptions(int argc, char* argv[], DecodeHints* hints, std::string
 		}
 		else if (strcmp(argv[i], "-rotate") == 0) {
 			hints->setTryRotate(true);
+		}
+		else if (strcmp(argv[i], "-ispure") == 0) {
+			hints->setIsPure(true);
+			hints->setBinarizer(Binarizer::FixedThreshold);
 		}
 		else if (strcmp(argv[i], "-format") == 0) {
 			if (++i == argc)
