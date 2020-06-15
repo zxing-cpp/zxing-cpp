@@ -124,30 +124,31 @@ BitMatrix::mirror()
 bool
 BitMatrix::findBoundingBox(int &left, int& top, int& width, int& height, int minSize) const
 {
-	left = _width;
-	top = _height;
-	int right = -1;
-	int bottom = -1;
+	int right, bottom;
+	if (!getTopLeftOnBit(left, top) || !getBottomRightOnBit(right, bottom) || bottom - top + 1 < minSize)
+		return false;
 
-	for (int y = 0; y < _height; y++)
+#ifdef ZX_FAST_BIT_STORAGE
+	for (int y = top; y <= bottom; y++ ) {
+		for (int x = 0; x < left; ++x)
+			if (get(x, y)) {
+				left = x;
+				break;
+			}
+		for (int x = _width-1; x > right; x--)
+			if (get(x, y)) {
+				right = x;
+				break;
+			}
+	}
+#else
+	for (int y = top; y <= bottom; y++)
 	{
 		for (int x32 = 0; x32 < _rowSize; x32++)
 		{
 			uint32_t theBits = _bits[y * _rowSize + x32];
 			if (theBits != 0)
 			{
-				if (y < top) {
-					top = y;
-				}
-				if (y > bottom) {
-					bottom = y;
-				}
-#ifdef ZX_FAST_BIT_STORAGE
-				if (x32 < left)
-					left = x32;
-				if (x32 > right)
-					right = x32;
-#else
 				if (x32 * 32 < left) {
 					int bit = 0;
 					while ((theBits << (31 - bit)) == 0) {
@@ -166,10 +167,11 @@ BitMatrix::findBoundingBox(int &left, int& top, int& width, int& height, int min
 						right = x32 * 32 + bit;
 					}
 				}
-#endif
 			}
 		}
 	}
+#endif
+
 	width = right - left + 1;
 	height = bottom - top + 1;
 	return width >= minSize && height >= minSize;
