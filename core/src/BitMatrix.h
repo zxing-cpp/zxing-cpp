@@ -50,14 +50,25 @@ class BitMatrix
 	int _height = 0;
 	int _rowSize = 0;
 #ifdef ZX_FAST_BIT_STORAGE
-	std::vector<uint8_t> _bits;
+	using data_t = uint8_t;
 #else
-	std::vector<uint32_t> _bits;
+	using data_t = uint32_t;
 #endif
+	std::vector<data_t> _bits;
 	// There is nothing wrong to support this but disable to make it explicit since we may copy something very big here.
 	// Use copy() below.
 	BitMatrix(const BitMatrix&) = default;
 	BitMatrix& operator=(const BitMatrix&) = delete;
+
+	const data_t& get(int i) const {
+#if 1
+		return _bits.at(i);
+#else
+		return _bits[i];
+#endif
+	}
+
+	data_t& get(int i) { return const_cast<data_t&>(static_cast<const BitMatrix*>(this)->get(i)); }
 
 public:
 	BitMatrix() = default;
@@ -95,9 +106,9 @@ public:
 	*/
 	bool get(int x, int y) const {
 #ifdef ZX_FAST_BIT_STORAGE
-		return _bits.at(y * _width + x) != 0;
+		return get(y * _width + x) != 0;
 #else
-		return ((_bits.at(y * _rowSize + (x / 32)) >> (x & 0x1f)) & 1) != 0;
+		return ((get(y * _rowSize + (x / 32)) >> (x & 0x1f)) & 1) != 0;
 #endif
 	}
 
@@ -109,23 +120,23 @@ public:
 	*/
 	void set(int x, int y) {
 #ifdef ZX_FAST_BIT_STORAGE
-		_bits.at(y * _width + x) = 1;
+		get(y * _width + x) = 1;
 #else
-		_bits.at(y * _rowSize + (x / 32)) |= 1 << (x & 0x1f);
+		get(y * _rowSize + (x / 32)) |= 1 << (x & 0x1f);
 #endif
 	}
 
 	void unset(int x, int y) {
 #ifdef ZX_FAST_BIT_STORAGE
-		_bits.at(y * _width + x) = 0;
+		get(y * _width + x) = 0;
 #else
-		_bits.at(y * _rowSize + (x / 32)) &= ~(1 << (x & 0x1f));
+		get(y * _rowSize + (x / 32)) &= ~(1 << (x & 0x1f));
 #endif
 	}
 
 	void set(int x, int y, bool val) {
 #ifdef ZX_FAST_BIT_STORAGE
-		_bits.at(y * _width + x) = val;
+		get(y * _width + x) = val;
 #else
 		val ? set(x, y) : unset(x, y);
 #endif
@@ -139,10 +150,10 @@ public:
 	*/
 	void flip(int x, int y) {
 #ifdef ZX_FAST_BIT_STORAGE
-		auto& v =_bits.at(y * _width + x);
+		auto& v =get(y * _width + x);
 		v = !v;
 #else
-		_bits.at(y * _rowSize + (x / 32)) ^= 1 << (x & 0x1f);
+		get(y * _rowSize + (x / 32)) ^= 1 << (x & 0x1f);
 #endif
 	}
 
