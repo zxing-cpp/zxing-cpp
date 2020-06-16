@@ -28,14 +28,13 @@
 #include <memory>
 #include <mutex>
 #include <vector>
+#include <utility>
 
 namespace ZXing {
 
 // This class uses 5x5 blocks to compute local luminance, where each block is 8x8 pixels.
 // So this is the smallest dimension in each axis we can accept.
-static const int BLOCK_SIZE_POWER = 3;
-static const int BLOCK_SIZE = 1 << BLOCK_SIZE_POWER; // ...0100...00
-static const int BLOCK_SIZE_MASK = BLOCK_SIZE - 1;   // ...0011...11
+static const int BLOCK_SIZE = 8;
 static const int MINIMUM_DIMENSION = BLOCK_SIZE * 5;
 static const int MIN_DYNAMIC_RANGE = 24;
 
@@ -63,17 +62,9 @@ static Matrix<int> CalculateBlackPoints(const uint8_t* luminances, int subWidth,
 	Matrix<int>	blackPoints(subWidth, subHeight);
 
 	for (int y = 0; y < subHeight; y++) {
-		int yoffset = y << BLOCK_SIZE_POWER;
-		int maxYOffset = height - BLOCK_SIZE;
-		if (yoffset > maxYOffset) {
-			yoffset = maxYOffset;
-		}
+		int yoffset = std::min(y * BLOCK_SIZE, height - BLOCK_SIZE);
 		for (int x = 0; x < subWidth; x++) {
-			int xoffset = x << BLOCK_SIZE_POWER;
-			int maxXOffset = width - BLOCK_SIZE;
-			if (xoffset > maxXOffset) {
-				xoffset = maxXOffset;
-			}
+			int xoffset = std::min(x * BLOCK_SIZE, width - BLOCK_SIZE);
 			int sum = 0;
 			int min = 0xFF;
 			int max = 0;
@@ -101,7 +92,7 @@ static Matrix<int> CalculateBlackPoints(const uint8_t* luminances, int subWidth,
 			}
 
 			// The default estimate is the average of the values in the block.
-			int average = sum >> (BLOCK_SIZE_POWER * 2);
+			int average = sum / (BLOCK_SIZE * BLOCK_SIZE);
 			if (max - min <= MIN_DYNAMIC_RANGE) {
 				// If variation within the block is low, assume this is a block with only light or only
 				// dark pixels. In that case we do not want to use the average, as it would divide this
@@ -157,17 +148,9 @@ static void CalculateThresholdForBlock(const uint8_t* luminances, int subWidth, 
                                        int stride, const Matrix<int>& blackPoints, BitMatrix& matrix)
 {
 	for (int y = 0; y < subHeight; y++) {
-		int yoffset = y << BLOCK_SIZE_POWER;
-		int maxYOffset = height - BLOCK_SIZE;
-		if (yoffset > maxYOffset) {
-			yoffset = maxYOffset;
-		}
+		int yoffset = std::min(y * BLOCK_SIZE, height - BLOCK_SIZE);
 		for (int x = 0; x < subWidth; x++) {
-			int xoffset = x << BLOCK_SIZE_POWER;
-			int maxXOffset = width - BLOCK_SIZE;
-			if (xoffset > maxXOffset) {
-				xoffset = maxXOffset;
-			}
+			int xoffset = std::min(x * BLOCK_SIZE, width - BLOCK_SIZE);
 			int left = Clamp(x, 2, subWidth - 3);
 			int top = Clamp(y, 2, subHeight - 3);
 			int sum = 0;
@@ -195,19 +178,13 @@ static void InitBlackMatrix(const LuminanceSource& source, std::shared_ptr<const
 	ByteArray buffer;
 	int stride;
 	const uint8_t* luminances = source.getMatrix(buffer, stride);
-	int subWidth = width >> BLOCK_SIZE_POWER;
-	if ((width & BLOCK_SIZE_MASK) != 0) {
-		subWidth++;
-	}
-	int subHeight = height >> BLOCK_SIZE_POWER;
-	if ((height & BLOCK_SIZE_MASK) != 0) {
-		subHeight++;
-	}
+	int subWidth = (width + BLOCK_SIZE - 1) / BLOCK_SIZE; // ceil(width/BS)
+	int subHeight = (height + BLOCK_SIZE - 1) / BLOCK_SIZE; // ceil(height/BS)
 	auto blackPoints = CalculateBlackPoints(luminances, subWidth, subHeight, width, height, stride);
 
 	auto matrix = std::make_shared<BitMatrix>(width, height);
 	CalculateThresholdForBlock(luminances, subWidth, subHeight, width, height, stride, blackPoints, *matrix);
-	outMatrix = matrix;
+	outMatrix = std::move(matrix);
 }
 
 std::shared_ptr<const BitMatrix>
