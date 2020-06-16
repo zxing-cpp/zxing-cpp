@@ -79,7 +79,7 @@ public:
 	*
 	* @return sum/difference of a and b
 	*/
-	int addOrSubtract(int a, int b) const {
+	int addOrSubtract(int a, int b) const noexcept {
 		return a ^ b;
 	}
 
@@ -97,23 +97,20 @@ public:
 		if (a == 0) {
 			throw std::invalid_argument("a == 0");
 		}
-		return _logTable[a];
+		return _logTable.at(a);
 	}
 
 	/**
 	* @return multiplicative inverse of a
 	*/
 	int inverse(int a) const {
-		if (a == 0) {
-			throw std::invalid_argument("a == 0");
-		}
-		return _expTable[_size - _logTable[a] - 1];
+		return _expTable[_size - log(a) - 1];
 	}
 
 	/**
 	* @return product of a and b in GF(size)
 	*/
-	int multiply(int a, int b) const {
+	int multiply(int a, int b) const noexcept {
 		if (a == 0 || b == 0) {
 			return 0;
 		}
