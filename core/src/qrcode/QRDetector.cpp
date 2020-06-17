@@ -214,42 +214,17 @@ AlignmentPattern FindAlignmentInRegion(const BitMatrix& image, float overallEstM
 
 static PerspectiveTransform CreateTransform(const ResultPoint& topLeft, const ResultPoint& topRight, const ResultPoint& bottomLeft, const AlignmentPattern& alignmentPattern, int dimension)
 {
-	float dimMinusThree = (float)dimension - 3.5f;
-	float bottomRightX;
-	float bottomRightY;
-	float sourceBottomRightX;
-	float sourceBottomRightY;
+	auto quad = ClockwiseRect(dimension, dimension, 3.5);
+	PointF bottomRight;
 	if (alignmentPattern.isValid()) {
-		bottomRightX = alignmentPattern.x();
-		bottomRightY = alignmentPattern.y();
-		sourceBottomRightX = dimMinusThree - 3.0f;
-		sourceBottomRightY = sourceBottomRightX;
-	}
-	else {
+		bottomRight = alignmentPattern;
+		quad[2] = quad[2] + PointF(-3, -3);
+	} else {
 		// Don't have an alignment pattern, just make up the bottom-right point
-		bottomRightX = (topRight.x() - topLeft.x()) + bottomLeft.x();
-		bottomRightY = (topRight.y() - topLeft.y()) + bottomLeft.y();
-		sourceBottomRightX = dimMinusThree;
-		sourceBottomRightY = dimMinusThree;
+		bottomRight = topRight - topLeft + bottomLeft;
 	}
 
-	return PerspectiveTransform::QuadrilateralToQuadrilateral(
-		3.5f,
-		3.5f,
-		dimMinusThree,
-		3.5f,
-		sourceBottomRightX,
-		sourceBottomRightY,
-		3.5f,
-		dimMinusThree,
-		topLeft.x(),
-		topLeft.y(),
-		topRight.x(),
-		topRight.y(),
-		bottomRightX,
-		bottomRightY,
-		bottomLeft.x(),
-		bottomLeft.y());
+	return {quad, {topLeft, topRight, bottomRight, bottomLeft}};
 }
 
 /**
@@ -316,7 +291,7 @@ ProcessFinderPatternInfo(const BitMatrix& image, const FinderPatternInfo& info)
 
 	PerspectiveTransform transform = CreateTransform(info.topLeft, info.topRight, info.bottomLeft, alignmentPattern, dimension);
 
-	auto bits = GridSampler::Instance()->sampleGrid(image, dimension, dimension, transform);
+	auto bits = SampleGrid(image, dimension, dimension, transform);
 	if (bits.empty())
 		return {};
 

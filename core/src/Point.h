@@ -24,9 +24,13 @@ struct PointT
 {
 	using value_t = T;
 	T x = 0, y = 0;
+
 	PointT() = default;
 	PointT(T x, T y) : x(x), y(y) {}
-	template <typename U> explicit PointT(const PointT<U>& p) : x((T)p.x), y((T)p.y) {}
+
+	template <typename U>
+	explicit PointT(const PointT<U>& p) : x(static_cast<T>(p.x)), y(static_cast<T>(p.y))
+	{}
 };
 
 template <typename T>

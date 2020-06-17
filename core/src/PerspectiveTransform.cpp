@@ -1,6 +1,7 @@
 /*
 * Copyright 2016 Nu-book Inc.
 * Copyright 2016 ZXing authors
+* Copyright 2020 Axel Waggershauser
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -17,49 +18,34 @@
 
 #include "PerspectiveTransform.h"
 
+#include <array>
+#include <tuple>
+
 namespace ZXing {
 
-PerspectiveTransform::PerspectiveTransform(float b11, float b21, float b31, float b12, float b22, float b32, float b13, float b23, float b33) :
-	a11(b11),
-	a12(b12),
-	a13(b13),
-	a21(b21),
-	a22(b22),
-	a23(b23),
-	a31(b31),
-	a32(b32),
-	a33(b33)
+static bool IsConvex(const Quadrilateral& poly)
 {
-}
+	const int N = static_cast<int>(poly.size());
+	bool sign = false;
 
-void
-PerspectiveTransform::transformPoints(float* points, int count) const
-{
-	int max = count - 1;
-	for (int i = 0; i < max; i += 2) {
-		float x = points[i];
-		float y = points[i + 1];
-		float denominator = a13 * x + a23 * y + a33;
-		points[i] = (a11 * x + a21 * y + a31) / denominator;
-		points[i + 1] = (a12 * x + a22 * y + a32) / denominator;
+	for(int i = 0; i < N; i++)
+	{
+		auto d1 = poly[(i + 2) % N] - poly[(i + 1) % N];
+		auto d2 = poly[i] - poly[(i + 1) % N];
+		auto cp = crossProduct(d1, d2);
+
+		if (i == 0)
+			sign = cp > 0;
+		else if (sign != (cp > 0))
+			return false;
 	}
+
+	return true;
 }
 
-void
-PerspectiveTransform::transformPoints(float* xValues, float* yValues, int count) const
+PerspectiveTransform PerspectiveTransform::inverse() const
 {
-	for (int i = 0; i < count; i++) {
-		float x = xValues[i];
-		float y = yValues[i];
-		float denominator = a13 * x + a23 * y + a33;
-		xValues[i] = (a11 * x + a21 * y + a31) / denominator;
-		yValues[i] = (a12 * x + a22 * y + a32) / denominator;
-	}
-}
-
-PerspectiveTransform
-PerspectiveTransform::buildAdjoint() const
-{
+	// Here, the adjoint serves as the inverse:
 	// Adjoint is the transpose of the cofactor matrix:
 	return {
 		a22 * a33 - a23 * a32,
@@ -74,8 +60,7 @@ PerspectiveTransform::buildAdjoint() const
 	};
 }
 
-PerspectiveTransform
-PerspectiveTransform::times(const PerspectiveTransform& other) const
+PerspectiveTransform PerspectiveTransform::times(const PerspectiveTransform& other) const
 {
 	return {
 		a11 * other.a11 + a21 * other.a12 + a31 * other.a13,
@@ -90,40 +75,42 @@ PerspectiveTransform::times(const PerspectiveTransform& other) const
 	};
 }
 
-PerspectiveTransform
-PerspectiveTransform::QuadrilateralToQuadrilateral(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3, float x0p, float y0p, float x1p, float y1p, float x2p, float y2p, float x3p, float y3p)
+PerspectiveTransform PerspectiveTransform::UnitSquareTo(const Quadrilateral& q)
 {
-	PerspectiveTransform qToS = QuadrilateralToSquare(x0, y0, x1, y1, x2, y2, x3, y3);
-	PerspectiveTransform sToQ = SquareToQuadrilateral(x0p, y0p, x1p, y1p, x2p, y2p, x3p, y3p);
-	return sToQ.times(qToS);
-}
+	//c++-17: structured binding
+	PointF::value_t x0, y0, x1, y1, x2, y2, x3, y3;
+	std::tie(x0, y0, x1, y1, x2, y2, x3, y3) =
+		std::tuple_cat(reinterpret_cast<const std::array<PointF::value_t, 8>&>(q));
 
-PerspectiveTransform
-PerspectiveTransform::SquareToQuadrilateral(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3)
-{
-	float dx3 = x0 - x1 + x2 - x3;
-	float dy3 = y0 - y1 + y2 - y3;
-	if (dx3 == 0.0f && dy3 == 0.0f) {
+	auto d3 = q[0] - q[1] + q[2] - q[3];
+	if (d3 == PointF(0, 0)) {
 		// Affine
-		return {x1 - x0, x2 - x1, x0, y1 - y0, y2 - y1, y0, 0.0f, 0.0f, 1.0f};
-	}
-	else {
-		float dx1 = x1 - x2;
-		float dx2 = x3 - x2;
-		float dy1 = y1 - y2;
-		float dy2 = y3 - y2;
-		float denominator = dx1 * dy2 - dx2 * dy1;
-		float a13 = (dx3 * dy2 - dx2 * dy3) / denominator;
-		float a23 = (dx1 * dy3 - dx3 * dy1) / denominator;
-		return {x1 - x0 + a13 * x1, x3 - x0 + a23 * x3, x0, y1 - y0 + a13 * y1, y3 - y0 + a23 * y3, y0, a13, a23, 1.0f};
+		return {x1 - x0, x2 - x1, x0,
+				y1 - y0, y2 - y1, y0,
+				0.0f, 0.0f, 1.0f};
+	} else {
+		auto d1 = q[1] - q[2];
+		auto d2 = q[3] - q[2];
+		auto denominator = crossProduct(d1, d2);
+		auto a13 = crossProduct(d3, d2) / denominator;
+		auto a23 = crossProduct(d1, d3) / denominator;
+		return {x1 - x0 + a13 * x1, x3 - x0 + a23 * x3, x0,
+				y1 - y0 + a13 * y1, y3 - y0 + a23 * y3, y0,
+				a13, a23, 1.0f};
 	}
 }
 
-PerspectiveTransform
-PerspectiveTransform::QuadrilateralToSquare(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3)
+PerspectiveTransform::PerspectiveTransform(const Quadrilateral& src, const Quadrilateral& dst)
 {
-	// Here, the adjoint serves as the inverse:
-	return SquareToQuadrilateral(x0, y0, x1, y1, x2, y2, x3, y3).buildAdjoint();
+	if (!IsConvex(src) || !IsConvex(dst))
+		return;
+	*this = UnitSquareTo(dst).times(UnitSquareTo(src).inverse());
+}
+
+PointF PerspectiveTransform::operator()(PointF p) const
+{
+	auto denominator = a13 * p.x + a23 * p.y + a33;
+	return {(a11 * p.x + a21 * p.y + a31) / denominator, (a12 * p.x + a22 * p.y + a32) / denominator};
 }
 
 } // ZXing

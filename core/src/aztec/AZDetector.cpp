@@ -503,19 +503,10 @@ static BitMatrix SampleGrid(const BitMatrix& image, const ResultPoint& topLeft, 
 	float low = dimension / 2.0f - nbCenterLayers;
 	float high = dimension / 2.0f + nbCenterLayers;
 
-	return GridSampler::Instance()->sampleGrid(image,
-		dimension,
-		dimension,
-		low, low,   // topleft
-		high, low,  // topright
-		high, high, // bottomright
-		low, high,  // bottomleft
-		topLeft.x(), topLeft.y(),
-		topRight.x(), topRight.y(),
-		bottomRight.x(), bottomRight.y(),
-		bottomLeft.x(), bottomLeft.y());
+	return SampleGrid(image, dimension, dimension,
+					  PerspectiveTransform{{PointF{low, low}, {high, low}, {high, high}, {low, high}},
+										   {topLeft, topRight, bottomRight, bottomLeft}});
 }
-
 
 DetectorResult Detector::Detect(const BitMatrix& image, bool isMirror)
 {

@@ -206,28 +206,10 @@ static ResultPoint CorrectTopRight(const BitMatrix& image, const ResultPoint& bo
 }
 
 static BitMatrix SampleGrid(const BitMatrix& image, const ResultPoint& topLeft, const ResultPoint& bottomLeft,
-							const ResultPoint& bottomRight, const ResultPoint& topRight, int dimensionX, int dimensionY)
+							const ResultPoint& bottomRight, const ResultPoint& topRight, int width, int height)
 {
-	return GridSampler::Instance()->sampleGrid(
-		image,
-		dimensionX,
-		dimensionY,
-		0.5f,
-		0.5f,
-		dimensionX - 0.5f,
-		0.5f,
-		dimensionX - 0.5f,
-		dimensionY - 0.5f,
-		0.5f,
-		dimensionY - 0.5f,
-		topLeft.x(),
-		topLeft.y(),
-		topRight.x(),
-		topRight.y(),
-		bottomRight.x(),
-		bottomRight.y(),
-		bottomLeft.x(),
-		bottomLeft.y());
+	return SampleGrid(image, width, height,
+					  {ClockwiseRect(width, height, 0.5), {topLeft, topRight, bottomRight, bottomLeft}});
 }
 
 /**
@@ -849,8 +831,7 @@ static void dumpDebugPPM(const BitMatrix& image, const char* fn )
 }
 #endif
 
-static BitMatrix SampleGrid(const BitMatrix& image, PointF tl, PointF bl, PointF br, PointF tr, int dimensionX,
-							int dimensionY)
+static BitMatrix SampleGrid(const BitMatrix& image, PointF tl, PointF bl, PointF br, PointF tr, int width, int height)
 {
 	auto moveTowardsBy = [](PointF& a, const PointF& b, double d) {
 		auto a2b = normalized(b - a);
@@ -871,19 +852,7 @@ static BitMatrix SampleGrid(const BitMatrix& image, PointF tl, PointF bl, PointF
 	for (auto* p : {&tl, &bl, &br, &tr})
 		*p = *p + PointF(0.5, 0.5);
 
-	auto border = 0.f;
-
-	return GridSampler::Instance()->sampleGrid(
-		image,
-		dimensionX, dimensionY,
-		border, border,
-		dimensionX - border, border,
-		dimensionX - border, dimensionY - border,
-		border,	dimensionY - border,
-		(float)tl.x, (float)tl.y,
-		(float)tr.x, (float)tr.y,
-		(float)br.x, (float)br.y,
-		(float)bl.x, (float)bl.y);
+	return SampleGrid(image, width, height, PerspectiveTransform(ClockwiseRect(width, height, 0), {tl, tr, br, bl}));
 }
 
 static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)

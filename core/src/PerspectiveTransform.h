@@ -2,6 +2,7 @@
 /*
 * Copyright 2016 Nu-book Inc.
 * Copyright 2016 ZXing authors
+* Copyright 2020 Axel Waggershauser
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -16,43 +17,47 @@
 * limitations under the License.
 */
 
+#include "Point.h"
+
+#include <array>
+
 namespace ZXing {
+
+using Quadrilateral = std::array<PointF, 4>;
+
+inline Quadrilateral ClockwiseRect(int width, int height, PointF::value_t margin = 0)
+{
+	return {
+		PointF{margin, margin}, {width - margin, margin}, {width - margin, height - margin}, {margin, height - margin}};
+}
 
 /**
 * <p>This class implements a perspective transform in two dimensions. Given four source and four
 * destination points, it will compute the transformation implied between them. The code is based
 * directly upon section 3.4.2 of George Wolberg's "Digital Image Warping"; see pages 54-56.</p>
-*
-* @author Sean Owen
 */
 class PerspectiveTransform
 {
-	float a11 = 1.0f;
-	float a12 = 0.0f;
-	float a13 = 0.0f;
-	float a21 = 0.0f;
-	float a22 = 1.0f;
-	float a23 = 0.0f;
-	float a31 = 0.0f;
-	float a32 = 0.0f;
-	float a33 = 1.0f;
+	using value_t = PointF::value_t;
+	value_t a11, a12, a13, a21, a22, a23, a31, a32, a33;
+	bool _isValid = false;
 
-public:
-	PerspectiveTransform(float a11, float a21, float a31, float a12, float a22, float a32, float a13, float a23, float a33);
+	PerspectiveTransform(value_t a11, value_t a21, value_t a31, value_t a12, value_t a22, value_t a32, value_t a13,
+						 value_t a23, value_t a33)
+		: a11(a11), a12(a12), a13(a13), a21(a21), a22(a22), a23(a23), a31(a31), a32(a32), a33(a33), _isValid(true)
+	{}
 
-	void transformPoints(float* points, int count) const;
-	void transformPoints(float* xValues, float* yValues, int count) const;
-
-	PerspectiveTransform buildAdjoint() const;
+	PerspectiveTransform inverse() const;
 	PerspectiveTransform times(const PerspectiveTransform& other) const;
 
-	static PerspectiveTransform QuadrilateralToQuadrilateral(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3, float x0p, float y0p, float x1p, float y1p, float x2p, float y2p, float x3p, float y3p);
-	static PerspectiveTransform SquareToQuadrilateral(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3);
-	static PerspectiveTransform QuadrilateralToSquare(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3);
-};
+	static PerspectiveTransform UnitSquareTo(const Quadrilateral& q);
 
-inline PerspectiveTransform operator*(const PerspectiveTransform& a, const PerspectiveTransform& b) {
-	return a.times(b);
-}
+public:
+	PerspectiveTransform(const Quadrilateral& src, const Quadrilateral& dst);
+
+	PointF operator()(PointF p) const;
+
+	bool isValid() const { return _isValid; }
+};
 
 } // ZXing
