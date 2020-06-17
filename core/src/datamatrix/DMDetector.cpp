@@ -24,6 +24,7 @@
 #include "BitMatrix.h"
 #include "DetectorResult.h"
 #include "GridSampler.h"
+#include "Point.h"
 #include "WhiteRectDetector.h"
 
 #ifdef PRINT_DEBUG
@@ -443,71 +444,6 @@ static DetectorResult DetectOld(const BitMatrix& image)
 *  * works with lower resolution scans (around 2 pixel per module), due to sub-pixel precision grid placement
 *  * works with real-world codes that have just one module wide quite-zone (which is perfectly in spec)
 */
-
-template <typename T> struct PointT
-{
-	T x = 0, y = 0;
-	PointT() = default;
-	PointT(T x, T y) : x(x), y(y) {}
-	template <typename U>
-	explicit PointT(const PointT<U>& p) : x((T)p.x), y((T)p.y) {}
-	explicit PointT(const ResultPoint& p) : x(p.x()), y(p.y()) {}
-	operator ResultPoint() const { return {static_cast<float>(x), static_cast<float>(y)}; }
-};
-
-template <typename T> bool operator == (const PointT<T>& a, const PointT<T>& b)
-{
-	return a.x == b.x && a.y == b.y;
-}
-
-template <typename T> bool operator != (const PointT<T>& a, const PointT<T>& b)
-{
-	return !(a == b);
-}
-
-template <typename T, typename U> auto operator + (const PointT<T>& a, const PointT<U>& b) -> PointT<decltype(a.x + b.x)>
-{
-	return {a.x + b.x, a.y + b.y};
-}
-
-template <typename T, typename U> auto operator - (const PointT<T>& a, const PointT<U>& b) -> PointT<decltype(a.x - b.x)>
-{
-	return {a.x - b.x, a.y - b.y};
-}
-
-template <typename T, typename U> PointT<T> operator * (U s, const PointT<T>& a)
-{
-	return {s * a.x, s * a.y};
-}
-
-template <typename T, typename U> PointT<T> operator / (const PointT<T>& a, U d)
-{
-	return {a.x / d, a.y / d};
-}
-
-template <typename T, typename U> double operator * (const PointT<T>& a, const PointT<U>& b)
-{
-	return double(a.x) * b.x + a.y * b.y;
-}
-
-template <typename T> double distance(PointT<T> a, PointT<T> b)
-{
-	auto d = a - b;
-	return std::sqrt(d * d);
-}
-
-using PointI = PointT<int>;
-using PointF = PointT<double>;
-
-template <typename T> PointF normalized(PointT<T> a)
-{
-	return PointF(a) / distance(a, {});
-}
-
-PointI round(PointF p)
-{
-    return PointI(::lround(p.x), ::lround(p.y));
-}
 
 class RegressionLine
 {
