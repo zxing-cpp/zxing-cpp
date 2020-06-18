@@ -390,13 +390,15 @@ static std::vector<FinderPattern> SelectBestPatterns(std::vector<FinderPattern> 
 	double distortion = std::numeric_limits<double>::max();
 	std::array<double, 3> squares;
 
+	auto squaredDistance = [](PointF a, PointF b) { return (a - b) * (a - b); };
+
 	for (int i = 0; i < nbPossibleCenters - 2; i++) {
 		auto& fpi = possibleCenters[i];
 		float minModuleSize = fpi.estimatedModuleSize();
 
 		for (int j = i + 1; j < nbPossibleCenters - 1; j++) {
 			auto& fpj = possibleCenters[j];
-			double squares0 = ResultPoint::SquaredDistance(fpi, fpj);
+			double squares0 = squaredDistance(fpi, fpj);
 
 			for (int k = j + 1; k < nbPossibleCenters; k++) {
 				auto& fpk = possibleCenters[k];
@@ -407,8 +409,8 @@ static std::vector<FinderPattern> SelectBestPatterns(std::vector<FinderPattern> 
 				}
 
 				squares[0] = squares0;
-				squares[1] = ResultPoint::SquaredDistance(fpj, fpk);
-				squares[2] = ResultPoint::SquaredDistance(fpi, fpk);
+				squares[1] = squaredDistance(fpj, fpk);
+				squares[2] = squaredDistance(fpi, fpk);
 				std::sort(squares.begin(), squares.end());
 
 				// a^2 + b^2 = c^2 (Pythagorean theorem), and a = b (isosceles triangle).

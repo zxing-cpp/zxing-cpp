@@ -46,12 +46,4 @@ float ResultPoint::Distance(int aX, int aY, int bX, int bY)
 	return std::sqrt(dx * dx + dy * dy);
 }
 
-float ResultPoint::SquaredDistance(const ResultPoint& a, const ResultPoint& b)
-{
-	auto dx = a.x() - b.x();
-	auto dy = a.y() - b.y();
-	return dx * dx + dy * dy;
-}
-
-
 } // ZXing

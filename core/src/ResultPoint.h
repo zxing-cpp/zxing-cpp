@@ -42,8 +42,6 @@ public:
 	static float Distance(const ResultPoint& a, const ResultPoint& b);
 	static float Distance(float aX, float aY, float bX, float bY);
 	static float Distance(int aX, int aY, int bX, int bY);
-
-	static float SquaredDistance(const ResultPoint& a, const ResultPoint& b);
 };
 
 } // ZXing
