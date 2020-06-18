@@ -23,29 +23,29 @@
 namespace ZXing {
 
 template<typename Enum>
-class ZXFlags
+class Flags
 {
-	static_assert(std::is_enum<Enum>::value, "ZXFlags is only usable on enumeration types.");
+	static_assert(std::is_enum<Enum>::value, "Flags is only usable on enumeration types.");
 
 	using Int = typename std::underlying_type<Enum>::type;
 	Int i = 0;
 
-	constexpr inline ZXFlags(Int other) : i(other) {}
+	constexpr inline Flags(Int other) : i(other) {}
 	constexpr static inline unsigned numberOfBits(Int x) noexcept { return x < 2 ? x : 1 + numberOfBits(x >> 1); }
 
 public:
 	using enum_type = Enum;
 
-	constexpr inline ZXFlags() noexcept = default;
-	constexpr inline ZXFlags(Enum flag) noexcept : i(Int(flag)) {}
+	constexpr inline Flags() noexcept = default;
+	constexpr inline Flags(Enum flag) noexcept : i(Int(flag)) {}
 
-//	constexpr inline ZXFlags(std::initializer_list<Enum> flags) noexcept
+//	constexpr inline Flags(std::initializer_list<Enum> flags) noexcept
 //		: i(initializer_list_helper(flags.begin(), flags.end()))
 //	{}
 
 	class iterator : public std::iterator<std::input_iterator_tag, Enum>
 	{
-		friend class ZXFlags;
+		friend class Flags;
 		const Int _flags = 0;
 		int _pos = 0;
 		iterator(Int i, int p) : _flags(i), _pos(p) {}
@@ -66,22 +66,22 @@ public:
 	iterator begin() const noexcept { return {i, BitHacks::NumberOfTrailingZeros(i)}; }
 	iterator end() const noexcept { return {i, BitHacks::HighestBitSet(i) + 1}; }
 
-	constexpr inline bool operator==(ZXFlags other) const noexcept { return i == other.i; }
+	constexpr inline bool operator==(Flags other) const noexcept { return i == other.i; }
 
-	inline ZXFlags& operator&=(ZXFlags mask) noexcept { return i &= mask.i, *this; }
-	inline ZXFlags& operator&=(Enum mask) noexcept { return i &= Int(mask), *this; }
-	inline ZXFlags& operator|=(ZXFlags other) noexcept { return i |= other.i, *this; }
-	inline ZXFlags& operator|=(Enum other) noexcept { return i |= Int(other), *this; }
-//	inline ZXFlags &operator^=(ZXFlags other) noexcept { return i ^= other.i, *this; }
-//	inline ZXFlags &operator^=(Enum other) noexcept { return i ^= Int(other), *this; }
+	inline Flags& operator&=(Flags mask) noexcept { return i &= mask.i, *this; }
+	inline Flags& operator&=(Enum mask) noexcept { return i &= Int(mask), *this; }
+	inline Flags& operator|=(Flags other) noexcept { return i |= other.i, *this; }
+	inline Flags& operator|=(Enum other) noexcept { return i |= Int(other), *this; }
+//	inline Flags &operator^=(Flags other) noexcept { return i ^= other.i, *this; }
+//	inline Flags &operator^=(Enum other) noexcept { return i ^= Int(other), *this; }
 
-	constexpr inline ZXFlags operator&(ZXFlags other) const noexcept { return i & other.i; }
-	constexpr inline ZXFlags operator&(Enum other) const noexcept { return i & Int(other); }
-	constexpr inline ZXFlags operator|(ZXFlags other) const noexcept { return i | other.i; }
-	constexpr inline ZXFlags operator|(Enum other) const noexcept { return i | Int(other); }
-//	constexpr inline ZXFlags operator^(ZXFlags other) const noexcept { return i ^ other.i; }
-//	constexpr inline ZXFlags operator^(Enum other) const noexcept { return i ^ Int(other); }
-//	constexpr inline ZXFlags operator~() const noexcept { return ~i; }
+	constexpr inline Flags operator&(Flags other) const noexcept { return i & other.i; }
+	constexpr inline Flags operator&(Enum other) const noexcept { return i & Int(other); }
+	constexpr inline Flags operator|(Flags other) const noexcept { return i | other.i; }
+	constexpr inline Flags operator|(Enum other) const noexcept { return i | Int(other); }
+//	constexpr inline Flags operator^(Flags other) const noexcept { return i ^ other.i; }
+//	constexpr inline Flags operator^(Enum other) const noexcept { return i ^ Int(other); }
+//	constexpr inline Flags operator~() const noexcept { return ~i; }
 
 //	constexpr inline operator Int() const noexcept { return i; }
 //	constexpr inline bool operator!() const noexcept { return !i; }
@@ -91,14 +91,14 @@ public:
 	{
 		return (i & Int(flag)) == Int(flag) && (Int(flag) != 0 || i == Int(flag));
 	}
-	inline ZXFlags& setFlag(Enum flag, bool on = true) noexcept
+	inline Flags& setFlag(Enum flag, bool on = true) noexcept
 	{
 		return on ? (*this |= flag) : (*this &= ~Int(flag));
 	}
 	inline void clear() noexcept { i = 0; }
 
 	constexpr static unsigned bitIndex(Enum flag) noexcept { return numberOfBits(Int(flag)); }
-	constexpr static ZXFlags all() noexcept { return ~(unsigned(~0) << numberOfBits(Int(Enum::_max))); }
+	constexpr static Flags all() noexcept { return ~(unsigned(~0) << numberOfBits(Int(Enum::_max))); }
 
 private:
 //	constexpr static inline Int
@@ -110,7 +110,7 @@ private:
 };
 
 #define ZX_DECLARE_FLAGS(FLAGS, ENUM) \
-	using FLAGS = ZXFlags<ENUM>; \
+	using FLAGS = Flags<ENUM>; \
 	constexpr inline FLAGS operator|(FLAGS::enum_type e1, FLAGS::enum_type e2) noexcept { return FLAGS(e1) | e2; } \
 	constexpr inline FLAGS operator|(FLAGS::enum_type e, FLAGS f) noexcept { return f | e; } \
 	constexpr inline bool operator==(FLAGS::enum_type e, FLAGS f) noexcept { return FLAGS(e) == f; } \

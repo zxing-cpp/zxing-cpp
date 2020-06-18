@@ -28,7 +28,7 @@ namespace ZXing {
 */
 enum class BarcodeFormat
 {
-	// The values are an implementation detail. The c++ use-case (ZXFlags) could have been designed such that it
+	// The values are an implementation detail. The c++ use-case (ZXing::Flags) could have been designed such that it
 	// would not have been necessary to explicitly set the values to single bit constants. This has been done to ease
 	// the interoperability with C-like interfaces, the python and the Qt wrapper.
 	INVALID           = 0,         ///< Used as a return value if no valid barcode has been detected
