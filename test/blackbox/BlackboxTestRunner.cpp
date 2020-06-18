@@ -114,6 +114,8 @@ static std::string checkResult(const fs::path& imgPath, const char* expectedForm
 	return "Error reading file";
 }
 
+static int failed = 0;
+
 static void printPositiveTestStats(size_t imageCount, const TestCase::TC& tc)
 {
 	size_t passCount = imageCount - tc.misReadFiles.size() - tc.notDetectedFiles.size();
@@ -126,6 +128,7 @@ static void printPositiveTestStats(size_t imageCount, const TestCase::TC& tc)
 		for (const auto& f : tc.notDetectedFiles)
 			std::cout << ' ' << f.filename();
 		std::cout << "\n";
+		++failed;
 	}
 
 	if (tc.misReadFiles.size() > tc.maxMisreads) {
@@ -133,6 +136,7 @@ static void printPositiveTestStats(size_t imageCount, const TestCase::TC& tc)
 		for (const auto& [path, error] : tc.misReadFiles)
 			std::cout << "      " << path.filename() << ": " << error << "\n";
 		std::cout << "\n";
+		++failed;
 	}
 }
 
@@ -535,7 +539,10 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 
 		auto duration = std::chrono::steady_clock::now() - startTime;
 		std::cout << "Total time: " << std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() << " ms." << std::endl;
-		return 0;
+		if (failed)
+			std::cout << "WARNING: " << failed << " tests failed.";
+
+		return failed;
 	}
 	catch (const std::exception& e) {
 		std::cout << e.what() << std::endl;
