@@ -60,10 +60,6 @@ Reader::Reader(const DecodeHints& hints) : _isPure(hints.isPure()) {}
 Result
 Reader::decode(const BinaryBitmap& image) const
 {
-	if (!_isPure) {
-		return Result(DecodeStatus::NotFound);
-	}
-
 	auto binImg = image.getBlackMatrix();
 	if (binImg == nullptr) {
 		return Result(DecodeStatus::NotFound);
