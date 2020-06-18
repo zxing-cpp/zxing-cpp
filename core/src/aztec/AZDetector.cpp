@@ -81,14 +81,6 @@ inline static bool IsValidPoint(const ResultPoint& point, int imgWidth, int imgH
 	return IsValidPoint(RoundToNearest(point.x()), RoundToNearest(point.y()), imgWidth, imgHeight);
 }
 
-//private static float distance(Point a, Point b) {
-//	return MathUtils.distance(a.getX(), a.getY(), b.getX(), b.getY());
-//}
-//
-//private static float distance(ResultPoint a, ResultPoint b) {
-//	return MathUtils.distance(a.getX(), a.getY(), b.getX(), b.getY());
-//}
-
 /**
 * Samples a line.
 *
@@ -101,7 +93,7 @@ static int SampleLine(const BitMatrix& image, const ResultPoint& p1, const Resul
 {
 	int result = 0;
 
-	float d = ResultPoint::Distance(p1, p2);
+	float d = distance(p1, p2);
 	float moduleSize = d / size;
 	float px = p1.x();
 	float py = p1.y();

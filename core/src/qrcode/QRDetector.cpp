@@ -234,8 +234,8 @@ static PerspectiveTransform CreateTransform(const ResultPoint& topLeft, const Re
 */
 static int ComputeDimension(const ResultPoint& topLeft, const ResultPoint& topRight, const ResultPoint& bottomLeft, float moduleSize)
 {
-	int tltrCentersDimension = RoundToNearest(ResultPoint::Distance(topLeft, topRight) / moduleSize);
-	int tlblCentersDimension = RoundToNearest(ResultPoint::Distance(topLeft, bottomLeft) / moduleSize);
+	int tltrCentersDimension = RoundToNearest(distance(topLeft, topRight) / moduleSize);
+	int tlblCentersDimension = RoundToNearest(distance(topLeft, bottomLeft) / moduleSize);
 	int dimension = ((tltrCentersDimension + tlblCentersDimension) / 2) + 7;
 	switch (dimension & 0x03) { // mod 4
 	case 0:

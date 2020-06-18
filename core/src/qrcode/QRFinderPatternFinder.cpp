@@ -454,9 +454,9 @@ static void OrderBestPatterns(std::vector<FinderPattern>& patterns)
 	auto &p0 = patterns[0], &p1 = patterns[1], &p2 = patterns[2];
 
 	// Find distances between pattern centers
-	float zeroOneDistance = ResultPoint::Distance(p0, p1);
-	float oneTwoDistance = ResultPoint::Distance(p1, p2);
-	float zeroTwoDistance = ResultPoint::Distance(p0, p2);
+	float zeroOneDistance = distance(p0, p1);
+	float oneTwoDistance = distance(p1, p2);
+	float zeroTwoDistance = distance(p0, p2);
 
 	// Assume one closest to other two is B; A and C will just be guesses at first
 	if (oneTwoDistance >= zeroOneDistance && oneTwoDistance >= zeroTwoDistance)

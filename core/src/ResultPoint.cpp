@@ -20,18 +20,6 @@
 
 namespace ZXing {
 
-  /**
-  * @param pattern1 first pattern
-  * @param pattern2 second pattern
-  * @return distance between two points
-  */
-float ResultPoint::Distance(const ResultPoint& a, const ResultPoint& b)
-{
-	auto dx = a.x() - b.x();
-	auto dy = a.y() - b.y();
-	return std::sqrt(dx*dx + dy*dy);
-}
-
 float ResultPoint::Distance(float aX, float aY, float bX, float bY)
 {
 	auto dx = aX - bX;
