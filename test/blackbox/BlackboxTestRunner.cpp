@@ -41,22 +41,27 @@ namespace ZXing::Test {
 
 namespace {
 
+	struct PureTag {} pure;
+
 	struct TestCase
 	{
 		struct TC
 		{
-			std::string name;
-			size_t mustPassCount; // The number of images which must decode for the test to pass.
-			size_t maxMisreads;   // Maximum number of images which can fail due to successfully reading the wrong contents
-			std::set<fs::path> notDetectedFiles;
-			std::map<fs::path, std::string> misReadFiles;
+			std::string name = {};
+			size_t minPassCount = 0; // The number of images which must decode for the test to pass.
+			size_t maxMisreads = 0; // Maximum number of successfully read images with the wrong contents.
+			std::set<fs::path> notDetectedFiles = {};
+			std::map<fs::path, std::string> misReadFiles = {};
 		};
 
-		TC tc[2];
-		int rotation; // The rotation in degrees clockwise to use for this test.
+		TC tc[2] = {};
+		int rotation = 0; // The rotation in degrees clockwise to use for this test.
 
-		TestCase(size_t mpc, size_t thc, size_t mm, size_t mt, int r) : tc{ {"fast", mpc, mm, {}, {}}, {"slow", thc, mt, {}, {}} }, rotation(r) {}
-		TestCase(size_t mpc, size_t thc, int r) : TestCase(mpc, thc, 0, 0, r) {}
+		TestCase(size_t mntf, size_t mnts, size_t mmf, size_t mms, int r)
+			: tc{{"fast", mntf, mmf}, {"slow", mnts, mms}}, rotation(r)
+		{}
+		TestCase(size_t mntf, size_t mnts, int r) : TestCase(mntf, mnts, 0, 0, r) {}
+		TestCase(size_t mntp, size_t mmp, PureTag) : tc{{"pure", mntp, mmp}} {}
 	};
 
 	struct FalsePositiveTestCase
@@ -120,10 +125,10 @@ static void printPositiveTestStats(size_t imageCount, const TestCase::TC& tc)
 {
 	size_t passCount = imageCount - tc.misReadFiles.size() - tc.notDetectedFiles.size();
 
-	printf(", %s: %3d of %3d, misread: %d of %d", tc.name.c_str(), (int)passCount, (int)tc.mustPassCount,
+	printf(", %s: %3d of %3d, misread: %d of %d", tc.name.c_str(), (int)passCount, (int)tc.minPassCount,
 		(int)tc.misReadFiles.size(), (int)tc.maxMisreads);
 
-	if (passCount < tc.mustPassCount && !tc.notDetectedFiles.empty()) {
+	if (passCount < tc.minPassCount && !tc.notDetectedFiles.empty()) {
 		std::cout << "\nFAILED: Not detected (" << tc.name << "):";
 		for (const auto& f : tc.notDetectedFiles)
 			std::cout << ' ' << f.filename();
@@ -166,8 +171,11 @@ static void doRunTests(
 		auto startTime = std::chrono::steady_clock::now();
 		printf("%-20s @ %3d, total: %3d", folderName.string().c_str(), test.rotation, (int)images.size());
 		for (auto tc : test.tc) {
+			if (tc.name.empty())
+				break;
 			hints.setTryHarder(tc.name == "slow");
 			hints.setTryRotate(tc.name == "slow");
+			hints.setIsPure(tc.name == "pure");
 			MultiFormatReader reader(hints);
 			for (const auto& imgPath : images) {
 				auto result = reader.read(*ImageLoader::load(imgPath).rotated(test.rotation));
@@ -278,6 +286,7 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{  0, 21, 90  },
 			{  0, 21, 180 },
 			{  0, 21, 270 },
+			{ 19, 0, pure },
 		});
 
 		runTests("datamatrix-2", "DATA_MATRIX", 18, {
@@ -469,6 +478,7 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 30, 30, 90  },
 			{ 30, 30, 180 },
 			{ 30, 30, 270 },
+			{ 9, 0, pure },
 		});
 
 		runTests("qrcode-3", "QR_CODE", 42, {
@@ -490,6 +500,7 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 19, 19, 90  },
 			{ 19, 19, 180 },
 			{ 19, 19, 270 },
+			{ 4, 0, pure },
 		});
 
 		runTests("qrcode-6", "QR_CODE", 15, {
