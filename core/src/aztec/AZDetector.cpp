@@ -210,33 +210,19 @@ static bool ExtractParameters(const BitMatrix& image, const std::array<ResultPoi
 	return true;
 }
 
-struct PixelPoint
-{
-	int x;
-	int y;
-
-	ResultPoint toResultPoint() const { return {x, y}; }
-};
-
-
-inline static float Distance(const PixelPoint& a, const PixelPoint& b)
-{
-	return ResultPoint::Distance(a.x, a.y, b.x, b.y);
-}
-
 
 /**
 * Gets the color of a segment
 *
 * @return 1 if segment more than 90% black, -1 if segment is more than 90% white, 0 else
 */
-static int GetColor(const BitMatrix& image, const PixelPoint& p1, const PixelPoint& p2)
+static int GetColor(const BitMatrix& image, const PointI& p1, const PointI& p2)
 {
 	if (!IsValidPoint(p1.x, p1.y, image.width(), image.height()) ||
 		!IsValidPoint(p2.x, p2.y, image.width(), image.height()))
 		return 0;
 
-	float d = Distance(p1, p2);
+	float d = distance(p1, p2);
 	float dx = (p2.x - p1.x) / d;
 	float dy = (p2.y - p1.y) / d;
 	int error = 0;
@@ -267,14 +253,14 @@ static int GetColor(const BitMatrix& image, const PixelPoint& p1, const PixelPoi
 * @return true if the border of the rectangle passed in parameter is compound of white points only
 *         or black points only
 */
-static bool IsWhiteOrBlackRectangle(const BitMatrix& image, const PixelPoint& pt1, const PixelPoint& pt2, const PixelPoint& pt3, const PixelPoint& pt4) {
+static bool IsWhiteOrBlackRectangle(const BitMatrix& image, const PointI& pt1, const PointI& pt2, const PointI& pt3, const PointI& pt4) {
 
 	int corr = 3;
 
-	PixelPoint p1{ pt1.x - corr, pt1.y + corr };
-	PixelPoint p2{ pt2.x - corr, pt2.y - corr };
-	PixelPoint p3{ pt3.x + corr, pt3.y - corr };
-	PixelPoint p4{ pt4.x + corr, pt4.y + corr };
+	PointI p1{ pt1.x - corr, pt1.y + corr };
+	PointI p2{ pt2.x - corr, pt2.y - corr };
+	PointI p3{ pt3.x + corr, pt3.y - corr };
+	PointI p4{ pt4.x + corr, pt4.y + corr };
 
 	int cInit = GetColor(image, p4, p1);
 
@@ -303,7 +289,7 @@ static bool IsWhiteOrBlackRectangle(const BitMatrix& image, const PixelPoint& pt
 /**
 * Gets the coordinate of the first point with a different color in the given direction
 */
-static PixelPoint GetFirstDifferent(const BitMatrix& image, const PixelPoint& init, bool color, int dx, int dy) {
+static PointI GetFirstDifferent(const BitMatrix& image, const PointI& init, bool color, int dx, int dy) {
 	int x = init.x + dx;
 	int y = init.y + dy;
 
@@ -325,7 +311,7 @@ static PixelPoint GetFirstDifferent(const BitMatrix& image, const PixelPoint& in
 	}
 	y -= dy;
 
-	return PixelPoint{ x, y };
+	return PointI{ x, y };
 }
 
 /**
@@ -365,26 +351,26 @@ static void ExpandSquare(std::array<ResultPoint, 4>& cornerPoints, float oldSide
 * @return The corners of the bull-eye
 * @throws NotFoundException If no valid bull-eye can be found
 */
-static bool GetBullsEyeCorners(const BitMatrix& image, const PixelPoint& pCenter, std::array<ResultPoint, 4>& result, bool& compact, int& nbCenterLayers)
+static bool GetBullsEyeCorners(const BitMatrix& image, const PointI& pCenter, std::array<ResultPoint, 4>& result, bool& compact, int& nbCenterLayers)
 {
-	PixelPoint pina = pCenter;
-	PixelPoint pinb = pCenter;
-	PixelPoint pinc = pCenter;
-	PixelPoint pind = pCenter;
+	PointI pina = pCenter;
+	PointI pinb = pCenter;
+	PointI pinc = pCenter;
+	PointI pind = pCenter;
 
 	bool color = true;
 	for (nbCenterLayers = 1; nbCenterLayers < 9; nbCenterLayers++) {
-		PixelPoint pouta = GetFirstDifferent(image, pina, color, 1, -1);
-		PixelPoint poutb = GetFirstDifferent(image, pinb, color, 1, 1);
-		PixelPoint poutc = GetFirstDifferent(image, pinc, color, -1, 1);
-		PixelPoint poutd = GetFirstDifferent(image, pind, color, -1, -1);
+		PointI pouta = GetFirstDifferent(image, pina, color, 1, -1);
+		PointI poutb = GetFirstDifferent(image, pinb, color, 1, 1);
+		PointI poutc = GetFirstDifferent(image, pinc, color, -1, 1);
+		PointI poutd = GetFirstDifferent(image, pind, color, -1, -1);
 
 		//d      a
 		//
 		//c      b
 
 		if (nbCenterLayers > 2) {
-			float q = Distance(poutd, pouta) * nbCenterLayers / (Distance(pind, pina) * (nbCenterLayers + 2));
+			float q = distance(poutd, pouta) * nbCenterLayers / (distance(pind, pina) * (nbCenterLayers + 2));
 			if (q < 0.75 || q > 1.25 || !IsWhiteOrBlackRectangle(image, pouta, poutb, poutc, poutd)) {
 				break;
 			}
@@ -422,7 +408,7 @@ static bool GetBullsEyeCorners(const BitMatrix& image, const PixelPoint& pCenter
 *
 * @return the center point
 */
-static PixelPoint GetMatrixCenter(const BitMatrix& image)
+static PointI GetMatrixCenter(const BitMatrix& image)
 {
 	//Get a white rectangle that can be the border of the matrix in center bull's eye or
 	ResultPoint pointA, pointB, pointC, pointD;
@@ -431,10 +417,10 @@ static PixelPoint GetMatrixCenter(const BitMatrix& image)
 		// In that case, surely in the bull's eye, we try to expand the rectangle.
 		int cx = image.width() / 2;
 		int cy = image.height() / 2;
-		pointA = GetFirstDifferent(image, { cx + 7, cy - 7 }, false, 1, -1).toResultPoint();
-		pointB = GetFirstDifferent(image, { cx + 7, cy + 7 }, false, 1, 1).toResultPoint();
-		pointC = GetFirstDifferent(image, { cx - 7, cy + 7 }, false, -1, 1).toResultPoint();
-		pointD = GetFirstDifferent(image, { cx - 7, cy - 7 }, false, -1, -1).toResultPoint();
+		pointA = GetFirstDifferent(image, { cx + 7, cy - 7 }, false, 1, -1);
+		pointB = GetFirstDifferent(image, { cx + 7, cy + 7 }, false, 1, 1);
+		pointC = GetFirstDifferent(image, { cx - 7, cy + 7 }, false, -1, 1);
+		pointD = GetFirstDifferent(image, { cx - 7, cy - 7 }, false, -1, -1);
 	}
 
 	//Compute the center of the rectangle
@@ -447,10 +433,10 @@ static PixelPoint GetMatrixCenter(const BitMatrix& image)
 	if (!WhiteRectDetector::Detect(image, 15, cx, cy, pointA, pointB, pointC, pointD)) {
 		// This exception can be in case the initial rectangle is white
 		// In that case we try to expand the rectangle.
-		pointA = GetFirstDifferent(image, { cx + 7, cy - 7 }, false, 1, -1).toResultPoint();
-		pointB = GetFirstDifferent(image, { cx + 7, cy + 7 }, false, 1, 1).toResultPoint();
-		pointC = GetFirstDifferent(image, { cx - 7, cy + 7 }, false, -1, 1).toResultPoint();
-		pointD = GetFirstDifferent(image, { cx - 7, cy - 7 }, false, -1, -1).toResultPoint();
+		pointA = GetFirstDifferent(image, { cx + 7, cy - 7 }, false, 1, -1);
+		pointB = GetFirstDifferent(image, { cx + 7, cy + 7 }, false, 1, 1);
+		pointC = GetFirstDifferent(image, { cx - 7, cy + 7 }, false, -1, 1);
+		pointD = GetFirstDifferent(image, { cx - 7, cy - 7 }, false, -1, -1);
 	}
 
 	// Recompute the center of the rectangle
