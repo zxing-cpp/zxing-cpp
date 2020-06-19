@@ -555,7 +555,7 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		auto duration = std::chrono::steady_clock::now() - startTime;
 		std::cout << "Total time: " << std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() << " ms." << std::endl;
 		if (failed)
-			std::cout << "WARNING: " << failed << " tests failed.";
+			std::cout << "WARNING: " << failed << " tests failed." << std::endl;
 
 		return failed;
 	}
