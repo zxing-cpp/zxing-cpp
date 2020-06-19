@@ -404,8 +404,8 @@ static std::vector<FinderPattern> SelectBestPatterns(std::vector<FinderPattern> 
 				auto& fpk = possibleCenters[k];
 				float maxModuleSize = fpk.estimatedModuleSize();
 				if (maxModuleSize > minModuleSize * 1.4f) {
-					// module size is not similar
-					continue;
+					// module size is not similar. since we sorted the input, we can break the inner loop
+					break;
 				}
 
 				squares[0] = squares0;
