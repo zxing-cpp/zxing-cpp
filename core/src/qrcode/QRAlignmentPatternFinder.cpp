@@ -107,7 +107,7 @@ static float CrossCheckVertical(const BitMatrix& image, int startI, int centerJ,
 		return std::numeric_limits<float>::quiet_NaN();
 	}
 
-	int stateCountTotal = Accumulate(stateCount, 0);
+	int stateCountTotal = Reduce(stateCount);
 	if (5 * std::abs(stateCountTotal - originalStateCountTotal) >= 2 * originalStateCountTotal) {
 		return std::numeric_limits<float>::quiet_NaN();
 	}
@@ -129,7 +129,7 @@ static float CrossCheckVertical(const BitMatrix& image, int startI, int centerJ,
 static AlignmentPattern
 HandlePossibleCenter(const BitMatrix& image, const StateCount& stateCount, int i, int j, float moduleSize, std::vector<AlignmentPattern>& possibleCenters)
 {
-	int stateCountTotal = Accumulate(stateCount, 0);
+	int stateCountTotal = Reduce(stateCount);
 	float centerJ = CenterFromEnd(stateCount, j);
 	float centerI = CrossCheckVertical(image, i, static_cast<int>(centerJ), 2 * stateCount[1], stateCountTotal, moduleSize);
 	if (!std::isnan(centerI)) {

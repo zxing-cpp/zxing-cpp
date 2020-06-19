@@ -47,9 +47,9 @@ inline bool Contains(const char* str, char c) {
 	return strchr(str, c) != nullptr;
 }
 
-template <typename Container, typename Value>
-Value Accumulate(const Container& c, Value v = Value(0)) {
-    return std::accumulate(std::begin(c), std::end(c), v);
+template <typename Container, typename Value = typename Container::value_type, typename Op = std::plus<Value>>
+Value Reduce(const Container& c, Value v = Value{}, Op op = {}) {
+    return std::accumulate(std::begin(c), std::end(c), v, op);
 }
 
 template <typename T, typename S = int>

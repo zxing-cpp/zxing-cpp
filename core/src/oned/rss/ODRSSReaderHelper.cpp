@@ -56,7 +56,7 @@ int
 ReaderHelper::GetRSSvalue(const std::array<int, 4>& widths, int maxWidth, bool noNarrow)
 {
 	int elements = static_cast<int>(widths.size());
-	int n = Accumulate(widths, 0);
+	int n = Reduce(widths);
 	int val = 0;
 	int narrowMask = 0;
 	for (int bar = 0; bar < elements - 1; bar++) {

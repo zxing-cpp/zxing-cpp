@@ -138,7 +138,7 @@ static BitArray::Range
 FindGuardPattern(const BitArray& row, const Container& pattern)
 {
 	Container counters = {};
-	auto pat_sum = Accumulate(pattern, 0);
+	auto pat_sum = Reduce(pattern);
 
 	return RowReader::FindPattern(
 	    row.getNextSet(row.begin()), row.end(), counters,

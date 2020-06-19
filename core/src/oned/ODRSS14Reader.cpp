@@ -306,8 +306,8 @@ DecodeDataCharacter(const BitArray& row, const RSS::FinderPattern& pattern, bool
 	};
 
 	int checksumPortion = calcChecksumPortion(oddCounts) + 3 * calcChecksumPortion(evenCounts);
-	int oddSum = Accumulate(oddCounts, 0);
-	int evenSum = Accumulate(evenCounts, 0);
+	int oddSum = Reduce(oddCounts);
+	int evenSum = Reduce(evenCounts);
 
 	if (outsideChar) {
 		if ((oddSum & 0x01) != 0 || oddSum > 12 || oddSum < 4) {

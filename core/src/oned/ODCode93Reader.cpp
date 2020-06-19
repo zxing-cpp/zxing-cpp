@@ -57,7 +57,7 @@ static int
 ToPattern(const CounterContainer& counters)
 {
 	// each bar/space is 1-4 modules wide, the sum of all is 9 modules wide
-	int sum = Accumulate(counters, 0);
+	int sum = Reduce(counters);
 	int pattern = 0;
 	for (int i = 0, count = (int)counters.size(); i < count; ++i) {
 		int scaled = (counters[i] * 9 + (sum/2)) / sum; // non-float version of RoundToNearest(counters[i] * 9.0f / sum);

@@ -212,7 +212,7 @@ static float CrossCheckVertical(const BitMatrix& image, int startI, int centerJ,
 
 	// If we found a finder-pattern-like section, but its size is more than 40% different than
 	// the original, assume it's a false positive
-	int stateCountTotal = Accumulate(stateCount, 0);
+	int stateCountTotal = Reduce(stateCount);
 	if (5 * std::abs(stateCountTotal - originalStateCountTotal) >= 2 * originalStateCountTotal) {
 		return std::numeric_limits<float>::quiet_NaN();
 	}
@@ -278,7 +278,7 @@ static float CrossCheckHorizontal(const BitMatrix& image, int startJ, int center
 
 	// If we found a finder-pattern-like section, but its size is significantly different than
 	// the original, assume it's a false positive
-	int stateCountTotal = Accumulate(stateCount, 0);
+	int stateCountTotal = Reduce(stateCount);
 	if (5 * std::abs(stateCountTotal - originalStateCountTotal) >= originalStateCountTotal) {
 		return std::numeric_limits<float>::quiet_NaN();
 	}
@@ -596,7 +596,7 @@ FinderPatternInfo FinderPatternFinder::Find(const BitMatrix& image, bool tryHard
 */
 bool
 FinderPatternFinder::FoundPatternCross(const StateCount& stateCount) {
-	int totalModuleSize = Accumulate(stateCount, 0);
+	int totalModuleSize = Reduce(stateCount);
 	if (totalModuleSize < 7) {
 		return false;
 	}
@@ -632,7 +632,7 @@ FinderPatternFinder::FoundPatternCross(const StateCount& stateCount) {
 bool
 FinderPatternFinder::HandlePossibleCenter(const BitMatrix& image, const StateCount& stateCount, int i, int j, std::vector<FinderPattern>& possibleCenters)
 {
-	int stateCountTotal = Accumulate(stateCount, 0);
+	int stateCountTotal = Reduce(stateCount);
 	float centerJ = CenterFromEnd(stateCount, j);
 	float centerI = CrossCheckVertical(image, i, static_cast<int>(centerJ), stateCount[2], stateCountTotal);
 	if (std::isnan(centerI))
