@@ -309,7 +309,7 @@ ProcessFinderPatternInfo(const BitMatrix& image, const FinderPatternInfo& info)
 */
 static DetectorResult DetectPure(const BitMatrix& image)
 {
-	const int minSize = 16; // two finder patterns alone need already 16 pixels
+	const int minSize = 21; // Number of modules in the smallest QRCode (Version 1)
 	int left, top, width, height;
 	if (!image.findBoundingBox(left, top, width, height, minSize) || width != height) {
 		return {};
