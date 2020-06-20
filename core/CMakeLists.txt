@@ -468,7 +468,10 @@ target_link_libraries (ZXing PUBLIC ${CMAKE_THREAD_LIBS_INIT})
 
 add_library(ZXing::ZXing ALIAS ZXing)
 # add the old alias as well, to keep old clients compiling
+# note: this only affects client code that includes ZXing via sub_directory.
+#       for clients using the exported target, see ZXingConfig.cmake.in
 add_library(ZXing::Core ALIAS ZXing)
+
 set_target_properties(ZXing PROPERTIES EXPORT_NAME ZXing)
 if (PROJECT_VERSION)
     set_target_properties(ZXing PROPERTIES VERSION ${PROJECT_VERSION})
@@ -477,7 +480,6 @@ endif()
 
 include (GNUInstallDirs)
 
-# Once we can require cmake 1.13, then we can move this to ../CMakeLists.txt, see: https://gitlab.kitware.com/cmake/cmake/merge_requests/2152
 install (
     TARGETS ZXing EXPORT ZXingTargets
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
