@@ -31,8 +31,8 @@ namespace ZXing {
 
 class ThresholdBinarizer : public BinaryBitmap
 {
-	ImageView _buffer;
-	uint8_t _threshold = 0;
+	const ImageView _buffer;
+	const uint8_t _threshold = 0;
 	mutable std::shared_ptr<const BitMatrix> _cache;
 
 public:
@@ -60,11 +60,18 @@ public:
 	std::shared_ptr<const BitMatrix> getBlackMatrix() const override
 	{
 		if (!_cache) {
-			const int channel = GreenIndex(_buffer._format);
 			BitMatrix res(width(), height());
+#ifdef ZX_FAST_BIT_STORAGE
+			auto src = _buffer.data(0, 0) + GreenIndex(_buffer._format);
+			for (int y = 0; y < res.height(); ++y)
+				for (auto& dst : res.row(y))
+					dst = *(src += _buffer._pixStride) <= _threshold;
+#else
+			const int channel = GreenIndex(_buffer._format);
 			for (int y = 0; y < res.height(); ++y)
 				for (int x = 0; x < res.width(); ++x)
 					res.set(x, y, _buffer.data(x, y)[channel] <= _threshold);
+#endif
 			_cache = std::make_shared<const BitMatrix>(std::move(res));
 		}
 		return _cache;

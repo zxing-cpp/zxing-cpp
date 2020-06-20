@@ -97,6 +97,18 @@ public:
 	[[deprecated]]
 	ByteMatrix toByteMatrix(int black = 0, int white = 255) const;
 
+#ifdef ZX_FAST_BIT_STORAGE
+	// experimental iterator based access
+	using iterator = data_t*;
+	struct Row
+	{
+		iterator _begin, _end;
+		iterator begin() noexcept { return _begin; }
+		iterator end() noexcept { return _end; }
+	};
+	Row row(int y) { return {_bits.data() + y * _width, _bits.data() + (y + 1) * _width}; }
+#endif
+
 	/**
 	* <p>Gets the requested bit, where true means black.</p>
 	*
