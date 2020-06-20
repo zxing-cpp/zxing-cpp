@@ -35,7 +35,6 @@ class RowReader;
 class Reader : public ZXing::Reader
 {
 public:
-	// Only POSSIBLE_FORMATS is read here, and the same hint is ignored in decode().
 	explicit Reader(const DecodeHints& hints);
     ~Reader() override;
 

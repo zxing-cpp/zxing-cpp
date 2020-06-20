@@ -17,19 +17,13 @@
 */
 
 #include "CustomData.h"
-#include <algorithm>
 
 namespace ZXing {
-
-class ResultPoint;
-
 namespace QRCode {
 
 /**
 * Meta-data container for QR Code decoding. Instances of this class may be used to convey information back to the
 * decoding caller. Callers are expected to process this.
-*
-* @see com.google.zxing.common.DecoderResult#getOther()
 */
 
 class DecoderMetadata : public CustomData

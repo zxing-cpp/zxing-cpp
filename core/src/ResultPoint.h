@@ -39,7 +39,6 @@ public:
 
 	void set(float x, float y) { *this = PointF(x, y); }
 
-	static float Distance(float aX, float aY, float bX, float bY);
 	static float Distance(int aX, int aY, int bX, int bY);
 };
 

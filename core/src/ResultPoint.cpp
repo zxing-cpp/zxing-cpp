@@ -20,13 +20,6 @@
 
 namespace ZXing {
 
-float ResultPoint::Distance(float aX, float aY, float bX, float bY)
-{
-	auto dx = aX - bX;
-	auto dy = aY - bY;
-	return std::sqrt(dx * dx + dy * dy);
-}
-
 float ResultPoint::Distance(int aX, int aY, int bX, int bY)
 {
 	auto dx = static_cast<float>(aX - bX);
