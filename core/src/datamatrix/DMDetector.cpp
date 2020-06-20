@@ -118,11 +118,7 @@ inline static bool IsValidPoint(const ResultPoint& p, int imgWidth, int imgHeigh
 
 inline static float RoundToNearest(float x)
 {
-#if defined(__ANDROID__) && defined(__GNUC__)
-	return static_cast<float>(round(x));
-#else
 	return std::round(x);
-#endif
 }
 
 /**

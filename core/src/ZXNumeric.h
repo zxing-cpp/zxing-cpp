@@ -83,11 +83,7 @@ template <typename T>
 typename std::enable_if<std::is_floating_point<T>::value, int>::type
 RoundToNearest(T x)
 {
-#if defined(__ANDROID__) && defined(__GNUC__)
-	return static_cast<int>(round(x));
-#else
 	return static_cast<int>(std::round(x));
-#endif
 }
 
 /// <summary>
