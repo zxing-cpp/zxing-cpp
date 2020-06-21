@@ -46,8 +46,11 @@ set (CMAKE_CXX_EXTENSIONS OFF)
 
 if (BUILD_UNIT_TESTS)
     add_definitions (-DZXING_BUILD_FOR_TEST)
-    set (BUILD_WRITERS ON)
-    set (BUILD_READERS ON)
+    if (NOT BUILD_WRITERS OR NOT BUILD_READERS)
+        message("Note: To build with unit tests, the library will be build with READERS and WRITERS.")
+        set (BUILD_WRITERS ON)
+        set (BUILD_READERS ON)
+    endif()
 endif()
 
 add_subdirectory (core)
