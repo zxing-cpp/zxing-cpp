@@ -62,8 +62,7 @@ TEST(ODCodaBarWriterTest, FullCircle)
 	std::wstring text = L"A0123456789-$:/.+A";
 	BitArray row;
 	CodabarWriter().encode(text, 0, 0).getRow(0, row);
-	std::unique_ptr<RowReader::DecodingState> state;
-	Result res = CodabarReader(DecodeHints().setReturnCodabarStartEnd(true)).decodeRow(0, row, state);
+	Result res = CodabarReader(DecodeHints().setReturnCodabarStartEnd(true)).decodeSingleRow(0, row);
 	EXPECT_EQ(text, res.text());
 }
 
