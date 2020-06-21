@@ -203,12 +203,6 @@ public:
 	void getRow(int y, BitArray& row) const;
 
 	/**
-	* @param y row to set
-	* @param row {@link BitArray} to copy from
-	*/
-	void setRow(int y, const BitArray& row);
-
-	/**
 	* Modifies this {@code BitMatrix} to represent the same but rotated 90 degrees clockwise
 	*/
 	void rotate90();

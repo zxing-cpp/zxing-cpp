@@ -40,15 +40,6 @@ BitMatrix::getRow(int y, BitArray& row) const
 	std::copy_n(_bits.begin() + y * _rowSize, _rowSize, row._bits.begin());
 }
 
-void
-BitMatrix::setRow(int y, const BitArray& row)
-{
-	if (int(row._bits.size()) != _rowSize) {
-		throw std::invalid_argument("BitMatrix::setRegion(): row sizes do not match");
-	}
-	std::copy(row._bits.begin(), row._bits.end(), _bits.begin() + y *_rowSize);
-}
-
 ByteMatrix BitMatrix::toByteMatrix(int black, int white) const
 {
 	ByteMatrix res(width(), height());
