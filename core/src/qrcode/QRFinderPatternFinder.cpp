@@ -33,7 +33,7 @@ static const int CENTER_QUORUM = 2;
 static const int MIN_SKIP = 3; // 1 pixel/module times 3 modules/center
 static const int MAX_MODULES = 97; // support up to version 20 for mobile clients
 
-using StateCount = FinderPatternFinder::StateCount;
+using StateCount = std::array<int, 5>;
 
 /**
 * Given a count of black/white/black/white/black pixels just seen and an end position,
@@ -41,35 +41,39 @@ using StateCount = FinderPatternFinder::StateCount;
 */
 static float CenterFromEnd(const StateCount& stateCount, int end)
 {
-	return (float)(end - stateCount[4] - stateCount[3]) - stateCount[2] / 2.0f;
+	return end - stateCount[4] - stateCount[3] - stateCount[2] / 2.f;
 }
 
 /**
- * @param stateCount count of black/white/black/white/black pixels just read
- * @return true iff the proportions of the counts is close enough to the 1/1/3/1/1 ratios
- *         used by finder patterns to be considered a match
- */
-static bool FoundPatternDiagonal(const StateCount& stateCount) {
-	int totalModuleSize = 0;
-	for (int i = 0; i < 5; i++) {
-		int count = stateCount[i];
-		if (count == 0) {
-			return false;
-		}
-		totalModuleSize += count;
-	}
+* @param stateCount count of black/white/black/white/black pixels just read
+* @param similarityThreshold allow less than "threshold" variance from 1-1-3-1-1 proportions
+* @return true iff the proportions of the counts is close enough to the 1/1/3/1/1 ratios
+*         used by finder patterns to be considered a match
+*/
+static bool FoundPattern(const StateCount& stateCount, float similarityThreshold)
+{
+	int totalModuleSize = Reduce(stateCount);
 	if (totalModuleSize < 7) {
 		return false;
 	}
 	float moduleSize = totalModuleSize / 7.0f;
-	float maxVariance = moduleSize / 1.333f;
-	// Allow less than 75% variance from 1-1-3-1-1 proportions
+	float maxVariance = moduleSize * similarityThreshold;
 	return
 		std::abs(moduleSize - stateCount[0]) < maxVariance &&
 		std::abs(moduleSize - stateCount[1]) < maxVariance &&
-		std::abs(3.0f * moduleSize - stateCount[2]) < 3 * maxVariance &&
+		std::abs(3 * moduleSize - stateCount[2]) < 3 * maxVariance &&
 		std::abs(moduleSize - stateCount[3]) < maxVariance &&
 		std::abs(moduleSize - stateCount[4]) < maxVariance;
+}
+
+static bool FoundPatternCross(const StateCount& stateCount)
+{
+	return FoundPattern(stateCount, 0.5f);
+}
+
+static bool FoundPatternDiagonal(const StateCount& stateCount)
+{
+	return FoundPattern(stateCount, 0.75f);
 }
 
 /**
@@ -217,7 +221,7 @@ static float CrossCheckVertical(const BitMatrix& image, int startI, int centerJ,
 		return std::numeric_limits<float>::quiet_NaN();
 	}
 
-	return FinderPatternFinder::FoundPatternCross(stateCount) ? CenterFromEnd(stateCount, i) : std::numeric_limits<float>::quiet_NaN();
+	return FoundPatternCross(stateCount) ? CenterFromEnd(stateCount, i) : std::numeric_limits<float>::quiet_NaN();
 }
 
 /**
@@ -283,7 +287,7 @@ static float CrossCheckHorizontal(const BitMatrix& image, int startJ, int center
 		return std::numeric_limits<float>::quiet_NaN();
 	}
 
-	return FinderPatternFinder::FoundPatternCross(stateCount) ? CenterFromEnd(stateCount, j) : std::numeric_limits<float>::quiet_NaN();
+	return FoundPatternCross(stateCount) ? CenterFromEnd(stateCount, j) : std::numeric_limits<float>::quiet_NaN();
 }
 
 /**
@@ -311,11 +315,56 @@ static int FindRowSkip(const std::vector<FinderPattern>& possibleCenters, bool& 
 				// difference in the x / y coordinates of the two centers.
 				// This is the case where you find top left last.
 				hasSkipped = true;
-				return static_cast<int>(std::abs(firstConfirmedCenter->x() - center.x()) - std::abs(firstConfirmedCenter->y() - center.y())) / 2;
+				auto diff = *firstConfirmedCenter - center;
+				return static_cast<int>(std::abs(diff.x) - std::abs(diff.y)) / 2;
 			}
 		}
 	}
 	return 0;
+}
+
+/**
+* <p>This is called when a horizontal scan finds a possible alignment pattern. It will
+* cross check with a vertical scan, and if successful, will, ah, cross-cross-check
+* with another horizontal scan. This is needed primarily to locate the real horizontal
+* center of the pattern in cases of extreme skew.
+* And then we cross-cross-cross check with another diagonal scan.</p>
+*
+* <p>If that succeeds the finder pattern location is added to a list that tracks
+* the number of times each location has been nearly-matched as a finder pattern.
+* Each additional find is more evidence that the location is in fact a finder
+* pattern center
+*
+* @param stateCount reading state module counts from horizontal scan
+* @param i row where finder pattern may be found
+* @param j end of possible finder pattern in row
+* @param possibleCenters [in/out] current list of centers to be updated
+* @return true if a finder pattern candidate was found this time
+*/
+static bool HandlePossibleCenter(const BitMatrix& image, const StateCount& stateCount, int i, int j, std::vector<FinderPattern>& possibleCenters)
+{
+	int stateCountTotal = Reduce(stateCount);
+	float centerJ = CenterFromEnd(stateCount, j);
+	float centerI = CrossCheckVertical(image, i, static_cast<int>(centerJ), stateCount[2], stateCountTotal);
+	if (std::isnan(centerI))
+		return false;
+
+	// Re-cross check
+	centerJ = CrossCheckHorizontal(image, static_cast<int>(centerJ), static_cast<int>(centerI), stateCount[2],
+								   stateCountTotal);
+	if (std::isnan(centerJ) || !CrossCheckDiagonal(image, (int)centerI, (int)centerJ))
+		return false;
+
+	float estimatedModuleSize = stateCountTotal / 7.0f;
+	auto center = ZXing::FindIf(possibleCenters, [=](const FinderPattern& center) {
+        return center.aboutEquals(estimatedModuleSize, centerI, centerJ);
+    });
+	if (center != possibleCenters.end())
+		*center = center->combineEstimate(centerI, centerJ, estimatedModuleSize);
+	else
+		possibleCenters.emplace_back(centerJ, centerI, estimatedModuleSize);
+
+	return true;
 }
 
 /**
@@ -327,7 +376,6 @@ static bool HaveMultiplyConfirmedCenters(const std::vector<FinderPattern>& possi
 {
 	int confirmedCount = 0;
 	float totalModuleSize = 0.0f;
-	//int max = possibleCenters.size();
 	for (const FinderPattern& pattern : possibleCenters) {
 		if (pattern.count() >= CENTER_QUORUM) {
 			confirmedCount++;
@@ -341,53 +389,33 @@ static bool HaveMultiplyConfirmedCenters(const std::vector<FinderPattern>& possi
 	// and that we need to keep looking. We detect this by asking if the estimated module sizes
 	// vary too much. We arbitrarily say that when the total deviation from average exceeds
 	// 5% of the total module size estimates, it's too much.
-	float average = totalModuleSize / static_cast<float>(possibleCenters.size());
-	float totalDeviation = 0.0f;
-	for (const FinderPattern& pattern : possibleCenters) {
-		totalDeviation += std::abs(pattern.estimatedModuleSize() - average);
-	}
+	float totalDeviation =
+		Reduce(possibleCenters, 0.f, [average = totalModuleSize / possibleCenters.size()](auto sum, auto pattern) {
+			return sum + std::abs(pattern.estimatedModuleSize() - average);
+		});
+
 	return totalDeviation <= 0.05f * totalModuleSize;
 }
 
 /**
-* <p>Orders by furthest from average</p>
-*/
-struct FurthestFromAverageComparator
-{
-	float average;
-
-	bool operator()(const FinderPattern& center1, const FinderPattern& center2) const {
-		return std::abs(center1.estimatedModuleSize() - average) > std::abs(center2.estimatedModuleSize() - average);
-	}
-};
-
-/**
-* <p>Orders by {@link FinderPatternFinder#estimatedModuleSize()}, descending.</p>
-*/
-struct EstimatedModuleComparator
-{
-	bool operator()(const FinderPattern& center1, const FinderPattern& center2) const {
-		return center1.estimatedModuleSize() < center2.estimatedModuleSize();
-	}
-};
-
-/**
 * @return the 3 best {@link FinderPattern}s from our list of candidates. The "best" are
 *         those have similar module size and form a shape closer to a isosceles right triangle.
-* Return empty if 3 such finder patterns do not exist
+*         Return invalid if 3 such finder patterns do not exist.
 */
-static std::vector<FinderPattern> SelectBestPatterns(std::vector<FinderPattern> possibleCenters)
+static FinderPatternInfo SelectBestPatterns(std::vector<FinderPattern> possibleCenters)
 {
-	std::vector<FinderPattern> bestPatterns;
 	int nbPossibleCenters = static_cast<int>(possibleCenters.size());
 	if (nbPossibleCenters < 3) {
 		// Couldn't find enough finder patterns
-		return bestPatterns;
+		return {};
 	}
 
-	std::sort(possibleCenters.begin(), possibleCenters.end(), EstimatedModuleComparator());
+	std::sort(possibleCenters.begin(), possibleCenters.end(), [](const auto& a, const auto& b) {
+		return a.estimatedModuleSize() < b.estimatedModuleSize();
+	});
 
 	double distortion = std::numeric_limits<double>::max();
+	std::array<FinderPattern, 3> bestPatterns;
 	std::array<double, 3> squares;
 
 	auto squaredDistance = [](PointF a, PointF b) { return (a - b) * (a - b); };
@@ -421,60 +449,43 @@ static std::vector<FinderPattern> SelectBestPatterns(std::vector<FinderPattern> 
 				double d = std::abs(squares[2] - 2 * squares[1]) + std::abs(squares[2] - 2 * squares[0]);
 				if (d < distortion) {
 					distortion = d;
-					bestPatterns.resize(3);
-					bestPatterns[0] = fpi;
-					bestPatterns[1] = fpj;
-					bestPatterns[2] = fpk;
+					bestPatterns = {fpi, fpj, fpk};
 				}
 			}
 		}
 	}
 
-	return bestPatterns;
-}
+	// Orders an array of three Points in an order [A,B,C] such that AB is less than AC
+	// and BC is less than AC, and the angle between BC and BA is less than 180 degrees.
+	// TODO: c++17
+	auto &a = bestPatterns[0], &b = bestPatterns[1], &c = bestPatterns[2];
 
-/**
-* Returns the z component of the cross product between vectors BC and BA.
-*/
-static float CrossProductZ(const ResultPoint& a, const ResultPoint& b, const ResultPoint& c)
-{
-	return (c.x() - b.x())*(a.y() - b.y()) - (c.y() - b.y())*(a.x() - b.x());
-}
-
-/**
-* Orders an array of three ResultPoints in an order [A,B,C] such that AB is less than AC
-* and BC is less than AC, and the angle between BC and BA is less than 180 degrees.
-*
-* @param patterns array of three {@code ResultPoint} to order
-*/
-static void OrderBestPatterns(std::vector<FinderPattern>& patterns)
-{
-	assert(patterns.size() == 3);
-
-	auto &p0 = patterns[0], &p1 = patterns[1], &p2 = patterns[2];
+	if (!a.isValid() && b.isValid() && c.isValid())
+		return {};
 
 	// Find distances between pattern centers
-	float zeroOneDistance = distance(p0, p1);
-	float oneTwoDistance = distance(p1, p2);
-	float zeroTwoDistance = distance(p0, p2);
+	float distAB = distance(a, b);
+	float distBC = distance(b, c);
+	float distAC = distance(a, c);
 
 	// Assume one closest to other two is B; A and C will just be guesses at first
-	if (oneTwoDistance >= zeroOneDistance && oneTwoDistance >= zeroTwoDistance)
-		std::swap(p0, p1);
-	else if (zeroTwoDistance >= oneTwoDistance && zeroTwoDistance >= zeroOneDistance)
+	if (distBC >= distAB && distBC >= distAC)
+		std::swap(a, b);
+	else if (distAC >= distBC && distAC >= distAB)
 		; // do nothing, the order is correct
 	else
-		std::swap(p1, p2);
+		std::swap(b, c);
 
 	// Use cross product to figure out whether A and C are correct or flipped.
 	// This asks whether BC x BA has a positive z component, which is the arrangement
 	// we want for A, B, C. If it's negative, then we've got it flipped around and
 	// should swap A and C.
-	if (CrossProductZ(p0, p1, p2) < 0.0f) {
-		std::swap(p0, p2);
+	if (crossProduct(c - b, a - b) < 0) {
+		std::swap(a, c);
 	}
-}
 
+	return {a, b, c};
+}
 
 FinderPatternInfo FinderPatternFinder::Find(const BitMatrix& image, bool tryHarder)
 {
@@ -535,6 +546,9 @@ FinderPatternInfo FinderPatternFinder::Find(const BitMatrix& image, bool tryHard
 										j = maxJ - 1;
 									}
 								}
+								// Clear state to start looking again
+								currentState = 0;
+								stateCount.fill(0);
 							}
 							else {
 								stateCount[0] = stateCount[2];
@@ -545,9 +559,6 @@ FinderPatternInfo FinderPatternFinder::Find(const BitMatrix& image, bool tryHard
 								currentState = 3;
 								continue;
 							}
-							// Clear state to start looking again
-							currentState = 0;
-							stateCount.fill(0);
 						}
 						else { // No, shift counts back by two
 							stateCount[0] = stateCount[2];
@@ -567,8 +578,8 @@ FinderPatternInfo FinderPatternFinder::Find(const BitMatrix& image, bool tryHard
 				}
 			}
 		}
-		if (FinderPatternFinder::FoundPatternCross(stateCount)) {
-			bool confirmed = FinderPatternFinder::HandlePossibleCenter(image, stateCount, i, maxJ, possibleCenters);
+		if (FoundPatternCross(stateCount)) {
+			bool confirmed = HandlePossibleCenter(image, stateCount, i, maxJ, possibleCenters);
 			if (confirmed) {
 				iSkip = stateCount[0];
 				if (hasSkipped) {
@@ -579,81 +590,7 @@ FinderPatternInfo FinderPatternFinder::Find(const BitMatrix& image, bool tryHard
 		}
 	}
 
-	auto bestPatterns = SelectBestPatterns(possibleCenters);
-	if (bestPatterns.empty())
-		return {};
-
-	OrderBestPatterns(bestPatterns);
-
-	return { bestPatterns[0], bestPatterns[1], bestPatterns[2]};
-}
-
-
-/**
-* @param stateCount count of black/white/black/white/black pixels just read
-* @return true iff the proportions of the counts is close enough to the 1/1/3/1/1 ratios
-*         used by finder patterns to be considered a match
-*/
-bool
-FinderPatternFinder::FoundPatternCross(const StateCount& stateCount) {
-	int totalModuleSize = Reduce(stateCount);
-	if (totalModuleSize < 7) {
-		return false;
-	}
-	float moduleSize = totalModuleSize / 7.0f;
-	float maxVariance = moduleSize / 2.0f;
-	// Allow less than 50% variance from 1-1-3-1-1 proportions
-	return
-		std::abs(moduleSize - stateCount[0]) < maxVariance &&
-		std::abs(moduleSize - stateCount[1]) < maxVariance &&
-		std::abs(3.0f * moduleSize - stateCount[2]) < 3 * maxVariance &&
-		std::abs(moduleSize - stateCount[3]) < maxVariance &&
-		std::abs(moduleSize - stateCount[4]) < maxVariance;
-}
-
-/**
-* <p>This is called when a horizontal scan finds a possible alignment pattern. It will
-* cross check with a vertical scan, and if successful, will, ah, cross-cross-check
-* with another horizontal scan. This is needed primarily to locate the real horizontal
-* center of the pattern in cases of extreme skew.
-* And then we cross-cross-cross check with another diagonal scan.</p>
-*
-* <p>If that succeeds the finder pattern location is added to a list that tracks
-* the number of times each location has been nearly-matched as a finder pattern.
-* Each additional find is more evidence that the location is in fact a finder
-* pattern center
-*
-* @param stateCount reading state module counts from horizontal scan
-* @param i row where finder pattern may be found
-* @param j end of possible finder pattern in row
-* @param pureBarcode true if in "pure barcode" mode
-* @return true if a finder pattern candidate was found this time
-*/
-bool
-FinderPatternFinder::HandlePossibleCenter(const BitMatrix& image, const StateCount& stateCount, int i, int j, std::vector<FinderPattern>& possibleCenters)
-{
-	int stateCountTotal = Reduce(stateCount);
-	float centerJ = CenterFromEnd(stateCount, j);
-	float centerI = CrossCheckVertical(image, i, static_cast<int>(centerJ), stateCount[2], stateCountTotal);
-	if (std::isnan(centerI))
-		return false;
-
-	// Re-cross check
-	centerJ = CrossCheckHorizontal(image, static_cast<int>(centerJ), static_cast<int>(centerI), stateCount[2],
-								   stateCountTotal);
-	if (std::isnan(centerJ) || !CrossCheckDiagonal(image, (int)centerI, (int)centerJ))
-		return false;
-
-	float estimatedModuleSize = stateCountTotal / 7.0f;
-	auto center = ZXing::FindIf(possibleCenters, [=](const FinderPattern& center) {
-		return center.aboutEquals(estimatedModuleSize, centerI, centerJ);
-	});
-	if (center != possibleCenters.end())
-		*center = center->combineEstimate(centerI, centerJ, estimatedModuleSize);
-	else
-		possibleCenters.emplace_back(centerJ, centerI, estimatedModuleSize);
-
-	return true;
+	return SelectBestPatterns(possibleCenters);
 }
 
 } // QRCode
