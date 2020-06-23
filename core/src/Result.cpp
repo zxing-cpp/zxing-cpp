@@ -24,10 +24,7 @@
 namespace ZXing {
 
 Result::Result(std::wstring&& text, std::vector<ResultPoint>&& resultPoints, BarcodeFormat format, ByteArray&& rawBytes)
-    : _text(std::move(text)),
-      _rawBytes(std::move(rawBytes)),
-      _resultPoints(std::move(resultPoints)),
-      _format(format)
+	: _format(format), _text(std::move(text)), _rawBytes(std::move(rawBytes)), _resultPoints(std::move(resultPoints))
 {
 	_numBits = static_cast<int>(_rawBytes.size()) * 8;
 }
@@ -38,11 +35,11 @@ Result::Result(const std::string& text, int y, int xStart, int xStop, BarcodeFor
 
 Result::Result(DecoderResult&& decodeResult, std::vector<ResultPoint>&& resultPoints, BarcodeFormat format)
     : _status(decodeResult.errorCode()),
+	  _format(format),
       _text(std::move(decodeResult).text()),
       _rawBytes(std::move(decodeResult).rawBytes()),
       _numBits(decodeResult.numBits()),
-      _resultPoints(std::move(resultPoints)),
-      _format(format)
+      _resultPoints(std::move(resultPoints))
 {
 	if (!isValid())
 		return;

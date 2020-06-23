@@ -55,6 +55,13 @@ public:
 		return _status;
 	}
 
+	BarcodeFormat format() const {
+		return _format;
+	}
+	void setFormat(BarcodeFormat format) {
+		_format = format;
+	}
+
 	const std::wstring& text() const {
 		return _text;
 	}
@@ -80,13 +87,6 @@ public:
 
 	void addResultPoints(const std::vector<ResultPoint>& points);
 
-	BarcodeFormat format() const {
-		return _format;
-	}
-	void setFormat(BarcodeFormat format) {
-		_format = format;
-	}
-
 	const ResultMetadata& metadata() const {
 		return _metadata;
 	}
@@ -97,11 +97,11 @@ public:
 
 private:
 	DecodeStatus _status = DecodeStatus::NoError;
+	BarcodeFormat _format = BarcodeFormat::INVALID;
 	std::wstring _text;
 	ByteArray _rawBytes;
 	int _numBits = 0;
 	std::vector<ResultPoint> _resultPoints;
-	BarcodeFormat _format = BarcodeFormat::INVALID;
 	ResultMetadata _metadata;
 };
 
