@@ -40,6 +40,12 @@ public:
 	inline constexpr Point topRight() const noexcept { return at(1); }
 	inline constexpr Point bottomRight() const noexcept { return at(2); }
 	inline constexpr Point bottomLeft() const noexcept { return at(3); }
+
+	inline double rotation() const
+	{
+		auto centerLine = normalized((topRight() + bottomRight()) - (topLeft() + bottomLeft()));
+		return std::atan2(centerLine.y, centerLine.x);
+	}
 };
 
 using QuadrilateralF = Quadrilateral<PointF>;
