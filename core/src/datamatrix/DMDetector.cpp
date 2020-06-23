@@ -205,7 +205,7 @@ static BitMatrix SampleGrid(const BitMatrix& image, const ResultPoint& topLeft, 
 							const ResultPoint& bottomRight, const ResultPoint& topRight, int width, int height)
 {
 	return SampleGrid(image, width, height,
-					  {ClockwiseRect(width, height, 0.5), {topLeft, topRight, bottomRight, bottomLeft}});
+					  {Rectangle(width, height, 0.5), {topLeft, topRight, bottomRight, bottomLeft}});
 }
 
 /**
@@ -848,7 +848,7 @@ static BitMatrix SampleGrid(const BitMatrix& image, PointF tl, PointF bl, PointF
 	for (auto* p : {&tl, &bl, &br, &tr})
 		*p = *p + PointF(0.5, 0.5);
 
-	return SampleGrid(image, width, height, PerspectiveTransform(ClockwiseRect(width, height, 0), {tl, tr, br, bl}));
+	return SampleGrid(image, width, height, PerspectiveTransform(Rectangle(width, height, 0), {tl, tr, br, bl}));
 }
 
 static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)

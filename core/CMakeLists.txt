@@ -53,6 +53,7 @@ set (COMMON_FILES
     src/GenericGFPoly.cpp
     src/Matrix.h
     src/Point.h
+    src/Quadrilateral.h
     src/TextUtfEncoding.h
     src/TextUtfEncoding.cpp
     src/TritMatrix.h

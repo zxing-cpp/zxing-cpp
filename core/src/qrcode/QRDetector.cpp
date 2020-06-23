@@ -214,7 +214,7 @@ AlignmentPattern FindAlignmentInRegion(const BitMatrix& image, float overallEstM
 
 static PerspectiveTransform CreateTransform(const ResultPoint& topLeft, const ResultPoint& topRight, const ResultPoint& bottomLeft, const AlignmentPattern& alignmentPattern, int dimension)
 {
-	auto quad = ClockwiseRect(dimension, dimension, 3.5);
+	auto quad = Rectangle(dimension, dimension, 3.5);
 	PointF bottomRight;
 	if (alignmentPattern.isValid()) {
 		bottomRight = alignmentPattern;

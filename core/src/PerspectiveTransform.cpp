@@ -23,26 +23,6 @@
 
 namespace ZXing {
 
-static bool IsConvex(const Quadrilateral& poly)
-{
-	const int N = static_cast<int>(poly.size());
-	bool sign = false;
-
-	for(int i = 0; i < N; i++)
-	{
-		auto d1 = poly[(i + 2) % N] - poly[(i + 1) % N];
-		auto d2 = poly[i] - poly[(i + 1) % N];
-		auto cp = crossProduct(d1, d2);
-
-		if (i == 0)
-			sign = cp > 0;
-		else if (sign != (cp > 0))
-			return false;
-	}
-
-	return true;
-}
-
 PerspectiveTransform PerspectiveTransform::inverse() const
 {
 	// Here, the adjoint serves as the inverse:
@@ -75,7 +55,7 @@ PerspectiveTransform PerspectiveTransform::times(const PerspectiveTransform& oth
 	};
 }
 
-PerspectiveTransform PerspectiveTransform::UnitSquareTo(const Quadrilateral& q)
+PerspectiveTransform PerspectiveTransform::UnitSquareTo(const QuadrilateralF& q)
 {
 	//c++-17: structured binding
 	PointF::value_t x0, y0, x1, y1, x2, y2, x3, y3;
@@ -100,7 +80,7 @@ PerspectiveTransform PerspectiveTransform::UnitSquareTo(const Quadrilateral& q)
 	}
 }
 
-PerspectiveTransform::PerspectiveTransform(const Quadrilateral& src, const Quadrilateral& dst)
+PerspectiveTransform::PerspectiveTransform(const QuadrilateralF& src, const QuadrilateralF& dst)
 {
 	if (!IsConvex(src) || !IsConvex(dst))
 		return;

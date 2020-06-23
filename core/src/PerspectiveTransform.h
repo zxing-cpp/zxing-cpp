@@ -18,18 +18,11 @@
 */
 
 #include "Point.h"
+#include "Quadrilateral.h"
 
 #include <array>
 
 namespace ZXing {
-
-using Quadrilateral = std::array<PointF, 4>;
-
-inline Quadrilateral ClockwiseRect(int width, int height, PointF::value_t margin = 0)
-{
-	return {
-		PointF{margin, margin}, {width - margin, margin}, {width - margin, height - margin}, {margin, height - margin}};
-}
 
 /**
 * <p>This class implements a perspective transform in two dimensions. Given four source and four
@@ -50,10 +43,10 @@ class PerspectiveTransform
 	PerspectiveTransform inverse() const;
 	PerspectiveTransform times(const PerspectiveTransform& other) const;
 
-	static PerspectiveTransform UnitSquareTo(const Quadrilateral& q);
+	static PerspectiveTransform UnitSquareTo(const QuadrilateralF& q);
 
 public:
-	PerspectiveTransform(const Quadrilateral& src, const Quadrilateral& dst);
+	PerspectiveTransform(const QuadrilateralF& src, const QuadrilateralF& dst);
 
 	PointF operator()(PointF p) const;
 
