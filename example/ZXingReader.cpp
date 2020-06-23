@@ -16,6 +16,7 @@
 
 #include "ReadBarcode.h"
 #include "TextUtfEncoding.h"
+#include "ZXNumeric.h"
 
 #include <iostream>
 #include <cstring>
@@ -103,7 +104,7 @@ int main(int argc, char* argv[])
 	std::cout << "Text:     \"" << TextUtfEncoding::ToUtf8(result.text()) << "\"\n"
 			  << "Format:   " << ToString(result.format()) << "\n"
 			  << "Position: " << result.position() << "\n"
-			  << "Rotation: " << int(result.position().rotation() / M_PI * 180) << "\n"
+			  << "Rotation: " << int(result.position().rotation() * kDegPerRad) << "\n"
 			  << "Error:    " << ToString(result.status()) << "\n";
 	auto errLevel = result.metadata().getString(ResultMetadata::Key::ERROR_CORRECTION_LEVEL);
 	if (!errLevel.empty()) {
