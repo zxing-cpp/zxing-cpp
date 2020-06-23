@@ -34,8 +34,8 @@ public:
 	ResultPoint(int x, int y) : PointF(x, y) {}
 	template <typename T> ResultPoint(PointT<T> p) : PointF(p) {}
 
-	float x() const { return PointF::x; }
-	float y() const { return PointF::y; }
+	float x() const { return static_cast<float>(PointF::x); }
+	float y() const { return static_cast<float>(PointF::y); }
 
 	void set(float x, float y) { *this = PointF(x, y); }
 
