@@ -56,7 +56,7 @@ Reader::decode(const BinaryBitmap& image) const
 	if (!detectorResult.isValid())
 		return Result(DecodeStatus::NotFound);
 
-	return Result(Decoder::Decode(detectorResult.bits()), std::move(detectorResult).points(),
+	return Result(Decoder::Decode(detectorResult.bits()), std::move(detectorResult).position(),
 				  BarcodeFormat::DATA_MATRIX);
 }
 

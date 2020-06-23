@@ -31,6 +31,10 @@ public:
 
 	Quadrilateral() = default;
 	Quadrilateral(T tl, T tr, T br, T bl) : Base{tl, tr, br, bl} {}
+	template <typename U>
+	Quadrilateral(PointT<U> tl, PointT<U> tr, PointT<U> br, PointT<U> bl)
+		: Quadrilateral(Point(tl), Point(tr), Point(br), Point(bl))
+	{}
 
 	inline constexpr Point topLeft() const noexcept { return at(0); }
 	inline constexpr Point topRight() const noexcept { return at(1); }
@@ -46,6 +50,12 @@ Quadrilateral<PointT> Rectangle(int width, int height, typename PointT::value_t 
 {
 	return {
 		PointT{margin, margin}, {width - margin, margin}, {width - margin, height - margin}, {margin, height - margin}};
+}
+
+template <typename PointT = PointI>
+Quadrilateral<PointT> Line(int y, int xStart, int xStop)
+{
+	return {PointT{xStart, y}, {xStop, y}, {xStop, y}, {xStart, y}};
 }
 
 template <typename PointT>

@@ -75,9 +75,9 @@ static bool ParseOptions(int argc, char* argv[], DecodeHints* hints, std::string
 	return !filePath->empty();
 }
 
-std::ostream& operator<<(std::ostream& os, const std::vector<ResultPoint>& points) {
+std::ostream& operator<<(std::ostream& os, const Position& points) {
 	for (const auto& p : points)
-		os << int(p.x() + .5f) << "x" << int(p.y() + .5f) << " ";
+		os << p.x << "x" << p.y << " ";
 	return os;
 }
 
@@ -102,7 +102,7 @@ int main(int argc, char* argv[])
 
 	std::cout << "Text:     \"" << TextUtfEncoding::ToUtf8(result.text()) << "\"\n"
 			  << "Format:   " << ToString(result.format()) << "\n"
-			  << "Position: " << result.resultPoints() << "\n"
+			  << "Position: " << result.position() << "\n"
 			  << "Error:    " << ToString(result.status()) << "\n";
 	auto errLevel = result.metadata().getString(ResultMetadata::Key::ERROR_CORRECTION_LEVEL);
 	if (!errLevel.empty()) {

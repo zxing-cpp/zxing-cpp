@@ -77,9 +77,8 @@ DecodeStatus DoDecode(const BinaryBitmap& image, bool multiple, std::list<Result
 			ScanningDecoder::Decode(*detectorResult.bits, points[4], points[5], points[6], points[7],
 									GetMinCodewordWidth(points), GetMaxCodewordWidth(points));
 		if (decoderResult.isValid()) {
-			std::vector<ResultPoint> foundPoints(points.size());
-			std::transform(points.begin(), points.end(), foundPoints.begin(), [](const Nullable<ResultPoint>& p) { return p.value(); });
-			Result result(std::move(decoderResult), std::move(foundPoints), BarcodeFormat::PDF_417);
+			auto point = [&](int i) { return points[i].value(); };
+			Result result(std::move(decoderResult), {point(0), point(2), point(3), point(1)}, BarcodeFormat::PDF_417);
 			result.metadata().put(ResultMetadata::ERROR_CORRECTION_LEVEL, decoderResult.ecLevel());
 			if (auto extra = decoderResult.extra()) {
 				result.metadata().put(ResultMetadata::PDF417_EXTRA_METADATA, extra);

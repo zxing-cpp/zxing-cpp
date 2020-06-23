@@ -23,23 +23,19 @@
 
 namespace ZXing {
 
-Result::Result(std::wstring&& text, std::vector<ResultPoint>&& resultPoints, BarcodeFormat format, ByteArray&& rawBytes)
-	: _format(format), _text(std::move(text)), _rawBytes(std::move(rawBytes)), _resultPoints(std::move(resultPoints))
+Result::Result(std::wstring&& text, Position&& position, BarcodeFormat format, ByteArray&& rawBytes)
+	: _format(format), _text(std::move(text)), _position(std::move(position)), _rawBytes(std::move(rawBytes))
 {
 	_numBits = static_cast<int>(_rawBytes.size()) * 8;
 }
 
 Result::Result(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format, ByteArray&& rawBytes)
-    : Result(TextDecoder::FromLatin1(text), {ResultPoint(xStart, y), ResultPoint(xStop, y)}, format, std::move(rawBytes))
+	: Result(TextDecoder::FromLatin1(text), Line(y, xStart, xStop), format, std::move(rawBytes))
 {}
 
-Result::Result(DecoderResult&& decodeResult, std::vector<ResultPoint>&& resultPoints, BarcodeFormat format)
-    : _status(decodeResult.errorCode()),
-	  _format(format),
-      _text(std::move(decodeResult).text()),
-      _rawBytes(std::move(decodeResult).rawBytes()),
-      _numBits(decodeResult.numBits()),
-      _resultPoints(std::move(resultPoints))
+Result::Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat format)
+	: _status(decodeResult.errorCode()), _format(format), _text(std::move(decodeResult).text()),
+	  _position(std::move(position)), _rawBytes(std::move(decodeResult).rawBytes()), _numBits(decodeResult.numBits())
 {
 	if (!isValid())
 		return;
@@ -59,12 +55,6 @@ Result::Result(DecoderResult&& decodeResult, std::vector<ResultPoint>&& resultPo
 		metadata().put(ResultMetadata::STRUCTURED_APPEND_PARITY, decodeResult.structuredAppendParity());
 	}
 	//TODO: what about the other optional data in DecoderResult?
-}
-
-void
-Result::addResultPoints(const std::vector<ResultPoint>& points)
-{
-	_resultPoints.insert(resultPoints().end(), points.begin(), points.end());
 }
 
 } // ZXing

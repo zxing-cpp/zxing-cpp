@@ -17,7 +17,7 @@
 */
 
 #include "PerspectiveTransform.h"
-#include "BitMatrix.h"
+#include "DetectorResult.h"
 
 namespace ZXing {
 
@@ -30,9 +30,9 @@ namespace ZXing {
 * @param width width of {@link BitMatrix} to sample from image
 * @param height height of {@link BitMatrix} to sample from image
 * @param transform transforming a destination position into a source position
-* @return {@link BitMatrix} representing a grid of points sampled from the image within a region
+* @return {@link DetectorResult} representing a grid of points sampled from the image within a region
 *   defined by the "src" parameters. Result is empty if transformation is invalid (out of bound access).
 */
-BitMatrix SampleGrid(const BitMatrix& image, int width, int height, const PerspectiveTransform& transform);
+DetectorResult SampleGrid(const BitMatrix& image, int width, int height, const PerspectiveTransform& transform);
 
 } // ZXing

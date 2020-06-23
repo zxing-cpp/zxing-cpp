@@ -126,7 +126,8 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, BitArray::Range star
 	{
 		decodeResult.metadata().put(ResultMetadata::UPC_EAN_EXTENSION, extensionResult.text());
 		decodeResult.metadata().putAll(extensionResult.metadata());
-		decodeResult.addResultPoints(extensionResult.resultPoints());
+		//TODO: extend position in include extension
+		//decodeResult.addResultPoints(extensionResult.resultPoints());
 	}
 
 	if (!_allowedExtensions.empty() && !Contains(_allowedExtensions, extensionResult.text().size())) {

@@ -23,6 +23,7 @@
 #include "DMDetector.h"
 #include "BitMatrix.h"
 #include "DetectorResult.h"
+#include "ResultPoint.h"
 #include "GridSampler.h"
 #include "Point.h"
 #include "WhiteRectDetector.h"
@@ -201,8 +202,8 @@ static ResultPoint CorrectTopRight(const BitMatrix& image, const ResultPoint& bo
 	return l1 <= l2 ? c1 : c2;
 }
 
-static BitMatrix SampleGrid(const BitMatrix& image, const ResultPoint& topLeft, const ResultPoint& bottomLeft,
-							const ResultPoint& bottomRight, const ResultPoint& topRight, int width, int height)
+static DetectorResult SampleGrid(const BitMatrix& image, const ResultPoint& topLeft, const ResultPoint& bottomLeft,
+								 const ResultPoint& bottomRight, const ResultPoint& topRight, int width, int height)
 {
 	return SampleGrid(image, width, height,
 					  {Rectangle(width, height, 0.5), {topLeft, topRight, bottomRight, bottomLeft}});
@@ -408,11 +409,7 @@ static DetectorResult DetectOld(const BitMatrix& image)
 		dimensionTop = dimensionRight = dimension;
 	}
 
-	auto bits = SampleGrid(image, *topLeft, *bottomLeft, *bottomRight, correctedTopRight, dimensionTop, dimensionRight);
-	if (bits.empty())
-		return {};
-
-	return {std::move(bits), {*topLeft, *bottomLeft, *bottomRight, correctedTopRight}};
+	return SampleGrid(image, *topLeft, *bottomLeft, *bottomRight, correctedTopRight, dimensionTop, dimensionRight);
 }
 
 /**
@@ -827,7 +824,7 @@ static void dumpDebugPPM(const BitMatrix& image, const char* fn )
 }
 #endif
 
-static BitMatrix SampleGrid(const BitMatrix& image, PointF tl, PointF bl, PointF br, PointF tr, int width, int height)
+static DetectorResult SampleGrid(const BitMatrix& image, PointF tl, PointF bl, PointF br, PointF tr, int width, int height)
 {
 	auto moveTowardsBy = [](PointF& a, const PointF& b, double d) {
 		auto a2b = normalized(b - a);
@@ -981,7 +978,7 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 			if (dimT < 10 || dimT > 144 || dimR < 8 || dimR > 144 )
 				continue;
 
-			auto bits = SampleGrid(image, tl, bl, br, tr, dimT, dimR);
+			auto res = SampleGrid(image, tl, bl, br, tr, dimT, dimR);
 
 #ifdef PRINT_DEBUG
 			printf("modules top: %d, right: %d\n", dimT, dimR);
@@ -993,10 +990,10 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 			dumpDebugPPM(image, "binary.pnm");
 #endif
 
-			if (bits.empty())
+			if (!res.isValid())
 				continue;
 
-			return {std::move(bits), {tl, bl, br, tr}};
+			return res;
 		}
 		// reached border of image -> try next scan direction
 #ifndef PRINT_DEBUG

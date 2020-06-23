@@ -291,14 +291,7 @@ ProcessFinderPatternInfo(const BitMatrix& image, const FinderPatternInfo& info)
 
 	PerspectiveTransform transform = CreateTransform(info.topLeft, info.topRight, info.bottomLeft, alignmentPattern, dimension);
 
-	auto bits = SampleGrid(image, dimension, dimension, transform);
-	if (bits.empty())
-		return {};
-
-	if (alignmentPattern.isValid())
-		return {std::move(bits), {info.bottomLeft, info.topLeft, info.topRight, alignmentPattern}};
-	else
-		return {std::move(bits), {info.bottomLeft, info.topLeft, info.topRight}};
+	return SampleGrid(image, dimension, dimension, transform);
 }
 
 /**

@@ -36,8 +36,8 @@ public:
 	DetectorResult(DetectorResult&&) = default;
 	DetectorResult& operator=(DetectorResult&&) = default;
 
-	DetectorResult(BitMatrix&& bits, std::vector<ResultPoint>&& points, bool isCompact, int nbDatablocks, int nbLayers)
-		: ZXing::DetectorResult{std::move(bits), std::move(points)}, _compact(isCompact), _nbDatablocks(nbDatablocks),
+	DetectorResult(ZXing::DetectorResult&& result, bool isCompact, int nbDatablocks, int nbLayers)
+		: ZXing::DetectorResult{std::move(result)}, _compact(isCompact), _nbDatablocks(nbDatablocks),
 		  _nbLayers(nbLayers)
 	{}
 

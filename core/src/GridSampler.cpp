@@ -20,7 +20,7 @@
 
 namespace ZXing {
 
-BitMatrix SampleGrid(const BitMatrix& image, int width, int height, const PerspectiveTransform& transform)
+DetectorResult SampleGrid(const BitMatrix& image, int width, int height, const PerspectiveTransform& transform)
 {
 	auto project = [&](PointI p) { return PointI(transform(p + PointF(0.5, 0.5))); };
 	auto isInside = [&](PointI p) {
@@ -39,7 +39,10 @@ BitMatrix SampleGrid(const BitMatrix& image, int width, int height, const Perspe
 			if (image.get(p.x, p.y))
 				res.set(x, y);
 		}
-	return res;
+	auto projectCorner = [&](PointI p) { return PointI(transform(PointF(p)) + PointF(0.5, 0.5)); };
+	return {
+		std::move(res),
+		{projectCorner({0, 0}), projectCorner({width, 0}), projectCorner({width, height}), projectCorner({0, height})}};
 }
 
 } // ZXing

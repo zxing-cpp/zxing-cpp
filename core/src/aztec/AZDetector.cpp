@@ -20,6 +20,7 @@
 #include "BitHacks.h"
 #include "ZXNumeric.h"
 #include "ReedSolomonDecoder.h"
+#include "ResultPoint.h"
 #include "GenericGF.h"
 #include "WhiteRectDetector.h"
 #include "GridSampler.h"
@@ -457,24 +458,12 @@ static int GetDimension(bool compact, int nbLayers)
 	return 4 * nbLayers + 2 * ((nbLayers - 4) / 8 + 1) + 15;
 }
 
-
-/**
-* Gets the Aztec code corners from the bull's eye corners and the parameters.
-*
-* @param bullsEyeCorners the array of bull's eye corners
-* @return the array of aztec code corners
-*/
-static void GetMatrixCornerPoints(std::array<ResultPoint, 4>& bullsEyeCorners, bool compact, int nbLayers, int nbCenterLayers)
-{
-	ExpandSquare(bullsEyeCorners, static_cast<float>(2 * nbCenterLayers), static_cast<float>(GetDimension(compact, nbLayers)));
-}
-
 /**
 * Creates a BitMatrix by sampling the provided image.
 * topLeft, topRight, bottomRight, and bottomLeft are the centers of the squares on the
 * diagonal just outside the bull's eye.
 */
-static BitMatrix SampleGrid(const BitMatrix& image, const ResultPoint& topLeft, const ResultPoint& topRight, const ResultPoint& bottomRight, const ResultPoint& bottomLeft, bool compact, int nbLayers, int nbCenterLayers)
+static ZXing::DetectorResult SampleGrid(const BitMatrix& image, const ResultPoint& topLeft, const ResultPoint& topRight, const ResultPoint& bottomRight, const ResultPoint& bottomLeft, bool compact, int nbLayers, int nbCenterLayers)
 {
 	int dimension = GetDimension(compact, nbLayers);
 
@@ -513,14 +502,10 @@ DetectorResult Detector::Detect(const BitMatrix& image, bool isMirror)
 	}
 
 	// 4. Sample the grid
-	auto bits = SampleGrid(image, bullsEyeCorners[shift % 4], bullsEyeCorners[(shift + 1) % 4], bullsEyeCorners[(shift + 2) % 4], bullsEyeCorners[(shift + 3) % 4], compact, nbLayers, nbCenterLayers);
-	if (bits.empty())
-		return {};
-
-	// 5. Get the corners of the matrix.
-	GetMatrixCornerPoints(bullsEyeCorners, compact, nbLayers, nbCenterLayers);
-
-	return {std::move(bits), {bullsEyeCorners.begin(), bullsEyeCorners.end()}, compact, nbDataBlocks, nbLayers};
+	return {SampleGrid(image, bullsEyeCorners[(shift + 0) % 4], bullsEyeCorners[(shift + 1) % 4],
+					   bullsEyeCorners[(shift + 2) % 4], bullsEyeCorners[(shift + 3) % 4], compact, nbLayers,
+					   nbCenterLayers),
+			compact, nbDataBlocks, nbLayers};
 }
 
 } // Aztec

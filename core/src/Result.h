@@ -18,6 +18,7 @@
 
 #include "ByteArray.h"
 #include "BarcodeFormat.h"
+#include "Quadrilateral.h"
 #include "ResultPoint.h"
 #include "ResultMetadata.h"
 #include "DecodeStatus.h"
@@ -30,6 +31,8 @@ namespace ZXing {
 
 class DecoderResult;
 
+using Position = QuadrilateralI;
+
 /**
 * <p>Encapsulates the result of decoding a barcode within an image.</p>
 *
@@ -40,12 +43,12 @@ class Result
 public:
 	explicit Result(DecodeStatus status) : _status(status) {}
 
-	Result(std::wstring&& text, std::vector<ResultPoint>&& resultPoints, BarcodeFormat format, ByteArray&& rawBytes = {});
+	Result(std::wstring&& text, Position&& position, BarcodeFormat format, ByteArray&& rawBytes = {});
 
 	// 1D convenience constructor
 	Result(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format, ByteArray&& rawBytes = {});
 
-	Result(DecoderResult&& decodeResult, std::vector<ResultPoint>&& resultPoints, BarcodeFormat format);
+	Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat format);
 
 	bool isValid() const {
 		return StatusIsOK(_status);
@@ -69,6 +72,13 @@ public:
 		_text = std::move(text);
 	}
 
+	const Position& position() const {
+		return _position;
+	}
+	void setPosition(Position pos) {
+		_position = pos;
+	}
+
 	const ByteArray& rawBytes() const {
 		return _rawBytes;
 	}
@@ -77,15 +87,10 @@ public:
 		return _numBits;
 	}
 
-	const std::vector<ResultPoint>& resultPoints() const {
-		return _resultPoints;
+	[[deprecated]]
+	std::vector<ResultPoint> resultPoints() const {
+		return {position().begin(), position().end()};
 	}
-
-	void setResultPoints(std::vector<ResultPoint>&& points) {
-		_resultPoints = std::move(points);
-	}
-
-	void addResultPoints(const std::vector<ResultPoint>& points);
 
 	const ResultMetadata& metadata() const {
 		return _metadata;
@@ -99,9 +104,9 @@ private:
 	DecodeStatus _status = DecodeStatus::NoError;
 	BarcodeFormat _format = BarcodeFormat::INVALID;
 	std::wstring _text;
+	Position _position;
 	ByteArray _rawBytes;
 	int _numBits = 0;
-	std::vector<ResultPoint> _resultPoints;
 	ResultMetadata _metadata;
 };
 
