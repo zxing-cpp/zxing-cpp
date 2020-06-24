@@ -114,6 +114,9 @@ bool
 GlobalHistogramBinarizer::getBlackRow(int y, BitArray& row) const
 {
 	int width = _source->width();
+	if (width < 3)
+		return false; // special casing the code below for a width < 3 makes no sense
+
 	if (row.size() != width)
 		row = BitArray(width);
 	else
@@ -123,39 +126,27 @@ GlobalHistogramBinarizer::getBlackRow(int y, BitArray& row) const
 	const uint8_t* luminances = _source->getRow(y, buffer);
 	std::array<int, LUMINANCE_BUCKETS> buckets = {};
 	for (int x = 0; x < width; x++) {
-		int pixel = luminances[x];
-		buckets[pixel >> LUMINANCE_SHIFT]++;
+		buckets[luminances[x] >> LUMINANCE_SHIFT]++;
 	}
 	int blackPoint = EstimateBlackPoint(buckets);
-	if (blackPoint >= 0) {
-		if (width < 3) {
-			// Special case for very small images
-			for (int x = 0; x < width; x++) {
-				if (luminances[x] < blackPoint) {
-					row.set(x);
-				}
-			}
+	if (blackPoint <= 0)
+		return false;
+
+	if (luminances[0] < blackPoint)
+		row.set(0);
+
+	int x = 1;
+	for (auto* p = luminances + 1; p < luminances + width - 1; ++p, ++x) {
+		// A simple -1 4 -1 box filter with a weight of 2.
+		if ((-*(p - 1) + (int(*p) * 4) - *(p + 1)) / 2 < blackPoint) {
+			row.set(x);
 		}
-		else {
-			if (luminances[0] < blackPoint)
-				row.set(0);
-			int left = luminances[0];
-			int center = luminances[1];
-			for (int x = 1; x < width - 1; x++) {
-				int right = luminances[x + 1];
-				// A simple -1 4 -1 box filter with a weight of 2.
-				if (((center * 4) - left - right) / 2 < blackPoint) {
-					row.set(x);
-				}
-				left = center;
-				center = right;
-			}
-			if (luminances[width-1] < blackPoint)
-				row.set(width-1);
-		}
-		return true;
 	}
-	return false;
+
+	if (luminances[width - 1] < blackPoint)
+		row.set(width - 1);
+
+	return true;
 }
 
 static void InitBlackMatrix(const LuminanceSource& source, std::shared_ptr<const BitMatrix>& outMatrix)
@@ -174,31 +165,30 @@ static void InitBlackMatrix(const LuminanceSource& source, std::shared_ptr<const
 			const uint8_t* luminances = source.getRow(row, buffer);
 			int right = (width * 4) / 5;
 			for (int x = width / 5; x < right; x++) {
-				int pixel = luminances[x];
-				localBuckets[pixel >> LUMINANCE_SHIFT]++;
+				localBuckets[luminances[x] >> LUMINANCE_SHIFT]++;
 			}
 		}
 	}
 
 	int blackPoint = EstimateBlackPoint(localBuckets);
-	if (blackPoint >= 0) {
-		// We delay reading the entire image luminance until the black point estimation succeeds.
-		// Although we end up reading four rows twice, it is consistent with our motto of
-		// "fail quickly" which is necessary for continuous scanning.
-		ByteArray buffer;
-		int stride;
-		const uint8_t* luminances = source.getMatrix(buffer, stride);
-		for (int y = 0; y < height; y++) {
-			int offset = y * stride;
-			for (int x = 0; x < width; x++) {
-				int pixel = luminances[offset + x];
-				if (pixel < blackPoint) {
-					matrix->set(x, y);
-				}
+	if (blackPoint <= 0)
+		return;
+
+	// We delay reading the entire image luminance until the black point estimation succeeds.
+	// Although we end up reading four rows twice, it is consistent with our motto of
+	// "fail quickly" which is necessary for continuous scanning.
+	ByteArray buffer;
+	int stride;
+	const uint8_t* luminances = source.getMatrix(buffer, stride);
+	for (int y = 0; y < height; y++) {
+		int offset = y * stride;
+		for (int x = 0; x < width; x++) {
+			if (luminances[offset + x] < blackPoint) {
+				matrix->set(x, y);
 			}
 		}
-		outMatrix = matrix;
 	}
+	outMatrix = matrix;
 }
 
 // Does not sharpen the data, as this call is intended to only be used by 2D Readers.
