@@ -1,7 +1,6 @@
 cmake_minimum_required (VERSION 3.10)
 
-set(ZXing_VERSION 1.0.8)
-project (ZXing VERSION ${ZXing_VERSION} LANGUAGES CXX)
+project (ZXing VERSION "1.0.8" LANGUAGES CXX)
 
 option (BUILD_WRITERS "Build with writer support (encoders)" ON)
 option (BUILD_READERS "Build with reader support (decoders)" ON)
@@ -109,7 +108,7 @@ include (CMakePackageConfigHelpers)
 
 write_basic_package_version_file(
     "${CMAKE_CURRENT_BINARY_DIR}/ZXingConfigVersion.cmake"
-    VERSION ${ZXing_VERSION}
+    VERSION ${PROJECT_VERSION}
     COMPATIBILITY AnyNewerVersion
 )
 
