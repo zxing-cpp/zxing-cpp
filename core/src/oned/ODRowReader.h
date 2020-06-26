@@ -26,6 +26,22 @@
 #include <memory>
 #include <type_traits>
 
+/*
+Code39 : 1:2/3, 5+4+1 (0x3|2x1 wide) -> 12-15 mods, v1-? | ToNarrowWide(OMG 1) == *
+Codabar: 1:2/3, 4+3+1 (1x1|1x2|3x0 wide) -> 9-13 mods, v1-? | ToNarrowWide(OMG 2) == ABCD
+ITF    : 1:2/3, 5+5   (2x2 wide) -> mods, v6-?| .5, .38 == *
+
+Code93 : 1-4, 3+3 -> 9 mods  v1-? | round to 1-4 == *
+Code128: 1-4, 3+3 -> 11 mods v1-? | .7, .25 == ABC
+UPC/EAN: 1-4, 2+2 -> 7 mods  f    | .7, .48 == *
+  UPC-A: 11d 95m = 3 + 6*4 + 5 + 6*4 + 3 = 59
+  EAN-13: 12d 95m
+
+RSS14  : 1-8, finder: (15,2+3), symbol: (15/16,4+4) | .45, .2 (finder only), 14d
+  code = 2xguard + 2xfinder + 4xsymbol = (96,23), stacked = 2x50 mods
+RSSExp.:  v?-74d/?-41c
+*/
+
 namespace ZXing {
 
 class Result;

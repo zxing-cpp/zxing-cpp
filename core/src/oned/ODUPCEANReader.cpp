@@ -61,6 +61,7 @@ UPCEANReader::FindStartGuardPattern(const BitArray& row)
 	return {row.end(), row.end()};
 #else
 	// this is the 'right' way to do it: scan for a pattern of the form 3111, where 3 is the quitezone
+	// note upstream uses a quite-zone width of 3 modules but the spec requires 9
 	const auto& pattern = UPCEANCommon::START_END_PATTERN;
 	using Counters = std::decay<decltype(pattern)>::type;
 	Counters counters{};
