@@ -297,8 +297,13 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		});
 
 		runTests("codabar-1", "CODABAR", 11, {
-			{ 11, 11, 0   },
-			{ 11, 11, 180 },
+			{ 10, 10, 0   },
+			{ 10, 10, 180 },
+		});
+
+		runTests("codabar-2", "CODABAR", 4, {
+			{ 2, 2, 0   },
+			{ 2, 2, 180 },
 		});
 
 		runTests("code39-1", "CODE_39", 4, {
