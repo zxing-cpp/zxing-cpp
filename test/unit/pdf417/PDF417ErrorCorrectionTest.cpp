@@ -37,7 +37,7 @@ static const int PDF417_TEST_WITH_EC[] = {
 	900, 900, 769, 843, 591, 910, 605, 206, 706, 917, 371, 469, 79, 718, 47, 777, 249, 262, 193, 620, 597, 477, 450,
 	806, 908, 309, 153, 871, 686, 838, 185, 674, 68, 679, 691, 794, 497, 479, 234, 250, 496, 43, 347, 582, 882, 536,
 	322, 317, 273, 194, 917, 237, 420, 859, 340, 115, 222, 808, 866, 836, 417, 121, 833, 459, 64, 159 };
-static const int ECC_BYTES = Length(PDF417_TEST_WITH_EC) - Length(PDF417_TEST);
+static const int ECC_BYTES = Size(PDF417_TEST_WITH_EC) - Size(PDF417_TEST);
 static const int ERROR_LIMIT = ECC_BYTES;
 static const int MAX_ERRORS = ERROR_LIMIT / 2;
 static const int MAX_ERASURES = ERROR_LIMIT;
@@ -47,7 +47,7 @@ static void CheckDecode(std::vector<int>& received, const std::vector<int>& eras
 	int nbError = 0;
 	bool corrected = DecodeErrorCorrection(received, ECC_BYTES, erasures, nbError);
 	EXPECT_TRUE(corrected);
-	for (int i = 0; i < Length(PDF417_TEST); i++) {
+	for (int i = 0; i < Size(PDF417_TEST); i++) {
 		EXPECT_EQ(received[i], PDF417_TEST[i]);
 	}
 }
@@ -76,7 +76,7 @@ static void Corrupt(std::vector<int>& received, int howMany, PseudoRandom& rando
 
 TEST(PDF417ErrorCorrectionTest, NoError)
 {
-	std::vector<int> received(PDF417_TEST_WITH_EC, PDF417_TEST_WITH_EC + Length(PDF417_TEST_WITH_EC));
+	std::vector<int> received(PDF417_TEST_WITH_EC, PDF417_TEST_WITH_EC + Size(PDF417_TEST_WITH_EC));
     // no errors
 	CheckDecode(received);
 }
@@ -84,8 +84,8 @@ TEST(PDF417ErrorCorrectionTest, NoError)
 TEST(PDF417ErrorCorrectionTest, OneError)
 {
 	PseudoRandom random(0x12345678);
-    for (int i = 0; i < Length(PDF417_TEST_WITH_EC); i++) {
-		std::vector<int> received(PDF417_TEST_WITH_EC, PDF417_TEST_WITH_EC + Length(PDF417_TEST_WITH_EC));
+    for (int i = 0; i < Size(PDF417_TEST_WITH_EC); i++) {
+		std::vector<int> received(PDF417_TEST_WITH_EC, PDF417_TEST_WITH_EC + Size(PDF417_TEST_WITH_EC));
 		received[i] = random.next(0, 255);
 		CheckDecode(received);
     }
@@ -95,7 +95,7 @@ TEST(PDF417ErrorCorrectionTest, MaxErrors)
 {
 	PseudoRandom random(0x12345678);
     for (int testIterations = 0; testIterations < 100; testIterations++) { // # iterations is kind of arbitrary
-		std::vector<int> received(PDF417_TEST_WITH_EC, PDF417_TEST_WITH_EC + Length(PDF417_TEST_WITH_EC));
+		std::vector<int> received(PDF417_TEST_WITH_EC, PDF417_TEST_WITH_EC + Size(PDF417_TEST_WITH_EC));
 		Corrupt(received, MAX_ERRORS, random, 929);
 		CheckDecode(received);
     }
@@ -103,7 +103,7 @@ TEST(PDF417ErrorCorrectionTest, MaxErrors)
 
 TEST(PDF417ErrorCorrectionTest, TooManyErrors)
 {
-	std::vector<int> received(PDF417_TEST_WITH_EC, PDF417_TEST_WITH_EC + Length(PDF417_TEST_WITH_EC));
+	std::vector<int> received(PDF417_TEST_WITH_EC, PDF417_TEST_WITH_EC + Size(PDF417_TEST_WITH_EC));
 	PseudoRandom random(0x12345678);
 	Corrupt(received, MAX_ERRORS + 1, random, 929);
 	int nbError = 0;

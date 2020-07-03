@@ -113,7 +113,7 @@ static const IsMaskedFunc DATA_MASKS[] = {
 
 DataMask::DataMask(int reference)
 {
-	if (reference < 0 || reference >= Length(DATA_MASKS)) {
+	if (reference < 0 || reference >= Size(DATA_MASKS)) {
 		throw std::invalid_argument("Invalid data mask");
 	}
 	_isMasked = DATA_MASKS[reference];

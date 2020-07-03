@@ -205,7 +205,7 @@ static bool DecodeC40Segment(BitSource& bits, std::string& result)
 				if (cValue < 3) {
 					shift = cValue + 1;
 				}
-				else if (cValue < Length(C40_BASIC_SET_CHARS)) {
+				else if (cValue < Size(C40_BASIC_SET_CHARS)) {
 					char c40char = C40_BASIC_SET_CHARS[cValue];
 					if (upperShift) {
 						result.push_back((char)(c40char + 128));
@@ -230,7 +230,7 @@ static bool DecodeC40Segment(BitSource& bits, std::string& result)
 				shift = 0;
 				break;
 			case 2:
-				if (cValue < Length(C40_SHIFT2_SET_CHARS)) {
+				if (cValue < Size(C40_SHIFT2_SET_CHARS)) {
 					char c40char = C40_SHIFT2_SET_CHARS[cValue];
 					if (upperShift) {
 						result.push_back((char)(c40char + 128));
@@ -296,7 +296,7 @@ static bool DecodeTextSegment(BitSource& bits, std::string& result)
 				if (cValue < 3) {
 					shift = cValue + 1;
 				}
-				else if (cValue < Length(TEXT_BASIC_SET_CHARS)) {
+				else if (cValue < Size(TEXT_BASIC_SET_CHARS)) {
 					char textChar = TEXT_BASIC_SET_CHARS[cValue];
 					if (upperShift) {
 						result.push_back((char)(textChar + 128));
@@ -322,7 +322,7 @@ static bool DecodeTextSegment(BitSource& bits, std::string& result)
 				break;
 			case 2:
 				// Shift 2 for Text is the same encoding as C40
-				if (cValue < Length(TEXT_SHIFT2_SET_CHARS)) {
+				if (cValue < Size(TEXT_SHIFT2_SET_CHARS)) {
 					char textChar = TEXT_SHIFT2_SET_CHARS[cValue];
 					if (upperShift) {
 						result.push_back((char)(textChar + 128));
@@ -344,7 +344,7 @@ static bool DecodeTextSegment(BitSource& bits, std::string& result)
 				shift = 0;
 				break;
 			case 3:
-				if (cValue < Length(TEXT_SHIFT3_SET_CHARS)) {
+				if (cValue < Size(TEXT_SHIFT3_SET_CHARS)) {
 					char textChar = TEXT_SHIFT3_SET_CHARS[cValue];
 					if (upperShift) {
 						result.push_back((char)(textChar + 128));

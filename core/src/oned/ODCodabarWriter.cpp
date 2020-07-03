@@ -43,7 +43,7 @@ static const int CHARACTER_ENCODINGS[] = {
 	0x00c, 0x018, 0x045, 0x051, 0x054, 0x015, 0x01A, 0x029, 0x00B, 0x00E, // -$:/.+ABCD
 };
 
-static_assert(Length(ALPHABET) - 1 == Length(CHARACTER_ENCODINGS), "table size mismatch");
+static_assert(Size(ALPHABET) - 1 == Size(CHARACTER_ENCODINGS), "table size mismatch");
 
 BitMatrix
 CodabarWriter::encode(const std::wstring& contents_, int width, int height) const

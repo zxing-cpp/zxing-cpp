@@ -48,7 +48,7 @@ static const char* FORMAT_STR[] = {
 	"UPC_EAN_EXTENSION",
 };
 
-static_assert(Length(FORMAT_STR) == (int)BarcodeFormats::bitIndex(BarcodeFormat::_max) + 1,
+static_assert(Size(FORMAT_STR) == (int)BarcodeFormats::bitIndex(BarcodeFormat::_max) + 1,
 			  "FORMAT_STR array is out of sync with BarcodeFormat");
 
 const char* ToString(BarcodeFormat format)

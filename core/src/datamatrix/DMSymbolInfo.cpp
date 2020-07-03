@@ -63,7 +63,7 @@ static const SymbolInfo PROD_SYMBOLS[] = {
 };
 
 static const SymbolInfo* s_symbols = PROD_SYMBOLS;
-static ZXING_IF_NOT_TEST(const) size_t s_symbolCount = Length(PROD_SYMBOLS);
+static ZXING_IF_NOT_TEST(const) size_t s_symbolCount = Size(PROD_SYMBOLS);
 
 #if ZXING_BUILD_FOR_TEST
 
@@ -78,7 +78,7 @@ ZXING_EXPORT_TEST_ONLY
 void UseDefaultSymbolSet()
 {
 	s_symbols = PROD_SYMBOLS;
-	s_symbolCount = Length(PROD_SYMBOLS);
+	s_symbolCount = Size(PROD_SYMBOLS);
 }
 
 #endif // ZXING_BUILD_FOR_TEST

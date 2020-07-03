@@ -199,7 +199,7 @@ static void mapFromUnicode(const std::wstring& str, const MapEntry* entries, siz
 	}
 }
 
-#define CONVERT_USING(table, str, bytes) mapFromUnicode(str, table, Length(table), bytes)
+#define CONVERT_USING(table, str, bytes) mapFromUnicode(str, table, Size(table), bytes)
 
 } // anonymous
 

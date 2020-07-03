@@ -47,7 +47,7 @@ static const int CHARACTER_ENCODINGS[] = {
 	0x00c, 0x018, 0x045, 0x051, 0x054, 0x015, 0x01A, 0x029, 0x00B, 0x00E, // -$:/.+ABCD
 };
 
-static_assert(Length(ALPHABET) - 1 == Length(CHARACTER_ENCODINGS), "table size mismatch");
+static_assert(Size(ALPHABET) - 1 == Size(CHARACTER_ENCODINGS), "table size mismatch");
 
 // minimal number of characters that should be present (inclusing start and stop characters)
 // under normal circumstances this should be set to 3, but can be set higher

@@ -45,7 +45,7 @@ static const int CHARACTER_ENCODINGS[] = {
 	0x0A2, 0x08A, 0x02A, 0x094 // /-% , *
 };
 
-static_assert(Length(ALPHABET) - 1 == Length(CHARACTER_ENCODINGS), "table size mismatch");
+static_assert(Size(ALPHABET) - 1 == Size(CHARACTER_ENCODINGS), "table size mismatch");
 
 static const int ASTERISK_ENCODING = 0x094;
 

@@ -75,9 +75,9 @@ std::string metadataToUtf8(const Result& result)
 {
 	constexpr ResultMetadata::Key keys[] = {ResultMetadata::SUGGESTED_PRICE, ResultMetadata::ISSUE_NUMBER, ResultMetadata::UPC_EAN_EXTENSION};
 	constexpr char const * prefixs[] = {"SUGGESTED_PRICE", "ISSUE_NUMBER", "UPC_EAN_EXTENSION"};
-	static_assert(Length(keys) == Length(prefixs), "lut size mismatch");
+	static_assert(Size(keys) == Size(prefixs), "lut size mismatch");
 
-	for (int i = 0; i < Length(keys); ++i) {
+	for (int i = 0; i < Size(keys); ++i) {
 		auto res = TextUtfEncoding::ToUtf8(result.metadata().getString(keys[i]));
 		if (res.size()) {
 			res.insert(0, std::string(prefixs[i]) + "=");

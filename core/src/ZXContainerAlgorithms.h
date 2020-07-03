@@ -52,9 +52,15 @@ Value Reduce(const Container& c, Value v = Value{}, Op op = {}) {
 	return std::accumulate(std::begin(c), std::end(c), v, op);
 }
 
-template <typename T, typename S = int>
-constexpr S Length(const T&) {
-	return static_cast<S>(std::extent<T>::value);
+// see C++20 ssize
+template <class Container>
+constexpr auto Size(const Container& c) -> decltype(c.size(), int()) {
+	return static_cast<int>(c.size());
+}
+
+template <class T, std::size_t N>
+constexpr int Size(const T (&)[N]) noexcept {
+	return static_cast<int>(N);
 }
 
 template <typename Container, typename Value>
