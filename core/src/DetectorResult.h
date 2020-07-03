@@ -19,7 +19,6 @@
 #include "BitMatrix.h"
 #include "Quadrilateral.h"
 
-#include <vector>
 #include <utility>
 
 namespace ZXing {

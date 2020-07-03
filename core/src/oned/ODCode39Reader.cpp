@@ -28,7 +28,7 @@ namespace ZXing {
 
 namespace OneD {
 
-static const char ALPHABET_STRING[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%*";
+static const char ALPHABET[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%*";
 
 /**
 * Each character consists of 5 bars and 4 spaces, 3 of which are wide (i.e. 6 are narrow).
@@ -45,7 +45,7 @@ static const int CHARACTER_ENCODINGS[] = {
 	0x0A2, 0x08A, 0x02A, 0x094 // /-% , *
 };
 
-static_assert(Length(ALPHABET_STRING) - 1 == Length(CHARACTER_ENCODINGS), "table size mismatch");
+static_assert(Length(ALPHABET) - 1 == Length(CHARACTER_ENCODINGS), "table size mismatch");
 
 static const int ASTERISK_ENCODING = 0x094;
 
@@ -179,7 +179,7 @@ Code39Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 		if (i < 0)
 			return Result(DecodeStatus::NotFound);
 
-		result += ALPHABET_STRING[i];
+		result += ALPHABET[i];
 	} while (result.back() != '*');
 
 	result.pop_back(); // remove asterisk
@@ -192,8 +192,8 @@ Code39Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 	if (_usingCheckDigit) {
 		auto checkDigit = result.back();
 		result.pop_back();
-		int checksum = TransformReduce(result, 0, [](char c) { return IndexOf(ALPHABET_STRING, c); });
-		if (checkDigit != ALPHABET_STRING[checksum % 43]) {
+		int checksum = TransformReduce(result, 0, [](char c) { return IndexOf(ALPHABET, c); });
+		if (checkDigit != ALPHABET[checksum % 43]) {
 			return Result(DecodeStatus::ChecksumError);
 		}
 	}
