@@ -404,7 +404,7 @@ static bool HaveMultiplyConfirmedCenters(const std::vector<FinderPattern>& possi
 */
 static FinderPatternInfo SelectBestPatterns(std::vector<FinderPattern> possibleCenters)
 {
-	int nbPossibleCenters = static_cast<int>(possibleCenters.size());
+	int nbPossibleCenters = Size(possibleCenters);
 	if (nbPossibleCenters < 3) {
 		// Couldn't find enough finder patterns
 		return {};

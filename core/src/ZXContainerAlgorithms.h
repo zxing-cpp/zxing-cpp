@@ -55,7 +55,7 @@ Value Reduce(const Container& c, Value v = Value{}, Op op = {}) {
 // see C++20 ssize
 template <class Container>
 constexpr auto Size(const Container& c) -> decltype(c.size(), int()) {
-	return static_cast<int>(c.size());
+	return Size(c);
 }
 
 template <class T, std::size_t N>

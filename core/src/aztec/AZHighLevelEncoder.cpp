@@ -233,7 +233,7 @@ static bool IsBetterThanOrEqualTo(const EncodingState& state, const EncodingStat
 
 static BitArray ToBitArray(const EncodingState& state, const std::string& text)
 {
-	auto endState = EndBinaryShift(state, static_cast<int>(text.length()));
+	auto endState = EndBinaryShift(state, Size(text));
 	BitArray bits;
 	// Add each token to the result.
 	for (const Token& symbol : endState.tokens) {
@@ -363,9 +363,9 @@ HighLevelEncoder::Encode(const std::string& text)
 {
 	std::list<EncodingState> states;
 	states.push_back(EncodingState{ std::vector<Token>(), MODE_UPPER, 0, 0 });
-	for (int index = 0; index < (int)text.length(); index++) {
+	for (int index = 0; index < Size(text); index++) {
 		int pairCode;
-		int nextChar = index + 1 < (int)text.length() ? text[index + 1] : 0;
+		int nextChar = index + 1 < Size(text) ? text[index + 1] : 0;
 		switch (text[index]) {
 		case '\r':
 			pairCode = nextChar == '\n' ? 2 : 0;

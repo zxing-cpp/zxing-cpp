@@ -33,7 +33,7 @@ ReedSolomonEncoder::ReedSolomonEncoder(const GenericGF& field)
 const GenericGFPoly&
 ReedSolomonEncoder::buildGenerator(int degree)
 {
-	int cachedGenSize = static_cast<int>(_cachedGenerators.size());
+	int cachedGenSize = Size(_cachedGenerators);
 	if (degree >= cachedGenSize) {
 		GenericGFPoly lastGenerator = _cachedGenerators.back();
 		for (int d = cachedGenSize; d <= degree; d++) {
@@ -51,7 +51,7 @@ ReedSolomonEncoder::encode(std::vector<int>& toEncode, const int ecBytes)
 	if (ecBytes == 0) {
 		throw std::invalid_argument("No error correction bytes");
 	}
-	int dataBytes = static_cast<int>(toEncode.size()) - ecBytes;
+	int dataBytes = Size(toEncode) - ecBytes;
 	if (dataBytes <= 0) {
 		throw std::invalid_argument("No data bytes provided");
 	}
@@ -60,7 +60,7 @@ ReedSolomonEncoder::encode(std::vector<int>& toEncode, const int ecBytes)
 	GenericGFPoly _;
 	info.divide(buildGenerator(ecBytes), _);
 	auto& coefficients = info.coefficients();
-	int numZeroCoefficients = ecBytes - static_cast<int>(coefficients.size());
+	int numZeroCoefficients = ecBytes - Size(coefficients);
 	std::fill_n(toEncode.begin() + dataBytes, numZeroCoefficients, 0);
 	std::copy(coefficients.begin(), coefficients.end(), toEncode.begin() + dataBytes + numZeroCoefficients);
 }

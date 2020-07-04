@@ -571,7 +571,7 @@ CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
 {
 	// First read into an array of ints
 	std::vector<int> codewordsInts(codewordBytes.begin(), codewordBytes.end());
-	int numECCodewords = codewordBytes.length() - numDataCodewords;
+	int numECCodewords = Size(codewordBytes) - numDataCodewords;
 	if (!ReedSolomonDecoder::Decode(GenericGF::DataMatrixField256(), codewordsInts, numECCodewords))
 		return false;
 
@@ -608,7 +608,7 @@ DecoderResult Decoder::Decode(const BitMatrix& bits)
 	ByteArray resultBytes(totalBytes);
 
 	// Error-correct and copy data blocks together into a stream of bytes
-	int dataBlocksCount = static_cast<int>(dataBlocks.size());
+	int dataBlocksCount = Size(dataBlocks);
 	for (int j = 0; j < dataBlocksCount; j++) {
 		auto& dataBlock = dataBlocks[j];
 		ByteArray& codewordBytes = dataBlock.codewords();

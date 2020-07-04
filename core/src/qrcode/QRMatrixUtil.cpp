@@ -151,7 +151,7 @@ static void MaybeEmbedPositionAdjustmentPatterns(const Version& version, TritMat
 	}
 	int index = version.versionNumber() - 1;
 	auto& coordinates = POSITION_ADJUSTMENT_PATTERN_COORDINATE_TABLE[index];
-	int numCoordinates = static_cast<int>(coordinates.size());
+	int numCoordinates = Size(coordinates);
 	for (int i = 0; i < numCoordinates; ++i) {
 		for (int j = 0; j < numCoordinates; ++j) {
 			int y = coordinates[i];
@@ -194,7 +194,7 @@ static void EmbedPositionDetectionPattern(int xStart, int yStart, TritMatrix& ma
 static void EmbedPositionDetectionPatternsAndSeparators(TritMatrix& matrix)
 {
 	// Embed three big squares at corners.
-	int pdpWidth = static_cast<int>(POSITION_DETECTION_PATTERN[0].size());
+	int pdpWidth = Size(POSITION_DETECTION_PATTERN[0]);
 	// Left top corner.
 	EmbedPositionDetectionPattern(0, 0, matrix);
 	// Right top corner.

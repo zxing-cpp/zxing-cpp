@@ -99,7 +99,7 @@ CheckOneChecksum(const std::string& result, int checkPosition, int weightMax)
 static bool
 CheckChecksums(const std::string& result)
 {
-	int length = static_cast<int>(result.length());
+	int length = Size(result);
 	return CheckOneChecksum(result, length - 2, 20) && CheckOneChecksum(result, length - 1, 15);
 }
 

@@ -16,6 +16,8 @@
 * limitations under the License.
 */
 
+#include "ZXContainerAlgorithms.h"
+
 #include <utility>
 #include <vector>
 
@@ -48,7 +50,7 @@ public:
 	* @return degree of this polynomial
 	*/
 	int degree() const {
-		return static_cast<int>(_coefficients.size()) - 1;
+		return Size(_coefficients) - 1;
 	}
 
 	/**

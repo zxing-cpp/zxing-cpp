@@ -15,6 +15,8 @@
 * limitations under the License.
 */
 
+#include "ZXContainerAlgorithms.h"
+
 #include <vector>
 #include <cstdint>
 
@@ -29,7 +31,6 @@ public:
 	ByteArray()																	= default;
 	ByteArray(std::initializer_list<uint8_t> list) : std::vector<uint8_t>(list) {}
 	explicit ByteArray(int len) : std::vector<uint8_t>(len, 0)					{}
-	int length() const															{ return static_cast<int>(size()); }
 	const char* charPtr() const													{ return reinterpret_cast<const char*>(data()); }
 	char* charPtr()																{ return reinterpret_cast<char*>(data()); }
 };

@@ -548,7 +548,7 @@ Encoder::Encode(const std::wstring& content, ErrorCorrectionLevel ecLevel, Chara
 	BitArray headerAndDataBits;
 	headerAndDataBits.appendBitArray(headerBits);
 	// Find "length" of main segment and write it
-	int numLetters = mode == CodecMode::BYTE ? dataBits.sizeInBytes() : static_cast<int>(content.length());
+	int numLetters = mode == CodecMode::BYTE ? dataBits.sizeInBytes() : Size(content);
 	AppendLengthInfo(numLetters, *version, mode, headerAndDataBits);
 	// Put data together into the overall payload
 	headerAndDataBits.appendBitArray(dataBits);

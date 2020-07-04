@@ -143,7 +143,7 @@ namespace DecodedBitStreamParser
 
 	static int GetInt(const ByteArray& bytes, const ByteArray& x)
 	{
-		int len = x.length();
+		int len = Size(x);
 		int val = 0;
 		for (int i = 0; i < len; i++) {
 			val += GetBit(x[i], bytes) << (len - i - 1);

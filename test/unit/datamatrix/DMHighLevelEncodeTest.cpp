@@ -61,7 +61,7 @@ namespace {
 	*/
 	static std::string Visualize(const ByteArray& codewords) {
 		std::stringstream buf;
-		for (int i = 0; i < codewords.length(); i++) {
+		for (int i = 0; i < Size(codewords); i++) {
 			if (i > 0) {
 				buf << ' ';
 			}

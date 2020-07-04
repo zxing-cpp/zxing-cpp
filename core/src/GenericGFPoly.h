@@ -20,6 +20,7 @@
 #include <cstddef>
 #include <cassert>
 #include <vector>
+#include <ZXContainerAlgorithms.h>
 
 namespace ZXing {
 
@@ -102,7 +103,7 @@ public:
 	* @return degree of this polynomial
 	*/
 	int degree() const {
-		return static_cast<int>(_coefficients.size()) - 1;
+		return Size(_coefficients) - 1;
 	}
 
 	/**

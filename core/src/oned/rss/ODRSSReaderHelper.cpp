@@ -55,7 +55,7 @@ static int combins(int n, int r)
 int
 ReaderHelper::GetRSSvalue(const std::array<int, 4>& widths, int maxWidth, bool noNarrow)
 {
-	int elements = static_cast<int>(widths.size());
+	int elements = Size(widths);
 	int n = Reduce(widths);
 	int val = 0;
 	int narrowMask = 0;

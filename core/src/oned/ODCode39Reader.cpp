@@ -65,7 +65,7 @@ using CounterContainer = std::array<int, 9>;
 static int
 ToNarrowWidePattern(const CounterContainer& counters)
 {
-	int numCounters = static_cast<int>(counters.size());
+	int numCounters = Size(counters);
 	int maxNarrowCounter = 0;
 	int wideCounters;
 	do {

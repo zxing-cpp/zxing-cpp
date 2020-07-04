@@ -110,7 +110,7 @@ static bool
 FindGuardPattern(const BitMatrix& matrix, int column, int row, int width, bool whiteFirst, const std::vector<int>& pattern, std::vector<int>& counters, int& startPos, int& endPos)
 {
 	std::fill(counters.begin(), counters.end(), 0);
-	int patternLength = static_cast<int>(pattern.size());
+	int patternLength = Size(pattern);
 	bool isWhite = whiteFirst;
 	int patternStart = column;
 	int pixelDrift = 0;

@@ -161,7 +161,7 @@ ReedSolomonDecoder::Decode(const GenericGF& field, std::vector<int>& received, i
 
 	auto errorMagnitudes = FindErrorMagnitudes(field, omega, errorLocations);
 
-	int receivedCount = static_cast<int>(received.size());
+	int receivedCount = Size(received);
 	for (size_t i = 0; i < errorLocations.size(); ++i) {
 		int position = receivedCount - 1 - field.log(errorLocations[i]);
 		if (position < 0)

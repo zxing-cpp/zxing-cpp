@@ -521,7 +521,7 @@ Encoder::generateBarcodeLogic(const std::wstring& msg, int errorCorrectionLevel)
 	int errorCorrectionCodeWords = GetErrorCorrectionCodewordCount(errorCorrectionLevel);
 	std::vector<int> highLevel = HighLevelEncoder::EncodeHighLevel(msg, _compaction, _encoding);
 	
-	int sourceCodeWords = static_cast<int>(highLevel.size());
+	int sourceCodeWords = Size(highLevel);
 
 	int cols, rows;
 	DetermineDimensions(_minCols, _maxCols, _minRows, _maxRows, sourceCodeWords, errorCorrectionCodeWords, cols, rows);

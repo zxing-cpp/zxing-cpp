@@ -90,7 +90,7 @@ InitCounters(const BitArray& row, std::vector<int>& counters)
 static int
 ToNarrowWidePattern(const std::vector<int>& counters, int position)
 {
-	int counterLength = static_cast<int>(counters.size());
+	int counterLength = Size(counters);
 	int end = position + 7;
 	if (end >= counterLength) {
 		return -1;
@@ -138,7 +138,7 @@ ToNarrowWidePattern(const std::vector<int>& counters, int position)
 static int
 FindStartPattern(const std::vector<int>& counters)
 {
-	int counterLength = static_cast<int>(counters.size());
+	int counterLength = Size(counters);
 	for (int i = 1; i < counterLength; i += 2) {
 		int charOffset = ToNarrowWidePattern(counters, i);
 		if (charOffset >= 0 && IndexOf(STARTEND_ENCODING, ALPHABET[charOffset]) >= 0) {
@@ -247,7 +247,7 @@ CodabarReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Dec
 		if (charOffsets.size() > 1 && IndexOf(STARTEND_ENCODING, ALPHABET[charOffset]) >= 0) {
 			break;
 		}
-	} while (nextStart < static_cast<int>(counters.size())); // no fixed end pattern so keep on reading while data is available
+	} while (nextStart < Size(counters)); // no fixed end pattern so keep on reading while data is available
 
 	// Look for whitespace after pattern:
 	int trailingWhitespace = counters[nextStart - 1];
@@ -259,7 +259,7 @@ CodabarReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Dec
 	// We need to see whitespace equal to 50% of the last pattern size,
 	// otherwise this is probably a false positive. The exception is if we are
 	// at the end of the row. (I.e. the barcode barely fits.)
-	if (nextStart < static_cast<int>(counters.size()) && trailingWhitespace < lastPatternSize / 2) {
+	if (nextStart < Size(counters) && trailingWhitespace < lastPatternSize / 2) {
 		return Result(DecodeStatus::NotFound);
 	}
 
@@ -282,7 +282,7 @@ CodabarReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Dec
 	}
 
 	// remove stop/start characters character and check if a long enough string is contained
-	if (static_cast<int>(decodeRowResult.length()) <= MIN_CHARACTER_LENGTH) {
+	if (Size(decodeRowResult) <= MIN_CHARACTER_LENGTH) {
 		// Almost surely a false positive ( start + stop + at least 1 character)
 		return Result(DecodeStatus::NotFound);
 	}

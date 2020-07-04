@@ -208,7 +208,7 @@ Code128Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Dec
 		return Result(DecodeStatus::NotFound);
 
 	int checksum = rawCodes.front();
-	for (int i = 1; i < static_cast<int>(rawCodes.size()) - 1; ++i)
+	for (int i = 1; i < Size(rawCodes) - 1; ++i)
 		checksum += i * rawCodes[i];
 	// the last code is the checksum:
 	if (checksum % 103 != rawCodes.back()) {

@@ -26,7 +26,7 @@ namespace ZXing {
 Result::Result(std::wstring&& text, Position&& position, BarcodeFormat format, ByteArray&& rawBytes)
 	: _format(format), _text(std::move(text)), _position(std::move(position)), _rawBytes(std::move(rawBytes))
 {
-	_numBits = static_cast<int>(_rawBytes.size()) * 8;
+	_numBits = Size(_rawBytes) * 8;
 }
 
 Result::Result(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format, ByteArray&& rawBytes)

@@ -64,8 +64,8 @@ static void RotateArray(const std::vector<std::vector<bool>>& input, std::vector
 static BitMatrix BitMatrixFromBitArray(const std::vector<std::vector<bool>>& input, int margin)
 {
 	// Creates the bitmatrix with extra space for whitespace
-	int width = static_cast<int>(input[0].size());
-	int height = static_cast<int>(input.size());
+	int width = Size(input[0]);
+	int height = Size(input);
 	BitMatrix result(width + 2 * margin, height + 2 * margin);
 	for (int y = 0, yOutput = static_cast<int>(result.height()) - margin - 1; y < height; y++, yOutput--) {
 		for (int x = 0; x < width; ++x) {
@@ -96,8 +96,8 @@ Writer::encode(const std::wstring& contents, int width, int height) const
 		rotated = true;
 	}
 
-	int scaleX = width / static_cast<int>(originalScale[0].size());
-	int scaleY = height / static_cast<int>(originalScale.size());
+	int scaleX = width / Size(originalScale[0]);
+	int scaleY = height / Size(originalScale);
 
 	int scale;
 	if (scaleX < scaleY) {

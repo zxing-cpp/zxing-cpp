@@ -96,7 +96,7 @@ static ModuleBitCountType GetBitCountForCodeword(int codeword)
     ModuleBitCountType result;
     result.fill(0);
 	int previousValue = 0;
-	int i = static_cast<int>(result.size()) - 1;
+	int i = Size(result) - 1;
 	while (true) {
 		if ((codeword & 0x1) != previousValue) {
 			previousValue = codeword & 0x1;
@@ -495,7 +495,7 @@ bool DecodeErrorCorrection(std::vector<int>& received, int numECCodewords, const
 
 	ModulusPoly knownErrors = field.one();
 	for (int erasure : erasures) {
-		int b = field.exp(static_cast<int>(received.size()) - 1 - erasure);
+		int b = field.exp(Size(received) - 1 - erasure);
 		// Add (1 - bx) term:
 		ModulusPoly term(field, { field.subtract(0, b), 1 });
 		knownErrors = knownErrors.multiply(term);
@@ -518,7 +518,7 @@ bool DecodeErrorCorrection(std::vector<int>& received, int numECCodewords, const
 
 	std::vector<int> errorMagnitudes = FindErrorMagnitudes(omega, sigma, errorLocations);
 
-	int receivedSize = static_cast<int>(received.size());
+	int receivedSize = Size(received);
 	for (size_t i = 0; i < errorLocations.size(); i++) {
 		int position = receivedSize - 1 - field.log(errorLocations[i]);
 		if (position < 0) {
@@ -526,7 +526,7 @@ bool DecodeErrorCorrection(std::vector<int>& received, int numECCodewords, const
 		}
 		received[position] = field.subtract(received[position], errorMagnitudes[i]);
 	}
-	nbErrors = static_cast<int>(errorLocations.size());
+	nbErrors = Size(errorLocations);
 	return true;
 }
 
@@ -599,7 +599,7 @@ static DecoderResult DecodeCodewords(std::vector<int>& codewords, int ecLevel, c
 	auto result = DecodedBitStreamParser::Decode(codewords, ecLevel);
 	if (result.isValid()) {
 		result.setErrorsCorrected(correctedErrorsCount);
-		result.setErasures(static_cast<int>(erasures.size()));
+		result.setErasures(Size(erasures));
 	}
 	return result;
 }

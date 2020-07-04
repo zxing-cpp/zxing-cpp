@@ -57,7 +57,7 @@ CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
 	// First read into an array of ints
 	std::vector<int> codewordsInts(codewordBytes.begin(), codewordBytes.end());
 
-	int numECCodewords = codewordBytes.length() - numDataCodewords;
+	int numECCodewords = Size(codewordBytes) - numDataCodewords;
 	if (!ReedSolomonDecoder::Decode(GenericGF::QRCodeField256(), codewordsInts, numECCodewords))
 		return false;
 
@@ -100,7 +100,7 @@ DecodeHanziSegment(BitSource& bits, int count, std::wstring& result)
 		count--;
 	}
 
-	TextDecoder::Append(result, buffer.data(), buffer.length(), CharacterSet::GB2312);
+	TextDecoder::Append(result, buffer.data(), Size(buffer), CharacterSet::GB2312);
 	return DecodeStatus::NoError;
 }
 
@@ -133,7 +133,7 @@ DecodeKanjiSegment(BitSource& bits, int count, std::wstring& result)
 		count--;
 	}
 
-	TextDecoder::Append(result, buffer.data(), buffer.length(), CharacterSet::Shift_JIS);
+	TextDecoder::Append(result, buffer.data(), Size(buffer), CharacterSet::Shift_JIS);
 	return DecodeStatus::NoError;
 }
 
@@ -161,10 +161,10 @@ DecodeByteSegment(BitSource& bits, int count, CharacterSet currentCharset, const
 		}
 		if (currentCharset == CharacterSet::Unknown)
 		{
-			currentCharset = TextDecoder::GuessEncoding(readBytes.data(), readBytes.length());
+			currentCharset = TextDecoder::GuessEncoding(readBytes.data(), Size(readBytes));
 		}
 	}
-	TextDecoder::Append(result, readBytes.data(), readBytes.length(), currentCharset);
+	TextDecoder::Append(result, readBytes.data(), Size(readBytes), currentCharset);
 	byteSegments.push_back(readBytes);
 	return DecodeStatus::NoError;
 }

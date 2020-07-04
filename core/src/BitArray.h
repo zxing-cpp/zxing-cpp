@@ -27,6 +27,7 @@
 #include <vector>
 #include <algorithm>
 #include <utility>
+#include <ZXContainerAlgorithms.h>
 
 namespace ZXing {
 
@@ -147,7 +148,7 @@ public:
 
 	int size() const noexcept {
 #ifdef ZX_FAST_BIT_STORAGE
-		return static_cast<int>(_bits.size());
+		return Size(_bits);
 #else
 		return _size;
 #endif

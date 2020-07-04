@@ -189,7 +189,7 @@ static BitArray::Range DecodeEnd(const BitArray& row)
 
 	// Now recalculate the indices of where the 'endblock' starts & stops to accommodate
 	// the reversed nature of the search
-	auto rowSize = static_cast<int>(row.size());
+	auto rowSize = Size(row);
 	return {row.iterAt(rowSize - static_cast<int>(range.end - revRow.begin())),
 	        row.iterAt(rowSize - static_cast<int>(range.begin - revRow.begin()))};
 }
@@ -220,7 +220,7 @@ ITFReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Decodin
 
 	// To avoid false positives with 2D barcodes (and other patterns), make
 	// an assumption that the decoded string must be a 'standard' length if it's short
-	int length = static_cast<int>(result.length());
+	int length = Size(result);
 	if (!_allowedLengths.empty() && !Contains(_allowedLengths, length)) {
 		int maxAllowedLength = *std::max_element(_allowedLengths.begin(), _allowedLengths.end());
 		if (length < maxAllowedLength)

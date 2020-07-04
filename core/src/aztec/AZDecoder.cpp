@@ -171,7 +171,7 @@ static bool CorrectBits(const DetectorResult& ddata, const std::vector<bool>& ra
 	}
 
 	int numDataCodewords = ddata.nbDatablocks();
-	int numCodewords = static_cast<int>(rawbits.size()) / codewordSize;
+	int numCodewords = Size(rawbits) / codewordSize;
 	if (numCodewords < numDataCodewords) {
 		return false;
 	}
@@ -275,7 +275,7 @@ static const char* GetCharacter(Table table, int code)
 ZXING_EXPORT_TEST_ONLY
 std::string GetEncodedData(const std::vector<bool>& correctedBits)
 {
-	int endIndex = static_cast<int>(correctedBits.size());
+	int endIndex = Size(correctedBits);
 	Table latchTable = Table::UPPER; // table most recently latched to
 	Table shiftTable = Table::UPPER; // table to use for the next read
 	std::string result;
@@ -341,7 +341,7 @@ std::string GetEncodedData(const std::vector<bool>& correctedBits)
 */
 static uint8_t ReadByte(const std::vector<bool>& rawbits, int startIndex)
 {
-	int n = static_cast<int>(rawbits.size()) - startIndex;
+	int n = Size(rawbits) - startIndex;
 	if (n >= 8) {
 		return static_cast<uint8_t>(ReadCode(rawbits, startIndex, 8));
 	}
@@ -354,7 +354,7 @@ static uint8_t ReadByte(const std::vector<bool>& rawbits, int startIndex)
 static ByteArray ConvertBoolArrayToByteArray(const std::vector<bool>& boolArr)
 {
 	ByteArray byteArr(((int)boolArr.size() + 7) / 8);
-	for (int i = 0; i < byteArr.length(); ++i) {
+	for (int i = 0; i < Size(byteArr); ++i) {
 		byteArr[i] = ReadByte(boolArr, 8 * i);
 	}
 	return byteArr;
@@ -367,7 +367,7 @@ DecoderResult Decoder::Decode(const DetectorResult& detectorResult)
 	if (CorrectBits(detectorResult, rawbits, correctedBits)) {
 		return DecoderResult(ConvertBoolArrayToByteArray(correctedBits),
 							 TextDecoder::FromLatin1(GetEncodedData(correctedBits)))
-		        .setNumBits(static_cast<int>(correctedBits.size()));
+		        .setNumBits(Size(correctedBits));
 	}
 	else {
 		return DecodeStatus::FormatError;

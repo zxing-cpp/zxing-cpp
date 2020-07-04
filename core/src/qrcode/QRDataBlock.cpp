@@ -25,7 +25,7 @@ namespace QRCode {
 
 std::vector<DataBlock> DataBlock::GetDataBlocks(const ByteArray& rawCodewords, const Version& version, ErrorCorrectionLevel ecLevel)
 {
-	if (rawCodewords.length() != version.totalCodewords())
+	if (Size(rawCodewords) != version.totalCodewords())
 		return {};
 
 	// Figure out the number and size of data blocks used by this version and
@@ -48,10 +48,10 @@ std::vector<DataBlock> DataBlock::GetDataBlocks(const ByteArray& rawCodewords, c
 
 	// All blocks have the same amount of data, except that the last n
 	// (where n may be 0) have 1 more byte. Figure out where these start.
-	int shorterBlocksTotalCodewords = result[0]._codewords.length();
-	int longerBlocksStartAt = static_cast<int>(result.size()) - 1;
+	int shorterBlocksTotalCodewords = Size(result[0]._codewords);
+	int longerBlocksStartAt = Size(result) - 1;
 	while (longerBlocksStartAt >= 0) {
-		int numCodewords = result[longerBlocksStartAt]._codewords.length();
+		int numCodewords = Size(result[longerBlocksStartAt]._codewords);
 		if (numCodewords == shorterBlocksTotalCodewords) {
 			break;
 		}
@@ -73,7 +73,7 @@ std::vector<DataBlock> DataBlock::GetDataBlocks(const ByteArray& rawCodewords, c
 		result[j]._codewords[shorterBlocksNumDataCodewords] = rawCodewords[rawCodewordsOffset++];
 	}
 	// Now add in error correction blocks
-	int max = result[0]._codewords.length();
+	int max = Size(result[0]._codewords);
 	for (int i = shorterBlocksNumDataCodewords; i < max; i++) {
 		for (int j = 0; j < numResultBlocks; j++) {
 			int iOffset = j < longerBlocksStartAt ? i : i + 1;

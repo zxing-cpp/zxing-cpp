@@ -41,7 +41,7 @@ BitArray ParseBitArray(const std::string& str)
 
 BitArray ParseBitArray(const std::string& str, char one)
 {
-	BitArray result((int)str.length());
+	BitArray result(Size(str));
 	auto iter = result.begin();
 	for (size_t x = 0; x < str.length(); ++x, ++iter) {
 		if (str[x] == one) {

@@ -15,6 +15,8 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+#include "ZXContainerAlgorithms.h"
+
 #include <algorithm>
 #include <cassert>
 #include <vector>
@@ -57,7 +59,7 @@ public:
 	}
 
 	int size() const {
-		return static_cast<int>(_data.size());
+		return Size(_data);
 	}
 
 	value_t& operator()(int x, int y)

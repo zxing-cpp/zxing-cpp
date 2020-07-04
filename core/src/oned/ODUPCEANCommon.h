@@ -63,7 +63,7 @@ public:
 	template <typename T>
 	static int ComputeChecksum(const std::basic_string<T>& digits, bool skipTail = false)
 	{
-		int sum = 0, N = static_cast<int>(digits.size());
+		int sum = 0, N = Size(digits);
 		for (int i = N - 1 - skipTail; i >= 0; i -= 2) {
 			sum += digits[i] - '0';
 		}

@@ -41,7 +41,7 @@ std::vector<DataBlock> DataBlock::GetDataBlocks(const ByteArray& rawCodewords, c
 	// All blocks have the same amount of data, except that the last n
 	// (where n may be 0) have 1 less byte. Figure out where these start.
 	// TODO(bbrown): There is only one case where there is a difference for Data Matrix for size 144
-	int longerBlocksTotalCodewords = result[0]._codewords.length();
+	int longerBlocksTotalCodewords = Size(result[0]._codewords);
 	//int shorterBlocksTotalCodewords = longerBlocksTotalCodewords - 1;
 
 	int longerBlocksNumDataCodewords = longerBlocksTotalCodewords - ecBlocks.codewordsPerBlock;
@@ -63,7 +63,7 @@ std::vector<DataBlock> DataBlock::GetDataBlocks(const ByteArray& rawCodewords, c
 	}
 
 	// Now add in error correction blocks
-	int max = result[0]._codewords.length();
+	int max = Size(result[0]._codewords);
 	for (int i = longerBlocksNumDataCodewords; i < max; i++) {
 		for (int j = 0; j < numResultBlocks; j++) {
 			int jOffset = specialVersion ? (j + 8) % numResultBlocks : j;
@@ -72,7 +72,7 @@ std::vector<DataBlock> DataBlock::GetDataBlocks(const ByteArray& rawCodewords, c
 		}
 	}
 
-	if (rawCodewordsOffset != rawCodewords.length())
+	if (rawCodewordsOffset != Size(rawCodewords))
 		return {};
 
 	return result;

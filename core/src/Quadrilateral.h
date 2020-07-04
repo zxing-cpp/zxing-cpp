@@ -16,6 +16,7 @@
 */
 
 #include "Point.h"
+#include "ZXContainerAlgorithms.h"
 
 #include <array>
 
@@ -67,7 +68,7 @@ Quadrilateral<PointT> Line(int y, int xStart, int xStop)
 template <typename PointT>
 bool IsConvex(const Quadrilateral<PointT>& poly)
 {
-	const int N = static_cast<int>(poly.size());
+	const int N = Size(poly);
 	bool sign = false;
 
 	for(int i = 0; i < N; i++)

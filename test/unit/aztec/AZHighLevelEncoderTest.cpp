@@ -50,7 +50,7 @@ namespace {
 
 	void TestHighLevelEncodeString(const std::string& s, int expectedReceivedBits) {
 		BitArray bits = Aztec::HighLevelEncoder::Encode(s);
-		int receivedBitCount = (int)Utility::ToString(bits).length();
+		int receivedBitCount = Size(Utility::ToString(bits));
 		EXPECT_EQ(receivedBitCount, expectedReceivedBits) << "highLevelEncode() failed for input string: " + s;
 		EXPECT_EQ(s, Aztec::GetEncodedData(ToBoolArray(bits)));
 	}

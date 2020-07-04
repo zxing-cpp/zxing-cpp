@@ -75,7 +75,7 @@ static void
 AI01EncodeCompressedGtin(std::string& buffer, const BitArray& bits, int currentPos)
 {
 	buffer.append("(01)");
-	int initialPosition = static_cast<int>(buffer.length());
+	int initialPosition = Size(buffer);
 	buffer.push_back('9');
 	AI01EncodeCompressedGtinWithoutAI(buffer, bits, currentPos, initialPosition);
 }
@@ -112,7 +112,7 @@ DecodeAI01AndOtherAIs(const BitArray& bits)
 													  //the second one is the encodation method, and the other two are for the variable length
 	std::string buffer;
 	buffer.append("(01)");
-	int initialGtinPosition = static_cast<int>(buffer.length());
+	int initialGtinPosition = Size(buffer);
 	int firstGtinDigit = GenericAppIdDecoder::ExtractNumeric(bits, HEADER_SIZE, 4);
 	buffer.append(std::to_string(firstGtinDigit));
 

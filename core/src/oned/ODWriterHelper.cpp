@@ -28,7 +28,7 @@ namespace OneD {
 BitMatrix
 WriterHelper::RenderResult(const std::vector<bool>& code, int width, int height, int sidesMargin)
 {
-	int inputWidth = static_cast<int>(code.size());
+	int inputWidth = Size(code);
 	// Add quiet zone on both sides.
 	int fullWidth = inputWidth + sidesMargin;
 	int outputWidth = std::max(width, fullWidth);
