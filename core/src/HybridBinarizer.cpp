@@ -21,6 +21,7 @@
 #include "BitMatrix.h"
 #include "Matrix.h"
 #include "ZXNumeric.h"
+#include "ZXContainerAlgorithms.h"
 
 #include <cassert>
 #include <cstdint>

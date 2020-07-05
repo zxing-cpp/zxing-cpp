@@ -490,7 +490,7 @@ static bool DecodeBase256Segment(BitSource& bits, std::string& result, std::list
 	byteSegments.push_back(bytes);
 
 	// bytes is in ISO-8859-1
-	result.append(bytes.charPtr(), bytes.size());
+	result.append(reinterpret_cast<const char*>(bytes.data()), bytes.size());
 	return true;
 }
 

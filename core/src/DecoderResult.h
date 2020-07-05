@@ -18,6 +18,7 @@
 
 #include "ByteArray.h"
 #include "DecodeStatus.h"
+#include "ZXContainerAlgorithms.h"
 
 #include <memory>
 #include <list>

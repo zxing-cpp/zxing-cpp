@@ -21,6 +21,7 @@
 #include "CharacterSet.h"
 #include "ByteArray.h"
 #include "ZXStrConvWorkaround.h"
+#include "ZXContainerAlgorithms.h"
 
 #include <cstddef>
 #include <cstdint>
