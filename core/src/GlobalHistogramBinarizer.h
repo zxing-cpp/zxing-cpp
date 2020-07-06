@@ -47,6 +47,7 @@ public:
 	int width() const override;
 	int height() const override;
 	bool getBlackRow(int y, BitArray& row) const override;
+	bool getPatternRow(int y, PatternRow &res) const override;
 	std::shared_ptr<const BitMatrix> getBlackMatrix() const override;
 	bool canCrop() const override;
 	std::shared_ptr<BinaryBitmap> cropped(int left, int top, int width, int height) const override;

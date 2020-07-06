@@ -113,6 +113,10 @@ DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, const BinaryBit
 		15;			// 15 rows spaced 1/32 apart is roughly the middle half of the image
 
 	BitArray row(width);
+#ifdef ZX_USE_NEW_ROW_READERS
+	PatternRow bars;
+	bars.reserve(128); // e.g. EAN-13 has 96 bars
+#endif
 	for (int x = 0; x < maxLines; x++) {
 
 		// Scanning from the middle out. Determine which row we're looking at next:
@@ -124,10 +128,15 @@ DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, const BinaryBit
 			break;
 		}
 
+#ifdef ZX_USE_NEW_ROW_READERS
+		image.getPatternRow(rowNumber, bars);
+		bool hasBitArray = false;
+#else
 		// Estimate black point for this row and load it:
 		if (!image.getBlackRow(rowNumber, row)) {
 			continue;
 		}
+#endif
 
 		// While we have the image data in a BitArray, it's fairly cheap to reverse it in place to
 		// handle decoding upside down barcodes.
@@ -141,10 +150,22 @@ DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, const BinaryBit
 			if (upsideDown) {
 				// reverse the row and continue
 				row.reverse();
+#ifdef ZX_USE_NEW_ROW_READERS
+				std::reverse(bars.begin(), bars.end());
+#endif
 			}
 			// Look for a barcode
 			for (size_t r = 0; r < readers.size(); ++r) {
+#ifdef ZX_USE_NEW_ROW_READERS
+				Result result = readers[r]->decodePattern(rowNumber, bars, decodingState[r]);
+				if (result.status() == DecodeStatus::_internal) {
+					if (!std::exchange(hasBitArray, true))
+						image.getBlackRow(rowNumber, row);
+					result = readers[r]->decodeRow(rowNumber, row, decodingState[r]);
+				}
+#else
 				Result result = readers[r]->decodeRow(rowNumber, row, decodingState[r]);
+#endif
 				if (result.isValid()) {
 					// We found our barcode
 					if (upsideDown) {

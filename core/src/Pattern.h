@@ -1,0 +1,204 @@
+#pragma once
+/*
+* Copyright 2020 Axel Waggershauser
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*      http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+
+#include "ZXContainerAlgorithms.h"
+
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
+#include <numeric>
+#include <vector>
+
+namespace ZXing {
+
+using PatternRow = std::vector<uint16_t>;
+
+class PatternView
+{
+	using Iterator = PatternRow::const_pointer;
+	Iterator _data = nullptr;
+	int _size = 0;
+	Iterator _base = nullptr;
+	Iterator _end = nullptr;
+
+public:
+	using value_type = PatternRow::value_type;
+
+	PatternView() = default;
+	PatternView(const PatternRow& bars)
+		: _data(bars.data() + 1), _size(bars.size()), _base(bars.data()), _end(bars.data() + bars.size())
+	{}
+	PatternView(Iterator data, int size, Iterator base, Iterator end) : _data(data), _size(size), _base(base), _end(end) {}
+
+	Iterator begin() const { return _data; }
+	Iterator end() const { return _data + _size; }
+
+	value_type operator[](int i) const
+	{
+//		assert(i < _count);
+		return _data[i];
+	}
+
+	int sum() const { return Reduce(*this); }
+	int size() const { return _size; }
+
+	int index() const { return _data - _base; }
+	int pixelsInFront() const { return std::accumulate(_base, _data, 0); }
+	bool isAtFirstBar() const { return _data == _base + 1; }
+	bool isAtLastBar() const { return _data + _size == _end - 1; }
+	bool isValid() const { return _data < _end; }
+
+	template<bool acceptIfAtFirstBar = false>
+	bool hasQuiteZoneBefore(float scale) const
+	{
+		return (acceptIfAtFirstBar && isAtFirstBar()) || _data[-1] >= sum() * scale;
+	}
+
+	template<bool acceptIfAtLastBar = true>
+	bool hasQuiteZoneAfter(float scale) const
+	{
+		return (acceptIfAtLastBar && isAtLastBar()) || _data[_size] >= sum() * scale;
+	}
+
+	PatternView subView(int offset, int size = 0) const
+	{
+//		if(std::abs(size) > count())
+//			printf("%d > %d\n", std::abs(size), _count);
+//		assert(std::abs(size) <= count());
+		if (size == 0)
+			size = _size - offset;
+		else if (size < 0)
+			size = _size - offset + size;
+		return {begin() + offset, std::max(size, 0), _base, _end};
+	}
+
+	bool skipPair()
+	{
+		_data += 2;
+		return isValid();
+	}
+
+	bool skipSymbol()
+	{
+		_data += _size;
+		return isValid();
+	}
+
+	bool skipSpace(int maxSpace)
+	{
+		_data += 1;
+		return _data <= _end && _data[-1] < maxSpace;
+	}
+};
+
+/**
+ * @brief The BarAndSpace struct is a simple 2 element data structure to hold information about bar(s) and space(s).
+ *
+ * The operator[](int) can be used in combination with a BarsAndSpaces
+ */
+template <typename T>
+struct BarAndSpace
+{
+	using value_type = T;
+	T bar = {}, space = {};
+	// even index -> bar, odd index -> space
+	T& operator[](int i) { return reinterpret_cast<T*>(this)[i & 1]; }
+	T operator[](int i) const { return reinterpret_cast<const T*>(this)[i & 1]; }
+	bool isValid() const { return bar != T{} && space != T{}; }
+};
+
+using BarAndSpaceI = BarAndSpace<PatternView::value_type>;
+
+
+template <int N, int SUM, bool IS_MASK = false>
+struct FixedPattern
+{
+	using value_type = PatternRow::value_type;
+	value_type _data[N];
+	constexpr value_type operator[](size_t i) const noexcept { return _data[i]; }
+};
+
+template <int N, int SUM>
+using FixedMaskPattern = FixedPattern<N, SUM, true>;
+
+template <int N, int SUM>
+float IsPattern(const PatternView& view, const FixedPattern<N, SUM, false>& pattern, float moduleSizeRef = 0.f)
+{
+	int width = view.subView(0, N).sum();
+	if (SUM > N && width < SUM)
+		return 0;
+
+	const float moduleSize = (float)width / SUM;
+	if( !moduleSizeRef )
+		moduleSizeRef = moduleSize;
+
+	for (size_t x = 0; x < N; ++x)
+		if (std::abs(view[x] - pattern[x] * moduleSize) > moduleSizeRef / 2)
+			return 0;
+
+	return moduleSize;
+}
+
+template <int N, int SUM>
+float IsPattern(const PatternView& view, const FixedPattern<N, SUM, true>& pattern, float moduleSizeRef = 0.f)
+{
+	// note: fully optimized with at compile-time known constants in pattern, this code
+	// should be as fast as IsPattern in case it is called with a pattern without '0's.
+	// As of gcc-9, this is not the case.
+
+	int width = 0;
+	for (size_t x = 0; x < N; ++x)
+		width += view[x] * (pattern[x] > 0);
+
+	const float moduleSize = (float)width / SUM;
+	if( !moduleSizeRef )
+		moduleSizeRef = moduleSize;
+
+	for (size_t x = 0; x < N; ++x)
+		if (pattern[x]) {
+			if (std::abs(view[x] - pattern[x] * moduleSize) > moduleSizeRef / 2)
+				return 0;
+		} else {
+			if (view[x] < 1.5f * moduleSizeRef)
+				return 0;
+		}
+
+	return moduleSize;
+}
+
+template<int PATTERN_LEN, typename Pred>
+PatternView FindPattern(const PatternView& view, Pred isPattern, float quiteZoneScale)
+{
+	auto window = view.subView(0, PATTERN_LEN);
+	if (window.isAtFirstBar() && isPattern(window))
+		return window;
+	while (window.skipPair()) {
+		// Look for guard symbol with sufficient whitespace in front (>= percentage of pattern width).
+		if (window.hasQuiteZoneBefore(quiteZoneScale) && isPattern(window))
+			break;
+	}
+	return window;
+}
+
+template <int N, int SUM, bool IS_MASK>
+PatternView FindPattern(const PatternView& view, const FixedPattern<N, SUM, IS_MASK>& pattern, float quiteZoneScale)
+{
+	return FindPattern<N>(
+		view, [&pattern](auto window) { return IsPattern(window, pattern); }, quiteZoneScale);
+}
+
+} // ZXing

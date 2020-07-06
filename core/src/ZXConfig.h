@@ -29,3 +29,9 @@
 // On embedded/mobile systems this might be of importance. Note: the BitMatrix in 'fast' mode still requires
 // only 1/3 of the same image in RGB.
 #define ZX_FAST_BIT_STORAGE // undef to disable
+
+// There is a faster and simpler approach to how the ODRowReaders work available. This is currently a WIP and
+// disabled by default. This would ultimately lead to a substantial performance improvement, once every RowReader
+// has been ported. E.g. the new Codabar implementation, that actually decodes one row of the image, is about
+// 10x faster than the original one.
+//#define ZX_USE_NEW_ROW_READERS

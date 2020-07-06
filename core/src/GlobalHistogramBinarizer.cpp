@@ -149,6 +149,53 @@ GlobalHistogramBinarizer::getBlackRow(int y, BitArray& row) const
 	return true;
 }
 
+bool GlobalHistogramBinarizer::getPatternRow(int y, PatternRow& res) const
+{
+	int width = _source->width();
+	if (width < 3)
+		return false; // special casing the code below for a width < 3 makes no sense
+
+	res.clear();
+
+	ByteArray buffer;
+	const uint8_t* luminances = _source->getRow(y, buffer);
+	std::array<int, LUMINANCE_BUCKETS> buckets = {};
+	for (int x = 0; x < width; x++) {
+		buckets[luminances[x] >> LUMINANCE_SHIFT]++;
+	}
+	int blackPoint = EstimateBlackPoint(buckets);
+	if (blackPoint <= 0)
+		return false;
+
+	auto* lastPos = luminances;
+	bool lastVal = luminances[0] < blackPoint;
+	if (lastVal)
+		res.push_back(0); // first value is number of white pixels, here 0
+
+	auto process = [&](bool val, const uint8_t* p) {
+		if (val != lastVal) {
+			res.push_back(p - lastPos);
+			lastVal = val;
+			lastPos = p;
+		}
+	};
+
+	for (auto* p = luminances + 1; p < luminances + width - 1; ++p)
+		process((-*(p - 1) + (int(*p) * 4) - *(p + 1)) / 2 < blackPoint, p);
+
+	auto* backPos = luminances + width - 1;
+	bool backVal = *backPos < blackPoint;
+	process(backVal, backPos);
+
+	if (lastPos != backPos)
+		res.push_back(backPos - lastPos);
+
+	if (backVal)
+		res.push_back(0); // last value is number of white pixels, here 0
+
+	return true;
+}
+
 static void InitBlackMatrix(const LuminanceSource& source, std::shared_ptr<const BitMatrix>& outMatrix)
 {
 	int width = source.width();

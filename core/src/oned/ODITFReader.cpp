@@ -232,5 +232,60 @@ ITFReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Decodin
 	return Result(result, rowNumber, xStart, xStop, BarcodeFormat::ITF);
 }
 
+constexpr auto START_PATTERN_ = FixedPattern<4, 4>{1, 1, 1, 1};
+constexpr auto STOP_PATTERN_1 = FixedPattern<3, 4>{2, 1, 1};
+constexpr auto STOP_PATTERN_2 = FixedPattern<3, 5>{3, 1, 1};
+
+constexpr float QUITE_ZONE_SCALE = 0.5f;
+
+Result ITFReader::decodePattern(int rowNumber, const PatternView& row, std::unique_ptr<DecodingState>&) const
+{
+	const int minCharCount = 6;
+
+	auto next = ZXing::FindPattern(row.subView(0, -(4 + minCharCount/2 + 3)), START_PATTERN_, QUITE_ZONE_SCALE);
+	if (!next.isValid())
+		return Result(DecodeStatus::NotFound);
+
+	std::string txt;
+	txt.reserve(20);
+
+	constexpr int weights[] = {1, 2, 4, 7, 0};
+	int xStart = next.pixelsInFront();
+	next = next.subView(4, 10);
+
+	while (next.index() < row.size() - (10 + 3)) {
+		const auto threshold = NarrowWideThreshold(next);
+		if (!threshold.isValid())
+			break;
+
+		BarAndSpace<int> digits, numWide;
+		for (int i = 0; i < 10; ++i) {
+			if (next[i] > threshold[i] * 2)
+				break;
+			numWide[i] += next[i] > threshold[i];
+			digits[i] += weights[i/2] * (next[i] > threshold[i]);
+		}
+
+		if (numWide.bar != 2 || numWide.space != 2)
+			break;
+
+		for (int i = 0; i < 2; ++i)
+			txt.push_back((char)('0' + (digits[i] == 11 ? 0 : digits[i])));
+
+		next.skipSymbol();
+	}
+
+	next = next.subView(0, 3);
+
+	if (Size(txt) < minCharCount || !next.hasQuiteZoneAfter(QUITE_ZONE_SCALE))
+		return Result(DecodeStatus::NotFound);
+
+	if (!IsPattern(next, STOP_PATTERN_1) && !IsPattern(next, STOP_PATTERN_2))
+		return Result(DecodeStatus::NotFound);
+
+	int xStop = next.pixelsInFront() + next.size() - 1;
+	return Result(txt, rowNumber, xStart, xStop, BarcodeFormat::ITF);
+}
+
 } // OneD
 } // ZXing

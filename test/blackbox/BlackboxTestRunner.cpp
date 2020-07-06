@@ -297,13 +297,23 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		});
 
 		runTests("codabar-1", "CODABAR", 11, {
+#ifdef ZX_USE_NEW_ROW_READERS
+			{ 11, 11, 0   },
+			{ 11, 11, 180 },
+#else
 			{ 10, 10, 0   },
 			{ 10, 10, 180 },
+#endif
 		});
 
 		runTests("codabar-2", "CODABAR", 4, {
+#ifdef ZX_USE_NEW_ROW_READERS
+			{ 3, 3, 0   },
+			{ 3, 3, 180 },
+#else
 			{ 2, 2, 0   },
 			{ 2, 2, 180 },
+#endif
 		});
 
 		runTests("code39-1", "CODE_39", 4, {

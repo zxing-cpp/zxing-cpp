@@ -52,6 +52,7 @@ set (COMMON_FILES
     src/GenericGFPoly.h
     src/GenericGFPoly.cpp
     src/Matrix.h
+    src/Pattern.h
     src/Point.h
     src/Quadrilateral.h
     src/TextUtfEncoding.h

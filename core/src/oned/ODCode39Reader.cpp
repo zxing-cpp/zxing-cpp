@@ -119,6 +119,14 @@ FindAsteriskPattern(const BitArray& row)
 	    });
 }
 
+// each character has 5 bars and 4 spaces
+constexpr int CHAR_LEN = 9;
+
+inline bool IsStartOrStopChar(char c)
+{
+	return c == '*';
+}
+
 /** Decode the extended string in place. Return false if FormatError occured.
  * ctrl is either "$%/+" for code39 or "abcd" for code93. */
 bool
@@ -171,7 +179,7 @@ Code39Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 		if (!range)
 			return Result(DecodeStatus::NotFound);
 
-		int pattern = ToNarrowWidePattern(theCounters);
+		int pattern = OneD::ToNarrowWidePattern(theCounters);
 		if (pattern < 0)
 			return Result(DecodeStatus::NotFound);
 
@@ -205,7 +213,60 @@ Code39Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 	return Result(result, rowNumber, xStart, xStop, BarcodeFormat::CODE_39);
 }
 
+// pattern where '1' means 'narrow' and '0' means wide
+constexpr auto START_PATTERN = FixedMaskPattern<CHAR_LEN, 6>{1, 0, 1, 1, 0, 1, 0, 1, 1};
+// quite zone is half the width of a character symbol
+constexpr float QUITE_ZONE_SCALE = 0.5f;
 
+Result Code39Reader::decodePattern(int rowNumber, const PatternView& row, std::unique_ptr<RowReader::DecodingState>&) const
+{
+	// minimal number of characters that must be present (including start, stop and checksum characters)
+	int minCharCount = _usingCheckDigit ? 4 : 3;
+	auto isStartOrStopSymbol = [](char c) { return c == '*'; };
+
+	auto next = ZXing::FindPattern(row.subView(0, -minCharCount * CHAR_LEN), START_PATTERN, QUITE_ZONE_SCALE);
+	if (!next.isValid())
+		return Result(DecodeStatus::NotFound);
+
+	if (!isStartOrStopSymbol(DecodeNarrowWidePattern(next, CHARACTER_ENCODINGS, ALPHABET))) // read off the start pattern
+		return Result(DecodeStatus::NotFound);
+
+	int xStart = next.pixelsInFront();
+	int maxInterCharacterSpace = next.sum() / 2; // spec actually says 1 narrow space, width/2 is about 4
+
+	std::string txt;
+	txt.reserve(20);
+
+	do {
+		// check remaining input width and inter-character space
+		if (!next.skipSymbol() || !next.skipSpace(maxInterCharacterSpace))
+			return Result(DecodeStatus::NotFound);
+
+		txt += DecodeNarrowWidePattern(next, CHARACTER_ENCODINGS, ALPHABET);
+		if (txt.back() < 0)
+			return Result(DecodeStatus::NotFound);
+	} while (!isStartOrStopSymbol(txt.back()));
+
+	txt.pop_back(); // remove asterisk
+
+	// check txt length and whitespace after the last char. See also FindStartPattern.
+	if (Size(txt) < minCharCount - 2 || !next.hasQuiteZoneAfter(QUITE_ZONE_SCALE))
+		return Result(DecodeStatus::NotFound);
+
+	if (_usingCheckDigit) {
+		auto checkDigit = txt.back();
+		txt.pop_back();
+		int checksum = TransformReduce(txt, 0, [](char c) { return IndexOf(ALPHABET, c); });
+		if (checkDigit != ALPHABET[checksum % 43])
+			return Result(DecodeStatus::ChecksumError);
+	}
+
+	if (_extendedMode && !DecodeExtendedCode39AndCode93(txt, "$%/+"))
+		return Result(DecodeStatus::FormatError);
+
+	int xStop = next.pixelsInFront() + next.sum() - 1;
+	return Result(txt, rowNumber, xStart, xStop, BarcodeFormat::CODE_39);
+}
 
 } // OneD
 } // ZXing

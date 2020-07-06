@@ -34,6 +34,15 @@ RowReader::decodeSingleRow(int rowNumber, const BitArray& row) const
 	return decodeRow(rowNumber, row, state);
 }
 
+Result RowReader::decodePattern(int, const PatternView&, std::unique_ptr<RowReader::DecodingState>&) const
+{
+#ifdef ZX_USE_NEW_ROW_READERS
+	return Result(DecodeStatus::_internal);
+#else
+	return Result(DecodeStatus::NotFound);
+#endif
+}
+
 /**
 * Determines how closely a set of observed counts of runs of black/white values matches a given
 * target pattern. This is reported as the ratio of the total variance from the expected pattern

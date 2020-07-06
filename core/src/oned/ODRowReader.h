@@ -2,6 +2,7 @@
 /*
 * Copyright 2016 Nu-book Inc.
 * Copyright 2016 ZXing authors
+* Copyright 2020 Axel Waggershauser
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -18,6 +19,7 @@
 
 #include "BitArray.h"
 #include "DecodeStatus.h"
+#include "Pattern.h"
 
 #include <algorithm>
 #include <cassert>
@@ -29,10 +31,10 @@
 /*
 Code39 : 1:2/3, 5+4+1 (0x3|2x1 wide) -> 12-15 mods, v1-? | ToNarrowWide(OMG 1) == *
 Codabar: 1:2/3, 4+3+1 (1x1|1x2|3x0 wide) -> 9-13 mods, v1-? | ToNarrowWide(OMG 2) == ABCD
-ITF    : 1:2/3, 5+5   (2x2 wide) -> mods, v6-?| .5, .38 == *
+ITF    : 1:2/3, 5+5   (2x2 wide) -> mods, v6-?| .5, .38 == * | qz:10
 
 Code93 : 1-4, 3+3 -> 9 mods  v1-? | round to 1-4 == *
-Code128: 1-4, 3+3 -> 11 mods v1-? | .7, .25 == ABC
+Code128: 1-4, 3+3 -> 11 mods v1-? | .7, .25 == ABC | qz:10
 UPC/EAN: 1-4, 2+2 -> 7 mods  f    | .7, .48 == *
   UPC-A: 11d 95m = 3 + 6*4 + 5 + 6*4 + 3 = 59
   EAN-13: 12d 95m
@@ -81,6 +83,8 @@ public:
 	* @throws FormatException if a potential barcode is found but format is invalid
 	*/
 	virtual Result decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const = 0;
+
+	virtual Result decodePattern(int rowNumber, const PatternView& row, std::unique_ptr<DecodingState>& state) const;
 
 	/**
 	* Scans the given bit range for a pattern identified by evaluating the function object match for each
@@ -201,6 +205,66 @@ public:
 
 public:
 	static float PatternMatchVariance(const int *counters, const int* pattern, size_t length, float maxIndividualVariance);
+
+	/**
+	 * @brief NarrowWideThreshold calculates width thresholds to separate narrow and wide bars and spaces.
+	 *
+	 * This is useful for codes like Codabar, Code39 and ITF which distinguish between narrow and wide
+	 * bars/spaces. Where wide ones are between 2 and 3 times as wide as the narrow ones.
+	 *
+	 * @param view containing one character
+	 * @return threshold value for bars and spaces
+	 */
+	static BarAndSpaceI NarrowWideThreshold(const PatternView& view)
+	{
+		BarAndSpaceI m = {std::numeric_limits<BarAndSpaceI::value_type>::max(),
+						  std::numeric_limits<BarAndSpaceI::value_type>::max()};
+		BarAndSpaceI M = {0, 0};
+		for (int i = 0; i < view.size(); ++i) {
+			m[i] = std::min(m[i], view[i]);
+			M[i] = std::max(M[i], view[i]);
+		}
+
+		BarAndSpaceI res;
+		for (int i = 0; i < 2; ++i) {
+			// check that
+			//  a) wide <= 4 * narrow
+			//  b) bars and spaces are not more than a factor of 2 (or 3 for the max) apart from each other
+			if (M[i] > 4 * (m[i] + 1) || M[i] > 3 * M[i + 1] || m[i] > 2 * (m[i + 1] + 1))
+				return {};
+			// the threshold is the average of min and max but at least 1.5 * min
+			res[i] = std::max((m[i] + M[i]) / 2, m[i] * 3 / 2);
+		}
+
+		return res;
+	}
+
+	/**
+	 * @brief ToNarrowWidePattern takes a PatternView, calculates a NarrowWideThreshold and returns int where a '0' bit
+	 * means narrow and a '1' bit means 'wide'.
+	 */
+	static int ToNarrowWidePattern(const PatternView& view)
+	{
+		const auto threshold = NarrowWideThreshold(view);
+		if (!threshold.isValid())
+			return -1;
+
+		int pattern = 0;
+		for (int i = 0; i < view.size(); ++i) {
+			if (view[i] > threshold[i] * 2)
+				return -1;
+			pattern = (pattern << 1) | (view[i] > threshold[i]);
+		}
+
+		return pattern;
+	}
+
+	template<typename INDEX, typename ALPHABET>
+	static char DecodeNarrowWidePattern(const PatternView& view, const INDEX& table, const ALPHABET& alphabet)
+	{
+		int i = IndexOf(table, ToNarrowWidePattern(view));
+		return i == -1 ? -1 : alphabet[i];
+	}
 };
 
 } // OneD

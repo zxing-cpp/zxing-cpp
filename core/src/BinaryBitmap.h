@@ -16,6 +16,9 @@
 * limitations under the License.
 */
 
+#include "BitArray.h"
+#include "Pattern.h"
+
 #include <memory>
 #include <stdexcept>
 
@@ -62,6 +65,25 @@ public:
 	* @throws NotFoundException if row can't be binarized
 	*/
 	virtual bool getBlackRow(int y, BitArray& outArray) const = 0;
+
+	virtual bool getPatternRow(int y, PatternRow& res) const
+	{
+		res.clear();
+		BitArray row;
+		getBlackRow(y, row);
+
+		auto li = row.begin();
+		auto i = li;
+		if( *i )
+			res.push_back(0);
+		while ((i = row.getNextSetTo(i, !*i)) != row.end()) {
+			res.push_back(i - li);
+			li = i;
+		}
+		res.push_back(i - li);
+
+		return true;
+	}
 
 	/**
 	* Converts a 2D array of luminance data to 1 bit. This method is intended for decoding 2D
