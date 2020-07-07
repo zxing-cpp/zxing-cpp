@@ -159,6 +159,67 @@ Code93Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 	return Result(result, rowNumber, xStart, xStop, BarcodeFormat::CODE_93);
 }
 
+constexpr int CHAR_LEN = 6;
+constexpr int CHAR_SUM = 9;
+// pattern where '1' means 'narrow' and '0' means wide
+constexpr auto START_PATTERN = FixedPattern<CHAR_LEN, CHAR_SUM>{1, 1, 1, 1, 4, 1};
+// quite zone is half the width of a character symbol
+constexpr float QUITE_ZONE_SCALE = 0.5f;
+
+Result Code93Reader::decodePattern(int rowNumber, const PatternView &row, std::unique_ptr<DecodingState> &) const
+{
+	// minimal number of characters that must be present (including start, stop, checksum and 1 payload characters)
+	int minCharCount = 5;
+	auto isStartOrStopSymbol = [](char c) { return c == '*'; };
+	auto decodePattern       = [](const PatternView& view) {
+        return LookupBitPattern(OneToFourBitPattern<CHAR_LEN, CHAR_SUM>(view), CHARACTER_ENCODINGS, ALPHABET);
+	};
+
+	auto next = ZXing::FindPattern(row.subView(0, -minCharCount * CHAR_LEN), START_PATTERN, QUITE_ZONE_SCALE);
+	if (!next.isValid())
+		return Result(DecodeStatus::NotFound);
+
+	if (!isStartOrStopSymbol(decodePattern(next))) // read off the start pattern
+		return Result(DecodeStatus::NotFound);
+
+	int xStart = next.pixelsInFront();
+
+	std::string txt;
+	txt.reserve(20);
+
+	do {
+		// check remaining input width
+		if (!next.skipSymbol())
+			return Result(DecodeStatus::NotFound);
+
+		txt += decodePattern(next);
+		if (txt.back() < 0)
+			return Result(DecodeStatus::NotFound);
+	} while (!isStartOrStopSymbol(txt.back()));
+
+	txt.pop_back(); // remove asterisk
+
+	if (Size(txt) < minCharCount - 2)
+		return Result(DecodeStatus::NotFound);
+
+	// check termination bar (is present and not wider than about 2 modules) and quite zone
+	next = next.subView(0, CHAR_LEN + 1);
+	if (!next.isValid() || next[CHAR_LEN] > next.sum(CHAR_LEN) / 4 || !next.hasQuiteZoneAfter(QUITE_ZONE_SCALE))
+		return Result(DecodeStatus::NotFound);
+
+	if (!CheckChecksums(txt))
+		return Result(DecodeStatus::ChecksumError);
+
+	// Remove checksum digits
+	txt.resize(txt.size() - 2);
+
+	if (!DecodeExtendedCode39AndCode93(txt, "abcd"))
+		return Result(DecodeStatus::FormatError);
+
+	int xStop = next.pixelsInFront() + next.sum() - 1;
+	return Result(txt, rowNumber, xStart, xStop, BarcodeFormat::CODE_93);
+}
+
 
 } // OneD
 } // ZXing

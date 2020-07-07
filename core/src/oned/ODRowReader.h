@@ -259,6 +259,40 @@ public:
 		return pattern;
 	}
 
+	/**
+	 * @brief each bar/space is 1-4 modules wide, we have N bars/spaces, they are SUM modules wide in total
+	 */
+	template <int LEN, int SUM>
+	static int OneToFourBitPattern(const PatternView& view)
+	{
+		float moduleSize = static_cast<float>(view.sum(LEN)) / SUM;
+		int err = SUM;
+		int is[LEN];
+		float rs[LEN];
+		for (int i = 0; i < LEN; i++) {
+			float v = view[i] / moduleSize;
+			is[i] = int(v + .5f);
+			rs[i] = v - is[i];
+			err -= is[i];
+		}
+
+		if (std::abs(err) > 1)
+			return -1;
+
+		if (err) {
+			int mi = err > 0 ? std::max_element(std::begin(rs), std::end(rs)) - std::begin(rs)
+							 : std::min_element(std::begin(rs), std::end(rs)) - std::begin(rs);
+			is[mi] += err;
+			rs[mi] -= err;
+		}
+
+		int pattern = 0;
+		for (size_t i = 0; i < LEN; i++)
+			pattern = (pattern << is[i]) | ~(0xffffffff << is[i]) * (~i & 1);
+
+		return pattern;
+	}
+
 	template<typename INDEX, typename ALPHABET>
 	static char LookupBitPattern(int pattern, const INDEX& table, const ALPHABET& alphabet)
 	{
