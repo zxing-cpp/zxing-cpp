@@ -23,6 +23,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cassert>
 #include <functional>
 #include <mutex>
 #include <utility>
@@ -187,11 +188,12 @@ bool GlobalHistogramBinarizer::getPatternRow(int y, PatternRow& res) const
 	bool backVal = *backPos < blackPoint;
 	process(backVal, backPos);
 
-	if (lastPos != backPos)
-		res.push_back(backPos - lastPos);
+	res.push_back(backPos - lastPos + 1);
 
 	if (backVal)
 		res.push_back(0); // last value is number of white pixels, here 0
+
+	assert(res.size() % 2 == 1);
 
 	return true;
 }
