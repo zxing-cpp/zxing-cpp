@@ -44,8 +44,11 @@ public:
 
 	inline double rotation() const
 	{
-		auto centerLine = normalized((topRight() + bottomRight()) - (topLeft() + bottomLeft()));
-		return std::atan2(centerLine.y, centerLine.x);
+		auto centerLine = (topRight() + bottomRight()) - (topLeft() + bottomLeft());
+		if (centerLine == Point{})
+			return 0.;
+		auto centerLineF = normalized(centerLine);
+		return std::atan2(centerLineF.y, centerLineF.x);
 	}
 };
 
