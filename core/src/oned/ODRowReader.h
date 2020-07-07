@@ -243,7 +243,7 @@ public:
 	 * @brief ToNarrowWidePattern takes a PatternView, calculates a NarrowWideThreshold and returns int where a '0' bit
 	 * means narrow and a '1' bit means 'wide'.
 	 */
-	static int ToNarrowWidePattern(const PatternView& view)
+	static int NarrowWideBitPattern(const PatternView& view)
 	{
 		const auto threshold = NarrowWideThreshold(view);
 		if (!threshold.isValid())
@@ -260,10 +260,16 @@ public:
 	}
 
 	template<typename INDEX, typename ALPHABET>
+	static char LookupBitPattern(int pattern, const INDEX& table, const ALPHABET& alphabet)
+	{
+		int i = IndexOf(table, pattern);
+		return i == -1 ? -1 : alphabet[i];
+	}
+
+	template<typename INDEX, typename ALPHABET>
 	static char DecodeNarrowWidePattern(const PatternView& view, const INDEX& table, const ALPHABET& alphabet)
 	{
-		int i = IndexOf(table, ToNarrowWidePattern(view));
-		return i == -1 ? -1 : alphabet[i];
+		return LookupBitPattern(NarrowWideBitPattern(view), table, alphabet);
 	}
 };
 

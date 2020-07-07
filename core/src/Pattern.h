@@ -53,7 +53,7 @@ public:
 		return _data[i];
 	}
 
-	int sum() const { return Reduce(*this); }
+	int sum(int n = 0) const { return std::accumulate(_data, _data + (n == 0 ? _size : n), 0); }
 	int size() const { return _size; }
 
 	int index() const { return _data - _base; }
@@ -98,17 +98,17 @@ public:
 		return isValid();
 	}
 
-	bool skipSpace(int maxSpace)
+	bool skipSingle(int maxWidth)
 	{
 		_data += 1;
-		return _data <= _end && _data[-1] < maxSpace;
+		return _data <= _end && _data[-1] < maxWidth;
 	}
 };
 
 /**
  * @brief The BarAndSpace struct is a simple 2 element data structure to hold information about bar(s) and space(s).
  *
- * The operator[](int) can be used in combination with a BarsAndSpaces
+ * The operator[](int) can be used in combination with a PatternView
  */
 template <typename T>
 struct BarAndSpace
@@ -123,8 +123,14 @@ struct BarAndSpace
 
 using BarAndSpaceI = BarAndSpace<PatternView::value_type>;
 
-
-template <int N, int SUM, bool IS_MASK = false>
+/**
+ * @brief FixedPattern describes a compile-time constant (start/stop) pattern.
+ *
+ * @param N  number of bars/spaces
+ * @param SUM  sum over all N elements (size of pattern in modules)
+ * @param IS_SPARCE  whether or not the pattern contains '0's denoting 'wide' bars/spaces
+ */
+template <int N, int SUM, bool IS_SPARCE = false>
 struct FixedPattern
 {
 	using value_type = PatternRow::value_type;
@@ -133,7 +139,7 @@ struct FixedPattern
 };
 
 template <int N, int SUM>
-using FixedMaskPattern = FixedPattern<N, SUM, true>;
+using FixedSparcePattern = FixedPattern<N, SUM, true>;
 
 template <int N, int SUM>
 float IsPattern(const PatternView& view, const FixedPattern<N, SUM, false>& pattern, float moduleSizeRef = 0.f)
@@ -180,10 +186,10 @@ float IsPattern(const PatternView& view, const FixedPattern<N, SUM, true>& patte
 	return moduleSize;
 }
 
-template<int PATTERN_LEN, typename Pred>
+template<int LEN, typename Pred>
 PatternView FindPattern(const PatternView& view, Pred isPattern, float quiteZoneScale)
 {
-	auto window = view.subView(0, PATTERN_LEN);
+	auto window = view.subView(0, LEN);
 	if (window.isAtFirstBar() && isPattern(window))
 		return window;
 	while (window.skipPair()) {
@@ -194,10 +200,10 @@ PatternView FindPattern(const PatternView& view, Pred isPattern, float quiteZone
 	return window;
 }
 
-template <int N, int SUM, bool IS_MASK>
-PatternView FindPattern(const PatternView& view, const FixedPattern<N, SUM, IS_MASK>& pattern, float quiteZoneScale)
+template <int LEN, int SUM, bool IS_SPARCE>
+PatternView FindPattern(const PatternView& view, const FixedPattern<LEN, SUM, IS_SPARCE>& pattern, float quiteZoneScale)
 {
-	return FindPattern<N>(
+	return FindPattern<LEN>(
 		view, [&pattern](auto window) { return IsPattern(window, pattern); }, quiteZoneScale);
 }
 

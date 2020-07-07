@@ -214,7 +214,7 @@ Code39Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 }
 
 // pattern where '1' means 'narrow' and '0' means wide
-constexpr auto START_PATTERN = FixedMaskPattern<CHAR_LEN, 6>{1, 0, 1, 1, 0, 1, 0, 1, 1};
+constexpr auto START_PATTERN = FixedSparcePattern<CHAR_LEN, 6>{1, 0, 1, 1, 0, 1, 0, 1, 1};
 // quite zone is half the width of a character symbol
 constexpr float QUITE_ZONE_SCALE = 0.5f;
 
@@ -239,7 +239,7 @@ Result Code39Reader::decodePattern(int rowNumber, const PatternView& row, std::u
 
 	do {
 		// check remaining input width and inter-character space
-		if (!next.skipSymbol() || !next.skipSpace(maxInterCharacterSpace))
+		if (!next.skipSymbol() || !next.skipSingle(maxInterCharacterSpace))
 			return Result(DecodeStatus::NotFound);
 
 		txt += DecodeNarrowWidePattern(next, CHARACTER_ENCODINGS, ALPHABET);

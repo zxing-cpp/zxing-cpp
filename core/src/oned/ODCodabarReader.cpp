@@ -312,7 +312,7 @@ constexpr float QUITE_ZONE_SCALE = 0.5f;
 
 inline bool IsStartOrStopPattern(const PatternView& view)
 {
-	return Contains({0x1A, 0x29, 0x0B, 0x0E}, RowReader::ToNarrowWidePattern(view));
+	return Contains({0x1A, 0x29, 0x0B, 0x0E}, RowReader::NarrowWideBitPattern(view));
 }
 
 Result
@@ -340,7 +340,7 @@ CodabarReader::decodePattern(int rowNumber, const PatternView& row, std::unique_
 
 	do {
 		// check remaining input width and inter-character space
-		if (!next.skipSymbol() || !next.skipSpace(maxInterCharacterSpace))
+		if (!next.skipSymbol() || !next.skipSingle(maxInterCharacterSpace))
 			return Result(DecodeStatus::NotFound);
 
 		txt += DecodeNarrowWidePattern(next, CHARACTER_ENCODINGS, ALPHABET);
