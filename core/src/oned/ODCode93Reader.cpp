@@ -29,7 +29,7 @@ namespace ZXing {
 namespace OneD {
 
 // Note that 'abcd' are dummy characters in place of control characters.
-static const char ALPHABET_STRING[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%abcd*";
+static const char ALPHABET[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%abcd*";
 
 /**
 * Each character consist of 3 bars and 3 spaces and is 9 modules wide in total.
@@ -47,7 +47,7 @@ static const int CHARACTER_ENCODINGS[] = {
 	0x126, 0x1DA, 0x1D6, 0x132, 0x15E, // Control chars ($)==a, (%)==b, (/)==c, (+)==d, *
 };
 
-static_assert(Size(ALPHABET_STRING) - 1 == Size(CHARACTER_ENCODINGS), "table size mismatch");
+static_assert(Size(ALPHABET) - 1 == Size(CHARACTER_ENCODINGS), "table size mismatch");
 
 static const int ASTERISK_ENCODING = 0x15E;
 
@@ -88,12 +88,12 @@ CheckOneChecksum(const std::string& result, int checkPosition, int weightMax)
 	int weight = 1;
 	int checkSum = 0;
 	for (int i = checkPosition - 1; i >= 0; i--) {
-		checkSum += weight * IndexOf(ALPHABET_STRING, result[i]);
+		checkSum += weight * IndexOf(ALPHABET, result[i]);
 		if (++weight > weightMax) {
 			weight = 1;
 		}
 	}
-	return result[checkPosition] == ALPHABET_STRING[checkSum % 47];
+	return result[checkPosition] == ALPHABET[checkSum % 47];
 }
 
 static bool
@@ -132,7 +132,7 @@ Code93Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 		if (i < 0)
 			return Result(DecodeStatus::NotFound);
 
-		result += ALPHABET_STRING[i];
+		result += ALPHABET[i];
 	} while (result.back() != '*');
 
 	result.pop_back(); // remove asterisk

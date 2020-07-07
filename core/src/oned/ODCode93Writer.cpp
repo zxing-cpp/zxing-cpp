@@ -25,7 +25,7 @@
 namespace ZXing {
 namespace OneD {
 
-static const char ALPHABET_STRING[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%abcd*";
+static const char ALPHABET[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%abcd*";
 
 /**
 * These represent the encodings of characters, as patterns of wide and narrow bars.
@@ -40,7 +40,7 @@ static const int CHARACTER_ENCODINGS[] = {
 	0x126, 0x1DA, 0x1D6, 0x132, 0x15E, // Control chars? $-*
 };
 
-static_assert(Size(ALPHABET_STRING) - 1 == Size(CHARACTER_ENCODINGS), "table size mismatch");
+static_assert(Size(ALPHABET) - 1 == Size(CHARACTER_ENCODINGS), "table size mismatch");
 
 static const int ASTERISK_ENCODING = CHARACTER_ENCODINGS[47];
 
@@ -60,7 +60,7 @@ static int ComputeChecksumIndex(const std::string& contents, int maxWeight)
 	int total = 0;
 
 	for (int i = Size(contents) - 1; i >= 0; i--) {
-		int indexInString = IndexOf(ALPHABET_STRING, contents[i]);
+		int indexInString = IndexOf(ALPHABET, contents[i]);
 		total += indexInString * weight;
 		if (++weight > maxWeight) {
 			weight = 1;
@@ -79,7 +79,7 @@ std::string Code93ConvertToExtended(const std::wstring& contents)
 
 	for (size_t i = 0; i < length; i++) {
 		int character = contents[i];
-		// ($)=a, (%)=b, (/)=c, (+)=d. see Code93Reader.ALPHABET_STRING
+		// ($)=a, (%)=b, (/)=c, (+)=d. see Code93Reader.ALPHABET
 		if (character == 0) {
 			// NUL: (%)U
 			extendedContent.append("bU");
@@ -171,7 +171,7 @@ Code93Writer::encode(const std::wstring& contents_, int width, int height) const
 	int pos = AppendPattern(result, 0, ASTERISK_ENCODING);
 
 	for (size_t i = 0; i < length; i++) {
-		int indexInString = IndexOf(ALPHABET_STRING, contents[i]);
+		int indexInString = IndexOf(ALPHABET, contents[i]);
 		pos += AppendPattern(result, pos, CHARACTER_ENCODINGS[indexInString]);
 	}
 
@@ -180,7 +180,7 @@ Code93Writer::encode(const std::wstring& contents_, int width, int height) const
 	pos += AppendPattern(result, pos, CHARACTER_ENCODINGS[check1]);
 
 	//append the contents to reflect the first checksum added
-	contents += static_cast<wchar_t>(ALPHABET_STRING[check1]);
+	contents += static_cast<wchar_t>(ALPHABET[check1]);
 
 	int check2 = ComputeChecksumIndex(contents, 15);
 	pos += AppendPattern(result, pos, CHARACTER_ENCODINGS[check2]);
