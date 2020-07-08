@@ -52,7 +52,7 @@ int main(int argc, char** argv)
 	fs::path pathPrefix = argv[1];
 
 	if (Contains({".png", ".jpg", ".pgm", ".gif"}, pathPrefix.extension())) {
-		auto hints = DecodeHints().setTryHarder(true).setTryRotate(true).setIsPure(getEnv("IS_PURE"));
+		auto hints = DecodeHints().setTryHarder(!getEnv("FAST", false)).setTryRotate(true).setIsPure(getEnv("IS_PURE"));
 		if (getenv("FORMATS"))
 			hints.setFormats(BarcodeFormatsFromString(getenv("FORMATS")));
 		MultiFormatReader reader(hints);
