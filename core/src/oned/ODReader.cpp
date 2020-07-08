@@ -159,8 +159,19 @@ DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, const BinaryBit
 #ifdef ZX_USE_NEW_ROW_READERS
 				Result result = readers[r]->decodePattern(rowNumber, bars, decodingState[r]);
 				if (result.status() == DecodeStatus::_internal) {
-					if (!std::exchange(hasBitArray, true))
-						image.getBlackRow(rowNumber, row);
+					if (!std::exchange(hasBitArray, true)) {
+						row.clearBits();
+						bool set = false;
+						int pos = 0;
+						for(int w : bars) {
+							if (set)
+								for (int i = 0; i < w; ++i)
+									row.set(pos++);
+							else
+								pos += w;
+							set = !set;
+						}
+					}
 					result = readers[r]->decodeRow(rowNumber, row, decodingState[r]);
 				}
 #else
