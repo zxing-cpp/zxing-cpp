@@ -53,6 +53,111 @@ static const int CODE_START_B = 104;
 static const int CODE_START_C = 105;
 static const int CODE_STOP = 106;
 
+class Raw2TxtDecoder
+{
+	int codeSet = 0;
+	bool _convertFNC1 = false;
+	std::string txt;
+	size_t lastTxtSize = 0;
+
+	bool fnc4All = false;
+	bool fnc4Next = false;
+	bool shift = false;
+
+	void fnc1()
+	{
+		if (_convertFNC1) {
+			if (txt.empty()) {
+				// GS1 specification 5.4.3.7. and 5.4.6.4. If the first char after the start code
+				// is FNC1 then this is GS1-128. We add the symbology identifier.
+				txt.append("]C1");
+			}
+			else {
+				// GS1 specification 5.4.7.5. Every subsequent FNC1 is returned as ASCII 29 (GS)
+				txt.push_back((char)29);
+			}
+		}
+	};
+
+public:
+	Raw2TxtDecoder(int startCode, bool convertFNC1) : codeSet(204 - startCode), _convertFNC1(convertFNC1)
+	{
+		txt.reserve(20);
+	}
+
+	bool decode(int code)
+	{
+		lastTxtSize = txt.size();
+
+		if (codeSet == CODE_CODE_C) {
+			if (code < 100) {
+				if (code < 10)
+					txt.push_back('0');
+				txt.append(std::to_string(code));
+			} else if (code == CODE_FNC_1) {
+				fnc1();
+			} else {
+				codeSet = code; // CODE_A / CODE_B
+			}
+		} else { // codeSet A or B
+			bool unshift = shift;
+
+			switch (code) {
+			case CODE_FNC_1: fnc1(); break;
+			case CODE_FNC_2:
+			case CODE_FNC_3:
+				// do nothing?
+				break;
+			case CODE_SHIFT:
+				if (shift)
+					return false; // two shifts in a row make no sense
+				shift = true;
+				codeSet = codeSet == CODE_CODE_A ? CODE_CODE_B : CODE_CODE_A;
+				break;
+			case CODE_CODE_A:
+			case CODE_CODE_B:
+				if (codeSet == code) {
+					// FNC4
+					if (fnc4Next)
+						fnc4All = !fnc4All;
+					fnc4Next = !fnc4Next;
+				} else {
+					codeSet = code;
+				}
+				break;
+			case CODE_CODE_C: codeSet = CODE_CODE_C; break;
+
+			default: {
+				// code < 96 at this point
+				int offset;
+				if (codeSet == CODE_CODE_A && code >= 64)
+					offset = fnc4All == fnc4Next ? -64 : +64;
+				else
+					offset = fnc4All == fnc4Next ? ' ' : ' ' + 128;
+				txt.push_back((char)(code + offset));
+				fnc4Next = false;
+				break;
+			}
+			}
+
+			// Unshift back to another code set if we were shifted
+			if (unshift) {
+				codeSet = codeSet == CODE_CODE_A ? CODE_CODE_B : CODE_CODE_A;
+				shift = false;
+			}
+		}
+
+		return true;
+	}
+
+	std::string text() const
+	{
+		// Need to pull out the check digit(s) from string (if the checksum code happened to
+		// be a printable character).
+		return txt.substr(0, lastTxtSize);
+	}
+};
+
 static BitArray::Range
 FindStartPattern(const BitArray& row, int* startCode)
 {
@@ -97,31 +202,10 @@ Code128Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Dec
 	int xStart = static_cast<int>(range.begin - row.begin());
 	ByteArray rawCodes;
 	rawCodes.reserve(20);
-	std::string result;
-	result.reserve(20);
 	std::vector<int> counters(6, 0);
+	Raw2TxtDecoder raw2txt(startCode, _convertFNC1);
 
 	rawCodes.push_back(static_cast<uint8_t>(startCode));
-
-	int codeSet = 204 - startCode;
-	size_t lastResultSize = 0;
-	bool fnc4All = false;
-	bool fnc4Next = false;
-	bool shift = false;
-
-	auto fnc1 = [&] {
-		if (_convertFNC1) {
-			if (result.empty()) {
-				// GS1 specification 5.4.3.7. and 5.4.6.4. If the first char after the start code
-				// is FNC1 then this is GS1-128. We add the symbology identifier.
-				result.append("]C1");
-			}
-			else {
-				// GS1 specification 5.4.7.5. Every subsequent FNC1 is returned as ASCII 29 (GS)
-				result.push_back((char)29);
-			}
-		}
-	};
 
 	while (true) {
 		range = RecordPattern(range.end, row.end(), counters);
@@ -136,75 +220,17 @@ Code128Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Dec
 			break;
 		if (code >= CODE_START_A)
 			return Result(DecodeStatus::FormatError);
+		if (!raw2txt.decode(code))
+			return Result(DecodeStatus::FormatError);
 
 		rawCodes.push_back(static_cast<uint8_t>(code));
-
-		lastResultSize = result.size();
-
-		if (codeSet == CODE_CODE_C) {
-			if (code < 100) {
-				if (code < 10)
-					result.push_back('0');
-				result.append(std::to_string(code));
-			} else if (code == CODE_FNC_1) {
-				fnc1();
-			} else {
-				codeSet = code; // CODE_A / CODE_B
-			}
-		} else { // codeSet A or B
-			bool unshift = shift;
-
-			switch (code) {
-			case CODE_FNC_1: fnc1(); break;
-			case CODE_FNC_2:
-			case CODE_FNC_3:
-				// do nothing?
-				break;
-			case CODE_SHIFT:
-				if (shift)
-					return Result(DecodeStatus::FormatError); // two shifts in a row make no sense
-				shift = true;
-				codeSet = codeSet == CODE_CODE_A ? CODE_CODE_B : CODE_CODE_A;
-				break;
-			case CODE_CODE_A:
-			case CODE_CODE_B:
-				if (codeSet == code) {
-					// FNC4
-					if (fnc4Next)
-						fnc4All = !fnc4All;
-					fnc4Next = !fnc4Next;
-				} else {
-					codeSet = code;
-				}
-				break;
-			case CODE_CODE_C: codeSet = CODE_CODE_C; break;
-
-			default: {
-				// code < 96 at this point
-				int offset;
-				if (codeSet == CODE_CODE_A && code >= 64)
-					offset = fnc4All == fnc4Next ? -64 : +64;
-				else
-					offset = fnc4All == fnc4Next ? ' ' : ' ' + 128;
-				result.push_back((char)(code + offset));
-				fnc4Next = false;
-				break;
-			}
-			}
-
-			// Unshift back to another code set if we were shifted
-			if (unshift) {
-				codeSet = codeSet == CODE_CODE_A ? CODE_CODE_B : CODE_CODE_A;
-				shift = false;
-			}
-		}
 	}
 
 	// Check for ample whitespace following pattern, but, to do this we first need to remember that
 	// we fudged decoding CODE_STOP since it actually has 7 bars, not 6. There is a black bar left
 	// to read off. Would be slightly better to properly read. Here we just skip it:
 	range.end = row.getNextUnset(range.end);
-	if (result.empty() || !row.hasQuiteZone(range.end, range.size() / 2))
+	if (rawCodes.empty() || !row.hasQuiteZone(range.end, range.size() / 2))
 		return Result(DecodeStatus::NotFound);
 
 	int checksum = rawCodes.front();
@@ -215,12 +241,10 @@ Code128Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Dec
 		return Result(DecodeStatus::ChecksumError);
 	}
 
-	// Need to pull out the check digit(s) from string (if the checksum code happened to
-	// be a printable character).
-	result.resize(lastResultSize);
-
 	int xStop = static_cast<int>(range.end - row.begin() - 1);
-	return Result(result, rowNumber, xStart, xStop, BarcodeFormat::CODE_128, std::move(rawCodes));
+	return Result(raw2txt.text(), rowNumber, xStart, xStop, BarcodeFormat::CODE_128, std::move(rawCodes));
+}
+
 }
 
 } // OneD
