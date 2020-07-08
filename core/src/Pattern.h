@@ -44,6 +44,7 @@ public:
 	{}
 	PatternView(Iterator data, int size, Iterator base, Iterator end) : _data(data), _size(size), _base(base), _end(end) {}
 
+	Iterator data() const { return _data; }
 	Iterator begin() const { return _data; }
 	Iterator end() const { return _data + _size; }
 

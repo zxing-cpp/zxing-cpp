@@ -159,18 +159,43 @@ public:
 	}
 
 	/**
-	* Determines how closely a set of observed counts of runs of black/white values matches a given
-	* target pattern. This is reported as the ratio of the total variance from the expected pattern
-	* proportions across all pattern elements, to the length of the pattern.
-	*
-	* @param counters observed counters
-	* @param pattern expected pattern
-	* @param maxIndividualVariance The most any counter can differ before we give up
-	* @return ratio of total variance between counters and pattern compared to total pattern size
-	*/
-	template <typename Container>
-	static float PatternMatchVariance(const Container& counters, const Container& pattern, float maxIndividualVariance) {
-		assert(counters.size() <= pattern.size()); //TODO: this should test for equality, see ODCode128Reader.cpp:93
+	 * Determines how closely a set of observed counts of runs of black/white values matches a given
+	 * target pattern. This is reported as the ratio of the total variance from the expected pattern
+	 * proportions across all pattern elements, to the length of the pattern.
+	 *
+	 * @param counters observed counters
+	 * @param pattern expected pattern
+	 * @param maxIndividualVariance The most any counter can differ before we give up
+	 * @return ratio of total variance between counters and pattern compared to total pattern size
+	 */
+	template <typename CP, typename PP>
+	static float PatternMatchVariance(const CP* counters, const PP* pattern, size_t length, float maxIndividualVariance)
+	{
+		int total = std::accumulate(counters, counters+length, 0);
+		int patternLength = std::accumulate(pattern, pattern+length, 0);
+		if (total < patternLength) {
+			// If we don't even have one pixel per unit of bar width, assume this is too small
+			// to reliably match, so fail:
+			return std::numeric_limits<float>::max();
+		}
+
+		float unitBarWidth = (float)total / patternLength;
+		maxIndividualVariance *= unitBarWidth;
+
+		float totalVariance = 0.0f;
+		for (size_t x = 0; x < length; ++x) {
+			float variance = std::abs(counters[x] - pattern[x] * unitBarWidth);
+			if (variance > maxIndividualVariance) {
+				return std::numeric_limits<float>::max();
+			}
+			totalVariance += variance;
+		}
+		return totalVariance / total;
+	}
+
+	template <typename Counters, typename Pattern>
+	static float PatternMatchVariance(const Counters& counters, const Pattern& pattern, float maxIndividualVariance) {
+		assert(Size(counters) <= Size(pattern)); //TODO: this should test for equality, see ODCode128Reader.cpp:93
 		return PatternMatchVariance(counters.data(), pattern.data(), counters.size(), maxIndividualVariance);
 	}
 
@@ -183,7 +208,7 @@ public:
 	* @param requireUnambiguousMatch the 'best match' must be better than all other matches
 	* @return The decoded digit index, -1 if no pattern matched
 	*/
-	template <typename Patterns, typename Counters>
+	template <typename Counters, typename Patterns>
 	static int DecodeDigit(const Counters& counters, const Patterns& patterns, float maxAvgVariance,
 						   float maxIndividualVariance, bool requireUnambiguousMatch = true)
 	{
@@ -202,9 +227,6 @@ public:
 		}
 		return bestMatch;
 	}
-
-public:
-	static float PatternMatchVariance(const int *counters, const int* pattern, size_t length, float maxIndividualVariance);
 
 	/**
 	 * @brief NarrowWideThreshold calculates width thresholds to separate narrow and wide bars and spaces.
