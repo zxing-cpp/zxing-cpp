@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-#include <ZXConfig.h>
+#include "ZXConfig.h"
 
 namespace ZXing {
 
