@@ -236,7 +236,7 @@ constexpr auto START_PATTERN_ = FixedPattern<4, 4>{1, 1, 1, 1};
 constexpr auto STOP_PATTERN_1 = FixedPattern<3, 4>{2, 1, 1};
 constexpr auto STOP_PATTERN_2 = FixedPattern<3, 5>{3, 1, 1};
 
-constexpr float QUITE_ZONE_SCALE = 0.5f;
+constexpr float QUITE_ZONE_SCALE = 2.5; // spec says 10 modules
 
 Result ITFReader::decodePattern(int rowNumber, const PatternView& row, std::unique_ptr<DecodingState>&) const
 {
