@@ -18,6 +18,7 @@
 */
 
 #include "ZXConfig.h"
+#include "ZXContainerAlgorithms.h"
 #ifndef ZX_FAST_BIT_STORAGE
 #include "BitHacks.h"
 #endif
@@ -27,7 +28,6 @@
 #include <vector>
 #include <algorithm>
 #include <utility>
-#include <ZXContainerAlgorithms.h>
 
 namespace ZXing {
 

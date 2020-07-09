@@ -16,11 +16,12 @@
 * limitations under the License.
 */
 
+#include "ZXContainerAlgorithms.h"
+
 #include <algorithm>
 #include <cstddef>
 #include <cassert>
 #include <vector>
-#include <ZXContainerAlgorithms.h>
 
 namespace ZXing {
 
