@@ -19,6 +19,7 @@
 
 #include <array>
 #include <algorithm>
+#include <cstdint>
 #include <numeric>
 #include <limits>
 
