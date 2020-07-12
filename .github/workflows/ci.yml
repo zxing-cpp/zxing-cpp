@@ -61,7 +61,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - uses: mymindstorm/setup-emsdk@v5
+    - uses: mymindstorm/setup-emsdk@v6
 
     - name: Configure
       run: emcmake cmake -Swrappers/wasm -Bbuild
