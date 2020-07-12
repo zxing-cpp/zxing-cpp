@@ -162,7 +162,6 @@ Code93Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 
 constexpr int CHAR_LEN = 6;
 constexpr int CHAR_SUM = 9;
-// pattern where '1' means 'narrow' and '0' means wide
 constexpr auto START_PATTERN = FixedPattern<CHAR_LEN, CHAR_SUM>{1, 1, 1, 1, 4, 1};
 // quite zone is half the width of a character symbol
 constexpr float QUITE_ZONE_SCALE = 0.5f;
@@ -176,7 +175,7 @@ Result Code93Reader::decodePattern(int rowNumber, const PatternView &row, std::u
         return LookupBitPattern(OneToFourBitPattern<CHAR_LEN, CHAR_SUM>(view), CHARACTER_ENCODINGS, ALPHABET);
 	};
 
-	auto next = ZXing::FindPattern(row.subView(0, -minCharCount * CHAR_LEN), START_PATTERN, QUITE_ZONE_SCALE);
+	auto next = FindLeftGuard(row, minCharCount * CHAR_LEN, START_PATTERN, QUITE_ZONE_SCALE * CHAR_SUM);
 	if (!next.isValid())
 		return Result(DecodeStatus::NotFound);
 

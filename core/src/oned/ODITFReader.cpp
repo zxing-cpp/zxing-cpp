@@ -236,13 +236,12 @@ constexpr auto START_PATTERN_ = FixedPattern<4, 4>{1, 1, 1, 1};
 constexpr auto STOP_PATTERN_1 = FixedPattern<3, 4>{2, 1, 1};
 constexpr auto STOP_PATTERN_2 = FixedPattern<3, 5>{3, 1, 1};
 
-constexpr float QUITE_ZONE_SCALE = 2.5; // spec says 10 modules
-
 Result ITFReader::decodePattern(int rowNumber, const PatternView& row, std::unique_ptr<DecodingState>&) const
 {
 	const int minCharCount = 6;
+	const int minQuiteZone = 10;
 
-	auto next = ZXing::FindPattern(row.subView(0, -(4 + minCharCount/2 + 3)), START_PATTERN_, QUITE_ZONE_SCALE);
+	auto next = FindLeftGuard(row, 4 + minCharCount/2 + 3, START_PATTERN_, minQuiteZone);
 	if (!next.isValid())
 		return Result(DecodeStatus::NotFound);
 
@@ -277,10 +276,10 @@ Result ITFReader::decodePattern(int rowNumber, const PatternView& row, std::uniq
 
 	next = next.subView(0, 3);
 
-	if (Size(txt) < minCharCount || !next.hasQuiteZoneAfter(QUITE_ZONE_SCALE))
+	if (Size(txt) < minCharCount)
 		return Result(DecodeStatus::NotFound);
 
-	if (!IsPattern(next, STOP_PATTERN_1) && !IsPattern(next, STOP_PATTERN_2))
+	if (!IsRightGuard(next, STOP_PATTERN_1, minQuiteZone) && !IsRightGuard(next, STOP_PATTERN_2, minQuiteZone))
 		return Result(DecodeStatus::NotFound);
 
 	int xStop = next.pixelsTillEnd();

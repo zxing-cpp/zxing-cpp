@@ -224,7 +224,7 @@ Result Code39Reader::decodePattern(int rowNumber, const PatternView& row, std::u
 	int minCharCount = _usingCheckDigit ? 4 : 3;
 	auto isStartOrStopSymbol = [](char c) { return c == '*'; };
 
-	auto next = ZXing::FindPattern(row.subView(0, -minCharCount * CHAR_LEN), START_PATTERN, QUITE_ZONE_SCALE);
+	auto next = FindLeftGuard(row, minCharCount * CHAR_LEN, START_PATTERN, QUITE_ZONE_SCALE * 12);
 	if (!next.isValid())
 		return Result(DecodeStatus::NotFound);
 

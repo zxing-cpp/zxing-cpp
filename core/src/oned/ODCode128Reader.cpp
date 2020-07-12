@@ -253,9 +253,8 @@ Code128Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Dec
 
 // all 3 start patterns share the same 2-1-1 prefix
 constexpr auto START_PATTERN_PREFIX = FixedPattern<3, 4>{2, 1, 1};
-// quite zone is 10 modules, prefix covers 4 -> require at least 8
-constexpr float QUITE_ZONE_SCALE = 2;
 constexpr int CHAR_LEN = 6;
+constexpr float QUITE_ZONE = 8;	// quite zone spec is 10 modules
 
 //#define USE_FAST_1_TO_4_BIT_PATTERN_DECODING
 #ifdef USE_FAST_1_TO_4_BIT_PATTERN_DECODING
@@ -301,7 +300,7 @@ Result Code128Reader::decodePattern(int rowNumber, const PatternView& row, std::
 #endif
 	};
 
-	auto next = ZXing::FindPattern(row.subView(0, -minCharCount * CHAR_LEN), START_PATTERN_PREFIX, QUITE_ZONE_SCALE);
+	auto next = FindLeftGuard(row, minCharCount * CHAR_LEN, START_PATTERN_PREFIX, QUITE_ZONE);
 	if (!next.isValid())
 		return Result(DecodeStatus::NotFound);
 
@@ -341,7 +340,7 @@ Result Code128Reader::decodePattern(int rowNumber, const PatternView& row, std::
 	// check termination bar (is present and not wider than about 2 modules) and quite zone (next is now 13 modules
 	// wide, require at least 8)
 	next = next.subView(0, CHAR_LEN + 1);
-	if (!next.isValid() || next[CHAR_LEN] > next.sum(CHAR_LEN) / 4 || !next.hasQuiteZoneAfter(8/13.f))
+	if (!next.isValid() || next[CHAR_LEN] > next.sum(CHAR_LEN) / 4 || !next.hasQuiteZoneAfter(QUITE_ZONE/13))
 		return Result(DecodeStatus::NotFound);
 
 	int checksum = rawCodes.front();

@@ -105,12 +105,20 @@ constexpr auto UPCE_END_PATTERN = FixedPattern<6, 6>{1, 1, 1, 1, 1, 1};
 constexpr auto EXT_START_PATTERN = FixedPattern<3, 4>{1, 1, 2};
 constexpr auto EXT_SEPARATOR_PATTERN = FixedPattern<2, 2>{1, 1};
 
-constexpr float QUITE_ZONE_SCALE_FRONT = 2.0; // specs sais 9 modules but there are samples with less than 7
-constexpr float QUITE_ZONE_SCALE_BACK  = 1.5; // specs sais 9 modules but there are samples with less than 5
-
 static const int FIRST_DIGIT_ENCODINGS[] = {
 	0x00, 0x0B, 0x0D, 0x0E, 0x13, 0x19, 0x1C, 0x15, 0x16, 0x1A
 };
+
+// The GS1 specification has the following to say about quite zones
+// Type: EAN-13 | EAN-8 | UPC-A | UPC-E | EAN Add-on | UPC Add-on
+// QZ L:   11   |   7   |   9   |   9   |     7-12   |     9-12
+// QZ R:    7   |   7   |   9   |   7   |        5   |        5
+
+constexpr float QUIET_ZONE_LEFT = 6;
+constexpr float QUIET_ZONE_RIGHT = 6;
+
+// There is a single sample (ean13-1/12.png) that fails to decode with these (new) settings because
+// it has a right-side quite zone of only about 4.5 modules, which is clearly out of spec.
 
 static bool DecodeDigit(const PatternView& view, std::string& txt, int* lgPattern = nullptr)
 {
@@ -201,8 +209,7 @@ static bool EAN13(PartialResult& res, PatternView begin)
 	auto mid = begin.subView(27, MID_PATTERN.size());
 	auto end = begin.subView(56, END_PATTERN.size());
 
-	CHECK(end.isValid() && end.hasQuiteZoneAfter(QUITE_ZONE_SCALE_BACK) && IsPattern(mid, MID_PATTERN) &&
-		  IsPattern(end, END_PATTERN));
+	CHECK(end.isValid() && IsRightGuard(end, END_PATTERN, QUIET_ZONE_RIGHT) && IsPattern(mid, MID_PATTERN));
 
 	auto next = begin.subView(END_PATTERN.size(), CHAR_LEN);
 	res.txt = " "; // make space for lgPattern character
@@ -227,8 +234,7 @@ static bool EAN8(PartialResult& res, PatternView begin)
 	auto mid = begin.subView(19, MID_PATTERN.size());
 	auto end = begin.subView(40, END_PATTERN.size());
 
-	CHECK(end.isValid() && end.hasQuiteZoneAfter(QUITE_ZONE_SCALE_BACK) && IsPattern(mid, MID_PATTERN) &&
-		  IsPattern(end, END_PATTERN));
+	CHECK(end.isValid() && IsRightGuard(end, END_PATTERN, QUIET_ZONE_RIGHT) && IsPattern(mid, MID_PATTERN));
 
 	auto next = begin.subView(END_PATTERN.size(), CHAR_LEN);
 	res.txt.clear();
@@ -248,7 +254,7 @@ static bool UPCE(PartialResult& res, PatternView begin)
 {
 	auto end = begin.subView(27, UPCE_END_PATTERN.size());
 
-	CHECK(end.isValid() && end.hasQuiteZoneAfter(1) && IsPattern(end, UPCE_END_PATTERN));
+	CHECK(end.isValid() && IsRightGuard(end, UPCE_END_PATTERN, QUIET_ZONE_RIGHT));
 
 	// additional plausibilty check for the module size: it has to be about the same for both
 	// the guard patterns and the payload/data part. This speeds up the falsepositives use case
@@ -295,6 +301,8 @@ static bool Extension(PartialResult& res, PatternView begin, int digitCount)
 		}
 	}
 
+	//TODO: check right quite zone
+
 	if (digitCount == 2) {
 		CHECK(std::stoi(res.txt) % 4 == lgPattern);
 	} else {
@@ -309,9 +317,9 @@ Result MultiUPCEANReader::decodePattern(int rowNumber, const PatternView& row, s
 {
 //	return Result(DecodeStatus::_internal);
 
-	const int minBarCount = 3 + 6*4 + 6; // UPC-E
+	const int minSize = 3 + 6*4 + 6; // UPC-E
 
-	auto begin = ZXing::FindPattern(row.subView(0, -minBarCount), END_PATTERN, QUITE_ZONE_SCALE_FRONT);
+	auto begin = FindLeftGuard(row, minSize, END_PATTERN, QUIET_ZONE_LEFT);
 	if (!begin.isValid())
 		return Result(DecodeStatus::NotFound);
 

@@ -310,9 +310,10 @@ constexpr float QUITE_ZONE_SCALE = 0.5f;
 // some codabar generator allow the codabar string to be closed by every
 // character. This will cause lots of false positives!
 
-inline bool IsStartOrStopPattern(const PatternView& view)
+inline bool IsLeftGuard(const PatternView& view, int spaceInPixel)
 {
-	return Contains({0x1A, 0x29, 0x0B, 0x0E}, RowReader::NarrowWideBitPattern(view));
+	return spaceInPixel > view.sum() * QUITE_ZONE_SCALE &&
+		   Contains({0x1A, 0x29, 0x0B, 0x0E}, RowReader::NarrowWideBitPattern(view));
 }
 
 Result
@@ -324,7 +325,7 @@ CodabarReader::decodePattern(int rowNumber, const PatternView& row, std::unique_
 	const int minCharCount = 4;
 	auto isStartOrStopSymbol = [](char c) { return 'A' <= c && c <= 'D'; };
 
-	auto next = ZXing::FindPattern<CHAR_LEN>(row.subView(0, -minCharCount * CHAR_LEN), IsStartOrStopPattern, QUITE_ZONE_SCALE);
+	auto next = FindLeftGuard<CHAR_LEN>(row, minCharCount * CHAR_LEN, IsLeftGuard);
 	if (!next.isValid())
 		return Result(DecodeStatus::NotFound);
 
