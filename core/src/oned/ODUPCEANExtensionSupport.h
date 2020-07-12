@@ -18,6 +18,8 @@
 
 #include "BitArray.h"
 
+#include <string>
+
 namespace ZXing {
 
 class Result;
