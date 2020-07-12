@@ -139,6 +139,7 @@ struct FixedPattern
 	using value_type = PatternRow::value_type;
 	value_type _data[N];
 	constexpr value_type operator[](size_t i) const noexcept { return _data[i]; }
+	constexpr int size() const noexcept { return N; }
 };
 
 template <int N, int SUM>

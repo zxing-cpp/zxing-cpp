@@ -62,13 +62,13 @@ public:
 
 	using Digit = std::array<int, 4>;
 
-protected:
 	// These two values are critical for determining how permissive the decoding will be.
 	// We've arrived at these values through a lot of trial and error. Setting them any higher
 	// lets false positives creep in quickly.
 	static constexpr float MAX_AVG_VARIANCE = 0.48f;
 	static constexpr float MAX_INDIVIDUAL_VARIANCE = 0.7f;
 
+protected:
 	explicit UPCEANReader(const DecodeHints& hints);
 
 	/**

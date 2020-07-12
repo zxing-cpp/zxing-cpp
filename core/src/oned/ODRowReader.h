@@ -36,8 +36,10 @@ ITF    : 1:2/3, 5+5   (2x2 wide) -> mods, v6-?| .5, .38 == * | qz:10
 Code93 : 1-4, 3+3 -> 9 mods  v1-? | round to 1-4 == *
 Code128: 1-4, 3+3 -> 11 mods v1-? | .7, .25 == ABC | qz:10
 UPC/EAN: 1-4, 2+2 -> 7 mods  f    | .7, .48 == *
-  UPC-A: 11d 95m = 3 + 6*4 + 5 + 6*4 + 3 = 59
+  UPC-A: 11d 95m = 3 + 6*4 + 5 + 6*4 + 3 = 59 | qz:3
   EAN-13: 12d 95m
+  UPC-E: 6d, 3 + 6*4 + 6 = 33
+  EAN-8: 8d, 3 + 4*4 + 5 + 4*4 + 3 = 43
 
 RSS14  : 1-8, finder: (15,2+3), symbol: (15/16,4+4) | .45, .2 (finder only), 14d
   code = 2xguard + 2xfinder + 4xsymbol = (96,23), stacked = 2x50 mods

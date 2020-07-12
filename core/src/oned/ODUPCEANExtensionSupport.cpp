@@ -34,8 +34,7 @@ namespace OneD {
 
 namespace UPCEANExtension5Support
 {
-	static int
-	ExtensionChecksum(const std::string& s)
+	int ExtensionChecksum(const std::string& s)
 	{
 		int length = Size(s);
 		int sum = 0;
@@ -50,8 +49,7 @@ namespace UPCEANExtension5Support
 		return sum % 10;
 	}
 
-	static std::string
-	ParseExtension5String(const std::string& raw)
+	std::string ParseExtension5String(const std::string& raw)
 	{
 		std::string currency;
 		switch (raw.front()) {

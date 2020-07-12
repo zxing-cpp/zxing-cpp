@@ -18,14 +18,12 @@
 
 #include "ODRowReader.h"
 #include "BarcodeFormat.h"
+#include "DecodeHints.h"
 
 #include <vector>
 #include <memory>
 
 namespace ZXing {
-
-class DecodeHints;
-
 namespace OneD {
 
 class UPCEANReader;
@@ -44,10 +42,12 @@ public:
 	~MultiUPCEANReader() override;
 
 	Result decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const override;
+	Result decodePattern(int rowNumber, const PatternView& row, std::unique_ptr<DecodingState>&) const override;
 
 private:
 	std::vector<std::unique_ptr<const UPCEANReader>> _readers;
 	bool _canReturnUPCA = false;
+	DecodeHints _hints;
 };
 
 } // OneD
