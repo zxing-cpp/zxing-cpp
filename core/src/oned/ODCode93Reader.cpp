@@ -217,7 +217,7 @@ Result Code93Reader::decodePattern(int rowNumber, const PatternView &row, std::u
 	if (!DecodeExtendedCode39AndCode93(txt, "abcd"))
 		return Result(DecodeStatus::FormatError);
 
-	int xStop = next.pixelsInFront() + next.sum() - 1;
+	int xStop = next.pixelsTillEnd();
 	return Result(txt, rowNumber, xStart, xStop, BarcodeFormat::CODE_93);
 }
 

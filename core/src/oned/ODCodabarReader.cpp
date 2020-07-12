@@ -357,7 +357,7 @@ CodabarReader::decodePattern(int rowNumber, const PatternView& row, std::unique_
 	if (!_returnStartEnd)
 		txt = txt.substr(1, txt.size() - 2);
 
-	int xStop = next.pixelsInFront() + next.sum() - 1;
+	int xStop = next.pixelsTillEnd();
 	return Result(txt, rowNumber, xStart, xStop, BarcodeFormat::CODABAR);
 }
 

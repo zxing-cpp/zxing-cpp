@@ -264,7 +264,7 @@ Result Code39Reader::decodePattern(int rowNumber, const PatternView& row, std::u
 	if (_extendedMode && !DecodeExtendedCode39AndCode93(txt, "$%/+"))
 		return Result(DecodeStatus::FormatError);
 
-	int xStop = next.pixelsInFront() + next.sum() - 1;
+	int xStop = next.pixelsTillEnd();
 	return Result(txt, rowNumber, xStart, xStop, BarcodeFormat::CODE_39);
 }
 

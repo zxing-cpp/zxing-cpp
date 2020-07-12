@@ -283,7 +283,7 @@ Result ITFReader::decodePattern(int rowNumber, const PatternView& row, std::uniq
 	if (!IsPattern(next, STOP_PATTERN_1) && !IsPattern(next, STOP_PATTERN_2))
 		return Result(DecodeStatus::NotFound);
 
-	int xStop = next.pixelsInFront() + next.size() - 1;
+	int xStop = next.pixelsTillEnd();
 	return Result(txt, rowNumber, xStart, xStop, BarcodeFormat::ITF);
 }
 

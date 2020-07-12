@@ -59,6 +59,7 @@ public:
 
 	int index() const { return _data - _base; }
 	int pixelsInFront() const { return std::accumulate(_base, _data, 0); }
+	int pixelsTillEnd() const { return std::accumulate(_base, _data + _size, 0) - 1; }
 	bool isAtFirstBar() const { return _data == _base + 1; }
 	bool isAtLastBar() const { return _data + _size == _end - 1; }
 	bool isValid() const { return _data < _end; }

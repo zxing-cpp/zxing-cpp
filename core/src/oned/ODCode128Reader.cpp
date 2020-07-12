@@ -351,7 +351,7 @@ Result Code128Reader::decodePattern(int rowNumber, const PatternView& row, std::
 	if (checksum % 103 != rawCodes.back())
 		return Result(DecodeStatus::ChecksumError);
 
-	int xStop = next.pixelsInFront() + next.sum() - 1;
+	int xStop = next.pixelsTillEnd();
 	return Result(raw2txt.text(), rowNumber, xStart, xStop, BarcodeFormat::CODE_128, std::move(rawCodes));
 }
 
