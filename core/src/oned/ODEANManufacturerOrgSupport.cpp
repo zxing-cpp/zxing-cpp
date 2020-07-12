@@ -32,7 +32,7 @@ struct CountryId
 	const char *id;
 
 	bool operator<(const CountryId &other) const {
-		return first < other.first;
+		return last < other.last;
 	}
 };
 
@@ -149,13 +149,8 @@ std::string
 EANManufacturerOrgSupport::LookupCountryIdentifier(const std::string& productCode)
 {
 	int prefix = std::stoi(productCode.substr(0, 3));
-	auto it = std::lower_bound(std::begin(COUNTRIES), std::end(COUNTRIES), CountryId{ prefix, 0, nullptr });
-	if (it != std::end(COUNTRIES))
-	{
-		if (prefix >= it->first && it->last)
-			return it->id;
-	}
-	return std::string();
+	auto it = std::lower_bound(std::begin(COUNTRIES), std::end(COUNTRIES), CountryId{ 0, prefix, nullptr });
+	return it != std::end(COUNTRIES) ? it->id : std::string();
 }
 
 } // OneD

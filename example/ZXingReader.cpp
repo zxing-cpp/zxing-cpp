@@ -109,7 +109,8 @@ int main(int argc, char* argv[])
 
 	std::map<ResultMetadata::Key, const char*> keys = {{ResultMetadata::ERROR_CORRECTION_LEVEL, "EC Level: "},
 													   {ResultMetadata::SUGGESTED_PRICE, "Price:    "},
-													   {ResultMetadata::ISSUE_NUMBER, "Issue #   "},
+													   {ResultMetadata::ISSUE_NUMBER, "Issue #:  "},
+													   {ResultMetadata::POSSIBLE_COUNTRY, "Country:  "},
 													   {ResultMetadata::UPC_EAN_EXTENSION, "Extension:"}};
 
 	for (auto key : keys) {
