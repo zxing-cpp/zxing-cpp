@@ -382,9 +382,9 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		});
 
 		runTests("ean13-extension-1", "EAN_13", 5, {
-			{ 5, 5, 0, 0, 0 },
-			{ 5, 5, 1, 0, 180 },
-		});
+			{ 5, 5, 0 },
+			{ 4, 5, 180 },
+		}, DecodeHints().setAllowedEanExtensions({2,5}));
 
 		runTests("itf-1", "ITF", 14, {
 			{ 14, 14, 0   },
@@ -431,9 +431,9 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		});
 
 		runTests("upca-extension-1", "UPC_A", 6, {
-			{ 2, 4, 2, 2, 0 },
-			{ 2, 4, 2, 2, 180 },
-		});
+			{ 3, 6, 0 },
+			{ 4, 6, 180 },
+		}, DecodeHints().setAllowedEanExtensions({2,5}));
 
 		runTests("upce-1", "UPC_E", 3, {
 			{ 3, 3, 0   },
