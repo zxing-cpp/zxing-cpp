@@ -106,9 +106,16 @@ int main(int argc, char* argv[])
 			  << "Position: " << result.position() << "\n"
 			  << "Rotation: " << std::lround(result.position().rotation() * kDegPerRad) << "\n"
 			  << "Error:    " << ToString(result.status()) << "\n";
-	auto errLevel = result.metadata().getString(ResultMetadata::Key::ERROR_CORRECTION_LEVEL);
-	if (!errLevel.empty()) {
-		std::cout << "EC Level: " << TextUtfEncoding::ToUtf8(errLevel) << "\n";
+
+	std::map<ResultMetadata::Key, const char*> keys = {{ResultMetadata::ERROR_CORRECTION_LEVEL, "EC Level: "},
+													   {ResultMetadata::SUGGESTED_PRICE, "Price:    "},
+													   {ResultMetadata::ISSUE_NUMBER, "Issue #   "},
+													   {ResultMetadata::UPC_EAN_EXTENSION, "Extension:"}};
+
+	for (auto key : keys) {
+		auto value = TextUtfEncoding::ToUtf8(result.metadata().getString(key.first));
+		if (value.size())
+			std::cout << key.second << value << "\n";
 	}
 
 	return static_cast<int>(result.status());
