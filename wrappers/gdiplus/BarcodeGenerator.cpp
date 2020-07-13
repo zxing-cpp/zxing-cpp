@@ -28,7 +28,7 @@ namespace ZXing {
 BarcodeGenerator::BarcodeGenerator(const std::string& format)
 {
 	auto barcodeFormat = BarcodeFormatFromString(format);
-	if (barcodeFormat == BarcodeFormat::INVALID)
+	if (barcodeFormat == BarcodeFormat::NONE)
 		throw std::invalid_argument("Unsupported format: " + format);
 	_writer.reset(new MultiFormatWriter(barcodeFormat));
 }
