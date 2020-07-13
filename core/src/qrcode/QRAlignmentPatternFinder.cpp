@@ -49,7 +49,7 @@ static bool FoundPatternCross(const StateCount& stateCount, float moduleSize)
 {
 	float maxVariance = moduleSize / 2.0f;
 	for (int i = 0; i < 3; i++) {
-		if (std::fabs(moduleSize - stateCount[i]) >= maxVariance) {
+		if (std::abs(moduleSize - stateCount[i]) >= maxVariance) {
 			return false;
 		}
 	}

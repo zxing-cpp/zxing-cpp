@@ -30,6 +30,8 @@
 #include "TextDecoder.h"
 #include "Result.h"
 
+#include <cmath>
+
 namespace ZXing {
 
 namespace OneD {
