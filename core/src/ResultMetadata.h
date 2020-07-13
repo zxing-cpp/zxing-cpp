@@ -51,7 +51,7 @@ public:
 		* said to have orientation "90". This key maps to an {@link Integer} whose
 		* value is in the range [0,360).
 		*/
-		ORIENTATION,
+		ORIENTATION [[deprecated]],
 
 		/**
 		* <p>2D barcode formats typically encode text, but allow for a sort of 'byte mode'

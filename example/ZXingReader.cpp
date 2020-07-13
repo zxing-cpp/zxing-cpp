@@ -16,7 +16,6 @@
 
 #include "ReadBarcode.h"
 #include "TextUtfEncoding.h"
-#include "ZXNumeric.h"
 
 #include <iostream>
 #include <cstring>
@@ -104,7 +103,7 @@ int main(int argc, char* argv[])
 	std::cout << "Text:     \"" << TextUtfEncoding::ToUtf8(result.text()) << "\"\n"
 			  << "Format:   " << ToString(result.format()) << "\n"
 			  << "Position: " << result.position() << "\n"
-			  << "Rotation: " << std::lround(result.position().rotation() * kDegPerRad) << " deg\n"
+			  << "Rotation: " << result.orientation() << " deg\n"
 			  << "Error:    " << ToString(result.status()) << "\n";
 
 	std::map<ResultMetadata::Key, const char*> keys = {{ResultMetadata::ERROR_CORRECTION_LEVEL, "EC Level: "},

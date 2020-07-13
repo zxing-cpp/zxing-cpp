@@ -178,11 +178,8 @@ DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, const BinaryBit
 				Result result = readers[r]->decodeRow(rowNumber, row, decodingState[r]);
 #endif
 				if (result.isValid()) {
-					// We found our barcode
 					if (upsideDown) {
-						// But it was upside down, so note that
-						result.metadata().put(ResultMetadata::ORIENTATION, 180);
-						// And remember to flip the result points horizontally.
+						// update position (flip horizontally).
 						auto points = result.position();
 						for (auto& p : points) {
 							p = {width - p.x - 1, p.y};
@@ -201,18 +198,12 @@ Result
 Reader::decode(const BinaryBitmap& image) const
 {
 	Result result = DoDecode(_readers, image, _tryHarder);
-	if (result.isValid()) {
-		return result;
-	}
 
-	if (_tryRotate && image.canRotate()) {
+	if (!result.isValid() && _tryRotate && image.canRotate()) {
 		auto rotatedImage = image.rotated(270);
 		result = DoDecode(_readers, *rotatedImage, _tryHarder);
 		if (result.isValid()) {
-			// Record that we found it rotated 90 degrees CCW / 270 degrees CW
-			auto& metadata = result.metadata();
-			metadata.put(ResultMetadata::ORIENTATION, (270 + metadata.getInt(ResultMetadata::ORIENTATION)) % 360);
-			// Update result points
+			// Update position
 			auto points = result.position();
 			int height = rotatedImage->height();
 			for (auto& p : points) {
@@ -221,6 +212,9 @@ Reader::decode(const BinaryBitmap& image) const
 			result.setPosition(std::move(points));
 		}
 	}
+
+	result.metadata().put(ResultMetadata::ORIENTATION, result.orientation());
+
 	return result;
 }
 

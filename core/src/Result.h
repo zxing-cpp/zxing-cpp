@@ -79,6 +79,8 @@ public:
 		_position = pos;
 	}
 
+	int orientation() const; //< orientation of barcode in degree, see also Position::orientation()
+
 	const ByteArray& rawBytes() const {
 		return _rawBytes;
 	}

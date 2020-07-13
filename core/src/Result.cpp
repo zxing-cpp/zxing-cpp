@@ -18,7 +18,9 @@
 #include "Result.h"
 #include "DecoderResult.h"
 #include "TextDecoder.h"
+#include "ZXNumeric.h"
 
+#include <cmath>
 #include <utility>
 
 namespace ZXing {
@@ -55,6 +57,11 @@ Result::Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat 
 		metadata().put(ResultMetadata::STRUCTURED_APPEND_PARITY, decodeResult.structuredAppendParity());
 	}
 	//TODO: what about the other optional data in DecoderResult?
+}
+
+int Result::orientation() const
+{
+	return std::lround(_position.orientation() * kDegPerRad);
 }
 
 } // ZXing
