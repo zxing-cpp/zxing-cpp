@@ -192,10 +192,10 @@ struct PartialResult
 {
 	std::string txt;
 	PatternView end;
-	BarcodeFormat format = BarcodeFormat::INVALID;
+	BarcodeFormat format = BarcodeFormat::NONE;
 
 	PartialResult() { txt.reserve(14); }
-	bool isValid() const { return format != BarcodeFormat::INVALID; }
+	bool isValid() const { return format != BarcodeFormat::NONE; }
 };
 
 inline bool _ret_false_debug_helper()

@@ -31,7 +31,7 @@ enum class BarcodeFormat
 	// The values are an implementation detail. The c++ use-case (ZXing::Flags) could have been designed such that it
 	// would not have been necessary to explicitly set the values to single bit constants. This has been done to ease
 	// the interoperability with C-like interfaces, the python and the Qt wrapper.
-	INVALID           = 0,         ///< Used as a return value if no valid barcode has been detected
+	NONE              = 0,         ///< Used as a return value if no valid barcode has been detected
 	AZTEC             = (1 << 0),  ///< Aztec (2D)
 	CODABAR           = (1 << 1),  ///< CODABAR (1D)
 	CODE_39           = (1 << 2),  ///< Code 39 (1D)
@@ -50,7 +50,7 @@ enum class BarcodeFormat
 	UPC_E             = (1 << 15), ///< UPC-E (1D)
 	UPC_EAN_EXTENSION = (1 << 16), ///< UPC/EAN extension (1D). Not a stand-alone format.
 
-	FORMAT_COUNT = INVALID,           ///> DEPRECATED: Used to count the number of formats
+	FORMAT_COUNT = NONE,           ///> DEPRECATED: Used to count the number of formats
 	_max         = UPC_EAN_EXTENSION, ///> implementation detail, don't use
 };
 
@@ -60,7 +60,7 @@ const char* ToString(BarcodeFormat format);
 
 /**
  * @brief Parse a string into a BarcodeFormat.
- * @return INVALID if str can not be parsed as a valid enum value
+ * @return NONE if str can not be parsed as a valid enum value
  */
 BarcodeFormat BarcodeFormatFromString(const std::string& str);
 

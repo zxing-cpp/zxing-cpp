@@ -85,7 +85,7 @@ static bool ParseOptions(int argc, char* argv[], int* width, int* height, int* m
 		}
 		else if (nonOptArgCount == 0) {
 			*format = BarcodeFormatFromString(argv[i]);
-			if (*format == BarcodeFormat::INVALID) {
+			if (*format == BarcodeFormat::NONE) {
 				std::cerr << "Unrecognized format: " << argv[i] << std::endl;
 				return false;
 			}

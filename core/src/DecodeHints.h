@@ -49,7 +49,7 @@ class DecodeHints
 	bool _returnCodabarStartEnd : 1;
 	Binarizer _binarizer : 2;
 
-	BarcodeFormats _formats = BarcodeFormat::INVALID;
+	BarcodeFormats _formats = BarcodeFormat::NONE;
 	std::string _characterSet;
 	std::vector<int> _allowedLengths;
 	std::vector<int> _allowedEanExtensions;
@@ -117,7 +117,7 @@ public:
 #undef ZX_PROPERTY
 
 	bool hasFormat(BarcodeFormat f) const noexcept { return _formats.testFlag(f); }
-	bool hasNoFormat() const noexcept { return _formats.testFlag(BarcodeFormat::INVALID); }
+	bool hasNoFormat() const noexcept { return _formats.testFlag(BarcodeFormat::NONE); }
 
 	[[deprecated]] DecodeHints& setPossibleFormats(const std::vector<BarcodeFormat>& formats)
 	{

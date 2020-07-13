@@ -28,7 +28,7 @@
 namespace ZXing {
 
 static const char* FORMAT_STR[] = {
-	"INVALID",
+	"NONE",
 	"AZTEC",
 	"CODABAR",
 	"CODE_39",
@@ -67,7 +67,7 @@ static BarcodeFormat ParseFormatString(const std::string& str)
 {
 	auto pos = std::find_if(std::begin(FORMAT_STR), std::end(FORMAT_STR),
 							[str](auto fmt) { return NormalizeFormatString(fmt) == str; });
-	return pos == std::end(FORMAT_STR) ? BarcodeFormat::INVALID
+	return pos == std::end(FORMAT_STR) ? BarcodeFormat::NONE
 									   : BarcodeFormat(1 << (std::distance(std::begin(FORMAT_STR), pos) - 1));
 }
 
@@ -86,7 +86,7 @@ BarcodeFormats BarcodeFormatsFromString(const std::string& str)
 	for (std::string token; std::getline(input, token, '|');) {
 		if(!token.empty()) {
 			auto bc = ParseFormatString(token);
-			if (bc == BarcodeFormat::INVALID)
+			if (bc == BarcodeFormat::NONE)
 				throw std::invalid_argument("This is not a valid barcode format: " + token);
 			res |= bc;
 		}
