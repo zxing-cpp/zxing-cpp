@@ -29,7 +29,7 @@ class Test(unittest.TestCase):
 		res = zxing.read_barcode(np.zeros((100, 100), np.uint8), formats = [BF.EAN_8, BF.AZTEC])
 
 		self.assertFalse(res.valid)
-		self.assertEqual(res.format, BF.INVALID)
+		self.assertEqual(res.format, BF.NONE)
 		self.assertEqual(res.text, '')
 
 if __name__ == '__main__':
