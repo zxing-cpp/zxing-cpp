@@ -446,7 +446,7 @@ static const RatioTableType& GetRatioTable()
 
 static ModuleBitCountType SampleBitCounts(const ModuleBitCountType& moduleBitCount)
 {
-	float bitCountSum = Reduce(moduleBitCount);
+	float bitCountSum = static_cast<float>(Reduce(moduleBitCount));
 	ModuleBitCountType result;
 	result.fill(0);
 	int bitCountIndex = 0;
@@ -456,7 +456,7 @@ static ModuleBitCountType SampleBitCounts(const ModuleBitCountType& moduleBitCou
 		if (sumPreviousBits + moduleBitCount[bitCountIndex] <= sampleIndex) {
 			sumPreviousBits += moduleBitCount[bitCountIndex];
 			bitCountIndex++;
-			if (bitCountIndex == (int)moduleBitCount.size()) { // this check is not done in original code, so I guess this should not happen?
+			if (bitCountIndex == Size(moduleBitCount)) { // this check is not done in original code, so I guess this should not happen?
 				break;
 			}
 		}

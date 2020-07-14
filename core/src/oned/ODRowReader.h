@@ -311,7 +311,7 @@ public:
 		}
 
 		int pattern = 0;
-		for (size_t i = 0; i < LEN; i++)
+		for (int i = 0; i < LEN; i++)
 			pattern = (pattern << is[i]) | ~(0xffffffff << is[i]) * (~i & 1);
 
 		return pattern;

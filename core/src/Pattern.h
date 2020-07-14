@@ -162,7 +162,7 @@ float IsPattern(const PatternView& view, const FixedPattern<N, SUM, false>& patt
 	if (!moduleSizeRef)
 		moduleSizeRef = moduleSize;
 
-	for (size_t x = 0; x < N; ++x)
+	for (int x = 0; x < N; ++x)
 		// the offset of 0.5 is to make the code less sensitive to quantization errors for small (near 1) module sizes.
 		// TODO: review once we have upsampling in the binarizer in place.
 		if (std::abs(view[x] - pattern[x] * moduleSize) > moduleSizeRef * 0.5f + 0.5f)

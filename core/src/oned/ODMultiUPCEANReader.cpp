@@ -294,7 +294,7 @@ static bool Extension(PartialResult& res, PatternView begin, int digitCount)
 		CHECK(DecodeDigit(ext, res.txt, &lgPattern));
 		ext.skipSymbol();
 		if (i < digitCount - 1) {
-			CHECK(IsPattern(ext, EXT_SEPARATOR_PATTERN, moduleSize));
+			CHECK(IsPattern(ext, EXT_SEPARATOR_PATTERN, 0, 0, moduleSize));
 			ext.skipPair();
 		}
 	}

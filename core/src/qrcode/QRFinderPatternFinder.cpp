@@ -464,9 +464,9 @@ static FinderPatternInfo SelectBestPatterns(std::vector<FinderPattern> possibleC
 		return {};
 
 	// Find distances between pattern centers
-	float distAB = distance(a, b);
-	float distBC = distance(b, c);
-	float distAC = distance(a, c);
+	auto distAB = distance(a, b);
+	auto distBC = distance(b, c);
+	auto distAC = distance(a, c);
 
 	// Assume one closest to other two is B; A and C will just be guesses at first
 	if (distBC >= distAB && distBC >= distAC)
