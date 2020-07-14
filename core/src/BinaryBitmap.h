@@ -74,13 +74,13 @@ public:
 
 		auto li = row.begin();
 		auto i = li;
-		if( *i )
+		if (*i)
 			res.push_back(0);
 		while ((i = row.getNextSetTo(i, !*i)) != row.end()) {
-			res.push_back(i - li);
+			res.push_back(static_cast<PatternRow::value_type>(i - li));
 			li = i;
 		}
-		res.push_back(i - li);
+		res.push_back(static_cast<PatternRow::value_type>(i - li));
 
 		return true;
 	}

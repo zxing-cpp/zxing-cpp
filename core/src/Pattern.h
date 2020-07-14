@@ -41,7 +41,7 @@ public:
 
 	PatternView() = default;
 	PatternView(const PatternRow& bars)
-		: _data(bars.data() + 1), _size(bars.size()), _base(bars.data()), _end(bars.data() + bars.size())
+		: _data(bars.data() + 1), _size(Size(bars)), _base(bars.data()), _end(bars.data() + bars.size())
 	{}
 	PatternView(Iterator data, int size, Iterator base, Iterator end) : _data(data), _size(size), _base(base), _end(end) {}
 
@@ -58,7 +58,7 @@ public:
 	int sum(int n = 0) const { return std::accumulate(_data, _data + (n == 0 ? _size : n), 0); }
 	int size() const { return _size; }
 
-	int index() const { return _data - _base; }
+	int index() const { return static_cast<int>(_data - _base); }
 	int pixelsInFront() const { return std::accumulate(_base, _data, 0); }
 	int pixelsTillEnd() const { return std::accumulate(_base, _data + _size, 0) - 1; }
 	bool isAtFirstBar() const { return _data == _base + 1; }
@@ -139,7 +139,7 @@ struct FixedPattern
 {
 	using value_type = PatternRow::value_type;
 	value_type _data[N];
-	constexpr value_type operator[](size_t i) const noexcept { return _data[i]; }
+	constexpr value_type operator[](int i) const noexcept { return _data[i]; }
 	constexpr int size() const noexcept { return N; }
 };
 
@@ -180,7 +180,7 @@ float IsPattern(const PatternView& view, const FixedPattern<N, SUM, true>& patte
 	// As of gcc-9, this is not the case.
 
 	int width = 0;
-	for (size_t x = 0; x < N; ++x)
+	for (int x = 0; x < N; ++x)
 		width += view[x] * (pattern[x] > 0);
 
 	const float moduleSize = (float)width / SUM;
@@ -191,7 +191,7 @@ float IsPattern(const PatternView& view, const FixedPattern<N, SUM, true>& patte
 	if (!moduleSizeRef)
 		moduleSizeRef = moduleSize;
 
-	for (size_t x = 0; x < N; ++x)
+	for (int x = 0; x < N; ++x)
 		if (pattern[x]) {
 			if (std::abs(view[x] - pattern[x] * moduleSize) > moduleSizeRef / 2)
 				return 0;

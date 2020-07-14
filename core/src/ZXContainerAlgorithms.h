@@ -66,7 +66,7 @@ constexpr int Size(const T (&)[N]) noexcept {
 template <typename Container, typename Value>
 int IndexOf(const Container& c, const Value& v) {
 	auto i = Find(c, v);
-	return i == std::end(c) ? -1 : std::distance(std::begin(c), i);
+	return i == std::end(c) ? -1 : static_cast<int>(std::distance(std::begin(c), i));
 }
 
 inline int IndexOf(const char* str, char c) {
