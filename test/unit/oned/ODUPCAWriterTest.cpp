@@ -22,9 +22,9 @@ using namespace ZXing;
 using namespace ZXing::OneD;
 
 namespace {
-	std::string Encode(const std::wstring& input, size_t length)
+	std::string Encode(const std::wstring& input)
 	{
-		auto result = ToString(UPCAWriter().encode(input, (int)length, 0), '1', '0', false);
+		auto result = ToString(UPCAWriter().encode(input, 0, 0), '1', '0', false);
 		return result.substr(0, result.size() - 1);	// remove the \n at the end
 	}
 }
@@ -33,13 +33,13 @@ TEST(ODUPCAWriterTest, Encode1)
 {
 	std::wstring toEncode = L"485963095124";
 	std::string expected = "00001010100011011011101100010001011010111101111010101011100101110100100111011001101101100101110010100000";
-	EXPECT_EQ(Encode(toEncode, expected.length()), expected);
+	EXPECT_EQ(Encode(toEncode), expected);
 }
 
 TEST(ODUPCAWriterTest, AddChecksumAndEncode)
 {
 	std::wstring toEncode = L"12345678901";
 	std::string expected = "00001010011001001001101111010100011011000101011110101010001001001000111010011100101100110110110010100000";
-	EXPECT_EQ(Encode(toEncode, expected.length()), expected);
+	EXPECT_EQ(Encode(toEncode), expected);
 }
 
