@@ -62,14 +62,6 @@ struct RSS14DecodingState : public RowReader::DecodingState
 	std::list<RSS::Pair> possibleRightPairs;
 };
 
-//private final List<Pair> possibleLeftPairs;
-//private final List<Pair> possibleRightPairs;
-//
-//public RSS14Reader() {
-//	possibleLeftPairs = new ArrayList<>();
-//	possibleRightPairs = new ArrayList<>();
-//}
-
 static BitArray::Range
 FindFinderPattern(const BitArray& row, bool rightFinderPattern, FinderCounters& counters)
 {
@@ -162,19 +154,6 @@ AdjustOddEvenCounts(bool outsideChar, int numModules, std::array<int, 4>& oddCou
 		}
 	}
 
-	/*if (mismatch == 2) {
-	if (!(oddParityBad && evenParityBad)) {
-	throw ReaderException.getInstance();
-	}
-	decrementOdd = true;
-	decrementEven = true;
-	} else if (mismatch == -2) {
-	if (!(oddParityBad && evenParityBad)) {
-	throw ReaderException.getInstance();
-	}
-	incrementOdd = true;
-	incrementEven = true;
-	} else */
 	if (mismatch == 1) {
 		if (oddParityBad) {
 			if (evenParityBad) {
@@ -370,18 +349,12 @@ AddOrTally(std::list<RSS::Pair>& possiblePairs, const RSS::Pair& pair)
 			return;
 		}
 	}
-//	printf("found new pair\n"); fflush(stdout);
 	possiblePairs.push_back(pair);
 }
 
 static bool
 CheckChecksum(const RSS::Pair& leftPair, const RSS::Pair& rightPair)
 {
-	//int leftFPValue = leftPair.getFinderPattern().getValue();
-	//int rightFPValue = rightPair.getFinderPattern().getValue();
-	//if ((leftFPValue == 0 && rightFPValue == 8) ||
-	//    (leftFPValue == 8 && rightFPValue == 0)) {
-	//}
 	int checkValue = (leftPair.checksumPortion() + 16 * rightPair.checksumPortion()) % 79;
 	int targetCheckValue =
 		9 * leftPair.finderPattern().value() + rightPair.finderPattern().value();
@@ -419,7 +392,6 @@ RSS14Reader::decodeRow(int rowNumber, const BitArray& row_, std::unique_ptr<Deco
 	AddOrTally(prevState->possibleLeftPairs, DecodePair(row, false, rowNumber));
 	row.reverse();
 	AddOrTally(prevState->possibleRightPairs, DecodePair(row, true, rowNumber));
-//	row.reverse();
 
 	// To be able to detect "stacked" RSS codes (split over multiple lines)
 	// we need to store the parts we found and try all possible left/right
