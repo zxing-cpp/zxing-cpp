@@ -16,9 +16,9 @@
 */
 
 #include "PDFCodewordDecoder.h"
+#include "ZXContainerAlgorithms.h"
 
 #include <array>
-#include <algorithm>
 #include <cstdint>
 #include <numeric>
 #include <limits>
@@ -446,7 +446,7 @@ static const RatioTableType& GetRatioTable()
 
 static ModuleBitCountType SampleBitCounts(const ModuleBitCountType& moduleBitCount)
 {
-	float bitCountSum = static_cast<float>(std::accumulate(moduleBitCount.begin(), moduleBitCount.end(), 0));
+	float bitCountSum = Reduce(moduleBitCount);
 	ModuleBitCountType result;
 	result.fill(0);
 	int bitCountIndex = 0;
@@ -487,7 +487,7 @@ static int GetClosestDecodedValue(const ModuleBitCountType& moduleBitCount)
 {
 	static const RatioTableType& ratioTable = GetRatioTable();
 
-	int bitCountSum = std::accumulate(moduleBitCount.begin(), moduleBitCount.end(), 0);
+	int bitCountSum = Reduce(moduleBitCount);
 	std::array<float, CodewordDecoder::BARS_IN_MODULE> bitCountRatios = {};
 	if (bitCountSum > 1) {
 		for (int i = 0; i < CodewordDecoder::BARS_IN_MODULE; i++) {

@@ -122,8 +122,8 @@ static bool
 AdjustOddEvenCounts(bool outsideChar, int numModules, std::array<int, 4>& oddCounts, std::array<int, 4>& evenCounts,
 	const std::array<float, 4>& oddRoundingErrors, const std::array<float, 4>& evenRoundingErrors)
 {
-	int oddSum = std::accumulate(oddCounts.begin(), oddCounts.end(), 0);
-	int evenSum = std::accumulate(evenCounts.begin(), evenCounts.end(), 0);
+	int oddSum = Reduce(oddCounts);
+	int evenSum = Reduce(evenCounts);
 	int mismatch = oddSum + evenSum - numModules;
 	bool oddParityBad = (oddSum & 0x01) == (outsideChar ? 1 : 0);
 	bool evenParityBad = (evenSum & 0x01) == 1;
@@ -266,7 +266,7 @@ DecodeDataCharacter(const BitArray& row, const RSS::FinderPattern& pattern, bool
 	}
 
 	int numModules = outsideChar ? 16 : 15;
-	float elementWidth = static_cast<float>(std::accumulate(counters.begin(), counters.end(), 0)) / static_cast<float>(numModules);
+	float elementWidth = static_cast<float>(Reduce(counters)) / numModules;
 
 	std::array<int, 4> oddCounts;
 	std::array<int, 4> evenCounts;

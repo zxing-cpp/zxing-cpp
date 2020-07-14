@@ -263,7 +263,7 @@ Code128Writer::encode(const std::wstring& contents, int width, int height) const
 	// Compute code width
 	int codeWidth = 0;
 	for (const std::vector<int>& pattern : patterns) {
-		codeWidth += std::accumulate(pattern.begin(), pattern.end(), 0);
+		codeWidth += Reduce(pattern);
 	}
 
 	// Compute result

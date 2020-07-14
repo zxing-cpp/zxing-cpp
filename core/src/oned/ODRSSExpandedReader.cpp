@@ -23,6 +23,7 @@
 #include "BitArray.h"
 #include "TextDecoder.h"
 #include "ZXConfig.h"
+#include "ZXContainerAlgorithms.h"
 
 #include <algorithm>
 #include <array>
@@ -177,8 +178,8 @@ IsNotA1left(FinderPattern pattern, bool isOddPattern, bool leftChar)
 static bool
 AdjustOddEvenCounts(int numModules, std::array<int, 4>& oddCounts, std::array<int, 4>& evenCounts, const std::array<float, 4>& oddRoundingErrors, const std::array<float, 4>& evenRoundingErrors)
 {
-	int oddSum = std::accumulate(oddCounts.begin(), oddCounts.end(), 0);
-	int evenSum = std::accumulate(evenCounts.begin(), evenCounts.end(), 0);
+	int oddSum = Reduce(oddCounts);
+	int evenSum = Reduce(evenCounts);
 	int mismatch = oddSum + evenSum - numModules;
 	bool oddParityBad = (oddSum & 0x01) == 1;
 	bool evenParityBad = (evenSum & 0x01) == 0;
@@ -293,10 +294,10 @@ DecodeDataCharacter(const BitArray& row, const FinderPattern& pattern, bool isOd
 	}
 
 	int numModules = 17; //left and right data characters have all the same length
-	float elementWidth = static_cast<float>(std::accumulate(counters.begin(), counters.end(), 0)) / static_cast<float>(numModules);
+	float elementWidth = static_cast<float>(Reduce(counters)) / numModules;
 
 	// Sanity check: element width for pattern and the character should match
-	float expectedElementWidth = static_cast<float>(pattern.endPos() - pattern.startPos()) / 15.0f;
+	float expectedElementWidth = (pattern.endPos() - pattern.startPos()) / 15.0f;
 	if (std::abs(elementWidth - expectedElementWidth) / expectedElementWidth > 0.3f) {
 		return {};
 	}

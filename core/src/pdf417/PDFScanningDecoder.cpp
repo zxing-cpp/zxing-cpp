@@ -133,7 +133,7 @@ static Nullable<Codeword> DetectCodeword(const BitMatrix& image, int minColumn, 
 		return nullptr;
 	}
 	int endColumn;
-	int codewordBitCount = std::accumulate(moduleBitCount.begin(), moduleBitCount.end(), 0);
+	int codewordBitCount = Reduce(moduleBitCount);
 	if (leftToRight) {
 		endColumn = startColumn + codewordBitCount;
 	}

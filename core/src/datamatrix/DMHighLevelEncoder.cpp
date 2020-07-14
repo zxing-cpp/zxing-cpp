@@ -171,7 +171,7 @@ static int LookAheadTest(const std::string& msg, size_t startpos, int currentMod
 			int min = std::numeric_limits<int>::max();
 			std::transform(charCounts.begin(), charCounts.end(), intCharCounts.begin(), [](float x) { return static_cast<int>(std::ceil(x)); });
 			min = FindMinimums(intCharCounts, min, mins);
-			int minCount = std::accumulate(mins.begin(), mins.end(), 0);
+			int minCount = Reduce(mins);
 
 			if (intCharCounts[ASCII_ENCODATION] == min) {
 				return ASCII_ENCODATION;
@@ -263,7 +263,7 @@ static int LookAheadTest(const std::string& msg, size_t startpos, int currentMod
 		if (charsProcessed >= 4) {
 			std::transform(charCounts.begin(), charCounts.end(), intCharCounts.begin(), [](float x) { return static_cast<int>(std::ceil(x)); });
 			FindMinimums(intCharCounts, std::numeric_limits<int>::max(), mins);
-			int minCount = std::accumulate(mins.begin(), mins.end(), 0);
+			int minCount = Reduce(mins);
 
 			if (intCharCounts[ASCII_ENCODATION] < intCharCounts[BASE256_ENCODATION]
 				&& intCharCounts[ASCII_ENCODATION] < intCharCounts[C40_ENCODATION]
