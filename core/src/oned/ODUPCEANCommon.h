@@ -16,6 +16,7 @@
 * limitations under the License.
 */
 #include "ODUPCEANReader.h"
+#include "GTIN.h"
 
 #include <array>
 #include <cstddef>
@@ -60,22 +61,8 @@ public:
 	*/
 	static const std::array<int, 20> NUMSYS_AND_CHECK_DIGIT_PATTERNS;
 
-	template <typename T>
-	static int ComputeChecksum(const std::basic_string<T>& digits, bool skipTail = false)
-	{
-		int sum = 0, N = Size(digits);
-		for (int i = N - 1 - skipTail; i >= 0; i -= 2) {
-			sum += digits[i] - '0';
-		}
-		sum *= 3;
-		for (int i = N - 2 - skipTail; i >= 0; i -= 2) {
-			sum += digits[i] - '0';
-		}
-		return (10 - (sum % 10)) % 10;
-	}
-
 	template <size_t N, typename T>
-	static std::array<int, N> DigitString2IntArray(const std::basic_string<T>& in, int checksum = -1)
+	static std::array<int, N> DigitString2IntArray(const std::basic_string<T>& in, T checkDigit = -1)
 	{
 		static_assert(N == 8 || N == 13, "invalid UPC/EAN length");
 
@@ -89,12 +76,12 @@ public:
 				throw std::invalid_argument("Contents must contain only digits: 0-9");
 		}
 
-		if (checksum == -1)
-			checksum = ComputeChecksum(in, N == in.size());
+		if (checkDigit == -1)
+			checkDigit = GTIN::ComputeCheckDigit(in, N == in.size());
 
 		if (in.size() == N-1)
-			out.back() = checksum;
-		else if (out.back() != checksum)
+			out.back() = checkDigit - '0';
+		else if (out.back() != checkDigit - '0')
 			throw std::invalid_argument("Checksum error");
 
 		return out;

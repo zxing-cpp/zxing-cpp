@@ -156,7 +156,7 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, BitArray::Range star
 bool
 UPCEANReader::checkChecksum(const std::string& s) const
 {
-	return UPCEANCommon::ComputeChecksum(s, 1) == s.back() - '0';
+	return GTIN::IsCheckDigitValid(s);
 }
 
 } // OneD

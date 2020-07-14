@@ -33,7 +33,7 @@ BitMatrix
 UPCEWriter::encode(const std::wstring& contents, int width, int height) const
 {
 	auto digits = UPCEANCommon::DigitString2IntArray<8>(
-		contents, UPCEANCommon::ComputeChecksum(UPCEANCommon::ConvertUPCEtoUPCA(contents), contents.size() == 8));
+		contents, GTIN::ComputeCheckDigit(UPCEANCommon::ConvertUPCEtoUPCA(contents), contents.size() == 8));
 
 	int firstDigit = digits[0];
 	if (firstDigit != 0 && firstDigit != 1) {

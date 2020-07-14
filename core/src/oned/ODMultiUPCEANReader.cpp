@@ -25,6 +25,7 @@
 #include "ODEAN8Reader.h"
 #include "ODUPCAReader.h"
 #include "ODUPCEReader.h"
+#include "GTIN.h"
 #include "DecodeHints.h"
 #include "BarcodeFormat.h"
 #include "TextDecoder.h"
@@ -185,11 +186,6 @@ static bool DecodeDigits(int digitCount, PatternView& next, std::string& txt, in
 	return true;
 }
 
-static bool CheckChecksum(const std::string& s)
-{
-	return UPCEANCommon::ComputeChecksum(s, 1) == s.back() - '0';
-}
-
 struct PartialResult
 {
 	std::string txt;
@@ -332,7 +328,7 @@ Result MultiUPCEANReader::decodePattern(int rowNumber, const PatternView& row, s
 		  (_hints.hasFormat(BarcodeFormat::UPC_E) && UPCE(res, begin))))
 		return Result(DecodeStatus::NotFound);
 
-	if (!CheckChecksum(res.format == BarcodeFormat::UPC_E ? UPCEANCommon::ConvertUPCEtoUPCA(res.txt) : res.txt))
+	if (!GTIN::IsCheckDigitValid(res.format == BarcodeFormat::UPC_E ? UPCEANCommon::ConvertUPCEtoUPCA(res.txt) : res.txt))
 		return Result(DecodeStatus::ChecksumError);
 
 	// If UPC-A was a requested format and we deteced a EAN-13 code with a leading '0', then we drop the '0' and call it
