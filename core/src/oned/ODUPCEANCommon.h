@@ -62,7 +62,7 @@ public:
 	static const std::array<int, 20> NUMSYS_AND_CHECK_DIGIT_PATTERNS;
 
 	template <size_t N, typename T>
-	static std::array<int, N> DigitString2IntArray(const std::basic_string<T>& in, T checkDigit = -1)
+	static std::array<int, N> DigitString2IntArray(const std::basic_string<T>& in, int checkDigit = -1)
 	{
 		static_assert(N == 8 || N == 13, "invalid UPC/EAN length");
 
@@ -82,7 +82,7 @@ public:
 		if (in.size() == N-1)
 			out.back() = checkDigit - '0';
 		else if (in.back() != checkDigit) {
-			printf("%ls != %lc\n", in.c_str(), checkDigit);
+			printf("%ls != '%c' (%d)\n", in.c_str(), checkDigit, checkDigit);
 			throw std::invalid_argument("Checksum error");
 		}
 
