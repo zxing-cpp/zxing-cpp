@@ -81,8 +81,10 @@ public:
 
 		if (in.size() == N-1)
 			out.back() = checkDigit - '0';
-		else if (out.back() != checkDigit - '0')
+		else if (in.back() != checkDigit) {
+			printf("%ls != %lc\n", in.c_str(), checkDigit);
 			throw std::invalid_argument("Checksum error");
+		}
 
 		return out;
 	}
