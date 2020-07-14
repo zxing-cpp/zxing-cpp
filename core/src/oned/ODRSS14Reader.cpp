@@ -110,172 +110,13 @@ ParseFoundFinderPattern(const BitArray& row, int rowNumber, bool right, BitArray
 			{ResultPoint(start, rowNumber), ResultPoint(end, rowNumber)}};
 }
 
-static bool
-AdjustOddEvenCounts(bool outsideChar, int numModules, std::array<int, 4>& oddCounts, std::array<int, 4>& evenCounts,
-	const std::array<float, 4>& oddRoundingErrors, const std::array<float, 4>& evenRoundingErrors)
-{
-	int oddSum = Reduce(oddCounts);
-	int evenSum = Reduce(evenCounts);
-	int mismatch = oddSum + evenSum - numModules;
-	bool oddParityBad = (oddSum & 0x01) == (outsideChar ? 1 : 0);
-	bool evenParityBad = (evenSum & 0x01) == 1;
-
-	bool incrementOdd = false;
-	bool decrementOdd = false;
-	bool incrementEven = false;
-	bool decrementEven = false;
-
-	if (outsideChar) {
-		if (oddSum > 12) {
-			decrementOdd = true;
-		}
-		else if (oddSum < 4) {
-			incrementOdd = true;
-		}
-		if (evenSum > 12) {
-			decrementEven = true;
-		}
-		else if (evenSum < 4) {
-			incrementEven = true;
-		}
-	}
-	else {
-		if (oddSum > 11) {
-			decrementOdd = true;
-		}
-		else if (oddSum < 5) {
-			incrementOdd = true;
-		}
-		if (evenSum > 10) {
-			decrementEven = true;
-		}
-		else if (evenSum < 4) {
-			incrementEven = true;
-		}
-	}
-
-	if (mismatch == 1) {
-		if (oddParityBad) {
-			if (evenParityBad) {
-				return false;
-			}
-			decrementOdd = true;
-		}
-		else {
-			if (!evenParityBad) {
-				return false;
-			}
-			decrementEven = true;
-		}
-	}
-	else if (mismatch == -1) {
-		if (oddParityBad) {
-			if (evenParityBad) {
-				return false;
-			}
-			incrementOdd = true;
-		}
-		else {
-			if (!evenParityBad) {
-				return false;
-			}
-			incrementEven = true;
-		}
-	}
-	else if (mismatch == 0) {
-		if (oddParityBad) {
-			if (!evenParityBad) {
-				return false;
-			}
-			// Both bad
-			if (oddSum < evenSum) {
-				incrementOdd = true;
-				decrementEven = true;
-			}
-			else {
-				decrementOdd = true;
-				incrementEven = true;
-			}
-		}
-		else {
-			if (evenParityBad) {
-				return false;
-			}
-			// Nothing to do!
-		}
-	}
-	else {
-		return false;
-	}
-
-	if (incrementOdd) {
-		if (decrementOdd) {
-			return false;
-		}
-		oddCounts[std::max_element(oddRoundingErrors.begin(), oddRoundingErrors.end()) - oddRoundingErrors.begin()] += 1;
-	}
-	if (decrementOdd) {
-		oddCounts[std::min_element(oddRoundingErrors.begin(), oddRoundingErrors.end()) - oddRoundingErrors.begin()] -= 1;
-	}
-	if (incrementEven) {
-		if (decrementEven) {
-			return false;
-		}
-		evenCounts[std::max_element(evenRoundingErrors.begin(), evenRoundingErrors.end()) - evenRoundingErrors.begin()] += 1;
-	}
-	if (decrementEven) {
-		evenCounts[std::min_element(evenRoundingErrors.begin(), evenRoundingErrors.end()) - evenRoundingErrors.begin()] -= 1;
-	}
-	return true;
-}
-
 static RSS::DataCharacter
 DecodeDataCharacter(const BitArray& row, const RSS::FinderPattern& pattern, bool outsideChar)
 {
-	std::array<int, 8> counters = {};
+	DataCounters oddCounts, evenCounts;
 
-	if (outsideChar) {
-		if (!RowReader::RecordPatternInReverse(row.begin(), row.iterAt(pattern.startPos()), counters))
-			return {};
-	}
-	else {
-		if (!RowReader::RecordPattern(row.iterAt(pattern.endPos()), row.end(), counters))
-			return {};
-		std::reverse(counters.begin(), counters.end());
-	}
-
-	int numModules = outsideChar ? 16 : 15;
-	float elementWidth = static_cast<float>(Reduce(counters)) / numModules;
-
-	std::array<int, 4> oddCounts;
-	std::array<int, 4> evenCounts;
-	std::array<float, 4> oddRoundingErrors;
-	std::array<float, 4> evenRoundingErrors;
-
-	for (int i = 0; i < 8; i++) {
-		float value = (float)counters[i] / elementWidth;
-		int count = (int)(value + 0.5f); // Round
-		//TODO: C++17: count = std::clamp((int)(value + 0.5f), 1, 8);
-		if (count < 1) {
-			count = 1;
-		}
-		else if (count > 8) {
-			count = 8;
-		}
-		int offset = i / 2;
-		if ((i & 0x01) == 0) {
-			oddCounts[offset] = count;
-			oddRoundingErrors[offset] = value - count;
-		}
-		else {
-			evenCounts[offset] = count;
-			evenRoundingErrors[offset] = value - count;
-		}
-	}
-
-	if (!AdjustOddEvenCounts(outsideChar, numModules, oddCounts, evenCounts, oddRoundingErrors, evenRoundingErrors)) {
+	if (!ReaderHelper::ReadOddEvenElements(row, pattern, outsideChar ? 16 : 15, outsideChar, oddCounts, evenCounts))
 		return {};
-	}
 
 	auto calcChecksumPortion = [](const std::array<int, 4>& counts) {
 		int res = 0;
@@ -290,7 +131,7 @@ DecodeDataCharacter(const BitArray& row, const RSS::FinderPattern& pattern, bool
 	int evenSum = Reduce(evenCounts);
 
 	if (outsideChar) {
-		if ((oddSum & 0x01) != 0 || oddSum > 12 || oddSum < 4) {
+		if ((oddSum & 1) != 0 || oddSum > 12 || oddSum < 4) {
 			return {};
 		}
 		int group = (12 - oddSum) / 2;
@@ -303,7 +144,7 @@ DecodeDataCharacter(const BitArray& row, const RSS::FinderPattern& pattern, bool
 		return {vOdd * tEven + vEven + gSum, checksumPortion};
 	}
 	else {
-		if ((evenSum & 0x01) != 0 || evenSum > 10 || evenSum < 4) {
+		if ((evenSum & 1) != 0 || evenSum > 10 || evenSum < 4) {
 			return {};
 		}
 		int group = (10 - evenSum) / 2;

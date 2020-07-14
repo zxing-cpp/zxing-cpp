@@ -24,7 +24,10 @@ namespace ZXing {
 namespace OneD {
 namespace RSS {
 
+class FinderPattern;
+
 using FinderCounters = std::array<int, 4>;
+using DataCounters = std::array<int, 4>;
 
 class ReaderHelper
 {
@@ -73,6 +76,9 @@ public:
 	}
 
 	static int GetRSSvalue(const std::array<int, 4>& widths, int maxWidth, bool noNarrow);
+
+	static bool ReadOddEvenElements(const BitArray& row, const FinderPattern& pattern, int numModules, bool reversed,
+									DataCounters& oddCounts, DataCounters& evenCounts);
 };
 
 } // RSS
