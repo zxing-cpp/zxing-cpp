@@ -75,7 +75,7 @@ public:
 		return a > 8 * b && a < 14 * b && a > 8 * c && a < 14 * c;
 	}
 
-	static int GetRSSvalue(const std::array<int, 4>& widths, int maxWidth, bool noNarrow);
+	static int GetRSSvalue(const DataCounters& widths, int maxWidth, bool noNarrow);
 
 	static bool ReadOddEvenElements(const BitArray& row, const FinderPattern& pattern, int numModules, bool reversed,
 									DataCounters& oddCounts, DataCounters& evenCounts);

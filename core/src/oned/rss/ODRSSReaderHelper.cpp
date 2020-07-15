@@ -32,13 +32,12 @@ static int combins(int n, int r)
 	if (n - r > r) {
 		minDenom = r;
 		maxDenom = n - r;
-	}
-	else {
+	} else {
 		minDenom = n - r;
 		maxDenom = r;
 	}
 	int val = 1;
-	int j = 1;
+	int j   = 1;
 	for (int i = n; i > maxDenom; i--) {
 		val *= i;
 		if (j <= minDenom) {
@@ -54,7 +53,7 @@ static int combins(int n, int r)
 }
 
 int
-ReaderHelper::GetRSSvalue(const std::array<int, 4>& widths, int maxWidth, bool noNarrow)
+ReaderHelper::GetRSSvalue(const DataCounters& widths, int maxWidth, bool noNarrow)
 {
 	int elements = Size(widths);
 	int n = Reduce(widths);
@@ -62,25 +61,18 @@ ReaderHelper::GetRSSvalue(const std::array<int, 4>& widths, int maxWidth, bool n
 	int narrowMask = 0;
 	for (int bar = 0; bar < elements - 1; bar++) {
 		int elmWidth;
-		for (elmWidth = 1, narrowMask |= 1 << bar;
-			elmWidth < widths[bar];
-			elmWidth++, narrowMask &= ~(1 << bar)) {
+		for (elmWidth = 1, narrowMask |= 1 << bar; elmWidth < widths[bar]; elmWidth++, narrowMask &= ~(1 << bar)) {
 			int subVal = combins(n - elmWidth - 1, elements - bar - 2);
-			if (noNarrow && (narrowMask == 0) &&
-				(n - elmWidth - (elements - bar - 1) >= elements - bar - 1)) {
-				subVal -= combins(n - elmWidth - (elements - bar),
-					elements - bar - 2);
+			if (noNarrow && (narrowMask == 0) && (n - elmWidth - (elements - bar - 1) >= elements - bar - 1)) {
+				subVal -= combins(n - elmWidth - (elements - bar), elements - bar - 2);
 			}
 			if (elements - bar - 1 > 1) {
 				int lessVal = 0;
-				for (int mxwElement = n - elmWidth - (elements - bar - 2);
-					mxwElement > maxWidth; mxwElement--) {
-					lessVal += combins(n - elmWidth - mxwElement - 1,
-						elements - bar - 3);
+				for (int mxwElement = n - elmWidth - (elements - bar - 2); mxwElement > maxWidth; mxwElement--) {
+					lessVal += combins(n - elmWidth - mxwElement - 1, elements - bar - 3);
 				}
 				subVal -= lessVal * (elements - 1 - bar);
-			}
-			else if (n - elmWidth > maxWidth) {
+			} else if (n - elmWidth > maxWidth) {
 				subVal--;
 			}
 			val += subVal;
