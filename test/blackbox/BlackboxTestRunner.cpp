@@ -455,7 +455,7 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 6, 6, 180 },
 		});
 
-		runTests("rss14-2", "RSS_14", 20, {
+		runTests("rss14-2", "RSS_14", 16, {
 			{ 7, 10, 1, 1, 0   },
 			{ 8, 10, 0, 1, 180 },
 		});
