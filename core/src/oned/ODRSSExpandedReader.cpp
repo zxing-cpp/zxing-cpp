@@ -566,5 +566,14 @@ RSSExpandedReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr
 	return r;
 }
 
+Result RSSExpandedReader::decodePattern(int, const PatternView& row, std::unique_ptr<RowReader::DecodingState>&) const
+{
+#ifdef ZX_USE_NEW_ROW_READERS
+	return FindFinderPattern<true>(row).isValid() ? Result(DecodeStatus::_internal) : Result(DecodeStatus::NotFound);
+#else
+	return Result(DecodeStatus::NotFound);
+#endif
+}
+
 } // OneD
 } // ZXing

@@ -252,5 +252,14 @@ RSS14Reader::decodeRow(int rowNumber, const BitArray& row_, std::unique_ptr<Deco
 	return Result(DecodeStatus::NotFound);
 }
 
+Result RSS14Reader::decodePattern(int, const PatternView& row, std::unique_ptr<RowReader::DecodingState>&) const
+{
+#ifdef ZX_USE_NEW_ROW_READERS
+	return FindFinderPattern<false>(row).isValid() ? Result(DecodeStatus::_internal) : Result(DecodeStatus::NotFound);
+#else
+	return Result(DecodeStatus::NotFound);
+#endif
+}
+
 } // OneD
 } // ZXing

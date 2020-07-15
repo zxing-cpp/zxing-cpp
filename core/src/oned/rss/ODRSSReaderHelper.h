@@ -16,6 +16,7 @@
 * limitations under the License.
 */
 #include "../ODRowReader.h"
+#include "Pattern.h"
 
 #include <array>
 #include <algorithm>
@@ -28,6 +29,46 @@ class FinderPattern;
 
 using FinderCounters = std::array<int, 4>;
 using DataCounters = std::array<int, 4>;
+
+template<bool EXPANDED>
+inline bool IsFinderPattern(const PatternView& v)
+{
+	//  a,b,c,d,e, g | sum(a..e) = 15
+	//  ------------
+	//  1,1,2,1,1, 1
+	//	| | |
+	//	3,8,9
+
+	// TODO: not checking the guard (g) might allow scanning rotated extended codes
+
+	auto isFinderPattern = [](int a, int b, int c, int d, int e, int g) {
+		int w = 2 * (b + c), n = d + e;
+		return w > 9 * n && w < 13 * n && std::max(b, c) < 10 * std::min(d, e) && a < 4 * d && 4 * a > n &&
+			   g * 4 < 3 * n;
+	};
+
+	int guardLeft = v[-10];
+	int guardRight = v[13];
+
+	// with GS1 Expanded Stacked codes, we don't know whether the guard element is left or right
+	if (EXPANDED)
+		guardLeft = guardRight = std::min(guardLeft, guardRight);
+
+	return isFinderPattern(v[-1], v[0], v[1], v[2], v[3], guardLeft) ||
+		   isFinderPattern(v[4], v[3], v[2], v[1], v[0], guardRight);
+}
+
+template<bool EXPANDED>
+inline PatternView FindFinderPattern(const PatternView& row)
+{
+	const int minNumElems = 10; // number of elements left and right of a finder pattern, including the guard
+	auto window = row.subView(minNumElems, 5);
+	for (auto end = row.end() - minNumElems; window.data() < end; window.skipPair())
+		if (IsFinderPattern<EXPANDED>(window))
+			return window;
+
+	return {};
+}
 
 class ReaderHelper
 {

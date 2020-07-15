@@ -29,6 +29,7 @@ class RSSExpandedReader : public RowReader
 {
 public:
 	Result decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const override;
+	Result decodePattern(int, const PatternView& row, std::unique_ptr<RowReader::DecodingState>&) const override;
 };
 
 } // OneD
