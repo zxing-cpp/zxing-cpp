@@ -543,13 +543,13 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 25, 25, 180 },
 		});
 
-		runTests("pdf417-3", "PDF_417", 19, {
-			{ 19, 19, 0   },
-			{ 19, 19, 180 },
+		runTests("pdf417-3", "PDF_417", 16, {
+			{ 16, 16, 0   },
+			{ 16, 16, 180 },
 		});
 
-		runPdf417StructuredAppendTest("pdf417-4", "PDF_417", 3, {
-			{ 3, 3, 0   },
+		runPdf417StructuredAppendTest("pdf417-4", "PDF_417", 2, {
+			{ 2, 2, 0   },
 		});
 
 		runTests("falsepositives-1", "NONE", 24, {

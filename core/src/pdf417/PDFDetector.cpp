@@ -246,8 +246,13 @@ static std::array<Nullable<ResultPoint>, 8> FindVertices(const BitMatrix& matrix
 	if (result[4] != nullptr) {
 		startColumn = static_cast<int>(result[4].value().x());
 		startRow = static_cast<int>(result[4].value().y());
+#if 1 // 2x speed improvement for images with no PDF417 symbol by not looking for symbols without start guard (which are not conforming to spec anyway)
+		CopyToResult(result, FindRowsWithPattern(matrix, height, width, startRow, startColumn, STOP_PATTERN, tmp), INDEXES_STOP_PATTERN);
+	}
+#else
 	}
 	CopyToResult(result, FindRowsWithPattern(matrix, height, width, startRow, startColumn, STOP_PATTERN, tmp), INDEXES_STOP_PATTERN);
+#endif
 	return result;
 }
 
