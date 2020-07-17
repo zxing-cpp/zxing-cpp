@@ -48,7 +48,7 @@ static const int MAX_PATTERN_DRIFT = 5;
 static const int SKIPPED_ROW_COUNT_MAX = 25;
 // A PDF471 barcode should have at least 3 rows, with each row being >= 3 times the module width. Therefore it should be at least
 // 9 pixels tall. To be conservative, we use about half the size to ensure we don't miss it.
-static const int ROW_STEP = 5;
+static const int ROW_STEP = 8; // used to be 5, but 8 is enough for conforming symbols
 static const int BARCODE_MIN_HEIGHT = 10;
 
 /**
@@ -326,10 +326,6 @@ static std::list<std::array<Nullable<ResultPoint>, 8>> DetectBarcode(const BitMa
 DecodeStatus
 Detector::Detect(const BinaryBitmap& image, bool multiple, Result& result)
 {
-	// TODO detection improvement, tryHarder could try several different luminance thresholds/blackpoints or even 
-	// different binarizers
-	//boolean tryHarder = hints != null && hints.containsKey(DecodeHintType.TRY_HARDER);
-
 	auto binImg = image.getBlackMatrix();
 	if (binImg == nullptr) {
 		return DecodeStatus::NotFound;
