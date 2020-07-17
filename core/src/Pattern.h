@@ -219,8 +219,8 @@ PatternView FindLeftGuard(const PatternView& view, int minSize, Pred isGuard)
 		return window;
 	for (auto end = view.end() - minSize; window.data() < end; window.skipPair())
 		if (isGuard(window, window[-1]))
-			break;
-	return window;
+			return window;
+	return {};
 }
 
 template <int LEN, int SUM, bool IS_SPARCE>
