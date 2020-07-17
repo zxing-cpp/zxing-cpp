@@ -106,8 +106,8 @@ DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, const BinaryBit
 	int width = image.width();
 	int height = image.height();
 
-	int middle = height >> 1;
-	int rowStep = std::max(1, height >> (tryHarder ? 8 : 5));
+	int middle = height / 2;
+	int rowStep = std::max(1, height / (tryHarder ? 256 : 32));
 	int maxLines = tryHarder ?
 		height :	// Look at the whole image, not just the center
 		15;			// 15 rows spaced 1/32 apart is roughly the middle half of the image
@@ -117,11 +117,11 @@ DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, const BinaryBit
 	PatternRow bars;
 	bars.reserve(128); // e.g. EAN-13 has 96 bars
 #endif
-	for (int x = 0; x < maxLines; x++) {
+	for (int i = 0; i < maxLines; i++) {
 
 		// Scanning from the middle out. Determine which row we're looking at next:
-		int rowStepsAboveOrBelow = (x + 1) / 2;
-		bool isAbove = (x & 0x01) == 0; // i.e. is x even?
+		int rowStepsAboveOrBelow = (i + 1) / 2;
+		bool isAbove = (i & 0x01) == 0; // i.e. is x even?
 		int rowNumber = middle + rowStep * (isAbove ? rowStepsAboveOrBelow : -rowStepsAboveOrBelow);
 		if (rowNumber < 0 || rowNumber >= height) {
 			// Oops, if we run off the top or bottom, stop
