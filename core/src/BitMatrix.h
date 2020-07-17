@@ -51,6 +51,8 @@ class BitMatrix
 	int _rowSize = 0;
 #ifdef ZX_FAST_BIT_STORAGE
 	using data_t = uint8_t;
+	static constexpr data_t SET_V = 0xff; // allows playing with SIMD binarization
+	static constexpr data_t UNSET_V = 0;
 #else
 	using data_t = uint32_t;
 #endif
@@ -73,7 +75,9 @@ class BitMatrix
 public:
 	BitMatrix() = default;
 #ifdef ZX_FAST_BIT_STORAGE
-	BitMatrix(int width, int height) : _width(width), _height(height), _rowSize(width), _bits(width * height, 0) {}
+	static bool isSet(data_t v) { return v != 0; } // see SET_V above
+
+	BitMatrix(int width, int height) : _width(width), _height(height), _rowSize(width), _bits(width * height, UNSET_V) {}
 #else
 	BitMatrix(int width, int height) : _width(width), _height(height), _rowSize((width + 31) / 32), _bits(((width + 31) / 32) * _height, 0) {}
 #endif
@@ -99,14 +103,15 @@ public:
 
 #ifdef ZX_FAST_BIT_STORAGE
 	// experimental iterator based access
-	using iterator = data_t*;
+	template<typename iterator>
 	struct Row
 	{
 		iterator _begin, _end;
 		iterator begin() noexcept { return _begin; }
 		iterator end() noexcept { return _end; }
 	};
-	Row row(int y) { return {_bits.data() + y * _width, _bits.data() + (y + 1) * _width}; }
+	Row<data_t*> row(int y) { return {_bits.data() + y * _width, _bits.data() + (y + 1) * _width}; }
+	Row<const data_t*> row(int y) const { return {_bits.data() + y * _width, _bits.data() + (y + 1) * _width}; }
 #endif
 
 	/**
@@ -118,7 +123,7 @@ public:
 	*/
 	bool get(int x, int y) const {
 #ifdef ZX_FAST_BIT_STORAGE
-		return get(y * _width + x) != 0;
+		return isSet(get(y * _width + x));
 #else
 		return ((get(y * _rowSize + (x / 32)) >> (x & 0x1f)) & 1) != 0;
 #endif
@@ -132,7 +137,7 @@ public:
 	*/
 	void set(int x, int y) {
 #ifdef ZX_FAST_BIT_STORAGE
-		get(y * _width + x) = 1;
+		get(y * _width + x) = SET_V;
 #else
 		get(y * _rowSize + (x / 32)) |= 1 << (x & 0x1f);
 #endif
@@ -140,7 +145,7 @@ public:
 
 	void unset(int x, int y) {
 #ifdef ZX_FAST_BIT_STORAGE
-		get(y * _width + x) = 0;
+		get(y * _width + x) = UNSET_V;
 #else
 		get(y * _rowSize + (x / 32)) &= ~(1 << (x & 0x1f));
 #endif
@@ -148,7 +153,7 @@ public:
 
 	void set(int x, int y, bool val) {
 #ifdef ZX_FAST_BIT_STORAGE
-		get(y * _width + x) = val;
+		get(y * _width + x) = val ? SET_V : UNSET_V;
 #else
 		val ? set(x, y) : unset(x, y);
 #endif

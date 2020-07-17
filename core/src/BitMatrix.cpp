@@ -37,7 +37,11 @@ BitMatrix::getRow(int y, BitArray& row) const
 	}
 	if (row.size() != _width)
 		row = BitArray(_width);
+#ifdef ZX_FAST_BIT_STORAGE
+	std::transform(_bits.begin() + y * _rowSize, _bits.begin() + (y + 1) * _rowSize, row._bits.begin(), isSet);
+#else
 	std::copy_n(_bits.begin() + y * _rowSize, _rowSize, row._bits.begin());
+#endif
 }
 
 ByteMatrix BitMatrix::toByteMatrix(int black, int white) const
@@ -67,7 +71,7 @@ BitMatrix::setRegion(int left, int top, int width, int height)
 		size_t offset = y * _rowSize;
 		for (int x = left; x < right; x++) {
 #ifdef ZX_FAST_BIT_STORAGE
-			_bits[offset + x] = 1;
+			_bits[offset + x] = SET_V;
 #else
 			_bits[offset + (x / 32)] |= 1 << (x & 0x1f);
 #endif
@@ -168,10 +172,18 @@ BitMatrix::findBoundingBox(int &left, int& top, int& width, int& height, int min
 	return width >= minSize && height >= minSize;
 }
 
+static auto isSet_ = [](auto v) {
+#ifdef ZX_FAST_BIT_STORAGE
+	return BitMatrix::isSet(v);
+#else
+	return v;
+#endif
+};
+
 bool
 BitMatrix::getTopLeftOnBit(int& left, int& top) const
 {
-	int bitsOffset = std::distance(_bits.begin(), std::find_if(_bits.begin(), _bits.end(), [](auto v) { return v; }));
+	int bitsOffset = std::distance(_bits.begin(), std::find_if(_bits.begin(), _bits.end(), isSet_));
 	if (bitsOffset == (int)_bits.size()) {
 		return false;
 	}
@@ -187,8 +199,7 @@ bool
 BitMatrix::getBottomRightOnBit(int& right, int& bottom) const
 {
 	int bitsOffset =
-		_bits.size() - 1 -
-		std::distance(_bits.rbegin(), std::find_if(_bits.rbegin(), _bits.rend(), [](auto v) { return v; }));
+		_bits.size() - 1 - std::distance(_bits.rbegin(), std::find_if(_bits.rbegin(), _bits.rend(), isSet_));
 	if (bitsOffset < 0) {
 		return false;
 	}
