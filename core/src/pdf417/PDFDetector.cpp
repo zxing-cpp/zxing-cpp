@@ -20,6 +20,7 @@
 #include "DecodeStatus.h"
 #include "BitMatrix.h"
 #include "ZXNullable.h"
+#include "Pattern.h"
 
 #include <algorithm>
 #include <array>
@@ -312,6 +313,27 @@ static std::list<std::array<Nullable<ResultPoint>, 8>> DetectBarcode(const BitMa
 	return barcodeCoordinates;
 }
 
+#ifdef ZX_FAST_BIT_STORAGE
+bool HasStartPattern(const BitMatrix& m)
+{
+	constexpr FixedPattern<8, 17> START_PATTERN = { 8, 1, 1, 1, 1, 1, 1, 3 };
+	constexpr int minSymbolWidth = 3*8+1; // compact symbol
+
+	PatternRow row;
+
+	for (int r = ROW_STEP; r < m.height(); r += ROW_STEP) {
+		m.getPatternRow(r, row);
+
+		if (FindLeftGuard(row, minSymbolWidth, START_PATTERN, 2).isValid())
+			return true;
+		std::reverse(row.begin(), row.end());
+		if (FindLeftGuard(row, minSymbolWidth, START_PATTERN, 2).isValid())
+			return true;
+	}
+
+	return false;
+}
+#endif
 
 /**
 * <p>Detects a PDF417 Code in an image. Only checks 0 and 180 degree rotations.</p>
@@ -330,6 +352,11 @@ Detector::Detect(const BinaryBitmap& image, bool multiple, Result& result)
 	if (binImg == nullptr) {
 		return DecodeStatus::NotFound;
 	}
+
+#if defined(ZX_USE_NEW_ROW_READERS) && defined(ZX_FAST_BIT_STORAGE)
+	if (!HasStartPattern(*binImg))
+		return DecodeStatus::NotFound;
+#endif
 
 	auto barcodeCoordinates = DetectBarcode(*binImg, multiple);
 	if (barcodeCoordinates.empty()) {
