@@ -18,6 +18,7 @@
 #include "BitMatrix.h"
 #include "BitArray.h"
 #include "ByteMatrix.h"
+#include "Pattern.h"
 
 #ifndef ZX_FAST_BIT_STORAGE
 #include "BitHacks.h"
@@ -211,6 +212,50 @@ BitMatrix::getBottomRightOnBit(int& right, int& bottom) const
 #endif
 	return true;
 }
+
+#ifdef ZX_FAST_BIT_STORAGE
+void BitMatrix::getPatternRow(int r, PatternRow& p_row) const
+{
+	auto b_row = row(r);
+#if 0
+	p_row.reserve(64);
+	p_row.clear();
+
+	auto* lastPos = b_row.begin();
+	if (BitMatrix::isSet(*lastPos))
+		p_row.push_back(0); // first value is number of white pixels, here 0
+
+	for (auto* p = b_row.begin() + 1; p < b_row.end(); ++p)
+		if (bool(*p) != bool(*lastPos))
+			p_row.push_back(p - std::exchange(lastPos, p));
+
+	p_row.push_back(b_row.end() - lastPos);
+
+	if (BitMatrix::isSet(*lastPos))
+		p_row.push_back(0); // last value is number of white pixels, here 0
+#else
+	p_row.resize(width() + 2);
+	std::fill(p_row.begin(), p_row.end(), 0);
+
+	auto* bitPos = b_row.begin();
+	auto* intPos = p_row.data();
+
+	if (BitMatrix::isSet(*bitPos))
+		intPos++; // first value is number of white pixels, here 0
+
+	for (++bitPos; bitPos < b_row.end(); ++bitPos) {
+		++(*intPos);
+		intPos += bitPos[0] != bitPos[-1];
+	}
+	++(*intPos);
+
+	if (BitMatrix::isSet(bitPos[-1]))
+		intPos++;
+
+	p_row.resize(intPos - p_row.data() + 1);
+#endif
+}
+#endif
 
 BitMatrix Inflate(BitMatrix&& input, int width, int height, int quietZone)
 {

@@ -235,6 +235,10 @@ public:
 
 	bool getBottomRightOnBit(int &right, int& bottom) const;
 
+#ifdef ZX_FAST_BIT_STORAGE
+	void getPatternRow(int r, std::vector<uint16_t>& p_row) const;
+#endif
+
 	/**
 	* @return The width of the matrix
 	*/
