@@ -214,6 +214,9 @@ BitMatrix::getBottomRightOnBit(int& right, int& bottom) const
 }
 
 #ifdef ZX_FAST_BIT_STORAGE
+constexpr BitMatrix::data_t BitMatrix::SET_V;
+constexpr BitMatrix::data_t BitMatrix::UNSET_V;
+
 void BitMatrix::getPatternRow(int r, PatternRow& p_row) const
 {
 	auto b_row = row(r);

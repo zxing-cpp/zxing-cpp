@@ -51,6 +51,7 @@ class BitMatrix
 	int _rowSize = 0;
 #ifdef ZX_FAST_BIT_STORAGE
 	using data_t = uint8_t;
+	//TODO: c++17 inline
 	static constexpr data_t SET_V = 0xff; // allows playing with SIMD binarization
 	static constexpr data_t UNSET_V = 0;
 #else
