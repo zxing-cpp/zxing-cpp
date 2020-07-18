@@ -16,9 +16,9 @@
 * limitations under the License.
 */
 
-//#ifndef NDEBUG
+#ifndef NDEBUG
 //#define PRINT_DEBUG
-//#endif
+#endif
 
 #include "DMDetector.h"
 #include "BitMatrix.h"
@@ -29,11 +29,8 @@
 #include "WhiteRectDetector.h"
 
 #ifdef PRINT_DEBUG
-#include "Matrix.h"
 #include "BitMatrixIO.h"
-#include <cstdint>
-using LogBuffer = ZXing::Matrix<uint8_t>;
-static LogBuffer _log;
+#include "LogMatrix.h"
 #endif
 
 #include <algorithm>
@@ -47,6 +44,13 @@ static LogBuffer _log;
 #include <vector>
 
 namespace ZXing {
+
+#ifdef PRINT_DEBUG
+static LogMatrix log;
+#else
+void log(PointI, int = 0) {}
+#endif
+
 namespace DataMatrix {
 
 /**
@@ -637,18 +641,6 @@ class EdgeTracer
 	}
 
 public:
-#ifdef PRINT_DEBUG
-	void log(const PointI& p) const
-	{
-		if (_log.height() != image.height() || _log.width() != image.width())
-			_log = LogBuffer(image.width(), image.height());
-		if (isIn(p))
-			_log.set(p.x, p.y, 1);
-	}
-#else
-	void log(const PointI&) const {}
-#endif
-
 	EdgeTracer(const BitMatrix& img, PointF p, PointF d) : image(img), p(p), d(d) {}
 	EdgeTracer& operator=(const EdgeTracer& other)
 	{
@@ -791,38 +783,6 @@ public:
 	}
 };
 
-#ifdef PRINT_DEBUG
-
-static void log(const std::vector<PointI>& points, int color = 2)
-{
-	for (auto p : points)
-		_log.set(p.x, p.y, color);
-}
-
-static void dumpDebugPPM(const BitMatrix& image, const char* fn )
-{
-	FILE *f = fopen(fn, "wb");
-
-	// Write PPM header, P5 == grey, P6 == rgb
-	fprintf(f, "P6\n%d %d\n255\n", image.width(), image.height());
-
-	// Write pixels
-	for (int y = 0; y < image.height(); ++y)
-		for (int x = 0; x < image.width(); ++x) {
-			unsigned char r, g, b;
-			r = g = b = image.get(x, y) ? 0 : 255;
-			switch (_log.get(x, y)) {
-			case 1: r = g = b = r ? 230 : 50; break;
-			case 2: r = b = 50, g = 220; break;
-			case 3: g = r = 100, b = 250; break;
-			}
-			fwrite(&r, 1, 1, f);
-			fwrite(&g, 1, 1, f);
-			fwrite(&b, 1, 1, f);
-		}
-	fclose(f);
-}
-#endif
 
 static DetectorResult SampleGrid(const BitMatrix& image, PointF tl, PointF bl, PointF br, PointF tr, int width, int height)
 {
@@ -851,7 +811,12 @@ static DetectorResult SampleGrid(const BitMatrix& image, PointF tl, PointF bl, P
 static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 {
 	// walk to the left at first
-	for (auto startDirection : {PointF(-1, 0), PointF(1, 0), PointF(0, -1), PointF(0, 1)}) {
+#ifdef PRINT_DEBUG
+	log.init(&image);
+	for (auto startDirection : {PointF(-1, 0)}) {
+#else
+	for (auto startDirection : {PointF(-1, 0), PointF(-1, 0), PointF(1, 0), PointF(0, -1), PointF(0, 1)}) {
+#endif
 		EdgeTracer startTracer(image, PointF(image.width()/2, image.height()/2), startDirection);
 		while (startTracer.step()) {
 			// go forward until we reach a white/black border
@@ -982,12 +947,14 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 
 #ifdef PRINT_DEBUG
 			printf("modules top: %d, right: %d\n", dimT, dimR);
-			printf("%s", ToString(bits).c_str());
+			printf("%s", ToString(res.bits()).c_str());
 
 			for (RegressionLine* l : {&lineL, &lineB, &lineT, &lineR})
 				log(l->points());
 
-			dumpDebugPPM(image, "binary.pnm");
+			log(theGrid, 3);
+
+			log.write("log.pnm");
 #endif
 
 			if (!res.isValid())
@@ -1003,7 +970,7 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 	}
 
 #ifdef PRINT_DEBUG
-	dumpDebugPPM(image, "binary.pnm");
+	log.write("log.pnm");
 #endif
 
 	return {};

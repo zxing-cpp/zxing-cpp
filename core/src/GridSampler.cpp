@@ -20,8 +20,16 @@
 
 namespace ZXing {
 
+#ifndef NDEBUG
+std::vector<PointI> theGrid;
+#endif
+
 DetectorResult SampleGrid(const BitMatrix& image, int width, int height, const PerspectiveTransform& transform)
 {
+#ifndef NDEBUG
+	theGrid.clear();
+	theGrid.reserve(width * height);
+#endif
 	auto project = [&](PointI p) { return PointI(transform(p + PointF(0.5, 0.5))); };
 	auto isInside = [&](PointI p) {
 		p = project(p);
@@ -36,6 +44,9 @@ DetectorResult SampleGrid(const BitMatrix& image, int width, int height, const P
 	for (int y = 0; y < height; ++y)
 		for (int x = 0; x < width; ++x) {
 			auto p = project({x, y});
+#ifndef NDEBUG
+			theGrid.emplace_back(p);
+#endif
 			if (image.get(p.x, p.y))
 				res.set(x, y);
 		}
