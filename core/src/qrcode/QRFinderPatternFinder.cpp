@@ -41,7 +41,10 @@ using StateCount = std::array<int, 5>;
 */
 static float CenterFromEnd(const StateCount& stateCount, int end)
 {
-	return end - stateCount[4] - stateCount[3] - stateCount[2] / 2.f;
+	float a = stateCount[4] + stateCount[3] + stateCount[2] / 2.f;
+	float b = stateCount[4] + (stateCount[3] + stateCount[2] + stateCount[1]) / 2.f;
+	float c = (stateCount[4] + stateCount[3] + stateCount[2] + stateCount[1] + stateCount[0]) / 2.f;
+	return end - (2 * a + b + c) / 4;
 }
 
 /**
@@ -345,14 +348,15 @@ static bool HandlePossibleCenter(const BitMatrix& image, const StateCount& state
 {
 	int stateCountTotal = Reduce(stateCount);
 	float centerJ = CenterFromEnd(stateCount, j);
-	float centerI = CrossCheckVertical(image, i, static_cast<int>(centerJ), stateCount[2], stateCountTotal);
+	constexpr auto off = 0.49f;
+	float centerI = CrossCheckVertical(image, i, static_cast<int>(centerJ + off), stateCount[2], stateCountTotal);
 	if (std::isnan(centerI))
 		return false;
 
 	// Re-cross check
-	centerJ = CrossCheckHorizontal(image, static_cast<int>(centerJ), static_cast<int>(centerI), stateCount[2],
+	centerJ = CrossCheckHorizontal(image, static_cast<int>(centerJ + off), static_cast<int>(centerI + off), stateCount[2],
 								   stateCountTotal);
-	if (std::isnan(centerJ) || !CrossCheckDiagonal(image, (int)centerI, (int)centerJ))
+	if (std::isnan(centerJ) || !CrossCheckDiagonal(image, static_cast<int>(centerI + off), static_cast<int>(centerJ + off)))
 		return false;
 
 	float estimatedModuleSize = stateCountTotal / 7.0f;

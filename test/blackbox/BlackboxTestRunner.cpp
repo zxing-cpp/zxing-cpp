@@ -493,25 +493,25 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		});
 
 		runTests("qrcode-2", "QR_CODE", 34, {
-			{ 31, 31, 0   },
-			{ 30, 30, 90  },
-			{ 30, 30, 180 },
-			{ 30, 30, 270 },
+			{ 32, 32, 0   },
+			{ 31, 31, 90  },
+			{ 31, 31, 180 },
+			{ 31, 31, 270 },
 			{ 9, 0, pure },
 		});
 
 		runTests("qrcode-3", "QR_CODE", 42, {
 			{ 38, 38, 0   },
 			{ 39, 39, 90  },
-			{ 36, 36, 180 },
-			{ 39, 39, 270 },
+			{ 38, 38, 180 },
+			{ 38, 38, 270 },
 		});
 
 		runTests("qrcode-4", "QR_CODE", 48, {
 			{ 36, 36, 0   },
-			{ 35, 35, 90  },
-			{ 35, 35, 180 },
-			{ 35, 35, 270 },
+			{ 36, 36, 90  },
+			{ 36, 36, 180 },
+			{ 36, 36, 270 },
 		});
 
 		runTests("qrcode-5", "QR_CODE", 19, {
@@ -524,9 +524,9 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 
 		runTests("qrcode-6", "QR_CODE", 15, {
 			{ 15, 15, 0   },
-			{ 14, 14, 90  },
-			{ 13, 13, 180 },
-			{ 14, 14, 270 },
+			{ 15, 15, 90  },
+			{ 15, 15, 180 },
+			{ 15, 15, 270 },
 		});
 
 		runQRCodeStructuredAppendTest("qrcode-7", "QR_CODE", 1, {
