@@ -568,12 +568,6 @@ class EdgeTracer
 	PointI p; // current position
 	PointF d; // current direction
 
-	static PointF mainDirection(PointF d)
-	{
-		assert(std::abs(d.x) != std::abs(d.y));
-		return std::abs(d.x) > std::abs(d.y) ? PointF(d.x, 0) : PointF(0, d.y);
-	}
-
 	enum class StepResult { FOUND, OPEN_END, CLOSED_END };
 
 	bool isIn(PointI p) const
@@ -661,7 +655,7 @@ public:
 		return isIn(p);
 	}
 
-	void setDirection(PointF dir) { d = dir / std::max(std::abs(dir.x), std::abs(dir.y)); }
+	void setDirection(PointF dir) { d = bresenhamDirection(dir); }
 
 	bool updateDirectionFromOrigin(PointF origin)
 	{
@@ -786,10 +780,7 @@ public:
 
 static DetectorResult SampleGrid(const BitMatrix& image, PointF tl, PointF bl, PointF br, PointF tr, int width, int height)
 {
-	auto moveTowardsBy = [](PointF& a, const PointF& b, double d) {
-		auto a2b = normalized(b - a);
-		a = a + d * a2b;
-	};
+	auto moveTowardsBy = [](PointF& a, PointF b, double d) { a = movedTowardsBy(a, b, d); };
 
 	// shrink shape by half a pixel to go from center of white pixel outside of code to the edge between white and black
 	moveTowardsBy(tl, br, 0.5);

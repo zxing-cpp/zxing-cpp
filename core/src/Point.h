@@ -15,6 +15,7 @@
 * limitations under the License.
 */
 
+#include <cassert>
 #include <cmath>
 
 namespace ZXing {
@@ -83,6 +84,12 @@ double distance(PointT<T> a, PointT<T> b)
 }
 
 template <typename T>
+double length(PointT<T> d)
+{
+	return std::sqrt(d * d);
+}
+
+template <typename T>
 double crossProduct(PointT<T> a, PointT<T> b)
 {
 	return a.x * b.y - b.x * a.y;
@@ -94,13 +101,30 @@ using PointF = PointT<double>;
 template <typename T>
 PointF normalized(PointT<T> a)
 {
-	return PointF(a) / distance(a, {});
+	return PointF(a) / length(a);
 }
 
 inline PointI round(PointF p)
 {
 	return PointI(::lround(p.x), ::lround(p.y));
 }
+
+inline PointF bresenhamDirection(PointF d)
+{
+	return d / std::fmax(std::fabs(d.x), std::fabs(d.y));
+}
+
+inline PointF mainDirection(PointF d)
+{
+	assert(std::fabs(d.x) != std::fabs(d.y));
+	return std::fabs(d.x) > std::fabs(d.y) ? PointF(d.x, 0) : PointF(0, d.y);
+}
+
+inline PointF movedTowardsBy(PointF a, PointF b, double d)
+{
+	return a + d * normalized(b - a);
+}
+
 
 } // ZXing
 
