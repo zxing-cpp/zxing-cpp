@@ -541,12 +541,12 @@ public:
 		auto lineLength = distance(beg, end) - unitPixelDist;
 		auto meanGapSize = lineLength / gapSizes.size();
 #ifdef PRINT_DEBUG
-		printf("unit pixel dist: %f\n", unitPixelDist);
-		printf("lineLength: %f, meanGapSize: %f, gaps: %lu\n", lineLength, meanGapSize, gapSizes.size());
+		printf("unit pixel dist: %.1f\n", unitPixelDist);
+		printf("lineLength: %.1f, meanGapSize: %.1f, gaps: %lu\n", lineLength, meanGapSize, gapSizes.size());
 #endif
 		meanGapSize = average(gapSizes, [&](double dist){ return std::abs(dist - meanGapSize) < meanGapSize/2; });
 #ifdef PRINT_DEBUG
-		printf("lineLength: %f, meanGapSize: %f, gaps: %lu\n", lineLength, meanGapSize, gapSizes.size());
+		printf("lineLength: %.1f, meanGapSize: %.1f, gaps: %lu\n", lineLength, meanGapSize, gapSizes.size());
 #endif
 		return lineLength / meanGapSize;
 	}
@@ -903,7 +903,7 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 				continue;
 
 #ifdef PRINT_DEBUG
-			printf("L: %f, %f ^ %f, %f > %f, %f (%d : %d : %d : %d)\n", bl.x, bl.y,
+			printf("L: %.1f, %.1f ^ %.1f, %.1f > %.1f, %.1f (%d : %d : %d : %d)\n", bl.x, bl.y,
 			       tl.x - bl.x, tl.y - bl.y, br.x - bl.x, br.y - bl.y, (int)lenL, (int)lenB, (int)lenT, (int)lenR);
 #endif
 
@@ -926,7 +926,7 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 			splitDouble(lineR.modules(br, tr), &dimR, &fracR);
 
 #ifdef PRINT_DEBUG
-			printf("L: %f, %f ^ %f, %f > %f, %f ^> %f, %f\n", bl.x, bl.y,
+			printf("L: %.1f, %.1f ^ %.1f, %.1f > %.1f, %.1f ^> %.1f, %.1f\n", bl.x, bl.y,
 			       tl.x - bl.x, tl.y - bl.y, br.x - bl.x, br.y - bl.y, tr.x, tr.y);
 			printf("dim: %d x %d\n", dimT, dimR);
 #endif
