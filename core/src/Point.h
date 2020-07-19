@@ -109,6 +109,11 @@ inline PointI round(PointF p)
 	return PointI(::lround(p.x), ::lround(p.y));
 }
 
+inline PointI round(PointI p)
+{
+	return p;
+}
+
 inline PointF bresenhamDirection(PointF d)
 {
 	return d / std::fmax(std::fabs(d.x), std::fabs(d.y));
@@ -125,6 +130,15 @@ inline PointF movedTowardsBy(PointF a, PointF b, double d)
 	return a + d * normalized(b - a);
 }
 
+inline void moveBy(PointI& p, PointF d)
+{
+	p = p + round(d);
+}
+
+inline void moveBy(PointF& p, PointF d)
+{
+	p = p + d;
+}
 
 } // ZXing
 

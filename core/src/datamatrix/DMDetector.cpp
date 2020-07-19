@@ -562,54 +562,9 @@ PointF intersect(const RegressionLine& l1, const RegressionLine& l2)
 	return {x, y};
 }
 
-struct BitMatrixAccessor
+class EdgeTracer : public BitMatrixCursor<PointI>
 {
-	const BitMatrix* image;
-
-	BitMatrixAccessor(const BitMatrix& image) : image(&image) {}
-
-	bool isIn(PointI p) const
-	{
-		const int b = 0;
-		return b <= p.x && p.x < image->width()-b &&
-			   b <= p.y && p.y < image->height()-b;
-	}
-	bool isIn(PointF p) const { return isIn(round(p)); }
-
-	class Value
-	{
-		enum { INVALID, WHITE, BLACK };
-		int v = INVALID;
-	public:
-		Value() = default;
-		Value(bool isBlack) : v(isBlack ? BLACK : WHITE) {}
-		bool isValid() const { return v != INVALID; }
-		bool isWhite() const { return v == WHITE; }
-		bool isBlack() const { return v == BLACK; }
-	};
-
-	Value getAt(PointF p) const
-	{
-		auto q = round(p);
-		if (!isIn(q))
-			return {};
-		return {image->get(q.x, q.y)};
-	}
-
-	bool blackAt(PointF p) const { return getAt(p).isBlack(); }
-	bool whiteAt(PointF p) const { return getAt(p).isWhite(); }
-	bool isEdge(PointF pos, PointF dir) const { return whiteAt(pos) && blackAt(pos + dir); }
-};
-
-class EdgeTracer : BitMatrixAccessor
-{
-	PointI p; // current position
-	PointF d; // current direction
-
 	enum class StepResult { FOUND, OPEN_END, CLOSED_END };
-
-	using BitMatrixAccessor::isIn;
-	bool isIn() const { return isIn(p); }
 
 	StepResult traceStep(PointF dEdge, int maxStepSize, bool goodDirection)
 	{
@@ -643,16 +598,7 @@ class EdgeTracer : BitMatrixAccessor
 	}
 
 public:
-	EdgeTracer(const BitMatrix& img, PointI p, PointF d) : BitMatrixAccessor(img), p(p), d(d) {}
-
-	bool step(int s = 1)
-	{
-		p = round(p + s * d);
-		log(p);
-		return isIn(p);
-	}
-
-	void setDirection(PointF dir) { d = bresenhamDirection(dir); }
+	using BitMatrixCursor<PointI>::BitMatrixCursor;
 
 	bool updateDirectionFromOrigin(PointF origin)
 	{
@@ -668,13 +614,6 @@ public:
 			d = mainDirection(old_d) + 0.99 * mainDirection(d);
 		return true;
 	}
-
-	PointF front() const { return d; }
-	PointF back() const { return {-d.x, -d.y}; }
-	PointF right() const { return {-d.y, d.x}; }
-	PointF left() const { return {d.y, -d.x}; }
-
-	bool isEdgeBehind() const { return isEdge(PointF(p), back()); }
 
 	bool traceLine(PointF dEdge, RegressionLine& line)
 	{
@@ -764,6 +703,7 @@ public:
 	bool traceCorner(PointF dir, PointF& corner)
 	{
 		step();
+		log(p);
 		corner = PointF(p);
 		std::swap(d, dir);
 		traceStep(-1 * dir, 2, false);
@@ -807,6 +747,8 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 #endif
 		EdgeTracer startTracer(image, {image.width()/2, image.height()/2}, startDirection);
 		while (startTracer.step()) {
+			log(startTracer.p);
+
 			// go forward until we reach a white/black border
 			if (!startTracer.isEdgeBehind())
 				continue;

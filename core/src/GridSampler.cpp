@@ -47,7 +47,7 @@ DetectorResult SampleGrid(const BitMatrix& image, int width, int height, const P
 #ifndef NDEBUG
 			theGrid.emplace_back(p);
 #endif
-			if (image.get(p.x, p.y))
+			if (image.get(p))
 				res.set(x, y);
 		}
 	auto projectCorner = [&](PointI p) { return PointI(transform(PointF(p)) + PointF(0.5, 0.5)); };

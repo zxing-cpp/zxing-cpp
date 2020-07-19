@@ -16,13 +16,14 @@
 * limitations under the License.
 */
 
+#include "Matrix.h"
+#include "Point.h"
+#include "ZXConfig.h"
+
 #include <algorithm>
 #include <cstdint>
 #include <utility>
 #include <vector>
-
-#include "Matrix.h"
-#include "ZXConfig.h"
 
 namespace ZXing {
 
@@ -268,6 +269,80 @@ public:
 	friend bool operator==(const BitMatrix& a, const BitMatrix& b)
 	{
 		return a._width == b._width && a._height == b._height && a._rowSize == b._rowSize && a._bits == b._bits;
+	}
+
+	bool isIn(PointI p, int b = 0) const noexcept
+	{
+		return b <= p.x && p.x < width() - b && b <= p.y && p.y < height() - b;
+	}
+	bool isIn(PointF p) const  noexcept { return isIn(round(p)); }
+
+	bool get(PointI p) const { return get(p.x, p.y); }
+	bool get(PointF p) const { return get(round(p)); }
+	void set(PointI p, bool v = true) { set(p.x, p.y, v); }
+	void set(PointF p, bool v = true) { set(round(p), v); }
+
+	class Value
+	{
+		enum { INVALID, WHITE, BLACK };
+		int v = INVALID;
+	public:
+		Value() = default;
+		Value(bool isBlack) : v(isBlack ? BLACK : WHITE) {}
+		bool isValid() const { return v != INVALID; }
+		bool isWhite() const { return v == WHITE; }
+		bool isBlack() const { return v == BLACK; }
+	};
+
+	template <typename T>
+	Value testAt(PointT<T> p) const
+	{
+		auto q = round(p);
+		return isIn(q) ? Value{get(q)} : Value{};
+	}
+
+	template <typename T> bool blackAt(PointT<T> p) const { return testAt(p).isBlack(); }
+	template <typename T> bool whiteAt(PointT<T> p) const { return testAt(p).isWhite(); }
+};
+
+/**
+ * @brief The BitMatrixCursor represents a current position inside an image and durrent direction it can advance towards.
+ *
+ * The current position is PointI or PointF. So depending on the type it will either round its current position after each
+ * step or do a Bresenham traversal through the BitMatrix.
+ */
+template<typename CPOS_T>
+class BitMatrixCursor
+{
+	const BitMatrix* _img;
+
+public:
+	CPOS_T p; // current position
+	PointF d; // current direction
+
+	BitMatrixCursor(const BitMatrix& image, CPOS_T p, PointF d) : _img(&image), p(p), d(d) {}
+
+	bool isIn(PointI p) const noexcept { return _img->isIn(p); }
+	bool isIn(PointF p) const noexcept { return _img->isIn(p); }
+	bool isIn() const noexcept { return isIn(p); }
+	bool isBlack() const noexcept { return blackAt(p); }
+	bool isWhite() const noexcept { return whiteAt(p); }
+
+	PointF front() const noexcept { return d; }
+	PointF back() const noexcept { return {-d.x, -d.y}; }
+	PointF right() const noexcept { return {-d.y, d.x}; }
+	PointF left() const noexcept { return {d.y, -d.x}; }
+
+	bool blackAt(PointF pos) const noexcept { return _img->testAt(pos).isBlack(); }
+	bool whiteAt(PointF pos) const noexcept { return _img->testAt(pos).isWhite(); }
+	bool isEdge(PointF pos, PointF dir) const noexcept { return whiteAt(pos) && blackAt(pos + dir); }
+	bool isEdgeBehind() const noexcept { return isEdge(PointF(p), back()); }
+
+	void setDirection(PointF dir) { d = bresenhamDirection(dir); }
+	bool step(int s = 1)
+	{
+		moveBy(p, s * d);
+		return isIn(p);
 	}
 };
 
