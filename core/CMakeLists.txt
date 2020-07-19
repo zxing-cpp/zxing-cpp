@@ -52,6 +52,7 @@ set (COMMON_FILES
     src/GenericGFPoly.h
     src/GenericGFPoly.cpp
     src/GTIN.h
+    src/LogMatrix.h
     src/Matrix.h
     src/Pattern.h
     src/Point.h
