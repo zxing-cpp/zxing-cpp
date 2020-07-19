@@ -562,22 +562,19 @@ PointF intersect(const RegressionLine& l1, const RegressionLine& l2)
 	return {x, y};
 }
 
-class EdgeTracer
+struct BitMatrixAccessor
 {
-	const BitMatrix& image;
-	PointI p; // current position
-	PointF d; // current direction
+	const BitMatrix* image;
 
-	enum class StepResult { FOUND, OPEN_END, CLOSED_END };
+	BitMatrixAccessor(const BitMatrix& image) : image(&image) {}
 
 	bool isIn(PointI p) const
 	{
 		const int b = 0;
-		return  b <= p.x && p.x < image.width()-b &&
-		        b <= p.y && p.y < image.height()-b;
+		return b <= p.x && p.x < image->width()-b &&
+			   b <= p.y && p.y < image->height()-b;
 	}
 	bool isIn(PointF p) const { return isIn(round(p)); }
-	bool isIn() const { return isIn(p); }
 
 	class Value
 	{
@@ -596,12 +593,23 @@ class EdgeTracer
 		auto q = round(p);
 		if (!isIn(q))
 			return {};
-		return {image.get(q.x, q.y)};
+		return {image->get(q.x, q.y)};
 	}
 
 	bool blackAt(PointF p) const { return getAt(p).isBlack(); }
 	bool whiteAt(PointF p) const { return getAt(p).isWhite(); }
 	bool isEdge(PointF pos, PointF dir) const { return whiteAt(pos) && blackAt(pos + dir); }
+};
+
+class EdgeTracer : BitMatrixAccessor
+{
+	PointI p; // current position
+	PointF d; // current direction
+
+	enum class StepResult { FOUND, OPEN_END, CLOSED_END };
+
+	using BitMatrixAccessor::isIn;
+	bool isIn() const { return isIn(p); }
 
 	StepResult traceStep(PointF dEdge, int maxStepSize, bool goodDirection)
 	{
@@ -635,18 +643,7 @@ class EdgeTracer
 	}
 
 public:
-	EdgeTracer(const BitMatrix& img, PointF p, PointF d) : image(img), p(p), d(d) {}
-	EdgeTracer& operator=(const EdgeTracer& other)
-	{
-		assert(&image == &other.image);
-		p = other.p;
-		d = other.d;
-		return *this;
-	}
-	EdgeTracer(const EdgeTracer&) = default;
-	~EdgeTracer() = default;
-	EdgeTracer(EdgeTracer&&) noexcept(true) = default;
-	EdgeTracer& operator=(EdgeTracer&&) = default;
+	EdgeTracer(const BitMatrix& img, PointI p, PointF d) : BitMatrixAccessor(img), p(p), d(d) {}
 
 	bool step(int s = 1)
 	{
@@ -808,7 +805,7 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 #else
 	for (auto startDirection : {PointF(-1, 0), PointF(-1, 0), PointF(1, 0), PointF(0, -1), PointF(0, 1)}) {
 #endif
-		EdgeTracer startTracer(image, PointF(image.width()/2, image.height()/2), startDirection);
+		EdgeTracer startTracer(image, {image.width()/2, image.height()/2}, startDirection);
 		while (startTracer.step()) {
 			// go forward until we reach a white/black border
 			if (!startTracer.isEdgeBehind())
