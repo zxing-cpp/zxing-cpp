@@ -70,27 +70,26 @@ PointT<T> operator/(const PointT<T>& a, U d)
 	return {a.x / d, a.y / d};
 }
 
-template <typename T, typename U>
-double operator*(const PointT<T>& a, const PointT<U>& b)
+template <typename T>
+double length(PointT<T> d)
 {
-	return double(a.x) * b.x + a.y * b.y;
+	return std::sqrt(dot(d, d));
 }
 
 template <typename T>
 double distance(PointT<T> a, PointT<T> b)
 {
-	auto d = a - b;
-	return std::sqrt(d * d);
+	return length(a - b);
 }
 
-template <typename T>
-double length(PointT<T> d)
+template <typename T, typename U>
+double dot(const PointT<T>& a, const PointT<U>& b)
 {
-	return std::sqrt(d * d);
+	return double(a.x) * b.x + a.y * b.y;
 }
 
 template <typename T>
-double crossProduct(PointT<T> a, PointT<T> b)
+double cross(PointT<T> a, PointT<T> b)
 {
 	return a.x * b.y - b.x * a.y;
 }

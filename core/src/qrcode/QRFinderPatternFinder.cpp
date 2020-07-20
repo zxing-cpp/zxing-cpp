@@ -422,7 +422,7 @@ static FinderPatternInfo SelectBestPatterns(std::vector<FinderPattern> possibleC
 	std::array<FinderPattern, 3> bestPatterns;
 	std::array<double, 3> squares;
 
-	auto squaredDistance = [](PointF a, PointF b) { return (a - b) * (a - b); };
+	auto squaredDistance = [](PointF a, PointF b) { return dot((a - b), (a - b)); };
 
 	for (int i = 0; i < nbPossibleCenters - 2; i++) {
 		auto& fpi = possibleCenters[i];
@@ -484,7 +484,7 @@ static FinderPatternInfo SelectBestPatterns(std::vector<FinderPattern> possibleC
 	// This asks whether BC x BA has a positive z component, which is the arrangement
 	// we want for A, B, C. If it's negative, then we've got it flipped around and
 	// should swap A and C.
-	if (crossProduct(c - b, a - b) < 0) {
+	if (cross(c - b, a - b) < 0) {
 		std::swap(a, c);
 	}
 

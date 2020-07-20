@@ -71,9 +71,9 @@ PerspectiveTransform PerspectiveTransform::UnitSquareTo(const QuadrilateralF& q)
 	} else {
 		auto d1 = q[1] - q[2];
 		auto d2 = q[3] - q[2];
-		auto denominator = crossProduct(d1, d2);
-		auto a13 = crossProduct(d3, d2) / denominator;
-		auto a23 = crossProduct(d1, d3) / denominator;
+		auto denominator = cross(d1, d2);
+		auto a13 = cross(d3, d2) / denominator;
+		auto a23 = cross(d1, d3) / denominator;
 		return {x1 - x0 + a13 * x1, x3 - x0 + a23 * x3, x0,
 				y1 - y0 + a13 * y1, y3 - y0 + a23 * y3, y0,
 				a13, a23, 1.0f};

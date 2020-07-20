@@ -78,7 +78,7 @@ bool IsConvex(const Quadrilateral<PointT>& poly)
 	{
 		auto d1 = poly[(i + 2) % N] - poly[(i + 1) % N];
 		auto d2 = poly[i] - poly[(i + 1) % N];
-		auto cp = crossProduct(d1, d2);
+		auto cp = cross(d1, d2);
 
 		if (i == 0)
 			sign = cp > 0;

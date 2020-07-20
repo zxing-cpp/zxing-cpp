@@ -448,12 +448,12 @@ class RegressionLine
 			a = +sumXY / std::sqrt(sumXX * sumXX + sumXY * sumXY);
 			b = -sumXX / std::sqrt(sumXX * sumXX + sumXY * sumXY);
 		}
-		if (_directionInward * normal() < 0) {
+		if (dot(_directionInward, normal()) < 0) {
 			a = -a;
 			b = -b;
 		}
-		c = normal() * mean; // (a*mean.x + b*mean.y);
-		return _directionInward * normal() > 0.5; // angle between original and new direction is at most 60 degree
+		c = dot(normal(), mean); // (a*mean.x + b*mean.y);
+		return dot(_directionInward, normal()) > 0.5; // angle between original and new direction is at most 60 degree
 	}
 
 	template <typename Container, typename Filter>
@@ -474,7 +474,7 @@ public:
 	int length() const { return _points.size() >= 2 ? int(distance(_points.front(), _points.back())) : 0; }
 	bool isValid() const { return !std::isnan(a); }
 	PointF normal() const { return isValid() ? PointF(a, b) : _directionInward; }
-	double signedDistance(PointI p) const { return normal() * p - c; }
+	double signedDistance(PointI p) const { return dot(normal(), p) - c; }
 	PointF project(PointI p) const { return p - signedDistance(p) * normal(); }
 
 	void reverse() { std::reverse(_points.begin(), _points.end()); }
@@ -483,7 +483,7 @@ public:
 		assert(_directionInward != PointF());
 		_points.push_back(p);
 		if (_points.size() == 1)
-			c = normal() * p;
+			c = dot(normal(), p);
 	}
 
 	void pop_back() { _points.pop_back(); }
@@ -605,7 +605,7 @@ public:
 		auto old_d = d;
 		setDirection(p - origin);
 		// if the new direction is pointing "backward", i.e. angle(new, old) > 90 deg -> break
-		if (d * old_d < 0)
+		if (dot(d, old_d) < 0)
 			return false;
 		// make sure d stays in the same quadrant to prevent an infinite loop
 		if (std::abs(d.x) == std::abs(d.y))
@@ -651,7 +651,7 @@ public:
 				// In case the 'go outward' step in traceStep lead us astray, we might end up with a line
 				// that is almost perpendicular to d. Then the back-projection below can result in an
 				// endless loop. Break if the angle between d and line is greater than 45 deg.
-				if (std::abs(normalized(d) * line.normal()) > 0.7) // thresh is approx. sin(45 deg)
+				if (std::abs(dot(normalized(d), line.normal())) > 0.7) // thresh is approx. sin(45 deg)
 					return false;
 
 				auto np = line.project(p);
@@ -663,7 +663,7 @@ public:
 				p = round(np);
 			}
 			else {
-				auto stepLengthInMainDir = line.points().empty() ? 0.0 : mainDirection(d) * (p - line.points().back());
+				auto stepLengthInMainDir = line.points().empty() ? 0.0 : dot(mainDirection(d), (p - line.points().back()));
 				line.add(p);
 
 				if (stepLengthInMainDir > 1) {
