@@ -745,7 +745,10 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 #else
 	for (auto startDirection : {PointF(-1, 0), PointF(-1, 0), PointF(1, 0), PointF(0, -1), PointF(0, 1)}) {
 #endif
-		EdgeTracer startTracer(image, {image.width()/2, image.height()/2}, startDirection);
+		// TODO: If neither the horizontal nor the vertical center line cross the symbol, it will be overlooked.
+		// Will need to look at more lines.
+		auto center = PointI(image.width()/2, image.height()/2);
+		EdgeTracer startTracer(image, center - center * PointI(startDirection), startDirection);
 		while (startTracer.step()) {
 			log(startTracer.p);
 
