@@ -48,7 +48,7 @@ namespace ZXing {
 #ifdef PRINT_DEBUG
 static LogMatrix log;
 #else
-void log(PointI, int = 0) {}
+template<typename T> void log(PointT<T>, int = 0) {}
 #endif
 
 namespace DataMatrix {
@@ -573,7 +573,7 @@ class EdgeTracer : public BitMatrixCursor<PointI>
 			for (int step = 1; step <= maxStepSize; ++step)
 				for (int i = 0; i <= 2*(step/4+1) * breadth; ++i) {
 					auto pEdge = p + step * d + (i&1 ? (i+1)/2 : -i/2) * dEdge;
-					log(round(pEdge));
+					log(pEdge);
 
 					if (!blackAt(pEdge + dEdge))
 						continue;
@@ -589,7 +589,7 @@ class EdgeTracer : public BitMatrixCursor<PointI>
 						pEdge = pEdge - dEdge;
 						if (blackAt(pEdge - d))
 							pEdge = pEdge - d;
-						log(round(pEdge));
+						log(pEdge);
 					}
 					// no valid b/w border found within reasonable range
 					return StepResult::CLOSED_END;

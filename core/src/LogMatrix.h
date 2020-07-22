@@ -68,8 +68,10 @@ public:
 		if (0 <= p.x && 0 <= p.y && p.x < _log.width() && p.y < _log.height())
 			_log.set(p.x, p.y, color);
 	}
+	void operator()(const PointF& p, int color = 1) { operator()(PointI(p), color); }
 
-	void operator()(const std::vector<PointI>& points, int color = 2)
+	template <typename T>
+	void operator()(const std::vector<PointT<T>>& points, int color = 2)
 	{
 		for (auto p : points)
 			operator()(p, color);
