@@ -296,6 +296,13 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{  0, 18, 270 },
 		});
 
+		runTests("datamatrix-3", "DATA_MATRIX", 19, {
+			{ 18, 19, 0   },
+			{  0, 19, 90  },
+			{  0, 18, 180 }, // 1 fail because of a different binarizer output
+			{  0, 19, 270 },
+		});
+
 		runTests("codabar-1", "CODABAR", 11, {
 #ifdef ZX_USE_NEW_ROW_READERS
 			{ 11, 11, 0   },
