@@ -232,7 +232,11 @@ public:
 	*/
 	void set(int i) {
 #ifdef ZX_FAST_BIT_STORAGE
+#if 0
+		_bits[i] = 1;
+#else
 		_bits.at(i) = 1;
+#endif
 #else
 		_bits.at(i >> 5) |= 1 << (i & 0x1F);
 #endif
