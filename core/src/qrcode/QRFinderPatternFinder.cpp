@@ -31,7 +31,7 @@ namespace QRCode {
 
 static const int CENTER_QUORUM = 2;
 static const int MIN_SKIP = 3; // 1 pixel/module times 3 modules/center
-static const int MAX_MODULES = 97; // support up to version 20 for mobile clients
+static const int MAX_MODULES = 20 * 4 + 17; // support up to version 20 for mobile clients
 
 using StateCount = std::array<int, 5>;
 
@@ -339,34 +339,34 @@ static int FindRowSkip(const std::vector<FinderPattern>& possibleCenters, bool& 
 * pattern center
 *
 * @param stateCount reading state module counts from horizontal scan
-* @param i row where finder pattern may be found
-* @param j end of possible finder pattern in row
+* @param y row where finder pattern may be found
+* @param x end of possible finder pattern in row
 * @param possibleCenters [in/out] current list of centers to be updated
 * @return true if a finder pattern candidate was found this time
 */
-static bool HandlePossibleCenter(const BitMatrix& image, const StateCount& stateCount, int i, int j, std::vector<FinderPattern>& possibleCenters)
+static bool HandlePossibleCenter(const BitMatrix& image, const StateCount& stateCount, int y, int x, std::vector<FinderPattern>& possibleCenters)
 {
 	int stateCountTotal = Reduce(stateCount);
-	float centerJ = CenterFromEnd(stateCount, j);
+	float centerX = CenterFromEnd(stateCount, x);
 	constexpr auto off = 0.49f;
-	float centerI = CrossCheckVertical(image, i, static_cast<int>(centerJ + off), stateCount[2], stateCountTotal);
-	if (std::isnan(centerI))
+	float centerY = CrossCheckVertical(image, y, static_cast<int>(centerX + off), stateCount[2], stateCountTotal);
+	if (std::isnan(centerY))
 		return false;
 
 	// Re-cross check
-	centerJ = CrossCheckHorizontal(image, static_cast<int>(centerJ + off), static_cast<int>(centerI + off), stateCount[2],
+	centerX = CrossCheckHorizontal(image, static_cast<int>(centerX + off), static_cast<int>(centerY + off), stateCount[2],
 								   stateCountTotal);
-	if (std::isnan(centerJ) || !CrossCheckDiagonal(image, static_cast<int>(centerI + off), static_cast<int>(centerJ + off)))
+	if (std::isnan(centerX) || !CrossCheckDiagonal(image, static_cast<int>(centerY + off), static_cast<int>(centerX + off)))
 		return false;
 
 	float estimatedModuleSize = stateCountTotal / 7.0f;
 	auto center = ZXing::FindIf(possibleCenters, [=](const FinderPattern& center) {
-        return center.aboutEquals(estimatedModuleSize, centerI, centerJ);
+        return center.aboutEquals(estimatedModuleSize, centerY, centerX);
     });
 	if (center != possibleCenters.end())
-		*center = center->combineEstimate(centerI, centerJ, estimatedModuleSize);
+		*center = center->combineEstimate(centerY, centerX, estimatedModuleSize);
 	else
-		possibleCenters.emplace_back(centerJ, centerI, estimatedModuleSize);
+		possibleCenters.emplace_back(centerX, centerY, estimatedModuleSize);
 
 	return true;
 }
