@@ -243,10 +243,9 @@ void BitMatrix::getPatternRow(int r, PatternRow& p_row) const
 	auto* bitPos = b_row.begin();
 	auto* intPos = p_row.data();
 
-	if (BitMatrix::isSet(*bitPos))
-		intPos++; // first value is number of white pixels, here 0
+	intPos += BitMatrix::isSet(*bitPos); // first value is number of white pixels, here 0
 
-	for (++bitPos; bitPos < b_row.end(); ++bitPos) {
+	while (++bitPos < b_row.end()) {
 		++(*intPos);
 		intPos += bitPos[0] != bitPos[-1];
 	}
