@@ -42,7 +42,7 @@ public:
 	void write(const char* fn)
 	{
 		assert(_image);
-
+#ifndef __EMSCRIPTEN_major__
 		FILE* f = fopen(fn, "wb");
 
 		// Write PPM header, P5 == grey, P6 == rgb
@@ -65,6 +65,7 @@ public:
 				fwrite(&b, 1, 1, f);
 			}
 		fclose(f);
+#endif
 	}
 
 	template <typename T>
