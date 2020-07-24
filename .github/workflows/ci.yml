@@ -71,3 +71,8 @@ jobs:
 
 #    - name: Test
 #      run: node build/EmGlueTests.js
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: wasm-artifacts
+        path: *.wasm
