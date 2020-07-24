@@ -29,12 +29,14 @@ class LogMatrix
 	using LogBuffer = Matrix<uint8_t>;
 	LogBuffer _log;
 	const BitMatrix* _image = nullptr;
+	int _scale = 1;
 
 public:
-	void init(const BitMatrix* image_)
+	void init(const BitMatrix* image, int scale = 1)
 	{
-		_image = image_;
-		_log = LogBuffer(_image->width(), _image->height());
+		_image = image;
+		_scale = scale;
+		_log = LogBuffer(_image->width() * _scale, _image->height() * _scale);
 	}
 
 	void write(const char* fn)
@@ -44,15 +46,17 @@ public:
 		FILE* f = fopen(fn, "wb");
 
 		// Write PPM header, P5 == grey, P6 == rgb
-		fprintf(f, "P6\n%d %d\n255\n", _image->width(), _image->height());
+		fprintf(f, "P6\n%d %d\n255\n", _log.width(), _log.height());
 
 		// Write pixels
-		for (int y = 0; y < _image->height(); ++y)
-			for (int x = 0; x < _image->width(); ++x) {
+		for (int y = 0; y < _log.height(); ++y)
+			for (int x = 0; x < _log.width(); ++x) {
 				unsigned char r, g, b;
-				r = g = b = _image->get(x, y) ? 0 : 255;
+				r = g = b = _image->get(x / _scale, y / _scale) ? 0 : 255;
+				if (_scale > 1 && x % _scale == _scale / 2 && y % _scale == _scale / 2)
+					r = g = b = r ? 230 : 50;
 				switch (_log.get(x, y)) {
-				case 1: r = g = b = r ? 230 : 50; break;
+				case 1: r = g = b = _scale > 1 ? 128 : (r ? 230 : 50); break;
 				case 2: r = b = 50, g = 220; break;
 				case 3: g = r = 100, b = 250; break;
 				}
@@ -63,12 +67,12 @@ public:
 		fclose(f);
 	}
 
-	void operator()(const PointI& p, int color = 1)
+	template <typename T>
+	void operator()(const PointT<T>& p, int color = 1)
 	{
-		if (0 <= p.x && 0 <= p.y && p.x < _log.width() && p.y < _log.height())
-			_log.set(p.x, p.y, color);
+		if (_image->isIn(p))
+			_log.set(static_cast<int>(p.x * _scale), static_cast<int>(p.y * _scale), color);
 	}
-	void operator()(const PointF& p, int color = 1) { operator()(PointI(p), color); }
 
 	template <typename T>
 	void operator()(const std::vector<PointT<T>>& points, int color = 2)
@@ -79,7 +83,7 @@ public:
 };
 
 #ifndef NDEBUG
-extern std::vector<PointI> theGrid;
+extern std::vector<PointF> theGrid;
 #endif
 
 } // namespace ZXing

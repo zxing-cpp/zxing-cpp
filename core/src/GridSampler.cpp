@@ -18,10 +18,14 @@
 
 #include "GridSampler.h"
 
+#ifndef NDEBUG
+#include "LogMatrix.h"
+#endif
+
 namespace ZXing {
 
 #ifndef NDEBUG
-std::vector<PointI> theGrid;
+std::vector<PointF> theGrid;
 #endif
 
 DetectorResult SampleGrid(const BitMatrix& image, int width, int height, const PerspectiveTransform& transform)
@@ -29,6 +33,8 @@ DetectorResult SampleGrid(const BitMatrix& image, int width, int height, const P
 #ifndef NDEBUG
 	theGrid.clear();
 	theGrid.reserve(width * height);
+	LogMatrix log;
+	log.init(&image, 5);
 #endif
 	auto project = [&](PointI p) { return PointI(transform(p + PointF(0.5, 0.5))); };
 	auto isInside = [&](PointI p) {
@@ -46,10 +52,15 @@ DetectorResult SampleGrid(const BitMatrix& image, int width, int height, const P
 			auto p = project({x, y});
 #ifndef NDEBUG
 			theGrid.emplace_back(p);
+			log(p, 3);
 #endif
 			if (image.get(p))
 				res.set(x, y);
 		}
+#ifndef NDEBUG
+	log.write("grid.pnm");
+#endif
+
 	auto projectCorner = [&](PointI p) { return PointI(transform(PointF(p)) + PointF(0.5, 0.5)); };
 	return {
 		std::move(res),
