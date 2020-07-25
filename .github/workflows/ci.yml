@@ -75,4 +75,4 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         name: wasm-artifacts
-        path: "**/*.wasm"
+        path: "build/zxing*"
