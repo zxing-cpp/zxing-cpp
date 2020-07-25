@@ -73,6 +73,8 @@ except for specific usecases, you won't notice the difference!
 3. Invoke `cmake --bulid .` to create `zxing.js` and `zxing.wasm` (and `_reader`/`_writer` versions).
 4. Copy these two files to your web folder and create an HTML page that includes `zxing.js`.
 
+You can also download the latest build output from the continuous integration system from the [Actions](https://github.com/nu-book/zxing-cpp/actions) tab. Look for 'wasm-artifacts'.
+
 For usage examples see [reader](wrappers/wasm/demo_reader.html) and [writer](wrappers/wasm/demo_writer.html) demos or the [live demos](https://nu-book.github.io/zxing-cpp/).
 
 ### For other platforms
