@@ -22,6 +22,7 @@
 
 #include "DMDetector.h"
 #include "BitMatrix.h"
+#include "BitMatrixCursor.h"
 #include "DetectorResult.h"
 #include "ResultPoint.h"
 #include "GridSampler.h"
@@ -562,7 +563,7 @@ PointF intersect(const RegressionLine& l1, const RegressionLine& l2)
 	return {x, y};
 }
 
-class EdgeTracer : public BitMatrixCursor<PointF>
+class EdgeTracer : public BitMatrixCursorF
 {
 	enum class StepResult { FOUND, OPEN_END, CLOSED_END };
 
@@ -598,7 +599,7 @@ class EdgeTracer : public BitMatrixCursor<PointF>
 	}
 
 public:
-	using BitMatrixCursor<PointF>::BitMatrixCursor;
+	using BitMatrixCursorF::BitMatrixCursor;
 
 	bool updateDirectionFromOrigin(PointF origin)
 	{

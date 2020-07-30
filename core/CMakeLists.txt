@@ -39,6 +39,7 @@ set (COMMON_FILES
     src/BitHacks.h
     src/BitMatrix.h
     src/BitMatrix.cpp
+    src/BitMatrixCursor.h
     src/BitMatrixIO.h
     src/BitMatrixIO.cpp
     src/ByteArray.h
