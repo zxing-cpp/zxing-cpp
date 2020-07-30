@@ -59,6 +59,7 @@ public:
 				case 1: r = g = b = _scale > 1 ? 128 : (r ? 230 : 50); break;
 				case 2: r = b = 50, g = 220; break;
 				case 3: g = r = 100, b = 250; break;
+				case 4: g = b = 100, r = 250; break;
 				}
 				fwrite(&r, 1, 1, f);
 				fwrite(&g, 1, 1, f);
@@ -82,8 +83,17 @@ public:
 	}
 };
 
-#ifndef NDEBUG
-extern std::vector<PointF> theGrid;
-#endif
+class LogMatrixWriter
+{
+	LogMatrix &log;
+	std::string fn;
+
+public:
+	LogMatrixWriter(LogMatrix& log, const BitMatrix& image, int scale, std::string fn) : log(log), fn(fn)
+	{
+		log.init(&image, scale);
+	}
+	~LogMatrixWriter() { log.write(fn.c_str()); }
+};
 
 } // namespace ZXing

@@ -740,7 +740,7 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 {
 	// walk to the left at first
 #ifdef PRINT_DEBUG
-	log.init(&image);
+	LogMatrixWriter lmw(log, image, 1, "dm-log.pnm");
 	for (auto startDirection : {PointF(-1, 0)}) {
 #else
 	for (auto startDirection : {PointF(-1, 0), PointF(-1, 0), PointF(1, 0), PointF(0, -1), PointF(0, 1)}) {
@@ -884,10 +884,6 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 
 			for (RegressionLine* l : {&lineL, &lineB, &lineT, &lineR})
 				log(l->points());
-
-			log(theGrid, 3);
-
-			log.write("log.pnm");
 #endif
 
 			if (!res.isValid())
@@ -901,10 +897,6 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 #endif
 			break; // only test left direction
 	}
-
-#ifdef PRINT_DEBUG
-	log.write("log.pnm");
-#endif
 
 	return {};
 }
