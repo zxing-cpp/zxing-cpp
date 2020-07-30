@@ -24,26 +24,22 @@
 
 namespace ZXing {
 
-DetectorResult SampleGrid(const BitMatrix& image, int width, int height, const PerspectiveTransform& transform)
+DetectorResult SampleGrid(const BitMatrix& image, int width, int height, const PerspectiveTransform& mod2Pix)
 {
 #ifndef NDEBUG
 	LogMatrix log;
 	LogMatrixWriter lmw(log, image, 5, "grid.pnm");
 #endif
-	auto project = [&](PointI p) { return PointI(transform(p + PointF(0.5, 0.5))); };
-	auto isInside = [&](PointI p) {
-		p = project(p);
-		return 0 <= p.x && p.x < image.width() && 0 <= p.y && p.y < image.height();
-	};
+	auto isInside = [&](PointI p) { return image.isIn(mod2Pix(centered(p))); };
 
-	if (width <= 0 || height <= 0 || !transform.isValid() || !isInside({0, 0}) || !isInside({width - 1, 0}) ||
+	if (width <= 0 || height <= 0 || !mod2Pix.isValid() || !isInside({0, 0}) || !isInside({width - 1, 0}) ||
 		!isInside({width - 1, height - 1}) || !isInside({0, height - 1}))
 		return {};
 
 	BitMatrix res(width, height);
 	for (int y = 0; y < height; ++y)
 		for (int x = 0; x < width; ++x) {
-			auto p = project({x, y});
+			auto p = mod2Pix(centered(PointI{x, y}));
 #ifndef NDEBUG
 			log(p, 3);
 #endif
@@ -51,7 +47,7 @@ DetectorResult SampleGrid(const BitMatrix& image, int width, int height, const P
 				res.set(x, y);
 		}
 
-	auto projectCorner = [&](PointI p) { return PointI(transform(PointF(p)) + PointF(0.5, 0.5)); };
+	auto projectCorner = [&](PointI p) { return PointI(mod2Pix(PointF(p)) + PointF(0.5, 0.5)); };
 	return {
 		std::move(res),
 		{projectCorner({0, 0}), projectCorner({width, 0}), projectCorner({width, height}), projectCorner({0, height})}};

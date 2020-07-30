@@ -48,6 +48,7 @@ class PerspectiveTransform
 public:
 	PerspectiveTransform(const QuadrilateralF& src, const QuadrilateralF& dst);
 
+	/// Project from the destination space (grid of modules) into the image space (bit matrix)
 	PointF operator()(PointF p) const;
 
 	bool isValid() const { return _isValid; }

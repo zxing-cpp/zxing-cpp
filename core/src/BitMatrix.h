@@ -275,12 +275,30 @@ public:
 	{
 		return b <= p.x && p.x < width() - b && b <= p.y && p.y < height() - b;
 	}
-	bool isIn(PointF p) const  noexcept { return isIn(round(p)); }
+	bool isIn(PointF p) const  noexcept { return isIn(PointI(p)); }
 
 	bool get(PointI p) const { return get(p.x, p.y); }
-	bool get(PointF p) const { return get(round(p)); }
+	bool get(PointF p) const { return get(PointI(p)); }
 	void set(PointI p, bool v = true) { set(p.x, p.y, v); }
-	void set(PointF p, bool v = true) { set(round(p), v); }
+	void set(PointF p, bool v = true) { set(PointI(p), v); }
+};
+
+/**
+ * @brief The BitMatrixCursor represents a current position inside an image and current direction it can advance towards.
+ *
+ * The current position is PointI or PointF. So depending on the type it will either round its current position after each
+ * step or do a Bresenham traversal through the BitMatrix.
+ */
+template<typename POINT>
+class BitMatrixCursor
+{
+public:
+	const BitMatrix* img;
+
+	POINT p; // current position
+	POINT d; // current direction
+
+	BitMatrixCursor(const BitMatrix& image, POINT p, POINT d) : img(&image), p(p) { setDirection(d); }
 
 	class Value
 	{
@@ -292,59 +310,45 @@ public:
 		bool isValid() const { return v != INVALID; }
 		bool isWhite() const { return v == WHITE; }
 		bool isBlack() const { return v == BLACK; }
+
+		bool operator==(Value o) const { return v == o.v; }
+		bool operator!=(Value o) const { return v != o.v; }
 	};
 
 	template <typename T>
 	Value testAt(PointT<T> p) const
 	{
-		auto q = round(p);
-		return isIn(q) ? Value{get(q)} : Value{};
+		auto q = PointI(p);
+		return img->isIn(q) ? Value{img->get(q)} : Value{};
 	}
 
-	template <typename T> bool blackAt(PointT<T> p) const { return testAt(p).isBlack(); }
-	template <typename T> bool whiteAt(PointT<T> p) const { return testAt(p).isWhite(); }
-};
-
-/**
- * @brief The BitMatrixCursor represents a current position inside an image and durrent direction it can advance towards.
- *
- * The current position is PointI or PointF. So depending on the type it will either round its current position after each
- * step or do a Bresenham traversal through the BitMatrix.
- */
-template<typename CPOS_T>
-class BitMatrixCursor
-{
-	const BitMatrix* _img;
-
-public:
-	CPOS_T p; // current position
-	PointF d; // current direction
-
-	BitMatrixCursor(const BitMatrix& image, CPOS_T p, PointF d) : _img(&image), p(p), d(d) {}
-
-	bool isIn(PointI p) const noexcept { return _img->isIn(p); }
-	bool isIn(PointF p) const noexcept { return _img->isIn(p); }
+	bool isIn(POINT p) const noexcept { return img->isIn(p); }
 	bool isIn() const noexcept { return isIn(p); }
 	bool isBlack() const noexcept { return blackAt(p); }
 	bool isWhite() const noexcept { return whiteAt(p); }
 
-	PointF front() const noexcept { return d; }
-	PointF back() const noexcept { return {-d.x, -d.y}; }
-	PointF right() const noexcept { return {-d.y, d.x}; }
-	PointF left() const noexcept { return {d.y, -d.x}; }
+	POINT front() const noexcept { return d; }
+	POINT back() const noexcept { return {-d.x, -d.y}; }
+	POINT right() const noexcept { return {-d.y, d.x}; }
+	POINT left() const noexcept { return {d.y, -d.x}; }
 
-	bool blackAt(PointF pos) const noexcept { return _img->testAt(pos).isBlack(); }
-	bool whiteAt(PointF pos) const noexcept { return _img->testAt(pos).isWhite(); }
-	bool isEdge(PointF pos, PointF dir) const noexcept { return whiteAt(pos) && blackAt(pos + dir); }
-	bool isEdgeBehind() const noexcept { return isEdge(PointF(p), back()); }
+	bool blackAt(POINT pos) const noexcept { return testAt(pos).isBlack(); }
+	bool whiteAt(POINT pos) const noexcept { return testAt(pos).isWhite(); }
+	bool isEdge(POINT pos, POINT dir) const noexcept { return whiteAt(pos) && blackAt(pos + dir); }
+	bool isEdgeBehind() const noexcept { return isEdge(p, back()); }
 
 	void setDirection(PointF dir) { d = bresenhamDirection(dir); }
-	bool step(int s = 1)
+	void setDirection(PointI dir) { d = dir; }
+
+	bool step(typename POINT::value_t s = 1)
 	{
-		moveBy(p, s * d);
+		p = p + s * d;
 		return isIn(p);
 	}
 };
+
+using BitMatrixCursorF = BitMatrixCursor<PointF>;
+using BitMatrixCursorI = BitMatrixCursor<PointI>;
 
 /**
  * @brief Inflate scales a BitMatrix up and adds a quite Zone plus padding

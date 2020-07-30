@@ -103,20 +103,23 @@ double cross(PointT<T> a, PointT<T> b)
 using PointI = PointT<int>;
 using PointF = PointT<double>;
 
+/// Calculate a floating point pixel coordiante representing the 'center' of the pixel.
+/// This is sort of the inverse operation of the PointI(PointF) conversion constructor.
+/// See also the documentation of the GridSampler API.
+inline PointF centered(PointI p)
+{
+	return p + PointF(0.5, 0.5);
+}
+
+inline PointF centered(PointF p)
+{
+	return {std::floor(p.x) + 0.5, std::floor(p.y) + 0.5};
+}
+
 template <typename T>
 PointF normalized(PointT<T> a)
 {
 	return PointF(a) / length(a);
-}
-
-inline PointI round(PointF p)
-{
-	return PointI(::lround(p.x), ::lround(p.y));
-}
-
-inline PointI round(PointI p)
-{
-	return p;
 }
 
 inline PointF bresenhamDirection(PointF d)
@@ -133,16 +136,6 @@ inline PointF mainDirection(PointF d)
 inline PointF movedTowardsBy(PointF a, PointF b, double d)
 {
 	return a + d * normalized(b - a);
-}
-
-inline void moveBy(PointI& p, PointF d)
-{
-	p = p + round(d);
-}
-
-inline void moveBy(PointF& p, PointF d)
-{
-	p = p + d;
 }
 
 } // ZXing

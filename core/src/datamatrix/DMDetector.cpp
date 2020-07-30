@@ -426,13 +426,13 @@ static DetectorResult DetectOld(const BitMatrix& image)
 
 class RegressionLine
 {
-	std::vector<PointI> _points;
+	std::vector<PointF> _points;
 	PointF _directionInward;
 	double a = NAN, b = NAN, c = NAN;
 
 	friend PointF intersect(const RegressionLine& l1, const RegressionLine& l2);
 
-	bool evaluate(const std::vector<PointI>& ps)
+	bool evaluate(const std::vector<PointF>& ps)
 	{
 		auto mean = std::accumulate(ps.begin(), ps.end(), PointF()) / ps.size();
 		double sumXX = 0, sumYY = 0, sumXY = 0;
@@ -470,16 +470,16 @@ class RegressionLine
 	}
 
 public:
-	const std::vector<PointI>& points() const { return _points; }
+	const std::vector<PointF>& points() const { return _points; }
 	int length() const { return _points.size() >= 2 ? int(distance(_points.front(), _points.back())) : 0; }
 	bool isValid() const { return !std::isnan(a); }
 	PointF normal() const { return isValid() ? PointF(a, b) : _directionInward; }
-	double signedDistance(PointI p) const { return dot(normal(), p) - c; }
-	PointF project(PointI p) const { return p - signedDistance(p) * normal(); }
+	double signedDistance(PointF p) const { return dot(normal(), p) - c; }
+	PointF project(PointF p) const { return p - signedDistance(p) * normal(); }
 
 	void reverse() { std::reverse(_points.begin(), _points.end()); }
 
-	void add(PointI p) {
+	void add(PointF p) {
 		assert(_directionInward != PointF());
 		_points.push_back(p);
 		if (_points.size() == 1)
@@ -499,7 +499,7 @@ public:
 			while (true) {
 				old_points_size = _points.size();
 				_points.erase(std::remove_if(_points.begin(), _points.end(),
-											 [this, maxDist](PointI p) { return this->signedDistance(p) > maxDist; }),
+											 [this, maxDist](auto p) { return this->signedDistance(p) > maxDist; }),
 							  _points.end());
 				if (old_points_size == _points.size())
 					break;
@@ -562,7 +562,7 @@ PointF intersect(const RegressionLine& l1, const RegressionLine& l2)
 	return {x, y};
 }
 
-class EdgeTracer : public BitMatrixCursor<PointI>
+class EdgeTracer : public BitMatrixCursor<PointF>
 {
 	enum class StepResult { FOUND, OPEN_END, CLOSED_END };
 
@@ -582,8 +582,8 @@ class EdgeTracer : public BitMatrixCursor<PointI>
 					for (int j = 0; j < std::max(maxStepSize, 3) && isIn(pEdge); ++j) {
 						if (whiteAt(pEdge)) {
 							// if we are not making any progress, we still have another endless loop bug
-							assert(p != round(pEdge));
-							p = round(pEdge);
+							assert(p != centered(pEdge));
+							p = centered(pEdge);
 							return StepResult::FOUND;
 						}
 						pEdge = pEdge - dEdge;
@@ -598,7 +598,7 @@ class EdgeTracer : public BitMatrixCursor<PointI>
 	}
 
 public:
-	using BitMatrixCursor<PointI>::BitMatrixCursor;
+	using BitMatrixCursor<PointF>::BitMatrixCursor;
 
 	bool updateDirectionFromOrigin(PointF origin)
 	{
@@ -660,7 +660,7 @@ public:
 				// back projected where we left off the line.
 				if (distance(np, line.project(line.points().back())) < 1)
 					np = np + d;
-				p = round(np);
+				p = centered(np);
 			}
 			else {
 				auto stepLengthInMainDir = line.points().empty() ? 0.0 : dot(mainDirection(d), (p - line.points().back()));
@@ -704,11 +704,11 @@ public:
 	{
 		step();
 		log(p);
-		corner = PointF(p);
+		corner = p;
 		std::swap(d, dir);
 		traceStep(-1 * dir, 2, false);
 #ifdef PRINT_DEBUG
-		printf("turn: %d x %d -> %.2f, %.2f\n", p.x, p.y, d.x, d.y);
+		printf("turn: %.0f x %.0f -> %.2f, %.2f\n", p.x, p.y, d.x, d.y);
 #endif
 		return isIn(corner) && isIn(p);
 	}
@@ -727,12 +727,6 @@ static DetectorResult SampleGrid(const BitMatrix& image, PointF tl, PointF bl, P
 	// inclined toward the center anyway.
 	moveTowardsBy(tr, bl, 0.3);
 
-	// work around a missing 'round' in GridSampler.
-	// TODO: the correct location for the rounding is after the transformation in GridSampler
-	// but that would currently break other 2D encoders
-	for (auto* p : {&tl, &bl, &br, &tr})
-		*p = *p + PointF(0.5, 0.5);
-
 	return SampleGrid(image, width, height, PerspectiveTransform(Rectangle(width, height, 0), {tl, tr, br, bl}));
 }
 
@@ -747,8 +741,8 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 #endif
 		// TODO: If neither the horizontal nor the vertical center line cross the symbol, it will be overlooked.
 		// Will need to look at more lines.
-		auto center = PointI(image.width()/2, image.height()/2);
-		EdgeTracer startTracer(image, center - center * PointI(startDirection), startDirection);
+		auto center = PointF(image.width()/2, image.height()/2);
+		EdgeTracer startTracer(image, centered(center - center * startDirection), startDirection);
 		while (startTracer.step()) {
 			log(startTracer.p);
 
