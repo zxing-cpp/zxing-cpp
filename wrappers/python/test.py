@@ -22,6 +22,8 @@ class Test(unittest.TestCase):
 		self.assertTrue(res.valid)
 		self.assertEqual(res.format, format)
 		self.assertEqual(res.text, text)
+		self.assertEqual(res.orientation, 0)
+		self.assertEqual(res.position.topLeft.x, 4)
 
 	@unittest.skipIf(not has_numpy, "need numpy for read/write tests")
 	def test_failed_read(self):

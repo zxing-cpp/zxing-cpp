@@ -89,14 +89,20 @@ PYBIND11_MODULE(zxing, m)
 		.value("FORMAT_COUNT", BarcodeFormat::FORMAT_COUNT)
 		.value("NONE", BarcodeFormat::NONE)
 		.export_values();
-	py::class_<ResultPoint>(m, "ResultPoint")
-		.def_property_readonly("x", &ResultPoint::x)
-		.def_property_readonly("y", &ResultPoint::y);
+	py::class_<PointI>(m, "Point")
+		.def_readonly("x", &PointI::x)
+		.def_readonly("y", &PointI::y);
+	py::class_<Position>(m, "Position")
+		.def_property_readonly("topLeft", &Position::topLeft)
+		.def_property_readonly("topRight", &Position::topRight)
+		.def_property_readonly("bottomLeft", &Position::bottomLeft)
+		.def_property_readonly("bottomRight", &Position::bottomRight);
 	py::class_<Result>(m, "Result")
 		.def_property_readonly("valid", &Result::isValid)
 		.def_property_readonly("text", &Result::text)
 		.def_property_readonly("format", &Result::format)
-		.def_property_readonly("points", &Result::resultPoints);
+		.def_property_readonly("position", &Result::position)
+		.def_property_readonly("orientation", &Result::orientation);
 	m.def("barcode_format_from_str", &BarcodeFormatFromString, "Convert string to BarcodeFormat", py::arg("str"));
 	m.def("barcode_formats_from_str", &barcode_formats_from_str, "Convert string to BarcodeFormats", py::arg("str"));
 	m.def("read_barcode", &read_barcode, "Read (decode) a barcode from a numpy BGR or grayscale image array",
