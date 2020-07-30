@@ -19,6 +19,8 @@
 #include "ZXContainerAlgorithms.h"
 
 #include <array>
+#include <cmath>
+#include <limits>
 
 namespace ZXing {
 
@@ -74,11 +76,16 @@ bool IsConvex(const Quadrilateral<PointT>& poly)
 	const int N = Size(poly);
 	bool sign = false;
 
+	double m = std::numeric_limits<double>::max(), M = 0.0;
+
 	for(int i = 0; i < N; i++)
 	{
 		auto d1 = poly[(i + 2) % N] - poly[(i + 1) % N];
 		auto d2 = poly[i] - poly[(i + 1) % N];
 		auto cp = cross(d1, d2);
+
+		m = std::min(std::fabs(m), cp);
+		M = std::max(std::fabs(M), cp);
 
 		if (i == 0)
 			sign = cp > 0;
@@ -86,7 +93,14 @@ bool IsConvex(const Quadrilateral<PointT>& poly)
 			return false;
 	}
 
-	return true;
+	// It turns out beeing convex is not enough to prevent a "numercial instability"
+	// that can cause the corners beeing projected inside the image boundaries but
+	// some points near the corners beeing projected outside. This has been observed
+	// where one corner is almost in line with two others. The M/m ratio is below 2
+	// for the complete existing sample set. For very "skewed" QRCodes a value of
+	// around 3 is realistic. A value of 14 has been observed to trigger the
+	// instability.
+	return M / m < 4.0;
 }
 
 
