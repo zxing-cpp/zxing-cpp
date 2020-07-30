@@ -26,23 +26,21 @@ OUT narrow(IN in)
 	return static_cast<OUT>(in);
 }
 
-// The intension was to use the flag based BarcodeFormats here but that failed due to a pybind11 bug:
-// https://github.com/pybind/pybind11/issues/2221
-using FormatList = std::vector<BarcodeFormat>;
+std::ostream& operator<<(std::ostream& os, const Position& points) {
+	for (const auto& p : points)
+		os << p.x << "x" << p.y << " ";
+	os.seekp(-1, os.cur);
+	os << '\0';
+	return os;
+}
 
-FormatList barcode_formats_from_str(const std::string& str)
-{
-	auto formats = BarcodeFormatsFromString(str);
-	return FormatList(formats.begin(), formats.end());
-};
-
-Result read_barcode(const Image& image, const FormatList& formats, bool fastMode, bool tryRotate, bool hybridBinarizer)
+Result read_barcode(const Image& image, const BarcodeFormats& formats, bool fastMode, bool tryRotate, Binarizer binarizer)
 {
 	DecodeHints hints;
 	hints.setTryHarder(!fastMode);
 	hints.setTryRotate(tryRotate);
-	hints.setPossibleFormats(formats);
-	hints.setBinarizer(hybridBinarizer ? Binarizer::LocalAverage : Binarizer::GlobalHistogram);
+	hints.setFormats(formats);
+	hints.setBinarizer(binarizer);
 	const auto height = narrow<int>(image.shape(0));
 	const auto width = narrow<int>(image.shape(1));
 	const auto channels = image.ndim() == 2 ? 1 : narrow<int>(image.shape(2));
@@ -68,7 +66,7 @@ Image write_barcode(BarcodeFormat format, std::string text, int width, int heigh
 PYBIND11_MODULE(zxing, m)
 {
 	m.doc() = "python bindings for zxing-cpp";
-	py::enum_<BarcodeFormat>(m, "BarcodeFormat")
+	py::enum_<BarcodeFormat>(m, "BarcodeFormat", py::arithmetic{})
 		.value("AZTEC", BarcodeFormat::AZTEC)
 		.value("CODABAR", BarcodeFormat::CODABAR)
 		.value("CODE_39", BarcodeFormat::CODE_39)
@@ -86,8 +84,20 @@ PYBIND11_MODULE(zxing, m)
 		.value("UPC_A", BarcodeFormat::UPC_A)
 		.value("UPC_E", BarcodeFormat::UPC_E)
 		.value("UPC_EAN_EXTENSION", BarcodeFormat::UPC_EAN_EXTENSION)
-		.value("FORMAT_COUNT", BarcodeFormat::FORMAT_COUNT)
 		.value("NONE", BarcodeFormat::NONE)
+		.export_values()
+		// see https://github.com/pybind/pybind11/issues/2221
+		.def("__or__", [](BarcodeFormat f1, BarcodeFormat f2){ return f1 | f2; })
+		.def("__or__", [](BarcodeFormats fs, BarcodeFormat f){ return fs | f; });
+	py::class_<BarcodeFormats>(m, "BarcodeFormats")
+		.def("__repr__", py::overload_cast<BarcodeFormats>(&ToString))
+		.def("__str__", py::overload_cast<BarcodeFormats>(&ToString))
+		.def("__eq__", [](BarcodeFormats f1, BarcodeFormats f2){ return f1 == f2; });
+	py::enum_<Binarizer>(m, "Binarizer")
+		.value("BoolCast", Binarizer::BoolCast)
+		.value("FixedThreshold", Binarizer::FixedThreshold)
+		.value("GlobalHistogram", Binarizer::GlobalHistogram)
+		.value("LocalAverage", Binarizer::LocalAverage)
 		.export_values();
 	py::class_<PointI>(m, "Point")
 		.def_readonly("x", &PointI::x)
@@ -96,7 +106,12 @@ PYBIND11_MODULE(zxing, m)
 		.def_property_readonly("topLeft", &Position::topLeft)
 		.def_property_readonly("topRight", &Position::topRight)
 		.def_property_readonly("bottomLeft", &Position::bottomLeft)
-		.def_property_readonly("bottomRight", &Position::bottomRight);
+		.def_property_readonly("bottomRight", &Position::bottomRight)
+		.def("__str__", [](Position pos) {
+			std::ostringstream oss;
+			oss << pos;
+			return oss.str();
+		});
 	py::class_<Result>(m, "Result")
 		.def_property_readonly("valid", &Result::isValid)
 		.def_property_readonly("text", &Result::text)
@@ -104,13 +119,13 @@ PYBIND11_MODULE(zxing, m)
 		.def_property_readonly("position", &Result::position)
 		.def_property_readonly("orientation", &Result::orientation);
 	m.def("barcode_format_from_str", &BarcodeFormatFromString, "Convert string to BarcodeFormat", py::arg("str"));
-	m.def("barcode_formats_from_str", &barcode_formats_from_str, "Convert string to BarcodeFormats", py::arg("str"));
+	m.def("barcode_formats_from_str", &BarcodeFormatsFromString, "Convert string to BarcodeFormat", py::arg("str"));
 	m.def("read_barcode", &read_barcode, "Read (decode) a barcode from a numpy BGR or grayscale image array",
 		py::arg("image"),
-		py::arg("formats") = FormatList{},
+		py::arg("formats") = BarcodeFormats{},
 		py::arg("fastMode") = false,
 		py::arg("tryRotate") = true,
-		py::arg("hybridBinarizer") = true
+		py::arg("binarizer") = Binarizer::LocalAverage
 	);
 	m.def("write_barcode", &write_barcode, "Write (encode) a text into a barcode and return numpy image array",
 		py::arg("format"),

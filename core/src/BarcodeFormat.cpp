@@ -56,6 +56,16 @@ const char* ToString(BarcodeFormat format)
 	return FORMAT_STR[BarcodeFormats::bitIndex(format)];
 }
 
+std::string ToString(BarcodeFormats formats)
+{
+	if (formats.testFlag(BarcodeFormat::NONE))
+		return ToString(BarcodeFormat::NONE);
+	std::string res;
+	for (auto f : formats)
+		res += ToString(f) + std::string("|");
+	return res.substr(0, res.size() - 1);
+}
+
 static std::string NormalizeFormatString(std::string str)
 {
 	std::transform(str.begin(), str.end(), str.begin(), [](char c) { return (char)std::tolower(c); });

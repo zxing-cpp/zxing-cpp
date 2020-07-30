@@ -57,6 +57,7 @@ enum class BarcodeFormat
 ZX_DECLARE_FLAGS(BarcodeFormats, BarcodeFormat)
 
 const char* ToString(BarcodeFormat format);
+std::string ToString(BarcodeFormats formats);
 
 /**
  * @brief Parse a string into a BarcodeFormat.
