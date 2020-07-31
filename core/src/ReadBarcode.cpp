@@ -97,6 +97,8 @@ Result ReadBarcode(const ImageView& iv, const DecodeHints& hints)
 	default:
 		return ReadBarcode(
 			{
+				0,
+				0,
 				iv._width,
 				iv._height,
 				iv._data,
@@ -105,6 +107,7 @@ Result ReadBarcode(const ImageView& iv, const DecodeHints& hints)
 				RedIndex(iv._format),
 				GreenIndex(iv._format),
 				BlueIndex(iv._format),
+				nullptr
 			},
 			hints);
 	}
@@ -113,14 +116,14 @@ Result ReadBarcode(const ImageView& iv, const DecodeHints& hints)
 Result ReadBarcode(int width, int height, const uint8_t* data, int rowStride, BarcodeFormats formats, bool tryRotate,
 				   bool tryHarder)
 {
-	return ReadBarcode({width, height, data, rowStride},
+	return ReadBarcode({0, 0, width, height, data, rowStride, 1, 0, 0, 0, nullptr},
 					   DecodeHints().setTryHarder(tryHarder).setTryRotate(tryRotate).setFormats(formats));
 }
 
 Result ReadBarcode(int width, int height, const uint8_t* data, int rowStride, int pixelStride, int rIndex, int gIndex,
 				   int bIndex, BarcodeFormats formats, bool tryRotate, bool tryHarder)
 {
-	return ReadBarcode({width, height, data, rowStride, pixelStride, rIndex, gIndex, bIndex},
+	return ReadBarcode({0, 0, width, height, data, rowStride, pixelStride, rIndex, gIndex, bIndex, nullptr},
 					   DecodeHints().setTryHarder(tryHarder).setTryRotate(tryRotate).setFormats(formats));
 }
 

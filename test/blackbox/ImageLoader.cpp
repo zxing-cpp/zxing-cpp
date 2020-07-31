@@ -46,10 +46,10 @@ static std::shared_ptr<GenericLuminanceSource> readImage(const fs::path& imgPath
 		throw std::runtime_error("Failed to read image");
 	}
 	switch (colors) {
-	case 1: return std::make_shared<GenericLuminanceSource>(width, height, buffer.get(), width);
-	case 2: return std::make_shared<GenericLuminanceSource>(width, height, buffer.get(), width * colors, colors, 0, 0, 0);
+	case 1: return std::make_shared<GenericLuminanceSource>(0, 0, width, height, buffer.get(), width, 1, 0, 0, 0, nullptr);
+	case 2: return std::make_shared<GenericLuminanceSource>(0, 0, width, height, buffer.get(), width * colors, colors, 0, 0, 0, nullptr);
 	case 3:
-	case 4: return std::make_shared<GenericLuminanceSource>(width, height, buffer.get(), width * colors, colors, 0, 1, 2);
+	case 4: return std::make_shared<GenericLuminanceSource>(0, 0, width, height, buffer.get(), width * colors, colors, 0, 1, 2, nullptr);
 	}
 	return {}; // silence warning
 }

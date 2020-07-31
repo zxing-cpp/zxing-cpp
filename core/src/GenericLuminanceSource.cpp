@@ -60,7 +60,7 @@ static std::shared_ptr<ByteArray> MakeCopy(const ByteArray& pixels, int rowBytes
 	return MakeCopy(pixels.data(), rowBytes, left, top, width, height);
 }
 
-GenericLuminanceSource::GenericLuminanceSource(int left, int top, int width, int height, const void* bytes, int rowBytes, int pixelBytes, int redIndex, int greenIndex, int blueIndex) :
+GenericLuminanceSource::GenericLuminanceSource(int left, int top, int width, int height, const void* bytes, int rowBytes, int pixelBytes, int redIndex, int greenIndex, int blueIndex, void*) :
 	_left(0),	// since we copy the pixels
 	_top(0),
 	_width(width),
