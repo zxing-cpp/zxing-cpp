@@ -30,28 +30,27 @@ using namespace ZXing;
 
 static void PrintUsage(const char* exePath)
 {
-	std::cout << "Usage: " << exePath << " [-fast] [-rotate] [-format <FORMAT[,...]>] <png image path>\n"
-			  << "    -fast    Skip some lines/pixels during detection\n"
-			  << "    -rotate  Also try rotated image during detection\n"
-			  << "    -format  Only detect given format(s)\n"
-			  << "    -ispure  Assume the image contains only a 'pure'/perfect code\n"
+	std::cout << "Usage: " << exePath << " [-fast] [-norotate] [-format <FORMAT[,...]>] [-ispure] <png image path>\n"
+			  << "    -fast      Skip some lines/pixels during detection (faster)\n"
+			  << "    -norotate  Don't try rotated image during detection (faster)\n"
+			  << "    -format    Only detect given format(s) (faster)\n"
+			  << "    -ispure    Assume the image contains only a 'pure'/perfect code (faster)\n"
 			  << "\n"
 			  << "Supported formats are:\n";
 	for (auto f : BarcodeFormats::all()) {
 		std::cout << "    " << ToString(f) << "\n";
 	}
-	std::cout << "Formats can be lowercase, with or without underscore, separated by ',', '|' and/or ' '\n";
+	std::cout << "Formats can be lowercase, with or without underscore, separated by ',' and/or '|'\n";
 }
 
 static bool ParseOptions(int argc, char* argv[], DecodeHints* hints, std::string* filePath)
 {
-	hints->setTryHarder(true);
 	for (int i = 1; i < argc; ++i) {
 		if (strcmp(argv[i], "-fast") == 0) {
 			hints->setTryHarder(false);
 		}
-		else if (strcmp(argv[i], "-rotate") == 0) {
-			hints->setTryRotate(true);
+		else if (strcmp(argv[i], "-norotate") == 0) {
+			hints->setTryRotate(false);
 		}
 		else if (strcmp(argv[i], "-ispure") == 0) {
 			hints->setIsPure(true);

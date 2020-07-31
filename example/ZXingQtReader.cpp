@@ -84,7 +84,7 @@ int main(int argc, char* argv[])
 
 	auto hints = DecodeHints()
 					 .setFormats(BarcodeFormat::QR_CODE | BarcodeFormat::DATA_MATRIX)
-					 .setTryHarder(true)
+					 .setTryRotate(false)
 					 .setBinarizer(Binarizer::FixedThreshold);
 
 	auto result = ReadBarcode(QImage(filePath), hints);
