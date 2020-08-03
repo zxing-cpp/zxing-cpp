@@ -16,10 +16,6 @@
 * limitations under the License.
 */
 
-#ifndef NDEBUG
-//#define PRINT_DEBUG
-#endif
-
 #include "DMDetector.h"
 #include "BitMatrix.h"
 #include "BitMatrixCursor.h"

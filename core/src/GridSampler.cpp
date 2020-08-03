@@ -18,7 +18,7 @@
 
 #include "GridSampler.h"
 
-#ifndef NDEBUG
+#ifdef PRINT_DEBUG
 #include "LogMatrix.h"
 #endif
 
@@ -26,7 +26,7 @@ namespace ZXing {
 
 DetectorResult SampleGrid(const BitMatrix& image, int width, int height, const PerspectiveTransform& mod2Pix)
 {
-#ifndef NDEBUG
+#ifdef PRINT_DEBUG
 	LogMatrix log;
 	LogMatrixWriter lmw(log, image, 5, "grid.pnm");
 #endif
@@ -40,7 +40,7 @@ DetectorResult SampleGrid(const BitMatrix& image, int width, int height, const P
 	for (int y = 0; y < height; ++y)
 		for (int x = 0; x < width; ++x) {
 			auto p = mod2Pix(centered(PointI{x, y}));
-#ifndef NDEBUG
+#ifdef PRINT_DEBUG
 			log(p, 3);
 #endif
 			if (image.get(p))
