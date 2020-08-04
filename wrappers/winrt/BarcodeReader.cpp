@@ -16,6 +16,7 @@
 
 #if (_MSC_VER >= 1915)
 #define no_init_all deprecated
+#pragma warning(disable : 4996)
 #endif
 
 #include "BarcodeReader.h"

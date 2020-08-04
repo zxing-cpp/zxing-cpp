@@ -1,13 +1,17 @@
 # Based on the Qt 5 processor detection code, so should be very accurate
-# https://qt.gitorious.org/qt/qtbase/blobs/master/src/corelib/global/qprocessordetection.h
-# Currently handles ARM (v5, v6, v7), x86 (32/64), ia64, and ppc (32/64)
+# https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/global/qprocessordetection.h
+# Currently handles ARM (v5, v6, v7, v8), ARM64, x86 (32/64), ia64, and ppc (32/64)
 
 # Regarding POWER/PowerPC, just as is noted in the Qt source,
 # "There are many more known variants/revisions that we do not handle/detect."
 
 set(archdetect_c_code "
-#if defined(__arm__) || defined(__TARGET_ARCH_ARM) || defined(_M_ARM)
+#if defined(__arm__) || defined(__TARGET_ARCH_ARM) || defined(_M_ARM) || defined(_M_ARM64) || defined(__aarch64__) || defined(__ARM64__)
+  #if defined(__aarch64__) || defined(__ARM64__) || defined(_M_ARM64)
+    #error cmake_ARCH ARM64
+  #else
     #error cmake_ARCH ARM
+  #endif
 #elif defined(__x86_64) || defined(__x86_64__) || defined(__amd64) || defined(_M_X64)
     #error cmake_ARCH x64
 #elif defined(__ia64) || defined(__ia64__) || defined(_M_IA64)
@@ -25,11 +29,14 @@ set(archdetect_c_code "
 message (STATUS ${CMAKE_GENERATOR})
 
 function(get_target_architecture output_var)
-	if (MSVC AND CMAKE_CL_64)
+	if (MSVC AND (${CMAKE_GENERATOR} MATCHES "X64$"))
 		set (ARCH x64)
 
 	elseif (MSVC AND (${CMAKE_GENERATOR} MATCHES "ARM$"))
 		set (ARCH ARM)
+
+    elseif (MSVC AND (${CMAKE_GENERATOR} MATCHES "ARM64$"))
+		set (ARCH ARM64)
 		
     else()
         file(WRITE "${CMAKE_BINARY_DIR}/arch.c" "${archdetect_c_code}")

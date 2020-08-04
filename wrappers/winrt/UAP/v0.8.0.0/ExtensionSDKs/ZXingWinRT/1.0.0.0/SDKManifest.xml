@@ -6,6 +6,6 @@
     MinVSVersion="14.0"
     AppliesTo="WindowsAppContainer"
     SupportsMultipleVersions="Error"
-    SupportedArchitectures="x86;x64;ARM">
+    SupportedArchitectures="x86;x64;ARM;ARM64">
 	<File Reference="ZXing.winmd" Implementation="ZXing.dll" />
 </FileList>

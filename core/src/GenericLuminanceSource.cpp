@@ -15,6 +15,10 @@
 * limitations under the License.
 */
 
+#if (_MSC_VER >= 1915)
+#pragma warning(disable : 4996)
+#endif
+
 #include "GenericLuminanceSource.h"
 #include "ByteArray.h"
 
