@@ -94,7 +94,7 @@ static int SampleLine(const BitMatrix& image, const ResultPoint& p1, const Resul
 {
 	int result = 0;
 
-	float d = distance(p1, p2);
+	float d = static_cast<float>(distance(p1, p2));
 	float moduleSize = d / size;
 	float px = p1.x();
 	float py = p1.y();
@@ -223,7 +223,7 @@ static int GetColor(const BitMatrix& image, const PointI& p1, const PointI& p2)
 		!IsValidPoint(p2.x, p2.y, image.width(), image.height()))
 		return 0;
 
-	float d = distance(p1, p2);
+	float d = static_cast<float>(distance(p1, p2));
 	float dx = (p2.x - p1.x) / d;
 	float dy = (p2.y - p1.y) / d;
 	int error = 0;
@@ -371,7 +371,7 @@ static bool GetBullsEyeCorners(const BitMatrix& image, const PointI& pCenter, st
 		//c      b
 
 		if (nbCenterLayers > 2) {
-			float q = distance(poutd, pouta) * nbCenterLayers / (distance(pind, pina) * (nbCenterLayers + 2));
+			auto q = distance(poutd, pouta) * nbCenterLayers / (distance(pind, pina) * (nbCenterLayers + 2.0));
 			if (q < 0.75 || q > 1.25 || !IsWhiteOrBlackRectangle(image, pouta, poutb, poutc, poutd)) {
 				break;
 			}

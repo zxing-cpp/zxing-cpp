@@ -304,7 +304,7 @@ public:
 			return -1;
 
 		if (err) {
-			int mi = err > 0 ? std::max_element(std::begin(rs), std::end(rs)) - std::begin(rs)
+			auto mi = err > 0 ? std::max_element(std::begin(rs), std::end(rs)) - std::begin(rs)
 							 : std::min_element(std::begin(rs), std::end(rs)) - std::begin(rs);
 			is[mi] += err;
 			rs[mi] -= err;

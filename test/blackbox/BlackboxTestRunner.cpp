@@ -112,7 +112,8 @@ static std::string checkResult(const fs::path& imgPath, const char* expectedForm
 	}
 
 	if (auto expected = readFile(".bin")) {
-		std::string latin1Result(result.text().begin(), result.text().end());
+		std::string latin1Result(result.text().length(), '\0');
+		std::transform(result.text().begin(), result.text().end(), latin1Result.begin(), [](wchar_t c) { return static_cast<char>(c); });
 		return latin1Result != *expected ? "Content mismatch: expected '" + *expected + "' but got '" + latin1Result + "'" : "";
 	}
 
