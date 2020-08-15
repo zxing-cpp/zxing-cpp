@@ -104,6 +104,29 @@ GenericLuminanceSource::GenericLuminanceSource(int left, int top, int width, int
 	}
 }
 
+// Definied here instead of inlining in header to avoid link error since WINDOWS_EXPORT_ALL_SYMBOLS does not cover vtable.
+GenericLuminanceSource::GenericLuminanceSource(int width, int height, const void* bytes, int rowBytes, int pixelBytes, int redIndex, int greenIndex, int blueIndex) :
+	GenericLuminanceSource(0, 0, width, height, bytes, rowBytes, pixelBytes, redIndex, greenIndex, blueIndex, nullptr)
+{
+}
+
+// Definied here instead of inlining in header to avoid link error since WINDOWS_EXPORT_ALL_SYMBOLS does not cover vtable.
+GenericLuminanceSource::GenericLuminanceSource(int left, int top, int width, int height, const void* bytes, int rowBytes, int pixelBytes, int redIndex, int greenIndex, int blueIndex) :
+	GenericLuminanceSource(left, top, width, height, bytes, rowBytes, pixelBytes, redIndex, greenIndex, blueIndex, nullptr)
+{
+}
+
+// Definied here instead of inlining in header to avoid link error since WINDOWS_EXPORT_ALL_SYMBOLS does not cover vtable.
+GenericLuminanceSource::GenericLuminanceSource(int width, int height, const void* bytes, int rowBytes) :
+	GenericLuminanceSource(0, 0, width, height, bytes, rowBytes, 1, 0, 0, 0, nullptr)
+{
+}
+
+// Definied here instead of inlining in header to avoid link error since WINDOWS_EXPORT_ALL_SYMBOLS does not cover vtable.
+GenericLuminanceSource::GenericLuminanceSource(int left, int top, int width, int height, const void* bytes, int rowBytes) :
+	GenericLuminanceSource(left, top, width, height, bytes, rowBytes, 1, 0, 0, 0, nullptr)
+{
+}
 
 int
 GenericLuminanceSource::width() const

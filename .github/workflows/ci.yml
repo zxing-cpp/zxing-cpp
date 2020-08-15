@@ -60,7 +60,7 @@ jobs:
   build-wasm:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - uses: mymindstorm/setup-emsdk@v6
 
     - name: Configure
@@ -76,3 +76,26 @@ jobs:
       with:
         name: wasm-artifacts
         path: "build/zxing*"
+
+  build-win-gdiplus:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Configure CMake
+      shell: cmd
+      run: |
+        mkdir "${{runner.workspace}}/build"
+        cd "${{runner.workspace}}/build"
+        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_GDIPLUS_LIB=ON -DBUILD_SHARED_LIBS=ON -DBUILD_EXAMPLES=OFF -DBUILD_BLACKBOX_TESTS=OFF
+
+    - name: Build
+      working-directory: ${{runner.workspace}}/build
+      shell: cmd
+      run: cmake --build . -j8 --config $BUILD_TYPE 
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: wasm-artifacts
+        path: "build/core/Release/*"
+        path: "build/wrappers/gdiplus/Release/*"

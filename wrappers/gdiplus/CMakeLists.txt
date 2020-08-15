@@ -16,18 +16,19 @@ if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
         set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /MTd")
         set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
     endif()
-endif()
 
-if (NOT DEFINED BUILD_WRITERS)
-    set (BUILD_WRITERS OFF)
-endif()
+    if (NOT DEFINED BUILD_WRITERS)
+        set (BUILD_WRITERS OFF)
+    endif()
 
-if (NOT DEFINED BUILD_READERS)
-    set (BUILD_READERS ON)
-endif()
+    if (NOT DEFINED BUILD_READERS)
+        set (BUILD_READERS ON)
+    endif()
 
-add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/../../core ${CMAKE_BINARY_DIR}/ZXing)
+    add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/../../core ${CMAKE_BINARY_DIR}/ZXing)
     
+endif()
+
 set (LOCAL_COMMON_FILES
     GdiplusInit.h
     GdiplusInit.cpp
