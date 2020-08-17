@@ -19,7 +19,7 @@ add_definitions (-DUNICODE -D_UNICODE)
 
 if (MSVC)
     add_definitions (
-        -DNOMINMAX
+        -DNOMINMAX -wd4996
     )
 endif()
 
@@ -32,7 +32,7 @@ if (NOT DEFINED EXTENSION_SDK_OUTPUT)
     set (EXTENSION_SDK_OUTPUT "" CACHE PATH "Path to folder parent of SDKManifest")
 endif()
 
-add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/../../core ${CMAKE_BINARY_DIR}/ZXing)
+add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/../../core ${CMAKE_BINARY_DIR}/ZXingCore)
 
 file (GLOB SOURCE_FILES *.cpp)
 file (GLOB HEADER_FILES *.h)
