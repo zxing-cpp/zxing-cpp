@@ -682,7 +682,7 @@ public:
 							return true;
 						}
 					}
-				} else if (gaps == 0 && line.points().size() >= 2ull * maxStepSize)
+				} else if (gaps == 0 && line.points().size() >= static_cast<size_t>(2 * maxStepSize))
 					return false; // no point in following a line that has no gaps
 			}
 
