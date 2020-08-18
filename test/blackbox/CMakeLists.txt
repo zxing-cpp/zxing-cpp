@@ -21,6 +21,12 @@ if (BUILD_READERS)
         $<$<AND:$<CXX_COMPILER_ID:GNU>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,9.0>>:stdc++fs>
     )
 
+if (MSVC)
+    target_compile_options(ReaderTest PRIVATE
+        -D_CRT_SECURE_NO_WARNINGS
+    )
+endif()
+
     add_test(NAME ReaderTest COMMAND ReaderTest ${CMAKE_CURRENT_SOURCE_DIR}/../samples)
 endif()
 

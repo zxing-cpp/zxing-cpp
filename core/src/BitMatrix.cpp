@@ -184,7 +184,7 @@ static auto isSet_ = [](auto v) {
 bool
 BitMatrix::getTopLeftOnBit(int& left, int& top) const
 {
-	int bitsOffset = std::distance(_bits.begin(), std::find_if(_bits.begin(), _bits.end(), isSet_));
+	int bitsOffset = (int)std::distance(_bits.begin(), std::find_if(_bits.begin(), _bits.end(), isSet_));
 	if (bitsOffset == (int)_bits.size()) {
 		return false;
 	}
@@ -199,8 +199,7 @@ BitMatrix::getTopLeftOnBit(int& left, int& top) const
 bool
 BitMatrix::getBottomRightOnBit(int& right, int& bottom) const
 {
-	int bitsOffset =
-		_bits.size() - 1 - std::distance(_bits.rbegin(), std::find_if(_bits.rbegin(), _bits.rend(), isSet_));
+	int bitsOffset = (int)_bits.size() - 1 - (int)std::distance(_bits.rbegin(), std::find_if(_bits.rbegin(), _bits.rend(), isSet_));
 	if (bitsOffset < 0) {
 		return false;
 	}

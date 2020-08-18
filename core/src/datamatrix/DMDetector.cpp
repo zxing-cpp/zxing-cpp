@@ -118,9 +118,10 @@ inline static bool IsValidPoint(const ResultPoint& p, int imgWidth, int imgHeigh
 	return p.x() >= 0 && p.x() < imgWidth && p.y() > 0 && p.y() < imgHeight;
 }
 
-inline static float RoundToNearest(float x)
+template <typename T>
+inline static float RoundToNearestF(T x)
 {
-	return std::round(x);
+	return static_cast<float>(std::round(x));
 }
 
 /**
@@ -132,15 +133,15 @@ static bool CorrectTopRightRectangular(const BitMatrix& image, const ResultPoint
 									   const ResultPoint& topRight, int dimensionTop, int dimensionRight,
 									   ResultPoint& result)
 {
-	float corr = RoundToNearest(distance(bottomLeft, bottomRight)) / static_cast<float>(dimensionTop);
-	float norm = RoundToNearest(distance(topLeft, topRight));
+	float corr = RoundToNearestF(distance(bottomLeft, bottomRight)) / static_cast<float>(dimensionTop);
+	float norm = RoundToNearestF(distance(topLeft, topRight));
 	float cos = (topRight.x() - topLeft.x()) / norm;
 	float sin = (topRight.y() - topLeft.y()) / norm;
 
 	ResultPoint c1(topRight.x() + corr*cos, topRight.y() + corr*sin);
 
-	corr = RoundToNearest(distance(bottomLeft, topLeft)) / (float)dimensionRight;
-	norm = RoundToNearest(distance(bottomRight, topRight));
+	corr = RoundToNearestF(distance(bottomLeft, topLeft)) / (float)dimensionRight;
+	norm = RoundToNearestF(distance(bottomRight, topRight));
 	cos = (topRight.x() - bottomRight.x()) / norm;
 	sin = (topRight.y() - bottomRight.y()) / norm;
 
@@ -174,15 +175,15 @@ static bool CorrectTopRightRectangular(const BitMatrix& image, const ResultPoint
 static ResultPoint CorrectTopRight(const BitMatrix& image, const ResultPoint& bottomLeft, const ResultPoint& bottomRight,
                                    const ResultPoint& topLeft, const ResultPoint& topRight, int dimension)
 {
-	float corr = RoundToNearest(distance(bottomLeft, bottomRight)) / (float)dimension;
-	float norm = RoundToNearest(distance(topLeft, topRight));
+	float corr = RoundToNearestF(distance(bottomLeft, bottomRight)) / (float)dimension;
+	float norm = RoundToNearestF(distance(topLeft, topRight));
 	float cos = (topRight.x() - topLeft.x()) / norm;
 	float sin = (topRight.y() - topLeft.y()) / norm;
 
 	ResultPoint c1(topRight.x() + corr * cos, topRight.y() + corr * sin);
 
-	corr = RoundToNearest(distance(bottomLeft, topLeft)) / (float)dimension;
-	norm = RoundToNearest(distance(bottomRight, topRight));
+	corr = RoundToNearestF(distance(bottomLeft, topLeft)) / (float)dimension;
+	norm = RoundToNearestF(distance(bottomRight, topRight));
 	cos = (topRight.x() - bottomRight.x()) / norm;
 	sin = (topRight.y() - bottomRight.y()) / norm;
 
@@ -227,9 +228,9 @@ static float CrossProductZ(const ResultPoint& a, const ResultPoint& b, const Res
 static void OrderByBestPatterns(const ResultPoint*& p0, const ResultPoint*& p1, const ResultPoint*& p2)
 {
 	// Find distances between pattern centers
-	float zeroOneDistance = distance(*p0, *p1);
-	float oneTwoDistance = distance(*p1, *p2);
-	float zeroTwoDistance = distance(*p0, *p2);
+	auto zeroOneDistance = distance(*p0, *p1);
+	auto oneTwoDistance = distance(*p1, *p2);
+	auto zeroTwoDistance = distance(*p0, *p2);
 
 	const ResultPoint* pointA;
 	const ResultPoint* pointB;
@@ -681,7 +682,7 @@ public:
 							return true;
 						}
 					}
-				} else if (gaps == 0 && line.points().size() >= 2u * maxStepSize)
+				} else if (gaps == 0 && line.points().size() >= static_cast<size_t>(2 * maxStepSize))
 					return false; // no point in following a line that has no gaps
 			}
 

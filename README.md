@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/nu-book/zxing-cpp.svg?branch=master)](https://travis-ci.org/nu-book/zxing-cpp)
+[![Build Status](https://github.com/nu-book/zxing-cpp/workflows/CI/badge.svg?branch=master)](https://github.com/nu-book/zxing-cpp/actions?query=workflow%3ACI)
 
 # ZXing-C++
 

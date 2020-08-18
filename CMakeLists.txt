@@ -69,6 +69,9 @@ endif()
 if (BUILD_PYTHON_MODULE)
     add_subdirectory (wrappers/python)
 endif()
+if (WIN32)
+    add_subdirectory (wrappers/gdiplus)
+endif()
 
 set (CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/ZXing")
 

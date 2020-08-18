@@ -175,7 +175,7 @@ bool GlobalHistogramBinarizer::getPatternRow(int y, PatternRow& res) const
 
 	auto process = [&](bool val, const uint8_t* p) {
 		if (val != lastVal) {
-			res.push_back(p - lastPos);
+			res.push_back(static_cast<PatternRow::value_type>(p - lastPos));
 			lastVal = val;
 			lastPos = p;
 		}
@@ -188,7 +188,7 @@ bool GlobalHistogramBinarizer::getPatternRow(int y, PatternRow& res) const
 	bool backVal = *backPos < blackPoint;
 	process(backVal, backPos);
 
-	res.push_back(backPos - lastPos + 1);
+	res.push_back(static_cast<PatternRow::value_type>(backPos - lastPos + 1));
 
 	if (backVal)
 		res.push_back(0); // last value is number of white pixels, here 0

@@ -42,7 +42,8 @@ build_script:
     %CMAKE_EXE% --build . --config Release
 
     cd %BASE_DIR%
-    nuget pack -Version %APPVEYOR_REPO_BRANCH:~1% wrappers\winrt\nuget\ZXingWinRT.nuspec
+    for /f "tokens=1,2,3 delims=. " %%a in ("%APPVEYOR_BUILD_VERSION%") do set major=%%a&set minor=%%b&set patch=%%c&set
+    nuget pack -Version %major%.%minor%.%patch% wrappers\winrt\nuget\ZXingWinRT.nuspec
 artifacts:
 - path: '*.nupkg'
 deploy:
