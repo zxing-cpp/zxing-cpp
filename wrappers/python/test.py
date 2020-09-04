@@ -26,6 +26,23 @@ class Test(unittest.TestCase):
 		self.assertEqual(res.position.topLeft.x, 4)
 
 	@unittest.skipIf(not has_numpy, "need numpy for read/write tests")
+	def test_write_read_oned_cycle(self):
+		format = BF.CODE_128
+		text = "I have the best words."
+		height = 80
+		width = 400
+		img = zxing.write_barcode(format, text, width=width, height=height)
+		self.assertEqual(img.shape[0], height)
+		self.assertEqual(img.shape[1], width)
+
+		res = zxing.read_barcode(img)
+		self.assertTrue(res.valid)
+		self.assertEqual(res.format, format)
+		self.assertEqual(res.text, text)
+		self.assertEqual(res.orientation, 0)
+		self.assertEqual(res.position.topLeft.x, 61)
+
+	@unittest.skipIf(not has_numpy, "need numpy for read/write tests")
 	def test_failed_read(self):
 		import numpy as np
 		res = zxing.read_barcode(np.zeros((100, 100), np.uint8), formats = BF.EAN_8 | BF.AZTEC, binarizer = zxing.BoolCast)
