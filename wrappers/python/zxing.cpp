@@ -55,7 +55,7 @@ Image write_barcode(BarcodeFormat format, std::string text, int width, int heigh
 	auto writer = MultiFormatWriter(format).setMargin(margin).setEccLevel(eccLevel);
 	auto bitmap = writer.encode(TextUtfEncoding::FromUtf8(text), width, height);
 
-	auto result = Image({bitmap.width(), bitmap.height()});
+	auto result = Image({bitmap.height(), bitmap.width()});
 	auto r = result.mutable_unchecked<2>();
 	for (ssize_t y = 0; y < r.shape(0); y++)
 		for (ssize_t x = 0; x < r.shape(1); x++)
