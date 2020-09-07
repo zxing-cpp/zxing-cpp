@@ -64,11 +64,11 @@ BarcodeReader::init(bool tryHarder, bool tryRotate, const Platform::Array<Barcod
 	hints.setTryRotate(tryRotate);
 
 	if (types != nullptr && types->Length > 0) {
-		std::vector<BarcodeFormat> barcodeFormats;
+		BarcodeFormats barcodeFormats;
 		for (BarcodeType type : types) {
-			barcodeFormats.emplace_back(BarcodeReader::ConvertRuntimeToNative(type));
+			barcodeFormats |= BarcodeReader::ConvertRuntimeToNative(type);
 		}
-		hints.setPossibleFormats(barcodeFormats);
+		hints.setFormats(barcodeFormats);
 	}
 
 	m_reader.reset(new MultiFormatReader(hints));
