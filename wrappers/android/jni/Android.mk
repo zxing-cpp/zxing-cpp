@@ -5,7 +5,7 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := zxing_android
 
 LOCAL_CFLAGS += -Wall
-LOCAL_CPPFLAGS += -std=c++11
+LOCAL_CPPFLAGS += -std=c++17
 
 LOCAL_SRC_FILES := \
 	JNIUtils.cpp \
