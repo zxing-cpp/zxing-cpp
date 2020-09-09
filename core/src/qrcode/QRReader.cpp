@@ -53,11 +53,8 @@ Reader::decode(const BinaryBitmap& image) const
 	auto decoderResult = Decoder::Decode(detectorResult.bits(), _charset);
 	auto position = detectorResult.position();
 
-	// If the code was mirrored: swap the bottom-left and the top-right position.
-	// No need to 'fix' top-left and alignment pattern.
-	if (decoderResult.extra() && static_cast<DecoderMetadata*>(decoderResult.extra().get())->isMirrored()) {
-		std::swap(position[1], position[3]);
-	}
+	// TODO: report the information that the symbol was mirrored back to the caller
+	//bool isMirrored = decoderResult.extra() && static_cast<DecoderMetadata*>(decoderResult.extra().get())->isMirrored();
 
 	return Result(std::move(decoderResult), std::move(position), BarcodeFormat::QR_CODE);
 }
