@@ -500,7 +500,7 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 14, 14, 270 },
 		});
 
-		runTests("qrcode-2", "QR_CODE", 34, {
+		runTests("qrcode-2", "QR_CODE", 35, {
 			{ 32, 32, 0   },
 			{ 31, 31, 90  },
 			{ 31, 31, 180 },
