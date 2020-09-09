@@ -15,6 +15,7 @@
 * limitations under the License.
 */
 
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 
@@ -44,6 +45,12 @@ template <typename T>
 bool operator!=(const PointT<T>& a, const PointT<T>& b)
 {
 	return !(a == b);
+}
+
+template <typename T>
+auto operator-(const PointT<T>& a) -> PointT<T>
+{
+	return {-a.x, -a.y};
 }
 
 template <typename T, typename U>
@@ -76,10 +83,25 @@ PointT<T> operator/(const PointT<T>& a, U d)
 	return {a.x / d, a.y / d};
 }
 
+/// L1 norm
 template <typename T>
-double length(PointT<T> d)
+T sumAbsComponent(PointT<T> p)
 {
-	return std::sqrt(dot(d, d));
+	return std::abs(p.x) + std::abs(p.y);
+}
+
+/// L2 norm
+template <typename T>
+double length(PointT<T> p)
+{
+	return std::sqrt(dot(p, p));
+}
+
+/// L-inf norm
+template <typename T>
+T maxAbsComponent(PointT<T> p)
+{
+	return std::max(std::abs(p.x), std::abs(p.y));
 }
 
 template <typename T>
@@ -89,13 +111,13 @@ double distance(PointT<T> a, PointT<T> b)
 }
 
 template <typename T, typename U>
-double dot(const PointT<T>& a, const PointT<U>& b)
+auto dot(const PointT<T>& a, const PointT<U>& b) -> decltype (a.x * b.x)
 {
-	return double(a.x) * b.x + a.y * b.y;
+	return a.x * b.x + a.y * b.y;
 }
 
 template <typename T>
-double cross(PointT<T> a, PointT<T> b)
+auto cross(PointT<T> a, PointT<T> b) -> decltype(a.x * b.x)
 {
 	return a.x * b.y - b.x * a.y;
 }
@@ -117,20 +139,22 @@ inline PointF centered(PointF p)
 }
 
 template <typename T>
-PointF normalized(PointT<T> a)
+PointF normalized(PointT<T> d)
 {
-	return PointF(a) / length(a);
+	return PointF(d) / length(d);
 }
 
-inline PointF bresenhamDirection(PointF d)
+template <typename T>
+PointT<T> bresenhamDirection(PointT<T> d)
 {
-	return d / std::fmax(std::fabs(d.x), std::fabs(d.y));
+	return d / maxAbsComponent(d);
 }
 
-inline PointF mainDirection(PointF d)
+template <typename T>
+PointT<T> mainDirection(PointT<T> d)
 {
-	assert(std::fabs(d.x) != std::fabs(d.y));
-	return std::fabs(d.x) > std::fabs(d.y) ? PointF(d.x, 0) : PointF(0, d.y);
+	assert(std::abs(d.x) != std::abs(d.y));
+	return std::abs(d.x) > std::abs(d.y) ? PointT<T>(d.x, 0) : PointT<T>(0, d.y);
 }
 
 inline PointF movedTowardsBy(PointF a, PointF b, double d)
