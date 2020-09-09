@@ -67,19 +67,14 @@ static Matrix<int> CalculateBlackPoints(const uint8_t* luminances, int subWidth,
 		for (int x = 0; x < subWidth; x++) {
 			int xoffset = std::min(x * BLOCK_SIZE, width - BLOCK_SIZE);
 			int sum = 0;
-			int min = 0xFF;
-			int max = 0;
+			uint8_t min = 0xFF;
+			uint8_t max = 0;
 			for (int yy = 0, offset = yoffset * stride + xoffset; yy < BLOCK_SIZE; yy++, offset += stride) {
 				for (int xx = 0; xx < BLOCK_SIZE; xx++) {
-					int pixel = luminances[offset + xx];
+					auto pixel = luminances[offset + xx];
 					sum += pixel;
-					// still looking for good contrast
-					if (pixel < min) {
-						min = pixel;
-					}
-					if (pixel > max) {
-						max = pixel;
-					}
+					min = min < pixel ? min : pixel;
+					max = max > pixel ? max : pixel;
 				}
 				// short-circuit min/max tests once dynamic range is met
 				if (max - min > MIN_DYNAMIC_RANGE) {
