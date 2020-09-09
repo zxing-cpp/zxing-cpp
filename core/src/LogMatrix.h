@@ -26,6 +26,8 @@
 
 namespace ZXing {
 
+#ifdef PRINT_DEBUG
+
 class LogMatrix
 {
 	using LogBuffer = Matrix<uint8_t>;
@@ -76,6 +78,12 @@ public:
 			_log.set(static_cast<int>(p.x * _scale), static_cast<int>(p.y * _scale), color);
 	}
 
+	template <>
+	void operator()(const PointT<int>& p, int color)
+	{
+		operator()(centered(p), color);
+	}
+
 	template <typename T>
 	void operator()(const std::vector<PointT<T>>& points, int color = 2)
 	{
@@ -83,6 +91,8 @@ public:
 			operator()(p, color);
 	}
 };
+
+extern LogMatrix log;
 
 class LogMatrixWriter
 {
@@ -96,5 +106,11 @@ public:
 	}
 	~LogMatrixWriter() { log.write(fn.c_str()); }
 };
+
+#else
+
+template<typename T> void log(PointT<T>, int = 0) {}
+
+#endif
 
 } // namespace ZXing

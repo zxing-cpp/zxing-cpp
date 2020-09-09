@@ -26,6 +26,7 @@
 #include "PerspectiveTransform.h"
 #include "GridSampler.h"
 #include "ZXNumeric.h"
+#include "LogMatrix.h"
 
 #include <algorithm>
 #include <cmath>
@@ -333,6 +334,10 @@ static DetectorResult DetectPure(const BitMatrix& image)
 
 DetectorResult Detector::Detect(const BitMatrix& image, bool tryHarder, bool isPure)
 {
+#ifdef PRINT_DEBUG
+	LogMatrixWriter lmw(log, image, 5, "qr-log.pnm");
+#endif
+
 	if (isPure)
 		return DetectPure(image);
 

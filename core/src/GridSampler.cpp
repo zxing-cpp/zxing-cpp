@@ -20,9 +20,14 @@
 
 #ifdef PRINT_DEBUG
 #include "LogMatrix.h"
+#include "BitMatrixIO.h"
 #endif
 
 namespace ZXing {
+
+#ifdef PRINT_DEBUG
+LogMatrix log;
+#endif
 
 DetectorResult SampleGrid(const BitMatrix& image, int width, int height, const PerspectiveTransform& mod2Pix)
 {
@@ -46,6 +51,11 @@ DetectorResult SampleGrid(const BitMatrix& image, int width, int height, const P
 			if (image.get(p))
 				res.set(x, y);
 		}
+
+#ifdef PRINT_DEBUG
+	printf("width: %d, height: %d\n", width, height);
+	printf("%s", ToString(res).c_str());
+#endif
 
 	auto projectCorner = [&](PointI p) { return PointI(mod2Pix(PointF(p)) + PointF(0.5, 0.5)); };
 	return {

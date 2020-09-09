@@ -25,10 +25,7 @@
 #include "Point.h"
 #include "WhiteRectDetector.h"
 
-#ifdef PRINT_DEBUG
-#include "BitMatrixIO.h"
 #include "LogMatrix.h"
-#endif
 
 #include <algorithm>
 #include <array>
@@ -41,13 +38,6 @@
 #include <vector>
 
 namespace ZXing {
-
-#ifdef PRINT_DEBUG
-static LogMatrix log;
-#else
-template<typename T> void log(PointT<T>, int = 0) {}
-#endif
-
 namespace DataMatrix {
 
 /**
@@ -871,9 +861,6 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 			auto res = SampleGrid(image, tl, bl, br, tr, dimT, dimR);
 
 #ifdef PRINT_DEBUG
-			printf("modules top: %d, right: %d\n", dimT, dimR);
-			printf("%s", ToString(res.bits()).c_str());
-
 			for (RegressionLine* l : {&lineL, &lineB, &lineT, &lineR})
 				log(l->points());
 #endif
