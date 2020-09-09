@@ -734,8 +734,8 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 		while (startTracer.step()) {
 			log(startTracer.p);
 
-			// go forward until we reach a white/black border
-			if (!startTracer.isEdgeBehind())
+			// continue until we cross from black into white
+			if (!startTracer.edgeAtBack().isWhite())
 				continue;
 
 #ifdef PRINT_DEBUG
@@ -752,7 +752,7 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 			auto t = startTracer;
 
 			// follow left leg upwards
-			t.setDirection(t.right());
+			t.turnRight();
 			if (!t.traceLine(t.right(), lineL))
 				continue;
 

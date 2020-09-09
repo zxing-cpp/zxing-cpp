@@ -45,9 +45,11 @@ public:
 	public:
 		Value() = default;
 		Value(bool isBlack) : v(isBlack ? BLACK : WHITE) {}
-		bool isValid() const { return v != INVALID; }
-		bool isWhite() const { return v == WHITE; }
-		bool isBlack() const { return v == BLACK; }
+		bool isValid() const noexcept { return v != INVALID; }
+		bool isWhite() const noexcept { return v == WHITE; }
+		bool isBlack() const noexcept { return v == BLACK; }
+
+		operator bool() const noexcept { return isValid(); }
 
 		bool operator==(Value o) const { return v == o.v; }
 		bool operator!=(Value o) const { return v != o.v; }
@@ -60,6 +62,9 @@ public:
 		return img->isIn(q) ? Value{img->get(q)} : Value{};
 	}
 
+	bool blackAt(POINT pos) const noexcept { return testAt(pos).isBlack(); }
+	bool whiteAt(POINT pos) const noexcept { return testAt(pos).isWhite(); }
+
 	bool isIn(POINT p) const noexcept { return img->isIn(p); }
 	bool isIn() const noexcept { return isIn(p); }
 	bool isBlack() const noexcept { return blackAt(p); }
@@ -67,13 +72,23 @@ public:
 
 	POINT front() const noexcept { return d; }
 	POINT back() const noexcept { return {-d.x, -d.y}; }
-	POINT right() const noexcept { return {-d.y, d.x}; }
 	POINT left() const noexcept { return {d.y, -d.x}; }
+	POINT right() const noexcept { return {-d.y, d.x}; }
 
-	bool blackAt(POINT pos) const noexcept { return testAt(pos).isBlack(); }
-	bool whiteAt(POINT pos) const noexcept { return testAt(pos).isWhite(); }
-	bool isEdge(POINT pos, POINT dir) const noexcept { return whiteAt(pos) && blackAt(pos + dir); }
-	bool isEdgeBehind() const noexcept { return isEdge(p, back()); }
+	void turnBack() noexcept { d = back(); }
+	void turnLeft() noexcept { d = left(); }
+	void turnRight() noexcept { d = right(); }
+
+	Value edgeAt(POINT d) const noexcept
+	{
+		Value v = testAt(p);
+		return testAt(p + d) != v ? v : Value();
+	}
+
+	Value edgeAtFront() const noexcept { return edgeAt(front()); }
+	Value edgeAtBack() const noexcept { return edgeAt(back()); }
+	Value edgeAtLeft() const noexcept { return edgeAt(left()); }
+	Value edgeAtRight() const noexcept { return edgeAt(right()); }
 
 	void setDirection(PointF dir) { d = bresenhamDirection(dir); }
 	void setDirection(PointI dir) { d = dir; }
