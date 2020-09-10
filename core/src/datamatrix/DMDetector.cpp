@@ -478,23 +478,23 @@ public:
 
 	void setDirectionInward(PointF d) { _directionInward = normalized(d); }
 
-	bool evaluate(double maxDist = -1)
+	bool evaluate(double maxSignedDist = -1)
 	{
-		auto ps = _points;
-		bool ret = evaluate(ps);
-		if (maxDist > 0) {
-			size_t old_points_size;
+		bool ret = evaluate(_points);
+		if (maxSignedDist > 0) {
+			auto points = _points;
 			while (true) {
-				old_points_size = _points.size();
-				_points.erase(std::remove_if(_points.begin(), _points.end(),
-											 [this, maxDist](auto p) { return this->signedDistance(p) > maxDist; }),
-							  _points.end());
-				if (old_points_size == _points.size())
+				auto old_points_size = points.size();
+				points.erase(
+					std::remove_if(points.begin(), points.end(),
+								   [this, maxSignedDist](auto p) { return this->signedDistance(p) > maxSignedDist; }),
+					points.end());
+				if (old_points_size == points.size())
 					break;
 #ifdef PRINT_DEBUG
-				printf("removed %zu points\n", old_points_size - _points.size());
+				printf("removed %zu points\n", old_points_size - points.size());
 #endif
-				ret = evaluate(_points);
+				ret = evaluate(points);
 			}
 		}
 		return ret;
