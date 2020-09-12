@@ -58,6 +58,7 @@ set (COMMON_FILES
     src/Pattern.h
     src/Point.h
     src/Quadrilateral.h
+    src/RegressionLine.h
     src/TextUtfEncoding.h
     src/TextUtfEncoding.cpp
     src/TritMatrix.h

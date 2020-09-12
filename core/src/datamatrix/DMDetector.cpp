@@ -20,6 +20,7 @@
 #include "BitMatrix.h"
 #include "BitMatrixCursor.h"
 #include "DetectorResult.h"
+#include "RegressionLine.h"
 #include "ResultPoint.h"
 #include "GridSampler.h"
 #include "Point.h"
@@ -412,38 +413,8 @@ static DetectorResult DetectOld(const BitMatrix& image)
 *  * works with real-world codes that have just one module wide quite-zone (which is perfectly in spec)
 */
 
-class RegressionLine
+class DMRegressionLine : public RegressionLine
 {
-	std::vector<PointF> _points;
-	PointF _directionInward;
-	double a = NAN, b = NAN, c = NAN;
-
-	friend PointF intersect(const RegressionLine& l1, const RegressionLine& l2);
-
-	bool evaluate(const std::vector<PointF>& ps)
-	{
-		auto mean = std::accumulate(ps.begin(), ps.end(), PointF()) / ps.size();
-		double sumXX = 0, sumYY = 0, sumXY = 0;
-		for (auto& p : ps) {
-			sumXX += (p.x - mean.x) * (p.x - mean.x);
-			sumYY += (p.y - mean.y) * (p.y - mean.y);
-			sumXY += (p.x - mean.x) * (p.y - mean.y);
-		}
-		if (sumYY >= sumXX) {
-			a = +sumYY / std::sqrt(sumYY * sumYY + sumXY * sumXY);
-			b = -sumXY / std::sqrt(sumYY * sumYY + sumXY * sumXY);
-		} else {
-			a = +sumXY / std::sqrt(sumXX * sumXX + sumXY * sumXY);
-			b = -sumXX / std::sqrt(sumXX * sumXX + sumXY * sumXY);
-		}
-		if (dot(_directionInward, normal()) < 0) {
-			a = -a;
-			b = -b;
-		}
-		c = dot(normal(), mean); // (a*mean.x + b*mean.y);
-		return dot(_directionInward, normal()) > 0.5; // angle between original and new direction is at most 60 degree
-	}
-
 	template <typename Container, typename Filter>
 	static double average(const Container& c, Filter f)
 	{
@@ -458,47 +429,7 @@ class RegressionLine
 	}
 
 public:
-	const std::vector<PointF>& points() const { return _points; }
-	int length() const { return _points.size() >= 2 ? int(distance(_points.front(), _points.back())) : 0; }
-	bool isValid() const { return !std::isnan(a); }
-	PointF normal() const { return isValid() ? PointF(a, b) : _directionInward; }
-	double signedDistance(PointF p) const { return dot(normal(), p) - c; }
-	PointF project(PointF p) const { return p - signedDistance(p) * normal(); }
-
 	void reverse() { std::reverse(_points.begin(), _points.end()); }
-
-	void add(PointF p) {
-		assert(_directionInward != PointF());
-		_points.push_back(p);
-		if (_points.size() == 1)
-			c = dot(normal(), p);
-	}
-
-	void pop_back() { _points.pop_back(); }
-
-	void setDirectionInward(PointF d) { _directionInward = normalized(d); }
-
-	bool evaluate(double maxSignedDist = -1)
-	{
-		bool ret = evaluate(_points);
-		if (maxSignedDist > 0) {
-			auto points = _points;
-			while (true) {
-				auto old_points_size = points.size();
-				points.erase(
-					std::remove_if(points.begin(), points.end(),
-								   [this, maxSignedDist](auto p) { return this->signedDistance(p) > maxSignedDist; }),
-					points.end());
-				if (old_points_size == points.size())
-					break;
-#ifdef PRINT_DEBUG
-				printf("removed %zu points\n", old_points_size - points.size());
-#endif
-				ret = evaluate(points);
-			}
-		}
-		return ret;
-	}
 
 	double modules(PointF beg, PointF end) const
 	{
@@ -539,16 +470,6 @@ public:
 		return lineLength / meanGapSize;
 	}
 };
-
-PointF intersect(const RegressionLine& l1, const RegressionLine& l2)
-{
-	assert(l1.isValid() && l2.isValid());
-	double x, y, d;
-	d = l1.a * l2.b - l1.b * l2.a;
-	x = (l1.c * l2.b - l1.b * l2.c) / d;
-	y = (l1.a * l2.c - l1.c * l2.a) / d;
-	return {x, y};
-}
 
 class EdgeTracer : public BitMatrixCursorF
 {
@@ -747,7 +668,7 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 #endif
 
 			PointF tl, bl, br, tr;
-			RegressionLine lineL, lineB, lineR, lineT;
+			DMRegressionLine lineL, lineB, lineR, lineT;
 
 			auto t = startTracer;
 
@@ -822,7 +743,7 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 			       tl.x - bl.x, tl.y - bl.y, br.x - bl.x, br.y - bl.y, (int)lenL, (int)lenB, (int)lenT, (int)lenR);
 #endif
 
-			for (RegressionLine* l : {&lineL, &lineB, &lineT, &lineR})
+			for (auto* l : {&lineL, &lineB, &lineT, &lineR})
 				l->evaluate(1.0);
 
 			// find the bounding box corners of the code with sub-pixel precision by intersecting the 4 border lines
