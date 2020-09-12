@@ -117,7 +117,7 @@ public:
 
 	void extend()
 	{
-		_size = _end - _data;
+		_size = static_cast<int>(_end - _data);
 	}
 };
 

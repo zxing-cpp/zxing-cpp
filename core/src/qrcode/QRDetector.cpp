@@ -66,7 +66,7 @@ static auto FindFinderPatterns(const BitMatrix& image, bool tryHarder)
 			// make sure p is not 'inside' an already found pattern area
 			if (FindIf(res, [p](const auto& old) { return distance(p, old) < old.size / 2; }) == res.end()) {
 				auto pattern = LocateConcentricPattern(image, PATTERN, p,
-													   Reduce(next) * 1.5); // 1.5 for very skewed samples
+													   Reduce(next) * 3 / 2); // 1.5 for very skewed samples
 				if (pattern) {
 					log(*pattern, 3);
 					res.push_back(*pattern);
@@ -158,7 +158,7 @@ static FinderPatternSets GenerateFinderPatternSets(std::vector<ConcentricPattern
 	return res;
 }
 
-static float EstimateModuleSize(const BitMatrix& image, PointF a, PointF b)
+static double EstimateModuleSize(const BitMatrix& image, PointF a, PointF b)
 {
 	BitMatrixCursorF cur(image, a, b - a);
 
@@ -170,21 +170,21 @@ static float EstimateModuleSize(const BitMatrix& image, PointF a, PointF b)
 
 	auto pattern = cur.readPattern<std::array<int, 4>>();
 
-	return Reduce(pattern) / 6.f * length(cur.d);
+	return Reduce(pattern) / 6.0 * length(cur.d);
 }
 
 struct DimensionEstimate
 {
 	int dim = 0;
-	float ms = 0;
+	double ms = 0;
 	int err = 0;
 };
 
 static DimensionEstimate EstimateDimension(const BitMatrix& image, PointF a, PointF b)
 {
-	float ms_a = EstimateModuleSize(image, a, b);
-	float ms_b = EstimateModuleSize(image, b, a);
-	float moduleSize = (ms_a + ms_b) / 2;
+	auto ms_a = EstimateModuleSize(image, a, b);
+	auto ms_b = EstimateModuleSize(image, b, a);
+	auto moduleSize = (ms_a + ms_b) / 2;
 
 	int dimension = std::lround(distance(a, b) / moduleSize) + 7;
 	int error     = 1 - (dimension % 4);
@@ -218,7 +218,7 @@ static RegressionLine traceLine(const BitMatrix& image, PointF p, PointF d, int 
 			}
 		}
 
-		int stepCount = maxAbsComponent(cur.p - p);
+		auto stepCount = std::lround(maxAbsComponent(cur.p - p));
 		do {
 			log(c.p, 2);
 			line.add(centered(c.p));
@@ -236,7 +236,7 @@ static DetectorResult SampleAtFinderPatternSet(const BitMatrix& image, const Fin
 	auto left = EstimateDimension(image, fp.tl, fp.bl);
 	auto best = top.err < left.err ? top : left;
 	int dimension = best.dim;
-	float moduleSize = best.ms;
+	int moduleSize = static_cast<int>(best.ms + 1);
 
 	// generate 4 lines: outer and inner edge of the 1 module wide black line between the two outer and the inner
 	// (tl) finder pattern
