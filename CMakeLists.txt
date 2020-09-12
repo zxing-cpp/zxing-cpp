@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.10)
 
-project (ZXing VERSION "1.1.0" LANGUAGES CXX)
+project (ZXing VERSION "1.1.1" LANGUAGES CXX)
 
 option (BUILD_WRITERS "Build with writer support (encoders)" ON)
 option (BUILD_READERS "Build with reader support (decoders)" ON)
