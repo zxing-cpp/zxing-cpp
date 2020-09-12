@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-#include <initializer_list>
+#include <vector>
 
 #include "MultiFormatWriter.h"
 #include "BitMatrix.h"
@@ -46,7 +46,7 @@ int main()
 	}
 
 	text = L"012345678901234567890123456789";
-	using FormatSpecs = std::initializer_list<std::pair<BarcodeFormat, size_t>>;
+	using FormatSpecs = std::vector<std::pair<BarcodeFormat, size_t>>;
 	for (const auto& [format, length] : FormatSpecs({
 		{BarcodeFormat::CODABAR, 0},
 		{BarcodeFormat::CODE_39, 0},
