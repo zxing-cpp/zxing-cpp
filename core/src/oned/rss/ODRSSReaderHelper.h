@@ -98,8 +98,8 @@ public:
 		float ratio = (reversed ? sumB : sumA) / sum;
 		if (ratio >= MIN_FINDER_PATTERN_RATIO && ratio <= MAX_FINDER_PATTERN_RATIO) {
 			// passes ratio test in spec, but see if the counts are unreasonable
-			auto minmax = std::minmax_element(counters.begin(), counters.end());
-			return *minmax.second < 10 * *minmax.first;
+			auto [min, max] = std::minmax_element(counters.begin(), counters.end());
+			return *max < 10 * *min;
 		}
 		return false;
 	}

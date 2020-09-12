@@ -19,7 +19,6 @@
 #include "PerspectiveTransform.h"
 
 #include <array>
-#include <tuple>
 
 namespace ZXing {
 
@@ -57,10 +56,7 @@ PerspectiveTransform PerspectiveTransform::times(const PerspectiveTransform& oth
 
 PerspectiveTransform PerspectiveTransform::UnitSquareTo(const QuadrilateralF& q)
 {
-	//c++-17: structured binding
-	PointF::value_t x0, y0, x1, y1, x2, y2, x3, y3;
-	std::tie(x0, y0, x1, y1, x2, y2, x3, y3) =
-		std::tuple_cat(reinterpret_cast<const std::array<PointF::value_t, 8>&>(q));
+	auto [x0, y0, x1, y1, x2, y2, x3, y3] = reinterpret_cast<const std::array<PointF::value_t, 8>&>(q);
 
 	auto d3 = q[0] - q[1] + q[2] - q[3];
 	if (d3 == PointF(0, 0)) {

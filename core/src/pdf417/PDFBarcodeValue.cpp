@@ -38,14 +38,14 @@ BarcodeValue::value() const
 {
 	int maxConfidence = -1;
 	std::vector<int> result;
-	for (auto& entry : _values) {
-		if (entry.second > maxConfidence) {
-			maxConfidence = entry.second;
+	for (auto [value, count] : _values) {
+		if (count > maxConfidence) {
+			maxConfidence = count;
 			result.clear();
-			result.push_back(entry.first);
+			result.push_back(value);
 		}
-		else if (entry.second == maxConfidence) {
-			result.push_back(entry.first);
+		else if (count == maxConfidence) {
+			result.push_back(value);
 		}
 	}
 	return result;

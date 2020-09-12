@@ -266,16 +266,14 @@ static DetectorResult DetectOld(const BitMatrix& image)
 	// Point A and D are across the diagonal from one another,
 	// as are B and C. Figure out which are the solid black lines
 	// by counting transitions
-	std::array<ResultPointsAndTransitions, 4> transitions = {
+	std::array transitions = {
 		TransitionsBetween(image, pointA, pointB),
 		TransitionsBetween(image, pointA, pointC),
 		TransitionsBetween(image, pointB, pointD),
 		TransitionsBetween(image, pointC, pointD),
 	};
 	std::sort(transitions.begin(), transitions.end(),
-			  [](const ResultPointsAndTransitions& a, const ResultPointsAndTransitions& b) {
-				  return a.transitions < b.transitions;
-			  });
+			  [](const auto& a, const auto& b) { return a.transitions < b.transitions; });
 
 	// Sort by number of transitions. First two will be the two solid sides; last two
 	// will be the two alternating black/white sides
@@ -293,17 +291,17 @@ static DetectorResult DetectOld(const BitMatrix& image)
 	const ResultPoint* bottomRight = nullptr;
 	const ResultPoint* bottomLeft = nullptr;
 	const ResultPoint* topLeft = nullptr;
-	for (const auto& entry : pointCount) {
-		if (entry.second == 2) {
-			bottomLeft = entry.first; // this is definitely the bottom left, then -- end of two L sides
+	for (const auto& [point, count] : pointCount) {
+		if (count == 2) {
+			bottomLeft = point; // this is definitely the bottom left, then -- end of two L sides
 		}
 		else {
 			// Otherwise it's either top left or bottom right -- just assign the two arbitrarily now
 			if (bottomRight == nullptr) {
-				bottomRight = entry.first;
+				bottomRight = point;
 			}
 			else {
-				topLeft = entry.first;
+				topLeft = point;
 			}
 		}
 	}
@@ -449,11 +447,8 @@ public:
 		auto i = gapSizes.begin();
 		for (auto dist : gapSizes) {
 			sum += dist;
-			if (dist > 1.9 * unitPixelDist) {
-				// c++14: *i++ = std::exchange(sum, 0.0);
-				*i++ = sum;
-				sum = 0.0;
-			}
+			if (dist > 1.9 * unitPixelDist)
+				*i++ = std::exchange(sum, 0.0);
 		}
 		*i++ = sum + distance(end, project(_points.back()));
 		gapSizes.erase(i, gapSizes.end());

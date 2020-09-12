@@ -59,13 +59,7 @@ static const std::map<int, CharacterSet> ECI_VALUE_TO_CHARSET = {
 	{170, CharacterSet::ASCII},
 };
 
-struct StringCmp {
-	bool operator()(char const *a, char const *b) const {
-		return std::strcmp(a, b) < 0;
-	}
-};
-
-static const std::map<const char*, CharacterSet, StringCmp> ECI_NAME_TO_CHARSET = {
+static const std::map<const char*, CharacterSet> ECI_NAME_TO_CHARSET = {
 	{"Cp437",		CharacterSet::Cp437},
 	{"ISO8859_1",	CharacterSet::ISO8859_1},
 	{"ISO-8859-1",	CharacterSet::ISO8859_1},
@@ -140,11 +134,11 @@ CharacterSetECI::CharsetFromValue(int value)
 int
 CharacterSetECI::ValueForCharset(CharacterSet charset)
 {
-	for (auto& entry : ECI_VALUE_TO_CHARSET)
+	for (auto [key, value] : ECI_VALUE_TO_CHARSET)
 	{
-		if (entry.second == charset)
+		if (value == charset)
 		{
-			return entry.first;
+			return key;
 		}
 	}
 	return 0;

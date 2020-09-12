@@ -19,6 +19,7 @@
 #include "ODRSSFinderPattern.h"
 #include "ZXContainerAlgorithms.h"
 
+#include <algorithm>
 #include <array>
 
 namespace ZXing {
@@ -172,12 +173,7 @@ bool ReaderHelper::ReadOddEvenElements(const BitArray& row, const FinderPattern&
 
 	for (int i = 0; i < 8; i++) {
 		float value = counters[i] / moduleSize;
-		//TODO: C++17: count = std::clamp(std::lround(value), 1, 8);
-		int count = std::lround(value);
-		if (count < 1)
-			count = 1;
-		else if (count > 8)
-			count = 8;
+		int count = std::clamp(std::lround(value), 1l, 8l);
 		int offset = i / 2;
 		if ((i & 1) == 0) {
 			oddCounts[offset] = count;
