@@ -43,13 +43,19 @@ public:
 //		: i(initializer_list_helper(flags.begin(), flags.end()))
 //	{}
 
-	class iterator : public std::iterator<std::input_iterator_tag, Enum>
+	class iterator
 	{
 		friend class Flags;
 		const Int _flags = 0;
 		int _pos = 0;
 		iterator(Int i, int p) : _flags(i), _pos(p) {}
 	public:
+		using iterator_category = std::input_iterator_tag;
+		using value_type = Enum;
+		using difference_type = ptrdiff_t;
+		using pointer = Enum*;
+		using reference = Enum&;
+
 		Enum operator*() const noexcept { return Enum(1 << _pos); }
 
 		iterator& operator++() noexcept

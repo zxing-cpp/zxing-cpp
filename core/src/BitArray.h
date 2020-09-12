@@ -64,9 +64,15 @@ public:
 #ifdef ZX_FAST_BIT_STORAGE
 	using Iterator = std::vector<uint8_t>::const_iterator;
 #else
-	class Iterator : public std::iterator<std::bidirectional_iterator_tag, bool, int, bool*, bool>
+	class Iterator
 	{
 	public:
+		using iterator_category = std::bidirectional_iterator_tag;
+		using value_type = bool;
+		using difference_type = int;
+		using pointer = bool*;
+		using reference = bool;
+
 		bool operator*() const { return (*_value & _mask) != 0; }
 
 		Iterator& operator++()
