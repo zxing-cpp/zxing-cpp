@@ -6,7 +6,7 @@ This project is a C++ port of [ZXing Library](https://github.com/zxing/zxing).
 
 ## Features
 
-* In pure C++14, no third-party dependencies
+* In pure C++17, no third-party dependencies
 * Stateless, thread-safe readers/generators
 * Wrapper to create WinRT component
 * Wrapper for Android
@@ -56,7 +56,7 @@ PM> Install-Package huycn.zxingcpp.winrt
 
 ### Standard setup on Windows/macOS/Linux
 1. Make sure [CMake](https://cmake.org) version 3.10 or newer is installed.
-2. Make sure a C++14 compliant compiler is installed (minimum VS 2017 15.0 / gcc 5 / clang 3.4)
+2. Make sure a C++17 compliant compiler is installed (minimum VS 2017 15.7 / gcc 7 / clang 5)
 3. See the cmake `BUILD_...` options to enable the testing code, python wrapper, etc.
 
 ### Windows GDIPlus wrapper

@@ -1,5 +1,3 @@
-set (CMAKE_CXX_STANDARD 17)
-
 if (BUILD_READERS)
     add_executable (ReaderTest
         TestReaderMain.cpp

@@ -466,8 +466,8 @@ if (COMPILER_NEEDS_FLOAT_STORE)
     )
 endif()
 
-# the lib needs a c++-14 compiler but can be used with a c++-11 compiler (see examples)
-target_compile_features(ZXing PRIVATE cxx_std_14 INTERFACE cxx_std_11)
+# the lib needs a c++-17 compiler but can be used with a c++-11 compiler (see examples)
+target_compile_features(ZXing PRIVATE cxx_std_17 INTERFACE cxx_std_11)
 
 target_link_libraries (ZXing PUBLIC ${CMAKE_THREAD_LIBS_INIT})
 

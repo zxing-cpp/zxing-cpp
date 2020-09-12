@@ -40,8 +40,7 @@ if (BUILD_SHARED_LIBS)
     set (CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif()
 
-# force the default c++ standard to c++-14 to fail if we depend on c++-17 features
-set (CMAKE_CXX_STANDARD 14)
+set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_EXTENSIONS OFF)
 
 if (BUILD_UNIT_TESTS)
