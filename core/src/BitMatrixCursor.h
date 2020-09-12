@@ -21,6 +21,13 @@
 
 namespace ZXing {
 
+enum class Direction {LEFT = -1, RIGHT = 1};
+
+inline Direction opposite(Direction dir) noexcept
+{
+	return dir == Direction::LEFT ? Direction::RIGHT : Direction::LEFT;
+}
+
 /**
  * @brief The BitMatrixCursor represents a current position inside an image and current direction it can advance towards.
  *
@@ -74,10 +81,12 @@ public:
 	POINT back() const noexcept { return {-d.x, -d.y}; }
 	POINT left() const noexcept { return {d.y, -d.x}; }
 	POINT right() const noexcept { return {-d.y, d.x}; }
+	POINT direction(Direction dir) const noexcept { return static_cast<int>(dir) * right(); }
 
 	void turnBack() noexcept { d = back(); }
 	void turnLeft() noexcept { d = left(); }
 	void turnRight() noexcept { d = right(); }
+	void turn(Direction dir) noexcept { d = direction(dir); }
 
 	Value edgeAt(POINT d) const noexcept
 	{
@@ -89,6 +98,7 @@ public:
 	Value edgeAtBack() const noexcept { return edgeAt(back()); }
 	Value edgeAtLeft() const noexcept { return edgeAt(left()); }
 	Value edgeAtRight() const noexcept { return edgeAt(right()); }
+	Value edgeAt(Direction dir) const noexcept { return edgeAt(direction(dir)); }
 
 	void setDirection(PointF dir) { d = bresenhamDirection(dir); }
 	void setDirection(PointI dir) { d = dir; }
@@ -115,6 +125,29 @@ public:
 				++i;
 			}
 		return sum * (!range || sum < range) * isIn(p + back());
+	}
+
+	bool stepAlongEdge(Direction dir, bool skipCorner = false)
+	{
+		if (!edgeAt(dir))
+			turn(dir);
+		else if (edgeAtFront()) {
+			turn(opposite(dir));
+			if (edgeAtFront()) {
+				turn(opposite(dir));
+				if (edgeAtFront())
+					return false;
+			}
+		}
+
+		bool ret = step();
+
+		if (ret && skipCorner && !edgeAt(dir)) {
+			turn(dir);
+			ret = step();
+		}
+
+		return ret;
 	}
 
 	template<typename ARRAY>

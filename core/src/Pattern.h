@@ -18,6 +18,7 @@
 #include "ZXContainerAlgorithms.h"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
@@ -40,10 +41,16 @@ public:
 	using value_type = PatternRow::value_type;
 
 	PatternView() = default;
+
 	PatternView(const PatternRow& bars)
 		: _data(bars.data() + 1), _size(Size(bars)), _base(bars.data()), _end(bars.data() + bars.size())
 	{}
+
 	PatternView(Iterator data, int size, Iterator base, Iterator end) : _data(data), _size(size), _base(base), _end(end) {}
+
+	template <size_t N>
+	PatternView(const std::array<value_type, N>& row) : _data(row.data()), _size(N)
+	{}
 
 	Iterator data() const { return _data; }
 	Iterator begin() const { return _data; }
@@ -107,6 +114,11 @@ public:
 		_data += 1;
 		return _data <= _end && _data[-1] <= maxWidth;
 	}
+
+	void extend()
+	{
+		_size = _end - _data;
+	}
 };
 
 /**
@@ -156,7 +168,7 @@ float IsPattern(const PatternView& view, const FixedPattern<N, SUM, false>& patt
 
 	const float moduleSize = (float)width / SUM;
 
-	if (minQuiteZone && spaceInPixel < minQuiteZone * moduleSize)
+	if (minQuiteZone && spaceInPixel < minQuiteZone * moduleSize - 1)
 		return 0;
 
 	if (!moduleSizeRef)
@@ -185,7 +197,7 @@ float IsPattern(const PatternView& view, const FixedPattern<N, SUM, true>& patte
 
 	const float moduleSize = (float)width / SUM;
 
-	if (minQuiteZone && spaceInPixel < minQuiteZone * moduleSize)
+	if (minQuiteZone && spaceInPixel < minQuiteZone * moduleSize - 1)
 		return 0;
 
 	if (!moduleSizeRef)
@@ -227,7 +239,7 @@ template <int LEN, int SUM, bool IS_SPARCE>
 PatternView FindLeftGuard(const PatternView& view, int minSize, const FixedPattern<LEN, SUM, IS_SPARCE>& pattern,
 						  float minQuiteZone)
 {
-	return FindLeftGuard<LEN>(view, minSize, [&pattern, minQuiteZone](auto window, int spaceInPixel) {
+	return FindLeftGuard<LEN>(view, std::max(minSize, LEN), [&pattern, minQuiteZone](auto window, int spaceInPixel) {
 		return IsPattern(window, pattern, spaceInPixel, minQuiteZone);
 	});
 }

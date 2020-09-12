@@ -47,6 +47,8 @@ set (COMMON_FILES
     src/CharacterSet.h
     src/CharacterSetECI.h
     src/CharacterSetECI.cpp
+    src/ConcentricFinder.h
+    src/ConcentricFinder.cpp
     src/CustomData.h
     src/GenericGF.h
     src/GenericGF.cpp
@@ -351,10 +353,6 @@ set (QRCODE_FILES
 )
 if (BUILD_READERS)
     set (QRCODE_FILES ${QRCODE_FILES}
-        src/qrcode/QRAlignmentPattern.h
-        src/qrcode/QRAlignmentPattern.cpp
-        src/qrcode/QRAlignmentPatternFinder.h
-        src/qrcode/QRAlignmentPatternFinder.cpp
         src/qrcode/QRBitMatrixParser.h
         src/qrcode/QRBitMatrixParser.cpp
         src/qrcode/QRDataBlock.h
@@ -367,11 +365,6 @@ if (BUILD_READERS)
         src/qrcode/QRDetector.h
         src/qrcode/QRDetector.cpp
         src/qrcode/QRECB.h
-        src/qrcode/QRFinderPattern.h
-        src/qrcode/QRFinderPattern.cpp
-        src/qrcode/QRFinderPatternFinder.h
-        src/qrcode/QRFinderPatternFinder.cpp
-        src/qrcode/QRFinderPatternInfo.h
         src/qrcode/QRFormatInformation.h
         src/qrcode/QRFormatInformation.cpp
         src/qrcode/QRReader.h
