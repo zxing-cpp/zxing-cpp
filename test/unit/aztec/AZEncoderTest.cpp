@@ -186,21 +186,8 @@ TEST(AZEncoderTest, UserSpecifiedLayers)
 	EXPECT_EQ(aztec.layers, 32);
 	EXPECT_FALSE(aztec.compact);
 
-	try {
-		aztec = Aztec::Encoder::Encode(alphabet, 25, 33);
-		FAIL() << "Encode should have failed.  No such thing as 33 layers";
-	}
-	catch (const std::invalid_argument&) {
-		// expected
-	}
-
-	try {
-		aztec = Aztec::Encoder::Encode(alphabet, 25, -1);
-		FAIL() << "Encode should have failed.  Text can't fit in 1-layer compact";
-	}
-	catch (const std::invalid_argument&) {
-		// expected
-	}
+	EXPECT_THROW({Aztec::Encoder::Encode(alphabet, 25, 33);}, std::invalid_argument );
+	EXPECT_THROW({Aztec::Encoder::Encode(alphabet, 25, -1);}, std::invalid_argument );
 }
 
 TEST(AZEncoderTest, BorderCompact4Case)
@@ -210,17 +197,10 @@ TEST(AZEncoderTest, BorderCompact4Case)
 	std::string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	// encodes as 26 * 5 * 4 = 520 bits of data
 	std::string alphabet4 = alphabet + alphabet + alphabet + alphabet;
-	Aztec::EncodeResult aztec;
-	try {
-		aztec = Aztec::Encoder::Encode(alphabet4, 0, -4);
-		FAIL() << "Encode should have failed.  Text can't fit in 1-layer compact";
-	}
-	catch (const std::invalid_argument&) {
-		// expected
-	}
+	EXPECT_THROW({Aztec::Encoder::Encode(alphabet4, 0, -4);}, std::invalid_argument );
 
 	// If we just try to encode it normally, it will go to a non-compact 4 layer
-	aztec = Aztec::Encoder::Encode(alphabet4, 0, Aztec::Encoder::DEFAULT_AZTEC_LAYERS);
+	auto aztec = Aztec::Encoder::Encode(alphabet4, 0, Aztec::Encoder::DEFAULT_AZTEC_LAYERS);
 	EXPECT_FALSE(aztec.compact);
 	EXPECT_EQ(aztec.layers, 4);
 
