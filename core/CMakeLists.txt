@@ -428,7 +428,9 @@ source_group (Sources\\pdf417 FILES ${PDF417_FILES})
 source_group (Sources\\qrcode FILES ${QRCODE_FILES})
 source_group (Sources\\textcodec FILES ${TEXT_CODEC_FILES})
 
-find_package (Threads)
+set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+find_package(Threads REQUIRED)
 
 add_library (ZXing
     ${COMMON_FILES}
@@ -464,7 +466,7 @@ endif()
 # the lib needs a c++-17 compiler but can be used with a c++-11 compiler (see examples)
 target_compile_features(ZXing PRIVATE cxx_std_17 INTERFACE cxx_std_11)
 
-target_link_libraries (ZXing PUBLIC ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries (ZXing PRIVATE Threads::Threads)
 
 add_library(ZXing::ZXing ALIAS ZXing)
 # add the old alias as well, to keep old clients compiling
