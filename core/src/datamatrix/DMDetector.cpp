@@ -646,7 +646,7 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 #else
 # define CHECK(A) if(!(A)) continue
 
-	for (auto startDirection : {PointF(-1, 0), PointF(-1, 0), PointF(1, 0), PointF(0, -1), PointF(0, 1)}) {
+	for (auto startDirection : {PointF(-1, 0), PointF(1, 0), PointF(0, -1), PointF(0, 1)}) {
 #endif
 		// TODO: If neither the horizontal nor the vertical center line cross the symbol, it will be overlooked.
 		// Will need to look at more lines.
