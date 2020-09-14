@@ -24,6 +24,7 @@
 #include "ResultPoint.h"
 #include "GridSampler.h"
 #include "Point.h"
+#include "Scope.h"
 #include "WhiteRectDetector.h"
 
 #include "LogMatrix.h"
@@ -638,18 +639,13 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 {
 	// walk to the left at first
 #ifdef PRINT_DEBUG
-# define CHECK(A) \
-	if (!(A)) { \
-		printf("broke at %d\n", __LINE__); \
-		for (auto* l : {&lineL, &lineB, &lineT, &lineR}) \
-			log(l->points()); \
-		continue; \
-	}
+# define CHECK(A) if (!(A)) { printf("broke at %d\n", __LINE__); continue; }
 
 	LogMatrixWriter lmw(log, image, 1, "dm-log.pnm");
 	for (auto startDirection : {PointF(-1, 0)}) {
 #else
 # define CHECK(A) if(!(A)) continue
+
 	for (auto startDirection : {PointF(-1, 0), PointF(-1, 0), PointF(1, 0), PointF(0, -1), PointF(0, 1)}) {
 #endif
 		// TODO: If neither the horizontal nor the vertical center line cross the symbol, it will be overlooked.
@@ -665,6 +661,13 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 
 			PointF tl, bl, br, tr;
 			DMRegressionLine lineL, lineB, lineR, lineT;
+
+#ifdef PRINT_DEBUG
+			SCOPE_EXIT([&] {
+				for (auto* l : {&lineL, &lineB, &lineT, &lineR})
+					log(l->points());
+			});
+#endif
 
 			auto t = startTracer;
 
@@ -759,11 +762,6 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 			CHECK(dimT >= 10 && dimT <= 144 && dimR >= 8 && dimR <= 144);
 
 			auto res = SampleGrid(image, tl, bl, br, tr, dimT, dimR);
-
-#ifdef PRINT_DEBUG
-			for (RegressionLine* l : {&lineL, &lineB, &lineT, &lineR})
-				log(l->points());
-#endif
 
 			CHECK(res.isValid());
 
