@@ -35,8 +35,8 @@ inline bool IsFinderPattern(const PatternView& v)
 {
 	//  a,b,c,d,e, g | sum(a..e) = 15
 	//  ------------
-	//  1,1,2,1,1, 1
-	//	| | |
+	//  1,1,2
+	//	| | |,1,1, 1
 	//	3,8,9
 
 	// TODO: not checking the guard (g) might allow scanning rotated extended codes
