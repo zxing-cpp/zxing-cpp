@@ -537,7 +537,7 @@ public:
 		} while (true);
 	}
 
-	bool traceGaps(PointF dEdge, RegressionLine& line, int maxStepSize, const RegressionLine& finishLine)
+	bool traceGaps(PointF dEdge, RegressionLine& line, int maxStepSize, const RegressionLine& finishLine = {})
 	{
 		line.setDirectionInward(dEdge);
 		int gaps = 0;
@@ -638,9 +638,18 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 {
 	// walk to the left at first
 #ifdef PRINT_DEBUG
+# define CHECK(A) \
+	if (!(A)) { \
+		printf("broke at %d\n", __LINE__); \
+		for (auto* l : {&lineL, &lineB, &lineT, &lineR}) \
+			log(l->points()); \
+		continue; \
+	}
+
 	LogMatrixWriter lmw(log, image, 1, "dm-log.pnm");
 	for (auto startDirection : {PointF(-1, 0)}) {
 #else
+# define CHECK(A) if(!(A)) continue
 	for (auto startDirection : {PointF(-1, 0), PointF(-1, 0), PointF(1, 0), PointF(0, -1), PointF(0, 1)}) {
 #endif
 		// TODO: If neither the horizontal nor the vertical center line cross the symbol, it will be overlooked.
@@ -654,14 +663,6 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 			if (!startTracer.edgeAtBack().isWhite())
 				continue;
 
-#ifdef PRINT_DEBUG
-#define continue { \
-			printf("broke at %d\n", __LINE__); \
-			for (auto* l : {&lineL, &lineB, &lineT, &lineR}) log(l->points()); \
-			continue; \
-		}
-#endif
-
 			PointF tl, bl, br, tr;
 			DMRegressionLine lineL, lineB, lineR, lineT;
 
@@ -669,69 +670,53 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 
 			// follow left leg upwards
 			t.turnRight();
-			if (!t.traceLine(t.right(), lineL))
-				continue;
-
-			if (!t.traceCorner(t.right(), tl))
-				continue;
+			CHECK(t.traceLine(t.right(), lineL));
+			CHECK(t.traceCorner(t.right(), tl));
 			lineL.reverse();
 			auto tlTracer = t;
 
 			// follow left leg downwards
 			t = startTracer;
 			t.setDirection(tlTracer.right());
-			if (!t.traceLine(t.left(), lineL))
-				continue;
-
+			CHECK(t.traceLine(t.left(), lineL));
 			if (!lineL.isValid())
 				t.updateDirectionFromOrigin(tl);
 			auto up = t.back();
-			if (!t.traceCorner(t.left(), bl))
-				continue;
+			CHECK(t.traceCorner(t.left(), bl));
 
 			// follow bottom leg right
-			if (!t.traceLine(t.left(), lineB))
-				continue;
-
+			CHECK(t.traceLine(t.left(), lineB));
 			if (!lineB.isValid())
 				t.updateDirectionFromOrigin(bl);
 			auto right = t.front();
-			if (!t.traceCorner(t.left(), br))
-				continue;
+			CHECK(t.traceCorner(t.left(), br));
 
 			auto lenL = distance(tl, bl) - 1;
 			auto lenB = distance(bl, br) - 1;
-			if (lenL < 10 || lenB < 10 || lenB < lenL / 4 || lenB > lenL * 8)
-				continue;
+			CHECK(lenL >= 10 && lenB >= 10 && lenB >= lenL / 4 && lenB <= lenL * 8);
 
 			auto maxStepSize = static_cast<int>(lenB / 5 + 1); // datamatrix dim is at least 10x10
 
 			// at this point we found a plausible L-shape and are now looking for the b/w pattern at the top and right:
 			// follow top row right 'half way' (4 gaps), see traceGaps break condition with 'invalid' line
 			tlTracer.setDirection(right);
-			if (!tlTracer.traceGaps(tlTracer.right(), lineT, maxStepSize, RegressionLine()))
-				continue;
+			CHECK(tlTracer.traceGaps(tlTracer.right(), lineT, maxStepSize));
 
 			maxStepSize = std::min(lineT.length() / 3, static_cast<int>(lenL / 5)) * 2;
 
 			// follow up until we reach the top line
 			t.setDirection(up);
-			if (!t.traceGaps(t.left(), lineR, maxStepSize, lineT))
-				continue;
-
-			if (!t.traceCorner(t.left(), tr))
-				continue;
+			CHECK(t.traceGaps(t.left(), lineR, maxStepSize, lineT));
+			CHECK(t.traceCorner(t.left(), tr));
 
 			auto lenT = distance(tl, tr) - 1;
 			auto lenR = distance(tr, br) - 1;
 
-			if (std::abs(lenT - lenB) / lenB > 0.5 || std::abs(lenR - lenL) / lenL > 0.5 ||
-			        lineT.points().size() < 5 || lineR.points().size() < 5)
-				continue;
+			CHECK(std::abs(lenT - lenB) / lenB < 0.5 && std::abs(lenR - lenL) / lenL < 0.5 &&
+				  lineT.points().size() >= 5 && lineR.points().size() >= 5);
 
 			// continue top row right until we cross the right line
-			if (!tlTracer.traceGaps(tlTracer.right(), lineT, maxStepSize, lineR))
-				continue;
+			CHECK(tlTracer.traceGaps(tlTracer.right(), lineT, maxStepSize, lineR));
 
 #ifdef PRINT_DEBUG
 			printf("L: %.1f, %.1f ^ %.1f, %.1f > %.1f, %.1f (%d : %d : %d : %d)\n", bl.x, bl.y,
@@ -771,8 +756,7 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 			dimT *= 2;
 			dimR *= 2;
 
-			if (dimT < 10 || dimT > 144 || dimR < 8 || dimR > 144 )
-				continue;
+			CHECK(dimT >= 10 && dimT <= 144 && dimR >= 8 && dimR <= 144);
 
 			auto res = SampleGrid(image, tl, bl, br, tr, dimT, dimR);
 
@@ -781,8 +765,7 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryRotate)
 				log(l->points());
 #endif
 
-			if (!res.isValid())
-				continue;
+			CHECK(res.isValid());
 
 			return res;
 		}
