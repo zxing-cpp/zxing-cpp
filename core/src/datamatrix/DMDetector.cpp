@@ -628,8 +628,7 @@ public:
 	}
 };
 
-
-static DetectorResult Scan(EdgeTracer startTracer)
+static DetectorResult Scan(EdgeTracer startTracer, std::array<DMRegressionLine, 4>& lines)
 {
 	while (startTracer.step()) {
 		log(startTracer.p);
@@ -639,12 +638,15 @@ static DetectorResult Scan(EdgeTracer startTracer)
 			continue;
 
 		PointF tl, bl, br, tr;
-		DMRegressionLine lineL, lineB, lineR, lineT;
+		auto& [lineL, lineB, lineR, lineT] = lines;
+
+		for (auto& l : lines)
+			l.reset();
 
 #ifdef PRINT_DEBUG
 		SCOPE_EXIT([&] {
-			for (auto* l : {&lineL, &lineB, &lineT, &lineR})
-				log(l->points());
+			for (auto& l : lines)
+				log(l.points());
 		});
 # define CHECK(A) if (!(A)) { printf("broke at %d\n", __LINE__); continue; }
 #else
@@ -778,6 +780,9 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryHarder, bool try
 	if (tryHarder)
 		history = BitMatrix(image.width(), image.height());
 
+	// instanciate RegressionLine objects outside of Scan function to prevent repetitive std::vector allocations
+	std::array<DMRegressionLine, 4> lines;
+
 	constexpr int minSymbolSize = 8 * 2; // minimum realistic size in pixel: 8 modules x 2 pixels per module
 
 	for (auto dir : {PointF(-1, 0), PointF(1, 0), PointF(0, -1), PointF(0, 1)}) {
@@ -796,7 +801,7 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryHarder, bool try
 			if (!tracer.isIn())
 				break;
 
-			if (auto res = Scan(tracer); res.isValid())
+			if (auto res = Scan(tracer, lines); res.isValid())
 				return res;
 
 			if (!tryHarder)

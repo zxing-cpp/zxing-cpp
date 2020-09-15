@@ -70,6 +70,13 @@ public:
 	auto signedDistance(PointF p) const { return dot(normal(), p) - c; }
 	PointF project(PointF p) const { return p - signedDistance(p) * normal(); }
 
+	void reset()
+	{
+		_points.clear();
+		_directionInward = {};
+		a = b = c = NAN;
+	}
+
 	void add(PointF p) {
 		assert(_directionInward != PointF());
 		_points.push_back(p);
