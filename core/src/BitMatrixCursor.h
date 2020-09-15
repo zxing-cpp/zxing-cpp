@@ -47,11 +47,11 @@ public:
 
 	class Value
 	{
-		enum { INVALID, WHITE, BLACK };
+		enum { INVALID = -1, WHITE = 0, BLACK = 1 };
 		int v = INVALID;
 	public:
 		Value() = default;
-		Value(bool isBlack) : v(isBlack ? BLACK : WHITE) {}
+		Value(bool isBlack) : v(isBlack) {}
 		bool isValid() const noexcept { return v != INVALID; }
 		bool isWhite() const noexcept { return v == WHITE; }
 		bool isBlack() const noexcept { return v == BLACK; }
