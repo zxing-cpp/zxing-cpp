@@ -38,16 +38,19 @@ protected:
 		auto mean = std::accumulate(ps.begin(), ps.end(), PointF()) / ps.size();
 		PointF::value_t sumXX = 0, sumYY = 0, sumXY = 0;
 		for (auto& p : ps) {
-			sumXX += (p.x - mean.x) * (p.x - mean.x);
-			sumYY += (p.y - mean.y) * (p.y - mean.y);
-			sumXY += (p.x - mean.x) * (p.y - mean.y);
+			auto d = p - mean;
+			sumXX += d.x * d.x;
+			sumYY += d.y * d.y;
+			sumXY += d.x * d.y;
 		}
 		if (sumYY >= sumXX) {
-			a = +sumYY / std::sqrt(sumYY * sumYY + sumXY * sumXY);
-			b = -sumXY / std::sqrt(sumYY * sumYY + sumXY * sumXY);
+			auto l = std::sqrt(sumYY * sumYY + sumXY * sumXY);
+			a = +sumYY / l;
+			b = -sumXY / l;
 		} else {
-			a = +sumXY / std::sqrt(sumXX * sumXX + sumXY * sumXY);
-			b = -sumXX / std::sqrt(sumXX * sumXX + sumXY * sumXY);
+			auto l = std::sqrt(sumXX * sumXX + sumXY * sumXY);
+			a = +sumXY / l;
+			b = -sumXX / l;
 		}
 		if (dot(_directionInward, normal()) < 0) {
 			a = -a;
