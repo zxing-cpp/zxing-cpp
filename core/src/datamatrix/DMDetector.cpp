@@ -535,7 +535,7 @@ public:
 		do {
 			log(p);
 			line.add(p);
-			if (line.points().size() % 30 == 10) {
+			if (line.points().size() % 50 == 10) {
 				if (!line.evaluate())
 					return false;
 				if (!updateDirectionFromOrigin(p - line.project(p) + line.points().front()))
