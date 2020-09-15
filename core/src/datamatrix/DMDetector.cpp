@@ -489,6 +489,13 @@ class EdgeTracer : public BitMatrixCursorF
 							// if we are not making any progress, we still have another endless loop bug
 							assert(p != centered(pEdge));
 							p = centered(pEdge);
+
+							if (history && maxStepSize == 1) {
+								if (history->get(p))
+									return StepResult::CLOSED_END;
+								history->set(p);
+							}
+
 							return StepResult::FOUND;
 						}
 						pEdge = pEdge - dEdge;
@@ -503,6 +510,8 @@ class EdgeTracer : public BitMatrixCursorF
 	}
 
 public:
+	BitMatrix* history = nullptr;
+
 	using BitMatrixCursorF::BitMatrixCursor;
 
 	bool updateDirectionFromOrigin(PointF origin)
@@ -764,6 +773,11 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryHarder, bool try
 	// disable expensive multi-line scan to detect off-center symbols for now
 	tryHarder = false;
 
+	// a history log to remember where the tracing already passed by to prevent a later trace from doing the same work twice
+	BitMatrix history;
+	if (tryHarder)
+		history = BitMatrix(image.width(), image.height());
+
 	constexpr int minSymbolSize = 8 * 2; // minimum realistic size in pixel: 8 modules x 2 pixels per module
 
 	for (auto dir : {PointF(-1, 0), PointF(1, 0), PointF(0, -1), PointF(0, 1)}) {
@@ -771,6 +785,10 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryHarder, bool try
 		auto startPos = centered(center - center * dir + minSymbolSize / 2 * dir);
 
 		EdgeTracer tracer(image, startPos, dir);
+		if (tryHarder) {
+			tracer.history = &history;
+			history.clear();
+		}
 
 		for (int i = 1;; ++i) {
 			tracer.p = startPos + i / 2 * minSymbolSize * (i & 1 ? -1 : 1) * tracer.right();
