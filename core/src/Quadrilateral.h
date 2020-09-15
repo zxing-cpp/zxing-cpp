@@ -20,7 +20,6 @@
 
 #include <array>
 #include <cmath>
-#include <limits>
 
 namespace ZXing {
 
@@ -76,7 +75,7 @@ bool IsConvex(const Quadrilateral<PointT>& poly)
 	const int N = Size(poly);
 	bool sign = false;
 
-	double m = std::numeric_limits<double>::max(), M = 0.0;
+	typename PointT::value_t m = INFINITY, M = 0;
 
 	for(int i = 0; i < N; i++)
 	{

@@ -29,14 +29,14 @@ class RegressionLine
 protected:
 	std::vector<PointF> _points;
 	PointF _directionInward;
-	double a = NAN, b = NAN, c = NAN;
+	PointF::value_t a = NAN, b = NAN, c = NAN;
 
 	friend PointF intersect(const RegressionLine& l1, const RegressionLine& l2);
 
 	bool evaluate(const std::vector<PointF>& ps)
 	{
 		auto mean = std::accumulate(ps.begin(), ps.end(), PointF()) / ps.size();
-		double sumXX = 0, sumYY = 0, sumXY = 0;
+		PointF::value_t sumXX = 0, sumYY = 0, sumXY = 0;
 		for (auto& p : ps) {
 			sumXX += (p.x - mean.x) * (p.x - mean.x);
 			sumYY += (p.y - mean.y) * (p.y - mean.y);
@@ -54,17 +54,17 @@ protected:
 			b = -b;
 		}
 		c = dot(normal(), mean); // (a*mean.x + b*mean.y);
-		return dot(_directionInward, normal()) > 0.5; // angle between original and new direction is at most 60 degree
+		return dot(_directionInward, normal()) > 0.5f; // angle between original and new direction is at most 60 degree
 	}
 
 public:
 	RegressionLine() { _points.reserve(16); } // arbitrary but plausible start size (tiny performance improvement)
 
-	const std::vector<PointF>& points() const { return _points; }
+	const auto& points() const { return _points; }
 	int length() const { return _points.size() >= 2 ? int(distance(_points.front(), _points.back())) : 0; }
 	bool isValid() const { return !std::isnan(a); }
 	PointF normal() const { return isValid() ? PointF(a, b) : _directionInward; }
-	double signedDistance(PointF p) const { return dot(normal(), p) - c; }
+	auto signedDistance(PointF p) const { return dot(normal(), p) - c; }
 	PointF project(PointF p) const { return p - signedDistance(p) * normal(); }
 
 	void add(PointF p) {
@@ -104,10 +104,9 @@ public:
 inline PointF intersect(const RegressionLine& l1, const RegressionLine& l2)
 {
 	assert(l1.isValid() && l2.isValid());
-	double x, y, d;
-	d = l1.a * l2.b - l1.b * l2.a;
-	x = (l1.c * l2.b - l1.b * l2.c) / d;
-	y = (l1.a * l2.c - l1.c * l2.a) / d;
+	auto d = l1.a * l2.b - l1.b * l2.a;
+	auto x = (l1.c * l2.b - l1.b * l2.c) / d;
+	auto y = (l1.a * l2.c - l1.c * l2.a) / d;
 	return {x, y};
 }
 

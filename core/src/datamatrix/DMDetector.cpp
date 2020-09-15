@@ -514,9 +514,9 @@ public:
 			return false;
 		// make sure d stays in the same quadrant to prevent an infinite loop
 		if (std::abs(d.x) == std::abs(d.y))
-			d = mainDirection(old_d) + 0.99 * (d - mainDirection(old_d));
+			d = mainDirection(old_d) + 0.99f * (d - mainDirection(old_d));
 		else if (mainDirection(d) != mainDirection(old_d))
-			d = mainDirection(old_d) + 0.99 * mainDirection(d);
+			d = mainDirection(old_d) + 0.99f * mainDirection(d);
 		return true;
 	}
 
