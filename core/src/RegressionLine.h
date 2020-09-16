@@ -106,6 +106,9 @@ public:
 #endif
 				ret = evaluate(points);
 			}
+#ifdef PRINT_DEBUG
+			_points = points;
+#endif
 		}
 		return ret;
 	}

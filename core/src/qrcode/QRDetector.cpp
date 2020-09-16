@@ -220,12 +220,14 @@ static RegressionLine TraceLine(const BitMatrix& image, PointF p, PointF d, int 
 
 		auto stepCount = static_cast<int>(maxAbsComponent(cur.p - p));
 		do {
-			log(c.p, 2);
 			line.add(centered(c.p));
 		} while (--stepCount > 0 && c.stepAlongEdge(dir, true));
 	}
 
 	line.evaluate(1.0);
+
+	for (auto p : line.points())
+		log(p, 2);
 
 	return line;
 }
