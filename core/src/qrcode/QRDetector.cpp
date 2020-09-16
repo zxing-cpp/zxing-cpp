@@ -192,7 +192,7 @@ static DimensionEstimate EstimateDimension(const BitMatrix& image, PointF a, Poi
 	return {dimension + error, moduleSize, std::abs(error)};
 }
 
-static RegressionLine traceLine(const BitMatrix& image, PointF p, PointF d, int edge)
+static RegressionLine TraceLine(const BitMatrix& image, PointF p, PointF d, int edge)
 {
 	BitMatrixCursorF cur(image, p, d - p);
 	RegressionLine line;
@@ -240,10 +240,10 @@ static DetectorResult SampleAtFinderPatternSet(const BitMatrix& image, const Fin
 
 	// generate 4 lines: outer and inner edge of the 1 module wide black line between the two outer and the inner
 	// (tl) finder pattern
-	auto bl2 = traceLine(image, fp.bl, fp.tl, 2);
-	auto bl3 = traceLine(image, fp.bl, fp.tl, 3);
-	auto tr2 = traceLine(image, fp.tr, fp.tl, 2);
-	auto tr3 = traceLine(image, fp.tr, fp.tl, 3);
+	auto bl2 = TraceLine(image, fp.bl, fp.tl, 2);
+	auto bl3 = TraceLine(image, fp.bl, fp.tl, 3);
+	auto tr2 = TraceLine(image, fp.tr, fp.tl, 2);
+	auto tr3 = TraceLine(image, fp.tr, fp.tl, 3);
 
 	auto quad = Rectangle(dimension, dimension, 3.5);
 	PointF br = fp.tr - fp.tl + fp.bl;
