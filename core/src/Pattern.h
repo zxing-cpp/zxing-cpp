@@ -158,7 +158,7 @@ struct FixedPattern
 template <int N, int SUM>
 using FixedSparcePattern = FixedPattern<N, SUM, true>;
 
-template <int N, int SUM>
+template <bool RELAXED_THRESHOLD = false, int N, int SUM>
 float IsPattern(const PatternView& view, const FixedPattern<N, SUM, false>& pattern, int spaceInPixel = 0,
 				float minQuiteZone = 0, float moduleSizeRef = 0.f)
 {
@@ -174,16 +174,18 @@ float IsPattern(const PatternView& view, const FixedPattern<N, SUM, false>& patt
 	if (!moduleSizeRef)
 		moduleSizeRef = moduleSize;
 
+	// the offset of 0.5 is to make the code less sensitive to quantization errors for small (near 1) module sizes.
+	// TODO: review once we have upsampling in the binarizer in place.
+	const float threshold = moduleSizeRef * (0.5f + RELAXED_THRESHOLD * 0.25f) + 0.5f;
+
 	for (int x = 0; x < N; ++x)
-		// the offset of 0.5 is to make the code less sensitive to quantization errors for small (near 1) module sizes.
-		// TODO: review once we have upsampling in the binarizer in place.
-		if (std::abs(view[x] - pattern[x] * moduleSize) > moduleSizeRef * 0.5f + 0.5f)
+		if (std::abs(view[x] - pattern[x] * moduleSizeRef) > threshold)
 			return 0;
 
 	return moduleSize;
 }
 
-template <int N, int SUM>
+template <bool RELAXED_THRESHOLD = false, int N, int SUM>
 float IsPattern(const PatternView& view, const FixedPattern<N, SUM, true>& pattern, int spaceInPixel = 0,
 				float minQuiteZone = 0, float moduleSizeRef = 0.f)
 {
@@ -203,9 +205,13 @@ float IsPattern(const PatternView& view, const FixedPattern<N, SUM, true>& patte
 	if (!moduleSizeRef)
 		moduleSizeRef = moduleSize;
 
+	// the offset of 0.5 is to make the code less sensitive to quantization errors for small (near 1) module sizes.
+	// TODO: review once we have upsampling in the binarizer in place.
+	const float threshold = moduleSizeRef * (0.5f + RELAXED_THRESHOLD * 0.25f) + 0.5f;
+
 	for (int x = 0; x < N; ++x)
 		if (pattern[x]) {
-			if (std::abs(view[x] - pattern[x] * moduleSize) > moduleSizeRef / 2)
+			if (std::abs(view[x] - pattern[x] * moduleSizeRef) > threshold)
 				return 0;
 		} else {
 			if (view[x] < 1.5f * moduleSizeRef)

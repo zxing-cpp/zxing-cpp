@@ -53,7 +53,7 @@ std::optional<Pattern> ReadSymmetricPattern(BitMatrixCursorF& cur, int range)
 	return pattern;
 }
 
-template<typename FinderPattern>
+template<bool RELAXED_THRESHOLD = false, typename FinderPattern>
 int CheckDirection(BitMatrixCursorF& cur, PointF dir, FinderPattern finderPattern, int range, bool updatePosition)
 {
 	using Pattern = std::array<PatternView::value_type, finderPattern.size()>;
@@ -61,7 +61,7 @@ int CheckDirection(BitMatrixCursorF& cur, PointF dir, FinderPattern finderPatter
 	auto pOri = cur.p;
 	cur.setDirection(dir);
 	auto pattern = ReadSymmetricPattern<Pattern>(cur, range);
-	if (!pattern || !IsPattern(*pattern, finderPattern))
+	if (!pattern || !IsPattern<RELAXED_THRESHOLD>(*pattern, finderPattern))
 		return 0;
 
 	if (updatePosition)
@@ -81,13 +81,14 @@ struct ConcentricPattern : public PointF
 	int size = 0;
 };
 
-template<typename FINDER_PATTERN>
+template <bool RELAXED_THRESHOLD = false, typename FINDER_PATTERN>
 std::optional<ConcentricPattern> LocateConcentricPattern(const BitMatrix& image, FINDER_PATTERN finderPattern, PointF center, int range)
 {
 	auto cur = BitMatrixCursorF(image, center, {});
 	int minSpread = image.width(), maxSpread = 0;
 	for (auto d : {PointF{0, 1}, {1, 0}, {1, 1}, {1, -1}}) {
-		int spread = CheckDirection(cur, d, finderPattern, range, length(d) < 1.1);
+		int spread =
+			CheckDirection<RELAXED_THRESHOLD>(cur, d, finderPattern, range, length(d) < 1.1 && !RELAXED_THRESHOLD);
 		if (!spread)
 			return {};
 		minSpread = std::min(spread, minSpread);

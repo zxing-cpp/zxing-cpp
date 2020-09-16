@@ -218,7 +218,7 @@ static RegressionLine TraceLine(const BitMatrix& image, PointF p, PointF d, int 
 			}
 		}
 
-		auto stepCount = std::lround(maxAbsComponent(cur.p - p));
+		auto stepCount = static_cast<int>(maxAbsComponent(cur.p - p));
 		do {
 			log(c.p, 2);
 			line.add(centered(c.p));
@@ -258,9 +258,12 @@ static DetectorResult SampleAtFinderPatternSet(const BitMatrix& image, const Fin
 		if (dimension > 21) {
 			// in case we landed outside of the central black module of the alignment pattern, use the center
 			// of the next best circle (either outer or inner edge of the white part of the alignment pattern)
-			br = CenterOfRing(image, PointI(br), moduleSize * 4, 1, false).value_or(br);
-			br = LocateConcentricPattern(image, FixedPattern<3, 3>{1, 1, 1}, br, moduleSize * 3)
-							  .value_or(ConcentricPattern{br});
+			auto br2 = CenterOfRing(image, PointI(br), moduleSize * 4, 1, false).value_or(br);
+			// if we did not land on a black pixel or the concentric pattern finder fails,
+			// leave the intersection of the lines as the best guess
+			if (image.get(br2))
+				br = LocateConcentricPattern<true>(image, FixedPattern<3, 3>{1, 1, 1}, br2, moduleSize * 3)
+						 .value_or(ConcentricPattern{br});
 		}
 	}
 
