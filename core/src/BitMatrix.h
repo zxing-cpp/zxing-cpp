@@ -79,7 +79,7 @@ public:
 #ifdef ZX_FAST_BIT_STORAGE
 	static bool isSet(data_t v) { return v != 0; } // see SET_V above
 
-	BitMatrix(int width, int height) : _width(width), _height(height), _rowSize(width), _bits(width * height, UNSET_V) {}
+	BitMatrix(int width, int height);
 #else
 	BitMatrix(int width, int height) : _width(width), _height(height), _rowSize((width + 31) / 32), _bits(((width + 31) / 32) * _height, 0) {}
 #endif

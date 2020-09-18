@@ -30,6 +30,10 @@
 
 namespace ZXing {
 
+#ifdef ZX_FAST_BIT_STORAGE
+	BitMatrix::BitMatrix(int width, int height) : _width(width), _height(height), _rowSize(width), _bits(width * height, UNSET_V) {}
+#endif
+
 void
 BitMatrix::getRow(int y, BitArray& row) const
 {
