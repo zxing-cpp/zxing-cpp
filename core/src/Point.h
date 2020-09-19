@@ -157,11 +157,6 @@ PointT<T> mainDirection(PointT<T> d)
 	return std::abs(d.x) > std::abs(d.y) ? PointT<T>(d.x, 0) : PointT<T>(0, d.y);
 }
 
-template <typename U>
-PointF movedTowardsBy(PointF a, PointF b, U d)
-{
-	return a + d * normalized(b - a);
-}
 
 } // ZXing
 

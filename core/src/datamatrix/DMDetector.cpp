@@ -745,17 +745,21 @@ static DetectorResult Scan(EdgeTracer startTracer, std::array<DMRegressionLine, 
 
 		CHECK(dimT >= 10 && dimT <= 144 && dimR >= 8 && dimR <= 144);
 
-		auto moveTowardsBy = [](PointF& a, PointF b, auto d) { a = movedTowardsBy(a, b, d); };
+		auto movedTowardsBy = [](PointF& a, PointF b1, PointF b2, auto d) {
+			return a + d * normalized(normalized(b1 - a) + normalized(b2 - a));
+		};
 
 		// shrink shape by half a pixel to go from center of white pixel outside of code to the edge between white and black
-		moveTowardsBy(tl, br, 0.5f);
-		moveTowardsBy(br, tl, 0.5f);
-		moveTowardsBy(bl, tr, 0.5f);
-		// move the tr point a little less because the jagged top and right line tend to be statistically slightly
-		// inclined toward the center anyway.
-		moveTowardsBy(tr, bl, 0.3f);
+		QuadrilateralF sourcePoints = {
+			movedTowardsBy(tl, tr, bl, 0.5f),
+			// move the tr point a little less because the jagged top and right line tend to be statistically slightly
+			// inclined toward the center anyway.
+			movedTowardsBy(tr, br, tl, 0.3f),
+			movedTowardsBy(br, bl, tr, 0.5f),
+			movedTowardsBy(bl, tl, br, 0.5f),
+		};
 
-		auto res = SampleGrid(*startTracer.img, dimT, dimR, PerspectiveTransform(Rectangle(dimT, dimR, 0), {tl, tr, br, bl}));
+		auto res = SampleGrid(*startTracer.img, dimT, dimR, PerspectiveTransform(Rectangle(dimT, dimR, 0), sourcePoints));
 
 		CHECK(res.isValid());
 
