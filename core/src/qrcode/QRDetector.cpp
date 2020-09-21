@@ -253,6 +253,11 @@ static DetectorResult SampleAtFinderPatternSet(const BitMatrix& image, const Fin
 	if (bl2.isValid() && tr2.isValid() && bl3.isValid() && tr3.isValid()) {
 		// intersect both outer and inner line pairs and take the center point between the two intersection points
 		br = (intersect(bl2, tr2) + intersect(bl3, tr3)) / 2;
+
+		// if the estimated alignment pattern position is outside of the image, stop here
+		if (!image.isIn(PointI(br), 3 * moduleSize))
+			return {};
+
 		log(br, 3);
 		quad[2] = quad[2] - PointF(3, 3);
 
