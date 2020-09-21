@@ -18,6 +18,7 @@
 #include "GenericGFPoly.h"
 #include "GenericGF.h"
 #include "ZXConfig.h"
+#include "ZXContainerAlgorithms.h"
 
 #include <algorithm>
 #include <cassert>
@@ -170,17 +171,16 @@ GenericGFPoly::divide(const GenericGFPoly& other, GenericGFPoly& quotient)
 
 void GenericGFPoly::normalize()
 {
-	auto& coefs = _coefficients;
-	auto firstNonZero = std::find_if(coefs.cbegin(), coefs.cend(), [](int c){ return c != 0; });
+	auto firstNonZero = FindIf(_coefficients, [](int c){ return c != 0; });
 	// Leading term must be non-zero for anything except the constant polynomial "0"
-	if (firstNonZero != coefs.cbegin())
+	if (firstNonZero != _coefficients.begin())
 	{
-		if (firstNonZero == coefs.end()) {
-			coefs.resize(1, 0);
+		if (firstNonZero == _coefficients.end()) {
+			_coefficients.resize(1, 0);
 		}
 		else {
-			std::copy(firstNonZero, coefs.cend(), coefs.begin());
-			coefs.resize(coefs.cend() - firstNonZero);
+			std::copy(firstNonZero, _coefficients.end(), _coefficients.begin());
+			_coefficients.resize(_coefficients.end() - firstNonZero);
 		}
 	}
 }
