@@ -40,7 +40,7 @@ static void PrintUsage(const char* exePath)
 	for (auto f : BarcodeFormats::all()) {
 		std::cout << "    " << ToString(f) << "\n";
 	}
-	std::cout << "Formats can be lowercase, with or without underscore, separated by ',' and/or '|'\n";
+	std::cout << "Formats can be lowercase, with or without '-', separated by ',' and/or '|'\n";
 }
 
 static bool ParseOptions(int argc, char* argv[], DecodeHints* hints, std::string* filePath)

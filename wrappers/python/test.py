@@ -6,15 +6,16 @@ has_numpy = importlib.util.find_spec('numpy') is not None
 
 BF = zxing.BarcodeFormat
 
+
 class Test(unittest.TestCase):
 
 	def test_format(self):
-		self.assertEqual(zxing.barcode_format_from_str('qrcode'), BF.QR_CODE)
-		self.assertEqual(zxing.barcode_formats_from_str('ITF, qrcode'), BF.ITF | BF.QR_CODE)
+		self.assertEqual(zxing.barcode_format_from_str('qrcode'), BF.QRCode)
+		self.assertEqual(zxing.barcode_formats_from_str('ITF, qrcode'), BF.ITF | BF.QRCode)
 
 	@unittest.skipIf(not has_numpy, "need numpy for read/write tests")
 	def test_write_read_cycle(self):
-		format = BF.QR_CODE
+		format = BF.QRCode
 		text = "I have the best words."
 		img = zxing.write_barcode(format, text)
 		res = zxing.read_barcode(img)
@@ -27,7 +28,7 @@ class Test(unittest.TestCase):
 
 	@unittest.skipIf(not has_numpy, "need numpy for read/write tests")
 	def test_write_read_oned_cycle(self):
-		format = BF.CODE_128
+		format = BF.Code128
 		text = "I have the best words."
 		height = 80
 		width = 400
@@ -45,11 +46,12 @@ class Test(unittest.TestCase):
 	@unittest.skipIf(not has_numpy, "need numpy for read/write tests")
 	def test_failed_read(self):
 		import numpy as np
-		res = zxing.read_barcode(np.zeros((100, 100), np.uint8), formats = BF.EAN_8 | BF.AZTEC, binarizer = zxing.BoolCast)
+		res = zxing.read_barcode(np.zeros((100, 100), np.uint8), formats = BF.EAN8 | BF.Aztec, binarizer = zxing.BoolCast)
 
 		self.assertFalse(res.valid)
 		self.assertEqual(res.format, BF.NONE)
 		self.assertEqual(res.text, '')
+
 
 if __name__ == '__main__':
 	unittest.main()

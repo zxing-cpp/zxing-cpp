@@ -28,7 +28,7 @@ static Result MaybeReturnResult(Result&& result)
 	const std::wstring& text = result.text();
 	if (!text.empty() && text[0] == '0') {
 		result.setText(text.substr(1));
-		result.setFormat(BarcodeFormat::UPC_A);
+		result.setFormat(BarcodeFormat::UPCA);
 		return std::move(result);
 	}
 	else {
@@ -51,7 +51,7 @@ UPCAReader::decodeRow(int rowNumber, const BitArray& row, BitArray::Range startG
 BarcodeFormat
 UPCAReader::expectedFormat() const
 {
-	return BarcodeFormat::UPC_A;
+	return BarcodeFormat::UPCA;
 }
 
 BitArray::Range

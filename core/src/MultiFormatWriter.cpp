@@ -59,19 +59,19 @@ MultiFormatWriter::encode(const std::wstring& contents, int width, int height) c
 	};
 
 	switch (_format) {
-	case BarcodeFormat::AZTEC: return exec1(Aztec::Writer(), AztecEccLevel);
-	case BarcodeFormat::DATA_MATRIX: return exec0(DataMatrix::Writer());
-	case BarcodeFormat::PDF_417: return exec1(Pdf417::Writer(), Pdf417EccLevel);
-	case BarcodeFormat::QR_CODE: return exec1(QRCode::Writer(), QRCodeEccLevel);
-	case BarcodeFormat::CODABAR: return exec0(OneD::CodabarWriter());
-	case BarcodeFormat::CODE_39: return exec0(OneD::Code39Writer());
-	case BarcodeFormat::CODE_93: return exec0(OneD::Code93Writer());
-	case BarcodeFormat::CODE_128: return exec0(OneD::Code128Writer());
-	case BarcodeFormat::EAN_8: return exec0(OneD::EAN8Writer());
-	case BarcodeFormat::EAN_13: return exec0(OneD::EAN13Writer());
+	case BarcodeFormat::Aztec: return exec1(Aztec::Writer(), AztecEccLevel);
+	case BarcodeFormat::DataMatrix: return exec0(DataMatrix::Writer());
+	case BarcodeFormat::PDF417: return exec1(Pdf417::Writer(), Pdf417EccLevel);
+	case BarcodeFormat::QRCode: return exec1(QRCode::Writer(), QRCodeEccLevel);
+	case BarcodeFormat::Codabar: return exec0(OneD::CodabarWriter());
+	case BarcodeFormat::Code39: return exec0(OneD::Code39Writer());
+	case BarcodeFormat::Code93: return exec0(OneD::Code93Writer());
+	case BarcodeFormat::Code128: return exec0(OneD::Code128Writer());
+	case BarcodeFormat::EAN8: return exec0(OneD::EAN8Writer());
+	case BarcodeFormat::EAN13: return exec0(OneD::EAN13Writer());
 	case BarcodeFormat::ITF: return exec0(OneD::ITFWriter());
-	case BarcodeFormat::UPC_A: return exec0(OneD::UPCAWriter());
-	case BarcodeFormat::UPC_E: return exec0(OneD::UPCEWriter());
+	case BarcodeFormat::UPCA: return exec0(OneD::UPCAWriter());
+	case BarcodeFormat::UPCE: return exec0(OneD::UPCEWriter());
 	default: throw std::invalid_argument(std::string("Unsupported format: ") + ToString(_format));
 	}
 }

@@ -28,7 +28,7 @@ namespace OneD {
 BarcodeFormat
 EAN8Reader::expectedFormat() const
 {
-	return BarcodeFormat::EAN_8;
+	return BarcodeFormat::EAN8;
 }
 
 BitArray::Range

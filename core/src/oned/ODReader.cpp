@@ -41,45 +41,25 @@ Reader::Reader(const DecodeHints& hints) :
 {
 	_readers.reserve(8);
 
-	if (hints.hasNoFormat()) {
+	auto formats = hints.formats().empty() ? BarcodeFormat::Any : hints.formats();
+
+	if (formats.testFlags(BarcodeFormat::EAN13 | BarcodeFormat::UPCA | BarcodeFormat::EAN8 | BarcodeFormat::UPCE))
 		_readers.emplace_back(new MultiUPCEANReader(hints));
+
+	if (formats.testFlag(BarcodeFormat::Code39))
 		_readers.emplace_back(new Code39Reader(hints));
-		_readers.emplace_back(new CodabarReader(hints));
+	if (formats.testFlag(BarcodeFormat::Code93))
 		_readers.emplace_back(new Code93Reader());
+	if (formats.testFlag(BarcodeFormat::Code128))
 		_readers.emplace_back(new Code128Reader(hints));
+	if (formats.testFlag(BarcodeFormat::ITF))
 		_readers.emplace_back(new ITFReader(hints));
+	if (formats.testFlag(BarcodeFormat::Codabar))
+		_readers.emplace_back(new CodabarReader(hints));
+	if (formats.testFlag(BarcodeFormat::DataBar))
 		_readers.emplace_back(new RSS14Reader());
+	if (formats.testFlag(BarcodeFormat::DataBarExpanded))
 		_readers.emplace_back(new RSSExpandedReader());
-	}
-	else {
-		if (hints.hasFormat(BarcodeFormat::EAN_13) ||
-			hints.hasFormat(BarcodeFormat::UPC_A) ||
-			hints.hasFormat(BarcodeFormat::EAN_8) ||
-			hints.hasFormat(BarcodeFormat::UPC_E)) {
-			_readers.emplace_back(new MultiUPCEANReader(hints));
-		}
-		if (hints.hasFormat(BarcodeFormat::CODE_39)) {
-			_readers.emplace_back(new Code39Reader(hints));
-		}
-		if (hints.hasFormat(BarcodeFormat::CODE_93)) {
-			_readers.emplace_back(new Code93Reader());
-		}
-		if (hints.hasFormat(BarcodeFormat::CODE_128)) {
-			_readers.emplace_back(new Code128Reader(hints));
-		}
-		if (hints.hasFormat(BarcodeFormat::ITF)) {
-			_readers.emplace_back(new ITFReader(hints));
-		}
-		if (hints.hasFormat(BarcodeFormat::CODABAR)) {
-			_readers.emplace_back(new CodabarReader(hints));
-		}
-		if (hints.hasFormat(BarcodeFormat::RSS_14)) {
-			_readers.emplace_back(new RSS14Reader());
-		}
-		if (hints.hasFormat(BarcodeFormat::RSS_EXPANDED)) {
-			_readers.emplace_back(new RSSExpandedReader());
-		}
-	}
 }
 
 Reader::~Reader() = default;

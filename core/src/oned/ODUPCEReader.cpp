@@ -30,7 +30,7 @@ namespace OneD {
 BarcodeFormat
 UPCEReader::expectedFormat() const
 {
-	return BarcodeFormat::UPC_E;
+	return BarcodeFormat::UPCE;
 }
 
 BitArray::Range

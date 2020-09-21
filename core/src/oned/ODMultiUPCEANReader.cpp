@@ -39,24 +39,20 @@ namespace OneD {
 
 MultiUPCEANReader::MultiUPCEANReader(const DecodeHints& hints) : _hints(hints)
 {
-	_canReturnUPCA = _hints.hasNoFormat() || _hints.hasFormat(BarcodeFormat::UPC_A);
-	if (_hints.hasNoFormat()) {
-		_hints.setFormats(BarcodeFormat::EAN_13 | BarcodeFormat::EAN_8 | BarcodeFormat::UPC_E);
-		// UPC-A is covered by EAN-13
-	}
+	_canReturnUPCA = _hints.formats().empty() || _hints.hasFormat(BarcodeFormat::UPCA);
+	if (_hints.formats().empty())
+		_hints.setFormats(BarcodeFormat::Any);
 
-	if (_hints.hasFormat(BarcodeFormat::EAN_13)) {
+	if (_hints.hasFormat(BarcodeFormat::EAN13))
 		_readers.emplace_back(new EAN13Reader(hints));
-	}
-	else if (_hints.hasFormat(BarcodeFormat::UPC_A)) {
+	// UPC-A is covered by EAN-13
+	else if (_hints.hasFormat(BarcodeFormat::UPCA))
 		_readers.emplace_back(new UPCAReader(hints));
-	}
-	if (_hints.hasFormat(BarcodeFormat::EAN_8)) {
+
+	if (_hints.hasFormat(BarcodeFormat::EAN8))
 		_readers.emplace_back(new EAN8Reader(hints));
-	}
-	if (_hints.hasFormat(BarcodeFormat::UPC_E)) {
+	if (_hints.hasFormat(BarcodeFormat::UPCE))
 		_readers.emplace_back(new UPCEReader(hints));
-	}
 
 	if (_hints.hasFormat(BarcodeFormat::UPC_EAN_EXTENSION))
 		_hints.setAllowedEanExtensions({2,5});
@@ -90,10 +86,10 @@ MultiUPCEANReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr
 		//
 		// But, don't return UPC-A if UPC-A was not a requested format!
 		const std::wstring& resultText = result.text();
-		bool ean13MayBeUPCA = result.format() == BarcodeFormat::EAN_13 && !resultText.empty() && resultText[0] == '0';
+		bool ean13MayBeUPCA = result.format() == BarcodeFormat::EAN13 && !resultText.empty() && resultText[0] == '0';
 		if (ean13MayBeUPCA && _canReturnUPCA) {
 			result.setText(resultText.substr(1));
-			result.setFormat(BarcodeFormat::UPC_A);
+			result.setFormat(BarcodeFormat::UPCA);
 		}
 		return result;
 	}
@@ -190,10 +186,10 @@ struct PartialResult
 {
 	std::string txt;
 	PatternView end;
-	BarcodeFormat format = BarcodeFormat::NONE;
+	BarcodeFormat format = BarcodeFormat::None;
 
 	PartialResult() { txt.reserve(14); }
-	bool isValid() const { return format != BarcodeFormat::NONE; }
+	bool isValid() const { return format != BarcodeFormat::None; }
 };
 
 inline bool _ret_false_debug_helper()
@@ -223,7 +219,7 @@ static bool EAN13(PartialResult& res, PatternView begin)
 	CHECK(res.txt[0] != '0' - 1);
 
 	res.end = end;
-	res.format = BarcodeFormat::EAN_13;
+	res.format = BarcodeFormat::EAN13;
 	return true;
 }
 
@@ -244,7 +240,7 @@ static bool EAN8(PartialResult& res, PatternView begin)
 	CHECK(DecodeDigits(4, next, res.txt));
 
 	res.end = end;
-	res.format = BarcodeFormat::EAN_8;
+	res.format = BarcodeFormat::EAN8;
 	return true;
 }
 
@@ -274,7 +270,7 @@ static bool UPCE(PartialResult& res, PatternView begin)
 	res.txt += '0' + i % 10;
 
 	res.end = end;
-	res.format = BarcodeFormat::UPC_E;
+	res.format = BarcodeFormat::UPCE;
 	return true;
 }
 
@@ -323,20 +319,20 @@ Result MultiUPCEANReader::decodePattern(int rowNumber, const PatternView& row, s
 
 	PartialResult res;
 
-	if (!((_hints.hasFormat(BarcodeFormat::EAN_13) && EAN13(res, begin)) ||
-		  (_hints.hasFormat(BarcodeFormat::EAN_8) && EAN8(res, begin)) ||
-		  (_hints.hasFormat(BarcodeFormat::UPC_E) && UPCE(res, begin))))
+	if (!((_hints.hasFormat(BarcodeFormat::EAN13) && EAN13(res, begin)) ||
+		  (_hints.hasFormat(BarcodeFormat::EAN8) && EAN8(res, begin)) ||
+		  (_hints.hasFormat(BarcodeFormat::UPCE) && UPCE(res, begin))))
 		return Result(DecodeStatus::NotFound);
 
-	if (!GTIN::IsCheckDigitValid(res.format == BarcodeFormat::UPC_E ? UPCEANCommon::ConvertUPCEtoUPCA(res.txt) : res.txt))
+	if (!GTIN::IsCheckDigitValid(res.format == BarcodeFormat::UPCE ? UPCEANCommon::ConvertUPCEtoUPCA(res.txt) : res.txt))
 		return Result(DecodeStatus::ChecksumError);
 
 	// If UPC-A was a requested format and we deteced a EAN-13 code with a leading '0', then we drop the '0' and call it
 	// a UPC-A code.
 	// TODO: this is questionable
-	if (_canReturnUPCA && res.format == BarcodeFormat::EAN_13 && res.txt.front() == '0') {
+	if (_canReturnUPCA && res.format == BarcodeFormat::EAN13 && res.txt.front() == '0') {
 		res.txt = res.txt.substr(1);
-		res.format = BarcodeFormat::UPC_A;
+		res.format = BarcodeFormat::UPCA;
 	}
 
 	Result result(res.txt, rowNumber, begin.pixelsInFront(), res.end.pixelsTillEnd(), res.format);
@@ -365,7 +361,7 @@ Result MultiUPCEANReader::decodePattern(int rowNumber, const PatternView& row, s
 	if (!_hints.allowedEanExtensions().empty() && !extRes.isValid())
 		return Result(DecodeStatus::NotFound);
 
-	if (res.format == BarcodeFormat::EAN_13 || res.format == BarcodeFormat::UPC_A) {
+	if (res.format == BarcodeFormat::EAN13 || res.format == BarcodeFormat::UPCA) {
 		std::string countryID = EANManufacturerOrgSupport::LookupCountryIdentifier(res.txt);
 		if (!countryID.empty())
 			result.metadata().put(ResultMetadata::POSSIBLE_COUNTRY, TextDecoder::FromLatin1(countryID));

@@ -210,7 +210,7 @@ Code39Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 		return Result(DecodeStatus::FormatError);
 
 	int xStop = static_cast<int>(range.end - row.begin() - 1);
-	return Result(result, rowNumber, xStart, xStop, BarcodeFormat::CODE_39);
+	return Result(result, rowNumber, xStart, xStop, BarcodeFormat::Code39);
 }
 
 // pattern where '1' means 'narrow' and '0' means wide
@@ -265,7 +265,7 @@ Result Code39Reader::decodePattern(int rowNumber, const PatternView& row, std::u
 		return Result(DecodeStatus::FormatError);
 
 	int xStop = next.pixelsTillEnd();
-	return Result(txt, rowNumber, xStart, xStop, BarcodeFormat::CODE_39);
+	return Result(txt, rowNumber, xStart, xStop, BarcodeFormat::Code39);
 }
 
 } // OneD

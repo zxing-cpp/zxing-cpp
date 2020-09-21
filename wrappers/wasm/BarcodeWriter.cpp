@@ -63,7 +63,7 @@ WriteResult generateBarcode(std::wstring text, std::string format, std::string e
 	using namespace ZXing;
 	try {
 		auto barcodeFormat = BarcodeFormatFromString(format);
-		if (barcodeFormat == BarcodeFormat::NONE)
+		if (barcodeFormat == BarcodeFormat::None)
 			return {"Unsupported format: " + format};
 
 		MultiFormatWriter writer(barcodeFormat);

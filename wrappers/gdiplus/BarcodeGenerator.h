@@ -29,33 +29,16 @@ class BarcodeGenerator
 {
 public:
 	/**
-	 Supported formats are:
-	 "AZTEC",
-	 "CODABAR",
-	 "CODE_39",
-	 "CODE_93",
-	 "CODE_128",
-	 "DATA_MATRIX",
-	 "EAN_8",
-	 "EAN_13",
-	 "ITF",
-	 "PDF_417",
-	 "QR_CODE",
-	 "UPC_A",
-	 "UPC_E",
-	*/
+	 * Supported format strings see BarcodeFormat.cpp
+	 */
 	explicit BarcodeGenerator(const std::string& format);
 
 	/**
-	* Used for AZTEC, PDF417, and QR_CODE only.
-	*/
+	 * Used for Aztec, PDF417, and QRCode only.
+	 */
 	void setEncoding(const std::string& encoding);
 
-	/**
-	* Used for all except AZTEC, DATA_MATRIX.
-	*/
 	void setMargin(int margin);
-
 
 	std::shared_ptr<Gdiplus::Bitmap> generate(const std::wstring& contents, int width, int height) const;
 

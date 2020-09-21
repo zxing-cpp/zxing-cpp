@@ -298,7 +298,7 @@ CodabarReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Dec
 		runningCount += counters[i];
 	}
 	int xStop = runningCount;
-	return Result(decodeRowResult, rowNumber, xStart, xStop, BarcodeFormat::CODABAR);
+	return Result(decodeRowResult, rowNumber, xStart, xStop, BarcodeFormat::Codabar);
 }
 
 // each character has 4 bars and 3 spaces
@@ -359,7 +359,7 @@ CodabarReader::decodePattern(int rowNumber, const PatternView& row, std::unique_
 		txt = txt.substr(1, txt.size() - 2);
 
 	int xStop = next.pixelsTillEnd();
-	return Result(txt, rowNumber, xStart, xStop, BarcodeFormat::CODABAR);
+	return Result(txt, rowNumber, xStart, xStop, BarcodeFormat::Codabar);
 }
 
 } // OneD

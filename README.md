@@ -15,17 +15,16 @@ This project is a C++ port of [ZXing Library](https://github.com/zxing/zxing).
 
 ## Supported Formats
 
-Same as ZXing, following barcode are supported:
+| 1D product | 1D industrial     | 2D
+| ---------- | ----------------- | --------------
+| UPC-A      | Code 39           | QR Code
+| UPC-E      | Code 93           | DataMatrix
+| EAN-8      | Code 128          | Aztec
+| EAN-13     | Codabar           | PDF417
+| DataBar    | ITF               | MaxiCode (beta)
+|            | DataBar Expanded  |
 
-| 1D product | 1D industrial | 2D
-| ---------- | ------------- | --------------
-| UPC-A      | Code 39       | QR Code
-| UPC-E      | Code 93       | Data Matrix
-| EAN-8      | Code 128      | Aztec (beta)
-| EAN-13     | Codabar       | PDF 417 (beta)
-|            | ITF           |
-|            | RSS-14        |
-|            | RSS-Expanded  |
+Note: DataBar used to be called RSS.
 
 ## Getting Started
 

@@ -34,57 +34,26 @@ namespace ZXing {
 MultiFormatReader::MultiFormatReader(const DecodeHints& hints)
 {
 	bool tryHarder = hints.tryHarder();
-	if (!hints.hasNoFormat()) {
-		bool addOneDReader =
-			hints.hasFormat(BarcodeFormat::UPC_A) ||
-			hints.hasFormat(BarcodeFormat::UPC_E) ||
-			hints.hasFormat(BarcodeFormat::EAN_13) ||
-			hints.hasFormat(BarcodeFormat::EAN_8) ||
-			hints.hasFormat(BarcodeFormat::CODABAR) ||
-			hints.hasFormat(BarcodeFormat::CODE_39) ||
-			hints.hasFormat(BarcodeFormat::CODE_93) ||
-			hints.hasFormat(BarcodeFormat::CODE_128) ||
-			hints.hasFormat(BarcodeFormat::ITF) ||
-			hints.hasFormat(BarcodeFormat::RSS_14) ||
-			hints.hasFormat(BarcodeFormat::RSS_EXPANDED);
+	auto formats = hints.formats().empty() ? BarcodeFormat::Any : hints.formats();
 
-		// Put 1D readers upfront in "normal" mode
-		if (addOneDReader && !tryHarder) {
-			_readers.emplace_back(new OneD::Reader(hints));
-		}
-		if (hints.hasFormat(BarcodeFormat::QR_CODE)) {
-			_readers.emplace_back(new QRCode::Reader(hints));
-		}
-		if (hints.hasFormat(BarcodeFormat::DATA_MATRIX)) {
-			_readers.emplace_back(new DataMatrix::Reader(hints));
-		}
-		if (hints.hasFormat(BarcodeFormat::AZTEC)) {
-			_readers.emplace_back(new Aztec::Reader());
-		}
-		if (hints.hasFormat(BarcodeFormat::PDF_417)) {
-			_readers.emplace_back(new Pdf417::Reader());
-		}
-		if (hints.hasFormat(BarcodeFormat::MAXICODE)) {
-			_readers.emplace_back(new MaxiCode::Reader(hints));
-		}
-		// At end in "try harder" mode
-		if (addOneDReader && tryHarder) {
-			_readers.emplace_back(new OneD::Reader(hints));
-		}
-	}
+	// Put 1D readers upfront in "normal" mode
+	if (formats.testFlags(BarcodeFormat::OneDCodes) && !tryHarder)
+		_readers.emplace_back(new OneD::Reader(hints));
 
-	if (_readers.empty()) {
-		if (!tryHarder) {
-			_readers.emplace_back(new OneD::Reader(hints));
-		}
+	if (formats.testFlag(BarcodeFormat::QRCode))
 		_readers.emplace_back(new QRCode::Reader(hints));
+	if (formats.testFlag(BarcodeFormat::DataMatrix))
 		_readers.emplace_back(new DataMatrix::Reader(hints));
+	if (formats.testFlag(BarcodeFormat::Aztec))
 		_readers.emplace_back(new Aztec::Reader());
+	if (formats.testFlag(BarcodeFormat::PDF417))
 		_readers.emplace_back(new Pdf417::Reader());
+	if (formats.testFlag(BarcodeFormat::MaxiCode))
 		_readers.emplace_back(new MaxiCode::Reader(hints));
-		if (tryHarder) {
-			_readers.emplace_back(new OneD::Reader(hints));
-		}
+
+	// At end in "try harder" mode
+	if (formats.testFlags(BarcodeFormat::OneDCodes) && tryHarder) {
+		_readers.emplace_back(new OneD::Reader(hints));
 	}
 }
 

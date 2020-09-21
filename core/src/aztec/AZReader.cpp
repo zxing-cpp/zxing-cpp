@@ -52,7 +52,7 @@ Reader::decode(const BinaryBitmap& image) const
 		}
 	}
 
-	return Result(std::move(decodeResult), std::move(detectResult).position(), BarcodeFormat::AZTEC);
+	return Result(std::move(decodeResult), std::move(detectResult).position(), BarcodeFormat::Aztec);
 }
 
 } // Aztec

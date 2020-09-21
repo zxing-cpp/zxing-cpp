@@ -157,7 +157,7 @@ Code93Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 		return Result(DecodeStatus::FormatError);
 
 	int xStop = static_cast<int>(range.end - row.begin() - 1);
-	return Result(result, rowNumber, xStart, xStop, BarcodeFormat::CODE_93);
+	return Result(result, rowNumber, xStart, xStop, BarcodeFormat::Code93);
 }
 
 constexpr int CHAR_LEN = 6;
@@ -217,7 +217,7 @@ Result Code93Reader::decodePattern(int rowNumber, const PatternView &row, std::u
 		return Result(DecodeStatus::FormatError);
 
 	int xStop = next.pixelsTillEnd();
-	return Result(txt, rowNumber, xStart, xStop, BarcodeFormat::CODE_93);
+	return Result(txt, rowNumber, xStart, xStop, BarcodeFormat::Code93);
 }
 
 

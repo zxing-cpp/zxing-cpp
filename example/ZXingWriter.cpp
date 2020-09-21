@@ -46,7 +46,7 @@ static void PrintUsage(const char* exePath)
 	for (auto f : BarcodeFormats::all()) {
 		std::cout << "    " << ToString(f) << "\n";
 	}
-	std::cout << "Format can be lowercase letters, with or without underscore.\n";
+	std::cout << "Format can be lowercase letters, with or without '-'.\n";
 }
 
 static bool ParseSize(std::string str, int* width, int* height)
@@ -85,7 +85,7 @@ static bool ParseOptions(int argc, char* argv[], int* width, int* height, int* m
 		}
 		else if (nonOptArgCount == 0) {
 			*format = BarcodeFormatFromString(argv[i]);
-			if (*format == BarcodeFormat::NONE) {
+			if (*format == BarcodeFormat::None) {
 				std::cerr << "Unrecognized format: " << argv[i] << std::endl;
 				return false;
 			}

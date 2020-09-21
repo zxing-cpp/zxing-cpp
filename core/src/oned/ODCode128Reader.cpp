@@ -248,7 +248,7 @@ Code128Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Dec
 	}
 
 	int xStop = static_cast<int>(range.end - row.begin() - 1);
-	return Result(raw2txt.text(), rowNumber, xStart, xStop, BarcodeFormat::CODE_128, std::move(rawCodes));
+	return Result(raw2txt.text(), rowNumber, xStart, xStop, BarcodeFormat::Code128, std::move(rawCodes));
 }
 
 // all 3 start patterns share the same 2-1-1 prefix
@@ -351,7 +351,7 @@ Result Code128Reader::decodePattern(int rowNumber, const PatternView& row, std::
 		return Result(DecodeStatus::ChecksumError);
 
 	int xStop = next.pixelsTillEnd();
-	return Result(raw2txt.text(), rowNumber, xStart, xStop, BarcodeFormat::CODE_128, std::move(rawCodes));
+	return Result(raw2txt.text(), rowNumber, xStart, xStop, BarcodeFormat::Code128, std::move(rawCodes));
 }
 
 } // OneD

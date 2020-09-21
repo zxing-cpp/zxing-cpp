@@ -104,7 +104,7 @@ public:
 
 private:
 	DecodeStatus _status = DecodeStatus::NoError;
-	BarcodeFormat _format = BarcodeFormat::NONE;
+	BarcodeFormat _format = BarcodeFormat::None;
 	std::wstring _text;
 	Position _position;
 	ByteArray _rawBytes;

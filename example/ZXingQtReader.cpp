@@ -83,7 +83,7 @@ int main(int argc, char* argv[])
 	QString filePath = argv[1];
 
 	auto hints = DecodeHints()
-					 .setFormats(BarcodeFormat::QR_CODE | BarcodeFormat::DATA_MATRIX)
+					 .setFormats(BarcodeFormat::QRCode | BarcodeFormat::DataMatrix)
 					 .setTryRotate(false)
 					 .setBinarizer(Binarizer::FixedThreshold);
 

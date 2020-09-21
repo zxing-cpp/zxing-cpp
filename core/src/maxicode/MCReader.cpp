@@ -71,7 +71,7 @@ Reader::decode(const BinaryBitmap& image) const
 		return Result(DecodeStatus::NotFound);
 	}
 
-	return Result(Decoder::Decode(bits), {}, BarcodeFormat::MAXICODE);
+	return Result(Decoder::Decode(bits), {}, BarcodeFormat::MaxiCode);
 }
 
 } // MaxiCode

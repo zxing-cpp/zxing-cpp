@@ -218,7 +218,7 @@ ConstructResult(const RSS::Pair& leftPair, const RSS::Pair& rightPair)
 
 	auto& leftPoints = leftPair.finderPattern().points();
 	auto& rightPoints = rightPair.finderPattern().points();
-	return Result(buffer.str(), { leftPoints[0], leftPoints[1], rightPoints[0], rightPoints[1] }, BarcodeFormat::RSS_14);
+	return Result(buffer.str(), { leftPoints[0], leftPoints[1], rightPoints[0], rightPoints[1] }, BarcodeFormat::DataBar);
 }
 
 Result

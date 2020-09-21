@@ -29,24 +29,24 @@
 namespace ZXing {
 
 static const char* FORMAT_STR[] = {
-	"NONE",
-	"AZTEC",
-	"CODABAR",
-	"CODE_39",
-	"CODE_93",
-	"CODE_128",
-	"DATA_MATRIX",
-	"EAN_8",
-	"EAN_13",
+	"None",
+	"Aztec",
+	"Codabar",
+	"Code39",
+	"Code93",
+	"Code128",
+	"DataBar",
+	"DataBarExpanded",
+	"DataMatrix",
+	"EAN-8",
+	"EAN-13",
 	"ITF",
-	"MAXICODE",
-	"PDF_417",
-	"QR_CODE",
-	"RSS_14",
-	"RSS_EXPANDED",
-	"UPC_A",
-	"UPC_E",
-	"UPC_EAN_EXTENSION",
+	"MaxiCode",
+	"PDF417",
+	"QRCode",
+	"UPC-A",
+	"UPC-E",
+	"EAN-Addon",
 };
 
 static_assert(Size(FORMAT_STR) == (int)BarcodeFormats::bitIndex(BarcodeFormat::_max) + 1,
@@ -59,8 +59,8 @@ const char* ToString(BarcodeFormat format)
 
 std::string ToString(BarcodeFormats formats)
 {
-	if (formats.testFlag(BarcodeFormat::NONE))
-		return ToString(BarcodeFormat::NONE);
+	if (formats.empty())
+		return ToString(BarcodeFormat::None);
 	std::string res;
 	for (auto f : formats)
 		res += ToString(f) + std::string("|");
@@ -70,7 +70,7 @@ std::string ToString(BarcodeFormats formats)
 static std::string NormalizeFormatString(std::string str)
 {
 	std::transform(str.begin(), str.end(), str.begin(), [](char c) { return (char)std::tolower(c); });
-	str.erase(std::remove(str.begin(), str.end(), '_'), str.end());
+	str.erase(std::remove_if(str.begin(), str.end(), [](char c) { return c == '_' || c == '-'; }), str.end());
 	return str;
 }
 
@@ -78,7 +78,7 @@ static BarcodeFormat ParseFormatString(const std::string& str)
 {
 	auto pos = std::find_if(std::begin(FORMAT_STR), std::end(FORMAT_STR),
 							[str](auto fmt) { return NormalizeFormatString(fmt) == str; });
-	return pos == std::end(FORMAT_STR) ? BarcodeFormat::NONE
+	return pos == std::end(FORMAT_STR) ? BarcodeFormat::None
 									   : BarcodeFormat(1 << (std::distance(std::begin(FORMAT_STR), pos) - 1));
 }
 
@@ -97,7 +97,7 @@ BarcodeFormats BarcodeFormatsFromString(const std::string& str)
 	for (std::string token; std::getline(input, token, '|');) {
 		if(!token.empty()) {
 			auto bc = ParseFormatString(token);
-			if (bc == BarcodeFormat::NONE)
+			if (bc == BarcodeFormat::None)
 				throw std::invalid_argument("This is not a valid barcode format: " + token);
 			res |= bc;
 		}

@@ -72,6 +72,8 @@ public:
 	iterator begin() const noexcept { return {i, BitHacks::NumberOfTrailingZeros(i)}; }
 	iterator end() const noexcept { return {i, BitHacks::HighestBitSet(i) + 1}; }
 
+	bool empty() const noexcept { return i == 0; }
+
 	constexpr inline bool operator==(Flags other) const noexcept { return i == other.i; }
 
 	inline Flags& operator&=(Flags mask) noexcept { return i &= mask.i, *this; }
@@ -97,6 +99,7 @@ public:
 	{
 		return (i & Int(flag)) == Int(flag) && (Int(flag) != 0 || i == Int(flag));
 	}
+	constexpr inline bool testFlags(Flags mask) const noexcept { return i & mask.i; }
 	inline Flags& setFlag(Enum flag, bool on = true) noexcept
 	{
 		return on ? (*this |= flag) : (*this &= ~Int(flag));

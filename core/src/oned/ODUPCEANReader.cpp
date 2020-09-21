@@ -135,7 +135,7 @@ UPCEANReader::decodeRow(int rowNumber, const BitArray& row, BitArray::Range star
 		return Result(DecodeStatus::NotFound);
 	}
 
-	if (format == BarcodeFormat::EAN_13 || format == BarcodeFormat::UPC_A) {
+	if (format == BarcodeFormat::EAN13 || format == BarcodeFormat::UPCA) {
 		std::string countryID = EANManufacturerOrgSupport::LookupCountryIdentifier(result);
 		if (!countryID.empty()) {
 			decodeResult.metadata().put(ResultMetadata::POSSIBLE_COUNTRY, TextDecoder::FromLatin1(countryID));

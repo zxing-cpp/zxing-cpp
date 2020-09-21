@@ -47,22 +47,22 @@ enum class JavaBarcodeFormat : int {
 static ZXing::BarcodeFormat ToZXingBarcodeFormat(JNIEnv* env, JavaBarcodeFormat format)
 {
     switch (format) {
-        case JavaBarcodeFormat::AZTEC             : return ZXing::BarcodeFormat::AZTEC;
-        case JavaBarcodeFormat::CODABAR           : return ZXing::BarcodeFormat::CODABAR;
-        case JavaBarcodeFormat::CODE_39           : return ZXing::BarcodeFormat::CODE_39;
-        case JavaBarcodeFormat::CODE_93           : return ZXing::BarcodeFormat::CODE_93;
-        case JavaBarcodeFormat::CODE_128          : return ZXing::BarcodeFormat::CODE_128;
-        case JavaBarcodeFormat::DATA_MATRIX       : return ZXing::BarcodeFormat::DATA_MATRIX;
-        case JavaBarcodeFormat::EAN_8             : return ZXing::BarcodeFormat::EAN_8;
-        case JavaBarcodeFormat::EAN_13            : return ZXing::BarcodeFormat::EAN_13;
+        case JavaBarcodeFormat::AZTEC             : return ZXing::BarcodeFormat::Aztec;
+        case JavaBarcodeFormat::CODABAR           : return ZXing::BarcodeFormat::Codabar;
+        case JavaBarcodeFormat::CODE_39           : return ZXing::BarcodeFormat::Code39;
+        case JavaBarcodeFormat::CODE_93           : return ZXing::BarcodeFormat::Code93;
+        case JavaBarcodeFormat::CODE_128          : return ZXing::BarcodeFormat::Code128;
+        case JavaBarcodeFormat::DATA_MATRIX       : return ZXing::BarcodeFormat::DataMatrix;
+        case JavaBarcodeFormat::EAN_8             : return ZXing::BarcodeFormat::EAN8;
+        case JavaBarcodeFormat::EAN_13            : return ZXing::BarcodeFormat::EAN13;
         case JavaBarcodeFormat::ITF               : return ZXing::BarcodeFormat::ITF;
-        case JavaBarcodeFormat::MAXICODE          : return ZXing::BarcodeFormat::MAXICODE;
-        case JavaBarcodeFormat::PDF_417           : return ZXing::BarcodeFormat::PDF_417;
-        case JavaBarcodeFormat::QR_CODE           : return ZXing::BarcodeFormat::QR_CODE;
-        case JavaBarcodeFormat::RSS_14            : return ZXing::BarcodeFormat::RSS_14;
-        case JavaBarcodeFormat::RSS_EXPANDED      : return ZXing::BarcodeFormat::RSS_EXPANDED;
-        case JavaBarcodeFormat::UPC_A             : return ZXing::BarcodeFormat::UPC_A;
-        case JavaBarcodeFormat::UPC_E             : return ZXing::BarcodeFormat::UPC_E;
+        case JavaBarcodeFormat::MAXICODE          : return ZXing::BarcodeFormat::MaxiCode;
+        case JavaBarcodeFormat::PDF_417           : return ZXing::BarcodeFormat::PDF417;
+        case JavaBarcodeFormat::QR_CODE           : return ZXing::BarcodeFormat::QRCode;
+        case JavaBarcodeFormat::RSS_14            : return ZXing::BarcodeFormat::DataBar;
+        case JavaBarcodeFormat::RSS_EXPANDED      : return ZXing::BarcodeFormat::DataBarExpanded;
+        case JavaBarcodeFormat::UPC_A             : return ZXing::BarcodeFormat::UPCA;
+        case JavaBarcodeFormat::UPC_E             : return ZXing::BarcodeFormat::UPCE;
         case JavaBarcodeFormat::UPC_EAN_EXTENSION : return ZXing::BarcodeFormat::UPC_EAN_EXTENSION;
     }
     ThrowJavaException(env, "Invalid format");
@@ -70,7 +70,7 @@ static ZXing::BarcodeFormat ToZXingBarcodeFormat(JNIEnv* env, JavaBarcodeFormat 
 
 static ZXing::BarcodeFormats GetFormats(JNIEnv* env, jintArray formats)
 {
-	ZXing::BarcodeFormats result = ZXing::BarcodeFormat::NONE;
+	ZXing::BarcodeFormats result = ZXing::BarcodeFormat::None;
 	jsize len = env->GetArrayLength(formats);
 	if (len > 0) {
 		std::vector<jint> elems(len);

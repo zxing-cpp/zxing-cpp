@@ -57,7 +57,7 @@ Result QRCodeStructuredAppendReader::readMultiple(const std::vector<fs::path>& i
 	for (const auto& r : allResults)
 		text.append(r.text());
 
-	return {std::move(text), {}, BarcodeFormat::QR_CODE};
+	return {std::move(text), {}, BarcodeFormat::QRCode};
 }
 
 } // ZXing::Test

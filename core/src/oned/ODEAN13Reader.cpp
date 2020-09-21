@@ -61,7 +61,7 @@ static const int FIRST_DIGIT_ENCODINGS[] = {
 BarcodeFormat
 EAN13Reader::expectedFormat() const
 {
-	return BarcodeFormat::EAN_13;
+	return BarcodeFormat::EAN13;
 }
 
 BitArray::Range EAN13Reader::decodeMiddle(const BitArray& row, BitArray::Iterator begin, std::string& resultString) const
