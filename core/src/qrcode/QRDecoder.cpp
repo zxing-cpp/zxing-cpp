@@ -457,56 +457,31 @@ DoDecode(const BitMatrix& bits, const Version& version, const FormatInformation&
 	return DecodeBitStream(std::move(resultBytes), version, ecLevel, hintedCharset);
 }
 
-static void
-ReMask(BitMatrix& bitMatrix, const FormatInformation& formatInfo)
-{
-	int dimension = bitMatrix.height();
-	DataMask(formatInfo.dataMask()).unmaskBitMatrix(bitMatrix, dimension);
-}
-
-
 DecoderResult
 Decoder::Decode(const BitMatrix& bits_, const std::string& hintedCharset)
 {
-	BitMatrix bits = bits_.copy();
-
 	// Construct a parser and read version, error-correction level
-	const Version* version = BitMatrixParser::ReadVersion(bits, false);
-	FormatInformation formatInfo = BitMatrixParser::ReadFormatInformation(bits, false);
+	const Version* version = BitMatrixParser::ReadVersion(bits_, false);
+	if (!version)
+		version = BitMatrixParser::ReadVersion(bits_, true);
+	if (!version)
+		return DecodeStatus::FormatError;
 
-	if (version != nullptr && formatInfo.isValid()) {
-		ReMask(bits, formatInfo);
-		auto result = DoDecode(bits, *version, formatInfo, hintedCharset);
-		if (result.isValid()) {
-			return result;
-		}
-	}
+	for (bool mirror : {false, true}) {
+		FormatInformation formatInfo = BitMatrixParser::ReadFormatInformation(bits_, mirror);
+		if (!formatInfo.isValid())
+			continue;
 
-	if (version != nullptr) {
-		// Revert the bit matrix
-		ReMask(bits, formatInfo);
-	}
+		BitMatrix bits = bits_.copy();
+		if (mirror)
+			bits.mirror();
+		DataMask(formatInfo.dataMask()).unmaskBitMatrix(bits, bits.height());
 
-	version = BitMatrixParser::ReadVersion(bits, true);
-	formatInfo = BitMatrixParser::ReadFormatInformation(bits, true);
-
-	if (version != nullptr && formatInfo.isValid()) {
-		/*
-		* Since we're here, this means we have successfully detected some kind
-		* of version and format information when mirrored. This is a good sign,
-		* that the QR code may be mirrored, and we should try once more with a
-		* mirrored content.
-		*/
-		// Prepare for a mirrored reading.
-		bits.mirror();
-
-		ReMask(bits, formatInfo);
 		auto result = DoDecode(bits, *version, formatInfo, hintedCharset);
 		if (result.isValid())
-			result.setExtra(std::make_shared<DecoderMetadata>(true));
-
-		return result;
+			return result;
 	}
+
 	return DecodeStatus::FormatError;
 }
 
