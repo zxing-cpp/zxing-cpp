@@ -23,6 +23,7 @@
 #include "BitHacks.h"
 #endif
 
+#include <cassert>
 #include <cstdint>
 #include <iterator>
 #include <vector>
@@ -356,5 +357,24 @@ public:
 	}
 };
 
+template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
+inline T& AppendBit(T& val, bool bit)
+{
+	return (val <<= 1) |= bit;
+}
+
+template <typename T = int, typename = std::enable_if_t<std::is_integral_v<T>>>
+T ToInt(const BitArray& bits, int pos = 0, int count = sizeof(T))
+{
+	assert(count <= sizeof(T));
+
+	count = std::min(count, bits.size());
+	int res = 0;
+	auto it = bits.iterAt(pos);
+	for (int i = 0; i < count; ++i, ++it)
+		AppendBit(res, *it);
+
+	return res;
+}
 
 } // ZXing

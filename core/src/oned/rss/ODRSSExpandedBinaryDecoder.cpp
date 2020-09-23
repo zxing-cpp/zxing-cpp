@@ -59,7 +59,7 @@ static void
 AI01EncodeCompressedGtinWithoutAI(std::string& buffer, const BitArray& bits, int currentPos, int initialBufferPosition)
 {
 	for (int i = 0; i < 4; ++i) {
-		int currentBlock = GenericAppIdDecoder::ExtractNumeric(bits, currentPos + 10 * i, 10);
+		int currentBlock = ToInt(bits, currentPos + 10 * i, 10);
 		if (currentBlock / 100 == 0) {
 			buffer.push_back('0');
 		}
@@ -86,7 +86,7 @@ using CheckWeightFunc = const std::function<int (int)>;
 static void AI01EncodeCompressedWeight(std::string& buffer, const BitArray& bits, int currentPos, int weightSize,
 	const AddWeightCodeFunc& addWeightCode, const CheckWeightFunc& checkWeight)
 {
-	int originalWeightNumeric = GenericAppIdDecoder::ExtractNumeric(bits, currentPos, weightSize);
+	int originalWeightNumeric = ToInt(bits, currentPos, weightSize);
 	addWeightCode(buffer, originalWeightNumeric);
 
 	int weightNumeric = checkWeight(originalWeightNumeric);
@@ -113,7 +113,7 @@ DecodeAI01AndOtherAIs(const BitArray& bits)
 	std::string buffer;
 	buffer.append("(01)");
 	int initialGtinPosition = Size(buffer);
-	int firstGtinDigit = GenericAppIdDecoder::ExtractNumeric(bits, HEADER_SIZE, 4);
+	int firstGtinDigit = ToInt(bits, HEADER_SIZE, 4);
 	buffer.append(std::to_string(firstGtinDigit));
 
 	AI01EncodeCompressedGtinWithoutAI(buffer, bits, HEADER_SIZE + 4, initialGtinPosition);
@@ -189,7 +189,7 @@ DecodeAI01392x(const BitArray& bits)
 	std::string buffer;
 	AI01EncodeCompressedGtin(buffer, bits, HEADER_SIZE);
 
-	int lastAIdigit = GenericAppIdDecoder::ExtractNumeric(bits, HEADER_SIZE + AI01_GTIN_SIZE, LAST_DIGIT_SIZE);
+	int lastAIdigit = ToInt(bits, HEADER_SIZE + AI01_GTIN_SIZE, LAST_DIGIT_SIZE);
 	buffer.append("(392");
 	buffer.append(std::to_string(lastAIdigit));
 	buffer.push_back(')');
@@ -214,13 +214,13 @@ DecodeAI01393x(const BitArray& bits)
 	std::string buffer;
 	AI01EncodeCompressedGtin(buffer, bits, HEADER_SIZE);
 
-	int lastAIdigit = GenericAppIdDecoder::ExtractNumeric(bits, HEADER_SIZE + AI01_GTIN_SIZE, LAST_DIGIT_SIZE);
+	int lastAIdigit = ToInt(bits, HEADER_SIZE + AI01_GTIN_SIZE, LAST_DIGIT_SIZE);
 
 	buffer.append("(393");
 	buffer.append(std::to_string(lastAIdigit));
 	buffer.push_back(')');
 
-	int firstThreeDigits = GenericAppIdDecoder::ExtractNumeric(bits, HEADER_SIZE + AI01_GTIN_SIZE + LAST_DIGIT_SIZE, FIRST_THREE_DIGITS_SIZE);
+	int firstThreeDigits = ToInt(bits, HEADER_SIZE + AI01_GTIN_SIZE + LAST_DIGIT_SIZE, FIRST_THREE_DIGITS_SIZE);
 	if (firstThreeDigits / 100 == 0) {
 		buffer.push_back('0');
 	}
@@ -262,7 +262,7 @@ DecodeAI013x0x1x(const BitArray& bits, const char* firstAIdigits, const char* da
 		});
 
 	// encode compressed date
-	int numericDate = GenericAppIdDecoder::ExtractNumeric(bits, HEADER_SIZE + AI01_GTIN_SIZE + WEIGHT_SIZE, DATE_SIZE);
+	int numericDate = ToInt(bits, HEADER_SIZE + AI01_GTIN_SIZE + WEIGHT_SIZE, DATE_SIZE);
 	if (numericDate != 38400) {
 		buffer.push_back('(');
 		buffer.append(dateCode);
@@ -301,20 +301,20 @@ ExpandedBinaryDecoder::Decode(const BitArray& bits)
 		return DecodeAnyAI(bits);
 	}
 
-	int fourBitEncodationMethod = GenericAppIdDecoder::ExtractNumeric(bits, 1, 4);
+	int fourBitEncodationMethod = ToInt(bits, 1, 4);
 
 	switch (fourBitEncodationMethod) {
 	case 4: return DecodeAI013103(bits);
 	case 5: return DecodeAI01320x(bits);
 	}
 
-	int fiveBitEncodationMethod = GenericAppIdDecoder::ExtractNumeric(bits, 1, 5);
+	int fiveBitEncodationMethod = ToInt(bits, 1, 5);
 	switch (fiveBitEncodationMethod) {
 	case 12: return DecodeAI01392x(bits);
 	case 13: return DecodeAI01393x(bits);
 	}
 
-	int sevenBitEncodationMethod = GenericAppIdDecoder::ExtractNumeric(bits, 1, 7);
+	int sevenBitEncodationMethod = ToInt(bits, 1, 7);
 	switch (sevenBitEncodationMethod) {
 	case 56: return DecodeAI013x0x1x(bits, "310", "11");
 	case 57: return DecodeAI013x0x1x(bits, "320", "11");

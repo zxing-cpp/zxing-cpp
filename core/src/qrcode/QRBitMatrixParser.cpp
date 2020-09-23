@@ -20,15 +20,10 @@
 #include "QRFormatInformation.h"
 #include "BitMatrix.h"
 #include "ByteArray.h"
+#include "BitArray.h"
 
 namespace ZXing {
 namespace QRCode {
-
-template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
-inline T& AppendBit(T& val, bool bit)
-{
-	return (val <<= 1) |= bit;
-}
 
 inline bool getBit(const BitMatrix& bitMatrix, int x, int y, bool mirrored)
 {

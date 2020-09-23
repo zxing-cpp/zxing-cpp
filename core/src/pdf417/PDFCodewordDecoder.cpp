@@ -16,6 +16,7 @@
 */
 
 #include "PDFCodewordDecoder.h"
+#include "BitArray.h"
 #include "ZXContainerAlgorithms.h"
 
 #include <array>
@@ -469,11 +470,9 @@ static ModuleBitCountType SampleBitCounts(const ModuleBitCountType& moduleBitCou
 static int GetBitValue(const ModuleBitCountType& moduleBitCount)
 {
 	int result = 0;
-	for (size_t i = 0; i < moduleBitCount.size(); i++) {
-		for (int bit = 0; bit < moduleBitCount[i]; bit++) {
-			result = (result << 1) | (i % 2 == 0 ? 1 : 0);
-		}
-	}
+	for (size_t i = 0; i < moduleBitCount.size(); i++)
+		for (int bit = 0; bit < moduleBitCount[i]; bit++)
+			AppendBit(result, i % 2 == 0);
 	return result;
 }
 

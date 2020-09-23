@@ -28,6 +28,7 @@
 #include "GTIN.h"
 #include "DecodeHints.h"
 #include "BarcodeFormat.h"
+#include "BitArray.h"
 #include "TextDecoder.h"
 #include "Result.h"
 
@@ -129,7 +130,7 @@ static bool DecodeDigit(const PatternView& view, std::string& txt, int* lgPatter
 												 UPCEANReader::MAX_INDIVIDUAL_VARIANCE, false);
 	txt += '0' + (bestMatch % 10);
 	if (lgPattern)
-		(*lgPattern <<= 1) |= (bestMatch >= 10);
+		AppendBit(*lgPattern, bestMatch >= 10);
 
 	return bestMatch != -1;
 #else
@@ -168,7 +169,7 @@ static bool DecodeDigit(const PatternView& view, std::string& txt, int* lgPatter
 	char d = digit[pattern];
 	txt += '0' + (d & 0xf);
 	if (lgPattern)
-		(*lgPattern <<= 1) |= (d >> 4) & 1;
+		AppendBit(*lgPattern, (d >> 4) & 1);
 
 	return d != I;
 #endif

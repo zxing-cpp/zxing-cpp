@@ -22,6 +22,7 @@
 #include "GenericGF.h"
 #include "DecodeStatus.h"
 #include "BitMatrix.h"
+#include "BitArray.h"
 #include "TextDecoder.h"
 #include "ZXTestSupport.h"
 
@@ -136,9 +137,9 @@ static std::vector<bool> ExtractBits(const DetectorResult& ddata)
 static int ReadCode(const std::vector<bool>& rawbits, int startIndex, int length)
 {
 	int res = 0;
-	for (int i = startIndex; i < startIndex + length; i++) {
-		res = (res << 1) | static_cast<int>(rawbits[i]);
-	}
+	for (int i = startIndex; i < startIndex + length; i++)
+		AppendBit(res, rawbits[i]);
+
 	return res;
 }
 

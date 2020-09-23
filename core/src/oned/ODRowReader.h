@@ -277,7 +277,7 @@ public:
 		for (int i = 0; i < view.size(); ++i) {
 			if (view[i] > threshold[i] * 2)
 				return -1;
-			pattern = (pattern << 1) | (view[i] > threshold[i]);
+			AppendBit(pattern, view[i] > threshold[i]);
 		}
 
 		return pattern;

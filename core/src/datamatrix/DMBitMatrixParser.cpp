@@ -20,6 +20,7 @@
 #include "DMVersion.h"
 #include "BitMatrix.h"
 #include "ByteArray.h"
+#include "BitArray.h"
 
 #include <cstdint>
 #include <stdexcept>
@@ -107,10 +108,8 @@ BitMatrixParser::ReadCodewords(const BitMatrix& bits)
 	VisitMatrix(dataBits.height(), dataBits.width(), [&codeword, &dataBits](const BitPosArray& bitPos) {
 		// Read the 8 bits of one of the special corner/utah symbols into the current codeword
 		*codeword = 0;
-		for (auto& p : bitPos) {
-			*codeword <<= 1;
-			*codeword |= static_cast<uint8_t>(dataBits.get(p.col, p.row));
-		}
+		for (auto& p : bitPos)
+			AppendBit(*codeword, dataBits.get(p.col, p.row));
 		++codeword;
 	});
 

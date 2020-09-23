@@ -29,17 +29,6 @@ namespace ZXing {
 namespace OneD {
 namespace RSS {
 
-int
-GenericAppIdDecoder::ExtractNumeric(const BitArray& bits, int pos, int count)
-{
-	int value = 0;
-	auto bitIter = bits.iterAt(pos);
-	for (int i = 0; i < count; ++i, ++bitIter) {
-		value = (value << 1) | static_cast<int>(*bitIter);
-	}
-	return value;
-}
-
 struct DecodedValue
 {
 	int newPosition = std::numeric_limits<int>::max();
@@ -130,8 +119,6 @@ struct ParsingState
 	State encoding = NUMERIC;
 };
 
-#define ExtractNumeric GenericAppIdDecoder::ExtractNumeric
-
 static bool
 IsStillAlpha(const BitArray& bits, int pos)
 {
@@ -140,7 +127,7 @@ IsStillAlpha(const BitArray& bits, int pos)
 	}
 
 	// We now check if it's a valid 5-bit value (0..9 and FNC1)
-	int fiveBitValue = ExtractNumeric(bits, pos, 5);
+	int fiveBitValue = ToInt(bits, pos, 5);
 	if (fiveBitValue >= 5 && fiveBitValue < 16) {
 		return true;
 	}
@@ -149,7 +136,7 @@ IsStillAlpha(const BitArray& bits, int pos)
 		return false;
 	}
 
-	int sixBitValue = ExtractNumeric(bits, pos, 6);
+	int sixBitValue = ToInt(bits, pos, 6);
 	return sixBitValue >= 16 && sixBitValue < 63; // 63 not included
 }
 
@@ -160,7 +147,7 @@ IsStillIsoIec646(const BitArray& bits, int pos)
 		return false;
 	}
 
-	int fiveBitValue = ExtractNumeric(bits, pos, 5);
+	int fiveBitValue = ToInt(bits, pos, 5);
 	if (fiveBitValue >= 5 && fiveBitValue < 16) {
 		return true;
 	}
@@ -169,7 +156,7 @@ IsStillIsoIec646(const BitArray& bits, int pos)
 		return false;
 	}
 
-	int sevenBitValue = ExtractNumeric(bits, pos, 7);
+	int sevenBitValue = ToInt(bits, pos, 7);
 	if (sevenBitValue >= 64 && sevenBitValue < 116) {
 		return true;
 	}
@@ -178,7 +165,7 @@ IsStillIsoIec646(const BitArray& bits, int pos)
 		return false;
 	}
 
-	int eightBitValue = ExtractNumeric(bits, pos, 8);
+	int eightBitValue = ToInt(bits, pos, 8);
 	return eightBitValue >= 232 && eightBitValue < 253;
 }
 
@@ -202,7 +189,7 @@ IsStillNumeric(const BitArray& bits, int pos)
 static DecodedChar
 DecodeAlphanumeric(const BitArray& bits, int pos)
 {
-	int fiveBitValue = ExtractNumeric(bits, pos, 5);
+	int fiveBitValue = ToInt(bits, pos, 5);
 	if (fiveBitValue == 15) {
 		return DecodedChar(pos + 5, DecodedChar::FNC1);
 	}
@@ -211,7 +198,7 @@ DecodeAlphanumeric(const BitArray& bits, int pos)
 		return DecodedChar(pos + 5, (char)('0' + fiveBitValue - 5));
 	}
 
-	int sixBitValue = ExtractNumeric(bits, pos, 6);
+	int sixBitValue = ToInt(bits, pos, 6);
 
 	if (sixBitValue >= 32 && sixBitValue < 58) {
 		return DecodedChar(pos + 6, (char)(sixBitValue + 33));
@@ -311,7 +298,7 @@ ParseAlphaBlock(const BitArray& bits, ParsingState& state, std::string& buffer)
 static DecodedChar
 DecodeIsoIec646(const BitArray& bits, int pos)
 {
-	int fiveBitValue = ExtractNumeric(bits,pos, 5);
+	int fiveBitValue = ToInt(bits,pos, 5);
 	if (fiveBitValue == 15) {
 		return DecodedChar(pos + 5, DecodedChar::FNC1);
 	}
@@ -320,7 +307,7 @@ DecodeIsoIec646(const BitArray& bits, int pos)
 		return DecodedChar(pos + 5, (char)('0' + fiveBitValue - 5));
 	}
 
-	int sevenBitValue = ExtractNumeric(bits, pos, 7);
+	int sevenBitValue = ToInt(bits, pos, 7);
 
 	if (sevenBitValue >= 64 && sevenBitValue < 90) {
 		return DecodedChar(pos + 7, (char)(sevenBitValue + 1));
@@ -330,7 +317,7 @@ DecodeIsoIec646(const BitArray& bits, int pos)
 		return DecodedChar(pos + 7, (char)(sevenBitValue + 7));
 	}
 
-	int eightBitValue = ExtractNumeric(bits, pos, 8);
+	int eightBitValue = ToInt(bits, pos, 8);
 	if (eightBitValue < 232 || eightBitValue > 252)
 		throw std::runtime_error("Decoding invalid ISO-IEC-646 value");
 
@@ -372,13 +359,13 @@ static DecodedNumeric
 DecodeNumeric(const BitArray& bits, int pos)
 {
 	if (pos + 7 > bits.size()) {
-		int numeric = ExtractNumeric(bits, pos, 4);
+		int numeric = ToInt(bits, pos, 4);
 		if (numeric == 0) {
 			return DecodedNumeric(bits.size(), DecodedNumeric::FNC1, DecodedNumeric::FNC1);
 		}
 		return DecodedNumeric(bits.size(), numeric - 1, DecodedNumeric::FNC1);
 	}
-	int numeric = ExtractNumeric(bits, pos, 7);
+	int numeric = ToInt(bits, pos, 7);
 	int digit1 = (numeric - 8) / 11;
 	int digit2 = (numeric - 8) % 11;
 
