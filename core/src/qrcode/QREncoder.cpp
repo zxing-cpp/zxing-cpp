@@ -72,7 +72,7 @@ static bool IsOnlyDoubleByteKanji(const std::wstring& content)
 ZXING_EXPORT_TEST_ONLY
 int GetAlphanumericCode(int code)
 {
-	if (code < (int)ALPHANUMERIC_TABLE.size()) {
+	if (code < Size(ALPHANUMERIC_TABLE)) {
 		return ALPHANUMERIC_TABLE[code];
 	}
 	return -1;
@@ -208,7 +208,7 @@ ZXING_EXPORT_TEST_ONLY
 void AppendKanjiBytes(const std::wstring& content, BitArray& bits)
 {
 	std::string bytes = TextEncoder::FromUnicode(content, CharacterSet::Shift_JIS);
-	int length = (int)bytes.size();
+	int length = Size(bytes);
 	if (length % 2 != 0) {
 		throw std::invalid_argument("Kanji byte size not even");
 	}
@@ -424,7 +424,7 @@ BitArray InterleaveWithECBytes(const BitArray& bits, int numTotalBytes, int numD
 		GenerateECBytes(blocks[i].dataBytes, numEcBytesInBlock, blocks[i].ecBytes);
 
 		maxNumDataBytes = std::max(maxNumDataBytes, size);
-		maxNumEcBytes = std::max(maxNumEcBytes, (int)blocks[i].ecBytes.size());
+		maxNumEcBytes = std::max(maxNumEcBytes, Size(blocks[i].ecBytes));
 		dataBytesOffset += numDataBytesInBlock;
 	}
 	if (numDataBytes != dataBytesOffset) {
@@ -435,7 +435,7 @@ BitArray InterleaveWithECBytes(const BitArray& bits, int numTotalBytes, int numD
 	// First, place data blocks.
 	for (int i = 0; i < maxNumDataBytes; ++i) {
 		for (auto& block : blocks) {
-			if (i < (int)block.dataBytes.size()) {
+			if (i < Size(block.dataBytes)) {
 				output.appendBits(block.dataBytes[i], 8);
 			}
 		}
@@ -443,7 +443,7 @@ BitArray InterleaveWithECBytes(const BitArray& bits, int numTotalBytes, int numD
 	// Then, place error correction blocks.
 	for (int i = 0; i < maxNumEcBytes; ++i) {
 		for (auto& block : blocks) {
-			if (i < (int)block.ecBytes.size()) {
+			if (i < Size(block.ecBytes)) {
 				output.appendBits(block.ecBytes[i], 8);
 			}
 		}

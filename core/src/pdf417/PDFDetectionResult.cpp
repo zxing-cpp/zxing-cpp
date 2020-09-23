@@ -17,6 +17,7 @@
 
 #include "PDFDetectionResult.h"
 #include "PDFCodewordDecoder.h"
+#include "ZXContainerAlgorithms.h"
 
 #include <algorithm>
 #include <array>
@@ -191,12 +192,12 @@ static void AdjustRowNumbers(const std::vector<Nullable<DetectionResultColumn>>&
 		otherCodewords[10] = previousColumnCodewords[codewordsRow - 2];
 		otherCodewords[11] = nextColumnCodewords[codewordsRow - 2];
 	}
-	if (codewordsRow < (int)codewords.size() - 1) {
+	if (codewordsRow < Size(codewords) - 1) {
 		otherCodewords[1] = codewords[codewordsRow + 1];
 		otherCodewords[6] = previousColumnCodewords[codewordsRow + 1];
 		otherCodewords[7] = nextColumnCodewords[codewordsRow + 1];
 	}
-	if (codewordsRow < (int)codewords.size() - 2) {
+	if (codewordsRow < Size(codewords) - 2) {
 		otherCodewords[9] = codewords[codewordsRow + 2];
 		otherCodewords[12] = previousColumnCodewords[codewordsRow + 2];
 		otherCodewords[13] = nextColumnCodewords[codewordsRow + 2];
@@ -221,12 +222,12 @@ static int AdjustRowNumbers(std::vector<Nullable<DetectionResultColumn>>& detect
 	if (unadjustedCount == 0) {
 		return 0;
 	}
-	for (int barcodeColumn = 1; barcodeColumn < (int)detectionResultColumns.size() - 1; barcodeColumn++) {
+	for (int barcodeColumn = 1; barcodeColumn < Size(detectionResultColumns) - 1; barcodeColumn++) {
 		if (detectionResultColumns[barcodeColumn] == nullptr) {
 			continue;
 		}
 		auto& codewords = detectionResultColumns[barcodeColumn].value().allCodewords();
-		for (int codewordsRow = 0; codewordsRow < (int)codewords.size(); codewordsRow++) {
+		for (int codewordsRow = 0; codewordsRow < Size(codewords); codewordsRow++) {
 			if (codewords[codewordsRow] == nullptr) {
 				continue;
 			}

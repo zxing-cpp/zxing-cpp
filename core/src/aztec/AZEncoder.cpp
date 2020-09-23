@@ -280,9 +280,7 @@ Encoder::Encode(const std::string& data, int minECCPercent, int userSpecifiedLay
 	if (compact) {
 		// no alignment marks in compact mode, alignmentMap is a no-op
 		matrixSize = baseMatrixSize;
-		for (int i = 0; i < (int)alignmentMap.size(); i++) {
-			alignmentMap[i] = i;
-		}
+		std::iota(alignmentMap.begin(), alignmentMap.end(), 0);
 	}
 	else {
 		matrixSize = baseMatrixSize + 1 + 2 * ((baseMatrixSize / 2 - 1) / 15);

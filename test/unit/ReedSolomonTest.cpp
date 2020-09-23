@@ -48,7 +48,7 @@ namespace {
 		auto messageExpected = dataWords + ecWords;
 		auto message = dataWords;
 		message.resize(message.size() + ecWords.size());
-		encoder.encode(message, (int)ecWords.size());
+		encoder.encode(message, Size(ecWords));
 		EXPECT_EQ(message, messageExpected) << "Encode in " << field << " (" << dataWords.size() << ',' << ecWords.size() << ") failed";
 	}
 
@@ -80,7 +80,7 @@ namespace {
 				}
 				auto message = dataWords + ecWords;
 				Corrupt(message, i, random, field.size());
-				bool success = ReedSolomonDecoder::Decode(field, message, (int)ecWords.size());
+				bool success = ReedSolomonDecoder::Decode(field, message, Size(ecWords));
 				if (!success) {
 					// fail only if maxErrors exceeded
 					ASSERT_GT(i, maxErrors) << "Decode in " << field << " (" << dataWords.size() << ',' << ecWords.size() << ") failed at " << i;
@@ -116,7 +116,7 @@ namespace {
 			}
 			// generate ECC words
 			std::copy(dataWords.begin(), dataWords.end(), message.begin());
-			encoder.encode(message, (int)ecWords.size());
+			encoder.encode(message, Size(ecWords));
 			std::copy_n(message.begin() + dataWords.size(), ecSize, ecWords.begin());
 			// check to see if Decoder can fix up to ecWords/2 random errors
 			TestDecoder(field, dataWords, ecWords);

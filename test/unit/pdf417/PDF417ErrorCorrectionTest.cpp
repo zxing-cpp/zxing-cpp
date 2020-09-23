@@ -61,7 +61,7 @@ static void Corrupt(std::vector<int>& received, int howMany, PseudoRandom& rando
 {
 	std::vector<bool> corrupted(received.size(), false);
 	for (int j = 0; j < howMany; j++) {
-		int location = random.next(0, (int)received.size() - 1);
+		int location = random.next(0, Size(received) - 1);
 		int value = random.next(0, max - 1);
 		if (corrupted[location] || received[location] == value) {
 			j--;

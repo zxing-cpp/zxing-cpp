@@ -732,7 +732,7 @@ DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel)
 			break;
 		}
 		}
-		if (codeIndex < (int)codewords.size()) {
+		if (codeIndex < Size(codewords)) {
 			code = codewords[codeIndex++];
 		}
 		else {

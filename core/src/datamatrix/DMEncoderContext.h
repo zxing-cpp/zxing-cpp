@@ -21,6 +21,7 @@
 #include "ByteArray.h"
 #include "DMSymbolShape.h"
 #include "DMSymbolInfo.h"
+#include "ZXContainerAlgorithms.h"
 #include "ZXStrConvWorkaround.h"
 
 namespace ZXing {
@@ -87,7 +88,7 @@ public:
 	}
 
 	int codewordCount() const {
-		return (int)_codewords.size();
+		return Size(_codewords);
 	}
 
 	void addCodeword(uint8_t codeword) {

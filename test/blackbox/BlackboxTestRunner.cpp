@@ -127,7 +127,7 @@ static void printPositiveTestStats(size_t imageCount, const TestCase::TC& tc)
 	size_t passCount = imageCount - tc.misReadFiles.size() - tc.notDetectedFiles.size();
 
 	printf(", %s: %3d of %3d, misread: %d of %d", tc.name.c_str(), (int)passCount, (int)tc.minPassCount,
-		(int)tc.misReadFiles.size(), (int)tc.maxMisreads);
+		Size(tc.misReadFiles), (int)tc.maxMisreads);
 
 	if (passCount < tc.minPassCount && !tc.notDetectedFiles.empty()) {
 		std::cout << "\nFAILED: Not detected (" << tc.name << "):";
@@ -170,7 +170,7 @@ static void doRunTests(
 
 	for (auto& test : tests) {
 		auto startTime = std::chrono::steady_clock::now();
-		printf("%-20s @ %3d, total: %3d", folderName.string().c_str(), test.rotation, (int)images.size());
+		printf("%-20s @ %3d, total: %3d", folderName.string().c_str(), test.rotation, Size(images));
 		for (auto tc : test.tc) {
 			if (tc.name.empty())
 				break;
@@ -218,7 +218,7 @@ static void doRunStructuredAppendTest(
 	}
 
 	for (auto& test : tests) {
-		printf("%-20s @ %3d, total: %3d", folderName.string().c_str(), test.rotation, (int)imgPaths.size());
+		printf("%-20s @ %3d, total: %3d", folderName.string().c_str(), test.rotation, Size(imgPaths));
 		auto tc = test.tc[0];
 
 		for (const auto& [testPath, testImgPaths] : imageGroups) {

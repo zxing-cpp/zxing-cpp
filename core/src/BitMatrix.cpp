@@ -185,7 +185,7 @@ bool
 BitMatrix::getTopLeftOnBit(int& left, int& top) const
 {
 	int bitsOffset = (int)std::distance(_bits.begin(), std::find_if(_bits.begin(), _bits.end(), isSet_));
-	if (bitsOffset == (int)_bits.size()) {
+	if (bitsOffset == Size(_bits)) {
 		return false;
 	}
 	top = bitsOffset / _rowSize;
@@ -199,7 +199,7 @@ BitMatrix::getTopLeftOnBit(int& left, int& top) const
 bool
 BitMatrix::getBottomRightOnBit(int& right, int& bottom) const
 {
-	int bitsOffset = (int)_bits.size() - 1 - (int)std::distance(_bits.rbegin(), std::find_if(_bits.rbegin(), _bits.rend(), isSet_));
+	int bitsOffset = Size(_bits) - 1 - (int)std::distance(_bits.rbegin(), std::find_if(_bits.rbegin(), _bits.rend(), isSet_));
 	if (bitsOffset < 0) {
 		return false;
 	}

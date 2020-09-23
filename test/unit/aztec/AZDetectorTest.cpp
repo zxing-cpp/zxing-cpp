@@ -60,8 +60,8 @@ namespace {
 			BitMatrix matrix = matrix_.copy();
 			for (int i = 0; i < 4; ++i) {
 				// Systematically try every possible 1- and 2-bit error.
-				for (int error1 = 0; error1 < (int)orientationPoints.size(); error1++) {
-					for (int error2 = error1; error2 < (int)orientationPoints.size(); error2++) {
+				for (int error1 = 0; error1 < Size(orientationPoints); error1++) {
+					for (int error2 = error1; error2 < Size(orientationPoints); error2++) {
 						BitMatrix copy = matrix.copy();
 						if (isMirror) {
 							copy.mirror();

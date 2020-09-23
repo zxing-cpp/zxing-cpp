@@ -325,7 +325,7 @@ static void GenerateErrorCorrection(std::vector<int>& dataCodewords, int errorCo
 {
 	int k = GetErrorCorrectionCodewordCount(errorCorrectionLevel);
 	std::vector<int> e(k, 0);
-	int sld = (int)dataCodewords.size();
+	int sld = Size(dataCodewords);
 	for (int i = 0; i < sld; i++) {
 		int t1 = (dataCodewords[i] + e[k - 1]) % 929;
 		int t2;

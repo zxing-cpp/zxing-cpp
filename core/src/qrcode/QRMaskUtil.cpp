@@ -116,8 +116,8 @@ static int ApplyMaskPenaltyRule3(const TritMatrix& matrix)
 {
 	const std::array<bool, 4> white = {0, 0, 0, 0};
 	const std::array<bool, 7> finder = {1, 0, 1, 1, 1, 0, 1};
-	const int whiteSize = (int)white.size();
-	const int finderSize = (int)finder.size();
+	const int whiteSize = Size(white);
+	const int finderSize = Size(finder);
 
 	int numPenalties = 0;
 	int width = matrix.width();

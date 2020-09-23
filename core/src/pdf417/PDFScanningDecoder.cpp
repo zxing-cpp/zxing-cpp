@@ -247,13 +247,13 @@ static bool AdjustBoundingBox(Nullable<DetectionResultColumn>& rowIndicatorColum
 		missingStartRows--;
 	}
 	int missingEndRows = 0;
-	for (int row = (int)rowHeights.size() - 1; row >= 0; row--) {
+	for (int row = Size(rowHeights) - 1; row >= 0; row--) {
 		missingEndRows += maxRowHeight - rowHeights[row];
 		if (rowHeights[row] > 0) {
 			break;
 		}
 	}
-	for (int row = (int)codewords.size() - 1; missingEndRows > 0 && codewords[row] == nullptr; row--) {
+	for (int row = Size(codewords) - 1; missingEndRows > 0 && codewords[row] == nullptr; row--) {
 		missingEndRows--;
 	}
 	BoundingBox box;
@@ -335,7 +335,7 @@ static std::vector<std::vector<BarcodeValue>> CreateBarcodeMatrix(DetectionResul
 				if (codeword != nullptr) {
 					int rowNumber = codeword.value().rowNumber();
 					if (rowNumber >= 0) {
-						if (rowNumber >= (int)barcodeMatrix.size()) {
+						if (rowNumber >= Size(barcodeMatrix)) {
 							// We have more rows than the barcode metadata allows for, ignore them.
 							continue;
 						}
@@ -543,7 +543,7 @@ bool DecodeErrorCorrection(std::vector<int>& received, int numECCodewords, const
 */
 static bool CorrectErrors(std::vector<int>& codewords, const std::vector<int>& erasures, int numECCodewords, int& errorCount)
 {
-	if ((int)erasures.size() > numECCodewords / 2 + MAX_ERRORS ||
+	if (Size(erasures) > numECCodewords / 2 + MAX_ERRORS ||
 		numECCodewords < 0 ||
 		numECCodewords > MAX_EC_CODEWORDS) {
 		// Too many errors or EC Codewords is corrupted
@@ -566,13 +566,13 @@ static bool VerifyCodewordCount(std::vector<int>& codewords, int numECCodewords)
 	// codewords in the symbol, including the Symbol Length Descriptor itself, data codewords and pad
 	// codewords, but excluding the number of error correction codewords.
 	int numberOfCodewords = codewords[0];
-	if (numberOfCodewords > (int)codewords.size()) {
+	if (numberOfCodewords > Size(codewords)) {
 		return false;
 	}
 	if (numberOfCodewords == 0) {
 		// Reset to the length of the array - 8 (Allow for at least level 3 Error Correction (8 Error Codewords)
-		if (numECCodewords < (int)codewords.size()) {
-			codewords[0] = (int)codewords.size() - numECCodewords;
+		if (numECCodewords < Size(codewords)) {
+			codewords[0] = Size(codewords) - numECCodewords;
 		}
 		else {
 			return false;
@@ -636,7 +636,7 @@ static DecoderResult CreateDecoderResultFromAmbiguousValues(int ecLevel, std::ve
 			return DecodeStatus::ChecksumError;
 		}
 		for (size_t i = 0; i < ambiguousIndexCount.size(); i++) {
-			if (ambiguousIndexCount[i] < (int)ambiguousIndexValues[i].size() - 1) {
+			if (ambiguousIndexCount[i] < Size(ambiguousIndexValues[i]) - 1) {
 				ambiguousIndexCount[i]++;
 				break;
 			}

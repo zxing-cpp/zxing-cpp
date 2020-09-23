@@ -21,6 +21,7 @@
 
 #include "GenericLuminanceSource.h"
 #include "ByteArray.h"
+#include "ZXContainerAlgorithms.h"
 
 #include <algorithm>
 #include <cstdint>
@@ -58,7 +59,7 @@ static std::shared_ptr<ByteArray> MakeCopy(const void* src, int rowBytes, int le
 
 static std::shared_ptr<ByteArray> MakeCopy(const ByteArray& pixels, int rowBytes, int left, int top, int width, int height)
 {
-	if (top == 0 && left == 0 && width * height == (int)pixels.size()) {
+	if (top == 0 && left == 0 && width * height == Size(pixels)) {
 		return std::make_shared<ByteArray>(pixels);
 	}
 	return MakeCopy(pixels.data(), rowBytes, left, top, width, height);

@@ -354,7 +354,7 @@ static uint8_t ReadByte(const std::vector<bool>& rawbits, int startIndex)
 */
 static ByteArray ConvertBoolArrayToByteArray(const std::vector<bool>& boolArr)
 {
-	ByteArray byteArr(((int)boolArr.size() + 7) / 8);
+	ByteArray byteArr((Size(boolArr) + 7) / 8);
 	for (int i = 0; i < Size(byteArr); ++i) {
 		byteArr[i] = ReadByte(boolArr, 8 * i);
 	}

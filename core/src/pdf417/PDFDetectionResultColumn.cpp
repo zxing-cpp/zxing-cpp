@@ -18,6 +18,8 @@
 #include "PDFDetectionResultColumn.h"
 #include "PDFBarcodeMetadata.h"
 #include "PDFBarcodeValue.h"
+#include "ZXContainerAlgorithms.h"
+
 #include <algorithm>
 #include <stdexcept>
 
@@ -54,7 +56,7 @@ DetectionResultColumn::codewordNearby(int imageRow) const
 			}
 		}
 		nearImageRow = imageRowToCodewordIndex(imageRow) + i;
-		if (nearImageRow < (int)_codewords.size()) {
+		if (nearImageRow < Size(_codewords)) {
 			if (_codewords[nearImageRow] != nullptr) {
 				return _codewords[nearImageRow];
 			}

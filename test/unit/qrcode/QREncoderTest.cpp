@@ -582,8 +582,8 @@ TEST(QREncoderTest, InterleaveWithECBytes)
         42, 159, 74, 221, 244, 169, 239, 150, 138, 70,
         237, 85, 224, 96, 74, 219, 61,
     };
-	ASSERT_EQ(expected.size(), out.sizeInBytes());
-	EXPECT_EQ(expected, out.toBytes(0, (int)expected.size()));
+	ASSERT_EQ(Size(expected), out.sizeInBytes());
+	EXPECT_EQ(expected, out.toBytes(0, Size(expected)));
 
 	// Numbers are from http://www.swetake.com/qr/qr8.html
     in = BitArray();
@@ -615,8 +615,8 @@ TEST(QREncoderTest, InterleaveWithECBytes)
         140, 61, 179, 154, 214, 138, 147, 87, 27, 96, 77, 47,
         187, 49, 156, 214,
     };
-	EXPECT_EQ(expected.size(), out.sizeInBytes());
-	EXPECT_EQ(expected, out.toBytes(0, (int)expected.size()));
+	EXPECT_EQ(Size(expected), out.sizeInBytes());
+	EXPECT_EQ(expected, out.toBytes(0, Size(expected)));
 }
 
 TEST(QREncoderTest, BugInBitVectorNumBytes)
