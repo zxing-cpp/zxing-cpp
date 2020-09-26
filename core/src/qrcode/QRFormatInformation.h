@@ -36,7 +36,7 @@ class FormatInformation
 public:
 	FormatInformation() = default;
 
-	static FormatInformation DecodeFormatInformation(int maskedFormatInfo1, int maskedFormatInfo2);
+	static FormatInformation DecodeFormatInformation(uint32_t formatInfoBits1, uint32_t formatInfoBits2);
 
 	ErrorCorrectionLevel errorCorrectionLevel() const {
 		return _errorCorrectionLevel;
@@ -57,8 +57,6 @@ private:
 	uint8_t _dataMask = 0;
 
 	FormatInformation(int formatInfo);
-
-	static FormatInformation DoDecodeFormatInformation(int maskedFormatInfo1, int maskedFormatInfo2);
 };
 
 } // QRCode
