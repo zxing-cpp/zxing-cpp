@@ -33,10 +33,16 @@ class BitMatrixParser
 {
 public:
 	/**
-	* @param bitMatrix {@link BitMatrix} to parse
-	* return false if dimension is not >= 21 and 1 mod 4
-	*/
-	static const Version* ReadVersion(const BitMatrix& bitMatrix, bool mirrored);
+	 * @brief Reads version information from the QR Code.
+	 * @return {@link Version} encapsulating the QR Code's version, nullptr if neither location can be parsed
+	 */
+	static const Version* ReadVersion(const BitMatrix& bitMatrix);
+
+	/**
+	 * @brief Reads format information from one of its two locations within the QR Code.
+	 * @return {@link FormatInformation} encapsulating the QR Code's format info, result is invalid if both format
+	 * information locations cannot be parsed as the valid encoding of format information
+	 */
 	static FormatInformation ReadFormatInformation(const BitMatrix& bitMatrix, bool mirrored);
 
 	/**

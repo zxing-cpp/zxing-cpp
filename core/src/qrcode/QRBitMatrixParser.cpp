@@ -36,14 +36,7 @@ static inline bool hasValidDimension(const BitMatrix& bitMatrix)
 	return dimension >= 21 && dimension <= 177 && (dimension % 4) == 1;
 }
 
-/**
-* <p>Reads version information from one of its two locations within the QR Code.</p>
-*
-* @return {@link Version} encapsulating the QR Code's version
-* @throws FormatException if both version information locations cannot be parsed as
-* the valid encoding of version information
-*/
-const Version* BitMatrixParser::ReadVersion(const BitMatrix& bitMatrix, bool mirrored)
+const Version* BitMatrixParser::ReadVersion(const BitMatrix& bitMatrix)
 {
 	if (!hasValidDimension(bitMatrix))
 		return nullptr;
@@ -54,27 +47,22 @@ const Version* BitMatrixParser::ReadVersion(const BitMatrix& bitMatrix, bool mir
 	if (provisionalVersion <= 6)
 		return Version::VersionForNumber(provisionalVersion);
 
-	// Read top-right/bottom-left version info: 3 wide by 6 tall (depending on mirrored)
-	int versionBits = 0;
-	for (int y = 5; y >= 0; --y)
-		for (int x = dimension - 9; x >= dimension - 11; --x)
-			AppendBit(versionBits, getBit(bitMatrix, x, y, mirrored));
+	for (bool mirror : {false, true}) {
+		// Read top-right/bottom-left version info: 3 wide by 6 tall (depending on mirrored)
+		int versionBits = 0;
+		for (int y = 5; y >= 0; --y)
+			for (int x = dimension - 9; x >= dimension - 11; --x)
+				AppendBit(versionBits, getBit(bitMatrix, x, y, mirror));
 
-	auto theParsedVersion = Version::DecodeVersionInformation(versionBits);
-	//TODO: why care for the contents of the version bits if we know the dimension already?
-	if (theParsedVersion != nullptr && theParsedVersion->dimensionForVersion() == dimension)
-		return theParsedVersion;
-	else
-		return nullptr;
+		auto theParsedVersion = Version::DecodeVersionInformation(versionBits);
+		// TODO: why care for the contents of the version bits if we know the dimension already?
+		if (theParsedVersion != nullptr && theParsedVersion->dimensionForVersion() == dimension)
+			return theParsedVersion;
+	}
+
+	return nullptr;
 }
 
-/**
-* <p>Reads format information from one of its two locations within the QR Code.</p>
-*
-* @return {@link FormatInformation} encapsulating the QR Code's format info
-* @throws FormatException if both format information locations cannot be parsed as
-* the valid encoding of format information
-*/
 FormatInformation
 BitMatrixParser::ReadFormatInformation(const BitMatrix& bitMatrix, bool mirrored)
 {

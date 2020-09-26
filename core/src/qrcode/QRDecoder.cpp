@@ -460,10 +460,7 @@ DoDecode(const BitMatrix& bits, const Version& version, const FormatInformation&
 DecoderResult
 Decoder::Decode(const BitMatrix& bits_, const std::string& hintedCharset)
 {
-	// Construct a parser and read version, error-correction level
-	const Version* version = BitMatrixParser::ReadVersion(bits_, false);
-	if (!version)
-		version = BitMatrixParser::ReadVersion(bits_, true);
+	const Version* version = BitMatrixParser::ReadVersion(bits_);
 	if (!version)
 		return DecodeStatus::FormatError;
 
