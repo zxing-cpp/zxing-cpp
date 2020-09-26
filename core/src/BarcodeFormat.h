@@ -31,24 +31,23 @@ enum class BarcodeFormat
 	// The values are an implementation detail. The c++ use-case (ZXing::Flags) could have been designed such that it
 	// would not have been necessary to explicitly set the values to single bit constants. This has been done to ease
 	// the interoperability with C-like interfaces, the python and the Qt wrapper.
-	None              = 0,         ///< Used as a return value if no valid barcode has been detected
-	Aztec             = (1 << 0),  ///< Aztec (2D)
-	Codabar           = (1 << 1),  ///< Codabar (1D)
-	Code39            = (1 << 2),  ///< Code39 (1D)
-	Code93            = (1 << 3),  ///< Code93 (1D)
-	Code128           = (1 << 4),  ///< Code128 (1D)
-	DataBar           = (1 << 5),  ///< GS1 DataBar, formerly known as RSS 14
-	DataBarExpanded   = (1 << 6),  ///< GS1 DataBar Expanded, formerly known as RSS EXPANDED
-	DataMatrix        = (1 << 7),  ///< DataMatrix (2D)
-	EAN8              = (1 << 8),  ///< EAN-8 (1D)
-	EAN13             = (1 << 9),  ///< EAN-13 (1D)
-	ITF               = (1 << 10), ///< ITF (Interleaved Two of Five) (1D)
-	MaxiCode          = (1 << 11), ///< MaxiCode (2D)
-	PDF417            = (1 << 12), ///< PDF417 (1D) or (2D)
-	QRCode            = (1 << 13), ///< QR Code (2D)
-	UPCA              = (1 << 14), ///< UPC-A (1D)
-	UPCE              = (1 << 15), ///< UPC-E (1D)
-	UPC_EAN_EXTENSION = (1 << 16), ///< DEPRECATED: UPC/EAN extension (1D). Not a stand-alone format.
+	None            = 0,         ///< Used as a return value if no valid barcode has been detected
+	Aztec           = (1 << 0),  ///< Aztec (2D)
+	Codabar         = (1 << 1),  ///< Codabar (1D)
+	Code39          = (1 << 2),  ///< Code39 (1D)
+	Code93          = (1 << 3),  ///< Code93 (1D)
+	Code128         = (1 << 4),  ///< Code128 (1D)
+	DataBar         = (1 << 5),  ///< GS1 DataBar, formerly known as RSS 14
+	DataBarExpanded = (1 << 6),  ///< GS1 DataBar Expanded, formerly known as RSS EXPANDED
+	DataMatrix      = (1 << 7),  ///< DataMatrix (2D)
+	EAN8            = (1 << 8),  ///< EAN-8 (1D)
+	EAN13           = (1 << 9),  ///< EAN-13 (1D)
+	ITF             = (1 << 10), ///< ITF (Interleaved Two of Five) (1D)
+	MaxiCode        = (1 << 11), ///< MaxiCode (2D)
+	PDF417          = (1 << 12), ///< PDF417 (1D) or (2D)
+	QRCode          = (1 << 13), ///< QR Code (2D)
+	UPCA            = (1 << 14), ///< UPC-A (1D)
+	UPCE            = (1 << 15), ///< UPC-E (1D)
 
 	OneDCodes = Codabar | Code39 | Code93 | Code128 | EAN8 | EAN13 | ITF | DataBar | DataBarExpanded | UPCA | UPCE,
 	TwoDCodes = Aztec | DataMatrix | MaxiCode | PDF417 | QRCode,
@@ -72,8 +71,8 @@ enum class BarcodeFormat
 	UPC_A [[deprecated]]        = UPCA,
 	UPC_E [[deprecated]]        = UPCE,
 
-	FORMAT_COUNT [[deprecated]] = None,              ///> DEPRECATED: will be removed
-	_max                        = UPC_EAN_EXTENSION, ///> implementation detail, don't use
+	FORMAT_COUNT [[deprecated]] = None, ///> DEPRECATED: will be removed
+	_max                        = UPCE, ///> implementation detail, don't use
 };
 
 ZX_DECLARE_FLAGS(BarcodeFormats, BarcodeFormat)

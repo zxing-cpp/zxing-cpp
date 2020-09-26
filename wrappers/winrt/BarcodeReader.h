@@ -37,8 +37,7 @@ public enum class BarcodeType : int {
 	RSS_14,
 	RSS_EXPANDED,
 	UPC_A,
-	UPC_E,
-	UPC_EAN_EXTENSION
+	UPC_E
 };
 
 class MultiFormatReader;

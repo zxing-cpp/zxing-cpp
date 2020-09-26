@@ -47,18 +47,18 @@ class DecodeHints
 	bool _assumeCode39CheckDigit : 1;
 	bool _assumeGS1 : 1;
 	bool _returnCodabarStartEnd : 1;
+	bool _requireEanAddOnSymbol : 1;
 	Binarizer _binarizer : 2;
 
 	BarcodeFormats _formats = BarcodeFormat::None;
 	std::string _characterSet;
 	std::vector<int> _allowedLengths;
-	std::vector<int> _allowedEanExtensions;
 
 public:
 	// bitfields don't get default initialized to 0.
 	DecodeHints()
 		: _tryHarder(1), _tryRotate(1), _isPure(0), _tryCode39ExtendedMode(0), _assumeCode39CheckDigit(0),
-		  _assumeGS1(0), _returnCodabarStartEnd(0), _binarizer(Binarizer::LocalAverage)
+		  _assumeGS1(0), _returnCodabarStartEnd(0), _requireEanAddOnSymbol(0), _binarizer(Binarizer::LocalAverage)
 	{}
 
 #define ZX_PROPERTY(TYPE, GETTER, SETTER) \
@@ -106,13 +106,10 @@ public:
 	ZX_PROPERTY(bool, returnCodabarStartEnd, setReturnCodabarStartEnd)
 
 	/**
-	* Allowed extension lengths for EAN or UPC barcodes. Other formats will ignore this.
-	* Maps to an {@code int[]} of the allowed extension lengths, for example [2], [5], or [2, 5].
-	* If it is optional to have an extension, do not set this hint. If this is set,
-	* and a UPC or EAN barcode is found but an extension is not, then no result will be returned
-	* at all.
+	* If true, the codes EAN-13, UPC-A and UPC-E will require to have either an EAN-2 or EAN-5 add-on
+	* symbol.
 	*/
-	ZX_PROPERTY(std::vector<int>, allowedEanExtensions, setAllowedEanExtensions)
+	ZX_PROPERTY(bool, requireEanAddOnSymbol, setRequireEanAddOnSymbol)
 
 #undef ZX_PROPERTY
 
@@ -125,6 +122,15 @@ public:
 		for (auto f : formats)
 			_formats |= f;
 		return *this;
+	}
+
+	[[deprecated]] std::vector<int> allowedEanExtensions() const
+	{
+		return requireEanAddOnSymbol() ? std::vector<int>{2, 5} : std::vector<int>{};
+	}
+	[[deprecated]] DecodeHints& setAllowedEanExtensions(const std::vector<int>& v)
+	{
+		return setRequireEanAddOnSymbol(!v.empty());
 	}
 };
 

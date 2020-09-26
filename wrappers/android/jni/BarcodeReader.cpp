@@ -39,8 +39,7 @@ enum class JavaBarcodeFormat : int {
 	RSS_14,
 	RSS_EXPANDED,
 	UPC_A,
-	UPC_E,
-	UPC_EAN_EXTENSION
+	UPC_E
 };
 
 
@@ -63,7 +62,6 @@ static ZXing::BarcodeFormat ToZXingBarcodeFormat(JNIEnv* env, JavaBarcodeFormat 
         case JavaBarcodeFormat::RSS_EXPANDED      : return ZXing::BarcodeFormat::DataBarExpanded;
         case JavaBarcodeFormat::UPC_A             : return ZXing::BarcodeFormat::UPCA;
         case JavaBarcodeFormat::UPC_E             : return ZXing::BarcodeFormat::UPCE;
-        case JavaBarcodeFormat::UPC_EAN_EXTENSION : return ZXing::BarcodeFormat::UPC_EAN_EXTENSION;
     }
     ThrowJavaException(env, "Invalid format");
 }

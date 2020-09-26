@@ -147,7 +147,7 @@ UPCEANExtensionSupport::DecodeRow(int rowNumber, const BitArray& row, BitArray::
 
 	int xStop = static_cast<int>(next.begin - row.begin() - 1);
 
-	Result result(resultString, rowNumber, xStart, xStop, BarcodeFormat::UPC_EAN_EXTENSION);
+	Result result(resultString, rowNumber, xStart, xStop, BarcodeFormat::Any);
 
 	if (resultString.size() == 2) {
 		result.metadata().put(ResultMetadata::ISSUE_NUMBER, std::stoi(resultString));

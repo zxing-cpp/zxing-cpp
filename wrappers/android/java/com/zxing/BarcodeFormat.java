@@ -68,8 +68,5 @@ public enum BarcodeFormat {
 	UPC_A,
 
 	/** UPC-E 1D format. */
-	UPC_E,
-
-	/** UPC/EAN extension format. Not a stand-alone format. */
-	UPC_EAN_EXTENSION
+	UPC_E
 }

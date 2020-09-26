@@ -54,9 +54,6 @@ MultiUPCEANReader::MultiUPCEANReader(const DecodeHints& hints) : _hints(hints)
 		_readers.emplace_back(new EAN8Reader(hints));
 	if (_hints.hasFormat(BarcodeFormat::UPCE))
 		_readers.emplace_back(new UPCEReader(hints));
-
-	if (_hints.hasFormat(BarcodeFormat::UPC_EAN_EXTENSION))
-		_hints.setAllowedEanExtensions({2,5});
 }
 
 MultiUPCEANReader::~MultiUPCEANReader() = default;
@@ -304,7 +301,7 @@ static bool Extension(PartialResult& res, PatternView begin, int digitCount)
 		constexpr int CHECK_DIGIT_ENCODINGS[] = {0x18, 0x14, 0x12, 0x11, 0x0C, 0x06, 0x03, 0x0A, 0x09, 0x05};
 		CHECK(UPCEANExtension5Support::ExtensionChecksum(res.txt) == IndexOf(CHECK_DIGIT_ENCODINGS, lgPattern));
 	}
-	res.format = BarcodeFormat::UPC_EAN_EXTENSION;
+	res.format = BarcodeFormat::Any; // make sure res.format is valid, see below
 	return true;
 }
 
@@ -338,13 +335,10 @@ Result MultiUPCEANReader::decodePattern(int rowNumber, const PatternView& row, s
 
 	Result result(res.txt, rowNumber, begin.pixelsInFront(), res.end.pixelsTillEnd(), res.format);
 
-	auto expectExtension =
-		[this](int n) { return _hints.allowedEanExtensions().empty() || Contains(_hints.allowedEanExtensions(), n); };
-
 	auto ext = res.end;
 	PartialResult extRes;
-	if (ext.skipSymbol() && ext.skipSingle(static_cast<int>(begin.sum() * 3.5)) &&
-		((expectExtension(5) && Extension(extRes, ext, 5)) || (expectExtension(2) && Extension(extRes, ext, 2)))) {
+	if (_hints.requireEanAddOnSymbol() && ext.skipSymbol() && ext.skipSingle(static_cast<int>(begin.sum() * 3.5)) &&
+		(Extension(extRes, ext, 5) || Extension(extRes, ext, 2))) {
 
 		//TODO: extend position in include extension
 
@@ -359,7 +353,7 @@ Result MultiUPCEANReader::decodePattern(int rowNumber, const PatternView& row, s
 		}
 	}
 
-	if (!_hints.allowedEanExtensions().empty() && !extRes.isValid())
+	if (_hints.requireEanAddOnSymbol() && !extRes.isValid())
 		return Result(DecodeStatus::NotFound);
 
 	if (res.format == BarcodeFormat::EAN13 || res.format == BarcodeFormat::UPCA) {
