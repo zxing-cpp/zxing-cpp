@@ -128,7 +128,7 @@ BitMatrixParser::ReadCodewords(const BitMatrix& bitMatrix, const Version& versio
 				// Ignore bits covered by the function pattern
 				if (!functionPattern.get(xx, y)) {
 					// Read a bit
-					AppendBit(currentByte, IsBitAtFlipped(maskIndex, xx, y) != getBit(bitMatrix, xx, y, mirrored));
+					AppendBit(currentByte, GetDataMaskBit(maskIndex, xx, y) != getBit(bitMatrix, xx, y, mirrored));
 					// If we've made a whole byte, save it off
 					if (++bitsRead % 8 == 0)
 						result.push_back(std::exchange(currentByte, 0));

@@ -30,7 +30,7 @@ namespace QRCode {
 * and j is row position. In fact, as the text says, i is row position and j is column position.</p>
 */
 
-inline bool IsBitAtFlipped(int maskIndex, int x, int y)
+inline bool GetDataMaskBit(int maskIndex, int x, int y)
 {
 	switch (maskIndex) {
 	case 0: return (y + x) % 2 == 0;
@@ -47,8 +47,7 @@ inline bool IsBitAtFlipped(int maskIndex, int x, int y)
 
 inline bool GetMaskedBit(const BitMatrix& bits, int x, int y, int maskIndex)
 {
-	bool bit = bits.get(x, y);
-	return IsBitAtFlipped(maskIndex, x, y) ? !bit : bit;
+	return GetDataMaskBit(maskIndex, x, y) != bits.get(x, y);
 }
 
 } // QRCode
