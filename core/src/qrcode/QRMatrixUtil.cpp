@@ -30,91 +30,10 @@
 namespace ZXing {
 namespace QRCode {
 
-static const std::array<std::array<bool, 7>, 7> POSITION_DETECTION_PATTERN = {
-	1, 1, 1, 1, 1, 1, 1,
-	1, 0, 0, 0, 0, 0, 1,
-	1, 0, 1, 1, 1, 0, 1,
-	1, 0, 1, 1, 1, 0, 1,
-	1, 0, 1, 1, 1, 0, 1,
-	1, 0, 0, 0, 0, 0, 1,
-	1, 1, 1, 1, 1, 1, 1,
-};
-
-static const std::array<std::array<bool, 5>, 5> POSITION_ADJUSTMENT_PATTERN = {
-	1, 1, 1, 1, 1,
-	1, 0, 0, 0, 1,
-	1, 0, 1, 0, 1,
-	1, 0, 0, 0, 1,
-	1, 1, 1, 1, 1,
-};
-
-// From Appendix E. Table 1, JIS0510X:2004 (p 71). The table was double-checked by komatsu.
-static const std::array<std::array<int16_t, 7>, 40> POSITION_ADJUSTMENT_PATTERN_COORDINATE_TABLE = {
-   -1, -1, -1, -1,  -1,  -1,  -1,  // Version 1
-	6, 18, -1, -1,  -1,  -1,  -1,  // Version 2
-	6, 22, -1, -1,  -1,  -1,  -1,  // Version 3
-	6, 26, -1, -1,  -1,  -1,  -1,  // Version 4
-	6, 30, -1, -1,  -1,  -1,  -1,  // Version 5
-	6, 34, -1, -1,  -1,  -1,  -1,  // Version 6
-	6, 22, 38, -1,  -1,  -1,  -1,  // Version 7
-	6, 24, 42, -1,  -1,  -1,  -1,  // Version 8
-	6, 26, 46, -1,  -1,  -1,  -1,  // Version 9
-	6, 28, 50, -1,  -1,  -1,  -1,  // Version 10
-	6, 30, 54, -1,  -1,  -1,  -1,  // Version 11
-	6, 32, 58, -1,  -1,  -1,  -1,  // Version 12
-	6, 34, 62, -1,  -1,  -1,  -1,  // Version 13
-	6, 26, 46, 66,  -1,  -1,  -1,  // Version 14
-	6, 26, 48, 70,  -1,  -1,  -1,  // Version 15
-	6, 26, 50, 74,  -1,  -1,  -1,  // Version 16
-	6, 30, 54, 78,  -1,  -1,  -1,  // Version 17
-	6, 30, 56, 82,  -1,  -1,  -1,  // Version 18
-	6, 30, 58, 86,  -1,  -1,  -1,  // Version 19
-	6, 34, 62, 90,  -1,  -1,  -1,  // Version 20
-	6, 28, 50, 72,  94,  -1,  -1,  // Version 21
-	6, 26, 50, 74,  98,  -1,  -1,  // Version 22
-	6, 30, 54, 78, 102,  -1,  -1,  // Version 23
-	6, 28, 54, 80, 106,  -1,  -1,  // Version 24
-	6, 32, 58, 84, 110,  -1,  -1,  // Version 25
-	6, 30, 58, 86, 114,  -1,  -1,  // Version 26
-	6, 34, 62, 90, 118,  -1,  -1,  // Version 27
-	6, 26, 50, 74,  98, 122,  -1,  // Version 28
-	6, 30, 54, 78, 102, 126,  -1,  // Version 29
-	6, 26, 52, 78, 104, 130,  -1,  // Version 30
-	6, 30, 56, 82, 108, 134,  -1,  // Version 31
-	6, 34, 60, 86, 112, 138,  -1,  // Version 32
-	6, 30, 58, 86, 114, 142,  -1,  // Version 33
-	6, 34, 62, 90, 118, 146,  -1,  // Version 34
-	6, 30, 54, 78, 102, 126, 150,  // Version 35
-	6, 24, 50, 76, 102, 128, 154,  // Version 36
-	6, 28, 54, 80, 106, 132, 158,  // Version 37
-	6, 32, 58, 84, 110, 136, 162,  // Version 38
-	6, 26, 54, 82, 110, 138, 166,  // Version 39
-	6, 30, 58, 86, 114, 142, 170,  // Version 40
-};
-
-// Type info cells at the left top corner.
-static const std::array<std::array<int8_t, 2>, 15> TYPE_INFO_COORDINATES = {
-	8, 0,
-	8, 1,
-	8, 2,
-	8, 3,
-	8, 4,
-	8, 5,
-	8, 7,
-	8, 8,
-	7, 8,
-	5, 8,
-	4, 8,
-	3, 8,
-	2, 8,
-	1, 8,
-	0, 8,
-};
-
 // From Appendix D in JISX0510:2004 (p. 67)
 static const int VERSION_INFO_POLY = 0x1f25;  // 1 1111 0010 0101
 
-													  // From Appendix C in JISX0510:2004 (p.65).
+// From Appendix C in JISX0510:2004 (p.65).
 static const int TYPE_INFO_POLY = 0x537;
 static const int TYPE_INFO_MASK_PATTERN = 0x5412;
 
@@ -131,37 +50,29 @@ static void EmbedTimingPatterns(TritMatrix& matrix)
 	}
 }
 
-
 // Note that we cannot unify the function with embedPositionDetectionPattern() despite they are
 // almost identical, since we cannot write a function that takes 2D arrays in different sizes in
 // C/C++. We should live with the fact.
 static void EmbedPositionAdjustmentPattern(int xStart, int yStart, TritMatrix& matrix)
 {
-	for (int y = 0; y < 5; ++y) {
-		for (int x = 0; x < 5; ++x) {
-			matrix.set(xStart + x, yStart + y, POSITION_ADJUSTMENT_PATTERN[y][x]);
-		}
-	}
+	for (int y = 0; y < 5; ++y)
+		for (int x = 0; x < 5; ++x)
+			matrix.set(xStart + x, yStart + y, maxAbsComponent(PointI(x, y) - PointI(2, 2)) != 1);
 }
 
 // Embed position adjustment patterns if need be.
-static void MaybeEmbedPositionAdjustmentPatterns(const Version& version, TritMatrix& matrix)
+static void EmbedPositionAdjustmentPatterns(const Version& version, TritMatrix& matrix)
 {
 	if (version.versionNumber() < 2) {  // The patterns appear if version >= 2
 		return;
 	}
-	int index = version.versionNumber() - 1;
-	auto& coordinates = POSITION_ADJUSTMENT_PATTERN_COORDINATE_TABLE[index];
-	int numCoordinates = Size(coordinates);
-	for (int i = 0; i < numCoordinates; ++i) {
-		for (int j = 0; j < numCoordinates; ++j) {
-			int y = coordinates[i];
-			int x = coordinates[j];
+	auto& coordinates = version.alignmentPatternCenters();
+	for (int y : coordinates) {
+		for (int x : coordinates) {
 			// Check x/y is valid: don't place alignment patterns intersecting with the 3 finder patterns
-			if (x == -1 || y == -1 || (x == 6 && y == 6) || (x == 6 && y == matrix.height() - 7)
-				|| (x == matrix.width() - 7 && y == 6)) {
+			if ((x == 6 && y == 6) || (x == 6 && y == matrix.height() - 7) || (x == matrix.width() - 7 && y == 6))
 				continue;
-			}
+
 			// -2 is necessary since the x/y coordinates point to the center of the pattern, not the
 			// left top corner.
 			EmbedPositionAdjustmentPattern(x - 2, y - 2, matrix);
@@ -171,11 +82,9 @@ static void MaybeEmbedPositionAdjustmentPatterns(const Version& version, TritMat
 
 static void EmbedPositionDetectionPattern(int xStart, int yStart, TritMatrix& matrix)
 {
-	for (int y = 0; y < 7; ++y) {
-		for (int x = 0; x < 7; ++x) {
-			matrix.set(xStart + x, yStart + y, POSITION_DETECTION_PATTERN[y][x]);
-		}
-	}
+	for (int y = 0; y < 7; ++y)
+		for (int x = 0; x < 7; ++x)
+			matrix.set(xStart + x, yStart + y, maxAbsComponent(PointI(x, y) - PointI(3, 3)) != 2);
 
 	// Surround the 7x7 pattern with one line of white space (sepration pattern)
 	auto setIfInside = [&](int x, int y) {
@@ -194,14 +103,12 @@ static void EmbedPositionDetectionPattern(int xStart, int yStart, TritMatrix& ma
 // Embed position detection patterns and surrounding vertical/horizontal separators.
 static void EmbedPositionDetectionPatternsAndSeparators(TritMatrix& matrix)
 {
-	// Embed three big squares at corners.
-	int pdpWidth = Size(POSITION_DETECTION_PATTERN[0]);
 	// Left top corner.
 	EmbedPositionDetectionPattern(0, 0, matrix);
 	// Right top corner.
-	EmbedPositionDetectionPattern(matrix.width() - pdpWidth, 0, matrix);
+	EmbedPositionDetectionPattern(matrix.width() - 7, 0, matrix);
 	// Left bottom corner.
-	EmbedPositionDetectionPattern(0, matrix.width() - pdpWidth, matrix);
+	EmbedPositionDetectionPattern(0, matrix.width() - 7, matrix);
 }
 
 
@@ -210,26 +117,6 @@ static void EmbedDarkDotAtLeftBottomCorner(TritMatrix& matrix)
 {
 	matrix.set(8, matrix.height() - 8, 1);
 }
-
-// Embed basic patterns. On success, modify the matrix and return true.
-// The basic patterns are:
-// - Position detection patterns
-// - Timing patterns
-// - Dark dot at the left bottom corner
-// - Position adjustment patterns, if need be
-static void EmbedBasicPatterns(const Version& version, TritMatrix& matrix)
-{
-	// Let's get started with embedding big squares at corners.
-	EmbedPositionDetectionPatternsAndSeparators(matrix);
-	// Then, embed the dark dot at the left bottom corner.
-	EmbedDarkDotAtLeftBottomCorner(matrix);
-
-	// Position adjustment patterns appear if version >= 2.
-	MaybeEmbedPositionAdjustmentPatterns(version, matrix);
-	// Timing patterns should be embedded after position adj. patterns.
-	EmbedTimingPatterns(matrix);
-}
-
 
 // Return the position of the most significant bit set (to one) in the "value". The most
 // significant bit is position 32. If there is no bit set, return 0. Examples:
@@ -282,12 +169,13 @@ static int CalculateBCHCode(int value, int poly) {
 // Make bit vector of type information. On success, store the result in "bits" and return true.
 // Encode error correction level and mask pattern. See 8.9 of
 // JISX0510:2004 (p.45) for details.
-static void MakeTypeInfoBits(ErrorCorrectionLevel ecLevel, int maskPattern, BitArray& bits)
+static BitArray MakeTypeInfoBits(ErrorCorrectionLevel ecLevel, int maskPattern)
 {
 	if (maskPattern < 0 || maskPattern >= MatrixUtil::NUM_MASK_PATTERNS) {
 		throw std::invalid_argument("Invalid mask pattern");
 	}
 
+	BitArray bits;
 	int typeInfo = (BitsFromECLevel(ecLevel) << 3) | maskPattern;
 	bits.appendBits(typeInfo, 5);
 
@@ -301,13 +189,19 @@ static void MakeTypeInfoBits(ErrorCorrectionLevel ecLevel, int maskPattern, BitA
 	if (bits.size() != 15) {  // Just in case.
 		throw std::logic_error("Should not happen but we got: " + std::to_string(bits.size()));
 	}
+	return bits;
 }
 
 // Embed type information. On success, modify the matrix.
 static void EmbedTypeInfo(ErrorCorrectionLevel ecLevel, int maskPattern, TritMatrix& matrix)
 {
-	BitArray typeInfoBits;
-	MakeTypeInfoBits(ecLevel, maskPattern, typeInfoBits);
+	// Type info cells at the left top corner.
+	constexpr PointI TYPE_INFO_COORDINATES[] = {
+		{8, 0}, {8, 1}, {8, 2}, {8, 3}, {8, 4}, {8, 5}, {8, 7}, {8, 8},
+		{7, 8}, {5, 8}, {4, 8}, {3, 8}, {2, 8}, {1, 8}, {0, 8}
+	};
+
+	BitArray typeInfoBits = MakeTypeInfoBits(ecLevel, maskPattern);
 
 	for (int i = 0; i < typeInfoBits.size(); ++i) {
 		// Place bits in LSB to MSB order.  LSB (least significant bit) is the last value in
@@ -315,29 +209,24 @@ static void EmbedTypeInfo(ErrorCorrectionLevel ecLevel, int maskPattern, TritMat
 		bool bit = typeInfoBits.get(typeInfoBits.size() - 1 - i);
 
 		// Type info bits at the left top corner. See 8.9 of JISX0510:2004 (p.46).
-		int x1 = TYPE_INFO_COORDINATES[i][0];
-		int y1 = TYPE_INFO_COORDINATES[i][1];
-		matrix.set(x1, y1, bit);
+		matrix.set(TYPE_INFO_COORDINATES[i], bit);
 
 		if (i < 8) {
 			// Right top corner.
-			int x2 = matrix.width() - i - 1;
-			int y2 = 8;
-			matrix.set(x2, y2, bit);
+			matrix.set(matrix.width() - i - 1, 8, bit);
 		}
 		else {
 			// Left bottom corner.
-			int x2 = 8;
-			int y2 = matrix.height() - 7 + (i - 8);
-			matrix.set(x2, y2, bit);
+			matrix.set(8, matrix.height() - 7 + (i - 8), bit);
 		}
 	}
 }
 
 // Make bit vector of version information. On success, store the result in "bits" and return true.
 // See 8.10 of JISX0510:2004 (p.45) for details.
-static void MakeVersionInfoBits(const Version& version, BitArray& bits)
+static BitArray MakeVersionInfoBits(const Version& version)
 {
+	BitArray bits;
 	bits.appendBits(version.versionNumber(), 6);
 	int bchCode = CalculateBCHCode(version.versionNumber(), VERSION_INFO_POLY);
 	bits.appendBits(bchCode, 12);
@@ -345,18 +234,19 @@ static void MakeVersionInfoBits(const Version& version, BitArray& bits)
 	if (bits.size() != 18) {  // Just in case.
 		throw std::logic_error("Should not happen but we got: " + std::to_string(bits.size()));
 	}
+
+	return bits;
 }
 
 // Embed version information if need be. On success, modify the matrix and return true.
 // See 8.10 of JISX0510:2004 (p.47) for how to embed version information.
-static void MaybeEmbedVersionInfo(const Version& version, TritMatrix& matrix)
+static void EmbedVersionInfo(const Version& version, TritMatrix& matrix)
 {
 	if (version.versionNumber() < 7) {  // Version info is necessary if version >= 7.
 		return;  // Don't need version info.
 	}
 
-	BitArray versionInfoBits;
-	MakeVersionInfoBits(version, versionInfoBits);
+	BitArray versionInfoBits = MakeVersionInfoBits(version);
 
 	int bitIndex = 6 * 3 - 1;  // It will decrease from 17 to 0.
 	for (int i = 0; i < 6; ++i) {
@@ -422,11 +312,18 @@ void
 MatrixUtil::BuildMatrix(const BitArray& dataBits, ErrorCorrectionLevel ecLevel, const Version& version, int maskPattern, TritMatrix& matrix)
 {
 	matrix.clear();
-	EmbedBasicPatterns(version, matrix);
+	// Let's get started with embedding big squares at corners.
+	EmbedPositionDetectionPatternsAndSeparators(matrix);
+	// Then, embed the dark dot at the left bottom corner.
+	EmbedDarkDotAtLeftBottomCorner(matrix);
+	// Position adjustment patterns appear if version >= 2.
+	EmbedPositionAdjustmentPatterns(version, matrix);
+	// Timing patterns should be embedded after position adj. patterns.
+	EmbedTimingPatterns(matrix);
 	// Type information appear with any version.
 	EmbedTypeInfo(ecLevel, maskPattern, matrix);
 	// Version info appear if version >= 7.
-	MaybeEmbedVersionInfo(version, matrix);
+	EmbedVersionInfo(version, matrix);
 	// Data should be embedded at end.
 	EmbedDataBits(dataBits, maskPattern, matrix);
 }

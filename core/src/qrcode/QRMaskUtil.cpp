@@ -146,7 +146,7 @@ static int ApplyMaskPenaltyRule3(const TritMatrix& matrix)
 */
 static int ApplyMaskPenaltyRule4(const TritMatrix& matrix)
 {
-	auto numDarkCells = std::count_if(matrix.begin(), matrix.end(), [](int8_t cell){ return cell == 1; });
+	auto numDarkCells = std::count_if(matrix.begin(), matrix.end(), [](Trit cell){ return cell; });
 	auto numTotalCells = matrix.size();
 	auto fivePercentVariances = std::abs(numDarkCells * 2 - numTotalCells) * 10 / numTotalCells;
 	return static_cast<int>(fivePercentVariances * N4);

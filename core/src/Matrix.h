@@ -15,6 +15,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+#include "Point.h"
 #include "ZXContainerAlgorithms.h"
 
 #include <algorithm>
@@ -80,6 +81,14 @@ public:
 
 	void set(int x, int y, value_t value) {
 		operator()(x, y) = value;
+	}
+
+	const value_t& get(PointI p) const {
+		return operator()(p.x, p.y);
+	}
+
+	void set(PointI p, value_t value) {
+		operator()(p.x, p.y) = value;
 	}
 
 	const value_t* data() const {
