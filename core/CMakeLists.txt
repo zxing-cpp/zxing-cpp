@@ -359,7 +359,6 @@ if (BUILD_READERS)
         src/qrcode/QRDataBlock.h
         src/qrcode/QRDataBlock.cpp
         src/qrcode/QRDataMask.h
-        src/qrcode/QRDataMask.cpp
         src/qrcode/QRDecoder.h
         src/qrcode/QRDecoder.cpp
         src/qrcode/QRDecoderMetadata.h

@@ -24,21 +24,14 @@ using namespace ZXing::QRCode;
 
 namespace {
 
-	void TestMask(const DataMask& mask, int dimension, std::function<bool(int, int)> condition) {
-		BitMatrix bits(dimension);
-		mask.unmaskBitMatrix(bits, dimension);
-		for (int i = 0; i < dimension; i++) {
-			for (int j = 0; j < dimension; j++) {
-				EXPECT_EQ(bits.get(j, i), condition(i, j)) << "(" << i << ',' << j << ')';
-			}
-		}
-	}
-
-	void TestMaskAcrossDimensions(int reference, std::function<bool(int, int)> condition) {
-		DataMask mask(reference);
+	void TestMaskAcrossDimensions(int maskIndex, std::function<bool(int, int)> condition) {
 		for (int version = 1; version <= 40; version++) {
 			int dimension = 17 + 4 * version;
-			TestMask(mask, dimension, condition);
+			BitMatrix bits(dimension);
+
+			for (int i = 0; i < dimension; i++)
+				for (int j = 0; j < dimension; j++)
+					EXPECT_EQ(GetMaskedBit(bits, j, i, maskIndex), condition(i, j)) << "(" << i << ',' << j << ')';
 		}
 	}
 
@@ -51,12 +44,12 @@ TEST(QRDataMaskTest, Mask0)
 
 TEST(QRDataMaskTest, Mask1)
 {
-	TestMaskAcrossDimensions(1, [](int i, int j) { return i % 2 == 0; });
+	TestMaskAcrossDimensions(1, [](int i, int) { return i % 2 == 0; });
 }
 
 TEST(QRDataMaskTest, Mask2)
 {
-	TestMaskAcrossDimensions(2, [](int i, int j) { return j % 3 == 0; });
+	TestMaskAcrossDimensions(2, [](int, int j) { return j % 3 == 0; });
 }
 
 TEST(QRDataMaskTest, Mask3)

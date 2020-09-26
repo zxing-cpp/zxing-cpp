@@ -424,7 +424,7 @@ DoDecode(const BitMatrix& bits, const Version& version, const FormatInformation&
 	auto ecLevel = formatInfo.errorCorrectionLevel();
 
 	// Read codewords
-	ByteArray codewords = BitMatrixParser::ReadCodewords(bits, version);
+	ByteArray codewords = BitMatrixParser::ReadCodewords(bits, version, formatInfo.dataMask());
 	if (codewords.empty())
 		return DecodeStatus::FormatError;
 
@@ -472,7 +472,6 @@ Decoder::Decode(const BitMatrix& bits_, const std::string& hintedCharset)
 		BitMatrix bits = bits_.copy();
 		if (mirror)
 			bits.mirror();
-		DataMask(formatInfo.dataMask()).unmaskBitMatrix(bits, bits.height());
 
 		auto result = DoDecode(bits, *version, formatInfo, hintedCharset);
 		if (result.isValid())

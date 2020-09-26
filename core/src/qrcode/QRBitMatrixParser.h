@@ -53,7 +53,7 @@ public:
 	* @return bytes encoded within the QR Code
 	* or empty array if the exact number of bytes expected is not read
 	*/
-	static ByteArray ReadCodewords(const BitMatrix& bitMatrix, const Version& version);
+	static ByteArray ReadCodewords(const BitMatrix& bitMatrix, const Version& version, int maskIndex);
 };
 
 } // QRCode

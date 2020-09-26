@@ -18,6 +18,7 @@
 #include "QRBitMatrixParser.h"
 #include "QRVersion.h"
 #include "QRFormatInformation.h"
+#include "QRDataMask.h"
 #include "BitMatrix.h"
 #include "ByteArray.h"
 #include "BitArray.h"
@@ -101,7 +102,7 @@ BitMatrixParser::ReadFormatInformation(const BitMatrix& bitMatrix, bool mirrored
 * @throws FormatException if the exact number of bytes expected is not read
 */
 ByteArray
-BitMatrixParser::ReadCodewords(const BitMatrix& bitMatrix, const Version& version)
+BitMatrixParser::ReadCodewords(const BitMatrix& bitMatrix, const Version& version, int maskIndex)
 {
 	if (!hasValidDimension(bitMatrix))
 		return {};
@@ -116,7 +117,7 @@ BitMatrixParser::ReadCodewords(const BitMatrix& bitMatrix, const Version& versio
 	int dimension = bitMatrix.height();
 	// Read columns in pairs, from right to left
 	for (int x = dimension - 1; x > 0; x -= 2) {
-		// Skip whole column with vertical timing pattern. saves time and makes the other code proceed more cleanly
+		// Skip whole column with vertical timing pattern.
 		if (x == 6)
 			x--;
 		// Read alternatingly from bottom to top then top to bottom
@@ -126,7 +127,7 @@ BitMatrixParser::ReadCodewords(const BitMatrix& bitMatrix, const Version& versio
 				// Ignore bits covered by the function pattern
 				if (!functionPattern.get(x - col, y)) {
 					// Read a bit
-					AppendBit(currentByte, bitMatrix.get(x - col, y));
+					AppendBit(currentByte, GetMaskedBit(bitMatrix, x - col, y, maskIndex));
 					// If we've made a whole byte, save it off
 					if (++bitsRead % 8 == 0)
 						result.push_back(std::exchange(currentByte, 0));
