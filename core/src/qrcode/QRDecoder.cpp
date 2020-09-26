@@ -419,17 +419,19 @@ DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCorrectionLevel 
 }
 
 static DecoderResult
-DoDecode(const BitMatrix& bits, const Version& version, const FormatInformation& formatInfo, const std::string& hintedCharset)
+DoDecode(const BitMatrix& bits, const Version& version, const std::string& hintedCharset, bool mirrored)
 {
-	auto ecLevel = formatInfo.errorCorrectionLevel();
+	auto formatInfo = BitMatrixParser::ReadFormatInformation(bits, mirrored);
+	if (!formatInfo.isValid())
+		return DecodeStatus::FormatError;
 
 	// Read codewords
-	ByteArray codewords = BitMatrixParser::ReadCodewords(bits, version, formatInfo.dataMask());
+	ByteArray codewords = BitMatrixParser::ReadCodewords(bits, version, formatInfo.dataMask(), mirrored);
 	if (codewords.empty())
 		return DecodeStatus::FormatError;
 
 	// Separate into data blocks
-	std::vector<DataBlock> dataBlocks = DataBlock::GetDataBlocks(codewords, version, ecLevel);
+	std::vector<DataBlock> dataBlocks = DataBlock::GetDataBlocks(codewords, version, formatInfo.errorCorrectionLevel());
 	if (dataBlocks.empty())
 		return DecodeStatus::FormatError;
 
@@ -454,31 +456,26 @@ DoDecode(const BitMatrix& bits, const Version& version, const FormatInformation&
 	}
 
 	// Decode the contents of that stream of bytes
-	return DecodeBitStream(std::move(resultBytes), version, ecLevel, hintedCharset);
+	return DecodeBitStream(std::move(resultBytes), version, formatInfo.errorCorrectionLevel(), hintedCharset);
 }
 
 DecoderResult
-Decoder::Decode(const BitMatrix& bits_, const std::string& hintedCharset)
+Decoder::Decode(const BitMatrix& bits, const std::string& hintedCharset)
 {
-	const Version* version = BitMatrixParser::ReadVersion(bits_);
+	const Version* version = BitMatrixParser::ReadVersion(bits);
 	if (!version)
 		return DecodeStatus::FormatError;
 
-	for (bool mirror : {false, true}) {
-		FormatInformation formatInfo = BitMatrixParser::ReadFormatInformation(bits_, mirror);
-		if (!formatInfo.isValid())
-			continue;
+	auto res = DoDecode(bits, *version, hintedCharset, false);
+	if (res.isValid())
+		return res;
 
-		BitMatrix bits = bits_.copy();
-		if (mirror)
-			bits.mirror();
-
-		auto result = DoDecode(bits, *version, formatInfo, hintedCharset);
-		if (result.isValid())
-			return result;
+	if (auto resMirrored = DoDecode(bits, *version, hintedCharset, true); resMirrored.isValid()) {
+		resMirrored.setExtra(std::make_shared<DecoderMetadata>(true));
+		return resMirrored;
 	}
 
-	return DecodeStatus::FormatError;
+	return res;
 }
 
 } // QRCode

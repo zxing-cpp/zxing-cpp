@@ -102,7 +102,7 @@ BitMatrixParser::ReadFormatInformation(const BitMatrix& bitMatrix, bool mirrored
 * @throws FormatException if the exact number of bytes expected is not read
 */
 ByteArray
-BitMatrixParser::ReadCodewords(const BitMatrix& bitMatrix, const Version& version, int maskIndex)
+BitMatrixParser::ReadCodewords(const BitMatrix& bitMatrix, const Version& version, int maskIndex, bool mirrored)
 {
 	if (!hasValidDimension(bitMatrix))
 		return {};
@@ -124,10 +124,11 @@ BitMatrixParser::ReadCodewords(const BitMatrix& bitMatrix, const Version& versio
 		for (int row = 0; row < dimension; row++) {
 			int y = readingUp ? dimension - 1 - row : row;
 			for (int col = 0; col < 2; col++) {
+				int xx = x - col;
 				// Ignore bits covered by the function pattern
-				if (!functionPattern.get(x - col, y)) {
+				if (!functionPattern.get(xx, y)) {
 					// Read a bit
-					AppendBit(currentByte, GetMaskedBit(bitMatrix, x - col, y, maskIndex));
+					AppendBit(currentByte, IsBitAtFlipped(maskIndex, xx, y) != getBit(bitMatrix, xx, y, mirrored));
 					// If we've made a whole byte, save it off
 					if (++bitsRead % 8 == 0)
 						result.push_back(std::exchange(currentByte, 0));
