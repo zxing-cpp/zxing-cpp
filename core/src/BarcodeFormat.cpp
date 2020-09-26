@@ -28,33 +28,39 @@
 
 namespace ZXing {
 
-static const char* FORMAT_STR[] = {
-	"None",
-	"Aztec",
-	"Codabar",
-	"Code39",
-	"Code93",
-	"Code128",
-	"DataBar",
-	"DataBarExpanded",
-	"DataMatrix",
-	"EAN-8",
-	"EAN-13",
-	"ITF",
-	"MaxiCode",
-	"PDF417",
-	"QRCode",
-	"UPC-A",
-	"UPC-E",
-	"EAN-Addon",
+struct BarcodeFormatName
+{
+	BarcodeFormat format;
+	const char* name;
 };
 
-static_assert(Size(FORMAT_STR) == (int)BarcodeFormats::bitIndex(BarcodeFormat::_max) + 1,
-			  "FORMAT_STR array is out of sync with BarcodeFormat");
+static BarcodeFormatName NAMES[] = {
+	{BarcodeFormat::None, "None"},
+	{BarcodeFormat::Aztec, "Aztec"},
+	{BarcodeFormat::Codabar, "Codabar"},
+	{BarcodeFormat::Code39, "Code39"},
+	{BarcodeFormat::Code93, "Code93"},
+	{BarcodeFormat::Code128, "Code128"},
+	{BarcodeFormat::DataBar, "DataBar"},
+	{BarcodeFormat::DataBarExpanded, "DataBarExpanded"},
+	{BarcodeFormat::DataMatrix, "DataMatrix"},
+	{BarcodeFormat::EAN8, "EAN-8"},
+	{BarcodeFormat::EAN13, "EAN-13"},
+	{BarcodeFormat::ITF, "ITF"},
+	{BarcodeFormat::MaxiCode, "MaxiCode"},
+	{BarcodeFormat::PDF417, "PDF417"},
+	{BarcodeFormat::QRCode, "QRCode"},
+	{BarcodeFormat::UPCA, "UPC-A"},
+	{BarcodeFormat::UPCE, "UPC-E"},
+	{BarcodeFormat::UPC_EAN_EXTENSION, "EAN-Addon"},
+	{BarcodeFormat::OneDCodes, "1D-Codes"},
+	{BarcodeFormat::TwoDCodes, "2D-Codes"},
+};
 
 const char* ToString(BarcodeFormat format)
 {
-	return FORMAT_STR[BarcodeFormats::bitIndex(format)];
+	auto i = FindIf(NAMES, [format](auto& v) { return v.format == format; });
+	return i == std::end(NAMES) ? nullptr : i->name;
 }
 
 std::string ToString(BarcodeFormats formats)
@@ -76,10 +82,8 @@ static std::string NormalizeFormatString(std::string str)
 
 static BarcodeFormat ParseFormatString(const std::string& str)
 {
-	auto pos = std::find_if(std::begin(FORMAT_STR), std::end(FORMAT_STR),
-							[str](auto fmt) { return NormalizeFormatString(fmt) == str; });
-	return pos == std::end(FORMAT_STR) ? BarcodeFormat::None
-									   : BarcodeFormat(1 << (std::distance(std::begin(FORMAT_STR), pos) - 1));
+	auto i = FindIf(NAMES, [str](auto& v) { return NormalizeFormatString(v.name) == str; });
+	return i == std::end(NAMES) ? BarcodeFormat::None : i->format;
 }
 
 BarcodeFormat BarcodeFormatFromString(const std::string& str)
