@@ -128,6 +128,12 @@ static FinderPatternSets GenerateFinderPatternSets(std::vector<ConcentricPattern
 					std::swap(distAB, distAC);
 				}
 
+				// Estimate the module count and ignore this set if it can not result in a valid decoding
+				if (auto moduleCount =
+						(std::sqrt(distAB) + std::sqrt(distBC)) / (2 * (a->size + b->size + c->size) / (3 * 7.f)) + 7;
+					moduleCount < 21 * 0.9 || moduleCount > 177 * 1.05)
+					continue;
+
 				// a^2 + b^2 = c^2 (Pythagorean theorem), and a = b (isosceles triangle).
 				// Since any right triangle satisfies the formula c^2 - b^2 - a^2 = 0,
 				// we need to check both two equal sides separately.
@@ -141,11 +147,12 @@ static FinderPatternSets GenerateFinderPatternSets(std::vector<ConcentricPattern
 				if (cross(*c - *b, *a - *b) < 0)
 					std::swap(a, c);
 
-				sets.emplace(d, FinderPatternSet{*a, *b, *c});
-
 				// arbitrarily limit the number of potential sets
-				if (sets.size() > 16)
-					sets.erase(std::prev(sets.end()));
+				if (sets.size() < 16 || sets.crbegin()->first > d) {
+					sets.emplace(d, FinderPatternSet{*a, *b, *c});
+					if (sets.size() > 16)
+						sets.erase(std::prev(sets.end()));
+				}
 			}
 		}
 	}
