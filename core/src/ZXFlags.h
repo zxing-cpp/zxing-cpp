@@ -31,7 +31,7 @@ class Flags
 	Int i = 0;
 
 	constexpr inline Flags(Int other) : i(other) {}
-	constexpr static inline unsigned numberOfBits(Int x) noexcept { return x < 2 ? x : 1 + numberOfBits(x >> 1); }
+	constexpr static inline unsigned highestBitSet(Int x) noexcept { return x < 2 ? x : 1 + highestBitSet(x >> 1); }
 
 public:
 	using enum_type = Enum;
@@ -73,6 +73,7 @@ public:
 	iterator end() const noexcept { return {i, BitHacks::HighestBitSet(i) + 1}; }
 
 	bool empty() const noexcept { return i == 0; }
+	int count() const noexcept { return BitHacks::CountBitsSet(i); }
 
 	constexpr inline bool operator==(Flags other) const noexcept { return i == other.i; }
 
@@ -106,8 +107,7 @@ public:
 	}
 	inline void clear() noexcept { i = 0; }
 
-	constexpr static unsigned bitIndex(Enum flag) noexcept { return numberOfBits(Int(flag)); }
-	constexpr static Flags all() noexcept { return ~(unsigned(~0) << numberOfBits(Int(Enum::_max))); }
+	constexpr static Flags all() noexcept { return ~(unsigned(~0) << highestBitSet(Int(Enum::_max))); }
 
 private:
 //	constexpr static inline Int
