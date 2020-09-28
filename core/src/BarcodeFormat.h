@@ -16,7 +16,7 @@
 * limitations under the License.
 */
 
-#include "ZXFlags.h"
+#include "Flags.h"
 
 #include <string>
 #include <vector>

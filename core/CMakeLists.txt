@@ -50,6 +50,7 @@ set (COMMON_FILES
     src/ConcentricFinder.h
     src/ConcentricFinder.cpp
     src/CustomData.h
+    src/Flags.h
     src/GenericGF.h
     src/GenericGF.cpp
     src/GenericGFPoly.h
@@ -68,7 +69,6 @@ set (COMMON_FILES
     src/ZXBigInteger.h
     src/ZXBigInteger.cpp
     src/ZXConfig.h
-    src/ZXFlags.h
     src/ZXNullable.h
     src/ZXNumeric.h
     src/ZXContainerAlgorithms.h
