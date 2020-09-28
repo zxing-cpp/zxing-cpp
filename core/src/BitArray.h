@@ -364,9 +364,9 @@ inline T& AppendBit(T& val, bool bit)
 }
 
 template <typename T = int, typename = std::enable_if_t<std::is_integral_v<T>>>
-T ToInt(const BitArray& bits, int pos = 0, int count = sizeof(T))
+T ToInt(const BitArray& bits, int pos = 0, int count = 8 * sizeof(T))
 {
-	assert(count <= sizeof(T));
+	assert(0 <= count && count <= 8 * (int)sizeof(T));
 
 	count = std::min(count, bits.size());
 	int res = 0;
