@@ -290,11 +290,11 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 19, 0, pure },
 		});
 
-		runTests("datamatrix-2", "DataMatrix", 18, {
-			{ 18, 18, 0   },
-			{  0, 18, 90  },
-			{  0, 18, 180 },
-			{  0, 18, 270 },
+		runTests("datamatrix-2", "DataMatrix", 13, {
+			{ 13, 13, 0   },
+			{  0, 13, 90  },
+			{  0, 13, 180 },
+			{  0, 13, 270 },
 		});
 
 		runTests("datamatrix-3", "DataMatrix", 19, {
@@ -334,9 +334,9 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 2, 2, 180 },
 		}, DecodeHints().setTryCode39ExtendedMode(true).setFormats(BarcodeFormat::Code39));
 
-		runTests("code39-3", "Code39", 17, {
-			{ 17, 17, 0   },
-			{ 17, 17, 180 },
+		runTests("code39-3", "Code39", 12, {
+			{ 12, 12, 0   },
+			{ 12, 12, 180 },
 		});
 
 		runTests("code93-1", "Code93", 3, {
@@ -349,9 +349,9 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 6, 6, 180 },
 		});
 
-		runTests("code128-2", "Code128", 40, {
-			{ 36, 39, 0   },
-			{ 36, 39, 180 },
+		runTests("code128-2", "Code128", 21, {
+			{ 19, 21, 0   },
+			{ 19, 21, 180 },
 		});
 
 		runTests("code128-3", "Code128", 2, {
@@ -369,14 +369,14 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 23, 29, 180 },
 		});
 
-		runTests("ean13-2", "EAN-13", 28, {
-			{ 11, 17, 0   },
-			{ 11, 17, 180 },
+		runTests("ean13-2", "EAN-13", 24, {
+			{ 7, 13, 0   },
+			{ 7, 13, 180 },
 		});
 
-		runTests("ean13-3", "EAN-13", 55, {
-			{ 53, 55, 0   },
-			{ 55, 55, 180 },
+		runTests("ean13-3", "EAN-13", 21, {
+			{ 20, 21, 0   },
+			{ 21, 21, 180 },
 		});
 
 		runTests("ean13-4", "EAN-13", 22, {
@@ -384,38 +384,33 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 8, 14, 180 },
 		});
 
-		runTests("ean13-5", "EAN-13", 18, {
-			{ 0, 0, 0   },
-			{ 0, 0, 180 },
-		});
-
 		runTests("ean13-extension-1", "EAN-13", 5, {
 			{ 4, 5, 0 },
 			{ 3, 5, 180 },
 		}, DecodeHints().setRequireEanAddOnSymbol(true));
 
-		runTests("itf-1", "ITF", 14, {
-			{ 14, 14, 0   },
-			{ 14, 14, 180 },
+		runTests("itf-1", "ITF", 10, {
+			{ 10, 10, 0   },
+			{ 10, 10, 180 },
 		});
 
-		runTests("itf-2", "ITF", 13, {
-			{ 13, 13, 0   },
-			{ 13, 13, 180 },
+		runTests("itf-2", "ITF", 6, {
+			{ 6, 6, 0   },
+			{ 6, 6, 180 },
 		});
 
 		runTests("maxicode-1", "MaxiCode", 6, {
 			{ 1, 1, 5, 5, 0 },
 		});
 
-		runTests("upca-1", "UPC-A", 15, {
-			{ 10, 12, 0, 1, 0   },
-			{ 12, 12, 0, 1, 180 },
+		runTests("upca-1", "UPC-A", 12, {
+			{  9, 12, 0, 1, 0   },
+			{ 11, 12, 0, 1, 180 },
 		});
 
-		runTests("upca-2", "UPC-A", 52, {
-			{ 27, 35, 0   },
-			{ 29, 35, 180 },
+		runTests("upca-2", "UPC-A", 36, {
+			{ 17, 22, 0   },
+			{ 18, 22, 180 },
 		});
 
 		runTests("upca-3", "UPC-A", 21, {
@@ -428,16 +423,11 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 9, 11, 0, 1, 180 },
 		});
 
-		runTests("upca-5", "UPC-A", 35, {
-			{ 20, 23, 0, 0, 0   },
-			{ 22, 23, 0, 0, 180 },
+		runTests("upca-5", "UPC-A", 32, {
+			{ 17, 20, 0   },
+			{ 19, 20, 180 },
 		});
 		
-		runTests("upca-6", "UPC-A", 19, {
-			{ 0, 0, 0   },
-			{ 0, 0, 180 },
-		});
-
 		runTests("upca-extension-1", "UPC-A", 6, {
 			{ 3, 6, 0 },
 			{ 4, 6, 180 },
@@ -448,9 +438,9 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 3, 3, 180 },
 		});
 
-		runTests("upce-2", "UPC-E", 41, {
-			{ 30, 34, 0, 1, 0   },
-			{ 30, 34, 1, 1, 180 },
+		runTests("upce-2", "UPC-E", 28, {
+			{ 19, 22, 0, 1, 0   },
+			{ 20, 22, 1, 1, 180 },
 		});
 
 		runTests("upce-3", "UPC-E", 11, {
@@ -473,9 +463,9 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 32, 32, 180 },
 		});
 
-		runTests("rssexpanded-2", "DataBarExpanded", 23, {
-			{ 21, 23, 0   },
-			{ 21, 23, 180 },
+		runTests("rssexpanded-2", "DataBarExpanded", 15, {
+			{ 13, 15, 0   },
+			{ 13, 15, 180 },
 		});
 
 		runTests("rssexpanded-3", "DataBarExpanded", 117, {
@@ -493,11 +483,11 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 2, 7, 180 },
 		});
 
-		runTests("qrcode-1", "QRCode", 20, {
-			{ 20, 20, 0   },
-			{ 20, 20, 90  },
-			{ 20, 20, 180 },
-			{ 20, 20, 270 },
+		runTests("qrcode-1", "QRCode", 16, {
+			{ 16, 16, 0   },
+			{ 16, 16, 90  },
+			{ 16, 16, 180 },
+			{ 16, 16, 270 },
 		});
 
 		runTests("qrcode-2", "QRCode", 37, {
@@ -508,25 +498,25 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 9, 0, pure },
 		});
 
-		runTests("qrcode-3", "QRCode", 42, {
-			{ 38, 38, 0   },
-			{ 38, 38, 90  },
-			{ 38, 38, 180 },
-			{ 38, 38, 270 },
+		runTests("qrcode-3", "QRCode", 28, {
+			{ 25, 25, 0   },
+			{ 25, 25, 90  },
+			{ 25, 25, 180 },
+			{ 24, 24, 270 },
 		});
 
-		runTests("qrcode-4", "QRCode", 48, {
-			{ 36, 36, 0   },
-			{ 36, 36, 90  },
-			{ 36, 36, 180 },
-			{ 36, 36, 270 },
+		runTests("qrcode-4", "QRCode", 41, {
+			{ 29, 29, 0   },
+			{ 29, 29, 90  },
+			{ 29, 29, 180 },
+			{ 29, 29, 270 },
 		});
 
-		runTests("qrcode-5", "QRCode", 19, {
-			{ 19, 19, 0   },
-			{ 19, 19, 90  },
-			{ 19, 19, 180 },
-			{ 19, 19, 270 },
+		runTests("qrcode-5", "QRCode", 16, {
+			{ 16, 16, 0   },
+			{ 16, 16, 90  },
+			{ 16, 16, 180 },
+			{ 16, 16, 270 },
 			{ 4, 0, pure },
 		});
 
