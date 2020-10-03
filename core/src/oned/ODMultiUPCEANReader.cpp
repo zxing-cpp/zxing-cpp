@@ -317,7 +317,7 @@ Result MultiUPCEANReader::decodePattern(int rowNumber, const PatternView& row, s
 
 	PartialResult res;
 
-	if (!((_hints.hasFormat(BarcodeFormat::EAN13) && EAN13(res, begin)) ||
+	if (!(((_hints.hasFormat(BarcodeFormat::EAN13 | BarcodeFormat::UPCA)) && EAN13(res, begin)) ||
 		  (_hints.hasFormat(BarcodeFormat::EAN8) && EAN8(res, begin)) ||
 		  (_hints.hasFormat(BarcodeFormat::UPCE) && UPCE(res, begin))))
 		return Result(DecodeStatus::NotFound);

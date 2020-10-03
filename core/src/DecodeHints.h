@@ -113,7 +113,7 @@ public:
 
 #undef ZX_PROPERTY
 
-	bool hasFormat(BarcodeFormat f) const noexcept { return _formats.testFlag(f); }
+	bool hasFormat(BarcodeFormats f) const noexcept { return _formats.testFlags(f); }
 	bool hasNoFormat() const noexcept { return _formats.empty(); }
 
 	[[deprecated]] DecodeHints& setPossibleFormats(const std::vector<BarcodeFormat>& formats)
