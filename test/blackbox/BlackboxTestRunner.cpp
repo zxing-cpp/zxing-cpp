@@ -48,8 +48,8 @@ namespace {
 		struct TC
 		{
 			std::string name = {};
-			size_t minPassCount = 0; // The number of images which must decode for the test to pass.
-			size_t maxMisreads = 0; // Maximum number of successfully read images with the wrong contents.
+			int minPassCount = 0; // The number of images which must decode for the test to pass.
+			int maxMisreads = 0; // Maximum number of successfully read images with the wrong contents.
 			std::set<fs::path> notDetectedFiles = {};
 			std::map<fs::path, std::string> misReadFiles = {};
 		};
@@ -57,11 +57,11 @@ namespace {
 		TC tc[2] = {};
 		int rotation = 0; // The rotation in degrees clockwise to use for this test.
 
-		TestCase(size_t mntf, size_t mnts, size_t mmf, size_t mms, int r)
+		TestCase(int mntf, int mnts, int mmf, int mms, int r)
 			: tc{{"fast", mntf, mmf}, {"slow", mnts, mms}}, rotation(r)
 		{}
-		TestCase(size_t mntf, size_t mnts, int r) : TestCase(mntf, mnts, 0, 0, r) {}
-		TestCase(size_t mntp, size_t mmp, PureTag) : tc{{"pure", mntp, mmp}} {}
+		TestCase(int mntf, int mnts, int r) : TestCase(mntf, mnts, 0, 0, r) {}
+		TestCase(int mntp, int mmp, PureTag) : tc{{"pure", mntp, mmp}} {}
 	};
 
 	struct FalsePositiveTestCase
@@ -121,13 +121,30 @@ static std::string checkResult(const fs::path& imgPath, const char* expectedForm
 }
 
 static int failed = 0;
+static int totalImageLoadTime = 0;
 
-static void printPositiveTestStats(size_t imageCount, const TestCase::TC& tc)
+int timeSince(std::chrono::steady_clock::time_point startTime)
 {
-	size_t passCount = imageCount - tc.misReadFiles.size() - tc.notDetectedFiles.size();
+	auto duration = std::chrono::steady_clock::now() - startTime;
+	return static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count());
+}
 
-	printf(", %s: %3d of %3d, misread: %d of %d", tc.name.c_str(), (int)passCount, (int)tc.minPassCount,
-		Size(tc.misReadFiles), (int)tc.maxMisreads);
+// pre-load images into cache, so the disc io time does not end up in the timing measurement
+void preloadImageCache(const std::vector<fs::path>& imgPaths)
+{
+	auto startTime = std::chrono::steady_clock::now();
+	ImageLoader::cache.clear();
+	for (const auto& imgPath : imgPaths)
+		ImageLoader::load(imgPath);
+	totalImageLoadTime += timeSince(startTime);
+}
+
+static void printPositiveTestStats(int imageCount, const TestCase::TC& tc)
+{
+	int passCount = imageCount - Size(tc.misReadFiles) - Size(tc.notDetectedFiles);
+
+	printf(" | %s: %3d of %3d, misread %d of %d", tc.name.c_str(), passCount, tc.minPassCount, Size(tc.misReadFiles),
+		   tc.maxMisreads);
 
 	if (passCount < tc.minPassCount && !tc.notDetectedFiles.empty()) {
 		std::cout << "\nFAILED: Not detected (" << tc.name << "):";
@@ -137,7 +154,7 @@ static void printPositiveTestStats(size_t imageCount, const TestCase::TC& tc)
 		++failed;
 	}
 
-	if (tc.misReadFiles.size() > tc.maxMisreads) {
+	if (Size(tc.misReadFiles) > tc.maxMisreads) {
 		std::cout << "FAILED: Read error (" << tc.name << "):";
 		for (const auto& [path, error] : tc.misReadFiles)
 			std::cout << "      " << path.filename() << ": " << error << "\n";
@@ -153,35 +170,37 @@ static std::vector<fs::path> getImagesInDirectory(const fs::path& directory)
 		if (fs::is_regular_file(entry.status()) &&
 				Contains({".png", ".jpg", ".pgm", ".gif"}, entry.path().extension()))
 			result.push_back(entry.path());
+
+	preloadImageCache(result);
+
 	return result;
 }
 
 static void doRunTests(
-	const fs::path& directory, const char* format, size_t totalTests, const std::vector<TestCase>& tests, DecodeHints hints)
+	const fs::path& directory, std::string_view format, int totalTests, const std::vector<TestCase>& tests, DecodeHints hints)
 {
-	ImageLoader::cache.clear();
-
-	auto images = getImagesInDirectory(directory);
+	auto imgPaths = getImagesInDirectory(directory);
 	auto folderName = directory.stem();
 
-	if (images.size() != totalTests)
+	if (Size(imgPaths) != totalTests)
 		std::cout << "TEST " << folderName << " => Expected number of tests: " << totalTests
-			 << ", got: " << images.size() << " => FAILED!" << std::endl;
+			 << ", got: " << imgPaths.size() << " => FAILED!" << std::endl;
 
 	for (auto& test : tests) {
-		auto startTime = std::chrono::steady_clock::now();
-		printf("%-20s @ %3d, total: %3d", folderName.string().c_str(), test.rotation, Size(images));
+		printf("%-20s @ %3d, %3d", folderName.string().c_str(), test.rotation, Size(imgPaths));
+		std::vector<int> times;
 		for (auto tc : test.tc) {
 			if (tc.name.empty())
 				break;
+			auto startTime = std::chrono::steady_clock::now();
 			hints.setTryHarder(tc.name == "slow");
 			hints.setTryRotate(tc.name == "slow");
 			hints.setIsPure(tc.name == "pure");
 			MultiFormatReader reader(hints);
-			for (const auto& imgPath : images) {
+			for (const auto& imgPath : imgPaths) {
 				auto result = reader.read(*ImageLoader::load(imgPath).rotated(test.rotation));
 				if (result.isValid()) {
-					auto error = checkResult(imgPath, format, result);
+					auto error = checkResult(imgPath, format.data(), result);
 					if (!error.empty())
 						tc.misReadFiles[imgPath] = error;
 				} else {
@@ -189,18 +208,17 @@ static void doRunTests(
 				}
 			}
 
-			printPositiveTestStats(images.size(), tc);
+			times.push_back(timeSince(startTime));
+			printPositiveTestStats(imgPaths.size(), tc);
 		}
-
-		auto duration = std::chrono::steady_clock::now() - startTime;
-		printf(", time: %4d ms", (int)std::chrono::duration_cast<std::chrono::milliseconds>(duration).count());
+		printf(" | time: %3d vs %3d ms", times.front(), times.back());
 		std::cout << std::endl;
 	}
 }
 
 template <typename ReaderT>
 static void doRunStructuredAppendTest(
-	const fs::path& directory, [[maybe_unused]]const char* format, size_t totalTests, const std::vector<TestCase>& tests)
+	const fs::path& directory, [[maybe_unused]]const char* format, int totalTests, const std::vector<TestCase>& tests)
 {
 	auto imgPaths = getImagesInDirectory(directory);
 	auto folderName = directory.stem();
@@ -212,14 +230,15 @@ static void doRunStructuredAppendTest(
 		imageGroups[imgPath.parent_path() / fn.substr(0, p)].push_back(imgPath);
 	}
 
-	if (imageGroups.size() != (size_t)totalTests) {
+	if (Size(imageGroups) != totalTests) {
 		std::cout << "TEST " << folderName << " => Expected number of tests: " << totalTests
 			<< ", got: " << imageGroups.size() << " => FAILED!" << std::endl;
 	}
 
 	for (auto& test : tests) {
-		printf("%-20s @ %3d, total: %3d", folderName.string().c_str(), test.rotation, Size(imgPaths));
+		printf("%-20s @ %3d, %3d", folderName.string().c_str(), test.rotation, Size(imgPaths));
 		auto tc = test.tc[0];
+		auto startTime = std::chrono::steady_clock::now();
 
 		for (const auto& [testPath, testImgPaths] : imageGroups) {
 			auto result = ReaderT::readMultiple(testImgPaths, test.rotation);
@@ -234,7 +253,7 @@ static void doRunStructuredAppendTest(
 		}
 
 		printPositiveTestStats(imageGroups.size(), tc);
-
+		printf(" | time: %3d ms", timeSince(startTime));
 		std::cout << std::endl;
 	}
 }
@@ -247,18 +266,18 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 				Contains(includedTests, stem.substr(0, stem.size() - 2));
 	};
 
-	auto runTests = [&](std::string_view directory, const char* format, size_t total,
+	auto runTests = [&](std::string_view directory, const char* format, int total,
 					    const std::vector<TestCase>& tests, const DecodeHints& hints = DecodeHints()) {
 		if (hasTest(directory))
 			doRunTests(testPathPrefix / directory, format, total, tests, hints);
 	};
 
-	auto runPdf417StructuredAppendTest = [&](std::string_view directory, const char* format, size_t total, const std::vector<TestCase>& tests) {
+	auto runPdf417StructuredAppendTest = [&](std::string_view directory, const char* format, int total, const std::vector<TestCase>& tests) {
 		if (hasTest(directory))
 			doRunStructuredAppendTest<Pdf417MultipleCodeReader>(testPathPrefix / directory, format, total, tests);
 	};
 
-	auto runQRCodeStructuredAppendTest = [&](std::string_view directory, const char* format, size_t total, const std::vector<TestCase>& tests) {
+	auto runQRCodeStructuredAppendTest = [&](std::string_view directory, const char* format, int total, const std::vector<TestCase>& tests) {
 		if (hasTest(directory))
 			doRunStructuredAppendTest<QRCodeStructuredAppendReader>(testPathPrefix / directory, format, total, tests);
 	};
@@ -565,10 +584,13 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		});
 		// clang-format on
 
-		auto duration = std::chrono::steady_clock::now() - startTime;
-		std::cout << "Total time: " << std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() << " ms." << std::endl;
+		int totalTime = timeSince(startTime);
+		int decodeTime = totalTime - totalImageLoadTime;
+		std::cout << "load time:   " << totalImageLoadTime << " ms.\n";
+		std::cout << "decode time: " << decodeTime << " ms.\n";
+		std::cout << "total time:  " << totalTime << " ms.\n";
 		if (failed)
-			std::cout << "WARNING: " << failed << " tests failed." << std::endl;
+			std::cout << "WARNING: " << failed << " tests failed.\n";
 
 		return failed;
 	}
