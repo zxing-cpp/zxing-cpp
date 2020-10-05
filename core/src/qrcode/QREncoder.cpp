@@ -419,11 +419,10 @@ BitArray InterleaveWithECBytes(const BitArray& bits, int numTotalBytes, int numD
 		int numEcBytesInBlock = 0;
 		GetNumDataBytesAndNumECBytesForBlockID(numTotalBytes, numDataBytes, numRSBlocks, i, numDataBytesInBlock, numEcBytesInBlock);
 
-		int size = numDataBytesInBlock;
-		blocks[i].dataBytes = bits.toBytes(8 * dataBytesOffset, size);
+		blocks[i].dataBytes = bits.toBytes(8 * dataBytesOffset, numDataBytesInBlock);
 		GenerateECBytes(blocks[i].dataBytes, numEcBytesInBlock, blocks[i].ecBytes);
 
-		maxNumDataBytes = std::max(maxNumDataBytes, size);
+		maxNumDataBytes = std::max(maxNumDataBytes, numDataBytesInBlock);
 		maxNumEcBytes = std::max(maxNumEcBytes, Size(blocks[i].ecBytes));
 		dataBytesOffset += numDataBytesInBlock;
 	}

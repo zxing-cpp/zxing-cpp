@@ -25,14 +25,6 @@
 #include <fstream>
 #endif
 
-namespace testing {
-	namespace internal {
-		inline bool operator==(const std::string& a, const std::wstring& b) {
-			return a.length() == b.length() && std::equal(a.begin(), a.end(), b.begin());
-		}
-	}
-}
-
 #include "gtest/gtest.h"
 
 using namespace ZXing;
@@ -41,10 +33,7 @@ namespace {
 
 	void TestEncodeDecode(const std::wstring& data, DataMatrix::SymbolShape shape = DataMatrix::SymbolShape::NONE)
 	{
-		DataMatrix::Writer writer;
-		writer.setMargin(0);
-		writer.setShapeHint(shape);
-		BitMatrix matrix = writer.encode(data, 0, 0);
+		BitMatrix matrix = DataMatrix::Writer().setMargin(0).setShapeHint(shape).encode(data, 0, 0);
 		ASSERT_EQ(matrix.empty(), false);
 
 		DecoderResult res = DataMatrix::Decoder::Decode(matrix);
@@ -100,7 +89,7 @@ TEST(DMEncodeDecodeTest, EncodeDecodeSquare)
 		" erat pulvinar nisi, id elementum sapien dolor et diam.",
 	};
 
-	for (auto data : text)
+	for (auto& data : text)
 		TestEncodeDecode(data, DataMatrix::SymbolShape::SQUARE);
 }
 
@@ -115,7 +104,7 @@ TEST(DMEncodeDecodeTest, EncodeDecodeRectangle)
 	    L"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
 	};
 
-	for (auto data : text)
+	for (auto& data : text)
 		for (size_t len	= 1; len <= data.size(); ++len)
 			TestEncodeDecode(data.substr(0, len), DataMatrix::SymbolShape::RECTANGLE);
 }
@@ -129,7 +118,7 @@ TEST(DMEncodeDecodeTest, EDIFACTWithEOD)
 		L"<ABCDEFG><ABCDEFGK>",
 		L"*CH/GN1/022/00",
 	};
-	for (auto data : text)
+	for (auto& data : text)
 		for (auto shape : {SymbolShape::NONE, SymbolShape::SQUARE, SymbolShape::RECTANGLE})
 			TestEncodeDecode(data, shape);
 }

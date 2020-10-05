@@ -308,7 +308,6 @@ TextDecoder::Append(std::wstring& str, const uint8_t* bytes, size_t length, Char
 		KRTextDecoder::AppendEucKr(buf, bytes, length);
 		TextUtfEncoding::AppendUtf16(str, buf.data(), buf.size());
 		break;
-		break;
 	}
 	case CharacterSet::UnicodeBig:
 	{

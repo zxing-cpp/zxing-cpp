@@ -228,8 +228,7 @@ TEST(AZEncodeDecodeTest, AztecWriter)
 		
 	// Test AztecWriter defaults
 	std::wstring data = L"In ut magna vel mauris malesuada";
-	Aztec::Writer writer;
-	BitMatrix matrix = writer.encode(data, 0, 0);
+	BitMatrix matrix = Aztec::Writer().encode(data, 0, 0);
 	Aztec::EncodeResult aztec =
 		Aztec::Encoder::Encode(TextEncoder::FromUnicode(data, CharacterSet::ISO8859_1),
 							   Aztec::Encoder::DEFAULT_EC_PERCENT, Aztec::Encoder::DEFAULT_AZTEC_LAYERS);

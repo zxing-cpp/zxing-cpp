@@ -216,79 +216,48 @@ TextEncoder::GetBytes(const std::wstring& str, CharacterSet charset, std::string
 		for (wchar_t c : str) {
 			if (c <= 0xff) {
 				bytes.push_back(static_cast<char>(c));
-			}
-			else {
+			} else {
 				throw std::invalid_argument("Unexpected charcode");
 			}
 		}
 		break;
 	case CharacterSet::ASCII:
-	{
 		bytes.reserve(str.length());
 		for (wchar_t c : str) {
 			if (c < 0x80) {
 				bytes.push_back(static_cast<char>(c));
-			}
-			else {
+			} else {
 				throw std::invalid_argument("Unexpected charcode");
 			}
 		}
 		break;
-	}
-	case CharacterSet::ISO8859_2:
-		CONVERT_USING(latin2Mapping, str, bytes); break;
-	case CharacterSet::ISO8859_3:
-		CONVERT_USING(latin3Mapping, str, bytes); break;
-	case CharacterSet::ISO8859_4:
-		CONVERT_USING(latin4Mapping, str, bytes); break;
-	case CharacterSet::ISO8859_5:
-		CONVERT_USING(latin5Mapping, str, bytes); break;
-	case CharacterSet::ISO8859_6:
-		CONVERT_USING(latin6Mapping, str, bytes); break;
-	case CharacterSet::ISO8859_7:
-		CONVERT_USING(latin7Mapping, str, bytes); break;
-	case CharacterSet::ISO8859_8:
-		CONVERT_USING(latin8Mapping, str, bytes); break;
-	case CharacterSet::ISO8859_9:
-		CONVERT_USING(latin9Mapping, str, bytes); break;
-	case CharacterSet::ISO8859_10:
-		CONVERT_USING(latin10Mapping, str, bytes); break;
-	case CharacterSet::ISO8859_11:
-		CONVERT_USING(latin11Mapping, str, bytes); break;
-	case CharacterSet::ISO8859_13:
-		CONVERT_USING(latin13Mapping, str, bytes); break;
-	case CharacterSet::ISO8859_14:
-		CONVERT_USING(latin14Mapping, str, bytes); break;
-	case CharacterSet::ISO8859_15:
-		CONVERT_USING(latin15Mapping, str, bytes); break;
-	case CharacterSet::ISO8859_16:
-		CONVERT_USING(latin16Mapping, str, bytes); break;
-	case CharacterSet::Cp437:
-		CONVERT_USING(cp437Mapping, str, bytes); break;
-	case CharacterSet::Cp1250:
-		CONVERT_USING(cp1250Mapping, str, bytes); break;
-	case CharacterSet::Cp1251:
-		CONVERT_USING(cp1251Mapping, str, bytes); break;
-	case CharacterSet::Cp1252:
-		CONVERT_USING(cp1252Mapping, str, bytes); break;
-	case CharacterSet::Cp1256:
-		CONVERT_USING(cp1256Mapping, str, bytes); break;
-	case CharacterSet::Shift_JIS:
-		JPTextEncoder::EncodeShiftJIS(str, bytes); break;
-	case CharacterSet::Big5:
-		Big5TextEncoder::EncodeBig5(str, bytes); break;
-	case CharacterSet::GB2312:
-		GBTextEncoder::EncodeGB2312(str, bytes); break;
-	case CharacterSet::GB18030:
-		GBTextEncoder::EncodeGB18030(str, bytes); break;
-	case CharacterSet::EUC_JP:
-		JPTextEncoder::EncodeEUCJP(str, bytes); break;
-	case CharacterSet::EUC_KR:
-		KRTextDecoder::EncodeEucKr(str, bytes); break;
-	case CharacterSet::UTF8:
-		TextUtfEncoding::ToUtf8(str, bytes); break;
-	default:
-		break;
+	case CharacterSet::ISO8859_2: CONVERT_USING(latin2Mapping, str, bytes); break;
+	case CharacterSet::ISO8859_3: CONVERT_USING(latin3Mapping, str, bytes); break;
+	case CharacterSet::ISO8859_4: CONVERT_USING(latin4Mapping, str, bytes); break;
+	case CharacterSet::ISO8859_5: CONVERT_USING(latin5Mapping, str, bytes); break;
+	case CharacterSet::ISO8859_6: CONVERT_USING(latin6Mapping, str, bytes); break;
+	case CharacterSet::ISO8859_7: CONVERT_USING(latin7Mapping, str, bytes); break;
+	case CharacterSet::ISO8859_8: CONVERT_USING(latin8Mapping, str, bytes); break;
+	case CharacterSet::ISO8859_9: CONVERT_USING(latin9Mapping, str, bytes); break;
+	case CharacterSet::ISO8859_10: CONVERT_USING(latin10Mapping, str, bytes); break;
+	case CharacterSet::ISO8859_11: CONVERT_USING(latin11Mapping, str, bytes); break;
+	case CharacterSet::ISO8859_13: CONVERT_USING(latin13Mapping, str, bytes); break;
+	case CharacterSet::ISO8859_14: CONVERT_USING(latin14Mapping, str, bytes); break;
+	case CharacterSet::ISO8859_15: CONVERT_USING(latin15Mapping, str, bytes); break;
+	case CharacterSet::ISO8859_16: CONVERT_USING(latin16Mapping, str, bytes); break;
+	case CharacterSet::Cp437: CONVERT_USING(cp437Mapping, str, bytes); break;
+	case CharacterSet::Cp1250: CONVERT_USING(cp1250Mapping, str, bytes); break;
+	case CharacterSet::Cp1251: CONVERT_USING(cp1251Mapping, str, bytes); break;
+	case CharacterSet::Cp1252: CONVERT_USING(cp1252Mapping, str, bytes); break;
+	case CharacterSet::Cp1256: CONVERT_USING(cp1256Mapping, str, bytes); break;
+	case CharacterSet::Shift_JIS: JPTextEncoder::EncodeShiftJIS(str, bytes); break;
+	case CharacterSet::Big5: Big5TextEncoder::EncodeBig5(str, bytes); break;
+	case CharacterSet::GB2312: GBTextEncoder::EncodeGB2312(str, bytes); break;
+	case CharacterSet::GB18030: GBTextEncoder::EncodeGB18030(str, bytes); break;
+	case CharacterSet::EUC_JP: JPTextEncoder::EncodeEUCJP(str, bytes); break;
+	case CharacterSet::EUC_KR: KRTextDecoder::EncodeEucKr(str, bytes); break;
+	case CharacterSet::UTF8: TextUtfEncoding::ToUtf8(str, bytes); break;
+	default: break;
 	}
 }
 
