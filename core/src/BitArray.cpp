@@ -122,10 +122,10 @@ BitArray::bitwiseXOR(const BitArray& other)
 
 ByteArray BitArray::toBytes(int bitOffset, int numBytes) const
 {
-	ByteArray res(numBytes);
-	for (int i = 0; i < numBytes; i++)
+	ByteArray res(numBytes == -1 ? (size() - bitOffset + 7) / 8 : numBytes);
+	for (int i = 0; i < Size(res); i++)
 		for (int j = 0; j < 8; j++)
-			AppendBit(res[i], get(bitOffset++));
+			AppendBit(res[i], (numBytes != -1 || bitOffset < size()) ? get(bitOffset++) : 0);
 	return res;
 }
 

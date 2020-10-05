@@ -339,13 +339,11 @@ public:
 	void bitwiseXOR(const BitArray& other);
 
 	/**
-	*
-	* @param bitOffset first bit to start writing
-	* @param numBytes how many bytes to write
-	* @return Bytes are written most-significant bit first. This is the opposite
-	*  of the internal representation, which is exposed by {@link #getBitArray()}
+	* @param bitOffset first bit to extract
+	* @param numBytes how many bytes to extract (-1 == until the end, padded with '0')
+	* @return Bytes are written most-significant bit first.
 	*/
-	ByteArray toBytes(int bitOffset, int numBytes) const;
+	ByteArray toBytes(int bitOffset = 0, int numBytes = -1) const;
 
 	friend bool operator==(const BitArray& a, const BitArray& b)
 	{
