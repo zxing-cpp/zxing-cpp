@@ -1,14 +1,13 @@
 language: cpp
-dist: bionic
+dist: focal
 os:
  - linux
 
 script:
  - mkdir build && cd build
-# disable unit test build because the current travis ubuntu (binic / 18.04) does not provide cmake 3.14
- - cmake -DBUILD_UNIT_TESTS=OFF ..
+ - cmake ..
  - make -j10
-# - ./test/unit/UnitTest
+ - ./test/unit/UnitTest
  - ./test/blackbox/ReaderTest ../test/samples
  - ./test/blackbox/WriterTest
  - ./test/blackbox/ReaderTest *.png
