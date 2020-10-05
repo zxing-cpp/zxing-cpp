@@ -5,7 +5,7 @@ os:
 
 script:
  - mkdir build && cd build
- - cmake ..
+ - cmake -DBUILD_UNIT_TESTS=ON -DBUILD_BLACKBOX_TESTS=ON ..
  - make -j10
  - ./test/unit/UnitTest
  - ./test/blackbox/ReaderTest ../test/samples
