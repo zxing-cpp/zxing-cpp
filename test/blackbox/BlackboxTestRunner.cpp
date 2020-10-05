@@ -27,14 +27,17 @@
 #include "QRCodeStructuredAppendReader.h"
 #include "ZXContainerAlgorithms.h"
 
+#include <fmt/core.h>
+#include <fmt/ostream.h>
+
 #include <chrono>
 #include <exception>
-#include <iostream>
 #include <fstream>
 #include <map>
 #include <optional>
 #include <set>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace ZXing::Test {
@@ -77,23 +80,17 @@ std::string metadataToUtf8(const Result& result)
 	constexpr char const * prefixs[] = {"SUGGESTED_PRICE", "ISSUE_NUMBER", "UPC_EAN_EXTENSION"};
 	static_assert(Size(keys) == Size(prefixs), "lut size mismatch");
 
-	for (int i = 0; i < Size(keys); ++i) {
-		auto res = TextUtfEncoding::ToUtf8(result.metadata().getString(keys[i]));
-		if (res.size()) {
-			res.insert(0, std::string(prefixs[i]) + "=");
-			return res;
-		}
-	}
+	for (int i = 0; i < Size(keys); ++i)
+		if (auto res = TextUtfEncoding::ToUtf8(result.metadata().getString(keys[i])); !res.empty())
+			return fmt::format("{}={}", prefixs[i], res);
 
 	return {};
 }
 
-static std::string checkResult(const fs::path& imgPath, const char* expectedFormat, const Result& result)
+static std::string checkResult(const fs::path& imgPath, std::string_view expectedFormat, const Result& result)
 {
-	using namespace std::literals;
-
-	if (std::string format = ToString(result.format()); expectedFormat != format)
-		return "Format mismatch: expected '"s + expectedFormat + "' but got '" + format + "'";
+	if (auto format = ToString(result.format()); expectedFormat != format)
+		return fmt::format("Format mismatch: expected '{}' but got '{}'", expectedFormat, format);
 
 	auto readFile = [imgPath](const char* ending) {
 		std::ifstream ifs(fs::path(imgPath).replace_extension(ending), std::ios::binary);
@@ -103,18 +100,18 @@ static std::string checkResult(const fs::path& imgPath, const char* expectedForm
 	if (auto expected = readFile(".metadata.txt")) {
 		auto metadata = metadataToUtf8(result);
 		if (metadata != *expected)
-			return "Metadata mismatch: expected '" + *expected + "' but got '" + metadata + "'";
+			return fmt::format("Metadata mismatch: expected '{}' but got '{}'", *expected, metadata);
 	}
 
 	if (auto expected = readFile(".txt")) {
 		auto utf8Result = TextUtfEncoding::ToUtf8(result.text());
-		return utf8Result != *expected ? "Content mismatch: expected '" + *expected + "' but got '" + utf8Result + "'" : "";
+		return utf8Result != *expected ? fmt::format("Content mismatch: expected '{}' but got '{}'", *expected, utf8Result) : "";
 	}
 
 	if (auto expected = readFile(".bin")) {
 		std::string latin1Result(result.text().length(), '\0');
 		std::transform(result.text().begin(), result.text().end(), latin1Result.begin(), [](wchar_t c) { return static_cast<char>(c); });
-		return latin1Result != *expected ? "Content mismatch: expected '" + *expected + "' but got '" + latin1Result + "'" : "";
+		return latin1Result != *expected ? fmt::format("Content mismatch: expected '{}' but got '{}'", *expected, latin1Result) : "";
 	}
 
 	return "Error reading file";
@@ -143,22 +140,21 @@ static void printPositiveTestStats(int imageCount, const TestCase::TC& tc)
 {
 	int passCount = imageCount - Size(tc.misReadFiles) - Size(tc.notDetectedFiles);
 
-	printf(" | %s: %3d of %3d, misread %d of %d", tc.name.c_str(), passCount, tc.minPassCount, Size(tc.misReadFiles),
-		   tc.maxMisreads);
+	fmt::print(" | {}: {:3} of {:3}, misread {} of {}", tc.name, passCount, tc.minPassCount, Size(tc.misReadFiles),
+			   tc.maxMisreads);
 
 	if (passCount < tc.minPassCount && !tc.notDetectedFiles.empty()) {
-		std::cout << "\nFAILED: Not detected (" << tc.name << "):";
+		fmt::print("\nFAILED: Not detected ({}):", tc.name);
 		for (const auto& f : tc.notDetectedFiles)
-			std::cout << ' ' << f.filename();
-		std::cout << "\n";
+			fmt::print(" {}", f.filename().string());
+		fmt::print("\n");
 		++failed;
 	}
 
 	if (Size(tc.misReadFiles) > tc.maxMisreads) {
-		std::cout << "FAILED: Read error (" << tc.name << "):";
+		fmt::print("\nFAILED: Read error ({}):", tc.name);
 		for (const auto& [path, error] : tc.misReadFiles)
-			std::cout << "      " << path.filename() << ": " << error << "\n";
-		std::cout << "\n";
+			fmt::print("      {}: {}\n", path.filename().string(), error);
 		++failed;
 	}
 }
@@ -183,11 +179,11 @@ static void doRunTests(
 	auto folderName = directory.stem();
 
 	if (Size(imgPaths) != totalTests)
-		std::cout << "TEST " << folderName << " => Expected number of tests: " << totalTests
-			 << ", got: " << imgPaths.size() << " => FAILED!" << std::endl;
+		fmt::print("TEST {} => Expected number of tests: {}, got: {} => FAILED\n", folderName, totalTests,
+				   imgPaths.size());
 
 	for (auto& test : tests) {
-		printf("%-20s @ %3d, %3d", folderName.string().c_str(), test.rotation, Size(imgPaths));
+		fmt::print("{:20} @ {:3}, {:3}", folderName.string(), test.rotation, Size(imgPaths));
 		std::vector<int> times;
 		for (auto tc : test.tc) {
 			if (tc.name.empty())
@@ -200,7 +196,7 @@ static void doRunTests(
 			for (const auto& imgPath : imgPaths) {
 				auto result = reader.read(*ImageLoader::load(imgPath).rotated(test.rotation));
 				if (result.isValid()) {
-					auto error = checkResult(imgPath, format.data(), result);
+					auto error = checkResult(imgPath, format, result);
 					if (!error.empty())
 						tc.misReadFiles[imgPath] = error;
 				} else {
@@ -211,14 +207,13 @@ static void doRunTests(
 			times.push_back(timeSince(startTime));
 			printPositiveTestStats(imgPaths.size(), tc);
 		}
-		printf(" | time: %3d vs %3d ms", times.front(), times.back());
-		std::cout << std::endl;
+		fmt::print(" | time: {:3} vs {:3} ms\n", times.front(), times.back());
 	}
 }
 
 template <typename ReaderT>
 static void doRunStructuredAppendTest(
-	const fs::path& directory, [[maybe_unused]]const char* format, int totalTests, const std::vector<TestCase>& tests)
+	const fs::path& directory, [[maybe_unused]]std::string_view format, int totalTests, const std::vector<TestCase>& tests)
 {
 	auto imgPaths = getImagesInDirectory(directory);
 	auto folderName = directory.stem();
@@ -230,13 +225,12 @@ static void doRunStructuredAppendTest(
 		imageGroups[imgPath.parent_path() / fn.substr(0, p)].push_back(imgPath);
 	}
 
-	if (Size(imageGroups) != totalTests) {
-		std::cout << "TEST " << folderName << " => Expected number of tests: " << totalTests
-			<< ", got: " << imageGroups.size() << " => FAILED!" << std::endl;
-	}
+	if (Size(imageGroups) != totalTests)
+		fmt::print("TEST {} => Expected number of tests: {}, got: {} => FAILED\n", folderName, totalTests,
+				   imageGroups.size());
 
 	for (auto& test : tests) {
-		printf("%-20s @ %3d, %3d", folderName.string().c_str(), test.rotation, Size(imgPaths));
+		fmt::print("{:20} @ {:3}, {:3}", folderName.string(), test.rotation, Size(imgPaths));
 		auto tc = test.tc[0];
 		auto startTime = std::chrono::steady_clock::now();
 
@@ -253,8 +247,7 @@ static void doRunStructuredAppendTest(
 		}
 
 		printPositiveTestStats(imageGroups.size(), tc);
-		printf(" | time: %3d ms", timeSince(startTime));
-		std::cout << std::endl;
+		fmt::print(" | time: {:3} ms\n", timeSince(startTime));
 	}
 }
 
@@ -266,18 +259,18 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 				Contains(includedTests, stem.substr(0, stem.size() - 2));
 	};
 
-	auto runTests = [&](std::string_view directory, const char* format, int total,
-					    const std::vector<TestCase>& tests, const DecodeHints& hints = DecodeHints()) {
+	auto runTests = [&](std::string_view directory, std::string_view format, int total,
+						const std::vector<TestCase>& tests, const DecodeHints& hints = DecodeHints()) {
 		if (hasTest(directory))
 			doRunTests(testPathPrefix / directory, format, total, tests, hints);
 	};
 
-	auto runPdf417StructuredAppendTest = [&](std::string_view directory, const char* format, int total, const std::vector<TestCase>& tests) {
+	auto runPdf417StructuredAppendTest = [&](std::string_view directory, std::string_view format, int total, const std::vector<TestCase>& tests) {
 		if (hasTest(directory))
 			doRunStructuredAppendTest<Pdf417MultipleCodeReader>(testPathPrefix / directory, format, total, tests);
 	};
 
-	auto runQRCodeStructuredAppendTest = [&](std::string_view directory, const char* format, int total, const std::vector<TestCase>& tests) {
+	auto runQRCodeStructuredAppendTest = [&](std::string_view directory, std::string_view format, int total, const std::vector<TestCase>& tests) {
 		if (hasTest(directory))
 			doRunStructuredAppendTest<QRCodeStructuredAppendReader>(testPathPrefix / directory, format, total, tests);
 	};
@@ -586,19 +579,19 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 
 		int totalTime = timeSince(startTime);
 		int decodeTime = totalTime - totalImageLoadTime;
-		std::cout << "load time:   " << totalImageLoadTime << " ms.\n";
-		std::cout << "decode time: " << decodeTime << " ms.\n";
-		std::cout << "total time:  " << totalTime << " ms.\n";
+		fmt::print("load time:   {} ms.\n", totalImageLoadTime);
+		fmt::print("decode time: {} ms.\n", decodeTime);
+		fmt::print("total time:  {} ms.\n", totalTime);
 		if (failed)
-			std::cout << "WARNING: " << failed << " tests failed.\n";
+			fmt::print("WARNING: {} tests failed.\n", failed);
 
 		return failed;
 	}
 	catch (const std::exception& e) {
-		std::cout << e.what() << std::endl;
+		fmt::print("{}\n", e.what());
 	}
 	catch (...) {
-		std::cout << "Internal error" << std::endl;
+		fmt::print("Internal error\n");
 	}
 	return -1;
 }

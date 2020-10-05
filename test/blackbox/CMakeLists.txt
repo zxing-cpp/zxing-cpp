@@ -1,3 +1,9 @@
+include(FetchContent)
+FetchContent_Declare (fmtlib
+        GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+        GIT_TAG 7.0.3)
+FetchContent_MakeAvailable (fmtlib) # Adds fmt::fmt
+
 if (BUILD_READERS)
     add_executable (ReaderTest
         TestReaderMain.cpp
@@ -15,7 +21,7 @@ if (BUILD_READERS)
     target_include_directories (ReaderTest PRIVATE ../../thirdparty/stb)
 
     target_link_libraries(ReaderTest
-        ZXing::ZXing
+        ZXing::ZXing fmt::fmt
         $<$<AND:$<CXX_COMPILER_ID:GNU>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,9.0>>:stdc++fs>
     )
 
