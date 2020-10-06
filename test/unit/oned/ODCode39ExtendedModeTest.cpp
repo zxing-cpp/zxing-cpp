@@ -24,15 +24,12 @@
 using namespace ZXing;
 using namespace ZXing::OneD;
 
-namespace {
-
-	std::wstring Decode(const std::string& encoded)
-	{
-		Code39Reader sut(DecodeHints().setTryCode39ExtendedMode(true));
-		BitArray row = Utility::ParseBitArray(encoded, '1');
-		Result result = sut.decodeSingleRow(0, row);
-		return result.text();
-	}
+static std::wstring Decode(std::string_view encoded)
+{
+	Code39Reader sut(DecodeHints().setTryCode39ExtendedMode(true));
+	BitArray row = Utility::ParseBitArray(encoded, '1');
+	Result result = sut.decodeSingleRow(0, row);
+	return result.text();
 }
 
 TEST(ODCode39ExtendedModeTest, Decode)

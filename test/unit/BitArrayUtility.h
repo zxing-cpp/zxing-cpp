@@ -1,5 +1,7 @@
 #pragma once
+
 #include <string>
+#include <string_view>
 
 namespace ZXing {
 
@@ -9,7 +11,6 @@ namespace Utility {
     
 	std::string ToString(const BitArray& arr, char one, char zero);
 	std::string ToString(const BitArray& BitArray);
-	BitArray ParseBitArray(const std::string& str, char one);
-	BitArray ParseBitArray(const std::string& str);
+	BitArray ParseBitArray(std::string_view str, char one = 'X');
 
 }} // ZXing::Utility

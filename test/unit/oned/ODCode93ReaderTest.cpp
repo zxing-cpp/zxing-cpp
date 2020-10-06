@@ -23,14 +23,12 @@
 using namespace ZXing;
 using namespace ZXing::OneD;
 
-namespace {
-	std::wstring Decode(const std::string& input)
-	{
-		Code93Reader sut;
-		auto row = Utility::ParseBitArray(input, '1');
-		auto result = sut.decodeSingleRow(0, row);
-		return result.text();
-	}
+static std::wstring Decode(std::string_view input)
+{
+	Code93Reader sut;
+	auto row    = Utility::ParseBitArray(input, '1');
+	auto result = sut.decodeSingleRow(0, row);
+	return result.text();
 }
 
 TEST(ODCode93ReaderTest, Decode)

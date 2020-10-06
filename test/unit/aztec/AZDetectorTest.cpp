@@ -20,6 +20,7 @@
 #include "BitMatrixIO.h"
 #include "PseudoRandom.h"
 
+#include <string_view>
 #include <vector>
 
 using namespace ZXing;
@@ -52,9 +53,9 @@ namespace {
 	}
 
 	// Test that we can tolerate errors in the parameter locator bits
-	void TestErrorInParameterLocator(const std::string& data, int nbLayers, bool isCompact, const BitMatrix &matrix_)
+	void TestErrorInParameterLocator(std::string_view data, int nbLayers, bool isCompact, const BitMatrix &matrix_)
 	{
-		PseudoRandom random(std::hash<std::string>()(data));
+		PseudoRandom random(std::hash<std::string_view>()(data));
 		auto orientationPoints = GetOrientationPoints(matrix_, isCompact);
 		for (bool isMirror : { false, true }) {
 			BitMatrix matrix = matrix_.copy();
