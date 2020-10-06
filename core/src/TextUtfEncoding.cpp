@@ -18,26 +18,21 @@
 
 #include <type_traits>
 
-namespace ZXing {
+namespace ZXing::TextUtfEncoding {
 
-static size_t Utf8CountCodePoints(const uint8_t *utf8, size_t length)
+static size_t Utf8CountCodePoints(const uint8_t* utf8, size_t length)
 {
-	size_t i = 0;
 	size_t count = 0;
 
-	while (i < length) {
+	for (size_t i = 0; i < length;) {
 		if (utf8[i] < 128) {
 			++i;
-		}
-		else {
+		} else {
 			switch (utf8[i] & 0xf0) {
-			case 0xc0:
-			case 0xd0:
-				i += 2; break;
-			case 0xe0:
-				i += 3; break;
-			case 0xf0:
-				i += 4; break;
+			case 0xc0: [[fallthrough]];
+			case 0xd0: i += 2; break;
+			case 0xe0: i += 3; break;
+			case 0xf0: i += 4; break;
 			default: // we are in middle of a sequence
 				++i;
 				while (i < length && (utf8[i] & 0xc0) == 0x80)
@@ -83,102 +78,50 @@ static uint32_t Utf8Decode(uint8_t byte, uint32_t& state, uint32_t& codep)
 	return state;
 }
 
-template <typename WCharT>
-static void ConvertFromUtf8(const uint8_t* src, size_t length, std::basic_string<WCharT>& buffer, typename std::enable_if<(sizeof(WCharT) == 2)>::type* = nullptr)
-{
-	const uint8_t* srcEnd = src + length;
-	size_t destLen = Utf8CountCodePoints(src, length);
-	if (destLen > 0) {
-		buffer.reserve(buffer.size() + destLen);
-		uint32_t codePoint = 0;
-		uint32_t state = kAccepted;
+static_assert(sizeof(wchar_t) == 4 || sizeof(wchar_t) == 2, "wchar_t needs to be 2 or 4 bytes wide");
 
-		while (src < srcEnd) {
-			if (Utf8Decode(*src++, state, codePoint) != kAccepted) {
-				continue;
-			}
-			if (codePoint > 0xffff) { // surrogate pair
-				buffer.push_back((WCharT)(0xd7c0 + (codePoint >> 10)));
-				buffer.push_back((WCharT)(0xdc00 + (codePoint & 0x3ff)));
-			}
-			else {
-				buffer.push_back((WCharT)codePoint);
-			}
-		}
+static void ConvertFromUtf8(const uint8_t* src, size_t length, std::wstring& buffer)
+{
+	size_t destLen = Utf8CountCodePoints(src, length);
+
+	buffer.reserve(buffer.size() + destLen);
+	uint32_t codePoint = 0;
+	uint32_t state = kAccepted;
+
+	for (auto i = src, end = src + length; i < end; ++i) {
+		if (Utf8Decode(*i, state, codePoint) != kAccepted)
+			continue;
+
+		if (sizeof(wchar_t) == 2 && codePoint > 0xffff) { // surrogate pair
+			buffer.push_back(static_cast<wchar_t>(0xd7c0 + (codePoint >> 10)));
+			buffer.push_back(static_cast<wchar_t>(0xdc00 + (codePoint & 0x3ff)));
+		} else
+			buffer.push_back(static_cast<wchar_t>(codePoint));
 	}
 }
-
-template <typename WCharT>
-static void ConvertFromUtf8(const uint8_t* src, size_t length, std::basic_string<WCharT>& buffer, typename std::enable_if<(sizeof(WCharT) == 4)>::type* = nullptr)
-{
-	const uint8_t* srcEnd = src + length;
-	size_t destLen = Utf8CountCodePoints(src, length);
-	if (destLen > 0) {
-		buffer.reserve(buffer.size() + destLen);
-		uint32_t codePoint = 0;
-		uint32_t state = kAccepted;
-
-		while (src < srcEnd) {
-			if (Utf8Decode(*src++, state, codePoint) != kAccepted) {
-				continue;
-			}
-			buffer.push_back((WCharT)codePoint);
-		}
-	}
-}
-
 
 /// <summary>
 /// Count the number of bytes required to store given code points in UTF-8.
 /// </summary>
-template <typename WCharT>
-static size_t Utf8CountBytes(const WCharT* utf32, size_t length, typename std::enable_if<(sizeof(WCharT) == 4)>::type* = nullptr)
+static size_t Utf8CountBytes(const wchar_t* str, size_t length)
 {
 	int result = 0;
 	for (size_t i = 0; i < length; ++i) {
-		unsigned codePoint = (unsigned)utf32[i];
-		if (codePoint < 0x80)
-		{
+		if (str[i] < 0x80)
 			result += 1;
-		}
-		else if (codePoint < 0x800)
-		{
+		else if (str[i] < 0x800)
 			result += 2;
-		}
-		else if (codePoint < 0x10000)
-		{
-			result += 3;
-		}
-		else
-		{
-			result += 4;
-		}
-	}
-	return result;
-}
-
-template <typename WCharT>
-static size_t Utf8CountBytes(const WCharT* utf16, size_t length, typename std::enable_if<(sizeof(WCharT) == 2)>::type* = nullptr)
-{
-	int result = 0;
-	for (size_t i = 0; i < length; ++i) {
-		uint16_t codePoint = utf16[i];
-		if (codePoint < 0x80)
-		{
-			result += 1;
-		}
-		else if (codePoint < 0x800)
-		{
-			result += 2;
-		}
-		else if (TextUtfEncoding::IsUtf16HighSurrogate(codePoint))
-		{
-			result += 4;
-			++i;
-		}
-		else
-		{
-			result += 3;
+		else if (sizeof(wchar_t) == 4) {
+			if (str[i] < 0x10000)
+				result += 3;
+			else
+				result += 4;
+		} else {
+			if (IsUtf16HighSurrogate(str[i])) {
+				result += 4;
+				++i;
+			} else
+				result += 3;
 		}
 	}
 	return result;
@@ -186,19 +129,16 @@ static size_t Utf8CountBytes(const WCharT* utf16, size_t length, typename std::e
 
 static int Utf8Encode(uint32_t utf32, char* out)
 {
-	if (utf32 < 0x80)
-	{
+	if (utf32 < 0x80) {
 		*out++ = static_cast<uint8_t>(utf32);
 		return 1;
 	}
-	if (utf32 < 0x800)
-	{
+	if (utf32 < 0x800) {
 		*out++ = static_cast<uint8_t>((utf32 >> 6) | 0xc0);
 		*out++ = static_cast<uint8_t>((utf32 & 0x3f) | 0x80);
 		return 2;
 	}
-	if (utf32 < 0x10000)
-	{
+	if (utf32 < 0x10000) {
 		*out++ = static_cast<uint8_t>((utf32 >> 12) | 0xe0);
 		*out++ = static_cast<uint8_t>(((utf32 >> 6) & 0x3f) | 0x80);
 		*out++ = static_cast<uint8_t>((utf32 & 0x3f) | 0x80);
@@ -212,62 +152,45 @@ static int Utf8Encode(uint32_t utf32, char* out)
 	return 4;
 }
 
-template <typename WCharT>
-static void ConvertToUtf8(const std::basic_string<WCharT>& str, std::string& utf8, typename std::enable_if<(sizeof(WCharT) == 2)>::type* = nullptr)
+static void ConvertToUtf8(const std::wstring& str, std::string& utf8)
 {
 	char buffer[4];
-	int bufLength;
 	for (size_t i = 0; i < str.length(); ++i)
 	{
-		if (i + 1 < str.length() && TextUtfEncoding::IsUtf16HighSurrogate(str[i]) && TextUtfEncoding::IsUtf16LowSurrogate(str[i + 1]))
-		{
-			bufLength = Utf8Encode(TextUtfEncoding::CodePointFromUtf16Surrogates(str[i], str[i + 1]), buffer);
+		uint32_t c;
+		if (sizeof(wchar_t) == 2 && i + 1 < str.length() && IsUtf16HighSurrogate(str[i]) &&
+			IsUtf16LowSurrogate(str[i + 1])) {
+			c = CodePointFromUtf16Surrogates(str[i], str[i + 1]);
 			++i;
-		}
-		else
-		{
-			bufLength = Utf8Encode(str[i], buffer);
-		}
-		utf8.append(buffer, bufLength);
-	}
-}
+		} else
+			c = str[i];
 
-template <typename WCharT>
-static void ConvertToUtf8(const std::basic_string<WCharT>& str, std::string& utf8, typename std::enable_if<(sizeof(WCharT) == 4)>::type* = nullptr)
-{
-	char buffer[4];
-	for (auto c : str) {
 		auto bufLength = Utf8Encode(c, buffer);
 		utf8.append(buffer, bufLength);
 	}
 }
 
-
-void
-TextUtfEncoding::ToUtf8(const std::wstring& str, std::string& utf8)
+void ToUtf8(const std::wstring& str, std::string& utf8)
 {
 	utf8.reserve(str.length() + Utf8CountBytes(str.data(), str.length()));
 	ConvertToUtf8(str, utf8);
 }
 
-std::wstring
-TextUtfEncoding::FromUtf8(const std::string& utf8)
+std::wstring FromUtf8(const std::string& utf8)
 {
 	std::wstring str;
 	ConvertFromUtf8(reinterpret_cast<const uint8_t*>(utf8.data()), utf8.length(), str);
 	return str;
 }
 
-std::string
-TextUtfEncoding::ToUtf8(const std::wstring& str)
+std::string ToUtf8(const std::wstring& str)
 {
 	std::string utf8;
 	ToUtf8(str, utf8);
 	return utf8;
 }
 
-void
-TextUtfEncoding::AppendUtf16(std::wstring& str, const uint16_t* utf16, size_t length)
+void AppendUtf16(std::wstring& str, const uint16_t* utf16, size_t length)
 {
 	if (sizeof(wchar_t) == 2) {
 		str.append(reinterpret_cast<const wchar_t*>(utf16), length);
@@ -291,11 +214,9 @@ TextUtfEncoding::AppendUtf16(std::wstring& str, const uint16_t* utf16, size_t le
 	}
 }
 
-void
-TextUtfEncoding::AppendUtf8(std::wstring& str, const uint8_t* utf8, size_t length)
+void AppendUtf8(std::wstring& str, const uint8_t* utf8, size_t length)
 {
 	ConvertFromUtf8(utf8, length, str);
 }
 
-
-} // ZXing
+} // namespace ZXing::TextUtfEncoding

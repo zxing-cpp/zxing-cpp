@@ -20,34 +20,32 @@
 #include <string>
 
 namespace ZXing {
+namespace TextUtfEncoding {
 
-class TextUtfEncoding
+std::string ToUtf8(const std::wstring& str);
+std::wstring FromUtf8(const std::string& utf8);
+
+void ToUtf8(const std::wstring& str, std::string& utf8);
+void AppendUtf16(std::wstring& str, const uint16_t* utf16, size_t length);
+void AppendUtf8(std::wstring& str, const uint8_t* utf8, size_t length);
+
+template <typename T>
+bool IsUtf16HighSurrogate(T c)
 {
-public:
-	static std::string ToUtf8(const std::wstring& str);
-	static std::wstring FromUtf8(const std::string& utf8);
+	return (c & 0xfc00) == 0xd800;
+}
 
-	static void ToUtf8(const std::wstring& str, std::string& utf8);
-	static void AppendUtf16(std::wstring& str, const uint16_t* utf16, size_t length);
-	static void AppendUtf8(std::wstring& str, const uint8_t* utf8, size_t length);
+template <typename T>
+bool IsUtf16LowSurrogate(T c)
+{
+	return (c & 0xfc00) == 0xdc00;
+}
 
-	template <typename T>
-	static bool IsUtf16HighSurrogate(T c)
-	{
-		return (c & 0xfc00) == 0xd800;
-	}
+template <typename T>
+uint32_t CodePointFromUtf16Surrogates(T high, T low)
+{
+	return (uint32_t(high) << 10) + low - 0x35fdc00;
+}
 
-	template <typename T>
-	static bool IsUtf16LowSurrogate(T c)
-	{
-		return (c & 0xfc00) == 0xdc00;
-	}
-
-	template <typename T>
-	static uint32_t CodePointFromUtf16Surrogates(T high, T low)
-	{
-		return (uint32_t(high) << 10) + low - 0x35fdc00;
-	}
-};
-
-} // ZXing
+} // namespace TextUtfEncoding
+} // namespace ZXing
