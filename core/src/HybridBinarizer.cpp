@@ -20,7 +20,6 @@
 #include "ByteArray.h"
 #include "BitMatrix.h"
 #include "Matrix.h"
-#include "ZXNumeric.h"
 #include "ZXContainerAlgorithms.h"
 
 #include <cassert>
@@ -147,8 +146,8 @@ static void CalculateThresholdForBlock(const uint8_t* luminances, int subWidth, 
 		int yoffset = std::min(y * BLOCK_SIZE, height - BLOCK_SIZE);
 		for (int x = 0; x < subWidth; x++) {
 			int xoffset = std::min(x * BLOCK_SIZE, width - BLOCK_SIZE);
-			int left = Clamp(x, 2, subWidth - 3);
-			int top = Clamp(y, 2, subHeight - 3);
+			int left = std::clamp(x, 2, subWidth - 3);
+			int top = std::clamp(y, 2, subHeight - 3);
 			int sum = 0;
 			for (int dy = -2; dy <= 2; ++dy) {
 				for (int dx = -2; dx <= 2; ++dx) {

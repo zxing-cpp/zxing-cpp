@@ -74,12 +74,6 @@ IsZero(T a)
 }
 
 template <typename T>
-inline T Clamp(T n, T lower, T upper)
-{
-	return n <= lower ? lower : n >= upper ? upper : n;
-}
-
-template <typename T>
 typename std::enable_if<std::is_floating_point<T>::value, int>::type
 RoundToNearest(T x)
 {
