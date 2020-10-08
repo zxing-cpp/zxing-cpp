@@ -12,6 +12,7 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/src
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/src
 
 COMMON_FILES :=	\
+	src/BinaryBitmap.cpp \
 	src/BarcodeFormat.cpp \
 	src/BitArray.cpp \
 	src/BitMatrix.cpp \

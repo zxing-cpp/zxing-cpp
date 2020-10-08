@@ -16,16 +16,17 @@
 * limitations under the License.
 */
 
-#include "BitArray.h"
-#include "Pattern.h"
-
 #include <memory>
 #include <stdexcept>
+#include <vector>
+#include <stdint.h>
 
 namespace ZXing {
 
 class BitArray;
 class BitMatrix;
+
+using PatternRow = std::vector<uint16_t>;
 
 /**
 * This class is the core bitmap class used by ZXing to represent 1 bit data. Reader objects
@@ -66,24 +67,7 @@ public:
 	*/
 	virtual bool getBlackRow(int y, BitArray& outArray) const = 0;
 
-	virtual bool getPatternRow(int y, PatternRow& res) const
-	{
-		res.clear();
-		BitArray row;
-		getBlackRow(y, row);
-
-		auto li = row.begin();
-		auto i = li;
-		if (*i)
-			res.push_back(0);
-		while ((i = row.getNextSetTo(i, !*i)) != row.end()) {
-			res.push_back(static_cast<PatternRow::value_type>(i - li));
-			li = i;
-		}
-		res.push_back(static_cast<PatternRow::value_type>(i - li));
-
-		return true;
-	}
+	virtual bool getPatternRow(int y, PatternRow& res) const;
 
 	/**
 	* Converts a 2D array of luminance data to 1 bit. This method is intended for decoding 2D

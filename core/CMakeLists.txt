@@ -78,6 +78,7 @@ set (COMMON_FILES
 if (BUILD_READERS)
     set (COMMON_FILES ${COMMON_FILES}
         src/BinaryBitmap.h
+        src/BinaryBitmap.cpp
         src/BitSource.h
         src/BitSource.cpp
         src/DecodeHints.h
