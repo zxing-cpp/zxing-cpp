@@ -70,7 +70,6 @@ set (COMMON_FILES
     src/ZXBigInteger.cpp
     src/ZXConfig.h
     src/ZXNullable.h
-    src/ZXNumeric.h
     src/ZXContainerAlgorithms.h
     src/ZXStrConvWorkaround.h
     src/ZXTestSupport.h

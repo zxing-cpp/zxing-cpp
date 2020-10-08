@@ -18,7 +18,6 @@
 #include "AZDetector.h"
 #include "AZDetectorResult.h"
 #include "BitHacks.h"
-#include "ZXNumeric.h"
 #include "ReedSolomonDecoder.h"
 #include "ResultPoint.h"
 #include "GenericGF.h"
@@ -31,6 +30,12 @@
 
 namespace ZXing {
 namespace Aztec {
+
+template <typename T, typename = typename std::enable_if<std::is_floating_point<T>::value>::type>
+static int RoundToNearest(T x)
+{
+	return static_cast<int>(std::lround(x));
+}
 
 static const int EXPECTED_CORNER_BITS[] = {
 	0xee0,  // 07340  XXX .XX X.. ...

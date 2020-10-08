@@ -25,7 +25,6 @@
 #include "RegressionLine.h"
 #include "ConcentricFinder.h"
 #include "GridSampler.h"
-#include "ZXNumeric.h"
 #include "LogMatrix.h"
 
 #include <algorithm>

@@ -18,7 +18,6 @@
 #include "Result.h"
 #include "DecoderResult.h"
 #include "TextDecoder.h"
-#include "ZXNumeric.h"
 
 #include <cmath>
 #include <utility>
@@ -61,7 +60,8 @@ Result::Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat 
 
 int Result::orientation() const
 {
-	return std::lround(_position.orientation() * kDegPerRad);
+	constexpr auto std_numbers_pi_v = 3.14159265358979323846; // TODO: c++20 <numbers>
+	return std::lround(_position.orientation() * 180 / std_numbers_pi_v);
 }
 
 } // ZXing

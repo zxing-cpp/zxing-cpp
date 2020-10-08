@@ -26,7 +26,6 @@
 #include "DecodeHints.h"
 #include "BinaryBitmap.h"
 #include "BitMatrix.h"
-#include "ZXNumeric.h"
 
 #include <utility>
 

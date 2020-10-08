@@ -17,8 +17,8 @@
 
 #include "WhiteRectDetector.h"
 #include "BitMatrix.h"
-#include "ZXNumeric.h"
 #include "ResultPoint.h"
+#include "BitMatrixCursor.h"
 
 namespace ZXing {
 
@@ -59,18 +59,19 @@ static bool ContainsBlackPoint(const BitMatrix& image, int a, int b, int fixed, 
 	return false;
 }
 
-static bool GetBlackPointOnSegment(const BitMatrix& image, int aX, int aY, int bX, int bY, ResultPoint& result) {
-	int dist = RoundToNearest(ResultPoint::Distance(aX, aY, bX, bY));
-	float xStep = static_cast<float>(bX - aX) / dist;
-	float yStep = static_cast<float>(bY - aY) / dist;
+static bool GetBlackPointOnSegment(const BitMatrix& image, int aX, int aY, int bX, int bY, ResultPoint& result)
+{
+	PointF a(aX, aY), b(bX, bY);
+	BitMatrixCursorF cur(image, a, b - a);
+
+	auto dist = std::lround(distance(a, b) / length(cur.d));
 
 	for (int i = 0; i < dist; i++) {
-		int x = RoundToNearest(aX + i * xStep);
-		int y = RoundToNearest(aY + i * yStep);
-		if (image.get(x, y)) {
-			result.set(static_cast<float>(x), static_cast<float>(y));
+		if (image.get(cur.p)) {
+			result = cur.p;
 			return true;
 		}
+		cur.step();
 	}
 	return false;
 }
