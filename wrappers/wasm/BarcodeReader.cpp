@@ -26,10 +26,10 @@
 
 struct ReadResult
 {
-    std::string format;
-    std::wstring text;
-    std::string error;
-    ZXing::Position position;
+	std::string format;
+	std::wstring text;
+	std::string error;
+	ZXing::Position position;
 };
 
 ReadResult readBarcodeFromImage(int bufferPtr, int bufferLength, bool tryHarder, std::string format)
@@ -94,23 +94,23 @@ EMSCRIPTEN_BINDINGS(BarcodeReader)
 	using namespace emscripten;
 
 	value_object<ReadResult>("ReadResult")
-	        .field("format", &ReadResult::format)
-	        .field("text", &ReadResult::text)
-	        .field("error", &ReadResult::error)
-            .field("position", &ReadResult::position)
-	        ;
+			.field("format", &ReadResult::format)
+			.field("text", &ReadResult::text)
+			.field("error", &ReadResult::error)
+			.field("position", &ReadResult::position)
+			;
 
-    value_object<ZXing::PointI>("Point")
-	        .field("x", &ZXing::PointI::x)
-	        .field("y", &ZXing::PointI::y)
-	        ;
+	value_object<ZXing::PointI>("Point")
+			.field("x", &ZXing::PointI::x)
+			.field("y", &ZXing::PointI::y)
+			;
 
-    value_object<ZXing::Position>("Position")
-            .field("topLeft", emscripten::index<0>())
-	        .field("topRight", emscripten::index<1>())
-	        .field("bottomLeft", emscripten::index<2>())
-            .field("bottomRight", emscripten::index<3>())
-            ;
+	value_object<ZXing::Position>("Position")
+			.field("topLeft", emscripten::index<0>())
+			.field("topRight", emscripten::index<1>())
+			.field("bottomLeft", emscripten::index<2>())
+			.field("bottomRight", emscripten::index<3>())
+			;
 
 	function("readBarcodeFromImage", &readBarcodeFromImage);
 	function("readBarcodeFromPixmap", &readBarcodeFromPixmap);
