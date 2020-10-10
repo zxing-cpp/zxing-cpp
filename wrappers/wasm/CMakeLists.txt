@@ -11,6 +11,8 @@ if (NOT CMAKE_BUILD_TYPE)
     set (CMAKE_BUILD_TYPE "MinSizeRel" CACHE STRING "Choose the type of build." FORCE)
 endif()
 
+add_definitions ("-s DISABLE_EXCEPTION_CATCHING=0")
+
 add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/../../core ${CMAKE_BINARY_DIR}/ZXing)
 
 include_directories ("../../thirdparty/stb")
