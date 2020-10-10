@@ -16,28 +16,42 @@ function scanBarcode(file) {
 	reader.onloadend = function(evt) {
 		var format = document.getElementById("scan_format").value;
 		var fileData = new Uint8Array(evt.target.result);
-		showImage(document.getElementById("drop_zone"), fileData, file.type);
 
 		var buffer = zxing._malloc(fileData.length);
 		zxing.HEAPU8.set(fileData, buffer);
 		var result = zxing.readBarcode(buffer, fileData.length, true, format);
 		zxing._free(buffer);
 
+		showImage(document.getElementById("drop_zone"), fileData, file.type, result.position);
 		showScanResult(result);
 	}
 	reader.readAsArrayBuffer(file);
 }
 
-function showImage(container, fileData, fileType) {
+function showImage(container, fileData, fileType, position) {
 	fileType = fileType || "image/jpeg";
 	container.innerHTML = "";
 	var img = document.createElement("img");
 	img.addEventListener('load', function() {
 		container.style.width = img.width + 'px';
 		container.style.height = img.height + 'px';
+		const canvas = document.createElement("canvas");
+		canvas.width = img.width;
+		canvas.height = img.height;
+		const ctx = canvas.getContext("2d");
+		ctx.drawImage(img, 0, 0);
+		ctx.beginPath();
+		ctx.moveTo(position.topLeft.x, position.topLeft.y);
+		ctx.lineTo(position.topRight.x, position.topRight.y);
+		ctx.lineTo(position.bottomRight.x, position.bottomRight.y);
+		ctx.lineTo(position.bottomLeft.x, position.bottomLeft.y);
+		ctx.closePath();
+		ctx.strokeStyle = "red";
+		ctx.lineWidth = 5;
+		ctx.stroke();
+		container.appendChild(canvas);
 	});
 	img.src = "data:" + fileType + ";base64," + base64ArrayBuffer(fileData);
-	container.appendChild(img);
 }
 
 function showScanResult(result) {
