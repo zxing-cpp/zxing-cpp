@@ -108,8 +108,8 @@ EMSCRIPTEN_BINDINGS(BarcodeReader)
 	value_object<ZXing::Position>("Position")
 			.field("topLeft", emscripten::index<0>())
 			.field("topRight", emscripten::index<1>())
-			.field("bottomLeft", emscripten::index<2>())
-			.field("bottomRight", emscripten::index<3>())
+			.field("bottomRight", emscripten::index<2>())
+			.field("bottomLeft", emscripten::index<3>())
 			;
 
 	function("readBarcodeFromImage", &readBarcodeFromImage);
