@@ -65,7 +65,7 @@ static const SymbolInfo PROD_SYMBOLS[] = {
 static const SymbolInfo* s_symbols = PROD_SYMBOLS;
 static ZXING_IF_NOT_TEST(const) size_t s_symbolCount = Size(PROD_SYMBOLS);
 
-#if ZXING_BUILD_FOR_TEST
+#ifdef ZXING_BUILD_FOR_TEST
 
 ZXING_EXPORT_TEST_ONLY
 void OverrideSymbolSet(const SymbolInfo* symbols, size_t count)
