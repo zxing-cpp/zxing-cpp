@@ -21,8 +21,16 @@ if (BUILD_WRITERS)
     add_test(NAME ZXingWriterTest COMMAND ZXingWriter qrcode "I have the best words." test.png)
 endif()
 
-find_package (Qt5 5.5 COMPONENTS Gui)
+find_package(Qt5 COMPONENTS Gui Multimedia Quick)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+
 if (TARGET Qt5::Gui)
-    add_executable (ZXingQtReader ZXingQtReader.cpp)
+    add_executable (ZXingQtReader ZXingQtReader.cpp ZXingQtReader.h)
     target_link_libraries(ZXingQtReader ZXing::ZXing Qt5::Gui)
+endif()
+
+if (TARGET Qt5::Multimedia)
+    add_executable(ZXingQtCamReader ZXingQtCamReader.cpp ZXingQtCamReader.qrc ZXingQtReader.h)
+    target_link_libraries(ZXingQtCamReader ZXing::ZXing Qt5::Gui Qt5::Multimedia Qt5::Quick)
 endif()

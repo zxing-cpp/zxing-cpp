@@ -14,26 +14,23 @@
  * limitations under the License.
  */
 
+#include <QGuiApplication>
+#include <QQmlApplicationEngine>
+
 #include "ZXingQtReader.h"
 
-#include <QDebug>
-
-using namespace ZXingQt;
-
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
-	QString filePath = argv[1];
+    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
-	auto hints = DecodeHints()
-					 .setFormats(BarcodeFormat::QRCode)
-					 .setTryRotate(false)
-					 .setBinarizer(Binarizer::FixedThreshold);
+	ZXingQt::registerQmlAndMetaTypes();
 
-	auto result = ReadBarcode(QImage(filePath), hints);
+    QGuiApplication app(argc, argv);
+    app.setApplicationName("ZXingQtCamReader");
+    QQmlApplicationEngine engine;
+    engine.load(QUrl(QStringLiteral("qrc:/ZXingQtCamReader.qml")));
+    if (engine.rootObjects().isEmpty())
+        return -1;
 
-	qDebug() << "Text:   " << result.text();
-	qDebug() << "Format: " << result.format();
-	qDebug() << "Error:  " << result.status();
-
-	return result.isValid() ? 0 : 1;
+    return app.exec();
 }
