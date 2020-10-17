@@ -60,7 +60,7 @@ public:
 
 		iterator& operator++() noexcept
 		{
-			while (++_pos < BitHacks::HighestBitSet(_flags) && !(_pos & _flags))
+			while (++_pos < BitHacks::HighestBitSet(_flags) && !((1 << _pos) & _flags))
 				;
 			return *this;
 		}
