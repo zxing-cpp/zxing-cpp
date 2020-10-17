@@ -54,6 +54,9 @@ enum class BarcodeFormat
 	QRCode          = (1 << 13), ///< QR Code (2D)
 	UPCA            = (1 << 14), ///< UPC-A (1D)
 	UPCE            = (1 << 15), ///< UPC-E (1D)
+
+	OneDCodes = Codabar | Code39 | Code93 | Code128 | EAN8 | EAN13 | ITF | DataBar | DataBarExpanded | UPCA | UPCE,
+	TwoDCodes = Aztec | DataMatrix | MaxiCode | PDF417 | QRCode,
 };
 
 enum class DecodeStatus
@@ -296,7 +299,7 @@ public:
 		if (formats() != newVal) {
 			DecodeHints::setFormats(static_cast<ZXing::BarcodeFormat>(newVal));
 			emit formatsChanged();
-			qDebug() << BarcodeFormats(static_cast<ZXing::BarcodeFormat>(newVal));
+			qDebug() << DecodeHints::formats();
 		}
 	}
 	Q_SIGNAL void formatsChanged();

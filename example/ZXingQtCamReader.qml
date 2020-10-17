@@ -39,9 +39,9 @@ Window {
     VideoFilter {
         id: zxingFilter
 
-//        formats: ZXing.EAN13 | ZXing.EAN8
-//        tryRotate: false
-//        tryHarder: false
+        formats: (oneDSwitch.checked ? (ZXing.OneDCodes) : ZXing.None) | (twoDSwitch.checked ? (ZXing.TwoDCodes) : ZXing.None)
+        tryRotate: tryRotateSwitch.checked
+        tryHarder: tryHarderSwitch.checked
 
         // callback with parameter 'result', called for every sucessfully processed frame
         // onFoundBarcode: {}
@@ -140,6 +140,15 @@ Window {
                 color: "white"
                 padding: 10
                 background: Rectangle { color: "#80808080" }
+            }
+
+            ColumnLayout {
+                anchors.right: parent.right
+
+                Switch {id: tryRotateSwitch; text: qsTr("Try Rotate"); checked: true }
+                Switch {id: tryHarderSwitch; text: qsTr("Try Harder"); checked: true }
+                Switch {id: oneDSwitch; text: qsTr("1D Codes"); checked: true }
+                Switch {id: twoDSwitch; text: qsTr("2D Codes"); checked: true }
             }
         }
     }
