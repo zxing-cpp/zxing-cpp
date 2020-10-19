@@ -109,7 +109,8 @@ DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, const BinaryBit
 		}
 
 #ifdef ZX_USE_NEW_ROW_READERS
-		image.getPatternRow(rowNumber, bars);
+		if (!image.getPatternRow(rowNumber, bars))
+			continue;
 		bool hasBitArray = false;
 #else
 		// Estimate black point for this row and load it:

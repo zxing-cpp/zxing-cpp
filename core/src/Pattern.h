@@ -42,8 +42,10 @@ public:
 
 	PatternView() = default;
 
+	// A PatternRow always starts with the width of whitespace in front of the first black bar.
+	// The first element of the PatternView is the first bar.
 	PatternView(const PatternRow& bars)
-		: _data(bars.data() + 1), _size(Size(bars)), _base(bars.data()), _end(bars.data() + bars.size())
+		: _data(bars.data() + 1), _size(Size(bars) - 1), _base(bars.data()), _end(bars.data() + bars.size())
 	{}
 
 	PatternView(Iterator data, int size, Iterator base, Iterator end) : _data(data), _size(size), _base(base), _end(end) {}
@@ -65,7 +67,8 @@ public:
 	int sum(int n = 0) const { return std::accumulate(_data, _data + (n == 0 ? _size : n), 0); }
 	int size() const { return _size; }
 
-	int index() const { return static_cast<int>(_data - _base); }
+	// index is the number of bars and spaces from the first bar to the current position
+	int index() const { return static_cast<int>(_data - (_base + 1)); }
 	int pixelsInFront() const { return std::accumulate(_base, _data, 0); }
 	int pixelsTillEnd() const { return std::accumulate(_base, _data + _size, 0) - 1; }
 	bool isAtFirstBar() const { return _data == _base + 1; }
