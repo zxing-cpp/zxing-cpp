@@ -429,7 +429,9 @@ source_group (Sources\\textcodec FILES ${TEXT_CODEC_FILES})
 
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
-find_package(Threads REQUIRED)
+if(NOT CMAKE_SYSTEM_NAME STREQUAL "Android")
+    find_package(Threads REQUIRED) # Not needed on Android, where pthread.h is part of the standard library.
+endif()
 
 add_library (ZXing
     ${COMMON_FILES}
@@ -465,7 +467,9 @@ endif()
 # the lib needs a c++-17 compiler but can be used with a c++-11 compiler (see examples)
 target_compile_features(ZXing PRIVATE cxx_std_17 INTERFACE cxx_std_11)
 
-target_link_libraries (ZXing PRIVATE Threads::Threads)
+if(NOT CMAKE_SYSTEM_NAME STREQUAL "Android")
+    target_link_libraries (ZXing PRIVATE Threads::Threads) # On Android, this is in the standard lib.
+endif()
 
 add_library(ZXing::ZXing ALIAS ZXing)
 # add the old alias as well, to keep old clients compiling
