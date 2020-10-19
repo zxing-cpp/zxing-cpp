@@ -221,12 +221,25 @@ static bool EAN13(PartialResult& res, PatternView begin)
 	return true;
 }
 
+static bool PlausibleDigitModuleSize(PatternView begin, int start, int i, float moduleSizeRef)
+{
+	float moduleSizeData = begin.subView(start + i * 4, 4).sum() / 7.f;
+	return std::abs(moduleSizeData / moduleSizeRef - 1) < 0.2f;
+}
+
 static bool EAN8(PartialResult& res, PatternView begin)
 {
 	auto mid = begin.subView(19, MID_PATTERN.size());
 	auto end = begin.subView(40, END_PATTERN.size());
 
 	CHECK(end.isValid() && IsRightGuard(end, END_PATTERN, QUIET_ZONE_RIGHT) && IsPattern(mid, MID_PATTERN));
+
+	// additional plausibilty check for the module size: it has to be about the same for both
+	// the guard patterns and the payload/data part.
+	float moduleSizeGuard = (begin.sum() + mid.sum() + end.sum()) / 11.f;
+	for (auto start : {3, 24})
+		for (int i = 0; i < 4; ++i)
+			CHECK(PlausibleDigitModuleSize(begin, start, i, moduleSizeGuard));
 
 	auto next = begin.subView(END_PATTERN.size(), CHAR_LEN);
 	res.txt.clear();
@@ -252,8 +265,8 @@ static bool UPCE(PartialResult& res, PatternView begin)
 	// the guard patterns and the payload/data part. This speeds up the falsepositives use case
 	// about 2x and brings the misread count down to 0
 	float moduleSizeGuard = (begin.sum() + end.sum()) / 9.f;
-	float moduleSizeData = begin.subView(3, 6*4).sum() / (6*7.f);
-	CHECK(std::abs(moduleSizeData / moduleSizeGuard - 1) < 0.2f);
+	for (int i = 0; i < 6; ++i)
+		CHECK(PlausibleDigitModuleSize(begin, 3, i, moduleSizeGuard));
 
 	auto next = begin.subView(END_PATTERN.size(), CHAR_LEN);
 	int lgPattern = 0;
