@@ -73,8 +73,8 @@ public:
 	int pixelsTillEnd() const { return std::accumulate(_base, _data + _size, 0) - 1; }
 	bool isAtFirstBar() const { return _data == _base + 1; }
 	bool isAtLastBar() const { return _data + _size == _end - 1; }
-	bool isValid() const { return _data && _data + _size <= _end; }
-	bool isValid(int n) const { return _data && _data + n <= _end; }
+	bool isValid(int n) const { return _data && _data >= _base && _data + n <= _end; }
+	bool isValid() const { return isValid(size()); }
 
 	template<bool acceptIfAtFirstBar = false>
 	bool hasQuiteZoneBefore(float scale) const
@@ -100,10 +100,15 @@ public:
 		return {begin() + offset, std::max(size, 0), _base, _end};
 	}
 
+	bool shift(int n)
+	{
+		_data += n;
+		return isValid();
+	}
+
 	bool skipPair()
 	{
-		_data += 2;
-		return isValid();
+		return shift(2);
 	}
 
 	bool skipSymbol()
@@ -155,6 +160,7 @@ struct FixedPattern
 	using value_type = PatternRow::value_type;
 	value_type _data[N];
 	constexpr value_type operator[](int i) const noexcept { return _data[i]; }
+	constexpr const value_type* data() const noexcept { return _data; }
 	constexpr int size() const noexcept { return N; }
 };
 

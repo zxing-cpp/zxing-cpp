@@ -198,7 +198,7 @@ public:
 	template <typename Counters, typename Pattern>
 	static float PatternMatchVariance(const Counters& counters, const Pattern& pattern, float maxIndividualVariance) {
 		assert(Size(counters) <= Size(pattern)); //TODO: this should test for equality, see ODCode128Reader.cpp:93
-		return PatternMatchVariance(counters.data(), pattern.data(), counters.size(), maxIndividualVariance);
+		return PatternMatchVariance(std::data(counters), std::data(pattern), std::size(counters), maxIndividualVariance);
 	}
 
 	/**
@@ -217,11 +217,11 @@ public:
 		float bestVariance = maxAvgVariance; // worst variance we'll accept
 		constexpr int INVALID_MATCH = -1;
 		int bestMatch = INVALID_MATCH;
-		for (size_t i = 0; i < patterns.size(); i++) {
+		for (int i = 0; i < Size(patterns); i++) {
 			float variance = PatternMatchVariance(counters, patterns[i], maxIndividualVariance);
 			if (variance < bestVariance) {
 				bestVariance = variance;
-				bestMatch = static_cast<int>(i);
+				bestMatch = i;
 			} else if (requireUnambiguousMatch && variance == bestVariance) {
 				// if we find a second 'best match' with the same variance, we can not reliably report to have a suitable match
 				bestMatch = INVALID_MATCH;
@@ -305,7 +305,7 @@ public:
 
 		if (err) {
 			auto mi = err > 0 ? std::max_element(std::begin(rs), std::end(rs)) - std::begin(rs)
-							 : std::min_element(std::begin(rs), std::end(rs)) - std::begin(rs);
+							  : std::min_element(std::begin(rs), std::end(rs)) - std::begin(rs);
 			is[mi] += err;
 			rs[mi] -= err;
 		}
