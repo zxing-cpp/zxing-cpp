@@ -62,10 +62,13 @@ public:
 		if (!_cache) {
 			BitMatrix res(width(), height());
 #ifdef ZX_FAST_BIT_STORAGE
-			auto src = _buffer.data(0, 0) + GreenIndex(_buffer._format);
-			for (int y = 0; y < res.height(); ++y)
-				for (auto& dst : res.row(y))
-					dst = *(src += _buffer._pixStride) <= _threshold;
+			for (int y = 0; y < res.height(); ++y) {
+				auto src = _buffer.data(0, y) + GreenIndex(_buffer._format);
+				for (auto& dst : res.row(y)) {
+					dst = *src <= _threshold;
+					src += _buffer._pixStride;
+				}
+			}
 #else
 			const int channel = GreenIndex(_buffer._format);
 			for (int y = 0; y < res.height(); ++y)
