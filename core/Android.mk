@@ -62,6 +62,8 @@ ONED_FILES := \
 	src/oned/ODCode128Reader.cpp \
 	src/oned/ODCode39Reader.cpp \
 	src/oned/ODCode93Reader.cpp \
+	src/oned/ODDataBarCommon.cpp \
+	src/oned/ODDataBarReader.cpp \
 	src/oned/ODEAN13Reader.cpp \
 	src/oned/ODEAN8Reader.cpp \
 	src/oned/ODEANManufacturerOrgSupport.cpp \
