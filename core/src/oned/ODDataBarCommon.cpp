@@ -79,7 +79,7 @@ bool ReadDataCharacterRaw(const PatternView& view, int numModules, bool reversed
 
 	for (int i : {odd, evn}) {
 		int err = i == odd ? (oddSumErr | oddParityErr) : (evnSumErr | evnParityErr);
-		int mi = err > 0 ? std::max_element(rem[i].begin(), rem[i].end()) - rem[i].begin()
+		int mi = err < 0 ? std::max_element(rem[i].begin(), rem[i].end()) - rem[i].begin()
 						 : std::min_element(rem[i].begin(), rem[i].end()) - rem[i].begin();
 		res[i][mi] -= err;
 	};
