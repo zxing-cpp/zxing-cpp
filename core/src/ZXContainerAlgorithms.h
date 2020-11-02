@@ -24,7 +24,7 @@
 namespace ZXing {
 
 template <typename Container, typename Value>
-auto Find(const Container& c, const Value& v) -> decltype(std::begin(c)) {
+auto Find(Container& c, const Value& v) -> decltype(std::begin(c)) {
 	return std::find(std::begin(c), std::end(c), v);
 }
 
