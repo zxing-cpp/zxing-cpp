@@ -103,7 +103,7 @@ public:
 	bool shift(int n)
 	{
 		_data += n;
-		return isValid();
+		return _data + _size <= _end;
 	}
 
 	bool skipPair()
@@ -113,8 +113,7 @@ public:
 
 	bool skipSymbol()
 	{
-		_data += _size;
-		return isValid();
+		return shift(_size);
 	}
 
 	bool skipSingle(int maxWidth)
