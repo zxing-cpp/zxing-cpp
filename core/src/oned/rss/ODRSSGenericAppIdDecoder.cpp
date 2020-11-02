@@ -464,7 +464,11 @@ GenericAppIdDecoder::DecodeAllCodes(const BitArray& bits, int pos, std::string& 
 			std::string parsedFields;
 			auto status = FieldParser::ParseFieldsInGeneralPurpose(info.newString, parsedFields);
 			if (StatusIsError(status)) {
-				return status;
+				if (result.empty() && remaining.empty()){
+					result = info.newString;
+					return DecodeStatus::NoError;
+				} else
+					return status;
 			}
 			result += parsedFields;
 			if (info.isRemaining()) {
