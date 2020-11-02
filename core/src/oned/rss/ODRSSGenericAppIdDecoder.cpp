@@ -377,6 +377,8 @@ ParseNumericBlock(const BitArray& bits, ParsingState& state, std::string& buffer
 {
 	while (IsStillNumeric(bits, state.position)) {
 		DecodedNumeric numeric = DecodeNumeric(bits, state.position);
+		if (!numeric.isValid())
+			break;
 		state.position = numeric.newPosition;
 
 		if (numeric.isFirstDigitFNC1()) {

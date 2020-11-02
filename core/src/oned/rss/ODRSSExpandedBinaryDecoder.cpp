@@ -108,8 +108,12 @@ static void AI01EncodeCompressedWeight(std::string& buffer, const BitArray& bits
 static std::string
 DecodeAI01AndOtherAIs(const BitArray& bits)
 {
-	static const int HEADER_SIZE = 1 + 1 + 2; //first bit encodes the linkage flag,
-													  //the second one is the encodation method, and the other two are for the variable length
+	static const int HEADER_SIZE = 1 + 1 + 2; // first bit encodes the linkage flag, the second one is the encodation
+											  // method, and the other two are for the variable length
+
+	if (bits.size() < HEADER_SIZE + 44)
+		return {};
+
 	std::string buffer;
 	buffer.append("(01)");
 	int initialGtinPosition = Size(buffer);
@@ -120,7 +124,7 @@ DecodeAI01AndOtherAIs(const BitArray& bits)
 	if (StatusIsOK(GenericAppIdDecoder::DecodeAllCodes(bits, HEADER_SIZE + 44, buffer))) {
 		return buffer;
 	}
-	return std::string();
+	return {};
 }
 
 static std::string
