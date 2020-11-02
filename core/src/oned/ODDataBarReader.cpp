@@ -30,8 +30,9 @@
 #include <iomanip>
 #include <unordered_set>
 
-namespace ZXing {
-namespace OneD {
+namespace ZXing::OneD {
+
+using namespace DataBar;
 
 DataBarReader::DataBarReader(const DecodeHints&) {}
 DataBarReader::~DataBarReader() = default;
@@ -41,30 +42,20 @@ Result DataBarReader::decodeRow(int, const BitArray&, std::unique_ptr<RowReader:
 	return Result(DecodeStatus::FormatError);
 }
 
-inline bool IsFinderPattern(int a, int b, int c, int d, int e)
+static bool IsCharacterPair(PatternView v, int modsLeft, int modsRight)
 {
-	//  a,b,c,d,e, g | sum(a..e) = 15
-	//  ------------
-	//  1,1,2
-	//	| | |,1,1, 1
-	//	3,8,9
-
-	// use only pairs of bar+space to limit effect of poor threshold:
-	// b+c can be 10, 11 or 12 modules, d+e is always 2
-	int w = 2 * (b + c), n = d + e;
-	// the offsets (5 and 2) are there to reduce quantization effects for small module sizes
-	// TODO: review after switch to sub-pixel bar width calculation
-	return (w + 5 > 9 * n) && (w - 5 < 13 * n) && (b < 5 + 9 * d) && (c < 5 + 10 * e) && (a < 2 + 4 * e) && (4 * a > n);
-};
-
-inline bool IsLeftPair(const PatternView& v)
-{
-	return IsFinderPattern(v[8], v[9], v[10], v[11], v[12]) && IsGuard(v[-1], v[11]) && IsCharacterPair(v, 16, 15);
+	float modSizeRef = ModSizeFinder(v);
+	return IsCharacter(LeftChar(v), modsLeft, modSizeRef) && IsCharacter(RightChar(v), modsRight, modSizeRef);
 }
 
-inline bool IsRightPair(const PatternView& v)
+static bool IsLeftPair(const PatternView& v)
 {
-	return IsFinderPattern(v[12], v[11], v[10], v[9], v[8]) && IsGuard(v[9], v[21]) && IsCharacterPair(v, 15, 16);
+	return IsFinder(v[8], v[9], v[10], v[11], v[12]) && IsGuard(v[-1], v[11]) && IsCharacterPair(v, 16, 15);
+}
+
+static bool IsRightPair(const PatternView& v)
+{
+	return IsFinder(v[12], v[11], v[10], v[9], v[8]) && IsGuard(v[9], v[21]) && IsCharacterPair(v, 15, 16);
 }
 
 static Character ReadDataCharacter(const PatternView& view, bool outsideChar, bool rightPair)
@@ -116,50 +107,46 @@ static Character ReadDataCharacter(const PatternView& view, bool outsideChar, bo
 
 int ParseFinderPattern(const PatternView& view, bool reversed)
 {
-	constexpr float MAX_AVG_VARIANCE        = 0.2f;
-	constexpr float MAX_INDIVIDUAL_VARIANCE = 0.45f;
-	constexpr FixedPattern<5, 15> FINDER_PATTERNS[] = {
-		{3,8,2,1,1},
-		{3,5,5,1,1},
-		{3,3,7,1,1},
-		{3,1,9,1,1},
-		{2,7,4,1,1},
-		{2,5,6,1,1},
-		{2,3,8,1,1},
-		{1,5,7,1,1},
-		{1,3,9,1,1},
-	};
+	static constexpr std::array<FixedPattern<5, 15>, 10> FINDER_PATTERNS = {{
+		{3, 8, 2, 1, 1},
+		{3, 5, 5, 1, 1},
+		{3, 3, 7, 1, 1},
+		{3, 1, 9, 1, 1},
+		{2, 7, 4, 1, 1},
+		{2, 5, 6, 1, 1},
+		{2, 3, 8, 1, 1},
+		{1, 5, 7, 1, 1},
+		{1, 3, 9, 1, 1},
+	}};
+
 	// TODO: c++20 constexpr inversion from FIND_PATTERN?
-	constexpr FixedPattern<5, 15> REVERSED_FINDER_PATTERNS[] = {
+	static constexpr std::array<FixedPattern<5, 15>, 10> REVERSED_FINDER_PATTERNS = {{
 		{1, 1, 2, 8, 3}, {1, 1, 5, 5, 3}, {1, 1, 7, 3, 3}, {1, 1, 9, 1, 3}, {1, 1, 4, 7, 2},
 		{1, 1, 6, 5, 2}, {1, 1, 8, 3, 2}, {1, 1, 7, 5, 1}, {1, 1, 9, 3, 1},
-	};
+	}};
 
-	return RowReader::DecodeDigit(view.subView(0, 5), reversed ? REVERSED_FINDER_PATTERNS : FINDER_PATTERNS,
-								  MAX_AVG_VARIANCE, MAX_INDIVIDUAL_VARIANCE, true);
+	return ParseFinderPattern(view, reversed, FINDER_PATTERNS, REVERSED_FINDER_PATTERNS);
 }
-
-constexpr int PAIR_SIZE = 8 + 5 + 8;
 
 static Pair ReadPair(const PatternView& view, bool rightPair)
 {
-	if (int pattern = ParseFinderPattern(view.subView(8, 5), rightPair); pattern != -1)
-		if (auto outside = ReadDataCharacter(view.subView(rightPair ? 13 : 0, 8), true, rightPair))
-			if (auto inside = ReadDataCharacter(view.subView(rightPair ? 0 : 13, 8), false, rightPair)) {
+	if (int pattern = ParseFinderPattern(Finder(view), rightPair))
+		if (auto outside = ReadDataCharacter(rightPair ? RightChar(view) : LeftChar(view), true, rightPair))
+			if (auto inside = ReadDataCharacter(rightPair ? LeftChar(view) : RightChar(view), false, rightPair)) {
 				// include left and right guards
 				int xStart = view.pixelsInFront() - (rightPair ? 0 : view[-1] + std::min(view[-2], view[-1]));
-				int xStop  = view.pixelsTillEnd() + (rightPair ? view[PAIR_SIZE] + view[PAIR_SIZE + 1] : 0);
-				Character character = {1597 * outside.value + inside.value, outside.checksum + 4 * inside.checksum};
-				return {character, pattern, xStart, xStop};
+				int xStop  = view.pixelsTillEnd() + (rightPair ? view[FULL_PAIR_SIZE] + view[FULL_PAIR_SIZE + 1] : 0);
+				return {outside, inside, pattern, xStart, xStop};
 			}
 
 	return {};
 }
 
-static bool CheckChecksum(Pair leftPair, Pair rightPair)
+static bool ChecksumIsValid(Pair leftPair, Pair rightPair)
 {
-	int a = (leftPair.checksum + 16 * rightPair.checksum) % 79;
-	int b = 9 * leftPair.finder + rightPair.finder;
+	auto checksum = [](Pair p) { return p.left.checksum + 4 * p.right.checksum; };
+	int a = (checksum(leftPair) + 16 * checksum(rightPair)) % 79;
+	int b = 9 * (std::abs(leftPair.finder) - 1) + (std::abs(rightPair.finder) - 1);
 	if (b > 72)
 		b--;
 	if (b > 8)
@@ -169,7 +156,8 @@ static bool CheckChecksum(Pair leftPair, Pair rightPair)
 
 static std::string ConstructText(Pair leftPair, Pair rightPair)
 {
-	auto res = 4537077LL * leftPair.value + rightPair.value;
+	auto value = [](Pair p) { return 1597 * p.left.value + p.right.value; };
+	auto res = 4537077LL * value(leftPair) + value(rightPair);
 	std::ostringstream txt;
 	txt << std::setw(13) << std::setfill('0') << res;
 	txt << GTIN::ComputeCheckDigit(txt.str());
@@ -203,12 +191,12 @@ Result DataBarReader::decodePattern(int rowNumber, const PatternView& view,
 		state.reset(new State);
 	auto* prevState = static_cast<State*>(state.get());
 
-	auto next = view.subView(0, PAIR_SIZE);
+	auto next = view.subView(0, FULL_PAIR_SIZE);
 	// yes: the first view we test is at index 1 (black bar at 0 would be the guard pattern)
 	while (next.shift(1)) {
 		if (IsLeftPair(next)) {
 			if (auto leftPair = ReadPair(next, false)) {
-				leftPair.rowNumber = rowNumber;
+				leftPair.y = rowNumber;
 				prevState->leftPairs.insert(leftPair);
 				next.skipSymbol();
 				next.shift(-1);
@@ -217,7 +205,7 @@ Result DataBarReader::decodePattern(int rowNumber, const PatternView& view,
 
 		if (next.shift(1) && IsRightPair(next)) {
 			if (auto rightPair = ReadPair(next, true)) {
-				rightPair.rowNumber = rowNumber;
+				rightPair.y = rowNumber;
 				prevState->rightPairs.insert(rightPair);
 			}
 		}
@@ -225,21 +213,12 @@ Result DataBarReader::decodePattern(int rowNumber, const PatternView& view,
 
 	for (const auto& leftPair : prevState->leftPairs)
 		for (const auto& rightPair : prevState->rightPairs)
-			if (CheckChecksum(leftPair, rightPair))
-			{
-				Position p = leftPair.rowNumber == rightPair.rowNumber
-								 ? Line(leftPair.rowNumber, leftPair.xStart, leftPair.xStop)
-								 : Position{{leftPair.xStart, leftPair.rowNumber},
-											{leftPair.xStop, leftPair.rowNumber},
-											{rightPair.xStop, rightPair.rowNumber},
-											{rightPair.xStart, rightPair.rowNumber}};
-				return {TextDecoder::FromLatin1(ConstructText(leftPair, rightPair)), std::move(p),
-						BarcodeFormat::DataBar};
-			}
+			if (ChecksumIsValid(leftPair, rightPair))
+				return {TextDecoder::FromLatin1(ConstructText(leftPair, rightPair)),
+						EstimatePosition(leftPair, rightPair), BarcodeFormat::DataBar};
 #endif
 
 	return Result(DecodeStatus::NotFound);
 }
 
-} // OneD
-} // ZXing
+} // namespace ZXing::OneD

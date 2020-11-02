@@ -229,6 +229,8 @@ if (BUILD_READERS)
         src/oned/ODDataBarCommon.cpp
         src/oned/ODDataBarReader.h
         src/oned/ODDataBarReader.cpp
+        src/oned/ODDataBarExpandedReader.h
+        src/oned/ODDataBarExpandedReader.cpp
         src/oned/ODEAN8Reader.h
         src/oned/ODEAN8Reader.cpp
         src/oned/ODEAN13Reader.h

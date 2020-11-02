@@ -21,6 +21,7 @@
 #include "ODCode93Reader.h"
 #include "ODCode128Reader.h"
 #include "ODDataBarReader.h"
+#include "ODDataBarExpandedReader.h"
 #include "ODITFReader.h"
 #include "ODCodabarReader.h"
 #include "ODRSS14Reader.h"
@@ -60,12 +61,14 @@ Reader::Reader(const DecodeHints& hints) :
 #ifdef ZX_USE_NEW_ROW_READERS
 	if (formats.testFlags(BarcodeFormat::DataBar))
 		_readers.emplace_back(new DataBarReader(hints));
+	if (formats.testFlags(BarcodeFormat::DataBarExpanded))
+		_readers.emplace_back(new DataBarExpandedReader(hints));
 #else
 	if (formats.testFlag(BarcodeFormat::DataBar))
 		_readers.emplace_back(new RSS14Reader());
-#endif
 	if (formats.testFlag(BarcodeFormat::DataBarExpanded))
 		_readers.emplace_back(new RSSExpandedReader());
+#endif
 }
 
 Reader::~Reader() = default;

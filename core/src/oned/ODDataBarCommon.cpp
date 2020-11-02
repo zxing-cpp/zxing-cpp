@@ -16,11 +16,7 @@
 
 #include "ODDataBarCommon.h"
 
-namespace ZXing {
-namespace OneD {
-
-// apparently the spec calls numbers at even indices 'odd'!?!
-constexpr int odd = 0, evn = 1;
+namespace ZXing::OneD::DataBar {
 
 template <typename T>
 struct OddEven
@@ -28,6 +24,8 @@ struct OddEven
 	T odd = {}, evn = {};
 	T& operator[](int i) { return i & 1 ? evn : odd; }
 };
+
+using Array4F = std::array<float, 4>;
 
 bool ReadDataCharacterRaw(const PatternView& view, int numModules, bool reversed, Array4I& oddPattern,
 						  Array4I& evnPattern)
@@ -53,6 +51,7 @@ bool ReadDataCharacterRaw(const PatternView& view, int numModules, bool reversed
 	int maxSum = numModules - minSum;
 	int oddSum = Reduce(res.odd);
 	int evnSum = Reduce(res.evn);
+
 	int sumErr = oddSum + evnSum - numModules;
 	// sum < min -> negative error; sum > max -> positive error
 	int oddSumErr = std::min(0, oddSum - (minSum + (numModules == 15))) + std::max(0, oddSum - maxSum);
@@ -60,6 +59,13 @@ bool ReadDataCharacterRaw(const PatternView& view, int numModules, bool reversed
 
 	int oddParityErr = (oddSum & 1) == (numModules > 15);
 	int evnParityErr = (evnSum & 1) == (numModules < 17);
+
+#if 0
+	// the 'signal improving' strategy of trying to fix off-by-one errors in the sum or parity leads to a massively
+	// increased likelyhood of false positives / misreads especially with expanded codes that are composed of many
+	// pairs. the combinatorial explosion of posible pair combinations (see FindValidSequence) results in many possible
+	// sequences with valid checksums. It can slightly lower the minimum required resolution to detect something at all
+	// but the introduced error rate is clearly not worth it.
 
 	if ((sumErr == 0 && oddParityErr != evnParityErr) || (std::abs(sumErr) == 1 && oddParityErr == evnParityErr) ||
 		std::abs(sumErr) > 1 || std::abs(oddSumErr) > 1 || std::abs(evnSumErr) > 1)
@@ -77,15 +83,28 @@ bool ReadDataCharacterRaw(const PatternView& view, int numModules, bool reversed
 	if (oddParityErr * oddSumErr < 0 || evnParityErr * evnSumErr < 0)
 		return {};
 
+	// apparently the spec calls numbers at even indices 'odd'!?!
+	constexpr int odd = 0, evn = 1;
 	for (int i : {odd, evn}) {
 		int err = i == odd ? (oddSumErr | oddParityErr) : (evnSumErr | evnParityErr);
 		int mi = err < 0 ? std::max_element(rem[i].begin(), rem[i].end()) - rem[i].begin()
 						 : std::min_element(rem[i].begin(), rem[i].end()) - rem[i].begin();
 		res[i][mi] -= err;
-	};
+	}
 
 	return true;
+#else
+	// instead, we ignore any character that is not exactly fitting the requirements
+	return !(sumErr || oddSumErr || evnSumErr || oddParityErr || evnParityErr);
+#endif
 }
 
-} // OneD
-} // ZXing
+Position EstimatePosition(const Pair& first, const Pair& last)
+{
+	if (first.y == last.y)
+		return Line(first.y, first.xStart, last.xStop);
+	else
+		return Position{{first.xStart, first.y}, {first.xStop, first.y}, {last.xStop, last.y}, {last.xStart, last.y}};
+}
+
+} // namespace ZXing::OneD::DataBar
