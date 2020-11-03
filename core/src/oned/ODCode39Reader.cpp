@@ -213,16 +213,16 @@ Code39Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 	return Result(result, rowNumber, xStart, xStop, BarcodeFormat::Code39);
 }
 
-// pattern where '1' means 'narrow' and '0' means wide
-constexpr auto START_PATTERN = FixedSparcePattern<CHAR_LEN, 6>{1, 0, 1, 1, 0, 1, 0, 1, 1};
-// quite zone is half the width of a character symbol
-constexpr float QUITE_ZONE_SCALE = 0.5f;
-
 Result Code39Reader::decodePattern(int rowNumber, const PatternView& row, std::unique_ptr<RowReader::DecodingState>&) const
 {
 	// minimal number of characters that must be present (including start, stop and checksum characters)
 	int minCharCount = _usingCheckDigit ? 4 : 3;
 	auto isStartOrStopSymbol = [](char c) { return c == '*'; };
+
+	// provide the indices with the narrow bars/spaces wich have to be equally wide
+	constexpr auto START_PATTERN = FixedSparcePattern<CHAR_LEN, 6>{0, 2, 3, 5, 7, 8};
+	// quite zone is half the width of a character symbol
+	constexpr float QUITE_ZONE_SCALE = 0.5f;
 
 	auto next = FindLeftGuard(row, minCharCount * CHAR_LEN, START_PATTERN, QUITE_ZONE_SCALE * 12);
 	if (!next.isValid())

@@ -197,13 +197,10 @@ template <bool RELAXED_THRESHOLD = false, int N, int SUM>
 float IsPattern(const PatternView& view, const FixedPattern<N, SUM, true>& pattern, int spaceInPixel = 0,
 				float minQuiteZone = 0, float moduleSizeRef = 0.f)
 {
-	// note: fully optimized with at compile-time known constants in pattern, this code
-	// should be as fast as IsPattern in case it is called with a pattern without '0's.
-	// As of gcc-9, this is not the case.
-
+	// pattern contains the indices with the bars/spaces that need to be equally wide
 	int width = 0;
-	for (int x = 0; x < N; ++x)
-		width += view[x] * (pattern[x] > 0);
+	for (int x = 0; x < SUM; ++x)
+		width += view[pattern[x]];
 
 	const float moduleSize = (float)width / SUM;
 
@@ -217,14 +214,9 @@ float IsPattern(const PatternView& view, const FixedPattern<N, SUM, true>& patte
 	// TODO: review once we have upsampling in the binarizer in place.
 	const float threshold = moduleSizeRef * (0.5f + RELAXED_THRESHOLD * 0.25f) + 0.5f;
 
-	for (int x = 0; x < N; ++x)
-		if (pattern[x]) {
-			if (std::abs(view[x] - pattern[x] * moduleSizeRef) > threshold)
-				return 0;
-		} else {
-			if (view[x] < 1.5f * moduleSizeRef)
-				return 0;
-		}
+	for (int x = 0; x < SUM; ++x)
+		if (std::abs(view[pattern[x]] - moduleSizeRef) > threshold)
+			return 0;
 
 	return moduleSize;
 }
