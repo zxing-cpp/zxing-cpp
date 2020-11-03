@@ -161,24 +161,26 @@ Code93Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<Deco
 
 constexpr int CHAR_LEN = 6;
 constexpr int CHAR_SUM = 9;
-constexpr auto START_PATTERN = FixedPattern<CHAR_LEN, CHAR_SUM>{1, 1, 1, 1, 4, 1};
 // quite zone is half the width of a character symbol
 constexpr float QUITE_ZONE_SCALE = 0.5f;
 
-Result Code93Reader::decodePattern(int rowNumber, const PatternView &row, std::unique_ptr<DecodingState> &) const
+static bool IsStartGuard(const PatternView& window, int spaceInPixel)
+{
+	// The complete start pattern is FixedPattern<CHAR_LEN, CHAR_SUM>{1, 1, 1, 1, 4, 1}.
+	// Use only the first 4 elements which results in more than a 2x speedup. This is counter-intuitive since we save at
+	// most 1/3rd of the loop iterations in FindPattern. The reason might be a sucessfull vectorization with the limited
+	// pattern size that is missed otherwise. We check for the remaining 2 slots for plausibility of the 4:1 ratio.
+	return IsPattern(window, FixedPattern<4, 4>{1, 1, 1, 1}, spaceInPixel, QUITE_ZONE_SCALE * 12) &&
+		   window[4] > 3 * window[5] - 2 && RowReader::OneToFourBitPattern<CHAR_LEN, CHAR_SUM>(window) == 0x15E;
+}
+
+Result Code93Reader::decodePattern(int rowNumber, const PatternView& row, std::unique_ptr<DecodingState>&) const
 {
 	// minimal number of characters that must be present (including start, stop, checksum and 1 payload characters)
 	int minCharCount = 5;
-	auto isStartOrStopSymbol = [](char c) { return c == '*'; };
-	auto decodePattern       = [](const PatternView& view) {
-        return LookupBitPattern(OneToFourBitPattern<CHAR_LEN, CHAR_SUM>(view), CHARACTER_ENCODINGS, ALPHABET);
-	};
 
-	auto next = FindLeftGuard(row, minCharCount * CHAR_LEN, START_PATTERN, QUITE_ZONE_SCALE * CHAR_SUM);
+	auto next = FindLeftGuard<CHAR_LEN>(row, minCharCount * CHAR_LEN, IsStartGuard);
 	if (!next.isValid())
-		return Result(DecodeStatus::NotFound);
-
-	if (!isStartOrStopSymbol(decodePattern(next))) // read off the start pattern
 		return Result(DecodeStatus::NotFound);
 
 	int xStart = next.pixelsInFront();
@@ -191,10 +193,10 @@ Result Code93Reader::decodePattern(int rowNumber, const PatternView &row, std::u
 		if (!next.skipSymbol())
 			return Result(DecodeStatus::NotFound);
 
-		txt += decodePattern(next);
+		txt += LookupBitPattern(OneToFourBitPattern<CHAR_LEN, CHAR_SUM>(next), CHARACTER_ENCODINGS, ALPHABET);
 		if (txt.back() < 0)
 			return Result(DecodeStatus::NotFound);
-	} while (!isStartOrStopSymbol(txt.back()));
+	} while (txt.back() != '*');
 
 	txt.pop_back(); // remove asterisk
 
