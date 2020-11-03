@@ -317,11 +317,15 @@ public:
 		return pattern;
 	}
 
+	/**
+	 * @brief Lookup the pattern in the table and return the character in alphabet at the same index.
+	 * @returns 0 if pattern is not found. Used to be -1 but that fails on systems where char is unsigned.
+	 */
 	template<typename INDEX, typename ALPHABET>
 	static char LookupBitPattern(int pattern, const INDEX& table, const ALPHABET& alphabet)
 	{
 		int i = IndexOf(table, pattern);
-		return i == -1 ? -1 : alphabet[i];
+		return i == -1 ? 0 : alphabet[i];
 	}
 
 	template<typename INDEX, typename ALPHABET>

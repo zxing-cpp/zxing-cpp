@@ -194,7 +194,7 @@ Result Code93Reader::decodePattern(int rowNumber, const PatternView& row, std::u
 			return Result(DecodeStatus::NotFound);
 
 		txt += LookupBitPattern(OneToFourBitPattern<CHAR_LEN, CHAR_SUM>(next), CHARACTER_ENCODINGS, ALPHABET);
-		if (txt.back() < 0)
+		if (txt.back() == 0)
 			return Result(DecodeStatus::NotFound);
 	} while (txt.back() != '*');
 

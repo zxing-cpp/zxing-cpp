@@ -345,7 +345,7 @@ CodabarReader::decodePattern(int rowNumber, const PatternView& row, std::unique_
 			return Result(DecodeStatus::NotFound);
 
 		txt += DecodeNarrowWidePattern(next, CHARACTER_ENCODINGS, ALPHABET);
-		if (txt.back() < 0)
+		if (txt.back() == 0)
 			return Result(DecodeStatus::NotFound);
 	} while (!isStartOrStopSymbol(txt.back()));
 
