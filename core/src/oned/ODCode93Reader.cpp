@@ -171,7 +171,8 @@ static bool IsStartGuard(const PatternView& window, int spaceInPixel)
 	// most 1/3rd of the loop iterations in FindPattern. The reason might be a sucessfull vectorization with the limited
 	// pattern size that is missed otherwise. We check for the remaining 2 slots for plausibility of the 4:1 ratio.
 	return IsPattern(window, FixedPattern<4, 4>{1, 1, 1, 1}, spaceInPixel, QUITE_ZONE_SCALE * 12) &&
-		   window[4] > 3 * window[5] - 2 && RowReader::OneToFourBitPattern<CHAR_LEN, CHAR_SUM>(window) == 0x15E;
+		   window[4] > 3 * window[5] - 2 &&
+		   RowReader::OneToFourBitPattern<CHAR_LEN, CHAR_SUM>(window) == ASTERISK_ENCODING;
 }
 
 Result Code93Reader::decodePattern(int rowNumber, const PatternView& row, std::unique_ptr<DecodingState>&) const
