@@ -1,6 +1,7 @@
 /*
 * Copyright 2016 Nu-book Inc.
 * Copyright 2016 ZXing authors
+* Copyright 2020 Axel Waggershauser
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -15,73 +16,27 @@
 * limitations under the License.
 */
 
-#include "DMBitMatrixParser.h"
 #include "DMDefaultPlacement.h"
 #include "DMVersion.h"
 #include "BitMatrix.h"
 #include "ByteArray.h"
 #include "BitArray.h"
 
-#include <cstdint>
-#include <stdexcept>
+namespace ZXing::DataMatrix {
 
-namespace ZXing {
-namespace DataMatrix {
-
-//private final BitMatrix mappingBitMatrix;
-//private final BitMatrix readMappingMatrix;
-//private final Version version;
-
-const Version*
-BitMatrixParser::ReadVersion(const BitMatrix& bits)
+// Extracts the data bits from a BitMatrix that contains alignment patterns.
+static BitMatrix ExtractDataBits(const Version& version, const BitMatrix& bits)
 {
-	return Version::VersionForDimensions(bits.height(), bits.width());
-}
+	BitMatrix res(version.dataWidth(), version.dataHeight());
 
-/**
-* <p>Extracts the data region from a {@link BitMatrix} that contains
-* alignment patterns.</p>
-*
-* @param bitMatrix Original {@link BitMatrix} with alignment patterns
-* @return BitMatrix that has the alignment patterns removed
-*/
-static BitMatrix ExtractDataRegion(const Version& version, const BitMatrix& bitMatrix)
-{
-	int symbolSizeRows = version.symbolSizeRows();
-	int symbolSizeColumns = version.symbolSizeColumns();
-
-	if (bitMatrix.height() != symbolSizeRows) {
-		throw std::invalid_argument("Dimension of bitMarix must match the version size");
-	}
-
-	int dataRegionSizeRows = version.dataRegionSizeRows();
-	int dataRegionSizeColumns = version.dataRegionSizeColumns();
-
-	int numDataRegionsRow = symbolSizeRows / dataRegionSizeRows;
-	int numDataRegionsColumn = symbolSizeColumns / dataRegionSizeColumns;
-
-	int sizeDataRegionRow = numDataRegionsRow * dataRegionSizeRows;
-	int sizeDataRegionColumn = numDataRegionsColumn * dataRegionSizeColumns;
-
-	BitMatrix result(sizeDataRegionColumn, sizeDataRegionRow);
-	for (int dataRegionRow = 0; dataRegionRow < numDataRegionsRow; ++dataRegionRow) {
-		int dataRegionRowOffset = dataRegionRow * dataRegionSizeRows;
-		for (int dataRegionColumn = 0; dataRegionColumn < numDataRegionsColumn; ++dataRegionColumn) {
-			int dataRegionColumnOffset = dataRegionColumn * dataRegionSizeColumns;
-			for (int i = 0; i < dataRegionSizeRows; ++i) {
-				int readRowOffset = dataRegionRow * (dataRegionSizeRows + 2) + 1 + i;
-				int writeRowOffset = dataRegionRowOffset + i;
-				for (int j = 0; j < dataRegionSizeColumns; ++j) {
-					int readColumnOffset = dataRegionColumn * (dataRegionSizeColumns + 2) + 1 + j;
-					if (bitMatrix.get(readColumnOffset, readRowOffset)) {
-						int writeColumnOffset = dataRegionColumnOffset + j;
-						result.set(writeColumnOffset, writeRowOffset);
-					}
-				}
-			}
+	for (int y = 0; y < res.height(); ++y)
+		for (int x = 0; x < res.width(); ++x) {
+			int ix = x + 1 + (x / version.dataBlockWidth) * 2;
+			int iy = y + 1 + (y / version.dataBlockHeight) * 2;
+			res.set(x, y, bits.get(ix, iy));
 		}
-	}
-	return result;
+
+	return res;
 }
 
 /**
@@ -90,17 +45,14 @@ static BitMatrix ExtractDataRegion(const Version& version, const BitMatrix& bitM
 * Data Matrix Code.</p>
 *
 * @return bytes encoded within the Data Matrix Code
-* @throws FormatException if the exact number of bytes expected is not read
 */
-ByteArray
-BitMatrixParser::ReadCodewords(const BitMatrix& bits)
+ByteArray CodewordsFromBitMatrix(const BitMatrix& bits)
 {
-	const Version* version = ReadVersion(bits);
-	if (version == nullptr) {
+	const Version* version = VersionForDimensionsOf(bits);
+	if (version == nullptr)
 		return {};
-	}
 
-	BitMatrix dataBits = ExtractDataRegion(*version, bits);
+	BitMatrix dataBits = ExtractDataBits(*version, bits);
 
 	ByteArray result(version->totalCodewords());
 	auto codeword = result.begin();
@@ -119,5 +71,4 @@ BitMatrixParser::ReadCodewords(const BitMatrix& bits)
 	return result;
 }
 
-} // DataMatrix
-} // ZXing
+} // namespace ZXing::DataMatrix

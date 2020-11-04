@@ -34,8 +34,7 @@
 #include <functional>
 #include <stdexcept>
 
-namespace ZXing {
-namespace DataMatrix {
+namespace ZXing::DataMatrix {
 
 static const uint8_t PAD = 129;
 static const uint8_t UPPER_SHIFT = 235;
@@ -874,8 +873,7 @@ static bool EndsWith(const std::wstring& s, const std::wstring& ss)
 	return s.length() > ss.length() && s.compare(s.length() - ss.length(), ss.length(), ss) == 0;
 }
 
-ByteArray
-HighLevelEncoder::Encode(const std::wstring& msg)
+ByteArray Encode(const std::wstring& msg)
 {
 	return Encode(msg, SymbolShape::NONE, -1, -1, -1, -1);
 }
@@ -891,8 +889,7 @@ HighLevelEncoder::Encode(const std::wstring& msg)
 * @param maxSize the maximum symbol size constraint or null for no constraint
 * @return the encoded message (the char values range from 0 to 255)
 */
-ByteArray
-HighLevelEncoder::Encode(const std::wstring& msg, SymbolShape shape, int minWdith, int minHeight, int maxWidth, int maxHeight)
+ByteArray Encode(const std::wstring& msg, SymbolShape shape, int minWdith, int minHeight, int maxWidth, int maxHeight)
 {
 	//the codewords 0..255 are encoded as Unicode characters
 	//Encoder[] encoders = {
@@ -949,5 +946,4 @@ HighLevelEncoder::Encode(const std::wstring& msg, SymbolShape shape, int minWdit
 	return context.codewords();
 }
 
-} // DataMatrix
-} // ZXing
+} // namespace ZXing::DataMatrix

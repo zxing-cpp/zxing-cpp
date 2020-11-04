@@ -21,16 +21,15 @@
 #include <cstdint>
 #include <vector>
 
-namespace ZXing {
-namespace DataMatrix {
+namespace ZXing::DataMatrix {
 
-BitMatrix DefaultPlacement::Place(const ByteArray& codewords, int numCols, int numRows)
+BitMatrix BitMatrixFromCodewords(const ByteArray& codewords, int width, int height)
 {
-	BitMatrix result(numCols, numRows);
+	BitMatrix result(width, height);
 
 	auto codeword = codewords.begin();
 
-	auto visited = VisitMatrix(numRows, numCols, [&codeword, &result](const BitPosArray& bitPos) {
+	auto visited = VisitMatrix(height, width, [&codeword, &result](const BitPosArray& bitPos) {
 		// Places the 8 bits of a corner or the utah-shaped symbol character in the result matrix
 		uint8_t mask = 0x80;
 		for (auto& p : bitPos) {
@@ -45,13 +44,12 @@ BitMatrix DefaultPlacement::Place(const ByteArray& codewords, int numCols, int n
 		return {};
 
 	// Lastly, if the lower righthand corner is untouched, fill in fixed pattern
-	if (!visited.get(numCols - 1, numRows - 1)) {
-		result.set(numCols - 1, numRows - 1);
-		result.set(numCols - 2, numRows - 2);
+	if (!visited.get(width - 1, height - 1)) {
+		result.set(width - 1, height - 1);
+		result.set(width - 2, height - 2);
 	}
 
 	return result;
 }
 
-} // DataMatrix
-} // ZXing
+} // namespace ZXing::DataMatrix

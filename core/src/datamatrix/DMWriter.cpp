@@ -29,8 +29,7 @@
 #include <string>
 #include <utility>
 
-namespace ZXing {
-namespace DataMatrix {
+namespace ZXing::DataMatrix {
 
 /**
 * Encode the given symbol info to a bit matrix.
@@ -103,24 +102,23 @@ Writer::encode(const std::wstring& contents, int width, int height) const
 	}
 
 	//1. step: Data encodation
-	auto encoded = HighLevelEncoder::Encode(contents, _shapeHint, _minWidth, _minHeight, _maxWidth, _maxHeight);
+	auto encoded = Encode(contents, _shapeHint, _minWidth, _minHeight, _maxWidth, _maxHeight);
 	const SymbolInfo* symbolInfo = SymbolInfo::Lookup(Size(encoded), _shapeHint, _minWidth, _minHeight, _maxWidth, _maxHeight);
 	if (symbolInfo == nullptr) {
 		throw std::invalid_argument("Can't find a symbol arrangement that matches the message. Data codewords: " + std::to_string(encoded.size()));
 	}
 
 	//2. step: ECC generation
-	ECEncoder::EncodeECC200(encoded, *symbolInfo);
+	EncodeECC200(encoded, *symbolInfo);
 
 	//3. step: Module placement in Matrix
-	BitMatrix placement = DefaultPlacement::Place(encoded, symbolInfo->symbolDataWidth(), symbolInfo->symbolDataHeight());
+	BitMatrix symbolData = BitMatrixFromCodewords(encoded, symbolInfo->symbolDataWidth(), symbolInfo->symbolDataHeight());
 
 	//4. step: low-level encoding
-	BitMatrix result = EncodeLowLevel(placement, *symbolInfo);
+	BitMatrix result = EncodeLowLevel(symbolData, *symbolInfo);
 
 	//5. step: scale-up to requested size, minimum required quite zone is 1
 	return Inflate(std::move(result), width, height, _quiteZone);
 }
 
-} // DataMatrix
-} // ZXing
+} // namespace ZXing::DataMatrix

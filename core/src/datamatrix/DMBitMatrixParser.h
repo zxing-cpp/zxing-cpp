@@ -23,14 +23,7 @@ class ByteArray;
 
 namespace DataMatrix {
 
-class Version;
+ByteArray CodewordsFromBitMatrix(const BitMatrix& bits);
 
-class BitMatrixParser
-{
-public:
-	static ByteArray ReadCodewords(const BitMatrix& bits);
-	static const Version* ReadVersion(const BitMatrix& bits);
-};
-
-} // DataMatrix
-} // ZXing
+} // namespace DataMatrix
+} // namespace ZXing

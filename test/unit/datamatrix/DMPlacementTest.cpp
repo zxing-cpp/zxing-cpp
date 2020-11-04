@@ -23,8 +23,6 @@
 #include <sstream>
 #include <iterator>
 
-  //private static final Pattern SPACE = Pattern.compile(" ");
-
 using namespace ZXing;
 using namespace ZXing::DataMatrix;
 
@@ -41,7 +39,7 @@ namespace {
 TEST(DMPlacementTest, Placement)
 {
     auto codewords = Unvisualize("66 74 78 66 74 78 129 56 35 102 192 96 226 100 156 1 107 221"); //"AIMAIM" encoded
-    auto matrix = DefaultPlacement::Place(codewords, 12, 12);
+    auto matrix = BitMatrixFromCodewords(codewords, 12, 12);
     std::string expected =
         "011100001111\n"
         "001010101000\n"

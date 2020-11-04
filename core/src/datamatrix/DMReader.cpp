@@ -28,8 +28,7 @@
 #include <utility>
 #include <vector>
 
-namespace ZXing {
-namespace DataMatrix {
+namespace ZXing::DataMatrix {
 
 Reader::Reader(const DecodeHints& hints)
 	: _tryRotate(hints.tryRotate()), _tryHarder(hints.tryHarder()), _isPure(hints.isPure())
@@ -56,9 +55,7 @@ Reader::decode(const BinaryBitmap& image) const
 	if (!detectorResult.isValid())
 		return Result(DecodeStatus::NotFound);
 
-	return Result(Decoder::Decode(detectorResult.bits()), std::move(detectorResult).position(),
-				  BarcodeFormat::DataMatrix);
+	return Result(Decode(detectorResult.bits()), std::move(detectorResult).position(), BarcodeFormat::DataMatrix);
 }
 
-} // DataMatrix
-} // ZXing
+} // namespace ZXing::DataMatrix

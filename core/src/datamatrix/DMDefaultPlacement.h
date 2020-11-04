@@ -22,8 +22,7 @@
 #include <array>
 #include <cstddef>
 
-namespace ZXing {
-namespace DataMatrix {
+namespace ZXing::DataMatrix {
 
 struct BitPos
 {
@@ -124,11 +123,6 @@ BitMatrix VisitMatrix(int numRows, int numCols, VisitFunc visit)
 /**
 * Symbol Character Placement Program. Adapted from Annex M.1 in ISO/IEC 16022:2000(E).
 */
-class DefaultPlacement
-{
-public:
-	static BitMatrix Place(const ByteArray& codewords, int numcols, int numrows);
-};
+BitMatrix BitMatrixFromCodewords(const ByteArray& codewords, int width, int height);
 
-} // DataMatrix
-} // ZXing
+} // namespace ZXing::DataMatrix

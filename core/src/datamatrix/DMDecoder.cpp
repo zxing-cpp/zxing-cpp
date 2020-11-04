@@ -18,10 +18,12 @@
 #include "DMDecoder.h"
 #include "DMBitMatrixParser.h"
 #include "DMDataBlock.h"
+#include "DMVersion.h"
 #include "DecoderResult.h"
 #include "ReedSolomonDecoder.h"
 #include "GenericGF.h"
 #include "BitSource.h"
+#include "BitMatrix.h"
 #include "DecodeStatus.h"
 #include "TextDecoder.h"
 #include "ZXContainerAlgorithms.h"
@@ -35,8 +37,7 @@
 #include <utility>
 #include <vector>
 
-namespace ZXing {
-namespace DataMatrix {
+namespace ZXing::DataMatrix {
 
 /**
 * <p>Data Matrix Codes can encode text as bits in one of several modes, and can use multiple modes
@@ -545,19 +546,6 @@ DecoderResult Decode(ByteArray&& bytes)
 
 } // namespace DecodedBitStreamParser
 
-//public DecoderResult decode(boolean[][] image) throws FormatException, ChecksumException{
-//	int dimension = image.length;
-//BitMatrix bits = new BitMatrix(dimension);
-//for (int i = 0; i < dimension; i++) {
-//	for (int j = 0; j < dimension; j++) {
-//		if (image[i][j]) {
-//			bits.set(j, i);
-//		}
-//	}
-//}
-//return decode(bits);
-//}
-
 /**
 * <p>Given data and error-correction codewords received, possibly corrupted by errors, attempts to
 * correct the errors in-place using Reed-Solomon error correction.</p>
@@ -582,37 +570,33 @@ CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
 	return true;
 }
 
-DecoderResult Decoder::Decode(const BitMatrix& bits)
+DecoderResult Decode(const BitMatrix& bits)
 {
 	// Construct a parser and read version, error-correction level
-	const Version* version = BitMatrixParser::ReadVersion(bits);
+	const Version* version = VersionForDimensionsOf(bits);
 	if (version == nullptr) {
 		return DecodeStatus::FormatError;
 	}
 
 	// Read codewords
-	ByteArray codewords = BitMatrixParser::ReadCodewords(bits);
+	ByteArray codewords = CodewordsFromBitMatrix(bits);
 	if (codewords.empty())
 		return DecodeStatus::FormatError;
 
 	// Separate into data blocks
-	std::vector<DataBlock> dataBlocks = DataBlock::GetDataBlocks(codewords, *version);
+	std::vector<DataBlock> dataBlocks = GetDataBlocks(codewords, *version);
 	if (dataBlocks.empty())
 		return DecodeStatus::FormatError;
 
 	// Count total number of data bytes
-	int totalBytes = 0;
-	for (const DataBlock& db : dataBlocks) {
-		totalBytes += db.numDataCodewords();
-	}
-	ByteArray resultBytes(totalBytes);
+	ByteArray resultBytes(TransformReduce(dataBlocks, 0, [](const auto& db) { return db.numDataCodewords; }));
 
 	// Error-correct and copy data blocks together into a stream of bytes
-	int dataBlocksCount = Size(dataBlocks);
+	const int dataBlocksCount = Size(dataBlocks);
 	for (int j = 0; j < dataBlocksCount; j++) {
 		auto& dataBlock = dataBlocks[j];
-		ByteArray& codewordBytes = dataBlock.codewords();
-		int numDataCodewords = dataBlock.numDataCodewords();
+		ByteArray& codewordBytes = dataBlock.codewords;
+		int numDataCodewords = dataBlock.numDataCodewords;
 		if (!CorrectErrors(codewordBytes, numDataCodewords))
 			return DecodeStatus::ChecksumError;
 
@@ -626,5 +610,4 @@ DecoderResult Decoder::Decode(const BitMatrix& bits)
 	return DecodedBitStreamParser::Decode(std::move(resultBytes));
 }
 
-} // DataMatrix
-} // ZXing
+} // namespace ZXing::DataMatrix
