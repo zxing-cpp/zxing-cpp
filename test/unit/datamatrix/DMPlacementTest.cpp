@@ -17,7 +17,7 @@
 #include "gtest/gtest.h"
 #include "BitMatrixIO.h"
 #include "ByteArray.h"
-#include "datamatrix/DMDefaultPlacement.h"
+#include "datamatrix/DMBitLayout.h"
 
 #include <algorithm>
 #include <sstream>

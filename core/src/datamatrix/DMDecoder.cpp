@@ -16,7 +16,7 @@
 */
 
 #include "DMDecoder.h"
-#include "DMBitMatrixParser.h"
+#include "DMBitLayout.h"
 #include "DMDataBlock.h"
 #include "DMVersion.h"
 #include "DecoderResult.h"

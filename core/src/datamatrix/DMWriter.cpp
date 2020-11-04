@@ -20,7 +20,7 @@
 #include "DMHighLevelEncoder.h"
 #include "DMSymbolInfo.h"
 #include "DMECEncoder.h"
-#include "DMDefaultPlacement.h"
+#include "DMBitLayout.h"
 #include "BitMatrix.h"
 #include "ByteArray.h"
 #include "ZXStrConvWorkaround.h"

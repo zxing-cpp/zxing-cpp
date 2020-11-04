@@ -1,7 +1,6 @@
 #pragma once
 /*
-* Copyright 2016 Nu-book Inc.
-* Copyright 2016 ZXing authors
+* Copyright 2020 Axel Waggershauser
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -23,6 +22,7 @@ class ByteArray;
 
 namespace DataMatrix {
 
+BitMatrix BitMatrixFromCodewords(const ByteArray& codewords, int width, int height);
 ByteArray CodewordsFromBitMatrix(const BitMatrix& bits);
 
 } // namespace DataMatrix

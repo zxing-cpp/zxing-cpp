@@ -1,7 +1,7 @@
-#pragma once
 /*
 * Copyright 2016 Huy Cuong Nguyen
-* Copyright 2006 Jeremias Maerki.
+* Copyright 2006 Jeremias Maerki
+* Copyright 2020 Axel Waggersauser
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -17,7 +17,9 @@
 */
 
 #include "BitMatrix.h"
+#include "BitArray.h"
 #include "ByteArray.h"
+#include "DMVersion.h"
 
 #include <array>
 #include <cstddef>
@@ -123,6 +125,80 @@ BitMatrix VisitMatrix(int numRows, int numCols, VisitFunc visit)
 /**
 * Symbol Character Placement Program. Adapted from Annex M.1 in ISO/IEC 16022:2000(E).
 */
-BitMatrix BitMatrixFromCodewords(const ByteArray& codewords, int width, int height);
+BitMatrix BitMatrixFromCodewords(const ByteArray& codewords, int width, int height)
+{
+	BitMatrix result(width, height);
+
+	auto codeword = codewords.begin();
+
+	auto visited = VisitMatrix(height, width, [&codeword, &result](const BitPosArray& bitPos) {
+		// Places the 8 bits of a corner or the utah-shaped symbol character in the result matrix
+		uint8_t mask = 0x80;
+		for (auto& p : bitPos) {
+			if (*codeword & mask)
+				result.set(p.col, p.row);
+			mask >>= 1;
+		}
+		++codeword;
+	});
+
+	if (codeword != codewords.end())
+		return {};
+
+	// Lastly, if the lower righthand corner is untouched, fill in fixed pattern
+	if (!visited.get(width - 1, height - 1)) {
+		result.set(width - 1, height - 1);
+		result.set(width - 2, height - 2);
+	}
+
+	return result;
+}
+
+// Extracts the data bits from a BitMatrix that contains alignment patterns.
+static BitMatrix ExtractDataBits(const Version& version, const BitMatrix& bits)
+{
+	BitMatrix res(version.dataWidth(), version.dataHeight());
+
+	for (int y = 0; y < res.height(); ++y)
+		for (int x = 0; x < res.width(); ++x) {
+			int ix = x + 1 + (x / version.dataBlockWidth) * 2;
+			int iy = y + 1 + (y / version.dataBlockHeight) * 2;
+			res.set(x, y, bits.get(ix, iy));
+		}
+
+	return res;
+}
+
+/**
+* <p>Reads the bits in the {@link BitMatrix} representing the mapping matrix (No alignment patterns)
+* in the correct order in order to reconstitute the codewords bytes contained within the
+* Data Matrix Code.</p>
+*
+* @return bytes encoded within the Data Matrix Code
+*/
+ByteArray CodewordsFromBitMatrix(const BitMatrix& bits)
+{
+	const Version* version = VersionForDimensionsOf(bits);
+	if (version == nullptr)
+		return {};
+
+	BitMatrix dataBits = ExtractDataBits(*version, bits);
+
+	ByteArray result(version->totalCodewords());
+	auto codeword = result.begin();
+
+	VisitMatrix(dataBits.height(), dataBits.width(), [&codeword, &dataBits](const BitPosArray& bitPos) {
+		// Read the 8 bits of one of the special corner/utah symbols into the current codeword
+		*codeword = 0;
+		for (auto& p : bitPos)
+			AppendBit(*codeword, dataBits.get(p.col, p.row));
+		++codeword;
+	});
+
+	if (codeword != result.end())
+		return {};
+
+	return result;
+}
 
 } // namespace ZXing::DataMatrix

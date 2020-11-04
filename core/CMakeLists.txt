@@ -159,12 +159,11 @@ endif()
 
 
 set (DATAMATRIX_FILES
+    src/datamatrix/DMBitLayout.h
+    src/datamatrix/DMBitLayout.cpp
 )
 if (BUILD_READERS)
     set (DATAMATRIX_FILES ${DATAMATRIX_FILES}
-        src/datamatrix/DMBitMatrixParser.h
-        src/datamatrix/DMBitMatrixParser.cpp
-        src/datamatrix/DMECB.h
         src/datamatrix/DMDataBlock.h
         src/datamatrix/DMDataBlock.cpp
         src/datamatrix/DMDecoder.h
@@ -182,8 +181,6 @@ if (BUILD_WRITERS)
         src/datamatrix/DMECEncoder.h
         src/datamatrix/DMECEncoder.cpp
         src/datamatrix/DMEncoderContext.h
-        src/datamatrix/DMDefaultPlacement.h
-        src/datamatrix/DMDefaultPlacement.cpp
         src/datamatrix/DMHighLevelEncoder.h
         src/datamatrix/DMHighLevelEncoder.cpp
         src/datamatrix/DMSymbolInfo.h

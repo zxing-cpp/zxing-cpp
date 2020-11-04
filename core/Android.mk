@@ -44,7 +44,7 @@ AZTEC_FILES := \
 	src/aztec/AZReader.cpp
 
 DATAMATRIX_FILES :=	\
-	src/datamatrix/DMBitMatrixParser.cpp \
+	src/datamatrix/DMBitLayout.cpp \
 	src/datamatrix/DMDataBlock.cpp \
 	src/datamatrix/DMDecoder.cpp \
 	src/datamatrix/DMDetector.cpp \
