@@ -317,23 +317,13 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		});
 
 		runTests("codabar-1", "Codabar", 11, {
-#ifdef ZX_USE_NEW_ROW_READERS
 			{ 11, 11, 0   },
 			{ 11, 11, 180 },
-#else
-			{ 10, 10, 0   },
-			{ 10, 10, 180 },
-#endif
 		});
 
 		runTests("codabar-2", "Codabar", 4, {
-#ifdef ZX_USE_NEW_ROW_READERS
 			{ 3, 3, 0   },
 			{ 3, 3, 180 },
-#else
-			{ 2, 2, 0   },
-			{ 2, 2, 180 },
-#endif
 		});
 
 		runTests("code39-1", "Code39", 4, {
@@ -466,8 +456,8 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		});
 
 		runTests("rss14-2", "DataBar", 16, {
-			{ 7, 10, 1, 1, 0   },
-			{ 8, 10, 0, 1, 180 },
+			{ 8 , 10, 0   },
+			{ 10, 10, 180 },
 		});
 
 		runTests("rssexpanded-1", "DataBarExpanded", 32, {
@@ -570,10 +560,10 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		});
 
 		runTests("falsepositives-2", "None", 25, {
-			{ 0, 0, 0, 2, 0   },
-			{ 0, 0, 0, 2, 90  },
-			{ 0, 0, 0, 2, 180 },
-			{ 0, 0, 0, 2, 270 },
+			{ 0, 0, 0, 0, 0   },
+			{ 0, 0, 0, 0, 90  },
+			{ 0, 0, 0, 0, 180 },
+			{ 0, 0, 0, 0, 270 },
 		});
 		// clang-format on
 
