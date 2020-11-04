@@ -135,6 +135,8 @@ using Array4I = std::array<int, 4>;
 bool ReadDataCharacterRaw(const PatternView& view, int numModules, bool reversed, Array4I& oddPattern,
 						  Array4I& evnPattern);
 
+int GetValue(const Array4I& widths, int maxWidth, bool noNarrow);
+
 Position EstimatePosition(const Pair& first, const Pair& last);
 
 } // namespace ZXing::OneD::DataBar

@@ -19,8 +19,6 @@
 #include "ODDataBarReader.h"
 
 #include "ODDataBarCommon.h"
-#include "rss/ODRSSReaderHelper.h"
-
 #include "BarcodeFormat.h"
 #include "Result.h"
 #include "GTIN.h"
@@ -36,11 +34,6 @@ using namespace DataBar;
 
 DataBarReader::DataBarReader(const DecodeHints&) {}
 DataBarReader::~DataBarReader() = default;
-
-Result DataBarReader::decodeRow(int, const BitArray&, std::unique_ptr<RowReader::DecodingState>&) const
-{
-	return Result(DecodeStatus::FormatError);
-}
 
 static bool IsCharacterPair(PatternView v, int modsLeft, int modsRight)
 {
@@ -86,8 +79,8 @@ static Character ReadDataCharacter(const PatternView& view, bool outsideChar, bo
 		int group = (12 - oddSum) / 2;
 		int oddWidest = OUTSIDE_ODD_WIDEST[group];
 		int evnWidest = 9 - oddWidest;
-		int vOdd = RSS::ReaderHelper::GetRSSvalue(oddPattern, oddWidest, false);
-		int vEvn = RSS::ReaderHelper::GetRSSvalue(evnPattern, evnWidest, true);
+		int vOdd = GetValue(oddPattern, oddWidest, false);
+		int vEvn = GetValue(evnPattern, evnWidest, true);
 		int tEvn = OUTSIDE_EVEN_TOTAL_SUBSET[group];
 		int gSum = OUTSIDE_GSUM[group];
 		return {vOdd * tEvn + vEvn + gSum, checksumPortion};
@@ -97,8 +90,8 @@ static Character ReadDataCharacter(const PatternView& view, bool outsideChar, bo
 		int group = (10 - evnSum) / 2;
 		int oddWidest = INSIDE_ODD_WIDEST[group];
 		int evnWidest = 9 - oddWidest;
-		int vOdd = RSS::ReaderHelper::GetRSSvalue(oddPattern, oddWidest, true);
-		int vEvn = RSS::ReaderHelper::GetRSSvalue(evnPattern, evnWidest, false);
+		int vOdd = GetValue(oddPattern, oddWidest, true);
+		int vEvn = GetValue(evnPattern, evnWidest, false);
 		int tOdd = INSIDE_ODD_TOTAL_SUBSET[group];
 		int gSum = INSIDE_GSUM[group];
 		return {vEvn * tOdd + vOdd + gSum, checksumPortion};

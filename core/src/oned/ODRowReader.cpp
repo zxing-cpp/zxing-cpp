@@ -1,6 +1,5 @@
 /*
-* Copyright 2016 Nu-book Inc.
-* Copyright 2016 ZXing authors
+* Copyright 2020 Axel Waggershauser
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -19,29 +18,27 @@
 #include "Result.h"
 #include "BitArray.h"
 
-#include <cmath>
-#include <limits>
-#include <numeric>
 #include <memory>
 
-namespace ZXing {
-namespace OneD {
+namespace ZXing::OneD {
 
-Result
-RowReader::decodeSingleRow(int rowNumber, const BitArray& row) const
+Result RowReader::decodeSingleRow(int rowNumber, const BitArray& row) const
 {
 	std::unique_ptr<DecodingState> state;
-	return decodeRow(rowNumber, row, state);
+	PatternRow res;
+	auto li = row.begin();
+	auto i  = li;
+	if (*i)
+		res.push_back(0);
+	while ((i = row.getNextSetTo(i, !*i)) != row.end()) {
+		res.push_back(static_cast<PatternRow::value_type>(i - li));
+		li = i;
+	}
+	res.push_back(static_cast<PatternRow::value_type>(i - li));
+	if (*(i-1))
+		res.push_back(0);
+
+	return decodePattern(rowNumber, res, state);
 }
 
-Result RowReader::decodePattern(int, const PatternView&, std::unique_ptr<RowReader::DecodingState>&) const
-{
-#ifdef ZX_USE_NEW_ROW_READERS
-	return Result(DecodeStatus::_internal);
-#else
-	return Result(DecodeStatus::NotFound);
-#endif
-}
-
-} // OneD
-} // ZXing
+} // namespace ZXing::OneD

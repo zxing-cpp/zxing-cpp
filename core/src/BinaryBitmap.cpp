@@ -16,31 +16,7 @@
 
 #include "BinaryBitmap.h"
 
-#include "BitArray.h"
-#include "Pattern.h"
-
-#include <memory>
-#include <stdexcept>
-
 namespace ZXing {
 
-bool BinaryBitmap::getPatternRow(int y, PatternRow& res) const
-{
-	res.clear();
-	BitArray row;
-	getBlackRow(y, row);
-
-	auto li = row.begin();
-	auto i  = li;
-	if (*i)
-		res.push_back(0);
-	while ((i = row.getNextSetTo(i, !*i)) != row.end()) {
-		res.push_back(static_cast<PatternRow::value_type>(i - li));
-		li = i;
-	}
-	res.push_back(static_cast<PatternRow::value_type>(i - li));
-
-	return true;
-}
 
 } // ZXing

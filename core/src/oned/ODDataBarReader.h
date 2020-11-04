@@ -33,7 +33,6 @@ public:
 	explicit DataBarReader(const DecodeHints& hints);
 	~DataBarReader() override;
 
-	Result decodeRow(int, const BitArray&, std::unique_ptr<DecodingState>&) const override;
 	Result decodePattern(int rowNumber, const PatternView& row, std::unique_ptr<DecodingState>& state) const override;
 };
 

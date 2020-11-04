@@ -173,82 +173,9 @@ static int DetectStartCode(const C& c)
 	return bestVariance < MAX_AVG_VARIANCE ? bestCode : 0;
 }
 
-static BitArray::Range
-FindStartPattern(const BitArray& row, int* startCode)
-{
-	assert(startCode != nullptr);
-
-	using Counters = std::vector<int>;
-	Counters counters(Code128::CODE_PATTERNS[CODE_START_A].size());
-
-	return RowReader::FindPattern(
-	    row.getNextSet(row.begin()), row.end(), counters,
-		[&row, startCode](BitArray::Iterator begin, BitArray::Iterator end, const Counters& counters) -> bool {
-			// Look for whitespace before start pattern, >= 50% of width of start pattern
-			if (!row.hasQuiteZone(begin, static_cast<int>(-(end-begin)/2)))
-				return false;
-			return (*startCode = DetectStartCode(counters));
-	    });
-}
-
 Code128Reader::Code128Reader(const DecodeHints& hints) :
 	_convertFNC1(hints.assumeGS1())
 {
-}
-
-Result
-Code128Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>&) const
-{
-	int startCode = 0;
-	auto range = FindStartPattern(row, &startCode);
-	if (!range) {
-		return Result(DecodeStatus::NotFound);
-	}
-
-	int xStart = static_cast<int>(range.begin - row.begin());
-	ByteArray rawCodes;
-	rawCodes.reserve(20);
-	std::vector<int> counters(6, 0);
-	Raw2TxtDecoder raw2txt(startCode, _convertFNC1);
-
-	rawCodes.push_back(static_cast<uint8_t>(startCode));
-
-	while (true) {
-		range = RecordPattern(range.end, row.end(), counters);
-		if (!range)
-			return Result(DecodeStatus::NotFound);
-
-		// Decode another code from image
-		int code = RowReader::DecodeDigit(counters, Code128::CODE_PATTERNS, MAX_AVG_VARIANCE, MAX_INDIVIDUAL_VARIANCE);
-		if (code == -1)
-			return Result(DecodeStatus::NotFound);
-		if (code == CODE_STOP)
-			break;
-		if (code >= CODE_START_A)
-			return Result(DecodeStatus::FormatError);
-		if (!raw2txt.decode(code))
-			return Result(DecodeStatus::FormatError);
-
-		rawCodes.push_back(static_cast<uint8_t>(code));
-	}
-
-	// Check for ample whitespace following pattern, but, to do this we first need to remember that
-	// we fudged decoding CODE_STOP since it actually has 7 bars, not 6. There is a black bar left
-	// to read off. Would be slightly better to properly read. Here we just skip it:
-	range.end = row.getNextUnset(range.end);
-	if (rawCodes.empty() || !row.hasQuiteZone(range.end, range.size() / 2))
-		return Result(DecodeStatus::NotFound);
-
-	int checksum = rawCodes.front();
-	for (int i = 1; i < Size(rawCodes) - 1; ++i)
-		checksum += i * rawCodes[i];
-	// the last code is the checksum:
-	if (checksum % 103 != rawCodes.back()) {
-		return Result(DecodeStatus::ChecksumError);
-	}
-
-	int xStop = static_cast<int>(range.end - row.begin() - 1);
-	return Result(raw2txt.text(), rowNumber, xStart, xStop, BarcodeFormat::Code128, std::move(rawCodes));
 }
 
 // all 3 start patterns share the same 2-1-1 prefix

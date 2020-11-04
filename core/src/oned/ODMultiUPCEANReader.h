@@ -20,13 +20,8 @@
 #include "BarcodeFormat.h"
 #include "DecodeHints.h"
 
-#include <vector>
-#include <memory>
-
 namespace ZXing {
 namespace OneD {
-
-class UPCEANReader;
 
 /**
 * <p>A reader that can read all available UPC/EAN formats. If a caller wants to try to
@@ -41,11 +36,9 @@ public:
 	explicit MultiUPCEANReader(const DecodeHints& hints);
 	~MultiUPCEANReader() override;
 
-	Result decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const override;
 	Result decodePattern(int rowNumber, const PatternView& row, std::unique_ptr<DecodingState>&) const override;
 
 private:
-	std::vector<std::unique_ptr<const UPCEANReader>> _readers;
 	bool _canReturnUPCA = false;
 	DecodeHints _hints;
 };

@@ -17,14 +17,8 @@
 */
 
 #include "ODMultiUPCEANReader.h"
-#include "ODUPCEANReader.h"
 #include "ODUPCEANCommon.h"
 #include "ODEANManufacturerOrgSupport.h"
-#include "ODUPCEANExtensionSupport.h"
-#include "ODEAN13Reader.h"
-#include "ODEAN8Reader.h"
-#include "ODUPCAReader.h"
-#include "ODUPCEReader.h"
 #include "GTIN.h"
 #include "DecodeHints.h"
 #include "BarcodeFormat.h"
@@ -33,9 +27,10 @@
 #include "Result.h"
 
 #include <cmath>
+#include <sstream>
+#include <iomanip>
 
 namespace ZXing {
-
 namespace OneD {
 
 MultiUPCEANReader::MultiUPCEANReader(const DecodeHints& hints) : _hints(hints)
@@ -43,56 +38,9 @@ MultiUPCEANReader::MultiUPCEANReader(const DecodeHints& hints) : _hints(hints)
 	_canReturnUPCA = _hints.formats().empty() || _hints.hasFormat(BarcodeFormat::UPCA);
 	if (_hints.formats().empty())
 		_hints.setFormats(BarcodeFormat::Any);
-
-	if (_hints.hasFormat(BarcodeFormat::EAN13))
-		_readers.emplace_back(new EAN13Reader(hints));
-	// UPC-A is covered by EAN-13
-	else if (_hints.hasFormat(BarcodeFormat::UPCA))
-		_readers.emplace_back(new UPCAReader(hints));
-
-	if (_hints.hasFormat(BarcodeFormat::EAN8))
-		_readers.emplace_back(new EAN8Reader(hints));
-	if (_hints.hasFormat(BarcodeFormat::UPCE))
-		_readers.emplace_back(new UPCEReader(hints));
 }
 
 MultiUPCEANReader::~MultiUPCEANReader() = default;
-
-Result
-MultiUPCEANReader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>&) const
-{
-	// Compute this location once and reuse it on multiple implementations
-	auto range = UPCEANReader::FindStartGuardPattern(row);
-	if (!range)
-		return Result(DecodeStatus::NotFound);
-
-	for (auto& reader : _readers) {
-		Result result = reader->decodeRow(rowNumber, row, range);
-		if (!result.isValid())
-			continue;
-
-		// Special case: a 12-digit code encoded in UPC-A is identical to a "0"
-		// followed by those 12 digits encoded as EAN-13. Each will recognize such a code,
-		// UPC-A as a 12-digit string and EAN-13 as a 13-digit string starting with "0".
-		// Individually these are correct and their readers will both read such a code
-		// and correctly call it EAN-13, or UPC-A, respectively.
-		//
-		// In this case, if we've been looking for both types, we'd like to call it
-		// a UPC-A code. But for efficiency we only run the EAN-13 decoder to also read
-		// UPC-A. So we special case it here, and convert an EAN-13 result to a UPC-A
-		// result if appropriate.
-		//
-		// But, don't return UPC-A if UPC-A was not a requested format!
-		const std::wstring& resultText = result.text();
-		bool ean13MayBeUPCA = result.format() == BarcodeFormat::EAN13 && !resultText.empty() && resultText[0] == '0';
-		if (ean13MayBeUPCA && _canReturnUPCA) {
-			result.setText(resultText.substr(1));
-			result.setFormat(BarcodeFormat::UPCA);
-		}
-		return result;
-	}
-	return Result(DecodeStatus::NotFound);
-}
 
 constexpr int CHAR_LEN = 4;
 
@@ -120,11 +68,16 @@ constexpr float QUIET_ZONE_RIGHT = 6;
 static bool DecodeDigit(const PatternView& view, std::string& txt, int* lgPattern = nullptr)
 {
 #if 1
-	int bestMatch = lgPattern
-						? RowReader::DecodeDigit(view, UPCEANCommon::L_AND_G_PATTERNS, UPCEANReader::MAX_AVG_VARIANCE,
-												 UPCEANReader::MAX_INDIVIDUAL_VARIANCE, false)
-						: RowReader::DecodeDigit(view, UPCEANCommon::L_PATTERNS, UPCEANReader::MAX_AVG_VARIANCE,
-												 UPCEANReader::MAX_INDIVIDUAL_VARIANCE, false);
+	// These two values are critical for determining how permissive the decoding will be.
+	// We've arrived at these values through a lot of trial and error. Setting them any higher
+	// lets false positives creep in quickly.
+	static constexpr float MAX_AVG_VARIANCE = 0.48f;
+	static constexpr float MAX_INDIVIDUAL_VARIANCE = 0.7f;
+
+	int bestMatch = lgPattern ? RowReader::DecodeDigit(view, UPCEANCommon::L_AND_G_PATTERNS, MAX_AVG_VARIANCE,
+													   MAX_INDIVIDUAL_VARIANCE, false)
+							  : RowReader::DecodeDigit(view, UPCEANCommon::L_PATTERNS, MAX_AVG_VARIANCE,
+													   MAX_INDIVIDUAL_VARIANCE, false);
 	txt += '0' + (bestMatch % 10);
 	if (lgPattern)
 		AppendBit(*lgPattern, bestMatch >= 10);
@@ -285,6 +238,65 @@ static bool UPCE(PartialResult& res, PatternView begin)
 	return true;
 }
 
+namespace UPCEANExtension5Support
+{
+int ExtensionChecksum(const std::string& s)
+{
+	int length = Size(s);
+	int sum = 0;
+	for (int i = length - 2; i >= 0; i -= 2) {
+		sum += (int)s[i] - (int) '0';
+	}
+	sum *= 3;
+	for (int i = length - 1; i >= 0; i -= 2) {
+		sum += (int)s[i] - (int) '0';
+	}
+	sum *= 3;
+	return sum % 10;
+}
+
+std::string ParseExtension5String(const std::string& raw)
+{
+	std::string currency;
+	switch (raw.front()) {
+	case '0':
+	case '1':
+		currency = "\xa3";
+		break;
+	case '3': // AUS
+	case '4': // NZ
+	case '5': // US
+	case '6': // CA
+		currency = "$";
+		break;
+	case '9':
+		// Reference: http://www.jollytech.com
+		if (raw == "90000") {
+			// No suggested retail price
+			return std::string();
+		}
+		if (raw == "99991") {
+			// Complementary
+			return "0.00";
+		}
+		if (raw == "99990") {
+			return "Used";
+		}
+		// Otherwise... unknown currency?
+		currency = "";
+		break;
+	default:
+		currency = "";
+		break;
+	}
+	int rawAmount = std::stoi(raw.substr(1));
+	std::stringstream buf;
+	buf << currency << std::fixed << std::setprecision(2) << (float(rawAmount) / 100);
+	return buf.str();
+}
+
+} // UPCEANExtension5Support
+
 static bool Extension(PartialResult& res, PatternView begin, int digitCount)
 {
 	auto ext = begin.subView(0, 3 + digitCount * 4 + (digitCount - 1) * 2);
@@ -320,8 +332,6 @@ static bool Extension(PartialResult& res, PatternView begin, int digitCount)
 
 Result MultiUPCEANReader::decodePattern(int rowNumber, const PatternView& row, std::unique_ptr<RowReader::DecodingState>&) const
 {
-//	return Result(DecodeStatus::_internal);
-
 	const int minSize = 3 + 6*4 + 6; // UPC-E
 
 	auto begin = FindLeftGuard(row, minSize, END_PATTERN, QUIET_ZONE_LEFT);

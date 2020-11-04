@@ -110,46 +110,6 @@ static int EstimateBlackPoint(const std::array<int, LUMINANCE_BUCKETS>& buckets)
 	return bestValley << LUMINANCE_SHIFT;
 }
 
-// Applies simple sharpening to the row data to improve performance of the 1D Readers.
-bool
-GlobalHistogramBinarizer::getBlackRow(int y, BitArray& row) const
-{
-	int width = _source->width();
-	if (width < 3)
-		return false; // special casing the code below for a width < 3 makes no sense
-
-	if (row.size() != width)
-		row = BitArray(width);
-	else
-		row.clearBits();
-
-	ByteArray buffer;
-	const uint8_t* luminances = _source->getRow(y, buffer);
-	std::array<int, LUMINANCE_BUCKETS> buckets = {};
-	for (int x = 0; x < width; x++) {
-		buckets[luminances[x] >> LUMINANCE_SHIFT]++;
-	}
-	int blackPoint = EstimateBlackPoint(buckets);
-	if (blackPoint <= 0)
-		return false;
-
-	if (luminances[0] < blackPoint)
-		row.set(0);
-
-	int x = 1;
-	for (auto* p = luminances + 1; p < luminances + width - 1; ++p, ++x) {
-		// A simple -1 4 -1 box filter with a weight of 2.
-		if ((-*(p - 1) + (int(*p) * 4) - *(p + 1)) / 2 < blackPoint) {
-			row.set(x);
-		}
-	}
-
-	if (luminances[width - 1] < blackPoint)
-		row.set(width - 1);
-
-	return true;
-}
-
 bool GlobalHistogramBinarizer::getPatternRow(int y, PatternRow& res) const
 {
 	int width = _source->width();

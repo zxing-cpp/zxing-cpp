@@ -47,8 +47,6 @@ static const int CHARACTER_ENCODINGS[] = {
 
 static_assert(Size(ALPHABET) - 1 == Size(CHARACTER_ENCODINGS), "table size mismatch");
 
-static const int ASTERISK_ENCODING = 0x094;
-
 static const char PERCENTAGE_MAPPING[26] = {
 	'A' - 38, 'B' - 38, 'C' - 38, 'D' - 38, 'E' - 38,	// %A to %E map to control codes ESC to USep
 	'F' - 11, 'G' - 11, 'H' - 11, 'I' - 11, 'J' - 11,	// %F to %J map to ; < = > ?
@@ -60,72 +58,8 @@ static const char PERCENTAGE_MAPPING[26] = {
 
 using CounterContainer = std::array<int, 9>;
 
-// For efficiency, returns -1 on failure. Not throwing here saved as many as 700 exceptions
-// per image when using some of our blackbox images.
-static int
-ToNarrowWidePattern(const CounterContainer& counters)
-{
-	int numCounters = Size(counters);
-	int maxNarrowCounter = 0;
-	int wideCounters;
-	do {
-		int minCounter = std::numeric_limits<int>::max();
-		for (int i = 0; i < numCounters; ++i) {
-			if (counters[i] < minCounter && counters[i] > maxNarrowCounter) {
-				minCounter = counters[i];
-			}
-		}
-		maxNarrowCounter = minCounter;
-		wideCounters = 0;
-		int totalWideCountersWidth = 0;
-		int pattern = 0;
-		for (int i = 0; i < numCounters; ++i) {
-			if (counters[i] > maxNarrowCounter) {
-				pattern |= 1 << (numCounters - 1 - i);
-				wideCounters++;
-				totalWideCountersWidth += counters[i];
-			}
-		}
-		if (wideCounters == 3) {
-			// Found 3 wide counters, but are they close enough in width?
-			// We can perform a cheap, conservative check to see if any individual
-			// counter is more than 1.5 times the average:
-			for (int i = 0; i < numCounters && wideCounters > 0; ++i) {
-				if (counters[i] > maxNarrowCounter) {
-					wideCounters--;
-					// totalWideCountersWidth = 3 * average, so this checks if counter >= 3/2 * average
-					if ((counters[i] * 2) >= totalWideCountersWidth) {
-						return -1;
-					}
-				}
-			}
-			return pattern;
-		}
-	} while (wideCounters > 3);
-	return -1;
-}
-
-static BitArray::Range
-FindAsteriskPattern(const BitArray& row)
-{
-	CounterContainer counters;
-
-	return RowReader::FindPattern(
-	    row.getNextSet(row.begin()), row.end(), counters,
-	    [&row](BitArray::Iterator begin, BitArray::Iterator end, const CounterContainer& counters) {
-		    // Look for whitespace before start pattern, >= 50% of width of start pattern
-		    return row.hasQuiteZone(begin, static_cast<int>(-(end-begin)/2)) &&
-				ToNarrowWidePattern(counters) == ASTERISK_ENCODING;
-	    });
-}
-
 // each character has 5 bars and 4 spaces
 constexpr int CHAR_LEN = 9;
-
-inline bool IsStartOrStopChar(char c)
-{
-	return c == '*';
-}
 
 /** Decode the extended string in place. Return false if FormatError occured.
  * ctrl is either "$%/+" for code39 or "abcd" for code93. */
@@ -159,58 +93,6 @@ Code39Reader::Code39Reader(const DecodeHints& hints) :
 	_extendedMode(hints.tryCode39ExtendedMode()),
 	_usingCheckDigit(hints.assumeCode39CheckDigit())
 {
-}
-
-Result
-Code39Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>&) const
-{
-	auto range = FindAsteriskPattern(row);
-	if (!range)
-		return Result(DecodeStatus::NotFound);
-
-	int xStart = static_cast<int>(range.begin - row.begin());
-	CounterContainer theCounters = {};
-	std::string result;
-	result.reserve(20);
-
-	do {
-		// Read off white space
-		range = RecordPattern(row.getNextSet(range.end), row.end(), theCounters);
-		if (!range)
-			return Result(DecodeStatus::NotFound);
-
-		int pattern = OneD::ToNarrowWidePattern(theCounters);
-		if (pattern < 0)
-			return Result(DecodeStatus::NotFound);
-
-		int i = IndexOf(CHARACTER_ENCODINGS, pattern);
-		if (i < 0)
-			return Result(DecodeStatus::NotFound);
-
-		result += ALPHABET[i];
-	} while (result.back() != '*');
-
-	result.pop_back(); // remove asterisk
-
-	// Require at least one payload character and a quite zone of half the last pattern size.
-	if (result.size() < (_usingCheckDigit ? 2u : 1u) || !row.hasQuiteZone(range.end, range.size() / 2)) {
-		return Result(DecodeStatus::NotFound);
-	}
-
-	if (_usingCheckDigit) {
-		auto checkDigit = result.back();
-		result.pop_back();
-		int checksum = TransformReduce(result, 0, [](char c) { return IndexOf(ALPHABET, c); });
-		if (checkDigit != ALPHABET[checksum % 43]) {
-			return Result(DecodeStatus::ChecksumError);
-		}
-	}
-
-	if (_extendedMode && !DecodeExtendedCode39AndCode93(result, "$%/+"))
-		return Result(DecodeStatus::FormatError);
-
-	int xStop = static_cast<int>(range.end - row.begin() - 1);
-	return Result(result, rowNumber, xStart, xStop, BarcodeFormat::Code39);
 }
 
 Result Code39Reader::decodePattern(int rowNumber, const PatternView& row, std::unique_ptr<RowReader::DecodingState>&) const

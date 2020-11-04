@@ -19,7 +19,6 @@
 #include "ODDataBarExpandedReader.h"
 
 #include "ODDataBarCommon.h"
-#include "rss/ODRSSReaderHelper.h"
 #include "rss/ODRSSExpandedBinaryDecoder.h"
 
 #include "BarcodeFormat.h"
@@ -35,11 +34,6 @@ using namespace DataBar;
 
 DataBarExpandedReader::DataBarExpandedReader(const DecodeHints&) {}
 DataBarExpandedReader::~DataBarExpandedReader() = default;
-
-Result DataBarExpandedReader::decodeRow(int, const BitArray&, std::unique_ptr<RowReader::DecodingState>&) const
-{
-	return Result(DecodeStatus::FormatError);
-}
 
 static bool IsFinderPattern(int a, int b, int c, int d, int e)
 {
@@ -113,8 +107,8 @@ static Character ReadDataCharacter(const PatternView& view, int finder, bool rev
 	int group = (13 - oddSum) / 2;
 	int oddWidest = SYMBOL_WIDEST[group];
 	int evnWidest = 9 - oddWidest;
-	int vOdd = RSS::ReaderHelper::GetRSSvalue(oddCounts, oddWidest, true);
-	int vEvn = RSS::ReaderHelper::GetRSSvalue(evnCounts, evnWidest, false);
+	int vOdd = GetValue(oddCounts, oddWidest, true);
+	int vEvn = GetValue(evnCounts, evnWidest, false);
 	int tEvn = EVEN_TOTAL_SUBSET[group];
 	int gSum = GSUM[group];
 	int value = vOdd * tEvn + vEvn + gSum;

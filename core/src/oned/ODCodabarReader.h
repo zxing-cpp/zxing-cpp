@@ -34,7 +34,6 @@ class CodabarReader : public RowReader
 {
 public:
 	explicit CodabarReader(const DecodeHints& hints);
-	Result decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>& state) const override;
 	Result decodePattern(int rowNumber, const PatternView& row, std::unique_ptr<DecodingState>& state) const override;
 
 private:

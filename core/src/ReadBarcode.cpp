@@ -41,18 +41,28 @@ public:
 	int width() const override { return _buffer._width; }
 	int height() const override { return _buffer._height; }
 
-	bool getBlackRow(int y, BitArray& row) const override
+	bool getPatternRow(int y, PatternRow& res) const override
 	{
-		const int channel = GreenIndex(_buffer._format);
+		const int stride = _buffer._pixStride;
+		const uint8_t* begin = _buffer.data(0, y) + GreenIndex(_buffer._format);
+		const uint8_t* end = begin + _buffer._width * stride;
 
-		if (row.size() != width())
-			row = BitArray(width());
-		else
-			row.clearBits();
+		auto* lastPos = begin;
+		bool lastVal = false;
 
-		for (int x = 0; x < row.size(); ++x)
-			if (_buffer.data(x, y)[channel] <= _threshold)
-				row.set(x);
+		for (const uint8_t* p = begin; p < end; p += stride) {
+			bool val = *p <= _threshold;
+			if (val != lastVal) {
+				res.push_back(static_cast<PatternRow::value_type>(p - lastPos) / stride);
+				lastVal = val;
+				lastPos = p;
+			}
+		}
+
+		res.push_back(static_cast<PatternRow::value_type>(end - lastPos) / stride);
+
+		if (*(end - stride) <= _threshold)
+			res.push_back(0); // last value is number of white pixels, here 0
 
 		return true;
 	}

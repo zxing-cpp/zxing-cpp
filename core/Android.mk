@@ -65,26 +65,17 @@ ONED_FILES := \
 	src/oned/ODDataBarCommon.cpp \
 	src/oned/ODDataBarReader.cpp \
 	src/oned/ODDataBarExpandedReader.cpp \
-	src/oned/ODEAN13Reader.cpp \
-	src/oned/ODEAN8Reader.cpp \
 	src/oned/ODEANManufacturerOrgSupport.cpp \
 	src/oned/ODITFReader.cpp \
 	src/oned/ODMultiUPCEANReader.cpp \
-	src/oned/ODRSS14Reader.cpp \
-	src/oned/ODRSSExpandedReader.cpp \
 	src/oned/ODReader.cpp \
 	src/oned/ODRowReader.cpp \
-	src/oned/ODUPCAReader.cpp \
-    src/oned/ODUPCEANCommon.cpp \
-	src/oned/ODUPCEANExtensionSupport.cpp \
-	src/oned/ODUPCEANReader.cpp \
-	src/oned/ODUPCEReader.cpp
+    src/oned/ODUPCEANCommon.cpp
 
 ONED_RSS_FILES := \
 	src/oned/rss/ODRSSExpandedBinaryDecoder.cpp \
 	src/oned/rss/ODRSSFieldParser.cpp \
-	src/oned/rss/ODRSSGenericAppIdDecoder.cpp \
-	src/oned/rss/ODRSSReaderHelper.cpp
+	src/oned/rss/ODRSSGenericAppIdDecoder.cpp
 
 PDF417_FILES := \
 	src/pdf417/PDFBarcodeValue.cpp \

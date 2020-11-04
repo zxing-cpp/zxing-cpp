@@ -228,10 +228,6 @@ if (BUILD_READERS)
         src/oned/ODDataBarReader.cpp
         src/oned/ODDataBarExpandedReader.h
         src/oned/ODDataBarExpandedReader.cpp
-        src/oned/ODEAN8Reader.h
-        src/oned/ODEAN8Reader.cpp
-        src/oned/ODEAN13Reader.h
-        src/oned/ODEAN13Reader.cpp
         src/oned/ODEANManufacturerOrgSupport.h
         src/oned/ODEANManufacturerOrgSupport.cpp
         src/oned/ODITFReader.h
@@ -242,18 +238,6 @@ if (BUILD_READERS)
         src/oned/ODReader.cpp
         src/oned/ODRowReader.h
         src/oned/ODRowReader.cpp
-        src/oned/ODRSS14Reader.h
-        src/oned/ODRSS14Reader.cpp
-        src/oned/ODRSSExpandedReader.h
-        src/oned/ODRSSExpandedReader.cpp
-        src/oned/ODUPCAReader.h
-        src/oned/ODUPCAReader.cpp
-        src/oned/ODUPCEANExtensionSupport.h
-        src/oned/ODUPCEANExtensionSupport.cpp
-        src/oned/ODUPCEANReader.h
-        src/oned/ODUPCEANReader.cpp
-        src/oned/ODUPCEReader.h
-        src/oned/ODUPCEReader.cpp
     )
 endif()
 if (BUILD_WRITERS)
@@ -286,19 +270,12 @@ set (ONED_RSS_FILES
 )
 if (BUILD_READERS)
     set (ONED_RSS_FILES ${ONED_RSS_FILES}
-        src/oned/rss/ODRSSDataCharacter.h
         src/oned/rss/ODRSSExpandedBinaryDecoder.h
         src/oned/rss/ODRSSExpandedBinaryDecoder.cpp
-        src/oned/rss/ODRSSExpandedPair.h
-        src/oned/rss/ODRSSExpandedRow.h
         src/oned/rss/ODRSSFieldParser.h
         src/oned/rss/ODRSSFieldParser.cpp
-        src/oned/rss/ODRSSFinderPattern.h
         src/oned/rss/ODRSSGenericAppIdDecoder.h
         src/oned/rss/ODRSSGenericAppIdDecoder.cpp
-        src/oned/rss/ODRSSPair.h
-        src/oned/rss/ODRSSReaderHelper.h
-        src/oned/rss/ODRSSReaderHelper.cpp
     )
 endif()
 

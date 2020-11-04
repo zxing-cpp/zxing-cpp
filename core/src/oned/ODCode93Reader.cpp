@@ -53,35 +53,6 @@ static const int ASTERISK_ENCODING = 0x15E;
 
 using CounterContainer = std::array<int, 6>;
 
-static int
-ToPattern(const CounterContainer& counters)
-{
-	// each bar/space is 1-4 modules wide, the sum of all is 9 modules wide
-	int sum = Reduce(counters);
-	int pattern = 0;
-	for (int i = 0, count = Size(counters); i < count; ++i) {
-		int scaled = (counters[i] * 9 + (sum/2)) / sum; // non-float version of RoundToNearest(counters[i] * 9.0f / sum);
-		if (scaled < 1 || scaled > 4) {
-			return -1;
-		}
-		pattern <<= scaled;
-		pattern |= ~(0xffffffff << scaled) * (~i & 1);
-	}
-	return pattern;
-}
-
-static BitArray::Range
-FindAsteriskPattern(const BitArray& row)
-{
-	CounterContainer counters;
-
-	return RowReader::FindPattern(
-	    row.getNextSet(row.begin()), row.end(), counters,
-	    [](BitArray::Iterator, BitArray::Iterator, const CounterContainer& counters) {
-		    return ToPattern(counters) == ASTERISK_ENCODING;
-	    });
-}
-
 static bool
 CheckOneChecksum(const std::string& result, int checkPosition, int weightMax)
 {
@@ -105,59 +76,6 @@ CheckChecksums(const std::string& result)
 
 // forward declare here. see ODCode39Reader.cpp. Not put in header to not pollute the public facing API
 bool DecodeExtendedCode39AndCode93(std::string& encoded, const char ctrl[4]);
-
-Result
-Code93Reader::decodeRow(int rowNumber, const BitArray& row, std::unique_ptr<DecodingState>&) const
-{
-	auto range = FindAsteriskPattern(row);
-	if (!range)
-		return Result(DecodeStatus::NotFound);
-
-	int xStart = static_cast<int>(range.begin - row.begin());
-	CounterContainer theCounters = {};
-	std::string result;
-	result.reserve(20);
-
-	do {
-		// Read off white space
-		range = RecordPattern(row.getNextSet(range.end), row.end(), theCounters);
-		if (!range)
-			return Result(DecodeStatus::NotFound);
-
-		int pattern = ToPattern(theCounters);
-		if (pattern < 0)
-			return Result(DecodeStatus::NotFound);
-
-		int i = IndexOf(CHARACTER_ENCODINGS, pattern);
-		if (i < 0)
-			return Result(DecodeStatus::NotFound);
-
-		result += ALPHABET[i];
-	} while (result.back() != '*');
-
-	result.pop_back(); // remove asterisk
-
-	// Should be at least one more black module
-	if (range.end == row.end() || !*range.end) {
-		return Result(DecodeStatus::NotFound);
-	}
-
-	// Need at least 2 checksum + 1 payload characters
-	if (result.length() < 3)
-		return Result(DecodeStatus::NotFound);
-
-	if (!CheckChecksums(result))
-		return Result(DecodeStatus::ChecksumError);
-
-	// Remove checksum digits
-	result.resize(result.length() - 2);
-
-	if (!DecodeExtendedCode39AndCode93(result, "abcd"))
-		return Result(DecodeStatus::FormatError);
-
-	int xStop = static_cast<int>(range.end - row.begin() - 1);
-	return Result(result, rowNumber, xStart, xStop, BarcodeFormat::Code93);
-}
 
 constexpr int CHAR_LEN = 6;
 constexpr int CHAR_SUM = 9;
