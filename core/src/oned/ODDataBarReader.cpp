@@ -184,15 +184,14 @@ Result DataBarReader::decodePattern(int rowNumber, const PatternView& view,
 		state.reset(new State);
 	auto* prevState = static_cast<State*>(state.get());
 
-	auto next = view.subView(0, FULL_PAIR_SIZE);
+	auto next = view.subView(0, FULL_PAIR_SIZE + 2); // +2 reflects the guard pattern on the right
 	// yes: the first view we test is at index 1 (black bar at 0 would be the guard pattern)
 	while (next.shift(1)) {
 		if (IsLeftPair(next)) {
 			if (auto leftPair = ReadPair(next, false)) {
 				leftPair.y = rowNumber;
 				prevState->leftPairs.insert(leftPair);
-				next.skipSymbol();
-				next.shift(-1);
+				next.shift(FULL_PAIR_SIZE - 1);
 			}
 		}
 
