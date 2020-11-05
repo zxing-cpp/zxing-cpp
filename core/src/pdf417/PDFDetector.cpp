@@ -353,7 +353,7 @@ Detector::Detect(const BinaryBitmap& image, bool multiple, Result& result)
 		return DecodeStatus::NotFound;
 	}
 
-#if defined(ZX_USE_NEW_ROW_READERS) && defined(ZX_FAST_BIT_STORAGE)
+#if defined(ZX_FAST_BIT_STORAGE)
 	if (!HasStartPattern(*binImg))
 		return DecodeStatus::NotFound;
 #endif

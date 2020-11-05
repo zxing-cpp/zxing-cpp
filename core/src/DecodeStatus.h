@@ -15,8 +15,6 @@
 * limitations under the License.
 */
 
-#include "ZXConfig.h"
-
 namespace ZXing {
 
 enum class DecodeStatus
@@ -25,9 +23,6 @@ enum class DecodeStatus
 	NotFound,
 	FormatError,
 	ChecksumError,
-#ifdef ZX_USE_NEW_ROW_READERS
-	_internal // this is for internal/temporary use until all 1D readers support the new Pattern API
-#endif
 };
 
 inline bool StatusIsOK(DecodeStatus status)
