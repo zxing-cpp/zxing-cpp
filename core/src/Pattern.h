@@ -118,8 +118,7 @@ public:
 
 	bool skipSingle(int maxWidth)
 	{
-		_data += 1;
-		return _data <= _end && _data[-1] <= maxWidth;
+		return shift(1) && _data[-1] <= maxWidth;
 	}
 
 	void extend()
@@ -232,12 +231,16 @@ bool IsRightGuard(const PatternView& view, const FixedPattern<N, SUM, IS_SPARCE>
 template<int LEN, typename Pred>
 PatternView FindLeftGuard(const PatternView& view, int minSize, Pred isGuard)
 {
+	if (view.size() < minSize)
+		return {};
+
 	auto window = view.subView(0, LEN);
 	if (window.isAtFirstBar() && isGuard(window, std::numeric_limits<int>::max()))
 		return window;
 	for (auto end = view.end() - minSize; window.data() < end; window.skipPair())
 		if (isGuard(window, window[-1]))
 			return window;
+
 	return {};
 }
 
