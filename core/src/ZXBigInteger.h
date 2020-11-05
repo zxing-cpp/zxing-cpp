@@ -51,7 +51,7 @@ public:
 	std::string toString() const;
 	int toInt() const;
 
-	inline BigInteger& operator+=(BigInteger&& a) {
+	BigInteger& operator+=(BigInteger&& a) {
 		if (mag.empty())
 			*this = std::move(a);
 		else
@@ -59,19 +59,19 @@ public:
 		return *this;
 	}
 
-	friend inline BigInteger operator+(const BigInteger& a, const BigInteger& b) {
+	friend BigInteger operator+(const BigInteger& a, const BigInteger& b) {
 		BigInteger c;
 		BigInteger::Add(a, b, c);
 		return c;
 	}
 
-	friend inline BigInteger operator-(const BigInteger& a, const BigInteger& b) {
+	friend BigInteger operator-(const BigInteger& a, const BigInteger& b) {
 		BigInteger c;
 		BigInteger::Subtract(a, b, c);
 		return c;
 	}
 
-	friend inline BigInteger operator*(const BigInteger& a, const BigInteger& b) {
+	friend BigInteger operator*(const BigInteger& a, const BigInteger& b) {
 		BigInteger c;
 		BigInteger::Multiply(a, b, c);
 		return c;

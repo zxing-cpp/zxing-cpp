@@ -78,12 +78,12 @@ static int GetRotation(const std::array<int, 4>& sides, int length)
 	return -1;
 }
 
-inline static bool IsValidPoint(int x, int y, int imgWidth, int imgHeight)
+static bool IsValidPoint(int x, int y, int imgWidth, int imgHeight)
 {
 	return x >= 0 && x < imgWidth && y > 0 && y < imgHeight;
 }
 
-inline static bool IsValidPoint(const ResultPoint& point, int imgWidth, int imgHeight)
+static bool IsValidPoint(const ResultPoint& point, int imgWidth, int imgHeight)
 {
 	return IsValidPoint(RoundToNearest(point.x()), RoundToNearest(point.y()), imgWidth, imgHeight);
 }

@@ -67,44 +67,44 @@ static const uint8_t LATCHES[] = {
 	231, // LATCH_TO_BASE256,
 };
 
-static inline bool IsDigit(int ch)
+static bool IsDigit(int ch)
 {
 	return ch >= '0' && ch <= '9';
 }
 
-static inline bool IsExtendedASCII(int ch)
+static bool IsExtendedASCII(int ch)
 {
 	return ch >= 128 && ch <= 255;
 }
 
-static inline bool IsNativeC40(int ch)
+static bool IsNativeC40(int ch)
 {
 	return (ch == ' ') || (ch >= '0' && ch <= '9') || (ch >= 'A' && ch <= 'Z');
 }
 
-static inline bool IsNativeText(int ch)
+static bool IsNativeText(int ch)
 {
 	return (ch == ' ') || (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'z');
 }
 
-static inline bool IsX12TermSep(int ch)
+static bool IsX12TermSep(int ch)
 {
 	return (ch == '\r') //CR
 		|| (ch == '*')
 		|| (ch == '>');
 }
 
-static inline bool IsNativeX12(int ch)
+static bool IsNativeX12(int ch)
 {
 	return IsX12TermSep(ch) || (ch == ' ') || (ch >= '0' && ch <= '9') || (ch >= 'A' && ch <= 'Z');
 }
 
-static inline bool IsNativeEDIFACT(int ch)
+static bool IsNativeEDIFACT(int ch)
 {
 	return ch >= ' ' && ch <= '^';
 }
 
-static inline bool IsSpecialB256(int /*ch*/)
+static bool IsSpecialB256(int /*ch*/)
 {
 	return false; //TODO NOT IMPLEMENTED YET!!!
 }

@@ -144,7 +144,7 @@ struct PartialResult
 	bool isValid() const { return format != BarcodeFormat::None; }
 };
 
-inline bool _ret_false_debug_helper()
+bool _ret_false_debug_helper()
 {
 	return false;
 }

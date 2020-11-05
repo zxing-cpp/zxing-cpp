@@ -101,7 +101,7 @@ static const uint8_t ALOG[] = {
 	  3,   6,  12,  24,  48,  96, 192, 173, 119, 238, 241, 207, 179,  75, 150,   1,
 };
 
-static inline uint8_t mult(uint8_t a, uint8_t b)
+static uint8_t mult(uint8_t a, uint8_t b)
 {
 	if(a == 0 || b == 0)
 		return 0;

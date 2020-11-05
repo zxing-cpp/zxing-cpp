@@ -356,7 +356,7 @@ public:
 };
 
 template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
-inline T& AppendBit(T& val, bool bit)
+T& AppendBit(T& val, bool bit)
 {
 	return (val <<= 1) |= bit;
 }

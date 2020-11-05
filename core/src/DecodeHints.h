@@ -62,8 +62,8 @@ public:
 	{}
 
 #define ZX_PROPERTY(TYPE, GETTER, SETTER) \
-	inline TYPE GETTER() const noexcept { return _##GETTER; } \
-	inline DecodeHints& SETTER(TYPE v) { return _##GETTER = std::move(v), *this; }
+	TYPE GETTER() const noexcept { return _##GETTER; } \
+	DecodeHints& SETTER(TYPE v) { return _##GETTER = std::move(v), *this; }
 
 	/// Specify a set of BarcodeFormats that should be searched for, the default is all supported formats.
 	ZX_PROPERTY(BarcodeFormats, formats, setFormats)

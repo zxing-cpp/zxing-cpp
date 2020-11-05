@@ -31,7 +31,7 @@
 
 namespace testing {
 	namespace internal {
-		inline bool operator==(const std::string& a, const std::wstring& b) {
+		bool operator==(const std::string& a, const std::wstring& b) {
 			return a.length() == b.length() && std::equal(a.begin(), a.end(), b.begin());
 		}
 	}

@@ -309,7 +309,7 @@ static const short* EC_COEFFICIENTS[] = {EC_COEFFICIENTS_L0, EC_COEFFICIENTS_L1,
 * @param errorCorrectionLevel the error correction level (0-8)
 * @return the number of codewords generated for error correction
 */
-static inline int GetErrorCorrectionCodewordCount(int errorCorrectionLevel)
+static int GetErrorCorrectionCodewordCount(int errorCorrectionLevel)
 {
 	return 1 << (errorCorrectionLevel + 1);
 }

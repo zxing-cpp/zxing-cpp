@@ -71,7 +71,7 @@ static const char* DIGIT_TABLE[] = {
 	"CTRL_PS", " ", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ",", ".", "CTRL_UL", "CTRL_US"
 };
 
-inline static int TotalBitsInLayer(int layers, bool compact)
+static int TotalBitsInLayer(int layers, bool compact)
 {
 	return ((compact ? 88 : 112) + 16 * layers) * layers;
 }

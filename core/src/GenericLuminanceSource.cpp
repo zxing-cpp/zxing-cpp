@@ -32,7 +32,7 @@
 
 namespace ZXing {
 
-inline static uint8_t RGBToGray(unsigned r, unsigned g, unsigned b)
+static uint8_t RGBToGray(unsigned r, unsigned g, unsigned b)
 {
 	// This optimization is not necessary as the computation below is cheap enough.
 	//if (r == g && g == b) {

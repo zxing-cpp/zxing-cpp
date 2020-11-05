@@ -59,7 +59,7 @@ constexpr float QUITE_ZONE_SCALE = 0.5f;
 // some codabar generator allow the codabar string to be closed by every
 // character. This will cause lots of false positives!
 
-inline bool IsLeftGuard(const PatternView& view, int spaceInPixel)
+bool IsLeftGuard(const PatternView& view, int spaceInPixel)
 {
 	return spaceInPixel > view.sum() * QUITE_ZONE_SCALE &&
 		   Contains({0x1A, 0x29, 0x0B, 0x0E}, RowReader::NarrowWideBitPattern(view));

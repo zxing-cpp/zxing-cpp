@@ -38,12 +38,12 @@ public:
 		: Quadrilateral(Point(tl), Point(tr), Point(br), Point(bl))
 	{}
 
-	inline constexpr Point topLeft() const noexcept { return at(0); }
-	inline constexpr Point topRight() const noexcept { return at(1); }
-	inline constexpr Point bottomRight() const noexcept { return at(2); }
-	inline constexpr Point bottomLeft() const noexcept { return at(3); }
+	constexpr Point topLeft() const noexcept { return at(0); }
+	constexpr Point topRight() const noexcept { return at(1); }
+	constexpr Point bottomRight() const noexcept { return at(2); }
+	constexpr Point bottomLeft() const noexcept { return at(3); }
 
-	inline double orientation() const
+	double orientation() const
 	{
 		auto centerLine = (topRight() + bottomRight()) - (topLeft() + bottomLeft());
 		if (centerLine == Point{})

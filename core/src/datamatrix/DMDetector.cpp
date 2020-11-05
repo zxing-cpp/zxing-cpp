@@ -105,13 +105,13 @@ static ResultPointsAndTransitions TransitionsBetween(const BitMatrix& image, con
 	return ResultPointsAndTransitions{ &from, &to, transitions };
 }
 
-inline static bool IsValidPoint(const ResultPoint& p, int imgWidth, int imgHeight)
+static bool IsValidPoint(const ResultPoint& p, int imgWidth, int imgHeight)
 {
 	return p.x() >= 0 && p.x() < imgWidth && p.y() > 0 && p.y() < imgHeight;
 }
 
 template <typename T>
-inline static float RoundToNearestF(T x)
+static float RoundToNearestF(T x)
 {
 	return static_cast<float>(std::round(x));
 }

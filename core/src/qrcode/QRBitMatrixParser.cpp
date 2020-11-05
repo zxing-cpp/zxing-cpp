@@ -27,12 +27,12 @@
 namespace ZXing {
 namespace QRCode {
 
-inline bool getBit(const BitMatrix& bitMatrix, int x, int y, bool mirrored)
+static bool getBit(const BitMatrix& bitMatrix, int x, int y, bool mirrored)
 {
 	return mirrored ? bitMatrix.get(y, x) : bitMatrix.get(x, y);
 }
 
-static inline bool hasValidDimension(const BitMatrix& bitMatrix)
+static bool hasValidDimension(const BitMatrix& bitMatrix)
 {
 	int dimension = bitMatrix.height();
 	return dimension >= 21 && dimension <= 177 && (dimension % 4) == 1;
