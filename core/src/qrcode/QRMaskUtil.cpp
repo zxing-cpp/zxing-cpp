@@ -19,8 +19,8 @@
 
 #include <algorithm>
 #include <array>
-#include <cstdlib>
 #include <cassert>
+#include <cstdlib>
 
 namespace ZXing {
 namespace QRCode {

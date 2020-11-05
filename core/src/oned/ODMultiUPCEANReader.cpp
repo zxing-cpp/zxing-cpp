@@ -17,18 +17,19 @@
 */
 
 #include "ODMultiUPCEANReader.h"
-#include "ODUPCEANCommon.h"
-#include "ODEANManufacturerOrgSupport.h"
-#include "GTIN.h"
-#include "DecodeHints.h"
+
 #include "BarcodeFormat.h"
 #include "BitArray.h"
-#include "TextDecoder.h"
+#include "DecodeHints.h"
+#include "GTIN.h"
+#include "ODEANManufacturerOrgSupport.h"
+#include "ODUPCEANCommon.h"
 #include "Result.h"
+#include "TextDecoder.h"
 
 #include <cmath>
-#include <sstream>
 #include <iomanip>
+#include <sstream>
 
 namespace ZXing {
 namespace OneD {

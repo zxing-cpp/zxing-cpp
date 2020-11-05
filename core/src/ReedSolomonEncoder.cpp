@@ -16,11 +16,12 @@
 */
 
 #include "ReedSolomonEncoder.h"
+
 #include "GenericGF.h"
 
-#include <stdexcept>
 #include <algorithm>
 #include <iterator>
+#include <stdexcept>
 
 namespace ZXing {
 

@@ -15,8 +15,9 @@
 */
 
 #include "ODRowReader.h"
-#include "Result.h"
+
 #include "BitArray.h"
+#include "Result.h"
 
 #include <memory>
 

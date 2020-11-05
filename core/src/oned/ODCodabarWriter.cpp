@@ -16,6 +16,7 @@
 */
 
 #include "ODCodabarWriter.h"
+
 #include "ODWriterHelper.h"
 #include "ZXContainerAlgorithms.h"
 

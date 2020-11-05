@@ -18,15 +18,14 @@
 
 #include "ODDataBarExpandedReader.h"
 
-#include "ODDataBarCommon.h"
-#include "rss/ODRSSExpandedBinaryDecoder.h"
-
 #include "BarcodeFormat.h"
+#include "ODDataBarCommon.h"
 #include "Result.h"
 #include "TextDecoder.h"
+#include "rss/ODRSSExpandedBinaryDecoder.h"
 
-#include <vector>
 #include <map>
+#include <vector>
 
 namespace ZXing::OneD {
 

@@ -17,9 +17,10 @@
 */
 
 #include "ODCodabarReader.h"
-#include "Result.h"
+
 #include "BitArray.h"
 #include "DecodeHints.h"
+#include "Result.h"
 #include "ZXContainerAlgorithms.h"
 
 #include <array>

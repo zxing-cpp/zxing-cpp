@@ -16,10 +16,11 @@
 */
 
 #include "ODCode39Writer.h"
-#include "ODWriterHelper.h"
-#include "ZXContainerAlgorithms.h"
-#include "TextEncoder.h"
+
 #include "CharacterSet.h"
+#include "ODWriterHelper.h"
+#include "TextEncoder.h"
+#include "ZXContainerAlgorithms.h"
 #include "ZXStrConvWorkaround.h"
 
 #include <array>

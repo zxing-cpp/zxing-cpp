@@ -16,10 +16,11 @@
 */
 
 #include "AZEncoder.h"
+
 #include "AZHighLevelEncoder.h"
 #include "BitArray.h"
-#include "ReedSolomonEncoder.h"
 #include "GenericGF.h"
+#include "ReedSolomonEncoder.h"
 #include "ZXStrConvWorkaround.h"
 #include "ZXTestSupport.h"
 

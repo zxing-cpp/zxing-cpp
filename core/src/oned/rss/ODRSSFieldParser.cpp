@@ -16,11 +16,12 @@
 */
 
 #include "ODRSSFieldParser.h"
+
 #include "DecodeStatus.h"
 #include "ZXContainerAlgorithms.h"
 
-#include <cstdlib>
 #include <algorithm>
+#include <cstdlib>
 
 namespace ZXing {
 namespace OneD {

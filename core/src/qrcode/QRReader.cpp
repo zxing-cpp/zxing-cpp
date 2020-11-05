@@ -16,16 +16,17 @@
 */
 
 #include "QRReader.h"
-#include "QRDecoder.h"
-#include "QRDetector.h"
-#include "QRDecoderMetadata.h"
-#include "Result.h"
-#include "DecoderResult.h"
-#include "DetectorResult.h"
-#include "ResultPoint.h"
-#include "DecodeHints.h"
+
 #include "BinaryBitmap.h"
 #include "BitMatrix.h"
+#include "DecodeHints.h"
+#include "DecoderResult.h"
+#include "DetectorResult.h"
+#include "QRDecoder.h"
+#include "QRDecoderMetadata.h"
+#include "QRDetector.h"
+#include "Result.h"
+#include "ResultPoint.h"
 
 #include <utility>
 

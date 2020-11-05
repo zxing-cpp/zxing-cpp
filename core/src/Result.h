@@ -16,12 +16,12 @@
 * limitations under the License.
 */
 
-#include "ByteArray.h"
 #include "BarcodeFormat.h"
-#include "Quadrilateral.h"
-#include "ResultPoint.h"
-#include "ResultMetadata.h"
+#include "ByteArray.h"
 #include "DecodeStatus.h"
+#include "Quadrilateral.h"
+#include "ResultMetadata.h"
+#include "ResultPoint.h"
 
 #include <string>
 #include <utility>

@@ -14,9 +14,11 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#include "gtest/gtest.h"
+
 #include "qrcode/QRDataMask.h"
 #include "BitMatrix.h"
+
+#include "gtest/gtest.h"
 #include <functional>
 
 using namespace ZXing;

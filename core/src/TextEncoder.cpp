@@ -15,18 +15,19 @@
 */
 
 #include "TextEncoder.h"
+
 #include "CharacterSet.h"
 #include "TextUtfEncoding.h"
-#include "textcodec/JPTextEncoder.h"
+#include "ZXContainerAlgorithms.h"
 #include "textcodec/Big5TextEncoder.h"
 #include "textcodec/GBTextEncoder.h"
+#include "textcodec/JPTextEncoder.h"
 #include "textcodec/KRTextEncoder.h"
-#include "ZXContainerAlgorithms.h"
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <stdexcept>
-#include <algorithm>
 
 namespace ZXing {
 

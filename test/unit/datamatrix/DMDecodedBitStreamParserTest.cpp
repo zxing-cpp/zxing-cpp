@@ -14,10 +14,11 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#include "gtest/gtest.h"
-#include "DecoderResult.h"
-#include "ByteArray.h"
 
+#include "ByteArray.h"
+#include "DecoderResult.h"
+
+#include "gtest/gtest.h"
 #include <utility>
 
 namespace ZXing {

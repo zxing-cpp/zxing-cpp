@@ -16,29 +16,30 @@
 */
 
 #include "QRDecoder.h"
-#include "QRBitMatrixParser.h"
-#include "QRFormatInformation.h"
-#include "QRDecoderMetadata.h"
-#include "QRDataMask.h"
-#include "QRDataBlock.h"
-#include "QRCodecMode.h"
-#include "DecoderResult.h"
+
 #include "BitMatrix.h"
-#include "ReedSolomonDecoder.h"
-#include "GenericGF.h"
 #include "BitSource.h"
-#include "TextDecoder.h"
 #include "CharacterSet.h"
 #include "CharacterSetECI.h"
 #include "DecodeStatus.h"
+#include "DecoderResult.h"
+#include "GenericGF.h"
+#include "QRBitMatrixParser.h"
+#include "QRCodecMode.h"
+#include "QRDataBlock.h"
+#include "QRDataMask.h"
+#include "QRDecoderMetadata.h"
+#include "QRFormatInformation.h"
+#include "ReedSolomonDecoder.h"
+#include "TextDecoder.h"
 #include "ZXContainerAlgorithms.h"
 #include "ZXTestSupport.h"
 
 #include <algorithm>
 #include <list>
 #include <stdexcept>
-#include <vector>
 #include <utility>
+#include <vector>
 
 namespace ZXing {
 namespace QRCode {

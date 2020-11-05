@@ -1,3 +1,4 @@
+#pragma once
 /*
 * Copyright 2019 Axel Waggershauser
 *
@@ -14,10 +15,8 @@
 * limitations under the License.
 */
 
-#pragma once
-
-#include "Result.h"
 #include "DecodeHints.h"
+#include "Result.h"
 
 #include <cstdint>
 

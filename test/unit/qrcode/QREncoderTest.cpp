@@ -13,16 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "gtest/gtest.h"
-#include "qrcode/QREncoder.h"
-#include "qrcode/QRCodecMode.h"
-#include "qrcode/QRErrorCorrectionLevel.h"
-#include "qrcode/QREncodeResult.h"
-#include "CharacterSet.h"
-#include "TextDecoder.h"
-#include "BitMatrixIO.h"
+
 #include "BitArray.h"
 #include "BitArrayUtility.h"
+#include "BitMatrixIO.h"
+#include "CharacterSet.h"
+#include "TextDecoder.h"
+#include "qrcode/QREncoder.h"
+#include "qrcode/QRCodecMode.h"
+#include "qrcode/QREncodeResult.h"
+#include "qrcode/QRErrorCorrectionLevel.h"
+
+#include "gtest/gtest.h"
 
 namespace ZXing {
 	namespace QRCode {

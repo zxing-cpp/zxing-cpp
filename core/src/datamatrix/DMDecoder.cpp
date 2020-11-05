@@ -16,22 +16,23 @@
 */
 
 #include "DMDecoder.h"
+
+#include "BitMatrix.h"
+#include "BitSource.h"
 #include "DMBitLayout.h"
 #include "DMDataBlock.h"
 #include "DMVersion.h"
-#include "DecoderResult.h"
-#include "ReedSolomonDecoder.h"
-#include "GenericGF.h"
-#include "BitSource.h"
-#include "BitMatrix.h"
 #include "DecodeStatus.h"
+#include "DecoderResult.h"
+#include "GenericGF.h"
+#include "ReedSolomonDecoder.h"
 #include "TextDecoder.h"
 #include "ZXContainerAlgorithms.h"
 #include "ZXStrConvWorkaround.h"
 #include "ZXTestSupport.h"
 
-#include <array>
 #include <algorithm>
+#include <array>
 #include <list>
 #include <string>
 #include <utility>

@@ -16,10 +16,11 @@
 */
 
 #include <algorithm>
-#include <iterator>
-#include <initializer_list>
-#include <numeric>
 #include <cstring>
+#include <initializer_list>
+#include <iterator>
+#include <numeric>
+#include <string>
 
 namespace ZXing {
 

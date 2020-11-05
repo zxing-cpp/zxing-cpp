@@ -16,6 +16,7 @@
 */
 
 #include "Result.h"
+
 #include "DecoderResult.h"
 #include "TextDecoder.h"
 

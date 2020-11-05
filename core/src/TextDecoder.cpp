@@ -15,11 +15,12 @@
 */
 
 #include "TextDecoder.h"
+
 #include "CharacterSet.h"
 #include "TextUtfEncoding.h"
-#include "textcodec/JPTextDecoder.h"
-#include "textcodec/GBTextDecoder.h"
 #include "textcodec/Big5TextDecoder.h"
+#include "textcodec/GBTextDecoder.h"
+#include "textcodec/JPTextDecoder.h"
 #include "textcodec/KRTextDecoder.h"
 
 #include <vector>

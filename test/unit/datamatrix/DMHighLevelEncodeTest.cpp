@@ -14,12 +14,14 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#include "gtest/gtest.h"
+
 #include "ByteArray.h"
+#include "ZXContainerAlgorithms.h"
 #include "datamatrix/DMHighLevelEncoder.h"
 #include "datamatrix/DMSymbolInfo.h"
 #include "datamatrix/DMSymbolShape.h"
-#include "ZXContainerAlgorithms.h"
+
+#include "gtest/gtest.h"
 
 namespace ZXing {
 	namespace DataMatrix {

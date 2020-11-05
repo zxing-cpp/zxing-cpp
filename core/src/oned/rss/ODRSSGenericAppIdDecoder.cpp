@@ -16,9 +16,10 @@
 */
 
 #include "ODRSSGenericAppIdDecoder.h"
-#include "ODRSSFieldParser.h"
+
 #include "BitArray.h"
 #include "DecodeStatus.h"
+#include "ODRSSFieldParser.h"
 #include "ZXStrConvWorkaround.h"
 
 #include <limits>

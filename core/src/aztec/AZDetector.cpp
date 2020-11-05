@@ -16,14 +16,15 @@
 */
 
 #include "AZDetector.h"
+
 #include "AZDetectorResult.h"
 #include "BitHacks.h"
+#include "BitMatrix.h"
+#include "GenericGF.h"
+#include "GridSampler.h"
 #include "ReedSolomonDecoder.h"
 #include "ResultPoint.h"
-#include "GenericGF.h"
 #include "WhiteRectDetector.h"
-#include "GridSampler.h"
-#include "BitMatrix.h"
 
 #include <array>
 #include <utility>

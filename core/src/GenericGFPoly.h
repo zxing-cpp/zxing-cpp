@@ -19,8 +19,8 @@
 #include "ZXContainerAlgorithms.h"
 
 #include <algorithm>
-#include <cstddef>
 #include <cassert>
+#include <cstddef>
 #include <vector>
 
 namespace ZXing {

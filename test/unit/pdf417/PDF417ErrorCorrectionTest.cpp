@@ -14,9 +14,11 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#include "gtest/gtest.h"
+
 #include "PseudoRandom.h"
 #include "ZXContainerAlgorithms.h"
+
+#include "gtest/gtest.h"
 
 namespace ZXing {
 	namespace Pdf417 {

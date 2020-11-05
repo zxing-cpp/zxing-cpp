@@ -18,14 +18,14 @@
 
 #include "ODDataBarReader.h"
 
-#include "ODDataBarCommon.h"
 #include "BarcodeFormat.h"
-#include "Result.h"
 #include "GTIN.h"
+#include "ODDataBarCommon.h"
+#include "Result.h"
 #include "TextDecoder.h"
 
-#include <sstream>
 #include <iomanip>
+#include <sstream>
 #include <unordered_set>
 
 namespace ZXing::OneD {

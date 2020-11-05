@@ -14,14 +14,15 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#include "gtest/gtest.h"
+
 #include "BitMatrixIO.h"
 #include "ByteArray.h"
 #include "datamatrix/DMBitLayout.h"
 
+#include "gtest/gtest.h"
 #include <algorithm>
-#include <sstream>
 #include <iterator>
+#include <sstream>
 
 using namespace ZXing;
 using namespace ZXing::DataMatrix;

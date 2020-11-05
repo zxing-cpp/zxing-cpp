@@ -14,16 +14,17 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#include "aztec/AZEncoder.h"
-#include "aztec/AZDetectorResult.h"
-#include "aztec/AZDecoder.h"
-#include "aztec/AZWriter.h"
-#include "DecoderResult.h"
+
 #include "BitMatrix.h"
-#include "PseudoRandom.h"
 #include "CharacterSet.h"
-#include "TextEncoder.h"
+#include "DecoderResult.h"
+#include "PseudoRandom.h"
 #include "TextDecoder.h"
+#include "TextEncoder.h"
+#include "aztec/AZDecoder.h"
+#include "aztec/AZDetectorResult.h"
+#include "aztec/AZEncoder.h"
+#include "aztec/AZWriter.h"
 
 #include <algorithm>
 #include <utility>

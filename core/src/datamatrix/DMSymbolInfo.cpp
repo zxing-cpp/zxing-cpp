@@ -16,6 +16,7 @@
 */
 
 #include "DMSymbolInfo.h"
+
 #include "DMSymbolShape.h"
 #include "ZXContainerAlgorithms.h"
 #include "ZXTestSupport.h"

@@ -16,8 +16,10 @@
 * limitations under the License.
 */
 
-#include "BitMatrix.h"
+#include "DMBitLayout.h"
+
 #include "BitArray.h"
+#include "BitMatrix.h"
 #include "ByteArray.h"
 #include "DMVersion.h"
 

@@ -16,8 +16,8 @@
 * limitations under the License.
 */
 
-#include "PerspectiveTransform.h"
 #include "DetectorResult.h"
+#include "PerspectiveTransform.h"
 
 namespace ZXing {
 

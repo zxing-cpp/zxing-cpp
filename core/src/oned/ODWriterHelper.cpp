@@ -16,7 +16,9 @@
 */
 
 #include "ODWriterHelper.h"
+
 #include "BitMatrix.h"
+
 #include <algorithm>
 
 namespace ZXing {

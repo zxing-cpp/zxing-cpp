@@ -17,18 +17,19 @@
 */
 
 #include "ODReader.h"
-#include "ODMultiUPCEANReader.h"
+
+#include "BinaryBitmap.h"
+#include "BitArray.h"
+#include "DecodeHints.h"
+#include "ODCodabarReader.h"
+#include "ODCode128Reader.h"
 #include "ODCode39Reader.h"
 #include "ODCode93Reader.h"
-#include "ODCode128Reader.h"
-#include "ODDataBarReader.h"
 #include "ODDataBarExpandedReader.h"
+#include "ODDataBarReader.h"
 #include "ODITFReader.h"
-#include "ODCodabarReader.h"
+#include "ODMultiUPCEANReader.h"
 #include "Result.h"
-#include "BitArray.h"
-#include "BinaryBitmap.h"
-#include "DecodeHints.h"
 
 #include <algorithm>
 #include <utility>

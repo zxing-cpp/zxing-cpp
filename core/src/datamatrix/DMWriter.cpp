@@ -16,13 +16,14 @@
 */
 
 #include "DMWriter.h"
-#include "DMSymbolShape.h"
-#include "DMHighLevelEncoder.h"
-#include "DMSymbolInfo.h"
-#include "DMECEncoder.h"
-#include "DMBitLayout.h"
+
 #include "BitMatrix.h"
 #include "ByteArray.h"
+#include "DMBitLayout.h"
+#include "DMECEncoder.h"
+#include "DMHighLevelEncoder.h"
+#include "DMSymbolInfo.h"
+#include "DMSymbolShape.h"
 #include "ZXStrConvWorkaround.h"
 
 #include <stdexcept>

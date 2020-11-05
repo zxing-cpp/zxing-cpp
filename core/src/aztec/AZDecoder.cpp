@@ -16,13 +16,14 @@
 */
 
 #include "AZDecoder.h"
+
 #include "AZDetectorResult.h"
-#include "DecoderResult.h"
-#include "ReedSolomonDecoder.h"
-#include "GenericGF.h"
-#include "DecodeStatus.h"
-#include "BitMatrix.h"
 #include "BitArray.h"
+#include "BitMatrix.h"
+#include "DecodeStatus.h"
+#include "DecoderResult.h"
+#include "GenericGF.h"
+#include "ReedSolomonDecoder.h"
 #include "TextDecoder.h"
 #include "ZXTestSupport.h"
 

@@ -16,13 +16,14 @@
 */
 
 #include "MCReader.h"
-#include "MCDecoder.h"
-#include "MCBitMatrixParser.h"
-#include "Result.h"
-#include "DecodeHints.h"
-#include "DecoderResult.h"
+
 #include "BinaryBitmap.h"
 #include "BitMatrix.h"
+#include "DecodeHints.h"
+#include "DecoderResult.h"
+#include "MCBitMatrixParser.h"
+#include "MCDecoder.h"
+#include "Result.h"
 
 namespace ZXing {
 namespace MaxiCode {

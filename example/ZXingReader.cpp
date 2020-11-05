@@ -17,11 +17,12 @@
 #include "ReadBarcode.h"
 #include "TextUtfEncoding.h"
 
-#include <iostream>
-#include <cstring>
-#include <string>
 #include <algorithm>
 #include <cctype>
+#include <chrono>
+#include <cstring>
+#include <iostream>
+#include <string>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"

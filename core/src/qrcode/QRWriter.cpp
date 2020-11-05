@@ -16,11 +16,12 @@
 */
 
 #include "QRWriter.h"
-#include "QRErrorCorrectionLevel.h"
-#include "QREncoder.h"
-#include "QREncodeResult.h"
+
 #include "BitMatrix.h"
 #include "CharacterSet.h"
+#include "QREncodeResult.h"
+#include "QREncoder.h"
+#include "QRErrorCorrectionLevel.h"
 
 #include <stdexcept>
 #include <utility>

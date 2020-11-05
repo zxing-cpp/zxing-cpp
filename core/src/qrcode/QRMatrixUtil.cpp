@@ -16,16 +16,17 @@
 */
 
 #include "QRMatrixUtil.h"
+
+#include "BitArray.h"
+#include "BitHacks.h"
 #include "QRDataMask.h"
 #include "QRErrorCorrectionLevel.h"
 #include "QRVersion.h"
-#include "BitArray.h"
-#include "BitHacks.h"
 #include "ZXStrConvWorkaround.h"
 
 #include <array>
-#include <string>
 #include <stdexcept>
+#include <string>
 
 namespace ZXing {
 namespace QRCode {

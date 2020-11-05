@@ -15,21 +15,22 @@
 */
 
 #include "MultiFormatWriter.h"
+
 #include "BitMatrix.h"
 #include "aztec/AZWriter.h"
 #include "datamatrix/DMWriter.h"
-#include "pdf417/PDFWriter.h"
-#include "qrcode/QRWriter.h"
-#include "qrcode/QRErrorCorrectionLevel.h"
 #include "oned/ODCodabarWriter.h"
+#include "oned/ODCode128Writer.h"
 #include "oned/ODCode39Writer.h"
 #include "oned/ODCode93Writer.h"
-#include "oned/ODCode128Writer.h"
-#include "oned/ODEAN8Writer.h"
 #include "oned/ODEAN13Writer.h"
+#include "oned/ODEAN8Writer.h"
 #include "oned/ODITFWriter.h"
 #include "oned/ODUPCAWriter.h"
 #include "oned/ODUPCEWriter.h"
+#include "pdf417/PDFWriter.h"
+#include "qrcode/QRErrorCorrectionLevel.h"
+#include "qrcode/QRWriter.h"
 
 #include <stdexcept>
 

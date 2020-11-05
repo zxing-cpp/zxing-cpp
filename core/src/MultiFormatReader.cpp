@@ -16,16 +16,16 @@
 */
 
 #include "MultiFormatReader.h"
-#include "DecodeHints.h"
-#include "BarcodeFormat.h"
-#include "Result.h"
 
-#include "oned/ODReader.h"
-#include "qrcode/QRReader.h"
-#include "datamatrix/DMReader.h"
+#include "BarcodeFormat.h"
+#include "DecodeHints.h"
+#include "Result.h"
 #include "aztec/AZReader.h"
+#include "datamatrix/DMReader.h"
 #include "maxicode/MCReader.h"
+#include "oned/ODReader.h"
 #include "pdf417/PDFReader.h"
+#include "qrcode/QRReader.h"
 
 #include <memory>
 

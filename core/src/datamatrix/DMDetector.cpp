@@ -17,17 +17,17 @@
 */
 
 #include "DMDetector.h"
+
 #include "BitMatrix.h"
 #include "BitMatrixCursor.h"
 #include "DetectorResult.h"
+#include "GridSampler.h"
+#include "LogMatrix.h"
+#include "Point.h"
 #include "RegressionLine.h"
 #include "ResultPoint.h"
-#include "GridSampler.h"
-#include "Point.h"
 #include "Scope.h"
 #include "WhiteRectDetector.h"
-
-#include "LogMatrix.h"
 
 #include <algorithm>
 #include <array>

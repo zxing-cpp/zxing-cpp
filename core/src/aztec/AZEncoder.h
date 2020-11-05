@@ -15,8 +15,10 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#include <string>
+
 #include "BitMatrix.h"
+
+#include <string>
 
 namespace ZXing {
 namespace Aztec {

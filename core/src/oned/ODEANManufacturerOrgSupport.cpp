@@ -16,6 +16,7 @@
 */
 
 #include "ODEANManufacturerOrgSupport.h"
+
 #include "ZXStrConvWorkaround.h"
 
 #include <algorithm>

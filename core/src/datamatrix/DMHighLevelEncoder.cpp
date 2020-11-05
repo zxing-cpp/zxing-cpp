@@ -16,23 +16,24 @@
 */
 
 #include "DMHighLevelEncoder.h"
+
+#include "ByteArray.h"
+#include "CharacterSet.h"
 #include "DMEncoderContext.h"
 #include "TextEncoder.h"
-#include "CharacterSet.h"
-#include "ByteArray.h"
-#include "ZXStrConvWorkaround.h"
 #include "ZXContainerAlgorithms.h"
+#include "ZXStrConvWorkaround.h"
 
-#include <cstddef>
-#include <cstdint>
-#include <string>
 #include <algorithm>
 #include <array>
-#include <limits>
 #include <cmath>
-#include <numeric>
+#include <cstddef>
+#include <cstdint>
 #include <functional>
+#include <limits>
+#include <numeric>
 #include <stdexcept>
+#include <string>
 
 namespace ZXing::DataMatrix {
 

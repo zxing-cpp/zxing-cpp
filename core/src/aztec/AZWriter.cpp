@@ -16,6 +16,7 @@
 */
 
 #include "AZWriter.h"
+
 #include "AZEncoder.h"
 #include "CharacterSet.h"
 #include "TextEncoder.h"

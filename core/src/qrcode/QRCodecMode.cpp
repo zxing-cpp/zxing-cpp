@@ -16,6 +16,7 @@
 */
 
 #include "QRCodecMode.h"
+
 #include "QRVersion.h"
 
 #include <stdexcept>

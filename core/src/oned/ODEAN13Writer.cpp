@@ -16,6 +16,7 @@
 */
 
 #include "ODEAN13Writer.h"
+
 #include "ODUPCEANCommon.h"
 #include "ODWriterHelper.h"
 

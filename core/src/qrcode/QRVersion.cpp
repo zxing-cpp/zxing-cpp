@@ -16,9 +16,10 @@
 */
 
 #include "QRVersion.h"
-#include "QRECB.h"
+
 #include "BitHacks.h"
 #include "BitMatrix.h"
+#include "QRECB.h"
 
 #include <limits>
 

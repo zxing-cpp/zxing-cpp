@@ -20,8 +20,8 @@
 
 #include <algorithm>
 #include <cassert>
-#include <vector>
 #include <stdexcept>
+#include <vector>
 
 namespace ZXing {
 

@@ -15,8 +15,9 @@
 * limitations under the License.
 */
 
-#include "BitMatrix.h"
 #include "ODUPCAWriter.h"
+
+#include "BitMatrix.h"
 #include "ODEAN13Writer.h"
 
 #include <stdexcept>

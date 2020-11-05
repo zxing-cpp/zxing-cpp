@@ -16,10 +16,11 @@
 */
 
 #include "LuminanceSource.h"
+
 #include "ByteArray.h"
 
-#include <stdexcept>
 #include <algorithm>
+#include <stdexcept>
 #include <utility>
 
 namespace ZXing {

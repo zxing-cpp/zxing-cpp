@@ -14,14 +14,15 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#include "gtest/gtest.h"
+
+#include "oned/ODCodabarWriter.h"
 #include "BitArray.h"
 #include "BitMatrixIO.h"
-#include "oned/ODCodabarWriter.h"
-#include "oned/ODCodabarReader.h"
 #include "DecodeHints.h"
 #include "Result.h"
+#include "oned/ODCodabarReader.h"
 
+#include "gtest/gtest.h"
 #include <stdexcept>
 
 using namespace ZXing;

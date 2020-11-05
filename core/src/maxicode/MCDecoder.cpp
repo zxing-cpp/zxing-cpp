@@ -16,21 +16,22 @@
 */
 
 #include "MCDecoder.h"
-#include "MCBitMatrixParser.h"
+
 #include "ByteArray.h"
-#include "DecoderResult.h"
-#include "ReedSolomonDecoder.h"
-#include "GenericGF.h"
 #include "DecodeStatus.h"
+#include "DecoderResult.h"
+#include "GenericGF.h"
+#include "MCBitMatrixParser.h"
+#include "ReedSolomonDecoder.h"
 #include "TextDecoder.h"
 #include "ZXStrConvWorkaround.h"
 
+#include <algorithm>
 #include <array>
 #include <cstdint>
+#include <iomanip>
 #include <sstream>
 #include <string>
-#include <iomanip>
-#include <algorithm>
 #include <utility>
 #include <vector>
 

@@ -20,8 +20,8 @@
 #include "DecodeStatus.h"
 #include "ZXContainerAlgorithms.h"
 
-#include <memory>
 #include <list>
+#include <memory>
 #include <string>
 #include <utility>
 

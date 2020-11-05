@@ -15,11 +15,12 @@
 */
 
 #include "Pdf417MultipleCodeReader.h"
+
 #include "BinaryBitmap.h"
-#include "TextUtfEncoding.h"
-#include "pdf417/PDFReader.h"
-#include "pdf417/PDFDecoderResultExtra.h"
 #include "ImageLoader.h"
+#include "TextUtfEncoding.h"
+#include "pdf417/PDFDecoderResultExtra.h"
+#include "pdf417/PDFReader.h"
 
 #include <list>
 #include <utility>

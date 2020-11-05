@@ -16,16 +16,17 @@
 */
 
 #include "AZReader.h"
+
+#include "AZDecoder.h"
 #include "AZDetector.h"
 #include "AZDetectorResult.h"
-#include "AZDecoder.h"
+#include "BinaryBitmap.h"
+#include "DecoderResult.h"
+#include "Result.h"
 
 #include <memory>
 #include <utility>
 #include <vector>
-#include "Result.h"
-#include "BinaryBitmap.h"
-#include "DecoderResult.h"
 
 namespace ZXing {
 namespace Aztec {

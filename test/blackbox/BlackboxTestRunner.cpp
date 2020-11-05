@@ -16,15 +16,16 @@
 */
 
 #include "BlackboxTestRunner.h"
-#include "TextDecoder.h"
-#include "TextUtfEncoding.h"
-#include "DecodeHints.h"
-#include "Result.h"
-#include "MultiFormatReader.h"
-#include "ImageLoader.h"
+
 #include "BinaryBitmap.h"
+#include "DecodeHints.h"
+#include "ImageLoader.h"
+#include "MultiFormatReader.h"
 #include "Pdf417MultipleCodeReader.h"
 #include "QRCodeStructuredAppendReader.h"
+#include "Result.h"
+#include "TextDecoder.h"
+#include "TextUtfEncoding.h"
 #include "ZXContainerAlgorithms.h"
 
 #include <fmt/core.h>

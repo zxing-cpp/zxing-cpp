@@ -16,14 +16,15 @@
 */
 
 #include "DMECEncoder.h"
-#include "DMSymbolInfo.h"
+
 #include "ByteArray.h"
+#include "DMSymbolInfo.h"
 #include "ZXStrConvWorkaround.h"
 
+#include <algorithm>
+#include <array>
 #include <stdexcept>
 #include <string>
-#include <array>
-#include <algorithm>
 
 namespace ZXing::DataMatrix {
 

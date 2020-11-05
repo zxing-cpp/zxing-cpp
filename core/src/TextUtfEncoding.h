@@ -15,8 +15,8 @@
 * limitations under the License.
 */
 
-#include <cstdint>
 #include <cstddef>
+#include <cstdint>
 #include <string>
 
 namespace ZXing {

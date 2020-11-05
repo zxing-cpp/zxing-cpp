@@ -16,10 +16,10 @@
 * limitations under the License.
 */
 
-#include <string>
+#include <list>
 #include <map>
 #include <memory>
-#include <list>
+#include <string>
 
 namespace ZXing {
 

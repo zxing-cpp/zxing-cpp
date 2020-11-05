@@ -15,15 +15,15 @@
 */
 
 #include "ReadBarcode.h"
+
+#include "BinaryBitmap.h"
+#include "BitArray.h"
+#include "BitMatrix.h"
 #include "DecodeHints.h"
-#include "MultiFormatReader.h"
 #include "GenericLuminanceSource.h"
 #include "GlobalHistogramBinarizer.h"
 #include "HybridBinarizer.h"
-#include "BinaryBitmap.h"
-
-#include "BitMatrix.h"
-#include "BitArray.h"
+#include "MultiFormatReader.h"
 
 #include <memory>
 

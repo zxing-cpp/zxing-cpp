@@ -14,10 +14,12 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#include "gtest/gtest.h"
+
+#include "BitMatrixIO.h"
 #include "qrcode/QRWriter.h"
 #include "qrcode/QRErrorCorrectionLevel.h"
-#include "BitMatrixIO.h"
+
+#include "gtest/gtest.h"
 
 using namespace ZXing;
 using namespace ZXing::QRCode;

@@ -16,7 +16,9 @@
 */
 
 #include "AZToken.h"
+
 #include "BitArray.h"
+
 #include <algorithm>
 
 namespace ZXing {

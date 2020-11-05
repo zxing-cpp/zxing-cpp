@@ -16,6 +16,7 @@
 */
 
 #include "BitSource.h"
+
 #include "ByteArray.h"
 #include "ZXContainerAlgorithms.h"
 

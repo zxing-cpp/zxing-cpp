@@ -16,6 +16,7 @@
 */
 
 #include "ODCode93Writer.h"
+
 #include "ODWriterHelper.h"
 #include "ZXContainerAlgorithms.h"
 #include "ZXTestSupport.h"

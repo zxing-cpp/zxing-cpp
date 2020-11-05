@@ -16,6 +16,7 @@
 */
 
 #include "BitMatrix.h"
+
 #include "BitArray.h"
 #include "ByteMatrix.h"
 #include "Pattern.h"

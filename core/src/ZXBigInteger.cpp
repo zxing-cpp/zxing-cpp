@@ -15,6 +15,7 @@
 */
 
 #include "ZXBigInteger.h"
+
 #include "BitHacks.h"
 
 #include <algorithm>

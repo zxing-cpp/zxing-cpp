@@ -15,8 +15,8 @@
 * limitations under the License.
 */
 
-#include "Pattern.h"
 #include "ODRowReader.h"
+#include "Pattern.h"
 #include "Result.h"
 
 #include <array>

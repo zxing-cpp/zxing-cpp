@@ -15,22 +15,21 @@
 * limitations under the License.
 */
 
-#include "ByteArray.h"
+#include "BinaryBitmap.h"
 #include "BlackboxTestRunner.h"
+#include "ByteArray.h"
+#include "DecodeHints.h"
 #include "ImageLoader.h"
 #include "MultiFormatReader.h"
 #include "Result.h"
-#include "BinaryBitmap.h"
-#include "ImageLoader.h"
-#include "DecodeHints.h"
 #include "TextUtfEncoding.h"
 #include "ZXContainerAlgorithms.h"
 #include "ZXFilesystem.h"
 
 #include <cstdlib>
 #include <cstring>
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <set>
 
 using namespace ZXing;

@@ -16,10 +16,11 @@
 */
 
 #include "CharacterSetECI.h"
+
 #include "CharacterSet.h"
 
-#include <map>
 #include <cstring>
+#include <map>
 #include <utility>
 
 namespace ZXing {

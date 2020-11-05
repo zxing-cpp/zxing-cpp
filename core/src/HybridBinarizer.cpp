@@ -16,9 +16,11 @@
 */
 
 #include "HybridBinarizer.h"
-#include "LuminanceSource.h"
-#include "ByteArray.h"
+
 #include "BitMatrix.h"
+#include "BitMatrixIO.h"
+#include "ByteArray.h"
+#include "LuminanceSource.h"
 #include "Matrix.h"
 #include "ZXContainerAlgorithms.h"
 
@@ -27,8 +29,8 @@
 #include <functional>
 #include <memory>
 #include <mutex>
-#include <vector>
 #include <utility>
+#include <vector>
 
 namespace ZXing {
 

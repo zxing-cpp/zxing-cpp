@@ -14,12 +14,14 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#include "gtest/gtest.h"
-#include "BitMatrixIO.h"
+
 #include "oned/ODCode128Writer.h"
-#include "oned/ODCode128Reader.h"
+#include "BitMatrixIO.h"
 #include "DecodeHints.h"
 #include "Result.h"
+#include "oned/ODCode128Reader.h"
+
+#include "gtest/gtest.h"
 
 using namespace ZXing;
 using namespace ZXing::OneD;

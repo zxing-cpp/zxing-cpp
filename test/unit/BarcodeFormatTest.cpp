@@ -13,11 +13,12 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#include "gtest/gtest.h"
 
 #include "BarcodeFormat.h"
-#include <vector>
+
+#include "gtest/gtest.h"
 #include <stdexcept>
+#include <vector>
 
 using namespace ZXing;
 

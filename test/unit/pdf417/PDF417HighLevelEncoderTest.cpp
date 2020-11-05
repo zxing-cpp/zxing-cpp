@@ -14,10 +14,12 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#include "gtest/gtest.h"
-#include "pdf417/PDFHighLevelEncoder.h"
-#include "pdf417/PDFCompaction.h"
+
 #include "CharacterSet.h"
+#include "pdf417/PDFCompaction.h"
+#include "pdf417/PDFHighLevelEncoder.h"
+
+#include "gtest/gtest.h"
 
 using namespace ZXing;
 using namespace ZXing::Pdf417;

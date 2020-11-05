@@ -16,6 +16,7 @@
 */
 
 #include "ImageLoader.h"
+
 #include "BinaryBitmap.h"
 #include "GenericLuminanceSource.h"
 

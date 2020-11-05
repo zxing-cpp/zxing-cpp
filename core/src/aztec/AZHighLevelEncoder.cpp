@@ -16,14 +16,15 @@
 */
 
 #include "AZHighLevelEncoder.h"
+
 #include "AZEncodingState.h"
 #include "AZToken.h"
 #include "BitArray.h"
 #include "ZXContainerAlgorithms.h"
 
+#include <algorithm>
 #include <array>
 #include <cstdint>
-#include <algorithm>
 #include <list>
 #include <vector>
 

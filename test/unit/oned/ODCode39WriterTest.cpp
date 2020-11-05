@@ -14,9 +14,11 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#include "gtest/gtest.h"
-#include "BitMatrixIO.h"
+
 #include "oned/ODCode39Writer.h"
+#include "BitMatrixIO.h"
+
+#include "gtest/gtest.h"
 
 using namespace ZXing;
 using namespace ZXing::OneD;

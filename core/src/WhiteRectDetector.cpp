@@ -16,9 +16,10 @@
 */
 
 #include "WhiteRectDetector.h"
+
 #include "BitMatrix.h"
-#include "ResultPoint.h"
 #include "BitMatrixCursor.h"
+#include "ResultPoint.h"
 
 namespace ZXing {
 

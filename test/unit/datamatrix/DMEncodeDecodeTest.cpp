@@ -14,11 +14,12 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#include "datamatrix/DMWriter.h"
+
+#include "BitMatrixIO.h"
+#include "DecoderResult.h"
 #include "datamatrix/DMDecoder.h"
 #include "datamatrix/DMSymbolShape.h"
-#include "DecoderResult.h"
-#include "BitMatrixIO.h"
+#include "datamatrix/DMWriter.h"
 
 #include <algorithm>
 #ifndef NDEBUG

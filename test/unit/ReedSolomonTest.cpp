@@ -14,10 +14,11 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#include "ReedSolomonDecoder.h"
-#include "ReedSolomonEncoder.h"
+
 #include "GenericGF.h"
 #include "PseudoRandom.h"
+#include "ReedSolomonDecoder.h"
+#include "ReedSolomonEncoder.h"
 
 #include <algorithm>
 #include <ostream>

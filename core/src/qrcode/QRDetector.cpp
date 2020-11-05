@@ -17,15 +17,16 @@
 */
 
 #include "QRDetector.h"
-#include "QRVersion.h"
+
 #include "BitMatrix.h"
 #include "BitMatrixCursor.h"
-#include "DetectorResult.h"
-#include "PerspectiveTransform.h"
-#include "RegressionLine.h"
 #include "ConcentricFinder.h"
+#include "DetectorResult.h"
 #include "GridSampler.h"
 #include "LogMatrix.h"
+#include "PerspectiveTransform.h"
+#include "QRVersion.h"
+#include "RegressionLine.h"
 
 #include <algorithm>
 #include <cmath>

@@ -18,8 +18,8 @@
 #include "Point.h"
 
 #include <algorithm>
-#include <numeric>
 #include <cmath>
+#include <numeric>
 #include <vector>
 
 namespace ZXing {

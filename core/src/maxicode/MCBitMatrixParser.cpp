@@ -16,8 +16,9 @@
 */
 
 #include "MCBitMatrixParser.h"
-#include "ByteArray.h"
+
 #include "BitMatrix.h"
+#include "ByteArray.h"
 
 #include <array>
 

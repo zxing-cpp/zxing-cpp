@@ -18,8 +18,8 @@
 
 #include <memory>
 #include <stdexcept>
+#include <cstdint>
 #include <vector>
-#include <stdint.h>
 
 namespace ZXing {
 

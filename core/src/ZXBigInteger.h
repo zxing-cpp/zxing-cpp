@@ -16,10 +16,10 @@
 */
 
 #include <cstdlib>
-#include <type_traits>
-#include <vector>
 #include <string>
+#include <type_traits>
 #include <utility>
+#include <vector>
 
 namespace ZXing {
 

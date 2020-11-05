@@ -16,9 +16,10 @@
 */
 
 #include "QRDataBlock.h"
-#include "QRVersion.h"
-#include "QRErrorCorrectionLevel.h"
+
 #include "DecodeStatus.h"
+#include "QRErrorCorrectionLevel.h"
+#include "QRVersion.h"
 #include "ZXContainerAlgorithms.h"
 
 namespace ZXing {

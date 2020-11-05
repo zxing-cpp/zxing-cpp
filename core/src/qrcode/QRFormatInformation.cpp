@@ -16,6 +16,7 @@
 */
 
 #include "QRFormatInformation.h"
+
 #include "BitHacks.h"
 
 #include <array>

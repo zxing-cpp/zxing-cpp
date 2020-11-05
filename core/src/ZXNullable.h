@@ -15,8 +15,8 @@
 * limitations under the License.
 */
 
-#include <utility>
 #include <stdexcept>
+#include <utility>
 
 namespace ZXing {
 

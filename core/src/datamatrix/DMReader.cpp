@@ -16,14 +16,15 @@
 */
 
 #include "DMReader.h"
+
+#include "BinaryBitmap.h"
+#include "BitMatrix.h"
 #include "DMDecoder.h"
 #include "DMDetector.h"
-#include "Result.h"
-#include "BitMatrix.h"
-#include "BinaryBitmap.h"
 #include "DecodeHints.h"
 #include "DecoderResult.h"
 #include "DetectorResult.h"
+#include "Result.h"
 
 #include <utility>
 #include <vector>

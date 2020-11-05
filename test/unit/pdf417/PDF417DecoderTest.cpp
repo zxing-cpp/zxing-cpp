@@ -14,10 +14,12 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#include "gtest/gtest.h"
+
 #include "DecodeStatus.h"
 #include "pdf417/PDFDecodedBitStreamParser.h"
 #include "pdf417/PDFDecoderResultExtra.h"
+
+#include "gtest/gtest.h"
 
 namespace ZXing { namespace Pdf417 {
 	DecodeStatus DecodeMacroBlock(const std::vector<int>& codewords, int codeIndex, DecoderResultExtra& resultMetadata, int& next);

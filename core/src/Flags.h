@@ -17,8 +17,8 @@
 
 #include "BitHacks.h"
 
-#include <type_traits>
 #include <iterator>
+#include <type_traits>
 
 namespace ZXing {
 

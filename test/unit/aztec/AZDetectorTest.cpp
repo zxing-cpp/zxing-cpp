@@ -14,12 +14,13 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#include "gtest/gtest.h"
+
 #include "aztec/AZDetector.h"
-#include "aztec/AZDetectorResult.h"
 #include "BitMatrixIO.h"
 #include "PseudoRandom.h"
+#include "aztec/AZDetectorResult.h"
 
+#include "gtest/gtest.h"
 #include <string_view>
 #include <vector>
 

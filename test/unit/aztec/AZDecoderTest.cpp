@@ -14,13 +14,14 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#include "gtest/gtest.h"
+
 #include "aztec/AZDecoder.h"
-#include "aztec/AZDetectorResult.h"
-#include "DecoderResult.h"
 #include "BitMatrixIO.h"
 #include "DecodeStatus.h"
+#include "DecoderResult.h"
+#include "aztec/AZDetectorResult.h"
 
+#include "gtest/gtest.h"
 #include <utility>
 
 using namespace ZXing;

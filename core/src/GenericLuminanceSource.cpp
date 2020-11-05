@@ -20,6 +20,7 @@
 #endif
 
 #include "GenericLuminanceSource.h"
+
 #include "ByteArray.h"
 #include "ZXContainerAlgorithms.h"
 

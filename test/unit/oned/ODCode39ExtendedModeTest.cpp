@@ -14,12 +14,14 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#include "gtest/gtest.h"
+
 #include "BitArray.h"
 #include "BitArrayUtility.h"
 #include "DecodeHints.h"
 #include "Result.h"
 #include "oned/ODCode39Reader.h"
+
+#include "gtest/gtest.h"
 
 using namespace ZXing;
 using namespace ZXing::OneD;

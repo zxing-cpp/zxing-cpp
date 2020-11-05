@@ -16,15 +16,16 @@
 */
 
 #include "BarcodeFormat.h"
+
 #include "BitHacks.h"
 #include "ZXContainerAlgorithms.h"
 
 #include <algorithm>
 #include <cctype>
 #include <iterator>
-#include <string>
 #include <sstream>
 #include <stdexcept>
+#include <string>
 
 namespace ZXing {
 

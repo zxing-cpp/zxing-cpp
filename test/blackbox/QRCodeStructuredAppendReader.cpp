@@ -15,12 +15,13 @@
 */
 
 #include "QRCodeStructuredAppendReader.h"
-#include "TextUtfEncoding.h"
+
 #include "BinaryBitmap.h"
-#include "Result.h"
 #include "DecodeHints.h"
-#include "qrcode/QRReader.h"
 #include "ImageLoader.h"
+#include "Result.h"
+#include "TextUtfEncoding.h"
+#include "qrcode/QRReader.h"
 
 #include <list>
 #include <string>

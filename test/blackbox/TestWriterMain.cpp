@@ -15,11 +15,11 @@
 * limitations under the License.
 */
 
-#include <vector>
-
-#include "MultiFormatWriter.h"
 #include "BitMatrix.h"
 #include "ByteMatrix.h"
+#include "MultiFormatWriter.h"
+
+#include <vector>
 
 using namespace ZXing;
 using namespace std::literals;

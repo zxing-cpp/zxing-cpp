@@ -26,9 +26,10 @@
 */
 
 #include "ODRSSExpandedBinaryDecoder.h"
-#include "ODRSSGenericAppIdDecoder.h"
+
 #include "BitArray.h"
 #include "DecodeStatus.h"
+#include "ODRSSGenericAppIdDecoder.h"
 #include "ZXStrConvWorkaround.h"
 
 #include <functional>

@@ -16,15 +16,16 @@
 */
 
 #include "QREncoder.h"
-#include "QRMaskUtil.h"
-#include "QRMatrixUtil.h"
-#include "QRErrorCorrectionLevel.h"
-#include "QREncodeResult.h"
-#include "GenericGF.h"
-#include "ReedSolomonEncoder.h"
+
 #include "BitArray.h"
 #include "CharacterSet.h"
 #include "CharacterSetECI.h"
+#include "GenericGF.h"
+#include "QREncodeResult.h"
+#include "QRErrorCorrectionLevel.h"
+#include "QRMaskUtil.h"
+#include "QRMatrixUtil.h"
+#include "ReedSolomonEncoder.h"
 #include "TextEncoder.h"
 #include "ZXStrConvWorkaround.h"
 #include "ZXTestSupport.h"

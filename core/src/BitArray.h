@@ -23,12 +23,12 @@
 #include "BitHacks.h"
 #endif
 
+#include <algorithm>
 #include <cassert>
 #include <cstdint>
 #include <iterator>
-#include <vector>
-#include <algorithm>
 #include <utility>
+#include <vector>
 
 namespace ZXing {
 

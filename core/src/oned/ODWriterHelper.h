@@ -15,10 +15,11 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+
 #include "BitMatrix.h"
 
-#include <vector>
 #include <cstddef>
+#include <vector>
 
 namespace ZXing {
 namespace OneD {

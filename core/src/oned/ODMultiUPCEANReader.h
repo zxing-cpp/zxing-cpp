@@ -16,9 +16,9 @@
 * limitations under the License.
 */
 
-#include "ODRowReader.h"
 #include "BarcodeFormat.h"
 #include "DecodeHints.h"
+#include "ODRowReader.h"
 
 namespace ZXing {
 namespace OneD {

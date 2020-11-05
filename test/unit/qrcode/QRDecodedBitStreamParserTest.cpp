@@ -14,14 +14,16 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#include "gtest/gtest.h"
+
+#include "BitArray.h"
+#include "ByteArray.h"
+#include "DecoderResult.h"
 #include "qrcode/QRDataMask.h"
 #include "qrcode/QRDecoder.h"
-#include "qrcode/QRVersion.h"
 #include "qrcode/QRErrorCorrectionLevel.h"
-#include "ByteArray.h"
-#include "BitArray.h"
-#include "DecoderResult.h"
+#include "qrcode/QRVersion.h"
+
+#include "gtest/gtest.h"
 
 namespace ZXing {
 	namespace QRCode {

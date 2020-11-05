@@ -14,7 +14,9 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+
 #include "BitMatrixIO.h"
+
 #include "BitArray.h"
 
 #include <fstream>

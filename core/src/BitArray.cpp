@@ -16,6 +16,7 @@
 */
 
 #include "BitArray.h"
+
 #include "ByteArray.h"
 
 #include <cstddef>
