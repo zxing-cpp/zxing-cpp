@@ -167,12 +167,12 @@ Result DataBarReader::decodePattern(int rowNumber, const PatternView& view,
 									std::unique_ptr<RowReader::DecodingState>& state) const
 {
 #if 0 // non-stacked version
-	auto next = view.subView(-1, PAIR_SIZE);
+	auto next = view.subView(-1, FULL_PAIR_SIZE + 2);
 	// yes: the first view we test is at index 1 (black bar at 0 would be the guard pattern)
 	while (next.shift(2)) {
 		if (IsLeftPair(next)) {
-			if (auto leftPair = ReadPair(next, false); leftPair && next.skipSymbol() && IsRightPair(next)) {
-				if (auto rightPair = ReadPair(next, true); rightPair && CheckChecksum(leftPair, rightPair)) {
+			if (auto leftPair = ReadPair(next, false); leftPair && next.shift(FULL_PAIR_SIZE) && IsRightPair(next)) {
+				if (auto rightPair = ReadPair(next, true); rightPair && ChecksumIsValid(leftPair, rightPair)) {
 					return {ConstructText(leftPair, rightPair), rowNumber, leftPair.xStart, rightPair.xStop,
 							BarcodeFormat::DataBar};
 				}
