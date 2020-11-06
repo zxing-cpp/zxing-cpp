@@ -23,6 +23,7 @@ COMMON_FILES :=	\
 	src/GenericGF.cpp \
 	src/GenericGFPoly.cpp \
 	src/GenericLuminanceSource.cpp \
+	src/GTIN.cpp \
 	src/GlobalHistogramBinarizer.cpp \
 	src/GridSampler.cpp \
 	src/HybridBinarizer.cpp \
@@ -65,7 +66,6 @@ ONED_FILES := \
 	src/oned/ODDataBarCommon.cpp \
 	src/oned/ODDataBarReader.cpp \
 	src/oned/ODDataBarExpandedReader.cpp \
-	src/oned/ODEANManufacturerOrgSupport.cpp \
 	src/oned/ODITFReader.cpp \
 	src/oned/ODMultiUPCEANReader.cpp \
 	src/oned/ODReader.cpp \

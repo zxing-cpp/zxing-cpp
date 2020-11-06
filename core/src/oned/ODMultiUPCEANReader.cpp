@@ -22,7 +22,6 @@
 #include "BitArray.h"
 #include "DecodeHints.h"
 #include "GTIN.h"
-#include "ODEANManufacturerOrgSupport.h"
 #include "ODUPCEANCommon.h"
 #include "Result.h"
 #include "TextDecoder.h"
@@ -381,7 +380,7 @@ Result MultiUPCEANReader::decodePattern(int rowNumber, const PatternView& row, s
 		return Result(DecodeStatus::NotFound);
 
 	if (res.format == BarcodeFormat::EAN13 || res.format == BarcodeFormat::UPCA) {
-		std::string countryID = EANManufacturerOrgSupport::LookupCountryIdentifier(res.txt);
+		std::string countryID = GTIN::LookupCountryIdentifier(res.txt);
 		if (!countryID.empty())
 			result.metadata().put(ResultMetadata::POSSIBLE_COUNTRY, TextDecoder::FromLatin1(countryID));
 	}

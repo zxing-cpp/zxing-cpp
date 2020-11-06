@@ -56,6 +56,7 @@ set (COMMON_FILES
     src/GenericGFPoly.h
     src/GenericGFPoly.cpp
     src/GTIN.h
+    src/GTIN.cpp
     src/LogMatrix.h
     src/Matrix.h
     src/Pattern.h
@@ -228,8 +229,6 @@ if (BUILD_READERS)
         src/oned/ODDataBarReader.cpp
         src/oned/ODDataBarExpandedReader.h
         src/oned/ODDataBarExpandedReader.cpp
-        src/oned/ODEANManufacturerOrgSupport.h
-        src/oned/ODEANManufacturerOrgSupport.cpp
         src/oned/ODITFReader.h
         src/oned/ODITFReader.cpp
         src/oned/ODMultiUPCEANReader.h

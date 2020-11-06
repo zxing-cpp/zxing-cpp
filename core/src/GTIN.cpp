@@ -15,29 +15,28 @@
 * limitations under the License.
 */
 
-#include "ODEANManufacturerOrgSupport.h"
-
-#include "ZXStrConvWorkaround.h"
+#include "GTIN.h"
 
 #include <algorithm>
 #include <iterator>
 #include <string>
 
-namespace ZXing {
-namespace OneD {
+namespace ZXing::GTIN {
 
 struct CountryId
 {
 	int first;
 	int last;
 	const char *id;
-
-	bool operator<(const CountryId &other) const {
-		return last < other.last;
-	}
 };
 
+bool operator<(const CountryId& lhs, const CountryId& rhs)
+{
+	return lhs.last < rhs.last;
+}
+
 static const CountryId COUNTRIES[] = {
+	// clang-format off
 	{0, 19, "US/CA"},
 	{30, 39, "US"},
 	{60, 139, "US/CA"},
@@ -144,15 +143,15 @@ static const CountryId COUNTRIES[] = {
 	{940, 949, "AZ"},
 	{955, 955, "MY"},
 	{958, 958, "MO"},
+	// clang-format on
 };
 
-std::string
-EANManufacturerOrgSupport::LookupCountryIdentifier(const std::string& productCode)
+std::string LookupCountryIdentifier(const std::string& GTIN)
 {
-	int prefix = std::stoi(productCode.substr(0, 3));
-	auto it = std::lower_bound(std::begin(COUNTRIES), std::end(COUNTRIES), CountryId{ 0, prefix, nullptr });
+	// TODO: support GTIN-14 numbers?
+	int prefix = std::stoi(GTIN.substr(0, 3));
+	auto it    = std::lower_bound(std::begin(COUNTRIES), std::end(COUNTRIES), CountryId{0, prefix, nullptr});
 	return it != std::end(COUNTRIES) ? it->id : std::string();
 }
 
-} // OneD
-} // ZXing
+} // namespace ZXing::GTIN

@@ -42,7 +42,12 @@ bool IsCheckDigitValid(const std::basic_string<T>& s)
 	return ComputeCheckDigit(s, true) == s.back();
 }
 
-//TODO: move EANManufacturerSupport code here
+/**
+ * Evaluate the prefix of the GTIN to estimate the country of origin. See
+ * <a href="http://en.wikipedia.org/wiki/List_of_GS1_country_codes">
+ * http://en.wikipedia.org/wiki/List_of_GS1_country_codes</a>.
+ */
+std::string LookupCountryIdentifier(const std::string& GTIN);
 
 } // namespace GTIN
 } // namespace ZXing
