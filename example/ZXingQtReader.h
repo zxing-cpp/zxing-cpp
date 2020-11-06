@@ -163,7 +163,8 @@ inline Result ReadBarcode(const QImage& img, const DecodeHints& hints = {})
 	};
 
 	auto exec = [&](const QImage& img) {
-		return Result(ZXing::ReadBarcode({img.bits(), img.width(), img.height(), ImgFmtFromQImg(img)}, hints));
+		return Result(ZXing::ReadBarcode(
+			{img.bits(), img.width(), img.height(), ImgFmtFromQImg(img), img.bytesPerLine()}, hints));
 	};
 
 	return ImgFmtFromQImg(img) == ImageFormat::None ? exec(img.convertToFormat(QImage::Format_RGBX8888)) : exec(img);
