@@ -71,8 +71,6 @@ ONED_FILES := \
 	src/oned/ODReader.cpp \
 	src/oned/ODRowReader.cpp \
     src/oned/ODUPCEANCommon.cpp
-
-ONED_RSS_FILES := \
 	src/oned/rss/ODRSSExpandedBinaryDecoder.cpp \
 	src/oned/rss/ODRSSFieldParser.cpp \
 	src/oned/rss/ODRSSGenericAppIdDecoder.cpp
@@ -120,7 +118,6 @@ LOCAL_SRC_FILES := \
 	$(DATAMATRIX_FILES) \
 	$(MAXICODE_FILES) \
 	$(ONED_FILES) \
-	$(ONED_RSS_FILES) \
 	$(PDF417_FILES) \
 	$(QRCODE_FILES) \
 	$(TEXT_CODEC_FILES)
