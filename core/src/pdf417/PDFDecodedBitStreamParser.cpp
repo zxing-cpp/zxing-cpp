@@ -647,10 +647,9 @@ DecodeStatus DecodeMacroBlock(const std::vector<int>& codewords, int codeIndex, 
 				status = DecodeStatus::FormatError;
 				break;
 			}
-
-			if (StatusIsError(status)) {
-				return status;
-			}
+		}
+		if (StatusIsError(status)) {
+			return status;
 		}
 	}
 
