@@ -24,8 +24,7 @@
 #include "QRFormatInformation.h"
 #include "QRVersion.h"
 
-namespace ZXing {
-namespace QRCode {
+namespace ZXing::QRCode {
 
 static bool getBit(const BitMatrix& bitMatrix, int x, int y, bool mirrored)
 {
@@ -144,5 +143,4 @@ BitMatrixParser::ReadCodewords(const BitMatrix& bitMatrix, const Version& versio
 	return result;
 }
 
-} // QRCode
-} // ZXing
+} // namespace ZXing::QRCode

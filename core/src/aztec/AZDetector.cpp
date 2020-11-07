@@ -29,8 +29,7 @@
 #include <array>
 #include <utility>
 
-namespace ZXing {
-namespace Aztec {
+namespace ZXing::Aztec {
 
 template <typename T, typename = typename std::enable_if<std::is_floating_point<T>::value>::type>
 static int RoundToNearest(T x)
@@ -514,5 +513,4 @@ DetectorResult Detector::Detect(const BitMatrix& image, bool isMirror)
 			compact, nbDataBlocks, nbLayers};
 }
 
-} // Aztec
-} // ZXing
+} // namespace ZXing::Aztec

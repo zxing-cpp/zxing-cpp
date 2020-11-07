@@ -23,8 +23,7 @@
 
 #include <stdexcept>
 
-namespace ZXing {
-namespace OneD {
+namespace ZXing::OneD {
 
 static const char ALPHABET[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%abcd*";
 
@@ -195,6 +194,4 @@ Code93Writer::encode(const std::wstring& contents_, int width, int height) const
 	return WriterHelper::RenderResult(result, width, height, _sidesMargin >= 0 ? _sidesMargin : 10);
 }
 
-
-} // OneD
-} // ZXing
+} // namespace ZXing::OneD

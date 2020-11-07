@@ -34,8 +34,7 @@
 #include <algorithm>
 #include <utility>
 
-namespace ZXing {
-namespace OneD {
+namespace ZXing::OneD {
 
 Reader::Reader(const DecodeHints& hints) :
 	_tryHarder(hints.tryHarder()),
@@ -168,5 +167,4 @@ Reader::decode(const BinaryBitmap& image) const
 	return result;
 }
 
-} // OneD
-} // ZXing
+} // namespace ZXing::OneD

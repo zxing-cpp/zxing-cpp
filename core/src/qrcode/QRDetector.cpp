@@ -35,8 +35,7 @@
 #include <map>
 #include <utility>
 
-namespace ZXing {
-namespace QRCode {
+namespace ZXing::QRCode {
 
 static auto FindFinderPatterns(const BitMatrix& image, bool tryHarder)
 {
@@ -342,5 +341,4 @@ DetectorResult Detector::Detect(const BitMatrix& image, bool tryHarder, bool isP
 	return SampleAtFinderPatternSet(image, sets[0]);
 }
 
-} // QRCode
-} // ZXing
+} // namespace ZXing::QRCode

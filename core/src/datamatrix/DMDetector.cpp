@@ -39,8 +39,7 @@
 #include <utility>
 #include <vector>
 
-namespace ZXing {
-namespace DataMatrix {
+namespace ZXing::DataMatrix {
 
 /**
 * The following code is the 'old' code by Sean Owen based on the Java upstream project.
@@ -867,5 +866,4 @@ DetectorResult Detector::Detect(const BitMatrix& image, bool tryHarder, bool try
 	return result;
 }
 
-} // DataMatrix
-} // ZXing
+} // namespace ZXing::DataMatrix

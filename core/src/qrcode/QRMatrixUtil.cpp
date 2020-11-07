@@ -28,8 +28,7 @@
 #include <stdexcept>
 #include <string>
 
-namespace ZXing {
-namespace QRCode {
+namespace ZXing::QRCode {
 
 // From Appendix D in JISX0510:2004 (p. 67)
 static const int VERSION_INFO_POLY = 0x1f25;  // 1 1111 0010 0101
@@ -329,5 +328,4 @@ MatrixUtil::BuildMatrix(const BitArray& dataBits, ErrorCorrectionLevel ecLevel, 
 	EmbedDataBits(dataBits, maskPattern, matrix);
 }
 
-} // QRCode
-} // ZXing
+} // namespace ZXing::QRCode

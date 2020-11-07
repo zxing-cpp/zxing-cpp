@@ -26,9 +26,7 @@
 #include <stdexcept>
 #include <utility>
 
-namespace ZXing {
-namespace OneD {
-namespace RSS {
+namespace ZXing::OneD::RSS {
 
 struct DecodedValue
 {
@@ -492,6 +490,4 @@ GenericAppIdDecoder::DecodeAllCodes(const BitArray& bits, int pos, std::string& 
 	return DecodeStatus::FormatError;
 }
 
-} // RSS
-} // OneD
-} // ZXing
+} // namespace ZXing::OneD::RSS

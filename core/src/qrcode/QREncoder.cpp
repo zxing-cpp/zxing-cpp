@@ -35,8 +35,7 @@
 #include <limits>
 #include <stdexcept>
 
-namespace ZXing {
-namespace QRCode {
+namespace ZXing::QRCode {
 
 static const CharacterSet DEFAULT_BYTE_MODE_ENCODING = CharacterSet::ISO8859_1;
 
@@ -581,5 +580,4 @@ Encoder::Encode(const std::wstring& content, ErrorCorrectionLevel ecLevel, Chara
 	return output;
 }
 
-} // QRCode
-} // ZXing
+} // namespace ZXing::QRCode

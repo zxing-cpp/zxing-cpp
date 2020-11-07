@@ -28,8 +28,7 @@
 #include <utility>
 #include <vector>
 
-namespace ZXing {
-namespace Aztec {
+namespace ZXing::Aztec {
 
 Result
 Reader::decode(const BinaryBitmap& image) const
@@ -56,5 +55,4 @@ Reader::decode(const BinaryBitmap& image) const
 	return Result(std::move(decodeResult), std::move(detectResult).position(), BarcodeFormat::Aztec);
 }
 
-} // Aztec
-} // ZXing
+} // namespace ZXing::Aztec

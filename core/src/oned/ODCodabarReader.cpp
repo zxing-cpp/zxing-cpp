@@ -28,8 +28,7 @@
 #include <string>
 #include <vector>
 
-namespace ZXing {
-namespace OneD {
+namespace ZXing::OneD {
 
 static const char ALPHABET[] = "0123456789-$:/.+ABCD";
 
@@ -111,5 +110,4 @@ CodabarReader::decodePattern(int rowNumber, const PatternView& row, std::unique_
 	return Result(txt, rowNumber, xStart, xStop, BarcodeFormat::Codabar);
 }
 
-} // OneD
-} // ZXing
+} // namespace ZXing::OneD

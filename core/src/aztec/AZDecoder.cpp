@@ -34,8 +34,7 @@
 #include <string>
 #include <vector>
 
-namespace ZXing {
-namespace Aztec {
+namespace ZXing::Aztec {
 
 enum class Table {
 	UPPER,
@@ -376,5 +375,4 @@ DecoderResult Decoder::Decode(const DetectorResult& detectorResult)
 	}
 }
 
-} // Aztec
-} // ZXing
+} // namespace ZXing::Aztec

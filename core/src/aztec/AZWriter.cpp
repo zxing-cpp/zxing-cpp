@@ -23,8 +23,7 @@
 
 #include <utility>
 
-namespace ZXing {
-namespace Aztec {
+namespace ZXing::Aztec {
 
 Writer::Writer() :
 	_encoding(CharacterSet::ISO8859_1),
@@ -41,5 +40,4 @@ Writer::encode(const std::wstring& contents, int width, int height) const
 	return Inflate(std::move(aztec.matrix), width, height, _margin);
 }
 
-} // Aztec
-} // ZXing
+} // namespace ZXing::Aztec

@@ -23,10 +23,7 @@
 
 #include <limits>
 
-namespace ZXing {
-namespace QRCode {
-
-namespace {
+namespace ZXing::QRCode {
 
 	/**
 	* See ISO 18004:2006 Annex D.
@@ -41,9 +38,6 @@ namespace {
 		0x209D5, 0x216F0, 0x228BA, 0x2379F, 0x24B0B,
 		0x2542E, 0x26A64, 0x27541, 0x28C69
 	};
-
-
-} // anonymous
 
 const Version *
 Version::AllVersions()
@@ -397,5 +391,4 @@ BitMatrix Version::buildFunctionPattern() const
 	return bitMatrix;
 }
 
-} // QRCode
-} // ZXing
+} // namespace ZXing::QRCode

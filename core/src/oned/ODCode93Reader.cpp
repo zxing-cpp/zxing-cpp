@@ -25,9 +25,7 @@
 #include <array>
 #include <string>
 
-namespace ZXing {
-
-namespace OneD {
+namespace ZXing::OneD {
 
 // Note that 'abcd' are dummy characters in place of control characters.
 static const char ALPHABET[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%abcd*";
@@ -141,6 +139,4 @@ Result Code93Reader::decodePattern(int rowNumber, const PatternView& row, std::u
 	return Result(txt, rowNumber, xStart, xStop, BarcodeFormat::Code93);
 }
 
-
-} // OneD
-} // ZXing
+} // namespace ZXing::OneD

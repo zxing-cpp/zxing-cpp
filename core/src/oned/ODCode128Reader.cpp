@@ -33,8 +33,7 @@
 #include <utility>
 #include <vector>
 
-namespace ZXing {
-namespace OneD {
+namespace ZXing::OneD {
 
 static const float MAX_AVG_VARIANCE = 0.25f;
 static const float MAX_INDIVIDUAL_VARIANCE = 0.7f;
@@ -282,5 +281,4 @@ Result Code128Reader::decodePattern(int rowNumber, const PatternView& row, std::
 	return Result(raw2txt.text(), rowNumber, xStart, xStop, BarcodeFormat::Code128, std::move(rawCodes));
 }
 
-} // OneD
-} // ZXing
+} // namespace ZXing::OneD

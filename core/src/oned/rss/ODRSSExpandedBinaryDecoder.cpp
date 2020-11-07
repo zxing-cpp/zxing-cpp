@@ -34,9 +34,7 @@
 
 #include <functional>
 
-namespace ZXing {
-namespace OneD {
-namespace RSS {
+namespace ZXing::OneD::RSS {
 
 static const int AI01_GTIN_SIZE = 40;
 
@@ -335,6 +333,4 @@ ExpandedBinaryDecoder::Decode(const BitArray& bits)
 	//throw new IllegalStateException("unknown decoder: " + information);
 }
 
-} // RSS
-} // OneD
-} // ZXing
+} // namespace ZXing::OneD::RSS

@@ -31,8 +31,7 @@
 #include <cassert>
 #include <utility>
 
-namespace ZXing {
-namespace Pdf417 {
+namespace ZXing::Pdf417 {
 
 enum class Mode {
 	ALPHA,
@@ -749,5 +748,4 @@ DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel)
 		.setExtra(resultMetadata);
 }
 
-} // Pdf417
-} // ZXing
+} // namespace ZXing::Pdf417

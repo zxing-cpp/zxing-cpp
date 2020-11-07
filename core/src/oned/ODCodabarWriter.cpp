@@ -23,8 +23,7 @@
 #include <stdexcept>
 #include <vector>
 
-namespace ZXing {
-namespace OneD {
+namespace ZXing::OneD {
 
 static constexpr wchar_t START_END_CHARS[] =  L"ABCD";
 static constexpr wchar_t ALT_START_END_CHARS[] = L"TN*E";
@@ -138,5 +137,4 @@ CodabarWriter::encode(const std::wstring& contents_, int width, int height) cons
 	return WriterHelper::RenderResult(result, width, height, _sidesMargin >= 0 ? _sidesMargin : 10);
 }
 
-} // OneD
-} // ZXing
+} // namespace ZXing::OneD

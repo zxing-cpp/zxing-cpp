@@ -17,8 +17,7 @@
 
 #include "ODUPCEANCommon.h"
 
-namespace ZXing {
-namespace OneD {
+namespace ZXing::OneD {
 
 const std::array<int, 3> UPCEANCommon::START_END_PATTERN = { 1, 1, 1 };
 const std::array<int, 5> UPCEANCommon::MIDDLE_PATTERN = { 1, 1, 1, 1, 1 };
@@ -89,6 +88,4 @@ const std::array<int, 20> UPCEANCommon::NUMSYS_AND_CHECK_DIGIT_PATTERNS = {
 	0x07, 0x0B, 0x0D, 0x0E, 0x13, 0x19, 0x1C, 0x15, 0x16, 0x1A,
 };
 
-
-} // OneD
-} // ZXing
+} // namespace ZXing::OneD

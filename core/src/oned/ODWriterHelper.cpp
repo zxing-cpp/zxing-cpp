@@ -21,8 +21,7 @@
 
 #include <algorithm>
 
-namespace ZXing {
-namespace OneD {
+namespace ZXing::OneD {
 
 /**
 * @return a byte array of horizontal pixels (0 = white, 1 = black)
@@ -71,5 +70,4 @@ WriterHelper::AppendPattern(std::vector<bool>& target, int pos, const int* patte
 	return numAdded;
 }
 
-} // OneD
-} // ZXing
+} // namespace ZXing::OneD

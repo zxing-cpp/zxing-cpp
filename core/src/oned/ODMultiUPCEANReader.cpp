@@ -30,8 +30,7 @@
 #include <iomanip>
 #include <sstream>
 
-namespace ZXing {
-namespace OneD {
+namespace ZXing::OneD {
 
 MultiUPCEANReader::MultiUPCEANReader(const DecodeHints& hints) : _hints(hints)
 {
@@ -388,5 +387,4 @@ Result MultiUPCEANReader::decodePattern(int rowNumber, const PatternView& row, s
 	return result;
 }
 
-} // OneD
-} // ZXing
+} // namespace ZXing::OneD

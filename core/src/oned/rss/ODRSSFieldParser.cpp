@@ -23,9 +23,7 @@
 #include <algorithm>
 #include <cstdlib>
 
-namespace ZXing {
-namespace OneD {
-namespace RSS {
+namespace ZXing::OneD::RSS {
 
 	//private static final Object VARIABLE_LENGTH = new Object();
 
@@ -217,7 +215,4 @@ FieldParser::ParseFieldsInGeneralPurpose(const std::string &rawInfo, std::string
 	return status;
 }
 
-
-} // RSS
-} // OneD
-} // ZXing
+} // namespace ZXing::OneD::RSS

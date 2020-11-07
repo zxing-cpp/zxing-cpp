@@ -24,8 +24,7 @@
 
 #include <array>
 
-namespace ZXing {
-namespace OneD {
+namespace ZXing::OneD {
 
 /** Valid ITF lengths. Anything longer than the largest value is also allowed. */
 static const std::array<int, 5> DEFAULT_ALLOWED_LENGTHS = { 6, 8, 10, 12, 14 };
@@ -92,5 +91,4 @@ Result ITFReader::decodePattern(int rowNumber, const PatternView& row, std::uniq
 	return Result(txt, rowNumber, xStart, xStop, BarcodeFormat::ITF);
 }
 
-} // OneD
-} // ZXing
+} // namespace ZXing::OneD

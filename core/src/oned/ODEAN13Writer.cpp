@@ -23,8 +23,7 @@
 #include <array>
 #include <vector>
 
-namespace ZXing {
-namespace OneD {
+namespace ZXing::OneD {
 
 static const int FIRST_DIGIT_ENCODINGS[] = {
 	0x00, 0x0B, 0x0D, 0xE, 0x13, 0x19, 0x1C, 0x15, 0x16, 0x1A
@@ -65,5 +64,4 @@ EAN13Writer::encode(const std::wstring& contents, int width, int height) const
 	return WriterHelper::RenderResult(result, width, height, _sidesMargin >= 0 ? _sidesMargin : 9);
 }
 
-} // OneD
-} // ZXing
+} // namespace ZXing::OneD

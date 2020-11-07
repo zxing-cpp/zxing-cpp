@@ -25,8 +25,7 @@
 #include <stdexcept>
 #include <vector>
 
-namespace ZXing {
-namespace OneD {
+namespace ZXing::OneD {
 
 static const int CODE_START_A = 103;
 static const int CODE_START_B = 104;
@@ -277,5 +276,4 @@ Code128Writer::encode(const std::wstring& contents, int width, int height) const
 	return WriterHelper::RenderResult(result, width, height, _sidesMargin >= 0 ? _sidesMargin : 10);
 }
 
-} // OneD
-} // ZXing
+} // namespace ZXing::OneD

@@ -25,9 +25,7 @@
 #include <array>
 #include <limits>
 
-namespace ZXing {
-
-namespace OneD {
+namespace ZXing::OneD {
 
 static const char ALPHABET[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%*";
 
@@ -151,5 +149,4 @@ Result Code39Reader::decodePattern(int rowNumber, const PatternView& row, std::u
 	return Result(txt, rowNumber, xStart, xStop, BarcodeFormat::Code39);
 }
 
-} // OneD
-} // ZXing
+} // namespace ZXing::OneD

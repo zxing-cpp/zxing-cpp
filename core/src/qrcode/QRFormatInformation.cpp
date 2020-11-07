@@ -21,10 +21,7 @@
 
 #include <array>
 
-namespace ZXing {
-namespace QRCode {
-
-namespace {
+namespace ZXing::QRCode {
 
 static const int FORMAT_INFO_MASK_QR = 0x5412;
 
@@ -66,8 +63,6 @@ static const std::array<int, 2> FORMAT_INFO_DECODE_LOOKUP[] = {
 	{0x2BED, 0x1F},
 };
 
-} // anonymous
-
 FormatInformation::FormatInformation(int formatInfo)
 {
 	// Bits 3,4
@@ -107,5 +102,4 @@ FormatInformation::DecodeFormatInformation(uint32_t formatInfoBits1, uint32_t fo
 	return {};
 }
 
-} // QRCode
-} // ZXing
+} // namespace ZXing::QRCode

@@ -30,8 +30,7 @@
 
 #include <utility>
 
-namespace ZXing {
-namespace QRCode {
+namespace ZXing::QRCode {
 
 Reader::Reader(const DecodeHints& hints)
 	: _tryHarder(hints.tryHarder()), _isPure(hints.isPure()), _charset(hints.characterSet())
@@ -59,5 +58,4 @@ Reader::decode(const BinaryBitmap& image) const
 	return Result(std::move(decoderResult), std::move(position), BarcodeFormat::QRCode);
 }
 
-} // QRCode
-} // ZXing
+} // namespace ZXing::QRCode

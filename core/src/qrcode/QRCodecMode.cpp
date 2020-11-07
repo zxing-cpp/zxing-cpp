@@ -21,10 +21,7 @@
 
 #include <stdexcept>
 
-namespace ZXing {
-namespace QRCode {
-
-namespace {
+namespace ZXing::QRCode {
 
 static const int CHAR_COUNT_PER_MODE[] = {
 	0, 0, 0,
@@ -42,8 +39,6 @@ static const int CHAR_COUNT_PER_MODE[] = {
 	0, 0, 0,
 	8, 10, 12,
 };
-
-} // anonymous
 
 CodecMode::Mode
 CodecMode::ModeForBits(int bits)
@@ -72,5 +67,4 @@ CodecMode::CharacterCountBits(Mode mode, const Version& version)
 	return CHAR_COUNT_PER_MODE[static_cast<int>(mode) * 3 + offset];
 }
 
-} // QRCode
-} // ZXing
+} // namespace ZXing::QRCode

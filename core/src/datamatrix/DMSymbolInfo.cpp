@@ -24,8 +24,7 @@
 #include <cstddef>
 #include <stdexcept>
 
-namespace ZXing {
-namespace DataMatrix {
+namespace ZXing::DataMatrix {
 
 static const SymbolInfo PROD_SYMBOLS[] = {
 	{ false, 3, 5, 8, 8, 1 },
@@ -163,5 +162,4 @@ SymbolInfo::verticalDataRegions() const {
 	}
 }
 
-} // DataMatrix
-} // ZXing
+} // namespace ZXing::DataMatrix

@@ -26,8 +26,7 @@
 #include <stdexcept>
 #include <utility>
 
-namespace ZXing {
-namespace QRCode {
+namespace ZXing::QRCode {
 
 static const int QUIET_ZONE_SIZE = 4;
 
@@ -56,5 +55,4 @@ Writer::encode(const std::wstring& contents, int width, int height) const
 	return Inflate(std::move(code.matrix), width, height, _margin);
 }
 
-} // QRCode
-} // ZXing
+} // namespace ZXing::QRCode

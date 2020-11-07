@@ -41,8 +41,7 @@
 #include <utility>
 #include <vector>
 
-namespace ZXing {
-namespace QRCode {
+namespace ZXing::QRCode {
 
 /**
 * <p>Given data and error-correction codewords received, possibly corrupted by errors, attempts to
@@ -479,5 +478,4 @@ Decoder::Decode(const BitMatrix& bits, const std::string& hintedCharset)
 	return res;
 }
 
-} // QRCode
-} // ZXing
+} // namespace ZXing::QRCode
