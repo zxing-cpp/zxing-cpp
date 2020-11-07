@@ -496,7 +496,6 @@ static void DetermineDimensions(int minCols, int maxCols, int minRows, int maxRo
 		if (rows < minRows) {
 			outCols = minCols;
 			outRows = minRows;
-			haveDimension = true;
 		}
 		else {
 			throw std::invalid_argument("Unable to fit message in columns");
