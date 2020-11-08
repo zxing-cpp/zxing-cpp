@@ -27,34 +27,23 @@ class Version;
 class FormatInformation;
 
 /**
-* @author Sean Owen
-*/
-class BitMatrixParser
-{
-public:
-	/**
-	 * @brief Reads version information from the QR Code.
-	 * @return {@link Version} encapsulating the QR Code's version, nullptr if neither location can be parsed
-	 */
-	static const Version* ReadVersion(const BitMatrix& bitMatrix);
+ * @brief Reads version information from the QR Code.
+ * @return {@link Version} encapsulating the QR Code's version, nullptr if neither location can be parsed
+ */
+const Version* ReadVersion(const BitMatrix& bitMatrix);
 
-	/**
-	 * @brief Reads format information from one of its two locations within the QR Code.
-	 * @return {@link FormatInformation} encapsulating the QR Code's format info, result is invalid if both format
-	 * information locations cannot be parsed as the valid encoding of format information
-	 */
-	static FormatInformation ReadFormatInformation(const BitMatrix& bitMatrix, bool mirrored);
+/**
+ * @brief Reads format information from one of its two locations within the QR Code.
+ * @return {@link FormatInformation} encapsulating the QR Code's format info, result is invalid if both format
+ * information locations cannot be parsed as the valid encoding of format information
+ */
+FormatInformation ReadFormatInformation(const BitMatrix& bitMatrix, bool mirrored);
 
-	/**
-	* <p>Reads the bits in the {@link BitMatrix} representing the finder pattern in the
-	* correct order in order to reconstruct the codewords bytes contained within the
-	* QR Code.</p>
-	*
-	* @return bytes encoded within the QR Code
-	* or empty array if the exact number of bytes expected is not read
-	*/
-	static ByteArray ReadCodewords(const BitMatrix& bitMatrix, const Version& version, int maskIndex, bool mirrored);
-};
+/**
+ * @brief Reads the codewords from the BitMatrix.
+ * @return bytes encoded within the QR Code or empty array if the exact number of bytes expected is not read
+ */
+ByteArray ReadCodewords(const BitMatrix& bitMatrix, const Version& version, int maskIndex, bool mirrored);
 
 } // QRCode
 } // ZXing

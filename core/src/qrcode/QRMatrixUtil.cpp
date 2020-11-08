@@ -171,7 +171,7 @@ static int CalculateBCHCode(int value, int poly) {
 // JISX0510:2004 (p.45) for details.
 static BitArray MakeTypeInfoBits(ErrorCorrectionLevel ecLevel, int maskPattern)
 {
-	if (maskPattern < 0 || maskPattern >= MatrixUtil::NUM_MASK_PATTERNS) {
+	if (maskPattern < 0 || maskPattern >= NUM_MASK_PATTERNS) {
 		throw std::invalid_argument("Invalid mask pattern");
 	}
 
@@ -308,8 +308,8 @@ static void EmbedDataBits(const BitArray& dataBits, int maskPattern, TritMatrix&
 
 // Build 2D matrix of QR Code from "dataBits" with "ecLevel", "version" and "getMaskPattern". On
 // success, store the result in "matrix" and return true.
-void
-MatrixUtil::BuildMatrix(const BitArray& dataBits, ErrorCorrectionLevel ecLevel, const Version& version, int maskPattern, TritMatrix& matrix)
+void BuildMatrix(const BitArray& dataBits, ErrorCorrectionLevel ecLevel, const Version& version, int maskPattern,
+				 TritMatrix& matrix)
 {
 	matrix.clear();
 	// Let's get started with embedding big squares at corners.

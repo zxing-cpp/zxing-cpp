@@ -44,19 +44,16 @@ class GenericGF;
 * @author William Rucklidge
 * @author sanfordsquires
 */
-class ReedSolomonDecoder
-{
-public:
-	/**
-	* <p>Decodes given set of received codewords, which include both data and error-correction
-	* codewords. Really, this means it uses Reed-Solomon to detect and correct errors, in-place,
-	* in the input.</p>
-	*
-	* @param received data and error-correction codewords
-	* @param twoS number of error-correction codewords available
-	* @throws ReedSolomonException if decoding fails for any reason
-	*/
-	static bool Decode(const GenericGF& field, std::vector<int>& received, int twoS);
-};
+
+/**
+ * <p>Decodes given set of received codewords, which include both data and error-correction
+ * codewords. Really, this means it uses Reed-Solomon to detect and correct errors, in-place,
+ * in the input.</p>
+ *
+ * @param received data and error-correction codewords
+ * @param twoS number of error-correction codewords available
+ * @return true on sucess
+ */
+bool ReedSolomonDecode(const GenericGF& field, std::vector<int>& received, int twoS);
 
 } // ZXing

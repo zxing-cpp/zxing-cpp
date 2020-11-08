@@ -561,7 +561,7 @@ CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
 	// First read into an array of ints
 	std::vector<int> codewordsInts(codewordBytes.begin(), codewordBytes.end());
 	int numECCodewords = Size(codewordBytes) - numDataCodewords;
-	if (!ReedSolomonDecoder::Decode(GenericGF::DataMatrixField256(), codewordsInts, numECCodewords))
+	if (!ReedSolomonDecode(GenericGF::DataMatrixField256(), codewordsInts, numECCodewords))
 		return false;
 
 	// Copy back into array of bytes -- only need to worry about the bytes that were data

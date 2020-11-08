@@ -135,7 +135,7 @@ FindErrorMagnitudes(const GenericGF& field, const GenericGFPoly& errorEvaluator,
 
 
 bool
-ReedSolomonDecoder::Decode(const GenericGF& field, std::vector<int>& received, int twoS)
+ReedSolomonDecode(const GenericGF& field, std::vector<int>& received, int twoS)
 {
 	GenericGFPoly poly(field, received);
 	std::vector<int> syndromeCoefficients(twoS, 0);

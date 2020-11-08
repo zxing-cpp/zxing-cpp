@@ -22,19 +22,9 @@ namespace ZXing {
 
 class BitArray;
 
-namespace OneD {
-namespace RSS {
+namespace OneD::DataBar {
 
-/**
-* @author Pablo Orduña, University of Deusto (pablo.orduna@deusto.es)
-* @author Eduardo Castillejo, University of Deusto (eduardo.castillejo@deusto.es)
-*/
-class ExpandedBinaryDecoder
-{
-public:
-	static std::string Decode(const BitArray& bits);
-};
+std::string DecodeExpandedBits(const BitArray& bits);
 
-} // RSS
-} // OneD
-} // ZXing
+} // namespace OneD::DataBar
+} // namespace ZXing

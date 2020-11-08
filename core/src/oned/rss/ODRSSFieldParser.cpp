@@ -23,7 +23,7 @@
 #include <algorithm>
 #include <cstdlib>
 
-namespace ZXing::OneD::RSS {
+namespace ZXing::OneD::DataBar {
 
 	//private static final Object VARIABLE_LENGTH = new Object();
 
@@ -183,7 +183,7 @@ AiSize(const char* aiPrefix)
 
 
 DecodeStatus
-FieldParser::ParseFieldsInGeneralPurpose(const std::string &rawInfo, std::string& result)
+ParseFieldsInGeneralPurpose(const std::string &rawInfo, std::string& result)
 {
 	if (rawInfo.empty()) {
 		return DecodeStatus::NoError;
@@ -210,7 +210,7 @@ FieldParser::ParseFieldsInGeneralPurpose(const std::string &rawInfo, std::string
 	auto field = rawInfo.substr(aiSize, fieldSize);
 	auto remaining = rawInfo.substr(aiSize + fieldSize);
 	std::string parsedRemaining;
-	auto status = FieldParser::ParseFieldsInGeneralPurpose(remaining, parsedRemaining);
+	auto status = ParseFieldsInGeneralPurpose(remaining, parsedRemaining);
 	result = '(' + ai + ')' + field + parsedRemaining;
 	return status;
 }

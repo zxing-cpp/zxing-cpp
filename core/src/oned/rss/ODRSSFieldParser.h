@@ -22,15 +22,9 @@ namespace ZXing {
 
 enum class DecodeStatus;
 
-namespace OneD {
-namespace RSS {
+namespace OneD::DataBar {
 
-class FieldParser
-{
-public:
-	static DecodeStatus ParseFieldsInGeneralPurpose(const std::string &rawInfo, std::string& result);
-};
+DecodeStatus ParseFieldsInGeneralPurpose(const std::string &rawInfo, std::string& result);
 
-} // RSS
-} // OneD
-} // ZXing
+} // namespace OneD::DataBar
+} // namespace ZXing

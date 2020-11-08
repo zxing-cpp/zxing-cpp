@@ -23,6 +23,8 @@
 
 namespace ZXing {
 
+// TODO: make interface symmetric to ReedSolomonDecode
+
 class ReedSolomonEncoder
 {
 public:

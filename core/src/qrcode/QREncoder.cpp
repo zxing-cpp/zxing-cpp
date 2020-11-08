@@ -83,7 +83,7 @@ int GetAlphanumericCode(int code)
 * if it is Shift_JIS, and the input is only double-byte Kanji, then we return {@link Mode#KANJI}.
 */
 ZXING_EXPORT_TEST_ONLY
-CodecMode::Mode ChooseMode(const std::wstring& content, CharacterSet encoding)
+CodecMode ChooseMode(const std::wstring& content, CharacterSet encoding)
 {
 	if (encoding == CharacterSet::Shift_JIS && IsOnlyDoubleByteKanji(content)) {
 		// Choose Kanji mode if all input are double-byte characters
@@ -113,7 +113,7 @@ CodecMode::Mode ChooseMode(const std::wstring& content, CharacterSet encoding)
 
 static void AppendECI(CharacterSet eci, BitArray& bits)
 {
-	bits.appendBits(CodecMode::ECI, 4);
+	bits.appendBits(static_cast<int>(CodecMode::ECI), 4);
 	// This is correct for values up to 127, which is all we need now.
 	bits.appendBits(CharacterSetECI::ValueForCharset(eci), 8);
 }
@@ -122,9 +122,9 @@ static void AppendECI(CharacterSet eci, BitArray& bits)
 * Append mode info. On success, store the result in "bits".
 */
 ZXING_EXPORT_TEST_ONLY
-void AppendModeInfo(CodecMode::Mode mode, BitArray& bits)
+void AppendModeInfo(CodecMode mode, BitArray& bits)
 {
-	bits.appendBits(mode, 4);
+	bits.appendBits(static_cast<int>(mode), 4);
 }
 
 
@@ -132,9 +132,9 @@ void AppendModeInfo(CodecMode::Mode mode, BitArray& bits)
 * Append length info. On success, store the result in "bits".
 */
 ZXING_EXPORT_TEST_ONLY
-void AppendLengthInfo(int numLetters, const Version& version, CodecMode::Mode mode, BitArray& bits)
+void AppendLengthInfo(int numLetters, const Version& version, CodecMode mode, BitArray& bits)
 {
-	int numBits = CodecMode::CharacterCountBits(mode, version);
+	int numBits = CharacterCountBits(mode, version);
 	if (numLetters >= (1 << numBits)) {
 		return throw std::invalid_argument(std::to_string(numLetters) + " is bigger than " + std::to_string((1 << numBits) - 1));
 	}
@@ -236,7 +236,7 @@ void AppendKanjiBytes(const std::wstring& content, BitArray& bits)
 * Append "bytes" in "mode" mode (encoding) into "bits". On success, store the result in "bits".
 */
 ZXING_EXPORT_TEST_ONLY
-void AppendBytes(const std::wstring& content, CodecMode::Mode mode, CharacterSet encoding, BitArray& bits)
+void AppendBytes(const std::wstring& content, CodecMode mode, CharacterSet encoding, BitArray& bits)
 {
 	switch (mode) {
 		case CodecMode::NUMERIC:
@@ -252,7 +252,7 @@ void AppendBytes(const std::wstring& content, CodecMode::Mode mode, CharacterSet
 			AppendKanjiBytes(content, bits);
 			break;
 		default:
-			throw std::invalid_argument("Invalid mode: " + std::to_string(mode));
+			throw std::invalid_argument("Invalid mode: " + std::to_string(static_cast<int>(mode)));
 	}
 }
 
@@ -459,8 +459,8 @@ static int ChooseMaskPattern(const BitArray& bits, ErrorCorrectionLevel ecLevel,
 	int minPenalty = std::numeric_limits<int>::max();  // Lower penalty is better.
 	int bestMaskPattern = -1;
 	// We try all mask patterns to choose the best one.
-	for (int maskPattern = 0; maskPattern < MatrixUtil::NUM_MASK_PATTERNS; maskPattern++) {
-		MatrixUtil::BuildMatrix(bits, ecLevel, version, maskPattern, matrix);
+	for (int maskPattern = 0; maskPattern < NUM_MASK_PATTERNS; maskPattern++) {
+		BuildMatrix(bits, ecLevel, version, maskPattern, matrix);
 		int penalty = MaskUtil::CalculateMaskPenalty(matrix);
 		if (penalty < minPenalty) {
 			minPenalty = penalty;
@@ -470,16 +470,16 @@ static int ChooseMaskPattern(const BitArray& bits, ErrorCorrectionLevel ecLevel,
 	return bestMaskPattern;
 }
 
-static int CalculateBitsNeeded(CodecMode::Mode mode, const BitArray& headerBits, const BitArray& dataBits, const Version& version)
+static int CalculateBitsNeeded(CodecMode mode, const BitArray& headerBits, const BitArray& dataBits, const Version& version)
 {
-	return headerBits.size() + CodecMode::CharacterCountBits(mode, version) + dataBits.size();
+	return headerBits.size() + CharacterCountBits(mode, version) + dataBits.size();
 }
 
 /**
 * Decides the smallest version of QR code that will contain all of the provided data.
 * @throws WriterException if the data cannot fit in any version
 */
-static const Version& RecommendVersion(ErrorCorrectionLevel ecLevel, CodecMode::Mode mode, const BitArray& headerBits, const BitArray& dataBits)
+static const Version& RecommendVersion(ErrorCorrectionLevel ecLevel, CodecMode mode, const BitArray& headerBits, const BitArray& dataBits)
 {
 	// Hard part: need to know version to know how many bits length takes. But need to know how many
 	// bits it takes to know version. First we take a guess at version by assuming version will be
@@ -492,8 +492,8 @@ static const Version& RecommendVersion(ErrorCorrectionLevel ecLevel, CodecMode::
 	return ChooseVersion(bitsNeeded, ecLevel);
 }
 
-EncodeResult
-Encoder::Encode(const std::wstring& content, ErrorCorrectionLevel ecLevel, CharacterSet charset, int versionNumber, bool useGs1Format, int maskPattern)
+EncodeResult Encode(const std::wstring& content, ErrorCorrectionLevel ecLevel, CharacterSet charset, int versionNumber,
+					bool useGs1Format, int maskPattern)
 {
 	bool charsetWasUnknown = charset == CharacterSet::Unknown;
 	if (charsetWasUnknown) {
@@ -502,7 +502,7 @@ Encoder::Encode(const std::wstring& content, ErrorCorrectionLevel ecLevel, Chara
 
 	// Pick an encoding mode appropriate for the content. Note that this will not attempt to use
 	// multiple modes / segments even if that were more efficient. Twould be nice.
-	CodecMode::Mode mode = ChooseMode(content, charset);
+	CodecMode mode = ChooseMode(content, charset);
 
 	// This will store the header information, like mode and
 	// length, as well as "header" segments like an ECI segment.
@@ -573,7 +573,7 @@ Encoder::Encode(const std::wstring& content, ErrorCorrectionLevel ecLevel, Chara
 	output.maskPattern = maskPattern != -1 ? maskPattern : ChooseMaskPattern(finalBits, ecLevel, *version, matrix);
 
 	// Build the matrix and set it to "qrCode".
-	MatrixUtil::BuildMatrix(finalBits, ecLevel, *version, output.maskPattern, matrix);
+	BuildMatrix(finalBits, ecLevel, *version, output.maskPattern, matrix);
 
 	output.matrix = ToBitMatrix(matrix);
 

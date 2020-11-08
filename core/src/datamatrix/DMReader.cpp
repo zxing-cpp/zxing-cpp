@@ -52,7 +52,7 @@ Reader::decode(const BinaryBitmap& image) const
 		return Result(DecodeStatus::NotFound);
 	}
 
-	auto detectorResult = Detector::Detect(*binImg, _tryHarder, _tryRotate, _isPure);
+	auto detectorResult = Detect(*binImg, _tryHarder, _tryRotate, _isPure);
 	if (!detectorResult.isValid())
 		return Result(DecodeStatus::NotFound);
 

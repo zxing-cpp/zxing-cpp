@@ -26,9 +26,9 @@ namespace ZXing {
 static const int INIT_SIZE = 10;
 static const int CORR = 1;
 
-bool WhiteRectDetector::Detect(const BitMatrix& image, ResultPoint& p0, ResultPoint& p1, ResultPoint& p2, ResultPoint& p3)
+bool DetectWhiteRect(const BitMatrix& image, ResultPoint& p0, ResultPoint& p1, ResultPoint& p2, ResultPoint& p3)
 {
-	return Detect(image, INIT_SIZE, image.width() / 2, image.height() / 2, p0, p1, p2, p3);
+	return DetectWhiteRect(image, INIT_SIZE, image.width() / 2, image.height() / 2, p0, p1, p2, p3);
 }
 
 /**
@@ -136,7 +136,7 @@ static void CenterEdges(const ResultPoint& y, const ResultPoint& z, const Result
 *         leftmost and the third, the rightmost
 * @throws NotFoundException if no Data Matrix Code can be found
 */
-bool WhiteRectDetector::Detect(const BitMatrix& image, int initSize, int x, int y, ResultPoint& p0, ResultPoint& p1, ResultPoint& p2, ResultPoint& p3)
+bool DetectWhiteRect(const BitMatrix& image, int initSize, int x, int y, ResultPoint& p0, ResultPoint& p1, ResultPoint& p2, ResultPoint& p3)
 {
 	int height = image.height();
 	int width = image.width();

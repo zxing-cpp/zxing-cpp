@@ -259,7 +259,7 @@ static void OrderByBestPatterns(const ResultPoint*& p0, const ResultPoint*& p1, 
 static DetectorResult DetectOld(const BitMatrix& image)
 {
 	ResultPoint pointA, pointB, pointC, pointD;
-	if (!WhiteRectDetector::Detect(image, pointA, pointB, pointC, pointD)) {
+	if (!DetectWhiteRect(image, pointA, pointB, pointC, pointD)) {
 		return {};
 	}
 
@@ -855,7 +855,7 @@ static DetectorResult DetectPure(const BitMatrix& image)
 			{{left, top}, {right, top}, {right, bottom}, {left, bottom}}};
 }
 
-DetectorResult Detector::Detect(const BitMatrix& image, bool tryHarder, bool tryRotate, bool isPure)
+DetectorResult Detect(const BitMatrix& image, bool tryHarder, bool tryRotate, bool isPure)
 {
 	if (isPure)
 		return DetectPure(image);

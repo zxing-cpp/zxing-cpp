@@ -45,11 +45,11 @@ Reader::decode(const BinaryBitmap& image) const
 		return Result(DecodeStatus::NotFound);
 	}
 
-	auto detectorResult = Detector::Detect(*binImg, _tryHarder, _isPure);
+	auto detectorResult = Detect(*binImg, _tryHarder, _isPure);
 	if (!detectorResult.isValid())
 		return Result(DecodeStatus::NotFound);
 
-	auto decoderResult = Decoder::Decode(detectorResult.bits(), _charset);
+	auto decoderResult = Decode(detectorResult.bits(), _charset);
 	auto position = detectorResult.position();
 
 	// TODO: report the information that the symbol was mirrored back to the caller

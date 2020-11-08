@@ -24,18 +24,15 @@
 
 namespace ZXing::QRCode {
 
-CodecMode::Mode
-CodecMode::ModeForBits(int bits)
+CodecMode CodecModeForBits(int bits)
 {
 	if ((bits >= 0x00 && bits <= 0x05) || (bits >= 0x07 && bits <= 0x09) || bits == 0x0d)
-	{
-		return static_cast<Mode>(bits);
-	}
+		return static_cast<CodecMode>(bits);
+
 	throw std::invalid_argument("Invalid mode");
 }
 
-int
-CodecMode::CharacterCountBits(Mode mode, const Version& version)
+int CharacterCountBits(CodecMode mode, const Version& version)
 {
 	int number = version.versionNumber();
 	int i;

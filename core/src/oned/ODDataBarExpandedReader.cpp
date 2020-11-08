@@ -367,7 +367,7 @@ Result DataBarExpandedReader::decodePattern(int rowNumber, const PatternView& vi
 		return Result(DecodeStatus::NotFound);
 #endif
 
-	auto txt = RSS::ExpandedBinaryDecoder::Decode(BuildBitArray(pairs));
+	auto txt = DecodeExpandedBits(BuildBitArray(pairs));
 	if(txt.empty())
 		return Result(DecodeStatus::NotFound);
 

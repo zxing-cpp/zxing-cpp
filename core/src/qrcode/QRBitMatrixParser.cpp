@@ -37,7 +37,7 @@ static bool hasValidDimension(const BitMatrix& bitMatrix)
 	return dimension >= 21 && dimension <= 177 && (dimension % 4) == 1;
 }
 
-const Version* BitMatrixParser::ReadVersion(const BitMatrix& bitMatrix)
+const Version* ReadVersion(const BitMatrix& bitMatrix)
 {
 	if (!hasValidDimension(bitMatrix))
 		return nullptr;
@@ -64,8 +64,7 @@ const Version* BitMatrixParser::ReadVersion(const BitMatrix& bitMatrix)
 	return nullptr;
 }
 
-FormatInformation
-BitMatrixParser::ReadFormatInformation(const BitMatrix& bitMatrix, bool mirrored)
+FormatInformation ReadFormatInformation(const BitMatrix& bitMatrix, bool mirrored)
 {
 	if (!hasValidDimension(bitMatrix))
 		return {};
@@ -93,16 +92,7 @@ BitMatrixParser::ReadFormatInformation(const BitMatrix& bitMatrix, bool mirrored
 	return FormatInformation::DecodeFormatInformation(formatInfoBits1, formatInfoBits2);
 }
 
-/**
-* <p>Reads the bits in the {@link BitMatrix} representing the finder pattern in the
-* correct order in order to reconstruct the codewords bytes contained within the
-* QR Code.</p>
-*
-* @return bytes encoded within the QR Code
-* @throws FormatException if the exact number of bytes expected is not read
-*/
-ByteArray
-BitMatrixParser::ReadCodewords(const BitMatrix& bitMatrix, const Version& version, int maskIndex, bool mirrored)
+ByteArray ReadCodewords(const BitMatrix& bitMatrix, const Version& version, int maskIndex, bool mirrored)
 {
 	if (!hasValidDimension(bitMatrix))
 		return {};

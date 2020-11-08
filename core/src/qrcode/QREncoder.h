@@ -27,23 +27,8 @@ namespace QRCode {
 enum class ErrorCorrectionLevel;
 class EncodeResult;
 
-/**
-* @author satorux@google.com (Satoru Takabayashi) - creator
-* @author dswitkin@google.com (Daniel Switkin) - ported from C++
-*/
-class Encoder
-{
-public:
-	/**
-	* @param content text to encode
-	* @param ecLevel error correction level to use
-	* @param maskPattern Mask patern to use or -1 for automatically chosen pattern
-	* @return {@link QRCode} representing the encoded QR code
-	* @throws WriterException if encoding can't succeed, because of for example invalid content
-	*   or configuration
-	*/
-	static EncodeResult Encode(const std::wstring& content, ErrorCorrectionLevel ecLevel, CharacterSet encoding, int versionNumber, bool useGs1Format, int maskPattern);
-};
+EncodeResult Encode(const std::wstring& content, ErrorCorrectionLevel ecLevel, CharacterSet encoding, int versionNumber,
+					bool useGs1Format, int maskPattern = -1);
 
 } // QRCode
 } // ZXing

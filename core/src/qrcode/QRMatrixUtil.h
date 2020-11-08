@@ -27,13 +27,10 @@ namespace QRCode {
 enum class ErrorCorrectionLevel;
 class Version;
 
-class MatrixUtil
-{
-public:
-	static const int NUM_MASK_PATTERNS = 8;
+constexpr int NUM_MASK_PATTERNS = 8;
 
-	static void BuildMatrix(const BitArray& dataBits, ErrorCorrectionLevel ecLevel, const Version& version, int maskPattern, TritMatrix& matrix);
-};
+void BuildMatrix(const BitArray& dataBits, ErrorCorrectionLevel ecLevel, const Version& version, int maskPattern,
+				 TritMatrix& matrix);
 
 } // QRCode
 } // ZXing

@@ -56,7 +56,7 @@ static bool CorrectErrors(ByteArray& codewordBytes, int start, int dataCodewords
 		}
 	}
 
-	if (!ReedSolomonDecoder::Decode(GenericGF::MaxiCodeField64(), codewordsInts, ecCodewords / divisor))
+	if (!ReedSolomonDecode(GenericGF::MaxiCodeField64(), codewordsInts, ecCodewords / divisor))
 		return false;
 
 	// Copy back into array of bytes -- only need to worry about the bytes that were data

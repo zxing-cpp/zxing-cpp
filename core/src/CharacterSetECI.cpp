@@ -23,9 +23,7 @@
 #include <map>
 #include <utility>
 
-namespace ZXing {
-
-namespace {
+namespace ZXing::CharacterSetECI {
 
 static const std::map<int, CharacterSet> ECI_VALUE_TO_CHARSET = {
 	{0,  CharacterSet::Cp437},
@@ -119,10 +117,7 @@ static const std::map<const char*, CharacterSet> ECI_NAME_TO_CHARSET = {
 	{"EUC-KR",		CharacterSet::EUC_KR },
 };
 
-} // anonymous
-
-CharacterSet
-CharacterSetECI::CharsetFromValue(int value)
+CharacterSet CharsetFromValue(int value)
 {
 	auto it = ECI_VALUE_TO_CHARSET.find(value);
 	if (it != ECI_VALUE_TO_CHARSET.end())
@@ -132,8 +127,7 @@ CharacterSetECI::CharsetFromValue(int value)
 	return CharacterSet::Unknown;
 }
 
-int
-CharacterSetECI::ValueForCharset(CharacterSet charset)
+int ValueForCharset(CharacterSet charset)
 {
 	for (auto [key, value] : ECI_VALUE_TO_CHARSET)
 	{
@@ -145,8 +139,7 @@ CharacterSetECI::ValueForCharset(CharacterSet charset)
 	return 0;
 }
 
-CharacterSet
-CharacterSetECI::CharsetFromName(const char* name)
+CharacterSet CharsetFromName(const char* name)
 {
 	auto it = ECI_NAME_TO_CHARSET.find(name);
 	if (it != ECI_NAME_TO_CHARSET.end())
@@ -156,4 +149,4 @@ CharacterSetECI::CharsetFromName(const char* name)
 	return CharacterSet::Unknown;
 };
 
-} // ZXing
+} // namespace ZXing::CharacterSetECI

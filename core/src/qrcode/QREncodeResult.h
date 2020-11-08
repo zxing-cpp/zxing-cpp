@@ -35,7 +35,7 @@ class EncodeResult
 {
 public:
 	ErrorCorrectionLevel ecLevel = ErrorCorrectionLevel::Invalid;
-	CodecMode::Mode mode = CodecMode::TERMINATOR;
+	CodecMode mode = CodecMode::TERMINATOR;
 	const Version* version = nullptr;
 	int maskPattern = -1;
 	BitMatrix matrix;

@@ -320,7 +320,7 @@ static DetectorResult DetectPure(const BitMatrix& image)
 			{{left, top}, {right, top}, {right, bottom}, {left, bottom}}};
 }
 
-DetectorResult Detector::Detect(const BitMatrix& image, bool tryHarder, bool isPure)
+DetectorResult Detect(const BitMatrix& image, bool tryHarder, bool isPure)
 {
 #ifdef PRINT_DEBUG
 	LogMatrixWriter lmw(log, image, 5, "qr-log.pnm");

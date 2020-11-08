@@ -58,7 +58,7 @@ CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
 	std::vector<int> codewordsInts(codewordBytes.begin(), codewordBytes.end());
 
 	int numECCodewords = Size(codewordBytes) - numDataCodewords;
-	if (!ReedSolomonDecoder::Decode(GenericGF::QRCodeField256(), codewordsInts, numECCodewords))
+	if (!ReedSolomonDecode(GenericGF::QRCodeField256(), codewordsInts, numECCodewords))
 		return false;
 
 	// Copy back into array of bytes -- only need to worry about the bytes that were data
@@ -321,7 +321,7 @@ DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCorrectionLevel 
 	{
 		CharacterSet currentCharset = CharacterSet::Unknown;
 		bool fc1InEffect = false;
-		CodecMode::Mode mode;
+		CodecMode mode;
 		do {
 			// While still another segment to read...
 			if (bits.available() < 4) {
@@ -329,7 +329,7 @@ DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCorrectionLevel 
 				mode = CodecMode::TERMINATOR;
 			}
 			else {
-				mode = CodecMode::ModeForBits(bits.readBits(4)); // mode is encoded by 4 bits
+				mode = CodecModeForBits(bits.readBits(4)); // mode is encoded by 4 bits
 			}
 			switch (mode) {
 			case CodecMode::TERMINATOR:
@@ -366,7 +366,7 @@ DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCorrectionLevel 
 				// First handle Hanzi mode which does not start with character count
 				// chinese mode contains a sub set indicator right after mode indicator
 				int subset = bits.readBits(4);
-				int countHanzi = bits.readBits(CodecMode::CharacterCountBits(mode, version));
+				int countHanzi = bits.readBits(CharacterCountBits(mode, version));
 				if (subset == GB2312_SUBSET) {
 					auto status = DecodeHanziSegment(bits, countHanzi, result);
 					if (StatusIsError(status)) {
@@ -378,7 +378,7 @@ DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCorrectionLevel 
 			default: {
 				// "Normal" QR code modes:
 				// How many characters will follow, encoded in this mode?
-				int count = bits.readBits(CodecMode::CharacterCountBits(mode, version));
+				int count = bits.readBits(CharacterCountBits(mode, version));
 				DecodeStatus status;
 				switch (mode) {
 				case CodecMode::NUMERIC:
@@ -421,12 +421,12 @@ DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCorrectionLevel 
 static DecoderResult
 DoDecode(const BitMatrix& bits, const Version& version, const std::string& hintedCharset, bool mirrored)
 {
-	auto formatInfo = BitMatrixParser::ReadFormatInformation(bits, mirrored);
+	auto formatInfo = ReadFormatInformation(bits, mirrored);
 	if (!formatInfo.isValid())
 		return DecodeStatus::FormatError;
 
 	// Read codewords
-	ByteArray codewords = BitMatrixParser::ReadCodewords(bits, version, formatInfo.dataMask(), mirrored);
+	ByteArray codewords = ReadCodewords(bits, version, formatInfo.dataMask(), mirrored);
 	if (codewords.empty())
 		return DecodeStatus::FormatError;
 
@@ -459,10 +459,9 @@ DoDecode(const BitMatrix& bits, const Version& version, const std::string& hinte
 	return DecodeBitStream(std::move(resultBytes), version, formatInfo.errorCorrectionLevel(), hintedCharset);
 }
 
-DecoderResult
-Decoder::Decode(const BitMatrix& bits, const std::string& hintedCharset)
+DecoderResult Decode(const BitMatrix& bits, const std::string& hintedCharset)
 {
-	const Version* version = BitMatrixParser::ReadVersion(bits);
+	const Version* version = ReadVersion(bits);
 	if (!version)
 		return DecodeStatus::FormatError;
 

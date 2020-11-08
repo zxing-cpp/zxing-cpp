@@ -26,7 +26,7 @@
 #include <stdexcept>
 #include <utility>
 
-namespace ZXing::OneD::RSS {
+namespace ZXing::OneD::DataBar {
 
 struct DecodedValue
 {
@@ -435,7 +435,7 @@ DoDecodeGeneralPurposeField(ParsingState& state, const BitArray& bits, std::stri
 }
 
 DecodeStatus
-GenericAppIdDecoder::DecodeGeneralPurposeField(const BitArray& bits, int pos, std::string& result)
+DecodeAppIdGeneralPurposeField(const BitArray& bits, int pos, std::string& result)
 {
 	try
 	{
@@ -451,7 +451,7 @@ GenericAppIdDecoder::DecodeGeneralPurposeField(const BitArray& bits, int pos, st
 }
 
 DecodeStatus
-GenericAppIdDecoder::DecodeAllCodes(const BitArray& bits, int pos, std::string& result)
+DecodeAppIdAllCodes(const BitArray& bits, int pos, std::string& result)
 {
 	try
 	{
@@ -461,7 +461,7 @@ GenericAppIdDecoder::DecodeAllCodes(const BitArray& bits, int pos, std::string& 
 			state.position = pos;
 			DecodedInformation info = DoDecodeGeneralPurposeField(state, bits, remaining);
 			std::string parsedFields;
-			auto status = FieldParser::ParseFieldsInGeneralPurpose(info.newString, parsedFields);
+			auto status = ParseFieldsInGeneralPurpose(info.newString, parsedFields);
 			if (StatusIsError(status)) {
 				if (result.empty() && remaining.empty()){
 					result = info.newString;

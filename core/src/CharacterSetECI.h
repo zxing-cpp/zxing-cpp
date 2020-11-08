@@ -26,25 +26,24 @@ enum class CharacterSet;
 *
 * @author Sean Owen
 */
-class CharacterSetECI
-{
-public:
-	/**
-	* @param value character set ECI value
-	* @return {@code CharacterSetECI} representing ECI of given value, or null if it is legal but
-	*   unsupported
-	* @throws FormatException if ECI value is invalid
-	*/
-	static CharacterSet CharsetFromValue(int value);
+namespace CharacterSetECI {
 
-	static int ValueForCharset(CharacterSet charset);
+/**
+ * @param value character set ECI value
+ * @return {@code CharacterSetECI} representing ECI of given value, or null if it is legal but
+ *   unsupported
+ * @throws FormatException if ECI value is invalid
+ */
+CharacterSet CharsetFromValue(int value);
 
-	/**
-	* @param name character set ECI encoding name
-	* @return CharacterSetECI representing ECI for character encoding, or null if it is legal
-	*   but unsupported
-	*/
-	static CharacterSet CharsetFromName(const char* name);
-};
+int ValueForCharset(CharacterSet charset);
 
-} // ZXing
+/**
+ * @param name character set ECI encoding name
+ * @return CharacterSetECI representing ECI for character encoding, or null if it is legal
+ *   but unsupported
+ */
+CharacterSet CharsetFromName(const char* name);
+
+} // namespace CharacterSetECI
+} // namespace ZXing
