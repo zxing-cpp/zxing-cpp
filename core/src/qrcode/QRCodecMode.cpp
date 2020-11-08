@@ -19,26 +19,10 @@
 
 #include "QRVersion.h"
 
+#include <array>
 #include <stdexcept>
 
 namespace ZXing::QRCode {
-
-static const int CHAR_COUNT_PER_MODE[] = {
-	0, 0, 0,
-	10, 12, 14,
-	9, 11, 13,
-	0, 0, 0,
-	8, 16, 16,
-	0, 0, 0,
-	0, 0, 0,
-	0, 0, 0,
-	8, 10, 12,
-	0, 0, 0,
-	0, 0, 0,
-	0, 0, 0,
-	0, 0, 0,
-	8, 10, 12,
-};
 
 CodecMode::Mode
 CodecMode::ModeForBits(int bits)
@@ -54,17 +38,22 @@ int
 CodecMode::CharacterCountBits(Mode mode, const Version& version)
 {
 	int number = version.versionNumber();
-	int offset;
-	if (number <= 9) {
-		offset = 0;
+	int i;
+	if (number <= 9)
+		i = 0;
+	else if (number <= 26)
+		i = 1;
+	else
+		i = 2;
+
+	switch (mode) {
+	case CodecMode::NUMERIC: return std::array{10, 12, 14}[i];
+	case CodecMode::ALPHANUMERIC: return std::array{9, 11, 13}[i];
+	case CodecMode::BYTE: return std::array{8, 16, 16}[i];
+	case CodecMode::KANJI: [[fallthrough]];
+	case CodecMode::HANZI: return std::array{8, 10, 12}[i];
+	default: return 0;
 	}
-	else if (number <= 26) {
-		offset = 1;
-	}
-	else {
-		offset = 2;
-	}
-	return CHAR_COUNT_PER_MODE[static_cast<int>(mode) * 3 + offset];
 }
 
 } // namespace ZXing::QRCode
