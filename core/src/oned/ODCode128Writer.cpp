@@ -168,7 +168,7 @@ Code128Writer::encode(const std::wstring& contents, int width, int height) const
 		}
 	}
 
-	std::list<std::vector<int>> patterns; // temporary storage for patterns
+	std::list<std::array<int, 6>> patterns; // temporary storage for patterns
 	int checkSum = 0;
 	int checkWeight = 1;
 	int codeSet = 0; // selected code (CODE_CODE_B or CODE_CODE_C)
@@ -261,17 +261,21 @@ Code128Writer::encode(const std::wstring& contents, int width, int height) const
 	patterns.push_back(Code128::CODE_PATTERNS[CODE_STOP]);
 
 	// Compute code width
-	int codeWidth = 0;
-	for (const std::vector<int>& pattern : patterns) {
+	int codeWidth = 2; // termination bar
+	for (const auto& pattern : patterns) {
 		codeWidth += Reduce(pattern);
 	}
 
 	// Compute result
 	std::vector<bool> result(codeWidth, false);
 	int pos = 0;
-	for (const std::vector<int>& pattern : patterns) {
+	for (const auto& pattern : patterns) {
 		pos += WriterHelper::AppendPattern(result, pos, pattern, true);
 	}
+
+	// Append termination bar
+	result[pos++] = true;
+	result[pos++] = true;
 
 	return WriterHelper::RenderResult(result, width, height, _sidesMargin >= 0 ? _sidesMargin : 10);
 }

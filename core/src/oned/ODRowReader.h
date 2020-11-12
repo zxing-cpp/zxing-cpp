@@ -109,7 +109,7 @@ public:
 
 	template <typename Counters, typename Pattern>
 	static float PatternMatchVariance(const Counters& counters, const Pattern& pattern, float maxIndividualVariance) {
-		assert(Size(counters) <= Size(pattern)); //TODO: this should test for equality, see ODCode128Reader.cpp:93
+		assert(Size(counters) == Size(pattern));
 		return PatternMatchVariance(std::data(counters), std::data(pattern), std::size(counters), maxIndividualVariance);
 	}
 

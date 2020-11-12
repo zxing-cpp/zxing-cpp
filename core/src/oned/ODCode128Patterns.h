@@ -17,13 +17,12 @@
 */
 
 #include <array>
-#include <vector>
 
 namespace ZXing {
 namespace OneD {
 namespace Code128 {
 
-extern const std::array<std::vector<int>, 107> CODE_PATTERNS;
+extern const std::array<std::array<int, 6>, 107> CODE_PATTERNS;
 
 } // Code128
 } // OneD
