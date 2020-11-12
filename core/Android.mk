@@ -18,6 +18,7 @@ COMMON_FILES :=	\
 	src/BitMatrix.cpp \
 	src/BitSource.cpp \
 	src/CharacterSetECI.cpp \
+	src/ConcentricFinder.cpp \
 	src/DecodeHints.cpp \
 	src/DecodeStatus.cpp \
 	src/GenericGF.cpp \
@@ -70,7 +71,7 @@ ONED_FILES := \
 	src/oned/ODMultiUPCEANReader.cpp \
 	src/oned/ODReader.cpp \
 	src/oned/ODRowReader.cpp \
-    src/oned/ODUPCEANCommon.cpp
+	src/oned/ODUPCEANCommon.cpp \
 	src/oned/rss/ODRSSExpandedBinaryDecoder.cpp \
 	src/oned/rss/ODRSSFieldParser.cpp \
 	src/oned/rss/ODRSSGenericAppIdDecoder.cpp
@@ -89,17 +90,12 @@ PDF417_FILES := \
 	src/pdf417/PDFScanningDecoder.cpp
 
 QRCODE_FILES := \
-	src/qrcode/QRAlignmentPattern.cpp \
-	src/qrcode/QRAlignmentPatternFinder.cpp \
 	src/qrcode/QRBitMatrixParser.cpp \
 	src/qrcode/QRCodecMode.cpp \
 	src/qrcode/QRDataBlock.cpp \
-	src/qrcode/QRDataMask.cpp \
 	src/qrcode/QRDecoder.cpp \
 	src/qrcode/QRDetector.cpp \
 	src/qrcode/QRErrorCorrectionLevel.cpp \
-	src/qrcode/QRFinderPattern.cpp \
-	src/qrcode/QRFinderPatternFinder.cpp \
 	src/qrcode/QRFormatInformation.cpp \
 	src/qrcode/QRReader.cpp \
 	src/qrcode/QRVersion.cpp
