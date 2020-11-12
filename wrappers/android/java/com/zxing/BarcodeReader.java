@@ -89,7 +89,7 @@ public class BarcodeReader
 	private static native int readBarcode(long objPtr, Bitmap bitmap, int left, int top, int width, int height, Object[] result);
 
 	static {
-		System.loadLibrary("zxing-android");
+		System.loadLibrary("zxing_android");
 	}
 
 }
