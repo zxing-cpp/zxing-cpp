@@ -376,4 +376,14 @@ T ToInt(const BitArray& bits, int pos = 0, int count = 8 * sizeof(T))
 	return res;
 }
 
+template <typename T = int, typename = std::enable_if_t<std::is_integral_v<T>>>
+std::vector<T> ToInts(const BitArray& bits, int wordSize, int totalWords)
+{
+	assert(totalWords >= bits.size() / wordSize);
+	std::vector<int> res(totalWords, 0);
+	for (int i = 0; i < bits.size(); i += wordSize)
+		res[i/wordSize] = ToInt(bits, i, wordSize);
+	return res;
+}
+
 } // ZXing
