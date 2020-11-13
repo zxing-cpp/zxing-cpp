@@ -23,8 +23,7 @@
 
 namespace ZXing {
 
-// TODO: make interface symmetric to ReedSolomonDecode
-
+// public only for testing purposes
 class ReedSolomonEncoder
 {
 public:
@@ -39,4 +38,12 @@ private:
 	const GenericGFPoly& buildGenerator(int degree);
 };
 
-} // ZXing
+/**
+ * @brief ReedSolomonEncode extends the message by ecBytes error correction code words
+ */
+inline void ReedSolomonEncode(const GenericGF& field, std::vector<int>& message, int ecBytes)
+{
+	ReedSolomonEncoder(field).encode(message, ecBytes);
+}
+
+} // namespace ZXing

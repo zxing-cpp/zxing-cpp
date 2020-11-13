@@ -45,11 +45,10 @@ namespace {
 	}
 
 	void TestEncoder(const GenericGF& field, const std::vector<int>& dataWords, const std::vector<int>& ecWords) {
-		ReedSolomonEncoder encoder(field);
 		auto messageExpected = dataWords + ecWords;
 		auto message = dataWords;
 		message.resize(message.size() + ecWords.size());
-		encoder.encode(message, Size(ecWords));
+		ReedSolomonEncode(field, message, Size(ecWords));
 		EXPECT_EQ(message, messageExpected) << "Encode in " << field << " (" << dataWords.size() << ',' << ecWords.size() << ") failed";
 	}
 

@@ -384,7 +384,7 @@ void GenerateECBytes(const ByteArray& dataBytes, int numEcBytesInBlock, ByteArra
 	size_t numDataBytes = dataBytes.size();
 	std::vector<int> toEncode(numDataBytes + numEcBytesInBlock, 0);
 	std::copy(dataBytes.begin(), dataBytes.end(), toEncode.begin());
-	ReedSolomonEncoder(GenericGF::QRCodeField256()).encode(toEncode, numEcBytesInBlock);
+	ReedSolomonEncode(GenericGF::QRCodeField256(), toEncode, numEcBytesInBlock);
 
 	ecBytes.resize(numEcBytesInBlock);
 	for (int i = 0; i < numEcBytesInBlock; i++) {
