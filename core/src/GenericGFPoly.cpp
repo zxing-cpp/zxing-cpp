@@ -1,6 +1,7 @@
 /*
 * Copyright 2016 Nu-book Inc.
 * Copyright 2016 ZXing authors
+* Copyright 2017 Axel Waggershauser
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -30,22 +31,17 @@ namespace ZXing {
 int
 GenericGFPoly::evaluateAt(int a) const
 {
-	if (a == 0) {
+	if (a == 0)
 		// Just return the x^0 coefficient
 		return coefficient(0);
-	}
-	if (a == 1) {
+
+	if (a == 1)
 		// Just the sum of the coefficients
-		int result = 0;
-		for (int coef : _coefficients) {
-			result = _field->addOrSubtract(result, coef);
-		}
-		return result;
-	}
+		return Reduce(_coefficients, 0, [this](auto a, auto b) { return _field->addOrSubtract(a, b); });
+
 	int result = _coefficients[0];
-	for (size_t i = 1; i < _coefficients.size(); ++i) {
+	for (size_t i = 1; i < _coefficients.size(); ++i)
 		result = _field->addOrSubtract(_field->multiply(a, result), _coefficients[i]);
-	}
 	return result;
 }
 
@@ -58,9 +54,8 @@ GenericGFPoly& GenericGFPoly::addOrSubtract(GenericGFPoly& other)
 		return *this;
 	}
 	
-	if (other.isZero()) {
+	if (other.isZero())
 		return *this;
-	}
 
 	auto& smallerCoefs = other._coefficients;
 	auto& largerCoefs = _coefficients;
@@ -92,11 +87,9 @@ GenericGFPoly::multiply(const GenericGFPoly& other)
 	// Coefficients _cache;
 	_cache.resize(a.size() + b.size() - 1);
 	std::fill(_cache.begin(), _cache.end(), 0);
-	for (size_t i = 0; i < a.size(); ++i) {
-		for (size_t j = 0; j < b.size(); ++j) {
+	for (size_t i = 0; i < a.size(); ++i)
+		for (size_t j = 0; j < b.size(); ++j)
 			_cache[i + j] = _field->addOrSubtract(_cache[i + j], _field->multiply(a[i], b[j]));
-		}
-	}
 
 	_coefficients.swap(_cache);
 
@@ -107,16 +100,14 @@ GenericGFPoly::multiply(const GenericGFPoly& other)
 GenericGFPoly&
 GenericGFPoly::multiply(int scalar)
 {
-	if (scalar == 0) {
+	if (scalar == 0)
 		return _field->setZero(*this);
-	}
-	if (scalar == 1) {
-		return *this;
-	}
 
-	for (int& c : _coefficients) {
+	if (scalar == 1)
+		return *this;
+
+	for (int& c : _coefficients)
 		c = _field->multiply(c, scalar);
-	}
 
 	normalize();
 	return *this;
@@ -127,14 +118,13 @@ GenericGFPoly::multiplyByMonomial(int degree, int coefficient)
 {
 	assert(degree >= 0);
 
-	if (coefficient == 0) {
+	if (coefficient == 0)
 		return _field->setZero(*this);
-	}
-	size_t size = _coefficients.size();
-	for (size_t i = 0; i < size; ++i) {
-		_coefficients[i] = _field->multiply(_coefficients[i], coefficient);
-	}
-	_coefficients.resize(size + degree, 0);
+
+	for (int& c : _coefficients)
+		c = _field->multiply(c, coefficient);
+
+	_coefficients.resize(_coefficients.size() + degree, 0);
 
 	normalize();
 	return *this;
@@ -145,15 +135,13 @@ GenericGFPoly::divide(const GenericGFPoly& other, GenericGFPoly& quotient)
 {
 	assert(_field == other._field); // "GenericGFPolys do not have same GenericGF field"
 
-	if (other.isZero()) {
+	if (other.isZero())
 		throw std::invalid_argument("Divide by 0");
-	}
 
 	_field->setZero(quotient);
 	auto& remainder = *this;
 
-	int denominatorLeadingTerm = other.coefficient(other.degree());
-	int inverseDenominatorLeadingTerm = _field->inverse(denominatorLeadingTerm);
+	const int inverseDenominatorLeadingTerm = _field->inverse(other.coefficient(other.degree()));
 
 	ZX_THREAD_LOCAL GenericGFPoly temp;
 
@@ -174,17 +162,14 @@ void GenericGFPoly::normalize()
 {
 	auto firstNonZero = FindIf(_coefficients, [](int c){ return c != 0; });
 	// Leading term must be non-zero for anything except the constant polynomial "0"
-	if (firstNonZero != _coefficients.begin())
-	{
+	if (firstNonZero != _coefficients.begin()) {
 		if (firstNonZero == _coefficients.end()) {
 			_coefficients.resize(1, 0);
-		}
-		else {
+		} else {
 			std::copy(firstNonZero, _coefficients.end(), _coefficients.begin());
 			_coefficients.resize(_coefficients.end() - firstNonZero);
 		}
 	}
 }
 
-} // ZXing
-
+} // namespace ZXing

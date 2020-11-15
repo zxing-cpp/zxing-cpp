@@ -123,11 +123,11 @@ public:
 	}
 
 	
-	int size() const {
+	int size() const noexcept {
 		return _size;
 	}
 
-	int generatorBase() const {
+	int generatorBase() const noexcept {
 		return _generatorBase;
 	}
 
@@ -143,7 +143,7 @@ private:
 	* @param primitive irreducible polynomial whose coefficients are represented by
 	*  the bits of an int, where the least-significant bit represents the constant
 	*  coefficient
-	* @param size the size of the field
+	* @param size the size of the field (m = log2(size) is called the word size of the encoding)
 	* @param b the factor b in the generator polynomial can be 0- or 1-based
 	*  (g(x) = (x+a^b)(x+a^(b+1))...(x+a^(b+2t-1))).
 	*  In most cases it should be 1, but for QR code it is 0.
