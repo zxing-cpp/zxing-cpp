@@ -113,9 +113,9 @@ public:
 	* @return product of a and b in GF(size)
 	*/
 	int multiply(int a, int b) const noexcept {
-		if (a == 0 || b == 0) {
+		if (a == 0 || b == 0)
 			return 0;
-		}
+
 #ifdef ZX_REED_SOLOMON_USE_MORE_MEMORY_FOR_SPEED
 		return _expTable[_logTable[a] + _logTable[b]];
 #else
@@ -128,7 +128,6 @@ public:
 #endif
 	}
 
-	
 	int size() const noexcept {
 		return _size;
 	}
@@ -157,4 +156,4 @@ private:
 	GenericGF(int primitive, int size, int b);
 };
 
-} // ZXing
+} // namespace ZXing
