@@ -23,6 +23,8 @@
 #include <stdexcept>
 #include <vector>
 
+#define ZX_REED_SOLOMON_USE_MORE_MEMORY_FOR_SPEED
+
 namespace ZXing {
 
 /**
@@ -114,12 +116,16 @@ public:
 		if (a == 0 || b == 0) {
 			return 0;
 		}
+#ifdef ZX_REED_SOLOMON_USE_MORE_MEMORY_FOR_SPEED
+		return _expTable[_logTable[a] + _logTable[b]];
+#else
 		auto fast_mod = [](const int input, const int ceil) {
 			// avoid using the '%' modulo operator => ReedSolomon computation is more than twice as fast
 			// see also https://stackoverflow.com/a/33333636/2088798
 			return input < ceil ? input : input - ceil;
 		};
 		return _expTable[fast_mod(_logTable[a] + _logTable[b], _size - 1)];
+#endif
 	}
 
 	
@@ -134,8 +140,8 @@ public:
 private:
 	const int _size;
 	int _generatorBase;
-	std::vector<int> _expTable;
-	std::vector<int> _logTable;
+	std::vector<short> _expTable;
+	std::vector<short> _logTable;
 
 	/**
 	* Create a representation of GF(size) using the given primitive polynomial.

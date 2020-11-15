@@ -91,7 +91,11 @@ GenericGF::GenericGF(int primitive, int size, int b) :
 	_size(size),
 	_generatorBase(b)
 {
+#ifdef ZX_REED_SOLOMON_USE_MORE_MEMORY_FOR_SPEED
+	_expTable.resize(size * 2, 0);
+#else
 	_expTable.resize(size, 0);
+#endif
 	_logTable.resize(size, 0);
 	int x = 1;
 	for (int i = 0; i < size; ++i)
@@ -103,6 +107,12 @@ GenericGF::GenericGF(int primitive, int size, int b) :
 			x &= size - 1;
 		}
 	}
+
+#ifdef ZX_REED_SOLOMON_USE_MORE_MEMORY_FOR_SPEED
+	for (int i = size - 1; i < size * 2; ++i)
+		_expTable[i] = _expTable[i - (size - 1)];
+#endif
+
 	for (int i = 0; i < size - 1; ++i)
 	{
 		_logTable[_expTable[i]] = i;
