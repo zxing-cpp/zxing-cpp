@@ -50,32 +50,6 @@ public:
 	static const GenericGF& AztecData8();
 	static const GenericGF& MaxiCodeField64();
 
-	/**
-	* @return the monomial representing coefficient * x^degree
-	*/
-	GenericGFPoly& setMonomial(GenericGFPoly& poly, int degree, int coefficient) const
-	{
-		assert(degree >= 0);
-
-		if (coefficient == 0)
-			degree = 0;
-
-		poly._field = this;
-		poly._coefficients.resize(degree + 1);
-		std::fill(poly._coefficients.begin(), poly._coefficients.end(), 0);
-		poly._coefficients.front() = coefficient;
-
-		return poly;
-	}
-
-	GenericGFPoly& setZero(GenericGFPoly& poly) const {
-		return setMonomial(poly, 0, 0);
-	}
-
-	GenericGFPoly& setOne(GenericGFPoly& poly) const {
-		return setMonomial(poly, 0, 1);
-	}
-
 	// note: replaced addOrSubstract calls with '^' / '^='. everyone trying to understand this code needs to look into
 	// Golois Fields with caracteristic 2 and will then understand that XOR is addition/substraction. And those
 	// operators are way more readable than noisy member funtion

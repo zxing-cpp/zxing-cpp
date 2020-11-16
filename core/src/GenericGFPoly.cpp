@@ -78,7 +78,7 @@ GenericGFPoly::multiply(const GenericGFPoly& other)
 	assert(_field == other._field); // "GenericGFPolys do not have same GenericGF field"
 
 	if (isZero() || other.isZero())
-		return _field->setZero(*this);
+		return setMonomial(0);
 
 	auto& a = _coefficients;
 	auto& b = other._coefficients;
@@ -103,7 +103,7 @@ GenericGFPoly::multiplyByMonomial(int degree, int coefficient)
 	assert(degree >= 0);
 
 	if (coefficient == 0)
-		return _field->setZero(*this);
+		return setMonomial(0);
 
 	for (int& c : _coefficients)
 		c = _field->multiply(c, coefficient);
@@ -122,17 +122,19 @@ GenericGFPoly::divide(const GenericGFPoly& other, GenericGFPoly& quotient)
 	if (other.isZero())
 		throw std::invalid_argument("Divide by 0");
 
-	_field->setZero(quotient);
+	quotient.setField(*_field);
+	quotient.setMonomial(0);
 	auto& remainder = *this;
 
 	const int inverseDenominatorLeadingTerm = _field->inverse(other.coefficient(other.degree()));
 
 	ZX_THREAD_LOCAL GenericGFPoly temp;
+	temp.setField(*_field);
 
 	while (remainder.degree() >= other.degree() && !remainder.isZero()) {
 		int degreeDifference = remainder.degree() - other.degree();
 		int scale = _field->multiply(remainder.coefficient(remainder.degree()), inverseDenominatorLeadingTerm);
-		_field->setMonomial(temp, degreeDifference, scale);
+		temp.setMonomial(scale, degreeDifference);
 		quotient.addOrSubtract(temp);
 		temp = other;
 		temp.multiplyByMonomial(degreeDifference, scale);

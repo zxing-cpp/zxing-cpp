@@ -96,9 +96,13 @@ public:
 		*this = other;
 	}
 
-	const std::vector<int>& coefficients() const {
-		return _coefficients;
+	GenericGFPoly& setField(const GenericGF& field)
+	{
+		_field = &field;
+		return *this;
 	}
+	const GenericGF& field() const noexcept { return *_field; }
+	const auto& coefficients() const noexcept { return _coefficients; }
 
 	/**
 	* @return degree of this polynomial
@@ -122,6 +126,20 @@ public:
 	}
 
 	/**
+	 * @brief set to the monomial representing coefficient * x^degree
+	 */
+	GenericGFPoly& setMonomial(int coefficient, int degree = 0)
+	{
+		assert(degree >= 0 && (coefficient != 0 || degree == 0));
+
+		_coefficients.resize(degree + 1);
+		std::fill(_coefficients.begin(), _coefficients.end(), 0);
+		_coefficients.front() = coefficient;
+
+		return *this;
+	}
+
+	/**
 	* @return evaluation of this polynomial at a given point
 	*/
 	int evaluateAt(int a) const;
@@ -138,8 +156,6 @@ public:
 	}
 
 private:
-	friend class GenericGF;
-
 	void normalize();
 
 	const GenericGF* _field = nullptr;

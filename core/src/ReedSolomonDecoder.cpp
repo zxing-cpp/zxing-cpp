@@ -31,13 +31,16 @@ static bool
 RunEuclideanAlgorithm(const GenericGF& field, std::vector<int>&& rCoefs, int R, GenericGFPoly& sigma, GenericGFPoly& omega)
 {
 	GenericGFPoly r(field, std::move(rCoefs));
-	GenericGFPoly& tLast = omega;
-	GenericGFPoly& t = sigma;
+	GenericGFPoly& tLast = omega.setField(field);
+	GenericGFPoly& t = sigma.setField(field);
 	ZX_THREAD_LOCAL GenericGFPoly q, rLast;
 
-	field.setMonomial(rLast, R, 1);
-	field.setZero(tLast);
-	field.setOne(t);
+	rLast.setField(field);
+	q.setField(field);
+
+	rLast.setMonomial(1, R);
+	tLast.setMonomial(0);
+	t.setMonomial(1);
 
 	// Assume r's degree is < rLast's
 	if (r.degree() >= rLast.degree())
