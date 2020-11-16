@@ -147,7 +147,7 @@ public:
 
 	GenericGFPoly& addOrSubtract(GenericGFPoly& other);
 	GenericGFPoly& multiply(const GenericGFPoly& other);
-	GenericGFPoly& multiplyByMonomial(int degree, int coefficient);
+	GenericGFPoly& multiplyByMonomial(int coefficient, int degree = 0);
 	GenericGFPoly& divide(const GenericGFPoly& other, GenericGFPoly& quotient);
 
 	friend void swap(GenericGFPoly& a, GenericGFPoly& b)

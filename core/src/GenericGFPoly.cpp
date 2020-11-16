@@ -98,7 +98,7 @@ GenericGFPoly::multiply(const GenericGFPoly& other)
 }
 
 GenericGFPoly&
-GenericGFPoly::multiplyByMonomial(int degree, int coefficient)
+GenericGFPoly::multiplyByMonomial(int coefficient, int degree)
 {
 	assert(degree >= 0);
 
@@ -137,7 +137,7 @@ GenericGFPoly::divide(const GenericGFPoly& other, GenericGFPoly& quotient)
 		temp.setMonomial(scale, degreeDifference);
 		quotient.addOrSubtract(temp);
 		temp = other;
-		temp.multiplyByMonomial(degreeDifference, scale);
+		temp.multiplyByMonomial(scale, degreeDifference);
 		remainder.addOrSubtract(temp);
 	}
 

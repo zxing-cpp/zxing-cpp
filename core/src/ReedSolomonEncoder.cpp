@@ -57,7 +57,7 @@ ReedSolomonEncoder::encode(std::vector<int>& toEncode, const int ecBytes)
 		throw std::invalid_argument("No data bytes provided");
 	}
 	GenericGFPoly info = GenericGFPoly(*_field, std::vector<int>(toEncode.begin(), toEncode.begin() + dataBytes));
-	info.multiplyByMonomial(ecBytes, 1);
+	info.multiplyByMonomial(1, ecBytes);
 	GenericGFPoly _;
 	info.divide(buildGenerator(ecBytes), _);
 	auto& coefficients = info.coefficients();
