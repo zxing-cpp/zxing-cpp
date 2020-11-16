@@ -37,11 +37,11 @@ GenericGFPoly::evaluateAt(int a) const
 
 	if (a == 1)
 		// Just the sum of the coefficients
-		return Reduce(_coefficients, 0, [this](auto a, auto b) { return _field->addOrSubtract(a, b); });
+		return Reduce(_coefficients, 0, [](auto a, auto b) { return a ^ b; });
 
 	int result = _coefficients[0];
 	for (size_t i = 1; i < _coefficients.size(); ++i)
-		result = _field->addOrSubtract(_field->multiply(a, result), _coefficients[i]);
+		result = _field->multiply(a, result) ^ _coefficients[i];
 	return result;
 }
 
@@ -66,7 +66,7 @@ GenericGFPoly& GenericGFPoly::addOrSubtract(GenericGFPoly& other)
 
 	// high-order terms only found in higher-degree polynomial's coefficients stay untouched
 	for (size_t i = lengthDiff; i < largerCoefs.size(); ++i)
-		largerCoefs[i] = _field->addOrSubtract(smallerCoefs[i - lengthDiff], largerCoefs[i]);
+		largerCoefs[i] ^= smallerCoefs[i - lengthDiff];
 
 	normalize();
 	return *this;
@@ -89,7 +89,7 @@ GenericGFPoly::multiply(const GenericGFPoly& other)
 	std::fill(_cache.begin(), _cache.end(), 0);
 	for (size_t i = 0; i < a.size(); ++i)
 		for (size_t j = 0; j < b.size(); ++j)
-			_cache[i + j] = _field->addOrSubtract(_cache[i + j], _field->multiply(a[i], b[j]));
+			_cache[i + j] ^= _field->multiply(a[i], b[j]);
 
 	_coefficients.swap(_cache);
 

@@ -104,7 +104,7 @@ FindErrorMagnitudes(const GenericGF& field, const GenericGFPoly& errorEvaluator,
 		int denom = 1;
 		for (int j = 0; j < s; ++j)
 			if (i != j)
-				denom = field.multiply(denom, field.addOrSubtract(1, field.multiply(errorLocations[j], xiInverse)));
+				denom = field.multiply(denom, 1 ^ field.multiply(errorLocations[j], xiInverse));
 		res[i] = field.multiply(errorEvaluator.evaluateAt(xiInverse), field.inverse(denom));
 		if (field.generatorBase() != 0)
 			res[i] = field.multiply(res[i], xiInverse);
@@ -141,7 +141,7 @@ ReedSolomonDecode(const GenericGF& field, std::vector<int>& received, int twoS)
 		if (position < 0)
 			return false;
 
-		received[position] = field.addOrSubtract(received[position], errorMagnitudes[i]);
+		received[position] ^= errorMagnitudes[i];
 	}
 	return true;
 }

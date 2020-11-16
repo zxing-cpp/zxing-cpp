@@ -76,14 +76,9 @@ public:
 		return setMonomial(poly, 0, 1);
 	}
 
-	/**
-	* Implements both addition and subtraction -- they are the same in GF(size).
-	*
-	* @return sum/difference of a and b
-	*/
-	int addOrSubtract(int a, int b) const noexcept {
-		return a ^ b;
-	}
+	// note: replaced addOrSubstract calls with '^' / '^='. everyone trying to understand this code needs to look into
+	// Golois Fields with caracteristic 2 and will then understand that XOR is addition/substraction. And those
+	// operators are way more readable than noisy member funtion
 
 	/**
 	* @return 2 to the power of a in GF(size)
