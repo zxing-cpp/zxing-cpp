@@ -128,7 +128,6 @@ public:
 
 	GenericGFPoly& addOrSubtract(GenericGFPoly& other);
 	GenericGFPoly& multiply(const GenericGFPoly& other);
-	GenericGFPoly& multiply(int scalar);
 	GenericGFPoly& multiplyByMonomial(int degree, int coefficient);
 	GenericGFPoly& divide(const GenericGFPoly& other, GenericGFPoly& quotient);
 

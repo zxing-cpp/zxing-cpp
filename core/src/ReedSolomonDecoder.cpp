@@ -67,8 +67,8 @@ RunEuclideanAlgorithm(const GenericGF& field, std::vector<int>&& rCoefs, int R, 
 		return false;
 
 	int inverse = field.inverse(sigmaTildeAtZero);
-	t.multiply(inverse);
-	r.multiply(inverse);
+	t.multiplyByMonomial(0, inverse);
+	r.multiplyByMonomial(0, inverse);
 
 	// sigma is t
 	omega = std::move(r);

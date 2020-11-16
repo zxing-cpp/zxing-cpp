@@ -98,22 +98,6 @@ GenericGFPoly::multiply(const GenericGFPoly& other)
 }
 
 GenericGFPoly&
-GenericGFPoly::multiply(int scalar)
-{
-	if (scalar == 0)
-		return _field->setZero(*this);
-
-	if (scalar == 1)
-		return *this;
-
-	for (int& c : _coefficients)
-		c = _field->multiply(c, scalar);
-
-	normalize();
-	return *this;
-}
-
-GenericGFPoly&
 GenericGFPoly::multiplyByMonomial(int degree, int coefficient)
 {
 	assert(degree >= 0);
