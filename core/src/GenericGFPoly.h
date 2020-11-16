@@ -118,11 +118,12 @@ public:
 		return _coefficients[0] == 0;
 	}
 
-	/**
-	* @return coefficient of x^degree term in this polynomial
-	*/
-	int coefficient(int degree) const {
-		return _coefficients[_coefficients.size() - 1 - degree];
+	int leadingCoefficient() const noexcept {
+		return _coefficients.front();
+	}
+
+	int constant() const noexcept {
+		return _coefficients.back();
 	}
 
 	/**

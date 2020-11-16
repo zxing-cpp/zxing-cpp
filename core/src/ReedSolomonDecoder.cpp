@@ -65,7 +65,7 @@ RunEuclideanAlgorithm(const GenericGF& field, std::vector<int>&& rCoefs, int R, 
 			throw std::runtime_error("Division algorithm failed to reduce polynomial?");
 	}
 
-	int sigmaTildeAtZero = t.coefficient(0);
+	int sigmaTildeAtZero = t.constant();
 	if (sigmaTildeAtZero == 0)
 		return false;
 

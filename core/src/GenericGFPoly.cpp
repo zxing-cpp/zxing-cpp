@@ -33,7 +33,7 @@ GenericGFPoly::evaluateAt(int a) const
 {
 	if (a == 0)
 		// Just return the x^0 coefficient
-		return coefficient(0);
+		return constant();
 
 	if (a == 1)
 		// Just the sum of the coefficients
@@ -126,14 +126,14 @@ GenericGFPoly::divide(const GenericGFPoly& other, GenericGFPoly& quotient)
 	quotient.setMonomial(0);
 	auto& remainder = *this;
 
-	const int inverseDenominatorLeadingTerm = _field->inverse(other.coefficient(other.degree()));
+	const int inverseDenominatorLeadingTerm = _field->inverse(other.leadingCoefficient());
 
 	ZX_THREAD_LOCAL GenericGFPoly temp;
 	temp.setField(*_field);
 
 	while (remainder.degree() >= other.degree() && !remainder.isZero()) {
 		int degreeDifference = remainder.degree() - other.degree();
-		int scale = _field->multiply(remainder.coefficient(remainder.degree()), inverseDenominatorLeadingTerm);
+		int scale = _field->multiply(remainder.leadingCoefficient(), inverseDenominatorLeadingTerm);
 		temp.setMonomial(scale, degreeDifference);
 		quotient.addOrSubtract(temp);
 		temp = other;
