@@ -123,23 +123,41 @@ GenericGFPoly::divide(const GenericGFPoly& other, GenericGFPoly& quotient)
 		throw std::invalid_argument("Divide by 0");
 
 	quotient.setField(*_field);
-	quotient.setMonomial(0);
-	auto& remainder = *this;
-
-	const int inverseDenominatorLeadingTerm = _field->inverse(other.leadingCoefficient());
-
-	ZX_THREAD_LOCAL GenericGFPoly temp;
-	temp.setField(*_field);
-
-	while (remainder.degree() >= other.degree() && !remainder.isZero()) {
-		int degreeDifference = remainder.degree() - other.degree();
-		int scale = _field->multiply(remainder.leadingCoefficient(), inverseDenominatorLeadingTerm);
-		temp.setMonomial(scale, degreeDifference);
-		quotient.addOrSubtract(temp);
-		temp = other;
-		temp.multiplyByMonomial(scale, degreeDifference);
-		remainder.addOrSubtract(temp);
+	if (degree() < other.degree()) {
+		// the remainder is this and the quotient is 0
+		quotient.setMonomial(0);
+		return *this;
 	}
+
+	// use Expanded Synthetic Division (see https://en.wikiversity.org/wiki/Reed%E2%80%93Solomon_codes_for_coders):
+	// we use the memory from this (the divident) and swap it with quotient, wich will then accumulate the result as
+	// [quotient : remainder]. we later copy back the remainder into this and shorten the quotient.
+	std::swap(*this, quotient);
+	auto& divisor = other._coefficients;
+	auto& result = quotient._coefficients;
+	auto normalizer = _field->inverse(divisor[0]);
+	for (int i = 0; i < Size(result) - (Size(divisor) - 1); ++i) {
+		auto& ci = result[i];
+		if (ci == 0)
+			continue;
+
+		ci = _field->multiply(ci, normalizer);
+
+		// we always skip the first coefficient of the divisior, because it's only used to normalize the dividend coefficient
+		for (int j = 1; j < Size(divisor); ++j)
+			result[i + j] ^= _field->multiply(divisor[j], ci); // equivalent to: result[i + j] += -divisor[j] * ci
+	}
+
+	// extract the normalized remainder from result
+	auto firstNonZero = std::find_if(result.end() - other.degree(), result.end(), [](int c){ return c != 0; });
+	if (firstNonZero == result.end()) {
+		setMonomial(0);
+	} else {
+		_coefficients.resize(result.end() - firstNonZero);
+		std::copy(firstNonZero, result.end(), _coefficients.begin());
+	}
+	// cut off the tail with the remainder to leave the quotient
+	result.resize(result.size() - other.degree());
 
 	return *this;
 }
