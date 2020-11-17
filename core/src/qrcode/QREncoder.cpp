@@ -322,7 +322,6 @@ struct BlockPair
 };
 
 
-
 /**
 * Get number of data bytes and number of error correction bytes for block id "blockID". Store
 * the result in "numDataBytesInBlock", and "numECBytesInBlock". See table 12 in 8.5.1 of
@@ -379,17 +378,15 @@ void GetNumDataBytesAndNumECBytesForBlockID(int numTotalBytes, int numDataBytes,
 }
 
 ZXING_EXPORT_TEST_ONLY
-void GenerateECBytes(const ByteArray& dataBytes, int numEcBytesInBlock, ByteArray& ecBytes)
+void GenerateECBytes(const ByteArray& dataBytes, int numEcBytes, ByteArray& ecBytes)
 {
-	size_t numDataBytes = dataBytes.size();
-	std::vector<int> toEncode(numDataBytes + numEcBytesInBlock, 0);
-	std::copy(dataBytes.begin(), dataBytes.end(), toEncode.begin());
-	ReedSolomonEncode(GenericGF::QRCodeField256(), toEncode, numEcBytesInBlock);
+	std::vector<int> message(dataBytes.size() + numEcBytes, 0);
+	std::copy(dataBytes.begin(), dataBytes.end(), message.begin());
+	ReedSolomonEncode(GenericGF::QRCodeField256(), message, numEcBytes);
 
-	ecBytes.resize(numEcBytesInBlock);
-	for (int i = 0; i < numEcBytesInBlock; i++) {
-		ecBytes[i] = static_cast<uint8_t>(toEncode[numDataBytes + i]);
-	}
+	ecBytes.resize(numEcBytes);
+	std::transform(message.end() - numEcBytes, message.end(), ecBytes.begin(),
+				   [](auto c) { return static_cast<uint8_t>(c); });
 }
 
 

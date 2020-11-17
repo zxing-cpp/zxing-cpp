@@ -47,24 +47,19 @@ ReedSolomonEncoder::buildGenerator(int degree)
 }
 
 void
-ReedSolomonEncoder::encode(std::vector<int>& toEncode, const int ecBytes)
+ReedSolomonEncoder::encode(std::vector<int>& message, const int numECCodeWords)
 {
-	if (ecBytes == 0) {
-		throw std::invalid_argument("No error correction bytes");
-	}
-	int dataBytes = Size(toEncode) - ecBytes;
-	if (dataBytes <= 0) {
-		throw std::invalid_argument("No data bytes provided");
-	}
-	GenericGFPoly info = GenericGFPoly(*_field, std::vector<int>(toEncode.begin(), toEncode.begin() + dataBytes));
-	info.multiplyByMonomial(1, ecBytes);
-	GenericGFPoly _;
-	info.divide(buildGenerator(ecBytes), _);
-	auto& coefficients = info.coefficients();
-	int numZeroCoefficients = ecBytes - Size(coefficients);
-	std::fill_n(toEncode.begin() + dataBytes, numZeroCoefficients, 0);
-	std::copy(coefficients.begin(), coefficients.end(), toEncode.begin() + dataBytes + numZeroCoefficients);
-}
+	if (numECCodeWords == 0 || numECCodeWords >= Size(message))
+		throw std::invalid_argument("Invalid number of error correction code words");
 
+	GenericGFPoly info = GenericGFPoly(*_field, std::vector<int>(message.begin(), message.end() - numECCodeWords));
+	info.multiplyByMonomial(1, numECCodeWords);
+	GenericGFPoly _;
+	info.divide(buildGenerator(numECCodeWords), _);
+	auto& coefficients = info.coefficients();
+	int numZeroCoefficients = numECCodeWords - Size(coefficients);
+	std::fill_n(message.end() - numECCodeWords, numZeroCoefficients, 0);
+	std::copy(coefficients.begin(), coefficients.end(), message.end() - numECCodeWords + numZeroCoefficients);
+}
 
 } // ZXing

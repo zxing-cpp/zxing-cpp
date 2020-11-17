@@ -29,7 +29,7 @@ class ReedSolomonEncoder
 public:
 	explicit ReedSolomonEncoder(const GenericGF& field);
 
-	void encode(std::vector<int>& toEncode, int ecBytes);
+	void encode(std::vector<int>& message, int numECCodeWords);
 
 private:
 	const GenericGF* _field;
@@ -39,11 +39,11 @@ private:
 };
 
 /**
- * @brief ReedSolomonEncode extends the message by ecBytes error correction code words
+ * @brief ReedSolomonEncode replaces the last numECCodeWords code words in message with error correction code words
  */
-inline void ReedSolomonEncode(const GenericGF& field, std::vector<int>& message, int ecBytes)
+inline void ReedSolomonEncode(const GenericGF& field, std::vector<int>& message, int numECCodeWords)
 {
-	ReedSolomonEncoder(field).encode(message, ecBytes);
+	ReedSolomonEncoder(field).encode(message, numECCodeWords);
 }
 
 } // namespace ZXing

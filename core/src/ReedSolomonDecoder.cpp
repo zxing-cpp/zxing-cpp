@@ -28,8 +28,9 @@
 namespace ZXing {
 
 static bool
-RunEuclideanAlgorithm(const GenericGF& field, std::vector<int>&& rCoefs, int R, GenericGFPoly& sigma, GenericGFPoly& omega)
+RunEuclideanAlgorithm(const GenericGF& field, std::vector<int>&& rCoefs, GenericGFPoly& sigma, GenericGFPoly& omega)
 {
+	int R = Size(rCoefs); // == numECCodeWords
 	GenericGFPoly r(field, std::move(rCoefs));
 	GenericGFPoly& tLast = omega.setField(field);
 	GenericGFPoly& t = sigma.setField(field);
@@ -116,12 +117,13 @@ FindErrorMagnitudes(const GenericGF& field, const GenericGFPoly& errorEvaluator,
 }
 
 bool
-ReedSolomonDecode(const GenericGF& field, std::vector<int>& received, int twoS)
+ReedSolomonDecode(const GenericGF& field, std::vector<int>& message, int numECCodeWords)
 {
-	GenericGFPoly poly(field, received);
-	std::vector<int> syndromes(twoS, 0);
-	for (int i = 0; i < twoS; i++)
-		syndromes[twoS - 1 - i] = poly.evaluateAt(field.exp(i + field.generatorBase()));
+	GenericGFPoly poly(field, message);
+
+	std::vector<int> syndromes(numECCodeWords);
+	for (int i = 0; i < numECCodeWords; i++)
+		syndromes[numECCodeWords - 1 - i] = poly.evaluateAt(field.exp(i + field.generatorBase()));
 
 	// if all syndromes are 0 there is no error to correct
 	if (std::all_of(syndromes.begin(), syndromes.end(), [](int c) { return c == 0; }))
@@ -129,7 +131,7 @@ ReedSolomonDecode(const GenericGF& field, std::vector<int>& received, int twoS)
 
 	ZX_THREAD_LOCAL GenericGFPoly sigma, omega;
 
-	if (!RunEuclideanAlgorithm(field, std::move(syndromes), twoS, sigma, omega))
+	if (!RunEuclideanAlgorithm(field, std::move(syndromes), sigma, omega))
 		return false;
 
 	auto errorLocations = FindErrorLocations(field, sigma);
@@ -138,13 +140,13 @@ ReedSolomonDecode(const GenericGF& field, std::vector<int>& received, int twoS)
 
 	auto errorMagnitudes = FindErrorMagnitudes(field, omega, errorLocations);
 
-	int receivedCount = Size(received);
+	int msgLen = Size(message);
 	for (int i = 0; i < Size(errorLocations); ++i) {
-		int position = receivedCount - 1 - field.log(errorLocations[i]);
+		int position = msgLen - 1 - field.log(errorLocations[i]);
 		if (position < 0)
 			return false;
 
-		received[position] ^= errorMagnitudes[i];
+		message[position] ^= errorMagnitudes[i];
 	}
 	return true;
 }
