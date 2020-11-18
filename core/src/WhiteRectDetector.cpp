@@ -26,9 +26,9 @@ namespace ZXing {
 static const int INIT_SIZE = 10;
 static const int CORR = 1;
 
-bool DetectWhiteRect(const BitMatrix& image, ResultPoint& p0, ResultPoint& p1, ResultPoint& p2, ResultPoint& p3)
+bool DetectWhiteRect(const BitMatrix& image, ResultPoint& p0, ResultPoint& p1, ResultPoint& p2, ResultPoint& p3, bool isPure)
 {
-	return DetectWhiteRect(image, INIT_SIZE, image.width() / 2, image.height() / 2, p0, p1, p2, p3);
+	return DetectWhiteRect(image, INIT_SIZE, image.width() / 2, image.height() / 2, p0, p1, p2, p3, isPure);
 }
 
 /**
@@ -42,7 +42,11 @@ bool DetectWhiteRect(const BitMatrix& image, ResultPoint& p0, ResultPoint& p1, R
 */
 static bool ContainsBlackPoint(const BitMatrix& image, int a, int b, int fixed, bool horizontal) {
 
+	a = std::max(a, 0);
 	if (horizontal) {
+		if (fixed < 0 || fixed >= image.height())
+			return false;
+		b = std::min(b, image.width() - 1);
 		for (int x = a; x <= b; x++) {
 			if (image.get(x, fixed)) {
 				return true;
@@ -50,6 +54,9 @@ static bool ContainsBlackPoint(const BitMatrix& image, int a, int b, int fixed, 
 		}
 	}
 	else {
+		if (fixed < 0 || fixed >= image.width())
+			return false;
+		b = std::min(b, image.height() - 1);
 		for (int y = a; y <= b; y++) {
 			if (image.get(fixed, y)) {
 				return true;
@@ -68,7 +75,7 @@ static bool GetBlackPointOnSegment(const BitMatrix& image, int aX, int aY, int b
 	auto dist = std::lround(distance(a, b) / length(cur.d));
 
 	for (int i = 0; i < dist; i++) {
-		if (image.get(cur.p)) {
+		if (cur.isBlack()) {
 			result = cur.p;
 			return true;
 		}
@@ -136,7 +143,8 @@ static void CenterEdges(const ResultPoint& y, const ResultPoint& z, const Result
 *         leftmost and the third, the rightmost
 * @throws NotFoundException if no Data Matrix Code can be found
 */
-bool DetectWhiteRect(const BitMatrix& image, int initSize, int x, int y, ResultPoint& p0, ResultPoint& p1, ResultPoint& p2, ResultPoint& p3)
+bool DetectWhiteRect(const BitMatrix& image, int initSize, int x, int y, ResultPoint& p0, ResultPoint& p1,
+					 ResultPoint& p2, ResultPoint& p3, bool isPure)
 {
 	int height = image.height();
 	int width = image.width();
@@ -149,7 +157,6 @@ bool DetectWhiteRect(const BitMatrix& image, int initSize, int x, int y, ResultP
 		return false;
 	}
 
-	bool sizeExceeded = false;
 	bool aBlackPointFoundOnBorder = true;
 	bool atLeastOneBlackPointFoundOnBorder = false;
 
@@ -178,11 +185,6 @@ bool DetectWhiteRect(const BitMatrix& image, int initSize, int x, int y, ResultP
 			}
 		}
 
-		if (right >= width) {
-			sizeExceeded = true;
-			break;
-		}
-
 		// .....
 		// .   .
 		// .___.
@@ -197,11 +199,6 @@ bool DetectWhiteRect(const BitMatrix& image, int initSize, int x, int y, ResultP
 			else if (!atLeastOneBlackPointFoundOnBottom) {
 				down++;
 			}
-		}
-
-		if (down >= height) {
-			sizeExceeded = true;
-			break;
 		}
 
 		// .....
@@ -220,11 +217,6 @@ bool DetectWhiteRect(const BitMatrix& image, int initSize, int x, int y, ResultP
 			}
 		}
 
-		if (left < 0) {
-			sizeExceeded = true;
-			break;
-		}
-
 		// .___.
 		// .   .
 		// .....
@@ -241,18 +233,19 @@ bool DetectWhiteRect(const BitMatrix& image, int initSize, int x, int y, ResultP
 			}
 		}
 
-		if (up < 0) {
-			sizeExceeded = true;
-			break;
-		}
-
 		if (aBlackPointFoundOnBorder) {
 			atLeastOneBlackPointFoundOnBorder = true;
 		}
 
 	}
 
-	if (!sizeExceeded && atLeastOneBlackPointFoundOnBorder) {
+	if (!isPure && (up < 0 || left < 0 || down >= height || right >= width))
+		return false;
+
+	if (up < 0 && left < 0 && down >= height && right >= width)
+		return false;
+
+	if (atLeastOneBlackPointFoundOnBorder) {
 
 		int maxSize = right - left;
 

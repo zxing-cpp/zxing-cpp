@@ -40,7 +40,8 @@ class ResultPoint;
  * @throws NotFoundException if no Data Matrix Code can be found
  */
 bool DetectWhiteRect(const BitMatrix& image, int initSize, int x, int y, ResultPoint& p0, ResultPoint& p1,
-					 ResultPoint& p2, ResultPoint& p3);
-bool DetectWhiteRect(const BitMatrix& image, ResultPoint& p0, ResultPoint& p1, ResultPoint& p2, ResultPoint& p3);
+					 ResultPoint& p2, ResultPoint& p3, bool isPure = false);
+bool DetectWhiteRect(const BitMatrix& image, ResultPoint& p0, ResultPoint& p1, ResultPoint& p2, ResultPoint& p3,
+					 bool isPure = false);
 
 } // ZXing

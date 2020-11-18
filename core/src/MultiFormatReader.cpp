@@ -45,7 +45,7 @@ MultiFormatReader::MultiFormatReader(const DecodeHints& hints)
 	if (formats.testFlag(BarcodeFormat::DataMatrix))
 		_readers.emplace_back(new DataMatrix::Reader(hints));
 	if (formats.testFlag(BarcodeFormat::Aztec))
-		_readers.emplace_back(new Aztec::Reader());
+		_readers.emplace_back(new Aztec::Reader(hints));
 	if (formats.testFlag(BarcodeFormat::PDF417))
 		_readers.emplace_back(new Pdf417::Reader());
 	if (formats.testFlag(BarcodeFormat::MaxiCode))

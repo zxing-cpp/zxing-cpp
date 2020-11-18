@@ -414,11 +414,11 @@ static bool GetBullsEyeCorners(const BitMatrix& image, const PointI& pCenter, st
 *
 * @return the center point
 */
-static PointI GetMatrixCenter(const BitMatrix& image)
+static PointI GetMatrixCenter(const BitMatrix& image, bool isPure)
 {
 	//Get a white rectangle that can be the border of the matrix in center bull's eye or
 	ResultPoint pointA, pointB, pointC, pointD;
-	if (!DetectWhiteRect(image, pointA, pointB, pointC, pointD)) {
+	if (!DetectWhiteRect(image, pointA, pointB, pointC, pointD, isPure)) {
 		// This exception can be in case the initial rectangle is white
 		// In that case, surely in the bull's eye, we try to expand the rectangle.
 		int cx = image.width() / 2;
@@ -480,10 +480,10 @@ static ZXing::DetectorResult SampleGrid(const BitMatrix& image, const ResultPoin
 										   {topLeft, topRight, bottomRight, bottomLeft}});
 }
 
-DetectorResult Detector::Detect(const BitMatrix& image, bool isMirror)
+DetectorResult Detector::Detect(const BitMatrix& image, bool isMirror, bool isPure)
 {
 	// 1. Get the center of the aztec matrix
-	auto pCenter = GetMatrixCenter(image);
+	auto pCenter = GetMatrixCenter(image, isPure);
 
 	// 2. Get the center points of the four diagonal points just outside the bull's eye
 	//  [topRight, bottomRight, bottomLeft, topLeft]

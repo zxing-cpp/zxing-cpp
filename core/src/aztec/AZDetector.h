@@ -41,7 +41,7 @@ public:
 	* @return {@link AztecDetectorResult} encapsulating results of detecting an Aztec Code
 	* @throws NotFoundException if no Aztec Code can be found
 	*/
-	static DetectorResult Detect(const BitMatrix& image, bool isMirror);
+	static DetectorResult Detect(const BitMatrix& image, bool isMirror, bool isPure);
 };
 
 } // Aztec

@@ -19,6 +19,9 @@
 #include "Reader.h"
 
 namespace ZXing {
+
+class DecodeHints;
+
 namespace Aztec {
 
 /**
@@ -29,7 +32,11 @@ namespace Aztec {
 class Reader : public ZXing::Reader
 {
 public:
+	explicit Reader(const DecodeHints& hints);
 	Result decode(const BinaryBitmap& image) const override;
+
+private:
+	bool _isPure;
 };
 
 } // Aztec

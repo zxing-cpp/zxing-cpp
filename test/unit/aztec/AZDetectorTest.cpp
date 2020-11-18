@@ -74,7 +74,7 @@ namespace {
 							copy.flip(orientationPoints[error2].x, orientationPoints[error2].y);
 						}
 						// The detector doesn't seem to work when matrix bits are only 1x1.  So magnify.
-						Aztec::DetectorResult r = Aztec::Detector::Detect(MakeLarger(copy, 3), isMirror);
+						Aztec::DetectorResult r = Aztec::Detector::Detect(MakeLarger(copy, 3), isMirror, true);
 						EXPECT_EQ(r.isValid(), true);
 						EXPECT_EQ(r.nbLayers(), nbLayers);
 						EXPECT_EQ(r.isCompact(), isCompact);
@@ -92,7 +92,7 @@ namespace {
 					for (auto error : errors) {
 						copy.flip(orientationPoints[error].x, orientationPoints[error].y);
 					}
-					Aztec::DetectorResult r = Aztec::Detector::Detect(MakeLarger(copy, 3), false);
+					Aztec::DetectorResult r = Aztec::Detector::Detect(MakeLarger(copy, 3), false, true);
 					EXPECT_EQ(r.isValid(), false);
 				}
 
