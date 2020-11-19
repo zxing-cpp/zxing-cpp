@@ -150,6 +150,20 @@ public:
 		return ret;
 	}
 
+	int countEdges(int range = 0)
+	{
+		int res = 0;
+		int steps;
+
+		do {
+			steps = stepToEdge(1, range);
+			range -= steps;
+			++res;
+		} while (steps);
+
+		return res;
+	}
+
 	template<typename ARRAY>
 	ARRAY readPattern(int range = 0)
 	{
