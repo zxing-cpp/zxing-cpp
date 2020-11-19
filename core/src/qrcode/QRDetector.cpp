@@ -293,30 +293,21 @@ static DetectorResult DetectPure(const BitMatrix& image)
 {
 	const int minSize = 21; // Number of modules in the smallest QRCode (Version 1)
 	int left, top, width, height;
-	if (!image.findBoundingBox(left, top, width, height, minSize) || width != height) {
+	if (!image.findBoundingBox(left, top, width, height, minSize) || width != height)
 		return {};
-	}
 
-	// find the first white pixel on the diagonal
-	int moduleSize = 1;
-	while (moduleSize < width / minSize && image.get(left + moduleSize, top + moduleSize))
-		++moduleSize;
+	// The upper-left corner must contain a finder pattern.
+	float moduleSize = BitMatrixCursorF(image, PointF(left, top), PointF(1, 1)).stepToEdge(5) / 7.f;
 
-	int matrixWidth = width / moduleSize;
-	int matrixHeight = height / moduleSize;
-	if (matrixWidth < minSize || matrixHeight < minSize) {
+	int symbolSize = std::lround(width / moduleSize);
+	if (symbolSize < minSize)
 		return {};
-	}
 
-	// Push in the "border" by half the module width so that we start
-	// sampling in the middle of the module. Just in case the image is a
-	// little off, this will help recover.
-	int msh    = moduleSize / 2;
 	int right  = left + width - 1;
 	int bottom = top + height - 1;
 
 	// Now just read off the bits (this is a crop + subsample)
-	return {Deflate(image, matrixWidth, matrixHeight, top + msh, left + msh, moduleSize),
+	return {Deflate(image, symbolSize, symbolSize, top + moduleSize / 2.f, left + moduleSize / 2.f, moduleSize),
 			{{left, top}, {right, top}, {right, bottom}, {left, bottom}}};
 }
 

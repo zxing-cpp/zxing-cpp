@@ -287,18 +287,19 @@ BitMatrix Inflate(BitMatrix&& input, int width, int height, int quietZone)
 	return result;
 }
 
-BitMatrix Deflate(const BitMatrix& input, int width, int height, int top, int left, int subSampling)
+BitMatrix Deflate(const BitMatrix& input, int width, int height, float top, float left, float subSampling)
 {
 	BitMatrix result(width, height);
+
 	for (int y = 0; y < result.height(); y++) {
-		int yOffset = top + y * subSampling;
+		auto yOffset = top + y * subSampling;
 		for (int x = 0; x < result.width(); x++) {
-			if (input.get(left + x * subSampling, yOffset))
+			if (input.get(PointF(left + x * subSampling, yOffset)))
 				result.set(x, y);
 		}
 	}
-	return result;
 
+	return result;
 }
 
 } // ZXing

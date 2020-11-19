@@ -303,7 +303,7 @@ BitMatrix Inflate(BitMatrix&& input, int width, int height, int quietZone);
  * @param subSampling typically the module size
  * @return deflated input
  */
-BitMatrix Deflate(const BitMatrix& matrix, int width, int height, int top, int left, int subSampling);
+BitMatrix Deflate(const BitMatrix& matrix, int width, int height, float top, float left, float subSampling);
 
 template<typename T>
 BitMatrix ToBitMatrix(const Matrix<T>& in, T trueValue = {true})
