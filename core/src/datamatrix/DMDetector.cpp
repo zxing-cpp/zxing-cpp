@@ -551,7 +551,6 @@ public:
 		line.setDirectionInward(dEdge);
 		int gaps = 0;
 		do {
-			assert(line.points().empty() || p != line.points().back());
 			log(p);
 
 			// if we drifted too far outside of the code, break
@@ -610,7 +609,9 @@ public:
 				// we are successful iff we found an open end across a valid finishLine
 				return stepResult == StepResult::OPEN_END && finishLine.isValid() &&
 					   static_cast<int>(finishLine.signedDistance(p)) <= maxStepSize + 1;
-		} while (true);
+		} while (p != line.points().back());
+
+        return false;
 	}
 
 	bool traceCorner(PointF dir, PointF& corner)
