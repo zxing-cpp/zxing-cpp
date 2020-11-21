@@ -300,7 +300,8 @@ static DetectorResult DetectPure(const BitMatrix& image)
 	float moduleSize = BitMatrixCursorF(image, PointF(left, top), PointF(1, 1)).stepToEdge(5) / 7.f;
 
 	int symbolSize = std::lround(width / moduleSize);
-	if (symbolSize < minSize)
+	if (symbolSize < minSize || !image.isIn(PointF{left + moduleSize / 2 + (symbolSize - 1) * moduleSize,
+												   top + moduleSize / 2 + (symbolSize - 1) * moduleSize}))
 		return {};
 
 	int right  = left + width - 1;
