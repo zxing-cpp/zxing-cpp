@@ -17,13 +17,12 @@
 */
 
 #include "GenericGFPoly.h"
+#include "ZXConfig.h"
 
 #include <algorithm>
 #include <cassert>
 #include <stdexcept>
 #include <vector>
-
-#define ZX_REED_SOLOMON_USE_MORE_MEMORY_FOR_SPEED
 
 namespace ZXing {
 

@@ -26,13 +26,23 @@ ModulusGF::ModulusGF(int modulus, int generator) :
 	_zero(*this, { 0 }),
 	_one(*this, { 1 })
 {
+#ifdef ZX_REED_SOLOMON_USE_MORE_MEMORY_FOR_SPEED
+	_expTable.resize(modulus * 2, 0);
+#else
 	_expTable.resize(modulus, 0);
+#endif
 	_logTable.resize(modulus, 0);
 	int x = 1;
 	for (int i = 0; i < modulus; i++) {
 		_expTable[i] = x;
 		x = (x * generator) % modulus;
 	}
+
+#ifdef ZX_REED_SOLOMON_USE_MORE_MEMORY_FOR_SPEED
+	for (int i = modulus - 1; i < modulus * 2; ++i)
+		_expTable[i] = _expTable[i - (modulus - 1)];
+#endif
+
 	for (int i = 0; i < modulus - 1; i++) {
 		_logTable[_expTable[i]] = i;
 	}
