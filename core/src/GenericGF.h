@@ -39,6 +39,24 @@ namespace ZXing {
 */
 class GenericGF
 {
+	const int _size;
+	int _generatorBase;
+	std::vector<short> _expTable;
+	std::vector<short> _logTable;
+
+	/**
+	* Create a representation of GF(size) using the given primitive polynomial.
+	*
+	* @param primitive irreducible polynomial whose coefficients are represented by
+	*  the bits of an int, where the least-significant bit represents the constant
+	*  coefficient
+	* @param size the size of the field (m = log2(size) is called the word size of the encoding)
+	* @param b the factor b in the generator polynomial can be 0- or 1-based
+	*  (g(x) = (x+a^b)(x+a^(b+1))...(x+a^(b+2t-1))).
+	*  In most cases it should be 1, but for QR code it is 0.
+	*/
+	GenericGF(int primitive, int size, int b);
+
 public:
 	static const GenericGF& AztecData12();
 	static const GenericGF& AztecData10();
@@ -50,8 +68,8 @@ public:
 	static const GenericGF& MaxiCodeField64();
 
 	// note: replaced addOrSubstract calls with '^' / '^='. everyone trying to understand this code needs to look into
-	// Golois Fields with caracteristic 2 and will then understand that XOR is addition/substraction. And those
-	// operators are way more readable than noisy member funtion
+	// Galois Fields with caracteristic 2 and will then understand that XOR is addition/substraction. And those
+	// operators are way more readable than a noisy member function name
 
 	/**
 	* @return 2 to the power of a in GF(size)
@@ -103,25 +121,6 @@ public:
 	int generatorBase() const noexcept {
 		return _generatorBase;
 	}
-
-private:
-	const int _size;
-	int _generatorBase;
-	std::vector<short> _expTable;
-	std::vector<short> _logTable;
-
-	/**
-	* Create a representation of GF(size) using the given primitive polynomial.
-	*
-	* @param primitive irreducible polynomial whose coefficients are represented by
-	*  the bits of an int, where the least-significant bit represents the constant
-	*  coefficient
-	* @param size the size of the field (m = log2(size) is called the word size of the encoding)
-	* @param b the factor b in the generator polynomial can be 0- or 1-based
-	*  (g(x) = (x+a^b)(x+a^(b+1))...(x+a^(b+2t-1))).
-	*  In most cases it should be 1, but for QR code it is 0.
-	*/
-	GenericGF(int primitive, int size, int b);
 };
 
 } // namespace ZXing
