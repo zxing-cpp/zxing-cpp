@@ -38,7 +38,8 @@ namespace ZXing::OneD {
 
 Reader::Reader(const DecodeHints& hints) :
 	_tryHarder(hints.tryHarder()),
-	_tryRotate(hints.tryRotate())
+	_tryRotate(hints.tryRotate()),
+	_isPure(hints.isPure())
 {
 	_readers.reserve(8);
 
@@ -80,7 +81,7 @@ Reader::~Reader() = default;
 * @throws NotFoundException Any spontaneous errors which occur
 */
 static Result
-DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, const BinaryBitmap& image, bool tryHarder)
+DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, const BinaryBitmap& image, bool tryHarder, bool isPure)
 {
 	std::vector<std::unique_ptr<RowReader::DecodingState>> decodingState(readers.size());
 
@@ -139,6 +140,10 @@ DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, const BinaryBit
 				}
 			}
 		}
+
+		// If this is a pure symbol, then checking a single non-empty line is sufficient
+		if (isPure)
+			break;
 	}
 	return Result(DecodeStatus::NotFound);
 }
@@ -146,11 +151,11 @@ DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, const BinaryBit
 Result
 Reader::decode(const BinaryBitmap& image) const
 {
-	Result result = DoDecode(_readers, image, _tryHarder);
+	Result result = DoDecode(_readers, image, _tryHarder, _isPure);
 
 	if (!result.isValid() && _tryRotate && image.canRotate()) {
 		auto rotatedImage = image.rotated(270);
-		result = DoDecode(_readers, *rotatedImage, _tryHarder);
+		result = DoDecode(_readers, *rotatedImage, _tryHarder, _isPure);
 		if (result.isValid()) {
 			// Update position
 			auto points = result.position();
