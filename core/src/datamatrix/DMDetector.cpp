@@ -835,12 +835,17 @@ static DetectorResult DetectPure(const BitMatrix& image)
 	int dimT = cur.countEdges(width - 1);
 	cur.turnRight();
 	int dimR = cur.countEdges(height - 1);
+	cur.turnRight();
+	int dimB = cur.countEdges(width - 1);
+	cur.turnRight();
+	int dimL = cur.countEdges(height - 1);
 
 	auto modSizeX = float(width) / dimT;
 	auto modSizeY = float(height) / dimR;
 	auto modSize = (modSizeX + modSizeY) / 2;
 
-	if (dimT < 10 || dimT > 144 || dimR < 8 || dimR > 144 || std::abs(modSizeX - modSizeY) > 1 ||
+	if (dimL != 1 || dimB != 1 || dimT < 10 || dimT > 144 || dimR < 8 || dimR > 144 ||
+		std::abs(modSizeX - modSizeY) > 1 ||
 		!image.isIn(PointF{left + modSizeX / 2 + (dimT - 1) * modSize, top + modSizeY / 2 + (dimR - 1) * modSize}))
 		return {};
 
