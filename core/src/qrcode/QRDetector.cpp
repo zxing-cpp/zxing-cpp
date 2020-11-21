@@ -37,18 +37,21 @@
 
 namespace ZXing::QRCode {
 
+constexpr auto PATTERN    = FixedPattern<5, 7>{1, 1, 3, 1, 1};
+constexpr int MIN_MODULES = 1 * 4 + 17; // version 1
+constexpr int MAX_MODULES = 40 * 4 + 17; // version 40
+
 static auto FindFinderPatterns(const BitMatrix& image, bool tryHarder)
 {
-	constexpr int MIN_SKIP    = 3;           // 1 pixel/module times 3 modules/center
-	constexpr int MAX_MODULES = 20 * 4 + 17; // support up to version 20 for mobile clients
-	constexpr auto PATTERN    = FixedPattern<5, 7>{1, 1, 3, 1, 1};
+	constexpr int MIN_SKIP         = 3;           // 1 pixel/module times 3 modules/center
+	constexpr int MAX_MODULES_FAST = 20 * 4 + 17; // support up to version 20 for mobile clients
 
 	// Let's assume that the maximum version QR Code we support takes up 1/4 the height of the
 	// image, and then account for the center being 3 modules in size. This gives the smallest
 	// number of pixels the center could be, so skip this often. When trying harder, look for all
 	// QR versions regardless of how dense they are.
 	int height = image.height();
-	int skip = (3 * height) / (4 * MAX_MODULES);
+	int skip = (3 * height) / (4 * MAX_MODULES_FAST);
 	if (skip < MIN_SKIP || tryHarder)
 		skip = MIN_SKIP;
 
@@ -291,24 +294,45 @@ static DetectorResult SampleAtFinderPatternSet(const BitMatrix& image, const Fin
 */
 static DetectorResult DetectPure(const BitMatrix& image)
 {
-	const int minSize = 21; // Number of modules in the smallest QRCode (Version 1)
 	int left, top, width, height;
-	if (!image.findBoundingBox(left, top, width, height, minSize) || width != height)
+	if (!image.findBoundingBox(left, top, width, height, MIN_MODULES) || std::abs(width - height) > 1)
 		return {};
-
-	// The upper-left corner must contain a finder pattern.
-	float moduleSize = BitMatrixCursorF(image, PointF(left, top), PointF(1, 1)).stepToEdge(5) / 7.f;
-
-	int symbolSize = std::lround(width / moduleSize);
-	if (symbolSize < minSize || !image.isIn(PointF{left + moduleSize / 2 + (symbolSize - 1) * moduleSize,
-												   top + moduleSize / 2 + (symbolSize - 1) * moduleSize}))
-		return {};
-
 	int right  = left + width - 1;
 	int bottom = top + height - 1;
 
+	// The top-left and top-right corners must contain a finder pattern
+	auto fpWidth   = BitMatrixCursorI(image, {left, top}, {1, 1}).stepToEdge(5);
+	auto dimension = EstimateDimension(image, PointF(left, top) + fpWidth / 2 * PointF(1, 1),
+									   PointF(right, top) + fpWidth / 2 * PointF(-1, 1))
+						 .dim;
+
+	float moduleSize = float(width) / dimension;
+	if (dimension < MIN_MODULES || dimension > MAX_MODULES ||
+		!image.isIn(PointF{left + moduleSize / 2 + (dimension - 1) * moduleSize,
+						   top + moduleSize / 2 + (dimension - 1) * moduleSize}))
+		return {};
+
+	// To prevent a costly Deflate() and later ReedSolomonDecode(), check corners for presense of finder patterns
+	auto hasFinderPatternAt = [&](PointI center, int size) {
+		using Pattern = std::array<PatternView::value_type, PATTERN.size()>;
+
+		for (auto d : {PointI{0, 1}, {1, 0}}) {
+			BitMatrixCursorI cur(image, center, d);
+			auto pattern = ReadSymmetricPattern<Pattern>(cur, size);
+			if (!pattern || !IsPattern(*pattern, PATTERN) || std::abs(Reduce(*pattern) - size) > 1)
+				return false;
+		}
+		return true;
+	};
+
+	fpWidth = moduleSize * 7;
+	if (!hasFinderPatternAt(PointI(left, top) + fpWidth / 2 * PointI(1, 1), fpWidth) ||
+		!hasFinderPatternAt(PointI(left, bottom) + fpWidth / 2 * PointI(1, -1), fpWidth) ||
+		!hasFinderPatternAt(PointI(right, top) + fpWidth / 2 * PointI(-1, 1), fpWidth))
+		return {};
+
 	// Now just read off the bits (this is a crop + subsample)
-	return {Deflate(image, symbolSize, symbolSize, top + moduleSize / 2.f, left + moduleSize / 2.f, moduleSize),
+	return {Deflate(image, dimension, dimension, top + moduleSize / 2, left + moduleSize / 2, moduleSize),
 			{{left, top}, {right, top}, {right, bottom}, {left, bottom}}};
 }
 

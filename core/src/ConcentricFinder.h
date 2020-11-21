@@ -38,8 +38,8 @@ static float CenterFromEnd(const std::array<T, N>& pattern, float end)
 	}
 }
 
-template<typename Pattern>
-std::optional<Pattern> ReadSymmetricPattern(BitMatrixCursorF& cur, int range)
+template<typename Pattern, typename Cursor>
+std::optional<Pattern> ReadSymmetricPattern(Cursor& cur, int range)
 {
 	if (!cur.stepToEdge(std::tuple_size<Pattern>::value / 2 + 1, range))
 		return std::nullopt;
@@ -47,7 +47,7 @@ std::optional<Pattern> ReadSymmetricPattern(BitMatrixCursorF& cur, int range)
 	cur.turnBack();
 	cur.step();
 
-	auto pattern = cur.readPattern<Pattern>(range);
+	auto pattern = cur.template readPattern<Pattern>(range);
 	if (pattern.back() == 0)
 		return std::nullopt;
 	return pattern;
