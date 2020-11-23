@@ -33,6 +33,14 @@ struct PointT
 	template <typename U>
 	constexpr explicit PointT(const PointT<U>& p) : x(static_cast<T>(p.x)), y(static_cast<T>(p.y))
 	{}
+
+	template <typename U>
+	PointT& operator+=(const PointT<U>& b)
+	{
+		x += b.x;
+		y += b.y;
+		return *this;
+	}
 };
 
 template <typename T>

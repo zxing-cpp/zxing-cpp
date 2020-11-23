@@ -27,7 +27,7 @@ std::optional<PointF> AverageEdgePixels(BitMatrixCursorI cur, int range, int num
 		if (!cur.isIn())
 			return {};
 		cur.stepToEdge(1, range);
-		sum = sum + centered(cur.p) + centered(cur.p + cur.back());
+		sum += centered(cur.p) + centered(cur.p + cur.back());
 		log(cur.p + cur.back(), 2);
 	}
 	return sum / (2 * numOfEdges);
@@ -41,7 +41,7 @@ std::optional<PointF> CenterOfDoubleCross(const BitMatrix& image, PointI center,
 		auto avr2 = AverageEdgePixels({image, center, -d}, range, numOfEdges);
 		if (!avr1 || !avr2)
 			return {};
-		sum = sum + *avr1 + *avr2;
+		sum += *avr1 + *avr2;
 	}
 	return sum / 8;
 }
@@ -58,7 +58,7 @@ std::optional<PointF> CenterOfRing(const BitMatrix& image, PointI center, int ra
 	int n = 0;
 	do {
 		log(cur.p, 4);
-		sum = sum + centered(cur.p);
+		sum += centered(cur.p);
 		++n;
 
 		// find out if we come full circle around the center. 8 bits have to be set in the end.
@@ -88,7 +88,7 @@ std::optional<PointF> CenterOfRings(const BitMatrix& image, PointI center, int r
 			return {};
 		// TODO: decide whether this wheighting depending on distance to the center is worth it
 		int weight = numOfRings - i;
-		sum = sum + weight * *c;
+		sum += weight * *c;
 		n += weight;
 	}
 	return sum / n;

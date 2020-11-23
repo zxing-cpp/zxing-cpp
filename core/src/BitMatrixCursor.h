@@ -105,7 +105,7 @@ public:
 
 	bool step(typename POINT::value_t s = 1)
 	{
-		p = p + s * d;
+		p += s * d;
 		return isIn(p);
 	}
 
