@@ -551,7 +551,10 @@ public:
 		line.setDirectionInward(dEdge);
 		int gaps = 0;
 		do {
+			// detect an endless loop (lack of progress). if encountered, please report.
 			assert(line.points().empty() || p != line.points().back());
+			if (!line.points().empty() && p == line.points().back())
+				return false;
 			log(p);
 
 			// if we drifted too far outside of the code, break
