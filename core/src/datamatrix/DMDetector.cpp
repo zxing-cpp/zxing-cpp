@@ -636,8 +636,12 @@ static DetectorResult Scan(EdgeTracer startTracer, std::array<DMRegressionLine, 
 		log(startTracer.p);
 
 		// continue until we cross from black into white
-		if (!startTracer.edgeAtBack().isWhite())
-			continue;
+        auto offColor = startTracer.edgeAtBack();
+        if (!offColor.isValid()) {
+            continue;
+        }
+        bool inverted = (offColor.isBlack());
+        startTracer.setColor(inverted);
 
 		PointF tl, bl, br, tr;
 		auto& [lineL, lineB, lineR, lineT] = lines;
@@ -761,7 +765,7 @@ static DetectorResult Scan(EdgeTracer startTracer, std::array<DMRegressionLine, 
 			movedTowardsBy(bl, tl, br, 0.5f),
 		};
 
-		auto res = SampleGrid(*startTracer.img, dimT, dimR, PerspectiveTransform(Rectangle(dimT, dimR, 0), sourcePoints));
+		auto res = SampleGrid(*startTracer.img, dimT, dimR, PerspectiveTransform(Rectangle(dimT, dimR, 0), sourcePoints), inverted);
 
 		CHECK(res.isValid());
 

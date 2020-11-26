@@ -29,7 +29,7 @@ namespace ZXing {
 LogMatrix log;
 #endif
 
-DetectorResult SampleGrid(const BitMatrix& image, int width, int height, const PerspectiveTransform& mod2Pix)
+DetectorResult SampleGrid(const BitMatrix& image, int width, int height, const PerspectiveTransform& mod2Pix, bool inverted)
 {
 #ifdef PRINT_DEBUG
 	LogMatrix log;
@@ -51,6 +51,9 @@ DetectorResult SampleGrid(const BitMatrix& image, int width, int height, const P
 			if (image.get(p))
 				res.set(x, y);
 		}
+    if (inverted) {
+        res.flipAll();
+    }
 
 #ifdef PRINT_DEBUG
 	printf("width: %d, height: %d\n", width, height);

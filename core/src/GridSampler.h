@@ -46,6 +46,6 @@ namespace ZXing {
 * @return {@link DetectorResult} representing a grid of points sampled from the image within a region
 *   defined by the "src" parameters. Result is empty if transformation is invalid (out of bound access).
 */
-DetectorResult SampleGrid(const BitMatrix& image, int width, int height, const PerspectiveTransform& mod2Pix);
+DetectorResult SampleGrid(const BitMatrix& image, int width, int height, const PerspectiveTransform& mod2Pix, bool inverted=false);
 
 } // ZXing

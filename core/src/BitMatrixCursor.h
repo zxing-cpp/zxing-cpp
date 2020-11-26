@@ -61,6 +61,9 @@ public:
 		bool operator==(Value o) const { return v == o.v; }
 		bool operator!=(Value o) const { return v != o.v; }
 	};
+    
+    Value c1{true};  // On module color
+    Value c0{false}; // Off module color
 
 	template <typename T>
 	Value testAt(PointT<T> p) const
@@ -69,8 +72,8 @@ public:
 		return img->isIn(q) ? Value{img->get(q)} : Value{};
 	}
 
-	bool blackAt(POINT pos) const noexcept { return testAt(pos).isBlack(); }
-	bool whiteAt(POINT pos) const noexcept { return testAt(pos).isWhite(); }
+	bool blackAt(POINT pos) const noexcept { return testAt(pos) == c1; }
+	bool whiteAt(POINT pos) const noexcept { return testAt(pos) == c0; }
 
 	bool isIn(POINT p) const noexcept { return img->isIn(p); }
 	bool isIn() const noexcept { return isIn(p); }
@@ -102,6 +105,11 @@ public:
 
 	void setDirection(PointF dir) { d = bresenhamDirection(dir); }
 	void setDirection(PointI dir) { d = dir; }
+    void setColor(bool inverted)
+    {
+        c1 = Value(!inverted);
+        c0 = Value(inverted);
+    }
 
 	bool step(typename POINT::value_t s = 1)
 	{
