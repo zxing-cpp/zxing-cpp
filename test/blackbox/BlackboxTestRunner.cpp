@@ -281,12 +281,12 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		auto startTime = std::chrono::steady_clock::now();
 
 		// clang-format off
-		runTests("aztec-1", "Aztec", 14, {
-			{ 13, 13, 0   },
-			{ 13, 13, 90  },
-			{ 13, 13, 180 },
-			{ 13, 13, 270 },
-			{ 14, 0, pure },
+		runTests("aztec-1", "Aztec", 15, {
+			{ 14, 14, 0   },
+			{ 14, 14, 90  },
+			{ 14, 14, 180 },
+			{ 14, 14, 270 },
+			{ 15, 0, pure },
 		});
 
 		runTests("aztec-2", "Aztec", 22, {
@@ -494,12 +494,12 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 16, 16, 270 },
 		});
 
-		runTests("qrcode-2", "QRCode", 37, {
-			{ 35, 35, 0   },
-			{ 35, 35, 90  },
-			{ 35, 35, 180 },
-			{ 35, 35, 270 },
-			{ 21, 1, pure }, // the misread is the 'outer' symbol in 16.png
+		runTests("qrcode-2", "QRCode", 38, {
+			{ 36, 36, 0   },
+			{ 36, 36, 90  },
+			{ 36, 36, 180 },
+			{ 36, 36, 270 },
+			{ 19, 1, pure }, // the misread is the 'outer' symbol in 16.png
 		});
 
 		runTests("qrcode-3", "QRCode", 28, {

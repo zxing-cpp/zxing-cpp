@@ -294,17 +294,36 @@ static DetectorResult SampleAtFinderPatternSet(const BitMatrix& image, const Fin
 */
 static DetectorResult DetectPure(const BitMatrix& image)
 {
+	using Pattern = std::array<PatternView::value_type, PATTERN.size()>;
+
 	int left, top, width, height;
 	if (!image.findBoundingBox(left, top, width, height, MIN_MODULES) || std::abs(width - height) > 1)
 		return {};
 	int right  = left + width - 1;
 	int bottom = top + height - 1;
 
+	PointI tl{left, top}, tr{right, top}, bl{left, bottom};
+
+	// allow corners be moved one pixel inside to accomodate for possible aliasing artifacts
+	if (!image.get(tl))
+		tl += PointI{1, 1};
+	if (!image.get(tr))
+		tr += PointI{-1, 1};
+	if (!image.get(bl))
+		bl += PointI{1, -1};
+
 	// The top-left and top-right corners must contain a finder pattern
-	auto fpWidth   = BitMatrixCursorI(image, {left, top}, {1, 1}).stepToEdge(5);
-	auto dimension = EstimateDimension(image, PointF(left, top) + fpWidth / 2 * PointF(1, 1),
-									   PointF(right, top) + fpWidth / 2 * PointF(-1, 1))
-						 .dim;
+	if (!image.get(tl) || !image.get(tr) || !image.get(bl))
+		return {};
+
+	auto tlDiagonal = BitMatrixCursorI(image, tl, {1, 1}).readPattern<Pattern>();
+	auto trDiagonal = BitMatrixCursorI(image, tr, {-1, 1}).readPattern<Pattern>();
+	auto blDiagonal = BitMatrixCursorI(image, bl, {1, -1}).readPattern<Pattern>();
+	if (!IsPattern(tlDiagonal, PATTERN) || !IsPattern(trDiagonal, PATTERN) || !IsPattern(blDiagonal, PATTERN))
+		return {};
+
+	auto fpWidth = Reduce(tlDiagonal);
+	auto dimension = EstimateDimension(image, tl + fpWidth / 2 * PointF(1, 1), tr + fpWidth / 2 * PointF(-1, 1)).dim;
 
 	float moduleSize = float(width) / dimension;
 	if (dimension < MIN_MODULES || dimension > MAX_MODULES ||
@@ -312,24 +331,6 @@ static DetectorResult DetectPure(const BitMatrix& image)
 						   top + moduleSize / 2 + (dimension - 1) * moduleSize}))
 		return {};
 
-	// To prevent a costly Deflate() and later ReedSolomonDecode(), check corners for presense of finder patterns
-	auto hasFinderPatternAt = [&](PointI center, int size) {
-		using Pattern = std::array<PatternView::value_type, PATTERN.size()>;
-
-		for (auto d : {PointI{0, 1}, {1, 0}}) {
-			BitMatrixCursorI cur(image, center, d);
-			auto pattern = ReadSymmetricPattern<Pattern>(cur, size);
-			if (!pattern || !IsPattern(*pattern, PATTERN) || std::abs(Reduce(*pattern) - size) > 1)
-				return false;
-		}
-		return true;
-	};
-
-	fpWidth = moduleSize * 7;
-	if (!hasFinderPatternAt(PointI(left, top) + fpWidth / 2 * PointI(1, 1), fpWidth) ||
-		!hasFinderPatternAt(PointI(left, bottom) + fpWidth / 2 * PointI(1, -1), fpWidth) ||
-		!hasFinderPatternAt(PointI(right, top) + fpWidth / 2 * PointI(-1, 1), fpWidth))
-		return {};
 
 	// Now just read off the bits (this is a crop + subsample)
 	return {Deflate(image, dimension, dimension, top + moduleSize / 2, left + moduleSize / 2, moduleSize),
