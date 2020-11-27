@@ -28,6 +28,8 @@
 #include "QRVersion.h"
 #include "RegressionLine.h"
 
+#include "BitMatrixIO.h"
+
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
@@ -296,6 +298,10 @@ static DetectorResult DetectPure(const BitMatrix& image)
 {
 	using Pattern = std::array<PatternView::value_type, PATTERN.size()>;
 
+#ifdef PRINT_DEBUG
+	SaveAsPBM(image, "weg.pbm");
+#endif
+
 	int left, top, width, height;
 	if (!image.findBoundingBox(left, top, width, height, MIN_MODULES) || std::abs(width - height) > 1)
 		return {};
@@ -331,6 +337,13 @@ static DetectorResult DetectPure(const BitMatrix& image)
 						   top + moduleSize / 2 + (dimension - 1) * moduleSize}))
 		return {};
 
+#ifdef PRINT_DEBUG
+	LogMatrix log;
+	LogMatrixWriter lmw(log, image, 5, "grid2.pnm");
+	for (int y = 0; y < dimension; y++)
+		for (int x = 0; x < dimension; x++)
+			log(PointF(left + (x + .5f) * moduleSize, top + (y + .5f) * moduleSize));
+#endif
 
 	// Now just read off the bits (this is a crop + subsample)
 	return {Deflate(image, dimension, dimension, top + moduleSize / 2, left + moduleSize / 2, moduleSize),
