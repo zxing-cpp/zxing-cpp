@@ -17,22 +17,15 @@
 
 #include "ZXFilesystem.h"
 
-#include <memory>
-#include <map>
-
 namespace ZXing {
 
 class BinaryBitmap;
 
-namespace Test {
+namespace Test::ImageLoader {
 
-class ImageLoader
-{
-public:
-	static std::map<fs::path, std::unique_ptr<BinaryBitmap>> cache;
+void clearCache();
+const BinaryBitmap& load(const fs::path& imgPath, bool isPure = false, int rotation = 0);
 
-	static const BinaryBitmap& load(const fs::path& imgPath);
-};
+} // namespace Test::ImageLoader
 
-
-}} // ZXing::Test
+} // ZXing::Test

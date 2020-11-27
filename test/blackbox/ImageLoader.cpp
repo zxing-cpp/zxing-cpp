@@ -19,48 +19,68 @@
 
 #include "BinaryBitmap.h"
 #include "GenericLuminanceSource.h"
+#include "HybridBinarizer.h"
+#include "ReadBarcode.h"
+#include "ThresholdBinarizer.h"
 
+#include <map>
 #include <memory>
 #include <stdexcept>
-
-#if 0
-#include "GlobalHistogramBinarizer.h"
-using Binarizer = ZXing::GlobalHistogramBinarizer;
-#else
-#include "HybridBinarizer.h"
-using Binarizer = ZXing::HybridBinarizer;
-#endif
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
 namespace ZXing::Test {
 
-std::map<fs::path, std::unique_ptr<BinaryBitmap>> ImageLoader::cache;
-
-static std::shared_ptr<GenericLuminanceSource> readImage(const fs::path& imgPath)
+class STBImage : public ImageView
 {
-	int width, height, colors;
-	std::unique_ptr<stbi_uc, void (*)(void*)> buffer(stbi_load(imgPath.string().c_str(), &width, &height, &colors, 0),
-													 stbi_image_free);
-	if (buffer == nullptr) {
-		throw std::runtime_error("Failed to read image");
+	std::unique_ptr<stbi_uc[], void (*)(void*)> _memory;
+
+public:
+	STBImage() : ImageView(nullptr, 0, 0, ImageFormat::None), _memory(nullptr, stbi_image_free) {}
+
+	void load(const fs::path& imgPath)
+	{
+		int width, height, colors;
+		_memory.reset(stbi_load(imgPath.string().c_str(), &width, &height, &colors, 1));
+		if (_memory == nullptr)
+			throw std::runtime_error("Failed to read image");
+		ImageView::operator=({_memory.get(), width, height, ImageFormat::Lum});
 	}
-	switch (colors) {
-	case 1: return std::make_shared<GenericLuminanceSource>(0, 0, width, height, buffer.get(), width, 1, 0, 0, 0, nullptr);
-	case 2: return std::make_shared<GenericLuminanceSource>(0, 0, width, height, buffer.get(), width * colors, colors, 0, 0, 0, nullptr);
-	case 3:
-	case 4: return std::make_shared<GenericLuminanceSource>(0, 0, width, height, buffer.get(), width * colors, colors, 0, 1, 2, nullptr);
+
+	auto luminanceSource() const
+	{
+		return std::make_shared<GenericLuminanceSource>(0, 0, _width, _height, _memory.get(), _width, 1, 0, 0, 0, nullptr);
 	}
-	return {}; // silence warning
+
+	operator bool() const { return _data; }
+};
+
+std::map<fs::path, STBImage> cache;
+
+void ImageLoader::clearCache()
+{
+	cache.clear();
 }
 
-const BinaryBitmap& ImageLoader::load(const fs::path& imgPath)
+const BinaryBitmap& ImageLoader::load(const fs::path& imgPath, bool isPure, int rotation)
 {
+	thread_local std::unique_ptr<BinaryBitmap> localAverage, threshold;
+
 	auto& binImg = cache[imgPath];
-	if (binImg == nullptr)
-		binImg = std::make_unique<Binarizer>(readImage(imgPath));
-	return *binImg;
+	if (!binImg)
+		binImg.load(imgPath);
+
+	if (isPure) {
+		threshold = std::make_unique<ThresholdBinarizer>(binImg, 127);
+		return *threshold;
+	} else {
+		if (rotation == 0)
+			localAverage = std::make_unique<HybridBinarizer>(binImg.luminanceSource());
+		else
+			localAverage = std::make_unique<HybridBinarizer>(binImg.luminanceSource()->rotated(rotation));
+		return *localAverage;
+	}
 }
 
-}
+} // namespace ZXing::Test

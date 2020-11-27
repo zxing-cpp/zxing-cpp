@@ -58,7 +58,7 @@ int main(int argc, char** argv)
 		int rotation = getEnv("ROTATION");
 
 		for (int i = 1; i < argc; ++i) {
-			Result result = reader.read(*ImageLoader::load(argv[i]).rotated(rotation));
+			Result result = reader.read(ImageLoader::load(argv[i], hints.isPure(), rotation));
 			std::cout << argv[i] << ": ";
 			if (result.isValid())
 				std::cout << ToString(result.format()) << ": " << TextUtfEncoding::ToUtf8(result.text()) << " " << metadataToUtf8(result) << "\n";

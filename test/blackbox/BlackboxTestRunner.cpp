@@ -131,9 +131,9 @@ int timeSince(std::chrono::steady_clock::time_point startTime)
 void preloadImageCache(const std::vector<fs::path>& imgPaths)
 {
 	auto startTime = std::chrono::steady_clock::now();
-	ImageLoader::cache.clear();
+	ImageLoader::clearCache();
 	for (const auto& imgPath : imgPaths)
-		ImageLoader::load(imgPath);
+		ImageLoader::load(imgPath, true);
 	totalImageLoadTime += timeSince(startTime);
 }
 
@@ -195,7 +195,7 @@ static void doRunTests(
 			hints.setIsPure(tc.name == "pure");
 			MultiFormatReader reader(hints);
 			for (const auto& imgPath : imgPaths) {
-				auto result = reader.read(*ImageLoader::load(imgPath).rotated(test.rotation));
+				auto result = reader.read(ImageLoader::load(imgPath, hints.isPure(), test.rotation));
 				if (result.isValid()) {
 					auto error = checkResult(imgPath, format, result);
 					if (!error.empty())

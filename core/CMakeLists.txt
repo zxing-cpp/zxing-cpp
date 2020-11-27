@@ -114,6 +114,7 @@ if (BUILD_READERS)
         src/ResultPoint.cpp
         src/TextDecoder.h
         src/TextDecoder.cpp
+        src/ThresholdBinarizer.h
         src/WhiteRectDetector.h
         src/WhiteRectDetector.cpp
     )

@@ -44,6 +44,7 @@ constexpr inline int BlueIndex(ImageFormat format) { return (static_cast<uint32_
  */
 class ImageView
 {
+protected:
 	const uint8_t* _data = nullptr;
 	ImageFormat _format;
 	int _width = 0, _height = 0, _pixStride = 0, _rowStride = 0;
