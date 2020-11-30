@@ -563,6 +563,7 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 0, 0, 0, 0, 90  },
 			{ 0, 0, 0, 0, 180 },
 			{ 0, 0, 0, 0, 270 },
+			{ 0, 0, pure },
 		});
 
 		runTests("falsepositives-2", "None", 25, {
@@ -570,6 +571,7 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 0, 0, 0, 0, 90  },
 			{ 0, 0, 0, 0, 180 },
 			{ 0, 0, 0, 0, 270 },
+			{ 0, 0, pure },
 		});
 		// clang-format on
 
