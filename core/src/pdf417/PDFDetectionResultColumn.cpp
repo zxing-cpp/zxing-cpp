@@ -135,18 +135,22 @@ DetectionResultColumn::adjustCompleteIndicatorColumnRowNumbers(const BarcodeMeta
 	auto bottom = isLeftRowIndicator() ? bb.bottomLeft() : bb.bottomRight();
 	int firstRow = imageRowToCodewordIndex((int)top.value().y());
 	int lastRow = imageRowToCodewordIndex((int)bottom.value().y());
-	// We need to be careful using the average row height. Barcode could be skewed so that we have smaller and 
+	// We need to be careful using the average row height. Barcode could be skewed so that we have smaller and
 	// taller rows
 	//float averageRowHeight = (lastRow - firstRow) / (float)barcodeMetadata.rowCount();
 	int barcodeRow = -1;
 	int maxRowHeight = 1;
 	int currentRowHeight = 0;
+	int increment = 1;
 	for (int codewordsRow = firstRow; codewordsRow < lastRow; codewordsRow++) {
 		if (codewords[codewordsRow] == nullptr) {
 			continue;
 		}
 		Codeword codeword = codewords[codewordsRow];
-
+		if (barcodeRow == -1 && codeword.rowNumber() == barcodeMetadata.rowCount() - 1) {
+			increment = -1;
+			barcodeRow = barcodeMetadata.rowCount();
+		}
 		//      float expectedRowNumber = (codewordsRow - firstRow) / averageRowHeight;
 		//      if (Math.abs(codeword.getRowNumber() - expectedRowNumber) > 2) {
 		//        SimpleLog.log(LEVEL.WARNING,
@@ -157,12 +161,10 @@ DetectionResultColumn::adjustCompleteIndicatorColumnRowNumbers(const BarcodeMeta
 
 		int rowDifference = codeword.rowNumber() - barcodeRow;
 
-		// TODO improve handling with case where first row indicator doesn't start with 0
-
 		if (rowDifference == 0) {
 			currentRowHeight++;
 		}
-		else if (rowDifference == 1) {
+		else if (rowDifference == increment) {
 			maxRowHeight = std::max(maxRowHeight, currentRowHeight);
 			currentRowHeight = 1;
 			barcodeRow = codeword.rowNumber();
