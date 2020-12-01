@@ -833,21 +833,22 @@ static DetectorResult DetectPure(const BitMatrix& image)
 	if (!image.findBoundingBox(left, top, width, height, 8))
 		return {};
 
-	BitMatrixCursorI cur(image, {left, top}, {1, 0});
-
-	int dimT = cur.countEdges(width - 1);
-	cur.turnRight();
-	int dimR = cur.countEdges(height - 1);
-	cur.turnRight();
-	int dimB = cur.countEdges(width - 1);
-	cur.turnRight();
-	int dimL = cur.countEdges(height - 1);
+	BitMatrixCursorI cur(image, {left, top}, {0, 1});
+	if (cur.countEdges(height - 1) != 0)
+		return {};
+	cur.turnLeft();
+	if (cur.countEdges(width - 1) != 0)
+		return {};
+	cur.turnLeft();
+	int dimR = cur.countEdges(height - 1) + 1;
+	cur.turnLeft();
+	int dimT = cur.countEdges(width - 1) + 1;
 
 	auto modSizeX = float(width) / dimT;
 	auto modSizeY = float(height) / dimR;
 	auto modSize = (modSizeX + modSizeY) / 2;
 
-	if (dimL != 1 || dimB != 1 || dimT < 10 || dimT > 144 || dimR < 8 || dimR > 144 ||
+	if (dimT % 2 != 0 || dimR % 2 != 0 || dimT < 10 || dimT > 144 || dimR < 8 || dimR > 144 ||
 		std::abs(modSizeX - modSizeY) > 1 ||
 		!image.isIn(PointF{left + modSizeX / 2 + (dimT - 1) * modSize, top + modSizeY / 2 + (dimR - 1) * modSize}))
 		return {};

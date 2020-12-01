@@ -117,6 +117,7 @@ public:
 	 */
 	int stepToEdge(int nth = 1, int range = 0)
 	{
+		// TODO: provide an alternative and faster out-of-bounds check than isIn() inside step()
 		int sum = 0;
 		bool v = isBlack();
 		for (int i = 0; i < nth && (!range || sum < range) && (++sum, step());)
@@ -153,13 +154,11 @@ public:
 	int countEdges(int range = 0)
 	{
 		int res = 0;
-		int steps;
 
-		do {
-			steps = stepToEdge(1, range);
+		while (int steps = stepToEdge(1, range)) {
 			range -= steps;
 			++res;
-		} while (steps);
+		}
 
 		return res;
 	}
