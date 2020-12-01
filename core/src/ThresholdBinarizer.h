@@ -69,11 +69,26 @@ public:
 		if (!_cache) {
 			BitMatrix res(width(), height());
 #ifdef ZX_FAST_BIT_STORAGE
-			for (int y = 0; y < res.height(); ++y) {
-				auto src = _buffer.data(0, y) + GreenIndex(_buffer._format);
-				for (auto& dst : res.row(y)) {
-					dst = *src <= _threshold;
-					src += _buffer._pixStride;
+			if (_buffer._pixStride == 1 && _buffer._rowStride == _buffer._width) {
+				// Specialize for a packed buffer with pixStride 1 to support auto vectorization (16x speedup on AVX2)
+				auto dst = res.row(0).begin();
+				for (auto src = _buffer.data(0, 0), end = _buffer.data(0, height()); src != end; ++src, ++dst)
+					*dst = *src <= _threshold;
+			} else {
+				auto processLine = [this, &res](int y, const auto* src, const int stride) {
+					for (auto& dst : res.row(y)) {
+						dst = *src <= _threshold;
+						src += stride;
+					}
+				};
+				for (int y = 0; y < res.height(); ++y) {
+					auto src = _buffer.data(0, y) + GreenIndex(_buffer._format);
+					// Specialize the inner loop for strides 1 and 4 to support auto vectorization
+					switch (_buffer._pixStride) {
+					case 1: processLine(y, src, 1); break;
+					case 4: processLine(y, src, 4); break;
+					default: processLine(y, src, _buffer._pixStride); break;
+					}
 				}
 			}
 #else
