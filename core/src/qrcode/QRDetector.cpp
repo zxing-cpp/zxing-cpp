@@ -309,26 +309,15 @@ static DetectorResult DetectPure(const BitMatrix& image)
 	int bottom = top + height - 1;
 
 	PointI tl{left, top}, tr{right, top}, bl{left, bottom};
-
+	Pattern diagonal;
 	// allow corners be moved one pixel inside to accomodate for possible aliasing artifacts
-	if (!image.get(tl))
-		tl += PointI{1, 1};
-	if (!image.get(tr))
-		tr += PointI{-1, 1};
-	if (!image.get(bl))
-		bl += PointI{1, -1};
+	for (auto [p, d] : {std::pair(tl, PointI{1, 1}), {tr, {-1, 1}}, {bl, {1, -1}}}) {
+		diagonal = BitMatrixCursorI(image, p, d).readPatternFromBlack<Pattern>(1);
+		if (!IsPattern(diagonal, PATTERN))
+			return {};
+	}
 
-	// The top-left and top-right corners must contain a finder pattern
-	if (!image.get(tl) || !image.get(tr) || !image.get(bl))
-		return {};
-
-	auto tlDiagonal = BitMatrixCursorI(image, tl, {1, 1}).readPattern<Pattern>();
-	auto trDiagonal = BitMatrixCursorI(image, tr, {-1, 1}).readPattern<Pattern>();
-	auto blDiagonal = BitMatrixCursorI(image, bl, {1, -1}).readPattern<Pattern>();
-	if (!IsPattern(tlDiagonal, PATTERN) || !IsPattern(trDiagonal, PATTERN) || !IsPattern(blDiagonal, PATTERN))
-		return {};
-
-	auto fpWidth = Reduce(tlDiagonal);
+	auto fpWidth = Reduce(diagonal);
 	auto dimension = EstimateDimension(image, tl + fpWidth / 2 * PointF(1, 1), tr + fpWidth / 2 * PointF(-1, 1)).dim;
 
 	float moduleSize = float(width) / dimension;

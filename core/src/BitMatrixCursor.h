@@ -175,6 +175,14 @@ public:
 			i = stepToEdge(1, range);
 		return res;
 	}
+
+	template<typename ARRAY>
+	ARRAY readPatternFromBlack(int maxWhitePrefix, int range = 0)
+	{
+		if (maxWhitePrefix && isWhite() && !stepToEdge(1, maxWhitePrefix))
+			return {};
+		return readPattern<ARRAY>(range);
+	}
 };
 
 using BitMatrixCursorF = BitMatrixCursor<PointF>;
