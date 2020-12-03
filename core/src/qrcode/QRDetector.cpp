@@ -312,7 +312,7 @@ static DetectorResult DetectPure(const BitMatrix& image)
 	Pattern diagonal;
 	// allow corners be moved one pixel inside to accomodate for possible aliasing artifacts
 	for (auto [p, d] : {std::pair(tl, PointI{1, 1}), {tr, {-1, 1}}, {bl, {1, -1}}}) {
-		diagonal = BitMatrixCursorI(image, p, d).readPatternFromBlack<Pattern>(1);
+		diagonal = BitMatrixCursorI(image, p, d).readPatternFromBlack<Pattern>(1, width / 3);
 		if (!IsPattern(diagonal, PATTERN))
 			return {};
 	}
