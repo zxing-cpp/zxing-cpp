@@ -254,4 +254,31 @@ PatternView FindLeftGuard(const PatternView& view, int minSize, const FixedPatte
 							  });
 }
 
+template <int LEN, int SUM>
+std::array<int, LEN> NormalizedPattern(const PatternView& view)
+{
+	float moduleSize = static_cast<float>(view.sum(LEN)) / SUM;
+	int err = SUM;
+	std::array<int, LEN> is;
+	std::array<float, LEN> rs;
+	for (int i = 0; i < LEN; i++) {
+		float v = view[i] / moduleSize;
+		is[i] = int(v + .5f);
+		rs[i] = v - is[i];
+		err -= is[i];
+	}
+
+	if (std::abs(err) > 1)
+		return {};
+
+	if (err) {
+		auto mi = err > 0 ? std::max_element(std::begin(rs), std::end(rs)) - std::begin(rs)
+						  : std::min_element(std::begin(rs), std::end(rs)) - std::begin(rs);
+		is[mi] += err;
+		rs[mi] -= err;
+	}
+
+	return is;
+}
+
 } // ZXing
