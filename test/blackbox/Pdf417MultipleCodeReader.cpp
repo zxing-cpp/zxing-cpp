@@ -17,6 +17,7 @@
 #include "Pdf417MultipleCodeReader.h"
 
 #include "BinaryBitmap.h"
+#include "DecodeHints.h"
 #include "ImageLoader.h"
 #include "TextUtfEncoding.h"
 #include "pdf417/PDFDecoderResultExtra.h"
@@ -29,7 +30,8 @@ namespace ZXing::Test {
 
 Result Pdf417MultipleCodeReader::readMultiple(const std::vector<fs::path>& imgPaths, int rotation)
 {
-	Pdf417::Reader reader;
+	DecodeHints hints;
+	Pdf417::Reader reader(hints);
 	std::list<Result> allResults;
 	for (const auto& imgPath : imgPaths) {
 		auto results = reader.decodeMultiple(*ImageLoader::load(imgPath).rotated(rotation));

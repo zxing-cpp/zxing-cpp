@@ -20,6 +20,9 @@
 #include <list>
 
 namespace ZXing {
+
+class DecodeHints;
+
 namespace Pdf417 {
 
 /**
@@ -29,7 +32,11 @@ namespace Pdf417 {
 */
 class Reader : public ZXing::Reader
 {
+	bool _isPure;
+
 public:
+	explicit Reader(const DecodeHints& hints);
+
 	Result decode(const BinaryBitmap& image) const override;
 	std::list<Result> decodeMultiple(const BinaryBitmap& image) const;
 };
