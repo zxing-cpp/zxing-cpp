@@ -280,7 +280,14 @@ static Result DecodePure(const BinaryBitmap& image_)
 	if (codeWords.empty())
 		return Result(DecodeStatus::NotFound);
 
-	auto res = DecodeCodewords(codeWords, info.ecLevel, {});
+	std::vector<int> erasures;
+	for (int i = 0; i < Size(codeWords); ++i)
+		if (codeWords[i] == -1) {
+			codeWords[i] = 0;
+			erasures.push_back(i);
+		}
+
+	auto res = DecodeCodewords(codeWords, info.ecLevel, erasures);
 
 	return Result(std::move(res), {{left, top}, {right, top}, {right, bottom}, {left, bottom}}, BarcodeFormat::PDF417);
 }
