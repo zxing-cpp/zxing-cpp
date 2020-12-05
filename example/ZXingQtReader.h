@@ -243,6 +243,8 @@ inline Result ReadBarcode(const QVideoFrame& frame, const DecodeHints& hints = {
 		fmt = ImageFormat::XBGR;
 #endif
 		break;
+#endif
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
 	case QVideoFrame::Format_YUV422P: fmt = ImageFormat::Lum; break;
 #endif
 	default: break;
