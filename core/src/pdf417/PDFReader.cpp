@@ -173,10 +173,13 @@ SymbolInfo DetectSymbol(BitMatrixCursor<POINT> topCur, int width, int height)
 	int lastRow = -1;
 	int rows0, rows1;
 
-	auto pat = BitMatrixCursor<POINT>(topCur).template readPatternFromBlack<Pattern417>(1, width / 3);
+	auto centerCur = topCur;
+	centerCur.p += height / 2 * topCur.right();
+	auto pat = centerCur.template readPatternFromBlack<Pattern417>(1, width / 3);
 	if (!IsPattern(pat, START_PATTERN))
 		return {};
 	rowSkip = std::max(Reduce(pat) / 17, 1) * bresenhamDirection(rowSkip);
+	topCur.p += 0.5f * rowSkip;
 
 	for (auto startCur = topCur; clusterMask != 0b111 && maxAbsComponent(topCur.p - startCur.p) < height; startCur.p += rowSkip) {
 		auto cur = startCur;
