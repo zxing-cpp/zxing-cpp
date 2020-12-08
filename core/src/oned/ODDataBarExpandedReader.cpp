@@ -252,7 +252,7 @@ using PairMap = std::map<int, Pairs>;
 static bool Insert(PairMap& all, Pairs&& row)
 {
 	bool res = false;
-	for (Pair pair : row) {
+	for (const Pair& pair : row) {
 		auto& pairs = all[pair.finder];
 		if (auto i = Find(pairs, pair); i != pairs.end()) {
 			i->count++;

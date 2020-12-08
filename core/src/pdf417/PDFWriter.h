@@ -36,7 +36,7 @@ class Writer
 {
 public:
 	Writer();
-	Writer(Writer &&);
+	Writer(Writer &&) noexcept;
 	~Writer();
 
 	Writer& setMargin(int margin) { _margin = margin; return *this; }

@@ -38,14 +38,14 @@ public:
 
 	// The current mode of the encoding (or the mode to which we'll return if
 	// we're in Binary Shift mode.
-	int mode;
+	int mode = 0;
 	
 	// If non-zero, the number of most recent bytes that should be output
 	// in Binary Shift mode.
-	int binaryShiftByteCount;
+	int binaryShiftByteCount = 0;
 	
 	// The total number of bits generated (including Binary Shift).
-	int bitCount;
+	int bitCount = 0;
 };
 
 } // Aztec

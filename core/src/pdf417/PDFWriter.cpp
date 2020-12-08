@@ -127,7 +127,7 @@ Writer::Writer()
 	_encoder.reset(new Encoder);
 }
 
-Writer::Writer(Writer &&other) :
+Writer::Writer(Writer &&other) noexcept:
 	_margin(other._margin),
 	_ecLevel(other._ecLevel),
 	_encoder(std::move(other._encoder))

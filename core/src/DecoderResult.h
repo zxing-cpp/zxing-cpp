@@ -61,7 +61,7 @@ public:
 	}
 
 	DecoderResult() = default;
-	DecoderResult(DecoderResult&&) = default;
+	DecoderResult(DecoderResult&&) noexcept = default;
 	DecoderResult& operator=(DecoderResult&&) = default;
 
 	bool isValid() const { return StatusIsOK(_status); }

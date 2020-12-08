@@ -206,7 +206,7 @@ static void doRunTests(
 			}
 
 			times.push_back(timeSince(startTime));
-			printPositiveTestStats(imgPaths.size(), tc);
+			printPositiveTestStats(Size(imgPaths), tc);
 		}
 		fmt::print(" | time: {:3} vs {:3} ms\n", times.front(), times.back());
 	}
@@ -247,7 +247,7 @@ static void doRunStructuredAppendTest(
 			}
 		}
 
-		printPositiveTestStats(imageGroups.size(), tc);
+		printPositiveTestStats(Size(imageGroups), tc);
 		fmt::print(" | time: {:3} ms\n", timeSince(startTime));
 	}
 }
