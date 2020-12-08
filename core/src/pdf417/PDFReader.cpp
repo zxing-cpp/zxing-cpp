@@ -183,7 +183,7 @@ SymbolInfo DetectSymbol(BitMatrixCursor<POINT> topCur, int width, int height)
 		if (!IsPattern(cur.template readPatternFromBlack<Pattern417>(1, width / 3), START_PATTERN))
 			break;
 		auto cw = ReadCodeWord(cur);
-		printf("%3dx%3d:%2d: %4d.%d \n", cur.p.x, cur.p.y, Row(cw), cw.code, cw.cluster);
+		printf("%3dx%3d:%2d: %4d.%d \n", int(cur.p.x), int(cur.p.y), Row(cw), cw.code, cw.cluster);
 		if (!cw)
 			continue;
 		res.upsideDown = std::exchange(lastRow, Row(cw)) > lastRow;
@@ -223,7 +223,7 @@ std::vector<int> ReadCodeWords(BitMatrixCursor<POINT> topCur, SymbolInfo info)
 		cur.stepToEdge(8 + cur.isWhite(), info.width / (info.nCols));
 		// read off left row indicator column
 		auto cw [[maybe_unused]] = ReadCodeWord(cur, cluster);
-		printf("%3dx%3d:%2d: ", cur.p.x, cur.p.y, Row(cw));
+		printf("%3dx%3d:%2d: ", int(cur.p.x), int(cur.p.y), Row(cw));
 		print(cw);
 
 		for (int col = 0; col < info.nCols; ++col) {
