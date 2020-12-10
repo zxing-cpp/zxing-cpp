@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.14)
 project(ZXingPython)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 # get pybind11
 include(FetchContent)
 #set(FETCHCONTENT_QUIET Off)
