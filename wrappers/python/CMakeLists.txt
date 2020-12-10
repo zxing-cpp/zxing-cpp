@@ -12,6 +12,10 @@ FetchContent_MakeAvailable (pybind11)
 # check if we are called from the top-level ZXing project
 get_directory_property(hasParent PARENT_DIRECTORY)
 if (NOT hasParent)
+    # Force to build by C++17. The zxing-cpp require C++17 to build
+    set(CMAKE_CXX_STANDARD 17)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
     option (BUILD_SHARED_LIBS "Link python module to shared lib" OFF)
     option (BUILD_WRITERS "Build with writer support (encoders)" ON)
     option (BUILD_READERS "Build with reader support (decoders)" ON)
