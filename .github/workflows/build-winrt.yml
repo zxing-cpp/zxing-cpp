@@ -1,5 +1,8 @@
 name: build-winrt
 on:
+  release:
+    types: [published]
+    
   workflow_dispatch:
     inputs:
       publish:
@@ -41,9 +44,10 @@ jobs:
         name: winrt-${{matrix.target}}-artifacts
         path: ${{runner.workspace}}/build/dist
 
-  create-package:
+  publish-package:
+    needs: build
     runs-on: windows-latest
-    if: ${{github.event.inputs.publish == 'y'}}
+    if: ${{ github.event_name == 'release' || github.event.inputs.publish == 'y' }}
     steps:
     - uses: actions/download-artifact@v2
       with:
@@ -59,11 +63,23 @@ jobs:
         name: winrt-ARM64-artifacts
 
     - name: Create NuGet package
+      if: ${{ github.event_name != 'release' }}
       shell: cmd
-      run: nuget pack -Version ${{github.event.inputs.package_version}} nuget/ZXingWinRT.nuspec
+      run: nuget pack -Version ${{ github.event.inputs.package_version }} -OutputFileNamesWithoutVersion nuget/ZXingWinRT.nuspec
+
+    - name: Create NuGet package
+      if: ${{ github.event_name == 'release' }}
+      shell: bash
+      env:
+          RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
+      run: nuget pack -Version ${RELEASE_TAG_NAME:1} -OutputFileNamesWithoutVersion nuget/ZXingWinRT.nuspec
+
+    - name: Publish NuGet package
+      shell: cmd
+      run: nuget push huycn.zxingcpp.winrt.nupkg ${{ secrets.NUGET_API_KEY }} -Source https://api.nuget.org/v3/index.json
 
     - uses: actions/upload-artifact@v2
       with:
-        name: winrt-${{matrix.target}}-artifacts
-        path: "*.nupkg"
+        name: nuget-package
+        path: huycn.zxingcpp.winrt.nupkg
         
