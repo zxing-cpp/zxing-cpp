@@ -108,6 +108,13 @@ public:
 		return isIn(p);
 	}
 
+	BitMatrixCursor<POINT> movedBy(POINT d) const
+	{
+		auto res = *this;
+		res.p += d;
+		return res;
+	}
+
 	/**
 	 * @brief stepToEdge advances cursor to one step behind the next (or n-th) edge.
 	 * @param nth number of edges to pass

@@ -118,12 +118,11 @@ struct CodeWord
 
 struct SymbolInfo
 {
-	int width = 0;
-	int height = 0;
-	int nRows = 0;
-	int nCols = 0;
+	int width = 0, height = 0;
+	int nRows = 0, nCols = 0, firstRow = -1, lastRow = -1;
 	int ecLevel = -1;
-	bool upsideDown = false;
+	int colWidth = 0;
+	float rowHeight = 0;
 	operator bool() const noexcept { return nRows >= 3 && nCols >= 1 && ecLevel != -1; }
 };
 
@@ -142,8 +141,7 @@ CodeWord ReadCodeWord(BitMatrixCursor<POINT>& cur, int expectedCluster = -1)
 	auto cw = readCodeWord(cur);
 	if (!cw) {
 		for (auto offset : {curBackup.left(), curBackup.right()}) {
-			auto curAlt = curBackup;
-			curAlt.p += offset;
+			auto curAlt = curBackup.movedBy(offset);
 			if (auto cwAlt = readCodeWord(curAlt)) {
 				cur = curAlt;
 				return cwAlt;
@@ -165,31 +163,25 @@ constexpr FixedPattern<8, 17> START_PATTERN = { 8, 1, 1, 1, 1, 1, 1, 3 };
 #endif
 
 template<typename POINT>
-SymbolInfo DetectSymbol(BitMatrixCursor<POINT> topCur, int width, int height)
+SymbolInfo ReadSymbolInfo(BitMatrixCursor<POINT> topCur, POINT rowSkip, int colWidth, int width, int height)
 {
-	auto rowSkip = topCur.right();
 	SymbolInfo res = {width, height};
+	res.colWidth = colWidth;
 	int clusterMask = 0;
-	int lastRow = -1;
 	int rows0, rows1;
 
-	auto centerCur = topCur;
-	centerCur.p += height / 2 * topCur.right();
-	auto pat = centerCur.template readPatternFromBlack<Pattern417>(1, width / 3);
-	if (!IsPattern(pat, START_PATTERN))
-		return {};
-	rowSkip = std::max(Reduce(pat) / 17, 1) * bresenhamDirection(rowSkip);
-	topCur.p += 0.5f * rowSkip;
+	topCur.p += .5f * rowSkip;
 
-	for (auto startCur = topCur; clusterMask != 0b111 && maxAbsComponent(topCur.p - startCur.p) < height; startCur.p += rowSkip) {
+	for (auto startCur = topCur; clusterMask != 0b111 && maxAbsComponent(topCur.p - startCur.p) < height / 2; startCur.p += rowSkip) {
 		auto cur = startCur;
-		if (!IsPattern(cur.template readPatternFromBlack<Pattern417>(1, width / 3), START_PATTERN))
+		if (!IsPattern(cur.template readPatternFromBlack<Pattern417>(1, colWidth + 2), START_PATTERN))
 			break;
 		auto cw = ReadCodeWord(cur);
 		printf("%3dx%3d:%2d: %4d.%d \n", int(cur.p.x), int(cur.p.y), Row(cw), cw.code, cw.cluster);
 		if (!cw)
 			continue;
-		res.upsideDown = std::exchange(lastRow, Row(cw)) > lastRow;
+		if (res.firstRow == -1)
+			res.firstRow = Row(cw);
 		switch (cw.cluster) {
 		case 0: rows0 = cw.code % 30; break;
 		case 3: rows1 = cw.code % 3, res.ecLevel = (cw.code % 30) / 3; break;
@@ -204,34 +196,60 @@ SymbolInfo DetectSymbol(BitMatrixCursor<POINT> topCur, int width, int height)
 }
 
 template<typename POINT>
+SymbolInfo DetectSymbol(BitMatrixCursor<POINT> topCur, int width, int height)
+{
+	auto pat = topCur.movedBy(height / 2 * topCur.right()).template readPatternFromBlack<Pattern417>(1, width / 3);
+	if (!IsPattern(pat, START_PATTERN))
+		return {};
+	int colWidth = Reduce(pat);
+	auto rowSkip = std::max(colWidth / 17.f, 1.f) * bresenhamDirection(topCur.right());
+	auto botCur  = topCur.movedBy((height - 1) * topCur.right());
+
+	auto topSI = ReadSymbolInfo(topCur, rowSkip, colWidth, width, height);
+	auto botSI = ReadSymbolInfo(botCur, -rowSkip, colWidth, width, height);
+#ifdef PRINT_DEBUG
+	fflush(stdout);
+#endif
+
+	SymbolInfo res = topSI;
+	res.lastRow = botSI.firstRow;
+	res.rowHeight = float(height) / (std::abs(res.lastRow - res.firstRow) + 1);
+	if (topSI.nCols != botSI.nCols)
+		// if there is something fishy with the number of cols (alising), guess them from the width
+		res.nCols = (width + res.colWidth / 2) / res.colWidth - 4;
+
+	return res;
+}
+
+template<typename POINT>
 std::vector<int> ReadCodeWords(BitMatrixCursor<POINT> topCur, SymbolInfo info)
 {
-	float rowHeight = float(info.height) / info.nRows;
-	printf("rows: %d, cols: %d -> row height: %.1f\n", info.nRows, info.nCols, rowHeight);
+	printf("rows: %d, cols: %d, rowHeight: %.1f, colWidth: %d, firstRow: %d, lastRow: %d, ecLevel: %d\n", info.nRows,
+		   info.nCols, info.rowHeight, info.colWidth, info.firstRow, info.lastRow, info.ecLevel);
 	auto print = [](CodeWord c [[maybe_unused]]) { printf("%4d.%d ", c.code, c.cluster); };
 
 	auto rowSkip = topCur.right();
-	if (info.upsideDown) {
+	if (info.firstRow > info.lastRow) {
 		topCur.p += (info.height - 1) * rowSkip;
 		rowSkip = -rowSkip;
+		std::swap(info.firstRow, info.lastRow);
 	}
 
-	std::vector<int> codeWords;
-	codeWords.reserve(info.nRows * info.nCols);
-	for (int row = 0; row < info.nRows; ++row) {
+	int maxColWidth = info.colWidth * 3 / 2;
+	std::vector<int> codeWords(info.nRows * info.nCols, -1);
+	for (int row = info.firstRow; row < std::min(info.nRows, info.lastRow + 1); ++row) {
 		int cluster = (row % 3) * 3;
-		auto cur = topCur;
-		cur.p += int((row + 0.5f) * rowHeight) * rowSkip;
+		auto cur = topCur.movedBy(int((row - info.firstRow + 0.5f) * info.rowHeight) * rowSkip);
 		// skip start pattern
-		cur.stepToEdge(8 + cur.isWhite(), info.width / (info.nCols));
+		cur.stepToEdge(8 + cur.isWhite(), maxColWidth);
 		// read off left row indicator column
 		auto cw [[maybe_unused]] = ReadCodeWord(cur, cluster);
 		printf("%3dx%3d:%2d: ", int(cur.p.x), int(cur.p.y), Row(cw));
 		print(cw);
 
-		for (int col = 0; col < info.nCols; ++col) {
+		for (int col = 0; col < info.nCols && cur.isIn(); ++col) {
 			auto cw = ReadCodeWord(cur, cluster);
-			codeWords.push_back(cw.code);
+			codeWords[row * info.nCols + col] = cw.code;
 			print(cw);
 		}
 
