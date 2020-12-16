@@ -281,12 +281,12 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		auto startTime = std::chrono::steady_clock::now();
 
 		// clang-format off
-		runTests("aztec-1", "Aztec", 15, {
-			{ 14, 14, 0   },
-			{ 14, 14, 90  },
-			{ 14, 14, 180 },
-			{ 14, 14, 270 },
-			{ 15, 0, pure },
+		runTests("aztec-1", "Aztec", 16, {
+			{ 15, 15, 0   },
+			{ 15, 15, 90  },
+			{ 15, 15, 180 },
+			{ 15, 15, 270 },
+			{ 16, 0, pure },
 		});
 
 		runTests("aztec-2", "Aztec", 22, {

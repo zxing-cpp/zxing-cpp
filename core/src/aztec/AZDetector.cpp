@@ -465,10 +465,7 @@ static int GetDimension(bool compact, int nbLayers)
 	if (compact) {
 		return 4 * nbLayers + 11;
 	}
-	if (nbLayers <= 4) {
-		return 4 * nbLayers + 15;
-	}
-	return 4 * nbLayers + 2 * ((nbLayers - 4) / 8 + 1) + 15;
+	return 4 * nbLayers + 2 * ((2 * nbLayers + 6) / 15) + 15;
 }
 
 /**
