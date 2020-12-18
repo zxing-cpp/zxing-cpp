@@ -177,7 +177,10 @@ SymbolInfo ReadSymbolInfo(BitMatrixCursor<POINT> topCur, POINT rowSkip, int colW
 		if (!IsPattern(cur.template readPatternFromBlack<Pattern417>(1, colWidth + 2), START_PATTERN))
 			break;
 		auto cw = ReadCodeWord(cur);
+#ifdef PRINT_DEBUG
 		printf("%3dx%3d:%2d: %4d.%d \n", int(cur.p.x), int(cur.p.y), Row(cw), cw.code, cw.cluster);
+		fflush(stdout);
+#endif
 		if (!cw)
 			continue;
 		if (res.firstRow == -1)
@@ -207,9 +210,6 @@ SymbolInfo DetectSymbol(BitMatrixCursor<POINT> topCur, int width, int height)
 
 	auto topSI = ReadSymbolInfo(topCur, rowSkip, colWidth, width, height);
 	auto botSI = ReadSymbolInfo(botCur, -rowSkip, colWidth, width, height);
-#ifdef PRINT_DEBUG
-	fflush(stdout);
-#endif
 
 	SymbolInfo res = topSI;
 	res.lastRow = botSI.firstRow;
@@ -256,9 +256,9 @@ std::vector<int> ReadCodeWords(BitMatrixCursor<POINT> topCur, SymbolInfo info)
 #ifdef PRINT_DEBUG
 		print(ReadCodeWord(cur));
 		printf("\n");
+		fflush(stdout);
 #endif
 	}
-	fflush(stdout);
 
 	return codeWords;
 }
@@ -297,9 +297,10 @@ static Result DecodePure(const BinaryBitmap& image_)
 		std::swap(width, height);
 	}
 
-	auto codeWords = ReadCodeWords(cur, info);
-	if (codeWords.empty())
+	if (!info)
 		return Result(DecodeStatus::NotFound);
+
+	auto codeWords = ReadCodeWords(cur, info);
 
 	std::vector<int> erasures;
 	for (int i = 0; i < Size(codeWords); ++i)
