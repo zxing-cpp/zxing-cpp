@@ -319,8 +319,13 @@ Reader::Reader(const DecodeHints& hints) : _isPure(hints.isPure()) {}
 Result
 Reader::decode(const BinaryBitmap& image) const
 {
-	if (_isPure)
-		return DecodePure(image);
+	if (_isPure) {
+		auto res = DecodePure(image);
+		if (res.status() != DecodeStatus::ChecksumError)
+			return res;
+		// This falls through and tries the non-pure code path if we have a checksum error. This approach is
+		// currently the best option to deal with 'aliased' input like e.g. 03-aliased.png
+	}
 
 	std::list<Result> results;
 	DecodeStatus status = DoDecode(image, false, results);
