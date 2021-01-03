@@ -19,9 +19,11 @@
 
 #include "CharacterSet.h"
 
-#include <cstring>
+#include <string>
+#include <cctype>
 #include <map>
 #include <utility>
+#include <algorithm>
 
 namespace ZXing::CharacterSetECI {
 
@@ -58,8 +60,8 @@ static const std::map<int, CharacterSet> ECI_VALUE_TO_CHARSET = {
 	{170, CharacterSet::ASCII},
 };
 
-static const std::map<const char*, CharacterSet> ECI_NAME_TO_CHARSET = {
-	{"Cp437",		CharacterSet::Cp437},
+static const std::map<std::string, CharacterSet> ECI_NAME_TO_CHARSET = {
+	{"CP437",		CharacterSet::Cp437},
 	{"ISO8859_1",	CharacterSet::ISO8859_1},
 	{"ISO-8859-1",	CharacterSet::ISO8859_1},
 	{"ISO8859_2",	CharacterSet::ISO8859_2},
@@ -91,23 +93,23 @@ static const std::map<const char*, CharacterSet> ECI_NAME_TO_CHARSET = {
 	{"ISO8859_16",	CharacterSet::ISO8859_16},
 	{"ISO-8859-16",	CharacterSet::ISO8859_16},
 	{"SJIS",		CharacterSet::Shift_JIS},
-	{"Shift_JIS",	CharacterSet::Shift_JIS},
-	{"Cp1250",		CharacterSet::Cp1250},
-	{"windows-1250",CharacterSet::Cp1250},
-	{"Cp1251",		CharacterSet::Cp1251},
-	{"windows-1251",CharacterSet::Cp1251},
-	{"Cp1252",		CharacterSet::Cp1252},
-	{"windows-1252",CharacterSet::Cp1252},
-	{"Cp1256",		CharacterSet::Cp1256},
-	{"windows-1256",CharacterSet::Cp1256},
-	{"UnicodeBigUnmarked", CharacterSet::UnicodeBig},
+	{"SHIFT_JIS",	CharacterSet::Shift_JIS},
+	{"CP1250",		CharacterSet::Cp1250},
+	{"WINDOWS-1250",CharacterSet::Cp1250},
+	{"CP1251",		CharacterSet::Cp1251},
+	{"WINDOWS-1251",CharacterSet::Cp1251},
+	{"CP1252",		CharacterSet::Cp1252},
+	{"WINDOWS-1252",CharacterSet::Cp1252},
+	{"CP1256",		CharacterSet::Cp1256},
+	{"WINDOWS-1256",CharacterSet::Cp1256},
+	{"UNICODEBIGUNMARKED", CharacterSet::UnicodeBig},
 	{"UTF-16BE",	CharacterSet::UnicodeBig},
-	{"UnicodeBig",	CharacterSet::UnicodeBig},
+	{"UNICODEBIG",	CharacterSet::UnicodeBig},
 	{"UTF8",		CharacterSet::UTF8},
 	{"UTF-8",		CharacterSet::UTF8},
 	{"ASCII",		CharacterSet::ASCII},
 	{"US-ASCII",	CharacterSet::ASCII},
-	{"Big5",		CharacterSet::Big5},
+	{"BIG5",		CharacterSet::Big5},
 	{"GB2312",		CharacterSet::GB2312},
 	{"GB18030",		CharacterSet::GB18030},
 	{"EUC_CN",		CharacterSet::GB18030},
@@ -120,8 +122,7 @@ static const std::map<const char*, CharacterSet> ECI_NAME_TO_CHARSET = {
 CharacterSet CharsetFromValue(int value)
 {
 	auto it = ECI_VALUE_TO_CHARSET.find(value);
-	if (it != ECI_VALUE_TO_CHARSET.end())
-	{
+	if (it != ECI_VALUE_TO_CHARSET.end()) {
 		return it->second;
 	}
 	return CharacterSet::Unknown;
@@ -129,21 +130,23 @@ CharacterSet CharsetFromValue(int value)
 
 int ValueForCharset(CharacterSet charset)
 {
-	for (auto [key, value] : ECI_VALUE_TO_CHARSET)
-	{
-		if (value == charset)
-		{
+	for (auto& [key, value] : ECI_VALUE_TO_CHARSET) {
+		if (value == charset) {
 			return key;
 		}
 	}
 	return 0;
 }
 
+static std::string toUpper(std::string s) {
+	std::transform(s.begin(), s.end(), s.begin(), [](char c) { return static_cast<char>(std::toupper(c)); });
+	return s;
+}
+
 CharacterSet CharsetFromName(const char* name)
 {
-	auto it = ECI_NAME_TO_CHARSET.find(name);
-	if (it != ECI_NAME_TO_CHARSET.end())
-	{
+	auto it = ECI_NAME_TO_CHARSET.find(toUpper(name));
+	if (it != ECI_NAME_TO_CHARSET.end()) {
 		return it->second;
 	}
 	return CharacterSet::Unknown;
