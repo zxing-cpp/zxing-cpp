@@ -139,7 +139,7 @@ int ValueForCharset(CharacterSet charset)
 }
 
 static std::string toUpper(std::string s) {
-	std::transform(s.begin(), s.end(), s.begin(), &std::toupper);
+	std::transform(s.begin(), s.end(), s.begin(), [](char c) { return static_cast<char>(std::toupper(c)); });
 	return s;
 }
 
