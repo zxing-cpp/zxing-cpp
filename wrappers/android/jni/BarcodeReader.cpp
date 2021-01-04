@@ -21,6 +21,7 @@
 
 #include <exception>
 #include <vector>
+#include <stdexcept>
 
 // This is what we have at Java's side and must be kept in sync with.
 enum class JavaBarcodeFormat : int {
@@ -64,6 +65,30 @@ static ZXing::BarcodeFormat ToZXingBarcodeFormat(JNIEnv* env, JavaBarcodeFormat 
         case JavaBarcodeFormat::UPC_E             : return ZXing::BarcodeFormat::UPCE;
     }
     ThrowJavaException(env, "Invalid format");
+}
+
+static JavaBarcodeFormat FromZXingBarcodeFormat(ZXing::BarcodeFormat format)
+{
+    switch (format) {
+        case ZXing::BarcodeFormat::Aztec           : return JavaBarcodeFormat::AZTEC;
+        case ZXing::BarcodeFormat::Codabar         : return JavaBarcodeFormat::CODABAR;
+        case ZXing::BarcodeFormat::Code39          : return JavaBarcodeFormat::CODE_39;
+        case ZXing::BarcodeFormat::Code93          : return JavaBarcodeFormat::CODE_93;
+        case ZXing::BarcodeFormat::Code128         : return JavaBarcodeFormat::CODE_128;
+        case ZXing::BarcodeFormat::DataMatrix      : return JavaBarcodeFormat::DATA_MATRIX;
+        case ZXing::BarcodeFormat::EAN8            : return JavaBarcodeFormat::EAN_8;
+        case ZXing::BarcodeFormat::EAN13           : return JavaBarcodeFormat::EAN_13;
+        case ZXing::BarcodeFormat::ITF             : return JavaBarcodeFormat::ITF;
+        case ZXing::BarcodeFormat::MaxiCode        : return JavaBarcodeFormat::MAXICODE;
+        case ZXing::BarcodeFormat::PDF417          : return JavaBarcodeFormat::PDF_417;
+        case ZXing::BarcodeFormat::QRCode          : return JavaBarcodeFormat::QR_CODE;
+        case ZXing::BarcodeFormat::DataBar         : return JavaBarcodeFormat::RSS_14;
+        case ZXing::BarcodeFormat::DataBarExpanded : return JavaBarcodeFormat::RSS_EXPANDED;
+        case ZXing::BarcodeFormat::UPCA            : return JavaBarcodeFormat::UPC_A;
+        case ZXing::BarcodeFormat::UPCE            : return JavaBarcodeFormat::UPC_E;
+        default: break;
+    }
+    throw std::invalid_argument("Invalid format");
 }
 
 static ZXing::BarcodeFormats GetFormats(JNIEnv* env, jintArray formats)
@@ -129,7 +154,7 @@ Java_com_zxing_BarcodeReader_readBarcode(JNIEnv* env, jobject thiz, jlong objPtr
 		auto readResult = reader->read(*binImage);
 		if (readResult.isValid()) {
 			env->SetObjectArrayElement(result, 0, ToJavaString(env, readResult.text()));
-			return static_cast<int>(readResult.format());
+			return static_cast<int>(FromZXingBarcodeFormat(readResult.format()));
 		}
 	}
 	catch (const std::exception& e)
