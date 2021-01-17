@@ -57,7 +57,7 @@ PM> Install-Package huycn.zxingcpp.winrt
 
 ### Standard setup on Windows/macOS/Linux
 1. Make sure [CMake](https://cmake.org) version 3.10 or newer is installed.
-2. Make sure a C++17 compliant compiler is installed (minimum VS 2017 15.7 / gcc 7 / clang 5)
+2. Make sure a C++17 compliant compiler is installed (minimum VS 2019 16.8 / gcc 7 / clang 5)
 3. See the cmake `BUILD_...` options to enable the testing code, python wrapper, etc.
 
 ### Windows GDIPlus wrapper
