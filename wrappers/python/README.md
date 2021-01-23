@@ -13,7 +13,7 @@ import cv2
 import zxing
 
 img = cv2.imread('myimage.png')
-result = zxing.decode(img)
+result = zxing.read_barcode(img)
 if result.valid:
     print("Found barcode with value '{}' (format: {})".format(result.text, str(result.format))) 
 else:
