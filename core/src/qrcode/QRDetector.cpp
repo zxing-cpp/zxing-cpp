@@ -235,7 +235,7 @@ static RegressionLine TraceLine(const BitMatrix& image, PointF p, PointF d, int 
 		} while (--stepCount > 0 && c.stepAlongEdge(dir, true));
 	}
 
-	line.evaluate(1.0);
+	line.evaluate(1.0, true);
 
 	for (auto p : line.points())
 		log(p, 2);

@@ -429,9 +429,13 @@ class DMRegressionLine : public RegressionLine
 public:
 	void reverse() { std::reverse(_points.begin(), _points.end()); }
 
-	double modules(PointF beg, PointF end) const
+	double modules(PointF beg, PointF end)
 	{
 		assert(_points.size() > 3);
+
+		// re-evaluate and filter out all points too far away. required for the gapSizes calculation.
+		evaluate(1.0, true);
+
 		std::vector<double> gapSizes;
 		gapSizes.reserve(_points.size());
 
@@ -736,9 +740,11 @@ static DetectorResult Scan(EdgeTracer startTracer, std::array<DMRegressionLine, 
 		printf("dim: %d x %d\n", dimT, dimR);
 #endif
 
-		// if we have an invalid rectangular data matrix dimension, we try to parse it by assuming a square
-		// we use the dimension that is closer to an integral value
-		if (dimT < 2 * dimR || dimT > 4 * dimR)
+		// if we have an almost square (invalid rectangular) data matrix dimension, we try to parse it by assuming a
+		// square. we use the dimension that is closer to an integral value. all valid rectangular symbols differ in
+		// their dimension by at least 10 (here 5, see doubling below). Note: this is currently not required for the
+		// black-box tests to complete.
+		if (std::abs(dimT - dimR) < 5)
 			dimT = dimR = fracR < fracT ? dimR : dimT;
 
 		// the dimension is 2x the number of black/white transitions

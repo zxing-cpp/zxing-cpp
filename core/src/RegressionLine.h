@@ -88,7 +88,7 @@ public:
 
 	void setDirectionInward(PointF d) { _directionInward = normalized(d); }
 
-	bool evaluate(double maxSignedDist = -1)
+	bool evaluate(double maxSignedDist = -1, bool updatePoints = false)
 	{
 		bool ret = evaluate(_points);
 		if (maxSignedDist > 0) {
@@ -106,9 +106,9 @@ public:
 #endif
 				ret = evaluate(points);
 			}
-#ifdef PRINT_DEBUG
-			_points = points;
-#endif
+
+			if (updatePoints)
+				_points = std::move(points);
 		}
 		return ret;
 	}

@@ -314,7 +314,7 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		runTests("datamatrix-3", "DataMatrix", 19, {
 			{ 18, 19, 0   },
 			{  0, 19, 90  },
-			{  0, 18, 180 }, // 1 fail because of a different binarizer output
+			{  0, 19, 180 },
 			{  0, 19, 270 },
 		});
 
