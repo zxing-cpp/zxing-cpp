@@ -571,7 +571,7 @@ CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
 	return true;
 }
 
-DecoderResult Decode(const BitMatrix& bits)
+static DecoderResult DoDecode(const BitMatrix& bits)
 {
 	// Construct a parser and read version, error-correction level
 	const Version* version = VersionForDimensionsOf(bits);
@@ -609,6 +609,31 @@ DecoderResult Decode(const BitMatrix& bits)
 
 	// Decode the contents of that stream of bytes
 	return DecodedBitStreamParser::Decode(std::move(resultBytes));
+}
+
+static BitMatrix FlippedL(const BitMatrix& bits)
+{
+	BitMatrix res(bits.height(), bits.width());
+	for (int y = 0; y < res.height(); ++y)
+		for (int x = 0; x < res.width(); ++x)
+			res.set(x, y, bits.get(bits.width() - 1 - y, bits.height() - 1 - x));
+	return res;
+}
+
+DecoderResult Decode(const BitMatrix& bits)
+{
+	auto res = DoDecode(bits);
+	if (res.isValid())
+		return res;
+
+	//TODO:
+	// * report mirrored state (see also QRReader)
+	// * unify bit mirroring helper code with QRReader?
+	// * rectangular symbols with the a size of 8 x Y are not supported a.t.m.
+	if (auto mirroredRes = DoDecode(FlippedL(bits)); mirroredRes.isValid())
+		return mirroredRes;
+
+	return res;
 }
 
 } // namespace ZXing::DataMatrix
