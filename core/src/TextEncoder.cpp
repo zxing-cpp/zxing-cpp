@@ -256,7 +256,7 @@ TextEncoder::GetBytes(const std::wstring& str, CharacterSet charset, std::string
 	case CharacterSet::GB2312: GBTextEncoder::EncodeGB2312(str, bytes); break;
 	case CharacterSet::GB18030: GBTextEncoder::EncodeGB18030(str, bytes); break;
 	case CharacterSet::EUC_JP: JPTextEncoder::EncodeEUCJP(str, bytes); break;
-	case CharacterSet::EUC_KR: KRTextDecoder::EncodeEucKr(str, bytes); break;
+	case CharacterSet::EUC_KR: KRTextEncoder::EncodeEucKr(str, bytes); break;
 	case CharacterSet::UTF8: TextUtfEncoding::ToUtf8(str, bytes); break;
 	default: break;
 	}
