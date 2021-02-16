@@ -703,7 +703,7 @@ static uint16_t unicode2ksc(unsigned unicode)
 	return 0;
 }
 
-void KRTextDecoder::EncodeEucKr(const std::wstring& str, std::string& bytes)
+void KRTextEncoder::EncodeEucKr(const std::wstring& str, std::string& bytes)
 {
 	static const char replacement = '?';
 	//int invalid = 0;
