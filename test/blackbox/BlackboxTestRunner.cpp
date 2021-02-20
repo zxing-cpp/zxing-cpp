@@ -539,6 +539,13 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 1, 1, 0   },
 		});
 
+		runTests("qrcode-8", "QRCode", 4, {
+			{ 4, 4, 0 },
+			{ 4, 4, 90 },
+			{ 4, 4, 180 },
+			{ 4, 4, 270 },
+		});
+
 		runTests("pdf417-1", "PDF417", 15, {
 			{ 14, 14, 0   },
 			{ 14, 14, 180 },
