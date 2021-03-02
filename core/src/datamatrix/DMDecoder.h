@@ -16,6 +16,8 @@
 * limitations under the License.
 */
 
+#include <string>
+
 namespace ZXing {
 
 class DecoderResult;
@@ -32,7 +34,7 @@ namespace DataMatrix {
  * @throws FormatException if the Data Matrix Code cannot be decoded
  * @throws ChecksumException if error correction fails
  */
-DecoderResult Decode(const BitMatrix& bits);
+DecoderResult Decode(const BitMatrix& bits, const std::string& characterSet = "");
 
 } // DataMatrix
 } // ZXing

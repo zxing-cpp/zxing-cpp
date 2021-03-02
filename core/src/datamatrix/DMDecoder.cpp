@@ -19,6 +19,8 @@
 
 #include "BitMatrix.h"
 #include "BitSource.h"
+#include "CharacterSet.h"
+#include "CharacterSetECI.h"
 #include "DMBitLayout.h"
 #include "DMDataBlock.h"
 #include "DMVersion.h"
@@ -95,11 +97,37 @@ static const char TEXT_SHIFT3_SET_CHARS[] = {
 	'O',  'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '{', '|', '}', '~', 127
 };
 
+constexpr CharacterSet DEFAULT_ENCODING = CharacterSet::ISO8859_1;
+
+// Encoding state (will be added to)
+struct State {
+	CharacterSet encoding = DEFAULT_ENCODING;
+};
+
+/**
+* See ISO 16022:2006, 5.4.1, Table 6
+*/
+static int ParseECIValue(BitSource& bits)
+{
+	int firstByte = bits.readBits(8);
+	if (firstByte <= 127) {
+		return firstByte - 1;
+	}
+	int secondByte = bits.readBits(8);
+	if (firstByte <= 191) {
+		return (firstByte - 128) * 254 + 127 + secondByte - 1;
+	}
+	int thirdByte = bits.readBits(8);
+	return (firstByte - 192) * 64516 + 16383 + (secondByte - 1) * 254 + thirdByte - 1;
+}
+
 /**
 * See ISO 16022:2006, 5.2.3 and Annex C, Table C.2
 */
-static Mode DecodeAsciiSegment(BitSource& bits, std::string& result, std::string& resultTrailer)
+static Mode DecodeAsciiSegment(BitSource& bits, std::string& result, std::string& resultTrailer,
+							   std::wstring& resultEncoded, State& state)
 {
+	int eci;
 	bool upperShift = false;
 	do {
 		int oneByte = bits.readBits(8);
@@ -139,9 +167,17 @@ static Mode DecodeAsciiSegment(BitSource& bits, std::string& result, std::string
 		case 240: // Latch to EDIFACT encodation
 			return Mode::EDIFACT_ENCODE;
 		case 241:  // ECI Character
-					// TODO(bbrown): I think we need to support ECI
-					//throw ReaderException.getInstance();
-					// Ignore this symbol for now
+			eci = ParseECIValue(bits);
+			if (eci >= 0 && eci <= 899) { // Character Set ECIs
+				CharacterSet encoding = CharacterSetECI::CharsetFromValue(eci);
+				if (encoding != CharacterSet::Unknown && encoding != state.encoding) {
+					// Encode data so far in current encoding and reset
+					TextDecoder::Append(resultEncoded, reinterpret_cast<const uint8_t*>(result.data()), result.size(),
+										state.encoding);
+					result.clear();
+					state.encoding = encoding;
+				}
+			}
 			break;
 		default:
 			if (oneByte <= 128) {  // ASCII data (ASCII value + 1)
@@ -497,17 +533,27 @@ static bool DecodeBase256Segment(BitSource& bits, std::string& result, std::list
 }
 
 ZXING_EXPORT_TEST_ONLY
-DecoderResult Decode(ByteArray&& bytes)
+DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet)
 {
 	BitSource bits(bytes);
 	std::string result;
 	result.reserve(100);
 	std::string resultTrailer;
+	std::wstring resultEncoded;
 	std::list<ByteArray> byteSegments;
 	Mode mode = Mode::ASCII_ENCODE;
+	State state;
+
+	if (!characterSet.empty()) {
+		auto encodingInit = CharacterSetECI::CharsetFromName(characterSet.c_str());
+		if (encodingInit != CharacterSet::Unknown) {
+			state.encoding = encodingInit;
+		}
+	}
+
 	do {
 		if (mode == Mode::ASCII_ENCODE) {
-			mode = DecodeAsciiSegment(bits, result, resultTrailer);
+			mode = DecodeAsciiSegment(bits, result, resultTrailer, resultEncoded, state);
 		}
 		else {
 			bool decodeOK;
@@ -541,8 +587,9 @@ DecoderResult Decode(ByteArray&& bytes)
 	if (resultTrailer.length() > 0) {
 		result.append(resultTrailer);
 	}
+	TextDecoder::Append(resultEncoded, reinterpret_cast<const uint8_t*>(result.data()), result.size(), state.encoding);
 
-	return DecoderResult(std::move(bytes), TextDecoder::FromLatin1(result)).setByteSegments(std::move(byteSegments));
+	return DecoderResult(std::move(bytes), std::move(resultEncoded)).setByteSegments(std::move(byteSegments));
 }
 
 } // namespace DecodedBitStreamParser
@@ -571,7 +618,7 @@ CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
 	return true;
 }
 
-static DecoderResult DoDecode(const BitMatrix& bits)
+static DecoderResult DoDecode(const BitMatrix& bits, const std::string& characterSet)
 {
 	// Construct a parser and read version, error-correction level
 	const Version* version = VersionForDimensionsOf(bits);
@@ -608,7 +655,7 @@ static DecoderResult DoDecode(const BitMatrix& bits)
 	}
 
 	// Decode the contents of that stream of bytes
-	return DecodedBitStreamParser::Decode(std::move(resultBytes));
+	return DecodedBitStreamParser::Decode(std::move(resultBytes), characterSet);
 }
 
 static BitMatrix FlippedL(const BitMatrix& bits)
@@ -620,9 +667,9 @@ static BitMatrix FlippedL(const BitMatrix& bits)
 	return res;
 }
 
-DecoderResult Decode(const BitMatrix& bits)
+DecoderResult Decode(const BitMatrix& bits, const std::string& characterSet)
 {
-	auto res = DoDecode(bits);
+	auto res = DoDecode(bits, characterSet);
 	if (res.isValid())
 		return res;
 
@@ -630,7 +677,7 @@ DecoderResult Decode(const BitMatrix& bits)
 	// * report mirrored state (see also QRReader)
 	// * unify bit mirroring helper code with QRReader?
 	// * rectangular symbols with the a size of 8 x Y are not supported a.t.m.
-	if (auto mirroredRes = DoDecode(FlippedL(bits)); mirroredRes.isValid())
+	if (auto mirroredRes = DoDecode(FlippedL(bits), characterSet); mirroredRes.isValid())
 		return mirroredRes;
 
 	return res;
