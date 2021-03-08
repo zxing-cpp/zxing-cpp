@@ -164,7 +164,7 @@ static bool CorrectTopRightRectangular(const BitMatrix& image, const ResultPoint
 * for a square matrix
 */
 static bool CorrectTopRight(const BitMatrix& image, const ResultPoint& bottomLeft, const ResultPoint& bottomRight,
-                                   const ResultPoint& topLeft, const ResultPoint& topRight, int dimension,
+								   const ResultPoint& topLeft, const ResultPoint& topRight, int dimension,
 								   ResultPoint& result)
 {
 	float corr = RoundToNearestF(distance(bottomLeft, bottomRight)) / (float)dimension;
