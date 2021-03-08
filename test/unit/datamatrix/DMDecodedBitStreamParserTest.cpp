@@ -24,7 +24,7 @@
 namespace ZXing {
 	namespace DataMatrix {
 		namespace DecodedBitStreamParser {
-			DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet);
+			DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet, const bool isDMRE);
 		}
 	}
 }
@@ -35,7 +35,7 @@ TEST(DMDecodedBitStreamParserTest, AsciiStandardDecode)
 {
 	// ASCII characters 0-127 are encoded as the value + 1
 	ByteArray bytes = { 'a' + 1, 'b' + 1, 'c' + 1, 'A' + 1, 'B' + 1, 'C' + 1 };
-	auto decodedString = DataMatrix::DecodedBitStreamParser::Decode(std::move(bytes), "").text();
+	auto decodedString = DataMatrix::DecodedBitStreamParser::Decode(std::move(bytes), "", false).text();
 	EXPECT_EQ(decodedString, L"abcABC");
 }
 
@@ -43,6 +43,6 @@ TEST(DMDecodedBitStreamParserTest, AsciiDoubleDigitDecode)
 {
 	// ASCII double digit (00 - 99) Numeric Value + 130
 	ByteArray bytes = { 130 , 1 + 130, 98 + 130, 99 + 130 };
-	auto decodedString = DataMatrix::DecodedBitStreamParser::Decode(std::move(bytes), "").text();
+	auto decodedString = DataMatrix::DecodedBitStreamParser::Decode(std::move(bytes), "", false).text();
 	EXPECT_EQ(decodedString, L"00019899");
 }

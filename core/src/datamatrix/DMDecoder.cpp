@@ -533,7 +533,7 @@ static bool DecodeBase256Segment(BitSource& bits, std::string& result, std::list
 }
 
 ZXING_EXPORT_TEST_ONLY
-DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet)
+DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet, const bool isDMRE)
 {
 	BitSource bits(bytes);
 	std::string result;
@@ -543,6 +543,8 @@ DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet)
 	std::list<ByteArray> byteSegments;
 	Mode mode = Mode::ASCII_ENCODE;
 	State state;
+
+	(void)isDMRE; // Note will be used in future to set symbology identifier ("]dm") metadata
 
 	if (!characterSet.empty()) {
 		auto encodingInit = CharacterSetECI::CharsetFromName(characterSet.c_str());
@@ -655,7 +657,7 @@ static DecoderResult DoDecode(const BitMatrix& bits, const std::string& characte
 	}
 
 	// Decode the contents of that stream of bytes
-	return DecodedBitStreamParser::Decode(std::move(resultBytes), characterSet);
+	return DecodedBitStreamParser::Decode(std::move(resultBytes), characterSet, version->isDMRE());
 }
 
 static BitMatrix FlippedL(const BitMatrix& bits)

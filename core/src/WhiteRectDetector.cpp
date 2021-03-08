@@ -24,7 +24,6 @@
 namespace ZXing {
 
 static const int INIT_SIZE = 10;
-static const int CORR = 1;
 
 bool DetectWhiteRect(const BitMatrix& image, ResultPoint& p0, ResultPoint& p1, ResultPoint& p2, ResultPoint& p3)
 {

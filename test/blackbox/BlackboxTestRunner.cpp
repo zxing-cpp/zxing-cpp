@@ -318,6 +318,14 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{  0, 19, 270 },
 		});
 
+		runTests("datamatrix-dmre-1", "DataMatrix", 20, {
+			{ 20, 20, 0   },
+			{  0, 20, 90  },
+			{  0, 20, 180 },
+			{  0, 20, 270 },
+			{ 18, 0, pure },
+		});
+
 		runTests("codabar-1", "Codabar", 11, {
 			{ 11, 11, 0   },
 			{ 11, 11, 180 },
