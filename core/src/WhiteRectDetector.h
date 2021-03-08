@@ -21,8 +21,6 @@ namespace ZXing {
 class BitMatrix;
 class ResultPoint;
 
-constexpr int CORR = 1;
-
 /**
  * <p>
  * Detects a candidate barcode-like rectangular region within an image. It

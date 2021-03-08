@@ -163,9 +163,8 @@ static bool CorrectTopRightRectangular(const BitMatrix& image, const ResultPoint
 * Calculates the position of the white top right module using the output of the rectangle detector
 * for a square matrix
 */
-static bool CorrectTopRight(const BitMatrix& image, const ResultPoint& bottomLeft, const ResultPoint& bottomRight,
-								   const ResultPoint& topLeft, const ResultPoint& topRight, int dimension,
-								   ResultPoint& result)
+static ResultPoint CorrectTopRight(const BitMatrix& image, const ResultPoint& bottomLeft, const ResultPoint& bottomRight,
+                                   const ResultPoint& topLeft, const ResultPoint& topRight, int dimension)
 {
 	float corr = RoundToNearestF(distance(bottomLeft, bottomRight)) / (float)dimension;
 	float norm = RoundToNearestF(distance(topLeft, topRight));
@@ -182,23 +181,18 @@ static bool CorrectTopRight(const BitMatrix& image, const ResultPoint& bottomLef
 	ResultPoint c2(topRight.x() + corr * cos, topRight.y() + corr * sin);
 
 	if (!IsValidPoint(c1, image.width(), image.height())) {
-		if (IsValidPoint(c2, image.width(), image.height())) {
-			result = c2;
-			return true;
-		}
-		return false;
+		if (!IsValidPoint(c2, image.width(), image.height()))
+			return topRight;
+		return c2;
 	}
-	if (!IsValidPoint(c2, image.width(), image.height())) {
-		result = c1;
-		return true;
-	}
+	if (!IsValidPoint(c2, image.width(), image.height()))
+		return c1;
 
 	int l1 = std::abs(TransitionsBetween(image, topLeft, c1).transitions -
 					  TransitionsBetween(image, bottomRight, c1).transitions);
 	int l2 = std::abs(TransitionsBetween(image, topLeft, c2).transitions -
 					  TransitionsBetween(image, bottomRight, c2).transitions);
-	result = l1 <= l2 ? c1 : c2;
-	return true;
+	return l1 <= l2 ? c1 : c2;
 }
 
 static DetectorResult SampleGrid(const BitMatrix& image, const ResultPoint& topLeft, const ResultPoint& bottomLeft,
@@ -279,8 +273,7 @@ static DetectorResult DetectOld(const BitMatrix& image)
 		TransitionsBetween(image, pointC, pointD),
 	};
 	std::sort(transitions.begin(), transitions.end(),
-			  [](const auto& a, const auto& b) {
-			  return a.transitions != b.transitions ? a.transitions < b.transitions : a.from->x() < b.from->x(); });
+			  [](const auto& a, const auto& b) { return a.transitions < b.transitions; });
 
 	// Sort by number of transitions. First two will be the two solid sides; last two
 	// will be the two alternating black/white sides
@@ -338,63 +331,55 @@ static DetectorResult DetectOld(const BitMatrix& image)
 
 	// Next determine the dimension by tracing along the top or right side and counting black/white
 	// transitions. Since we start inside a black module, we should see a number of transitions
-	// equal to 1 less than the code dimension. Well, sometimes 2 less, because we may end on a black
-	// module:
+	// equal to 1 less than the code dimension. Well, actually 2 less, because we are going to
+	// end on a black module:
 
 	// The top right point is actually the corner of a module, which is one of the two black modules
 	// adjacent to the white module at the top right. Tracing to that corner from either the top left
 	// or bottom right should work here.
 
-	// But as the points returned by DetectWhiteRect() are centered, the y coordinate of the top right
-	// point is adjusted to just above the square so that the transition counting does not go below it
-	// and exit early before reaching it.
+	int dimensionTop = TransitionsBetween(image, *topLeft, *topRight).transitions;
+	int dimensionRight = TransitionsBetween(image, *bottomRight, *topRight).transitions;
 
-	int dimensionTop = TransitionsBetween(image, *topLeft, *topRight - PointF(0, 2 * CORR)).transitions;
-	int dimensionRight = TransitionsBetween(image, *bottomRight, *topRight - PointF(0, 2 * CORR)).transitions;
-
-	dimensionTop++;
 	if ((dimensionTop & 0x01) == 1) {
 		// it can't be odd, so, round... up?
 		dimensionTop++;
 	}
+	dimensionTop += 2;
 
-	dimensionRight++;
 	if ((dimensionRight & 0x01) == 1) {
 		// it can't be odd, so, round... up?
 		dimensionRight++;
 	}
+	dimensionRight += 2;
 
 	if (dimensionTop < 10 || dimensionTop > 144 || dimensionRight < 8 || dimensionRight > 144 )
 		return {};
 
 	ResultPoint correctedTopRight;
 
-	// The squarest rectangular symbol is 26x40 (DMRE), which is ~1.538, but to cut a bit more slack
-	// we accept it as rectangular if the bigger side is at least 6/4 (1.5) times the other:
-	if (4 * dimensionTop >= 6 * dimensionRight || 4 * dimensionRight >= 6 * dimensionTop) {
+	// Rectanguar symbols are 6x16, 6x28, 10x24, 10x32, 14x32, or 14x44. If one dimension is more
+	// than twice the other, it's certainly rectangular, but to cut a bit more slack we accept it as
+	// rectangular if the bigger side is at least 7/4 times the other:
+	if (4 * dimensionTop >= 7 * dimensionRight || 4 * dimensionRight >= 7 * dimensionTop) {
 		// The matrix is rectangular
 
 		if (!CorrectTopRightRectangular(image, *bottomLeft, *bottomRight, *topLeft, *topRight, dimensionTop,
 										dimensionRight, correctedTopRight)) {
 			correctedTopRight = *topRight;
 		}
-		else {
-			int dimensionTopCorrected = TransitionsBetween(image, *topLeft, correctedTopRight).transitions;
-			int dimensionRightCorrected = TransitionsBetween(image, *bottomRight, correctedTopRight).transitions;
 
-			// Only accept corrections if at least one is odd (as they should be if ended on top right square)
-			if ((dimensionTopCorrected & 0x01) || (dimensionRightCorrected & 0x01)) {
-				dimensionTopCorrected++;
-				if (dimensionTopCorrected & 0x01) {
-					dimensionTopCorrected++;
-				}
-				dimensionRightCorrected++;
-				if (dimensionRightCorrected & 0x01) {
-					dimensionRightCorrected++;
-				}
-				dimensionTop = dimensionTopCorrected;
-				dimensionRight = dimensionRightCorrected;
-			}
+		dimensionTop = TransitionsBetween(image, *topLeft, correctedTopRight).transitions;
+		dimensionRight = TransitionsBetween(image, *bottomRight, correctedTopRight).transitions;
+
+		if ((dimensionTop & 0x01) == 1) {
+			// it can't be odd, so, round... up?
+			dimensionTop++;
+		}
+
+		if ((dimensionRight & 0x01) == 1) {
+			// it can't be odd, so, round... up?
+			dimensionRight++;
 		}
 	}
 	else {
@@ -402,28 +387,17 @@ static DetectorResult DetectOld(const BitMatrix& image)
 
 		int dimension = std::min(dimensionRight, dimensionTop);
 		// correct top right point to match the white module
-		if (!CorrectTopRight(image, *bottomLeft, *bottomRight, *topLeft, *topRight, dimension, correctedTopRight)) {
-			correctedTopRight = *topRight;
-		}
-		else {
-			// Redetermine the dimension using the corrected top right point
-			int dimensionTopCorrected = TransitionsBetween(image, *topLeft, correctedTopRight).transitions;
-			int dimensionRightCorrected = TransitionsBetween(image, *bottomRight, correctedTopRight).transitions;
+		correctedTopRight = CorrectTopRight(image, *bottomLeft, *bottomRight, *topLeft, *topRight, dimension);
 
-			// Only accept corrections if they differ by at most one
-			if (std::abs(dimensionTopCorrected - dimensionRightCorrected) <= 1) {
-				dimensionTopCorrected++;
-				if (dimensionTopCorrected & 0x01) {
-					dimensionTopCorrected++;
-				}
-				dimensionRightCorrected++;
-				if (dimensionRightCorrected & 0x01) {
-					dimensionRightCorrected++;
-				}
-				dimensionTop = dimensionRight = std::max(dimensionTopCorrected, dimensionRightCorrected);
-			}
-
+		// Redetermine the dimension using the corrected top right point
+		int dimensionCorrected = std::max(TransitionsBetween(image, *topLeft, correctedTopRight).transitions,
+		                                  TransitionsBetween(image, *bottomRight, correctedTopRight).transitions);
+		dimensionCorrected++;
+		if ((dimensionCorrected & 0x01) == 1) {
+			dimensionCorrected++;
 		}
+
+		dimensionTop = dimensionRight = dimension;
 	}
 
 	return SampleGrid(image, *topLeft, *bottomLeft, *bottomRight, correctedTopRight, dimensionTop, dimensionRight);
