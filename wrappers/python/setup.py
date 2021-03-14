@@ -1,18 +1,18 @@
 import os
-import re
-import sys
 import platform
 import subprocess
+import sys
 
-from setuptools import setup, Extension
+from setuptools import setup, Extension, find_packages
 from setuptools.command.build_ext import build_ext
-from distutils.version import LooseVersion
+
 
 # Adapted from here: https://github.com/pybind/cmake_example/blob/master/setup.py
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=''):
         Extension.__init__(self, name, sources=[])
         self.sourcedir = os.path.abspath(sourcedir)
+
 
 class CMakeBuild(build_ext):
     def run(self):
@@ -46,7 +46,7 @@ class CMakeBuild(build_ext):
                                                               self.distribution.get_version())
         if not os.path.exists(self.build_temp):
             os.makedirs(self.build_temp)
-        try:	
+        try:
             subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, cwd=self.build_temp, env=env)
         except subprocess.CalledProcessError:
             sys.exit("Error running cmake configure step")
@@ -64,7 +64,8 @@ setup(
     author_email='timothy.rae@ankidroid.org',
     url='https://github.com/nu-book/zxing-cpp',
     keywords=['barcode'],
-    ext_modules=[CMakeExtension('zxing')],
+    packages=find_packages("."),
+    ext_modules=[CMakeExtension('zxing._zxing')],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
 )

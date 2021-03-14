@@ -50,6 +50,17 @@ Result read_barcode(const Image& image, const BarcodeFormats& formats, bool fast
 	return ReadBarcode({bytes, width, height, imgfmt, width * channels, channels}, hints);
 }
 
+Result read_barcode2(const Image& image, const DecodeHints& hints)
+{
+	const auto height = narrow<int>(image.shape(0));
+	const auto width = narrow<int>(image.shape(1));
+	const auto channels = image.ndim() == 2 ? 1 : narrow<int>(image.shape(2));
+	const auto bytes = image.data();
+	const auto imgfmt = channels == 1 ? ImageFormat::Lum : ImageFormat::BGR;
+
+	return ReadBarcode({bytes, width, height, imgfmt, width * channels, channels}, hints);
+}
+
 Image write_barcode(BarcodeFormat format, std::string text, int width, int height, int margin, int eccLevel)
 {
 	auto writer = MultiFormatWriter(format).setMargin(margin).setEccLevel(eccLevel);
@@ -63,7 +74,8 @@ Image write_barcode(BarcodeFormat format, std::string text, int width, int heigh
 	return result;
 }
 
-PYBIND11_MODULE(zxing, m)
+
+PYBIND11_MODULE(_zxing, m)
 {
 	m.doc() = "python bindings for zxing-cpp";
 	py::enum_<BarcodeFormat>(m, "BarcodeFormat", py::arithmetic{})
@@ -83,11 +95,11 @@ PYBIND11_MODULE(zxing, m)
 		.value("DataBarExpanded", BarcodeFormat::DataBarExpanded)
 		.value("UPCA", BarcodeFormat::UPCA)
 		.value("UPCE", BarcodeFormat::UPCE)
-		// use upper case 'NONE' because 'None' is a reserved identifyer in python
+		// use upper case 'NONE' because 'None' is a reserved identifier in python
 		.value("NONE", BarcodeFormat::None)
 		.value("OneDCodes", BarcodeFormat::OneDCodes)
 		.value("TwoDCodes", BarcodeFormat::TwoDCodes)
-		.export_values()
+		//.export_values()
 		// see https://github.com/pybind/pybind11/issues/2221
 		.def("__or__", [](BarcodeFormat f1, BarcodeFormat f2){ return f1 | f2; })
 		.def("__or__", [](BarcodeFormats fs, BarcodeFormat f){ return fs | f; });
@@ -100,7 +112,32 @@ PYBIND11_MODULE(zxing, m)
 		.value("FixedThreshold", Binarizer::FixedThreshold)
 		.value("GlobalHistogram", Binarizer::GlobalHistogram)
 		.value("LocalAverage", Binarizer::LocalAverage)
-		.export_values();
+		//.export_values()
+		;
+	py::class_<DecodeHints>(m, "DecodeHints")
+	    .def(py::init<>())
+
+#define PYZX_PROPERTY(GETTER, SETTER) \
+    .def_property_readonly(#GETTER, &DecodeHints::##GETTER) \
+	.def(#SETTER, &DecodeHints::##SETTER)
+
+	    PYZX_PROPERTY(formats, setFormats)
+	    PYZX_PROPERTY(tryHarder, setTryHarder)
+	    PYZX_PROPERTY(tryRotate, setTryRotate)
+	    PYZX_PROPERTY(binarizer, setBinarizer)
+	    PYZX_PROPERTY(isPure, setIsPure)
+	    PYZX_PROPERTY(characterSet, setCharacterSet)
+	    PYZX_PROPERTY(allowedLengths, setAllowedLengths)
+	    PYZX_PROPERTY(tryCode39ExtendedMode, setTryCode39ExtendedMode)
+	    PYZX_PROPERTY(assumeCode39CheckDigit, setAssumeCode39CheckDigit)
+	    PYZX_PROPERTY(assumeGS1, setAssumeGS1)
+	    PYZX_PROPERTY(returnCodabarStartEnd, setReturnCodabarStartEnd)
+	    PYZX_PROPERTY(requireEanAddOnSymbol, setRequireEanAddOnSymbol)
+
+#undef PYZX_PROPERTY
+
+	    .def("hasFormat", &DecodeHints::hasFormat)
+	    .def("hasNoFormat", &DecodeHints::hasNoFormat);
 	py::class_<PointI>(m, "Point")
 		.def_readonly("x", &PointI::x)
 		.def_readonly("y", &PointI::y);
@@ -128,6 +165,10 @@ PYBIND11_MODULE(zxing, m)
 		py::arg("fastMode") = false,
 		py::arg("tryRotate") = true,
 		py::arg("binarizer") = Binarizer::LocalAverage
+	);
+	m.def("read_barcode2", &read_barcode2, "Read (decode) a barcode from a numpy BGR or grayscale image array",
+	    py::arg("image"),
+	    py::arg("hints") = DecodeHints{}
 	);
 	m.def("write_barcode", &write_barcode, "Write (encode) a text into a barcode and return numpy image array",
 		py::arg("format"),
