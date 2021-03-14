@@ -79,6 +79,9 @@ BitMatrix VisitMatrix(int numRows, int numCols, VisitFunc visit)
 				c += numCols;
 				r += 4 - ((numCols + 4) % 8);
 			}
+			if (r >= numRows) {
+				r -= numRows;
+			}
 			result[bit] = {r, c};
 			logAccess(result[bit]);
 		}

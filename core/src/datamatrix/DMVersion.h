@@ -63,6 +63,7 @@ public:
 	int totalCodewords() const { return ecBlocks.totalDataCodewords(); }
 	int dataWidth() const { return (symbolWidth / dataBlockWidth) * dataBlockWidth; }
 	int dataHeight() const { return (symbolHeight / dataBlockHeight) * dataBlockHeight; }
+	bool isDMRE() const { return versionNumber >= 31 && versionNumber <= 48; }
 };
 
 /**

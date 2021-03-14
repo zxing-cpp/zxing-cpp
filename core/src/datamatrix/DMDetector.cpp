@@ -686,9 +686,9 @@ static DetectorResult Scan(EdgeTracer startTracer, std::array<DMRegressionLine, 
 
 		auto lenL = distance(tl, bl) - 1;
 		auto lenB = distance(bl, br) - 1;
-		CHECK(lenL >= 10 && lenB >= 10 && lenB >= lenL / 4 && lenB <= lenL * 8);
+		CHECK(lenL >= 8 && lenB >= 10 && lenB >= lenL / 4 && lenB <= lenL * 18);
 
-		auto maxStepSize = static_cast<int>(lenB / 5 + 1); // datamatrix dim is at least 10x10
+		auto maxStepSize = static_cast<int>(lenB / 5 + 1); // datamatrix bottom dim is at least 10
 
 		// at this point we found a plausible L-shape and are now looking for the b/w pattern at the top and right:
 		// follow top row right 'half way' (4 gaps), see traceGaps break condition with 'invalid' line
