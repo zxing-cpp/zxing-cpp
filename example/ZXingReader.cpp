@@ -133,7 +133,7 @@ int main(int argc, char* argv[])
 	int fileCount = 0;
 	int ret = 0;
 
-	std::setlocale(LC_ALL, "en_US.UTF-8");
+	std::setlocale(LC_ALL, "en_US.UTF-8"); // Needed for `std::iswgraph()`
 
 	if (!ParseOptions(argc, argv, &hints, oneLine, filePaths)) {
 		PrintUsage(argv[0]);
