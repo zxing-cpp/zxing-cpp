@@ -20,7 +20,9 @@
 #include <algorithm>
 #include <cctype>
 #include <chrono>
+#include <clocale>
 #include <cstring>
+#include <cwctype>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
