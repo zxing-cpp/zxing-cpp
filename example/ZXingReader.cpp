@@ -22,16 +22,14 @@
 #include <chrono>
 #include <clocale>
 #include <cstring>
-#include <cwctype>
-#include <iomanip>
 #include <iostream>
-#include <sstream>
 #include <string>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
 using namespace ZXing;
+using namespace TextUtfEncoding;
 
 static void PrintUsage(const char* exePath)
 {
@@ -41,6 +39,7 @@ static void PrintUsage(const char* exePath)
 			  << "    -format    Only detect given format(s) (faster)\n"
 			  << "    -ispure    Assume the image contains only a 'pure'/perfect code (faster)\n"
 			  << "    -1         Print only file name, text and status on one line per file\n"
+			  << "    -escape    Escape non-graphical characters in angle brackets (ignored for -1 option, which always escapes)\n"
 			  << "\n"
 			  << "Supported formats are:\n";
 	for (auto f : BarcodeFormats::all()) {
@@ -49,7 +48,7 @@ static void PrintUsage(const char* exePath)
 	std::cout << "Formats can be lowercase, with or without '-', separated by ',' and/or '|'\n";
 }
 
-static bool ParseOptions(int argc, char* argv[], DecodeHints* hints, bool& oneLine, std::list<std::string>& filePaths)
+static bool ParseOptions(int argc, char* argv[], DecodeHints* hints, bool& oneLine, bool& angleEscape, std::list<std::string>& filePaths)
 {
 	for (int i = 1; i < argc; ++i) {
 		if (strcmp(argv[i], "-fast") == 0) {
@@ -75,48 +74,15 @@ static bool ParseOptions(int argc, char* argv[], DecodeHints* hints, bool& oneLi
 		else if (strcmp(argv[i], "-1") == 0) {
 			oneLine = true;
 		}
+		else if (strcmp(argv[i], "-escape") == 0) {
+			angleEscape = true;
+		}
 		else {
 			filePaths.push_back(argv[i]);
 		}
 	}
 
 	return !filePaths.empty();
-}
-
-// Convert to UTF-8, placing non-graphical characters in angle brackets with text name
-static std::string FormatText(const std::wstring& text) {
-	static const char* const ascii_nongraphicals[33] = {
-		"NUL", "SOH", "STX", "ETX", "EOT", "ENQ", "ACK", "BEL",
-		 "BS",  "HT",  "LF",  "VT",  "FF",  "CR",  "SO",  "SI",
-		"DLE", "DC1", "DC2", "DC3", "DC4", "NAK", "SYN", "ETB",
-		"CAN",  "EM", "SUB", "ESC",  "FS",  "GS",  "RS",  "US",
-		"DEL",
-	};
-	std::wostringstream ws;
-
-	ws.fill(L'0');
-
-	for (wchar_t wc : text) {
-		if (wc < 128) { // ASCII
-			if (wc < 32 || wc == 127) { // Non-graphical ASCII, excluding space
-				ws << "<" << ascii_nongraphicals[wc == 127 ? 33 : wc] << ">";
-			}
-			else {
-				ws << wc;
-			}
-		}
-		else {
-			if ((wc >= 0xd800 && wc < 0xe000) || std::iswgraph(wc)) { // Include surrogates
-				ws << wc;
-			}
-			else { // Non-graphical Unicode
-				int width = wc < 256 ? 2 : 4;
-				ws << "<U+" << std::setw(width) << std::uppercase << std::hex << static_cast<unsigned int>(wc) << ">";
-			}
-		}
-	}
-
-	return TextUtfEncoding::ToUtf8(ws.str());
 }
 
 std::ostream& operator<<(std::ostream& os, const Position& points) {
@@ -130,14 +96,20 @@ int main(int argc, char* argv[])
 	DecodeHints hints;
 	std::list<std::string> filePaths;
 	bool oneLine = false;
+	bool angleEscape = false;
 	int fileCount = 0;
 	int ret = 0;
 
-	std::setlocale(LC_ALL, "en_US.UTF-8"); // Needed for `std::iswgraph()`
-
-	if (!ParseOptions(argc, argv, &hints, oneLine, filePaths)) {
+	if (!ParseOptions(argc, argv, &hints, oneLine, angleEscape, filePaths)) {
 		PrintUsage(argv[0]);
 		return -1;
+	}
+	if (oneLine) {
+		angleEscape = true;
+	}
+
+	if (angleEscape) {
+		std::setlocale(LC_CTYPE, "en_US.UTF-8"); // Needed for `std::iswgraph()` in `ToUtf8(angleEscape)`
 	}
 
 	for (std::string filePath : filePaths) {
@@ -156,12 +128,12 @@ int main(int argc, char* argv[])
 
 		if (oneLine) {
 			if (!meta.getString(ResultMetadata::UPC_EAN_EXTENSION).empty()) {
-				std::cout << filePath << " \"" << FormatText(result.text())
-						  << "+" << FormatText(meta.getString(ResultMetadata::UPC_EAN_EXTENSION)) << "\" "
+				std::cout << filePath << " \"" << ToUtf8(result.text(), angleEscape)
+						  << " " << ToUtf8(meta.getString(ResultMetadata::UPC_EAN_EXTENSION)) << "\" "
 						  << ToString(result.status()) << "\n";
 			}
 			else {
-				std::cout << filePath << " \"" << FormatText(result.text()) << "\" " << ToString(result.status()) << "\n";
+				std::cout << filePath << " \"" << ToUtf8(result.text(), angleEscape) << "\" " << ToString(result.status()) << "\n";
 			}
 			continue;
 		}
@@ -172,7 +144,7 @@ int main(int argc, char* argv[])
 			}
 			std::cout << "File:     " << filePath << "\n";
 		}
-		std::cout << "Text:     \"" << FormatText(result.text()) << "\"\n"
+		std::cout << "Text:     \"" << ToUtf8(result.text(), angleEscape) << "\"\n"
 				  << "Format:   " << ToString(result.format()) << "\n"
 				  << "Position: " << result.position() << "\n"
 				  << "Rotation: " << result.orientation() << " deg\n"
@@ -182,18 +154,18 @@ int main(int argc, char* argv[])
 														   {ResultMetadata::POSSIBLE_COUNTRY, "Country:  "}};
 
 		for (auto key : keys) {
-			auto value = TextUtfEncoding::ToUtf8(meta.getString(key.first));
+			auto value = ToUtf8(meta.getString(key.first));
 			if (value.size())
 				std::cout << key.second << value << "\n";
 		}
 
 		if (!meta.getString(ResultMetadata::UPC_EAN_EXTENSION).empty()) {
-			std::cout << "Add-on:   \"" << FormatText(meta.getString(ResultMetadata::UPC_EAN_EXTENSION)) << "\"";
+			std::cout << "Add-on:   \"" << ToUtf8(meta.getString(ResultMetadata::UPC_EAN_EXTENSION)) << "\"";
 			if (!meta.getString(ResultMetadata::ISSUE_NUMBER).empty()) {
-				std::cout << " (Issue #" << FormatText(meta.getString(ResultMetadata::ISSUE_NUMBER)) << ")";
+				std::cout << " (Issue #" << ToUtf8(meta.getString(ResultMetadata::ISSUE_NUMBER)) << ")";
 			}
 			else if (!meta.getString(ResultMetadata::SUGGESTED_PRICE).empty()) {
-				std::cout << " (Price " << FormatText(meta.getString(ResultMetadata::SUGGESTED_PRICE)) << ")";
+				std::cout << " (Price " << ToUtf8(meta.getString(ResultMetadata::SUGGESTED_PRICE)) << ")";
 			}
 			std::cout << "\n";
 		}

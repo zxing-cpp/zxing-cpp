@@ -23,6 +23,7 @@ namespace ZXing {
 namespace TextUtfEncoding {
 
 std::string ToUtf8(const std::wstring& str);
+std::string ToUtf8(const std::wstring& str, const bool angleEscape);
 std::wstring FromUtf8(const std::string& utf8);
 
 void ToUtf8(const std::wstring& str, std::string& utf8);
