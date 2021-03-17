@@ -106,7 +106,9 @@ PYBIND11_MODULE(_zxing, m)
 	py::class_<BarcodeFormats>(m, "BarcodeFormats")
 		.def("__repr__", py::overload_cast<BarcodeFormats>(&ToString))
 		.def("__str__", py::overload_cast<BarcodeFormats>(&ToString))
-		.def("__eq__", [](BarcodeFormats f1, BarcodeFormats f2){ return f1 == f2; });
+		.def("__eq__", [](BarcodeFormats f1, BarcodeFormats f2){ return f1 == f2; })
+		.def(py::init<BarcodeFormat>());
+	py::implicitly_convertible<BarcodeFormat, BarcodeFormats>();
 	py::enum_<Binarizer>(m, "Binarizer")
 		.value("BoolCast", Binarizer::BoolCast)
 		.value("FixedThreshold", Binarizer::FixedThreshold)
