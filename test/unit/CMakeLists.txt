@@ -21,6 +21,7 @@ add_executable (UnitTest
     PseudoRandom.h
     BitHacksTest.cpp
     ReedSolomonTest.cpp
+    TextUtfEncodingTest.cpp
     aztec/AZDetectorTest.cpp
     aztec/AZDecoderTest.cpp
     aztec/AZEncoderTest.cpp

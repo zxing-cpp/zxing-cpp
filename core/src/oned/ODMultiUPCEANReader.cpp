@@ -359,7 +359,7 @@ Result MultiUPCEANReader::decodePattern(int rowNumber, const PatternView& row, s
 
 	auto ext = res.end;
 	PartialResult extRes;
-	if (_hints.requireEanAddOnSymbol() && ext.skipSymbol() && ext.skipSingle(static_cast<int>(begin.sum() * 3.5)) &&
+	if (ext.skipSymbol() && ext.skipSingle(static_cast<int>(begin.sum() * 3.5)) &&
 		(Extension(extRes, ext, 5) || Extension(extRes, ext, 2))) {
 
 		//TODO: extend position in include extension

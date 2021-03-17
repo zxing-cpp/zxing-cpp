@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <cctype>
 #include <chrono>
+#include <clocale>
 #include <cstring>
 #include <iostream>
 #include <string>
@@ -28,14 +29,17 @@
 #include "stb_image.h"
 
 using namespace ZXing;
+using namespace TextUtfEncoding;
 
 static void PrintUsage(const char* exePath)
 {
-	std::cout << "Usage: " << exePath << " [-fast] [-norotate] [-format <FORMAT[,...]>] [-ispure] <png image path>\n"
+	std::cout << "Usage: " << exePath << " [-fast] [-norotate] [-format <FORMAT[,...]>] [-ispure] [-1] <png image path>...\n"
 			  << "    -fast      Skip some lines/pixels during detection (faster)\n"
 			  << "    -norotate  Don't try rotated image during detection (faster)\n"
 			  << "    -format    Only detect given format(s) (faster)\n"
 			  << "    -ispure    Assume the image contains only a 'pure'/perfect code (faster)\n"
+			  << "    -1         Print only file name, text and status on one line per file\n"
+			  << "    -escape    Escape non-graphical characters in angle brackets (ignored for -1 option, which always escapes)\n"
 			  << "\n"
 			  << "Supported formats are:\n";
 	for (auto f : BarcodeFormats::all()) {
@@ -44,7 +48,7 @@ static void PrintUsage(const char* exePath)
 	std::cout << "Formats can be lowercase, with or without '-', separated by ',' and/or '|'\n";
 }
 
-static bool ParseOptions(int argc, char* argv[], DecodeHints* hints, std::string* filePath)
+static bool ParseOptions(int argc, char* argv[], DecodeHints* hints, bool& oneLine, bool& angleEscape, std::list<std::string>& filePaths)
 {
 	for (int i = 1; i < argc; ++i) {
 		if (strcmp(argv[i], "-fast") == 0) {
@@ -67,12 +71,18 @@ static bool ParseOptions(int argc, char* argv[], DecodeHints* hints, std::string
 				return false;
 			}
 		}
+		else if (strcmp(argv[i], "-1") == 0) {
+			oneLine = true;
+		}
+		else if (strcmp(argv[i], "-escape") == 0) {
+			angleEscape = true;
+		}
 		else {
-			*filePath = argv[i];
+			filePaths.push_back(argv[i]);
 		}
 	}
 
-	return !filePath->empty();
+	return !filePaths.empty();
 }
 
 std::ostream& operator<<(std::ostream& os, const Position& points) {
@@ -84,39 +94,82 @@ std::ostream& operator<<(std::ostream& os, const Position& points) {
 int main(int argc, char* argv[])
 {
 	DecodeHints hints;
-	std::string filePath;
+	std::list<std::string> filePaths;
+	bool oneLine = false;
+	bool angleEscape = false;
+	int fileCount = 0;
+	int ret = 0;
 
-	if (!ParseOptions(argc, argv, &hints, &filePath)) {
+	if (!ParseOptions(argc, argv, &hints, oneLine, angleEscape, filePaths)) {
 		PrintUsage(argv[0]);
 		return -1;
 	}
-
-	int width, height, channels;
-	std::unique_ptr<stbi_uc, void(*)(void*)> buffer(stbi_load(filePath.c_str(), &width, &height, &channels, 4), stbi_image_free);
-	if (buffer == nullptr) {
-		std::cerr << "Failed to read image: " << filePath << "\n";
-		return -1;
+	if (oneLine) {
+		angleEscape = true;
 	}
 
-	auto result = ReadBarcode({buffer.get(), width, height, ImageFormat::RGBX}, hints);
-
-	std::cout << "Text:     \"" << TextUtfEncoding::ToUtf8(result.text()) << "\"\n"
-			  << "Format:   " << ToString(result.format()) << "\n"
-			  << "Position: " << result.position() << "\n"
-			  << "Rotation: " << result.orientation() << " deg\n"
-			  << "Error:    " << ToString(result.status()) << "\n";
-
-	std::map<ResultMetadata::Key, const char*> keys = {{ResultMetadata::ERROR_CORRECTION_LEVEL, "EC Level: "},
-													   {ResultMetadata::SUGGESTED_PRICE, "Price:    "},
-													   {ResultMetadata::ISSUE_NUMBER, "Issue #:  "},
-													   {ResultMetadata::POSSIBLE_COUNTRY, "Country:  "},
-													   {ResultMetadata::UPC_EAN_EXTENSION, "Extension:"}};
-
-	for (auto key : keys) {
-		auto value = TextUtfEncoding::ToUtf8(result.metadata().getString(key.first));
-		if (value.size())
-			std::cout << key.second << value << "\n";
+	if (angleEscape) {
+		std::setlocale(LC_CTYPE, "en_US.UTF-8"); // Needed for `std::iswgraph()` in `ToUtf8(angleEscape)`
 	}
 
-	return static_cast<int>(result.status());
+	for (std::string filePath : filePaths) {
+		int width, height, channels;
+		std::unique_ptr<stbi_uc, void(*)(void*)> buffer(stbi_load(filePath.c_str(), &width, &height, &channels, 4), stbi_image_free);
+		if (buffer == nullptr) {
+			std::cerr << "Failed to read image: " << filePath << "\n";
+			return -1;
+		}
+		fileCount++;
+
+		const auto& result = ReadBarcode({buffer.get(), width, height, ImageFormat::RGBX}, hints);
+		const auto& meta = result.metadata();
+
+		ret |= static_cast<int>(result.status());
+
+		if (oneLine) {
+			if (!meta.getString(ResultMetadata::UPC_EAN_EXTENSION).empty()) {
+				std::cout << filePath << " \"" << ToUtf8(result.text(), angleEscape)
+						  << " " << ToUtf8(meta.getString(ResultMetadata::UPC_EAN_EXTENSION)) << "\" "
+						  << ToString(result.status()) << "\n";
+			}
+			else {
+				std::cout << filePath << " \"" << ToUtf8(result.text(), angleEscape) << "\" " << ToString(result.status()) << "\n";
+			}
+			continue;
+		}
+
+		if (filePaths.size() > 1) {
+			if (fileCount > 1) {
+				std::cout << "\n";
+			}
+			std::cout << "File:     " << filePath << "\n";
+		}
+		std::cout << "Text:     \"" << ToUtf8(result.text(), angleEscape) << "\"\n"
+				  << "Format:   " << ToString(result.format()) << "\n"
+				  << "Position: " << result.position() << "\n"
+				  << "Rotation: " << result.orientation() << " deg\n"
+				  << "Error:    " << ToString(result.status()) << "\n";
+
+		std::map<ResultMetadata::Key, const char*> keys = {{ResultMetadata::ERROR_CORRECTION_LEVEL, "EC Level: "},
+														   {ResultMetadata::POSSIBLE_COUNTRY, "Country:  "}};
+
+		for (auto key : keys) {
+			auto value = ToUtf8(meta.getString(key.first));
+			if (value.size())
+				std::cout << key.second << value << "\n";
+		}
+
+		if (!meta.getString(ResultMetadata::UPC_EAN_EXTENSION).empty()) {
+			std::cout << "Add-on:   \"" << ToUtf8(meta.getString(ResultMetadata::UPC_EAN_EXTENSION)) << "\"";
+			if (!meta.getString(ResultMetadata::ISSUE_NUMBER).empty()) {
+				std::cout << " (Issue #" << ToUtf8(meta.getString(ResultMetadata::ISSUE_NUMBER)) << ")";
+			}
+			else if (!meta.getString(ResultMetadata::SUGGESTED_PRICE).empty()) {
+				std::cout << " (Price " << ToUtf8(meta.getString(ResultMetadata::SUGGESTED_PRICE)) << ")";
+			}
+			std::cout << "\n";
+		}
+	}
+
+	return ret;
 }
