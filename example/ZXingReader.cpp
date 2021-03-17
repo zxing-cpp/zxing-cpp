@@ -24,6 +24,7 @@
 #include <cstring>
 #include <iostream>
 #include <string>
+#include <vector>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -48,24 +49,24 @@ static void PrintUsage(const char* exePath)
 	std::cout << "Formats can be lowercase, with or without '-', separated by ',' and/or '|'\n";
 }
 
-static bool ParseOptions(int argc, char* argv[], DecodeHints* hints, bool& oneLine, bool& angleEscape, std::list<std::string>& filePaths)
+static bool ParseOptions(int argc, char* argv[], DecodeHints& hints, bool& oneLine, bool& angleEscape, std::vector<std::string>& filePaths)
 {
 	for (int i = 1; i < argc; ++i) {
 		if (strcmp(argv[i], "-fast") == 0) {
-			hints->setTryHarder(false);
+			hints.setTryHarder(false);
 		}
 		else if (strcmp(argv[i], "-norotate") == 0) {
-			hints->setTryRotate(false);
+			hints.setTryRotate(false);
 		}
 		else if (strcmp(argv[i], "-ispure") == 0) {
-			hints->setIsPure(true);
-			hints->setBinarizer(Binarizer::FixedThreshold);
+			hints.setIsPure(true);
+			hints.setBinarizer(Binarizer::FixedThreshold);
 		}
 		else if (strcmp(argv[i], "-format") == 0) {
 			if (++i == argc)
 				return false;
 			try {
-				hints->setFormats(BarcodeFormatsFromString(argv[i]));
+				hints.setFormats(BarcodeFormatsFromString(argv[i]));
 			} catch (const std::exception& e) {
 				std::cerr << e.what() << "\n";
 				return false;
@@ -94,32 +95,29 @@ std::ostream& operator<<(std::ostream& os, const Position& points) {
 int main(int argc, char* argv[])
 {
 	DecodeHints hints;
-	std::list<std::string> filePaths;
+	std::vector<std::string> filePaths;
 	bool oneLine = false;
 	bool angleEscape = false;
-	int fileCount = 0;
 	int ret = 0;
 
-	if (!ParseOptions(argc, argv, &hints, oneLine, angleEscape, filePaths)) {
+	if (!ParseOptions(argc, argv, hints, oneLine, angleEscape, filePaths)) {
 		PrintUsage(argv[0]);
 		return -1;
 	}
-	if (oneLine) {
+
+	if (oneLine)
 		angleEscape = true;
-	}
 
-	if (angleEscape) {
-		std::setlocale(LC_CTYPE, "en_US.UTF-8"); // Needed for `std::iswgraph()` in `ToUtf8(angleEscape)`
-	}
+	if (angleEscape)
+		std::setlocale(LC_CTYPE, "en_US.UTF-8"); // Needed so `std::iswgraph()` in `ToUtf8(angleEscape)` does not 'swallow' all printable non-ascii utf8 chars
 
-	for (std::string filePath : filePaths) {
+	for (const auto& filePath : filePaths) {
 		int width, height, channels;
 		std::unique_ptr<stbi_uc, void(*)(void*)> buffer(stbi_load(filePath.c_str(), &width, &height, &channels, 4), stbi_image_free);
 		if (buffer == nullptr) {
 			std::cerr << "Failed to read image: " << filePath << "\n";
 			return -1;
 		}
-		fileCount++;
 
 		const auto& result = ReadBarcode({buffer.get(), width, height, ImageFormat::RGBX}, hints);
 		const auto& meta = result.metadata();
@@ -139,10 +137,11 @@ int main(int argc, char* argv[])
 		}
 
 		if (filePaths.size() > 1) {
-			if (fileCount > 1) {
+			static bool firstFile = true;
+			if (!firstFile)
 				std::cout << "\n";
-			}
 			std::cout << "File:     " << filePath << "\n";
+			firstFile = false;
 		}
 		std::cout << "Text:     \"" << ToUtf8(result.text(), angleEscape) << "\"\n"
 				  << "Format:   " << ToString(result.format()) << "\n"
@@ -161,12 +160,10 @@ int main(int argc, char* argv[])
 
 		if (!meta.getString(ResultMetadata::UPC_EAN_EXTENSION).empty()) {
 			std::cout << "Add-on:   \"" << ToUtf8(meta.getString(ResultMetadata::UPC_EAN_EXTENSION)) << "\"";
-			if (!meta.getString(ResultMetadata::ISSUE_NUMBER).empty()) {
+			if (!meta.getString(ResultMetadata::ISSUE_NUMBER).empty())
 				std::cout << " (Issue #" << ToUtf8(meta.getString(ResultMetadata::ISSUE_NUMBER)) << ")";
-			}
-			else if (!meta.getString(ResultMetadata::SUGGESTED_PRICE).empty()) {
+			else if (!meta.getString(ResultMetadata::SUGGESTED_PRICE).empty())
 				std::cout << " (Price " << ToUtf8(meta.getString(ResultMetadata::SUGGESTED_PRICE)) << ")";
-			}
 			std::cout << "\n";
 		}
 	}
