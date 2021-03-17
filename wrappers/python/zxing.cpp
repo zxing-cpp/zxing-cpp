@@ -50,14 +50,40 @@ Result read_barcode(const Image& image, const BarcodeFormats& formats, bool fast
 	return ReadBarcode({bytes, width, height, imgfmt, width * channels, channels}, hints);
 }
 
-Result read_barcode2(const Image& image, const DecodeHints& hints)
+Result read_barcode2(py::object _image, const DecodeHints& hints)
 {
+    const auto _type = py::type::of(_image).str().cast<std::string>();
+	Image image;
+	try {
+		image = _image.cast<Image>();
+	}
+	catch(...) {
+		throw py::type_error("Unsupported type " + _type + ". Expect a PIL Image or numpy array");
+	}
 	const auto height = narrow<int>(image.shape(0));
 	const auto width = narrow<int>(image.shape(1));
-	const auto channels = image.ndim() == 2 ? 1 : narrow<int>(image.shape(2));
-	const auto bytes = image.data();
-	const auto imgfmt = channels == 1 ? ImageFormat::Lum : ImageFormat::BGR;
+	auto channels = image.ndim() == 2 ? 1 : narrow<int>(image.shape(2));
+	ImageFormat imgfmt;
+	if (_type.find("PIL.") != std::string::npos) {
+		const auto mode = _image.attr("mode").cast<std::string>();
+		if (mode.compare("L") == 0)
+			imgfmt = ImageFormat::Lum;
+		else if (mode.compare("RGB") == 0)
+			imgfmt = ImageFormat::RGB;
+		else if (mode.compare("RGBA") == 0)
+			imgfmt = ImageFormat::RGBX;
+		else {
+			// Unsupported mode in ImageFormat. Let's do conversion to L mode with PIL
+			image = _image.attr("convert")("L").cast<Image>();
+			imgfmt = ImageFormat::Lum;
+			channels = 1;
+		}
+	} else {
+		// Assume greyscale or BGR image depending on channels number
+		imgfmt = channels == 1 ? ImageFormat::Lum : ImageFormat::BGR;
+	}
 
+	const auto bytes = image.data();
 	return ReadBarcode({bytes, width, height, imgfmt, width * channels, channels}, hints);
 }
 

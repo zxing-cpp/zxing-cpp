@@ -29,19 +29,6 @@ class DecodeHints(_DecodeHints):
 			getattr(self, f"set{setter_name}")(value)
 		return self
 
-	def setFormats(self, value):
-		"""
-		Override setter to allow BarcodeFormat instead of BarcodeFormats
-
-		:param value: the barcode(s) format(s)
-		:type value: zxing.BarcodeFormat|zxing.BarcodeFormats
-		:return: the current DecodeHints object
-		:rtype: zxing.DecodeHints
-		"""
-		if isinstance(value, BarcodeFormat):
-			value = value | BarcodeFormat.NONE
-		return super().setFormats(value)
-
 
 def read_barcode2(image, hints=DecodeHints()):
 	"""
@@ -54,9 +41,9 @@ def read_barcode2(image, hints=DecodeHints()):
 	:rtype: zxing.Result
 	"""
 	# Test for PIL.Image without requiring that PIL is installed.
-	if 'PIL.' in str(type(image)):
-		if image.mode != "L":
-			image = image.convert("L")
-		import numpy as np  # Import here because numpy is not required until reading barcodes
-		image = np.array(image)
+	# if 'PIL.' in str(type(image)):
+	# 	if image.mode != "L":
+	# 		image = image.convert("L")
+	# 	import numpy as np  # Import here because numpy is not required until reading barcodes
+	# 	# image = np.array(image)
 	return _read_barcode2(image, hints)

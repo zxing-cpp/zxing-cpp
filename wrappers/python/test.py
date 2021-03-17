@@ -3,6 +3,7 @@ import zxing
 import importlib.util
 
 has_numpy = importlib.util.find_spec('numpy') is not None
+has_pil = importlib.util.find_spec('PIL') is not None
 
 BF = zxing.BarcodeFormat
 
@@ -88,6 +89,65 @@ class Test(unittest.TestCase):
 		self.assertFalse(res.valid)
 		self.assertEqual(res.format, BF.NONE)
 		self.assertEqual(res.text, '')
+
+	@unittest.skipIf(not has_pil, "need numpy for read/write tests")
+	def test_write_read_cycle_pil(self):
+		from PIL import Image
+		format = BF.QRCode
+		text = "I have the best words."
+		img = zxing.write_barcode(format, text)
+		img = Image.fromarray(img, "L")
+
+		res = zxing.read_barcode(img)
+		self.assertTrue(res.valid)
+		self.assertEqual(res.format, format)
+		self.assertEqual(res.text, text)
+		self.assertEqual(res.orientation, 0)
+		self.assertEqual(res.position.topLeft.x, 4)
+
+		res = zxing.read_barcode2(img)
+		self.assertTrue(res.valid)
+		self.assertEqual(res.format, format)
+		self.assertEqual(res.text, text)
+		self.assertEqual(res.orientation, 0)
+		self.assertEqual(res.position.topLeft.x, 4)
+
+		rgb_img = img.convert("RGB")
+		res = zxing.read_barcode2(rgb_img)
+		self.assertTrue(res.valid)
+		self.assertEqual(res.format, format)
+		self.assertEqual(res.text, text)
+		self.assertEqual(res.orientation, 0)
+		self.assertEqual(res.position.topLeft.x, 4)
+
+		rgba_img = img.convert("RGBA")
+		res = zxing.read_barcode2(rgba_img)
+		self.assertTrue(res.valid)
+		self.assertEqual(res.format, format)
+		self.assertEqual(res.text, text)
+		self.assertEqual(res.orientation, 0)
+		self.assertEqual(res.position.topLeft.x, 4)
+
+		bin_img = img.convert("1")
+		res = zxing.read_barcode2(bin_img)
+		self.assertTrue(res.valid)
+		self.assertEqual(res.format, format)
+		self.assertEqual(res.text, text)
+		self.assertEqual(res.orientation, 0)
+		self.assertEqual(res.position.topLeft.x, 4)
+
+		cmyk_img = img.convert("CMYK")
+		res = zxing.read_barcode2(cmyk_img)
+		self.assertTrue(res.valid)
+		self.assertEqual(res.format, format)
+		self.assertEqual(res.text, text)
+		self.assertEqual(res.orientation, 0)
+		self.assertEqual(res.position.topLeft.x, 4)
+
+	def test_read_invalid_type(self):
+		self.assertRaisesRegex(
+			TypeError, "Unsupported type <class 'str'>. Expect a PIL Image or numpy array", zxing.read_barcode2, "foo"
+		)
 
 
 if __name__ == '__main__':
