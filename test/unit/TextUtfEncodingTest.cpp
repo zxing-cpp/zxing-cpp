@@ -72,4 +72,3 @@ TEST(TextUtfEncoding, ToUtf8AngleEscapeTest)
 
 	std::setlocale(LC_CTYPE, ctype_locale);
 }
-
