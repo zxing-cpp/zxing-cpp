@@ -167,8 +167,6 @@ Reader::decode(const BinaryBitmap& image) const
 		}
 	}
 
-	result.metadata().put(ResultMetadata::ORIENTATION, result.orientation());
-
 	return result;
 }
 
