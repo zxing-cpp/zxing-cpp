@@ -121,6 +121,14 @@ public:
 	bool hasFormat(BarcodeFormats f) const noexcept { return _formats.testFlags(f); }
 	bool hasNoFormat() const noexcept { return _formats.empty(); }
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#elif defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
 	[[deprecated]] DecodeHints& setPossibleFormats(const std::vector<BarcodeFormat>& formats)
 	{
 		_formats.clear();
@@ -142,6 +150,12 @@ public:
 	{
 		return setRequireEanAddOnSymbol(!v.empty());
 	}
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
 };
 
 } // ZXing
