@@ -149,21 +149,15 @@ int main(int argc, char* argv[])
 				  << "Rotation: " << result.orientation() << " deg\n"
 				  << "Error:    " << ToString(result.status()) << "\n";
 
-		std::map<ResultMetadata::Key, const char*> keys = {{ResultMetadata::ERROR_CORRECTION_LEVEL, "EC Level: "}};
+		auto printOptional = [](const char* key, const std::string& v) {
+			if (!v.empty())
+				std::cout << key << v << "\n";
+		};
 
-		const auto& meta = result.metadata();
-		for (auto key : keys) {
-			auto value = ToUtf8(meta.getString(key.first));
-			if (value.size())
-				std::cout << key.second << value << "\n";
-		}
+		printOptional("EC Level: ", ToUtf8(result.ecLevel()));
 
 		if ((BarcodeFormat::EAN13 | BarcodeFormat::EAN8 | BarcodeFormat::UPCA | BarcodeFormat::UPCE)
 				.testFlag(result.format())) {
-			auto printOptional = [](const char* key, const std::string& v) {
-				if (!v.empty())
-					std::cout << key << v << "\n";
-			};
 			printOptional("Country:  ", GTIN::LookupCountryIdentifier(ToUtf8(result.text())));
 			printOptional("Add-On:   ", GTIN::EanAddOn(result));
 			printOptional("Price:    ", GTIN::Price(GTIN::EanAddOn(result)));

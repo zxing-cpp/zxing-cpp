@@ -68,7 +68,7 @@ public:
 		* Error correction level used, if applicable. The value type depends on the
 		* format, but is typically a String.
 		*/
-		ERROR_CORRECTION_LEVEL,
+		ERROR_CORRECTION_LEVEL [[deprecated]],
 
 		/**
 		* For some periodicals, indicates the issue number as an {@link Integer}.

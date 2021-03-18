@@ -37,7 +37,8 @@ Result::Result(const std::string& text, int y, int xStart, int xStop, BarcodeFor
 
 Result::Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat format)
 	: _status(decodeResult.errorCode()), _format(format), _text(std::move(decodeResult).text()),
-	  _position(std::move(position)), _rawBytes(std::move(decodeResult).rawBytes()), _numBits(decodeResult.numBits())
+	  _position(std::move(position)), _rawBytes(std::move(decodeResult).rawBytes()), _numBits(decodeResult.numBits()),
+	  _ecLevel(decodeResult.ecLevel())
 {
 	if (!isValid())
 		return;
@@ -46,10 +47,6 @@ Result::Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat 
 	const auto& byteSegments = decodeResult.byteSegments();
 	if (!byteSegments.empty()) {
 		metadata().put(ResultMetadata::BYTE_SEGMENTS, byteSegments);
-	}
-	const auto& ecLevel = decodeResult.ecLevel();
-	if (!ecLevel.empty()) {
-		metadata().put(ResultMetadata::ERROR_CORRECTION_LEVEL, ecLevel);
 	}
 	if (decodeResult.hasStructuredAppend()) {
 		metadata().put(ResultMetadata::STRUCTURED_APPEND_SEQUENCE, decodeResult.structuredAppendSequenceNumber());
