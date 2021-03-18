@@ -38,6 +38,13 @@ enum class Binarizer : unsigned char // needs to unsigned for the bitfield below
 	BoolCast,        ///< T = 0, fastest possible
 };
 
+enum class EanAddOnSymbol : unsigned char // see above
+{
+	Ignore,  ///< Ignore any Add-On symbol during read/scan
+	Read,    ///< Read EAN-2/EAN-5 Add-On symbol if found
+	Require, ///< Require EAN-2/EAN-5 Add-On symbol to be present
+};
+
 class DecodeHints
 {
 	bool _tryHarder : 1;
@@ -47,8 +54,8 @@ class DecodeHints
 	bool _assumeCode39CheckDigit : 1;
 	bool _assumeGS1 : 1;
 	bool _returnCodabarStartEnd : 1;
-	bool _requireEanAddOnSymbol : 1;
 	Binarizer _binarizer : 2;
+	EanAddOnSymbol _eanAddOnSymbol : 2;
 
 	BarcodeFormats _formats = BarcodeFormat::None;
 	std::string _characterSet;
@@ -58,7 +65,8 @@ public:
 	// bitfields don't get default initialized to 0.
 	DecodeHints()
 		: _tryHarder(1), _tryRotate(1), _isPure(0), _tryCode39ExtendedMode(0), _assumeCode39CheckDigit(0),
-		  _assumeGS1(0), _returnCodabarStartEnd(0), _requireEanAddOnSymbol(0), _binarizer(Binarizer::LocalAverage)
+		  _assumeGS1(0), _returnCodabarStartEnd(0), _binarizer(Binarizer::LocalAverage),
+		  _eanAddOnSymbol(EanAddOnSymbol::Ignore)
 	{}
 
 #define ZX_PROPERTY(TYPE, GETTER, SETTER) \
@@ -105,11 +113,8 @@ public:
 	*/
 	ZX_PROPERTY(bool, returnCodabarStartEnd, setReturnCodabarStartEnd)
 
-	/**
-	* If true, the codes EAN-13, UPC-A and UPC-E will require to have either an EAN-2 or EAN-5 add-on
-	* symbol.
-	*/
-	ZX_PROPERTY(bool, requireEanAddOnSymbol, setRequireEanAddOnSymbol)
+	/// Specify whether to ignore, read or require EAN-2/5 add-on symbols while scanning EAN/UPC codes
+	ZX_PROPERTY(EanAddOnSymbol, eanAddOnSymbol, setEanAddOnSymbol)
 
 #undef ZX_PROPERTY
 
@@ -124,6 +129,11 @@ public:
 		return *this;
 	}
 
+	[[deprecated]] bool requireEanAddOnSymbol() const { return _eanAddOnSymbol == EanAddOnSymbol::Require; }
+	[[deprecated]] DecodeHints& setRequireEanAddOnSymbol(bool v)
+	{
+		return setEanAddOnSymbol(v ? EanAddOnSymbol::Require : EanAddOnSymbol::Ignore);
+	}
 	[[deprecated]] std::vector<int> allowedEanExtensions() const
 	{
 		return requireEanAddOnSymbol() ? std::vector<int>{2, 5} : std::vector<int>{};

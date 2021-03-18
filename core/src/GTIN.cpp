@@ -17,8 +17,12 @@
 
 #include "GTIN.h"
 
+#include "Result.h"
+
 #include <algorithm>
+#include <iomanip>
 #include <iterator>
+#include <sstream>
 #include <string>
 
 namespace ZXing::GTIN {
@@ -152,6 +156,57 @@ std::string LookupCountryIdentifier(const std::string& GTIN)
 	int prefix = std::stoi(GTIN.substr(0, 3));
 	auto it    = std::lower_bound(std::begin(COUNTRIES), std::end(COUNTRIES), CountryId{0, prefix, nullptr});
 	return it != std::end(COUNTRIES) ? it->id : std::string();
+}
+
+std::string EanAddOn(const Result& result)
+{
+	if (!(BarcodeFormat::EAN13 | BarcodeFormat::UPCA | BarcodeFormat::UPCE).testFlag(result.format()))
+		return {};
+	auto txt = result.text();
+	auto pos = txt.find(L' ');
+	return std::string(pos == std::wstring::npos ? txt.end() : txt.begin() + pos + 1, txt.end());
+}
+
+std::string IssueNr(const std::string& ean2AddOn)
+{
+	if (ean2AddOn.size() != 2)
+		return {};
+
+	return std::to_string(std::stoi(ean2AddOn));
+}
+
+std::string Price(const std::string& ean5AddOn)
+{
+	if (ean5AddOn.size() != 5)
+		return {};
+
+	std::string currency;
+	switch (ean5AddOn.front()) {
+	case '0': [[fallthrough]];
+	case '1': currency = "GBP £"; break; // UK
+	case '3': currency = "AUD $"; break; // AUS
+	case '4': currency = "NZD $"; break; // NZ
+	case '5': currency = "USD $"; break; // US
+	case '6': currency = "CAD $"; break; // CA
+	case '9':
+		// Reference: http://www.jollytech.com
+		if (ean5AddOn == "90000") // No suggested retail price
+			return {};
+		if (ean5AddOn == "99991") // Complementary
+			return "0.00";
+		if (ean5AddOn == "99990")
+			return "Used";
+
+		// Otherwise... unknown currency?
+		currency = "";
+		break;
+	default: currency = ""; break;
+	}
+
+	int rawAmount = std::stoi(ean5AddOn.substr(1));
+	std::stringstream buf;
+	buf << currency << std::fixed << std::setprecision(2) << (float(rawAmount) / 100);
+	return buf.str();
 }
 
 } // namespace ZXing::GTIN

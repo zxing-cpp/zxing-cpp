@@ -73,24 +73,24 @@ public:
 		/**
 		* For some periodicals, indicates the issue number as an {@link Integer}.
 		*/
-		ISSUE_NUMBER,
+		ISSUE_NUMBER [[deprecated]],
 
 		/**
 		* For some products, indicates the suggested retail price in the barcode as a
 		* formatted {@link String}.
 		*/
-		SUGGESTED_PRICE,
+		SUGGESTED_PRICE [[deprecated]],
 
 		/**
 		* For some products, the possible country of manufacture as a {@link String} denoting the
 		* ISO country code. Some map to multiple possible countries, like "US/CA".
 		*/
-		POSSIBLE_COUNTRY,
+		POSSIBLE_COUNTRY [[deprecated]],
 
 		/**
 		* For some products, the extension text
 		*/
-		UPC_EAN_EXTENSION,
+		UPC_EAN_EXTENSION [[deprecated]],
 
 		/**
 		* PDF417-specific metadata

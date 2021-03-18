@@ -16,6 +16,7 @@
 
 #include "ReadBarcode.h"
 #include "TextUtfEncoding.h"
+#include "GTIN.h"
 
 #include <algorithm>
 #include <cctype>
@@ -105,6 +106,8 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
+	hints.setEanAddOnSymbol(EanAddOnSymbol::Read);
+
 	if (oneLine)
 		angleEscape = true;
 
@@ -120,19 +123,16 @@ int main(int argc, char* argv[])
 		}
 
 		const auto& result = ReadBarcode({buffer.get(), width, height, ImageFormat::RGBX}, hints);
-		const auto& meta = result.metadata();
 
 		ret |= static_cast<int>(result.status());
 
 		if (oneLine) {
-			if (!meta.getString(ResultMetadata::UPC_EAN_EXTENSION).empty()) {
-				std::cout << filePath << " \"" << ToUtf8(result.text(), angleEscape)
-						  << " " << ToUtf8(meta.getString(ResultMetadata::UPC_EAN_EXTENSION)) << "\" "
-						  << ToString(result.status()) << "\n";
-			}
-			else {
-				std::cout << filePath << " \"" << ToUtf8(result.text(), angleEscape) << "\" " << ToString(result.status()) << "\n";
-			}
+			std::cout << filePath << " " << ToString(result.format());
+			if (result.isValid())
+				std::cout << " \"" << ToUtf8(result.text(), angleEscape) << "\"";
+			else if (result.format() != BarcodeFormat::None)
+				std::cout << " " << ToString(result.status());
+			std::cout << "\n";
 			continue;
 		}
 
@@ -149,22 +149,25 @@ int main(int argc, char* argv[])
 				  << "Rotation: " << result.orientation() << " deg\n"
 				  << "Error:    " << ToString(result.status()) << "\n";
 
-		std::map<ResultMetadata::Key, const char*> keys = {{ResultMetadata::ERROR_CORRECTION_LEVEL, "EC Level: "},
-														   {ResultMetadata::POSSIBLE_COUNTRY, "Country:  "}};
+		std::map<ResultMetadata::Key, const char*> keys = {{ResultMetadata::ERROR_CORRECTION_LEVEL, "EC Level: "}};
 
+		const auto& meta = result.metadata();
 		for (auto key : keys) {
 			auto value = ToUtf8(meta.getString(key.first));
 			if (value.size())
 				std::cout << key.second << value << "\n";
 		}
 
-		if (!meta.getString(ResultMetadata::UPC_EAN_EXTENSION).empty()) {
-			std::cout << "Add-on:   \"" << ToUtf8(meta.getString(ResultMetadata::UPC_EAN_EXTENSION)) << "\"";
-			if (!meta.getString(ResultMetadata::ISSUE_NUMBER).empty())
-				std::cout << " (Issue #" << ToUtf8(meta.getString(ResultMetadata::ISSUE_NUMBER)) << ")";
-			else if (!meta.getString(ResultMetadata::SUGGESTED_PRICE).empty())
-				std::cout << " (Price " << ToUtf8(meta.getString(ResultMetadata::SUGGESTED_PRICE)) << ")";
-			std::cout << "\n";
+		if ((BarcodeFormat::EAN13 | BarcodeFormat::EAN8 | BarcodeFormat::UPCA | BarcodeFormat::UPCE)
+				.testFlag(result.format())) {
+			auto printOptional = [](const char* key, const std::string& v) {
+				if (!v.empty())
+					std::cout << key << v << "\n";
+			};
+			printOptional("Country:  ", GTIN::LookupCountryIdentifier(ToUtf8(result.text())));
+			printOptional("Add-On:   ", GTIN::EanAddOn(result));
+			printOptional("Price:    ", GTIN::Price(GTIN::EanAddOn(result)));
+			printOptional("Issue #:  ", GTIN::IssueNr(GTIN::EanAddOn(result)));
 		}
 	}
 

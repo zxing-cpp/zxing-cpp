@@ -22,6 +22,9 @@
 #include <string>
 
 namespace ZXing {
+
+class Result;
+
 namespace GTIN {
 
 template <typename T>
@@ -48,6 +51,11 @@ bool IsCheckDigitValid(const std::basic_string<T>& s)
  * http://en.wikipedia.org/wiki/List_of_GS1_country_codes</a>.
  */
 std::string LookupCountryIdentifier(const std::string& GTIN);
+
+std::string EanAddOn(const Result& result);
+
+std::string IssueNr(const std::string& ean2AddOn);
+std::string Price(const std::string& ean5AddOn);
 
 } // namespace GTIN
 } // namespace ZXing
