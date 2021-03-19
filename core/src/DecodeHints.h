@@ -136,11 +136,11 @@ public:
 	}
 	[[deprecated]] std::vector<int> allowedEanExtensions() const
 	{
-		return requireEanAddOnSymbol() ? std::vector<int>{2, 5} : std::vector<int>{};
+		return _eanAddOnSymbol == EanAddOnSymbol::Require ? std::vector<int>{2, 5} : std::vector<int>{};
 	}
 	[[deprecated]] DecodeHints& setAllowedEanExtensions(const std::vector<int>& v)
 	{
-		return setRequireEanAddOnSymbol(!v.empty());
+		return setEanAddOnSymbol(v.empty() ? EanAddOnSymbol::Ignore : EanAddOnSymbol::Require);
 	}
 };
 
