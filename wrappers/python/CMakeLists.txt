@@ -30,8 +30,8 @@ if (NOT hasParent)
 endif()
 
 # build the python module
-pybind11_add_module(_zxing zxing.cpp)
-target_link_libraries(_zxing PRIVATE ZXing::ZXing)
+pybind11_add_module(zxing zxing.cpp)
+target_link_libraries(zxing PRIVATE ZXing::ZXing)
 
 add_test(NAME PythonTest COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/test.py -v)
-set_property(TEST PythonTest PROPERTY ENVIRONMENT PYTHONPATH=$<TARGET_FILE_DIR:_zxing>)
+set_property(TEST PythonTest PROPERTY ENVIRONMENT PYTHONPATH=$<TARGET_FILE_DIR:zxing>)

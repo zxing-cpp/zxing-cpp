@@ -34,7 +34,7 @@ class Test(unittest.TestCase):
 		self.assertEqual(res.orientation, 0)
 		self.assertEqual(res.position.topLeft.x, 4)
 
-		res = zxing.read_barcode2(img, zxing.DecodeHints(formats=format))
+		res = zxing.read_barcode2(img, formats=format)
 		self.assertTrue(res.valid)
 		self.assertEqual(res.format, format)
 		self.assertEqual(res.text, text)
@@ -76,16 +76,9 @@ class Test(unittest.TestCase):
 		self.assertEqual(res.format, BF.NONE)
 		self.assertEqual(res.text, '')
 
-		hints = zxing.DecodeHints()
-		hints.setFormats(BF.EAN8 | BF.Aztec)
-		hints.setBinarizer(zxing.Binarizer.BoolCast)
-		res = zxing.read_barcode2(np.zeros((100, 10), np.uint8), hints)
-		self.assertFalse(res.valid)
-		self.assertEqual(res.format, BF.NONE)
-		self.assertEqual(res.text, '')
-
-		hints = zxing.DecodeHints(formats=BF.EAN8 | BF.Aztec, binarizer=zxing.Binarizer.BoolCast)
-		res = zxing.read_barcode2(np.zeros((100, 10), np.uint8), hints)
+		res = zxing.read_barcode2(
+			np.zeros((100, 10), np.uint8), formats=BF.EAN8 | BF.Aztec, binarizer=zxing.Binarizer.BoolCast
+		)
 		self.assertFalse(res.valid)
 		self.assertEqual(res.format, BF.NONE)
 		self.assertEqual(res.text, '')

@@ -3,7 +3,7 @@ import platform
 import subprocess
 import sys
 
-from setuptools import setup, Extension, find_packages
+from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
 
 
@@ -64,8 +64,7 @@ setup(
     author_email='timothy.rae@ankidroid.org',
     url='https://github.com/nu-book/zxing-cpp',
     keywords=['barcode'],
-    packages=find_packages("."),
-    ext_modules=[CMakeExtension('zxing._zxing')],
+    ext_modules=[CMakeExtension('zxing')],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
 )
