@@ -27,8 +27,6 @@
 #include "TextDecoder.h"
 
 #include <cmath>
-#include <iomanip>
-#include <sstream>
 
 namespace ZXing::OneD {
 
@@ -237,66 +235,19 @@ static bool UPCE(PartialResult& res, PatternView begin)
 	return true;
 }
 
-namespace UPCEANExtension5Support
+static int Ean5Checksum(const std::string& s)
 {
-int ExtensionChecksum(const std::string& s)
-{
-	int length = Size(s);
-	int sum = 0;
-	for (int i = length - 2; i >= 0; i -= 2) {
-		sum += (int)s[i] - (int) '0';
-	}
+	int sum = 0, N = Size(s);
+	for (int i = N - 2; i >= 0; i -= 2)
+		sum += (int)s[i] - (int)'0';
 	sum *= 3;
-	for (int i = length - 1; i >= 0; i -= 2) {
-		sum += (int)s[i] - (int) '0';
-	}
+	for (int i = N - 1; i >= 0; i -= 2)
+		sum += (int)s[i] - (int)'0';
 	sum *= 3;
 	return sum % 10;
 }
 
-std::string ParseExtension5String(const std::string& raw)
-{
-	std::string currency;
-	switch (raw.front()) {
-	case '0':
-	case '1':
-		currency = "\xa3";
-		break;
-	case '3': // AUS
-	case '4': // NZ
-	case '5': // US
-	case '6': // CA
-		currency = "$";
-		break;
-	case '9':
-		// Reference: http://www.jollytech.com
-		if (raw == "90000") {
-			// No suggested retail price
-			return std::string();
-		}
-		if (raw == "99991") {
-			// Complementary
-			return "0.00";
-		}
-		if (raw == "99990") {
-			return "Used";
-		}
-		// Otherwise... unknown currency?
-		currency = "";
-		break;
-	default:
-		currency = "";
-		break;
-	}
-	int rawAmount = std::stoi(raw.substr(1));
-	std::stringstream buf;
-	buf << currency << std::fixed << std::setprecision(2) << (float(rawAmount) / 100);
-	return buf.str();
-}
-
-} // UPCEANExtension5Support
-
-static bool Extension(PartialResult& res, PatternView begin, int digitCount)
+static bool AddOn(PartialResult& res, PatternView begin, int digitCount)
 {
 	auto ext = begin.subView(0, 3 + digitCount * 4 + (digitCount - 1) * 2);
 	CHECK(ext.isValid());
@@ -323,7 +274,7 @@ static bool Extension(PartialResult& res, PatternView begin, int digitCount)
 		CHECK(std::stoi(res.txt) % 4 == lgPattern);
 	} else {
 		constexpr int CHECK_DIGIT_ENCODINGS[] = {0x18, 0x14, 0x12, 0x11, 0x0C, 0x06, 0x03, 0x0A, 0x09, 0x05};
-		CHECK(UPCEANExtension5Support::ExtensionChecksum(res.txt) == IndexOf(CHECK_DIGIT_ENCODINGS, lgPattern));
+		CHECK(Ean5Checksum(res.txt) == IndexOf(CHECK_DIGIT_ENCODINGS, lgPattern));
 	}
 	res.format = BarcodeFormat::Any; // make sure res.format is valid, see below
 	return true;
@@ -355,36 +306,19 @@ Result MultiUPCEANReader::decodePattern(int rowNumber, const PatternView& row, s
 		res.format = BarcodeFormat::UPCA;
 	}
 
-	Result result(res.txt, rowNumber, begin.pixelsInFront(), res.end.pixelsTillEnd(), res.format);
-
 	auto ext = res.end;
-	PartialResult extRes;
-	if (_hints.requireEanAddOnSymbol() && ext.skipSymbol() && ext.skipSingle(static_cast<int>(begin.sum() * 3.5)) &&
-		(Extension(extRes, ext, 5) || Extension(extRes, ext, 2))) {
+	PartialResult addOnRes;
+	if (_hints.eanAddOnSymbol() != EanAddOnSymbol::Ignore && ext.skipSymbol() &&
+		ext.skipSingle(static_cast<int>(begin.sum() * 3.5)) && (AddOn(addOnRes, ext, 5) || AddOn(addOnRes, ext, 2))) {
 
 		//TODO: extend position in include extension
-
-		result.metadata().put(ResultMetadata::UPC_EAN_EXTENSION, TextDecoder::FromLatin1(extRes.txt));
-
-		if (Size(extRes.txt) == 2) {
-			result.metadata().put(ResultMetadata::ISSUE_NUMBER, std::stoi(extRes.txt));
-		} else {
-			std::string price = UPCEANExtension5Support::ParseExtension5String(extRes.txt);
-			if (!price.empty())
-				result.metadata().put(ResultMetadata::SUGGESTED_PRICE, TextDecoder::FromLatin1(price));
-		}
+		res.txt += " " + addOnRes.txt;
 	}
 
-	if (_hints.requireEanAddOnSymbol() && !extRes.isValid())
+	if (_hints.eanAddOnSymbol() == EanAddOnSymbol::Require && !addOnRes.isValid())
 		return Result(DecodeStatus::NotFound);
 
-	if (res.format == BarcodeFormat::EAN13 || res.format == BarcodeFormat::UPCA) {
-		std::string countryID = GTIN::LookupCountryIdentifier(res.txt);
-		if (!countryID.empty())
-			result.metadata().put(ResultMetadata::POSSIBLE_COUNTRY, TextDecoder::FromLatin1(countryID));
-	}
-
-	return result;
+	return {res.txt, rowNumber, begin.pixelsInFront(), res.end.pixelsTillEnd(), res.format};
 }
 
 } // namespace ZXing::OneD

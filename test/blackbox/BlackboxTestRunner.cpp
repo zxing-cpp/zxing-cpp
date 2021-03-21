@@ -75,19 +75,6 @@ namespace {
 	};
 }
 
-std::string metadataToUtf8(const Result& result)
-{
-	constexpr ResultMetadata::Key keys[] = {ResultMetadata::SUGGESTED_PRICE, ResultMetadata::ISSUE_NUMBER, ResultMetadata::UPC_EAN_EXTENSION};
-	constexpr char const * prefixs[] = {"SUGGESTED_PRICE", "ISSUE_NUMBER", "UPC_EAN_EXTENSION"};
-	static_assert(Size(keys) == Size(prefixs), "lut size mismatch");
-
-	for (int i = 0; i < Size(keys); ++i)
-		if (auto res = TextUtfEncoding::ToUtf8(result.metadata().getString(keys[i])); !res.empty())
-			return fmt::format("{}={}", prefixs[i], res);
-
-	return {};
-}
-
 static std::string checkResult(const fs::path& imgPath, std::string_view expectedFormat, const Result& result)
 {
 	if (auto format = ToString(result.format()); expectedFormat != format)
@@ -97,12 +84,6 @@ static std::string checkResult(const fs::path& imgPath, std::string_view expecte
 		std::ifstream ifs(fs::path(imgPath).replace_extension(ending), std::ios::binary);
 		return ifs ? std::optional(std::string(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>())) : std::nullopt;
 	};
-
-	if (auto expected = readFile(".metadata.txt")) {
-		auto metadata = metadataToUtf8(result);
-		if (metadata != *expected)
-			return fmt::format("Metadata mismatch: expected '{}' but got '{}'", *expected, metadata);
-	}
 
 	if (auto expected = readFile(".txt")) {
 		auto utf8Result = TextUtfEncoding::ToUtf8(result.text());
@@ -399,7 +380,7 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		runTests("ean13-extension-1", "EAN-13", 5, {
 			{ 4, 5, 0 },
 			{ 3, 5, 180 },
-		}, DecodeHints().setRequireEanAddOnSymbol(true));
+		}, DecodeHints().setEanAddOnSymbol(EanAddOnSymbol::Require));
 
 		runTests("itf-1", "ITF", 10, {
 			{ 10, 10, 0   },
@@ -447,7 +428,7 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		runTests("upca-extension-1", "UPC-A", 6, {
 			{ 3, 6, 0 },
 			{ 4, 6, 180 },
-		}, DecodeHints().setRequireEanAddOnSymbol(true));
+		}, DecodeHints().setEanAddOnSymbol(EanAddOnSymbol::Require));
 
 		runTests("upce-1", "UPC-E", 3, {
 			{ 3, 3, 0   },

@@ -89,6 +89,10 @@ public:
 		return _numBits;
 	}
 
+	const std::wstring& ecLevel() const {
+		return _ecLevel;
+	}
+
 	[[deprecated]]
 	std::vector<ResultPoint> resultPoints() const {
 		return {position().begin(), position().end()};
@@ -109,6 +113,7 @@ private:
 	Position _position;
 	ByteArray _rawBytes;
 	int _numBits = 0;
+	std::wstring _ecLevel;
 	ResultMetadata _metadata;
 };
 

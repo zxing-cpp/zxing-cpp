@@ -16,6 +16,9 @@
 
 #include "TextUtfEncoding.h"
 
+#include <cwctype>
+#include <iomanip>
+#include <sstream>
 #include <type_traits>
 
 namespace ZXing::TextUtfEncoding {
@@ -188,6 +191,45 @@ std::string ToUtf8(const std::wstring& str)
 	std::string utf8;
 	ToUtf8(str, utf8);
 	return utf8;
+}
+
+// Same as `ToUtf8()` above, except if angleEscape set, places non-graphical characters in angle brackets with text name
+// Note `std::setlocale(LC_CTYPE, "en_US.UTF-8")` must be set beforehand for `std::iswraph()` to work
+std::string ToUtf8(const std::wstring& str, const bool angleEscape)
+{
+	if (!angleEscape) {
+		return ToUtf8(str);
+	}
+	static const char* const ascii_nongraphs[33] = {
+		"NUL", "SOH", "STX", "ETX", "EOT", "ENQ", "ACK", "BEL",
+		 "BS",  "HT",  "LF",  "VT",  "FF",  "CR",  "SO",  "SI",
+		"DLE", "DC1", "DC2", "DC3", "DC4", "NAK", "SYN", "ETB",
+		"CAN",  "EM", "SUB", "ESC",  "FS",  "GS",  "RS",  "US",
+		"DEL",
+	};
+	std::wostringstream ws;
+
+	ws.fill(L'0');
+
+	for (wchar_t wc : str) {
+		if (wc < 128) { // ASCII
+			if (wc < 32 || wc == 127) { // Non-graphical ASCII, excluding space
+				ws << "<" << ascii_nongraphs[wc == 127 ? 32 : wc] << ">";
+			} else {
+				ws << wc;
+			}
+		} else {
+			// Include surrogates but exclude NO-BREAK spaces NBSP and NUMSP
+			if ((wc >= 0xd800 && wc < 0xe000) || (std::iswgraph(wc) && wc != 0xA0 && wc != 0x2007)) {
+				ws << wc;
+			} else { // Non-graphical Unicode
+				int width = wc < 256 ? 2 : 4;
+				ws << "<U+" << std::setw(width) << std::uppercase << std::hex << static_cast<unsigned int>(wc) << ">";
+			}
+		}
+	}
+
+	return ToUtf8(ws.str());
 }
 
 void AppendUtf16(std::wstring& str, const uint16_t* utf16, size_t length)
