@@ -45,7 +45,7 @@ Result read_barcode(
     	.setBinarizer(binarizer)
     	.setIsPure(is_pure)
     	.setRequireEanAddOnSymbol(require_ean_add_on_symbol);
-    const auto _type = std::string(py::type::of(_image).str());
+    const auto _type = std::string(py::str(py::type::of(_image)));
 	Image image;
 	try {
 		image = _image.cast<Image>();
