@@ -64,6 +64,7 @@ jobs:
       with:
         python-versions: 'cp36-cp36m cp37-cp37m cp38-cp38 cp39-cp39'
         package-path: 'wrappers/python'
+        pre-build-command: 'sed -i "s:\${CMAKE_CURRENT_SOURCE_DIR}/\.\./\.\./core:$(pwd)/../../core:" CMakeLists.txt'
     - name: Deploy
       # only run if the commit is tagged...
       if: startsWith(github.ref, 'refs/tags/')
