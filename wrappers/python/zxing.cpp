@@ -34,27 +34,11 @@ std::ostream& operator<<(std::ostream& os, const Position& points) {
 	return os;
 }
 
-Result read_barcode(const Image& image, const BarcodeFormats& formats, bool fastMode, bool tryRotate, Binarizer binarizer)
-{
-	DecodeHints hints;
-	hints.setTryHarder(!fastMode);
-	hints.setTryRotate(tryRotate);
-	hints.setFormats(formats);
-	hints.setBinarizer(binarizer);
-	const auto height = narrow<int>(image.shape(0));
-	const auto width = narrow<int>(image.shape(1));
-	const auto channels = image.ndim() == 2 ? 1 : narrow<int>(image.shape(2));
-	const auto bytes = image.data();
-	const auto imgfmt = channels == 1 ? ImageFormat::Lum : ImageFormat::BGR;
-
-	return ReadBarcode({bytes, width, height, imgfmt, width * channels, channels}, hints);
-}
-
-Result read_barcode2(
+Result read_barcode(
     py::object _image, const BarcodeFormats& formats, bool try_harder, bool try_rotate, Binarizer binarizer,
     bool is_pure, bool require_ean_add_on_symbol)
 {
-    auto hints = DecodeHints()
+    const auto hints = DecodeHints()
     	.setFormats(formats)
     	.setTryHarder(try_harder)
     	.setTryRotate(try_rotate)
@@ -88,8 +72,13 @@ Result read_barcode2(
 			channels = 1;
 		}
 	} else {
-		// Assume greyscale or BGR image depending on channels number
-		imgfmt = channels == 1 ? ImageFormat::Lum : ImageFormat::BGR;
+		// Assume grayscale or BGR image depending on channels number
+		if (channels == 1)
+		    imgfmt = ImageFormat::Lum;
+		else if (channels == 3)
+		    imgfmt = ImageFormat::BGR;
+		else
+		    throw py::type_error("Unsupported number of channels for numpy array: " + std::to_string(channels));
 	}
 
 	const auto bytes = image.data();
@@ -113,7 +102,7 @@ Image write_barcode(BarcodeFormat format, std::string text, int width, int heigh
 PYBIND11_MODULE(zxing, m)
 {
 	m.doc() = "python bindings for zxing-cpp";
-	py::enum_<BarcodeFormat>(m, "BarcodeFormat", py::arithmetic{})
+	py::enum_<BarcodeFormat>(m, "BarcodeFormat", py::arithmetic{}, "Enumeration of zxing supported barcode formats")
 		.value("Aztec", BarcodeFormat::Aztec)
 		.value("Codabar", BarcodeFormat::Codabar)
 		.value("Code39", BarcodeFormat::Code39)
@@ -144,56 +133,123 @@ PYBIND11_MODULE(zxing, m)
 		.def("__eq__", [](BarcodeFormats f1, BarcodeFormats f2){ return f1 == f2; })
 		.def(py::init<BarcodeFormat>());
 	py::implicitly_convertible<BarcodeFormat, BarcodeFormats>();
-	py::enum_<Binarizer>(m, "Binarizer")
+	py::enum_<Binarizer>(m, "Binarizer", "Enumeration of binarizers used before decoding images")
 		.value("BoolCast", Binarizer::BoolCast)
 		.value("FixedThreshold", Binarizer::FixedThreshold)
 		.value("GlobalHistogram", Binarizer::GlobalHistogram)
 		.value("LocalAverage", Binarizer::LocalAverage)
 		//.export_values()
 		;
-	py::class_<PointI>(m, "Point")
-		.def_readonly("x", &PointI::x)
-		.def_readonly("y", &PointI::y);
-	py::class_<Position>(m, "Position")
-		.def_property_readonly("topLeft", &Position::topLeft)
-		.def_property_readonly("topRight", &Position::topRight)
-		.def_property_readonly("bottomLeft", &Position::bottomLeft)
-		.def_property_readonly("bottomRight", &Position::bottomRight)
+	py::class_<PointI>(m, "Point", "Represents the coordinates of a point in an image")
+		.def_readonly("x", &PointI::x,
+		    ":return: horizontal coordinate of the point\n"
+		    ":rtype: int")
+		.def_readonly("y", &PointI::y,
+		    ":return: vertical coordinate of the point\n"
+		    ":rtype: int");
+	py::class_<Position>(m, "Position", "The position of a decoded symbol")
+		.def_property_readonly("top_left", &Position::topLeft,
+		    ":return: coordinate of the symbol's top-left corner\n"
+		    ":rtype: zxing.Point")
+		.def_property_readonly("top_right", &Position::topRight,
+		    ":return: coordinate of the symbol's top-right corner\n"
+		    ":rtype: zxing.Point")
+		.def_property_readonly("bottom_left", &Position::bottomLeft,
+		    ":return: coordinate of the symbol's bottom-left corner\n"
+		    ":rtype: zxing.Point")
+		.def_property_readonly("bottom_right", &Position::bottomRight,
+		    ":return: coordinate of the symbol's bottom-right corner\n"
+		    ":rtype: zxing.Point")
 		.def("__str__", [](Position pos) {
 			std::ostringstream oss;
 			oss << pos;
 			return oss.str();
 		});
-	py::class_<Result>(m, "Result")
-		.def_property_readonly("valid", &Result::isValid)
-		.def_property_readonly("text", &Result::text)
-		.def_property_readonly("format", &Result::format)
-		.def_property_readonly("position", &Result::position)
-		.def_property_readonly("orientation", &Result::orientation);
-	m.def("barcode_format_from_str", &BarcodeFormatFromString, "Convert string to BarcodeFormat", py::arg("str"));
-	m.def("barcode_formats_from_str", &BarcodeFormatsFromString, "Convert string to BarcodeFormat", py::arg("str"));
-	m.def("read_barcode", &read_barcode, "Read (decode) a barcode from a numpy BGR or grayscale image array",
-		py::arg("image"),
-		py::arg("formats") = BarcodeFormats{},
-		py::arg("fastMode") = false,
-		py::arg("tryRotate") = true,
-		py::arg("binarizer") = Binarizer::LocalAverage
-	);
-	m.def("read_barcode2", &read_barcode2, "Read (decode) a barcode from a numpy BGR or grayscale image array",
+	py::class_<Result>(m, "Result", "Result of barcode reading")
+		.def_property_readonly("valid", &Result::isValid,
+		    ":return: whether or not result is valid (i.e. a symbol was found)\n"
+		    ":rtype: bool")
+		.def_property_readonly("text", &Result::text,
+		    ":return: text of the decoded symbol\n"
+		    ":rtype: str")
+		.def_property_readonly("format", &Result::format,
+		    ":return: decoded symbol format\n"
+		    ":rtype: zxing.BarcodeFormat")
+		.def_property_readonly("position", &Result::position,
+		    ":return: position of the decoded symbol\n"
+		    ":rtype: zxing.Position")
+		.def_property_readonly("orientation", &Result::orientation,
+		    ":return: orientation (in degree) of the decoded symbol\n"
+		    ":rtype: int");
+	m.def("barcode_format_from_str", &BarcodeFormatFromString,
+	    py::arg("str"),
+	    "Convert string to BarcodeFormat\n\n"
+	    ":type str: str\n"
+	    ":param str: string representing barcode format\n"
+	    ":return: corresponding barcode format\n"
+	    ":rtype: zxing.BarcodeFormat");
+	m.def("barcode_formats_from_str", &BarcodeFormatsFromString,
+	    py::arg("str"),
+	    "Convert string to BarcodeFormats\n\n"
+	    ":type str: str\n"
+	    ":param str: string representing a list of barcodes formats\n"
+	    ":return: corresponding barcode formats\n"
+	    ":rtype: zxing.BarcodeFormats");
+	m.def("read_barcode", &read_barcode,
 	    py::arg("image"),
 		py::arg("formats") = BarcodeFormats{},
 		py::arg("try_harder") = true,
 		py::arg("try_rotate") = true,
 		py::arg("binarizer") = Binarizer::LocalAverage,
 		py::arg("is_pure") = true,
-		py::arg("require_ean_add_on_symbol") = true
+		py::arg("require_ean_add_on_symbol") = true,
+		"Read (decode) a barcode from a numpy BGR or grayscale image array or from a PIL image.\n\n"
+		":type image: numpy.ndarray|PIL.Image.Image\n"
+		":param image: The image object to decode. The image can be either:\n"
+		"  - a numpy array containing image either in grayscale (1 byte per pixel) or BGR mode (3 bytes per pixel)\n"
+		"  - a PIL Image\n"
+		":type formats: zxing.BarcodeFormat|zxing.BarcodeFormats\n"
+		":param formats: the format(s) to decode. If ``None``, decode all formats.\n"
+		":type try_harder: bool\n"
+		":param try_harder: if ``True`` (the default), spend more time to try to find a barcode; if ``False``, \n"
+		"  speed up detection, but with less accuracy.\n"
+		":type try_rotate: bool\n"
+		":param try_rotate: if ``True`` (the default), decoder searched for barcodes in any direction; \n"
+		"  if ``False``, it will not search for 90° / 270° rotated barcodes.\n"
+		":type binarizer: zxing.Binarizer\n"
+		":param binarizer: the binarizer used to convert image before decoding barcodes.\n"
+		"  Defaults to :py:attr:`zxing.Binarizer.LocalAverage`."
+		":type is_pure: bool\n"
+		":param is_pure: if ``True`` (the default), consider the whole image as containing only one barcode.\n"
+		"  If ``False``, the image can contain a barcode among other things."
+		":type require_ean_add_on_symbol: bool\n"
+		":param require_ean_add_on_symbol: if ``True`` (the default), EAN and UPC codes must contain at least one \n"
+		"  add-on symbols to be considered as valid.\n"
+		":rtype: zxing.Result\n"
+		":return: a zxing result containing decoded symbol if found."
 	);
-	m.def("write_barcode", &write_barcode, "Write (encode) a text into a barcode and return numpy image array",
+	m.def("write_barcode", &write_barcode,
 		py::arg("format"),
 		py::arg("text"),
 		py::arg("width") = 0,
 		py::arg("height") = 0,
 		py::arg("margin") = -1,
-		py::arg("eccLevel") = -1
+		py::arg("ecc_level") = -1,
+		"Write (encode) a text into a barcode and return numpy (grayscale) image array\n\n"
+		":type format: zxing.BarcodeFormat\n"
+		":param format: format of the barcode to create\n"
+		":type text: str\n"
+		":param text: the text of barcode\n"
+		":type width: int\n"
+		":param width: width (in pixels) of the barcode to create. If undefined (or set to 0), barcode will be\n"
+		"  created with the minimum possible width\n"
+		":type height: int\n"
+		":param height: height (in pixels) of the barcode to create. If undefined (or set to 0), barcode will be\n"
+		"  created with the minimum possible height\n"
+		":type margin: int\n"
+		":param margin: minimum size (in pixels) of the quiet zone around barcode. If undefined (or set to -1), ???\n"
+		":type ecc_level: int\n"
+		":param ecc_level: error correction code level (in percent) of the barcode\n"
+		"  (Used for Aztec, PDF417, and QRCode only)."
 	);
 }
