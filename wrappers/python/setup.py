@@ -62,12 +62,13 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name='zxing-cpp',
-    use_scm_version={
-        "root": "../..",
-        "version_scheme": "guess-next-dev",
-        "local_scheme": "no-local-version",
-        "tag_regex": "v?([0-9]+.[0-9]+.[0-9]+)",
-    },
+    version='0.0.1',
+    # use_scm_version={
+    #     "root": "../..",
+    #     "version_scheme": "guess-next-dev",
+    #     "local_scheme": "no-local-version",
+    #     "tag_regex": "v?([0-9]+.[0-9]+.[0-9]+)",
+    # },
     description='Python bindings for the zxing-cpp barcode library',
     long_description=long_description,
     long_description_content_type="text/markdown",
