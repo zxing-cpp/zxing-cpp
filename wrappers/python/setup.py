@@ -17,7 +17,7 @@ class CMakeExtension(Extension):
 class CMakeBuild(build_ext):
     def run(self):
         try:
-            out = subprocess.check_output(['cmake', '--version'])
+            subprocess.check_output(['cmake', '--version'])
         except OSError:
             sys.exit("CMake must be installed to build the python wrapper")
 
@@ -55,15 +55,35 @@ class CMakeBuild(build_ext):
         except subprocess.CalledProcessError:
             sys.exit("Error running cmake build step")
 
+
+with open("README.md", "r", encoding="utf-8") as fh:
+    long_description = fh.read()
+
+
 setup(
-    name='zxing',
-    version='0.0.1',
+    name='zxing-cpp',
+    use_scm_version={
+        "root": "../..",
+        "version_scheme": "guess-next-dev",
+        "local_scheme": "no-local-version",
+        "tag_regex": "v?([0-9]+.[0-9]+.[0-9]+)",
+    },
     description='Python bindings for the zxing-cpp barcode library',
-    long_description='',
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     author='Timothy Rae',
     author_email='timothy.rae@ankidroid.org',
     url='https://github.com/nu-book/zxing-cpp',
+    license='Apache License 2.0',
     keywords=['barcode'],
+    classifiers=[
+        "Development Status :: 4 - Beta",
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: Apache Software License",
+        "Operating System :: OS Independent",
+        "Topic :: Multimedia :: Graphics",
+    ],
+    python_requires=">=3.6",
     ext_modules=[CMakeExtension('zxing')],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,

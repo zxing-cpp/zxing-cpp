@@ -1,0 +1,75 @@
+name: Python Build + Pypi Upload
+
+on:
+  push:
+    branches: [master]
+    tags: ["v*.*.*"]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest]
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Install dependencies
+      working-directory: wrappers/python
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install --upgrade build
+    - name: Build
+      working-directory: wrappers/python
+      run: |
+        python -m build
+    - name: Deploy
+      # only run if the commit is tagged...
+      if: startsWith(github.ref, 'refs/tags/')
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+      working-directory: wrappers/python
+      run: |
+        python -m pip install --upgrade twine
+        python -m twine upload dist/*
+
+  build_manylinux:
+
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Install dependencies
+      working-directory: wrappers/python
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install --upgrade build
+    - name: Build manylinux Python wheels
+      uses: RalfG/python-wheels-manylinux-build@v0.3.3-manylinux2010_x86_64
+      with:
+        python-versions: 'cp36-cp36m cp37-cp37m cp38-cp38 cp39-cp39'
+        package-path: 'wrappers/python
+    - name: Deploy
+      # only run if the commit is tagged...
+      if: startsWith(github.ref, 'refs/tags/')
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+      run: |
+        python -m pip install --upgrade twine
+        python -m twine upload dist/*-manylinux*.whl
