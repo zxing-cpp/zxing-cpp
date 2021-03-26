@@ -33,7 +33,7 @@ static const char ALPHABET[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%abcd*
 /**
 * Each character consist of 3 bars and 3 spaces and is 9 modules wide in total.
 * Each bar and space is from 1 to 4 modules wide.
-* These represent the encodings of characters. Each module is asigned 1 bit.
+* These represent the encodings of characters. Each module is assigned 1 bit.
 * The 9 least-significant bits of each int correspond to the 9 modules in a symbol.
 * Note: bit 9 (the first) is always 1, bit 1 (the last) is always 0.
 */
@@ -85,7 +85,7 @@ static bool IsStartGuard(const PatternView& window, int spaceInPixel)
 {
 	// The complete start pattern is FixedPattern<CHAR_LEN, CHAR_SUM>{1, 1, 1, 1, 4, 1}.
 	// Use only the first 4 elements which results in more than a 2x speedup. This is counter-intuitive since we save at
-	// most 1/3rd of the loop iterations in FindPattern. The reason might be a sucessfull vectorization with the limited
+	// most 1/3rd of the loop iterations in FindPattern. The reason might be a successful vectorization with the limited
 	// pattern size that is missed otherwise. We check for the remaining 2 slots for plausibility of the 4:1 ratio.
 	return IsPattern(window, FixedPattern<4, 4>{1, 1, 1, 1}, spaceInPixel, QUITE_ZONE_SCALE * 12) &&
 		   window[4] > 3 * window[5] - 2 &&

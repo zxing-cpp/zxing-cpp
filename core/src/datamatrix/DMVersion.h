@@ -34,7 +34,7 @@ public:
 	{
 		int codewordsPerBlock;
 
-		/* Encapsualtes the parameters for one error-correction block in one symbol version.
+		/* Encapsulates the parameters for one error-correction block in one symbol version.
 		 * This includes the number of data codewords, and the number of times a block with these
 		 * parameters is used consecutively in the Data Matrix code version's format.
 		 */
@@ -71,7 +71,7 @@ public:
  *
  * @param height Number of rows in modules
  * @param width Number of columns in modules
- * @return Version for a Data Matrix Code of those dimensions, nullputr for invalid dimentions
+ * @return Version for a Data Matrix Code of those dimensions, nullputr for invalid dimensions
  */
 const Version* VersionForDimensions(int height, int width);
 

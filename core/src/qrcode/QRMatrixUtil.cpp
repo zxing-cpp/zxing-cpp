@@ -86,7 +86,7 @@ static void EmbedPositionDetectionPattern(int xStart, int yStart, TritMatrix& ma
 		for (int x = 0; x < 7; ++x)
 			matrix.set(xStart + x, yStart + y, maxAbsComponent(PointI(x, y) - PointI(3, 3)) != 2);
 
-	// Surround the 7x7 pattern with one line of white space (sepration pattern)
+	// Surround the 7x7 pattern with one line of white space (separation pattern)
 	auto setIfInside = [&](int x, int y) {
 		if( x >= 0 && x < matrix.width() && y >= 0 && y < matrix.height())
 			matrix.set(x, y, 0);

@@ -85,7 +85,7 @@ FormatInformation::DecodeFormatInformation(uint32_t formatInfoBits1, uint32_t fo
 	int bestDifference = 32;
 	int bestFormatInfo = -1;
 
-	// Some QR codes apparently do not apply the XOR mask. Try without and with additional maksing.
+	// Some QR codes apparently do not apply the XOR mask. Try without and with additional masking.
 	for (auto mask : {0, FORMAT_INFO_MASK_QR})
 		for (uint32_t bits : {formatInfoBits1 ^ mask, formatInfoBits2 ^ mask})
 			for (auto& [pattern, decodedInfo] : FORMAT_INFO_DECODE_LOOKUP)

@@ -284,7 +284,7 @@ static bool FindValidSequence(const PairMap& all, ITER begin, ITER end, Pairs& s
 			// skip p if it is a half-pair but not the last one in the sequence
 			if (!p->right && std::next(begin) != end)
 				continue;
-			// to lower the chance of a misead, one can require each pair to have been seen at least N times.
+			// to lower the chance of a misread, one can require each pair to have been seen at least N times.
 			// e.g: if (p.count < 2) break;
 			stack.push_back(*p);
 			if (FindValidSequence(all, std::next(begin), end, stack))

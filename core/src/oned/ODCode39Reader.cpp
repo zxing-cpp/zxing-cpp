@@ -60,7 +60,7 @@ using CounterContainer = std::array<int, 9>;
 // each character has 5 bars and 4 spaces
 constexpr int CHAR_LEN = 9;
 
-/** Decode the extended string in place. Return false if FormatError occured.
+/** Decode the extended string in place. Return false if FormatError occurred.
  * ctrl is either "$%/+" for code39 or "abcd" for code93. */
 bool
 DecodeExtendedCode39AndCode93(std::string& encoded, const char ctrl[4])
@@ -100,7 +100,7 @@ Result Code39Reader::decodePattern(int rowNumber, const PatternView& row, std::u
 	int minCharCount = _usingCheckDigit ? 4 : 3;
 	auto isStartOrStopSymbol = [](char c) { return c == '*'; };
 
-	// provide the indices with the narrow bars/spaces wich have to be equally wide
+	// provide the indices with the narrow bars/spaces which have to be equally wide
 	constexpr auto START_PATTERN = FixedSparcePattern<CHAR_LEN, 6>{0, 2, 3, 5, 7, 8};
 	// quite zone is half the width of a character symbol
 	constexpr float QUITE_ZONE_SCALE = 0.5f;

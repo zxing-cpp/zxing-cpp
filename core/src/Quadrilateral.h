@@ -92,9 +92,9 @@ bool IsConvex(const Quadrilateral<PointT>& poly)
 			return false;
 	}
 
-	// It turns out beeing convex is not enough to prevent a "numercial instability"
-	// that can cause the corners beeing projected inside the image boundaries but
-	// some points near the corners beeing projected outside. This has been observed
+	// It turns out being convex is not enough to prevent a "numerical instability"
+	// that can cause the corners being projected inside the image boundaries but
+	// some points near the corners being projected outside. This has been observed
 	// where one corner is almost in line with two others. The M/m ratio is below 2
 	// for the complete existing sample set. For very "skewed" QRCodes a value of
 	// around 3 is realistic. A value of 14 has been observed to trigger the

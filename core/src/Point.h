@@ -133,7 +133,7 @@ auto distance(PointT<T> a, PointT<T> b) -> decltype(length(a - b))
 using PointI = PointT<int>;
 using PointF = PointT<double>;
 
-/// Calculate a floating point pixel coordiante representing the 'center' of the pixel.
+/// Calculate a floating point pixel coordinate representing the 'center' of the pixel.
 /// This is sort of the inverse operation of the PointI(PointF) conversion constructor.
 /// See also the documentation of the GridSampler API.
 inline PointF centered(PointI p)
