@@ -56,7 +56,7 @@ jobs:
 
     - uses: actions/upload-artifact@v2
       with:
-        path: wrappres/python/dist/*.tar.gz
+        path: wrappers/python/dist/*.tar.gz
 
   upload-pypi:
     name: Deploy
