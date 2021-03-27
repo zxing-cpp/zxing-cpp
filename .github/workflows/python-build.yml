@@ -8,13 +8,13 @@ on:
     branches: [master]
 
 jobs:
-  build:
-
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8, 3.9]
-        os: [macos-latest, windows-latest]
+        python-version: [3.7, 3.8, 3.9]
+        os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
     - uses: actions/checkout@v2
@@ -28,50 +28,49 @@ jobs:
       working-directory: wrappers/python
       run: |
         python -m pip install --upgrade pip
-        python -m pip install --upgrade build
-    - name: Build
-      working-directory: wrappers/python
-      run: |
-        python -m build
-    - name: Deploy
-      # only run if the commit is tagged...
-      if: startsWith(github.ref, 'refs/tags/')
-      env:
-        TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
-      working-directory: wrappers/python
-      run: |
-        python -m pip install --upgrade twine
-        python -m twine upload dist/*
+        python -m pip install --upgrade cibuildwheel
+    - name: Build wheels
+      uses: joerick/cibuildwheel@v1.10.0
+      with:
+        package-dir: ./wrappers/python
+        output-dir: ./wrappers/python/wheelhouse
+    - uses: actions/upload-artifact@v2
+      with:
+        path: ./wrappers/python/wheelhouse/*.whl
 
-  build_manylinux:
-
+  build_sdist:
+    name: Build source distribution
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
       with:
         submodules: recursive
-    - name: Set up Python 3.8
+    - name: Set up Python
       uses: actions/setup-python@v2
       with:
         python-version: 3.8
-    - name: Install dependencies
+    - name: Build sdist
       working-directory: wrappers/python
       run: |
-        python -m pip install --upgrade pip
-        python -m pip install --upgrade build
-    - name: Build manylinux Python wheels
-      uses: RalfG/python-wheels-manylinux-build@v0.3.3-manylinux2010_x86_64
+        python setup.py sdist
+    - uses: actions/upload-artifact@v2
       with:
-        python-versions: 'cp36-cp36m cp37-cp37m cp38-cp38 cp39-cp39'
-        package-path: 'wrappers/python'
-        pre-build-command: 'sh pre-build-manylinux.sh'
-    - name: Deploy
-      # only run if the commit is tagged...
-      if: startsWith(github.ref, 'refs/tags/')
-      env:
-        TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
-      run: |
-        python -m pip install --upgrade twine
-        python -m twine upload dist/*-manylinux*.whl
+        path: dist/*.tar.gz
+
+  upload-pypi:
+    name: Deploy
+    needs: [build_wheels, build_sdist]
+    runs-on: ubuntu-latest
+    # only run if the commit is tagged...
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: artifact
+          path: dist
+
+      - uses: pypa/gh-action-pypi-publish@master
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_TOKEN }}
+          # To test: repository_url: https://test.pypi.org/legacy/
