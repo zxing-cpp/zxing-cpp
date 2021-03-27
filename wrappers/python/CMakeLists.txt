@@ -24,7 +24,29 @@ if (NOT hasParent)
     if (NOT BUILD_SHARED_LIBS)
         set(CMAKE_POSITION_INDEPENDENT_CODE ON)
     endif()
-    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../core ZXing EXCLUDE_FROM_ALL)
+    if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../../core)
+        add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../core ZXing EXCLUDE_FROM_ALL)
+    else()
+        find_package (Git REQUIRED)
+        execute_process(
+            COMMAND ${GIT_EXECUTABLE} ls-remote https://github.com/nu-book/zxing-cpp.git tags/*
+            RESULT_VARIABLE RESULT
+            OUTPUT_VARIABLE OUTPUT)
+        string (FIND "${OUTPUT}" "refs/tags/v${VERSION_INFO}\n" FOUND_IDX)
+        if (FOUND_IDX LESS 0)
+            # Version not found in tags (suppose we are preparing future version), use master branch
+            FetchContent_Declare(zxing-cpp
+                GIT_REPOSITORY https://github.com/nu-book/zxing-cpp.git)
+        else()
+            FetchContent_Declare(zxing-cpp
+                GIT_REPOSITORY https://github.com/nu-book/zxing-cpp.git
+                GIT_TAG v${VERSION_INFO})
+        endif()
+        if(NOT zxing-cpp_POPULATED)
+            FetchContent_Populate(zxing-cpp)
+            add_subdirectory(${zxing-cpp_SOURCE_DIR} ZXing EXCLUDE_FROM_ALL)
+        endif()
+    endif()
 
     enable_testing()
 endif()

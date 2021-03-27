@@ -41,9 +41,10 @@ class CMakeBuild(build_ext):
             cmake_args += ['-DCMAKE_BUILD_TYPE=' + cfg]
             build_args += ['--', '-j2']
 
+        cmake_args += ['-DVERSION_INFO=' + self.distribution.get_version()]
         env = os.environ.copy()
-        env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\"'.format(env.get('CXXFLAGS', ''),
-                                                              self.distribution.get_version())
+        # fixme: What is the reason for -DVERSION_INFO in CXXFLAGS ?
+        env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\"'.format(env.get('CXXFLAGS', ''), self.distribution.get_version())
         if not os.path.exists(self.build_temp):
             os.makedirs(self.build_temp)
         try:
@@ -62,13 +63,18 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name='zxing-cpp',
-    version='0.0.1',
+    # setuptools_scm cannot be used because of the structure of the project until the following issues are solved:
+    # https://github.com/pypa/setuptools_scm/issues/357
+    # https://github.com/pypa/pip/issues/7549
+    # Because pip works on a copy of current directory in a temporary directory, the temporary directory does not hold
+    # the .git directory of the repo, so that setuptools_scm cannot guess the current version.
     # use_scm_version={
     #     "root": "../..",
     #     "version_scheme": "guess-next-dev",
     #     "local_scheme": "no-local-version",
     #     "tag_regex": "v?([0-9]+.[0-9]+.[0-9]+)",
     # },
+    version='1.1.2',
     description='Python bindings for the zxing-cpp barcode library',
     long_description=long_description,
     long_description_content_type="text/markdown",
