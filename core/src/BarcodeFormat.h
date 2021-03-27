@@ -89,7 +89,7 @@ BarcodeFormat BarcodeFormatFromString(const std::string& str);
 /**
  * @brief Parse a string into a set of BarcodeFormats.
  * Separators can be (any combination of) '|', ',' or ' '.
- * Underscors are optional and input can be lower case.
+ * Underscores are optional and input can be lower case.
  * e.g. "EAN-8 qrcode, Itf" would be parsed into [EAN8, QRCode, ITF].
  * @throws std::invalid_parameter Throws if the string can not be fully parsed.
  */

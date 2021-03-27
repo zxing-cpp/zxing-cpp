@@ -369,7 +369,7 @@ BitMatrix Version::buildFunctionPattern() const
 		int i = _alignmentPatternCenters[x] - 2;
 		for (size_t y = 0; y < max; ++y) {
 			if ((x == 0 && (y == 0 || y == max - 1)) || (x == max - 1 && y == 0)) {
-				// No alignment patterns near the three finder paterns
+				// No alignment patterns near the three finder patterns
 				continue;
 			}
 			bitMatrix.setRegion(_alignmentPatternCenters[y] - 2, i, 5, 5);

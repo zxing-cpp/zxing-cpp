@@ -179,7 +179,7 @@ public:
 
 	// If you know exactly how may bits you are going to iterate
 	// and that you access bit in sequence, iterator is faster than get().
-	// However, be extremly careful since there is no check whatsoever.
+	// However, be extremely careful since there is no check whatsoever.
 	// (Performance is the reason for the iterator to exist in the first place.)
 #ifdef ZX_FAST_BIT_STORAGE
 	Iterator iterAt(int i) const noexcept { return {_bits.cbegin() + i}; }

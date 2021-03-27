@@ -184,7 +184,7 @@ static bool EAN8(PartialResult& res, PatternView begin)
 
 	CHECK(end.isValid() && IsRightGuard(end, END_PATTERN, QUIET_ZONE_RIGHT) && IsPattern(mid, MID_PATTERN));
 
-	// additional plausibilty check for the module size: it has to be about the same for both
+	// additional plausibility check for the module size: it has to be about the same for both
 	// the guard patterns and the payload/data part.
 	float moduleSizeGuard = (begin.sum() + mid.sum() + end.sum()) / 11.f;
 	for (auto start : {3, 24})
@@ -211,7 +211,7 @@ static bool UPCE(PartialResult& res, PatternView begin)
 
 	CHECK(end.isValid() && IsRightGuard(end, UPCE_END_PATTERN, QUIET_ZONE_RIGHT));
 
-	// additional plausibilty check for the module size: it has to be about the same for both
+	// additional plausibility check for the module size: it has to be about the same for both
 	// the guard patterns and the payload/data part. This speeds up the falsepositives use case
 	// about 2x and brings the misread count down to 0
 	float moduleSizeGuard = (begin.sum() + end.sum()) / 9.f;
@@ -298,7 +298,7 @@ Result MultiUPCEANReader::decodePattern(int rowNumber, const PatternView& row, s
 	if (!GTIN::IsCheckDigitValid(res.format == BarcodeFormat::UPCE ? UPCEANCommon::ConvertUPCEtoUPCA(res.txt) : res.txt))
 		return Result(DecodeStatus::ChecksumError);
 
-	// If UPC-A was a requested format and we deteced a EAN-13 code with a leading '0', then we drop the '0' and call it
+	// If UPC-A was a requested format and we detected a EAN-13 code with a leading '0', then we drop the '0' and call it
 	// a UPC-A code.
 	// TODO: this is questionable
 	if (_canReturnUPCA && res.format == BarcodeFormat::EAN13 && res.txt.front() == '0') {

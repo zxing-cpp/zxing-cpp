@@ -162,7 +162,7 @@ Code93Writer::encode(const std::wstring& contents_, int width, int height) const
 		throw std::invalid_argument("Requested contents should be less than 80 digits long after converting to extended encoding");
 	}
 
-	//lenght of code + 2 start/stop characters + 2 checksums, each of 9 bits, plus a termination bar
+	//length of code + 2 start/stop characters + 2 checksums, each of 9 bits, plus a termination bar
 	size_t codeWidth = (contents.length() + 2 + 2) * 9 + 1;
 
 	std::vector<bool> result(codeWidth, false);

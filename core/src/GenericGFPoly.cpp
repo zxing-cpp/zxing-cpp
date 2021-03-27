@@ -130,7 +130,7 @@ GenericGFPoly::divide(const GenericGFPoly& other, GenericGFPoly& quotient)
 	}
 
 	// use Expanded Synthetic Division (see https://en.wikiversity.org/wiki/Reed%E2%80%93Solomon_codes_for_coders):
-	// we use the memory from this (the divident) and swap it with quotient, wich will then accumulate the result as
+	// we use the memory from this (the dividend) and swap it with quotient, which will then accumulate the result as
 	// [quotient : remainder]. we later copy back the remainder into this and shorten the quotient.
 	std::swap(*this, quotient);
 	auto& divisor = other._coefficients;
@@ -143,7 +143,7 @@ GenericGFPoly::divide(const GenericGFPoly& other, GenericGFPoly& quotient)
 
 		ci = _field->multiply(ci, normalizer);
 
-		// we always skip the first coefficient of the divisior, because it's only used to normalize the dividend coefficient
+		// we always skip the first coefficient of the divisor, because it's only used to normalize the dividend coefficient
 		for (int j = 1; j < Size(divisor); ++j)
 			result[i + j] ^= _field->multiply(divisor[j], ci); // equivalent to: result[i + j] += -divisor[j] * ci
 	}

@@ -890,7 +890,7 @@ ByteArray Encode(const std::wstring& msg)
 * @param maxSize the maximum symbol size constraint or null for no constraint
 * @return the encoded message (the char values range from 0 to 255)
 */
-ByteArray Encode(const std::wstring& msg, SymbolShape shape, int minWdith, int minHeight, int maxWidth, int maxHeight)
+ByteArray Encode(const std::wstring& msg, SymbolShape shape, int minWidth, int minHeight, int maxWidth, int maxHeight)
 {
 	//the codewords 0..255 are encoded as Unicode characters
 	//Encoder[] encoders = {
@@ -900,7 +900,7 @@ ByteArray Encode(const std::wstring& msg, SymbolShape shape, int minWdith, int m
 
 	EncoderContext context(TextEncoder::FromUnicode(msg, CharacterSet::ISO8859_1));
 	context.setSymbolShape(shape);
-	context.setSizeConstraints(minWdith, minHeight, maxWidth, maxHeight);
+	context.setSizeConstraints(minWidth, minHeight, maxWidth, maxHeight);
 
 	if (StartsWith(msg, MACRO_05_HEADER) && EndsWith(msg, MACRO_TRAILER)) {
 		context.addCodeword(MACRO_05);
