@@ -1,9 +1,9 @@
 import importlib.util
 import unittest
 
+import numpy as np
 import zxing
 
-has_numpy = importlib.util.find_spec('numpy') is not None
 has_pil = importlib.util.find_spec('PIL') is not None
 
 BF = zxing.BarcodeFormat
@@ -15,7 +15,6 @@ class Test(unittest.TestCase):
 		self.assertEqual(zxing.barcode_format_from_str('qrcode'), BF.QRCode)
 		self.assertEqual(zxing.barcode_formats_from_str('ITF, qrcode'), BF.ITF | BF.QRCode)
 
-	@unittest.skipIf(not has_numpy, "need numpy for read/write tests")
 	def test_write_read_cycle(self):
 		format = BF.QRCode
 		text = "I have the best words."
@@ -35,7 +34,6 @@ class Test(unittest.TestCase):
 		self.assertEqual(res.orientation, 0)
 		self.assertEqual(res.position.top_left.x, 4)
 
-	@unittest.skipIf(not has_numpy, "need numpy for read/write tests")
 	def test_write_read_oned_cycle(self):
 		format = BF.Code128
 		text = "I have the best words."
@@ -52,9 +50,7 @@ class Test(unittest.TestCase):
 		self.assertEqual(res.orientation, 0)
 		self.assertEqual(res.position.top_left.x, 61)
 
-	@unittest.skipIf(not has_numpy, "need numpy for read/write tests")
 	def test_failed_read(self):
-		import numpy as np
 		res = zxing.read_barcode(
 			np.zeros((100, 100), np.uint8), formats=BF.EAN8 | BF.Aztec, binarizer=zxing.Binarizer.BoolCast
 		)
@@ -115,9 +111,7 @@ class Test(unittest.TestCase):
 			TypeError, "Unsupported type <class 'str'>. Expect a PIL Image or numpy array", zxing.read_barcode, "foo"
 		)
 
-	@unittest.skipIf(not has_numpy, "need numpy for read/write tests")
 	def test_read_invalid_numpy_array_channels(self):
-		import numpy as np
 		self.assertRaisesRegex(
 			TypeError, "Unsupported number of channels for numpy array: 4", zxing.read_barcode,
 			np.zeros((100, 100, 4), np.uint8)
