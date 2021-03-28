@@ -44,16 +44,11 @@ if (NOT hasParent)
         endif()
         if(NOT zxing-cpp_POPULATED)
             FetchContent_Populate(zxing-cpp)
-            add_subdirectory(${zxing-cpp_SOURCE_DIR} ZXing EXCLUDE_FROM_ALL)
+            add_subdirectory(${zxing-cpp_SOURCE_DIR}/core ZXing EXCLUDE_FROM_ALL)
         endif()
     endif()
-
-    enable_testing()
 endif()
 
 # build the python module
 pybind11_add_module(zxing zxing.cpp)
 target_link_libraries(zxing PRIVATE ZXing::ZXing)
-
-add_test(NAME PythonTest COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/test.py -v)
-set_property(TEST PythonTest PROPERTY ENVIRONMENT PYTHONPATH=$<TARGET_FILE_DIR:zxing>)
