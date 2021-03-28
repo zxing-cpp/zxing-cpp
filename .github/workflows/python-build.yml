@@ -2,7 +2,7 @@ name: Python Build + Pypi Upload
 
 on:
   push:
-    branches: [master, feature/python_bindings]
+    branches: [master]
     tags: ["v*.*.*"]
   pull_request:
     branches: [master]
