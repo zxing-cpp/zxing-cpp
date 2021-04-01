@@ -28,6 +28,7 @@ namespace ZXing {
 class ByteMatrix : public Matrix<int8_t>
 {
 public:
+	ByteMatrix() = default;
 	ByteMatrix(int width, int height, int8_t val = 0) : Matrix<int8_t>(width, height, val) {}
 	ByteMatrix(ByteMatrix&&) = default;
 	ByteMatrix& operator=(ByteMatrix&&) = default;

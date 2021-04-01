@@ -20,6 +20,7 @@
 
 #include "BitMatrix.h"
 #include "BitMatrixCursor.h"
+#include "ByteMatrix.h"
 #include "DetectorResult.h"
 #include "GridSampler.h"
 #include "LogMatrix.h"
@@ -494,9 +495,9 @@ class EdgeTracer : public BitMatrixCursorF
 							p = centered(pEdge);
 
 							if (history && maxStepSize == 1) {
-								if (history->get(p))
+								if (history->get(PointI(p)) == state)
 									return StepResult::CLOSED_END;
-								history->set(p);
+								history->set(PointI(p), state);
 							}
 
 							return StepResult::FOUND;
@@ -513,7 +514,8 @@ class EdgeTracer : public BitMatrixCursorF
 	}
 
 public:
-	BitMatrix* history = nullptr;
+	ByteMatrix* history = nullptr;
+	int state = 0;
 
 	using BitMatrixCursorF::BitMatrixCursor;
 
@@ -663,6 +665,7 @@ static DetectorResult Scan(EdgeTracer startTracer, std::array<DMRegressionLine, 
 
 		// follow left leg upwards
 		t.turnRight();
+		t.state = 1;
 		CHECK(t.traceLine(t.right(), lineL));
 		CHECK(t.traceCorner(t.right(), tl));
 		lineL.reverse();
@@ -670,6 +673,7 @@ static DetectorResult Scan(EdgeTracer startTracer, std::array<DMRegressionLine, 
 
 		// follow left leg downwards
 		t = startTracer;
+		t.state = 1;
 		t.setDirection(tlTracer.right());
 		CHECK(t.traceLine(t.left(), lineL));
 		if (!lineL.isValid())
@@ -678,6 +682,7 @@ static DetectorResult Scan(EdgeTracer startTracer, std::array<DMRegressionLine, 
 		CHECK(t.traceCorner(t.left(), bl));
 
 		// follow bottom leg right
+		t.state = 2;
 		CHECK(t.traceLine(t.left(), lineB));
 		if (!lineB.isValid())
 			t.updateDirectionFromOrigin(bl);
@@ -699,6 +704,7 @@ static DetectorResult Scan(EdgeTracer startTracer, std::array<DMRegressionLine, 
 
 		// follow up until we reach the top line
 		t.setDirection(up);
+		t.state = 3;
 		CHECK(t.traceGaps(t.left(), lineR, maxStepSize, lineT));
 		CHECK(t.traceCorner(t.left(), tr));
 
@@ -788,9 +794,9 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryHarder, bool try
 	tryHarder = false;
 
 	// a history log to remember where the tracing already passed by to prevent a later trace from doing the same work twice
-	BitMatrix history;
+	ByteMatrix history;
 	if (tryHarder)
-		history = BitMatrix(image.width(), image.height());
+		history = ByteMatrix(image.width(), image.height());
 
 	// instantiate RegressionLine objects outside of Scan function to prevent repetitive std::vector allocations
 	std::array<DMRegressionLine, 4> lines;
