@@ -63,6 +63,8 @@ public:
 	BarcodeFormat format() const {
 		return _format;
 	}
+
+	[[deprecated]]
 	void setFormat(BarcodeFormat format) {
 		_format = format;
 	}
@@ -70,6 +72,8 @@ public:
 	const std::wstring& text() const {
 		return _text;
 	}
+
+	[[deprecated]]
 	void setText(std::wstring&& text) {
 		_text = std::move(text);
 	}
