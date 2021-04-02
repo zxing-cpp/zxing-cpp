@@ -2,6 +2,7 @@
 /*
 * Copyright 2016 Nu-book Inc.
 * Copyright 2016 ZXing authors
+* Copyright 2020 Axel Waggershauser
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -22,6 +23,7 @@
 #include "Quadrilateral.h"
 #include "ResultMetadata.h"
 #include "ResultPoint.h"
+#include "StructuredAppend.h"
 
 #include <string>
 #include <utility>
@@ -106,6 +108,30 @@ public:
 		return _metadata;
 	}
 
+	/**
+	 * @brief symbolCount number of symbols in a structured append context.
+	 *
+	 * If this is not part of a structured append set of symbols, the returned value is -1.
+	 * If it is a structured append symbol but the total number of symbols is unknown, the
+	 * returned value is 0 (see PDF417).
+	 */
+	int symbolCount() const { return _sai.symbolCount; }
+
+	/**
+	 * @brief symbolIndex the index of this symbol in a structured append set of symbols.
+	 */
+	int symbolIndex() const { return _sai.symbolIndex; }
+
+	/**
+	 * @brief symbolParity parity or id of the symbol to check if a set of symbols belong to the same structured append set.
+	 *
+	 * If the symbology does not support this feature, the returned value is -1 (see PDF417).
+	 */
+	int symbolParity() const { return _sai.symbolParity; }
+
+	bool isLastStructuredAppendSymbol() const { return symbolCount() == symbolIndex() + 1; }
+	bool isStructuredAppendSymbol() const { return symbolCount() > -1; }
+
 private:
 	DecodeStatus _status = DecodeStatus::NoError;
 	BarcodeFormat _format = BarcodeFormat::None;
@@ -115,6 +141,7 @@ private:
 	int _numBits = 0;
 	std::wstring _ecLevel;
 	ResultMetadata _metadata;
+	StructuredAppendInfo _sai;
 };
 
 } // ZXing

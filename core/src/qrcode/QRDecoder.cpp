@@ -312,9 +312,7 @@ DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCorrectionLevel 
 	BitSource bits(bytes);
 	std::wstring result;
 	std::list<ByteArray> byteSegments;
-	int codeSequence = -1;
-	int codeCount = -1;
-	int parityData = -1;
+	StructuredAppendInfo structuredAppend;
 	static const int GB2312_SUBSET = 1;
 
 	try
@@ -344,10 +342,10 @@ DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCorrectionLevel 
 					return DecodeStatus::FormatError;
 				}
 				// sequence number and parity is added later to the result metadata
-				// Read next 4 bits of sequence #, 4 bits of code count, and 8 bits of parity data, then continue
-				codeSequence = bits.readBits(4);
-				codeCount = bits.readBits(4) + 1;
-				parityData = bits.readBits(8);
+				// Read next 4 bits of index, 4 bits of symbol count, and 8 bits of parity data, then continue
+				structuredAppend.symbolIndex = bits.readBits(4);
+				structuredAppend.symbolCount = bits.readBits(4) + 1;
+				structuredAppend.symbolParity = bits.readBits(8);
 				break;
 			case CodecMode::ECI: {
 				// Count doesn't apply to ECI
@@ -413,9 +411,7 @@ DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCorrectionLevel 
 	return DecoderResult(std::move(bytes), std::move(result))
 		.setByteSegments(std::move(byteSegments))
 		.setEcLevel(ToString(ecLevel))
-		.setStructuredAppendParity(parityData)
-		.setStructuredAppendSequenceNumber(codeSequence)
-		.setStructuredAppendCodeCount(codeCount);
+		.setStructuredAppend(structuredAppend);
 }
 
 static DecoderResult

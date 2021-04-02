@@ -101,19 +101,19 @@ public:
 		* If the code format supports structured append and the current scanned code is part of one then the
 		* sequence number is given with it.
 		*/
-		STRUCTURED_APPEND_SEQUENCE,
+		STRUCTURED_APPEND_SEQUENCE [[deprecated]],
 
 		/**
 		* If the code format supports structured append and the current scanned code is part of one then the
 		* total code count is given with it.
 		*/
-		STRUCTURED_APPEND_CODE_COUNT,
+		STRUCTURED_APPEND_CODE_COUNT [[deprecated]],
 
 		/**
 		* If the code format supports structured append and the current scanned code is part of one then the
 		* parity is given with it.
 		*/
-		STRUCTURED_APPEND_PARITY,
+		STRUCTURED_APPEND_PARITY [[deprecated]],
 
 	};
 
