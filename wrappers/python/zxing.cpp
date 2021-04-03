@@ -36,7 +36,7 @@ std::ostream& operator<<(std::ostream& os, const Position& points) {
 
 Result read_barcode(
 	py::object _image, const BarcodeFormats& formats, bool try_harder, bool try_rotate, Binarizer binarizer,
-	bool is_pure, bool require_ean_add_on_symbol)
+	bool is_pure, EanAddOnSymbol ean_add_on_symbol)
 {
 	const auto hints = DecodeHints()
 		.setFormats(formats)
@@ -44,7 +44,7 @@ Result read_barcode(
 		.setTryRotate(try_rotate)
 		.setBinarizer(binarizer)
 		.setIsPure(is_pure)
-		.setRequireEanAddOnSymbol(require_ean_add_on_symbol);
+		.setEanAddOnSymbol(ean_add_on_symbol);
 	const auto _type = std::string(py::str(py::type::of(_image)));
 	Image image;
 	try {
@@ -85,9 +85,9 @@ Result read_barcode(
 	return ReadBarcode({bytes, width, height, imgfmt, width * channels, channels}, hints);
 }
 
-Image write_barcode(BarcodeFormat format, std::string text, int width, int height, int margin, int eccLevel)
+Image write_barcode(BarcodeFormat format, std::string text, int width, int height, int quiet_zone, int eccLevel)
 {
-	auto writer = MultiFormatWriter(format).setMargin(margin).setEccLevel(eccLevel);
+	auto writer = MultiFormatWriter(format).setMargin(quiet_zone).setEccLevel(eccLevel);
 	auto bitmap = writer.encode(TextUtfEncoding::FromUtf8(text), width, height);
 
 	auto result = Image({bitmap.height(), bitmap.width()});
@@ -140,6 +140,10 @@ PYBIND11_MODULE(zxing, m)
 		.value("LocalAverage", Binarizer::LocalAverage)
 		//.export_values()
 		;
+	py::enum_<EanAddOnSymbol>(m, "EanAddOnSymbol", "Enumeration of options for EAN-2/5 add-on symbols check")
+		.value("Ignore", EanAddOnSymbol::Ignore)
+		.value("Read", EanAddOnSymbol::Read)
+		.value("Require", EanAddOnSymbol::Require);
 	py::class_<PointI>(m, "Point", "Represents the coordinates of a point in an image")
 		.def_readonly("x", &PointI::x,
 			":return: horizontal coordinate of the point\n"
@@ -201,8 +205,8 @@ PYBIND11_MODULE(zxing, m)
 		py::arg("try_harder") = true,
 		py::arg("try_rotate") = true,
 		py::arg("binarizer") = Binarizer::LocalAverage,
-		py::arg("is_pure") = true,
-		py::arg("require_ean_add_on_symbol") = true,
+		py::arg("is_pure") = false,
+		py::arg("ean_add_on_symbol") = EanAddOnSymbol::Ignore,
 		"Read (decode) a barcode from a numpy BGR or grayscale image array or from a PIL image.\n\n"
 		":type image: numpy.ndarray|PIL.Image.Image\n"
 		":param image: The image object to decode. The image can be either:\n"
@@ -220,11 +224,11 @@ PYBIND11_MODULE(zxing, m)
 		":param binarizer: the binarizer used to convert image before decoding barcodes.\n"
 		"  Defaults to :py:attr:`zxing.Binarizer.LocalAverage`."
 		":type is_pure: bool\n"
-		":param is_pure: if ``True`` (the default), consider the whole image as containing only one barcode.\n"
-		"  If ``False``, the image can contain a barcode among other things."
-		":type require_ean_add_on_symbol: bool\n"
-		":param require_ean_add_on_symbol: if ``True`` (the default), EAN and UPC codes must contain at least one \n"
-		"  add-on symbols to be considered as valid.\n"
+		":param is_pure: Set to True if the input contains nothing but a perfectly aligned barcode (generated image).\n"
+		"  Speeds up detection in that case. Default is False."
+		":type ean_add_on_symbol: zxing.EanAddOnSymbol\n"
+		":param ean_add_on_symbol: Specify whether to Ignore, Read or Require EAN-2/5 add-on symbols while scanning \n"
+		"  EAN/UPC codes. Default is ``Ignore``.\n"
 		":rtype: zxing.Result\n"
 		":return: a zxing result containing decoded symbol if found."
 	);
@@ -246,8 +250,9 @@ PYBIND11_MODULE(zxing, m)
 		":type height: int\n"
 		":param height: height (in pixels) of the barcode to create. If undefined (or set to 0), barcode will be\n"
 		"  created with the minimum possible height\n"
-		":type margin: int\n"
-		":param margin: minimum size (in pixels) of the quiet zone around barcode. If undefined (or set to -1), ???\n"
+		":type quiet_zone: int\n"
+		":param quiet_zone: minimum size (in pixels) of the quiet zone around barcode. If undefined (or set to -1), \n"
+		"  the minimum quiet zone of respective barcode is used."
 		":type ecc_level: int\n"
 		":param ecc_level: error correction code level (in percent) of the barcode\n"
 		"  (Used for Aztec, PDF417, and QRCode only)."
