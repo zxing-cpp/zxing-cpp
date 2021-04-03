@@ -40,15 +40,14 @@ Result::Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat 
 	  _position(std::move(position)), _rawBytes(std::move(decodeResult).rawBytes()), _numBits(decodeResult.numBits()),
 	  _ecLevel(decodeResult.ecLevel()), _sai(decodeResult.structuredAppend())
 {
-	if (!isValid())
-		return;
-
+	// TODO: keep that for one release so people get the deprecation warning with a still intact functionality
 	if (decodeResult.structuredAppend().symbolCount != -1) {
 		_metadata.put(ResultMetadata::STRUCTURED_APPEND_SEQUENCE, symbolIndex());
 		_metadata.put(ResultMetadata::STRUCTURED_APPEND_CODE_COUNT, symbolCount());
 		_metadata.put(ResultMetadata::STRUCTURED_APPEND_PARITY, symbolParity());
 	}
-	//TODO: what about the other optional data in DecoderResult?
+
+	// TODO: add type opaque and code specific 'extra data'? (see DecoderResult::extra())
 }
 
 int Result::orientation() const

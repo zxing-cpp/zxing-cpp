@@ -89,9 +89,6 @@ DecodeStatus DoDecode(const BinaryBitmap& image, bool multiple, std::list<Result
 		if (decoderResult.isValid()) {
 			auto point = [&](int i) { return points[i].value(); };
 			Result result(std::move(decoderResult), {point(0), point(2), point(3), point(1)}, BarcodeFormat::PDF417);
-			if (auto extra = decoderResult.extra()) {
-				result.metadata().put(ResultMetadata::PDF417_EXTRA_METADATA, extra);
-			}
 			results.push_back(result);
 			if (!multiple) {
 				return DecodeStatus::NoError;

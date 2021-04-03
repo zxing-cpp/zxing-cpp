@@ -104,10 +104,12 @@ public:
 		return {position().begin(), position().end()};
 	}
 
+	[[deprecated]]
 	const ResultMetadata& metadata() const {
 		return _metadata;
 	}
 
+	[[deprecated]]
 	ResultMetadata& metadata() {
 		return _metadata;
 	}

@@ -42,7 +42,7 @@ public:
 		/**
 		* Unspecified, application-specific metadata. Maps to an unspecified {@link CustomData}.
 		*/
-		OTHER,
+		OTHER [[deprecated]],
 
 		/**
 		* Denotes the likely approximate orientation of the barcode in the image. This value
@@ -95,7 +95,7 @@ public:
 		/**
 		* PDF417-specific metadata
 		*/
-		PDF417_EXTRA_METADATA,
+		PDF417_EXTRA_METADATA [[deprecated]],
 
 		/**
 		* If the code format supports structured append and the current scanned code is part of one then the
