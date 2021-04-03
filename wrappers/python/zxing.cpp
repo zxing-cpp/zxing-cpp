@@ -35,17 +35,17 @@ std::ostream& operator<<(std::ostream& os, const Position& points) {
 }
 
 Result read_barcode(
-    py::object _image, const BarcodeFormats& formats, bool try_harder, bool try_rotate, Binarizer binarizer,
-    bool is_pure, bool require_ean_add_on_symbol)
+	py::object _image, const BarcodeFormats& formats, bool try_harder, bool try_rotate, Binarizer binarizer,
+	bool is_pure, bool require_ean_add_on_symbol)
 {
-    const auto hints = DecodeHints()
-    	.setFormats(formats)
-    	.setTryHarder(try_harder)
-    	.setTryRotate(try_rotate)
-    	.setBinarizer(binarizer)
-    	.setIsPure(is_pure)
-    	.setRequireEanAddOnSymbol(require_ean_add_on_symbol);
-    const auto _type = std::string(py::str(py::type::of(_image)));
+	const auto hints = DecodeHints()
+		.setFormats(formats)
+		.setTryHarder(try_harder)
+		.setTryRotate(try_rotate)
+		.setBinarizer(binarizer)
+		.setIsPure(is_pure)
+		.setRequireEanAddOnSymbol(require_ean_add_on_symbol);
+	const auto _type = std::string(py::str(py::type::of(_image)));
 	Image image;
 	try {
 		image = _image.cast<Image>();
@@ -74,11 +74,11 @@ Result read_barcode(
 	} else {
 		// Assume grayscale or BGR image depending on channels number
 		if (channels == 1)
-		    imgfmt = ImageFormat::Lum;
+			imgfmt = ImageFormat::Lum;
 		else if (channels == 3)
-		    imgfmt = ImageFormat::BGR;
+			imgfmt = ImageFormat::BGR;
 		else
-		    throw py::type_error("Unsupported number of channels for numpy array: " + std::to_string(channels));
+			throw py::type_error("Unsupported number of channels for numpy array: " + std::to_string(channels));
 	}
 
 	const auto bytes = image.data();
@@ -142,24 +142,24 @@ PYBIND11_MODULE(zxing, m)
 		;
 	py::class_<PointI>(m, "Point", "Represents the coordinates of a point in an image")
 		.def_readonly("x", &PointI::x,
-		    ":return: horizontal coordinate of the point\n"
-		    ":rtype: int")
+			":return: horizontal coordinate of the point\n"
+			":rtype: int")
 		.def_readonly("y", &PointI::y,
-		    ":return: vertical coordinate of the point\n"
-		    ":rtype: int");
+			":return: vertical coordinate of the point\n"
+			":rtype: int");
 	py::class_<Position>(m, "Position", "The position of a decoded symbol")
 		.def_property_readonly("top_left", &Position::topLeft,
-		    ":return: coordinate of the symbol's top-left corner\n"
-		    ":rtype: zxing.Point")
+			":return: coordinate of the symbol's top-left corner\n"
+			":rtype: zxing.Point")
 		.def_property_readonly("top_right", &Position::topRight,
-		    ":return: coordinate of the symbol's top-right corner\n"
-		    ":rtype: zxing.Point")
+			":return: coordinate of the symbol's top-right corner\n"
+			":rtype: zxing.Point")
 		.def_property_readonly("bottom_left", &Position::bottomLeft,
-		    ":return: coordinate of the symbol's bottom-left corner\n"
-		    ":rtype: zxing.Point")
+			":return: coordinate of the symbol's bottom-left corner\n"
+			":rtype: zxing.Point")
 		.def_property_readonly("bottom_right", &Position::bottomRight,
-		    ":return: coordinate of the symbol's bottom-right corner\n"
-		    ":rtype: zxing.Point")
+			":return: coordinate of the symbol's bottom-right corner\n"
+			":rtype: zxing.Point")
 		.def("__str__", [](Position pos) {
 			std::ostringstream oss;
 			oss << pos;
@@ -167,36 +167,36 @@ PYBIND11_MODULE(zxing, m)
 		});
 	py::class_<Result>(m, "Result", "Result of barcode reading")
 		.def_property_readonly("valid", &Result::isValid,
-		    ":return: whether or not result is valid (i.e. a symbol was found)\n"
-		    ":rtype: bool")
+			":return: whether or not result is valid (i.e. a symbol was found)\n"
+			":rtype: bool")
 		.def_property_readonly("text", &Result::text,
-		    ":return: text of the decoded symbol\n"
-		    ":rtype: str")
+			":return: text of the decoded symbol\n"
+			":rtype: str")
 		.def_property_readonly("format", &Result::format,
-		    ":return: decoded symbol format\n"
-		    ":rtype: zxing.BarcodeFormat")
+			":return: decoded symbol format\n"
+			":rtype: zxing.BarcodeFormat")
 		.def_property_readonly("position", &Result::position,
-		    ":return: position of the decoded symbol\n"
-		    ":rtype: zxing.Position")
+			":return: position of the decoded symbol\n"
+			":rtype: zxing.Position")
 		.def_property_readonly("orientation", &Result::orientation,
-		    ":return: orientation (in degree) of the decoded symbol\n"
-		    ":rtype: int");
+			":return: orientation (in degree) of the decoded symbol\n"
+			":rtype: int");
 	m.def("barcode_format_from_str", &BarcodeFormatFromString,
-	    py::arg("str"),
-	    "Convert string to BarcodeFormat\n\n"
-	    ":type str: str\n"
-	    ":param str: string representing barcode format\n"
-	    ":return: corresponding barcode format\n"
-	    ":rtype: zxing.BarcodeFormat");
+		py::arg("str"),
+		"Convert string to BarcodeFormat\n\n"
+		":type str: str\n"
+		":param str: string representing barcode format\n"
+		":return: corresponding barcode format\n"
+		":rtype: zxing.BarcodeFormat");
 	m.def("barcode_formats_from_str", &BarcodeFormatsFromString,
-	    py::arg("str"),
-	    "Convert string to BarcodeFormats\n\n"
-	    ":type str: str\n"
-	    ":param str: string representing a list of barcodes formats\n"
-	    ":return: corresponding barcode formats\n"
-	    ":rtype: zxing.BarcodeFormats");
+		py::arg("str"),
+		"Convert string to BarcodeFormats\n\n"
+		":type str: str\n"
+		":param str: string representing a list of barcodes formats\n"
+		":return: corresponding barcode formats\n"
+		":rtype: zxing.BarcodeFormats");
 	m.def("read_barcode", &read_barcode,
-	    py::arg("image"),
+		py::arg("image"),
 		py::arg("formats") = BarcodeFormats{},
 		py::arg("try_harder") = true,
 		py::arg("try_rotate") = true,
