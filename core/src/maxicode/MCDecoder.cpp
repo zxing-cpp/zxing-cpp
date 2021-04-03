@@ -78,60 +78,54 @@ static bool CorrectErrors(ByteArray& codewordBytes, int start, int dataCodewords
 */
 namespace DecodedBitStreamParser
 {
-	static const char SHI0 = 0x40;
-	static const char SHI1 = 0x41;
-	static const char SHI2 = 0x42;
-	static const char SHI3 = 0x43;
-	static const char SHI4 = 0x44;
-	static const char TWSA = 0x45;		// two shift A
-	static const char TRSA = 0x46;	// three shift A
-	static const char LCHA = 0x47;		// latch A
-	static const char LCHB = 0x48;		// latch B
-	static const char LOCK = 0x49;
-	static const char ECI  = 0x4A;
-	static const char NS   = 0x4B;
-	static const char PAD  = 0x4C;
+	static const short SHI0 = 0x100;
+	static const short SHI1 = 0x101;
+	static const short SHI2 = 0x102;
+	static const short SHI3 = 0x103;
+	static const short SHI4 = 0x104;
+	static const short TWSA = 0x105;	// two shift A
+	static const short TRSA = 0x106;	// three shift A
+	static const short LCHA = 0x107;	// latch A
+	static const short LCHB = 0x108;	// latch B
+	static const short LOCK = 0x109;
+	static const short ECI  = 0x10A;
+	static const short NS   = 0x10B;
+	static const short PAD  = 0x10C;
 
 	static const char FS = 0x1C;
 	static const char GS = 0x1D;
 	static const char RS = 0x1E;
 
-	const static std::array<char, 0x40> CHARSETS[] = {
-		{ // set 0
+	const static std::array<short, 0x40> CHARSETS[] = {
+		{ // set 0 (A)
 			'\n',  'A',  'B',  'C',  'D',  'E',  'F',  'G',  'H',  'I',  'J',  'K',  'L',  'M',  'N',  'O',
 			 'P',  'Q',  'R',  'S',  'T',  'U',  'V',  'W',  'X',  'Y',  'Z',  ECI,   FS,   GS,   RS,   NS,
 			 ' ',  PAD,  '"',  '#',  '$',  '%',  '&', '\'',  '(',  ')',  '*',  '+',  ',',  '-',  '.',  '/',
 			 '0',  '1',  '2',  '3',  '4',  '5',  '6',  '7',  '8',  '9',  ':', SHI1, SHI2, SHI3, SHI4, LCHB,
 		},
-		{ // set 1
+		{ // set 1 (B)
 			 '`',  'a',  'b',  'c',  'd',  'e',  'f',  'g',  'h',  'i',  'j',  'k',  'l',  'm',  'n',  'o',
 			 'p',  'q',  'r',  's',  't',  'u',  'v',  'w',  'x',  'y',  'z',  ECI,   FS,   GS,   RS,   NS,
 			 '{',  PAD,  '}',  '~', 0x7F,  ';',  '<',  '=',  '>',  '?',  '[', '\\',  ']',  '^',  '_',  ' ',
 			 ',',  '.',  '/',  ':',  '@',  '!',  '|',  PAD, TWSA, TRSA,  PAD, SHI0, SHI2, SHI3, SHI4, LCHA,
 		},
-		{ // set 2
-			'\xC0', '\xC1', '\xC2', '\xC3', '\xC4', '\xC5', '\xC6', '\xC7', '\xC8', '\xC9', '\xCA', '\xCB', '\xCC', '\xCD', '\xCE', '\xCF',
-			'\xD0', '\xD1', '\xD2', '\xD3', '\xD4', '\xD5', '\xD6', '\xD7', '\xD8', '\xD9', '\xDA',    ECI,     FS,     GS,     RS,     NS,		// Note that in original code in Java, NS is not there, which seems to be a bug
-			'\xDB', '\xDC', '\xDD', '\xDE', '\xDF', '\xAA', '\xAC', '\xB1', '\xB2', '\xB3', '\xB5', '\xB9', '\xBA', '\xBC', '\xBD', '\xBE',
-			'\x80', '\x81', '\x82', '\x83', '\x84', '\x85', '\x86', '\x87', '\x88', '\x89',   LCHA, '\x20',   LOCK,   SHI3,   SHI4,   LCHB,
+		{ // set 2 (C)
+			0xC0, 0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7, 0xC8, 0xC9, 0xCA, 0xCB, 0xCC, 0xCD, 0xCE, 0xCF,
+			0xD0, 0xD1, 0xD2, 0xD3, 0xD4, 0xD5, 0xD6, 0xD7, 0xD8, 0xD9, 0xDA,  ECI,   FS,   GS,   RS,   NS,		// Note that in original code in Java, NS is not there, which seems to be a bug
+			0xDB, 0xDC, 0xDD, 0xDE, 0xDF, 0xAA, 0xAC, 0xB1, 0xB2, 0xB3, 0xB5, 0xB9, 0xBA, 0xBC, 0xBD, 0xBE,
+			0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89, LCHA, 0x20, LOCK, SHI3, SHI4, LCHB,
 		},
-		{ // set 3
-			'\xE0', '\xE1', '\xE2', '\xE3', '\xE4', '\xE5', '\xE6', '\xE7', '\xE8', '\xE9', '\xEA', '\xEB', '\xEC', '\xED', '\xEE', '\xEF',
-			'\xF0', '\xF1', '\xF2', '\xF3', '\xF4', '\xF5', '\xF6', '\xF7', '\xF8', '\xF9', '\xFA',    ECI,     FS,     GS,     RS,     NS,
-			'\xFB', '\xFC', '\xFD', '\xFE', '\xFF', '\xA1', '\xA8', '\xAB', '\xAF', '\xB0', '\xB4', '\xB7', '\xB8', '\xBB', '\xBF', '\x8A',
-			'\x8B', '\x8C', '\x8D', '\x8E', '\x8F', '\x90', '\x91', '\x92', '\x93', '\x94',   LCHA, '\x20',   SHI2,   LOCK,   SHI4,   LCHB,
+		{ // set 3 (D)
+			0xE0, 0xE1, 0xE2, 0xE3, 0xE4, 0xE5, 0xE6, 0xE7, 0xE8, 0xE9, 0xEA, 0xEB, 0xEC, 0xED, 0xEE, 0xEF,
+			0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7, 0xF8, 0xF9, 0xFA,  ECI,   FS,   GS,   RS,   NS,
+			0xFB, 0xFC, 0xFD, 0xFE, 0xFF, 0xA1, 0xA8, 0xAB, 0xAF, 0xB0, 0xB4, 0xB7, 0xB8, 0xBB, 0xBF, 0x8A,
+			0x8B, 0x8C, 0x8D, 0x8E, 0x8F, 0x90, 0x91, 0x92, 0x93, 0x94, LCHA, 0x20, SHI2, LOCK, SHI4, LCHB,
 		},
-		{ // set 4
-			'\x00', '\x01', '\x02', '\x03', '\x04', '\x05', '\x06', '\x07', '\x08', '\x09', '\x0A', '\x0B', '\x0C', '\x0D', '\x0E', '\x0F',
-			'\x10', '\x11', '\x12', '\x13', '\x14', '\x15', '\x16', '\x17', '\x18', '\x19', '\x1A',    ECI,    PAD,    PAD, '\x1B',     NS,
-			    FS,     GS,     RS, '\x1F', '\x9F', '\xA0', '\xA2', '\xA3', '\xA4', '\xA5', '\xA6', '\xA7', '\xA9', '\xAD', '\xAE', '\xB6',
-			'\x95', '\x96', '\x97', '\x98', '\x99', '\x9A', '\x9B', '\x9C', '\x9D', '\x9E',   LCHA, '\x20',   SHI2,   SHI3,   LOCK,   LCHB,
-		},
-		{ // set 5
-			'\x00', '\x01', '\x02', '\x03', '\x04', '\x05', '\x06', '\x07', '\x08', '\x09', '\x0A', '\x0B', '\x0C', '\x0D', '\x0E', '\x0F',
-			'\x10', '\x11', '\x12', '\x13', '\x14', '\x15', '\x16', '\x17', '\x18', '\x19', '\x1A', '\x1B', '\x1C', '\x1D', '\x1E', '\x1F',
-			'\x20', '\x21', '\x22', '\x23', '\x24', '\x25', '\x26', '\x27', '\x28', '\x29', '\x2A', '\x2B', '\x2C', '\x2D', '\x2E', '\x2F',
-			'\x30', '\x31', '\x32', '\x33', '\x34', '\x35', '\x36', '\x37', '\x38', '\x39', '\x3A', '\x3B', '\x3C', '\x3D', '\x3E', '\x3F',
+		{ // set 4 (E)
+			0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
+			0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A,  ECI,  PAD,  PAD, 0x1B,   NS,
+			  FS,   GS,   RS, 0x1F, 0x9F, 0xA0, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7, 0xA9, 0xAD, 0xAE, 0xB6,
+			0x95, 0x96, 0x97, 0x98, 0x99, 0x9A, 0x9B, 0x9C, 0x9D, 0x9E, LCHA, 0x20, SHI2, SHI3, LOCK, LCHB,
 		},
 	};
 
@@ -163,12 +157,12 @@ namespace DecodedBitStreamParser
 	static std::string GetPostCode3(const ByteArray& bytes)
 	{
 		return {
-			CHARSETS[0].at(GetInt(bytes, { 39, 40, 41, 42, 31, 32 })),
-			CHARSETS[0].at(GetInt(bytes, { 33, 34, 35, 36, 25, 26 })),
-			CHARSETS[0].at(GetInt(bytes, { 27, 28, 29, 30, 19, 20 })),
-			CHARSETS[0].at(GetInt(bytes, { 21, 22, 23, 24, 13, 14 })),
-			CHARSETS[0].at(GetInt(bytes, { 15, 16, 17, 18,  7,  8 })),
-			CHARSETS[0].at(GetInt(bytes, { 9,  10, 11, 12,  1,  2 })),
+			(char) CHARSETS[0].at(GetInt(bytes, { 39, 40, 41, 42, 31, 32 })),
+			(char) CHARSETS[0].at(GetInt(bytes, { 33, 34, 35, 36, 25, 26 })),
+			(char) CHARSETS[0].at(GetInt(bytes, { 27, 28, 29, 30, 19, 20 })),
+			(char) CHARSETS[0].at(GetInt(bytes, { 21, 22, 23, 24, 13, 14 })),
+			(char) CHARSETS[0].at(GetInt(bytes, { 15, 16, 17, 18,  7,  8 })),
+			(char) CHARSETS[0].at(GetInt(bytes, { 9,  10, 11, 12,  1,  2 })),
 		};
 	}
 
@@ -197,7 +191,7 @@ namespace DecodedBitStreamParser
 		int set = 0;
 		int lastset = 0;
 		for (int i = start; i < start + len; i++) {
-			char c = CHARSETS[set].at(bytes[i]);
+			int c = CHARSETS[set].at(bytes[i]);
 			switch (c) {
 			case LCHA:
 				set = 0;
@@ -233,15 +227,21 @@ namespace DecodedBitStreamParser
 			case LOCK:
 				shift = -1;
 				break;
+			case ECI:
+				// TODO: ECI/encoding
+				break;
+			case PAD:
+				if (i == start) {
+					// TODO: Structured Append
+				}
+				shift = -1;
+				break;
 			default:
-				sb.push_back(c);
+				sb.push_back((unsigned char) c);
 			}
 			if (shift-- == 0) {
 				set = lastset;
 			}
-		}
-		while (sb.length() > 0 && sb.at(sb.length() - 1) == PAD) {
-			sb.resize(sb.length() - 1);
 		}
 		return sb;
 	}
@@ -266,12 +266,14 @@ namespace DecodedBitStreamParser
 				break;
 			}
 			case 4:
+			case 6:
 				result.append(GetMessage(bytes, 1, 93));
 				break;
 			case 5:
 				result.append(GetMessage(bytes, 1, 77));
 				break;
 		}
+		// TODO: Set reader programming boolean (mode == 6)
 		return DecoderResult(std::move(bytes), TextDecoder::FromLatin1(result)).setEcLevel(std::to_wstring(mode)); // really???
 	}
 
@@ -290,9 +292,10 @@ Decoder::Decode(const BitMatrix& bits)
 	int mode = codewords[0] & 0x0F;
 	ByteArray datawords;
 	switch (mode) {
-		case 2:
-		case 3:
-		case 4:
+		case 2: // Structured Carrier Message (numeric postcode)
+		case 3: // Structured Carrier Message (alphanumeric postcode)
+		case 4: // Standard Symbol
+		case 6: // Reader Programming
 			if (CorrectErrors(codewords, 20, 84, 40, EVEN) && CorrectErrors(codewords, 20, 84, 40, ODD)) {
 				datawords.resize(94, 0);
 			}
@@ -300,7 +303,7 @@ Decoder::Decode(const BitMatrix& bits)
 				return DecodeStatus::ChecksumError;
 			}
 			break;
-		case 5:
+		case 5: // Full ECC
 			if (CorrectErrors(codewords, 20, 68, 56, EVEN) && CorrectErrors(codewords, 20, 68, 56, ODD)) {
 				datawords.resize(78, 0);
 			}
