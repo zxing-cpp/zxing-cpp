@@ -43,11 +43,6 @@ Result::Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat 
 	if (!isValid())
 		return;
 
-	//TODO: change ResultMetadata::put interface, so we can move from decodeResult?
-	const auto& byteSegments = decodeResult.byteSegments();
-	if (!byteSegments.empty()) {
-		_metadata.put(ResultMetadata::BYTE_SEGMENTS, byteSegments);
-	}
 	if (decodeResult.structuredAppend().symbolCount != -1) {
 		_metadata.put(ResultMetadata::STRUCTURED_APPEND_SEQUENCE, symbolIndex());
 		_metadata.put(ResultMetadata::STRUCTURED_APPEND_CODE_COUNT, symbolCount());

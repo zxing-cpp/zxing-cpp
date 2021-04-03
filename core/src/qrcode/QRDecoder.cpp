@@ -36,7 +36,6 @@
 #include "ZXTestSupport.h"
 
 #include <algorithm>
-#include <list>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -138,7 +137,7 @@ DecodeKanjiSegment(BitSource& bits, int count, std::wstring& result)
 }
 
 static DecodeStatus
-DecodeByteSegment(BitSource& bits, int count, CharacterSet currentCharset, const std::string& hintedCharset, std::wstring& result, std::list<ByteArray>& byteSegments)
+DecodeByteSegment(BitSource& bits, int count, CharacterSet currentCharset, const std::string& hintedCharset, std::wstring& result)
 {
 	// Don't crash trying to read more bits than we have available.
 	if (8 * count > bits.available()) {
@@ -165,7 +164,6 @@ DecodeByteSegment(BitSource& bits, int count, CharacterSet currentCharset, const
 		}
 	}
 	TextDecoder::Append(result, readBytes.data(), Size(readBytes), currentCharset);
-	byteSegments.push_back(readBytes);
 	return DecodeStatus::NoError;
 }
 
@@ -311,7 +309,6 @@ DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCorrectionLevel 
 {
 	BitSource bits(bytes);
 	std::wstring result;
-	std::list<ByteArray> byteSegments;
 	StructuredAppendInfo structuredAppend;
 	static const int GB2312_SUBSET = 1;
 
@@ -386,7 +383,7 @@ DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCorrectionLevel 
 					status = DecodeAlphanumericSegment(bits, count, fc1InEffect, result);
 					break;
 				case CodecMode::BYTE:
-					status = DecodeByteSegment(bits, count, currentCharset, hintedCharset, result, byteSegments);
+					status = DecodeByteSegment(bits, count, currentCharset, hintedCharset, result);
 					break;
 				case CodecMode::KANJI:
 					status = DecodeKanjiSegment(bits, count, result);
@@ -409,7 +406,6 @@ DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCorrectionLevel 
 	}
 
 	return DecoderResult(std::move(bytes), std::move(result))
-		.setByteSegments(std::move(byteSegments))
 		.setEcLevel(ToString(ecLevel))
 		.setStructuredAppend(structuredAppend);
 }

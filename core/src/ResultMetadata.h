@@ -62,7 +62,7 @@ public:
 		* <p>This maps to a {@link java.util.List} of byte arrays corresponding to the
 		* raw bytes in the byte segments in the barcode, in order.</p>
 		*/
-		BYTE_SEGMENTS,
+		BYTE_SEGMENTS [[deprecated]],
 
 		/**
 		* Error correction level used, if applicable. The value type depends on the

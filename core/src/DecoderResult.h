@@ -21,7 +21,6 @@
 #include "StructuredAppend.h"
 #include "ZXContainerAlgorithms.h"
 
-#include <list>
 #include <memory>
 #include <string>
 #include <utility>
@@ -43,7 +42,6 @@ class DecoderResult
 	ByteArray _rawBytes;
 	int _numBits = 0;
 	std::wstring _text;
-	std::list<ByteArray> _byteSegments;
 	std::wstring _ecLevel;
 	int _errorsCorrected = -1;
 	int _erasures = -1;
@@ -87,7 +85,6 @@ public:
 	DecoderResult&& SETTER(TYPE&& v) && { _##GETTER = std::move(v); return std::move(*this); }
 
 	ZX_PROPERTY(int, numBits, setNumBits)
-	ZX_PROPERTY(std::list<ByteArray>, byteSegments, setByteSegments)
 	ZX_PROPERTY(std::wstring, ecLevel, setEcLevel)
 	ZX_PROPERTY(int, errorsCorrected, setErrorsCorrected)
 	ZX_PROPERTY(int, erasures, setErasures)
