@@ -56,7 +56,7 @@ class CMakeBuild(build_ext):
             sys.exit("Error running cmake build step")
 
 
-with open(os.path.join(os.path.dirname(__file__), "README.md"), "r", encoding="utf-8") as fh:
+with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 

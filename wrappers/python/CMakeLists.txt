@@ -55,5 +55,5 @@ endif()
 pybind11_add_module(zxing zxing.cpp)
 target_link_libraries(zxing PRIVATE ZXing::ZXing)
 
-add_test(NAME PythonTest COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/setup.py test)
+add_test(NAME PythonTest COMMAND python setup.py test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 set_property(TEST PythonTest PROPERTY ENVIRONMENT PYTHONPATH=$<TARGET_FILE_DIR:zxing>)
