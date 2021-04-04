@@ -35,7 +35,6 @@
 
 #include <algorithm>
 #include <array>
-#include <list>
 #include <string>
 #include <utility>
 #include <vector>
@@ -495,7 +494,7 @@ static int Unrandomize255State(int randomizedBase256Codeword, int base256Codewor
 /**
 * See ISO 16022:2006, 5.2.9 and Annex B, B.2
 */
-static bool DecodeBase256Segment(BitSource& bits, std::string& result, std::list<ByteArray>& byteSegments)
+static bool DecodeBase256Segment(BitSource& bits, std::string& result)
 {
 	// Figure out how long the Base 256 Segment is.
 	int codewordPosition = 1 + bits.byteOffset(); // position is 1-indexed
@@ -525,7 +524,6 @@ static bool DecodeBase256Segment(BitSource& bits, std::string& result, std::list
 		}
 		bytes[i] = (uint8_t)Unrandomize255State(bits.readBits(8), codewordPosition++);
 	}
-	byteSegments.push_back(bytes);
 
 	// bytes is in ISO-8859-1
 	result.append(reinterpret_cast<const char*>(bytes.data()), bytes.size());
@@ -540,7 +538,6 @@ DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet)
 	result.reserve(100);
 	std::string resultTrailer;
 	std::wstring resultEncoded;
-	std::list<ByteArray> byteSegments;
 	Mode mode = Mode::ASCII_ENCODE;
 	State state;
 
@@ -571,7 +568,7 @@ DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet)
 				decodeOK = DecodeEdifactSegment(bits, result);
 				break;
 			case BASE256_ENCODE:
-				decodeOK = DecodeBase256Segment(bits, result, byteSegments);
+				decodeOK = DecodeBase256Segment(bits, result);
 				break;
 			default:
 				decodeOK = false;
@@ -589,7 +586,7 @@ DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet)
 	}
 	TextDecoder::Append(resultEncoded, reinterpret_cast<const uint8_t*>(result.data()), result.size(), state.encoding);
 
-	return DecoderResult(std::move(bytes), std::move(resultEncoded)).setByteSegments(std::move(byteSegments));
+	return DecoderResult(std::move(bytes), std::move(resultEncoded));
 }
 
 } // namespace DecodedBitStreamParser

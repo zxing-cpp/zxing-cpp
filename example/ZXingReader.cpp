@@ -163,6 +163,10 @@ int main(int argc, char* argv[])
 			printOptional("Price:    ", GTIN::Price(GTIN::EanAddOn(result)));
 			printOptional("Issue #:  ", GTIN::IssueNr(GTIN::EanAddOn(result)));
 		}
+
+		if (result.isStructuredAppendSymbol())
+			std::cout << "Structured Append: symbol " << result.symbolIndex() + 1 << " of " << result.symbolCount()
+					  << " (parity/id: " << result.symbolParity() << ")\n";
 	}
 
 	return ret;

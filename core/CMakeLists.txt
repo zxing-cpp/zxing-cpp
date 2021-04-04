@@ -454,6 +454,8 @@ add_library(ZXing::ZXing ALIAS ZXing)
 add_library(ZXing::Core ALIAS ZXing)
 
 set_target_properties(ZXing PROPERTIES EXPORT_NAME ZXing)
+# force position indepent code to be able to link it as static lib into a DLL (e.g. the python module)
+set_target_properties(ZXing PROPERTIES POSITION_INDEPENDENT_CODE ON)
 if (PROJECT_VERSION)
     set_target_properties(ZXing PROPERTIES VERSION ${PROJECT_VERSION})
     set_target_properties(ZXing PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
@@ -468,3 +470,12 @@ install (
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     INCLUDES DESTINATION include
 )
+
+if(MSVC)
+    set_target_properties(ZXing PROPERTIES
+        COMPILE_PDB_NAME ZXing
+        COMPILE_PDB_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR})
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ZXing.pdb
+            DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            CONFIGURATIONS Debug RelWithDebInfo)
+endif()

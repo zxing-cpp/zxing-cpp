@@ -36,7 +36,6 @@
 #include "ZXTestSupport.h"
 
 #include <algorithm>
-#include <list>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -138,7 +137,7 @@ DecodeKanjiSegment(BitSource& bits, int count, std::wstring& result)
 }
 
 static DecodeStatus
-DecodeByteSegment(BitSource& bits, int count, CharacterSet currentCharset, const std::string& hintedCharset, std::wstring& result, std::list<ByteArray>& byteSegments)
+DecodeByteSegment(BitSource& bits, int count, CharacterSet currentCharset, const std::string& hintedCharset, std::wstring& result)
 {
 	// Don't crash trying to read more bits than we have available.
 	if (8 * count > bits.available()) {
@@ -165,7 +164,6 @@ DecodeByteSegment(BitSource& bits, int count, CharacterSet currentCharset, const
 		}
 	}
 	TextDecoder::Append(result, readBytes.data(), Size(readBytes), currentCharset);
-	byteSegments.push_back(readBytes);
 	return DecodeStatus::NoError;
 }
 
@@ -311,10 +309,7 @@ DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCorrectionLevel 
 {
 	BitSource bits(bytes);
 	std::wstring result;
-	std::list<ByteArray> byteSegments;
-	int codeSequence = -1;
-	int codeCount = -1;
-	int parityData = -1;
+	StructuredAppendInfo structuredAppend;
 	static const int GB2312_SUBSET = 1;
 
 	try
@@ -344,10 +339,10 @@ DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCorrectionLevel 
 					return DecodeStatus::FormatError;
 				}
 				// sequence number and parity is added later to the result metadata
-				// Read next 4 bits of sequence #, 4 bits of code count, and 8 bits of parity data, then continue
-				codeSequence = bits.readBits(4);
-				codeCount = bits.readBits(4) + 1;
-				parityData = bits.readBits(8);
+				// Read next 4 bits of index, 4 bits of symbol count, and 8 bits of parity data, then continue
+				structuredAppend.symbolIndex = bits.readBits(4);
+				structuredAppend.symbolCount = bits.readBits(4) + 1;
+				structuredAppend.symbolParity = bits.readBits(8);
 				break;
 			case CodecMode::ECI: {
 				// Count doesn't apply to ECI
@@ -388,7 +383,7 @@ DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCorrectionLevel 
 					status = DecodeAlphanumericSegment(bits, count, fc1InEffect, result);
 					break;
 				case CodecMode::BYTE:
-					status = DecodeByteSegment(bits, count, currentCharset, hintedCharset, result, byteSegments);
+					status = DecodeByteSegment(bits, count, currentCharset, hintedCharset, result);
 					break;
 				case CodecMode::KANJI:
 					status = DecodeKanjiSegment(bits, count, result);
@@ -411,11 +406,8 @@ DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCorrectionLevel 
 	}
 
 	return DecoderResult(std::move(bytes), std::move(result))
-		.setByteSegments(std::move(byteSegments))
 		.setEcLevel(ToString(ecLevel))
-		.setStructuredAppendParity(parityData)
-		.setStructuredAppendSequenceNumber(codeSequence)
-		.setStructuredAppendCodeCount(codeCount);
+		.setStructuredAppend(structuredAppend);
 }
 
 static DecoderResult

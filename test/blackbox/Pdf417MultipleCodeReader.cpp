@@ -41,11 +41,7 @@ Result Pdf417MultipleCodeReader::readMultiple(const std::vector<fs::path>& imgPa
 	if (allResults.empty())
 		return Result(DecodeStatus::NotFound);
 
-	allResults.sort([](const Result &r1, const Result &r2) {
-		auto m1 = std::dynamic_pointer_cast<Pdf417::DecoderResultExtra>(r1.metadata().getCustomData(ResultMetadata::PDF417_EXTRA_METADATA));
-		auto m2 = std::dynamic_pointer_cast<Pdf417::DecoderResultExtra>(r2.metadata().getCustomData(ResultMetadata::PDF417_EXTRA_METADATA));
-		return m1->segmentIndex() < m2->segmentIndex();
-	});
+	allResults.sort([](const Result& r1, const Result& r2) { return r1.symbolIndex() < r2.symbolIndex(); });
 
 	std::wstring text;
 	for (const auto& r : allResults)

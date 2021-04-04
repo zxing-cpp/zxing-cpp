@@ -21,9 +21,6 @@ if (NOT hasParent)
     option (BUILD_READERS "Build with reader support (decoders)" ON)
 
     # build the main library
-    if (NOT BUILD_SHARED_LIBS)
-        set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-    endif()
     if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../../core)
         # In development mode, when the whole zxing-cpp directory is checked out, build against head code.
         add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../core ZXing EXCLUDE_FROM_ALL)

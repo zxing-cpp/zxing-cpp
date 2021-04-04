@@ -392,8 +392,8 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 6, 6, 180 },
 		});
 
-		runTests("maxicode-1", "MaxiCode", 6, {
-			{ 1, 1, 5, 5, 0 },
+		runTests("maxicode-1", "MaxiCode", 7, {
+			{ 7, 7, 0 },
 		});
 
 		runTests("maxicode-2", "MaxiCode", 4, {

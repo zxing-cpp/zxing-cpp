@@ -36,23 +36,18 @@ Result QRCodeStructuredAppendReader::readMultiple(const std::vector<fs::path>& i
 	int prevParity = -1;
 	for (const auto& imgPath : imgPaths) {
 		auto r = reader.decode(*ImageLoader::load(imgPath).rotated(rotation));
-		if (r.metadata().getInt(ResultMetadata::STRUCTURED_APPEND_CODE_COUNT, 0) != Size(imgPaths))
+		if (r.symbolCount() != Size(imgPaths))
 			return Result(DecodeStatus::FormatError);
-		auto parity = r.metadata().getInt(ResultMetadata::STRUCTURED_APPEND_PARITY, -1);
-		if (prevParity != -1 && prevParity != parity)
+		if (prevParity != -1 && prevParity != r.symbolParity())
 			return Result(DecodeStatus::FormatError);
-		prevParity = parity;
+		prevParity = r.symbolParity();
 		allResults.push_back(r);
 	}
 
 	if (allResults.empty())
 		return Result(DecodeStatus::NotFound);
 
-	allResults.sort([](const Result &r1, const Result &r2) {
-		auto s1 = r1.metadata().getInt(ResultMetadata::STRUCTURED_APPEND_SEQUENCE, -1);
-		auto s2 = r2.metadata().getInt(ResultMetadata::STRUCTURED_APPEND_SEQUENCE, -1);
-		return s1 < s2;
-	});
+	allResults.sort([](const Result& r1, const Result& r2) { return r1.symbolIndex() < r2.symbolIndex(); });
 
 	std::wstring text;
 	for (const auto& r : allResults)
