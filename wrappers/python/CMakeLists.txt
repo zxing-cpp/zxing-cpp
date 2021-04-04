@@ -25,8 +25,13 @@ if (NOT hasParent)
         set(CMAKE_POSITION_INDEPENDENT_CODE ON)
     endif()
     if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../../core)
+        # In development mode, when the whole zxing-cpp directory is checked out, build against head code.
         add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../core ZXing EXCLUDE_FROM_ALL)
     else()
+        # Building from python source distribution (which does not include the whole repository but only python part)
+        # so we need to get c++ source git to build the python extension. The python distribution version (given in
+        # VERSION_INFO), matches the c++ version the distribution must build against ; hence the checkout of
+        # related tag.
         find_package (Git REQUIRED)
         execute_process(
             COMMAND ${GIT_EXECUTABLE} ls-remote https://github.com/nu-book/zxing-cpp.git tags/*

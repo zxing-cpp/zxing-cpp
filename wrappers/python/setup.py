@@ -44,13 +44,10 @@ class CMakeBuild(build_ext):
             build_args += ['--', '-j2']
 
         cmake_args += ['-DVERSION_INFO=' + self.distribution.get_version()]
-        env = os.environ.copy()
-        # fixme: What is the reason for -DVERSION_INFO in CXXFLAGS ?
-        env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\"'.format(env.get('CXXFLAGS', ''), self.distribution.get_version())
         if not os.path.exists(self.build_temp):
             os.makedirs(self.build_temp)
         try:
-            subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, cwd=self.build_temp, env=env)
+            subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, cwd=self.build_temp)
         except subprocess.CalledProcessError:
             sys.exit("Error running cmake configure step")
         try:
@@ -76,7 +73,7 @@ setup(
     #     "local_scheme": "no-local-version",
     #     "tag_regex": "v?([0-9]+.[0-9]+.[0-9]+)",
     # },
-    version='1.1.2',
+    version='1.2.0',
     description='Python bindings for the zxing-cpp barcode library',
     long_description=long_description,
     long_description_content_type="text/markdown",

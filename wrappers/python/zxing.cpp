@@ -59,11 +59,11 @@ Result read_barcode(
 	ImageFormat imgfmt;
 	if (_type.find("PIL.") != std::string::npos) {
 		const auto mode = _image.attr("mode").cast<std::string>();
-		if (mode.compare("L") == 0)
+		if (mode == "L")
 			imgfmt = ImageFormat::Lum;
-		else if (mode.compare("RGB") == 0)
+		else if (mode == "RGB")
 			imgfmt = ImageFormat::RGB;
-		else if (mode.compare("RGBA") == 0)
+		else if (mode == "RGBA")
 			imgfmt = ImageFormat::RGBX;
 		else {
 			// Unsupported mode in ImageFormat. Let's do conversion to L mode with PIL
