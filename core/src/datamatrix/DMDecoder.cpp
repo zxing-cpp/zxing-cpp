@@ -547,6 +547,7 @@ DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet)
 	do {
 		if (mode == Mode::ASCII_ENCODE) {
 			mode = DecodeAsciiSegment(bits, result, resultTrailer, resultEncoded, state);
+			//TODO: if that failed on the last code word, that information gets lost
 		} else {
 			bool decodeOK;
 			switch (mode) {
