@@ -52,7 +52,8 @@ namespace ZXing::DataMatrix {
 */
 namespace DecodedBitStreamParser {
 
-enum Mode {
+enum Mode
+{
 	FORMAT_ERROR,
 	PAD_ENCODE, // Not really a mode
 	ASCII_ENCODE,
@@ -99,7 +100,8 @@ static const char TEXT_SHIFT3_SET_CHARS[] = {
 constexpr CharacterSet DEFAULT_ENCODING = CharacterSet::ISO8859_1;
 
 // Encoding state (will be added to)
-struct State {
+struct State
+{
 	CharacterSet encoding = DEFAULT_ENCODING;
 };
 
@@ -109,14 +111,15 @@ struct State {
 static int ParseECIValue(BitSource& bits)
 {
 	int firstByte = bits.readBits(8);
-	if (firstByte <= 127) {
+	if (firstByte <= 127)
 		return firstByte - 1;
-	}
+
 	int secondByte = bits.readBits(8);
-	if (firstByte <= 191) {
+	if (firstByte <= 191)
 		return (firstByte - 128) * 254 + 127 + secondByte - 1;
-	}
+
 	int thirdByte = bits.readBits(8);
+
 	return (firstByte - 192) * 64516 + 16383 + (secondByte - 1) * 254 + thirdByte - 1;
 }
 
@@ -189,16 +192,14 @@ static Mode DecodeAsciiSegment(BitSource& bits, std::string& result, std::string
 			}
 			else if (oneByte <= 229) {  // 2-digit data 00-99 (Numeric Value + 130)
 				int value = oneByte - 130;
-				if (value < 10) { // pad with '0' for single digit values
+				if (value < 10) // pad with '0' for single digit values
 					result.push_back('0');
-				}
 				result.append(std::to_string(value));
 			}
 			else if (oneByte >= 242) {  // Not to be used in ASCII encodation
 									// ... but work around encoders that end with 254, latch back to ASCII
-				if (oneByte != 254 || bits.available() != 0) {
+				if (oneByte != 254 || bits.available() != 0)
 					return Mode::FORMAT_ERROR;
-				}
 			}
 		}
 	} while (bits.available() > 0);
@@ -452,12 +453,12 @@ static bool DecodeAnsiX12Segment(BitSource& bits, std::string& result)
 /**
 * See ISO 16022:2006, 5.2.8 and Annex C Table C.3
 */
-static bool DecodeEdifactSegment(BitSource& bits, std::string& result) {
+static bool DecodeEdifactSegment(BitSource& bits, std::string& result)
+{
 	do {
 		// If there is only two or less bytes left then it will be encoded as ASCII
-		if (bits.available() <= 16) {
+		if (bits.available() <= 16)
 			return true;
-		}
 
 		for (int i = 0; i < 4; i++) {
 			int edifactValue = bits.readBits(6);
@@ -466,18 +467,17 @@ static bool DecodeEdifactSegment(BitSource& bits, std::string& result) {
 			if (edifactValue == 0x1F) {  // 011111
 										 // Read rest of byte, which should be 0, and stop
 				int bitsLeft = 8 - bits.bitOffset();
-				if (bitsLeft != 8) {
+				if (bitsLeft != 8)
 					bits.readBits(bitsLeft);
-				}
 				return true;
 			}
 
-			if ((edifactValue & 0x20) == 0) {  // no 1 in the leading (6th) bit
+			if ((edifactValue & 0x20) == 0)  // no 1 in the leading (6th) bit
 				edifactValue |= 0x40;  // Add a leading 01 to the 6 bit binary value
-			}
 			result.push_back((char)edifactValue);
 		}
 	} while (bits.available() > 0);
+
 	return true;
 }
 
@@ -500,33 +500,30 @@ static bool DecodeBase256Segment(BitSource& bits, std::string& result)
 	int codewordPosition = 1 + bits.byteOffset(); // position is 1-indexed
 	int d1 = Unrandomize255State(bits.readBits(8), codewordPosition++);
 	int count;
-	if (d1 == 0) {  // Read the remainder of the symbol
+	if (d1 == 0)  // Read the remainder of the symbol
 		count = bits.available() / 8;
-	}
-	else if (d1 < 250) {
+	else if (d1 < 250)
 		count = d1;
-	}
-	else {
+	else
 		count = 250 * (d1 - 249) + Unrandomize255State(bits.readBits(8), codewordPosition++);
-	}
 
 	// We're seeing NegativeArraySizeException errors from users.
-	if (count < 0) {
+	if (count < 0)
 		return false;
-	}
 
 	ByteArray bytes(count);
 	for (int i = 0; i < count; i++) {
 		// Have seen this particular error in the wild, such as at
 		// http://www.bcgen.com/demo/IDAutomationStreamingDataMatrix.aspx?MODE=3&D=Fred&PFMT=3&PT=F&X=0.3&O=0&LM=0.2
-		if (bits.available() < 8) {
+		if (bits.available() < 8)
 			return false;
-		}
+
 		bytes[i] = (uint8_t)Unrandomize255State(bits.readBits(8), codewordPosition++);
 	}
 
 	// bytes is in ISO-8859-1
 	result.append(reinterpret_cast<const char*>(bytes.data()), bytes.size());
+
 	return true;
 }
 
@@ -543,47 +540,33 @@ DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet)
 
 	if (!characterSet.empty()) {
 		auto encodingInit = CharacterSetECI::CharsetFromName(characterSet.c_str());
-		if (encodingInit != CharacterSet::Unknown) {
+		if (encodingInit != CharacterSet::Unknown)
 			state.encoding = encodingInit;
-		}
 	}
 
 	do {
 		if (mode == Mode::ASCII_ENCODE) {
 			mode = DecodeAsciiSegment(bits, result, resultTrailer, resultEncoded, state);
-		}
-		else {
+		} else {
 			bool decodeOK;
 			switch (mode) {
-			case C40_ENCODE:
-				decodeOK = DecodeC40Segment(bits, result);
-				break;
-			case TEXT_ENCODE:
-				decodeOK = DecodeTextSegment(bits, result);
-				break;
-			case ANSIX12_ENCODE:
-				decodeOK = DecodeAnsiX12Segment(bits, result);
-				break;
-			case EDIFACT_ENCODE:
-				decodeOK = DecodeEdifactSegment(bits, result);
-				break;
-			case BASE256_ENCODE:
-				decodeOK = DecodeBase256Segment(bits, result);
-				break;
-			default:
-				decodeOK = false;
-				break;
+			case C40_ENCODE: decodeOK = DecodeC40Segment(bits, result); break;
+			case TEXT_ENCODE: decodeOK = DecodeTextSegment(bits, result); break;
+			case ANSIX12_ENCODE: decodeOK = DecodeAnsiX12Segment(bits, result); break;
+			case EDIFACT_ENCODE: decodeOK = DecodeEdifactSegment(bits, result); break;
+			case BASE256_ENCODE: decodeOK = DecodeBase256Segment(bits, result); break;
+			default: decodeOK = false; break;
 			}
-			if (!decodeOK) {
+			if (!decodeOK)
 				return DecodeStatus::FormatError;
-			}
+
 			mode = Mode::ASCII_ENCODE;
 		}
 	} while (mode != Mode::PAD_ENCODE && bits.available() > 0);
 
-	if (resultTrailer.length() > 0) {
+	if (resultTrailer.length() > 0)
 		result.append(resultTrailer);
-	}
+
 	TextDecoder::Append(resultEncoded, reinterpret_cast<const uint8_t*>(result.data()), result.size(), state.encoding);
 
 	return DecoderResult(std::move(bytes), std::move(resultEncoded));
@@ -619,9 +602,8 @@ static DecoderResult DoDecode(const BitMatrix& bits, const std::string& characte
 {
 	// Construct a parser and read version, error-correction level
 	const Version* version = VersionForDimensionsOf(bits);
-	if (version == nullptr) {
+	if (version == nullptr)
 		return DecodeStatus::FormatError;
-	}
 
 	// Read codewords
 	ByteArray codewords = CodewordsFromBitMatrix(bits);
