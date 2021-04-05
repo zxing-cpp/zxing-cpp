@@ -237,7 +237,7 @@ PYBIND11_MODULE(zxing, m)
 		py::arg("text"),
 		py::arg("width") = 0,
 		py::arg("height") = 0,
-		py::arg("margin") = -1,
+		py::arg("quiet_zone") = -1,
 		py::arg("ecc_level") = -1,
 		"Write (encode) a text into a barcode and return numpy (grayscale) image array\n\n"
 		":type format: zxing.BarcodeFormat\n"
