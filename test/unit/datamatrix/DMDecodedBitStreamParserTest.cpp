@@ -49,7 +49,7 @@ TEST(DMDecodeTest, AsciiError)
 	EXPECT_EQ(DataMatrix::DecodedBitStreamParser::Decode({66, 250, 68}, "").errorCode(), DecodeStatus::FormatError);
 
 	// ASCII err on invalid code word at end (currently failing)
-//	EXPECT_EQ(DataMatrix::DecodedBitStreamParser::Decode({66, 67, 68, 250}, "").errorCode(), DecodeStatus::FormatError);
+	EXPECT_EQ(DataMatrix::DecodedBitStreamParser::Decode({66, 67, 68, 250}, "").errorCode(), DecodeStatus::FormatError);
 
 	// ASCII accept extra (illegal) unlatch at end
 	EXPECT_EQ(DataMatrix::DecodedBitStreamParser::Decode({66, 67, 68, 254}, "").errorCode(), DecodeStatus::NoError);
