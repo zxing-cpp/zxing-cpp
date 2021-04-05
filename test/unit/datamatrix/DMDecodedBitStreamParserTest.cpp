@@ -21,28 +21,69 @@
 #include "gtest/gtest.h"
 #include <utility>
 
-namespace ZXing {
-	namespace DataMatrix {
-		namespace DecodedBitStreamParser {
-			DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet);
-		}
-	}
+namespace ZXing::DataMatrix::DecodedBitStreamParser {
+
+DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet);
+
 }
 
 using namespace ZXing;
 
-TEST(DMDecodedBitStreamParserTest, AsciiStandardDecode)
+static std::wstring decode(ByteArray bytes)
 {
-	// ASCII characters 0-127 are encoded as the value + 1
-	ByteArray bytes = { 'a' + 1, 'b' + 1, 'c' + 1, 'A' + 1, 'B' + 1, 'C' + 1 };
-	auto decodedString = DataMatrix::DecodedBitStreamParser::Decode(std::move(bytes), "").text();
-	EXPECT_EQ(decodedString, L"abcABC");
+	return DataMatrix::DecodedBitStreamParser::Decode(std::move(bytes), "").text();
 }
 
-TEST(DMDecodedBitStreamParserTest, AsciiDoubleDigitDecode)
+TEST(DMDecodeTest, Ascii)
 {
+	// ASCII characters 0-127 are encoded as the value + 1
+	EXPECT_EQ(decode({'b', 'c', 'd', 'B', 'C', 'D'}), L"abcABC");
+
 	// ASCII double digit (00 - 99) Numeric Value + 130
-	ByteArray bytes = { 130 , 1 + 130, 98 + 130, 99 + 130 };
-	auto decodedString = DataMatrix::DecodedBitStreamParser::Decode(std::move(bytes), "").text();
-	EXPECT_EQ(decodedString, L"00019899");
+	EXPECT_EQ(decode({130, 131, 228, 229}), L"00019899");
+}
+
+// Most of the following examples are taken from the DMHighLevelEncodeTest.cpp tests.
+// For an explanation of the different cases, see there.
+
+TEST(DMDecodeTest, C40)
+{
+	EXPECT_EQ(decode({230, 91, 11, 91, 11, 91, 11, 254}), L"AIMAIMAIM");
+	EXPECT_EQ(decode({66, 74, 78, 66, 74, 66, 99, 129}), L"AIMAIAb");
+	EXPECT_EQ(decode({230, 91, 11, 91, 11, 91, 11, 254, 235, 76}), L"AIMAIMAIM\xCB");
+	EXPECT_EQ(decode({230, 91, 11, 91, 11, 91, 11, 254, 235, 108}), L"AIMAIMAIM\xEB");
+	EXPECT_EQ(decode({230, 88, 88, 40, 8, 107, 147, 59, 67, 126, 206, 78, 126, 144, 121, 35, 47, 254}), L"A1B2C3D4E5F6G7H8I9J0K1L2");
+	EXPECT_EQ(decode({230, 91, 11, 91, 11, 91, 11, 91, 11, 91, 11, 91, 11}), L"AIMAIMAIMAIMAIMAIM");
+	EXPECT_EQ(decode({230, 91, 11, 91, 11, 91, 11, 91, 11, 91, 11, 90, 241}), L"AIMAIMAIMAIMAIMAI");
+	EXPECT_EQ(decode({230, 91, 11, 91, 11, 91, 11, 91, 11, 91, 11, 254, 66}), L"AIMAIMAIMAIMAIMA");
+	EXPECT_EQ(decode({230, 91, 11, 91, 11, 91, 11, 91, 11, 91, 11, 254, 66, 74, 129, 237}), L"AIMAIMAIMAIMAIMAI");
+	EXPECT_EQ(decode({230, 91, 11, 91, 11, 91, 11, 66}), L"AIMAIMAIMA");
+	EXPECT_EQ(decode({230, 91, 11, 91, 11, 91, 11, 91, 11, 91, 11, 91, 11, 254, 66, 74}), L"AIMAIMAIMAIMAIMAIMAI");
+}
+
+TEST(DMDecodeTest, Text)
+{
+	EXPECT_EQ(decode({239, 91, 11, 91, 11, 91, 11, 254}), L"aimaimaim");
+	EXPECT_EQ(decode({239, 91, 11, 91, 11, 91, 11, 254, 40, 129}), L"aimaimaim'");
+	EXPECT_EQ(decode({239, 91, 11, 91, 11, 87, 218, 110}), L"aimaimaIm");
+	EXPECT_EQ(decode({239, 91, 11, 91, 11, 91, 11, 254, 67, 129}), L"aimaimaimB");
+	EXPECT_EQ(decode({239, 91, 11, 91, 11, 91, 11, 16, 218, 236, 107, 181, 69, 254, 129, 237}), L"aimaimaim{txt}\x04");
+}
+
+TEST(DMDecodeTest, C40AndTextShiftUpper)
+{
+	// additional shiftUpper test: (1->shift 2, 30->upperShift, 3->' '+128==0xa0) == 2804 == 0x0af4
+
+	EXPECT_EQ(decode({230, 0x0a, 0xf4}), L"\xA0"); // C40
+	EXPECT_EQ(decode({239, 0x0a, 0xf4}), L"\xA0"); // Text
+}
+
+TEST(DMDecodeTest, X12)
+{
+	EXPECT_EQ(decode({238, 89, 233, 14, 192, 100, 207, 44, 31, 67}), L"ABC>ABC123>AB");
+	EXPECT_EQ(decode({238, 89, 233, 14, 192, 100, 207, 44, 31, 254, 67, 68}), L"ABC>ABC123>ABC");
+	EXPECT_EQ(decode({238, 89, 233, 14, 192, 100, 207, 44, 31, 96, 82, 254}), L"ABC>ABC123>ABCD");
+	EXPECT_EQ(decode({238, 89, 233, 14, 192, 100, 207, 44, 31, 96, 82, 70}), L"ABC>ABC123>ABCDE");
+	EXPECT_EQ(decode({238, 89, 233, 14, 192, 100, 207, 44, 31, 96, 82, 254, 70, 71, 129, 237}), L"ABC>ABC123>ABCDEF");
+//	EXPECT_EQ(decode({}), L"");
 }
