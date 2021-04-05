@@ -16,6 +16,8 @@
 * limitations under the License.
 */
 
+#include <string>
+
 namespace ZXing {
 
 class DecoderResult;
@@ -33,7 +35,7 @@ class DetectorResult;
 class Decoder
 {
 public:
-	static DecoderResult Decode(const DetectorResult& detectorResult);
+	static DecoderResult Decode(const DetectorResult& detectorResult, const std::string& characterSet);
 };
 
 } // Aztec
