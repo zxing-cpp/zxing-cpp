@@ -16,6 +16,8 @@
 * limitations under the License.
 */
 
+#include <string>
+
 namespace ZXing {
 
 class DecoderResult;
@@ -32,7 +34,7 @@ namespace MaxiCode {
 class Decoder
 {
 public:
-	static DecoderResult Decode(const BitMatrix& bits);
+	static DecoderResult Decode(const BitMatrix& bits, const std::string& characterSet);
 };
 
 } // MaxiCode
