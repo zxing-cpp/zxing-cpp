@@ -1,5 +1,9 @@
 # Python bindings for zxing-cpp (experimental)
 
+[![Test](https://github.com/nu-book/zxing-cpp/actions/workflows/python-test.yml/badge.svg)](https://github.com/nu-book/zxing-cpp/actions/workflows/python-test.yml)
+[![Build + Deploy](https://github.com/nu-book/zxing-cpp/actions/workflows/python-build.yml/badge.svg)](https://github.com/nu-book/zxing-cpp/actions/workflows/python-build.yml)
+[![PyPI](https://img.shields.io/pypi/v/zxing-cpp.svg)](https://pypi.org/project/zxing-cpp/)
+
 ## Installation
 
 ```bash

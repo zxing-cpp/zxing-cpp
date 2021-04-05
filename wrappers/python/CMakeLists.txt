@@ -21,9 +21,34 @@ if (NOT hasParent)
     option (BUILD_READERS "Build with reader support (decoders)" ON)
 
     # build the main library
-    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../core ZXing EXCLUDE_FROM_ALL)
-
-    enable_testing()
+    if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../../core)
+        # In development mode, when the whole zxing-cpp directory is checked out, build against head code.
+        add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../core ZXing EXCLUDE_FROM_ALL)
+    else()
+        # Building from python source distribution (which does not include the whole repository but only python part)
+        # so we need to get c++ source git to build the python extension. The python distribution version (given in
+        # VERSION_INFO), matches the c++ version the distribution must build against ; hence the checkout of
+        # related tag.
+        find_package (Git REQUIRED)
+        execute_process(
+            COMMAND ${GIT_EXECUTABLE} ls-remote https://github.com/nu-book/zxing-cpp.git tags/*
+            RESULT_VARIABLE RESULT
+            OUTPUT_VARIABLE OUTPUT)
+        string (FIND "${OUTPUT}" "refs/tags/v${VERSION_INFO}\n" FOUND_IDX)
+        if (FOUND_IDX LESS 0)
+            # Version not found in tags (suppose we are preparing future version), use master branch
+            FetchContent_Declare(zxing-cpp
+                GIT_REPOSITORY https://github.com/nu-book/zxing-cpp.git)
+        else()
+            FetchContent_Declare(zxing-cpp
+                GIT_REPOSITORY https://github.com/nu-book/zxing-cpp.git
+                GIT_TAG v${VERSION_INFO})
+        endif()
+        if(NOT zxing-cpp_POPULATED)
+            FetchContent_Populate(zxing-cpp)
+            add_subdirectory(${zxing-cpp_SOURCE_DIR}/core ZXing EXCLUDE_FROM_ALL)
+        endif()
+    endif()
 endif()
 
 # build the python module

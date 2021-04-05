@@ -1,0 +1,78 @@
+name: Python Build + Pypi Upload
+
+on:
+  push:
+    branches: [master]
+    tags: ["v*.*.*"]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: Build wheels
+      uses: joerick/cibuildwheel@v1.10.0
+      with:
+        package-dir: ./wrappers/python
+        output-dir: ./wrappers/python/wheelhouse
+      env:
+        CIBW_BUILD: cp37-* cp38-* cp39-*
+
+    - uses: actions/upload-artifact@v2
+      with:
+        path: ./wrappers/python/wheelhouse/*.whl
+
+  build_sdist:
+    name: Build source distribution
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: Build sdist
+      working-directory: wrappers/python
+      run: |
+        python setup.py sdist
+
+    - uses: actions/upload-artifact@v2
+      with:
+        path: wrappers/python/dist/*.tar.gz
+
+  upload-pypi:
+    name: Deploy
+    needs: [build_wheels, build_sdist]
+    runs-on: ubuntu-latest
+    # only run if the commit is tagged...
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: artifact
+          path: dist
+
+      - uses: pypa/gh-action-pypi-publish@master
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_TOKEN }}
+          # To test: repository_url: https://test.pypi.org/legacy/
