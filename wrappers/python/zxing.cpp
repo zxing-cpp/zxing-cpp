@@ -123,7 +123,7 @@ PYBIND11_MODULE(zxing, m)
 		.value("NONE", BarcodeFormat::None)
 		.value("OneDCodes", BarcodeFormat::OneDCodes)
 		.value("TwoDCodes", BarcodeFormat::TwoDCodes)
-		//.export_values()
+		.export_values()
 		// see https://github.com/pybind/pybind11/issues/2221
 		.def("__or__", [](BarcodeFormat f1, BarcodeFormat f2){ return f1 | f2; })
 		.def("__or__", [](BarcodeFormats fs, BarcodeFormat f){ return fs | f; });
@@ -138,12 +138,12 @@ PYBIND11_MODULE(zxing, m)
 		.value("FixedThreshold", Binarizer::FixedThreshold)
 		.value("GlobalHistogram", Binarizer::GlobalHistogram)
 		.value("LocalAverage", Binarizer::LocalAverage)
-		//.export_values()
-		;
+		.export_values();
 	py::enum_<EanAddOnSymbol>(m, "EanAddOnSymbol", "Enumeration of options for EAN-2/5 add-on symbols check")
 		.value("Ignore", EanAddOnSymbol::Ignore)
 		.value("Read", EanAddOnSymbol::Read)
-		.value("Require", EanAddOnSymbol::Require);
+		.value("Require", EanAddOnSymbol::Require)
+		.export_values();
 	py::class_<PointI>(m, "Point", "Represents the coordinates of a point in an image")
 		.def_readonly("x", &PointI::x,
 			":return: horizontal coordinate of the point\n"
