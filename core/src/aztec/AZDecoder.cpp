@@ -20,8 +20,10 @@
 #include "AZDetectorResult.h"
 #include "BitArray.h"
 #include "BitMatrix.h"
-#include "DecodeStatus.h"
+#include "CharacterSet.h"
+#include "CharacterSetECI.h"
 #include "DecoderResult.h"
+#include "DecodeStatus.h"
 #include "GenericGF.h"
 #include "ReedSolomonDecoder.h"
 #include "TextDecoder.h"
@@ -35,6 +37,8 @@
 #include <vector>
 
 namespace ZXing::Aztec {
+
+constexpr CharacterSet DEFAULT_ENCODING = CharacterSet::ISO8859_1;
 
 enum class Table {
 	UPPER,
@@ -62,7 +66,7 @@ static const char* MIXED_TABLE[] = {
 };
 
 static const char* PUNCT_TABLE[] = {
-	"", "\r", "\r\n", ". ", ", ", ": ", "!", "\"", "#", "$", "%", "&", "'", "(", ")",
+	"FLGN", "\r", "\r\n", ". ", ", ", ": ", "!", "\"", "#", "$", "%", "&", "'", "(", ")",
 	"*", "+", ",", "-", ".", "/", ":", ";", "<", "=", ">", "?", "[", "]", "{", "}", "CTRL_UL"
 };
 
@@ -274,14 +278,25 @@ static const char* GetCharacter(Table table, int code)
 * @return the decoded string
 */
 ZXING_EXPORT_TEST_ONLY
-std::string GetEncodedData(const std::vector<bool>& correctedBits)
+std::wstring GetEncodedData(const std::vector<bool>& correctedBits, const std::string& characterSet)
 {
 	int endIndex = Size(correctedBits);
 	Table latchTable = Table::UPPER; // table most recently latched to
 	Table shiftTable = Table::UPPER; // table to use for the next read
 	std::string result;
 	result.reserve(20);
+	std::wstring resultEncoded;
 	int index = 0;
+	int eci = -1;
+	CharacterSet encoding = DEFAULT_ENCODING;
+
+	if (!characterSet.empty()) {
+		auto encodingInit = CharacterSetECI::CharsetFromName(characterSet.c_str());
+		if (encodingInit != CharacterSet::Unknown) {
+			encoding = encodingInit;
+		}
+	}
+
 	while (index < endIndex) {
 		if (shiftTable == Table::BINARY) {
 			if (endIndex - index < 5) {
@@ -327,6 +342,38 @@ std::string GetEncodedData(const std::vector<bool>& correctedBits)
 					latchTable = shiftTable;
 				}
 			}
+			else if (std::strcmp(str, "FLGN") == 0) {
+				if (endIndex - index < 3) {
+					break;
+				}
+				int flg = ReadCode(correctedBits, index, 3);
+				index += 3;
+				if (flg == 0) {
+					// TODO: Handle FNC1
+				}
+				else if (flg <= 6) {
+					// FLG(1) to FLG(6) ECI
+					eci = 0;
+					for (int i = 0; i < flg && endIndex - index >= 4; i++) {
+						eci *= 10;
+						eci += ReadCode(correctedBits, index, 4) - 2;
+						index += 4;
+					}
+					if (eci >= 0 && eci <= 899) { // Character Set ECIs
+						auto encodingNew = CharacterSetECI::CharsetFromValue(eci);
+						if (encodingNew != CharacterSet::Unknown && encodingNew != encoding) {
+							// Encode data so far in current encoding and reset
+							TextDecoder::Append(resultEncoded, reinterpret_cast<const uint8_t*>(result.data()), result.size(), encoding);
+							result.clear();
+							encoding = encodingNew;
+						}
+					}
+				}
+				else {
+					// FLG(7) is invalid
+				}
+				shiftTable = latchTable;
+			}
 			else {
 				result.append(str);
 				// Go back to whatever mode we had been in
@@ -334,7 +381,8 @@ std::string GetEncodedData(const std::vector<bool>& correctedBits)
 			}
 		}
 	}
-	return result;
+	TextDecoder::Append(resultEncoded, reinterpret_cast<const uint8_t*>(result.data()), result.size(), encoding);
+	return resultEncoded;
 }
 
 /**
@@ -361,13 +409,13 @@ static ByteArray ConvertBoolArrayToByteArray(const std::vector<bool>& boolArr)
 	return byteArr;
 }
 
-DecoderResult Decoder::Decode(const DetectorResult& detectorResult)
+DecoderResult Decoder::Decode(const DetectorResult& detectorResult, const std::string& characterSet)
 {
 	std::vector<bool> rawbits = ExtractBits(detectorResult);
 	std::vector<bool> correctedBits;
 	if (CorrectBits(detectorResult, rawbits, correctedBits)) {
 		return DecoderResult(ConvertBoolArrayToByteArray(correctedBits),
-							 TextDecoder::FromLatin1(GetEncodedData(correctedBits)))
+							 GetEncodedData(correctedBits, characterSet))
 		        .setNumBits(Size(correctedBits));
 	}
 	else {
