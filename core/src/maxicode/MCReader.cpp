@@ -54,7 +54,7 @@ static BitMatrix ExtractPureBits(const BitMatrix& image)
 	return result;
 }
 
-Reader::Reader(const DecodeHints& hints) : _isPure(hints.isPure()) {}
+Reader::Reader(const DecodeHints& hints) : _isPure(hints.isPure()), _characterSet(hints.characterSet()) {}
 
 Result
 Reader::decode(const BinaryBitmap& image) const
@@ -70,7 +70,7 @@ Reader::decode(const BinaryBitmap& image) const
 		return Result(DecodeStatus::NotFound);
 	}
 
-	return Result(Decoder::Decode(bits), {}, BarcodeFormat::MaxiCode);
+	return Result(Decoder::Decode(bits, _characterSet), {}, BarcodeFormat::MaxiCode);
 }
 
 } // namespace ZXing::MaxiCode

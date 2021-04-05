@@ -18,8 +18,10 @@
 #include "MCDecoder.h"
 
 #include "ByteArray.h"
-#include "DecodeStatus.h"
+#include "CharacterSet.h"
+#include "CharacterSetECI.h"
 #include "DecoderResult.h"
+#include "DecodeStatus.h"
 #include "GenericGF.h"
 #include "MCBitMatrixParser.h"
 #include "ReedSolomonDecoder.h"
@@ -40,6 +42,8 @@ namespace ZXing::MaxiCode {
 static const int ALL = 0;
 static const int EVEN = 1;
 static const int ODD = 2;
+
+constexpr CharacterSet DEFAULT_ENCODING = CharacterSet::ISO8859_1;
 
 static bool CorrectErrors(ByteArray& codewordBytes, int start, int dataCodewords, int ecCodewords, int mode)
 {
@@ -184,12 +188,44 @@ namespace DecodedBitStreamParser
 		return GetInt(bytes, { 55, 56, 57, 58, 59, 60, 49, 50, 51, 52 });
 	}
 
-	static std::string GetMessage(const ByteArray& bytes, int start, int len)
+	/**
+	* See ISO/IEC 16023:2000 Section 4.6 Table 3
+	*/
+	static int ParseECIValue(const ByteArray& bytes, int& i)
+	{
+		int firstByte = bytes[++i];
+		if ((firstByte & 0x20) == 0) {
+			return firstByte;
+		}
+		int secondByte = bytes[++i];
+		if ((firstByte & 0x10) == 0) {
+			return ((firstByte & 0x0F) << 6) | secondByte;
+		}
+		int thirdByte = bytes[++i];
+		if ((firstByte & 0x08) == 0) {
+			return ((firstByte & 0x07) << 12) | (secondByte << 6) | thirdByte;
+		}
+		int fourthByte = bytes[++i];
+		return ((firstByte & 0x03) << 18) | (secondByte << 12) | (thirdByte << 6) | fourthByte;
+	}
+
+	static std::wstring GetMessage(const ByteArray& bytes, int start, int len, const std::string& characterSet)
 	{
 		std::string sb;
+		std::wstring sbEncoded;
 		int shift = -1;
 		int set = 0;
 		int lastset = 0;
+		int eci = -1;
+		CharacterSet encoding = DEFAULT_ENCODING;
+
+		if (!characterSet.empty()) {
+			auto encodingInit = CharacterSetECI::CharsetFromName(characterSet.c_str());
+			if (encodingInit != CharacterSet::Unknown) {
+				encoding = encodingInit;
+			}
+		}
+
 		for (int i = start; i < start + len; i++) {
 			int c = CHARSETS[set].at(bytes[i]);
 			switch (c) {
@@ -228,7 +264,16 @@ namespace DecodedBitStreamParser
 				shift = -1;
 				break;
 			case ECI:
-				// TODO: ECI/encoding
+				eci = ParseECIValue(bytes, i);
+				if (eci >= 0 && eci <= 899) { // Character Set ECIs
+					auto encodingNew = CharacterSetECI::CharsetFromValue(eci);
+					if (encodingNew != CharacterSet::Unknown && encodingNew != encoding) {
+						// Encode data so far in current encoding and reset
+						TextDecoder::Append(sbEncoded, reinterpret_cast<const uint8_t*>(sb.data()), sb.size(), encoding);
+						sb.clear();
+						encoding = encodingNew;
+					}
+				}
 				break;
 			case PAD:
 				if (i == start) {
@@ -243,12 +288,13 @@ namespace DecodedBitStreamParser
 				set = lastset;
 			}
 		}
-		return sb;
+		TextDecoder::Append(sbEncoded, reinterpret_cast<const uint8_t*>(sb.data()), sb.size(), encoding);
+		return sbEncoded;
 	}
 
-	static DecoderResult Decode(ByteArray&& bytes, int mode)
+	static DecoderResult Decode(ByteArray&& bytes, int mode, const std::string& characterSet)
 	{
-		std::string result;
+		std::wstring result;
 		result.reserve(144);
 		switch (mode) {
 			case 2:
@@ -256,25 +302,25 @@ namespace DecodedBitStreamParser
 				auto postcode = mode == 2 ? ToString(GetPostCode2(bytes), GetPostCode2Length(bytes)) : GetPostCode3(bytes);
 				auto country = ToString(GetCountry(bytes), 3);
 				auto service = ToString(GetServiceClass(bytes), 3);
-				result.append(GetMessage(bytes, 10, 84));
-				if (result.compare(0, 7, std::string("[)>") + RS + std::string("01") + GS) == 0) {
-					result.insert(9, postcode + GS + country + GS + service + GS);
+				result.append(GetMessage(bytes, 10, 84, characterSet));
+				if (result.size() >= 9 && result.compare(0, 7, L"[)>\u001E01\u001D") == 0) { // "[)>" + RS + "01" + GS
+					result.insert(9, TextDecoder::FromLatin1(postcode + GS + country + GS + service + GS));
 				}
 				else {
-					result.insert(0, postcode + GS + country + GS + service + GS);
+					result.insert(0, TextDecoder::FromLatin1(postcode + GS + country + GS + service + GS));
 				}
 				break;
 			}
 			case 4:
 			case 6:
-				result.append(GetMessage(bytes, 1, 93));
+				result.append(GetMessage(bytes, 1, 93, characterSet));
 				break;
 			case 5:
-				result.append(GetMessage(bytes, 1, 77));
+				result.append(GetMessage(bytes, 1, 77, characterSet));
 				break;
 		}
 		// TODO: Set reader programming boolean (mode == 6)
-		return DecoderResult(std::move(bytes), TextDecoder::FromLatin1(result)).setEcLevel(std::to_wstring(mode)); // really???
+		return DecoderResult(std::move(bytes), std::move(result)).setEcLevel(std::to_wstring(mode));
 	}
 
 
@@ -282,7 +328,7 @@ namespace DecodedBitStreamParser
 } // DecodedBitStreamParser
 
 DecoderResult
-Decoder::Decode(const BitMatrix& bits)
+Decoder::Decode(const BitMatrix& bits, const std::string& characterSet)
 {
 	ByteArray codewords = BitMatrixParser::ReadCodewords(bits);
 
@@ -318,7 +364,7 @@ Decoder::Decode(const BitMatrix& bits)
 	std::copy_n(codewords.begin(), 10, datawords.begin());
 	std::copy_n(codewords.begin() + 20, datawords.size() - 10, datawords.begin() + 10);
 
-	return DecodedBitStreamParser::Decode(std::move(datawords), mode);
+	return DecodedBitStreamParser::Decode(std::move(datawords), mode, characterSet);
 }
 
 } // namespace ZXing::MaxiCode
