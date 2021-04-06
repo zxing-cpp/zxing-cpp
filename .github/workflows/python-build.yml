@@ -1,14 +1,22 @@
-name: Python Build + Pypi Upload
+name: build-python-dist
 
 on:
-  push:
-    branches: [master]
-    tags: ["v*.*.*"]
-  pull_request:
-    branches: [master]
+  release:
+    types: [published]
+    
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Publish package (y/n)'
+        default: 'n'
+#  push:
+#    branches: [master]
+#    tags: ["v*.*.*"]
+#  pull_request:
+#    branches: [master]
 
 jobs:
-  build_wheels:
+  build-wheels:
     name: Build wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -37,7 +45,7 @@ jobs:
       with:
         path: ./wrappers/python/wheelhouse/*.whl
 
-  build_sdist:
+  build-sdist:
     name: Build source distribution
     runs-on: ubuntu-latest
     steps:
@@ -52,8 +60,7 @@ jobs:
 
     - name: Build sdist
       working-directory: wrappers/python
-      run: |
-        python setup.py sdist
+      run: python setup.py sdist
 
     - uses: actions/upload-artifact@v2
       with:
@@ -61,10 +68,11 @@ jobs:
 
   upload-pypi:
     name: Deploy
-    needs: [build_wheels, build_sdist]
+    needs: [build-wheels, build-sdist]
     runs-on: ubuntu-latest
     # only run if the commit is tagged...
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+#    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'release' || github.event.inputs.publish == 'y'
     steps:
       - uses: actions/download-artifact@v2
         with:
