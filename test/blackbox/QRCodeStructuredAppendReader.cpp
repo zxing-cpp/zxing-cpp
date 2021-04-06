@@ -33,14 +33,14 @@ Result QRCodeStructuredAppendReader::readMultiple(const std::vector<fs::path>& i
 {
 	QRCode::Reader reader({});
 	std::list<Result> allResults;
-	int prevParity = -1;
+	std::string prevId;
 	for (const auto& imgPath : imgPaths) {
 		auto r = reader.decode(*ImageLoader::load(imgPath).rotated(rotation));
 		if (r.symbolCount() != Size(imgPaths))
 			return Result(DecodeStatus::FormatError);
-		if (prevParity != -1 && prevParity != r.symbolParity())
+		if (!prevId.empty() && prevId != r.symbolId())
 			return Result(DecodeStatus::FormatError);
-		prevParity = r.symbolParity();
+		prevId = r.symbolId();
 		allResults.push_back(r);
 	}
 

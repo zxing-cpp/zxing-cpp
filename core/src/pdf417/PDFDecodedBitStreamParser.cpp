@@ -748,7 +748,7 @@ DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel)
 						  ? resultMetadata->segmentCount()
 						  : (resultMetadata->isLastSegment() ? resultMetadata->segmentIndex() + 1 : 0);
 	sai.symbolIndex = resultMetadata->segmentIndex();
-	sai.symbolParity = -1;
+	sai.symbolId = resultMetadata->fileId();
 
 	return DecoderResult(ByteArray(), std::move(resultString))
 		.setEcLevel(std::to_wstring(ecLevel))

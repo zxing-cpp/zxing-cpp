@@ -41,10 +41,11 @@ Result::Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat 
 	  _ecLevel(decodeResult.ecLevel()), _sai(decodeResult.structuredAppend())
 {
 	// TODO: keep that for one release so people get the deprecation warning with a still intact functionality
-	if (decodeResult.structuredAppend().symbolCount != -1) {
+	if (isStructuredAppendSymbol()) {
 		_metadata.put(ResultMetadata::STRUCTURED_APPEND_SEQUENCE, symbolIndex());
 		_metadata.put(ResultMetadata::STRUCTURED_APPEND_CODE_COUNT, symbolCount());
-		_metadata.put(ResultMetadata::STRUCTURED_APPEND_PARITY, symbolParity());
+		if (_format == BarcodeFormat::QRCode)
+			_metadata.put(ResultMetadata::STRUCTURED_APPEND_PARITY, std::stoi(symbolId()));
 	}
 
 	// TODO: add type opaque and code specific 'extra data'? (see DecoderResult::extra())

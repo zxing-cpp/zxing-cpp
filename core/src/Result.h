@@ -129,11 +129,11 @@ public:
 	int symbolIndex() const { return _sai.symbolIndex; }
 
 	/**
-	 * @brief symbolParity parity or id of the symbol to check if a set of symbols belong to the same structured append set.
+	 * @brief symbolId id (or parity) of the symbol to check if a set of symbols belong to the same structured append set.
 	 *
-	 * If the symbology does not support this feature, the returned value is -1 (see PDF417).
+	 * If the symbology does not support this feature, the returned value is empty.
 	 */
-	int symbolParity() const { return _sai.symbolParity; }
+	std::string symbolId() const { return _sai.symbolId; }
 
 	bool isLastStructuredAppendSymbol() const { return symbolCount() == symbolIndex() + 1; }
 	bool isStructuredAppendSymbol() const { return symbolCount() > -1; }

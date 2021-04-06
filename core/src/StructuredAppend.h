@@ -15,13 +15,15 @@
 * limitations under the License.
 */
 
+#include <string>
+
 namespace ZXing {
 
 struct StructuredAppendInfo
 {
 	int symbolIndex = -1;
 	int symbolCount = -1;
-	int symbolParity = -1;
+	std::string symbolId;
 };
 
 } // ZXing
