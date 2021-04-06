@@ -166,7 +166,7 @@ int main(int argc, char* argv[])
 
 		if (result.isStructuredAppendSymbol())
 			std::cout << "Structured Append: symbol " << result.symbolIndex() + 1 << " of " << result.symbolCount()
-					  << " (parity/id: " << result.symbolParity() << ")\n";
+					  << " (parity/id: '" << result.symbolId() << "')\n";
 	}
 
 	return ret;
