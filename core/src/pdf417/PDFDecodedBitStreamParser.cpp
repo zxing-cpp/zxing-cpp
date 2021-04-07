@@ -744,11 +744,11 @@ DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel)
 		return status;
 
 	StructuredAppendInfo sai;
-	sai.symbolCount = resultMetadata->segmentCount() != -1
-						  ? resultMetadata->segmentCount()
-						  : (resultMetadata->isLastSegment() ? resultMetadata->segmentIndex() + 1 : 0);
-	sai.symbolIndex = resultMetadata->segmentIndex();
-	sai.symbolId = resultMetadata->fileId();
+	sai.count = resultMetadata->segmentCount() != -1
+					? resultMetadata->segmentCount()
+					: (resultMetadata->isLastSegment() ? resultMetadata->segmentIndex() + 1 : 0);
+	sai.index = resultMetadata->segmentIndex();
+	sai.id    = resultMetadata->fileId();
 
 	return DecoderResult(ByteArray(), std::move(resultString))
 		.setEcLevel(std::to_wstring(ecLevel))

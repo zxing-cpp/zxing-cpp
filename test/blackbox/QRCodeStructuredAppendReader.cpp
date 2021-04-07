@@ -36,18 +36,18 @@ Result QRCodeStructuredAppendReader::readMultiple(const std::vector<fs::path>& i
 	std::string prevId;
 	for (const auto& imgPath : imgPaths) {
 		auto r = reader.decode(*ImageLoader::load(imgPath).rotated(rotation));
-		if (r.symbolCount() != Size(imgPaths))
+		if (r.sequenceSize() != Size(imgPaths))
 			return Result(DecodeStatus::FormatError);
-		if (!prevId.empty() && prevId != r.symbolId())
+		if (!prevId.empty() && prevId != r.sequenceId())
 			return Result(DecodeStatus::FormatError);
-		prevId = r.symbolId();
+		prevId = r.sequenceId();
 		allResults.push_back(r);
 	}
 
 	if (allResults.empty())
 		return Result(DecodeStatus::NotFound);
 
-	allResults.sort([](const Result& r1, const Result& r2) { return r1.symbolIndex() < r2.symbolIndex(); });
+	allResults.sort([](const Result& r1, const Result& r2) { return r1.sequenceIndex() < r2.sequenceIndex(); });
 
 	std::wstring text;
 	for (const auto& r : allResults)

@@ -164,9 +164,9 @@ int main(int argc, char* argv[])
 			printOptional("Issue #:  ", GTIN::IssueNr(GTIN::EanAddOn(result)));
 		}
 
-		if (result.isStructuredAppendSymbol())
-			std::cout << "Structured Append: symbol " << result.symbolIndex() + 1 << " of " << result.symbolCount()
-					  << " (parity/id: '" << result.symbolId() << "')\n";
+		if (result.isPartOfSequence())
+			std::cout << "Structured Append: symbol " << result.sequenceIndex() + 1 << " of " << result.sequenceSize()
+					  << " (parity/id: '" << result.sequenceId() << "')\n";
 	}
 
 	return ret;

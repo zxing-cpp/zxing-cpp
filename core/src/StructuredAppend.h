@@ -21,9 +21,9 @@ namespace ZXing {
 
 struct StructuredAppendInfo
 {
-	int symbolIndex = -1;
-	int symbolCount = -1;
-	std::string symbolId;
+	int index = -1;
+	int count = -1;
+	std::string id;
 };
 
 } // ZXing

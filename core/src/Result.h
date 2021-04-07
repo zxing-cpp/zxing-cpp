@@ -115,28 +115,30 @@ public:
 	}
 
 	/**
-	 * @brief symbolCount number of symbols in a structured append context.
+	 * @brief sequenceSize number of symbols in a structured append sequence.
 	 *
-	 * If this is not part of a structured append set of symbols, the returned value is -1.
+	 * If this is not part of a structured append sequence, the returned value is -1.
 	 * If it is a structured append symbol but the total number of symbols is unknown, the
-	 * returned value is 0 (see PDF417).
+	 * returned value is 0 (see PDF417 if optional "Segment Count" not given).
 	 */
-	int symbolCount() const { return _sai.symbolCount; }
+	int sequenceSize() const { return _sai.count; }
 
 	/**
-	 * @brief symbolIndex the index of this symbol in a structured append set of symbols.
+	 * @brief sequenceIndex the 0-based index of this symbol in a structured append sequence.
 	 */
-	int symbolIndex() const { return _sai.symbolIndex; }
+	int sequenceIndex() const { return _sai.index; }
 
 	/**
-	 * @brief symbolId id (or parity) of the symbol to check if a set of symbols belong to the same structured append set.
+	 * @brief sequenceId id to check if a set of symbols belongs to the same structured append sequence.
 	 *
-	 * If the symbology does not support this feature, the returned value is empty.
+	 * If the symbology does not support this feature, the returned value is empty (see MaxiCode).
+	 * For QR Code, this is the parity integer converted to a string.
+	 * For PDF417 and DataMatrix, this is the "fileId".
 	 */
-	std::string symbolId() const { return _sai.symbolId; }
+	const std::string& sequenceId() const { return _sai.id; }
 
-	bool isLastStructuredAppendSymbol() const { return symbolCount() == symbolIndex() + 1; }
-	bool isStructuredAppendSymbol() const { return symbolCount() > -1; }
+	bool isLastInSequence() const { return sequenceSize() == sequenceIndex() + 1; }
+	bool isPartOfSequence() const { return sequenceSize() > -1; }
 
 private:
 	DecodeStatus _status = DecodeStatus::NoError;

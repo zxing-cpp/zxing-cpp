@@ -41,7 +41,7 @@ Result Pdf417MultipleCodeReader::readMultiple(const std::vector<fs::path>& imgPa
 	if (allResults.empty())
 		return Result(DecodeStatus::NotFound);
 
-	allResults.sort([](const Result& r1, const Result& r2) { return r1.symbolIndex() < r2.symbolIndex(); });
+	allResults.sort([](const Result& r1, const Result& r2) { return r1.sequenceIndex() < r2.sequenceIndex(); });
 
 	std::wstring text;
 	for (const auto& r : allResults)

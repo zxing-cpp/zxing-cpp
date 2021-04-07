@@ -340,9 +340,9 @@ DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCorrectionLevel 
 				}
 				// sequence number and parity is added later to the result metadata
 				// Read next 4 bits of index, 4 bits of symbol count, and 8 bits of parity data, then continue
-				structuredAppend.symbolIndex = bits.readBits(4);
-				structuredAppend.symbolCount = bits.readBits(4) + 1;
-				structuredAppend.symbolId = std::to_string(bits.readBits(8));
+				structuredAppend.index = bits.readBits(4);
+				structuredAppend.count = bits.readBits(4) + 1;
+				structuredAppend.id = std::to_string(bits.readBits(8));
 				break;
 			case CodecMode::ECI: {
 				// Count doesn't apply to ECI
