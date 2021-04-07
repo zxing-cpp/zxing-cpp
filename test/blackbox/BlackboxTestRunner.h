@@ -20,14 +20,8 @@
 #include <set>
 #include <string>
 
-namespace ZXing {
-
-class Result;
-
-namespace Test {
-
-std::string metadataToUtf8(const Result& result);
+namespace ZXing::Test {
 
 int runBlackBoxTests(const fs::path& blackboxPath, const std::set<std::string>& includedTests);
 
-}} // ZXing::Test
+} // ZXing::Test
