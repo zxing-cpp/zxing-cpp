@@ -11,10 +11,6 @@ if (BUILD_READERS)
         TestReaderMain.cpp
         ImageLoader.h
         ImageLoader.cpp
-        Pdf417MultipleCodeReader.h
-        Pdf417MultipleCodeReader.cpp
-        QRCodeStructuredAppendReader.h
-        QRCodeStructuredAppendReader.cpp
         BlackboxTestRunner.h
         BlackboxTestRunner.cpp
         ZXFilesystem.h

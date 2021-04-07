@@ -21,12 +21,12 @@
 #include "DecodeHints.h"
 #include "ImageLoader.h"
 #include "MultiFormatReader.h"
-#include "Pdf417MultipleCodeReader.h"
-#include "QRCodeStructuredAppendReader.h"
 #include "Result.h"
 #include "TextDecoder.h"
 #include "TextUtfEncoding.h"
 #include "ZXContainerAlgorithms.h"
+#include "pdf417/PDFReader.h"
+#include "qrcode/QRReader.h"
 
 #include <fmt/core.h>
 #include <fmt/ostream.h>
@@ -193,9 +193,37 @@ static void doRunTests(
 	}
 }
 
-template <typename ReaderT>
+static auto readPDF417s = [](const BinaryBitmap& image) { return Pdf417::Reader({}).decodeMultiple(image); };
+static auto readQRCodes = [](const BinaryBitmap& image) { return std::list{QRCode::Reader({}).decode(image)}; };
+
+template<typename READER>
+static Result readMultiple(const std::vector<fs::path>& imgPaths, int rotation, READER read)
+{
+	std::list<Result> allResults;
+	for (const auto& imgPath : imgPaths) {
+		auto results = read(*ImageLoader::load(imgPath).rotated(rotation));
+		allResults.insert(allResults.end(), results.begin(), results.end());
+	}
+
+	if (allResults.empty())
+		return Result(DecodeStatus::NotFound);
+
+	allResults.sort([](const Result& r1, const Result& r2) { return r1.sequenceIndex() < r2.sequenceIndex(); });
+
+	if (allResults.back().sequenceSize() != Size(allResults) ||
+		!std::all_of(allResults.begin(), allResults.end(),
+					 [&](Result& it) { return it.sequenceId() == allResults.front().sequenceId(); }))
+		return Result(DecodeStatus::FormatError);
+
+	std::wstring text;
+	for (const auto& r : allResults)
+		text.append(r.text());
+
+	return {std::move(text), {}, allResults.front().format()};
+}
+
 static void doRunStructuredAppendTest(
-	const fs::path& directory, [[maybe_unused]]std::string_view format, int totalTests, const std::vector<TestCase>& tests)
+	const fs::path& directory, std::string_view format, int totalTests, const std::vector<TestCase>& tests)
 {
 	auto imgPaths = getImagesInDirectory(directory);
 	auto folderName = directory.stem();
@@ -217,13 +245,13 @@ static void doRunStructuredAppendTest(
 		auto startTime = std::chrono::steady_clock::now();
 
 		for (const auto& [testPath, testImgPaths] : imageGroups) {
-			auto result = ReaderT::readMultiple(testImgPaths, test.rotation);
+			auto result = format == "QRCode" ? readMultiple(testImgPaths, test.rotation, readQRCodes)
+											 : readMultiple(testImgPaths, test.rotation, readPDF417s);
 			if (result.isValid()) {
 				auto error = checkResult(testPath, format, result);
 				if (!error.empty())
 					tc.misReadFiles[testPath] = error;
-			}
-			else {
+			} else {
 				tc.notDetectedFiles.insert(testPath);
 			}
 		}
@@ -247,14 +275,9 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			doRunTests(testPathPrefix / directory, format, total, tests, hints);
 	};
 
-	auto runPdf417StructuredAppendTest = [&](std::string_view directory, std::string_view format, int total, const std::vector<TestCase>& tests) {
+	auto runStructuredAppendTest = [&](std::string_view directory, std::string_view format, int total, const std::vector<TestCase>& tests) {
 		if (hasTest(directory))
-			doRunStructuredAppendTest<Pdf417MultipleCodeReader>(testPathPrefix / directory, format, total, tests);
-	};
-
-	auto runQRCodeStructuredAppendTest = [&](std::string_view directory, std::string_view format, int total, const std::vector<TestCase>& tests) {
-		if (hasTest(directory))
-			doRunStructuredAppendTest<QRCodeStructuredAppendReader>(testPathPrefix / directory, format, total, tests);
+			doRunStructuredAppendTest(testPathPrefix / directory, format, total, tests);
 	};
 
 	try
@@ -524,7 +547,7 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 15, 15, 270 },
 		});
 
-		runQRCodeStructuredAppendTest("qrcode-7", "QRCode", 1, {
+		runStructuredAppendTest("qrcode-7", "QRCode", 1, {
 			{ 1, 1, 0   },
 		});
 
@@ -545,7 +568,7 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 7, 0, pure },
 		});
 
-		runPdf417StructuredAppendTest("pdf417-4", "PDF417", 2, {
+		runStructuredAppendTest("pdf417-4", "PDF417", 2, {
 			{ 2, 2, 0   },
 		});
 
