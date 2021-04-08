@@ -15,6 +15,7 @@
 * limitations under the License.
 */
 
+#include "DecoderResult.h"
 #include "DecodeStatus.h"
 #include "pdf417/PDFDecodedBitStreamParser.h"
 #include "pdf417/PDFDecoderResultExtra.h"
@@ -42,7 +43,7 @@ TEST(PDF417DecoderTest, StandardSample1)
 	auto status = DecodeMacroBlock(sampleCodes, 2, resultMetadata, next);
 
 	EXPECT_EQ(0, resultMetadata.segmentIndex());
-	EXPECT_EQ("ARBX", resultMetadata.fileId());
+	EXPECT_EQ("017053", resultMetadata.fileId());
 	EXPECT_EQ(false, resultMetadata.isLastSegment());
 	EXPECT_EQ(4, resultMetadata.segmentCount());
 	EXPECT_EQ("CEN BE", resultMetadata.sender());
@@ -51,6 +52,12 @@ TEST(PDF417DecoderTest, StandardSample1)
 	auto optionalData = resultMetadata.optionalData();
 	EXPECT_EQ(1, optionalData.front()) << "first element of optional array should be the first field identifier";
 	EXPECT_EQ(67, optionalData.back()) << "last element of optional array should be the last codeword of the last field";
+
+	auto result = DecodedBitStreamParser::Decode(sampleCodes, 0 /*ecLevel*/);
+
+	EXPECT_EQ(0, result.structuredAppend().index);
+	EXPECT_EQ("017053", result.structuredAppend().id);
+	EXPECT_EQ(4, result.structuredAppend().count);
 }
 
 /**
@@ -67,7 +74,7 @@ TEST(PDF417DecoderTest, StandardSample2)
 	auto status = DecodeMacroBlock(sampleCodes, 2, resultMetadata, next);
 
 	EXPECT_EQ(3, resultMetadata.segmentIndex());
-	EXPECT_EQ("ARBX", resultMetadata.fileId());
+	EXPECT_EQ("017053", resultMetadata.fileId());
 	EXPECT_EQ(true, resultMetadata.isLastSegment());
 	EXPECT_EQ(4, resultMetadata.segmentCount());
 	EXPECT_EQ("", resultMetadata.sender());
@@ -76,6 +83,35 @@ TEST(PDF417DecoderTest, StandardSample2)
 	auto optionalData = resultMetadata.optionalData();
 	EXPECT_EQ(1, optionalData.front()) << "first element of optional array should be the first field identifier";
 	EXPECT_EQ(104, optionalData.back()) << "last element of optional array should be the last codeword of the last field";
+
+	auto result = DecodedBitStreamParser::Decode(sampleCodes, 0 /*ecLevel*/);
+
+	EXPECT_EQ(3, result.structuredAppend().index);
+	EXPECT_EQ("017053", result.structuredAppend().id);
+	EXPECT_EQ(4, result.structuredAppend().count);
+}
+
+/**
+* Tests the example given in ISO/IEC 15438:2015(E) - Annex H.6
+*/
+TEST(PDF417DecoderTest, StandardSample3)
+{
+	// Note final dummy ECC codeword required for DecodedBitStreamParser::Decode() to work
+	std::vector<int> sampleCodes = { 7, 928, 111, 100, 100, 200, 300, 0 };
+
+	int next = 0;
+	DecoderResultExtra resultMetadata;
+	auto status = DecodeMacroBlock(sampleCodes, 2, resultMetadata, next);
+
+	EXPECT_EQ(0, resultMetadata.segmentIndex());
+	EXPECT_EQ("100200300", resultMetadata.fileId());
+	EXPECT_EQ(-1, resultMetadata.segmentCount());
+
+	auto result = DecodedBitStreamParser::Decode(sampleCodes, 0 /*ecLevel*/);
+
+	EXPECT_EQ(0, result.structuredAppend().index);
+	EXPECT_EQ("100200300", result.structuredAppend().id);
+	EXPECT_EQ(0, result.structuredAppend().count);
 }
 
 TEST(PDF417DecoderTest, SampleWithFilename)
@@ -89,12 +125,18 @@ TEST(PDF417DecoderTest, SampleWithFilename)
 	auto status = DecodeMacroBlock(sampleCodes, 3, resultMetadata, next);
 
 	EXPECT_EQ(0, resultMetadata.segmentIndex());
-	EXPECT_EQ("AAIMAVC ", resultMetadata.fileId());
+	EXPECT_EQ("000252021086", resultMetadata.fileId());
 	EXPECT_EQ(false, resultMetadata.isLastSegment());
 	EXPECT_EQ(2, resultMetadata.segmentCount());
 	EXPECT_EQ("", resultMetadata.sender());
 	EXPECT_EQ("", resultMetadata.addressee());
 	EXPECT_EQ("filename.txt", resultMetadata.fileName());
+
+	auto result = DecodedBitStreamParser::Decode(sampleCodes, 0 /*ecLevel*/);
+
+	EXPECT_EQ(0, result.structuredAppend().index);
+	EXPECT_EQ("000252021086", result.structuredAppend().id);
+	EXPECT_EQ(2, result.structuredAppend().count);
 }
 
 TEST(PDF417DecoderTest, SampleWithNumericValues)
@@ -106,10 +148,37 @@ TEST(PDF417DecoderTest, SampleWithNumericValues)
 	auto status = DecodeMacroBlock(sampleCodes, 3, resultMetadata, next);
 
 	EXPECT_EQ(0, resultMetadata.segmentIndex());
-	EXPECT_EQ("AAIMAVC ", resultMetadata.fileId());
+	EXPECT_EQ("000252021086", resultMetadata.fileId());
 	EXPECT_EQ(false, resultMetadata.isLastSegment());
-	
+
 	EXPECT_EQ(180980729000000L, resultMetadata.timestamp());
 	EXPECT_EQ(30, resultMetadata.fileSize());
 	EXPECT_EQ(260013, resultMetadata.checksum());
+	EXPECT_EQ(-1, resultMetadata.segmentCount());
+
+	auto result = DecodedBitStreamParser::Decode(sampleCodes, 0 /*ecLevel*/);
+
+	EXPECT_EQ(0, result.structuredAppend().index);
+	EXPECT_EQ("000252021086", result.structuredAppend().id);
+	EXPECT_EQ(0, result.structuredAppend().count);
+}
+
+TEST(PDF417DecoderTest, SampleWithMacroTerminatorOnly)
+{
+	std::vector<int> sampleCodes = { 7, 477, 928, 222, 198, 0, 922, 0 };
+
+	int next = 0;
+	DecoderResultExtra resultMetadata;
+	auto status = DecodeMacroBlock(sampleCodes, 3, resultMetadata, next);
+
+	EXPECT_EQ(99998, resultMetadata.segmentIndex());
+	EXPECT_EQ("000", resultMetadata.fileId());
+	EXPECT_EQ(true, resultMetadata.isLastSegment());
+	EXPECT_EQ(-1, resultMetadata.segmentCount());
+
+	auto result = DecodedBitStreamParser::Decode(sampleCodes, 0 /*ecLevel*/);
+
+	EXPECT_EQ(99998, result.structuredAppend().index);
+	EXPECT_EQ("000", result.structuredAppend().id);
+	EXPECT_EQ(99999, result.structuredAppend().count);
 }

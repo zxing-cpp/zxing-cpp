@@ -29,6 +29,8 @@
 
 #include <array>
 #include <cassert>
+#include <iomanip>
+#include <sstream>
 #include <utility>
 
 namespace ZXing::Pdf417 {
@@ -571,12 +573,15 @@ DecodeStatus DecodeMacroBlock(const std::vector<int>& codewords, int codeIndex, 
 	if (StatusIsError(status)) {
 		return status;
 	}
-
 	resultMetadata.setSegmentIndex(std::stoi(strBuf));
 
-	std::string fileId;
-	codeIndex = TextCompaction(codewords, codeIndex, fileId);
-	resultMetadata.setFileId(fileId);
+	std::ostringstream fileId;
+	fileId.fill('0');
+	for (int i = 0; codeIndex < codewords[0] && codewords[codeIndex] != MACRO_PDF417_TERMINATOR
+			&& codewords[codeIndex] != BEGIN_MACRO_PDF417_OPTIONAL_FIELD; i++, codeIndex++) {
+		fileId << std::setw(3) << codewords[codeIndex];
+	}
+	resultMetadata.setFileId(fileId.str());
 
 	int optionalFieldsStart = -1;
 	if (codewords[codeIndex] == BEGIN_MACRO_PDF417_OPTIONAL_FIELD) {
@@ -737,18 +742,18 @@ DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel)
 			status = DecodeStatus::FormatError;
 		}
 	}
-	if (resultString.empty())
-		return DecodeStatus::FormatError;
 
 	if (StatusIsError(status))
 		return status;
 
 	StructuredAppendInfo sai;
-	sai.count = resultMetadata->segmentCount() != -1
-					? resultMetadata->segmentCount()
-					: (resultMetadata->isLastSegment() ? resultMetadata->segmentIndex() + 1 : 0);
-	sai.index = resultMetadata->segmentIndex();
-	sai.id    = resultMetadata->fileId();
+	if (resultMetadata->segmentIndex() > -1) {
+		sai.count = resultMetadata->segmentCount() != -1
+						? resultMetadata->segmentCount()
+						: (resultMetadata->isLastSegment() ? resultMetadata->segmentIndex() + 1 : 0);
+		sai.index = resultMetadata->segmentIndex();
+		sai.id    = resultMetadata->fileId();
+	}
 
 	return DecoderResult(ByteArray(), std::move(resultString))
 		.setEcLevel(std::to_wstring(ecLevel))

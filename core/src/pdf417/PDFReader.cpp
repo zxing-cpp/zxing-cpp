@@ -164,7 +164,7 @@ SymbolInfo ReadSymbolInfo(BitMatrixCursor<POINT> topCur, POINT rowSkip, int colW
 	SymbolInfo res = {width, height};
 	res.colWidth = colWidth;
 	int clusterMask = 0;
-	int rows0, rows1;
+	int rows0 = 0, rows1 = 0; // Suppress GNUC -Wmaybe-uninitialized
 
 	topCur.p += .5f * rowSkip;
 

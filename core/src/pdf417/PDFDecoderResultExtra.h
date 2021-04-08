@@ -29,7 +29,7 @@ namespace Pdf417 {
 */
 class DecoderResultExtra : public CustomData
 {
-	int _segmentIndex = 0;
+	int _segmentIndex = -1;
 	std::string _fileId;
 	std::vector<int> _optionalData;
 	bool _lastSegment = false;
@@ -47,6 +47,7 @@ public:
 		return _segmentIndex;
 	}
 
+	// -1 if not set
 	void setSegmentIndex(int segmentIndex) {
 		_segmentIndex = segmentIndex;
 	}
