@@ -742,6 +742,8 @@ DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel)
 			status = DecodeStatus::FormatError;
 		}
 	}
+	if (resultString.empty() && resultMetadata->segmentIndex() == -1)
+		return DecodeStatus::FormatError;
 
 	if (StatusIsError(status))
 		return status;
