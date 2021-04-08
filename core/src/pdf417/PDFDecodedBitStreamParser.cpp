@@ -575,6 +575,9 @@ DecodeStatus DecodeMacroBlock(const std::vector<int>& codewords, int codeIndex, 
 	}
 	resultMetadata.setSegmentIndex(std::stoi(strBuf));
 
+	// Decoding the fileId codewords as 0-899 numbers, each 0-filled to width 3. This follows the spec
+	// (See ISO/IEC 15438:2015 Annex H.6) and preserves all info, but some generators (e.g. TEC-IT) write
+	// the fileId using text compaction, so in those cases the fileId will appear mangled.
 	std::ostringstream fileId;
 	fileId.fill('0');
 	for (int i = 0; codeIndex < codewords[0] && codewords[codeIndex] != MACRO_PDF417_TERMINATOR
