@@ -1,0 +1,3 @@
+include ':zxingcpp'
+include ':app'
+rootProject.name = "ZXingCpp"

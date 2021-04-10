@@ -76,7 +76,7 @@ std::string ToString(BarcodeFormats formats)
 static std::string NormalizeFormatString(std::string str)
 {
 	std::transform(str.begin(), str.end(), str.begin(), [](char c) { return (char)std::tolower(c); });
-	str.erase(std::remove_if(str.begin(), str.end(), [](char c) { return c == '_' || c == '-'; }), str.end());
+	str.erase(std::remove_if(str.begin(), str.end(), [](char c) { return Contains("_-[]", c); }), str.end());
 	return str;
 }
 

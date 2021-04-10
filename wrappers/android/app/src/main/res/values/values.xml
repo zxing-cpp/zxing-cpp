@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:immersive">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:windowTranslucentNavigation">true</item>
+    </style>
+
+    <style name="Chip" parent="Widget.MaterialComponents.Chip.Entry">
+        <item name="android:checkable">true</item>
+        <item name="chipSurfaceColor">#A0FFFFFF</item>
+        <item name="chipMinTouchTargetSize">42dp</item>
+        <item name="closeIconVisible">false</item>
+        <item name="android:layout_width">110dp</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="ChipR" parent="Chip">
+        <item name="android:scaleX">-1</item>
+    </style>
+
+
+    <string name="app_name">ZXingCpp-Demo</string>
+    <string name="capture_button_alt">Capture</string>
+    <string name="unknown">UNKNOWN</string>
+
+
+    <dimen name="margin_xsmall">16dp</dimen>
+    <dimen name="margin_small">32dp</dimen>
+    <dimen name="margin_medium">48dp</dimen>
+    <dimen name="margin_large">64dp</dimen>
+    <dimen name="margin_xlarge">92dp</dimen>
+
+    <dimen name="spacing_small">4dp</dimen>
+    <dimen name="spacing_medium">8dp</dimen>
+    <dimen name="spacing_large">16dp</dimen>
+
+    <dimen name="shutter_button_size">64dp</dimen>
+    <dimen name="shutter_button_margin">80dp</dimen>
+
+</resources>

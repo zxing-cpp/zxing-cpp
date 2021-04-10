@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/camera_container"
+    android:background="@android:color/black"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.camera.view.PreviewView
+        android:id="@+id/view_finder"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:scaleType="fitCenter" />
+
+    <View
+        android:id="@+id/box_crop"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/shape_rectangle"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- Camera control buttons -->
+
+    <TextView
+        android:id="@+id/text_result"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_large"
+        android:background="#65000000"
+        android:shadowColor="@android:color/black"
+        android:shadowRadius="6"
+        android:text="@string/unknown"
+        android:textAllCaps="false"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium.Inverse"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/text_fps"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_xsmall"
+        android:layout_marginEnd="@dimen/margin_xsmall"
+        android:background="#65000000"
+        android:shadowColor="@android:color/black"
+        android:shadowRadius="6"
+        android:text="@string/unknown"
+        android:textAllCaps="false"
+        android:textAppearance="@style/TextAppearance.AppCompat.Small.Inverse"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageButton
+        android:id="@+id/camera_capture_button"
+        android:layout_width="@dimen/shutter_button_size"
+        android:layout_height="@dimen/shutter_button_size"
+        android:layout_marginEnd="@dimen/shutter_button_margin"
+        android:background="@drawable/ic_shutter"
+        android:contentDescription="@string/capture_button_alt"
+        android:scaleType="fitCenter"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.chip.ChipGroup
+        android:layout_width="120dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_java"
+            style="@style/Chip"
+            android:text="Java" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_qrcode"
+            style="@style/Chip"
+            android:text="QRCode" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_tryHarder"
+            style="@style/Chip"
+            android:text="tryHarder" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_tryRotate"
+            style="@style/Chip"
+            android:text="tryRotate" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_crop"
+            style="@style/Chip"
+            android:text="crop" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_pause"
+            style="@style/Chip"
+            android:text="pause" />
+
+    </com.google.android.material.chip.ChipGroup>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
