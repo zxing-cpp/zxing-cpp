@@ -252,14 +252,16 @@ static DetectorResult SampleAtFinderPatternSet(const BitMatrix& image, const Fin
 	int moduleSize = static_cast<int>(best.ms + 1);
 
 	auto quad = Rectangle(dimension, dimension, 3.5);
-	PointF br = fp.tr - fp.tl + fp.bl;
+
+	auto sample = [&](PointF br, PointF quad2) {
+		log(br, 3);
+		quad[2] = quad2;
+		return SampleGrid(image, dimension, dimension, {quad, {fp.tl, fp.tr, br, fp.bl}});
+	};
 
 	// Everything except version 1 (21 modules) has an alignment pattern. Estimate the center of that by intersecting
 	// line extensions of the 1 module wide sqare around the finder patterns. This could also help with detecting
-	// slanted symbols of version 1 but since we can not fine tune the estimated position, this may make things worse
-	// (see #199). -> for version 1 codes, we use the simple upstream approach.
-	if (dimension == 21)
-		return SampleGrid(image, dimension, dimension, {quad, {fp.tl, fp.tr, br, fp.bl}});
+	// slanted symbols of version 1.
 
 	// generate 4 lines: outer and inner edge of the 1 module wide black line between the two outer and the inner
 	// (tl) finder pattern
@@ -270,27 +272,33 @@ static DetectorResult SampleAtFinderPatternSet(const BitMatrix& image, const Fin
 
 	if (bl2.isValid() && tr2.isValid() && bl3.isValid() && tr3.isValid()) {
 		// intersect both outer and inner line pairs and take the center point between the two intersection points
-		br = (intersect(bl2, tr2) + intersect(bl3, tr3)) / 2;
+		auto brInter = (intersect(bl2, tr2) + intersect(bl3, tr3)) / 2;
+		log(brInter, 3);
 
 		// if the estimated alignment pattern position is outside of the image, stop here
-		if (!image.isIn(PointI(br), 3 * moduleSize))
+		if (!image.isIn(PointI(brInter), 3 * moduleSize))
 			return {};
 
-		quad[2] = quad[2] - PointF(3, 3);
+		if (dimension > 21) {
+			// just in case we landed outside of the central black module of the alignment pattern, use the center
+			// of the next best circle (either outer or inner edge of the white part of the alignment pattern)
+			auto brCoR = CenterOfRing(image, PointI(brInter), moduleSize * 4, 1, false).value_or(brInter);
+			// if we did not land on a black pixel or the concentric pattern finder fails,
+			// leave the intersection of the lines as the best guess
+			if (image.get(brCoR)) {
+				if (auto brCP = LocateConcentricPattern<true>(image, FixedPattern<3, 3>{1, 1, 1}, brCoR, moduleSize * 3))
+					return sample(*brCP, quad[2] - PointF(3, 3));
+			}
+		}
 
-		// in case we landed outside of the central black module of the alignment pattern, use the center
-		// of the next best circle (either outer or inner edge of the white part of the alignment pattern)
-		auto br2 = CenterOfRing(image, PointI(br), moduleSize * 4, 1, false).value_or(br);
-		// if we did not land on a black pixel or the concentric pattern finder fails,
-		// leave the intersection of the lines as the best guess
-		if (image.get(br2))
-			br = LocateConcentricPattern<true>(image, FixedPattern<3, 3>{1, 1, 1}, br2, moduleSize * 3)
-					 .value_or(ConcentricPattern{br});
+		// if the resolution of the RegressionLines is sufficient, use their intersection as the best estimate
+		// (see discussion in #199, TODO: tune threshold in RegressionLine::isHighRes())
+		if (bl2.isHighRes() && bl3.isHighRes() && tr2.isHighRes() && tr3.isHighRes())
+			return sample(brInter, quad[2] - PointF(3, 3));
 	}
 
-	log(br, 3);
-
-	return SampleGrid(image, dimension, dimension, {quad, {fp.tl, fp.tr, br, fp.bl}});
+	// otherwise the simple estimation used by upstream is used as a best guess fallback
+	return sample(fp.tr - fp.tl + fp.bl, quad[2]);
 }
 
 /**

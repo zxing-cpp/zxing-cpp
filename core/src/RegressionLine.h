@@ -112,6 +112,22 @@ public:
 		}
 		return ret;
 	}
+
+	bool isHighRes() const
+	{
+		PointF min = _points.front(), max = _points.front();
+		for (auto p : _points) {
+			min.x = std::min(min.x, p.x);
+			min.y = std::min(min.y, p.y);
+			max.x = std::max(max.x, p.x);
+			max.y = std::max(max.y, p.y);
+		}
+		auto diff  = max - min;
+		auto len   = maxAbsComponent(diff);
+		auto steps = std::min(std::abs(diff.x), std::abs(diff.y));
+		// due to aliasing we get bad extrapolations if the line is short and too close to vertical/horizontal
+		return steps > 2 || len > 50;
+	}
 };
 
 inline PointF intersect(const RegressionLine& l1, const RegressionLine& l2)
