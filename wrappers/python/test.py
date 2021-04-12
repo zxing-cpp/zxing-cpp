@@ -19,23 +19,23 @@ class TestFormat(unittest.TestCase):
 @unittest.skipIf(not has_numpy, "need numpy for read/write tests")
 class TestReadWrite(unittest.TestCase):
 
+	def check_res(self, res, format, text):
+		self.assertTrue(res.valid)
+		self.assertEqual(res.format, format)
+		self.assertEqual(res.text, text)
+		self.assertEqual(res.orientation, 0)
+
 	def test_write_read_cycle(self):
 		format = BF.QRCode
 		text = "I have the best words."
 		img = zxing.write_barcode(format, text)
 
 		res = zxing.read_barcode(img)
-		self.assertTrue(res.valid)
-		self.assertEqual(res.format, format)
-		self.assertEqual(res.text, text)
-		self.assertEqual(res.orientation, 0)
+		self.check_res(res, format, text)
 		self.assertEqual(res.position.top_left.x, 4)
 
 		res = zxing.read_barcode(img, formats=format)
-		self.assertTrue(res.valid)
-		self.assertEqual(res.format, format)
-		self.assertEqual(res.text, text)
-		self.assertEqual(res.orientation, 0)
+		self.check_res(res, format, text)
 		self.assertEqual(res.position.top_left.x, 4)
 
 	def test_write_read_oned_cycle(self):
@@ -48,10 +48,7 @@ class TestReadWrite(unittest.TestCase):
 		self.assertEqual(img.shape[1], width)
 
 		res = zxing.read_barcode(img)
-		self.assertTrue(res.valid)
-		self.assertEqual(res.format, format)
-		self.assertEqual(res.text, text)
-		self.assertEqual(res.orientation, 0)
+		self.check_res(res, format, text)
 		self.assertEqual(res.position.top_left.x, 61)
 
 	def test_failed_read(self):
@@ -72,44 +69,11 @@ class TestReadWrite(unittest.TestCase):
 		img = zxing.write_barcode(format, text)
 		img = Image.fromarray(img, "L")
 
-		res = zxing.read_barcode(img)
-		self.assertTrue(res.valid)
-		self.assertEqual(res.format, format)
-		self.assertEqual(res.text, text)
-		self.assertEqual(res.orientation, 0)
-		self.assertEqual(res.position.top_left.x, 4)
-
-		rgb_img = img.convert("RGB")
-		res = zxing.read_barcode(rgb_img)
-		self.assertTrue(res.valid)
-		self.assertEqual(res.format, format)
-		self.assertEqual(res.text, text)
-		self.assertEqual(res.orientation, 0)
-		self.assertEqual(res.position.top_left.x, 4)
-
-		rgba_img = img.convert("RGBA")
-		res = zxing.read_barcode(rgba_img)
-		self.assertTrue(res.valid)
-		self.assertEqual(res.format, format)
-		self.assertEqual(res.text, text)
-		self.assertEqual(res.orientation, 0)
-		self.assertEqual(res.position.top_left.x, 4)
-
-		bin_img = img.convert("1")
-		res = zxing.read_barcode(bin_img)
-		self.assertTrue(res.valid)
-		self.assertEqual(res.format, format)
-		self.assertEqual(res.text, text)
-		self.assertEqual(res.orientation, 0)
-		self.assertEqual(res.position.top_left.x, 4)
-
-		cmyk_img = img.convert("CMYK")
-		res = zxing.read_barcode(cmyk_img)
-		self.assertTrue(res.valid)
-		self.assertEqual(res.format, format)
-		self.assertEqual(res.text, text)
-		self.assertEqual(res.orientation, 0)
-		self.assertEqual(res.position.top_left.x, 4)
+		self.check_res(zxing.read_barcode(img), format, text)
+		self.check_res(zxing.read_barcode(img.convert("RGB")), format, text)
+		self.check_res(zxing.read_barcode(img.convert("RGBA")), format, text)
+		self.check_res(zxing.read_barcode(img.convert("1")), format, text)
+		self.check_res(zxing.read_barcode(img.convert("CMYK")), format, text)
 
 	def test_read_invalid_type(self):
 		self.assertRaisesRegex(
