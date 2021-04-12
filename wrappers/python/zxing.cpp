@@ -34,13 +34,11 @@ std::ostream& operator<<(std::ostream& os, const Position& points) {
 	return os;
 }
 
-Result read_barcode(
-	py::object _image, const BarcodeFormats& formats, bool try_harder, bool try_rotate, Binarizer binarizer,
-	bool is_pure, EanAddOnSymbol ean_add_on_symbol)
+Result read_barcode(py::object _image, const BarcodeFormats& formats, bool try_rotate, Binarizer binarizer,
+					bool is_pure, EanAddOnSymbol ean_add_on_symbol)
 {
 	const auto hints = DecodeHints()
 		.setFormats(formats)
-		.setTryHarder(try_harder)
 		.setTryRotate(try_rotate)
 		.setBinarizer(binarizer)
 		.setIsPure(is_pure)
@@ -202,7 +200,6 @@ PYBIND11_MODULE(zxing, m)
 	m.def("read_barcode", &read_barcode,
 		py::arg("image"),
 		py::arg("formats") = BarcodeFormats{},
-		py::arg("try_harder") = true,
 		py::arg("try_rotate") = true,
 		py::arg("binarizer") = Binarizer::LocalAverage,
 		py::arg("is_pure") = false,
@@ -214,9 +211,6 @@ PYBIND11_MODULE(zxing, m)
 		"  - a PIL Image\n"
 		":type formats: zxing.BarcodeFormat|zxing.BarcodeFormats\n"
 		":param formats: the format(s) to decode. If ``None``, decode all formats.\n"
-		":type try_harder: bool\n"
-		":param try_harder: if ``True`` (the default), spend more time to try to find a barcode; if ``False``, \n"
-		"  speed up detection, but with less accuracy.\n"
 		":type try_rotate: bool\n"
 		":param try_rotate: if ``True`` (the default), decoder searched for barcodes in any direction; \n"
 		"  if ``False``, it will not search for 90° / 270° rotated barcodes.\n"
