@@ -114,3 +114,8 @@ jobs:
     - name: Build the lib/app
       working-directory: wrappers/android
       run: ./gradlew build
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: android-artifacts
+        path: "zxingcpp/build/outputs/zxingcpp-release.aar"
