@@ -15,13 +15,9 @@
 * limitations under the License.
 */
 
-#include "BinaryBitmap.h"
 #include "BlackboxTestRunner.h"
 #include "ByteArray.h"
-#include "DecodeHints.h"
 #include "ImageLoader.h"
-#include "MultiFormatReader.h"
-#include "Result.h"
 #include "TextUtfEncoding.h"
 #include "ZXContainerAlgorithms.h"
 #include "ZXFilesystem.h"
@@ -54,11 +50,10 @@ int main(int argc, char** argv)
 		auto hints = DecodeHints().setTryHarder(!getEnv("FAST", false)).setTryRotate(true).setIsPure(getEnv("IS_PURE"));
 		if (getenv("FORMATS"))
 			hints.setFormats(BarcodeFormatsFromString(getenv("FORMATS")));
-		MultiFormatReader reader(hints);
 		int rotation = getEnv("ROTATION");
 
 		for (int i = 1; i < argc; ++i) {
-			Result result = reader.read(ImageLoader::load(argv[i], hints.isPure(), rotation));
+			Result result = ReadBarcode(ImageLoader::load(argv[i]).rotated(rotation), hints);
 			std::cout << argv[i] << ": ";
 			if (result.isValid())
 				std::cout << ToString(result.format()) << ": " << TextUtfEncoding::ToUtf8(result.text()) << "\n";

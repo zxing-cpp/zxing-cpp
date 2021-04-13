@@ -17,13 +17,10 @@
 
 #include "BlackboxTestRunner.h"
 
-#include "BinaryBitmap.h"
-#include "DecodeHints.h"
 #include "ImageLoader.h"
-#include "MultiFormatReader.h"
-#include "Result.h"
-#include "TextDecoder.h"
+#include "ReadBarcode.h"
 #include "TextUtfEncoding.h"
+#include "ThresholdBinarizer.h"
 #include "ZXContainerAlgorithms.h"
 #include "pdf417/PDFReader.h"
 #include "qrcode/QRReader.h"
@@ -114,7 +111,7 @@ void preloadImageCache(const std::vector<fs::path>& imgPaths)
 	auto startTime = std::chrono::steady_clock::now();
 	ImageLoader::clearCache();
 	for (const auto& imgPath : imgPaths)
-		ImageLoader::load(imgPath, true);
+		ImageLoader::load(imgPath);
 	totalImageLoadTime += timeSince(startTime);
 }
 
@@ -174,9 +171,10 @@ static void doRunTests(
 			hints.setTryHarder(tc.name == "slow");
 			hints.setTryRotate(tc.name == "slow");
 			hints.setIsPure(tc.name == "pure");
-			MultiFormatReader reader(hints);
+			if (hints.isPure())
+				hints.setBinarizer(Binarizer::FixedThreshold);
 			for (const auto& imgPath : imgPaths) {
-				auto result = reader.read(ImageLoader::load(imgPath, hints.isPure(), test.rotation));
+				auto result = ReadBarcode(ImageLoader::load(imgPath).rotated(test.rotation), hints);
 				if (result.isValid()) {
 					auto error = checkResult(imgPath, format, result);
 					if (!error.empty())
@@ -201,7 +199,7 @@ static Result readMultiple(const std::vector<fs::path>& imgPaths, int rotation, 
 {
 	std::list<Result> allResults;
 	for (const auto& imgPath : imgPaths) {
-		auto results = read(*ImageLoader::load(imgPath).rotated(rotation));
+		auto results = read(ThresholdBinarizer(ImageLoader::load(imgPath), 127));
 		allResults.insert(allResults.end(), results.begin(), results.end());
 	}
 

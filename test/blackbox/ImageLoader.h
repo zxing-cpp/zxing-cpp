@@ -15,17 +15,12 @@
 * limitations under the License.
 */
 
+#include "ReadBarcode.h"
 #include "ZXFilesystem.h"
 
-namespace ZXing {
-
-class BinaryBitmap;
-
-namespace Test::ImageLoader {
+namespace ZXing::Test::ImageLoader {
 
 void clearCache();
-const BinaryBitmap& load(const fs::path& imgPath, bool isPure = false, int rotation = 0);
+const ImageView& load(const fs::path& imgPath);
 
-} // namespace Test::ImageLoader
-
-} // ZXing::Test
+} // namespace ZXing::Test::ImageLoader

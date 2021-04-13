@@ -48,11 +48,6 @@ public:
 		ImageView::operator=({_memory.get(), width, height, ImageFormat::Lum});
 	}
 
-	auto luminanceSource() const
-	{
-		return std::make_shared<GenericLuminanceSource>(0, 0, _width, _height, _memory.get(), _width, 1, 0, 0, 0, nullptr);
-	}
-
 	operator bool() const { return _data; }
 };
 
@@ -63,7 +58,7 @@ void ImageLoader::clearCache()
 	cache.clear();
 }
 
-const BinaryBitmap& ImageLoader::load(const fs::path& imgPath, bool isPure, int rotation)
+const ImageView& ImageLoader::load(const fs::path& imgPath)
 {
 	thread_local std::unique_ptr<BinaryBitmap> localAverage, threshold;
 
@@ -71,16 +66,7 @@ const BinaryBitmap& ImageLoader::load(const fs::path& imgPath, bool isPure, int 
 	if (!binImg)
 		binImg.load(imgPath);
 
-	if (isPure) {
-		threshold = std::make_unique<ThresholdBinarizer>(binImg, 127);
-		return *threshold;
-	} else {
-		if (rotation == 0)
-			localAverage = std::make_unique<HybridBinarizer>(binImg.luminanceSource());
-		else
-			localAverage = std::make_unique<HybridBinarizer>(binImg.luminanceSource()->rotated(rotation));
-		return *localAverage;
-	}
+	return binImg;
 }
 
 } // namespace ZXing::Test

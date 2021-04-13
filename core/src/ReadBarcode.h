@@ -70,7 +70,7 @@ public:
 
 	const uint8_t* data(int x, int y) const { return _data + y * _rowStride + x * _pixStride; }
 
-	ImageView cropped(int left, int top, int width, int height)
+	ImageView cropped(int left, int top, int width, int height) const
 	{
 		left   = std::max(0, left);
 		top    = std::max(0, top);
@@ -79,7 +79,7 @@ public:
 		return {data(left, top), width, height, _format, _rowStride, _pixStride};
 	}
 
-	ImageView rotated(int degree)
+	ImageView rotated(int degree) const
 	{
 		switch ((degree + 360) % 360) {
 		case 90: return {data(0, _height - 1), _height, _width, _format, _pixStride, -_rowStride};
