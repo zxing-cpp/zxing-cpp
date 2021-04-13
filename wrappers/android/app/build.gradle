@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId 'com.example.zxingdemo'
-        minSdkVersion 28
+        minSdkVersion 26
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"
@@ -30,6 +30,9 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    lintOptions {
+        disable "UnsafeExperimentalUsageError"
+    }
 }
 
 dependencies {
@@ -41,11 +44,11 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
 
     // CameraX
-    def camerax_version = "1.0.0-rc03"
+    def camerax_version = "1.0.0-rc04"
     implementation "androidx.camera:camera-core:${camerax_version}"
     implementation "androidx.camera:camera-camera2:${camerax_version}"
     implementation "androidx.camera:camera-lifecycle:${camerax_version}"
-    implementation "androidx.camera:camera-view:1.0.0-alpha22"
+    implementation 'androidx.camera:camera-view:1.0.0-alpha23'
 
     // Java 'upstream' version of zxing (to compare performance)
     implementation 'com.google.zxing:core:3.4.1'
