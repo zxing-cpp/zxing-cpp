@@ -70,12 +70,10 @@ PM> Install-Package huycn.zxingcpp.winrt
 3. Double-click on the batch script to run it.
 4. If the build succeeds, it will put the results in the folder UAP which is ready-to-use SDK extension.
 
-### Android NDK
-Note: The original Java-only [ZXing](https://github.com/zxing/zxing) project has a very good support for Android, whether you want to use it as external app via Intent or directly integrated into your app. You should consider using it first before trying this library since involving with native code is always more complex than Java-only code. Performance-wise, except for specific usecases, you won't notice the difference!
-
-1. Edit [`wrappers/android/jni/Application.mk`](wrappers/android/jni/Application.mk) and adjust for your project.
-2. On command line, `cd` into [`wrappers/android/jni`](wrappers/android/jni), type `ndk-build` (or `ndk-build -j <number of your CPU cores>`)
-3. Copy files in `libs` and `java` into corresponding folders of your Android project.
+### Android
+1. Install AndroidStudio including NDK and CMake (see 'SDK Tools').
+2. Open the project in folder [wrappers/android](wrappers/android).
+3. The project contains 2 modules: `zxingcpp` is the wrapper library, `app` is the demo app using `zxingcpp`
 
 ### WebAssembly
 1. [Install Emscripten](https://kripken.github.io/emscripten-site/docs/getting_started/) if not done already.
