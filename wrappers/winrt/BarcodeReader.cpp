@@ -23,11 +23,8 @@
 
 #include "BarcodeFormat.h"
 #include "DecodeHints.h"
-#include "GenericLuminanceSource.h"
-#include "HybridBinarizer.h"
-#include "MultiFormatReader.h"
+#include "ReadBarcode.h"
 #include "ReadResult.h"
-#include "Result.h"
 #include "TextUtfEncoding.h"
 
 #include <algorithm>
@@ -59,19 +56,17 @@ BarcodeReader::BarcodeReader(bool tryHarder)
 void
 BarcodeReader::init(bool tryHarder, bool tryRotate, const Platform::Array<BarcodeType>^ types)
 {
-	DecodeHints hints;
-	hints.setTryHarder(tryHarder);
-	hints.setTryRotate(tryRotate);
+	m_hints.reset(new DecodeHints());
+	m_hints->setTryHarder(tryHarder);
+	m_hints->setTryRotate(tryRotate);
 
 	if (types != nullptr && types->Length > 0) {
 		BarcodeFormats barcodeFormats;
 		for (BarcodeType type : types) {
 			barcodeFormats |= BarcodeReader::ConvertRuntimeToNative(type);
 		}
-		hints.setFormats(barcodeFormats);
+		m_hints->setFormats(barcodeFormats);
 	}
-
-	m_reader.reset(new MultiFormatReader(hints));
 }
 
 BarcodeReader::~BarcodeReader()
@@ -159,46 +154,6 @@ BarcodeType BarcodeReader::ConvertNativeToRuntime(BarcodeFormat format)
 	}
 }
 
-static std::shared_ptr<BinaryBitmap>
-CreateBinaryBitmap(SoftwareBitmap^ bitmap, int cropWidth, int cropHeight)
-{
-	cropWidth = cropWidth <= 0 ? bitmap->PixelWidth : std::min(bitmap->PixelWidth, cropWidth);
-	cropHeight = cropHeight <= 0 ? bitmap->PixelHeight : std::min(bitmap->PixelHeight, cropHeight);
-	int cropLeft = (bitmap->PixelWidth - cropWidth) / 2;
-	int cropTop = (bitmap->PixelHeight - cropHeight) / 2;
-
-	auto inBuffer = bitmap->LockBuffer(BitmapBufferAccessMode::Read);
-	auto inMemRef = inBuffer->CreateReference();
-	ComPtr<IMemoryBufferByteAccess> inBufferAccess;
-	if (SUCCEEDED(ComPtr<IUnknown>(reinterpret_cast<IUnknown*>(inMemRef)).As(&inBufferAccess)))
-	{
-		BYTE* inBytes = nullptr;
-		UINT32 inCapacity = 0;
-		inBufferAccess->GetBuffer(&inBytes, &inCapacity);
-
-		std::shared_ptr<GenericLuminanceSource> luminance;
-		switch (bitmap->BitmapPixelFormat)
-		{
-		case BitmapPixelFormat::Gray8:
-			luminance = std::make_shared<GenericLuminanceSource>(cropLeft, cropTop, cropWidth, cropHeight, inBytes, inBuffer->GetPlaneDescription(0).Stride);
-			break;
-		case BitmapPixelFormat::Bgra8:
-			luminance = std::make_shared<GenericLuminanceSource>(cropLeft, cropTop, cropWidth, cropHeight, inBytes, inBuffer->GetPlaneDescription(0).Stride, 4, 2, 1, 0);
-			break;
-		case BitmapPixelFormat::Rgba8:
-			luminance = std::make_shared<GenericLuminanceSource>(cropLeft, cropTop, cropWidth, cropHeight, inBytes, inBuffer->GetPlaneDescription(0).Stride, 4, 0, 1, 2);
-			break;
-		default:
-			throw std::runtime_error("Unsupported format");
-		}
-		return std::make_shared<HybridBinarizer>(luminance);
-	}
-	else
-	{
-		throw std::runtime_error("Failed to read bitmap's data");
-	}
-}
-
 static Platform::String^ ToPlatformString(const std::wstring& str)
 {
 	return ref new Platform::String(str.c_str(), (unsigned)str.length());
@@ -214,10 +169,39 @@ ReadResult^
 BarcodeReader::Read(SoftwareBitmap^ bitmap, int cropWidth, int cropHeight)
 {
 	try {
-		auto binImg = CreateBinaryBitmap(bitmap, cropWidth, cropHeight);
-		auto result = m_reader->read(*binImg);
-		if (result.isValid()) {
-			return ref new ReadResult(ToPlatformString(ZXing::ToString(result.format())), ToPlatformString(result.text()), ConvertNativeToRuntime(result.format()));
+		cropWidth = cropWidth <= 0 ? bitmap->PixelWidth : std::min(bitmap->PixelWidth, cropWidth);
+		cropHeight = cropHeight <= 0 ? bitmap->PixelHeight : std::min(bitmap->PixelHeight, cropHeight);
+		int cropLeft = (bitmap->PixelWidth - cropWidth) / 2;
+		int cropTop = (bitmap->PixelHeight - cropHeight) / 2;
+
+		auto inBuffer = bitmap->LockBuffer(BitmapBufferAccessMode::Read);
+		auto inMemRef = inBuffer->CreateReference();
+		ComPtr<IMemoryBufferByteAccess> inBufferAccess;
+
+		if (SUCCEEDED(ComPtr<IUnknown>(reinterpret_cast<IUnknown*>(inMemRef)).As(&inBufferAccess))) {
+			BYTE* inBytes = nullptr;
+			UINT32 inCapacity = 0;
+			inBufferAccess->GetBuffer(&inBytes, &inCapacity);
+
+			ImageFormat fmt = ImageFormat::None;
+			switch (bitmap->BitmapPixelFormat)
+			{
+			case BitmapPixelFormat::Gray8: fmt = ImageFormat::Lum; break;
+			case BitmapPixelFormat::Bgra8: fmt = ImageFormat::BGRX; break;
+			case BitmapPixelFormat::Rgba8: fmt = ImageFormat::RGBX; break;
+			default:
+				throw std::runtime_error("Unsupported BitmapPixelFormat");
+			}
+
+			auto img = ImageView(inBytes, bitmap->PixelWidth, bitmap->PixelHeight, fmt, inBuffer->GetPlaneDescription(0).Stride)
+						   .cropped(cropLeft, cropTop, cropWidth, cropHeight);
+
+			auto result = ReadBarcode(img, *m_hints);
+			if (result.isValid()) {
+				return ref new ReadResult(ToPlatformString(ZXing::ToString(result.format())), ToPlatformString(result.text()), ConvertNativeToRuntime(result.format()));
+			}
+		} else {
+			throw std::runtime_error("Failed to read bitmap's data");
 		}
 	}
 	catch (const std::exception& e) {
