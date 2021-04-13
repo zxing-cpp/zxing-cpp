@@ -60,10 +60,6 @@ PM> Install-Package huycn.zxingcpp.winrt
 2. Make sure a C++17 compliant compiler is installed (minimum VS 2019 16.8 / gcc 7 / clang 5)
 3. See the cmake `BUILD_...` options to enable the testing code, python wrapper, etc.
 
-### Windows GDIPlus wrapper
-1. Open CMake GUI, specify [`wrappers/gdiplus`](wrappers/gdiplus) as source folder in the first input, specify the build output in the second input, and click on Generate.
-2. At prompt, select "Visual Studio 15 2017" (or "Visual Studio 15 2017 Win64" if you want to build for x64 platform); leave the second input (Optional toolset...) empty; leave "Use default native compilers" checked; and click on Finish to generate the VS project. At the end, you will get a solution (.sln) in your binary output directory that you can open in VS. The project ZXingGdiPlus in the solution will generate a static library.
-
 ### Windows Universal Platform
 1. Download and install [CMake](https://cmake.org) 3.4 or more recent if it's not already installed.
 2. Edit the file [`wrappers/winrt/BuildWinCom.bat`](wrappers/winrt/BuildWinCom.bat) to adjust the path to your CMake installation.
