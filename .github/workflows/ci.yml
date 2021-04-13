@@ -105,3 +105,12 @@ jobs:
     - name: Test module
       working-directory: wrappers/python
       run: python -m unittest -v
+
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Build the lib/app
+      working-directory: wrappers/android
+      run: ./gradlew build
