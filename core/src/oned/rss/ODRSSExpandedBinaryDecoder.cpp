@@ -30,7 +30,6 @@
 #include "BitArray.h"
 #include "DecodeStatus.h"
 #include "ODRSSGenericAppIdDecoder.h"
-#include "ZXStrConvWorkaround.h"
 
 #include <functional>
 

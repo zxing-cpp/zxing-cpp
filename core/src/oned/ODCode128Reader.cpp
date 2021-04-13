@@ -22,7 +22,6 @@
 #include "ODCode128Patterns.h"
 #include "Result.h"
 #include "ZXContainerAlgorithms.h"
-#include "ZXStrConvWorkaround.h"
 
 #include <array>
 #include <cassert>

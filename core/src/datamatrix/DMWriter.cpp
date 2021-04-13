@@ -24,7 +24,6 @@
 #include "DMHighLevelEncoder.h"
 #include "DMSymbolInfo.h"
 #include "DMSymbolShape.h"
-#include "ZXStrConvWorkaround.h"
 
 #include <stdexcept>
 #include <string>

@@ -19,7 +19,6 @@
 #include "ByteMatrix.h"
 #include "MultiFormatWriter.h"
 #include "TextUtfEncoding.h"
-#include "ZXStrConvWorkaround.h"
 
 #include <algorithm>
 #include <cctype>

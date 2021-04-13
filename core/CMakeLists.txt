@@ -72,7 +72,6 @@ set (COMMON_FILES
     src/ZXConfig.h
     src/ZXNullable.h
     src/ZXContainerAlgorithms.h
-    src/ZXStrConvWorkaround.h
     src/ZXTestSupport.h
 )
 if (BUILD_READERS)

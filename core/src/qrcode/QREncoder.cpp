@@ -27,7 +27,6 @@
 #include "QRMatrixUtil.h"
 #include "ReedSolomonEncoder.h"
 #include "TextEncoder.h"
-#include "ZXStrConvWorkaround.h"
 #include "ZXTestSupport.h"
 
 #include <algorithm>

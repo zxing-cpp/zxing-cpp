@@ -30,7 +30,6 @@
 #include "ReedSolomonDecoder.h"
 #include "TextDecoder.h"
 #include "ZXContainerAlgorithms.h"
-#include "ZXStrConvWorkaround.h"
 #include "ZXTestSupport.h"
 
 #include <algorithm>

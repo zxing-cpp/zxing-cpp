@@ -26,7 +26,6 @@
 #include "MCBitMatrixParser.h"
 #include "ReedSolomonDecoder.h"
 #include "TextDecoder.h"
-#include "ZXStrConvWorkaround.h"
 
 #include <algorithm>
 #include <array>

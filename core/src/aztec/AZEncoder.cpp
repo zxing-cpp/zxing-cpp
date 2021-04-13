@@ -21,7 +21,6 @@
 #include "BitArray.h"
 #include "GenericGF.h"
 #include "ReedSolomonEncoder.h"
-#include "ZXStrConvWorkaround.h"
 #include "ZXTestSupport.h"
 
 #include <cstdlib>

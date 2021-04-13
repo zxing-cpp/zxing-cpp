@@ -21,7 +21,6 @@
 #include "ODWriterHelper.h"
 #include "TextEncoder.h"
 #include "ZXContainerAlgorithms.h"
-#include "ZXStrConvWorkaround.h"
 
 #include <array>
 #include <stdexcept>

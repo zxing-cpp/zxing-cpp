@@ -24,7 +24,6 @@
 #include "ByteArray.h"
 #include "DecodeStatus.h"
 #include "DecoderResult.h"
-#include "ZXStrConvWorkaround.h"
 #include "ZXTestSupport.h"
 
 #include <array>

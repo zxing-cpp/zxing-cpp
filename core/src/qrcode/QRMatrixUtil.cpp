@@ -22,7 +22,6 @@
 #include "QRDataMask.h"
 #include "QRErrorCorrectionLevel.h"
 #include "QRVersion.h"
-#include "ZXStrConvWorkaround.h"
 
 #include <array>
 #include <stdexcept>

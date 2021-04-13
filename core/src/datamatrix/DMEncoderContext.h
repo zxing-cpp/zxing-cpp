@@ -20,7 +20,6 @@
 #include "DMSymbolInfo.h"
 #include "DMSymbolShape.h"
 #include "ZXContainerAlgorithms.h"
-#include "ZXStrConvWorkaround.h"
 
 #include <stdexcept>
 #include <string>

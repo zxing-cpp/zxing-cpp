@@ -19,7 +19,6 @@
 
 #include "ByteArray.h"
 #include "DMSymbolInfo.h"
-#include "ZXStrConvWorkaround.h"
 
 #include <algorithm>
 #include <array>
