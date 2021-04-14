@@ -18,7 +18,6 @@
 #include "MCDecoder.h"
 
 #include "ByteArray.h"
-#include "CharacterSet.h"
 #include "CharacterSetECI.h"
 #include "DecoderResult.h"
 #include "DecodeStatus.h"
@@ -41,8 +40,6 @@ namespace ZXing::MaxiCode {
 static const int ALL = 0;
 static const int EVEN = 1;
 static const int ODD = 2;
-
-constexpr CharacterSet DEFAULT_ENCODING = CharacterSet::ISO8859_1;
 
 static bool CorrectErrors(ByteArray& codewordBytes, int start, int dataCodewords, int ecCodewords, int mode)
 {
@@ -215,15 +212,7 @@ namespace DecodedBitStreamParser
 		int shift = -1;
 		int set = 0;
 		int lastset = 0;
-		int eci = -1;
-		CharacterSet encoding = DEFAULT_ENCODING;
-
-		if (!characterSet.empty()) {
-			auto encodingInit = CharacterSetECI::CharsetFromName(characterSet.c_str());
-			if (encodingInit != CharacterSet::Unknown) {
-				encoding = encodingInit;
-			}
-		}
+		CharacterSet encoding = CharacterSetECI::InitEncoding(characterSet);
 
 		for (int i = start; i < start + len; i++) {
 			int c = CHARSETS[set].at(bytes[i]);
@@ -263,16 +252,7 @@ namespace DecodedBitStreamParser
 				shift = -1;
 				break;
 			case ECI:
-				eci = ParseECIValue(bytes, i);
-				if (eci >= 0 && eci <= 899) { // Character Set ECIs
-					auto encodingNew = CharacterSetECI::CharsetFromValue(eci);
-					if (encodingNew != CharacterSet::Unknown && encodingNew != encoding) {
-						// Encode data so far in current encoding and reset
-						TextDecoder::Append(sbEncoded, reinterpret_cast<const uint8_t*>(sb.data()), sb.size(), encoding);
-						sb.clear();
-						encoding = encodingNew;
-					}
-				}
+				encoding = CharacterSetECI::OnChangeAppendReset(ParseECIValue(bytes, i), sbEncoded, sb, encoding);
 				break;
 			case PAD:
 				if (i == start) {

@@ -20,14 +20,14 @@
 #include <clocale>
 #include <vector>
 
-TEST(TextUtfEncoding, ToUtf8AngleEscapeTest)
+TEST(TextUtfEncodingTest, ToUtf8AngleEscape)
 {
 	using namespace ZXing::TextUtfEncoding;
 
 	bool angleEscape = true;
 
-	char* ctype_locale = std::setlocale(LC_CTYPE, NULL);
-	EXPECT_STREQ(ctype_locale, "C");
+	std::string ctype_locale(std::setlocale(LC_CTYPE, NULL)); // Use std::string to avoid assert on Windows Debug
+	EXPECT_EQ(ctype_locale, std::string("C"));
 
 #ifndef _WIN32
 	EXPECT_EQ(ToUtf8(std::wstring(L"\u00B6\u0416"), angleEscape), std::string("<U+B6><U+0416>"));
@@ -69,6 +69,8 @@ TEST(TextUtfEncoding, ToUtf8AngleEscapeTest)
 #else
 	EXPECT_EQ(ToUtf8(std::wstring(L"\U00010000"), angleEscape), std::string("<U+10000>"));
 #endif
+	EXPECT_EQ(ToUtf8(std::wstring(L"\xD800Z"), angleEscape), std::string("<U+D800>Z")); // Unpaired high surrogate
+	EXPECT_EQ(ToUtf8(std::wstring(L"A\xDC00"), angleEscape), std::string("A<U+DC00>")); // Unpaired low surrogate
 
-	std::setlocale(LC_CTYPE, ctype_locale);
+	std::setlocale(LC_CTYPE, ctype_locale.c_str());
 }

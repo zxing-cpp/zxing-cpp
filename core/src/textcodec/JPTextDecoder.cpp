@@ -2641,7 +2641,9 @@ JPTextDecoder::AppendShiftJIS(std::vector<uint16_t>& result, const uint8_t* byte
 		switch (nbuf) {
 		case 0:
 			if (ch < 0x80) {
-				result.push_back(ValidChar(ch));
+				// Using direct ASCII mapping, i.e. not doing standard mappings of backslash (0x5C) to
+				// Yen sign (U+00A5) and tilde (0x7E) to overline (U+203E)
+				result.push_back(ch);
 			}
 			else if (IsKana(ch)) {
 				// JIS X 0201 Latin or JIS X 0201 Kana

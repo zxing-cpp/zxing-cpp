@@ -213,6 +213,7 @@ TextEncoder::GetBytes(const std::wstring& str, CharacterSet charset, std::string
 	{
 	case CharacterSet::Unknown:
 	case CharacterSet::ISO8859_1:
+	case CharacterSet::BINARY:
 		bytes.reserve(str.length());
 		for (wchar_t c : str) {
 			if (c <= 0xff) {

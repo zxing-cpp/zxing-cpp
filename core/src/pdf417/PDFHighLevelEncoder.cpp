@@ -167,14 +167,14 @@ static void EncodingECI(int eci, std::vector<int>& buffer)
 		buffer.push_back(ECI_CHARSET);
 		buffer.push_back(eci);
 	}
-	else if (eci < 810900) {
+	else if (eci >= 900 && eci < 810900) {
 		buffer.push_back(ECI_GENERAL_PURPOSE);
 		buffer.push_back(eci / 900 - 1);
 		buffer.push_back(eci % 900);
 	}
-	else if (eci < 811800) {
+	else if (eci >= 810900 && eci < 811800) {
 		buffer.push_back(ECI_USER_DEFINED);
-		buffer.push_back(810900 - eci);
+		buffer.push_back(eci - 810900);
 	}
 	else {
 		throw std::invalid_argument("ECI number not in valid range from 0..811799");

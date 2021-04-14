@@ -20,7 +20,9 @@ add_executable (UnitTest
     BitArrayUtility.cpp
     PseudoRandom.h
     BitHacksTest.cpp
+    CharacterSetECITest.cpp
     ReedSolomonTest.cpp
+    TextDecoderTest.cpp
     TextUtfEncodingTest.cpp
     aztec/AZDetectorTest.cpp
     aztec/AZDecoderTest.cpp
@@ -60,6 +62,6 @@ add_executable (UnitTest
 
 target_include_directories (UnitTest PRIVATE .)
 
-target_link_libraries (UnitTest ZXing::ZXing gtest_main)
+target_link_libraries (UnitTest ZXing::ZXing gtest_main gmock)
 
 add_test(NAME UnitTest COMMAND UnitTest)

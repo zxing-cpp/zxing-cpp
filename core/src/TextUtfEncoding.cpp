@@ -211,7 +211,8 @@ std::string ToUtf8(const std::wstring& str, const bool angleEscape)
 
 	ws.fill(L'0');
 
-	for (wchar_t wc : str) {
+	for (unsigned int i = 0; i < str.length(); i++) {
+		wchar_t wc = str[i];
 		if (wc < 128) { // ASCII
 			if (wc < 32 || wc == 127) { // Non-graphical ASCII, excluding space
 				ws << "<" << ascii_nongraphs[wc == 127 ? 32 : wc] << ">";
@@ -219,12 +220,18 @@ std::string ToUtf8(const std::wstring& str, const bool angleEscape)
 				ws << wc;
 			}
 		} else {
-			// Include surrogates but exclude NO-BREAK spaces NBSP and NUMSP
-			if ((wc >= 0xd800 && wc < 0xe000) || (std::iswgraph(wc) && wc != 0xA0 && wc != 0x2007)) {
-				ws << wc;
-			} else { // Non-graphical Unicode
-				int width = wc < 256 ? 2 : 4;
-				ws << "<U+" << std::setw(width) << std::uppercase << std::hex << static_cast<unsigned int>(wc) << ">";
+			// Surrogates (Windows) need special treatment
+			if (i + 1 < str.length() && IsUtf16HighSurrogate(wc) && IsUtf16LowSurrogate(str[i + 1])) {
+				ws.write(str.c_str() + i++, 2);
+			} else {
+				// Exclude unpaired surrogates and NO-BREAK spaces NBSP and NUMSP
+				if ((wc < 0xd800 || wc >= 0xe000) && (std::iswgraph(wc) && wc != 0xA0 && wc != 0x2007)) {
+					ws << wc;
+				} else { // Non-graphical Unicode
+					int width = wc < 256 ? 2 : 4;
+					ws << "<U+" << std::setw(width) << std::uppercase << std::hex
+					   << static_cast<unsigned int>(wc) << ">";
+				}
 			}
 		}
 	}
