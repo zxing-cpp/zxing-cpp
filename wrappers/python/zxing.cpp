@@ -83,9 +83,9 @@ Result read_barcode(py::object _image, const BarcodeFormats& formats, bool try_r
 	return ReadBarcode({bytes, width, height, imgfmt, width * channels, channels}, hints);
 }
 
-Image write_barcode(BarcodeFormat format, std::string text, int width, int height, int quiet_zone, int eccLevel)
+Image write_barcode(BarcodeFormat format, std::string text, int width, int height, int quiet_zone, int ec_level)
 {
-	auto writer = MultiFormatWriter(format).setMargin(quiet_zone).setEccLevel(eccLevel);
+	auto writer = MultiFormatWriter(format).setMargin(quiet_zone).setEccLevel(ec_level);
 	auto bitmap = writer.encode(TextUtfEncoding::FromUtf8(text), width, height);
 
 	auto result = Image({bitmap.height(), bitmap.width()});
@@ -232,7 +232,7 @@ PYBIND11_MODULE(zxing, m)
 		py::arg("width") = 0,
 		py::arg("height") = 0,
 		py::arg("quiet_zone") = -1,
-		py::arg("ecc_level") = -1,
+		py::arg("ec_level") = -1,
 		"Write (encode) a text into a barcode and return numpy (grayscale) image array\n\n"
 		":type format: zxing.BarcodeFormat\n"
 		":param format: format of the barcode to create\n"
@@ -247,8 +247,8 @@ PYBIND11_MODULE(zxing, m)
 		":type quiet_zone: int\n"
 		":param quiet_zone: minimum size (in pixels) of the quiet zone around barcode. If undefined (or set to -1), \n"
 		"  the minimum quiet zone of respective barcode is used."
-		":type ecc_level: int\n"
-		":param ecc_level: error correction code level (in percent) of the barcode\n"
+		":type ec_level: int\n"
+		":param ec_level: error correction level of the barcode\n"
 		"  (Used for Aztec, PDF417, and QRCode only)."
 	);
 }
