@@ -198,6 +198,38 @@ TEST(QREncoderTest, SimpleUTF8ECI)
 		"X X X X X X X         X   X     X   X     \n");
 }
 
+TEST(QREncoderTest, SimpleBINARYECI)
+{
+	auto qrCode = Encode(L"\u00E9", ErrorCorrectionLevel::High, CharacterSet::BINARY, 0, false, -1);
+	EXPECT_EQ(qrCode.mode, CodecMode::BYTE);
+	EXPECT_EQ(qrCode.ecLevel, ErrorCorrectionLevel::High);
+	ASSERT_NE(qrCode.version, nullptr);
+	EXPECT_EQ(qrCode.version->versionNumber(), 1);
+	EXPECT_EQ(qrCode.maskPattern, 6);
+	EXPECT_EQ(ToString(qrCode.matrix),
+		"X X X X X X X     X X X X   X X X X X X X \n"
+		"X           X           X   X           X \n"
+		"X   X X X   X   X X   X     X   X X X   X \n"
+		"X   X X X   X   X X X X X   X   X X X   X \n"
+		"X   X X X   X       X       X   X X X   X \n"
+		"X           X     X     X   X           X \n"
+		"X X X X X X X   X   X   X   X X X X X X X \n"
+		"                    X X X                 \n"
+		"      X X   X X     X             X X     \n"
+		"X   X           X X       X     X   X   X \n"
+		"X X       X X X X X X X     X   X X X X X \n"
+		"X   X X X     X X   X     X       X X X X \n"
+		"      X   X X   X       X X X       X X X \n"
+		"                X   X X X     X   X   X X \n"
+		"X X X X X X X   X       X X X X X     X X \n"
+		"X           X     X       X   X X     X   \n"
+		"X   X X X   X   X   X X X X   X     X   X \n"
+		"X   X X X   X   X X   X   X X   X X X     \n"
+		"X   X X X   X           X   X     X X X   \n"
+		"X           X     X X X         X   X     \n"
+		"X X X X X X X     X X X   X X       X     \n");
+}
+
 TEST(QREncoderTest, EncodeKanjiMode)
 {
 	auto qrCode = Encode(L"\u65e5\u672c", ErrorCorrectionLevel::Medium, CharacterSet::Shift_JIS, 0, false, -1);

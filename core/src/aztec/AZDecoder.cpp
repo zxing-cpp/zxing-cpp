@@ -20,7 +20,6 @@
 #include "AZDetectorResult.h"
 #include "BitArray.h"
 #include "BitMatrix.h"
-#include "CharacterSet.h"
 #include "CharacterSetECI.h"
 #include "DecoderResult.h"
 #include "DecodeStatus.h"
@@ -37,8 +36,6 @@
 #include <vector>
 
 namespace ZXing::Aztec {
-
-constexpr CharacterSet DEFAULT_ENCODING = CharacterSet::ISO8859_1;
 
 enum class Table {
 	UPPER,
@@ -273,6 +270,20 @@ static const char* GetCharacter(Table table, int code)
 }
 
 /**
+* See ISO/IEC 24778:2008 10.1
+*/
+static int ParseECIValue(const std::vector<bool>& correctedBits, const int flg, const int endIndex, int& index)
+{
+	int eci = 0;
+	for (int i = 0; i < flg && endIndex - index >= 4; i++) {
+		eci *= 10;
+		eci += ReadCode(correctedBits, index, 4) - 2;
+		index += 4;
+	}
+	return eci;
+}
+
+/**
 * Gets the string encoded in the aztec code bits
 *
 * @return the decoded string
@@ -287,15 +298,7 @@ std::wstring GetEncodedData(const std::vector<bool>& correctedBits, const std::s
 	result.reserve(20);
 	std::wstring resultEncoded;
 	int index = 0;
-	int eci = -1;
-	CharacterSet encoding = DEFAULT_ENCODING;
-
-	if (!characterSet.empty()) {
-		auto encodingInit = CharacterSetECI::CharsetFromName(characterSet.c_str());
-		if (encodingInit != CharacterSet::Unknown) {
-			encoding = encodingInit;
-		}
-	}
+	CharacterSet encoding = CharacterSetECI::InitEncoding(characterSet);
 
 	while (index < endIndex) {
 		if (shiftTable == Table::BINARY) {
@@ -353,21 +356,8 @@ std::wstring GetEncodedData(const std::vector<bool>& correctedBits, const std::s
 				}
 				else if (flg <= 6) {
 					// FLG(1) to FLG(6) ECI
-					eci = 0;
-					for (int i = 0; i < flg && endIndex - index >= 4; i++) {
-						eci *= 10;
-						eci += ReadCode(correctedBits, index, 4) - 2;
-						index += 4;
-					}
-					if (eci >= 0 && eci <= 899) { // Character Set ECIs
-						auto encodingNew = CharacterSetECI::CharsetFromValue(eci);
-						if (encodingNew != CharacterSet::Unknown && encodingNew != encoding) {
-							// Encode data so far in current encoding and reset
-							TextDecoder::Append(resultEncoded, reinterpret_cast<const uint8_t*>(result.data()), result.size(), encoding);
-							result.clear();
-							encoding = encodingNew;
-						}
-					}
+					encoding = CharacterSetECI::OnChangeAppendReset(ParseECIValue(correctedBits, flg, endIndex, index),
+																	resultEncoded, result, encoding);
 				}
 				else {
 					// FLG(7) is invalid

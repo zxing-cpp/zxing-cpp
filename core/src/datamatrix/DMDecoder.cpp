@@ -19,7 +19,6 @@
 
 #include "BitMatrix.h"
 #include "BitSource.h"
-#include "CharacterSet.h"
 #include "CharacterSetECI.h"
 #include "DMBitLayout.h"
 #include "DMDataBlock.h"
@@ -97,12 +96,10 @@ static const char TEXT_SHIFT3_SET_CHARS[] = {
 	'O',  'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '{', '|', '}', '~', 127
 };
 
-constexpr CharacterSet DEFAULT_ENCODING = CharacterSet::ISO8859_1;
-
 // Encoding state (will be added to)
 struct State
 {
-	CharacterSet encoding = DEFAULT_ENCODING;
+	CharacterSet encoding;
 };
 
 struct Shift128
@@ -175,16 +172,8 @@ static Mode DecodeAsciiSegment(BitSource& bits, std::string& result, std::string
 		case 240: // Latch to EDIFACT encodation
 			return Mode::EDIFACT_ENCODE;
 		case 241: // ECI Character
-			if (int eci = ParseECIValue(bits); eci >= 0 && eci <= 899) { // Character Set ECIs
-				CharacterSet encoding = CharacterSetECI::CharsetFromValue(eci);
-				if (encoding != CharacterSet::Unknown && encoding != state.encoding) {
-					// Encode data so far in current encoding and reset
-					TextDecoder::Append(resultEncoded, reinterpret_cast<const uint8_t*>(result.data()), result.size(),
-										state.encoding);
-					result.clear();
-					state.encoding = encoding;
-				}
-			}
+			state.encoding = CharacterSetECI::OnChangeAppendReset(ParseECIValue(bits), resultEncoded, result,
+																  state.encoding);
 			break;
 		default:
 			if (oneByte <= 128) { // ASCII data (ASCII value + 1)
@@ -380,12 +369,7 @@ DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet)
 	std::wstring resultEncoded;
 	Mode mode = Mode::ASCII_ENCODE;
 	State state;
-
-	if (!characterSet.empty()) {
-		auto encodingInit = CharacterSetECI::CharsetFromName(characterSet.c_str());
-		if (encodingInit != CharacterSet::Unknown)
-			state.encoding = encodingInit;
-	}
+	state.encoding = CharacterSetECI::InitEncoding(characterSet);
 
 	while (mode != Mode::FORMAT_ERROR && mode != Mode::DONE) {
 		if (mode == Mode::ASCII_ENCODE) {
