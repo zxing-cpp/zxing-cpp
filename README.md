@@ -9,11 +9,12 @@ It was originally ported from the Java [ZXing Library](https://github.com/zxing/
 ## Features
 
 * In pure C++17, no third-party dependencies
-* Stateless, thread-safe readers/generators
-* Wrapper to create WinRT component
-* Wrapper for Android
-* Wrapper for WebAssembly
-* Python binding
+* Stateless, thread-safe readers/scanners and writers/generators
+* Wrapper/Bindings for:
+  * WinRT
+  * Android
+  * WebAssembly
+  * [Python](wrappers/python/README.md)
 
 ## Supported Formats
 
