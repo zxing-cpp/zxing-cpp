@@ -63,7 +63,7 @@ TEST(TextDecoderTest, AppendAllASCIIRange00_7F)
 		} else {
 			TextDecoder::Append(str, data, sizeof(data), static_cast<CharacterSet>(i));
 		}
-		EXPECT_THAT(str, ElementsAreArray(data, sizeof(data))) << "iso: " << i;
+		EXPECT_THAT(str, ElementsAreArray(data, sizeof(data))) << "charset: " << i;
 	}
 }
 

@@ -84,7 +84,7 @@ public:
 		_segmentCount = segmentCount;
 	}
 
-	std::string sender() const {
+	std::string sender() const { // UTF-8
 		return _sender;
 	}
 
@@ -92,7 +92,7 @@ public:
 		_sender = sender;
 	}
 
-	std::string addressee() const {
+	std::string addressee() const { // UTF-8
 		return _addressee;
 	}
 
@@ -100,7 +100,7 @@ public:
 		_addressee = addressee;
 	}
 
-	std::string fileName() const {
+	std::string fileName() const { // UTF-8
 		return _fileName;
 	}
 

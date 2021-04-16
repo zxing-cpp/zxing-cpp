@@ -74,7 +74,8 @@ static int GetMaxCodewordWidth(const std::array<Nullable<ResultPoint>, 8>& p)
 					std::max(GetMaxWidth(p[1], p[5]), GetMaxWidth(p[7], p[3]) * CodewordDecoder::MODULES_IN_CODEWORD / MODULES_IN_STOP_PATTERN));
 }
 
-DecodeStatus DoDecode(const BinaryBitmap& image, bool multiple, std::list<Result>& results)
+DecodeStatus DoDecode(const BinaryBitmap& image, bool multiple, std::list<Result>& results,
+					  const std::string& characterSet)
 {
 	Detector::Result detectorResult;
 	DecodeStatus status = Detector::Detect(image, multiple, detectorResult);
@@ -85,7 +86,7 @@ DecodeStatus DoDecode(const BinaryBitmap& image, bool multiple, std::list<Result
 	for (const auto& points : detectorResult.points) {
 		DecoderResult decoderResult =
 			ScanningDecoder::Decode(*detectorResult.bits, points[4], points[5], points[6], points[7],
-									GetMinCodewordWidth(points), GetMaxCodewordWidth(points));
+									GetMinCodewordWidth(points), GetMaxCodewordWidth(points), characterSet);
 		if (decoderResult.isValid()) {
 			auto point = [&](int i) { return points[i].value(); };
 			Result result(std::move(decoderResult), {point(0), point(2), point(3), point(1)}, BarcodeFormat::PDF417);
@@ -260,9 +261,10 @@ std::vector<int> ReadCodeWords(BitMatrixCursor<POINT> topCur, SymbolInfo info)
 }
 
 // forward declaration from PDFScanningDecoder.cpp
-DecoderResult DecodeCodewords(std::vector<int>& codewords, int ecLevel, const std::vector<int>& erasures);
+DecoderResult DecodeCodewords(std::vector<int>& codewords, int ecLevel, const std::vector<int>& erasures,
+							  const std::string& characterSet);
 
-static Result DecodePure(const BinaryBitmap& image_)
+static Result DecodePure(const BinaryBitmap& image_, const std::string& characterSet)
 {
 	auto pimage = image_.getBlackMatrix();
 	if (!pimage)
@@ -305,18 +307,18 @@ static Result DecodePure(const BinaryBitmap& image_)
 			erasures.push_back(i);
 		}
 
-	auto res = DecodeCodewords(codeWords, info.ecLevel, erasures);
+	auto res = DecodeCodewords(codeWords, info.ecLevel, erasures, characterSet);
 
 	return Result(std::move(res), {{left, top}, {right, top}, {right, bottom}, {left, bottom}}, BarcodeFormat::PDF417);
 }
 
-Reader::Reader(const DecodeHints& hints) : _isPure(hints.isPure()) {}
+Reader::Reader(const DecodeHints& hints) : _isPure(hints.isPure()), _characterSet(hints.characterSet()) {}
 
 Result
 Reader::decode(const BinaryBitmap& image) const
 {
 	if (_isPure) {
-		auto res = DecodePure(image);
+		auto res = DecodePure(image, _characterSet);
 		if (res.status() != DecodeStatus::ChecksumError)
 			return res;
 		// This falls through and tries the non-pure code path if we have a checksum error. This approach is
@@ -324,7 +326,7 @@ Reader::decode(const BinaryBitmap& image) const
 	}
 
 	std::list<Result> results;
-	DecodeStatus status = DoDecode(image, false, results);
+	DecodeStatus status = DoDecode(image, false, results, _characterSet);
 	if (StatusIsOK(status)) {
 		return results.front();
 	}
@@ -335,7 +337,7 @@ std::list<Result>
 Reader::decodeMultiple(const BinaryBitmap& image) const
 {
 	std::list<Result> results;
-	DoDecode(image, true, results);
+	DoDecode(image, true, results, _characterSet);
 	return results;
 }
 
