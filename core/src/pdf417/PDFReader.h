@@ -17,7 +17,9 @@
 */
 
 #include "Reader.h"
+
 #include <list>
+#include <string>
 
 namespace ZXing {
 
@@ -33,6 +35,7 @@ namespace Pdf417 {
 class Reader : public ZXing::Reader
 {
 	bool _isPure;
+	std::string _characterSet;
 
 public:
 	explicit Reader(const DecodeHints& hints);

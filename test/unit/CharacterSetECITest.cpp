@@ -36,8 +36,9 @@ TEST(CharacterSetECITest, ValueForCharset)
 TEST(CharacterSetECITest, InitEncoding)
 {
 	EXPECT_EQ(InitEncoding(std::string()), CharacterSet::ISO8859_1);
-	EXPECT_EQ(InitEncoding(std::string()), CharacterSet::ISO8859_1);
+	EXPECT_EQ(InitEncoding(std::string(), CharacterSet::ISO8859_2), CharacterSet::ISO8859_2);
 	EXPECT_EQ(InitEncoding(std::string("asdfasdf")), CharacterSet::ISO8859_1);
+	EXPECT_EQ(InitEncoding(std::string("asdfasdf"), CharacterSet::ISO8859_2), CharacterSet::ISO8859_2);
 	EXPECT_EQ(InitEncoding(std::string("ISO-8859-1")), CharacterSet::ISO8859_1);
 	EXPECT_EQ(InitEncoding(std::string("ISO-8859-2")), CharacterSet::ISO8859_2);
 	EXPECT_EQ(InitEncoding(std::string("UTF-16BE")), CharacterSet::UnicodeBig);

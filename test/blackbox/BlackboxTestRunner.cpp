@@ -549,12 +549,12 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 1, 1, 0   },
 		});
 
-		runTests("pdf417-1", "PDF417", 15, {
-			{ 14, 14, 0   },
+		runTests("pdf417-1", "PDF417", 16, {
+			{ 15, 15, 0   },
 			{  1,  1, 90  },
-			{ 14, 14, 180 },
+			{ 15, 15, 180 },
 			{  1,  1, 270 },
-			{ 15, 0, pure },
+			{ 16, 0, pure },
 		});
 
 		runTests("pdf417-2", "PDF417", 25, {
