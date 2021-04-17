@@ -536,8 +536,6 @@ static DecodeStatus DecodeBase900toBase10(const std::vector<int>& codewords, int
 /**
 * Numeric Compaction mode (see 5.4.4) permits efficient encoding of numeric data strings.
 *
-* ECI encoding set but not used. Result buffer should be empty on entry and converted from ASCII on return.
-*
 * @param status    Set on format error.
 * @param codewords The array of codewords (data + error)
 * @param codeIndex The current index into the codeword array.
@@ -546,7 +544,7 @@ static DecodeStatus DecodeBase900toBase10(const std::vector<int>& codewords, int
 * @return The next index into the codeword array.
 */
 static int NumericCompaction(DecodeStatus& status, const std::vector<int>& codewords, int codeIndex,
-							 std::string& result, CharacterSet& encoding)
+							 std::wstring& resultEncoded, std::string& result, CharacterSet& encoding)
 {
 	int count = 0;
 	bool end = false;
@@ -559,20 +557,16 @@ static int NumericCompaction(DecodeStatus& status, const std::vector<int>& codew
 			if (code >= ECI_USER_DEFINED && code <= ECI_CHARSET) {
 				// As operating in Basic Channel Mode (i.e. not embedding backslashed ECIs and doubling backslashes)
 				// allow ECIs anywhere in Numeric Compaction (i.e. ISO/IEC 15438:2015 5.5.3.4 doesn't apply).
-				// ECIs processed to set encoding - not used for buffer conversion, which is ASCII
-				if (code == ECI_CHARSET) {
-					if (codeIndex < codewords[0]) {
-						int eci = codewords[codeIndex++];
-						auto encodingNew = CharacterSetECI::CharsetFromValue(eci);
-						if (encodingNew != CharacterSet::Unknown && encodingNew != encoding) {
-							encoding = encodingNew;
-						}
+				if (count > 0) {
+					std::string tmp;
+					status = DecodeBase900toBase10(numericCodewords, count, tmp);
+					if (StatusIsError(status)) {
+						return codeIndex;
 					}
+					result += tmp;
+					count = 0;
 				}
-				else {
-					// Don't currently handle non-character set ECIs so just ignore
-					codeIndex += code == ECI_GENERAL_PURPOSE ? 2 : 1;
-				}
+				codeIndex = ProcessECI(codewords, codeIndex, codewords[0], code, resultEncoded, result, encoding);
 				continue;
 			}
 			if (!TerminatesCompaction(code)) {
@@ -625,6 +619,26 @@ static int DecodeMacroOptionalTextField(DecodeStatus& status, const std::vector<
 
 	// Converting to UTF-8 (backward-incompatible change for non-ASCII chars)
 	TextUtfEncoding::ToUtf8(resultEncoded, field);
+
+	return codeIndex;
+}
+
+/*
+* Helper to deal with optional numeric fields in Macros.
+*/
+static int DecodeMacroOptionalNumericField(DecodeStatus& status, const std::vector<int>& codewords, int codeIndex,
+										   uint64_t& field)
+{
+	std::wstring resultEncoded;
+	std::string result;
+	// Each optional field begins with an implied reset to ECI 2 (Annex H.2.3).
+	// Numeric optional fields should not contain ECIs, but processed anyway.
+	CharacterSet encoding = CharacterSet::Cp437;
+
+	codeIndex = NumericCompaction(status, codewords, codeIndex, resultEncoded, result, encoding);
+	TextDecoder::Append(resultEncoded, reinterpret_cast<const uint8_t*>(result.data()), result.size(), encoding);
+
+	field = std::stoll(resultEncoded);
 
 	return codeIndex;
 }
@@ -692,33 +706,27 @@ DecodeStatus DecodeMacroBlock(const std::vector<int>& codewords, int codeIndex, 
 						break;
 					}
 					case MACRO_PDF417_OPTIONAL_FIELD_SEGMENT_COUNT: {
-						std::string segmentCount;
-						// Each optional field begins with an implied reset to ECI 2 (Annex H.2.3).
-						// Numeric optional fields should not contain ECIs (though they are processed (i.e. skipped)).
-						CharacterSet encoding = CharacterSet::Cp437;
-						codeIndex = NumericCompaction(status, codewords, codeIndex + 1, segmentCount, encoding);
-						resultMetadata.setSegmentCount(std::stoi(segmentCount));
+						uint64_t segmentCount;
+						codeIndex = DecodeMacroOptionalNumericField(status, codewords, codeIndex + 1, segmentCount);
+						resultMetadata.setSegmentCount(segmentCount);
 						break;
 					}
 					case MACRO_PDF417_OPTIONAL_FIELD_TIME_STAMP: {
-						std::string timestamp;
-						CharacterSet encoding = CharacterSet::Cp437;
-						codeIndex = NumericCompaction(status, codewords, codeIndex + 1, timestamp, encoding);
-						resultMetadata.setTimestamp(std::stoll(timestamp));
+						uint64_t timestamp;
+						codeIndex = DecodeMacroOptionalNumericField(status, codewords, codeIndex + 1, timestamp);
+						resultMetadata.setTimestamp(timestamp);
 						break;
 					}
 					case MACRO_PDF417_OPTIONAL_FIELD_CHECKSUM: {
-						std::string checksum;
-						CharacterSet encoding = CharacterSet::Cp437;
-						codeIndex = NumericCompaction(status, codewords, codeIndex + 1, checksum, encoding);
-						resultMetadata.setChecksum(std::stoi(checksum));
+						uint64_t checksum;
+						codeIndex = DecodeMacroOptionalNumericField(status, codewords, codeIndex + 1, checksum);
+						resultMetadata.setChecksum(checksum);
 						break;
 					}
 					case MACRO_PDF417_OPTIONAL_FIELD_FILE_SIZE: {
-						std::string fileSize;
-						CharacterSet encoding = CharacterSet::Cp437;
-						codeIndex = NumericCompaction(status, codewords, codeIndex + 1, fileSize, encoding);
-						resultMetadata.setFileSize(std::stoll(fileSize));
+						uint64_t fileSize;
+						codeIndex = DecodeMacroOptionalNumericField(status, codewords, codeIndex + 1, fileSize);
+						resultMetadata.setFileSize(fileSize);
 						break;
 					}
 					default: {
@@ -784,15 +792,7 @@ DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel, c
 			codeIndex = ByteCompaction(status, code, codewords, codeIndex, resultEncoded, result, encoding);
 			break;
 		case NUMERIC_COMPACTION_MODE_LATCH:
-			// Convert and reset current result
-			TextDecoder::Append(resultEncoded, reinterpret_cast<const uint8_t*>(result.data()), result.size(),
-								encoding);
-			result.clear();
-			// Convert numeric result as ASCII and reset result
-			codeIndex = NumericCompaction(status, codewords, codeIndex, result, encoding);
-			TextDecoder::Append(resultEncoded, reinterpret_cast<const uint8_t*>(result.data()), result.size(),
-								CharacterSet::ASCII);
-			result.clear();
+			codeIndex = NumericCompaction(status, codewords, codeIndex, resultEncoded, result, encoding);
 			break;
 		case ECI_CHARSET:
 		case ECI_GENERAL_PURPOSE:

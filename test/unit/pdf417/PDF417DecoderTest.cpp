@@ -423,23 +423,24 @@ TEST(PDF417DecoderTest, ECISingleNumeric)
 {
 	// ECIs allowed anywhere in Numeric Compaction
 
-	// Numeric ECI 25 Numeric(15)
-	EXPECT_EQ(decode({ 19, 902, 927, 25, 491, 81, 137, 450, 302, 67, 15, 174, 492, 862, 667, 475, 869, 12, 434 }),
+	// Numeric ECI 20 Numeric(15)
+	EXPECT_EQ(decode({ 19, 902, 927, 20, 491, 81, 137, 450, 302, 67, 15, 174, 492, 862, 667, 475, 869, 12, 434 }),
 		L"12345678901234567890123456789012345678901234");
 
-	// Numeric(1) ECI 25 Numeric(14)
-	EXPECT_EQ(decode({ 19, 902, 491, 927, 25, 81, 137, 450, 302, 67, 15, 174, 492, 862, 667, 475, 869, 12, 434 }),
-		L"12345678901234567890123456789012345678901234");
+	// Numeric(1) ECI 20 Numeric(14)
+	EXPECT_EQ(decode({ 19, 902, 11, 927, 20, 485, 624, 192, 160, 521, 439, 324, 737, 864, 136, 732, 282, 410, 12 }),
+		L"123456789012345678901234567890123456789012");
 
-	// Numeric(4) ECI 25 Numeric(11) Byte(UnicodeBig) "AĀ" (U+0100)
-	EXPECT_EQ(decode({ 24, 902, 491, 81, 137, 450, 927, 25, 302, 67, 15, 174, 492, 862, 667, 475, 869, 12, 434,
-		901, 0, 'A', 1, 0 }),
-		L"12345678901234567890123456789012345678901234A\u0100");
+	// Numeric(4) ECI 20 Numeric(11) Byte(ShiftJIS) "点茗"
+	EXPECT_EQ(decode({ 24, 902, 154, 98, 332, 101, 927, 20, 354, 63, 496, 448, 236, 148, 354, 624, 335, 600, 123,
+		901, 147, 95, 228, 170 }),
+		L"1234567890123456789012345678901234567890123\u70B9\u8317");
 
 	// Numeric(11) ECI 25 Numeric(4) Byte(UnicodeBig) "AĀ" (U+0100)
-	EXPECT_EQ(decode({ 24, 902, 491, 81, 137, 450, 302, 67, 15, 174, 492, 862, 667, 927, 25, 475, 869, 12, 434,
+	// (ASCII values of "3456789012" as UTF-16 "343536373839303132" (CJK compatibility block)
+	EXPECT_EQ(decode({ 24, 902, 322, 183, 750, 813, 535, 621, 854, 718, 783, 621, 112, 927, 25, 18, 413, 287, 712,
 		901, 0, 'A', 1, 0 }),
-		L"12345678901234567890123456789012345678901234A\u0100");
+		L"12345678901234567890123456789012\u3334\u3536\u3738\u3930\u3132A\u0100");
 }
 
 TEST(PDF417DecoderTest, ECIMultipleTextByte)
@@ -488,26 +489,47 @@ TEST(PDF417DecoderTest, ECIMultipleByte)
 
 TEST(PDF417DecoderTest, ECIMultipleNumeric)
 {
-	// Numeric(5) ECI 16 ECI 25 Numeric(10) Text(UnicodeBig) "AŁ" (U+0141)
-	EXPECT_EQ(decode({ 26, 902, 491, 81, 137, 450, 302, 927, 25, 67, 15, 174, 492, 862, 667, 475, 869, 12, 434,
-		900, 913, 0, 29, 913, 1, 29 }),
-		L"12345678901234567890123456789012345678901234A\u0141");
+	// Numeric(5) ECI 16 ECI 20 Numeric(10) Text(ShiftJIS) "AB点"
+	EXPECT_EQ(decode({ 25, 902, 171, 209, 269, 12, 434, 927, 20, 404, 629, 775, 441, 213, 222, 288, 513, 400, 123,
+		900, 1, 913, 147, 913, 95 }),
+		L"1234567890123456789012345678901234567890123AB\u70B9");
 
-	// Numeric(6) ECI 16 ECI 25 Numeric(7) Byte(UnicodeBig) "AĀŁ" ECI 26 "Θ"
-	EXPECT_EQ(decode({ 31, 902, 491, 81, 137, 450, 302, 67, 927, 16, 15, 174, 492, 862, 927, 25, 667, 475, 869, 12,
-		434, 901, 0, 382, 878, 524, 177, 927, 26, 0xCE, 0x98 }),
-		L"12345678901234567890123456789012345678901234A\u0100\u0141\u0398");
+	// Numeric(6) ECI 16 Numeric(4) ECI 20 Numeric(5) Byte(ShiftJIS) "AB点" ECI 26 "Θ"
+	EXPECT_EQ(decode({ 31, 902, 190, 232, 498, 813, 782, 767, 927, 16, 259, 248, 517, 378, 927, 20, 289, 700, 317, 21,
+		112, 901, 'A', 'B', 147, 95, 927, 26, 0xCE, 901, 0x98 }),
+		L"123456789012345678901234567890123456789012AB\u70B9\u0398");
 
 	// Numeric(10) ECI 16 ECI 25 Numeric(5) Byte6(UnicodeBig) "AĀŁ" ECI 26 Byte "Θ"
-	EXPECT_EQ(decode({ 32, 902, 491, 81, 137, 450, 302, 67, 15, 174, 492, 862, 927, 16, 927, 25, 667, 475, 869, 12,
-		434, 924, 0, 382, 878, 524, 177, 927, 26, 901, 0xCE, 0x98 }),
-		L"12345678901234567890123456789012345678901234A\u0100\u0141\u0398");
+	EXPECT_EQ(decode({ 32, 902, 289, 885, 405, 732, 212, 109, 679, 286, 885, 289, 927, 16, 927, 25, 289, 700, 317, 21,
+		112, 924, 0, 382, 878, 524, 177, 927, 26, 901, 0xCE, 0x98 }),
+		L"12345678901234567890123456789\u3930\u3132\u3334\u3536\u3738\u3930\u3132A\u0100\u0141\u0398");
 }
 
 TEST(PDF417DecoderTest, ECIInvalid)
 {
 	EXPECT_EQ(decode({ 4, 927, 901, 0 }), L"AA"); // Invalid Character Set ECI (> 899) silently ignored
 	EXPECT_EQ(decode({ 3, 0, 927 }), L"AA"); // Malformed ECI at end silently ignored
+}
+
+TEST(PDF417DecoderTest, ECIMacroOptionalNumeric)
+{
+	// Check that ECI 25 (UnicodeBig) in numeric field (resulting in "\u3x3x" codepoints) still parses
+
+	// File Size is "1234567890" ECI 25 "12345" ("\u3132\u3334\x35", the final odd byte gets dropped on UTF-16
+	// conversion)
+	std::vector<int> sampleCodes = { 19, 477, 928, 111, 100, 0, 252, 21, 86, 923, 5, 15, 369, 753, 190, 927, 25, 124,
+		745 };
+
+	int next = 0;
+	DecoderResultExtra resultMetadata;
+	auto status = DecodeMacroBlock(sampleCodes, 3, resultMetadata, next);
+
+	EXPECT_EQ(0, resultMetadata.segmentIndex());
+	EXPECT_EQ("000252021086", resultMetadata.fileId());
+	EXPECT_EQ(false, resultMetadata.isLastSegment());
+
+	EXPECT_EQ(1234567890, resultMetadata.fileSize());
+	EXPECT_EQ(-1, resultMetadata.segmentCount());
 }
 
 TEST(PDF417DecoderTest, ECIGeneralPurpose)
