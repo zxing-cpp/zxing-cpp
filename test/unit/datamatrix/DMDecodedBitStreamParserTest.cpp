@@ -99,3 +99,48 @@ TEST(DMDecodeTest, X12)
 	EXPECT_EQ(decode({238, 89, 233, 14, 192, 100, 207, 44, 31, 96, 82, 254, 70, 71, 129, 237}), L"ABC>ABC123>ABCDEF");
 //	EXPECT_EQ(decode({}), L"");
 }
+
+static StructuredAppendInfo info(ByteArray bytes)
+{
+	return DataMatrix::DecodedBitStreamParser::Decode(std::move(bytes), "").structuredAppend();
+}
+
+TEST(DMDecodeTest, StructuredAppend)
+{
+	// Null
+	EXPECT_EQ(info({50}).index, -1);
+	EXPECT_EQ(info({50}).count, -1);
+	EXPECT_TRUE(info({50}).id.empty());
+
+	// ISO/IEC 16022:2006 5.6.2 sequence indicator example
+	EXPECT_EQ(info({50, 233, 42, 1, 1}).index, 2); // 1-based position 3 == index 2
+	EXPECT_EQ(info({50, 233, 42, 1, 1}).count, 7);
+	EXPECT_EQ(info({50, 233, 42, 1, 1}).id, "001001");
+
+	// Sequence indicator
+	EXPECT_EQ(info({50, 233, 0, 1, 1}).index, 0);
+	EXPECT_EQ(info({50, 233, 0, 1, 1}).count, 0); // Count 17 set to 0
+
+	EXPECT_EQ(info({50, 233, 1, 1, 1}).index, 0);
+	EXPECT_EQ(info({50, 233, 1, 1, 1}).count, 16);
+
+	EXPECT_EQ(info({50, 233, 0x81, 1, 1}).index, 8);
+	EXPECT_EQ(info({50, 233, 0x81, 1, 1}).count, 16);
+
+	EXPECT_EQ(info({50, 233, 0xFF, 1, 1}).index, 15);
+	EXPECT_EQ(info({50, 233, 0xFF, 1, 1}).count, 0); // Count 2 <= index so set to 0
+
+	EXPECT_EQ(info({50, 233, 0xF1, 1, 1}).index, 15);
+	EXPECT_EQ(info({50, 233, 0xF1, 1, 1}).count, 16);
+
+	// File identification
+	EXPECT_EQ(info({50, 233, 42, 1, 12}).id, "001012");
+	EXPECT_EQ(info({50, 233, 42, 12, 34}).id, "012034");
+	EXPECT_EQ(info({50, 233, 42, 12, 123}).id, "012123");
+	EXPECT_EQ(info({50, 233, 42, 254, 254}).id, "254254");
+	// Values outside 1-254 allowed
+	EXPECT_EQ(info({50, 233, 42, 0, 0}).id, "000000");
+	EXPECT_EQ(info({50, 233, 42, 0, 255}).id, "000255");
+	EXPECT_EQ(info({50, 233, 42, 255, 0}).id, "255000");
+	EXPECT_EQ(info({50, 233, 42, 255, 255}).id, "255255");
+}
