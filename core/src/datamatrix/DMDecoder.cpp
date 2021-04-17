@@ -33,9 +33,7 @@
 
 #include <algorithm>
 #include <array>
-#include <iomanip>
 #include <optional>
-#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -146,12 +144,8 @@ static void ParseStructuredAppend(BitSource& bits, StructuredAppendInfo& sai)
 	int fileId2 = bits.readBits(8); // File identification 2
 
 	// There's no conversion method or meaning given to the 2 file id codewords in Section 5.6.3, apart from
-	// saying that each value should be 1-254. Choosing here to represent them as 2 0-filled 3 digit numbers
-	// (same as PDF417) as opposed to a base 254 representation (which TEC-IT uses a version of).
-	std::ostringstream fileId;
-	fileId.fill('0');
-	fileId << std::setw(3) << fileId1 << std::setw(3) << fileId2; // Allow 0 and 255
-	sai.id = fileId.str();
+	// saying that each value should be 1-254. Choosing here to represent them as base 256.
+	sai.id = std::to_string((fileId1 << 8) | fileId2);
 }
 
 /**
