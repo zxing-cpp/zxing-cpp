@@ -25,6 +25,7 @@
 #include "MCBitMatrixParser.h"
 #include "ReedSolomonDecoder.h"
 #include "TextDecoder.h"
+#include "ZXTestSupport.h"
 
 #include <algorithm>
 #include <array>
@@ -205,7 +206,22 @@ namespace DecodedBitStreamParser
 		return ((firstByte & 0x03) << 18) | (secondByte << 12) | (thirdByte << 6) | fourthByte;
 	}
 
-	static std::wstring GetMessage(const ByteArray& bytes, int start, int len, const std::string& characterSet)
+	/**
+	* See ISO/IEC 16023:2000 Section 4.9.1 Table 5
+	*/
+	static void ParseStructuredAppend(const ByteArray& bytes, int& i, StructuredAppendInfo& sai)
+	{
+		const int byte = bytes[++i];
+		sai.index = (byte >> 3) & 0x07;
+		sai.count = (byte & 0x07) + 1;
+		if (sai.count == 1 || sai.count <= sai.index) { // If info doesn't make sense
+			sai.count = 0; // Choose to mark count as unknown
+		}
+		// No id
+	}
+
+	static std::wstring GetMessage(const ByteArray& bytes, int start, int len, const std::string& characterSet,
+								   StructuredAppendInfo& sai)
 	{
 		std::string sb;
 		std::wstring sbEncoded;
@@ -256,7 +272,7 @@ namespace DecodedBitStreamParser
 				break;
 			case PAD:
 				if (i == start) {
-					// TODO: Structured Append
+					ParseStructuredAppend(bytes, i, sai);
 				}
 				shift = -1;
 				break;
@@ -271,17 +287,19 @@ namespace DecodedBitStreamParser
 		return sbEncoded;
 	}
 
-	static DecoderResult Decode(ByteArray&& bytes, int mode, const std::string& characterSet)
+	ZXING_EXPORT_TEST_ONLY
+	DecoderResult Decode(ByteArray&& bytes, const int mode, const std::string& characterSet)
 	{
 		std::wstring result;
 		result.reserve(144);
+		StructuredAppendInfo sai;
 		switch (mode) {
 			case 2:
 			case 3: {
 				auto postcode = mode == 2 ? ToString(GetPostCode2(bytes), GetPostCode2Length(bytes)) : GetPostCode3(bytes);
 				auto country = ToString(GetCountry(bytes), 3);
 				auto service = ToString(GetServiceClass(bytes), 3);
-				result.append(GetMessage(bytes, 10, 84, characterSet));
+				result.append(GetMessage(bytes, 10, 84, characterSet, sai));
 				if (result.size() >= 9 && result.compare(0, 7, L"[)>\u001E01\u001D") == 0) { // "[)>" + RS + "01" + GS
 					result.insert(9, TextDecoder::FromLatin1(postcode + GS + country + GS + service + GS));
 				}
@@ -292,14 +310,16 @@ namespace DecodedBitStreamParser
 			}
 			case 4:
 			case 6:
-				result.append(GetMessage(bytes, 1, 93, characterSet));
+				result.append(GetMessage(bytes, 1, 93, characterSet, sai));
 				break;
 			case 5:
-				result.append(GetMessage(bytes, 1, 77, characterSet));
+				result.append(GetMessage(bytes, 1, 77, characterSet, sai));
 				break;
 		}
 		// TODO: Set reader programming boolean (mode == 6)
-		return DecoderResult(std::move(bytes), std::move(result)).setEcLevel(std::to_wstring(mode));
+		return DecoderResult(std::move(bytes), std::move(result))
+				.setEcLevel(std::to_wstring(mode))
+				.setStructuredAppend(sai);
 	}
 
 
