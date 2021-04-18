@@ -32,10 +32,10 @@ using namespace ZXing;
 static void pad(ByteArray& padded)
 {
 	int i = 0;
-	for (i = padded.size(); i < 20; i++) { // Primary
+	for (i = (int) padded.size(); i < 20; i++) { // Primary
 		padded.push_back(33);
 	}
-	for (; i < 93; i++) { // Secondary
+	for (; i < 93 + 1; i++) { // Secondary (seem to require extra +1 dummy on Windows/Mac)
 		padded.push_back(33);
 	}
 }
@@ -44,7 +44,7 @@ static void pad(ByteArray& padded)
 static StructuredAppendInfo info(ByteArray bytes, const int mode)
 {
 	ByteArray padded;
-	padded.reserve(93);
+	padded.reserve(93 + 1);
 	if (mode == 2) {
 		// Mode 2, Postcode 152382802, Country 840, Class 001 example from ISO/IEC 16023:2000 Annex B.2
 		padded = {34, 20, 45, 20, 17, 18, 2, 18, 7, 0};
