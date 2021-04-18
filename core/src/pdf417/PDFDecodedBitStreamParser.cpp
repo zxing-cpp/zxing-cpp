@@ -404,7 +404,8 @@ static int CountByteBatches(DecodeStatus& status, int mode, const std::vector<in
 static int ProcessByteECIs(const std::vector<int>& codewords, int codeIndex,
 						   std::wstring& resultEncoded, std::string& result, CharacterSet& encoding)
 {
-	while (codewords[codeIndex] >= TEXT_COMPACTION_MODE_LATCH && !TerminatesCompaction(codewords[codeIndex])) {
+	while (codeIndex < codewords[0] && codewords[codeIndex] >= TEXT_COMPACTION_MODE_LATCH
+			&& !TerminatesCompaction(codewords[codeIndex])) {
 		int code = codewords[codeIndex++];
 		if (code >= ECI_USER_DEFINED && code <= ECI_CHARSET) {
 			codeIndex = ProcessECI(codewords, codeIndex, codewords[0], code, resultEncoded, result, encoding);
