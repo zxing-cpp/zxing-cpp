@@ -97,7 +97,7 @@ Image write_barcode(BarcodeFormat format, std::string text, int width, int heigh
 }
 
 
-PYBIND11_MODULE(zxing, m)
+PYBIND11_MODULE(zxingcpp, m)
 {
 	m.doc() = "python bindings for zxing-cpp";
 	py::enum_<BarcodeFormat>(m, "BarcodeFormat", py::arithmetic{}, "Enumeration of zxing supported barcode formats")

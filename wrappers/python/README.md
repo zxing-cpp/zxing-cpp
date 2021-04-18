@@ -6,6 +6,11 @@
 ## Installation
 
 ```bash
+pip install zxing-cpp
+```
+or
+
+```bash
 python setup.py install
 ```
 
@@ -13,10 +18,10 @@ python setup.py install
 
 ```python
 import cv2
-import zxing
+import zxingcpp
 
 img = cv2.imread('myimage.png')
-result = zxing.read_barcode(img)
+result = zxingcpp.read_barcode(img)
 if result.valid:
     print("Found barcode with value '{}' (format: {})".format(result.text, str(result.format))) 
 else:
