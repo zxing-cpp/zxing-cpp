@@ -96,10 +96,11 @@ static const char TEXT_SHIFT3_SET_CHARS[] = {
 	'O',  'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '{', '|', '}', '~', 127
 };
 
-// Encoding state (will be added to)
+// Decoding state
 struct State
 {
 	CharacterSet encoding;
+	struct StructuredAppendInfo sai;
 };
 
 struct Shift128
@@ -127,6 +128,27 @@ static int ParseECIValue(BitSource& bits)
 }
 
 /**
+* See ISO 16022:2006, 5.6
+*/
+static void ParseStructuredAppend(BitSource& bits, StructuredAppendInfo& sai)
+{
+	// 5.6.2 Table 8
+	int symbolSequenceIndicator = bits.readBits(8);
+	sai.index = symbolSequenceIndicator >> 4;
+	sai.count = 17 - (symbolSequenceIndicator & 0x0F); // 2-16 permitted, 17 invalid
+
+	if (sai.count == 17 || sai.count <= sai.index) // If info doesn't make sense
+		sai.count = 0; // Choose to mark count as unknown
+
+	int fileId1 = bits.readBits(8); // File identification 1
+	int fileId2 = bits.readBits(8); // File identification 2
+
+	// There's no conversion method or meaning given to the 2 file id codewords in Section 5.6.3, apart from
+	// saying that each value should be 1-254. Choosing here to represent them as base 256.
+	sai.id = std::to_string((fileId1 << 8) | fileId2);
+}
+
+/**
 * See ISO 16022:2006, 5.2.3 and Annex C, Table C.2
 */
 static Mode DecodeAsciiSegment(BitSource& bits, std::string& result, std::string& resultTrailer,
@@ -146,13 +168,14 @@ static Mode DecodeAsciiSegment(BitSource& bits, std::string& result, std::string
 		case 231: // Latch to Base 256 encodation
 			return Mode::BASE256_ENCODE;
 		case 232: // FNC1
+			// TODO: handle first/second position
 			result.push_back((char)29); // translate as ASCII 29
 			break;
-		case 233:
-		case 234:
-			// Structured Append, Reader Programming
-			// Ignore these symbols for now
-			//throw ReaderException.getInstance();
+		case 233: // Structured Append
+			ParseStructuredAppend(bits, state.sai);
+			break;
+		case 234: // Reader Programming
+			// TODO: handle
 			break;
 		case 235: // Upper Shift (shift to Extended ASCII)
 			upperShift.set = true;
@@ -396,7 +419,7 @@ DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet)
 
 	TextDecoder::Append(resultEncoded, reinterpret_cast<const uint8_t*>(result.data()), result.size(), state.encoding);
 
-	return DecoderResult(std::move(bytes), std::move(resultEncoded));
+	return DecoderResult(std::move(bytes), std::move(resultEncoded)).setStructuredAppend(state.sai);
 }
 
 } // namespace DecodedBitStreamParser
