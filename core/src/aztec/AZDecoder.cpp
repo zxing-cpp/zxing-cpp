@@ -26,6 +26,7 @@
 #include "GenericGF.h"
 #include "ReedSolomonDecoder.h"
 #include "TextDecoder.h"
+#include "TextUtfEncoding.h"
 #include "ZXTestSupport.h"
 
 #include <algorithm>
@@ -270,7 +271,7 @@ static const char* GetCharacter(Table table, int code)
 }
 
 /**
-* See ISO/IEC 24778:2008 10.1
+* See ISO/IEC 24778:2008 Section 10.1
 */
 static int ParseECIValue(const std::vector<bool>& correctedBits, const int flg, const int endIndex, int& index)
 {
@@ -284,12 +285,47 @@ static int ParseECIValue(const std::vector<bool>& correctedBits, const int flg, 
 }
 
 /**
+* See ISO/IEC 24778:2008 Section 8
+*/
+static void ParseStructuredAppend(std::wstring& resultEncoded, StructuredAppendInfo& sai)
+{
+	std::wstring id;
+	int i = 0;
+
+	if (resultEncoded[0] == ' ') { // Space-delimited id
+		std::string::size_type sp = resultEncoded.find(' ', 1);
+		if (sp == std::string::npos) {
+			return;
+		}
+		id = resultEncoded.substr(1, sp - 1); // Strip space delimiters
+		i = sp + 1;
+	}
+	if (i + 1 >= (int)resultEncoded.size() || resultEncoded[i] < 'A' || resultEncoded[i] > 'Z'
+			|| resultEncoded[i + 1] < 'A' || resultEncoded[i + 1] > 'Z') {
+		return;
+	}
+	sai.index = resultEncoded[i] - 'A';
+	sai.count = resultEncoded[i + 1] - 'A' + 1;
+
+	if (sai.count == 1 || sai.count <= sai.index) { // If info doesn't make sense
+		sai.count = 0; // Choose to mark count as unknown
+	}
+
+	if (!id.empty()) {
+		TextUtfEncoding::ToUtf8(id, sai.id);
+	}
+
+	resultEncoded.erase(0, i + 2); // Remove
+}
+
+/**
 * Gets the string encoded in the aztec code bits
 *
 * @return the decoded string
 */
 ZXING_EXPORT_TEST_ONLY
-std::wstring GetEncodedData(const std::vector<bool>& correctedBits, const std::string& characterSet)
+std::wstring GetEncodedData(const std::vector<bool>& correctedBits, const std::string& characterSet,
+							StructuredAppendInfo& sai)
 {
 	int endIndex = Size(correctedBits);
 	Table latchTable = Table::UPPER; // table most recently latched to
@@ -299,6 +335,10 @@ std::wstring GetEncodedData(const std::vector<bool>& correctedBits, const std::s
 	std::wstring resultEncoded;
 	int index = 0;
 	CharacterSet encoding = CharacterSetECI::InitEncoding(characterSet);
+
+	// Check for Structured Append - need 4 5-bit words, beginning with ML UL, ending with index and count
+	bool haveStructuredAppend = endIndex > 20 && ReadCode(correctedBits, 0, 5) == 29 // ML (UPPER table)
+									&& ReadCode(correctedBits, 5, 5) == 29; // UL (MIXED table)
 
 	while (index < endIndex) {
 		if (shiftTable == Table::BINARY) {
@@ -372,6 +412,11 @@ std::wstring GetEncodedData(const std::vector<bool>& correctedBits, const std::s
 		}
 	}
 	TextDecoder::Append(resultEncoded, reinterpret_cast<const uint8_t*>(result.data()), result.size(), encoding);
+
+	if (haveStructuredAppend && !resultEncoded.empty()) {
+		ParseStructuredAppend(resultEncoded, sai);
+	}
+
 	return resultEncoded;
 }
 
@@ -403,10 +448,12 @@ DecoderResult Decoder::Decode(const DetectorResult& detectorResult, const std::s
 {
 	std::vector<bool> rawbits = ExtractBits(detectorResult);
 	std::vector<bool> correctedBits;
+	StructuredAppendInfo sai;
 	if (CorrectBits(detectorResult, rawbits, correctedBits)) {
 		return DecoderResult(ConvertBoolArrayToByteArray(correctedBits),
-							 GetEncodedData(correctedBits, characterSet))
-		        .setNumBits(Size(correctedBits));
+							 GetEncodedData(correctedBits, characterSet, sai))
+		        .setNumBits(Size(correctedBits))
+				.setStructuredAppend(sai);
 	}
 	else {
 		return DecodeStatus::FormatError;
