@@ -316,10 +316,10 @@ namespace DecodedBitStreamParser
 				result.append(GetMessage(bytes, 1, 77, characterSet, sai));
 				break;
 		}
-		// TODO: Set reader programming boolean (mode == 6)
 		return DecoderResult(std::move(bytes), std::move(result))
 				.setEcLevel(std::to_wstring(mode))
-				.setStructuredAppend(sai);
+				.setStructuredAppend(sai)
+				.setReaderInit(mode == 6);
 	}
 
 

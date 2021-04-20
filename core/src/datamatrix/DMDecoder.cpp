@@ -101,6 +101,8 @@ struct State
 {
 	CharacterSet encoding;
 	struct StructuredAppendInfo sai;
+	bool readerInit = false;
+	bool firstCodeword = true;
 };
 
 struct Shift128
@@ -175,7 +177,10 @@ static Mode DecodeAsciiSegment(BitSource& bits, std::string& result, std::string
 			ParseStructuredAppend(bits, state.sai);
 			break;
 		case 234: // Reader Programming
-			// TODO: handle
+			if (state.firstCodeword) // Must be first ISO 16022:2006 5.2.4.9
+				state.readerInit = true;
+			else
+				return Mode::FORMAT_ERROR;
 			break;
 		case 235: // Upper Shift (shift to Extended ASCII)
 			upperShift.set = true;
@@ -213,6 +218,7 @@ static Mode DecodeAsciiSegment(BitSource& bits, std::string& result, std::string
 				return Mode::FORMAT_ERROR;
 			}
 		}
+		state.firstCodeword = false;
 	}
 
 	return Mode::DONE;
@@ -397,6 +403,7 @@ DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet)
 	while (mode != Mode::FORMAT_ERROR && mode != Mode::DONE) {
 		if (mode == Mode::ASCII_ENCODE) {
 			mode = DecodeAsciiSegment(bits, result, resultTrailer, resultEncoded, state);
+			state.firstCodeword = false;
 		} else {
 			bool decodeOK;
 			switch (mode) {
@@ -414,12 +421,17 @@ DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet)
 	if (mode == Mode::FORMAT_ERROR)
 		return DecodeStatus::FormatError;
 
+	if (state.readerInit && state.sai.index > -1) // Not allowed together ISO 16022:2006 5.2.4.9
+		return DecodeStatus::FormatError;
+
 	if (resultTrailer.length() > 0)
 		result.append(resultTrailer);
 
 	TextDecoder::Append(resultEncoded, reinterpret_cast<const uint8_t*>(result.data()), result.size(), state.encoding);
 
-	return DecoderResult(std::move(bytes), std::move(resultEncoded)).setStructuredAppend(state.sai);
+	return DecoderResult(std::move(bytes), std::move(resultEncoded))
+			.setStructuredAppend(state.sai)
+			.setReaderInit(state.readerInit);
 }
 
 } // namespace DecodedBitStreamParser

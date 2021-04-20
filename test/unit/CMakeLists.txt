@@ -41,6 +41,7 @@ add_executable (UnitTest
     oned/ODCode39WriterTest.cpp
     oned/ODCode93ReaderTest.cpp
     oned/ODCode93WriterTest.cpp
+    oned/ODCode128ReaderTest.cpp
     oned/ODCode128WriterTest.cpp
     oned/ODEAN8WriterTest.cpp
     oned/ODEAN13WriterTest.cpp

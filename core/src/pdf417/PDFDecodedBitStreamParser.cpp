@@ -773,6 +773,7 @@ DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel, c
 	std::wstring resultEncoded;
 	std::string result;
 	auto encoding = CharacterSetECI::InitEncoding(characterSet);
+	bool readerInit = false;
 	auto resultMetadata = std::make_shared<DecoderResultExtra>();
 	int codeIndex = 1;
 	DecodeStatus status = DecodeStatus::NoError;
@@ -813,7 +814,7 @@ DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel, c
 				status = DecodeStatus::FormatError;
 			}
 			else {
-				// TODO: handle
+				readerInit = true;
 			}
 			break;
 		case LINKAGE_EANUCC:
@@ -860,6 +861,7 @@ DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel, c
 	return DecoderResult(ByteArray(), std::move(resultEncoded))
 		.setEcLevel(std::to_wstring(ecLevel))
 		.setStructuredAppend(sai)
+		.setReaderInit(readerInit)
 		.setExtra(resultMetadata);
 }
 

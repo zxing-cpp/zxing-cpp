@@ -29,6 +29,12 @@ namespace ZXing { namespace Pdf417 {
 using namespace ZXing;
 using namespace ZXing::Pdf417;
 
+// Shorthand for Decode()
+static DecoderResult parse(const std::vector<int>& codewords, int ecLevel = 0, const std::string& characterSet = "")
+{
+	return DecodedBitStreamParser::Decode(codewords, ecLevel, characterSet);
+}
+
 /**
 * Tests the first sample given in ISO/IEC 15438:2015(E) - Annex H.4
 */
@@ -41,6 +47,7 @@ TEST(PDF417DecoderTest, StandardSample1)
 	int next = 0;
 	DecoderResultExtra resultMetadata;
 	auto status = DecodeMacroBlock(sampleCodes, 2, resultMetadata, next);
+	EXPECT_EQ(status, DecodeStatus::NoError);
 
 	EXPECT_EQ(0, resultMetadata.segmentIndex());
 	EXPECT_EQ("017053", resultMetadata.fileId());
@@ -53,7 +60,7 @@ TEST(PDF417DecoderTest, StandardSample1)
 	EXPECT_EQ(1, optionalData.front()) << "first element of optional array should be the first field identifier";
 	EXPECT_EQ(67, optionalData.back()) << "last element of optional array should be the last codeword of the last field";
 
-	auto result = DecodedBitStreamParser::Decode(sampleCodes, 0 /*ecLevel*/, "");
+	auto result = parse(sampleCodes);
 
 	EXPECT_EQ(0, result.structuredAppend().index);
 	EXPECT_EQ("017053", result.structuredAppend().id);
@@ -72,6 +79,7 @@ TEST(PDF417DecoderTest, StandardSample2)
 	int next = 0;
 	DecoderResultExtra resultMetadata;
 	auto status = DecodeMacroBlock(sampleCodes, 2, resultMetadata, next);
+	EXPECT_EQ(status, DecodeStatus::NoError);
 
 	EXPECT_EQ(3, resultMetadata.segmentIndex());
 	EXPECT_EQ("017053", resultMetadata.fileId());
@@ -84,7 +92,7 @@ TEST(PDF417DecoderTest, StandardSample2)
 	EXPECT_EQ(1, optionalData.front()) << "first element of optional array should be the first field identifier";
 	EXPECT_EQ(104, optionalData.back()) << "last element of optional array should be the last codeword of the last field";
 
-	auto result = DecodedBitStreamParser::Decode(sampleCodes, 0 /*ecLevel*/, "");
+	auto result = parse(sampleCodes);
 
 	EXPECT_EQ(3, result.structuredAppend().index);
 	EXPECT_EQ("017053", result.structuredAppend().id);
@@ -101,12 +109,13 @@ TEST(PDF417DecoderTest, StandardSample3)
 	int next = 0;
 	DecoderResultExtra resultMetadata;
 	auto status = DecodeMacroBlock(sampleCodes, 2, resultMetadata, next);
+	EXPECT_EQ(status, DecodeStatus::NoError);
 
 	EXPECT_EQ(0, resultMetadata.segmentIndex());
 	EXPECT_EQ("100200300", resultMetadata.fileId());
 	EXPECT_EQ(-1, resultMetadata.segmentCount());
 
-	auto result = DecodedBitStreamParser::Decode(sampleCodes, 0 /*ecLevel*/, "");
+	auto result = parse(sampleCodes);
 
 	EXPECT_EQ(0, result.structuredAppend().index);
 	EXPECT_EQ("100200300", result.structuredAppend().id);
@@ -122,6 +131,7 @@ TEST(PDF417DecoderTest, SampleWithFilename)
 	int next = 0;
 	DecoderResultExtra resultMetadata;
 	auto status = DecodeMacroBlock(sampleCodes, 3, resultMetadata, next);
+	EXPECT_EQ(status, DecodeStatus::NoError);
 
 	EXPECT_EQ(0, resultMetadata.segmentIndex());
 	EXPECT_EQ("000252021086", resultMetadata.fileId());
@@ -131,7 +141,7 @@ TEST(PDF417DecoderTest, SampleWithFilename)
 	EXPECT_EQ("", resultMetadata.addressee());
 	EXPECT_EQ("filename.txt", resultMetadata.fileName());
 
-	auto result = DecodedBitStreamParser::Decode(sampleCodes, 0 /*ecLevel*/, "");
+	auto result = parse(sampleCodes);
 
 	EXPECT_EQ(0, result.structuredAppend().index);
 	EXPECT_EQ("000252021086", result.structuredAppend().id);
@@ -146,6 +156,7 @@ TEST(PDF417DecoderTest, SampleWithNumericValues)
 	int next = 0;
 	DecoderResultExtra resultMetadata;
 	auto status = DecodeMacroBlock(sampleCodes, 3, resultMetadata, next);
+	EXPECT_EQ(status, DecodeStatus::NoError);
 
 	EXPECT_EQ(0, resultMetadata.segmentIndex());
 	EXPECT_EQ("000252021086", resultMetadata.fileId());
@@ -156,7 +167,7 @@ TEST(PDF417DecoderTest, SampleWithNumericValues)
 	EXPECT_EQ(260013, resultMetadata.checksum());
 	EXPECT_EQ(-1, resultMetadata.segmentCount());
 
-	auto result = DecodedBitStreamParser::Decode(sampleCodes, 0 /*ecLevel*/, "");
+	auto result = parse(sampleCodes);
 
 	EXPECT_EQ(0, result.structuredAppend().index);
 	EXPECT_EQ("000252021086", result.structuredAppend().id);
@@ -170,13 +181,14 @@ TEST(PDF417DecoderTest, SampleWithMacroTerminatorOnly)
 	int next = 0;
 	DecoderResultExtra resultMetadata;
 	auto status = DecodeMacroBlock(sampleCodes, 3, resultMetadata, next);
+	EXPECT_EQ(status, DecodeStatus::NoError);
 
 	EXPECT_EQ(99998, resultMetadata.segmentIndex());
 	EXPECT_EQ("000", resultMetadata.fileId());
 	EXPECT_EQ(true, resultMetadata.isLastSegment());
 	EXPECT_EQ(-1, resultMetadata.segmentCount());
 
-	auto result = DecodedBitStreamParser::Decode(sampleCodes, 0 /*ecLevel*/, "");
+	auto result = parse(sampleCodes);
 
 	EXPECT_EQ(99998, result.structuredAppend().index);
 	EXPECT_EQ("000", result.structuredAppend().id);
@@ -186,13 +198,13 @@ TEST(PDF417DecoderTest, SampleWithMacroTerminatorOnly)
 // Shorthand to decode and return text
 static std::wstring decode(const std::vector<int>& codewords)
 {
-	return DecodedBitStreamParser::Decode(codewords, 0 /*ecLevel*/, "").text();
+	return parse(codewords).text();
 }
 
 // Shorthand to decode and return isValid
 static bool valid(const std::vector<int>& codewords)
 {
-	return DecodedBitStreamParser::Decode(codewords, 0 /*ecLevel*/, "").isValid();
+	return parse(codewords).isValid();
 }
 
 TEST(PDF417DecoderTest, TextCompactionSimple)
@@ -523,6 +535,7 @@ TEST(PDF417DecoderTest, ECIMacroOptionalNumeric)
 	int next = 0;
 	DecoderResultExtra resultMetadata;
 	auto status = DecodeMacroBlock(sampleCodes, 3, resultMetadata, next);
+	EXPECT_EQ(status, DecodeStatus::NoError);
 
 	EXPECT_EQ(0, resultMetadata.segmentIndex());
 	EXPECT_EQ("000252021086", resultMetadata.fileId());
@@ -549,10 +562,22 @@ TEST(PDF417DecoderTest, ECIUserDefined)
 
 TEST(PDF417DecoderTest, ReaderInit)
 {
+	// Null
+	EXPECT_FALSE(parse({ 2, 0 }).readerInit());
 	EXPECT_EQ(decode({ 2, 0 }), L"AA");
-	EXPECT_EQ(decode({ 3, 921, 0 }), L"AA"); // Ignored if first codeword after length
-	EXPECT_FALSE(valid({ 3, 0, 921 })); // But not elsewhere
+
+	// Set
+	EXPECT_TRUE(parse({ 3, 921, 0 }).readerInit());
+	EXPECT_EQ(decode({ 3, 921, 0 }), L"AA");
+
+	// Must be first
+	EXPECT_FALSE(parse({ 3, 0, 921 }).readerInit());
+	EXPECT_FALSE(valid({ 3, 0, 921 }));
+
+	EXPECT_FALSE(parse({ 4, 901, 65, 921 }).readerInit());
 	EXPECT_FALSE(valid({ 4, 901, 65, 921 }));
+
+	EXPECT_FALSE(parse({ 4, 901, 921, 65 }).readerInit());
 	EXPECT_FALSE(valid({ 4, 901, 921, 65 }));
 }
 
