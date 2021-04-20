@@ -45,10 +45,12 @@ class Result
 public:
 	explicit Result(DecodeStatus status) : _status(status) {}
 
-	Result(std::wstring&& text, Position&& position, BarcodeFormat format, ByteArray&& rawBytes = {});
+	Result(std::wstring&& text, Position&& position, BarcodeFormat format, ByteArray&& rawBytes = {},
+		   const bool readerInit = false);
 
 	// 1D convenience constructor
-	Result(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format, ByteArray&& rawBytes = {});
+	Result(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format, ByteArray&& rawBytes = {},
+		   const bool readerInit = false);
 
 	Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat format);
 
@@ -140,6 +142,13 @@ public:
 	bool isLastInSequence() const { return sequenceSize() == sequenceIndex() + 1; }
 	bool isPartOfSequence() const { return sequenceSize() > -1; }
 
+	/**
+	 * @brief readerInit Set if Reader Initialisation/Programming symbol.
+	 */
+	bool readerInit() const {
+		return _readerInit;
+	}
+
 private:
 	DecodeStatus _status = DecodeStatus::NoError;
 	BarcodeFormat _format = BarcodeFormat::None;
@@ -150,6 +159,7 @@ private:
 	std::wstring _ecLevel;
 	ResultMetadata _metadata;
 	StructuredAppendInfo _sai;
+	bool _readerInit = false;
 };
 
 } // ZXing

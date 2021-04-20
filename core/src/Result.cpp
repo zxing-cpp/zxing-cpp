@@ -25,20 +25,23 @@
 
 namespace ZXing {
 
-Result::Result(std::wstring&& text, Position&& position, BarcodeFormat format, ByteArray&& rawBytes)
-	: _format(format), _text(std::move(text)), _position(std::move(position)), _rawBytes(std::move(rawBytes))
+Result::Result(std::wstring&& text, Position&& position, BarcodeFormat format, ByteArray&& rawBytes,
+			   const bool readerInit)
+	: _format(format), _text(std::move(text)), _position(std::move(position)), _rawBytes(std::move(rawBytes)),
+	  _readerInit(readerInit)
 {
 	_numBits = Size(_rawBytes) * 8;
 }
 
-Result::Result(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format, ByteArray&& rawBytes)
-	: Result(TextDecoder::FromLatin1(text), Line(y, xStart, xStop), format, std::move(rawBytes))
+Result::Result(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format, ByteArray&& rawBytes,
+			   const bool readerInit)
+	: Result(TextDecoder::FromLatin1(text), Line(y, xStart, xStop), format, std::move(rawBytes), readerInit)
 {}
 
 Result::Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat format)
 	: _status(decodeResult.errorCode()), _format(format), _text(std::move(decodeResult).text()),
 	  _position(std::move(position)), _rawBytes(std::move(decodeResult).rawBytes()), _numBits(decodeResult.numBits()),
-	  _ecLevel(decodeResult.ecLevel()), _sai(decodeResult.structuredAppend())
+	  _ecLevel(decodeResult.ecLevel()), _sai(decodeResult.structuredAppend()), _readerInit(decodeResult.readerInit())
 {
 	// TODO: keep that for one release so people get the deprecation warning with a still intact functionality
 	if (isPartOfSequence()) {

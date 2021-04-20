@@ -167,6 +167,9 @@ int main(int argc, char* argv[])
 		if (result.isPartOfSequence())
 			std::cout << "Structured Append: symbol " << result.sequenceIndex() + 1 << " of " << result.sequenceSize()
 					  << " (parity/id: '" << result.sequenceId() << "')\n";
+
+		if (result.readerInit())
+			std::cout << "Reader Initialisation/Programming\n";
 	}
 
 	return ret;

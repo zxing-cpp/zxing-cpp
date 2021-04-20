@@ -56,6 +56,7 @@ class Raw2TxtDecoder
 {
 	int codeSet = 0;
 	bool _convertFNC1 = false;
+	bool _readerInit = false;
 	std::string txt;
 	size_t lastTxtSize = 0;
 
@@ -104,8 +105,10 @@ public:
 			switch (code) {
 			case CODE_FNC_1: fnc1(); break;
 			case CODE_FNC_2:
-			case CODE_FNC_3:
 				// do nothing?
+				break;
+			case CODE_FNC_3:
+				_readerInit = true; // Can occur anywhere in the symbol (ISO/IEC 15417:2007 4.3.4.2 (c))
 				break;
 			case CODE_SHIFT:
 				if (shift)
@@ -155,6 +158,8 @@ public:
 		// be a printable character).
 		return txt.substr(0, lastTxtSize);
 	}
+
+	bool readerInit() const { return _readerInit; }
 };
 
 template <typename C>
@@ -277,7 +282,8 @@ Result Code128Reader::decodePattern(int rowNumber, const PatternView& row, std::
 		return Result(DecodeStatus::ChecksumError);
 
 	int xStop = next.pixelsTillEnd();
-	return Result(raw2txt.text(), rowNumber, xStart, xStop, BarcodeFormat::Code128, std::move(rawCodes));
+	return Result(raw2txt.text(), rowNumber, xStart, xStop, BarcodeFormat::Code128, std::move(rawCodes),
+				  raw2txt.readerInit());
 }
 
 } // namespace ZXing::OneD

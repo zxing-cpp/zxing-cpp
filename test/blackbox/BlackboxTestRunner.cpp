@@ -298,12 +298,12 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 3, 3, 270 },
 		});
 
-		runTests("datamatrix-1", "DataMatrix", 24, {
-			{ 24, 24, 0   },
-			{  0, 24, 90  },
-			{  0, 24, 180 },
-			{  0, 24, 270 },
-			{ 23, 0, pure },
+		runTests("datamatrix-1", "DataMatrix", 25, {
+			{ 25, 25, 0   },
+			{  0, 25, 90  },
+			{  0, 25, 180 },
+			{  0, 25, 270 },
+			{ 24, 0, pure },
 		});
 
 		runTests("datamatrix-2", "DataMatrix", 13, {
@@ -549,12 +549,12 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 1, 1, 0   },
 		});
 
-		runTests("pdf417-1", "PDF417", 16, {
-			{ 15, 15, 0   },
+		runTests("pdf417-1", "PDF417", 17, {
+			{ 16, 16, 0   },
 			{  1,  1, 90  },
-			{ 15, 15, 180 },
+			{ 16, 16, 180 },
 			{  1,  1, 270 },
-			{ 16, 0, pure },
+			{ 17, 0, pure },
 		});
 
 		runTests("pdf417-2", "PDF417", 25, {

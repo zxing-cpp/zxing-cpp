@@ -29,9 +29,15 @@ DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet);
 
 using namespace ZXing;
 
+// Shorthand for Decode()
+static DecoderResult parse(ByteArray bytes)
+{
+	return DataMatrix::DecodedBitStreamParser::Decode(std::move(bytes), "");
+}
+
 static std::wstring decode(ByteArray bytes)
 {
-	return DataMatrix::DecodedBitStreamParser::Decode(std::move(bytes), "").text();
+	return parse(std::move(bytes)).text();
 }
 
 TEST(DMDecodeTest, Ascii)
@@ -46,13 +52,13 @@ TEST(DMDecodeTest, Ascii)
 TEST(DMDecodeTest, AsciiError)
 {
 	// ASCII err on invalid code word
-	EXPECT_EQ(DataMatrix::DecodedBitStreamParser::Decode({66, 250, 68}, "").errorCode(), DecodeStatus::FormatError);
+	EXPECT_EQ(parse({66, 250, 68}).errorCode(), DecodeStatus::FormatError);
 
 	// ASCII err on invalid code word at end (currently failing)
-	EXPECT_EQ(DataMatrix::DecodedBitStreamParser::Decode({66, 67, 68, 250}, "").errorCode(), DecodeStatus::FormatError);
+	EXPECT_EQ(parse({66, 67, 68, 250}).errorCode(), DecodeStatus::FormatError);
 
 	// ASCII accept extra (illegal) unlatch at end
-	EXPECT_EQ(DataMatrix::DecodedBitStreamParser::Decode({66, 67, 68, 254}, "").errorCode(), DecodeStatus::NoError);
+	EXPECT_EQ(parse({66, 67, 68, 254}).errorCode(), DecodeStatus::NoError);
 }
 
 // Most of the following examples are taken from the DMHighLevelEncodeTest.cpp tests.
@@ -102,7 +108,7 @@ TEST(DMDecodeTest, X12)
 
 static StructuredAppendInfo info(ByteArray bytes)
 {
-	return DataMatrix::DecodedBitStreamParser::Decode(std::move(bytes), "").structuredAppend();
+	return parse(std::move(bytes)).structuredAppend();
 }
 
 TEST(DMDecodeTest, StructuredAppend)
@@ -143,4 +149,27 @@ TEST(DMDecodeTest, StructuredAppend)
 	EXPECT_EQ(info({50, 233, 42, 0, 255}).id, "255");
 	EXPECT_EQ(info({50, 233, 42, 255, 0}).id, "65280");
 	EXPECT_EQ(info({50, 233, 42, 255, 255}).id, "65535");
+}
+
+TEST(DMDecodeTest, ReaderInit)
+{
+	// Null
+	EXPECT_FALSE(parse({50}).readerInit());
+	EXPECT_TRUE(parse({50}).isValid());
+
+	// Set
+	EXPECT_TRUE(parse({234, 50}).readerInit());
+	EXPECT_TRUE(parse({234, 50}).isValid());
+
+	// Must be first
+	EXPECT_FALSE(parse({50, 234}).readerInit());
+	EXPECT_FALSE(parse({50, 234}).isValid());
+
+	EXPECT_FALSE(parse({235, 234, 50}).readerInit()); // Upper Shift first
+	EXPECT_FALSE(parse({235, 234, 50}).isValid());
+
+	// Can't be used with Structured Append
+	EXPECT_TRUE(parse({50, 233, 42, 1, 1}).isValid()); // Null
+	EXPECT_FALSE(parse({234, 50, 233, 42, 1, 1}).readerInit());
+	EXPECT_FALSE(parse({234, 50, 233, 42, 1, 1}).isValid());
 }

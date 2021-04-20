@@ -46,6 +46,7 @@ class DecoderResult
 	int _errorsCorrected = -1;
 	int _erasures = -1;
 	StructuredAppendInfo _structuredAppend;
+	bool _readerInit = false;
 	std::shared_ptr<CustomData> _extra;
 
 	DecoderResult(const DecoderResult &) = delete;
@@ -89,6 +90,7 @@ public:
 	ZX_PROPERTY(int, errorsCorrected, setErrorsCorrected)
 	ZX_PROPERTY(int, erasures, setErasures)
 	ZX_PROPERTY(StructuredAppendInfo, structuredAppend, setStructuredAppend)
+	ZX_PROPERTY(bool, readerInit, setReaderInit)
 	ZX_PROPERTY(std::shared_ptr<CustomData>, extra, setExtra)
 
 #undef ZX_PROPERTY

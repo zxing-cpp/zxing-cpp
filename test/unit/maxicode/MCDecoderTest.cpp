@@ -36,8 +36,8 @@ static void pad(ByteArray& padded)
 	}
 }
 
-// Helper to return Structured Append
-static StructuredAppendInfo info(ByteArray bytes, const int mode)
+// Helper to call Decode()
+static DecoderResult parse(ByteArray bytes, const int mode)
 {
 	ByteArray padded;
 	padded.reserve(93 + 1); // 93 + mode
@@ -52,7 +52,13 @@ static StructuredAppendInfo info(ByteArray bytes, const int mode)
 	}
 	padded.insert(padded.end(), bytes.begin(), bytes.end());
 	pad(padded);
-	return MaxiCode::DecodedBitStreamParser::Decode(std::move(padded), mode, "").structuredAppend();
+	return MaxiCode::DecodedBitStreamParser::Decode(std::move(padded), mode, "");
+}
+
+// Helper to return Structured Append
+static StructuredAppendInfo info(ByteArray bytes, const int mode)
+{
+	return parse(bytes, mode).structuredAppend();
 }
 
 TEST(MCDecodeTest, StructuredAppend)
@@ -135,4 +141,15 @@ TEST(MCDecodeTest, StructuredAppend)
 	EXPECT_EQ(info({33, 032, 49}, 2).count, 0); // Count 3 <= index 3 so set to 0
 	EXPECT_EQ(info({33, 032, 49}, 4).index, 3); // Mode 4
 	EXPECT_EQ(info({33, 032, 49}, 4).count, 0);
+}
+
+TEST(MCDecodeTest, ReaderInit)
+{
+	// Null
+	EXPECT_FALSE(parse({49}, 2).readerInit()); // Mode 2
+	EXPECT_TRUE(parse({49}, 2).isValid());
+
+	// Set
+	EXPECT_TRUE(parse({49}, 6).readerInit()); // Mode 6
+	EXPECT_TRUE(parse({49}, 6).isValid());
 }
