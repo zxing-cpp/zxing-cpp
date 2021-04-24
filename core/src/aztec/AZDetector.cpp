@@ -156,7 +156,8 @@ static bool GetCorrectedParameterData(int64_t parameterData, bool compact, int& 
 * @param bullsEyeCorners the array of bull's eye corners
 * @throws NotFoundException in case of too many errors or invalid parameters
 */
-static bool ExtractParameters(const BitMatrix& image, const std::array<ResultPoint, 4>& bullsEyeCorners, bool compact, int nbCenterLayers, int& nbLayers, int& nbDataBlocks, int& shift)
+static bool ExtractParameters(const BitMatrix& image, const std::array<ResultPoint, 4>& bullsEyeCorners, bool compact,
+							  int nbCenterLayers, int& nbLayers, int& nbDataBlocks, bool& readerInit, int& shift)
 {
 	if (!IsValidPoint(bullsEyeCorners[0], image.width(), image.height()) || !IsValidPoint(bullsEyeCorners[1], image.width(), image.height()) ||
 		!IsValidPoint(bullsEyeCorners[2], image.width(), image.height()) || !IsValidPoint(bullsEyeCorners[3], image.width(), image.height())) {
@@ -203,14 +204,23 @@ static bool ExtractParameters(const BitMatrix& image, const std::array<ResultPoi
 		return false;
 	}
 
+	readerInit = false;
 	if (compact) {
 		// 8 bits:  2 bits layers and 6 bits data blocks
 		nbLayers = (correctedData >> 6) + 1;
+		if (nbLayers == 1 && (correctedData & 0x20)) { // ISO/IEC 24778:2008 Section 9 MSB artificially set
+			readerInit = true;
+			correctedData &= ~0x20;
+		}
 		nbDataBlocks = (correctedData & 0x3F) + 1;
 	}
 	else {
 		// 16 bits:  5 bits layers and 11 bits data blocks
 		nbLayers = (correctedData >> 11) + 1;
+		if (nbLayers <= 22 && (correctedData & 0x400)) { // ISO/IEC 24778:2008 Section 9 MSB artificially set
+			readerInit = true;
+			correctedData &= ~0x400;
+		}
 		nbDataBlocks = (correctedData & 0x7FF) + 1;
 	}
 	return true;
@@ -506,8 +516,10 @@ DetectorResult Detector::Detect(const BitMatrix& image, bool isMirror, bool isPu
 	// 3. Get the size of the matrix and other parameters from the bull's eye
 	int nbLayers = 0;
 	int nbDataBlocks = 0;
+	bool readerInit = false;
 	int shift = 0;
-	if (!ExtractParameters(image, bullsEyeCorners, compact, nbCenterLayers, nbLayers, nbDataBlocks, shift)) {
+	if (!ExtractParameters(image, bullsEyeCorners, compact, nbCenterLayers, nbLayers, nbDataBlocks, readerInit,
+						   shift)) {
 		return {};
 	}
 
@@ -515,7 +527,7 @@ DetectorResult Detector::Detect(const BitMatrix& image, bool isMirror, bool isPu
 	return {SampleGrid(image, bullsEyeCorners[(shift + 0) % 4], bullsEyeCorners[(shift + 1) % 4],
 					   bullsEyeCorners[(shift + 2) % 4], bullsEyeCorners[(shift + 3) % 4], compact, nbLayers,
 					   nbCenterLayers),
-			compact, nbDataBlocks, nbLayers};
+			compact, nbDataBlocks, nbLayers, readerInit};
 }
 
 } // namespace ZXing::Aztec
