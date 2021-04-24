@@ -204,3 +204,243 @@ TEST(AZDetectorTest, ErrorInParameterLocatorNotCompact)
 		, 'X', true)
 	);
 }
+
+TEST(AZDetectorTest, ReaderInitFull2Layers)
+{
+	{
+		// Null (not set)
+		auto r = Aztec::Detector::Detect(ParseBitMatrix(
+			"      X X X   X   X X   X X X X   X X X X X   \n"
+			"    X   X X X X   X X X     X X X         X   \n"
+			"  X X   X X   X   X X   X X X   X X X     X X \n"
+			"  X X X   X X X   X X X X   X   X   X   X   X \n"
+			"    X X X X         X               X X X   X \n"
+			"X       X X X X X X X X X X X X X X X     X X \n"
+			"X     X X X                       X     X   X \n"
+			"X   X X X X   X X X X X X X X X   X           \n"
+			"X X X   X X   X               X   X       X X \n"
+			"X   X X   X   X   X X X X X   X   X   X X   X \n"
+			"X   X     X   X   X       X   X   X X X   X X \n"
+			"  X   X   X   X   X   X   X   X   X   X   X   \n"
+			"  X X X X X   X   X       X   X   X         X \n"
+			"X   X   X X   X   X X X X X   X   X X     X   \n"
+			"X       X X   X               X   X X X X   X \n"
+			"  X   X   X   X X X X X X X X X   X   X X   X \n"
+			"X     X X X                       X X         \n"
+			"X X   X   X X X X X X X X X X X X X X X X   X \n"
+			"X X         X   X       X   X X       X X     \n"
+			"    X     X         X X X X   X X X     X X   \n"
+			"    X     X X X         X   X X X     X       \n"
+			"    X X X         X   X   X X   X       X   X \n"
+			"  X   X X X             X   X   X       X     \n"
+		), false /*isMirror*/, true /*isPure*/);
+		EXPECT_TRUE(r.isValid());
+		EXPECT_FALSE(r.readerInit());
+		EXPECT_FALSE(r.isCompact());
+		EXPECT_EQ(r.nbLayers(), 2);
+	}
+	{
+		// Set
+		auto r = Aztec::Detector::Detect(ParseBitMatrix(
+			"      X X X   X   X X   X X X X   X X X X X   \n"
+			"    X   X X X X   X X X     X X X         X   \n"
+			"  X X   X X   X   X X   X X X   X X X     X X \n"
+			"  X X X   X X X   X X X X   X   X   X   X   X \n"
+			"    X X X X         X   X           X X X   X \n"
+			"X       X X X X X X X X X X X X X X X     X X \n"
+			"X     X X X                       X     X   X \n"
+			"X   X X   X   X X X X X X X X X   X           \n"
+			"X X X     X   X               X   X       X X \n"
+			"X   X X   X   X   X X X X X   X   X   X X   X \n"
+			"X   X   X X   X   X       X   X   X X X   X X \n"
+			"  X   X   X   X   X   X   X   X   X   X   X   \n"
+			"  X X X X X   X   X       X   X   X         X \n"
+			"X   X     X   X   X X X X X   X   X       X   \n"
+			"X         X   X               X   X X X X   X \n"
+			"  X   X X X   X X X X X X X X X   X   X X   X \n"
+			"X     X   X                       X X         \n"
+			"X X   X   X X X X X X X X X X X X X X X X   X \n"
+			"X X           X X X X         X X     X X     \n"
+			"    X     X         X X X X   X X X     X X   \n"
+			"    X     X X X         X   X X X     X       \n"
+			"    X X X         X   X   X X   X       X   X \n"
+			"  X   X X X             X   X   X       X     \n"
+		), false /*isMirror*/, true /*isPure*/);
+		EXPECT_TRUE(r.isValid());
+		EXPECT_TRUE(r.readerInit());
+		EXPECT_FALSE(r.isCompact());
+		EXPECT_EQ(r.nbLayers(), 2);
+	}
+}
+
+TEST(AZDetectorTest, ReaderInitFull22Layers)
+{
+	// Set
+	auto r = Aztec::Detector::Detect(ParseBitMatrix(
+		"            X X   X   X X X     X       X   X     X         X   X     X X   X   X       X X   X X X         X       X   X     X   X         X X X X X X   X   X   X   X X   X X     X     X X X X     X   X X X X   X X   \n"
+		"        X X     X X   X   X X X X   X X   X           X     X   X   X X   X   X X X X X X X       X   X         X X X   X X     X X   X             X         X   X X   X X   X   X   X   X X     X X X X     X     X   X \n"
+		"    X   X   X   X       X           X X     X       X       X   X X       X X X     X   X   X X     X X   X X X X         X X X   X     X X X   X   X X     X       X X X   X   X     X X   X X X           X X   X X     \n"
+		"      X X       X X     X X X     X       X     X   X   X       X     X       X             X   X     X X         X   X   X X   X       X     X X   X           X X X X   X   X X     X     X     X X         X   X   X   \n"
+		"        X   X       X X   X       X X X X   X X X X X X X X X   X X X   X X X   X   X X X X X X X   X X X X X     X       X   X     X       X X X     X         X X X   X X X X X           X   X X X X X X X X       X   \n"
+		"    X     X   X     X   X X         X X X X     X     X X X   X X     X       X X   X X     X X X X X X X X   X   X   X     X     X X   X           X           X     X         X   X   X X   X     X X X X   X X         \n"
+		"X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X \n"
+		"          X     X X     X X X X       X   X     X       X X           X X X               X   X     X X X X   X X X   X         X X X         X X   X X X   X   X X                     X         X X X   X         X X X \n"
+		"X   X X X X X         X X X   X   X X       X X   X X X   X X X             X   X X       X   X       X     X X       X   X   X X   X X X X X   X   X   X       X X         X X     X X X     X X X X       X X       X   \n"
+		"  X X         X X X     X X X X   X X X X X   X         X       X   X X   X     X X X X X X   X X   X X   X   X       X   X   X X X     X X   X     X   X X   X X X X X   X     X     X X     X X     X X X       X   X   \n"
+		"  X   X     X X           X X   X X         X   X   X X X   X   X X X X X X X X X       X   X   X X X X     X     X   X X X X X             X X X X X X     X     X     X   X   X     X           X     X X X   X X X   X \n"
+		"  X X X X X   X X     X   X     X X X X   X         X X X X X X               X X X   X     X X X X     X X   X X           X X   X X X   X   X X   X X           X X X X X       X     X         X X X X X   X     X X X \n"
+		"  X     X X X X       X X     X       X   X X X X X X X X   X X X   X X X X X     X X   X     X   X   X X   X X             X X X X   X X   X X   X X   X     X     X       X X         X X X X X X X       X X       X   \n"
+		"X X X             X X   X X   X X X   X   X     X   X   X X X X   X   X X         X         X       X     X     X       X X         X         X   X X   X     X X       X     X   X X X X   X X     X X X X   X   X X X   \n"
+		"X X   X   X X     X   X X X     X X   X     X   X X X   X X X     X         X X     X X X X X X X X         X X     X X X X       X X X     X X X X X X   X X     X     X X X X         X X X   X   X   X X X       X   X \n"
+		"  X X X   X     X X   X X         X X X X X   X X       X   X   X X       X       X X X     X X     X X X           X X   X X X X             X X X     X X   X X X       X   X X     X             X X   X     X X   X X \n"
+		"X X     X   X     X     X X X X X X     X X X     X X X   X   X X X     X X X   X X X X X   X       X X X   X X     X X X   X   X X   X X   X   X X X     X   X X X       X X X     X           X   X X     X     X X     \n"
+		"      X         X     X X   X         X X X         X   X             X   X   X X   X       X   X   X   X                 X   X   X X   X     X X       X X X X X       X       X X         X   X X             X   X X   \n"
+		"  X X   X   X   X X     X       X   X X X X X   X X   X       X X           X X   X X   X X     X X X X     X X   X     X X     X   X X     X X   X X   X   X X X X     X X X X X       X X X     X     X X X     X       \n"
+		"X X X X       X X X   X       X     X X   X     X X           X   X X X   X         X         X       X       X     X X     X X     X   X X     X X       X   X X       X     X         X   X     X X X X X     X       X \n"
+		"    X   X   X X X X X     X X X X   X   X   X X       X   X   X         X   X X   X     X X       X X       X   X     X           X   X     X     X X   X       X   X X     X X X X   X X X       X X X     X X           \n"
+		"  X   X       X X   X X X       X X X   X     X X   X       X             X       X     X X X X X   X X       X X         X X   X X   X X             X     X   X X   X X     X   X     X       X X X X X     X   X X   X \n"
+		"X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X \n"
+		"      X X     X X   X X X X X     X X     X   X     X X X X     X   X X       X   X X X       X X     X X X     X   X X         X     X X     X       X       X X X   X         X   X   X X     X   X   X X   X   X   X X \n"
+		"          X X     X X       X X     X     X X       X     X X X X X   X     X         X   X X X   X         X   X   X     X X   X X X       X   X X   X       X X   X   X X X X X   X X   X X X   X     X   X   X X X     \n"
+		"X   X X X           X X X X   X     X   X X   X   X           X X X   X X     X X   X         X X         X   X         X   X X X     X X     X   X   X X       X X X X       X             X           X             X   \n"
+		"X X   X     X   X   X X X X X     X X     X X   X X X   X   X   X   X       X     X   X X X X X X       X   X X         X   X     X X       X   X X   X         X   X     X X X X     X   X X           X X X         X X \n"
+		"  X       X           X X X X X X   X X X     X   X   X   X X   X     X   X         X X   X   X                 X X   X X   X X     X         X X X     X X     X     X   X   X   X X X     X   X X X X                 X \n"
+		"  X     X X X     X X X     X     X   X   X X X X X   X   X           X   X X   X       X X   X   X   X X X X X   X X       X X X   X   X   X X   X X X X X X X X   X X X   X X               X   X     X   X       X X   \n"
+		"  X     X     X X     X X X           X X X   X X   X X   X X X   X   X       X X X X     X         X X   X   X           X X X X X   X   X       X X X       X X         X   X X X X     X       X X   X X   X   X X X X \n"
+		"    X X   X X   X               X X   X X X X X X X           X   X   X X   X X     X     X X         X   X X X X X   X X     X   X   X X   X X X   X X X X   X     X X X   X X     X   X   X   X X     X   X   X   X X X \n"
+		"X   X X   X   X         X     X X   X X         X X     X         X   X   X     X     X X X   X   X     X     X         X   X X X     X   X   X X     X X X X X X   X         X X       X   X   X     X   X     X     X X \n"
+		"  X         X X   X     X   X     X X   X   X   X   X X   X     X X X X   X X     X   X X X X     X X       X   X   X X X X X X       X   X X     X   X     X X X X X X   X X X X       X   X X   X   X   X X X     X   X \n"
+		"X                 X   X   X X   X       X X               X X   X X   X   X   X   X X   X X X   X     X   X   X X     X X     X   X     X X   X X     X   X X X X     X X     X X     X X       X X X         X   X X     \n"
+		"X         X X X X   X X X X     X   X   X   X   X       X   X X         X X X X         X   X X X X X       X X X X X X X     X X     X   X X     X         X   X X   X X X X X X X X X   X X X   X     X   X   X X X X   \n"
+		"  X   X   X       X     X X X X   X X X X     X   X X X X X   X   X X X   X     X   X   X     X         X X   X X X   X X         X X X X X     X   X       X     X       X   X X         X   X X X     X         X X   X \n"
+		"X   X     X X     X       X   X   X         X X X X   X X     X   X   X   X X           X         X   X     X               X X     X       X       X X X X   X X X X X     X X   X   X     X     X X X     X     X X   X \n"
+		"  X X   X     X                 X             X X X     X       X   X X X X   X   X     X X X   X X X X   X     X   X   X   X X X   X X X     X X X X   X X       X     X       X             X   X X X X X     X X X     \n"
+		"X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X \n"
+		"      X   X     X X   X X       X X   X   X             X   X X X     X   X     X X   X   X   X   X     X X             X X X       X X   X   X   X     X     X X X   X X           X   X X   X     X   X X     X X X   X \n"
+		"X X X   X   X X     X     X   X X       X   X X     X     X     X           X X         X   X   X X X     X X   X   X X X     X X   X       X X X X   X     X X             X X   X X X     X     X X X     X X   X     X \n"
+		"X     X   X       X X               X X   X           X   X       X     X X   X           X   X   X   X       X             X   X X   X         X X X X X     X X X X                     X   X X X X X       X X X X     \n"
+		"    X   X X X     X X X X X X X X X X X X X X X X   X   X     X X           X     X   X X   X X   X         X     X   X X X     X   X X     X X X   X   X X   X   X         X   X X X   X X X X X X     X   X X     X X   \n"
+		"  X X   X     X   X X       X X               X           X X   X X X X X     X         X     X X   X X X X         X     X     X     X   X   X   X X   X   X   X     X   X     X   X X X X X     X     X X   X X X X X X \n"
+		"X X X   X X X X   X X X   X X X X X     X X X       X           X           X X             X X X   X X   X X X X   X X X X X   X X     X X X X X X     X                   X X     X   X X X   X X     X   X X X         \n"
+		"X X X   X     X   X X     X     X       X     X           X       X X   X       X X   X X     X X     X X X   X X X   X X       X X X     X   X   X   X X   X X X     X X     X X X X   X   X X X   X X X X   X X   X   X \n"
+		"  X   X X X X   X   X       X X   X         X       X     X   X             X X   X         X X         X X X   X         X X   X   X X X   X   X   X X       X X     X   X X X X X                   X   X X X X X     X \n"
+		"X         X   X   X X X X X   X X   X   X X   X   X X   X X X X   X   X           X     X     X X X   X   X   X           X X X         X X   X X X X X     X X     X     X   X     X X       X   X     X X   X X X X   X \n"
+		"      X X X X X X       X   X     X X X     X   X   X           X X X   X X X X X X X   X X   X X X X X X X X X X X X X X X X         X X X X       X X   X X       X       X       X   X X       X X     X X     X X X   \n"
+		"X   X   X X   X     X X X X   X     X     X       X     X   X   X X                   X     X   X                       X       X X     X       X                 X X   X         X X         X       X X           X     \n"
+		"            X X   X X X               X X X X   X       X X   X   X   X     X X X X   X X X     X   X X X X X X X X X   X     X X X   X     X   X   X   X X   X   X     X X X     X   X   X X X     X   X X X X X   X   X \n"
+		"X X     X X         X   X     X X X X     X   X         X   X   X   X X X X   X X X X   X X   X X   X               X   X     X     X X X     X             X X   X X     X   X X   X   X X   X         X X   X X         \n"
+		"X X   X X X X X       X X X X X     X X   X X   X X X   X       X         X X X X   X   X X     X   X   X X X X X   X   X         X X   X X X   X X   X X     X     X X X   X   X   X X         X X X   X X X X X X       \n"
+		"X X   X X X   X     X   X     X X X X   X X       X   X X   X X   X           X   X X X     X   X   X   X       X   X   X     X   X X     X   X X   X       X   X   X     X     X   X X X   X   X X   X   X   X X X X   X \n"
+		"X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X \n"
+		"X             X X X X   X   X             X           X X   X         X       X X X X   X X   X X   X   X       X   X   X X       X X   X     X X X   X X   X X X X   X X X       X     X     X         X X         X X   \n"
+		"X     X     X   X     X X X     X X     X X X X   X X X   X X     X     X X X X   X X     X     X   X   X X X X X   X   X X   X X     X   X X   X     X           X X   X   X     X X     X         X       X     X   X   \n"
+		"X X   X X           X   X X X X       X X X   X   X   X     X   X X     X     X   X   X X   X   X   X               X   X   X   X X     X X   X X X   X   X         X     X     X X       X             X X   X   X       \n"
+		"X     X   X X X     X   X X   X   X     X   X X       X       X X     X X X X   X               X   X X X X X X X X X   X       X   X       X X       X     X     X     X X X         X X   X   X     X     X X X X X X X \n"
+		"  X             X   X               X   X X   X     X X X X X X X             X       X X   X X X                       X   X X   X   X       X X X X X X         X X           X   X X         X   X   X     X X   X X   \n"
+		"X       X X X X   X       X   X X X X       X   X X X   X   X X X   X   X   X   X X       X     X X X X X X X X X X X X X X           X X   X X     X     X X X X   X       X     X X X X X     X X X     X X X       X   \n"
+		"X   X X X     X   X X X X X   X X     X   X         X   X   X         X X X     X X X   X X         X         X   X X       X X   X     X     X       X         X X X X X     X   X X X X X   X   X       X   X X X X   X \n"
+		"X X X X X   X         X     X     X X   X X X X   X     X X X   X X   X X   X   X   X X X X         X X     X   X X                   X   X X     X   X   X X   X X         X   X     X X         X X     X X   X X   X X \n"
+		"      X X X   X     X X X X X   X X   X X     X   X X X X         X X   X     X X X   X X       X   X X X X     X X X X   X X   X             X X X         X X   X X X   X     X   X   X X     X X       X       X       \n"
+		"    X X     X X X           X X     X X   X X X X X X X X X X X   X       X X X X     X X   X X X   X   X X X       X X     X X X X X X X   X X   X     X X         X X     X X X   X   X   X X   X   X   X X   X   X     \n"
+		"  X X   X X   X X       X     X X       X     X       X X X   X X X           X X   X X             X   X X         X   X X X   X X   X X X   X X X       X X X     X X X X   X X X   X X X     X         X     X       X \n"
+		"  X X X     X     X         X X   X   X X X X X   X   X     X       X   X   X     X               X   X X   X X   X X     X X X           X X     X X         X       X     X     X   X X   X X           X X   X X X     \n"
+		"X   X   X     X X     X   X X   X   X X X         X       X X                       X   X       X X X   X       X       X   X     X   X   X     X     X X   X   X   X X X X   X X X X X     X X X X X X X     X X   X X   \n"
+		"X X   X X   X       X X     X     X X X   X X   X X X X     X X   X X X     X   X     X   X X X   X   X   X X   X   X X X X     X X   X     X X     X X   X       X         X       X   X   X X     X   X   X         X X \n"
+		"X X X   X       X X   X     X X   X   X   X   X X X   X   X   X   X   X X                                 X   X     X     X     X   X X   X   X     X   X X         X   X X     X X   X X   X X X X           X   X       \n"
+		"X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X \n"
+		"X   X   X       X   X   X   X   X   X   X X       X X       X     X   X   X     X X     X     X X X X   X X       X   X     X   X X X     X   X X X X   X X   X X         X       X X X X X X X     X     X   X   X     X \n"
+		"X X X X     X X X X   X       X X   X X   X X X X   X   X       X X   X     X X   X X     X X   X X X     X X   X X X   X   X X   X X   X X X X X X   X X X X X X X X   X X X   X X X       X   X   X     X X X X X X     \n"
+		"  X     X         X X X       X   X     X     X X X   X X   X   X X           X   X X X   X X     X     X X   X X X   X X   X X       X X       X   X X   X   X     X     X     X   X       X     X X     X   X         X \n"
+		"X   X   X X X       X   X     X     X X X X X   X   X   X     X   X   X   X X X   X       X X   X X X X X   X       X         X   X X X X X X X X X X           X   X   X X X   X X   X X             X   X X X X X     X \n"
+		"    X X X     X X   X X   X X X       X   X     X       X     X X                     X   X X   X       X X       X X   X X X X X   X   X     X     X   X     X   X   X X     X X X X   X     X X       X X     X X     X \n"
+		"X X X   X   X     X       X       X X X X X X X X       X   X     X     X X X X       X   X X   X   X X     X X X   X   X   X     X     X X X   X   X X X         X         X       X X X     X     X X X X X   X X X X   \n"
+		"X X     X X         X   X X X X X   X   X       X     X           X           X X   X   X   X X   X   X X     X X X       X X X X X   X   X   X     X     X X X   X   X X           X X X   X X X       X         X X     \n"
+		"X       X X X X X X X     X     X     X X   X   X X X   X X       X     X X X X   X         X X   X X   X   X X X   X X   X   X X   X   X X X X           X   X     X X X   X       X     X           X X   X X X         \n"
+		"    X X X                 X X     X   X X X   X   X X X   X       X X     X         X   X X X X       X       X X X X X     X X   X X X   X   X X X X   X X       X   X X X     X X X   X       X X     X X   X     X X   \n"
+		"  X X X   X X X X X X X X   X       X X     X                 X   X       X X X       X   X X   X X X X   X X   X   X             X         X X X   X X       X X X X       X X   X X   X X X     X X X     X X X     X   \n"
+		"X       X X   X X X X   X X   X     X X   X           X X   X X   X X X   X   X X       X X X   X X X X   X   X     X   X   X X   X     X X     X     X X   X   X X     X X     X       X X   X               X           \n"
+		"X           X   X X X X X X   X     X     X X X       X X   X     X X     X X X   X   X X   X X X X X X   X X X X       X X X   X X         X     X X X X       X X X   X X X   X X X X   X   X     X X     X X X   X     \n"
+		"  X           X X     X   X X X       X       X X X     X X X X X X X     X           X     X   X   X   X     X   X   X X X   X         X X   X     X X X X X X   X X X         X X X X X     X       X X X       X     X \n"
+		"    X   X   X   X     X X X X X   X X X X   X X X X X X   X   X X   X X X X X X X X   X   X   X   X   X X   X X     X X     X     X   X X X X X   X X X   X X X X         X X X   X X   X X X X   X   X     X X       X   \n"
+		"X X   X X     X   X     X X       X   X X X   X X X X     X     X   X     X       X   X   X X   X       X X     X   X X   X X X X X X X             X X X X     X X X X X X       X X   X X     X     X X X           X X \n"
+		"X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X \n"
+		"    X X X           X   X X X       X X X     X     X X   X X   X X X         X     X     X X X X X   X X X   X X X   X       X       X X X     X     X       X     X X       X                       X X           X     \n"
+		"X X X   X X X     X   X X   X X X X   X     X X X X   X X X   X   X X X X   X     X X     X   X   X X X     X X   X X       X X     X     X X X   X X   X X X X   X       X X   X X   X X X X X       X X   X   X X       \n"
+		"    X     X   X     X   X X X X       X           X       X X X X   X X   X     X X         X X X             X X X X           X X X   X X             X X X   X   X     X   X X X   X X     X X X     X X   X X X X X   \n"
+		"      X X X X X   X X     X X X X     X X   X X     X           X           X X     X X X X X       X     X X X X   X       X   X   X X X X X   X   X X X   X   X X X X   X X   X X X     X   X   X       X X X X   X X X \n"
+		"X X X   X         X X     X     X       X     X   X         X X X X   X   X     X         X       X   X X X       X X X X X   X X   X X   X       X X       X X X   X X       X X   X X       X X X       X           X X \n"
+		"X X     X X X   X                 X X X     X X X   X X X X X   X X X X   X X   X   X X X   X X   X   X   X X   X     X X X   X         X   X X       X     X X       X     X X       X     X X X X   X     X X   X X   X \n"
+		"  X X   X     X   X   X X   X   X   X           X     X       X   X   X   X   X X X   X X   X X   X X X   X   X   X X X X X       X X X       X     X   X   X X X     X       X X X X   X X X   X   X   X X     X X X   X \n"
+		"X X   X X X X X X   X   X X   X   X         X X X X   X       X X           X   X X     X     X X     X X X X         X     X X   X     X   X X X X       X         X X   X X X X X     X X   X X     X     X X X     X X \n"
+		"X X     X X   X X   X X X X   X       X   X     X   X X         X   X               X     X X X   X X X X X       X   X X   X X     X   X         X X X   X   X X   X   X     X X X X X X     X X X X X X X   X X       X \n"
+		"    X   X X X X   X   X   X           X X X X   X   X     X X   X   X X X   X X X     X X X X X     X X X   X X X X X       X X   X X       X X X X X             X   X X   X X X           X X X         X X X   X   X X \n"
+		"X     X   X   X   X   X X   X   X   X         X X X         X   X   X X       X         X     X X X   X   X   X   X X X X X X         X X     X X   X X   X   X       X X       X X     X X X       X X       X   X     X \n"
+		"X X X X     X X X   X X X     X X X     X   X X X     X       X X X   X   X X X X       X X     X X X X X   X         X   X X X X X X X   X X X X X X X   X     X X   X   X X     X X X     X X       X X   X X X     X X \n"
+		"  X   X   X             X X X   X       X X   X X   X   X         X   X X X       X     X               X X   X X X X X X         X   X X X     X X X   X   X     X X         X X   X X X   X     X   X X X       X X X X \n"
+		"X       X   X X   X X   X X X   X   X X X   X   X X X     X X X X X X   X X X X X     X     X X X X   X X   X       X X X X   X X       X X X   X X X X X X X       X X X X X X X X           X X       X X X         X   \n"
+		"X     X X       X X X         X           X     X       X X     X X X     X   X X X   X   X       X     X     X X X X X X X   X   X X X             X   X X X     X X   X X   X X X X X X   X     X X X       X           \n"
+		"X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X   X \n"
+		"X     X X     X X X   X X         X X X X X       X X       X     X   X   X         X   X   X       X X   X   X     X X X X   X     X           X     X       X X X X     X     X       X X X   X X X X   X   X   X X X   \n"
+		"  X X X X   X   X   X X       X   X     X   X   X X X X     X     X         X     X     X   X   X   X     X X   X X     X   X   X           X X                     X X     X   X   X   X   X X   X X     X X X X   X X   \n"
+		"X X   X X X   X   X   X X X X       X X         X         X   X X X X     X       X X X X   X   X     X X             X X X X X   X   X       X X X X X     X X X X X X X X     X X X X   X X X X     X X X   X X X   X X \n"
+		"X X X     X X   X   X   X X X   X X X     X X X X   X   X X X   X   X X   X X       X             X X X     X   X X   X X     X X           X X X             X X     X   X X       X X X X X X         X   X   X       X \n"
+		"  X   X   X   X   X   X X X X     X X X X     X X       X X X   X X X     X     X X X X X X X X       X X     X X   X   X       X         X   X X   X X X X   X   X   X X     X     X X   X X   X X X X   X           X   \n"
+		"X X X X X   X X X X   X X X   X X X         X X       X       X       X X X X X X X     X   X X X         X X       X X X X X   X     X   X X X X X   X   X     X           X X X   X X X X X X       X X X X       X X   \n"
+	), false /*isMirror*/, true /*isPure*/);
+	EXPECT_TRUE(r.isValid());
+	EXPECT_TRUE(r.readerInit());
+	EXPECT_FALSE(r.isCompact());
+	EXPECT_EQ(r.nbLayers(), 22);
+}
+
+TEST(AZDetectorTest, ReaderInitCompact)
+{
+	{
+		// Null (not set)
+		auto r = Aztec::Detector::Detect(ParseBitMatrix(
+			"            X X   X         X \n"
+			"    X X X X   X X X   X     X \n"
+			"    X X             X   X     \n"
+			"  X X X X X X X X X X X X     \n"
+			"  X   X               X       \n"
+			"    X X   X X X X X   X     X \n"
+			"X     X   X       X   X X     \n"
+			"X     X   X   X   X   X     X \n"
+			"X     X   X       X   X X X   \n"
+			"X X   X   X X X X X   X X X X \n"
+			"    X X               X   X   \n"
+			"      X X X X X X X X X X X   \n"
+			"X             X X         X X \n"
+			"X         X   X     X X       \n"
+			"X X X X     X X X         X X \n"
+		), false /*isMirror*/, true /*isPure*/);
+		EXPECT_TRUE(r.isValid());
+		EXPECT_FALSE(r.readerInit());
+		EXPECT_TRUE(r.isCompact());
+		EXPECT_EQ(r.nbLayers(), 1);
+	}
+	{
+		// Set
+		auto r = Aztec::Detector::Detect(ParseBitMatrix(
+			"            X X   X         X \n"
+			"    X X X X   X X X   X     X \n"
+			"    X X     X       X   X     \n"
+			"  X X X X X X X X X X X X     \n"
+			"  X X X               X       \n"
+			"    X X   X X X X X   X X   X \n"
+			"X   X X   X       X   X X     \n"
+			"X     X   X   X   X   X     X \n"
+			"X     X   X       X   X   X   \n"
+			"X X   X   X X X X X   X   X X \n"
+			"    X X               X   X   \n"
+			"      X X X X X X X X X X X   \n"
+			"X       X X   X   X X     X X \n"
+			"X         X   X     X X       \n"
+			"X X X X     X X X         X X \n"
+		), false /*isMirror*/, true /*isPure*/);
+		EXPECT_TRUE(r.isValid());
+		EXPECT_TRUE(r.readerInit());
+		EXPECT_TRUE(r.isCompact());
+		EXPECT_EQ(r.nbLayers(), 1);
+	}
+}

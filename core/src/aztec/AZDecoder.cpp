@@ -453,7 +453,8 @@ DecoderResult Decoder::Decode(const DetectorResult& detectorResult, const std::s
 		return DecoderResult(ConvertBoolArrayToByteArray(correctedBits),
 							 GetEncodedData(correctedBits, characterSet, sai))
 		        .setNumBits(Size(correctedBits))
-				.setStructuredAppend(sai);
+				.setStructuredAppend(sai)
+				.setReaderInit(detectorResult.readerInit());
 	}
 	else {
 		return DecodeStatus::FormatError;

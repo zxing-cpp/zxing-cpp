@@ -33,6 +33,12 @@ std::wstring GetEncodedData(const std::vector<bool>& correctedBits, const std::s
 
 using namespace ZXing;
 
+// Shorthand to call Decode()
+static DecoderResult parse(BitMatrix&& bits, bool compact, int nbDatablocks, int nbLayers)
+{
+	return Aztec::Decoder::Decode({{std::move(bits), {}}, compact, nbDatablocks, nbLayers, false /*readerInit*/}, "");
+}
+
 TEST(AZDecoderTest, AztecResult)
 {
 	auto bits = ParseBitMatrix(
@@ -61,7 +67,7 @@ TEST(AZDecoderTest, AztecResult)
 		"    X X X     X X X       X X X     X X X X   \n"
 		, 'X', true);
 
-	DecoderResult result = Aztec::Decoder::Decode({{std::move(bits), {}}, false, 30, 2}, "");
+	DecoderResult result = parse(std::move(bits), false, 30, 2);
 	EXPECT_EQ(result.isValid(), true);
 	EXPECT_EQ(result.text(), L"88888TTTTTTTTTTTTTTTTTTTTTTTTTTTTTT");
 	EXPECT_EQ(result.rawBytes(), ByteArray({
@@ -103,7 +109,7 @@ TEST(AZDecoderTest, DecodeTooManyErrors)
 		"X X . X . X . . . X . X . . . . X X . X . . X X . . . \n"
 		, 'X', true);
 
-	DecoderResult result = Aztec::Decoder::Decode({{std::move(bits), {}}, true, 16, 4}, "");
+	DecoderResult result = parse(std::move(bits), true, 16, 4);
 	EXPECT_EQ(result.errorCode(), DecodeStatus::FormatError);
 }
 
@@ -139,7 +145,7 @@ TEST(AZDecoderTest, DecodeTooManyErrors2)
 		"X X . . . X X . . X . X . . . . X X . X . . X . X . X \n"
 		, 'X', true);
 
-	DecoderResult result = Aztec::Decoder::Decode({{std::move(bits), {}}, true, 16, 4}, "");
+	DecoderResult result = parse(std::move(bits), true, 16, 4);
 	EXPECT_EQ(result.errorCode(), DecodeStatus::FormatError);
 }
 
