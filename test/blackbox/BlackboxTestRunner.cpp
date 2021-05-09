@@ -476,9 +476,9 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 10, 10, 180 },
 		});
 
-		runTests("rssexpanded-1", "DataBarExpanded", 32, {
-			{ 32, 32, 0   },
-			{ 32, 32, 180 },
+		runTests("rssexpanded-1", "DataBarExpanded", 33, {
+			{ 33, 33, 0   },
+			{ 33, 33, 180 },
 		});
 
 		runTests("rssexpanded-2", "DataBarExpanded", 15, {
@@ -486,14 +486,14 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 13, 15, 180 },
 		});
 
-		runTests("rssexpanded-3", "DataBarExpanded", 117, {
-			{ 117, 117, 0   },
-			{ 117, 117, 180 },
+		runTests("rssexpanded-3", "DataBarExpanded", 118, {
+			{ 118, 118, 0   },
+			{ 118, 118, 180 },
 		});
 
-		runTests("rssexpandedstacked-1", "DataBarExpanded", 64, {
-			{ 59, 64, 0   },
-			{ 59, 64, 180 },
+		runTests("rssexpandedstacked-1", "DataBarExpanded", 65, {
+			{ 60, 65, 0   },
+			{ 60, 65, 180 },
 		});
 
 		runTests("rssexpandedstacked-2", "DataBarExpanded", 7, {
