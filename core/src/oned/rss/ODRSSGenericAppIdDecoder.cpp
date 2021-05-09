@@ -272,6 +272,11 @@ ParseAlphaBlock(const BitArray& bits, ParsingState& state, std::string& buffer)
 		state.position = alpha.newPosition;
 
 		if (alpha.isFNC1()) {
+			// Allow for some generators incorrectly placing a numeric latch "000" after an FNC1
+			if (state.position + 7 < bits.size() && ToInt(bits, state.position, 7) < 8) {
+				state.position += 3;
+			}
+			state.encoding = ParsingState::NUMERIC; // FNC1 latches to numeric encodation
 			return DecodedInformation(state.position, buffer); //end of the char block
 		}
 		buffer.push_back(alpha.value);
@@ -332,6 +337,11 @@ ParseIsoIec646Block(const BitArray& bits, ParsingState& state, std::string& buff
 		DecodedChar iso = DecodeIsoIec646(bits, state.position);
 		state.position = iso.newPosition;
 		if (iso.isFNC1()) {
+			// Allow for some generators incorrectly placing a numeric latch "000" after an FNC1
+			if (state.position + 7 < bits.size() && ToInt(bits, state.position, 7) < 8) {
+				state.position += 3;
+			}
+			state.encoding = ParsingState::NUMERIC; // FNC1 latches to numeric encodation
 			return DecodedInformation(state.position, buffer);
 		}
 		buffer.push_back(iso.value);
