@@ -54,23 +54,23 @@ BitMatrix VisitMatrix(int numRows, int numCols, VisitFunc visit)
 	int row = 4;
 	int col = 0;
 
-	auto corner = [&numRows, &numCols, logAccess](const BitPosArray& corner) {
+	auto corner = [&numRows, &numCols, logAccess](const BitPosArray& positions) {
 		auto clamp = [](int i, int max) { return i < 0 ? i + max : i; };
 		BitPosArray result;
 		for (size_t bit = 0; bit < 8; ++bit) {
-			result[bit] = {clamp(corner[bit].row, numRows), clamp(corner[bit].col, numCols)};
+			result[bit] = {clamp(positions[bit].row, numRows), clamp(positions[bit].col, numCols)};
 			logAccess(result[bit]);
 		}
 		return result;
 	};
 
-	auto utah = [&numRows, &numCols, logAccess](int row, int col) {
+	auto utah = [&numRows, &numCols, logAccess](int _row, int _col) {
 		const BitPosArray delta = {{{-2, -2}, {-2, -1}, {-1, -2}, {-1, -1}, {-1, 0}, {0, -2}, {0, -1}, {0, 0}}};
 
 		BitPosArray result;
 		for (size_t bit = 0; bit < 8; ++bit) {
-			int r = row + delta[bit].row;
-			int c = col + delta[bit].col;
+			int r = _row + delta[bit].row;
+			int c = _col + delta[bit].col;
 			if (r < 0) {
 				r += numRows;
 				c += 4 - ((numRows + 4) % 8);

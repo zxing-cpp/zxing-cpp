@@ -184,15 +184,15 @@ FindRowsWithPattern(const BitMatrix& matrix, int height, int width, int startRow
 		int previousRowStart = static_cast<int>(result[0].value().x());
 		int previousRowEnd = static_cast<int>(result[1].value().x());
 		for (; stopRow < height; stopRow++) {
-			int startPos, endPos;
-			found = FindGuardPattern(matrix, previousRowStart, stopRow, width, false, pattern, counters, startPos, endPos);
+			int start, end;
+			found = FindGuardPattern(matrix, previousRowStart, stopRow, width, false, pattern, counters, start, end);
 			// a found pattern is only considered to belong to the same barcode if the start and end positions
 			// don't differ too much. Pattern drift should be not bigger than two for consecutive rows. With
 			// a higher number of skipped rows drift could be larger. To keep it simple for now, we allow a slightly
 			// larger drift and don't check for skipped rows.
-			if (found && std::abs(previousRowStart - startPos) < MAX_PATTERN_DRIFT && std::abs(previousRowEnd - endPos) < MAX_PATTERN_DRIFT) {
-				previousRowStart = startPos;
-				previousRowEnd = endPos;
+			if (found && std::abs(previousRowStart - start) < MAX_PATTERN_DRIFT && std::abs(previousRowEnd - end) < MAX_PATTERN_DRIFT) {
+				previousRowStart = start;
+				previousRowEnd = end;
 				skippedRowCount = 0;
 			}
 			else if (skippedRowCount > SKIPPED_ROW_COUNT_MAX) {
@@ -316,7 +316,7 @@ static std::list<std::array<Nullable<ResultPoint>, 8>> DetectBarcode(const BitMa
 #ifdef ZX_FAST_BIT_STORAGE
 bool HasStartPattern(const BitMatrix& m)
 {
-	constexpr FixedPattern<8, 17> START_PATTERN = { 8, 1, 1, 1, 1, 1, 1, 3 };
+	constexpr FixedPattern<8, 17> FAST_START_PATTERN = { 8, 1, 1, 1, 1, 1, 1, 3 };
 	constexpr int minSymbolWidth = 3*8+1; // compact symbol
 
 	PatternRow row;
@@ -324,10 +324,10 @@ bool HasStartPattern(const BitMatrix& m)
 	for (int r = ROW_STEP; r < m.height(); r += ROW_STEP) {
 		m.getPatternRow(r, row);
 
-		if (FindLeftGuard(row, minSymbolWidth, START_PATTERN, 2).isValid())
+		if (FindLeftGuard(row, minSymbolWidth, FAST_START_PATTERN, 2).isValid())
 			return true;
 		std::reverse(row.begin(), row.end());
-		if (FindLeftGuard(row, minSymbolWidth, START_PATTERN, 2).isValid())
+		if (FindLeftGuard(row, minSymbolWidth, FAST_START_PATTERN, 2).isValid())
 			return true;
 	}
 

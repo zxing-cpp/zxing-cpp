@@ -126,8 +126,8 @@ struct SymbolInfo
 template<typename POINT>
 CodeWord ReadCodeWord(BitMatrixCursor<POINT>& cur, int expectedCluster = -1)
 {
-	auto readCodeWord = [expectedCluster](auto& cur) -> CodeWord {
-		auto np     = NormalizedPattern<8, 17>(cur.template readPattern<Pattern417>());
+	auto readCodeWord = [expectedCluster](auto& cursor) -> CodeWord {
+		auto np     = NormalizedPattern<8, 17>(cursor.template readPattern<Pattern417>());
 		int cluster = (np[0] - np[2] + np[4] - np[6] + 9) % 9;
 		int code = expectedCluster == -1 || cluster == expectedCluster ? CodewordDecoder::GetCodeword(ToInt(np)) : -1;
 
@@ -245,9 +245,9 @@ std::vector<int> ReadCodeWords(BitMatrixCursor<POINT> topCur, SymbolInfo info)
 		print(cw);
 
 		for (int col = 0; col < info.nCols && cur.isIn(); ++col) {
-			auto cw = ReadCodeWord(cur, cluster);
-			codeWords[row * info.nCols + col] = cw.code;
-			print(cw);
+			auto word = ReadCodeWord(cur, cluster);
+			codeWords[row * info.nCols + col] = word.code;
+			print(word);
 		}
 
 #ifdef PRINT_DEBUG

@@ -267,29 +267,29 @@ bool DetectWhiteRect(const BitMatrix& image, int initSize, int x, int y, ResultP
 			return false;
 		}
 
-		ResultPoint x;
+		ResultPoint _x;
 		found = false;
 		//go down left
 		for (int i = 1; !found && i < maxSize; i++) {
-			found = GetBlackPointOnSegment(image, right, up + i, right - i, up, x);
+			found = GetBlackPointOnSegment(image, right, up + i, right - i, up, _x);
 		}
 
 		if (!found) {
 			return false;
 		}
 
-		ResultPoint y;
+		ResultPoint _y;
 		found = false;
 		//go up left
 		for (int i = 1; !found && i < maxSize; i++) {
-			found = GetBlackPointOnSegment(image, right, down - i, right - i, down, y);
+			found = GetBlackPointOnSegment(image, right, down - i, right - i, down, _y);
 		}
 
 		if (!found) {
 			return false;
 		}
 
-		CenterEdges(y, z, x, t, width, p0, p1, p2, p3);
+		CenterEdges(_y, z, _x, t, width, p0, p1, p2, p3);
 		return true;
 	}
 	else {

@@ -43,7 +43,7 @@ public:
 	POINT p; // current position
 	POINT d; // current direction
 
-	BitMatrixCursor(const BitMatrix& image, POINT p, POINT d) : img(&image), p(p) { setDirection(d); }
+	BitMatrixCursor(const BitMatrix& image, POINT _p, POINT _d) : img(&image), p(_p) { setDirection(_d); }
 
 	class Value
 	{
@@ -63,15 +63,15 @@ public:
 	};
 
 	template <typename T>
-	Value testAt(PointT<T> p) const
+	Value testAt(PointT<T> _p) const
 	{
-		return img->isIn(p) ? Value{img->get(p)} : Value{};
+		return img->isIn(_p) ? Value{img->get(_p)} : Value{};
 	}
 
 	bool blackAt(POINT pos) const noexcept { return testAt(pos).isBlack(); }
 	bool whiteAt(POINT pos) const noexcept { return testAt(pos).isWhite(); }
 
-	bool isIn(POINT p) const noexcept { return img->isIn(p); }
+	bool isIn(POINT _p) const noexcept { return img->isIn(_p); }
 	bool isIn() const noexcept { return isIn(p); }
 	bool isBlack() const noexcept { return blackAt(p); }
 	bool isWhite() const noexcept { return whiteAt(p); }
@@ -87,10 +87,10 @@ public:
 	void turnRight() noexcept { d = right(); }
 	void turn(Direction dir) noexcept { d = direction(dir); }
 
-	Value edgeAt(POINT d) const noexcept
+	Value edgeAt(POINT _d) const noexcept
 	{
 		Value v = testAt(p);
-		return testAt(p + d) != v ? v : Value();
+		return testAt(p + _d) != v ? v : Value();
 	}
 
 	Value edgeAtFront() const noexcept { return edgeAt(front()); }
@@ -108,10 +108,10 @@ public:
 		return isIn(p);
 	}
 
-	BitMatrixCursor<POINT> movedBy(POINT d) const
+	BitMatrixCursor<POINT> movedBy(POINT _d) const
 	{
 		auto res = *this;
-		res.p += d;
+		res.p += _d;
 		return res;
 	}
 

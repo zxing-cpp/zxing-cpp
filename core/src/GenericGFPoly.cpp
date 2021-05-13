@@ -37,7 +37,7 @@ GenericGFPoly::evaluateAt(int a) const
 
 	if (a == 1)
 		// Just the sum of the coefficients
-		return Reduce(_coefficients, 0, [](auto a, auto b) { return a ^ b; });
+		return Reduce(_coefficients, 0, [](auto i, auto j) { return i ^ j; });
 
 	int result = _coefficients[0];
 	for (size_t i = 1; i < _coefficients.size(); ++i)

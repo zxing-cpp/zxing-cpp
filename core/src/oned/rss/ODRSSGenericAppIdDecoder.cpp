@@ -80,7 +80,7 @@ struct DecodedNumeric : public DecodedValue
 	int secondDigit = 0;
 
 	DecodedNumeric() = default;
-	DecodedNumeric(int newPosition, int first, int second) : DecodedValue(newPosition), firstDigit(first), secondDigit(second) {
+	DecodedNumeric(int position, int first, int second) : DecodedValue(position), firstDigit(first), secondDigit(second) {
 		if (firstDigit < 0 || firstDigit > 10 || secondDigit < 0 || secondDigit > 10) {
 			*this = DecodedNumeric();
 		}

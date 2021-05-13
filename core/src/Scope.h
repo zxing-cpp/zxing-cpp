@@ -28,7 +28,7 @@ class ScopeExit
 {
 	EF fn;
 public:
-	ScopeExit(EF&& fn) : fn(std::move(fn)) {}
+	ScopeExit(EF&& _fn) : fn(std::move(_fn)) {}
 	~ScopeExit() { fn(); }
 };
 

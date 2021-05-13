@@ -35,9 +35,10 @@ class PerspectiveTransform
 	value_t a11, a12, a13, a21, a22, a23, a31, a32, a33;
 	bool _isValid = false;
 
-	PerspectiveTransform(value_t a11, value_t a21, value_t a31, value_t a12, value_t a22, value_t a32, value_t a13,
-						 value_t a23, value_t a33)
-		: a11(a11), a12(a12), a13(a13), a21(a21), a22(a22), a23(a23), a31(a31), a32(a32), a33(a33), _isValid(true)
+	PerspectiveTransform(value_t _a11, value_t _a21, value_t _a31, value_t _a12, value_t _a22, value_t _a32,
+						 value_t _a13, value_t _a23, value_t _a33)
+		: a11(_a11), a12(_a12), a13(_a13), a21(_a21), a22(_a22), a23(_a23), a31(_a31), a32(_a32), a33(_a33),
+		_isValid(true)
 	{}
 
 	PerspectiveTransform inverse() const;
