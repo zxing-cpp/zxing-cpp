@@ -139,6 +139,8 @@ CodeWord ReadCodeWord(BitMatrixCursor<POINT>& cur, int expectedCluster = -1)
 	if (!cw) {
 		for (auto offset : {curBackup.left(), curBackup.right()}) {
 			auto curAlt = curBackup.movedBy(offset);
+			if (!curAlt.isIn()) // curBackup might be the first or last image row
+				continue;
 			if (auto cwAlt = readCodeWord(curAlt)) {
 				cur = curAlt;
 				return cwAlt;
