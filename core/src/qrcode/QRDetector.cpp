@@ -24,8 +24,8 @@
 #include "DetectorResult.h"
 #include "GridSampler.h"
 #include "LogMatrix.h"
-#include "PerspectiveTransform.h"
-#include "QRVersion.h"
+#include "Pattern.h"
+#include "Quadrilateral.h"
 #include "RegressionLine.h"
 
 #include "BitMatrixIO.h"
@@ -33,9 +33,10 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
-#include <limits>
+#include <iterator>
 #include <map>
 #include <utility>
+#include <vector>
 
 namespace ZXing::QRCode {
 

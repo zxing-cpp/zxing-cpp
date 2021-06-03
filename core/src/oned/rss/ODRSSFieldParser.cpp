@@ -22,6 +22,8 @@
 
 #include <algorithm>
 #include <cstdlib>
+#include <cstring>
+#include <iterator>
 
 namespace ZXing::OneD::DataBar {
 

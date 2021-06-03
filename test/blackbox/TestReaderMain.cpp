@@ -16,7 +16,6 @@
 */
 
 #include "BlackboxTestRunner.h"
-#include "ByteArray.h"
 #include "ImageLoader.h"
 #include "TextUtfEncoding.h"
 #include "ZXContainerAlgorithms.h"

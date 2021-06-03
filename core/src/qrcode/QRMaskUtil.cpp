@@ -21,6 +21,7 @@
 #include <array>
 #include <cassert>
 #include <cstdlib>
+#include <utility>
 
 namespace ZXing::QRCode::MaskUtil {
 

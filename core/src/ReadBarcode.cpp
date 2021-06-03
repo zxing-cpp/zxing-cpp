@@ -16,9 +16,6 @@
 
 #include "ReadBarcode.h"
 
-#include "BinaryBitmap.h"
-#include "BitArray.h"
-#include "BitMatrix.h"
 #include "DecodeHints.h"
 #include "GenericLuminanceSource.h"
 #include "GlobalHistogramBinarizer.h"

@@ -24,6 +24,8 @@
 #include "QRFormatInformation.h"
 #include "QRVersion.h"
 
+#include <utility>
+
 namespace ZXing::QRCode {
 
 static bool getBit(const BitMatrix& bitMatrix, int x, int y, bool mirrored)

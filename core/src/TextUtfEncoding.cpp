@@ -19,7 +19,6 @@
 #include <cwctype>
 #include <iomanip>
 #include <sstream>
-#include <type_traits>
 
 namespace ZXing::TextUtfEncoding {
 

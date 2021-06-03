@@ -20,7 +20,6 @@
 #include "PDFDetector.h"
 #include "PDFScanningDecoder.h"
 #include "PDFCodewordDecoder.h"
-#include "PDFDecoderResultExtra.h"
 #include "DecodeHints.h"
 #include "DecoderResult.h"
 #include "Result.h"
@@ -30,15 +29,19 @@
 #include "BitArray.h"
 #include "DecodeStatus.h"
 #include "Pattern.h"
-#include "PDFDecodedBitStreamParser.h"
-#include "BitMatrixIO.h"
-#include <iostream>
 
 #include <vector>
 #include <cstdlib>
 #include <algorithm>
 #include <limits>
 #include <utility>
+
+#ifdef PRINT_DEBUG
+#include "PDFDecoderResultExtra.h"
+#include "PDFDecodedBitStreamParser.h"
+#include "BitMatrixIO.h"
+#include <iostream>
+#endif
 
 namespace ZXing {
 namespace Pdf417 {

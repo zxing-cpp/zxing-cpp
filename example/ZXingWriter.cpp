@@ -16,16 +16,13 @@
 
 #include "BarcodeFormat.h"
 #include "BitMatrix.h"
-#include "ByteMatrix.h"
 #include "MultiFormatWriter.h"
 #include "TextUtfEncoding.h"
 
 #include <algorithm>
 #include <cctype>
-#include <cstdlib>
 #include <cstring>
 #include <iostream>
-#include <stdexcept>
 #include <string>
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION

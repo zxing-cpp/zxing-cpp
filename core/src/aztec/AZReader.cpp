@@ -27,7 +27,6 @@
 
 #include <memory>
 #include <utility>
-#include <vector>
 
 namespace ZXing::Aztec {
 

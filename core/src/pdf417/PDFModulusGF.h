@@ -20,6 +20,7 @@
 #include "ZXConfig.h"
 
 #include <stdexcept>
+#include <vector>
 
 namespace ZXing {
 namespace Pdf417 {

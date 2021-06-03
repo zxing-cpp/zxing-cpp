@@ -17,7 +17,6 @@
 
 #include "BarcodeFormat.h"
 
-#include "BitHacks.h"
 #include "ZXContainerAlgorithms.h"
 
 #include <algorithm>

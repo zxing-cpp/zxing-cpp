@@ -19,7 +19,6 @@
 #include "Flags.h"
 
 #include <string>
-#include <vector>
 
 namespace ZXing {
 

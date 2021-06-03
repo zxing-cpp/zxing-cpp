@@ -17,13 +17,11 @@
 
 #include "ODCode39Reader.h"
 
-#include "BitArray.h"
 #include "DecodeHints.h"
 #include "Result.h"
 #include "ZXContainerAlgorithms.h"
 
 #include <array>
-#include <limits>
 
 namespace ZXing::OneD {
 

@@ -18,7 +18,6 @@
 
 #include "ODCode93Reader.h"
 
-#include "BitArray.h"
 #include "Result.h"
 #include "ZXContainerAlgorithms.h"
 

@@ -19,7 +19,6 @@
 #include "ODReader.h"
 
 #include "BinaryBitmap.h"
-#include "BitArray.h"
 #include "DecodeHints.h"
 #include "ODCodabarReader.h"
 #include "ODCode128Reader.h"

@@ -24,9 +24,6 @@
 #include "GTIN.h"
 #include "ODUPCEANCommon.h"
 #include "Result.h"
-#include "TextDecoder.h"
-
-#include <cmath>
 
 namespace ZXing::OneD {
 

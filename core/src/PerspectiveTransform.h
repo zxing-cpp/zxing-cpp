@@ -20,8 +20,6 @@
 #include "Point.h"
 #include "Quadrilateral.h"
 
-#include <array>
-
 namespace ZXing {
 
 /**

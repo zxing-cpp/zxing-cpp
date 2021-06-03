@@ -24,13 +24,10 @@
 #include "Matrix.h"
 #include "ZXContainerAlgorithms.h"
 
-#include <cassert>
 #include <cstdint>
-#include <functional>
 #include <memory>
 #include <mutex>
 #include <utility>
-#include <vector>
 
 namespace ZXing {
 

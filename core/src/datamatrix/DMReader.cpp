@@ -18,7 +18,6 @@
 #include "DMReader.h"
 
 #include "BinaryBitmap.h"
-#include "BitMatrix.h"
 #include "DMDecoder.h"
 #include "DMDetector.h"
 #include "DecodeHints.h"
@@ -27,7 +26,6 @@
 #include "Result.h"
 
 #include <utility>
-#include <vector>
 
 namespace ZXing::DataMatrix {
 

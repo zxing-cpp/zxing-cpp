@@ -19,9 +19,9 @@
 #include "BitArray.h"
 #include "ZXContainerAlgorithms.h"
 
+#include <algorithm>
 #include <array>
 #include <cstdint>
-#include <numeric>
 #include <limits>
 
 namespace ZXing {

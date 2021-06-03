@@ -18,15 +18,12 @@
 
 #include "ODCodabarReader.h"
 
-#include "BitArray.h"
 #include "DecodeHints.h"
 #include "Result.h"
 #include "ZXContainerAlgorithms.h"
 
-#include <array>
-#include <limits>
 #include <string>
-#include <vector>
+#include <memory>
 
 namespace ZXing::OneD {
 

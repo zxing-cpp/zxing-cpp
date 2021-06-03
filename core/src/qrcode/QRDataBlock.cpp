@@ -17,7 +17,6 @@
 
 #include "QRDataBlock.h"
 
-#include "DecodeStatus.h"
 #include "QRErrorCorrectionLevel.h"
 #include "QRVersion.h"
 #include "ZXContainerAlgorithms.h"

@@ -32,7 +32,6 @@
 #include "ZXTestSupport.h"
 
 #include <cstdlib>
-#include <numeric>
 #include <array>
 #include <algorithm>
 

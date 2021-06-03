@@ -19,8 +19,6 @@
 #include "GenericGFPoly.h"
 #include "ZXConfig.h"
 
-#include <algorithm>
-#include <cassert>
 #include <stdexcept>
 #include <vector>
 

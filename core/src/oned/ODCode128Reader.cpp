@@ -17,14 +17,12 @@
 
 #include "ODCode128Reader.h"
 
-#include "BitArray.h"
 #include "DecodeHints.h"
 #include "ODCode128Patterns.h"
 #include "Result.h"
 #include "ZXContainerAlgorithms.h"
 
 #include <array>
-#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>

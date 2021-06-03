@@ -16,7 +16,6 @@
 */
 
 #include "BitMatrix.h"
-#include "ByteMatrix.h"
 #include "MultiFormatWriter.h"
 
 #include <vector>

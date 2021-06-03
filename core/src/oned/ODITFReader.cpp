@@ -17,7 +17,6 @@
 
 #include "ODITFReader.h"
 
-#include "BitArray.h"
 #include "DecodeHints.h"
 #include "Result.h"
 #include "ZXContainerAlgorithms.h"

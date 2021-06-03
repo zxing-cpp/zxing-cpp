@@ -18,12 +18,12 @@
 #include "TextUtfEncoding.h"
 #include "GTIN.h"
 
-#include <algorithm>
 #include <cctype>
 #include <chrono>
 #include <clocale>
 #include <cstring>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
 

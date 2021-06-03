@@ -21,7 +21,6 @@
 #include <cctype>
 #include <map>
 #include <utility>
-#include <algorithm>
 
 namespace ZXing::CharacterSetECI {
 

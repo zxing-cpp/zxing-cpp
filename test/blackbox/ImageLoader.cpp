@@ -18,10 +18,7 @@
 #include "ImageLoader.h"
 
 #include "BinaryBitmap.h"
-#include "GenericLuminanceSource.h"
-#include "HybridBinarizer.h"
 #include "ReadBarcode.h"
-#include "ThresholdBinarizer.h"
 
 #include <map>
 #include <memory>

@@ -25,8 +25,8 @@
 #include <cassert>
 #include <cstddef>
 #include <iterator>
+#include <limits>
 #include <memory>
-#include <type_traits>
 
 /*
 Code39 : 1:2/3, 5+4+1 (0x3|2x1 wide) -> 12-15 mods, v1-? | ToNarrowWide(OMG 1) == *

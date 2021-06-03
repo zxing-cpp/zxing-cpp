@@ -17,7 +17,6 @@
 
 #include "GlobalHistogramBinarizer.h"
 
-#include "BitArray.h"
 #include "BitMatrix.h"
 #include "ByteArray.h"
 #include "LuminanceSource.h"

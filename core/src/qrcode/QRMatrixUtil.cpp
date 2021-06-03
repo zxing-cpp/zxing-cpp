@@ -23,7 +23,6 @@
 #include "QRErrorCorrectionLevel.h"
 #include "QRVersion.h"
 
-#include <array>
 #include <stdexcept>
 #include <string>
 
