@@ -697,25 +697,38 @@ static DetectorResult Scan(EdgeTracer startTracer, std::array<DMRegressionLine, 
 
 		// at this point we found a plausible L-shape and are now looking for the b/w pattern at the top and right:
 		// follow top row right 'half way' (4 gaps), see traceGaps break condition with 'invalid' line
+		bool rightGaps=true;
+		bool topGaps  =true;
 		tlTracer.setDirection(right);
-		CHECK(tlTracer.traceGaps(tlTracer.right(), lineT, maxStepSize));
+		if(!tlTracer.traceGaps(tlTracer.right(), lineT, maxStepSize)){
+			topGaps=false;
+		}
 
 		maxStepSize = std::min(lineT.length() / 3, static_cast<int>(lenL / 5)) * 2;
 
 		// follow up until we reach the top line
 		t.setDirection(up);
 		t.state = 3;
-		CHECK(t.traceGaps(t.left(), lineR, maxStepSize, lineT));
-		CHECK(t.traceCorner(t.left(), tr));
+		if((t.traceGaps(t.left(), lineR, maxStepSize, lineT))){
+			CHECK(t.traceCorner(t.left(), tr));
+	    }
+		else{
+			rightGaps=false;
+            CHECK(topGaps);
+		}
+
+		// continue top row right until we cross the right line
+		if(topGaps){
+			CHECK(tlTracer.traceGaps(tlTracer.right(), lineT, maxStepSize, lineR));
+			if(!rightGaps)
+			     CHECK(tlTracer.traceCorner(tlTracer.right(), tr));
+		}
 
 		auto lenT = distance(tl, tr) - 1;
 		auto lenR = distance(tr, br) - 1;
-
 		CHECK(std::abs(lenT - lenB) / lenB < 0.5 && std::abs(lenR - lenL) / lenL < 0.5 &&
 			  lineT.points().size() >= 5 && lineR.points().size() >= 5);
 
-		// continue top row right until we cross the right line
-		CHECK(tlTracer.traceGaps(tlTracer.right(), lineT, maxStepSize, lineR));
 
 #ifdef PRINT_DEBUG
 		printf("L: %.1f, %.1f ^ %.1f, %.1f > %.1f, %.1f (%d : %d : %d : %d)\n", bl.x, bl.y,
@@ -739,7 +752,20 @@ static DetectorResult Scan(EdgeTracer startTracer, std::array<DMRegressionLine, 
 		};
 		splitDouble(lineT.modules(tl, tr), &dimT, &fracT);
 		splitDouble(lineR.modules(br, tr), &dimR, &fracR);
-
+		
+        if((!topGaps&&!dimR) || (!rightGaps&&!dimR)){
+			int left  =br.x-bl.x;
+			int bottom=bl.y-tl.y;
+			int err=(left+bottom)/4;
+			/*only consider situation 1:1 */
+			if (left > bottom - err && left < bottom + err){
+				if(!topGaps)
+				  dimT=dimR;
+                else 
+                  dimR=dimT;					
+			}
+		}
+		
 #ifdef PRINT_DEBUG
 		printf("L: %.1f, %.1f ^ %.1f, %.1f > %.1f, %.1f ^> %.1f, %.1f\n", bl.x, bl.y,
 			   tl.x - bl.x, tl.y - bl.y, br.x - bl.x, br.y - bl.y, tr.x, tr.y);
