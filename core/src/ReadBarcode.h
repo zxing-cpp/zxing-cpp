@@ -99,14 +99,5 @@ public:
  */
 Result ReadBarcode(const ImageView& buffer, const DecodeHints& hints = {});
 
-
-[[deprecated]]
-Result ReadBarcode(int width, int height, const uint8_t* data, int rowStride,
-			BarcodeFormats formats = {}, bool tryRotate = true, bool tryHarder = true);
-
-[[deprecated]]
-Result ReadBarcode(int width, int height, const uint8_t* data, int rowStride, int pixelStride, int rIndex, int gIndex, int bIndex,
-			BarcodeFormats formats = {}, bool tryRotate = true, bool tryHarder = true);
-
 } // ZXing
 

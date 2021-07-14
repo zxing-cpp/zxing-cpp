@@ -40,12 +40,6 @@ public:
 	virtual ~BinaryBitmap() = default;
 
 	/**
-	* Image is a pure monochrome image of a barcode.
-	*/
-	[[deprecated]]
-	virtual bool isPureBarcode() const { return false; }
-
-	/**
 	* @return The width of the bitmap.
 	*/
 	virtual int width() const = 0;

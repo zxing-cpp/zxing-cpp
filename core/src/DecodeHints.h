@@ -121,28 +121,6 @@ public:
 
 	bool hasFormat(BarcodeFormats f) const noexcept { return _formats.testFlags(f); }
 	bool hasNoFormat() const noexcept { return _formats.empty(); }
-
-	[[deprecated]] DecodeHints& setPossibleFormats(const std::vector<BarcodeFormat>& formats)
-	{
-		_formats.clear();
-		for (auto f : formats)
-			_formats |= f;
-		return *this;
-	}
-
-	[[deprecated]] bool requireEanAddOnSymbol() const { return _eanAddOnSymbol == EanAddOnSymbol::Require; }
-	[[deprecated]] DecodeHints& setRequireEanAddOnSymbol(bool v)
-	{
-		return setEanAddOnSymbol(v ? EanAddOnSymbol::Require : EanAddOnSymbol::Ignore);
-	}
-	[[deprecated]] std::vector<int> allowedEanExtensions() const
-	{
-		return _eanAddOnSymbol == EanAddOnSymbol::Require ? std::vector<int>{2, 5} : std::vector<int>{};
-	}
-	[[deprecated]] DecodeHints& setAllowedEanExtensions(const std::vector<int>& v)
-	{
-		return setEanAddOnSymbol(v.empty() ? EanAddOnSymbol::Ignore : EanAddOnSymbol::Require);
-	}
 };
 
 } // ZXing

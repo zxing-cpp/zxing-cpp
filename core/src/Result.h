@@ -21,13 +21,9 @@
 #include "ByteArray.h"
 #include "DecodeStatus.h"
 #include "Quadrilateral.h"
-#include "ResultMetadata.h"
-#include "ResultPoint.h"
 #include "StructuredAppend.h"
 
 #include <string>
-#include <utility>
-#include <vector>
 
 namespace ZXing {
 
@@ -66,18 +62,8 @@ public:
 		return _format;
 	}
 
-	[[deprecated]]
-	void setFormat(BarcodeFormat format) {
-		_format = format;
-	}
-
 	const std::wstring& text() const {
 		return _text;
-	}
-
-	[[deprecated]]
-	void setText(std::wstring&& text) {
-		_text = std::move(text);
 	}
 
 	const Position& position() const {
@@ -99,21 +85,6 @@ public:
 
 	const std::wstring& ecLevel() const {
 		return _ecLevel;
-	}
-
-	[[deprecated]]
-	std::vector<ResultPoint> resultPoints() const {
-		return {position().begin(), position().end()};
-	}
-
-	[[deprecated]]
-	const ResultMetadata& metadata() const {
-		return _metadata;
-	}
-
-	[[deprecated]]
-	ResultMetadata& metadata() {
-		return _metadata;
 	}
 
 	/**
@@ -157,7 +128,6 @@ private:
 	ByteArray _rawBytes;
 	int _numBits = 0;
 	std::wstring _ecLevel;
-	ResultMetadata _metadata;
 	StructuredAppendInfo _sai;
 	bool _readerInit = false;
 };

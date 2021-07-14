@@ -70,7 +70,6 @@ enum class BarcodeFormat
 	UPC_A [[deprecated]]        = UPCA,
 	UPC_E [[deprecated]]        = UPCE,
 
-	FORMAT_COUNT [[deprecated]] = None, ///> DEPRECATED: will be removed
 	_max                        = UPCE, ///> implementation detail, don't use
 };
 

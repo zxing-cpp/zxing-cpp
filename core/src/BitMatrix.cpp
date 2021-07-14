@@ -18,7 +18,6 @@
 #include "BitMatrix.h"
 
 #include "BitArray.h"
-#include "ByteMatrix.h"
 #include "Pattern.h"
 
 #ifndef ZX_FAST_BIT_STORAGE
@@ -44,15 +43,6 @@ BitMatrix::getRow(int y, BitArray& row) const
 #else
 	std::copy_n(_bits.begin() + y * _rowSize, _rowSize, row._bits.begin());
 #endif
-}
-
-ByteMatrix BitMatrix::toByteMatrix(int black, int white) const
-{
-	ByteMatrix res(width(), height());
-	for (int y = 0; y < height(); ++y)
-		for (int x = 0; x < width(); ++x)
-			res.set(x, y, get(x, y) ? black : white);
-	return res;
 }
 
 void

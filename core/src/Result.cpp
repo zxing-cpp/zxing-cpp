@@ -43,14 +43,6 @@ Result::Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat 
 	  _position(std::move(position)), _rawBytes(std::move(decodeResult).rawBytes()), _numBits(decodeResult.numBits()),
 	  _ecLevel(decodeResult.ecLevel()), _sai(decodeResult.structuredAppend()), _readerInit(decodeResult.readerInit())
 {
-	// TODO: keep that for one release so people get the deprecation warning with a still intact functionality
-	if (isPartOfSequence()) {
-		_metadata.put(ResultMetadata::STRUCTURED_APPEND_SEQUENCE, sequenceIndex());
-		_metadata.put(ResultMetadata::STRUCTURED_APPEND_CODE_COUNT, sequenceSize());
-		if (_format == BarcodeFormat::QRCode)
-			_metadata.put(ResultMetadata::STRUCTURED_APPEND_PARITY, std::stoi(sequenceId()));
-	}
-
 	// TODO: add type opaque and code specific 'extra data'? (see DecoderResult::extra())
 }
 

@@ -100,9 +100,6 @@ public:
 		return *this;
 	}
 
-	[[deprecated]]
-	ByteMatrix toByteMatrix(int black = 0, int white = 255) const;
-
 #ifdef ZX_FAST_BIT_STORAGE
 	// experimental iterator based access
 	template<typename iterator>
