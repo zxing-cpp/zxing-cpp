@@ -107,8 +107,6 @@ if (BUILD_READERS)
         src/ReedSolomonDecoder.cpp
         src/Result.h
         src/Result.cpp
-        src/ResultMetadata.h
-        src/ResultMetadata.cpp
         src/ResultPoint.h
         src/ResultPoint.cpp
         src/TextDecoder.h
