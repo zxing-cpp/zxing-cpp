@@ -100,10 +100,10 @@ Result Code39Reader::decodePattern(int rowNumber, const PatternView& row, std::u
 
 	// provide the indices with the narrow bars/spaces which have to be equally wide
 	constexpr auto START_PATTERN = FixedSparcePattern<CHAR_LEN, 6>{0, 2, 3, 5, 7, 8};
-	// quite zone is half the width of a character symbol
-	constexpr float QUITE_ZONE_SCALE = 0.5f;
+	// quiet zone is half the width of a character symbol
+	constexpr float QUIET_ZONE_SCALE = 0.5f;
 
-	auto next = FindLeftGuard(row, minCharCount * CHAR_LEN, START_PATTERN, QUITE_ZONE_SCALE * 12);
+	auto next = FindLeftGuard(row, minCharCount * CHAR_LEN, START_PATTERN, QUIET_ZONE_SCALE * 12);
 	if (!next.isValid())
 		return Result(DecodeStatus::NotFound);
 
@@ -129,7 +129,7 @@ Result Code39Reader::decodePattern(int rowNumber, const PatternView& row, std::u
 	txt.pop_back(); // remove asterisk
 
 	// check txt length and whitespace after the last char. See also FindStartPattern.
-	if (Size(txt) < minCharCount - 2 || !next.hasQuiteZoneAfter(QUITE_ZONE_SCALE))
+	if (Size(txt) < minCharCount - 2 || !next.hasQuietZoneAfter(QUIET_ZONE_SCALE))
 		return Result(DecodeStatus::NotFound);
 
 	if (_usingCheckDigit) {

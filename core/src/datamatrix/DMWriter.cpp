@@ -117,8 +117,8 @@ Writer::encode(const std::wstring& contents, int width, int height) const
 	//4. step: low-level encoding
 	BitMatrix result = EncodeLowLevel(symbolData, *symbolInfo);
 
-	//5. step: scale-up to requested size, minimum required quite zone is 1
-	return Inflate(std::move(result), width, height, _quiteZone);
+	//5. step: scale-up to requested size, minimum required quiet zone is 1
+	return Inflate(std::move(result), width, height, _quietZone);
 }
 
 } // namespace ZXing::DataMatrix

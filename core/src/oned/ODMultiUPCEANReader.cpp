@@ -48,7 +48,7 @@ static const int FIRST_DIGIT_ENCODINGS[] = {
 	0x00, 0x0B, 0x0D, 0x0E, 0x13, 0x19, 0x1C, 0x15, 0x16, 0x1A
 };
 
-// The GS1 specification has the following to say about quite zones
+// The GS1 specification has the following to say about quiet zones
 // Type: EAN-13 | EAN-8 | UPC-A | UPC-E | EAN Add-on | UPC Add-on
 // QZ L:   11   |   7   |   9   |   9   |     7-12   |     9-12
 // QZ R:    7   |   7   |   9   |   7   |        5   |        5
@@ -57,7 +57,7 @@ constexpr float QUIET_ZONE_LEFT = 6;
 constexpr float QUIET_ZONE_RIGHT = 6;
 
 // There is a single sample (ean13-1/12.png) that fails to decode with these (new) settings because
-// it has a right-side quite zone of only about 4.5 modules, which is clearly out of spec.
+// it has a right-side quiet zone of only about 4.5 modules, which is clearly out of spec.
 
 static bool DecodeDigit(const PatternView& view, std::string& txt, int* lgPattern = nullptr)
 {
@@ -265,7 +265,7 @@ static bool AddOn(PartialResult& res, PatternView begin, int digitCount)
 		}
 	}
 
-	//TODO: check right quite zone
+	//TODO: check right quiet zone
 
 	if (digitCount == 2) {
 		CHECK(std::stoi(res.txt) % 4 == lgPattern);

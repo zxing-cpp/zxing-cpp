@@ -32,7 +32,7 @@ public:
 	Writer();
 
 	Writer& setMargin(int margin) {
-		_quiteZone = margin;
+		_quietZone = margin;
 		return *this;
 	}
 
@@ -57,7 +57,7 @@ public:
 
 private:
 	SymbolShape _shapeHint;
-	int _quiteZone = 1, _minWidth = -1, _minHeight = -1, _maxWidth = -1, _maxHeight = -1;
+	int _quietZone = 1, _minWidth = -1, _minHeight = -1, _maxWidth = -1, _maxHeight = -1;
 };
 
 } // DataMatrix

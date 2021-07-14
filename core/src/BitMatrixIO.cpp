@@ -64,9 +64,9 @@ BitMatrix ParseBitMatrix(const std::string& str, char one, bool expectSpace)
 	return mat;
 }
 
-void SaveAsPBM(const BitMatrix& matrix, const std::string filename, int quiteZone)
+void SaveAsPBM(const BitMatrix& matrix, const std::string filename, int quietZone)
 {
-	auto out = Inflate(matrix.copy(), 0, 0, quiteZone);
+	auto out = Inflate(matrix.copy(), 0, 0, quietZone);
 	std::ofstream file(filename);
 	file << "P1\n" << out.width() << ' ' << out.height() << '\n';
 	file << ToString(out, '1', '0', true);

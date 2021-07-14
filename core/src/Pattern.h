@@ -78,13 +78,13 @@ public:
 	bool isValid() const { return isValid(size()); }
 
 	template<bool acceptIfAtFirstBar = false>
-	bool hasQuiteZoneBefore(float scale) const
+	bool hasQuietZoneBefore(float scale) const
 	{
 		return (acceptIfAtFirstBar && isAtFirstBar()) || _data[-1] >= sum() * scale;
 	}
 
 	template<bool acceptIfAtLastBar = true>
-	bool hasQuiteZoneAfter(float scale) const
+	bool hasQuietZoneAfter(float scale) const
 	{
 		return (acceptIfAtLastBar && isAtLastBar()) || _data[_size] >= sum() * scale;
 	}
@@ -168,7 +168,7 @@ using FixedSparcePattern = FixedPattern<N, SUM, true>;
 
 template <bool RELAXED_THRESHOLD = false, int N, int SUM>
 float IsPattern(const PatternView& view, const FixedPattern<N, SUM, false>& pattern, int spaceInPixel = 0,
-				float minQuiteZone = 0, float moduleSizeRef = 0.f)
+				float minQuietZone = 0, float moduleSizeRef = 0)
 {
 	int width = view.sum(N);
 	if (SUM > N && width < SUM)
@@ -176,7 +176,7 @@ float IsPattern(const PatternView& view, const FixedPattern<N, SUM, false>& patt
 
 	const float moduleSize = (float)width / SUM;
 
-	if (minQuiteZone && spaceInPixel < minQuiteZone * moduleSize - 1)
+	if (minQuietZone && spaceInPixel < minQuietZone * moduleSize - 1)
 		return 0;
 
 	if (!moduleSizeRef)
@@ -195,7 +195,7 @@ float IsPattern(const PatternView& view, const FixedPattern<N, SUM, false>& patt
 
 template <bool RELAXED_THRESHOLD = false, int N, int SUM>
 float IsPattern(const PatternView& view, const FixedPattern<N, SUM, true>& pattern, int spaceInPixel = 0,
-				float minQuiteZone = 0, float moduleSizeRef = 0.f)
+				float minQuietZone = 0, float moduleSizeRef = 0)
 {
 	// pattern contains the indices with the bars/spaces that need to be equally wide
 	int width = 0;
@@ -204,7 +204,7 @@ float IsPattern(const PatternView& view, const FixedPattern<N, SUM, true>& patte
 
 	const float moduleSize = (float)width / SUM;
 
-	if (minQuiteZone && spaceInPixel < minQuiteZone * moduleSize - 1)
+	if (minQuietZone && spaceInPixel < minQuietZone * moduleSize - 1)
 		return 0;
 
 	if (!moduleSizeRef)
@@ -222,11 +222,11 @@ float IsPattern(const PatternView& view, const FixedPattern<N, SUM, true>& patte
 }
 
 template <int N, int SUM, bool IS_SPARCE>
-bool IsRightGuard(const PatternView& view, const FixedPattern<N, SUM, IS_SPARCE>& pattern, float minQuiteZone,
+bool IsRightGuard(const PatternView& view, const FixedPattern<N, SUM, IS_SPARCE>& pattern, float minQuietZone,
 				  float moduleSizeRef = 0.f)
 {
 	int spaceInPixel = view.isAtLastBar() ? std::numeric_limits<int>::max() : *view.end();
-	return IsPattern(view, pattern, spaceInPixel, minQuiteZone, moduleSizeRef) != 0;
+	return IsPattern(view, pattern, spaceInPixel, minQuietZone, moduleSizeRef) != 0;
 }
 
 template<int LEN, typename Pred>
@@ -247,11 +247,11 @@ PatternView FindLeftGuard(const PatternView& view, int minSize, Pred isGuard)
 
 template <int LEN, int SUM, bool IS_SPARCE>
 PatternView FindLeftGuard(const PatternView& view, int minSize, const FixedPattern<LEN, SUM, IS_SPARCE>& pattern,
-						  float minQuiteZone)
+						  float minQuietZone)
 {
 	return FindLeftGuard<LEN>(view, std::max(minSize, LEN),
-							  [&pattern, minQuiteZone](const PatternView& window, int spaceInPixel) {
-								  return IsPattern(window, pattern, spaceInPixel, minQuiteZone);
+							  [&pattern, minQuietZone](const PatternView& window, int spaceInPixel) {
+								  return IsPattern(window, pattern, spaceInPixel, minQuietZone);
 							  });
 }
 

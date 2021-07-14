@@ -52,7 +52,7 @@ public:
 	}
 
 	/**
-	* Used for all formats, sets the minimum number of quite zone pixels.
+	* Used for all formats, sets the minimum number of quiet zone pixels.
 	*/
 	MultiFormatWriter& setMargin(int margin) {
 		_margin = margin;

@@ -409,7 +409,7 @@ static DetectorResult DetectOld(const BitMatrix& image)
 * It is performing something like a (back) trace search along edges through the bit matrix, first looking for
 * the 'L'-pattern, then tracing the black/white borders at the top/right. Advantages over the old code are:
 *  * works with lower resolution scans (around 2 pixel per module), due to sub-pixel precision grid placement
-*  * works with real-world codes that have just one module wide quite-zone (which is perfectly in spec)
+*  * works with real-world codes that have just one module wide quiet-zone (which is perfectly in spec)
 */
 
 class DMRegressionLine : public RegressionLine

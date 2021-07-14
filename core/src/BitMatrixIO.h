@@ -25,6 +25,6 @@ namespace ZXing {
 std::string ToString(const BitMatrix& matrix, char one = 'X', char zero = ' ', bool addSpace = true,
 					 bool printAsCString = false);
 BitMatrix ParseBitMatrix(const std::string& str, char one = 'X', bool expectSpace = true);
-void SaveAsPBM(const BitMatrix& matrix, const std::string filename, int quiteZone = 0);
+void SaveAsPBM(const BitMatrix& matrix, const std::string filename, int quietZone = 0);
 
 } // ZXing

@@ -275,9 +275,9 @@ public:
 #endif
 
 	// Little helper method to make common isRange use case more readable.
-	// Pass positive zone size to look for quite zone after i and negative for zone in front of i.
+	// Pass positive zone size to look for quiet zone after i and negative for zone in front of i.
 	// Set allowClippedZone to false if clipping the zone at the image border is not acceptable.
-	bool hasQuiteZone(Iterator i, int signedZoneSize, bool allowClippedZone = true) const {
+	bool hasQuietZone(Iterator i, int signedZoneSize, bool allowClippedZone = true) const {
 		int index = static_cast<int>(i - begin());
 		if (signedZoneSize > 0) {
 			if (!allowClippedZone && index + signedZoneSize >= size())
@@ -290,8 +290,8 @@ public:
 		}
 	}
 
-	bool hasQuiteZone(ReverseIterator i, int signedZoneSize, bool allowClippedZone = true) const {
-		return hasQuiteZone(i.base(), -signedZoneSize, allowClippedZone);
+	bool hasQuietZone(ReverseIterator i, int signedZoneSize, bool allowClippedZone = true) const {
+		return hasQuietZone(i.base(), -signedZoneSize, allowClippedZone);
 	}
 
 	/**
