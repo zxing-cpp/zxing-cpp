@@ -62,18 +62,4 @@ Result ReadBarcode(const ImageView& iv, const DecodeHints& hints)
 	}
 }
 
-Result ReadBarcode(int width, int height, const uint8_t* data, int rowStride, BarcodeFormats formats, bool tryRotate,
-				   bool tryHarder)
-{
-	return ReadBarcode({0, 0, width, height, data, rowStride, 1, 0, 0, 0, nullptr},
-					   DecodeHints().setTryHarder(tryHarder).setTryRotate(tryRotate).setFormats(formats));
-}
-
-Result ReadBarcode(int width, int height, const uint8_t* data, int rowStride, int pixelStride, int rIndex, int gIndex,
-				   int bIndex, BarcodeFormats formats, bool tryRotate, bool tryHarder)
-{
-	return ReadBarcode({0, 0, width, height, data, rowStride, pixelStride, rIndex, gIndex, bIndex, nullptr},
-					   DecodeHints().setTryHarder(tryHarder).setTryRotate(tryRotate).setFormats(formats));
-}
-
 } // ZXing
