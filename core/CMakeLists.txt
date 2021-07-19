@@ -86,16 +86,13 @@ if (BUILD_READERS)
         src/DecodeStatus.cpp
         src/DecoderResult.h
         src/DetectorResult.h
-        src/GenericLuminanceSource.h
-        src/GenericLuminanceSource.cpp
         src/GlobalHistogramBinarizer.h
         src/GlobalHistogramBinarizer.cpp
         src/GridSampler.h
         src/GridSampler.cpp
         src/HybridBinarizer.h
         src/HybridBinarizer.cpp
-        src/LuminanceSource.h
-        src/LuminanceSource.cpp
+        src/ImageView.h
         src/MultiFormatReader.h
         src/MultiFormatReader.cpp
         src/PerspectiveTransform.h

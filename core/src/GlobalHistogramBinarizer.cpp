@@ -19,13 +19,11 @@
 
 #include "BitMatrix.h"
 #include "ByteArray.h"
-#include "LuminanceSource.h"
 
 #include <algorithm>
 #include <array>
 #include <cassert>
 #include <functional>
-#include <mutex>
 #include <utility>
 
 namespace ZXing {
@@ -34,33 +32,9 @@ static const int LUMINANCE_BITS = 5;
 static const int LUMINANCE_SHIFT = 8 - LUMINANCE_BITS;
 static const int LUMINANCE_BUCKETS = 1 << LUMINANCE_BITS;
 
-
-struct GlobalHistogramBinarizer::DataCache
-{
-	std::once_flag once;
-	std::shared_ptr<const BitMatrix> matrix;
-};
-
-GlobalHistogramBinarizer::GlobalHistogramBinarizer(std::shared_ptr<const LuminanceSource> source) :
-	_source(std::move(source)),
-	_cache(new DataCache)
-{
-}
+GlobalHistogramBinarizer::GlobalHistogramBinarizer(const ImageView& buffer) : BinaryBitmap(buffer) {}
 
 GlobalHistogramBinarizer::~GlobalHistogramBinarizer() = default;
-
-int
-GlobalHistogramBinarizer::width() const
-{
-	return _source->width();
-}
-
-int
-GlobalHistogramBinarizer::height() const
-{
-	return _source->height();
-}
-
 
 // Return -1 on error
 static int EstimateBlackPoint(const std::array<int, LUMINANCE_BUCKETS>& buckets)
@@ -110,20 +84,21 @@ static int EstimateBlackPoint(const std::array<int, LUMINANCE_BUCKETS>& buckets)
 	return bestValley << LUMINANCE_SHIFT;
 }
 
-bool GlobalHistogramBinarizer::getPatternRow(int y, PatternRow& res) const
+bool GlobalHistogramBinarizer::getPatternRow(int row, int rotation, PatternRow& res) const
 {
-	int width = _source->width();
-	if (width < 3)
+	auto buffer = _buffer.rotated(rotation);
+
+	if (buffer.width() < 3)
 		return false; // special casing the code below for a width < 3 makes no sense
 
 	res.clear();
 
-	ByteArray buffer;
-	const uint8_t* luminances = _source->getRow(y, buffer);
+	const uint8_t* luminances = buffer.data(0, row);
+	const int pixStride = buffer.pixStride();
 	std::array<int, LUMINANCE_BUCKETS> buckets = {};
-	for (int x = 0; x < width; x++) {
-		buckets[luminances[x] >> LUMINANCE_SHIFT]++;
-	}
+	for (int x = 0; x < buffer.width(); x++)
+		buckets[luminances[x * pixStride] >> LUMINANCE_SHIFT]++;
+
 	int blackPoint = EstimateBlackPoint(buckets);
 	if (blackPoint <= 0)
 		return false;
@@ -135,20 +110,20 @@ bool GlobalHistogramBinarizer::getPatternRow(int y, PatternRow& res) const
 
 	auto process = [&](bool val, const uint8_t* p) {
 		if (val != lastVal) {
-			res.push_back(static_cast<PatternRow::value_type>(p - lastPos));
+			res.push_back(static_cast<PatternRow::value_type>(p - lastPos) / pixStride);
 			lastVal = val;
 			lastPos = p;
 		}
 	};
 
-	for (auto* p = luminances + 1; p < luminances + width - 1; ++p)
-		process((-*(p - 1) + (int(*p) * 4) - *(p + 1)) / 2 < blackPoint, p);
+	for (auto *p = luminances + pixStride, *e = luminances + (buffer.width() - 1) * pixStride; p < e; p += pixStride)
+		process((-*(p - pixStride) + (int(*p) * 4) - *(p + pixStride)) / 2 < blackPoint, p);
 
-	auto* backPos = luminances + width - 1;
+	auto* backPos = buffer.data(buffer.width() - 1, row);
 	bool backVal = *backPos < blackPoint;
 	process(backVal, backPos);
 
-	res.push_back(static_cast<PatternRow::value_type>(backPos - lastPos + 1));
+	res.push_back(static_cast<PatternRow::value_type>((backPos - lastPos) / pixStride + 1));
 
 	if (backVal)
 		res.push_back(0); // last value is number of white pixels, here 0
@@ -158,85 +133,36 @@ bool GlobalHistogramBinarizer::getPatternRow(int y, PatternRow& res) const
 	return true;
 }
 
-static void InitBlackMatrix(const LuminanceSource& source, std::shared_ptr<const BitMatrix>& outMatrix)
+// Does not sharpen the data, as this call is intended to only be used by 2D Readers.
+std::shared_ptr<const BitMatrix>
+GlobalHistogramBinarizer::getBlackMatrix() const
 {
-	int width = source.width();
-	int height = source.height();
-	auto matrix = std::make_shared<BitMatrix>(width, height);
-
 	// Quickly calculates the histogram by sampling four rows from the image. This proved to be
 	// more robust on the blackbox tests than sampling a diagonal as we used to do.
 	std::array<int, LUMINANCE_BUCKETS> localBuckets = {};
 	{
-		ByteArray buffer;
 		for (int y = 1; y < 5; y++) {
-			int row = height * y / 5;
-			const uint8_t* luminances = source.getRow(row, buffer);
-			int right = (width * 4) / 5;
-			for (int x = width / 5; x < right; x++) {
+			int row = height() * y / 5;
+			const uint8_t* luminances = _buffer.data(0, row);
+			int right = (width() * 4) / 5;
+			for (int x = width() / 5; x < right; x++)
 				localBuckets[luminances[x] >> LUMINANCE_SHIFT]++;
-			}
 		}
 	}
 
 	int blackPoint = EstimateBlackPoint(localBuckets);
 	if (blackPoint <= 0)
-		return;
+		return {};
 
 	// We delay reading the entire image luminance until the black point estimation succeeds.
 	// Although we end up reading four rows twice, it is consistent with our motto of
 	// "fail quickly" which is necessary for continuous scanning.
-	ByteArray buffer;
-	int stride;
-	const uint8_t* luminances = source.getMatrix(buffer, stride);
-	for (int y = 0; y < height; y++) {
-		int offset = y * stride;
-		for (int x = 0; x < width; x++) {
-			if (luminances[offset + x] < blackPoint) {
-				matrix->set(x, y);
-			}
-		}
-	}
-	outMatrix = matrix;
-}
+	auto matrix = std::make_shared<BitMatrix>(width(), height());
+	for(int y = 0; y < height(); ++y)
+		for(int x = 0; x < width(); ++x)
+			matrix->set(x, y, *_buffer.data(x, y) < blackPoint);
 
-// Does not sharpen the data, as this call is intended to only be used by 2D Readers.
-std::shared_ptr<const BitMatrix>
-GlobalHistogramBinarizer::getBlackMatrix() const
-{
-	std::call_once(_cache->once, &InitBlackMatrix, std::cref(*_source), std::ref(_cache->matrix));
-	return _cache->matrix;
+	return matrix;
 }
-
-bool
-GlobalHistogramBinarizer::canCrop() const
-{
-	return _source->canCrop();
-}
-
-std::shared_ptr<BinaryBitmap>
-GlobalHistogramBinarizer::cropped(int left, int top, int width, int height) const
-{
-	return newInstance(_source->cropped(left, top, width, height));
-}
-
-bool
-GlobalHistogramBinarizer::canRotate() const
-{
-	return _source->canRotate();
-}
-
-std::shared_ptr<BinaryBitmap>
-GlobalHistogramBinarizer::rotated(int degreeCW) const
-{
-	return newInstance(_source->rotated(degreeCW));
-}
-
-std::shared_ptr<BinaryBitmap>
-GlobalHistogramBinarizer::newInstance(const std::shared_ptr<const LuminanceSource>& source) const
-{
-	return std::make_shared<GlobalHistogramBinarizer>(source);
-}
-
 
 } // ZXing

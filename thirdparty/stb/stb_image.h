@@ -1646,7 +1646,7 @@ static stbi_uc stbi__compute_y(int r, int g, int b)
 {
 #if 0 // ori
    return (stbi_uc) (((r*77) + (g*150) +  (29*b)) >> 8);
-#else // zxing (see GenericLuminanceSource.cpp:RGBToGray)
+#else // zxing (see ReadBarcode.cpp:RGBToGray)
    return (stbi_uc) ((306 * r + 601 * g + 117 * b + 0x200) >> 10);
 #endif
 }

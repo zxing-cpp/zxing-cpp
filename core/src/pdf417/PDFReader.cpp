@@ -271,7 +271,7 @@ DecoderResult DecodeCodewords(std::vector<int>& codewords, int ecLevel, const st
 
 static Result DecodePure(const BinaryBitmap& image_, const std::string& characterSet)
 {
-	auto pimage = image_.getBlackMatrix();
+	auto pimage = image_.getBitMatrix();
 	if (!pimage)
 		return Result(DecodeStatus::NotFound);
 	auto& image = *pimage;

@@ -18,8 +18,6 @@
 
 #include "GlobalHistogramBinarizer.h"
 
-#include <memory>
-
 namespace ZXing {
 
 /**
@@ -42,15 +40,10 @@ namespace ZXing {
 class HybridBinarizer : public GlobalHistogramBinarizer
 {
 public:
-	explicit HybridBinarizer(const std::shared_ptr<const LuminanceSource>& source);
+	explicit HybridBinarizer(const ImageView& iv);
 	~HybridBinarizer() override;
 
 	std::shared_ptr<const BitMatrix> getBlackMatrix() const override;
-	std::shared_ptr<BinaryBitmap> newInstance(const std::shared_ptr<const LuminanceSource>& source) const override;
-
-private:
-	struct DataCache;
-	std::unique_ptr<DataCache> _cache;
 };
 
 } // ZXing

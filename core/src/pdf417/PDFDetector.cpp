@@ -348,8 +348,10 @@ bool HasStartPattern(const BitMatrix& m)
 DecodeStatus
 Detector::Detect(const BinaryBitmap& image, bool multiple, Result& result)
 {
-	auto binImg = image.getBlackMatrix();
-	if (binImg == nullptr) {
+	// construct a 'dummy' shared pointer, just be able to pass it up the call chain in DecodeStatus
+	// TODO: reimplement PDF Detector
+	auto binImg = std::shared_ptr<const BitMatrix>(image.getBitMatrix(), [](const BitMatrix*){});
+	if (!binImg) {
 		return DecodeStatus::NotFound;
 	}
 

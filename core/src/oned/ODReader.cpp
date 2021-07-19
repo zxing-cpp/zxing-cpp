@@ -73,19 +73,17 @@ Reader::~Reader() = default;
 * rowStep is bigger as the image is taller, but is always at least 1. We've somewhat arbitrarily
 * decided that moving up and down by about 1/16 of the image is pretty good; we try more of the
 * image if "trying harder".
-*
-* @param image The image to decode
-* @param hints Any hints that were requested
-* @return The contents of the decoded barcode
-* @throws NotFoundException Any spontaneous errors which occur
 */
-static Result
-DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, const BinaryBitmap& image, bool tryHarder, bool isPure)
+static Result DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, const BinaryBitmap& image,
+					   bool tryHarder, bool rotate, bool isPure)
 {
 	std::vector<std::unique_ptr<RowReader::DecodingState>> decodingState(readers.size());
 
 	int width = image.width();
 	int height = image.height();
+
+	if (rotate)
+		std::swap(width, height);
 
 	int middle = height / 2;
 	int rowStep = std::max(1, height / (tryHarder ? 256 : 32));
@@ -107,7 +105,7 @@ DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, const BinaryBit
 			break;
 		}
 
-		if (!image.getPatternRow(rowNumber, bars))
+		if (!image.getPatternRow(rowNumber, rotate ? 270 : 0, bars))
 			continue;
 
 		// While we have the image data in a PatternRow, it's fairly cheap to reverse it in place to
@@ -150,15 +148,14 @@ DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, const BinaryBit
 Result
 Reader::decode(const BinaryBitmap& image) const
 {
-	Result result = DoDecode(_readers, image, _tryHarder, _isPure);
+	Result result = DoDecode(_readers, image, _tryHarder, false, _isPure);
 
-	if (!result.isValid() && _tryRotate && image.canRotate()) {
-		auto rotatedImage = image.rotated(270);
-		result = DoDecode(_readers, *rotatedImage, _tryHarder, _isPure);
+	if (!result.isValid() && _tryRotate) {
+		result = DoDecode(_readers, image, _tryHarder, true, _isPure);
 		if (result.isValid()) {
 			// Update position
 			auto points = result.position();
-			int height = rotatedImage->height();
+			int height = image.width();
 			for (auto& p : points) {
 				p = {height - p.y - 1, p.x};
 			}
