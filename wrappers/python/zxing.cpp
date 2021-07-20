@@ -34,8 +34,9 @@ std::ostream& operator<<(std::ostream& os, const Position& points) {
 	return os;
 }
 
-Result read_barcode(py::object _image, const BarcodeFormats& formats, bool try_rotate, Binarizer binarizer,
-					bool is_pure, EanAddOnSymbol ean_add_on_symbol)
+template <typename FUNC>
+auto read_barcode_impl(FUNC func, py::object _image, const BarcodeFormats& formats, bool try_rotate,
+					   Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol)
 {
 	const auto hints = DecodeHints()
 		.setFormats(formats)
@@ -80,7 +81,19 @@ Result read_barcode(py::object _image, const BarcodeFormats& formats, bool try_r
 	}
 
 	const auto bytes = image.data();
-	return ReadBarcode({bytes, width, height, imgfmt, width * channels, channels}, hints);
+	return func({bytes, width, height, imgfmt, width * channels, channels}, hints);
+}
+
+Result read_barcode(py::object _image, const BarcodeFormats& formats, bool try_rotate, Binarizer binarizer,
+					bool is_pure, EanAddOnSymbol ean_add_on_symbol)
+{
+	return read_barcode_impl(ReadBarcode, _image, formats, try_rotate, binarizer, is_pure, ean_add_on_symbol);
+}
+
+Results read_barcodes(py::object _image, const BarcodeFormats& formats, bool try_rotate, Binarizer binarizer,
+					  bool is_pure, EanAddOnSymbol ean_add_on_symbol)
+{
+	return read_barcode_impl(ReadBarcodes, _image, formats, try_rotate, binarizer, is_pure, ean_add_on_symbol);
 }
 
 Image write_barcode(BarcodeFormat format, std::string text, int width, int height, int quiet_zone, int ec_level)
@@ -226,6 +239,35 @@ PYBIND11_MODULE(zxingcpp, m)
 		":rtype: zxing.Result\n"
 		":return: a zxing result containing decoded symbol if found."
 	);
+	m.def("read_barcodes", &read_barcodes,
+		py::arg("image"),
+		py::arg("formats") = BarcodeFormats{},
+		py::arg("try_rotate") = true,
+		py::arg("binarizer") = Binarizer::LocalAverage,
+		py::arg("is_pure") = false,
+		py::arg("ean_add_on_symbol") = EanAddOnSymbol::Ignore,
+		"Read (decode) multiple barcodes from a numpy BGR or grayscale image array or from a PIL image.\n\n"
+		":type image: numpy.ndarray|PIL.Image.Image\n"
+		":param image: The image object to decode. The image can be either:\n"
+		"  - a numpy array containing image either in grayscale (1 byte per pixel) or BGR mode (3 bytes per pixel)\n"
+		"  - a PIL Image\n"
+		":type formats: zxing.BarcodeFormat|zxing.BarcodeFormats\n"
+		":param formats: the format(s) to decode. If ``None``, decode all formats.\n"
+		":type try_rotate: bool\n"
+		":param try_rotate: if ``True`` (the default), decoder searched for barcodes in any direction; \n"
+		"  if ``False``, it will not search for 90° / 270° rotated barcodes.\n"
+		":type binarizer: zxing.Binarizer\n"
+		":param binarizer: the binarizer used to convert image before decoding barcodes.\n"
+		"  Defaults to :py:attr:`zxing.Binarizer.LocalAverage`."
+		":type is_pure: bool\n"
+		":param is_pure: Set to True if the input contains nothing but a perfectly aligned barcode (generated image).\n"
+		"  Speeds up detection in that case. Default is False."
+		":type ean_add_on_symbol: zxing.EanAddOnSymbol\n"
+		":param ean_add_on_symbol: Specify whether to Ignore, Read or Require EAN-2/5 add-on symbols while scanning \n"
+		"  EAN/UPC codes. Default is ``Ignore``.\n"
+		":rtype: zxing.Result\n"
+		":return: a list of zxing results containing decoded symbols, the list is empty if none is found"
+		);
 	m.def("write_barcode", &write_barcode,
 		py::arg("format"),
 		py::arg("text"),
