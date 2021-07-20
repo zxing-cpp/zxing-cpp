@@ -39,7 +39,8 @@ static Result parse(const int startPattern, PatternRow row)
 	std::unique_ptr<Code128Reader::DecodingState> state;
 	DecodeHints hints;
 	Code128Reader reader(hints);
-	return reader.decodePattern(0, row, state);
+	PatternView next(row);
+	return reader.decodePattern(0, next, state);
 }
 
 TEST(ODCode128ReaderTest, ReaderInit)

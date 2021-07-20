@@ -46,7 +46,7 @@ class ITFReader : public RowReader
 {
 public:
 	explicit ITFReader(const DecodeHints& hints);
-	Result decodePattern(int rowNumber, const PatternView& row, std::unique_ptr<DecodingState>&) const override;
+	Result decodePattern(int rowNumber, PatternView& next, std::unique_ptr<DecodingState>&) const override;
 
 private:
 	std::vector<int> _allowedLengths;

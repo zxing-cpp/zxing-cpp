@@ -384,8 +384,8 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		});
 
 		runTests("ean13-2", "EAN-13", 24, {
-			{ 7, 13, 0   },
-			{ 7, 13, 180 },
+			{ 7, 14, 0   },
+			{ 7, 14, 180 },
 		});
 
 		runTests("ean13-3", "EAN-13", 21, {
@@ -403,9 +403,9 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 3, 5, 180 },
 		}, DecodeHints().setEanAddOnSymbol(EanAddOnSymbol::Require));
 
-		runTests("itf-1", "ITF", 10, {
-			{ 10, 10, 0   },
-			{ 10, 10, 180 },
+		runTests("itf-1", "ITF", 11, {
+			{ 10, 11, 0   },
+			{ 10, 11, 180 },
 		});
 
 		runTests("itf-2", "ITF", 6, {
@@ -427,8 +427,8 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		});
 
 		runTests("upca-2", "UPC-A", 36, {
-			{ 17, 22, 0   },
-			{ 18, 22, 180 },
+			{ 17, 23, 0   },
+			{ 18, 23, 180 },
 		});
 
 		runTests("upca-3", "UPC-A", 21, {

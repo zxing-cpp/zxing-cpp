@@ -39,7 +39,8 @@ Result RowReader::decodeSingleRow(int rowNumber, const BitArray& row) const
 	if (*(i-1))
 		res.push_back(0);
 
-	return decodePattern(rowNumber, res, state);
+	PatternView view(res);
+	return decodePattern(rowNumber, view, state);
 }
 
 } // namespace ZXing::OneD

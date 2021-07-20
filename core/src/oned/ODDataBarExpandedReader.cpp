@@ -201,16 +201,15 @@ static Pair ReadPair(const PatternView& view, Direction dir)
 }
 
 template<bool STACKED>
-static Pairs ReadRowOfPairs(const PatternView& view, int rowNumber)
+static Pairs ReadRowOfPairs(PatternView& next, int rowNumber)
 {
 	Pairs pairs;
 	Pair pair;
-	PatternView next;
 
 	if constexpr (STACKED) {
 		// a possible first pair is either left2right starting on a space or right2left starting on a bar.
 		// it might be a half-pair
-		next = view.subView(0, HALF_PAIR_SIZE);
+		next = next.subView(0, HALF_PAIR_SIZE);
 		while (next.shift(1)) {
 			if (IsL2RPair(next) && (pair = ReadPair(next, Direction::Right)) &&
 				(pair.finder != FINDER_A || IsGuard(next[-1], next[11])))
@@ -221,7 +220,7 @@ static Pairs ReadRowOfPairs(const PatternView& view, int rowNumber)
 	} else {
 		// the only possible first pair is a full, left2right FINDER_A pair starting on a space
 		// with a guard bar on the left
-		next = view.subView(-1, FULL_PAIR_SIZE);
+		next = next.subView(-1, FULL_PAIR_SIZE);
 		while (next.shift(2)) {
 			if (IsL2RPair(next) && IsGuard(next[-1], next[11]) &&
 				(pair = ReadPair(next, Direction::Right)).finder == FINDER_A)
@@ -231,8 +230,10 @@ static Pairs ReadRowOfPairs(const PatternView& view, int rowNumber)
 		next = next.subView(0, HALF_PAIR_SIZE);
 	}
 
-	if (!pair)
+	if (!pair) {
+		next = {}; // if we didn't find a single pair, consume the rest of the row
 		return {};
+	}
 
 	auto flippedDir = [](Pair p) { return p.finder < 0 ? Direction::Right : Direction::Left; };
 	auto isValidPair = [](Pair p, PatternView v) { return p.right || IsGuard(v[p.finder < 0 ? 9 : 11], v[13]); };
@@ -333,7 +334,7 @@ struct DBERState : public RowReader::DecodingState
 	PairMap allPairs;
 };
 
-Result DataBarExpandedReader::decodePattern(int rowNumber, const PatternView& view,
+Result DataBarExpandedReader::decodePattern(int rowNumber, PatternView& view,
 											std::unique_ptr<RowReader::DecodingState>& state) const
 {
 #if 0 // non-stacked version

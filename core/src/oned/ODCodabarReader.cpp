@@ -62,7 +62,7 @@ bool IsLeftGuard(const PatternView& view, int spaceInPixel)
 }
 
 Result
-CodabarReader::decodePattern(int rowNumber, const PatternView& row, std::unique_ptr<DecodingState>&) const
+CodabarReader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<DecodingState>&) const
 {
 	// minimal number of characters that must be present (including start, stop and checksum characters)
 	// absolute minimum would be 2 (meaning 0 'content'). everything below 4 produces too many false
@@ -70,7 +70,7 @@ CodabarReader::decodePattern(int rowNumber, const PatternView& row, std::unique_
 	const int minCharCount = 4;
 	auto isStartOrStopSymbol = [](char c) { return 'A' <= c && c <= 'D'; };
 
-	auto next = FindLeftGuard<CHAR_LEN>(row, minCharCount * CHAR_LEN, IsLeftGuard);
+	next = FindLeftGuard<CHAR_LEN>(next, minCharCount * CHAR_LEN, IsLeftGuard);
 	if (!next.isValid())
 		return Result(DecodeStatus::NotFound);
 

@@ -70,7 +70,7 @@ public:
 
 	virtual ~RowReader() {}
 
-	virtual Result decodePattern(int rowNumber, const PatternView& row, std::unique_ptr<DecodingState>& state) const = 0;
+	virtual Result decodePattern(int rowNumber, PatternView& next, std::unique_ptr<DecodingState>& state) const = 0;
 
 	/**
 	 * Determines how closely a set of observed counts of runs of black/white values matches a given

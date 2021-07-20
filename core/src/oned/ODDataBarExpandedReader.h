@@ -33,7 +33,7 @@ public:
 	explicit DataBarExpandedReader(const DecodeHints& hints);
 	~DataBarExpandedReader() override;
 
-	Result decodePattern(int rowNumber, const PatternView& row, std::unique_ptr<DecodingState>& state) const override;
+	Result decodePattern(int rowNumber, PatternView& next, std::unique_ptr<DecodingState>& state) const override;
 };
 
 } // OneD

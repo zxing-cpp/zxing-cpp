@@ -163,11 +163,11 @@ struct State : public RowReader::DecodingState
 	std::unordered_set<Pair, PairHash> rightPairs;
 };
 
-Result DataBarReader::decodePattern(int rowNumber, const PatternView& view,
+Result DataBarReader::decodePattern(int rowNumber, PatternView& next,
 									std::unique_ptr<RowReader::DecodingState>& state) const
 {
 #if 0 // non-stacked version
-	auto next = view.subView(-1, FULL_PAIR_SIZE + 2);
+	next = next.subView(-1, FULL_PAIR_SIZE + 2);
 	// yes: the first view we test is at index 1 (black bar at 0 would be the guard pattern)
 	while (next.shift(2)) {
 		if (IsLeftPair(next)) {
@@ -184,7 +184,7 @@ Result DataBarReader::decodePattern(int rowNumber, const PatternView& view,
 		state.reset(new State);
 	auto* prevState = static_cast<State*>(state.get());
 
-	auto next = view.subView(0, FULL_PAIR_SIZE + 2); // +2 reflects the guard pattern on the right
+	next = next.subView(0, FULL_PAIR_SIZE + 2); // +2 reflects the guard pattern on the right
 	// yes: the first view we test is at index 1 (black bar at 0 would be the guard pattern)
 	while (next.shift(1)) {
 		if (IsLeftPair(next)) {
@@ -209,6 +209,9 @@ Result DataBarReader::decodePattern(int rowNumber, const PatternView& view,
 				return {TextDecoder::FromLatin1(ConstructText(leftPair, rightPair)),
 						EstimatePosition(leftPair, rightPair), BarcodeFormat::DataBar};
 #endif
+
+	// guaratee progress (see loop in ODReader.cpp)
+	next = {};
 
 	return Result(DecodeStatus::NotFound);
 }

@@ -277,15 +277,16 @@ static bool AddOn(PartialResult& res, PatternView begin, int digitCount)
 	return true;
 }
 
-Result MultiUPCEANReader::decodePattern(int rowNumber, const PatternView& row, std::unique_ptr<RowReader::DecodingState>&) const
+Result MultiUPCEANReader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<RowReader::DecodingState>&) const
 {
 	const int minSize = 3 + 6*4 + 6; // UPC-E
 
-	auto begin = FindLeftGuard(row, minSize, END_PATTERN, QUIET_ZONE_LEFT);
-	if (!begin.isValid())
+	next = FindLeftGuard(next, minSize, END_PATTERN, QUIET_ZONE_LEFT);
+	if (!next.isValid())
 		return Result(DecodeStatus::NotFound);
 
 	PartialResult res;
+	auto begin = next;
 
 	if (!(((_hints.hasFormat(BarcodeFormat::EAN13 | BarcodeFormat::UPCA)) && EAN13(res, begin)) ||
 		  (_hints.hasFormat(BarcodeFormat::EAN8) && EAN8(res, begin)) ||
@@ -311,6 +312,8 @@ Result MultiUPCEANReader::decodePattern(int rowNumber, const PatternView& row, s
 		//TODO: extend position in include extension
 		res.txt += " " + addOnRes.txt;
 	}
+
+	next = res.end;
 
 	if (_hints.eanAddOnSymbol() == EanAddOnSymbol::Require && !addOnRes.isValid())
 		return Result(DecodeStatus::NotFound);

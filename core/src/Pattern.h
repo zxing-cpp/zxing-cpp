@@ -124,7 +124,7 @@ public:
 
 	void extend()
 	{
-		_size = static_cast<int>(_end - _data);
+		_size = std::max(0, static_cast<int>(_end - _data));
 	}
 };
 

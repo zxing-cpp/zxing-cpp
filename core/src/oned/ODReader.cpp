@@ -123,18 +123,24 @@ static Result DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, c
 			}
 			// Look for a barcode
 			for (size_t r = 0; r < readers.size(); ++r) {
-				Result result = readers[r]->decodePattern(rowNumber, bars, decodingState[r]);
-				if (result.isValid()) {
-					if (upsideDown) {
-						// update position (flip horizontally).
-						auto points = result.position();
-						for (auto& p : points) {
-							p = {width - p.x - 1, p.y};
+				PatternView next(bars);
+				do {
+					Result result = readers[r]->decodePattern(rowNumber, next, decodingState[r]);
+					if (result.isValid()) {
+						if (upsideDown) {
+							// update position (flip horizontally).
+							auto points = result.position();
+							for (auto& p : points) {
+								p = {width - p.x - 1, p.y};
+							}
+							result.setPosition(std::move(points));
 						}
-						result.setPosition(std::move(points));
+						return result;
 					}
-					return result;
-				}
+					// make sure we make progress and we start the next try on a bar
+					next.shift(2 - (next.index() % 2));
+					next.extend();
+				} while (tryHarder && next.isValid());
 			}
 		}
 

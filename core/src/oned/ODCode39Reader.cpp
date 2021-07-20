@@ -92,7 +92,7 @@ Code39Reader::Code39Reader(const DecodeHints& hints) :
 {
 }
 
-Result Code39Reader::decodePattern(int rowNumber, const PatternView& row, std::unique_ptr<RowReader::DecodingState>&) const
+Result Code39Reader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<RowReader::DecodingState>&) const
 {
 	// minimal number of characters that must be present (including start, stop and checksum characters)
 	int minCharCount = _usingCheckDigit ? 4 : 3;
@@ -103,7 +103,7 @@ Result Code39Reader::decodePattern(int rowNumber, const PatternView& row, std::u
 	// quiet zone is half the width of a character symbol
 	constexpr float QUIET_ZONE_SCALE = 0.5f;
 
-	auto next = FindLeftGuard(row, minCharCount * CHAR_LEN, START_PATTERN, QUIET_ZONE_SCALE * 12);
+	next = FindLeftGuard(next, minCharCount * CHAR_LEN, START_PATTERN, QUIET_ZONE_SCALE * 12);
 	if (!next.isValid())
 		return Result(DecodeStatus::NotFound);
 
