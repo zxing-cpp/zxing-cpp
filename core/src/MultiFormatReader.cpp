@@ -19,7 +19,6 @@
 
 #include "BarcodeFormat.h"
 #include "DecodeHints.h"
-#include "Result.h"
 #include "aztec/AZReader.h"
 #include "datamatrix/DMReader.h"
 #include "maxicode/MCReader.h"
@@ -73,6 +72,18 @@ MultiFormatReader::read(const BinaryBitmap& image) const
 			return r;
 	}
 	return Result(DecodeStatus::NotFound);
+}
+
+Results MultiFormatReader::readMultiple(const BinaryBitmap& image) const
+{
+	std::vector<Result> res;
+
+	for (const auto& reader : _readers) {
+		auto r = reader->decode(image, 10);
+		res.insert(res.end(), r.begin(), r.end());
+	}
+
+	return res;
 }
 
 } // ZXing

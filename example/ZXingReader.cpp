@@ -122,54 +122,57 @@ int main(int argc, char* argv[])
 			return -1;
 		}
 
-		const auto& result = ReadBarcode({buffer.get(), width, height, ImageFormat::RGBX}, hints);
+		const auto& results = ReadBarcodes({buffer.get(), width, height, ImageFormat::RGBX}, hints);
+		for (auto&& result : results) {
+			ret |= static_cast<int>(result.status());
 
-		ret |= static_cast<int>(result.status());
-
-		if (oneLine) {
-			std::cout << filePath << " " << ToString(result.format());
-			if (result.isValid())
-				std::cout << " \"" << ToUtf8(result.text(), angleEscape) << "\"";
-			else if (result.format() != BarcodeFormat::None)
-				std::cout << " " << ToString(result.status());
-			std::cout << "\n";
-			continue;
-		}
-
-		if (filePaths.size() > 1) {
-			static bool firstFile = true;
-			if (!firstFile)
+			if (oneLine) {
+				std::cout << filePath << " " << ToString(result.format());
+				if (result.isValid())
+					std::cout << " \"" << ToUtf8(result.text(), angleEscape) << "\"";
+				else if (result.format() != BarcodeFormat::None)
+					std::cout << " " << ToString(result.status());
 				std::cout << "\n";
-			std::cout << "File:     " << filePath << "\n";
-			firstFile = false;
+				continue;
+			}
+
+			if (filePaths.size() > 1 || results.size() > 1) {
+				static bool firstFile = true;
+				if (!firstFile)
+					std::cout << "\n";
+				if (filePaths.size() > 1)
+					std::cout << "File:     " << filePath << "\n";
+				firstFile = false;
+			}
+			std::cout << "Text:     \"" << ToUtf8(result.text(), angleEscape) << "\"\n"
+					  << "Format:   " << ToString(result.format()) << "\n"
+					  << "Position: " << result.position() << "\n"
+					  << "Rotation: " << result.orientation() << " deg\n"
+					  << "Error:    " << ToString(result.status()) << "\n";
+
+			auto printOptional = [](const char* key, const std::string& v) {
+				if (!v.empty())
+					std::cout << key << v << "\n";
+			};
+
+			printOptional("EC Level: ", ToUtf8(result.ecLevel()));
+
+			if ((BarcodeFormat::EAN13 | BarcodeFormat::EAN8 | BarcodeFormat::UPCA | BarcodeFormat::UPCE)
+					.testFlag(result.format())) {
+				printOptional("Country:  ", GTIN::LookupCountryIdentifier(ToUtf8(result.text())));
+				printOptional("Add-On:   ", GTIN::EanAddOn(result));
+				printOptional("Price:    ", GTIN::Price(GTIN::EanAddOn(result)));
+				printOptional("Issue #:  ", GTIN::IssueNr(GTIN::EanAddOn(result)));
+			}
+
+			if (result.isPartOfSequence())
+				std::cout << "Structured Append: symbol " << result.sequenceIndex() + 1 << " of "
+						  << result.sequenceSize() << " (parity/id: '" << result.sequenceId() << "')\n";
+
+			if (result.readerInit())
+				std::cout << "Reader Initialisation/Programming\n";
 		}
-		std::cout << "Text:     \"" << ToUtf8(result.text(), angleEscape) << "\"\n"
-				  << "Format:   " << ToString(result.format()) << "\n"
-				  << "Position: " << result.position() << "\n"
-				  << "Rotation: " << result.orientation() << " deg\n"
-				  << "Error:    " << ToString(result.status()) << "\n";
 
-		auto printOptional = [](const char* key, const std::string& v) {
-			if (!v.empty())
-				std::cout << key << v << "\n";
-		};
-
-		printOptional("EC Level: ", ToUtf8(result.ecLevel()));
-
-		if ((BarcodeFormat::EAN13 | BarcodeFormat::EAN8 | BarcodeFormat::UPCA | BarcodeFormat::UPCE)
-				.testFlag(result.format())) {
-			printOptional("Country:  ", GTIN::LookupCountryIdentifier(ToUtf8(result.text())));
-			printOptional("Add-On:   ", GTIN::EanAddOn(result));
-			printOptional("Price:    ", GTIN::Price(GTIN::EanAddOn(result)));
-			printOptional("Issue #:  ", GTIN::IssueNr(GTIN::EanAddOn(result)));
-		}
-
-		if (result.isPartOfSequence())
-			std::cout << "Structured Append: symbol " << result.sequenceIndex() + 1 << " of " << result.sequenceSize()
-					  << " (parity/id: '" << result.sequenceId() << "')\n";
-
-		if (result.readerInit())
-			std::cout << "Reader Initialisation/Programming\n";
 	}
 
 	return ret;

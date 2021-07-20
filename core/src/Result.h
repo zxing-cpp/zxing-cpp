@@ -24,6 +24,7 @@
 #include "StructuredAppend.h"
 
 #include <string>
+#include <vector>
 
 namespace ZXing {
 
@@ -120,6 +121,10 @@ public:
 		return _readerInit;
 	}
 
+	bool operator==(const Result& o) const {
+		return text() == o.text() && format() == o.format();
+	}
+
 private:
 	DecodeStatus _status = DecodeStatus::NoError;
 	BarcodeFormat _format = BarcodeFormat::None;
@@ -131,5 +136,7 @@ private:
 	StructuredAppendInfo _sai;
 	bool _readerInit = false;
 };
+
+using Results = std::vector<Result>;
 
 } // ZXing

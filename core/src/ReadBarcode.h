@@ -30,5 +30,8 @@ namespace ZXing {
  */
 Result ReadBarcode(const ImageView& buffer, const DecodeHints& hints = {});
 
+// WARNING: this API is experimental and may change/disappear
+Results ReadBarcodes(const ImageView& buffer, const DecodeHints& hints = {});
+
 } // ZXing
 

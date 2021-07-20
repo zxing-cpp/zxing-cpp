@@ -74,9 +74,11 @@ Reader::~Reader() = default;
 * decided that moving up and down by about 1/16 of the image is pretty good; we try more of the
 * image if "trying harder".
 */
-static Result DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, const BinaryBitmap& image,
-					   bool tryHarder, bool rotate, bool isPure)
+static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, const BinaryBitmap& image,
+						bool tryHarder, bool rotate, bool isPure, int maxSymbols)
 {
+	Results res;
+
 	std::vector<std::unique_ptr<RowReader::DecodingState>> decodingState(readers.size());
 
 	int width = image.width();
@@ -126,7 +128,7 @@ static Result DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, c
 				PatternView next(bars);
 				do {
 					Result result = readers[r]->decodePattern(rowNumber, next, decodingState[r]);
-					if (result.isValid()) {
+					if (result.isValid() && !Contains(res, result)) {
 						if (upsideDown) {
 							// update position (flip horizontally).
 							auto points = result.position();
@@ -135,7 +137,16 @@ static Result DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, c
 							}
 							result.setPosition(std::move(points));
 						}
-						return result;
+						if (rotate) {
+							auto points = result.position();
+							for (auto& p : points) {
+								p = {height - p.y - 1, p.x};
+							}
+							result.setPosition(std::move(points));
+						}
+						res.push_back(std::move(result));
+						if (maxSymbols && Size(res) == maxSymbols)
+							return res;
 					}
 					// make sure we make progress and we start the next try on a bar
 					next.shift(2 - (next.index() % 2));
@@ -148,28 +159,29 @@ static Result DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, c
 		if (isPure)
 			break;
 	}
-	return Result(DecodeStatus::NotFound);
+
+	return res;
 }
 
 Result
 Reader::decode(const BinaryBitmap& image) const
 {
-	Result result = DoDecode(_readers, image, _tryHarder, false, _isPure);
+	auto result = DoDecode(_readers, image, _tryHarder, false, _isPure, 1);
 
-	if (!result.isValid() && _tryRotate) {
-		result = DoDecode(_readers, image, _tryHarder, true, _isPure);
-		if (result.isValid()) {
-			// Update position
-			auto points = result.position();
-			int height = image.width();
-			for (auto& p : points) {
-				p = {height - p.y - 1, p.x};
-			}
-			result.setPosition(std::move(points));
-		}
+	if (result.empty() && _tryRotate)
+		result = DoDecode(_readers, image, _tryHarder, true, _isPure, 1);
+
+	return result.empty() ? Result(DecodeStatus::NotFound) : result.front();
+}
+
+Results Reader::decode(const BinaryBitmap& image, int maxSymbols) const
+{
+	auto resH = DoDecode(_readers, image, _tryHarder, false, _isPure, maxSymbols);
+	if (Size(resH) < maxSymbols && _tryRotate) {
+		auto resV = DoDecode(_readers, image, _tryHarder, true, _isPure, maxSymbols);
+		resH.insert(resH.end(), resV.begin(), resV.end());
 	}
-
-	return result;
+	return resH;
 }
 
 } // namespace ZXing::OneD
