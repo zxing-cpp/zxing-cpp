@@ -110,7 +110,7 @@ bool GlobalHistogramBinarizer::getPatternRow(int row, int rotation, PatternRow& 
 
 	auto process = [&](bool val, const uint8_t* p) {
 		if (val != lastVal) {
-			res.push_back(static_cast<PatternRow::value_type>(p - lastPos) / pixStride);
+			res.push_back(static_cast<PatternRow::value_type>((p - lastPos) / pixStride));
 			lastVal = val;
 			lastPos = p;
 		}
