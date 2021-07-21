@@ -80,7 +80,7 @@ Result ITFReader::decodePattern(int rowNumber, PatternView& next, std::unique_pt
 
 	next = next.subView(0, 3);
 
-	if (Size(txt) < minCharCount)
+	if (Size(txt) < minCharCount || !next.isValid())
 		return Result(DecodeStatus::NotFound);
 
 	if (!IsRightGuard(next, STOP_PATTERN_1, minQuietZone) && !IsRightGuard(next, STOP_PATTERN_2, minQuietZone))
