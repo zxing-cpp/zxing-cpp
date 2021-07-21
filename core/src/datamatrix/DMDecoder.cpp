@@ -301,7 +301,9 @@ static bool DecodeAnsiX12Segment(BitSource& bits, std::string& result)
 		for (int cValue : *triple) {
 			// X12 segment terminator <CR>, separator *, sub-element separator >, space
 			static const char segChars[4] = {'\r', '*', '>', ' '};
-			if (cValue < 4)
+			if (cValue < 0)
+				return false;
+			else if (cValue < 4)
 				result.push_back(segChars[cValue]);
 			else if (cValue < 14) // 0 - 9
 				result.push_back((char)(cValue + 44));
