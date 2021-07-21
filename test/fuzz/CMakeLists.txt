@@ -9,10 +9,12 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -march=native -fsanitize=address,fuz
 set (BUILD_WRITERS ON)
 set (BUILD_READERS ON)
 
+add_definitions (-DZXING_BUILD_FOR_TEST)
 add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/../../core ${CMAKE_BINARY_DIR}/ZXing)
 
 set (TESTS
     DBEDecoder
+    DMDecoder
     DMEncoder
     ODDecoders
 )
