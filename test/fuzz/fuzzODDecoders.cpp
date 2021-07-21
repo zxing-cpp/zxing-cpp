@@ -46,8 +46,15 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
 	}
 	row.back() = 0;
 
-	for (size_t r = 0; r < readers.size(); ++r)
-		readers[r]->decodePattern(0, row, decodingState[r]);
+	for (size_t r = 0; r < readers.size(); ++r) {
+		PatternView next(row);
+		while (next.isValid()) {
+			readers[r]->decodePattern(0, next, decodingState[r]);
+			// make sure we make progress and we start the next try on a bar
+			next.shift(2 - (next.index() % 2));
+			next.extend();
+		}
+	}
 
 	return 0;
 }
