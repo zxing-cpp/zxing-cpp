@@ -29,19 +29,22 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
 
 using namespace ZXing;
 using namespace TextUtfEncoding;
 
 static void PrintUsage(const char* exePath)
 {
-	std::cout << "Usage: " << exePath << " [-fast] [-norotate] [-format <FORMAT[,...]>] [-ispure] [-1] <png image path>...\n"
+	std::cout << "Usage: " << exePath << " [-fast] [-norotate] [-format <FORMAT[,...]>] [-pngout <png out path>] [-ispure] [-1] <png image path>...\n"
 			  << "    -fast      Skip some lines/pixels during detection (faster)\n"
 			  << "    -norotate  Don't try rotated image during detection (faster)\n"
 			  << "    -format    Only detect given format(s) (faster)\n"
 			  << "    -ispure    Assume the image contains only a 'pure'/perfect code (faster)\n"
 			  << "    -1         Print only file name, text and status on one line per file\n"
 			  << "    -escape    Escape non-graphical characters in angle brackets (ignored for -1 option, which always escapes)\n"
+			  << "    -pngout    Write a copy of the input image with barcodes outlined by a red line\n"
 			  << "\n"
 			  << "Supported formats are:\n";
 	for (auto f : BarcodeFormats::all()) {
@@ -50,7 +53,8 @@ static void PrintUsage(const char* exePath)
 	std::cout << "Formats can be lowercase, with or without '-', separated by ',' and/or '|'\n";
 }
 
-static bool ParseOptions(int argc, char* argv[], DecodeHints& hints, bool& oneLine, bool& angleEscape, std::vector<std::string>& filePaths)
+static bool ParseOptions(int argc, char* argv[], DecodeHints& hints, bool& oneLine, bool& angleEscape,
+						 std::vector<std::string>& filePaths, std::string& outPath)
 {
 	for (int i = 1; i < argc; ++i) {
 		if (strcmp(argv[i], "-fast") == 0) {
@@ -79,6 +83,11 @@ static bool ParseOptions(int argc, char* argv[], DecodeHints& hints, bool& oneLi
 		else if (strcmp(argv[i], "-escape") == 0) {
 			angleEscape = true;
 		}
+		else if (strcmp(argv[i], "-pngout") == 0) {
+			if (++i == argc)
+				return false;
+			outPath = argv[i];
+		}
 		else {
 			filePaths.push_back(argv[i]);
 		}
@@ -93,15 +102,32 @@ std::ostream& operator<<(std::ostream& os, const Position& points) {
 	return os;
 }
 
+void drawLine(const ImageView& image, PointI a, PointI b)
+{
+	int steps = maxAbsComponent(b - a);
+	PointF dir = bresenhamDirection(PointF(b - a));
+	for (int i = 0; i < steps; ++i) {
+		auto p = centered(a + i * dir);
+		*((uint32_t*)image.data(p.x, p.y)) = 0xff0000ff;
+	}
+}
+
+void drawRect(const ImageView& image, const Position& pos)
+{
+	for(int i=0;i<4;++i)
+		drawLine(image, pos[i], pos[(i+1)%4]);
+}
+
 int main(int argc, char* argv[])
 {
 	DecodeHints hints;
 	std::vector<std::string> filePaths;
+	std::string outPath;
 	bool oneLine = false;
 	bool angleEscape = false;
 	int ret = 0;
 
-	if (!ParseOptions(argc, argv, hints, oneLine, angleEscape, filePaths)) {
+	if (!ParseOptions(argc, argv, hints, oneLine, angleEscape, filePaths, outPath)) {
 		PrintUsage(argv[0]);
 		return -1;
 	}
@@ -124,6 +150,10 @@ int main(int argc, char* argv[])
 
 		const auto& results = ReadBarcodes({buffer.get(), width, height, ImageFormat::RGBX}, hints);
 		for (auto&& result : results) {
+
+			if (!outPath.empty())
+				drawRect(image, result.position());
+
 			ret |= static_cast<int>(result.status());
 
 			if (oneLine) {
@@ -172,6 +202,9 @@ int main(int argc, char* argv[])
 			if (result.readerInit())
 				std::cout << "Reader Initialisation/Programming\n";
 		}
+
+		if (!outPath.empty())
+			stbi_write_png(outPath.c_str(), image.width(), image.height(), 4, image.data(0, 0), image.rowStride());
 
 	}
 
