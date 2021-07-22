@@ -191,15 +191,12 @@ static void doRunTests(
 	}
 }
 
-static auto readPDF417s = [](const BinaryBitmap& image) { return Pdf417::Reader({}).decodeMultiple(image); };
-static auto readQRCodes = [](const BinaryBitmap& image) { return std::list{QRCode::Reader({}).decode(image)}; };
-
-template<typename READER>
-static Result readMultiple(const std::vector<fs::path>& imgPaths, int rotation, READER read)
+static Result readMultiple(const std::vector<fs::path>& imgPaths, std::string_view format)
 {
 	std::list<Result> allResults;
 	for (const auto& imgPath : imgPaths) {
-		auto results = read(ThresholdBinarizer(ImageLoader::load(imgPath), 127));
+		auto results =
+			ReadBarcodes(ImageLoader::load(imgPath), DecodeHints().setFormats(BarcodeFormatFromString(format.data())));
 		allResults.insert(allResults.end(), results.begin(), results.end());
 	}
 
@@ -243,8 +240,7 @@ static void doRunStructuredAppendTest(
 		auto startTime = std::chrono::steady_clock::now();
 
 		for (const auto& [testPath, testImgPaths] : imageGroups) {
-			auto result = format == "QRCode" ? readMultiple(testImgPaths, test.rotation, readQRCodes)
-											 : readMultiple(testImgPaths, test.rotation, readPDF417s);
+			auto result = readMultiple(testImgPaths, format);
 			if (result.isValid()) {
 				auto error = checkResult(testPath, format, result);
 				if (!error.empty())

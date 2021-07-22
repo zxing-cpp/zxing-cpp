@@ -338,6 +338,13 @@ Reader::decode(const BinaryBitmap& image) const
 	return Result(status);
 }
 
+Results Reader::decode(const BinaryBitmap& image, [[maybe_unused]] int maxSymbols) const
+{
+	std::list<Result> results;
+	DoDecode(image, true, results, _characterSet);
+	return Results(results.begin(), results.end());
+}
+
 std::list<Result>
 Reader::decodeMultiple(const BinaryBitmap& image) const
 {
