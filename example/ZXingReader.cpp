@@ -148,7 +148,9 @@ int main(int argc, char* argv[])
 			return -1;
 		}
 
-		const auto& results = ReadBarcodes({buffer.get(), width, height, ImageFormat::RGBX}, hints);
+		ImageView image{buffer.get(), width, height, ImageFormat::RGBX};
+		const auto& results = ReadBarcodes(image, hints);
+
 		for (auto&& result : results) {
 
 			if (!outPath.empty())
