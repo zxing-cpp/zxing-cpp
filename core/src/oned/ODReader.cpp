@@ -208,7 +208,7 @@ Reader::decode(const BinaryBitmap& image) const
 Results Reader::decode(const BinaryBitmap& image, int maxSymbols) const
 {
 	auto resH = DoDecode(_readers, image, _tryHarder, false, _isPure, maxSymbols);
-	if (Size(resH) < maxSymbols && _tryRotate) {
+	if ((!maxSymbols || Size(resH) < maxSymbols) && _tryRotate) {
 		auto resV = DoDecode(_readers, image, _tryHarder, true, _isPure, maxSymbols);
 		resH.insert(resH.end(), resV.begin(), resV.end());
 	}

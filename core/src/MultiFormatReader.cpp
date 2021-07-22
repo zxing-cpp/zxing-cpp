@@ -79,7 +79,7 @@ Results MultiFormatReader::readMultiple(const BinaryBitmap& image) const
 	std::vector<Result> res;
 
 	for (const auto& reader : _readers) {
-		auto r = reader->decode(image, 10);
+		auto r = reader->decode(image, 0);
 		res.insert(res.end(), r.begin(), r.end());
 	}
 
