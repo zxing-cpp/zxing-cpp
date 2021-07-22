@@ -83,6 +83,13 @@ Results MultiFormatReader::readMultiple(const BinaryBitmap& image) const
 		res.insert(res.end(), r.begin(), r.end());
 	}
 
+	// sort results based on their position on the image
+	std::sort(res.begin(), res.end(), [](const Result& l, const Result& r) {
+		auto lp = l.position().topLeft();
+		auto rp = r.position().topLeft();
+		return lp.y < rp.y || (lp.y == rp.y && lp.x <= rp.x);
+	});
+
 	return res;
 }
 
