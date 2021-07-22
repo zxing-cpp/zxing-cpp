@@ -129,7 +129,7 @@ static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, 
 				PatternView next(bars);
 				do {
 					Result result = readers[r]->decodePattern(rowNumber, next, decodingState[r]);
-					if (result.isValid() && !Contains(res, result)) {
+					if (result.isValid()) {
 						if (upsideDown) {
 							// update position (flip horizontally).
 							auto points = result.position();
@@ -145,9 +145,39 @@ static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, 
 							}
 							result.setPosition(std::move(points));
 						}
-						res.push_back(std::move(result));
-						if (maxSymbols && Size(res) == maxSymbols)
-							return res;
+
+						// check if we know this code already
+						for (auto& other : res) {
+							if (other == result) {
+								auto dTop = maxAbsComponent(other.position().topLeft() - result.position().topLeft());
+								auto dBot = maxAbsComponent(other.position().bottomLeft() - result.position().topLeft());
+								auto length = maxAbsComponent(other.position().topLeft() - other.position().bottomRight());
+								// if the new line is less than half the length of the existing result away from the
+								// latter, we consider it to belong to the same symbol
+								if (std::min(dTop, dBot) < length / 2) {
+									// if so, merge the position information
+									auto points = other.position();
+									if (dTop < dBot ||
+										(dTop == dBot && rotate ^ (sumAbsComponent(points[0]) >
+																   sumAbsComponent(result.position()[0])))) {
+										points[0] = result.position()[0];
+										points[1] = result.position()[1];
+									} else {
+										points[2] = result.position()[2];
+										points[3] = result.position()[3];
+									}
+									other.setPosition(points);
+									// clear the result below, so we don't insert it again
+									result = Result(DecodeStatus::NotFound);
+								}
+							}
+						}
+
+						if (result.isValid()) {
+							res.push_back(std::move(result));
+							if (maxSymbols && Size(res) == maxSymbols)
+								return res;
+						}
 					}
 					// make sure we make progress and we start the next try on a bar
 					next.shift(2 - (next.index() % 2));
