@@ -37,6 +37,8 @@ public:
 	explicit Reader(const DecodeHints& hints);
 	Result decode(const BinaryBitmap& image) const override;
 
+	Results decode(const BinaryBitmap& image, int maxSymbols) const override;
+
 private:
 	bool _tryHarder, _isPure;
 	std::string _charset;

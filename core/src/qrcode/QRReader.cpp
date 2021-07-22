@@ -55,4 +55,36 @@ Reader::decode(const BinaryBitmap& image) const
 	return Result(std::move(decoderResult), std::move(position), BarcodeFormat::QRCode);
 }
 
+Results Reader::decode(const BinaryBitmap& image, int maxSymbols) const
+{
+	auto binImg = image.getBitMatrix();
+	if (binImg == nullptr)
+		return {};
+
+	FinderPatternSets allFPSets = FindFinderPatternSets(*binImg, _tryHarder);
+	std::vector<ConcentricPattern> usedFPs;
+	Results results;
+
+	for(auto& fpSet : allFPSets) {
+		if (Contains(usedFPs, fpSet.bl) || Contains(usedFPs, fpSet.tl) || Contains(usedFPs, fpSet.tr))
+			continue;
+
+		auto detectorResult = SampleAtFinderPatternSet(*binImg, fpSet);
+		if (detectorResult.isValid()) {
+			auto decoderResult = Decode(detectorResult.bits(), _charset);
+			auto position = detectorResult.position();
+			if (decoderResult.isValid()) {
+				usedFPs.push_back(fpSet.bl);
+				usedFPs.push_back(fpSet.tl);
+				usedFPs.push_back(fpSet.tr);
+				results.emplace_back(std::move(decoderResult), std::move(position), BarcodeFormat::QRCode);
+				if (maxSymbols && Size(results) == maxSymbols)
+					break;
+			}
+		}
+	}
+
+	return results;
+}
+
 } // namespace ZXing::QRCode

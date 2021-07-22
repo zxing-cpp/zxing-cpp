@@ -87,13 +87,6 @@ static auto FindFinderPatterns(const BitMatrix& image, bool tryHarder)
 	return res;
 }
 
-struct FinderPatternSet
-{
-	ConcentricPattern bl, tl, tr;
-};
-
-using FinderPatternSets = std::vector<FinderPatternSet>;
-
 /**
  * @brief GenerateFinderPatternSets
  * @param patterns list of ConcentricPattern objects, i.e. found finder pattern squares
@@ -153,9 +146,10 @@ static FinderPatternSets GenerateFinderPatternSets(std::vector<ConcentricPattern
 					std::swap(a, c);
 
 				// arbitrarily limit the number of potential sets
-				if (sets.size() < 16 || sets.crbegin()->first > d) {
+				const auto setSizeLimit = 16;
+				if (sets.size() < setSizeLimit || sets.crbegin()->first > d) {
 					sets.emplace(d, FinderPatternSet{*a, *b, *c});
-					if (sets.size() > 16)
+					if (sets.size() > setSizeLimit)
 						sets.erase(std::prev(sets.end()));
 				}
 			}
@@ -244,7 +238,7 @@ static RegressionLine TraceLine(const BitMatrix& image, PointF p, PointF d, int 
 	return line;
 }
 
-static DetectorResult SampleAtFinderPatternSet(const BitMatrix& image, const FinderPatternSet& fp)
+DetectorResult SampleAtFinderPatternSet(const BitMatrix& image, const FinderPatternSet& fp)
 {
 	auto top  = EstimateDimension(image, fp.tl, fp.tr);
 	auto left = EstimateDimension(image, fp.tl, fp.bl);
@@ -351,6 +345,11 @@ static DetectorResult DetectPure(const BitMatrix& image)
 	// Now just read off the bits (this is a crop + subsample)
 	return {Deflate(image, dimension, dimension, top + moduleSize / 2, left + moduleSize / 2, moduleSize),
 			{{left, top}, {right, top}, {right, bottom}, {left, bottom}}};
+}
+
+FinderPatternSets FindFinderPatternSets(const BitMatrix& image, bool tryHarder)
+{
+	return GenerateFinderPatternSets(FindFinderPatterns(image, tryHarder));
 }
 
 DetectorResult Detect(const BitMatrix& image, bool tryHarder, bool isPure)
