@@ -21,6 +21,7 @@ import android.graphics.ImageFormat
 import android.graphics.Rect
 import androidx.camera.core.ImageProxy
 import java.lang.RuntimeException
+import java.nio.ByteBuffer
 
 class BarcodeReader {
 
@@ -57,6 +58,19 @@ class BarcodeReader {
         return read(bitmapBuffer, image.cropRect, image.imageInfo.rotationDegrees)
     }
 
+    fun read2(image: ImageProxy): Result? {
+        val supportedYUVFormats = arrayOf(ImageFormat.YUV_420_888, ImageFormat.YUV_422_888, ImageFormat.YUV_444_888)
+        if (image.format !in supportedYUVFormats) {
+            error("invalid image format")
+        }
+
+        return image.use {
+            // This is a direct ByteBuffer which can let us access it from native directly without copying data
+            val yByteBuffer = it.planes[0].buffer
+            read(yByteBuffer = yByteBuffer, cropRect = it.cropRect, rotation = it.imageInfo.rotationDegrees)
+        }
+    }
+
     fun read(bitmap: Bitmap, cropRect: Rect = Rect(), rotation: Int = 0): Result? {
         return read(bitmap, options, cropRect, rotation)
     }
@@ -74,9 +88,34 @@ class BarcodeReader {
         }
     }
 
+    fun read(
+        yByteBuffer: ByteBuffer,
+        options: Options = this.options,
+        cropRect: Rect = Rect(),
+        rotation: Int = 0,
+    ): Result? {
+        var result = Result()
+        val status = with(options) {
+            readYuvNative(yByteBuffer, cropRect.left, cropRect.top, cropRect.width(), cropRect.height(), rotation,
+                formats.joinToString(), tryHarder, tryRotate, result)
+        }
+        return try {
+            result.copy(format = Format.valueOf(status!!))
+        } catch (e: Throwable) {
+            if (status == "NotFound") null else throw RuntimeException(status!!)
+        }
+    }
+
     // setting the format enum from inside the JNI code is a hassle -> use returned String instead
     private external fun read(
         bitmap: Bitmap, left: Int, top: Int, width: Int, height: Int, rotation: Int,
+        formats: String, tryHarder: Boolean, tryRotate: Boolean,
+        result: Result,
+    ): String?
+
+    // Passing yByteBuffer here to avoid memory allocation.
+    private external fun readYuvNative(
+        yByteBuffer: ByteBuffer, left: Int, top: Int, width: Int, height: Int, rotation: Int,
         formats: String, tryHarder: Boolean, tryRotate: Boolean,
         result: Result,
     ): String?

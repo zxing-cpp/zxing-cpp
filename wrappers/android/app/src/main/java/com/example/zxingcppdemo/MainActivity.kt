@@ -17,6 +17,7 @@
 package com.example.zxingcppdemo
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.*
@@ -24,6 +25,8 @@ import android.hardware.camera2.CaptureRequest
 import android.media.AudioManager
 import android.media.ToneGenerator
 import android.os.Bundle
+import android.util.Log
+import android.util.Size
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
@@ -34,7 +37,6 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.toPoint
-import androidx.core.graphics.toRectF
 import androidx.lifecycle.LifecycleOwner
 import com.example.zxingcpp.BarcodeReader
 import com.example.zxingcpp.BarcodeReader.Format
@@ -72,6 +74,7 @@ class MainActivity : AppCompatActivity() {
 		}
 	}
 
+	@SuppressLint("RestrictedApi")
 	private fun bindCameraUseCases() = view_finder.post {
 
 		val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
@@ -158,7 +161,7 @@ class MainActivity : AppCompatActivity() {
 					image.setCropRect(cropRect)
 
 					resultText = try {
-						val result = readerCpp.read(image)
+						val result = readerCpp.read2(image)
 						runtime2 += result?.time?.toInt() ?: 0
 						(result?.let { "${it.format}: ${it.text}" } ?: "")
 					} catch (e: Throwable) {
@@ -195,6 +198,11 @@ class MainActivity : AppCompatActivity() {
 			val camera = cameraProvider.bindToLifecycle(
 				this as LifecycleOwner, cameraSelector, preview, imageAnalysis
 			)
+
+			val selectedPreviewSize = preview.attachedSurfaceResolution ?: Size(0, 0)
+			val selectedImageAnalysisSize = imageAnalysis.attachedSurfaceResolution ?: Size(0, 0)
+			Log.i("MainActivity", "selectedPreviewSize: $selectedPreviewSize")
+			Log.i("MainActivity", "selectedImageAnalysisSize: $selectedImageAnalysisSize")
 
 			// Reduce exposure time to decrease effect of motion blur
 			val camera2 = Camera2CameraControl.from(camera.cameraControl)

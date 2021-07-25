@@ -136,3 +136,51 @@ Java_com_example_zxingcpp_BarcodeReader_read(
 		return ThrowJavaException(env, "Unknown exception");
 	}
 }
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_com_example_zxingcpp_BarcodeReader_readYuvNative(JNIEnv *env, jobject thiz,
+                                                      jobject y_byte_buffer, jint left, jint top,
+                                                      jint width, jint height, jint rotation,
+                                                      jstring formats, jboolean try_harder,
+                                                      jboolean try_rotate, jobject result) {
+	using namespace ZXing;
+
+	try {
+		uint8_t* yBytes = static_cast<uint8_t *>(env->GetDirectBufferAddress(y_byte_buffer));
+
+		auto image = ImageView(yBytes, width, height, ImageFormat::Lum, width)
+				.cropped(left, top, width, height)
+				.rotated(rotation);
+
+		auto hints = DecodeHints()
+				.setFormats(BarcodeFormatsFromString(J2CString(env, formats)))
+				.setTryHarder(try_harder)
+				.setTryRotate(try_rotate);
+
+		auto startTime = std::chrono::high_resolution_clock::now();
+		auto res = ReadBarcode(image, hints);
+		auto duration = std::chrono::high_resolution_clock::now() - startTime;
+
+		LOGD("Decode status: %s", ToString(res.status()));
+
+		if (res.isValid()){
+			jclass clResult = env->GetObjectClass(result);
+
+			jfieldID fidTime = env->GetFieldID(clResult, "time", "Ljava/lang/String;");
+			auto time = std::to_wstring(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count());
+			env->SetObjectField(result, fidTime, C2JString(env, time));
+
+			jfieldID fidText = env->GetFieldID(clResult, "text", "Ljava/lang/String;");
+			env->SetObjectField(result, fidText, C2JString(env, res.text()));
+
+			return C2JString(env, JavaBarcodeFormatName(res.format()));
+		} else {
+			return C2JString(env, ToString(res.status()));
+		}
+	} catch (const std::exception& e) {
+		return ThrowJavaException(env, e.what());
+	} catch (...) {
+		return ThrowJavaException(env, "Unknown exception");
+	}
+}
