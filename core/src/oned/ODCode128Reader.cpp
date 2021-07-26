@@ -183,7 +183,7 @@ Code128Reader::Code128Reader(const DecodeHints& hints) :
 // all 3 start patterns share the same 2-1-1 prefix
 constexpr auto START_PATTERN_PREFIX = FixedPattern<3, 4>{2, 1, 1};
 constexpr int CHAR_LEN = 6;
-constexpr float QUIET_ZONE = 8;	// quiet zone spec is 10 modules
+constexpr float QUIET_ZONE = 5;	// quiet zone spec is 10 modules, real world examples ignore that, see #138
 
 //#define USE_FAST_1_TO_4_BIT_PATTERN_DECODING
 #ifdef USE_FAST_1_TO_4_BIT_PATTERN_DECODING
