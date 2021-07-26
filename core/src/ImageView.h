@@ -47,11 +47,6 @@ protected:
 	ImageFormat _format;
 	int _width = 0, _height = 0, _pixStride = 0, _rowStride = 0;
 
-//	friend class ThresholdBinarizer;
-//	friend class GlobalHistogramBinarizer;
-//	friend class HybridBinarizer;
-//	friend class BinaryBitmap;
-
 public:
 	/**
 	 * ImageView contructor
