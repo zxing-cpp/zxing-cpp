@@ -205,7 +205,7 @@ int main(int argc, char* argv[])
 				std::cout << "Reader Initialisation/Programming\n";
 		}
 
-		if (!outPath.empty())
+		if (Size(filePaths) == 1 && !outPath.empty())
 			stbi_write_png(outPath.c_str(), image.width(), image.height(), 4, image.data(0, 0), image.rowStride());
 
 	}
