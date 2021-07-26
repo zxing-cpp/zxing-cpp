@@ -55,6 +55,7 @@ static const int FIRST_DIGIT_ENCODINGS[] = {
 
 constexpr float QUIET_ZONE_LEFT = 6;
 constexpr float QUIET_ZONE_RIGHT = 6;
+constexpr float QUIET_ZONE_ADDON = 3;
 
 // There is a single sample (ean13-1/12.png) that fails to decode with these (new) settings because
 // it has a right-side quiet zone of only about 4.5 modules, which is clearly out of spec.
@@ -251,6 +252,8 @@ static bool AddOn(PartialResult& res, PatternView begin, int digitCount)
 	auto moduleSize = IsPattern(ext, EXT_START_PATTERN);
 	CHECK(moduleSize);
 
+	CHECK(ext.isAtLastBar() || *ext.end() > QUIET_ZONE_ADDON * moduleSize - 1);
+
 	res.end = ext;
 	ext = ext.subView(EXT_START_PATTERN.size(), CHAR_LEN);
 	int lgPattern = 0;
@@ -264,8 +267,6 @@ static bool AddOn(PartialResult& res, PatternView begin, int digitCount)
 			ext.skipPair();
 		}
 	}
-
-	//TODO: check right quiet zone
 
 	if (digitCount == 2) {
 		CHECK(std::stoi(res.txt) % 4 == lgPattern);
