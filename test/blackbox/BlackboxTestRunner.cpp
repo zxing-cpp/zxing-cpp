@@ -443,7 +443,7 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		});
 		
 		runTests("upca-extension-1", "UPC-A", 6, {
-			{ 3, 6, 0 },
+			{ 4, 6, 0 },
 			{ 4, 6, 180 },
 		}, DecodeHints().setEanAddOnSymbol(EanAddOnSymbol::Require));
 
