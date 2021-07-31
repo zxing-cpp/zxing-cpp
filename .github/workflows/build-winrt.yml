@@ -76,7 +76,7 @@ jobs:
 
     - name: Publish NuGet package
       shell: cmd
-      run: nuget push huycn.zxingcpp.winrt.nupkg ${{ secrets.NUGET_API_KEY }} -Source https://api.nuget.org/v3/index.json
+      run: nuget push huycn.zxingcpp.winrt.nupkg -ApiKey ${{ secrets.NUGET_API_KEY }} -Source https://api.nuget.org/v3/index.json
 
     - uses: actions/upload-artifact@v2
       with:
