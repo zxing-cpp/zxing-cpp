@@ -66,8 +66,11 @@ class BarcodeReader {
 
         return image.use {
             // This is a direct ByteBuffer which can let us access it from native directly without copying data
-            val yByteBuffer = it.planes[0].buffer
-            read(yByteBuffer = yByteBuffer, cropRect = it.cropRect, rotation = it.imageInfo.rotationDegrees)
+            val yPlane = it.planes[0]
+            read(yByteBuffer = yPlane.buffer,
+                rowStride = yPlane.rowStride,
+                cropRect = it.cropRect,
+                rotation = it.imageInfo.rotationDegrees)
         }
     }
 
@@ -90,6 +93,7 @@ class BarcodeReader {
 
     fun read(
         yByteBuffer: ByteBuffer,
+        rowStride: Int,
         options: Options = this.options,
         cropRect: Rect = Rect(),
         rotation: Int = 0,
@@ -97,7 +101,7 @@ class BarcodeReader {
         var result = Result()
         val status = with(options) {
             readYuvNative(yByteBuffer, cropRect.left, cropRect.top, cropRect.width(), cropRect.height(), rotation,
-                formats.joinToString(), tryHarder, tryRotate, result)
+                formats.joinToString(), tryHarder, tryRotate, result, rowStride)
         }
         return try {
             result.copy(format = Format.valueOf(status!!))
@@ -118,6 +122,7 @@ class BarcodeReader {
         yByteBuffer: ByteBuffer, left: Int, top: Int, width: Int, height: Int, rotation: Int,
         formats: String, tryHarder: Boolean, tryRotate: Boolean,
         result: Result,
+        rowStride: Int = width,
     ): String?
 
     init {

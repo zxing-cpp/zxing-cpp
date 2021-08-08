@@ -143,13 +143,14 @@ Java_com_example_zxingcpp_BarcodeReader_readYuvNative(JNIEnv *env, jobject thiz,
                                                       jobject y_byte_buffer, jint left, jint top,
                                                       jint width, jint height, jint rotation,
                                                       jstring formats, jboolean try_harder,
-                                                      jboolean try_rotate, jobject result) {
+                                                      jboolean try_rotate, jobject result,
+                                                      jint row_stride) {
 	using namespace ZXing;
 
 	try {
 		uint8_t* yBytes = static_cast<uint8_t *>(env->GetDirectBufferAddress(y_byte_buffer));
 
-		auto image = ImageView(yBytes, width, height, ImageFormat::Lum, width)
+		auto image = ImageView(yBytes, width, height, ImageFormat::Lum, row_stride)
 				.cropped(left, top, width, height)
 				.rotated(rotation);
 
