@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.14)
 include(FetchContent)
 FetchContent_Declare (fmtlib
         GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-        GIT_TAG 7.1.2)
+        GIT_TAG 8.0.1)
 FetchContent_MakeAvailable (fmtlib) # Adds fmt::fmt
 
 if (BUILD_READERS)
