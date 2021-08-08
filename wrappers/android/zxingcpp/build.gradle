@@ -11,8 +11,6 @@ android {
     defaultConfig {
         minSdkVersion 26
         targetSdkVersion 30
-        versionCode 1
-        versionName "1.0"
 
         ndk {
             // speed up build: compile only arm versions
@@ -51,9 +49,9 @@ android {
 dependencies {
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'androidx.core:core-ktx:1.3.2'
+    implementation 'androidx.core:core-ktx:1.6.0'
 
-    def camerax_version = "1.0.0-rc04"
+    def camerax_version = "1.0.1"
     implementation "androidx.camera:camera-core:${camerax_version}"
 
 }
