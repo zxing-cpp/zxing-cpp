@@ -95,7 +95,7 @@ static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, 
 		15;			// 15 rows spaced 1/32 apart is roughly the middle half of the image
 
 	PatternRow bars;
-	bars.reserve(128); // e.g. EAN-13 has 96 bars
+	bars.reserve(128); // e.g. EAN-13 has 59 bars/spaces
 
 	for (int i = 0; i < maxLines; i++) {
 
