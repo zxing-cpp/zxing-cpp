@@ -18,7 +18,7 @@ android {
         }
         externalNativeBuild {
             cmake {
-                arguments "-DCMAKE_BUILD_TYPE=Release"
+                arguments "-DCMAKE_BUILD_TYPE=RelWithDebInfo"
             }
         }
     }
