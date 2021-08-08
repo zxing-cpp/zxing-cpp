@@ -6,7 +6,7 @@ include(FetchContent)
 #set(FETCHCONTENT_QUIET Off)
 FetchContent_Declare (pybind11
     GIT_REPOSITORY https://github.com/pybind/pybind11.git
-    GIT_TAG v2.6.2)
+    GIT_TAG v2.7.1)
 FetchContent_MakeAvailable (pybind11)
 
 # check if we are called from the top-level ZXing project
