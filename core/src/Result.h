@@ -121,6 +121,16 @@ public:
 		return _readerInit;
 	}
 
+	/**
+	 * @brief How many lines have been detected with this code (applies only to 1D symbologies)
+	 */
+	int lineCount() const {
+		return _lineCount;
+	}
+	void incrementLineCount() {
+		++_lineCount;
+	}
+
 	bool operator==(const Result& o) const {
 		return text() == o.text() && format() == o.format();
 	}
@@ -135,6 +145,7 @@ private:
 	std::wstring _ecLevel;
 	StructuredAppendInfo _sai;
 	bool _readerInit = false;
+	int _lineCount = 0;
 };
 
 using Results = std::vector<Result>;

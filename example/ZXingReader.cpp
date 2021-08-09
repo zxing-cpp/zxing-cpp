@@ -193,6 +193,9 @@ int main(int argc, char* argv[])
 
 			printOptional("EC Level: ", ToUtf8(result.ecLevel()));
 
+			if (result.lineCount())
+				std::cout << "Lines:    " << result.lineCount() << "\n";
+
 			if ((BarcodeFormat::EAN13 | BarcodeFormat::EAN8 | BarcodeFormat::UPCA | BarcodeFormat::UPCE)
 					.testFlag(result.format())) {
 				printOptional("Country:  ", GTIN::LookupCountryIdentifier(ToUtf8(result.text())));

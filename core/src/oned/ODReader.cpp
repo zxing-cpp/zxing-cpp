@@ -65,6 +65,13 @@ Reader::Reader(const DecodeHints& hints) :
 
 Reader::~Reader() = default;
 
+static bool IsIntersecting(QuadrilateralI a, QuadrilateralI b)
+{
+	bool x = b.topRight().x < a.topLeft().x || b.topLeft().x > a.topRight().x;
+	bool y = b.bottomLeft().y < a.topLeft().y || b.topLeft().y > a.bottomLeft().y;
+	return !(x || y);
+}
+
 /**
 * We're going to examine rows from the middle outward, searching alternately above and below the
 * middle, and farther out each time. rowStep is the number of rows between each successive
@@ -129,6 +136,7 @@ static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, 
 				PatternView next(bars);
 				do {
 					Result result = readers[r]->decodePattern(rowNumber, next, decodingState[r]);
+					result.incrementLineCount();
 					if (result.isValid()) {
 						if (upsideDown) {
 							// update position (flip horizontally).
@@ -167,6 +175,7 @@ static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, 
 										points[3] = result.position()[3];
 									}
 									other.setPosition(points);
+									other.incrementLineCount();
 									// clear the result below, so we don't insert it again
 									result = Result(DecodeStatus::NotFound);
 								}
@@ -176,7 +185,7 @@ static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, 
 						if (result.isValid()) {
 							res.push_back(std::move(result));
 							if (maxSymbols && Size(res) == maxSymbols)
-								return res;
+								goto out;
 						}
 					}
 					// make sure we make progress and we start the next try on a bar
@@ -190,6 +199,17 @@ static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, 
 		if (isPure)
 			break;
 	}
+
+out:
+	// if symbols overlap, remove the one with a lower line count
+	for (auto a = res.begin(); a != res.end(); ++a)
+		for (auto b = std::next(a); b != res.end(); ++b)
+			if (IsIntersecting(a->position(), b->position()))
+				*(a->lineCount() < b->lineCount() ? a : b) = Result(DecodeStatus::NotFound);
+
+	//TODO: C++20 res.erase_if()
+	auto it = std::remove_if(res.begin(), res.end(), [](auto&& r) { return r.status() == DecodeStatus::NotFound; });
+	res.erase(it, res.end());
 
 	return res;
 }
