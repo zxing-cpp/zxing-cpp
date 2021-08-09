@@ -58,6 +58,58 @@ static jstring ThrowJavaException(JNIEnv* env, const char* message)
 	return nullptr;
 }
 
+jstring Read(JNIEnv *env, ImageView image, jstring formats, jboolean tryHarder, jboolean tryRotate,
+             jobject result)
+{
+	try {
+		auto hints = DecodeHints()
+						 .setFormats(BarcodeFormatsFromString(J2CString(env, formats)))
+						 .setTryHarder(tryHarder)
+						 .setTryRotate(tryRotate);
+
+//		return C2JString(env, ToString(DecodeStatus::NotFound));
+
+		auto startTime = std::chrono::high_resolution_clock::now();
+		auto res = ReadBarcode(image, hints);
+		auto duration = std::chrono::high_resolution_clock::now() - startTime;
+//		LOGD("time: %4d ms\n", (int)std::chrono::duration_cast<std::chrono::milliseconds>(duration).count());
+
+		jclass clResult = env->GetObjectClass(result);
+
+		jfieldID fidTime = env->GetFieldID(clResult, "time", "Ljava/lang/String;");
+		auto time = std::to_wstring(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count());
+		env->SetObjectField(result, fidTime, C2JString(env, time));
+
+		if (res.isValid()) {
+			jfieldID fidText = env->GetFieldID(clResult, "text", "Ljava/lang/String;");
+			env->SetObjectField(result, fidText, C2JString(env, res.text()));
+
+			return C2JString(env, JavaBarcodeFormatName(res.format()));
+		} else
+			return C2JString(env, ToString(res.status()));
+	} catch (const std::exception& e) {
+		return ThrowJavaException(env, e.what());
+	} catch (...) {
+		return ThrowJavaException(env, "Unknown exception");
+	}
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_example_zxingcpp_BarcodeReader_readYBuffer(
+	JNIEnv *env, jobject thiz, jobject yBuffer, jint rowStride,
+	jint left, jint top, jint width, jint height, jint rotation,
+	jstring formats, jboolean tryHarder, jboolean tryRotate,
+	jobject result)
+{
+	const uint8_t* pixels = static_cast<uint8_t *>(env->GetDirectBufferAddress(yBuffer));
+
+	auto image =
+		ImageView{pixels + top * rowStride + left, width, height, ImageFormat::Lum, rowStride}
+			.rotated(rotation);
+
+	return Read(env, image, formats, tryHarder, tryRotate, result);
+}
+
 struct LockedPixels
 {
 	JNIEnv* env;
@@ -78,61 +130,30 @@ struct LockedPixels
 };
 
 extern "C" JNIEXPORT jstring JNICALL
-Java_com_example_zxingcpp_BarcodeReader_read(
-		JNIEnv* env, jobject thiz, jobject bitmap,
-		jint left, jint top, jint width, jint height, jint rotation,
-		jstring formats, jboolean tryHarder, jboolean tryRotate,
-		jobject result)
+Java_com_example_zxingcpp_BarcodeReader_readBitmap(
+	JNIEnv* env, jobject thiz, jobject bitmap,
+	jint left, jint top, jint width, jint height, jint rotation,
+	jstring formats, jboolean tryHarder, jboolean tryRotate,
+	jobject result)
 {
-	using namespace ZXing;
+	AndroidBitmapInfo bmInfo;
+	AndroidBitmap_getInfo(env, bitmap, &bmInfo);
 
-	try {
-		AndroidBitmapInfo bmInfo;
-		AndroidBitmap_getInfo(env, bitmap, &bmInfo);
-
-		ImageFormat fmt = ImageFormat::None;
-		switch (bmInfo.format) {
-		case ANDROID_BITMAP_FORMAT_A_8: fmt = ImageFormat::Lum; break;
-		case ANDROID_BITMAP_FORMAT_RGBA_8888: fmt = ImageFormat::RGBX; break;
-		default: return ThrowJavaException(env, "Unsupported format");
-		}
-
-		auto pixels = LockedPixels(env, bitmap);
-
-		if (!pixels)
-			return ThrowJavaException(env, "Failed to lock/read AndroidBitmap data");
-
-		auto image = ImageView{pixels, (int)bmInfo.width, (int)bmInfo.height, fmt, (int)bmInfo.stride}
-						 .cropped(left, top, width, height)
-						 .rotated(rotation);
-		auto hints = DecodeHints()
-						 .setFormats(BarcodeFormatsFromString(J2CString(env, formats)))
-						 .setTryHarder(tryHarder)
-						 .setTryRotate(tryRotate);
-
-//		return C2JString(env, ToString(DecodeStatus::NotFound));
-
-		auto startTime = std::chrono::high_resolution_clock::now();
-		auto res = ReadBarcode(image, hints);
-		auto duration = std::chrono::high_resolution_clock::now() - startTime;
-//		LOGD("time: %4d ms\n", (int)std::chrono::duration_cast<std::chrono::milliseconds>(duration).count());
-
-		if (res.isValid()) {
-			jclass clResult = env->GetObjectClass(result);
-
-			jfieldID fidTime = env->GetFieldID(clResult, "time", "Ljava/lang/String;");
-			auto time = std::to_wstring(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count());
-			env->SetObjectField(result, fidTime, C2JString(env, time));
-
-			jfieldID fidText = env->GetFieldID(clResult, "text", "Ljava/lang/String;");
-			env->SetObjectField(result, fidText, C2JString(env, res.text()));
-
-			return C2JString(env, JavaBarcodeFormatName(res.format()));
-		} else
-			return C2JString(env, ToString(res.status()));
-	} catch (const std::exception& e) {
-		return ThrowJavaException(env, e.what());
-	} catch (...) {
-		return ThrowJavaException(env, "Unknown exception");
+	ImageFormat fmt = ImageFormat::None;
+	switch (bmInfo.format) {
+	case ANDROID_BITMAP_FORMAT_A_8: fmt = ImageFormat::Lum; break;
+	case ANDROID_BITMAP_FORMAT_RGBA_8888: fmt = ImageFormat::RGBX; break;
+	default: return ThrowJavaException(env, "Unsupported format");
 	}
+
+	auto pixels = LockedPixels(env, bitmap);
+
+	if (!pixels)
+		return ThrowJavaException(env, "Failed to lock/Read AndroidBitmap data");
+
+	auto image = ImageView{pixels, (int)bmInfo.width, (int)bmInfo.height, fmt, (int)bmInfo.stride}
+					 .cropped(left, top, width, height)
+					 .rotated(rotation);
+
+	return Read(env, image, formats, tryHarder, tryRotate, result);
 }

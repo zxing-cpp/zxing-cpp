@@ -21,6 +21,7 @@ import android.graphics.ImageFormat
 import android.graphics.Rect
 import androidx.camera.core.ImageProxy
 import java.lang.RuntimeException
+import java.nio.ByteBuffer
 
 class BarcodeReader {
 
@@ -43,18 +44,35 @@ class BarcodeReader {
         val time: String? = null, // for development/debug purposes only
     )
 
-    private lateinit var bitmapBuffer: Bitmap
     var options : Options = Options()
 
     fun read(image: ImageProxy): Result? {
-        if (!::bitmapBuffer.isInitialized || bitmapBuffer.width != image.width || bitmapBuffer.height != image.height) {
-            if (image.format != ImageFormat.YUV_420_888) {
-                error("invalid image format")
-            }
-            bitmapBuffer = Bitmap.createBitmap(image.width, image.height, Bitmap.Config.ALPHA_8)
+        val supportedYUVFormats = arrayOf(ImageFormat.YUV_420_888, ImageFormat.YUV_422_888, ImageFormat.YUV_444_888)
+        if (image.format !in supportedYUVFormats) {
+            error("invalid image format")
         }
-        image.use { bitmapBuffer.copyPixelsFromBuffer(image.planes[0].buffer) }
-        return read(bitmapBuffer, image.cropRect, image.imageInfo.rotationDegrees)
+
+        var result = Result()
+        val status = image.use {
+            readYBuffer(
+                it.planes[0].buffer,
+                it.planes[0].rowStride,
+                it.cropRect.left,
+                it.cropRect.top,
+                it.cropRect.width(),
+                it.cropRect.height(),
+                it.imageInfo.rotationDegrees,
+                options.formats.joinToString(),
+                options.tryHarder,
+                options.tryRotate,
+                result
+            )
+        }
+        return try {
+            result.copy(format = Format.valueOf(status!!))
+        } catch (e: Throwable) {
+            if (status == "NotFound") null else throw RuntimeException(status!!)
+        }
     }
 
     fun read(bitmap: Bitmap, cropRect: Rect = Rect(), rotation: Int = 0): Result? {
@@ -64,8 +82,10 @@ class BarcodeReader {
     fun read(bitmap: Bitmap, options: Options, cropRect: Rect = Rect(), rotation: Int = 0): Result? {
         var result = Result()
         val status = with(options) {
-            read(bitmap, cropRect.left, cropRect.top, cropRect.width(), cropRect.height(), rotation,
-                    formats.joinToString(), tryHarder, tryRotate, result)
+            readBitmap(
+                bitmap, cropRect.left, cropRect.top, cropRect.width(), cropRect.height(), rotation,
+                formats.joinToString(), tryHarder, tryRotate, result
+            )
         }
         return try {
             result.copy(format = Format.valueOf(status!!))
@@ -75,7 +95,13 @@ class BarcodeReader {
     }
 
     // setting the format enum from inside the JNI code is a hassle -> use returned String instead
-    private external fun read(
+    private external fun readYBuffer(
+        yBuffer: ByteBuffer, rowStride: Int, left: Int, top: Int, width: Int, height: Int, rotation: Int,
+        formats: String, tryHarder: Boolean, tryRotate: Boolean,
+        result: Result,
+    ): String?
+
+    private external fun readBitmap(
         bitmap: Bitmap, left: Int, top: Int, width: Int, height: Int, rotation: Int,
         formats: String, tryHarder: Boolean, tryRotate: Boolean,
         result: Result,
