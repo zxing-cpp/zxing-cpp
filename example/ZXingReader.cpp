@@ -42,7 +42,7 @@ static void PrintUsage(const char* exePath)
 			  << "    -norotate  Don't try rotated image during detection (faster)\n"
 			  << "    -format    Only detect given format(s) (faster)\n"
 			  << "    -ispure    Assume the image contains only a 'pure'/perfect code (faster)\n"
-			  << "    -1         Print only file name, text and status on one line per file\n"
+			  << "    -1         Print only file name, text and status on one line per file/barcode\n"
 			  << "    -escape    Escape non-graphical characters in angle brackets (ignored for -1 option, which always escapes)\n"
 			  << "    -pngout    Write a copy of the input image with barcodes outlined by a red line\n"
 			  << "\n"
@@ -149,7 +149,11 @@ int main(int argc, char* argv[])
 		}
 
 		ImageView image{buffer.get(), width, height, ImageFormat::RGBX};
-		const auto& results = ReadBarcodes(image, hints);
+		auto results = ReadBarcodes(image, hints);
+
+		// if we did not find anything, insert a dummy to produce some output for each file
+		if (results.empty())
+			results.emplace_back(DecodeStatus::NotFound);
 
 		for (auto&& result : results) {
 
