@@ -54,7 +54,7 @@ BoundingBox::calculateMinMaxValues()
 	}
 	else if (_topRight == nullptr) {
 		_topRight = ResultPoint(static_cast<float>(_imgWidth - 1), _topLeft.value().y());
-		_bottomRight = ResultPoint(static_cast<float>(_imgHeight - 1), _bottomLeft.value().y());
+		_bottomRight = ResultPoint(static_cast<float>(_imgWidth - 1), _bottomLeft.value().y());
 	}
 
 	_minX = static_cast<int>(std::min(_topLeft.value().x(), _bottomLeft.value().x()));
