@@ -218,8 +218,7 @@ static const std::array<std::array<int, 929>, 3> CODEWORD_TABLE = {
 };
 
 static const float PREFERRED_RATIO = 3.0f;
-static const float DEFAULT_MODULE_WIDTH = 0.357f; //1px in mm
-static const float HEIGHT = 2.0f; //mm
+static const float MODULE_RATIO = 0.25f; // keep in sync with Writer::encode()
 
 /**
 * PDF417 error correction code following the algorithm described in ISO/IEC 15438:2001(E) in
@@ -476,7 +475,7 @@ static void DetermineDimensions(int minCols, int maxCols, int minRows, int maxRo
 			continue;
 		}
 
-		float newRatio = ((17 * cols + 69) * DEFAULT_MODULE_WIDTH) / (rows * HEIGHT);
+		float newRatio = ((17 * cols + 69) / rows) * MODULE_RATIO;
 
 		// ignore if previous ratio is closer to preferred ratio
 		if (haveDimension && std::abs(newRatio - PREFERRED_RATIO) > std::abs(ratio - PREFERRED_RATIO)) {
