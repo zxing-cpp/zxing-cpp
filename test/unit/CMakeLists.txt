@@ -1,14 +1,24 @@
 cmake_minimum_required(VERSION 3.14)
 
-# Download and unpack googletest at configure time
-include(FetchContent)
-#set(FETCHCONTENT_QUIET Off)
-FetchContent_Declare (googletest
-        GIT_REPOSITORY https://github.com/google/googletest.git
-        GIT_TAG v1.10.x)
-# Prevent overriding the parent project's compiler/linker settings on Windows
-set (gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable (googletest)
+if (BUILD_SYSTEM_DEPS STREQUAL "AUTO")
+    find_package (GTest)
+    find_package (GMock)
+elseif (BUILD_SYSTEM_DEPS STREQUAL "ALWAYS")
+    find_package (GTest REQUIRED)
+    find_package (GMock REQUIRED)
+endif()
+
+if (NOT GTest_FOUND OR NOT GMock_FOUND)
+    # Download and unpack googletest at configure time
+    include(FetchContent)
+    #set(FETCHCONTENT_QUIET Off)
+    FetchContent_Declare (googletest
+            GIT_REPOSITORY https://github.com/google/googletest.git
+            GIT_TAG v1.10.x)
+    # Prevent overriding the parent project's compiler/linker settings on Windows
+    set (gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable (googletest)
+endif()
 
 # don't install gtest stuff on "make install"
 set (INSTALL_GTEST OFF CACHE BOOL "" FORCE)
