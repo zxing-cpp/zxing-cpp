@@ -85,7 +85,7 @@ Writer::encode(const std::wstring& contents, int width, int height) const
 	int ecLevel = _ecLevel >= 0 ? _ecLevel : DEFAULT_ERROR_CORRECTION_LEVEL;
 
 	BarcodeMatrix resultMatrix = _encoder->generateBarcodeLogic(contents, ecLevel);
-	int aspectRatio = 4;
+	int aspectRatio = 4; // keep in sync with MODULE_RATIO in PDFEncoder.cpp
 	std::vector<std::vector<bool>> originalScale;
 	resultMatrix.getScaledMatrix(1, aspectRatio, originalScale);
 	bool rotated = false;
