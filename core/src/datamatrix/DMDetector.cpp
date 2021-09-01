@@ -580,7 +580,7 @@ public:
 				// make sure we are making progress even when back-projecting:
 				// consider a 90deg corner, rotated 45deg. we step away perpendicular from the line and get
 				// back projected where we left off the line.
-				if (distance(np, line.project(line.points().back())) < 1)
+				while (distance(np, line.project(line.points().back())) < 1)
 					np = np + d;
 				p = centered(np);
 			}
