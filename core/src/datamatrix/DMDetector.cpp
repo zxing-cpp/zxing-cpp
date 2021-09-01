@@ -580,6 +580,9 @@ public:
 				// make sure we are making progress even when back-projecting:
 				// consider a 90deg corner, rotated 45deg. we step away perpendicular from the line and get
 				// back projected where we left off the line.
+				// The 'while' instead of 'if' was introduced to fix the issue with #245. It turns out that
+				// np can actually be behind the projection of the last line point and we need 2 steps in d
+				// to prevent a dead lock. see #245.png
 				while (distance(np, line.project(line.points().back())) < 1)
 					np = np + d;
 				p = centered(np);
