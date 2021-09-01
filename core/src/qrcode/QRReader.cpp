@@ -21,6 +21,7 @@
 #include "DecodeHints.h"
 #include "DecoderResult.h"
 #include "DetectorResult.h"
+#include "LogMatrix.h"
 #include "QRDecoder.h"
 #include "QRDetector.h"
 #include "Result.h"
@@ -60,6 +61,10 @@ Results Reader::decode(const BinaryBitmap& image, int maxSymbols) const
 	auto binImg = image.getBitMatrix();
 	if (binImg == nullptr)
 		return {};
+
+#ifdef PRINT_DEBUG
+	LogMatrixWriter lmw(log, *binImg, 5, "qr-log.pnm");
+#endif
 
 	FinderPatternSets allFPSets = FindFinderPatternSets(*binImg, _tryHarder);
 	std::vector<ConcentricPattern> usedFPs;
