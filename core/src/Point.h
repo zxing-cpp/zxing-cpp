@@ -149,7 +149,7 @@ inline PointF centered(PointF p)
 template <typename T>
 PointF normalized(PointT<T> d)
 {
-	return PointF(d) / length(d);
+	return PointF(d) / length(PointF(d));
 }
 
 template <typename T>
