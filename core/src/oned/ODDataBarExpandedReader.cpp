@@ -281,7 +281,8 @@ static bool FindValidSequence(const PairMap& all, ITER begin, ITER end, Pairs& s
 		constexpr int N = 2;
 		// TODO c++20 ranges::views::take()
 		auto& pairs = ppairs->second;
-		for (auto p = pairs.begin(), pend = std::min(pairs.end(), pairs.begin() + N); p != pend; ++p) {
+		int n = 0;
+		for (auto p = pairs.begin(), pend = pairs.end(); p != pend && n < N; ++p, ++n) {
 			// skip p if it is a half-pair but not the last one in the sequence
 			if (!p->right && std::next(begin) != end)
 				continue;
