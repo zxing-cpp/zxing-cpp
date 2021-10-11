@@ -25,7 +25,7 @@ if (MSVC)
     )
 else()
     set (ZXING_CORE_LOCAL_DEFINES ${ZXING_CORE_LOCAL_DEFINES}
-        -Wall -Wextra -Wno-missing-braces -Werror=undef)
+        -Wall -Wextra -Wno-missing-braces -Werror=undef -Werror=return-type)
 endif()
 
 
