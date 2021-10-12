@@ -88,6 +88,7 @@ Result ReadBarcode(const ImageView& _iv, const DecodeHints& hints)
 	case Binarizer::GlobalHistogram: return MultiFormatReader(hints).read(GlobalHistogramBinarizer(iv));
 	case Binarizer::LocalAverage: return MultiFormatReader(hints).read(HybridBinarizer(iv));
 	}
+    return Result(DecodeStatus::FormatError);
 }
 
 Results ReadBarcodes(const ImageView& _iv, const DecodeHints& hints)
@@ -101,6 +102,7 @@ Results ReadBarcodes(const ImageView& _iv, const DecodeHints& hints)
 	case Binarizer::GlobalHistogram: return MultiFormatReader(hints).readMultiple(GlobalHistogramBinarizer(iv));
 	case Binarizer::LocalAverage: return MultiFormatReader(hints).readMultiple(HybridBinarizer(iv));
 	}
+    return {};
 }
 
 } // ZXing
