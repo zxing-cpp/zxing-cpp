@@ -398,7 +398,7 @@ static DetectorResult DetectOld(const BitMatrix& image)
 			dimensionCorrected++;
 		}
 
-		dimensionTop = dimensionRight = dimension;
+		dimensionTop = dimensionRight = dimensionCorrected;
 	}
 
 	return SampleGrid(image, *topLeft, *bottomLeft, *bottomRight, correctedTopRight, dimensionTop, dimensionRight);
