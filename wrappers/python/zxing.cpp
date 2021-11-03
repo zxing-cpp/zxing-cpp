@@ -103,8 +103,8 @@ Image write_barcode(BarcodeFormat format, std::string text, int width, int heigh
 
 	auto result = Image({bitmap.height(), bitmap.width()});
 	auto r = result.mutable_unchecked<2>();
-	for (ssize_t y = 0; y < r.shape(0); y++)
-		for (ssize_t x = 0; x < r.shape(1); x++)
+	for (py::ssize_t y = 0; y < r.shape(0); y++)
+		for (py::ssize_t x = 0; x < r.shape(1); x++)
 			r(y, x) = bitmap.get(narrow<int>(x), narrow<int>(y)) ? 0 : 255;
 	return result;
 }
