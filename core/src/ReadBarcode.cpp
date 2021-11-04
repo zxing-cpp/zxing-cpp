@@ -63,6 +63,9 @@ static LumImage ExtractLum(const ImageView& iv, P projection)
 
 ImageView SetupLumImageView(const ImageView& iv, LumImage& lum, const DecodeHints& hints)
 {
+	if (iv.format() == ImageFormat::None)
+		throw std::invalid_argument("Invalid image format");
+
 	if (hints.binarizer() == Binarizer::GlobalHistogram || hints.binarizer() == Binarizer::LocalAverage) {
 		if (iv.format() != ImageFormat::Lum) {
 			lum = ExtractLum(iv, [r = RedIndex(iv.format()), g = GreenIndex(iv.format()), b = BlueIndex(iv.format())](
