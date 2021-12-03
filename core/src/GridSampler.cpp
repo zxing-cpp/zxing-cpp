@@ -35,11 +35,19 @@ DetectorResult SampleGrid(const BitMatrix& image, int width, int height, const P
 	LogMatrix log;
 	LogMatrixWriter lmw(log, image, 5, "grid.pnm");
 #endif
-	auto isInside = [&](PointI p) { return image.isIn(mod2Pix(centered(p))); };
-
-	if (width <= 0 || height <= 0 || !mod2Pix.isValid() || !isInside({0, 0}) || !isInside({width - 1, 0}) ||
-		!isInside({width - 1, height - 1}) || !isInside({0, height - 1}))
+	if (width <= 0 || height <= 0 || !mod2Pix.isValid())
 		return {};
+
+	// To deal with remaining examples (see #251 and #267) of "numercial instabilities" that have not been
+	// prevented with the Quadrilateral.h:IsConvex() check, we check for all boundary points of the grid to
+	// be inside.
+	auto isInside = [&](PointI p) { return image.isIn(mod2Pix(centered(p))); };
+	for (int y = 0; y < height; ++y)
+		if (!isInside({0, y}) || !isInside({width - 1, y}))
+			return {};
+	for (int x = 1; x < width - 1; ++x)
+		if (!isInside({x, 0}) || !isInside({x, height - 1}))
+			return {};
 
 	BitMatrix res(width, height);
 	for (int y = 0; y < height; ++y)
