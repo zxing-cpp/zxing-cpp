@@ -1,6 +1,6 @@
 diff -Naur upstream/stb_image.h zxing/stb_image.h
---- upstream/stb_image.h	2021-12-08 18:18:07.485461782 -0500
-+++ zxing/stb_image.h	2021-12-08 18:18:29.596689004 -0500
+--- upstream/stb_image.h	2021-12-08 18:22:56.724466161 -0500
++++ zxing/stb_image.h	2021-12-08 18:23:15.084657043 -0500
 @@ -1725,7 +1725,11 @@
  
  static stbi_uc stbi__compute_y(int r, int g, int b)
