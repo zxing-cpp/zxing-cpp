@@ -136,12 +136,12 @@ PYBIND11_MODULE(zxingcpp, m)
 		.value("TwoDCodes", BarcodeFormat::TwoDCodes)
 		.export_values()
 		// see https://github.com/pybind/pybind11/issues/2221
-		.def("__or__", [](BarcodeFormat f1, BarcodeFormat f2){ return f1 | f2; })
-		.def("__or__", [](BarcodeFormats fs, BarcodeFormat f){ return fs | f; });
+		.def("__or__", [](BarcodeFormat f1, BarcodeFormat f2){ return f1 | f2; });
 	py::class_<BarcodeFormats>(m, "BarcodeFormats")
 		.def("__repr__", py::overload_cast<BarcodeFormats>(&ToString))
 		.def("__str__", py::overload_cast<BarcodeFormats>(&ToString))
 		.def("__eq__", [](BarcodeFormats f1, BarcodeFormats f2){ return f1 == f2; })
+		.def("__or__", [](BarcodeFormats fs, BarcodeFormat f){ return fs | f; })
 		.def(py::init<BarcodeFormat>());
 	py::implicitly_convertible<BarcodeFormat, BarcodeFormats>();
 	py::enum_<Binarizer>(m, "Binarizer", "Enumeration of binarizers used before decoding images")
