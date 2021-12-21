@@ -113,6 +113,10 @@ Image write_barcode(BarcodeFormat format, std::string text, int width, int heigh
 PYBIND11_MODULE(zxingcpp, m)
 {
 	m.doc() = "python bindings for zxing-cpp";
+
+	// forward declaration of BarcodeFormats to fix BarcodeFormat function header typings
+	py::class_<BarcodeFormats> pyBarcodeFormats(m, "BarcodeFormats");
+
 	py::enum_<BarcodeFormat>(m, "BarcodeFormat", py::arithmetic{}, "Enumeration of zxing supported barcode formats")
 		.value("Aztec", BarcodeFormat::Aztec)
 		.value("Codabar", BarcodeFormat::Codabar)
@@ -137,7 +141,7 @@ PYBIND11_MODULE(zxingcpp, m)
 		.export_values()
 		// see https://github.com/pybind/pybind11/issues/2221
 		.def("__or__", [](BarcodeFormat f1, BarcodeFormat f2){ return f1 | f2; });
-	py::class_<BarcodeFormats>(m, "BarcodeFormats")
+	pyBarcodeFormats
 		.def("__repr__", py::overload_cast<BarcodeFormats>(&ToString))
 		.def("__str__", py::overload_cast<BarcodeFormats>(&ToString))
 		.def("__eq__", [](BarcodeFormats f1, BarcodeFormats f2){ return f1 == f2; })
