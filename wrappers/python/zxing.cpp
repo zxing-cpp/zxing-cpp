@@ -115,6 +115,7 @@ PYBIND11_MODULE(zxingcpp, m)
 	m.doc() = "python bindings for zxing-cpp";
 
 	// forward declaration of BarcodeFormats to fix BarcodeFormat function header typings
+	// see https://github.com/nu-book/zxing-cpp/pull/271
 	py::class_<BarcodeFormats> pyBarcodeFormats(m, "BarcodeFormats");
 
 	py::enum_<BarcodeFormat>(m, "BarcodeFormat", py::arithmetic{}, "Enumeration of zxing supported barcode formats")
