@@ -178,6 +178,7 @@ CharacterSet InitEncoding(const std::string& name, CharacterSet encodingDefault)
 	return encodingDefault;
 }
 
+#ifdef ZXING_BUILD_READERS
 CharacterSet OnChangeAppendReset(const int eci, std::wstring& encoded, std::string& data, CharacterSet encoding)
 {
 	// Character set ECIs only
@@ -193,5 +194,6 @@ CharacterSet OnChangeAppendReset(const int eci, std::wstring& encoded, std::stri
 
 	return encoding;
 }
+#endif
 
 } // namespace ZXing::CharacterSetECI
