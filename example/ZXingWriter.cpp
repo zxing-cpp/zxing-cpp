@@ -51,7 +51,7 @@ static bool ParseSize(std::string str, int* width, int* height)
 	std::transform(str.begin(), str.end(), str.begin(), [](char c) { return (char)std::tolower(c); });
 	auto xPos = str.find('x');
 	if (xPos != std::string::npos) {
-		*width = std::stoi(str.substr(0, xPos));
+		*width  = std::stoi(str.substr(0, xPos));
 		*height = std::stoi(str.substr(xPos + 1));
 		return true;
 	}
@@ -70,39 +70,32 @@ static bool ParseOptions(int argc, char* argv[], int* width, int* height, int* m
 				std::cerr << "Invalid size specification: " << argv[i] << std::endl;
 				return false;
 			}
-		}
-		else if (strcmp(argv[i], "-margin") == 0) {
+		} else if (strcmp(argv[i], "-margin") == 0) {
 			if (++i == argc)
 				return false;
 			*margin = std::stoi(argv[i]);
-		}
-		else if (strcmp(argv[i], "-ecc") == 0) {
+		} else if (strcmp(argv[i], "-ecc") == 0) {
 			if (++i == argc)
 				return false;
 			*eccLevel = std::stoi(argv[i]);
-		}
-		else if (strcmp(argv[i], "-encoding") == 0) {
+		} else if (strcmp(argv[i], "-encoding") == 0) {
 			if (++i == argc)
 				return false;
 			*encoding = CharacterSetECI::CharsetFromName(argv[i]);
-		}
-		else if (nonOptArgCount == 0) {
+		} else if (nonOptArgCount == 0) {
 			*format = BarcodeFormatFromString(argv[i]);
 			if (*format == BarcodeFormat::None) {
 				std::cerr << "Unrecognized format: " << argv[i] << std::endl;
 				return false;
 			}
 			++nonOptArgCount;
-		}
-		else if (nonOptArgCount == 1) {
+		} else if (nonOptArgCount == 1) {
 			*text = argv[i];
 			++nonOptArgCount;
-		}
-		else if (nonOptArgCount == 2) {
+		} else if (nonOptArgCount == 2) {
 			*filePath = argv[i];
 			++nonOptArgCount;
-		}
-		else {
+		} else {
 			return false;
 		}
 	}
@@ -142,8 +135,7 @@ int main(int argc, char* argv[])
 		int success = 0;
 		if (ext == "" || ext == "png") {
 			success = stbi_write_png(filePath.c_str(), bitmap.width(), bitmap.height(), 1, bitmap.data(), 0);
-		}
-		else if (ext == "jpg" || ext == "jpeg") {
+		} else if (ext == "jpg" || ext == "jpeg") {
 			success = stbi_write_jpg(filePath.c_str(), bitmap.width(), bitmap.height(), 1, bitmap.data(), 0);
 		}
 
@@ -151,8 +143,7 @@ int main(int argc, char* argv[])
 			std::cerr << "Failed to write image: " << filePath << std::endl;
 			return -1;
 		}
-	}
-	catch (const std::exception& e) {
+	} catch (const std::exception& e) {
 		std::cerr << e.what() << std::endl;
 		return -1;
 	}

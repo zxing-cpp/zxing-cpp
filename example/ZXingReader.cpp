@@ -59,15 +59,12 @@ static bool ParseOptions(int argc, char* argv[], DecodeHints& hints, bool& oneLi
 	for (int i = 1; i < argc; ++i) {
 		if (strcmp(argv[i], "-fast") == 0) {
 			hints.setTryHarder(false);
-		}
-		else if (strcmp(argv[i], "-norotate") == 0) {
+		} else if (strcmp(argv[i], "-norotate") == 0) {
 			hints.setTryRotate(false);
-		}
-		else if (strcmp(argv[i], "-ispure") == 0) {
+		} else if (strcmp(argv[i], "-ispure") == 0) {
 			hints.setIsPure(true);
 			hints.setBinarizer(Binarizer::FixedThreshold);
-		}
-		else if (strcmp(argv[i], "-format") == 0) {
+		} else if (strcmp(argv[i], "-format") == 0) {
 			if (++i == argc)
 				return false;
 			try {
@@ -76,19 +73,15 @@ static bool ParseOptions(int argc, char* argv[], DecodeHints& hints, bool& oneLi
 				std::cerr << e.what() << "\n";
 				return false;
 			}
-		}
-		else if (strcmp(argv[i], "-1") == 0) {
+		} else if (strcmp(argv[i], "-1") == 0) {
 			oneLine = true;
-		}
-		else if (strcmp(argv[i], "-escape") == 0) {
+		} else if (strcmp(argv[i], "-escape") == 0) {
 			angleEscape = true;
-		}
-		else if (strcmp(argv[i], "-pngout") == 0) {
+		} else if (strcmp(argv[i], "-pngout") == 0) {
 			if (++i == argc)
 				return false;
 			outPath = argv[i];
-		}
-		else {
+		} else {
 			filePaths.push_back(argv[i]);
 		}
 	}
@@ -96,7 +89,8 @@ static bool ParseOptions(int argc, char* argv[], DecodeHints& hints, bool& oneLi
 	return !filePaths.empty();
 }
 
-std::ostream& operator<<(std::ostream& os, const Position& points) {
+std::ostream& operator<<(std::ostream& os, const Position& points)
+{
 	for (const auto& p : points)
 		os << p.x << "x" << p.y << " ";
 	return os;
@@ -114,8 +108,8 @@ void drawLine(const ImageView& image, PointI a, PointI b)
 
 void drawRect(const ImageView& image, const Position& pos)
 {
-	for(int i=0;i<4;++i)
-		drawLine(image, pos[i], pos[(i+1)%4]);
+	for (int i = 0; i < 4; ++i)
+		drawLine(image, pos[i], pos[(i + 1) % 4]);
 }
 
 int main(int argc, char* argv[])
