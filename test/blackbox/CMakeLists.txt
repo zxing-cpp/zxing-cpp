@@ -24,10 +24,8 @@ if (BUILD_READERS)
         ZXFilesystem.h
     )
 
-    target_include_directories (ReaderTest PRIVATE ../../thirdparty/stb)
-
     target_link_libraries(ReaderTest
-        ZXing::ZXing fmt::fmt
+        ZXing::ZXing fmt::fmt stb::stb
         $<$<AND:$<CXX_COMPILER_ID:GNU>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,9.0>>:stdc++fs>
     )
 
@@ -43,9 +41,7 @@ endif()
 if (BUILD_WRITERS)
     add_executable (WriterTest TestWriterMain.cpp)
 
-    target_include_directories (WriterTest PRIVATE ../../thirdparty/stb)
-
-    target_link_libraries (WriterTest ZXing::ZXing)
+    target_link_libraries (WriterTest ZXing::ZXing stb::stb)
 
     add_test(NAME WriterTest COMMAND WriterTest)
 endif()

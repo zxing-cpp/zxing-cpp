@@ -4,9 +4,7 @@ set (CMAKE_CXX_STANDARD 11)
 if (BUILD_READERS)
     add_executable (ZXingReader ZXingReader.cpp)
 
-    target_include_directories (ZXingReader PRIVATE ../thirdparty/stb)
-
-    target_link_libraries (ZXingReader ZXing::ZXing)
+    target_link_libraries (ZXingReader ZXing::ZXing stb::stb)
 
     add_test(NAME ZXingReaderTest COMMAND ZXingReader -fast -format qrcode "${CMAKE_SOURCE_DIR}/test/samples/qrcode-1/1.png")
 endif()
@@ -14,9 +12,7 @@ endif()
 if (BUILD_WRITERS)
     add_executable (ZXingWriter ZXingWriter.cpp)
 
-    target_include_directories (ZXingWriter PRIVATE ../thirdparty/stb)
-
-    target_link_libraries (ZXingWriter ZXing::ZXing)
+    target_link_libraries (ZXingWriter ZXing::ZXing stb::stb)
 
     add_test(NAME ZXingWriterTest COMMAND ZXingWriter qrcode "I have the best words." test.png)
 endif()

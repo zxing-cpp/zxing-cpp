@@ -61,6 +61,24 @@ if(NOT BUILD_SYSTEM_DEPS IN_LIST BUILD_SYSTEM_DEPS_LIST)
     message(FATAL_ERROR "BUILD_SYSTEM_DEPS must be one of ${BUILD_SYSTEM_DEPS_LIST}")
 endif()
 
+if (BUILD_EXAMPLES OR BUILD_BLACKBOX_TESTS)
+
+    if (BUILD_SYSTEM_DEPS STREQUAL "AUTO")
+        find_package(PkgConfig)
+        pkg_check_modules (STB IMPORTED_TARGET stb)
+    elseif (BUILD_SYSTEM_DEPS STREQUAL "ALWAYS")
+        find_package(PkgConfig REQUIRED)
+        pkg_check_modules (STB REQUIRED IMPORTED_TARGET stb)
+    endif()
+
+    if (NOT STB_FOUND)
+        include (${CMAKE_SOURCE_DIR}/FetchSTB.cmake)
+    else()
+        add_library(stb::stb ALIAS PkgConfig::STB)
+    endif()
+
+endif()
+
 add_subdirectory (core)
 
 enable_testing()
