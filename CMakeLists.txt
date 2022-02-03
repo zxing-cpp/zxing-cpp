@@ -45,6 +45,10 @@ endif()
 set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_EXTENSIONS OFF)
 
+if (NOT (BUILD_READERS OR BUILD_WRITERS))
+    message(FATAL_ERROR "At least one of BUILD_READERS/BUILD_WRITERS must be enabled.")
+endif()
+
 if (BUILD_UNIT_TESTS AND (NOT BUILD_WRITERS OR NOT BUILD_READERS))
     message("Note: To build with unit tests, the library will be build with READERS and WRITERS.")
     set (BUILD_WRITERS ON)
