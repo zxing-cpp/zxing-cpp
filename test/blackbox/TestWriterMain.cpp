@@ -24,7 +24,7 @@ using namespace ZXing;
 using namespace std::literals;
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
+#include <stb_image_write.h>
 
 void savePng(const BitMatrix& matrix, BarcodeFormat format)
 {

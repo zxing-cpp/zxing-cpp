@@ -45,6 +45,10 @@ endif()
 set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_EXTENSIONS OFF)
 
+if (NOT (BUILD_READERS OR BUILD_WRITERS))
+    message(FATAL_ERROR "At least one of BUILD_READERS/BUILD_WRITERS must be enabled.")
+endif()
+
 if (BUILD_UNIT_TESTS AND (NOT BUILD_WRITERS OR NOT BUILD_READERS))
     message("Note: To build with unit tests, the library will be build with READERS and WRITERS.")
     set (BUILD_WRITERS ON)
@@ -55,6 +59,24 @@ set(BUILD_SYSTEM_DEPS_LIST AUTO ALWAYS NEVER)
 set_property(CACHE BUILD_SYSTEM_DEPS PROPERTY STRINGS ${BUILD_SYSTEM_DEPS_LIST})
 if(NOT BUILD_SYSTEM_DEPS IN_LIST BUILD_SYSTEM_DEPS_LIST)
     message(FATAL_ERROR "BUILD_SYSTEM_DEPS must be one of ${BUILD_SYSTEM_DEPS_LIST}")
+endif()
+
+if (BUILD_EXAMPLES OR BUILD_BLACKBOX_TESTS)
+
+    if (BUILD_SYSTEM_DEPS STREQUAL "AUTO")
+        find_package(PkgConfig)
+        pkg_check_modules (STB IMPORTED_TARGET stb)
+    elseif (BUILD_SYSTEM_DEPS STREQUAL "ALWAYS")
+        find_package(PkgConfig REQUIRED)
+        pkg_check_modules (STB REQUIRED IMPORTED_TARGET stb)
+    endif()
+
+    if (NOT STB_FOUND)
+        include (${CMAKE_SOURCE_DIR}/FetchSTB.cmake)
+    else()
+        add_library(stb::stb ALIAS PkgConfig::STB)
+    endif()
+
 endif()
 
 add_subdirectory (core)
