@@ -255,7 +255,7 @@ DetectorResult SampleAtFinderPatternSet(const BitMatrix& image, const FinderPatt
 	};
 
 	// Everything except version 1 (21 modules) has an alignment pattern. Estimate the center of that by intersecting
-	// line extensions of the 1 module wide sqare around the finder patterns. This could also help with detecting
+	// line extensions of the 1 module wide square around the finder patterns. This could also help with detecting
 	// slanted symbols of version 1.
 
 	// generate 4 lines: outer and inner edge of the 1 module wide black line between the two outer and the inner
@@ -318,7 +318,7 @@ static DetectorResult DetectPure(const BitMatrix& image)
 
 	PointI tl{left, top}, tr{right, top}, bl{left, bottom};
 	Pattern diagonal;
-	// allow corners be moved one pixel inside to accomodate for possible aliasing artifacts
+	// allow corners be moved one pixel inside to accommodate for possible aliasing artifacts
 	for (auto [p, d] : {std::pair(tl, PointI{1, 1}), {tr, {-1, 1}}, {bl, {1, -1}}}) {
 		diagonal = BitMatrixCursorI(image, p, d).readPatternFromBlack<Pattern>(1, width / 3);
 		if (!IsPattern(diagonal, PATTERN))

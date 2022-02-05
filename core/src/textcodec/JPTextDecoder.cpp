@@ -40,7 +40,7 @@
 /*
 * This data is derived from Unicode 1.1,
 * JIS X 0208 (1990) to Unicode mapping table version 0.9 .
-* (In addition NEC Vender Defined Char included)
+* (In addition NEC Vendor Defined Char included)
 */
 static unsigned short const jisx0208_to_unicode[] = {
 	/* 0x2121 - 0x217e */
@@ -1272,7 +1272,7 @@ static unsigned short const jisx0208_to_unicode[] = {
 /*
 * This data is derived from Unicode 1.1,
 * JIS X 0212 (1990) to Unicode mapping table version 0.9 .
-* (In addition IBM Vender Defined Char included)
+* (In addition IBM Vendor Defined Char included)
 */
 static unsigned short const jisx0212_to_unicode[] = {
 	/* 0x2121 - 0x217e */

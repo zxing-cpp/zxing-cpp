@@ -40,7 +40,7 @@
 /*
 * This data is derived from Unicode 1.1,
 * JIS X 0208 (1990) to Unicode mapping table version 0.9 .
-* (In addition NEC Vender Defined Char included)
+* (In addition NEC Vendor Defined Char included)
 */
 static const uint16_t unicode_to_jisx0208_00[256] = {
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,

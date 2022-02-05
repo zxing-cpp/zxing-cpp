@@ -118,8 +118,8 @@ bool ReadDataCharacterRaw(const PatternView& view, int numModules, bool reversed
 
 #if 0
 	// the 'signal improving' strategy of trying to fix off-by-one errors in the sum or parity leads to a massively
-	// increased likelyhood of false positives / misreads especially with expanded codes that are composed of many
-	// pairs. the combinatorial explosion of posible pair combinations (see FindValidSequence) results in many possible
+	// increased likelihood of false positives / misreads especially with expanded codes that are composed of many
+	// pairs. the combinatorial explosion of possible pair combinations (see FindValidSequence) results in many possible
 	// sequences with valid checksums. It can slightly lower the minimum required resolution to detect something at all
 	// but the introduced error rate is clearly not worth it.
 

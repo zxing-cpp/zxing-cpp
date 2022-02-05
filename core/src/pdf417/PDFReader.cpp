@@ -217,7 +217,7 @@ SymbolInfo DetectSymbol(BitMatrixCursor<POINT> topCur, int width, int height)
 	res.lastRow = botSI.firstRow;
 	res.rowHeight = float(height) / (std::abs(res.lastRow - res.firstRow) + 1);
 	if (topSI.nCols != botSI.nCols)
-		// if there is something fishy with the number of cols (alising), guess them from the width
+		// if there is something fishy with the number of cols (aliasing), guess them from the width
 		res.nCols = (width + res.colWidth / 2) / res.colWidth - 4;
 
 	return res;

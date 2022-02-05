@@ -288,7 +288,7 @@ public:
 
 	QVideoFilterRunnable* createFilterRunnable() override;
 
-	// TODO: find out how to properyl expose QFlags to QML
+	// TODO: find out how to properly expose QFlags to QML
 	// simply using ZQ_PROPERTY(BarcodeFormats, formats, setFormats)
 	// results in the runtime error "can't assign int to formats"
 	Q_PROPERTY(int formats READ formats WRITE setFormats NOTIFY formatsChanged)

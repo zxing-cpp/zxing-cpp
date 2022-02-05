@@ -43,7 +43,7 @@ Window {
         tryRotate: tryRotateSwitch.checked
         tryHarder: tryHarderSwitch.checked
 
-        // callback with parameter 'result', called for every sucessfully processed frame
+        // callback with parameter 'result', called for every successfully processed frame
         // onFoundBarcode: {}
 
         // callback with parameter 'result', called for every processed frame
