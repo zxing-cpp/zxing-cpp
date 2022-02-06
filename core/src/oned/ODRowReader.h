@@ -118,7 +118,7 @@ public:
 	* digit.
 	*
 	* @param counters the counts of runs of observed black/white/black/... values
-	* @param patterns the list of patterns to compare the contens of counters to
+	* @param patterns the list of patterns to compare the contents of counters to
 	* @param requireUnambiguousMatch the 'best match' must be better than all other matches
 	* @return The decoded digit index, -1 if no pattern matched
 	*/

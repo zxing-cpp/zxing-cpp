@@ -365,7 +365,7 @@ static int CompareMag(const Magnitude& a, const Magnitude& b)
 		// Compare blocks one by one from left to right.
 		auto p = std::mismatch(a.rbegin(), a.rend(), b.rbegin());
 		if (p.first != a.rend()) {
-			return *p.first < *p.second ? -1 : 1;	// note: cannot use substraction here
+			return *p.first < *p.second ? -1 : 1;	// note: cannot use subtraction here
 		}
 		return 0;
 	}

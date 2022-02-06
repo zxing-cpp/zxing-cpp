@@ -66,7 +66,7 @@ public:
 	static const GenericGF& MaxiCodeField64();
 
 	// note: replaced addOrSubstract calls with '^' / '^='. everyone trying to understand this code needs to look into
-	// Galois Fields with caracteristic 2 and will then understand that XOR is addition/substraction. And those
+	// Galois Fields with characteristic 2 and will then understand that XOR is addition/subtraction. And those
 	// operators are way more readable than a noisy member function name
 
 	/**

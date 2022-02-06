@@ -131,7 +131,7 @@ constexpr int FINDER_D = 4;
 constexpr int FINDER_E = 5;
 constexpr int FINDER_F = 6;
 
-// A negative number means the finder pattern is layed out right2left. Note: each finder may only occur once per code.
+// A negative number means the finder pattern is laid out right2left. Note: each finder may only occur once per code.
 static const std::array<std::vector<int>, 10> FINDER_PATTERN_SEQUENCES = {{
 	{FINDER_A, -FINDER_A},
 	{FINDER_A, -FINDER_B, FINDER_B},
@@ -348,7 +348,7 @@ Result DataBarExpandedReader::decodePattern(int rowNumber, PatternView& view,
 		state.reset(new DBERState);
 	auto& allPairs = static_cast<DBERState*>(state.get())->allPairs;
 
-	// Stacked codes can be layed out in a number of ways. The following rules apply:
+	// Stacked codes can be laid out in a number of ways. The following rules apply:
 	//  * the first row starts with FINDER_A in left-to-right (l2r) layout
 	//  * pairs in l2r layout start with a space, r2l ones with a bar
 	//  * l2r and r2l finders always alternate

@@ -34,7 +34,7 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       run: cmake ${{github.workspace}}/wrappers/winrt -A ${{matrix.target}} -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0 -DCMAKE_BUILD_TYPE=Release -DBUILD_WINRT_LIB=ON -DBUILD_EXAMPLES=OFF -DBUILD_BLACKBOX_TESTS=OFF -DEXTENSION_SDK_OUTPUT=dist/UAP/v0.8.0.0/ExtensionSDKs/ZXingWinRT/1.0.0.0
 
-    - name: Buid
+    - name: Build
       shell: cmd
       working-directory: ${{runner.workspace}}/build
       run: cmake --build . -j8 --config Release

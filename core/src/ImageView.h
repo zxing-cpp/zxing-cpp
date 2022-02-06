@@ -57,7 +57,7 @@ protected:
 
 public:
 	/**
-	 * ImageView contructor
+	 * ImageView constructor
 	 *
 	 * @param data  pointer to image buffer
 	 * @param width  image width in pixels

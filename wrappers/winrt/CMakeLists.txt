@@ -1,5 +1,5 @@
 #
-# This will create a Windows Runtime Component that can be consummed by any WinRT or UWP project.
+# This will create a Windows Runtime Component that can be consumed by any WinRT or UWP project.
 # You need to specify -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0 at command line
 # to generate correctly UWP projects. You can also use Toolchain-Win10.cmake as tool chain file
 # which defined these for you.

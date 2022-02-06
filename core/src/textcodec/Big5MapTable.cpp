@@ -34,7 +34,7 @@
 
 #include <type_traits>
 
-// Big 5 to Unicode maping tables.
+// Big 5 to Unicode mapping tables.
 // Tables are in sorted order on X(all table together) & Y(individually)
 static const B5Map b5_8140_to_uc_map[2041] = {
     {0x8140,0xeeb8}, {0x8141,0xeeb9}, {0x8142,0xeeba}, {0x8143,0xeebb}, {0x8144,0xeebc}, {0x8145,0xeebd}, {0x8146,0xeebe}, {0x8147,0xeebf}, {0x8148,0xeec0}, {0x8149,0xeec1},

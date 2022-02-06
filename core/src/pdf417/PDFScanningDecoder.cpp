@@ -687,7 +687,7 @@ static DecoderResult CreateDecoderResult(DetectionResult& detectionResult, const
 
 // TODO don't pass in minCodewordWidth and maxCodewordWidth, pass in barcode columns for start and stop pattern
 // columns. That way width can be deducted from the pattern column.
-// This approach also allows to detect more details about the barcode, e.g. if a bar type (white or black) is wider 
+// This approach also allows detecting more details about the barcode, e.g. if a bar type (white or black) is wider 
 // than it should be. This can happen if the scanner used a bad blackpoint.
 DecoderResult
 ScanningDecoder::Decode(const BitMatrix& image, const Nullable<ResultPoint>& imageTopLeft, const Nullable<ResultPoint>& imageBottomLeft,
