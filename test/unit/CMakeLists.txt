@@ -31,6 +31,7 @@ add_executable (UnitTest
     PseudoRandom.h
     BitHacksTest.cpp
     CharacterSetECITest.cpp
+    GTINTest.cpp
     ReedSolomonTest.cpp
     TextDecoderTest.cpp
     TextUtfEncodingTest.cpp

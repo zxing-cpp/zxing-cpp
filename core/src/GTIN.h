@@ -17,6 +17,7 @@
 * limitations under the License.
 */
 
+#include "BarcodeFormat.h"
 #include "ZXContainerAlgorithms.h"
 
 #include <string>
@@ -47,10 +48,14 @@ bool IsCheckDigitValid(const std::basic_string<T>& s)
 
 /**
  * Evaluate the prefix of the GTIN to estimate the country of origin. See
- * <a href="http://en.wikipedia.org/wiki/List_of_GS1_country_codes">
- * http://en.wikipedia.org/wiki/List_of_GS1_country_codes</a>.
+ * <a href="https://www.gs1.org/standards/id-keys/company-prefix">
+ * https://www.gs1.org/standards/id-keys/company-prefix</a> and
+ * <a href="https://en.wikipedia.org/wiki/List_of_GS1_country_codes">
+ * https://en.wikipedia.org/wiki/List_of_GS1_country_codes</a>.
+ *
+ * `format` required for EAN-8 (UPC-E assumed if not given)
  */
-std::string LookupCountryIdentifier(const std::string& GTIN);
+std::string LookupCountryIdentifier(const std::string& GTIN, const BarcodeFormat format = BarcodeFormat::None);
 
 std::string EanAddOn(const Result& result);
 

@@ -39,128 +39,181 @@ bool operator<(const CountryId& lhs, const CountryId& rhs)
 	return lhs.last < rhs.last;
 }
 
+// https://www.gs1.org/standards/id-keys/company-prefix (as of 7 Feb 2022)
+// and https://en.wikipedia.org/wiki/List_of_GS1_country_codes
 static const CountryId COUNTRIES[] = {
 	// clang-format off
-	{0, 19, "US/CA"},
+	{1, 19, "US/CA"},
 	{30, 39, "US"},
-	{60, 139, "US/CA"},
-	{300, 379, "FR"},
-	{380, 380, "BG"},
-	{383, 383, "SI"},
-	{385, 385, "HR"},
-	{387, 387, "BA"},
-	{400, 440, "DE"},
-	{450, 459, "JP"},
-	{460, 469, "RU"},
-	{471, 471, "TW"},
-	{474, 474, "EE"},
-	{475, 475, "LV"},
-	{476, 476, "AZ"},
-	{477, 477, "LT"},
-	{478, 478, "UZ"},
-	{479, 479, "LK"},
-	{480, 480, "PH"},
-	{481, 481, "BY"},
-	{482, 482, "UA"},
-	{484, 484, "MD"},
-	{485, 485, "AM"},
-	{486, 486, "GE"},
-	{487, 487, "KZ"},
-	{489, 489, "HK"},
-	{490, 499, "JP"},
-	{500, 509, "GB"},
-	{520, 520, "GR"},
-	{528, 528, "LB"},
-	{529, 529, "CY"},
-	{531, 531, "MK"},
-	{535, 535, "MT"},
-	{539, 539, "IE"},
-	{540, 549, "BE/LU"},
-	{560, 560, "PT"},
-	{569, 569, "IS"},
-	{570, 579, "DK"},
-	{590, 590, "PL"},
-	{594, 594, "RO"},
-	{599, 599, "HU"},
-	{600, 601, "ZA"},
-	{603, 603, "GH"},
-	{608, 608, "BH"},
-	{609, 609, "MU"},
-	{611, 611, "MA"},
-	{613, 613, "DZ"},
-	{616, 616, "KE"},
-	{618, 618, "CI"},
-	{619, 619, "TN"},
-	{621, 621, "SY"},
-	{622, 622, "EG"},
-	{624, 624, "LY"},
-	{625, 625, "JO"},
-	{626, 626, "IR"},
-	{627, 627, "KW"},
-	{628, 628, "SA"},
-	{629, 629, "AE"},
-	{640, 649, "FI"},
-	{690, 695, "CN"},
-	{700, 709, "NO"},
-	{729, 729, "IL"},
-	{730, 739, "SE"},
-	{740, 740, "GT"},
-	{741, 741, "SV"},
-	{742, 742, "HN"},
-	{743, 743, "NI"},
-	{744, 744, "CR"},
-	{745, 745, "PA"},
-	{746, 746, "DO"},
-	{750, 750, "MX"},
-	{754, 755, "CA"},
-	{759, 759, "VE"},
-	{760, 769, "CH"},
-	{770, 770, "CO"},
-	{773, 773, "UY"},
-	{775, 775, "PE"},
-	{777, 777, "BO"},
-	{779, 779, "AR"},
-	{780, 780, "CL"},
-	{784, 784, "PY"},
-	{785, 785, "PE"},
-	{786, 786, "EC"},
-	{789, 790, "BR"},
-	{800, 839, "IT"},
-	{840, 849, "ES"},
-	{850, 850, "CU"},
-	{858, 858, "SK"},
-	{859, 859, "CZ"},
-	{860, 860, "YU"},
-	{865, 865, "MN"},
-	{867, 867, "KP"},
-	{868, 869, "TR"},
-	{870, 879, "NL"},
-	{880, 880, "KR"},
-	{885, 885, "TH"},
-	{888, 888, "SG"},
-	{890, 890, "IN"},
-	{893, 893, "VN"},
-	{896, 896, "PK"},
-	{899, 899, "ID"},
-	{900, 919, "AT"},
-	{930, 939, "AU"},
-	{940, 949, "AZ"},
-	{955, 955, "MY"},
-	{958, 958, "MO"},
+	{60, 99, "US/CA"}, // Note 99 coupon identification
+	{100, 139, "US"},
+	{300, 379, "FR"}, // France (and Monaco according to Wikipedia)
+	{380, 380, "BG"}, // Bulgaria
+	{383, 383, "SI"}, // Slovenia
+	{385, 385, "HR"}, // Croatia
+	{387, 387, "BA"}, // Bosnia and Herzegovina
+	{389, 389, "ME"}, // Montenegro
+	//{390, 390, "XK"}, // (Kosovo according to Wikipedia, unsourced)
+	{400, 440, "DE"}, // Germany
+	{450, 459, "JP"}, // Japan
+	{460, 469, "RU"}, // Russia
+	{470, 470, "KG"}, // Kyrgyzstan
+	{471, 471, "TW"}, // Taiwan
+	{474, 474, "EE"}, // Estonia
+	{475, 475, "LV"}, // Latvia
+	{476, 476, "AZ"}, // Azerbaijan
+	{477, 477, "LT"}, // Lithuania
+	{478, 478, "UZ"}, // Uzbekistan
+	{479, 479, "LK"}, // Sri Lanka
+	{480, 480, "PH"}, // Philippines
+	{481, 481, "BY"}, // Belarus
+	{482, 482, "UA"}, // Ukraine
+	{483, 483, "TM"}, // Turkmenistan
+	{484, 484, "MD"}, // Moldova
+	{485, 485, "AM"}, // Armenia
+	{486, 486, "GE"}, // Georgia
+	{487, 487, "KZ"}, // Kazakhstan
+	{488, 488, "TJ"}, // Tajikistan
+	{489, 489, "HK"}, // Hong Kong
+	{490, 499, "JP"}, // Japan
+	{500, 509, "GB"}, // UK
+	{520, 521, "GR"}, // Greece
+	{528, 528, "LB"}, // Lebanon
+	{529, 529, "CY"}, // Cyprus
+	{530, 530, "AL"}, // Albania
+	{531, 531, "MK"}, // North Macedonia
+	{535, 535, "MT"}, // Malta
+	{539, 539, "IE"}, // Ireland
+	{540, 549, "BE/LU"}, // Belgium & Luxembourg
+	{560, 560, "PT"}, // Portugal
+	{569, 569, "IS"}, // Iceland
+	{570, 579, "DK"}, // Denmark (and Faroe Islands and Greenland according to Wikipedia)
+	{590, 590, "PL"}, // Poland
+	{594, 594, "RO"}, // Romania
+	{599, 599, "HU"}, // Hungary
+	{600, 601, "ZA"}, // South Africa
+	{603, 603, "GH"}, // Ghana
+	{604, 604, "SN"}, // Senegal
+	{608, 608, "BH"}, // Bahrain
+	{609, 609, "MU"}, // Mauritius
+	{611, 611, "MA"}, // Morocco
+	{613, 613, "DZ"}, // Algeria
+	{615, 615, "NG"}, // Nigeria
+	{616, 616, "KE"}, // Kenya
+	{617, 617, "CM"}, // Cameroon
+	{618, 618, "CI"}, // Côte d'Ivoire
+	{619, 619, "TN"}, // Tunisia
+	{620, 620, "TZ"}, // Tanzania
+	{621, 621, "SY"}, // Syria
+	{622, 622, "EG"}, // Egypt
+	{623, 623, "BN"}, // Brunei
+	{624, 624, "LY"}, // Libya
+	{625, 625, "JO"}, // Jordan
+	{626, 626, "IR"}, // Iran
+	{627, 627, "KW"}, // Kuwait
+	{628, 628, "SA"}, // Saudi Arabia
+	{629, 629, "AE"}, // United Arab Emirates
+	{630, 630, "QA"}, // Qatar
+	{631, 631, "NA"}, // Namibia
+	{640, 649, "FI"}, // Finland
+	{690, 699, "CN"}, // China
+	{700, 709, "NO"}, // Norway
+	{729, 729, "IL"}, // Israel
+	{730, 739, "SE"}, // Sweden
+	{740, 740, "GT"}, // Guatemala
+	{741, 741, "SV"}, // El Salvador
+	{742, 742, "HN"}, // Honduras
+	{743, 743, "NI"}, // Nicaragua
+	{744, 744, "CR"}, // Costa Rica
+	{745, 745, "PA"}, // Panama
+	{746, 746, "DO"}, // Dominican Republic
+	{750, 750, "MX"}, // Mexico
+	{754, 755, "CA"}, // Canada
+	{759, 759, "VE"}, // Venezuela
+	{760, 769, "CH"}, // Switzerland (and Liechtenstein according to Wikipedia)
+	{770, 771, "CO"}, // Colombia
+	{773, 773, "UY"}, // Uruguay
+	{775, 775, "PE"}, // Peru
+	{777, 777, "BO"}, // Bolivia
+	{778, 779, "AR"}, // Argentina
+	{780, 780, "CL"}, // Chile
+	{784, 784, "PY"}, // Paraguay
+	{786, 786, "EC"}, // Ecuador
+	{789, 790, "BR"}, // Brazil
+	{800, 839, "IT"}, // Italy (and San Marino and Vatican City according to Wikipedia)
+	{840, 849, "ES"}, // Spain (and Andorra according to Wikipedia)
+	{850, 850, "CU"}, // Cuba
+	{858, 858, "SK"}, // Slovakia
+	{859, 859, "CZ"}, // Czechia
+	{860, 860, "RS"}, // Serbia
+	{865, 865, "MN"}, // Mongolia
+	{867, 867, "KP"}, // North Korea
+	{868, 869, "TR"}, // Turkey
+	{870, 879, "NL"}, // Netherlands
+	{880, 880, "KR"}, // South Korea
+	{883, 883, "MM"}, // Myanmar
+	{884, 884, "KH"}, // Cambodia
+	{885, 885, "TH"}, // Thailand
+	{888, 888, "SG"}, // Singapore
+	{890, 890, "IN"}, // India
+	{893, 893, "VN"}, // Vietnam
+	{896, 896, "PK"}, // Pakistan
+	{899, 899, "ID"}, // Indonesia
+	{900, 919, "AT"}, // Austria
+	{930, 939, "AU"}, // Australia
+	{940, 949, "NZ"}, // New Zealand
+	{955, 955, "MY"}, // Malaysia
+	{958, 958, "MO"}, // Macao
+	//{960, 961, "GB"}, // Global Office - assigned to GS1 UK for GTIN-8 allocations (also 9620-9624999)
 	// clang-format on
 };
 
-std::string LookupCountryIdentifier(const std::string& GTIN)
+std::string LookupCountryIdentifier(const std::string& GTIN, const BarcodeFormat format)
 {
-	// TODO: support GTIN-14 numbers?
-	int prefix = std::stoi(GTIN.substr(0, 3));
-	auto it    = std::lower_bound(std::begin(COUNTRIES), std::end(COUNTRIES), CountryId{0, prefix, nullptr});
-	return it != std::end(COUNTRIES) ? it->id : std::string();
+	// Ignore add-on if any
+	const auto space = GTIN.find(' ');
+	const std::string::size_type size = space != std::string::npos ? space : GTIN.size();
+
+	if (size != 14 && size != 13 && size != 12 && size != 8)
+		return std::string();
+
+	// GTIN-14 leading packaging level indicator
+	const int first = size == 14 ? 1 : 0;
+	// UPC-A/E implicit leading 0
+	const int implicitZero = size == 12 || (size == 8 && format != BarcodeFormat::EAN8) ? 1 : 0;
+
+	if (size != 8 || format != BarcodeFormat::EAN8) { // Assuming following doesn't apply to EAN-8
+		// 0000000 Restricted Circulation Numbers; 0000001-0000099 unused to avoid collision with GTIN-8
+		int prefix = std::stoi(GTIN.substr(first, 7 - implicitZero));
+		if (prefix >= 0 && prefix <= 99)
+			return std::string();
+
+		// 00001-00009 US
+		prefix = std::stoi(GTIN.substr(first, 5 - implicitZero));
+		if (prefix >= 1 && prefix <= 9)
+			return "US";
+
+		// 0001-0009 US
+		prefix = std::stoi(GTIN.substr(first, 4 - implicitZero));
+		if (prefix >= 1 && prefix <= 9)
+			return "US";
+	}
+
+	const int prefix = std::stoi(GTIN.substr(first, 3 - implicitZero));
+
+	// Special case EAN-8 for prefix < 100 (GS1 General Specifications Figure 1.4.3-1)
+	if (size == 8 && format == BarcodeFormat::EAN8 && prefix <= 99) // Restricted Circulation Numbers
+		return std::string();
+
+	const auto it = std::lower_bound(std::begin(COUNTRIES), std::end(COUNTRIES), CountryId{0, prefix, nullptr});
+
+	return it != std::end(COUNTRIES) && prefix >= it->first && prefix <= it->last ? it->id : std::string();
 }
 
 std::string EanAddOn(const Result& result)
 {
-	if (!(BarcodeFormat::EAN13 | BarcodeFormat::UPCA | BarcodeFormat::UPCE).testFlag(result.format()))
+	if (!(BarcodeFormat::EAN13 | BarcodeFormat::UPCA | BarcodeFormat::UPCE | BarcodeFormat::EAN8)
+			.testFlag(result.format()))
 		return {};
 	auto txt = result.text();
 	auto pos = txt.find(L' ');
