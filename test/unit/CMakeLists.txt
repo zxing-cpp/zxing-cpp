@@ -60,6 +60,7 @@ add_executable (UnitTest
     oned/ODUPCAWriterTest.cpp
     oned/ODUPCEWriterTest.cpp
     oned/rss/ODRSSExpandedBinaryDecoderTest.cpp
+    oned/rss/ODRSSFieldParserTest.cpp
     qrcode/QRDataMaskTest.cpp
     qrcode/QRDecodedBitStreamParserTest.cpp
     qrcode/QREncoderTest.cpp
