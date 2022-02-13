@@ -119,7 +119,7 @@ DecodeAI01AndOtherAIs(const BitArray& bits)
 	buffer.append(std::to_string(firstGtinDigit));
 
 	AI01EncodeCompressedGtinWithoutAI(buffer, bits, HEADER_SIZE + 4, initialGtinPosition);
-	if (StatusIsOK(DecodeAppIdAllCodes(bits, HEADER_SIZE + 44, buffer))) {
+	if (StatusIsOK(DecodeAppIdAllCodes(bits, HEADER_SIZE + 44, -1, buffer))) {
 		return buffer;
 	}
 	return {};
@@ -130,7 +130,7 @@ DecodeAnyAI(const BitArray& bits)
 {
 	static const int HEADER_SIZE = 2 + 1 + 2;
 	std::string buffer;
-	if (StatusIsOK(DecodeAppIdAllCodes(bits, HEADER_SIZE, buffer))) {
+	if (StatusIsOK(DecodeAppIdAllCodes(bits, HEADER_SIZE, -1, buffer))) {
 		return buffer;
 	}
 	return std::string();
@@ -196,7 +196,10 @@ DecodeAI01392x(const BitArray& bits)
 	buffer.append(std::to_string(lastAIdigit));
 	buffer.push_back(')');
 
-	if (StatusIsOK(DecodeAppIdGeneralPurposeField(bits, HEADER_SIZE + AI01_GTIN_SIZE + LAST_DIGIT_SIZE, buffer))) {
+	int pos = HEADER_SIZE + AI01_GTIN_SIZE + LAST_DIGIT_SIZE;
+	int remainingValue = -1;
+	if (StatusIsOK(DecodeAppIdGeneralPurposeField(bits, pos, remainingValue, buffer))
+			&& StatusIsOK(DecodeAppIdAllCodes(bits, pos, remainingValue, buffer))) {
 		return buffer;
 	}
 	return std::string();
@@ -231,7 +234,10 @@ DecodeAI01393x(const BitArray& bits)
 	}
 	buffer.append(std::to_string(firstThreeDigits));
 
-	if (StatusIsOK(DecodeAppIdGeneralPurposeField(bits, HEADER_SIZE + AI01_GTIN_SIZE + LAST_DIGIT_SIZE + FIRST_THREE_DIGITS_SIZE, buffer))) {
+	int pos = HEADER_SIZE + AI01_GTIN_SIZE + LAST_DIGIT_SIZE + FIRST_THREE_DIGITS_SIZE;
+	int remainingValue = -1;
+	if (StatusIsOK(DecodeAppIdGeneralPurposeField(bits, pos, remainingValue, buffer))
+			&& StatusIsOK(DecodeAppIdAllCodes(bits, pos, remainingValue, buffer))) {
 		return buffer;
 	}
 	return std::string();
@@ -332,4 +338,4 @@ DecodeExpandedBits(const BitArray& bits)
 	//throw new IllegalStateException("unknown decoder: " + information);
 }
 
-} // namespace ZXing::OneD::RSS
+} // namespace ZXing::OneD::DataBar
