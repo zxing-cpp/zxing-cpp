@@ -35,6 +35,7 @@ add_executable (UnitTest
     ReedSolomonTest.cpp
     TextDecoderTest.cpp
     TextUtfEncodingTest.cpp
+    ThresholdBinarizerTest.cpp
     aztec/AZDetectorTest.cpp
     aztec/AZDecoderTest.cpp
     aztec/AZEncoderTest.cpp

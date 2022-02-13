@@ -40,6 +40,8 @@ public:
 		auto* lastPos = begin;
 		bool lastVal = false;
 
+		res.clear();
+
 		for (const uint8_t* p = begin; p < end; p += stride) {
 			bool val = *p <= _threshold;
 			if (val != lastVal) {
