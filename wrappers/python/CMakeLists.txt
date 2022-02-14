@@ -21,7 +21,7 @@ if (NOT hasParent)
         add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../core ZXing EXCLUDE_FROM_ALL)
 
         include(${CMAKE_CURRENT_SOURCE_DIR}/../../zxing.cmake)
-        zxing_add_package(pybind11 ${pybind11_git_repo} ${pybind11_git_rev})
+        zxing_add_package(pybind11 pybind11 ${pybind11_git_repo} ${pybind11_git_rev})
     else()
         # we don't have access to the top-level cmake helpers -> simply fetch it unconditional
         include(FetchContent)
@@ -55,7 +55,7 @@ if (NOT hasParent)
         endif()
     endif()
 else()
-    zxing_add_package(pybind11 ${pybind11_git_repo} ${pybind11_git_rev})
+    zxing_add_package(pybind11 pybind11 ${pybind11_git_repo} ${pybind11_git_rev})
 endif()
 
 # build the python module

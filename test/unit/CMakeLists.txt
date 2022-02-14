@@ -1,8 +1,6 @@
-zxing_add_package(GTest https://github.com/google/googletest.git release-1.11.0)
+zxing_add_package(GTest googletest https://github.com/google/googletest.git release-1.11.0)
 
 if (GTest_POPULATED)
-    # Prevent overriding the parent project's compiler/linker settings on Windows
-    set (gtest_force_shared_crt ON CACHE BOOL "" FORCE)
     # don't install gtest stuff on "make install"
     set (INSTALL_GTEST OFF CACHE BOOL "" FORCE)
 endif()

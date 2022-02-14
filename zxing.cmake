@@ -22,7 +22,7 @@ macro(zxing_add_package_stb)
     endif()
 endmacro()
 
-macro(zxing_add_package name git_repo git_rev)
+macro(zxing_add_package name depname git_repo git_rev)
     unset(${name}_FOUND CACHE) # see https://github.com/nu-book/zxing-cpp/commit/8db14eeead45e0f1961532f55061d5e4dd0f78be#commitcomment-66464026
 
     if (BUILD_DEPENDENCIES STREQUAL "AUTO")
@@ -33,10 +33,14 @@ macro(zxing_add_package name git_repo git_rev)
 
     if (NOT ${name}_FOUND)
         include(FetchContent)
-        FetchContent_Declare (${name}
+        FetchContent_Declare (${depname}
             GIT_REPOSITORY ${git_repo}
             GIT_TAG ${git_rev})
-        FetchContent_MakeAvailable (${name})
+        if (${depname} STREQUAL "googletest")
+            # Prevent overriding the parent project's compiler/linker settings on Windows
+            set (gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+        endif()
+        FetchContent_MakeAvailable (${depname})
         set (${name}_POPULATED TRUE) # this is supposed to be done in MakeAvailable but it seems not to?!?
     endif()
 endmacro()
