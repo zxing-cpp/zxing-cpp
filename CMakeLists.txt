@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.10)
+cmake_minimum_required (VERSION 3.14)
 
 project (ZXing VERSION "1.2.0" LANGUAGES CXX)
 
@@ -8,7 +8,7 @@ option (BUILD_EXAMPLES "Build the example barcode reader/writer applications" ON
 option (BUILD_BLACKBOX_TESTS "Build the black box reader/writer tests" ON)
 option (BUILD_UNIT_TESTS "Build the unit tests (don't enable for production builds)" OFF)
 option (BUILD_PYTHON_MODULE "Build the python module" OFF)
-set(BUILD_SYSTEM_DEPS "AUTO" CACHE STRING "Use system dependencies (AUTO/ALWAYS/NEVER)")
+set(BUILD_DEPENDENCIES "AUTO" CACHE STRING "Fetch from github or use locally installed (AUTO/GITHUB/LOCAL)")
 
 if (WIN32)
     option (BUILD_SHARED_LIBS "Build and link as shared library" OFF)
@@ -55,33 +55,17 @@ if (BUILD_UNIT_TESTS AND (NOT BUILD_WRITERS OR NOT BUILD_READERS))
     set (BUILD_READERS ON)
 endif()
 
-set(BUILD_SYSTEM_DEPS_LIST AUTO ALWAYS NEVER)
-set_property(CACHE BUILD_SYSTEM_DEPS PROPERTY STRINGS ${BUILD_SYSTEM_DEPS_LIST})
-if(NOT BUILD_SYSTEM_DEPS IN_LIST BUILD_SYSTEM_DEPS_LIST)
-    message(FATAL_ERROR "BUILD_SYSTEM_DEPS must be one of ${BUILD_SYSTEM_DEPS_LIST}")
-endif()
-
-if (BUILD_EXAMPLES OR BUILD_BLACKBOX_TESTS)
-
-    if (BUILD_SYSTEM_DEPS STREQUAL "AUTO")
-        find_package(PkgConfig)
-        pkg_check_modules (STB IMPORTED_TARGET stb)
-    elseif (BUILD_SYSTEM_DEPS STREQUAL "ALWAYS")
-        find_package(PkgConfig REQUIRED)
-        pkg_check_modules (STB REQUIRED IMPORTED_TARGET stb)
-    endif()
-
-    if (NOT STB_FOUND)
-        include (${CMAKE_SOURCE_DIR}/FetchSTB.cmake)
-    else()
-        add_library(stb::stb ALIAS PkgConfig::STB)
-    endif()
-
+set(BUILD_DEPENDENCIES_LIST AUTO GITHUB LOCAL)
+set_property(CACHE BUILD_DEPENDENCIES PROPERTY STRINGS ${BUILD_DEPENDENCIES_LIST})
+if(NOT BUILD_DEPENDENCIES IN_LIST BUILD_DEPENDENCIES_LIST)
+    message(FATAL_ERROR "BUILD_DEPENDENCIES must be one of ${BUILD_DEPENDENCIES_LIST}")
 endif()
 
 add_subdirectory (core)
 
 enable_testing()
+
+include(zxing.cmake)
 
 if (BUILD_EXAMPLES)
     add_subdirectory (example)

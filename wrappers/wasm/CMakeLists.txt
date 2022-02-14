@@ -2,7 +2,8 @@ cmake_minimum_required (VERSION 3.10)
 
 project (ZXingWasm)
 
-include (${CMAKE_CURRENT_SOURCE_DIR}/../../FetchSTB.cmake)
+include (${CMAKE_CURRENT_SOURCE_DIR}/../../zxing.cmake)
+zxing_add_package_stb()
 
 set (CMAKE_CXX_STANDARD 17)
 

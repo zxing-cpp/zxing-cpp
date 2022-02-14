@@ -1,18 +1,5 @@
-cmake_minimum_required(VERSION 3.14)
-
-if (BUILD_SYSTEM_DEPS STREQUAL "AUTO")
-    find_package (fmt)
-elseif (BUILD_SYSTEM_DEPS STREQUAL "ALWAYS")
-    find_package (fmt REQUIRED)
-endif()
-
-if (NOT fmt_FOUND)
-    include(FetchContent)
-    FetchContent_Declare (fmtlib
-            GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-            GIT_TAG 8.0.1)
-    FetchContent_MakeAvailable (fmtlib) # Adds fmt::fmt
-endif()
+zxing_add_package_stb()
+zxing_add_package(fmt https://github.com/fmtlib/fmt.git 8.1.1)
 
 if (BUILD_READERS)
     add_executable (ReaderTest
