@@ -52,7 +52,7 @@ Reader::Reader(const DecodeHints& hints) :
 	if (formats.testFlag(BarcodeFormat::Code93))
 		_readers.emplace_back(new Code93Reader());
 	if (formats.testFlag(BarcodeFormat::Code128))
-		_readers.emplace_back(new Code128Reader(hints));
+		_readers.emplace_back(new Code128Reader());
 	if (formats.testFlag(BarcodeFormat::ITF))
 		_readers.emplace_back(new ITFReader(hints));
 	if (formats.testFlag(BarcodeFormat::Codabar))

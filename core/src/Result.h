@@ -43,11 +43,11 @@ public:
 	explicit Result(DecodeStatus status) : _status(status) {}
 
 	Result(std::wstring&& text, Position&& position, BarcodeFormat format, ByteArray&& rawBytes = {},
-		   const bool readerInit = false);
+		   std::string symbologyIdentifier = "", StructuredAppendInfo sai = {}, const bool readerInit = false);
 
 	// 1D convenience constructor
 	Result(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format, ByteArray&& rawBytes = {},
-		   const bool readerInit = false);
+		   std::string symbologyIdentifier = "", const bool readerInit = false);
 
 	Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat format);
 
@@ -79,13 +79,20 @@ public:
 	const ByteArray& rawBytes() const {
 		return _rawBytes;
 	}
-	
+
 	int numBits() const {
 		return _numBits;
 	}
 
 	const std::wstring& ecLevel() const {
 		return _ecLevel;
+	}
+
+	/**
+	 * @brief symbologyIdentifier Symbology identifier "]cm" where "c" is symbology code character, "m" the modifier.
+	 */
+	const std::string& symbologyIdentifier() const {
+		return _symbologyIdentifier;
 	}
 
 	/**
@@ -143,6 +150,7 @@ private:
 	ByteArray _rawBytes;
 	int _numBits = 0;
 	std::wstring _ecLevel;
+	std::string _symbologyIdentifier;
 	StructuredAppendInfo _sai;
 	bool _readerInit = false;
 	int _lineCount = 0;

@@ -45,6 +45,7 @@ class DecoderResult
 	std::wstring _ecLevel;
 	int _errorsCorrected = -1;
 	int _erasures = -1;
+	std::string _symbologyIdentifier;
 	StructuredAppendInfo _structuredAppend;
 	bool _readerInit = false;
 	std::shared_ptr<CustomData> _extra;
@@ -89,6 +90,7 @@ public:
 	ZX_PROPERTY(std::wstring, ecLevel, setEcLevel)
 	ZX_PROPERTY(int, errorsCorrected, setErrorsCorrected)
 	ZX_PROPERTY(int, erasures, setErasures)
+	ZX_PROPERTY(std::string, symbologyIdentifier, setSymbologyIdentifier)
 	ZX_PROPERTY(StructuredAppendInfo, structuredAppend, setStructuredAppend)
 	ZX_PROPERTY(bool, readerInit, setReaderInit)
 	ZX_PROPERTY(std::shared_ptr<CustomData>, extra, setExtra)

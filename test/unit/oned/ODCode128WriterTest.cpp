@@ -17,7 +17,6 @@
 
 #include "oned/ODCode128Writer.h"
 #include "BitMatrixIO.h"
-#include "DecodeHints.h"
 #include "Result.h"
 #include "oned/ODCode128Reader.h"
 
@@ -50,13 +49,13 @@ static ZXing::Result Decode(const BitMatrix &matrix)
 {
 	BitArray row;
 	matrix.getRow(0, row);
-	return Code128Reader(DecodeHints()).decodeSingleRow(0, row);
+	return Code128Reader().decodeSingleRow(0, row);
 }
 
 TEST(ODCode128Writer, EncodeWithFunc1)
 {
 	auto toEncode = L"\xf1""123";
-    //                                                       "12"                           "3"          check digit 92
+	//                                                       "12"                           "3"          check digit 92
 	auto expected = QUIET_SPACE + START_CODE_C + FNC1 + "10110011100" + SWITCH_CODE_B + "11001011100" + "10101111000" + STOP + QUIET_SPACE;
 
 	auto actual = LineMatrixToString(Code128Writer().encode(toEncode, 0, 0));
@@ -101,14 +100,28 @@ TEST(ODCode128Writer, EncodeWithFncsAndNumberInCodesetA)
 	EXPECT_EQ(actual, expected);
 }
 
-TEST(ODCode128Writer, Roundtrip)
+TEST(ODCode128Writer, RoundtripGS1)
 {
 	auto toEncode = L"\xf1" "10958" "\xf1" "17160526";
-	auto expected = L"1095817160526";
+	auto expected = L"10958\u001D17160526";
 
-    auto encResult = Code128Writer().encode(toEncode, 0, 0);
-	auto actual = Decode(encResult).text();
+	auto encResult = Code128Writer().encode(toEncode, 0, 0);
+	auto decResult = Decode(encResult);
+	auto actual = decResult.text();
 	EXPECT_EQ(actual, expected);
+	EXPECT_EQ(decResult.symbologyIdentifier(), "]C1");
+}
+
+TEST(ODCode128Writer, RoundtripFNC1)
+{
+	auto toEncode = L"1\xf1" "0958" "\xf1" "17160526";
+	auto expected = L"1\u001D0958\u001D17160526";
+
+	auto encResult = Code128Writer().encode(toEncode, 0, 0);
+	auto decResult = Decode(encResult);
+	auto actual = decResult.text();
+	EXPECT_EQ(actual, expected);
+	EXPECT_EQ(decResult.symbologyIdentifier(), "]C0");
 }
 
 TEST(ODCode128Writer, EncodeSwitchCodesetFromAToB)
