@@ -16,8 +16,12 @@
 */
 
 #include "aztec/AZDetector.h"
+
 #include "BitMatrixIO.h"
+#include "DecoderResult.h"
 #include "PseudoRandom.h"
+#include "TextUtfEncoding.h"
+#include "aztec/AZDecoder.h"
 #include "aztec/AZDetectorResult.h"
 
 #include "gtest/gtest.h"
@@ -48,11 +52,6 @@ namespace {
 		return result;
 	}
 
-	// Zooms a bit matrix so that each bit is factor x factor
-	BitMatrix MakeLarger(const BitMatrix& input, int factor) {
-		return Inflate(input.copy(), factor * input.width(), factor * input.height(), 0);
-	}
-
 	// Test that we can tolerate errors in the parameter locator bits
 	void TestErrorInParameterLocator(std::string_view data, int nbLayers, bool isCompact, const BitMatrix &matrix_)
 	{
@@ -73,13 +72,11 @@ namespace {
 							// if error2 == error1, we only test a single error
 							copy.flip(orientationPoints[error2].x, orientationPoints[error2].y);
 						}
-						// The detector doesn't seem to work when matrix bits are only 1x1.  So magnify.
-						Aztec::DetectorResult r = Aztec::Detector::Detect(MakeLarger(copy, 3), isMirror, true);
+						Aztec::DetectorResult r = Aztec::Detector::Detect(copy, isMirror, true);
 						EXPECT_EQ(r.isValid(), true);
 						EXPECT_EQ(r.nbLayers(), nbLayers);
 						EXPECT_EQ(r.isCompact(), isCompact);
-						//DecoderResult res = new Decoder().decode(r);
-						//assertEquals(data, res.getText());
+						EXPECT_EQ(data, TextUtfEncoding::ToUtf8(Aztec::Decoder::Decode(r, "").text()));
 					}
 				}
 				// Try a few random three-bit errors;
@@ -92,7 +89,7 @@ namespace {
 					for (auto error : errors) {
 						copy.flip(orientationPoints[error].x, orientationPoints[error].y);
 					}
-					Aztec::DetectorResult r = Aztec::Detector::Detect(MakeLarger(copy, 3), false, true);
+					Aztec::DetectorResult r = Aztec::Detector::Detect(copy, false, true);
 					EXPECT_EQ(r.isValid(), false);
 				}
 
