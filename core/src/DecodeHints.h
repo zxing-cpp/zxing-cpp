@@ -74,6 +74,10 @@ public:
 	TYPE GETTER() const noexcept { return _##GETTER; } \
 	DecodeHints& SETTER(TYPE v) { return _##GETTER = std::move(v), *this; }
 
+#define ZX_PROPERTY_DEPRECATED(TYPE, GETTER, SETTER) \
+	[[deprecated]] TYPE GETTER() const noexcept { return _##GETTER; } \
+	[[deprecated]] DecodeHints& SETTER(TYPE v) { return _##GETTER = std::move(v), *this; }
+
 	/// Specify a set of BarcodeFormats that should be searched for, the default is all supported formats.
 	ZX_PROPERTY(BarcodeFormats, formats, setFormats)
 
@@ -103,9 +107,9 @@ public:
 
 	/**
 	* Assume the barcode is being processed as a GS1 barcode, and modify behavior as needed.
-	* For example this affects FNC1 handling for Code 128 (aka GS1-128).
+	* NOTE: used to affect FNC1 handling for Code 128 (aka GS1-128) but behavior now based on position of FNC1.
 	*/
-	ZX_PROPERTY(bool, assumeGS1, setAssumeGS1)
+	ZX_PROPERTY_DEPRECATED(bool, assumeGS1, setAssumeGS1)
 
 	/**
 	* If true, return the start and end digits in a Codabar barcode instead of stripping them. They
@@ -118,6 +122,7 @@ public:
 	ZX_PROPERTY(EanAddOnSymbol, eanAddOnSymbol, setEanAddOnSymbol)
 
 #undef ZX_PROPERTY
+#undef ZX_PROPERTY_DEPRECATED
 
 	bool hasFormat(BarcodeFormats f) const noexcept { return _formats.testFlags(f); }
 	bool hasNoFormat() const noexcept { return _formats.empty(); }
