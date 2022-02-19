@@ -1,0 +1,2 @@
+symbologyIdentifier=]z0
+readerInit=true

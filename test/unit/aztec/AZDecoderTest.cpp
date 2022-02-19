@@ -27,7 +27,7 @@
 namespace ZXing::Aztec {
 
 std::wstring GetEncodedData(const std::vector<bool>& correctedBits, const std::string& characterSet,
-							StructuredAppendInfo& sai);
+							std::string& symbologyIdentifier, StructuredAppendInfo& sai);
 
 }
 
@@ -75,6 +75,7 @@ TEST(AZDecoderTest, AztecResult)
 		0x5a, 0xd6, 0xb5, 0xad, 0x6b, 0x5a, 0xd6, 0xb5, 0xad, 0x6b, 
 		0x5a, 0xd6, 0xb0 }));
 	EXPECT_EQ(result.numBits(), 180);
+	EXPECT_EQ(result.symbologyIdentifier(), "]z0");
 }
 
 TEST(AZDecoderTest, DecodeTooManyErrors)
@@ -149,8 +150,123 @@ TEST(AZDecoderTest, DecodeTooManyErrors2)
 	EXPECT_EQ(result.errorCode(), DecodeStatus::FormatError);
 }
 
-// Helper to call GetEncodedData()
-static std::wstring getData(const ByteArray& bytes, StructuredAppendInfo& sai)
+// Helper taking bit string to call GetEncodedData()
+static std::wstring getData(std::string bitStr, std::string& symbologyIdentifier, StructuredAppendInfo& sai)
+{
+	std::vector<bool> correctedBits;
+	correctedBits.reserve(bitStr.size());
+
+	for (int i = 0; i < bitStr.size(); i++) {
+		correctedBits.push_back(bitStr[i] == '1');
+	}
+
+	return Aztec::GetEncodedData(correctedBits, "", symbologyIdentifier, sai);
+}
+
+// Shorthand to return symbology identifier given bit string
+static std::string id(const char* const bitStr)
+{
+	std::string symbologyIdentifier;
+	StructuredAppendInfo sai;
+	(void)getData(bitStr, symbologyIdentifier, sai);
+	return symbologyIdentifier;
+}
+
+// Shorthand to return string result given bit string
+static std::wstring data(const char* const bitStr)
+{
+	std::string symbologyIdentifier;
+	StructuredAppendInfo sai;
+	return getData(bitStr, symbologyIdentifier, sai);
+}
+
+// Shorthand to return structured append given given bit string
+static StructuredAppendInfo info(const char* const bitStr)
+{
+	std::string symbologyIdentifier;
+	StructuredAppendInfo sai;
+	(void)getData(bitStr, symbologyIdentifier, sai);
+	return sai;
+}
+
+TEST(AZDecoderTest, SymbologyIdentifier)
+{
+	// Plain
+	EXPECT_EQ(id("00010"), "]z0");
+	EXPECT_EQ(data("00010"), L"A");
+
+	{
+		// GS1 ("PS FLGN(0) DL (20)01")
+		const char bitStr[] = "0000000000000111100100001000100011";
+		EXPECT_EQ(id(bitStr), "]z1");
+		EXPECT_EQ(data(bitStr), L"2001");
+	}
+
+	{
+		// AIM ("A PS FLGN(0) B")
+		const char bitStr[] = "00010000000000000000011";
+		EXPECT_EQ(id(bitStr), "]z2");
+		EXPECT_EQ(data(bitStr), L"AB");
+	}
+
+	{
+		// AIM ("DL 99 UL PS FLGN(0) B")
+		const char bitStr[] = "11110101110111110000000000000000011";
+		EXPECT_EQ(id(bitStr), "]z2");
+		EXPECT_EQ(data(bitStr), L"99B");
+	}
+
+	{
+		// Structured Append ("UL ML A D A")
+		const char bitStr[] = "1110111101000100010100010";
+		EXPECT_EQ(id(bitStr), "]z6");
+		EXPECT_EQ(data(bitStr), L"A");
+		EXPECT_EQ(info(bitStr).index, 0);
+		EXPECT_EQ(info(bitStr).count, 4);
+	}
+
+	{
+		// Structured Append with GS1 ("UL ML A D PS FLGN(0) DL (20)01")
+		const char bitStr[] = "111011110100010001010000000000000111100100001000100011";
+		EXPECT_EQ(id(bitStr), "]z7");
+		EXPECT_EQ(data(bitStr), L"2001");
+		EXPECT_EQ(info(bitStr).index, 0);
+		EXPECT_EQ(info(bitStr).count, 4);
+	}
+
+	{
+		// Structured Append with AIM ("UL ML A D A PS FLGN(0) B")
+		const char bitStr[] = "1110111101000100010100010000000000000000011";
+		EXPECT_EQ(id(bitStr), "]z8");
+		EXPECT_EQ(data(bitStr), L"AB");
+		EXPECT_EQ(info(bitStr).index, 0);
+		EXPECT_EQ(info(bitStr).count, 4);
+	}
+
+	{
+		// Plain with FNC1 not in first/second position ("A B PS FLGN(0) C")
+		const char bitStr[] = "0001000011000000000000000100";
+		EXPECT_EQ(id(bitStr), "]z0");
+		EXPECT_EQ(data(bitStr), L"AB\u001DC"); // "AB<GS>C"
+	}
+
+	{
+		// Plain with FNC1 not in first/second position ("A B C PS FLGN(0) D")
+		const char bitStr[] = "000100001100100000000000000000101";
+		EXPECT_EQ(id(bitStr), "]z0");
+		EXPECT_EQ(data(bitStr), L"ABC\u001DD"); // "ABC<GS>D"
+	}
+
+	{
+		// Plain with FNC1 not in first/second position ("DL 1 UL PS FLGN(0) A")
+		const char bitStr[] = "1111000111110000000000000000010";
+		EXPECT_EQ(id(bitStr), "]z0");
+		EXPECT_EQ(data(bitStr), L"1\u001DA"); // "1<GS>D"
+	}
+}
+
+// Helper taking 5-bit word array to call GetEncodedData()
+static std::wstring getData(const ByteArray& bytes, std::string& symbologyIdentifier, StructuredAppendInfo& sai)
 {
 	std::vector<bool> correctedBits;
 	correctedBits.reserve(bytes.size() * 5); // 5-bit words (assuming no digits/binary)
@@ -161,22 +277,24 @@ static std::wstring getData(const ByteArray& bytes, StructuredAppendInfo& sai)
 		}
 	}
 
-	return Aztec::GetEncodedData(correctedBits, "", sai);
+	return Aztec::GetEncodedData(correctedBits, "", symbologyIdentifier, sai);
 }
 
-// Shorthand to return Structured Append
+// Shorthand to return Structured Append given 5-bit word array
 static StructuredAppendInfo info(ByteArray bytes)
 {
+	std::string symbologyIdentifier;
 	StructuredAppendInfo sai;
-	(void)getData(bytes, sai);
+	(void)getData(bytes, symbologyIdentifier, sai);
 	return sai;
 }
 
-// Shorthand to return string result
+// Shorthand to return string result given 5-bit word array
 static std::wstring data(ByteArray bytes)
 {
+	std::string symbologyIdentifier;
 	StructuredAppendInfo sai;
-	return getData(bytes, sai);
+	return getData(bytes, symbologyIdentifier, sai);
 }
 
 TEST(AZDecoderTest, StructuredAppend)

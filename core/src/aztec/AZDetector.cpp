@@ -79,7 +79,7 @@ static int GetRotation(const std::array<int, 4>& sides, int length)
 
 static bool IsValidPoint(int x, int y, int imgWidth, int imgHeight)
 {
-	return x >= 0 && x < imgWidth && y > 0 && y < imgHeight;
+	return x >= 0 && x < imgWidth && y >= 0 && y < imgHeight;
 }
 
 static bool IsValidPoint(const ResultPoint& point, int imgWidth, int imgHeight)
@@ -483,7 +483,9 @@ static int GetDimension(bool compact, int nbLayers)
 * topLeft, topRight, bottomRight, and bottomLeft are the centers of the squares on the
 * diagonal just outside the bull's eye.
 */
-static ZXing::DetectorResult SampleGrid(const BitMatrix& image, const ResultPoint& topLeft, const ResultPoint& topRight, const ResultPoint& bottomRight, const ResultPoint& bottomLeft, bool compact, int nbLayers, int nbCenterLayers)
+static ZXing::DetectorResult SampleGrid(const BitMatrix& image, const ResultPoint& topLeft,
+										const ResultPoint& topRight, const ResultPoint& bottomRight,
+										const ResultPoint& bottomLeft, bool compact, int nbLayers, int nbCenterLayers)
 {
 	int dimension = GetDimension(compact, nbLayers);
 
