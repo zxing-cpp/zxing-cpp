@@ -21,8 +21,8 @@
 #include "BitArray.h"
 #include "BitMatrix.h"
 #include "CharacterSetECI.h"
-#include "DecoderResult.h"
 #include "DecodeStatus.h"
+#include "DecoderResult.h"
 #include "GenericGF.h"
 #include "ReedSolomonDecoder.h"
 #include "TextDecoder.h"
@@ -30,6 +30,7 @@
 #include "ZXTestSupport.h"
 
 #include <algorithm>
+#include <cctype>
 #include <cstdint>
 #include <cstring>
 #include <numeric>
@@ -38,7 +39,8 @@
 
 namespace ZXing::Aztec {
 
-enum class Table {
+enum class Table
+{
 	UPPER,
 	LOWER,
 	MIXED,
@@ -87,19 +89,18 @@ static std::vector<bool> ExtractBits(const DetectorResult& ddata)
 	bool compact = ddata.isCompact();
 	int layers = ddata.nbLayers();
 	int baseMatrixSize = (compact ? 11 : 14) + layers * 4; // not including alignment lines
-	std::vector<int> alignmentMap(baseMatrixSize, 0);
+	std::vector<int> map(baseMatrixSize, 0);
 
 	if (compact) {
-		std::iota(alignmentMap.begin(), alignmentMap.end(), 0);
-	}
-	else {
+		std::iota(map.begin(), map.end(), 0);
+	} else {
 		int matrixSize = baseMatrixSize + 1 + 2 * ((baseMatrixSize / 2 - 1) / 15);
 		int origCenter = baseMatrixSize / 2;
 		int center = matrixSize / 2;
 		for (int i = 0; i < origCenter; i++) {
 			int newOffset = i + i / 15;
-			alignmentMap[origCenter - i - 1] = center - newOffset - 1;
-			alignmentMap[origCenter + i] = center + newOffset + 1;
+			map[origCenter - i - 1] = center - newOffset - 1;
+			map[origCenter + i] = center + newOffset + 1;
 		}
 	}
 	auto& matrix = ddata.bits();
@@ -112,20 +113,16 @@ static std::vector<bool> ExtractBits(const DetectorResult& ddata)
 		int high = baseMatrixSize - 1 - low;
 		// We pull bits from the two 2 x rowSize columns and two rowSize x 2 rows
 		for (int j = 0; j < rowSize; j++) {
-			int columnOffset = j * 2;
+			int colOffset = j * 2;
 			for (int k = 0; k < 2; k++) {
 				// left column
-				rawbits[rowOffset + columnOffset + k] =
-					matrix.get(alignmentMap[low + k], alignmentMap[low + j]);
+				rawbits[rowOffset + 0 * rowSize + colOffset + k] = matrix.get(map[low + k], map[low + j]);
 				// bottom row
-				rawbits[rowOffset + 2 * rowSize + columnOffset + k] =
-					matrix.get(alignmentMap[low + j], alignmentMap[high - k]);
+				rawbits[rowOffset + 2 * rowSize + colOffset + k] = matrix.get(map[low + j], map[high - k]);
 				// right column
-				rawbits[rowOffset + 4 * rowSize + columnOffset + k] =
-					matrix.get(alignmentMap[high - k], alignmentMap[high - j]);
+				rawbits[rowOffset + 4 * rowSize + colOffset + k] = matrix.get(map[high - k], map[high - j]);
 				// top row
-				rawbits[rowOffset + 6 * rowSize + columnOffset + k] =
-					matrix.get(alignmentMap[high - j], alignmentMap[low + k]);
+				rawbits[rowOffset + 6 * rowSize + colOffset + k] = matrix.get(map[high - j], map[low + k]);
 			}
 		}
 		rowOffset += rowSize * 8;
@@ -159,32 +156,28 @@ static bool CorrectBits(const DetectorResult& ddata, const std::vector<bool>& ra
 	if (ddata.nbLayers() <= 2) {
 		codewordSize = 6;
 		gf = &GenericGF::AztecData6();
-	}
-	else if (ddata.nbLayers() <= 8) {
+	} else if (ddata.nbLayers() <= 8) {
 		codewordSize = 8;
 		gf = &GenericGF::AztecData8();
-	}
-	else if (ddata.nbLayers() <= 22) {
+	} else if (ddata.nbLayers() <= 22) {
 		codewordSize = 10;
 		gf = &GenericGF::AztecData10();
-	}
-	else {
+	} else {
 		codewordSize = 12;
 		gf = &GenericGF::AztecData12();
 	}
 
 	int numDataCodewords = ddata.nbDatablocks();
 	int numCodewords = Size(rawbits) / codewordSize;
-	if (numCodewords < numDataCodewords) {
+	if (numCodewords < numDataCodewords)
 		return false;
-	}
+
 	int offset = rawbits.size() % codewordSize;
 	int numECCodewords = numCodewords - numDataCodewords;
 
 	std::vector<int> dataWords(numCodewords);
-	for (int i = 0; i < numCodewords; i++, offset += codewordSize) {
+	for (int i = 0; i < numCodewords; i++, offset += codewordSize)
 		dataWords[i] = ReadCode(rawbits, offset, codewordSize);
-	}
 
 	if (!ReedSolomonDecode(*gf, dataWords, numECCodewords))
 		return false;
@@ -195,12 +188,10 @@ static bool CorrectBits(const DetectorResult& ddata, const std::vector<bool>& ra
 	int stuffedBits = 0;
 	for (int i = 0; i < numDataCodewords; i++) {
 		int dataWord = dataWords[i];
-		if (dataWord == 0 || dataWord == mask) {
+		if (dataWord == 0 || dataWord == mask)
 			return false;
-		}
-		else if (dataWord == 1 || dataWord == mask - 1) {
+		else if (dataWord == 1 || dataWord == mask - 1)
 			stuffedBits++;
-		}
 	}
 	// Now, actually unpack the bits and remove the stuffing
 	correctedBits.resize(numDataCodewords * codewordSize - stuffedBits);
@@ -211,11 +202,9 @@ static bool CorrectBits(const DetectorResult& ddata, const std::vector<bool>& ra
 			// next codewordSize-1 bits are all zeros or all ones
 			std::fill_n(correctedBits.begin() + index, codewordSize - 1, dataWord > 1);
 			index += codewordSize - 1;
-		}
-		else {
-			for (int bit = codewordSize - 1; bit >= 0; --bit) {
+		} else {
+			for (int bit = codewordSize - 1; bit >= 0; --bit)
 				correctedBits[index++] = (dataWord & (1 << bit)) != 0;
-			}
 		}
 	}
 	return true;
@@ -227,19 +216,13 @@ static bool CorrectBits(const DetectorResult& ddata, const std::vector<bool>& ra
 static Table GetTable(char t)
 {
 	switch (t) {
-	case 'L':
-		return Table::LOWER;
-	case 'P':
-		return Table::PUNCT;
-	case 'M':
-		return Table::MIXED;
-	case 'D':
-		return Table::DIGIT;
-	case 'B':
-		return Table::BINARY;
+	case 'L': return Table::LOWER;
+	case 'P': return Table::PUNCT;
+	case 'M': return Table::MIXED;
+	case 'D': return Table::DIGIT;
+	case 'B': return Table::BINARY;
 	case 'U':
-	default:
-		return Table::UPPER;
+	default: return Table::UPPER;
 	}
 }
 
@@ -252,20 +235,15 @@ static Table GetTable(char t)
 static const char* GetCharacter(Table table, int code)
 {
 	switch (table) {
-	case Table::UPPER:
-		return UPPER_TABLE[code];
-	case Table::LOWER:
-		return LOWER_TABLE[code];
-	case Table::MIXED:
-		return MIXED_TABLE[code];
-	case Table::PUNCT:
-		return PUNCT_TABLE[code];
-	case Table::DIGIT:
-		return DIGIT_TABLE[code];
+	case Table::UPPER: return UPPER_TABLE[code];
+	case Table::LOWER: return LOWER_TABLE[code];
+	case Table::MIXED: return MIXED_TABLE[code];
+	case Table::PUNCT: return PUNCT_TABLE[code];
+	case Table::DIGIT: return DIGIT_TABLE[code];
 	default:
 		return nullptr;
 		// Should not reach here.
-		//throw new IllegalStateException("Bad table");
+		// throw new IllegalStateException("Bad table");
 	}
 }
 
@@ -294,26 +272,24 @@ static void ParseStructuredAppend(std::wstring& resultEncoded, StructuredAppendI
 
 	if (resultEncoded[0] == ' ') { // Space-delimited id
 		std::string::size_type sp = resultEncoded.find(' ', 1);
-		if (sp == std::string::npos) {
+		if (sp == std::string::npos)
 			return;
-		}
+
 		id = resultEncoded.substr(1, sp - 1); // Strip space delimiters
 		i = sp + 1;
 	}
-	if (i + 1 >= resultEncoded.size() || resultEncoded[i] < 'A' || resultEncoded[i] > 'Z'
-			|| resultEncoded[i + 1] < 'A' || resultEncoded[i + 1] > 'Z') {
+	if (i + 1 >= resultEncoded.size() || !std::isupper(resultEncoded[i]) || !std::isupper(resultEncoded[i + 1]))
 		return;
-	}
+
 	sai.index = resultEncoded[i] - 'A';
 	sai.count = resultEncoded[i + 1] - 'A' + 1;
 
-	if (sai.count == 1 || sai.count <= sai.index) { // If info doesn't make sense
+	if (sai.count == 1 || sai.count <= sai.index) // If info doesn't make sense
 		sai.count = 0; // Choose to mark count as unknown
-	}
 
-	if (!id.empty()) {
+	if (!id.empty())
 		TextUtfEncoding::ToUtf8(id, sai.id);
-	}
+
 	resultEncoded.erase(0, i + 2); // Remove
 }
 
@@ -343,15 +319,13 @@ std::wstring GetEncodedData(const std::vector<bool>& correctedBits, const std::s
 
 	while (index < endIndex) {
 		if (shiftTable == Table::BINARY) {
-			if (endIndex - index < 5) {
+			if (endIndex - index < 5)
 				break;
-			}
 			int length = ReadCode(correctedBits, index, 5);
 			index += 5;
 			if (length == 0) {
-				if (endIndex - index < 11) {
+				if (endIndex - index < 11)
 					break;
-				}
 				length = ReadCode(correctedBits, index, 11) + 31;
 				index += 11;
 			}
@@ -366,12 +340,10 @@ std::wstring GetEncodedData(const std::vector<bool>& correctedBits, const std::s
 			}
 			// Go back to whatever mode we had been in
 			shiftTable = latchTable;
-		}
-		else {
+		} else {
 			int size = shiftTable == Table::DIGIT ? 4 : 5;
-			if (endIndex - index < size) {
+			if (endIndex - index < size)
 				break;
-			}
 			int code = ReadCode(correctedBits, index, size);
 			index += size;
 			const char* str = GetCharacter(shiftTable, code);
@@ -382,31 +354,25 @@ std::wstring GetEncodedData(const std::vector<bool>& correctedBits, const std::s
 				// Our test case dlusbs.png for issue #642 exercises that.
 				latchTable = shiftTable;  // Latch the current mode, so as to return to Upper after U/S B/S
 				shiftTable = GetTable(str[5]);
-				if (str[6] == 'L') {
+				if (str[6] == 'L')
 					latchTable = shiftTable;
-				}
-			}
-			else if (std::strcmp(str, "FLGN") == 0) {
-				if (endIndex - index < 3) {
+			} else if (std::strcmp(str, "FLGN") == 0) {
+				if (endIndex - index < 3)
 					break;
-				}
 				int flg = ReadCode(correctedBits, index, 3);
 				index += 3;
 				if (flg == 0) { // FNC1
 					haveFNC1 = true; // Will process first/second FNC1 at end after any Structured Append
 					result.push_back((char)29); // May be removed at end if first/second FNC1
-				}
-				else if (flg <= 6) {
+				} else if (flg <= 6) {
 					// FLG(1) to FLG(6) ECI
 					encoding = CharacterSetECI::OnChangeAppendReset(ParseECIValue(correctedBits, flg, index),
 																	resultEncoded, result, encoding);
-				}
-				else {
+				} else {
 					// FLG(7) is invalid
 				}
 				shiftTable = latchTable;
-			}
-			else {
+			} else {
 				result.append(str);
 				// Go back to whatever mode we had been in
 				shiftTable = latchTable;
@@ -416,24 +382,21 @@ std::wstring GetEncodedData(const std::vector<bool>& correctedBits, const std::s
 	TextDecoder::Append(resultEncoded, reinterpret_cast<const uint8_t*>(result.data()), result.size(), encoding);
 
 	if (!resultEncoded.empty()) {
-		if (haveStructuredAppend) {
+		if (haveStructuredAppend)
 			ParseStructuredAppend(resultEncoded, sai);
-		}
 		if (haveFNC1) {
 			// As converting character set ECIs ourselves and ignoring/skipping non-character ECIs, not using
 			// modifiers that indicate ECI protocol (ISO/IEC 24778:2008 Annex F Table F.1)
 			if (resultEncoded.front() == 29) {
 				symbologyIdModifier = 1; // GS1
 				resultEncoded.erase(0, 1); // Remove FNC1
-			}
-			else if (resultEncoded.size() > 2 && resultEncoded[0] >= 'A' && resultEncoded[0] <= 'Z' && resultEncoded[1] == 29) {
+			} else if (resultEncoded.size() > 2 && std::isupper(resultEncoded[0]) && resultEncoded[1] == 29) {
 				// FNC1 following single uppercase letter (the AIM Application Indicator)
 				symbologyIdModifier = 2; // AIM
 				resultEncoded.erase(1, 1); // Remove FNC1
 				// The AIM Application Indicator character "A"-"Z" is left in the stream (ISO/IEC 24778:2008 16.2)
-			}
-			else if (resultEncoded.size() > 3 && resultEncoded[0] >= '0' && resultEncoded[0] <= '9'
-					&& resultEncoded[1] >= '0' && resultEncoded[1] <= '9' && resultEncoded[2] == 29) {
+			} else if (resultEncoded.size() > 3 && std::isdigit(resultEncoded[0]) && std::isdigit(resultEncoded[1]) &&
+					   resultEncoded[2] == 29) {
 				// FNC1 following 2 digits (the AIM Application Indicator)
 				symbologyIdModifier = 2; // AIM
 				resultEncoded.erase(2, 1); // Remove FNC1
@@ -453,9 +416,9 @@ std::wstring GetEncodedData(const std::vector<bool>& correctedBits, const std::s
 static uint8_t ReadByte(const std::vector<bool>& rawbits, int startIndex)
 {
 	int n = Size(rawbits) - startIndex;
-	if (n >= 8) {
+	if (n >= 8)
 		return static_cast<uint8_t>(ReadCode(rawbits, startIndex, 8));
-	}
+
 	return static_cast<uint8_t>(ReadCode(rawbits, startIndex, n) << (8 - n));
 }
 
@@ -465,9 +428,9 @@ static uint8_t ReadByte(const std::vector<bool>& rawbits, int startIndex)
 static ByteArray ConvertBoolArrayToByteArray(const std::vector<bool>& boolArr)
 {
 	ByteArray byteArr((Size(boolArr) + 7) / 8);
-	for (int i = 0; i < Size(byteArr); ++i) {
+	for (int i = 0; i < Size(byteArr); ++i)
 		byteArr[i] = ReadByte(boolArr, 8 * i);
-	}
+
 	return byteArr;
 }
 
@@ -478,20 +441,18 @@ DecoderResult Decoder::Decode(const DetectorResult& detectorResult, const std::s
 	std::string symbologyIdentifier;
 	StructuredAppendInfo sai;
 
-	if (CorrectBits(detectorResult, rawbits, correctedBits)) {
-		std::wstring resultEncoded = GetEncodedData(correctedBits, characterSet, symbologyIdentifier, sai);
-		if (resultEncoded.empty()) {
-			return DecodeStatus::FormatError;
-		}
-		return DecoderResult(ConvertBoolArrayToByteArray(correctedBits), std::move(resultEncoded))
-				.setNumBits(Size(correctedBits))
-				.setSymbologyIdentifier(std::move(symbologyIdentifier))
-				.setStructuredAppend(sai)
-				.setReaderInit(detectorResult.readerInit());
-	}
-	else {
+	if (!CorrectBits(detectorResult, rawbits, correctedBits))
 		return DecodeStatus::FormatError;
-	}
+
+	std::wstring resultEncoded = GetEncodedData(correctedBits, characterSet, symbologyIdentifier, sai);
+	if (resultEncoded.empty())
+		return DecodeStatus::FormatError;
+
+	return DecoderResult(ConvertBoolArrayToByteArray(correctedBits), std::move(resultEncoded))
+		.setNumBits(Size(correctedBits))
+		.setSymbologyIdentifier(std::move(symbologyIdentifier))
+		.setStructuredAppend(sai)
+		.setReaderInit(detectorResult.readerInit());
 }
 
 } // namespace ZXing::Aztec
