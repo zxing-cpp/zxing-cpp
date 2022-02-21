@@ -219,6 +219,8 @@ static const char* GetCharacter(Table table, int code)
 	case Table::DIGIT: return DIGIT_TABLE[code];
 	case Table::BINARY: return nullptr; // should not happen
 	}
+	// silence gcc warning/error (this code can not be reached)
+	return nullptr;
 }
 
 /**
