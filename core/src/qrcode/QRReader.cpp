@@ -38,6 +38,13 @@ Reader::Reader(const DecodeHints& hints)
 Result
 Reader::decode(const BinaryBitmap& image) const
 {
+#if 1
+	if (!_isPure) {
+		auto res = decode(image, 1);
+		return res.empty() ? Result(DecodeStatus::NotFound) : res.front();
+	}
+#endif
+
 	auto binImg = image.getBitMatrix();
 	if (binImg == nullptr) {
 		return Result(DecodeStatus::NotFound);

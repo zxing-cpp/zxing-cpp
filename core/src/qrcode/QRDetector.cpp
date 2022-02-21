@@ -270,26 +270,26 @@ DetectorResult SampleAtFinderPatternSet(const BitMatrix& image, const FinderPatt
 		auto brInter = (intersect(bl2, tr2) + intersect(bl3, tr3)) / 2;
 		log(brInter, 3);
 
-		// if the estimated alignment pattern position is outside of the image, stop here
-		if (!image.isIn(PointI(brInter), 3 * moduleSize))
-			return {};
-
-		if (dimension > 21) {
-			// just in case we landed outside of the central black module of the alignment pattern, use the center
-			// of the next best circle (either outer or inner edge of the white part of the alignment pattern)
-			auto brCoR = CenterOfRing(image, PointI(brInter), moduleSize * 4, 1, false).value_or(brInter);
-			// if we did not land on a black pixel or the concentric pattern finder fails,
-			// leave the intersection of the lines as the best guess
-			if (image.get(brCoR)) {
-				if (auto brCP = LocateConcentricPattern<true>(image, FixedPattern<3, 3>{1, 1, 1}, brCoR, moduleSize * 3))
-					return sample(*brCP, quad[2] - PointF(3, 3));
+		// check that the estimated alignment pattern position is inside of the image
+		if (image.isIn(PointI(brInter), 3 * moduleSize)) {
+			if (dimension > 21) {
+				// just in case we landed outside of the central black module of the alignment pattern, use the center
+				// of the next best circle (either outer or inner edge of the white part of the alignment pattern)
+				auto brCoR = CenterOfRing(image, PointI(brInter), moduleSize * 4, 1, false).value_or(brInter);
+				// if we did not land on a black pixel or the concentric pattern finder fails,
+				// leave the intersection of the lines as the best guess
+				if (image.get(brCoR)) {
+					if (auto brCP =
+							LocateConcentricPattern<true>(image, FixedPattern<3, 3>{1, 1, 1}, brCoR, moduleSize * 3))
+						return sample(*brCP, quad[2] - PointF(3, 3));
+				}
 			}
-		}
 
-		// if the resolution of the RegressionLines is sufficient, use their intersection as the best estimate
-		// (see discussion in #199, TODO: tune threshold in RegressionLine::isHighRes())
-		if (bl2.isHighRes() && bl3.isHighRes() && tr2.isHighRes() && tr3.isHighRes())
-			return sample(brInter, quad[2] - PointF(3, 3));
+			// if the resolution of the RegressionLines is sufficient, use their intersection as the best estimate
+			// (see discussion in #199, TODO: tune threshold in RegressionLine::isHighRes())
+			if (bl2.isHighRes() && bl3.isHighRes() && tr2.isHighRes() && tr3.isHighRes())
+				return sample(brInter, quad[2] - PointF(3, 3));
+		}
 	}
 
 	// otherwise the simple estimation used by upstream is used as a best guess fallback

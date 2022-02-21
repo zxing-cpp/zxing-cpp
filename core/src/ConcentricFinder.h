@@ -86,14 +86,23 @@ std::optional<ConcentricPattern> LocateConcentricPattern(const BitMatrix& image,
 {
 	auto cur = BitMatrixCursorF(image, center, {});
 	int minSpread = image.width(), maxSpread = 0;
-	for (auto d : {PointF{0, 1}, {1, 0}, {1, 1}, {1, -1}}) {
-		int spread =
-			CheckDirection<RELAXED_THRESHOLD>(cur, d, finderPattern, range, length(d) < 1.1 && !RELAXED_THRESHOLD);
+	for (auto d : {PointF{0, 1}, {1, 0}}) {
+		int spread = CheckDirection<RELAXED_THRESHOLD>(cur, d, finderPattern, range, !RELAXED_THRESHOLD);
 		if (!spread)
 			return {};
 		minSpread = std::min(spread, minSpread);
 		maxSpread = std::max(spread, maxSpread);
 	}
+
+#if 1
+	for (auto d : {PointF{1, 1}, {1, -1}}) {
+		int spread = CheckDirection<true>(cur, d, finderPattern, range, false);
+		if (!spread)
+			return {};
+		minSpread = std::min(spread, minSpread);
+		maxSpread = std::max(spread, maxSpread);
+	}
+#endif
 
 	if (maxSpread > 5 * minSpread)
 		return {};
