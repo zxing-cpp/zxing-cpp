@@ -497,7 +497,7 @@ static ZXing::DetectorResult SampleGrid(const BitMatrix& image, const ResultPoin
 										   {topLeft, topRight, bottomRight, bottomLeft}});
 }
 
-DetectorResult Detector::Detect(const BitMatrix& image, bool isMirror, bool isPure)
+DetectorResult Detect(const BitMatrix& image, bool isMirror, bool isPure)
 {
 	// 1. Get the center of the aztec matrix
 	auto pCenter = isPure ? GetMatrixCenterPure(image) : GetMatrixCenter(image);

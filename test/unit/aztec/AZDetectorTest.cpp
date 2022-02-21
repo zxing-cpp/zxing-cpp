@@ -72,11 +72,11 @@ namespace {
 							// if error2 == error1, we only test a single error
 							copy.flip(orientationPoints[error2].x, orientationPoints[error2].y);
 						}
-						Aztec::DetectorResult r = Aztec::Detector::Detect(copy, isMirror, true);
+						Aztec::DetectorResult r = Aztec::Detect(copy, isMirror, true);
 						EXPECT_EQ(r.isValid(), true);
 						EXPECT_EQ(r.nbLayers(), nbLayers);
 						EXPECT_EQ(r.isCompact(), isCompact);
-						EXPECT_EQ(data, TextUtfEncoding::ToUtf8(Aztec::Decoder::Decode(r, "").text()));
+						EXPECT_EQ(data, TextUtfEncoding::ToUtf8(Aztec::Decode(r).text()));
 					}
 				}
 				// Try a few random three-bit errors;
@@ -89,7 +89,7 @@ namespace {
 					for (auto error : errors) {
 						copy.flip(orientationPoints[error].x, orientationPoints[error].y);
 					}
-					Aztec::DetectorResult r = Aztec::Detector::Detect(copy, false, true);
+					Aztec::DetectorResult r = Aztec::Detect(copy, false, true);
 					EXPECT_EQ(r.isValid(), false);
 				}
 
@@ -206,7 +206,7 @@ TEST(AZDetectorTest, ReaderInitFull2Layers)
 {
 	{
 		// Null (not set)
-		auto r = Aztec::Detector::Detect(ParseBitMatrix(
+		auto r = Aztec::Detect(ParseBitMatrix(
 			"      X X X   X   X X   X X X X   X X X X X   \n"
 			"    X   X X X X   X X X     X X X         X   \n"
 			"  X X   X X   X   X X   X X X   X X X     X X \n"
@@ -238,7 +238,7 @@ TEST(AZDetectorTest, ReaderInitFull2Layers)
 	}
 	{
 		// Set
-		auto r = Aztec::Detector::Detect(ParseBitMatrix(
+		auto r = Aztec::Detect(ParseBitMatrix(
 			"      X X X   X   X X   X X X X   X X X X X   \n"
 			"    X   X X X X   X X X     X X X         X   \n"
 			"  X X   X X   X   X X   X X X   X X X     X X \n"
@@ -273,7 +273,7 @@ TEST(AZDetectorTest, ReaderInitFull2Layers)
 TEST(AZDetectorTest, ReaderInitFull22Layers)
 {
 	// Set
-	auto r = Aztec::Detector::Detect(ParseBitMatrix(
+	auto r = Aztec::Detect(ParseBitMatrix(
 		"            X X   X   X X X     X       X   X     X         X   X     X X   X   X       X X   X X X         X       X   X     X   X         X X X X X X   X   X   X   X X   X X     X     X X X X     X   X X X X   X X   \n"
 		"        X X     X X   X   X X X X   X X   X           X     X   X   X X   X   X X X X X X X       X   X         X X X   X X     X X   X             X         X   X X   X X   X   X   X   X X     X X X X     X     X   X \n"
 		"    X   X   X   X       X           X X     X       X       X   X X       X X X     X   X   X X     X X   X X X X         X X X   X     X X X   X   X X     X       X X X   X   X     X X   X X X           X X   X X     \n"
@@ -394,7 +394,7 @@ TEST(AZDetectorTest, ReaderInitCompact)
 {
 	{
 		// Null (not set)
-		auto r = Aztec::Detector::Detect(ParseBitMatrix(
+		auto r = Aztec::Detect(ParseBitMatrix(
 			"            X X   X         X \n"
 			"    X X X X   X X X   X     X \n"
 			"    X X             X   X     \n"
@@ -418,7 +418,7 @@ TEST(AZDetectorTest, ReaderInitCompact)
 	}
 	{
 		// Set
-		auto r = Aztec::Detector::Detect(ParseBitMatrix(
+		auto r = Aztec::Detect(ParseBitMatrix(
 			"            X X   X         X \n"
 			"    X X X X   X X X   X     X \n"
 			"    X X     X       X   X     \n"

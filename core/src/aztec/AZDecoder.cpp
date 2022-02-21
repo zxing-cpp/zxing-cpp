@@ -386,7 +386,7 @@ AztecData GetEncodedData(const BitArray& bits, const std::string& characterSet)
 	return res;
 }
 
-DecoderResult Decoder::Decode(const DetectorResult& detectorResult, const std::string& characterSet)
+DecoderResult Decode(const DetectorResult& detectorResult, const std::string& characterSet)
 {
 	BitArray bits = CorrectBits(detectorResult, ExtractBits(detectorResult));
 

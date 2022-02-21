@@ -44,7 +44,7 @@ using namespace ZXing;
 // Shorthand to call Decode()
 static DecoderResult parse(BitMatrix&& bits, bool compact, int nbDatablocks, int nbLayers)
 {
-	return Aztec::Decoder::Decode({{std::move(bits), {}}, compact, nbDatablocks, nbLayers, false /*readerInit*/}, "");
+	return Aztec::Decode({{std::move(bits), {}}, compact, nbDatablocks, nbLayers, false /*readerInit*/});
 }
 
 TEST(AZDecoderTest, AztecResult)

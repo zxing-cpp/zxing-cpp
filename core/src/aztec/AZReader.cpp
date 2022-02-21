@@ -43,17 +43,17 @@ Reader::decode(const BinaryBitmap& image) const
 		return Result(DecodeStatus::NotFound);
 	}
 
-	DetectorResult detectResult = Detector::Detect(*binImg, false, _isPure);
+	DetectorResult detectResult = Detect(*binImg, false, _isPure);
 	DecoderResult decodeResult = DecodeStatus::NotFound;
 	if (detectResult.isValid()) {
-		decodeResult = Decoder::Decode(detectResult, _characterSet);
+		decodeResult = Decode(detectResult, _characterSet);
 	}
 
 	//TODO: don't start detection all over again, just to swap 2 corner points
 	if (!decodeResult.isValid()) {
-		detectResult = Detector::Detect(*binImg, true, _isPure);
+		detectResult = Detect(*binImg, true, _isPure);
 		if (detectResult.isValid()) {
-			decodeResult = Decoder::Decode(detectResult, _characterSet);
+			decodeResult = Decode(detectResult, _characterSet);
 		}
 	}
 
