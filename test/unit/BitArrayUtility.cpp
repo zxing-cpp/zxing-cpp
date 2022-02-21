@@ -37,10 +37,8 @@ std::string ToString(const BitArray& arr, char one, char zero)
 BitArray ParseBitArray(std::string_view str, char one)
 {
 	BitArray result(Size(str));
-	for (int i = 0; i < Size(str); ++i) {
-		if (str[i] == one)
-			result.set(i);
-	}
+	for (int i = 0; i < Size(str); ++i)
+		result.set(i, str[i] == one);
 	return result;
 }
 

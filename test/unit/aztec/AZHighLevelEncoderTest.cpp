@@ -24,23 +24,22 @@
 #include "gtest/gtest.h"
 #include <algorithm>
 
-namespace ZXing {
-	namespace Aztec {
-		std::wstring GetEncodedData(const std::vector<bool>& correctedBits, const std::string& characterSet,
-									std::string& symbologyIdentifier, StructuredAppendInfo& sai);
-	}
+namespace ZXing::Aztec {
+
+struct AztecData
+{
+	std::wstring text;
+	std::string symbologyIdentifier;
+	StructuredAppendInfo sai;
+};
+
+AztecData GetEncodedData(const BitArray& bits, const std::string& characterSet = "");
+
 }
 
 using namespace ZXing;
 
 namespace {
-	
-	std::vector<bool> ToBoolArray(const BitArray& arr) {
-		std::vector<bool> result(arr.size());
-		std::copy_n(arr.begin(), arr.size(), result.begin());
-		return result;
-	}
-
 	std::string StripSpaces(std::string str) {
 		str.erase(std::remove_if(str.begin(), str.end(), isspace), str.end());
 		return str;
@@ -49,9 +48,7 @@ namespace {
 	void TestHighLevelEncodeString(const std::string& s, const std::string& expectedBits) {
 		BitArray bits = Aztec::HighLevelEncoder::Encode(s);
 		EXPECT_EQ(Utility::ToString(bits), StripSpaces(expectedBits)) << "highLevelEncode() failed for input string: " + s;
-		std::string symbologyIdentifier;
-		StructuredAppendInfo sai;
-		EXPECT_EQ(TextDecoder::FromLatin1(s), Aztec::GetEncodedData(ToBoolArray(bits), "", symbologyIdentifier, sai));
+		EXPECT_EQ(TextDecoder::FromLatin1(s), Aztec::GetEncodedData(bits).text);
 	}
 
 	void TestHighLevelEncodeString(const std::string& s, int expectedReceivedBits) {
@@ -60,7 +57,7 @@ namespace {
 		EXPECT_EQ(receivedBitCount, expectedReceivedBits) << "highLevelEncode() failed for input string: " + s;
 		std::string symbologyIdentifier;
 		StructuredAppendInfo sai;
-		EXPECT_EQ(TextDecoder::FromLatin1(s), Aztec::GetEncodedData(ToBoolArray(bits), "", symbologyIdentifier, sai));
+		EXPECT_EQ(TextDecoder::FromLatin1(s), Aztec::GetEncodedData(bits).text);
 	}
 }
 
