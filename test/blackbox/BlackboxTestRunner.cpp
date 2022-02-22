@@ -126,9 +126,6 @@ static bool compareResult(const Result& result, const std::string& expected, std
 			actualValue += " ***Mismatch***";
 		}
 		actual += key + '=' + actualValue + '\n';
-
-	}
-	if (ret) {
 	}
 	return ret;
 }
@@ -363,12 +360,12 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 3, 3, 270 },
 		});
 
-		runTests("datamatrix-1", "DataMatrix", 25, {
-			{ 25, 25, 0   },
-			{  0, 25, 90  },
-			{  0, 25, 180 },
-			{  0, 25, 270 },
-			{ 24, 0, pure },
+		runTests("datamatrix-1", "DataMatrix", 26, {
+			{ 26, 26, 0   },
+			{  0, 26, 90  },
+			{  0, 26, 180 },
+			{  0, 26, 270 },
+			{ 25, 0, pure },
 		});
 
 		runTests("datamatrix-2", "DataMatrix", 13, {
@@ -385,12 +382,12 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{  0, 19, 270 },
 		});
 
-		runTests("datamatrix-4", "DataMatrix", 20, {
-			{ 20, 20, 0   },
-			{  0, 20, 90  },
-			{  0, 20, 180 },
-			{  0, 20, 270 },
-			{ 18, 0, pure },
+		runTests("datamatrix-4", "DataMatrix", 21, {
+			{ 21, 21, 0   },
+			{  0, 21, 90  },
+			{  0, 21, 180 },
+			{  0, 21, 270 },
+			{ 19, 0, pure },
 		});
 
 		runTests("codabar-1", "Codabar", 11, {
