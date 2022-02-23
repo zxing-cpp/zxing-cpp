@@ -100,9 +100,11 @@ static const char TEXT_SHIFT3_SET_CHARS[] = {
 struct State
 {
 	CharacterSet encoding;
+	int symbologyIdModifier = 1; // ECC 200 (ISO 16022:2006 Annex N Table N.1)
 	struct StructuredAppendInfo sai;
 	bool readerInit = false;
 	bool firstCodeword = true;
+	int firstFNC1Position = 1;
 };
 
 struct Shift128
@@ -170,11 +172,28 @@ static Mode DecodeAsciiSegment(BitSource& bits, std::string& result, std::string
 		case 231: // Latch to Base 256 encodation
 			return Mode::BASE256_ENCODE;
 		case 232: // FNC1
-			// TODO: handle first/second position
-			result.push_back((char)29); // translate as ASCII 29
+			if (bits.byteOffset() == state.firstFNC1Position || bits.byteOffset() == state.firstFNC1Position + 1) {
+				// As converting character set ECIs ourselves and ignoring/skipping non-character ECIs, not using
+				// modifiers that indicate ECI protocol (ISO 16022:2006 Annex N Table N.1, ISO 21471:2020 Annex G Table G.1)
+
+				// Only recognizing an FNC1 as first/second by codeword position (aka symbol character position), not
+				// by decoded character position, i.e. not recognizing a C40/Text encoded FNC1 (which requires a latch
+				// and a shift)
+				if (bits.byteOffset() == state.firstFNC1Position)
+					state.symbologyIdModifier = 2; // GS1
+				else {
+					state.symbologyIdModifier = 3; // AIM
+					// Note no AIM Application Indicator format defined, ISO 16022:2006 11.2
+				}
+			} else
+				result.push_back((char)29); // translate as ASCII 29 <GS>
 			break;
 		case 233: // Structured Append
-			ParseStructuredAppend(bits, state.sai);
+			if (state.firstCodeword) { // Must be first ISO 16022:2006 5.6.1
+				ParseStructuredAppend(bits, state.sai);
+				state.firstFNC1Position = 5;
+			} else
+				return Mode::FORMAT_ERROR;
 			break;
 		case 234: // Reader Programming
 			if (state.firstCodeword) // Must be first ISO 16022:2006 5.2.4.9
@@ -384,14 +403,13 @@ static bool DecodeBase256Segment(BitSource& bits, std::string& result)
 		bytes[i] = (uint8_t)Unrandomize255State(bits.readBits(8), codewordPosition++);
 	}
 
-	// bytes is in ISO-8859-1
 	result.append(reinterpret_cast<const char*>(bytes.data()), bytes.size());
 
 	return true;
 }
 
 ZXING_EXPORT_TEST_ONLY
-DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet)
+DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet, const bool isDMRE)
 {
 	BitSource bits(bytes);
 	std::string result;
@@ -406,6 +424,7 @@ DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet)
 		if (mode == Mode::ASCII_ENCODE) {
 			mode = DecodeAsciiSegment(bits, result, resultTrailer, resultEncoded, state);
 			state.firstCodeword = false;
+			state.firstFNC1Position = -1; // Only recognize in first segment
 		} else {
 			bool decodeOK;
 			switch (mode) {
@@ -431,7 +450,10 @@ DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet)
 
 	TextDecoder::Append(resultEncoded, reinterpret_cast<const uint8_t*>(result.data()), result.size(), state.encoding);
 
+	std::string symbologyIdentifier("]d" + std::to_string(state.symbologyIdModifier + (isDMRE ? 6 : 0)));
+
 	return DecoderResult(std::move(bytes), std::move(resultEncoded))
+			.setSymbologyIdentifier(std::move(symbologyIdentifier))
 			.setStructuredAppend(state.sai)
 			.setReaderInit(state.readerInit);
 }
@@ -452,6 +474,7 @@ CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
 	// First read into an array of ints
 	std::vector<int> codewordsInts(codewordBytes.begin(), codewordBytes.end());
 	int numECCodewords = Size(codewordBytes) - numDataCodewords;
+
 	if (!ReedSolomonDecode(GenericGF::DataMatrixField256(), codewordsInts, numECCodewords))
 		return false;
 
@@ -498,7 +521,7 @@ static DecoderResult DoDecode(const BitMatrix& bits, const std::string& characte
 	}
 
 	// Decode the contents of that stream of bytes
-	return DecodedBitStreamParser::Decode(std::move(resultBytes), characterSet);
+	return DecodedBitStreamParser::Decode(std::move(resultBytes), characterSet, version->isDMRE());
 }
 
 static BitMatrix FlippedL(const BitMatrix& bits)

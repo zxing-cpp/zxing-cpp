@@ -23,21 +23,34 @@
 
 namespace ZXing::DataMatrix::DecodedBitStreamParser {
 
-DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet);
+DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet, const bool isDMRE);
 
 }
 
 using namespace ZXing;
 
-// Shorthand for Decode()
-static DecoderResult parse(ByteArray bytes)
+// Helper to call Decode()
+static DecoderResult parse(ByteArray bytes, const bool isDMRE = false)
 {
-	return DataMatrix::DecodedBitStreamParser::Decode(std::move(bytes), "");
+	return DataMatrix::DecodedBitStreamParser::Decode(std::move(bytes), "", isDMRE);
 }
 
-static std::wstring decode(ByteArray bytes)
+// Shorthand to return text
+static std::wstring decode(ByteArray bytes, const bool isDMRE = false)
 {
-	return parse(std::move(bytes)).text();
+	return parse(std::move(bytes), isDMRE).text();
+}
+
+// Shorthand to return symbology identifier
+static std::string id(ByteArray bytes, const bool isDMRE = false)
+{
+	return parse(std::move(bytes), isDMRE).symbologyIdentifier();
+}
+
+// Shorthand to return Structured Append
+static StructuredAppendInfo info(ByteArray bytes, const bool isDMRE = false)
+{
+	return parse(std::move(bytes), isDMRE).structuredAppend();
 }
 
 TEST(DMDecodeTest, Ascii)
@@ -106,9 +119,90 @@ TEST(DMDecodeTest, X12)
 //	EXPECT_EQ(decode({}), L"");
 }
 
-static StructuredAppendInfo info(ByteArray bytes)
+TEST(DMDecodeTest, SymbologyIdentifier)
 {
-	return parse(std::move(bytes)).structuredAppend();
+	// Plain
+	EXPECT_EQ(id({50}), "]d1");
+	EXPECT_EQ(decode({50}), L"1");
+
+	// GS1 "FNC1 (20)01"
+	EXPECT_EQ(id({232, 150, 131}), "]d2");
+	EXPECT_EQ(decode({232, 150, 131}), L"2001");
+
+	// "LatchC40 Shift2 FNC1 LatchASCII 2001" not recognized as FNC1 in first position
+	EXPECT_EQ(id({230, 0x0A, 0x79, 254, 150, 131}), "]d1"); // shift2FNC1 = (1600 * 1) + (40 * 27) + 0 + 1 == 0x0A79
+	EXPECT_EQ(decode({230, 0x0A, 0x79, 254, 150, 131}), L"\u001D2001");
+
+	// AIM "A FNC1 B"
+	EXPECT_EQ(id({66, 232, 67}), "]d3");
+	EXPECT_EQ(decode({66, 232, 67}), L"AB");
+
+	// AIM "9 FNC1 A"
+	EXPECT_EQ(id({58, 232, 66}), "]d3");
+	EXPECT_EQ(decode({58, 232, 66}), L"9A");
+
+	// AIM "99 FNC1 A" (double digit + 130)
+	EXPECT_EQ(id({99 + 130, 232, 66}), "]d3");
+	EXPECT_EQ(decode({99 + 130, 232, 66}), L"99A");
+
+	// AIM "? FNC1 A" (ISO/IEC 16022:2006 11.2 does not specify any restrictions on single first character)
+	EXPECT_EQ(id({64, 232, 66}), "]d3");
+	EXPECT_EQ(decode({64, 232, 66}), L"?A");
+
+	// "LatchC40 A Shift2 FNC1 B" not recognized as FNC1 in second position
+	EXPECT_EQ(id({230, 0x57, 0xC4, 254, 67}), "]d1"); // shift2FNC1 = 1600 * 14 + (40 * 1) + 27 + 1 == 0x57C4
+	EXPECT_EQ(decode({230, 0x57, 0xC4, 254, 67}), L"A\u001DB");
+
+	// "99 FNC1 A" (2 single digits before FNC1 not recognized as AIM)
+	EXPECT_EQ(id({58, 58, 232, 66}), "]d1");
+	EXPECT_EQ(decode({58, 58, 232, 66}), L"99\u001DA");
+
+	// GS1 "StructuredAppend FNC1 (20)01"
+	EXPECT_EQ(id({233, 42, 1, 1, 232, 150, 131}), "]d2");
+	EXPECT_EQ(decode({233, 42, 1, 1, 232, 150, 131}), L"2001");
+
+	// AIM "StructuredAppend A FNC1 B"
+	EXPECT_EQ(id({233, 42, 1, 1, 66, 232, 67}), "]d3");
+	EXPECT_EQ(decode({233, 42, 1, 1, 66, 232, 67}), L"AB");
+}
+
+TEST(DMDecodeTest, DMRESymbologyIdentifier)
+{
+	// Plain
+	EXPECT_EQ(id({50}, true /*isDMRE*/), "]d7");
+	EXPECT_EQ(decode({50}, true /*isDMRE*/), L"1");
+
+	// GS1 "FNC1 (20)01"
+	EXPECT_EQ(id({232, 150, 131}, true /*isDMRE*/), "]d8");
+	EXPECT_EQ(decode({232, 150, 131}, true /*isDMRE*/), L"2001");
+
+	// AIM "A FNC1 B"
+	EXPECT_EQ(id({66, 232, 67}, true /*isDMRE*/), "]d9");
+	EXPECT_EQ(decode({66, 232, 67}, true /*isDMRE*/), L"AB");
+
+	// AIM "9 FNC1 A"
+	EXPECT_EQ(id({58, 232, 66}, true /*isDMRE*/), "]d9");
+	EXPECT_EQ(decode({58, 232, 66}, true /*isDMRE*/), L"9A");
+
+	// AIM "99 FNC1 A" (double digit + 130)
+	EXPECT_EQ(id({99 + 130, 232, 66}, true /*isDMRE*/), "]d9");
+	EXPECT_EQ(decode({99 + 130, 232, 66}, true /*isDMRE*/), L"99A");
+
+	// AIM "? FNC1 A" (ISO/IEC 16022:2006 11.2 does not specify any restrictions on single first character)
+	EXPECT_EQ(id({64, 232, 66}, true /*isDMRE*/), "]d9");
+	EXPECT_EQ(decode({64, 232, 66}, true /*isDMRE*/), L"?A");
+
+	// "99 FNC1 A" (2 single digits before FNC1 not recognized as AIM)
+	EXPECT_EQ(id({58, 58, 232, 66}, true /*isDMRE*/), "]d7");
+	EXPECT_EQ(decode({58, 58, 232, 66}, true /*isDMRE*/), L"99\u001DA");
+
+	// GS1 "StructuredAppend FNC1 (20)01"
+	EXPECT_EQ(id({233, 42, 1, 1, 232, 150, 131}, true /*isDMRE*/), "]d8");
+	EXPECT_EQ(decode({233, 42, 1, 1, 232, 150, 131}, true /*isDMRE*/), L"2001");
+
+	// AIM "StructuredAppend A FNC1 B"
+	EXPECT_EQ(id({233, 42, 1, 1, 66, 232, 67}, true /*isDMRE*/), "]d9");
+	EXPECT_EQ(decode({233, 42, 1, 1, 66, 232, 67}, true /*isDMRE*/), L"AB");
 }
 
 TEST(DMDecodeTest, StructuredAppend)
@@ -117,38 +211,44 @@ TEST(DMDecodeTest, StructuredAppend)
 	EXPECT_EQ(info({50}).index, -1);
 	EXPECT_EQ(info({50}).count, -1);
 	EXPECT_TRUE(info({50}).id.empty());
+	EXPECT_EQ(id({50}), "]d1");
+
+	// Structured Append "233" must be first ISO 16022:2006 5.6.1
+	EXPECT_FALSE(parse({50, 233, 42, 1, 1}).isValid());
+	EXPECT_EQ(info({50, 233, 42, 1, 1}).index, -1);
 
 	// ISO/IEC 16022:2006 5.6.2 sequence indicator example
-	EXPECT_EQ(info({50, 233, 42, 1, 1}).index, 2); // 1-based position 3 == index 2
-	EXPECT_EQ(info({50, 233, 42, 1, 1}).count, 7);
-	EXPECT_EQ(info({50, 233, 42, 1, 1}).id, "257");
+	EXPECT_EQ(info({233, 42, 1, 1, 50}).index, 2); // 1-based position 3 == index 2
+	EXPECT_EQ(info({233, 42, 1, 1, 50}).count, 7);
+	EXPECT_EQ(info({233, 42, 1, 1, 50}).id, "257");
+	EXPECT_EQ(id({233, 42, 1, 1, 50}), "]d1");
 
 	// Sequence indicator
-	EXPECT_EQ(info({50, 233, 0, 1, 1}).index, 0);
-	EXPECT_EQ(info({50, 233, 0, 1, 1}).count, 0); // Count 17 set to 0
+	EXPECT_EQ(info({233, 0, 1, 1, 50}).index, 0);
+	EXPECT_EQ(info({233, 0, 1, 1, 50}).count, 0); // Count 17 set to 0
 
-	EXPECT_EQ(info({50, 233, 1, 1, 1}).index, 0);
-	EXPECT_EQ(info({50, 233, 1, 1, 1}).count, 16);
+	EXPECT_EQ(info({233, 1, 1, 1, 50}).index, 0);
+	EXPECT_EQ(info({233, 1, 1, 1, 50}).count, 16);
 
-	EXPECT_EQ(info({50, 233, 0x81, 1, 1}).index, 8);
-	EXPECT_EQ(info({50, 233, 0x81, 1, 1}).count, 16);
+	EXPECT_EQ(info({233, 0x81, 1, 1, 50}).index, 8);
+	EXPECT_EQ(info({233, 0x81, 1, 1, 50}).count, 16);
 
-	EXPECT_EQ(info({50, 233, 0xFF, 1, 1}).index, 15);
-	EXPECT_EQ(info({50, 233, 0xFF, 1, 1}).count, 0); // Count 2 <= index so set to 0
+	EXPECT_EQ(info({233, 0xFF, 1, 1, 50}).index, 15);
+	EXPECT_EQ(info({233, 0xFF, 1, 1, 50}).count, 0); // Count 2 <= index so set to 0
 
-	EXPECT_EQ(info({50, 233, 0xF1, 1, 1}).index, 15);
-	EXPECT_EQ(info({50, 233, 0xF1, 1, 1}).count, 16);
+	EXPECT_EQ(info({233, 0xF1, 1, 1, 50}).index, 15);
+	EXPECT_EQ(info({233, 0xF1, 1, 1, 50}).count, 16);
 
 	// File identification
-	EXPECT_EQ(info({50, 233, 42, 1, 12}).id, "268");
-	EXPECT_EQ(info({50, 233, 42, 12, 34}).id, "3106");
-	EXPECT_EQ(info({50, 233, 42, 12, 123}).id, "3195");
-	EXPECT_EQ(info({50, 233, 42, 254, 254}).id, "65278");
+	EXPECT_EQ(info({233, 42, 1, 12, 50}).id, "268");
+	EXPECT_EQ(info({233, 42, 12, 34, 50}).id, "3106");
+	EXPECT_EQ(info({233, 42, 12, 123, 50}).id, "3195");
+	EXPECT_EQ(info({233, 42, 254, 254, 50}).id, "65278");
 	// Values outside 1-254 allowed (i.e. tolerated)
-	EXPECT_EQ(info({50, 233, 42, 0, 0}).id, "0");
-	EXPECT_EQ(info({50, 233, 42, 0, 255}).id, "255");
-	EXPECT_EQ(info({50, 233, 42, 255, 0}).id, "65280");
-	EXPECT_EQ(info({50, 233, 42, 255, 255}).id, "65535");
+	EXPECT_EQ(info({233, 42, 0, 0, 50}).id, "0");
+	EXPECT_EQ(info({233, 42, 0, 255, 50}).id, "255");
+	EXPECT_EQ(info({233, 42, 255, 0, 50}).id, "65280");
+	EXPECT_EQ(info({233, 42, 255, 255, 50}).id, "65535");
 }
 
 TEST(DMDecodeTest, ReaderInit)
@@ -157,19 +257,19 @@ TEST(DMDecodeTest, ReaderInit)
 	EXPECT_FALSE(parse({50}).readerInit());
 	EXPECT_TRUE(parse({50}).isValid());
 
+	// Reader Programming "234" must be first ISO 16022:2006 5.2.4.9
+	EXPECT_FALSE(parse({50, 234}).readerInit());
+	EXPECT_FALSE(parse({50, 234}).isValid());
+
 	// Set
 	EXPECT_TRUE(parse({234, 50}).readerInit());
 	EXPECT_TRUE(parse({234, 50}).isValid());
 
-	// Must be first
-	EXPECT_FALSE(parse({50, 234}).readerInit());
-	EXPECT_FALSE(parse({50, 234}).isValid());
-
 	EXPECT_FALSE(parse({235, 234, 50}).readerInit()); // Upper Shift first
 	EXPECT_FALSE(parse({235, 234, 50}).isValid());
 
-	// Can't be used with Structured Append
-	EXPECT_TRUE(parse({50, 233, 42, 1, 1}).isValid()); // Null
-	EXPECT_FALSE(parse({234, 50, 233, 42, 1, 1}).readerInit());
-	EXPECT_FALSE(parse({234, 50, 233, 42, 1, 1}).isValid());
+	// Can't be used with Structured Append "233"
+	EXPECT_TRUE(parse({233, 42, 1, 1, 50}).isValid()); // Null
+	EXPECT_FALSE(parse({233, 42, 1, 1, 234, 50}).readerInit());
+	EXPECT_FALSE(parse({233, 42, 1, 1, 234, 50}).isValid());
 }
