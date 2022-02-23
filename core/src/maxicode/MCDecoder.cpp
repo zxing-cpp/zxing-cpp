@@ -316,8 +316,21 @@ namespace DecodedBitStreamParser
 				result.append(GetMessage(bytes, 1, 77, characterSet, sai));
 				break;
 		}
+
+		// As converting character set ECIs ourselves and ignoring/skipping non-character ECIs, not using modifiers
+		// that indicate ECI protocol (ISO/IEC 16023:2000 Annexe E Table E1)
+		std::string symbologyIdentifier;
+		if (mode == 4 || mode == 5) {
+			symbologyIdentifier = "]U0";
+		}
+		else if (mode == 2 || mode == 3) {
+			symbologyIdentifier = "]U1";
+		}
+		// No identifier defined for mode 6
+
 		return DecoderResult(std::move(bytes), std::move(result))
 				.setEcLevel(std::to_wstring(mode))
+				.setSymbologyIdentifier(std::move(symbologyIdentifier))
 				.setStructuredAppend(sai)
 				.setReaderInit(mode == 6);
 	}

@@ -1,0 +1,2 @@
+symbologyIdentifier=]U1
+ecLevel=2
