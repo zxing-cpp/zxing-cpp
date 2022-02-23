@@ -1,0 +1,5 @@
+symbologyIdentifier=]U0
+ecLevel=5
+sequenceSize=3
+sequenceIndex=1
+sequenceId=

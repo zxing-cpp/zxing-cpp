@@ -61,28 +61,33 @@ static StructuredAppendInfo info(ByteArray bytes, const int mode)
 	return parse(bytes, mode).structuredAppend();
 }
 
-TEST(MCDecodeTest, StructuredAppend)
+TEST(MCDecodeTest, StructuredAppendSymbologyIdentifier)
 {
 	// Null
 	EXPECT_EQ(info({49}, 2).index, -1); // Mode 2
 	EXPECT_EQ(info({49}, 2).count, -1);
 	EXPECT_TRUE(info({49}, 2).id.empty());
+	EXPECT_EQ(parse({49}, 2).symbologyIdentifier(), "]U1");
 
 	EXPECT_EQ(info({49}, 3).index, -1); // Mode 3
 	EXPECT_EQ(info({49}, 3).count, -1);
 	EXPECT_TRUE(info({49}, 3).id.empty());
+	EXPECT_EQ(parse({49}, 3).symbologyIdentifier(), "]U1");
 
 	EXPECT_EQ(info({49}, 4).index, -1); // Mode 4
 	EXPECT_EQ(info({49}, 4).count, -1);
 	EXPECT_TRUE(info({49}, 4).id.empty());
+	EXPECT_EQ(parse({49}, 4).symbologyIdentifier(), "]U0");
 
 	EXPECT_EQ(info({49}, 5).index, -1); // Mode 5
 	EXPECT_EQ(info({49}, 5).count, -1);
 	EXPECT_TRUE(info({49}, 5).id.empty());
+	EXPECT_EQ(parse({49}, 5).symbologyIdentifier(), "]U0");
 
 	EXPECT_EQ(info({49}, 6).index, -1); // Mode 6
 	EXPECT_EQ(info({49}, 6).count, -1);
 	EXPECT_TRUE(info({49}, 6).id.empty());
+	EXPECT_TRUE(parse({49}, 6).symbologyIdentifier().empty()); // Not defined for reader initialisation/programming
 
 	// ISO/IEC 16023:2000 4.9.1 example
 	EXPECT_EQ(info({33, 22, 49}, 2).index, 2); // Mode 2 - 3rd position 1-based == index 2
