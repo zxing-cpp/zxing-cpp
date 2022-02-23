@@ -297,6 +297,7 @@ static int TextCompaction(DecodeStatus& status, const std::vector<int>& codeword
 
 	int index = 0;
 	bool end = false;
+
 	while ((codeIndex < codewords[0]) && !end) {
 		int code = codewords[codeIndex++];
 		if (code < TEXT_COMPACTION_MODE_LATCH) {
@@ -709,7 +710,7 @@ DecodeStatus DecodeMacroBlock(const std::vector<int>& codewords, int codeIndex, 
 					case MACRO_PDF417_OPTIONAL_FIELD_SEGMENT_COUNT: {
 						uint64_t segmentCount;
 						codeIndex = DecodeMacroOptionalNumericField(status, codewords, codeIndex + 1, segmentCount);
-						resultMetadata.setSegmentCount(segmentCount);
+						resultMetadata.setSegmentCount(static_cast<int>(segmentCount));
 						break;
 					}
 					case MACRO_PDF417_OPTIONAL_FIELD_TIME_STAMP: {
@@ -721,7 +722,7 @@ DecodeStatus DecodeMacroBlock(const std::vector<int>& codewords, int codeIndex, 
 					case MACRO_PDF417_OPTIONAL_FIELD_CHECKSUM: {
 						uint64_t checksum;
 						codeIndex = DecodeMacroOptionalNumericField(status, codewords, codeIndex + 1, checksum);
-						resultMetadata.setChecksum(checksum);
+						resultMetadata.setChecksum(static_cast<int>(checksum));
 						break;
 					}
 					case MACRO_PDF417_OPTIONAL_FIELD_FILE_SIZE: {
@@ -860,6 +861,9 @@ DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel, c
 
 	return DecoderResult(ByteArray(), std::move(resultEncoded))
 		.setEcLevel(std::to_wstring(ecLevel))
+		// As converting character set ECIs ourselves and ignoring/skipping non-character ECIs, not using modifier
+		// that indicates ECI protocol (ISO/IEC 15438:2015 Annex L Table L.1)
+		.setSymbologyIdentifier("]L2")
 		.setStructuredAppend(sai)
 		.setReaderInit(readerInit)
 		.setExtra(resultMetadata);
