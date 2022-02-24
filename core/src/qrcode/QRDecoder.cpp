@@ -309,6 +309,8 @@ DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCorrectionLevel 
 {
 	BitSource bits(bytes);
 	std::wstring result;
+	int symbologyIdModifier = 1; // ISO/IEC 18004:2015 Annex F Table F.1
+	int appIndValue = -1; // ISO/IEC 18004:2015 7.4.8.3 AIM Application Indicator (FNC1 in second position)
 	StructuredAppendInfo structuredAppend;
 	static const int GB2312_SUBSET = 1;
 
@@ -330,9 +332,16 @@ DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCorrectionLevel 
 			case CodecMode::TERMINATOR:
 				break;
 			case CodecMode::FNC1_FIRST_POSITION:
+				fc1InEffect = true; // In Alphanumeric mode undouble doubled percents and treat single percent as <GS>
+				// As converting character set ECIs ourselves and ignoring/skipping non-character ECIs, not using
+				// modifiers that indicate ECI protocol (ISO/IEC 18004:2015 Annex F Table F.1)
+				symbologyIdModifier = 3;
+				break;
 			case CodecMode::FNC1_SECOND_POSITION:
-				// We do little with FNC1 except alter the parsed result a bit according to the spec
-				fc1InEffect = true;
+				fc1InEffect = true; // As above
+				symbologyIdModifier = 5; // As above
+				// ISO/IEC 18004:2015 7.4.8.3 AIM Application Indicator "00-99" or "A-Za-z"
+				appIndValue = bits.readBits(8); // Number 00-99 or ASCII value + 100; prefixed to data below
 				break;
 			case CodecMode::STRUCTURED_APPEND:
 				if (bits.available() < 16) {
@@ -405,8 +414,26 @@ DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCorrectionLevel 
 		return DecodeStatus::FormatError;
 	}
 
+	if (appIndValue >= 0) {
+		if (appIndValue < 10) { // "00-09"
+			result.insert(0, L'0' + std::to_wstring(appIndValue));
+		}
+		else if (appIndValue < 100) { // "10-99"
+			result.insert(0, std::to_wstring(appIndValue));
+		}
+		else if ((appIndValue >= 165 && appIndValue <= 190) || (appIndValue >= 197 && appIndValue <= 222)) { // "A-Za-z"
+			result.insert(0, 1, static_cast<wchar_t>(appIndValue - 100));
+		}
+		else {
+			return DecodeStatus::FormatError;
+		}
+	}
+
+	std::string symbologyIdentifier("]Q" + std::to_string(symbologyIdModifier));
+
 	return DecoderResult(std::move(bytes), std::move(result))
 		.setEcLevel(ToString(ecLevel))
+		.setSymbologyIdentifier(std::move(symbologyIdentifier))
 		.setStructuredAppend(structuredAppend);
 }
 
