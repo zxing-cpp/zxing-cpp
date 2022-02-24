@@ -143,8 +143,14 @@ Result Code39Reader::decodePattern(int rowNumber, PatternView& next, std::unique
 	if (_extendedMode && !DecodeExtendedCode39AndCode93(txt, "$%/+"))
 		return Result(DecodeStatus::FormatError);
 
+	// Symbology identifier modifiers ISO/IEC 16388:2007 Annex C Table C.1
+	static const int symbologyModifiers[4] = { 0, 3 /*checksum*/, 4 /*extended*/, 7 /*checksum,extended*/ };
+	int symbologyIdModifier = symbologyModifiers[(int)_extendedMode * 2 + (int)_usingCheckDigit];
+
+	std::string symbologyIdentifier("]A" + std::to_string(symbologyIdModifier));
+
 	int xStop = next.pixelsTillEnd();
-	return Result(txt, rowNumber, xStart, xStop, BarcodeFormat::Code39);
+	return Result(txt, rowNumber, xStart, xStop, BarcodeFormat::Code39, {}, std::move(symbologyIdentifier));
 }
 
 } // namespace ZXing::OneD
