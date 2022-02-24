@@ -203,11 +203,15 @@ Result DataBarReader::decodePattern(int rowNumber, PatternView& next,
 		}
 	}
 
+	// Symbology identifier ISO/IEC 24724:2011 Section 9 and GS1 General Specifications 5.1.3 Figure 5.1.3-2
+	std::string symbologyIdentifier("]e0");
+
 	for (const auto& leftPair : prevState->leftPairs)
 		for (const auto& rightPair : prevState->rightPairs)
 			if (ChecksumIsValid(leftPair, rightPair))
 				return {TextDecoder::FromLatin1(ConstructText(leftPair, rightPair)),
-						EstimatePosition(leftPair, rightPair), BarcodeFormat::DataBar};
+						EstimatePosition(leftPair, rightPair), BarcodeFormat::DataBar,
+						{}, std::move(symbologyIdentifier)};
 #endif
 
 	// guaratee progress (see loop in ODReader.cpp)
