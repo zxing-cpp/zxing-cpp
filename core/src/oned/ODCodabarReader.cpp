@@ -103,8 +103,12 @@ CodabarReader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<D
 	if (!_returnStartEnd)
 		txt = txt.substr(1, txt.size() - 2);
 
+	// symbology identifier ISO/IEC 15424:2008 4.4.9
+	// if checksum processing were implemented and checksum present and stripped then modifier would be 4
+	std::string symbologyIdentifier("]F0");
+
 	int xStop = next.pixelsTillEnd();
-	return Result(txt, rowNumber, xStart, xStop, BarcodeFormat::Codabar);
+	return Result(txt, rowNumber, xStart, xStop, BarcodeFormat::Codabar, {}, std::move(symbologyIdentifier));
 }
 
 } // namespace ZXing::OneD
