@@ -96,3 +96,49 @@ TEST(QRDecodedBitStreamParserTest, HanziLevel1)
 	auto result = DecodeBitStream(ba.toBytes(), *Version::VersionForNumber(1), ErrorCorrectionLevel::Medium, "").text();
 	EXPECT_EQ(L"\u30a2", result);
 }
+
+TEST(QRDecodedBitStreamParserTest, SymbologyIdentifier)
+{
+	const Version& version = *Version::VersionForNumber(1);
+	const ErrorCorrectionLevel ecLevel = ErrorCorrectionLevel::Medium;
+	DecoderResult result;
+
+	// Plain "ANUM(1) A"
+	result = DecodeBitStream({0x20, 0x09, 0x40}, version, ecLevel, "");
+	EXPECT_EQ(result.symbologyIdentifier(), "]Q1");
+	EXPECT_EQ(result.text(), L"A");
+
+	// GS1 "FNC1(1st) NUM(4) 2001"
+	result = DecodeBitStream({0x51, 0x01, 0x0C, 0x81, 0x00}, version, ecLevel, "");
+	EXPECT_EQ(result.symbologyIdentifier(), "]Q3");
+	EXPECT_EQ(result.text(), L"2001"); // "(20)01"
+
+	// GS1 "NUM(4) 2001 FNC1(1st) 301" - FNC1(1st) can occur anywhere
+	result = DecodeBitStream({0x10, 0x10, 0xC8, 0x15, 0x10, 0x0D, 0x2D, 0x00}, version, ecLevel, "");
+	EXPECT_EQ(result.symbologyIdentifier(), "]Q3");
+	EXPECT_EQ(result.text(), L"2001301"); // "(20)01(30)1"
+
+	// AIM "FNC1(2nd) 99 (0x63) ANUM(1) A"
+	result = DecodeBitStream({0x96, 0x32, 0x00, 0x94, 0x00}, version, ecLevel, "");
+	EXPECT_EQ(result.symbologyIdentifier(), "]Q5");
+	EXPECT_EQ(result.text(), L"99A");
+
+	// AIM "BYTE(1) A FNC1(2nd) 99 (0x63) BYTE(1) B" - FNC1(2nd) can occur anywhere
+	result = DecodeBitStream({0x40, 0x14, 0x19, 0x63, 0x40, 0x14, 0x20, 0x00}, version, ecLevel, "");
+	EXPECT_EQ(result.symbologyIdentifier(), "]Q5");
+	EXPECT_EQ(result.text(), L"99AB"); // Application Indicator prefixed to data
+
+	// AIM "FNC1(2nd) A (100 + 61 = 0xA5) ANUM(1) B"
+	result = DecodeBitStream({0x9A, 0x52, 0x00, 0x96, 0x00}, version, ecLevel, "");
+	EXPECT_EQ(result.symbologyIdentifier(), "]Q5");
+	EXPECT_EQ(result.text(), L"AB");
+
+	// AIM "FNC1(2nd) a (100 + 97 = 0xC5) ANUM(1) B"
+	result = DecodeBitStream({0x9C, 0x52, 0x00, 0x96, 0x00}, version, ecLevel, "");
+	EXPECT_EQ(result.symbologyIdentifier(), "]Q5");
+	EXPECT_EQ(result.text(), L"aB");
+
+	// Bad AIM Application Indicator "FNC1(2nd) @ (0xA4) ANUM(1) B"
+	result = DecodeBitStream({0x9A, 0x42, 0x00, 0x96, 0x00}, version, ecLevel, "");
+	EXPECT_FALSE(result.isValid());
+}
