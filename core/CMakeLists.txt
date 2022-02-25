@@ -115,6 +115,7 @@ if (BUILD_READERS)
         src/Result.cpp
         src/ResultPoint.h
         src/ResultPoint.cpp
+        src/StructuredAppend.h
         src/TextDecoder.h
         src/TextDecoder.cpp
         src/ThresholdBinarizer.h
@@ -498,7 +499,25 @@ if (PROJECT_VERSION)
     set_target_properties(ZXing PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
 endif()
 
-set_target_properties(ZXing PROPERTIES PUBLIC_HEADER "${PUBLIC_HEADERS}")
+set(PUBLIC_HEADERS "${COMMON_FILES}")
+list(FILTER PUBLIC_HEADERS INCLUDE REGEX "^.*\.h$")
+  
+message(STATUS "PUBLIC HEADERS BE LIKE ${PUBLIC_HEADERS}")
+
+set_target_properties(ZXing PROPERTIES
+  FRAMEWORK TRUE
+  FRAMEWORK_VERSION "C"
+  XCODE_ATTRIBUTE_DEFINES_MODULE YES
+  XCODE_ATTRIBUTE_BUILD_LIBRARY_FOR_DISTRIBUTION YES
+  XCODE_ATTRIBUTE_MODULEMAP_FILE "wrappers/ios/Sources/Wrapper/module.modulemap"
+  XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC YES
+  MACOSX_FRAMEWORK_IDENTIFIER "com.zxing_cpp.ios"
+  CMAKE_XCODE_ATTRIBUTE_ONLY_ACTIVE_ARCH NO
+  #MACOSX_FRAMEWORK_INFO_PLIST Info.plist
+  PUBLIC_HEADER "${PUBLIC_HEADERS}"
+  XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "iPhone Developer"
+  XCODE_ATTRIBUTE_ENABLE_BITCODE "YES"
+)
 
 include (GNUInstallDirs)
 
