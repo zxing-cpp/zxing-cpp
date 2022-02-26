@@ -57,6 +57,7 @@ class DecodeHints
 	bool _returnCodabarStartEnd : 1;
 	Binarizer _binarizer : 2;
 	EanAddOnSymbol _eanAddOnSymbol : 2;
+    bool _assumeITFCheckDigit : 1;
 
 	BarcodeFormats _formats = BarcodeFormat::None;
 	std::string _characterSet;
@@ -67,7 +68,7 @@ public:
 	DecodeHints()
 		: _tryHarder(1), _tryRotate(1), _isPure(0), _tryCode39ExtendedMode(0), _assumeCode39CheckDigit(0),
 		  _assumeGS1(0), _returnCodabarStartEnd(0), _binarizer(Binarizer::LocalAverage),
-		  _eanAddOnSymbol(EanAddOnSymbol::Ignore)
+		  _eanAddOnSymbol(EanAddOnSymbol::Ignore), _assumeITFCheckDigit(0)
 	{}
 
 #define ZX_PROPERTY(TYPE, GETTER, SETTER) \
@@ -120,6 +121,9 @@ public:
 
 	/// Specify whether to ignore, read or require EAN-2/5 add-on symbols while scanning EAN/UPC codes
 	ZX_PROPERTY(EanAddOnSymbol, eanAddOnSymbol, setEanAddOnSymbol)
+
+	/// Assume ITF codes employ a GS1 check digit.
+	ZX_PROPERTY(bool, assumeITFCheckDigit, setAssumeITFCheckDigit)
 
 #undef ZX_PROPERTY
 #undef ZX_PROPERTY_DEPRECATED
