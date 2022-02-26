@@ -305,13 +305,23 @@ Result MultiUPCEANReader::decodePattern(int rowNumber, PatternView& next, std::u
 		res.format = BarcodeFormat::UPCA;
 	}
 
+	// Symbology identifier modifiers ISO/IEC 15420:2009 Annex B Table B.1
+	// ISO/IEC 15420:2009 (& GS1 General Specifications 5.1.3) states that the content for "]E0" should be 13 digits,
+	// i.e. converted to EAN-13 if UPC-A/E, but not doing this here to maintain backward compatibility
+	std::string symbologyIdentifier(res.format == BarcodeFormat::EAN8 ? "]E4" : "]E0");
+
 	auto ext = res.end;
 	PartialResult addOnRes;
 	if (_hints.eanAddOnSymbol() != EanAddOnSymbol::Ignore && ext.skipSymbol() &&
 		ext.skipSingle(static_cast<int>(begin.sum() * 3.5)) && (AddOn(addOnRes, ext, 5) || AddOn(addOnRes, ext, 2))) {
 
+		// ISO/IEC 15420:2009 states that the content for "]E3" should be 15 or 18 digits, i.e. converted to EAN-13
+		// and extended with no separator, and that the content for "]E4" should be 8 digits, i.e. no add-on
 		//TODO: extend position in include extension
 		res.txt += " " + addOnRes.txt;
+
+		if (res.format != BarcodeFormat::EAN8) // Keeping EAN-8 with add-on as "]E4"
+			symbologyIdentifier = "]E3"; // Combined packet, EAN-13, UPC-A, UPC-E, with add-on
 	}
 
 	next = res.end;
@@ -319,7 +329,8 @@ Result MultiUPCEANReader::decodePattern(int rowNumber, PatternView& next, std::u
 	if (_hints.eanAddOnSymbol() == EanAddOnSymbol::Require && !addOnRes.isValid())
 		return Result(DecodeStatus::NotFound);
 
-	return {res.txt, rowNumber, begin.pixelsInFront(), res.end.pixelsTillEnd(), res.format};
+	return {res.txt, rowNumber, begin.pixelsInFront(), res.end.pixelsTillEnd(), res.format, {},
+			std::move(symbologyIdentifier)};
 }
 
 } // namespace ZXing::OneD
