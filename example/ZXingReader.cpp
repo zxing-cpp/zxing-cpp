@@ -171,33 +171,34 @@ int main(int argc, char* argv[])
 				if (!firstFile)
 					std::cout << "\n";
 				if (filePaths.size() > 1)
-					std::cout << "File:     " << filePath << "\n";
+					std::cout << "File:       " << filePath << "\n";
 				firstFile = false;
 			}
-			std::cout << "Text:     \"" << ToUtf8(result.text(), angleEscape) << "\"\n"
-					  << "Format:   " << ToString(result.format()) << "\n"
-					  << "Position: " << result.position() << "\n"
-					  << "Rotation: " << result.orientation() << " deg\n"
-					  << "Error:    " << ToString(result.status()) << "\n";
+			std::cout << "Text:       \"" << ToUtf8(result.text(), angleEscape) << "\"\n"
+					  << "Format:     " << ToString(result.format()) << "\n"
+					  << "Identifier: " << result.symbologyIdentifier() << "\n"
+					  << "Position:   " << result.position() << "\n"
+					  << "Rotation:   " << result.orientation() << " deg\n"
+					  << "Error:      " << ToString(result.status()) << "\n";
 
 			auto printOptional = [](const char* key, const std::string& v) {
 				if (!v.empty())
 					std::cout << key << v << "\n";
 			};
 
-			printOptional("EC Level: ", ToUtf8(result.ecLevel()));
+			printOptional("EC Level:   ", ToUtf8(result.ecLevel()));
 
 			if (result.lineCount())
-				std::cout << "Lines:    " << result.lineCount() << "\n";
+				std::cout << "Lines:      " << result.lineCount() << "\n";
 
 			if ((BarcodeFormat::EAN13 | BarcodeFormat::EAN8 | BarcodeFormat::UPCA | BarcodeFormat::UPCE)
 					.testFlag(result.format())) {
-				printOptional("Country:  ", GTIN::LookupCountryIdentifier(ToUtf8(result.text()), result.format()));
-				printOptional("Add-On:   ", GTIN::EanAddOn(result));
-				printOptional("Price:    ", GTIN::Price(GTIN::EanAddOn(result)));
-				printOptional("Issue #:  ", GTIN::IssueNr(GTIN::EanAddOn(result)));
+				printOptional("Country:    ", GTIN::LookupCountryIdentifier(ToUtf8(result.text()), result.format()));
+				printOptional("Add-On:     ", GTIN::EanAddOn(result));
+				printOptional("Price:      ", GTIN::Price(GTIN::EanAddOn(result)));
+				printOptional("Issue #:    ", GTIN::IssueNr(GTIN::EanAddOn(result)));
 			} else if (result.format() == BarcodeFormat::ITF && result.text().length() == 14) {
-				printOptional("Country:  ", GTIN::LookupCountryIdentifier(ToUtf8(result.text()), result.format()));
+				printOptional("Country:    ", GTIN::LookupCountryIdentifier(ToUtf8(result.text()), result.format()));
 			}
 
 			if (result.isPartOfSequence())

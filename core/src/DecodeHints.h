@@ -53,6 +53,7 @@ class DecodeHints
 	bool _isPure : 1;
 	bool _tryCode39ExtendedMode : 1;
 	bool _assumeCode39CheckDigit : 1;
+	bool _assumeITFCheckDigit : 1;
 	bool _assumeGS1 : 1;
 	bool _returnCodabarStartEnd : 1;
 	Binarizer _binarizer : 2;
@@ -66,7 +67,7 @@ public:
 	// bitfields don't get default initialized to 0.
 	DecodeHints()
 		: _tryHarder(1), _tryRotate(1), _isPure(0), _tryCode39ExtendedMode(0), _assumeCode39CheckDigit(0),
-		  _assumeGS1(0), _returnCodabarStartEnd(0), _binarizer(Binarizer::LocalAverage),
+		  _assumeITFCheckDigit(0), _assumeGS1(0), _returnCodabarStartEnd(0), _binarizer(Binarizer::LocalAverage),
 		  _eanAddOnSymbol(EanAddOnSymbol::Ignore)
 	{}
 
@@ -104,6 +105,9 @@ public:
 
 	/// Assume Code-39 codes employ a check digit.
 	ZX_PROPERTY(bool, assumeCode39CheckDigit, setAssumeCode39CheckDigit)
+
+	/// Assume ITF codes employ a GS1 check digit.
+	ZX_PROPERTY(bool, assumeITFCheckDigit, setAssumeITFCheckDigit)
 
 	/**
 	* Assume the barcode is being processed as a GS1 barcode, and modify behavior as needed.
