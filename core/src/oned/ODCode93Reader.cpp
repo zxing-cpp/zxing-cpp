@@ -134,8 +134,11 @@ Result Code93Reader::decodePattern(int rowNumber, PatternView& next, std::unique
 	if (!DecodeExtendedCode39AndCode93(txt, "abcd"))
 		return Result(DecodeStatus::FormatError);
 
+	// Symbology identifier ISO/IEC 15424:2008 4.4.10 no modifiers
+	std::string symbologyIdentifier("]G0");
+
 	int xStop = next.pixelsTillEnd();
-	return Result(txt, rowNumber, xStart, xStop, BarcodeFormat::Code93);
+	return Result(txt, rowNumber, xStart, xStop, BarcodeFormat::Code93, {}, std::move(symbologyIdentifier));
 }
 
 } // namespace ZXing::OneD
