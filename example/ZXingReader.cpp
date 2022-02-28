@@ -101,7 +101,7 @@ void drawLine(const ImageView& image, PointI a, PointI b)
 	int steps = maxAbsComponent(b - a);
 	PointF dir = bresenhamDirection(PointF(b - a));
 	for (int i = 0; i < steps; ++i) {
-		auto p = centered(a + i * dir);
+		auto p = PointI(centered(a + i * dir));
 		*((uint32_t*)image.data(p.x, p.y)) = 0xff0000ff;
 	}
 }
