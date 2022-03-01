@@ -18,6 +18,7 @@
 #include "GTIN.h"
 
 #include "Result.h"
+#include "TextUtfEncoding.h"
 
 #include <algorithm>
 #include <iomanip>
@@ -217,7 +218,7 @@ std::string EanAddOn(const Result& result)
 		return {};
 	auto txt = result.text();
 	auto pos = txt.find(L' ');
-	return std::string(pos == std::wstring::npos ? txt.end() : txt.begin() + pos + 1, txt.end());
+	return pos != std::wstring::npos ? TextUtfEncoding::ToUtf8(txt.substr(pos + 1)) : std::string();
 }
 
 std::string IssueNr(const std::string& ean2AddOn)

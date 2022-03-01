@@ -121,7 +121,7 @@ public:
 	explicit Result(ZXing::Result&& r) : ZXing::Result(std::move(r)) {
 		_text = QString::fromWCharArray(ZXing::Result::text().c_str());
 		_rawBytes = QByteArray(reinterpret_cast<const char*>(ZXing::Result::rawBytes().data()),
-							   ZXing::Result::rawBytes().size());
+							   Size(ZXing::Result::rawBytes()));
 		auto& pos = ZXing::Result::position();
 		auto qp = [&pos](int i) { return QPoint(pos[i].x, pos[i].y); };
 		_position = {qp(0), qp(1), qp(2), qp(3)};
