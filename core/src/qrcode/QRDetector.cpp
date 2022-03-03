@@ -168,7 +168,8 @@ static double EstimateModuleSize(const BitMatrix& image, PointF a, PointF b)
 {
 	BitMatrixCursorF cur(image, a, b - a);
 
-	cur.stepToEdge(3);
+	if (!cur.stepToEdge(3, distance(a, b) / 3))
+		return -1;
 
 	cur.turnBack();
 	cur.step();
@@ -190,6 +191,10 @@ static DimensionEstimate EstimateDimension(const BitMatrix& image, PointF a, Poi
 {
 	auto ms_a = EstimateModuleSize(image, a, b);
 	auto ms_b = EstimateModuleSize(image, b, a);
+
+	if (ms_a < 0 || ms_b < 0)
+		return {};
+
 	auto moduleSize = (ms_a + ms_b) / 2;
 
 	int dimension = std::lround(distance(a, b) / moduleSize) + 7;
@@ -242,6 +247,10 @@ DetectorResult SampleAtFinderPatternSet(const BitMatrix& image, const FinderPatt
 {
 	auto top  = EstimateDimension(image, fp.tl, fp.tr);
 	auto left = EstimateDimension(image, fp.tl, fp.bl);
+
+	if (!top.dim || !left.dim)
+		return {};
+
 	auto best = top.err < left.err ? top : left;
 	int dimension = best.dim;
 	int moduleSize = static_cast<int>(best.ms + 1);
