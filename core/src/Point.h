@@ -161,7 +161,6 @@ PointT<T> bresenhamDirection(PointT<T> d)
 template <typename T>
 PointT<T> mainDirection(PointT<T> d)
 {
-	assert(std::abs(d.x) != std::abs(d.y));
 	return std::abs(d.x) > std::abs(d.y) ? PointT<T>(d.x, 0) : PointT<T>(0, d.y);
 }
 
