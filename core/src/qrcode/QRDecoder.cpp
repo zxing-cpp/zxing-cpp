@@ -455,10 +455,8 @@ DoDecode(const BitMatrix& bits, const Version& version, const std::string& hinte
 		return DecodeStatus::FormatError;
 
 	// Count total number of data bytes
-	int totalBytes = 0;
-	for (const auto& dataBlock : dataBlocks) {
-		totalBytes += dataBlock.numDataCodewords();
-	}
+	const auto op = [](auto totalBytes, const auto& dataBlock){ return totalBytes + dataBlock.numDataCodewords();};
+	const auto totalBytes = std::accumulate(std::begin(dataBlocks), std::end(dataBlocks), int{}, op);
 	ByteArray resultBytes(totalBytes);
 	auto resultIterator = resultBytes.begin();
 
