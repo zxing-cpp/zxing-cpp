@@ -60,11 +60,8 @@ ModulusPoly::evaluateAt(int a) const
 	size_t size = _coefficients.size();
 	if (a == 1) {
 		// Just the sum of the coefficients
-		int result = 0;
-		for (int coefficient : _coefficients) {
-			result = _field->add(result, coefficient);
-		}
-		return result;
+		const auto op = [this](auto result, const auto coefficient){ return _field->add(result, coefficient);};
+		return std::accumulate(std::begin(_coefficients), std::end(_coefficients), int{}, op);
 	}
 	int result = _coefficients[0];
 	for (size_t i = 1; i < size; i++) {
