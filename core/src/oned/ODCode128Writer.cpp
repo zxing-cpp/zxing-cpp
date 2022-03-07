@@ -268,11 +268,8 @@ Code128Writer::encode(const std::wstring& contents, int width, int height) const
 
 	// Compute result
 	std::vector<bool> result(codeWidth, false);
-	int pos = 0;
-	for (const auto& pattern : patterns) {
-		pos += WriterHelper::AppendPattern(result, pos, pattern, true);
-	}
-
+	const auto op = [&result](auto pos, const auto& pattern){ return pos + WriterHelper::AppendPattern(result, pos, pattern, true);};
+	auto pos = std::accumulate(std::begin(patterns), std::end(patterns), int{}, op);
 	// Append termination bar
 	result[pos++] = true;
 	result[pos++] = true;
