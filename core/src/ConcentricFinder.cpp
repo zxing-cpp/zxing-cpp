@@ -101,6 +101,8 @@ std::optional<PointF> FinetuneConcentricPatternCenter(const BitMatrix& image, Po
 		res = CenterOfDoubleCross(image, PointI(center), range, finderPatternSize / 2 + 1);
 	if (!res || !image.get(*res))
 		res = center;
+	if (!res || !image.get(*res))
+		return {};
 	return res;
 }
 
