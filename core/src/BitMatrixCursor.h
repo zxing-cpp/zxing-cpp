@@ -124,19 +124,19 @@ public:
 	int stepToEdge(int nth = 1, int range = 0)
 	{
 		// TODO: provide an alternative and faster out-of-bounds check than isIn() inside testAt()
-		int sum = 0;
+		int steps = 0;
 		auto lv = testAt(p);
 
-		while (nth && (!range || sum < range) && lv.isValid()) {
-			step();
-			++sum;
-			auto v = testAt(p);
+		while (nth && (!range || steps < range) && lv.isValid()) {
+			++steps;
+			auto v = testAt(p + steps * d);
 			if (lv != v) {
 				lv = v;
 				--nth;
 			}
 		}
-		return sum * (nth == 0);
+		p += steps * d;
+		return steps * (nth == 0);
 	}
 
 	bool stepAlongEdge(Direction dir, bool skipCorner = false)
