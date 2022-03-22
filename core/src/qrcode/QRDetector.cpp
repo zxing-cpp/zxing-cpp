@@ -74,6 +74,7 @@ static auto FindFinderPatterns(const BitMatrix& image, bool tryHarder)
 													   Reduce(next) * 3 / 2); // 1.5 for very skewed samples
 				if (pattern) {
 					log(*pattern, 3);
+					assert(image.get(pattern->x, pattern->y));
 					res.push_back(*pattern);
 				}
 			}
@@ -166,7 +167,8 @@ static FinderPatternSets GenerateFinderPatternSets(std::vector<ConcentricPattern
 
 static double EstimateModuleSize(const BitMatrix& image, PointF a, PointF b)
 {
-	BitMatrixCursorF cur(image, a, b - a);
+	BitMatrixCursorF cur(image, centered(a), b - a);
+	assert(cur.isBlack());
 
 	if (!cur.stepToEdge(3, distance(a, b) / 3))
 		return -1;
