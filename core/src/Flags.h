@@ -17,6 +17,7 @@
 
 #include "BitHacks.h"
 
+#include <cstddef>
 #include <iterator>
 #include <type_traits>
 
@@ -52,7 +53,7 @@ public:
 	public:
 		using iterator_category = std::input_iterator_tag;
 		using value_type = Enum;
-		using difference_type = ptrdiff_t;
+		using difference_type = std::ptrdiff_t;
 		using pointer = Enum*;
 		using reference = Enum&;
 
