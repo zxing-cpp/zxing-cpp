@@ -167,14 +167,20 @@ static FinderPatternSets GenerateFinderPatternSets(std::vector<ConcentricPattern
 
 static double EstimateModuleSize(const BitMatrix& image, PointF a, PointF b)
 {
-	BitMatrixCursorF cur(image, centered(a), b - a);
+	BitMatrixCursorF cur(image, a, b - a);
 	assert(cur.isBlack());
 
 	if (!cur.stepToEdge(3, distance(a, b) / 3))
 		return -1;
 
 	cur.turnBack();
-	cur.step();
+
+	// the following is basically a simple "cur.step()" that reverts the very last step that crossed from back into
+	// white, but due to a numerical instability near an integer boundary (think .999999999995) it might be required
+	// to back up two steps. See issues #300 and #308.
+	if (!cur.stepToEdge(1, 2))
+		return -1;
+
 	assert(cur.isBlack());
 
 	auto pattern = cur.readPattern<std::array<int, 4>>();
