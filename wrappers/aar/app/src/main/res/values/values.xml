@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+		<item name="android:immersive">true</item>
+		<item name="android:windowFullscreen">true</item>
+		<item name="android:windowTranslucentStatus">true</item>
+		<item name="android:windowTranslucentNavigation">true</item>
+	</style>
+
+	<style name="Chip" parent="Widget.MaterialComponents.Chip.Entry">
+		<item name="android:checkable">true</item>
+		<item name="chipSurfaceColor">#A0FFFFFF</item>
+		<item name="chipMinTouchTargetSize">42dp</item>
+		<item name="closeIconVisible">false</item>
+		<item name="android:layout_width">110dp</item>
+		<item name="android:layout_height">wrap_content</item>
+	</style>
+
+	<style name="ChipR" parent="Chip">
+		<item name="android:scaleX">-1</item>
+	</style>
+</resources>

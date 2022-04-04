@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<dimen name="margin_xsmall">16dp</dimen>
+	<dimen name="margin_small">32dp</dimen>
+	<dimen name="margin_medium">48dp</dimen>
+	<dimen name="margin_large">64dp</dimen>
+	<dimen name="margin_xlarge">92dp</dimen>
+
+	<dimen name="spacing_small">4dp</dimen>
+	<dimen name="spacing_medium">8dp</dimen>
+	<dimen name="spacing_large">16dp</dimen>
+
+	<dimen name="shutter_button_size">64dp</dimen>
+	<dimen name="shutter_button_margin">80dp</dimen>
+</resources>

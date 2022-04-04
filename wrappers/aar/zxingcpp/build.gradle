@@ -1,0 +1,55 @@
+plugins {
+	id 'com.android.library'
+	id 'kotlin-android'
+	id 'maven-publish'
+}
+
+android {
+	compileSdkVersion sdk_version
+
+	defaultConfig {
+		minSdkVersion 9
+		targetSdkVersion sdk_version
+
+		ndk {
+			// speed up build: compile only arm versions
+			abiFilters 'armeabi-v7a', 'arm64-v8a'
+		}
+
+		externalNativeBuild {
+			cmake {
+				arguments "-DCMAKE_BUILD_TYPE=RelWithDebInfo"
+			}
+		}
+	}
+
+	buildTypes {
+		release {
+			minifyEnabled true
+			proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+		}
+	}
+
+	externalNativeBuild {
+		cmake {
+			path file('src/main/cpp/CMakeLists.txt')
+		}
+	}
+}
+
+dependencies {
+	implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+}
+
+afterEvaluate {
+	publishing {
+		publications {
+			release(MavenPublication) {
+				from components.release
+				groupId = 'com.github.nu-book'
+				artifactId = 'final'
+				version = '1.2.1'
+			}
+		}
+	}
+}

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent">
+
+	<androidx.camera.view.PreviewView
+		android:id="@+id/view_finder"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		app:scaleType="fitCenter" />
+
+	<View
+		android:id="@+id/box_crop"
+		android:layout_width="0dp"
+		android:layout_height="0dp"
+		android:background="@drawable/shape_rectangle" />
+
+	<TextView
+		android:id="@+id/text_result"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_marginTop="@dimen/margin_large"
+		android:layout_centerHorizontal="true"
+		android:background="#65000000"
+		android:shadowColor="@android:color/black"
+		android:shadowRadius="6"
+		android:text="@string/unknown"
+		android:textAllCaps="false"
+		android:textAppearance="@style/TextAppearance.AppCompat.Medium.Inverse" />
+
+	<TextView
+		android:id="@+id/text_fps"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_marginTop="@dimen/margin_xsmall"
+		android:layout_marginEnd="@dimen/margin_xsmall"
+		android:layout_alignParentEnd="true"
+		android:background="#65000000"
+		android:shadowColor="@android:color/black"
+		android:shadowRadius="6"
+		android:text="@string/unknown"
+		android:textAllCaps="false"
+		android:textAppearance="@style/TextAppearance.AppCompat.Small.Inverse" />
+
+	<com.google.android.material.chip.ChipGroup
+		android:layout_width="120dp"
+		android:layout_height="wrap_content"
+		android:layout_marginEnd="8dp"
+		android:layout_marginBottom="8dp"
+		android:layout_alignParentBottom="true"
+		android:layout_alignParentEnd="true"
+		android:scaleX="-1">
+
+		<com.google.android.material.chip.Chip
+			android:id="@+id/chip_java"
+			style="@style/ChipR"
+			android:text="Java" />
+
+		<com.google.android.material.chip.Chip
+			android:id="@+id/chip_qrcode"
+			style="@style/ChipR"
+			android:text="QRCode" />
+
+		<com.google.android.material.chip.Chip
+			android:id="@+id/chip_tryHarder"
+			style="@style/ChipR"
+			android:text="tryHarder" />
+
+		<com.google.android.material.chip.Chip
+			android:id="@+id/chip_tryRotate"
+			style="@style/ChipR"
+			android:text="tryRotate" />
+
+		<com.google.android.material.chip.Chip
+			android:id="@+id/chip_crop"
+			style="@style/ChipR"
+			android:text="crop" />
+
+		<com.google.android.material.chip.Chip
+			android:id="@+id/chip_pause"
+			style="@style/ChipR"
+			android:text="pause" />
+
+	</com.google.android.material.chip.ChipGroup>
+
+</RelativeLayout>
