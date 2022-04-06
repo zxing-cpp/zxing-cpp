@@ -195,6 +195,9 @@ PYBIND11_MODULE(zxingcpp, m)
 		.def_property_readonly("format", &Result::format,
 			":return: decoded symbol format\n"
 			":rtype: zxing.BarcodeFormat")
+		.def_property_readonly("symbology_identifier", &Result::symbologyIdentifier,
+			":return: decoded symbology idendifier\n"
+			":rtype: str")
 		.def_property_readonly("position", &Result::position,
 			":return: position of the decoded symbol\n"
 			":rtype: zxing.Position")
