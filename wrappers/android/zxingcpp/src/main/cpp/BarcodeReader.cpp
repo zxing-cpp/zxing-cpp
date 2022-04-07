@@ -95,7 +95,7 @@ jstring Read(JNIEnv *env, ImageView image, jstring formats, jboolean tryHarder, 
 }
 
 extern "C" JNIEXPORT jstring JNICALL
-Java_com_example_zxingcpp_BarcodeReader_readYBuffer(
+Java_com_zxingcpp_BarcodeReader_readYBuffer(
 	JNIEnv *env, jobject thiz, jobject yBuffer, jint rowStride,
 	jint left, jint top, jint width, jint height, jint rotation,
 	jstring formats, jboolean tryHarder, jboolean tryRotate,
@@ -130,7 +130,7 @@ struct LockedPixels
 };
 
 extern "C" JNIEXPORT jstring JNICALL
-Java_com_example_zxingcpp_BarcodeReader_readBitmap(
+Java_com_zxingcpp_BarcodeReader_readBitmap(
 	JNIEnv* env, jobject thiz, jobject bitmap,
 	jint left, jint top, jint width, jint height, jint rotation,
 	jstring formats, jboolean tryHarder, jboolean tryRotate,

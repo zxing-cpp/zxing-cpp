@@ -36,8 +36,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.toPoint
 import androidx.core.graphics.toRectF
 import androidx.lifecycle.LifecycleOwner
-import com.example.zxingcpp.BarcodeReader
-import com.example.zxingcpp.BarcodeReader.Format
+import com.zxingcpp.BarcodeReader
+import com.zxingcpp.BarcodeReader.Format
 import com.google.zxing.*
 import com.google.zxing.common.HybridBinarizer
 import kotlinx.android.synthetic.main.activity_camera.*
