@@ -38,7 +38,8 @@ namespace ZXing::OneD {
 Reader::Reader(const DecodeHints& hints) :
 	_tryHarder(hints.tryHarder()),
 	_tryRotate(hints.tryRotate()),
-	_isPure(hints.isPure())
+	_isPure(hints.isPure()),
+	_minLineCount(hints.minLineCount())
 {
 	_readers.reserve(8);
 
@@ -82,7 +83,7 @@ static bool IsIntersecting(QuadrilateralI a, QuadrilateralI b)
 * image if "trying harder".
 */
 static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, const BinaryBitmap& image,
-						bool tryHarder, bool rotate, bool isPure, int maxSymbols)
+						bool tryHarder, bool rotate, bool isPure, int maxSymbols, int minLineCount)
 {
 	Results res;
 
@@ -184,7 +185,9 @@ static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, 
 
 						if (result.isValid()) {
 							res.push_back(std::move(result));
-							if (maxSymbols && Size(res) == maxSymbols)
+							if (maxSymbols && Reduce(res, 0, [&](int s, const Result& r) {
+												  return s + (r.lineCount() >= minLineCount);
+											  }) == maxSymbols)
 								goto out;
 						}
 					}
@@ -201,6 +204,10 @@ static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, 
 	}
 
 out:
+	// remove all symbols with insufficient line count
+	auto it = std::remove_if(res.begin(), res.end(), [&](auto&& r) { return r.lineCount() < minLineCount; });
+	res.erase(it, res.end());
+
 	// if symbols overlap, remove the one with a lower line count
 	for (auto a = res.begin(); a != res.end(); ++a)
 		for (auto b = std::next(a); b != res.end(); ++b)
@@ -208,7 +215,7 @@ out:
 				*(a->lineCount() < b->lineCount() ? a : b) = Result(DecodeStatus::NotFound);
 
 	//TODO: C++20 res.erase_if()
-	auto it = std::remove_if(res.begin(), res.end(), [](auto&& r) { return r.status() == DecodeStatus::NotFound; });
+	it = std::remove_if(res.begin(), res.end(), [](auto&& r) { return r.status() == DecodeStatus::NotFound; });
 	res.erase(it, res.end());
 
 	return res;
@@ -217,19 +224,19 @@ out:
 Result
 Reader::decode(const BinaryBitmap& image) const
 {
-	auto result = DoDecode(_readers, image, _tryHarder, false, _isPure, 1);
+	auto result = DoDecode(_readers, image, _tryHarder, false, _isPure, 1, _minLineCount);
 
 	if (result.empty() && _tryRotate)
-		result = DoDecode(_readers, image, _tryHarder, true, _isPure, 1);
+		result = DoDecode(_readers, image, _tryHarder, true, _isPure, 1, _minLineCount);
 
 	return result.empty() ? Result(DecodeStatus::NotFound) : result.front();
 }
 
 Results Reader::decode(const BinaryBitmap& image, int maxSymbols) const
 {
-	auto resH = DoDecode(_readers, image, _tryHarder, false, _isPure, maxSymbols);
+	auto resH = DoDecode(_readers, image, _tryHarder, false, _isPure, maxSymbols, _minLineCount);
 	if ((!maxSymbols || Size(resH) < maxSymbols) && _tryRotate) {
-		auto resV = DoDecode(_readers, image, _tryHarder, true, _isPure, maxSymbols);
+		auto resV = DoDecode(_readers, image, _tryHarder, true, _isPure, maxSymbols - Size(resH), _minLineCount);
 		resH.insert(resH.end(), resV.begin(), resV.end());
 	}
 	return resH;

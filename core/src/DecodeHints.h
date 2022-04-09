@@ -59,9 +59,10 @@ class DecodeHints
 	Binarizer _binarizer : 2;
 	EanAddOnSymbol _eanAddOnSymbol : 2;
 
-	BarcodeFormats _formats = BarcodeFormat::None;
 	std::string _characterSet;
 	std::vector<int> _allowedLengths;
+	BarcodeFormats _formats = BarcodeFormat::None;
+	uint8_t _minLineCount = 1;
 
 public:
 	// bitfields don't get default initialized to 0.
@@ -93,6 +94,9 @@ public:
 
 	/// Set to true if the input contains nothing but a perfectly aligned barcode (generated image)
 	ZX_PROPERTY(bool, isPure, setIsPure)
+
+	/// The number of scan lines in a 1D barcode that have to be equal to accept the result, default is 1
+	ZX_PROPERTY(uint8_t, minLineCount, setMinLineCount)
 
 	/// Specifies what character encoding to use when decoding, where applicable.
 	ZX_PROPERTY(std::string, characterSet, setCharacterSet)

@@ -47,6 +47,7 @@ private:
 	bool _tryHarder;
 	bool _tryRotate;
 	bool _isPure;
+	int _minLineCount;
 };
 
 } // OneD
