@@ -8,13 +8,13 @@
     android:layout_height="match_parent">
 
     <androidx.camera.view.PreviewView
-        android:id="@+id/view_finder"
+        android:id="@+id/viewFinder"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:scaleType="fitCenter" />
 
     <View
-        android:id="@+id/box_crop"
+        android:id="@+id/cropRect"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="@drawable/shape_rectangle"
@@ -24,7 +24,7 @@
     <!-- Camera control buttons -->
 
     <TextView
-        android:id="@+id/text_result"
+        android:id="@+id/result"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/margin_large"
@@ -39,7 +39,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/text_fps"
+        android:id="@+id/fps"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/margin_xsmall"
@@ -54,7 +54,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageButton
-        android:id="@+id/camera_capture_button"
+        android:id="@+id/capture"
         android:layout_width="@dimen/shutter_button_size"
         android:layout_height="@dimen/shutter_button_size"
         android:layout_marginEnd="@dimen/shutter_button_margin"
@@ -75,32 +75,32 @@
         app:layout_constraintStart_toStartOf="parent">
 
         <com.google.android.material.chip.Chip
-            android:id="@+id/chip_java"
+            android:id="@+id/java"
             style="@style/Chip"
             android:text="Java" />
 
         <com.google.android.material.chip.Chip
-            android:id="@+id/chip_qrcode"
+            android:id="@+id/qrcode"
             style="@style/Chip"
             android:text="QRCode" />
 
         <com.google.android.material.chip.Chip
-            android:id="@+id/chip_tryHarder"
+            android:id="@+id/tryHarder"
             style="@style/Chip"
             android:text="tryHarder" />
 
         <com.google.android.material.chip.Chip
-            android:id="@+id/chip_tryRotate"
+            android:id="@+id/tryRotate"
             style="@style/Chip"
             android:text="tryRotate" />
 
         <com.google.android.material.chip.Chip
-            android:id="@+id/chip_crop"
+            android:id="@+id/crop"
             style="@style/Chip"
             android:text="crop" />
 
         <com.google.android.material.chip.Chip
-            android:id="@+id/chip_pause"
+            android:id="@+id/pause"
             style="@style/Chip"
             android:text="pause" />
 

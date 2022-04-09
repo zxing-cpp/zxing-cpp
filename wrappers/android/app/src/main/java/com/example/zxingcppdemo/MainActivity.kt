@@ -34,18 +34,18 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.toPoint
-import androidx.core.graphics.toRectF
 import androidx.lifecycle.LifecycleOwner
 import com.example.zxingcpp.BarcodeReader
 import com.example.zxingcpp.BarcodeReader.Format
 import com.google.zxing.*
 import com.google.zxing.common.HybridBinarizer
-import kotlinx.android.synthetic.main.activity_camera.*
 import java.util.concurrent.Executors
 import kotlin.math.abs
 import kotlin.random.Random
+import com.example.zxingcppdemo.databinding.ActivityCameraBinding
 
 class MainActivity : AppCompatActivity() {
+	private lateinit var binding: ActivityCameraBinding
 	private val executor = Executors.newSingleThreadExecutor()
 	private val permissions = listOf(Manifest.permission.CAMERA)
 	private val permissionsRequestCode = Random.nextInt(0, 10000)
@@ -59,9 +59,10 @@ class MainActivity : AppCompatActivity() {
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
-		setContentView(R.layout.activity_camera)
+		binding = ActivityCameraBinding.inflate(layoutInflater)
+		setContentView(binding.root)
 
-		camera_capture_button.setOnClickListener {
+		binding.capture.setOnClickListener {
 			// Disable all camera controls
 			it.isEnabled = false
 
@@ -72,7 +73,7 @@ class MainActivity : AppCompatActivity() {
 		}
 	}
 
-	private fun bindCameraUseCases() = view_finder.post {
+	private fun bindCameraUseCases() = binding.viewFinder.post {
 
 		val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 		cameraProviderFuture.addListener({
@@ -105,13 +106,13 @@ class MainActivity : AppCompatActivity() {
 				imageHeight = image.height
 
 				// Early exit: image analysis is in paused state
-				if (chip_pause.isChecked) {
+				if (binding.pause.isChecked) {
 					image.close()
 					return@Analyzer
 				}
 
 				val cropSize = image.height / 3 * 2
-				cropRect = if (chip_crop.isChecked)
+				cropRect = if (binding.crop.isChecked)
 					Rect(
 						(image.width - cropSize) / 2, (image.height - cropSize) / 2,
 						(image.width - cropSize) / 2 + cropSize, (image.height - cropSize) / 2 + cropSize
@@ -122,15 +123,15 @@ class MainActivity : AppCompatActivity() {
 				val startTime = System.currentTimeMillis()
 				var resultText: String
 
-				if (chip_java.isChecked) {
+				if (binding.java.isChecked) {
 					val yBuffer = image.planes[0].buffer // Y
 					val data = ByteArray(yBuffer.remaining())
 					yBuffer.get(data, 0, data.size)
 					image.close()
 					val hints = mutableMapOf<DecodeHintType, Any>()
-					if (chip_qrcode.isChecked)
+					if (binding.qrcode.isChecked)
 						hints[DecodeHintType.POSSIBLE_FORMATS] = arrayListOf(BarcodeFormat.QR_CODE)
-					if (chip_tryHarder.isChecked)
+					if (binding.tryHarder.isChecked)
 						hints[DecodeHintType.TRY_HARDER] = true
 
 					resultText = try {
@@ -150,9 +151,9 @@ class MainActivity : AppCompatActivity() {
 					}
 				} else {
 					readerCpp.options = BarcodeReader.Options(
-						formats = if (chip_qrcode.isChecked) setOf(Format.QR_CODE) else setOf(),
-						tryHarder = chip_tryHarder.isChecked,
-						tryRotate = chip_tryRotate.isChecked
+						formats = if (binding.qrcode.isChecked) setOf(Format.QR_CODE) else setOf(),
+						tryHarder = binding.tryHarder.isChecked,
+						tryRotate = binding.tryRotate.isChecked
 					)
 
 					image.setCropRect(cropRect)
@@ -204,28 +205,28 @@ class MainActivity : AppCompatActivity() {
 				.build()
 
 			// Use the camera object to link our preview use case with the view
-			preview.setSurfaceProvider(view_finder.surfaceProvider)
+			preview.setSurfaceProvider(binding.viewFinder.surfaceProvider)
 
 		}, ContextCompat.getMainExecutor(this))
 	}
 
-	private fun showResult(resultText: String, fpsText: String?) = view_finder.post {
+	private fun showResult(resultText: String, fpsText: String?) = binding.viewFinder.post {
 		// Update the text and UI
-		text_result.text = resultText
-		text_result.visibility = View.VISIBLE
+		binding.result.text = resultText
+		binding.result.visibility = View.VISIBLE
 
 		val tl = image2View(Point(cropRect.left, cropRect.top))
 		val br = image2View(Point(cropRect.right, cropRect.bottom))
-		(box_crop.layoutParams as ViewGroup.MarginLayoutParams).apply {
+		(binding.cropRect.layoutParams as ViewGroup.MarginLayoutParams).apply {
 			leftMargin = kotlin.math.min(tl.x, br.x)
 			topMargin = kotlin.math.min(tl.y, br.y)
 			width = abs(br.x - tl.x)
 			height = abs(br.y - tl.y)
 		}
-		box_crop.visibility = if (chip_crop.isChecked) View.VISIBLE else View.GONE
+		binding.cropRect.visibility = if (binding.crop.isChecked) View.VISIBLE else View.GONE
 
 		if (fpsText != null)
-			text_fps.text = fpsText
+			binding.fps.text = fpsText
 
 		if (resultText.isNotEmpty() && lastText != resultText) {
 			lastText = resultText
@@ -234,10 +235,10 @@ class MainActivity : AppCompatActivity() {
 	}
 
 	private fun image2View(p: Point) : Point {
-		val s = kotlin.math.min(view_finder.width, view_finder.height).toFloat() / imageHeight
-		val o = (kotlin.math.max(view_finder.width, view_finder.height) - (imageWidth * s).toInt()) / 2
+		val s = kotlin.math.min(binding.viewFinder.width, binding.viewFinder.height).toFloat() / imageHeight
+		val o = (kotlin.math.max(binding.viewFinder.width, binding.viewFinder.height) - (imageWidth * s).toInt()) / 2
 		val res = PointF(p.x * s + o, p.y * s).toPoint()
-		return if (imageRotation % 180 == 0) res else Point(view_finder.width - res.y, res.x)
+		return if (imageRotation % 180 == 0) res else Point(binding.viewFinder.width - res.y, res.x)
 	}
 
 	override fun onResume() {
