@@ -58,6 +58,32 @@ static jstring ThrowJavaException(JNIEnv* env, const char* message)
 	return nullptr;
 }
 
+static jobject CreateAndroidPoint(JNIEnv* env, const PointT<int>& point)
+{
+	jclass cls = env->FindClass("android/graphics/Point");
+	auto constructor = env->GetMethodID(cls, "<init>", "(II)V");
+	return env->NewObject(cls, constructor, point.x, point.y);
+}
+
+static jobject CreatePosition(JNIEnv* env, const Position& position)
+{
+	jclass cls = env->FindClass("com/zxingcpp/BarcodeReader$Position");
+	auto constructor = env->GetMethodID(
+		cls, "<init>",
+		"(Landroid/graphics/Point;"
+		"Landroid/graphics/Point;"
+		"Landroid/graphics/Point;"
+		"Landroid/graphics/Point;"
+		"D)V");
+	return env->NewObject(
+		cls, constructor,
+		CreateAndroidPoint(env, position.topLeft()),
+		CreateAndroidPoint(env, position.topRight()),
+		CreateAndroidPoint(env, position.bottomLeft()),
+		CreateAndroidPoint(env, position.bottomRight()),
+		position.orientation());
+}
+
 jstring Read(JNIEnv *env, ImageView image, jstring formats, jboolean tryHarder, jboolean tryRotate,
              jobject result)
 {
@@ -84,19 +110,8 @@ jstring Read(JNIEnv *env, ImageView image, jstring formats, jboolean tryHarder, 
 			jfieldID fidText = env->GetFieldID(clResult, "text", "Ljava/lang/String;");
 			env->SetObjectField(result, fidText, C2JString(env, res.text()));
 
-			jfieldID fidPosition = env->GetFieldID(clResult, "position", "Landroid/graphics/Rect;");
-			jobject rect = env->GetObjectField(result, fidPosition);
-			jclass clRect = env->GetObjectClass(rect);
-			auto tl = res.position().topLeft();
-			auto br = res.position().bottomRight();
-			jfieldID fidLeft = env->GetFieldID(clRect, "left", "I");
-			env->SetIntField(rect, fidLeft, tl.x);
-			jfieldID fidTop = env->GetFieldID(clRect, "top", "I");
-			env->SetIntField(rect, fidTop, tl.y);
-			jfieldID fidRight = env->GetFieldID(clRect, "right", "I");
-			env->SetIntField(rect, fidRight, br.x);
-			jfieldID fidBottom = env->GetFieldID(clRect, "bottom", "I");
-			env->SetIntField(rect, fidBottom, br.y);
+			jfieldID fidPosition = env->GetFieldID(clResult, "position", "Lcom/zxingcpp/BarcodeReader$Position;");
+			env->SetObjectField(result, fidPosition, CreatePosition(env, res.position()));
 
 			jfieldID fidOrientation = env->GetFieldID(clResult, "orientation", "I");
 			env->SetIntField(result, fidOrientation, res.orientation());
