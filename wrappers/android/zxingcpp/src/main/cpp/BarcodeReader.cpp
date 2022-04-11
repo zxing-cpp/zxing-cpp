@@ -58,6 +58,32 @@ static jstring ThrowJavaException(JNIEnv* env, const char* message)
 	return nullptr;
 }
 
+static jobject CreateAndroidPoint(JNIEnv* env, const PointT<int>& point)
+{
+	jclass cls = env->FindClass("android/graphics/Point");
+	auto constructor = env->GetMethodID(cls, "<init>", "(II)V");
+	return env->NewObject(cls, constructor, point.x, point.y);
+}
+
+static jobject CreatePosition(JNIEnv* env, const Position& position)
+{
+	jclass cls = env->FindClass("com/zxingcpp/BarcodeReader$Position");
+	auto constructor = env->GetMethodID(
+		cls, "<init>",
+		"(Landroid/graphics/Point;"
+		"Landroid/graphics/Point;"
+		"Landroid/graphics/Point;"
+		"Landroid/graphics/Point;"
+		"D)V");
+	return env->NewObject(
+		cls, constructor,
+		CreateAndroidPoint(env, position.topLeft()),
+		CreateAndroidPoint(env, position.topRight()),
+		CreateAndroidPoint(env, position.bottomLeft()),
+		CreateAndroidPoint(env, position.bottomRight()),
+		position.orientation());
+}
+
 jstring Read(JNIEnv *env, ImageView image, jstring formats, jboolean tryHarder, jboolean tryRotate,
              jobject result)
 {
@@ -84,6 +110,18 @@ jstring Read(JNIEnv *env, ImageView image, jstring formats, jboolean tryHarder, 
 			jfieldID fidText = env->GetFieldID(clResult, "text", "Ljava/lang/String;");
 			env->SetObjectField(result, fidText, C2JString(env, res.text()));
 
+			jfieldID fidPosition = env->GetFieldID(clResult, "position", "Lcom/zxingcpp/BarcodeReader$Position;");
+			env->SetObjectField(result, fidPosition, CreatePosition(env, res.position()));
+
+			jfieldID fidOrientation = env->GetFieldID(clResult, "orientation", "I");
+			env->SetIntField(result, fidOrientation, res.orientation());
+
+			jfieldID fidEcLevel = env->GetFieldID(clResult, "ecLevel", "Ljava/lang/String;");
+			env->SetObjectField(result, fidEcLevel, C2JString(env, res.ecLevel()));
+
+			jfieldID fidSymbologyIdentifier = env->GetFieldID(clResult, "symbologyIdentifier", "Ljava/lang/String;");
+			env->SetObjectField(result, fidSymbologyIdentifier, C2JString(env, res.symbologyIdentifier()));
+
 			return C2JString(env, JavaBarcodeFormatName(res.format()));
 		} else
 			return C2JString(env, ToString(res.status()));
@@ -95,7 +133,7 @@ jstring Read(JNIEnv *env, ImageView image, jstring formats, jboolean tryHarder, 
 }
 
 extern "C" JNIEXPORT jstring JNICALL
-Java_com_example_zxingcpp_BarcodeReader_readYBuffer(
+Java_com_zxingcpp_BarcodeReader_readYBuffer(
 	JNIEnv *env, jobject thiz, jobject yBuffer, jint rowStride,
 	jint left, jint top, jint width, jint height, jint rotation,
 	jstring formats, jboolean tryHarder, jboolean tryRotate,
@@ -130,7 +168,7 @@ struct LockedPixels
 };
 
 extern "C" JNIEXPORT jstring JNICALL
-Java_com_example_zxingcpp_BarcodeReader_readBitmap(
+Java_com_zxingcpp_BarcodeReader_readBitmap(
 	JNIEnv* env, jobject thiz, jobject bitmap,
 	jint left, jint top, jint width, jint height, jint rotation,
 	jstring formats, jboolean tryHarder, jboolean tryRotate,

@@ -14,10 +14,11 @@
 * limitations under the License.
 */
 
-package com.example.zxingcpp
+package com.zxingcpp
 
 import android.graphics.Bitmap
 import android.graphics.ImageFormat
+import android.graphics.Point
 import android.graphics.Rect
 import androidx.camera.core.ImageProxy
 import java.lang.RuntimeException
@@ -38,10 +39,22 @@ class BarcodeReader {
         val tryRotate: Boolean = false
     )
 
+    data class Position(
+        val topLeft: Point,
+        val topRight: Point,
+        val bottomLeft: Point,
+        val bottomRight: Point,
+        val orientation: Double
+    )
+
     data class Result(
         val format: Format = Format.NONE,
         val text: String? = null,
         val time: String? = null, // for development/debug purposes only
+        val position: Position? = null,
+        val orientation: Int = 0,
+        val ecLevel: String? = null,
+        val symbologyIdentifier: String? = null
     )
 
     var options : Options = Options()
