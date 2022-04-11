@@ -84,6 +84,29 @@ jstring Read(JNIEnv *env, ImageView image, jstring formats, jboolean tryHarder, 
 			jfieldID fidText = env->GetFieldID(clResult, "text", "Ljava/lang/String;");
 			env->SetObjectField(result, fidText, C2JString(env, res.text()));
 
+			jfieldID fidPosition = env->GetFieldID(clResult, "position", "Landroid/graphics/Rect;");
+			jobject rect = env->GetObjectField(result, fidPosition);
+			jclass clRect = env->GetObjectClass(rect);
+			auto tl = res.position().topLeft();
+			auto br = res.position().bottomRight();
+			jfieldID fidLeft = env->GetFieldID(clRect, "left", "I");
+			env->SetIntField(rect, fidLeft, tl.x);
+			jfieldID fidTop = env->GetFieldID(clRect, "top", "I");
+			env->SetIntField(rect, fidTop, tl.y);
+			jfieldID fidRight = env->GetFieldID(clRect, "right", "I");
+			env->SetIntField(rect, fidRight, br.x);
+			jfieldID fidBottom = env->GetFieldID(clRect, "bottom", "I");
+			env->SetIntField(rect, fidBottom, br.y);
+
+			jfieldID fidOrientation = env->GetFieldID(clResult, "orientation", "I");
+			env->SetIntField(result, fidOrientation, res.orientation());
+
+			jfieldID fidEcLevel = env->GetFieldID(clResult, "ecLevel", "Ljava/lang/String;");
+			env->SetObjectField(result, fidEcLevel, C2JString(env, res.ecLevel()));
+
+			jfieldID fidSymbologyIdentifier = env->GetFieldID(clResult, "symbologyIdentifier", "Ljava/lang/String;");
+			env->SetObjectField(result, fidSymbologyIdentifier, C2JString(env, res.symbologyIdentifier()));
+
 			return C2JString(env, JavaBarcodeFormatName(res.format()));
 		} else
 			return C2JString(env, ToString(res.status()));

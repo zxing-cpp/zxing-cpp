@@ -42,6 +42,10 @@ class BarcodeReader {
         val format: Format = Format.NONE,
         val text: String? = null,
         val time: String? = null, // for development/debug purposes only
+        val position: Rect = Rect(),
+        val orientation: Int = 0,
+        val ecLevel: String? = null,
+        val symbologyIdentifier: String? = null
     )
 
     var options : Options = Options()
