@@ -97,7 +97,7 @@ static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, 
 
 	int middle = height / 2;
 	// TODO: find a better heuristic/parameterization if maxSymbols != 1
-	int rowStep = std::max(1, height / (tryHarder ? (maxSymbols == 1 ? 256 : 512) : 32));
+	int rowStep = std::max(1, height / ((tryHarder && !isPure) ? (maxSymbols == 1 ? 256 : 512) : 32));
 	int maxLines = tryHarder ?
 		height :	// Look at the whole image, not just the center
 		15;			// 15 rows spaced 1/32 apart is roughly the middle half of the image
@@ -134,6 +134,11 @@ static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, 
 			}
 			// Look for a barcode
 			for (size_t r = 0; r < readers.size(); ++r) {
+				// If this is a pure symbol, then checking a single non-empty line is sufficient for all but the stacked
+				// DataBar codes. They are the only ones using the decodingState, which we can use a flag here.
+				if (isPure && i && !decodingState[r])
+					continue;
+
 				PatternView next(bars);
 				do {
 					Result result = readers[r]->decodePattern(rowNumber, next, decodingState[r]);
@@ -197,10 +202,6 @@ static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, 
 				} while (tryHarder && next.isValid());
 			}
 		}
-
-		// If this is a pure symbol, then checking a single non-empty line is sufficient
-		if (isPure)
-			break;
 	}
 
 out:

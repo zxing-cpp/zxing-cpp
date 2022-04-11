@@ -438,6 +438,7 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		runTests("ean8-1", "EAN-8", 8, {
 			{ 8, 8, 0   },
 			{ 8, 8, 180 },
+			{ 7, 0, pure },
 		});
 
 		runTests("ean13-1", "EAN-13", 31, {
@@ -516,6 +517,7 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		runTests("upce-1", "UPC-E", 3, {
 			{ 3, 3, 0   },
 			{ 3, 3, 180 },
+			{ 3, 0, pure },
 		});
 
 		runTests("upce-2", "UPC-E", 28, {
@@ -541,6 +543,7 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		runTests("rssexpanded-1", "DataBarExpanded", 33, {
 			{ 33, 33, 0   },
 			{ 33, 33, 180 },
+			{ 33, 0, pure },
 		});
 
 		runTests("rssexpanded-2", "DataBarExpanded", 15, {
@@ -551,11 +554,13 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		runTests("rssexpanded-3", "DataBarExpanded", 118, {
 			{ 118, 118, 0   },
 			{ 118, 118, 180 },
+			{ 118, 0, pure },
 		});
 
 		runTests("rssexpandedstacked-1", "DataBarExpanded", 65, {
 			{ 60, 65, 0   },
 			{ 60, 65, 180 },
+			{ 60, 0, pure },
 		});
 
 		runTests("rssexpandedstacked-2", "DataBarExpanded", 7, {
