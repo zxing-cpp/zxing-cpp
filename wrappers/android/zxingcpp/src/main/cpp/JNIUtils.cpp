@@ -37,16 +37,12 @@ static void Utf32toUtf16(const uint32_t* utf32, size_t length, std::vector<uint1
 {
 	result.clear();
 	result.reserve(length);
-	for (size_t i = 0; i < length; ++i)
-	{
+	for (size_t i = 0; i < length; ++i)	{
 		uint32_t c = utf32[i];
-		if (RequiresSurrogates(c))
-		{
+		if (RequiresSurrogates(c)) {
 			result.push_back(HighSurrogate(c));
 			result.push_back(LowSurrogate(c));
-		}
-		else
-		{
+		} else {
 			result.push_back(c);
 		}
 	}
@@ -57,10 +53,9 @@ jstring C2JString(JNIEnv* env, const std::wstring& str)
 	if (env->ExceptionCheck())
 		return 0;
 
-	if (sizeof(wchar_t) == 2) {
+	if constexpr (sizeof(wchar_t) == 2) {
 		return env->NewString((const jchar*)str.data(), str.size());
-	}
-	else {
+	} else {
 		std::vector<uint16_t> buffer;
 		Utf32toUtf16((const uint32_t*)str.data(), str.size(), buffer);
 		return env->NewString((const jchar*)buffer.data(), buffer.size());
