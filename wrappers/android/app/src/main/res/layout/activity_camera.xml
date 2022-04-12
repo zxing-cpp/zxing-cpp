@@ -13,6 +13,11 @@
         android:layout_height="match_parent"
         app:scaleType="fitCenter" />
 
+    <com.example.zxingcppdemo.DetectorView
+        android:id="@+id/detectorView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
     <View
         android:id="@+id/cropRect"
         android:layout_width="0dp"
