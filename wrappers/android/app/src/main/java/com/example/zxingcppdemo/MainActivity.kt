@@ -19,22 +19,16 @@ package com.example.zxingcppdemo
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
-import android.graphics.Point
-import android.graphics.PointF
-import android.graphics.Rect
+import android.graphics.*
 import android.hardware.camera2.CaptureRequest
 import android.media.AudioManager
 import android.media.ToneGenerator
 import android.os.Bundle
 import android.view.View
-import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.camera2.interop.Camera2CameraControl
 import androidx.camera.camera2.interop.CaptureRequestOptions
-import androidx.camera.core.AspectRatio
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageAnalysis
-import androidx.camera.core.Preview
+import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -47,9 +41,8 @@ import com.google.zxing.common.HybridBinarizer
 import com.zxingcpp.BarcodeReader
 import com.zxingcpp.BarcodeReader.Format
 import java.util.concurrent.Executors
-import kotlin.math.abs
-import kotlin.math.roundToInt
 import kotlin.random.Random
+
 
 class MainActivity : AppCompatActivity() {
 	private lateinit var binding: ActivityCameraBinding
@@ -59,10 +52,6 @@ class MainActivity : AppCompatActivity() {
 
 	private val beeper = ToneGenerator(AudioManager.STREAM_NOTIFICATION, 50)
 	private var lastText = String()
-	private var cropRect = Rect()
-	private var imageRotation: Int = 0
-	private var imageWidth: Int = 0
-	private var imageHeight: Int = 0
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -108,10 +97,6 @@ class MainActivity : AppCompatActivity() {
 			val readerCpp = BarcodeReader()
 
 			imageAnalysis.setAnalyzer(executor, ImageAnalysis.Analyzer { image ->
-				imageRotation = image.imageInfo.rotationDegrees
-				imageWidth = image.width
-				imageHeight = image.height
-
 				// Early exit: image analysis is in paused state
 				if (binding.pause.isChecked) {
 					image.close()
@@ -119,13 +104,14 @@ class MainActivity : AppCompatActivity() {
 				}
 
 				val cropSize = image.height / 3 * 2
-				cropRect = if (binding.crop.isChecked)
+				val cropRect = if (binding.crop.isChecked)
 					Rect(
 						(image.width - cropSize) / 2, (image.height - cropSize) / 2,
 						(image.width - cropSize) / 2 + cropSize, (image.height - cropSize) / 2 + cropSize
 					)
 				else
 					Rect(0, 0, image.width, image.height)
+				image.setCropRect(cropRect)
 
 				val startTime = System.currentTimeMillis()
 				var resultText: String
@@ -146,14 +132,13 @@ class MainActivity : AppCompatActivity() {
 						val bitmap = BinaryBitmap(
 							HybridBinarizer(
 								PlanarYUVLuminanceSource(
-									data, imageWidth, imageHeight,
+									data, image.width, image.height,
 									cropRect.left, cropRect.top, cropRect.width(), cropRect.height(),
 									false
 								)
 							)
 						)
 						val result = readerJava.decode(bitmap, hints)
-						resultPoints = mapPoints(result?.resultPoints)
 						result?.let { "${it.barcodeFormat}: ${it.text}" } ?: ""
 					} catch (e: Throwable) {
 						if (e.toString() != "com.google.zxing.NotFoundException") e.toString() else ""
@@ -165,12 +150,19 @@ class MainActivity : AppCompatActivity() {
 						tryRotate = binding.tryRotate.isChecked
 					)
 
-					image.setCropRect(cropRect)
-
 					resultText = try {
 						val result = readerCpp.read(image)
 						runtime2 += result?.time?.toInt() ?: 0
-						resultPoints = mapPoints(result?.position)
+						resultPoints = result?.position?.let {
+							listOf(
+								it.topLeft,
+								it.topRight,
+								it.bottomRight,
+								it.bottomLeft
+							).map { p ->
+								p.toPointF()
+							}
+						}
 						(result?.let { "${it.format}: ${it.text}" } ?: "")
 					} catch (e: Throwable) {
 						e.message ?: "Error"
@@ -192,8 +184,7 @@ class MainActivity : AppCompatActivity() {
 					runtime2 = 0
 				}
 
-				binding.detectorView.update(resultPoints)
-				showResult(resultText, infoText)
+				showResult(resultText, infoText, resultPoints, image)
 			})
 
 			// Create a new camera selector each time, enforcing lens facing
@@ -221,67 +212,22 @@ class MainActivity : AppCompatActivity() {
 		}, ContextCompat.getMainExecutor(this))
 	}
 
-	private fun mapPoints(resultPoints: Array<ResultPoint>?) = resultPoints?.map {
-		image2View(Point(it.x.roundToInt(), it.y.roundToInt())).toPointF()
-	}
+	private fun showResult(resultText: String, fpsText: String?, points: List<PointF>?, image: ImageProxy) =
+		binding.viewFinder.post {
+			// Update the text and UI
+			binding.result.text = resultText
+			binding.result.visibility = View.VISIBLE
 
-	private fun mapPoints(position: BarcodeReader.Position?) = position?.let {
-		val w: Int
-		val h: Int
-		if (imageRotation == 90 || imageRotation == 270) {
-			w = imageHeight
-			h = imageWidth
-		} else {
-			w = imageWidth
-			h = imageHeight
+			binding.overlay.update(binding.viewFinder, image, points)
+
+			if (fpsText != null)
+				binding.fps.text = fpsText
+
+			if (resultText.isNotEmpty() && lastText != resultText) {
+				lastText = resultText
+				beeper.startTone(ToneGenerator.TONE_PROP_BEEP)
+			}
 		}
-		val vf = binding.viewFinder
-		val xf = vf.width / w.toFloat()
-		val yf = vf.height / h.toFloat()
-		listOf(
-			it.topLeft,
-			it.topRight,
-			it.bottomRight,
-			it.bottomLeft
-		).map { p ->
-			PointF(p.x * xf, p.y * yf)
-		}
-	}
-
-	private fun showResult(resultText: String, fpsText: String?) = binding.viewFinder.post {
-		// Update the text and UI
-		binding.result.text = resultText
-		binding.result.visibility = View.VISIBLE
-
-		val tl = image2View(Point(cropRect.left, cropRect.top))
-		val br = image2View(Point(cropRect.right, cropRect.bottom))
-		(binding.cropRect.layoutParams as ViewGroup.MarginLayoutParams).apply {
-			leftMargin = kotlin.math.min(tl.x, br.x)
-			topMargin = kotlin.math.min(tl.y, br.y)
-			width = abs(br.x - tl.x)
-			height = abs(br.y - tl.y)
-		}
-		binding.cropRect.visibility = if (binding.crop.isChecked) View.VISIBLE else View.GONE
-
-		if (fpsText != null)
-			binding.fps.text = fpsText
-
-		if (resultText.isNotEmpty() && lastText != resultText) {
-			lastText = resultText
-			beeper.startTone(ToneGenerator.TONE_PROP_BEEP)
-		}
-	}
-
-	private fun image2View(p: Point): Point {
-		val s = kotlin.math.min(binding.viewFinder.width, binding.viewFinder.height).toFloat() / imageHeight
-		val o = (kotlin.math.max(binding.viewFinder.width, binding.viewFinder.height) - (imageWidth * s).toInt()) / 2
-		val res = PointF(p.x * s + o, p.y * s).toPoint()
-		return when (imageRotation) {
-			0 -> res
-			180 -> Point(binding.viewFinder.width - res.x, binding.viewFinder.height - res.y)
-			else -> Point(binding.viewFinder.width - res.y, res.x)
-		}
-	}
 
 	override fun onResume() {
 		super.onResume()
