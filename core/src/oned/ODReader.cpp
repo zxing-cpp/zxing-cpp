@@ -102,6 +102,10 @@ static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, 
 		height :	// Look at the whole image, not just the center
 		15;			// 15 rows spaced 1/32 apart is roughly the middle half of the image
 
+	if (isPure)
+		minLineCount = 1;
+	std::vector<int> checkRows;
+
 	PatternRow bars;
 	bars.reserve(128); // e.g. EAN-13 has 59 bars/spaces
 
@@ -114,6 +118,15 @@ static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, 
 		if (rowNumber < 0 || rowNumber >= height) {
 			// Oops, if we run off the top or bottom, stop
 			break;
+		}
+
+		// See if we have additional check rows (see below) to process
+		if (checkRows.size()) {
+			--i;
+			rowNumber = checkRows.back();
+			checkRows.pop_back();
+			if (rowNumber < 0 || rowNumber >= height)
+				continue;
 		}
 
 		if (!image.getPatternRow(rowNumber, rotate ? 270 : 0, bars))
@@ -196,6 +209,14 @@ static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, 
 											  return s + (r.lineCount() >= minLineCount);
 										  }) == maxSymbols) {
 							goto out;
+						}
+
+						// if we found a valid code but have a minLineCount > 1, add additional check rows above and
+						// below the current one
+						if (checkRows.empty() && minLineCount > 1 && rowStep > 1) {
+							checkRows = {rowNumber - 1, rowNumber + 1};
+							if (rowStep > 2)
+								checkRows.insert(checkRows.end(), {rowNumber - 2, rowNumber + 2});
 						}
 					}
 					// make sure we make progress and we start the next try on a bar
