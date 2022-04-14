@@ -163,4 +163,10 @@ Position EstimatePosition(const Pair& first, const Pair& last)
 		return Position{{first.xStart, first.y}, {first.xStop, first.y}, {last.xStop, last.y}, {last.xStart, last.y}};
 }
 
+int EstimateLineCount(const Pair& first, const Pair& last)
+{
+	// see incrementLineCount() in ODReader.cpp for the -1 here
+	return std::min(first.count, last.count) * ((first.y == last.y) ? 1 : 2) - 1;
+}
+
 } // namespace ZXing::OneD::DataBar

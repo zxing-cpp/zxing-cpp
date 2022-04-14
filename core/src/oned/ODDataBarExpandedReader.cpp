@@ -377,7 +377,8 @@ Result DataBarExpandedReader::decodePattern(int rowNumber, PatternView& view,
 	std::string symbologyIdentifier("]e0");
 
 	return {TextDecoder::FromLatin1(txt), EstimatePosition(pairs.front(), pairs.back()),
-			BarcodeFormat::DataBarExpanded, {}, symbologyIdentifier};
+			BarcodeFormat::DataBarExpanded, {}, symbologyIdentifier, {}, false,
+			EstimateLineCount(pairs.front(), pairs.back())};
 }
 
 } // namespace ZXing::OneD

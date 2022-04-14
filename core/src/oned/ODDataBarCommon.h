@@ -138,5 +138,6 @@ bool ReadDataCharacterRaw(const PatternView& view, int numModules, bool reversed
 int GetValue(const Array4I& widths, int maxWidth, bool noNarrow);
 
 Position EstimatePosition(const Pair& first, const Pair& last);
+int EstimateLineCount(const Pair& first, const Pair& last);
 
 } // namespace ZXing::OneD::DataBar

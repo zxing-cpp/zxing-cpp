@@ -43,7 +43,8 @@ public:
 	explicit Result(DecodeStatus status) : _status(status) {}
 
 	Result(std::wstring&& text, Position&& position, BarcodeFormat format, ByteArray&& rawBytes = {},
-		   std::string symbologyIdentifier = "", StructuredAppendInfo sai = {}, const bool readerInit = false);
+		   std::string symbologyIdentifier = "", StructuredAppendInfo sai = {}, const bool readerInit = false,
+		   int lineCount = 0);
 
 	// 1D convenience constructor
 	Result(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format, ByteArray&& rawBytes = {},

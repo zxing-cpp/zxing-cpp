@@ -210,8 +210,8 @@ Result DataBarReader::decodePattern(int rowNumber, PatternView& next,
 		for (const auto& rightPair : prevState->rightPairs)
 			if (ChecksumIsValid(leftPair, rightPair))
 				return {TextDecoder::FromLatin1(ConstructText(leftPair, rightPair)),
-						EstimatePosition(leftPair, rightPair), BarcodeFormat::DataBar,
-						{}, std::move(symbologyIdentifier)};
+						EstimatePosition(leftPair, rightPair), BarcodeFormat::DataBar, {},
+						std::move(symbologyIdentifier), {}, false, EstimateLineCount(leftPair, rightPair)};
 #endif
 
 	// guaratee progress (see loop in ODReader.cpp)
