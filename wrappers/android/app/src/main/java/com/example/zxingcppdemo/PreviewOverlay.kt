@@ -63,7 +63,6 @@ class PreviewOverlay constructor(context: Context, attributeSet: AttributeSet?) 
 
 	override fun onDraw(canvas: Canvas) {
 		canvas.apply {
-			drawColor(0, PorterDuff.Mode.CLEAR)
 			// draw the cropRect, which is relative to the original image orientation
 			save()
 			if (rotation == 90) {
