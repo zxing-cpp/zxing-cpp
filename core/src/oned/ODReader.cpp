@@ -197,7 +197,6 @@ static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, 
 										  }) == maxSymbols) {
 							goto out;
 						}
-						}
 					}
 					// make sure we make progress and we start the next try on a bar
 					next.shift(2 - (next.index() % 2));
