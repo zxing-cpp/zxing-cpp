@@ -135,15 +135,15 @@ static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, 
 			// Look for a barcode
 			for (size_t r = 0; r < readers.size(); ++r) {
 				// If this is a pure symbol, then checking a single non-empty line is sufficient for all but the stacked
-				// DataBar codes. They are the only ones using the decodingState, which we can use a flag here.
+				// DataBar codes. They are the only ones using the decodingState, which we can use as a flag here.
 				if (isPure && i && !decodingState[r])
 					continue;
 
 				PatternView next(bars);
 				do {
 					Result result = readers[r]->decodePattern(rowNumber, next, decodingState[r]);
-					result.incrementLineCount();
 					if (result.isValid()) {
+						result.incrementLineCount();
 						if (upsideDown) {
 							// update position (flip horizontally).
 							auto points = result.position();
@@ -182,18 +182,21 @@ static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, 
 									}
 									other.setPosition(points);
 									other.incrementLineCount();
-									// clear the result below, so we don't insert it again
+									// clear the result, so we don't insert it again below
 									result = Result(DecodeStatus::NotFound);
+									break;
 								}
 							}
 						}
 
-						if (result.isValid()) {
+						if (result.isValid())
 							res.push_back(std::move(result));
-							if (maxSymbols && Reduce(res, 0, [&](int s, const Result& r) {
-												  return s + (r.lineCount() >= minLineCount);
-											  }) == maxSymbols)
-								goto out;
+
+						if (maxSymbols && Reduce(res, 0, [&](int s, const Result& r) {
+											  return s + (r.lineCount() >= minLineCount);
+										  }) == maxSymbols) {
+							goto out;
+						}
 						}
 					}
 					// make sure we make progress and we start the next try on a bar
