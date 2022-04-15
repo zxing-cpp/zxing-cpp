@@ -199,6 +199,7 @@ Result DataBarReader::decodePattern(int rowNumber, PatternView& next,
 			if (auto rightPair = ReadPair(next, true)) {
 				rightPair.y = rowNumber;
 				prevState->rightPairs.insert(rightPair);
+				next.shift(FULL_PAIR_SIZE + 2);
 			}
 		}
 	}
