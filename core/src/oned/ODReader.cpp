@@ -176,29 +176,23 @@ static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, 
 						// check if we know this code already
 						for (auto& other : res) {
 							if (other == result) {
+								// merge the position information
 								auto dTop = maxAbsComponent(other.position().topLeft() - result.position().topLeft());
 								auto dBot = maxAbsComponent(other.position().bottomLeft() - result.position().topLeft());
-								auto length = maxAbsComponent(other.position().topLeft() - other.position().bottomRight());
-								// if the new line is less than half the length of the existing result away from the
-								// latter, we consider it to belong to the same symbol
-								if (std::min(dTop, dBot) < length / 2) {
-									// if so, merge the position information
-									auto points = other.position();
-									if (dTop < dBot ||
-										(dTop == dBot && rotate ^ (sumAbsComponent(points[0]) >
-																   sumAbsComponent(result.position()[0])))) {
-										points[0] = result.position()[0];
-										points[1] = result.position()[1];
-									} else {
-										points[2] = result.position()[2];
-										points[3] = result.position()[3];
-									}
-									other.setPosition(points);
-									other.incrementLineCount();
-									// clear the result, so we don't insert it again below
-									result = Result(DecodeStatus::NotFound);
-									break;
+								auto points = other.position();
+								if (dTop < dBot || (dTop == dBot && rotate ^ (sumAbsComponent(points[0]) >
+																			  sumAbsComponent(result.position()[0])))) {
+									points[0] = result.position()[0];
+									points[1] = result.position()[1];
+								} else {
+									points[2] = result.position()[2];
+									points[3] = result.position()[3];
 								}
+								other.setPosition(points);
+								other.incrementLineCount();
+								// clear the result, so we don't insert it again below
+								result = Result(DecodeStatus::NotFound);
+								break;
 							}
 						}
 

@@ -139,9 +139,7 @@ public:
 		++_lineCount;
 	}
 
-	bool operator==(const Result& o) const {
-		return text() == o.text() && format() == o.format();
-	}
+	bool operator==(const Result& o) const;
 
 private:
 	DecodeStatus _status = DecodeStatus::NoError;

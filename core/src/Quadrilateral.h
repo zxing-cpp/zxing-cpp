@@ -102,6 +102,14 @@ bool IsConvex(const Quadrilateral<PointT>& poly)
 	return M / m < 4.0;
 }
 
+template <typename PointT>
+bool IsIntersecting(const Quadrilateral<PointT>& a, const Quadrilateral<PointT>& b)
+{
+	// TODO: this is only a quick and dirty approximation that works for the trivial standard cases
+	bool x = b.topRight().x < a.topLeft().x || b.topLeft().x > a.topRight().x;
+	bool y = b.bottomLeft().y < a.topLeft().y || b.topLeft().y > a.bottomLeft().y;
+	return !(x || y);
+}
 
 } // ZXing
 

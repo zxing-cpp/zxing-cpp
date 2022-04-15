@@ -55,4 +55,21 @@ int Result::orientation() const
 	return std::lround(_position.orientation() * 180 / std_numbers_pi_v);
 }
 
+bool Result::operator==(const Result& o) const
+{
+	if (format() != o.format() || text() != o.text())
+		return false;
+
+	if (BarcodeFormats(BarcodeFormat::TwoDCodes).testFlag(format()))
+		return IsIntersecting(position(), o.position());
+
+	// if one line is less than half the length of the other away from the
+	// latter, we consider it to belong to the same symbol
+	auto dTop = maxAbsComponent(o.position().topLeft() - position().topLeft());
+	auto dBot = maxAbsComponent(o.position().bottomLeft() - position().topLeft());
+	auto length = maxAbsComponent(position().topLeft() - position().bottomRight());
+
+	return std::min(dTop, dBot) < length / 2;
+}
+
 } // ZXing
