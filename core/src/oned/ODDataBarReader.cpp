@@ -127,8 +127,8 @@ static Pair ReadPair(const PatternView& view, bool rightPair)
 		if (auto outside = ReadDataCharacter(rightPair ? RightChar(view) : LeftChar(view), true, rightPair))
 			if (auto inside = ReadDataCharacter(rightPair ? LeftChar(view) : RightChar(view), false, rightPair)) {
 				// include left and right guards
-				int xStart = view.pixelsInFront() - (rightPair ? 0 : view[-1] + std::min(view[-2], view[-1]));
-				int xStop  = view.pixelsTillEnd() + (rightPair ? view[FULL_PAIR_SIZE] + view[FULL_PAIR_SIZE + 1] : 0);
+				int xStart = view.pixelsInFront() - view[-1];
+				int xStop  = view.pixelsTillEnd() + 2 * view[FULL_PAIR_SIZE];
 				return {outside, inside, pattern, xStart, xStop};
 			}
 
@@ -167,7 +167,7 @@ Result DataBarReader::decodePattern(int rowNumber, PatternView& next,
 									std::unique_ptr<RowReader::DecodingState>& state) const
 {
 #if 0 // non-stacked version
-	next = next.subView(-1, FULL_PAIR_SIZE + 2);
+	next = next.subView(-1, FULL_PAIR_SIZE);
 	// yes: the first view we test is at index 1 (black bar at 0 would be the guard pattern)
 	while (next.shift(2)) {
 		if (IsLeftPair(next)) {
@@ -184,7 +184,7 @@ Result DataBarReader::decodePattern(int rowNumber, PatternView& next,
 		state.reset(new State);
 	auto* prevState = static_cast<State*>(state.get());
 
-	next = next.subView(0, FULL_PAIR_SIZE + 2); // +2 reflects the guard pattern on the right
+	next = next.subView(0, FULL_PAIR_SIZE);
 	// yes: the first view we test is at index 1 (black bar at 0 would be the guard pattern)
 	while (next.shift(1)) {
 		if (IsLeftPair(next)) {
@@ -203,15 +203,21 @@ Result DataBarReader::decodePattern(int rowNumber, PatternView& next,
 		}
 	}
 
-	// Symbology identifier ISO/IEC 24724:2011 Section 9 and GS1 General Specifications 5.1.3 Figure 5.1.3-2
-	std::string symbologyIdentifier("]e0");
-
 	for (const auto& leftPair : prevState->leftPairs)
 		for (const auto& rightPair : prevState->rightPairs)
-			if (ChecksumIsValid(leftPair, rightPair))
-				return {TextDecoder::FromLatin1(ConstructText(leftPair, rightPair)),
-						EstimatePosition(leftPair, rightPair), BarcodeFormat::DataBar, {},
-						std::move(symbologyIdentifier), {}, false, EstimateLineCount(leftPair, rightPair)};
+			if (ChecksumIsValid(leftPair, rightPair)) {
+				// Symbology identifier ISO/IEC 24724:2011 Section 9 and GS1 General Specifications 5.1.3 Figure 5.1.3-2
+				std::string symbologyIdentifier("]e0");
+
+				Result res{TextDecoder::FromLatin1(ConstructText(leftPair, rightPair)),
+						   EstimatePosition(leftPair, rightPair), BarcodeFormat::DataBar,
+						   {}, std::move(symbologyIdentifier), {}, false,
+						   EstimateLineCount(leftPair, rightPair)};
+
+				prevState->leftPairs.erase(leftPair);
+				prevState->rightPairs.erase(rightPair);
+				return res;
+			}
 #endif
 
 	// guaratee progress (see loop in ODReader.cpp)
