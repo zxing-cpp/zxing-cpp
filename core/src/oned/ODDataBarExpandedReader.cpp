@@ -316,6 +316,14 @@ static Pairs FindValidSequence(PairMap& all)
 	return stack;
 }
 
+static void RemovePairs(PairMap& all, const Pairs& pairs)
+{
+	for(const auto& p : pairs)
+		if (auto i = Find(all[p.finder], p); i != all[p.finder].end())
+			if (--i->count == 0)
+				all[p.finder].erase(i);
+}
+
 static BitArray BuildBitArray(const Pairs& pairs)
 {
 	BitArray res;
@@ -373,9 +381,13 @@ Result DataBarExpandedReader::decodePattern(int rowNumber, PatternView& view,
 	if (txt.empty())
 		return Result(DecodeStatus::NotFound);
 
+	RemovePairs(allPairs, pairs);
+
 	// Symbology identifier ISO/IEC 24724:2011 Section 9 and GS1 General Specifications 5.1.3 Figure 5.1.3-2
 	std::string symbologyIdentifier("]e0");
 
+	// TODO: EstimatePosition misses part of the symbol in the stacked case where the last row contains less pairs than
+	// the first
 	return {TextDecoder::FromLatin1(txt), EstimatePosition(pairs.front(), pairs.back()),
 			BarcodeFormat::DataBarExpanded, {}, symbologyIdentifier, {}, false,
 			EstimateLineCount(pairs.front(), pairs.back())};
