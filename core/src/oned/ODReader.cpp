@@ -66,13 +66,6 @@ Reader::Reader(const DecodeHints& hints) :
 
 Reader::~Reader() = default;
 
-static bool IsIntersecting(QuadrilateralI a, QuadrilateralI b)
-{
-	bool x = b.topRight().x < a.topLeft().x || b.topLeft().x > a.topRight().x;
-	bool y = b.bottomLeft().y < a.topLeft().y || b.topLeft().y > a.bottomLeft().y;
-	return !(x || y);
-}
-
 /**
 * We're going to examine rows from the middle outward, searching alternately above and below the
 * middle, and farther out each time. rowStep is the number of rows between each successive
