@@ -2,6 +2,7 @@
 /*
 * Copyright 2016 Nu-book Inc.
 * Copyright 2016 ZXing authors
+* Copyright 2020 Axel Waggershauser
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -52,9 +53,8 @@ class DecodeHints
 	bool _tryRotate : 1;
 	bool _isPure : 1;
 	bool _tryCode39ExtendedMode : 1;
-	bool _assumeCode39CheckDigit : 1;
-	bool _assumeITFCheckDigit : 1;
-	bool _assumeGS1 : 1;
+	bool _validateCode39CheckSum : 1;
+	bool _validateITFCheckSum : 1;
 	bool _returnCodabarStartEnd : 1;
 	Binarizer _binarizer : 2;
 	EanAddOnSymbol _eanAddOnSymbol : 2;
@@ -69,18 +69,14 @@ class DecodeHints
 public:
 	// bitfields don't get default initialized to 0.
 	DecodeHints()
-		: _tryHarder(1), _tryRotate(1), _isPure(0), _tryCode39ExtendedMode(0), _assumeCode39CheckDigit(0),
-		  _assumeITFCheckDigit(0), _assumeGS1(0), _returnCodabarStartEnd(0), _binarizer(Binarizer::LocalAverage),
+		: _tryHarder(1), _tryRotate(1), _isPure(0), _tryCode39ExtendedMode(0), _validateCode39CheckSum(0),
+		  _validateITFCheckSum(0), _returnCodabarStartEnd(0), _binarizer(Binarizer::LocalAverage),
 		  _eanAddOnSymbol(EanAddOnSymbol::Ignore)
 	{}
 
 #define ZX_PROPERTY(TYPE, GETTER, SETTER) \
 	TYPE GETTER() const noexcept { return _##GETTER; } \
 	DecodeHints& SETTER(TYPE v) { return _##GETTER = std::move(v), *this; }
-
-#define ZX_PROPERTY_DEPRECATED(TYPE, GETTER, SETTER) \
-	[[deprecated]] TYPE GETTER() const noexcept { return _##GETTER; } \
-	[[deprecated]] DecodeHints& SETTER(TYPE v) { return _##GETTER = std::move(v), *this; }
 
 	/// Specify a set of BarcodeFormats that should be searched for, the default is all supported formats.
 	ZX_PROPERTY(BarcodeFormats, formats, setFormats)
@@ -115,17 +111,11 @@ public:
 	/// If true, the Code-39 reader will try to read extended mode.
 	ZX_PROPERTY(bool, tryCode39ExtendedMode, setTryCode39ExtendedMode)
 
-	/// Assume Code-39 codes employ a check digit.
-	ZX_PROPERTY(bool, assumeCode39CheckDigit, setAssumeCode39CheckDigit)
+	/// Assume Code-39 codes employ a check digit and validate it.
+	ZX_PROPERTY(bool, validateCode39CheckSum, setValidateCode39CheckSum)
 
-	/// Assume ITF codes employ a GS1 check digit.
-	ZX_PROPERTY(bool, assumeITFCheckDigit, setAssumeITFCheckDigit)
-
-	/**
-	* Assume the barcode is being processed as a GS1 barcode, and modify behavior as needed.
-	* NOTE: used to affect FNC1 handling for Code 128 (aka GS1-128) but behavior now based on position of FNC1.
-	*/
-	ZX_PROPERTY_DEPRECATED(bool, assumeGS1, setAssumeGS1)
+	/// Assume ITF codes employ a GS1 check digit and validate it.
+	ZX_PROPERTY(bool, validateITFCheckSum, setValidateITFCheckSum)
 
 	/**
 	* If true, return the start and end digits in a Codabar barcode instead of stripping them. They
@@ -139,6 +129,14 @@ public:
 
 #undef ZX_PROPERTY
 #undef ZX_PROPERTY_DEPRECATED
+
+	/// NOTE: used to affect FNC1 handling for Code 128 (aka GS1-128) but behavior now based on position of FNC1.
+	[[deprecated]] bool assumeGS1() const noexcept { return true; }
+	[[deprecated]] DecodeHints& setAssumeGS1(bool v [[maybe_unused]]) { return *this; }
+
+	/// NOTE: use validateCode39CheckSum
+	[[deprecated]] bool assumeCode39CheckDigit() const noexcept { return validateCode39CheckSum(); }
+	[[deprecated]] DecodeHints& setAssumeCode39CheckDigit(bool v) { return setValidateCode39CheckSum(v); }
 
 	bool hasFormat(BarcodeFormats f) const noexcept { return _formats.testFlags(f); }
 	bool hasNoFormat() const noexcept { return _formats.empty(); }

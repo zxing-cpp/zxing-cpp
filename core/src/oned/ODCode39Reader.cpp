@@ -88,14 +88,14 @@ DecodeExtendedCode39AndCode93(std::string& encoded, const char ctrl[4])
 
 Code39Reader::Code39Reader(const DecodeHints& hints) :
 	_extendedMode(hints.tryCode39ExtendedMode()),
-	_usingCheckDigit(hints.assumeCode39CheckDigit())
+	_validateCheckSum(hints.validateCode39CheckSum())
 {
 }
 
 Result Code39Reader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<RowReader::DecodingState>&) const
 {
 	// minimal number of characters that must be present (including start, stop and checksum characters)
-	int minCharCount = _usingCheckDigit ? 4 : 3;
+	int minCharCount = _validateCheckSum ? 4 : 3;
 	auto isStartOrStopSymbol = [](char c) { return c == '*'; };
 
 	// provide the indices with the narrow bars/spaces which have to be equally wide
@@ -132,7 +132,7 @@ Result Code39Reader::decodePattern(int rowNumber, PatternView& next, std::unique
 	if (Size(txt) < minCharCount - 2 || !next.hasQuietZoneAfter(QUIET_ZONE_SCALE))
 		return Result(DecodeStatus::NotFound);
 
-	if (_usingCheckDigit) {
+	if (_validateCheckSum) {
 		auto checkDigit = txt.back();
 		txt.pop_back();
 		int checksum = TransformReduce(txt, 0, [](char c) { return IndexOf(ALPHABET, c); });
@@ -145,7 +145,7 @@ Result Code39Reader::decodePattern(int rowNumber, PatternView& next, std::unique
 
 	// Symbology identifier modifiers ISO/IEC 16388:2007 Annex C Table C.1
 	static const int symbologyModifiers[4] = { 0, 3 /*checksum*/, 4 /*extended*/, 7 /*checksum,extended*/ };
-	int symbologyIdModifier = symbologyModifiers[(int)_extendedMode * 2 + (int)_usingCheckDigit];
+	int symbologyIdModifier = symbologyModifiers[(int)_extendedMode * 2 + (int)_validateCheckSum];
 
 	std::string symbologyIdentifier("]A" + std::to_string(symbologyIdModifier));
 

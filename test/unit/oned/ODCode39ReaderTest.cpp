@@ -49,7 +49,7 @@ TEST(ODCode39ReaderTest, SymbologyIdentifier)
 	{
 		// "A" with checksum
 		PatternRow row({ 2, 1, 1, 1, 1, 2, 1, 1, 2, 0, 2, 1, 1, 1, 1, 2, 1, 1, 2 });
-		auto result = parse(row, DecodeHints().setAssumeCode39CheckDigit(true));
+		auto result = parse(row, DecodeHints().setValidateCode39CheckSum(true));
 		EXPECT_EQ(result.symbologyIdentifier(), "]A3");
 		EXPECT_EQ(result.text(), L"A");
 
@@ -71,7 +71,7 @@ TEST(ODCode39ReaderTest, SymbologyIdentifier)
 	{
 		// Extended "a" with checksum
 		PatternRow row({ 1, 2, 1, 1, 1, 2, 1, 2, 1, 0, 2, 1, 1, 1, 1, 2, 1, 1, 2, 0, 2, 1, 1, 2, 1, 1, 2, 1, 1 });
-		auto result = parse(row, DecodeHints().setTryCode39ExtendedMode(true).setAssumeCode39CheckDigit(true));
+		auto result = parse(row, DecodeHints().setTryCode39ExtendedMode(true).setValidateCode39CheckSum(true));
 		EXPECT_EQ(result.symbologyIdentifier(), "]A7");
 		EXPECT_EQ(result.text(), L"a");
 

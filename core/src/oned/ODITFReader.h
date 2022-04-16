@@ -49,7 +49,7 @@ public:
 
 private:
 	std::vector<int> _allowedLengths;
-	bool _usingCheckDigit;
+	bool _validateCheckSum;
 };
 
 } // OneD

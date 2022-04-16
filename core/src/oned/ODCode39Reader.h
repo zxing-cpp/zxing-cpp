@@ -49,7 +49,7 @@ public:
 
 private:
 	bool _extendedMode;
-	bool _usingCheckDigit;
+	bool _validateCheckSum;
 };
 
 } // OneD

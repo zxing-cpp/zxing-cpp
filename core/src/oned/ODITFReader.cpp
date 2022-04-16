@@ -31,7 +31,7 @@ constexpr auto DEFAULT_ALLOWED_LENGTHS = { 6, 8, 10, 12, 14 };
 
 ITFReader::ITFReader(const DecodeHints& hints) :
 	_allowedLengths(hints.allowedLengths()),
-	_usingCheckDigit(hints.assumeITFCheckDigit())
+	_validateCheckSum(hints.validateITFCheckSum())
 {
 	if (_allowedLengths.empty())
 		_allowedLengths.assign(DEFAULT_ALLOWED_LENGTHS.begin(), DEFAULT_ALLOWED_LENGTHS.end());
@@ -87,14 +87,14 @@ Result ITFReader::decodePattern(int rowNumber, PatternView& next, std::unique_pt
 	if (!IsRightGuard(next, STOP_PATTERN_1, minQuietZone) && !IsRightGuard(next, STOP_PATTERN_2, minQuietZone))
 		return Result(DecodeStatus::NotFound);
 
-	if (_usingCheckDigit && !GTIN::IsCheckDigitValid(txt))
+	if (_validateCheckSum && !GTIN::IsCheckDigitValid(txt))
 		return Result(DecodeStatus::ChecksumError);
 
 	// Symbology identifier ISO/IEC 16390:2007 Annex C Table C.1
 	// See also GS1 General Specifications 5.1.3 Figure 5.1.3-2
 	std::string symbologyIdentifier("]I0"); // No check character validation
 
-	if (_usingCheckDigit || (txt.size() == 14 && GTIN::IsCheckDigitValid(txt))) // If no hint test if valid ITF-14
+	if (_validateCheckSum || (txt.size() == 14 && GTIN::IsCheckDigitValid(txt))) // If no hint test if valid ITF-14
 		symbologyIdentifier = "]I1"; // Modulo 10 symbol check character validated and transmitted
 
 	int xStop = next.pixelsTillEnd();
