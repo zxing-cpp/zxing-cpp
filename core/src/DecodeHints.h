@@ -62,7 +62,9 @@ class DecodeHints
 	std::string _characterSet;
 	std::vector<int> _allowedLengths;
 	BarcodeFormats _formats = BarcodeFormat::None;
+	uint16_t _multiResolutionThreshold = 0xffff;
 	uint8_t _minLineCount = 2;
+	uint8_t _maxNumberOfSymbols = 0xff;
 
 public:
 	// bitfields don't get default initialized to 0.
@@ -92,11 +94,17 @@ public:
 	/// Binarizer to use internally when using the ReadBarcode function
 	ZX_PROPERTY(Binarizer, binarizer, setBinarizer)
 
-	/// Set to true if the input contains nothing but a perfectly aligned barcode (generated image)
+	/// Set to true if the input contains nothing but a single perfectly aligned barcode (generated image)
 	ZX_PROPERTY(bool, isPure, setIsPure)
+
+	/// Image size (width or height) threshold at which to start multi-resolution scanning
+	ZX_PROPERTY(uint16_t, multiResolutionThreshold, setMultiResolutionThreshold)
 
 	/// The number of scan lines in a 1D barcode that have to be equal to accept the result, default is 2
 	ZX_PROPERTY(uint8_t, minLineCount, setMinLineCount)
+
+	/// The maximum number of symbols (barcodes) to detect / look for in the image with ReadBarcodes
+	ZX_PROPERTY(uint8_t, maxNumberOfSymbols, setMaxNumberOfSymbols)
 
 	/// Specifies what character encoding to use when decoding, where applicable.
 	ZX_PROPERTY(std::string, characterSet, setCharacterSet)

@@ -54,7 +54,47 @@ static LumImage ExtractLum(const ImageView& iv, P projection)
 	return res;
 }
 
-ImageView SetupLumImageView(const ImageView& iv, LumImage& lum, const DecodeHints& hints)
+class LumImagePyramid
+{
+	static constexpr int N = 3;
+	std::vector<LumImage> buffers;
+
+	void addLayer()
+	{
+		auto siv = layers.back();
+		buffers.emplace_back(siv.width() / N, siv.height() / N);
+		layers.push_back(buffers.back());
+		auto& div = buffers.back();
+		auto* d   = div.data();
+
+		for (int dy = 0; dy < div.height(); ++dy)
+			for (int dx = 0; dx < div.width(); ++dx) {
+				int sum = (N * N) / 2;
+				for (int ty = 0; ty < N; ++ty)
+					for (int tx = 0; tx < N; ++tx)
+						sum += *siv.data(dx * N + tx, dy * N + ty);
+				*d++ = sum / (N * N);
+			}
+	}
+
+public:
+	std::vector<ImageView> layers;
+
+	LumImagePyramid(const ImageView& iv, int threshold)
+	{
+		layers.push_back(iv);
+		while (threshold > 0 && std::max(layers.back().width(), layers.back().height()) > threshold)
+			addLayer();
+#if 0
+		// Reversing the layers means we'd start with the smallest. that can make sense if we are only looking for a
+		// single symbol. If we start with the higher resolution, we get better (high res) position information.
+		// TODO: see if masking out higher res layers based on found symbols in lower res helps overall performance.
+		std::reverse(layers.begin(), layers.end());
+#endif
+	}
+};
+
+ImageView SetupLumImageView(ImageView iv, LumImage& lum, const DecodeHints& hints)
 {
 	if (iv.format() == ImageFormat::None)
 		throw std::invalid_argument("Invalid image format");
@@ -73,32 +113,59 @@ ImageView SetupLumImageView(const ImageView& iv, LumImage& lum, const DecodeHint
 	return iv;
 }
 
+std::unique_ptr<BinaryBitmap> CreateBitmap(ZXing::Binarizer binarizer, const ImageView& iv)
+{
+	switch (binarizer) {
+	case Binarizer::BoolCast: return std::make_unique<ThresholdBinarizer>(iv, 0);
+	case Binarizer::FixedThreshold: return std::make_unique<ThresholdBinarizer>(iv, 127);
+	case Binarizer::GlobalHistogram: return std::make_unique<GlobalHistogramBinarizer>(iv);
+	case Binarizer::LocalAverage: return std::make_unique<HybridBinarizer>(iv);
+	}
+	return {}; // silence gcc warning
+}
+
 Result ReadBarcode(const ImageView& _iv, const DecodeHints& hints)
 {
+#if 0
+	auto ress = ReadBarcodes(_iv, DecodeHints(hints).setMaxNumberOfSymbols(1));
+	return ress.empty() ? Result(DecodeStatus::NotFound) : ress.front();
+#else
 	LumImage lum;
 	ImageView iv = SetupLumImageView(_iv, lum, hints);
 
-	switch (hints.binarizer()) {
-	case Binarizer::BoolCast: return MultiFormatReader(hints).read(ThresholdBinarizer(iv, 0));
-	case Binarizer::FixedThreshold: return MultiFormatReader(hints).read(ThresholdBinarizer(iv, 127));
-	case Binarizer::GlobalHistogram: return MultiFormatReader(hints).read(GlobalHistogramBinarizer(iv));
-	case Binarizer::LocalAverage: return MultiFormatReader(hints).read(HybridBinarizer(iv));
-	}
-    return Result(DecodeStatus::FormatError);
+	return MultiFormatReader(hints).read(*CreateBitmap(hints.binarizer(), iv));
+#endif
 }
 
 Results ReadBarcodes(const ImageView& _iv, const DecodeHints& hints)
 {
 	LumImage lum;
 	ImageView iv = SetupLumImageView(_iv, lum, hints);
+	MultiFormatReader reader(hints);
 
-	switch (hints.binarizer()) {
-	case Binarizer::BoolCast: return MultiFormatReader(hints).readMultiple(ThresholdBinarizer(iv, 0));
-	case Binarizer::FixedThreshold: return MultiFormatReader(hints).readMultiple(ThresholdBinarizer(iv, 127));
-	case Binarizer::GlobalHistogram: return MultiFormatReader(hints).readMultiple(GlobalHistogramBinarizer(iv));
-	case Binarizer::LocalAverage: return MultiFormatReader(hints).readMultiple(HybridBinarizer(iv));
+	if (hints.isPure())
+		return {reader.read(*CreateBitmap(hints.binarizer(), iv))};
+
+	LumImagePyramid pyramid(iv, hints.multiResolutionThreshold());
+
+	Results results;
+	int maxSymbols = hints.maxNumberOfSymbols();
+	for (auto&& iv : pyramid.layers) {
+		auto bitmap = CreateBitmap(hints.binarizer(), iv);
+		auto rs = reader.readMultiple(*bitmap, maxSymbols);
+		for (auto& r : rs) {
+			if (iv.width() != _iv.width())
+				r.setPosition(Scale(r.position(), _iv.width() / iv.width()));
+			if (!Contains(results, r)) {
+				results.push_back(std::move(r));
+				--maxSymbols;
+			}
+		}
+		if (maxSymbols <= 0)
+			break;
 	}
-    return {};
+
+	return results;
 }
 
 } // ZXing

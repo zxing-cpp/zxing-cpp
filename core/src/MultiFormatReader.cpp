@@ -74,13 +74,16 @@ MultiFormatReader::read(const BinaryBitmap& image) const
 	return Result(DecodeStatus::NotFound);
 }
 
-Results MultiFormatReader::readMultiple(const BinaryBitmap& image) const
+Results MultiFormatReader::readMultiple(const BinaryBitmap& image, int maxSymbols) const
 {
 	std::vector<Result> res;
 
 	for (const auto& reader : _readers) {
-		auto r = reader->decode(image, 0);
-		res.insert(res.end(), r.begin(), r.end());
+		auto r = reader->decode(image, maxSymbols);
+		maxSymbols -= r.size();
+		res.insert(res.end(), std::move_iterator(r.begin()), std::move_iterator(r.end()));
+		if (maxSymbols <= 0)
+			break;
 	}
 
 	// sort results based on their position on the image

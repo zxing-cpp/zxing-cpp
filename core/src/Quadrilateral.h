@@ -103,6 +103,12 @@ bool IsConvex(const Quadrilateral<PointT>& poly)
 }
 
 template <typename PointT>
+Quadrilateral<PointT> Scale(const Quadrilateral<PointT>& q, int factor)
+{
+	return {factor * q[0], factor * q[1], factor * q[2], factor * q[3]};
+}
+
+template <typename PointT>
 bool IsIntersecting(const Quadrilateral<PointT>& a, const Quadrilateral<PointT>& b)
 {
 	// TODO: this is only a quick and dirty approximation that works for the trivial standard cases
