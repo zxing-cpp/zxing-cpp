@@ -94,6 +94,7 @@ public:
 	ZX_PROPERTY(bool, isPure, setIsPure)
 
 	/// Image size (width or height) threshold at which to start multi-resolution scanning
+	// WARNING: this API is experimental and may change/disappear
 	ZX_PROPERTY(uint16_t, multiResolutionThreshold, setMultiResolutionThreshold)
 
 	/// The number of scan lines in a 1D barcode that have to be equal to accept the result, default is 2
