@@ -47,6 +47,7 @@ class DecoderResult
 	int _erasures = -1;
 	std::string _symbologyIdentifier;
 	StructuredAppendInfo _structuredAppend;
+	bool _isMirrored = false;
 	bool _readerInit = false;
 	std::shared_ptr<CustomData> _extra;
 
@@ -92,6 +93,7 @@ public:
 	ZX_PROPERTY(int, erasures, setErasures)
 	ZX_PROPERTY(std::string, symbologyIdentifier, setSymbologyIdentifier)
 	ZX_PROPERTY(StructuredAppendInfo, structuredAppend, setStructuredAppend)
+	ZX_PROPERTY(bool, isMirrored, setIsMirrored)
 	ZX_PROPERTY(bool, readerInit, setReaderInit)
 	ZX_PROPERTY(std::shared_ptr<CustomData>, extra, setExtra)
 

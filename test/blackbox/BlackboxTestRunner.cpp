@@ -94,6 +94,8 @@ static std::string getResultValue(const Result& result, const std::string& key)
 		return result.isLastInSequence() ? "true" : "false";
 	if (key == "isPartOfSequence")
 		return result.isPartOfSequence() ? "true" : "false";
+	if (key == "isMirrored")
+		return result.isMirrored() ? "true" : "false";
 	if (key == "readerInit")
 		return result.readerInit() ? "true" : "false";
 

@@ -540,11 +540,12 @@ DecoderResult Decode(const BitMatrix& bits, const std::string& characterSet)
 		return res;
 
 	//TODO:
-	// * report mirrored state (see also QRReader)
 	// * unify bit mirroring helper code with QRReader?
 	// * rectangular symbols with the a size of 8 x Y are not supported a.t.m.
-	if (auto mirroredRes = DoDecode(FlippedL(bits), characterSet); mirroredRes.isValid())
+	if (auto mirroredRes = DoDecode(FlippedL(bits), characterSet); mirroredRes.isValid()) {
+		mirroredRes.setIsMirrored(true);
 		return mirroredRes;
+	}
 
 	return res;
 }

@@ -57,9 +57,6 @@ Reader::decode(const BinaryBitmap& image) const
 	auto decoderResult = Decode(detectorResult.bits(), _charset);
 	auto position = detectorResult.position();
 
-	// TODO: report the information that the symbol was mirrored back to the caller
-	//bool isMirrored = decoderResult.extra() && static_cast<DecoderMetadata*>(decoderResult.extra().get())->isMirrored();
-
 	return Result(std::move(decoderResult), std::move(position), BarcodeFormat::QRCode);
 }
 

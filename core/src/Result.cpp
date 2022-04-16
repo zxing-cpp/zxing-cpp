@@ -43,7 +43,8 @@ Result::Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat 
 	: _status(decodeResult.errorCode()), _format(format), _text(std::move(decodeResult).text()),
 	  _position(std::move(position)), _rawBytes(std::move(decodeResult).rawBytes()), _numBits(decodeResult.numBits()),
 	  _ecLevel(decodeResult.ecLevel()), _symbologyIdentifier(decodeResult.symbologyIdentifier()),
-	  _sai(decodeResult.structuredAppend()), _readerInit(decodeResult.readerInit())
+	  _sai(decodeResult.structuredAppend()), _isMirrored(decodeResult.isMirrored()),
+	  _readerInit(decodeResult.readerInit())
 {
 
 	// TODO: add type opaque and code specific 'extra data'? (see DecoderResult::extra())

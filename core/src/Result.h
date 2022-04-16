@@ -77,6 +77,13 @@ public:
 
 	int orientation() const; //< orientation of barcode in degree, see also Position::orientation()
 
+	/**
+	 * @brief isMirrored is the symbol mirrored (currently only supported by QRCode and DataMatrix)
+	 */
+	bool isMirrored() const {
+		return _isMirrored;
+	}
+
 	const ByteArray& rawBytes() const {
 		return _rawBytes;
 	}
@@ -151,6 +158,7 @@ private:
 	std::wstring _ecLevel;
 	std::string _symbologyIdentifier;
 	StructuredAppendInfo _sai;
+	bool _isMirrored = false;
 	bool _readerInit = false;
 	int _lineCount = 0;
 };

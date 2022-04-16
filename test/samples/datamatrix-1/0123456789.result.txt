@@ -1,1 +1,2 @@
 symbologyIdentifier=]d1
+isMirrored=false

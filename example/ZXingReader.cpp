@@ -191,6 +191,7 @@ int main(int argc, char* argv[])
 					  << "Identifier: " << result.symbologyIdentifier() << "\n"
 					  << "Position:   " << result.position() << "\n"
 					  << "Rotation:   " << result.orientation() << " deg\n"
+					  << "IsMirrored: " << (result.isMirrored() ? "true" : "false") << "\n"
 					  << "Error:      " << ToString(result.status()) << "\n";
 
 			auto printOptional = [](const char* key, const std::string& v) {
