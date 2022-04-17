@@ -112,7 +112,7 @@ void drawLine(const ImageView& image, PointI a, PointI b)
 	PointF dir = bresenhamDirection(PointF(b - a));
 	for (int i = 0; i < steps; ++i) {
 		auto p = PointI(centered(a + i * dir));
-		*((uint32_t*)image.data(p.x, p.y)) = 0xff0000ff;
+		*((uint32_t*)image.data(p.x, p.y)) = 0xff00ff00;
 	}
 }
 
