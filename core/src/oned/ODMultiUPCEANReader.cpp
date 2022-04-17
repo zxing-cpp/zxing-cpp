@@ -329,8 +329,8 @@ Result MultiUPCEANReader::decodePattern(int rowNumber, PatternView& next, std::u
 	if (_hints.eanAddOnSymbol() == EanAddOnSymbol::Require && !addOnRes.isValid())
 		return Result(DecodeStatus::NotFound);
 
-	return {res.txt, rowNumber, begin.pixelsInFront(), res.end.pixelsTillEnd(), res.format, {},
-			std::move(symbologyIdentifier)};
+	return {
+		res.txt, rowNumber, begin.pixelsInFront(), res.end.pixelsTillEnd(), res.format, std::move(symbologyIdentifier)};
 }
 
 } // namespace ZXing::OneD

@@ -282,7 +282,8 @@ static Result readMultiple(const std::vector<fs::path>& imgPaths, std::string_vi
 
 	const auto& first = allResults.front();
 	StructuredAppendInfo sai{ first.sequenceIndex(), first.sequenceSize(), first.sequenceId() };
-	return Result(std::move(text), {}, first.format(), {}, first.symbologyIdentifier(), sai, first.readerInit());
+	return Result(std::move(text), {}, first.format(), std::string(first.symbologyIdentifier()), {}, std::move(sai),
+				  first.readerInit());
 }
 
 static void doRunStructuredAppendTest(

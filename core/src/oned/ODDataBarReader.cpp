@@ -212,7 +212,7 @@ Result DataBarReader::decodePattern(int rowNumber, PatternView& next,
 
 				Result res{TextDecoder::FromLatin1(ConstructText(leftPair, rightPair)),
 						   EstimatePosition(leftPair, rightPair), BarcodeFormat::DataBar,
-						   {}, std::move(symbologyIdentifier), {}, false,
+						   std::move(symbologyIdentifier), {}, {}, false,
 						   EstimateLineCount(leftPair, rightPair)};
 
 				prevState->leftPairs.erase(leftPair);

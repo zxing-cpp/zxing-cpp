@@ -25,18 +25,19 @@
 
 namespace ZXing {
 
-Result::Result(std::wstring&& text, Position&& position, BarcodeFormat format, ByteArray&& rawBytes,
-			   std::string symbologyIdentifier, StructuredAppendInfo sai, const bool readerInit, int lineCount)
+Result::Result(std::wstring&& text, Position&& position, BarcodeFormat format, std::string&& symbologyIdentifier,
+			   ByteArray&& rawBytes, StructuredAppendInfo&& sai, const bool readerInit, int lineCount)
 	: _format(format), _text(std::move(text)), _position(std::move(position)), _rawBytes(std::move(rawBytes)),
-	  _symbologyIdentifier(symbologyIdentifier), _sai(sai), _readerInit(readerInit), _lineCount(lineCount)
+	  _symbologyIdentifier(std::move(symbologyIdentifier)), _sai(std::move(sai)), _readerInit(readerInit),
+	  _lineCount(lineCount)
 {
 	_numBits = Size(_rawBytes) * 8;
 }
 
-Result::Result(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format, ByteArray&& rawBytes,
-			   std::string symbologyIdentifier, const bool readerInit)
-	: Result(TextDecoder::FromLatin1(text), Line(y, xStart, xStop), format, std::move(rawBytes), symbologyIdentifier,
-			 {}, readerInit)
+Result::Result(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format,
+			   std::string&& symbologyIdentifier, ByteArray&& rawBytes, const bool readerInit)
+	: Result(TextDecoder::FromLatin1(text), Line(y, xStart, xStop), format, std::move(symbologyIdentifier),
+			 std::move(rawBytes), {}, readerInit)
 {}
 
 Result::Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat format)

@@ -150,7 +150,7 @@ Result Code39Reader::decodePattern(int rowNumber, PatternView& next, std::unique
 	std::string symbologyIdentifier("]A" + std::to_string(symbologyIdModifier));
 
 	int xStop = next.pixelsTillEnd();
-	return Result(txt, rowNumber, xStart, xStop, BarcodeFormat::Code39, {}, std::move(symbologyIdentifier));
+	return Result(txt, rowNumber, xStart, xStop, BarcodeFormat::Code39, std::move(symbologyIdentifier));
 }
 
 } // namespace ZXing::OneD

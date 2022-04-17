@@ -164,7 +164,7 @@ public:
 		return txt.substr(0, lastTxtSize);
 	}
 
-	const std::string& symbologyIdentifier() const { return _symbologyIdentifier; }
+	std::string symbologyIdentifier() const { return _symbologyIdentifier; }
 
 	bool readerInit() const { return _readerInit; }
 };
@@ -284,8 +284,8 @@ Result Code128Reader::decodePattern(int rowNumber, PatternView& next, std::uniqu
 		return Result(DecodeStatus::ChecksumError);
 
 	int xStop = next.pixelsTillEnd();
-	return Result(raw2txt.text(), rowNumber, xStart, xStop, BarcodeFormat::Code128, std::move(rawCodes),
-				  raw2txt.symbologyIdentifier(), raw2txt.readerInit());
+	return Result(raw2txt.text(), rowNumber, xStart, xStop, BarcodeFormat::Code128, raw2txt.symbologyIdentifier(),
+				  std::move(rawCodes), raw2txt.readerInit());
 }
 
 } // namespace ZXing::OneD

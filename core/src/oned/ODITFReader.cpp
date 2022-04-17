@@ -98,7 +98,7 @@ Result ITFReader::decodePattern(int rowNumber, PatternView& next, std::unique_pt
 		symbologyIdentifier = "]I1"; // Modulo 10 symbol check character validated and transmitted
 
 	int xStop = next.pixelsTillEnd();
-	return Result(txt, rowNumber, xStart, xStop, BarcodeFormat::ITF, {}, std::move(symbologyIdentifier));
+	return Result(txt, rowNumber, xStart, xStop, BarcodeFormat::ITF, std::move(symbologyIdentifier));
 }
 
 } // namespace ZXing::OneD

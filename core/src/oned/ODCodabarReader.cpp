@@ -108,7 +108,7 @@ CodabarReader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<D
 	std::string symbologyIdentifier("]F0");
 
 	int xStop = next.pixelsTillEnd();
-	return Result(txt, rowNumber, xStart, xStop, BarcodeFormat::Codabar, {}, std::move(symbologyIdentifier));
+	return Result(txt, rowNumber, xStart, xStop, BarcodeFormat::Codabar, std::move(symbologyIdentifier));
 }
 
 } // namespace ZXing::OneD

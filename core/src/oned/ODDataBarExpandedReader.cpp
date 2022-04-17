@@ -389,7 +389,7 @@ Result DataBarExpandedReader::decodePattern(int rowNumber, PatternView& view,
 	// TODO: EstimatePosition misses part of the symbol in the stacked case where the last row contains less pairs than
 	// the first
 	return {TextDecoder::FromLatin1(txt), EstimatePosition(pairs.front(), pairs.back()),
-			BarcodeFormat::DataBarExpanded, {}, symbologyIdentifier, {}, false,
+			BarcodeFormat::DataBarExpanded, std::move(symbologyIdentifier), {}, {}, false,
 			EstimateLineCount(pairs.front(), pairs.back())};
 }
 
