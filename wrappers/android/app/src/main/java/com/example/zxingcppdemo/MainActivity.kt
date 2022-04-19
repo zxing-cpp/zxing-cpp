@@ -118,7 +118,9 @@ class MainActivity : AppCompatActivity() {
 				var resultPoints: List<PointF>? = null
 
 				if (binding.java.isChecked) {
-					val yBuffer = image.planes[0].buffer // Y
+					val yPlane = image.planes[0]
+					val yBuffer = yPlane.buffer
+					val yStride = yPlane.rowStride
 					val data = ByteArray(yBuffer.remaining())
 					yBuffer.get(data, 0, data.size)
 					image.close()
@@ -132,7 +134,7 @@ class MainActivity : AppCompatActivity() {
 						val bitmap = BinaryBitmap(
 							HybridBinarizer(
 								PlanarYUVLuminanceSource(
-									data, image.width, image.height,
+									data, yStride, image.height,
 									cropRect.left, cropRect.top, cropRect.width(), cropRect.height(),
 									false
 								)
