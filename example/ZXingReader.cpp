@@ -106,13 +106,16 @@ std::ostream& operator<<(std::ostream& os, const Position& points)
 	return os;
 }
 
-void drawLine(const ImageView& image, PointI a, PointI b)
+void drawLine(const ImageView& iv, PointI a, PointI b)
 {
 	int steps = maxAbsComponent(b - a);
 	PointF dir = bresenhamDirection(PointF(b - a));
+	int R = RedIndex(iv.format()), G = GreenIndex(iv.format()), B = BlueIndex(iv.format());
 	for (int i = 0; i < steps; ++i) {
 		auto p = PointI(centered(a + i * dir));
-		*((uint32_t*)image.data(p.x, p.y)) = 0xff00ff00;
+		auto* dst = const_cast<uint8_t*>(iv.data(p.x, p.y));
+		dst[R] = dst[B] = 0;
+		dst[G] = 0xff;
 	}
 }
 
@@ -148,13 +151,13 @@ int main(int argc, char* argv[])
 
 	for (const auto& filePath : filePaths) {
 		int width, height, channels;
-		std::unique_ptr<stbi_uc, void(*)(void*)> buffer(stbi_load(filePath.c_str(), &width, &height, &channels, 4), stbi_image_free);
+		std::unique_ptr<stbi_uc, void(*)(void*)> buffer(stbi_load(filePath.c_str(), &width, &height, &channels, 3), stbi_image_free);
 		if (buffer == nullptr) {
 			std::cerr << "Failed to read image: " << filePath << "\n";
 			return -1;
 		}
 
-		ImageView image{buffer.get(), width, height, ImageFormat::RGBX};
+		ImageView image{buffer.get(), width, height, ImageFormat::RGB};
 		auto results = ReadBarcodes(image, hints);
 
 		// if we did not find anything, insert a dummy to produce some output for each file
@@ -223,7 +226,7 @@ int main(int argc, char* argv[])
 		}
 
 		if (Size(filePaths) == 1 && !outPath.empty())
-			stbi_write_png(outPath.c_str(), image.width(), image.height(), 4, image.data(0, 0), image.rowStride());
+			stbi_write_png(outPath.c_str(), image.width(), image.height(), 3, image.data(0, 0), image.rowStride());
 
 	}
 
