@@ -41,7 +41,7 @@ static BitMatrix ParseBitMatrix(const std::string& str, const int width)
 // Helper to convert a BitMatrix into a black/white ImageView
 static ImageView getImageView(std::vector<uint8_t> &buf, const BitMatrix &bits)
 {
-	buf.reserve(bits.width() * bits.height());
+	buf.resize(bits.width() * bits.height());
 	for (int r = 0; r < bits.height(); r++) {
 		const int k = r * bits.width();
 		for (int c = 0; c < bits.width(); c++) {
