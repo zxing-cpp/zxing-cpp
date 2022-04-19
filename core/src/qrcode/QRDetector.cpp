@@ -183,9 +183,9 @@ static double EstimateModuleSize(const BitMatrix& image, PointF a, PointF b)
 
 	assert(cur.isBlack());
 
-	auto pattern = cur.readPattern<std::array<int, 4>>();
+	auto pattern = cur.readPattern<std::array<int, 5>>();
 
-	return Reduce(pattern) / 6.0 * length(cur.d);
+	return (2 * Reduce(pattern) - pattern[0] - pattern[4]) / 12.0 * length(cur.d);
 }
 
 struct DimensionEstimate
