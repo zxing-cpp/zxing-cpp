@@ -221,7 +221,7 @@ out:
 	// if symbols overlap, remove the one with a lower line count
 	for (auto a = res.begin(); a != res.end(); ++a)
 		for (auto b = std::next(a); b != res.end(); ++b)
-			if (IsIntersecting(a->position(), b->position()))
+			if (HaveIntersectingBoundingBoxes(a->position(), b->position()))
 				*(a->lineCount() < b->lineCount() ? a : b) = Result(DecodeStatus::NotFound);
 
 	//TODO: C++20 res.erase_if()

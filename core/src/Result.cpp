@@ -63,7 +63,7 @@ bool Result::operator==(const Result& o) const
 		return false;
 
 	if (BarcodeFormats(BarcodeFormat::TwoDCodes).testFlag(format()))
-		return IsIntersecting(position(), o.position());
+		return IsInside(Center(o.position()), position());
 
 	// if one line is less than half the length of the other away from the
 	// latter, we consider it to belong to the same symbol

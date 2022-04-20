@@ -109,7 +109,23 @@ Quadrilateral<PointT> Scale(const Quadrilateral<PointT>& q, int factor)
 }
 
 template <typename PointT>
-bool IsIntersecting(const Quadrilateral<PointT>& a, const Quadrilateral<PointT>& b)
+PointT Center(const Quadrilateral<PointT>& q)
+{
+	return Reduce(q) / Size(q);
+}
+
+template <typename PointT>
+bool IsInside(const PointT& p, const Quadrilateral<PointT>& q)
+{
+	// Test if p is on the same side (right or left) of all polygon segments
+	int pos = 0, neg = 0;
+	for (int i = 0; i < Size(q); ++i)
+		(cross(p - q[i], q[(i + 1) % Size(q)] - q[i]) < 0 ? neg : pos)++;
+	return pos == 0 || neg == 0;
+}
+
+template <typename PointT>
+bool HaveIntersectingBoundingBoxes(const Quadrilateral<PointT>& a, const Quadrilateral<PointT>& b)
 {
 	// TODO: this is only a quick and dirty approximation that works for the trivial standard cases
 	bool x = b.topRight().x < a.topLeft().x || b.topLeft().x > a.topRight().x;
