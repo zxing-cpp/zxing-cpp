@@ -97,6 +97,12 @@ public:
 		}
 		return *this;
 	}
+
+	ImageView subsampled(int scale) const
+	{
+		return {_data, _width / scale, _height / scale, _format, _rowStride * scale, _pixStride * scale};
+	}
+
 };
 
 } // ZXing
