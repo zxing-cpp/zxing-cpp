@@ -1,2 +1,7 @@
 CMakeLists.txt.user
+*.o
+*.so
+*.lib
+*.d
+*.a
 
