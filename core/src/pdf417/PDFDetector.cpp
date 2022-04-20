@@ -162,10 +162,11 @@ FindRowsWithPattern(const BitMatrix& matrix, int height, int width, int startRow
 {
 	bool found = false;
 	int startPos, endPos;
+	int minStartRow = startRow;
 	std::vector<int> counters(pattern.size(), 0);
 	for (; startRow < height; startRow += ROW_STEP) {
 		if (FindGuardPattern(matrix, startColumn, startRow, width, false, pattern, counters, startPos, endPos)) {
-			while (startRow > 0) {
+			while (startRow > minStartRow + 1) {
 				if (!FindGuardPattern(matrix, startColumn, --startRow, width, false, pattern, counters, startPos, endPos)) {
 					startRow++;
 					break;
