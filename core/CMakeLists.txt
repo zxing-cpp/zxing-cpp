@@ -212,6 +212,10 @@ if (BUILD_READERS)
     set (MICROQRCODE_FILES ${MICROQRCODE_FILES}
         src/microqrcode/detector/Dimension.h
         src/microqrcode/detector/Dimension.cpp
+        src/microqrcode/detector/FinderPattern.h
+        src/microqrcode/detector/FinderPattern.cpp
+        src/microqrcode/detector/FinderPatternInfo.h
+        src/microqrcode/detector/FinderPatternInfo.cpp
     )
 endif()
 
