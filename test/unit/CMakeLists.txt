@@ -30,6 +30,7 @@ add_executable (UnitTest
     datamatrix/DMSymbolInfoTest.cpp
     datamatrix/DMWriterTest.cpp
     maxicode/MCDecoderTest.cpp
+    microqrcode/DimensionTest.cpp
     oned/ODCodaBarWriterTest.cpp
     oned/ODCode39ExtendedModeTest.cpp
     oned/ODCode39ReaderTest.cpp

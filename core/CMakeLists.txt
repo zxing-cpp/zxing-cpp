@@ -206,6 +206,16 @@ if (BUILD_READERS)
 endif()
 
 
+set (MICROQRCODE_FILES
+)
+if (BUILD_READERS)
+    set (MICROQRCODE_FILES ${MICROQRCODE_FILES}
+        src/microqrcode/detector/Dimension.h
+        src/microqrcode/detector/Dimension.cpp
+    )
+endif()
+
+
 set (ONED_FILES
     src/oned/ODUPCEANCommon.h
     src/oned/ODUPCEANCommon.cpp
@@ -398,6 +408,7 @@ source_group (Sources FILES ${COMMON_FILES})
 source_group (Sources\\aztec FILES ${AZTEC_FILES})
 source_group (Sources\\datamatrix FILES ${DATAMATRIX_FILES})
 source_group (Sources\\maxicode FILES ${MAXICODE_FILES})
+source_group (Sources\\microqrcode FILES ${MICROQRCODE_FILES})
 source_group (Sources\\oned FILES ${ONED_FILES})
 source_group (Sources\\oned\\rss FILES ${ONED_RSS_FILES})
 source_group (Sources\\pdf417 FILES ${PDF417_FILES})
@@ -413,6 +424,7 @@ add_library (ZXing
     ${AZTEC_FILES}
     ${DATAMATRIX_FILES}
     ${MAXICODE_FILES}
+    ${MICROQRCODE_FILES}
     ${ONED_FILES}
     ${ONED_RSS_FILES}
     ${PDF417_FILES}
