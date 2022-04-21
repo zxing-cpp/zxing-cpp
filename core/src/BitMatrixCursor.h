@@ -119,9 +119,10 @@ public:
 	 * @brief stepToEdge advances cursor to one step behind the next (or n-th) edge.
 	 * @param nth number of edges to pass
 	 * @param range max number of steps to take
+	 * @param backup whether or not to backup one step so we land in front of the edge
 	 * @return number of steps taken or 0 if moved outside of range/image
 	 */
-	int stepToEdge(int nth = 1, int range = 0)
+	int stepToEdge(int nth = 1, int range = 0, bool backup = false)
 	{
 		// TODO: provide an alternative and faster out-of-bounds check than isIn() inside testAt()
 		int steps = 0;
@@ -135,6 +136,8 @@ public:
 				--nth;
 			}
 		}
+		if (backup)
+			--steps;
 		p += steps * d;
 		return steps * (nth == 0);
 	}
