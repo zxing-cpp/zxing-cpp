@@ -222,19 +222,20 @@ static RegressionLine TraceLine(const BitMatrix& image, PointF p, PointF d, int 
 	if (edge == 3)
 		cur.turnBack();
 
-	for (auto dir : {Direction::LEFT, Direction::RIGHT}) {
-		auto c = BitMatrixCursorI(image, PointI(cur.p), PointI(mainDirection(cur.direction(dir))));
-		// if cur.d is near diagonal, it could be c.p is at a corner, i.e. c is not currently at an edge and hence,
-		// stepAlongEdge() would fail. Going either a step forward or backward should do the trick.
-		if (!c.edgeAt(dir)) {
-			c.step();
-			if (!c.edgeAt(dir)) {
-				c.step(-2);
-				if (!c.edgeAt(dir))
-					return {};
-			}
-		}
+	auto curI = BitMatrixCursorI(image, PointI(cur.p), PointI(mainDirection(cur.d)));
+	// make sure curI positioned such that the white->black edge is directly behind
+	// Test image: fix-traceline.jpg
+	while (!curI.edgeAtBack()) {
+		if (curI.edgeAtLeft())
+			curI.turnRight();
+		else if (curI.edgeAtRight())
+			curI.turnLeft();
+		else
+			curI.step(-1);
+	}
 
+	for (auto dir : {Direction::LEFT, Direction::RIGHT}) {
+		auto c = BitMatrixCursorI(image, curI.p, curI.direction(dir));
 		auto stepCount = static_cast<int>(maxAbsComponent(cur.p - p));
 		do {
 			line.add(centered(c.p));
