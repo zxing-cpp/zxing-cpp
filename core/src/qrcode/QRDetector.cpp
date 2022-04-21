@@ -250,6 +250,14 @@ static RegressionLine TraceLine(const BitMatrix& image, PointF p, PointF d, int 
 	return line;
 }
 
+// estimate how tilted the symbol is (return value between 1 and 2, see also above)
+static double EstimateTilt(const FinderPatternSet& fp)
+{
+	int min = std::min({fp.bl.size, fp.tl.size, fp.tr.size});
+	int max = std::max({fp.bl.size, fp.tl.size, fp.tr.size});
+	return double(max) / min;
+}
+
 DetectorResult SampleAtFinderPatternSet(const BitMatrix& image, const FinderPatternSet& fp)
 {
 	auto top  = EstimateDimension(image, fp.tl, fp.tr);
@@ -301,9 +309,9 @@ DetectorResult SampleAtFinderPatternSet(const BitMatrix& image, const FinderPatt
 				}
 			}
 
-			// if the resolution of the RegressionLines is sufficient, use their intersection as the best estimate
-			// (see discussion in #199, TODO: tune threshold in RegressionLine::isHighRes())
-			if (bl2.isHighRes() && bl3.isHighRes() && tr2.isHighRes() && tr3.isHighRes())
+			// if the symbol is tilted or the resolution of the RegressionLines is sufficient, use their intersection
+			// as the best estimate (see discussion in #199 and test image estimate-tilt.jpg )
+			if (EstimateTilt(fp) > 1.1 || (bl2.isHighRes() && bl3.isHighRes() && tr2.isHighRes() && tr3.isHighRes()))
 				return sample(brInter, quad[2] - PointF(3, 3));
 		}
 	}
