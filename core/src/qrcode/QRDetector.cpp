@@ -170,18 +170,12 @@ static double EstimateModuleSize(const BitMatrix& image, PointF a, PointF b)
 	BitMatrixCursorF cur(image, a, b - a);
 	assert(cur.isBlack());
 
-	if (!cur.stepToEdge(3, distance(a, b) / 3))
-		return -1;
-
-	cur.turnBack();
-
-	// the following is basically a simple "cur.step()" that reverts the very last step that crossed from back into
-	// white, but due to a numerical instability near an integer boundary (think .999999999995) it might be required
-	// to back up two steps. See issues #300 and #308.
-	if (!cur.stepToEdge(1, 2))
+	if (!cur.stepToEdge(3, distance(a, b) / 3, true))
 		return -1;
 
 	assert(cur.isBlack());
+	cur.turnBack();
+
 
 	auto pattern = cur.readPattern<std::array<int, 5>>();
 
@@ -217,12 +211,10 @@ static RegressionLine TraceLine(const BitMatrix& image, PointF p, PointF d, int 
 	RegressionLine line;
 	line.setDirectionInward(cur.back());
 
-	cur.stepToEdge(edge);
-	if (edge == 3) {
-		// collect points inside the black line -> go one step back
+	// collect points inside the black line -> backup on 3rd edge
+	cur.stepToEdge(edge, 0, edge == 3);
+	if (edge == 3)
 		cur.turnBack();
-		cur.step();
-	}
 
 	for (auto dir : {Direction::LEFT, Direction::RIGHT}) {
 		auto c = BitMatrixCursorI(image, PointI(cur.p), PointI(mainDirection(cur.direction(dir))));
