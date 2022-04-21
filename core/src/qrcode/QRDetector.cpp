@@ -98,7 +98,13 @@ static FinderPatternSets GenerateFinderPatternSets(std::vector<ConcentricPattern
 	std::sort(patterns.begin(), patterns.end(), [](const auto& a, const auto& b) { return a.size < b.size; });
 
 	auto sets            = std::multimap<double, FinderPatternSet>();
-	auto squaredDistance = [](PointF a, PointF b) { return dot((a - b), (a - b)); };
+	auto squaredDistance = [](const auto* a, const auto* b) {
+		// The scaling of the distance by the b/a size ratio is a very coarse compensation for the shortening effect of
+		// the camera projection on slanted symbols. The fact that the size of the finder pattern is proportional to the
+		// distance from the camera is used here. This approximation only works if a < b < 2*a (see below).
+		// Test image: fix-finderpattern-order.jpg
+		return dot((*a - *b), (*a - *b)) * std::pow(double(b->size) / a->size, 2);
+	};
 
 	int nbPatterns = Size(patterns);
 	for (int i = 0; i < nbPatterns - 2; i++) {
@@ -115,9 +121,9 @@ static FinderPatternSets GenerateFinderPatternSets(std::vector<ConcentricPattern
 				// Orders the three points in an order [A,B,C] such that AB is less than AC
 				// and BC is less than AC, and the angle between BC and BA is less than 180 degrees.
 
-				auto distAB = squaredDistance(*a, *b);
-				auto distBC = squaredDistance(*b, *c);
-				auto distAC = squaredDistance(*a, *c);
+				auto distAB = squaredDistance(a, b);
+				auto distBC = squaredDistance(b, c);
+				auto distAC = squaredDistance(a, c);
 
 				if (distBC >= distAB && distBC >= distAC) {
 					std::swap(a, b);
