@@ -149,7 +149,8 @@ class MainActivity : AppCompatActivity() {
 					readerCpp.options = BarcodeReader.Options(
 						formats = if (binding.qrcode.isChecked) setOf(Format.QR_CODE) else setOf(),
 						tryHarder = binding.tryHarder.isChecked,
-						tryRotate = binding.tryRotate.isChecked
+						tryRotate = binding.tryRotate.isChecked,
+						tryDownscale = binding.tryDownscale.isChecked
 					)
 
 					resultText = try {

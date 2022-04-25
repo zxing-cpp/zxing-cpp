@@ -93,6 +93,11 @@
             android:text="tryRotate" />
 
         <com.google.android.material.chip.Chip
+            android:id="@+id/tryDownscale"
+            style="@style/ChipR"
+            android:text="tryDownscale" />
+
+        <com.google.android.material.chip.Chip
             android:id="@+id/crop"
             style="@style/ChipR"
             android:text="crop" />
