@@ -262,7 +262,8 @@ static Result readMultiple(const std::vector<fs::path>& imgPaths, std::string_vi
 	std::list<Result> allResults;
 	for (const auto& imgPath : imgPaths) {
 		auto results =
-			ReadBarcodes(ImageLoader::load(imgPath), DecodeHints().setFormats(BarcodeFormatFromString(format.data())));
+			ReadBarcodes(ImageLoader::load(imgPath),
+						 DecodeHints().setFormats(BarcodeFormatFromString(format.data())).setTryDownscale(false));
 		allResults.insert(allResults.end(), results.begin(), results.end());
 	}
 
