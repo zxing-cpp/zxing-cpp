@@ -40,8 +40,8 @@ static void PrintUsage(const char* exePath)
 	std::cout << "Usage: " << exePath << " [-fast] [-norotate] [-format <FORMAT[,...]>] [-pngout <png out path>] [-ispure] [-1] <png image path>...\n"
 			  << "    -fast      Skip some lines/pixels during detection (faster)\n"
 			  << "    -norotate  Don't try rotated image during detection (faster)\n"
+			  << "    -noscale   Don't try downscaled images during detection (faster)\n"
 			  << "    -format    Only detect given format(s) (faster)\n"
-			  << "    -multires  Image size threshold at which to start multi-resolution scanning, 0 disables it\n"
 			  << "    -ispure    Assume the image contains only a 'pure'/perfect code (faster)\n"
 			  << "    -1         Print only file name, text and status on one line per file/barcode\n"
 			  << "    -escape    Escape non-graphical characters in angle brackets (ignored for -1 option, which always escapes)\n"
@@ -62,6 +62,8 @@ static bool ParseOptions(int argc, char* argv[], DecodeHints& hints, bool& oneLi
 			hints.setTryHarder(false);
 		} else if (strcmp(argv[i], "-norotate") == 0) {
 			hints.setTryRotate(false);
+		} else if (strcmp(argv[i], "-noscale") == 0) {
+			hints.setDownscaleThreshold(0);
 		} else if (strcmp(argv[i], "-ispure") == 0) {
 			hints.setIsPure(true);
 			hints.setBinarizer(Binarizer::FixedThreshold);
@@ -70,15 +72,6 @@ static bool ParseOptions(int argc, char* argv[], DecodeHints& hints, bool& oneLi
 				return false;
 			try {
 				hints.setFormats(BarcodeFormatsFromString(argv[i]));
-			} catch (const std::exception& e) {
-				std::cerr << e.what() << "\n";
-				return false;
-			}
-		} else if (strcmp(argv[i], "-multires") == 0) {
-			if (++i == argc)
-				return false;
-			try {
-				hints.setMultiResolutionThreshold(std::stoi(argv[i]));
 			} catch (const std::exception& e) {
 				std::cerr << e.what() << "\n";
 				return false;
@@ -134,7 +127,6 @@ int main(int argc, char* argv[])
 	bool angleEscape = false;
 	int ret = 0;
 
-	hints.setMultiResolutionThreshold(500); // enable the feature by default
 
 	if (!ParseOptions(argc, argv, hints, oneLine, angleEscape, filePaths, outPath)) {
 		PrintUsage(argv[0]);

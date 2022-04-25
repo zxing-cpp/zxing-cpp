@@ -51,6 +51,7 @@ class DecodeHints
 {
 	bool _tryHarder : 1;
 	bool _tryRotate : 1;
+	bool _tryDownscale : 1;
 	bool _isPure : 1;
 	bool _tryCode39ExtendedMode : 1;
 	bool _validateCode39CheckSum : 1;
@@ -62,16 +63,16 @@ class DecodeHints
 	std::string _characterSet;
 	std::vector<int> _allowedLengths;
 	BarcodeFormats _formats = BarcodeFormat::None;
-	uint16_t _multiResolutionThreshold = 0xffff;
+	uint16_t _downscaleThreshold = 500;
 	uint8_t _minLineCount = 2;
 	uint8_t _maxNumberOfSymbols = 0xff;
 
 public:
 	// bitfields don't get default initialized to 0.
 	DecodeHints()
-		: _tryHarder(1), _tryRotate(1), _isPure(0), _tryCode39ExtendedMode(0), _validateCode39CheckSum(0),
-		  _validateITFCheckSum(0), _returnCodabarStartEnd(0), _binarizer(Binarizer::LocalAverage),
-		  _eanAddOnSymbol(EanAddOnSymbol::Ignore)
+		: _tryHarder(1), _tryRotate(1), _tryDownscale(1), _isPure(0), _tryCode39ExtendedMode(0),
+		  _validateCode39CheckSum(0), _validateITFCheckSum(0), _returnCodabarStartEnd(0),
+		  _binarizer(Binarizer::LocalAverage), _eanAddOnSymbol(EanAddOnSymbol::Ignore)
 	{}
 
 #define ZX_PROPERTY(TYPE, GETTER, SETTER) \
@@ -87,6 +88,9 @@ public:
 	/// Also try detecting code in 90, 180 and 270 degree rotated images.
 	ZX_PROPERTY(bool, tryRotate, setTryRotate)
 
+	/// Also try detecting code in downscaled images (depending on image size).
+	ZX_PROPERTY(bool, tryDownscale, setTryDownscale)
+
 	/// Binarizer to use internally when using the ReadBarcode function
 	ZX_PROPERTY(Binarizer, binarizer, setBinarizer)
 
@@ -95,7 +99,7 @@ public:
 
 	/// Image size (width or height) threshold at which to start multi-resolution scanning
 	// WARNING: this API is experimental and may change/disappear
-	ZX_PROPERTY(uint16_t, multiResolutionThreshold, setMultiResolutionThreshold)
+	ZX_PROPERTY(uint16_t, downscaleThreshold, setDownscaleThreshold)
 
 	/// The number of scan lines in a 1D barcode that have to be equal to accept the result, default is 2
 	ZX_PROPERTY(uint8_t, minLineCount, setMinLineCount)

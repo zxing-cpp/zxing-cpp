@@ -146,7 +146,7 @@ Results ReadBarcodes(const ImageView& _iv, const DecodeHints& hints)
 	if (hints.isPure())
 		return {reader.read(*CreateBitmap(hints.binarizer(), iv))};
 
-	LumImagePyramid pyramid(iv, hints.multiResolutionThreshold());
+	LumImagePyramid pyramid(iv, hints.downscaleThreshold() * hints.tryDownscale());
 
 	Results results;
 	int maxSymbols = hints.maxNumberOfSymbols();
