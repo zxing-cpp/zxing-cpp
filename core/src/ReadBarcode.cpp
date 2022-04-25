@@ -126,15 +126,17 @@ std::unique_ptr<BinaryBitmap> CreateBitmap(ZXing::Binarizer binarizer, const Ima
 
 Result ReadBarcode(const ImageView& _iv, const DecodeHints& hints)
 {
-#if 0
-	auto ress = ReadBarcodes(_iv, DecodeHints(hints).setMaxNumberOfSymbols(1));
-	return ress.empty() ? Result(DecodeStatus::NotFound) : ress.front();
-#else
-	LumImage lum;
-	ImageView iv = SetupLumImageView(_iv, lum, hints);
+	if (hints.maxNumberOfSymbols() == 1) {
+		// HACK: use the maxNumberOfSymbols value as a switch to ReadBarcodes to enable the downscaling
+		// see python and android wrapper
+		auto ress = ReadBarcodes(_iv, DecodeHints(hints).setMaxNumberOfSymbols(1));
+		return ress.empty() ? Result(DecodeStatus::NotFound) : ress.front();
+	} else {
+		LumImage lum;
+		ImageView iv = SetupLumImageView(_iv, lum, hints);
 
-	return MultiFormatReader(hints).read(*CreateBitmap(hints.binarizer(), iv));
-#endif
+		return MultiFormatReader(hints).read(*CreateBitmap(hints.binarizer(), iv));
+	}
 }
 
 Results ReadBarcodes(const ImageView& _iv, const DecodeHints& hints)

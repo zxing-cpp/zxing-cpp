@@ -92,15 +92,13 @@ jstring Read(JNIEnv *env, ImageView image, jstring formats, jboolean tryHarder, 
 						 .setFormats(BarcodeFormatsFromString(J2CString(env, formats)))
 						 .setTryHarder(tryHarder)
 						 .setTryRotate( tryRotate )
-						 .setTryDownscale(tryDownscale);
+						 .setTryDownscale(tryDownscale)
+						 .setMaxNumberOfSymbols(1); // see ReadBarcode implementation
 
 //		return C2JString(env, ToString(DecodeStatus::NotFound));
 
 		auto startTime = std::chrono::high_resolution_clock::now();
-		Result res(DecodeStatus::NotFound);
-		auto results = ReadBarcodes(image, DecodeHints(hints).setMaxNumberOfSymbols(1));
-		if (!results.empty())
-			res = results.front();
+		auto res = ReadBarcode(image, hints);
 		auto duration = std::chrono::high_resolution_clock::now() - startTime;
 //		LOGD("time: %4d ms\n", (int)std::chrono::duration_cast<std::chrono::milliseconds>(duration).count());
 
