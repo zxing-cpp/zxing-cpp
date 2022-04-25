@@ -35,14 +35,17 @@ std::ostream& operator<<(std::ostream& os, const Position& points) {
 }
 
 template <typename FUNC>
-auto read_barcode_impl(FUNC func, py::object _image, const BarcodeFormats& formats, bool try_rotate,
-					   Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol)
+auto read_barcode_impl(FUNC func, py::object _image, const BarcodeFormats& formats, bool try_rotate, bool try_downscale,
+					   Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol,
+					   uint8_t max_number_of_symbols = 0xff)
 {
 	const auto hints = DecodeHints()
 		.setFormats(formats)
 		.setTryRotate(try_rotate)
+		.setTryDownscale(try_downscale)
 		.setBinarizer(binarizer)
 		.setIsPure(is_pure)
+		.setMaxNumberOfSymbols(max_number_of_symbols)
 		.setEanAddOnSymbol(ean_add_on_symbol);
 	const auto _type = std::string(py::str(py::type::of(_image)));
 	Image image;
@@ -84,16 +87,18 @@ auto read_barcode_impl(FUNC func, py::object _image, const BarcodeFormats& forma
 	return func({bytes, width, height, imgfmt, width * channels, channels}, hints);
 }
 
-Result read_barcode(py::object _image, const BarcodeFormats& formats, bool try_rotate, Binarizer binarizer,
-					bool is_pure, EanAddOnSymbol ean_add_on_symbol)
+Result read_barcode(py::object _image, const BarcodeFormats& formats, bool try_rotate, bool try_downscale,
+					Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol)
 {
-	return read_barcode_impl(ReadBarcode, _image, formats, try_rotate, binarizer, is_pure, ean_add_on_symbol);
+	return read_barcode_impl(ReadBarcode, _image, formats, try_rotate, try_downscale, binarizer, is_pure,
+							 ean_add_on_symbol, 1);
 }
 
-Results read_barcodes(py::object _image, const BarcodeFormats& formats, bool try_rotate, Binarizer binarizer,
-					  bool is_pure, EanAddOnSymbol ean_add_on_symbol)
+Results read_barcodes(py::object _image, const BarcodeFormats& formats, bool try_rotate, bool try_downscale,
+					  Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol)
 {
-	return read_barcode_impl(ReadBarcodes, _image, formats, try_rotate, binarizer, is_pure, ean_add_on_symbol);
+	return read_barcode_impl(ReadBarcodes, _image, formats, try_rotate, try_downscale, binarizer, is_pure,
+							 ean_add_on_symbol);
 }
 
 Image write_barcode(BarcodeFormat format, std::string text, int width, int height, int quiet_zone, int ec_level)
@@ -222,6 +227,7 @@ PYBIND11_MODULE(zxingcpp, m)
 		py::arg("image"),
 		py::arg("formats") = BarcodeFormats{},
 		py::arg("try_rotate") = true,
+		py::arg("try_downscale") = true,
 		py::arg("binarizer") = Binarizer::LocalAverage,
 		py::arg("is_pure") = false,
 		py::arg("ean_add_on_symbol") = EanAddOnSymbol::Ignore,
@@ -233,8 +239,11 @@ PYBIND11_MODULE(zxingcpp, m)
 		":type formats: zxing.BarcodeFormat|zxing.BarcodeFormats\n"
 		":param formats: the format(s) to decode. If ``None``, decode all formats.\n"
 		":type try_rotate: bool\n"
-		":param try_rotate: if ``True`` (the default), decoder searched for barcodes in any direction; \n"
+		":param try_rotate: if ``True`` (the default), decoder searches for barcodes in any direction; \n"
 		"  if ``False``, it will not search for 90° / 270° rotated barcodes.\n"
+		":type try_downscale: bool\n"
+		":param try_downscale: if ``True`` (the default), decoder also scans downscaled versions of the input; \n"
+		"  if ``False``, it will only search in the resolution provided.\n"
 		":type binarizer: zxing.Binarizer\n"
 		":param binarizer: the binarizer used to convert image before decoding barcodes.\n"
 		"  Defaults to :py:attr:`zxing.Binarizer.LocalAverage`."
@@ -251,6 +260,7 @@ PYBIND11_MODULE(zxingcpp, m)
 		py::arg("image"),
 		py::arg("formats") = BarcodeFormats{},
 		py::arg("try_rotate") = true,
+		py::arg("try_downscale") = true,
 		py::arg("binarizer") = Binarizer::LocalAverage,
 		py::arg("is_pure") = false,
 		py::arg("ean_add_on_symbol") = EanAddOnSymbol::Ignore,
@@ -262,8 +272,11 @@ PYBIND11_MODULE(zxingcpp, m)
 		":type formats: zxing.BarcodeFormat|zxing.BarcodeFormats\n"
 		":param formats: the format(s) to decode. If ``None``, decode all formats.\n"
 		":type try_rotate: bool\n"
-		":param try_rotate: if ``True`` (the default), decoder searched for barcodes in any direction; \n"
+		":param try_rotate: if ``True`` (the default), decoder searches for barcodes in any direction; \n"
 		"  if ``False``, it will not search for 90° / 270° rotated barcodes.\n"
+		":type try_downscale: bool\n"
+		":param try_downscale: if ``True`` (the default), decoder also scans downscaled versions of the input; \n"
+		"  if ``False``, it will only search in the resolution provided.\n"
 		":type binarizer: zxing.Binarizer\n"
 		":param binarizer: the binarizer used to convert image before decoding barcodes.\n"
 		"  Defaults to :py:attr:`zxing.Binarizer.LocalAverage`."
