@@ -210,6 +210,8 @@ set (MICROQRCODE_FILES
 )
 if (BUILD_READERS)
     set (MICROQRCODE_FILES ${MICROQRCODE_FILES}
+        src/microqrcode/detector/CornerFinder.h
+        src/microqrcode/detector/CornerFinder.cpp
         src/microqrcode/detector/Dimension.h
         src/microqrcode/detector/Dimension.cpp
         src/microqrcode/detector/FinderPattern.h
