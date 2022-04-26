@@ -31,6 +31,7 @@ add_executable (UnitTest
     datamatrix/DMWriterTest.cpp
     maxicode/MCDecoderTest.cpp
     microqrcode/CornerFinderTest.cpp
+    microqrcode/DetectorTest.cpp
     microqrcode/DimensionTest.cpp
     microqrcode/FinderPatternFinderTest.cpp
     microqrcode/FinderPatternTest.cpp

@@ -207,6 +207,9 @@ std::vector<ResultPoint> FinderPatternFinder::getCodeEnclosingRect(const FinderP
 FinderPatternInfo FinderPatternFinder::generatePatternInfoForPattern(const FinderPattern& actualPattern)
 {
 	std::vector<ResultPoint> results = getCodeEnclosingRect(actualPattern);
+	if (results.empty())
+		throw NotFoundException();
+
 	FakeCenterCalculator calculator(actualPattern, results);
 
 	FinderPattern fakeTopRightPattern = calculator.getTopRightCenter();

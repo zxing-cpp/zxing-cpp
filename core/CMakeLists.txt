@@ -212,6 +212,8 @@ if (BUILD_READERS)
     set (MICROQRCODE_FILES ${MICROQRCODE_FILES}
         src/microqrcode/detector/CornerFinder.h
         src/microqrcode/detector/CornerFinder.cpp
+        src/microqrcode/detector/Detector.h
+        src/microqrcode/detector/Detector.cpp
         src/microqrcode/detector/Dimension.h
         src/microqrcode/detector/Dimension.cpp
         src/microqrcode/detector/FakeCenterCalculator.h
@@ -223,6 +225,7 @@ if (BUILD_READERS)
         src/microqrcode/detector/FinderPatternInfo.h
         src/microqrcode/detector/FinderPatternInfo.cpp
         src/microqrcode/detector/NotFoundException.h
+        src/microqrcode/detector/ReaderException.h
     )
 endif()
 
