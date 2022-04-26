@@ -45,7 +45,7 @@ static void PrintUsage(const char* exePath)
 			  << "    -ispure    Assume the image contains only a 'pure'/perfect code (faster)\n"
 			  << "    -1         Print only file name, text and status on one line per file/barcode\n"
 			  << "    -escape    Escape non-graphical characters in angle brackets (ignored for -1 option, which always escapes)\n"
-			  << "    -pngout    Write a copy of the input image with barcodes outlined by a red line\n"
+			  << "    -pngout    Write a copy of the input image with barcodes outlined by a green line\n"
 			  << "\n"
 			  << "Supported formats are:\n";
 	for (auto f : BarcodeFormats::all()) {
