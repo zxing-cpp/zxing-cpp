@@ -83,7 +83,7 @@ public:
 	LumImagePyramid(const ImageView& iv, int threshold)
 	{
 		layers.push_back(iv);
-		while (threshold > 0 && std::max(layers.back().width(), layers.back().height()) > threshold)
+		while (threshold > 0 && std::min(layers.back().width(), layers.back().height()) > threshold)
 			addLayer();
 #if 0
 		// Reversing the layers means we'd start with the smallest. that can make sense if we are only looking for a

@@ -97,7 +97,7 @@ public:
 	/// Set to true if the input contains nothing but a single perfectly aligned barcode (generated image)
 	ZX_PROPERTY(bool, isPure, setIsPure)
 
-	/// Image size (width or height) threshold at which to start multi-resolution scanning
+	/// Image size ( min(width, height) ) threshold at which to start downscaled scanning
 	// WARNING: this API is experimental and may change/disappear
 	ZX_PROPERTY(uint16_t, downscaleThreshold, setDownscaleThreshold)
 
