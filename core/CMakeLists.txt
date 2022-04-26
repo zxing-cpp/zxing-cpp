@@ -214,10 +214,15 @@ if (BUILD_READERS)
         src/microqrcode/detector/CornerFinder.cpp
         src/microqrcode/detector/Dimension.h
         src/microqrcode/detector/Dimension.cpp
+        src/microqrcode/detector/FakeCenterCalculator.h
+        src/microqrcode/detector/FakeCenterCalculator.cpp
         src/microqrcode/detector/FinderPattern.h
         src/microqrcode/detector/FinderPattern.cpp
+        src/microqrcode/detector/FinderPatternFinder.h
+        src/microqrcode/detector/FinderPatternFinder.cpp
         src/microqrcode/detector/FinderPatternInfo.h
         src/microqrcode/detector/FinderPatternInfo.cpp
+        src/microqrcode/detector/NotFoundException.h
     )
 endif()
 

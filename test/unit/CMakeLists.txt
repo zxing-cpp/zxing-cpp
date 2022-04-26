@@ -32,6 +32,7 @@ add_executable (UnitTest
     maxicode/MCDecoderTest.cpp
     microqrcode/CornerFinderTest.cpp
     microqrcode/DimensionTest.cpp
+    microqrcode/FinderPatternFinderTest.cpp
     microqrcode/FinderPatternTest.cpp
     oned/ODCodaBarWriterTest.cpp
     oned/ODCode39ExtendedModeTest.cpp
