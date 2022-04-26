@@ -26,24 +26,23 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-      with:
-        submodules: recursive
+
     - name: Set up Python
       uses: actions/setup-python@v2
-      with:
-        python-version: 3.8
+
+    - name: Install cibuildwheel
+      run: python -m pip install cibuildwheel==2.4.0
 
     - name: Build wheels
-      uses: joerick/cibuildwheel@v1.10.0
-      with:
-        package-dir: ./wrappers/python
-        output-dir: ./wrappers/python/wheelhouse
+      run: python -m cibuildwheel --output-dir wheelhouse wrappers/python
       env:
-        CIBW_BUILD: cp37-* cp38-* cp39-*
+        CIBW_BUILD: cp38-* cp39-* cp310-*
+        # "Installing Python cp310" fails on macOS on 2022-04-26 -> disable
+        CIBW_SKIP: "*musllinux* *310-macos*"
 
     - uses: actions/upload-artifact@v2
       with:
-        path: ./wrappers/python/wheelhouse/*.whl
+        path: ./wheelhouse/*.whl
 
   build-sdist:
     name: Build source distribution
@@ -55,8 +54,6 @@ jobs:
 
     - name: Set up Python
       uses: actions/setup-python@v2
-      with:
-        python-version: 3.8
 
     - name: Build sdist
       working-directory: wrappers/python
