@@ -2,6 +2,7 @@
 #define __FINDER_PATTERN_FINDER_H__
 
 /*
+ * Copyright 2007 ZXing authors All rights reserved.
  * Copyright 2017 KURZ Digital Solutions GmbH & Co. KG
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
