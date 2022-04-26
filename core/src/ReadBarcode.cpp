@@ -48,7 +48,7 @@ static LumImage ExtractLum(const ImageView& iv, P projection)
 
 	auto* dst = res.data();
 	for(int y = 0; y < iv.height(); ++y)
-		for(int x = 0; x < iv.width(); ++x)
+		for(int x = 0, w = iv.width(); x < w; ++x)
 			*dst++ = projection(iv.data(x, y));
 
 	return res;
