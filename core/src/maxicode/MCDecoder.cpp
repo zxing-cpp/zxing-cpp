@@ -294,27 +294,22 @@ namespace DecodedBitStreamParser
 		result.reserve(144);
 		StructuredAppendInfo sai;
 		switch (mode) {
-			case 2:
-			case 3: {
-				auto postcode = mode == 2 ? ToString(GetPostCode2(bytes), GetPostCode2Length(bytes)) : GetPostCode3(bytes);
-				auto country = ToString(GetCountry(bytes), 3);
-				auto service = ToString(GetServiceClass(bytes), 3);
-				result.append(GetMessage(bytes, 10, 84, characterSet, sai));
-				if (result.size() >= 9 && result.compare(0, 7, L"[)>\u001E01\u001D") == 0) { // "[)>" + RS + "01" + GS
-					result.insert(9, TextDecoder::FromLatin1(postcode + GS + country + GS + service + GS));
-				}
-				else {
-					result.insert(0, TextDecoder::FromLatin1(postcode + GS + country + GS + service + GS));
-				}
-				break;
+		case 2:
+		case 3: {
+			auto postcode = mode == 2 ? ToString(GetPostCode2(bytes), GetPostCode2Length(bytes)) : GetPostCode3(bytes);
+			auto country = ToString(GetCountry(bytes), 3);
+			auto service = ToString(GetServiceClass(bytes), 3);
+			result.append(GetMessage(bytes, 10, 84, characterSet, sai));
+			if (result.size() >= 9 && result.compare(0, 7, L"[)>\u001E01\u001D") == 0) { // "[)>" + RS + "01" + GS
+				result.insert(9, TextDecoder::FromLatin1(postcode + GS + country + GS + service + GS));
+			} else {
+				result.insert(0, TextDecoder::FromLatin1(postcode + GS + country + GS + service + GS));
 			}
-			case 4:
-			case 6:
-				result.append(GetMessage(bytes, 1, 93, characterSet, sai));
-				break;
-			case 5:
-				result.append(GetMessage(bytes, 1, 77, characterSet, sai));
-				break;
+			break;
+		}
+		case 4:
+		case 6: result.append(GetMessage(bytes, 1, 93, characterSet, sai)); break;
+		case 5: result.append(GetMessage(bytes, 1, 77, characterSet, sai)); break;
 		}
 
 		// As converting character set ECIs ourselves and ignoring/skipping non-character ECIs, not using modifiers
@@ -350,27 +345,24 @@ Decoder::Decode(const BitMatrix& bits, const std::string& characterSet)
 	int mode = codewords[0] & 0x0F;
 	ByteArray datawords;
 	switch (mode) {
-		case 2: // Structured Carrier Message (numeric postcode)
-		case 3: // Structured Carrier Message (alphanumeric postcode)
-		case 4: // Standard Symbol
-		case 6: // Reader Programming
-			if (CorrectErrors(codewords, 20, 84, 40, EVEN) && CorrectErrors(codewords, 20, 84, 40, ODD)) {
-				datawords.resize(94, 0);
-			}
-			else {
-				return DecodeStatus::ChecksumError;
-			}
-			break;
-		case 5: // Full ECC
-			if (CorrectErrors(codewords, 20, 68, 56, EVEN) && CorrectErrors(codewords, 20, 68, 56, ODD)) {
-				datawords.resize(78, 0);
-			}
-			else {
-				return DecodeStatus::ChecksumError;
-			}
-			break;
-		default:
-			return DecodeStatus::FormatError;
+	case 2: // Structured Carrier Message (numeric postcode)
+	case 3: // Structured Carrier Message (alphanumeric postcode)
+	case 4: // Standard Symbol
+	case 6: // Reader Programming
+		if (CorrectErrors(codewords, 20, 84, 40, EVEN) && CorrectErrors(codewords, 20, 84, 40, ODD)) {
+			datawords.resize(94, 0);
+		} else {
+			return DecodeStatus::ChecksumError;
+		}
+		break;
+	case 5: // Full ECC
+		if (CorrectErrors(codewords, 20, 68, 56, EVEN) && CorrectErrors(codewords, 20, 68, 56, ODD)) {
+			datawords.resize(78, 0);
+		} else {
+			return DecodeStatus::ChecksumError;
+		}
+		break;
+	default: return DecodeStatus::FormatError;
 	}
 
 	std::copy_n(codewords.begin(), 10, datawords.begin());

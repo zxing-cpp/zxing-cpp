@@ -231,80 +231,70 @@ static int EncodeText(const std::wstring& msg, int startpos, int count, int subm
 	while (true) {
 		int ch = msg[startpos + idx];
 		switch (submode) {
-			case SUBMODE_ALPHA:
-				if (IsAlphaUpper(ch)) {
-					tmp.push_back(ch == ' ' ? 26 : (ch - 65)); //space
-				}
-				else if (IsAlphaLower(ch)) {
-					submode = SUBMODE_LOWER;
-					tmp.push_back(27); //ll
-					continue;
-				}
-				else if (IsMixed(ch)) {
-					submode = SUBMODE_MIXED;
-					tmp.push_back(28); //ml
-					continue;
-				}
-				else {
-					tmp.push_back(29); //ps
-					tmp.push_back(PUNCTUATION[ch]);
-				}
-				break;
-			case SUBMODE_LOWER:
-				if (IsAlphaLower(ch)) {
-					tmp.push_back(ch == ' ' ? 26 : (ch - 97)); //space
-				}
-				else if (IsAlphaUpper(ch)) {
-					tmp.push_back(27); //as
-					tmp.push_back(ch - 65);
-					//space cannot happen here, it is also in "Lower"
-				}
-				else if (IsMixed(ch)) {
-					submode = SUBMODE_MIXED;
-					tmp.push_back(28); //ml
-					continue;
-				}
-				else {
-					tmp.push_back(29); //ps
-					tmp.push_back(PUNCTUATION[ch]);
-				}
-				break;
-			case SUBMODE_MIXED:
-				if (IsMixed(ch)) {
-					tmp.push_back(MIXED[ch]);
-				}
-				else if (IsAlphaUpper(ch)) {
-					submode = SUBMODE_ALPHA;
-					tmp.push_back(28); //al
-					continue;
-				}
-				else if (IsAlphaLower(ch)) {
-					submode = SUBMODE_LOWER;
-					tmp.push_back(27); //ll
-					continue;
-				}
-				else {
-					if (startpos + idx + 1 < count) {
-						int next = msg[startpos + idx + 1];
-						if (IsPunctuation(next)) {
-							submode = SUBMODE_PUNCTUATION;
-							tmp.push_back(25); //pl
-							continue;
-						}
+		case SUBMODE_ALPHA:
+			if (IsAlphaUpper(ch)) {
+				tmp.push_back(ch == ' ' ? 26 : (ch - 65)); // space
+			} else if (IsAlphaLower(ch)) {
+				submode = SUBMODE_LOWER;
+				tmp.push_back(27); // ll
+				continue;
+			} else if (IsMixed(ch)) {
+				submode = SUBMODE_MIXED;
+				tmp.push_back(28); // ml
+				continue;
+			} else {
+				tmp.push_back(29); // ps
+				tmp.push_back(PUNCTUATION[ch]);
+			}
+			break;
+		case SUBMODE_LOWER:
+			if (IsAlphaLower(ch)) {
+				tmp.push_back(ch == ' ' ? 26 : (ch - 97)); // space
+			} else if (IsAlphaUpper(ch)) {
+				tmp.push_back(27); // as
+				tmp.push_back(ch - 65);
+				// space cannot happen here, it is also in "Lower"
+			} else if (IsMixed(ch)) {
+				submode = SUBMODE_MIXED;
+				tmp.push_back(28); // ml
+				continue;
+			} else {
+				tmp.push_back(29); // ps
+				tmp.push_back(PUNCTUATION[ch]);
+			}
+			break;
+		case SUBMODE_MIXED:
+			if (IsMixed(ch)) {
+				tmp.push_back(MIXED[ch]);
+			} else if (IsAlphaUpper(ch)) {
+				submode = SUBMODE_ALPHA;
+				tmp.push_back(28); // al
+				continue;
+			} else if (IsAlphaLower(ch)) {
+				submode = SUBMODE_LOWER;
+				tmp.push_back(27); // ll
+				continue;
+			} else {
+				if (startpos + idx + 1 < count) {
+					int next = msg[startpos + idx + 1];
+					if (IsPunctuation(next)) {
+						submode = SUBMODE_PUNCTUATION;
+						tmp.push_back(25); // pl
+						continue;
 					}
-					tmp.push_back(29); //ps
-					tmp.push_back(PUNCTUATION[ch]);
 				}
-				break;
-			default: //SUBMODE_PUNCTUATION
-				if (IsPunctuation(ch)) {
-					tmp.push_back(PUNCTUATION[ch]);
-				}
-				else {
-					submode = SUBMODE_ALPHA;
-					tmp.push_back(29); //al
-					continue;
-				}
+				tmp.push_back(29); // ps
+				tmp.push_back(PUNCTUATION[ch]);
+			}
+			break;
+		default: // SUBMODE_PUNCTUATION
+			if (IsPunctuation(ch)) {
+				tmp.push_back(PUNCTUATION[ch]);
+			} else {
+				submode = SUBMODE_ALPHA;
+				tmp.push_back(29); // al
+				continue;
+			}
 		}
 		idx++;
 		if (idx >= count) {

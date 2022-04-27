@@ -607,26 +607,16 @@ namespace X12Encoder {
 	static int EncodeChar(int c, std::string& sb)
 	{
 		switch (c) {
-		case '\r':
-			sb.push_back('\0');
-			break;
-		case '*':
-			sb.push_back('\1');
-			break;
-		case '>':
-			sb.push_back('\2');
-			break;
-		case ' ':
-			sb.push_back('\3');
-			break;
+		case '\r': sb.push_back('\0'); break;
+		case '*': sb.push_back('\1'); break;
+		case '>': sb.push_back('\2'); break;
+		case ' ': sb.push_back('\3'); break;
 		default:
 			if (c >= '0' && c <= '9') {
 				sb.push_back((char)(c - 48 + 4));
-			}
-			else if (c >= 'A' && c <= 'Z') {
+			} else if (c >= 'A' && c <= 'Z') {
 				sb.push_back((char)(c - 65 + 14));
-			}
-			else {
+			} else {
 				throw std::invalid_argument("Illegal character: " + ToHexString(c));
 			}
 			break;
@@ -915,12 +905,12 @@ ByteArray Encode(const std::wstring& msg, SymbolShape shape, int minWidth, int m
 	int encodingMode = ASCII_ENCODATION; //Default mode
 	while (context.hasMoreCharacters()) {
 		switch (encodingMode) {
-			case ASCII_ENCODATION:   ASCIIEncoder::EncodeASCII(context);     break;
-			case C40_ENCODATION:     C40Encoder::EncodeC40(context);         break;
-			case TEXT_ENCODATION:    DMTextEncoder::EncodeText(context);     break;
-			case X12_ENCODATION:     X12Encoder::EncodeX12(context);         break;
-			case EDIFACT_ENCODATION: EdifactEncoder::EncodeEdifact(context); break;
-			case BASE256_ENCODATION: Base256Encoder::EncodeBase256(context); break;
+		case ASCII_ENCODATION:   ASCIIEncoder::EncodeASCII(context);     break;
+		case C40_ENCODATION:     C40Encoder::EncodeC40(context);         break;
+		case TEXT_ENCODATION:    DMTextEncoder::EncodeText(context);     break;
+		case X12_ENCODATION:     X12Encoder::EncodeX12(context);         break;
+		case EDIFACT_ENCODATION: EdifactEncoder::EncodeEdifact(context); break;
+		case BASE256_ENCODATION: Base256Encoder::EncodeBase256(context); break;
 		}
 		if (context.newEncoding() >= 0) {
 			encodingMode = context.newEncoding();

@@ -250,20 +250,11 @@ ZXING_EXPORT_TEST_ONLY
 void AppendBytes(const std::wstring& content, CodecMode mode, CharacterSet encoding, BitArray& bits)
 {
 	switch (mode) {
-		case CodecMode::NUMERIC:
-			AppendNumericBytes(content, bits);
-			break;
-		case CodecMode::ALPHANUMERIC:
-			AppendAlphanumericBytes(content, bits);
-			break;
-		case CodecMode::BYTE:
-			Append8BitBytes(content, encoding, bits);
-			break;
-		case CodecMode::KANJI:
-			AppendKanjiBytes(content, bits);
-			break;
-		default:
-			throw std::invalid_argument("Invalid mode: " + std::to_string(static_cast<int>(mode)));
+	case CodecMode::NUMERIC:      AppendNumericBytes(content, bits); break;
+	case CodecMode::ALPHANUMERIC: AppendAlphanumericBytes(content, bits); break;
+	case CodecMode::BYTE:         Append8BitBytes(content, encoding, bits); break;
+	case CodecMode::KANJI:        AppendKanjiBytes(content, bits); break;
+	default: throw std::invalid_argument("Invalid mode: " + std::to_string(static_cast<int>(mode)));
 	}
 }
 

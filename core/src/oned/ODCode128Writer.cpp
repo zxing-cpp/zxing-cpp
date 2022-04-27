@@ -155,16 +155,15 @@ Code128Writer::encode(const std::wstring& contents, int width, int height) const
 	for (int i = 0; i < length; ++i) {
 		int c = contents[i];
 		switch (c) {
-			case ESCAPE_FNC_1:
-			case ESCAPE_FNC_2:
-			case ESCAPE_FNC_3:
-			case ESCAPE_FNC_4:
-				break;
-			default:
-				if (c > 127) {
-					// support for FNC4 isn't implemented, no full Latin-1 character set available at the moment
-					throw std::invalid_argument(std::string("Bad character in input: ") + static_cast<char>(c));
-				}
+		case ESCAPE_FNC_1:
+		case ESCAPE_FNC_2:
+		case ESCAPE_FNC_3:
+		case ESCAPE_FNC_4: break;
+		default:
+			if (c > 127) {
+				// support for FNC4 isn't implemented, no full Latin-1 character set available at the moment
+				throw std::invalid_argument(std::string("Bad character in input: ") + static_cast<char>(c));
+			}
 		}
 	}
 
@@ -184,23 +183,10 @@ Code128Writer::encode(const std::wstring& contents, int width, int height) const
 			// Encode the current character
 			// First handle escapes
 			switch (contents[position]) {
-			case ESCAPE_FNC_1:
-				patternIndex = CODE_FNC_1;
-				break;
-			case ESCAPE_FNC_2:
-				patternIndex = CODE_FNC_2;
-				break;
-			case ESCAPE_FNC_3:
-				patternIndex = CODE_FNC_3;
-				break;
-			case ESCAPE_FNC_4:
-				if (codeSet == CODE_CODE_A) {
-					patternIndex = CODE_FNC_4_A;
-				}
-				else {
-					patternIndex = CODE_FNC_4_B;
-				}
-				break;
+			case ESCAPE_FNC_1: patternIndex = CODE_FNC_1; break;
+			case ESCAPE_FNC_2: patternIndex = CODE_FNC_2; break;
+			case ESCAPE_FNC_3: patternIndex = CODE_FNC_3; break;
+			case ESCAPE_FNC_4: patternIndex = (codeSet == CODE_CODE_A) ? CODE_FNC_4_A : CODE_FNC_4_B; break;
 			default:
 				// Then handle normal characters otherwise
 				if (codeSet == CODE_CODE_A) {
@@ -209,12 +195,11 @@ Code128Writer::encode(const std::wstring& contents, int width, int height) const
 						// everything below a space character comes behind the underscore in the code patterns table
 						patternIndex += '`';
 					}
-				}
-				else if (codeSet == CODE_CODE_B) {
+				} else if (codeSet == CODE_CODE_B) {
 					patternIndex = contents[position] - ' ';
-				}
-				else { // CODE_CODE_C
-					patternIndex = (contents[position] - '0') * 10 + (position+1 < length ? contents[position+1] - '0' : 0);
+				} else { // CODE_CODE_C
+					patternIndex =
+						(contents[position] - '0') * 10 + (position + 1 < length ? contents[position + 1] - '0' : 0);
 					position++; // Also incremented below
 				}
 			}

@@ -367,28 +367,18 @@ HighLevelEncoder::Encode(const std::string& text)
 		int pairCode;
 		int nextChar = index + 1 < Size(text) ? text[index + 1] : 0;
 		switch (text[index]) {
-		case '\r':
-			pairCode = nextChar == '\n' ? 2 : 0;
-			break;
-		case '.':
-			pairCode = nextChar == ' ' ? 3 : 0;
-			break;
-		case ',':
-			pairCode = nextChar == ' ' ? 4 : 0;
-			break;
-		case ':':
-			pairCode = nextChar == ' ' ? 5 : 0;
-			break;
-		default:
-			pairCode = 0;
+		case '\r': pairCode = nextChar == '\n' ? 2 : 0; break;
+		case '.': pairCode = nextChar == ' ' ? 3 : 0; break;
+		case ',': pairCode = nextChar == ' ' ? 4 : 0; break;
+		case ':': pairCode = nextChar == ' ' ? 5 : 0; break;
+		default: pairCode = 0;
 		}
 		if (pairCode > 0) {
 			// We have one of the four special PUNCT pairs.  Treat them specially.
 			// Get a new set of states for the two new characters.
 			states = UpdateStateListForPair(states, index, pairCode);
 			index++;
-		}
-		else {
+		} else {
 			// Get a new set of states for the new character.
 			states = UpdateStateListForChar(states, text, index);
 		}

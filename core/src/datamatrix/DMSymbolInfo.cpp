@@ -129,36 +129,24 @@ int
 SymbolInfo::horizontalDataRegions() const
 {
 	switch (_dataRegions) {
-	case 1:
-		return 1;
-	case 2:
-		return 2;
-	case 4:
-		return 2;
-	case 16:
-		return 4;
-	case 36:
-		return 6;
-	default:
-		throw std::out_of_range("Cannot handle this number of data regions");
+	case 1:  return 1;
+	case 2:  return 2;
+	case 4:  return 2;
+	case 16: return 4;
+	case 36: return 6;
+	default: throw std::out_of_range("Cannot handle this number of data regions");
 	}
 }
 
 int
 SymbolInfo::verticalDataRegions() const {
 	switch (_dataRegions) {
-	case 1:
-		return 1;
-	case 2:
-		return 1;
-	case 4:
-		return 2;
-	case 16:
-		return 4;
-	case 36:
-		return 6;
-	default:
-		throw std::out_of_range("Cannot handle this number of data regions");
+	case 1:  return 1;
+	case 2:  return 1;
+	case 4:  return 2;
+	case 16: return 4;
+	case 36: return 6;
+	default: throw std::out_of_range("Cannot handle this number of data regions");
 	}
 }
 

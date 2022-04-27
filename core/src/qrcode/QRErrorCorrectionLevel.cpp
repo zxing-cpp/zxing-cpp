@@ -30,13 +30,12 @@ const wchar_t* ToString(ErrorCorrectionLevel l)
 
 ErrorCorrectionLevel ECLevelFromString(const char* str)
 {
-	switch (str[0])
-	{
-		case 'L': return ErrorCorrectionLevel::Low;
-		case 'M': return ErrorCorrectionLevel::Medium;
-		case 'Q': return ErrorCorrectionLevel::Quality;
-		case 'H': return ErrorCorrectionLevel::High;
-		default:  return ErrorCorrectionLevel::Invalid;
+	switch (str[0]) {
+	case 'L': return ErrorCorrectionLevel::Low;
+	case 'M': return ErrorCorrectionLevel::Medium;
+	case 'Q': return ErrorCorrectionLevel::Quality;
+	case 'H': return ErrorCorrectionLevel::High;
+	default: return ErrorCorrectionLevel::Invalid;
 	}
 }
 
