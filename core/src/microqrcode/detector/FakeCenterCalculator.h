@@ -17,15 +17,13 @@
  * limitations under the License.
  */
 
-#include <vector>
-
 #include "FinderPattern.h"
 #include "ResultPoint.h"
 
-namespace ZXing
-{
-namespace MicroQRCode 
-{
+#include <vector>
+
+namespace ZXing {
+namespace MicroQRCode {
 
 class FakeCenterCalculator
 {
@@ -33,9 +31,11 @@ public:
 	FakeCenterCalculator(const FinderPattern& actualCenter, const std::vector<ResultPoint>& rect);
 	FinderPattern getTopRightCenter();
 	FinderPattern getBottomLeftCenter();
+
 private:
 	ResultPoint calculateCenter(const ResultPoint& deltas) const;
 	ResultPoint calculateNormalizedDeltas(const ResultPoint& source, const ResultPoint& destination);
+
 private:
 	FinderPattern actualCenter_;
 	float moduleSize_;
@@ -43,8 +43,8 @@ private:
 	int dimension_;
 };
 
-}
+} // namespace MicroQRCode
 
-}
+} // namespace ZXing
 
 #endif // __FAKE_CENTER_CALCULATOR_H__

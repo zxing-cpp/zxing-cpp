@@ -24,20 +24,19 @@
 
 #include <vector>
 
-namespace ZXing 
-{
+namespace ZXing {
 
 class DecodeHints;
 
-namespace MicroQRCode
-{
+namespace MicroQRCode {
 
-class FinderPatternFinder 
+class FinderPatternFinder
 {
 public:
 	FinderPatternFinder(const BitMatrix& image);
 	std::vector<ResultPoint> findCorners(DecodeHints const& hints);
 	FinderPatternInfo findCenters(DecodeHints const& hints);
+
 private:
 	static int CENTER_QUORUM;
 	static int MIN_SKIP;
@@ -45,6 +44,7 @@ private:
 	BitMatrix image_;
 	std::vector<FinderPattern> possibleCenters_;
 	std::vector<int> crossCheckStateCount_;
+
 private: // methods
 	FinderPattern findBestPattern(DecodeHints const& hints);
 	std::vector<ResultPoint> getCodeEnclosingRect(const FinderPattern& actualPattern);
@@ -61,8 +61,8 @@ private: // methods
 	FinderPattern selectBestPattern();
 };
 
-}
+} // namespace MicroQRCode
 
-}
+} // namespace ZXing
 
 #endif // __FINDER_PATTERN_FINDER_H__

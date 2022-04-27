@@ -25,10 +25,10 @@ class NotFoundException : public std::exception
 {
 public:
 	NotFoundException() throw() {}
-	NotFoundException(const char *msg) throw() : std::exception(msg) {}
+	NotFoundException(const char* msg) throw() : std::exception(msg) {}
 	~NotFoundException() throw() {}
 };
 
-}
+} // namespace ZXing
 
 #endif // __NOT_FOUND_EXCEPTION_H__

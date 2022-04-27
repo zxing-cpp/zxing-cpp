@@ -17,43 +17,35 @@
 
 using ZXing::MicroQRCode::Dimension;
 
- /**
-	* Will try to compute dimension by choosing the bigger one if given dimension is on the border
-	* between two dimensions
-	* @param estimatedDimension The estimated dimension
-	* @return The real dimension
-	*/
+/**
+ * Will try to compute dimension by choosing the bigger one if given dimension is on the border
+ * between two dimensions
+ * @param estimatedDimension The estimated dimension
+ * @return The real dimension
+ */
 int Dimension::computeRoundUp(int estimatedDimension)
 {
-	if (estimatedDimension < 12) 
-	{
+	if (estimatedDimension < 12) {
 		return 11;
-	}
-	else if (estimatedDimension >= 12 && estimatedDimension < 14) 
-	{
+	} else if (estimatedDimension >= 12 && estimatedDimension < 14) {
 		return 13;
-	}
-	else if (estimatedDimension >= 14 && estimatedDimension < 16) 
-	{
+	} else if (estimatedDimension >= 14 && estimatedDimension < 16) {
 		return 15;
 	}
 	return 17;
 }
 
 /**
-  * Will try to compute dimension by choosing the smaller one if given dimension is on the border
-  * between two dimensions
-  * @param estimatedDimension The estimated dimension
-  * @return The real dimension
-  */
-int Dimension::computeRoundOff(int estimatedDimension) {
+ * Will try to compute dimension by choosing the smaller one if given dimension is on the border
+ * between two dimensions
+ * @param estimatedDimension The estimated dimension
+ * @return The real dimension
+ */
+int Dimension::computeRoundOff(int estimatedDimension)
+{
 	switch (estimatedDimension & 0x03) { // mod 4
-	case 0:
-		estimatedDimension++;
-		break;
-	case 2:
-		estimatedDimension--;
-		break;
+	case 0: estimatedDimension++; break;
+	case 2: estimatedDimension--; break;
 	}
 	return estimatedDimension;
 }

@@ -1,60 +1,57 @@
 /*
-* Copyright 2022 KURZ Digital Solutions GmbH & Co. KG
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2022 KURZ Digital Solutions GmbH & Co. KG
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #include "microqrcode/detector/FinderPatternFinder.h"
-#include "microqrcode/detector/NotFoundException.h"
 
 #include "BitMatrixIO.h"
 #include "DecodeHints.h"
+#include "microqrcode/detector/NotFoundException.h"
 
 #include "gtest/gtest.h"
 
 using namespace ZXing;
 using namespace ZXing::MicroQRCode;
 
-namespace
-{
+namespace {
 
 BitMatrix LoadScaledCode(const int moduleSize, const int quietZone)
 {
-	auto bitMatrix = ParseBitMatrix(
-		"XXXXXXX X X X X\n"
-		"X     X    X X \n"
-		"X XXX X XXXXXXX\n"
-		"X XXX X X X  XX\n"
-		"X XXX X    X XX\n"
-		"X     X X X X X\n"
-		"XXXXXXX  X  XX \n"
-		"         X X  X\n"
-		"XXXXXX    X X X\n"
-		"   X  XX    XXX\n"
-		"XXX XX XXXX XXX\n"
-		" X    X  XXX X \n"
-		"X XXXXX XXX X X\n"
-		" X    X  X XXX \n"
-		"XXX XX X X XXXX\n",
-		88,
-		false
-	);
+	auto bitMatrix = ParseBitMatrix("XXXXXXX X X X X\n"
+									"X     X    X X \n"
+									"X XXX X XXXXXXX\n"
+									"X XXX X X X  XX\n"
+									"X XXX X    X XX\n"
+									"X     X X X X X\n"
+									"XXXXXXX  X  XX \n"
+									"         X X  X\n"
+									"XXXXXX    X X X\n"
+									"   X  XX    XXX\n"
+									"XXX XX XXXX XXX\n"
+									" X    X  XXX X \n"
+									"X XXXXX XXX X X\n"
+									" X    X  X XXX \n"
+									"XXX XX X X XXXX\n",
+									88, false);
 
 	// Inflate bit matrix since corner finder does not work with pure barcodes.
-	return Inflate(std::move(bitMatrix), (bitMatrix.width() + 2 * quietZone) * moduleSize, (bitMatrix.height() + 2 * quietZone) * moduleSize, quietZone * moduleSize);
+	return Inflate(std::move(bitMatrix), (bitMatrix.width() + 2 * quietZone) * moduleSize,
+				   (bitMatrix.height() + 2 * quietZone) * moduleSize, quietZone * moduleSize);
 }
 
-}
+} // namespace
 
 TEST(MicroQRFinderPatternFinderTest, FindCodeCorners)
 {
@@ -81,7 +78,7 @@ TEST(MicroQRFinderPatternFinderTest, FindPatternCenters)
 	const auto scaledBitMatrix = LoadScaledCode(moduleSize, 2);
 
 	DecodeHints hints;
-	FinderPatternFinder finder{ scaledBitMatrix };
+	FinderPatternFinder finder{scaledBitMatrix};
 	const auto finderPatternInfo = finder.findCenters(hints);
 
 	const float patternCenterX = (3.5 + 2.0) * moduleSize;
@@ -92,7 +89,6 @@ TEST(MicroQRFinderPatternFinderTest, FindPatternCenters)
 	ASSERT_NEAR(patternCenterX, finderPatternInfo.getActualTopLeft().x(), moduleSize / 4);
 	ASSERT_NEAR(patternCenterY, finderPatternInfo.getActualTopLeft().y(), moduleSize / 4);
 
-
 	ASSERT_EQ(1, finderPatternInfo.getFakeBottomLeft().getCount());
 	ASSERT_EQ(1, finderPatternInfo.getFakeTopRight().getCount());
 }
@@ -100,12 +96,13 @@ TEST(MicroQRFinderPatternFinderTest, FindPatternCenters)
 TEST(MicroQRFinderPatternFinderTest, FindNoPattern)
 {
 	const int moduleSize = 12;
-	BitMatrix bitMatrix{ 15, 15 };
+	BitMatrix bitMatrix{15, 15};
 	// Inflate bit matrix since corner finder does not work with pure barcodes.
-	const auto scaledBitMatrix = Inflate(std::move(bitMatrix), (bitMatrix.width() + 4) * moduleSize, (bitMatrix.height() + 4) * moduleSize, 2 * moduleSize);
+	const auto scaledBitMatrix = Inflate(std::move(bitMatrix), (bitMatrix.width() + 4) * moduleSize,
+										 (bitMatrix.height() + 4) * moduleSize, 2 * moduleSize);
 
 	DecodeHints hints;
-	FinderPatternFinder finder{ scaledBitMatrix };
+	FinderPatternFinder finder{scaledBitMatrix};
 	ASSERT_THROW(finder.findCenters(hints), NotFoundException);
 	ASSERT_THROW(finder.findCorners(hints), NotFoundException);
 }
@@ -117,16 +114,12 @@ TEST(MicroQRFinderPatternFinderTest, FindPatternRotated)
 
 	DecodeHints hints;
 	std::vector<std::tuple<int, int, float, float>> expectedPositions = {
-		{0, 15, 3.5f, 11.5f},
-		{15, 15, 11.5f, 11.5f},
-		{15, 0, 11.5f, 3.5f}
-	};
-	for (const auto&[cornerX, cornerY, centerX, centerY] : expectedPositions)
-	{
+		{0, 15, 3.5f, 11.5f}, {15, 15, 11.5f, 11.5f}, {15, 0, 11.5f, 3.5f}};
+	for (const auto& [cornerX, cornerY, centerX, centerY] : expectedPositions) {
 		// Rotate matrix 90 degrees counter-clockwise.
 		scaledBitMatrix.rotate90();
 
-		FinderPatternFinder finder{ scaledBitMatrix };
+		FinderPatternFinder finder{scaledBitMatrix};
 		const auto corners = finder.findCorners(hints);
 		ASSERT_EQ(4, corners.size());
 

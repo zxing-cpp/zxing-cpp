@@ -3,7 +3,7 @@
 
 /*
  * Copyright 2007 ZXing authors All rights reserved.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -35,7 +35,7 @@ class FinderPattern : public ResultPoint
 private:
 	float estimatedModuleSize_;
 	int count_;
-			
+
 	FinderPattern(float posX, float posY, float estimatedModuleSize, int count);
 
 public:
@@ -46,8 +46,8 @@ public:
 	FinderPattern combineEstimate(float i, float j, float newModuleSize) const;
 };
 
-}
+} // namespace MicroQRCode
 
-} // ZXing
+} // namespace ZXing
 
 #endif // __FINDER_PATTERN_H__

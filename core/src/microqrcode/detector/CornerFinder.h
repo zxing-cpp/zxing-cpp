@@ -31,24 +31,31 @@ class CornerFinder
 public:
 	CornerFinder(const BitMatrix& image, const FinderPattern& center);
 	std::vector<ResultPoint> find() const;
+
 private:
 	ResultPoint calculateDirection() const;
 	int numberOfWhiteInKernel(int x, int y) const;
 	bool isQuietZoneDirection(int stepX, int stepY) const;
 	ResultPoint getMidpointOfCode(const std::vector<ResultPoint>& centerRect, const ResultPoint& direction) const;
-	std::vector<ResultPoint> getLineToBottomRightCorner(const std::vector<ResultPoint>& centerEnclosingRect, const ResultPoint& direction) const;
-	std::vector<ResultPoint> defineCornersMorePrecisely(const std::vector<ResultPoint>& centerEnclosingRect, const std::vector<ResultPoint>& codeEnclosingRect, const ResultPoint& direction) const;
-	ResultPoint calculateLineIntersection(const ResultPoint& diagonalStart, const ResultPoint& diagonalEnd, const ResultPoint& start, const ResultPoint& end) const;
-	std::vector<ResultPoint> sortRectCorners(const std::vector<ResultPoint>& codeEnclosingRect, const ResultPoint& direction) const;
+	std::vector<ResultPoint> getLineToBottomRightCorner(const std::vector<ResultPoint>& centerEnclosingRect,
+														const ResultPoint& direction) const;
+	std::vector<ResultPoint> defineCornersMorePrecisely(const std::vector<ResultPoint>& centerEnclosingRect,
+														const std::vector<ResultPoint>& codeEnclosingRect,
+														const ResultPoint& direction) const;
+	ResultPoint calculateLineIntersection(const ResultPoint& diagonalStart, const ResultPoint& diagonalEnd,
+										  const ResultPoint& start, const ResultPoint& end) const;
+	std::vector<ResultPoint> sortRectCorners(const std::vector<ResultPoint>& codeEnclosingRect,
+											 const ResultPoint& direction) const;
 	void swapPoints(std::vector<ResultPoint>& codeEnclosingRect, int source, int destination) const;
+
 private:
 	BitMatrix image_;
 	const FinderPattern center_;
 	int moduleSize_;
 };
 
-}
+} // namespace MicroQRCode
 
-} // ZXing
+} // namespace ZXing
 
 #endif // __CORNER_FINDER_H__

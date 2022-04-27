@@ -21,19 +21,19 @@ namespace ZXing {
 
 namespace MicroQRCode {
 
-FinderPatternInfo::FinderPatternInfo(const std::vector<FinderPattern>& patternCenters) :
-    actualTopLeft_(patternCenters[0]), fakeTopRight_(patternCenters[1]), fakeBottomLeft_(patternCenters[2])
+FinderPatternInfo::FinderPatternInfo(const std::vector<FinderPattern>& patternCenters)
+	: actualTopLeft_(patternCenters[0]), fakeTopRight_(patternCenters[1]), fakeBottomLeft_(patternCenters[2])
 {
 }
 
 FinderPattern FinderPatternInfo::getActualTopLeft() const
 {
-  return actualTopLeft_;
+	return actualTopLeft_;
 }
 
 FinderPattern FinderPatternInfo::getFakeTopRight() const
 {
-  return fakeTopRight_;
+	return fakeTopRight_;
 }
 
 FinderPattern FinderPatternInfo::getFakeBottomLeft() const
@@ -41,6 +41,6 @@ FinderPattern FinderPatternInfo::getFakeBottomLeft() const
 	return fakeBottomLeft_;
 }
 
-}
+} // namespace MicroQRCode
 
-}
+} // namespace ZXing

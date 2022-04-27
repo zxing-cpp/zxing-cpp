@@ -39,14 +39,15 @@ public:
 	FinderPattern getActualTopLeft() const;
 	FinderPattern getFakeTopRight() const;
 	FinderPattern getFakeBottomLeft() const;
+
 private:
 	FinderPattern actualTopLeft_;
 	FinderPattern fakeTopRight_;
 	FinderPattern fakeBottomLeft_;
 };
 
-}
+} // namespace MicroQRCode
 
-} // ZXing
+} // namespace ZXing
 
 #endif // __FINDER_PATTERN_INFO_H__

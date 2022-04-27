@@ -24,17 +24,18 @@
  */
 
 #include "FakeCenterCalculator.h"
+
 #include "Dimension.h"
 
+using ZXing::ResultPoint;
 using ZXing::MicroQRCode::FakeCenterCalculator;
 using ZXing::MicroQRCode::FinderPattern;
-using ZXing::ResultPoint;
 
- /**
-   *
-   * @param actualCenter The center which was found
-   * @param rect can only work with a correctly rotated Micro QR Code
-   */
+/**
+ *
+ * @param actualCenter The center which was found
+ * @param rect can only work with a correctly rotated Micro QR Code
+ */
 FakeCenterCalculator::FakeCenterCalculator(const FinderPattern& actualCenter, const std::vector<ResultPoint>& rect)
 	: actualCenter_(actualCenter), moduleSize_(actualCenter.getEstimatedModuleSize()), rect_(rect), dimension_(0)
 {
@@ -45,7 +46,7 @@ FinderPattern FakeCenterCalculator::getTopRightCenter()
 	ResultPoint deltas = calculateNormalizedDeltas(rect_[0], rect_[2]);
 	ResultPoint center = calculateCenter(deltas);
 
-	return FinderPattern{ center.x(), center.y(), moduleSize_ };
+	return FinderPattern{center.x(), center.y(), moduleSize_};
 }
 
 FinderPattern FakeCenterCalculator::getBottomLeftCenter()
@@ -53,24 +54,23 @@ FinderPattern FakeCenterCalculator::getBottomLeftCenter()
 	ResultPoint deltas = calculateNormalizedDeltas(rect_[0], rect_[1]);
 	ResultPoint center = calculateCenter(deltas);
 
-	return FinderPattern{ center.x(), center.y(), moduleSize_ };
+	return FinderPattern{center.x(), center.y(), moduleSize_};
 }
 
 ResultPoint FakeCenterCalculator::calculateCenter(const ResultPoint& deltas) const
 {
 	int modulesBetweenCenters = dimension_ - 7;
 
-	ResultPoint rightCenter{
-		actualCenter_.x() + modulesBetweenCenters * moduleSize_ * deltas.x(),
-		actualCenter_.y() + modulesBetweenCenters * moduleSize_ * deltas.y()
-	};
+	ResultPoint rightCenter{actualCenter_.x() + modulesBetweenCenters * moduleSize_ * deltas.x(),
+							actualCenter_.y() + modulesBetweenCenters * moduleSize_ * deltas.y()};
 
 	return rightCenter;
 }
 
 ResultPoint FakeCenterCalculator::calculateNormalizedDeltas(const ResultPoint& source, const ResultPoint& destination)
 {
-	float distance = ResultPoint::Distance(std::lroundf(source.x()), std::lroundf(source.y()), std::lroundf(destination.x()), std::lroundf(destination.y()));
+	float distance = ResultPoint::Distance(std::lroundf(source.x()), std::lroundf(source.y()),
+										   std::lroundf(destination.x()), std::lroundf(destination.y()));
 	float estimatedDimension = distance / moduleSize_;
 
 	dimension_ = ZXing::MicroQRCode::Dimension::computeRoundUp((int)std::round(estimatedDimension));
@@ -81,5 +81,5 @@ ResultPoint FakeCenterCalculator::calculateNormalizedDeltas(const ResultPoint& s
 	float normalizedDeltaX = deltaX / distance;
 	float normalizedDeltaY = deltaY / distance;
 
-	return ResultPoint{ normalizedDeltaX, normalizedDeltaY };
+	return ResultPoint{normalizedDeltaX, normalizedDeltaY};
 }

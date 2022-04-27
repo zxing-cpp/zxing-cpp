@@ -16,17 +16,21 @@
 
 #include "FinderPattern.h"
 
-using ZXing::MicroQRCode::FinderPattern;		
+using ZXing::MicroQRCode::FinderPattern;
 
 FinderPattern::FinderPattern(float posX, float posY, float estimatedModuleSize)
-    : ResultPoint(posX,posY), estimatedModuleSize_(estimatedModuleSize), count_(1) {}
-		
+	: ResultPoint(posX, posY), estimatedModuleSize_(estimatedModuleSize), count_(1)
+{
+}
+
 FinderPattern::FinderPattern(float posX, float posY, float estimatedModuleSize, int count)
-    : ResultPoint(posX,posY), estimatedModuleSize_(estimatedModuleSize), count_(count) {}
+	: ResultPoint(posX, posY), estimatedModuleSize_(estimatedModuleSize), count_(count)
+{
+}
 
 /**
  * Get the number of patterns contributing to this estimate.
- * 
+ *
  * @return the number of patterns that contribute to this estimate of the pattern position
  * and module size
  */
@@ -34,7 +38,7 @@ int FinderPattern::getCount() const
 {
 	return count_;
 }
-		
+
 float FinderPattern::getEstimatedModuleSize() const
 {
 	return estimatedModuleSize_;
@@ -42,7 +46,7 @@ float FinderPattern::getEstimatedModuleSize() const
 
 /**
  * Checks to see if a pattern postion and module size matches an existing one.
- * 
+ *
  * @param moduleSize size of the module derived from the found pattern
  * @param i vertical position
  * @param j horizontal position
@@ -50,8 +54,7 @@ float FinderPattern::getEstimatedModuleSize() const
  */
 bool FinderPattern::aboutEquals(float moduleSize, float i, float j) const
 {
-	if (std::abs(i - y()) <= moduleSize && abs(j - x()) <= moduleSize)
-	{
+	if (std::abs(i - y()) <= moduleSize && abs(j - x()) <= moduleSize) {
 		float moduleSizeDiff = abs(moduleSize - estimatedModuleSize_);
 		return moduleSizeDiff <= 1.0f || moduleSizeDiff <= estimatedModuleSize_;
 	}
@@ -60,7 +63,7 @@ bool FinderPattern::aboutEquals(float moduleSize, float i, float j) const
 
 /**
  * Combine the estimate of a pattern postion and module size with an existing one.
- * 
+ *
  * @param i vertical position
  * @param j horizontal position
  * @param newModuleSize size of the module derived from the found pattern
@@ -72,5 +75,5 @@ FinderPattern FinderPattern::combineEstimate(float i, float j, float newModuleSi
 	float combinedX = (count_ * x() + j) / combinedCount;
 	float combinedY = (count_ * y() + i) / combinedCount;
 	float combinedModuleSize = (count_ * getEstimatedModuleSize() + newModuleSize) / combinedCount;
-	return FinderPattern{ combinedX, combinedY, combinedModuleSize, combinedCount };
+	return FinderPattern{combinedX, combinedY, combinedModuleSize, combinedCount};
 }

@@ -18,10 +18,10 @@
 
 #include "WhiteRectDetector.h"
 
-using ZXing::MicroQRCode::CornerFinder;
-using ZXing::MicroQRCode::FinderPattern;
 using ZXing::BitMatrix;
 using ZXing::ResultPoint;
+using ZXing::MicroQRCode::CornerFinder;
+using ZXing::MicroQRCode::FinderPattern;
 
 /**
  * Detects the corners of a Micro QR Code. It will start with getting the corners of the inner center
@@ -30,8 +30,7 @@ using ZXing::ResultPoint;
  *
  * @author Christian Braun
  */
-CornerFinder::CornerFinder(const BitMatrix& image, const FinderPattern& center)
-	: center_(center)
+CornerFinder::CornerFinder(const BitMatrix& image, const FinderPattern& center) : center_(center)
 {
 	image_ = image.copy();
 	moduleSize_ = static_cast<int>(center.getEstimatedModuleSize());
@@ -51,18 +50,22 @@ std::vector<ResultPoint> CornerFinder::find() const
 		return std::vector<ResultPoint>{};
 
 	ResultPoint centerEnclosingRectA, centerEnclosingRectB, centerEnclosingRectC, centerEnclosingRectD;
-	if (!DetectWhiteRect(image_, moduleSize_ * 4, std::lround(center_.x()), std::lround(center_.y()), centerEnclosingRectA, centerEnclosingRectB, centerEnclosingRectC, centerEnclosingRectD))
+	if (!DetectWhiteRect(image_, moduleSize_ * 4, std::lround(center_.x()), std::lround(center_.y()),
+						 centerEnclosingRectA, centerEnclosingRectB, centerEnclosingRectC, centerEnclosingRectD))
 		return std::vector<ResultPoint>{};
 
-	std::vector<ResultPoint> centerEnclosingRect = { centerEnclosingRectA, centerEnclosingRectB, centerEnclosingRectC, centerEnclosingRectD };
+	std::vector<ResultPoint> centerEnclosingRect = {centerEnclosingRectA, centerEnclosingRectB, centerEnclosingRectC,
+													centerEnclosingRectD};
 
 	ResultPoint midPoint = getMidpointOfCode(centerEnclosingRect, direction);
 
 	ResultPoint codeEnclosingRectA, codeEnclosingRectB, codeEnclosingRectC, codeEnclosingRectD;
-	if (!DetectWhiteRect(image_, moduleSize_ * 5, std::lround(midPoint.x()), std::lround(midPoint.y()), codeEnclosingRectA, codeEnclosingRectB, codeEnclosingRectC, codeEnclosingRectD))
+	if (!DetectWhiteRect(image_, moduleSize_ * 5, std::lround(midPoint.x()), std::lround(midPoint.y()),
+						 codeEnclosingRectA, codeEnclosingRectB, codeEnclosingRectC, codeEnclosingRectD))
 		return std::vector<ResultPoint>{};
 
-	std::vector<ResultPoint> codeEnclosingRect = { codeEnclosingRectA, codeEnclosingRectB, codeEnclosingRectC, codeEnclosingRectD };
+	std::vector<ResultPoint> codeEnclosingRect = {codeEnclosingRectA, codeEnclosingRectB, codeEnclosingRectC,
+												  codeEnclosingRectD};
 
 	codeEnclosingRect = sortRectCorners(codeEnclosingRect, direction);
 	return defineCornersMorePrecisely(centerEnclosingRect, codeEnclosingRect, direction);
@@ -95,26 +98,27 @@ ResultPoint CornerFinder::calculateDirection() const
 		y += -1;
 	}
 
-	return ResultPoint{ x, y };
+	return ResultPoint{x, y};
 }
 
 int CornerFinder::numberOfWhiteInKernel(int x, int y) const
 {
-	const auto safePixelGet = [&](const int x, const int y)
-	{
+	const auto safePixelGet = [&](const int x, const int y) {
 		if (x >= 0 && x < image_.width() && y >= 0 && y < image_.height())
 			return image_.get(x, y);
 		return false;
 	};
 
 	// 9 point imagekernel
-	std::vector<bool> moduleKernel {
-	  safePixelGet(x, y), safePixelGet(x - moduleSize_, y),
-	  safePixelGet(x - moduleSize_, y + moduleSize_), safePixelGet(x, y + moduleSize_),
-	  safePixelGet(x + moduleSize_, y + moduleSize_), safePixelGet(x + moduleSize_, y),
-	  safePixelGet(x + moduleSize_, y - moduleSize_), safePixelGet(x, y - moduleSize_),
-	  safePixelGet(x - moduleSize_, y - moduleSize_)
-	};
+	std::vector<bool> moduleKernel{safePixelGet(x, y),
+								   safePixelGet(x - moduleSize_, y),
+								   safePixelGet(x - moduleSize_, y + moduleSize_),
+								   safePixelGet(x, y + moduleSize_),
+								   safePixelGet(x + moduleSize_, y + moduleSize_),
+								   safePixelGet(x + moduleSize_, y),
+								   safePixelGet(x + moduleSize_, y - moduleSize_),
+								   safePixelGet(x, y - moduleSize_),
+								   safePixelGet(x - moduleSize_, y - moduleSize_)};
 	int whiteModules = 0;
 
 	for (bool isBlackModule : moduleKernel) {
@@ -148,7 +152,8 @@ bool CornerFinder::isQuietZoneDirection(int stepX, int stepY) const
 	return false;
 }
 
-ResultPoint CornerFinder::getMidpointOfCode(const std::vector<ResultPoint>& centerRect, const ResultPoint& direction) const
+ResultPoint CornerFinder::getMidpointOfCode(const std::vector<ResultPoint>& centerRect,
+											const ResultPoint& direction) const
 {
 	const std::vector<ResultPoint> diagonal = getLineToBottomRightCorner(centerRect, direction);
 	const ResultPoint startCenter = diagonal[0];
@@ -163,50 +168,45 @@ ResultPoint CornerFinder::getMidpointOfCode(const std::vector<ResultPoint>& cent
 	float middleBetweenCornersX = (x + startCenter.x()) / 2;
 	float middleBetweenCornersY = delta * middleBetweenCornersX + t;
 
-	return ResultPoint{ middleBetweenCornersX, middleBetweenCornersY };
+	return ResultPoint{middleBetweenCornersX, middleBetweenCornersY};
 }
 
-std::vector<ResultPoint> CornerFinder::getLineToBottomRightCorner(const std::vector<ResultPoint>& centerEnclosingRect, const ResultPoint& direction) const
+std::vector<ResultPoint> CornerFinder::getLineToBottomRightCorner(const std::vector<ResultPoint>& centerEnclosingRect,
+																  const ResultPoint& direction) const
 {
 	ResultPoint startCenter;
 	ResultPoint endCenter;
 
-	if (direction.x() == 1 && direction.y() == 1) 
-	{
+	if (direction.x() == 1 && direction.y() == 1) {
 		startCenter = centerEnclosingRect[0];
 		endCenter = centerEnclosingRect[3];
-	}
-	else if (direction.x() == -1 && direction.y() == -1) 
-	{
+	} else if (direction.x() == -1 && direction.y() == -1) {
 		startCenter = centerEnclosingRect[3];
 		endCenter = centerEnclosingRect[0];
-	}
-	else if (direction.x() == 1 && direction.y() == -1) 
-	{
+	} else if (direction.x() == 1 && direction.y() == -1) {
 		startCenter = centerEnclosingRect[1];
 		endCenter = centerEnclosingRect[2];
-	}
-	else if (direction.x() == -1 && direction.y() == 1) 
-	{
+	} else if (direction.x() == -1 && direction.y() == 1) {
 		startCenter = centerEnclosingRect[2];
 		endCenter = centerEnclosingRect[1];
 	}
 
-	return std::vector<ResultPoint>{ startCenter, endCenter };
+	return std::vector<ResultPoint>{startCenter, endCenter};
 }
 
-std::vector<ResultPoint> CornerFinder::defineCornersMorePrecisely(const std::vector<ResultPoint>& centerEnclosingRect, const std::vector<ResultPoint>& codeEnclosingRect, const ResultPoint& direction) const
+std::vector<ResultPoint> CornerFinder::defineCornersMorePrecisely(const std::vector<ResultPoint>& centerEnclosingRect,
+																  const std::vector<ResultPoint>& codeEnclosingRect,
+																  const ResultPoint& direction) const
 {
 	ResultPoint start;
 	ResultPoint end = codeEnclosingRect[3];
 
-	if (ResultPoint::Distance(std::lround(codeEnclosingRect[2].x()), std::lround(codeEnclosingRect[2].y()), std::lround(codeEnclosingRect[3].x()), std::lround(codeEnclosingRect[3].y())) >
-		ResultPoint::Distance(std::lround(codeEnclosingRect[1].x()), std::lround(codeEnclosingRect[1].y()), std::lround(codeEnclosingRect[3].x()), std::lround(codeEnclosingRect[3].y())))
-	{
+	if (ResultPoint::Distance(std::lround(codeEnclosingRect[2].x()), std::lround(codeEnclosingRect[2].y()),
+							  std::lround(codeEnclosingRect[3].x()), std::lround(codeEnclosingRect[3].y())) >
+		ResultPoint::Distance(std::lround(codeEnclosingRect[1].x()), std::lround(codeEnclosingRect[1].y()),
+							  std::lround(codeEnclosingRect[3].x()), std::lround(codeEnclosingRect[3].y()))) {
 		start = codeEnclosingRect[1];
-	}
-	else 
-	{
+	} else {
 		start = codeEnclosingRect[2];
 	}
 
@@ -214,11 +214,12 @@ std::vector<ResultPoint> CornerFinder::defineCornersMorePrecisely(const std::vec
 	ResultPoint bottomRightCorner = calculateLineIntersection(diagonalLine[0], diagonalLine[1], start, end);
 
 	// TODO: What?
-//    codeEnclosingRect[3] = bottomRightCorner;
+	//    codeEnclosingRect[3] = bottomRightCorner;
 	return codeEnclosingRect;
 }
 
-ResultPoint CornerFinder::calculateLineIntersection(const ResultPoint& diagonalStart, const ResultPoint& diagonalEnd, const ResultPoint& start, const ResultPoint& end) const
+ResultPoint CornerFinder::calculateLineIntersection(const ResultPoint& diagonalStart, const ResultPoint& diagonalEnd,
+													const ResultPoint& start, const ResultPoint& end) const
 {
 	const float deltaDiagonal = (diagonalEnd.y() - diagonalStart.y()) / (diagonalEnd.x() - diagonalStart.x());
 	const float delta = (end.y() - start.y()) / (end.x() - start.x());
@@ -230,39 +231,31 @@ ResultPoint CornerFinder::calculateLineIntersection(const ResultPoint& diagonalS
 	float intersectionY;
 
 	// Java code had signed infinity check.  Not sure C++ does.
-	if (std::numeric_limits<float>::infinity() == delta) 
-	{
+	if (std::numeric_limits<float>::infinity() == delta) {
 		intersectionX = start.x();
 		intersectionY = deltaDiagonal * intersectionX + tDiagonal;
-	}
-	else {
+	} else {
 		intersectionX = (t - tDiagonal) / (deltaDiagonal - delta);
 		intersectionY = deltaDiagonal * intersectionX + tDiagonal;
 	}
 
-	return ResultPoint{ intersectionX, intersectionY };
+	return ResultPoint{intersectionX, intersectionY};
 }
 
-std::vector<ResultPoint> CornerFinder::sortRectCorners(const std::vector<ResultPoint>& codeEnclosingRect, const ResultPoint& direction) const
+std::vector<ResultPoint> CornerFinder::sortRectCorners(const std::vector<ResultPoint>& codeEnclosingRect,
+													   const ResultPoint& direction) const
 {
 	auto sortedCorners = codeEnclosingRect;
-	if (direction.x() == 1 && direction.y() == 1) 
-	{
+	if (direction.x() == 1 && direction.y() == 1) {
 		return sortedCorners;
-	}
-	else if (direction.x() == -1 && direction.y() == -1) 
-	{
+	} else if (direction.x() == -1 && direction.y() == -1) {
 		swapPoints(sortedCorners, 0, 3);
 		swapPoints(sortedCorners, 1, 2);
-	}
-	else if (direction.x() == 1 && direction.y() == -1) 
-	{
+	} else if (direction.x() == 1 && direction.y() == -1) {
 		swapPoints(sortedCorners, 0, 1);
 		swapPoints(sortedCorners, 2, 1);
 		swapPoints(sortedCorners, 3, 1);
-	}
-	else if (direction.x() == -1 && direction.y() == 1) 
-	{
+	} else if (direction.x() == -1 && direction.y() == 1) {
 		swapPoints(sortedCorners, 2, 0);
 		swapPoints(sortedCorners, 2, 1);
 		swapPoints(sortedCorners, 3, 2);

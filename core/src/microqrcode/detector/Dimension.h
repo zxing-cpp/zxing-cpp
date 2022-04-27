@@ -3,7 +3,7 @@
 
 /*
  * Copyright 2017 KURZ Digital Solutions GmbH & Co. KG
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,10 +17,9 @@
  * limitations under the License.
  */
 
-namespace ZXing 
-{
-namespace MicroQRCode 
-{
+namespace ZXing {
+
+namespace MicroQRCode {
 
 class Dimension
 {
@@ -30,8 +29,8 @@ public:
 	static int computeRoundOff(int estimatedDimension);
 };
 
-}
+} // namespace MicroQRCode
 
-}
+} // namespace ZXing
 
 #endif // __DIMENSION_H__

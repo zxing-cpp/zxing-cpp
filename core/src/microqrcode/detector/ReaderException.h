@@ -25,10 +25,10 @@ class ReaderException : public std::exception
 {
 public:
 	ReaderException() throw() {}
-	ReaderException(const char *msg) throw() : std::exception(msg) {}
+	ReaderException(const char* msg) throw() : std::exception(msg) {}
 	~ReaderException() throw() {}
 };
 
-}
+} // namespace ZXing
 
 #endif // __READER_EXCEPTION_H__
