@@ -183,7 +183,7 @@ FinderPatternInfo FinderPatternFinder::generatePatternInfoForPattern(const Finde
 {
 	std::vector<ResultPoint> results = getCodeEnclosingRect(actualPattern);
 	if (results.empty())
-		throw NotFoundException();
+		throw NotFoundException("Unable to find enclosing rectangle.");
 
 	FakeCenterCalculator calculator(actualPattern, results);
 
@@ -489,11 +489,11 @@ bool FinderPatternFinder::handlePossibleCenter(const std::vector<int>& stateCoun
 	int stateCountTotal = stateCount[0] + stateCount[1] + stateCount[2] + stateCount[3] + stateCount[4];
 	float centerJ = centerFromEnd(stateCount, j);
 	float centerI = crossCheckVertical(i, std::lroundf(centerJ), stateCount[2], stateCountTotal);
-	if (!isnan(centerI)) {
+	if (!std::isnan(centerI)) {
 		// Re-cross check
 		centerJ = crossCheckHorizontal(std::lroundf(centerJ), std::lroundf(centerI), stateCount[2], stateCountTotal);
-		if (!isnan(centerJ) && (!pureBarcode || crossCheckDiagonal(std::lroundf(centerI), std::lroundf(centerJ),
-																   stateCount[2], stateCountTotal))) {
+		if (!std::isnan(centerJ) && (!pureBarcode || crossCheckDiagonal(std::lroundf(centerI), std::lroundf(centerJ),
+																		stateCount[2], stateCountTotal))) {
 			float estimatedModuleSize = (float)stateCountTotal / 7.0f;
 			bool found = false;
 			for (size_t index = 0; index < possibleCenters_.size(); index++) {
@@ -539,7 +539,7 @@ bool FinderPatternFinder::haveMultiplyConfirmedCenters() const
 FinderPattern FinderPatternFinder::selectBestPattern()
 {
 	if (possibleCenters_.empty())
-		throw NotFoundException();
+		throw NotFoundException("Unable to find finder pattern.");
 
 	if (possibleCenters_.size() > 1) {
 		// Throw away all but those first size candidate points we found.

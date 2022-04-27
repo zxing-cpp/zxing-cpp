@@ -17,15 +17,14 @@
  * limitations under the License.
  */
 
-#include <exception>
+#include <stdexcept>
 
 namespace ZXing {
 
-class ReaderException : public std::exception
+class ReaderException : public std::invalid_argument
 {
 public:
-	ReaderException() throw() {}
-	ReaderException(const char* msg) throw() : std::exception(msg) {}
+	ReaderException(const char* msg) throw() : std::invalid_argument(msg) {}
 	~ReaderException() throw() {}
 };
 

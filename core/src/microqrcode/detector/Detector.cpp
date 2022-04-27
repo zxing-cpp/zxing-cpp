@@ -64,7 +64,7 @@ DetectorResult Detector::detect(DecodeHints const& hints) const
 	const auto patternInfo = finder.findCenters(hints);
 	float moduleSize = patternInfo.getActualTopLeft().getEstimatedModuleSize();
 	if (moduleSize < 2.0f)
-		throw ReaderException();
+		throw ReaderException("Module size too small.");
 
 	// Calculating dimension from centers and from corners as the center dimension is highly vulnerable for
 	// perspective transformed Micro QR Codes. Therefore, if the two dimensions differ we will work with the

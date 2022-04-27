@@ -17,15 +17,14 @@
  * limitations under the License.
  */
 
-#include <exception>
+#include <stdexcept>
 
 namespace ZXing {
 
-class NotFoundException : public std::exception
+class NotFoundException : public std::invalid_argument
 {
 public:
-	NotFoundException() throw() {}
-	NotFoundException(const char* msg) throw() : std::exception(msg) {}
+	NotFoundException(const char* msg) throw() : std::invalid_argument(msg) {}
 	~NotFoundException() throw() {}
 };
 
