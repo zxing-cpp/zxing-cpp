@@ -21,9 +21,10 @@ import cv2
 import zxingcpp
 
 img = cv2.imread('myimage.png')
-result = zxingcpp.read_barcode(img)
-if result.valid:
-    print("Found barcode with value '{}' (format: {})".format(result.text, str(result.format))) 
-else:
-    print("could not read barcode")
+results = zxingcpp.read_barcodes(img)
+for result in results:
+	print("Found barcode:\n Text:    '{}'\n Format:   {}\n Position: {}"
+		.format(result.text, result.format, result.position))
+if len(results) == 0:
+	print("Could not find any barcode.")
 ```
