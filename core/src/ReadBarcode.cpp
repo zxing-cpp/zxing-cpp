@@ -56,7 +56,7 @@ static LumImage ExtractLum(const ImageView& iv, P projection)
 
 class LumImagePyramid
 {
-	static constexpr int N = 3;
+	int N = 3;
 	std::vector<LumImage> buffers;
 
 	void addLayer()
@@ -80,8 +80,11 @@ class LumImagePyramid
 public:
 	std::vector<ImageView> layers;
 
-	LumImagePyramid(const ImageView& iv, int threshold)
+	LumImagePyramid(const ImageView& iv, int threshold, int factor) : N(factor)
 	{
+		if (factor < 2)
+			throw std::invalid_argument("Invalid DecodeHints::downscaleFactor");
+
 		layers.push_back(iv);
 		while (threshold > 0 && std::min(layers.back().width(), layers.back().height()) > threshold)
 			addLayer();
@@ -148,7 +151,7 @@ Results ReadBarcodes(const ImageView& _iv, const DecodeHints& hints)
 	if (hints.isPure())
 		return {reader.read(*CreateBitmap(hints.binarizer(), iv))};
 
-	LumImagePyramid pyramid(iv, hints.downscaleThreshold() * hints.tryDownscale());
+	LumImagePyramid pyramid(iv, hints.downscaleThreshold() * hints.tryDownscale(), hints.downscaleFactor());
 
 	Results results;
 	int maxSymbols = hints.maxNumberOfSymbols();

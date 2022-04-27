@@ -64,6 +64,7 @@ class DecodeHints
 	std::vector<int> _allowedLengths;
 	BarcodeFormats _formats = BarcodeFormat::None;
 	uint16_t _downscaleThreshold = 500;
+	uint8_t _downscaleFactor = 3;
 	uint8_t _minLineCount = 2;
 	uint8_t _maxNumberOfSymbols = 0xff;
 
@@ -100,6 +101,10 @@ public:
 	/// Image size ( min(width, height) ) threshold at which to start downscaled scanning
 	// WARNING: this API is experimental and may change/disappear
 	ZX_PROPERTY(uint16_t, downscaleThreshold, setDownscaleThreshold)
+
+	/// Scale factor used during downscaling, meaningful values are 2, 3 and 4
+	// WARNING: this API is experimental and may change/disappear
+	ZX_PROPERTY(uint8_t, downscaleFactor, setDownscaleFactor)
 
 	/// The number of scan lines in a 1D barcode that have to be equal to accept the result, default is 2
 	ZX_PROPERTY(uint8_t, minLineCount, setMinLineCount)
