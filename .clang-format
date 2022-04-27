@@ -1,0 +1,32 @@
+---
+Language: Cpp
+Standard: c++17
+BasedOnStyle: LLVM
+
+IndentWidth: 4
+TabWidth: 4
+UseTab: ForContinuationAndIndentation # ForIndentation
+
+AccessModifierOffset: -4
+BreakBeforeBraces: Mozilla
+ColumnLimit: 120
+
+#AlignConsecutiveAssignments: true
+AlignEscapedNewlines: DontAlign
+AlignTrailingComments: true
+AllowShortCaseLabelsOnASingleLine: true
+
+AllowShortFunctionsOnASingleLine: Inline
+#AllowShortLambdasOnASingleLine: Inline
+
+AlwaysBreakAfterDefinitionReturnType: None
+AlwaysBreakTemplateDeclarations: Yes
+BreakBeforeBraces: Mozilla
+BreakBeforeTernaryOperators: true
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
+FixNamespaceComments: true
+IncludeBlocks: Regroup
+KeepEmptyLinesAtTheStartOfBlocks: false
+PointerAlignment: Left
+ReflowComments: true
+SortIncludes: true
