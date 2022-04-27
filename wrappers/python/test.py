@@ -51,6 +51,14 @@ class TestReadWrite(unittest.TestCase):
 		self.check_res(res, format, text)
 		self.assertEqual(res.position.top_left.x, 61)
 
+	def test_write_read_multi_cycle(self):
+		format = BF.QRCode
+		text = "I have the best words."
+		img = zxingcpp.write_barcode(format, text)
+
+		res = zxingcpp.read_barcodes(img)[0]
+		self.check_res(res, format, text)
+
 	def test_failed_read(self):
 		import numpy as np
 		res = zxingcpp.read_barcode(
