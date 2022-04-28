@@ -59,12 +59,11 @@ TEST(MicroQRDetectorTest, DetectPureBarcodeNoQuietZone)
 {
 	const auto testCode = LoadCode();
 	DecodeHints hints;
-	Detector detector{testCode};
-	auto result = detector.detect(hints);
+	auto result = Detect(testCode, hints);
 	ASSERT_FALSE(result.isValid());
 
 	hints.setIsPure(true);
-	result = detector.detect(hints);
+	result = Detect(testCode, hints);
 	ASSERT_EQ(testCode, result.bits());
 }
 
@@ -72,12 +71,11 @@ TEST(MicroQRDetectorTest, DetectPureBarcodeQuietZone)
 {
 	const auto testCode = ScaleCode(LoadCode(), 1, 2);
 	DecodeHints hints;
-	Detector detector{testCode};
-	auto result = detector.detect(hints);
+	auto result = Detect(testCode, hints);
 	ASSERT_FALSE(result.isValid());
 
 	hints.setIsPure(true);
-	result = detector.detect(hints);
+	result = Detect(testCode, hints);
 	ASSERT_EQ(LoadCode(), result.bits());
 }
 
@@ -85,12 +83,11 @@ TEST(MicroQRDetectorTest, DetectPureBarcodeQuietZoneAndModuleSize2)
 {
 	const auto testCode = ScaleCode(LoadCode(), 2, 2);
 	DecodeHints hints;
-	Detector detector{testCode};
-	auto result = detector.detect(hints);
+	auto result = Detect(testCode, hints);
 	ASSERT_EQ(LoadCode(), result.bits());
 
 	hints.setIsPure(true);
-	result = detector.detect(hints);
+	result = Detect(testCode, hints);
 	ASSERT_EQ(LoadCode(), result.bits());
 }
 
@@ -99,12 +96,11 @@ TEST(MicroQRDetectorTest, DetectScaledPureBarcodeQuietZone)
 	auto testCode = ScaleCode(LoadCode(), 12, 2);
 
 	DecodeHints hints;
-	Detector detector{testCode};
-	auto result = detector.detect(hints);
+	auto result = Detect(testCode, hints);
 	ASSERT_EQ(LoadCode(), result.bits());
 
 	hints.setIsPure(true);
-	result = detector.detect(hints);
+	result = Detect(testCode, hints);
 	ASSERT_EQ(LoadCode(), result.bits());
 }
 
@@ -114,8 +110,7 @@ TEST(MicroQRDetectorTest, DetectRotatedBarcode)
 
 	for (auto loop : {0, 90, 180, 270}) {
 		DecodeHints hints;
-		Detector detector{testCode};
-		auto result = detector.detect(hints);
+		auto result = Detect(testCode, hints);
 		ASSERT_EQ(LoadCode(), result.bits()) << "Rotation " << loop;
 		testCode.rotate90();
 	}
@@ -126,11 +121,10 @@ TEST(MicroQRDetectorTest, DetectNoBarcode)
 	auto testCode = ScaleCode(BitMatrix{15}, 12, 2);
 
 	DecodeHints hints;
-	Detector detector{testCode};
-	auto result = detector.detect(hints);
+	auto result = Detect(testCode, hints);
 	ASSERT_FALSE(result.isValid());
 
 	hints.setIsPure(true);
-	result = detector.detect(hints);
+	result = Detect(testCode, hints);
 	ASSERT_FALSE(result.isValid());
 }

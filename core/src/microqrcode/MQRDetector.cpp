@@ -25,72 +25,32 @@
 #include "MQRDimension.h"
 #include "MQRFinderPattern.h"
 #include "MQRFinderPatternFinder.h"
+#include "PerspectiveTransform.h"
 
 #include <algorithm> // vs12, std::min and std:max
 #include <cstdlib>
 #include <sstream>
 
 using ZXing::BitMatrix;
+using ZXing::DecodeHints;
 using ZXing::DetectorResult;
 using ZXing::PerspectiveTransform;
-using ZXing::MicroQRCode::Detector;
-
-// VC++
-using ZXing::DecodeHints;
+using ZXing::PointF;
+using ZXing::QuadrilateralF;
 using ZXing::ResultPoint;
-using ZXing::MicroQRCode::FinderPatternFinder;
-using ZXing::MicroQRCode::FinderPatternInfo;
 
-Detector::Detector(const BitMatrix& image)
-{
-	image_ = image.copy();
-}
+namespace ZXing::MicroQRCode {
 
-/**
- * <p>Detects a Micro QR Code in an image.</p>
- *
- * @param hints optional hints to detector
- * @return {@link DetectorResult} encapsulating results of detecting a Micro QR Code
- */
-DetectorResult Detector::detect(DecodeHints const& hints) const
-{
-	if (hints.isPure())
-		return detectPure();
-
-	FinderPatternFinder finder(image_);
-	const auto codeEnclosingRect = finder.findCorners(hints);
-	const auto patternInfo = finder.findCenters(hints);
-	if (codeEnclosingRect.empty() || !patternInfo)
-		return {};
-
-	float moduleSize = patternInfo->getActualTopLeft().getEstimatedModuleSize();
-	if (moduleSize < 2.0f)
-		return {};
-
-	// Calculating dimension from centers and from corners as the center dimension is highly vulnerable for
-	// perspective transformed Micro QR Codes. Therefore, if the two dimensions differ we will work with the
-	// code enclosing rect for detection. We are not using this rect for every detection as there are some cases
-	// in which not all 4 corners of the Micro QR Code are detected correctly. The detection with the fake centers
-	// depends only on 3 corners (tl, tr, bl) and  will therefore give better results in many situations.
-	int dimensionFromCenters = computeDimension(patternInfo->getActualTopLeft(), patternInfo->getFakeTopRight(),
-												patternInfo->getFakeBottomLeft(), moduleSize);
-	int dimensionFromCorners = computeDimension(codeEnclosingRect, moduleSize);
-	if (dimensionFromCenters != dimensionFromCorners) {
-		return processCodeEnclosingRect(codeEnclosingRect, dimensionFromCorners);
-	}
-	return processFinderPatternInfo(*patternInfo, dimensionFromCenters);
-}
-
-DetectorResult Detector::detectPure() const
+DetectorResult DetectPure(const BitMatrix& image)
 {
 	// Now need to determine module size in pixels
-	int height = image_.height();
-	int width = image_.width();
+	int height = image.height();
+	int width = image.width();
 	int minDimension = std::min(height, width);
 
 	// First, skip white border by tracking diagonally from the top left down and to the right:
 	int borderWidth = 0;
-	while (borderWidth < minDimension && !image_.get(borderWidth, borderWidth)) {
+	while (borderWidth < minDimension && !image.get(borderWidth, borderWidth)) {
 		borderWidth++;
 	}
 	if (borderWidth == minDimension) {
@@ -99,7 +59,7 @@ DetectorResult Detector::detectPure() const
 
 	// And then keep tracking across the top-left black module to determine module size
 	int moduleEnd = borderWidth;
-	while (moduleEnd < minDimension && image_.get(moduleEnd, moduleEnd)) {
+	while (moduleEnd < minDimension && image.get(moduleEnd, moduleEnd)) {
 		moduleEnd++;
 	}
 	if (moduleEnd == minDimension) {
@@ -110,7 +70,7 @@ DetectorResult Detector::detectPure() const
 
 	// And now find where the rightmost black module on the first row ends
 	int rowEndOfSymbol = width - 1;
-	while (rowEndOfSymbol >= 0 && !image_.get(rowEndOfSymbol, borderWidth)) {
+	while (rowEndOfSymbol >= 0 && !image.get(rowEndOfSymbol, borderWidth)) {
 		rowEndOfSymbol--;
 	}
 	if (rowEndOfSymbol < 0) {
@@ -139,7 +99,7 @@ DetectorResult Detector::detectPure() const
 	for (int i = 0; i < dimension; i++) {
 		int iOffset = borderWidth + i * moduleSize;
 		for (int j = 0; j < dimension; j++) {
-			if (image_.get(borderWidth + j * moduleSize, iOffset)) {
+			if (image.get(borderWidth + j * moduleSize, iOffset)) {
 				bits.set(j, i);
 			}
 		}
@@ -151,21 +111,9 @@ DetectorResult Detector::detectPure() const
 			 {borderWidth, rowEndOfSymbol}}};
 }
 
-DetectorResult Detector::processCodeEnclosingRect(const std::vector<ResultPoint>& codeEnclosingRect,
-												  int dimension) const
+DetectorResult SampleGrid(const BitMatrix& image, const PerspectiveTransform& transform, int dimension)
 {
-	PerspectiveTransform transform = createTransform(codeEnclosingRect, dimension);
-	return sampleGrid(image_, transform, dimension);
-}
-
-DetectorResult Detector::processFinderPatternInfo(const FinderPatternInfo& patternInfo, int dimension) const
-{
-	FinderPattern actualTopLeft(patternInfo.getActualTopLeft());
-	FinderPattern fakeTopRight(patternInfo.getFakeTopRight());
-	FinderPattern fakeBottomLeft(patternInfo.getFakeBottomLeft());
-
-	PerspectiveTransform transform = createTransform(actualTopLeft, fakeTopRight, fakeBottomLeft, dimension);
-	return sampleGrid(image_, transform, dimension);
+	return SampleGrid(image, dimension, dimension, transform);
 }
 
 /**
@@ -174,7 +122,7 @@ DetectorResult Detector::processFinderPatternInfo(const FinderPatternInfo& patte
  * @param dimension the dimension of the code.
  * @return Transform from registered QR code to input image.
  */
-PerspectiveTransform Detector::createTransform(const std::vector<ResultPoint>& rect, int dimension) const
+PerspectiveTransform CreateTransform(const std::vector<ResultPoint>& rect, int dimension)
 {
 	const QuadrilateralF codeDomain = {PointF{0.0f, 0.0f}, PointF{static_cast<float>(dimension), 0.0f},
 									   PointF{static_cast<float>(dimension), static_cast<float>(dimension)},
@@ -190,8 +138,8 @@ PerspectiveTransform Detector::createTransform(const std::vector<ResultPoint>& r
  * @param bottomLeft fake position of a finder pattern
  * @return Transform from registered QR code to input image.
  */
-PerspectiveTransform Detector::createTransform(const ResultPoint& topLeft, const ResultPoint& topRight,
-											   const ResultPoint& bottomLeft, int dimension) const
+PerspectiveTransform CreateTransform(const ResultPoint& topLeft, const ResultPoint& topRight,
+									 const ResultPoint& bottomLeft, int dimension)
 {
 	const float PATTERN_CENTER_POS = 3.5f;
 	float dimMinusThree = (float)dimension - PATTERN_CENTER_POS;
@@ -207,17 +155,29 @@ PerspectiveTransform Detector::createTransform(const ResultPoint& topLeft, const
 	return PerspectiveTransform{codeDomain, imageDomain};
 }
 
-DetectorResult Detector::sampleGrid(const BitMatrix& image, const PerspectiveTransform& transform, int dimension) const
+DetectorResult ProcessCodeEnclosingRect(const BitMatrix& image, const std::vector<ResultPoint>& codeEnclosingRect,
+										int dimension)
 {
-	return SampleGrid(image, dimension, dimension, transform);
+	PerspectiveTransform transform = CreateTransform(codeEnclosingRect, dimension);
+	return SampleGrid(image, transform, dimension);
+}
+
+DetectorResult ProcessFinderPatternInfo(const BitMatrix& image, const FinderPatternInfo& patternInfo, int dimension)
+{
+	FinderPattern actualTopLeft(patternInfo.getActualTopLeft());
+	FinderPattern fakeTopRight(patternInfo.getFakeTopRight());
+	FinderPattern fakeBottomLeft(patternInfo.getFakeBottomLeft());
+
+	PerspectiveTransform transform = CreateTransform(actualTopLeft, fakeTopRight, fakeBottomLeft, dimension);
+	return SampleGrid(image, transform, dimension);
 }
 
 /**
  * <p>Computes the dimension (number of modules on a size) of the Micro QR Code based on the position
  * of the finder patterns and estimated module size.</p>
  */
-int Detector::computeDimension(const ResultPoint& topLeft, const ResultPoint& topRight, const ResultPoint& bottomLeft,
-							   float moduleSize) const
+int ComputeDimension(const ResultPoint& topLeft, const ResultPoint& topRight, const ResultPoint& bottomLeft,
+					 float moduleSize)
 {
 	float tltrCentersDimension = ResultPoint::Distance(std::lround(topLeft.x()), std::lround(topLeft.y()),
 													   std::lround(topRight.x()), std::lround(topRight.y())) /
@@ -236,7 +196,7 @@ int Detector::computeDimension(const ResultPoint& topLeft, const ResultPoint& to
  * <p>Computes the dimension (number of modules on a size) of the Micro QR Code based on the position
  * of the corners and estimated module size.</p>
  */
-int Detector::computeDimension(const std::vector<ResultPoint>& codeEnclosingRect, float moduleSize) const
+int ComputeDimension(const std::vector<ResultPoint>& codeEnclosingRect, float moduleSize)
 {
 	float tltrDimension =
 		ResultPoint::Distance(std::lround(codeEnclosingRect[0].x()), std::lround(codeEnclosingRect[0].y()),
@@ -250,3 +210,40 @@ int Detector::computeDimension(const std::vector<ResultPoint>& codeEnclosingRect
 
 	return Dimension::computeRoundUp(estimatedDimension);
 }
+
+/**
+ * <p>Detects a Micro QR Code in an image.</p>
+ *
+ * @param hints optional hints to detector
+ * @return {@link DetectorResult} encapsulating results of detecting a Micro QR Code
+ */
+DetectorResult Detect(const BitMatrix& image, DecodeHints const& hints)
+{
+	if (hints.isPure())
+		return DetectPure(image);
+
+	FinderPatternFinder finder;
+	const auto codeEnclosingRect = finder.findCorners(image, hints);
+	const auto patternInfo = finder.findCenters(image, hints);
+	if (codeEnclosingRect.empty() || !patternInfo)
+		return {};
+
+	float moduleSize = patternInfo->getActualTopLeft().getEstimatedModuleSize();
+	if (moduleSize < 2.0f)
+		return {};
+
+	// Calculating dimension from centers and from corners as the center dimension is highly vulnerable for
+	// perspective transformed Micro QR Codes. Therefore, if the two dimensions differ we will work with the
+	// code enclosing rect for detection. We are not using this rect for every detection as there are some cases
+	// in which not all 4 corners of the Micro QR Code are detected correctly. The detection with the fake centers
+	// depends only on 3 corners (tl, tr, bl) and  will therefore give better results in many situations.
+	int dimensionFromCenters = ComputeDimension(patternInfo->getActualTopLeft(), patternInfo->getFakeTopRight(),
+												patternInfo->getFakeBottomLeft(), moduleSize);
+	int dimensionFromCorners = ComputeDimension(codeEnclosingRect, moduleSize);
+	if (dimensionFromCenters != dimensionFromCorners) {
+		return ProcessCodeEnclosingRect(image, codeEnclosingRect, dimensionFromCorners);
+	}
+	return ProcessFinderPatternInfo(image, *patternInfo, dimensionFromCenters);
+}
+
+} // namespace ZXing::MicroQRCode

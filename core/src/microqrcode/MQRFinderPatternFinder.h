@@ -33,30 +33,32 @@ namespace MicroQRCode {
 class FinderPatternFinder
 {
 public:
-	FinderPatternFinder(const BitMatrix& image);
-	std::vector<ResultPoint> findCorners(DecodeHints const& hints);
-	std::optional<FinderPatternInfo> findCenters(DecodeHints const& hints);
+	FinderPatternFinder();
+	std::vector<ResultPoint> findCorners(const BitMatrix& image, DecodeHints const& hints);
+	std::optional<FinderPatternInfo> findCenters(const BitMatrix& image, DecodeHints const& hints);
 
 private:
 	static int CENTER_QUORUM;
 	static int MIN_SKIP;
 	static int MAX_MODULES;
-	BitMatrix image_;
 	std::vector<FinderPattern> possibleCenters_;
 	std::vector<int> crossCheckStateCount_;
 
 private: // methods
-	std::optional<FinderPattern> findBestPattern(DecodeHints const& hints);
-	std::vector<ResultPoint> getCodeEnclosingRect(const FinderPattern& actualPattern);
-	std::optional<FinderPatternInfo> generatePatternInfoForPattern(const FinderPattern& actualPattern);
+	std::optional<FinderPattern> findBestPattern(const BitMatrix& image, DecodeHints const& hints);
+	std::vector<ResultPoint> getCodeEnclosingRect(const BitMatrix& image, const FinderPattern& actualPattern);
+	std::optional<FinderPatternInfo> generatePatternInfoForPattern(const BitMatrix& image,
+																   const FinderPattern& actualPattern);
 	float centerFromEnd(const std::vector<int>& stateCount, int end) const;
 	bool foundPatternCross(const std::vector<int>& stateCount) const;
 	std::vector<int> getCrossCheckStateCount();
-	bool crossCheckDiagonal(int startI, int centerJ, int maxCount, int originalStateCountTotal);
-	float crossCheckVertical(int startI, int centerJ, int maxCount, int originalStateCountTotal);
-	float crossCheckHorizontal(int startJ, int centerI, int maxCount, int originalStateCountTotal);
-
-	bool handlePossibleCenter(const std::vector<int>& stateCount, int i, int j, bool pureBarcode);
+	bool crossCheckDiagonal(const BitMatrix& image, int startI, int centerJ, int maxCount, int originalStateCountTotal);
+	float crossCheckVertical(const BitMatrix& image, int startI, int centerJ, int maxCount,
+							 int originalStateCountTotal);
+	float crossCheckHorizontal(const BitMatrix& image, int startJ, int centerI, int maxCount,
+							   int originalStateCountTotal);
+	bool handlePossibleCenter(const BitMatrix& image, const std::vector<int>& stateCount, int i, int j,
+							  bool pureBarcode);
 	bool haveMultiplyConfirmedCenters() const;
 	std::optional<FinderPattern> selectBestPattern();
 };

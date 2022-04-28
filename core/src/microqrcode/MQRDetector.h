@@ -18,8 +18,6 @@
 
 #include "BitMatrix.h"
 #include "DetectorResult.h"
-#include "MQRFinderPatternInfo.h"
-#include "PerspectiveTransform.h"
 
 namespace ZXing {
 
@@ -27,27 +25,10 @@ class DecodeHints;
 
 namespace MicroQRCode {
 
-class Detector
-{
-public:
-	Detector(const BitMatrix& image);
-	DetectorResult detect(DecodeHints const& hints) const;
-
-private: // methods
-	DetectorResult detectPure() const;
-	DetectorResult processCodeEnclosingRect(const std::vector<ResultPoint>& codeEnclosingRect, int dimension) const;
-	DetectorResult processFinderPatternInfo(const FinderPatternInfo& patternInfo, int dimension) const;
-	PerspectiveTransform createTransform(const std::vector<ResultPoint>& rect, int dimension) const;
-	PerspectiveTransform createTransform(const ResultPoint& topLeft, const ResultPoint& topRight,
-										 const ResultPoint& bottomLeft, int dimension) const;
-	DetectorResult sampleGrid(const BitMatrix& image, const PerspectiveTransform& transform, int dimension) const;
-	int computeDimension(const ResultPoint& topLeft, const ResultPoint& topRight, const ResultPoint& bottomLeft,
-						 float moduleSize) const;
-	int computeDimension(const std::vector<ResultPoint>& codeEnclosingRect, float moduleSize) const;
-
-private:
-	BitMatrix image_;
-};
+/**
+ * @brief Detects a micro QR code in an image.
+ */
+DetectorResult Detect(const BitMatrix& image, DecodeHints const& hints);
 
 } // namespace MicroQRCode
 

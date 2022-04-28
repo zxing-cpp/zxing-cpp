@@ -30,11 +30,7 @@ using ZXing::MicroQRCode::FinderPattern;
  *
  * @author Christian Braun
  */
-CornerFinder::CornerFinder(const BitMatrix& image, const FinderPattern& center) : center_(center)
-{
-	image_ = image.copy();
-	moduleSize_ = static_cast<int>(center.getEstimatedModuleSize());
-}
+CornerFinder::CornerFinder() {}
 
 /**
  *
@@ -42,26 +38,30 @@ CornerFinder::CornerFinder(const BitMatrix& image, const FinderPattern& center) 
  * normal position without any rotation. That means the corner closest to the center will always be at index 0
  * an the corner at the opposite site will always be at index 3 and so on.
  * If no corners are found an empty vector is returned.
+ * @param image
+ * @param center of the pattern.
  */
-std::vector<ResultPoint> CornerFinder::find() const
+std::vector<ResultPoint> CornerFinder::find(const BitMatrix& image, const FinderPattern& center) const
 {
-	ResultPoint direction = calculateDirection();
+	ResultPoint direction = calculateDirection(image, center);
 	if (direction.x() == 0 || direction.y() == 0)
 		return std::vector<ResultPoint>{};
 
 	ResultPoint centerEnclosingRectA, centerEnclosingRectB, centerEnclosingRectC, centerEnclosingRectD;
-	if (!DetectWhiteRect(image_, moduleSize_ * 4, std::lround(center_.x()), std::lround(center_.y()),
-						 centerEnclosingRectA, centerEnclosingRectB, centerEnclosingRectC, centerEnclosingRectD))
+	if (!DetectWhiteRect(image, std::lround(center.getEstimatedModuleSize() * 4), std::lround(center.x()),
+						 std::lround(center.y()), centerEnclosingRectA, centerEnclosingRectB, centerEnclosingRectC,
+						 centerEnclosingRectD))
 		return std::vector<ResultPoint>{};
 
 	std::vector<ResultPoint> centerEnclosingRect = {centerEnclosingRectA, centerEnclosingRectB, centerEnclosingRectC,
 													centerEnclosingRectD};
 
-	ResultPoint midPoint = getMidpointOfCode(centerEnclosingRect, direction);
+	ResultPoint midPoint = getMidpointOfCode(center, centerEnclosingRect, direction);
 
 	ResultPoint codeEnclosingRectA, codeEnclosingRectB, codeEnclosingRectC, codeEnclosingRectD;
-	if (!DetectWhiteRect(image_, moduleSize_ * 5, std::lround(midPoint.x()), std::lround(midPoint.y()),
-						 codeEnclosingRectA, codeEnclosingRectB, codeEnclosingRectC, codeEnclosingRectD))
+	if (!DetectWhiteRect(image, std::lround(center.getEstimatedModuleSize() * 5), std::lround(midPoint.x()),
+						 std::lround(midPoint.y()), codeEnclosingRectA, codeEnclosingRectB, codeEnclosingRectC,
+						 codeEnclosingRectD))
 		return std::vector<ResultPoint>{};
 
 	std::vector<ResultPoint> codeEnclosingRect = {codeEnclosingRectA, codeEnclosingRectB, codeEnclosingRectC,
@@ -80,45 +80,45 @@ std::vector<ResultPoint> CornerFinder::find() const
  * expands in positive x and positive y direction
  * @throws NotFoundException If there was a quitezone detected twice either in x or y direction
  */
-ResultPoint CornerFinder::calculateDirection() const
+ResultPoint CornerFinder::calculateDirection(const BitMatrix& image, const FinderPattern& center) const
 {
 	int x = 0;
 	int y = 0;
 
-	if (!isQuietZoneDirection(1, 0)) {
+	if (!isQuietZoneDirection(image, center, 1, 0)) {
 		x += 1;
 	}
-	if (!isQuietZoneDirection(0, 1)) {
+	if (!isQuietZoneDirection(image, center, 0, 1)) {
 		y += 1;
 	}
-	if (!isQuietZoneDirection(-1, 0)) {
+	if (!isQuietZoneDirection(image, center, -1, 0)) {
 		x += -1;
 	}
-	if (!isQuietZoneDirection(0, -1)) {
+	if (!isQuietZoneDirection(image, center, 0, -1)) {
 		y += -1;
 	}
 
 	return ResultPoint{x, y};
 }
 
-int CornerFinder::numberOfWhiteInKernel(int x, int y) const
+int CornerFinder::numberOfWhiteInKernel(const BitMatrix& image, int moduleSize, int x, int y) const
 {
-	const auto safePixelGet = [&](const int x, const int y) {
-		if (x >= 0 && x < image_.width() && y >= 0 && y < image_.height())
-			return image_.get(x, y);
+	const auto safePixelGet = [&image](const int x, const int y) {
+		if (x >= 0 && x < image.width() && y >= 0 && y < image.height())
+			return image.get(x, y);
 		return false;
 	};
 
 	// 9 point imagekernel
 	std::vector<bool> moduleKernel{safePixelGet(x, y),
-								   safePixelGet(x - moduleSize_, y),
-								   safePixelGet(x - moduleSize_, y + moduleSize_),
-								   safePixelGet(x, y + moduleSize_),
-								   safePixelGet(x + moduleSize_, y + moduleSize_),
-								   safePixelGet(x + moduleSize_, y),
-								   safePixelGet(x + moduleSize_, y - moduleSize_),
-								   safePixelGet(x, y - moduleSize_),
-								   safePixelGet(x - moduleSize_, y - moduleSize_)};
+								   safePixelGet(x - moduleSize, y),
+								   safePixelGet(x - moduleSize, y + moduleSize),
+								   safePixelGet(x, y + moduleSize),
+								   safePixelGet(x + moduleSize, y + moduleSize),
+								   safePixelGet(x + moduleSize, y),
+								   safePixelGet(x + moduleSize, y - moduleSize),
+								   safePixelGet(x, y - moduleSize),
+								   safePixelGet(x - moduleSize, y - moduleSize)};
 	int whiteModules = 0;
 
 	for (bool isBlackModule : moduleKernel) {
@@ -130,29 +130,30 @@ int CornerFinder::numberOfWhiteInKernel(int x, int y) const
 	return whiteModules;
 }
 
-bool CornerFinder::isQuietZoneDirection(int stepX, int stepY) const
+bool CornerFinder::isQuietZoneDirection(const BitMatrix& image, const FinderPattern& center, int stepX, int stepY) const
 {
 	int numberOfSteps = 7;
-	int centerX = static_cast<int>(center_.x());
-	int centerY = static_cast<int>(center_.y());
+	int centerX = std::lround(center.x());
+	int centerY = std::lround(center.y());
+	int moduleSize = std::lround(center.getEstimatedModuleSize());
 	bool firstStep = false;
 
 	// We assume that we hit a quiet zone when we get at least 5 white modules
 	// directly followed by 9 white modules in our image kernel
 	for (int i = 0; i <= numberOfSteps; ++i) {
-		int x = centerX + i * stepX * moduleSize_;
-		int y = centerY + i * stepY * moduleSize_;
-		if (firstStep && numberOfWhiteInKernel(x, y) >= 9) {
+		int x = centerX + i * stepX * moduleSize;
+		int y = centerY + i * stepY * moduleSize;
+		if (firstStep && numberOfWhiteInKernel(image, moduleSize, x, y) >= 9) {
 			return true;
 		}
 
-		firstStep = numberOfWhiteInKernel(x, y) >= 5;
+		firstStep = numberOfWhiteInKernel(image, moduleSize, x, y) >= 5;
 	}
 
 	return false;
 }
 
-ResultPoint CornerFinder::getMidpointOfCode(const std::vector<ResultPoint>& centerRect,
+ResultPoint CornerFinder::getMidpointOfCode(const FinderPattern& center, const std::vector<ResultPoint>& centerRect,
 											const ResultPoint& direction) const
 {
 	const std::vector<ResultPoint> diagonal = getLineToBottomRightCorner(centerRect, direction);
@@ -164,7 +165,7 @@ ResultPoint CornerFinder::getMidpointOfCode(const std::vector<ResultPoint>& cent
 	float delta = (endCenter.y() - startCenter.y()) / (endCenter.x() - startCenter.x());
 	float t = startCenter.y() - delta * startCenter.x();
 
-	float x = center_.x() + direction.x() * modulesAwayFromCenterX * moduleSize_;
+	float x = center.x() + direction.x() * modulesAwayFromCenterX * center.getEstimatedModuleSize();
 	float middleBetweenCornersX = (x + startCenter.x()) / 2;
 	float middleBetweenCornersY = delta * middleBetweenCornersX + t;
 

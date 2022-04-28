@@ -28,14 +28,15 @@ namespace MicroQRCode {
 class CornerFinder
 {
 public:
-	CornerFinder(const BitMatrix& image, const FinderPattern& center);
-	std::vector<ResultPoint> find() const;
+	CornerFinder();
+	std::vector<ResultPoint> find(const BitMatrix& image, const FinderPattern& center) const;
 
 private:
-	ResultPoint calculateDirection() const;
-	int numberOfWhiteInKernel(int x, int y) const;
-	bool isQuietZoneDirection(int stepX, int stepY) const;
-	ResultPoint getMidpointOfCode(const std::vector<ResultPoint>& centerRect, const ResultPoint& direction) const;
+	ResultPoint calculateDirection(const BitMatrix& image, const FinderPattern& center) const;
+	int numberOfWhiteInKernel(const BitMatrix& image, int moduleSize, int x, int y) const;
+	bool isQuietZoneDirection(const BitMatrix& image, const FinderPattern& center, int stepX, int stepY) const;
+	ResultPoint getMidpointOfCode(const FinderPattern& center, const std::vector<ResultPoint>& centerRect,
+								  const ResultPoint& direction) const;
 	std::vector<ResultPoint> getLineToBottomRightCorner(const std::vector<ResultPoint>& centerEnclosingRect,
 														const ResultPoint& direction) const;
 	std::vector<ResultPoint> defineCornersMorePrecisely(const std::vector<ResultPoint>& centerEnclosingRect,
@@ -46,11 +47,6 @@ private:
 	std::vector<ResultPoint> sortRectCorners(const std::vector<ResultPoint>& codeEnclosingRect,
 											 const ResultPoint& direction) const;
 	void swapPoints(std::vector<ResultPoint>& codeEnclosingRect, int source, int destination) const;
-
-private:
-	BitMatrix image_;
-	const FinderPattern center_;
-	int moduleSize_;
 };
 
 } // namespace MicroQRCode

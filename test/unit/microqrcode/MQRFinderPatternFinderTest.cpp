@@ -59,8 +59,8 @@ TEST(MicroQRFinderPatternFinderTest, FindCodeCorners)
 	const auto scaledBitMatrix = LoadScaledCode(moduleSize, 2);
 
 	DecodeHints hints;
-	FinderPatternFinder finder{scaledBitMatrix};
-	const auto corners = finder.findCorners(hints);
+	FinderPatternFinder finder;
+	const auto corners = finder.findCorners(scaledBitMatrix, hints);
 	ASSERT_EQ(4, corners.size());
 
 	ASSERT_NEAR(2 * moduleSize, corners[0].x(), moduleSize / 4);
@@ -77,8 +77,8 @@ TEST(MicroQRFinderPatternFinderTest, FindPatternCenters)
 	const auto scaledBitMatrix = LoadScaledCode(moduleSize, 2);
 
 	DecodeHints hints;
-	FinderPatternFinder finder{scaledBitMatrix};
-	const auto finderPatternInfo = finder.findCenters(hints);
+	FinderPatternFinder finder;
+	const auto finderPatternInfo = finder.findCenters(scaledBitMatrix, hints);
 	ASSERT_TRUE(finderPatternInfo);
 
 	const float patternCenterX = (3.5 + 2.0) * moduleSize;
@@ -102,10 +102,10 @@ TEST(MicroQRFinderPatternFinderTest, FindNoPattern)
 										 (bitMatrix.height() + 4) * moduleSize, 2 * moduleSize);
 
 	DecodeHints hints;
-	FinderPatternFinder finder{scaledBitMatrix};
-	const auto centerResult = finder.findCenters(hints);
+	FinderPatternFinder finder;
+	const auto centerResult = finder.findCenters(scaledBitMatrix, hints);
 	ASSERT_FALSE(centerResult);
-	const auto cornersResult = finder.findCorners(hints);
+	const auto cornersResult = finder.findCorners(scaledBitMatrix, hints);
 	ASSERT_TRUE(cornersResult.empty());
 }
 
@@ -121,14 +121,14 @@ TEST(MicroQRFinderPatternFinderTest, FindPatternRotated)
 		// Rotate matrix 90 degrees counter-clockwise.
 		scaledBitMatrix.rotate90();
 
-		FinderPatternFinder finder{scaledBitMatrix};
-		const auto corners = finder.findCorners(hints);
+		FinderPatternFinder finder;
+		const auto corners = finder.findCorners(scaledBitMatrix, hints);
 		ASSERT_EQ(4, corners.size());
 
 		ASSERT_NEAR((2 + cornerX) * moduleSize, corners[0].x(), moduleSize / 4);
 		ASSERT_NEAR((2 + cornerY) * moduleSize, corners[0].y(), moduleSize / 4);
 
-		const auto centers = finder.findCenters(hints);
+		const auto centers = finder.findCenters(scaledBitMatrix, hints);
 		const float patternCenterX = (centerX + 2.0f) * moduleSize;
 		const float patternCenterY = (centerY + 2.0f) * moduleSize;
 
