@@ -21,6 +21,7 @@
 #include "MQRFinderPattern.h"
 #include "MQRFinderPatternInfo.h"
 
+#include <optional>
 #include <vector>
 
 namespace ZXing {
@@ -34,7 +35,7 @@ class FinderPatternFinder
 public:
 	FinderPatternFinder(const BitMatrix& image);
 	std::vector<ResultPoint> findCorners(DecodeHints const& hints);
-	FinderPatternInfo findCenters(DecodeHints const& hints);
+	std::optional<FinderPatternInfo> findCenters(DecodeHints const& hints);
 
 private:
 	static int CENTER_QUORUM;
@@ -45,9 +46,9 @@ private:
 	std::vector<int> crossCheckStateCount_;
 
 private: // methods
-	FinderPattern findBestPattern(DecodeHints const& hints);
+	std::optional<FinderPattern> findBestPattern(DecodeHints const& hints);
 	std::vector<ResultPoint> getCodeEnclosingRect(const FinderPattern& actualPattern);
-	FinderPatternInfo generatePatternInfoForPattern(const FinderPattern& actualPattern);
+	std::optional<FinderPatternInfo> generatePatternInfoForPattern(const FinderPattern& actualPattern);
 	float centerFromEnd(const std::vector<int>& stateCount, int end) const;
 	bool foundPatternCross(const std::vector<int>& stateCount) const;
 	std::vector<int> getCrossCheckStateCount();
@@ -57,7 +58,7 @@ private: // methods
 
 	bool handlePossibleCenter(const std::vector<int>& stateCount, int i, int j, bool pureBarcode);
 	bool haveMultiplyConfirmedCenters() const;
-	FinderPattern selectBestPattern();
+	std::optional<FinderPattern> selectBestPattern();
 };
 
 } // namespace MicroQRCode

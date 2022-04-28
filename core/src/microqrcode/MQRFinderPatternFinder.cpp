@@ -20,7 +20,6 @@
 #include "DecodeHints.h"
 #include "MQRCornerFinder.h"
 #include "MQRFakeCenterCalculator.h"
-#include "MQRNotFoundException.h"
 
 #include <algorithm>
 
@@ -70,16 +69,20 @@ FinderPatternFinder::FinderPatternFinder(const BitMatrix& image) : crossCheckSta
 std::vector<ResultPoint> FinderPatternFinder::findCorners(DecodeHints const& hints)
 {
 	const auto bestPattern = findBestPattern(hints);
-	return getCodeEnclosingRect(bestPattern);
+	if (!bestPattern)
+		return {};
+	return getCodeEnclosingRect(*bestPattern);
 }
 
-FinderPatternInfo FinderPatternFinder::findCenters(DecodeHints const& hints)
+std::optional<FinderPatternInfo> FinderPatternFinder::findCenters(DecodeHints const& hints)
 {
-	FinderPattern center = findBestPattern(hints);
-	return generatePatternInfoForPattern(center);
+	const auto bestPattern = findBestPattern(hints);
+	if (!bestPattern)
+		return {};
+	return generatePatternInfoForPattern(*bestPattern);
 }
 
-FinderPattern FinderPatternFinder::findBestPattern(DecodeHints const& hints)
+std::optional<FinderPattern> FinderPatternFinder::findBestPattern(DecodeHints const& hints)
 {
 	bool tryHarder = hints.tryHarder();
 	bool pureBarcode = hints.isPure();
@@ -179,11 +182,11 @@ std::vector<ResultPoint> FinderPatternFinder::getCodeEnclosingRect(const FinderP
 	return cornerFinder.find();
 }
 
-FinderPatternInfo FinderPatternFinder::generatePatternInfoForPattern(const FinderPattern& actualPattern)
+std::optional<FinderPatternInfo> FinderPatternFinder::generatePatternInfoForPattern(const FinderPattern& actualPattern)
 {
 	std::vector<ResultPoint> results = getCodeEnclosingRect(actualPattern);
 	if (results.empty())
-		throw NotFoundException("Unable to find enclosing rectangle.");
+		return {};
 
 	FakeCenterCalculator calculator(actualPattern, results);
 
@@ -534,12 +537,11 @@ bool FinderPatternFinder::haveMultiplyConfirmedCenters() const
  * @return the best {@link FinderPattern} from our list of candidates. The "best" is
  * the one that have been detected at least {@link #CENTER_QUORUM} times, and whose module
  * size differs from the average among those patterns the least
- * @throws NotFoundException if 1 such finder patterns do not exist
  */
-FinderPattern FinderPatternFinder::selectBestPattern()
+std::optional<FinderPattern> FinderPatternFinder::selectBestPattern()
 {
 	if (possibleCenters_.empty())
-		throw NotFoundException("Unable to find finder pattern.");
+		return {};
 
 	if (possibleCenters_.size() > 1) {
 		// Throw away all but those first size candidate points we found.

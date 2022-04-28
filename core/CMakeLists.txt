@@ -224,8 +224,6 @@ if (BUILD_READERS)
         src/microqrcode/MQRFinderPatternFinder.cpp
         src/microqrcode/MQRFinderPatternInfo.h
         src/microqrcode/MQRFinderPatternInfo.cpp
-        src/microqrcode/MQRNotFoundException.h
-        src/microqrcode/MQRReaderException.h
     )
 endif()
 

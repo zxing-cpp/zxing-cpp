@@ -25,7 +25,6 @@
 #include "MQRDimension.h"
 #include "MQRFinderPattern.h"
 #include "MQRFinderPatternFinder.h"
-#include "MQRReaderException.h"
 
 #include <algorithm> // vs12, std::min and std:max
 #include <cstdlib>
@@ -52,7 +51,6 @@ Detector::Detector(const BitMatrix& image)
  *
  * @param hints optional hints to detector
  * @return {@link DetectorResult} encapsulating results of detecting a Micro QR Code
- * @throws NotFoundException if Micro QR Code cannot be found
  */
 DetectorResult Detector::detect(DecodeHints const& hints) const
 {
@@ -62,22 +60,25 @@ DetectorResult Detector::detect(DecodeHints const& hints) const
 	FinderPatternFinder finder(image_);
 	const auto codeEnclosingRect = finder.findCorners(hints);
 	const auto patternInfo = finder.findCenters(hints);
-	float moduleSize = patternInfo.getActualTopLeft().getEstimatedModuleSize();
+	if (codeEnclosingRect.empty() || !patternInfo)
+		return {};
+
+	float moduleSize = patternInfo->getActualTopLeft().getEstimatedModuleSize();
 	if (moduleSize < 2.0f)
-		throw ReaderException("Module size too small.");
+		return {};
 
 	// Calculating dimension from centers and from corners as the center dimension is highly vulnerable for
 	// perspective transformed Micro QR Codes. Therefore, if the two dimensions differ we will work with the
 	// code enclosing rect for detection. We are not using this rect for every detection as there are some cases
 	// in which not all 4 corners of the Micro QR Code are detected correctly. The detection with the fake centers
 	// depends only on 3 corners (tl, tr, bl) and  will therefore give better results in many situations.
-	int dimensionFromCenters = computeDimension(patternInfo.getActualTopLeft(), patternInfo.getFakeTopRight(),
-												patternInfo.getFakeBottomLeft(), moduleSize);
+	int dimensionFromCenters = computeDimension(patternInfo->getActualTopLeft(), patternInfo->getFakeTopRight(),
+												patternInfo->getFakeBottomLeft(), moduleSize);
 	int dimensionFromCorners = computeDimension(codeEnclosingRect, moduleSize);
 	if (dimensionFromCenters != dimensionFromCorners) {
 		return processCodeEnclosingRect(codeEnclosingRect, dimensionFromCorners);
 	}
-	return processFinderPatternInfo(patternInfo, dimensionFromCenters);
+	return processFinderPatternInfo(*patternInfo, dimensionFromCenters);
 }
 
 DetectorResult Detector::detectPure() const
@@ -93,7 +94,7 @@ DetectorResult Detector::detectPure() const
 		borderWidth++;
 	}
 	if (borderWidth == minDimension) {
-		throw ReaderException("border width equal to min dimension");
+		return {};
 	}
 
 	// And then keep tracking across the top-left black module to determine module size
@@ -102,7 +103,7 @@ DetectorResult Detector::detectPure() const
 		moduleEnd++;
 	}
 	if (moduleEnd == minDimension) {
-		throw ReaderException("module end equal to min dimension");
+		return {};
 	}
 
 	int moduleSize = moduleEnd - borderWidth;
@@ -113,13 +114,13 @@ DetectorResult Detector::detectPure() const
 		rowEndOfSymbol--;
 	}
 	if (rowEndOfSymbol < 0) {
-		throw ReaderException("Row end of symbol less than 0.");
+		return {};
 	}
 	rowEndOfSymbol++;
 
 	// Make sure width of barcode is a multiple of module size
 	if ((rowEndOfSymbol - borderWidth) % moduleSize != 0) {
-		throw ReaderException("Barcode width is not a multiple of module size.");
+		return {};
 	}
 	int dimension = (rowEndOfSymbol - borderWidth) / moduleSize;
 
@@ -130,7 +131,7 @@ DetectorResult Detector::detectPure() const
 
 	int sampleDimension = borderWidth + (dimension - 1) * moduleSize;
 	if (sampleDimension >= width || sampleDimension >= height) {
-		throw ReaderException("Sample dimension must be less than width or height");
+		return {};
 	}
 
 	// Now just read off the bits

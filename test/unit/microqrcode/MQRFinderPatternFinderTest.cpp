@@ -18,7 +18,6 @@
 
 #include "BitMatrixIO.h"
 #include "DecodeHints.h"
-#include "microqrcode/MQRNotFoundException.h"
 
 #include "gtest/gtest.h"
 
@@ -80,17 +79,18 @@ TEST(MicroQRFinderPatternFinderTest, FindPatternCenters)
 	DecodeHints hints;
 	FinderPatternFinder finder{scaledBitMatrix};
 	const auto finderPatternInfo = finder.findCenters(hints);
+	ASSERT_TRUE(finderPatternInfo);
 
 	const float patternCenterX = (3.5 + 2.0) * moduleSize;
 	const float patternCenterY = (3.5 + 2.0) * moduleSize;
 
-	ASSERT_EQ(moduleSize, finderPatternInfo.getActualTopLeft().getEstimatedModuleSize());
-	ASSERT_EQ(4, finderPatternInfo.getActualTopLeft().getCount());
-	ASSERT_NEAR(patternCenterX, finderPatternInfo.getActualTopLeft().x(), moduleSize / 4);
-	ASSERT_NEAR(patternCenterY, finderPatternInfo.getActualTopLeft().y(), moduleSize / 4);
+	ASSERT_EQ(moduleSize, finderPatternInfo->getActualTopLeft().getEstimatedModuleSize());
+	ASSERT_EQ(4, finderPatternInfo->getActualTopLeft().getCount());
+	ASSERT_NEAR(patternCenterX, finderPatternInfo->getActualTopLeft().x(), moduleSize / 4);
+	ASSERT_NEAR(patternCenterY, finderPatternInfo->getActualTopLeft().y(), moduleSize / 4);
 
-	ASSERT_EQ(1, finderPatternInfo.getFakeBottomLeft().getCount());
-	ASSERT_EQ(1, finderPatternInfo.getFakeTopRight().getCount());
+	ASSERT_EQ(1, finderPatternInfo->getFakeBottomLeft().getCount());
+	ASSERT_EQ(1, finderPatternInfo->getFakeTopRight().getCount());
 }
 
 TEST(MicroQRFinderPatternFinderTest, FindNoPattern)
@@ -103,8 +103,10 @@ TEST(MicroQRFinderPatternFinderTest, FindNoPattern)
 
 	DecodeHints hints;
 	FinderPatternFinder finder{scaledBitMatrix};
-	ASSERT_THROW(finder.findCenters(hints), NotFoundException);
-	ASSERT_THROW(finder.findCorners(hints), NotFoundException);
+	const auto centerResult = finder.findCenters(hints);
+	ASSERT_FALSE(centerResult);
+	const auto cornersResult = finder.findCorners(hints);
+	ASSERT_TRUE(cornersResult.empty());
 }
 
 TEST(MicroQRFinderPatternFinderTest, FindPatternRotated)
@@ -130,8 +132,9 @@ TEST(MicroQRFinderPatternFinderTest, FindPatternRotated)
 		const float patternCenterX = (centerX + 2.0f) * moduleSize;
 		const float patternCenterY = (centerY + 2.0f) * moduleSize;
 
-		ASSERT_EQ(moduleSize, centers.getActualTopLeft().getEstimatedModuleSize());
-		ASSERT_NEAR(patternCenterX, centers.getActualTopLeft().x(), moduleSize / 4);
-		ASSERT_NEAR(patternCenterY, centers.getActualTopLeft().y(), moduleSize / 4);
+		ASSERT_TRUE(centers);
+		ASSERT_EQ(moduleSize, centers->getActualTopLeft().getEstimatedModuleSize());
+		ASSERT_NEAR(patternCenterX, centers->getActualTopLeft().x(), moduleSize / 4);
+		ASSERT_NEAR(patternCenterY, centers->getActualTopLeft().y(), moduleSize / 4);
 	}
 }

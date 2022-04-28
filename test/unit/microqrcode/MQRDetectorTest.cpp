@@ -18,8 +18,6 @@
 
 #include "BitMatrixIO.h"
 #include "DecodeHints.h"
-#include "microqrcode/MQRNotFoundException.h"
-#include "microqrcode/MQRReaderException.h"
 
 #include "gtest/gtest.h"
 
@@ -62,10 +60,11 @@ TEST(MicroQRDetectorTest, DetectPureBarcodeNoQuietZone)
 	const auto testCode = LoadCode();
 	DecodeHints hints;
 	Detector detector{testCode};
-	ASSERT_THROW(detector.detect(hints), NotFoundException);
+	auto result = detector.detect(hints);
+	ASSERT_FALSE(result.isValid());
 
 	hints.setIsPure(true);
-	const auto result = detector.detect(hints);
+	result = detector.detect(hints);
 	ASSERT_EQ(testCode, result.bits());
 }
 
@@ -74,10 +73,11 @@ TEST(MicroQRDetectorTest, DetectPureBarcodeQuietZone)
 	const auto testCode = ScaleCode(LoadCode(), 1, 2);
 	DecodeHints hints;
 	Detector detector{testCode};
-	ASSERT_THROW(detector.detect(hints), ReaderException);
+	auto result = detector.detect(hints);
+	ASSERT_FALSE(result.isValid());
 
 	hints.setIsPure(true);
-	auto result = detector.detect(hints);
+	result = detector.detect(hints);
 	ASSERT_EQ(LoadCode(), result.bits());
 }
 
@@ -127,8 +127,10 @@ TEST(MicroQRDetectorTest, DetectNoBarcode)
 
 	DecodeHints hints;
 	Detector detector{testCode};
-	ASSERT_THROW(detector.detect(hints), NotFoundException);
+	auto result = detector.detect(hints);
+	ASSERT_FALSE(result.isValid());
 
 	hints.setIsPure(true);
-	ASSERT_THROW(detector.detect(hints), ReaderException);
+	result = detector.detect(hints);
+	ASSERT_FALSE(result.isValid());
 }
