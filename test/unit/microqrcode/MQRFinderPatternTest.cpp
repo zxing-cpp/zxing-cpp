@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "microqrcode/detector/FinderPatternInfo.h"
+#include "microqrcode/MQRFinderPatternInfo.h"
 
 #include "gtest/gtest.h"
 

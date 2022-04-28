@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-#include "microqrcode/detector/FinderPatternFinder.h"
+#include "microqrcode/MQRFinderPatternFinder.h"
 
 #include "BitMatrixIO.h"
 #include "DecodeHints.h"
-#include "microqrcode/detector/NotFoundException.h"
+#include "microqrcode/MQRNotFoundException.h"
 
 #include "gtest/gtest.h"
 

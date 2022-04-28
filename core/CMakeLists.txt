@@ -210,22 +210,22 @@ set (MICROQRCODE_FILES
 )
 if (BUILD_READERS)
     set (MICROQRCODE_FILES ${MICROQRCODE_FILES}
-        src/microqrcode/detector/CornerFinder.h
-        src/microqrcode/detector/CornerFinder.cpp
-        src/microqrcode/detector/Detector.h
-        src/microqrcode/detector/Detector.cpp
-        src/microqrcode/detector/Dimension.h
-        src/microqrcode/detector/Dimension.cpp
-        src/microqrcode/detector/FakeCenterCalculator.h
-        src/microqrcode/detector/FakeCenterCalculator.cpp
-        src/microqrcode/detector/FinderPattern.h
-        src/microqrcode/detector/FinderPattern.cpp
-        src/microqrcode/detector/FinderPatternFinder.h
-        src/microqrcode/detector/FinderPatternFinder.cpp
-        src/microqrcode/detector/FinderPatternInfo.h
-        src/microqrcode/detector/FinderPatternInfo.cpp
-        src/microqrcode/detector/NotFoundException.h
-        src/microqrcode/detector/ReaderException.h
+        src/microqrcode/MQRCornerFinder.h
+        src/microqrcode/MQRCornerFinder.cpp
+        src/microqrcode/MQRDetector.h
+        src/microqrcode/MQRDetector.cpp
+        src/microqrcode/MQRDimension.h
+        src/microqrcode/MQRDimension.cpp
+        src/microqrcode/MQRFakeCenterCalculator.h
+        src/microqrcode/MQRFakeCenterCalculator.cpp
+        src/microqrcode/MQRFinderPattern.h
+        src/microqrcode/MQRFinderPattern.cpp
+        src/microqrcode/MQRFinderPatternFinder.h
+        src/microqrcode/MQRFinderPatternFinder.cpp
+        src/microqrcode/MQRFinderPatternInfo.h
+        src/microqrcode/MQRFinderPatternInfo.cpp
+        src/microqrcode/MQRNotFoundException.h
+        src/microqrcode/MQRReaderException.h
     )
 endif()
 

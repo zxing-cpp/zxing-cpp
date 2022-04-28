@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "microqrcode/detector/Dimension.h"
+#include "microqrcode/MQRDimension.h"
 
 #include "gtest/gtest.h"
 

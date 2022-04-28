@@ -19,8 +19,8 @@
  */
 
 #include "BitMatrix.h"
-#include "FinderPattern.h"
-#include "FinderPatternInfo.h"
+#include "MQRFinderPattern.h"
+#include "MQRFinderPatternInfo.h"
 
 #include <vector>
 

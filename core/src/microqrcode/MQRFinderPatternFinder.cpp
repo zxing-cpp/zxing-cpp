@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-#include "FinderPatternFinder.h"
+#include "MQRFinderPatternFinder.h"
 
-#include "CornerFinder.h"
 #include "DecodeHints.h"
-#include "FakeCenterCalculator.h"
-#include "NotFoundException.h"
+#include "MQRCornerFinder.h"
+#include "MQRFakeCenterCalculator.h"
+#include "MQRNotFoundException.h"
 
 #include <algorithm>
 

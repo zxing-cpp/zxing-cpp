@@ -1,7 +1,8 @@
-#ifndef __FAKE_CENTER_CALCULATOR_H__
-#define __FAKE_CENTER_CALCULATOR_H__
+#ifndef __FINDER_PATTERN_INFO_H__
+#define __FINDER_PATTERN_INFO_H__
 
 /*
+ * Copyright 2007 ZXing authors All rights reserved.
  * Copyright 2017 KURZ Digital Solutions GmbH & Co. KG
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,34 +18,36 @@
  * limitations under the License.
  */
 
-#include "FinderPattern.h"
-#include "ResultPoint.h"
+#include "MQRFinderPattern.h"
 
 #include <vector>
 
 namespace ZXing {
+
 namespace MicroQRCode {
 
-class FakeCenterCalculator
+/**
+ * <p>Encapsulates information about finder patterns in an image, including the location of
+ * the finder pattern, and its estimated module size.</p>
+ * For the Micro QR Code we just assume where these patterns should be located.
+ */
+class FinderPatternInfo
 {
 public:
-	FakeCenterCalculator(const FinderPattern& actualCenter, const std::vector<ResultPoint>& rect);
-	FinderPattern getTopRightCenter();
-	FinderPattern getBottomLeftCenter();
+	FinderPatternInfo(const std::vector<FinderPattern>& patternCenters);
+
+	FinderPattern getActualTopLeft() const;
+	FinderPattern getFakeTopRight() const;
+	FinderPattern getFakeBottomLeft() const;
 
 private:
-	ResultPoint calculateCenter(const ResultPoint& deltas) const;
-	ResultPoint calculateNormalizedDeltas(const ResultPoint& source, const ResultPoint& destination);
-
-private:
-	FinderPattern actualCenter_;
-	float moduleSize_;
-	std::vector<ResultPoint> rect_;
-	int dimension_;
+	FinderPattern actualTopLeft_;
+	FinderPattern fakeTopRight_;
+	FinderPattern fakeBottomLeft_;
 };
 
 } // namespace MicroQRCode
 
 } // namespace ZXing
 
-#endif // __FAKE_CENTER_CALCULATOR_H__
+#endif // __FINDER_PATTERN_INFO_H__

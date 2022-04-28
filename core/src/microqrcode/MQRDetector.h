@@ -19,7 +19,7 @@
 
 #include "BitMatrix.h"
 #include "DetectorResult.h"
-#include "FinderPatternInfo.h"
+#include "MQRFinderPatternInfo.h"
 #include "PerspectiveTransform.h"
 
 namespace ZXing {

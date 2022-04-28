@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "CornerFinder.h"
+#include "MQRCornerFinder.h"
 
 #include "WhiteRectDetector.h"
 

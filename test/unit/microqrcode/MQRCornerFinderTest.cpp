@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "microqrcode/detector/CornerFinder.h"
+#include "microqrcode/MQRCornerFinder.h"
 
 #include "BitMatrixIO.h"
 #include "DecodeHints.h"

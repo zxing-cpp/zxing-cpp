@@ -18,14 +18,14 @@
  * is rotated or skewed, or partially obscured.</p>
  */
 
-#include "Detector.h"
+#include "MQRDetector.h"
 
 #include "DecodeHints.h"
-#include "Dimension.h"
-#include "FinderPattern.h"
-#include "FinderPatternFinder.h"
 #include "GridSampler.h"
-#include "ReaderException.h"
+#include "MQRDimension.h"
+#include "MQRFinderPattern.h"
+#include "MQRFinderPatternFinder.h"
+#include "MQRReaderException.h"
 
 #include <algorithm> // vs12, std::min and std:max
 #include <cstdlib>

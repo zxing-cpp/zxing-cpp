@@ -23,9 +23,9 @@
  * @author Ralph Corby
  */
 
-#include "FakeCenterCalculator.h"
+#include "MQRFakeCenterCalculator.h"
 
-#include "Dimension.h"
+#include "MQRDimension.h"
 
 using ZXing::ResultPoint;
 using ZXing::MicroQRCode::FakeCenterCalculator;
@@ -38,8 +38,7 @@ using ZXing::MicroQRCode::FinderPattern;
  */
 FakeCenterCalculator::FakeCenterCalculator(const FinderPattern& actualCenter, const std::vector<ResultPoint>& rect)
 	: actualCenter_(actualCenter), moduleSize_(actualCenter.getEstimatedModuleSize()), rect_(rect), dimension_(0)
-{
-}
+{}
 
 FinderPattern FakeCenterCalculator::getTopRightCenter()
 {

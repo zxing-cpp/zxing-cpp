@@ -14,19 +14,17 @@
  * limitations under the License.
  */
 
-#include "FinderPattern.h"
+#include "MQRFinderPattern.h"
 
 using ZXing::MicroQRCode::FinderPattern;
 
 FinderPattern::FinderPattern(float posX, float posY, float estimatedModuleSize)
 	: ResultPoint(posX, posY), estimatedModuleSize_(estimatedModuleSize), count_(1)
-{
-}
+{}
 
 FinderPattern::FinderPattern(float posX, float posY, float estimatedModuleSize, int count)
 	: ResultPoint(posX, posY), estimatedModuleSize_(estimatedModuleSize), count_(count)
-{
-}
+{}
 
 /**
  * Get the number of patterns contributing to this estimate.
