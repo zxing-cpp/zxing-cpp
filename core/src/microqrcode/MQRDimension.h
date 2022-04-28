@@ -1,5 +1,4 @@
-#ifndef __DIMENSION_H__
-#define __DIMENSION_H__
+#pragma once
 
 /*
  * Copyright 2017 KURZ Digital Solutions GmbH & Co. KG
@@ -32,5 +31,3 @@ public:
 } // namespace MicroQRCode
 
 } // namespace ZXing
-
-#endif // __DIMENSION_H__

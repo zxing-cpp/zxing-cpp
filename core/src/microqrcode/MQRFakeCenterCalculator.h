@@ -1,5 +1,4 @@
-#ifndef __FAKE_CENTER_CALCULATOR_H__
-#define __FAKE_CENTER_CALCULATOR_H__
+#pragma once
 
 /*
  * Copyright 2017 KURZ Digital Solutions GmbH & Co. KG
@@ -46,5 +45,3 @@ private:
 } // namespace MicroQRCode
 
 } // namespace ZXing
-
-#endif // __FAKE_CENTER_CALCULATOR_H__

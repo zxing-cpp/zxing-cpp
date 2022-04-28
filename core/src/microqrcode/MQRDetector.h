@@ -1,5 +1,4 @@
-#ifndef __DETECTOR_H__
-#define __DETECTOR_H__
+#pragma once
 
 /*
  * Copyright 2017 KURZ Digital Solutions GmbH & Co. KG
@@ -53,5 +52,3 @@ private:
 } // namespace MicroQRCode
 
 } // namespace ZXing
-
-#endif // __DETECTOR_H__

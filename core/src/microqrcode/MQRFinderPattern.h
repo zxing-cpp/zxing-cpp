@@ -1,5 +1,4 @@
-#ifndef __FINDER_PATTERN_H__
-#define __FINDER_PATTERN_H__
+#pragma once
 
 /*
  * Copyright 2007 ZXing authors All rights reserved.
@@ -49,5 +48,3 @@ public:
 } // namespace MicroQRCode
 
 } // namespace ZXing
-
-#endif // __FINDER_PATTERN_H__

@@ -1,5 +1,4 @@
-#ifndef __NOT_FOUND_EXCEPTION_H__
-#define __NOT_FOUND_EXCEPTION_H__
+#pragma once
 
 /*
  * Copyright 2017 KURZ Digital Solutions GmbH & Co. KG
@@ -29,5 +28,3 @@ public:
 };
 
 } // namespace ZXing
-
-#endif // __NOT_FOUND_EXCEPTION_H__

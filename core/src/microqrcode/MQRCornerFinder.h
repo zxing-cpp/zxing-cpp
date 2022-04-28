@@ -1,5 +1,4 @@
-#ifndef __CORNER_FINDER_H__
-#define __CORNER_FINDER_H__
+#pragma once
 
 /*
  * Copyright 2017 KURZ Digital Solutions GmbH & Co. KG
@@ -57,5 +56,3 @@ private:
 } // namespace MicroQRCode
 
 } // namespace ZXing
-
-#endif // __CORNER_FINDER_H__
