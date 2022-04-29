@@ -27,9 +27,7 @@
 #include "MQRFinderPatternFinder.h"
 #include "PerspectiveTransform.h"
 
-#include <algorithm> // vs12, std::min and std:max
-#include <cstdlib>
-#include <sstream>
+#include <algorithm>
 
 namespace ZXing::MicroQRCode {
 
