@@ -46,7 +46,6 @@ private:
 
 private: // methods
 	std::optional<FinderPattern> findBestPattern(const BitMatrix& image, DecodeHints const& hints);
-	std::vector<ResultPoint> getCodeEnclosingRect(const BitMatrix& image, const FinderPattern& actualPattern);
 	std::optional<FinderPatternInfo> generatePatternInfoForPattern(const BitMatrix& image,
 																   const FinderPattern& actualPattern);
 	float centerFromEnd(const std::vector<int>& stateCount, int end) const;

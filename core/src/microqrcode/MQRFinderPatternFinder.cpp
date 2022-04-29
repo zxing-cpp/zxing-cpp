@@ -59,7 +59,7 @@ std::vector<ResultPoint> FinderPatternFinder::findCorners(const BitMatrix& image
 	const auto bestPattern = findBestPattern(image, hints);
 	if (!bestPattern)
 		return {};
-	return getCodeEnclosingRect(image, *bestPattern);
+	return FindCorners(image, *bestPattern);
 }
 
 std::optional<FinderPatternInfo> FinderPatternFinder::findCenters(const BitMatrix& image, DecodeHints const& hints)
@@ -164,17 +164,10 @@ std::optional<FinderPattern> FinderPatternFinder::findBestPattern(const BitMatri
 	return selectBestPattern();
 }
 
-std::vector<ResultPoint> FinderPatternFinder::getCodeEnclosingRect(const BitMatrix& image,
-																   const FinderPattern& actualPattern)
-{
-	CornerFinder cornerFinder;
-	return cornerFinder.find(image, actualPattern);
-}
-
 std::optional<FinderPatternInfo> FinderPatternFinder::generatePatternInfoForPattern(const BitMatrix& image,
 																					const FinderPattern& actualPattern)
 {
-	std::vector<ResultPoint> results = getCodeEnclosingRect(image, actualPattern);
+	std::vector<ResultPoint> results = FindCorners(image, actualPattern);
 	if (results.empty())
 		return {};
 

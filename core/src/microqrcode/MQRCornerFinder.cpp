@@ -23,82 +23,12 @@ namespace ZXing::MicroQRCode {
 /**
  * Detects the corners of a Micro QR Code. It will start with getting the corners of the inner center
  * of the qr code eye. From there it calculates the midpoint of the qr code and searches for the code enclosing
- * rect with an increasing searcharea
+ * rect with an increasing search area.
  *
  * @author Christian Braun
  */
-CornerFinder::CornerFinder() {}
 
-/**
- *
- * @return the corners of the Micro QR Code. They will always be sorted like the Micro QR Code is in
- * normal position without any rotation. That means the corner closest to the center will always be at index 0
- * an the corner at the opposite site will always be at index 3 and so on.
- * If no corners are found an empty vector is returned.
- * @param image
- * @param center of the pattern.
- */
-std::vector<ResultPoint> CornerFinder::find(const BitMatrix& image, const FinderPattern& center) const
-{
-	ResultPoint direction = calculateDirection(image, center);
-	if (direction.x() == 0 || direction.y() == 0)
-		return {};
-
-	ResultPoint centerEnclosingRectA, centerEnclosingRectB, centerEnclosingRectC, centerEnclosingRectD;
-	if (!DetectWhiteRect(image, std::lround(center.getEstimatedModuleSize() * 4), std::lround(center.x()),
-						 std::lround(center.y()), centerEnclosingRectA, centerEnclosingRectB, centerEnclosingRectC,
-						 centerEnclosingRectD))
-		return {};
-
-	std::vector<ResultPoint> centerEnclosingRect = {centerEnclosingRectA, centerEnclosingRectB, centerEnclosingRectC,
-													centerEnclosingRectD};
-
-	ResultPoint midPoint = getMidpointOfCode(center, centerEnclosingRect, direction);
-
-	ResultPoint codeEnclosingRectA, codeEnclosingRectB, codeEnclosingRectC, codeEnclosingRectD;
-	if (!DetectWhiteRect(image, std::lround(center.getEstimatedModuleSize() * 5), std::lround(midPoint.x()),
-						 std::lround(midPoint.y()), codeEnclosingRectA, codeEnclosingRectB, codeEnclosingRectC,
-						 codeEnclosingRectD))
-		return {};
-
-	std::vector<ResultPoint> codeEnclosingRect = {codeEnclosingRectA, codeEnclosingRectB, codeEnclosingRectC,
-												  codeEnclosingRectD};
-
-	codeEnclosingRect = sortRectCorners(codeEnclosingRect, direction);
-	return defineCornersMorePrecisely(centerEnclosingRect, codeEnclosingRect, direction);
-}
-
-/**
- * Calculates the direction of a Micro Qr Code. For this purpose the method is using the center
- * of the code and tries to find out in which direction the quite zones are closest to the center
- * of the FinderPattern.
- *
- * @return Resultpoint with direction. The direction is given as a vector (1, 1) means the code
- * expands in positive x and positive y direction
- * @throws NotFoundException If there was a quitezone detected twice either in x or y direction
- */
-ResultPoint CornerFinder::calculateDirection(const BitMatrix& image, const FinderPattern& center) const
-{
-	int x = 0;
-	int y = 0;
-
-	if (!isQuietZoneDirection(image, center, 1, 0)) {
-		x += 1;
-	}
-	if (!isQuietZoneDirection(image, center, 0, 1)) {
-		y += 1;
-	}
-	if (!isQuietZoneDirection(image, center, -1, 0)) {
-		x += -1;
-	}
-	if (!isQuietZoneDirection(image, center, 0, -1)) {
-		y += -1;
-	}
-
-	return ResultPoint{x, y};
-}
-
-int CornerFinder::numberOfWhiteInKernel(const BitMatrix& image, int moduleSize, int x, int y) const
+static int numberOfWhiteInKernel(const BitMatrix& image, int moduleSize, int x, int y)
 {
 	const auto safePixelGet = [&image](const int x, const int y) {
 		if (x >= 0 && x < image.width() && y >= 0 && y < image.height())
@@ -127,7 +57,7 @@ int CornerFinder::numberOfWhiteInKernel(const BitMatrix& image, int moduleSize, 
 	return whiteModules;
 }
 
-bool CornerFinder::isQuietZoneDirection(const BitMatrix& image, const FinderPattern& center, int stepX, int stepY) const
+static bool isQuietZoneDirection(const BitMatrix& image, const FinderPattern& center, int stepX, int stepY)
 {
 	int numberOfSteps = 7;
 	int centerX = std::lround(center.x());
@@ -150,27 +80,38 @@ bool CornerFinder::isQuietZoneDirection(const BitMatrix& image, const FinderPatt
 	return false;
 }
 
-ResultPoint CornerFinder::getMidpointOfCode(const FinderPattern& center, const std::vector<ResultPoint>& centerRect,
-											const ResultPoint& direction) const
+/**
+ * Calculates the direction of a Micro Qr Code. For this purpose the method is using the center
+ * of the code and tries to find out in which direction the quite zones are closest to the center
+ * of the FinderPattern.
+ *
+ * @return Resultpoint with direction. The direction is given as a vector (1, 1) means the code
+ * expands in positive x and positive y direction
+ * @throws NotFoundException If there was a quitezone detected twice either in x or y direction
+ */
+static ResultPoint calculateDirection(const BitMatrix& image, const FinderPattern& center)
 {
-	const std::vector<ResultPoint> diagonal = getLineToBottomRightCorner(centerRect, direction);
-	const ResultPoint startCenter = diagonal[0];
-	const ResultPoint endCenter = diagonal[1];
-	// Where to set the midpoint on x axis
-	int modulesAwayFromCenterX = 12;
+	int x = 0;
+	int y = 0;
 
-	float delta = (endCenter.y() - startCenter.y()) / (endCenter.x() - startCenter.x());
-	float t = startCenter.y() - delta * startCenter.x();
+	if (!isQuietZoneDirection(image, center, 1, 0)) {
+		x += 1;
+	}
+	if (!isQuietZoneDirection(image, center, 0, 1)) {
+		y += 1;
+	}
+	if (!isQuietZoneDirection(image, center, -1, 0)) {
+		x += -1;
+	}
+	if (!isQuietZoneDirection(image, center, 0, -1)) {
+		y += -1;
+	}
 
-	float x = center.x() + direction.x() * modulesAwayFromCenterX * center.getEstimatedModuleSize();
-	float middleBetweenCornersX = (x + startCenter.x()) / 2;
-	float middleBetweenCornersY = delta * middleBetweenCornersX + t;
-
-	return ResultPoint{middleBetweenCornersX, middleBetweenCornersY};
+	return ResultPoint{x, y};
 }
 
-std::vector<ResultPoint> CornerFinder::getLineToBottomRightCorner(const std::vector<ResultPoint>& centerEnclosingRect,
-																  const ResultPoint& direction) const
+static std::vector<ResultPoint> getLineToBottomRightCorner(const std::vector<ResultPoint>& centerEnclosingRect,
+														   const ResultPoint& direction)
 {
 	ResultPoint startCenter;
 	ResultPoint endCenter;
@@ -192,32 +133,27 @@ std::vector<ResultPoint> CornerFinder::getLineToBottomRightCorner(const std::vec
 	return std::vector<ResultPoint>{startCenter, endCenter};
 }
 
-std::vector<ResultPoint> CornerFinder::defineCornersMorePrecisely(const std::vector<ResultPoint>& centerEnclosingRect,
-																  const std::vector<ResultPoint>& codeEnclosingRect,
-																  const ResultPoint& direction) const
+static ResultPoint getMidpointOfCode(const FinderPattern& center, const std::vector<ResultPoint>& centerRect,
+									 const ResultPoint& direction)
 {
-	ResultPoint start;
-	ResultPoint end = codeEnclosingRect[3];
+	const std::vector<ResultPoint> diagonal = getLineToBottomRightCorner(centerRect, direction);
+	const ResultPoint startCenter = diagonal[0];
+	const ResultPoint endCenter = diagonal[1];
+	// Where to set the midpoint on x axis
+	int modulesAwayFromCenterX = 12;
 
-	if (ResultPoint::Distance(std::lround(codeEnclosingRect[2].x()), std::lround(codeEnclosingRect[2].y()),
-							  std::lround(codeEnclosingRect[3].x()), std::lround(codeEnclosingRect[3].y())) >
-		ResultPoint::Distance(std::lround(codeEnclosingRect[1].x()), std::lround(codeEnclosingRect[1].y()),
-							  std::lround(codeEnclosingRect[3].x()), std::lround(codeEnclosingRect[3].y()))) {
-		start = codeEnclosingRect[1];
-	} else {
-		start = codeEnclosingRect[2];
-	}
+	float delta = (endCenter.y() - startCenter.y()) / (endCenter.x() - startCenter.x());
+	float t = startCenter.y() - delta * startCenter.x();
 
-	std::vector<ResultPoint> diagonalLine = getLineToBottomRightCorner(centerEnclosingRect, direction);
-	ResultPoint bottomRightCorner = calculateLineIntersection(diagonalLine[0], diagonalLine[1], start, end);
+	float x = center.x() + direction.x() * modulesAwayFromCenterX * center.getEstimatedModuleSize();
+	float middleBetweenCornersX = (x + startCenter.x()) / 2;
+	float middleBetweenCornersY = delta * middleBetweenCornersX + t;
 
-	// TODO: What?
-	//    codeEnclosingRect[3] = bottomRightCorner;
-	return codeEnclosingRect;
+	return ResultPoint{middleBetweenCornersX, middleBetweenCornersY};
 }
 
-ResultPoint CornerFinder::calculateLineIntersection(const ResultPoint& diagonalStart, const ResultPoint& diagonalEnd,
-													const ResultPoint& start, const ResultPoint& end) const
+static ResultPoint calculateLineIntersection(const ResultPoint& diagonalStart, const ResultPoint& diagonalEnd,
+											 const ResultPoint& start, const ResultPoint& end)
 {
 	const float deltaDiagonal = (diagonalEnd.y() - diagonalStart.y()) / (diagonalEnd.x() - diagonalStart.x());
 	const float delta = (end.y() - start.y()) / (end.x() - start.x());
@@ -240,8 +176,39 @@ ResultPoint CornerFinder::calculateLineIntersection(const ResultPoint& diagonalS
 	return ResultPoint{intersectionX, intersectionY};
 }
 
-std::vector<ResultPoint> CornerFinder::sortRectCorners(const std::vector<ResultPoint>& codeEnclosingRect,
-													   const ResultPoint& direction) const
+static std::vector<ResultPoint> defineCornersMorePrecisely(const std::vector<ResultPoint>& centerEnclosingRect,
+														   const std::vector<ResultPoint>& codeEnclosingRect,
+														   const ResultPoint& direction)
+{
+	ResultPoint start;
+	ResultPoint end = codeEnclosingRect[3];
+
+	if (ResultPoint::Distance(std::lround(codeEnclosingRect[2].x()), std::lround(codeEnclosingRect[2].y()),
+							  std::lround(codeEnclosingRect[3].x()), std::lround(codeEnclosingRect[3].y())) >
+		ResultPoint::Distance(std::lround(codeEnclosingRect[1].x()), std::lround(codeEnclosingRect[1].y()),
+							  std::lround(codeEnclosingRect[3].x()), std::lround(codeEnclosingRect[3].y()))) {
+		start = codeEnclosingRect[1];
+	} else {
+		start = codeEnclosingRect[2];
+	}
+
+	std::vector<ResultPoint> diagonalLine = getLineToBottomRightCorner(centerEnclosingRect, direction);
+	ResultPoint bottomRightCorner = calculateLineIntersection(diagonalLine[0], diagonalLine[1], start, end);
+
+	// TODO: What?
+	//    codeEnclosingRect[3] = bottomRightCorner;
+	return codeEnclosingRect;
+}
+
+static void swapPoints(std::vector<ResultPoint>& codeEnclosingRect, int source, int destination)
+{
+	ResultPoint temp = codeEnclosingRect[source];
+	codeEnclosingRect[source] = codeEnclosingRect[destination];
+	codeEnclosingRect[destination] = temp;
+}
+
+static std::vector<ResultPoint> sortRectCorners(const std::vector<ResultPoint>& codeEnclosingRect,
+												const ResultPoint& direction)
 {
 	auto sortedCorners = codeEnclosingRect;
 	if (direction.x() == 1 && direction.y() == 1) {
@@ -262,11 +229,42 @@ std::vector<ResultPoint> CornerFinder::sortRectCorners(const std::vector<ResultP
 	return sortedCorners;
 }
 
-void CornerFinder::swapPoints(std::vector<ResultPoint>& codeEnclosingRect, int source, int destination) const
+/**
+ * @return the corners of the Micro QR Code. They will always be sorted like the Micro QR Code is in
+ * normal position without any rotation. That means the corner closest to the center will always be at index 0
+ * an the corner at the opposite site will always be at index 3 and so on.
+ * If no corners are found an empty vector is returned.
+ * @param image
+ * @param center of the pattern.
+ */
+std::vector<ResultPoint> FindCorners(const BitMatrix& image, const FinderPattern& center)
 {
-	ResultPoint temp = codeEnclosingRect[source];
-	codeEnclosingRect[source] = codeEnclosingRect[destination];
-	codeEnclosingRect[destination] = temp;
+	ResultPoint direction = calculateDirection(image, center);
+	if (direction.x() == 0 || direction.y() == 0)
+		return {};
+
+	ResultPoint centerEnclosingRectA, centerEnclosingRectB, centerEnclosingRectC, centerEnclosingRectD;
+	if (!DetectWhiteRect(image, std::lround(center.getEstimatedModuleSize() * 4), std::lround(center.x()),
+						 std::lround(center.y()), centerEnclosingRectA, centerEnclosingRectB, centerEnclosingRectC,
+						 centerEnclosingRectD))
+		return {};
+
+	std::vector<ResultPoint> centerEnclosingRect = {centerEnclosingRectA, centerEnclosingRectB, centerEnclosingRectC,
+													centerEnclosingRectD};
+
+	ResultPoint midPoint = getMidpointOfCode(center, centerEnclosingRect, direction);
+
+	ResultPoint codeEnclosingRectA, codeEnclosingRectB, codeEnclosingRectC, codeEnclosingRectD;
+	if (!DetectWhiteRect(image, std::lround(center.getEstimatedModuleSize() * 5), std::lround(midPoint.x()),
+						 std::lround(midPoint.y()), codeEnclosingRectA, codeEnclosingRectB, codeEnclosingRectC,
+						 codeEnclosingRectD))
+		return {};
+
+	std::vector<ResultPoint> codeEnclosingRect = {codeEnclosingRectA, codeEnclosingRectB, codeEnclosingRectC,
+												  codeEnclosingRectD};
+
+	codeEnclosingRect = sortRectCorners(codeEnclosingRect, direction);
+	return defineCornersMorePrecisely(centerEnclosingRect, codeEnclosingRect, direction);
 }
 
 } // namespace ZXing::MicroQRCode

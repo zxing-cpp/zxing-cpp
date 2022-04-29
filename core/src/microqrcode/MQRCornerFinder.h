@@ -25,29 +25,10 @@ namespace ZXing {
 
 namespace MicroQRCode {
 
-class CornerFinder
-{
-public:
-	CornerFinder();
-	std::vector<ResultPoint> find(const BitMatrix& image, const FinderPattern& center) const;
-
-private:
-	ResultPoint calculateDirection(const BitMatrix& image, const FinderPattern& center) const;
-	int numberOfWhiteInKernel(const BitMatrix& image, int moduleSize, int x, int y) const;
-	bool isQuietZoneDirection(const BitMatrix& image, const FinderPattern& center, int stepX, int stepY) const;
-	ResultPoint getMidpointOfCode(const FinderPattern& center, const std::vector<ResultPoint>& centerRect,
-								  const ResultPoint& direction) const;
-	std::vector<ResultPoint> getLineToBottomRightCorner(const std::vector<ResultPoint>& centerEnclosingRect,
-														const ResultPoint& direction) const;
-	std::vector<ResultPoint> defineCornersMorePrecisely(const std::vector<ResultPoint>& centerEnclosingRect,
-														const std::vector<ResultPoint>& codeEnclosingRect,
-														const ResultPoint& direction) const;
-	ResultPoint calculateLineIntersection(const ResultPoint& diagonalStart, const ResultPoint& diagonalEnd,
-										  const ResultPoint& start, const ResultPoint& end) const;
-	std::vector<ResultPoint> sortRectCorners(const std::vector<ResultPoint>& codeEnclosingRect,
-											 const ResultPoint& direction) const;
-	void swapPoints(std::vector<ResultPoint>& codeEnclosingRect, int source, int destination) const;
-};
+/**
+ * @brief Finds the corners of micro QR code.
+ */
+std::vector<ResultPoint> FindCorners(const BitMatrix& image, const FinderPattern& center);
 
 } // namespace MicroQRCode
 

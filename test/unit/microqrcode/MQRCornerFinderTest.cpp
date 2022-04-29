@@ -64,8 +64,7 @@ TEST(MicroQRCornerFinderTest, FindCorners)
 	// Create expected center of finder pattern taking into account quiet zones (+2).
 	const FinderPattern patternPosition{(patternCenterX + 2) * moduleSize, (patternCenterX + 2) * moduleSize,
 										moduleSize};
-	const CornerFinder finder;
-	const auto corners = finder.find(scaledBitMatrix, patternPosition);
+	const auto corners = FindCorners(scaledBitMatrix, patternPosition);
 
 	ASSERT_EQ(4, corners.size());
 	ASSERT_NEAR(2 * moduleSize, corners[0].x(), moduleSize / 4);
@@ -90,8 +89,7 @@ TEST(MicroQRCornerFinderTest, FindNoCornersInEmptyBitMatrix)
 	// Create expected center of finder pattern taking into account quiet zones (+2).
 	const FinderPattern patternPosition{(patternCenterX + 2) * moduleSize, (patternCenterX + 2) * moduleSize,
 										moduleSize};
-	const CornerFinder finder;
-	const auto corners = finder.find(scaledBitMatrix, patternPosition);
+	const auto corners = FindCorners(scaledBitMatrix, patternPosition);
 
 	ASSERT_EQ(0, corners.size());
 }
@@ -107,8 +105,7 @@ TEST(MicroQRCornerFinderTest, FindNoCornersWithNoQuietZone)
 
 	// Create expected center of finder pattern.
 	const FinderPattern patternPosition{patternCenterX * moduleSize, patternCenterX * moduleSize, moduleSize};
-	const CornerFinder finder;
-	const auto corners = finder.find(scaledBitMatrix, patternPosition);
+	const auto corners = FindCorners(scaledBitMatrix, patternPosition);
 
 	ASSERT_EQ(0, corners.size());
 }
