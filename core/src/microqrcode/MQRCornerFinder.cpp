@@ -42,13 +42,13 @@ std::vector<ResultPoint> CornerFinder::find(const BitMatrix& image, const Finder
 {
 	ResultPoint direction = calculateDirection(image, center);
 	if (direction.x() == 0 || direction.y() == 0)
-		return std::vector<ResultPoint>{};
+		return {};
 
 	ResultPoint centerEnclosingRectA, centerEnclosingRectB, centerEnclosingRectC, centerEnclosingRectD;
 	if (!DetectWhiteRect(image, std::lround(center.getEstimatedModuleSize() * 4), std::lround(center.x()),
 						 std::lround(center.y()), centerEnclosingRectA, centerEnclosingRectB, centerEnclosingRectC,
 						 centerEnclosingRectD))
-		return std::vector<ResultPoint>{};
+		return {};
 
 	std::vector<ResultPoint> centerEnclosingRect = {centerEnclosingRectA, centerEnclosingRectB, centerEnclosingRectC,
 													centerEnclosingRectD};
@@ -59,7 +59,7 @@ std::vector<ResultPoint> CornerFinder::find(const BitMatrix& image, const Finder
 	if (!DetectWhiteRect(image, std::lround(center.getEstimatedModuleSize() * 5), std::lround(midPoint.x()),
 						 std::lround(midPoint.y()), codeEnclosingRectA, codeEnclosingRectB, codeEnclosingRectC,
 						 codeEnclosingRectD))
-		return std::vector<ResultPoint>{};
+		return {};
 
 	std::vector<ResultPoint> codeEnclosingRect = {codeEnclosingRectA, codeEnclosingRectB, codeEnclosingRectC,
 												  codeEnclosingRectD};
