@@ -70,7 +70,7 @@ ResultPoint FakeCenterCalculator::calculateNormalizedDeltas(const ResultPoint& s
 										   std::lroundf(destination.x()), std::lroundf(destination.y()));
 	float estimatedDimension = distance / moduleSize_;
 
-	dimension_ = ZXing::MicroQRCode::Dimension::computeRoundUp((int)std::round(estimatedDimension));
+	dimension_ = ZXing::MicroQRCode::Dimension::ComputeRoundUp((int)std::round(estimatedDimension));
 
 	float deltaX = destination.x() - source.x();
 	float deltaY = destination.y() - source.y();

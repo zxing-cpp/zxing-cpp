@@ -28,7 +28,7 @@ namespace ZXing::MicroQRCode {
  * @author Christian Braun
  */
 
-static int numberOfWhiteInKernel(const BitMatrix& image, int moduleSize, int x, int y)
+static int NumberOfWhiteInKernel(const BitMatrix& image, int moduleSize, int x, int y)
 {
 	const auto safePixelGet = [&image](const int x, const int y) {
 		if (x >= 0 && x < image.width() && y >= 0 && y < image.height())
@@ -57,7 +57,7 @@ static int numberOfWhiteInKernel(const BitMatrix& image, int moduleSize, int x, 
 	return whiteModules;
 }
 
-static bool isQuietZoneDirection(const BitMatrix& image, const FinderPattern& center, int stepX, int stepY)
+static bool IsQuietZoneDirection(const BitMatrix& image, const FinderPattern& center, int stepX, int stepY)
 {
 	int numberOfSteps = 7;
 	int centerX = std::lround(center.x());
@@ -70,11 +70,11 @@ static bool isQuietZoneDirection(const BitMatrix& image, const FinderPattern& ce
 	for (int i = 0; i <= numberOfSteps; ++i) {
 		int x = centerX + i * stepX * moduleSize;
 		int y = centerY + i * stepY * moduleSize;
-		if (firstStep && numberOfWhiteInKernel(image, moduleSize, x, y) >= 9) {
+		if (firstStep && NumberOfWhiteInKernel(image, moduleSize, x, y) >= 9) {
 			return true;
 		}
 
-		firstStep = numberOfWhiteInKernel(image, moduleSize, x, y) >= 5;
+		firstStep = NumberOfWhiteInKernel(image, moduleSize, x, y) >= 5;
 	}
 
 	return false;
@@ -89,28 +89,28 @@ static bool isQuietZoneDirection(const BitMatrix& image, const FinderPattern& ce
  * expands in positive x and positive y direction
  * @throws NotFoundException If there was a quitezone detected twice either in x or y direction
  */
-static ResultPoint calculateDirection(const BitMatrix& image, const FinderPattern& center)
+static ResultPoint CalculateDirection(const BitMatrix& image, const FinderPattern& center)
 {
 	int x = 0;
 	int y = 0;
 
-	if (!isQuietZoneDirection(image, center, 1, 0)) {
+	if (!IsQuietZoneDirection(image, center, 1, 0)) {
 		x += 1;
 	}
-	if (!isQuietZoneDirection(image, center, 0, 1)) {
+	if (!IsQuietZoneDirection(image, center, 0, 1)) {
 		y += 1;
 	}
-	if (!isQuietZoneDirection(image, center, -1, 0)) {
+	if (!IsQuietZoneDirection(image, center, -1, 0)) {
 		x += -1;
 	}
-	if (!isQuietZoneDirection(image, center, 0, -1)) {
+	if (!IsQuietZoneDirection(image, center, 0, -1)) {
 		y += -1;
 	}
 
 	return ResultPoint{x, y};
 }
 
-static std::vector<ResultPoint> getLineToBottomRightCorner(const std::vector<ResultPoint>& centerEnclosingRect,
+static std::vector<ResultPoint> GetLineToBottomRightCorner(const std::vector<ResultPoint>& centerEnclosingRect,
 														   const ResultPoint& direction)
 {
 	ResultPoint startCenter;
@@ -133,10 +133,10 @@ static std::vector<ResultPoint> getLineToBottomRightCorner(const std::vector<Res
 	return std::vector<ResultPoint>{startCenter, endCenter};
 }
 
-static ResultPoint getMidpointOfCode(const FinderPattern& center, const std::vector<ResultPoint>& centerRect,
+static ResultPoint GetMidpointOfCode(const FinderPattern& center, const std::vector<ResultPoint>& centerRect,
 									 const ResultPoint& direction)
 {
-	const std::vector<ResultPoint> diagonal = getLineToBottomRightCorner(centerRect, direction);
+	const std::vector<ResultPoint> diagonal = GetLineToBottomRightCorner(centerRect, direction);
 	const ResultPoint startCenter = diagonal[0];
 	const ResultPoint endCenter = diagonal[1];
 	// Where to set the midpoint on x axis
@@ -152,7 +152,7 @@ static ResultPoint getMidpointOfCode(const FinderPattern& center, const std::vec
 	return ResultPoint{middleBetweenCornersX, middleBetweenCornersY};
 }
 
-static ResultPoint calculateLineIntersection(const ResultPoint& diagonalStart, const ResultPoint& diagonalEnd,
+static ResultPoint CalculateLineIntersection(const ResultPoint& diagonalStart, const ResultPoint& diagonalEnd,
 											 const ResultPoint& start, const ResultPoint& end)
 {
 	const float deltaDiagonal = (diagonalEnd.y() - diagonalStart.y()) / (diagonalEnd.x() - diagonalStart.x());
@@ -176,7 +176,7 @@ static ResultPoint calculateLineIntersection(const ResultPoint& diagonalStart, c
 	return ResultPoint{intersectionX, intersectionY};
 }
 
-static std::vector<ResultPoint> defineCornersMorePrecisely(const std::vector<ResultPoint>& centerEnclosingRect,
+static std::vector<ResultPoint> DefineCornersMorePrecisely(const std::vector<ResultPoint>& centerEnclosingRect,
 														   const std::vector<ResultPoint>& codeEnclosingRect,
 														   const ResultPoint& direction)
 {
@@ -192,38 +192,38 @@ static std::vector<ResultPoint> defineCornersMorePrecisely(const std::vector<Res
 		start = codeEnclosingRect[2];
 	}
 
-	std::vector<ResultPoint> diagonalLine = getLineToBottomRightCorner(centerEnclosingRect, direction);
-	ResultPoint bottomRightCorner = calculateLineIntersection(diagonalLine[0], diagonalLine[1], start, end);
+	std::vector<ResultPoint> diagonalLine = GetLineToBottomRightCorner(centerEnclosingRect, direction);
+	ResultPoint bottomRightCorner = CalculateLineIntersection(diagonalLine[0], diagonalLine[1], start, end);
 
 	// TODO: What?
 	//    codeEnclosingRect[3] = bottomRightCorner;
 	return codeEnclosingRect;
 }
 
-static void swapPoints(std::vector<ResultPoint>& codeEnclosingRect, int source, int destination)
+static void SwapPoints(std::vector<ResultPoint>& codeEnclosingRect, int source, int destination)
 {
 	ResultPoint temp = codeEnclosingRect[source];
 	codeEnclosingRect[source] = codeEnclosingRect[destination];
 	codeEnclosingRect[destination] = temp;
 }
 
-static std::vector<ResultPoint> sortRectCorners(const std::vector<ResultPoint>& codeEnclosingRect,
+static std::vector<ResultPoint> SortRectCorners(const std::vector<ResultPoint>& codeEnclosingRect,
 												const ResultPoint& direction)
 {
 	auto sortedCorners = codeEnclosingRect;
 	if (direction.x() == 1 && direction.y() == 1) {
 		return sortedCorners;
 	} else if (direction.x() == -1 && direction.y() == -1) {
-		swapPoints(sortedCorners, 0, 3);
-		swapPoints(sortedCorners, 1, 2);
+		SwapPoints(sortedCorners, 0, 3);
+		SwapPoints(sortedCorners, 1, 2);
 	} else if (direction.x() == 1 && direction.y() == -1) {
-		swapPoints(sortedCorners, 0, 1);
-		swapPoints(sortedCorners, 2, 1);
-		swapPoints(sortedCorners, 3, 1);
+		SwapPoints(sortedCorners, 0, 1);
+		SwapPoints(sortedCorners, 2, 1);
+		SwapPoints(sortedCorners, 3, 1);
 	} else if (direction.x() == -1 && direction.y() == 1) {
-		swapPoints(sortedCorners, 2, 0);
-		swapPoints(sortedCorners, 2, 1);
-		swapPoints(sortedCorners, 3, 2);
+		SwapPoints(sortedCorners, 2, 0);
+		SwapPoints(sortedCorners, 2, 1);
+		SwapPoints(sortedCorners, 3, 2);
 	}
 
 	return sortedCorners;
@@ -239,7 +239,7 @@ static std::vector<ResultPoint> sortRectCorners(const std::vector<ResultPoint>& 
  */
 std::vector<ResultPoint> FindCorners(const BitMatrix& image, const FinderPattern& center)
 {
-	ResultPoint direction = calculateDirection(image, center);
+	ResultPoint direction = CalculateDirection(image, center);
 	if (direction.x() == 0 || direction.y() == 0)
 		return {};
 
@@ -252,7 +252,7 @@ std::vector<ResultPoint> FindCorners(const BitMatrix& image, const FinderPattern
 	std::vector<ResultPoint> centerEnclosingRect = {centerEnclosingRectA, centerEnclosingRectB, centerEnclosingRectC,
 													centerEnclosingRectD};
 
-	ResultPoint midPoint = getMidpointOfCode(center, centerEnclosingRect, direction);
+	ResultPoint midPoint = GetMidpointOfCode(center, centerEnclosingRect, direction);
 
 	ResultPoint codeEnclosingRectA, codeEnclosingRectB, codeEnclosingRectC, codeEnclosingRectD;
 	if (!DetectWhiteRect(image, std::lround(center.getEstimatedModuleSize() * 5), std::lround(midPoint.x()),
@@ -263,8 +263,8 @@ std::vector<ResultPoint> FindCorners(const BitMatrix& image, const FinderPattern
 	std::vector<ResultPoint> codeEnclosingRect = {codeEnclosingRectA, codeEnclosingRectB, codeEnclosingRectC,
 												  codeEnclosingRectD};
 
-	codeEnclosingRect = sortRectCorners(codeEnclosingRect, direction);
-	return defineCornersMorePrecisely(centerEnclosingRect, codeEnclosingRect, direction);
+	codeEnclosingRect = SortRectCorners(codeEnclosingRect, direction);
+	return DefineCornersMorePrecisely(centerEnclosingRect, codeEnclosingRect, direction);
 }
 
 } // namespace ZXing::MicroQRCode

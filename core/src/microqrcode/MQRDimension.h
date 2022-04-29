@@ -24,8 +24,8 @@ class Dimension
 {
 public:
 	Dimension() = delete;
-	static int computeRoundUp(int estimatedDimension);
-	static int computeRoundOff(int estimatedDimension);
+	static int ComputeRoundUp(int estimatedDimension);
+	static int ComputeRoundOff(int estimatedDimension);
 };
 
 } // namespace MicroQRCode

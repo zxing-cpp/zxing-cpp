@@ -23,7 +23,7 @@ namespace ZXing::MicroQRCode {
  * @param estimatedDimension The estimated dimension
  * @return The real dimension
  */
-int Dimension::computeRoundUp(int estimatedDimension)
+int Dimension::ComputeRoundUp(int estimatedDimension)
 {
 	if (estimatedDimension < 12) {
 		return 11;
@@ -41,7 +41,7 @@ int Dimension::computeRoundUp(int estimatedDimension)
  * @param estimatedDimension The estimated dimension
  * @return The real dimension
  */
-int Dimension::computeRoundOff(int estimatedDimension)
+int Dimension::ComputeRoundOff(int estimatedDimension)
 {
 	switch (estimatedDimension & 0x03) { // mod 4
 	case 0: estimatedDimension++; break;
