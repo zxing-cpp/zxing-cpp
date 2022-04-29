@@ -23,16 +23,7 @@
 
 #include <algorithm>
 
-using ZXing::MicroQRCode::CornerFinder;
-using ZXing::MicroQRCode::FakeCenterCalculator;
-using ZXing::MicroQRCode::FinderPattern;
-using ZXing::MicroQRCode::FinderPatternFinder;
-using ZXing::MicroQRCode::FinderPatternInfo;
-
-// VC++
-using ZXing::BitMatrix;
-using ZXing::DecodeHints;
-using ZXing::ResultPoint;
+namespace ZXing::MicroQRCode {
 
 namespace {
 
@@ -565,3 +556,5 @@ std::optional<FinderPattern> FinderPatternFinder::selectBestPattern()
 
 	return possibleCenters_[0];
 }
+
+} // namespace ZXing::MicroQRCode

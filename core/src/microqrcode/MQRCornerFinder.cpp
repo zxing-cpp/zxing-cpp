@@ -18,10 +18,7 @@
 
 #include "WhiteRectDetector.h"
 
-using ZXing::BitMatrix;
-using ZXing::ResultPoint;
-using ZXing::MicroQRCode::CornerFinder;
-using ZXing::MicroQRCode::FinderPattern;
+namespace ZXing::MicroQRCode {
 
 /**
  * Detects the corners of a Micro QR Code. It will start with getting the corners of the inner center
@@ -271,3 +268,5 @@ void CornerFinder::swapPoints(std::vector<ResultPoint>& codeEnclosingRect, int s
 	codeEnclosingRect[source] = codeEnclosingRect[destination];
 	codeEnclosingRect[destination] = temp;
 }
+
+} // namespace ZXing::MicroQRCode

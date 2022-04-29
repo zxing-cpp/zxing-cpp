@@ -15,7 +15,7 @@
  */
 #include "MQRDimension.h"
 
-using ZXing::MicroQRCode::Dimension;
+namespace ZXing::MicroQRCode {
 
 /**
  * Will try to compute dimension by choosing the bigger one if given dimension is on the border
@@ -49,3 +49,5 @@ int Dimension::computeRoundOff(int estimatedDimension)
 	}
 	return estimatedDimension;
 }
+
+} // namespace ZXing::MicroQRCode

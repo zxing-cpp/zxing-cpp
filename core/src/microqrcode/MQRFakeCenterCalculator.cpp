@@ -27,9 +27,7 @@
 
 #include "MQRDimension.h"
 
-using ZXing::ResultPoint;
-using ZXing::MicroQRCode::FakeCenterCalculator;
-using ZXing::MicroQRCode::FinderPattern;
+namespace ZXing::MicroQRCode {
 
 /**
  *
@@ -82,3 +80,5 @@ ResultPoint FakeCenterCalculator::calculateNormalizedDeltas(const ResultPoint& s
 
 	return ResultPoint{normalizedDeltaX, normalizedDeltaY};
 }
+
+} // namespace ZXing::MicroQRCode

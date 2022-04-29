@@ -16,7 +16,7 @@
 
 #include "MQRFinderPattern.h"
 
-using ZXing::MicroQRCode::FinderPattern;
+namespace ZXing::MicroQRCode {
 
 FinderPattern::FinderPattern(float posX, float posY, float estimatedModuleSize)
 	: ResultPoint(posX, posY), estimatedModuleSize_(estimatedModuleSize), count_(1)
@@ -75,3 +75,5 @@ FinderPattern FinderPattern::combineEstimate(float i, float j, float newModuleSi
 	float combinedModuleSize = (count_ * getEstimatedModuleSize() + newModuleSize) / combinedCount;
 	return FinderPattern{combinedX, combinedY, combinedModuleSize, combinedCount};
 }
+
+} // namespace ZXing::MicroQRCode

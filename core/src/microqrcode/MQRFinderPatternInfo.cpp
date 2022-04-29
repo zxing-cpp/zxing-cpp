@@ -17,9 +17,7 @@
 
 #include "MQRFinderPatternInfo.h"
 
-namespace ZXing {
-
-namespace MicroQRCode {
+namespace ZXing::MicroQRCode {
 
 FinderPatternInfo::FinderPatternInfo(const std::vector<FinderPattern>& patternCenters)
 	: actualTopLeft_(patternCenters[0]), fakeTopRight_(patternCenters[1]), fakeBottomLeft_(patternCenters[2])
@@ -40,6 +38,4 @@ FinderPattern FinderPatternInfo::getFakeBottomLeft() const
 	return fakeBottomLeft_;
 }
 
-} // namespace MicroQRCode
-
-} // namespace ZXing
+} // namespace ZXing::MicroQRCode

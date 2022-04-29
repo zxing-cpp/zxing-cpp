@@ -31,14 +31,6 @@
 #include <cstdlib>
 #include <sstream>
 
-using ZXing::BitMatrix;
-using ZXing::DecodeHints;
-using ZXing::DetectorResult;
-using ZXing::PerspectiveTransform;
-using ZXing::PointF;
-using ZXing::QuadrilateralF;
-using ZXing::ResultPoint;
-
 namespace ZXing::MicroQRCode {
 
 DetectorResult DetectPure(const BitMatrix& image)
