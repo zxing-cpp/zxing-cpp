@@ -179,7 +179,7 @@ int ComputeDimension(const ResultPoint& topLeft, const ResultPoint& topRight, co
 	// corner of the code.
 	int estimatedDimension = std::lround(((tltrCentersDimension + tlblCentersDimension) / 2.0f) + 7);
 
-	return Dimension::ComputeRoundOff(estimatedDimension);
+	return RoundOffDimension(estimatedDimension);
 }
 
 /**
@@ -198,7 +198,7 @@ int ComputeDimension(const std::vector<ResultPoint>& codeEnclosingRect, float mo
 		moduleSize;
 	int estimatedDimension = std::lround((tltrDimension + tlblDimension) / 2.0f);
 
-	return Dimension::ComputeRoundUp(estimatedDimension);
+	return RoundUpDimension(estimatedDimension);
 }
 
 /**

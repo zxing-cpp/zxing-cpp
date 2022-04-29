@@ -23,21 +23,21 @@ using namespace ZXing::MicroQRCode;
 
 TEST(MicroQRDimensionTest, ComputeRoundUp)
 {
-	ASSERT_EQ(11, Dimension::ComputeRoundUp(-1));
-	ASSERT_EQ(11, Dimension::ComputeRoundUp(11));
-	ASSERT_EQ(13, Dimension::ComputeRoundUp(12));
-	ASSERT_EQ(13, Dimension::ComputeRoundUp(13));
-	ASSERT_EQ(15, Dimension::ComputeRoundUp(14));
-	ASSERT_EQ(15, Dimension::ComputeRoundUp(15));
-	ASSERT_EQ(17, Dimension::ComputeRoundUp(16));
-	ASSERT_EQ(17, Dimension::ComputeRoundUp(20));
+	ASSERT_EQ(11, RoundUpDimension(-1));
+	ASSERT_EQ(11, RoundUpDimension(11));
+	ASSERT_EQ(13, RoundUpDimension(12));
+	ASSERT_EQ(13, RoundUpDimension(13));
+	ASSERT_EQ(15, RoundUpDimension(14));
+	ASSERT_EQ(15, RoundUpDimension(15));
+	ASSERT_EQ(17, RoundUpDimension(16));
+	ASSERT_EQ(17, RoundUpDimension(20));
 }
 
 TEST(MicroQRDimensionTest, ComputeRoundOff)
 {
-	ASSERT_EQ(11, Dimension::ComputeRoundOff(11));
-	ASSERT_EQ(13, Dimension::ComputeRoundOff(12));
-	ASSERT_EQ(13, Dimension::ComputeRoundOff(13));
-	ASSERT_EQ(13, Dimension::ComputeRoundOff(14));
-	ASSERT_EQ(15, Dimension::ComputeRoundOff(15));
+	ASSERT_EQ(11, RoundOffDimension(11));
+	ASSERT_EQ(13, RoundOffDimension(12));
+	ASSERT_EQ(13, RoundOffDimension(13));
+	ASSERT_EQ(13, RoundOffDimension(14));
+	ASSERT_EQ(15, RoundOffDimension(15));
 }

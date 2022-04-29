@@ -215,7 +215,6 @@ if (BUILD_READERS)
         src/microqrcode/MQRDetector.h
         src/microqrcode/MQRDetector.cpp
         src/microqrcode/MQRDimension.h
-        src/microqrcode/MQRDimension.cpp
         src/microqrcode/MQRFakeCenterCalculator.h
         src/microqrcode/MQRFakeCenterCalculator.cpp
         src/microqrcode/MQRFinderPattern.h

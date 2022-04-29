@@ -20,13 +20,38 @@ namespace ZXing {
 
 namespace MicroQRCode {
 
-class Dimension
+/**
+ * Will try to compute dimension by choosing the bigger one if given dimension is on the border
+ * between two dimensions
+ * @param estimatedDimension The estimated dimension
+ * @return The real dimension
+ */
+static int RoundUpDimension(int estimatedDimension)
 {
-public:
-	Dimension() = delete;
-	static int ComputeRoundUp(int estimatedDimension);
-	static int ComputeRoundOff(int estimatedDimension);
-};
+	if (estimatedDimension < 12) {
+		return 11;
+	} else if (estimatedDimension >= 12 && estimatedDimension < 14) {
+		return 13;
+	} else if (estimatedDimension >= 14 && estimatedDimension < 16) {
+		return 15;
+	}
+	return 17;
+}
+
+/**
+ * Will try to compute dimension by choosing the smaller one if given dimension is on the border
+ * between two dimensions
+ * @param estimatedDimension The estimated dimension
+ * @return The real dimension
+ */
+static int RoundOffDimension(int estimatedDimension)
+{
+	switch (estimatedDimension & 0x03) { // mod 4
+	case 0: estimatedDimension++; break;
+	case 2: estimatedDimension--; break;
+	}
+	return estimatedDimension;
+}
 
 } // namespace MicroQRCode
 
