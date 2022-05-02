@@ -39,6 +39,7 @@ ReadResult readBarcodeFromImage(int bufferPtr, int bufferLength, bool tryHarder,
 		DecodeHints hints;
 		hints.setTryHarder(tryHarder);
 		hints.setTryRotate(tryHarder);
+		hints.setTryDownscale(tryHarder);
 		hints.setFormats(BarcodeFormatsFromString(format));
 
 		int width, height, channels;
@@ -71,6 +72,7 @@ ReadResult readBarcodeFromPixmap(int bufferPtr, int imgWidth, int imgHeight, boo
 		DecodeHints hints;
 		hints.setTryHarder(tryHarder);
 		hints.setTryRotate(tryHarder);
+		hints.setTryDownscale(tryHarder);
 		hints.setFormats(BarcodeFormatsFromString(format));
 
 		auto result =
