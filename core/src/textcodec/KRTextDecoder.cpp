@@ -1029,7 +1029,7 @@ KRTextDecoder::AppendEucKr(std::vector<uint16_t>& result, const uint8_t* bytes, 
 {
 	uint8_t buf[2] = { 0, 0 };
 	int nbuf = 0;
-	int invalid = 0;
+//	int invalid = 0;
 
 	for (size_t i = 0; i<length; i++) {
 		uint8_t ch = bytes[i];
@@ -1051,7 +1051,7 @@ KRTextDecoder::AppendEucKr(std::vector<uint16_t>& result, const uint8_t* bytes, 
 			else {
 				// Invalid
 				result.push_back(REPLACEMENT);
-				++invalid;
+//				++invalid;
 			}
 			break;
 		case 1:
@@ -1072,7 +1072,7 @@ KRTextDecoder::AppendEucKr(std::vector<uint16_t>& result, const uint8_t* bytes, 
 					column = ch - 0x81 + 52;
 				else {
 					result.push_back(REPLACEMENT);
-					++invalid;
+//					++invalid;
 					break;
 				}
 
@@ -1084,7 +1084,7 @@ KRTextDecoder::AppendEucKr(std::vector<uint16_t>& result, const uint8_t* bytes, 
 				// check whether the conversion avialble in the table.
 				if (internal_code < 0 || internal_code >= 8822) {
 					result.push_back(REPLACEMENT);
-					++invalid;
+//					++invalid;
 					break;
 				}
 				else

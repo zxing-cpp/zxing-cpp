@@ -3433,7 +3433,7 @@ GBTextDecoder::AppendGB18030(std::vector<uint16_t>& result, const uint8_t* bytes
 {
 	uint8_t buf[4];
 	int nbuf = 0;
-	int invalid = 0;
+//	int invalid = 0;
 
 	result.resize(length);
 	int unicodeLen = 0;
@@ -3454,7 +3454,7 @@ GBTextDecoder::AppendGB18030(std::vector<uint16_t>& result, const uint8_t* bytes
 			else {
 				// Invalid
 				result[unicodeLen++] = REPLACEMENT;
-				++invalid;
+//				++invalid;
 			}
 			break;
 		case 1:
@@ -3468,7 +3468,7 @@ GBTextDecoder::AppendGB18030(std::vector<uint16_t>& result, const uint8_t* bytes
 				}
 				else {
 					result[unicodeLen++] = REPLACEMENT;
-					++invalid;
+//					++invalid;
 				}
 				nbuf = 0;
 			}
@@ -3479,7 +3479,7 @@ GBTextDecoder::AppendGB18030(std::vector<uint16_t>& result, const uint8_t* bytes
 			else {
 				// Error
 				result[unicodeLen++] = REPLACEMENT;
-				++invalid;
+//				++invalid;
 				nbuf = 0;
 			}
 			break;
@@ -3491,7 +3491,7 @@ GBTextDecoder::AppendGB18030(std::vector<uint16_t>& result, const uint8_t* bytes
 			}
 			else {
 				result[unicodeLen++] = REPLACEMENT;
-				++invalid;
+//				++invalid;
 				nbuf = 0;
 			}
 			break;
@@ -3506,12 +3506,12 @@ GBTextDecoder::AppendGB18030(std::vector<uint16_t>& result, const uint8_t* bytes
 				}
 				else {
 					result[unicodeLen++] = REPLACEMENT;
-					++invalid;
+//					++invalid;
 				}
 			}
 			else {
 				result[unicodeLen++] = REPLACEMENT;
-				++invalid;
+//				++invalid;
 			}
 			nbuf = 0;
 			break;
@@ -3525,7 +3525,7 @@ GBTextDecoder::AppendGB2312(std::vector<uint16_t>& result, const uint8_t* bytes,
 {
 	uint8_t buf[2];
 	int nbuf = 0;
-	int invalid = 0;
+//	int invalid = 0;
 
 	result.resize(length);
 	int unicodeLen = 0;
@@ -3545,7 +3545,7 @@ GBTextDecoder::AppendGB2312(std::vector<uint16_t>& result, const uint8_t* bytes,
 			else {
 				// Invalid
 				result[unicodeLen++] = REPLACEMENT;
-				++invalid;
+//				++invalid;
 			}
 			break;
 		case 1:
@@ -3559,14 +3559,14 @@ GBTextDecoder::AppendGB2312(std::vector<uint16_t>& result, const uint8_t* bytes,
 				}
 				else {
 					result[unicodeLen++] = REPLACEMENT;
-					++invalid;
+//					++invalid;
 				}
 				nbuf = 0;
 			}
 			else {
 				// Error
 				result[unicodeLen++] = REPLACEMENT;
-				++invalid;
+//				++invalid;
 				nbuf = 0;
 			}
 			break;
