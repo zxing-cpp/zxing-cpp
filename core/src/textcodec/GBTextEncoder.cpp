@@ -3977,7 +3977,7 @@ void GBTextEncoder::EncodeGB18030(const std::wstring& str, std::string& bytes)
 {
 	static const char replacement = '?';
 	unsigned high = 0;
-	int invalid = 0;
+//	int invalid = 0;
 
 	bytes.resize(4 * str.length() + 1);
 	int index = 0;
@@ -3998,14 +3998,14 @@ void GBTextEncoder::EncodeGB18030(const std::wstring& str, std::string& bytes)
 				}
 				else {
 					bytes[index++] = replacement;
-					++invalid;
+//					++invalid;
 				}
 				high = 0;
 				continue;
 			}
 			else {
 				bytes[index++] = replacement;
-				++invalid;
+//				++invalid;
 				high = 0;
 			}
 		}
@@ -4026,7 +4026,7 @@ void GBTextEncoder::EncodeGB18030(const std::wstring& str, std::string& bytes)
 		else {
 			// Error
 			bytes[index++] = replacement;
-			++invalid;
+//			++invalid;
 		}
 	}
 	bytes.resize(index);
