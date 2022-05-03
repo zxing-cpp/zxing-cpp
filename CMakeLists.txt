@@ -109,7 +109,7 @@ if (NOT DEFINED INSTALLDIR)
     get_filename_component(INSTALLDIR ${INSTALLDIR} ABSOLUTE)
 endif()
 
-IF (NOT WIN32)
+IF (NOT WIN32 OR MINGW)
     configure_file(zxing.pc.in zxing.pc @ONLY)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/zxing.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 ENDIF()
