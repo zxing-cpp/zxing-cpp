@@ -53,7 +53,7 @@ dependencies {
     implementation 'androidx.camera:camera-view:1.0.0-alpha32'
 
     // Java 'upstream' version of zxing (to compare performance)
-    implementation 'com.google.zxing:core:3.4.1'
+    implementation 'com.google.zxing:core:3.5.0'
 
     implementation project(':zxingcpp')
 }
