@@ -90,7 +90,7 @@ Results MultiFormatReader::readMultiple(const BinaryBitmap& image, int maxSymbol
 	std::sort(res.begin(), res.end(), [](const Result& l, const Result& r) {
 		auto lp = l.position().topLeft();
 		auto rp = r.position().topLeft();
-		return lp.y < rp.y || (lp.y == rp.y && lp.x <= rp.x);
+		return lp.y < rp.y || (lp.y == rp.y && lp.x < rp.x);
 	});
 
 	return res;
