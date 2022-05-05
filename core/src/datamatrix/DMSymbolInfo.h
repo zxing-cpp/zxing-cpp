@@ -33,10 +33,10 @@ class SymbolInfo
 	int _rsBlockError;
 
 public:
-	SymbolInfo(bool rectangular, int dataCapacity, int errorCodewords, int matrixWidth, int matrixHeight, int dataRegions) :
+	constexpr SymbolInfo(bool rectangular, int dataCapacity, int errorCodewords, int matrixWidth, int matrixHeight, int dataRegions) :
 		SymbolInfo(rectangular, dataCapacity, errorCodewords, matrixWidth, matrixHeight, dataRegions, dataCapacity, errorCodewords) {}
 
-	SymbolInfo(bool rectangular, int dataCapacity, int errorCodewords, int matrixWidth, int matrixHeight, int dataRegions, int rsBlockData, int rsBlockError) :
+	constexpr SymbolInfo(bool rectangular, int dataCapacity, int errorCodewords, int matrixWidth, int matrixHeight, int dataRegions, int rsBlockData, int rsBlockError) :
 		_rectangular(rectangular), _dataCapacity(dataCapacity), _errorCodewords(errorCodewords),
 		_matrixWidth(matrixWidth), _matrixHeight(matrixHeight), _dataRegions(dataRegions),
 		_rsBlockData(rsBlockData), _rsBlockError(rsBlockError)
