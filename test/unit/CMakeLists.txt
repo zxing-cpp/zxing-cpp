@@ -49,6 +49,7 @@ add_executable (UnitTest
 	qrcode/MQRDataMaskTest.cpp
     qrcode/MQRDetectorTest.cpp
     qrcode/MQRDimensionTest.cpp
+	qrcode/MQRErrorCorrectionLevelTest.cpp
     qrcode/MQRFinderPatternFinderTest.cpp
     qrcode/MQRFinderPatternTest.cpp
     qrcode/QRDataMaskTest.cpp

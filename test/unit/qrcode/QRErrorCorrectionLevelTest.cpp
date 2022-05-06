@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-#include "qrcode/QRErrorCorrectionLevel.h"
+#include "qrcode/QRErrorCorrectionLevelFactory.h"
 
 #include "gtest/gtest.h"
 

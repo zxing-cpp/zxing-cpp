@@ -16,26 +16,22 @@
  * limitations under the License.
  */
 
+#include "QRErrorCorrectionLevel.h"
+
 namespace ZXing {
-namespace QRCode {
+namespace MicroQRCode {
 
-/**
- * <p>See ISO 18004:2006, 6.5.1. This enum encapsulates the four error correction levels
- * defined by the QR code standard.</p>
- *
- * @author Sean Owen
- */
-enum class ErrorCorrectionLevel
+static QRCode::ErrorCorrectionLevel ECLevelFromBits(int bits)
 {
-	Low,     // L = ~7 % correction
-	Medium,  // M = ~15% correction
-	Quality, // Q = ~25% correction
-	High,    // H = ~30% correction
-	Invalid, // denotes in invalid/unknown value
-};
+	using namespace ZXing::QRCode;
 
-const wchar_t* ToString(ErrorCorrectionLevel l);
-ErrorCorrectionLevel ECLevelFromString(const char* str);
+	static constexpr ErrorCorrectionLevel LEVEL_FOR_BITS[] = {
+		ErrorCorrectionLevel::Low,    ErrorCorrectionLevel::Low,    ErrorCorrectionLevel::Medium,
+		ErrorCorrectionLevel::Low,    ErrorCorrectionLevel::Medium, ErrorCorrectionLevel::Low,
+		ErrorCorrectionLevel::Medium, ErrorCorrectionLevel::Quality};
+	return LEVEL_FOR_BITS[bits & 0x07];
+}
 
-} // namespace QRCode
+} // namespace MicroQRCode
+
 } // namespace ZXing
