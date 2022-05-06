@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "microqrcode/MQRDetector.h"
+#include "qrcode/MQRDetector.h"
 
 #include "BitMatrixIO.h"
 #include "DecodeHints.h"

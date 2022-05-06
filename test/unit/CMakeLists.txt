@@ -30,11 +30,6 @@ add_executable (UnitTest
     datamatrix/DMSymbolInfoTest.cpp
     datamatrix/DMWriterTest.cpp
     maxicode/MCDecoderTest.cpp
-    microqrcode/MQRCornerFinderTest.cpp
-    microqrcode/MQRDetectorTest.cpp
-    microqrcode/MQRDimensionTest.cpp
-    microqrcode/MQRFinderPatternFinderTest.cpp
-    microqrcode/MQRFinderPatternTest.cpp
     oned/ODCodaBarWriterTest.cpp
     oned/ODCode39ExtendedModeTest.cpp
     oned/ODCode39ReaderTest.cpp
@@ -50,6 +45,11 @@ add_executable (UnitTest
     oned/ODUPCEWriterTest.cpp
     oned/rss/ODRSSExpandedBinaryDecoderTest.cpp
     oned/rss/ODRSSFieldParserTest.cpp
+	qrcode/MQRCornerFinderTest.cpp
+    qrcode/MQRDetectorTest.cpp
+    qrcode/MQRDimensionTest.cpp
+    qrcode/MQRFinderPatternFinderTest.cpp
+    qrcode/MQRFinderPatternTest.cpp
     qrcode/QRDataMaskTest.cpp
     qrcode/QRDecodedBitStreamParserTest.cpp
     qrcode/QREncoderTest.cpp
