@@ -49,31 +49,38 @@ enum class EanAddOnSymbol : unsigned char // see above
 
 class DecodeHints
 {
-	bool _tryHarder : 1;
-	bool _tryRotate : 1;
-	bool _tryDownscale : 1;
-	bool _isPure : 1;
-	bool _tryCode39ExtendedMode : 1;
-	bool _validateCode39CheckSum : 1;
-	bool _validateITFCheckSum : 1;
-	bool _returnCodabarStartEnd : 1;
-	Binarizer _binarizer : 2;
+	bool _tryHarder                : 1;
+	bool _tryRotate                : 1;
+	bool _tryDownscale             : 1;
+	bool _isPure                   : 1;
+	bool _tryCode39ExtendedMode    : 1;
+	bool _validateCode39CheckSum   : 1;
+	bool _validateITFCheckSum      : 1;
+	bool _returnCodabarStartEnd    : 1;
+	Binarizer _binarizer           : 2;
 	EanAddOnSymbol _eanAddOnSymbol : 2;
 
 	std::string _characterSet;
 	std::vector<int> _allowedLengths;
-	BarcodeFormats _formats = BarcodeFormat::None;
+	BarcodeFormats _formats      = BarcodeFormat::None;
 	uint16_t _downscaleThreshold = 500;
-	uint8_t _downscaleFactor = 3;
-	uint8_t _minLineCount = 2;
-	uint8_t _maxNumberOfSymbols = 0xff;
+	uint8_t _downscaleFactor     = 3;
+	uint8_t _minLineCount        = 2;
+	uint8_t _maxNumberOfSymbols  = 0xff;
 
 public:
 	// bitfields don't get default initialized to 0.
 	DecodeHints()
-		: _tryHarder(1), _tryRotate(1), _tryDownscale(1), _isPure(0), _tryCode39ExtendedMode(0),
-		  _validateCode39CheckSum(0), _validateITFCheckSum(0), _returnCodabarStartEnd(0),
-		  _binarizer(Binarizer::LocalAverage), _eanAddOnSymbol(EanAddOnSymbol::Ignore)
+		: _tryHarder(1),
+		  _tryRotate(1),
+		  _tryDownscale(1),
+		  _isPure(0),
+		  _tryCode39ExtendedMode(0),
+		  _validateCode39CheckSum(0),
+		  _validateITFCheckSum(0),
+		  _returnCodabarStartEnd(0),
+		  _binarizer(Binarizer::LocalAverage),
+		  _eanAddOnSymbol(EanAddOnSymbol::Ignore)
 	{}
 
 #define ZX_PROPERTY(TYPE, GETTER, SETTER) \

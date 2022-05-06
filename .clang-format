@@ -8,22 +8,26 @@ TabWidth: 4
 UseTab: ForContinuationAndIndentation # ForIndentation
 
 AccessModifierOffset: -4
-BreakBeforeBraces: Mozilla
-ColumnLimit: 120
+ColumnLimit: 135
 
 #AlignConsecutiveAssignments: true
+AlignConsecutiveBitFields: true
 AlignEscapedNewlines: DontAlign
 AlignTrailingComments: true
-AllowShortCaseLabelsOnASingleLine: true
 
+AllowShortCaseLabelsOnASingleLine: true
 AllowShortFunctionsOnASingleLine: Inline
 #AllowShortLambdasOnASingleLine: Inline
+AllowShortEnumsOnASingleLine: true
+AllowAllArgumentsOnNextLine: true
+AllowAllParametersOfDeclarationOnNextLine: true
 
 AlwaysBreakAfterDefinitionReturnType: None
 AlwaysBreakTemplateDeclarations: Yes
 BreakBeforeBraces: Mozilla
+BreakBeforeBinaryOperators: NonAssignment
 BreakBeforeTernaryOperators: true
-ConstructorInitializerAllOnOneLineOrOnePerLine: false
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
 FixNamespaceComments: true
 IncludeBlocks: Regroup
 KeepEmptyLinesAtTheStartOfBlocks: false

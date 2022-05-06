@@ -24,7 +24,7 @@ namespace ZXing::QRCode {
 const wchar_t* ToString(ErrorCorrectionLevel l)
 {
 	assert(l != ErrorCorrectionLevel::Invalid);
-	static const wchar_t* const LEVEL_STR[] = { L"L", L"M", L"Q", L"H", nullptr };
+	static const wchar_t* const LEVEL_STR[] = {L"L", L"M", L"Q", L"H", nullptr};
 	return LEVEL_STR[static_cast<int>(l)];
 }
 
@@ -35,20 +35,21 @@ ErrorCorrectionLevel ECLevelFromString(const char* str)
 	case 'M': return ErrorCorrectionLevel::Medium;
 	case 'Q': return ErrorCorrectionLevel::Quality;
 	case 'H': return ErrorCorrectionLevel::High;
-	default: return ErrorCorrectionLevel::Invalid;
+	default:  return ErrorCorrectionLevel::Invalid;
 	}
 }
 
 ErrorCorrectionLevel ECLevelFromBits(int bits)
 {
-	static const ErrorCorrectionLevel LEVEL_FOR_BITS[] = { ErrorCorrectionLevel::Medium, ErrorCorrectionLevel::Low, ErrorCorrectionLevel::High, ErrorCorrectionLevel::Quality };
+	static const ErrorCorrectionLevel LEVEL_FOR_BITS[] = {ErrorCorrectionLevel::Medium, ErrorCorrectionLevel::Low,
+														  ErrorCorrectionLevel::High, ErrorCorrectionLevel::Quality};
 	return LEVEL_FOR_BITS[bits & 0x3];
 }
 
 int BitsFromECLevel(ErrorCorrectionLevel l)
 {
 	assert(l != ErrorCorrectionLevel::Invalid);
-	static const int BITS[] = { 1, 0, 3, 2, -1 };
+	static const int BITS[] = {1, 0, 3, 2, -1};
 	return BITS[(int)l];
 }
 

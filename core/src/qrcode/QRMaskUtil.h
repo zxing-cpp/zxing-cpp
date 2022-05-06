@@ -21,7 +21,9 @@
 namespace ZXing {
 namespace QRCode {
 namespace MaskUtil {
-	int CalculateMaskPenalty(const TritMatrix& matrix);
-}
-} // QRCode
-} // ZXing
+
+int CalculateMaskPenalty(const TritMatrix& matrix);
+
+} // namespace MaskUtil
+} // namespace QRCode
+} // namespace ZXing

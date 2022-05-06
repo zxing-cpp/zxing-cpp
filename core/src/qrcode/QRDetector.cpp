@@ -134,8 +134,7 @@ static FinderPatternSets GenerateFinderPatternSets(std::vector<ConcentricPattern
 				}
 
 				// Estimate the module count and ignore this set if it can not result in a valid decoding
-				if (auto moduleCount =
-						(std::sqrt(distAB) + std::sqrt(distBC)) / (2 * (a->size + b->size + c->size) / (3 * 7.f)) + 7;
+				if (auto moduleCount = (std::sqrt(distAB) + std::sqrt(distBC)) / (2 * (a->size + b->size + c->size) / (3 * 7.f)) + 7;
 					moduleCount < 21 * 0.9 || moduleCount > 177 * 1.05)
 					continue;
 
@@ -303,8 +302,7 @@ DetectorResult SampleAtFinderPatternSet(const BitMatrix& image, const FinderPatt
 				// if we did not land on a black pixel or the concentric pattern finder fails,
 				// leave the intersection of the lines as the best guess
 				if (image.get(brCoR)) {
-					if (auto brCP =
-							LocateConcentricPattern<true>(image, FixedPattern<3, 3>{1, 1, 1}, brCoR, moduleSize * 3))
+					if (auto brCP = LocateConcentricPattern<true>(image, FixedPattern<3, 3>{1, 1, 1}, brCoR, moduleSize * 3))
 						return sample(*brCP, quad[2] - PointF(3, 3));
 				}
 			}

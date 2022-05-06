@@ -423,7 +423,7 @@ using ModuleBitCountType = std::array<int, CodewordDecoder::BARS_IN_MODULE>;
 
 static const RatioTableType& GetRatioTable()
 {
-	static constexpr RatioTableType table{[]() constexpr {
+	static constexpr RatioTableType table = []() constexpr {
 		RatioTableType table{};
 		for (int i = 0; i < SYMBOL_COUNT; i++) {
 			int currentSymbol = SYMBOL_TABLE[i];
@@ -439,7 +439,7 @@ static const RatioTableType& GetRatioTable()
 			}
 		}
 		return table;
-	}()};
+	}();
 
 	return table;
 }

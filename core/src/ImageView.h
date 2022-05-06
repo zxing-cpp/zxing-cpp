@@ -67,8 +67,12 @@ public:
 	 * @param pixStride  optional pixel stride in bytes, default is calculated from format
 	 */
 	ImageView(const uint8_t* data, int width, int height, ImageFormat format, int rowStride = 0, int pixStride = 0)
-		: _data(data), _format(format), _width(width), _height(height),
-		  _pixStride(pixStride ? pixStride : PixStride(format)), _rowStride(rowStride ? rowStride : width * _pixStride)
+		: _data(data),
+		  _format(format),
+		  _width(width),
+		  _height(height),
+		  _pixStride(pixStride ? pixStride : PixStride(format)),
+		  _rowStride(rowStride ? rowStride : width * _pixStride)
 	{}
 
 	int width() const { return _width; }
@@ -91,7 +95,7 @@ public:
 	ImageView rotated(int degree) const
 	{
 		switch ((degree + 360) % 360) {
-		case 90: return {data(0, _height - 1), _height, _width, _format, _pixStride, -_rowStride};
+		case 90:  return {data(0, _height - 1), _height, _width, _format, _pixStride, -_rowStride};
 		case 180: return {data(_width - 1, _height - 1), _width, _height, _format, -_rowStride, -_pixStride};
 		case 270: return {data(_width - 1, 0), _height, _width, _format, -_pixStride, _rowStride};
 		}

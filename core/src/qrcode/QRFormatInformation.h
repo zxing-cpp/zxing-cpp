@@ -38,17 +38,14 @@ public:
 
 	static FormatInformation DecodeFormatInformation(uint32_t formatInfoBits1, uint32_t formatInfoBits2);
 
-	ErrorCorrectionLevel errorCorrectionLevel() const {
-		return _errorCorrectionLevel;
-	}
+	ErrorCorrectionLevel errorCorrectionLevel() const { return _errorCorrectionLevel; }
 
-	uint8_t dataMask() const {
-		return _dataMask;
-	}
+	uint8_t dataMask() const { return _dataMask; }
 
 	bool isValid() const { return _errorCorrectionLevel != ErrorCorrectionLevel::Invalid; }
 
-	bool operator==(const FormatInformation& other) const {
+	bool operator==(const FormatInformation& other) const
+	{
 		return _dataMask == other._dataMask && _errorCorrectionLevel == other._errorCorrectionLevel;
 	}
 

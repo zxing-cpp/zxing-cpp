@@ -107,11 +107,7 @@ private:
 
 struct ParsingState
 {
-	enum State {
-		NUMERIC,
-		ALPHA,
-		ISO_IEC_646
-	};
+	enum State { NUMERIC, ALPHA, ISO_IEC_646 };
 
 	int position = 0;
 	State encoding = NUMERIC;

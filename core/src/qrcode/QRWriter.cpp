@@ -30,18 +30,16 @@ namespace ZXing::QRCode {
 
 static const int QUIET_ZONE_SIZE = 4;
 
-Writer::Writer() :
-	_margin(QUIET_ZONE_SIZE),
-	_ecLevel(ErrorCorrectionLevel::Low),
-	_encoding(CharacterSet::Unknown),
-	_version(0),
-	_useGs1Format(false),
-	_maskPattern(-1)
-{
-}
+Writer::Writer()
+	: _margin(QUIET_ZONE_SIZE),
+	  _ecLevel(ErrorCorrectionLevel::Low),
+	  _encoding(CharacterSet::Unknown),
+	  _version(0),
+	  _useGs1Format(false),
+	  _maskPattern(-1)
+{}
 
-BitMatrix
-Writer::encode(const std::wstring& contents, int width, int height) const
+BitMatrix Writer::encode(const std::wstring& contents, int width, int height) const
 {
 	if (contents.empty()) {
 		throw std::invalid_argument("Found empty contents");

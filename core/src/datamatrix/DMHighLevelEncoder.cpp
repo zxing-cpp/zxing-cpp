@@ -168,7 +168,8 @@ static int LookAheadTest(const std::string& msg, size_t startpos, int currentMod
 		//step K
 		if ((startpos + charsProcessed) == msg.length()) {
 			int min = std::numeric_limits<int>::max();
-			std::transform(charCounts.begin(), charCounts.end(), intCharCounts.begin(), [](float x) { return static_cast<int>(std::ceil(x)); });
+			std::transform(charCounts.begin(), charCounts.end(), intCharCounts.begin(),
+						   [](float x) { return static_cast<int>(std::ceil(x)); });
 			min = FindMinimums(intCharCounts, min, mins);
 			int minCount = Reduce(mins);
 
@@ -260,7 +261,8 @@ static int LookAheadTest(const std::string& msg, size_t startpos, int currentMod
 
 		//step R
 		if (charsProcessed >= 4) {
-			std::transform(charCounts.begin(), charCounts.end(), intCharCounts.begin(), [](float x) { return static_cast<int>(std::ceil(x)); });
+			std::transform(charCounts.begin(), charCounts.end(), intCharCounts.begin(),
+						   [](float x) { return static_cast<int>(std::ceil(x)); });
 			FindMinimums(intCharCounts, std::numeric_limits<int>::max(), mins);
 			int minCount = Reduce(mins);
 
@@ -421,7 +423,8 @@ namespace C40Encoder {
 		return len;
 	}
 
-	static int BacktrackOneCharacter(EncoderContext& context, std::string& buffer, std::string& removed, int lastCharSize, std::function<int (int, std::string&)> encodeChar)
+	static int BacktrackOneCharacter(EncoderContext& context, std::string& buffer, std::string& removed, int lastCharSize,
+									 std::function<int(int, std::string&)> encodeChar)
 	{
 		buffer.resize(buffer.size() - lastCharSize);
 		context.setCurrentPos(context.currentPos() - 1);

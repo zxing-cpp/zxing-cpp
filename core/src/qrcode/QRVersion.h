@@ -37,25 +37,15 @@ namespace QRCode {
 class Version
 {
 public:
-	int versionNumber() const {
-		return _versionNumber;
-	}
+	int versionNumber() const { return _versionNumber; }
 
-	const std::vector<int>& alignmentPatternCenters() const {
-		return _alignmentPatternCenters;
-	}
-	
-	int totalCodewords() const {
-		return _totalCodewords;
-	}
-	
-	int dimensionForVersion() const {
-		return 17 + 4 * _versionNumber;
-	}
-	
-	const ECBlocks & ecBlocksForLevel(ErrorCorrectionLevel ecLevel) const {
-		return _ecBlocks[(int)ecLevel];
-	}
+	const std::vector<int>& alignmentPatternCenters() const { return _alignmentPatternCenters; }
+
+	int totalCodewords() const { return _totalCodewords; }
+
+	int dimensionForVersion() const { return 17 + 4 * _versionNumber; }
+
+	const ECBlocks& ecBlocksForLevel(ErrorCorrectionLevel ecLevel) const { return _ecBlocks[(int)ecLevel]; }
 
 	BitMatrix buildFunctionPattern() const;
 

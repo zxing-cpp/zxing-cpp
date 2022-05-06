@@ -21,7 +21,7 @@
 
 namespace ZXing {
 
-enum class Direction {LEFT = -1, RIGHT = 1};
+enum class Direction { LEFT = -1, RIGHT = 1 };
 
 inline Direction opposite(Direction dir) noexcept
 {

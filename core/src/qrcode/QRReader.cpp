@@ -30,13 +30,9 @@
 
 namespace ZXing::QRCode {
 
-Reader::Reader(const DecodeHints& hints)
-	: _tryHarder(hints.tryHarder()), _isPure(hints.isPure()), _charset(hints.characterSet())
-{
-}
+Reader::Reader(const DecodeHints& hints) : _tryHarder(hints.tryHarder()), _isPure(hints.isPure()), _charset(hints.characterSet()) {}
 
-Result
-Reader::decode(const BinaryBitmap& image) const
+Result Reader::decode(const BinaryBitmap& image) const
 {
 #if 1
 	if (!_isPure) {

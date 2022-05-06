@@ -29,8 +29,7 @@ class Version;
 
 constexpr int NUM_MASK_PATTERNS = 8;
 
-void BuildMatrix(const BitArray& dataBits, ErrorCorrectionLevel ecLevel, const Version& version, int maskPattern,
-				 TritMatrix& matrix);
+void BuildMatrix(const BitArray& dataBits, ErrorCorrectionLevel ecLevel, const Version& version, int maskPattern, TritMatrix& matrix);
 
 } // QRCode
 } // ZXing
