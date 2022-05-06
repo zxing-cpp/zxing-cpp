@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-#include "QRFormatInformation.h"
+#include "QRFormatInformationFactory.h"
 
 #include "BitHacks.h"
 #include "QRErrorCorrectionLevelFactory.h"
@@ -37,14 +37,6 @@ static const std::array<int, 2> FORMAT_INFO_DECODE_LOOKUP[] = {
 	{0x24B4, 0x1C}, {0x2183, 0x1D}, {0x2EDA, 0x1E}, {0x2BED, 0x1F},
 };
 
-FormatInformation::FormatInformation(int formatInfo)
-{
-	// Bits 3,4
-	_errorCorrectionLevel = ECLevelFromBits((formatInfo >> 3) & 0x03);
-	// Bottom 3 bits
-	_dataMask = static_cast<uint8_t>(formatInfo & 0x07);
-}
-
 /**
  * @param formatInfoBits1 format info indicator, with mask still applied
  * @param formatInfoBits2 second copy of same info; both are checked at the same time
@@ -52,7 +44,7 @@ FormatInformation::FormatInformation(int formatInfo)
  * @return information about the format it specifies, or {@code null}
  *  if doesn't seem to match any known pattern
  */
-FormatInformation FormatInformation::DecodeFormatInformation(uint32_t formatInfoBits1, uint32_t formatInfoBits2)
+FormatInformation DecodeFormatInformation(uint32_t formatInfoBits1, uint32_t formatInfoBits2)
 {
 	// Find the int in FORMAT_INFO_DECODE_LOOKUP with fewest bits differing
 	int bestDifference = 32;
@@ -70,7 +62,7 @@ FormatInformation FormatInformation::DecodeFormatInformation(uint32_t formatInfo
 	// Hamming distance of the 32 masked codes is 7, by construction, so <= 3 bits
 	// differing means we found a match
 	if (bestDifference <= 3)
-		return {bestFormatInfo};
+		return {ECLevelFromBits((bestFormatInfo >> 3) & 0x03), static_cast<uint8_t>(bestFormatInfo & 0x07)};
 
 	return {};
 }

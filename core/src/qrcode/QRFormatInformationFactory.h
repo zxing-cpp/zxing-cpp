@@ -17,6 +17,7 @@
  */
 
 #include "QRErrorCorrectionLevel.h"
+#include "QRFormatInformation.h"
 
 #include <cstdint>
 
@@ -31,30 +32,7 @@ namespace QRCode {
  * @see DataMask
  * @see ErrorCorrectionLevel
  */
-class FormatInformation
-{
-public:
-	FormatInformation() = default;
-
-	FormatInformation(const ErrorCorrectionLevel& errorCorrectionLevel, const std::uint8_t& dataMask)
-		: _errorCorrectionLevel(errorCorrectionLevel), _dataMask(dataMask)
-	{}
-
-	ErrorCorrectionLevel errorCorrectionLevel() const { return _errorCorrectionLevel; }
-
-	uint8_t dataMask() const { return _dataMask; }
-
-	bool isValid() const { return _errorCorrectionLevel != ErrorCorrectionLevel::Invalid; }
-
-	bool operator==(const FormatInformation& other) const
-	{
-		return _dataMask == other._dataMask && _errorCorrectionLevel == other._errorCorrectionLevel;
-	}
-
-private:
-	ErrorCorrectionLevel _errorCorrectionLevel = ErrorCorrectionLevel::Invalid;
-	uint8_t _dataMask = 0;
-};
+FormatInformation DecodeFormatInformation(uint32_t formatInfoBits1, uint32_t formatInfoBits2);
 
 } // namespace QRCode
 } // namespace ZXing

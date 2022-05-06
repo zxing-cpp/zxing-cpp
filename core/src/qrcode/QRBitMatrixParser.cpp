@@ -21,7 +21,7 @@
 #include "BitMatrix.h"
 #include "ByteArray.h"
 #include "QRDataMask.h"
-#include "QRFormatInformation.h"
+#include "QRFormatInformationFactory.h"
 #include "QRVersion.h"
 
 #include <utility>
@@ -91,7 +91,7 @@ FormatInformation ReadFormatInformation(const BitMatrix& bitMatrix, bool mirrore
 	for (int x = dimension - 8; x < dimension; x++)
 		AppendBit(formatInfoBits2, getBit(bitMatrix, x, 8, mirrored));
 
-	return FormatInformation::DecodeFormatInformation(formatInfoBits1, formatInfoBits2);
+	return DecodeFormatInformation(formatInfoBits1, formatInfoBits2);
 }
 
 ByteArray ReadCodewords(const BitMatrix& bitMatrix, const Version& version, int maskIndex, bool mirrored)
