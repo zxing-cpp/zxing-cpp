@@ -167,7 +167,7 @@ inline Result ReadBarcode(const QImage& img, const DecodeHints& hints = {})
 			{img.bits(), img.width(), img.height(), ImgFmtFromQImg(img), img.bytesPerLine()}, hints));
 	};
 
-	return ImgFmtFromQImg(img) == ImageFormat::None ? exec(img.convertToFormat(QImage::Format_RGBX8888)) : exec(img);
+	return ImgFmtFromQImg(img) == ImageFormat::None ? exec(img.convertToFormat(QImage::Format_Grayscale8)) : exec(img);
 }
 
 #ifdef QT_MULTIMEDIA_LIB
@@ -256,9 +256,8 @@ inline Result ReadBarcode(const QVideoFrame& frame, const DecodeHints& hints = {
 			ZXing::ReadBarcode({img.bits() + pixOffset, img.width(), img.height(), fmt, img.bytesPerLine(), pixStride},
 							   hints));
 	} else {
-		auto qfmt = QVideoFrame::imageFormatFromPixelFormat(img.pixelFormat());
-		if (qfmt != QImage::Format_Invalid)
-			res = ReadBarcode(QImage(img.bits(), img.width(), img.height(), qfmt), hints);
+		if (QVideoFrame::imageFormatFromPixelFormat(img.pixelFormat()) != QImage::Format_Invalid)
+			res = ReadBarcode(img.image(), hints);
 	}
 
 	img.unmap();
