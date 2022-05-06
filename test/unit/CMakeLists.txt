@@ -46,6 +46,7 @@ add_executable (UnitTest
     oned/rss/ODRSSExpandedBinaryDecoderTest.cpp
     oned/rss/ODRSSFieldParserTest.cpp
 	qrcode/MQRCornerFinderTest.cpp
+	qrcode/MQRDataMaskTest.cpp
     qrcode/MQRDetectorTest.cpp
     qrcode/MQRDimensionTest.cpp
     qrcode/MQRFinderPatternFinderTest.cpp
