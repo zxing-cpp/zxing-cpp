@@ -658,6 +658,13 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 0, 0, 0, 0, 270 },
 			{ 0, 0, pure },
 		});
+
+		runTests("microqrcode-1", "MicroQRCode", 13, {
+			{ 13, 13, 0   },
+			//{ 15, 15, 90  },
+			//{ 13, 13, 180 },
+			//{ 15, 15, 270 },
+		});
 		// clang-format on
 
 		int totalTime = timeSince(startTime);

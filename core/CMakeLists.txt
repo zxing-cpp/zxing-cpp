@@ -235,6 +235,8 @@ if (BUILD_READERS)
         src/qrcode/MQRFinderPatternInfo.cpp
 		src/qrcode/MQRFormatInformationFactory.h
 		src/qrcode/MQRFormatInformationFactory.cpp
+		src/qrcode/MQRReader.h
+		src/qrcode/MQRReader.cpp
 		src/qrcode/MQRVersion.h
 		src/qrcode/MQRVersion.cpp
     )

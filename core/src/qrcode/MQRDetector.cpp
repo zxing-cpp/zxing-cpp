@@ -204,17 +204,16 @@ int ComputeDimension(const std::vector<ResultPoint>& codeEnclosingRect, float mo
 /**
  * <p>Detects a Micro QR Code in an image.</p>
  *
- * @param hints optional hints to detector
  * @return {@link DetectorResult} encapsulating results of detecting a Micro QR Code
  */
-DetectorResult Detect(const BitMatrix& image, DecodeHints const& hints)
+DetectorResult Detect(const BitMatrix& image, bool tryHarder, bool isPure)
 {
-	if (hints.isPure())
+	if (isPure)
 		return DetectPure(image);
 
 	FinderPatternFinder finder;
-	const auto codeEnclosingRect = finder.findCorners(image, hints);
-	const auto patternInfo = finder.findCenters(image, hints);
+	const auto codeEnclosingRect = finder.findCorners(image, tryHarder, isPure);
+	const auto patternInfo = finder.findCenters(image, tryHarder, isPure);
 	if (codeEnclosingRect.empty() || !patternInfo)
 		return {};
 

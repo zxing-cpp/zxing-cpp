@@ -28,7 +28,7 @@ namespace MicroQRCode {
 /**
  * @brief Detects a micro QR code in an image.
  */
-DetectorResult Detect(const BitMatrix& image, DecodeHints const& hints);
+DetectorResult Detect(const BitMatrix& image, bool tryHarder, bool isPure);
 
 } // namespace MicroQRCode
 

@@ -26,16 +26,14 @@
 
 namespace ZXing {
 
-class DecodeHints;
-
 namespace MicroQRCode {
 
 class FinderPatternFinder
 {
 public:
 	FinderPatternFinder();
-	std::vector<ResultPoint> findCorners(const BitMatrix& image, DecodeHints const& hints);
-	std::optional<FinderPatternInfo> findCenters(const BitMatrix& image, DecodeHints const& hints);
+	std::vector<ResultPoint> findCorners(const BitMatrix& image, bool tryHarder, bool isPure);
+	std::optional<FinderPatternInfo> findCenters(const BitMatrix& image, bool tryHarder, bool isPure);
 
 private:
 	static int CENTER_QUORUM;
@@ -45,7 +43,7 @@ private:
 	std::vector<int> crossCheckStateCount_;
 
 private: // methods
-	std::optional<FinderPattern> findBestPattern(const BitMatrix& image, DecodeHints const& hints);
+	std::optional<FinderPattern> findBestPattern(const BitMatrix& image, bool tryHarder, bool isPure);
 	std::optional<FinderPatternInfo> generatePatternInfoForPattern(const BitMatrix& image,
 																   const FinderPattern& actualPattern);
 	float centerFromEnd(const std::vector<int>& stateCount, int end) const;

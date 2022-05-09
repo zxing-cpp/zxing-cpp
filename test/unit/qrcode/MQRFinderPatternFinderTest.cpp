@@ -17,7 +17,6 @@
 #include "qrcode/MQRFinderPatternFinder.h"
 
 #include "BitMatrixIO.h"
-#include "DecodeHints.h"
 
 #include "gtest/gtest.h"
 
@@ -58,9 +57,8 @@ TEST(MicroQRFinderPatternFinderTest, FindCodeCorners)
 	const int moduleSize = 12;
 	const auto scaledBitMatrix = LoadScaledCode(moduleSize, 2);
 
-	DecodeHints hints;
 	FinderPatternFinder finder;
-	const auto corners = finder.findCorners(scaledBitMatrix, hints);
+	const auto corners = finder.findCorners(scaledBitMatrix, true, false);
 	ASSERT_EQ(4, corners.size());
 
 	ASSERT_NEAR(2 * moduleSize, corners[0].x(), moduleSize / 4);
@@ -76,9 +74,8 @@ TEST(MicroQRFinderPatternFinderTest, FindPatternCenters)
 	const int moduleSize = 12;
 	const auto scaledBitMatrix = LoadScaledCode(moduleSize, 2);
 
-	DecodeHints hints;
 	FinderPatternFinder finder;
-	const auto finderPatternInfo = finder.findCenters(scaledBitMatrix, hints);
+	const auto finderPatternInfo = finder.findCenters(scaledBitMatrix, true, false);
 	ASSERT_TRUE(finderPatternInfo);
 
 	const float patternCenterX = (3.5 + 2.0) * moduleSize;
@@ -101,11 +98,10 @@ TEST(MicroQRFinderPatternFinderTest, FindNoPattern)
 	const auto scaledBitMatrix = Inflate(std::move(bitMatrix), (bitMatrix.width() + 4) * moduleSize,
 										 (bitMatrix.height() + 4) * moduleSize, 2 * moduleSize);
 
-	DecodeHints hints;
 	FinderPatternFinder finder;
-	const auto centerResult = finder.findCenters(scaledBitMatrix, hints);
+	const auto centerResult = finder.findCenters(scaledBitMatrix, true, false);
 	ASSERT_FALSE(centerResult);
-	const auto cornersResult = finder.findCorners(scaledBitMatrix, hints);
+	const auto cornersResult = finder.findCorners(scaledBitMatrix, true, false);
 	ASSERT_TRUE(cornersResult.empty());
 }
 
@@ -114,7 +110,6 @@ TEST(MicroQRFinderPatternFinderTest, FindPatternRotated)
 	const int moduleSize = 12;
 	auto scaledBitMatrix = LoadScaledCode(moduleSize, 2);
 
-	DecodeHints hints;
 	std::vector<std::tuple<int, int, float, float>> expectedPositions = {
 		{0, 15, 3.5f, 11.5f}, {15, 15, 11.5f, 11.5f}, {15, 0, 11.5f, 3.5f}};
 	for (const auto& [cornerX, cornerY, centerX, centerY] : expectedPositions) {
@@ -122,13 +117,13 @@ TEST(MicroQRFinderPatternFinderTest, FindPatternRotated)
 		scaledBitMatrix.rotate90();
 
 		FinderPatternFinder finder;
-		const auto corners = finder.findCorners(scaledBitMatrix, hints);
+		const auto corners = finder.findCorners(scaledBitMatrix, true, false);
 		ASSERT_EQ(4, corners.size());
 
 		ASSERT_NEAR((2 + cornerX) * moduleSize, corners[0].x(), moduleSize / 4);
 		ASSERT_NEAR((2 + cornerY) * moduleSize, corners[0].y(), moduleSize / 4);
 
-		const auto centers = finder.findCenters(scaledBitMatrix, hints);
+		const auto centers = finder.findCenters(scaledBitMatrix, true, false);
 		const float patternCenterX = (centerX + 2.0f) * moduleSize;
 		const float patternCenterY = (centerY + 2.0f) * moduleSize;
 

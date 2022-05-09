@@ -17,7 +17,6 @@
 
 #include "MQRFinderPatternFinder.h"
 
-#include "DecodeHints.h"
 #include "MQRCornerFinder.h"
 #include "MQRFakeCenterCalculator.h"
 
@@ -54,27 +53,24 @@ int FinderPatternFinder::MAX_MODULES = 17;
 
 FinderPatternFinder::FinderPatternFinder() : crossCheckStateCount_(5) {}
 
-std::vector<ResultPoint> FinderPatternFinder::findCorners(const BitMatrix& image, DecodeHints const& hints)
+std::vector<ResultPoint> FinderPatternFinder::findCorners(const BitMatrix& image, bool tryHarder, bool isPure)
 {
-	const auto bestPattern = findBestPattern(image, hints);
+	const auto bestPattern = findBestPattern(image, tryHarder, isPure);
 	if (!bestPattern)
 		return {};
 	return FindCorners(image, *bestPattern);
 }
 
-std::optional<FinderPatternInfo> FinderPatternFinder::findCenters(const BitMatrix& image, DecodeHints const& hints)
+std::optional<FinderPatternInfo> FinderPatternFinder::findCenters(const BitMatrix& image, bool tryHarder, bool isPure)
 {
-	const auto bestPattern = findBestPattern(image, hints);
+	const auto bestPattern = findBestPattern(image, tryHarder, isPure);
 	if (!bestPattern)
 		return {};
 	return generatePatternInfoForPattern(image, *bestPattern);
 }
 
-std::optional<FinderPattern> FinderPatternFinder::findBestPattern(const BitMatrix& image, DecodeHints const& hints)
+std::optional<FinderPattern> FinderPatternFinder::findBestPattern(const BitMatrix& image, bool tryHarder, bool isPure)
 {
-	bool tryHarder = hints.tryHarder();
-	bool pureBarcode = hints.isPure();
-
 	int maxI = image.height();
 	int maxJ = image.width();
 
@@ -117,7 +113,7 @@ std::optional<FinderPattern> FinderPatternFinder::findBestPattern(const BitMatri
 						// A winner?
 						if (foundPatternCross(stateCount)) {
 							// Yes
-							bool confirmed = handlePossibleCenter(image, stateCount, i, j, pureBarcode);
+							bool confirmed = handlePossibleCenter(image, stateCount, i, j, isPure);
 							if (confirmed) {
 								done = haveMultiplyConfirmedCenters();
 							} else {
@@ -154,7 +150,7 @@ std::optional<FinderPattern> FinderPatternFinder::findBestPattern(const BitMatri
 			}
 		}
 		if (foundPatternCross(stateCount)) {
-			bool confirmed = handlePossibleCenter(image, stateCount, i, maxJ, pureBarcode);
+			bool confirmed = handlePossibleCenter(image, stateCount, i, maxJ, isPure);
 			if (confirmed) {
 				done = haveMultiplyConfirmedCenters();
 			}

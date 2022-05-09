@@ -24,6 +24,7 @@
 #include "maxicode/MCReader.h"
 #include "oned/ODReader.h"
 #include "pdf417/PDFReader.h"
+#include "qrcode/MQRReader.h"
 #include "qrcode/QRReader.h"
 
 #include <memory>
@@ -49,6 +50,8 @@ MultiFormatReader::MultiFormatReader(const DecodeHints& hints)
 		_readers.emplace_back(new Pdf417::Reader(hints));
 	if (formats.testFlag(BarcodeFormat::MaxiCode))
 		_readers.emplace_back(new MaxiCode::Reader(hints));
+	if (formats.testFlag(BarcodeFormat::MicroQRCode))
+		_readers.emplace_back(new MicroQRCode::Reader(hints));
 
 	// At end in "try harder" mode
 	if (formats.testFlags(BarcodeFormat::OneDCodes) && tryHarder) {
