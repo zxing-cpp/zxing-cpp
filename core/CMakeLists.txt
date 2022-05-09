@@ -210,9 +210,17 @@ set (MICROQRCODE_FILES
 )
 if (BUILD_READERS)
     set (MICROQRCODE_FILES ${MICROQRCODE_FILES}
+        src/qrcode/MQRBitMatrixParser.h
+        src/qrcode/MQRBitMatrixParser.cpp
+		src/qrcode/MQRCodecMode.h
+		src/qrcode/MQRCodecMode.cpp
         src/qrcode/MQRCornerFinder.h
         src/qrcode/MQRCornerFinder.cpp
+		src/qrcode/MQRDataBlock.h
+		src/qrcode/MQRDataBlock.cpp
         src/qrcode/MQRDataMask.h
+		src/qrcode/MQRDecoder.h
+		src/qrcode/MQRDecoder.cpp
         src/qrcode/MQRDetector.h
         src/qrcode/MQRDetector.cpp
         src/qrcode/MQRDimension.h     
