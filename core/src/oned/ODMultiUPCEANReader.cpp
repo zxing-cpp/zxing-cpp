@@ -38,15 +38,13 @@ MultiUPCEANReader::~MultiUPCEANReader() = default;
 
 constexpr int CHAR_LEN = 4;
 
-constexpr auto END_PATTERN = FixedPattern<3, 3>{1, 1, 1};
-constexpr auto MID_PATTERN = FixedPattern<5, 5>{1, 1, 1, 1, 1};
-constexpr auto UPCE_END_PATTERN = FixedPattern<6, 6>{1, 1, 1, 1, 1, 1};
-constexpr auto EXT_START_PATTERN = FixedPattern<3, 4>{1, 1, 2};
+constexpr auto END_PATTERN           = FixedPattern<3, 3>{1, 1, 1};
+constexpr auto MID_PATTERN           = FixedPattern<5, 5>{1, 1, 1, 1, 1};
+constexpr auto UPCE_END_PATTERN      = FixedPattern<6, 6>{1, 1, 1, 1, 1, 1};
+constexpr auto EXT_START_PATTERN     = FixedPattern<3, 4>{1, 1, 2};
 constexpr auto EXT_SEPARATOR_PATTERN = FixedPattern<2, 2>{1, 1};
 
-static const int FIRST_DIGIT_ENCODINGS[] = {
-	0x00, 0x0B, 0x0D, 0x0E, 0x13, 0x19, 0x1C, 0x15, 0x16, 0x1A
-};
+static const int FIRST_DIGIT_ENCODINGS[] = {0x00, 0x0B, 0x0D, 0x0E, 0x13, 0x19, 0x1C, 0x15, 0x16, 0x1A};
 
 // The GS1 specification has the following to say about quiet zones
 // Type: EAN-13 | EAN-8 | UPC-A | UPC-E | EAN Add-on | UPC Add-on
@@ -69,10 +67,9 @@ static bool DecodeDigit(const PatternView& view, std::string& txt, int* lgPatter
 	static constexpr float MAX_AVG_VARIANCE = 0.48f;
 	static constexpr float MAX_INDIVIDUAL_VARIANCE = 0.7f;
 
-	int bestMatch = lgPattern ? RowReader::DecodeDigit(view, UPCEANCommon::L_AND_G_PATTERNS, MAX_AVG_VARIANCE,
-													   MAX_INDIVIDUAL_VARIANCE, false)
-							  : RowReader::DecodeDigit(view, UPCEANCommon::L_PATTERNS, MAX_AVG_VARIANCE,
-													   MAX_INDIVIDUAL_VARIANCE, false);
+	int bestMatch =
+		lgPattern ? RowReader::DecodeDigit(view, UPCEANCommon::L_AND_G_PATTERNS, MAX_AVG_VARIANCE, MAX_INDIVIDUAL_VARIANCE, false)
+				  : RowReader::DecodeDigit(view, UPCEANCommon::L_PATTERNS, MAX_AVG_VARIANCE, MAX_INDIVIDUAL_VARIANCE, false);
 	txt += '0' + (bestMatch % 10);
 	if (lgPattern)
 		AppendBit(*lgPattern, bestMatch >= 10);
@@ -312,9 +309,8 @@ Result MultiUPCEANReader::decodePattern(int rowNumber, PatternView& next, std::u
 
 	auto ext = res.end;
 	PartialResult addOnRes;
-	if (_hints.eanAddOnSymbol() != EanAddOnSymbol::Ignore && ext.skipSymbol() &&
-		ext.skipSingle(static_cast<int>(begin.sum() * 3.5)) && (AddOn(addOnRes, ext, 5) || AddOn(addOnRes, ext, 2))) {
-
+	if (_hints.eanAddOnSymbol() != EanAddOnSymbol::Ignore && ext.skipSymbol() && ext.skipSingle(static_cast<int>(begin.sum() * 3.5))
+		&& (AddOn(addOnRes, ext, 5) || AddOn(addOnRes, ext, 2))) {
 		// ISO/IEC 15420:2009 states that the content for "]E3" should be 15 or 18 digits, i.e. converted to EAN-13
 		// and extended with no separator, and that the content for "]E4" should be 8 digits, i.e. no add-on
 		//TODO: extend position in include extension
@@ -329,8 +325,7 @@ Result MultiUPCEANReader::decodePattern(int rowNumber, PatternView& next, std::u
 	if (_hints.eanAddOnSymbol() == EanAddOnSymbol::Require && !addOnRes.isValid())
 		return Result(DecodeStatus::NotFound);
 
-	return {
-		res.txt, rowNumber, begin.pixelsInFront(), res.end.pixelsTillEnd(), res.format, std::move(symbologyIdentifier)};
+	return {res.txt, rowNumber, begin.pixelsInFront(), res.end.pixelsTillEnd(), res.format, std::move(symbologyIdentifier)};
 }
 
 } // namespace ZXing::OneD

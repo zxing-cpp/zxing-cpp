@@ -340,21 +340,21 @@ static PointI GetFirstDifferent(const BitMatrix& image, const PointI& init, bool
 */
 static void ExpandSquare(std::array<ResultPoint, 4>& cornerPoints, float oldSide, float newSide)
 {
-	float ratio = newSide / (2 * oldSide);
-	float dx = cornerPoints[0].x() - cornerPoints[2].x();
-	float dy = cornerPoints[0].y() - cornerPoints[2].y();
-	float centerx = (cornerPoints[0].x() + cornerPoints[2].x()) / 2.0f;
-	float centery = (cornerPoints[0].y() + cornerPoints[2].y()) / 2.0f;
+	double ratio = newSide / (2.0 * oldSide);
+	double dx = cornerPoints[0].x() - cornerPoints[2].x();
+	double dy = cornerPoints[0].y() - cornerPoints[2].y();
+	double centerx = (cornerPoints[0].x() + cornerPoints[2].x()) / 2.0f;
+	double centery = (cornerPoints[0].y() + cornerPoints[2].y()) / 2.0f;
 
-	cornerPoints[0] = ResultPoint(centerx + ratio * dx, centery + ratio * dy);
-	cornerPoints[2] = ResultPoint(centerx - ratio * dx, centery - ratio * dy);
+	cornerPoints[0] = PointF(centerx + ratio * dx, centery + ratio * dy);
+	cornerPoints[2] = PointF(centerx - ratio * dx, centery - ratio * dy);
 
 	dx = cornerPoints[1].x() - cornerPoints[3].x();
 	dy = cornerPoints[1].y() - cornerPoints[3].y();
 	centerx = (cornerPoints[1].x() + cornerPoints[3].x()) / 2.0f;
 	centery = (cornerPoints[1].y() + cornerPoints[3].y()) / 2.0f;
-	cornerPoints[1] = ResultPoint(centerx + ratio * dx, centery + ratio * dy);
-	cornerPoints[3] = ResultPoint(centerx - ratio * dx, centery - ratio * dy);
+	cornerPoints[1] = PointF(centerx + ratio * dx, centery + ratio * dy);
+	cornerPoints[3] = PointF(centerx - ratio * dx, centery - ratio * dy);
 }
 
 

@@ -35,7 +35,8 @@ static const int N4 = 10;
 * Helper function for applyMaskPenaltyRule1. We need this for doing this calculation in both
 * vertical and horizontal orders respectively.
 */
-static int ApplyMaskPenaltyRule1Internal(const TritMatrix& matrix, bool isHorizontal) {
+static int ApplyMaskPenaltyRule1Internal(const TritMatrix& matrix, bool isHorizontal)
+{
 	int penalty = 0;
 	int width = matrix.width();
 	int height = matrix.height();
@@ -63,7 +64,6 @@ static int ApplyMaskPenaltyRule1Internal(const TritMatrix& matrix, bool isHorizo
 	}
 	return penalty;
 }
-
 
 /**
 * Apply mask penalty rule 1 and return the penalty. Find repetitive cells with the same color and
@@ -93,8 +93,9 @@ static int ApplyMaskPenaltyRule2(const TritMatrix& matrix)
 	return N2 * penalty;
 }
 
-template<size_t N>
-static bool HasPatternAt(const std::array<bool, N>& pattern, const Trit* begin, int count, int stride) {
+template <size_t N>
+static bool HasPatternAt(const std::array<bool, N>& pattern, const Trit* begin, int count, int stride)
+{
 	assert(std::abs(count) <= (int)N);
 	auto end = begin + count * stride;
 	if (count < 0)
@@ -124,14 +125,14 @@ static int ApplyMaskPenaltyRule3(const TritMatrix& matrix)
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
 			auto i = &matrix.get(x, y);
-			if (x <= width - finderSize && HasPatternAt(finder, i, finderSize, 1) &&
-				(HasPatternAt(white, i, -std::min(x, whiteSize), 1) ||
-				 HasPatternAt(white, i + finderSize, std::min(width - x - finderSize, whiteSize), 1))) {
+			if (x <= width - finderSize && HasPatternAt(finder, i, finderSize, 1)
+				&& (HasPatternAt(white, i, -std::min(x, whiteSize), 1)
+					|| HasPatternAt(white, i + finderSize, std::min(width - x - finderSize, whiteSize), 1))) {
 				numPenalties++;
 			}
-			if (y <= height - finderSize && HasPatternAt(finder, i, finderSize, width) &&
-				(HasPatternAt(white, i, -std::min(y, whiteSize), width) ||
-				 HasPatternAt(white, i + finderSize * width, std::min(height - y - finderSize, whiteSize), width))) {
+			if (y <= height - finderSize && HasPatternAt(finder, i, finderSize, width)
+				&& (HasPatternAt(white, i, -std::min(y, whiteSize), width)
+					|| HasPatternAt(white, i + finderSize * width, std::min(height - y - finderSize, whiteSize), width))) {
 				numPenalties++;
 			}
 		}
@@ -145,7 +146,7 @@ static int ApplyMaskPenaltyRule3(const TritMatrix& matrix)
 */
 static int ApplyMaskPenaltyRule4(const TritMatrix& matrix)
 {
-	auto numDarkCells = std::count_if(matrix.begin(), matrix.end(), [](Trit cell){ return cell; });
+	auto numDarkCells = std::count_if(matrix.begin(), matrix.end(), [](Trit cell) { return cell; });
 	auto numTotalCells = matrix.size();
 	auto fivePercentVariances = std::abs(numDarkCells * 2 - numTotalCells) * 10 / numTotalCells;
 	return static_cast<int>(fivePercentVariances * N4);

@@ -35,7 +35,7 @@ ErrorCorrectionLevel ECLevelFromString(const char* str)
 	case 'M': return ErrorCorrectionLevel::Medium;
 	case 'Q': return ErrorCorrectionLevel::Quality;
 	case 'H': return ErrorCorrectionLevel::High;
-	default: return ErrorCorrectionLevel::Invalid;
+	default:  return ErrorCorrectionLevel::Invalid;
 	}
 }
 

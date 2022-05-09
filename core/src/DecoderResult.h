@@ -56,7 +56,8 @@ class DecoderResult
 
 public:
 	DecoderResult(DecodeStatus status) : _status(status) {}
-	DecoderResult(ByteArray&& rawBytes, std::wstring&& text) : _rawBytes(std::move(rawBytes)), _text(std::move(text)) {
+	DecoderResult(ByteArray&& rawBytes, std::wstring&& text) : _rawBytes(std::move(rawBytes)), _text(std::move(text))
+	{
 		_numBits = 8 * Size(_rawBytes);
 	}
 

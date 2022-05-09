@@ -30,10 +30,10 @@ namespace ZXing::OneD {
 static const int CODE_START_A = 103;
 static const int CODE_START_B = 104;
 static const int CODE_START_C = 105;
-static const int CODE_CODE_A = 101;
-static const int CODE_CODE_B = 100;
-static const int CODE_CODE_C = 99;
-static const int CODE_STOP = 106;
+static const int CODE_CODE_A  = 101;
+static const int CODE_CODE_B  = 100;
+static const int CODE_CODE_C  = 99;
+static const int CODE_STOP    = 106;
 
 // Dummy characters used to specify control characters in input
 static const auto ESCAPE_FNC_1 = L'\u00f1';
@@ -41,14 +41,15 @@ static const auto ESCAPE_FNC_2 = L'\u00f2';
 static const auto ESCAPE_FNC_3 = L'\u00f3';
 static const auto ESCAPE_FNC_4 = L'\u00f4';
 
-static const int CODE_FNC_1 = 102;   // Code A, Code B, Code C
-static const int CODE_FNC_2 = 97;    // Code A, Code B
-static const int CODE_FNC_3 = 96;    // Code A, Code B
+static const int CODE_FNC_1   = 102; // Code A, Code B, Code C
+static const int CODE_FNC_2   = 97;  // Code A, Code B
+static const int CODE_FNC_3   = 96;  // Code A, Code B
 static const int CODE_FNC_4_A = 101; // Code A
 static const int CODE_FNC_4_B = 100; // Code B
 
- // Results of minimal lookahead for code C
-enum class CType {
+// Results of minimal lookahead for code C
+enum class CType
+{
 	UNCODABLE,
 	ONE_DIGIT,
 	TWO_DIGITS,

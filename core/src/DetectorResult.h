@@ -41,9 +41,7 @@ public:
 	DetectorResult(DetectorResult&&) = default;
 	DetectorResult& operator=(DetectorResult&&) = default;
 
-	DetectorResult(BitMatrix&& bits, QuadrilateralI&& position)
-		: _bits(std::move(bits)), _position(std::move(position))
-	{}
+	DetectorResult(BitMatrix&& bits, QuadrilateralI&& position) : _bits(std::move(bits)), _position(std::move(position)) {}
 
 	const BitMatrix& bits() const & { return _bits; }
 	BitMatrix&& bits() && { return std::move(_bits); }

@@ -151,7 +151,8 @@ static int FindMSBSet(unsigned value)
 //
 // Since all coefficients in the polynomials are 1 or 0, we can do the calculation by bit
 // operations. We don't care if cofficients are positive or negative.
-static int CalculateBCHCode(int value, int poly) {
+static int CalculateBCHCode(int value, int poly)
+{
 	// If poly is "1 1111 0010 0101" (version info poly), msbSetInPoly is 13. We'll subtract 1
 	// from 13 to make it 12.
 	int msbSetInPoly = FindMSBSet(poly);
@@ -306,8 +307,7 @@ static void EmbedDataBits(const BitArray& dataBits, int maskPattern, TritMatrix&
 
 // Build 2D matrix of QR Code from "dataBits" with "ecLevel", "version" and "getMaskPattern". On
 // success, store the result in "matrix" and return true.
-void BuildMatrix(const BitArray& dataBits, ErrorCorrectionLevel ecLevel, const Version& version, int maskPattern,
-				 TritMatrix& matrix)
+void BuildMatrix(const BitArray& dataBits, ErrorCorrectionLevel ecLevel, const Version& version, int maskPattern, TritMatrix& matrix)
 {
 	matrix.clear();
 	// Let's get started with embedding big squares at corners.

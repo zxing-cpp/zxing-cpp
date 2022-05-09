@@ -36,17 +36,11 @@ enum class ErrorCorrectionLevel;
 class DataBlock
 {
 public:
-	int numDataCodewords() const {
-		return _numDataCodewords;
-	}
+	int numDataCodewords() const { return _numDataCodewords; }
 
-	const ByteArray& codewords() const {
-		return _codewords;
-	}
+	const ByteArray& codewords() const { return _codewords; }
 
-	ByteArray& codewords() {
-		return _codewords;
-	}
+	ByteArray& codewords() { return _codewords; }
 
 	/**
 	* <p>When QR Codes use multiple data blocks, they are actually interleaved.

@@ -81,14 +81,19 @@ public:
 
 	BitMatrix(int width, int height) : _width(width), _height(height), _rowSize(width), _bits(width * height, UNSET_V) {}
 #else
-	BitMatrix(int width, int height) : _width(width), _height(height), _rowSize((width + 31) / 32), _bits(((width + 31) / 32) * _height, 0) {}
+	BitMatrix(int width, int height)
+		: _width(width), _height(height), _rowSize((width + 31) / 32), _bits(((width + 31) / 32) * _height, 0)
+	{}
 #endif
 
 	explicit BitMatrix(int dimension) : BitMatrix(dimension, dimension) {} // Construct a square matrix.
 
-	BitMatrix(BitMatrix&& other) noexcept : _width(other._width), _height(other._height), _rowSize(other._rowSize), _bits(std::move(other._bits)) {}
+	BitMatrix(BitMatrix&& other) noexcept
+		: _width(other._width), _height(other._height), _rowSize(other._rowSize), _bits(std::move(other._bits))
+	{}
 
-	BitMatrix& operator=(BitMatrix&& other) noexcept {
+	BitMatrix& operator=(BitMatrix&& other) noexcept
+	{
 		_width = other._width;
 		_height = other._height;
 		_rowSize = other._rowSize;
@@ -96,13 +101,11 @@ public:
 		return *this;
 	}
 
-	BitMatrix copy() const {
-		return *this;
-	}
+	BitMatrix copy() const { return *this; }
 
 #ifdef ZX_FAST_BIT_STORAGE
 	// experimental iterator based access
-	template<typename iterator>
+	template <typename iterator>
 	struct Row
 	{
 		iterator _begin, _end;
@@ -120,7 +123,8 @@ public:
 	* @param y The vertical component (i.e. which row)
 	* @return value of given bit in matrix
 	*/
-	bool get(int x, int y) const {
+	bool get(int x, int y) const
+	{
 #ifdef ZX_FAST_BIT_STORAGE
 		return isSet(get(y * _width + x));
 #else
@@ -134,7 +138,8 @@ public:
 	* @param x The horizontal component (i.e. which column)
 	* @param y The vertical component (i.e. which row)
 	*/
-	void set(int x, int y) {
+	void set(int x, int y)
+	{
 #ifdef ZX_FAST_BIT_STORAGE
 		get(y * _width + x) = SET_V;
 #else
@@ -142,7 +147,8 @@ public:
 #endif
 	}
 
-	void unset(int x, int y) {
+	void unset(int x, int y)
+	{
 #ifdef ZX_FAST_BIT_STORAGE
 		get(y * _width + x) = UNSET_V;
 #else
@@ -150,7 +156,8 @@ public:
 #endif
 	}
 
-	void set(int x, int y, bool val) {
+	void set(int x, int y, bool val)
+	{
 #ifdef ZX_FAST_BIT_STORAGE
 		get(y * _width + x) = val ? SET_V : UNSET_V;
 #else
@@ -164,7 +171,8 @@ public:
 	* @param x The horizontal component (i.e. which column)
 	* @param y The vertical component (i.e. which row)
 	*/
-	void flip(int x, int y) {
+	void flip(int x, int y)
+	{
 #ifdef ZX_FAST_BIT_STORAGE
 		auto& v =get(y * _width + x);
 		v = !v;
@@ -173,7 +181,8 @@ public:
 #endif
 	}
 
-	void flipAll() {
+	void flipAll()
+	{
 		for (auto& i : _bits) {
 			i = ~i;
 		}
@@ -182,9 +191,7 @@ public:
 	/**
 	* Clears all bits (sets to false).
 	*/
-	void clear() {
-		std::fill(_bits.begin(), _bits.end(), 0);
-	}
+	void clear() { std::fill(_bits.begin(), _bits.end(), 0); }
 
 	/**
 	* <p>Sets a square region of the bit matrix to true.</p>
@@ -241,27 +248,19 @@ public:
 	/**
 	* @return The width of the matrix
 	*/
-	int width() const {
-		return _width;
-	}
+	int width() const { return _width; }
 
 	/**
 	* @return The height of the matrix
 	*/
-	int height() const {
-		return _height;
-	}
+	int height() const { return _height; }
 
 	/**
 	* @return The row size of the matrix. That is the number of 32-bits blocks that one row takes.
 	*/
-	int rowSize() const {
-		return _rowSize;
-	}
+	int rowSize() const { return _rowSize; }
 
-	bool empty() const {
-		return _bits.empty();
-	}
+	bool empty() const { return _bits.empty(); }
 
 	friend bool operator==(const BitMatrix& a, const BitMatrix& b)
 	{

@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.14)
 
-project (ZXing VERSION "1.2.0" LANGUAGES CXX)
+project (ZXing VERSION "1.3.0" LANGUAGES CXX)
 
 option (BUILD_WRITERS "Build with writer support (encoders)" ON)
 option (BUILD_READERS "Build with reader support (decoders)" ON)
@@ -109,7 +109,7 @@ if (NOT DEFINED INSTALLDIR)
     get_filename_component(INSTALLDIR ${INSTALLDIR} ABSOLUTE)
 endif()
 
-IF (NOT WIN32)
+IF (NOT WIN32 OR MINGW)
     configure_file(zxing.pc.in zxing.pc @ONLY)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/zxing.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 ENDIF()

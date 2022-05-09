@@ -1747,7 +1747,7 @@ Big5TextDecoder::AppendBig5(std::vector<uint16_t>& result, const uint8_t* bytes,
 {
 	uint8_t buf[2] = { 0 };
 	int nbuf = 0;
-	int invalid = 0;
+//	int invalid = 0;
 	result.reserve(length);
 
 	for (size_t i = 0; i<length; i++) {
@@ -1766,7 +1766,7 @@ Big5TextDecoder::AppendBig5(std::vector<uint16_t>& result, const uint8_t* bytes,
 			else {
 				// Invalid
 				result.push_back(REPLACEMENT);
-				++invalid;
+//				++invalid;
 			}
 			break;
 		case 1:
@@ -1779,13 +1779,13 @@ Big5TextDecoder::AppendBig5(std::vector<uint16_t>& result, const uint8_t* bytes,
 				else {
 					// Error
 					result.push_back(REPLACEMENT);
-					++invalid;
+//					++invalid;
 				}
 			}
 			else {
 				// Error
 				result.push_back(REPLACEMENT);
-				++invalid;
+//				++invalid;
 			}
 			nbuf = 0;
 			break;

@@ -108,6 +108,7 @@ static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, 
 		int rowStepsAboveOrBelow = (i + 1) / 2;
 		bool isAbove = (i & 0x01) == 0; // i.e. is x even?
 		int rowNumber = middle + rowStep * (isAbove ? rowStepsAboveOrBelow : -rowStepsAboveOrBelow);
+		bool isCheckRow = false;
 		if (rowNumber < 0 || rowNumber >= height) {
 			// Oops, if we run off the top or bottom, stop
 			break;
@@ -118,6 +119,7 @@ static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, 
 			--i;
 			rowNumber = checkRows.back();
 			checkRows.pop_back();
+			isCheckRow = true;
 			if (rowNumber < 0 || rowNumber >= height)
 				continue;
 		}
@@ -199,7 +201,7 @@ static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, 
 
 						// if we found a valid code but have a minLineCount > 1, add additional check rows above and
 						// below the current one
-						if (checkRows.empty() && minLineCount > 1 && rowStep > 1) {
+						if (!isCheckRow && minLineCount > 1 && rowStep > 1) {
 							checkRows = {rowNumber - 1, rowNumber + 1};
 							if (rowStep > 2)
 								checkRows.insert(checkRows.end(), {rowNumber - 2, rowNumber + 2});

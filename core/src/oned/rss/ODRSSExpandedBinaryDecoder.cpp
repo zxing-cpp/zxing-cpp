@@ -37,8 +37,7 @@ namespace ZXing::OneD::DataBar {
 
 static const int AI01_GTIN_SIZE = 40;
 
-static void
-AI01AppendCheckDigit(std::string& buffer, int currentPos)
+static void AI01AppendCheckDigit(std::string& buffer, int currentPos)
 {
 	int checkDigit = 0;
 	for (int i = 0; i < 13; i++) {
@@ -53,8 +52,7 @@ AI01AppendCheckDigit(std::string& buffer, int currentPos)
 	buffer.append(std::to_string(checkDigit));
 }
 
-static void
-AI01EncodeCompressedGtinWithoutAI(std::string& buffer, const BitArray& bits, int currentPos, int initialBufferPosition)
+static void AI01EncodeCompressedGtinWithoutAI(std::string& buffer, const BitArray& bits, int currentPos, int initialBufferPosition)
 {
 	for (int i = 0; i < 4; ++i) {
 		int currentBlock = ToInt(bits, currentPos + 10 * i, 10);
@@ -69,8 +67,7 @@ AI01EncodeCompressedGtinWithoutAI(std::string& buffer, const BitArray& bits, int
 	AI01AppendCheckDigit(buffer, initialBufferPosition);
 }
 
-static void
-AI01EncodeCompressedGtin(std::string& buffer, const BitArray& bits, int currentPos)
+static void AI01EncodeCompressedGtin(std::string& buffer, const BitArray& bits, int currentPos)
 {
 	buffer.append("(01)");
 	int initialPosition = Size(buffer);
@@ -82,7 +79,7 @@ using AddWeightCodeFunc = const std::function<void(std::string&, int)>;
 using CheckWeightFunc = const std::function<int (int)>;
 
 static void AI01EncodeCompressedWeight(std::string& buffer, const BitArray& bits, int currentPos, int weightSize,
-	const AddWeightCodeFunc& addWeightCode, const CheckWeightFunc& checkWeight)
+									   const AddWeightCodeFunc& addWeightCode, const CheckWeightFunc& checkWeight)
 {
 	int originalWeightNumeric = ToInt(bits, currentPos, weightSize);
 	addWeightCode(buffer, originalWeightNumeric);
@@ -103,8 +100,7 @@ static void AI01EncodeCompressedWeight(std::string& buffer, const BitArray& bits
 * @author Pablo Orduña, University of Deusto (pablo.orduna@deusto.es)
 * @author Eduardo Castillejo, University of Deusto (eduardo.castillejo@deusto.es)
 */
-static std::string
-DecodeAI01AndOtherAIs(const BitArray& bits)
+static std::string DecodeAI01AndOtherAIs(const BitArray& bits)
 {
 	static const int HEADER_SIZE = 1 + 1 + 2; // first bit encodes the linkage flag, the second one is the encodation
 											  // method, and the other two are for the variable length
@@ -125,8 +121,7 @@ DecodeAI01AndOtherAIs(const BitArray& bits)
 	return {};
 }
 
-static std::string
-DecodeAnyAI(const BitArray& bits)
+static std::string DecodeAnyAI(const BitArray& bits)
 {
 	static const int HEADER_SIZE = 2 + 1 + 2;
 	std::string buffer;
@@ -136,8 +131,7 @@ DecodeAnyAI(const BitArray& bits)
 	return std::string();
 }
 
-static std::string
-DecodeAI013103(const BitArray& bits)
+static std::string DecodeAI013103(const BitArray& bits)
 {
 	static const int HEADER_SIZE = 4 + 1;
 	static const int WEIGHT_SIZE = 15;
@@ -157,8 +151,7 @@ DecodeAI013103(const BitArray& bits)
 	return buffer;
 }
 
-static std::string
-DecodeAI01320x(const BitArray& bits)
+static std::string DecodeAI01320x(const BitArray& bits)
 {
 	static const int HEADER_SIZE = 4 + 1;
 	static const int WEIGHT_SIZE = 15;
@@ -169,7 +162,8 @@ DecodeAI01320x(const BitArray& bits)
 
 	std::string buffer;
 	AI01EncodeCompressedGtin(buffer, bits, HEADER_SIZE);
-	AI01EncodeCompressedWeight(buffer, bits, HEADER_SIZE + AI01_GTIN_SIZE, WEIGHT_SIZE,
+	AI01EncodeCompressedWeight(
+		buffer, bits, HEADER_SIZE + AI01_GTIN_SIZE, WEIGHT_SIZE,
 		// addWeightCode
 		[](std::string& buf, int weight) { buf.append(weight < 10000 ? "(3202)" : "(3203)"); },
 		// checkWeight
@@ -178,8 +172,7 @@ DecodeAI01320x(const BitArray& bits)
 	return buffer;
 }
 
-static std::string
-DecodeAI01392x(const BitArray& bits)
+static std::string DecodeAI01392x(const BitArray& bits)
 {
 	static const int HEADER_SIZE = 5 + 1 + 2;
 	static const int LAST_DIGIT_SIZE = 2;
@@ -205,8 +198,7 @@ DecodeAI01392x(const BitArray& bits)
 	return std::string();
 }
 
-static std::string
-DecodeAI01393x(const BitArray& bits)
+static std::string DecodeAI01393x(const BitArray& bits)
 {
 	static const int HEADER_SIZE = 5 + 1 + 2;
 	static const int LAST_DIGIT_SIZE = 2;
@@ -243,8 +235,7 @@ DecodeAI01393x(const BitArray& bits)
 	return std::string();
 }
 
-static std::string
-DecodeAI013x0x1x(const BitArray& bits, const char* firstAIdigits, const char* dateCode)
+static std::string DecodeAI013x0x1x(const BitArray& bits, const char* firstAIdigits, const char* dateCode)
 {
 	static const int HEADER_SIZE = 7 + 1;
 	static const int WEIGHT_SIZE = 20;
@@ -299,8 +290,7 @@ DecodeAI013x0x1x(const BitArray& bits, const char* firstAIdigits, const char* da
 	return buffer;
 }
 
-std::string
-DecodeExpandedBits(const BitArray& bits)
+std::string DecodeExpandedBits(const BitArray& bits)
 {
 	if (bits.get(1)) {
 		return DecodeAI01AndOtherAIs(bits);

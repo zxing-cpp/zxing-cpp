@@ -668,8 +668,9 @@ DecodeStatus DecodeMacroBlock(const std::vector<int>& codewords, int codeIndex, 
 	// the fileId using text compaction, so in those cases the fileId will appear mangled.
 	std::ostringstream fileId;
 	fileId.fill('0');
-	for (int i = 0; codeIndex < codewords[0] && codewords[codeIndex] != MACRO_PDF417_TERMINATOR
-			&& codewords[codeIndex] != BEGIN_MACRO_PDF417_OPTIONAL_FIELD; i++, codeIndex++) {
+	for (; codeIndex < codewords[0] && codewords[codeIndex] != MACRO_PDF417_TERMINATOR &&
+		   codewords[codeIndex] != BEGIN_MACRO_PDF417_OPTIONAL_FIELD;
+		 codeIndex++) {
 		fileId << std::setw(3) << codewords[codeIndex];
 	}
 	resultMetadata.setFileId(fileId.str());

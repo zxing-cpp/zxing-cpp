@@ -290,16 +290,13 @@ Version::AllVersions()
 	return allVersions;
 }
 
-Version::Version(int versionNumber, std::initializer_list<int> alignmentPatternCenters, const std::array<ECBlocks, 4> &ecBlocks) :
-	_versionNumber(versionNumber),
-	_alignmentPatternCenters(alignmentPatternCenters),
-	_ecBlocks(ecBlocks)
+Version::Version(int versionNumber, std::initializer_list<int> alignmentPatternCenters, const std::array<ECBlocks, 4>& ecBlocks)
+	: _versionNumber(versionNumber), _alignmentPatternCenters(alignmentPatternCenters), _ecBlocks(ecBlocks)
 {
 	_totalCodewords = ecBlocks[0].totalDataCodewords();
 }
 
-const Version *
-Version::VersionForNumber(int versionNumber)
+const Version* Version::VersionForNumber(int versionNumber)
 {
 	if (versionNumber < 1 || versionNumber > 40) {
 		//throw std::invalid_argument("Version should be in range [1-40].");
@@ -308,8 +305,7 @@ Version::VersionForNumber(int versionNumber)
 	return &AllVersions()[versionNumber - 1];
 }
 
-const Version *
-Version::ProvisionalVersionForDimension(int dimension)
+const Version* Version::ProvisionalVersionForDimension(int dimension)
 {
 	if (dimension % 4 != 1) {
 		//throw std::invalid_argument("Unexpected dimension");
@@ -318,9 +314,7 @@ Version::ProvisionalVersionForDimension(int dimension)
 	return VersionForNumber((dimension - 17) / 4);
 }
 
-
-const Version *
-Version::DecodeVersionInformation(int versionBits)
+const Version* Version::DecodeVersionInformation(int versionBits)
 {
 	int bestDifference = std::numeric_limits<int>::max();
 	int bestVersion = 0;
