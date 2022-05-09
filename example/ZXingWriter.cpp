@@ -40,9 +40,8 @@ static void PrintUsage(const char* exePath)
 	          << "    -ecc       Error correction level, [0-8]\n"
 	          << "\n"
 			  << "Supported formats are:\n";
-	for (auto f : BarcodeFormats::all()) {
+	for (auto f : BarcodeFormatsFromString("Aztec Codabar Code39 Code93 Code128 DataMatrix EAN8 EAN13 ITF PDF417 QRCode UPCA UPCE"))
 		std::cout << "    " << ToString(f) << "\n";
-	}
 	std::cout << "Format can be lowercase letters, with or without '-'.\n";
 }
 
