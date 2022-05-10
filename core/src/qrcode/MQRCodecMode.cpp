@@ -17,14 +17,14 @@
 
 #include "MQRCodecMode.h"
 
-#include "MQRVersion.h"
+#include "QRVersion.h"
 
 #include <array>
 #include <stdexcept>
 
 namespace ZXing::MicroQRCode {
 
-CodecMode CodecModeForBits(int bits, const Version& version)
+CodecMode CodecModeForBits(int bits, const QRCode::Version& version)
 {
 	int number = version.versionNumber();
 	switch (number) {
@@ -48,7 +48,7 @@ CodecMode CodecModeForBits(int bits, const Version& version)
 	throw std::invalid_argument("Invalid mode");
 }
 
-int CharacterCountBits(CodecMode mode, const Version& version)
+int CharacterCountBits(CodecMode mode, const QRCode::Version& version)
 {
 	int number = version.versionNumber();
 
@@ -62,12 +62,12 @@ int CharacterCountBits(CodecMode mode, const Version& version)
 	}
 }
 
-int CodecModeBitsLength(const Version& version)
+int CodecModeBitsLength(const QRCode::Version& version)
 {
 	return version.versionNumber() - 1;
 }
 
-int TerminatorBitsLength(const Version& version)
+int TerminatorBitsLength(const QRCode::Version& version)
 {
 	return version.versionNumber() * 2 + 1;
 }

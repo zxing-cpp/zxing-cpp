@@ -17,9 +17,12 @@
  */
 
 namespace ZXing {
-namespace MicroQRCode {
 
+namespace QRCode {
 class Version;
+}
+
+namespace MicroQRCode {
 
 /**
  * <p>See ISO 18004:2006, 6.4.1, Tables 2 and 3. This enum encapsulates the various modes in which
@@ -40,26 +43,26 @@ enum class CodecMode
  * @return Mode encoded by these bits
  * @throws IllegalArgumentException if bits do not correspond to a known mode
  */
-CodecMode CodecModeForBits(int bits, const Version& version);
+CodecMode CodecModeForBits(int bits, const QRCode::Version& version);
 
 /**
  * @param version version in question
  * @return number of bits used, in this QR Code symbol {@link Version}, to encode the
  *         count of characters that will follow encoded in this Mode
  */
-int CharacterCountBits(CodecMode mode, const Version& version);
+int CharacterCountBits(CodecMode mode, const QRCode::Version& version);
 
 /**
  * @param version version in question
  * @return number of bits used to encode a codec mode.
  */
-int CodecModeBitsLength(const Version& version);
+int CodecModeBitsLength(const QRCode::Version& version);
 
 /**
  * @param version version in question
  * @return number of bits in the Terminator code.
  */
-int TerminatorBitsLength(const Version& version);
+int TerminatorBitsLength(const QRCode::Version& version);
 
 } // namespace MicroQRCode
 

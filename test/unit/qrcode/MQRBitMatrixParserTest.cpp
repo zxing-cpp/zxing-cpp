@@ -20,8 +20,8 @@
 #include "BitMatrix.h"
 #include "BitMatrixIO.h"
 #include "ByteArray.h"
-#include "qrcode/MQRVersion.h"
 #include "qrcode/QRFormatInformation.h"
+#include "qrcode/QRVersion.h"
 
 #include "gtest/gtest.h"
 

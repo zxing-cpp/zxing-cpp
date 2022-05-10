@@ -26,9 +26,9 @@
 #include "GenericGF.h"
 #include "MQRBitMatrixParser.h"
 #include "MQRCodecMode.h"
-#include "MQRDataBlock.h"
-#include "MQRVersion.h"
+#include "QRDataBlock.h"
 #include "QRFormatInformation.h"
+#include "QRVersion.h"
 #include "ReedSolomonDecoder.h"
 #include "TextDecoder.h"
 #include "ZXContainerAlgorithms.h"
@@ -258,7 +258,7 @@ static DecodeStatus DecodeNumericSegment(BitSource& bits, int count, std::wstrin
 	return DecodeStatus::NoError;
 }
 
-bool IsTerminator(const BitSource& bits, const Version& version)
+bool IsTerminator(const BitSource& bits, const QRCode::Version& version)
 {
 	const int bitsRequired = TerminatorBitsLength(version);
 	const int bitsAvailable = std::min(bits.available(), bitsRequired);
@@ -271,7 +271,7 @@ bool IsTerminator(const BitSource& bits, const Version& version)
  *
  * <p>See ISO 18004:2006, 6.4.3 - 6.4.7</p>
  */
-ZXING_EXPORT_TEST_ONLY DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version,
+ZXING_EXPORT_TEST_ONLY DecoderResult DecodeBitStream(ByteArray&& bytes, const QRCode::Version& version,
 													 QRCode::ErrorCorrectionLevel ecLevel,
 													 const std::string& hintedCharset)
 {
@@ -337,7 +337,7 @@ ZXING_EXPORT_TEST_ONLY DecoderResult DecodeBitStream(ByteArray&& bytes, const Ve
 	return DecoderResult(std::move(bytes), std::move(result)).setEcLevel(ToString(ecLevel));
 }
 
-static DecoderResult DoDecode(const BitMatrix& bits, const Version& version, const std::string& hintedCharset,
+static DecoderResult DoDecode(const BitMatrix& bits, const QRCode::Version& version, const std::string& hintedCharset,
 							  bool mirrored)
 {
 	auto formatInfo = ReadFormatInformation(bits, mirrored);
@@ -350,7 +350,7 @@ static DecoderResult DoDecode(const BitMatrix& bits, const Version& version, con
 		return DecodeStatus::FormatError;
 
 	// Separate into data blocks.
-	std::vector<DataBlock> dataBlocks = DataBlock::GetDataBlocks(codewords, version, formatInfo.errorCorrectionLevel());
+	std::vector<QRCode::DataBlock> dataBlocks = QRCode::DataBlock::GetDataBlocks(codewords, version, formatInfo.errorCorrectionLevel());
 	// Should only receive one data block for micro QR codes.
 	if (dataBlocks.size() != 1)
 		return DecodeStatus::FormatError;
@@ -373,7 +373,7 @@ static DecoderResult DoDecode(const BitMatrix& bits, const Version& version, con
 
 DecoderResult Decode(const BitMatrix& bits, const std::string& hintedCharset)
 {
-	const Version* version = ReadVersion(bits);
+	const QRCode::Version* version = ReadVersion(bits);
 	if (!version)
 		return DecodeStatus::FormatError;
 

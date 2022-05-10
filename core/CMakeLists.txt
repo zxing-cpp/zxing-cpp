@@ -216,8 +216,6 @@ if (BUILD_READERS)
         src/qrcode/MQRCodecMode.cpp
         src/qrcode/MQRCornerFinder.h
         src/qrcode/MQRCornerFinder.cpp
-        src/qrcode/MQRDataBlock.h
-        src/qrcode/MQRDataBlock.cpp
         src/qrcode/MQRDataMask.h
         src/qrcode/MQRDecoder.h
         src/qrcode/MQRDecoder.cpp
@@ -237,8 +235,6 @@ if (BUILD_READERS)
         src/qrcode/MQRFormatInformationFactory.cpp
         src/qrcode/MQRReader.h
         src/qrcode/MQRReader.cpp
-        src/qrcode/MQRVersion.h
-        src/qrcode/MQRVersion.cpp
     )
 endif()
 

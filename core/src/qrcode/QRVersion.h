@@ -43,22 +43,23 @@ public:
 
 	int totalCodewords() const { return _totalCodewords; }
 
-	int dimensionForVersion() const { return 17 + 4 * _versionNumber; }
+	int dimensionForVersion() const;
 
 	const ECBlocks& ecBlocksForLevel(ErrorCorrectionLevel ecLevel) const { return _ecBlocks[(int)ecLevel]; }
 
 	BitMatrix buildFunctionPattern() const;
 
+	bool isMicroQRCode() const { return _isMicro; }
+
 	/**
-	* <p>Deduces version information purely from QR Code dimensions.</p>
+	* <p>Deduces version information purely from micro QR or QR Code dimensions.</p>
 	*
 	* @param dimension dimension in modules
 	* @return Version for a QR Code of that dimension
-	* @throws FormatException if dimension is not 1 mod 4
 	*/
-	static const Version* ProvisionalVersionForDimension(int dimension);
+	static const Version* ProvisionalVersionForDimension(int dimension, bool isMicro = false);
 	
-	static const Version* VersionForNumber(int versionNumber);
+	static const Version* VersionForNumber(int versionNumber, bool isMicro = false);
 
 	static const Version* DecodeVersionInformation(int versionBits);
 	
@@ -67,9 +68,12 @@ private:
 	std::vector<int> _alignmentPatternCenters;
 	std::array<ECBlocks, 4> _ecBlocks;
 	int _totalCodewords;
+	bool _isMicro;
 
 	Version(int versionNumber, std::initializer_list<int> alignmentPatternCenters, const std::array<ECBlocks, 4> &ecBlocks);
+	Version(int versionNumber, const std::array<ECBlocks, 4>& ecBlocks);
 	static const Version* AllVersions();
+	static const Version* AllMicroVersions();
 };
 
 } // QRCode

@@ -22,9 +22,9 @@
 #include "ByteArray.h"
 #include "MQRDataMask.h"
 #include "MQRFormatInformationFactory.h"
-#include "MQRVersion.h"
 #include "QRErrorCorrectionLevel.h"
 #include "QRFormatInformation.h"
+#include "QRVersion.h"
 
 #include <utility>
 
@@ -41,7 +41,7 @@ static bool hasValidDimension(const BitMatrix& bitMatrix)
 	return dimension >= 11 && dimension <= 17 && (dimension % 2) == 1;
 }
 
-const Version* ReadVersion(const BitMatrix& bitMatrix)
+const QRCode::Version* ReadVersion(const BitMatrix& bitMatrix)
 {
 	if (!hasValidDimension(bitMatrix))
 		return nullptr;
@@ -49,7 +49,7 @@ const Version* ReadVersion(const BitMatrix& bitMatrix)
 	int dimension = bitMatrix.height();
 
 	int provisionalVersion = (dimension - 9) / 2;
-	return Version::VersionForNumber(provisionalVersion);
+	return QRCode::Version::VersionForNumber(provisionalVersion, true);
 }
 
 QRCode::FormatInformation ReadFormatInformation(const BitMatrix& bitMatrix, bool mirrored)
@@ -67,7 +67,7 @@ QRCode::FormatInformation ReadFormatInformation(const BitMatrix& bitMatrix, bool
 	return DecodeFormatInformation(formatInfoBits);
 }
 
-ByteArray ReadCodewords(const BitMatrix& bitMatrix, const Version& version,
+ByteArray ReadCodewords(const BitMatrix& bitMatrix, const QRCode::Version& version,
 						const QRCode::FormatInformation& formatInformation, bool mirrored)
 {
 	if (!hasValidDimension(bitMatrix))

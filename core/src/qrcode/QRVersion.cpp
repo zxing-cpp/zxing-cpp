@@ -290,28 +290,58 @@ Version::AllVersions()
 	return allVersions;
 }
 
+const Version* Version::AllMicroVersions()
+{
+	/**
+	 * See ISO 18004:2006 6.5.1 Table 9
+	 */
+	static const Version allVersions[] = {
+		{1, {2, 1, 3, 0, 0}},
+		{2, {5, 1, 5, 0, 0, 6, 1, 4, 0, 0}},
+		{3, {6, 1, 11, 0, 0, 8, 1, 9, 0, 0}},
+		{4, {8, 1, 16, 0, 0, 10, 1, 14, 0, 0, 14, 1, 10, 0, 0}}};
+	return allVersions;
+}
+
+constexpr int MICRO_DIMENSION_STEP = 2;
+constexpr int DIMENSION_STEP = 4;
+constexpr int MICRO_DIMENSION_OFFSET = 9;
+constexpr int DIMENSION_OFFSET = 17;
+
 Version::Version(int versionNumber, std::initializer_list<int> alignmentPatternCenters, const std::array<ECBlocks, 4>& ecBlocks)
-	: _versionNumber(versionNumber), _alignmentPatternCenters(alignmentPatternCenters), _ecBlocks(ecBlocks)
+	: _versionNumber(versionNumber), _alignmentPatternCenters(alignmentPatternCenters), _ecBlocks(ecBlocks), _isMicro(false)
 {
 	_totalCodewords = ecBlocks[0].totalDataCodewords();
 }
 
-const Version* Version::VersionForNumber(int versionNumber)
+Version::Version(int versionNumber, const std::array<ECBlocks, 4>& ecBlocks)
+	: _versionNumber(versionNumber), _ecBlocks(ecBlocks), _isMicro(true)
 {
-	if (versionNumber < 1 || versionNumber > 40) {
+	_totalCodewords = ecBlocks[0].totalDataCodewords();
+}
+
+const Version* Version::VersionForNumber(int versionNumber, bool isMicro)
+{
+	constexpr int minVersion = 1;
+	const int maxVersion = isMicro ? 4 : 40;
+	if (versionNumber < minVersion || versionNumber > maxVersion) {
 		//throw std::invalid_argument("Version should be in range [1-40].");
 		return nullptr;
 	}
+	if (isMicro)
+		return &AllMicroVersions()[versionNumber - 1];
 	return &AllVersions()[versionNumber - 1];
 }
 
-const Version* Version::ProvisionalVersionForDimension(int dimension)
+const Version* Version::ProvisionalVersionForDimension(int dimension, bool isMicro)
 {
-	if (dimension % 4 != 1) {
+	const int dimensionStep = isMicro ? MICRO_DIMENSION_STEP : DIMENSION_STEP;
+	const int dimensionOffset = isMicro ? MICRO_DIMENSION_OFFSET : DIMENSION_OFFSET;
+	if (dimension % dimensionStep != 1) {
 		//throw std::invalid_argument("Unexpected dimension");
 		return nullptr;
 	}
-	return VersionForNumber((dimension - 17) / 4);
+	return VersionForNumber((dimension - dimensionOffset) / dimensionStep, isMicro);
 }
 
 const Version* Version::DecodeVersionInformation(int versionBits)
@@ -352,37 +382,53 @@ BitMatrix Version::buildFunctionPattern() const
 
 	// Top left finder pattern + separator + format
 	bitMatrix.setRegion(0, 0, 9, 9);
-	// Top right finder pattern + separator + format
-	bitMatrix.setRegion(dimension - 8, 0, 8, 9);
-	// Bottom left finder pattern + separator + format
-	bitMatrix.setRegion(0, dimension - 8, 9, 8);
 
-	// Alignment patterns
-	size_t max = _alignmentPatternCenters.size();
-	for (size_t x = 0; x < max; ++x) {
-		int i = _alignmentPatternCenters[x] - 2;
-		for (size_t y = 0; y < max; ++y) {
-			if ((x == 0 && (y == 0 || y == max - 1)) || (x == max - 1 && y == 0)) {
-				// No alignment patterns near the three finder patterns
-				continue;
+	if (!_isMicro) {
+		// Top right finder pattern + separator + format
+		bitMatrix.setRegion(dimension - 8, 0, 8, 9);
+		// Bottom left finder pattern + separator + format
+		bitMatrix.setRegion(0, dimension - 8, 9, 8);
+
+		// Alignment patterns
+		size_t max = _alignmentPatternCenters.size();
+		for (size_t x = 0; x < max; ++x) {
+			int i = _alignmentPatternCenters[x] - 2;
+			for (size_t y = 0; y < max; ++y) {
+				if ((x == 0 && (y == 0 || y == max - 1)) || (x == max - 1 && y == 0)) {
+					// No alignment patterns near the three finder patterns
+					continue;
+				}
+				bitMatrix.setRegion(_alignmentPatternCenters[y] - 2, i, 5, 5);
 			}
-			bitMatrix.setRegion(_alignmentPatternCenters[y] - 2, i, 5, 5);
 		}
-	}
 
-	// Vertical timing pattern
-	bitMatrix.setRegion(6, 9, 1, dimension - 17);
-	// Horizontal timing pattern
-	bitMatrix.setRegion(9, 6, dimension - 17, 1);
+		// Vertical timing pattern
+		bitMatrix.setRegion(6, 9, 1, dimension - 17);
+		// Horizontal timing pattern
+		bitMatrix.setRegion(9, 6, dimension - 17, 1);
 
-	if (_versionNumber > 6) {
-		// Version info, top right
-		bitMatrix.setRegion(dimension - 11, 0, 3, 6);
-		// Version info, bottom left
-		bitMatrix.setRegion(0, dimension - 11, 6, 3);
+		if (_versionNumber > 6) {
+			// Version info, top right
+			bitMatrix.setRegion(dimension - 11, 0, 3, 6);
+			// Version info, bottom left
+			bitMatrix.setRegion(0, dimension - 11, 6, 3);
+		}
+	} else {
+		// Vertical timing pattern
+		bitMatrix.setRegion(9, 0, dimension - 9, 1);
+
+		// Horizontal timing pattern
+		bitMatrix.setRegion(0, 9, 1, dimension - 9);
 	}
 
 	return bitMatrix;
+}
+
+int Version::dimensionForVersion() const
+{
+	if (_isMicro)
+		return MICRO_DIMENSION_OFFSET + MICRO_DIMENSION_STEP * _versionNumber;
+	return DIMENSION_OFFSET + DIMENSION_STEP * _versionNumber;
 }
 
 } // namespace ZXing::QRCode
