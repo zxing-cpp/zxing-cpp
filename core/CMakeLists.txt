@@ -212,19 +212,19 @@ if (BUILD_READERS)
     set (MICROQRCODE_FILES ${MICROQRCODE_FILES}
         src/qrcode/MQRBitMatrixParser.h
         src/qrcode/MQRBitMatrixParser.cpp
-		src/qrcode/MQRCodecMode.h
-		src/qrcode/MQRCodecMode.cpp
+        src/qrcode/MQRCodecMode.h
+        src/qrcode/MQRCodecMode.cpp
         src/qrcode/MQRCornerFinder.h
         src/qrcode/MQRCornerFinder.cpp
-		src/qrcode/MQRDataBlock.h
-		src/qrcode/MQRDataBlock.cpp
+        src/qrcode/MQRDataBlock.h
+        src/qrcode/MQRDataBlock.cpp
         src/qrcode/MQRDataMask.h
-		src/qrcode/MQRDecoder.h
-		src/qrcode/MQRDecoder.cpp
+        src/qrcode/MQRDecoder.h
+        src/qrcode/MQRDecoder.cpp
         src/qrcode/MQRDetector.h
         src/qrcode/MQRDetector.cpp
         src/qrcode/MQRDimension.h     
-		src/qrcode/MQRErrorCorrectionLevelFactory.h
+        src/qrcode/MQRErrorCorrectionLevelFactory.h
         src/qrcode/MQRFakeCenterCalculator.h
         src/qrcode/MQRFakeCenterCalculator.cpp
         src/qrcode/MQRFinderPattern.h
@@ -233,12 +233,12 @@ if (BUILD_READERS)
         src/qrcode/MQRFinderPatternFinder.cpp
         src/qrcode/MQRFinderPatternInfo.h
         src/qrcode/MQRFinderPatternInfo.cpp
-		src/qrcode/MQRFormatInformationFactory.h
-		src/qrcode/MQRFormatInformationFactory.cpp
-		src/qrcode/MQRReader.h
-		src/qrcode/MQRReader.cpp
-		src/qrcode/MQRVersion.h
-		src/qrcode/MQRVersion.cpp
+        src/qrcode/MQRFormatInformationFactory.h
+        src/qrcode/MQRFormatInformationFactory.cpp
+        src/qrcode/MQRReader.h
+        src/qrcode/MQRReader.cpp
+        src/qrcode/MQRVersion.h
+        src/qrcode/MQRVersion.cpp
     )
 endif()
 
