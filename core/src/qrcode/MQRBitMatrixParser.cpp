@@ -79,9 +79,8 @@ ByteArray ReadCodewords(const BitMatrix& bitMatrix, const Version& version,
 	// in a Version M3-M symbol is a 2x2 square 4-module block.
 	// See ISO 18004:2006 6.7.3.
 	bool hasD4mBlock = version.versionNumber() % 2 == 1;
-	int d4mBlockIndex = version.versionNumber() == 1                                                    ? 3
-						: formatInformation.errorCorrectionLevel() == QRCode::ErrorCorrectionLevel::Low ? 11
-																										: 9;
+	int d4mBlockIndex =
+		version.versionNumber() == 1 ? 3 : (formatInformation.errorCorrectionLevel() == QRCode::ErrorCorrectionLevel::Low ? 11 : 9);
 
 	ByteArray result;
 	result.reserve(version.totalCodewords());
