@@ -43,11 +43,11 @@ enum class BarcodeFormat
 	EAN13           = (1 << 9),  ///< EAN-13 (1D)
 	ITF             = (1 << 10), ///< ITF (Interleaved Two of Five) (1D)
 	MaxiCode        = (1 << 11), ///< MaxiCode (2D)
-	MicroQRCode     = (1 << 12), ///< Micro QR Code (2D)
-	PDF417          = (1 << 13), ///< PDF417 (1D) or (2D)
-	QRCode          = (1 << 14), ///< QR Code (2D)
-	UPCA            = (1 << 15), ///< UPC-A (1D)
-	UPCE            = (1 << 16), ///< UPC-E (1D)
+	PDF417          = (1 << 12), ///< PDF417 (1D) or (2D)
+	QRCode          = (1 << 13), ///< QR Code (2D)
+	UPCA            = (1 << 14), ///< UPC-A (1D)
+	UPCE            = (1 << 15), ///< UPC-E (1D)
+	MicroQRCode     = (1 << 16), ///< Micro QR Code (2D)
 
 	OneDCodes = Codabar | Code39 | Code93 | Code128 | EAN8 | EAN13 | ITF | DataBar | DataBarExpanded | UPCA | UPCE,
 	TwoDCodes = Aztec | DataMatrix | MaxiCode | PDF417 | QRCode | MicroQRCode,
