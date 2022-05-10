@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-#include "qrcode/MQRDecoder.h"
+#include "qrcode/QRDecoder.h"
 
 #include "BitMatrix.h"
 #include "BitMatrixIO.h"
@@ -24,7 +24,7 @@
 #include "gtest/gtest.h"
 
 using namespace ZXing;
-using namespace ZXing::MicroQRCode;
+using namespace ZXing::QRCode;
 
 TEST(MQRDecoderTest, MQRCodeM3L)
 {
@@ -45,7 +45,7 @@ TEST(MQRDecoderTest, MQRCodeM3L)
 										  "XXX XX X X XXXX\n",
 										  88, false);
 
-	const auto result = Decode(bitMatrix, {});
+	const auto result = Decode(bitMatrix, {}, true);
 	EXPECT_EQ(DecodeStatus::NoError, result.errorCode());
 }
 
@@ -68,7 +68,7 @@ TEST(MQRDecoderTest, MQRCodeM3M)
 										  "X X XXXX    XXX\n",
 										  88, false);
 
-	const auto result = Decode(bitMatrix, {});
+	const auto result = Decode(bitMatrix, {}, true);
 	EXPECT_EQ(DecodeStatus::NoError, result.errorCode());
 }
 
@@ -86,7 +86,7 @@ TEST(MQRDecoderTest, MQRCodeM1)
 										  " X  XXXXX X\n"
 										  "X  XXXXXX X\n",
 										  88, false);
-	const auto result = Decode(bitMatrix, {});
+	const auto result = Decode(bitMatrix, {}, true);
 	EXPECT_EQ(DecodeStatus::NoError, result.errorCode());
 	EXPECT_EQ(L"123", result.text());
 }
@@ -105,7 +105,7 @@ TEST(MQRDecoderTest, MQRCodeM1Error4Bits)
 										  " X  XXXXXX \n"
 										  "X  XXXXXXX \n",
 										  88, false);
-	const auto result = Decode(bitMatrix, {});
+	const auto result = Decode(bitMatrix, {}, true);
 	EXPECT_EQ(DecodeStatus::ChecksumError, result.errorCode());
 	EXPECT_TRUE(result.text().empty());
 }
@@ -130,6 +130,6 @@ TEST(MQRDecoderTest, MQRCodeM4)
 										  "  X X X X   X    \n"
 										  "X   XXXXXXX X X X\n",
 										  88, false);
-	const auto result = Decode(bitMatrix, {});
+	const auto result = Decode(bitMatrix, {}, true);
 	EXPECT_EQ(DecodeStatus::NoError, result.errorCode());
 }

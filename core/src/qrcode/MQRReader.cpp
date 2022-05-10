@@ -22,8 +22,8 @@
 #include "DecoderResult.h"
 #include "DetectorResult.h"
 #include "LogMatrix.h"
-#include "MQRDecoder.h"
 #include "MQRDetector.h"
+#include "QRDecoder.h"
 #include "Result.h"
 
 #include <utility>
@@ -45,7 +45,7 @@ Result Reader::decode(const BinaryBitmap& image) const
 	if (!detectorResult.isValid())
 		return Result(DecodeStatus::NotFound);
 
-	auto decoderResult = Decode(detectorResult.bits(), _charset);
+	auto decoderResult = QRCode::Decode(detectorResult.bits(), _charset, true);
 	auto position = detectorResult.position();
 
 	return Result(std::move(decoderResult), std::move(position), BarcodeFormat::MicroQRCode);
