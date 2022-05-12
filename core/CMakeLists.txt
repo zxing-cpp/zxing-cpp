@@ -218,7 +218,6 @@ if (BUILD_READERS)
         src/qrcode/MQRDetector.h
         src/qrcode/MQRDetector.cpp
         src/qrcode/MQRDimension.h     
-        src/qrcode/MQRErrorCorrectionLevelFactory.h
         src/qrcode/MQRFakeCenterCalculator.h
         src/qrcode/MQRFakeCenterCalculator.cpp
         src/qrcode/MQRFinderPattern.h
@@ -227,8 +226,6 @@ if (BUILD_READERS)
         src/qrcode/MQRFinderPatternFinder.cpp
         src/qrcode/MQRFinderPatternInfo.h
         src/qrcode/MQRFinderPatternInfo.cpp
-        src/qrcode/MQRFormatInformationFactory.h
-        src/qrcode/MQRFormatInformationFactory.cpp
         src/qrcode/MQRReader.h
         src/qrcode/MQRReader.cpp
     )
@@ -356,7 +353,6 @@ set (QRCODE_FILES
     src/qrcode/QRCodecMode.cpp
     src/qrcode/QRErrorCorrectionLevel.h
     src/qrcode/QRErrorCorrectionLevel.cpp
-	src/qrcode/QRErrorCorrectionLevelFactory.h
     src/qrcode/QRVersion.h
     src/qrcode/QRVersion.cpp
 )
@@ -372,9 +368,8 @@ if (BUILD_READERS)
         src/qrcode/QRDetector.h
         src/qrcode/QRDetector.cpp
         src/qrcode/QRECB.h
-		src/qrcode/QRFormatInformation.h
-        src/qrcode/QRFormatInformationFactory.h
-        src/qrcode/QRFormatInformationFactory.cpp
+        src/qrcode/QRFormatInformation.h
+        src/qrcode/QRFormatInformation.cpp
         src/qrcode/QRReader.h
         src/qrcode/QRReader.cpp
     )

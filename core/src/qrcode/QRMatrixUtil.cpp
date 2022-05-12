@@ -20,7 +20,7 @@
 #include "BitArray.h"
 #include "BitHacks.h"
 #include "QRDataMask.h"
-#include "QRErrorCorrectionLevelFactory.h"
+#include "QRErrorCorrectionLevel.h"
 #include "QRVersion.h"
 
 #include <stdexcept>

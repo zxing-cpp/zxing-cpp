@@ -21,7 +21,7 @@
 #include "BitMatrix.h"
 #include "ByteArray.h"
 #include "MQRDataMask.h"
-#include "MQRFormatInformationFactory.h"
+#include "QRFormatInformation.h"
 #include "QRErrorCorrectionLevel.h"
 #include "QRFormatInformation.h"
 #include "QRVersion.h"
@@ -64,7 +64,7 @@ QRCode::FormatInformation ReadFormatInformation(const BitMatrix& bitMatrix, bool
 	for (int y = 7; y >= 1; y--)
 		AppendBit(formatInfoBits, getBit(bitMatrix, 8, y, mirrored));
 
-	return DecodeFormatInformation(formatInfoBits);
+	return QRCode::FormatInformation::DecodeFormatInformation(formatInfoBits);
 }
 
 ByteArray ReadCodewords(const BitMatrix& bitMatrix, const QRCode::Version& version,
