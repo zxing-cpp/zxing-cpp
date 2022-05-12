@@ -15,20 +15,19 @@
  * limitations under the License.
  */
 
-#include "qrcode/MQRBitMatrixParser.h"
-
 #include "BitMatrix.h"
 #include "BitMatrixIO.h"
 #include "ByteArray.h"
+#include "qrcode/QRBitMatrixParser.h"
 #include "qrcode/QRFormatInformation.h"
 #include "qrcode/QRVersion.h"
 
 #include "gtest/gtest.h"
 
 using namespace ZXing;
-using namespace ZXing::MicroQRCode;
+using namespace ZXing::QRCode;
 
-TEST(MQRBitMatrixParserTest, MQRCodeM3L)
+TEST(QRBitMatrixParserTest, MQRCodeM3L)
 {
 	const auto bitMatrix = ParseBitMatrix("XXXXXXX X X X X\n"
 										  "X     X    X X \n"
@@ -47,16 +46,16 @@ TEST(MQRBitMatrixParserTest, MQRCodeM3L)
 										  "XXX XX X X XXXX\n",
 										  88, false);
 
-	const auto version = ReadVersion(bitMatrix);
+	const auto version = ReadVersion(bitMatrix, true);
 	EXPECT_EQ(3, version->versionNumber());
-	const auto format = ReadFormatInformation(bitMatrix, false);
+	const auto format = ReadFormatInformation(bitMatrix, false, true);
 	const auto codewords = ReadCodewords(bitMatrix, *version, format, false);
 	EXPECT_EQ(17, codewords.size());
 	EXPECT_EQ(0x0, codewords[10]);
 	EXPECT_EQ(0xd1, codewords[11]);
 }
 
-TEST(MQRBitMatrixParserTest, MQRCodeM3M)
+TEST(QRBitMatrixParserTest, MQRCodeM3M)
 {
 	const auto bitMatrix = ParseBitMatrix("XXXXXXX X X X X\n"
 										  "X     X      XX\n"
@@ -75,9 +74,9 @@ TEST(MQRBitMatrixParserTest, MQRCodeM3M)
 										  "X X XXXX    XXX\n",
 										  88, false);
 
-	const auto version = ReadVersion(bitMatrix);
+	const auto version = ReadVersion(bitMatrix, true);
 	EXPECT_EQ(3, version->versionNumber());
-	const auto format = ReadFormatInformation(bitMatrix, false);
+	const auto format = ReadFormatInformation(bitMatrix, false, true);
 	const auto codewords = ReadCodewords(bitMatrix, *version, format, false);
 	EXPECT_EQ(17, codewords.size());
 	EXPECT_EQ(0x0, codewords[8]);

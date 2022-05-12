@@ -24,7 +24,6 @@
 #include "DecodeStatus.h"
 #include "DecoderResult.h"
 #include "GenericGF.h"
-#include "MQRBitMatrixParser.h"
 #include "QRBitMatrixParser.h"
 #include "QRCodecMode.h"
 #include "QRDataBlock.h"
@@ -435,14 +434,12 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 
 static DecoderResult DoDecode(const BitMatrix& bits, const Version& version, const std::string& hintedCharset, bool mirrored)
 {
-	auto formatInfo =
-		version.isMicroQRCode() ? MicroQRCode::ReadFormatInformation(bits, mirrored) : QRCode::ReadFormatInformation(bits, mirrored);
+	auto formatInfo = ReadFormatInformation(bits, mirrored, version.isMicroQRCode());
 	if (!formatInfo.isValid())
 		return DecodeStatus::FormatError;
 
 	// Read codewords
-	ByteArray codewords = version.isMicroQRCode() ? MicroQRCode::ReadCodewords(bits, version, formatInfo, mirrored)
-											: QRCode::ReadCodewords(bits, version, formatInfo.dataMask(), mirrored);
+	ByteArray codewords = ReadCodewords(bits, version, formatInfo, mirrored);
 	if (codewords.empty())
 		return DecodeStatus::FormatError;
 
@@ -475,7 +472,7 @@ static DecoderResult DoDecode(const BitMatrix& bits, const Version& version, con
 
 DecoderResult Decode(const BitMatrix& bits, const std::string& hintedCharset, const bool isMicroQRCode)
 {
-	const Version* version = isMicroQRCode ? MicroQRCode::ReadVersion(bits) : QRCode::ReadVersion(bits);
+	const Version* version = ReadVersion(bits, isMicroQRCode);
 	if (!version)
 		return DecodeStatus::FormatError;
 
