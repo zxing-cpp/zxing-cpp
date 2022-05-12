@@ -303,11 +303,6 @@ const Version* Version::AllMicroVersions()
 	return allVersions;
 }
 
-constexpr int MICRO_DIMENSION_STEP = 2;
-constexpr int DIMENSION_STEP = 4;
-constexpr int MICRO_DIMENSION_OFFSET = 9;
-constexpr int DIMENSION_OFFSET = 17;
-
 Version::Version(int versionNumber, std::initializer_list<int> alignmentPatternCenters, const std::array<ECBlocks, 4>& ecBlocks)
 	: _versionNumber(versionNumber), _alignmentPatternCenters(alignmentPatternCenters), _ecBlocks(ecBlocks), _isMicro(false)
 {
@@ -322,26 +317,20 @@ Version::Version(int versionNumber, const std::array<ECBlocks, 4>& ecBlocks)
 
 const Version* Version::VersionForNumber(int versionNumber, bool isMicro)
 {
-	constexpr int minVersion = 1;
-	const int maxVersion = isMicro ? 4 : 40;
-	if (versionNumber < minVersion || versionNumber > maxVersion) {
+	if (versionNumber < 1 || versionNumber > (isMicro ? 4 : 40)) {
 		//throw std::invalid_argument("Version should be in range [1-40].");
 		return nullptr;
 	}
-	if (isMicro)
-		return &AllMicroVersions()[versionNumber - 1];
-	return &AllVersions()[versionNumber - 1];
+	return &(isMicro ? AllMicroVersions() : AllVersions())[versionNumber - 1];
 }
 
 const Version* Version::ProvisionalVersionForDimension(int dimension, bool isMicro)
 {
-	const int dimensionStep = isMicro ? MICRO_DIMENSION_STEP : DIMENSION_STEP;
-	const int dimensionOffset = isMicro ? MICRO_DIMENSION_OFFSET : DIMENSION_OFFSET;
-	if (dimension % dimensionStep != 1) {
+	if (dimension % DimensionStep(isMicro) != 1) {
 		//throw std::invalid_argument("Unexpected dimension");
 		return nullptr;
 	}
-	return VersionForNumber((dimension - dimensionOffset) / dimensionStep, isMicro);
+	return VersionForNumber((dimension - DimensionOffset(isMicro)) / DimensionStep(isMicro), isMicro);
 }
 
 const Version* Version::DecodeVersionInformation(int versionBits)
@@ -422,13 +411,6 @@ BitMatrix Version::buildFunctionPattern() const
 	}
 
 	return bitMatrix;
-}
-
-int Version::dimensionForVersion() const
-{
-	if (_isMicro)
-		return MICRO_DIMENSION_OFFSET + MICRO_DIMENSION_STEP * _versionNumber;
-	return DIMENSION_OFFSET + DIMENSION_STEP * _versionNumber;
 }
 
 } // namespace ZXing::QRCode

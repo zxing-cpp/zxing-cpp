@@ -43,13 +43,16 @@ public:
 
 	int totalCodewords() const { return _totalCodewords; }
 
-	int dimensionForVersion() const;
+	int dimensionForVersion() const { return DimensionOffset(_isMicro) + DimensionStep(_isMicro) * _versionNumber; }
 
 	const ECBlocks& ecBlocksForLevel(ErrorCorrectionLevel ecLevel) const { return _ecBlocks[(int)ecLevel]; }
 
 	BitMatrix buildFunctionPattern() const;
 
 	bool isMicroQRCode() const { return _isMicro; }
+
+	static constexpr int DimensionStep(bool isMicro) { return std::array{4, 2}[isMicro]; }
+	static constexpr int DimensionOffset(bool isMicro) { return std::array{17, 9}[isMicro]; }
 
 	/**
 	* <p>Deduces version information purely from micro QR or QR Code dimensions.</p>

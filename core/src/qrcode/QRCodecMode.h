@@ -41,11 +41,11 @@ enum class CodecMode
 
 /**
  * @param bits variable number of bits encoding a QR Code data mode
- * @param version which determines number of bits encoding data mode
+ * @param isMicro is this a MicroQRCode
  * @return Mode encoded by these bits
  * @throws IllegalArgumentException if bits do not correspond to a known mode
  */
-CodecMode CodecModeForBits(int bits, const Version& version);
+CodecMode CodecModeForBits(int bits, bool isMirco = false);
 
 /**
  * @param version version in question

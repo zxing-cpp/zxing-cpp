@@ -29,7 +29,7 @@ static const int FORMAT_INFO_MASK_MICRO_QR = 0x4445;
 /**
 * See ISO 18004:2006, Annex C, Table C.1
 */
-static const std::array<int, 2> FORMAT_INFO_DECODE_LOOKUP[] = {
+static const std::array<std::pair<int, int>, 32> FORMAT_INFO_DECODE_LOOKUP = {{
 	{0x5412, 0x00},
 	{0x5125, 0x01},
 	{0x5E7C, 0x02},
@@ -62,9 +62,9 @@ static const std::array<int, 2> FORMAT_INFO_DECODE_LOOKUP[] = {
 	{0x2183, 0x1D},
 	{0x2EDA, 0x1E},
 	{0x2BED, 0x1F},
-};
+}};
 
-static const std::array<int, 2> FORMAT_INFO_DECODE_LOOKUP_MICRO[] = {
+static const std::array<std::pair<int, int>, 32> FORMAT_INFO_DECODE_LOOKUP_MICRO = {{
 	{0x4445, 0x00},
 	{0x4172, 0x01},
 	{0x4E2B, 0x02},
@@ -97,11 +97,34 @@ static const std::array<int, 2> FORMAT_INFO_DECODE_LOOKUP_MICRO[] = {
 	{0x31D4, 0x1D},
 	{0x3E8D, 0x1E},
 	{0x3BBA, 0x1F},
-};
+}};
 
 FormatInformation::FormatInformation(const ErrorCorrectionLevel& errorCorrectionLevel, const uint8_t& dataMask)
 	: _errorCorrectionLevel(errorCorrectionLevel), _dataMask(dataMask)
 {
+}
+
+static int FindBestFormatInfo(int mask, const std::array<std::pair<int, int>, 32> lookup, const std::vector<uint32_t>& bits)
+{
+	// Find the int in lookup with fewest bits differing
+	int bestDifference = 32;
+	int bestFormatInfo = -1;
+
+	// Some QR codes apparently do not apply the XOR mask. Try without and with additional masking.
+	for (auto mask : {0, mask})
+		for (uint32_t bits : bits)
+			for (const auto& [pattern, decodedInfo] : lookup)
+				if (int bitsDifference = BitHacks::CountBitsSet((bits ^ mask) ^ pattern); bitsDifference < bestDifference) {
+					bestFormatInfo = decodedInfo;
+					bestDifference = bitsDifference;
+				}
+
+	// Hamming distance of the 32 masked codes is 7, by construction, so <= 3 bits
+	// differing means we found a match
+	if (bestDifference <= 3)
+		return bestFormatInfo;
+
+	return -1;
 }
 
 /**
@@ -114,59 +137,28 @@ FormatInformation::FormatInformation(const ErrorCorrectionLevel& errorCorrection
 FormatInformation
 FormatInformation::DecodeFormatInformation(uint32_t formatInfoBits1, uint32_t formatInfoBits2)
 {
-	// Find the int in FORMAT_INFO_DECODE_LOOKUP with fewest bits differing
-	int bestDifference = 32;
-	int bestFormatInfo = -1;
+	int bestFormatInfo = FindBestFormatInfo(FORMAT_INFO_MASK_QR, FORMAT_INFO_DECODE_LOOKUP, {formatInfoBits1, formatInfoBits2});
+	if (bestFormatInfo < 0)
+		return {};
 
-	// Some QR codes apparently do not apply the XOR mask. Try without and with additional masking.
-	for (auto mask : {0, FORMAT_INFO_MASK_QR})
-		for (uint32_t bits : {formatInfoBits1 ^ mask, formatInfoBits2 ^ mask})
-			for (auto& [pattern, decodedInfo] : FORMAT_INFO_DECODE_LOOKUP)
-				if (int bitsDifference = BitHacks::CountBitsSet(bits ^ pattern); bitsDifference < bestDifference) {
-					bestFormatInfo = decodedInfo;
-					bestDifference = bitsDifference;
-				}
-
-	// Hamming distance of the 32 masked codes is 7, by construction, so <= 3 bits
-	// differing means we found a match
-	if (bestDifference <= 3)
-		// Use bits 3/4 for error correction, and 0-2 for mask.
-		return {ECLevelFromBits((bestFormatInfo >> 3) & 0x03), static_cast<uint8_t>(bestFormatInfo & 0x07)};
-
-	return {};
+	// Use bits 3/4 for error correction, and 0-2 for mask.
+	return {ECLevelFromBits((bestFormatInfo >> 3) & 0x03), static_cast<uint8_t>(bestFormatInfo & 0x07)};
 }
 
 /**
- * @param formatInfoBits1 format info indicator, with mask still applied
- * @param formatInfoBits2 second copy of same info; both are checked at the same time
- *  to establish best match
+ * @param formatInfoBits format info indicator, with mask still applied
  * @return information about the format it specifies, or {@code null}
  *  if doesn't seem to match any known pattern
  */
 FormatInformation FormatInformation::DecodeFormatInformation(uint32_t formatInfoBits)
 {
-	// Find the int in FORMAT_INFO_DECODE_LOOKUP with fewest bits differing
-	int bestDifference = 32;
-	int bestFormatInfo = -1;
+	int bestFormatInfo = FindBestFormatInfo(FORMAT_INFO_MASK_MICRO_QR, FORMAT_INFO_DECODE_LOOKUP_MICRO, {formatInfoBits});
+	if (bestFormatInfo < 0)
+		return {};
 
-	// Some QR codes apparently do not apply the XOR mask. Try without and with additional masking.
-	for (auto mask : {0, FORMAT_INFO_MASK_MICRO_QR}) {
-		uint32_t bits = formatInfoBits ^ mask;
-		for (auto& [pattern, decodedInfo] : FORMAT_INFO_DECODE_LOOKUP_MICRO)
-			if (int bitsDifference = BitHacks::CountBitsSet(bits ^ pattern); bitsDifference < bestDifference) {
-				bestFormatInfo = decodedInfo;
-				bestDifference = bitsDifference;
-			}
-	}
-
-	// Hamming distance of the 32 masked codes is 7, by construction, so <= 3 bits
-	// differing means we found a match
-	if (bestDifference <= 3)
-		// Use bits 2/3/4 for error correction, and 0/1 for mask.
-		// This is different to regular QR code.
-		return {ECLevelFromBits((bestFormatInfo >> 2) & 0x07, true), static_cast<uint8_t>(bestFormatInfo & 0x03)};
-
-	return {};
+	// Use bits 2/3/4 for error correction, and 0/1 for mask.
+	// This is different to regular QR code.
+	return {ECLevelFromBits((bestFormatInfo >> 2) & 0x07, true), static_cast<uint8_t>(bestFormatInfo & 0x03)};
 }
 
 } // namespace ZXing::QRCode

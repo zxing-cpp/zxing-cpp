@@ -27,11 +27,11 @@ namespace QRCode {
 */
 enum class ErrorCorrectionLevel
 {
-	Low,			// L = ~7 % correction
-	Medium,			// M = ~15% correction
-	Quality,		// Q = ~25% correction
-	High,			// H = ~30% correction
-	Invalid,		// denotes in invalid/unknown value
+	Low,     // L = ~7 % correction
+	Medium,  // M = ~15% correction
+	Quality, // Q = ~25% correction
+	High,    // H = ~30% correction
+	Invalid, // denotes in invalid/unknown value
 };
 
 const wchar_t* ToString(ErrorCorrectionLevel l);

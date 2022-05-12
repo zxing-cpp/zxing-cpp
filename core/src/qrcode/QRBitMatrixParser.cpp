@@ -38,7 +38,8 @@ static bool hasValidDimension(const BitMatrix& bitMatrix, bool isMicro)
 	int dimension = bitMatrix.height();
 	if (isMicro)
 		return dimension >= 11 && dimension <= 17 && (dimension % 2) == 1;
-	return dimension >= 21 && dimension <= 177 && (dimension % 4) == 1;
+	else
+		return dimension >= 21 && dimension <= 177 && (dimension % 4) == 1;
 }
 
 const Version* ReadVersion(const BitMatrix& bitMatrix, bool isMicro)
@@ -47,10 +48,8 @@ const Version* ReadVersion(const BitMatrix& bitMatrix, bool isMicro)
 		return nullptr;
 
 	int dimension = bitMatrix.height();
-	int dimensionStart = isMicro ? 9 : 17;
-	int dimensionStep = isMicro ? 2 : 4;
 
-	int provisionalVersion = (dimension - dimensionStart) / dimensionStep;
+	int provisionalVersion = (dimension - Version::DimensionOffset(isMicro)) / Version::DimensionStep(isMicro);
 	if (provisionalVersion <= 6)
 		return Version::VersionForNumber(provisionalVersion, isMicro);
 
@@ -109,8 +108,46 @@ FormatInformation ReadFormatInformation(const BitMatrix& bitMatrix, bool mirrore
 	return FormatInformation::DecodeFormatInformation(formatInfoBits1, formatInfoBits2);
 }
 
-ByteArray readMicroCodewords(const BitMatrix& bitMatrix, const QRCode::Version& version, const QRCode::FormatInformation& formatInformation,
-						bool mirrored)
+static ByteArray ReadQRCodewords(const BitMatrix& bitMatrix, const Version& version, int maskIndex, bool mirrored)
+{
+	BitMatrix functionPattern = version.buildFunctionPattern();
+
+	ByteArray result;
+	result.reserve(version.totalCodewords());
+	uint8_t currentByte = 0;
+	bool readingUp = true;
+	int bitsRead = 0;
+	int dimension = bitMatrix.height();
+	// Read columns in pairs, from right to left
+	for (int x = dimension - 1; x > 0; x -= 2) {
+		// Skip whole column with vertical timing pattern.
+		if (x == 6)
+			x--;
+		// Read alternatingly from bottom to top then top to bottom
+		for (int row = 0; row < dimension; row++) {
+			int y = readingUp ? dimension - 1 - row : row;
+			for (int col = 0; col < 2; col++) {
+				int xx = x - col;
+				// Ignore bits covered by the function pattern
+				if (!functionPattern.get(xx, y)) {
+					// Read a bit
+					AppendBit(currentByte, GetDataMaskBit(maskIndex, xx, y) != getBit(bitMatrix, xx, y, mirrored));
+					// If we've made a whole byte, save it off
+					if (++bitsRead % 8 == 0)
+						result.push_back(std::exchange(currentByte, 0));
+				}
+			}
+		}
+		readingUp = !readingUp; // switch directions
+	}
+	if (Size(result) != version.totalCodewords())
+		return {};
+
+	return result;
+}
+
+static ByteArray ReadMQRCodewords(const BitMatrix& bitMatrix, const QRCode::Version& version,
+								  const FormatInformation& formatInformation, bool mirrored)
 {
 	BitMatrix functionPattern = version.buildFunctionPattern();
 
@@ -138,7 +175,7 @@ ByteArray readMicroCodewords(const BitMatrix& bitMatrix, const QRCode::Version& 
 				if (!functionPattern.get(xx, y)) {
 					// Read a bit
 					AppendBit(currentByte,
-							  QRCode::GetDataMaskBit(formatInformation.dataMask(), xx, y, true) != getBit(bitMatrix, xx, y, mirrored));
+							  GetDataMaskBit(formatInformation.dataMask(), xx, y, true) != getBit(bitMatrix, xx, y, mirrored));
 					++bitsRead;
 					// If we've made a whole byte, save it off; save early if 2x2 data block.
 					if (bitsRead == 8 || (bitsRead == 4 && hasD4mBlock && Size(result) == d4mBlockIndex - 1)) {
@@ -162,43 +199,8 @@ ByteArray ReadCodewords(const BitMatrix& bitMatrix, const Version& version, cons
 	if (!hasValidDimension(bitMatrix, version.isMicroQRCode()))
 		return {};
 
-	if (version.isMicroQRCode())
-		return readMicroCodewords(bitMatrix, version, formatInformation, mirrored);
-
-	BitMatrix functionPattern = version.buildFunctionPattern();
-
-	ByteArray result;
-	result.reserve(version.totalCodewords());
-	uint8_t currentByte = 0;
-	bool readingUp = true;
-	int bitsRead = 0;
-	int dimension = bitMatrix.height();
-	// Read columns in pairs, from right to left
-	for (int x = dimension - 1; x > 0; x -= 2) {
-		// Skip whole column with vertical timing pattern.
-		if (x == 6)
-			x--;
-		// Read alternatingly from bottom to top then top to bottom
-		for (int row = 0; row < dimension; row++) {
-			int y = readingUp ? dimension - 1 - row : row;
-			for (int col = 0; col < 2; col++) {
-				int xx = x - col;
-				// Ignore bits covered by the function pattern
-				if (!functionPattern.get(xx, y)) {
-					// Read a bit
-					AppendBit(currentByte, GetDataMaskBit(formatInformation.dataMask(), xx, y) != getBit(bitMatrix, xx, y, mirrored));
-					// If we've made a whole byte, save it off
-					if (++bitsRead % 8 == 0)
-						result.push_back(std::exchange(currentByte, 0));
-				}
-			}
-		}
-		readingUp = !readingUp; // switch directions
-	}
-	if (Size(result) != version.totalCodewords())
-		return {};
-
-	return result;
+	return version.isMicroQRCode() ? ReadMQRCodewords(bitMatrix, version, formatInformation, mirrored)
+								   : ReadQRCodewords(bitMatrix, version, formatInformation.dataMask(), mirrored);
 }
 
 } // namespace ZXing::QRCode

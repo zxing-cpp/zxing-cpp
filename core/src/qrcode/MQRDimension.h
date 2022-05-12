@@ -26,16 +26,16 @@ namespace MicroQRCode {
  * @param estimatedDimension The estimated dimension
  * @return The real dimension
  */
-static int RoundUpDimension(int estimatedDimension)
+inline int RoundUpDimension(int estimatedDimension)
 {
-	if (estimatedDimension < 12) {
+	if (estimatedDimension < 12)
 		return 11;
-	} else if (estimatedDimension >= 12 && estimatedDimension < 14) {
+	else if (estimatedDimension < 14)
 		return 13;
-	} else if (estimatedDimension >= 14 && estimatedDimension < 16) {
+	else if (estimatedDimension < 16)
 		return 15;
-	}
-	return 17;
+	else
+		return 17;
 }
 
 /**
@@ -44,7 +44,7 @@ static int RoundUpDimension(int estimatedDimension)
  * @param estimatedDimension The estimated dimension
  * @return The real dimension
  */
-static int RoundOffDimension(int estimatedDimension)
+inline int RoundOffDimension(int estimatedDimension)
 {
 	switch (estimatedDimension & 0x03) { // mod 4
 	case 0: estimatedDimension++; break;

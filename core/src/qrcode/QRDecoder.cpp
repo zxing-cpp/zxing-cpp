@@ -327,10 +327,11 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 			if (bits.available() < minimumBitsRequired || IsTerminator(bits, version)) {
 				// OK, assume we're done. Really, a TERMINATOR mode should have been recorded here
 				mode = CodecMode::TERMINATOR;
-			} else if (version.isMicroQRCode() && version.versionNumber() == 1) {
+			} else if (modeBitLength == 0) {
+				// MicroQRCode version 1 is always NUMERIC and modeBitLength is 0
 				mode = CodecMode::NUMERIC;
 			} else {
-				mode = CodecModeForBits(bits.readBits(modeBitLength), version);
+				mode = CodecModeForBits(bits.readBits(modeBitLength), version.isMicroQRCode());
 			}
 			switch (mode) {
 			case CodecMode::TERMINATOR:
