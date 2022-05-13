@@ -50,8 +50,21 @@ const Version* ReadVersion(const BitMatrix& bitMatrix, bool isMicro)
 	int dimension = bitMatrix.height();
 
 	int provisionalVersion = (dimension - Version::DimensionOffset(isMicro)) / Version::DimensionStep(isMicro);
+	if (isMicro) {
+		int verticalVersionBits = 0;
+		for (int y = 8; y < dimension; ++y)
+			AppendBit(verticalVersionBits, getBit(bitMatrix, 0, y, false));
+		int horizontalVersionBits = 0;
+		for (int x = 8; x < dimension; ++x)
+			AppendBit(horizontalVersionBits, getBit(bitMatrix, x, 0, false));
+		auto theParsedVersion = Version::DecodeVersionInformation(verticalVersionBits, horizontalVersionBits);
+		if (theParsedVersion != nullptr && theParsedVersion->dimensionForVersion() == dimension)
+			return theParsedVersion;
+		return nullptr;
+	}
+
 	if (provisionalVersion <= 6)
-		return Version::VersionForNumber(provisionalVersion, isMicro);
+		return Version::VersionForNumber(provisionalVersion);
 
 	for (bool mirror : {false, true}) {
 		// Read top-right/bottom-left version info: 3 wide by 6 tall (depending on mirrored)

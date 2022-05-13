@@ -65,7 +65,7 @@ public:
 	static const Version* VersionForNumber(int versionNumber, bool isMicro = false);
 
 	static const Version* DecodeVersionInformation(int versionBits);
-	
+	static const Version* DecodeVersionInformation(int verticalVersionBits, int horizontalVersionBits);
 private:
 	int _versionNumber;
 	std::vector<int> _alignmentPatternCenters;
