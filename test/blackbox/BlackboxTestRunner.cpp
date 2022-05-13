@@ -659,12 +659,12 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 0, 0, pure },
 		});
 
-		runTests("microqrcode-1", "MicroQRCode", 13, {
-			{ 13, 13, 0   },
-			{ 9, 9, 90  },
-			{ 9, 9, 180 },
+		runTests("microqrcode-1", "MicroQRCode", 14, {
+			{ 12, 12, 0   },
+			{ 11, 11, 90  },
+			{ 11, 11, 180 },
 			{ 11, 11, 270 },
-			{ 4, 0, pure },
+			{ 8, 0, pure },
 		});
 		// clang-format on
 
