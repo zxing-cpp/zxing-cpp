@@ -40,7 +40,7 @@ public:
 	Results decode(const BinaryBitmap& image, int maxSymbols) const override;
 
 private:
-	bool _tryHarder, _isPure;
+	bool _tryHarder, _isPure, _testQR, _testMQR;
 	std::string _charset;
 };
 

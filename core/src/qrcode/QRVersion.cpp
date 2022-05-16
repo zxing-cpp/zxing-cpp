@@ -361,19 +361,6 @@ const Version* Version::DecodeVersionInformation(int versionBits)
 	return nullptr;
 }
 
-const Version* Version::DecodeVersionInformation(int verticalVersionBits, int horizontalVersionBits)
-{
-	if (verticalVersionBits != horizontalVersionBits)
-		return nullptr;
-	switch (verticalVersionBits) {
-	case 0x05: return VersionForNumber(1, true);
-	case 0x15: return VersionForNumber(2, true);
-	case 0x55: return VersionForNumber(3, true);
-	case 0x155: return VersionForNumber(4, true);
-	}
-	return nullptr;
-}
-
 /**
 * See ISO 18004:2006 Annex E
 */

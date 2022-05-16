@@ -71,7 +71,7 @@ enum class BarcodeFormat
 	UPC_A [[deprecated]]        = UPCA,
 	UPC_E [[deprecated]]        = UPCE,
 
-	_max                        = UPCE, ///> implementation detail, don't use
+	_max                        = MicroQRCode, ///> implementation detail, don't use
 };
 
 ZX_DECLARE_FLAGS(BarcodeFormats, BarcodeFormat)

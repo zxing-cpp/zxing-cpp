@@ -30,6 +30,10 @@
 
 #include "BitMatrixIO.h"
 
+#include "BitArray.h"
+#include "QRFormatInformation.h"
+#include "QRVersion.h"
+
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
@@ -41,10 +45,8 @@
 namespace ZXing::QRCode {
 
 constexpr auto PATTERN    = FixedPattern<5, 7>{1, 1, 3, 1, 1};
-constexpr int MIN_MODULES = 1 * 4 + 17; // version 1
-constexpr int MAX_MODULES = 40 * 4 + 17; // version 40
 
-static auto FindFinderPatterns(const BitMatrix& image, bool tryHarder)
+std::vector<ConcentricPattern> FindFinderPatterns(const BitMatrix& image, bool tryHarder)
 {
 	constexpr int MIN_SKIP         = 3;           // 1 pixel/module times 3 modules/center
 	constexpr int MAX_MODULES_FAST = 20 * 4 + 17; // support up to version 20 for mobile clients
@@ -93,7 +95,7 @@ static auto FindFinderPatterns(const BitMatrix& image, bool tryHarder)
  * @param patterns list of ConcentricPattern objects, i.e. found finder pattern squares
  * @return list of plausible finder pattern sets, sorted by decreasing plausibility
  */
-static FinderPatternSets GenerateFinderPatternSets(std::vector<ConcentricPattern>&& patterns)
+FinderPatternSets GenerateFinderPatternSets(FinderPatterns&& patterns)
 {
 	std::sort(patterns.begin(), patterns.end(), [](const auto& a, const auto& b) { return a.size < b.size; });
 
@@ -324,13 +326,16 @@ DetectorResult SampleAtFinderPatternSet(const BitMatrix& image, const FinderPatt
 * around it. This is a specialized method that works exceptionally fast in this special
 * case.
 */
-static DetectorResult DetectPure(const BitMatrix& image)
+DetectorResult DetectPure(const BitMatrix& image)
 {
 	using Pattern = std::array<PatternView::value_type, PATTERN.size()>;
 
 #ifdef PRINT_DEBUG
 	SaveAsPBM(image, "weg.pbm");
 #endif
+
+	constexpr int MIN_MODULES = Version::DimensionOfVersion(1, false);
+	constexpr int MAX_MODULES = Version::DimensionOfVersion(40, false);
 
 	int left, top, width, height;
 	if (!image.findBoundingBox(left, top, width, height, MIN_MODULES) || std::abs(width - height) > 1)
@@ -351,6 +356,46 @@ static DetectorResult DetectPure(const BitMatrix& image)
 	auto dimension = EstimateDimension(image, tl + fpWidth / 2 * PointF(1, 1), tr + fpWidth / 2 * PointF(-1, 1)).dim;
 
 	float moduleSize = float(width) / dimension;
+	if (dimension < MIN_MODULES || dimension > MAX_MODULES ||
+		!image.isIn(PointF{left + moduleSize / 2 + (dimension - 1) * moduleSize,
+						   top + moduleSize / 2 + (dimension - 1) * moduleSize}))
+		return {};
+
+#ifdef PRINT_DEBUG
+	LogMatrix log;
+	LogMatrixWriter lmw(log, image, 5, "grid2.pnm");
+	for (int y = 0; y < dimension; y++)
+		for (int x = 0; x < dimension; x++)
+			log(PointF(left + (x + .5f) * moduleSize, top + (y + .5f) * moduleSize));
+#endif
+
+	// Now just read off the bits (this is a crop + subsample)
+	return {Deflate(image, dimension, dimension, top + moduleSize / 2, left + moduleSize / 2, moduleSize),
+			{{left, top}, {right, top}, {right, bottom}, {left, bottom}}};
+}
+
+DetectorResult DetectPureMicroQR(const BitMatrix& image)
+{
+	using Pattern = std::array<PatternView::value_type, PATTERN.size()>;
+
+	constexpr int MIN_MODULES = Version::DimensionOfVersion(1, true);
+	constexpr int MAX_MODULES = Version::DimensionOfVersion(4, true);
+
+	int left, top, width, height;
+	if (!image.findBoundingBox(left, top, width, height, MIN_MODULES) || std::abs(width - height) > 1)
+		return {};
+	int right  = left + width - 1;
+	int bottom = top + height - 1;
+
+	// allow corners be moved one pixel inside to accommodate for possible aliasing artifacts
+	auto diagonal = BitMatrixCursorI(image, {left, top}, {1, 1}).readPatternFromBlack<Pattern>(1);
+	if (!IsPattern(diagonal, PATTERN))
+		return {};
+
+	auto fpWidth = Reduce(diagonal);
+	float moduleSize = float(fpWidth) / 7;
+	auto dimension = width / moduleSize;
+
 	if (dimension < MIN_MODULES || dimension > MAX_MODULES ||
 		!image.isIn(PointF{left + moduleSize / 2 + (dimension - 1) * moduleSize,
 						   top + moduleSize / 2 + (dimension - 1) * moduleSize}))
@@ -393,6 +438,43 @@ DetectorResult Detect(const BitMatrix& image, bool tryHarder, bool isPure)
 #endif
 
 	return SampleAtFinderPatternSet(image, sets[0]);
+}
+
+DetectorResult SampleAtFinderPattern(const BitMatrix& image, const ConcentricPattern& fp)
+{
+	auto fpQuad = FindConcentricPatternCorners(image, fp, fp.size, 2);
+	if (!fpQuad)
+		return {};
+
+	auto srcQuad = Rectangle(7, 7, 0.5);
+
+	constexpr PointI FORMAT_INFO_COORDS[] = {{0, 8}, {1, 8}, {2, 8}, {3, 8}, {4, 8}, {5, 8}, {6, 8}, {7, 8}, {8, 8},
+											 {8, 7}, {8, 6}, {8, 5}, {8, 4}, {8, 3}, {8, 2}, {8, 1}, {8, 0}};
+
+	for (int i = 0; i < 4; ++i) {
+		auto mod2Pix = PerspectiveTransform(srcQuad, RotatedCorners(*fpQuad, i));
+
+		auto check = [&](int i, bool checkOne) {
+			auto p = mod2Pix(centered(FORMAT_INFO_COORDS[i]));
+			return image.isIn(p) && (!checkOne || image.get(p));
+		};
+
+		// check that we see both innermost timing pattern modules
+		if (!check(0, true) || !check(8, false) || !check(16, true))
+			continue;
+
+		int formatInfoBits = 0;
+		for (int i = 1; i <= 15; ++i)
+			AppendBit(formatInfoBits, image.get(mod2Pix(centered(FORMAT_INFO_COORDS[i]))));
+
+		auto fi = FormatInformation::DecodeFormatInformation(formatInfoBits);
+		if (fi.isValid() && fi.microVersion()) {
+			const int dim = Version::DimensionOfVersion(fi.microVersion(), true);
+			return SampleGrid(image, dim, dim, mod2Pix);
+		}
+	}
+
+	return {};
 }
 
 } // namespace ZXing::QRCode

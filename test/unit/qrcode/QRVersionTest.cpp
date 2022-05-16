@@ -41,12 +41,6 @@ namespace {
 		EXPECT_EQ(expectedVersion, version->versionNumber());
 	}
 
-	void DoTestMicroVersion(int expectedVersion, int verticalBits, int horizontalBits) {
-		auto version = Version::DecodeVersionInformation(verticalBits, horizontalBits);
-		ASSERT_NE(version, nullptr);
-		EXPECT_EQ(expectedVersion, version->versionNumber());
-		EXPECT_TRUE(version->isMicroQRCode());
-	}
 }
 
 TEST(QRVersionTest, VersionForNumber)
@@ -118,14 +112,4 @@ TEST(QRVersionTest, FunctionPattern)
 		for (int col = dimension; col < functionPattern.width(); col++)
 			EXPECT_TRUE(functionPattern.get(col, 0));
 	}
-}
-
-TEST(QRVersionTest, DecodeMicroVersionInformation)
-{
-	DoTestMicroVersion(1, 0x5, 0x5);
-	DoTestMicroVersion(2, 0x15, 0x15);
-	DoTestMicroVersion(3, 0x55, 0x55);
-	DoTestMicroVersion(4, 0x155, 0x155);
-
-	EXPECT_EQ(nullptr, Version::DecodeVersionInformation(0x5, 0x4));
 }

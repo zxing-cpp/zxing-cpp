@@ -24,7 +24,6 @@
 namespace ZXing::QRCode {
 
 static const int FORMAT_INFO_MASK_QR = 0x5412;
-static const int FORMAT_INFO_MASK_MICRO_QR = 0x4445;
 
 /**
 * See ISO 18004:2006, Annex C, Table C.1
@@ -99,11 +98,6 @@ static const std::array<std::pair<int, int>, 32> FORMAT_INFO_DECODE_LOOKUP_MICRO
 	{0x3BBA, 0x1F},
 }};
 
-FormatInformation::FormatInformation(const ErrorCorrectionLevel& errorCorrectionLevel, const uint8_t& dataMask)
-	: _errorCorrectionLevel(errorCorrectionLevel), _dataMask(dataMask)
-{
-}
-
 static int FindBestFormatInfo(int mask, const std::array<std::pair<int, int>, 32> lookup, const std::vector<uint32_t>& bits)
 {
 	// Find the int in lookup with fewest bits differing
@@ -152,13 +146,16 @@ FormatInformation::DecodeFormatInformation(uint32_t formatInfoBits1, uint32_t fo
  */
 FormatInformation FormatInformation::DecodeFormatInformation(uint32_t formatInfoBits)
 {
-	int bestFormatInfo = FindBestFormatInfo(FORMAT_INFO_MASK_MICRO_QR, FORMAT_INFO_DECODE_LOOKUP_MICRO, {formatInfoBits});
+	// We don't use the additional masking (with 0x4445) to work around potentially non complying MircoQRCode encoders
+	int bestFormatInfo = FindBestFormatInfo(0, FORMAT_INFO_DECODE_LOOKUP_MICRO, {formatInfoBits});
 	if (bestFormatInfo < 0)
 		return {};
 
-	// Use bits 2/3/4 for error correction, and 0/1 for mask.
-	// This is different to regular QR code.
-	return {ECLevelFromBits((bestFormatInfo >> 2) & 0x07, true), static_cast<uint8_t>(bestFormatInfo & 0x03)};
+	constexpr uint8_t BITS_TO_VERSION[] = {1, 2, 2, 3, 3, 4, 4, 4};
+
+	// Bits 2/3/4 contain both error correction level and version, 0/1 contain mask.
+	return {ECLevelFromBits((bestFormatInfo >> 2) & 0x07, true), static_cast<uint8_t>(bestFormatInfo & 0x03),
+			BITS_TO_VERSION[(bestFormatInfo >> 2) & 0x07]};
 }
 
 } // namespace ZXing::QRCode

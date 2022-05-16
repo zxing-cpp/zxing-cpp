@@ -43,7 +43,7 @@ public:
 
 	int totalCodewords() const { return _totalCodewords; }
 
-	int dimensionForVersion() const { return DimensionOffset(_isMicro) + DimensionStep(_isMicro) * _versionNumber; }
+	int dimensionForVersion() const { return DimensionOfVersion(_versionNumber, _isMicro); }
 
 	const ECBlocks& ecBlocksForLevel(ErrorCorrectionLevel ecLevel) const { return _ecBlocks[(int)ecLevel]; }
 
@@ -53,6 +53,10 @@ public:
 
 	static constexpr int DimensionStep(bool isMicro) { return std::array{4, 2}[isMicro]; }
 	static constexpr int DimensionOffset(bool isMicro) { return std::array{17, 9}[isMicro]; }
+	static constexpr int DimensionOfVersion(int version, bool isMicro)
+	{
+		return DimensionOffset(isMicro) + DimensionStep(isMicro) * version;
+	}
 
 	/**
 	* <p>Deduces version information purely from micro QR or QR Code dimensions.</p>
@@ -65,7 +69,6 @@ public:
 	static const Version* VersionForNumber(int versionNumber, bool isMicro = false);
 
 	static const Version* DecodeVersionInformation(int versionBits);
-	static const Version* DecodeVersionInformation(int verticalVersionBits, int horizontalVersionBits);
 private:
 	int _versionNumber;
 	std::vector<int> _alignmentPatternCenters;
