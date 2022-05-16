@@ -115,6 +115,14 @@ PointT Center(const Quadrilateral<PointT>& q)
 }
 
 template <typename PointT>
+Quadrilateral<PointT> RotatedCorners(const Quadrilateral<PointT>& q, int n = 1)
+{
+	Quadrilateral<PointT> res;
+	std::rotate_copy(q.begin(), q.begin() + ((n + 4) % 4), q.end(), res.begin());
+	return res;
+}
+
+template <typename PointT>
 bool IsInside(const PointT& p, const Quadrilateral<PointT>& q)
 {
 	// Test if p is on the same side (right or left) of all polygon segments

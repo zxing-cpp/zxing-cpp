@@ -39,7 +39,6 @@ public:
 	Result decodePattern(int rowNumber, PatternView& next, std::unique_ptr<DecodingState>&) const override;
 
 private:
-	bool _canReturnUPCA = false;
 	DecodeHints _hints;
 };
 

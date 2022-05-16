@@ -27,12 +27,7 @@
 
 namespace ZXing::OneD {
 
-MultiUPCEANReader::MultiUPCEANReader(const DecodeHints& hints) : _hints(hints)
-{
-	_canReturnUPCA = _hints.formats().empty() || _hints.hasFormat(BarcodeFormat::UPCA);
-	if (_hints.formats().empty())
-		_hints.setFormats(BarcodeFormat::Any);
-}
+MultiUPCEANReader::MultiUPCEANReader(const DecodeHints& hints) : _hints(hints) {}
 
 MultiUPCEANReader::~MultiUPCEANReader() = default;
 
@@ -297,7 +292,7 @@ Result MultiUPCEANReader::decodePattern(int rowNumber, PatternView& next, std::u
 	// If UPC-A was a requested format and we detected a EAN-13 code with a leading '0', then we drop the '0' and call it
 	// a UPC-A code.
 	// TODO: this is questionable
-	if (_canReturnUPCA && res.format == BarcodeFormat::EAN13 && res.txt.front() == '0') {
+	if (_hints.hasFormat(BarcodeFormat::UPCA) && res.format == BarcodeFormat::EAN13 && res.txt.front() == '0') {
 		res.txt = res.txt.substr(1);
 		res.format = BarcodeFormat::UPCA;
 	}

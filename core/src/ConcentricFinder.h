@@ -17,6 +17,7 @@
 
 #include "BitMatrixCursor.h"
 #include "Pattern.h"
+#include "Quadrilateral.h"
 #include "ZXContainerAlgorithms.h"
 
 #include <optional>
@@ -75,6 +76,8 @@ int CheckDirection(BitMatrixCursorF& cur, PointF dir, FinderPattern finderPatter
 std::optional<PointF> CenterOfRing(const BitMatrix& image, PointI center, int range, int nth, bool requireCircle = true);
 
 std::optional<PointF> FinetuneConcentricPatternCenter(const BitMatrix& image, PointF center, int range, int finderPatternSize);
+
+std::optional<QuadrilateralF> FindConcentricPatternCorners(const BitMatrix& image, PointF center, int range, int ringIndex);
 
 struct ConcentricPattern : public PointF
 {
