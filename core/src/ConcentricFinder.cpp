@@ -17,6 +17,7 @@
 #include "ConcentricFinder.h"
 
 #include "LogMatrix.h"
+#include "RegressionLine.h"
 
 namespace ZXing {
 
@@ -103,6 +104,98 @@ std::optional<PointF> FinetuneConcentricPatternCenter(const BitMatrix& image, Po
 		res = center;
 	if (!res || !image.get(*res))
 		return {};
+	return res;
+}
+
+static std::vector<PointF> CollectRingPoints(const BitMatrix& image, PointF center, int range, int edgeIndex, bool backup)
+{
+	PointI centerI(center);
+	BitMatrixCursorI cur(image, centerI, {0, 1});
+	cur.stepToEdge(edgeIndex, range, backup);
+	cur.turnRight(); // move clock wise and keep edge on the right/left depending on backup
+	const auto edgeDir = backup ? Direction::LEFT : Direction::RIGHT;
+
+	uint32_t neighbourMask = 0;
+	auto start = cur.p;
+	std::vector<PointF> points;
+	points.reserve(4 * range);
+
+	do {
+		log(cur.p, 4);
+		points.push_back(centered(cur.p));
+
+		// find out if we come full circle around the center. 8 bits have to be set in the end.
+		neighbourMask |= (1 << (4 + dot(bresenhamDirection(cur.p - centerI), PointI(1, 3))));
+
+		if (!cur.stepAlongEdge(edgeDir))
+			return {};
+
+		// use L-inf norm, simply because it is a lot faster than L2-norm and sufficiently accurate
+		if (maxAbsComponent(cur.p - center) > range || centerI == cur.p || Size(points) > 4 * 2 * range)
+			return {};
+
+	} while (cur.p != start);
+
+	if (neighbourMask != 0b111101111)
+		return {};
+
+	return points;
+}
+
+static QuadrilateralF FitQadrilateralToPoints(PointF center, std::vector<PointF>& points)
+{
+	auto dist2Center = [c = center](auto a, auto b) { return distance(a, c) < distance(b, c); };
+	// rotate points such that the first one is the furthest away from the center (hence, a corner)
+	std::rotate(points.begin(), std::max_element(points.begin(), points.end(), dist2Center), points.end());
+
+	std::array<const PointF*, 4> corners;
+	corners[0] = &points[0];
+	// find the oposite corner by looking for the farthest point near the oposite point
+	corners[2] = std::max_element(&points[Size(points) * 3 / 8], &points[Size(points) * 5 / 8], dist2Center);
+
+	// find the two in between corners by looking for the points farthest from the long diagonal
+	auto dist2Diagonal = [l = RegressionLine(*corners[0], *corners[2])](auto a, auto b) { return l.distance(a) < l.distance(b); };
+	corners[1] = std::max_element(&points[Size(points) * 1 / 8], &points[Size(points) * 3 / 8], dist2Diagonal);
+	corners[3] = std::max_element(&points[Size(points) * 5 / 8], &points[Size(points) * 7 / 8], dist2Diagonal);
+
+	std::array lines{RegressionLine{corners[0] + 1, corners[1]}, RegressionLine{corners[1] + 1, corners[2]},
+					 RegressionLine{corners[2] + 1, corners[3]}, RegressionLine{corners[3] + 1, &(*points.end())}};
+
+	QuadrilateralF res;
+	for (int i = 0; i < 4; ++i)
+		res[i] = intersect(lines[i], lines[(i + 1) % 4]);
+
+	return res;
+}
+
+std::optional<QuadrilateralF> FindConcentricPatternCorners(const BitMatrix& image, PointF center, int range, int lineIndex)
+{
+	auto innerPoints = CollectRingPoints(image, center, range, lineIndex, false);
+	auto outerPoints = CollectRingPoints(image, center, range, lineIndex + 1, true);
+
+	if (innerPoints.empty() || outerPoints.empty())
+		return {};
+
+	auto innerCorners = FitQadrilateralToPoints(center, innerPoints);
+	auto outerCorners = FitQadrilateralToPoints(center, outerPoints);
+
+	auto dist2First = [c = innerCorners[0]](auto a, auto b) { return distance(a, c) < distance(b, c); };
+	// rotate points such that the the two topLeft points are closest to each other
+	std::rotate(outerCorners.begin(), std::min_element(outerCorners.begin(), outerCorners.end(), dist2First), outerCorners.end());
+
+	QuadrilateralF res;
+	for (int i=0; i<4; ++i)
+		res[i] = (innerCorners[i] + outerCorners[i]) / 2;
+
+	for (auto p : innerCorners)
+		log(p, 3);
+
+	for (auto p : outerCorners)
+		log(p, 3);
+
+	for (auto p : res)
+		log(p, 3);
+
 	return res;
 }
 
