@@ -206,29 +206,6 @@ if (BUILD_READERS)
 endif()
 
 
-set (MICROQRCODE_FILES
-)
-if (BUILD_READERS)
-    set (MICROQRCODE_FILES ${MICROQRCODE_FILES}
-        src/qrcode/MQRCornerFinder.h
-        src/qrcode/MQRCornerFinder.cpp
-        src/qrcode/MQRDetector.h
-        src/qrcode/MQRDetector.cpp
-        src/qrcode/MQRDimension.h     
-        src/qrcode/MQRFakeCenterCalculator.h
-        src/qrcode/MQRFakeCenterCalculator.cpp
-        src/qrcode/MQRFinderPattern.h
-        src/qrcode/MQRFinderPattern.cpp
-        src/qrcode/MQRFinderPatternFinder.h
-        src/qrcode/MQRFinderPatternFinder.cpp
-        src/qrcode/MQRFinderPatternInfo.h
-        src/qrcode/MQRFinderPatternInfo.cpp
-        src/qrcode/MQRReader.h
-        src/qrcode/MQRReader.cpp
-    )
-endif()
-
-
 set (ONED_FILES
     src/oned/ODUPCEANCommon.h
     src/oned/ODUPCEANCommon.cpp
@@ -421,7 +398,6 @@ source_group (Sources FILES ${COMMON_FILES})
 source_group (Sources\\aztec FILES ${AZTEC_FILES})
 source_group (Sources\\datamatrix FILES ${DATAMATRIX_FILES})
 source_group (Sources\\maxicode FILES ${MAXICODE_FILES})
-source_group (Sources\\qrcode FILES ${MICROQRCODE_FILES})
 source_group (Sources\\oned FILES ${ONED_FILES})
 source_group (Sources\\oned\\rss FILES ${ONED_RSS_FILES})
 source_group (Sources\\pdf417 FILES ${PDF417_FILES})

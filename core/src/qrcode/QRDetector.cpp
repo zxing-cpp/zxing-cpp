@@ -21,7 +21,6 @@
 #include "BitMatrix.h"
 #include "BitMatrixCursor.h"
 #include "ConcentricFinder.h"
-#include "DetectorResult.h"
 #include "GridSampler.h"
 #include "LogMatrix.h"
 #include "Pattern.h"

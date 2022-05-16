@@ -18,6 +18,7 @@
 */
 
 #include "ConcentricFinder.h"
+#include "DetectorResult.h"
 
 #include <vector>
 
