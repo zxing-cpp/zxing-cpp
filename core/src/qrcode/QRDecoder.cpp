@@ -292,22 +292,22 @@ static DecodeStatus ParseECIValue(BitSource& bits, int& outValue)
 }
 
 /**
-* QR codes encode mode indicators and terminator codes into a constant bit length of 4. 
-* Micro QR codes have terminator codes that vary in bit length but are always longer than 
-* the mode indicators. 
-* M1 - 0 length mode code, 3 bits terminator code 
-* M2 - 1 bit mode code, 5 bits terminator code 
-* M3 - 2 bit mode code, 7 bits terminator code 
-* M4 - 3 bit mode code, 9 bits terminator code 
-* IsTerminator peaks into the bit stream to see if the current position is at the start of
-* a terminator code.  If true, then the decoding can finish. If false, then the decoding
-* can read off the next mode code.
-*
-* See ISO 18004:2006, 6.4.1 Table 2
-* 
-* @param bits the stream of bits that might have a terminator code
-* @param version the QR or micro QR code version
-*/
+ * QR codes encode mode indicators and terminator codes into a constant bit length of 4.
+ * Micro QR codes have terminator codes that vary in bit length but are always longer than
+ * the mode indicators.
+ * M1 - 0 length mode code, 3 bits terminator code
+ * M2 - 1 bit mode code, 5 bits terminator code
+ * M3 - 2 bit mode code, 7 bits terminator code
+ * M4 - 3 bit mode code, 9 bits terminator code
+ * IsTerminator peaks into the bit stream to see if the current position is at the start of
+ * a terminator code.  If true, then the decoding can finish. If false, then the decoding
+ * can read off the next mode code.
+ *
+ * See ISO 18004:2006, 6.4.1 Table 2
+ *
+ * @param bits the stream of bits that might have a terminator code
+ * @param version the QR or micro QR code version
+ */
 bool IsTerminator(const BitSource& bits, const Version& version)
 {
 	const int bitsRequired = TerminatorBitsLength(version);
@@ -333,7 +333,7 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 	static const int GB2312_SUBSET = 1;
 	const int modeBitLength = CodecModeBitsLength(version);
 	const int minimumBitsRequired = modeBitLength + CharacterCountBits(CodecMode::NUMERIC, version);
-	
+
 	try
 	{
 		CharacterSet currentCharset = CharacterSet::Unknown;
