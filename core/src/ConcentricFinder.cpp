@@ -159,7 +159,7 @@ static QuadrilateralF FitQadrilateralToPoints(PointF center, std::vector<PointF>
 	corners[3] = std::max_element(&points[Size(points) * 5 / 8], &points[Size(points) * 7 / 8], dist2Diagonal);
 
 	std::array lines{RegressionLine{corners[0] + 1, corners[1]}, RegressionLine{corners[1] + 1, corners[2]},
-					 RegressionLine{corners[2] + 1, corners[3]}, RegressionLine{corners[3] + 1, &(*points.end())}};
+					 RegressionLine{corners[2] + 1, corners[3]}, RegressionLine{corners[3] + 1, &points.back() + 1}};
 
 	QuadrilateralF res;
 	for (int i = 0; i < 4; ++i)
