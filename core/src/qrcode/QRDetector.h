@@ -39,16 +39,12 @@ using FinderPatternSets = std::vector<FinderPatternSet>;
 
 FinderPatterns FindFinderPatterns(const BitMatrix& image, bool tryHarder);
 FinderPatternSets GenerateFinderPatternSets(FinderPatterns&& patterns);
-DetectorResult SampleAtFinderPatternSet(const BitMatrix& image, const FinderPatternSet& fp);
-DetectorResult SampleAtFinderPattern(const BitMatrix& image, const ConcentricPattern& fp);
 
-DetectorResult DetectPureMicroQR(const BitMatrix& image);
-DetectorResult DetectPure(const BitMatrix& image);
+DetectorResult SampleQR(const BitMatrix& image, const FinderPatternSet& fp);
+DetectorResult SampleMQR(const BitMatrix& image, const ConcentricPattern& fp);
 
-/**
- * @brief Detects a QR Code in an image.
- */
-DetectorResult Detect(const BitMatrix& image, bool tryHarder, bool isPure);
+DetectorResult DetectPureQR(const BitMatrix& image);
+DetectorResult DetectPureMQR(const BitMatrix& image);
 
 } // QRCode
 } // ZXing

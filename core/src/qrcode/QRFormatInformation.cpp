@@ -105,6 +105,7 @@ static int FindBestFormatInfo(int mask, const std::array<std::pair<int, int>, 32
 	int bestFormatInfo = -1;
 
 	// Some QR codes apparently do not apply the XOR mask. Try without and with additional masking.
+	// TODO: test for mirrored format
 	for (auto mask : {0, mask})
 		for (uint32_t bits : bits)
 			for (const auto& [pattern, decodedInfo] : lookup)
@@ -128,8 +129,7 @@ static int FindBestFormatInfo(int mask, const std::array<std::pair<int, int>, 32
 * @return information about the format it specifies, or {@code null}
 *  if doesn't seem to match any known pattern
 */
-FormatInformation
-FormatInformation::DecodeFormatInformation(uint32_t formatInfoBits1, uint32_t formatInfoBits2)
+FormatInformation FormatInformation::DecodeQR(uint32_t formatInfoBits1, uint32_t formatInfoBits2)
 {
 	int bestFormatInfo = FindBestFormatInfo(FORMAT_INFO_MASK_QR, FORMAT_INFO_DECODE_LOOKUP, {formatInfoBits1, formatInfoBits2});
 	if (bestFormatInfo < 0)
@@ -144,7 +144,7 @@ FormatInformation::DecodeFormatInformation(uint32_t formatInfoBits1, uint32_t fo
  * @return information about the format it specifies, or {@code null}
  *  if doesn't seem to match any known pattern
  */
-FormatInformation FormatInformation::DecodeFormatInformation(uint32_t formatInfoBits)
+FormatInformation FormatInformation::DecodeMQR(uint32_t formatInfoBits)
 {
 	// We don't use the additional masking (with 0x4445) to work around potentially non complying MircoQRCode encoders
 	int bestFormatInfo = FindBestFormatInfo(0, FORMAT_INFO_DECODE_LOOKUP_MICRO, {formatInfoBits});

@@ -29,7 +29,7 @@ static const int MICRO_UNMASKED_TEST_FORMAT_INFO = MICRO_MASKED_TEST_FORMAT_INFO
 
 static void DoFormatInformationTest(const int formatInfo, const uint8_t expectedMask, const ErrorCorrectionLevel& expectedECL)
 {
-	FormatInformation parsedFormat = FormatInformation::DecodeFormatInformation(formatInfo);
+	FormatInformation parsedFormat = FormatInformation::DecodeMQR(formatInfo);
 	EXPECT_TRUE(parsedFormat.isValid());
 	EXPECT_EQ(expectedMask, parsedFormat.dataMask());
 	EXPECT_EQ(expectedECL, parsedFormat.errorCorrectionLevel());
@@ -38,28 +38,28 @@ static void DoFormatInformationTest(const int formatInfo, const uint8_t expected
 TEST(QRFormatInformationTest, Decode)
 {
     // Normal case
-    FormatInformation expected = FormatInformation::DecodeFormatInformation(MASKED_TEST_FORMAT_INFO, MASKED_TEST_FORMAT_INFO);
+    FormatInformation expected = FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO, MASKED_TEST_FORMAT_INFO);
     EXPECT_TRUE(expected.isValid());
     EXPECT_EQ(0x07, expected.dataMask());
 	EXPECT_EQ(ErrorCorrectionLevel::Quality, expected.errorCorrectionLevel());
     // where the code forgot the mask!
-	EXPECT_EQ(expected, FormatInformation::DecodeFormatInformation(UNMASKED_TEST_FORMAT_INFO, MASKED_TEST_FORMAT_INFO));
+	EXPECT_EQ(expected, FormatInformation::DecodeQR(UNMASKED_TEST_FORMAT_INFO, MASKED_TEST_FORMAT_INFO));
 }
 
 TEST(QRFormatInformationTest, DecodeWithBitDifference)
 {
-    FormatInformation expected = FormatInformation::DecodeFormatInformation(MASKED_TEST_FORMAT_INFO, MASKED_TEST_FORMAT_INFO);
+    FormatInformation expected = FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO, MASKED_TEST_FORMAT_INFO);
     // 1,2,3,4 bits difference
-	EXPECT_EQ(expected, FormatInformation::DecodeFormatInformation(MASKED_TEST_FORMAT_INFO ^ 0x01, MASKED_TEST_FORMAT_INFO ^ 0x01));
-	EXPECT_EQ(expected, FormatInformation::DecodeFormatInformation(MASKED_TEST_FORMAT_INFO ^ 0x03, MASKED_TEST_FORMAT_INFO ^ 0x03));
-	EXPECT_EQ(expected, FormatInformation::DecodeFormatInformation(MASKED_TEST_FORMAT_INFO ^ 0x07, MASKED_TEST_FORMAT_INFO ^ 0x07));
-	EXPECT_TRUE(!FormatInformation::DecodeFormatInformation(MASKED_TEST_FORMAT_INFO ^ 0x0F, MASKED_TEST_FORMAT_INFO ^ 0x0F).isValid());
+	EXPECT_EQ(expected, FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO ^ 0x01, MASKED_TEST_FORMAT_INFO ^ 0x01));
+	EXPECT_EQ(expected, FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO ^ 0x03, MASKED_TEST_FORMAT_INFO ^ 0x03));
+	EXPECT_EQ(expected, FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO ^ 0x07, MASKED_TEST_FORMAT_INFO ^ 0x07));
+	EXPECT_TRUE(!FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO ^ 0x0F, MASKED_TEST_FORMAT_INFO ^ 0x0F).isValid());
 }
 
 TEST(QRFormatInformationTest, DecodeWithMisread)
 {
-    FormatInformation expected = FormatInformation::DecodeFormatInformation(MASKED_TEST_FORMAT_INFO, MASKED_TEST_FORMAT_INFO);
-	EXPECT_EQ(expected, FormatInformation::DecodeFormatInformation(MASKED_TEST_FORMAT_INFO ^ 0x03, MASKED_TEST_FORMAT_INFO ^ 0x0F));
+    FormatInformation expected = FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO, MASKED_TEST_FORMAT_INFO);
+	EXPECT_EQ(expected, FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO ^ 0x03, MASKED_TEST_FORMAT_INFO ^ 0x0F));
 }
 
 TEST(QRFormatInformationTest, DecodeMicro)
@@ -83,12 +83,12 @@ TEST(QRFormatInformationTest, DecodeMicro)
 // distance calculation.
 TEST(QRFormatInformationTest, DecodeMicroWithBitDifference)
 {
-	FormatInformation expected = FormatInformation::DecodeFormatInformation(MICRO_MASKED_TEST_FORMAT_INFO);
+	FormatInformation expected = FormatInformation::DecodeMQR(MICRO_MASKED_TEST_FORMAT_INFO);
 
 	// 1,2,3 bits difference
-	EXPECT_EQ(expected, FormatInformation::DecodeFormatInformation(MICRO_MASKED_TEST_FORMAT_INFO ^ 0x01));
-	EXPECT_EQ(expected, FormatInformation::DecodeFormatInformation(MICRO_MASKED_TEST_FORMAT_INFO ^ 0x03));
-	EXPECT_EQ(expected, FormatInformation::DecodeFormatInformation(MICRO_MASKED_TEST_FORMAT_INFO ^ 0x07));
+	EXPECT_EQ(expected, FormatInformation::DecodeMQR(MICRO_MASKED_TEST_FORMAT_INFO ^ 0x01));
+	EXPECT_EQ(expected, FormatInformation::DecodeMQR(MICRO_MASKED_TEST_FORMAT_INFO ^ 0x03));
+	EXPECT_EQ(expected, FormatInformation::DecodeMQR(MICRO_MASKED_TEST_FORMAT_INFO ^ 0x07));
 
 	// Bigger bit differences can return valid FormatInformation objects but the data mask and error
 	// correction levels do not match.

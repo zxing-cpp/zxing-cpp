@@ -42,7 +42,7 @@
 
 namespace ZXing::QRCode {
 
-constexpr auto PATTERN    = FixedPattern<5, 7>{1, 1, 3, 1, 1};
+constexpr auto PATTERN = FixedPattern<5, 7>{1, 1, 3, 1, 1};
 
 std::vector<ConcentricPattern> FindFinderPatterns(const BitMatrix& image, bool tryHarder)
 {
@@ -257,7 +257,7 @@ static double EstimateTilt(const FinderPatternSet& fp)
 	return double(max) / min;
 }
 
-DetectorResult SampleAtFinderPatternSet(const BitMatrix& image, const FinderPatternSet& fp)
+DetectorResult SampleQR(const BitMatrix& image, const FinderPatternSet& fp)
 {
 	auto top  = EstimateDimension(image, fp.tl, fp.tr);
 	auto left = EstimateDimension(image, fp.tl, fp.bl);
@@ -324,7 +324,7 @@ DetectorResult SampleAtFinderPatternSet(const BitMatrix& image, const FinderPatt
 * around it. This is a specialized method that works exceptionally fast in this special
 * case.
 */
-DetectorResult DetectPure(const BitMatrix& image)
+DetectorResult DetectPureQR(const BitMatrix& image)
 {
 	using Pattern = std::array<PatternView::value_type, PATTERN.size()>;
 
@@ -372,7 +372,7 @@ DetectorResult DetectPure(const BitMatrix& image)
 			{{left, top}, {right, top}, {right, bottom}, {left, bottom}}};
 }
 
-DetectorResult DetectPureMicroQR(const BitMatrix& image)
+DetectorResult DetectPureMQR(const BitMatrix& image)
 {
 	using Pattern = std::array<PatternView::value_type, PATTERN.size()>;
 
@@ -412,33 +412,7 @@ DetectorResult DetectPureMicroQR(const BitMatrix& image)
 			{{left, top}, {right, top}, {right, bottom}, {left, bottom}}};
 }
 
-FinderPatternSets FindFinderPatternSets(const BitMatrix& image, bool tryHarder)
-{
-	return GenerateFinderPatternSets(FindFinderPatterns(image, tryHarder));
-}
-
-DetectorResult Detect(const BitMatrix& image, bool tryHarder, bool isPure)
-{
-#ifdef PRINT_DEBUG
-	LogMatrixWriter lmw(log, image, 5, "qr-log.pnm");
-#endif
-
-	if (isPure)
-		return DetectPure(image);
-
-	auto sets = GenerateFinderPatternSets(FindFinderPatterns(image, tryHarder));
-
-	if (sets.empty())
-		return {};
-
-#ifdef PRINT_DEBUG
-	printf("size of sets: %d\n", Size(sets));
-#endif
-
-	return SampleAtFinderPatternSet(image, sets[0]);
-}
-
-DetectorResult SampleAtFinderPattern(const BitMatrix& image, const ConcentricPattern& fp)
+DetectorResult SampleMQR(const BitMatrix& image, const ConcentricPattern& fp)
 {
 	auto fpQuad = FindConcentricPatternCorners(image, fp, fp.size, 2);
 	if (!fpQuad)
@@ -465,7 +439,7 @@ DetectorResult SampleAtFinderPattern(const BitMatrix& image, const ConcentricPat
 		for (int i = 1; i <= 15; ++i)
 			AppendBit(formatInfoBits, image.get(mod2Pix(centered(FORMAT_INFO_COORDS[i]))));
 
-		auto fi = FormatInformation::DecodeFormatInformation(formatInfoBits);
+		auto fi = FormatInformation::DecodeMQR(formatInfoBits);
 		if (fi.isValid() && fi.microVersion()) {
 			const int dim = Version::DimensionOfVersion(fi.microVersion(), true);
 			return SampleGrid(image, dim, dim, mod2Pix);

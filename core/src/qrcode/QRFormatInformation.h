@@ -36,8 +36,8 @@ class FormatInformation
 public:
 	FormatInformation() = default;
 
-	static FormatInformation DecodeFormatInformation(uint32_t formatInfoBits1, uint32_t formatInfoBits2);
-	static FormatInformation DecodeFormatInformation(uint32_t formatInfoBits);
+	static FormatInformation DecodeQR(uint32_t formatInfoBits1, uint32_t formatInfoBits2);
+	static FormatInformation DecodeMQR(uint32_t formatInfoBits);
 
 	ErrorCorrectionLevel errorCorrectionLevel() const { return _errorCorrectionLevel; }
 

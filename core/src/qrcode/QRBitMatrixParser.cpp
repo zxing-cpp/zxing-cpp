@@ -83,7 +83,7 @@ FormatInformation ReadFormatInformation(const BitMatrix& bitMatrix, bool mirrore
 		for (int y = 7; y >= 1; y--)
 			AppendBit(formatInfoBits, getBit(bitMatrix, 8, y, mirrored));
 
-		return FormatInformation::DecodeFormatInformation(formatInfoBits);
+		return FormatInformation::DecodeMQR(formatInfoBits);
 	}
 
 	// Read top-left format info bits
@@ -106,7 +106,7 @@ FormatInformation ReadFormatInformation(const BitMatrix& bitMatrix, bool mirrore
 	for (int x = dimension - 8; x < dimension; x++)
 		AppendBit(formatInfoBits2, getBit(bitMatrix, x, 8, mirrored));
 
-	return FormatInformation::DecodeFormatInformation(formatInfoBits1, formatInfoBits2);
+	return FormatInformation::DecodeQR(formatInfoBits1, formatInfoBits2);
 }
 
 static ByteArray ReadQRCodewords(const BitMatrix& bitMatrix, const Version& version, int maskIndex, bool mirrored)

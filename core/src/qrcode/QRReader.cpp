@@ -57,10 +57,10 @@ Result Reader::decode(const BinaryBitmap& image) const
 	bool isMicro = false;
 	DetectorResult detectorResult;
 	if (_testQR)
-		detectorResult = DetectPure(*binImg);
+		detectorResult = DetectPureQR(*binImg);
 	if (_testMQR && !detectorResult.isValid()) {
 		isMicro = true;
-		detectorResult = DetectPureMicroQR(*binImg);
+		detectorResult = DetectPureMQR(*binImg);
 	}
 
 	if (!detectorResult.isValid())
@@ -93,7 +93,7 @@ Results Reader::decode(const BinaryBitmap& image, int maxSymbols) const
 			if (Contains(usedFPs, fpSet.bl) || Contains(usedFPs, fpSet.tl) || Contains(usedFPs, fpSet.tr))
 				continue;
 
-			auto detectorResult = SampleAtFinderPatternSet(*binImg, fpSet);
+			auto detectorResult = SampleQR(*binImg, fpSet);
 			if (detectorResult.isValid()) {
 				auto decoderResult = Decode(detectorResult.bits(), _charset);
 				auto position = detectorResult.position();
@@ -114,7 +114,7 @@ Results Reader::decode(const BinaryBitmap& image, int maxSymbols) const
 			if (Contains(usedFPs, fp))
 				continue;
 
-			auto detectorResult = SampleAtFinderPattern(*binImg, fp);
+			auto detectorResult = SampleMQR(*binImg, fp);
 			if (detectorResult.isValid()) {
 				auto decoderResult = Decode(detectorResult.bits(), _charset, true);
 				auto position = detectorResult.position();
@@ -123,6 +123,7 @@ Results Reader::decode(const BinaryBitmap& image, int maxSymbols) const
 					if (maxSymbols && Size(results) == maxSymbols)
 						break;
 				}
+
 			}
 		}
 	}
