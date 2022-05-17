@@ -47,9 +47,10 @@ enum class BarcodeFormat
 	QRCode          = (1 << 13), ///< QR Code (2D)
 	UPCA            = (1 << 14), ///< UPC-A (1D)
 	UPCE            = (1 << 15), ///< UPC-E (1D)
+	MicroQRCode     = (1 << 16), ///< Micro QR Code (2D)
 
 	OneDCodes = Codabar | Code39 | Code93 | Code128 | EAN8 | EAN13 | ITF | DataBar | DataBarExpanded | UPCA | UPCE,
-	TwoDCodes = Aztec | DataMatrix | MaxiCode | PDF417 | QRCode,
+	TwoDCodes = Aztec | DataMatrix | MaxiCode | PDF417 | QRCode | MicroQRCode,
 	Any       = OneDCodes | TwoDCodes,
 
 	// Deprecated names, kept for compatibility at the moment
@@ -70,7 +71,7 @@ enum class BarcodeFormat
 	UPC_A [[deprecated]]        = UPCA,
 	UPC_E [[deprecated]]        = UPCE,
 
-	_max                        = UPCE, ///> implementation detail, don't use
+	_max                        = MicroQRCode, ///> implementation detail, don't use
 };
 
 ZX_DECLARE_FLAGS(BarcodeFormats, BarcodeFormat)

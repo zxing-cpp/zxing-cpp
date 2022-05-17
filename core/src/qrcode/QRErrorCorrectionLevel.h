@@ -36,7 +36,7 @@ enum class ErrorCorrectionLevel
 
 const wchar_t* ToString(ErrorCorrectionLevel l);
 ErrorCorrectionLevel ECLevelFromString(const char* str);
-ErrorCorrectionLevel ECLevelFromBits(int bits);
+ErrorCorrectionLevel ECLevelFromBits(int bits, const bool isMicro = false);
 int BitsFromECLevel(ErrorCorrectionLevel l);
 
 } // QRCode

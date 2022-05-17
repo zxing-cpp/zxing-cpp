@@ -34,6 +34,8 @@ std::vector<DataBlock> DataBlock::GetDataBlocks(const ByteArray& rawCodewords, c
 
 	// First count the total number of data blocks
 	int totalBlocks = ecBlocks.numBlocks();
+	if (totalBlocks == 0)
+		return {};
 
 	std::vector<DataBlock> result(totalBlocks);
 	// Now establish DataBlocks of the appropriate size and number of data codewords

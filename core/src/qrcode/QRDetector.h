@@ -18,6 +18,7 @@
 */
 
 #include "ConcentricFinder.h"
+#include "DetectorResult.h"
 
 #include <vector>
 
@@ -33,10 +34,16 @@ struct FinderPatternSet
 	ConcentricPattern bl, tl, tr;
 };
 
+using FinderPatterns = std::vector<ConcentricPattern>;
 using FinderPatternSets = std::vector<FinderPatternSet>;
 
-FinderPatternSets FindFinderPatternSets(const BitMatrix& image, bool tryHarder);
+FinderPatterns FindFinderPatterns(const BitMatrix& image, bool tryHarder);
+FinderPatternSets GenerateFinderPatternSets(FinderPatterns&& patterns);
 DetectorResult SampleAtFinderPatternSet(const BitMatrix& image, const FinderPatternSet& fp);
+DetectorResult SampleAtFinderPattern(const BitMatrix& image, const ConcentricPattern& fp);
+
+DetectorResult DetectPureMicroQR(const BitMatrix& image);
+DetectorResult DetectPure(const BitMatrix& image);
 
 /**
  * @brief Detects a QR Code in an image.

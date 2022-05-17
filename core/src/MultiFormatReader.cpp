@@ -39,7 +39,7 @@ MultiFormatReader::MultiFormatReader(const DecodeHints& hints)
 	if (formats.testFlags(BarcodeFormat::OneDCodes) && !tryHarder)
 		_readers.emplace_back(new OneD::Reader(hints));
 
-	if (formats.testFlag(BarcodeFormat::QRCode))
+	if (formats.testFlags(BarcodeFormat::QRCode | BarcodeFormat::MicroQRCode))
 		_readers.emplace_back(new QRCode::Reader(hints));
 	if (formats.testFlag(BarcodeFormat::DataMatrix))
 		_readers.emplace_back(new DataMatrix::Reader(hints));

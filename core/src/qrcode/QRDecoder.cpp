@@ -28,6 +28,7 @@
 #include "QRCodecMode.h"
 #include "QRDataBlock.h"
 #include "QRFormatInformation.h"
+#include "QRVersion.h"
 #include "ReedSolomonDecoder.h"
 #include "StructuredAppend.h"
 #include "TextDecoder.h"
@@ -291,6 +292,30 @@ static DecodeStatus ParseECIValue(BitSource& bits, int& outValue)
 }
 
 /**
+ * QR codes encode mode indicators and terminator codes into a constant bit length of 4.
+ * Micro QR codes have terminator codes that vary in bit length but are always longer than
+ * the mode indicators.
+ * M1 - 0 length mode code, 3 bits terminator code
+ * M2 - 1 bit mode code, 5 bits terminator code
+ * M3 - 2 bit mode code, 7 bits terminator code
+ * M4 - 3 bit mode code, 9 bits terminator code
+ * IsTerminator peaks into the bit stream to see if the current position is at the start of
+ * a terminator code.  If true, then the decoding can finish. If false, then the decoding
+ * can read off the next mode code.
+ *
+ * See ISO 18004:2006, 6.4.1 Table 2
+ *
+ * @param bits the stream of bits that might have a terminator code
+ * @param version the QR or micro QR code version
+ */
+bool IsTerminator(const BitSource& bits, const Version& version)
+{
+	const int bitsRequired = TerminatorBitsLength(version);
+	const int bitsAvailable = std::min(bits.available(), bitsRequired);
+	return bits.peakBits(bitsAvailable) == 0;
+}
+
+/**
 * <p>QR Codes can encode text as bits in one of several modes, and can use multiple modes
 * in one QR Code. This method decodes the bits back into text.</p>
 *
@@ -306,6 +331,8 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 	int appIndValue = -1; // ISO/IEC 18004:2015 7.4.8.3 AIM Application Indicator (FNC1 in second position)
 	StructuredAppendInfo structuredAppend;
 	static const int GB2312_SUBSET = 1;
+	const int modeBitLength = CodecModeBitsLength(version);
+	const int minimumBitsRequired = modeBitLength + CharacterCountBits(CodecMode::NUMERIC, version);
 
 	try
 	{
@@ -314,12 +341,14 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 		CodecMode mode;
 		do {
 			// While still another segment to read...
-			if (bits.available() < 4) {
+			if (bits.available() < minimumBitsRequired || IsTerminator(bits, version)) {
 				// OK, assume we're done. Really, a TERMINATOR mode should have been recorded here
 				mode = CodecMode::TERMINATOR;
-			}
-			else {
-				mode = CodecModeForBits(bits.readBits(4)); // mode is encoded by 4 bits
+			} else if (modeBitLength == 0) {
+				// MicroQRCode version 1 is always NUMERIC and modeBitLength is 0
+				mode = CodecMode::NUMERIC;
+			} else {
+				mode = CodecModeForBits(bits.readBits(modeBitLength), version.isMicroQRCode());
 			}
 			switch (mode) {
 			case CodecMode::TERMINATOR:
@@ -423,12 +452,12 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 
 static DecoderResult DoDecode(const BitMatrix& bits, const Version& version, const std::string& hintedCharset, bool mirrored)
 {
-	auto formatInfo = ReadFormatInformation(bits, mirrored);
+	auto formatInfo = ReadFormatInformation(bits, mirrored, version.isMicroQRCode());
 	if (!formatInfo.isValid())
 		return DecodeStatus::FormatError;
 
 	// Read codewords
-	ByteArray codewords = ReadCodewords(bits, version, formatInfo.dataMask(), mirrored);
+	ByteArray codewords = ReadCodewords(bits, version, formatInfo, mirrored);
 	if (codewords.empty())
 		return DecodeStatus::FormatError;
 
@@ -459,9 +488,9 @@ static DecoderResult DoDecode(const BitMatrix& bits, const Version& version, con
 	return DecodeBitStream(std::move(resultBytes), version, formatInfo.errorCorrectionLevel(), hintedCharset);
 }
 
-DecoderResult Decode(const BitMatrix& bits, const std::string& hintedCharset)
+DecoderResult Decode(const BitMatrix& bits, const std::string& hintedCharset, const bool isMicroQRCode)
 {
-	const Version* version = ReadVersion(bits);
+	const Version* version = ReadVersion(bits, isMicroQRCode);
 	if (!version)
 		return DecodeStatus::FormatError;
 

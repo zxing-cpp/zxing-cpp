@@ -37,10 +37,12 @@ public:
 	FormatInformation() = default;
 
 	static FormatInformation DecodeFormatInformation(uint32_t formatInfoBits1, uint32_t formatInfoBits2);
+	static FormatInformation DecodeFormatInformation(uint32_t formatInfoBits);
 
 	ErrorCorrectionLevel errorCorrectionLevel() const { return _errorCorrectionLevel; }
 
 	uint8_t dataMask() const { return _dataMask; }
+	uint8_t microVersion() const { return _microVersion; }
 
 	bool isValid() const { return _errorCorrectionLevel != ErrorCorrectionLevel::Invalid; }
 
@@ -52,8 +54,11 @@ public:
 private:
 	ErrorCorrectionLevel _errorCorrectionLevel = ErrorCorrectionLevel::Invalid;
 	uint8_t _dataMask = 0;
+	uint8_t _microVersion = 0;
 
-	FormatInformation(int formatInfo);
+	FormatInformation(const ErrorCorrectionLevel& errorCorrectionLevel, uint8_t dataMask, uint8_t microVersion = 0)
+		: _errorCorrectionLevel(errorCorrectionLevel), _dataMask(dataMask), _microVersion(microVersion)
+	{}
 };
 
 } // QRCode

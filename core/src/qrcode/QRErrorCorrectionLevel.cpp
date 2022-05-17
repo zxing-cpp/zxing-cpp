@@ -39,10 +39,16 @@ ErrorCorrectionLevel ECLevelFromString(const char* str)
 	}
 }
 
-ErrorCorrectionLevel ECLevelFromBits(int bits)
+ErrorCorrectionLevel ECLevelFromBits(int bits, const bool isMicro)
 {
-	static const ErrorCorrectionLevel LEVEL_FOR_BITS[] = {ErrorCorrectionLevel::Medium, ErrorCorrectionLevel::Low,
-														  ErrorCorrectionLevel::High, ErrorCorrectionLevel::Quality};
+	if (isMicro) {
+		constexpr ErrorCorrectionLevel LEVEL_FOR_BITS[] = {
+			ErrorCorrectionLevel::Low,    ErrorCorrectionLevel::Low, ErrorCorrectionLevel::Medium, ErrorCorrectionLevel::Low,
+			ErrorCorrectionLevel::Medium, ErrorCorrectionLevel::Low, ErrorCorrectionLevel::Medium, ErrorCorrectionLevel::Quality};
+		return LEVEL_FOR_BITS[bits & 0x07];
+	}
+	constexpr ErrorCorrectionLevel LEVEL_FOR_BITS[] = {ErrorCorrectionLevel::Medium, ErrorCorrectionLevel::Low,
+													   ErrorCorrectionLevel::High, ErrorCorrectionLevel::Quality};
 	return LEVEL_FOR_BITS[bits & 0x3];
 }
 

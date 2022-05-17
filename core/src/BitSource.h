@@ -69,6 +69,13 @@ public:
 	int readBits(int numBits);
 
 	/**
+	* @param numBits number of bits to peak
+	* @return int representing the bits peaked.  The bits will appear as the least-significant
+	*         bits of the int
+	*/
+	int peakBits(int numBits) const;
+
+	/**
 	* @return number of bits that can be read successfully
 	*/
 	int available() const;

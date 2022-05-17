@@ -17,6 +17,8 @@
 
 #include "qrcode/QRVersion.h"
 
+#include "BitMatrix.h"
+
 #include "gtest/gtest.h"
 
 using namespace ZXing;
@@ -27,7 +29,7 @@ namespace {
 	void CheckVersion(const Version* version, int number, int dimension) {
 		ASSERT_NE(version, nullptr);
 		EXPECT_EQ(number, version->versionNumber());
-		if (number > 1) {
+		if (number > 1 && !version->isMicroQRCode()) {
 			EXPECT_FALSE(version->alignmentPatternCenters().empty());
 		}
 		EXPECT_EQ(dimension, version->dimensionForVersion());
@@ -38,6 +40,7 @@ namespace {
 		ASSERT_NE(version, nullptr);
 		EXPECT_EQ(expectedVersion, version->versionNumber());
 	}
+
 }
 
 TEST(QRVersionTest, VersionForNumber)
@@ -71,3 +74,42 @@ TEST(QRVersionTest, DecodeVersionInformation)
     DoTestVersion(32, 0x209D5);
 }
   
+TEST(QRVersionTest, MicroVersionForNumber)
+{
+	auto version = Version::VersionForNumber(0, true);
+	EXPECT_EQ(version, nullptr) << "There is version with number 0";
+
+	for (int i = 1; i <= 4; i++) {
+		CheckVersion(Version::VersionForNumber(i, true), i, 2 * i + 9);
+	}
+}
+
+TEST(QRVersionTest, GetProvisionalMicroVersionForDimension)
+{
+	for (int i = 1; i <= 4; i++) {
+		auto prov = Version::ProvisionalVersionForDimension(2 * i + 9, true);
+		ASSERT_NE(prov, nullptr);
+		EXPECT_EQ(i, prov->versionNumber());
+	}
+}
+
+TEST(QRVersionTest, FunctionPattern)
+{
+	auto testFinderPatternRegion = [](const BitMatrix& bitMatrix) {
+		for (int row = 0; row < 9; row++)
+			for (int col = 0; col < 9; col++)
+				EXPECT_TRUE(bitMatrix.get(col, row));
+	};
+	for (int i = 1; i <= 4; i++) {
+		const auto version = Version::VersionForNumber(i, true);
+		const auto functionPattern = version->buildFunctionPattern();
+		testFinderPatternRegion(functionPattern);
+
+		// Check timing pattern areas.
+		const auto dimension = version->dimensionForVersion();
+		for (int row = dimension; row < functionPattern.height(); row++)
+			EXPECT_TRUE(functionPattern.get(0, row));
+		for (int col = dimension; col < functionPattern.width(); col++)
+			EXPECT_TRUE(functionPattern.get(col, 0));
+	}
+}

@@ -48,6 +48,7 @@ static BarcodeFormatName NAMES[] = {
 	{BarcodeFormat::EAN13, "EAN-13"},
 	{BarcodeFormat::ITF, "ITF"},
 	{BarcodeFormat::MaxiCode, "MaxiCode"},
+	{BarcodeFormat::MicroQRCode, "MicroQRCode"},
 	{BarcodeFormat::PDF417, "PDF417"},
 	{BarcodeFormat::QRCode, "QRCode"},
 	{BarcodeFormat::UPCA, "UPC-A"},

@@ -18,16 +18,23 @@
 #include "QRCodecMode.h"
 
 #include "QRVersion.h"
+#include "ZXContainerAlgorithms.h"
 
 #include <array>
 #include <stdexcept>
 
 namespace ZXing::QRCode {
 
-CodecMode CodecModeForBits(int bits)
+CodecMode CodecModeForBits(int bits, bool isMirco)
 {
-	if ((bits >= 0x00 && bits <= 0x05) || (bits >= 0x07 && bits <= 0x09) || bits == 0x0d)
-		return static_cast<CodecMode>(bits);
+	if (!isMirco) {
+		if ((bits >= 0x00 && bits <= 0x05) || (bits >= 0x07 && bits <= 0x09) || bits == 0x0d)
+			return static_cast<CodecMode>(bits);
+	} else {
+		constexpr CodecMode Bits2Mode[4] = {CodecMode::NUMERIC, CodecMode::ALPHANUMERIC, CodecMode::BYTE, CodecMode::KANJI};
+		if (bits < Size(Bits2Mode))
+			return Bits2Mode[bits];
+	}
 
 	throw std::invalid_argument("Invalid mode");
 }
@@ -35,6 +42,17 @@ CodecMode CodecModeForBits(int bits)
 int CharacterCountBits(CodecMode mode, const Version& version)
 {
 	int number = version.versionNumber();
+	if (version.isMicroQRCode()) {
+		switch (mode) {
+		case CodecMode::NUMERIC:      return std::array{3, 4, 5, 6}[number - 1];
+		case CodecMode::ALPHANUMERIC: return std::array{3, 4, 5}[number - 2];
+		case CodecMode::BYTE:         return std::array{4, 5}[number - 3];
+		case CodecMode::KANJI:        [[fallthrough]];
+		case CodecMode::HANZI:        return std::array{3, 4}[number - 3];
+		default: return 0;
+		}
+	}
+
 	int i;
 	if (number <= 9)
 		i = 0;
@@ -51,6 +69,16 @@ int CharacterCountBits(CodecMode mode, const Version& version)
 	case CodecMode::HANZI:        return std::array{8, 10, 12}[i];
 	default:                      return 0;
 	}
+}
+
+int CodecModeBitsLength(const Version& version)
+{
+	return version.isMicroQRCode() ? version.versionNumber() - 1 : 4;
+}
+
+int TerminatorBitsLength(const Version& version)
+{
+	return version.isMicroQRCode() ? version.versionNumber() * 2 + 1 : 4;
 }
 
 } // namespace ZXing::QRCode

@@ -30,10 +30,9 @@ BitSource::available() const
 	return 8 * (Size(_bytes) - _byteOffset) - _bitOffset;
 }
 
-int
-BitSource::readBits(int numBits)
+static int ReadBitsImpl(int numBits, const ByteArray& _bytes, int available, int& _byteOffset, int& _bitOffset)
 {
-	if (numBits < 1 || numBits > 32 || numBits > available()) {
+	if (numBits < 1 || numBits > 32 || numBits > available) {
 		throw std::out_of_range("BitSource::readBits: out of range");
 	}
 
@@ -72,6 +71,18 @@ BitSource::readBits(int numBits)
 	}
 
 	return result;
+}
+
+int BitSource::readBits(int numBits)
+{
+	return ReadBitsImpl(numBits, _bytes, available(), _byteOffset, _bitOffset);
+}
+
+int BitSource::peakBits(int numBits) const
+{
+	int bitOffset = _bitOffset;
+	int byteOffset = _byteOffset;
+	return ReadBitsImpl(numBits, _bytes, available(), byteOffset, bitOffset);
 }
 
 } // ZXing

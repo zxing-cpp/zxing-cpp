@@ -620,6 +620,14 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 1, 1, 0   },
 		});
 
+		runTests("microqrcode-1", "MicroQRCode", 16, {
+			{ 15, 15, 0   },
+			{ 15, 15, 90  },
+			{ 15, 15, 180 },
+			{ 14, 14, 270 },
+			{ 9, 0, pure },
+		});
+
 		runTests("pdf417-1", "PDF417", 17, {
 			{ 16, 16, 0   },
 			{  1,  1, 90  },
