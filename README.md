@@ -21,11 +21,11 @@ It was originally ported from the Java [ZXing Library](https://github.com/zxing/
 | 1D product | 1D industrial     | 2D
 | ---------- | ----------------- | --------------
 | UPC-A      | Code 39           | QR Code
-| UPC-E      | Code 93           | DataMatrix
+| UPC-E      | Code 93           | Micro QR Code
 | EAN-8      | Code 128          | Aztec
-| EAN-13     | Codabar           | PDF417
-| DataBar    | ITF               | MaxiCode (beta)
-|            | DataBar Expanded  |
+| EAN-13     | Codabar           | DataMatrix
+| DataBar    | ITF               | PDF417
+|            | DataBar Expanded  | MaxiCode (beta)
 
 Note: DataBar used to be called RSS. DataBar is not supported for writing.
 
