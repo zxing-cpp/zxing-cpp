@@ -3,7 +3,6 @@ requires = [
     "setuptools>=42",
     "setuptools_scm",
     "wheel",
-    "pip>=21",
     "cmake>=3.14",
 ]
 build-backend = "setuptools.build_meta"
