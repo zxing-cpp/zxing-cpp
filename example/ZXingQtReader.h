@@ -54,9 +54,10 @@ enum class BarcodeFormat
 	QRCode          = (1 << 13), ///< QR Code (2D)
 	UPCA            = (1 << 14), ///< UPC-A (1D)
 	UPCE            = (1 << 15), ///< UPC-E (1D)
+	MicroQRCode     = (1 << 16), ///< Micro QR Code (2D)
 
 	OneDCodes = Codabar | Code39 | Code93 | Code128 | EAN8 | EAN13 | ITF | DataBar | DataBarExpanded | UPCA | UPCE,
-	TwoDCodes = Aztec | DataMatrix | MaxiCode | PDF417 | QRCode,
+	TwoDCodes = Aztec | DataMatrix | MaxiCode | PDF417 | QRCode | MicroQRCode,
 };
 
 enum class DecodeStatus
