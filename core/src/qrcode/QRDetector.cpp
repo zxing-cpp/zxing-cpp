@@ -25,13 +25,12 @@
 #include "GridSampler.h"
 #include "LogMatrix.h"
 #include "Pattern.h"
-
-#include "BitMatrixIO.h"
-
 #include "QRFormatInformation.h"
 #include "QRVersion.h"
 #include "Quadrilateral.h"
 #include "RegressionLine.h"
+
+#include "BitMatrixIO.h"
 
 #include <algorithm>
 #include <cmath>
