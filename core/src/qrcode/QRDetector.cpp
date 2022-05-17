@@ -18,20 +18,20 @@
 
 #include "QRDetector.h"
 
+#include "BitArray.h"
 #include "BitMatrix.h"
 #include "BitMatrixCursor.h"
 #include "ConcentricFinder.h"
 #include "GridSampler.h"
 #include "LogMatrix.h"
 #include "Pattern.h"
-#include "Quadrilateral.h"
-#include "RegressionLine.h"
 
 #include "BitMatrixIO.h"
 
-#include "BitArray.h"
 #include "QRFormatInformation.h"
 #include "QRVersion.h"
+#include "Quadrilateral.h"
+#include "RegressionLine.h"
 
 #include <algorithm>
 #include <cmath>

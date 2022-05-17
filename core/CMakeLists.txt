@@ -413,7 +413,6 @@ add_library (ZXing
     ${AZTEC_FILES}
     ${DATAMATRIX_FILES}
     ${MAXICODE_FILES}
-    ${MICROQRCODE_FILES}
     ${ONED_FILES}
     ${ONED_RSS_FILES}
     ${PDF417_FILES}
