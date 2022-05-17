@@ -42,12 +42,13 @@ static bool hasValidDimension(const BitMatrix& bitMatrix, bool isMicro)
 		return dimension >= 21 && dimension <= 177 && (dimension % 4) == 1;
 }
 
-const Version* ReadVersion(const BitMatrix& bitMatrix, bool isMicro)
+const Version* ReadVersion(const BitMatrix& bitMatrix)
 {
+	int dimension = bitMatrix.height();
+	bool isMicro = dimension < 21;
+
 	if (!hasValidDimension(bitMatrix, isMicro))
 		return nullptr;
-
-	int dimension = bitMatrix.height();
 
 	int provisionalVersion = (dimension - Version::DimensionOffset(isMicro)) / Version::DimensionStep(isMicro);
 

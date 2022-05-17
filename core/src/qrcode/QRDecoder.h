@@ -28,7 +28,7 @@ namespace QRCode {
 /**
  * @brief Decodes a QR Code from the BitMatrix and the hinted charset.
  */
-DecoderResult Decode(const BitMatrix& bits, const std::string& hintedCharset, const bool isMicroQRCode = false);
+DecoderResult Decode(const BitMatrix& bits, const std::string& hintedCharset = {});
 
 } // QRCode
 } // ZXing

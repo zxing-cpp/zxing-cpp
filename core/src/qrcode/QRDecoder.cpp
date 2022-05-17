@@ -488,9 +488,9 @@ static DecoderResult DoDecode(const BitMatrix& bits, const Version& version, con
 	return DecodeBitStream(std::move(resultBytes), version, formatInfo.errorCorrectionLevel(), hintedCharset);
 }
 
-DecoderResult Decode(const BitMatrix& bits, const std::string& hintedCharset, const bool isMicroQRCode)
+DecoderResult Decode(const BitMatrix& bits, const std::string& hintedCharset)
 {
-	const Version* version = ReadVersion(bits, isMicroQRCode);
+	const Version* version = ReadVersion(bits);
 	if (!version)
 		return DecodeStatus::FormatError;
 

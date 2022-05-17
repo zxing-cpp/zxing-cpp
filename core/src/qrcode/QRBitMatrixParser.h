@@ -30,7 +30,7 @@ class FormatInformation;
  * @brief Reads version information from the QR Code.
  * @return {@link Version} encapsulating the QR Code's version, nullptr if neither location can be parsed
  */
-const Version* ReadVersion(const BitMatrix& bitMatrix, bool isMicro);
+const Version* ReadVersion(const BitMatrix& bitMatrix);
 
 /**
  * @brief Reads format information from one of its two locations within the QR Code.
