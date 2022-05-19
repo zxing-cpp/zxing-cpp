@@ -264,11 +264,11 @@ static int ParseECIValue(BitSource& bits)
  * @param bits the stream of bits that might have a terminator code
  * @param version the QR or micro QR code version
  */
-bool IsTerminator(const BitSource& bits, const Version& version)
+bool IsEndOfStream(const BitSource& bits, const Version& version)
 {
 	const int bitsRequired = TerminatorBitsLength(version);
 	const int bitsAvailable = std::min(bits.available(), bitsRequired);
-	return bits.peakBits(bitsAvailable) == 0;
+	return bitsAvailable == 0 || bits.peakBits(bitsAvailable) == 0;
 }
 
 /**
@@ -284,42 +284,43 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 	BitSource bits(bytes);
 	std::wstring result;
 	int symbologyIdModifier = 1; // ISO/IEC 18004:2015 Annex F Table F.1
-	int appIndValue = -1; // ISO/IEC 18004:2015 7.4.8.3 AIM Application Indicator (FNC1 in second position)
 	StructuredAppendInfo structuredAppend;
-	static const int GB2312_SUBSET = 1;
 	const int modeBitLength = CodecModeBitsLength(version);
-	const int minimumBitsRequired = modeBitLength + CharacterCountBits(CodecMode::NUMERIC, version);
 
 	try
 	{
 		CharacterSet currentCharset = CharacterSet::Unknown;
 		bool fc1InEffect = false;
-		CodecMode mode;
-		do {
-			// While still another segment to read...
-			if (bits.available() < minimumBitsRequired || IsTerminator(bits, version)) {
-				// OK, assume we're done. Really, a TERMINATOR mode should have been recorded here
-				mode = CodecMode::TERMINATOR;
-			} else if (modeBitLength == 0) {
-				// MicroQRCode version 1 is always NUMERIC and modeBitLength is 0
-				mode = CodecMode::NUMERIC;
-			} else {
+		while(!IsEndOfStream(bits, version)) {
+			CodecMode mode;
+			if (modeBitLength == 0)
+				mode = CodecMode::NUMERIC; // MicroQRCode version 1 is always NUMERIC and modeBitLength is 0
+			else
 				mode = CodecModeForBits(bits.readBits(modeBitLength), version.isMicroQRCode());
-			}
+
 			switch (mode) {
-			case CodecMode::TERMINATOR:
-				break;
 			case CodecMode::FNC1_FIRST_POSITION:
+//				if (!result.empty()) // uncomment to enforce specification
+//					throw std::runtime_error("GS1 Indicator (FNC1 in first position) at illegal position");
 				fc1InEffect = true; // In Alphanumeric mode undouble doubled percents and treat single percent as <GS>
 				// As converting character set ECIs ourselves and ignoring/skipping non-character ECIs, not using
 				// modifiers that indicate ECI protocol (ISO/IEC 18004:2015 Annex F Table F.1)
 				symbologyIdModifier = 3;
 				break;
 			case CodecMode::FNC1_SECOND_POSITION:
+				if (!result.empty())
+					throw std::runtime_error("AIM Application Indicator (FNC1 in second position) at illegal position");
 				fc1InEffect = true; // As above
 				symbologyIdModifier = 5; // As above
-				// ISO/IEC 18004:2015 7.4.8.3 AIM Application Indicator "00-99" or "A-Za-z"
-				appIndValue = bits.readBits(8); // Number 00-99 or ASCII value + 100; prefixed to data below
+				// ISO/IEC 18004:2015 7.4.8.3 AIM Application Indicator (FNC1 in second position), "00-99" or "A-Za-z"
+				if (int appInd = bits.readBits(8); appInd < 10) // "00-09"
+					result += L'0' + std::to_wstring(appInd);
+				else if (appInd < 100) // "10-99"
+					result += std::to_wstring(appInd);
+				else if ((appInd >= 165 && appInd <= 190) || (appInd >= 197 && appInd <= 222)) // "A-Za-z"
+					result += static_cast<wchar_t>(appInd - 100);
+				else
+					throw std::runtime_error("Invalid AIM Application Indicator");
 				break;
 			case CodecMode::STRUCTURED_APPEND:
 				// sequence number and parity is added later to the result metadata
@@ -328,20 +329,19 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 				structuredAppend.count = bits.readBits(4) + 1;
 				structuredAppend.id    = std::to_string(bits.readBits(8));
 				break;
-			case CodecMode::ECI: {
+			case CodecMode::ECI:
 				// Count doesn't apply to ECI
 				currentCharset = CharacterSetECI::CharsetFromValue(ParseECIValue(bits));
 				if (currentCharset == CharacterSet::Unknown)
 					return DecodeStatus::FormatError;
 				break;
-			}
 			case CodecMode::HANZI: {
 				// First handle Hanzi mode which does not start with character count
 				// chinese mode contains a sub set indicator right after mode indicator
 				int subset = bits.readBits(4);
-				int countHanzi = bits.readBits(CharacterCountBits(mode, version));
-				if (subset == GB2312_SUBSET)
-					DecodeHanziSegment(bits, countHanzi, result);
+				int count = bits.readBits(CharacterCountBits(mode, version));
+				if (subset == 1 ) // GB2312_SUBSET
+					DecodeHanziSegment(bits, count, result);
 				break;
 			}
 			default: {
@@ -358,7 +358,7 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 				break;
 			}
 			}
-		} while (mode != CodecMode::TERMINATOR);
+		}
 	}
 	catch (const std::exception& e)
 	{
@@ -366,17 +366,6 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 		printf("QRDecoder error: %s\n", e.what());
 #endif
 		return DecodeStatus::FormatError;
-	}
-
-	if (appIndValue >= 0) {
-		if (appIndValue < 10) // "00-09"
-			result.insert(0, L'0' + std::to_wstring(appIndValue));
-		else if (appIndValue < 100) // "10-99"
-			result.insert(0, std::to_wstring(appIndValue));
-		else if ((appIndValue >= 165 && appIndValue <= 190) || (appIndValue >= 197 && appIndValue <= 222)) // "A-Za-z"
-			result.insert(0, 1, static_cast<wchar_t>(appIndValue - 100));
-		else
-			return DecodeStatus::FormatError;
 	}
 
 	return DecoderResult(std::move(bytes), std::move(result))
