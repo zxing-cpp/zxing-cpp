@@ -292,8 +292,8 @@ AztecData GetEncodedData(const BitArray& bits, const std::string& characterSet)
 	CharacterSet encoding = CharacterSetECI::InitEncoding(characterSet);
 
 	// Check for Structured Append - need 4 5-bit words, beginning with ML UL, ending with index and count
-	bool haveStructuredAppend = Size(bits) > 20 && ToInt(bits, 0, 5) == 29 // ML (UPPER table)
-								&& ToInt(bits, 5, 5) == 29; // UL (MIXED table)
+	bool haveStructuredAppend = Size(bits) > 20 && ToInt(bits, 0, 5) == 29 // latch to MIXED (from UPPER)
+								&& ToInt(bits, 5, 5) == 29;                // latch back to UPPER (from MIXED)
 	bool haveFNC1 = false;
 	auto remBits = bits.range();
 
