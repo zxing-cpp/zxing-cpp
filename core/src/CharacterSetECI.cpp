@@ -134,7 +134,7 @@ static const std::map<const char *, CharacterSet, CompareNoCase> ECI_NAME_TO_CHA
 	{"BINARY",		CharacterSet::BINARY},
 };
 
-CharacterSet CharsetFromValue(int value)
+CharacterSet ECI2CharacterSet(int value)
 {
 	auto it = ECI_VALUE_TO_CHARSET.find(value);
 	if (it != ECI_VALUE_TO_CHARSET.end()) {
@@ -143,7 +143,7 @@ CharacterSet CharsetFromValue(int value)
 	return CharacterSet::Unknown;
 }
 
-int ValueForCharset(CharacterSet charset)
+int Charset2ECI(CharacterSet charset)
 {
 	// Special case ISO8859_1 to avoid obsolete ECI 1
 	if (charset == CharacterSet::ISO8859_1) {
@@ -183,7 +183,7 @@ CharacterSet OnChangeAppendReset(const int eci, std::wstring& encoded, std::stri
 {
 	// Character set ECIs only
 	if (eci >= 0 && eci <= 899) {
-		auto encodingNew = CharacterSetECI::CharsetFromValue(eci);
+		auto encodingNew = CharacterSetECI::ECI2CharacterSet(eci);
 		if (encodingNew != CharacterSet::Unknown && encodingNew != encoding) {
 			// Encode data so far in current encoding and reset
 			TextDecoder::Append(encoded, reinterpret_cast<const uint8_t*>(data.data()), data.size(), encoding);

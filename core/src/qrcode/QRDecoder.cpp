@@ -331,7 +331,7 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 				break;
 			case CodecMode::ECI:
 				// Count doesn't apply to ECI
-				currentCharset = CharacterSetECI::CharsetFromValue(ParseECIValue(bits));
+				currentCharset = CharacterSetECI::ECI2CharacterSet(ParseECIValue(bits));
 				if (currentCharset == CharacterSet::Unknown)
 					return DecodeStatus::FormatError;
 				break;

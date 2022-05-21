@@ -23,14 +23,14 @@ using namespace ZXing;
 using namespace ZXing::CharacterSetECI;
 using namespace testing;
 
-TEST(CharacterSetECITest, ValueForCharset)
+TEST(CharacterSetECITest, Charset2ECI)
 {
-	EXPECT_EQ(ValueForCharset(CharacterSet::ISO8859_1), 3);
-	EXPECT_EQ(ValueForCharset(CharacterSet::ISO8859_2), 4);
-	EXPECT_EQ(ValueForCharset(CharacterSet::ASCII), 27);
-	EXPECT_EQ(ValueForCharset(CharacterSet::EUC_KR), 30);
-	EXPECT_EQ(ValueForCharset(CharacterSet::BINARY), 899);
-	EXPECT_EQ(ValueForCharset(CharacterSet::Unknown), -1);
+	EXPECT_EQ(Charset2ECI(CharacterSet::ISO8859_1), 3);
+	EXPECT_EQ(Charset2ECI(CharacterSet::ISO8859_2), 4);
+	EXPECT_EQ(Charset2ECI(CharacterSet::ASCII), 27);
+	EXPECT_EQ(Charset2ECI(CharacterSet::EUC_KR), 30);
+	EXPECT_EQ(Charset2ECI(CharacterSet::BINARY), 899);
+	EXPECT_EQ(Charset2ECI(CharacterSet::Unknown), -1);
 }
 
 TEST(CharacterSetECITest, InitEncoding)

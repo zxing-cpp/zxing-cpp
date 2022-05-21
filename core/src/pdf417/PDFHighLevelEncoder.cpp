@@ -514,7 +514,7 @@ HighLevelEncoder::EncodeHighLevel(const std::wstring& msg, Compaction compaction
 
 	//the codewords 0..928 are encoded as Unicode characters
 	if (encoding != CharacterSet::ISO8859_1) {		
-		EncodingECI(CharacterSetECI::ValueForCharset(encoding), highLevel);
+		EncodingECI(CharacterSetECI::Charset2ECI(encoding), highLevel);
 	}
 
 	int len = Size(msg);
