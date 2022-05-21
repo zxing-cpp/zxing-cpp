@@ -19,6 +19,7 @@
 #include "ODDataBarExpandedReader.h"
 
 #include "BarcodeFormat.h"
+#include "DecoderResult.h"
 #include "ODDataBarCommon.h"
 #include "Result.h"
 #include "TextDecoder.h"
@@ -388,9 +389,10 @@ Result DataBarExpandedReader::decodePattern(int rowNumber, PatternView& view,
 
 	// TODO: EstimatePosition misses part of the symbol in the stacked case where the last row contains less pairs than
 	// the first
-	return {TextDecoder::FromLatin1(txt), EstimatePosition(pairs.front(), pairs.back()),
-			BarcodeFormat::DataBarExpanded, std::move(symbologyIdentifier), {}, {}, false,
-			EstimateLineCount(pairs.front(), pairs.back())};
+	return {DecoderResult({}, TextDecoder::FromLatin1(txt))
+				.setSymbologyIdentifier("]e0")
+				.setLineCount(EstimateLineCount(pairs.front(), pairs.back())),
+			EstimatePosition(pairs.front(), pairs.back()), BarcodeFormat::DataBarExpanded};
 }
 
 } // namespace ZXing::OneD

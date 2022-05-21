@@ -17,6 +17,7 @@
 
 #include "BlackboxTestRunner.h"
 
+#include "DecoderResult.h"
 #include "ImageLoader.h"
 #include "ReadBarcode.h"
 #include "TextUtfEncoding.h"
@@ -278,8 +279,12 @@ static Result readMultiple(const std::vector<fs::path>& imgPaths, std::string_vi
 		text.append(r.text());
 
 	const auto& first = allResults.front();
-	StructuredAppendInfo sai{first.sequenceIndex(), first.sequenceSize(), first.sequenceId()};
-	return {std::move(text), {}, first.format(), std::string(first.symbologyIdentifier()), {}, std::move(sai), first.readerInit()};
+	return {DecoderResult({}, std::move(text))
+				.setStructuredAppend({first.sequenceIndex(), first.sequenceSize(), first.sequenceId()})
+				.setSymbologyIdentifier(first.symbologyIdentifier())
+				.setReaderInit(first.readerInit()),
+			{},
+			first.format()};
 }
 
 static void doRunStructuredAppendTest(const fs::path& directory, std::string_view format, int totalTests,

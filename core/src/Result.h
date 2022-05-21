@@ -42,10 +42,6 @@ class Result
 public:
 	explicit Result(DecodeStatus status) : _status(status) {}
 
-	Result(std::wstring&& text, Position&& position, BarcodeFormat format, std::string&& symbologyIdentifier = "",
-		   ByteArray&& rawBytes = {}, StructuredAppendInfo&& sai = {}, const bool readerInit = false,
-		   int lineCount = 0);
-
 	// 1D convenience constructor
 	Result(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format,
 		   std::string&& symbologyIdentifier = "", ByteArray&& rawBytes = {}, const bool readerInit = false);

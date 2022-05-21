@@ -45,6 +45,7 @@ class DecoderResult
 	std::wstring _ecLevel;
 	int _errorsCorrected = -1;
 	int _erasures = -1;
+	int _lineCount = -1;
 	std::string _symbologyIdentifier;
 	StructuredAppendInfo _structuredAppend;
 	bool _isMirrored = false;
@@ -92,6 +93,7 @@ public:
 	ZX_PROPERTY(std::wstring, ecLevel, setEcLevel)
 	ZX_PROPERTY(int, errorsCorrected, setErrorsCorrected)
 	ZX_PROPERTY(int, erasures, setErasures)
+	ZX_PROPERTY(int, lineCount, setLineCount)
 	ZX_PROPERTY(std::string, symbologyIdentifier, setSymbologyIdentifier)
 	ZX_PROPERTY(StructuredAppendInfo, structuredAppend, setStructuredAppend)
 	ZX_PROPERTY(bool, isMirrored, setIsMirrored)
