@@ -69,12 +69,12 @@ static bool CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
 /**
 * See specification GBT 18284-2000
 */
-static void DecodeHanziSegment(BitSource& bits, int count, std::wstring& result)
+static void DecodeHanziSegment(BitSource& bits, int count, Content& result)
 {
-	// Each character will require 2 bytes. Read the characters as 2-byte pairs
-	// and decode as GB2312 afterwards
-	ByteArray buffer;
-	buffer.reserve(2 * count);
+	// Each character will require 2 bytes, decode as GB2312
+	result.switchEncoding(CharacterSet::GB2312);
+	result.reserve(2 * count);
+
 	while (count > 0) {
 		// Each 13 bits encodes a 2-byte character
 		int twoBytes = bits.readBits(13);
@@ -86,20 +86,19 @@ static void DecodeHanziSegment(BitSource& bits, int count, std::wstring& result)
 			// In the 0xB0A1 to 0xFAFE range
 			assembledTwoBytes += 0x0A6A1;
 		}
-		buffer.push_back(static_cast<uint8_t>((assembledTwoBytes >> 8) & 0xFF));
-		buffer.push_back(static_cast<uint8_t>(assembledTwoBytes & 0xFF));
+		result += static_cast<uint8_t>((assembledTwoBytes >> 8) & 0xFF);
+		result += static_cast<uint8_t>(assembledTwoBytes & 0xFF);
 		count--;
 	}
-
-	TextDecoder::Append(result, buffer.data(), Size(buffer), CharacterSet::GB2312);
 }
 
-static void DecodeKanjiSegment(BitSource& bits, int count, std::wstring& result)
+static void DecodeKanjiSegment(BitSource& bits, int count, Content& result)
 {
 	// Each character will require 2 bytes. Read the characters as 2-byte pairs
 	// and decode as Shift_JIS afterwards
-	ByteArray buffer;
-	buffer.reserve(2 * count);
+	result.switchEncoding(CharacterSet::Shift_JIS);
+	result.reserve(2 * count);
+
 	while (count > 0) {
 		// Each 13 bits encodes a 2-byte character
 		int twoBytes = bits.readBits(13);
@@ -111,34 +110,19 @@ static void DecodeKanjiSegment(BitSource& bits, int count, std::wstring& result)
 			// In the 0xE040 to 0xEBBF range
 			assembledTwoBytes += 0x0C140;
 		}
-		buffer.push_back(static_cast<uint8_t>(assembledTwoBytes >> 8));
-		buffer.push_back(static_cast<uint8_t>(assembledTwoBytes));
+		result += static_cast<uint8_t>(assembledTwoBytes >> 8);
+		result += static_cast<uint8_t>(assembledTwoBytes);
 		count--;
 	}
-
-	TextDecoder::Append(result, buffer.data(), Size(buffer), CharacterSet::Shift_JIS);
 }
 
-static void DecodeByteSegment(BitSource& bits, int count, CharacterSet currentCharset, const std::string& hintedCharset,
-							  std::wstring& result)
+static void DecodeByteSegment(BitSource& bits, int count, Content& result)
 {
-	ByteArray readBytes(count);
+	result.switchEncoding(CharacterSet::Unknown);
+	result.reserve(count);
+
 	for (int i = 0; i < count; i++)
-		readBytes[i] = static_cast<uint8_t>(bits.readBits(8));
-
-	if (currentCharset == CharacterSet::Unknown) {
-		// The spec isn't clear on this mode; see
-		// section 6.4.5: t does not say which encoding to assuming
-		// upon decoding. I have seen ISO-8859-1 used as well as
-		// Shift_JIS -- without anything like an ECI designator to
-		// give a hint.
-		if (!hintedCharset.empty())
-			currentCharset = CharacterSetECI::CharsetFromName(hintedCharset.c_str());
-
-		if (currentCharset == CharacterSet::Unknown)
-			currentCharset = TextDecoder::GuessEncoding(readBytes.data(), Size(readBytes));
-	}
-	TextDecoder::Append(result, readBytes.data(), Size(readBytes), currentCharset);
+		result += static_cast<uint8_t>(bits.readBits(8));
 }
 
 static char ToAlphaNumericChar(int value)
@@ -159,7 +143,7 @@ static char ToAlphaNumericChar(int value)
 	return ALPHANUMERIC_CHARS[value];
 }
 
-static void DecodeAlphanumericSegment(BitSource& bits, int count, bool fc1InEffect, std::wstring& result)
+static void DecodeAlphanumericSegment(BitSource& bits, int count, bool fc1InEffect, Content& result)
 {
 	// Read two characters at a time
 	std::string buffer;
@@ -188,22 +172,26 @@ static void DecodeAlphanumericSegment(BitSource& bits, int count, bool fc1InEffe
 			}
 		}
 	}
-	TextDecoder::AppendLatin1(result, buffer);
+
+	result.switchEncoding(CharacterSet::ASCII);
+	result += buffer;
 }
 
-static void DecodeNumericSegment(BitSource& bits, int count, std::wstring& result)
+static void DecodeNumericSegment(BitSource& bits, int count, Content& result)
 {
+	result.switchEncoding(CharacterSet::ASCII);
+	result.reserve(count);
+
 	// Read three digits at a time
-	std::string buffer;
 	while (count >= 3) {
 		// Each 10 bits encodes three digits
 		int threeDigitsBits = bits.readBits(10);
 		if (threeDigitsBits >= 1000)
 			throw std::runtime_error("Invalid value in numeric segment");
 
-		buffer += ToAlphaNumericChar(threeDigitsBits / 100);
-		buffer += ToAlphaNumericChar((threeDigitsBits / 10) % 10);
-		buffer += ToAlphaNumericChar(threeDigitsBits % 10);
+		result += ToAlphaNumericChar(threeDigitsBits / 100);
+		result += ToAlphaNumericChar((threeDigitsBits / 10) % 10);
+		result += ToAlphaNumericChar(threeDigitsBits % 10);
 		count -= 3;
 	}
 
@@ -213,18 +201,16 @@ static void DecodeNumericSegment(BitSource& bits, int count, std::wstring& resul
 		if (twoDigitsBits >= 100)
 			throw std::runtime_error("Invalid value in numeric segment");
 
-		buffer += ToAlphaNumericChar(twoDigitsBits / 10);
-		buffer += ToAlphaNumericChar(twoDigitsBits % 10);
+		result += ToAlphaNumericChar(twoDigitsBits / 10);
+		result += ToAlphaNumericChar(twoDigitsBits % 10);
 	} else if (count == 1) {
 		// One digit left over to read
 		int digitBits = bits.readBits(4);
 		if (digitBits >= 10)
 			throw std::runtime_error("Invalid value in numeric segment");
 
-		buffer += ToAlphaNumericChar(digitBits);
+		result += ToAlphaNumericChar(digitBits);
 	}
-
-	TextDecoder::AppendLatin1(result, buffer);
 }
 
 static int ParseECIValue(BitSource& bits)
@@ -282,15 +268,15 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 							  const std::string& hintedCharset)
 {
 	BitSource bits(bytes);
-	std::wstring result;
+	Content result;
+	result.hintedCharset = hintedCharset.empty() ? "Auto" : hintedCharset;
 	int symbologyIdModifier = 1; // ISO/IEC 18004:2015 Annex F Table F.1
 	StructuredAppendInfo structuredAppend;
 	const int modeBitLength = CodecModeBitsLength(version);
+	bool fc1InEffect = false;
 
 	try
 	{
-		CharacterSet currentCharset = CharacterSet::Unknown;
-		bool fc1InEffect = false;
 		while(!IsEndOfStream(bits, version)) {
 			CodecMode mode;
 			if (modeBitLength == 0)
@@ -314,11 +300,11 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 				symbologyIdModifier = 5; // As above
 				// ISO/IEC 18004:2015 7.4.8.3 AIM Application Indicator (FNC1 in second position), "00-99" or "A-Za-z"
 				if (int appInd = bits.readBits(8); appInd < 10) // "00-09"
-					result += L'0' + std::to_wstring(appInd);
+					result += '0' + std::to_string(appInd);
 				else if (appInd < 100) // "10-99"
-					result += std::to_wstring(appInd);
+					result += std::to_string(appInd);
 				else if ((appInd >= 165 && appInd <= 190) || (appInd >= 197 && appInd <= 222)) // "A-Za-z"
-					result += static_cast<wchar_t>(appInd - 100);
+					result += static_cast<uint8_t>(appInd - 100);
 				else
 					throw std::runtime_error("Invalid AIM Application Indicator");
 				break;
@@ -329,19 +315,21 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 				structuredAppend.count = bits.readBits(4) + 1;
 				structuredAppend.id    = std::to_string(bits.readBits(8));
 				break;
-			case CodecMode::ECI:
+			case CodecMode::ECI: {
 				// Count doesn't apply to ECI
-				currentCharset = CharacterSetECI::ECI2CharacterSet(ParseECIValue(bits));
-				if (currentCharset == CharacterSet::Unknown)
+				auto charset = CharacterSetECI::ECI2CharacterSet(ParseECIValue(bits));
+				if (charset == CharacterSet::Unknown)
 					return DecodeStatus::FormatError;
+				result.switchEncoding(charset, true);
 				break;
+			}
 			case CodecMode::HANZI: {
 				// First handle Hanzi mode which does not start with character count
 				// chinese mode contains a sub set indicator right after mode indicator
-				int subset = bits.readBits(4);
+				if (int subset = bits.readBits(4); subset != 1) // GB2312_SUBSET is the only supported one right now
+					return DecodeStatus::FormatError;
 				int count = bits.readBits(CharacterCountBits(mode, version));
-				if (subset == 1 ) // GB2312_SUBSET
-					DecodeHanziSegment(bits, count, result);
+				DecodeHanziSegment(bits, count, result);
 				break;
 			}
 			default: {
@@ -351,7 +339,7 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 				switch (mode) {
 				case CodecMode::NUMERIC:      DecodeNumericSegment(bits, count, result); break;
 				case CodecMode::ALPHANUMERIC: DecodeAlphanumericSegment(bits, count, fc1InEffect, result); break;
-				case CodecMode::BYTE:         DecodeByteSegment(bits, count, currentCharset, hintedCharset, result); break;
+				case CodecMode::BYTE:         DecodeByteSegment(bits, count, result); break;
 				case CodecMode::KANJI:        DecodeKanjiSegment(bits, count, result); break;
 				default:                      return DecodeStatus::FormatError;
 				}
@@ -368,7 +356,7 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 		return DecodeStatus::FormatError;
 	}
 
-	return DecoderResult(std::move(bytes), std::move(result))
+	return DecoderResult(std::move(bytes), {}, std::move(result))
 		.setEcLevel(ToString(ecLevel))
 		.setSymbologyIdentifier("]Q" + std::to_string(symbologyIdModifier))
 		.setStructuredAppend(structuredAppend);

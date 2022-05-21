@@ -84,6 +84,8 @@ if (BUILD_READERS)
         src/BinaryBitmap.cpp
         src/BitSource.h
         src/BitSource.cpp
+        src/Content.h
+        src/Content.cpp
         src/DecodeHints.h
         src/DecodeHints.cpp
         src/DecodeStatus.h

@@ -154,7 +154,7 @@ enum class Mode {C40, TEXT};
 * See ISO 16022:2006, 5.2.5 and Annex C, Table C.1 (C40)
 * See ISO 16022:2006, 5.2.6 and Annex C, Table C.2 (Text)
 */
-static void DecodeC40OrTextSegment(BitSource& bits, std::string& result, Mode mode)
+static void DecodeC40OrTextSegment(BitSource& bits, Content& result, Mode mode)
 {
 	// TODO(bbrown): The Upper Shift with C40 doesn't work in the 4 value scenario all the time
 	Shift128 upperShift;
@@ -200,7 +200,7 @@ static void DecodeC40OrTextSegment(BitSource& bits, std::string& result, Mode mo
 /**
 * See ISO 16022:2006, 5.2.7
 */
-static void DecodeAnsiX12Segment(BitSource& bits, std::string& result)
+static void DecodeAnsiX12Segment(BitSource& bits, Content& result)
 {
 	while (auto triple = DecodeNextTriple(bits)) {
 		for (int cValue : *triple) {
@@ -223,7 +223,7 @@ static void DecodeAnsiX12Segment(BitSource& bits, std::string& result)
 /**
 * See ISO 16022:2006, 5.2.8 and Annex C Table C.3
 */
-static void DecodeEdifactSegment(BitSource& bits, std::string& result)
+static void DecodeEdifactSegment(BitSource& bits, Content& result)
 {
 	// If there are less than 3 bytes left then it will be encoded as ASCII
 	while (bits.available() >= 24) {
@@ -258,7 +258,7 @@ static int Unrandomize255State(int randomizedBase256Codeword, int base256Codewor
 /**
 * See ISO 16022:2006, 5.2.9 and Annex B, B.2
 */
-static void DecodeBase256Segment(BitSource& bits, std::string& result)
+static void DecodeBase256Segment(BitSource& bits, Content& result)
 {
 	// Figure out how long the Base 256 Segment is.
 	int codewordPosition = 1 + bits.byteOffset(); // position is 1-indexed
@@ -275,26 +275,22 @@ static void DecodeBase256Segment(BitSource& bits, std::string& result)
 	if (count < 0)
 		throw std::runtime_error("invalid count in Base256 segment");
 
-	ByteArray bytes(count);
+	result.reserve(count);
 	for (int i = 0; i < count; i++) {
 		// readBits(8) may fail, have seen this particular error in the wild, such as at
 		// http://www.bcgen.com/demo/IDAutomationStreamingDataMatrix.aspx?MODE=3&D=Fred&PFMT=3&PT=F&X=0.3&O=0&LM=0.2
-		bytes[i] = (uint8_t)Unrandomize255State(bits.readBits(8), codewordPosition++);
+		result += static_cast<uint8_t>(Unrandomize255State(bits.readBits(8), codewordPosition++));
 	}
-
-	result.append(reinterpret_cast<const char*>(bytes.data()), bytes.size());
 }
 
 ZXING_EXPORT_TEST_ONLY
 DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet, const bool isDMRE)
 {
 	BitSource bits(bytes);
-	std::string result;
-	result.reserve(100);
+	Content result;
+	result.hintedCharset = characterSet;
 	std::string resultTrailer;
-	std::wstring resultEncoded;
 
-	CharacterSet encoding = CharacterSetECI::InitEncoding(characterSet);
 	int symbologyIdModifier = 1; // ECC 200 (ISO 16022:2006 Annex N Table N.1)
 	struct StructuredAppendInfo sai;
 	bool readerInit = false;
@@ -349,7 +345,7 @@ DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet, const b
 			case 238: DecodeAnsiX12Segment(bits, result); break;
 			case 239: DecodeC40OrTextSegment(bits, result, Mode::TEXT); break;
 			case 240: DecodeEdifactSegment(bits, result); break;
-			case 241: encoding = CharacterSetECI::OnChangeAppendReset(ParseECIValue(bits), resultEncoded, result, encoding); break;
+			case 241: result.switchEncoding(CharacterSetECI::ECI2CharacterSet(ParseECIValue(bits)), true); break;
 			default:
 				if (oneByte <= 128) { // ASCII data (ASCII value + 1)
 					result.push_back(upperShift(oneByte) - 1);
@@ -374,12 +370,9 @@ DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet, const b
 		return DecodeStatus::FormatError;
 	}
 
-	if (resultTrailer.length() > 0)
-		result.append(resultTrailer);
+	result.append(resultTrailer);
 
-	TextDecoder::Append(resultEncoded, reinterpret_cast<const uint8_t*>(result.data()), result.size(), encoding);
-
-	return DecoderResult(std::move(bytes), std::move(resultEncoded))
+	return DecoderResult(std::move(bytes), {}, std::move(result))
 			.setSymbologyIdentifier("]d" + std::to_string(symbologyIdModifier + (isDMRE ? 6 : 0)))
 			.setStructuredAppend(sai)
 			.setReaderInit(readerInit);

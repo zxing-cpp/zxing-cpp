@@ -56,6 +56,9 @@ public:
 
 	const std::wstring& text() const { return _text; }
 
+	// WARNING: this is an experimental API and may change/disappear
+	const ByteArray& binary() const { return _binary; }
+
 	const Position& position() const { return _position; }
 	void setPosition(Position pos) { _position = pos; }
 
@@ -120,6 +123,7 @@ private:
 	DecodeStatus _status = DecodeStatus::NoError;
 	BarcodeFormat _format = BarcodeFormat::None;
 	std::wstring _text;
+	ByteArray _binary;
 	Position _position;
 	ByteArray _rawBytes;
 	int _numBits = 0;

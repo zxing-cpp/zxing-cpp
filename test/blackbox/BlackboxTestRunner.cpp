@@ -153,9 +153,10 @@ static std::string checkResult(const fs::path& imgPath, std::string_view expecte
 	}
 
 	if (auto expected = readFile(".bin")) {
-		std::string latin1Result(result.text().length(), '\0');
-		std::transform(result.text().begin(), result.text().end(), latin1Result.begin(), [](wchar_t c) { return static_cast<char>(c); });
-		return latin1Result != *expected ? fmt::format("Content mismatch: expected '{}' but got '{}'", *expected, latin1Result) : "";
+		ByteArray binaryExpected(*expected);
+		return result.binary() != binaryExpected
+				   ? fmt::format("Content mismatch: expected '{}' but got '{}'", ToHex(binaryExpected), ToHex(result.binary()))
+				   : "";
 	}
 
 	return "Error reading file";
@@ -275,11 +276,14 @@ static Result readMultiple(const std::vector<fs::path>& imgPaths, std::string_vi
 		return Result(DecodeStatus::FormatError);
 
 	std::wstring text;
-	for (const auto& r : allResults)
+	Content content;
+	for (const auto& r : allResults) {
 		text.append(r.text());
+		content.append(r.binary());
+	}
 
 	const auto& first = allResults.front();
-	return {DecoderResult({}, std::move(text))
+	return {DecoderResult({}, std::move(text), std::move(content))
 				.setStructuredAppend({first.sequenceIndex(), first.sequenceSize(), first.sequenceId()})
 				.setSymbologyIdentifier(first.symbologyIdentifier())
 				.setReaderInit(first.readerInit()),

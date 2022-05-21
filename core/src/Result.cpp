@@ -30,6 +30,7 @@ Result::Result(const std::string& text, int y, int xStart, int xStop, BarcodeFor
 	:
 	  _format(format),
 	  _text(TextDecoder::FromLatin1(text)),
+	  _binary(text),
 	  _position(Line(y, xStart, xStop)),
 	  _rawBytes(std::move(rawBytes)),
 	  _numBits(Size(_rawBytes) * 8),
@@ -42,6 +43,7 @@ Result::Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat 
 	: _status(decodeResult.errorCode()),
 	  _format(format),
 	  _text(std::move(decodeResult).text()),
+	  _binary(std::move(decodeResult).binary()),
 	  _position(std::move(position)),
 	  _rawBytes(std::move(decodeResult).rawBytes()),
 	  _numBits(decodeResult.numBits()),

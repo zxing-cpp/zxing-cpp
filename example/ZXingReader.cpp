@@ -182,6 +182,7 @@ int main(int argc, char* argv[])
 				firstFile = false;
 			}
 			std::cout << "Text:       \"" << ToUtf8(result.text(), angleEscape) << "\"\n"
+					  << "Binary:     \"" << ToHex(result.binary()) << "\"\n"
 					  << "Format:     " << ToString(result.format()) << "\n"
 					  << "Identifier: " << result.symbologyIdentifier() << "\n"
 					  << "Position:   " << result.position() << "\n"

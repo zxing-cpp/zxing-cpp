@@ -17,6 +17,7 @@
 */
 
 #include "ByteArray.h"
+#include "Content.h"
 #include "DecodeStatus.h"
 #include "StructuredAppend.h"
 #include "ZXContainerAlgorithms.h"
@@ -40,6 +41,7 @@ class DecoderResult
 {
 	DecodeStatus _status = DecodeStatus::NoError;
 	ByteArray _rawBytes;
+	Content _content;
 	int _numBits = 0;
 	std::wstring _text;
 	std::wstring _ecLevel;
@@ -57,9 +59,15 @@ class DecoderResult
 
 public:
 	DecoderResult(DecodeStatus status) : _status(status) {}
-	DecoderResult(ByteArray&& rawBytes, std::wstring&& text) : _rawBytes(std::move(rawBytes)), _text(std::move(text))
+	DecoderResult(ByteArray&& rawBytes, std::wstring&& text, Content&& binary = {})
+		: _rawBytes(std::move(rawBytes)), _content(std::move(binary)), _text(std::move(text))
 	{
 		_numBits = 8 * Size(_rawBytes);
+		if (_text.empty())
+			_text = _content.text();
+		// provide some best guess fallback for barcodes not, yet supporting the content info
+		if (_content.empty() && std::all_of(_text.begin(), _text.end(), [](auto c) { return c < 256; }))
+			std::for_each(_text.begin(), _text.end(), [this](wchar_t c) { _content += static_cast<uint8_t>(c); });
 	}
 
 	DecoderResult() = default;
@@ -73,6 +81,8 @@ public:
 	ByteArray&& rawBytes() && { return std::move(_rawBytes); }
 	const std::wstring& text() const & { return _text; }
 	std::wstring&& text() && { return std::move(_text); }
+	const ByteArray& binary() const & { return _content.binary; }
+	ByteArray&& binary() && { return std::move(_content.binary); }
 
 	// Simple macro to set up getter/setter methods that save lots of boilerplate.
 	// It sets up a standard 'const & () const', 2 setters for setting lvalues via
