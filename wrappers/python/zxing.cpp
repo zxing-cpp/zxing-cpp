@@ -1,3 +1,10 @@
+/*
+ * Copyright 2019 Tim Rae
+ * Copyright 2021 Antoine Humbert
+ * Copyright 2021 Axel Waggershauser
+ */
+// SPDX-License-Identifier: Apache-2.0
+
 #include "BarcodeFormat.h"
 
 // Reader

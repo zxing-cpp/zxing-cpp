@@ -1,3 +1,8 @@
+/*
+ * Copyright 2021 Axel Waggershauser
+ */
+// SPDX-License-Identifier: Apache-2.0
+
 #include <stdint.h>
 #include <stddef.h>
 
