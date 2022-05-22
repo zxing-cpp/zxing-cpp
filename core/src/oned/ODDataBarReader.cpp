@@ -157,7 +157,7 @@ Result DataBarReader::decodePattern(int rowNumber, PatternView& next,
 									std::unique_ptr<RowReader::DecodingState>& state) const
 {
 #if 0 // non-stacked version
-	next = next.subView(-1, FULL_PAIR_SIZE);
+	next = next.subView(-1, FULL_PAIR_SIZE + 1); // +1 reflects the guard pattern on the right, see IsRightPair());
 	// yes: the first view we test is at index 1 (black bar at 0 would be the guard pattern)
 	while (next.shift(2)) {
 		if (IsLeftPair(next)) {
@@ -174,7 +174,7 @@ Result DataBarReader::decodePattern(int rowNumber, PatternView& next,
 		state.reset(new State);
 	auto* prevState = static_cast<State*>(state.get());
 
-	next = next.subView(0, FULL_PAIR_SIZE);
+	next = next.subView(0, FULL_PAIR_SIZE + 1); // +1 reflects the guard pattern on the right, see IsRightPair()
 	// yes: the first view we test is at index 1 (black bar at 0 would be the guard pattern)
 	while (next.shift(1)) {
 		if (IsLeftPair(next)) {
