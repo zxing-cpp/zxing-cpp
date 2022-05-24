@@ -7,7 +7,7 @@
 #include "QREncoder.h"
 
 #include "BitArray.h"
-#include "CharacterSetECI.h"
+#include "ECI.h"
 #include "GenericGF.h"
 #include "QREncodeResult.h"
 #include "QRErrorCorrectionLevel.h"
@@ -103,7 +103,7 @@ CodecMode ChooseMode(const std::wstring& content, CharacterSet encoding)
 */
 static void AppendECI(CharacterSet eci, BitArray& bits)
 {
-	int eciValue = CharacterSetECI::Charset2ECI(eci);
+	int eciValue = ToInt(ToECI(eci));
 	if (eciValue >= 0 && eciValue <= 999999) {
 		bits.appendBits(static_cast<int>(CodecMode::ECI), 4);
 		if (eciValue <= 127) {

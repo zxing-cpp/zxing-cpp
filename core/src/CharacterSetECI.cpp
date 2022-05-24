@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "CharacterSetECI.h"
+
+#include "ECI.h"
 #include "TextDecoder.h"
 
 #include <cctype>
@@ -14,40 +16,6 @@
 #include <utility>
 
 namespace ZXing::CharacterSetECI {
-
-static const std::map<int, CharacterSet> ECI_VALUE_TO_CHARSET = {
-	{0,  CharacterSet::Cp437}, // Obsolete
-	{1,  CharacterSet::ISO8859_1}, // Obsolete
-	{2,  CharacterSet::Cp437}, // Obsolete but still used by PDF417 Macro fields (ISO/IEC 15438:2015 Annex H.2.3)
-	{3,  CharacterSet::ISO8859_1},
-	{4,  CharacterSet::ISO8859_2},
-	{5,  CharacterSet::ISO8859_3},
-	{6,  CharacterSet::ISO8859_4},
-	{7,  CharacterSet::ISO8859_5},
-	{8,  CharacterSet::ISO8859_6},
-	{9,  CharacterSet::ISO8859_7},
-	{10, CharacterSet::ISO8859_8},
-	{11, CharacterSet::ISO8859_9},
-	{12, CharacterSet::ISO8859_10},
-	{13, CharacterSet::ISO8859_11},
-	{15, CharacterSet::ISO8859_13},
-	{16, CharacterSet::ISO8859_14},
-	{17, CharacterSet::ISO8859_15},
-	{18, CharacterSet::ISO8859_16},
-	{20, CharacterSet::Shift_JIS},
-	{21, CharacterSet::Cp1250},
-	{22, CharacterSet::Cp1251},
-	{23, CharacterSet::Cp1252},
-	{24, CharacterSet::Cp1256},
-	{25, CharacterSet::UnicodeBig},
-	{26, CharacterSet::UTF8},
-	{27, CharacterSet::ASCII},
-	{28, CharacterSet::Big5},
-	{29, CharacterSet::GB18030},
-	{30, CharacterSet::EUC_KR},
-	{170, CharacterSet::ASCII},
-	{899, CharacterSet::BINARY},
-};
 
 struct CompareNoCase {
 	bool operator ()(const char* a, const char* b) const {
@@ -125,36 +93,6 @@ static const std::map<const char *, CharacterSet, CompareNoCase> ECI_NAME_TO_CHA
 	{"BINARY",		CharacterSet::BINARY},
 };
 
-std::string ECI2String(int eci)
-{
-	std::ostringstream oss;
-	oss << '\\' << std::setw(6) << std::setfill('0') << eci;
-	return oss.str();
-}
-
-CharacterSet ECI2CharacterSet(int value)
-{
-	auto it = ECI_VALUE_TO_CHARSET.find(value);
-	if (it != ECI_VALUE_TO_CHARSET.end()) {
-		return it->second;
-	}
-	return CharacterSet::Unknown;
-}
-
-int Charset2ECI(CharacterSet charset)
-{
-	// Special case ISO8859_1 to avoid obsolete ECI 1
-	if (charset == CharacterSet::ISO8859_1) {
-		return 3;
-	}
-	for (auto& [key, value] : ECI_VALUE_TO_CHARSET) {
-		if (value == charset) {
-			return key;
-		}
-	}
-	return -1;
-}
-
 CharacterSet CharsetFromName(const char* name)
 {
 	auto it = ECI_NAME_TO_CHARSET.find(name);
@@ -181,7 +119,7 @@ CharacterSet OnChangeAppendReset(const int eci, std::wstring& encoded, std::stri
 {
 	// Character set ECIs only
 	if (eci >= 0 && eci <= 899) {
-		auto encodingNew = CharacterSetECI::ECI2CharacterSet(eci);
+		auto encodingNew = ToCharacterSet(ECI(eci));
 		if (encodingNew != CharacterSet::Unknown && encodingNew != encoding) {
 			// Encode data so far in current encoding and reset
 			TextDecoder::Append(encoded, reinterpret_cast<const uint8_t*>(data.data()), data.size(), encoding);

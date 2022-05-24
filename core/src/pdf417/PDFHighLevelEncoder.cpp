@@ -8,7 +8,7 @@
 #include "PDFHighLevelEncoder.h"
 #include "PDFCompaction.h"
 #include "CharacterSet.h"
-#include "CharacterSetECI.h"
+#include "ECI.h"
 #include "TextEncoder.h"
 #include "ZXBigInteger.h"
 #include "ZXContainerAlgorithms.h"
@@ -502,8 +502,8 @@ HighLevelEncoder::EncodeHighLevel(const std::wstring& msg, Compaction compaction
 	highLevel.reserve(highLevel.size() + msg.length());
 
 	//the codewords 0..928 are encoded as Unicode characters
-	if (encoding != CharacterSet::ISO8859_1) {		
-		EncodingECI(CharacterSetECI::Charset2ECI(encoding), highLevel);
+	if (encoding != CharacterSet::ISO8859_1) {
+		EncodingECI(ToInt(ToECI(encoding)), highLevel);
 	}
 
 	int len = Size(msg);

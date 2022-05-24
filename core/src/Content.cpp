@@ -12,11 +12,6 @@
 
 namespace ZXing {
 
-constexpr bool ECIIsBinary(int eci)
-{
-	return eci < 0 || eci > 32;
-}
-
 template <typename FUNC>
 void Content::ForEachECIBlock(FUNC func) const
 {
@@ -28,7 +23,7 @@ void Content::ForEachECIBlock(FUNC func) const
 	}
 }
 
-void Content::switchEncoding(int eci, bool isECI)
+void Content::switchEncoding(ECI eci, bool isECI)
 {
 	// TODO: replace non-ECI entries on first ECI entry with default ECI
 	if (isECI || !hasECI) {
@@ -42,7 +37,7 @@ void Content::switchEncoding(int eci, bool isECI)
 
 void Content::switchEncoding(CharacterSet cs)
 {
-	 switchEncoding(CharacterSetECI::Charset2ECI(cs), false);
+	 switchEncoding(ToECI(cs), false);
 }
 
 std::wstring Content::text() const
@@ -52,8 +47,8 @@ std::wstring Content::text() const
 		fallbackCS = guessEncoding();
 
 	std::wstring wstr;
-	ForEachECIBlock([&](int eci, int begin, int end) {
-		CharacterSet cs = CharacterSetECI::ECI2CharacterSet(eci);
+	ForEachECIBlock([&](ECI eci, int begin, int end) {
+		CharacterSet cs = ToCharacterSet(eci);
 		if (cs == CharacterSet::Unknown)
 			cs = fallbackCS;
 
@@ -65,21 +60,21 @@ std::wstring Content::text() const
 std::string Content::utf8Protocol() const
 {
 	std::wstring res;
-	int lastECI = -1;
+	ECI lastECI = ECI::Unknown;
 
-	ForEachECIBlock([&](int eci, int begin, int end) {
+	ForEachECIBlock([&](ECI eci, int begin, int end) {
 		if (!hasECI)
-			eci = CharacterSetECI::Charset2ECI(guessEncoding());
-		CharacterSet cs = CharacterSetECI::ECI2CharacterSet(eci);
+			eci = ToECI(guessEncoding());
+		CharacterSet cs = ToCharacterSet(eci);
 		if (cs == CharacterSet::Unknown)
 			cs = CharacterSet::BINARY;
-		if (eci == -1)
-			eci = 899; // 26 == binary ECI
-		else if (!ECIIsBinary(eci))
-			eci = 26; // 26 == utf8 ECI
+		if (eci == ECI::Unknown)
+			eci = ECI::Binary;
+		else if (IsText(eci))
+			eci = ECI::UTF8;
 
 		if (lastECI != eci)
-			TextDecoder::AppendLatin1(res, CharacterSetECI::ECI2String(eci));
+			TextDecoder::AppendLatin1(res, ToString(eci));
 		lastECI = eci;
 
 		std::wstring tmp;
@@ -98,8 +93,8 @@ CharacterSet Content::guessEncoding() const
 {
 	// assemble all blocks with unknown encoding
 	ByteArray input;
-	ForEachECIBlock([&](int eci, int begin, int end) {
-		if (eci == -1)
+	ForEachECIBlock([&](ECI eci, int begin, int end) {
+		if (eci == ECI::Unknown)
 			input.insert(input.end(), binary.begin() + begin, binary.begin() + end);
 	});
 
@@ -111,7 +106,7 @@ CharacterSet Content::guessEncoding() const
 
 ContentType Content::type() const
 {
-	auto isBinary = [](Encoding e) { return ECIIsBinary(e.eci); };
+	auto isBinary = [](Encoding e) { return !IsText(e.eci); };
 
 	if (hasECI) {
 		if (std::none_of(encodings.begin(), encodings.end(), isBinary))

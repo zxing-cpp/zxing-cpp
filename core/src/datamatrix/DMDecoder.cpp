@@ -82,19 +82,19 @@ struct Shift128
 /**
 * See ISO 16022:2006, 5.4.1, Table 6
 */
-static int ParseECIValue(BitSource& bits)
+static ECI ParseECIValue(BitSource& bits)
 {
 	int firstByte = bits.readBits(8);
 	if (firstByte <= 127)
-		return firstByte - 1;
+		return ECI(firstByte - 1);
 
 	int secondByte = bits.readBits(8);
 	if (firstByte <= 191)
-		return (firstByte - 128) * 254 + 127 + secondByte - 1;
+		return ECI((firstByte - 128) * 254 + 127 + secondByte - 1);
 
 	int thirdByte = bits.readBits(8);
 
-	return (firstByte - 192) * 64516 + 16383 + (secondByte - 1) * 254 + thirdByte - 1;
+	return ECI((firstByte - 192) * 64516 + 16383 + (secondByte - 1) * 254 + thirdByte - 1);
 }
 
 /**

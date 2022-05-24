@@ -6,7 +6,7 @@
 #pragma once
 
 #include "ByteArray.h"
-#include "CharacterSet.h"
+#include "ECI.h"
 
 namespace ZXing {
 
@@ -19,23 +19,24 @@ class Content
 	template <typename FUNC>
 	void ForEachECIBlock(FUNC f) const;
 
-	void switchEncoding(int eci, bool isECI);
+	void switchEncoding(ECI eci, bool isECI);
 
 public:
 	struct Encoding
 	{
-		int eci, pos;
+		ECI eci;
+		int pos;
 	};
 
 	ByteArray binary;
-	std::vector<Encoding> encodings = {{-1, 0}};
+	std::vector<Encoding> encodings = {{ECI::Unknown, 0}};
 	std::string hintedCharset;
 	std::string applicationIndicator;
 
 	Content() = default;
-	Content(ByteArray&& binary, int defaultECI) : binary(binary), encodings{{defaultECI, 0}} {}
+	Content(ByteArray&& binary, ECI defaultECI) : binary(binary), encodings{{defaultECI, 0}} {}
 
-	void switchEncoding(int eci) { switchEncoding(eci, true); }
+	void switchEncoding(ECI eci) { switchEncoding(eci, true); }
 	void switchEncoding(CharacterSet cs);
 
 	void reserve(int count) { binary.reserve(binary.size() + count); }

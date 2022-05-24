@@ -18,7 +18,7 @@ Result::Result(const std::string& text, int y, int xStart, int xStop, BarcodeFor
 			   std::string&& symbologyIdentifier, ByteArray&& rawBytes, const bool readerInit)
 	:
 	  _format(format),
-	  _content({ByteArray(text), 3}),
+	  _content({ByteArray(text), ECI::ISO8859_1}),
 	  _text(TextDecoder::FromLatin1(text)),
 	  _position(Line(y, xStart, xStop)),
 	  _rawBytes(std::move(rawBytes)),
