@@ -61,7 +61,8 @@ static bool CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
 static void DecodeHanziSegment(BitSource& bits, int count, Content& result)
 {
 	// Each character will require 2 bytes, decode as GB2312
-	result.switchEncoding(CharacterSet::GB2312);
+	// There is no ECI value for GB2312, use GB18030 which is a superset
+	result.switchEncoding(CharacterSet::GB18030);
 	result.reserve(2 * count);
 
 	while (count > 0) {
@@ -132,7 +133,7 @@ static char ToAlphaNumericChar(int value)
 	return ALPHANUMERIC_CHARS[value];
 }
 
-static void DecodeAlphanumericSegment(BitSource& bits, int count, bool fc1InEffect, Content& result)
+static void DecodeAlphanumericSegment(BitSource& bits, int count, Content& result)
 {
 	// Read two characters at a time
 	std::string buffer;
@@ -147,7 +148,7 @@ static void DecodeAlphanumericSegment(BitSource& bits, int count, bool fc1InEffe
 		buffer += ToAlphaNumericChar(bits.readBits(6));
 	}
 	// See section 6.4.8.1, 6.4.8.2
-	if (fc1InEffect) {
+	if (!result.applicationIndicator.empty()) {
 		// We need to massage the result a bit if in an FNC1 mode:
 		for (size_t i = 0; i < buffer.length(); i++) {
 			if (buffer[i] == '%') {
@@ -162,13 +163,13 @@ static void DecodeAlphanumericSegment(BitSource& bits, int count, bool fc1InEffe
 		}
 	}
 
-	result.switchEncoding(CharacterSet::ASCII);
+	result.switchEncoding(CharacterSet::ISO8859_1);
 	result += buffer;
 }
 
 static void DecodeNumericSegment(BitSource& bits, int count, Content& result)
 {
-	result.switchEncoding(CharacterSet::ASCII);
+	result.switchEncoding(CharacterSet::ISO8859_1);
 	result.reserve(count);
 
 	// Read three digits at a time
@@ -262,7 +263,6 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 	int symbologyIdModifier = 1; // ISO/IEC 18004:2015 Annex F Table F.1
 	StructuredAppendInfo structuredAppend;
 	const int modeBitLength = CodecModeBitsLength(version);
-	bool fc1InEffect = false;
 
 	try
 	{
@@ -277,15 +277,14 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 			case CodecMode::FNC1_FIRST_POSITION:
 //				if (!result.empty()) // uncomment to enforce specification
 //					throw std::runtime_error("GS1 Indicator (FNC1 in first position) at illegal position");
-				fc1InEffect = true; // In Alphanumeric mode undouble doubled percents and treat single percent as <GS>
 				// As converting character set ECIs ourselves and ignoring/skipping non-character ECIs, not using
 				// modifiers that indicate ECI protocol (ISO/IEC 18004:2015 Annex F Table F.1)
 				symbologyIdModifier = 3;
+				result.applicationIndicator = "GS1"; // In Alphanumeric mode undouble doubled percents and treat single percent as <GS>
 				break;
 			case CodecMode::FNC1_SECOND_POSITION:
 				if (!result.empty())
 					throw std::runtime_error("AIM Application Indicator (FNC1 in second position) at illegal position");
-				fc1InEffect = true; // As above
 				symbologyIdModifier = 5; // As above
 				// ISO/IEC 18004:2015 7.4.8.3 AIM Application Indicator (FNC1 in second position), "00-99" or "A-Za-z"
 				if (int appInd = bits.readBits(8); appInd < 10) // "00-09"
@@ -296,6 +295,7 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 					result += static_cast<uint8_t>(appInd - 100);
 				else
 					throw std::runtime_error("Invalid AIM Application Indicator");
+				result.applicationIndicator = std::string(result.binary.begin(), result.binary.end()); // see also above
 				break;
 			case CodecMode::STRUCTURED_APPEND:
 				// sequence number and parity is added later to the result metadata
@@ -304,14 +304,10 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 				structuredAppend.count = bits.readBits(4) + 1;
 				structuredAppend.id    = std::to_string(bits.readBits(8));
 				break;
-			case CodecMode::ECI: {
+			case CodecMode::ECI:
 				// Count doesn't apply to ECI
-				auto charset = CharacterSetECI::ECI2CharacterSet(ParseECIValue(bits));
-				if (charset == CharacterSet::Unknown)
-					return DecodeStatus::FormatError;
-				result.switchEncoding(charset, true);
+				result.switchEncoding(ParseECIValue(bits));
 				break;
-			}
 			case CodecMode::HANZI: {
 				// First handle Hanzi mode which does not start with character count
 				// chinese mode contains a sub set indicator right after mode indicator
@@ -327,7 +323,7 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 				int count = bits.readBits(CharacterCountBits(mode, version));
 				switch (mode) {
 				case CodecMode::NUMERIC:      DecodeNumericSegment(bits, count, result); break;
-				case CodecMode::ALPHANUMERIC: DecodeAlphanumericSegment(bits, count, fc1InEffect, result); break;
+				case CodecMode::ALPHANUMERIC: DecodeAlphanumericSegment(bits, count, result); break;
 				case CodecMode::BYTE:         DecodeByteSegment(bits, count, result); break;
 				case CodecMode::KANJI:        DecodeKanjiSegment(bits, count, result); break;
 				default:                      return DecodeStatus::FormatError;

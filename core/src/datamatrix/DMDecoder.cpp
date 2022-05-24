@@ -334,7 +334,7 @@ DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet, const b
 			case 238: DecodeAnsiX12Segment(bits, result); break;
 			case 239: DecodeC40OrTextSegment(bits, result, Mode::TEXT); break;
 			case 240: DecodeEdifactSegment(bits, result); break;
-			case 241: result.switchEncoding(CharacterSetECI::ECI2CharacterSet(ParseECIValue(bits)), true); break;
+			case 241: result.switchEncoding(ParseECIValue(bits)); break;
 			default:
 				if (oneByte <= 128) { // ASCII data (ASCII value + 1)
 					result.push_back(upperShift(oneByte) - 1);

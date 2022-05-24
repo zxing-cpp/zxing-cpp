@@ -182,6 +182,7 @@ int main(int argc, char* argv[])
 			}
 			std::cout << "Text:       \"" << ToUtf8(result.text(), angleEscape) << "\"\n"
 					  << "Binary:     \"" << ToHex(result.binary()) << "\"\n"
+					  << "ECI-Proto:  \"" << result.utf8Protocol() << "\"\n"
 					  << "Format:     " << ToString(result.format()) << "\n"
 					  << "Identifier: " << result.symbologyIdentifier() << "\n"
 					  << "Position:   " << result.position() << "\n"
@@ -195,6 +196,7 @@ int main(int argc, char* argv[])
 			};
 
 			printOptional("EC Level:   ", ToUtf8(result.ecLevel()));
+			printOptional("App-Ind.:   ", result.applicationIndicator());
 
 			if (result.lineCount())
 				std::cout << "Lines:      " << result.lineCount() << "\n";

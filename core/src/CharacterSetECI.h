@@ -20,6 +20,12 @@ namespace ZXing {
 namespace CharacterSetECI {
 
 /**
+ * @brief ECI2String converts the numerical ECI value to a 7 character string as used in the ECI protocol
+ * @return e.g. "\000020"
+ */
+std::string ECI2String(int eci);
+
+/**
  * @param value character set ECI value
  * @return {@code CharacterSet} representing ECI of given value, or {@code CharacterSet::Unknown} if it is unsupported
  */

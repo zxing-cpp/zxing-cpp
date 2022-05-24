@@ -9,6 +9,7 @@
 
 #include "BarcodeFormat.h"
 #include "ByteArray.h"
+#include "Content.h"
 #include "DecodeStatus.h"
 #include "Quadrilateral.h"
 #include "StructuredAppend.h"
@@ -47,7 +48,9 @@ public:
 	const std::wstring& text() const { return _text; }
 
 	// WARNING: this is an experimental API and may change/disappear
-	const ByteArray& binary() const { return _binary; }
+	const ByteArray& binary() const { return _content.binary; }
+	const std::string utf8Protocol() const { return _content.utf8Protocol(); }
+	const std::string applicationIndicator() const { return _content.applicationIndicator; }
 
 	const Position& position() const { return _position; }
 	void setPosition(Position pos) { _position = pos; }
@@ -112,8 +115,8 @@ public:
 private:
 	DecodeStatus _status = DecodeStatus::NoError;
 	BarcodeFormat _format = BarcodeFormat::None;
+	Content _content;
 	std::wstring _text;
-	ByteArray _binary;
 	Position _position;
 	ByteArray _rawBytes;
 	int _numBits = 0;

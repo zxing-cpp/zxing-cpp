@@ -8,7 +8,9 @@
 #include "TextDecoder.h"
 
 #include <cctype>
+#include <iomanip>
 #include <map>
+#include <sstream>
 #include <utility>
 
 namespace ZXing::CharacterSetECI {
@@ -122,6 +124,13 @@ static const std::map<const char *, CharacterSet, CompareNoCase> ECI_NAME_TO_CHA
 	{"EUC-KR",		CharacterSet::EUC_KR},
 	{"BINARY",		CharacterSet::BINARY},
 };
+
+std::string ECI2String(int eci)
+{
+	std::ostringstream oss;
+	oss << '\\' << std::setw(6) << std::setfill('0') << eci;
+	return oss.str();
+}
 
 CharacterSet ECI2CharacterSet(int value)
 {
