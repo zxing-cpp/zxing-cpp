@@ -37,7 +37,7 @@ class DecoderResult
 	std::wstring _ecLevel;
 	int _errorsCorrected = -1;
 	int _erasures = -1;
-	int _lineCount = -1;
+	int _lineCount = 0;
 	std::string _symbologyIdentifier;
 	StructuredAppendInfo _structuredAppend;
 	bool _isMirrored = false;
