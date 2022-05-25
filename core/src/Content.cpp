@@ -48,9 +48,7 @@ std::wstring Content::text() const
 
 	std::wstring wstr;
 	ForEachECIBlock([&](ECI eci, int begin, int end) {
-		CharacterSet cs = ToCharacterSet(eci);
-		if (cs == CharacterSet::Unknown)
-			cs = fallbackCS;
+		CharacterSet cs = eci == ECI::Unknown ? fallbackCS : ToCharacterSet(eci);
 
 		TextDecoder::Append(wstr, binary.data() + begin, end - begin, cs);
 	});
@@ -64,17 +62,19 @@ std::string Content::utf8Protocol() const
 
 	std::wstring res;
 	ECI lastECI = ECI::Unknown;
+	auto fallbackCS = guessEncoding();
 
 	ForEachECIBlock([&](ECI eci, int begin, int end) {
-		if (!hasECI)
-			eci = ToECI(guessEncoding());
-		CharacterSet cs = ToCharacterSet(eci);
-		if (cs == CharacterSet::Unknown)
-			cs = CharacterSet::BINARY;
-		if (eci == ECI::Unknown)
-			eci = ECI::Binary;
-		else if (IsText(eci))
+		// first determine how to decode the content (choose character set)
+		//  * eci == ECI::Unknown implies !hasECI and we guess
+		//  * if !IsText(eci) the ToCharcterSet(eci) will return Unknown and we decode as binary
+		CharacterSet cs = eci == ECI::Unknown ? fallbackCS : ToCharacterSet(eci);
+
+		// then find the eci to report back in the ECI designator
+		if (IsText(ToECI(cs))) // everything decoded as text is reported as utf8
 			eci = ECI::UTF8;
+		else if (eci == ECI::Unknown) // implies !hasECI and fallbackCS is Unknown or Binary
+			eci = ECI::Binary;
 
 		if (lastECI != eci)
 			TextDecoder::AppendLatin1(res, ToString(eci));
