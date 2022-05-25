@@ -402,6 +402,10 @@ TextDecoder::GuessEncoding(const uint8_t* bytes, size_t length, CharacterSet fal
 			if (value > 0x7F && value < 0xA0) {
 				canBeISO88591 = false;
 			}
+			// treat all ANSI control characters as binary, except EOT, LF, CR, GS and RS (see ISO/IEC 15434)
+			else if (value < 0x20 && value != 0x04 && value != 0x0a && value != 0x0d && value != 0x1d && value != 0x1e) {
+				canBeISO88591 = false;
+			}
 			else if (value > 0x9F) {
 				if (value < 0xC0 || value == 0xD7 || value == 0xF7) {
 					isoHighOther++;
