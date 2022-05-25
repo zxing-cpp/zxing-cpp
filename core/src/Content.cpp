@@ -59,6 +59,9 @@ std::wstring Content::text() const
 
 std::string Content::utf8Protocol() const
 {
+	if (binary.empty())
+		return {};
+
 	std::wstring res;
 	ECI lastECI = ECI::Unknown;
 
