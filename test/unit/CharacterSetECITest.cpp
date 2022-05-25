@@ -57,7 +57,7 @@ TEST(CharacterSetECITest, OnChangeAppendReset)
 		auto result = OnChangeAppendReset(3, encoded, data, CharacterSet::Unknown);
 		EXPECT_EQ(result, CharacterSet::ISO8859_1);
 		EXPECT_TRUE(data.empty());
-		EXPECT_EQ(encoded, std::wstring(L"A\u00E9Z"));
+		EXPECT_EQ(encoded, L"A\u00E9Z");
 	}
 
 	{
@@ -68,7 +68,7 @@ TEST(CharacterSetECITest, OnChangeAppendReset)
 		// Encoding same
 		auto result = OnChangeAppendReset(3, encoded, data, CharacterSet::ISO8859_1);
 		EXPECT_EQ(result, CharacterSet::ISO8859_1);
-		EXPECT_EQ(data, std::string("A\xE9Z"));
+		EXPECT_EQ(data, "A\xE9Z");
 		EXPECT_TRUE(encoded.empty());
 	}
 
@@ -82,7 +82,7 @@ TEST(CharacterSetECITest, OnChangeAppendReset)
 		result = OnChangeAppendReset(20, encoded, data, CharacterSet::ISO8859_5);
 		EXPECT_EQ(result, CharacterSet::Shift_JIS);
 		EXPECT_TRUE(data.empty());
-		EXPECT_EQ(encoded, std::wstring(L"A\u00E9ZA\u0449Z"));
+		EXPECT_EQ(encoded, L"A\u00E9ZA\u0449Z");
 
 		static const uint8_t bytes2[] = { 'A', 0x83, 0x65, 'Z' };
 		std::string data2(reinterpret_cast<const char*>(&bytes2), sizeof(bytes2));
@@ -91,12 +91,12 @@ TEST(CharacterSetECITest, OnChangeAppendReset)
 		result = OnChangeAppendReset(20, encoded, data2, result);
 		EXPECT_EQ(result, CharacterSet::Shift_JIS);
 		EXPECT_THAT(data2, ElementsAreArray(bytes2, sizeof(bytes2)));
-		EXPECT_EQ(encoded, std::wstring(L"A\u00E9ZA\u0449Z"));
+		EXPECT_EQ(encoded, L"A\u00E9ZA\u0449Z");
 
 		// Encoding change
 		result = OnChangeAppendReset(4, encoded, data2, result);
 		EXPECT_EQ(result, CharacterSet::ISO8859_2);
 		EXPECT_TRUE(data2.empty());
-		EXPECT_EQ(encoded, std::wstring(L"A\u00E9ZA\u0449ZA\u30C6Z"));
+		EXPECT_EQ(encoded, L"A\u00E9ZA\u0449ZA\u30C6Z");
 	}
 }
