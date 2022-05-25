@@ -307,7 +307,7 @@ DecoderResult Decode(ByteArray&& bytes, const int mode, const std::string& chara
 	// No identifier defined for mode 6
 
 	return DecoderResult(std::move(bytes), std::move(result))
-		.setEcLevel(std::to_wstring(mode))
+		.setEcLevel(std::to_string(mode))
 		.setSymbologyIdentifier(std::move(symbologyIdentifier))
 		.setStructuredAppend(sai)
 		.setReaderInit(mode == 6);

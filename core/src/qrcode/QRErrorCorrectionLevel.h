@@ -24,7 +24,7 @@ enum class ErrorCorrectionLevel
 	Invalid, // denotes in invalid/unknown value
 };
 
-const wchar_t* ToString(ErrorCorrectionLevel l);
+const char* ToString(ErrorCorrectionLevel l);
 ErrorCorrectionLevel ECLevelFromString(const char* str);
 ErrorCorrectionLevel ECLevelFromBits(int bits, const bool isMicro = false);
 int BitsFromECLevel(ErrorCorrectionLevel l);

@@ -36,8 +36,10 @@ TEST(QRErrorCorrectionLevelTest, ForMicroBits)
 
 TEST(QRErrorCorrectionLevelTest, ToString)
 {
-	EXPECT_EQ(L"L", std::wstring(ToString(ErrorCorrectionLevel::Low)));
-	EXPECT_EQ(L"M", std::wstring(ToString(ErrorCorrectionLevel::Medium)));
-	EXPECT_EQ(L"Q", std::wstring(ToString(ErrorCorrectionLevel::Quality)));
-	EXPECT_EQ(L"H", std::wstring(ToString(ErrorCorrectionLevel::High)));
+	using namespace std::literals;
+
+	EXPECT_EQ("L"s, ToString(ErrorCorrectionLevel::Low));
+	EXPECT_EQ("M"s, ToString(ErrorCorrectionLevel::Medium));
+	EXPECT_EQ("Q"s, ToString(ErrorCorrectionLevel::Quality));
+	EXPECT_EQ("H"s, ToString(ErrorCorrectionLevel::High));
 }

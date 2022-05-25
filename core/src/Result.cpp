@@ -36,7 +36,7 @@ Result::Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat 
 	  _position(std::move(position)),
 	  _rawBytes(std::move(decodeResult).rawBytes()),
 	  _numBits(decodeResult.numBits()),
-	  _ecLevel(decodeResult.ecLevel()),
+	  _ecLevel(TextDecoder::FromLatin1(decodeResult.ecLevel())),
 	  _symbologyIdentifier(decodeResult.symbologyIdentifier()),
 	  _sai(decodeResult.structuredAppend()),
 	  _isMirrored(decodeResult.isMirrored()),

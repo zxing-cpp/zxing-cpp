@@ -34,7 +34,7 @@ class DecoderResult
 	Content _content;
 	int _numBits = 0;
 	std::wstring _text;
-	std::wstring _ecLevel;
+	std::string _ecLevel;
 	int _errorsCorrected = -1;
 	int _erasures = -1;
 	int _lineCount = 0;
@@ -90,7 +90,7 @@ public:
 	DecoderResult&& SETTER(TYPE&& v) && { _##GETTER = std::move(v); return std::move(*this); }
 
 	ZX_PROPERTY(int, numBits, setNumBits)
-	ZX_PROPERTY(std::wstring, ecLevel, setEcLevel)
+	ZX_PROPERTY(std::string, ecLevel, setEcLevel)
 	ZX_PROPERTY(int, errorsCorrected, setErrorsCorrected)
 	ZX_PROPERTY(int, erasures, setErasures)
 	ZX_PROPERTY(int, lineCount, setLineCount)

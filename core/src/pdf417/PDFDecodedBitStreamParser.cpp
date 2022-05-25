@@ -845,7 +845,7 @@ DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel, c
 	content.append(result);
 
 	return DecoderResult(ByteArray(), std::move(resultEncoded), std::move(content))
-		.setEcLevel(std::to_wstring(ecLevel))
+		.setEcLevel(std::to_string(ecLevel))
 		// As converting character set ECIs ourselves and ignoring/skipping non-character ECIs, not using modifier
 		// that indicates ECI protocol (ISO/IEC 15438:2015 Annex L Table L.1)
 		.setSymbologyIdentifier("]L2")

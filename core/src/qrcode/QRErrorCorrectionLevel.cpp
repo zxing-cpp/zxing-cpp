@@ -10,10 +10,10 @@
 
 namespace ZXing::QRCode {
 
-const wchar_t* ToString(ErrorCorrectionLevel l)
+const char* ToString(ErrorCorrectionLevel l)
 {
 	assert(l != ErrorCorrectionLevel::Invalid);
-	static const wchar_t* const LEVEL_STR[] = {L"L", L"M", L"Q", L"H", nullptr};
+	static const char* const LEVEL_STR[] = {"L", "M", "Q", "H", nullptr};
 	return LEVEL_STR[static_cast<int>(l)];
 }
 
