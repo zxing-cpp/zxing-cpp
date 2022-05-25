@@ -117,7 +117,7 @@ static std::string DecodeAnyAI(const BitArray& bits)
 	if (StatusIsOK(DecodeAppIdAllCodes(bits, HEADER_SIZE, -1, buffer))) {
 		return buffer;
 	}
-	return std::string();
+	return {};
 }
 
 static std::string DecodeAI013103(const BitArray& bits)
@@ -126,7 +126,7 @@ static std::string DecodeAI013103(const BitArray& bits)
 	static const int WEIGHT_SIZE = 15;
 
 	if (bits.size() != HEADER_SIZE + AI01_GTIN_SIZE + WEIGHT_SIZE) {
-		return std::string();
+		return {};
 	}
 
 	std::string buffer;
@@ -146,7 +146,7 @@ static std::string DecodeAI01320x(const BitArray& bits)
 	static const int WEIGHT_SIZE = 15;
 
 	if (bits.size() != HEADER_SIZE + AI01_GTIN_SIZE + WEIGHT_SIZE) {
-		return std::string();
+		return {};
 	}
 
 	std::string buffer;
@@ -167,7 +167,7 @@ static std::string DecodeAI01392x(const BitArray& bits)
 	static const int LAST_DIGIT_SIZE = 2;
 
 	if (bits.size() < HEADER_SIZE + AI01_GTIN_SIZE) {
-		return std::string();
+		return {};
 	}
 
 	std::string buffer;
@@ -184,7 +184,7 @@ static std::string DecodeAI01392x(const BitArray& bits)
 			&& StatusIsOK(DecodeAppIdAllCodes(bits, pos, remainingValue, buffer))) {
 		return buffer;
 	}
-	return std::string();
+	return {};
 }
 
 static std::string DecodeAI01393x(const BitArray& bits)
@@ -194,7 +194,7 @@ static std::string DecodeAI01393x(const BitArray& bits)
 	static const int FIRST_THREE_DIGITS_SIZE = 10;
 
 	if (bits.size() < HEADER_SIZE + AI01_GTIN_SIZE) {
-		return std::string();
+		return {};
 	}
 
 	std::string buffer;
@@ -221,7 +221,7 @@ static std::string DecodeAI01393x(const BitArray& bits)
 			&& StatusIsOK(DecodeAppIdAllCodes(bits, pos, remainingValue, buffer))) {
 		return buffer;
 	}
-	return std::string();
+	return {};
 }
 
 static std::string DecodeAI013x0x1x(const BitArray& bits, const char* firstAIdigits, const char* dateCode)
@@ -231,7 +231,7 @@ static std::string DecodeAI013x0x1x(const BitArray& bits, const char* firstAIdig
 	static const int DATE_SIZE = 16;
 
 	if (bits.size() != HEADER_SIZE + AI01_GTIN_SIZE + WEIGHT_SIZE + DATE_SIZE) {
-		return std::string();
+		return {};
 	}
 
 	std::string buffer;
@@ -313,7 +313,7 @@ std::string DecodeExpandedBits(const BitArray& bits)
 	case 63: return DecodeAI013x0x1x(bits, "320", "17");
 	}
 
-	return std::string();
+	return {};
 	//throw new IllegalStateException("unknown decoder: " + information);
 }
 

@@ -165,7 +165,7 @@ std::string LookupCountryIdentifier(const std::string& GTIN, const BarcodeFormat
 	const std::string::size_type size = space != std::string::npos ? space : GTIN.size();
 
 	if (size != 14 && size != 13 && size != 12 && size != 8)
-		return std::string();
+		return {};
 
 	// GTIN-14 leading packaging level indicator
 	const int first = size == 14 ? 1 : 0;
@@ -176,7 +176,7 @@ std::string LookupCountryIdentifier(const std::string& GTIN, const BarcodeFormat
 		// 0000000 Restricted Circulation Numbers; 0000001-0000099 unused to avoid collision with GTIN-8
 		int prefix = std::stoi(GTIN.substr(first, 7 - implicitZero));
 		if (prefix >= 0 && prefix <= 99)
-			return std::string();
+			return {};
 
 		// 00001-00009 US
 		prefix = std::stoi(GTIN.substr(first, 5 - implicitZero));
@@ -193,7 +193,7 @@ std::string LookupCountryIdentifier(const std::string& GTIN, const BarcodeFormat
 
 	// Special case EAN-8 for prefix < 100 (GS1 General Specifications Figure 1.4.3-1)
 	if (size == 8 && format == BarcodeFormat::EAN8 && prefix <= 99) // Restricted Circulation Numbers
-		return std::string();
+		return {};
 
 	const auto it = std::lower_bound(std::begin(COUNTRIES), std::end(COUNTRIES), CountryId{0, prefix, nullptr});
 

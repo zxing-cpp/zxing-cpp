@@ -25,14 +25,14 @@ TEST(CharacterSetECITest, Charset2ECI)
 
 TEST(CharacterSetECITest, InitEncoding)
 {
-	EXPECT_EQ(InitEncoding(std::string()), CharacterSet::ISO8859_1);
-	EXPECT_EQ(InitEncoding(std::string(), CharacterSet::ISO8859_2), CharacterSet::ISO8859_2);
-	EXPECT_EQ(InitEncoding(std::string("asdfasdf")), CharacterSet::ISO8859_1);
-	EXPECT_EQ(InitEncoding(std::string("asdfasdf"), CharacterSet::ISO8859_2), CharacterSet::ISO8859_2);
-	EXPECT_EQ(InitEncoding(std::string("ISO-8859-1")), CharacterSet::ISO8859_1);
-	EXPECT_EQ(InitEncoding(std::string("ISO-8859-2")), CharacterSet::ISO8859_2);
-	EXPECT_EQ(InitEncoding(std::string("UTF-16BE")), CharacterSet::UnicodeBig);
-	EXPECT_EQ(InitEncoding(std::string(), CharacterSet::Unknown), CharacterSet::Unknown);
+	EXPECT_EQ(InitEncoding(""), CharacterSet::ISO8859_1);
+	EXPECT_EQ(InitEncoding("", CharacterSet::ISO8859_2), CharacterSet::ISO8859_2);
+	EXPECT_EQ(InitEncoding("asdfasdf"), CharacterSet::ISO8859_1);
+	EXPECT_EQ(InitEncoding("asdfasdf", CharacterSet::ISO8859_2), CharacterSet::ISO8859_2);
+	EXPECT_EQ(InitEncoding("ISO-8859-1"), CharacterSet::ISO8859_1);
+	EXPECT_EQ(InitEncoding("ISO-8859-2"), CharacterSet::ISO8859_2);
+	EXPECT_EQ(InitEncoding("UTF-16BE"), CharacterSet::UnicodeBig);
+	EXPECT_EQ(InitEncoding("", CharacterSet::Unknown), CharacterSet::Unknown);
 }
 
 TEST(CharacterSetECITest, OnChangeAppendReset)
