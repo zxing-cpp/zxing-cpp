@@ -19,7 +19,8 @@ void Content::ForEachECIBlock(FUNC func) const
 		auto [eci, start] = encodings[i];
 		int end = i + 1 == Size(encodings) ? Size(binary) : encodings[i + 1].pos;
 
-		func(eci, start, end);
+		if (start != end)
+			func(eci, start, end);
 	}
 }
 
@@ -57,9 +58,6 @@ std::wstring Content::text() const
 
 std::string Content::utf8Protocol() const
 {
-	if (binary.empty())
-		return {};
-
 	std::wstring res;
 	ECI lastECI = ECI::Unknown;
 	auto fallbackCS = guessEncoding();
