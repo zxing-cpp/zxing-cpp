@@ -4,6 +4,8 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "JNIUtils.h"
 
+#include "TextDecoder.h"
+
 #include <stdexcept>
 #include <vector>
 
@@ -53,7 +55,7 @@ jstring C2JString(JNIEnv* env, const std::wstring& str)
 
 jstring C2JString(JNIEnv* env, const std::string& str)
 {
-	return C2JString(env, std::wstring(str.begin(), str.end()));
+	return C2JString(env, ZXing::TextDecoder::FromLatin1(str));
 }
 
 std::string J2CString(JNIEnv* env, jstring str)
