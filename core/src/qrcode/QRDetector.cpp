@@ -429,10 +429,23 @@ DetectorResult SampleMQR(const BitMatrix& image, const ConcentricPattern& fp)
 			AppendBit(formatInfoBits, image.get(mod2Pix(centered(FORMAT_INFO_COORDS[i]))));
 
 		auto fi = FormatInformation::DecodeMQR(formatInfoBits);
-		if (fi.isValid() && fi.microVersion()) {
-			const int dim = Version::DimensionOfVersion(fi.microVersion(), true);
-			return SampleGrid(image, dim, dim, mod2Pix);
+		if (!fi.isValid())
+			continue;
+
+		const int dim = Version::DimensionOfVersion(fi.microVersion(), true);
+
+		// check that we are in fact not looking at a corner of a non-micro QRCode symbol
+		// we accept at most 1/3rd black pixels in the quite zone (in a QRCode symbol we expect about 1/2).
+		int blackPixels = 0;
+		for (int i = 0; i < dim; ++i) {
+			auto px = mod2Pix(centered(PointI{i, dim}));
+			auto py = mod2Pix(centered(PointI{dim, i}));
+			blackPixels += (image.isIn(px) && image.get(px)) + (image.isIn(py) && image.get(py));
 		}
+		if (blackPixels > 2 * dim / 3)
+			continue;
+
+		return SampleGrid(image, dim, dim, mod2Pix);
 	}
 
 	return {};

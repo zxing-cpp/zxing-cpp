@@ -644,7 +644,7 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 2, 2, 0   },
 		});
 
-		runTests("falsepositives-1", "None", 25, {
+		runTests("falsepositives-1", "None", 26, {
 			{ 0, 0, 0, 0, 0   },
 			{ 0, 0, 0, 0, 90  },
 			{ 0, 0, 0, 0, 180 },
