@@ -26,7 +26,9 @@ void Content::ForEachECIBlock(FUNC func) const
 
 void Content::switchEncoding(ECI eci, bool isECI)
 {
-	// TODO: replace non-ECI entries on first ECI entry with default ECI
+	// replace all non-ECI entries on first ECI entry with default ECI
+	if (isECI && !hasECI)
+		encodings = {{ECI::ISO8859_1, 0}};
 	if (isECI || !hasECI) {
 		if (encodings.back().pos == Size(binary))
 			encodings.back().eci = eci; // no point in recording 0 length segments
