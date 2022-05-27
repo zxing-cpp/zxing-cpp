@@ -34,7 +34,7 @@ public:
 	std::string applicationIndicator;
 
 	Content() = default;
-	Content(ByteArray&& binary, ECI defaultECI) : binary(binary), encodings{{defaultECI, 0}} {}
+	Content(ByteArray&& binary) : binary(std::move(binary)), encodings{{ECI::ISO8859_1, 0}} {}
 
 	void switchEncoding(ECI eci) { switchEncoding(eci, true); }
 	void switchEncoding(CharacterSet cs);
