@@ -187,6 +187,8 @@ int main(int argc, char* argv[])
 					  << "ECI-Proto:  \"" << result.utf8Protocol() << "\"\n"
 					  << "Format:     " << ToString(result.format()) << "\n"
 					  << "Identifier: " << result.symbologyIdentifier() << "\n"
+					  << "Content:    " << ToString(result.contentType()) << "\n"
+					  << "HasECI:     " << result.hasECI() << "\n"
 					  << "Position:   " << result.position() << "\n"
 					  << "Rotation:   " << result.orientation() << " deg\n"
 					  << "IsMirrored: " << result.isMirrored() << "\n"
