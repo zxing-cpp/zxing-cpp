@@ -117,15 +117,15 @@ ContentType Content::type() const
 {
 	auto isBinary = [](Encoding e) { return !IsText(e.eci); };
 
-	if (hasECI) {
-		if (std::none_of(encodings.begin(), encodings.end(), isBinary))
-			return ContentType::Text;
-		if (std::all_of(encodings.begin(), encodings.end(), isBinary))
-			return ContentType::Binary;
-	} else {
-		if (std::none_of(encodings.begin(), encodings.end(), isBinary))
-			return ContentType::Text;
+	if (std::none_of(encodings.begin(), encodings.end(), isBinary))
+		return ContentType::Text;
+	if (std::all_of(encodings.begin(), encodings.end(), isBinary))
+		return ContentType::Binary;
+
+	if (!hasECI) {
 		auto cs = guessEncoding();
+		if (IsText(ToECI(cs)))
+			return ContentType::Text;
 		if (cs == CharacterSet::BINARY)
 			return ContentType::Binary;
 	}
