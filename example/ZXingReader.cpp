@@ -135,6 +135,8 @@ int main(int argc, char* argv[])
 	if (angleEscape)
 		std::setlocale(LC_CTYPE, "en_US.UTF-8"); // Needed so `std::iswgraph()` in `ToUtf8(angleEscape)` does not 'swallow' all printable non-ascii utf8 chars
 
+	std::cout.setf(std::ios::boolalpha);
+
 	for (const auto& filePath : filePaths) {
 		int width, height, channels;
 		std::unique_ptr<stbi_uc, void(*)(void*)> buffer(stbi_load(filePath.c_str(), &width, &height, &channels, 3), stbi_image_free);
@@ -187,7 +189,7 @@ int main(int argc, char* argv[])
 					  << "Identifier: " << result.symbologyIdentifier() << "\n"
 					  << "Position:   " << result.position() << "\n"
 					  << "Rotation:   " << result.orientation() << " deg\n"
-					  << "IsMirrored: " << (result.isMirrored() ? "true" : "false") << "\n"
+					  << "IsMirrored: " << result.isMirrored() << "\n"
 					  << "Error:      " << ToString(result.status()) << "\n";
 
 			auto printOptional = [](const char* key, const std::string& v) {
