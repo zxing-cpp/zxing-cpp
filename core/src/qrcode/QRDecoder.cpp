@@ -259,8 +259,8 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 {
 	BitSource bits(bytes);
 	Content result;
+	result.symbology = {'Q', '1', 1};
 	result.hintedCharset = hintedCharset.empty() ? "Auto" : hintedCharset;
-	int symbologyIdModifier = 1; // ISO/IEC 18004:2015 Annex F Table F.1
 	StructuredAppendInfo structuredAppend;
 	const int modeBitLength = CodecModeBitsLength(version);
 
@@ -277,15 +277,13 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 			case CodecMode::FNC1_FIRST_POSITION:
 //				if (!result.empty()) // uncomment to enforce specification
 //					throw std::runtime_error("GS1 Indicator (FNC1 in first position) at illegal position");
-				// As converting character set ECIs ourselves and ignoring/skipping non-character ECIs, not using
-				// modifiers that indicate ECI protocol (ISO/IEC 18004:2015 Annex F Table F.1)
-				symbologyIdModifier = 3;
+				result.symbology.modifier = '3';
 				result.applicationIndicator = "GS1"; // In Alphanumeric mode undouble doubled percents and treat single percent as <GS>
 				break;
 			case CodecMode::FNC1_SECOND_POSITION:
 				if (!result.empty())
 					throw std::runtime_error("AIM Application Indicator (FNC1 in second position) at illegal position");
-				symbologyIdModifier = 5; // As above
+				result.symbology.modifier = '5'; // As above
 				// ISO/IEC 18004:2015 7.4.8.3 AIM Application Indicator (FNC1 in second position), "00-99" or "A-Za-z"
 				if (int appInd = bits.readBits(8); appInd < 10) // "00-09"
 					result += '0' + std::to_string(appInd);
@@ -343,7 +341,6 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 
 	return DecoderResult(std::move(bytes), {}, std::move(result))
 		.setEcLevel(ToString(ecLevel))
-		.setSymbologyIdentifier("]Q" + std::to_string(symbologyIdModifier))
 		.setStructuredAppend(structuredAppend);
 }
 

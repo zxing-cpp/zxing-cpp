@@ -12,6 +12,12 @@
 
 namespace ZXing {
 
+std::string ToString(ContentType type)
+{
+	const char* t2s[] = {"Text", "Binary", "Mixed"};
+	return t2s[static_cast<int>(type)];
+}
+
 template <typename FUNC>
 void Content::ForEachECIBlock(FUNC func) const
 {
@@ -60,7 +66,7 @@ std::wstring Content::text() const
 
 std::string Content::utf8Protocol() const
 {
-	std::wstring res;
+	std::wstring res = TextDecoder::FromLatin1(symbology.toString(true));
 	ECI lastECI = ECI::Unknown;
 	auto fallbackCS = guessEncoding();
 

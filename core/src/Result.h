@@ -35,7 +35,7 @@ public:
 
 	// 1D convenience constructor
 	Result(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format,
-		   std::string&& symbologyIdentifier = "", ByteArray&& rawBytes = {}, const bool readerInit = false);
+		   SymbologyIdentifier si, ByteArray&& rawBytes = {}, const bool readerInit = false);
 
 	Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat format);
 

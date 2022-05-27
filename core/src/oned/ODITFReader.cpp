@@ -81,13 +81,13 @@ Result ITFReader::decodePattern(int rowNumber, PatternView& next, std::unique_pt
 
 	// Symbology identifier ISO/IEC 16390:2007 Annex C Table C.1
 	// See also GS1 General Specifications 5.1.3 Figure 5.1.3-2
-	std::string symbologyIdentifier("]I0"); // No check character validation
+	SymbologyIdentifier symbologyIdentifier = {'I', '0'}; // No check character validation
 
 	if (_validateCheckSum || (txt.size() == 14 && GTIN::IsCheckDigitValid(txt))) // If no hint test if valid ITF-14
-		symbologyIdentifier = "]I1"; // Modulo 10 symbol check character validated and transmitted
+		symbologyIdentifier.modifier = '1'; // Modulo 10 symbol check character validated and transmitted
 
 	int xStop = next.pixelsTillEnd();
-	return Result(txt, rowNumber, xStart, xStop, BarcodeFormat::ITF, std::move(symbologyIdentifier));
+	return Result(txt, rowNumber, xStart, xStop, BarcodeFormat::ITF, symbologyIdentifier);
 }
 
 } // namespace ZXing::OneD

@@ -12,10 +12,21 @@ namespace ZXing {
 
 enum class ContentType { Text, Binary, Mixed };
 
+std::string ToString(ContentType type);
+
+struct SymbologyIdentifier
+{
+	char code, modifier;
+	int eciModifierOffset = 0;
+
+	std::string toString(bool hasECI = false) const
+	{
+		return ']' + std::string(1, code) + static_cast<char>(modifier + eciModifierOffset * hasECI);
+	}
+};
+
 class Content
 {
-	bool hasECI = false;
-
 	template <typename FUNC>
 	void ForEachECIBlock(FUNC f) const;
 
@@ -32,6 +43,8 @@ public:
 	std::vector<Encoding> encodings = {{ECI::Unknown, 0}};
 	std::string hintedCharset;
 	std::string applicationIndicator;
+	SymbologyIdentifier symbology;
+	bool hasECI = false;
 
 	Content() = default;
 	Content(ByteArray&& binary) : binary(std::move(binary)), encodings{{ECI::ISO8859_1, 0}} {}

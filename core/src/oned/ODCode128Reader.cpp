@@ -41,7 +41,7 @@ static const int CODE_STOP = 106;
 class Raw2TxtDecoder
 {
 	int codeSet = 0;
-	std::string _symbologyIdentifier = "]C0"; // ISO/IEC 15417:2007 Annex C Table C.1
+	SymbologyIdentifier _symbologyIdentifier = {'C', '0'}; // ISO/IEC 15417:2007 Annex C Table C.1
 	bool _readerInit = false;
 	std::string txt;
 	size_t lastTxtSize = 0;
@@ -55,7 +55,7 @@ class Raw2TxtDecoder
 		if (txt.empty()) {
 			// ISO/IEC 15417:2007 Annex B.1 and GS1 General Specifications 21.0.1 Section 5.4.3.7
 			// If the first char after the start code is FNC1 then this is GS1-128.
-			_symbologyIdentifier = "]C1";
+			_symbologyIdentifier.modifier = '1';
 			// GS1 General Specifications Section 5.4.6.4
 			// "Transmitted data ... is prefixed by the symbology identifier ]C1, if used."
 			// Choosing not to use symbology identifier, i.e. to not prefix to data.
@@ -65,7 +65,7 @@ class Raw2TxtDecoder
 														|| (txt[0] >= 'a' && txt[0] <= 'z')))) {
 			// ISO/IEC 15417:2007 Annex B.2
 			// FNC1 in second position following Code Set C "00-99" or Code Set A/B "A-Za-z" - AIM
-			_symbologyIdentifier = "]C2";
+			_symbologyIdentifier.modifier = '2';
 		}
 		else {
 			// ISO/IEC 15417:2007 Annex B.3. Otherwise FNC1 is returned as ASCII 29 (GS)
@@ -153,7 +153,7 @@ public:
 		return txt.substr(0, lastTxtSize);
 	}
 
-	std::string symbologyIdentifier() const { return _symbologyIdentifier; }
+	SymbologyIdentifier symbologyIdentifier() const { return _symbologyIdentifier; }
 
 	bool readerInit() const { return _readerInit; }
 };

@@ -94,10 +94,10 @@ CodabarReader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<D
 
 	// symbology identifier ISO/IEC 15424:2008 4.4.9
 	// if checksum processing were implemented and checksum present and stripped then modifier would be 4
-	std::string symbologyIdentifier("]F0");
+	SymbologyIdentifier symbologyIdentifier = {'F', '0'};
 
 	int xStop = next.pixelsTillEnd();
-	return Result(txt, rowNumber, xStart, xStop, BarcodeFormat::Codabar, std::move(symbologyIdentifier));
+	return Result(txt, rowNumber, xStart, xStop, BarcodeFormat::Codabar, symbologyIdentifier);
 }
 
 } // namespace ZXing::OneD

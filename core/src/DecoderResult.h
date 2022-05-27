@@ -58,6 +58,8 @@ public:
 		// provide some best guess fallback for barcodes not, yet supporting the content info
 		if (_content.empty() && std::all_of(_text.begin(), _text.end(), [](auto c) { return c < 256; }))
 			std::for_each(_text.begin(), _text.end(), [this](wchar_t c) { _content += static_cast<uint8_t>(c); });
+		if (_content.symbology.code != 0)
+			_symbologyIdentifier = _content.symbology.toString();
 	}
 
 	DecoderResult() = default;

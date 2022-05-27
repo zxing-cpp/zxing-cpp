@@ -15,7 +15,7 @@
 namespace ZXing {
 
 Result::Result(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format,
-			   std::string&& symbologyIdentifier, ByteArray&& rawBytes, const bool readerInit)
+			   SymbologyIdentifier si, ByteArray&& rawBytes, const bool readerInit)
 	:
 	  _format(format),
 	  _content({ByteArray(text)}),
@@ -23,7 +23,7 @@ Result::Result(const std::string& text, int y, int xStart, int xStop, BarcodeFor
 	  _position(Line(y, xStart, xStop)),
 	  _rawBytes(std::move(rawBytes)),
 	  _numBits(Size(_rawBytes) * 8),
-	  _symbologyIdentifier(std::move(symbologyIdentifier)),
+	  _symbologyIdentifier(si.toString()),
 	  _readerInit(readerInit),
 	  _lineCount(0)
 {}
