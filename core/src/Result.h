@@ -49,6 +49,7 @@ public:
 
 	// WARNING: this is an experimental API and may change/disappear
 	const ByteArray& binary() const { return _content.binary; }
+	const ByteArray binaryECI() const { return _content.binaryECI(); }
 	const std::string utf8Protocol() const { return _content.utf8Protocol(); }
 	const std::string& applicationIndicator() const { return _content.applicationIndicator; }
 	ContentType contentType() const { return _content.type(); }

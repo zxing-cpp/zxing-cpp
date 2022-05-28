@@ -98,6 +98,25 @@ std::string Content::utf8Protocol() const
 	return TextUtfEncoding::ToUtf8(res);
 }
 
+ByteArray Content::binaryECI() const
+{
+	std::string res = symbology.toString(true);
+
+	ForEachECIBlock([&](ECI eci, int begin, int end) {
+		if (hasECI)
+			res += ToString(eci);
+
+		for (int i = begin; i != end; ++i) {
+			char c = static_cast<char>(binary[i]);
+			res += c;
+			if (c == '\\') // in the ECI protocol a '\' has to be doubled
+				res += c;
+		}
+	});
+
+	return ByteArray(res);
+}
+
 CharacterSet Content::guessEncoding() const
 {
 	// assemble all blocks with unknown encoding

@@ -65,6 +65,7 @@ public:
 
 	std::wstring text() const;
 	std::string utf8Protocol() const;
+	ByteArray binaryECI() const;
 	CharacterSet guessEncoding() const;
 	ContentType type() const;
 };

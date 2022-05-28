@@ -184,7 +184,8 @@ int main(int argc, char* argv[])
 			}
 			std::cout << "Text:       \"" << ToUtf8(result.text(), angleEscape) << "\"\n"
 					  << "Binary:     \"" << ToHex(result.binary()) << "\"\n"
-					  << "ECI-Proto:  \"" << result.utf8Protocol() << "\"\n"
+					  << "TextECI:    \"" << result.utf8Protocol() << "\"\n"
+					  << "BinaryECI:  \"" << ToHex(result.binaryECI()) << "\"\n"
 					  << "Format:     " << ToString(result.format()) << "\n"
 					  << "Identifier: " << result.symbologyIdentifier() << "\n"
 					  << "Content:    " << ToString(result.contentType()) << "\n"
