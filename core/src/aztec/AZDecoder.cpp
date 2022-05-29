@@ -286,30 +286,17 @@ AztecData GetEncodedData(const BitArray& bits, const std::string& characterSet)
 	bool haveFNC1 = false;
 	auto remBits = bits.range();
 
-	while (remBits) {
+	while (remBits.size() >= (shiftTable == Table::DIGIT ? 4 : 5)) { // see ISO/IEC 24778:2008 7.3.1.2 regarding padding bits
 		if (shiftTable == Table::BINARY) {
-			if (remBits.size() < 5)
-				break;
 			int length = ReadBits(remBits, 5);
-			if (length == 0) {
-				if (remBits.size() < 11)
-					break;
+			if (length == 0)
 				length = ReadBits(remBits, 11) + 31;
-			}
-			for (int charCount = 0; charCount < length; charCount++) {
-				if (remBits.size() < 8) {
-					remBits.begin = remBits.end;  // Force outer loop to exit
-					break;
-				}
-				int code = ReadBits(remBits, 8);
-				text.push_back((char)code);
-			}
+			for (int i = 0; i < length; i++)
+				text.push_back(static_cast<char>(ReadBits(remBits, 8)));
 			// Go back to whatever mode we had been in
 			shiftTable = latchTable;
 		} else {
 			int size = shiftTable == Table::DIGIT ? 4 : 5;
-			if (remBits.size() < size)
-				break;
 			int code = ReadBits(remBits, size);
 			const char* str = GetCharacter(shiftTable, code);
 			if (std::strncmp(str, "CTRL_", 5) == 0) {
@@ -322,8 +309,6 @@ AztecData GetEncodedData(const BitArray& bits, const std::string& characterSet)
 				if (str[6] == 'L')
 					latchTable = shiftTable;
 			} else if (std::strcmp(str, "FLGN") == 0) {
-				if (remBits.size() < 3)
-					break;
 				int flg = ReadBits(remBits, 3);
 				if (flg == 0) { // FNC1
 					haveFNC1 = true; // Will process first/second FNC1 at end after any Structured Append
@@ -382,15 +367,19 @@ DecoderResult Decode(const DetectorResult& detectorResult, const std::string& ch
 	if (!bits.size())
 		return DecodeStatus::FormatError;
 
-	auto data = GetEncodedData(bits, characterSet);
-	if (data.text.empty())
-		return DecodeStatus::FormatError;
+	try {
+		auto data = GetEncodedData(bits, characterSet);
+		if (data.text.empty())
+			return DecodeStatus::FormatError;
 
-	return DecoderResult(bits.toBytes(), std::move(data.text))
-		.setNumBits(Size(bits))
-		.setSymbologyIdentifier(std::move(data.symbologyIdentifier))
-		.setStructuredAppend(data.sai)
-		.setReaderInit(detectorResult.readerInit());
+		return DecoderResult(bits.toBytes(), std::move(data.text))
+			.setNumBits(Size(bits))
+			.setSymbologyIdentifier(std::move(data.symbologyIdentifier))
+			.setStructuredAppend(data.sai)
+			.setReaderInit(detectorResult.readerInit());
+	} catch (const std::out_of_range&) { // see ReadBits()
+		return DecodeStatus::FormatError;
+	}
 }
 
 } // namespace ZXing::Aztec

@@ -17,6 +17,7 @@
 #include <cassert>
 #include <cstdint>
 #include <iterator>
+#include <stdexcept>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -365,8 +366,11 @@ int ToInt(const ARRAY& a)
 
 inline int ReadBits(BitArray::Range& bits, int n)
 {
+	assert(n <= 32);
+	if (n > bits.size())
+		throw std::out_of_range("ReadBits(BitArray::Range&) out of range.");
 	int res = 0;
-	for (; n > 0 && bits.size(); --n, bits.begin++)
+	for (; n > 0; --n, bits.begin++)
 		AppendBit(res, *bits.begin);
 	return res;
 }
