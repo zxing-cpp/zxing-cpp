@@ -46,7 +46,7 @@ void Content::switchEncoding(ECI eci, bool isECI)
 
 void Content::switchEncoding(CharacterSet cs)
 {
-	 switchEncoding(ToECI(cs), false);
+	switchEncoding(ToECI(cs), false);
 }
 
 std::wstring Content::text() const
