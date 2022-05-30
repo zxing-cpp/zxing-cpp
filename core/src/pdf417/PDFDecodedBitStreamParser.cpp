@@ -66,6 +66,11 @@ static const char* MIXED_CHARS = "0123456789&\r\t,:#-.$/+%*=^";
 
 static const int NUMBER_OF_SEQUENCE_CODEWORDS = 2;
 
+inline bool IsECI(int code)
+{
+	return code >= ECI_USER_DEFINED && code <= ECI_CHARSET;
+}
+
 /**
 * Whether a codeword terminates a Compaction mode.
 *
@@ -91,7 +96,7 @@ static bool TerminatesCompaction(int code)
 static int ProcessECI(const std::vector<int>& codewords, int codeIndex, const int length, const int code,
 					  std::wstring& resultEncoded, std::string& result, CharacterSet& encoding)
 {
-	if (codeIndex < length && code >= ECI_USER_DEFINED && code <= ECI_CHARSET) {
+	if (codeIndex < length && IsECI(code)) {
 		if (code == ECI_CHARSET) {
 			encoding = CharacterSetECI::OnChangeAppendReset(codewords[codeIndex++], resultEncoded, result, encoding);
 		}
@@ -134,13 +139,13 @@ static void DecodeTextCompaction(const std::vector<int>& textCompactionData, int
 		int subModeCh = textCompactionData[i];
 
 		// Note only have ECI and MODE_SHIFT_TO_BYTE_COMPACTION_MODE function codewords in text compaction array
-		if (subModeCh >= ECI_USER_DEFINED && subModeCh <= ECI_CHARSET) {
+		if (IsECI(subModeCh)) {
 			i = ProcessECI(textCompactionData, i + 1, length, subModeCh, resultEncoded, result, encoding);
 			continue;
 		}
 		if (subModeCh == MODE_SHIFT_TO_BYTE_COMPACTION_MODE) {
 			i++;
-			while (i < length && textCompactionData[i] >= ECI_USER_DEFINED && textCompactionData[i] <= ECI_CHARSET) {
+			while (i < length && IsECI(textCompactionData[i])) {
 				i = ProcessECI(textCompactionData, i + 1, length, textCompactionData[i], resultEncoded, result,
 							   encoding);
 			}
@@ -303,8 +308,7 @@ static int TextCompaction(DecodeStatus& status, const std::vector<int>& codeword
 				// in Text Compaction mode; its use is described in 5.4.2.4.
 				textCompactionData[index++] = MODE_SHIFT_TO_BYTE_COMPACTION_MODE;
 				// 5.5.3.1 allows ECIs anywhere in Text Compaction, including after a Shift to Byte
-				while (codeIndex < codewords[0] && codewords[codeIndex] >= ECI_USER_DEFINED
-						&& codewords[codeIndex] <= ECI_CHARSET) {
+				while (codeIndex < codewords[0] && IsECI(codewords[codeIndex])) {
 					codeIndex = ProcessTextECI(textCompactionData, index, codewords, codeIndex + 1,
 											   codewords[codeIndex]);
 				}
@@ -349,7 +353,7 @@ static int CountByteBatches(DecodeStatus& status, int mode, const std::vector<in
 				status = DecodeStatus::FormatError;
 				return 0;
 			}
-			if (code >= ECI_USER_DEFINED && code <= ECI_CHARSET) {
+			if (IsECI(code)) {
 				codeIndex += code == ECI_GENERAL_PURPOSE ? 2 : 1;
 				continue;
 			}
@@ -395,7 +399,7 @@ static int ProcessByteECIs(const std::vector<int>& codewords, int codeIndex,
 	while (codeIndex < codewords[0] && codewords[codeIndex] >= TEXT_COMPACTION_MODE_LATCH
 			&& !TerminatesCompaction(codewords[codeIndex])) {
 		int code = codewords[codeIndex++];
-		if (code >= ECI_USER_DEFINED && code <= ECI_CHARSET) {
+		if (IsECI(code)) {
 			codeIndex = ProcessECI(codewords, codeIndex, codewords[0], code, resultEncoded, result, encoding);
 		}
 	}
@@ -543,7 +547,7 @@ static int NumericCompaction(DecodeStatus& status, const std::vector<int>& codew
 	while (codeIndex < codewords[0] && !end) {
 		int code = codewords[codeIndex++];
 		if (code >= TEXT_COMPACTION_MODE_LATCH) {
-			if (code >= ECI_USER_DEFINED && code <= ECI_CHARSET) {
+			if (IsECI(code)) {
 				// As operating in Basic Channel Mode (i.e. not embedding backslashed ECIs and doubling backslashes)
 				// allow ECIs anywhere in Numeric Compaction (i.e. ISO/IEC 15438:2015 5.5.3.4 doesn't apply).
 				if (count > 0) {
