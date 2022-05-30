@@ -49,6 +49,14 @@ void Content::switchEncoding(CharacterSet cs)
 	switchEncoding(ToECI(cs), false);
 }
 
+void Content::erase(int pos, int n)
+{
+	binary.erase(binary.begin() + pos, binary.begin() + pos + n);
+	for (auto& e : encodings)
+		if (e.pos > pos)
+			pos -= n;
+}
+
 bool Content::canProcess() const
 {
 	return std::all_of(encodings.begin(), encodings.end(), [](Encoding e) { return CanProcess(e.eci); });

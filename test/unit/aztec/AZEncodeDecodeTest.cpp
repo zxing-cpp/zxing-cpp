@@ -86,10 +86,9 @@ namespace {
 
 		EXPECT_EQ(aztec.matrix, matrix);
 
-		std::wstring expectedData = TextDecoder::ToUnicode(textBytes, CharacterSet::ISO8859_1);
 		DecoderResult res = parse(matrix.copy(), aztec.compact, aztec.codeWords, aztec.layers);
 		EXPECT_EQ(res.isValid(), true);
-		EXPECT_EQ(res.text(), expectedData);
+		EXPECT_EQ(res.content().binary, ByteArray(textBytes));
 
 		// Check error correction by introducing up to eccPercent/2 errors
 		int ecWords = aztec.codeWords * eccPercent / 100 / 2;
@@ -106,7 +105,7 @@ namespace {
 		}
 		res = parse(std::move(matrix), aztec.compact, aztec.codeWords, aztec.layers);
 		EXPECT_EQ(res.isValid(), true);
-		EXPECT_EQ(res.text(), expectedData);
+		EXPECT_EQ(res.content().binary, ByteArray(textBytes));
 	}
 }
 

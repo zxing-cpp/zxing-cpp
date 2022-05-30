@@ -61,6 +61,8 @@ public:
 	void operator+=(char val) { push_back(val); }
 	void operator+=(const std::string& str) { append(str); }
 
+	void erase(int pos, int n);
+
 	bool empty() const { return binary.empty(); }
 	bool canProcess() const;
 
