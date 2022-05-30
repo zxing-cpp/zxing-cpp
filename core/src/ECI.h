@@ -53,6 +53,12 @@ inline constexpr bool IsText(ECI eci)
 	return ToInt(eci) >= 0 && ToInt(eci) <= 32;
 }
 
+inline constexpr bool CanProcess(ECI eci)
+{
+	// see https://github.com/nu-book/zxing-cpp/commit/d8587545434d533c4e568181e1c12ef04a8e42d9#r74864359
+	return ToInt(eci) <= 899;
+}
+
 /**
  * @brief ToString converts the numerical ECI value to a 7 character string as used in the ECI protocol
  * @return e.g. "\000020"

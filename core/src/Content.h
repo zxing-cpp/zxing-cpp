@@ -62,6 +62,7 @@ public:
 	void operator+=(const std::string& str) { append(str); }
 
 	bool empty() const { return binary.empty(); }
+	bool canProcess() const;
 
 	std::wstring text() const;
 	std::string utf8Protocol() const;

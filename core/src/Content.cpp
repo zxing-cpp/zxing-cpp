@@ -49,8 +49,16 @@ void Content::switchEncoding(CharacterSet cs)
 	switchEncoding(ToECI(cs), false);
 }
 
+bool Content::canProcess() const
+{
+	return std::all_of(encodings.begin(), encodings.end(), [](Encoding e) { return CanProcess(e.eci); });
+}
+
 std::wstring Content::text() const
 {
+	if (!canProcess())
+		return {};
+
 	auto fallbackCS = CharacterSetECI::CharsetFromName(hintedCharset.c_str());
 	if (!hasECI && fallbackCS == CharacterSet::Unknown)
 		fallbackCS = guessEncoding();
@@ -66,6 +74,9 @@ std::wstring Content::text() const
 
 std::string Content::utf8Protocol() const
 {
+	if (!canProcess())
+		return {};
+
 	std::wstring res = TextDecoder::FromLatin1(symbology.toString(true));
 	ECI lastECI = ECI::Unknown;
 	auto fallbackCS = guessEncoding();
