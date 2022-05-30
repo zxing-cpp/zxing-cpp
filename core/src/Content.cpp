@@ -154,19 +154,16 @@ CharacterSet Content::guessEncoding() const
 ContentType Content::type() const
 {
 	auto isBinary = [](Encoding e) { return !IsText(e.eci); };
+	auto es = encodings;
 
-	if (std::none_of(encodings.begin(), encodings.end(), isBinary))
+	for (auto& e : es)
+		if (e.eci == ECI::Unknown)
+			e.eci = ToECI(guessEncoding());
+
+	if (std::none_of(es.begin(), es.end(), isBinary))
 		return ContentType::Text;
-	if (std::all_of(encodings.begin(), encodings.end(), isBinary))
+	if (std::all_of(es.begin(), es.end(), isBinary))
 		return ContentType::Binary;
-
-	if (!hasECI) {
-		auto cs = guessEncoding();
-		if (IsText(ToECI(cs)))
-			return ContentType::Text;
-		if (cs == CharacterSet::BINARY)
-			return ContentType::Binary;
-	}
 
 	return ContentType::Mixed;
 }
