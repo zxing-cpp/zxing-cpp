@@ -94,12 +94,11 @@ static bool TerminatesCompaction(int code)
 /**
 * Helper to process ECIs.
 **/
-static int ProcessECI(const std::vector<int>& codewords, int codeIndex, const int length, const int code,
-					  std::wstring& resultEncoded, std::string& result, CharacterSet& encoding)
+static int ProcessECI(const std::vector<int>& codewords, int codeIndex, const int length, const int code, Content& result)
 {
 	if (codeIndex < length && IsECI(code)) {
 		if (code == ECI_CHARSET)
-			encoding = CharacterSetECI::OnChangeAppendReset(codewords[codeIndex++], resultEncoded, result, encoding);
+			result.switchEncoding(ECI(codewords[codeIndex++]));
 		else
 			codeIndex += code == ECI_GENERAL_PURPOSE ? 2 : 1; // Don't currently handle non-character set ECIs so just ignore
 	}
@@ -119,12 +118,9 @@ static int ProcessECI(const std::vector<int>& codewords, int codeIndex, const in
 *
 * @param textCompactionData The text compaction data.
 * @param length             The size of the text compaction data.
-* @param resultEncoded      The Unicode-encoded data.
 * @param result             The data in the character set encoding.
-* @param encoding           Currently active character encoding.
 */
-static void DecodeTextCompaction(const std::vector<int>& textCompactionData, int length, std::wstring& resultEncoded,
-								 std::string& result, CharacterSet& encoding)
+static void DecodeTextCompaction(const std::vector<int>& textCompactionData, int length, Content& result)
 {
 	// Beginning from an initial state of the Alpha sub-mode
 	// The default compaction mode for PDF417 in effect at the start of each symbol shall always be Text
@@ -138,13 +134,13 @@ static void DecodeTextCompaction(const std::vector<int>& textCompactionData, int
 
 		// Note only have ECI and MODE_SHIFT_TO_BYTE_COMPACTION_MODE function codewords in text compaction array
 		if (IsECI(subModeCh)) {
-			i = ProcessECI(textCompactionData, i + 1, length, subModeCh, resultEncoded, result, encoding);
+			i = ProcessECI(textCompactionData, i + 1, length, subModeCh, result);
 			continue;
 		}
 		if (subModeCh == MODE_SHIFT_TO_BYTE_COMPACTION_MODE) {
 			i++;
 			while (i < length && IsECI(textCompactionData[i]))
-				i = ProcessECI(textCompactionData, i + 1, length, textCompactionData[i], resultEncoded, result, encoding);
+				i = ProcessECI(textCompactionData, i + 1, length, textCompactionData[i], result);
 
 			if (i < length)
 				result.push_back((uint8_t)textCompactionData[i++]);
@@ -257,13 +253,10 @@ static int ProcessTextECI(std::vector<int>& textCompactionData, int& index, cons
 *
 * @param codewords     The array of codewords (data + error)
 * @param codeIndex     The current index into the codeword array.
-* @param resultEncoded The Unicode-encoded data.
 * @param result        The data in the character set encoding.
-* @param encoding      Currently active character encoding.
 * @return The next index into the codeword array.
 */
-static int TextCompaction(DecodeStatus& status, const std::vector<int>& codewords, int codeIndex,
-						  std::wstring& resultEncoded, std::string& result, CharacterSet& encoding)
+static int TextCompaction(DecodeStatus& status, const std::vector<int>& codewords, int codeIndex, Content& result)
 {
 	// 2 characters per codeword
 	std::vector<int> textCompactionData((codewords[0] - codeIndex) * 2, 0);
@@ -310,7 +303,7 @@ static int TextCompaction(DecodeStatus& status, const std::vector<int>& codeword
 			}
 		}
 	}
-	DecodeTextCompaction(textCompactionData, index, resultEncoded, result, encoding);
+	DecodeTextCompaction(textCompactionData, index, result);
 	return codeIndex;
 }
 
@@ -368,14 +361,13 @@ static int CountByteBatches(DecodeStatus& status, int mode, const std::vector<in
 /*
 * Helper to handle Byte Compaction ECIs.
 */
-static int ProcessByteECIs(const std::vector<int>& codewords, int codeIndex,
-						   std::wstring& resultEncoded, std::string& result, CharacterSet& encoding)
+static int ProcessByteECIs(const std::vector<int>& codewords, int codeIndex, Content& result)
 {
 	while (codeIndex < codewords[0] && codewords[codeIndex] >= TEXT_COMPACTION_MODE_LATCH
 			&& !TerminatesCompaction(codewords[codeIndex])) {
 		int code = codewords[codeIndex++];
 		if (IsECI(code))
-			codeIndex = ProcessECI(codewords, codeIndex, codewords[0], code, resultEncoded, result, encoding);
+			codeIndex = ProcessECI(codewords, codeIndex, codewords[0], code, result);
 	}
 
 	return codeIndex;
@@ -390,13 +382,11 @@ static int ProcessByteECIs(const std::vector<int>& codewords, int codeIndex,
 * @param mode          The byte compaction mode i.e. 901 or 924
 * @param codewords     The array of codewords (data + error)
 * @param codeIndex     The current index into the codeword array.
-* @param resultEncoded The Unicode-encoded data.
 * @param result        The data in the character set encoding.
-* @param encoding      Currently active character encoding.
 * @return The next index into the codeword array.
 */
 static int ByteCompaction(DecodeStatus& status, int mode, const std::vector<int>& codewords, int codeIndex,
-						  std::wstring& resultEncoded, std::string& result, CharacterSet& encoding)
+						  Content& result)
 {
 	// Count number of 5-codeword batches and trailing bytes
 	int trailingCount;
@@ -406,7 +396,7 @@ static int ByteCompaction(DecodeStatus& status, int mode, const std::vector<int>
 		return codeIndex;
 
 	// Deal with initial ECIs
-	codeIndex = ProcessByteECIs(codewords, codeIndex, resultEncoded, result, encoding);
+	codeIndex = ProcessByteECIs(codewords, codeIndex, result);
 
 	for (int batch = 0; batch < batches; batch++) {
 		int64_t value = 0;
@@ -417,13 +407,13 @@ static int ByteCompaction(DecodeStatus& status, int mode, const std::vector<int>
 			result.push_back((uint8_t)(value >> (8 * (5 - j))));
 
 		// Deal with inter-batch ECIs
-		codeIndex = ProcessByteECIs(codewords, codeIndex, resultEncoded, result, encoding);
+		codeIndex = ProcessByteECIs(codewords, codeIndex, result);
 	}
 
 	for (int i = 0; i < trailingCount; i++) {
 		result.push_back((uint8_t)codewords[codeIndex++]);
 		// Deal with inter-byte ECIs
-		codeIndex = ProcessByteECIs(codewords, codeIndex, resultEncoded, result, encoding);
+		codeIndex = ProcessByteECIs(codewords, codeIndex, result);
 	}
 
 	return codeIndex;
@@ -508,8 +498,7 @@ static DecodeStatus DecodeBase900toBase10(const std::vector<int>& codewords, int
 * @param encoding  Currently active character encoding.
 * @return The next index into the codeword array.
 */
-static int NumericCompaction(DecodeStatus& status, const std::vector<int>& codewords, int codeIndex,
-							 std::wstring& resultEncoded, std::string& result, CharacterSet& encoding)
+static int NumericCompaction(DecodeStatus& status, const std::vector<int>& codewords, int codeIndex, Content& result)
 {
 	int count = 0;
 	bool end = false;
@@ -531,7 +520,7 @@ static int NumericCompaction(DecodeStatus& status, const std::vector<int>& codew
 					result += tmp;
 					count = 0;
 				}
-				codeIndex = ProcessECI(codewords, codeIndex, codewords[0], code, resultEncoded, result, encoding);
+				codeIndex = ProcessECI(codewords, codeIndex, codewords[0], code, result);
 				continue;
 			}
 			if (!TerminatesCompaction(code)) {
@@ -570,20 +559,17 @@ static int NumericCompaction(DecodeStatus& status, const std::vector<int>& codew
 /*
 * Helper to deal with optional text fields in Macros.
 */
-static int DecodeMacroOptionalTextField(DecodeStatus& status, const std::vector<int>& codewords, int codeIndex,
-										std::string& field)
+static int DecodeMacroOptionalTextField(DecodeStatus& status, const std::vector<int>& codewords, int codeIndex, std::string& field)
 {
-	std::wstring resultEncoded;
-	std::string result;
+	Content result;
 	// Each optional field begins with an implied reset to ECI 2 (Annex H.2.3). ECI 2 is ASCII for 0-127, and Cp437
 	// for non-ASCII (128-255). Text optional fields can contain ECIs.
-	CharacterSet encoding = CharacterSet::Cp437;
+	result.hintedCharset = "Cp437";
 
-	codeIndex = TextCompaction(status, codewords, codeIndex, resultEncoded, result, encoding);
-	TextDecoder::Append(resultEncoded, reinterpret_cast<const uint8_t*>(result.data()), result.size(), encoding);
+	codeIndex = TextCompaction(status, codewords, codeIndex, result);
 
 	// Converting to UTF-8 (backward-incompatible change for non-ASCII chars)
-	TextUtfEncoding::ToUtf8(resultEncoded, field);
+	TextUtfEncoding::ToUtf8(result.text(), field);
 
 	return codeIndex;
 }
@@ -594,16 +580,14 @@ static int DecodeMacroOptionalTextField(DecodeStatus& status, const std::vector<
 static int DecodeMacroOptionalNumericField(DecodeStatus& status, const std::vector<int>& codewords, int codeIndex,
 										   uint64_t& field)
 {
-	std::wstring resultEncoded;
-	std::string result;
-	// Each optional field begins with an implied reset to ECI 2 (Annex H.2.3).
-	// Numeric optional fields should not contain ECIs, but processed anyway.
-	CharacterSet encoding = CharacterSet::Cp437;
+	Content result;
+	// Each optional field begins with an implied reset to ECI 2 (Annex H.2.3). ECI 2 is ASCII for 0-127, and Cp437
+	// for non-ASCII (128-255). Text optional fields can contain ECIs.
+	result.hintedCharset = "Cp437";
 
-	codeIndex = NumericCompaction(status, codewords, codeIndex, resultEncoded, result, encoding);
-	TextDecoder::Append(resultEncoded, reinterpret_cast<const uint8_t*>(result.data()), result.size(), encoding);
+	codeIndex = NumericCompaction(status, codewords, codeIndex, result);
 
-	field = std::stoll(resultEncoded);
+	field = std::stoll(result.text());
 
 	return codeIndex;
 }
@@ -725,9 +709,10 @@ DecodeStatus DecodeMacroBlock(const std::vector<int>& codewords, int codeIndex, 
 DecoderResult
 DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel, const std::string& characterSet)
 {
-	std::wstring resultEncoded;
-	std::string result;
-	auto encoding = CharacterSetECI::InitEncoding(characterSet);
+	Content result;
+	result.symbology = { 'L', '2', -1 };
+	result.hintedCharset = characterSet;
+
 	bool readerInit = false;
 	auto resultMetadata = std::make_shared<DecoderResultExtra>();
 	int codeIndex = 1;
@@ -737,24 +722,24 @@ DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel, c
 		int code = codewords[codeIndex++];
 		switch (code) {
 		case TEXT_COMPACTION_MODE_LATCH:
-			codeIndex = TextCompaction(status, codewords, codeIndex, resultEncoded, result, encoding);
+			codeIndex = TextCompaction(status, codewords, codeIndex, result);
 			break;
 		case MODE_SHIFT_TO_BYTE_COMPACTION_MODE:
 			// This should only be encountered once in this loop, when default Text Compaction mode applies
 			// (see default case below)
-			codeIndex = TextCompaction(status, codewords, codeIndex - 1, resultEncoded, result, encoding);
+			codeIndex = TextCompaction(status, codewords, codeIndex - 1, result);
 			break;
 		case BYTE_COMPACTION_MODE_LATCH:
 		case BYTE_COMPACTION_MODE_LATCH_6:
-			codeIndex = ByteCompaction(status, code, codewords, codeIndex, resultEncoded, result, encoding);
+			codeIndex = ByteCompaction(status, code, codewords, codeIndex, result);
 			break;
 		case NUMERIC_COMPACTION_MODE_LATCH:
-			codeIndex = NumericCompaction(status, codewords, codeIndex, resultEncoded, result, encoding);
+			codeIndex = NumericCompaction(status, codewords, codeIndex, result);
 			break;
 		case ECI_CHARSET:
 		case ECI_GENERAL_PURPOSE:
 		case ECI_USER_DEFINED:
-			codeIndex = ProcessECI(codewords, codeIndex, codewords[0], code, resultEncoded, result, encoding);
+			codeIndex = ProcessECI(codewords, codeIndex, codewords[0], code, result);
 			break;
 		case BEGIN_MACRO_PDF417_CONTROL_BLOCK:
 			status = DecodeMacroBlock(codewords, codeIndex, *resultMetadata, codeIndex);
@@ -785,18 +770,17 @@ DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel, c
 				status = DecodeStatus::FormatError; // TODO: add NotSupported error
 			} else {
 				// Default mode is Text Compaction mode Alpha sub-mode (ISO/IEC 15438:2015 5.4.2.1)
-				codeIndex = TextCompaction(status, codewords, codeIndex - 1, resultEncoded, result, encoding);
+				codeIndex = TextCompaction(status, codewords, codeIndex - 1, result);
 			}
 			break;
 		}
 	}
-	TextDecoder::Append(resultEncoded, reinterpret_cast<const uint8_t*>(result.data()), result.size(), encoding);
-
-	if (resultEncoded.empty() && resultMetadata->segmentIndex() == -1)
-		return DecodeStatus::FormatError;
 
 	if (StatusIsError(status))
 		return status;
+
+	if (result.empty() && resultMetadata->segmentIndex() == -1)
+		return DecodeStatus::FormatError;
 
 	StructuredAppendInfo sai;
 	if (resultMetadata->segmentIndex() > -1) {
@@ -807,14 +791,8 @@ DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel, c
 		sai.id    = resultMetadata->fileId();
 	}
 
-	Content content;
-	content.append(result);
-
-	return DecoderResult(ByteArray(), std::move(resultEncoded), std::move(content))
+	return DecoderResult(ByteArray(), {}, std::move(result))
 		.setEcLevel(std::to_string(ecLevel))
-		// As converting character set ECIs ourselves and ignoring/skipping non-character ECIs, not using modifier
-		// that indicates ECI protocol (ISO/IEC 15438:2015 Annex L Table L.1)
-		.setSymbologyIdentifier("]L2")
 		.setStructuredAppend(sai)
 		.setReaderInit(readerInit)
 		.setExtra(resultMetadata);
