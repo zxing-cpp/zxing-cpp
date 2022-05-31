@@ -82,7 +82,7 @@ std::wstring Content::text() const
 
 std::string Content::utf8Protocol() const
 {
-	if (!canProcess())
+	if (empty() || !canProcess())
 		return {};
 
 	std::wstring res = TextDecoder::FromLatin1(symbology.toString(true));
@@ -119,6 +119,9 @@ std::string Content::utf8Protocol() const
 
 ByteArray Content::binaryECI() const
 {
+	if (empty())
+		return {};
+
 	std::string res = symbology.toString(true);
 
 	ForEachECIBlock([&](ECI eci, int begin, int end) {
