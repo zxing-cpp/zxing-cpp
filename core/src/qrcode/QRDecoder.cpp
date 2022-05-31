@@ -293,7 +293,7 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 					result += static_cast<uint8_t>(appInd - 100);
 				else
 					throw std::runtime_error("Invalid AIM Application Indicator");
-				result.applicationIndicator = std::string(result.binary.begin(), result.binary.end()); // see also above
+				result.applicationIndicator = result.binary.asString(); // see also above
 				break;
 			case CodecMode::STRUCTURED_APPEND:
 				// sequence number and parity is added later to the result metadata
