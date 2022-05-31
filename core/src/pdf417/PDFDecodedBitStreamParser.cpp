@@ -24,7 +24,8 @@
 
 namespace ZXing::Pdf417 {
 
-enum class Mode {
+enum class Mode
+{
 	ALPHA,
 	LOWER,
 	MIXED,
@@ -97,13 +98,10 @@ static int ProcessECI(const std::vector<int>& codewords, int codeIndex, const in
 					  std::wstring& resultEncoded, std::string& result, CharacterSet& encoding)
 {
 	if (codeIndex < length && IsECI(code)) {
-		if (code == ECI_CHARSET) {
+		if (code == ECI_CHARSET)
 			encoding = CharacterSetECI::OnChangeAppendReset(codewords[codeIndex++], resultEncoded, result, encoding);
-		}
-		else {
-			// Don't currently handle non-character set ECIs so just ignore
-			codeIndex += code == ECI_GENERAL_PURPOSE ? 2 : 1;
-		}
+		else
+			codeIndex += code == ECI_GENERAL_PURPOSE ? 2 : 1; // Don't currently handle non-character set ECIs so just ignore
 	}
 
 	return codeIndex;
@@ -145,14 +143,12 @@ static void DecodeTextCompaction(const std::vector<int>& textCompactionData, int
 		}
 		if (subModeCh == MODE_SHIFT_TO_BYTE_COMPACTION_MODE) {
 			i++;
-			while (i < length && IsECI(textCompactionData[i])) {
-				i = ProcessECI(textCompactionData, i + 1, length, textCompactionData[i], resultEncoded, result,
-							   encoding);
-			}
-			if (i < length) {
-				result.push_back((uint8_t)textCompactionData[i]);
-				i++;
-			}
+			while (i < length && IsECI(textCompactionData[i]))
+				i = ProcessECI(textCompactionData, i + 1, length, textCompactionData[i], resultEncoded, result, encoding);
+
+			if (i < length)
+				result.push_back((uint8_t)textCompactionData[i++]);
+
 			continue;
 		}
 
@@ -164,19 +160,15 @@ static void DecodeTextCompaction(const std::vector<int>& textCompactionData, int
 			if (subModeCh < 26) {
 				// Upper/lowercase character
 				ch = (char)((subMode == Mode::ALPHA ? 'A' : 'a') + subModeCh);
-			}
-			else if (subModeCh == 26) { // Space
+			} else if (subModeCh == 26) { // Space
 				ch = ' ';
-			}
-			else if (subModeCh == 27 && subMode == Mode::ALPHA) { // LL
+			} else if (subModeCh == 27 && subMode == Mode::ALPHA) { // LL
 				subMode = Mode::LOWER;
-			}
-			else if (subModeCh == 27 && subMode == Mode::LOWER) { // AS
+			} else if (subModeCh == 27 && subMode == Mode::LOWER) { // AS
 				// Shift to alpha
 				priorToShiftMode = subMode;
 				subMode = Mode::ALPHA_SHIFT;
-			}
-			else if (subModeCh == 28) { // ML
+			} else if (subModeCh == 28) { // ML
 				subMode = Mode::MIXED;
 			}
 			// 29 PS - ignore if last or followed by Shift to Byte, 5.4.2.4 (b) (1)
@@ -191,17 +183,13 @@ static void DecodeTextCompaction(const std::vector<int>& textCompactionData, int
 			// Mixed (numeric and some punctuation)
 			if (subModeCh < 25) {
 				ch = MIXED_CHARS[subModeCh];
-			}
-			else if (subModeCh == 25) { // PL
+			} else if (subModeCh == 25) { // PL
 				subMode = Mode::PUNCT;
-			}
-			else if (subModeCh == 26) { // Space
+			} else if (subModeCh == 26) { // Space
 				ch = ' ';
-			}
-			else if (subModeCh == 27) { // LL
+			} else if (subModeCh == 27) { // LL
 				subMode = Mode::LOWER;
-			}
-			else if (subModeCh == 28) { // AL
+			} else if (subModeCh == 28) { // AL
 				subMode = Mode::ALPHA;
 			}
 			// 29 PS - ignore if last or followed by Shift to Byte, 5.4.2.4 (b) (1)
@@ -214,41 +202,33 @@ static void DecodeTextCompaction(const std::vector<int>& textCompactionData, int
 
 		case Mode::PUNCT:
 			// Punctuation
-			if (subModeCh < 29) {
+			if (subModeCh < 29)
 				ch = PUNCT_CHARS[subModeCh];
-			}
-			else { // 29 AL - note not ignored if followed by Shift to Byte, 5.4.2.4 (b) (2)
+			else // 29 AL - note not ignored if followed by Shift to Byte, 5.4.2.4 (b) (2)
 				subMode = Mode::ALPHA;
-			}
 			break;
 
 		case Mode::ALPHA_SHIFT:
 			// Restore sub-mode
 			subMode = priorToShiftMode;
-			if (subModeCh < 26) {
+			if (subModeCh < 26)
 				ch = (char)('A' + subModeCh);
-			}
-			else if (subModeCh == 26) { // Space
+			else if (subModeCh == 26) // Space
 				ch = ' ';
-			}
 			// 27 LL, 28 ML, 29 PS used as padding
 			break;
 
 		case Mode::PUNCT_SHIFT:
 			// Restore sub-mode
 			subMode = priorToShiftMode;
-			if (subModeCh < 29) {
+			if (subModeCh < 29)
 				ch = PUNCT_CHARS[subModeCh];
-			}
-			else { // 29 AL
+			else // 29 AL
 				subMode = Mode::ALPHA;
-			}
 			break;
 		}
-		if (ch != 0) {
-			// Append decoded character to result
-			result.push_back(ch);
-		}
+		if (ch != 0)
+			result.push_back(ch); // Append decoded character to result
 		i++;
 	}
 }
@@ -256,8 +236,9 @@ static void DecodeTextCompaction(const std::vector<int>& textCompactionData, int
 /*
 * Helper to put ECI codewords into Text Compaction array.
 */
-static int ProcessTextECI(std::vector<int>& textCompactionData, int& index,
-						  const std::vector<int>& codewords, int codeIndex, const int code) {
+static int ProcessTextECI(std::vector<int>& textCompactionData, int& index, const std::vector<int>& codewords, int codeIndex,
+						  const int code)
+{
 	textCompactionData[index++] = code;
 	if (codeIndex < codewords[0]) {
 		textCompactionData[index++] = codewords[codeIndex++];
@@ -296,8 +277,7 @@ static int TextCompaction(DecodeStatus& status, const std::vector<int>& codeword
 			textCompactionData[index] = code / 30;
 			textCompactionData[index + 1] = code % 30;
 			index += 2;
-		}
-		else {
+		} else {
 			switch (code) {
 			case MODE_SHIFT_TO_BYTE_COMPACTION_MODE:
 				// The Mode Shift codeword 913 shall cause a temporary
@@ -309,12 +289,10 @@ static int TextCompaction(DecodeStatus& status, const std::vector<int>& codeword
 				textCompactionData[index++] = MODE_SHIFT_TO_BYTE_COMPACTION_MODE;
 				// 5.5.3.1 allows ECIs anywhere in Text Compaction, including after a Shift to Byte
 				while (codeIndex < codewords[0] && IsECI(codewords[codeIndex])) {
-					codeIndex = ProcessTextECI(textCompactionData, index, codewords, codeIndex + 1,
-											   codewords[codeIndex]);
+					codeIndex = ProcessTextECI(textCompactionData, index, codewords, codeIndex + 1, codewords[codeIndex]);
 				}
-				if (codeIndex < codewords[0]) {
+				if (codeIndex < codewords[0])
 					textCompactionData[index++] = codewords[codeIndex++]; // Byte to shift
-				}
 				break;
 			case ECI_CHARSET:
 			case ECI_GENERAL_PURPOSE:
@@ -340,8 +318,7 @@ static int TextCompaction(DecodeStatus& status, const std::vector<int>& codeword
 * Helper for Byte Compaction to look ahead and count 5-codeword batches and trailing bytes, with some checking of
 * format errors.
 */
-static int CountByteBatches(DecodeStatus& status, int mode, const std::vector<int>& codewords, int codeIndex,
-							int& trailingCount)
+static int CountByteBatches(DecodeStatus& status, int mode, const std::vector<int>& codewords, int codeIndex, int& trailingCount)
 {
 	int count = 0;
 	trailingCount = 0;
@@ -369,9 +346,8 @@ static int CountByteBatches(DecodeStatus& status, int mode, const std::vector<in
 		status = DecodeStatus::FormatError;
 		return 0;
 	}
-	if (count == 0) {
+	if (count == 0)
 		return 0;
-	}
 
 	if (mode == BYTE_COMPACTION_MODE_LATCH) {
 		trailingCount = count % 5;
@@ -379,8 +355,7 @@ static int CountByteBatches(DecodeStatus& status, int mode, const std::vector<in
 			trailingCount = 5;
 			count -= 5;
 		}
-	}
-	else { // BYTE_COMPACTION_MODE_LATCH_6
+	} else { // BYTE_COMPACTION_MODE_LATCH_6
 		if (count % 5 != 0) {
 			status = DecodeStatus::FormatError;
 			return 0;
@@ -399,9 +374,8 @@ static int ProcessByteECIs(const std::vector<int>& codewords, int codeIndex,
 	while (codeIndex < codewords[0] && codewords[codeIndex] >= TEXT_COMPACTION_MODE_LATCH
 			&& !TerminatesCompaction(codewords[codeIndex])) {
 		int code = codewords[codeIndex++];
-		if (IsECI(code)) {
+		if (IsECI(code))
 			codeIndex = ProcessECI(codewords, codeIndex, codewords[0], code, resultEncoded, result, encoding);
-		}
 	}
 
 	return codeIndex;
@@ -428,21 +402,20 @@ static int ByteCompaction(DecodeStatus& status, int mode, const std::vector<int>
 	int trailingCount;
 	int batches = CountByteBatches(status, mode, codewords, codeIndex, trailingCount);
 
-	if (StatusIsError(status)) {
+	if (StatusIsError(status))
 		return codeIndex;
-	}
 
 	// Deal with initial ECIs
 	codeIndex = ProcessByteECIs(codewords, codeIndex, resultEncoded, result, encoding);
 
 	for (int batch = 0; batch < batches; batch++) {
 		int64_t value = 0;
-		for (int count = 0; count < 5; count++) {
+		for (int count = 0; count < 5; count++)
 			value = 900 * value + codewords[codeIndex++];
-		}
-		for (int j = 0; j < 6; ++j) {
+
+		for (int j = 0; j < 6; ++j)
 			result.push_back((uint8_t)(value >> (8 * (5 - j))));
-		}
+
 		// Deal with inter-batch ECIs
 		codeIndex = ProcessByteECIs(codewords, codeIndex, resultEncoded, result, encoding);
 	}
@@ -505,18 +478,17 @@ static DecodeStatus DecodeBase900toBase10(const std::vector<int>& codewords, int
 	// Table containing values for the exponent of 900.
 	static const auto EXP900 = []() {
 		std::array<BigInteger, 16> table = {1, 900};
-		for (size_t i = 2; i < table.size(); ++i) {
+		for (size_t i = 2; i < table.size(); ++i)
 			table[i] = table[i - 1] * 900;
-		}
 		return table;
 	}();
 
 	assert(count <= 16);
 
 	BigInteger result;
-	for (int i = 0; i < count; i++) {
+	for (int i = 0; i < count; i++)
 		result += EXP900[count - i - 1] * codewords[i];
-	}
+
 	resultString = result.toString();
 	if (!resultString.empty() && resultString.front() == '1') {
 		resultString = resultString.substr(1);
@@ -553,9 +525,9 @@ static int NumericCompaction(DecodeStatus& status, const std::vector<int>& codew
 				if (count > 0) {
 					std::string tmp;
 					status = DecodeBase900toBase10(numericCodewords, count, tmp);
-					if (StatusIsError(status)) {
+					if (StatusIsError(status))
 						return codeIndex;
-					}
+
 					result += tmp;
 					count = 0;
 				}
@@ -584,9 +556,9 @@ static int NumericCompaction(DecodeStatus& status, const std::vector<int>& codew
 			if (count > 0) {
 				std::string tmp;
 				status = DecodeBase900toBase10(numericCodewords, count, tmp);
-				if (StatusIsError(status)) {
+				if (StatusIsError(status))
 					return codeIndex;
-				}
+
 				result += tmp;
 				count = 0;
 			}
@@ -640,20 +612,19 @@ ZXING_EXPORT_TEST_ONLY
 DecodeStatus DecodeMacroBlock(const std::vector<int>& codewords, int codeIndex, DecoderResultExtra& resultMetadata,
 							  int& next)
 {
-	if (codeIndex + NUMBER_OF_SEQUENCE_CODEWORDS > codewords[0]) {
-		// we must have at least two bytes left for the segment index
+	// we must have at least two bytes left for the segment index
+	if (codeIndex + NUMBER_OF_SEQUENCE_CODEWORDS > codewords[0])
 		return DecodeStatus::FormatError;
-	}
+
 	std::vector<int> segmentIndexArray(NUMBER_OF_SEQUENCE_CODEWORDS);
-	for (int i = 0; i < NUMBER_OF_SEQUENCE_CODEWORDS; i++, codeIndex++) {
+	for (int i = 0; i < NUMBER_OF_SEQUENCE_CODEWORDS; i++, codeIndex++)
 		segmentIndexArray[i] = codewords[codeIndex];
-	}
 
 	std::string strBuf;
 	DecodeStatus status = DecodeBase900toBase10(segmentIndexArray, NUMBER_OF_SEQUENCE_CODEWORDS, strBuf);
-	if (StatusIsError(status)) {
+	if (StatusIsError(status))
 		return status;
-	}
+
 	resultMetadata.setSegmentIndex(std::stoi(strBuf));
 
 	// Decoding the fileId codewords as 0-899 numbers, each 0-filled to width 3. This follows the spec
@@ -661,25 +632,23 @@ DecodeStatus DecodeMacroBlock(const std::vector<int>& codewords, int codeIndex, 
 	// the fileId using text compaction, so in those cases the fileId will appear mangled.
 	std::ostringstream fileId;
 	fileId.fill('0');
-	for (; codeIndex < codewords[0] && codewords[codeIndex] != MACRO_PDF417_TERMINATOR &&
-		   codewords[codeIndex] != BEGIN_MACRO_PDF417_OPTIONAL_FIELD;
+	for (; codeIndex < codewords[0] && codewords[codeIndex] != MACRO_PDF417_TERMINATOR
+		   && codewords[codeIndex] != BEGIN_MACRO_PDF417_OPTIONAL_FIELD;
 		 codeIndex++) {
 		fileId << std::setw(3) << codewords[codeIndex];
 	}
 	resultMetadata.setFileId(fileId.str());
 
 	int optionalFieldsStart = -1;
-	if (codeIndex < codewords[0] && codewords[codeIndex] == BEGIN_MACRO_PDF417_OPTIONAL_FIELD) {
+	if (codeIndex < codewords[0] && codewords[codeIndex] == BEGIN_MACRO_PDF417_OPTIONAL_FIELD)
 		optionalFieldsStart = codeIndex + 1;
-	}
 
 	while (codeIndex < codewords[0]) {
 		switch (codewords[codeIndex]) {
 		case BEGIN_MACRO_PDF417_OPTIONAL_FIELD: {
 			codeIndex++;
-			if (codeIndex >= codewords[0]) {
+			if (codeIndex >= codewords[0])
 				break;
-			}
 			switch (codewords[codeIndex]) {
 			case MACRO_PDF417_OPTIONAL_FIELD_FILE_NAME: {
 				std::string fileName;
@@ -742,10 +711,9 @@ DecodeStatus DecodeMacroBlock(const std::vector<int>& codewords, int codeIndex, 
 	// copy optional fields to additional options
 	if (optionalFieldsStart != -1) {
 		int optionalFieldsLength = codeIndex - optionalFieldsStart;
-		if (resultMetadata.isLastSegment()) {
-			// do not include terminator
-			optionalFieldsLength--;
-		}
+		if (resultMetadata.isLastSegment())
+			optionalFieldsLength--; // do not include terminator
+
 		resultMetadata.setOptionalData(std::vector<int>(codewords.begin() + optionalFieldsStart,
 									   codewords.begin() + optionalFieldsStart + optionalFieldsLength));
 	}
@@ -797,20 +765,15 @@ DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel, c
 			status = DecodeStatus::FormatError;
 			break;
 		case READER_INIT:
-			if (codeIndex != 2) { // Must be first codeword after symbol length (ISO/IEC 15438:2015 5.4.1.4)
+			if (codeIndex != 2) // Must be first codeword after symbol length (ISO/IEC 15438:2015 5.4.1.4)
 				status = DecodeStatus::FormatError;
-			}
-			else {
+			else
 				readerInit = true;
-			}
 			break;
 		case LINKAGE_EANUCC:
-			if (codeIndex != 2) { // Must be first codeword after symbol length (GS1 Composite ISO/IEC 24723:2010 4.3)
+			if (codeIndex != 2) // Must be first codeword after symbol length (GS1 Composite ISO/IEC 24723:2010 4.3)
 				status = DecodeStatus::FormatError;
-			}
-			else {
-				// TODO: handle
-			}
+			// TODO: handle else case
 			break;
 		case LINKAGE_OTHER:
 			// Allowed to treat as invalid by ISO/IEC 24723:2010 5.4.1.5 and 5.4.6.1 when in Basic Channel Mode
@@ -820,8 +783,7 @@ DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel, c
 			if (code >= TEXT_COMPACTION_MODE_LATCH) { // Reserved codewords (all others in switch)
 				// Allowed to treat as invalid by ISO/IEC 24723:2010 5.4.6.1 when in Basic Channel Mode
 				status = DecodeStatus::FormatError; // TODO: add NotSupported error
-			}
-			else {
+			} else {
 				// Default mode is Text Compaction mode Alpha sub-mode (ISO/IEC 15438:2015 5.4.2.1)
 				codeIndex = TextCompaction(status, codewords, codeIndex - 1, resultEncoded, result, encoding);
 			}
