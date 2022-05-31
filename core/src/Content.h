@@ -16,12 +16,12 @@ std::string ToString(ContentType type);
 
 struct SymbologyIdentifier
 {
-	char code, modifier;
+	char code = 0, modifier = 0;
 	int eciModifierOffset = 0;
 
 	std::string toString(bool hasECI = false) const
 	{
-		return ']' + std::string(1, code) + static_cast<char>(modifier + eciModifierOffset * hasECI);
+		return code ? ']' + std::string(1, code) + static_cast<char>(modifier + eciModifierOffset * hasECI) : std::string();
 	}
 };
 
