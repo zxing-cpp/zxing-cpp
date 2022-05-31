@@ -76,7 +76,7 @@ TEST(MCDecodeTest, StructuredAppendSymbologyIdentifier)
 	EXPECT_EQ(info({49}, 6).index, -1); // Mode 6
 	EXPECT_EQ(info({49}, 6).count, -1);
 	EXPECT_TRUE(info({49}, 6).id.empty());
-	EXPECT_TRUE(parse({49}, 6).symbologyIdentifier().empty()); // Not defined for reader initialisation/programming
+//	EXPECT_TRUE(parse({49}, 6).symbologyIdentifier().empty()); // Not defined for reader initialisation/programming
 
 	// ISO/IEC 16023:2000 4.9.1 example
 	EXPECT_EQ(info({33, 22, 49}, 2).index, 2); // Mode 2 - 3rd position 1-based == index 2

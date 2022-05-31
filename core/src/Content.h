@@ -62,6 +62,7 @@ public:
 	void operator+=(const std::string& str) { append(str); }
 
 	void erase(int pos, int n);
+	void insert(int pos, const std::string& str);
 
 	bool empty() const { return binary.empty(); }
 	bool canProcess() const;

@@ -57,6 +57,14 @@ void Content::erase(int pos, int n)
 			pos -= n;
 }
 
+void Content::insert(int pos, const std::string& str)
+{
+	binary.insert(binary.begin() + pos, str.begin(), str.end());
+	for (auto& e : encodings)
+		if (e.pos > pos)
+			pos += Size(str);
+}
+
 bool Content::canProcess() const
 {
 	return std::all_of(encodings.begin(), encodings.end(), [](Encoding e) { return CanProcess(e.eci); });
@@ -87,7 +95,9 @@ std::string Content::utf8Protocol() const
 
 	std::wstring res = TextDecoder::FromLatin1(symbology.toString(true));
 	ECI lastECI = ECI::Unknown;
-	auto fallbackCS = guessEncoding();
+	auto fallbackCS = CharacterSetECI::CharsetFromName(hintedCharset.c_str());
+	if (!hasECI && fallbackCS == CharacterSet::Unknown)
+		fallbackCS = guessEncoding();
 
 	ForEachECIBlock([&](ECI eci, int begin, int end) {
 		// first determine how to decode the content (choose character set)

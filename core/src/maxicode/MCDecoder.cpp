@@ -179,22 +179,22 @@ static int GetServiceClass(const ByteArray& bytes)
 /**
  * See ISO/IEC 16023:2000 Section 4.6 Table 3
  */
-static int ParseECIValue(const ByteArray& bytes, int& i)
+static ZXing::ECI ParseECIValue(const ByteArray& bytes, int& i)
 {
 	int firstByte = bytes[++i];
 	if ((firstByte & 0x20) == 0)
-		return firstByte;
+		return ZXing::ECI(firstByte);
 
 	int secondByte = bytes[++i];
 	if ((firstByte & 0x10) == 0)
-		return ((firstByte & 0x0F) << 6) | secondByte;
+		return ZXing::ECI(((firstByte & 0x0F) << 6) | secondByte);
 
 	int thirdByte = bytes[++i];
 	if ((firstByte & 0x08) == 0)
-		return ((firstByte & 0x07) << 12) | (secondByte << 6) | thirdByte;
+		return ZXing::ECI(((firstByte & 0x07) << 12) | (secondByte << 6) | thirdByte);
 
 	int fourthByte = bytes[++i];
-	return ((firstByte & 0x03) << 18) | (secondByte << 12) | (thirdByte << 6) | fourthByte;
+	return ZXing::ECI(((firstByte & 0x03) << 18) | (secondByte << 12) | (thirdByte << 6) | fourthByte);
 }
 
 /**
@@ -210,14 +210,11 @@ static void ParseStructuredAppend(const ByteArray& bytes, int& i, StructuredAppe
 	// No id
 }
 
-static std::wstring GetMessage(const ByteArray& bytes, int start, int len, const std::string& characterSet, StructuredAppendInfo& sai)
+static void GetMessage(const ByteArray& bytes, int start, int len, Content& result, StructuredAppendInfo& sai)
 {
-	std::string sb;
-	std::wstring sbEncoded;
 	int shift = -1;
 	int set = 0;
 	int lastset = 0;
-	CharacterSet encoding = CharacterSetECI::InitEncoding(characterSet);
 
 	for (int i = start; i < start + len; i++) {
 		int c = CHARSETS[set].at(bytes[i]);
@@ -250,65 +247,53 @@ static std::wstring GetMessage(const ByteArray& bytes, int start, int len, const
 			shift   = 3;
 			break;
 		case NS:
-			sb.append(
+			result.append(
 				ToString((bytes[i + 1] << 24) + (bytes[i + 2] << 18) + (bytes[i + 3] << 12) + (bytes[i + 4] << 6) + bytes[i + 5], 9));
 			i += 5;
 			break;
 		case LOCK: shift = -1; break;
-		case ECI: encoding = CharacterSetECI::OnChangeAppendReset(ParseECIValue(bytes, i), sbEncoded, sb, encoding); break;
+		case ECI: result.switchEncoding(ParseECIValue(bytes, i)); break;
 		case PAD:
 			if (i == start)
 				ParseStructuredAppend(bytes, i, sai);
 			shift = -1;
 			break;
-		default: sb.push_back((unsigned char)c);
+		default: result.push_back(c);
 		}
 
 		if (shift-- == 0)
 			set = lastset;
 	}
-
-	TextDecoder::Append(sbEncoded, reinterpret_cast<const uint8_t*>(sb.data()), sb.size(), encoding);
-
-	return sbEncoded;
 }
 
 ZXING_EXPORT_TEST_ONLY
-DecoderResult Decode(ByteArray&& bytes, const int mode, const std::string& characterSet)
+DecoderResult Decode(ByteArray&& bytes, const int mode, const std::string& /*characterSet*/)
 {
-	std::wstring result;
-	result.reserve(144);
+	Content result;
+	result.symbology = {'U', (mode == 2 || mode == 3) ? '1' : '0', 2}; // TODO: No identifier defined for mode 6?
+	result.hintedCharset = "ISO8859_1";
 	StructuredAppendInfo sai;
+
 	switch (mode) {
 	case 2:
 	case 3: {
 		auto postcode = mode == 2 ? ToString(GetPostCode2(bytes), GetPostCode2Length(bytes)) : GetPostCode3(bytes);
 		auto country  = ToString(GetCountry(bytes), 3);
 		auto service  = ToString(GetServiceClass(bytes), 3);
-		result.append(GetMessage(bytes, 10, 84, characterSet, sai));
-		if (result.size() >= 9 && result.compare(0, 7, L"[)>\u001E01\u001D") == 0) // "[)>" + RS + "01" + GS
-			result.insert(9, TextDecoder::FromLatin1(postcode + GS + country + GS + service + GS));
+		GetMessage(bytes, 10, 84, result, sai);
+		if (result.binary.asString().compare(0, 7, "[)>\u001E01\u001D") == 0) // "[)>" + RS + "01" + GS
+			result.insert(9, postcode + GS + country + GS + service + GS);
 		else
-			result.insert(0, TextDecoder::FromLatin1(postcode + GS + country + GS + service + GS));
+			result.insert(0, postcode + GS + country + GS + service + GS);
 		break;
 	}
 	case 4:
-	case 6: result.append(GetMessage(bytes, 1, 93, characterSet, sai)); break;
-	case 5: result.append(GetMessage(bytes, 1, 77, characterSet, sai)); break;
+	case 6: GetMessage(bytes, 1, 93, result, sai); break;
+	case 5: GetMessage(bytes, 1, 77, result, sai); break;
 	}
 
-	// As converting character set ECIs ourselves and ignoring/skipping non-character ECIs, not using modifiers
-	// that indicate ECI protocol (ISO/IEC 16023:2000 Annexe E Table E1)
-	std::string symbologyIdentifier;
-	if (mode == 4 || mode == 5)
-		symbologyIdentifier = "]U0";
-	else if (mode == 2 || mode == 3)
-		symbologyIdentifier = "]U1";
-	// No identifier defined for mode 6
-
-	return DecoderResult(std::move(bytes), std::move(result))
+	return DecoderResult(std::move(bytes), {}, std::move(result))
 		.setEcLevel(std::to_string(mode))
-		.setSymbologyIdentifier(std::move(symbologyIdentifier))
 		.setStructuredAppend(sai)
 		.setReaderInit(mode == 6);
 }
