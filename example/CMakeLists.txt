@@ -3,14 +3,6 @@ set (CMAKE_CXX_STANDARD 11)
 
 zxing_add_package_stb()
 
-if (BUILD_READERS)
-    add_executable (ZXingReader ZXingReader.cpp)
-
-    target_link_libraries (ZXingReader ZXing::ZXing stb::stb)
-
-    add_test(NAME ZXingReaderTest COMMAND ZXingReader -fast -format qrcode "${CMAKE_SOURCE_DIR}/test/samples/qrcode-1/1.png")
-endif()
-
 if (BUILD_WRITERS)
     add_executable (ZXingWriter ZXingWriter.cpp)
 
@@ -19,6 +11,13 @@ if (BUILD_WRITERS)
     add_test(NAME ZXingWriterTest COMMAND ZXingWriter qrcode "I have the best words." test.png)
 endif()
 
+if (BUILD_READERS)
+    add_executable (ZXingReader ZXingReader.cpp)
+
+    target_link_libraries (ZXingReader ZXing::ZXing stb::stb)
+
+    add_test(NAME ZXingReaderTest COMMAND ZXingReader -fast -format qrcode test.png) # see above
+endif()
 
 if (BUILD_READERS)
     find_package(Qt5 COMPONENTS Gui Multimedia Quick)
