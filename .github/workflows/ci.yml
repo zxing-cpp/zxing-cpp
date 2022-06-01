@@ -39,7 +39,7 @@ jobs:
       # Use a bash shell so we can use the same syntax for environment variable
       # access regardless of the host operating system
       shell: bash
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_UNIT_TESTS=ON -DBUILD_PYTHON_MODULE=ON
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_BLACKBOX_TESTS=ON -DBUILD_UNIT_TESTS=ON -DBUILD_PYTHON_MODULE=ON
 
     - name: Build
       working-directory: ${{runner.workspace}}/build
