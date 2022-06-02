@@ -4,6 +4,7 @@
 //
 //  Created by Christian Braun on 22.02.22.
 //
+// SPDX-License-Identifier: Apache-2.0
 
 #import <CoreGraphics/CoreGraphics.h>
 #import <CoreImage/CoreImage.h>

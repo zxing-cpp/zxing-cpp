@@ -4,6 +4,7 @@
 //
 //  Created by Christian Braun on 22.02.22.
 //
+// SPDX-License-Identifier: Apache-2.0
 
 #import "ZXIBarcodeReader.h"
 #import "ZXIErrors.h"

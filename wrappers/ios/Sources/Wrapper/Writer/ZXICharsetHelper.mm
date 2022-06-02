@@ -4,6 +4,7 @@
 //
 //  Created by Hendrik von Prince on 25.03.22.
 //
+// SPDX-License-Identifier: Apache-2.0
 
 #import "ZXICharsetHelper.h"
 

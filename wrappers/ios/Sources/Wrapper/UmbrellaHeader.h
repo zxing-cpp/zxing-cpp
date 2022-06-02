@@ -4,6 +4,7 @@
 //
 //  Created by Christian Braun on 22.02.22.
 //
+// SPDX-License-Identifier: Apache-2.0
 
 #ifndef UmbrellaHeader_h
 #define UmbrellaHeader_h

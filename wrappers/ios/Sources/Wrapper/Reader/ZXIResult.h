@@ -4,6 +4,7 @@
 //
 //  Created by Christian Braun on 25.02.22.
 //
+// SPDX-License-Identifier: Apache-2.0
 
 #import <Foundation/Foundation.h>
 #import "ZXIFormat.h"
