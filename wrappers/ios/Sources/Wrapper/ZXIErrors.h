@@ -1,8 +1,4 @@
-//
-//  ZXIErrors.h
-//  
-//
-//  Created by Christian Braun on 25.02.22.
+// Copyright 2022 KURZ Digital Solutions GmbH
 //
 // SPDX-License-Identifier: Apache-2.0
 

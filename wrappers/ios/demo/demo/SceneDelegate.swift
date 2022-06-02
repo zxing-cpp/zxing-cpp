@@ -1,8 +1,6 @@
-//
-//  SceneDelegate.swift
 //  demo
 //
-//  Created by Hendrik von Prince on 24.05.22.
+// Copyright 2022 KURZ Digital Solutions GmbH
 //
 
 import UIKit
