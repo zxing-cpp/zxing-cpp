@@ -6,7 +6,7 @@
 #include "BarcodeFormat.h"
 #include "MultiFormatWriter.h"
 #include "BitMatrix.h"
-#include "CharacterSetECI.h"
+#include "CharacterSet.h"
 
 #include <string>
 #include <memory>
@@ -59,7 +59,7 @@ WriteResult generateBarcode(std::wstring text, std::string format, std::string e
 		if (margin >= 0)
 			writer.setMargin(margin);
 
-		CharacterSet charset = CharacterSetECI::CharsetFromName(encoding.c_str());
+		CharacterSet charset = CharacterSetFromString(encoding);
 		if (charset != CharacterSet::Unknown)
 			writer.setEncoding(charset);
 
