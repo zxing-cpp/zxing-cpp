@@ -6,6 +6,7 @@
 #include "Content.h"
 
 #include "CharacterSet.h"
+#include "ECI.h"
 #include "TextDecoder.h"
 #include "TextUtfEncoding.h"
 #include "ZXContainerAlgorithms.h"
@@ -43,6 +44,10 @@ void Content::switchEncoding(ECI eci, bool isECI)
 	}
 	hasECI |= isECI;
 }
+
+Content::Content() : encodings({{ECI::Unknown, 0}}) {}
+
+Content::Content(ByteArray&& binary) : binary(std::move(binary)), encodings{{ECI::ISO8859_1, 0}} {}
 
 void Content::switchEncoding(CharacterSet cs)
 {
