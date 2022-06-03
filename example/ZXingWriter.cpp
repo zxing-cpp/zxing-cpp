@@ -6,9 +6,9 @@
 #include "BarcodeFormat.h"
 #include "BitMatrix.h"
 #include "BitMatrixIO.h"
+#include "CharacterSet.h"
 #include "MultiFormatWriter.h"
 #include "TextUtfEncoding.h"
-#include "CharacterSetECI.h"
 
 #include <algorithm>
 #include <cctype>
@@ -73,7 +73,7 @@ static bool ParseOptions(int argc, char* argv[], int* width, int* height, int* m
 		} else if (strcmp(argv[i], "-encoding") == 0) {
 			if (++i == argc)
 				return false;
-			*encoding = CharacterSetECI::CharsetFromName(argv[i]);
+			*encoding = CharacterSetFromString(argv[i]);
 		} else if (nonOptArgCount == 0) {
 			*format = BarcodeFormatFromString(argv[i]);
 			if (*format == BarcodeFormat::None) {

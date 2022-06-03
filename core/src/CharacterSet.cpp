@@ -4,18 +4,13 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "CharacterSetECI.h"
-
-#include "ECI.h"
-#include "TextDecoder.h"
+#include "CharacterSet.h"
 
 #include <cctype>
-#include <iomanip>
 #include <map>
-#include <sstream>
 #include <utility>
 
-namespace ZXing::CharacterSetECI {
+namespace ZXing {
 
 struct CompareNoCase {
 	bool operator ()(const char* a, const char* b) const {
@@ -93,13 +88,13 @@ static const std::map<const char *, CharacterSet, CompareNoCase> ECI_NAME_TO_CHA
 	{"BINARY",		CharacterSet::BINARY},
 };
 
-CharacterSet CharsetFromName(const char* name)
+CharacterSet CharacterSetFromString(const std::string& name)
 {
-	auto it = ECI_NAME_TO_CHARSET.find(name);
-	if (it != ECI_NAME_TO_CHARSET.end()) {
+	auto it = ECI_NAME_TO_CHARSET.find(name.c_str());
+	if (it != ECI_NAME_TO_CHARSET.end())
 		return it->second;
-	}
+
 	return CharacterSet::Unknown;
 }
 
-} // namespace ZXing::CharacterSetECI
+} // namespace ZXing

@@ -8,8 +8,6 @@
 
 #include "CharacterSet.h"
 
-#include <string>
-
 namespace ZXing {
 
 /**
@@ -24,7 +22,7 @@ namespace CharacterSetECI {
  * @return {@code CharacterSet} representing ECI of given value, or {@code CharacterSet::Unknown} if it is
  *   unsupported
  */
-CharacterSet CharsetFromName(const char* name);
+[[deprecated]] inline CharacterSet CharsetFromName(const char* name) { return CharacterSetFromString(name); }
 
 } // namespace CharacterSetECI
 } // namespace ZXing

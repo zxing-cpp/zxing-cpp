@@ -7,7 +7,7 @@
 #include "PDFDecodedBitStreamParser.h"
 
 #include "ByteArray.h"
-#include "CharacterSetECI.h"
+#include "CharacterSet.h"
 #include "DecoderResult.h"
 #include "DecodeStatus.h"
 #include "PDFDecoderResultExtra.h"

@@ -3,14 +3,12 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "CharacterSetECI.h"
 #include "ECI.h"
 
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
 using namespace ZXing;
-using namespace ZXing::CharacterSetECI;
 using namespace testing;
 
 TEST(CharacterSetECITest, Charset2ECI)

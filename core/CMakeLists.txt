@@ -49,8 +49,8 @@ set (COMMON_FILES
     src/ByteArray.h
     src/ByteMatrix.h
     src/CharacterSet.h
+    src/CharacterSet.cpp
     src/CharacterSetECI.h
-    src/CharacterSetECI.cpp
     src/ConcentricFinder.h
     src/ConcentricFinder.cpp
     src/CustomData.h

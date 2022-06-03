@@ -8,7 +8,7 @@
 
 #include "BitMatrix.h"
 #include "BitSource.h"
-#include "CharacterSetECI.h"
+#include "CharacterSet.h"
 #include "DMBitLayout.h"
 #include "DMDataBlock.h"
 #include "DMVersion.h"
