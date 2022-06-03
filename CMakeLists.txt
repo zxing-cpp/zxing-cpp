@@ -87,22 +87,6 @@ install (
     DESTINATION ${CMAKECONFIG_INSTALL_DIR} NAMESPACE ZXing::
 )
 
-install (
-    DIRECTORY core/src/
-    DESTINATION include/ZXing
-    FILES_MATCHING PATTERN "*.h"
-)
-
-configure_file (
-    core/ZXVersion.h.in
-    ZXVersion.h
-)
-
-install (
-    FILES "${CMAKE_CURRENT_BINARY_DIR}/ZXVersion.h"
-    DESTINATION include/ZXing
-)
-
 # PC file generation.
 if (NOT DEFINED INSTALLDIR)
     set (INSTALLDIR ${CMAKE_INSTALL_PREFIX})

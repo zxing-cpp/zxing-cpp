@@ -114,7 +114,6 @@ if (BUILD_READERS)
         src/Result.cpp
         src/ResultPoint.h
         src/ResultPoint.cpp
-        src/StructuredAppend.h
         src/TextDecoder.h
         src/TextDecoder.cpp
         src/ThresholdBinarizer.h
@@ -134,6 +133,41 @@ if (BUILD_WRITERS)
     )
 endif()
 
+# define subset of public headers that get distributed with the binaries
+set (PUBLIC_HEADERS
+    src/BarcodeFormat.h
+    src/BitHacks.h
+    src/ByteArray.h
+    src/CharacterSet.h
+    src/CharacterSetECI.h # deprecated
+    src/Flags.h
+    src/GTIN.h
+    src/TextUtfEncoding.h
+    src/ZXConfig.h
+    src/ZXContainerAlgorithms.h
+)
+if (BUILD_READERS)
+    set (PUBLIC_HEADERS ${PUBLIC_HEADERS}
+        src/Content.h
+        src/DecodeHints.h
+        src/DecodeStatus.h
+        src/ImageView.h
+        src/Point.h
+        src/Quadrilateral.h
+        src/ReadBarcode.h
+        src/Result.h
+        src/StructuredAppend.h
+    )
+endif()
+if (BUILD_WRITERS)
+    set (PUBLIC_HEADERS ${PUBLIC_HEADERS}
+        src/BitMatrix.h
+        src/BitMatrixIO.h
+        src/Matrix.h
+        src/MultiFormatWriter.h
+    )
+endif()
+# end of public header set
 
 set (AZTEC_FILES
 )
@@ -427,7 +461,7 @@ add_library (ZXing
 
 target_include_directories (ZXing
     PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>"
-    INTERFACE "$<INSTALL_INTERFACE:include>"
+    INTERFACE "$<INSTALL_INTERFACE:include/ZXing>"
 )
 
 target_compile_options (ZXing
@@ -463,25 +497,7 @@ if (PROJECT_VERSION)
     set_target_properties(ZXing PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
 endif()
 
-set(PUBLIC_HEADERS "${COMMON_FILES}")
-list(FILTER PUBLIC_HEADERS INCLUDE REGEX "^.*\.h$")
-  
-message(STATUS "PUBLIC HEADERS BE LIKE ${PUBLIC_HEADERS}")
-
-set_target_properties(ZXing PROPERTIES
-  FRAMEWORK TRUE
-  FRAMEWORK_VERSION "C"
-  XCODE_ATTRIBUTE_DEFINES_MODULE YES
-  XCODE_ATTRIBUTE_BUILD_LIBRARY_FOR_DISTRIBUTION YES
-  XCODE_ATTRIBUTE_MODULEMAP_FILE "wrappers/ios/Sources/Wrapper/module.modulemap"
-  XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC YES
-  MACOSX_FRAMEWORK_IDENTIFIER "com.zxing_cpp.ios"
-  CMAKE_XCODE_ATTRIBUTE_ONLY_ACTIVE_ARCH NO
-  #MACOSX_FRAMEWORK_INFO_PLIST Info.plist
-  PUBLIC_HEADER "${PUBLIC_HEADERS}"
-  XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "iPhone Developer"
-  XCODE_ATTRIBUTE_ENABLE_BITCODE "YES"
-)
+set_target_properties(ZXing PROPERTIES PUBLIC_HEADER "${PUBLIC_HEADERS}")
 
 include (GNUInstallDirs)
 
@@ -490,8 +506,15 @@ install (
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    FRAMEWORK DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    INCLUDES DESTINATION include
+#    INCLUDES DESTINATION include
+    PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/ZXing"
+)
+
+configure_file (ZXVersion.h.in ZXVersion.h)
+
+install (
+    FILES "${CMAKE_CURRENT_BINARY_DIR}/ZXVersion.h"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/ZXing"
 )
 
 if(MSVC)
