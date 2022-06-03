@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <string>
+
 namespace ZXing {
 
 enum class CharacterSet
@@ -45,5 +47,7 @@ enum class CharacterSet
 
 	CharsetCount
 };
+
+CharacterSet CharacterSetFromString(const std::string& name);
 
 } // ZXing

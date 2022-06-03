@@ -9,7 +9,6 @@
 #include "BitMatrix.h"
 #include "BitSource.h"
 #include "CharacterSet.h"
-#include "CharacterSetECI.h"
 #include "DecodeStatus.h"
 #include "DecoderResult.h"
 #include "GenericGF.h"

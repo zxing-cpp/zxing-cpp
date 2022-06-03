@@ -7,7 +7,7 @@
 #include "MCDecoder.h"
 
 #include "ByteArray.h"
-#include "CharacterSetECI.h"
+#include "CharacterSet.h"
 #include "DecoderResult.h"
 #include "DecodeStatus.h"
 #include "GenericGF.h"

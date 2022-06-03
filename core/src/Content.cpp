@@ -5,7 +5,7 @@
 
 #include "Content.h"
 
-#include "CharacterSetECI.h"
+#include "CharacterSet.h"
 #include "TextDecoder.h"
 #include "TextUtfEncoding.h"
 #include "ZXContainerAlgorithms.h"
@@ -75,7 +75,7 @@ std::wstring Content::text() const
 	if (!canProcess())
 		return {};
 
-	auto fallbackCS = CharacterSetECI::CharsetFromName(hintedCharset.c_str());
+	auto fallbackCS = CharacterSetFromString(hintedCharset);
 	if (!hasECI && fallbackCS == CharacterSet::Unknown)
 		fallbackCS = guessEncoding();
 
@@ -95,7 +95,7 @@ std::string Content::utf8Protocol() const
 
 	std::wstring res = TextDecoder::FromLatin1(symbology.toString(true));
 	ECI lastECI = ECI::Unknown;
-	auto fallbackCS = CharacterSetECI::CharsetFromName(hintedCharset.c_str());
+	auto fallbackCS = CharacterSetFromString(hintedCharset);
 	if (!hasECI && fallbackCS == CharacterSet::Unknown)
 		fallbackCS = guessEncoding();
 
