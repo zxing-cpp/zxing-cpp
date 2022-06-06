@@ -12,7 +12,7 @@ namespace ZXing {
 enum class ECI : int;
 enum class CharacterSet;
 
-enum class ContentType { Text, Binary, Mixed };
+enum class ContentType { Text, Binary, Mixed, GS1, ISO15434, UnknownECI };
 
 std::string ToString(ContentType type);
 
