@@ -68,8 +68,6 @@ static std::string getResultValue(const Result& result, const std::string& key)
 		return TextUtfEncoding::ToUtf8(result.ecLevel());
 	if (key == "orientation")
 		return std::to_string(result.orientation());
-	if (key == "numBits")
-		return std::to_string(result.numBits());
 	if (key == "symbologyIdentifier")
 		return result.symbologyIdentifier();
 	if (key == "sequenceSize")

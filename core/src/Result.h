@@ -24,10 +24,8 @@ class DecoderResult;
 using Position = QuadrilateralI;
 
 /**
-* <p>Encapsulates the result of decoding a barcode within an image.</p>
-*
-* @author Sean Owen
-*/
+ * @brief The Result class encapsulates the result of decoding a barcode within an image.
+ */
 class Result
 {
 public:
@@ -66,9 +64,9 @@ public:
 	 */
 	bool isMirrored() const { return _isMirrored; }
 
-	const ByteArray& rawBytes() const { return _rawBytes; }
-
-	int numBits() const { return _numBits; }
+	/// see binary() above for a proper replacement of rawByes
+	[[deprecated]] const ByteArray& rawBytes() const { return _rawBytes; }
+	[[deprecated]] int numBits() const { return _numBits; }
 
 	const std::wstring& ecLevel() const { return _ecLevel; }
 
