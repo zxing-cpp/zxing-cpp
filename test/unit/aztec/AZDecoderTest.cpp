@@ -60,11 +60,6 @@ TEST(AZDecoderTest, AztecResult)
 	DecoderResult result = parse(std::move(bits), false, 30, 2);
 	EXPECT_EQ(result.isValid(), true);
 	EXPECT_EQ(result.text(), L"88888TTTTTTTTTTTTTTTTTTTTTTTTTTTTTT");
-	EXPECT_EQ(result.rawBytes(), ByteArray({
-		0xf5, 0x55, 0x55, 0x75, 0x6b, 0x5a, 0xd6, 0xb5, 0xad, 0x6b, 
-		0x5a, 0xd6, 0xb5, 0xad, 0x6b, 0x5a, 0xd6, 0xb5, 0xad, 0x6b, 
-		0x5a, 0xd6, 0xb0 }));
-	EXPECT_EQ(result.numBits(), 180);
 	EXPECT_EQ(result.symbologyIdentifier(), "]z0");
 }
 
