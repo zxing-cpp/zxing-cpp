@@ -15,7 +15,7 @@ namespace ZXing {
 
 std::string ToString(ContentType type)
 {
-	const char* t2s[] = {"Text", "Binary", "Mixed"};
+	const char* t2s[] = {"Text", "Binary", "Mixed", "GS1", "ISO15434", "UnknownECI"};
 	return t2s[static_cast<int>(type)];
 }
 
@@ -166,21 +166,35 @@ CharacterSet Content::guessEncoding() const
 	if (input.empty())
 		return CharacterSet::Unknown;
 
-	return TextDecoder::GuessEncoding(input.data(), input.size(), CharacterSet::BINARY);
+	return TextDecoder::GuessEncoding(input.data(), input.size(), CharacterSet::ISO8859_1);
 }
 
 ContentType Content::type() const
 {
-	auto isBinary = [](Encoding e) { return !IsText(e.eci); };
-	auto es = encodings;
+	if (!canProcess())
+		return ContentType::UnknownECI;
 
-	for (auto& e : es)
-		if (e.eci == ECI::Unknown)
-			e.eci = ToECI(guessEncoding());
+	if (applicationIndicator == "GS1")
+		return ContentType::GS1;
 
-	if (std::none_of(es.begin(), es.end(), isBinary))
+	// check for the absolut minimum of a ISO 15434 conforming message ("[)>" + RS + digit + digit)
+	if (binary.size() > 6 && binary.asString(0, 4) == "[)>\x1E" && std::isdigit(binary[4]) && std::isdigit(binary[5]))
+		return ContentType::ISO15434;
+
+	ECI fallback = ToECI(guessEncoding());
+	std::vector<bool> binaryECIs;
+	ForEachECIBlock([&](ECI eci, int begin, int end) {
+		if (eci == ECI::Unknown)
+			eci = fallback;
+		binaryECIs.push_back((!IsText(eci)
+							  || (ToInt(eci) > 0 && ToInt(eci) < 28 && ToInt(eci) != 25
+								  && std::any_of(binary.begin() + begin, binary.begin() + end,
+												 [](auto c) { return c < 0x20 && c != 0xa && c != 0xd; }))));
+	});
+
+	if (!Contains(binaryECIs, true))
 		return ContentType::Text;
-	if (std::all_of(es.begin(), es.end(), isBinary))
+	if (!Contains(binaryECIs, false))
 		return ContentType::Binary;
 
 	return ContentType::Mixed;
