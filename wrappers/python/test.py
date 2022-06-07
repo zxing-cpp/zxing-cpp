@@ -23,6 +23,7 @@ class TestReadWrite(unittest.TestCase):
 		self.assertTrue(res.valid)
 		self.assertEqual(res.format, format)
 		self.assertEqual(res.text, text)
+		self.assertEqual(res.bytes, bytes(text, 'utf-8'))
 		self.assertEqual(res.orientation, 0)
 
 	def test_write_read_cycle(self):
