@@ -97,13 +97,13 @@ class Result : private ZXing::Result
 	Q_PROPERTY(BarcodeFormat format READ format)
 	Q_PROPERTY(QString formatName READ formatName)
 	Q_PROPERTY(QString text READ text)
-	Q_PROPERTY(QByteArray binary READ binary)
+	Q_PROPERTY(QByteArray bytes READ bytes)
 	Q_PROPERTY(bool isValid READ isValid)
 	Q_PROPERTY(DecodeStatus status READ status)
 	Q_PROPERTY(Position position READ position)
 
 	QString _text;
-	QByteArray _binary;
+	QByteArray _bytes;
 	Position _position;
 
 public:
@@ -111,7 +111,7 @@ public:
 
 	explicit Result(ZXing::Result&& r) : ZXing::Result(std::move(r)) {
 		_text = QString::fromWCharArray(ZXing::Result::text().c_str());
-		_binary = QByteArray(reinterpret_cast<const char*>(ZXing::Result::binary().data()), Size(ZXing::Result::binary()));
+		_bytes = QByteArray(reinterpret_cast<const char*>(ZXing::Result::bytes().data()), Size(ZXing::Result::bytes()));
 		auto& pos = ZXing::Result::position();
 		auto qp = [&pos](int i) { return QPoint(pos[i].x, pos[i].y); };
 		_position = {qp(0), qp(1), qp(2), qp(3)};
@@ -123,7 +123,7 @@ public:
 	DecodeStatus status() const { return static_cast<DecodeStatus>(ZXing::Result::status()); }
 	QString formatName() const { return QString::fromStdString(ZXing::ToString(ZXing::Result::format())); }
 	const QString& text() const { return _text; }
-	const QByteArray& binary() const { return _binary; }
+	const QByteArray& bytes() const { return _bytes; }
 	const Position& position() const { return _position; }
 
 	// For debugging/development

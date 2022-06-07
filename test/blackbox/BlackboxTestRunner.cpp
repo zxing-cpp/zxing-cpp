@@ -141,8 +141,8 @@ static std::string checkResult(const fs::path& imgPath, std::string_view expecte
 
 	if (auto expected = readFile(".bin")) {
 		ByteArray binaryExpected(*expected);
-		return result.binary() != binaryExpected
-				   ? fmt::format("Content mismatch: expected '{}' but got '{}'", ToHex(binaryExpected), ToHex(result.binary()))
+		return result.bytes() != binaryExpected
+				   ? fmt::format("Content mismatch: expected '{}' but got '{}'", ToHex(binaryExpected), ToHex(result.bytes()))
 				   : "";
 	}
 
@@ -266,7 +266,7 @@ static Result readMultiple(const std::vector<fs::path>& imgPaths, std::string_vi
 	Content content;
 	for (const auto& r : allResults) {
 		text.append(r.text());
-		content.append(r.binary());
+		content.append(r.bytes());
 	}
 
 	const auto& first = allResults.front();

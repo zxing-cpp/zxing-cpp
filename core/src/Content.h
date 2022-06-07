@@ -41,7 +41,7 @@ public:
 		int pos;
 	};
 
-	ByteArray binary;
+	ByteArray bytes;
 	std::vector<Encoding> encodings;
 	std::string hintedCharset;
 	std::string applicationIndicator;
@@ -49,16 +49,16 @@ public:
 	bool hasECI = false;
 
 	Content();
-	Content(ByteArray&& binary);
+	Content(ByteArray&& bytes);
 
 	void switchEncoding(ECI eci) { switchEncoding(eci, true); }
 	void switchEncoding(CharacterSet cs);
 
-	void reserve(int count) { binary.reserve(binary.size() + count); }
+	void reserve(int count) { bytes.reserve(bytes.size() + count); }
 
-	void push_back(uint8_t val) { binary.push_back(val); }
-	void append(const std::string& str) { binary.insert(binary.end(), str.begin(), str.end()); }
-	void append(const ByteArray& bytes) { binary.insert(binary.end(), bytes.begin(), bytes.end()); }
+	void push_back(uint8_t val) { bytes.push_back(val); }
+	void append(const std::string& str) { bytes.insert(bytes.end(), str.begin(), str.end()); }
+	void append(const ByteArray& ba) { bytes.insert(bytes.end(), ba.begin(), ba.end()); }
 
 	void operator+=(char val) { push_back(val); }
 	void operator+=(const std::string& str) { append(str); }
@@ -66,12 +66,12 @@ public:
 	void erase(int pos, int n);
 	void insert(int pos, const std::string& str);
 
-	bool empty() const { return binary.empty(); }
+	bool empty() const { return bytes.empty(); }
 	bool canProcess() const;
 
 	std::wstring text() const;
 	std::string utf8Protocol() const;
-	ByteArray binaryECI() const;
+	ByteArray bytesECI() const;
 	CharacterSet guessEncoding() const;
 	ContentType type() const;
 };

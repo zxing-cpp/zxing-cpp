@@ -38,7 +38,7 @@ namespace {
 		BitArray bits = Aztec::HighLevelEncoder::Encode(s);
 		int receivedBitCount = Size(Utility::ToString(bits));
 		EXPECT_EQ(receivedBitCount, expectedReceivedBits) << "highLevelEncode() failed for input string: " + s;
-		EXPECT_EQ(ByteArray(s), Aztec::Decode(bits).content().binary);
+		EXPECT_EQ(ByteArray(s), Aztec::Decode(bits).content().bytes);
 	}
 }
 

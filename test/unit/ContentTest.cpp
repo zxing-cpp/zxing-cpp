@@ -53,7 +53,7 @@ TEST(ContentTest, GuessEncoding)
 		c.append(ByteArray{'A', 0xE9, 'Z'});
 		EXPECT_EQ(c.guessEncoding(), CharacterSet::ISO8859_1);
 		EXPECT_EQ(c.text(), L"A\u00E9Z");
-		EXPECT_EQ(c.binaryECI(), c.binary);
+		EXPECT_EQ(c.bytesECI(), c.bytes);
 	}
 
 	{ // guess Shift_JIS
@@ -73,7 +73,7 @@ TEST(ContentTest, ECI)
 		c.append(ByteArray{'A', 0xE9, 'Z'});
 		EXPECT_TRUE(c.hasECI);
 		EXPECT_EQ(c.text(), L"A\u00E9ZA\u0449Z");
-		EXPECT_EQ(c.binaryECI().asString(), std::string_view("\\000003A\xE9Z\\000007A\xE9Z"));
+		EXPECT_EQ(c.bytesECI().asString(), std::string_view("\\000003A\xE9Z\\000007A\xE9Z"));
 	}
 
 	{ // switch ECI -> latin1 for unknown (instead of Shift_JIS)
@@ -82,13 +82,13 @@ TEST(ContentTest, ECI)
 		c.switchEncoding(ECI::ISO8859_5);
 		c.append(ByteArray{'A', 0xE9, 'Z'});
 		EXPECT_EQ(c.text(), L"A\u0083\u0065ZA\u0449Z");
-		EXPECT_EQ(c.binaryECI().asString(), std::string_view("\\000003A\x83\x65Z\\000007A\xE9Z"));
+		EXPECT_EQ(c.bytesECI().asString(), std::string_view("\\000003A\x83\x65Z\\000007A\xE9Z"));
 	}
 
 	{ // double '\'
 		Content c;
 		c.append("C:\\Test");
 		EXPECT_EQ(c.text(), L"C:\\Test");
-		EXPECT_EQ(c.binaryECI().asString(), std::string_view("C:\\\\Test"));
+		EXPECT_EQ(c.bytesECI().asString(), std::string_view("C:\\\\Test"));
 	}
 }
