@@ -88,7 +88,7 @@ namespace {
 
 		DecoderResult res = parse(matrix.copy(), aztec.compact, aztec.codeWords, aztec.layers);
 		EXPECT_EQ(res.isValid(), true);
-		EXPECT_EQ(res.content().binary, ByteArray(textBytes));
+		EXPECT_EQ(res.content().bytes, ByteArray(textBytes));
 
 		// Check error correction by introducing up to eccPercent/2 errors
 		int ecWords = aztec.codeWords * eccPercent / 100 / 2;
@@ -105,7 +105,7 @@ namespace {
 		}
 		res = parse(std::move(matrix), aztec.compact, aztec.codeWords, aztec.layers);
 		EXPECT_EQ(res.isValid(), true);
-		EXPECT_EQ(res.content().binary, ByteArray(textBytes));
+		EXPECT_EQ(res.content().bytes, ByteArray(textBytes));
 	}
 }
 

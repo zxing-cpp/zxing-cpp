@@ -509,7 +509,7 @@ TEST(PDF417DecoderTest, ECIMultipleNumeric)
 TEST(PDF417DecoderTest, ECIInvalid)
 {
 	EXPECT_EQ(decode({ 4, 927, 901, 0 }), L""); // non-charset ECI > 899 -> empty text result
-	EXPECT_EQ(parse({4, 927, 901, 0}).content().binary, ByteArray("AA")); // non-charset ECI > 899 -> ignored in binary result
+	EXPECT_EQ(parse({4, 927, 901, 0}).content().bytes, ByteArray("AA")); // non-charset ECI > 899 -> ignored in binary result
 	EXPECT_EQ(decode({ 3, 0, 927 }), L"AA"); // Malformed ECI at end silently ignored
 }
 

@@ -223,9 +223,9 @@ static ECI ParseECIValue(BitArray::Range& bits, const int flg)
 /**
 * See ISO/IEC 24778:2008 Section 8
 */
-static StructuredAppendInfo ParseStructuredAppend(ByteArray& binary)
+static StructuredAppendInfo ParseStructuredAppend(ByteArray& bytes)
 {
-	std::string text(binary.begin(), binary.end());
+	std::string text(bytes.begin(), bytes.end());
 	StructuredAppendInfo sai;
 	std::string::size_type i = 0;
 
@@ -247,7 +247,7 @@ static StructuredAppendInfo ParseStructuredAppend(ByteArray& binary)
 		sai.count = 0; // Choose to mark count as unknown
 
 	text.erase(0, i + 2); // Remove
-	binary = ByteArray(text);
+	bytes = ByteArray(text);
 
 	return sai;
 }
@@ -314,32 +314,32 @@ DecoderResult Decode(const BitArray& bits, const std::string& characterSet)
 		return DecodeStatus::FormatError;
 	}
 
-	if (res.binary.empty())
+	if (res.bytes.empty())
 		return DecodeStatus::FormatError;
 
 	// Check for Structured Append - need 4 5-bit words, beginning with ML UL, ending with index and count
 	bool haveStructuredAppend = Size(bits) > 20 && ToInt(bits, 0, 5) == 29 // latch to MIXED (from UPPER)
 								&& ToInt(bits, 5, 5) == 29;                // latch back to UPPER (from MIXED)
 
-	StructuredAppendInfo sai = haveStructuredAppend ? ParseStructuredAppend(res.binary) : StructuredAppendInfo();
+	StructuredAppendInfo sai = haveStructuredAppend ? ParseStructuredAppend(res.bytes) : StructuredAppendInfo();
 
 	// As converting character set ECIs ourselves and ignoring/skipping non-character ECIs, not using
 	// modifiers that indicate ECI protocol (ISO/IEC 24778:2008 Annex F Table F.1)
-	if (res.binary[0] == 29) {
+	if (res.bytes[0] == 29) {
 		res.symbology.modifier = '1'; // GS1
 		res.applicationIndicator = "GS1";
 		res.erase(0, 1); // Remove FNC1
-	} else if (res.binary.size() > 2 && std::isupper(res.binary[0]) && res.binary[1] == 29) {
+	} else if (res.bytes.size() > 2 && std::isupper(res.bytes[0]) && res.bytes[1] == 29) {
 		// FNC1 following single uppercase letter (the AIM Application Indicator)
 		res.symbology.modifier = '2'; // AIM
 		// TODO: remove the AI from the content?
-		res.applicationIndicator = res.binary.asString(0, 1);
+		res.applicationIndicator = res.bytes.asString(0, 1);
 		res.erase(1, 1); // Remove FNC1,
 						 // The AIM Application Indicator character "A"-"Z" is left in the stream (ISO/IEC 24778:2008 16.2)
-	} else if (res.binary.size() > 3 && std::isdigit(res.binary[0]) && std::isdigit(res.binary[1]) && res.binary[2] == 29) {
+	} else if (res.bytes.size() > 3 && std::isdigit(res.bytes[0]) && std::isdigit(res.bytes[1]) && res.bytes[2] == 29) {
 		// FNC1 following 2 digits (the AIM Application Indicator)
 		res.symbology.modifier = '2'; // AIM
-		res.applicationIndicator = res.binary.asString(0, 2);
+		res.applicationIndicator = res.bytes.asString(0, 2);
 		res.erase(2, 1); // Remove FNC1
 						 // The AIM Application Indicator characters "00"-"99" are left in the stream (ISO/IEC 24778:2008 16.2)
 	}
