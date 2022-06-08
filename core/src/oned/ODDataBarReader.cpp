@@ -198,8 +198,7 @@ Result DataBarReader::decodePattern(int rowNumber, PatternView& next,
 		for (const auto& rightPair : prevState->rightPairs)
 			if (ChecksumIsValid(leftPair, rightPair)) {
 				// Symbology identifier ISO/IEC 24724:2011 Section 9 and GS1 General Specifications 5.1.3 Figure 5.1.3-2
-				Result res{DecoderResult({}, TextDecoder::FromLatin1(ConstructText(leftPair, rightPair)))
-							   .setSymbologyIdentifier("]e0")
+				Result res{DecoderResult({}, Content(ByteArray(ConstructText(leftPair, rightPair)), {'e', '0'}))
 							   .setLineCount(EstimateLineCount(leftPair, rightPair)),
 						   EstimatePosition(leftPair, rightPair), BarcodeFormat::DataBar};
 

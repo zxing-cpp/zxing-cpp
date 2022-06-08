@@ -47,7 +47,9 @@ void Content::switchEncoding(ECI eci, bool isECI)
 
 Content::Content() : encodings({{ECI::Unknown, 0}}) {}
 
-Content::Content(ByteArray&& bytes) : bytes(std::move(bytes)), encodings{{ECI::ISO8859_1, 0}} {}
+Content::Content(ByteArray&& bytes, SymbologyIdentifier si)
+	: bytes(std::move(bytes)), encodings{{ECI::ISO8859_1, 0}}, symbology(si)
+{}
 
 void Content::switchEncoding(CharacterSet cs)
 {

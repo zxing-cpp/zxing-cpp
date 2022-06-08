@@ -360,7 +360,7 @@ DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet, const b
 	result.applicationIndicator = result.symbology.modifier == '2' ? "GS1" : "";
 	result.symbology.modifier += isDMRE * 6;
 
-	return DecoderResult(std::move(bytes), {}, std::move(result))
+	return DecoderResult(std::move(bytes), std::move(result))
 			.setStructuredAppend(sai)
 			.setReaderInit(readerInit);
 }

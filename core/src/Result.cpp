@@ -19,7 +19,7 @@ Result::Result(const std::string& text, int y, int xStart, int xStop, BarcodeFor
 			   SymbologyIdentifier si, ByteArray&& rawBytes, const bool readerInit)
 	:
 	  _format(format),
-	  _content({ByteArray(text)}),
+	  _content({ByteArray(text)}, si),
 	  _text(TextDecoder::FromLatin1(text)),
 	  _position(Line(y, xStart, xStop)),
 	  _rawBytes(std::move(rawBytes)),
@@ -33,12 +33,12 @@ Result::Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat 
 	: _status(decodeResult.errorCode()),
 	  _format(format),
 	  _content(std::move(decodeResult).content()),
-	  _text(std::move(decodeResult).text()),
+	  _text(_content.text()),
 	  _position(std::move(position)),
 	  _rawBytes(std::move(decodeResult).rawBytes()),
 	  _numBits(decodeResult.numBits()),
 	  _ecLevel(TextDecoder::FromLatin1(decodeResult.ecLevel())),
-	  _symbologyIdentifier(decodeResult.symbologyIdentifier()),
+	  _symbologyIdentifier(_content.symbology.toString(false)),
 	  _sai(decodeResult.structuredAppend()),
 	  _isMirrored(decodeResult.isMirrored()),
 	  _readerInit(decodeResult.readerInit()),

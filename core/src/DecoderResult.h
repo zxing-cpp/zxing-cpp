@@ -20,25 +20,16 @@ namespace ZXing {
 
 class CustomData;
 
-/**
-* <p>Encapsulates the result of decoding a matrix of bits. This typically
-* applies to 2D barcode formats. For now it contains the raw bytes obtained,
-* as well as a string interpretation of those bytes, if applicable.</p>
-*
-* @author Sean Owen
-*/
 class DecoderResult
 {
 	DecodeStatus _status = DecodeStatus::NoError;
 	ByteArray _rawBytes;
 	Content _content;
 	int _numBits = 0;
-	std::wstring _text;
 	std::string _ecLevel;
 	int _errorsCorrected = -1;
 	int _erasures = -1;
 	int _lineCount = 0;
-	std::string _symbologyIdentifier;
 	StructuredAppendInfo _structuredAppend;
 	bool _isMirrored = false;
 	bool _readerInit = false;
@@ -49,17 +40,9 @@ class DecoderResult
 
 public:
 	DecoderResult(DecodeStatus status) : _status(status) {}
-	DecoderResult(ByteArray&& rawBytes, std::wstring&& text, Content&& binary = {})
-		: _rawBytes(std::move(rawBytes)), _content(std::move(binary)), _text(std::move(text))
+	DecoderResult(ByteArray&& rawBytes, Content&& bytes = {}) : _rawBytes(std::move(rawBytes)), _content(std::move(bytes))
 	{
 		_numBits = 8 * Size(_rawBytes);
-		if (_text.empty())
-			_text = _content.text();
-		// provide some best guess fallback for barcodes not, yet supporting the content info
-		if (_content.empty() && std::all_of(_text.begin(), _text.end(), [](auto c) { return c < 256; }))
-			std::for_each(_text.begin(), _text.end(), [this](wchar_t c) { _content += static_cast<uint8_t>(c); });
-		if (_content.symbology.code != 0)
-			_symbologyIdentifier = _content.symbology.toString();
 	}
 
 	DecoderResult() = default;
@@ -71,10 +54,12 @@ public:
 
 	const ByteArray& rawBytes() const & { return _rawBytes; }
 	ByteArray&& rawBytes() && { return std::move(_rawBytes); }
-	const std::wstring& text() const & { return _text; }
-	std::wstring&& text() && { return std::move(_text); }
 	const Content& content() const & { return _content; }
 	Content&& content() && { return std::move(_content); }
+
+	// to keep the unit tests happy for now:
+	std::wstring text() const { return _content.text(); }
+	std::string symbologyIdentifier() const { return _content.symbology.toString(false); }
 
 	// Simple macro to set up getter/setter methods that save lots of boilerplate.
 	// It sets up a standard 'const & () const', 2 setters for setting lvalues via
@@ -96,7 +81,6 @@ public:
 	ZX_PROPERTY(int, errorsCorrected, setErrorsCorrected)
 	ZX_PROPERTY(int, erasures, setErasures)
 	ZX_PROPERTY(int, lineCount, setLineCount)
-	ZX_PROPERTY(std::string, symbologyIdentifier, setSymbologyIdentifier)
 	ZX_PROPERTY(StructuredAppendInfo, structuredAppend, setStructuredAppend)
 	ZX_PROPERTY(bool, isMirrored, setIsMirrored)
 	ZX_PROPERTY(bool, readerInit, setReaderInit)

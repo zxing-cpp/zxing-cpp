@@ -49,7 +49,7 @@ public:
 	bool hasECI = false;
 
 	Content();
-	Content(ByteArray&& bytes);
+	Content(ByteArray&& bytes, SymbologyIdentifier si);
 
 	void switchEncoding(ECI eci) { switchEncoding(eci, true); }
 	void switchEncoding(CharacterSet cs);

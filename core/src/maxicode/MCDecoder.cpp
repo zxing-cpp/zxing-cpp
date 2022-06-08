@@ -292,7 +292,7 @@ DecoderResult Decode(ByteArray&& bytes, const int mode, const std::string& /*cha
 	case 5: GetMessage(bytes, 1, 77, result, sai); break;
 	}
 
-	return DecoderResult(std::move(bytes), {}, std::move(result))
+	return DecoderResult(std::move(bytes), std::move(result))
 		.setEcLevel(std::to_string(mode))
 		.setStructuredAppend(sai)
 		.setReaderInit(mode == 6);
