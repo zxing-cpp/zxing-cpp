@@ -114,6 +114,8 @@ public:
 
 	bool operator==(const Result& o) const;
 
+	friend Result MergeStructuredAppendResults(const std::vector<Result>& results);
+
 private:
 	DecodeStatus _status = DecodeStatus::NoError;
 	BarcodeFormat _format = BarcodeFormat::None;
@@ -131,5 +133,10 @@ private:
 };
 
 using Results = std::vector<Result>;
+
+/**
+ * @brief Merge a list of Results from one Structured Append set to a single result
+ */
+Result MergeStructuredAppendResults(const Results& results);
 
 } // ZXing
