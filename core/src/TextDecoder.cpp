@@ -426,6 +426,9 @@ TextDecoder::GuessEncoding(const uint8_t* bytes, size_t length, CharacterSet fal
 			else if (value == 0x80 || value == 0xA0 || value > 0xEF) {
 				canBeShiftJIS = false;
 			}
+			else if (value < 0x20 && value != 0xa && value != 0xd) {
+				canBeShiftJIS = false; // use non-printable ASCII as indication for binary content
+			}
 			else if (value > 0xA0 && value < 0xE0) {
 				sjisKatakanaChars++;
 				sjisCurDoubleBytesWordLength = 0;
