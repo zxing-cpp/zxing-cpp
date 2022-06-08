@@ -54,6 +54,13 @@ void Content::switchEncoding(CharacterSet cs)
 	switchEncoding(ToECI(cs), false);
 }
 
+void Content::append(const Content& other)
+{
+	for (auto& e : other.encodings)
+		encodings.push_back({e.eci, Size(bytes) + e.pos});
+	append(other.bytes);
+}
+
 void Content::erase(int pos, int n)
 {
 	bytes.erase(bytes.begin() + pos, bytes.begin() + pos + n);

@@ -10,6 +10,7 @@
 #include "TextDecoder.h"
 
 #include <cmath>
+#include <list>
 #include <utility>
 
 namespace ZXing {
@@ -67,6 +68,28 @@ bool Result::operator==(const Result& o) const
 	auto length = maxAbsComponent(position().topLeft() - position().bottomRight());
 
 	return std::min(dTop, dBot) < length / 2;
+}
+
+Result MergeStructuredAppendResults(const Results& results)
+{
+	if (results.empty())
+		return Result(DecodeStatus::NotFound);
+
+	std::list<Result> allResults(results.begin(), results.end());
+	allResults.sort([](const Result& r1, const Result& r2) { return r1.sequenceIndex() < r2.sequenceIndex(); });
+
+	if (allResults.back().sequenceSize() != Size(allResults) ||
+		!std::all_of(allResults.begin(), allResults.end(),
+					 [&](Result& it) { return it.sequenceId() == allResults.front().sequenceId(); }))
+		return Result(DecodeStatus::FormatError);
+
+	Result res = allResults.front();
+	for (auto i = std::next(allResults.begin()); i != allResults.end(); ++i)
+		res._content.append(i->_content);
+
+	res._text = res._content.text();
+
+	return res;
 }
 
 } // ZXing
