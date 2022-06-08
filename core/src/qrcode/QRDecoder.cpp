@@ -338,7 +338,7 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 		return DecodeStatus::FormatError;
 	}
 
-	return DecoderResult(std::move(bytes), {}, std::move(result))
+	return DecoderResult(std::move(bytes), std::move(result))
 		.setEcLevel(ToString(ecLevel))
 		.setStructuredAppend(structuredAppend);
 }

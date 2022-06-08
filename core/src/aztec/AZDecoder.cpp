@@ -347,7 +347,7 @@ DecoderResult Decode(const BitArray& bits, const std::string& characterSet)
 	if (sai.index != -1)
 		res.symbology.modifier += 6; // TODO: this is wrong as long as we remove the sai info from the content in ParseStructuredAppend
 
-	return DecoderResult(bits.toBytes(), {}, std::move(res)).setNumBits(Size(bits)).setStructuredAppend(sai);
+	return DecoderResult(bits.toBytes(), std::move(res)).setNumBits(Size(bits)).setStructuredAppend(sai);
 }
 
 DecoderResult Decode(const DetectorResult& detectorResult, const std::string& characterSet)

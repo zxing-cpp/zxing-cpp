@@ -791,7 +791,7 @@ DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel, c
 		sai.id    = resultMetadata->fileId();
 	}
 
-	return DecoderResult(ByteArray(), {}, std::move(result))
+	return DecoderResult({}, std::move(result))
 		.setEcLevel(std::to_string(ecLevel))
 		.setStructuredAppend(sai)
 		.setReaderInit(readerInit)
