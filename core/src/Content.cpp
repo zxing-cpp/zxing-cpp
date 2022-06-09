@@ -22,6 +22,12 @@ std::string ToString(ContentType type)
 template <typename FUNC>
 void Content::ForEachECIBlock(FUNC func) const
 {
+	ECI defaultECI = hasECI ? ECI::ISO8859_1 : ECI::Unknown;
+	if (encodings.empty())
+		func(defaultECI, 0, Size(bytes));
+	else if (encodings.front().pos != 0)
+		func(defaultECI, 0, encodings.front().pos);
+
 	for (int i = 0; i < Size(encodings); ++i) {
 		auto [eci, start] = encodings[i];
 		int end = i + 1 == Size(encodings) ? Size(bytes) : encodings[i + 1].pos;
@@ -33,23 +39,18 @@ void Content::ForEachECIBlock(FUNC func) const
 
 void Content::switchEncoding(ECI eci, bool isECI)
 {
-	// replace all non-ECI entries on first ECI entry with default ECI
+	// remove all non-ECI entries on first ECI entry
 	if (isECI && !hasECI)
-		encodings = {{ECI::ISO8859_1, 0}};
-	if (isECI || !hasECI) {
-		if (encodings.back().pos == Size(bytes))
-			encodings.back().eci = eci; // no point in recording 0 length segments
-		else
-			encodings.push_back({eci, Size(bytes)});
-	}
+		encodings.clear();
+	if (isECI || !hasECI)
+		encodings.push_back({eci, Size(bytes)});
+
 	hasECI |= isECI;
 }
 
-Content::Content() : encodings({{ECI::Unknown, 0}}) {}
+Content::Content() {}
 
-Content::Content(ByteArray&& bytes, SymbologyIdentifier si)
-	: bytes(std::move(bytes)), encodings{{ECI::ISO8859_1, 0}}, symbology(si)
-{}
+Content::Content(ByteArray&& bytes, SymbologyIdentifier si) : bytes(std::move(bytes)), symbology(si) {}
 
 void Content::switchEncoding(CharacterSet cs)
 {
@@ -58,9 +59,14 @@ void Content::switchEncoding(CharacterSet cs)
 
 void Content::append(const Content& other)
 {
-	for (auto& e : other.encodings)
-		encodings.push_back({e.eci, Size(bytes) + e.pos});
+	if (!hasECI && other.hasECI)
+		encodings.clear();
+	if (other.hasECI || !hasECI)
+		for (auto& e : other.encodings)
+			encodings.push_back({e.eci, Size(bytes) + e.pos});
 	append(other.bytes);
+
+	hasECI |= other.hasECI;
 }
 
 void Content::erase(int pos, int n)
