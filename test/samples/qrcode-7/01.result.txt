@@ -1,6 +1,6 @@
 symbologyIdentifier=]Q1
 # ecLevel not set when "runStructuredAppendTest"
 sequenceSize=4
-# sequenceIndex set to first when "runStructuredAppendTest"
-sequenceIndex=0
+# sequenceIndex set to -1 in MergeStructuredAppendResults
+sequenceIndex=-1
 sequenceId=95

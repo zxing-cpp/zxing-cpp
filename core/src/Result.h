@@ -99,7 +99,7 @@ public:
 	const std::string& sequenceId() const { return _sai.id; }
 
 	bool isLastInSequence() const { return sequenceSize() == sequenceIndex() + 1; }
-	bool isPartOfSequence() const { return sequenceSize() > -1; }
+	bool isPartOfSequence() const { return sequenceSize() > -1 && sequenceIndex() > -1; }
 
 	/**
 	 * @brief readerInit Set if Reader Initialisation/Programming symbol.
