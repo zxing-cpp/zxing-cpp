@@ -88,6 +88,8 @@ Result MergeStructuredAppendResults(const Results& results)
 		res._content.append(i->_content);
 
 	res._text = res._content.text();
+	res._position = {};
+	res._sai.index = -1;
 
 	return res;
 }
