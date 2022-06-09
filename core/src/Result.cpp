@@ -11,6 +11,7 @@
 
 #include <cmath>
 #include <list>
+#include <map>
 #include <utility>
 
 namespace ZXing {
@@ -70,7 +71,7 @@ bool Result::operator==(const Result& o) const
 	return std::min(dTop, dBot) < length / 2;
 }
 
-Result MergeStructuredAppendResults(const Results& results)
+Result MergeStructuredAppendSequence(const Results& results)
 {
 	if (results.empty())
 		return Result(DecodeStatus::NotFound);
@@ -92,6 +93,24 @@ Result MergeStructuredAppendResults(const Results& results)
 	res._sai.index = -1;
 
 	return res;
+}
+
+Results MergeStructuredAppendSequences(const Results& results)
+{
+	std::map<std::string, Results> sas;
+	for (auto& res : results) {
+		if (res.isPartOfSequence())
+			sas[res.sequenceId()].push_back(res);
+	}
+
+	Results saiResults;
+	for (auto& [id, seq] : sas) {
+		auto res = MergeStructuredAppendSequence(seq);
+		if (res.isValid())
+			saiResults.push_back(std::move(res));
+	}
+
+	return saiResults;
 }
 
 } // ZXing

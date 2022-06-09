@@ -114,7 +114,7 @@ public:
 
 	bool operator==(const Result& o) const;
 
-	friend Result MergeStructuredAppendResults(const std::vector<Result>& results);
+	friend Result MergeStructuredAppendSequence(const std::vector<Result>& results);
 
 private:
 	DecodeStatus _status = DecodeStatus::NoError;
@@ -135,8 +135,13 @@ private:
 using Results = std::vector<Result>;
 
 /**
- * @brief Merge a list of Results from one Structured Append set to a single result
+ * @brief Merge a list of Results from one Structured Append sequence to a single result
  */
-Result MergeStructuredAppendResults(const Results& results);
+Result MergeStructuredAppendSequence(const Results& results);
+
+/**
+ * @brief Automatically merge all structured append sequences found in the given results
+ */
+Results MergeStructuredAppendSequences(const Results& results);
 
 } // ZXing
