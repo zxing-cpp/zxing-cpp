@@ -115,6 +115,7 @@ int main(int argc, char* argv[])
 {
 	DecodeHints hints;
 	std::vector<std::string> filePaths;
+	Results allResults;
 	std::string outPath;
 	bool oneLine = false;
 	bool angleEscape = false;
@@ -151,6 +152,13 @@ int main(int argc, char* argv[])
 		// if we did not find anything, insert a dummy to produce some output for each file
 		if (results.empty())
 			results.emplace_back(DecodeStatus::NotFound);
+
+		allResults.insert(allResults.end(), results.begin(), results.end());
+		if (filePath == filePaths.back()) {
+			auto merged = MergeStructuredAppendSequences(allResults);
+			// report all merged sequences as part of the last file to make the logic not overly complicated here
+			results.insert(results.end(), merged.begin(), merged.end());
+		}
 
 		for (auto&& result : results) {
 
@@ -219,6 +227,9 @@ int main(int argc, char* argv[])
 			if (result.isPartOfSequence())
 				std::cout << "Structured Append: symbol " << result.sequenceIndex() + 1 << " of "
 						  << result.sequenceSize() << " (parity/id: '" << result.sequenceId() << "')\n";
+			else if (result.sequenceSize() > 0)
+				std::cout << "Structured Append: merged result from " << result.sequenceSize() << " symbols (parity/id: '"
+						  << result.sequenceId() << "')\n";
 
 			if (result.readerInit())
 				std::cout << "Reader Initialisation/Programming\n";

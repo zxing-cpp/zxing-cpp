@@ -252,7 +252,7 @@ static Result readMultiple(const std::vector<fs::path>& imgPaths, std::string_vi
 		allResults.insert(allResults.end(), results.begin(), results.end());
 	}
 
-	return MergeStructuredAppendResults(allResults);
+	return MergeStructuredAppendSequence(allResults);
 }
 
 static void doRunStructuredAppendTest(const fs::path& directory, std::string_view format, int totalTests,
