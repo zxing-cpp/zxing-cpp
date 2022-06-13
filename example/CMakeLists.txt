@@ -30,14 +30,14 @@ if (BUILD_READERS)
     set(CMAKE_AUTOMOC ON)
     set(CMAKE_AUTORCC ON)
 
-    if (TARGET Qt5::Gui)
+    if (TARGET Qt::Gui)
         add_executable (ZXingQtReader ZXingQtReader.cpp ZXingQtReader.h)
-        target_link_libraries(ZXingQtReader ZXing::ZXing Qt5::Gui)
+        target_link_libraries(ZXingQtReader ZXing::ZXing Qt::Gui)
     endif()
 
-    if (TARGET Qt5::Multimedia)
+    if (TARGET Qt::Multimedia AND TARGET Qt::Quick)
         add_executable(ZXingQtCamReader ZXingQtCamReader.cpp ZXingQtCamReader.qrc ZXingQtReader.h)
-        target_link_libraries(ZXingQtCamReader ZXing::ZXing Qt5::Gui Qt5::Multimedia Qt5::Quick)
+        target_link_libraries(ZXingQtCamReader ZXing::ZXing Qt::Gui Qt::Multimedia Qt::Quick)
     endif()
 
     find_package(OpenCV)

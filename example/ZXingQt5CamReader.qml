@@ -1,18 +1,7 @@
 /*
  * Copyright 2020 Axel Waggershauser
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
  */
+// SPDX-License-Identifier: Apache-2.0
 
 import QtQuick 2.12
 import QtQuick.Window 2.12
@@ -36,12 +25,13 @@ Window {
         interval: 2000
     }
 
-    VideoFilter {
-        id: zxingFilter
+    BarcodeReader {
+        id: barcodeReader
 
         formats: (oneDSwitch.checked ? (ZXing.OneDCodes) : ZXing.None) | (twoDSwitch.checked ? (ZXing.TwoDCodes) : ZXing.None)
         tryRotate: tryRotateSwitch.checked
         tryHarder: tryHarderSwitch.checked
+        tryDownscale: tryDownscaleSwitch.checked
 
         // callback with parameter 'result', called for every successfully processed frame
         // onFoundBarcode: {}
@@ -100,7 +90,7 @@ Window {
             id: videoOutput
             Layout.fillHeight: true
             Layout.fillWidth: true
-            filters: [zxingFilter]
+            filters: [barcodeReader]
             source: camera
             autoOrientation: true
 
@@ -144,9 +134,11 @@ Window {
 
             ColumnLayout {
                 anchors.right: parent.right
+                anchors.bottom: parent.bottom
 
                 Switch {id: tryRotateSwitch; text: qsTr("Try Rotate"); checked: true }
                 Switch {id: tryHarderSwitch; text: qsTr("Try Harder"); checked: true }
+                Switch {id: tryDownscaleSwitch; text: qsTr("Try Downscale"); checked: true }
                 Switch {id: oneDSwitch; text: qsTr("1D Codes"); checked: true }
                 Switch {id: twoDSwitch; text: qsTr("2D Codes"); checked: true }
             }

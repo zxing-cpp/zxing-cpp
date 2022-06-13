@@ -12,7 +12,12 @@
 #include <QMetaType>
 
 #ifdef QT_MULTIMEDIA_LIB
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #include <QAbstractVideoFilter>
+#else
+#include <QVideoFrame>
+#include <QVideoSink>
+#endif
 #include <QElapsedTimer>
 #endif
 
@@ -154,7 +159,7 @@ inline Result ReadBarcode(const QImage& img, const DecodeHints& hints = {})
 
 	auto exec = [&](const QImage& img) {
 		return Result(ZXing::ReadBarcode(
-			{img.bits(), img.width(), img.height(), ImgFmtFromQImg(img), img.bytesPerLine()}, hints));
+			{img.bits(), img.width(), img.height(), ImgFmtFromQImg(img), static_cast<int>(img.bytesPerLine())}, hints));
 	};
 
 	return ImgFmtFromQImg(img) == ImageFormat::None ? exec(img.convertToFormat(QImage::Format_Grayscale8)) : exec(img);
@@ -166,7 +171,11 @@ inline Result ReadBarcode(const QVideoFrame& frame, const DecodeHints& hints = {
 	using namespace ZXing;
 
 	auto img = frame; // shallow copy just get access to non-const map() function
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	if (!frame.isValid() || !img.map(QAbstractVideoBuffer::ReadOnly)){
+#else
+	if (!frame.isValid() || !img.map(QVideoFrame::ReadOnly)){
+#endif
 		qWarning() << "invalid QVideoFrame: could not map memory";
 		return {};
 	}
@@ -176,10 +185,18 @@ inline Result ReadBarcode(const QVideoFrame& frame, const DecodeHints& hints = {
 	int pixStride = 0;
 	int pixOffset = 0;
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#define FORMAT(F5, F6) QVideoFrame::Format_##F5
+#define FIRST_PLANE
+#else
+#define FORMAT(F5, F6) QVideoFrameFormat::Format_##F6
+#define FIRST_PLANE 0
+#endif
+
 	switch (img.pixelFormat()) {
-	case QVideoFrame::Format_ARGB32:
-	case QVideoFrame::Format_ARGB32_Premultiplied:
-	case QVideoFrame::Format_RGB32:
+	case FORMAT(ARGB32, ARGB8888):
+	case FORMAT(ARGB32_Premultiplied, ARGB8888_Premultiplied):
+	case FORMAT(RGB32, RGBX8888):
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
 		fmt = ImageFormat::BGRX;
 #else
@@ -187,11 +204,9 @@ inline Result ReadBarcode(const QVideoFrame& frame, const DecodeHints& hints = {
 #endif
 		break;
 
-	case QVideoFrame::Format_RGB24: fmt = ImageFormat::RGB; break;
-
-	case QVideoFrame::Format_BGRA32:
-	case QVideoFrame::Format_BGRA32_Premultiplied:
-	case QVideoFrame::Format_BGR32:
+	case FORMAT(BGRA32, BGRA8888):
+	case FORMAT(BGRA32_Premultiplied, BGRA8888_Premultiplied):
+	case FORMAT(BGR32, BGRX8888):
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
 		fmt = ImageFormat::RGBX;
 #else
@@ -199,10 +214,17 @@ inline Result ReadBarcode(const QVideoFrame& frame, const DecodeHints& hints = {
 #endif
 		break;
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+	case QVideoFrame::Format_RGB24: fmt = ImageFormat::RGB; break;
 	case QVideoFrame::Format_BGR24: fmt = ImageFormat::BGR; break;
+	case QVideoFrame::Format_YUV444: fmt = ImageFormat::Lum, pixStride = 3; break;
+#else
+	case QVideoFrameFormat::Format_P010:
+	case QVideoFrameFormat::Format_P016: fmt = ImageFormat::Lum, pixStride = 1; break;
+#endif
 
-	case QVideoFrame::Format_AYUV444:
-	case QVideoFrame::Format_AYUV444_Premultiplied:
+	case FORMAT(AYUV444, AYUV):
+	case FORMAT(AYUV444_Premultiplied, AYUV_Premultiplied):
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
 		fmt = ImageFormat::Lum, pixStride = 4, pixOffset = 3;
 #else
@@ -210,23 +232,22 @@ inline Result ReadBarcode(const QVideoFrame& frame, const DecodeHints& hints = {
 #endif
 		break;
 
-	case QVideoFrame::Format_YUV444: fmt = ImageFormat::Lum, pixStride = 3; break;
-	case QVideoFrame::Format_YUV420P:
-	case QVideoFrame::Format_NV12:
-	case QVideoFrame::Format_NV21:
-	case QVideoFrame::Format_IMC1:
-	case QVideoFrame::Format_IMC2:
-	case QVideoFrame::Format_IMC3:
-	case QVideoFrame::Format_IMC4:
-	case QVideoFrame::Format_YV12: fmt = ImageFormat::Lum; break;
-	case QVideoFrame::Format_UYVY: fmt = ImageFormat::Lum, pixStride = 2, pixOffset = 1; break;
-	case QVideoFrame::Format_YUYV: fmt = ImageFormat::Lum, pixStride = 2; break;
+	case FORMAT(YUV420P, YUV420P):
+	case FORMAT(NV12, NV12):
+	case FORMAT(NV21, NV21):
+	case FORMAT(IMC1, IMC1):
+	case FORMAT(IMC2, IMC2):
+	case FORMAT(IMC3, IMC3):
+	case FORMAT(IMC4, IMC4):
+	case FORMAT(YV12, YV12): fmt = ImageFormat::Lum; break;
+	case FORMAT(UYVY, UYVY): fmt = ImageFormat::Lum, pixStride = 2, pixOffset = 1; break;
+	case FORMAT(YUYV, YUYV): fmt = ImageFormat::Lum, pixStride = 2; break;
 
-	case QVideoFrame::Format_Y8: fmt = ImageFormat::Lum; break;
-	case QVideoFrame::Format_Y16: fmt = ImageFormat::Lum, pixStride = 2, pixOffset = 1; break;
+	case FORMAT(Y8, Y8): fmt = ImageFormat::Lum; break;
+	case FORMAT(Y16, Y16): fmt = ImageFormat::Lum, pixStride = 2, pixOffset = 1; break;
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 13, 0))
-	case QVideoFrame::Format_ABGR32:
+	case FORMAT(ABGR32, ABGR8888):
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
 		fmt = ImageFormat::RGBX;
 #else
@@ -235,19 +256,22 @@ inline Result ReadBarcode(const QVideoFrame& frame, const DecodeHints& hints = {
 		break;
 #endif
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
-	case QVideoFrame::Format_YUV422P: fmt = ImageFormat::Lum; break;
+	case FORMAT(YUV422P, YUV422P): fmt = ImageFormat::Lum; break;
 #endif
 	default: break;
 	}
 
 	Result res;
 	if (fmt != ImageFormat::None) {
-		res = Result(
-			ZXing::ReadBarcode({img.bits() + pixOffset, img.width(), img.height(), fmt, img.bytesPerLine(), pixStride},
-							   hints));
+		res = Result(ZXing::ReadBarcode(
+			{img.bits(FIRST_PLANE) + pixOffset, img.width(), img.height(), fmt, img.bytesPerLine(FIRST_PLANE), pixStride}, hints));
 	} else {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 		if (QVideoFrame::imageFormatFromPixelFormat(img.pixelFormat()) != QImage::Format_Invalid)
 			res = ReadBarcode(img.image(), hints);
+#else
+		res = ReadBarcode(img.toImage(), hints);
+#endif
 	}
 
 	img.unmap();
@@ -268,14 +292,21 @@ public: \
 	} \
 	Q_SIGNAL void name##Changed();
 
-class VideoFilter : public QAbstractVideoFilter, private DecodeHints
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+class BarcodeReader : public QAbstractVideoFilter, private DecodeHints
+#else
+class BarcodeReader : public QObject, private DecodeHints
+#endif
 {
 	Q_OBJECT
 
 public:
-	VideoFilter(QObject* parent = nullptr) : QAbstractVideoFilter(parent) {}
-
-	QVideoFilterRunnable* createFilterRunnable() override;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+	BarcodeReader(QObject* parent = nullptr) : QAbstractVideoFilter(parent) {}
+#else
+	BarcodeReader(QObject* parent = nullptr) : QObject(parent) {}
+#endif
 
 	// TODO: find out how to properly expose QFlags to QML
 	// simply using ZQ_PROPERTY(BarcodeFormats, formats, setFormats)
@@ -298,9 +329,10 @@ public:
 
 	ZQ_PROPERTY(bool, tryRotate, setTryRotate)
 	ZQ_PROPERTY(bool, tryHarder, setTryHarder)
+	ZQ_PROPERTY(bool, tryDownscale, setTryDownscale)
 
 public slots:
-	Result process(const QVideoFrame& image)
+	ZXingQt::Result process(const QVideoFrame& image)
 	{
 		QElapsedTimer t;
 		t.start();
@@ -316,18 +348,41 @@ public slots:
 	}
 
 signals:
-	void newResult(Result result);
-	void foundBarcode(Result result);
+	void newResult(ZXingQt::Result result);
+	void foundBarcode(ZXingQt::Result result);
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+public:
+	QVideoFilterRunnable *createFilterRunnable() override;
+#else
+private:
+	QVideoSink *_sink = nullptr;
+
+public:
+	void setVideoSink(QVideoSink* sink) {
+		if (_sink == sink)
+			return;
+
+		if (_sink)
+			disconnect(_sink, nullptr, this, nullptr);
+
+		_sink = sink;
+		connect(_sink, &QVideoSink::videoFrameChanged, this, &BarcodeReader::process);
+	}
+	Q_PROPERTY(QVideoSink* videoSink WRITE setVideoSink)
+#endif
+
 };
 
 #undef ZX_PROPERTY
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 class VideoFilterRunnable : public QVideoFilterRunnable
 {
-	VideoFilter* _filter = nullptr;
+	BarcodeReader* _filter = nullptr;
 
 public:
-	explicit VideoFilterRunnable(VideoFilter* filter) : _filter(filter) {}
+	explicit VideoFilterRunnable(BarcodeReader* filter) : _filter(filter) {}
 
 	QVideoFrame run(QVideoFrame* input, const QVideoSurfaceFormat& /*surfaceFormat*/, RunFlags /*flags*/) override
 	{
@@ -336,10 +391,11 @@ public:
 	}
 };
 
-inline QVideoFilterRunnable* VideoFilter::createFilterRunnable()
+inline QVideoFilterRunnable* BarcodeReader::createFilterRunnable()
 {
 	return new VideoFilterRunnable(this);
 }
+#endif
 
 #endif // QT_MULTIMEDIA_LIB
 
@@ -367,7 +423,7 @@ inline void registerQmlAndMetaTypes()
 
 	qmlRegisterUncreatableMetaObject(
 		ZXingQt::staticMetaObject, "ZXing", 1, 0, "ZXing", "Access to enums & flags only");
-	qmlRegisterType<ZXingQt::VideoFilter>("ZXing", 1, 0, "VideoFilter");
+	qmlRegisterType<ZXingQt::BarcodeReader>("ZXing", 1, 0, "BarcodeReader");
 }
 
 } // namespace ZXingQt
