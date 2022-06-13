@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
-        <file>ZXingQtCamReader.qml</file>
+        <file>ZXingQt5CamReader.qml</file>
+        <file>ZXingQt6CamReader.qml</file>
     </qresource>
 </RCC>
