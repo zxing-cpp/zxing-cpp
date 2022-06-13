@@ -461,7 +461,7 @@ add_library (ZXing
 
 target_include_directories (ZXing
     PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>"
-    INTERFACE "$<INSTALL_INTERFACE:include/ZXing>"
+    INTERFACE "$<INSTALL_INTERFACE:include>"
 )
 
 target_compile_options (ZXing
