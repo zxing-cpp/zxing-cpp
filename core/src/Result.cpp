@@ -21,11 +21,9 @@ Result::Result(const std::string& text, int y, int xStart, int xStop, BarcodeFor
 	:
 	  _format(format),
 	  _content({ByteArray(text)}, si),
-	  _text(TextDecoder::FromLatin1(text)),
 	  _position(Line(y, xStart, xStop)),
 	  _rawBytes(std::move(rawBytes)),
 	  _numBits(Size(_rawBytes) * 8),
-	  _symbologyIdentifier(si.toString()),
 	  _readerInit(readerInit),
 	  _lineCount(0)
 {}
@@ -34,12 +32,10 @@ Result::Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat 
 	: _status(decodeResult.errorCode()),
 	  _format(format),
 	  _content(std::move(decodeResult).content()),
-	  _text(_content.text()),
 	  _position(std::move(position)),
 	  _rawBytes(std::move(decodeResult).rawBytes()),
 	  _numBits(decodeResult.numBits()),
 	  _ecLevel(TextDecoder::FromLatin1(decodeResult.ecLevel())),
-	  _symbologyIdentifier(_content.symbology.toString(false)),
 	  _sai(decodeResult.structuredAppend()),
 	  _isMirrored(decodeResult.isMirrored()),
 	  _readerInit(decodeResult.readerInit()),
@@ -48,10 +44,60 @@ Result::Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat 
 	// TODO: add type opaque and code specific 'extra data'? (see DecoderResult::extra())
 }
 
+std::wstring Result::text() const
+{
+	return _content.text();
+}
+
+const ByteArray& Result::bytes() const
+{
+	return _content.bytes;
+}
+
+ByteArray Result::bytesECI() const
+{
+	return _content.bytesECI();
+}
+
+std::string Result::utf8Protocol() const
+{
+	return _content.utf8Protocol();
+}
+
+ContentType Result::contentType() const
+{
+	return _content.type();
+}
+
+bool Result::hasECI() const
+{
+	return _content.hasECI;
+}
+
 int Result::orientation() const
 {
 	constexpr auto std_numbers_pi_v = 3.14159265358979323846; // TODO: c++20 <numbers>
 	return std::lround(_position.orientation() * 180 / std_numbers_pi_v);
+}
+
+std::string Result::symbologyIdentifier() const
+{
+	return _content.symbology.toString();
+}
+
+int Result::sequenceSize() const
+{
+	return _sai.count;
+}
+
+int Result::sequenceIndex() const
+{
+	return _sai.index;
+}
+
+std::string Result::sequenceId() const
+{
+	return _sai.id;
 }
 
 bool Result::operator==(const Result& o) const
@@ -88,7 +134,6 @@ Result MergeStructuredAppendSequence(const Results& results)
 	for (auto i = std::next(allResults.begin()); i != allResults.end(); ++i)
 		res._content.append(i->_content);
 
-	res._text = res._content.text();
 	res._position = {};
 	res._sai.index = -1;
 

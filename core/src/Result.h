@@ -43,14 +43,14 @@ public:
 
 	BarcodeFormat format() const { return _format; }
 
-	const std::wstring& text() const { return _text; }
+	std::wstring text() const;
 
 	// WARNING: this is an experimental API and may change/disappear
-	const ByteArray& bytes() const { return _content.bytes; }
-	const ByteArray bytesECI() const { return _content.bytesECI(); }
-	const std::string utf8Protocol() const { return _content.utf8Protocol(); }
-	ContentType contentType() const { return _content.type(); }
-	bool hasECI() const { return _content.hasECI; }
+	const ByteArray& bytes() const;
+	ByteArray bytesECI() const;
+	std::string utf8Protocol() const;
+	ContentType contentType() const;
+	bool hasECI() const;
 	// END WARNING
 
 	const Position& position() const { return _position; }
@@ -72,7 +72,7 @@ public:
 	/**
 	 * @brief symbologyIdentifier Symbology identifier "]cm" where "c" is symbology code character, "m" the modifier.
 	 */
-	const std::string& symbologyIdentifier() const { return _symbologyIdentifier; }
+	std::string symbologyIdentifier() const;
 
 	/**
 	 * @brief sequenceSize number of symbols in a structured append sequence.
@@ -81,12 +81,12 @@ public:
 	 * If it is a structured append symbol but the total number of symbols is unknown, the
 	 * returned value is 0 (see PDF417 if optional "Segment Count" not given).
 	 */
-	int sequenceSize() const { return _sai.count; }
+	int sequenceSize() const;
 
 	/**
 	 * @brief sequenceIndex the 0-based index of this symbol in a structured append sequence.
 	 */
-	int sequenceIndex() const { return _sai.index; }
+	int sequenceIndex() const;
 
 	/**
 	 * @brief sequenceId id to check if a set of symbols belongs to the same structured append sequence.
@@ -95,7 +95,7 @@ public:
 	 * For QR Code, this is the parity integer converted to a string.
 	 * For PDF417 and DataMatrix, this is the "fileId".
 	 */
-	const std::string& sequenceId() const { return _sai.id; }
+	std::string sequenceId() const;
 
 	bool isLastInSequence() const { return sequenceSize() == sequenceIndex() + 1; }
 	bool isPartOfSequence() const { return sequenceSize() > -1 && sequenceIndex() > -1; }
@@ -109,6 +109,8 @@ public:
 	 * @brief How many lines have been detected with this code (applies only to 1D symbologies)
 	 */
 	int lineCount() const { return _lineCount; }
+
+	// only for internal use
 	void incrementLineCount() { ++_lineCount; }
 
 	bool operator==(const Result& o) const;
@@ -119,12 +121,10 @@ private:
 	DecodeStatus _status = DecodeStatus::NoError;
 	BarcodeFormat _format = BarcodeFormat::None;
 	Content _content;
-	std::wstring _text;
 	Position _position;
 	ByteArray _rawBytes;
 	int _numBits = 0;
 	std::wstring _ecLevel;
-	std::string _symbologyIdentifier;
 	StructuredAppendInfo _sai;
 	bool _isMirrored = false;
 	bool _readerInit = false;
