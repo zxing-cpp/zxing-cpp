@@ -49,7 +49,6 @@ public:
 	const ByteArray& bytes() const { return _content.bytes; }
 	const ByteArray bytesECI() const { return _content.bytesECI(); }
 	const std::string utf8Protocol() const { return _content.utf8Protocol(); }
-	const std::string& applicationIndicator() const { return _content.applicationIndicator; }
 	ContentType contentType() const { return _content.type(); }
 	bool hasECI() const { return _content.hasECI; }
 	// END WARNING
