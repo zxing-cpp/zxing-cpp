@@ -20,7 +20,13 @@ namespace ZXing {
  */
 Result ReadBarcode(const ImageView& buffer, const DecodeHints& hints = {});
 
-// WARNING: this API is experimental and may change/disappear
+/**
+ * Read barcodes from an ImageView
+ *
+ * @param buffer  view of the image data including layout and format
+ * @param hints  optional DecodeHints to parameterize / speed up decoding
+ * @return #Results list of results found, may be empty
+ */
 Results ReadBarcodes(const ImageView& buffer, const DecodeHints& hints = {});
 
 } // ZXing

@@ -109,7 +109,7 @@ public:
 	/// The maximum number of symbols (barcodes) to detect / look for in the image with ReadBarcodes
 	ZX_PROPERTY(uint8_t, maxNumberOfSymbols, setMaxNumberOfSymbols)
 
-	/// Specifies what character encoding to use when decoding, where applicable.
+	/// Specifies fallback character set to use instead of auto-detecting it (when applicable)
 	ZX_PROPERTY(std::string, characterSet, setCharacterSet)
 
 	/// Allowed lengths of encoded data -- reject anything else..
@@ -124,11 +124,7 @@ public:
 	/// Assume ITF codes employ a GS1 check digit and validate it.
 	ZX_PROPERTY(bool, validateITFCheckSum, setValidateITFCheckSum)
 
-	/**
-	* If true, return the start and end digits in a Codabar barcode instead of stripping them. They
-	* are alpha, whereas the rest are numeric. By default, they are stripped, but this causes them
-	* to not be.
-	*/
+	/// If true, return the start and end chars in a Codabar barcode instead of stripping them.
 	ZX_PROPERTY(bool, returnCodabarStartEnd, setReturnCodabarStartEnd)
 
 	/// Specify whether to ignore, read or require EAN-2/5 add-on symbols while scanning EAN/UPC codes

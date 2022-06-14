@@ -140,7 +140,7 @@ using Results = std::vector<Result>;
 Result MergeStructuredAppendSequence(const Results& results);
 
 /**
- * @brief Automatically merge all structured append sequences found in the given results
+ * @brief Automatically merge all Structured Append sequences found in the given results
  */
 Results MergeStructuredAppendSequences(const Results& results);
 
