@@ -209,7 +209,6 @@ int main(int argc, char* argv[])
 			};
 
 			printOptional("EC Level:   ", ToUtf8(result.ecLevel()));
-			printOptional("App-Ind.:   ", result.applicationIndicator());
 
 			if (result.lineCount())
 				std::cout << "Lines:      " << result.lineCount() << "\n";
