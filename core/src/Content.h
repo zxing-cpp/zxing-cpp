@@ -71,7 +71,7 @@ public:
 	bool canProcess() const;
 
 	std::wstring text() const;
-	std::string utf8Protocol() const;
+	std::string utf8ECI() const;
 	ByteArray bytesECI() const;
 	CharacterSet guessEncoding() const;
 	ContentType type() const;

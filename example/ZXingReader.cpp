@@ -192,7 +192,7 @@ int main(int argc, char* argv[])
 			}
 			std::cout << "Text:       \"" << ToUtf8(result.text(), angleEscape) << "\"\n"
 					  << "Bytes:      \"" << ToHex(result.bytes()) << "\"\n"
-					  << "TextECI:    \"" << result.utf8Protocol() << "\"\n"
+					  << "TextECI:    \"" << result.utf8ECI() << "\"\n"
 					  << "BytesECI:   \"" << ToHex(result.bytesECI()) << "\"\n"
 					  << "Format:     " << ToString(result.format()) << "\n"
 					  << "Identifier: " << result.symbologyIdentifier() << "\n"
