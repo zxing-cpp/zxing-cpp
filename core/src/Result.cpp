@@ -59,9 +59,9 @@ ByteArray Result::bytesECI() const
 	return _content.bytesECI();
 }
 
-std::string Result::utf8Protocol() const
+std::string Result::utf8ECI() const
 {
-	return _content.utf8Protocol();
+	return _content.utf8ECI();
 }
 
 ContentType Result::contentType() const

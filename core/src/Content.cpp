@@ -108,7 +108,7 @@ std::wstring Content::text() const
 	return wstr;
 }
 
-std::string Content::utf8Protocol() const
+std::string Content::utf8ECI() const
 {
 	if (empty() || !canProcess())
 		return {};
