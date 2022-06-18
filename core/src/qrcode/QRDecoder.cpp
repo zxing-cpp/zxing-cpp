@@ -343,19 +343,19 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 		.setStructuredAppend(structuredAppend);
 }
 
-static DecoderResult DoDecode(const BitMatrix& bits, const Version& version, const std::string& hintedCharset, bool mirrored)
+static DecoderResult DoDecode(const BitMatrix& bits, const Version& version, const std::string& hintedCharset)
 {
-	auto formatInfo = ReadFormatInformation(bits, mirrored, version.isMicroQRCode());
+	auto formatInfo = ReadFormatInformation(bits, version.isMicroQRCode());
 	if (!formatInfo.isValid())
 		return DecodeStatus::FormatError;
 
 	// Read codewords
-	ByteArray codewords = ReadCodewords(bits, version, formatInfo, mirrored);
+	ByteArray codewords = ReadCodewords(bits, version, formatInfo);
 	if (codewords.empty())
 		return DecodeStatus::FormatError;
 
 	// Separate into data blocks
-	std::vector<DataBlock> dataBlocks = DataBlock::GetDataBlocks(codewords, version, formatInfo.errorCorrectionLevel());
+	std::vector<DataBlock> dataBlocks = DataBlock::GetDataBlocks(codewords, version, formatInfo.ecLevel);
 	if (dataBlocks.empty())
 		return DecodeStatus::FormatError;
 
@@ -378,7 +378,7 @@ static DecoderResult DoDecode(const BitMatrix& bits, const Version& version, con
 	}
 
 	// Decode the contents of that stream of bytes
-	return DecodeBitStream(std::move(resultBytes), version, formatInfo.errorCorrectionLevel(), hintedCharset);
+	return DecodeBitStream(std::move(resultBytes), version, formatInfo.ecLevel, hintedCharset).setIsMirrored(formatInfo.isMirrored);
 }
 
 DecoderResult Decode(const BitMatrix& bits, const std::string& hintedCharset)
@@ -387,16 +387,7 @@ DecoderResult Decode(const BitMatrix& bits, const std::string& hintedCharset)
 	if (!version)
 		return DecodeStatus::FormatError;
 
-	auto res = DoDecode(bits, *version, hintedCharset, false);
-	if (res.isValid())
-		return res;
-
-	if (auto resMirrored = DoDecode(bits, *version, hintedCharset, true); resMirrored.isValid()) {
-		resMirrored.setIsMirrored(true);
-		return resMirrored;
-	}
-
-	return res;
+	return DoDecode(bits, *version, hintedCharset);
 }
 
 } // namespace ZXing::QRCode
