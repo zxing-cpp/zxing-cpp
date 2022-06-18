@@ -13,42 +13,28 @@
 namespace ZXing {
 namespace QRCode {
 
-/**
-* <p>Encapsulates a QR Code's format information, including the data mask used and
-* error correction level.</p>
-*
-* @author Sean Owen
-* @see DataMask
-* @see ErrorCorrectionLevel
-*/
 class FormatInformation
 {
 public:
+	uint8_t index = 255;
+	uint8_t hammingDistance = 255;
+	bool isMirrored = false;
+	uint8_t dataMask = 0;
+	uint8_t microVersion = 0;
+	ErrorCorrectionLevel ecLevel = ErrorCorrectionLevel::Invalid;
+
 	FormatInformation() = default;
 
 	static FormatInformation DecodeQR(uint32_t formatInfoBits1, uint32_t formatInfoBits2);
 	static FormatInformation DecodeMQR(uint32_t formatInfoBits);
 
-	ErrorCorrectionLevel errorCorrectionLevel() const { return _errorCorrectionLevel; }
-
-	uint8_t dataMask() const { return _dataMask; }
-	uint8_t microVersion() const { return _microVersion; }
-
-	bool isValid() const { return _errorCorrectionLevel != ErrorCorrectionLevel::Invalid; }
+	// Hamming distance of the 32 masked codes is 7, by construction, so <= 3 bits differing means we found a match
+	bool isValid() const { return hammingDistance <= 3; }
 
 	bool operator==(const FormatInformation& other) const
 	{
-		return _dataMask == other._dataMask && _errorCorrectionLevel == other._errorCorrectionLevel;
+		return dataMask == other.dataMask && ecLevel == other.ecLevel;
 	}
-
-private:
-	ErrorCorrectionLevel _errorCorrectionLevel = ErrorCorrectionLevel::Invalid;
-	uint8_t _dataMask = 0;
-	uint8_t _microVersion = 0;
-
-	FormatInformation(const ErrorCorrectionLevel& errorCorrectionLevel, uint8_t dataMask, uint8_t microVersion = 0)
-		: _errorCorrectionLevel(errorCorrectionLevel), _dataMask(dataMask), _microVersion(microVersion)
-	{}
 };
 
 } // QRCode

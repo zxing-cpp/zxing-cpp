@@ -20,8 +20,8 @@ static void DoFormatInformationTest(const int formatInfo, const uint8_t expected
 {
 	FormatInformation parsedFormat = FormatInformation::DecodeMQR(formatInfo);
 	EXPECT_TRUE(parsedFormat.isValid());
-	EXPECT_EQ(expectedMask, parsedFormat.dataMask());
-	EXPECT_EQ(expectedECL, parsedFormat.errorCorrectionLevel());
+	EXPECT_EQ(expectedMask, parsedFormat.dataMask);
+	EXPECT_EQ(expectedECL, parsedFormat.ecLevel);
 }
 
 TEST(QRFormatInformationTest, Decode)
@@ -29,8 +29,8 @@ TEST(QRFormatInformationTest, Decode)
     // Normal case
     FormatInformation expected = FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO, MASKED_TEST_FORMAT_INFO);
     EXPECT_TRUE(expected.isValid());
-    EXPECT_EQ(0x07, expected.dataMask());
-	EXPECT_EQ(ErrorCorrectionLevel::Quality, expected.errorCorrectionLevel());
+    EXPECT_EQ(0x07, expected.dataMask);
+	EXPECT_EQ(ErrorCorrectionLevel::Quality, expected.ecLevel);
     // where the code forgot the mask!
 	EXPECT_EQ(expected, FormatInformation::DecodeQR(UNMASKED_TEST_FORMAT_INFO, MASKED_TEST_FORMAT_INFO));
 }

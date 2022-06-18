@@ -432,7 +432,7 @@ DetectorResult SampleMQR(const BitMatrix& image, const ConcentricPattern& fp)
 		if (!fi.isValid())
 			continue;
 
-		const int dim = Version::DimensionOfVersion(fi.microVersion(), true);
+		const int dim = Version::DimensionOfVersion(fi.microVersion, true);
 
 		// check that we are in fact not looking at a corner of a non-micro QRCode symbol
 		// we accept at most 1/3rd black pixels in the quite zone (in a QRCode symbol we expect about 1/2).

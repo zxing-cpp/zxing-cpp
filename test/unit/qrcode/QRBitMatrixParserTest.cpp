@@ -37,8 +37,8 @@ TEST(QRBitMatrixParserTest, MQRCodeM3L)
 
 	const auto version = ReadVersion(bitMatrix);
 	EXPECT_EQ(3, version->versionNumber());
-	const auto format = ReadFormatInformation(bitMatrix, false, true);
-	const auto codewords = ReadCodewords(bitMatrix, *version, format, false);
+	const auto format = ReadFormatInformation(bitMatrix, true);
+	const auto codewords = ReadCodewords(bitMatrix, *version, format);
 	EXPECT_EQ(17, codewords.size());
 	EXPECT_EQ(0x0, codewords[10]);
 	EXPECT_EQ(0xd1, codewords[11]);
@@ -65,8 +65,8 @@ TEST(QRBitMatrixParserTest, MQRCodeM3M)
 
 	const auto version = ReadVersion(bitMatrix);
 	EXPECT_EQ(3, version->versionNumber());
-	const auto format = ReadFormatInformation(bitMatrix, false, true);
-	const auto codewords = ReadCodewords(bitMatrix, *version, format, false);
+	const auto format = ReadFormatInformation(bitMatrix, true);
+	const auto codewords = ReadCodewords(bitMatrix, *version, format);
 	EXPECT_EQ(17, codewords.size());
 	EXPECT_EQ(0x0, codewords[8]);
 	EXPECT_EQ(0x89, codewords[9]);

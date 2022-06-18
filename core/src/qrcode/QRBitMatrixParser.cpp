@@ -17,7 +17,7 @@
 
 namespace ZXing::QRCode {
 
-static bool getBit(const BitMatrix& bitMatrix, int x, int y, bool mirrored)
+static bool getBit(const BitMatrix& bitMatrix, int x, int y, bool mirrored = false)
 {
 	return mirrored ? bitMatrix.get(y, x) : bitMatrix.get(x, y);
 }
@@ -60,7 +60,7 @@ const Version* ReadVersion(const BitMatrix& bitMatrix)
 	return nullptr;
 }
 
-FormatInformation ReadFormatInformation(const BitMatrix& bitMatrix, bool mirrored, bool isMicro)
+FormatInformation ReadFormatInformation(const BitMatrix& bitMatrix, bool isMicro)
 {
 	if (!hasValidDimension(bitMatrix, isMicro))
 		return {};
@@ -69,9 +69,9 @@ FormatInformation ReadFormatInformation(const BitMatrix& bitMatrix, bool mirrore
 		// Read top-left format info bits
 		int formatInfoBits = 0;
 		for (int x = 1; x < 9; x++)
-			AppendBit(formatInfoBits, getBit(bitMatrix, x, 8, mirrored));
+			AppendBit(formatInfoBits, getBit(bitMatrix, x, 8));
 		for (int y = 7; y >= 1; y--)
-			AppendBit(formatInfoBits, getBit(bitMatrix, 8, y, mirrored));
+			AppendBit(formatInfoBits, getBit(bitMatrix, 8, y));
 
 		return FormatInformation::DecodeMQR(formatInfoBits);
 	}
@@ -79,27 +79,27 @@ FormatInformation ReadFormatInformation(const BitMatrix& bitMatrix, bool mirrore
 	// Read top-left format info bits
 	int formatInfoBits1 = 0;
 	for (int x = 0; x < 6; x++)
-		AppendBit(formatInfoBits1, getBit(bitMatrix, x, 8, mirrored));
+		AppendBit(formatInfoBits1, getBit(bitMatrix, x, 8));
 	// .. and skip a bit in the timing pattern ...
-	AppendBit(formatInfoBits1, getBit(bitMatrix, 7, 8, mirrored));
-	AppendBit(formatInfoBits1, getBit(bitMatrix, 8, 8, mirrored));
-	AppendBit(formatInfoBits1, getBit(bitMatrix, 8, 7, mirrored));
+	AppendBit(formatInfoBits1, getBit(bitMatrix, 7, 8));
+	AppendBit(formatInfoBits1, getBit(bitMatrix, 8, 8));
+	AppendBit(formatInfoBits1, getBit(bitMatrix, 8, 7));
 	// .. and skip a bit in the timing pattern ...
 	for (int y = 5; y >= 0; y--)
-		AppendBit(formatInfoBits1, getBit(bitMatrix, 8, y, mirrored));
+		AppendBit(formatInfoBits1, getBit(bitMatrix, 8, y));
 
 	// Read the top-right/bottom-left pattern too
 	int dimension = bitMatrix.height();
 	int formatInfoBits2 = 0;
 	for (int y = dimension - 1; y >= dimension - 7; y--)
-		AppendBit(formatInfoBits2, getBit(bitMatrix, 8, y, mirrored));
+		AppendBit(formatInfoBits2, getBit(bitMatrix, 8, y));
 	for (int x = dimension - 8; x < dimension; x++)
-		AppendBit(formatInfoBits2, getBit(bitMatrix, x, 8, mirrored));
+		AppendBit(formatInfoBits2, getBit(bitMatrix, x, 8));
 
 	return FormatInformation::DecodeQR(formatInfoBits1, formatInfoBits2);
 }
 
-static ByteArray ReadQRCodewords(const BitMatrix& bitMatrix, const Version& version, int maskIndex, bool mirrored)
+static ByteArray ReadQRCodewords(const BitMatrix& bitMatrix, const Version& version, const FormatInformation& formatInfo)
 {
 	BitMatrix functionPattern = version.buildFunctionPattern();
 
@@ -122,7 +122,8 @@ static ByteArray ReadQRCodewords(const BitMatrix& bitMatrix, const Version& vers
 				// Ignore bits covered by the function pattern
 				if (!functionPattern.get(xx, y)) {
 					// Read a bit
-					AppendBit(currentByte, GetDataMaskBit(maskIndex, xx, y) != getBit(bitMatrix, xx, y, mirrored));
+					AppendBit(currentByte,
+							  GetDataMaskBit(formatInfo.dataMask, xx, y) != getBit(bitMatrix, xx, y, formatInfo.isMirrored));
 					// If we've made a whole byte, save it off
 					if (++bitsRead % 8 == 0)
 						result.push_back(std::exchange(currentByte, 0));
@@ -137,8 +138,7 @@ static ByteArray ReadQRCodewords(const BitMatrix& bitMatrix, const Version& vers
 	return result;
 }
 
-static ByteArray ReadMQRCodewords(const BitMatrix& bitMatrix, const QRCode::Version& version,
-								  const FormatInformation& formatInformation, bool mirrored)
+static ByteArray ReadMQRCodewords(const BitMatrix& bitMatrix, const QRCode::Version& version, const FormatInformation& formatInfo)
 {
 	BitMatrix functionPattern = version.buildFunctionPattern();
 
@@ -147,7 +147,7 @@ static ByteArray ReadMQRCodewords(const BitMatrix& bitMatrix, const QRCode::Vers
 	// See ISO 18004:2006 6.7.3.
 	bool hasD4mBlock = version.versionNumber() % 2 == 1;
 	int d4mBlockIndex =
-		version.versionNumber() == 1 ? 3 : (formatInformation.errorCorrectionLevel() == QRCode::ErrorCorrectionLevel::Low ? 11 : 9);
+		version.versionNumber() == 1 ? 3 : (formatInfo.ecLevel == QRCode::ErrorCorrectionLevel::Low ? 11 : 9);
 
 	ByteArray result;
 	result.reserve(version.totalCodewords());
@@ -166,7 +166,7 @@ static ByteArray ReadMQRCodewords(const BitMatrix& bitMatrix, const QRCode::Vers
 				if (!functionPattern.get(xx, y)) {
 					// Read a bit
 					AppendBit(currentByte,
-							  GetDataMaskBit(formatInformation.dataMask(), xx, y, true) != getBit(bitMatrix, xx, y, mirrored));
+							  GetDataMaskBit(formatInfo.dataMask, xx, y, true) != getBit(bitMatrix, xx, y, formatInfo.isMirrored));
 					++bitsRead;
 					// If we've made a whole byte, save it off; save early if 2x2 data block.
 					if (bitsRead == 8 || (bitsRead == 4 && hasD4mBlock && Size(result) == d4mBlockIndex - 1)) {
@@ -184,14 +184,13 @@ static ByteArray ReadMQRCodewords(const BitMatrix& bitMatrix, const QRCode::Vers
 	return result;
 }
 
-ByteArray ReadCodewords(const BitMatrix& bitMatrix, const Version& version, const FormatInformation& formatInformation,
-						bool mirrored)
+ByteArray ReadCodewords(const BitMatrix& bitMatrix, const Version& version, const FormatInformation& formatInfo)
 {
 	if (!hasValidDimension(bitMatrix, version.isMicroQRCode()))
 		return {};
 
-	return version.isMicroQRCode() ? ReadMQRCodewords(bitMatrix, version, formatInformation, mirrored)
-								   : ReadQRCodewords(bitMatrix, version, formatInformation.dataMask(), mirrored);
+	return version.isMicroQRCode() ? ReadMQRCodewords(bitMatrix, version, formatInfo)
+								   : ReadQRCodewords(bitMatrix, version, formatInfo);
 }
 
 } // namespace ZXing::QRCode
