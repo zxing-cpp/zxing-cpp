@@ -102,7 +102,7 @@ std::string Result::sequenceId() const
 
 bool Result::operator==(const Result& o) const
 {
-	if (format() != o.format() || text() != o.text())
+	if (format() != o.format() || bytes() != o.bytes())
 		return false;
 
 	if (BarcodeFormats(BarcodeFormat::TwoDCodes).testFlag(format()))
