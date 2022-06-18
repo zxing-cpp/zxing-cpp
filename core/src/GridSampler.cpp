@@ -22,7 +22,8 @@ DetectorResult SampleGrid(const BitMatrix& image, int width, int height, const P
 {
 #ifdef PRINT_DEBUG
 	LogMatrix log;
-	LogMatrixWriter lmw(log, image, 5, "grid.pnm");
+	static int i = 0;
+	LogMatrixWriter lmw(log, image, 5, "grid" + std::to_string(i++) + ".pnm");
 #endif
 	if (width <= 0 || height <= 0 || !mod2Pix.isValid())
 		return {};
