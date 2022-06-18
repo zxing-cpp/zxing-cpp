@@ -34,6 +34,7 @@ class PerspectiveTransform
 	static PerspectiveTransform UnitSquareTo(const QuadrilateralF& q);
 
 public:
+	PerspectiveTransform() = default;
 	PerspectiveTransform(const QuadrilateralF& src, const QuadrilateralF& dst);
 
 	/// Project from the destination space (grid of modules) into the image space (bit matrix)
