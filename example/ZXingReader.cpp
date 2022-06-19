@@ -191,9 +191,9 @@ int main(int argc, char* argv[])
 				firstFile = false;
 			}
 			std::cout << "Text:       \"" << ToUtf8(result.text(), angleEscape) << "\"\n"
-					  << "Bytes:      \"" << ToHex(result.bytes()) << "\"\n"
+					  << "Bytes:      " << ToHex(result.bytes()) << "\n"
 					  << "TextECI:    \"" << result.utf8ECI() << "\"\n"
-					  << "BytesECI:   \"" << ToHex(result.bytesECI()) << "\"\n"
+					  << "BytesECI:   " << ToHex(result.bytesECI()) << "\n"
 					  << "Format:     " << ToString(result.format()) << "\n"
 					  << "Identifier: " << result.symbologyIdentifier() << "\n"
 					  << "Content:    " << ToString(result.contentType()) << "\n"
