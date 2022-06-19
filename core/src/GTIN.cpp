@@ -205,9 +205,9 @@ std::string EanAddOn(const Result& result)
 	if (!(BarcodeFormat::EAN13 | BarcodeFormat::UPCA | BarcodeFormat::UPCE | BarcodeFormat::EAN8)
 			.testFlag(result.format()))
 		return {};
-	auto txt = result.text();
-	auto pos = txt.find(L' ');
-	return pos != std::wstring::npos ? TextUtfEncoding::ToUtf8(txt.substr(pos + 1)) : std::string();
+	auto txt = result.bytes().asString();
+	auto pos = txt.find(' ');
+	return pos != std::string::npos ? std::string(txt.substr(pos + 1)) : std::string();
 }
 
 std::string IssueNr(const std::string& ean2AddOn)
