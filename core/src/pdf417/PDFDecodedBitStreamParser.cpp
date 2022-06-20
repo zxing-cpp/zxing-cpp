@@ -569,7 +569,7 @@ static int DecodeMacroOptionalTextField(DecodeStatus& status, const std::vector<
 	codeIndex = TextCompaction(status, codewords, codeIndex, result);
 
 	// Converting to UTF-8 (backward-incompatible change for non-ASCII chars)
-	TextUtfEncoding::ToUtf8(result.text(), field);
+	field = result.utf8();
 
 	return codeIndex;
 }
@@ -587,7 +587,7 @@ static int DecodeMacroOptionalNumericField(DecodeStatus& status, const std::vect
 
 	codeIndex = NumericCompaction(status, codewords, codeIndex, result);
 
-	field = std::stoll(result.text());
+	field = std::stoll(result.utf8());
 
 	return codeIndex;
 }
