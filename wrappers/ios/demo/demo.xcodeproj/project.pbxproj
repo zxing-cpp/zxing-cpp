@@ -14,6 +14,7 @@
 		388BF032283CC49E005CE271 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 388BF031283CC49E005CE271 /* Assets.xcassets */; };
 		388BF035283CC49E005CE271 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 388BF033283CC49E005CE271 /* LaunchScreen.storyboard */; };
 		9507445028609C0500E02D06 /* ZXingCppWrapper in Frameworks */ = {isa = PBXBuildFile; productRef = 9507444F28609C0500E02D06 /* ZXingCppWrapper */; };
+		950744522860A3A300E02D06 /* WriteViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 950744512860A3A300E02D06 /* WriteViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -26,6 +27,7 @@
 		388BF034283CC49E005CE271 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		388BF036283CC49E005CE271 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		388BF043283CE0AC005CE271 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		950744512860A3A300E02D06 /* WriteViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WriteViewController.swift; sourceTree = "<group>"; };
 		9550105328609B7900ED103F /* ios */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = ios; path = ..; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -66,6 +68,7 @@
 				388BF028283CC49D005CE271 /* AppDelegate.swift */,
 				388BF02A283CC49D005CE271 /* SceneDelegate.swift */,
 				388BF02C283CC49D005CE271 /* ViewController.swift */,
+				950744512860A3A300E02D06 /* WriteViewController.swift */,
 				388BF02E283CC49D005CE271 /* Main.storyboard */,
 				388BF031283CC49E005CE271 /* Assets.xcassets */,
 				388BF033283CC49E005CE271 /* LaunchScreen.storyboard */,
@@ -165,6 +168,7 @@
 			files = (
 				388BF02D283CC49D005CE271 /* ViewController.swift in Sources */,
 				388BF029283CC49D005CE271 /* AppDelegate.swift in Sources */,
+				950744522860A3A300E02D06 /* WriteViewController.swift in Sources */,
 				388BF02B283CC49D005CE271 /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
