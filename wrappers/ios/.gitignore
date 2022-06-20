@@ -1,3 +1,4 @@
 .swiftpm
 _builds
 xcuserdata
+ZXingCpp.xcframework
