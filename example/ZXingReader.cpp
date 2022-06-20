@@ -111,6 +111,11 @@ void drawRect(const ImageView& image, const Position& pos)
 		drawLine(image, pos[i], pos[(i + 1) % 4]);
 }
 
+std::string escapeNonGraphical(const std::string& str)
+{
+	return ToUtf8(FromUtf8(str), true);
+}
+
 int main(int argc, char* argv[])
 {
 	DecodeHints hints;
@@ -129,9 +134,6 @@ int main(int argc, char* argv[])
 	}
 
 	hints.setEanAddOnSymbol(EanAddOnSymbol::Read);
-
-	if (oneLine)
-		angleEscape = true;
 
 	if (angleEscape)
 		std::setlocale(LC_CTYPE, "en_US.UTF-8"); // Needed so `std::iswgraph()` in `ToUtf8(angleEscape)` does not 'swallow' all printable non-ascii utf8 chars
@@ -175,7 +177,7 @@ int main(int argc, char* argv[])
 			if (oneLine) {
 				std::cout << filePath << " " << ToString(result.format());
 				if (result.isValid())
-					std::cout << " \"" << ToUtf8(result.text(), angleEscape) << "\"";
+					std::cout << " \"" << escapeNonGraphical(result.utf8()) << "\"";
 				else if (result.format() != BarcodeFormat::None)
 					std::cout << " " << ToString(result.status());
 				std::cout << "\n";
@@ -190,9 +192,9 @@ int main(int argc, char* argv[])
 					std::cout << "File:       " << filePath << "\n";
 				firstFile = false;
 			}
-			std::cout << "Text:       \"" << ToUtf8(result.text(), angleEscape) << "\"\n"
-					  << "Bytes:      " << ToHex(result.bytes()) << "\n"
+			std::cout << "Text:       \"" << (angleEscape ? escapeNonGraphical(result.utf8()) : result.utf8()) << "\"\n"
 					  << "TextECI:    \"" << result.utf8ECI() << "\"\n"
+					  << "Bytes:      " << ToHex(result.bytes()) << "\n"
 					  << "BytesECI:   " << ToHex(result.bytesECI()) << "\n"
 					  << "Format:     " << ToString(result.format()) << "\n"
 					  << "Identifier: " << result.symbologyIdentifier() << "\n"
