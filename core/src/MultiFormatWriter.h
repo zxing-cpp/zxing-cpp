@@ -50,6 +50,7 @@ public:
 	}
 
 	BitMatrix encode(const std::wstring& contents, int width, int height) const;
+	BitMatrix encode(const std::string& contents, int width, int height) const;
 
 private:
 	BarcodeFormat _format;

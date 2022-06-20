@@ -7,6 +7,7 @@
 #include "ODITFWriter.h"
 
 #include "ODWriterHelper.h"
+#include "TextUtfEncoding.h"
 
 #include <array>
 #include <stdexcept>
@@ -67,6 +68,11 @@ ITFWriter::encode(const std::wstring& contents, int width, int height) const
 	}
 	WriterHelper::AppendPattern(result, pos, END_PATTERN, true);
 	return WriterHelper::RenderResult(result, width, height, _sidesMargin >= 0 ? _sidesMargin : 10);
+}
+
+BitMatrix ITFWriter::encode(const std::string& contents, int width, int height) const
+{
+	return encode(TextUtfEncoding::FromUtf8(contents), width, height);
 }
 
 } // namespace ZXing::OneD

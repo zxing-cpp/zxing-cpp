@@ -9,6 +9,7 @@
 #include "AZEncoder.h"
 #include "CharacterSet.h"
 #include "TextEncoder.h"
+#include "TextUtfEncoding.h"
 
 #include <utility>
 
@@ -27,6 +28,11 @@ Writer::encode(const std::wstring& contents, int width, int height) const
 	std::string bytes = TextEncoder::FromUnicode(contents, _encoding);
 	EncodeResult aztec = Encoder::Encode(bytes, _eccPercent, _layers);
 	return Inflate(std::move(aztec.matrix), width, height, _margin);
+}
+
+BitMatrix Writer::encode(const std::string& contents, int width, int height) const
+{
+	return encode(TextUtfEncoding::FromUtf8(contents), width, height);
 }
 
 } // namespace ZXing::Aztec

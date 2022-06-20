@@ -13,6 +13,7 @@
 #include "DMHighLevelEncoder.h"
 #include "DMSymbolInfo.h"
 #include "DMSymbolShape.h"
+#include "TextUtfEncoding.h"
 
 #include <stdexcept>
 #include <string>
@@ -108,6 +109,11 @@ Writer::encode(const std::wstring& contents, int width, int height) const
 
 	//5. step: scale-up to requested size, minimum required quiet zone is 1
 	return Inflate(std::move(result), width, height, _quietZone);
+}
+
+BitMatrix Writer::encode(const std::string& contents, int width, int height) const
+{
+	return encode(TextUtfEncoding::FromUtf8(contents), width, height);
 }
 
 } // namespace ZXing::DataMatrix

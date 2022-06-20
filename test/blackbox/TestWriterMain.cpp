@@ -23,7 +23,7 @@ void savePng(const BitMatrix& matrix, BarcodeFormat format)
 
 int main()
 {
-	std::wstring text = L"http://www.google.com/";
+	std::string text = "http://www.google.com/";
 	for (auto format : {
 		BarcodeFormat::Aztec,
 		BarcodeFormat::DataMatrix,
@@ -33,7 +33,7 @@ int main()
 		savePng(MultiFormatWriter(format).encode(text, 200, 200), format);
 	}
 
-	text = L"012345678901234567890123456789";
+	text = "012345678901234567890123456789";
 	using FormatSpecs = std::vector<std::pair<BarcodeFormat, size_t>>;
 	for (const auto& [format, length] : FormatSpecs({
 		{BarcodeFormat::Codabar, 0},

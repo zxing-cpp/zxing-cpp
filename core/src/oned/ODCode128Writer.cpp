@@ -8,6 +8,7 @@
 
 #include "ODCode128Patterns.h"
 #include "ODWriterHelper.h"
+#include "TextUtfEncoding.h"
 
 #include <list>
 #include <numeric>
@@ -250,6 +251,11 @@ Code128Writer::encode(const std::wstring& contents, int width, int height) const
 	result[pos++] = true;
 
 	return WriterHelper::RenderResult(result, width, height, _sidesMargin >= 0 ? _sidesMargin : 10);
+}
+
+BitMatrix Code128Writer::encode(const std::string& contents, int width, int height) const
+{
+	return encode(TextUtfEncoding::FromUtf8(contents), width, height);
 }
 
 } // namespace ZXing::OneD

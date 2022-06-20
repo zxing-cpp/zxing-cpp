@@ -20,6 +20,7 @@
 #include "pdf417/PDFWriter.h"
 #include "qrcode/QRErrorCorrectionLevel.h"
 #include "qrcode/QRWriter.h"
+#include "TextUtfEncoding.h"
 
 #include <stdexcept>
 
@@ -64,6 +65,11 @@ MultiFormatWriter::encode(const std::wstring& contents, int width, int height) c
 	case BarcodeFormat::UPCE: return exec0(OneD::UPCEWriter());
 	default: throw std::invalid_argument(std::string("Unsupported format: ") + ToString(_format));
 	}
+}
+
+BitMatrix MultiFormatWriter::encode(const std::string& contents, int width, int height) const
+{
+	return encode(TextUtfEncoding::FromUtf8(contents), width, height);
 }
 
 } // ZXing
