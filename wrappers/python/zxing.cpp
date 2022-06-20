@@ -7,6 +7,8 @@
 
 #include "BarcodeFormat.h"
 
+#define ZX_USE_UTF8 1 // see Result.h
+
 // Reader
 #include "ReadBarcode.h"
 

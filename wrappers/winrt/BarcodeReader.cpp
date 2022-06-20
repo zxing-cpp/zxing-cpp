@@ -21,6 +21,8 @@
 
 #include "BarcodeReader.h"
 
+#define ZX_USE_UTF8 1 // silence deprecation warning in Result.h
+
 #include "BarcodeFormat.h"
 #include "DecodeHints.h"
 #include "ReadBarcode.h"
@@ -202,7 +204,7 @@ BarcodeReader::Read(SoftwareBitmap^ bitmap, int cropWidth, int cropHeight)
 
 			auto result = ReadBarcode(img, *m_hints);
 			if (result.isValid()) {
-				return ref new ReadResult(ToPlatformString(ZXing::ToString(result.format())), ToPlatformString(result.text()), ConvertNativeToRuntime(result.format()));
+				return ref new ReadResult(ToPlatformString(ZXing::ToString(result.format())), ToPlatformString(result.utf16()), ConvertNativeToRuntime(result.format()));
 			}
 		} else {
 			throw std::runtime_error("Failed to read bitmap's data");

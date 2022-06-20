@@ -6,7 +6,6 @@
 
 #include "BlackboxTestRunner.h"
 #include "ImageLoader.h"
-#include "TextUtfEncoding.h"
 #include "ZXContainerAlgorithms.h"
 #include "ZXFilesystem.h"
 
@@ -44,12 +43,12 @@ int main(int argc, char** argv)
 			Result result = ReadBarcode(ImageLoader::load(argv[i]).rotated(rotation), hints);
 			std::cout << argv[i] << ": ";
 			if (result.isValid())
-				std::cout << ToString(result.format()) << ": " << TextUtfEncoding::ToUtf8(result.text()) << "\n";
+				std::cout << ToString(result.format()) << ": " << result.text() << "\n";
 			else
 				std::cout << "FAILED\n";
 			if (result.isValid() && getenv("WRITE_TEXT")) {
 				std::ofstream f(fs::path(argv[i]).replace_extension(".txt"));
-				f << TextUtfEncoding::ToUtf8(result.text());
+				f << result.text();
 			}
 		}
 		return 0;

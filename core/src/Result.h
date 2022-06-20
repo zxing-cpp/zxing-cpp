@@ -43,21 +43,57 @@ public:
 
 	BarcodeFormat format() const { return _format; }
 
-	std::wstring text() const;
-
-	// WARNING: this is an experimental API and may change/disappear
+	/**
+	 * @brief bytes is the raw / standard content without any modifications like character set conversions
+	 */
 	const ByteArray& bytes() const;
+
+	/**
+	 * @brief bytesECI is the raw / standard content following the ECI protocol
+	 */
 	ByteArray bytesECI() const;
+
+	/**
+	 * @brief utf8/utf16 is the bytes() content converted to utf8/16 based on ECI or guessed character set information
+	 *
+	 * Note: these two properties might only be available while transitioning text() from std::wstring to std::string. time will tell.
+	 * see https://github.com/nu-book/zxing-cpp/issues/338 for a background discussion on the issue.
+	 */
 	std::string utf8() const;
+	std::wstring utf16() const;
+
+#ifdef ZX_USE_UTF8
+	std::string text() const { return utf8(); }
+	std::string ecLevel() const { return _ecLevel; }
+#else
+#pragma message( \
+	"Warning: the return type of text() and ecLevel() will change to std::string. Please #define ZX_USE_UTF8 to transition before the next release.")
+	std::wstring text() const { return utf16(); }
+	std::wstring ecLevel() const { return {_ecLevel.begin(), _ecLevel.end()}; }
+#endif
+
+	/**
+	 * @brief utf8ECI is the standard content following the ECI protocol with every character set ECI segment transcoded to utf8
+	 */
 	std::string utf8ECI() const;
+
+	/**
+	 * @brief contentType gives a hint to the type of content found (Text/Binary/GS1/etc.)
+	 */
 	ContentType contentType() const;
+
+	/**
+	 * @brief hasECI specifies wheter or not an ECI tag was found
+	 */
 	bool hasECI() const;
-	// END WARNING
 
 	const Position& position() const { return _position; }
 	void setPosition(Position pos) { _position = pos; }
 
-	int orientation() const; //< orientation of barcode in degree, see also Position::orientation()
+	/**
+	 * @brief orientation of barcode in degree, see also Position::orientation()
+	 */
+	int orientation() const;
 
 	/**
 	 * @brief isMirrored is the symbol mirrored (currently only supported by QRCode and DataMatrix)
@@ -67,8 +103,6 @@ public:
 	/// see bytes() above for a proper replacement of rawByes
 	[[deprecated]] const ByteArray& rawBytes() const { return _rawBytes; }
 	[[deprecated]] int numBits() const { return _numBits; }
-
-	const std::wstring& ecLevel() const { return _ecLevel; }
 
 	/**
 	 * @brief symbologyIdentifier Symbology identifier "]cm" where "c" is symbology code character, "m" the modifier.
@@ -125,7 +159,7 @@ private:
 	Position _position;
 	ByteArray _rawBytes;
 	int _numBits = 0;
-	std::wstring _ecLevel;
+	std::string _ecLevel;
 	StructuredAppendInfo _sai;
 	bool _isMirrored = false;
 	bool _readerInit = false;

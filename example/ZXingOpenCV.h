@@ -5,8 +5,9 @@
 
 #pragma once
 
+#define ZX_USE_UTF8 1 // see Result.h
+
 #include "ReadBarcode.h"
-#include "TextUtfEncoding.h"
 
 #include <opencv2/opencv.hpp>
 
@@ -41,6 +42,5 @@ inline void DrawResult(cv::Mat& img, ZXing::Result res)
 	int npts = contour.size();
 
 	cv::polylines(img, &pts, &npts, 1, true, CV_RGB(0, 255, 0));
-	cv::putText(img, ZXing::TextUtfEncoding::ToUtf8(res.text()), cv::Point(10, 20), cv::FONT_HERSHEY_DUPLEX, 0.5,
-				CV_RGB(0, 255, 0));
+	cv::putText(img, res.text(), cv::Point(10, 20), cv::FONT_HERSHEY_DUPLEX, 0.5, CV_RGB(0, 255, 0));
 }

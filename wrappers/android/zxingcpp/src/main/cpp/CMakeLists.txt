@@ -12,5 +12,6 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../core ZXing EXCLUD
 
 add_library(zxing_android SHARED BarcodeReader.cpp JNIUtils.cpp)
 
+target_compile_definitions(zxing_android PRIVATE -DZX_USE_UTF8)
 target_link_libraries(zxing_android PRIVATE ZXing::ZXing log jnigraphics)
 
