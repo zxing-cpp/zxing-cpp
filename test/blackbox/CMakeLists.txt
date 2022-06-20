@@ -15,6 +15,7 @@ if (BUILD_READERS)
         ZXing::ZXing fmt::fmt stb::stb
         $<$<AND:$<CXX_COMPILER_ID:GNU>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,9.0>>:stdc++fs>
     )
+    target_compile_definitions(ReaderTest PRIVATE ZX_USE_UTF8)
 
     add_test(NAME ReaderTest COMMAND ReaderTest ${CMAKE_CURRENT_SOURCE_DIR}/../samples)
 endif()

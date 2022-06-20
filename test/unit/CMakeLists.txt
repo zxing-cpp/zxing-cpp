@@ -65,5 +65,6 @@ add_executable (UnitTest
 target_include_directories (UnitTest PRIVATE .)
 
 target_link_libraries (UnitTest ZXing::ZXing GTest::gtest_main GTest::gmock)
+target_compile_definitions(UnitTest PRIVATE ZX_USE_UTF8)
 
 add_test(NAME UnitTest COMMAND UnitTest)

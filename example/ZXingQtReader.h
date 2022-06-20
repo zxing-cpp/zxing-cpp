@@ -5,6 +5,8 @@
 
 #pragma once
 
+#define ZX_USE_UTF8 1 // see Result.h
+
 #include "ReadBarcode.h"
 
 #include <QImage>
@@ -115,7 +117,7 @@ public:
 	Result() : ZXing::Result(ZXing::DecodeStatus::NotFound) {} // required for qmetatype machinery
 
 	explicit Result(ZXing::Result&& r) : ZXing::Result(std::move(r)) {
-		_text = QString::fromWCharArray(ZXing::Result::text().c_str());
+		_text = QString::fromStdString(ZXing::Result::text());
 		_bytes = QByteArray(reinterpret_cast<const char*>(ZXing::Result::bytes().data()), Size(ZXing::Result::bytes()));
 		auto& pos = ZXing::Result::position();
 		auto qp = [&pos](int i) { return QPoint(pos[i].x, pos[i].y); };

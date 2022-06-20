@@ -3,6 +3,8 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
+#define ZX_USE_UTF8 1 // see Result.h
+
 #include "ReadBarcode.h"
 
 #include <string>
@@ -16,7 +18,7 @@
 struct ReadResult
 {
 	std::string format;
-	std::wstring text;
+	std::string text;
 	std::string error;
 	ZXing::Position position;
 };
@@ -37,7 +39,7 @@ ReadResult readBarcodeFromImage(int bufferPtr, int bufferLength, bool tryHarder,
 								  &channels, 4),
 			stbi_image_free);
 		if (buffer == nullptr) {
-			return { "", L"", "Error loading image" };
+			return { "", "", "Error loading image" };
 		}
 
 		auto result = ReadBarcode({buffer.get(), width, height, ImageFormat::RGBX}, hints);
@@ -46,10 +48,10 @@ ReadResult readBarcodeFromImage(int bufferPtr, int bufferLength, bool tryHarder,
 		}
 	}
 	catch (const std::exception& e) {
-		return { "", L"", e.what() };
+		return { "", "", e.what() };
 	}
 	catch (...) {
-		return { "", L"", "Unknown error" };
+		return { "", "", "Unknown error" };
 	}
 	return {};
 }
@@ -72,10 +74,10 @@ ReadResult readBarcodeFromPixmap(int bufferPtr, int imgWidth, int imgHeight, boo
 		}
 	}
 	catch (const std::exception& e) {
-		return { "", L"", e.what() };
+		return { "", "", e.what() };
 	}
 	catch (...) {
-		return { "", L"", "Unknown error" };
+		return { "", "", "Unknown error" };
 	}
 	return {};
 }
@@ -106,7 +108,7 @@ EMSCRIPTEN_BINDINGS(BarcodeReader)
 	function("readBarcodeFromImage", &readBarcodeFromImage);
 	function("readBarcodeFromPixmap", &readBarcodeFromPixmap);
 
-	// obsoletes
+	// obsoletes [[deprecated]]
 	function("readBarcode", &readBarcodeFromImage);
 	function("readBarcodeFromPng", &readBarcodeFromImage);
 }

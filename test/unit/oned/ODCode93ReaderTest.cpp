@@ -14,17 +14,17 @@
 using namespace ZXing;
 using namespace ZXing::OneD;
 
-static std::wstring Decode(std::string_view input)
+static std::string Decode(std::string_view input)
 {
 	Code93Reader sut;
 	auto row    = Utility::ParseBitArray(input, '1');
 	auto result = sut.decodeSingleRow(0, row);
-	return result.text();
+	return result.utf8();
 }
 
 TEST(ODCode93ReaderTest, Decode)
 {
-	auto expected = std::wstring(L"Code93!\n$%/+ :\x1b;[{\x7f\x00@`\x7f\x7f\x7f", 25);
+	auto expected = std::string("Code93!\n$%/+ :\x1b;[{\x7f\x00@`\x7f\x7f\x7f", 25);
 	auto decoded = Decode(
 		"00000010101111011010001010011001010010110010011001011001010010011001011001001010"
 		"00010101010000101110101101101010001001001101001101001110010101101011101011011101"

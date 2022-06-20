@@ -36,18 +36,13 @@ Result::Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat 
 	  _position(std::move(position)),
 	  _rawBytes(std::move(decodeResult).rawBytes()),
 	  _numBits(decodeResult.numBits()),
-	  _ecLevel(TextDecoder::FromLatin1(decodeResult.ecLevel())),
+	  _ecLevel(decodeResult.ecLevel()),
 	  _sai(decodeResult.structuredAppend()),
 	  _isMirrored(decodeResult.isMirrored()),
 	  _readerInit(decodeResult.readerInit()),
 	  _lineCount(decodeResult.lineCount())
 {
 	// TODO: add type opaque and code specific 'extra data'? (see DecoderResult::extra())
-}
-
-std::wstring Result::text() const
-{
-	return _content.text();
 }
 
 const ByteArray& Result::bytes() const
@@ -63,6 +58,11 @@ ByteArray Result::bytesECI() const
 std::string Result::utf8() const
 {
 	return _content.utf8();
+}
+
+std::wstring Result::utf16() const
+{
+	return _content.utf16();
 }
 
 std::string Result::utf8ECI() const
