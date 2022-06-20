@@ -1,0 +1,4 @@
+.swiftpm
+_builds
+ZXing.xcframework
+xcuserdata
