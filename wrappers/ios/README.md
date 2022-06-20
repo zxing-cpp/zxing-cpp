@@ -1,4 +1,4 @@
-# ZXing-C++ iOS Framework
+# ZXingCpp iOS Framework
 
 To use the iOS (wrapper) framework in other apps, it is easiest
 to build the library project and include the resulting xcframework
@@ -10,5 +10,5 @@ To build the xcframework:
 
 	$ ./build-release.sh
 
-Then copy `zxingcpp/wrappers/ios/ZXing.xcframework` into the 
+Then copy `zxingcpp/wrappers/ios/ZXingCpp.xcframework` into the 
 frameworks-section of your app.

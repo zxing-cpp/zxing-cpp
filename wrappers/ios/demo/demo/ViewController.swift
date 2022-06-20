@@ -6,7 +6,7 @@
 
 import UIKit
 import AVFoundation
-import ZXingWrapper
+import ZXingCppWrapper
 
 class ViewController: UIViewController {
     let captureSession = AVCaptureSession()

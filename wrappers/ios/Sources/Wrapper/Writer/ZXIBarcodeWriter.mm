@@ -6,7 +6,6 @@
 #import "ZXIBarcodeWriter.h"
 #import "ZXing/MultiFormatWriter.h"
 #import "ZXing/BitMatrix.h"
-#import "ZXing/BitArray.h"
 #import "ZXIFormatHelper.h"
 #import "ZXICharsetHelper.h"
 #import "ZXIErrors.h"
@@ -26,12 +25,8 @@ std::string ToString(const BitMatrix& matrix, char one, char zero, bool addSpace
     std::string result;
     result.reserve((addSpace ? 2 : 1) * (matrix.width() * matrix.height()) + matrix.height());
     for (int y = 0; y < matrix.height(); ++y) {
-        BitArray row;
-        matrix.getRow(y, row);
-        if (printAsCString)
-            result += '"';
-        for (auto bit : row) {
-            result += bit ? one : zero;
+        for (int x = 0; x < matrix.width(); ++x) {
+            result += matrix.get(x, y) ? one : zero;
             if (addSpace)
                 result += ' ';
         }
@@ -78,10 +73,8 @@ std::string ToString(const BitMatrix& matrix, char one, char zero, bool addSpace
         size_t index = 0;
         uint8_t *bytes = (uint8_t*)resultAsNSData.mutableBytes;
         for (int y = 0; y < realHeight; ++y) {
-            BitArray row;
-            result.getRow(y, row);
-            for (auto bit : row) {
-                bytes[index] = bit ? 0 : 255;
+            for (int x = 0; x < realWidth; ++x) {
+                bytes[index] = result.get(x, y) ? 0 : 255;
                 ++index;
             }
         }
