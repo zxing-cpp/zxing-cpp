@@ -13,8 +13,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, strong) ZXIDecodeHints *hints;
 
 - (instancetype)initWithHints:(ZXIDecodeHints*)options;
-- (nullable ZXIResult *)readCIImage:(nonnull CIImage *)image error:(NSError **)error;
-- (nullable ZXIResult *)readCGImage:(nonnull CGImageRef)image error:(NSError **)error;
+- (nullable NSArray<ZXIResult *> *)readCIImage:(nonnull CIImage *)image error:(NSError **)error;
+- (nullable NSArray<ZXIResult *> *)readCGImage:(nonnull CGImageRef)image error:(NSError **)error;
 @end
 
 NS_ASSUME_NONNULL_END

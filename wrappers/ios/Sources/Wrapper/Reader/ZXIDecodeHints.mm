@@ -9,7 +9,7 @@
 - (instancetype)initWithTryHarder:(BOOL)tryHarder
                         tryRotate:(BOOL)tryRotate
                      tryDownscale:(BOOL)tryDownscale
-               maxNumberOfSymbols:(NSInteger)maxNumberOfSymbol
+               maxNumberOfSymbols:(NSInteger)maxNumberOfSymbols
                           formats:(NSArray<NSNumber*>*)formats {
     self = [super init];
     self.tryHarder = tryHarder;

@@ -18,7 +18,7 @@ using namespace ZXing;
 @implementation ZXIBarcodeReader
 
 - (instancetype)init {
-    return [self initWithHints: [[ZXIDecodeHints alloc]initWithTryHarder:NO tryRotate:NO formats:@[]]];
+    return [self initWithHints: [[ZXIDecodeHints alloc]initWithTryHarder:NO tryRotate:NO tryDownscale:NO maxNumberOfSymbols:1 formats:@[]]];
 }
 
 - (instancetype)initWithHints:(ZXIDecodeHints*)hints{
@@ -28,14 +28,14 @@ using namespace ZXing;
     return self;
 }
 
-- (nullable ZXIResult *)readCIImage:(nonnull CIImage *)image error:(NSError **)error {
+- (nullable NSArray<ZXIResult *> *)readCIImage:(nonnull CIImage *)image error:(NSError **)error {
     CGImageRef cgImage = [self.ciContext createCGImage:image fromRect:image.extent];
-    ZXIResult *result = [self readCGImage:cgImage error:error];
+    auto results = [self readCGImage:cgImage error:error];
     CGImageRelease(cgImage);
-    return result;
+    return results;
 }
 
-- (nullable ZXIResult *)readCGImage: (nonnull CGImageRef)image error:(NSError **)error {
+- (nullable NSArray<ZXIResult *> *)readCGImage: (nonnull CGImageRef)image error:(NSError **)error {
     CGColorSpaceRef colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericGray);
     CGFloat cols = CGImageGetWidth(image);
     CGFloat rows = CGImageGetHeight(image);
@@ -59,39 +59,46 @@ using namespace ZXing;
               static_cast<int>(rows),
               ImageFormat::Lum);
 
-    Result result = ReadBarcode(imageView, [ZXIBarcodeReader DecodeHintsFromZXIOptions:self.hints]);
-    if(result.status() == DecodeStatus::NoError) {
-        const std::wstring &resultText = result.text();
-        NSString *text = [[NSString alloc] initWithBytes:resultText.data()
-                                                  length:resultText.size() * sizeof(wchar_t)
-                                                encoding:NSUTF32LittleEndianStringEncoding];
+    Results results = ReadBarcodes(imageView, [ZXIBarcodeReader DecodeHintsFromZXIOptions:self.hints]);
 
-        auto binary = result.binary();
-        NSData *rawBytes = [[NSData alloc] initWithBytes:binary.data() length:binary.size()];
-        return [[ZXIResult alloc] init:text
-                                format:ZXIFormatFromBarcodeFormat(result.format())
-                              rawBytes:rawBytes];
-    } else {
-        if(error != nil) {
-            ZXIReaderError errorCode;
-            switch (result.status()) {
-                case ZXing::DecodeStatus::NoError:
-                    // Can not happen
-                    break;
-                case ZXing::DecodeStatus::NotFound:
-                    errorCode = ZXIReaderError::ZXINotFoundError;
-                    break;
-                case ZXing::DecodeStatus::FormatError:
-                    errorCode = ZXIReaderError::ZXIFormatError;
-                    break;
-                case ZXing::DecodeStatus::ChecksumError:
-                    errorCode = ZXIReaderError::ZXIChecksumError;
-                    break;
+    NSMutableArray* zxiResults = [NSMutableArray array];
+    for (auto result: results) {
+        if(result.status() == DecodeStatus::NoError) {
+            const std::wstring &resultText = result.text();
+            NSString *text = [[NSString alloc] initWithBytes:resultText.data()
+                                                      length:resultText.size() * sizeof(wchar_t)
+                                                    encoding:NSUTF32LittleEndianStringEncoding];
+
+            auto binary = result.binary();
+            NSData *rawBytes = [[NSData alloc] initWithBytes:binary.data() length:binary.size()];
+            [zxiResults addObject:
+                                 [[ZXIResult alloc] init:text
+                                                  format:ZXIFormatFromBarcodeFormat(result.format())
+                                                rawBytes:rawBytes]
+                                 ];
+        } else {
+            if(error != nil) {
+                ZXIReaderError errorCode;
+                switch (result.status()) {
+                    case ZXing::DecodeStatus::NoError:
+                        // Can not happen
+                        break;
+                    case ZXing::DecodeStatus::NotFound:
+                        errorCode = ZXIReaderError::ZXINotFoundError;
+                        break;
+                    case ZXing::DecodeStatus::FormatError:
+                        errorCode = ZXIReaderError::ZXIFormatError;
+                        break;
+                    case ZXing::DecodeStatus::ChecksumError:
+                        errorCode = ZXIReaderError::ZXIChecksumError;
+                        break;
+                }
+                *error = [[NSError alloc] initWithDomain: ZXIErrorDomain code: errorCode userInfo:nil];
             }
-            *error = [[NSError alloc] initWithDomain: ZXIErrorDomain code: errorCode userInfo:nil];
+            return nil;
         }
-        return nil;
     }
+    return zxiResults;
 }
 
 + (DecodeHints)DecodeHintsFromZXIOptions:(ZXIDecodeHints*)hints {
