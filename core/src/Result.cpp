@@ -8,6 +8,7 @@
 
 #include "DecoderResult.h"
 #include "TextDecoder.h"
+#include "TextUtfEncoding.h"
 
 #include <cmath>
 #include <list>
@@ -57,6 +58,11 @@ const ByteArray& Result::bytes() const
 ByteArray Result::bytesECI() const
 {
 	return _content.bytesECI();
+}
+
+std::string Result::utf8() const
+{
+	return TextUtfEncoding::ToUtf8(_content.text());
 }
 
 std::string Result::utf8ECI() const
