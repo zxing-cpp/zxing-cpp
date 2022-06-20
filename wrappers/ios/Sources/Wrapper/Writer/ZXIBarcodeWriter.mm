@@ -66,7 +66,7 @@ std::string ToString(const BitMatrix& matrix, char one, char zero, bool addSpace
 
 
 #ifdef DEBUG
-        std::cout << ToString(result, 'X', ' ', false, false);
+//        std::cout << ToString(result, 'X', ' ', false, false);
 #endif
 
         NSMutableData *resultAsNSData = [[NSMutableData alloc] initWithLength:realWidth * realHeight];
