@@ -48,6 +48,7 @@ public:
 	// WARNING: this is an experimental API and may change/disappear
 	const ByteArray& bytes() const;
 	ByteArray bytesECI() const;
+	std::string utf8() const;
 	std::string utf8ECI() const;
 	ContentType contentType() const;
 	bool hasECI() const;
