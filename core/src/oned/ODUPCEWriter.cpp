@@ -8,6 +8,7 @@
 
 #include "ODUPCEANCommon.h"
 #include "ODWriterHelper.h"
+#include "TextUtfEncoding.h"
 
 #include <stdexcept>
 #include <vector>
@@ -45,6 +46,11 @@ UPCEWriter::encode(const std::wstring& contents, int width, int height) const
 
 	WriterHelper::AppendPattern(result, pos, UPCEANCommon::UPCE_END_PATTERN, false);
 	return WriterHelper::RenderResult(result, width, height, _sidesMargin >= 0 ? _sidesMargin : 9);
+}
+
+BitMatrix UPCEWriter::encode(const std::string& contents, int width, int height) const
+{
+	return encode(TextUtfEncoding::FromUtf8(contents), width, height);
 }
 
 } // namespace ZXing::OneD

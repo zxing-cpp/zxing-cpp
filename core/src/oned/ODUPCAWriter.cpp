@@ -8,6 +8,7 @@
 
 #include "BitMatrix.h"
 #include "ODEAN13Writer.h"
+#include "TextUtfEncoding.h"
 
 #include <stdexcept>
 
@@ -22,6 +23,11 @@ UPCAWriter::encode(const std::wstring& contents, int width, int height) const
 		throw std::invalid_argument("Requested contents should be 11 or 12 digits long");
 	}
 	return EAN13Writer().setMargin(_sidesMargin).encode(L'0' + contents, width, height);
+}
+
+BitMatrix UPCAWriter::encode(const std::string& contents, int width, int height) const
+{
+	return encode(TextUtfEncoding::FromUtf8(contents), width, height);
 }
 
 } // namespace ZXing::OneD

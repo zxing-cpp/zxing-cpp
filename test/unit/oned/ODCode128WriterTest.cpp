@@ -92,11 +92,11 @@ TEST(ODCode128Writer, EncodeWithFncsAndNumberInCodesetA)
 TEST(ODCode128Writer, RoundtripGS1)
 {
 	auto toEncode = L"\xf1" "10958" "\xf1" "17160526";
-	auto expected = L"10958\u001D17160526";
+	auto expected = "10958\u001D17160526";
 
 	auto encResult = Code128Writer().encode(toEncode, 0, 0);
 	auto decResult = Decode(encResult);
-	auto actual = decResult.text();
+	auto actual = decResult.utf8();
 	EXPECT_EQ(actual, expected);
 	EXPECT_EQ(decResult.symbologyIdentifier(), "]C1");
 }
@@ -104,11 +104,11 @@ TEST(ODCode128Writer, RoundtripGS1)
 TEST(ODCode128Writer, RoundtripFNC1)
 {
 	auto toEncode = L"1\xf1" "0958" "\xf1" "17160526";
-	auto expected = L"1\u001D0958\u001D17160526";
+	auto expected = "1\u001D0958\u001D17160526";
 
 	auto encResult = Code128Writer().encode(toEncode, 0, 0);
 	auto decResult = Decode(encResult);
-	auto actual = decResult.text();
+	auto actual = decResult.utf8();
 	EXPECT_EQ(actual, expected);
 	EXPECT_EQ(decResult.symbologyIdentifier(), "]C0");
 }
@@ -116,7 +116,7 @@ TEST(ODCode128Writer, RoundtripFNC1)
 TEST(ODCode128Writer, EncodeSwitchCodesetFromAToB)
 {
 	// start with A switch to B and back to A
-	auto toEncode = std::wstring(L"\0ABab\u0010", 6);
+	auto toEncode = std::string("\0ABab\u0010", 6);
 	//                                           "\0"            "A"             "B"             Switch to B     "a"             "b"             Switch to A     "\u0010"        check digit
 	auto expected = QUIET_SPACE + START_CODE_A + "10100001100" + "10100011000" + "10001011000" + SWITCH_CODE_B + "10010110000" + "10010000110" + SWITCH_CODE_A + "10100111100" + "11001110100" + STOP + QUIET_SPACE;
 
@@ -124,14 +124,14 @@ TEST(ODCode128Writer, EncodeSwitchCodesetFromAToB)
 	auto actual = LineMatrixToString(encoded);
 	EXPECT_EQ(actual, expected);
 
-	auto actualRoundTrip = Decode(encoded).text();
+	auto actualRoundTrip = Decode(encoded).utf8();
 	EXPECT_EQ(actualRoundTrip, toEncode);
 }
 
 TEST(ODCode128Writer, EncodeSwitchCodesetFromBToA)
 {
 	// start with B switch to A and back to B
-	auto toEncode = std::wstring(L"ab\0ab", 5);
+	auto toEncode = std::string("ab\0ab", 5);
 	//                                           "a"             "b"             Switch to A     "\0             "Switch to B"   "a"             "b"             check digit
 	auto expected = QUIET_SPACE + START_CODE_B + "10010110000" + "10010000110" + SWITCH_CODE_A + "10100001100" + SWITCH_CODE_B + "10010110000" + "10010000110" + "11010001110" + STOP + QUIET_SPACE;
 
@@ -139,6 +139,6 @@ TEST(ODCode128Writer, EncodeSwitchCodesetFromBToA)
 	auto actual = LineMatrixToString(encoded);
 	EXPECT_EQ(actual, expected);
 
-	auto actualRoundTrip = Decode(encoded).text();
+	auto actualRoundTrip = Decode(encoded).utf8();
 	EXPECT_EQ(actualRoundTrip, toEncode);
 }

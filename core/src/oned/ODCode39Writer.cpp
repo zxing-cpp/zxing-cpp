@@ -9,6 +9,7 @@
 #include "CharacterSet.h"
 #include "ODWriterHelper.h"
 #include "TextEncoder.h"
+#include "TextUtfEncoding.h"
 #include "ZXContainerAlgorithms.h"
 
 #include <array>
@@ -165,6 +166,11 @@ Code39Writer::encode(const std::wstring& contents, int width, int height) const
 	ToIntArray(ASTERISK_ENCODING, widths);
 	WriterHelper::AppendPattern(result, pos, widths, true);
 	return WriterHelper::RenderResult(result, width, height, _sidesMargin >= 0 ? _sidesMargin : 10);
+}
+
+BitMatrix Code39Writer::encode(const std::string& contents, int width, int height) const
+{
+	return encode(TextUtfEncoding::FromUtf8(contents), width, height);
 }
 
 } // namespace ZXing::OneD
