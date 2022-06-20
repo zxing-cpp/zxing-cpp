@@ -95,14 +95,16 @@ using namespace ZXing;
 }
 
 + (DecodeHints)DecodeHintsFromZXIOptions:(ZXIDecodeHints*)hints {
-    DecodeHints resultingHints = DecodeHints();
-    resultingHints.setTryRotate(hints.tryRotate);
-    resultingHints.setTryHarder(hints.tryHarder);
     BarcodeFormats formats;
     for(NSNumber* flag in hints.formats) {
         formats.setFlag(BarcodeFormatFromZXIFormat((ZXIFormat)flag.integerValue));
     }
-    resultingHints.setFormats(formats);
+    DecodeHints resultingHints = DecodeHints()
+        .setTryRotate(hints.tryRotate)
+        .setTryHarder(hints.tryHarder)
+        .setTryDownscale(hints.tryDownscale)
+        .setFormats(formats)
+        .setMaxNumberOfSymbols(hints.maxNumberOfSymbols);
     return resultingHints;
 }
 

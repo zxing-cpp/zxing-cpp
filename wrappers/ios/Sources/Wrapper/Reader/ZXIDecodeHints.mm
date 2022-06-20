@@ -6,10 +6,16 @@
 
 @implementation ZXIDecodeHints
 
-- (instancetype)initWithTryHarder:(BOOL)tryHarder tryRotate:(BOOL)tryRotate formats:(NSArray<NSNumber*>*)formats {
+- (instancetype)initWithTryHarder:(BOOL)tryHarder
+                        tryRotate:(BOOL)tryRotate
+                     tryDownscale:(BOOL)tryDownscale
+               maxNumberOfSymbols:(NSInteger)maxNumberOfSymbol
+                          formats:(NSArray<NSNumber*>*)formats {
     self = [super init];
     self.tryHarder = tryHarder;
     self.tryRotate = tryRotate;
+    self.tryDownscale = tryDownscale;
+    self.maxNumberOfSymbols = maxNumberOfSymbols;
     self.formats = formats;
     return self;
 }

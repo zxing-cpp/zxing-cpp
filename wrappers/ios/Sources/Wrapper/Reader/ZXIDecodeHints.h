@@ -9,10 +9,16 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ZXIDecodeHints : NSObject
 @property(nonatomic) BOOL tryHarder;
 @property(nonatomic) BOOL tryRotate;
+@property(nonatomic) BOOL tryDownscale;
+@property(nonatomic) BOOL maxNumberOfSymbols;
 /// An array of ZXIFormat
 @property(nonatomic, strong) NSArray<NSNumber*> *formats;
 
-- (instancetype)initWithTryHarder:(BOOL)tryHarder tryRotate:(BOOL)tryRotate formats:(NSArray<NSNumber*>*)formats;
+- (instancetype)initWithTryHarder:(BOOL)tryHarder
+                        tryRotate:(BOOL)tryRotate
+                     tryDownscale:(BOOL)tryDownscale
+               maxNumberOfSymbols:(NSInteger)maxNumberOfSymbol
+                          formats:(NSArray<NSNumber*>*)formats;
 @end
 
 NS_ASSUME_NONNULL_END
