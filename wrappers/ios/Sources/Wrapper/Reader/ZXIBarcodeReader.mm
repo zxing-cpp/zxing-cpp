@@ -66,8 +66,8 @@ using namespace ZXing;
                                                   length:resultText.size() * sizeof(wchar_t)
                                                 encoding:NSUTF32LittleEndianStringEncoding];
 
-        std::string s(resultText.begin(), resultText.end());
-        NSData *rawBytes = [[NSData alloc] initWithBytes:s.c_str() length:s.size()];
+        auto binary = result.binary();
+        NSData *rawBytes = [[NSData alloc] initWithBytes:binary.data() length:binary.size()];
         return [[ZXIResult alloc] init:text
                                 format:ZXIFormatFromBarcodeFormat(result.format())
                               rawBytes:rawBytes];
