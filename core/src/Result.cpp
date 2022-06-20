@@ -62,7 +62,7 @@ ByteArray Result::bytesECI() const
 
 std::string Result::utf8() const
 {
-	return TextUtfEncoding::ToUtf8(_content.text());
+	return _content.utf8();
 }
 
 std::string Result::utf8ECI() const
