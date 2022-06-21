@@ -74,7 +74,7 @@ using namespace ZXing;
             [zxiResults addObject:
                                  [[ZXIResult alloc] init:text
                                                   format:ZXIFormatFromBarcodeFormat(result.format())
-                                                rawBytes:rawBytes]
+                                                   bytes:rawBytes]
                                  ];
         } else {
             if(error != nil) {

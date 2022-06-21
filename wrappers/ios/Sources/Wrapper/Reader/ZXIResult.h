@@ -9,12 +9,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ZXIResult : NSObject
 @property(nonatomic, strong) NSString *text;
-@property(nonatomic, strong) NSData *rawBytes;
+@property(nonatomic, strong) NSData *bytes;
 @property(nonatomic) ZXIFormat format;
 
 - (instancetype)init:(NSString *)text
               format:(ZXIFormat)format
-            rawBytes:(NSData *)rawBytes;
+               bytes:(NSData *)bytes;
 @end
 
 NS_ASSUME_NONNULL_END

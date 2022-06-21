@@ -7,11 +7,11 @@
 @implementation ZXIResult
 - (instancetype)init:(NSString *)text
               format:(ZXIFormat)format
-            rawBytes:(NSData *)rawBytes {
+               bytes:(NSData *)bytes {
     self = [super init];
     self.text = text;
     self.format = format;
-    self.rawBytes = rawBytes;
+    self.bytes = bytes;
     return self;
 }
 @end
