@@ -50,7 +50,7 @@ public:
 	bool hasECI = false;
 
 	Content();
-	Content(ByteArray&& bytes, SymbologyIdentifier si);
+	Content(ByteArray&& bytes, SymbologyIdentifier si, std::string ai = {});
 
 	void switchEncoding(ECI eci) { switchEncoding(eci, true); }
 	void switchEncoding(CharacterSet cs);
