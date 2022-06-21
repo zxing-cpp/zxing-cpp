@@ -7,6 +7,8 @@
 
 #import "Reader/ZXIBarcodeReader.h"
 #import "Reader/ZXIResult.h"
+#import "Reader/ZXIPosition.h"
+#import "Reader/ZXIPoint.h"
 #import "Reader/ZXIDecodeHints.h"
 #import "Writer/ZXIBarcodeWriter.h"
 #import "Writer/ZXICharset.h"
