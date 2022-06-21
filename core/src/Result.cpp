@@ -18,10 +18,10 @@
 namespace ZXing {
 
 Result::Result(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format,
-			   SymbologyIdentifier si, ByteArray&& rawBytes, const bool readerInit)
+			   SymbologyIdentifier si, ByteArray&& rawBytes, bool readerInit, const std::string& ai)
 	:
 	  _format(format),
-	  _content({ByteArray(text)}, si),
+	  _content({ByteArray(text)}, si, ai),
 	  _position(Line(y, xStart, xStop)),
 	  _rawBytes(std::move(rawBytes)),
 	  _numBits(Size(_rawBytes) * 8),

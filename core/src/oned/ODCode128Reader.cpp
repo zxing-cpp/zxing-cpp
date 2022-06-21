@@ -43,6 +43,7 @@ class Raw2TxtDecoder
 	int codeSet = 0;
 	SymbologyIdentifier _symbologyIdentifier = {'C', '0'}; // ISO/IEC 15417:2007 Annex C Table C.1
 	bool _readerInit = false;
+	std::string _applicationIndicator;
 	std::string txt;
 	size_t lastTxtSize = 0;
 
@@ -59,6 +60,7 @@ class Raw2TxtDecoder
 			// GS1 General Specifications Section 5.4.6.4
 			// "Transmitted data ... is prefixed by the symbology identifier ]C1, if used."
 			// Choosing not to use symbology identifier, i.e. to not prefix to data.
+			_applicationIndicator = "GS1";
 		}
 		else if ((isCodeSetC && txt.size() == 2 && txt[0] >= '0' && txt[0] <= '9' && txt[1] >= '0' && txt[1] <= '9')
 				|| (!isCodeSetC && txt.size() == 1 && ((txt[0] >= 'A' && txt[0] <= 'Z')
@@ -66,6 +68,7 @@ class Raw2TxtDecoder
 			// ISO/IEC 15417:2007 Annex B.2
 			// FNC1 in second position following Code Set C "00-99" or Code Set A/B "A-Za-z" - AIM
 			_symbologyIdentifier.modifier = '2';
+			_applicationIndicator = txt;
 		}
 		else {
 			// ISO/IEC 15417:2007 Annex B.3. Otherwise FNC1 is returned as ASCII 29 (GS)
@@ -154,7 +157,7 @@ public:
 	}
 
 	SymbologyIdentifier symbologyIdentifier() const { return _symbologyIdentifier; }
-
+	std::string applicationIndicator() const { return _applicationIndicator; }
 	bool readerInit() const { return _readerInit; }
 };
 
@@ -268,13 +271,13 @@ Result Code128Reader::decodePattern(int rowNumber, PatternView& next, std::uniqu
 	int checksum = rawCodes.front();
 	for (int i = 1; i < Size(rawCodes) - 1; ++i)
 		checksum += i * rawCodes[i];
-	// the second last code is the checksum (last one is the stop code):
+	// the last code is the checksum:
 	if (checksum % 103 != rawCodes.back())
 		return Result(DecodeStatus::ChecksumError);
 
 	int xStop = next.pixelsTillEnd();
 	return Result(raw2txt.text(), rowNumber, xStart, xStop, BarcodeFormat::Code128, raw2txt.symbologyIdentifier(),
-				  std::move(rawCodes), raw2txt.readerInit());
+				  std::move(rawCodes), raw2txt.readerInit(), raw2txt.applicationIndicator());
 }
 
 } // namespace ZXing::OneD
