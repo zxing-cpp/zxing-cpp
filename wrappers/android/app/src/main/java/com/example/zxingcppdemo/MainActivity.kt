@@ -166,7 +166,9 @@ class MainActivity : AppCompatActivity() {
 								p.toPointF()
 							}
 						}
-						(result?.let { "${it.format}: ${it.text}" } ?: "")
+						(result?.let { "${it.format} (${it.contentType}):" +
+								"${if (it.contentType != BarcodeReader.ContentType.BINARY) it.text else it.bytes!!.joinToString(separator = "") { v -> "%02x".format(v) }}" }
+							?: "")
 					} catch (e: Throwable) {
 						e.message ?: "Error"
 					}
