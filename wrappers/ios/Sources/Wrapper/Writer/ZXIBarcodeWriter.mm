@@ -62,7 +62,6 @@ std::string ToString(const BitMatrix& matrix, char one, char zero, bool addSpace
         int realWidth = result.width();
         int realHeight = result.height();
 
-
 #ifdef DEBUG
 //        std::cout << ToString(result, 'X', ' ', false, false);
 #endif
