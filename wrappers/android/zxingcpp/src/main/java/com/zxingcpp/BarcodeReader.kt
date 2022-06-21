@@ -32,6 +32,9 @@ class BarcodeReader {
         NONE, AZTEC, CODABAR, CODE_39, CODE_93, CODE_128, DATA_BAR, DATA_BAR_EXPANDED,
         DATA_MATRIX, EAN_8, EAN_13, ITF, MAXICODE, PDF_417, QR_CODE, MICRO_QR_CODE, UPC_A, UPC_E
     }
+    enum class ContentType {
+        TEXT, BINARY, MIXED, GS1, ISO15434, UNKNOWN_ECI
+    }
 
     data class Options(
         val formats: Set<Format> = setOf(),
@@ -50,8 +53,10 @@ class BarcodeReader {
 
     data class Result(
         val format: Format = Format.NONE,
+        val bytes: ByteArray? = null,
         val text: String? = null,
         val time: String? = null, // for development/debug purposes only
+        val contentType: ContentType = ContentType.TEXT,
         val position: Position? = null,
         val orientation: Int = 0,
         val ecLevel: String? = null,
