@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #import "ZXIBarcodeReader.h"
-#import "ZXIErrors.h"
 #import "ZXing/ReadBarcode.h"
 #import "ZXing/ImageView.h"
 #import "ZXing/Result.h"
@@ -28,14 +27,14 @@ using namespace ZXing;
     return self;
 }
 
-- (nullable NSArray<ZXIResult *> *)readCIImage:(nonnull CIImage *)image error:(NSError **)error {
+- (NSArray<ZXIResult *> *)readCIImage:(nonnull CIImage *)image {
     CGImageRef cgImage = [self.ciContext createCGImage:image fromRect:image.extent];
-    auto results = [self readCGImage:cgImage error:error];
+    auto results = [self readCGImage:cgImage];
     CGImageRelease(cgImage);
     return results;
 }
 
-- (nullable NSArray<ZXIResult *> *)readCGImage: (nonnull CGImageRef)image error:(NSError **)error {
+- (NSArray<ZXIResult *> *)readCGImage: (nonnull CGImageRef)image {
     CGColorSpaceRef colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericGray);
     CGFloat cols = CGImageGetWidth(image);
     CGFloat rows = CGImageGetHeight(image);
@@ -76,26 +75,6 @@ using namespace ZXing;
                                                   format:ZXIFormatFromBarcodeFormat(result.format())
                                                    bytes:rawBytes]
                                  ];
-        } else {
-            if(error != nil) {
-                ZXIReaderError errorCode;
-                switch (result.status()) {
-                    case ZXing::DecodeStatus::NoError:
-                        // Can not happen
-                        break;
-                    case ZXing::DecodeStatus::NotFound:
-                        errorCode = ZXIReaderError::ZXINotFoundError;
-                        break;
-                    case ZXing::DecodeStatus::FormatError:
-                        errorCode = ZXIReaderError::ZXIFormatError;
-                        break;
-                    case ZXing::DecodeStatus::ChecksumError:
-                        errorCode = ZXIReaderError::ZXIChecksumError;
-                        break;
-                }
-                *error = [[NSError alloc] initWithDomain: ZXIErrorDomain code: errorCode userInfo:nil];
-            }
-            return nil;
         }
     }
     return zxiResults;
