@@ -1,0 +1,2 @@
+symbologyIdentifier=]d1
+contentType=UnknownECI
