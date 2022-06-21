@@ -7,6 +7,7 @@
 #import "ZXing/ImageView.h"
 #import "ZXing/Result.h"
 #import "ZXIFormatHelper.h"
+#import "ZXIPosition+Helper.h"
 
 using namespace ZXing;
 
@@ -71,10 +72,11 @@ using namespace ZXing;
             auto bytes = result.bytes();
             NSData *rawBytes = [[NSData alloc] initWithBytes:bytes.data() length:bytes.size()];
             [zxiResults addObject:
-                                 [[ZXIResult alloc] init:text
-                                                  format:ZXIFormatFromBarcodeFormat(result.format())
-                                                   bytes:rawBytes]
-                                 ];
+             [[ZXIResult alloc] init:text
+                              format:ZXIFormatFromBarcodeFormat(result.format())
+                               bytes:rawBytes
+                            position:[[ZXIPosition alloc]initWithPosition: result.position()]
+             ]];
         }
     }
     return zxiResults;

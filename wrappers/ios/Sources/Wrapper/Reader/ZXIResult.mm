@@ -7,11 +7,13 @@
 @implementation ZXIResult
 - (instancetype)init:(NSString *)text
               format:(ZXIFormat)format
-               bytes:(NSData *)bytes {
+               bytes:(NSData *)bytes
+            position:(ZXIPosition *)position {
     self = [super init];
     self.text = text;
     self.format = format;
     self.bytes = bytes;
+    self.position = position;
     return self;
 }
 @end
