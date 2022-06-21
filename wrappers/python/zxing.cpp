@@ -175,6 +175,14 @@ PYBIND11_MODULE(zxingcpp, m)
 		.value("Read", EanAddOnSymbol::Read)
 		.value("Require", EanAddOnSymbol::Require)
 		.export_values();
+	py::enum_<ContentType>(m, "ContentType", "Enumeration of content types")
+		.value("Text", ContentType::Text)
+		.value("Binary", ContentType::Binary)
+		.value("Mixed", ContentType::Mixed)
+		.value("GS1", ContentType::GS1)
+		.value("ISO15434", ContentType::ISO15434)
+		.value("UnknownECI", ContentType::UnknownECI)
+		.export_values();
 	py::class_<PointI>(m, "Point", "Represents the coordinates of a point in an image")
 		.def_readonly("x", &PointI::x,
 			":return: horizontal coordinate of the point\n"
@@ -216,6 +224,9 @@ PYBIND11_MODULE(zxingcpp, m)
 		.def_property_readonly("symbology_identifier", &Result::symbologyIdentifier,
 			":return: decoded symbology idendifier\n"
 			":rtype: str")
+		.def_property_readonly("content_type", &Result::contentType,
+			":return: content type of symbol\n"
+			":rtype: zxing.ContentType")
 		.def_property_readonly("position", &Result::position,
 			":return: position of the decoded symbol\n"
 			":rtype: zxing.Position")
