@@ -1,9 +1,6 @@
+// Copyright 2022 KURZ Digital Solutions GmbH
 //
-//  ZXIPositionHelper.h
-//  
-//
-//  Created by Christian Braun on 21.06.22.
-//
+// SPDX-License-Identifier: Apache-2.0
 
 #import <Foundation/Foundation.h>
 #import "ZXIPosition.h"
