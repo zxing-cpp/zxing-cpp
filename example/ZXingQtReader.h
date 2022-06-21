@@ -57,6 +57,8 @@ enum class BarcodeFormat
 	TwoDCodes = Aztec | DataMatrix | MaxiCode | PDF417 | QRCode | MicroQRCode,
 };
 
+enum class ContentType { Text, Binary, Mixed, GS1, ISO15434, UnknownECI };
+
 enum class DecodeStatus
 {
 	NoError = 0,
@@ -66,6 +68,7 @@ enum class DecodeStatus
 };
 #else
 using ZXing::BarcodeFormat;
+using ZXing::ContentType;
 using ZXing::DecodeStatus;
 #endif
 
@@ -74,6 +77,7 @@ using ZXing::Binarizer;
 using ZXing::BarcodeFormats;
 
 Q_ENUM_NS(BarcodeFormat)
+Q_ENUM_NS(ContentType)
 Q_ENUM_NS(DecodeStatus)
 
 template<typename T, typename = decltype(ZXing::ToString(T()))>
@@ -107,6 +111,7 @@ class Result : private ZXing::Result
 	Q_PROPERTY(QByteArray bytes READ bytes)
 	Q_PROPERTY(bool isValid READ isValid)
 	Q_PROPERTY(DecodeStatus status READ status)
+	Q_PROPERTY(ContentType contentType READ contentType)
 	Q_PROPERTY(Position position READ position)
 
 	QString _text;
@@ -128,6 +133,7 @@ public:
 
 	BarcodeFormat format() const { return static_cast<BarcodeFormat>(ZXing::Result::format()); }
 	DecodeStatus status() const { return static_cast<DecodeStatus>(ZXing::Result::status()); }
+	ContentType contentType() const { return static_cast<ContentType>(ZXing::Result::contentType()); }
 	QString formatName() const { return QString::fromStdString(ZXing::ToString(ZXing::Result::format())); }
 	const QString& text() const { return _text; }
 	const QByteArray& bytes() const { return _bytes; }
