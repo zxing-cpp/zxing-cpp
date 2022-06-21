@@ -69,12 +69,11 @@ using namespace ZXing;
                                                       length:resultText.size() * sizeof(wchar_t)
                                                     encoding:NSUTF32LittleEndianStringEncoding];
 
-            auto bytes = result.bytes();
-            NSData *rawBytes = [[NSData alloc] initWithBytes:bytes.data() length:bytes.size()];
+            NSData *bytes = [[NSData alloc] initWithBytes:result.bytes().data() length:result.bytes().size()];
             [zxiResults addObject:
              [[ZXIResult alloc] init:text
                               format:ZXIFormatFromBarcodeFormat(result.format())
-                               bytes:rawBytes
+                               bytes:bytes
                             position:[[ZXIPosition alloc]initWithPosition: result.position()]
              ]];
         }
