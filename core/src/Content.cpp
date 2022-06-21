@@ -191,6 +191,9 @@ CharacterSet Content::guessEncoding() const
 
 ContentType Content::type() const
 {
+	if (empty())
+		return ContentType::Text;
+
 	if (!canProcess())
 		return ContentType::UnknownECI;
 
