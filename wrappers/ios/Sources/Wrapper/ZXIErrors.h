@@ -8,10 +8,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #define ZXIErrorDomain @"ZXIErrorDomain"
 
-typedef NS_ENUM(NSInteger, ZXIReaderError) {
-    ZXINotFoundError = 1000,
-    ZXIChecksumError,
-    ZXIFormatError,
+typedef NS_ENUM(NSInteger, ZXIBarcodeWriterError) {
     ZXIWriterError,
 };
 

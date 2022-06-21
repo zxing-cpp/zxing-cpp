@@ -38,8 +38,6 @@ std::string ToString(const BitMatrix& matrix, char one, char zero, bool addSpace
 }
 #endif
 
-
-
 @implementation ZXIBarcodeWriter
 
 -(nullable CGImageRef)write:(nonnull NSString *)contents
