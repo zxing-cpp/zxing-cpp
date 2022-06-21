@@ -34,6 +34,7 @@ int main(int argc, char* argv[])
 
 	qDebug() << "Text:   " << result.text();
 	qDebug() << "Format: " << result.format();
+	qDebug() << "Content:" << result.contentType();
 	qDebug() << "Error:  " << result.status();
 
 	return result.isValid() ? 0 : 1;
