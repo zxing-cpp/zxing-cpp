@@ -585,12 +585,7 @@ DecoderResult DecodeCodewords(std::vector<int>& codewords, int ecLevel, const st
 		return DecodeStatus::FormatError;
 
 	// Decode the codewords
-	auto result = DecodedBitStreamParser::Decode(codewords, ecLevel, characterSet);
-	if (result.isValid()) {
-		result.setErrorsCorrected(correctedErrorsCount);
-		result.setErasures(Size(erasures));
-	}
-	return result;
+	return DecodedBitStreamParser::Decode(codewords, ecLevel, characterSet);
 }
 
 
