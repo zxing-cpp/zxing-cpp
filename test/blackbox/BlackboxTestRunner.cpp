@@ -63,6 +63,8 @@ namespace {
 // Helper for `compareResult()` - map `key` to Result property, converting value to std::string
 static std::string getResultValue(const Result& result, const std::string& key)
 {
+	if (key == "contentType")
+		return ToString(result.contentType());
 	if (key == "ecLevel")
 		return result.ecLevel();
 	if (key == "orientation")

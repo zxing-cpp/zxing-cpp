@@ -1,1 +1,2 @@
 symbologyIdentifier=]d2
+contentType=GS1
