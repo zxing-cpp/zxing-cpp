@@ -10,7 +10,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic) BOOL tryHarder;
 @property(nonatomic) BOOL tryRotate;
 @property(nonatomic) BOOL tryDownscale;
-@property(nonatomic) BOOL maxNumberOfSymbols;
+@property(nonatomic) NSInteger maxNumberOfSymbols;
 /// An array of ZXIFormat
 @property(nonatomic, strong) NSArray<NSNumber*> *formats;
 
