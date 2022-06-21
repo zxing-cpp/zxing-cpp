@@ -12,6 +12,7 @@
 #include <QImage>
 #include <QDebug>
 #include <QMetaType>
+#include <QScopeGuard>
 
 #ifdef QT_MULTIMEDIA_LIB
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -144,7 +145,15 @@ public:
 	Q_PROPERTY(int runTime MEMBER runTime)
 };
 
-inline Result ReadBarcode(const QImage& img, const DecodeHints& hints = {})
+inline QList<Result> QListResults(ZXing::Results&& zxres)
+{
+	QList<Result> res;
+	for (auto&& r : zxres)
+		res.push_back(Result(std::move(r)));
+	return res;
+}
+
+inline QList<Result> ReadBarcodes(const QImage& img, const DecodeHints& hints = {})
 {
 	using namespace ZXing;
 
@@ -166,15 +175,21 @@ inline Result ReadBarcode(const QImage& img, const DecodeHints& hints = {})
 	};
 
 	auto exec = [&](const QImage& img) {
-		return Result(ZXing::ReadBarcode(
+		return QListResults(ZXing::ReadBarcodes(
 			{img.bits(), img.width(), img.height(), ImgFmtFromQImg(img), static_cast<int>(img.bytesPerLine())}, hints));
 	};
 
 	return ImgFmtFromQImg(img) == ImageFormat::None ? exec(img.convertToFormat(QImage::Format_Grayscale8)) : exec(img);
 }
 
+inline Result ReadBarcode(const QImage& img, const DecodeHints& hints = {})
+{
+	auto res = ReadBarcodes(img, DecodeHints(hints).setMaxNumberOfSymbols(1));
+	return !res.isEmpty() ? res.takeFirst() : Result();
+}
+
 #ifdef QT_MULTIMEDIA_LIB
-inline Result ReadBarcode(const QVideoFrame& frame, const DecodeHints& hints = {})
+inline QList<Result> ReadBarcodes(const QVideoFrame& frame, const DecodeHints& hints = {})
 {
 	using namespace ZXing;
 
@@ -187,7 +202,7 @@ inline Result ReadBarcode(const QVideoFrame& frame, const DecodeHints& hints = {
 		qWarning() << "invalid QVideoFrame: could not map memory";
 		return {};
 	}
-	//TODO c++17:	SCOPE_EXIT([&] { img.unmap(); });
+	auto unmap = qScopeGuard([&] { img.unmap(); });
 
 	ImageFormat fmt = ImageFormat::None;
 	int pixStride = 0;
@@ -269,22 +284,25 @@ inline Result ReadBarcode(const QVideoFrame& frame, const DecodeHints& hints = {
 	default: break;
 	}
 
-	Result res;
 	if (fmt != ImageFormat::None) {
-		res = Result(ZXing::ReadBarcode(
+		return QListResults(ZXing::ReadBarcodes(
 			{img.bits(FIRST_PLANE) + pixOffset, img.width(), img.height(), fmt, img.bytesPerLine(FIRST_PLANE), pixStride}, hints));
 	} else {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 		if (QVideoFrame::imageFormatFromPixelFormat(img.pixelFormat()) != QImage::Format_Invalid)
-			res = ReadBarcode(img.image(), hints);
+			return ReadBarcodes(img.image(), hints);
+		qWarning() << "unsupported QVideoFrame::pixelFormat";
+		return {};
 #else
-		res = ReadBarcode(img.toImage(), hints);
+		return ReadBarcodes(img.toImage(), hints);
 #endif
 	}
+}
 
-	img.unmap();
-
-	return res;
+inline Result ReadBarcode(const QVideoFrame& frame, const DecodeHints& hints = {})
+{
+	auto res = ReadBarcodes(frame, DecodeHints(hints).setMaxNumberOfSymbols(1));
+	return !res.isEmpty() ? res.takeFirst() : Result();
 }
 
 #define ZQ_PROPERTY(Type, name, setter) \
