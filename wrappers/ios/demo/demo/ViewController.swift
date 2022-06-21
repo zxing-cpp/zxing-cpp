@@ -63,8 +63,7 @@ extension ViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
             return
         }
         let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)!
-        if let results = try? reader.read(CIImage(cvPixelBuffer: imageBuffer)),
-           let result = results.first {
+        if let result = reader.read(CIImage(cvPixelBuffer: imageBuffer)).first {
             print("Found barcode of format", result.format.rawValue, "with text", result.text)
         }
         self.zxingLock.signal()
