@@ -458,8 +458,7 @@ static std::vector<int> FindErrorMagnitudes(const ModulusPoly& errorEvaluator, c
 * @param received received codewords
 * @param numECCodewords number of those codewords used for EC
 * @param erasures location of erasures
-* @return number of errors
-* @throws ChecksumException if errors cannot be corrected, maybe because of too many errors
+* @return false if errors cannot be corrected, maybe because of too many errors
 */
 ZXING_EXPORT_TEST_ONLY
 bool DecodeErrorCorrection(std::vector<int>& received, int numECCodewords, const std::vector<int>& erasures, int& nbErrors)
@@ -527,7 +526,7 @@ bool DecodeErrorCorrection(std::vector<int>& received, int numECCodewords, const
 * @param codewords   data and error correction codewords
 * @param erasures positions of any known erasures
 * @param numECCodewords number of error correction codewords that are available in codewords
-* @throws ChecksumException if error correction fails
+* @return false if error correction fails
 */
 static bool CorrectErrors(std::vector<int>& codewords, const std::vector<int>& erasures, int numECCodewords, int& errorCount)
 {

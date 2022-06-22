@@ -16,11 +16,6 @@ class DecodeHints;
 
 namespace QRCode {
 
-/**
-* This implementation can detect and decode QR Codes in an image.
-*
-* @author Sean Owen
-*/
 class Reader : public ZXing::Reader
 {
 public:

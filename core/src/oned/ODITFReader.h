@@ -24,12 +24,10 @@ namespace OneD {
 * lengths are scanned, especially shorter ones, to avoid false positives. This in turn is due to a lack of
 * required checksum function.</p>
 *
-* <p>The checksum is optional and is only applied by this Reader if the assumeITFCheckDigit hint is given.</p>
+* <p>The checksum is optional and is only applied by this Reader if the validateITFCheckSum hint is given.</p>
 *
 * <p><a href="http://en.wikipedia.org/wiki/Interleaved_2_of_5">http://en.wikipedia.org/wiki/Interleaved_2_of_5</a>
 * is a great reference for Interleaved 2 of 5 information.</p>
-*
-* @author kevin.osullivan@sita.aero, SITA Lab.
 */
 class ITFReader : public RowReader
 {

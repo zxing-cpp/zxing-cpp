@@ -14,11 +14,7 @@ namespace ZXing {
 namespace OneD {
 
 /**
-* <p>A reader that can read all available UPC/EAN formats. If a caller wants to try to
-* read all such formats, it is most efficient to use this implementation rather than invoke
-* individual readers.</p>
-*
-* @author Sean Owen
+* @brief A reader that can read all available UPC/EAN formats.
 */
 class MultiUPCEANReader : public RowReader
 {

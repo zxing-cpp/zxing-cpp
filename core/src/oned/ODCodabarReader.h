@@ -14,12 +14,6 @@ class DecodeHints;
 
 namespace OneD {
 
-/**
-* <p>Decodes Codabar barcodes.</p>
-*
-* @author Bas Vijfwinkel
-* @author David Walker
-*/
 class CodabarReader : public RowReader
 {
 public:
