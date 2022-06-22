@@ -373,7 +373,7 @@ DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet, const b
 *
 * @param codewordBytes data and error correction codewords
 * @param numDataCodewords number of codewords that are data bytes
-* @throws ChecksumException if error correction fails
+* @return false if error correction fails
 */
 static bool
 CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)

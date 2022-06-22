@@ -329,11 +329,8 @@ bool HasStartPattern(const BitMatrix& m)
 * <p>Detects a PDF417 Code in an image. Only checks 0 and 180 degree rotations.</p>
 *
 * @param image barcode image to decode
-* @param hints optional hints to detector
 * @param multiple if true, then the image is searched for multiple codes. If false, then at most one code will
 * be found and returned
-* @return {@link PDF417DetectorResult} encapsulating results of detecting a PDF417 code
-* @throws NotFoundException if no PDF417 Code can be found
 */
 DecodeStatus
 Detector::Detect(const BinaryBitmap& image, bool multiple, Result& result)

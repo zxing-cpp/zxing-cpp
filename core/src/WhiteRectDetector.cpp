@@ -118,20 +118,6 @@ static void CenterEdges(const ResultPoint& y, const ResultPoint& z, const Result
 	}
 }
 
-/**
-* <p>
-* Detects a candidate barcode-like rectangular region within an image. It
-* starts around the center of the image, increases the size of the candidate
-* region until it finds a white rectangular region.
-* </p>
-*
-* @return {@link ResultPoint}[] describing the corners of the rectangular
-*         region. The first and last points are opposed on the diagonal, as
-*         are the second and third. The first point will be the topmost
-*         point and the last, the bottommost. The second point will be
-*         leftmost and the third, the rightmost
-* @throws NotFoundException if no Data Matrix Code can be found
-*/
 bool DetectWhiteRect(const BitMatrix& image, int initSize, int x, int y, ResultPoint& p0, ResultPoint& p1,
 					 ResultPoint& p2, ResultPoint& p3)
 {

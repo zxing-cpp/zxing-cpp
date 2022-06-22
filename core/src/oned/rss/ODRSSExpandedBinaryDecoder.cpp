@@ -314,7 +314,6 @@ std::string DecodeExpandedBits(const BitArray& bits)
 	}
 
 	return {};
-	//throw new IllegalStateException("unknown decoder: " + information);
 }
 
 } // namespace ZXing::OneD::DataBar

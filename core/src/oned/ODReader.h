@@ -19,10 +19,6 @@ namespace OneD {
 
 class RowReader;
 
-/**
-* @author dswitkin@google.com (Daniel Switkin)
-* @author Sean Owen
-*/
 class Reader : public ZXing::Reader
 {
 public:

@@ -14,11 +14,6 @@ class DecodeHints;
 
 namespace OneD {
 
-/**
-* <p>Decodes Code 128 barcodes.</p>
-*
-* @author Sean Owen
-*/
 class Code128Reader : public RowReader
 {
 public:

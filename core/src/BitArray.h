@@ -257,7 +257,6 @@ public:
 	* @param end end of range, exclusive
 	* @param value if true, checks that bits in range are set, otherwise checks that they are not set
 	* @return true iff all bits are set or not set in range, according to value argument
-	* @throws IllegalArgumentException if end is less than or equal to start
 	*/
 #ifdef ZX_FAST_BIT_STORAGE
 	bool isRange(int start, int end, bool value) const

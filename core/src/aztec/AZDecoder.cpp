@@ -117,10 +117,7 @@ static BitArray ExtractBits(const DetectorResult& ddata)
 }
 
 /**
-* <p>Performs RS error correction on an array of bits.</p>
-*
-* @return the corrected array
-* @throws FormatException if the input contains too many errors
+* @brief Performs RS error correction on an array of bits.
 */
 static BitArray CorrectBits(const DetectorResult& ddata, const BitArray& rawbits)
 {

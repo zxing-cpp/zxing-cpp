@@ -143,7 +143,7 @@ static bool GetCorrectedParameterData(int64_t parameterData, bool compact, int& 
 * Extracts the number of data layers and data blocks from the layer around the bull's eye.
 *
 * @param bullsEyeCorners the array of bull's eye corners
-* @throws NotFoundException in case of too many errors or invalid parameters
+* @return false in case of too many errors or invalid parameters
 */
 static bool ExtractParameters(const BitMatrix& image, const std::array<ResultPoint, 4>& bullsEyeCorners, bool compact,
 							  int nbCenterLayers, int& nbLayers, int& nbDataBlocks, bool& readerInit, int& shift)
@@ -354,7 +354,7 @@ static void ExpandSquare(std::array<ResultPoint, 4>& cornerPoints, float oldSide
 *
 * @param pCenter Center point
 * @return The corners of the bull-eye
-* @throws NotFoundException If no valid bull-eye can be found
+* @return false If no valid bull-eye can be found
 */
 static bool GetBullsEyeCorners(const BitMatrix& image, const PointI& pCenter, std::array<ResultPoint, 4>& result, bool& compact, int& nbCenterLayers)
 {

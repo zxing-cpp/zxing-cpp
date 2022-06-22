@@ -25,16 +25,7 @@ Reader::Reader(const DecodeHints& hints)
 	  _characterSet(hints.characterSet())
 {}
 
-/**
-* Locates and decodes a Data Matrix code in an image.
-*
-* @return a string representing the content encoded by the Data Matrix code
-* @throws NotFoundException if a Data Matrix code cannot be found
-* @throws FormatException if a Data Matrix code cannot be decoded
-* @throws ChecksumException if error correction fails
-*/
-Result
-Reader::decode(const BinaryBitmap& image) const
+Result Reader::decode(const BinaryBitmap& image) const
 {
 	auto binImg = image.getBitMatrix();
 	if (binImg == nullptr)
