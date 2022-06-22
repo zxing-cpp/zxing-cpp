@@ -15,11 +15,7 @@ class BitMatrix;
 
 namespace MaxiCode {
 
-class Decoder
-{
-public:
-	static DecoderResult Decode(const BitMatrix& bits, const std::string& characterSet);
-};
+DecoderResult Decode(const BitMatrix& bits, const std::string& characterSet);
 
 } // MaxiCode
 } // ZXing
