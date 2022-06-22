@@ -115,6 +115,7 @@ if (BUILD_READERS)
         src/Result.cpp
         src/ResultPoint.h
         src/ResultPoint.cpp
+        src/StructuredAppend.h
         src/TextDecoder.h
         src/TextDecoder.cpp
         src/ThresholdBinarizer.h
