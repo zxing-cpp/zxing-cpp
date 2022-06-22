@@ -26,15 +26,19 @@ int main(int argc, char* argv[])
 	}
 
 	auto hints = DecodeHints()
-					 .setFormats(BarcodeFormat::QRCode)
+					 .setFormats(BarcodeFormat::Any)
 					 .setTryRotate(false)
-					 .setBinarizer(Binarizer::FixedThreshold);
+					 .setMaxNumberOfSymbols(10);
 
-	auto result = ReadBarcode(fileImage, hints);
+	auto results = ReadBarcodes(fileImage, hints);
 
-	qDebug() << "Text:   " << result.text();
-	qDebug() << "Format: " << result.format();
-	qDebug() << "Error:  " << result.status();
+	for (auto& result : results) {
+		qDebug() << "Text:   " << result.text();
+		qDebug() << "Format: " << result.format();
+		qDebug() << "Content:" << result.contentType();
+		qDebug() << "Error:  " << result.status();
+		qDebug() << "";
+	}
 
-	return result.isValid() ? 0 : 1;
+	return results.isEmpty() ? 1 : 0;
 }

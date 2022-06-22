@@ -12,6 +12,7 @@
 #include <QImage>
 #include <QDebug>
 #include <QMetaType>
+#include <QScopeGuard>
 
 #ifdef QT_MULTIMEDIA_LIB
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -57,6 +58,8 @@ enum class BarcodeFormat
 	TwoDCodes = Aztec | DataMatrix | MaxiCode | PDF417 | QRCode | MicroQRCode,
 };
 
+enum class ContentType { Text, Binary, Mixed, GS1, ISO15434, UnknownECI };
+
 enum class DecodeStatus
 {
 	NoError = 0,
@@ -66,6 +69,7 @@ enum class DecodeStatus
 };
 #else
 using ZXing::BarcodeFormat;
+using ZXing::ContentType;
 using ZXing::DecodeStatus;
 #endif
 
@@ -74,6 +78,7 @@ using ZXing::Binarizer;
 using ZXing::BarcodeFormats;
 
 Q_ENUM_NS(BarcodeFormat)
+Q_ENUM_NS(ContentType)
 Q_ENUM_NS(DecodeStatus)
 
 template<typename T, typename = decltype(ZXing::ToString(T()))>
@@ -107,6 +112,7 @@ class Result : private ZXing::Result
 	Q_PROPERTY(QByteArray bytes READ bytes)
 	Q_PROPERTY(bool isValid READ isValid)
 	Q_PROPERTY(DecodeStatus status READ status)
+	Q_PROPERTY(ContentType contentType READ contentType)
 	Q_PROPERTY(Position position READ position)
 
 	QString _text;
@@ -128,6 +134,7 @@ public:
 
 	BarcodeFormat format() const { return static_cast<BarcodeFormat>(ZXing::Result::format()); }
 	DecodeStatus status() const { return static_cast<DecodeStatus>(ZXing::Result::status()); }
+	ContentType contentType() const { return static_cast<ContentType>(ZXing::Result::contentType()); }
 	QString formatName() const { return QString::fromStdString(ZXing::ToString(ZXing::Result::format())); }
 	const QString& text() const { return _text; }
 	const QByteArray& bytes() const { return _bytes; }
@@ -138,7 +145,15 @@ public:
 	Q_PROPERTY(int runTime MEMBER runTime)
 };
 
-inline Result ReadBarcode(const QImage& img, const DecodeHints& hints = {})
+inline QList<Result> QListResults(ZXing::Results&& zxres)
+{
+	QList<Result> res;
+	for (auto&& r : zxres)
+		res.push_back(Result(std::move(r)));
+	return res;
+}
+
+inline QList<Result> ReadBarcodes(const QImage& img, const DecodeHints& hints = {})
 {
 	using namespace ZXing;
 
@@ -160,15 +175,21 @@ inline Result ReadBarcode(const QImage& img, const DecodeHints& hints = {})
 	};
 
 	auto exec = [&](const QImage& img) {
-		return Result(ZXing::ReadBarcode(
+		return QListResults(ZXing::ReadBarcodes(
 			{img.bits(), img.width(), img.height(), ImgFmtFromQImg(img), static_cast<int>(img.bytesPerLine())}, hints));
 	};
 
 	return ImgFmtFromQImg(img) == ImageFormat::None ? exec(img.convertToFormat(QImage::Format_Grayscale8)) : exec(img);
 }
 
+inline Result ReadBarcode(const QImage& img, const DecodeHints& hints = {})
+{
+	auto res = ReadBarcodes(img, DecodeHints(hints).setMaxNumberOfSymbols(1));
+	return !res.isEmpty() ? res.takeFirst() : Result();
+}
+
 #ifdef QT_MULTIMEDIA_LIB
-inline Result ReadBarcode(const QVideoFrame& frame, const DecodeHints& hints = {})
+inline QList<Result> ReadBarcodes(const QVideoFrame& frame, const DecodeHints& hints = {})
 {
 	using namespace ZXing;
 
@@ -181,7 +202,7 @@ inline Result ReadBarcode(const QVideoFrame& frame, const DecodeHints& hints = {
 		qWarning() << "invalid QVideoFrame: could not map memory";
 		return {};
 	}
-	//TODO c++17:	SCOPE_EXIT([&] { img.unmap(); });
+	auto unmap = qScopeGuard([&] { img.unmap(); });
 
 	ImageFormat fmt = ImageFormat::None;
 	int pixStride = 0;
@@ -263,22 +284,25 @@ inline Result ReadBarcode(const QVideoFrame& frame, const DecodeHints& hints = {
 	default: break;
 	}
 
-	Result res;
 	if (fmt != ImageFormat::None) {
-		res = Result(ZXing::ReadBarcode(
+		return QListResults(ZXing::ReadBarcodes(
 			{img.bits(FIRST_PLANE) + pixOffset, img.width(), img.height(), fmt, img.bytesPerLine(FIRST_PLANE), pixStride}, hints));
 	} else {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 		if (QVideoFrame::imageFormatFromPixelFormat(img.pixelFormat()) != QImage::Format_Invalid)
-			res = ReadBarcode(img.image(), hints);
+			return ReadBarcodes(img.image(), hints);
+		qWarning() << "unsupported QVideoFrame::pixelFormat";
+		return {};
 #else
-		res = ReadBarcode(img.toImage(), hints);
+		return ReadBarcodes(img.toImage(), hints);
 #endif
 	}
+}
 
-	img.unmap();
-
-	return res;
+inline Result ReadBarcode(const QVideoFrame& frame, const DecodeHints& hints = {})
+{
+	auto res = ReadBarcodes(frame, DecodeHints(hints).setMaxNumberOfSymbols(1));
+	return !res.isEmpty() ? res.takeFirst() : Result();
 }
 
 #define ZQ_PROPERTY(Type, name, setter) \
