@@ -59,7 +59,7 @@ Reader::decode(const BinaryBitmap& image) const
 		return Result(DecodeStatus::NotFound);
 	}
 
-	return Result(Decoder::Decode(bits, _characterSet), {}, BarcodeFormat::MaxiCode);
+	return Result(Decode(bits, _characterSet), {}, BarcodeFormat::MaxiCode);
 }
 
 } // namespace ZXing::MaxiCode

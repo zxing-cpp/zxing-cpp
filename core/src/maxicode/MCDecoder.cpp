@@ -300,7 +300,7 @@ DecoderResult Decode(ByteArray&& bytes, const int mode, const std::string& /*cha
 
 } // DecodedBitStreamParser
 
-DecoderResult Decoder::Decode(const BitMatrix& bits, const std::string& characterSet)
+DecoderResult Decode(const BitMatrix& bits, const std::string& characterSet)
 {
 	ByteArray codewords = BitMatrixParser::ReadCodewords(bits);
 
