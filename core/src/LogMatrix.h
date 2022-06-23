@@ -68,7 +68,6 @@ public:
 			_log.set(static_cast<int>(p.x * _scale), static_cast<int>(p.y * _scale), color);
 	}
 
-	template <>
 	void operator()(const PointT<int>& p, int color)
 	{
 		operator()(centered(p), color);
