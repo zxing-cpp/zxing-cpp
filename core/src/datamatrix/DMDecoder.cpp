@@ -293,7 +293,7 @@ DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet, const b
 		while (!done && bits.available() >= 8) {
 			int oneByte = bits.readBits(8);
 			switch (oneByte) {
-			case 0: return DecodeStatus::FormatError;
+			case 0: throw std::runtime_error("invalid 0 code word");
 			case 129: done = true; break; // Pad -> we are done, ignore the rest of the bits
 			case 230: DecodeC40OrTextSegment(bits, result, Mode::C40); break;
 			case 231: DecodeBase256Segment(bits, result); break;
@@ -310,13 +310,13 @@ DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet, const b
 				break;
 			case 233: // Structured Append
 				if (!firstCodeword) // Must be first ISO 16022:2006 5.6.1
-					return DecodeStatus::FormatError;
+					throw std::runtime_error("structured append tag must be first code word");
 				ParseStructuredAppend(bits, sai);
 				firstFNC1Position = 5;
 				break;
 			case 234: // Reader Programming
 				if (!firstCodeword) // Must be first ISO 16022:2006 5.2.4.9
-					return DecodeStatus::FormatError;
+					throw std::runtime_error("reader programming tag must be first code word");
 				readerInit = true;
 				break;
 			case 235: upperShift.set = true; break; // Upper Shift (shift to Extended ASCII)
@@ -344,7 +344,7 @@ DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet, const b
 					// work around encoders that use unlatch to ASCII as last code word (ask upstream)
 					if (oneByte == 254 && bits.available() == 0)
 						break;
-					return DecodeStatus::FormatError;
+					throw std::runtime_error("invalid code word");
 				}
 			}
 			firstCodeword = false;
