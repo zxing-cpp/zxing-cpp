@@ -253,13 +253,11 @@ bool IsEndOfStream(const BitSource& bits, const Version& version)
 * <p>See ISO 18004:2006, 6.4.3 - 6.4.7</p>
 */
 ZXING_EXPORT_TEST_ONLY
-DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCorrectionLevel ecLevel,
-							  const std::string& hintedCharset)
+DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCorrectionLevel ecLevel)
 {
 	BitSource bits(bytes);
 	Content result;
 	result.symbology = {'Q', '1', 1};
-	result.hintedCharset = hintedCharset.empty() ? "Auto" : hintedCharset;
 	StructuredAppendInfo structuredAppend;
 	const int modeBitLength = CodecModeBitsLength(version);
 
@@ -343,7 +341,7 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 		.setStructuredAppend(structuredAppend);
 }
 
-DecoderResult Decode(const BitMatrix& bits, const std::string& hintedCharset)
+DecoderResult Decode(const BitMatrix& bits)
 {
 	const Version* pversion = ReadVersion(bits);
 	if (!pversion)
@@ -383,7 +381,7 @@ DecoderResult Decode(const BitMatrix& bits, const std::string& hintedCharset)
 	}
 
 	// Decode the contents of that stream of bytes
-	return DecodeBitStream(std::move(resultBytes), version, formatInfo.ecLevel, hintedCharset).setIsMirrored(formatInfo.isMirrored);
+	return DecodeBitStream(std::move(resultBytes), version, formatInfo.ecLevel).setIsMirrored(formatInfo.isMirrored);
 }
 
 } // namespace ZXing::QRCode

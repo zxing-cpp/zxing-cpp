@@ -12,7 +12,7 @@
 using namespace ZXing;
 
 namespace ZXing::DataMatrix::DecodedBitStreamParser {
-DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet, const bool isDMRE);
+DecoderResult Decode(ByteArray&& bytes, const bool isDMRE);
 }
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
@@ -23,7 +23,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
 	ByteArray ba;
 	ba.insert(ba.begin(), data, data + size);
 	try {
-		DataMatrix::DecodedBitStreamParser::Decode(std::move(ba), "", false);
+		DataMatrix::DecodedBitStreamParser::Decode(std::move(ba), false);
 	} catch (...) {
 	}
 

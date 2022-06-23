@@ -564,7 +564,7 @@ static int DecodeMacroOptionalTextField(DecodeStatus& status, const std::vector<
 	Content result;
 	// Each optional field begins with an implied reset to ECI 2 (Annex H.2.3). ECI 2 is ASCII for 0-127, and Cp437
 	// for non-ASCII (128-255). Text optional fields can contain ECIs.
-	result.hintedCharset = "Cp437";
+	result.defaultCharset = "Cp437";
 
 	codeIndex = TextCompaction(status, codewords, codeIndex, result);
 
@@ -583,7 +583,7 @@ static int DecodeMacroOptionalNumericField(DecodeStatus& status, const std::vect
 	Content result;
 	// Each optional field begins with an implied reset to ECI 2 (Annex H.2.3). ECI 2 is ASCII for 0-127, and Cp437
 	// for non-ASCII (128-255). Text optional fields can contain ECIs.
-	result.hintedCharset = "Cp437";
+	result.defaultCharset = "Cp437";
 
 	codeIndex = NumericCompaction(status, codewords, codeIndex, result);
 
@@ -707,11 +707,10 @@ DecodeStatus DecodeMacroBlock(const std::vector<int>& codewords, int codeIndex, 
 }
 
 DecoderResult
-DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel, const std::string& characterSet)
+DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel)
 {
 	Content result;
 	result.symbology = { 'L', '2', -1 };
-	result.hintedCharset = characterSet;
 
 	bool readerInit = false;
 	auto resultMetadata = std::make_shared<DecoderResultExtra>();

@@ -568,8 +568,7 @@ static bool VerifyCodewordCount(std::vector<int>& codewords, int numECCodewords)
 	return true;
 }
 
-DecoderResult DecodeCodewords(std::vector<int>& codewords, int ecLevel, const std::vector<int>& erasures,
-							  const std::string& characterSet)
+DecoderResult DecodeCodewords(std::vector<int>& codewords, int ecLevel, const std::vector<int>& erasures)
 {
 	if (codewords.empty()) {
 		return DecodeStatus::FormatError;
@@ -584,7 +583,7 @@ DecoderResult DecodeCodewords(std::vector<int>& codewords, int ecLevel, const st
 		return DecodeStatus::FormatError;
 
 	// Decode the codewords
-	return DecodedBitStreamParser::Decode(codewords, ecLevel, characterSet);
+	return DecodedBitStreamParser::Decode(codewords, ecLevel);
 }
 
 
@@ -603,7 +602,7 @@ DecoderResult DecodeCodewords(std::vector<int>& codewords, int ecLevel, const st
 */
 static DecoderResult CreateDecoderResultFromAmbiguousValues(int ecLevel, std::vector<int>& codewords,
 	const std::vector<int>& erasureArray, const std::vector<int>& ambiguousIndexes,
-	const std::vector<std::vector<int>>& ambiguousIndexValues, const std::string& characterSet)
+	const std::vector<std::vector<int>>& ambiguousIndexValues)
 {
 	std::vector<int> ambiguousIndexCount(ambiguousIndexes.size(), 0);
 
@@ -612,7 +611,7 @@ static DecoderResult CreateDecoderResultFromAmbiguousValues(int ecLevel, std::ve
 		for (size_t i = 0; i < ambiguousIndexCount.size(); i++) {
 			codewords[ambiguousIndexes[i]] = ambiguousIndexValues[i][ambiguousIndexCount[i]];
 		}
-		auto result = DecodeCodewords(codewords, ecLevel, erasureArray, characterSet);
+		auto result = DecodeCodewords(codewords, ecLevel, erasureArray);
 		if (result.errorCode() != DecodeStatus::ChecksumError) {
 			return result;
 		}
@@ -637,7 +636,7 @@ static DecoderResult CreateDecoderResultFromAmbiguousValues(int ecLevel, std::ve
 }
 
 
-static DecoderResult CreateDecoderResult(DetectionResult& detectionResult, const std::string& characterSet)
+static DecoderResult CreateDecoderResult(DetectionResult& detectionResult)
 {
 	auto barcodeMatrix = CreateBarcodeMatrix(detectionResult);
 	if (!AdjustCodewordCount(detectionResult, barcodeMatrix)) {
@@ -664,7 +663,7 @@ static DecoderResult CreateDecoderResult(DetectionResult& detectionResult, const
 		}
 	}
 	return CreateDecoderResultFromAmbiguousValues(detectionResult.barcodeECLevel(), codewords, erasures,
-												  ambiguousIndexesList, ambiguousIndexValues, characterSet);
+												  ambiguousIndexesList, ambiguousIndexValues);
 }
 
 
@@ -675,7 +674,7 @@ static DecoderResult CreateDecoderResult(DetectionResult& detectionResult, const
 DecoderResult
 ScanningDecoder::Decode(const BitMatrix& image, const Nullable<ResultPoint>& imageTopLeft, const Nullable<ResultPoint>& imageBottomLeft,
 	const Nullable<ResultPoint>& imageTopRight, const Nullable<ResultPoint>& imageBottomRight,
-	int minCodewordWidth, int maxCodewordWidth, const std::string& characterSet)
+	int minCodewordWidth, int maxCodewordWidth)
 {
 	BoundingBox boundingBox;
 	if (!BoundingBox::Create(image.width(), image.height(), imageTopLeft, imageBottomLeft, imageTopRight, imageBottomRight, boundingBox)) {
@@ -736,7 +735,7 @@ ScanningDecoder::Decode(const BitMatrix& image, const Nullable<ResultPoint>& ima
 			}
 		}
 	}
-	return CreateDecoderResult(detectionResult, characterSet);
+	return CreateDecoderResult(detectionResult);
 }
 
 } // Pdf417
