@@ -22,6 +22,9 @@ class Reader : public ZXing::Reader
 public:
 	explicit Reader(const DecodeHints& hints);
 	Result decode(const BinaryBitmap& image) const override;
+#ifdef __cpp_impl_coroutine
+	Results decode(const BinaryBitmap& image, int maxSymbols) const override;
+#endif
 };
 
 } // DataMatrix
