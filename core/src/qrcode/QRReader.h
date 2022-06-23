@@ -26,7 +26,6 @@ public:
 
 private:
 	bool _tryHarder, _isPure, _testQR, _testMQR;
-	std::string _charset;
 };
 
 } // QRCode

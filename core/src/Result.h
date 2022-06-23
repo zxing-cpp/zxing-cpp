@@ -147,6 +147,7 @@ public:
 
 	// only for internal use
 	void incrementLineCount() { ++_lineCount; }
+	Result& setCharacterSet(const std::string& defaultCS);
 
 	bool operator==(const Result& o) const;
 

@@ -127,7 +127,7 @@ Result ReadBarcode(const ImageView& _iv, const DecodeHints& hints)
 		LumImage lum;
 		ImageView iv = SetupLumImageView(_iv, lum, hints);
 
-		return MultiFormatReader(hints).read(*CreateBitmap(hints.binarizer(), iv));
+		return MultiFormatReader(hints).read(*CreateBitmap(hints.binarizer(), iv)).setCharacterSet(hints.characterSet());
 	}
 }
 
@@ -158,6 +158,9 @@ Results ReadBarcodes(const ImageView& _iv, const DecodeHints& hints)
 		if (maxSymbols <= 0)
 			break;
 	}
+
+	for (auto& res : results)
+		res.setCharacterSet(hints.characterSet());
 
 	return results;
 }

@@ -24,7 +24,6 @@ public:
 
 private:
 	bool _isPure;
-	std::string _characterSet;
 };
 
 } // Aztec

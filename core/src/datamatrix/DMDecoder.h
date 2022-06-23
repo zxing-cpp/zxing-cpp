@@ -15,7 +15,7 @@ class BitMatrix;
 
 namespace DataMatrix {
 
-DecoderResult Decode(const BitMatrix& bits, const std::string& characterSet = "");
+DecoderResult Decode(const BitMatrix& bits);
 
 } // DataMatrix
 } // ZXing

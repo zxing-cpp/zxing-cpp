@@ -24,7 +24,7 @@ namespace Pdf417 {
 class DecodedBitStreamParser
 {
 public:
-	static DecoderResult Decode(const std::vector<int>& codewords, int ecLevel, const std::string& characterSet);
+	static DecoderResult Decode(const std::vector<int>& codewords, int ecLevel);
 };
 
 } // Pdf417

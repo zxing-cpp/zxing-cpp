@@ -16,7 +16,7 @@
 
 namespace ZXing {
 	namespace QRCode {
-		DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCorrectionLevel ecLevel, const std::string& hintedCharset);
+		DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCorrectionLevel ecLevel);
 	}
 }
 
@@ -31,7 +31,7 @@ TEST(QRDecodedBitStreamParserTest, SimpleByteMode)
     ba.appendBits(0xF1, 8);
     ba.appendBits(0xF2, 8);
     ba.appendBits(0xF3, 8);
-    auto result = DecodeBitStream(ba.toBytes(), *Version::VersionForNumber(1), ErrorCorrectionLevel::Medium, "").text();
+    auto result = DecodeBitStream(ba.toBytes(), *Version::VersionForNumber(1), ErrorCorrectionLevel::Medium).text();
     EXPECT_EQ(L"\xF1\xF2\xF3", result);
 }
 
@@ -44,7 +44,7 @@ TEST(QRDecodedBitStreamParserTest, SimpleSJIS)
     ba.appendBits(0xA2, 8);
     ba.appendBits(0xA3, 8);
     ba.appendBits(0xD0, 8);
-	auto result = DecodeBitStream(ba.toBytes(), *Version::VersionForNumber(1), ErrorCorrectionLevel::Medium, "").text();
+	auto result = DecodeBitStream(ba.toBytes(), *Version::VersionForNumber(1), ErrorCorrectionLevel::Medium).text();
 	EXPECT_EQ(L"\uff61\uff62\uff63\uff90", result);
 }
 
@@ -58,7 +58,7 @@ TEST(QRDecodedBitStreamParserTest, ECI)
     ba.appendBits(0xA1, 8);
     ba.appendBits(0xA2, 8);
     ba.appendBits(0xA3, 8);
-	auto result = DecodeBitStream(ba.toBytes(), *Version::VersionForNumber(1), ErrorCorrectionLevel::Medium, "").text();
+	auto result = DecodeBitStream(ba.toBytes(), *Version::VersionForNumber(1), ErrorCorrectionLevel::Medium).text();
 	EXPECT_EQ(L"\xED\xF3\xFA", result);
 }
 
@@ -69,7 +69,7 @@ TEST(QRDecodedBitStreamParserTest, Hanzi)
     ba.appendBits(0x01, 4); // Subset 1 = GB2312 encoding
     ba.appendBits(0x01, 8); // 1 characters
     ba.appendBits(0x03C1, 13);
-	auto result = DecodeBitStream(ba.toBytes(), *Version::VersionForNumber(1), ErrorCorrectionLevel::Medium, "").text();
+	auto result = DecodeBitStream(ba.toBytes(), *Version::VersionForNumber(1), ErrorCorrectionLevel::Medium).text();
 	EXPECT_EQ(L"\u963f", result);
 }
 
@@ -82,7 +82,7 @@ TEST(QRDecodedBitStreamParserTest, HanziLevel1)
 	// A5A2 (U+30A2) => A5A2 - A1A1 = 401, 4*60 + 01 = 0181
 	ba.appendBits(0x0181, 13);
 
-	auto result = DecodeBitStream(ba.toBytes(), *Version::VersionForNumber(1), ErrorCorrectionLevel::Medium, "").text();
+	auto result = DecodeBitStream(ba.toBytes(), *Version::VersionForNumber(1), ErrorCorrectionLevel::Medium).text();
 	EXPECT_EQ(L"\u30a2", result);
 }
 
@@ -93,22 +93,22 @@ TEST(QRDecodedBitStreamParserTest, SymbologyIdentifier)
 	DecoderResult result;
 
 	// Plain "ANUM(1) A"
-	result = DecodeBitStream({0x20, 0x09, 0x40}, version, ecLevel, "");
+	result = DecodeBitStream({0x20, 0x09, 0x40}, version, ecLevel);
 	EXPECT_EQ(result.symbologyIdentifier(), "]Q1");
 	EXPECT_EQ(result.text(), L"A");
 
 	// GS1 "FNC1(1st) NUM(4) 2001"
-	result = DecodeBitStream({0x51, 0x01, 0x0C, 0x81, 0x00}, version, ecLevel, "");
+	result = DecodeBitStream({0x51, 0x01, 0x0C, 0x81, 0x00}, version, ecLevel);
 	EXPECT_EQ(result.symbologyIdentifier(), "]Q3");
 	EXPECT_EQ(result.text(), L"2001"); // "(20)01"
 
 	// GS1 "NUM(4) 2001 FNC1(1st) 301" - FNC1(1st) can occur anywhere (this actually violates the specification)
-	result = DecodeBitStream({0x10, 0x10, 0xC8, 0x15, 0x10, 0x0D, 0x2D, 0x00}, version, ecLevel, "");
+	result = DecodeBitStream({0x10, 0x10, 0xC8, 0x15, 0x10, 0x0D, 0x2D, 0x00}, version, ecLevel);
 	EXPECT_EQ(result.symbologyIdentifier(), "]Q3");
 	EXPECT_EQ(result.text(), L"2001301"); // "(20)01(30)1"
 
 	// AIM "FNC1(2nd) 99 (0x63) ANUM(1) A"
-	result = DecodeBitStream({0x96, 0x32, 0x00, 0x94, 0x00}, version, ecLevel, "");
+	result = DecodeBitStream({0x96, 0x32, 0x00, 0x94, 0x00}, version, ecLevel);
 	EXPECT_EQ(result.symbologyIdentifier(), "]Q5");
 	EXPECT_EQ(result.text(), L"99A");
 
@@ -119,16 +119,16 @@ TEST(QRDecodedBitStreamParserTest, SymbologyIdentifier)
 //	EXPECT_EQ(result.text(), L"99AB"); // Application Indicator prefixed to data
 
 	// AIM "FNC1(2nd) A (100 + 61 = 0xA5) ANUM(1) B"
-	result = DecodeBitStream({0x9A, 0x52, 0x00, 0x96, 0x00}, version, ecLevel, "");
+	result = DecodeBitStream({0x9A, 0x52, 0x00, 0x96, 0x00}, version, ecLevel);
 	EXPECT_EQ(result.symbologyIdentifier(), "]Q5");
 	EXPECT_EQ(result.text(), L"AB");
 
 	// AIM "FNC1(2nd) a (100 + 97 = 0xC5) ANUM(1) B"
-	result = DecodeBitStream({0x9C, 0x52, 0x00, 0x96, 0x00}, version, ecLevel, "");
+	result = DecodeBitStream({0x9C, 0x52, 0x00, 0x96, 0x00}, version, ecLevel);
 	EXPECT_EQ(result.symbologyIdentifier(), "]Q5");
 	EXPECT_EQ(result.text(), L"aB");
 
 	// Bad AIM Application Indicator "FNC1(2nd) @ (0xA4) ANUM(1) B"
-	result = DecodeBitStream({0x9A, 0x42, 0x00, 0x96, 0x00}, version, ecLevel, "");
+	result = DecodeBitStream({0x9A, 0x42, 0x00, 0x96, 0x00}, version, ecLevel);
 	EXPECT_FALSE(result.isValid());
 }

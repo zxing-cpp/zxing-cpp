@@ -19,7 +19,6 @@ namespace MaxiCode {
 class Reader : public ZXing::Reader
 {
 	bool _isPure;
-	std::string _characterSet;
 
 public:
 	explicit Reader(const DecodeHints& hints);

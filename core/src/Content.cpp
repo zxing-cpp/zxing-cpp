@@ -101,7 +101,7 @@ std::wstring Content::render(bool withECI) const
 	if (withECI)
 		res = TextDecoder::FromLatin1(symbology.toString(true));
 	ECI lastECI = ECI::Unknown;
-	auto fallbackCS = CharacterSetFromString(hintedCharset);
+	auto fallbackCS = CharacterSetFromString(defaultCharset);
 	if (!hasECI && fallbackCS == CharacterSet::Unknown)
 		fallbackCS = guessEncoding();
 

@@ -44,7 +44,7 @@ public:
 
 	ByteArray bytes;
 	std::vector<Encoding> encodings;
-	std::string hintedCharset;
+	std::string defaultCharset;
 	std::string applicationIndicator;
 	SymbologyIdentifier symbology;
 	bool hasECI = false;
