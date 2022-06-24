@@ -60,17 +60,9 @@ enum class BarcodeFormat
 
 enum class ContentType { Text, Binary, Mixed, GS1, ISO15434, UnknownECI };
 
-enum class DecodeStatus
-{
-	NoError = 0,
-	NotFound,
-	FormatError,
-	ChecksumError,
-};
 #else
 using ZXing::BarcodeFormat;
 using ZXing::ContentType;
-using ZXing::DecodeStatus;
 #endif
 
 using ZXing::DecodeHints;
@@ -79,7 +71,6 @@ using ZXing::BarcodeFormats;
 
 Q_ENUM_NS(BarcodeFormat)
 Q_ENUM_NS(ContentType)
-Q_ENUM_NS(DecodeStatus)
 
 template<typename T, typename = decltype(ZXing::ToString(T()))>
 QDebug operator<<(QDebug dbg, const T& v)
@@ -111,7 +102,6 @@ class Result : private ZXing::Result
 	Q_PROPERTY(QString text READ text)
 	Q_PROPERTY(QByteArray bytes READ bytes)
 	Q_PROPERTY(bool isValid READ isValid)
-	Q_PROPERTY(DecodeStatus status READ status)
 	Q_PROPERTY(ContentType contentType READ contentType)
 	Q_PROPERTY(Position position READ position)
 
@@ -133,7 +123,6 @@ public:
 	using ZXing::Result::isValid;
 
 	BarcodeFormat format() const { return static_cast<BarcodeFormat>(ZXing::Result::format()); }
-	DecodeStatus status() const { return static_cast<DecodeStatus>(ZXing::Result::status()); }
 	ContentType contentType() const { return static_cast<ContentType>(ZXing::Result::contentType()); }
 	QString formatName() const { return QString::fromStdString(ZXing::ToString(ZXing::Result::format())); }
 	const QString& text() const { return _text; }
@@ -440,7 +429,7 @@ namespace ZXingQt {
 inline void registerQmlAndMetaTypes()
 {
 	qRegisterMetaType<ZXingQt::BarcodeFormat>("BarcodeFormat");
-	qRegisterMetaType<ZXingQt::DecodeStatus>("DecodeStatus");
+	qRegisterMetaType<ZXingQt::ContentType>("ContentType");
 
 	// supposedly the Q_DECLARE_METATYPE should be used with the overload without a custom name
 	// but then the qml side complains about "unregistered type"

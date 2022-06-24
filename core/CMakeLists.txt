@@ -58,6 +58,7 @@ set (COMMON_FILES
     src/ECI.h
     src/ECI.cpp
     src/Flags.h
+    src/Generator.h
     src/GenericGF.h
     src/GenericGF.cpp
     src/GenericGFPoly.h
@@ -95,6 +96,7 @@ if (BUILD_READERS)
         src/DecodeStatus.cpp
         src/DecoderResult.h
         src/DetectorResult.h
+        src/Error.h
         src/GlobalHistogramBinarizer.h
         src/GlobalHistogramBinarizer.cpp
         src/GridSampler.h
@@ -153,6 +155,7 @@ if (BUILD_READERS)
         src/Content.h
         src/DecodeHints.h
         src/DecodeStatus.h
+        src/Error.h
         src/ImageView.h
         src/Point.h
         src/Quadrilateral.h
