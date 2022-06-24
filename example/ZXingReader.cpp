@@ -168,7 +168,7 @@ int main(int argc, char* argv[])
 			if (!outPath.empty())
 				drawRect(image, result.position());
 
-			ret |= static_cast<int>(result.status());
+			ret |= static_cast<int>(result.error().type());
 
 			if (binaryOutput) {
 				std::cout.write(reinterpret_cast<const char*>(result.bytes().data()), result.bytes().size());
@@ -179,8 +179,8 @@ int main(int argc, char* argv[])
 				std::cout << filePath << " " << ToString(result.format());
 				if (result.isValid())
 					std::cout << " \"" << escapeNonGraphical(result.text()) << "\"";
-				else if (result.format() != BarcodeFormat::None)
-					std::cout << " " << ToString(result.status());
+				else if (result.error())
+					std::cout << " " << ToString(result.error());
 				std::cout << "\n";
 				continue;
 			}
@@ -193,6 +193,12 @@ int main(int argc, char* argv[])
 					std::cout << "File:       " << filePath << "\n";
 				firstFile = false;
 			}
+
+			if (result.format() == BarcodeFormat::None) {
+				std::cout << "No barcode found\n";
+				continue;
+			}
+
 			std::cout << "Text:       \"" << (angleEscape ? escapeNonGraphical(result.text()) : result.text()) << "\"\n"
 					  << "Utf8ECI:    \"" << result.utf8ECI() << "\"\n"
 					  << "Bytes:      " << ToHex(result.bytes()) << "\n"
@@ -203,8 +209,7 @@ int main(int argc, char* argv[])
 					  << "HasECI:     " << result.hasECI() << "\n"
 					  << "Position:   " << result.position() << "\n"
 					  << "Rotation:   " << result.orientation() << " deg\n"
-					  << "IsMirrored: " << result.isMirrored() << "\n"
-					  << "Error:      " << ToString(result.status()) << "\n";
+					  << "IsMirrored: " << result.isMirrored() << "\n";
 
 			auto printOptional = [](const char* key, const std::string& v) {
 				if (!v.empty())
@@ -212,6 +217,7 @@ int main(int argc, char* argv[])
 			};
 
 			printOptional("EC Level:   ", result.ecLevel());
+			printOptional("Error:      ", ToString(result.error()));
 
 			if (result.lineCount())
 				std::cout << "Lines:      " << result.lineCount() << "\n";

@@ -216,7 +216,7 @@ out:
 				*(a->lineCount() < b->lineCount() ? a : b) = Result(DecodeStatus::NotFound);
 
 	//TODO: C++20 res.erase_if()
-	it = std::remove_if(res.begin(), res.end(), [](auto&& r) { return r.status() == DecodeStatus::NotFound; });
+	it = std::remove_if(res.begin(), res.end(), [](auto&& r) { return r.format() == BarcodeFormat::None; });
 	res.erase(it, res.end());
 
 	return res;
