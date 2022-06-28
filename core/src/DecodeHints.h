@@ -131,7 +131,6 @@ public:
 	ZX_PROPERTY(EanAddOnSymbol, eanAddOnSymbol, setEanAddOnSymbol)
 
 #undef ZX_PROPERTY
-#undef ZX_PROPERTY_DEPRECATED
 
 	/// NOTE: used to affect FNC1 handling for Code 128 (aka GS1-128) but behavior now based on position of FNC1.
 	[[deprecated]] bool assumeGS1() const noexcept { return true; }
