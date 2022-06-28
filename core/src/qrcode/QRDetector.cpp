@@ -82,7 +82,7 @@ std::vector<ConcentricPattern> FindFinderPatterns(const BitMatrix& image, bool t
  * @param patterns list of ConcentricPattern objects, i.e. found finder pattern squares
  * @return list of plausible finder pattern sets, sorted by decreasing plausibility
  */
-FinderPatternSets GenerateFinderPatternSets(FinderPatterns&& patterns)
+FinderPatternSets GenerateFinderPatternSets(FinderPatterns& patterns)
 {
 	std::sort(patterns.begin(), patterns.end(), [](const auto& a, const auto& b) { return a.size < b.size; });
 
