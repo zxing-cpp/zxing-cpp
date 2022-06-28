@@ -15,6 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithHints:(ZXIDecodeHints*)options;
 - (NSArray<ZXIResult *> *)readCIImage:(nonnull CIImage *)image;
 - (NSArray<ZXIResult *> *)readCGImage:(nonnull CGImageRef)image;
+- (NSArray<ZXIResult *> *)readCVPixelBuffer:(nonnull CVPixelBufferRef)pixelBuffer;
 @end
 
 NS_ASSUME_NONNULL_END

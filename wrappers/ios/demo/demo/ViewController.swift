@@ -35,7 +35,7 @@ class ViewController: UIViewController {
             self.captureSession.addInput(cameraInput)
             let videoDataOutput = AVCaptureVideoDataOutput()
             videoDataOutput.setSampleBufferDelegate(self, queue: self.queue)
-            videoDataOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: Int(kCVPixelFormatType_32BGRA)]
+            videoDataOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: Int(kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange)]
             videoDataOutput.alwaysDiscardsLateVideoFrames = true
             self.captureSession.addOutput(videoDataOutput)
             self.captureSession.commitConfiguration()
@@ -63,7 +63,7 @@ extension ViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
             return
         }
         let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)!
-        if let result = reader.read(CIImage(cvPixelBuffer: imageBuffer)).first {
+        if let result = reader.read(imageBuffer).first {
             print("Found barcode of format", result.format.rawValue, "with text", result.text)
         }
         self.zxingLock.signal()
