@@ -69,12 +69,12 @@ Results Reader::decode(const BinaryBitmap& image, int maxSymbols) const
 #endif
 
 	auto allFPs = FindFinderPatterns(*binImg, _tryHarder);
-	auto allFPSets = GenerateFinderPatternSets(std::move(allFPs));
 
 	std::vector<ConcentricPattern> usedFPs;
 	Results results;
 
 	if (_testQR) {
+		auto allFPSets = GenerateFinderPatternSets(allFPs);
 		for (auto& fpSet : allFPSets) {
 			if (Contains(usedFPs, fpSet.bl) || Contains(usedFPs, fpSet.tl) || Contains(usedFPs, fpSet.tr))
 				continue;
