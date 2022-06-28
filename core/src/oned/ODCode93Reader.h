@@ -11,12 +11,6 @@
 namespace ZXing {
 namespace OneD {
 
-/**
-* <p>Decodes Code 93 barcodes.</p>
-*
-* @author Sean Owen
-* @see Code39Reader
-*/
 class Code93Reader : public RowReader
 {
 public:

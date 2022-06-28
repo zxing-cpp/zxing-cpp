@@ -27,7 +27,7 @@ class ResultPoint;
  *         are the second and third. The first point will be the topmost
  *         point and the last, the bottommost. The second point will be
  *         leftmost and the third, the rightmost
- * @throws NotFoundException if no Data Matrix Code can be found
+ * @return true iff white rect was found
  */
 bool DetectWhiteRect(const BitMatrix& image, int initSize, int x, int y, ResultPoint& p0, ResultPoint& p1,
 					 ResultPoint& p2, ResultPoint& p3);

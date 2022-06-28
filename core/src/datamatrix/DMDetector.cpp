@@ -775,7 +775,7 @@ static DetectorResult Scan(EdgeTracer startTracer, std::array<DMRegressionLine, 
 	return {};
 }
 
-static DetectorResult DetectNew(const BitMatrix& image, bool tryHarder, bool tryRotate)
+static DetectorResults DetectNew(const BitMatrix& image, bool tryHarder, bool tryRotate)
 {
 #ifdef PRINT_DEBUG
 	LogMatrixWriter lmw(log, image, 1, "dm-log.pnm");
@@ -783,7 +783,9 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryHarder, bool try
 #endif
 
 	// disable expensive multi-line scan to detect off-center symbols for now
+#ifndef __cpp_impl_coroutine
 	tryHarder = false;
+#endif
 
 	// a history log to remember where the tracing already passed by to prevent a later trace from doing the same work twice
 	ByteMatrix history;
@@ -812,7 +814,11 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryHarder, bool try
 				break;
 
 			if (auto res = Scan(tracer, lines); res.isValid())
+#ifdef __cpp_impl_coroutine
+				co_yield std::move(res);
+#else
 				return res;
+#endif
 
 			if (!tryHarder)
 				break; // only test center lines
@@ -822,7 +828,9 @@ static DetectorResult DetectNew(const BitMatrix& image, bool tryHarder, bool try
 			break; // only test left direction
 	}
 
+#ifndef __cpp_impl_coroutine
 	return {};
+#endif
 }
 
 /**
@@ -865,8 +873,21 @@ static DetectorResult DetectPure(const BitMatrix& image)
 			{{left, top}, {right, top}, {right, bottom}, {left, bottom}}};
 }
 
-DetectorResult Detect(const BitMatrix& image, bool tryHarder, bool tryRotate, bool isPure)
+DetectorResults Detect(const BitMatrix& image, bool tryHarder, bool tryRotate, bool isPure)
 {
+#ifdef __cpp_impl_coroutine
+	if (isPure) {
+		co_yield DetectPure(image);
+	} else {
+		bool found = false;
+		for (auto&& r : DetectNew(image, tryHarder, tryRotate)) {
+			found = true;
+			co_yield std::move(r);
+		}
+		if (!found)
+			co_yield DetectOld(image);
+	}
+#else
 	if (isPure)
 		return DetectPure(image);
 
@@ -874,6 +895,7 @@ DetectorResult Detect(const BitMatrix& image, bool tryHarder, bool tryRotate, bo
 	if (!result.isValid() && tryHarder)
 		result = DetectOld(image);
 	return result;
+#endif
 }
 
 } // namespace ZXing::DataMatrix

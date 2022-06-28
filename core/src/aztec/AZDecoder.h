@@ -16,10 +16,7 @@ namespace Aztec {
 
 class DetectorResult;
 
-/**
- * @brief Decode Aztec Code after locating and extracting from an image.
- */
-DecoderResult Decode(const DetectorResult& detectorResult, const std::string& characterSet = "");
+DecoderResult Decode(const DetectorResult& detectorResult);
 
 } // Aztec
 } // ZXing

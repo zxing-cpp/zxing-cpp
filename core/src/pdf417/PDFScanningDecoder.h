@@ -26,7 +26,7 @@ public:
 	static DecoderResult Decode(const BitMatrix& image,
 		const Nullable<ResultPoint>& imageTopLeft, const Nullable<ResultPoint>& imageBottomLeft,
 		const Nullable<ResultPoint>& imageTopRight, const Nullable<ResultPoint>& imageBottomRight,
-		int minCodewordWidth, int maxCodewordWidth, const std::string& characterSet);
+		int minCodewordWidth, int maxCodewordWidth);
 };
 
 } // Pdf417

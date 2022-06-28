@@ -11,7 +11,7 @@
 
 namespace ZXing::MaxiCode::DecodedBitStreamParser {
 
-DecoderResult Decode(ByteArray&& bytes, const int mode, const std::string& characterSet);
+DecoderResult Decode(ByteArray&& bytes, const int mode);
 
 }
 
@@ -41,7 +41,7 @@ static DecoderResult parse(ByteArray bytes, const int mode)
 	}
 	padded.insert(padded.end(), bytes.begin(), bytes.end());
 	pad(padded);
-	return MaxiCode::DecodedBitStreamParser::Decode(std::move(padded), mode, "");
+	return MaxiCode::DecodedBitStreamParser::Decode(std::move(padded), mode);
 }
 
 // Helper to return Structured Append

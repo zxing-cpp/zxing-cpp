@@ -27,8 +27,6 @@ class DecoderResult
 	Content _content;
 	int _numBits = 0;
 	std::string _ecLevel;
-	int _errorsCorrected = -1;
-	int _erasures = -1;
 	int _lineCount = 0;
 	StructuredAppendInfo _structuredAppend;
 	bool _isMirrored = false;
@@ -78,8 +76,6 @@ public:
 
 	ZX_PROPERTY(int, numBits, setNumBits)
 	ZX_PROPERTY(std::string, ecLevel, setEcLevel)
-	ZX_PROPERTY(int, errorsCorrected, setErrorsCorrected)
-	ZX_PROPERTY(int, erasures, setErasures)
 	ZX_PROPERTY(int, lineCount, setLineCount)
 	ZX_PROPERTY(StructuredAppendInfo, structuredAppend, setStructuredAppend)
 	ZX_PROPERTY(bool, isMirrored, setIsMirrored)

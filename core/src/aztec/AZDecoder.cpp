@@ -117,10 +117,7 @@ static BitArray ExtractBits(const DetectorResult& ddata)
 }
 
 /**
-* <p>Performs RS error correction on an array of bits.</p>
-*
-* @return the corrected array
-* @throws FormatException if the input contains too many errors
+* @brief Performs RS error correction on an array of bits.
 */
 static BitArray CorrectBits(const DetectorResult& ddata, const BitArray& rawbits)
 {
@@ -302,11 +299,10 @@ static void DecodeContent(const BitArray& bits, Content& res)
 }
 
 ZXING_EXPORT_TEST_ONLY
-DecoderResult Decode(const BitArray& bits, const std::string& characterSet)
+DecoderResult Decode(const BitArray& bits)
 {
 	Content res;
 	res.symbology = {'z', '0', 3};
-	res.hintedCharset = characterSet;
 
 	try {
 		DecodeContent(bits, res);
@@ -350,14 +346,14 @@ DecoderResult Decode(const BitArray& bits, const std::string& characterSet)
 	return DecoderResult(bits.toBytes(), std::move(res)).setNumBits(Size(bits)).setStructuredAppend(sai);
 }
 
-DecoderResult Decode(const DetectorResult& detectorResult, const std::string& characterSet)
+DecoderResult Decode(const DetectorResult& detectorResult)
 {
 	BitArray bits = CorrectBits(detectorResult, ExtractBits(detectorResult));
 
 	if (!bits.size())
 		return DecodeStatus::FormatError;
 
-	return Decode(bits, characterSet).setReaderInit(detectorResult.readerInit());
+	return Decode(bits).setReaderInit(detectorResult.readerInit());
 }
 
 } // namespace ZXing::Aztec

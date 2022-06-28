@@ -11,6 +11,7 @@
 #include "ByteArray.h"
 #include "Content.h"
 #include "DecodeStatus.h"
+#include "Error.h"
 #include "Quadrilateral.h"
 #include "StructuredAppend.h"
 
@@ -29,7 +30,7 @@ using Position = QuadrilateralI;
 class Result
 {
 public:
-	explicit Result(DecodeStatus status) : _status(status) {}
+	explicit Result(DecodeStatus status);
 
 	// 1D convenience constructor
 	Result(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format, SymbologyIdentifier si,
@@ -37,9 +38,11 @@ public:
 
 	Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat format);
 
-	bool isValid() const { return StatusIsOK(_status); }
+	bool isValid() const { return format() != BarcodeFormat::None && !error(); }
 
-	DecodeStatus status() const { return _status; }
+	const Error& error() const { return _error; }
+
+	[[deprecated]] DecodeStatus status() const;
 
 	BarcodeFormat format() const { return _format; }
 
@@ -147,15 +150,16 @@ public:
 
 	// only for internal use
 	void incrementLineCount() { ++_lineCount; }
+	Result& setCharacterSet(const std::string& defaultCS);
 
 	bool operator==(const Result& o) const;
 
 	friend Result MergeStructuredAppendSequence(const std::vector<Result>& results);
 
 private:
-	DecodeStatus _status = DecodeStatus::NoError;
 	BarcodeFormat _format = BarcodeFormat::None;
 	Content _content;
+	Error _error;
 	Position _position;
 	ByteArray _rawBytes;
 	int _numBits = 0;

@@ -12,7 +12,7 @@
 
 namespace ZXing::DataMatrix::DecodedBitStreamParser {
 
-DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet, const bool isDMRE);
+DecoderResult Decode(ByteArray&& bytes, const bool isDMRE);
 
 }
 
@@ -21,7 +21,7 @@ using namespace ZXing;
 // Helper to call Decode()
 static DecoderResult parse(ByteArray bytes, const bool isDMRE = false)
 {
-	return DataMatrix::DecodedBitStreamParser::Decode(std::move(bytes), "", isDMRE);
+	return DataMatrix::DecodedBitStreamParser::Decode(std::move(bytes), isDMRE);
 }
 
 // Shorthand to return text

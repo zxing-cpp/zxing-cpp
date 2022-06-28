@@ -59,9 +59,6 @@ public:
 	* to perform computations
 	* @param coefficients coefficients as ints representing elements of GF(size), arranged
 	* from most significant (highest-power term) coefficient to least significant
-	* @throws IllegalArgumentException if argument is null or empty,
-	* or if leading coefficient is 0 and this is not a
-	* constant polynomial (that is, it is not the monomial "0").
 	*/
 	GenericGFPoly(const GenericGF& field, std::vector<int>&& coefficients) : _field(&field)
 	{

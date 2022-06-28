@@ -273,12 +273,11 @@ static void DecodeBase256Segment(BitSource& bits, Content& result)
 }
 
 ZXING_EXPORT_TEST_ONLY
-DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet, const bool isDMRE)
+DecoderResult Decode(ByteArray&& bytes, const bool isDMRE)
 {
 	BitSource bits(bytes);
 	Content result;
 	result.symbology = {'d', '1', 3}; // ECC 200 (ISO 16022:2006 Annex N Table N.1)
-	result.hintedCharset = characterSet;
 	std::string resultTrailer;
 
 	struct StructuredAppendInfo sai;
@@ -293,7 +292,7 @@ DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet, const b
 		while (!done && bits.available() >= 8) {
 			int oneByte = bits.readBits(8);
 			switch (oneByte) {
-			case 0: return DecodeStatus::FormatError;
+			case 0: throw std::runtime_error("invalid 0 code word");
 			case 129: done = true; break; // Pad -> we are done, ignore the rest of the bits
 			case 230: DecodeC40OrTextSegment(bits, result, Mode::C40); break;
 			case 231: DecodeBase256Segment(bits, result); break;
@@ -310,13 +309,13 @@ DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet, const b
 				break;
 			case 233: // Structured Append
 				if (!firstCodeword) // Must be first ISO 16022:2006 5.6.1
-					return DecodeStatus::FormatError;
+					throw std::runtime_error("structured append tag must be first code word");
 				ParseStructuredAppend(bits, sai);
 				firstFNC1Position = 5;
 				break;
 			case 234: // Reader Programming
 				if (!firstCodeword) // Must be first ISO 16022:2006 5.2.4.9
-					return DecodeStatus::FormatError;
+					throw std::runtime_error("reader programming tag must be first code word");
 				readerInit = true;
 				break;
 			case 235: upperShift.set = true; break; // Upper Shift (shift to Extended ASCII)
@@ -344,7 +343,7 @@ DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet, const b
 					// work around encoders that use unlatch to ASCII as last code word (ask upstream)
 					if (oneByte == 254 && bits.available() == 0)
 						break;
-					return DecodeStatus::FormatError;
+					throw std::runtime_error("invalid code word");
 				}
 			}
 			firstCodeword = false;
@@ -373,7 +372,7 @@ DecoderResult Decode(ByteArray&& bytes, const std::string& characterSet, const b
 *
 * @param codewordBytes data and error correction codewords
 * @param numDataCodewords number of codewords that are data bytes
-* @throws ChecksumException if error correction fails
+* @return false if error correction fails
 */
 static bool
 CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
@@ -392,7 +391,7 @@ CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
 	return true;
 }
 
-static DecoderResult DoDecode(const BitMatrix& bits, const std::string& characterSet)
+static DecoderResult DoDecode(const BitMatrix& bits)
 {
 	// Construct a parser and read version, error-correction level
 	const Version* version = VersionForDimensionsOf(bits);
@@ -428,7 +427,7 @@ static DecoderResult DoDecode(const BitMatrix& bits, const std::string& characte
 	}
 
 	// Decode the contents of that stream of bytes
-	return DecodedBitStreamParser::Decode(std::move(resultBytes), characterSet, version->isDMRE());
+	return DecodedBitStreamParser::Decode(std::move(resultBytes), version->isDMRE());
 }
 
 static BitMatrix FlippedL(const BitMatrix& bits)
@@ -440,16 +439,16 @@ static BitMatrix FlippedL(const BitMatrix& bits)
 	return res;
 }
 
-DecoderResult Decode(const BitMatrix& bits, const std::string& characterSet)
+DecoderResult Decode(const BitMatrix& bits)
 {
-	auto res = DoDecode(bits, characterSet);
+	auto res = DoDecode(bits);
 	if (res.isValid())
 		return res;
 
 	//TODO:
 	// * unify bit mirroring helper code with QRReader?
 	// * rectangular symbols with the a size of 8 x Y are not supported a.t.m.
-	if (auto mirroredRes = DoDecode(FlippedL(bits), characterSet); mirroredRes.isValid()) {
+	if (auto mirroredRes = DoDecode(FlippedL(bits)); mirroredRes.isValid()) {
 		mirroredRes.setIsMirrored(true);
 		return mirroredRes;
 	}

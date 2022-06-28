@@ -25,8 +25,7 @@ Reader::Reader(const DecodeHints& hints)
 	: _tryHarder(hints.tryHarder()),
 	  _isPure(hints.isPure()),
 	  _testQR(hints.hasFormat(BarcodeFormat::QRCode)),
-	  _testMQR(hints.hasFormat(BarcodeFormat::MicroQRCode)),
-	  _charset(hints.characterSet())
+	  _testMQR(hints.hasFormat(BarcodeFormat::MicroQRCode))
 {}
 
 Result Reader::decode(const BinaryBitmap& image) const
@@ -52,7 +51,7 @@ Result Reader::decode(const BinaryBitmap& image) const
 	if (!detectorResult.isValid())
 		return Result(DecodeStatus::NotFound);
 
-	auto decoderResult = Decode(detectorResult.bits(), _charset);
+	auto decoderResult = Decode(detectorResult.bits());
 	auto position = detectorResult.position();
 
 	return Result(std::move(decoderResult), std::move(position),
@@ -82,7 +81,7 @@ Results Reader::decode(const BinaryBitmap& image, int maxSymbols) const
 
 			auto detectorResult = SampleQR(*binImg, fpSet);
 			if (detectorResult.isValid()) {
-				auto decoderResult = Decode(detectorResult.bits(), _charset);
+				auto decoderResult = Decode(detectorResult.bits());
 				auto position = detectorResult.position();
 				if (decoderResult.isValid()) {
 					usedFPs.push_back(fpSet.bl);
@@ -103,7 +102,7 @@ Results Reader::decode(const BinaryBitmap& image, int maxSymbols) const
 
 			auto detectorResult = SampleMQR(*binImg, fp);
 			if (detectorResult.isValid()) {
-				auto decoderResult = Decode(detectorResult.bits(), _charset);
+				auto decoderResult = Decode(detectorResult.bits());
 				auto position = detectorResult.position();
 				if (decoderResult.isValid()) {
 					results.emplace_back(std::move(decoderResult), std::move(position), BarcodeFormat::MicroQRCode);

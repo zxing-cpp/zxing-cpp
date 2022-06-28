@@ -6,6 +6,11 @@
 
 #pragma once
 
+#ifdef __cpp_impl_coroutine
+#include <Generator.h>
+#include <DetectorResult.h>
+#endif
+
 namespace ZXing {
 
 class BitMatrix;
@@ -13,10 +18,13 @@ class DetectorResult;
 
 namespace DataMatrix {
 
-/**
- * @brief Detects a Data Matrix symbol in an image.
- */
-DetectorResult Detect(const BitMatrix& image, bool tryHarder, bool tryRotate, bool isPure);
+#ifdef __cpp_impl_coroutine
+using DetectorResults = Generator<DetectorResult>;
+#else
+using DetectorResults = DetectorResult;
+#endif
+
+DetectorResults Detect(const BitMatrix& image, bool tryHarder, bool tryRotate, bool isPure);
 
 } // DataMatrix
 } // ZXing

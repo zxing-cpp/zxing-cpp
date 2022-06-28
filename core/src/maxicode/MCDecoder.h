@@ -15,17 +15,7 @@ class BitMatrix;
 
 namespace MaxiCode {
 
-/**
-* <p>The main class which implements MaxiCode decoding -- as opposed to locating and extracting
-* the MaxiCode from an image.</p>
-*
-* @author Manuel Kasten
-*/
-class Decoder
-{
-public:
-	static DecoderResult Decode(const BitMatrix& bits, const std::string& characterSet);
-};
+DecoderResult Decode(const BitMatrix& bits);
 
 } // MaxiCode
 } // ZXing

@@ -16,11 +16,6 @@ class DecodeHints;
 
 namespace Aztec {
 
-/**
-* This implementation can detect and decode Aztec codes in an image.
-*
-* @author David Olivier
-*/
 class Reader : public ZXing::Reader
 {
 public:
@@ -29,7 +24,6 @@ public:
 
 private:
 	bool _isPure;
-	std::string _characterSet;
 };
 
 } // Aztec

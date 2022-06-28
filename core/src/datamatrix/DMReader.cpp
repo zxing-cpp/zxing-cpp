@@ -21,21 +21,15 @@ namespace ZXing::DataMatrix {
 Reader::Reader(const DecodeHints& hints)
 	: _tryRotate(hints.tryRotate()),
 	  _tryHarder(hints.tryHarder()),
-	  _isPure(hints.isPure()),
-	  _characterSet(hints.characterSet())
+	  _isPure(hints.isPure())
 {}
 
-/**
-* Locates and decodes a Data Matrix code in an image.
-*
-* @return a string representing the content encoded by the Data Matrix code
-* @throws NotFoundException if a Data Matrix code cannot be found
-* @throws FormatException if a Data Matrix code cannot be decoded
-* @throws ChecksumException if error correction fails
-*/
-Result
-Reader::decode(const BinaryBitmap& image) const
+Result Reader::decode(const BinaryBitmap& image) const
 {
+#ifdef __cpp_impl_coroutine
+	auto results = decode(image, 1);
+	return results.empty() ? Result(DecodeStatus::NotFound) : results.front();
+#else
 	auto binImg = image.getBitMatrix();
 	if (binImg == nullptr)
 		return Result(DecodeStatus::NotFound);
@@ -44,7 +38,25 @@ Reader::decode(const BinaryBitmap& image) const
 	if (!detectorResult.isValid())
 		return Result(DecodeStatus::NotFound);
 
-	return Result(Decode(detectorResult.bits(), _characterSet), std::move(detectorResult).position(), BarcodeFormat::DataMatrix);
+	return Result(Decode(detectorResult.bits()), std::move(detectorResult).position(), BarcodeFormat::DataMatrix);
+#endif
 }
 
+#ifdef __cpp_impl_coroutine
+Results Reader::decode(const BinaryBitmap& image, int maxSymbols) const
+{
+	auto binImg = image.getBitMatrix();
+	if (binImg == nullptr)
+		return {};
+
+	Results results;
+	for (auto&& res : Detect(*binImg, maxSymbols > 1, _tryRotate, _isPure)) {
+		results.push_back(Result(Decode(res.bits()), std::move(res).position(), BarcodeFormat::DataMatrix));
+		if (maxSymbols > 0 && Size(results) >= maxSymbols)
+			break;
+	}
+
+	return results;
+}
+#endif
 } // namespace ZXing::DataMatrix

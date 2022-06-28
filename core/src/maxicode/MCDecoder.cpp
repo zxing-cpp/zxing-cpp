@@ -267,11 +267,11 @@ static void GetMessage(const ByteArray& bytes, int start, int len, Content& resu
 }
 
 ZXING_EXPORT_TEST_ONLY
-DecoderResult Decode(ByteArray&& bytes, const int mode, const std::string& /*characterSet*/)
+DecoderResult Decode(ByteArray&& bytes, const int mode)
 {
 	Content result;
 	result.symbology = {'U', (mode == 2 || mode == 3) ? '1' : '0', 2}; // TODO: No identifier defined for mode 6?
-	result.hintedCharset = "ISO8859_1";
+	result.defaultCharset = "ISO8859_1";
 	StructuredAppendInfo sai;
 
 	switch (mode) {
@@ -300,7 +300,7 @@ DecoderResult Decode(ByteArray&& bytes, const int mode, const std::string& /*cha
 
 } // DecodedBitStreamParser
 
-DecoderResult Decoder::Decode(const BitMatrix& bits, const std::string& characterSet)
+DecoderResult Decode(const BitMatrix& bits)
 {
 	ByteArray codewords = BitMatrixParser::ReadCodewords(bits);
 
@@ -331,7 +331,7 @@ DecoderResult Decoder::Decode(const BitMatrix& bits, const std::string& characte
 	std::copy_n(codewords.begin(), 10, datawords.begin());
 	std::copy_n(codewords.begin() + 20, datawords.size() - 10, datawords.begin() + 10);
 
-	return DecodedBitStreamParser::Decode(std::move(datawords), mode, characterSet);
+	return DecodedBitStreamParser::Decode(std::move(datawords), mode);
 }
 
 } // namespace ZXing::MaxiCode
