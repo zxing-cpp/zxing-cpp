@@ -110,20 +110,23 @@ FinderPatternSets GenerateFinderPatternSets(FinderPatterns& patterns)
 				// Orders the three points in an order [A,B,C] such that AB is less than AC
 				// and BC is less than AC, and the angle between BC and BA is less than 180 degrees.
 
-				auto distAB = squaredDistance(a, b);
-				auto distBC = squaredDistance(b, c);
-				auto distAC = squaredDistance(a, c);
+				auto distAB2 = squaredDistance(a, b);
+				auto distBC2 = squaredDistance(b, c);
+				auto distAC2 = squaredDistance(a, c);
 
-				if (distBC >= distAB && distBC >= distAC) {
+				if (distBC2 >= distAB2 && distBC2 >= distAC2) {
 					std::swap(a, b);
-					std::swap(distBC, distAC);
-				} else if (distAB >= distAC && distAB >= distBC) {
+					std::swap(distBC2, distAC2);
+				} else if (distAB2 >= distAC2 && distAB2 >= distBC2) {
 					std::swap(b, c);
-					std::swap(distAB, distAC);
+					std::swap(distAB2, distAC2);
 				}
 
+				auto distAB = std::sqrt(distAB2);
+				auto distBC = std::sqrt(distBC2);
+
 				// Estimate the module count and ignore this set if it can not result in a valid decoding
-				if (auto moduleCount = (std::sqrt(distAB) + std::sqrt(distBC)) / (2 * (a->size + b->size + c->size) / (3 * 7.f)) + 7;
+				if (auto moduleCount = (distAB + distBC) / (2 * (a->size + b->size + c->size) / (3 * 7.f)) + 7;
 					moduleCount < 21 * 0.9 || moduleCount > 177 * 1.05)
 					continue;
 
@@ -132,7 +135,7 @@ FinderPatternSets GenerateFinderPatternSets(FinderPatterns& patterns)
 				// we need to check both two equal sides separately.
 				// The value of |c^2 - 2 * b^2| + |c^2 - 2 * a^2| increases as dissimilarity
 				// from isosceles right triangle.
-				double d = std::abs(distAC - 2 * distAB) + std::abs(distAC - 2 * distBC);
+				double d = (std::abs(distAC2 - 2 * distAB2) + std::abs(distAC2 - 2 * distBC2)) / distAC2;
 
 				// Use cross product to figure out whether A and C are correct or flipped.
 				// This asks whether BC x BA has a positive z component, which is the arrangement
