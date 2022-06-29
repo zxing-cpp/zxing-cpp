@@ -28,16 +28,18 @@ using namespace ZXing;
 
 static void PrintUsage(const char* exePath)
 {
-	std::cout << "Usage: " << exePath << " [-fast] [-norotate] [-format <FORMAT[,...]>] [-pngout <png out path>] [-ispure] [-1] <png image path>...\n"
+	std::cout << "Usage: " << exePath << " [options] <image file>...\n"
 			  << "    -fast      Skip some lines/pixels during detection (faster)\n"
 			  << "    -norotate  Don't try rotated image during detection (faster)\n"
 			  << "    -noscale   Don't try downscaled images during detection (faster)\n"
-			  << "    -format    Only detect given format(s) (faster)\n"
+			  << "    -format <FORMAT[,...]>\n"
+			  << "               Only detect given format(s) (faster)\n"
 			  << "    -ispure    Assume the image contains only a 'pure'/perfect code (faster)\n"
-			  << "    -1         Print only file name, text and status on one line per file/barcode\n"
-			  << "    -escape    Escape non-graphical characters in angle brackets (implicit for -1 option, which always escapes)\n"
+			  << "    -1         Print only file name, content/error on one line per file/barcode (implies '-escape')\n"
+			  << "    -escape    Escape non-graphical characters in angle brackets\n"
 			  << "    -binary    Write (only) the binary content of the symbol(s) to stdout\n"
-			  << "    -pngout    Write a copy of the input image with barcodes outlined by a green line\n"
+			  << "    -pngout <file name>\n"
+			  << "               Write a copy of the input image with barcodes outlined by a green line\n"
 			  << "\n"
 			  << "Supported formats are:\n";
 	for (auto f : BarcodeFormats::all()) {
