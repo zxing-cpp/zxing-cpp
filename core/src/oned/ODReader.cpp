@@ -24,11 +24,7 @@
 
 namespace ZXing::OneD {
 
-Reader::Reader(const DecodeHints& hints) :
-	_tryHarder(hints.tryHarder()),
-	_tryRotate(hints.tryRotate()),
-	_isPure(hints.isPure()),
-	_minLineCount(hints.minLineCount())
+Reader::Reader(const DecodeHints& hints) : ZXing::Reader(hints)
 {
 	_readers.reserve(8);
 
@@ -225,19 +221,20 @@ out:
 Result
 Reader::decode(const BinaryBitmap& image) const
 {
-	auto result = DoDecode(_readers, image, _tryHarder, false, _isPure, 1, _minLineCount);
+	auto result = DoDecode(_readers, image, _hints.tryHarder(), false, _hints.isPure(), 1, _hints.minLineCount());
 
-	if (result.empty() && _tryRotate)
-		result = DoDecode(_readers, image, _tryHarder, true, _isPure, 1, _minLineCount);
+	if (result.empty() && _hints.tryRotate())
+		result = DoDecode(_readers, image, _hints.tryHarder(), true, _hints.isPure(), 1, _hints.minLineCount());
 
 	return result.empty() ? Result(DecodeStatus::NotFound) : result.front();
 }
 
 Results Reader::decode(const BinaryBitmap& image, int maxSymbols) const
 {
-	auto resH = DoDecode(_readers, image, _tryHarder, false, _isPure, maxSymbols, _minLineCount);
-	if ((!maxSymbols || Size(resH) < maxSymbols) && _tryRotate) {
-		auto resV = DoDecode(_readers, image, _tryHarder, true, _isPure, maxSymbols - Size(resH), _minLineCount);
+	auto resH = DoDecode(_readers, image, _hints.tryHarder(), false, _hints.isPure(), maxSymbols, _hints.minLineCount());
+	if ((!maxSymbols || Size(resH) < maxSymbols) && _hints.tryRotate()) {
+		auto resV = DoDecode(_readers, image, _hints.tryHarder(), true, _hints.isPure(), maxSymbols - Size(resH),
+							 _hints.minLineCount());
 		resH.insert(resH.end(), resV.begin(), resV.end());
 	}
 	return resH;

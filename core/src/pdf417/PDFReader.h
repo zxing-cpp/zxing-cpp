@@ -24,10 +24,8 @@ namespace Pdf417 {
 */
 class Reader : public ZXing::Reader
 {
-	bool _isPure;
-
 public:
-	explicit Reader(const DecodeHints& hints);
+	using ZXing::Reader::Reader;
 
 	Result decode(const BinaryBitmap& image) const override;
 	Results decode(const BinaryBitmap& image, int maxSymbols) const override;

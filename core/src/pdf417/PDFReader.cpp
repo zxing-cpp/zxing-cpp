@@ -304,12 +304,10 @@ static Result DecodePure(const BinaryBitmap& image_)
 	return Result(std::move(res), {{left, top}, {right, top}, {right, bottom}, {left, bottom}}, BarcodeFormat::PDF417);
 }
 
-Reader::Reader(const DecodeHints& hints) : _isPure(hints.isPure()) {}
-
 Result
 Reader::decode(const BinaryBitmap& image) const
 {
-	if (_isPure) {
+	if (_hints.isPure()) {
 		auto res = DecodePure(image);
 		if (res.error().type() != Error::Checksum)
 			return res;

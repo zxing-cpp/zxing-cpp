@@ -11,10 +11,15 @@
 namespace ZXing {
 
 class BinaryBitmap;
+class DecodeHints;
 
 class Reader
 {
+protected:
+	const DecodeHints& _hints;
+
 public:
+	explicit Reader(const DecodeHints& hints) : _hints(hints) {}
 	virtual ~Reader() = default;
 
 	virtual Result decode(const BinaryBitmap& image) const = 0;

@@ -18,10 +18,9 @@ namespace MaxiCode {
 
 class Reader : public ZXing::Reader
 {
-	bool _isPure;
-
 public:
-	explicit Reader(const DecodeHints& hints);
+	using ZXing::Reader::Reader;
+
 	Result decode(const BinaryBitmap& image) const override;
 };
 
