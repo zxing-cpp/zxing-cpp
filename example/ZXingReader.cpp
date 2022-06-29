@@ -35,6 +35,7 @@ static void PrintUsage(const char* exePath)
 			  << "    -format <FORMAT[,...]>\n"
 			  << "               Only detect given format(s) (faster)\n"
 			  << "    -ispure    Assume the image contains only a 'pure'/perfect code (faster)\n"
+			  << "    -errors    Include results with errors (like checksum error)\n"
 			  << "    -1         Print only file name, content/error on one line per file/barcode (implies '-escape')\n"
 			  << "    -escape    Escape non-graphical characters in angle brackets\n"
 			  << "    -binary    Write (only) the binary content of the symbol(s) to stdout\n"
@@ -61,6 +62,8 @@ static bool ParseOptions(int argc, char* argv[], DecodeHints& hints, bool& oneLi
 		} else if (strcmp(argv[i], "-ispure") == 0) {
 			hints.setIsPure(true);
 			hints.setBinarizer(Binarizer::FixedThreshold);
+		} else if (strcmp(argv[i], "-errors") == 0) {
+			hints.setReturnErrors(true);
 		} else if (strcmp(argv[i], "-format") == 0) {
 			if (++i == argc)
 				return false;
@@ -95,7 +98,7 @@ std::ostream& operator<<(std::ostream& os, const Position& points)
 	return os;
 }
 
-void drawLine(const ImageView& iv, PointI a, PointI b)
+void drawLine(const ImageView& iv, PointI a, PointI b, bool error)
 {
 	int steps = maxAbsComponent(b - a);
 	PointF dir = bresenhamDirection(PointF(b - a));
@@ -103,15 +106,16 @@ void drawLine(const ImageView& iv, PointI a, PointI b)
 	for (int i = 0; i < steps; ++i) {
 		auto p = PointI(centered(a + i * dir));
 		auto* dst = const_cast<uint8_t*>(iv.data(p.x, p.y));
-		dst[R] = dst[B] = 0;
-		dst[G] = 0xff;
+		dst[R] = error ? 0xff : 0;
+		dst[G] = error ? 0 : 0xff;
+		dst[B] = 0;
 	}
 }
 
-void drawRect(const ImageView& image, const Position& pos)
+void drawRect(const ImageView& image, const Position& pos, bool error)
 {
 	for (int i = 0; i < 4; ++i)
-		drawLine(image, pos[i], pos[(i + 1) % 4]);
+		drawLine(image, pos[i], pos[(i + 1) % 4], error);
 }
 
 std::string escapeNonGraphical(const std::string& str)
@@ -168,7 +172,7 @@ int main(int argc, char* argv[])
 		for (auto&& result : results) {
 
 			if (!outPath.empty())
-				drawRect(image, result.position());
+				drawRect(image, result.position(), result.error());
 
 			ret |= static_cast<int>(result.error().type());
 

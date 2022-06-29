@@ -137,7 +137,8 @@ Result& Result::setCharacterSet(const std::string& defaultCS)
 
 bool Result::operator==(const Result& o) const
 {
-	if (format() != o.format() || bytes() != o.bytes())
+	// two symbols may be considered the same if at least one of them has an error
+	if (!(format() == o.format() && (bytes() == o.bytes() || error() || o.error())))
 		return false;
 
 	if (BarcodeFormats(BarcodeFormat::TwoDCodes).testFlag(format()))

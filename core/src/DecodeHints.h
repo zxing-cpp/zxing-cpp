@@ -47,6 +47,7 @@ class DecodeHints
 	bool _validateCode39CheckSum   : 1;
 	bool _validateITFCheckSum      : 1;
 	bool _returnCodabarStartEnd    : 1;
+	bool _returnErrors             : 1;
 	Binarizer _binarizer           : 2;
 	EanAddOnSymbol _eanAddOnSymbol : 2;
 
@@ -59,7 +60,7 @@ class DecodeHints
 	uint8_t _maxNumberOfSymbols  = 0xff;
 
 public:
-	// bitfields don't get default initialized to 0.
+	// bitfields don't get default initialized to 0 before c++20
 	DecodeHints()
 		: _tryHarder(1),
 		  _tryRotate(1),
@@ -69,6 +70,7 @@ public:
 		  _validateCode39CheckSum(0),
 		  _validateITFCheckSum(0),
 		  _returnCodabarStartEnd(0),
+		  _returnErrors(0),
 		  _binarizer(Binarizer::LocalAverage),
 		  _eanAddOnSymbol(EanAddOnSymbol::Ignore)
 	{}
@@ -126,6 +128,9 @@ public:
 
 	/// If true, return the start and end chars in a Codabar barcode instead of stripping them.
 	ZX_PROPERTY(bool, returnCodabarStartEnd, setReturnCodabarStartEnd)
+
+	/// If true, return the barcodes with errors as well (e.g. checksum errors, see @Result::error())
+	ZX_PROPERTY(bool, returnErrors, setReturnErrors)
 
 	/// Specify whether to ignore, read or require EAN-2/5 add-on symbols while scanning EAN/UPC codes
 	ZX_PROPERTY(EanAddOnSymbol, eanAddOnSymbol, setEanAddOnSymbol)

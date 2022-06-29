@@ -47,7 +47,10 @@ public:
 	DecoderResult(DecoderResult&&) noexcept = default;
 	DecoderResult& operator=(DecoderResult&&) = default;
 
-	bool isValid() const { return StatusIsOK(_status); }
+	bool isValid(bool includeErrors = false) const
+	{
+		return StatusIsOK(_status) || (includeErrors && _status != DecodeStatus::NotFound);
+	}
 	DecodeStatus errorCode() const { return _status; }
 
 	const ByteArray& rawBytes() const & { return _rawBytes; }
