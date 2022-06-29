@@ -61,7 +61,7 @@ Reader::~Reader() = default;
 * image if "trying harder".
 */
 static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, const BinaryBitmap& image,
-						bool tryHarder, bool rotate, bool isPure, int maxSymbols, int minLineCount)
+						bool tryHarder, bool rotate, bool isPure, int maxSymbols, int minLineCount, bool returnErrors)
 {
 	Results res;
 
@@ -134,7 +134,7 @@ static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, 
 				PatternView next(bars);
 				do {
 					Result result = readers[r]->decodePattern(rowNumber, next, decodingState[r]);
-					if (result.isValid()) {
+					if (result.isValid() || (returnErrors && result.error())) {
 						result.incrementLineCount();
 						if (upsideDown) {
 							// update position (flip horizontally).
@@ -175,7 +175,7 @@ static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, 
 							}
 						}
 
-						if (result.isValid())
+						if (result.format() != BarcodeFormat::None)
 							res.push_back(std::move(result));
 
 						if (maxSymbols && Reduce(res, 0, [&](int s, const Result& r) {
@@ -221,20 +221,22 @@ out:
 Result
 Reader::decode(const BinaryBitmap& image) const
 {
-	auto result = DoDecode(_readers, image, _hints.tryHarder(), false, _hints.isPure(), 1, _hints.minLineCount());
+	auto result =
+		DoDecode(_readers, image, _hints.tryHarder(), false, _hints.isPure(), 1, _hints.minLineCount(), _hints.returnErrors());
 
 	if (result.empty() && _hints.tryRotate())
-		result = DoDecode(_readers, image, _hints.tryHarder(), true, _hints.isPure(), 1, _hints.minLineCount());
+		result = DoDecode(_readers, image, _hints.tryHarder(), true, _hints.isPure(), 1, _hints.minLineCount(), _hints.returnErrors());
 
 	return result.empty() ? Result(DecodeStatus::NotFound) : result.front();
 }
 
 Results Reader::decode(const BinaryBitmap& image, int maxSymbols) const
 {
-	auto resH = DoDecode(_readers, image, _hints.tryHarder(), false, _hints.isPure(), maxSymbols, _hints.minLineCount());
+	auto resH = DoDecode(_readers, image, _hints.tryHarder(), false, _hints.isPure(), maxSymbols, _hints.minLineCount(),
+						 _hints.returnErrors());
 	if ((!maxSymbols || Size(resH) < maxSymbols) && _hints.tryRotate()) {
 		auto resV = DoDecode(_readers, image, _hints.tryHarder(), true, _hints.isPure(), maxSymbols - Size(resH),
-							 _hints.minLineCount());
+							 _hints.minLineCount(), _hints.returnErrors());
 		resH.insert(resH.end(), resV.begin(), resV.end());
 	}
 	return resH;
