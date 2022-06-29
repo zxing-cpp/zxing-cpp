@@ -86,6 +86,10 @@ std::optional<PointF> CenterOfRings(const BitMatrix& image, PointI center, int r
 
 std::optional<PointF> FinetuneConcentricPatternCenter(const BitMatrix& image, PointF center, int range, int finderPatternSize)
 {
+	// make sure we have at least one path of white around the center
+	if (!CenterOfRing(image, PointI(center), range, 1))
+		return {};
+
 	auto res = CenterOfRings(image, PointI(center), range, finderPatternSize / 2);
 	if (!res || !image.get(*res))
 		res = CenterOfDoubleCross(image, PointI(center), range, finderPatternSize / 2 + 1);

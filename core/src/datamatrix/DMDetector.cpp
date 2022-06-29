@@ -270,6 +270,10 @@ static DetectorResult DetectOld(const BitMatrix& image)
 	const auto& lSideOne = transitions[0];
 	const auto& lSideTwo = transitions[1];
 
+	// We accept at most 4 transisions inside the L pattern (i.e. 2 corruptions) to reduce false positive FormatErrors
+	if (lSideTwo.transitions > 2)
+		return {};
+
 	// Figure out which point is their intersection by tallying up the number of times we see the
 	// endpoints in the four endpoints. One will show up twice.
 	std::map<const ResultPoint*, int> pointCount;

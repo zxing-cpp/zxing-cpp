@@ -130,6 +130,12 @@ FinderPatternSets GenerateFinderPatternSets(FinderPatterns& patterns)
 					moduleCount < 21 * 0.9 || moduleCount > 177 * 1.05)
 					continue;
 
+				// Make sure the angle between AB and BC does not deviate from 90° by more than 45°
+				auto alpha = std::acos((distAB2 + distBC2 - distAC2) / (2 * distAB * distBC)) / 3.1415 * 180;
+//				printf("alpha: %.1f\n", alpha);
+				if (std::isnan(alpha) || std::abs(90 - alpha) > 45)
+					continue;
+
 				// a^2 + b^2 = c^2 (Pythagorean theorem), and a = b (isosceles triangle).
 				// Since any right triangle satisfies the formula c^2 - b^2 - a^2 = 0,
 				// we need to check both two equal sides separately.
