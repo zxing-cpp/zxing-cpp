@@ -884,8 +884,11 @@ DetectorResults Detect(const BitMatrix& image, bool tryHarder, bool tryRotate, b
 			found = true;
 			co_yield std::move(r);
 		}
-		if (!found)
-			co_yield DetectOld(image);
+		if (!found) {
+			auto r = DetectOld(image);
+			if (r.isValid())
+				co_yield std::move(r);
+		}
 	}
 #else
 	if (isPure)
