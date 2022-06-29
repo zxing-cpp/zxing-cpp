@@ -43,8 +43,6 @@ static BitMatrix ExtractPureBits(const BitMatrix& image)
 	return result;
 }
 
-Reader::Reader(const DecodeHints& hints) : _isPure(hints.isPure()) {}
-
 Result
 Reader::decode(const BinaryBitmap& image) const
 {

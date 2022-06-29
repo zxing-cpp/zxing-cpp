@@ -19,13 +19,10 @@ namespace QRCode {
 class Reader : public ZXing::Reader
 {
 public:
-	explicit Reader(const DecodeHints& hints);
+	using ZXing::Reader::Reader;
+
 	Result decode(const BinaryBitmap& image) const override;
-
 	Results decode(const BinaryBitmap& image, int maxSymbols) const override;
-
-private:
-	bool _tryHarder, _isPure, _testQR, _testMQR;
 };
 
 } // QRCode

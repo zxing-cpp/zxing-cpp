@@ -30,10 +30,6 @@ public:
 
 private:
 	std::vector<std::unique_ptr<RowReader>> _readers;
-	bool _tryHarder;
-	bool _tryRotate;
-	bool _isPure;
-	int _minLineCount;
 };
 
 } // OneD

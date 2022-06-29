@@ -19,11 +19,9 @@ namespace Aztec {
 class Reader : public ZXing::Reader
 {
 public:
-	explicit Reader(const DecodeHints& hints);
-	Result decode(const BinaryBitmap& image) const override;
+	using ZXing::Reader::Reader;
 
-private:
-	bool _isPure;
+	Result decode(const BinaryBitmap& image) const override;
 };
 
 } // Aztec
