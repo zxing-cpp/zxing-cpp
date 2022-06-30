@@ -612,7 +612,7 @@ static DecoderResult CreateDecoderResultFromAmbiguousValues(int ecLevel, std::ve
 			codewords[ambiguousIndexes[i]] = ambiguousIndexValues[i][ambiguousIndexCount[i]];
 		}
 		auto result = DecodeCodewords(codewords, ecLevel, erasureArray);
-		if (result.errorCode() != DecodeStatus::ChecksumError) {
+		if (result.error() != Error::Checksum) {
 			return result;
 		}
 

@@ -17,15 +17,6 @@
 
 namespace ZXing {
 
-static Error Status2Error(DecodeStatus s)
-{
-	switch (s) {
-	case DecodeStatus::FormatError: return FormatError();
-	case DecodeStatus::ChecksumError: return ChecksumError();
-	default: return {};
-	}
-}
-
 Result::Result(DecodeStatus status) : _error(Status2Error(status)) {}
 
 Result::Result(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format,
@@ -41,9 +32,9 @@ Result::Result(const std::string& text, int y, int xStart, int xStop, BarcodeFor
 {}
 
 Result::Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat format)
-	: _format(decodeResult.errorCode() == DecodeStatus::NotFound ? BarcodeFormat::None : format),
+	: _format(decodeResult.content().symbology.code == 0 ? BarcodeFormat::None : format),
 	  _content(std::move(decodeResult).content()),
-	  _error(Status2Error(decodeResult.errorCode())),
+	  _error(std::move(decodeResult).error()),
 	  _position(std::move(position)),
 	  _rawBytes(std::move(decodeResult).rawBytes()),
 	  _numBits(decodeResult.numBits()),
