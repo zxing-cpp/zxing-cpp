@@ -24,15 +24,13 @@ namespace ZXing::QRCode {
 Result Reader::decode(const BinaryBitmap& image) const
 {
 #if 1
-	if (!_hints.isPure()) {
+	if (!_hints.isPure())
 		return FirstOrDefault(decode(image, 1));
-	}
 #endif
 
 	auto binImg = image.getBitMatrix();
-	if (binImg == nullptr) {
+	if (binImg == nullptr)
 		return {};
-	}
 
 	DetectorResult detectorResult;
 	if (_hints.hasFormat(BarcodeFormat::QRCode))

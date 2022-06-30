@@ -104,9 +104,9 @@ static std::string DecodeAI01AndOtherAIs(const BitArray& bits)
 	buffer.append(std::to_string(firstGtinDigit));
 
 	AI01EncodeCompressedGtinWithoutAI(buffer, bits, HEADER_SIZE + 4, initialGtinPosition);
-	if (StatusIsOK(DecodeAppIdAllCodes(bits, HEADER_SIZE + 44, -1, buffer))) {
+	if (StatusIsOK(DecodeAppIdAllCodes(bits, HEADER_SIZE + 44, -1, buffer)))
 		return buffer;
-	}
+
 	return {};
 }
 
@@ -114,9 +114,9 @@ static std::string DecodeAnyAI(const BitArray& bits)
 {
 	static const int HEADER_SIZE = 2 + 1 + 2;
 	std::string buffer;
-	if (StatusIsOK(DecodeAppIdAllCodes(bits, HEADER_SIZE, -1, buffer))) {
+	if (StatusIsOK(DecodeAppIdAllCodes(bits, HEADER_SIZE, -1, buffer)))
 		return buffer;
-	}
+
 	return {};
 }
 
@@ -125,9 +125,8 @@ static std::string DecodeAI013103(const BitArray& bits)
 	static const int HEADER_SIZE = 4 + 1;
 	static const int WEIGHT_SIZE = 15;
 
-	if (bits.size() != HEADER_SIZE + AI01_GTIN_SIZE + WEIGHT_SIZE) {
+	if (bits.size() != HEADER_SIZE + AI01_GTIN_SIZE + WEIGHT_SIZE)
 		return {};
-	}
 
 	std::string buffer;
 	AI01EncodeCompressedGtin(buffer, bits, HEADER_SIZE);
@@ -145,9 +144,8 @@ static std::string DecodeAI01320x(const BitArray& bits)
 	static const int HEADER_SIZE = 4 + 1;
 	static const int WEIGHT_SIZE = 15;
 
-	if (bits.size() != HEADER_SIZE + AI01_GTIN_SIZE + WEIGHT_SIZE) {
+	if (bits.size() != HEADER_SIZE + AI01_GTIN_SIZE + WEIGHT_SIZE)
 		return {};
-	}
 
 	std::string buffer;
 	AI01EncodeCompressedGtin(buffer, bits, HEADER_SIZE);
@@ -166,9 +164,8 @@ static std::string DecodeAI01392x(const BitArray& bits)
 	static const int HEADER_SIZE = 5 + 1 + 2;
 	static const int LAST_DIGIT_SIZE = 2;
 
-	if (bits.size() < HEADER_SIZE + AI01_GTIN_SIZE) {
+	if (bits.size() < HEADER_SIZE + AI01_GTIN_SIZE)
 		return {};
-	}
 
 	std::string buffer;
 	AI01EncodeCompressedGtin(buffer, bits, HEADER_SIZE);
@@ -193,9 +190,8 @@ static std::string DecodeAI01393x(const BitArray& bits)
 	static const int LAST_DIGIT_SIZE = 2;
 	static const int FIRST_THREE_DIGITS_SIZE = 10;
 
-	if (bits.size() < HEADER_SIZE + AI01_GTIN_SIZE) {
+	if (bits.size() < HEADER_SIZE + AI01_GTIN_SIZE)
 		return {};
-	}
 
 	std::string buffer;
 	AI01EncodeCompressedGtin(buffer, bits, HEADER_SIZE);
@@ -207,12 +203,12 @@ static std::string DecodeAI01393x(const BitArray& bits)
 	buffer.push_back(')');
 
 	int firstThreeDigits = ToInt(bits, HEADER_SIZE + AI01_GTIN_SIZE + LAST_DIGIT_SIZE, FIRST_THREE_DIGITS_SIZE);
-	if (firstThreeDigits / 100 == 0) {
+	if (firstThreeDigits / 100 == 0)
 		buffer.push_back('0');
-	}
-	if (firstThreeDigits / 10 == 0) {
+
+	if (firstThreeDigits / 10 == 0)
 		buffer.push_back('0');
-	}
+
 	buffer.append(std::to_string(firstThreeDigits));
 
 	int pos = HEADER_SIZE + AI01_GTIN_SIZE + LAST_DIGIT_SIZE + FIRST_THREE_DIGITS_SIZE;
@@ -230,9 +226,8 @@ static std::string DecodeAI013x0x1x(const BitArray& bits, const char* firstAIdig
 	static const int WEIGHT_SIZE = 20;
 	static const int DATE_SIZE = 16;
 
-	if (bits.size() != HEADER_SIZE + AI01_GTIN_SIZE + WEIGHT_SIZE + DATE_SIZE) {
+	if (bits.size() != HEADER_SIZE + AI01_GTIN_SIZE + WEIGHT_SIZE + DATE_SIZE)
 		return {};
-	}
 
 	std::string buffer;
 	AI01EncodeCompressedGtin(buffer, bits, HEADER_SIZE);
@@ -262,17 +257,17 @@ static std::string DecodeAI013x0x1x(const BitArray& bits, const char* firstAIdig
 		numericDate /= 12;
 		int year = numericDate;
 
-		if (year / 10 == 0) {
+		if (year / 10 == 0)
 			buffer.push_back('0');
-		}
+
 		buffer.append(std::to_string(year));
-		if (month / 10 == 0) {
+		if (month / 10 == 0)
 			buffer.push_back('0');
-		}
+
 		buffer.append(std::to_string(month));
-		if (day / 10 == 0) {
+		if (day / 10 == 0)
 			buffer.push_back('0');
-		}
+
 		buffer.append(std::to_string(day));
 	}
 
@@ -281,12 +276,11 @@ static std::string DecodeAI013x0x1x(const BitArray& bits, const char* firstAIdig
 
 std::string DecodeExpandedBits(const BitArray& bits)
 {
-	if (bits.get(1)) {
+	if (bits.get(1))
 		return DecodeAI01AndOtherAIs(bits);
-	}
-	if (!bits.get(2)) {
+
+	if (!bits.get(2))
 		return DecodeAnyAI(bits);
-	}
 
 	int fourBitEncodationMethod = ToInt(bits, 1, 4);
 

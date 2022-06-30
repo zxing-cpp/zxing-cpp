@@ -23,22 +23,19 @@ Result
 Reader::decode(const BinaryBitmap& image) const
 {
 	auto binImg = image.getBitMatrix();
-	if (binImg == nullptr) {
+	if (binImg == nullptr)
 		return {};
-	}
 
 	DetectorResult detectResult = Detect(*binImg, false, _hints.isPure());
 	DecoderResult decodeResult = DecodeStatus::NotFound;
-	if (detectResult.isValid()) {
+	if (detectResult.isValid())
 		decodeResult = Decode(detectResult);
-	}
 
 	//TODO: don't start detection all over again, just to swap 2 corner points
 	if (!decodeResult.isValid()) {
 		detectResult = Detect(*binImg, true, _hints.isPure());
-		if (detectResult.isValid()) {
+		if (detectResult.isValid())
 			decodeResult = Decode(detectResult);
-		}
 	}
 
 	return Result(std::move(decodeResult), std::move(detectResult).position(), BarcodeFormat::Aztec);
