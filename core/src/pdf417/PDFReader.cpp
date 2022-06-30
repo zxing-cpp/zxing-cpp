@@ -304,7 +304,7 @@ Reader::decode(const BinaryBitmap& image) const
 {
 	if (_hints.isPure()) {
 		auto res = DecodePure(image);
-		if (res.error().type() != Error::Checksum)
+		if (res.error() != Error::Checksum)
 			return res;
 		// This falls through and tries the non-pure code path if we have a checksum error. This approach is
 		// currently the best option to deal with 'aliased' input like e.g. 03-aliased.png
