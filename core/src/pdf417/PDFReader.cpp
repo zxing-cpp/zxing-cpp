@@ -310,8 +310,7 @@ Reader::decode(const BinaryBitmap& image) const
 		// currently the best option to deal with 'aliased' input like e.g. 03-aliased.png
 	}
 
-	Results results = DoDecode(image, false, _hints.returnErrors());
-	return results.empty() ? Result() : results.front();
+	return FirstOrDefault(DoDecode(image, false, _hints.returnErrors()));
 }
 
 Results Reader::decode(const BinaryBitmap& image, [[maybe_unused]] int maxSymbols) const
