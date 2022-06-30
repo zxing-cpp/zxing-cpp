@@ -332,19 +332,17 @@ bool HasStartPattern(const BitMatrix& m)
 * @param multiple if true, then the image is searched for multiple codes. If false, then at most one code will
 * be found and returned
 */
-DecodeStatus
-Detector::Detect(const BinaryBitmap& image, bool multiple, Result& result)
+Detector::Result Detector::Detect(const BinaryBitmap& image, bool multiple)
 {
 	// construct a 'dummy' shared pointer, just be able to pass it up the call chain in DecodeStatus
 	// TODO: reimplement PDF Detector
 	auto binImg = std::shared_ptr<const BitMatrix>(image.getBitMatrix(), [](const BitMatrix*){});
-	if (!binImg) {
-		return DecodeStatus::NotFound;
-	}
+	if (!binImg)
+		return {};
 
 #if defined(ZX_FAST_BIT_STORAGE)
 	if (!HasStartPattern(*binImg))
-		return DecodeStatus::NotFound;
+		return {};
 #endif
 
 	auto barcodeCoordinates = DetectBarcode(*binImg, multiple);
@@ -354,12 +352,13 @@ Detector::Detect(const BinaryBitmap& image, bool multiple, Result& result)
 		binImg = newBits;
 		barcodeCoordinates = DetectBarcode(*binImg, multiple);
 	}
-	if (barcodeCoordinates.empty()) {
-		return DecodeStatus::NotFound;
-	}
+	if (barcodeCoordinates.empty())
+		return {};
+
+	Result result;
 	result.points = barcodeCoordinates;
 	result.bits = binImg;
-	return DecodeStatus::NoError;
+	return result;
 }
 
 } // Pdf417
