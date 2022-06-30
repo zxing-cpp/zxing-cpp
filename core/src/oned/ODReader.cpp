@@ -227,7 +227,7 @@ Reader::decode(const BinaryBitmap& image) const
 	if (result.empty() && _hints.tryRotate())
 		result = DoDecode(_readers, image, _hints.tryHarder(), true, _hints.isPure(), 1, _hints.minLineCount(), _hints.returnErrors());
 
-	return result.empty() ? Result() : result.front();
+	return FirstOrDefault(std::move(result));
 }
 
 Results Reader::decode(const BinaryBitmap& image, int maxSymbols) const

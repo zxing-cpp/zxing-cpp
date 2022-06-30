@@ -173,6 +173,12 @@ private:
 
 using Results = std::vector<Result>;
 
+// Consider this an internal function that can change/disappear anytime without notice
+inline Result FirstOrDefault(Results&& results)
+{
+	return results.empty() ? Result() : std::move(results.front());
+}
+
 /**
  * @brief Merge a list of Results from one Structured Append sequence to a single result
  */

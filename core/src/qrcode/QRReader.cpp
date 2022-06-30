@@ -25,8 +25,7 @@ Result Reader::decode(const BinaryBitmap& image) const
 {
 #if 1
 	if (!_hints.isPure()) {
-		auto res = decode(image, 1);
-		return res.empty() ? Result() : res.front();
+		return FirstOrDefault(decode(image, 1));
 	}
 #endif
 
