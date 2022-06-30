@@ -255,7 +255,7 @@ static Result DecodePure(const BinaryBitmap& image_)
 {
 	auto pimage = image_.getBitMatrix();
 	if (!pimage)
-		return Result(DecodeStatus::NotFound);
+		return {};
 	auto& image = *pimage;
 
 #ifdef PRINT_DEBUG
@@ -264,7 +264,7 @@ static Result DecodePure(const BinaryBitmap& image_)
 
 	int left, top, width, height;
 	if (!image.findBoundingBox(left, top, width, height, 9) || (width < 3 * 17 && height < 3 * 17))
-		return Result(DecodeStatus::NotFound);
+		return {};
 	int right  = left + width - 1;
 	int bottom = top + height - 1;
 
@@ -283,7 +283,7 @@ static Result DecodePure(const BinaryBitmap& image_)
 	}
 
 	if (!info)
-		return Result(DecodeStatus::NotFound);
+		return {};
 
 	auto codeWords = ReadCodeWords(cur, info);
 
@@ -311,7 +311,7 @@ Reader::decode(const BinaryBitmap& image) const
 	}
 
 	Results results = DoDecode(image, false, _hints.returnErrors());
-	return results.empty() ? Result(DecodeStatus::NotFound) : results.front();
+	return results.empty() ? Result() : results.front();
 }
 
 Results Reader::decode(const BinaryBitmap& image, [[maybe_unused]] int maxSymbols) const

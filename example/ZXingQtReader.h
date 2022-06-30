@@ -110,7 +110,7 @@ class Result : private ZXing::Result
 	Position _position;
 
 public:
-	Result() : ZXing::Result(ZXing::DecodeStatus::NotFound) {} // required for qmetatype machinery
+	Result() = default; // required for qmetatype machinery
 
 	explicit Result(ZXing::Result&& r) : ZXing::Result(std::move(r)) {
 		_text = QString::fromStdString(ZXing::Result::text());

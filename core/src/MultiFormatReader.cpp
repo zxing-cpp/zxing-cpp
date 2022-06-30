@@ -48,13 +48,13 @@ MultiFormatReader::~MultiFormatReader() = default;
 Result
 MultiFormatReader::read(const BinaryBitmap& image) const
 {
-	Result r(DecodeStatus::NotFound);
+	Result r;
 	for (const auto& reader : _readers) {
 		r = reader->decode(image);
   		if (r.isValid())
 			return r;
 	}
-	return _hints.returnErrors() ? r : Result(DecodeStatus::NotFound);
+	return _hints.returnErrors() ? r : Result();
 }
 
 Results MultiFormatReader::readMultiple(const BinaryBitmap& image, int maxSymbols) const

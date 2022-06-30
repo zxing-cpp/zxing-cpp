@@ -360,16 +360,16 @@ Result DataBarExpandedReader::decodePattern(int rowNumber, PatternView& view,
 	//    L R L R    |    r       |     l
 
 	if (!Insert(allPairs, ReadRowOfPairs<true>(view, rowNumber)))
-		return Result(DecodeStatus::NotFound);
+		return {};
 
 	auto pairs = FindValidSequence(allPairs);
 	if (pairs.empty())
-		return Result(DecodeStatus::NotFound);
+		return {};
 #endif
 
 	auto txt = DecodeExpandedBits(BuildBitArray(pairs));
 	if (txt.empty())
-		return Result(DecodeStatus::NotFound);
+		return {};
 
 	RemovePairs(allPairs, pairs);
 

@@ -160,7 +160,7 @@ int main(int argc, char* argv[])
 
 		// if we did not find anything, insert a dummy to produce some output for each file
 		if (results.empty())
-			results.emplace_back(DecodeStatus::NotFound);
+			results.emplace_back();
 
 		allResults.insert(allResults.end(), results.begin(), results.end());
 		if (filePath == filePaths.back()) {

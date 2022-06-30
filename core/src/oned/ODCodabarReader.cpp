@@ -61,7 +61,7 @@ CodabarReader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<D
 
 	next = FindLeftGuard<CHAR_LEN>(next, minCharCount * CHAR_LEN, IsLeftGuard);
 	if (!next.isValid())
-		return Result(DecodeStatus::NotFound);
+		return {};
 
 	int xStart = next.pixelsInFront();
 	int maxInterCharacterSpace = next.sum() / 2; // spec actually says 1 narrow space, width/2 is about 4
@@ -71,22 +71,22 @@ CodabarReader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<D
 	txt += DecodeNarrowWidePattern(next, CHARACTER_ENCODINGS, ALPHABET); // read off the start pattern
 
 	if (!isStartOrStopSymbol(txt.back()))
-		return Result(DecodeStatus::NotFound);
+		return {};
 
 	do {
 		// check remaining input width and inter-character space
 		if (!next.skipSymbol() || !next.skipSingle(maxInterCharacterSpace))
-			return Result(DecodeStatus::NotFound);
+			return {};
 
 		txt += DecodeNarrowWidePattern(next, CHARACTER_ENCODINGS, ALPHABET);
 		if (txt.back() == 0)
-			return Result(DecodeStatus::NotFound);
+			return {};
 	} while (!isStartOrStopSymbol(txt.back()));
 
 	// next now points to the last decoded symbol
 	// check txt length and whitespace after the last char. See also FindStartPattern.
 	if (Size(txt) < minCharCount || !next.hasQuietZoneAfter(QUIET_ZONE_SCALE))
-		return Result(DecodeStatus::NotFound);
+		return {};
 
 	// remove stop/start characters
 	if (!_returnStartEnd)

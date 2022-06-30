@@ -48,13 +48,13 @@ Reader::decode(const BinaryBitmap& image) const
 {
 	auto binImg = image.getBitMatrix();
 	if (binImg == nullptr) {
-		return Result(DecodeStatus::NotFound);
+		return {};
 	}
 
 	//TODO: this only works with effectively 'pure' barcodes. Needs proper detector.
 	BitMatrix bits = ExtractPureBits(*binImg);
 	if (bits.empty()) {
-		return Result(DecodeStatus::NotFound);
+		return {};
 	}
 
 	return Result(Decode(bits), {}, BarcodeFormat::MaxiCode);

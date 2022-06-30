@@ -170,7 +170,7 @@ static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, 
 								other.setPosition(points);
 								other.incrementLineCount();
 								// clear the result, so we don't insert it again below
-								result = Result(DecodeStatus::NotFound);
+								result = Result();
 								break;
 							}
 						}
@@ -209,7 +209,7 @@ out:
 	for (auto a = res.begin(); a != res.end(); ++a)
 		for (auto b = std::next(a); b != res.end(); ++b)
 			if (HaveIntersectingBoundingBoxes(a->position(), b->position()))
-				*(a->lineCount() < b->lineCount() ? a : b) = Result(DecodeStatus::NotFound);
+				*(a->lineCount() < b->lineCount() ? a : b) = Result();
 
 	//TODO: C++20 res.erase_if()
 	it = std::remove_if(res.begin(), res.end(), [](auto&& r) { return r.format() == BarcodeFormat::None; });
@@ -227,7 +227,7 @@ Reader::decode(const BinaryBitmap& image) const
 	if (result.empty() && _hints.tryRotate())
 		result = DoDecode(_readers, image, _hints.tryHarder(), true, _hints.isPure(), 1, _hints.minLineCount(), _hints.returnErrors());
 
-	return result.empty() ? Result(DecodeStatus::NotFound) : result.front();
+	return result.empty() ? Result() : result.front();
 }
 
 Results Reader::decode(const BinaryBitmap& image, int maxSymbols) const
