@@ -35,7 +35,7 @@ TEST(MQRDecoderTest, MQRCodeM3L)
 										  88, false);
 
 	const auto result = Decode(bitMatrix);
-	EXPECT_EQ(DecodeStatus::NoError, result.errorCode());
+	EXPECT_TRUE(result.isValid());
 }
 
 TEST(MQRDecoderTest, MQRCodeM3M)
@@ -58,7 +58,7 @@ TEST(MQRDecoderTest, MQRCodeM3M)
 										  88, false);
 
 	const auto result = Decode(bitMatrix);
-	EXPECT_EQ(DecodeStatus::NoError, result.errorCode());
+	EXPECT_TRUE(result.isValid());
 }
 
 TEST(MQRDecoderTest, MQRCodeM1)
@@ -76,7 +76,7 @@ TEST(MQRDecoderTest, MQRCodeM1)
 										  "X  XXXXXX X\n",
 										  88, false);
 	const auto result = Decode(bitMatrix);
-	EXPECT_EQ(DecodeStatus::NoError, result.errorCode());
+	EXPECT_TRUE(result.isValid());
 	EXPECT_EQ(L"123", result.text());
 }
 
@@ -95,7 +95,7 @@ TEST(MQRDecoderTest, MQRCodeM1Error4Bits)
 										  "X  XXXXXXX \n",
 										  88, false);
 	const auto result = Decode(bitMatrix);
-	EXPECT_EQ(DecodeStatus::ChecksumError, result.errorCode());
+	EXPECT_EQ(Error::Checksum, result.error());
 	EXPECT_TRUE(result.text().empty());
 }
 
@@ -120,5 +120,5 @@ TEST(MQRDecoderTest, MQRCodeM4)
 										  "X   XXXXXXX X X X\n",
 										  88, false);
 	const auto result = Decode(bitMatrix);
-	EXPECT_EQ(DecodeStatus::NoError, result.errorCode());
+	EXPECT_TRUE(result.isValid());
 }
