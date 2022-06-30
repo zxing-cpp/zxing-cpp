@@ -66,9 +66,7 @@ class TestReadWrite(unittest.TestCase):
 			np.zeros((100, 100), np.uint8), formats=BF.EAN8 | BF.Aztec, binarizer=zxingcpp.Binarizer.BoolCast
 		)
 
-		self.assertFalse(res.valid)
-		self.assertEqual(res.format, BF.NONE)
-		self.assertEqual(res.text, '')
+		self.assertEqual(res, None)
 
 	@unittest.skipIf(not has_pil, "need PIL for read/write tests")
 	def test_write_read_cycle_pil(self):
