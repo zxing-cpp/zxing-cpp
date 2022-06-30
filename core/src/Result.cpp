@@ -147,7 +147,7 @@ bool Result::operator==(const Result& o) const
 Result MergeStructuredAppendSequence(const Results& results)
 {
 	if (results.empty())
-		return Result(DecodeStatus::NotFound);
+		return {};
 
 	std::list<Result> allResults(results.begin(), results.end());
 	allResults.sort([](const Result& r1, const Result& r2) { return r1.sequenceIndex() < r2.sequenceIndex(); });

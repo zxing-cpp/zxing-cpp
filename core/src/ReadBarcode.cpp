@@ -122,7 +122,7 @@ Result ReadBarcode(const ImageView& _iv, const DecodeHints& hints)
 		// HACK: use the maxNumberOfSymbols value as a switch to ReadBarcodes to enable the downscaling
 		// see python and android wrapper
 		auto ress = ReadBarcodes(_iv, DecodeHints(hints).setMaxNumberOfSymbols(1));
-		return ress.empty() ? Result(DecodeStatus::NotFound) : ress.front();
+		return ress.empty() ? Result() : ress.front();
 	} else {
 		LumImage lum;
 		ImageView iv = SetupLumImageView(_iv, lum, hints);

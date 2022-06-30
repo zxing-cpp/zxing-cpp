@@ -26,13 +26,13 @@ Result Reader::decode(const BinaryBitmap& image) const
 #if 1
 	if (!_hints.isPure()) {
 		auto res = decode(image, 1);
-		return res.empty() ? Result(DecodeStatus::NotFound) : res.front();
+		return res.empty() ? Result() : res.front();
 	}
 #endif
 
 	auto binImg = image.getBitMatrix();
 	if (binImg == nullptr) {
-		return Result(DecodeStatus::NotFound);
+		return {};
 	}
 
 	DetectorResult detectorResult;
@@ -42,7 +42,7 @@ Result Reader::decode(const BinaryBitmap& image) const
 		detectorResult = DetectPureMQR(*binImg);
 
 	if (!detectorResult.isValid())
-		return Result(DecodeStatus::NotFound);
+		return {};
 
 	auto decoderResult = Decode(detectorResult.bits());
 	auto position = detectorResult.position();

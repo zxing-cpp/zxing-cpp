@@ -37,7 +37,7 @@ Result ITFReader::decodePattern(int rowNumber, PatternView& next, std::unique_pt
 
 	next = FindLeftGuard(next, 4 + minCharCount/2 + 3, START_PATTERN_, minQuietZone);
 	if (!next.isValid())
-		return Result(DecodeStatus::NotFound);
+		return {};
 
 	std::string txt;
 	txt.reserve(20);
@@ -71,10 +71,10 @@ Result ITFReader::decodePattern(int rowNumber, PatternView& next, std::unique_pt
 	next = next.subView(0, 3);
 
 	if (Size(txt) < minCharCount || !next.isValid())
-		return Result(DecodeStatus::NotFound);
+		return {};
 
 	if (!IsRightGuard(next, STOP_PATTERN_1, minQuietZone) && !IsRightGuard(next, STOP_PATTERN_2, minQuietZone))
-		return Result(DecodeStatus::NotFound);
+		return {};
 
 	if (_validateCheckSum && !GTIN::IsCheckDigitValid(txt))
 		return Result(DecodeStatus::ChecksumError);

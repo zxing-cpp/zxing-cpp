@@ -211,7 +211,7 @@ Result DataBarReader::decodePattern(int rowNumber, PatternView& next,
 	// guaratee progress (see loop in ODReader.cpp)
 	next = {};
 
-	return Result(DecodeStatus::NotFound);
+	return {};
 }
 
 } // namespace ZXing::OneD

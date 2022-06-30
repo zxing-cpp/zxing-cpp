@@ -26,11 +26,11 @@ Result Reader::decode(const BinaryBitmap& image) const
 #else
 	auto binImg = image.getBitMatrix();
 	if (binImg == nullptr)
-		return Result(DecodeStatus::NotFound);
+		return {};
 
 	auto detectorResult = Detect(*binImg, _hints.tryHarder(), _hints.tryRotate(), _hints.isPure());
 	if (!detectorResult.isValid())
-		return Result(DecodeStatus::NotFound);
+		return {};
 
 	return Result(Decode(detectorResult.bits()), std::move(detectorResult).position(), BarcodeFormat::DataMatrix);
 #endif

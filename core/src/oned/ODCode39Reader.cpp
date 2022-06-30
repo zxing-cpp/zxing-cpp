@@ -94,10 +94,10 @@ Result Code39Reader::decodePattern(int rowNumber, PatternView& next, std::unique
 
 	next = FindLeftGuard(next, minCharCount * CHAR_LEN, START_PATTERN, QUIET_ZONE_SCALE * 12);
 	if (!next.isValid())
-		return Result(DecodeStatus::NotFound);
+		return {};
 
 	if (!isStartOrStopSymbol(DecodeNarrowWidePattern(next, CHARACTER_ENCODINGS, ALPHABET))) // read off the start pattern
-		return Result(DecodeStatus::NotFound);
+		return {};
 
 	int xStart = next.pixelsInFront();
 	int maxInterCharacterSpace = next.sum() / 2; // spec actually says 1 narrow space, width/2 is about 4
@@ -108,18 +108,18 @@ Result Code39Reader::decodePattern(int rowNumber, PatternView& next, std::unique
 	do {
 		// check remaining input width and inter-character space
 		if (!next.skipSymbol() || !next.skipSingle(maxInterCharacterSpace))
-			return Result(DecodeStatus::NotFound);
+			return {};
 
 		txt += DecodeNarrowWidePattern(next, CHARACTER_ENCODINGS, ALPHABET);
 		if (txt.back() == 0)
-			return Result(DecodeStatus::NotFound);
+			return {};
 	} while (!isStartOrStopSymbol(txt.back()));
 
 	txt.pop_back(); // remove asterisk
 
 	// check txt length and whitespace after the last char. See also FindStartPattern.
 	if (Size(txt) < minCharCount - 2 || !next.hasQuietZoneAfter(QUIET_ZONE_SCALE))
-		return Result(DecodeStatus::NotFound);
+		return {};
 
 	if (_validateCheckSum) {
 		auto checkDigit = txt.back();

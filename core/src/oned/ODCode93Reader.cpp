@@ -87,7 +87,7 @@ Result Code93Reader::decodePattern(int rowNumber, PatternView& next, std::unique
 
 	next = FindLeftGuard<CHAR_LEN>(next, minCharCount * CHAR_LEN, IsStartGuard);
 	if (!next.isValid())
-		return Result(DecodeStatus::NotFound);
+		return {};
 
 	int xStart = next.pixelsInFront();
 
@@ -97,22 +97,22 @@ Result Code93Reader::decodePattern(int rowNumber, PatternView& next, std::unique
 	do {
 		// check remaining input width
 		if (!next.skipSymbol())
-			return Result(DecodeStatus::NotFound);
+			return {};
 
 		txt += LookupBitPattern(OneToFourBitPattern<CHAR_LEN, CHAR_SUM>(next), CHARACTER_ENCODINGS, ALPHABET);
 		if (txt.back() == 0)
-			return Result(DecodeStatus::NotFound);
+			return {};
 	} while (txt.back() != '*');
 
 	txt.pop_back(); // remove asterisk
 
 	if (Size(txt) < minCharCount - 2)
-		return Result(DecodeStatus::NotFound);
+		return {};
 
 	// check termination bar (is present and not wider than about 2 modules) and quiet zone
 	next = next.subView(0, CHAR_LEN + 1);
 	if (!next.isValid() || next[CHAR_LEN] > next.sum(CHAR_LEN) / 4 || !next.hasQuietZoneAfter(QUIET_ZONE_SCALE))
-		return Result(DecodeStatus::NotFound);
+		return {};
 
 	if (!CheckChecksums(txt))
 		return Result(DecodeStatus::ChecksumError);

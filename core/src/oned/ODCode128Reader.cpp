@@ -227,12 +227,12 @@ Result Code128Reader::decodePattern(int rowNumber, PatternView& next, std::uniqu
 
 	next = FindLeftGuard(next, minCharCount * CHAR_LEN, START_PATTERN_PREFIX, QUIET_ZONE);
 	if (!next.isValid())
-		return Result(DecodeStatus::NotFound);
+		return {};
 
 	next = next.subView(0, CHAR_LEN);
 	int startCode = decodePattern(next, true);
 	if (!(CODE_START_A <= startCode && startCode <= CODE_START_C))
-		return Result(DecodeStatus::NotFound);
+		return {};
 
 	int xStart = next.pixelsInFront();
 	ByteArray rawCodes;
@@ -243,12 +243,12 @@ Result Code128Reader::decodePattern(int rowNumber, PatternView& next, std::uniqu
 
 	while (true) {
 		if (!next.skipSymbol())
-			return Result(DecodeStatus::NotFound);
+			return {};
 
 		// Decode another code from image
 		int code = decodePattern(next);
 		if (code == -1)
-			return Result(DecodeStatus::NotFound);
+			return {};
 		if (code == CODE_STOP)
 			break;
 		if (code >= CODE_START_A)
@@ -260,13 +260,13 @@ Result Code128Reader::decodePattern(int rowNumber, PatternView& next, std::uniqu
 	}
 
 	if (Size(rawCodes) < minCharCount - 1) // stop code is missing in rawCodes
-		return Result(DecodeStatus::NotFound);
+		return {};
 
 	// check termination bar (is present and not wider than about 2 modules) and quiet zone (next is now 13 modules
 	// wide, require at least 8)
 	next = next.subView(0, CHAR_LEN + 1);
 	if (!next.isValid() || next[CHAR_LEN] > next.sum(CHAR_LEN) / 4 || !next.hasQuietZoneAfter(QUIET_ZONE/13))
-		return Result(DecodeStatus::NotFound);
+		return {};
 
 	int checksum = rawCodes.front();
 	for (int i = 1; i < Size(rawCodes) - 1; ++i)
