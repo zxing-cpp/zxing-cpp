@@ -30,7 +30,7 @@ using Position = QuadrilateralI;
 class Result
 {
 public:
-	Result() noexcept = default;
+	Result() = default;
 	explicit Result(DecodeStatus status);
 
 	// 1D convenience constructor
