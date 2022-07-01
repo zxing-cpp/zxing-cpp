@@ -8,7 +8,7 @@
 
 #include "BitArray.h"
 #include "DecodeStatus.h"
-#include "ODRSSFieldParser.h"
+#include "GS1.h"
 
 #include <limits>
 #include <stdexcept>
@@ -409,7 +409,6 @@ ParseBlocks(const BitArray& bits, ParsingState& state, std::string& buffer)
 			ParseAlphaBlock(bits, state, buffer) :
 			(state.encoding == ParsingState::ISO_IEC_646 ?
 				ParseIsoIec646Block(bits, state, buffer) :
-				// else
 				ParseNumericBlock(bits, state, buffer));
 		if (result.isValid() || initialPosition == state.position)
 		{
@@ -460,14 +459,16 @@ DecodeAppIdAllCodes(const BitArray& bits, int pos, int remainingValue, std::stri
 		while (true) {
 			state.position = pos;
 			DecodedInformation info = DoDecodeGeneralPurposeField(state, bits, remaining);
-			std::string parsedFields;
-			auto status = ParseFieldsInGeneralPurpose(info.newString, parsedFields);
-			if (StatusIsError(status)) {
-				if (result.empty() && remaining.empty()){
+			if (pos == info.newPosition || info.newString.empty()) // No step forward!
+				break;
+
+			std::string parsedFields = HRIFromGS1(info.newString);
+			if (parsedFields.empty()) {
+				if (result.empty() && remaining.empty()) {
 					result = info.newString;
 					return DecodeStatus::NoError;
 				} else
-					return status;
+					return DecodeStatus::FormatError;
 			}
 			result += parsedFields;
 			if (info.isRemaining()) {
@@ -477,9 +478,6 @@ DecodeAppIdAllCodes(const BitArray& bits, int pos, int remainingValue, std::stri
 				remaining.clear();
 			}
 
-			if (pos == info.newPosition) {// No step forward!
-				break;
-			}
 			pos = info.newPosition;
 		};
 		return DecodeStatus::NoError;
