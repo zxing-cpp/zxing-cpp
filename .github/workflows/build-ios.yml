@@ -1,0 +1,13 @@
+name: build-ios
+on: push
+    
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Build
+      shell: bash
+      working-directory: ${{runner.workspace}}/wrappers/ios
+      run: ./build-release
