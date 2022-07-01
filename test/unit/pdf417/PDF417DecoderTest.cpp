@@ -11,9 +11,9 @@
 
 #include "gtest/gtest.h"
 
-namespace ZXing { namespace Pdf417 {
-	DecodeStatus DecodeMacroBlock(const std::vector<int>& codewords, int codeIndex, DecoderResultExtra& resultMetadata, int& next);
-}}
+namespace ZXing::Pdf417 {
+int DecodeMacroBlock(const std::vector<int>& codewords, int codeIndex, DecoderResultExtra& resultMetadata);
+}
 
 using namespace ZXing;
 using namespace ZXing::Pdf417;
@@ -21,7 +21,11 @@ using namespace ZXing::Pdf417;
 // Shorthand for Decode()
 static DecoderResult parse(const std::vector<int>& codewords, int ecLevel = 0)
 {
-	return DecodedBitStreamParser::Decode(codewords, ecLevel);
+	try {
+		return DecodedBitStreamParser::Decode(codewords, ecLevel);
+	} catch (Error e) {
+		return e;
+	}
 }
 
 /**
@@ -33,10 +37,8 @@ TEST(PDF417DecoderTest, StandardSample1)
 		// we should never reach these
 		1000, 1000, 1000 };
 
-	int next = 0;
 	DecoderResultExtra resultMetadata;
-	auto status = DecodeMacroBlock(sampleCodes, 2, resultMetadata, next);
-	EXPECT_EQ(status, DecodeStatus::NoError);
+	DecodeMacroBlock(sampleCodes, 2, resultMetadata);
 
 	EXPECT_EQ(0, resultMetadata.segmentIndex());
 	EXPECT_EQ("017053", resultMetadata.fileId());
@@ -65,10 +67,8 @@ TEST(PDF417DecoderTest, StandardSample2)
 		// we should never reach these
 		1000, 1000, 1000 };
 
-	int next = 0;
 	DecoderResultExtra resultMetadata;
-	auto status = DecodeMacroBlock(sampleCodes, 2, resultMetadata, next);
-	EXPECT_EQ(status, DecodeStatus::NoError);
+	DecodeMacroBlock(sampleCodes, 2, resultMetadata);
 
 	EXPECT_EQ(3, resultMetadata.segmentIndex());
 	EXPECT_EQ("017053", resultMetadata.fileId());
@@ -95,10 +95,8 @@ TEST(PDF417DecoderTest, StandardSample3)
 {
 	std::vector<int> sampleCodes = { 7, 928, 111, 100, 100, 200, 300 };
 
-	int next = 0;
 	DecoderResultExtra resultMetadata;
-	auto status = DecodeMacroBlock(sampleCodes, 2, resultMetadata, next);
-	EXPECT_EQ(status, DecodeStatus::NoError);
+	DecodeMacroBlock(sampleCodes, 2, resultMetadata);
 
 	EXPECT_EQ(0, resultMetadata.segmentIndex());
 	EXPECT_EQ("100200300", resultMetadata.fileId());
@@ -117,10 +115,8 @@ TEST(PDF417DecoderTest, SampleWithFilename)
 		599, 923, 1, 111, 102, 98, 311, 355, 522, 920, 779, 40, 628, 33, 749, 267, 506, 213, 928, 465, 248, 493, 72,
 		780, 699, 780, 493, 755, 84, 198, 628, 368, 156, 198, 809, 19, 113 };
 
-	int next = 0;
 	DecoderResultExtra resultMetadata;
-	auto status = DecodeMacroBlock(sampleCodes, 3, resultMetadata, next);
-	EXPECT_EQ(status, DecodeStatus::NoError);
+	DecodeMacroBlock(sampleCodes, 3, resultMetadata);
 
 	EXPECT_EQ(0, resultMetadata.segmentIndex());
 	EXPECT_EQ("000252021086", resultMetadata.fileId());
@@ -142,10 +138,8 @@ TEST(PDF417DecoderTest, SampleWithNumericValues)
 	std::vector<int> sampleCodes = { 25, 477, 928, 111, 100, 0, 252, 21, 86, 923, 2, 2, 0, 1, 0, 0, 0, 923, 5, 130,
 		923, 6, 1, 500, 13 };
 
-	int next = 0;
 	DecoderResultExtra resultMetadata;
-	auto status = DecodeMacroBlock(sampleCodes, 3, resultMetadata, next);
-	EXPECT_EQ(status, DecodeStatus::NoError);
+	DecodeMacroBlock(sampleCodes, 3, resultMetadata);
 
 	EXPECT_EQ(0, resultMetadata.segmentIndex());
 	EXPECT_EQ("000252021086", resultMetadata.fileId());
@@ -167,10 +161,8 @@ TEST(PDF417DecoderTest, SampleWithMacroTerminatorOnly)
 {
 	std::vector<int> sampleCodes = { 7, 477, 928, 222, 198, 0, 922 };
 
-	int next = 0;
 	DecoderResultExtra resultMetadata;
-	auto status = DecodeMacroBlock(sampleCodes, 3, resultMetadata, next);
-	EXPECT_EQ(status, DecodeStatus::NoError);
+	DecodeMacroBlock(sampleCodes, 3, resultMetadata);
 
 	EXPECT_EQ(99998, resultMetadata.segmentIndex());
 	EXPECT_EQ("000", resultMetadata.fileId());
@@ -522,10 +514,8 @@ TEST(PDF417DecoderTest, ECIMacroOptionalNumeric)
 	std::vector<int> sampleCodes = { 19, 477, 928, 111, 100, 0, 252, 21, 86, 923, 5, 15, 369, 753, 190, 927, 25, 124,
 		745 };
 
-	int next = 0;
 	DecoderResultExtra resultMetadata;
-	auto status = DecodeMacroBlock(sampleCodes, 3, resultMetadata, next);
-	EXPECT_EQ(status, DecodeStatus::NoError);
+	DecodeMacroBlock(sampleCodes, 3, resultMetadata);
 
 	EXPECT_EQ(0, resultMetadata.segmentIndex());
 	EXPECT_EQ("000252021086", resultMetadata.fileId());
