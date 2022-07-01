@@ -27,7 +27,7 @@ Reader::decode(const BinaryBitmap& image) const
 		return {};
 
 	DetectorResult detectResult = Detect(*binImg, false, _hints.isPure());
-	DecoderResult decodeResult = DecodeStatus::NotFound;
+	DecoderResult decodeResult;
 	if (detectResult.isValid())
 		decodeResult = Decode(detectResult);
 

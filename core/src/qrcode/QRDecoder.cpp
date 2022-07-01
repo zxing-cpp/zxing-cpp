@@ -333,7 +333,7 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 #ifndef NDEBUG
 		printf("QRDecoder error: %s\n", e.what());
 #endif
-		return DecodeStatus::FormatError;
+		return FormatError();
 	}
 
 	return DecoderResult(std::move(bytes), std::move(result))
@@ -345,22 +345,22 @@ DecoderResult Decode(const BitMatrix& bits)
 {
 	const Version* pversion = ReadVersion(bits);
 	if (!pversion)
-		return DecodeStatus::FormatError;
+		return FormatError();
 	const Version& version = *pversion;
 
 	auto formatInfo = ReadFormatInformation(bits, version.isMicroQRCode());
 	if (!formatInfo.isValid())
-		return DecodeStatus::FormatError;
+		return FormatError();
 
 	// Read codewords
 	ByteArray codewords = ReadCodewords(bits, version, formatInfo);
 	if (codewords.empty())
-		return DecodeStatus::FormatError;
+		return FormatError();
 
 	// Separate into data blocks
 	std::vector<DataBlock> dataBlocks = DataBlock::GetDataBlocks(codewords, version, formatInfo.ecLevel);
 	if (dataBlocks.empty())
-		return DecodeStatus::FormatError;
+		return FormatError();
 
 	// Count total number of data bytes
 	const auto op = [](auto totalBytes, const auto& dataBlock){ return totalBytes + dataBlock.numDataCodewords();};
@@ -375,7 +375,7 @@ DecoderResult Decode(const BitMatrix& bits)
 		int numDataCodewords = dataBlock.numDataCodewords();
 
 		if (!CorrectErrors(codewordBytes, numDataCodewords))
-			return DecodeStatus::ChecksumError;
+			return ChecksumError();
 
 		resultIterator = std::copy_n(codewordBytes.begin(), numDataCodewords, resultIterator);
 	}

@@ -8,7 +8,6 @@
 
 #include "ByteArray.h"
 #include "Content.h"
-#include "DecodeStatus.h"
 #include "Error.h"
 #include "StructuredAppend.h"
 #include "ZXContainerAlgorithms.h"
@@ -38,14 +37,13 @@ class DecoderResult
 	DecoderResult& operator=(const DecoderResult &) = delete;
 
 public:
-	DecoderResult(DecodeStatus status) : _error(Status2Error(status)) {}
+	DecoderResult() = default;
 	DecoderResult(Error error) : _error(error) {}
 	DecoderResult(ByteArray&& rawBytes, Content&& bytes = {}) : _rawBytes(std::move(rawBytes)), _content(std::move(bytes))
 	{
 		_numBits = 8 * Size(_rawBytes);
 	}
 
-	DecoderResult() = default;
 	DecoderResult(DecoderResult&&) noexcept = default;
 	DecoderResult& operator=(DecoderResult&&) = default;
 

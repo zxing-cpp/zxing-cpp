@@ -307,11 +307,11 @@ DecoderResult Decode(const BitArray& bits)
 	try {
 		DecodeContent(bits, res);
 	} catch (const std::out_of_range&) { // see ReadBits()
-		return DecodeStatus::FormatError;
+		return FormatError();
 	}
 
 	if (res.bytes.empty())
-		return DecodeStatus::FormatError;
+		return FormatError();
 
 	// Check for Structured Append - need 4 5-bit words, beginning with ML UL, ending with index and count
 	bool haveStructuredAppend = Size(bits) > 20 && ToInt(bits, 0, 5) == 29 // latch to MIXED (from UPPER)
@@ -351,7 +351,7 @@ DecoderResult Decode(const DetectorResult& detectorResult)
 	BitArray bits = CorrectBits(detectorResult, ExtractBits(detectorResult));
 
 	if (!bits.size())
-		return DecodeStatus::FormatError;
+		return FormatError();
 
 	return Decode(bits).setReaderInit(detectorResult.readerInit());
 }
