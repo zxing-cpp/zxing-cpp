@@ -101,6 +101,8 @@ if (BUILD_READERS)
         src/GlobalHistogramBinarizer.cpp
         src/GridSampler.h
         src/GridSampler.cpp
+        src/GS1.h
+        src/GS1.cpp
         src/HybridBinarizer.h
         src/HybridBinarizer.cpp
         src/ImageView.h
@@ -313,8 +315,6 @@ if (BUILD_READERS)
     set (ONED_RSS_FILES ${ONED_RSS_FILES}
         src/oned/rss/ODRSSExpandedBinaryDecoder.h
         src/oned/rss/ODRSSExpandedBinaryDecoder.cpp
-        src/oned/rss/ODRSSFieldParser.h
-        src/oned/rss/ODRSSFieldParser.cpp
         src/oned/rss/ODRSSGenericAppIdDecoder.h
         src/oned/rss/ODRSSGenericAppIdDecoder.cpp
     )
