@@ -352,7 +352,7 @@ DecoderResult Decode(ByteArray&& bytes, const bool isDMRE)
 #ifndef NDEBUG
 		printf("DMDecoder error: %s\n", e.what());
 #endif
-		return DecodeStatus::FormatError;
+		return FormatError();
 	}
 
 	result.append(resultTrailer);
@@ -396,17 +396,17 @@ static DecoderResult DoDecode(const BitMatrix& bits)
 	// Construct a parser and read version, error-correction level
 	const Version* version = VersionForDimensionsOf(bits);
 	if (version == nullptr)
-		return DecodeStatus::FormatError;
+		return FormatError();
 
 	// Read codewords
 	ByteArray codewords = CodewordsFromBitMatrix(bits);
 	if (codewords.empty())
-		return DecodeStatus::FormatError;
+		return FormatError();
 
 	// Separate into data blocks
 	std::vector<DataBlock> dataBlocks = GetDataBlocks(codewords, *version);
 	if (dataBlocks.empty())
-		return DecodeStatus::FormatError;
+		return FormatError();
 
 	// Count total number of data bytes
 	ByteArray resultBytes(TransformReduce(dataBlocks, 0, [](const auto& db) { return db.numDataCodewords; }));
@@ -418,7 +418,7 @@ static DecoderResult DoDecode(const BitMatrix& bits)
 		ByteArray& codewordBytes = dataBlock.codewords;
 		int numDataCodewords = dataBlock.numDataCodewords;
 		if (!CorrectErrors(codewordBytes, numDataCodewords))
-			return DecodeStatus::ChecksumError;
+			return ChecksumError();
 
 		for (int i = 0; i < numDataCodewords; i++) {
 			// De-interlace data blocks.
