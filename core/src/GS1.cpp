@@ -272,13 +272,10 @@ std::string HRIFromGS1(const std::string& gs1)
 		res += rem.substr(0, fieldSize);
 		rem.remove_prefix(fieldSize);
 
-		if (Size(rem) && rem.front() == GS) {
-			// TODO: we have DataBar samples where the fixed-length 422 ends with a GS, sigh...
-			if (i->isVariableLength() || i->aiPrefix == "422")
-				rem.remove_prefix(1);
-			else
-				return {};
-		}
+		// See General Specification v22.0 Section 7.8.6.3: "...the processing routine SHALL tolerate a single separator character
+		// immediately following any element string, whether necessary or not..."
+		if (Size(rem) && rem.front() == GS)
+			rem.remove_prefix(1);
 	}
 
 	return res;
