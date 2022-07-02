@@ -7,6 +7,7 @@
 #include "ODCode39Reader.h"
 
 #include "DecodeHints.h"
+#include "DecoderResult.h"
 #include "Result.h"
 #include "ZXContainerAlgorithms.h"
 
@@ -121,23 +122,24 @@ Result Code39Reader::decodePattern(int rowNumber, PatternView& next, std::unique
 	if (Size(txt) < minCharCount - 2 || !next.hasQuietZoneAfter(QUIET_ZONE_SCALE))
 		return {};
 
+	Error error;
 	if (_validateCheckSum) {
 		auto checkDigit = txt.back();
 		txt.pop_back();
 		int checksum = TransformReduce(txt, 0, [](char c) { return IndexOf(ALPHABET, c); });
 		if (checkDigit != ALPHABET[checksum % 43])
-			return Result(DecodeStatus::ChecksumError);
+			error = ChecksumError();
 	}
 
-	if (_extendedMode && !DecodeExtendedCode39AndCode93(txt, "$%/+"))
-		return Result(DecodeStatus::FormatError);
+	if (!error && _extendedMode && !DecodeExtendedCode39AndCode93(txt, "$%/+"))
+		error = FormatError("Decoding extended Code39/Code93 failed");
 
 	// Symbology identifier modifiers ISO/IEC 16388:2007 Annex C Table C.1
 	constexpr const char symbologyModifiers[4] = { '0', '3' /*checksum*/, '4' /*extended*/, '7' /*checksum,extended*/ };
 	SymbologyIdentifier symbologyIdentifier = {'A', symbologyModifiers[(int)_extendedMode * 2 + (int)_validateCheckSum]};
 
 	int xStop = next.pixelsTillEnd();
-	return Result(txt, rowNumber, xStart, xStop, BarcodeFormat::Code39, symbologyIdentifier);
+	return Result(std::move(txt), rowNumber, xStart, xStop, BarcodeFormat::Code39, symbologyIdentifier, error);
 }
 
 } // namespace ZXing::OneD

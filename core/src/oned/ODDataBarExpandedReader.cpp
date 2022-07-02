@@ -341,7 +341,7 @@ Result DataBarExpandedReader::decodePattern(int rowNumber, PatternView& view,
 	auto pairs = ReadRowOfPairs<false>(view, rowNumber);
 
 	if (pairs.empty() || !ChecksumIsValid(pairs))
-		return Result(DecodeStatus::NotFound);
+		return {};
 #else
 	if (!state)
 		state.reset(new DBERState);

@@ -114,20 +114,21 @@ Result Code93Reader::decodePattern(int rowNumber, PatternView& next, std::unique
 	if (!next.isValid() || next[CHAR_LEN] > next.sum(CHAR_LEN) / 4 || !next.hasQuietZoneAfter(QUIET_ZONE_SCALE))
 		return {};
 
+	Error error;
 	if (!CheckChecksums(txt))
-		return Result(DecodeStatus::ChecksumError);
+		error = ChecksumError();
 
 	// Remove checksum digits
 	txt.resize(txt.size() - 2);
 
-	if (!DecodeExtendedCode39AndCode93(txt, "abcd"))
-		return Result(DecodeStatus::FormatError);
+	if (!error && !DecodeExtendedCode39AndCode93(txt, "abcd"))
+		error = FormatError("Decoding extended Code39/Code93 failed");
 
 	// Symbology identifier ISO/IEC 15424:2008 4.4.10 no modifiers
 	SymbologyIdentifier symbologyIdentifier = {'G', '0'};
 
 	int xStop = next.pixelsTillEnd();
-	return Result(txt, rowNumber, xStart, xStop, BarcodeFormat::Code93, symbologyIdentifier);
+	return Result(txt, rowNumber, xStart, xStop, BarcodeFormat::Code93, symbologyIdentifier, error);
 }
 
 } // namespace ZXing::OneD

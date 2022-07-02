@@ -34,7 +34,7 @@ public:
 	explicit Result(DecodeStatus status);
 
 	// 1D convenience constructor
-	Result(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format, SymbologyIdentifier si,
+	Result(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format, SymbologyIdentifier si, Error error = {},
 		   ByteArray&& rawBytes = {}, bool readerInit = false, const std::string& ai = {});
 
 	Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat format);

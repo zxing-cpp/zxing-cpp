@@ -252,9 +252,9 @@ Result Code128Reader::decodePattern(int rowNumber, PatternView& next, std::uniqu
 		if (code == CODE_STOP)
 			break;
 		if (code >= CODE_START_A)
-			return Result(DecodeStatus::FormatError);
+			return {};
 		if (!raw2txt.decode(code))
-			return Result(DecodeStatus::FormatError);
+			return {};
 
 		rawCodes.push_back(static_cast<uint8_t>(code));
 	}
@@ -268,15 +268,16 @@ Result Code128Reader::decodePattern(int rowNumber, PatternView& next, std::uniqu
 	if (!next.isValid() || next[CHAR_LEN] > next.sum(CHAR_LEN) / 4 || !next.hasQuietZoneAfter(QUIET_ZONE/13))
 		return {};
 
+	Error error;
 	int checksum = rawCodes.front();
 	for (int i = 1; i < Size(rawCodes) - 1; ++i)
 		checksum += i * rawCodes[i];
 	// the last code is the checksum:
 	if (checksum % 103 != rawCodes.back())
-		return Result(DecodeStatus::ChecksumError);
+		error = ChecksumError();
 
 	int xStop = next.pixelsTillEnd();
-	return Result(raw2txt.text(), rowNumber, xStart, xStop, BarcodeFormat::Code128, raw2txt.symbologyIdentifier(),
+	return Result(raw2txt.text(), rowNumber, xStart, xStop, BarcodeFormat::Code128, raw2txt.symbologyIdentifier(), error,
 				  std::move(rawCodes), raw2txt.readerInit(), raw2txt.applicationIndicator());
 }
 
