@@ -209,11 +209,11 @@ static const char* GetCharacter(Table table, int code)
 /**
 * See ISO/IEC 24778:2008 Section 10.1
 */
-static ECI ParseECIValue(BitArray::Range& bits, const int flg)
+static ECI ParseECIValue(BitArrayView& bits, const int flg)
 {
 	int eci = 0;
 	for (int i = 0; i < flg; i++)
-		eci = 10 * eci + ReadBits(bits, 4) - 2;
+		eci = 10 * eci + bits.readBits(4) - 2;
 	return ECI(eci);
 }
 
@@ -254,20 +254,20 @@ static void DecodeContent(const BitArray& bits, Content& res)
 	Table latchTable = Table::UPPER; // table most recently latched to
 	Table shiftTable = Table::UPPER; // table to use for the next read
 
-	auto remBits = bits.range();
+	auto remBits = BitArrayView(bits);
 
 	while (remBits.size() >= (shiftTable == Table::DIGIT ? 4 : 5)) { // see ISO/IEC 24778:2008 7.3.1.2 regarding padding bits
 		if (shiftTable == Table::BINARY) {
-			int length = ReadBits(remBits, 5);
+			int length = remBits.readBits(5);
 			if (length == 0)
-				length = ReadBits(remBits, 11) + 31;
+				length = remBits.readBits(11) + 31;
 			for (int i = 0; i < length; i++)
-				res.push_back(ReadBits(remBits, 8));
+				res.push_back(remBits.readBits(8));
 			// Go back to whatever mode we had been in
 			shiftTable = latchTable;
 		} else {
 			int size = shiftTable == Table::DIGIT ? 4 : 5;
-			int code = ReadBits(remBits, size);
+			int code = remBits.readBits(size);
 			const char* str = GetCharacter(shiftTable, code);
 			if (std::strncmp(str, "CTRL_", 5) == 0) {
 				// Table changes
@@ -279,7 +279,7 @@ static void DecodeContent(const BitArray& bits, Content& res)
 				if (str[6] == 'L')
 					latchTable = shiftTable;
 			} else if (std::strcmp(str, "FLGN") == 0) {
-				int flg = ReadBits(remBits, 3);
+				int flg = remBits.readBits(3);
 				if (flg == 0) { // FNC1
 					res.push_back(29); // May be removed at end if first/second FNC1
 				} else if (flg <= 6) {
