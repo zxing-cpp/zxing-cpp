@@ -5,7 +5,8 @@
 
 #include "BitArray.h"
 #include "BitArrayUtility.h"
-#include "oned/rss/ODRSSExpandedBinaryDecoder.h"
+#include "GS1.h"
+#include "oned/ODDataBarExpandedBitDecoder.h"
 
 #include "gtest/gtest.h"
 
@@ -13,10 +14,10 @@ using namespace ZXing;
 
 static std::string parse(std::string bitStr)
 {
-	return OneD::DataBar::DecodeExpandedBits(Utility::ParseBitArray(bitStr, '1'));
+	return HRIFromGS1(OneD::DataBar::DecodeExpandedBits(Utility::ParseBitArray(bitStr, '1')));
 }
 
-TEST(ODRSSExpandedBinaryDecoderTest, FNC1NumericLatch)
+TEST(ODDataBarExpandedBitDecoderTest, FNC1NumericLatch)
 {
 	std::string result;
 
@@ -37,7 +38,7 @@ TEST(ODRSSExpandedBinaryDecoderTest, FNC1NumericLatch)
 	EXPECT_EQ(result, "(10)12((422)123");
 }
 
-TEST(ODRSSExpandedBinaryDecoderTest, DecodeAI01392x)
+TEST(ODDataBarExpandedBitDecoderTest, DecodeAI01392x)
 {
 	std::string result;
 
@@ -53,7 +54,7 @@ TEST(ODRSSExpandedBinaryDecoderTest, DecodeAI01392x)
 	EXPECT_EQ(result, "(01)90012345678908(3929)12345678901234(20)01");
 }
 
-TEST(ODRSSExpandedBinaryDecoderTest, DecodeAI01393x)
+TEST(ODDataBarExpandedBitDecoderTest, DecodeAI01393x)
 {
 	std::string result;
 

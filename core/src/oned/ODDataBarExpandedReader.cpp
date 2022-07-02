@@ -9,10 +9,11 @@
 
 #include "BarcodeFormat.h"
 #include "DecoderResult.h"
+#include "GS1.h"
 #include "ODDataBarCommon.h"
+#include "ODDataBarExpandedBitDecoder.h"
 #include "Result.h"
 #include "TextDecoder.h"
-#include "rss/ODRSSExpandedBinaryDecoder.h"
 
 #include <map>
 #include <vector>
@@ -368,6 +369,8 @@ Result DataBarExpandedReader::decodePattern(int rowNumber, PatternView& view,
 #endif
 
 	auto txt = DecodeExpandedBits(BuildBitArray(pairs));
+	// TODO: remove this to make it return standard conform content -> needs lots of blackbox test fixes
+	txt = HRIFromGS1(txt);
 	if (txt.empty())
 		return {};
 

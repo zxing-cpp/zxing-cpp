@@ -525,14 +525,16 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		});
 
 		runTests("rssexpanded-3", "DataBarExpanded", 118, {
-			{ 118, 118, 0   },
-			{ 118, 118, 180 },
-			{ 118, 0, pure },
+			// TODO: See HRIFromGS1. 13.png and 66.png are seemingly invalid symbols
+			{ 116, 116, 0   },
+			{ 116, 116, 180 },
+			{ 116, 0, pure },
 		});
 
 		runTests("rssexpandedstacked-1", "DataBarExpanded", 65, {
-			{ 60, 65, 0   },
-			{ 60, 65, 180 },
+			// TODO: See HRIFromGS1. 13.png is seemingly invalid symbol
+			{ 60, 64, 0   },
+			{ 60, 64, 180 },
 			{ 60, 0, pure },
 		});
 
