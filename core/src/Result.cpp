@@ -19,11 +19,11 @@ namespace ZXing {
 
 Result::Result(DecodeStatus status) : _error(Status2Error(status)) {}
 
-Result::Result(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format,
-			   SymbologyIdentifier si, ByteArray&& rawBytes, bool readerInit, const std::string& ai)
-	:
-	  _format(format),
+Result::Result(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format, SymbologyIdentifier si, Error error,
+			   ByteArray&& rawBytes, bool readerInit, const std::string& ai)
+	: _format(format),
 	  _content({ByteArray(text)}, si, ai),
+	  _error(error),
 	  _position(Line(y, xStart, xStop)),
 	  _rawBytes(std::move(rawBytes)),
 	  _numBits(Size(_rawBytes) * 8),
@@ -152,17 +152,17 @@ Result MergeStructuredAppendSequence(const Results& results)
 	std::list<Result> allResults(results.begin(), results.end());
 	allResults.sort([](const Result& r1, const Result& r2) { return r1.sequenceIndex() < r2.sequenceIndex(); });
 
-	if (allResults.back().sequenceSize() != Size(allResults) ||
-		!std::all_of(allResults.begin(), allResults.end(),
-					 [&](Result& it) { return it.sequenceId() == allResults.front().sequenceId(); }))
-		return Result(DecodeStatus::FormatError);
-
 	Result res = allResults.front();
 	for (auto i = std::next(allResults.begin()); i != allResults.end(); ++i)
 		res._content.append(i->_content);
 
 	res._position = {};
 	res._sai.index = -1;
+
+	if (allResults.back().sequenceSize() != Size(allResults) ||
+		!std::all_of(allResults.begin(), allResults.end(),
+					 [&](Result& it) { return it.sequenceId() == allResults.front().sequenceId(); }))
+		res._error = FormatError("sequenceIDs not matching during structured append sequence merging");
 
 	return res;
 }

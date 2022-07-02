@@ -17,7 +17,6 @@ namespace ZXing {
 
 class BitMatrix;
 class BinaryBitmap;
-enum class DecodeStatus;
 
 namespace Pdf417 {
 

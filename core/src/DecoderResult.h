@@ -39,7 +39,7 @@ class DecoderResult
 public:
 	DecoderResult() = default;
 	DecoderResult(Error error) : _error(error) {}
-	DecoderResult(ByteArray&& rawBytes, Content&& bytes = {}) : _rawBytes(std::move(rawBytes)), _content(std::move(bytes))
+	DecoderResult(ByteArray&& rawBytes, Content&& bytes) : _rawBytes(std::move(rawBytes)), _content(std::move(bytes))
 	{
 		_numBits = 8 * Size(_rawBytes);
 	}

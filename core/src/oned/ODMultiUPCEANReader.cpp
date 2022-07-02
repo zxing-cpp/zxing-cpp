@@ -275,8 +275,9 @@ Result MultiUPCEANReader::decodePattern(int rowNumber, PatternView& next, std::u
 		  (_hints.hasFormat(BarcodeFormat::UPCE) && UPCE(res, begin))))
 		return {};
 
+	Error error;
 	if (!GTIN::IsCheckDigitValid(res.format == BarcodeFormat::UPCE ? UPCEANCommon::ConvertUPCEtoUPCA(res.txt) : res.txt))
-		return Result(DecodeStatus::ChecksumError);
+		error = ChecksumError();
 
 	// If UPC-A was a requested format and we detected a EAN-13 code with a leading '0', then we drop the '0' and call it
 	// a UPC-A code.
@@ -309,7 +310,7 @@ Result MultiUPCEANReader::decodePattern(int rowNumber, PatternView& next, std::u
 	if (_hints.eanAddOnSymbol() == EanAddOnSymbol::Require && !addOnRes.isValid())
 		return {};
 
-	return {res.txt, rowNumber, begin.pixelsInFront(), res.end.pixelsTillEnd(), res.format, symbologyIdentifier};
+	return Result(res.txt, rowNumber, begin.pixelsInFront(), res.end.pixelsTillEnd(), res.format, symbologyIdentifier, error);
 }
 
 } // namespace ZXing::OneD
