@@ -259,7 +259,12 @@ std::string HRIFromGS1(const std::string& gs1)
 		int fieldSize = i->fieldSize();
 		if (i->isVariableLength()) {
 			auto gsPos = rem.find(GS);
+#if 1
 			fieldSize = std::min(gsPos == std::string_view::npos ? Size(rem) : static_cast<int>(gsPos), fieldSize);
+#else
+			// TODO: ignore the 'max field size' part for now as it breaks rssexpanded-3/13.png?
+			fieldSize = gsPos == std::string_view::npos ? Size(rem) : static_cast<int>(gsPos);
+#endif
 		}
 		if (fieldSize == 0 || Size(rem) < fieldSize)
 			return {};
@@ -268,7 +273,8 @@ std::string HRIFromGS1(const std::string& gs1)
 		rem.remove_prefix(fieldSize);
 
 		if (Size(rem) && rem.front() == GS) {
-			if (i->isVariableLength())
+			// TODO: we have DataBar samples where the fixed-length 422 ends with a GS, sigh...
+			if (i->isVariableLength() || i->aiPrefix == "422")
 				rem.remove_prefix(1);
 			else
 				return {};
