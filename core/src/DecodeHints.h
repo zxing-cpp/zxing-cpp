@@ -146,7 +146,7 @@ public:
 	[[deprecated]] DecodeHints& setAssumeCode39CheckDigit(bool v) { return setValidateCode39CheckSum(v); }
 
 	bool hasFormat(BarcodeFormats f) const noexcept { return _formats.testFlags(f) || _formats.empty(); }
-	bool hasNoFormat() const noexcept { return _formats.empty(); }
+	[[deprecated]] bool hasNoFormat() const noexcept { return _formats.empty(); }
 };
 
 } // ZXing
