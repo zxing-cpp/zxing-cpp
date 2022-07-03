@@ -399,7 +399,7 @@ static DecoderResult DoDecode(const BitMatrix& bits)
 		return FormatError();
 
 	// Read codewords
-	ByteArray codewords = CodewordsFromBitMatrix(bits);
+	ByteArray codewords = CodewordsFromBitMatrix(bits, *version);
 	if (codewords.empty())
 		return FormatError();
 
