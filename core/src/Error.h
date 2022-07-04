@@ -17,7 +17,7 @@ public:
 	enum class Type { None, Format, Checksum, Unsupported };
 	Type type() const noexcept { return _type; }
 	const std::string& msg() const noexcept { return _msg; }
-	operator bool() const noexcept { return _type != Type::None; }
+	explicit operator bool() const noexcept { return _type != Type::None; }
 	std::string location() const noexcept
 	{
 		return _file.empty() ? "" : _file.substr(_file.find_last_of("/\\") + 1) + ":" + std::to_string(_line);
