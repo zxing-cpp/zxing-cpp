@@ -24,7 +24,7 @@ MultiFormatReader::MultiFormatReader(const DecodeHints& hints) : _hints(hints)
 	auto formats = hints.formats().empty() ? BarcodeFormat::Any : hints.formats();
 
 	// Put 1D readers upfront in "normal" mode
-	if (formats.testFlags(BarcodeFormat::OneDCodes) && !hints.tryHarder())
+	if (formats.testFlags(BarcodeFormat::LinearCodes) && !hints.tryHarder())
 		_readers.emplace_back(new OneD::Reader(hints));
 
 	if (formats.testFlags(BarcodeFormat::QRCode | BarcodeFormat::MicroQRCode))
@@ -39,7 +39,7 @@ MultiFormatReader::MultiFormatReader(const DecodeHints& hints) : _hints(hints)
 		_readers.emplace_back(new MaxiCode::Reader(hints));
 
 	// At end in "try harder" mode
-	if (formats.testFlags(BarcodeFormat::OneDCodes) && hints.tryHarder())
+	if (formats.testFlags(BarcodeFormat::LinearCodes) && hints.tryHarder())
 		_readers.emplace_back(new OneD::Reader(hints));
 }
 

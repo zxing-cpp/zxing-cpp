@@ -132,7 +132,7 @@ bool Result::operator==(const Result& o) const
 	if (!(format() == o.format() && (bytes() == o.bytes() || error() || o.error())))
 		return false;
 
-	if (BarcodeFormats(BarcodeFormat::TwoDCodes).testFlag(format()))
+	if (BarcodeFormats(BarcodeFormat::MatrixCodes).testFlag(format()))
 		return IsInside(Center(o.position()), position());
 
 	// 1D comparisons only implemented for this->lineCount == 1

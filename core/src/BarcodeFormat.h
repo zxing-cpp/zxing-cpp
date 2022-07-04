@@ -39,9 +39,9 @@ enum class BarcodeFormat
 	UPCE            = (1 << 15), ///< UPC-E (1D)
 	MicroQRCode     = (1 << 16), ///< Micro QR Code (2D)
 
-	OneDCodes = Codabar | Code39 | Code93 | Code128 | EAN8 | EAN13 | ITF | DataBar | DataBarExpanded | UPCA | UPCE,
-	TwoDCodes = Aztec | DataMatrix | MaxiCode | PDF417 | QRCode | MicroQRCode,
-	Any       = OneDCodes | TwoDCodes,
+	LinearCodes = Codabar | Code39 | Code93 | Code128 | EAN8 | EAN13 | ITF | DataBar | DataBarExpanded | UPCA | UPCE,
+	MatrixCodes = Aztec | DataMatrix | MaxiCode | PDF417 | QRCode | MicroQRCode,
+	Any         = LinearCodes | MatrixCodes,
 
 	// Deprecated names, kept for compatibility at the moment
 	NONE [[deprecated]]         = None,
@@ -60,6 +60,8 @@ enum class BarcodeFormat
 	RSS_EXPANDED [[deprecated]] = DataBarExpanded,
 	UPC_A [[deprecated]]        = UPCA,
 	UPC_E [[deprecated]]        = UPCE,
+	OneDCodes [[deprecated]]    = LinearCodes,
+	TwoDCodes [[deprecated]]    = MatrixCodes,
 
 	_max                        = MicroQRCode, ///> implementation detail, don't use
 };
