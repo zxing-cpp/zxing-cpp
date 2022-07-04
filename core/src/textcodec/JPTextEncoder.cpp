@@ -37,6 +37,8 @@
 
 #include "JPTextEncoder.h"
 
+#include <cstdint>
+
 /*
 * This data is derived from Unicode 1.1,
 * JIS X 0208 (1990) to Unicode mapping table version 0.9 .
