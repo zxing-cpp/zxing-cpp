@@ -7,7 +7,7 @@
 #include "ImageLoader.h"
 
 #include "BinaryBitmap.h"
-#include "ReadBarcode.h"
+#include "ImageView.h"
 
 #include <map>
 #include <memory>

@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "ReadBarcode.h"
+#include "ImageView.h"
 #include "ZXFilesystem.h"
 
 namespace ZXing::Test::ImageLoader {
