@@ -52,7 +52,6 @@ class DecodeHints
 	EanAddOnSymbol _eanAddOnSymbol : 2;
 
 	std::string _characterSet;
-	std::vector<int> _allowedLengths;
 	BarcodeFormats _formats      = BarcodeFormat::None;
 	uint16_t _downscaleThreshold = 500;
 	uint8_t _downscaleFactor     = 3;
@@ -114,9 +113,6 @@ public:
 	/// Specifies fallback character set to use instead of auto-detecting it (when applicable)
 	ZX_PROPERTY(std::string, characterSet, setCharacterSet)
 
-	/// Allowed lengths of encoded data -- reject anything else..
-	ZX_PROPERTY(std::vector<int>, allowedLengths, setAllowedLengths)
-
 	/// If true, the Code-39 reader will try to read extended mode.
 	ZX_PROPERTY(bool, tryCode39ExtendedMode, setTryCode39ExtendedMode)
 
@@ -140,6 +136,10 @@ public:
 	/// NOTE: used to affect FNC1 handling for Code 128 (aka GS1-128) but behavior now based on position of FNC1.
 	[[deprecated]] bool assumeGS1() const noexcept { return true; }
 	[[deprecated]] DecodeHints& setAssumeGS1(bool v [[maybe_unused]]) { return *this; }
+
+	/// NOTE: has not been in effect since at least 1.2 and no one noticed.
+	[[deprecated]] std::vector<int> allowedLengths() const noexcept { return {}; }
+	[[deprecated]] DecodeHints& setAllowedLengths(const std::vector<int> v [[maybe_unused]]) { return *this; }
 
 	/// NOTE: use validateCode39CheckSum
 	[[deprecated]] bool assumeCode39CheckDigit() const noexcept { return validateCode39CheckSum(); }

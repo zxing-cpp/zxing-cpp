@@ -15,16 +15,7 @@
 
 namespace ZXing::OneD {
 
-/** Valid ITF lengths. Anything longer than the largest value is also allowed. */
-constexpr auto DEFAULT_ALLOWED_LENGTHS = { 6, 8, 10, 12, 14 };
-
-ITFReader::ITFReader(const DecodeHints& hints) :
-	_allowedLengths(hints.allowedLengths()),
-	_validateCheckSum(hints.validateITFCheckSum())
-{
-	if (_allowedLengths.empty())
-		_allowedLengths.assign(DEFAULT_ALLOWED_LENGTHS.begin(), DEFAULT_ALLOWED_LENGTHS.end());
-}
+ITFReader::ITFReader(const DecodeHints& hints) : _validateCheckSum(hints.validateITFCheckSum()) {}
 
 constexpr auto START_PATTERN_ = FixedPattern<4, 4>{1, 1, 1, 1};
 constexpr auto STOP_PATTERN_1 = FixedPattern<3, 4>{2, 1, 1};
