@@ -14,6 +14,7 @@ add_executable (UnitTest
     BitHacksTest.cpp
     CharacterSetECITest.cpp
     ContentTest.cpp
+    ErrorTest.cpp
     GTINTest.cpp
     GS1Test.cpp
     ReedSolomonTest.cpp
