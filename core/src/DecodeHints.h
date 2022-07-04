@@ -24,8 +24,8 @@ namespace ZXing {
  */
 enum class Binarizer : unsigned char // needs to unsigned for the bitfield below to work, uint8_t fails as well
 {
-	LocalAverage,    ///< T = average of neighboring pixels for 2D and GlobalHistogram for 1D (HybridBinarizer)
-	GlobalHistogram, ///< T = valley between the 2 largest peaks in the histogram (per line in 1D case)
+	LocalAverage,    ///< T = average of neighboring pixels for matrix and GlobalHistogram for linear (HybridBinarizer)
+	GlobalHistogram, ///< T = valley between the 2 largest peaks in the histogram (per line in linear case)
 	FixedThreshold,  ///< T = 127
 	BoolCast,        ///< T = 0, fastest possible
 };
@@ -105,7 +105,7 @@ public:
 	// WARNING: this API is experimental and may change/disappear
 	ZX_PROPERTY(uint8_t, downscaleFactor, setDownscaleFactor)
 
-	/// The number of scan lines in a 1D barcode that have to be equal to accept the result, default is 2
+	/// The number of scan lines in a linear barcode that have to be equal to accept the result, default is 2
 	ZX_PROPERTY(uint8_t, minLineCount, setMinLineCount)
 
 	/// The maximum number of symbols (barcodes) to detect / look for in the image with ReadBarcodes
