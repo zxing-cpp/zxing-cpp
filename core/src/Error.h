@@ -45,9 +45,10 @@ inline bool operator!=(const Error& e, Error::Type t) noexcept { return !(e == t
 inline bool operator==(Error::Type t, const Error& e) noexcept { return e.type() == t; }
 inline bool operator!=(Error::Type t, const Error& e) noexcept { return !(t == e); }
 
-#define FormatError(...) Error(__FILE__, __LINE__, Error::Format, ##__VA_ARGS__)
-#define ChecksumError(...) Error(__FILE__, __LINE__, Error::Checksum, ##__VA_ARGS__)
-#define UnsupportedError(...) Error(__FILE__, __LINE__, Error::Unsupported, ##__VA_ARGS__)
+// see https://en.wikipedia.org/wiki/Variadic_macro_in_the_C_preprocessor#Support regarding __VA_OPT__
+#define FormatError(...) Error(__FILE__, __LINE__, Error::Format __VA_OPT__(,) __VA_ARGS__)
+#define ChecksumError(...) Error(__FILE__, __LINE__, Error::Checksum __VA_OPT__(,) __VA_ARGS__)
+#define UnsupportedError(...) Error(__FILE__, __LINE__, Error::Unsupported __VA_OPT__(,) __VA_ARGS__)
 
 inline std::string ToString(const Error& e)
 {
