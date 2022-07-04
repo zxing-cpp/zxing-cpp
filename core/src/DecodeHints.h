@@ -48,15 +48,15 @@ class DecodeHints
 	bool _validateITFCheckSum      : 1;
 	bool _returnCodabarStartEnd    : 1;
 	bool _returnErrors             : 1;
-	Binarizer _binarizer           : 2;
 	EanAddOnSymbol _eanAddOnSymbol : 2;
+	Binarizer _binarizer           : 2;
 
-	std::string _characterSet;
-	BarcodeFormats _formats      = BarcodeFormat::None;
-	uint16_t _downscaleThreshold = 500;
-	uint8_t _downscaleFactor     = 3;
 	uint8_t _minLineCount        = 2;
 	uint8_t _maxNumberOfSymbols  = 0xff;
+	uint8_t _downscaleFactor     = 3;
+	uint16_t _downscaleThreshold = 500;
+	BarcodeFormats _formats      = BarcodeFormat::None;
+	std::string _characterSet;
 
 public:
 	// bitfields don't get default initialized to 0 before c++20
@@ -70,8 +70,8 @@ public:
 		  _validateITFCheckSum(0),
 		  _returnCodabarStartEnd(0),
 		  _returnErrors(0),
-		  _binarizer(Binarizer::LocalAverage),
-		  _eanAddOnSymbol(EanAddOnSymbol::Ignore)
+		  _eanAddOnSymbol(EanAddOnSymbol::Ignore),
+		  _binarizer(Binarizer::LocalAverage)
 	{}
 
 #define ZX_PROPERTY(TYPE, GETTER, SETTER) \
