@@ -96,7 +96,7 @@ TEST(AZDecoderTest, DecodeTooManyErrors)
 		, 'X', true);
 
 	DecoderResult result = parse(std::move(bits), true, 16, 4);
-	EXPECT_EQ(result.error(), Error::Format);
+	EXPECT_EQ(result.error(), Error::Checksum);
 }
 
 TEST(AZDecoderTest, DecodeTooManyErrors2)
@@ -132,7 +132,7 @@ TEST(AZDecoderTest, DecodeTooManyErrors2)
 		, 'X', true);
 
 	DecoderResult result = parse(std::move(bits), true, 16, 4);
-	EXPECT_EQ(result.error(), Error::Format);
+	EXPECT_EQ(result.error(), Error::Checksum);
 }
 
 // Helper taking bit string to call GetEncodedData()
