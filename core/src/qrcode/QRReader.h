@@ -8,13 +8,7 @@
 
 #include "Reader.h"
 
-#include <string>
-
-namespace ZXing {
-
-class DecodeHints;
-
-namespace QRCode {
+namespace ZXing::QRCode {
 
 class Reader : public ZXing::Reader
 {
@@ -25,5 +19,4 @@ public:
 	Results decode(const BinaryBitmap& image, int maxSymbols) const override;
 };
 
-} // QRCode
-} // ZXing
+} // namespace ZXing::QRCode

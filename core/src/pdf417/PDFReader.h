@@ -9,13 +9,8 @@
 #include "Reader.h"
 
 #include <list>
-#include <string>
 
-namespace ZXing {
-
-class DecodeHints;
-
-namespace Pdf417 {
+namespace ZXing::Pdf417 {
 
 /**
 * This implementation can detect and decode PDF417 codes in an image.
@@ -33,5 +28,4 @@ public:
 	[[deprecated]] std::list<Result> decodeMultiple(const BinaryBitmap& image) const;
 };
 
-} // Pdf417
-} // ZXing
+} // namespace ZXing::Pdf417
