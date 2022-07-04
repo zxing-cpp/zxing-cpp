@@ -154,7 +154,7 @@ static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, 
 
 						// check if we know this code already
 						for (auto& other : res) {
-							if (other == result) {
+							if (result == other) {
 								// merge the position information
 								auto dTop = maxAbsComponent(other.position().topLeft() - result.position().topLeft());
 								auto dBot = maxAbsComponent(other.position().bottomLeft() - result.position().topLeft());

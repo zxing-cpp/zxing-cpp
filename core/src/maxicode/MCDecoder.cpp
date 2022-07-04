@@ -325,7 +325,7 @@ DecoderResult Decode(const BitMatrix& bits)
 		else
 			return ChecksumError();
 		break;
-	default: return FormatError();
+	default: return FormatError("Invalid mode");
 	}
 
 	std::copy_n(codewords.begin(), 10, datawords.begin());

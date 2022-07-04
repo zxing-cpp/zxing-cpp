@@ -728,12 +728,12 @@ DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel)
 			break;
 		case LINKAGE_OTHER:
 			// Allowed to treat as invalid by ISO/IEC 24723:2010 5.4.1.5 and 5.4.6.1 when in Basic Channel Mode
-			throw FormatError(); // TODO: add NotSupported error
+			throw UnsupportedError("LINKAGE_OTHER, see ISO/IEC 24723:2010 5.4.1.5");
 			break;
 		default:
 			if (code >= TEXT_COMPACTION_MODE_LATCH) { // Reserved codewords (all others in switch)
 				// Allowed to treat as invalid by ISO/IEC 24723:2010 5.4.6.1 when in Basic Channel Mode
-				throw FormatError(); // TODO: add NotSupported error
+				throw UnsupportedError("TEXT_COMPACTION_MODE_LATCH, see ISO/IEC 24723:2010 5.4.6.1");
 			} else {
 				// Default mode is Text Compaction mode Alpha sub-mode (ISO/IEC 15438:2015 5.4.2.1)
 				codeIndex = TextCompaction(codewords, codeIndex - 1, result);

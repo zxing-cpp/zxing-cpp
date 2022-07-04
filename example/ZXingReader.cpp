@@ -172,7 +172,7 @@ int main(int argc, char* argv[])
 		for (auto&& result : results) {
 
 			if (!outPath.empty())
-				drawRect(image, result.position(), result.error());
+				drawRect(image, result.position(), bool(result.error()));
 
 			ret |= static_cast<int>(result.error().type());
 

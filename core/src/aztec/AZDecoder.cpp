@@ -143,12 +143,12 @@ static BitArray CorrectBits(const DetectorResult& ddata, const BitArray& rawbits
 	int numECCodewords = numCodewords - numDataCodewords;
 
 	if (numCodewords < numDataCodewords)
-		return {};
+		throw FormatError("Invalid number of code words");
 
 	auto dataWords = ToInts<int>(rawbits, codewordSize, numCodewords, Size(rawbits) % codewordSize);
 
 	if (!ReedSolomonDecode(*gf, dataWords, numECCodewords))
-		return {};
+		throw ChecksumError();
 
 	// drop the ECCodewords from the dataWords array
 	dataWords.resize(numDataCodewords);
@@ -306,12 +306,12 @@ DecoderResult Decode(const BitArray& bits)
 
 	try {
 		DecodeContent(bits, res);
-	} catch (const std::out_of_range&) { // see ReadBits()
+	} catch (const std::exception&) { // see BitArrayView::readBits
 		return FormatError();
 	}
 
 	if (res.bytes.empty())
-		return FormatError();
+		return FormatError("Empty symbol content");
 
 	// Check for Structured Append - need 4 5-bit words, beginning with ML UL, ending with index and count
 	bool haveStructuredAppend = Size(bits) > 20 && ToInt(bits, 0, 5) == 29 // latch to MIXED (from UPPER)
@@ -348,12 +348,12 @@ DecoderResult Decode(const BitArray& bits)
 
 DecoderResult Decode(const DetectorResult& detectorResult)
 {
-	BitArray bits = CorrectBits(detectorResult, ExtractBits(detectorResult));
-
-	if (!bits.size())
-		return FormatError();
-
-	return Decode(bits).setReaderInit(detectorResult.readerInit());
+	try {
+		auto bits = CorrectBits(detectorResult, ExtractBits(detectorResult));
+		return Decode(bits).setReaderInit(detectorResult.readerInit());
+	} catch (Error e) {
+		return e;
+	}
 }
 
 } // namespace ZXing::Aztec
