@@ -135,6 +135,9 @@ bool Result::operator==(const Result& o) const
 	if (BarcodeFormats(BarcodeFormat::TwoDCodes).testFlag(format()))
 		return IsInside(Center(o.position()), position());
 
+	// 1D comparisons only implemented for this->lineCount == 1
+	assert(lineCount() == 1);
+
 	// if one line is less than half the length of the other away from the
 	// latter, we consider it to belong to the same symbol
 	auto dTop = maxAbsComponent(o.position().topLeft() - position().topLeft());
