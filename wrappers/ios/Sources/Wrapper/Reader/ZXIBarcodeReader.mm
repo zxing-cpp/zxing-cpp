@@ -65,29 +65,6 @@ using namespace ZXing;
     return results;
 }
 
-- (NSArray<ZXIResult*> *)readImageView: (ImageView)imageView {
-    Results results = ReadBarcodes(imageView, [ZXIBarcodeReader DecodeHintsFromZXIOptions:self.hints]);
-
-    NSMutableArray* zxiResults = [NSMutableArray array];
-    for (auto result: results) {
-        if(result.status() == DecodeStatus::NoError) {
-            const std::wstring &resultText = result.text();
-            NSString *text = [[NSString alloc] initWithBytes:resultText.data()
-                                                      length:resultText.size() * sizeof(wchar_t)
-                                                    encoding:NSUTF32LittleEndianStringEncoding];
-
-            NSData *bytes = [[NSData alloc] initWithBytes:result.bytes().data() length:result.bytes().size()];
-            [zxiResults addObject:
-             [[ZXIResult alloc] init:text
-                              format:ZXIFormatFromBarcodeFormat(result.format())
-                               bytes:bytes
-                            position:[[ZXIPosition alloc]initWithPosition: result.position()]
-             ]];
-        }
-    }
-    return zxiResults;
-}
-
 - (NSArray<ZXIResult *> *)readCGImage: (nonnull CGImageRef)image {
     CGColorSpaceRef colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericGray);
     CGFloat cols = CGImageGetWidth(image);
@@ -111,12 +88,29 @@ using namespace ZXing;
               static_cast<int>(cols),
               static_cast<int>(rows),
               ImageFormat::Lum);
+    return [self readImageView:imageView];
+}
 
++ (DecodeHints)DecodeHintsFromZXIOptions:(ZXIDecodeHints*)hints {
+    BarcodeFormats formats;
+    for(NSNumber* flag in hints.formats) {
+        formats.setFlag(BarcodeFormatFromZXIFormat((ZXIFormat)flag.integerValue));
+    }
+    DecodeHints resultingHints = DecodeHints()
+        .setTryRotate(hints.tryRotate)
+        .setTryHarder(hints.tryHarder)
+        .setTryDownscale(hints.tryDownscale)
+        .setFormats(formats)
+        .setMaxNumberOfSymbols(hints.maxNumberOfSymbols);
+    return resultingHints;
+}
+
+- (NSArray<ZXIResult*> *)readImageView: (ImageView)imageView {
     Results results = ReadBarcodes(imageView, [ZXIBarcodeReader DecodeHintsFromZXIOptions:self.hints]);
 
     NSMutableArray* zxiResults = [NSMutableArray array];
     for (auto result: results) {
-        if(result.status() == DecodeStatus::NoError) {
+        if(result.error() == Error::None) {
             const std::wstring &resultText = result.text();
             NSString *text = [[NSString alloc] initWithBytes:resultText.data()
                                                       length:resultText.size() * sizeof(wchar_t)
@@ -132,20 +126,6 @@ using namespace ZXing;
         }
     }
     return zxiResults;
-}
-
-+ (DecodeHints)DecodeHintsFromZXIOptions:(ZXIDecodeHints*)hints {
-    BarcodeFormats formats;
-    for(NSNumber* flag in hints.formats) {
-        formats.setFlag(BarcodeFormatFromZXIFormat((ZXIFormat)flag.integerValue));
-    }
-    DecodeHints resultingHints = DecodeHints()
-        .setTryRotate(hints.tryRotate)
-        .setTryHarder(hints.tryHarder)
-        .setTryDownscale(hints.tryDownscale)
-        .setFormats(formats)
-        .setMaxNumberOfSymbols(hints.maxNumberOfSymbols);
-    return resultingHints;
 }
 
 @end
