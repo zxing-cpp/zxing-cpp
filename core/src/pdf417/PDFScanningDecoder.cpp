@@ -570,20 +570,23 @@ static bool VerifyCodewordCount(std::vector<int>& codewords, int numECCodewords)
 
 DecoderResult DecodeCodewords(std::vector<int>& codewords, int ecLevel, const std::vector<int>& erasures)
 {
-	if (codewords.empty()) {
-		return DecodeStatus::FormatError;
-	}
+	if (codewords.empty())
+		return FormatError();
 
 	int numECCodewords = 1 << (ecLevel + 1);
 	int correctedErrorsCount = 0;
 	if (!CorrectErrors(codewords, erasures, numECCodewords, correctedErrorsCount))
-		return DecodeStatus::ChecksumError;
+		return ChecksumError();
 
 	if (!VerifyCodewordCount(codewords, numECCodewords))
-		return DecodeStatus::FormatError;
+		return FormatError();
 
 	// Decode the codewords
-	return DecodedBitStreamParser::Decode(codewords, ecLevel);
+	try {
+		return DecodedBitStreamParser::Decode(codewords, ecLevel);
+	} catch (Error e) {
+		return e;
+	}
 }
 
 
@@ -612,12 +615,12 @@ static DecoderResult CreateDecoderResultFromAmbiguousValues(int ecLevel, std::ve
 			codewords[ambiguousIndexes[i]] = ambiguousIndexValues[i][ambiguousIndexCount[i]];
 		}
 		auto result = DecodeCodewords(codewords, ecLevel, erasureArray);
-		if (result.errorCode() != DecodeStatus::ChecksumError) {
+		if (result.error() != Error::Checksum) {
 			return result;
 		}
 
 		if (ambiguousIndexCount.empty()) {
-			return DecodeStatus::ChecksumError;
+			return ChecksumError();
 		}
 		for (size_t i = 0; i < ambiguousIndexCount.size(); i++) {
 			if (ambiguousIndexCount[i] < Size(ambiguousIndexValues[i]) - 1) {
@@ -627,12 +630,12 @@ static DecoderResult CreateDecoderResultFromAmbiguousValues(int ecLevel, std::ve
 			else {
 				ambiguousIndexCount[i] = 0;
 				if (i == ambiguousIndexCount.size() - 1) {
-					return DecodeStatus::ChecksumError;
+					return ChecksumError();
 				}
 			}
 		}
 	}
-	return DecodeStatus::ChecksumError;
+	return ChecksumError();
 }
 
 
@@ -640,7 +643,7 @@ static DecoderResult CreateDecoderResult(DetectionResult& detectionResult)
 {
 	auto barcodeMatrix = CreateBarcodeMatrix(detectionResult);
 	if (!AdjustCodewordCount(detectionResult, barcodeMatrix)) {
-		return DecodeStatus::NotFound;
+		return {};
 	}
 	std::vector<int> erasures;
 	std::vector<int> codewords(detectionResult.barcodeRowCount() * detectionResult.barcodeColumnCount(), 0);
@@ -678,7 +681,7 @@ ScanningDecoder::Decode(const BitMatrix& image, const Nullable<ResultPoint>& ima
 {
 	BoundingBox boundingBox;
 	if (!BoundingBox::Create(image.width(), image.height(), imageTopLeft, imageBottomLeft, imageTopRight, imageBottomRight, boundingBox)) {
-		return DecodeStatus::NotFound;
+		return {};
 	}
 	
 	Nullable<DetectionResultColumn> leftRowIndicatorColumn, rightRowIndicatorColumn;
@@ -691,7 +694,7 @@ ScanningDecoder::Decode(const BitMatrix& image, const Nullable<ResultPoint>& ima
 			rightRowIndicatorColumn = GetRowIndicatorColumn(image, boundingBox, imageTopRight, false, minCodewordWidth, maxCodewordWidth);
 		}
 		if (!Merge(leftRowIndicatorColumn, rightRowIndicatorColumn, detectionResult)) {
-			return DecodeStatus::NotFound;
+			return {};
 		}
 		if (i == 0 && detectionResult.getBoundingBox() != nullptr && (detectionResult.getBoundingBox().value().minY() < boundingBox.minY() || detectionResult.getBoundingBox().value().maxY() > boundingBox.maxY())) {
 			boundingBox = detectionResult.getBoundingBox();

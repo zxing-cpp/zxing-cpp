@@ -170,15 +170,11 @@ static BitMatrix ExtractDataBits(const Version& version, const BitMatrix& bits)
 *
 * @return bytes encoded within the Data Matrix Code
 */
-ByteArray CodewordsFromBitMatrix(const BitMatrix& bits)
+ByteArray CodewordsFromBitMatrix(const BitMatrix& bits, const Version& version)
 {
-	const Version* version = VersionForDimensionsOf(bits);
-	if (version == nullptr)
-		return {};
+	BitMatrix dataBits = ExtractDataBits(version, bits);
 
-	BitMatrix dataBits = ExtractDataBits(*version, bits);
-
-	ByteArray result(version->totalCodewords());
+	ByteArray result(version.totalCodewords());
 	auto codeword = result.begin();
 
 	VisitMatrix(dataBits.height(), dataBits.width(), [&codeword, &dataBits](const BitPosArray& bitPos) {

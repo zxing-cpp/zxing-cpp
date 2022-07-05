@@ -249,9 +249,8 @@ static void OrderByBestPatterns(const ResultPoint*& p0, const ResultPoint*& p1, 
 static DetectorResult DetectOld(const BitMatrix& image)
 {
 	ResultPoint pointA, pointB, pointC, pointD;
-	if (!DetectWhiteRect(image, pointA, pointB, pointC, pointD)) {
+	if (!DetectWhiteRect(image, pointA, pointB, pointC, pointD))
 		return {};
-	}
 
 	// Point A and D are across the diagonal from one another,
 	// as are B and C. Figure out which are the solid black lines
@@ -269,6 +268,10 @@ static DetectorResult DetectOld(const BitMatrix& image)
 	// will be the two alternating black/white sides
 	const auto& lSideOne = transitions[0];
 	const auto& lSideTwo = transitions[1];
+
+	// We accept at most 4 transisions inside the L pattern (i.e. 2 corruptions) to reduce false positive FormatErrors
+	if (lSideTwo.transitions > 2)
+		return {};
 
 	// Figure out which point is their intersection by tallying up the number of times we see the
 	// endpoints in the four endpoints. One will show up twice.
@@ -296,9 +299,8 @@ static DetectorResult DetectOld(const BitMatrix& image)
 		}
 	}
 
-	if (bottomRight == nullptr || bottomLeft == nullptr || topLeft == nullptr) {
+	if (bottomRight == nullptr || bottomLeft == nullptr || topLeft == nullptr)
 		return {};
-	}
 
 	// Bottom left is correct but top left and bottom right might be switched
 	// Use the dot product trick to sort them out
@@ -884,8 +886,11 @@ DetectorResults Detect(const BitMatrix& image, bool tryHarder, bool tryRotate, b
 			found = true;
 			co_yield std::move(r);
 		}
-		if (!found)
-			co_yield DetectOld(image);
+		if (!found) {
+			auto r = DetectOld(image);
+			if (r.isValid())
+				co_yield std::move(r);
+		}
 	}
 #else
 	if (isPure)

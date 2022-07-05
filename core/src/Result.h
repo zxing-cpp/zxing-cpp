@@ -30,10 +30,11 @@ using Position = QuadrilateralI;
 class Result
 {
 public:
+	Result() = default;
 	explicit Result(DecodeStatus status);
 
-	// 1D convenience constructor
-	Result(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format, SymbologyIdentifier si,
+	// linear symbology convenience constructor
+	Result(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format, SymbologyIdentifier si, Error error = {},
 		   ByteArray&& rawBytes = {}, bool readerInit = false, const std::string& ai = {});
 
 	Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat format);
@@ -144,7 +145,7 @@ public:
 	bool readerInit() const { return _readerInit; }
 
 	/**
-	 * @brief How many lines have been detected with this code (applies only to 1D symbologies)
+	 * @brief How many lines have been detected with this code (applies only to linear symbologies)
 	 */
 	int lineCount() const { return _lineCount; }
 
@@ -171,6 +172,12 @@ private:
 };
 
 using Results = std::vector<Result>;
+
+// Consider this an internal function that can change/disappear anytime without notice
+inline Result FirstOrDefault(Results&& results)
+{
+	return results.empty() ? Result() : std::move(results.front());
+}
 
 /**
  * @brief Merge a list of Results from one Structured Append sequence to a single result

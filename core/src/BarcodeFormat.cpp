@@ -42,8 +42,8 @@ static BarcodeFormatName NAMES[] = {
 	{BarcodeFormat::QRCode, "QRCode"},
 	{BarcodeFormat::UPCA, "UPC-A"},
 	{BarcodeFormat::UPCE, "UPC-E"},
-	{BarcodeFormat::OneDCodes, "1D-Codes"},
-	{BarcodeFormat::TwoDCodes, "2D-Codes"},
+	{BarcodeFormat::LinearCodes, "Linear-Codes"},
+	{BarcodeFormat::MatrixCodes, "Matrix-Codes"},
 };
 
 const char* ToString(BarcodeFormat format)

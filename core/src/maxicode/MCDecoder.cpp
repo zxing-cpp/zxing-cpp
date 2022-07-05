@@ -305,7 +305,7 @@ DecoderResult Decode(const BitMatrix& bits)
 	ByteArray codewords = BitMatrixParser::ReadCodewords(bits);
 
 	if (!CorrectErrors(codewords, 0, 10, 10, ALL))
-		return DecodeStatus::ChecksumError;
+		return ChecksumError();
 
 	int mode = codewords[0] & 0x0F;
 	ByteArray datawords;
@@ -317,15 +317,15 @@ DecoderResult Decode(const BitMatrix& bits)
 		if (CorrectErrors(codewords, 20, 84, 40, EVEN) && CorrectErrors(codewords, 20, 84, 40, ODD))
 			datawords.resize(94, 0);
 		else
-			return DecodeStatus::ChecksumError;
+			return ChecksumError();
 		break;
 	case 5: // Full ECC
 		if (CorrectErrors(codewords, 20, 68, 56, EVEN) && CorrectErrors(codewords, 20, 68, 56, ODD))
 			datawords.resize(78, 0);
 		else
-			return DecodeStatus::ChecksumError;
+			return ChecksumError();
 		break;
-	default: return DecodeStatus::FormatError;
+	default: return FormatError("Invalid mode");
 	}
 
 	std::copy_n(codewords.begin(), 10, datawords.begin());

@@ -8,23 +8,14 @@
 
 #include "Reader.h"
 
-#include <string>
-
-namespace ZXing {
-
-class DecodeHints;
-
-namespace Aztec {
+namespace ZXing::Aztec {
 
 class Reader : public ZXing::Reader
 {
 public:
-	explicit Reader(const DecodeHints& hints);
-	Result decode(const BinaryBitmap& image) const override;
+	using ZXing::Reader::Reader;
 
-private:
-	bool _isPure;
+	Result decode(const BinaryBitmap& image) const override;
 };
 
-} // Aztec
-} // ZXing
+} // namespace ZXing::Aztec

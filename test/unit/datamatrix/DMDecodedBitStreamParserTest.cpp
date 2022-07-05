@@ -54,13 +54,13 @@ TEST(DMDecodeTest, Ascii)
 TEST(DMDecodeTest, AsciiError)
 {
 	// ASCII err on invalid code word
-	EXPECT_EQ(parse({66, 250, 68}).errorCode(), DecodeStatus::FormatError);
+	EXPECT_EQ(parse({66, 250, 68}).error(), Error::Format);
 
 	// ASCII err on invalid code word at end (currently failing)
-	EXPECT_EQ(parse({66, 67, 68, 250}).errorCode(), DecodeStatus::FormatError);
+	EXPECT_EQ(parse({66, 67, 68, 250}).error(), Error::Format);
 
 	// ASCII accept extra (illegal) unlatch at end
-	EXPECT_EQ(parse({66, 67, 68, 254}).errorCode(), DecodeStatus::NoError);
+	EXPECT_FALSE(parse({66, 67, 68, 254}).error());
 }
 
 // Most of the following examples are taken from the DMHighLevelEncodeTest.cpp tests.

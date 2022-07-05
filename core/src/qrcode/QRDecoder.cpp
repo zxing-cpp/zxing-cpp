@@ -176,7 +176,7 @@ static void DecodeNumericSegment(BitSource& bits, int count, Content& result)
 		// Each 10 bits encodes three digits
 		int threeDigitsBits = bits.readBits(10);
 		if (threeDigitsBits >= 1000)
-			throw std::runtime_error("Invalid value in numeric segment");
+			throw FormatError("Invalid value in numeric segment");
 
 		result += ToAlphaNumericChar(threeDigitsBits / 100);
 		result += ToAlphaNumericChar((threeDigitsBits / 10) % 10);
@@ -188,7 +188,7 @@ static void DecodeNumericSegment(BitSource& bits, int count, Content& result)
 		// Two digits left over to read, encoded in 7 bits
 		int twoDigitsBits = bits.readBits(7);
 		if (twoDigitsBits >= 100)
-			throw std::runtime_error("Invalid value in numeric segment");
+			throw FormatError("Invalid value in numeric segment");
 
 		result += ToAlphaNumericChar(twoDigitsBits / 10);
 		result += ToAlphaNumericChar(twoDigitsBits % 10);
@@ -196,7 +196,7 @@ static void DecodeNumericSegment(BitSource& bits, int count, Content& result)
 		// One digit left over to read
 		int digitBits = bits.readBits(4);
 		if (digitBits >= 10)
-			throw std::runtime_error("Invalid value in numeric segment");
+			throw FormatError("Invalid value in numeric segment");
 
 		result += ToAlphaNumericChar(digitBits);
 	}
@@ -219,7 +219,7 @@ static ECI ParseECIValue(BitSource& bits)
 		int secondThirdBytes = bits.readBits(16);
 		return ECI(((firstByte & 0x1F) << 16) | secondThirdBytes);
 	}
-	throw std::runtime_error("ParseECIValue: invalid value");
+	throw FormatError("ParseECIValue: invalid value");
 }
 
 /**
@@ -257,6 +257,7 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 {
 	BitSource bits(bytes);
 	Content result;
+	Error error;
 	result.symbology = {'Q', '1', 1};
 	StructuredAppendInfo structuredAppend;
 	const int modeBitLength = CodecModeBitsLength(version);
@@ -273,13 +274,13 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 			switch (mode) {
 			case CodecMode::FNC1_FIRST_POSITION:
 //				if (!result.empty()) // uncomment to enforce specification
-//					throw std::runtime_error("GS1 Indicator (FNC1 in first position) at illegal position");
+//					throw FormatError("GS1 Indicator (FNC1 in first position) at illegal position");
 				result.symbology.modifier = '3';
 				result.applicationIndicator = "GS1"; // In Alphanumeric mode undouble doubled percents and treat single percent as <GS>
 				break;
 			case CodecMode::FNC1_SECOND_POSITION:
 				if (!result.empty())
-					throw std::runtime_error("AIM Application Indicator (FNC1 in second position) at illegal position");
+					throw FormatError("AIM Application Indicator (FNC1 in second position) at illegal position");
 				result.symbology.modifier = '5'; // As above
 				// ISO/IEC 18004:2015 7.4.8.3 AIM Application Indicator (FNC1 in second position), "00-99" or "A-Za-z"
 				if (int appInd = bits.readBits(8); appInd < 10) // "00-09"
@@ -289,7 +290,7 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 				else if ((appInd >= 165 && appInd <= 190) || (appInd >= 197 && appInd <= 222)) // "A-Za-z"
 					result += static_cast<uint8_t>(appInd - 100);
 				else
-					throw std::runtime_error("Invalid AIM Application Indicator");
+					throw FormatError("Invalid AIM Application Indicator");
 				result.applicationIndicator = result.bytes.asString(); // see also above
 				break;
 			case CodecMode::STRUCTURED_APPEND:
@@ -307,7 +308,7 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 				// First handle Hanzi mode which does not start with character count
 				// chinese mode contains a sub set indicator right after mode indicator
 				if (int subset = bits.readBits(4); subset != 1) // GB2312_SUBSET is the only supported one right now
-					throw std::runtime_error("Unsupported HANZI subset");
+					throw FormatError("Unsupported HANZI subset");
 				int count = bits.readBits(CharacterCountBits(mode, version));
 				DecodeHanziSegment(bits, count, result);
 				break;
@@ -321,22 +322,18 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 				case CodecMode::ALPHANUMERIC: DecodeAlphanumericSegment(bits, count, result); break;
 				case CodecMode::BYTE:         DecodeByteSegment(bits, count, result); break;
 				case CodecMode::KANJI:        DecodeKanjiSegment(bits, count, result); break;
-				default:                      throw std::runtime_error("Invalid CodecMode");
+				default:                      throw FormatError("Invalid CodecMode");
 				}
 				break;
 			}
 			}
 		}
-	}
-	catch (const std::exception& e)
-	{
-#ifndef NDEBUG
-		printf("QRDecoder error: %s\n", e.what());
-#endif
-		return DecodeStatus::FormatError;
+	} catch (Error e) {
+		error = std::move(e);
 	}
 
 	return DecoderResult(std::move(bytes), std::move(result))
+		.setError(std::move(error))
 		.setEcLevel(ToString(ecLevel))
 		.setStructuredAppend(structuredAppend);
 }
@@ -345,22 +342,22 @@ DecoderResult Decode(const BitMatrix& bits)
 {
 	const Version* pversion = ReadVersion(bits);
 	if (!pversion)
-		return DecodeStatus::FormatError;
+		return FormatError("Invalid version");
 	const Version& version = *pversion;
 
 	auto formatInfo = ReadFormatInformation(bits, version.isMicroQRCode());
 	if (!formatInfo.isValid())
-		return DecodeStatus::FormatError;
+		return FormatError("Invalid format informatino");
 
 	// Read codewords
 	ByteArray codewords = ReadCodewords(bits, version, formatInfo);
 	if (codewords.empty())
-		return DecodeStatus::FormatError;
+		return FormatError("Failed to read codewords");
 
 	// Separate into data blocks
 	std::vector<DataBlock> dataBlocks = DataBlock::GetDataBlocks(codewords, version, formatInfo.ecLevel);
 	if (dataBlocks.empty())
-		return DecodeStatus::FormatError;
+		return FormatError("Failed to get data blocks");
 
 	// Count total number of data bytes
 	const auto op = [](auto totalBytes, const auto& dataBlock){ return totalBytes + dataBlock.numDataCodewords();};
@@ -375,7 +372,7 @@ DecoderResult Decode(const BitMatrix& bits)
 		int numDataCodewords = dataBlock.numDataCodewords();
 
 		if (!CorrectErrors(codewordBytes, numDataCodewords))
-			return DecodeStatus::ChecksumError;
+			return ChecksumError();
 
 		resultIterator = std::copy_n(codewordBytes.begin(), numDataCodewords, resultIterator);
 	}

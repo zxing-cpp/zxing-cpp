@@ -7,24 +7,19 @@
 
 #pragma once
 
-#include "DecodeHints.h"
 #include "ODRowReader.h"
 
-namespace ZXing {
-namespace OneD {
+namespace ZXing::OneD {
 
 /**
 * Decodes DataBar (formerly known as RSS) sybmols, including truncated and stacked variants. See ISO/IEC 24724:2006.
 */
 class DataBarReader : public RowReader
 {
-
 public:
-	explicit DataBarReader(const DecodeHints& hints);
-	~DataBarReader() override;
+	using RowReader::RowReader;
 
 	Result decodePattern(int rowNumber, PatternView& next, std::unique_ptr<DecodingState>& state) const override;
 };
 
-} // OneD
-} // ZXing
+} // namespace ZXing::OneD

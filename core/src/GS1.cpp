@@ -1,27 +1,30 @@
 /*
 * Copyright 2016 Nu-book Inc.
 * Copyright 2016 ZXing authors
+* Copyright 2022 Axel Waggershauser
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "ODRSSFieldParser.h"
+#include "GS1.h"
 
-#include "DecodeStatus.h"
 #include "ZXContainerAlgorithms.h"
 
-#include <algorithm>
-#include <cstdlib>
-#include <cstring>
-#include <iterator>
-
-namespace ZXing::OneD::DataBar {
-
-	//private static final Object VARIABLE_LENGTH = new Object();
+namespace ZXing {
 
 struct AiInfo
 {
-	const char* aiPrefix;
-	int fieldSize;	// if negative, the length is variable and abs(length) give the max size
+	std::string_view aiPrefix;
+	int _fieldSize;	// if negative, the length is variable and abs(length) give the max size
+
+	bool isVariableLength() const noexcept { return _fieldSize < 0; }
+	int fieldSize() const noexcept { return std::abs(_fieldSize); }
+	int aiSize() const
+	{
+		if ((aiPrefix[0] == '3' && Contains("1234569", aiPrefix[1])) || aiPrefix == "703" || aiPrefix == "723")
+			return 4;
+		else
+			return Size(aiPrefix);
+	}
 };
 
 // GS1 General Specifications Release 22.0 (Jan 22, 2022)
@@ -230,48 +233,52 @@ static const AiInfo aiInfos[] = {
 	{ "8200", -70 },
 };
 
-static size_t
-AiSize(const char* aiPrefix)
+std::string HRIFromGS1(const std::string& gs1)
 {
-	if ((aiPrefix[0] == '3' && Contains("1234569", aiPrefix[1])) || std::string(aiPrefix) == "703"
-			|| std::string(aiPrefix) == "723")
-		return 4;
-	else
-		return strlen(aiPrefix);
-}
+	//TODO: c++20
+	auto starts_with = [](std::string_view str, std::string_view pre) { return str.substr(0, pre.size()) == pre; };
+	constexpr char GS = 29; // GS character (29 / 0x1D)
 
+	std::string_view rem = gs1;
+	std::string res;
 
-DecodeStatus
-ParseFieldsInGeneralPurpose(const std::string &rawInfo, std::string& result)
-{
-	if (rawInfo.empty()) {
-		return DecodeStatus::NoError;
+	while (rem.size()) {
+		const AiInfo* i = FindIf(aiInfos, [&](const AiInfo& i) { return starts_with(rem, i.aiPrefix); });
+		if (i == std::end(aiInfos))
+			return {};
+
+		int aiSize = i->aiSize();
+		if (Size(rem) < aiSize)
+			return {};
+
+		res += '(';
+		res += rem.substr(0, aiSize);
+		res += ')';
+		rem.remove_prefix(aiSize);
+
+		int fieldSize = i->fieldSize();
+		if (i->isVariableLength()) {
+			auto gsPos = rem.find(GS);
+#if 1
+			fieldSize = std::min(gsPos == std::string_view::npos ? Size(rem) : static_cast<int>(gsPos), fieldSize);
+#else
+			// TODO: ignore the 'max field size' part for now as it breaks rssexpanded-3/13.png?
+			fieldSize = gsPos == std::string_view::npos ? Size(rem) : static_cast<int>(gsPos);
+#endif
+		}
+		if (fieldSize == 0 || Size(rem) < fieldSize)
+			return {};
+
+		res += rem.substr(0, fieldSize);
+		rem.remove_prefix(fieldSize);
+
+		// See General Specification v22.0 Section 7.8.6.3: "...the processing routine SHALL tolerate a single separator character
+		// immediately following any element string, whether necessary or not..."
+		if (Size(rem) && rem.front() == GS)
+			rem.remove_prefix(1);
 	}
 
-	auto starts_with =
-		[](const std::string& str, const char* pre) { return strncmp(pre, str.data(), strlen(pre)) == 0; };
-
-	const AiInfo* aiInfo = FindIf(aiInfos, [&](const AiInfo& i) { return starts_with(rawInfo, i.aiPrefix); });
-	if (aiInfo == std::end(aiInfos))
-		return DecodeStatus::NotFound;
-
-	size_t aiSize = AiSize(aiInfo->aiPrefix);
-
-	// require at least one character in the variable field size case
-	if (rawInfo.length() < aiSize + std::max(1, aiInfo->fieldSize))
-		return DecodeStatus::NotFound;
-
-	size_t fieldSize = aiInfo->fieldSize >= 0
-						   ? size_t(aiInfo->fieldSize)                                        // fixed
-						   : std::min(rawInfo.length() - aiSize, size_t(-aiInfo->fieldSize)); // variable
-
-	auto ai = rawInfo.substr(0, aiSize);
-	auto field = rawInfo.substr(aiSize, fieldSize);
-	auto remaining = rawInfo.substr(aiSize + fieldSize);
-	std::string parsedRemaining;
-	auto status = ParseFieldsInGeneralPurpose(remaining, parsedRemaining);
-	result = '(' + ai + ')' + field + parsedRemaining;
-	return status;
+	return res;
 }
 
-} // namespace ZXing::OneD::DataBar
+} // namespace ZXing

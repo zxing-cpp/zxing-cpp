@@ -39,6 +39,7 @@ public:
 
 private:
 	std::vector<std::unique_ptr<Reader>> _readers;
+	const DecodeHints& _hints;
 };
 
 } // ZXing

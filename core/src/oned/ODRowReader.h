@@ -8,7 +8,6 @@
 #pragma once
 
 #include "BitArray.h"
-#include "DecodeStatus.h"
 #include "Pattern.h"
 
 #include <algorithm>
@@ -38,6 +37,7 @@ RSSExp.:  v?-74d/?-41c
 
 namespace ZXing {
 
+class DecodeHints;
 class Result;
 
 namespace OneD {
@@ -48,7 +48,12 @@ namespace OneD {
 */
 class RowReader
 {
+protected:
+	const DecodeHints& _hints;
+
 public:
+	explicit RowReader(const DecodeHints& hints) : _hints(hints) {}
+	explicit RowReader(DecodeHints&& hints) = delete;
 
 	struct DecodingState
 	{

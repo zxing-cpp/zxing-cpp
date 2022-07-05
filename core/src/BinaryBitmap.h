@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "ReadBarcode.h"
+#include "ImageView.h"
 
 #include <cstdint>
 #include <memory>

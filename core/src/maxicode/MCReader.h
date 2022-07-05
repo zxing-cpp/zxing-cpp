@@ -8,22 +8,14 @@
 
 #include "Reader.h"
 
-#include <string>
-
-namespace ZXing {
-
-class DecodeHints;
-
-namespace MaxiCode {
+namespace ZXing::MaxiCode {
 
 class Reader : public ZXing::Reader
 {
-	bool _isPure;
-
 public:
-	explicit Reader(const DecodeHints& hints);
+	using ZXing::Reader::Reader;
+
 	Result decode(const BinaryBitmap& image) const override;
 };
 
-} // MaxiCode
-} // ZXing
+} // namespace ZXing::MaxiCode

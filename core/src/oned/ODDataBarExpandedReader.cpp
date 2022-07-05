@@ -9,10 +9,11 @@
 
 #include "BarcodeFormat.h"
 #include "DecoderResult.h"
+#include "GS1.h"
 #include "ODDataBarCommon.h"
+#include "ODDataBarExpandedBitDecoder.h"
 #include "Result.h"
 #include "TextDecoder.h"
-#include "rss/ODRSSExpandedBinaryDecoder.h"
 
 #include <map>
 #include <vector>
@@ -20,9 +21,6 @@
 namespace ZXing::OneD {
 
 using namespace DataBar;
-
-DataBarExpandedReader::DataBarExpandedReader(const DecodeHints&) {}
-DataBarExpandedReader::~DataBarExpandedReader() = default;
 
 static bool IsFinderPattern(int a, int b, int c, int d, int e)
 {
@@ -340,7 +338,7 @@ Result DataBarExpandedReader::decodePattern(int rowNumber, PatternView& view,
 	auto pairs = ReadRowOfPairs<false>(view, rowNumber);
 
 	if (pairs.empty() || !ChecksumIsValid(pairs))
-		return Result(DecodeStatus::NotFound);
+		return {};
 #else
 	if (!state)
 		state.reset(new DBERState);
@@ -360,16 +358,18 @@ Result DataBarExpandedReader::decodePattern(int rowNumber, PatternView& view,
 	//    L R L R    |    r       |     l
 
 	if (!Insert(allPairs, ReadRowOfPairs<true>(view, rowNumber)))
-		return Result(DecodeStatus::NotFound);
+		return {};
 
 	auto pairs = FindValidSequence(allPairs);
 	if (pairs.empty())
-		return Result(DecodeStatus::NotFound);
+		return {};
 #endif
 
 	auto txt = DecodeExpandedBits(BuildBitArray(pairs));
+	// TODO: remove this to make it return standard conform content -> needs lots of blackbox test fixes
+	txt = HRIFromGS1(txt);
 	if (txt.empty())
-		return Result(DecodeStatus::NotFound);
+		return {};
 
 	RemovePairs(allPairs, pairs);
 

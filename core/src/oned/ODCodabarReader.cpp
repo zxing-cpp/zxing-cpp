@@ -30,11 +30,6 @@ static_assert(Size(ALPHABET) - 1 == Size(CHARACTER_ENCODINGS), "table size misma
 // some industries use a checksum standard but this is not part of the original codabar standard
 // for more information see : http://www.mecsw.com/specs/codabar.html
 
-CodabarReader::CodabarReader(const DecodeHints& hints)
-{
-	_returnStartEnd = hints.returnCodabarStartEnd();
-}
-
 // each character has 4 bars and 3 spaces
 constexpr int CHAR_LEN = 7;
 // quiet zone is half the width of a character symbol
@@ -61,7 +56,7 @@ CodabarReader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<D
 
 	next = FindLeftGuard<CHAR_LEN>(next, minCharCount * CHAR_LEN, IsLeftGuard);
 	if (!next.isValid())
-		return Result(DecodeStatus::NotFound);
+		return {};
 
 	int xStart = next.pixelsInFront();
 	int maxInterCharacterSpace = next.sum() / 2; // spec actually says 1 narrow space, width/2 is about 4
@@ -71,25 +66,25 @@ CodabarReader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<D
 	txt += DecodeNarrowWidePattern(next, CHARACTER_ENCODINGS, ALPHABET); // read off the start pattern
 
 	if (!isStartOrStopSymbol(txt.back()))
-		return Result(DecodeStatus::NotFound);
+		return {};
 
 	do {
 		// check remaining input width and inter-character space
 		if (!next.skipSymbol() || !next.skipSingle(maxInterCharacterSpace))
-			return Result(DecodeStatus::NotFound);
+			return {};
 
 		txt += DecodeNarrowWidePattern(next, CHARACTER_ENCODINGS, ALPHABET);
 		if (txt.back() == 0)
-			return Result(DecodeStatus::NotFound);
+			return {};
 	} while (!isStartOrStopSymbol(txt.back()));
 
 	// next now points to the last decoded symbol
 	// check txt length and whitespace after the last char. See also FindStartPattern.
 	if (Size(txt) < minCharCount || !next.hasQuietZoneAfter(QUIET_ZONE_SCALE))
-		return Result(DecodeStatus::NotFound);
+		return {};
 
 	// remove stop/start characters
-	if (!_returnStartEnd)
+	if (!_hints.returnCodabarStartEnd())
 		txt = txt.substr(1, txt.size() - 2);
 
 	// symbology identifier ISO/IEC 15424:2008 4.4.9

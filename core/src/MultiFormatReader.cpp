@@ -19,13 +19,12 @@
 
 namespace ZXing {
 
-MultiFormatReader::MultiFormatReader(const DecodeHints& hints)
+MultiFormatReader::MultiFormatReader(const DecodeHints& hints) : _hints(hints)
 {
-	bool tryHarder = hints.tryHarder();
 	auto formats = hints.formats().empty() ? BarcodeFormat::Any : hints.formats();
 
-	// Put 1D readers upfront in "normal" mode
-	if (formats.testFlags(BarcodeFormat::OneDCodes) && !tryHarder)
+	// Put linear readers upfront in "normal" mode
+	if (formats.testFlags(BarcodeFormat::LinearCodes) && !hints.tryHarder())
 		_readers.emplace_back(new OneD::Reader(hints));
 
 	if (formats.testFlags(BarcodeFormat::QRCode | BarcodeFormat::MicroQRCode))
@@ -40,9 +39,8 @@ MultiFormatReader::MultiFormatReader(const DecodeHints& hints)
 		_readers.emplace_back(new MaxiCode::Reader(hints));
 
 	// At end in "try harder" mode
-	if (formats.testFlags(BarcodeFormat::OneDCodes) && tryHarder) {
+	if (formats.testFlags(BarcodeFormat::LinearCodes) && hints.tryHarder())
 		_readers.emplace_back(new OneD::Reader(hints));
-	}
 }
 
 MultiFormatReader::~MultiFormatReader() = default;
@@ -50,17 +48,13 @@ MultiFormatReader::~MultiFormatReader() = default;
 Result
 MultiFormatReader::read(const BinaryBitmap& image) const
 {
-	// If we have only one reader in our list, just return whatever that decoded.
-	// This preserves information (e.g. ChecksumError) instead of just returning 'NotFound'.
-	if (_readers.size() == 1)
-		return _readers.front()->decode(image);
-
+	Result r;
 	for (const auto& reader : _readers) {
-		Result r = reader->decode(image);
+		r = reader->decode(image);
   		if (r.isValid())
 			return r;
 	}
-	return Result(DecodeStatus::NotFound);
+	return _hints.returnErrors() ? r : Result();
 }
 
 Results MultiFormatReader::readMultiple(const BinaryBitmap& image, int maxSymbols) const
@@ -69,6 +63,11 @@ Results MultiFormatReader::readMultiple(const BinaryBitmap& image, int maxSymbol
 
 	for (const auto& reader : _readers) {
 		auto r = reader->decode(image, maxSymbols);
+		if (!_hints.returnErrors()) {
+			//TODO: C++20 res.erase_if()
+			auto it = std::remove_if(res.begin(), res.end(), [](auto&& r) { return !r.isValid(); });
+			res.erase(it, res.end());
+		}
 		maxSymbols -= r.size();
 		res.insert(res.end(), std::move_iterator(r.begin()), std::move_iterator(r.end()));
 		if (maxSymbols <= 0)

@@ -25,9 +25,8 @@ namespace ZXing::MaxiCode {
 static BitMatrix ExtractPureBits(const BitMatrix& image)
 {
 	int left, top, width, height;
-	if (!image.findBoundingBox(left, top, width, height, BitMatrixParser::MATRIX_WIDTH)) {
+	if (!image.findBoundingBox(left, top, width, height, BitMatrixParser::MATRIX_WIDTH))
 		return {};
-	}
 
 	// Now just read off the bits
 	BitMatrix result(BitMatrixParser::MATRIX_WIDTH, BitMatrixParser::MATRIX_HEIGHT);
@@ -43,21 +42,17 @@ static BitMatrix ExtractPureBits(const BitMatrix& image)
 	return result;
 }
 
-Reader::Reader(const DecodeHints& hints) : _isPure(hints.isPure()) {}
-
 Result
 Reader::decode(const BinaryBitmap& image) const
 {
 	auto binImg = image.getBitMatrix();
-	if (binImg == nullptr) {
-		return Result(DecodeStatus::NotFound);
-	}
+	if (binImg == nullptr)
+		return {};
 
 	//TODO: this only works with effectively 'pure' barcodes. Needs proper detector.
 	BitMatrix bits = ExtractPureBits(*binImg);
-	if (bits.empty()) {
-		return Result(DecodeStatus::NotFound);
-	}
+	if (bits.empty())
+		return {};
 
 	return Result(Decode(bits), {}, BarcodeFormat::MaxiCode);
 }

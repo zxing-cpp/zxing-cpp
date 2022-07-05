@@ -20,6 +20,7 @@
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <optional>
 #include <memory>
 #include <vector>
 
@@ -43,10 +44,8 @@ std::ostream& operator<<(std::ostream& os, const Position& points) {
 	return os;
 }
 
-template <typename FUNC>
-auto read_barcode_impl(FUNC func, py::object _image, const BarcodeFormats& formats, bool try_rotate, bool try_downscale,
-					   Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol,
-					   uint8_t max_number_of_symbols = 0xff)
+auto read_barcodes_impl(py::object _image, const BarcodeFormats& formats, bool try_rotate, bool try_downscale, Binarizer binarizer,
+						bool is_pure, EanAddOnSymbol ean_add_on_symbol, uint8_t max_number_of_symbols = 0xff)
 {
 	const auto hints = DecodeHints()
 		.setFormats(formats)
@@ -93,21 +92,20 @@ auto read_barcode_impl(FUNC func, py::object _image, const BarcodeFormats& forma
 	}
 
 	const auto bytes = image.data();
-	return func({bytes, width, height, imgfmt, width * channels, channels}, hints);
+	return ReadBarcodes({bytes, width, height, imgfmt, width * channels, channels}, hints);
 }
 
-Result read_barcode(py::object _image, const BarcodeFormats& formats, bool try_rotate, bool try_downscale,
-					Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol)
+std::optional<Result> read_barcode(py::object _image, const BarcodeFormats& formats, bool try_rotate, bool try_downscale,
+								   Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol)
 {
-	return read_barcode_impl(ReadBarcode, _image, formats, try_rotate, try_downscale, binarizer, is_pure,
-							 ean_add_on_symbol, 1);
+	auto res = read_barcodes_impl(_image, formats, try_rotate, try_downscale, binarizer, is_pure, ean_add_on_symbol, 1);
+	return res.empty() ? std::nullopt : std::optional(res.front());
 }
 
 Results read_barcodes(py::object _image, const BarcodeFormats& formats, bool try_rotate, bool try_downscale,
 					  Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol)
 {
-	return read_barcode_impl(ReadBarcodes, _image, formats, try_rotate, try_downscale, binarizer, is_pure,
-							 ean_add_on_symbol);
+	return read_barcodes_impl(_image, formats, try_rotate, try_downscale, binarizer, is_pure, ean_add_on_symbol);
 }
 
 Image write_barcode(BarcodeFormat format, std::string text, int width, int height, int quiet_zone, int ec_level)
@@ -152,8 +150,10 @@ PYBIND11_MODULE(zxingcpp, m)
 		.value("UPCE", BarcodeFormat::UPCE)
 		// use upper case 'NONE' because 'None' is a reserved identifier in python
 		.value("NONE", BarcodeFormat::None)
-		.value("OneDCodes", BarcodeFormat::OneDCodes)
-		.value("TwoDCodes", BarcodeFormat::TwoDCodes)
+		.value("OneDCodes", BarcodeFormat::LinearCodes) // deprecated, will be removed
+		.value("TwoDCodes", BarcodeFormat::MatrixCodes) // deprecated, will be removed
+		.value("LinearCodes", BarcodeFormat::LinearCodes)
+		.value("MatrixCodes", BarcodeFormat::MatrixCodes)
 		.export_values()
 		// see https://github.com/pybind/pybind11/issues/2221
 		.def("__or__", [](BarcodeFormat f1, BarcodeFormat f2){ return f1 | f2; });
@@ -278,7 +278,7 @@ PYBIND11_MODULE(zxingcpp, m)
 		":param ean_add_on_symbol: Specify whether to Ignore, Read or Require EAN-2/5 add-on symbols while scanning \n"
 		"  EAN/UPC codes. Default is ``Ignore``.\n"
 		":rtype: zxing.Result\n"
-		":return: a zxing result containing decoded symbol if found."
+		":return: a zxing result containing decoded symbol if found, None otherwise"
 	);
 	m.def("read_barcodes", &read_barcodes,
 		py::arg("image"),

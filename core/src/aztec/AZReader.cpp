@@ -19,31 +19,23 @@
 
 namespace ZXing::Aztec {
 
-Reader::Reader(const DecodeHints& hints)
-	: _isPure(hints.isPure())
-{
-}
-
 Result
 Reader::decode(const BinaryBitmap& image) const
 {
 	auto binImg = image.getBitMatrix();
-	if (binImg == nullptr) {
-		return Result(DecodeStatus::NotFound);
-	}
+	if (binImg == nullptr)
+		return {};
 
-	DetectorResult detectResult = Detect(*binImg, false, _isPure);
-	DecoderResult decodeResult = DecodeStatus::NotFound;
-	if (detectResult.isValid()) {
+	DetectorResult detectResult = Detect(*binImg, false, _hints.isPure());
+	DecoderResult decodeResult;
+	if (detectResult.isValid())
 		decodeResult = Decode(detectResult);
-	}
 
 	//TODO: don't start detection all over again, just to swap 2 corner points
 	if (!decodeResult.isValid()) {
-		detectResult = Detect(*binImg, true, _isPure);
-		if (detectResult.isValid()) {
+		detectResult = Detect(*binImg, true, _hints.isPure());
+		if (detectResult.isValid())
 			decodeResult = Decode(detectResult);
-		}
 	}
 
 	return Result(std::move(decodeResult), std::move(detectResult).position(), BarcodeFormat::Aztec);

@@ -1,6 +1,5 @@
 /*
-* Copyright 2016 Nu-book Inc.
-* Copyright 2016 ZXing authors
+* Copyright 2022 Axel Waggershauser
 */
 // SPDX-License-Identifier: Apache-2.0
 
@@ -10,11 +9,11 @@
 
 namespace ZXing {
 
-enum class DecodeStatus;
+class BitArray;
 
 namespace OneD::DataBar {
 
-DecodeStatus ParseFieldsInGeneralPurpose(const std::string &rawInfo, std::string& result);
+std::string DecodeExpandedBits(const BitArray& bits);
 
 } // namespace OneD::DataBar
 } // namespace ZXing
