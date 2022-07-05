@@ -75,17 +75,10 @@ DecodeExtendedCode39AndCode93(std::string& encoded, const char ctrl[4])
 	return true;
 }
 
-
-Code39Reader::Code39Reader(const DecodeHints& hints) :
-	_extendedMode(hints.tryCode39ExtendedMode()),
-	_validateCheckSum(hints.validateCode39CheckSum())
-{
-}
-
 Result Code39Reader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<RowReader::DecodingState>&) const
 {
 	// minimal number of characters that must be present (including start, stop and checksum characters)
-	int minCharCount = _validateCheckSum ? 4 : 3;
+	int minCharCount = _hints.validateCode39CheckSum() ? 4 : 3;
 	auto isStartOrStopSymbol = [](char c) { return c == '*'; };
 
 	// provide the indices with the narrow bars/spaces which have to be equally wide
@@ -123,7 +116,7 @@ Result Code39Reader::decodePattern(int rowNumber, PatternView& next, std::unique
 		return {};
 
 	Error error;
-	if (_validateCheckSum) {
+	if (_hints.validateCode39CheckSum()) {
 		auto checkDigit = txt.back();
 		txt.pop_back();
 		int checksum = TransformReduce(txt, 0, [](char c) { return IndexOf(ALPHABET, c); });
@@ -131,12 +124,12 @@ Result Code39Reader::decodePattern(int rowNumber, PatternView& next, std::unique
 			error = ChecksumError();
 	}
 
-	if (!error && _extendedMode && !DecodeExtendedCode39AndCode93(txt, "$%/+"))
+	if (!error && _hints.tryCode39ExtendedMode() && !DecodeExtendedCode39AndCode93(txt, "$%/+"))
 		error = FormatError("Decoding extended Code39/Code93 failed");
 
 	// Symbology identifier modifiers ISO/IEC 16388:2007 Annex C Table C.1
 	constexpr const char symbologyModifiers[4] = { '0', '3' /*checksum*/, '4' /*extended*/, '7' /*checksum,extended*/ };
-	SymbologyIdentifier symbologyIdentifier = {'A', symbologyModifiers[(int)_extendedMode * 2 + (int)_validateCheckSum]};
+	SymbologyIdentifier symbologyIdentifier = {'A', symbologyModifiers[(int)_hints.tryCode39ExtendedMode() * 2 + (int)_hints.validateCode39CheckSum()]};
 
 	int xStop = next.pixelsTillEnd();
 	return Result(std::move(txt), rowNumber, xStart, xStop, BarcodeFormat::Code39, symbologyIdentifier, error);

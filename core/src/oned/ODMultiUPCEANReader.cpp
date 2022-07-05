@@ -16,10 +16,6 @@
 
 namespace ZXing::OneD {
 
-MultiUPCEANReader::MultiUPCEANReader(const DecodeHints& hints) : _hints(hints) {}
-
-MultiUPCEANReader::~MultiUPCEANReader() = default;
-
 constexpr int CHAR_LEN = 4;
 
 constexpr auto END_PATTERN           = FixedPattern<3, 3>{1, 1, 1};

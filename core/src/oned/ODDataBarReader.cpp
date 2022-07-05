@@ -22,9 +22,6 @@ namespace ZXing::OneD {
 
 using namespace DataBar;
 
-DataBarReader::DataBarReader(const DecodeHints&) {}
-DataBarReader::~DataBarReader() = default;
-
 static bool IsCharacterPair(PatternView v, int modsLeft, int modsRight)
 {
 	float modSizeRef = ModSizeFinder(v);

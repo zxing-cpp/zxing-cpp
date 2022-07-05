@@ -17,7 +17,8 @@ using namespace ZXing::OneD;
 
 static std::string Decode(std::string_view encoded)
 {
-	Code39Reader sut(DecodeHints().setTryCode39ExtendedMode(true));
+	auto hints = DecodeHints().setTryCode39ExtendedMode(true);
+	Code39Reader sut(hints);
 	BitArray row = Utility::ParseBitArray(encoded, '1');
 	Result result = sut.decodeSingleRow(0, row);
 	return result.utf8();

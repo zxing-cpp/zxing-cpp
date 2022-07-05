@@ -6,6 +6,7 @@
 
 #include "oned/ODCode128Writer.h"
 #include "BitMatrixIO.h"
+#include "DecodeHints.h"
 #include "Result.h"
 #include "oned/ODCode128Reader.h"
 
@@ -38,7 +39,8 @@ static ZXing::Result Decode(const BitMatrix &matrix)
 {
 	BitArray row;
 	matrix.getRow(0, row);
-	return Code128Reader().decodeSingleRow(0, row);
+	DecodeHints hints;
+	return Code128Reader(hints).decodeSingleRow(0, row);
 }
 
 TEST(ODCode128Writer, EncodeWithFunc1)

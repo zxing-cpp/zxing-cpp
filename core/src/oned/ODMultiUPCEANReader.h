@@ -6,12 +6,9 @@
 
 #pragma once
 
-#include "BarcodeFormat.h"
-#include "DecodeHints.h"
 #include "ODRowReader.h"
 
-namespace ZXing {
-namespace OneD {
+namespace ZXing::OneD {
 
 /**
 * @brief A reader that can read all available UPC/EAN formats.
@@ -19,14 +16,9 @@ namespace OneD {
 class MultiUPCEANReader : public RowReader
 {
 public:
-	explicit MultiUPCEANReader(const DecodeHints& hints);
-	~MultiUPCEANReader() override;
+	using RowReader::RowReader;
 
 	Result decodePattern(int rowNumber, PatternView& next, std::unique_ptr<DecodingState>&) const override;
-
-private:
-	DecodeHints _hints;
 };
 
-} // OneD
-} // ZXing
+} // namespace ZXing::OneD

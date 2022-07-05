@@ -22,9 +22,6 @@ namespace ZXing::OneD {
 
 using namespace DataBar;
 
-DataBarExpandedReader::DataBarExpandedReader(const DecodeHints&) {}
-DataBarExpandedReader::~DataBarExpandedReader() = default;
-
 static bool IsFinderPattern(int a, int b, int c, int d, int e)
 {
 	return IsFinder(a, b, c, d, e) && (c > 3 * e);
