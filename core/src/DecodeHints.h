@@ -76,7 +76,8 @@ public:
 
 #define ZX_PROPERTY(TYPE, GETTER, SETTER) \
 	TYPE GETTER() const noexcept { return _##GETTER; } \
-	DecodeHints& SETTER(TYPE v) { return _##GETTER = std::move(v), *this; }
+	DecodeHints& SETTER(TYPE v)& { return _##GETTER = std::move(v), *this; } \
+	DecodeHints&& SETTER(TYPE v)&& { return _##GETTER = std::move(v), std::move(*this); }
 
 	/// Specify a set of BarcodeFormats that should be searched for, the default is all supported formats.
 	ZX_PROPERTY(BarcodeFormats, formats, setFormats)
@@ -143,7 +144,7 @@ public:
 
 	/// NOTE: use validateCode39CheckSum
 	[[deprecated]] bool assumeCode39CheckDigit() const noexcept { return validateCode39CheckSum(); }
-	[[deprecated]] DecodeHints& setAssumeCode39CheckDigit(bool v) { return setValidateCode39CheckSum(v); }
+	[[deprecated]] DecodeHints& setAssumeCode39CheckDigit(bool v) & { return setValidateCode39CheckSum(v); }
 
 	bool hasFormat(BarcodeFormats f) const noexcept { return _formats.testFlags(f) || _formats.empty(); }
 	[[deprecated]] bool hasNoFormat() const noexcept { return _formats.empty(); }

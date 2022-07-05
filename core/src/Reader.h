@@ -21,6 +21,7 @@ protected:
 
 public:
 	explicit Reader(const DecodeHints& hints) : _hints(hints) {}
+	explicit Reader(DecodeHints&& hints) = delete;
 	virtual ~Reader() = default;
 
 	virtual Result decode(const BinaryBitmap& image) const = 0;
