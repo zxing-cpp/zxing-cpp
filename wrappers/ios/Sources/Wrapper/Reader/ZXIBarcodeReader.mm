@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+#define ZX_USE_UTF8
 #import "ZXIBarcodeReader.h"
 #import "ZXing/ReadBarcode.h"
 #import "ZXing/ImageView.h"
@@ -111,10 +112,7 @@ using namespace ZXing;
     NSMutableArray* zxiResults = [NSMutableArray array];
     for (auto result: results) {
         if(result.error() == Error::None) {
-            const std::wstring &resultText = result.text();
-            NSString *text = [[NSString alloc] initWithBytes:resultText.data()
-                                                      length:resultText.size() * sizeof(wchar_t)
-                                                    encoding:NSUTF32LittleEndianStringEncoding];
+            NSString *text = [NSString stringWithUTF8String:result.text().c_str()];
 
             NSData *bytes = [[NSData alloc] initWithBytes:result.bytes().data() length:result.bytes().size()];
             [zxiResults addObject:
