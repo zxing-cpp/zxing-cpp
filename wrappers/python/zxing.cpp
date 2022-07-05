@@ -150,8 +150,10 @@ PYBIND11_MODULE(zxingcpp, m)
 		.value("UPCE", BarcodeFormat::UPCE)
 		// use upper case 'NONE' because 'None' is a reserved identifier in python
 		.value("NONE", BarcodeFormat::None)
-		.value("OneDCodes", BarcodeFormat::OneDCodes)
-		.value("TwoDCodes", BarcodeFormat::TwoDCodes)
+		.value("OneDCodes", BarcodeFormat::LinearCodes) // deprecated, will be removed
+		.value("TwoDCodes", BarcodeFormat::MatrixCodes) // deprecated, will be removed
+		.value("LinearCodes", BarcodeFormat::LinearCodes)
+		.value("MatrixCodes", BarcodeFormat::MatrixCodes)
 		.export_values()
 		// see https://github.com/pybind/pybind11/issues/2221
 		.def("__or__", [](BarcodeFormat f1, BarcodeFormat f2){ return f1 | f2; });

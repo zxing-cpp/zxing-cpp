@@ -23,7 +23,7 @@ struct ReadResult
 	ZXing::Position position;
 };
 
-ReadResult readBarcodeFromImage(int bufferPtr, int bufferLength, bool tryHarder, std::string format)
+ReadResult readBarcodeFromImageView(ZXing::ImageView iv, bool tryHarder, const std::string& format)
 {
 	using namespace ZXing;
 	try {
@@ -32,18 +32,11 @@ ReadResult readBarcodeFromImage(int bufferPtr, int bufferLength, bool tryHarder,
 		hints.setTryRotate(tryHarder);
 		hints.setTryDownscale(tryHarder);
 		hints.setFormats(BarcodeFormatsFromString(format));
+		hints.setMaxNumberOfSymbols(1);
 
-		int width, height, channels;
-		std::unique_ptr<stbi_uc, void (*)(void*)> buffer(
-			stbi_load_from_memory(reinterpret_cast<const unsigned char*>(bufferPtr), bufferLength, &width, &height,
-								  &channels, 4),
-			stbi_image_free);
-		if (buffer == nullptr) {
-			return { "", "", "Error loading image" };
-		}
-
-		auto result = ReadBarcode({buffer.get(), width, height, ImageFormat::RGBX}, hints);
-		if (result.isValid()) {
+		auto results = ReadBarcodes(iv, hints);
+		if (!results.empty()) {
+			auto& result = results.front();
 			return { ToString(result.format()), result.text(), "", result.position() };
 		}
 	}
@@ -56,30 +49,25 @@ ReadResult readBarcodeFromImage(int bufferPtr, int bufferLength, bool tryHarder,
 	return {};
 }
 
+ReadResult readBarcodeFromImage(int bufferPtr, int bufferLength, bool tryHarder, std::string format)
+{
+	using namespace ZXing;
+
+	int width, height, channels;
+	std::unique_ptr<stbi_uc, void (*)(void*)> buffer(
+		stbi_load_from_memory(reinterpret_cast<const unsigned char*>(bufferPtr), bufferLength, &width, &height, &channels, 4),
+		stbi_image_free);
+	if (buffer == nullptr) {
+		return {"", "", "Error loading image"};
+	}
+
+	return readBarcodeFromImageView({buffer.get(), width, height, ImageFormat::RGBX}, tryHarder, format);
+}
+
 ReadResult readBarcodeFromPixmap(int bufferPtr, int imgWidth, int imgHeight, bool tryHarder, std::string format)
 {
 	using namespace ZXing;
-	try {
-		DecodeHints hints;
-		hints.setTryHarder(tryHarder);
-		hints.setTryRotate(tryHarder);
-		hints.setTryDownscale(tryHarder);
-		hints.setFormats(BarcodeFormatsFromString(format));
-
-		auto result =
-			ReadBarcode({reinterpret_cast<uint8_t*>(bufferPtr), imgWidth, imgHeight, ImageFormat::RGBX}, hints);
-
-		if (result.isValid()) {
-			return { ToString(result.format()), result.text(), "", result.position() };
-		}
-	}
-	catch (const std::exception& e) {
-		return { "", "", e.what() };
-	}
-	catch (...) {
-		return { "", "", "Unknown error" };
-	}
-	return {};
+	return readBarcodeFromImageView({reinterpret_cast<uint8_t*>(bufferPtr), imgWidth, imgHeight, ImageFormat::RGBX}, tryHarder, format);
 }
 
 EMSCRIPTEN_BINDINGS(BarcodeReader)

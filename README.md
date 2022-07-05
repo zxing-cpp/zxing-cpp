@@ -2,7 +2,7 @@
 
 # ZXing-C++
 
-ZXing-C++ ("zebra crossing") is an open-source, multi-format 1D/2D barcode image processing library implemented in C++.
+ZXing-C++ ("zebra crossing") is an open-source, multi-format linear/matrix barcode image processing library implemented in C++.
 
 It was originally ported from the Java [ZXing Library](https://github.com/zxing/zxing) but has been developed further and now includes many improvements in terms of quality and performance. It can both read and write barcodes in a number of formats.
 
@@ -18,14 +18,14 @@ It was originally ported from the Java [ZXing Library](https://github.com/zxing/
 
 ## Supported Formats
 
-| 1D product | 1D industrial     | 2D
-| ---------- | ----------------- | --------------
-| UPC-A      | Code 39           | QR Code
-| UPC-E      | Code 93           | Micro QR Code
-| EAN-8      | Code 128          | Aztec
-| EAN-13     | Codabar           | DataMatrix
-| DataBar    | ITF               | PDF417
-|            | DataBar Expanded  | MaxiCode (beta)
+| Linear product | Linear industrial | Matrix             |
+|----------------|-------------------|--------------------|
+| UPC-A          | Code 39           | QR Code            |
+| UPC-E          | Code 93           | Micro QR Code      |
+| EAN-8          | Code 128          | Aztec              |
+| EAN-13         | Codabar           | DataMatrix         |
+| DataBar        | DataBar Exanded   | PDF417             |
+|                | ITF               | MaxiCode (partial) |
 
 Note: DataBar used to be called RSS. DataBar is not supported for writing.
 
@@ -34,7 +34,7 @@ Note: DataBar used to be called RSS. DataBar is not supported for writing.
 ### To read barcodes:
 As an example, have a look at [`ZXingReader.cpp`](example/ZXingReader.cpp).
 1. Load your image into memory (3rd-party library required).
-2. Call `ReadBarcode()` from [`ReadBarcode.h`](core/src/ReadBarcode.h), the simplest API to get a `Result`.
+2. Call `ReadBarcodes()` from [`ReadBarcode.h`](core/src/ReadBarcode.h), the simplest API to get a list of `Result` objects.
 
 ### To write barcodes:
 As an example, have a look at [`ZXingWriter.cpp`](example/ZXingWriter.cpp).

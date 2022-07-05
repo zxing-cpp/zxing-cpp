@@ -54,8 +54,8 @@ enum class BarcodeFormat
 	UPCE            = (1 << 15), ///< UPC-E (1D)
 	MicroQRCode     = (1 << 16), ///< Micro QR Code (2D)
 
-	OneDCodes = Codabar | Code39 | Code93 | Code128 | EAN8 | EAN13 | ITF | DataBar | DataBarExpanded | UPCA | UPCE,
-	TwoDCodes = Aztec | DataMatrix | MaxiCode | PDF417 | QRCode | MicroQRCode,
+	LinearCodes = Codabar | Code39 | Code93 | Code128 | EAN8 | EAN13 | ITF | DataBar | DataBarExpanded | UPCA | UPCE,
+	MatrixCodes = Aztec | DataMatrix | MaxiCode | PDF417 | QRCode | MicroQRCode,
 };
 
 enum class ContentType { Text, Binary, Mixed, GS1, ISO15434, UnknownECI };
