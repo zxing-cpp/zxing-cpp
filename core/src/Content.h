@@ -7,6 +7,9 @@
 
 #include "ByteArray.h"
 
+#include <string>
+#include <vector>
+
 namespace ZXing {
 
 enum class ECI : int;
