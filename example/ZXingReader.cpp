@@ -38,7 +38,7 @@ static void PrintUsage(const char* exePath)
 			  << "    -errors    Include results with errors (like checksum error)\n"
 			  << "    -1         Print only file name, content/error on one line per file/barcode (implies '-escape')\n"
 			  << "    -escape    Escape non-graphical characters in angle brackets\n"
-			  << "    -binary    Write (only) the binary content of the symbol(s) to stdout\n"
+			  << "    -bytes     Write (only) the bytes content of the symbol(s) to stdout\n"
 			  << "    -pngout <file name>\n"
 			  << "               Write a copy of the input image with barcodes outlined by a green line\n"
 			  << "\n"
@@ -49,7 +49,7 @@ static void PrintUsage(const char* exePath)
 	std::cout << "Formats can be lowercase, with or without '-', separated by ',' and/or '|'\n";
 }
 
-static bool ParseOptions(int argc, char* argv[], DecodeHints& hints, bool& oneLine, bool& angleEscape, bool& binaryOutput,
+static bool ParseOptions(int argc, char* argv[], DecodeHints& hints, bool& oneLine, bool& angleEscape, bool& bytesOnly,
 						 std::vector<std::string>& filePaths, std::string& outPath)
 {
 	for (int i = 1; i < argc; ++i) {
@@ -77,8 +77,8 @@ static bool ParseOptions(int argc, char* argv[], DecodeHints& hints, bool& oneLi
 			oneLine = true;
 		} else if (strcmp(argv[i], "-escape") == 0) {
 			angleEscape = true;
-		} else if (strcmp(argv[i], "-binary") == 0) {
-			binaryOutput = true;
+		} else if (strcmp(argv[i], "-bytes") == 0) {
+			bytesOnly = true;
 		} else if (strcmp(argv[i], "-pngout") == 0) {
 			if (++i == argc)
 				return false;
@@ -131,11 +131,11 @@ int main(int argc, char* argv[])
 	std::string outPath;
 	bool oneLine = false;
 	bool angleEscape = false;
-	bool binaryOutput = false;
+	bool bytesOnly = false;
 	int ret = 0;
 
 
-	if (!ParseOptions(argc, argv, hints, oneLine, angleEscape, binaryOutput, filePaths, outPath)) {
+	if (!ParseOptions(argc, argv, hints, oneLine, angleEscape, bytesOnly, filePaths, outPath)) {
 		PrintUsage(argv[0]);
 		return -1;
 	}
@@ -176,7 +176,7 @@ int main(int argc, char* argv[])
 
 			ret |= static_cast<int>(result.error().type());
 
-			if (binaryOutput) {
+			if (bytesOnly) {
 				std::cout.write(reinterpret_cast<const char*>(result.bytes().data()), result.bytes().size());
 				continue;
 			}
