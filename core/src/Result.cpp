@@ -80,7 +80,7 @@ std::wstring Result::utf16() const
 
 std::string Result::utf8ECI() const
 {
-	return _content.utf8ECI();
+	return _content.text(TextMode::Utf8ECI);
 }
 
 ContentType Result::contentType() const

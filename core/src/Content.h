@@ -16,6 +16,7 @@ enum class ECI : int;
 enum class CharacterSet;
 
 enum class ContentType { Text, Binary, Mixed, GS1, ISO15434, UnknownECI };
+enum class TextMode { Utf8, Utf8ECI, HRI, Hex, Escaped };
 
 std::string ToString(ContentType type);
 
@@ -74,9 +75,10 @@ public:
 	bool empty() const { return bytes.empty(); }
 	bool canProcess() const;
 
-	std::wstring utf16() const;
-	std::string utf8() const;
-	std::string utf8ECI() const;
+	std::string text(TextMode mode) const;
+	std::wstring utf16() const { return render(false); }
+	std::string utf8() const { return text(TextMode::Utf8); }
+
 	ByteArray bytesECI() const;
 	CharacterSet guessEncoding() const;
 	ContentType type() const;
