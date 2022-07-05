@@ -31,7 +31,6 @@ class Result
 {
 public:
 	Result() = default;
-	explicit Result(DecodeStatus status);
 
 	// linear symbology convenience constructor
 	Result(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format, SymbologyIdentifier si, Error error = {},

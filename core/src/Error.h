@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include "DecodeStatus.h"
-
 #include <string>
 
 namespace ZXing {
@@ -58,16 +56,6 @@ inline std::string ToString(const Error& e)
 	if (!e.location().empty())
 		ret += " @ " + e.location();
 	return ret;
-}
-
-// transitional helper function
-inline Error Status2Error(DecodeStatus s)
-{
-	switch (s) {
-	case DecodeStatus::FormatError: return Error(Error::Format);
-	case DecodeStatus::ChecksumError: return Error(Error::Checksum);
-	default: return {};
-	}
 }
 
 }

@@ -17,8 +17,6 @@
 
 namespace ZXing {
 
-Result::Result(DecodeStatus status) : _error(Status2Error(status)) {}
-
 Result::Result(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format, SymbologyIdentifier si, Error error,
 			   ByteArray&& rawBytes, bool readerInit, const std::string& ai)
 	: _format(format),
