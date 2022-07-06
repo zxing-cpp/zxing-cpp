@@ -111,17 +111,15 @@ using namespace ZXing;
 
     NSMutableArray* zxiResults = [NSMutableArray array];
     for (auto result: results) {
-        if(result.error() == Error::None) {
-            NSString *text = [NSString stringWithUTF8String:result.text().c_str()];
+        NSString *text = [NSString stringWithUTF8String:result.text().c_str()];
 
-            NSData *bytes = [[NSData alloc] initWithBytes:result.bytes().data() length:result.bytes().size()];
-            [zxiResults addObject:
-             [[ZXIResult alloc] init:text
-                              format:ZXIFormatFromBarcodeFormat(result.format())
-                               bytes:bytes
-                            position:[[ZXIPosition alloc]initWithPosition: result.position()]
-             ]];
-        }
+        NSData *bytes = [[NSData alloc] initWithBytes:result.bytes().data() length:result.bytes().size()];
+        [zxiResults addObject:
+         [[ZXIResult alloc] init:text
+                          format:ZXIFormatFromBarcodeFormat(result.format())
+                           bytes:bytes
+                        position:[[ZXIPosition alloc]initWithPosition: result.position()]
+         ]];
     }
     return zxiResults;
 }
