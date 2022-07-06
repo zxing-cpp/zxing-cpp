@@ -66,11 +66,20 @@ static int GetMaxCodewordWidth(const std::array<Nullable<ResultPoint>, 8>& p)
 					std::max(GetMaxWidth(p[1], p[5]), GetMaxWidth(p[7], p[3]) * CodewordDecoder::MODULES_IN_CODEWORD / MODULES_IN_STOP_PATTERN));
 }
 
-static Results DoDecode(const BinaryBitmap& image, bool multiple, bool returnErrors)
+static Results DoDecode(const BinaryBitmap& image, bool multiple, bool tryRotate, bool returnErrors)
 {
-	Detector::Result detectorResult = Detector::Detect(image, multiple);
+	Detector::Result detectorResult = Detector::Detect(image, multiple, tryRotate);
 	if (detectorResult.points.empty())
 		return {};
+
+	auto rotate = [res = detectorResult](PointI p) {
+		switch(res.rotation) {
+		case 90: return PointI(res.bits->height() - p.y - 1, p.x);
+		case 180: return PointI(res.bits->width() - p.x - 1, res.bits->height() - p.y - 1);
+		case 270: return PointI(p.y, res.bits->width() - p.x - 1);
+		}
+		return p;
+	};
 
 	Results results;
 	for (const auto& points : detectorResult.points) {
@@ -78,7 +87,7 @@ static Results DoDecode(const BinaryBitmap& image, bool multiple, bool returnErr
 			ScanningDecoder::Decode(*detectorResult.bits, points[4], points[5], points[6], points[7],
 									GetMinCodewordWidth(points), GetMaxCodewordWidth(points));
 		if (decoderResult.isValid(returnErrors)) {
-			auto point = [&](int i) { return points[i].value(); };
+			auto point = [&](int i) { return rotate(PointI(points[i].value())); };
 			Result result(std::move(decoderResult), {point(0), point(2), point(3), point(1)}, BarcodeFormat::PDF417);
 			results.push_back(result);
 			if (!multiple)
@@ -310,18 +319,18 @@ Reader::decode(const BinaryBitmap& image) const
 		// currently the best option to deal with 'aliased' input like e.g. 03-aliased.png
 	}
 
-	return FirstOrDefault(DoDecode(image, false, _hints.returnErrors()));
+	return FirstOrDefault(DoDecode(image, false, _hints.tryRotate(), _hints.returnErrors()));
 }
 
 Results Reader::decode(const BinaryBitmap& image, [[maybe_unused]] int maxSymbols) const
 {
-	return DoDecode(image, true, _hints.returnErrors());
+	return DoDecode(image, true, _hints.tryRotate(), _hints.returnErrors());
 }
 
 std::list<Result>
 Reader::decodeMultiple(const BinaryBitmap& image) const
 {
-	Results results = DoDecode(image, true, _hints.returnErrors());
+	Results results = DoDecode(image, true, _hints.tryRotate(), _hints.returnErrors());
 	return std::list<Result>(results.begin(), results.end());
 }
 
