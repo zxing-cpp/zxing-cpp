@@ -30,11 +30,6 @@ static_assert(Size(ALPHABET) - 1 == Size(CHARACTER_ENCODINGS), "table size misma
 // some industries use a checksum standard but this is not part of the original codabar standard
 // for more information see : http://www.mecsw.com/specs/codabar.html
 
-CodabarReader::CodabarReader(const DecodeHints& hints)
-{
-	_returnStartEnd = hints.returnCodabarStartEnd();
-}
-
 // each character has 4 bars and 3 spaces
 constexpr int CHAR_LEN = 7;
 // quiet zone is half the width of a character symbol
@@ -89,7 +84,7 @@ CodabarReader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<D
 		return {};
 
 	// remove stop/start characters
-	if (!_returnStartEnd)
+	if (!_hints.returnCodabarStartEnd())
 		txt = txt.substr(1, txt.size() - 2);
 
 	// symbology identifier ISO/IEC 15424:2008 4.4.9

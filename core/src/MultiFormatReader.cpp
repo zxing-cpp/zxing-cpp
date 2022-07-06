@@ -23,7 +23,7 @@ MultiFormatReader::MultiFormatReader(const DecodeHints& hints) : _hints(hints)
 {
 	auto formats = hints.formats().empty() ? BarcodeFormat::Any : hints.formats();
 
-	// Put 1D readers upfront in "normal" mode
+	// Put linear readers upfront in "normal" mode
 	if (formats.testFlags(BarcodeFormat::LinearCodes) && !hints.tryHarder())
 		_readers.emplace_back(new OneD::Reader(hints));
 

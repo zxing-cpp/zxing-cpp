@@ -33,7 +33,7 @@ public:
 	Result() = default;
 	explicit Result(DecodeStatus status);
 
-	// 1D convenience constructor
+	// linear symbology convenience constructor
 	Result(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format, SymbologyIdentifier si, Error error = {},
 		   ByteArray&& rawBytes = {}, bool readerInit = false, const std::string& ai = {});
 
@@ -145,7 +145,7 @@ public:
 	bool readerInit() const { return _readerInit; }
 
 	/**
-	 * @brief How many lines have been detected with this code (applies only to 1D symbologies)
+	 * @brief How many lines have been detected with this code (applies only to linear symbologies)
 	 */
 	int lineCount() const { return _lineCount; }
 

@@ -7,13 +7,8 @@
 #pragma once
 
 #include "Reader.h"
-#include <string>
 
-namespace ZXing {
-
-class DecodeHints;
-
-namespace DataMatrix {
+namespace ZXing::DataMatrix {
 
 class Reader : public ZXing::Reader
 {
@@ -26,5 +21,4 @@ public:
 #endif
 };
 
-} // DataMatrix
-} // ZXing
+} // namespace ZXing::DataMatrix

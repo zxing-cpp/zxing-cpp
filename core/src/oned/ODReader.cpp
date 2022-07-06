@@ -36,9 +36,9 @@ Reader::Reader(const DecodeHints& hints) : ZXing::Reader(hints)
 	if (formats.testFlag(BarcodeFormat::Code39))
 		_readers.emplace_back(new Code39Reader(hints));
 	if (formats.testFlag(BarcodeFormat::Code93))
-		_readers.emplace_back(new Code93Reader());
+		_readers.emplace_back(new Code93Reader(hints));
 	if (formats.testFlag(BarcodeFormat::Code128))
-		_readers.emplace_back(new Code128Reader());
+		_readers.emplace_back(new Code128Reader(hints));
 	if (formats.testFlag(BarcodeFormat::ITF))
 		_readers.emplace_back(new ITFReader(hints));
 	if (formats.testFlag(BarcodeFormat::Codabar))

@@ -8,13 +8,7 @@
 
 #include "Reader.h"
 
-#include <string>
-
-namespace ZXing {
-
-class DecodeHints;
-
-namespace Aztec {
+namespace ZXing::Aztec {
 
 class Reader : public ZXing::Reader
 {
@@ -24,5 +18,4 @@ public:
 	Result decode(const BinaryBitmap& image) const override;
 };
 
-} // Aztec
-} // ZXing
+} // namespace ZXing::Aztec

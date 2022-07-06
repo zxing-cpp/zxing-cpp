@@ -36,23 +36,23 @@ Q_NAMESPACE
 enum class BarcodeFormat
 {
 	None            = 0,         ///< Used as a return value if no valid barcode has been detected
-	Aztec           = (1 << 0),  ///< Aztec (2D)
-	Codabar         = (1 << 1),  ///< Codabar (1D)
-	Code39          = (1 << 2),  ///< Code39 (1D)
-	Code93          = (1 << 3),  ///< Code93 (1D)
-	Code128         = (1 << 4),  ///< Code128 (1D)
+	Aztec           = (1 << 0),  ///< Aztec
+	Codabar         = (1 << 1),  ///< Codabar
+	Code39          = (1 << 2),  ///< Code39
+	Code93          = (1 << 3),  ///< Code93
+	Code128         = (1 << 4),  ///< Code128
 	DataBar         = (1 << 5),  ///< GS1 DataBar, formerly known as RSS 14
 	DataBarExpanded = (1 << 6),  ///< GS1 DataBar Expanded, formerly known as RSS EXPANDED
-	DataMatrix      = (1 << 7),  ///< DataMatrix (2D)
-	EAN8            = (1 << 8),  ///< EAN-8 (1D)
-	EAN13           = (1 << 9),  ///< EAN-13 (1D)
-	ITF             = (1 << 10), ///< ITF (Interleaved Two of Five) (1D)
-	MaxiCode        = (1 << 11), ///< MaxiCode (2D)
-	PDF417          = (1 << 12), ///< PDF417 (1D) or (2D)
-	QRCode          = (1 << 13), ///< QR Code (2D)
-	UPCA            = (1 << 14), ///< UPC-A (1D)
-	UPCE            = (1 << 15), ///< UPC-E (1D)
-	MicroQRCode     = (1 << 16), ///< Micro QR Code (2D)
+	DataMatrix      = (1 << 7),  ///< DataMatrix
+	EAN8            = (1 << 8),  ///< EAN-8
+	EAN13           = (1 << 9),  ///< EAN-13
+	ITF             = (1 << 10), ///< ITF (Interleaved Two of Five)
+	MaxiCode        = (1 << 11), ///< MaxiCode
+	PDF417          = (1 << 12), ///< PDF417 or
+	QRCode          = (1 << 13), ///< QR Code
+	UPCA            = (1 << 14), ///< UPC-A
+	UPCE            = (1 << 15), ///< UPC-E
+	MicroQRCode     = (1 << 16), ///< Micro QR Code
 
 	LinearCodes = Codabar | Code39 | Code93 | Code128 | EAN8 | EAN13 | ITF | DataBar | DataBarExpanded | UPCA | UPCE,
 	MatrixCodes = Aztec | DataMatrix | MaxiCode | PDF417 | QRCode | MicroQRCode,

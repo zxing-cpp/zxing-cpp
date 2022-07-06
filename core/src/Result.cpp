@@ -80,7 +80,7 @@ std::wstring Result::utf16() const
 
 std::string Result::utf8ECI() const
 {
-	return _content.utf8ECI();
+	return _content.text(TextMode::Utf8ECI);
 }
 
 ContentType Result::contentType() const
@@ -135,7 +135,7 @@ bool Result::operator==(const Result& o) const
 	if (BarcodeFormats(BarcodeFormat::MatrixCodes).testFlag(format()))
 		return IsInside(Center(o.position()), position());
 
-	// 1D comparisons only implemented for this->lineCount == 1
+	// linear symbology comparisons only implemented for this->lineCount == 1
 	assert(lineCount() == 1);
 
 	// if one line is less than half the length of the other away from the
