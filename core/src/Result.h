@@ -150,16 +150,15 @@ public:
 	friend Result MergeStructuredAppendSequence(const std::vector<Result>& results);
 
 private:
-	BarcodeFormat _format = BarcodeFormat::None;
 	Content _content;
 	Error _error;
 	Position _position;
-	ByteArray _rawBytes;
 	std::string _ecLevel;
 	StructuredAppendInfo _sai;
+	BarcodeFormat _format = BarcodeFormat::None;
+	int _lineCount = 0;
 	bool _isMirrored = false;
 	bool _readerInit = false;
-	int _lineCount = 0;
 };
 
 using Results = std::vector<Result>;

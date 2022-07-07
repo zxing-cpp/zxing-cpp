@@ -19,24 +19,24 @@
 namespace ZXing {
 
 Result::Result(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format, SymbologyIdentifier si, Error error, bool readerInit)
-	: _format(format),
-	  _content({ByteArray(text)}, si),
+	: _content({ByteArray(text)}, si),
 	  _error(error),
 	  _position(Line(y, xStart, xStop)),
-	  _readerInit(readerInit),
-	  _lineCount(0)
+	  _format(format),
+	  _lineCount(0),
+	  _readerInit(readerInit)
 {}
 
 Result::Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat format)
-	: _format(decodeResult.content().symbology.code == 0 ? BarcodeFormat::None : format),
-	  _content(std::move(decodeResult).content()),
+	: _content(std::move(decodeResult).content()),
 	  _error(std::move(decodeResult).error()),
 	  _position(std::move(position)),
 	  _ecLevel(decodeResult.ecLevel()),
 	  _sai(decodeResult.structuredAppend()),
+	  _format(decodeResult.content().symbology.code == 0 ? BarcodeFormat::None : format),
+	  _lineCount(decodeResult.lineCount()),
 	  _isMirrored(decodeResult.isMirrored()),
-	  _readerInit(decodeResult.readerInit()),
-	  _lineCount(decodeResult.lineCount())
+	  _readerInit(decodeResult.readerInit())
 {
 	// TODO: add type opaque and code specific 'extra data'? (see DecoderResult::extra())
 }
