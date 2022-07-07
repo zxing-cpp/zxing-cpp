@@ -630,7 +630,7 @@ public:
 	}
 };
 
-static DetectorResult Scan(EdgeTracer startTracer, std::array<DMRegressionLine, 4>& lines)
+static DetectorResult Scan(EdgeTracer& startTracer, std::array<DMRegressionLine, 4>& lines)
 {
 	while (startTracer.step()) {
 		log(startTracer.p);
@@ -803,22 +803,23 @@ static DetectorResults DetectNew(const BitMatrix& image, bool tryHarder, bool tr
 		auto center = PointF(image.width() / 2, image.height() / 2);
 		auto startPos = centered(center - center * dir + minSymbolSize / 2 * dir);
 
-		EdgeTracer tracer(image, startPos, dir);
-		if (tryHarder) {
-			tracer.history = &history;
-			history.clear();
-		}
+		history.clear();
 
 		for (int i = 1;; ++i) {
-			tracer.p = startPos + i / 2 * minSymbolSize * (i & 1 ? -1 : 1) * tracer.right();
+			EdgeTracer tracer(image, startPos, dir);
+			tracer.p += i / 2 * minSymbolSize * (i & 1 ? -1 : 1) * tracer.right();
+			if (tryHarder)
+				tracer.history = &history;
 
 			if (!tracer.isIn())
 				break;
 
-			if (auto res = Scan(tracer, lines); res.isValid())
 #ifdef __cpp_impl_coroutine
+			DetectorResult res;
+			while (res = Scan(tracer, lines), res.isValid())
 				co_yield std::move(res);
 #else
+			if (auto res = Scan(tracer, lines); res.isValid())
 				return res;
 #endif
 
