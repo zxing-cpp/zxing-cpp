@@ -6,6 +6,7 @@
 #pragma once
 
 #include "ByteArray.h"
+#include "CharacterSet.h"
 
 #include <string>
 #include <vector>
@@ -13,7 +14,6 @@
 namespace ZXing {
 
 enum class ECI : int;
-enum class CharacterSet;
 
 enum class ContentType { Text, Binary, Mixed, GS1, ISO15434, UnknownECI };
 enum class TextMode { Utf8, Utf8ECI, HRI, Hex, Escaped };
@@ -49,8 +49,8 @@ public:
 
 	ByteArray bytes;
 	std::vector<Encoding> encodings;
-	std::string defaultCharset;
 	SymbologyIdentifier symbology;
+	CharacterSet defaultCharset = CharacterSet::Unknown;
 	bool hasECI = false;
 
 	Content();

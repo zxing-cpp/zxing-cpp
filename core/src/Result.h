@@ -143,7 +143,7 @@ public:
 
 	// only for internal use
 	void incrementLineCount() { ++_lineCount; }
-	Result& setCharacterSet(const std::string& defaultCS);
+	Result& setCharacterSet(CharacterSet defaultCS);
 
 	bool operator==(const Result& o) const;
 

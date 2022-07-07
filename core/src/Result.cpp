@@ -104,9 +104,9 @@ std::string Result::sequenceId() const
 	return _sai.id;
 }
 
-Result& Result::setCharacterSet(const std::string& defaultCS)
+Result& Result::setCharacterSet(CharacterSet defaultCS)
 {
-	if (!defaultCS.empty())
+	if (defaultCS != CharacterSet::Unknown)
 		_content.defaultCharset = defaultCS;
 	return *this;
 }

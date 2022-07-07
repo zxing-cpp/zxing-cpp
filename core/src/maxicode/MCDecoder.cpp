@@ -270,7 +270,7 @@ DecoderResult Decode(ByteArray&& bytes, const int mode)
 {
 	Content result;
 	result.symbology = {'U', (mode == 2 || mode == 3) ? '1' : '0', 2}; // TODO: No identifier defined for mode 6?
-	result.defaultCharset = "ISO8859_1";
+	result.defaultCharset = CharacterSet::ISO8859_1;
 	StructuredAppendInfo sai;
 
 	switch (mode) {
