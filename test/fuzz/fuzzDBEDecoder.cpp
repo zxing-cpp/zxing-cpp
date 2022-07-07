@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include "BitArray.h"
-#include "oned/rss/ODRSSExpandedBinaryDecoder.h"
+#include "oned/ODDataBarExpandedBitDecoder.h"
 
 using namespace ZXing;
 
