@@ -15,16 +15,13 @@ public:
 	enum class Type { None, Format, Checksum, Unsupported };
 	Type type() const noexcept { return _type; }
 	const std::string& msg() const noexcept { return _msg; }
+	const std::string& location() const noexcept { return _location; }
 	explicit operator bool() const noexcept { return _type != Type::None; }
-	std::string location() const noexcept
-	{
-		return _file.empty() ? "" : _file.substr(_file.find_last_of("/\\") + 1) + ":" + std::to_string(_line);
-	}
 
 	Error() = default;
 	Error(Type type, std::string msg = {}) : _type(type), _msg(std::move(msg)) {}
 	Error(std::string file, int line, Type type, std::string msg = {})
-		: _type(type), _msg(std::move(msg)), _file(std::move(file)), _line(line)
+		: _type(type), _msg(std::move(msg)), _location(file.substr(file.find_last_of("/\\") + 1) + ":" + std::to_string(line))
 	{}
 
 	static constexpr auto Format = Type::Format;
@@ -34,8 +31,7 @@ public:
 protected:
 	Type _type = Type::None;
 	std::string _msg;
-	std::string _file;
-	int _line = -1;
+	std::string _location;
 };
 
 inline bool operator==(const Error& e, Error::Type t) noexcept { return e.type() == t; }
