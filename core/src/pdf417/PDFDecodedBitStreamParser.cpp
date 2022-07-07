@@ -677,7 +677,7 @@ DecoderResult
 DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel)
 {
 	Content result;
-	result.symbology = { 'L', '2', -1 };
+	result.symbology = { 'L', '2', char(-1) };
 
 	bool readerInit = false;
 	auto resultMetadata = std::make_shared<DecoderResultExtra>();
