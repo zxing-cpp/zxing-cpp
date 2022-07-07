@@ -3,8 +3,6 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#define ZX_USE_UTF8 1 // see Result.h
-
 #include "ReadBarcode.h"
 
 #include <string>

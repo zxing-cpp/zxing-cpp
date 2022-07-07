@@ -10,8 +10,6 @@
 
 #include "BarcodeReader.h"
 
-#define ZX_USE_UTF8 1 // silence deprecation warning in Result.h
-
 #include "BarcodeFormat.h"
 #include "DecodeHints.h"
 #include "ReadBarcode.h"

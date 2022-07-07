@@ -62,12 +62,10 @@ public:
 	 */
 	ByteArray bytesECI() const;
 
-#ifdef ZX_USE_UTF8
+#ifndef ZX_USE_UTF16
 	std::string text() const { return utf8(); }
 	std::string ecLevel() const { return _ecLevel; }
 #else
-#pragma message( \
-	"Warning: the return type of text() and ecLevel() will change to std::string. Please #define ZX_USE_UTF8 to transition before the next release.")
 	std::wstring text() const { return utf16(); }
 	std::wstring ecLevel() const { return {_ecLevel.begin(), _ecLevel.end()}; }
 #endif
