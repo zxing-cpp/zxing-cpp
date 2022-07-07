@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <string>
 #include <string_view>
 
 namespace ZXing {
@@ -49,6 +50,6 @@ enum class CharacterSet : unsigned char
 };
 
 CharacterSet CharacterSetFromString(std::string_view name);
-std::string_view ToString(CharacterSet cs);
+std::string ToString(CharacterSet cs);
 
 } // ZXing

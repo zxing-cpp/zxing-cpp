@@ -45,8 +45,8 @@ static CharacterSetName NAME_TO_CHARSET[] = {
 	{"windows-1252",CharacterSet::Cp1252},
 	{"Cp1256",		CharacterSet::Cp1256},
 	{"windows-1256",CharacterSet::Cp1256},
-	{"UnicodeBigUnmarked", CharacterSet::UnicodeBig},
 	{"UTF-16BE",	CharacterSet::UnicodeBig},
+	{"UnicodeBigUnmarked", CharacterSet::UnicodeBig},
 	{"UnicodeBig",	CharacterSet::UnicodeBig},
 	{"UTF-8",		CharacterSet::UTF8},
 	{"ASCII",		CharacterSet::ASCII},
@@ -74,10 +74,10 @@ CharacterSet CharacterSetFromString(std::string_view name)
 	return i == std::end(NAME_TO_CHARSET) ? CharacterSet::Unknown : i->cs;
 }
 
-std::string_view ToString(CharacterSet cs)
+std::string ToString(CharacterSet cs)
 {
 	auto i = FindIf(NAME_TO_CHARSET, [cs](auto& v) { return v.cs == cs; });
-	return i == std::end(NAME_TO_CHARSET) ? "" : i->name;
+	return i == std::end(NAME_TO_CHARSET) ? "" : std::string(i->name);
 }
 
 } // namespace ZXing

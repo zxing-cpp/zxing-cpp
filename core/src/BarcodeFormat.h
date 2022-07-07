@@ -9,6 +9,7 @@
 #include "Flags.h"
 
 #include <string>
+#include <string_view>
 
 namespace ZXing {
 
@@ -48,14 +49,14 @@ enum class BarcodeFormat
 
 ZX_DECLARE_FLAGS(BarcodeFormats, BarcodeFormat)
 
-const char* ToString(BarcodeFormat format);
+std::string ToString(BarcodeFormat format);
 std::string ToString(BarcodeFormats formats);
 
 /**
  * @brief Parse a string into a BarcodeFormat. '-' and '_' are optional.
  * @return None if str can not be parsed as a valid enum value
  */
-BarcodeFormat BarcodeFormatFromString(const std::string& str);
+BarcodeFormat BarcodeFormatFromString(std::string_view str);
 
 /**
  * @brief Parse a string into a set of BarcodeFormats.
@@ -64,6 +65,6 @@ BarcodeFormat BarcodeFormatFromString(const std::string& str);
  * e.g. "EAN-8 qrcode, Itf" would be parsed into [EAN8, QRCode, ITF].
  * @throws std::invalid_parameter if the string can not be fully parsed.
  */
-BarcodeFormats BarcodeFormatsFromString(const std::string& str);
+BarcodeFormats BarcodeFormatsFromString(std::string_view str);
 
 } // ZXing
