@@ -18,9 +18,9 @@
 
 namespace ZXing {
 
-Result::Result(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format, SymbologyIdentifier si, Error error, bool readerInit, const std::string& ai)
+Result::Result(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format, SymbologyIdentifier si, Error error, bool readerInit)
 	: _format(format),
-	  _content({ByteArray(text)}, si, ai),
+	  _content({ByteArray(text)}, si),
 	  _error(error),
 	  _position(Line(y, xStart, xStop)),
 	  _readerInit(readerInit),

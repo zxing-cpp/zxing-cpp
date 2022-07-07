@@ -17,13 +17,14 @@ enum class CharacterSet;
 
 enum class ContentType { Text, Binary, Mixed, GS1, ISO15434, UnknownECI };
 enum class TextMode { Utf8, Utf8ECI, HRI, Hex, Escaped };
+enum class AIFlag : char { None, GS1, AIM };
 
 std::string ToString(ContentType type);
 
 struct SymbologyIdentifier
 {
-	char code = 0, modifier = 0;
-	int eciModifierOffset = 0;
+	char code = 0, modifier = 0, eciModifierOffset = 0;
+	AIFlag aiFlag = AIFlag::None;
 
 	std::string toString(bool hasECI = false) const
 	{
@@ -49,12 +50,11 @@ public:
 	ByteArray bytes;
 	std::vector<Encoding> encodings;
 	std::string defaultCharset;
-	std::string applicationIndicator;
 	SymbologyIdentifier symbology;
 	bool hasECI = false;
 
 	Content();
-	Content(ByteArray&& bytes, SymbologyIdentifier si, std::string ai = {});
+	Content(ByteArray&& bytes, SymbologyIdentifier si);
 
 	void switchEncoding(ECI eci) { switchEncoding(eci, true); }
 	void switchEncoding(CharacterSet cs);

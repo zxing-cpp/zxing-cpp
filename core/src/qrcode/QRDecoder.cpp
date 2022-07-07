@@ -146,7 +146,7 @@ static void DecodeAlphanumericSegment(BitSource& bits, int count, Content& resul
 		buffer += ToAlphaNumericChar(bits.readBits(6));
 	}
 	// See section 6.4.8.1, 6.4.8.2
-	if (!result.applicationIndicator.empty()) {
+	if (result.symbology.aiFlag != AIFlag::None) {
 		// We need to massage the result a bit if in an FNC1 mode:
 		for (size_t i = 0; i < buffer.length(); i++) {
 			if (buffer[i] == '%') {
@@ -275,7 +275,7 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 //				if (!result.empty()) // uncomment to enforce specification
 //					throw FormatError("GS1 Indicator (FNC1 in first position) at illegal position");
 				result.symbology.modifier = '3';
-				result.applicationIndicator = "GS1"; // In Alphanumeric mode undouble doubled percents and treat single percent as <GS>
+				result.symbology.aiFlag = AIFlag::GS1; // In Alphanumeric mode undouble doubled '%' and treat single '%' as <GS>
 				break;
 			case CodecMode::FNC1_SECOND_POSITION:
 				if (!result.empty())
@@ -290,7 +290,7 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 					result += narrow_cast<uint8_t>(appInd - 100);
 				else
 					throw FormatError("Invalid AIM Application Indicator");
-				result.applicationIndicator = result.bytes.asString(); // see also above
+				result.symbology.aiFlag = AIFlag::AIM; // see also above
 				break;
 			case CodecMode::STRUCTURED_APPEND:
 				// sequence number and parity is added later to the result metadata

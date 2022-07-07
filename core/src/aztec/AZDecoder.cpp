@@ -322,19 +322,18 @@ DecoderResult Decode(const BitArray& bits)
 	// modifiers that indicate ECI protocol (ISO/IEC 24778:2008 Annex F Table F.1)
 	if (res.bytes[0] == 29) {
 		res.symbology.modifier = '1'; // GS1
-		res.applicationIndicator = "GS1";
+		res.symbology.aiFlag = AIFlag::GS1;
 		res.erase(0, 1); // Remove FNC1
 	} else if (res.bytes.size() > 2 && std::isupper(res.bytes[0]) && res.bytes[1] == 29) {
 		// FNC1 following single uppercase letter (the AIM Application Indicator)
 		res.symbology.modifier = '2'; // AIM
-		// TODO: remove the AI from the content?
-		res.applicationIndicator = res.bytes.asString(0, 1);
+		res.symbology.aiFlag = AIFlag::AIM;
 		res.erase(1, 1); // Remove FNC1,
 						 // The AIM Application Indicator character "A"-"Z" is left in the stream (ISO/IEC 24778:2008 16.2)
 	} else if (res.bytes.size() > 3 && std::isdigit(res.bytes[0]) && std::isdigit(res.bytes[1]) && res.bytes[2] == 29) {
 		// FNC1 following 2 digits (the AIM Application Indicator)
 		res.symbology.modifier = '2'; // AIM
-		res.applicationIndicator = res.bytes.asString(0, 2);
+		res.symbology.aiFlag = AIFlag::AIM;
 		res.erase(2, 1); // Remove FNC1
 						 // The AIM Application Indicator characters "00"-"99" are left in the stream (ISO/IEC 24778:2008 16.2)
 	}

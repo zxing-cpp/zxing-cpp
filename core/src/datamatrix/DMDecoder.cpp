@@ -353,7 +353,7 @@ DecoderResult Decode(ByteArray&& bytes, const bool isDMRE)
 	}
 
 	result.append(resultTrailer);
-	result.applicationIndicator = result.symbology.modifier == '2' ? "GS1" : "";
+	result.symbology.aiFlag = result.symbology.modifier == '2' ? AIFlag::GS1 : AIFlag::None;
 	result.symbology.modifier += isDMRE * 6;
 
 	return DecoderResult(std::move(result))

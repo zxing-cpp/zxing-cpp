@@ -51,9 +51,7 @@ void Content::switchEncoding(ECI eci, bool isECI)
 
 Content::Content() {}
 
-Content::Content(ByteArray&& bytes, SymbologyIdentifier si, std::string ai)
-	: bytes(std::move(bytes)), applicationIndicator(std::move(ai)), symbology(si)
-{}
+Content::Content(ByteArray&& bytes, SymbologyIdentifier si) : bytes(std::move(bytes)), symbology(si) {}
 
 void Content::switchEncoding(CharacterSet cs)
 {
@@ -144,7 +142,7 @@ std::string Content::text(TextMode mode) const
 	case TextMode::Utf8: return TextUtfEncoding::ToUtf8(render(false));
 	case TextMode::Utf8ECI: return TextUtfEncoding::ToUtf8(render(true));
 	case TextMode::HRI:
-		if (applicationIndicator == "GS1")
+		if (symbology.aiFlag == AIFlag::GS1)
 			return HRIFromGS1(text(TextMode::Utf8));
 		else if (type() == ContentType::Text)
 			return text(TextMode::Utf8);
@@ -202,7 +200,7 @@ ContentType Content::type() const
 	if (!canProcess())
 		return ContentType::UnknownECI;
 
-	if (applicationIndicator == "GS1")
+	if (symbology.aiFlag == AIFlag::GS1)
 		return ContentType::GS1;
 
 	// check for the absolut minimum of a ISO 15434 conforming message ("[)>" + RS + digit + digit)

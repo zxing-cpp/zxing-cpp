@@ -42,7 +42,7 @@ public:
 
 	// linear symbology convenience constructor
 	Result(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format, SymbologyIdentifier si, Error error = {},
-		   bool readerInit = false, const std::string& ai = {});
+		   bool readerInit = false);
 
 	Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat format);
 
