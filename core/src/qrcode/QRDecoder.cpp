@@ -75,8 +75,8 @@ static void DecodeHanziSegment(BitSource& bits, int count, Content& result)
 			// In the 0xB0A1 to 0xFAFE range
 			assembledTwoBytes += 0x0A6A1;
 		}
-		result += static_cast<uint8_t>((assembledTwoBytes >> 8) & 0xFF);
-		result += static_cast<uint8_t>(assembledTwoBytes & 0xFF);
+		result += narrow_cast<uint8_t>((assembledTwoBytes >> 8) & 0xFF);
+		result += narrow_cast<uint8_t>(assembledTwoBytes & 0xFF);
 		count--;
 	}
 }
@@ -99,8 +99,8 @@ static void DecodeKanjiSegment(BitSource& bits, int count, Content& result)
 			// In the 0xE040 to 0xEBBF range
 			assembledTwoBytes += 0x0C140;
 		}
-		result += static_cast<uint8_t>(assembledTwoBytes >> 8);
-		result += static_cast<uint8_t>(assembledTwoBytes);
+		result += narrow_cast<uint8_t>(assembledTwoBytes >> 8);
+		result += narrow_cast<uint8_t>(assembledTwoBytes);
 		count--;
 	}
 }
@@ -111,7 +111,7 @@ static void DecodeByteSegment(BitSource& bits, int count, Content& result)
 	result.reserve(count);
 
 	for (int i = 0; i < count; i++)
-		result += static_cast<uint8_t>(bits.readBits(8));
+		result += narrow_cast<uint8_t>(bits.readBits(8));
 }
 
 static char ToAlphaNumericChar(int value)
@@ -288,7 +288,7 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 				else if (appInd < 100) // "10-99"
 					result += std::to_string(appInd);
 				else if ((appInd >= 165 && appInd <= 190) || (appInd >= 197 && appInd <= 222)) // "A-Za-z"
-					result += static_cast<uint8_t>(appInd - 100);
+					result += narrow_cast<uint8_t>(appInd - 100);
 				else
 					throw FormatError("Invalid AIM Application Indicator");
 				result.applicationIndicator = result.bytes.asString(); // see also above

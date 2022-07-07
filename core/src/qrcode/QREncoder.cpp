@@ -376,7 +376,7 @@ void GenerateECBytes(const ByteArray& dataBytes, int numEcBytes, ByteArray& ecBy
 	ReedSolomonEncode(GenericGF::QRCodeField256(), message, numEcBytes);
 
 	ecBytes.resize(numEcBytes);
-	std::transform(message.end() - numEcBytes, message.end(), ecBytes.begin(), [](auto c) { return static_cast<uint8_t>(c); });
+	std::transform(message.end() - numEcBytes, message.end(), ecBytes.begin(), [](auto c) { return narrow_cast<uint8_t>(c); });
 }
 
 

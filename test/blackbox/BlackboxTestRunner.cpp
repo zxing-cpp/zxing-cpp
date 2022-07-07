@@ -156,7 +156,7 @@ static int totalImageLoadTime = 0;
 int timeSince(std::chrono::steady_clock::time_point startTime)
 {
 	auto duration = std::chrono::steady_clock::now() - startTime;
-	return static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count());
+	return narrow_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count());
 }
 
 // pre-load images into cache, so the disc io time does not end up in the timing measurement

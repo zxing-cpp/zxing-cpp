@@ -627,7 +627,7 @@ int DecodeMacroBlock(const std::vector<int>& codewords, int codeIndex, DecoderRe
 			case MACRO_PDF417_OPTIONAL_FIELD_SEGMENT_COUNT: {
 				uint64_t segmentCount;
 				codeIndex = DecodeMacroOptionalNumericField(codewords, codeIndex + 1, segmentCount);
-				resultMetadata.setSegmentCount(static_cast<int>(segmentCount));
+				resultMetadata.setSegmentCount(narrow_cast<int>(segmentCount));
 				break;
 			}
 			case MACRO_PDF417_OPTIONAL_FIELD_TIME_STAMP: {
@@ -639,7 +639,7 @@ int DecodeMacroBlock(const std::vector<int>& codewords, int codeIndex, DecoderRe
 			case MACRO_PDF417_OPTIONAL_FIELD_CHECKSUM: {
 				uint64_t checksum;
 				codeIndex = DecodeMacroOptionalNumericField(codewords, codeIndex + 1, checksum);
-				resultMetadata.setChecksum(static_cast<int>(checksum));
+				resultMetadata.setChecksum(narrow_cast<int>(checksum));
 				break;
 			}
 			case MACRO_PDF417_OPTIONAL_FIELD_FILE_SIZE: {

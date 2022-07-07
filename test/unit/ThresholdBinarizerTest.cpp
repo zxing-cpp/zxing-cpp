@@ -13,7 +13,7 @@ using namespace ZXing;
 // Helper to parse a 0/1 string into a BitMatrix
 static BitMatrix ParseBitMatrix(const std::string& str, const int width)
 {
-	const int height = static_cast<int>(str.length() / width);
+	const int height = narrow_cast<int>(str.length() / width);
 
 	BitMatrix mat(width, height);
 	for (int y = 0; y < height; ++y) {

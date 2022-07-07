@@ -237,7 +237,7 @@ Result Code128Reader::decodePattern(int rowNumber, PatternView& next, std::uniqu
 	int xStart = next.pixelsInFront();
 	ByteArray rawCodes;
 	rawCodes.reserve(20);
-	rawCodes.push_back(static_cast<uint8_t>(startCode));
+	rawCodes.push_back(narrow_cast<uint8_t>(startCode));
 
 	Raw2TxtDecoder raw2txt(startCode);
 
@@ -256,7 +256,7 @@ Result Code128Reader::decodePattern(int rowNumber, PatternView& next, std::uniqu
 		if (!raw2txt.decode(code))
 			return {};
 
-		rawCodes.push_back(static_cast<uint8_t>(code));
+		rawCodes.push_back(narrow_cast<uint8_t>(code));
 	}
 
 	if (Size(rawCodes) < minCharCount - 1) // stop code is missing in rawCodes

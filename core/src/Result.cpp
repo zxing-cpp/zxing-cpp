@@ -9,6 +9,7 @@
 #include "DecoderResult.h"
 #include "TextDecoder.h"
 #include "TextUtfEncoding.h"
+#include "ZXContainerAlgorithms.h"
 
 #include <cmath>
 #include <list>
@@ -94,7 +95,7 @@ bool Result::hasECI() const
 int Result::orientation() const
 {
 	constexpr auto std_numbers_pi_v = 3.14159265358979323846; // TODO: c++20 <numbers>
-	return std::lround(_position.orientation() * 180 / std_numbers_pi_v);
+	return narrow_cast<int>(std::lround(_position.orientation() * 180 / std_numbers_pi_v));
 }
 
 std::string Result::symbologyIdentifier() const

@@ -103,7 +103,7 @@ public:
 	}
 
 	int totalMessageCharCount() const {
-		return static_cast<int>(_msg.length() - _skipAtEnd);
+		return narrow_cast<int>(_msg.length() - _skipAtEnd);
 	}
 
 	int remainingCharacters() const {
