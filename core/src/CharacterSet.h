@@ -9,7 +9,7 @@
 
 namespace ZXing {
 
-enum class CharacterSet
+enum class CharacterSet : unsigned char
 {
 	Unknown,
 	ASCII,

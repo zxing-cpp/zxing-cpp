@@ -5,13 +5,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
+
+#include "CharacterSet.h"
+
 #include <string>
 #include <memory>
 
 namespace ZXing {
 
 class BitMatrix;
-enum class CharacterSet;
 
 namespace Pdf417 {
 
