@@ -11,7 +11,7 @@
 
 // Reader
 #include "ReadBarcode.h"
-#include "ZXContainerAlgorithms.h"
+#include "ZXAlgorithms.h"
 
 // Writer
 #include "BitMatrix.h"

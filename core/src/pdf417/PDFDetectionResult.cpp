@@ -6,7 +6,7 @@
 
 #include "PDFDetectionResult.h"
 #include "PDFCodewordDecoder.h"
-#include "ZXContainerAlgorithms.h"
+#include "ZXAlgorithms.h"
 
 #include <algorithm>
 #include <array>

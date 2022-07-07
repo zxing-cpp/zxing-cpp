@@ -9,7 +9,7 @@
 #include "DecoderResult.h"
 #include "TextDecoder.h"
 #include "TextUtfEncoding.h"
-#include "ZXContainerAlgorithms.h"
+#include "ZXAlgorithms.h"
 
 #include <cmath>
 #include <list>

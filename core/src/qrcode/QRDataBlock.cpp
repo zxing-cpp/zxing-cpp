@@ -8,7 +8,7 @@
 
 #include "QRErrorCorrectionLevel.h"
 #include "QRVersion.h"
-#include "ZXContainerAlgorithms.h"
+#include "ZXAlgorithms.h"
 
 namespace ZXing::QRCode {
 

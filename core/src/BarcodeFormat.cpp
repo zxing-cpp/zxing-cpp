@@ -6,7 +6,7 @@
 
 #include "BarcodeFormat.h"
 
-#include "ZXContainerAlgorithms.h"
+#include "ZXAlgorithms.h"
 
 #include <algorithm>
 #include <cctype>

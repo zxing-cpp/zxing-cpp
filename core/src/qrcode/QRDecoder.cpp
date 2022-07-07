@@ -20,7 +20,7 @@
 #include "ReedSolomonDecoder.h"
 #include "StructuredAppend.h"
 #include "TextDecoder.h"
-#include "ZXContainerAlgorithms.h"
+#include "ZXAlgorithms.h"
 #include "ZXTestSupport.h"
 
 #include <algorithm>

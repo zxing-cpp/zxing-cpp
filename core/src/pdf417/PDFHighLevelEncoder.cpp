@@ -11,7 +11,7 @@
 #include "ECI.h"
 #include "TextEncoder.h"
 #include "ZXBigInteger.h"
-#include "ZXContainerAlgorithms.h"
+#include "ZXAlgorithms.h"
 
 #include <cstdint>
 #include <algorithm>

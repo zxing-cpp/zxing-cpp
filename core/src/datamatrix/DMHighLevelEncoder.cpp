@@ -10,7 +10,7 @@
 #include "CharacterSet.h"
 #include "DMEncoderContext.h"
 #include "TextEncoder.h"
-#include "ZXContainerAlgorithms.h"
+#include "ZXAlgorithms.h"
 
 #include <algorithm>
 #include <array>

@@ -9,7 +9,7 @@
 #include "AZEncodingState.h"
 #include "AZToken.h"
 #include "BitArray.h"
-#include "ZXContainerAlgorithms.h"
+#include "ZXAlgorithms.h"
 
 #include <algorithm>
 #include <array>

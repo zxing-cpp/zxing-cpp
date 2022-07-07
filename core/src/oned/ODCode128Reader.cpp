@@ -8,7 +8,7 @@
 
 #include "ODCode128Patterns.h"
 #include "Result.h"
-#include "ZXContainerAlgorithms.h"
+#include "ZXAlgorithms.h"
 
 #include <array>
 #include <cstddef>

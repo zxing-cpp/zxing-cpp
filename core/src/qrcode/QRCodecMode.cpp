@@ -7,7 +7,7 @@
 #include "QRCodecMode.h"
 
 #include "QRVersion.h"
-#include "ZXContainerAlgorithms.h"
+#include "ZXAlgorithms.h"
 
 #include <array>
 #include <stdexcept>

@@ -7,7 +7,7 @@
 
 #include "GS1.h"
 
-#include "ZXContainerAlgorithms.h"
+#include "ZXAlgorithms.h"
 
 namespace ZXing {
 

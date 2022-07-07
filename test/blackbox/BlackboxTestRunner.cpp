@@ -10,7 +10,7 @@
 #include "ImageLoader.h"
 #include "ReadBarcode.h"
 #include "ThresholdBinarizer.h"
-#include "ZXContainerAlgorithms.h"
+#include "ZXAlgorithms.h"
 #include "pdf417/PDFReader.h"
 #include "qrcode/QRReader.h"
 

@@ -9,7 +9,7 @@
 #include "DecodeHints.h"
 #include "DecoderResult.h"
 #include "Result.h"
-#include "ZXContainerAlgorithms.h"
+#include "ZXAlgorithms.h"
 
 #include <array>
 

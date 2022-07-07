@@ -75,11 +75,11 @@ set (COMMON_FILES
     src/TextUtfEncoding.h
     src/TextUtfEncoding.cpp
     src/TritMatrix.h
+    src/ZXAlgorithms.h
     src/ZXBigInteger.h
     src/ZXBigInteger.cpp
     src/ZXConfig.h
     src/ZXNullable.h
-    src/ZXContainerAlgorithms.h
     src/ZXTestSupport.h
 )
 if (BUILD_READERS)
@@ -148,8 +148,8 @@ set (PUBLIC_HEADERS
     src/Flags.h
     src/GTIN.h
     src/TextUtfEncoding.h
+    src/ZXAlgorithms.h
     src/ZXConfig.h
-    src/ZXContainerAlgorithms.h
 )
 if (BUILD_READERS)
     set (PUBLIC_HEADERS ${PUBLIC_HEADERS}

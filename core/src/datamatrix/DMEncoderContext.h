@@ -9,7 +9,7 @@
 #include "ByteArray.h"
 #include "DMSymbolInfo.h"
 #include "DMSymbolShape.h"
-#include "ZXContainerAlgorithms.h"
+#include "ZXAlgorithms.h"
 
 #include <stdexcept>
 #include <string>

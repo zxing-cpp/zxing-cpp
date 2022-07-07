@@ -8,7 +8,7 @@
 #pragma once
 
 #include "ZXConfig.h"
-#include "ZXContainerAlgorithms.h"
+#include "ZXAlgorithms.h"
 #ifndef ZX_FAST_BIT_STORAGE
 #include "BitHacks.h"
 #endif

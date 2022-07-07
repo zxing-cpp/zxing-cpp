@@ -14,7 +14,7 @@
 #include "ReedSolomonDecoder.h"
 #include "ResultPoint.h"
 #include "WhiteRectDetector.h"
-#include "ZXContainerAlgorithms.h"
+#include "ZXAlgorithms.h"
 
 #include <array>
 #include <utility>

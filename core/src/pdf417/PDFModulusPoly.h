@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "ZXContainerAlgorithms.h"
+#include "ZXAlgorithms.h"
 
 #include <utility>
 #include <vector>

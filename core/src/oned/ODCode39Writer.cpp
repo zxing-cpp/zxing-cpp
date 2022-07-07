@@ -10,7 +10,7 @@
 #include "ODWriterHelper.h"
 #include "TextEncoder.h"
 #include "TextUtfEncoding.h"
-#include "ZXContainerAlgorithms.h"
+#include "ZXAlgorithms.h"
 
 #include <array>
 #include <stdexcept>
