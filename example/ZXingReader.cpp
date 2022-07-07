@@ -206,7 +206,6 @@ int main(int argc, char* argv[])
 			}
 
 			std::cout << "Text:       \"" << (angleEscape ? escapeNonGraphical(result.text()) : result.text()) << "\"\n"
-					  << "Utf8ECI:    \"" << result.utf8ECI() << "\"\n"
 					  << "Bytes:      " << ToHex(result.bytes()) << "\n"
 					  << "BytesECI:   " << ToHex(result.bytesECI()) << "\n"
 					  << "Format:     " << ToString(result.format()) << "\n"

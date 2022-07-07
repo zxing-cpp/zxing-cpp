@@ -55,7 +55,7 @@ TEST(ODCodaBarWriterTest, FullCircle)
 	CodabarWriter().encode(text, 0, 0).getRow(0, row);
 	auto hints = DecodeHints().setReturnCodabarStartEnd(true);
 	Result res = CodabarReader(hints).decodeSingleRow(0, row);
-	EXPECT_EQ(text, res.utf8());
+	EXPECT_EQ(text, res.text());
 }
 
 TEST(ODCodaBarWriterTest, InvalidChars)

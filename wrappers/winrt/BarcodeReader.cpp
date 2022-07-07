@@ -149,15 +149,10 @@ BarcodeType BarcodeReader::ConvertNativeToRuntime(BarcodeFormat format)
 	}
 }
 
-static Platform::String^ ToPlatformString(const std::wstring& str)
-{
-	return ref new Platform::String(str.c_str(), (unsigned)str.length());
-}
-
 static Platform::String^ ToPlatformString(const std::string& str)
 {
-	auto ptr = (const uint8_t*)str.data();
-	return ToPlatformString(std::wstring(ptr, ptr + str.length()));
+	std::wstring wstr = TextUtfEncoding::FromUtf8(str);
+	return ref new Platform::String(wstr.c_str(), (unsigned)wstr.length());
 }
 
 ReadResult^
@@ -193,7 +188,7 @@ BarcodeReader::Read(SoftwareBitmap^ bitmap, int cropWidth, int cropHeight)
 
 			auto result = ReadBarcode(img, *m_hints);
 			if (result.isValid()) {
-				return ref new ReadResult(ToPlatformString(ZXing::ToString(result.format())), ToPlatformString(result.utf16()), ConvertNativeToRuntime(result.format()));
+				return ref new ReadResult(ToPlatformString(ZXing::ToString(result.format())), ToPlatformString(result.text()), ConvertNativeToRuntime(result.format()));
 			}
 		} else {
 			throw std::runtime_error("Failed to read bitmap's data");

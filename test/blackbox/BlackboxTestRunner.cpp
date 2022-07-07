@@ -136,7 +136,7 @@ static std::string checkResult(const fs::path& imgPath, std::string_view expecte
 	}
 
 	if (auto expected = readFile(".txt")) {
-		auto utf8Result = result.utf8();
+		auto utf8Result = result.text();
 		return utf8Result != *expected ? fmt::format("Content mismatch: expected '{}' but got '{}'", *expected, utf8Result) : "";
 	}
 

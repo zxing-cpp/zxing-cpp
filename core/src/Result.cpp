@@ -77,10 +77,12 @@ std::wstring Result::utf16() const
 	return _content.utf16();
 }
 
+#if 0
 std::string Result::utf8ECI() const
 {
 	return _content.text(TextMode::Utf8ECI);
 }
+#endif
 
 ContentType Result::contentType() const
 {
