@@ -121,7 +121,7 @@ Result ReadBarcode(const ImageView& _iv, const DecodeHints& hints)
 	if (hints.maxNumberOfSymbols() == 1) {
 		// HACK: use the maxNumberOfSymbols value as a switch to ReadBarcodes to enable the downscaling
 		// see python and android wrapper
-		return FirstOrDefault(ReadBarcodes(_iv, DecodeHints(hints).setMaxNumberOfSymbols(1)));
+		return FirstOrDefault(ReadBarcodes(_iv, hints));
 	} else {
 		LumImage lum;
 		ImageView iv = SetupLumImageView(_iv, lum, hints);
@@ -150,7 +150,7 @@ Results ReadBarcodes(const ImageView& _iv, const DecodeHints& hints)
 			if (iv.width() != _iv.width())
 				r.setPosition(Scale(r.position(), _iv.width() / iv.width()));
 			if (!Contains(results, r)) {
-				results.push_back(std::move(r));
+				results.push_back(std::move(r)); // TODO: keep the one with no error instead of the first found
 				--maxSymbols;
 			}
 		}

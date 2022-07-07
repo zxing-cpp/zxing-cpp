@@ -64,8 +64,8 @@ BitMatrix ParseBitMatrix(const std::string& str, char one, bool expectSpace)
 		return {};
 
 	int strStride = expectSpace ? 2 : 1;
-	int height = static_cast<int>(str.length() / (lineLength + 1));
-	int width = static_cast<int>(lineLength / strStride);
+	int height = narrow_cast<int>(str.length() / (lineLength + 1));
+	int width = narrow_cast<int>(lineLength / strStride);
 	BitMatrix mat(width, height);
 	for (int y = 0; y < height; ++y) {
 		size_t offset = y * (lineLength + 1);

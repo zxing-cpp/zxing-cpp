@@ -9,7 +9,7 @@
 
 #include "GenericGF.h"
 #include "ZXConfig.h"
-#include "ZXContainerAlgorithms.h"
+#include "ZXAlgorithms.h"
 
 #include <algorithm>
 #include <cassert>

@@ -196,9 +196,9 @@ BitMatrix::getBottomRightOnBit(int& right, int& bottom) const
 constexpr BitMatrix::data_t BitMatrix::SET_V;
 constexpr BitMatrix::data_t BitMatrix::UNSET_V;
 
-void BitMatrix::getPatternRow(int r, PatternRow& p_row) const
+template<typename I>
+void GetPatternRow(BitMatrix::Row<I> b_row, int row_size, PatternRow& p_row)
 {
-	auto b_row = row(r);
 #if 0
 	p_row.reserve(64);
 	p_row.clear();
@@ -216,11 +216,11 @@ void BitMatrix::getPatternRow(int r, PatternRow& p_row) const
 	if (BitMatrix::isSet(*lastPos))
 		p_row.push_back(0); // last value is number of white pixels, here 0
 #else
-	p_row.resize(width() + 2);
+	p_row.resize(row_size + 2);
 	std::fill(p_row.begin(), p_row.end(), 0);
 
-	auto* bitPos = b_row.begin();
-	auto* intPos = p_row.data();
+	auto bitPos = b_row.begin();
+	auto intPos = p_row.data();
 
 	intPos += BitMatrix::isSet(*bitPos); // first value is number of white pixels, here 0
 
@@ -235,6 +235,14 @@ void BitMatrix::getPatternRow(int r, PatternRow& p_row) const
 
 	p_row.resize(intPos - p_row.data() + 1);
 #endif
+}
+
+void BitMatrix::getPatternRow(int r, PatternRow& p_row, bool transpose) const
+{
+	if (transpose)
+		GetPatternRow(col(r), height(), p_row);
+	else
+		GetPatternRow(row(r), width(), p_row);
 }
 #endif
 

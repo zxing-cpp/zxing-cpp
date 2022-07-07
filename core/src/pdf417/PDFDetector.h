@@ -35,9 +35,10 @@ public:
 	{
 		std::shared_ptr<const BitMatrix> bits;
 		std::list<std::array<Nullable<ResultPoint>, 8>> points;
+		int rotation;
 	};
 
-	static Result Detect(const BinaryBitmap& image, bool multiple);
+	static Result Detect(const BinaryBitmap& image, bool multiple, bool tryRotate);
 };
 
 } // Pdf417

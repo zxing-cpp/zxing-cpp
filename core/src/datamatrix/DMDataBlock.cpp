@@ -7,7 +7,7 @@
 #include "DMDataBlock.h"
 
 #include "DMVersion.h"
-#include "ZXContainerAlgorithms.h"
+#include "ZXAlgorithms.h"
 
 #include <vector>
 

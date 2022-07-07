@@ -9,7 +9,7 @@
 #include "DecodeHints.h"
 #include "GTIN.h"
 #include "Result.h"
-#include "ZXContainerAlgorithms.h"
+#include "ZXAlgorithms.h"
 
 #include <array>
 

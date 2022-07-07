@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "ZXContainerAlgorithms.h"
+#include "ZXAlgorithms.h"
 
 #include <algorithm>
 #include <array>
@@ -59,7 +59,7 @@ public:
 	int size() const { return _size; }
 
 	// index is the number of bars and spaces from the first bar to the current position
-	int index() const { return static_cast<int>(_data - (_base + 1)); }
+	int index() const { return narrow_cast<int>(_data - (_base + 1)); }
 	int pixelsInFront() const { return std::accumulate(_base, _data, 0); }
 	int pixelsTillEnd() const { return std::accumulate(_base, _data + _size, 0) - 1; }
 	bool isAtFirstBar() const { return _data == _base + 1; }
@@ -114,7 +114,7 @@ public:
 
 	void extend()
 	{
-		_size = std::max(0, static_cast<int>(_end - _data));
+		_size = std::max(0, narrow_cast<int>(_end - _data));
 	}
 };
 

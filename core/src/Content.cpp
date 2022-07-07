@@ -10,7 +10,7 @@
 #include "GS1.h"
 #include "TextDecoder.h"
 #include "TextUtfEncoding.h"
-#include "ZXContainerAlgorithms.h"
+#include "ZXAlgorithms.h"
 
 namespace ZXing {
 

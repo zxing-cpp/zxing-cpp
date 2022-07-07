@@ -52,7 +52,7 @@ static bool CorrectErrors(ByteArray& codewordBytes, int start, int dataCodewords
 	// We don't care about errors in the error-correction codewords
 	for (int i = 0; i < dataCodewords; i++) {
 		if ((mode == ALL) || (i % 2 == (mode - 1)))
-			codewordBytes[i + start] = static_cast<uint8_t>(codewordsInts[i / divisor]);
+			codewordBytes[i + start] = narrow_cast<uint8_t>(codewordsInts[i / divisor]);
 	}
 
 	return true;

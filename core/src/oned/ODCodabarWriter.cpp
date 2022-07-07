@@ -8,7 +8,7 @@
 
 #include "ODWriterHelper.h"
 #include "TextUtfEncoding.h"
-#include "ZXContainerAlgorithms.h"
+#include "ZXAlgorithms.h"
 
 #include <stdexcept>
 #include <vector>

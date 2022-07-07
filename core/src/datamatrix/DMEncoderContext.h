@@ -9,7 +9,7 @@
 #include "ByteArray.h"
 #include "DMSymbolInfo.h"
 #include "DMSymbolShape.h"
-#include "ZXContainerAlgorithms.h"
+#include "ZXAlgorithms.h"
 
 #include <stdexcept>
 #include <string>
@@ -103,7 +103,7 @@ public:
 	}
 
 	int totalMessageCharCount() const {
-		return static_cast<int>(_msg.length() - _skipAtEnd);
+		return narrow_cast<int>(_msg.length() - _skipAtEnd);
 	}
 
 	int remainingCharacters() const {

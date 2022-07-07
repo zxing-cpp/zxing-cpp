@@ -9,6 +9,7 @@
 #include "DecoderResult.h"
 #include "TextDecoder.h"
 #include "TextUtfEncoding.h"
+#include "ZXAlgorithms.h"
 
 #include <cmath>
 #include <list>
@@ -16,8 +17,6 @@
 #include <utility>
 
 namespace ZXing {
-
-Result::Result(DecodeStatus status) : _error(Status2Error(status)) {}
 
 Result::Result(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format, SymbologyIdentifier si, Error error,
 			   ByteArray&& rawBytes, bool readerInit, const std::string& ai)
@@ -78,10 +77,12 @@ std::wstring Result::utf16() const
 	return _content.utf16();
 }
 
+#if 0
 std::string Result::utf8ECI() const
 {
 	return _content.text(TextMode::Utf8ECI);
 }
+#endif
 
 ContentType Result::contentType() const
 {
@@ -96,7 +97,7 @@ bool Result::hasECI() const
 int Result::orientation() const
 {
 	constexpr auto std_numbers_pi_v = 3.14159265358979323846; // TODO: c++20 <numbers>
-	return std::lround(_position.orientation() * 180 / std_numbers_pi_v);
+	return narrow_cast<int>(std::lround(_position.orientation() * 180 / std_numbers_pi_v));
 }
 
 std::string Result::symbologyIdentifier() const

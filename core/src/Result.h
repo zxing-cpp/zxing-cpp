@@ -29,9 +29,17 @@ using Position = QuadrilateralI;
  */
 class Result
 {
+	/**
+	 * @brief utf8/utf16 is the bytes() content converted to utf8/16 based on ECI or guessed character set information
+	 *
+	 * Note: these two properties might only be available while transitioning text() from std::wstring to std::string. time will tell.
+	 * see https://github.com/nu-book/zxing-cpp/issues/338 for a background discussion on the issue.
+	 */
+	std::string utf8() const;
+	std::wstring utf16() const;
+
 public:
 	Result() = default;
-	explicit Result(DecodeStatus status);
 
 	// linear symbology convenience constructor
 	Result(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format, SymbologyIdentifier si, Error error = {},
@@ -57,15 +65,6 @@ public:
 	 */
 	ByteArray bytesECI() const;
 
-	/**
-	 * @brief utf8/utf16 is the bytes() content converted to utf8/16 based on ECI or guessed character set information
-	 *
-	 * Note: these two properties might only be available while transitioning text() from std::wstring to std::string. time will tell.
-	 * see https://github.com/nu-book/zxing-cpp/issues/338 for a background discussion on the issue.
-	 */
-	std::string utf8() const;
-	std::wstring utf16() const;
-
 #ifdef ZX_USE_UTF8
 	std::string text() const { return utf8(); }
 	std::string ecLevel() const { return _ecLevel; }
@@ -76,10 +75,12 @@ public:
 	std::wstring ecLevel() const { return {_ecLevel.begin(), _ecLevel.end()}; }
 #endif
 
+#if 0 // disabled until final API decission is made
 	/**
 	 * @brief utf8ECI is the standard content following the ECI protocol with every character set ECI segment transcoded to utf8
 	 */
 	std::string utf8ECI() const;
+#endif
 
 	/**
 	 * @brief contentType gives a hint to the type of content found (Text/Binary/GS1/etc.)

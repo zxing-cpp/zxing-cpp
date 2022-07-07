@@ -30,7 +30,7 @@ static int EstimateBlackPoint(const std::array<int, LUMINANCE_BUCKETS>& buckets)
 {
 	// Find the tallest peak in the histogram.
 	auto firstPeakPos = std::max_element(buckets.begin(), buckets.end());
-	int firstPeak = static_cast<int>(firstPeakPos - buckets.begin());
+	int firstPeak = narrow_cast<int>(firstPeakPos - buckets.begin());
 	int firstPeakSize = *firstPeakPos;
 	int maxBucketCount = firstPeakSize;
 
@@ -99,7 +99,7 @@ bool GlobalHistogramBinarizer::getPatternRow(int row, int rotation, PatternRow& 
 
 	auto process = [&](bool val, const uint8_t* p) {
 		if (val != lastVal) {
-			res.push_back(static_cast<PatternRow::value_type>((p - lastPos) / pixStride));
+			res.push_back(narrow_cast<PatternRow::value_type>((p - lastPos) / pixStride));
 			lastVal = val;
 			lastPos = p;
 		}
@@ -112,7 +112,7 @@ bool GlobalHistogramBinarizer::getPatternRow(int row, int rotation, PatternRow& 
 	bool backVal = *backPos < blackPoint;
 	process(backVal, backPos);
 
-	res.push_back(static_cast<PatternRow::value_type>((backPos - lastPos) / pixStride + 1));
+	res.push_back(narrow_cast<PatternRow::value_type>((backPos - lastPos) / pixStride + 1));
 
 	if (backVal)
 		res.push_back(0); // last value is number of white pixels, here 0

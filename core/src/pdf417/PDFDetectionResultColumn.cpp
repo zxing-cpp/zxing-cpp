@@ -7,7 +7,7 @@
 #include "PDFDetectionResultColumn.h"
 #include "PDFBarcodeMetadata.h"
 #include "PDFBarcodeValue.h"
-#include "ZXContainerAlgorithms.h"
+#include "ZXAlgorithms.h"
 
 #include <algorithm>
 #include <stdexcept>

@@ -10,7 +10,7 @@
 #include "Content.h"
 #include "Error.h"
 #include "StructuredAppend.h"
-#include "ZXContainerAlgorithms.h"
+#include "ZXAlgorithms.h"
 
 #include <memory>
 #include <string>

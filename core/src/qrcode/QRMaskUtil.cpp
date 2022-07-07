@@ -138,7 +138,7 @@ static int ApplyMaskPenaltyRule4(const TritMatrix& matrix)
 	auto numDarkCells = std::count_if(matrix.begin(), matrix.end(), [](Trit cell) { return cell; });
 	auto numTotalCells = matrix.size();
 	auto fivePercentVariances = std::abs(numDarkCells * 2 - numTotalCells) * 10 / numTotalCells;
-	return static_cast<int>(fivePercentVariances * N4);
+	return narrow_cast<int>(fivePercentVariances * N4);
 }
 
 // The mask penalty calculation is complicated.  See Table 21 of JISX0510:2004 (p.45) for details.

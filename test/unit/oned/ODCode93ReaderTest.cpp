@@ -21,7 +21,7 @@ static std::string Decode(std::string_view input)
 	Code93Reader sut(hints);
 	auto row    = Utility::ParseBitArray(input, '1');
 	auto result = sut.decodeSingleRow(0, row);
-	return result.utf8();
+	return result.text();
 }
 
 TEST(ODCode93ReaderTest, Decode)

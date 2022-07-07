@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "ByteArray.h"
-#include "ZXContainerAlgorithms.h"
+#include "ZXAlgorithms.h"
 #include "datamatrix/DMHighLevelEncoder.h"
 #include "datamatrix/DMSymbolInfo.h"
 #include "datamatrix/DMSymbolShape.h"

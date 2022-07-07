@@ -10,7 +10,7 @@
 #include "BitMatrixIO.h"
 #include "ByteArray.h"
 #include "Matrix.h"
-#include "ZXContainerAlgorithms.h"
+#include "ZXAlgorithms.h"
 
 #include <cstdint>
 #include <memory>

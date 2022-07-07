@@ -104,6 +104,19 @@ public:
 	};
 	Row<data_t*> row(int y) { return {_bits.data() + y * _width, _bits.data() + (y + 1) * _width}; }
 	Row<const data_t*> row(int y) const { return {_bits.data() + y * _width, _bits.data() + (y + 1) * _width}; }
+
+	struct ColIter
+	{
+		const data_t* pos;
+		int stride;
+
+		data_t operator*() const { return *pos; }
+		data_t operator[](int i) const { return *(pos + i * stride); }
+		ColIter& operator++() { return pos += stride, *this; }
+		bool operator<(const ColIter& rhs) const { return pos < rhs.pos; }
+	};
+	Row<ColIter> col(int x) const { return {{_bits.data() + x, _width}, {_bits.data() + x + _height * _width, _width}}; }
+
 #endif
 
 	/**
@@ -232,7 +245,7 @@ public:
 	bool getBottomRightOnBit(int &right, int& bottom) const;
 
 #ifdef ZX_FAST_BIT_STORAGE
-	void getPatternRow(int r, std::vector<uint16_t>& p_row) const;
+	void getPatternRow(int r, std::vector<uint16_t>& p_row, bool transpose = false) const;
 #endif
 
 	/**
