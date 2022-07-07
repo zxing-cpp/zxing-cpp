@@ -145,8 +145,6 @@ PYBIND11_MODULE(zxingcpp, m)
 		.value("UPCE", BarcodeFormat::UPCE)
 		// use upper case 'NONE' because 'None' is a reserved identifier in python
 		.value("NONE", BarcodeFormat::None)
-		.value("OneDCodes", BarcodeFormat::LinearCodes) // deprecated, will be removed
-		.value("TwoDCodes", BarcodeFormat::MatrixCodes) // deprecated, will be removed
 		.value("LinearCodes", BarcodeFormat::LinearCodes)
 		.value("MatrixCodes", BarcodeFormat::MatrixCodes)
 		.export_values()

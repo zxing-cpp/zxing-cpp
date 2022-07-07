@@ -16,7 +16,6 @@
 #include "BitMatrixCursor.h"
 #include "BinaryBitmap.h"
 #include "BitArray.h"
-#include "DecodeStatus.h"
 #include "Pattern.h"
 
 #include <vector>
@@ -325,13 +324,6 @@ Reader::decode(const BinaryBitmap& image) const
 Results Reader::decode(const BinaryBitmap& image, [[maybe_unused]] int maxSymbols) const
 {
 	return DoDecode(image, true, _hints.tryRotate(), _hints.returnErrors());
-}
-
-std::list<Result>
-Reader::decodeMultiple(const BinaryBitmap& image) const
-{
-	Results results = DoDecode(image, true, _hints.tryRotate(), _hints.returnErrors());
-	return std::list<Result>(results.begin(), results.end());
 }
 
 } // Pdf417

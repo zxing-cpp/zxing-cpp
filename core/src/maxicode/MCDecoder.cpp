@@ -9,7 +9,6 @@
 #include "ByteArray.h"
 #include "CharacterSet.h"
 #include "DecoderResult.h"
-#include "DecodeStatus.h"
 #include "GenericGF.h"
 #include "MCBitMatrixParser.h"
 #include "ReedSolomonDecoder.h"
@@ -292,7 +291,7 @@ DecoderResult Decode(ByteArray&& bytes, const int mode)
 	case 5: GetMessage(bytes, 1, 77, result, sai); break;
 	}
 
-	return DecoderResult(std::move(bytes), std::move(result))
+	return DecoderResult(std::move(result))
 		.setEcLevel(std::to_string(mode))
 		.setStructuredAppend(sai)
 		.setReaderInit(mode == 6);

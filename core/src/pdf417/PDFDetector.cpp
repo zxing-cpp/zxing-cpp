@@ -6,7 +6,6 @@
 
 #include "PDFDetector.h"
 #include "BinaryBitmap.h"
-#include "DecodeStatus.h"
 #include "BitMatrix.h"
 #include "ZXNullable.h"
 #include "Pattern.h"
@@ -335,7 +334,7 @@ bool HasStartPattern(const BitMatrix& m, bool rotate90)
 */
 Detector::Result Detector::Detect(const BinaryBitmap& image, bool multiple, bool tryRotate)
 {
-	// construct a 'dummy' shared pointer, just be able to pass it up the call chain in DecodeStatus
+	// construct a 'dummy' shared pointer, just be able to pass it up the call chain in DetectorResult
 	// TODO: reimplement PDF Detector
 	auto binImg = std::shared_ptr<const BitMatrix>(image.getBitMatrix(), [](const BitMatrix*){});
 	if (!binImg)

@@ -376,7 +376,7 @@ Result DataBarExpandedReader::decodePattern(int rowNumber, PatternView& view,
 	// TODO: EstimatePosition misses part of the symbol in the stacked case where the last row contains less pairs than
 	// the first
 	// Symbology identifier: ISO/IEC 24724:2011 Section 9 and GS1 General Specifications 5.1.3 Figure 5.1.3-2
-	return {DecoderResult({}, Content(ByteArray(txt), {'e', '0'})).setLineCount(EstimateLineCount(pairs.front(), pairs.back())),
+	return {DecoderResult(Content(ByteArray(txt), {'e', '0'})).setLineCount(EstimateLineCount(pairs.front(), pairs.back())),
 			EstimatePosition(pairs.front(), pairs.back()), BarcodeFormat::DataBarExpanded};
 }
 

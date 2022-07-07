@@ -18,14 +18,11 @@
 
 namespace ZXing {
 
-Result::Result(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format, SymbologyIdentifier si, Error error,
-			   ByteArray&& rawBytes, bool readerInit, const std::string& ai)
+Result::Result(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format, SymbologyIdentifier si, Error error, bool readerInit, const std::string& ai)
 	: _format(format),
 	  _content({ByteArray(text)}, si, ai),
 	  _error(error),
 	  _position(Line(y, xStart, xStop)),
-	  _rawBytes(std::move(rawBytes)),
-	  _numBits(Size(_rawBytes) * 8),
 	  _readerInit(readerInit),
 	  _lineCount(0)
 {}
@@ -35,8 +32,6 @@ Result::Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat 
 	  _content(std::move(decodeResult).content()),
 	  _error(std::move(decodeResult).error()),
 	  _position(std::move(position)),
-	  _rawBytes(std::move(decodeResult).rawBytes()),
-	  _numBits(decodeResult.numBits()),
 	  _ecLevel(decodeResult.ecLevel()),
 	  _sai(decodeResult.structuredAppend()),
 	  _isMirrored(decodeResult.isMirrored()),
@@ -44,17 +39,6 @@ Result::Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat 
 	  _lineCount(decodeResult.lineCount())
 {
 	// TODO: add type opaque and code specific 'extra data'? (see DecoderResult::extra())
-}
-
-DecodeStatus Result::status() const
-{
-	switch(_error.type()) {
-	case Error::Format : return DecodeStatus::FormatError;
-	case Error::Checksum : return DecodeStatus::ChecksumError;
-	default: ;
-	}
-
-	return format() == BarcodeFormat::None ? DecodeStatus::NotFound : DecodeStatus::NoError;
 }
 
 const ByteArray& Result::bytes() const

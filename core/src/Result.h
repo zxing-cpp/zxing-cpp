@@ -10,7 +10,6 @@
 #include "BarcodeFormat.h"
 #include "ByteArray.h"
 #include "Content.h"
-#include "DecodeStatus.h"
 #include "Error.h"
 #include "Quadrilateral.h"
 #include "StructuredAppend.h"
@@ -43,15 +42,13 @@ public:
 
 	// linear symbology convenience constructor
 	Result(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format, SymbologyIdentifier si, Error error = {},
-		   ByteArray&& rawBytes = {}, bool readerInit = false, const std::string& ai = {});
+		   bool readerInit = false, const std::string& ai = {});
 
 	Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat format);
 
 	bool isValid() const { return format() != BarcodeFormat::None && !error(); }
 
 	const Error& error() const { return _error; }
-
-	[[deprecated]] DecodeStatus status() const;
 
 	BarcodeFormat format() const { return _format; }
 
@@ -104,10 +101,6 @@ public:
 	 * @brief isMirrored is the symbol mirrored (currently only supported by QRCode and DataMatrix)
 	 */
 	bool isMirrored() const { return _isMirrored; }
-
-	/// see bytes() above for a proper replacement of rawByes
-	[[deprecated]] const ByteArray& rawBytes() const { return _rawBytes; }
-	[[deprecated]] int numBits() const { return _numBits; }
 
 	/**
 	 * @brief symbologyIdentifier Symbology identifier "]cm" where "c" is symbology code character, "m" the modifier.
@@ -164,7 +157,6 @@ private:
 	Error _error;
 	Position _position;
 	ByteArray _rawBytes;
-	int _numBits = 0;
 	std::string _ecLevel;
 	StructuredAppendInfo _sai;
 	bool _isMirrored = false;

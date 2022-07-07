@@ -134,20 +134,7 @@ public:
 
 #undef ZX_PROPERTY
 
-	/// NOTE: used to affect FNC1 handling for Code 128 (aka GS1-128) but behavior now based on position of FNC1.
-	[[deprecated]] bool assumeGS1() const noexcept { return true; }
-	[[deprecated]] DecodeHints& setAssumeGS1(bool v [[maybe_unused]]) { return *this; }
-
-	/// NOTE: has not been in effect since at least 1.2 and no one noticed.
-	[[deprecated]] std::vector<int> allowedLengths() const noexcept { return {}; }
-	[[deprecated]] DecodeHints& setAllowedLengths(const std::vector<int> v [[maybe_unused]]) { return *this; }
-
-	/// NOTE: use validateCode39CheckSum
-	[[deprecated]] bool assumeCode39CheckDigit() const noexcept { return validateCode39CheckSum(); }
-	[[deprecated]] DecodeHints& setAssumeCode39CheckDigit(bool v) & { return setValidateCode39CheckSum(v); }
-
 	bool hasFormat(BarcodeFormats f) const noexcept { return _formats.testFlags(f) || _formats.empty(); }
-	[[deprecated]] bool hasNoFormat() const noexcept { return _formats.empty(); }
 };
 
 } // ZXing

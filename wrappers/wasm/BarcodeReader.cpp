@@ -95,8 +95,4 @@ EMSCRIPTEN_BINDINGS(BarcodeReader)
 
 	function("readBarcodeFromImage", &readBarcodeFromImage);
 	function("readBarcodeFromPixmap", &readBarcodeFromPixmap);
-
-	// obsoletes [[deprecated]]
-	function("readBarcode", &readBarcodeFromImage);
-	function("readBarcodeFromPng", &readBarcodeFromImage);
 }

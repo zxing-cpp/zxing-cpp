@@ -11,7 +11,6 @@
 #include "BitArray.h"
 #include "BitMatrix.h"
 #include "CharacterSet.h"
-#include "DecodeStatus.h"
 #include "DecoderResult.h"
 #include "GenericGF.h"
 #include "ReedSolomonDecoder.h"
@@ -343,7 +342,7 @@ DecoderResult Decode(const BitArray& bits)
 	if (sai.index != -1)
 		res.symbology.modifier += 6; // TODO: this is wrong as long as we remove the sai info from the content in ParseStructuredAppend
 
-	return DecoderResult(bits.toBytes(), std::move(res)).setNumBits(Size(bits)).setStructuredAppend(sai);
+	return DecoderResult(std::move(res)).setStructuredAppend(sai);
 }
 
 DecoderResult Decode(const DetectorResult& detectorResult)

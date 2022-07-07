@@ -9,7 +9,6 @@
 #include "BitMatrix.h"
 #include "BitSource.h"
 #include "CharacterSet.h"
-#include "DecodeStatus.h"
 #include "DecoderResult.h"
 #include "GenericGF.h"
 #include "QRBitMatrixParser.h"
@@ -332,7 +331,7 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 		error = std::move(e);
 	}
 
-	return DecoderResult(std::move(bytes), std::move(result))
+	return DecoderResult(std::move(result))
 		.setError(std::move(error))
 		.setEcLevel(ToString(ecLevel))
 		.setStructuredAppend(structuredAppend);

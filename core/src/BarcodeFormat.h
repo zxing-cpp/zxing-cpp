@@ -43,27 +43,7 @@ enum class BarcodeFormat
 	MatrixCodes = Aztec | DataMatrix | MaxiCode | PDF417 | QRCode | MicroQRCode,
 	Any         = LinearCodes | MatrixCodes,
 
-	// Deprecated names, kept for compatibility at the moment
-	NONE [[deprecated]]         = None,
-	AZTEC [[deprecated]]        = Aztec,
-	CODABAR [[deprecated]]      = Codabar,
-	CODE_39 [[deprecated]]      = Code39,
-	CODE_93 [[deprecated]]      = Code93,
-	CODE_128 [[deprecated]]     = Code128,
-	DATA_MATRIX [[deprecated]]  = DataMatrix,
-	EAN_8 [[deprecated]]        = EAN8,
-	EAN_13 [[deprecated]]       = EAN13,
-	MAXICODE [[deprecated]]     = MaxiCode,
-	PDF_417 [[deprecated]]      = PDF417,
-	QR_CODE [[deprecated]]      = QRCode,
-	RSS_14 [[deprecated]]       = DataBar,
-	RSS_EXPANDED [[deprecated]] = DataBarExpanded,
-	UPC_A [[deprecated]]        = UPCA,
-	UPC_E [[deprecated]]        = UPCE,
-	OneDCodes [[deprecated]]    = LinearCodes,
-	TwoDCodes [[deprecated]]    = MatrixCodes,
-
-	_max                        = MicroQRCode, ///> implementation detail, don't use
+	_max = MicroQRCode, ///> implementation detail, don't use
 };
 
 ZX_DECLARE_FLAGS(BarcodeFormats, BarcodeFormat)

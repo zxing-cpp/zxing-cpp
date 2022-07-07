@@ -9,7 +9,6 @@
 #include "ByteArray.h"
 #include "CharacterSet.h"
 #include "DecoderResult.h"
-#include "DecodeStatus.h"
 #include "PDFDecoderResultExtra.h"
 #include "TextDecoder.h"
 #include "TextUtfEncoding.h"
@@ -754,7 +753,7 @@ DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel)
 		sai.id    = resultMetadata->fileId();
 	}
 
-	return DecoderResult({}, std::move(result))
+	return DecoderResult(std::move(result))
 		.setEcLevel(std::to_string(ecLevel))
 		.setStructuredAppend(sai)
 		.setReaderInit(readerInit)
