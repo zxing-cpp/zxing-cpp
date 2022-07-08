@@ -40,22 +40,12 @@ std::string ToString(const BitMatrix& matrix, char one, char zero, bool addSpace
 
 @implementation ZXIBarcodeWriter
 
--(nullable CGImageRef)write:(nonnull NSString *)contents
-                      width:(int)width
-                     height:(int)height
-                     format:(ZXIFormat)format
-                      error:(NSError **)error {
-    return [self write:contents width:width height:height format:format charset:Unknown error:error];
-}
-
 -(CGImageRef)write:(NSString *)contents
              width:(int)width
             height:(int)height
             format:(ZXIFormat)format
-           charset:(ZXICharset)charset
              error:(NSError *__autoreleasing  _Nullable *)error {
     MultiFormatWriter writer { BarcodeFormatFromZXIFormat(format) };
-    writer.setEncoding(CharsetFromZXICharset(charset));
     // Catch exception for invalid formats
     try {
         BitMatrix result = writer.encode(NSStringToStringW(contents), width, height);

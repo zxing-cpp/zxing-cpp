@@ -11,7 +11,6 @@
 #import "Reader/ZXIPoint.h"
 #import "Reader/ZXIDecodeHints.h"
 #import "Writer/ZXIBarcodeWriter.h"
-#import "Writer/ZXICharset.h"
 #import "ZXIErrors.h"
 #import "ZXIFormat.h"
 

@@ -15,13 +15,6 @@ NS_ASSUME_NONNULL_BEGIN
                      height:(int)height
                      format:(ZXIFormat)format
                       error:(NSError **)error;
-
--(nullable CGImageRef)write:(NSString *)contents
-                      width:(int)width
-                     height:(int)height
-                     format:(ZXIFormat)format
-                    charset:(ZXICharset)charset
-                      error:(NSError **)error;
 @end
 
 NS_ASSUME_NONNULL_END
