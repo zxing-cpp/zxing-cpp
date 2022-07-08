@@ -18,8 +18,6 @@
 #include <algorithm>
 #include <array>
 #include <cstdint>
-#include <iomanip>
-#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -156,13 +154,6 @@ static std::string GetPostCode3(const ByteArray& bytes)
 		(char) CHARSETS[0].at(GetInt(bytes, { 15, 16, 17, 18,  7,  8 })),
 		(char) CHARSETS[0].at(GetInt(bytes, { 9,  10, 11, 12,  1,  2 })),
 	};
-}
-
-static std::string ToString(int x, int width)
-{
-	std::stringstream buf;
-	buf << std::setw(width) << std::setfill('0') << x;
-	return buf.str();
 }
 
 static int GetCountry(const ByteArray& bytes)
