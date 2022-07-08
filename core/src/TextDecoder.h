@@ -5,13 +5,13 @@
 
 #pragma once
 
+#include "CharacterSet.h"
+
 #include <cstddef>
 #include <cstdint>
 #include <string>
 
 namespace ZXing {
-
-enum class CharacterSet;
 
 class TextDecoder
 {
@@ -36,7 +36,6 @@ public:
 		Append(r, (const uint8_t*)str.data(), str.length(), charset);
 		return r;
 	}
-
 };
 
 } // ZXing

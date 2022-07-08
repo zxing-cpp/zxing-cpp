@@ -13,14 +13,13 @@
 #include <iterator>
 #include <sstream>
 #include <stdexcept>
-#include <string>
 
 namespace ZXing {
 
 struct BarcodeFormatName
 {
 	BarcodeFormat format;
-	const char* name;
+	std::string_view name;
 };
 
 static BarcodeFormatName NAMES[] = {
@@ -46,10 +45,10 @@ static BarcodeFormatName NAMES[] = {
 	{BarcodeFormat::MatrixCodes, "Matrix-Codes"},
 };
 
-const char* ToString(BarcodeFormat format)
+std::string ToString(BarcodeFormat format)
 {
 	auto i = FindIf(NAMES, [format](auto& v) { return v.format == format; });
-	return i == std::end(NAMES) ? nullptr : i->name;
+	return i == std::end(NAMES) ? std::string() : std::string(i->name);
 }
 
 std::string ToString(BarcodeFormats formats)
@@ -58,12 +57,13 @@ std::string ToString(BarcodeFormats formats)
 		return ToString(BarcodeFormat::None);
 	std::string res;
 	for (auto f : formats)
-		res += ToString(f) + std::string("|");
+		res += ToString(f) + "|";
 	return res.substr(0, res.size() - 1);
 }
 
-static std::string NormalizeFormatString(std::string str)
+static std::string NormalizeFormatString(std::string_view sv)
 {
+	std::string str(sv);
 	std::transform(str.begin(), str.end(), str.begin(), [](char c) { return (char)std::tolower(c); });
 	str.erase(std::remove_if(str.begin(), str.end(), [](char c) { return Contains("_-[]", c); }), str.end());
 	return str;
@@ -75,12 +75,12 @@ static BarcodeFormat ParseFormatString(const std::string& str)
 	return i == std::end(NAMES) ? BarcodeFormat::None : i->format;
 }
 
-BarcodeFormat BarcodeFormatFromString(const std::string& str)
+BarcodeFormat BarcodeFormatFromString(std::string_view str)
 {
 	return ParseFormatString(NormalizeFormatString(str));
 }
 
-BarcodeFormats BarcodeFormatsFromString(const std::string& str)
+BarcodeFormats BarcodeFormatsFromString(std::string_view str)
 {
 	auto normalized = NormalizeFormatString(str);
 	std::replace_if(

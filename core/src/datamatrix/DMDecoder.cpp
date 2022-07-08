@@ -12,7 +12,6 @@
 #include "DMBitLayout.h"
 #include "DMDataBlock.h"
 #include "DMVersion.h"
-#include "DecodeStatus.h"
 #include "DecoderResult.h"
 #include "GenericGF.h"
 #include "ReedSolomonDecoder.h"
@@ -354,10 +353,10 @@ DecoderResult Decode(ByteArray&& bytes, const bool isDMRE)
 	}
 
 	result.append(resultTrailer);
-	result.applicationIndicator = result.symbology.modifier == '2' ? "GS1" : "";
+	result.symbology.aiFlag = result.symbology.modifier == '2' ? AIFlag::GS1 : AIFlag::None;
 	result.symbology.modifier += isDMRE * 6;
 
-	return DecoderResult(std::move(bytes), std::move(result))
+	return DecoderResult(std::move(result))
 		.setError(std::move(error))
 		.setStructuredAppend(sai)
 		.setReaderInit(readerInit);

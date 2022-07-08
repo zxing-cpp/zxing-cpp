@@ -16,7 +16,6 @@
 #include "ResultPoint.h"
 #include "ZXNullable.h"
 #include "BitMatrix.h"
-#include "DecodeStatus.h"
 #include "DecoderResult.h"
 #include "ZXTestSupport.h"
 

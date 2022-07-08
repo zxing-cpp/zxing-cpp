@@ -10,7 +10,6 @@
 #include "BarcodeFormat.h"
 #include "ByteArray.h"
 #include "Content.h"
-#include "DecodeStatus.h"
 #include "Error.h"
 #include "Quadrilateral.h"
 #include "StructuredAppend.h"
@@ -43,15 +42,13 @@ public:
 
 	// linear symbology convenience constructor
 	Result(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format, SymbologyIdentifier si, Error error = {},
-		   ByteArray&& rawBytes = {}, bool readerInit = false, const std::string& ai = {});
+		   bool readerInit = false);
 
 	Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat format);
 
 	bool isValid() const { return format() != BarcodeFormat::None && !error(); }
 
 	const Error& error() const { return _error; }
-
-	[[deprecated]] DecodeStatus status() const;
 
 	BarcodeFormat format() const { return _format; }
 
@@ -65,12 +62,10 @@ public:
 	 */
 	ByteArray bytesECI() const;
 
-#ifdef ZX_USE_UTF8
+#ifndef ZX_USE_UTF16
 	std::string text() const { return utf8(); }
 	std::string ecLevel() const { return _ecLevel; }
 #else
-#pragma message( \
-	"Warning: the return type of text() and ecLevel() will change to std::string. Please #define ZX_USE_UTF8 to transition before the next release.")
 	std::wstring text() const { return utf16(); }
 	std::wstring ecLevel() const { return {_ecLevel.begin(), _ecLevel.end()}; }
 #endif
@@ -104,10 +99,6 @@ public:
 	 * @brief isMirrored is the symbol mirrored (currently only supported by QRCode and DataMatrix)
 	 */
 	bool isMirrored() const { return _isMirrored; }
-
-	/// see bytes() above for a proper replacement of rawByes
-	[[deprecated]] const ByteArray& rawBytes() const { return _rawBytes; }
-	[[deprecated]] int numBits() const { return _numBits; }
 
 	/**
 	 * @brief symbologyIdentifier Symbology identifier "]cm" where "c" is symbology code character, "m" the modifier.
@@ -152,24 +143,22 @@ public:
 
 	// only for internal use
 	void incrementLineCount() { ++_lineCount; }
-	Result& setCharacterSet(const std::string& defaultCS);
+	Result& setCharacterSet(CharacterSet defaultCS);
 
 	bool operator==(const Result& o) const;
 
 	friend Result MergeStructuredAppendSequence(const std::vector<Result>& results);
 
 private:
-	BarcodeFormat _format = BarcodeFormat::None;
 	Content _content;
 	Error _error;
 	Position _position;
-	ByteArray _rawBytes;
-	int _numBits = 0;
 	std::string _ecLevel;
 	StructuredAppendInfo _sai;
+	BarcodeFormat _format = BarcodeFormat::None;
+	int _lineCount = 0;
 	bool _isMirrored = false;
 	bool _readerInit = false;
-	int _lineCount = 0;
 };
 
 using Results = std::vector<Result>;

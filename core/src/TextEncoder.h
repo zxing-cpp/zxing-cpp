@@ -5,11 +5,11 @@
 
 #pragma once
 
+#include "CharacterSet.h"
+
 #include <string>
 
 namespace ZXing {
-
-enum class CharacterSet;
 
 class TextEncoder
 {
