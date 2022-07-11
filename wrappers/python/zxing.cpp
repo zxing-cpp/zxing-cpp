@@ -7,10 +7,9 @@
 
 #include "BarcodeFormat.h"
 
-#define ZX_USE_UTF8 1 // see Result.h
-
 // Reader
 #include "ReadBarcode.h"
+#include "ZXAlgorithms.h"
 
 // Writer
 #include "BitMatrix.h"
@@ -29,12 +28,6 @@ namespace py = pybind11;
 
 // Numpy array wrapper class for images (either BGR or GRAYSCALE)
 using Image = py::array_t<uint8_t, py::array::c_style>;
-
-template<typename OUT, typename IN>
-OUT narrow(IN in)
-{
-	return static_cast<OUT>(in);
-}
 
 std::ostream& operator<<(std::ostream& os, const Position& points) {
 	for (const auto& p : points)
@@ -63,9 +56,9 @@ auto read_barcodes_impl(py::object _image, const BarcodeFormats& formats, bool t
 	catch(...) {
 		throw py::type_error("Unsupported type " + _type + ". Expect a PIL Image or numpy array");
 	}
-	const auto height = narrow<int>(image.shape(0));
-	const auto width = narrow<int>(image.shape(1));
-	auto channels = image.ndim() == 2 ? 1 : narrow<int>(image.shape(2));
+	const auto height = narrow_cast<int>(image.shape(0));
+	const auto width = narrow_cast<int>(image.shape(1));
+	auto channels = image.ndim() == 2 ? 1 : narrow_cast<int>(image.shape(2));
 	ImageFormat imgfmt;
 	if (_type.find("PIL.") != std::string::npos) {
 		const auto mode = _image.attr("mode").cast<std::string>();
@@ -117,7 +110,7 @@ Image write_barcode(BarcodeFormat format, std::string text, int width, int heigh
 	auto r = result.mutable_unchecked<2>();
 	for (py::ssize_t y = 0; y < r.shape(0); y++)
 		for (py::ssize_t x = 0; x < r.shape(1); x++)
-			r(y, x) = bitmap.get(narrow<int>(x), narrow<int>(y)) ? 0 : 255;
+			r(y, x) = bitmap.get(narrow_cast<int>(x), narrow_cast<int>(y)) ? 0 : 255;
 	return result;
 }
 
@@ -150,8 +143,6 @@ PYBIND11_MODULE(zxingcpp, m)
 		.value("UPCE", BarcodeFormat::UPCE)
 		// use upper case 'NONE' because 'None' is a reserved identifier in python
 		.value("NONE", BarcodeFormat::None)
-		.value("OneDCodes", BarcodeFormat::LinearCodes) // deprecated, will be removed
-		.value("TwoDCodes", BarcodeFormat::MatrixCodes) // deprecated, will be removed
 		.value("LinearCodes", BarcodeFormat::LinearCodes)
 		.value("MatrixCodes", BarcodeFormat::MatrixCodes)
 		.export_values()

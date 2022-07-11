@@ -9,7 +9,6 @@
 #include "ByteArray.h"
 #include "CharacterSet.h"
 #include "DecoderResult.h"
-#include "DecodeStatus.h"
 #include "PDFDecoderResultExtra.h"
 #include "TextDecoder.h"
 #include "TextUtfEncoding.h"
@@ -541,7 +540,7 @@ static int DecodeMacroOptionalTextField(const std::vector<int>& codewords, int c
 	Content result;
 	// Each optional field begins with an implied reset to ECI 2 (Annex H.2.3). ECI 2 is ASCII for 0-127, and Cp437
 	// for non-ASCII (128-255). Text optional fields can contain ECIs.
-	result.defaultCharset = "Cp437";
+	result.defaultCharset = CharacterSet::Cp437;
 
 	codeIndex = TextCompaction(codewords, codeIndex, result);
 
@@ -559,7 +558,7 @@ static int DecodeMacroOptionalNumericField(const std::vector<int>& codewords, in
 	Content result;
 	// Each optional field begins with an implied reset to ECI 2 (Annex H.2.3). ECI 2 is ASCII for 0-127, and Cp437
 	// for non-ASCII (128-255). Text optional fields can contain ECIs.
-	result.defaultCharset = "Cp437";
+	result.defaultCharset = CharacterSet::Cp437;
 
 	codeIndex = NumericCompaction(codewords, codeIndex, result);
 
@@ -627,7 +626,7 @@ int DecodeMacroBlock(const std::vector<int>& codewords, int codeIndex, DecoderRe
 			case MACRO_PDF417_OPTIONAL_FIELD_SEGMENT_COUNT: {
 				uint64_t segmentCount;
 				codeIndex = DecodeMacroOptionalNumericField(codewords, codeIndex + 1, segmentCount);
-				resultMetadata.setSegmentCount(static_cast<int>(segmentCount));
+				resultMetadata.setSegmentCount(narrow_cast<int>(segmentCount));
 				break;
 			}
 			case MACRO_PDF417_OPTIONAL_FIELD_TIME_STAMP: {
@@ -639,7 +638,7 @@ int DecodeMacroBlock(const std::vector<int>& codewords, int codeIndex, DecoderRe
 			case MACRO_PDF417_OPTIONAL_FIELD_CHECKSUM: {
 				uint64_t checksum;
 				codeIndex = DecodeMacroOptionalNumericField(codewords, codeIndex + 1, checksum);
-				resultMetadata.setChecksum(static_cast<int>(checksum));
+				resultMetadata.setChecksum(narrow_cast<int>(checksum));
 				break;
 			}
 			case MACRO_PDF417_OPTIONAL_FIELD_FILE_SIZE: {
@@ -678,7 +677,7 @@ DecoderResult
 DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel)
 {
 	Content result;
-	result.symbology = { 'L', '2', -1 };
+	result.symbology = { 'L', '2', char(-1) };
 
 	bool readerInit = false;
 	auto resultMetadata = std::make_shared<DecoderResultExtra>();
@@ -754,7 +753,7 @@ DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel)
 		sai.id    = resultMetadata->fileId();
 	}
 
-	return DecoderResult({}, std::move(result))
+	return DecoderResult(std::move(result))
 		.setEcLevel(std::to_string(ecLevel))
 		.setStructuredAppend(sai)
 		.setReaderInit(readerInit)

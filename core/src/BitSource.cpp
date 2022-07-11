@@ -7,7 +7,7 @@
 #include "BitSource.h"
 
 #include "ByteArray.h"
-#include "ZXContainerAlgorithms.h"
+#include "ZXAlgorithms.h"
 
 #include <stdexcept>
 

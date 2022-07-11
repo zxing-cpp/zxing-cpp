@@ -6,7 +6,6 @@
 
 #include "PDFDetector.h"
 #include "BinaryBitmap.h"
-#include "DecodeStatus.h"
 #include "BitMatrix.h"
 #include "ZXNullable.h"
 #include "Pattern.h"
@@ -304,15 +303,16 @@ static std::list<std::array<Nullable<ResultPoint>, 8>> DetectBarcode(const BitMa
 }
 
 #ifdef ZX_FAST_BIT_STORAGE
-bool HasStartPattern(const BitMatrix& m)
+bool HasStartPattern(const BitMatrix& m, bool rotate90)
 {
 	constexpr FixedPattern<8, 17> START_PATTERN = { 8, 1, 1, 1, 1, 1, 1, 3 };
 	constexpr int minSymbolWidth = 3*8+1; // compact symbol
 
 	PatternRow row;
+	int end = rotate90 ? m.width() : m.height();
 
-	for (int r = ROW_STEP; r < m.height(); r += ROW_STEP) {
-		m.getPatternRow(r, row);
+	for (int r = ROW_STEP; r < end; r += ROW_STEP) {
+		m.getPatternRow(r, row, rotate90);
 
 		if (FindLeftGuard(row, minSymbolWidth, START_PATTERN, 2).isValid())
 			return true;
@@ -332,31 +332,41 @@ bool HasStartPattern(const BitMatrix& m)
 * @param multiple if true, then the image is searched for multiple codes. If false, then at most one code will
 * be found and returned
 */
-Detector::Result Detector::Detect(const BinaryBitmap& image, bool multiple)
+Detector::Result Detector::Detect(const BinaryBitmap& image, bool multiple, bool tryRotate)
 {
-	// construct a 'dummy' shared pointer, just be able to pass it up the call chain in DecodeStatus
+	// construct a 'dummy' shared pointer, just be able to pass it up the call chain in DetectorResult
 	// TODO: reimplement PDF Detector
 	auto binImg = std::shared_ptr<const BitMatrix>(image.getBitMatrix(), [](const BitMatrix*){});
 	if (!binImg)
 		return {};
 
-#if defined(ZX_FAST_BIT_STORAGE)
-	if (!HasStartPattern(*binImg))
-		return {};
-#endif
-
-	auto barcodeCoordinates = DetectBarcode(*binImg, multiple);
-	if (barcodeCoordinates.empty()) {
-		auto newBits = std::make_shared<BitMatrix>(binImg->copy());
-		newBits->rotate180();
-		binImg = newBits;
-		barcodeCoordinates = DetectBarcode(*binImg, multiple);
-	}
-	if (barcodeCoordinates.empty())
-		return {};
-
 	Result result;
-	result.points = barcodeCoordinates;
+
+	for (int rotate90 = false; rotate90 <= tryRotate && result.points.empty(); ++rotate90) {
+#if defined(ZX_FAST_BIT_STORAGE)
+		if (!HasStartPattern(*binImg, rotate90))
+			continue;
+#endif
+		result.rotation = 90 * rotate90;
+		if (rotate90) {
+			auto newBits = std::make_shared<BitMatrix>(binImg->copy());
+			newBits->rotate90();
+			binImg = newBits;
+		}
+
+		result.points = DetectBarcode(*binImg, multiple);
+		if (result.points.empty()) {
+			auto newBits = std::make_shared<BitMatrix>(binImg->copy());
+			newBits->rotate180();
+			binImg = newBits;
+			result.points = DetectBarcode(*binImg, multiple);
+			result.rotation += 180;
+		}
+	}
+
+	if (result.points.empty())
+		return {};
+
 	result.bits = binImg;
 	return result;
 }

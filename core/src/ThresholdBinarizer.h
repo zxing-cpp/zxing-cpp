@@ -35,13 +35,13 @@ public:
 		for (const uint8_t* p = begin; p < end; p += stride) {
 			bool val = *p <= _threshold;
 			if (val != lastVal) {
-				res.push_back(static_cast<PatternRow::value_type>(p - lastPos) / stride);
+				res.push_back(narrow_cast<PatternRow::value_type>(p - lastPos) / stride);
 				lastVal = val;
 				lastPos = p;
 			}
 		}
 
-		res.push_back(static_cast<PatternRow::value_type>(end - lastPos) / stride);
+		res.push_back(narrow_cast<PatternRow::value_type>(end - lastPos) / stride);
 
 		if (*(end - stride) <= _threshold)
 			res.push_back(0); // last value is number of white pixels, here 0

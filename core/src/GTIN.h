@@ -8,7 +8,7 @@
 #pragma once
 
 #include "BarcodeFormat.h"
-#include "ZXContainerAlgorithms.h"
+#include "ZXAlgorithms.h"
 
 #include <string>
 

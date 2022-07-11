@@ -4,8 +4,6 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#define ZX_USE_UTF8 1 // see Result.h
-
 #include "ReadBarcode.h"
 #include "TextUtfEncoding.h"
 #include "GTIN.h"
@@ -206,7 +204,6 @@ int main(int argc, char* argv[])
 			}
 
 			std::cout << "Text:       \"" << (angleEscape ? escapeNonGraphical(result.text()) : result.text()) << "\"\n"
-					  << "Utf8ECI:    \"" << result.utf8ECI() << "\"\n"
 					  << "Bytes:      " << ToHex(result.bytes()) << "\n"
 					  << "BytesECI:   " << ToHex(result.bytesECI()) << "\n"
 					  << "Format:     " << ToString(result.format()) << "\n"

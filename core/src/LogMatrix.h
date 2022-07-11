@@ -64,7 +64,7 @@ public:
 	template <typename T>
 	void operator()(const PointT<T>& p, int color = 1)
 	{
-		if (_image->isIn(p))
+		if (_image && _image->isIn(p))
 			_log.set(static_cast<int>(p.x * _scale), static_cast<int>(p.y * _scale), color);
 	}
 

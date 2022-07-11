@@ -5,8 +5,6 @@
 
 #pragma once
 
-#define ZX_USE_UTF8 1 // see Result.h
-
 #include "ReadBarcode.h"
 
 #include <opencv2/opencv.hpp>

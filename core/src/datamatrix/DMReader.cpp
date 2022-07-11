@@ -21,8 +21,7 @@ namespace ZXing::DataMatrix {
 Result Reader::decode(const BinaryBitmap& image) const
 {
 #ifdef __cpp_impl_coroutine
-	auto results = decode(image, 1);
-	return results.empty() ? Result(DecodeStatus::NotFound) : results.front();
+	return FirstOrDefault(decode(image, 1));
 #else
 	auto binImg = image.getBitMatrix();
 	if (binImg == nullptr)

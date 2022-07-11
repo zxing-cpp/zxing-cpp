@@ -7,7 +7,7 @@
 
 #include "GS1.h"
 
-#include "ZXContainerAlgorithms.h"
+#include "ZXAlgorithms.h"
 
 namespace ZXing {
 
@@ -260,10 +260,10 @@ std::string HRIFromGS1(const std::string& gs1)
 		if (i->isVariableLength()) {
 			auto gsPos = rem.find(GS);
 #if 1
-			fieldSize = std::min(gsPos == std::string_view::npos ? Size(rem) : static_cast<int>(gsPos), fieldSize);
+			fieldSize = std::min(gsPos == std::string_view::npos ? Size(rem) : narrow_cast<int>(gsPos), fieldSize);
 #else
 			// TODO: ignore the 'max field size' part for now as it breaks rssexpanded-3/13.png?
-			fieldSize = gsPos == std::string_view::npos ? Size(rem) : static_cast<int>(gsPos);
+			fieldSize = gsPos == std::string_view::npos ? Size(rem) : narrow_cast<int>(gsPos);
 #endif
 		}
 		if (fieldSize == 0 || Size(rem) < fieldSize)

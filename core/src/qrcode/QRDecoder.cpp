@@ -9,7 +9,6 @@
 #include "BitMatrix.h"
 #include "BitSource.h"
 #include "CharacterSet.h"
-#include "DecodeStatus.h"
 #include "DecoderResult.h"
 #include "GenericGF.h"
 #include "QRBitMatrixParser.h"
@@ -20,7 +19,7 @@
 #include "ReedSolomonDecoder.h"
 #include "StructuredAppend.h"
 #include "TextDecoder.h"
-#include "ZXContainerAlgorithms.h"
+#include "ZXAlgorithms.h"
 #include "ZXTestSupport.h"
 
 #include <algorithm>
@@ -75,8 +74,8 @@ static void DecodeHanziSegment(BitSource& bits, int count, Content& result)
 			// In the 0xB0A1 to 0xFAFE range
 			assembledTwoBytes += 0x0A6A1;
 		}
-		result += static_cast<uint8_t>((assembledTwoBytes >> 8) & 0xFF);
-		result += static_cast<uint8_t>(assembledTwoBytes & 0xFF);
+		result += narrow_cast<uint8_t>((assembledTwoBytes >> 8) & 0xFF);
+		result += narrow_cast<uint8_t>(assembledTwoBytes & 0xFF);
 		count--;
 	}
 }
@@ -99,8 +98,8 @@ static void DecodeKanjiSegment(BitSource& bits, int count, Content& result)
 			// In the 0xE040 to 0xEBBF range
 			assembledTwoBytes += 0x0C140;
 		}
-		result += static_cast<uint8_t>(assembledTwoBytes >> 8);
-		result += static_cast<uint8_t>(assembledTwoBytes);
+		result += narrow_cast<uint8_t>(assembledTwoBytes >> 8);
+		result += narrow_cast<uint8_t>(assembledTwoBytes);
 		count--;
 	}
 }
@@ -111,7 +110,7 @@ static void DecodeByteSegment(BitSource& bits, int count, Content& result)
 	result.reserve(count);
 
 	for (int i = 0; i < count; i++)
-		result += static_cast<uint8_t>(bits.readBits(8));
+		result += narrow_cast<uint8_t>(bits.readBits(8));
 }
 
 static char ToAlphaNumericChar(int value)
@@ -147,7 +146,7 @@ static void DecodeAlphanumericSegment(BitSource& bits, int count, Content& resul
 		buffer += ToAlphaNumericChar(bits.readBits(6));
 	}
 	// See section 6.4.8.1, 6.4.8.2
-	if (!result.applicationIndicator.empty()) {
+	if (result.symbology.aiFlag != AIFlag::None) {
 		// We need to massage the result a bit if in an FNC1 mode:
 		for (size_t i = 0; i < buffer.length(); i++) {
 			if (buffer[i] == '%') {
@@ -276,7 +275,7 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 //				if (!result.empty()) // uncomment to enforce specification
 //					throw FormatError("GS1 Indicator (FNC1 in first position) at illegal position");
 				result.symbology.modifier = '3';
-				result.applicationIndicator = "GS1"; // In Alphanumeric mode undouble doubled percents and treat single percent as <GS>
+				result.symbology.aiFlag = AIFlag::GS1; // In Alphanumeric mode undouble doubled '%' and treat single '%' as <GS>
 				break;
 			case CodecMode::FNC1_SECOND_POSITION:
 				if (!result.empty())
@@ -288,10 +287,10 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 				else if (appInd < 100) // "10-99"
 					result += std::to_string(appInd);
 				else if ((appInd >= 165 && appInd <= 190) || (appInd >= 197 && appInd <= 222)) // "A-Za-z"
-					result += static_cast<uint8_t>(appInd - 100);
+					result += narrow_cast<uint8_t>(appInd - 100);
 				else
 					throw FormatError("Invalid AIM Application Indicator");
-				result.applicationIndicator = result.bytes.asString(); // see also above
+				result.symbology.aiFlag = AIFlag::AIM; // see also above
 				break;
 			case CodecMode::STRUCTURED_APPEND:
 				// sequence number and parity is added later to the result metadata
@@ -332,7 +331,7 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 		error = std::move(e);
 	}
 
-	return DecoderResult(std::move(bytes), std::move(result))
+	return DecoderResult(std::move(result))
 		.setError(std::move(error))
 		.setEcLevel(ToString(ecLevel))
 		.setStructuredAppend(structuredAppend);

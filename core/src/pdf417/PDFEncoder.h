@@ -7,7 +7,7 @@
 #pragma once
 #include "CharacterSet.h"
 #include "PDFCompaction.h"
-#include "ZXContainerAlgorithms.h"
+#include "ZXAlgorithms.h"
 
 #include <string>
 #include <vector>

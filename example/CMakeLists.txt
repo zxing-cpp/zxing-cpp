@@ -1,6 +1,3 @@
-#show that it is possible to use the library (in its simples form) with a c++-11 compiler
-set (CMAKE_CXX_STANDARD 11)
-
 zxing_add_package_stb()
 
 include (GNUInstallDirs)

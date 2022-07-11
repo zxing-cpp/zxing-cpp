@@ -7,7 +7,7 @@
 
 #include "CharacterSet.h"
 #include "TextUtfEncoding.h"
-#include "ZXContainerAlgorithms.h"
+#include "ZXAlgorithms.h"
 #include "textcodec/Big5TextEncoder.h"
 #include "textcodec/GBTextEncoder.h"
 #include "textcodec/JPTextEncoder.h"

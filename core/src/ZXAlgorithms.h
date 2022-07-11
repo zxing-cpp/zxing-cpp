@@ -10,9 +10,14 @@
 #include <initializer_list>
 #include <iterator>
 #include <numeric>
-#include <string>
+#include <utility>
 
 namespace ZXing {
+
+template <class T, class U>
+constexpr T narrow_cast(U&& u) noexcept {
+	return static_cast<T>(std::forward<U>(u));
+}
 
 template <typename Container, typename Value>
 auto Find(Container& c, const Value& v) -> decltype(std::begin(c)) {
@@ -46,23 +51,23 @@ Value Reduce(const Container& c, Value v = Value{}, Op op = {}) {
 // see C++20 ssize
 template <class Container>
 constexpr auto Size(const Container& c) -> decltype(c.size(), int()) {
-	return static_cast<int>(c.size());
+	return narrow_cast<int>(c.size());
 }
 
 template <class T, std::size_t N>
 constexpr int Size(const T (&)[N]) noexcept {
-	return static_cast<int>(N);
+	return narrow_cast<int>(N);
 }
 
 template <typename Container, typename Value>
 int IndexOf(const Container& c, const Value& v) {
 	auto i = Find(c, v);
-	return i == std::end(c) ? -1 : static_cast<int>(std::distance(std::begin(c), i));
+	return i == std::end(c) ? -1 : narrow_cast<int>(std::distance(std::begin(c), i));
 }
 
 inline int IndexOf(const char* str, char c) {
 	auto s = strchr(str, c);
-	return s != nullptr ? static_cast<int>(s - str) : -1;
+	return s != nullptr ? narrow_cast<int>(s - str) : -1;
 }
 
 template <typename Container, typename Value, class UnaryOp>

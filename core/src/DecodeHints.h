@@ -8,8 +8,9 @@
 #pragma once
 
 #include "BarcodeFormat.h"
+#include "CharacterSet.h"
 
-#include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -51,12 +52,12 @@ class DecodeHints
 	EanAddOnSymbol _eanAddOnSymbol : 2;
 	Binarizer _binarizer           : 2;
 
+	CharacterSet _characterSet   = CharacterSet::Unknown;
 	uint8_t _minLineCount        = 2;
 	uint8_t _maxNumberOfSymbols  = 0xff;
 	uint8_t _downscaleFactor     = 3;
 	uint16_t _downscaleThreshold = 500;
 	BarcodeFormats _formats      = BarcodeFormat::None;
-	std::string _characterSet;
 
 public:
 	// bitfields don't get default initialized to 0 before c++20
@@ -111,9 +112,6 @@ public:
 	/// The maximum number of symbols (barcodes) to detect / look for in the image with ReadBarcodes
 	ZX_PROPERTY(uint8_t, maxNumberOfSymbols, setMaxNumberOfSymbols)
 
-	/// Specifies fallback character set to use instead of auto-detecting it (when applicable)
-	ZX_PROPERTY(std::string, characterSet, setCharacterSet)
-
 	/// If true, the Code-39 reader will try to read extended mode.
 	ZX_PROPERTY(bool, tryCode39ExtendedMode, setTryCode39ExtendedMode)
 
@@ -132,22 +130,14 @@ public:
 	/// Specify whether to ignore, read or require EAN-2/5 add-on symbols while scanning EAN/UPC codes
 	ZX_PROPERTY(EanAddOnSymbol, eanAddOnSymbol, setEanAddOnSymbol)
 
+	/// Specifies fallback character set to use instead of auto-detecting it (when applicable)
+	ZX_PROPERTY(CharacterSet, characterSet, setCharacterSet)
+	DecodeHints& setCharacterSet(std::string_view v)& { return _characterSet = CharacterSetFromString(v), *this; }
+	DecodeHints&& setCharacterSet(std::string_view v) && { return _characterSet = CharacterSetFromString(v), std::move(*this); }
+
 #undef ZX_PROPERTY
 
-	/// NOTE: used to affect FNC1 handling for Code 128 (aka GS1-128) but behavior now based on position of FNC1.
-	[[deprecated]] bool assumeGS1() const noexcept { return true; }
-	[[deprecated]] DecodeHints& setAssumeGS1(bool v [[maybe_unused]]) { return *this; }
-
-	/// NOTE: has not been in effect since at least 1.2 and no one noticed.
-	[[deprecated]] std::vector<int> allowedLengths() const noexcept { return {}; }
-	[[deprecated]] DecodeHints& setAllowedLengths(const std::vector<int> v [[maybe_unused]]) { return *this; }
-
-	/// NOTE: use validateCode39CheckSum
-	[[deprecated]] bool assumeCode39CheckDigit() const noexcept { return validateCode39CheckSum(); }
-	[[deprecated]] DecodeHints& setAssumeCode39CheckDigit(bool v) & { return setValidateCode39CheckSum(v); }
-
 	bool hasFormat(BarcodeFormats f) const noexcept { return _formats.testFlags(f) || _formats.empty(); }
-	[[deprecated]] bool hasNoFormat() const noexcept { return _formats.empty(); }
 };
 
 } // ZXing

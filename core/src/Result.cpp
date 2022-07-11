@@ -9,6 +9,7 @@
 #include "DecoderResult.h"
 #include "TextDecoder.h"
 #include "TextUtfEncoding.h"
+#include "ZXAlgorithms.h"
 
 #include <cmath>
 #include <list>
@@ -17,45 +18,27 @@
 
 namespace ZXing {
 
-Result::Result(DecodeStatus status) : _error(Status2Error(status)) {}
-
-Result::Result(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format, SymbologyIdentifier si, Error error,
-			   ByteArray&& rawBytes, bool readerInit, const std::string& ai)
-	: _format(format),
-	  _content({ByteArray(text)}, si, ai),
+Result::Result(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format, SymbologyIdentifier si, Error error, bool readerInit)
+	: _content({ByteArray(text)}, si),
 	  _error(error),
 	  _position(Line(y, xStart, xStop)),
-	  _rawBytes(std::move(rawBytes)),
-	  _numBits(Size(_rawBytes) * 8),
-	  _readerInit(readerInit),
-	  _lineCount(0)
+	  _format(format),
+	  _lineCount(0),
+	  _readerInit(readerInit)
 {}
 
 Result::Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat format)
-	: _format(decodeResult.content().symbology.code == 0 ? BarcodeFormat::None : format),
-	  _content(std::move(decodeResult).content()),
+	: _content(std::move(decodeResult).content()),
 	  _error(std::move(decodeResult).error()),
 	  _position(std::move(position)),
-	  _rawBytes(std::move(decodeResult).rawBytes()),
-	  _numBits(decodeResult.numBits()),
 	  _ecLevel(decodeResult.ecLevel()),
 	  _sai(decodeResult.structuredAppend()),
+	  _format(decodeResult.content().symbology.code == 0 ? BarcodeFormat::None : format),
+	  _lineCount(decodeResult.lineCount()),
 	  _isMirrored(decodeResult.isMirrored()),
-	  _readerInit(decodeResult.readerInit()),
-	  _lineCount(decodeResult.lineCount())
+	  _readerInit(decodeResult.readerInit())
 {
 	// TODO: add type opaque and code specific 'extra data'? (see DecoderResult::extra())
-}
-
-DecodeStatus Result::status() const
-{
-	switch(_error.type()) {
-	case Error::Format : return DecodeStatus::FormatError;
-	case Error::Checksum : return DecodeStatus::ChecksumError;
-	default: ;
-	}
-
-	return format() == BarcodeFormat::None ? DecodeStatus::NotFound : DecodeStatus::NoError;
 }
 
 const ByteArray& Result::bytes() const
@@ -78,10 +61,12 @@ std::wstring Result::utf16() const
 	return _content.utf16();
 }
 
+#if 0
 std::string Result::utf8ECI() const
 {
 	return _content.text(TextMode::Utf8ECI);
 }
+#endif
 
 ContentType Result::contentType() const
 {
@@ -96,7 +81,7 @@ bool Result::hasECI() const
 int Result::orientation() const
 {
 	constexpr auto std_numbers_pi_v = 3.14159265358979323846; // TODO: c++20 <numbers>
-	return std::lround(_position.orientation() * 180 / std_numbers_pi_v);
+	return narrow_cast<int>(std::lround(_position.orientation() * 180 / std_numbers_pi_v));
 }
 
 std::string Result::symbologyIdentifier() const
@@ -119,9 +104,9 @@ std::string Result::sequenceId() const
 	return _sai.id;
 }
 
-Result& Result::setCharacterSet(const std::string& defaultCS)
+Result& Result::setCharacterSet(CharacterSet defaultCS)
 {
-	if (!defaultCS.empty())
+	if (defaultCS != CharacterSet::Unknown)
 		_content.defaultCharset = defaultCS;
 	return *this;
 }

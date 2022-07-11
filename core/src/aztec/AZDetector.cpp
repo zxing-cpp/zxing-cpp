@@ -14,6 +14,7 @@
 #include "ReedSolomonDecoder.h"
 #include "ResultPoint.h"
 #include "WhiteRectDetector.h"
+#include "ZXAlgorithms.h"
 
 #include <array>
 #include <utility>
@@ -23,7 +24,7 @@ namespace ZXing::Aztec {
 template <typename T, typename = typename std::enable_if<std::is_floating_point<T>::value>::type>
 static int RoundToNearest(T x)
 {
-	return static_cast<int>(std::lround(x));
+	return narrow_cast<int>(std::lround(x));
 }
 
 static const int EXPECTED_CORNER_BITS[] = {

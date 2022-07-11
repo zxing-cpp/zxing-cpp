@@ -14,6 +14,7 @@
 #include "oned/ODDataBarExpandedReader.h"
 #include "oned/ODITFReader.h"
 #include "oned/ODCodabarReader.h"
+#include "DecodeHints.h"
 #include "Result.h"
 
 using namespace ZXing;
@@ -26,8 +27,8 @@ bool init()
 	DecodeHints hints;
 	readers.emplace_back(new MultiUPCEANReader(hints));
 	readers.emplace_back(new Code39Reader(hints));
-	readers.emplace_back(new Code93Reader());
-	readers.emplace_back(new Code128Reader());
+	readers.emplace_back(new Code93Reader(hints));
+	readers.emplace_back(new Code128Reader(hints));
 	readers.emplace_back(new ITFReader(hints));
 	readers.emplace_back(new CodabarReader(hints));
 	readers.emplace_back(new DataBarReader(hints));

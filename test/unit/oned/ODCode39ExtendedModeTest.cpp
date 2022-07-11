@@ -21,7 +21,7 @@ static std::string Decode(std::string_view encoded)
 	Code39Reader sut(hints);
 	BitArray row = Utility::ParseBitArray(encoded, '1');
 	Result result = sut.decodeSingleRow(0, row);
-	return result.utf8();
+	return result.text();
 }
 
 TEST(ODCode39ExtendedModeTest, Decode)

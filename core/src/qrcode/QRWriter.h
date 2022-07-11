@@ -6,12 +6,13 @@
 
 #pragma once
 
+#include "CharacterSet.h"
+
 #include <string>
 
 namespace ZXing {
 
 class BitMatrix;
-enum class CharacterSet;
 
 namespace QRCode {
 

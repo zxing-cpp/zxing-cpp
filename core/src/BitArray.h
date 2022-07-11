@@ -8,7 +8,7 @@
 #pragma once
 
 #include "ZXConfig.h"
-#include "ZXContainerAlgorithms.h"
+#include "ZXAlgorithms.h"
 #ifndef ZX_FAST_BIT_STORAGE
 #include "BitHacks.h"
 #endif
@@ -31,7 +31,7 @@ struct Range
 {
 	Iterator begin, end;
 	explicit operator bool() const { return begin < end; }
-	int size() const { return static_cast<int>(end - begin); }
+	int size() const { return narrow_cast<int>(end - begin); }
 };
 
 /**
@@ -89,7 +89,7 @@ public:
 
 		int operator-(const Iterator& rhs) const
 		{
-			return static_cast<int>(_value - rhs._value) * 32 + (_mask >= rhs._mask
+			return narrow_cast<int>(_value - rhs._value) * 32 + (_mask >= rhs._mask
 																	 ? +BitHacks::CountBitsSet(_mask - rhs._mask)
 																	 : -BitHacks::CountBitsSet(rhs._mask - _mask));
 		}
@@ -272,7 +272,7 @@ public:
 	// Set allowClippedZone to false if clipping the zone at the image border is not acceptable.
 	bool hasQuietZone(Iterator i, int signedZoneSize, bool allowClippedZone = true) const
 	{
-		int index = static_cast<int>(i - begin());
+		int index = narrow_cast<int>(i - begin());
 		if (signedZoneSize > 0) {
 			if (!allowClippedZone && index + signedZoneSize >= size())
 				return false;
@@ -427,7 +427,7 @@ public:
 
 	int size() const
 	{
-		return bits.end() - cur;
+		return narrow_cast<int>(bits.end() - cur);
 	}
 
 	explicit operator bool() const { return size(); }

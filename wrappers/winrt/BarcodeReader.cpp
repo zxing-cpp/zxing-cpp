@@ -10,8 +10,6 @@
 
 #include "BarcodeReader.h"
 
-#define ZX_USE_UTF8 1 // silence deprecation warning in Result.h
-
 #include "BarcodeFormat.h"
 #include "DecodeHints.h"
 #include "ReadBarcode.h"
@@ -68,39 +66,39 @@ BarcodeFormat BarcodeReader::ConvertRuntimeToNative(BarcodeType type)
 {
 	switch (type) {
 	case BarcodeType::AZTEC:
-		return BarcodeFormat::AZTEC;
+		return BarcodeFormat::Aztec;
 	case BarcodeType::CODABAR:
-		return BarcodeFormat::CODABAR;
+		return BarcodeFormat::Codabar;
 	case BarcodeType::CODE_128:
-		return BarcodeFormat::CODE_128;
+		return BarcodeFormat::Code128;
 	case BarcodeType::CODE_39:
-		return BarcodeFormat::CODE_39;
+		return BarcodeFormat::Code39;
 	case BarcodeType::CODE_93:
-		return BarcodeFormat::CODE_93;
+		return BarcodeFormat::Code93;
 	case BarcodeType::DATA_MATRIX:
-		return BarcodeFormat::DATA_MATRIX;
+		return BarcodeFormat::DataMatrix;
 	case BarcodeType::EAN_13:
-		return BarcodeFormat::EAN_13;
+		return BarcodeFormat::EAN13;
 	case BarcodeType::EAN_8:
-		return BarcodeFormat::EAN_8;
+		return BarcodeFormat::EAN8;
 	case BarcodeType::ITF:
 		return BarcodeFormat::ITF;
 	case BarcodeType::MAXICODE:
-		return BarcodeFormat::MAXICODE;
+		return BarcodeFormat::MaxiCode;
 	case BarcodeType::PDF_417:
-		return BarcodeFormat::PDF_417;
+		return BarcodeFormat::PDF417;
 	case BarcodeType::QR_CODE:
-		return BarcodeFormat::QR_CODE;
+		return BarcodeFormat::QRCode;
 	case BarcodeType::MICRO_QR_CODE:
 		return BarcodeFormat::MicroQRCode;
 	case BarcodeType::RSS_14:
-		return BarcodeFormat::RSS_14;
+		return BarcodeFormat::DataBar;
 	case BarcodeType::RSS_EXPANDED:
-		return BarcodeFormat::RSS_EXPANDED;
+		return BarcodeFormat::DataBarExpanded;
 	case BarcodeType::UPC_A:
-		return BarcodeFormat::UPC_A;
+		return BarcodeFormat::UPCA;
 	case BarcodeType::UPC_E:
-		return BarcodeFormat::UPC_E;
+		return BarcodeFormat::UPCE;
 	default:
 		std::wstring typeAsString = type.ToString()->Begin();
 		throw std::invalid_argument("Unknown Barcode Type: " + TextUtfEncoding::ToUtf8(typeAsString));
@@ -110,54 +108,49 @@ BarcodeFormat BarcodeReader::ConvertRuntimeToNative(BarcodeType type)
 BarcodeType BarcodeReader::ConvertNativeToRuntime(BarcodeFormat format)
 {
 	switch (format) {
-	case BarcodeFormat::AZTEC:
+	case BarcodeFormat::Aztec:
 		return BarcodeType::AZTEC;
-	case BarcodeFormat::CODABAR:
+	case BarcodeFormat::Codabar:
 		return BarcodeType::CODABAR;
-	case BarcodeFormat::CODE_128:
+	case BarcodeFormat::Code128:
 		return BarcodeType::CODE_128;
-	case BarcodeFormat::CODE_39:
+	case BarcodeFormat::Code39:
 		return BarcodeType::CODE_39;
-	case BarcodeFormat::CODE_93:
+	case BarcodeFormat::Code93:
 		return BarcodeType::CODE_93;
-	case BarcodeFormat::DATA_MATRIX:
+	case BarcodeFormat::DataMatrix:
 		return BarcodeType::DATA_MATRIX;
-	case BarcodeFormat::EAN_13:
+	case BarcodeFormat::EAN13:
 		return BarcodeType::EAN_13;
-	case BarcodeFormat::EAN_8:
+	case BarcodeFormat::EAN8:
 		return BarcodeType::EAN_8;
 	case BarcodeFormat::ITF:
 		return BarcodeType::ITF;
-	case BarcodeFormat::MAXICODE:
+	case BarcodeFormat::MaxiCode:
 		return BarcodeType::MAXICODE;
-	case BarcodeFormat::PDF_417:
+	case BarcodeFormat::PDF417:
 		return BarcodeType::PDF_417;
-	case BarcodeFormat::QR_CODE:
+	case BarcodeFormat::QRCode:
 		return BarcodeType::QR_CODE;
 	case BarcodeFormat::MicroQRCode:
 		return BarcodeType::MICRO_QR_CODE;
-	case BarcodeFormat::RSS_14:
+	case BarcodeFormat::DataBar:
 		return BarcodeType::RSS_14;
-	case BarcodeFormat::RSS_EXPANDED:
+	case BarcodeFormat::DataBarExpanded:
 		return BarcodeType::RSS_EXPANDED;
-	case BarcodeFormat::UPC_A:
+	case BarcodeFormat::UPCA:
 		return BarcodeType::UPC_A;
-	case BarcodeFormat::UPC_E:
+	case BarcodeFormat::UPCE:
 		return BarcodeType::UPC_E;
 	default:
 		throw std::invalid_argument("Unknown Barcode Format ");
 	}
 }
 
-static Platform::String^ ToPlatformString(const std::wstring& str)
-{
-	return ref new Platform::String(str.c_str(), (unsigned)str.length());
-}
-
 static Platform::String^ ToPlatformString(const std::string& str)
 {
-	auto ptr = (const uint8_t*)str.data();
-	return ToPlatformString(std::wstring(ptr, ptr + str.length()));
+	std::wstring wstr = TextUtfEncoding::FromUtf8(str);
+	return ref new Platform::String(wstr.c_str(), (unsigned)wstr.length());
 }
 
 ReadResult^
@@ -193,7 +186,7 @@ BarcodeReader::Read(SoftwareBitmap^ bitmap, int cropWidth, int cropHeight)
 
 			auto result = ReadBarcode(img, *m_hints);
 			if (result.isValid()) {
-				return ref new ReadResult(ToPlatformString(ZXing::ToString(result.format())), ToPlatformString(result.utf16()), ConvertNativeToRuntime(result.format()));
+				return ref new ReadResult(ToPlatformString(ZXing::ToString(result.format())), ToPlatformString(result.text()), ConvertNativeToRuntime(result.format()));
 			}
 		} else {
 			throw std::runtime_error("Failed to read bitmap's data");
