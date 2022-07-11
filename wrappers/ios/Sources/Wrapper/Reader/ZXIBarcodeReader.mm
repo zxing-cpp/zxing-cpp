@@ -111,7 +111,8 @@ using namespace ZXing;
 
     NSMutableArray* zxiResults = [NSMutableArray array];
     for (auto result: results) {
-        NSString *text = [NSString stringWithUTF8String:result.text().c_str()];
+        auto resultText = result.text();
+        NSString *text = [[NSString alloc]initWithBytes:resultText.data() length:resultText.size() encoding:NSUTF8StringEncoding];
 
         NSData *bytes = [[NSData alloc] initWithBytes:result.bytes().data() length:result.bytes().size()];
         [zxiResults addObject:
