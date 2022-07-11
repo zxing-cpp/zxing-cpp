@@ -15,6 +15,7 @@ It was originally ported from the Java [ZXing Library](https://github.com/zxing/
   * Android
   * WebAssembly
   * [Python](wrappers/python/README.md)
+  * [Flutter](https://pub.dev/packages/flutter_zxing) (external project)
 
 ## Supported Formats
 
