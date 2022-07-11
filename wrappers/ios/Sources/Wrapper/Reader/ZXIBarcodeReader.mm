@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#define ZX_USE_UTF8
 #import "ZXIBarcodeReader.h"
 #import "ZXing/ReadBarcode.h"
 #import "ZXing/ImageView.h"
