@@ -4,7 +4,6 @@
 
 #import <Foundation/Foundation.h>
 #import "ZXIFormat.h"
-#import "ZXICharset.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

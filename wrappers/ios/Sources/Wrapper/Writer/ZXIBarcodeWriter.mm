@@ -7,7 +7,6 @@
 #import "ZXing/MultiFormatWriter.h"
 #import "ZXing/BitMatrix.h"
 #import "ZXIFormatHelper.h"
-#import "ZXICharsetHelper.h"
 #import "ZXIErrors.h"
 #import <iostream>
 
