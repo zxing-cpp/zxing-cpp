@@ -10,6 +10,7 @@
 #include <initializer_list>
 #include <iterator>
 #include <numeric>
+#include <string>
 #include <utility>
 
 namespace ZXing {
