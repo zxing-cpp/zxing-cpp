@@ -8,17 +8,13 @@
 
 #include "ByteArray.h"
 #include "DMSymbolInfo.h"
-#include "DMSymbolShape.h"
 #include "ZXAlgorithms.h"
 
 #include <stdexcept>
 #include <string>
 #include <utility>
 
-namespace ZXing {
-namespace DataMatrix {
-
-class SymbolInfo;
+namespace ZXing::DataMatrix {
 
 class EncoderContext
 {
@@ -129,5 +125,4 @@ public:
 	}
 };
 
-} // DataMatrix
-} // ZXing
+} // namespace ZXing::DataMatrix

@@ -11,8 +11,7 @@
 #include "QRCodecMode.h"
 #include "QRVersion.h"
 
-namespace ZXing {
-namespace QRCode {
+namespace ZXing::QRCode {
 
 /**
 * @author satorux@google.com (Satoru Takabayashi) - creator
@@ -31,5 +30,4 @@ public:
 	BitMatrix matrix;
 };
 
-} // QRCode
-} // ZXing
+} // namespace ZXing::QRCode

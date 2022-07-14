@@ -6,10 +6,9 @@
 
 #pragma once
 
-namespace ZXing {
-namespace DataMatrix {
+#include "DMSymbolShape.h"
 
-enum class SymbolShape;
+namespace ZXing::DataMatrix {
 
 class SymbolInfo
 {
@@ -76,5 +75,4 @@ public:
 	int errorLengthForInterleavedBlock() const { return _rsBlockError; }
 };
 
-} // DataMatrix
-} // ZXing
+} // namespace ZXing::DataMatrix

@@ -6,7 +6,6 @@
 
 #include "datamatrix/DMWriter.h"
 #include "BitMatrixIO.h"
-#include "datamatrix/DMSymbolShape.h"
 
 #include "gtest/gtest.h"
 

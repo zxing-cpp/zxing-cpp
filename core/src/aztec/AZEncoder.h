@@ -10,8 +10,7 @@
 
 #include <string>
 
-namespace ZXing {
-namespace Aztec {
+namespace ZXing::Aztec {
 
 /**
 * Aztec 2D code representation
@@ -41,5 +40,4 @@ public:
 	static EncodeResult Encode(const std::string& data, int minECCPercent, int userSpecifiedLayers);
 };
 
-} // Aztec
-} // ZXing
+} // namespace ZXing::Aztec

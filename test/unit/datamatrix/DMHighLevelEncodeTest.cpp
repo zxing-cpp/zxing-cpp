@@ -8,7 +8,6 @@
 #include "ZXAlgorithms.h"
 #include "datamatrix/DMHighLevelEncoder.h"
 #include "datamatrix/DMSymbolInfo.h"
-#include "datamatrix/DMSymbolShape.h"
 
 #include "gtest/gtest.h"
 

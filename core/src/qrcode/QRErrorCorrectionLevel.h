@@ -6,8 +6,7 @@
 
 #pragma once
 
-namespace ZXing {
-namespace QRCode {
+namespace ZXing::QRCode {
 
 /**
 * <p>See ISO 18004:2006, 6.5.1. This enum encapsulates the four error correction levels
@@ -29,5 +28,4 @@ ErrorCorrectionLevel ECLevelFromString(const char* str);
 ErrorCorrectionLevel ECLevelFromBits(int bits, const bool isMicro = false);
 int BitsFromECLevel(ErrorCorrectionLevel l);
 
-} // QRCode
-} // ZXing
+} // namespace ZXing::QRCode

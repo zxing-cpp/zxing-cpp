@@ -11,8 +11,7 @@
 #include <array>
 #include <stdexcept>
 
-namespace ZXing {
-namespace QRCode {
+namespace ZXing::QRCode {
 
 /**
 * <p>Encapsulates data masks for the data bits in a QR  and micro QR code, per ISO 18004:2006 6.8.</p>
@@ -48,5 +47,4 @@ inline bool GetMaskedBit(const BitMatrix& bits, int x, int y, int maskIndex, boo
 	return GetDataMaskBit(maskIndex, x, y, isMicro) != bits.get(x, y);
 }
 
-} // QRCode
-} // ZXing
+} // namespace ZXing::QRCode

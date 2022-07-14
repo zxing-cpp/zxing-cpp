@@ -5,7 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "datamatrix/DMSymbolInfo.h"
-#include "datamatrix/DMSymbolShape.h"
 
 #include "gtest/gtest.h"
 

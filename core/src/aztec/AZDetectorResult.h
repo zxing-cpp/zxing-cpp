@@ -10,8 +10,7 @@
 
 #include <utility>
 
-namespace ZXing {
-namespace Aztec {
+namespace ZXing::Aztec {
 
 class DetectorResult : public ZXing::DetectorResult
 {
@@ -39,5 +38,4 @@ public:
 	bool readerInit() const { return _readerInit; }
 };
 
-} // Aztec
-} // ZXing
+} // namespace ZXing::Aztec
