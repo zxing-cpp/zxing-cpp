@@ -170,34 +170,11 @@ static void DecodeNumericSegment(BitSource& bits, int count, Content& result)
 	result.switchEncoding(CharacterSet::ISO8859_1);
 	result.reserve(count);
 
-	// Read three digits at a time
-	while (count >= 3) {
-		// Each 10 bits encodes three digits
-		int threeDigitsBits = bits.readBits(10);
-		if (threeDigitsBits >= 1000)
-			throw FormatError("Invalid value in numeric segment");
-
-		result += ToAlphaNumericChar(threeDigitsBits / 100);
-		result += ToAlphaNumericChar((threeDigitsBits / 10) % 10);
-		result += ToAlphaNumericChar(threeDigitsBits % 10);
-		count -= 3;
-	}
-
-	if (count == 2) {
-		// Two digits left over to read, encoded in 7 bits
-		int twoDigitsBits = bits.readBits(7);
-		if (twoDigitsBits >= 100)
-			throw FormatError("Invalid value in numeric segment");
-
-		result += ToAlphaNumericChar(twoDigitsBits / 10);
-		result += ToAlphaNumericChar(twoDigitsBits % 10);
-	} else if (count == 1) {
-		// One digit left over to read
-		int digitBits = bits.readBits(4);
-		if (digitBits >= 10)
-			throw FormatError("Invalid value in numeric segment");
-
-		result += ToAlphaNumericChar(digitBits);
+	while (count) {
+		int n = std::min(count, 3);
+		int nDigits = bits.readBits(1 + 3 * n); // read 4, 7 or 10 bits into 1, 2 or 3 digits
+		result.append(ZXing::ToString(nDigits, n));
+		count -= n;
 	}
 }
 
