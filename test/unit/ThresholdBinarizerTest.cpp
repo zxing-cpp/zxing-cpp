@@ -99,5 +99,5 @@ TEST(ThresholdBinarizerTest, PatternRowClear)
 
 	Result result = reader.decode(ThresholdBinarizer(getImageView(buf, bits), 0x7F));
 	EXPECT_TRUE(result.isValid());
-	EXPECT_EQ(result.text(), "(91)12345678901234567890123456789012345678901234567890123456789012345678");
+	EXPECT_EQ(result.text(), "9112345678901234567890123456789012345678901234567890123456789012345678");
 }
