@@ -218,10 +218,10 @@ static int Ean5Checksum(const std::string& s)
 {
 	int sum = 0, N = Size(s);
 	for (int i = N - 2; i >= 0; i -= 2)
-		sum += (int)s[i] - (int)'0';
+		sum += s[i] - '0';
 	sum *= 3;
 	for (int i = N - 1; i >= 0; i -= 2)
-		sum += (int)s[i] - (int)'0';
+		sum += s[i] - '0';
 	sum *= 3;
 	return sum % 10;
 }
