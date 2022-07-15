@@ -27,7 +27,7 @@ T ComputeCheckDigit(const std::basic_string<T>& digits, bool skipTail = false)
 	sum *= 3;
 	for (int i = N - 2; i >= 0; i -= 2)
 		sum += digits[i] - '0';
-	return ((10 - (sum % 10)) % 10) + '0';
+	return ToDigit<T>((10 - (sum % 10)) % 10);
 }
 
 template <typename T>

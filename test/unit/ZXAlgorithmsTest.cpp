@@ -9,6 +9,15 @@
 
 using namespace ZXing;
 
+TEST(ZXAlgorithmsTest, ToDigit)
+{
+	EXPECT_EQ(ToDigit(0), '0');
+	EXPECT_EQ(ToDigit(9), '9');
+
+	EXPECT_THROW(ToDigit(-1), Error);
+	EXPECT_THROW(ToDigit(11), Error);
+}
+
 TEST(ZXAlgorithmsTest, ToString)
 {
 	EXPECT_EQ(ToString(0, 1), "0");

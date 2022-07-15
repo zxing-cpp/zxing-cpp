@@ -54,14 +54,14 @@ static std::string DecodeGeneralPurposeBits(BitArrayView& bits)
 			if (bits.size() < 7) {
 				int v = bits.readBits(4);
 				if (v > 0)
-					res.push_back('0' + v - 1);
+					res.push_back(ToDigit(v - 1));
 			} else if (bits.peakBits(4) == 0) {
 				bits.skipBits(4);
 				state = ALPHA;
 			} else {
 				int v = bits.readBits(7);
 				for (int digit : {(v - 8) / 11, (v - 8) % 11})
-					res.push_back(digit == 10 ? GS : '0' + digit);
+					res.push_back(digit == 10 ? GS : ToDigit(digit));
 			}
 			break;
 		case ALPHA:

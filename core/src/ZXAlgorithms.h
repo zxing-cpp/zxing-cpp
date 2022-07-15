@@ -80,6 +80,14 @@ Value TransformReduce(const Container& c, Value s, UnaryOp op) {
 	return s;
 }
 
+template <typename T = char>
+T ToDigit(int i)
+{
+	if (i < 0 || i > 9)
+		throw FormatError("Invalid digit value");
+	return static_cast<T>('0' + i);
+}
+
 template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
 std::string ToString(T val, int len)
 {
