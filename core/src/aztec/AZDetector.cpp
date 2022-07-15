@@ -21,7 +21,7 @@
 
 namespace ZXing::Aztec {
 
-template <typename T, typename = typename std::enable_if<std::is_floating_point<T>::value>::type>
+template <typename T, typename = typename std::enable_if_t<std::is_floating_point_v<T>>>
 static int RoundToNearest(T x)
 {
 	return narrow_cast<int>(std::lround(x));

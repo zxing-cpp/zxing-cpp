@@ -5,9 +5,9 @@
 
 #include "ECI.h"
 
-#include <iomanip>
+#include "ZXAlgorithms.h"
+
 #include <map>
-#include <sstream>
 
 namespace ZXing {
 
@@ -47,9 +47,7 @@ static const std::map<ECI, CharacterSet> ECI_TO_CHARSET = {
 
 std::string ToString(ECI eci)
 {
-	std::ostringstream oss;
-	oss << '\\' << std::setw(6) << std::setfill('0') << ToInt(eci);
-	return oss.str();
+	return '\\' + ToString(ToInt(eci), 6);
 }
 
 CharacterSet ToCharacterSet(ECI eci)

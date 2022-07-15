@@ -1,6 +1,6 @@
 echo ========= Remove previous builds
 rm -rf _builds
-rm -rf ZXing.xcframework
+rm -rf ZXingCpp.xcframework
 
 echo ========= Create project structure
 cmake -S../../ -B_builds -GXcode \
@@ -33,4 +33,4 @@ echo ========= Create the xcframework
 xcodebuild -create-xcframework \
     -framework ./_builds/core/Release-iphonesimulator/ZXing.framework \
     -framework ./_builds/core/Release-iphoneos/ZXing.framework \
-    -output ZXing.xcframework
+    -output ZXingCpp.xcframework

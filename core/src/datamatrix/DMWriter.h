@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include "DMSymbolShape.h"
+
 #include <string>
 
 namespace ZXing {
@@ -13,8 +15,6 @@ namespace ZXing {
 class BitMatrix;
 
 namespace DataMatrix {
-
-enum class SymbolShape;
 
 class Writer
 {

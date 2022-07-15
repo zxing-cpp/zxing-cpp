@@ -1,13 +1,12 @@
-//
-//  ViewController.swift
 //  demo
 //
-//  Created by Hendrik von Prince on 24.05.22.
+// Copyright 2022 KURZ Digital Solutions GmbH
 //
+// SPDX-License-Identifier: Apache-2.0
 
 import UIKit
 import AVFoundation
-import ZXingWrapper
+import ZXingCppWrapper
 
 class ViewController: UIViewController {
     let captureSession = AVCaptureSession()
@@ -36,7 +35,7 @@ class ViewController: UIViewController {
             self.captureSession.addInput(cameraInput)
             let videoDataOutput = AVCaptureVideoDataOutput()
             videoDataOutput.setSampleBufferDelegate(self, queue: self.queue)
-            videoDataOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: Int(kCVPixelFormatType_32BGRA)]
+            videoDataOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: Int(kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange)]
             videoDataOutput.alwaysDiscardsLateVideoFrames = true
             self.captureSession.addOutput(videoDataOutput)
             self.captureSession.commitConfiguration()
@@ -64,7 +63,7 @@ extension ViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
             return
         }
         let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)!
-        if let result = try? reader.read(CIImage(cvPixelBuffer: imageBuffer)) {
+        if let result = reader.read(imageBuffer).first {
             print("Found barcode of format", result.format.rawValue, "with text", result.text)
         }
         self.zxingLock.signal()

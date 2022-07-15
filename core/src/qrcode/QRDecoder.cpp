@@ -170,34 +170,11 @@ static void DecodeNumericSegment(BitSource& bits, int count, Content& result)
 	result.switchEncoding(CharacterSet::ISO8859_1);
 	result.reserve(count);
 
-	// Read three digits at a time
-	while (count >= 3) {
-		// Each 10 bits encodes three digits
-		int threeDigitsBits = bits.readBits(10);
-		if (threeDigitsBits >= 1000)
-			throw FormatError("Invalid value in numeric segment");
-
-		result += ToAlphaNumericChar(threeDigitsBits / 100);
-		result += ToAlphaNumericChar((threeDigitsBits / 10) % 10);
-		result += ToAlphaNumericChar(threeDigitsBits % 10);
-		count -= 3;
-	}
-
-	if (count == 2) {
-		// Two digits left over to read, encoded in 7 bits
-		int twoDigitsBits = bits.readBits(7);
-		if (twoDigitsBits >= 100)
-			throw FormatError("Invalid value in numeric segment");
-
-		result += ToAlphaNumericChar(twoDigitsBits / 10);
-		result += ToAlphaNumericChar(twoDigitsBits % 10);
-	} else if (count == 1) {
-		// One digit left over to read
-		int digitBits = bits.readBits(4);
-		if (digitBits >= 10)
-			throw FormatError("Invalid value in numeric segment");
-
-		result += ToAlphaNumericChar(digitBits);
+	while (count) {
+		int n = std::min(count, 3);
+		int nDigits = bits.readBits(1 + 3 * n); // read 4, 7 or 10 bits into 1, 2 or 3 digits
+		result.append(ZXing::ToString(nDigits, n));
+		count -= n;
 	}
 }
 
@@ -282,10 +259,8 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 					throw FormatError("AIM Application Indicator (FNC1 in second position) at illegal position");
 				result.symbology.modifier = '5'; // As above
 				// ISO/IEC 18004:2015 7.4.8.3 AIM Application Indicator (FNC1 in second position), "00-99" or "A-Za-z"
-				if (int appInd = bits.readBits(8); appInd < 10) // "00-09"
-					result += '0' + std::to_string(appInd);
-				else if (appInd < 100) // "10-99"
-					result += std::to_string(appInd);
+				if (int appInd = bits.readBits(8); appInd < 100) // "00-09"
+					result += ZXing::ToString(appInd, 2);
 				else if ((appInd >= 165 && appInd <= 190) || (appInd >= 197 && appInd <= 222)) // "A-Za-z"
 					result += narrow_cast<uint8_t>(appInd - 100);
 				else

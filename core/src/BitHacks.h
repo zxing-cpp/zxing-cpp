@@ -14,8 +14,7 @@
 #define ZX_HAS_GCC_BUILTINS
 #endif
 
-namespace ZXing {
-namespace BitHacks {
+namespace ZXing::BitHacks {
 
 /**
 * The code below is taken from https://graphics.stanford.edu/~seander/bithacks.html
@@ -135,5 +134,4 @@ void Reverse(std::vector<T>& bits, std::size_t padding)
 	ShiftRight(bits, padding);
 }
 
-} // BitHacks
-} // ZXing
+} // namespace ZXing::BitHacks

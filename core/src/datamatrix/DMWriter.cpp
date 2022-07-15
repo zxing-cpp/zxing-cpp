@@ -12,7 +12,6 @@
 #include "DMECEncoder.h"
 #include "DMHighLevelEncoder.h"
 #include "DMSymbolInfo.h"
-#include "DMSymbolShape.h"
 #include "TextUtfEncoding.h"
 
 #include <stdexcept>

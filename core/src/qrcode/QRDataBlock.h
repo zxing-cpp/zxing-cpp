@@ -10,8 +10,7 @@
 
 #include <vector>
 
-namespace ZXing {
-namespace QRCode {
+namespace ZXing::QRCode {
 
 class Version;
 enum class ErrorCorrectionLevel;
@@ -50,5 +49,4 @@ private:
 	ByteArray _codewords;
 };
 
-} // QRCode
-} // ZXing
+} // namespace ZXing::QRCode

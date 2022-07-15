@@ -8,8 +8,7 @@
 
 #include <array>
 
-namespace ZXing {
-namespace QRCode {
+namespace ZXing::QRCode {
 
 /**
 * <p>Encapsulates the parameters for one error-correction block in one symbol version.
@@ -50,6 +49,4 @@ struct ECBlocks
 	const std::array<ECB, 2>& blockArray() const { return blocks; }
 };
 
-
-} // QRCode
-} // ZXing
+} // namespace ZXing::QRCode

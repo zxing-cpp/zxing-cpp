@@ -52,7 +52,7 @@ Result ITFReader::decodePattern(int rowNumber, PatternView& next, std::unique_pt
 			break;
 
 		for (int i = 0; i < 2; ++i)
-			txt.push_back((char)('0' + (digits[i] == 11 ? 0 : digits[i])));
+			txt.push_back(ToDigit(digits[i] == 11 ? 0 : digits[i]));
 
 		next.skipSymbol();
 	}

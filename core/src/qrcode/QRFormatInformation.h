@@ -10,8 +10,7 @@
 
 #include <cstdint>
 
-namespace ZXing {
-namespace QRCode {
+namespace ZXing::QRCode {
 
 class FormatInformation
 {
@@ -37,5 +36,4 @@ public:
 	}
 };
 
-} // QRCode
-} // ZXing
+} // namespace ZXing::QRCode

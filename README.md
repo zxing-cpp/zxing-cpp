@@ -11,10 +11,11 @@ It was originally ported from the Java [ZXing Library](https://github.com/zxing/
 * In pure C++17, no third-party dependencies (for the library)
 * Stateless, thread-safe readers/scanners and writers/generators
 * Wrapper/Bindings for:
-  * WinRT
-  * Android
-  * WebAssembly
+  * [Android](wrappers/android/README.md)
+  * [iOS](wrappers/ios/README.md)
   * [Python](wrappers/python/README.md)
+  * [WebAssembly](wrappers/wasm/README.md)
+  * [WinRT](wrappers/winrt/README.md)
   * [Flutter](https://pub.dev/packages/flutter_zxing) (external project)
 
 ## Supported Formats
@@ -48,37 +49,8 @@ As an example, have a look at [`ZXingWriter.cpp`](example/ZXingWriter.cpp).
 - [Write barcodes](https://nu-book.github.io/zxing-cpp/demo_writer.html)
 - [Scan with camera](https://nu-book.github.io/zxing-cpp/zxing_viddemo.html)
 
-## WinRT Package
-A nuget package is available for WinRT: [huycn.zxingcpp.winrt](https://www.nuget.org/packages/huycn.zxingcpp.winrt). 
-To install it, run the following command in the Package Manager Console
-```sh
-PM> Install-Package huycn.zxingcpp.winrt
-```
-
-## Build Instructions
-
-### Standard setup on Windows/macOS/Linux
+## Build Instructions (for Windows/macOS/Linux)
 1. Make sure [CMake](https://cmake.org) version 3.14 or newer is installed.
 2. Make sure a C++17 compliant compiler is installed (minimum VS 2019 16.8 / gcc 7 / clang 5).
 3. See the cmake `BUILD_...` options to enable the testing code, python wrapper, etc.
 
-### Windows Universal Platform
-1. Make sure [CMake](https://cmake.org) version 3.4 or newer is installed.
-2. Make sure a C++17 compliant compiler is installed (minimum VS 2019 16.8).
-3. Edit the file [`wrappers/winrt/BuildWinCom.bat`](wrappers/winrt/BuildWinCom.bat) to adjust the path to your CMake installation.
-4. Double-click on the batch script to run it.
-5. If the build succeeds, it will put the results in the folder UAP which is ready-to-use SDK extension.
-
-### Android
-1. Install AndroidStudio including NDK and CMake (see 'SDK Tools').
-2. Open the project in folder [wrappers/android](wrappers/android).
-3. The project contains 2 modules: `zxingcpp` is the wrapper library, `app` is the demo app using `zxingcpp`.
-
-### WebAssembly
-1. [Install Emscripten](https://kripken.github.io/emscripten-site/docs/getting_started/) if not done already.
-2. In an empty build folder, invoke `emcmake cmake <path to zxing-cpp.git/wrappers/wasm>`.
-3. Invoke `cmake --build .` to create `zxing.js` and `zxing.wasm` (and `_reader`/`_writer` versions).
-4. To see how to include these into a working HTML page, have a look at the [reader](wrappers/wasm/demo_reader.html) and [writer](wrappers/wasm/demo_writer.html) demos.
-5. To quickly test your build, copy those demo files into your build directory and run e.g. `emrun --serve_after_close demo_reader.html`.
-
-You can also download the latest build output from the continuous integration system from the [Actions](https://github.com/nu-book/zxing-cpp/actions) tab. Look for 'wasm-artifacts'. Also check out the [live demos](https://nu-book.github.io/zxing-cpp/).

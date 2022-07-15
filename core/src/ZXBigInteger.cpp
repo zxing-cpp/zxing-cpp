@@ -6,6 +6,7 @@
 #include "ZXBigInteger.h"
 
 #include "BitHacks.h"
+#include "ZXAlgorithms.h"
 
 #include <algorithm>
 #include <cassert>
@@ -606,7 +607,7 @@ BigInteger::toString() const
 
 	size_t offset = result.size();
 	result.resize(offset + buffer.size());
-	std::transform(buffer.rbegin(), buffer.rend(), result.begin() + offset, [](uint8_t c) { return static_cast<char>('0' + c); });
+	std::transform(buffer.rbegin(), buffer.rend(), result.begin() + offset, ToDigit<char>);
 	return result;
 }
 

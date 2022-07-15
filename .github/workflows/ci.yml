@@ -53,6 +53,29 @@ jobs:
       # Execute tests defined by the CMake configuration.
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest -V -C $BUILD_TYPE
+      
+  build-ios:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: ${{github.ref}}
+    
+    - name: Build the ZXingCpp.xcframework
+      shell: sh
+      working-directory: ${{runner.workspace}}/${{github.event.repository.name}}/wrappers/ios
+      run: ./build-release.sh
+      
+    - name: Upload .xcframework
+      uses: actions/upload-artifact@v3
+      with:
+        name: ios-artifacts
+        path: ${{runner.workspace}}/${{github.event.repository.name}}/wrappers/ios/ZXingCpp.xcframework
+        
+    - name: Build the demo app
+      shell: sh
+      working-directory: ${{runner.workspace}}/${{github.event.repository.name}}/wrappers/ios/demo
+      run: xcodebuild build -scheme demo -sdk "iphonesimulator"
 
   build-android:
     runs-on: ubuntu-latest

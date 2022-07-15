@@ -6,8 +6,6 @@
 
 #pragma once
 
-#include <string>
-
 namespace ZXing {
 
 class DecoderResult;

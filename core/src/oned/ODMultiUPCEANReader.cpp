@@ -50,11 +50,14 @@ static bool DecodeDigit(const PatternView& view, std::string& txt, int* lgPatter
 	int bestMatch =
 		lgPattern ? RowReader::DecodeDigit(view, UPCEANCommon::L_AND_G_PATTERNS, MAX_AVG_VARIANCE, MAX_INDIVIDUAL_VARIANCE, false)
 				  : RowReader::DecodeDigit(view, UPCEANCommon::L_PATTERNS, MAX_AVG_VARIANCE, MAX_INDIVIDUAL_VARIANCE, false);
-	txt += '0' + (bestMatch % 10);
+	if (bestMatch == -1)
+		return false;
+
+	txt += ToDigit(bestMatch % 10);
 	if (lgPattern)
 		AppendBit(*lgPattern, bestMatch >= 10);
 
-	return bestMatch != -1;
+	return true;
 #else
 	constexpr int CHAR_SUM = 7;
 	auto pattern = RowReader::OneToFourBitPattern<CHAR_LEN, CHAR_SUM>(view);
@@ -80,7 +83,7 @@ static bool DecodeDigit(const PatternView& view, std::string& txt, int* lgPatter
 	8 	11011 	00100 	00100
 	9 	00101 	01011 	11010
 */
-	constexpr char I = -1; // invalid pattern
+	constexpr char I = 0xf0; // invalid pattern
 
 	const char digit[] = {I,    I,    0x16, I,    0x18, 0x09, 0x00, I,
                           0x17, 0x02, I,    0x19, 0x01, 0x12, 0x14, I,
@@ -89,7 +92,7 @@ static bool DecodeDigit(const PatternView& view, std::string& txt, int* lgPatter
 	// clang-format on
 
 	char d = digit[pattern];
-	txt += '0' + (d & 0xf);
+	txt += ToDigit(d & 0xf);
 	if (lgPattern)
 		AppendBit(*lgPattern, (d >> 4) & 1);
 
@@ -138,8 +141,9 @@ static bool EAN13(PartialResult& res, PatternView begin)
 
 	CHECK(DecodeDigits(6, next, res.txt));
 
-	res.txt[0] = '0' + IndexOf(FIRST_DIGIT_ENCODINGS, lgPattern);
-	CHECK(res.txt[0] != '0' - 1);
+	int i = IndexOf(FIRST_DIGIT_ENCODINGS, lgPattern);
+	CHECK(i != -1);
+	res.txt[0] = ToDigit(i);
 
 	res.end = end;
 	res.format = BarcodeFormat::EAN13;
@@ -202,8 +206,8 @@ static bool UPCE(PartialResult& res, PatternView begin)
 	int i = IndexOf(UPCEANCommon::NUMSYS_AND_CHECK_DIGIT_PATTERNS, lgPattern);
 	CHECK(i != -1);
 
-	res.txt[0] = '0' + i / 10;
-	res.txt += '0' + i % 10;
+	res.txt[0] = ToDigit(i / 10);
+	res.txt += ToDigit(i % 10);
 
 	res.end = end;
 	res.format = BarcodeFormat::UPCE;
@@ -214,10 +218,10 @@ static int Ean5Checksum(const std::string& s)
 {
 	int sum = 0, N = Size(s);
 	for (int i = N - 2; i >= 0; i -= 2)
-		sum += (int)s[i] - (int)'0';
+		sum += s[i] - '0';
 	sum *= 3;
 	for (int i = N - 1; i >= 0; i -= 2)
-		sum += (int)s[i] - (int)'0';
+		sum += s[i] - '0';
 	sum *= 3;
 	return sum % 10;
 }

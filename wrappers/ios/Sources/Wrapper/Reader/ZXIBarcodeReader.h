@@ -1,9 +1,6 @@
+// Copyright 2022 KURZ Digital Solutions GmbH
 //
-//  BarcodeReader.h
-//  
-//
-//  Created by Christian Braun on 22.02.22.
-//
+// SPDX-License-Identifier: Apache-2.0
 
 #import <CoreGraphics/CoreGraphics.h>
 #import <CoreImage/CoreImage.h>
@@ -16,8 +13,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, strong) ZXIDecodeHints *hints;
 
 - (instancetype)initWithHints:(ZXIDecodeHints*)options;
-- (nullable ZXIResult *)readCIImage:(nonnull CIImage *)image error:(NSError **)error;
-- (nullable ZXIResult *)readCGImage:(nonnull CGImageRef)image error:(NSError **)error;
+- (NSArray<ZXIResult *> *)readCIImage:(nonnull CIImage *)image;
+- (NSArray<ZXIResult *> *)readCGImage:(nonnull CGImageRef)image;
+- (NSArray<ZXIResult *> *)readCVPixelBuffer:(nonnull CVPixelBufferRef)pixelBuffer;
 @end
 
 NS_ASSUME_NONNULL_END

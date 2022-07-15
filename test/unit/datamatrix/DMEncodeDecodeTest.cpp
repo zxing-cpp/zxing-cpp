@@ -7,7 +7,6 @@
 #include "BitMatrixIO.h"
 #include "DecoderResult.h"
 #include "datamatrix/DMDecoder.h"
-#include "datamatrix/DMSymbolShape.h"
 #include "datamatrix/DMWriter.h"
 
 #include <algorithm>

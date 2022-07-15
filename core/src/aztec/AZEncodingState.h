@@ -10,8 +10,7 @@
 
 #include <vector>
 
-namespace ZXing {
-namespace Aztec {
+namespace ZXing::Aztec {
 
 class Token;
 
@@ -38,5 +37,4 @@ public:
 	int bitCount = 0;
 };
 
-} // Aztec
-} // ZXing
+} // namespace ZXing::Aztec

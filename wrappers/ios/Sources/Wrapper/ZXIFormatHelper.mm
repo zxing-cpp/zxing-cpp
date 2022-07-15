@@ -1,9 +1,6 @@
+// Copyright 2022 KURZ Digital Solutions GmbH
 //
-//  ZXIFormatHelper.m
-//  
-//
-//  Created by Christian Braun on 25.03.22.
-//
+// SPDX-License-Identifier: Apache-2.0
 
 #import "ZXIFormatHelper.h"
 
@@ -11,10 +8,10 @@ ZXing::BarcodeFormat BarcodeFormatFromZXIFormat(ZXIFormat format) {
     switch (format) {
         case ZXIFormat::ANY:
             return ZXing::BarcodeFormat::Any;
-        case ZXIFormat::TWO_D_CODES:
-            return ZXing::BarcodeFormat::TwoDCodes;
-        case ZXIFormat::ONE_D_CODES:
-            return ZXing::BarcodeFormat::OneDCodes;
+        case ZXIFormat::MATRIX_CODES:
+            return ZXing::BarcodeFormat::MatrixCodes;
+        case ZXIFormat::LINEAR_CODES:
+            return ZXing::BarcodeFormat::LinearCodes;
         case ZXIFormat::UPC_E:
             return ZXing::BarcodeFormat::UPCE;
         case ZXIFormat::UPC_A:
@@ -92,10 +89,10 @@ ZXIFormat ZXIFormatFromBarcodeFormat(ZXing::BarcodeFormat format) {
             return ZXIFormat::UPC_A;
         case ZXing::BarcodeFormat::UPCE:
             return ZXIFormat::UPC_E;
-        case ZXing::BarcodeFormat::OneDCodes:
-            return ZXIFormat::ONE_D_CODES;
-        case ZXing::BarcodeFormat::TwoDCodes:
-            return ZXIFormat::TWO_D_CODES;
+        case ZXing::BarcodeFormat::LinearCodes:
+            return ZXIFormat::LINEAR_CODES;
+        case ZXing::BarcodeFormat::MatrixCodes:
+            return ZXIFormat::MATRIX_CODES;
         case ZXing::BarcodeFormat::MicroQRCode:
             return ZXIFormat::MICRO_QR_CODE;
         case ZXing::BarcodeFormat::Any:

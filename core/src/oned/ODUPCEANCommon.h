@@ -13,9 +13,7 @@
 #include <stdexcept>
 #include <string>
 
-namespace ZXing {
-namespace OneD {
-namespace UPCEANCommon {
+namespace ZXing::OneD::UPCEANCommon {
 
 using Digit = std::array<int, 4>;
 
@@ -128,6 +126,4 @@ StringT ConvertUPCEtoUPCA(const StringT& upce)
 	return result;
 }
 
-} // namespace UPCEANCommon
-} // namespace OneD
-} // namespace ZXing
+} // namespace ZXing::OneD::UPCEANCommon

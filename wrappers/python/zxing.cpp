@@ -149,8 +149,8 @@ PYBIND11_MODULE(zxingcpp, m)
 		// see https://github.com/pybind/pybind11/issues/2221
 		.def("__or__", [](BarcodeFormat f1, BarcodeFormat f2){ return f1 | f2; });
 	pyBarcodeFormats
-		.def("__repr__", py::overload_cast<BarcodeFormats>(&ToString))
-		.def("__str__", py::overload_cast<BarcodeFormats>(&ToString))
+		.def("__repr__", py::overload_cast<BarcodeFormats>(static_cast<std::string(*)(BarcodeFormats)>(ToString)))
+		.def("__str__", py::overload_cast<BarcodeFormats>(static_cast<std::string(*)(BarcodeFormats)>(ToString)))
 		.def("__eq__", [](BarcodeFormats f1, BarcodeFormats f2){ return f1 == f2; })
 		.def("__or__", [](BarcodeFormats fs, BarcodeFormat f){ return fs | f; })
 		.def(py::init<BarcodeFormat>());

@@ -13,7 +13,8 @@
 		388BF030283CC49D005CE271 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 388BF02E283CC49D005CE271 /* Main.storyboard */; };
 		388BF032283CC49E005CE271 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 388BF031283CC49E005CE271 /* Assets.xcassets */; };
 		388BF035283CC49E005CE271 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 388BF033283CC49E005CE271 /* LaunchScreen.storyboard */; };
-		388BF042283CD908005CE271 /* ZXingWrapper in Frameworks */ = {isa = PBXBuildFile; productRef = 388BF041283CD908005CE271 /* ZXingWrapper */; };
+		9507445028609C0500E02D06 /* ZXingCppWrapper in Frameworks */ = {isa = PBXBuildFile; productRef = 9507444F28609C0500E02D06 /* ZXingCppWrapper */; };
+		950744522860A3A300E02D06 /* WriteViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 950744512860A3A300E02D06 /* WriteViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -25,8 +26,9 @@
 		388BF031283CC49E005CE271 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		388BF034283CC49E005CE271 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		388BF036283CC49E005CE271 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		388BF03F283CD6C5005CE271 /* ios */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = ios; path = ..; sourceTree = "<group>"; };
 		388BF043283CE0AC005CE271 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		950744512860A3A300E02D06 /* WriteViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WriteViewController.swift; sourceTree = "<group>"; };
+		9550105328609B7900ED103F /* ios */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = ios; path = ..; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -34,7 +36,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				388BF042283CD908005CE271 /* ZXingWrapper in Frameworks */,
+				9507445028609C0500E02D06 /* ZXingCppWrapper in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -66,6 +68,7 @@
 				388BF028283CC49D005CE271 /* AppDelegate.swift */,
 				388BF02A283CC49D005CE271 /* SceneDelegate.swift */,
 				388BF02C283CC49D005CE271 /* ViewController.swift */,
+				950744512860A3A300E02D06 /* WriteViewController.swift */,
 				388BF02E283CC49D005CE271 /* Main.storyboard */,
 				388BF031283CC49E005CE271 /* Assets.xcassets */,
 				388BF033283CC49E005CE271 /* LaunchScreen.storyboard */,
@@ -77,7 +80,7 @@
 		388BF03E283CD6C5005CE271 /* Packages */ = {
 			isa = PBXGroup;
 			children = (
-				388BF03F283CD6C5005CE271 /* ios */,
+				9550105328609B7900ED103F /* ios */,
 			);
 			name = Packages;
 			sourceTree = "<group>";
@@ -106,7 +109,7 @@
 			);
 			name = demo;
 			packageProductDependencies = (
-				388BF041283CD908005CE271 /* ZXingWrapper */,
+				9507444F28609C0500E02D06 /* ZXingCppWrapper */,
 			);
 			productName = demo;
 			productReference = 388BF025283CC49D005CE271 /* demo.app */;
@@ -165,6 +168,7 @@
 			files = (
 				388BF02D283CC49D005CE271 /* ViewController.swift in Sources */,
 				388BF029283CC49D005CE271 /* AppDelegate.swift in Sources */,
+				950744522860A3A300E02D06 /* WriteViewController.swift in Sources */,
 				388BF02B283CC49D005CE271 /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -312,13 +316,14 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 25MXZ8DDDM;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = demo/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Test ZXing";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -342,13 +347,14 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 25MXZ8DDDM;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = demo/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Test ZXing";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -389,9 +395,9 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		388BF041283CD908005CE271 /* ZXingWrapper */ = {
+		9507444F28609C0500E02D06 /* ZXingCppWrapper */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = ZXingWrapper;
+			productName = ZXingCppWrapper;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -1,9 +1,6 @@
+// Copyright 2022 KURZ Digital Solutions GmbH
 //
-//  ZXIFormatHelper.h
-//  
-//
-//  Created by Christian Braun on 25.03.22.
-//
+// SPDX-License-Identifier: Apache-2.0
 
 #import <Foundation/Foundation.h>
 #import "ZXing/BarcodeFormat.h"
