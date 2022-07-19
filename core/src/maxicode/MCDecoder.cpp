@@ -85,7 +85,7 @@ static const char RS = 0x1E;
 // clang-format off
 const static std::array<short, 0x40> CHARSETS[] = {
 	{ // set 0 (A)
-		'\n',  'A',  'B',  'C',  'D',  'E',  'F',  'G',  'H',  'I',  'J',  'K',  'L',  'M',  'N',  'O',
+		'\r',  'A',  'B',  'C',  'D',  'E',  'F',  'G',  'H',  'I',  'J',  'K',  'L',  'M',  'N',  'O',
 		 'P',  'Q',  'R',  'S',  'T',  'U',  'V',  'W',  'X',  'Y',  'Z',  ECI,   FS,   GS,   RS,   NS,
 		 ' ',  PAD,  '"',  '#',  '$',  '%',  '&', '\'',  '(',  ')',  '*',  '+',  ',',  '-',  '.',  '/',
 		 '0',  '1',  '2',  '3',  '4',  '5',  '6',  '7',  '8',  '9',  ':', SHI1, SHI2, SHI3, SHI4, LCHB,
