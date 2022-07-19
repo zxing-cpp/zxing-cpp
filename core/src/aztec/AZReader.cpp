@@ -34,8 +34,9 @@ Reader::decode(const BinaryBitmap& image) const
 	//TODO: don't start detection all over again, just to swap 2 corner points
 	if (!decodeResult.isValid()) {
 		detectResult = Detect(*binImg, true, _hints.isPure());
-		if (detectResult.isValid())
-			decodeResult = Decode(detectResult);
+		if (!detectResult.isValid())
+			return {};
+		decodeResult = Decode(detectResult);
 	}
 
 	return Result(std::move(decodeResult), std::move(detectResult).position(), BarcodeFormat::Aztec);
