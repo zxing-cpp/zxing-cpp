@@ -418,7 +418,12 @@ DetectorResult SampleMQR(const BitMatrix& image, const ConcentricPattern& fp)
 
 	auto srcQuad = Rectangle(7, 7, 0.5);
 
-	constexpr PointI FORMAT_INFO_COORDS[] = {{0, 8}, {1, 8}, {2, 8}, {3, 8}, {4, 8}, {5, 8}, {6, 8}, {7, 8}, {8, 8},
+#if defined(_MSVC_LANG) && _MSVC_LANG >= 202002L // TODO: see MSVC issue https://developercommunity.visualstudio.com/t/constexpr-object-is-unable-to-be-used-as/10035065
+	static
+#else
+	constexpr
+#endif
+		const PointI FORMAT_INFO_COORDS[] = {{0, 8}, {1, 8}, {2, 8}, {3, 8}, {4, 8}, {5, 8}, {6, 8}, {7, 8}, {8, 8},
 											 {8, 7}, {8, 6}, {8, 5}, {8, 4}, {8, 3}, {8, 2}, {8, 1}, {8, 0}};
 
 	FormatInformation bestFI;
