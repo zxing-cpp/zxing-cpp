@@ -79,10 +79,10 @@ BitMatrix ParseBitMatrix(const std::string& str, char one, bool expectSpace)
 
 void SaveAsPBM(const BitMatrix& matrix, const std::string filename, int quietZone)
 {
-	auto out = Inflate(matrix.copy(), 0, 0, quietZone);
+	auto out = ToMatrix<uint8_t>(Inflate(matrix.copy(), 0, 0, quietZone));
 	std::ofstream file(filename);
-	file << "P1\n" << out.width() << ' ' << out.height() << '\n';
-	file << ToString(out, '1', '0', true);
+	file << "P5\n" << out.width() << ' ' << out.height() << "\n255\n";
+	file.write(reinterpret_cast<const char*>(out.data()), out.size());
 }
 
 } // ZXing
