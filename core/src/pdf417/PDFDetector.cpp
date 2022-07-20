@@ -342,7 +342,7 @@ Detector::Result Detector::Detect(const BinaryBitmap& image, bool multiple, bool
 
 	Result result;
 
-	for (int rotate90 = false; rotate90 <= tryRotate && result.points.empty(); ++rotate90) {
+	for (int rotate90 = 0; rotate90 <= static_cast<int>(tryRotate) && result.points.empty(); ++rotate90) {
 #if defined(ZX_FAST_BIT_STORAGE)
 		if (!HasStartPattern(*binImg, rotate90))
 			continue;

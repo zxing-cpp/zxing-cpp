@@ -10,7 +10,7 @@ It was originally ported from the Java [ZXing Library](https://github.com/zxing/
 
 * In pure C++17, no third-party dependencies (for the library)
 * Stateless, thread-safe readers/scanners and writers/generators
-* Wrapper/Bindings for:
+* Wrappers/Bindings for:
   * [Android](wrappers/android/README.md)
   * [iOS](wrappers/ios/README.md)
   * [Python](wrappers/python/README.md)
@@ -29,7 +29,7 @@ It was originally ported from the Java [ZXing Library](https://github.com/zxing/
 | DataBar        | DataBar Exanded   | PDF417             |
 |                | ITF               | MaxiCode (partial) |
 
-Note: DataBar used to be called RSS. DataBar is not supported for writing.
+[Note: DataBar used to be called RSS. DataBar is not supported for writing.]
 
 ## Getting Started
 
@@ -49,8 +49,23 @@ As an example, have a look at [`ZXingWriter.cpp`](example/ZXingWriter.cpp).
 - [Write barcodes](https://nu-book.github.io/zxing-cpp/demo_writer.html)
 - [Scan with camera](https://nu-book.github.io/zxing-cpp/zxing_viddemo.html)
 
-## Build Instructions (for Windows/macOS/Linux)
+[Note: those live demos are not necessarily fully up-to-date at all times.]
+
+## Build Instructions
+These are the generic instructions to build the library on Windows/macOS/Linux. For details on how to build the individual wrappers, follow the links above.
+
 1. Make sure [CMake](https://cmake.org) version 3.14 or newer is installed.
 2. Make sure a C++17 compliant compiler is installed (minimum VS 2019 16.8 / gcc 7 / clang 5).
 3. See the cmake `BUILD_...` options to enable the testing code, python wrapper, etc.
 
+```
+git clone https://github.com/nu-book/zxing-cpp.git --single-branch --depth 1
+cmake -S zxing-cpp -B zxing-cpp.release -DCMAKE_BUILD_TYPE=Release
+cmake --build zxing-cpp.release -j8
+```
+
+[Note: binary packages are available for/as
+[vcpkg](https://github.com/Microsoft/vcpkg/tree/master/ports/nu-book-zxing-cpp),
+[conan](https://github.com/conan-io/conan-center-index/tree/master/recipes/zxing-cpp),
+[mingw](https://github.com/msys2/MINGW-packages/tree/master/mingw-w64-zxing-cpp) and a bunch of
+[linux distributions](https://repology.org/project/zxing-cpp-nu-book/versions).]
