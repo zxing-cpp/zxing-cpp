@@ -184,7 +184,10 @@ static std::string printPositiveTestStats(int imageCount, const TestCase::TC& tc
 		failures += "\n";
 		failed += tc.minPassCount - passCount;
 	}
+
 	extra += std::max(0, passCount - tc.minPassCount);
+	if (passCount > tc.minPassCount)
+		failures += fmt::format("    Unexpected detections ({}): {}\n", tc.name, passCount - tc.minPassCount);
 
 	if (Size(tc.misReadFiles) > tc.maxMisreads) {
 		failures += fmt::format("    Read error ({}):", tc.name);
@@ -658,7 +661,7 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		if (failed)
 			fmt::print("WARNING: {} tests failed.\n", failed);
 		if (extra)
-			fmt::print("INFO: {} tests succeded unexpecedly.\n", extra);
+			fmt::print("INFO: {} tests succeeded unexpectedly.\n", extra);
 
 		return failed;
 	}
