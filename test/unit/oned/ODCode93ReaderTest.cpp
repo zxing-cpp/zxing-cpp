@@ -18,9 +18,8 @@ using namespace ZXing::OneD;
 static std::string Decode(std::string_view input)
 {
 	DecodeHints hints;
-	Code93Reader sut(hints);
 	auto row    = Utility::ParseBitArray(input, '1');
-	auto result = sut.decodeSingleRow(0, row);
+	auto result = DecodeSingleRow(Code93Reader(hints), row.range());
 	return result.text();
 }
 

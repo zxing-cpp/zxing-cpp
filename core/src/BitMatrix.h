@@ -8,6 +8,7 @@
 
 #include "Matrix.h"
 #include "Point.h"
+#include "Range.h"
 #include "ZXConfig.h"
 
 #include <algorithm>
@@ -42,9 +43,9 @@ class BitMatrix
 	int _rowSize = 0;
 #ifdef ZX_FAST_BIT_STORAGE
 	using data_t = uint8_t;
-	//TODO: c++17 inline
 	static constexpr data_t SET_V = 0xff; // allows playing with SIMD binarization
 	static constexpr data_t UNSET_V = 0;
+	static_assert(bool(SET_V), "SET_V needs to evaluate to true, see iterator usage");
 #else
 	using data_t = uint32_t;
 #endif
@@ -67,8 +68,6 @@ class BitMatrix
 public:
 	BitMatrix() = default;
 #ifdef ZX_FAST_BIT_STORAGE
-	static bool isSet(data_t v) { return v != 0; } // see SET_V above
-
 	BitMatrix(int width, int height) : _width(width), _height(height), _rowSize(width), _bits(width * height, UNSET_V) {}
 #else
 	BitMatrix(int width, int height)
@@ -95,28 +94,10 @@ public:
 
 #ifdef ZX_FAST_BIT_STORAGE
 	// experimental iterator based access
-	template <typename iterator>
-	struct Row
-	{
-		iterator _begin, _end;
-		iterator begin() noexcept { return _begin; }
-		iterator end() noexcept { return _end; }
-	};
-	Row<data_t*> row(int y) { return {_bits.data() + y * _width, _bits.data() + (y + 1) * _width}; }
-	Row<const data_t*> row(int y) const { return {_bits.data() + y * _width, _bits.data() + (y + 1) * _width}; }
+	Range<data_t*> row(int y) { return {_bits.data() + y * _width, _bits.data() + (y + 1) * _width}; }
+	Range<const data_t*> row(int y) const { return {_bits.data() + y * _width, _bits.data() + (y + 1) * _width}; }
 
-	struct ColIter
-	{
-		const data_t* pos;
-		int stride;
-
-		data_t operator*() const { return *pos; }
-		data_t operator[](int i) const { return *(pos + i * stride); }
-		ColIter& operator++() { return pos += stride, *this; }
-		bool operator<(const ColIter& rhs) const { return pos < rhs.pos; }
-	};
-	Row<ColIter> col(int x) const { return {{_bits.data() + x, _width}, {_bits.data() + x + _height * _width, _width}}; }
-
+	Range<StrideIter<const data_t*>> col(int x) const { return {{_bits.data() + x, _width}, {_bits.data() + x + _height * _width, _width}}; }
 #endif
 
 	/**
@@ -129,7 +110,7 @@ public:
 	bool get(int x, int y) const
 	{
 #ifdef ZX_FAST_BIT_STORAGE
-		return isSet(get(y * _width + x));
+		return get(y * _width + x);
 #else
 		return ((get(y * _rowSize + (x / 32)) >> (x & 0x1f)) & 1) != 0;
 #endif
@@ -207,16 +188,6 @@ public:
 	void setRegion(int left, int top, int width, int height);
 
 	/**
-	* A fast method to retrieve one row of data from the matrix as a BitArray.
-	*
-	* @param y The row to retrieve
-	* @param row An optional caller-allocated BitArray, will be allocated if null or too small
-	* @return The resulting BitArray - this reference should always be used even when passing
-	*         your own row
-	*/
-	void getRow(int y, BitArray& row) const;
-
-	/**
 	* Modifies this {@code BitMatrix} to represent the same but rotated 90 degrees clockwise
 	*/
 	void rotate90();
@@ -243,10 +214,6 @@ public:
 	bool getTopLeftOnBit(int &left, int& top) const;
 
 	bool getBottomRightOnBit(int &right, int& bottom) const;
-
-#ifdef ZX_FAST_BIT_STORAGE
-	void getPatternRow(int r, std::vector<uint16_t>& p_row, bool transpose = false) const;
-#endif
 
 	/**
 	* @return The width of the matrix
@@ -281,6 +248,8 @@ public:
 	void set(PointI p, bool v = true) { set(p.x, p.y, v); }
 	void set(PointF p, bool v = true) { set(PointI(p), v); }
 };
+
+void GetPatternRow(const BitMatrix& matrix, int r, std::vector<uint16_t>& pr, bool transpose);
 
 /**
  * @brief Inflate scales a BitMatrix up and adds a quiet Zone plus padding

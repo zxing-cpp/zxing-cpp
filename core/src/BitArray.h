@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "Range.h"
 #include "ZXConfig.h"
 #include "ZXAlgorithms.h"
 #ifndef ZX_FAST_BIT_STORAGE
@@ -25,14 +26,6 @@
 namespace ZXing {
 
 class ByteArray;
-
-template <typename Iterator>
-struct Range
-{
-	Iterator begin, end;
-	explicit operator bool() const { return begin < end; }
-	int size() const { return narrow_cast<int>(end - begin); }
-};
 
 /**
 * A simple, fast array of bits.

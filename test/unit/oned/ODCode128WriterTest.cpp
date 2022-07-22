@@ -37,10 +37,8 @@ static std::string LineMatrixToString(const BitMatrix& matrix)
 
 static ZXing::Result Decode(const BitMatrix &matrix)
 {
-	BitArray row;
-	matrix.getRow(0, row);
 	DecodeHints hints;
-	return Code128Reader(hints).decodeSingleRow(0, row);
+	return DecodeSingleRow(Code128Reader(hints), matrix.row(0));
 }
 
 TEST(ODCode128Writer, EncodeWithFunc1)

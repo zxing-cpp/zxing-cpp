@@ -312,7 +312,7 @@ bool HasStartPattern(const BitMatrix& m, bool rotate90)
 	int end = rotate90 ? m.width() : m.height();
 
 	for (int r = ROW_STEP; r < end; r += ROW_STEP) {
-		m.getPatternRow(r, row, rotate90);
+		GetPatternRow(m, r, row, rotate90);
 
 		if (FindLeftGuard(row, minSymbolWidth, START_PATTERN, 2).isValid())
 			return true;

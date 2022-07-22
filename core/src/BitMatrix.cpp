@@ -20,21 +20,6 @@
 namespace ZXing {
 
 void
-BitMatrix::getRow(int y, BitArray& row) const
-{
-	if (y < 0 || y >= _height) {
-		throw std::out_of_range("Requested row is outside the matrix");
-	}
-	if (row.size() != _width)
-		row = BitArray(_width);
-#ifdef ZX_FAST_BIT_STORAGE
-	std::transform(_bits.begin() + y * _rowSize, _bits.begin() + (y + 1) * _rowSize, row._bits.begin(), isSet);
-#else
-	std::copy_n(_bits.begin() + y * _rowSize, _rowSize, row._bits.begin());
-#endif
-}
-
-void
 BitMatrix::setRegion(int left, int top, int width, int height)
 {
 	if (top < 0 || left < 0) {
@@ -153,18 +138,12 @@ BitMatrix::findBoundingBox(int &left, int& top, int& width, int& height, int min
 	return width >= minSize && height >= minSize;
 }
 
-static auto isSet_ = [](auto v) {
-#ifdef ZX_FAST_BIT_STORAGE
-	return BitMatrix::isSet(v);
-#else
-	return v;
-#endif
-};
+static auto isSet = [](auto v) { return bool(v); };
 
 bool
 BitMatrix::getTopLeftOnBit(int& left, int& top) const
 {
-	int bitsOffset = (int)std::distance(_bits.begin(), std::find_if(_bits.begin(), _bits.end(), isSet_));
+	int bitsOffset = (int)std::distance(_bits.begin(), std::find_if(_bits.begin(), _bits.end(), isSet));
 	if (bitsOffset == Size(_bits)) {
 		return false;
 	}
@@ -179,7 +158,7 @@ BitMatrix::getTopLeftOnBit(int& left, int& top) const
 bool
 BitMatrix::getBottomRightOnBit(int& right, int& bottom) const
 {
-	int bitsOffset = Size(_bits) - 1 - (int)std::distance(_bits.rbegin(), std::find_if(_bits.rbegin(), _bits.rend(), isSet_));
+	int bitsOffset = Size(_bits) - 1 - (int)std::distance(_bits.rbegin(), std::find_if(_bits.rbegin(), _bits.rend(), isSet));
 	if (bitsOffset < 0) {
 		return false;
 	}
@@ -192,59 +171,13 @@ BitMatrix::getBottomRightOnBit(int& right, int& bottom) const
 	return true;
 }
 
-#ifdef ZX_FAST_BIT_STORAGE
-constexpr BitMatrix::data_t BitMatrix::SET_V;
-constexpr BitMatrix::data_t BitMatrix::UNSET_V;
-
-template<typename I>
-void GetPatternRow(BitMatrix::Row<I> b_row, int row_size, PatternRow& p_row)
-{
-#if 0
-	p_row.reserve(64);
-	p_row.clear();
-
-	auto* lastPos = b_row.begin();
-	if (BitMatrix::isSet(*lastPos))
-		p_row.push_back(0); // first value is number of white pixels, here 0
-
-	for (auto* p = b_row.begin() + 1; p < b_row.end(); ++p)
-		if (bool(*p) != bool(*lastPos))
-			p_row.push_back(p - std::exchange(lastPos, p));
-
-	p_row.push_back(b_row.end() - lastPos);
-
-	if (BitMatrix::isSet(*lastPos))
-		p_row.push_back(0); // last value is number of white pixels, here 0
-#else
-	p_row.resize(row_size + 2);
-	std::fill(p_row.begin(), p_row.end(), 0);
-
-	auto bitPos = b_row.begin();
-	auto intPos = p_row.data();
-
-	intPos += BitMatrix::isSet(*bitPos); // first value is number of white pixels, here 0
-
-	while (++bitPos < b_row.end()) {
-		++(*intPos);
-		intPos += bitPos[0] != bitPos[-1];
-	}
-	++(*intPos);
-
-	if (BitMatrix::isSet(bitPos[-1]))
-		intPos++;
-
-	p_row.resize(intPos - p_row.data() + 1);
-#endif
-}
-
-void BitMatrix::getPatternRow(int r, PatternRow& p_row, bool transpose) const
+void GetPatternRow(const BitMatrix& matrix, int r, std::vector<uint16_t>& pr, bool transpose)
 {
 	if (transpose)
-		GetPatternRow(col(r), height(), p_row);
+		GetPatternRow(matrix.col(r), pr);
 	else
-		GetPatternRow(row(r), width(), p_row);
+		GetPatternRow(matrix.row(r), pr);
 }
-#endif
 
 BitMatrix Inflate(BitMatrix&& input, int width, int height, int quietZone)
 {

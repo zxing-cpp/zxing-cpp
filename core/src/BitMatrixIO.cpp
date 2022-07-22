@@ -18,11 +18,9 @@ std::string ToString(const BitMatrix& matrix, char one, char zero, bool addSpace
 	std::string result;
 	result.reserve((addSpace ? 2 : 1) * (matrix.width() * matrix.height()) + matrix.height());
 	for (int y = 0; y < matrix.height(); ++y) {
-		BitArray row;
-		matrix.getRow(y, row);
 		if (printAsCString)
 			result += '"';
-		for (auto bit : row) {
+		for (auto bit : matrix.row(y)) {
 			result += bit ? one : zero;
 			if (addSpace)
 				result += ' ';
