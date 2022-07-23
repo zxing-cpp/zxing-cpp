@@ -31,7 +31,7 @@ class BitMatrix
 	using data_t = uint8_t;
 	static constexpr data_t SET_V = 0xff; // allows playing with SIMD binarization
 	static constexpr data_t UNSET_V = 0;
-	static_assert(bool(SET_V), "SET_V needs to evaluate to true, see iterator usage");
+	static_assert(bool(SET_V) && !bool(UNSET_V), "SET_V needs to evaluate to true, UNSET_V to false, see iterator usage");
 
 	std::vector<data_t> _bits;
 	// There is nothing wrong to support this but disable to make it explicit since we may copy something very big here.
@@ -69,10 +69,7 @@ public:
 	Range<StrideIter<const data_t*>> col(int x) const { return {{_bits.data() + x, _width}, {_bits.data() + x + _height * _width, _width}}; }
 
 	bool get(int x, int y) const { return get(y * _width + x); }
-	void set(int x, int y) { get(y * _width + x) = SET_V; }
-	void unset(int x, int y) { get(y * _width + x) = UNSET_V; }
-
-	void set(int x, int y, bool val) { get(y * _width + x) = val * SET_V; }
+	void set(int x, int y, bool val = true) { get(y * _width + x) = val * SET_V; }
 
 	/**
 	* <p>Flips the given bit.</p>
@@ -88,9 +85,8 @@ public:
 
 	void flipAll()
 	{
-		for (auto& i : _bits) {
-			i = ~i;
-		}
+		for (auto& i : _bits)
+			i = !i;
 	}
 
 	/**
