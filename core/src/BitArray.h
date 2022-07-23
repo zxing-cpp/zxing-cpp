@@ -8,11 +8,7 @@
 #pragma once
 
 #include "Range.h"
-#include "ZXConfig.h"
 #include "ZXAlgorithms.h"
-#ifndef ZX_FAST_BIT_STORAGE
-#include "BitHacks.h"
-#endif
 
 #include <algorithm>
 #include <cassert>
@@ -32,12 +28,7 @@ class ByteArray;
 */
 class BitArray
 {
-#ifdef ZX_FAST_BIT_STORAGE
 	std::vector<uint8_t> _bits;
-#else
-	int _size = 0;
-	std::vector<uint32_t> _bits;
-#endif
 
 	friend class BitMatrix;
 
@@ -48,150 +39,31 @@ class BitArray
 
 public:
 
-#ifdef ZX_FAST_BIT_STORAGE
 	using Iterator = std::vector<uint8_t>::const_iterator;
-#else
-	class Iterator
-	{
-	public:
-		using iterator_category = std::bidirectional_iterator_tag;
-		using value_type = bool;
-		using difference_type = int;
-		using pointer = bool*;
-		using reference = bool;
-
-		bool operator*() const { return (*_value & _mask) != 0; }
-
-		Iterator& operator++()
-		{
-			if ((_mask <<= 1) == 0) {
-				_mask = 1;
-				++_value;
-			}
-			return *this;
-		}
-
-		Iterator& operator--()
-		{
-			if ((_mask >>= 1) == 0) {
-				_mask = 0x80000000;
-				--_value;
-			}
-			return *this;
-		}
-
-		int operator-(const Iterator& rhs) const
-		{
-			return narrow_cast<int>(_value - rhs._value) * 32 + (_mask >= rhs._mask
-																	 ? +BitHacks::CountBitsSet(_mask - rhs._mask)
-																	 : -BitHacks::CountBitsSet(rhs._mask - _mask));
-		}
-
-		bool operator==(const Iterator& rhs) const { return _mask == rhs._mask && _value == rhs._value; }
-		bool operator!=(const Iterator& rhs) const { return !(*this == rhs); }
-
-		bool operator<(const Iterator& rhs) const
-		{
-			return _value < rhs._value || (_value == rhs._value && _mask < rhs._mask);
-		}
-		bool operator<=(const Iterator& rhs) const
-		{
-			return _value < rhs._value || (_value == rhs._value && _mask <= rhs._mask);
-		}
-		bool operator>(const Iterator& rhs) const { return !(*this <= rhs); }
-		bool operator>=(const Iterator& rhs) const { return !(*this < rhs); }
-
-	private:
-		Iterator(std::vector<uint32_t>::const_iterator p, uint32_t m) : _value(p), _mask(m) {}
-		std::vector<uint32_t>::const_iterator _value;
-		uint32_t _mask;
-		friend class BitArray;
-	};
-#endif
 
 	BitArray() = default;
 
-	explicit BitArray(int size)
-		:
-#ifdef ZX_FAST_BIT_STORAGE
-		  _bits(size, 0) {}
-#else
-		  _size(size),
-		  _bits((size + 31) / 32, 0) {}
-#endif
+	explicit BitArray(int size) : _bits(size, 0) {}
 
-	BitArray(BitArray&& other) noexcept
-		:
-#ifndef ZX_FAST_BIT_STORAGE
-		  _size(other._size),
-#endif
-		  _bits(std::move(other._bits)) {}
-
-	BitArray& operator=(BitArray&& other) noexcept
-	{
-#ifndef ZX_FAST_BIT_STORAGE
-		_size = other._size;
-#endif
-		_bits = std::move(other._bits);
-		return *this;
-	}
+	BitArray(BitArray&& other) noexcept = default;
+	BitArray& operator=(BitArray&& other) noexcept = default;
 
 	BitArray copy() const { return *this; }
 
-	int size() const noexcept
-	{
-#ifdef ZX_FAST_BIT_STORAGE
-		return Size(_bits);
-#else
-		return _size;
-#endif
-	}
+	int size() const noexcept { return Size(_bits); }
 
 	int sizeInBytes() const noexcept { return (size() + 7) / 8; }
 
-	/**
-	* @param i bit to get
-	* @return true iff bit i is set
-	*/
-	bool get(int i) const
-	{
-#ifdef ZX_FAST_BIT_STORAGE
-		return _bits.at(i) != 0;
-#else
-		return (_bits.at(i >> 5) & (1 << (i & 0x1F))) != 0;
-#endif
-	}
+	bool get(int i) const { return _bits.at(i) != 0; }
+	void set(int i, bool val) { _bits.at(i) = val; }
 
 	// If you know exactly how may bits you are going to iterate
 	// and that you access bit in sequence, iterator is faster than get().
 	// However, be extremely careful since there is no check whatsoever.
 	// (Performance is the reason for the iterator to exist in the first place.)
-#ifdef ZX_FAST_BIT_STORAGE
 	Iterator iterAt(int i) const noexcept { return {_bits.cbegin() + i}; }
 	Iterator begin() const noexcept { return _bits.cbegin(); }
 	Iterator end() const noexcept { return _bits.cend(); }
-#else
-	Iterator iterAt(int i) const noexcept { return {_bits.cbegin() + (i >> 5), 1U << (i & 0x1F)}; }
-	Iterator begin() const noexcept { return iterAt(0); }
-	Iterator end() const noexcept { return iterAt(_size); }
-#endif
-
-	/**
-	* Sets bit i.
-	*
-	* @param i bit to set
-	*/
-	void set(int i, bool val)
-	{
-#ifdef ZX_FAST_BIT_STORAGE
-		_bits.at(i) = val;
-#else
-		if (val)
-			_bits.at(i >> 5) |= 1 << (i & 0x1F);
-		else
-			_bits.at(i >> 5) &= ~(1 << (i & 0x1F));
-#endif
-	}
 
 	/**
 	* Appends the least-significant bits, from value, in order from most-significant to
@@ -201,7 +73,6 @@ public:
 	* @param value {@code int} containing bits to append
 	* @param numBits bits from value to append
 	*/
-#ifdef ZX_FAST_BIT_STORAGE
 	void appendBits(int value, int numBits)
 	{
 		for (; numBits; --numBits)
@@ -216,18 +87,6 @@ public:
 	* Reverses all bits in the array.
 	*/
 	void reverse() { std::reverse(_bits.begin(), _bits.end()); }
-#else
-	void appendBits(int value, int numBits);
-
-	void appendBit(bool bit);
-
-	void appendBitArray(const BitArray& other);
-
-	/**
-	* Reverses all bits in the array.
-	*/
-	void reverse() { BitHacks::Reverse(_bits, _bits.size() * 32 - _size); }
-#endif
 
 	void bitwiseXOR(const BitArray& other);
 
@@ -241,14 +100,7 @@ public:
 	using Range = ZXing::Range<Iterator>;
 	Range range() const { return {begin(), end()}; }
 
-	friend bool operator==(const BitArray& a, const BitArray& b)
-	{
-		return
-#ifndef ZX_FAST_BIT_STORAGE
-			a._size == b._size &&
-#endif
-			a._bits == b._bits;
-	}
+	friend bool operator==(const BitArray& a, const BitArray& b) { return a._bits == b._bits; }
 };
 
 template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>

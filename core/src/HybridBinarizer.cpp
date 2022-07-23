@@ -103,23 +103,12 @@ static Matrix<int> CalculateBlackPoints(const uint8_t* luminances, int subWidth,
 */
 static void ThresholdBlock(const uint8_t* luminances, int xoffset, int yoffset, int threshold, int rowStride, BitMatrix& matrix)
 {
-#ifdef ZX_FAST_BIT_STORAGE
 	for (int y = yoffset; y < yoffset + BLOCK_SIZE; ++y) {
 		auto* src = luminances + y * rowStride + xoffset;
 		auto* const dstBegin = matrix.row(y).begin() + xoffset;
 		for (auto* dst = dstBegin; dst < dstBegin + BLOCK_SIZE; ++dst, ++src)
 			*dst = *src <= threshold;
 	}
-#else
-	for (int y = 0, offset = yoffset * rowStride + xoffset; y < BLOCK_SIZE; y++, offset += rowStride) {
-		for (int x = 0; x < BLOCK_SIZE; x++) {
-			// Comparison needs to be <= so that black == 0 pixels are black even if the threshold is 0.
-			if (luminances[offset + x] <= threshold) {
-				matrix.set(xoffset + x, yoffset + y);
-			}
-		}
-	}
-#endif
 }
 
 /**

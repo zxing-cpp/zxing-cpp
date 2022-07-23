@@ -1,6 +1,7 @@
 /*
 * Copyright 2016 Nu-book Inc.
 * Copyright 2016 ZXing authors
+* Copyright 2022 Axel Waggershauser
 */
 // SPDX-License-Identifier: Apache-2.0
 
@@ -9,7 +10,6 @@
 #include "Matrix.h"
 #include "Point.h"
 #include "Range.h"
-#include "ZXConfig.h"
 
 #include <algorithm>
 #include <cstdint>
@@ -23,29 +23,24 @@ class ByteMatrix;
 
 /**
  * @brief A simple, fast 2D array of bits.
- *
- * Note: the original bit-packed storage variant is currently unusuable.
  */
 class BitMatrix
 {
 	int _width = 0;
 	int _height = 0;
-	int _rowSize = 0;
-#ifdef ZX_FAST_BIT_STORAGE
 	using data_t = uint8_t;
 	static constexpr data_t SET_V = 0xff; // allows playing with SIMD binarization
 	static constexpr data_t UNSET_V = 0;
 	static_assert(bool(SET_V), "SET_V needs to evaluate to true, see iterator usage");
-#else
-	using data_t = uint32_t;
-#endif
+
 	std::vector<data_t> _bits;
 	// There is nothing wrong to support this but disable to make it explicit since we may copy something very big here.
 	// Use copy() below.
 	BitMatrix(const BitMatrix&) = default;
 	BitMatrix& operator=(const BitMatrix&) = delete;
 
-	const data_t& get(int i) const {
+	const data_t& get(int i) const
+	{
 #if 1
 		return _bits.at(i);
 #else
@@ -60,14 +55,7 @@ class BitMatrix
 
 public:
 	BitMatrix() = default;
-#ifdef ZX_FAST_BIT_STORAGE
-	BitMatrix(int width, int height) : _width(width), _height(height), _rowSize(width), _bits(width * height, UNSET_V) {}
-#else
-	BitMatrix(int width, int height)
-		: _width(width), _height(height), _rowSize((width + 31) / 32), _bits(((width + 31) / 32) * _height, 0)
-	{}
-#endif
-
+	BitMatrix(int width, int height) : _width(width), _height(height), _bits(width * height, UNSET_V) {}
 	explicit BitMatrix(int dimension) : BitMatrix(dimension, dimension) {} // Construct a square matrix.
 
 	BitMatrix(BitMatrix&& other) noexcept = default;
@@ -75,61 +63,16 @@ public:
 
 	BitMatrix copy() const { return *this; }
 
-#ifdef ZX_FAST_BIT_STORAGE
 	Range<data_t*> row(int y) { return {_bits.data() + y * _width, _bits.data() + (y + 1) * _width}; }
 	Range<const data_t*> row(int y) const { return {_bits.data() + y * _width, _bits.data() + (y + 1) * _width}; }
 
 	Range<StrideIter<const data_t*>> col(int x) const { return {{_bits.data() + x, _width}, {_bits.data() + x + _height * _width, _width}}; }
-#endif
 
-	/**
-	* <p>Gets the requested bit, where true means black.</p>
-	*
-	* @param x The horizontal component (i.e. which column)
-	* @param y The vertical component (i.e. which row)
-	* @return value of given bit in matrix
-	*/
-	bool get(int x, int y) const
-	{
-#ifdef ZX_FAST_BIT_STORAGE
-		return get(y * _width + x);
-#else
-		return ((get(y * _rowSize + (x / 32)) >> (x & 0x1f)) & 1) != 0;
-#endif
-	}
+	bool get(int x, int y) const { return get(y * _width + x); }
+	void set(int x, int y) { get(y * _width + x) = SET_V; }
+	void unset(int x, int y) { get(y * _width + x) = UNSET_V; }
 
-	/**
-	* <p>Sets the given bit to true.</p>
-	*
-	* @param x The horizontal component (i.e. which column)
-	* @param y The vertical component (i.e. which row)
-	*/
-	void set(int x, int y)
-	{
-#ifdef ZX_FAST_BIT_STORAGE
-		get(y * _width + x) = SET_V;
-#else
-		get(y * _rowSize + (x / 32)) |= 1 << (x & 0x1f);
-#endif
-	}
-
-	void unset(int x, int y)
-	{
-#ifdef ZX_FAST_BIT_STORAGE
-		get(y * _width + x) = UNSET_V;
-#else
-		get(y * _rowSize + (x / 32)) &= ~(1 << (x & 0x1f));
-#endif
-	}
-
-	void set(int x, int y, bool val)
-	{
-#ifdef ZX_FAST_BIT_STORAGE
-		get(y * _width + x) = val ? SET_V : UNSET_V;
-#else
-		val ? set(x, y) : unset(x, y);
-#endif
-	}
+	void set(int x, int y, bool val) { get(y * _width + x) = val * SET_V; }
 
 	/**
 	* <p>Flips the given bit.</p>
@@ -139,12 +82,8 @@ public:
 	*/
 	void flip(int x, int y)
 	{
-#ifdef ZX_FAST_BIT_STORAGE
-		auto& v =get(y * _width + x);
+		auto& v = get(y * _width + x);
 		v = !v;
-#else
-		get(y * _rowSize + (x / 32)) ^= 1 << (x & 0x1f);
-#endif
 	}
 
 	void flipAll()
@@ -185,7 +124,7 @@ public:
 
 	friend bool operator==(const BitMatrix& a, const BitMatrix& b)
 	{
-		return a._width == b._width && a._height == b._height && a._rowSize == b._rowSize && a._bits == b._bits;
+		return a._width == b._width && a._height == b._height && a._bits == b._bits;
 	}
 
 	template <typename T>

@@ -9,10 +9,6 @@
 #include "BitArray.h"
 #include "Pattern.h"
 
-#ifndef ZX_FAST_BIT_STORAGE
-#include "BitHacks.h"
-#endif
-
 #include <algorithm>
 #include <stdexcept>
 #include <utility>
@@ -34,13 +30,9 @@ BitMatrix::setRegion(int left, int top, int width, int height)
 		throw std::invalid_argument("BitMatrix::setRegion(): The region must fit inside the matrix");
 	}
 	for (int y = top; y < bottom; y++) {
-		size_t offset = y * _rowSize;
+		size_t offset = y * _width;
 		for (int x = left; x < right; x++) {
-#ifdef ZX_FAST_BIT_STORAGE
 			_bits[offset + x] = SET_V;
-#else
-			_bits[offset + (x / 32)] |= 1 << (x & 0x1f);
-#endif
 		}
 	}
 }
@@ -62,11 +54,7 @@ BitMatrix::rotate90()
 void
 BitMatrix::rotate180()
 {
-#ifdef ZX_FAST_BIT_STORAGE
 	std::reverse(_bits.begin(), _bits.end());
-#else
-	BitHacks::Reverse(_bits, _rowSize * 32 - _width);
-#endif
 }
 
 void
@@ -89,7 +77,6 @@ BitMatrix::findBoundingBox(int &left, int& top, int& width, int& height, int min
 	if (!getTopLeftOnBit(left, top) || !getBottomRightOnBit(right, bottom) || bottom - top + 1 < minSize)
 		return false;
 
-#ifdef ZX_FAST_BIT_STORAGE
 	for (int y = top; y <= bottom; y++ ) {
 		for (int x = 0; x < left; ++x)
 			if (get(x, y)) {
@@ -102,36 +89,6 @@ BitMatrix::findBoundingBox(int &left, int& top, int& width, int& height, int min
 				break;
 			}
 	}
-#else
-	for (int y = top; y <= bottom; y++)
-	{
-		for (int x32 = 0; x32 < _rowSize; x32++)
-		{
-			uint32_t theBits = _bits[y * _rowSize + x32];
-			if (theBits != 0)
-			{
-				if (x32 * 32 < left) {
-					int bit = 0;
-					while ((theBits << (31 - bit)) == 0) {
-						bit++;
-					}
-					if ((x32 * 32 + bit) < left) {
-						left = x32 * 32 + bit;
-					}
-				}
-				if (x32 * 32 + 31 > right) {
-					int bit = 31;
-					while ((theBits >> bit) == 0) {
-						bit--;
-					}
-					if ((x32 * 32 + bit) > right) {
-						right = x32 * 32 + bit;
-					}
-				}
-			}
-		}
-	}
-#endif
 
 	width = right - left + 1;
 	height = bottom - top + 1;
@@ -147,11 +104,8 @@ BitMatrix::getTopLeftOnBit(int& left, int& top) const
 	if (bitsOffset == Size(_bits)) {
 		return false;
 	}
-	top = bitsOffset / _rowSize;
-	left = (bitsOffset % _rowSize);
-#ifndef ZX_FAST_BIT_STORAGE
-	left = left * 32 + BitHacks::NumberOfTrailingZeros(_bits[bitsOffset]);
-#endif
+	top = bitsOffset / _width;
+	left = (bitsOffset % _width);
 	return true;
 }
 
@@ -163,11 +117,8 @@ BitMatrix::getBottomRightOnBit(int& right, int& bottom) const
 		return false;
 	}
 
-	bottom = bitsOffset / _rowSize;
-	right = (bitsOffset % _rowSize);
-#ifndef ZX_FAST_BIT_STORAGE
-	right = right * 32 + 31 - BitHacks::NumberOfLeadingZeros(_bits[bitsOffset]);
-#endif
+	bottom = bitsOffset / _width;
+	right = (bitsOffset % _width);
 	return true;
 }
 
