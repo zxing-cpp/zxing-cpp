@@ -20,32 +20,6 @@ namespace ZXing {
 
 #ifndef ZX_FAST_BIT_STORAGE
 
-bool
-BitArray::isRange(int start, int end, bool value) const
-{
-	if (end < start || start < 0 || end > _size) {
-		throw std::invalid_argument("BitArray::isRange(): Invalid range");
-	}
-	if (end == start) {
-		return true; // empty range matches
-	}
-	end--; // will be easier to treat this as the last actually set bit -- inclusive
-	int firstInt = start / 32;
-	int lastInt = end / 32;
-	for (int i = firstInt; i <= lastInt; i++) {
-		int firstBit = i > firstInt ? 0 : start & 0x1F;
-		int lastBit = i < lastInt ? 31 : end & 0x1F;
-		// Ones from firstBit to lastBit, inclusive
-		uint32_t mask = (2UL << lastBit) - (1UL << firstBit);
-		// Return false if we're looking for 1s and the masked bits[i] isn't all 1s (that is,
-		// equals the mask, or we're looking for 0s and the masked portion is not all 0s
-		if ((_bits[i] & mask) != (value ? mask : 0U)) {
-			return false;
-		}
-	}
-	return true;
-}
-
 void
 BitArray::appendBits(int value, int numBits)
 {

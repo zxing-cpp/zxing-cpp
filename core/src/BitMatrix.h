@@ -22,20 +22,10 @@ class BitArray;
 class ByteMatrix;
 
 /**
-* <p>Represents a 2D matrix of bits. In function arguments below, and throughout the common
-* module, x is the column position, and y is the row position. The ordering is always x, y.
-* The origin is at the top-left.</p>
-*
-* <p>Internally the bits are represented in a 1-D array of 32-bit ints. However, each row begins
-* with a new int. This is done intentionally so that we can copy out a row into a BitArray very
-* efficiently.</p>
-*
-* <p>The ordering of bits is row-major. Within each int, the least significant bits are used first,
-* meaning they represent lower x values. This is compatible with BitArray's implementation.</p>
-*
-* @author Sean Owen
-* @author dswitkin@google.com (Daniel Switkin)
-*/
+ * @brief A simple, fast 2D array of bits.
+ *
+ * Note: the original bit-packed storage variant is currently unusuable.
+ */
 class BitMatrix
 {
 	int _width = 0;
@@ -65,6 +55,9 @@ class BitMatrix
 
 	data_t& get(int i) { return const_cast<data_t&>(static_cast<const BitMatrix*>(this)->get(i)); }
 
+	bool getTopLeftOnBit(int &left, int& top) const;
+	bool getBottomRightOnBit(int &right, int& bottom) const;
+
 public:
 	BitMatrix() = default;
 #ifdef ZX_FAST_BIT_STORAGE
@@ -77,23 +70,12 @@ public:
 
 	explicit BitMatrix(int dimension) : BitMatrix(dimension, dimension) {} // Construct a square matrix.
 
-	BitMatrix(BitMatrix&& other) noexcept
-		: _width(other._width), _height(other._height), _rowSize(other._rowSize), _bits(std::move(other._bits))
-	{}
-
-	BitMatrix& operator=(BitMatrix&& other) noexcept
-	{
-		_width = other._width;
-		_height = other._height;
-		_rowSize = other._rowSize;
-		_bits = std::move(other._bits);
-		return *this;
-	}
+	BitMatrix(BitMatrix&& other) noexcept = default;
+	BitMatrix& operator=(BitMatrix&& other) noexcept = default;
 
 	BitMatrix copy() const { return *this; }
 
 #ifdef ZX_FAST_BIT_STORAGE
-	// experimental iterator based access
 	Range<data_t*> row(int y) { return {_bits.data() + y * _width, _bits.data() + (y + 1) * _width}; }
 	Range<const data_t*> row(int y) const { return {_bits.data() + y * _width, _bits.data() + (y + 1) * _width}; }
 
@@ -173,11 +155,6 @@ public:
 	}
 
 	/**
-	* Clears all bits (sets to false).
-	*/
-	void clear() { std::fill(_bits.begin(), _bits.end(), 0); }
-
-	/**
 	* <p>Sets a square region of the bit matrix to true.</p>
 	*
 	* @param left The horizontal position to begin at (inclusive)
@@ -187,14 +164,8 @@ public:
 	*/
 	void setRegion(int left, int top, int width, int height);
 
-	/**
-	* Modifies this {@code BitMatrix} to represent the same but rotated 90 degrees clockwise
-	*/
 	void rotate90();
 
-	/**
-	* Modifies this {@code BitMatrix} to represent the same but rotated 180 degrees
-	*/
 	void rotate180();
 
 	void mirror();
@@ -206,29 +177,9 @@ public:
 	*/
 	bool findBoundingBox(int &left, int& top, int& width, int& height, int minSize = 1) const;
 
-	/**
-	* This is useful in detecting a corner of a 'pure' barcode.
-	*
-	* @return {@code x,y} coordinate of top-left-most 1 bit, or null if it is all white
-	*/
-	bool getTopLeftOnBit(int &left, int& top) const;
-
-	bool getBottomRightOnBit(int &right, int& bottom) const;
-
-	/**
-	* @return The width of the matrix
-	*/
 	int width() const { return _width; }
 
-	/**
-	* @return The height of the matrix
-	*/
 	int height() const { return _height; }
-
-	/**
-	* @return The row size of the matrix. That is the number of 32-bits blocks that one row takes.
-	*/
-	int rowSize() const { return _rowSize; }
 
 	bool empty() const { return _bits.empty(); }
 

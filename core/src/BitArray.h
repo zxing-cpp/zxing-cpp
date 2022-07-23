@@ -109,9 +109,6 @@ public:
 	};
 #endif
 
-	using ReverseIterator = std::reverse_iterator<Iterator>;
-	using Range = ZXing::Range<Iterator>;
-
 	BitArray() = default;
 
 	explicit BitArray(int size)
@@ -173,53 +170,11 @@ public:
 	Iterator iterAt(int i) const noexcept { return {_bits.cbegin() + i}; }
 	Iterator begin() const noexcept { return _bits.cbegin(); }
 	Iterator end() const noexcept { return _bits.cend(); }
-
-	template <typename ITER>
-	static ITER getNextSetTo(ITER begin, ITER end, bool v) noexcept
-	{
-		while( begin != end && *begin != static_cast<int>(v) )
-			++begin;
-		return begin;
-	}
 #else
 	Iterator iterAt(int i) const noexcept { return {_bits.cbegin() + (i >> 5), 1U << (i & 0x1F)}; }
 	Iterator begin() const noexcept { return iterAt(0); }
 	Iterator end() const noexcept { return iterAt(_size); }
-
-	static Iterator getNextSetTo(Iterator begin, Iterator end, bool v)
-	{
-		auto i = begin;
-		// reconstruct _bits.end()
-		auto bitsEnd = end._mask == 0x1 ? end._value : std::next(end._value);
-		if (i._value >= bitsEnd)
-			return end;
-		// mask off lesser bits first
-		auto currentBits = (v ? *i._value : ~*i._value) & ~(i._mask - 1);
-		while (currentBits == 0) {
-			if (++i._value == bitsEnd) {
-				return end;
-			}
-			currentBits = v ? *i._value : ~*i._value;
-		}
-		i._mask = 1 << BitHacks::NumberOfTrailingZeros(currentBits);
-		return i;
-	}
-
-	static ReverseIterator getNextSetTo(ReverseIterator begin, ReverseIterator end, bool v)
-	{
-		while( begin != end && *begin != v )
-			++begin;
-		return begin;
-	}
 #endif
-
-	Iterator getNextSetTo(Iterator i, bool v) const { return getNextSetTo(i, end(), v); }
-
-	Iterator getNextSet(Iterator i) const { return getNextSetTo(i, true); }
-	Iterator getNextUnset(Iterator i) const { return getNextSetTo(i, false); }
-
-	ReverseIterator rbegin() const noexcept { return ReverseIterator(end()); }
-	ReverseIterator rend() const noexcept { return ReverseIterator(begin()); }
 
 	/**
 	* Sets bit i.
@@ -236,50 +191,6 @@ public:
 		else
 			_bits.at(i >> 5) &= ~(1 << (i & 0x1F));
 #endif
-	}
-
-	/**
-	* Clears all bits (sets to false).
-	*/
-	void clearBits() { std::fill(_bits.begin(), _bits.end(), 0); }
-
-	/**
-	* Efficient method to check if a range of bits is set, or not set.
-	*
-	* @param start start of range, inclusive.
-	* @param end end of range, exclusive
-	* @param value if true, checks that bits in range are set, otherwise checks that they are not set
-	* @return true iff all bits are set or not set in range, according to value argument
-	*/
-#ifdef ZX_FAST_BIT_STORAGE
-	bool isRange(int start, int end, bool value) const
-	{
-		return std::all_of(std::begin(_bits) + start, std::begin(_bits) + end, [value](uint8_t v) { return v == static_cast<int>(value); });
-	}
-#else
-	bool isRange(int start, int end, bool value) const;
-#endif
-
-	// Little helper method to make common isRange use case more readable.
-	// Pass positive zone size to look for quiet zone after i and negative for zone in front of i.
-	// Set allowClippedZone to false if clipping the zone at the image border is not acceptable.
-	bool hasQuietZone(Iterator i, int signedZoneSize, bool allowClippedZone = true) const
-	{
-		int index = narrow_cast<int>(i - begin());
-		if (signedZoneSize > 0) {
-			if (!allowClippedZone && index + signedZoneSize >= size())
-				return false;
-			return isRange(index, std::min(size(), index + signedZoneSize), false);
-		} else {
-			if (!allowClippedZone && index + signedZoneSize < 0)
-				return false;
-			return isRange(std::max(0, index + signedZoneSize), index, false);
-		}
-	}
-
-	bool hasQuietZone(ReverseIterator i, int signedZoneSize, bool allowClippedZone = true) const
-	{
-		return hasQuietZone(i.base(), -signedZoneSize, allowClippedZone);
 	}
 
 	/**
@@ -327,6 +238,7 @@ public:
 	*/
 	ByteArray toBytes(int bitOffset = 0, int numBytes = -1) const;
 
+	using Range = ZXing::Range<Iterator>;
 	Range range() const { return {begin(), end()}; }
 
 	friend bool operator==(const BitArray& a, const BitArray& b)

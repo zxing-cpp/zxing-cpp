@@ -276,6 +276,10 @@ std::array<int, LEN> NormalizedPattern(const PatternView& view)
 template<typename I>
 void GetPatternRow(Range<I> b_row, PatternRow& p_row)
 {
+	// TODO: if reactivating the bit-packed array (!ZX_FAST_BIT_STORAGE) should be of interest then the following code could be
+	// considerably speed up by using a specialized variant along the lines of the old BitArray::getNextSetTo() function that
+	// was removed between 1.4 and 2.0.
+
 #if 0
 	p_row.reserve(64);
 	p_row.clear();
