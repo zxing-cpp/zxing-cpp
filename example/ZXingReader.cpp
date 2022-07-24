@@ -249,6 +249,20 @@ int main(int argc, char* argv[])
 		if (Size(filePaths) == 1 && !outPath.empty())
 			stbi_write_png(outPath.c_str(), image.width(), image.height(), 3, image.data(0, 0), image.rowStride());
 
+#ifdef NDEBUG
+		if (getenv("MEASURE_PERF")) {
+			auto startTime = std::chrono::high_resolution_clock::now();
+			auto duration = startTime - startTime;
+			int N = 0;
+			do {
+				for (int i = 0; i < 100; ++i)
+					ReadBarcodes(image, hints);
+				N += 100;
+				duration = std::chrono::high_resolution_clock::now() - startTime;
+			} while (duration < std::chrono::seconds(1));
+			printf("time: %5.1f ms per frame\n", double(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count()) / N);
+		}
+#endif
 	}
 
 	return ret;
