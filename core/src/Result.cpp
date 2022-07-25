@@ -33,12 +33,17 @@ Result::Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat 
 	  _position(std::move(position)),
 	  _ecLevel(decodeResult.ecLevel()),
 	  _sai(decodeResult.structuredAppend()),
-	  _format(decodeResult.content().symbology.code == 0 ? BarcodeFormat::None : format),
+	  _format(format),
 	  _lineCount(decodeResult.lineCount()),
 	  _isMirrored(decodeResult.isMirrored()),
 	  _readerInit(decodeResult.readerInit())
 {
 	// TODO: add type opaque and code specific 'extra data'? (see DecoderResult::extra())
+}
+
+bool Result::isValid() const
+{
+	return format() != BarcodeFormat::None && _content.symbology.code != 0 && !error();
 }
 
 const ByteArray& Result::bytes() const

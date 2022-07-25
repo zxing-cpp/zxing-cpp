@@ -51,10 +51,10 @@ TEST(ODCodaBarWriterTest, AltStartEnd)
 TEST(ODCodaBarWriterTest, FullCircle)
 {
 	std::string text = "A0123456789-$:/.+A";
-	BitArray row;
-	CodabarWriter().encode(text, 0, 0).getRow(0, row);
+	auto matrix = CodabarWriter().encode(text, 0, 0);
 	auto hints = DecodeHints().setReturnCodabarStartEnd(true);
-	Result res = CodabarReader(hints).decodeSingleRow(0, row);
+
+	Result res = OneD::DecodeSingleRow(CodabarReader(hints), matrix.row(0));
 	EXPECT_EQ(text, res.text());
 }
 

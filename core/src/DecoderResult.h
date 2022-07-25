@@ -44,7 +44,7 @@ public:
 
 	bool isValid(bool includeErrors = false) const
 	{
-		return _content.symbology.code != 0 && (!_error || includeErrors);
+		return includeErrors || (_content.symbology.code != 0 && !_error);
 	}
 
 	const Content& content() const & { return _content; }

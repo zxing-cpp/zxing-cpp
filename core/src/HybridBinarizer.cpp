@@ -43,14 +43,16 @@ static Matrix<int> CalculateBlackPoints(const uint8_t* luminances, int subWidth,
 		for (int x = 0; x < subWidth; x++) {
 			int xoffset = std::min(x * BLOCK_SIZE, width - BLOCK_SIZE);
 			int sum = 0;
-			uint8_t min = 0xFF;
-			uint8_t max = 0;
+			uint8_t min = luminances[yoffset * rowStride + xoffset];
+			uint8_t max = min;
 			for (int yy = 0, offset = yoffset * rowStride + xoffset; yy < BLOCK_SIZE; yy++, offset += rowStride) {
 				for (int xx = 0; xx < BLOCK_SIZE; xx++) {
 					auto pixel = luminances[offset + xx];
 					sum += pixel;
-					min = min < pixel ? min : pixel;
-					max = max > pixel ? max : pixel;
+					if (pixel < min)
+						min = pixel;
+					else if (pixel > max)
+						max = pixel;
 				}
 				// short-circuit min/max tests once dynamic range is met
 				if (max - min > MIN_DYNAMIC_RANGE) {
@@ -101,23 +103,12 @@ static Matrix<int> CalculateBlackPoints(const uint8_t* luminances, int subWidth,
 */
 static void ThresholdBlock(const uint8_t* luminances, int xoffset, int yoffset, int threshold, int rowStride, BitMatrix& matrix)
 {
-#ifdef ZX_FAST_BIT_STORAGE
 	for (int y = yoffset; y < yoffset + BLOCK_SIZE; ++y) {
 		auto* src = luminances + y * rowStride + xoffset;
 		auto* const dstBegin = matrix.row(y).begin() + xoffset;
 		for (auto* dst = dstBegin; dst < dstBegin + BLOCK_SIZE; ++dst, ++src)
 			*dst = *src <= threshold;
 	}
-#else
-	for (int y = 0, offset = yoffset * rowStride + xoffset; y < BLOCK_SIZE; y++, offset += rowStride) {
-		for (int x = 0; x < BLOCK_SIZE; x++) {
-			// Comparison needs to be <= so that black == 0 pixels are black even if the threshold is 0.
-			if (luminances[offset + x] <= threshold) {
-				matrix.set(xoffset + x, yoffset + y);
-			}
-		}
-	}
-#endif
 }
 
 /**

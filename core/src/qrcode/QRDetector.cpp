@@ -51,7 +51,7 @@ std::vector<ConcentricPattern> FindFinderPatterns(const BitMatrix& image, bool t
 
 	for (int y = skip - 1; y < height; y += skip) {
 		PatternRow row;
-		image.getPatternRow(y, row);
+		GetPatternRow(image, y, row, false);
 		PatternView next = row;
 
 		while (next = FindLeftGuard(next, 0, PATTERN, 0.5), next.isValid()) {

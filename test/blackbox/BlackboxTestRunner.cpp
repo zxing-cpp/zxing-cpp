@@ -151,6 +151,7 @@ static std::string checkResult(const fs::path& imgPath, std::string_view expecte
 }
 
 static int failed = 0;
+static int extra = 0;
 static int totalImageLoadTime = 0;
 
 int timeSince(std::chrono::steady_clock::time_point startTime)
@@ -169,26 +170,32 @@ void preloadImageCache(const std::vector<fs::path>& imgPaths)
 	totalImageLoadTime += timeSince(startTime);
 }
 
-static void printPositiveTestStats(int imageCount, const TestCase::TC& tc)
+static std::string printPositiveTestStats(int imageCount, const TestCase::TC& tc)
 {
 	int passCount = imageCount - Size(tc.misReadFiles) - Size(tc.notDetectedFiles);
 
 	fmt::print(" | {}: {:3} of {:3}, misread {} of {}", tc.name, passCount, tc.minPassCount, Size(tc.misReadFiles), tc.maxMisreads);
 
+	std::string failures;
 	if (passCount < tc.minPassCount && !tc.notDetectedFiles.empty()) {
-		fmt::print("\nFAILED: Not detected ({}):", tc.name);
+		failures += fmt::format("    Not detected ({}):", tc.name);
 		for (const auto& f : tc.notDetectedFiles)
-			fmt::print(" {}", f.filename().string());
-		fmt::print("\n");
-		++failed;
+			failures += fmt::format(" {}", f.filename().string());
+		failures += "\n";
+		failed += tc.minPassCount - passCount;
 	}
 
+	extra += std::max(0, passCount - tc.minPassCount);
+	if (passCount > tc.minPassCount)
+		failures += fmt::format("    Unexpected detections ({}): {}\n", tc.name, passCount - tc.minPassCount);
+
 	if (Size(tc.misReadFiles) > tc.maxMisreads) {
-		fmt::print("\nFAILED: Read error ({}):", tc.name);
+		failures += fmt::format("    Read error ({}):", tc.name);
 		for (const auto& [path, error] : tc.misReadFiles)
-			fmt::print("      {}: {}\n", path.filename().string(), error);
-		++failed;
+			failures += fmt::format("      {}: {}\n", path.filename().string(), error);
+		failed += Size(tc.misReadFiles) - tc.maxMisreads;
 	}
+	return failures;
 }
 
 static std::vector<fs::path> getImagesInDirectory(const fs::path& directory)
@@ -217,6 +224,7 @@ static void doRunTests(const fs::path& directory, std::string_view format, int t
 	for (auto& test : tests) {
 		fmt::print("{:20} @ {:3}, {:3}", folderName.string(), test.rotation, Size(imgPaths));
 		std::vector<int> times;
+		std::string failures;
 		for (auto tc : test.tc) {
 			if (tc.name.empty())
 				break;
@@ -238,9 +246,11 @@ static void doRunTests(const fs::path& directory, std::string_view format, int t
 			}
 
 			times.push_back(timeSince(startTime));
-			printPositiveTestStats(Size(imgPaths), tc);
+			failures += printPositiveTestStats(Size(imgPaths), tc);
 		}
 		fmt::print(" | time: {:3} vs {:3} ms\n", times.front(), times.back());
+		if (!failures.empty())
+			fmt::print("\n{}\n", failures);
 	}
 }
 
@@ -288,8 +298,10 @@ static void doRunStructuredAppendTest(const fs::path& directory, std::string_vie
 			}
 		}
 
-		printPositiveTestStats(Size(imageGroups), tc);
+		auto failures = printPositiveTestStats(Size(imageGroups), tc);
 		fmt::print(" | time: {:3} ms\n", timeSince(startTime));
+		if (!failures.empty())
+			fmt::print("\n{}\n", failures);
 	}
 }
 
@@ -525,10 +537,9 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		});
 
 		runTests("rssexpanded-3", "DataBarExpanded", 118, {
-			// TODO: See HRIFromGS1. 13.png and 66.png are seemingly invalid symbols
-			{ 116, 116, 0   },
-			{ 116, 116, 180 },
-			{ 116, 0, pure },
+			{ 118, 118, 0   },
+			{ 118, 118, 180 },
+			{ 118, 0, pure },
 		});
 
 		runTests("rssexpandedstacked-1", "DataBarExpanded", 65, {
@@ -649,6 +660,8 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		fmt::print("total time:  {} ms.\n", totalTime);
 		if (failed)
 			fmt::print("WARNING: {} tests failed.\n", failed);
+		if (extra)
+			fmt::print("INFO: {} tests succeeded unexpectedly.\n", extra);
 
 		return failed;
 	}

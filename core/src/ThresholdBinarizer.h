@@ -52,7 +52,7 @@ public:
 	std::shared_ptr<const BitMatrix> getBlackMatrix() const override
 	{
 		BitMatrix res(width(), height());
-#ifdef ZX_FAST_BIT_STORAGE
+
 		if (_buffer.pixStride() == 1 && _buffer.rowStride() == _buffer.width()) {
 			// Specialize for a packed buffer with pixStride 1 to support auto vectorization (16x speedup on AVX2)
 			auto dst = res.row(0).begin();
@@ -75,12 +75,7 @@ public:
 				}
 			}
 		}
-#else
-		const int channel = GreenIndex(_buffer.format());
-		for (int y = 0; y < res.height(); ++y)
-			for (int x = 0; x < res.width(); ++x)
-				res.set(x, y, _buffer.data(x, y)[channel] <= _threshold);
-#endif
+
 		return std::make_shared<const BitMatrix>(std::move(res));
 	}
 };

@@ -39,6 +39,8 @@ static BitMatrix ExtractPureBits(const BitMatrix& image)
 			}
 		}
 	}
+
+	//TODO: need to return position info
 	return result;
 }
 
@@ -54,7 +56,12 @@ Reader::decode(const BinaryBitmap& image) const
 	if (bits.empty())
 		return {};
 
-	return Result(Decode(bits), {}, BarcodeFormat::MaxiCode);
+	DecoderResult decRes = Decode(bits);
+	// TODO: before we can meaningfully return a ChecksumError result, we need to check the center for the presence of the finder pattern
+	if (!decRes.isValid())
+		return {};
+
+	return Result(std::move(decRes), {}, BarcodeFormat::MaxiCode);
 }
 
 } // namespace ZXing::MaxiCode
