@@ -173,7 +173,7 @@ static double EstimateModuleSize(const BitMatrix& image, PointF a, PointF b)
 	BitMatrixCursorF cur(image, a, b - a);
 	assert(cur.isBlack());
 
-	if (!cur.stepToEdge(3, distance(a, b) / 3, true))
+	if (!cur.stepToEdge(3, static_cast<int>(distance(a, b) / 3), true))
 		return -1;
 
 	assert(cur.isBlack());
@@ -390,7 +390,7 @@ DetectorResult DetectPureMQR(const BitMatrix& image)
 
 	auto fpWidth = Reduce(diagonal);
 	float moduleSize = float(fpWidth) / 7;
-	auto dimension = width / moduleSize;
+	int dimension = narrow_cast<int>(std::lround(width / moduleSize));
 
 	if (dimension < MIN_MODULES || dimension > MAX_MODULES ||
 		!image.isIn(PointF{left + moduleSize / 2 + (dimension - 1) * moduleSize,
