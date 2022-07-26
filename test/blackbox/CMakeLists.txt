@@ -1,5 +1,5 @@
 zxing_add_package_stb()
-zxing_add_package(fmt fmtlib https://github.com/fmtlib/fmt.git 8.1.1)
+zxing_add_package(fmt fmtlib https://github.com/fmtlib/fmt.git 9.0.0)
 
 if (BUILD_READERS)
     add_executable (ReaderTest
