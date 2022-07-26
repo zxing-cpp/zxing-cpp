@@ -555,8 +555,10 @@ static bool VerifyCodewordCount(std::vector<int>& codewords, int numECCodewords)
 	if (numberOfCodewords > Size(codewords)) {
 		return false;
 	}
-	if (numberOfCodewords == 0) {
-		// Reset to the length of the array - 8 (Allow for at least level 3 Error Correction (8 Error Codewords)
+
+	assert(numECCodewords >= 2);
+	if (numberOfCodewords + numECCodewords != Size(codewords)) {
+		// Reset to the length of the array less number of Error Codewords
 		if (numECCodewords < Size(codewords)) {
 			codewords[0] = Size(codewords) - numECCodewords;
 		}

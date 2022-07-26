@@ -61,6 +61,7 @@ add_executable (UnitTest
     pdf417/PDF417DecoderTest.cpp
     pdf417/PDF417ErrorCorrectionTest.cpp
     pdf417/PDF417HighLevelEncoderTest.cpp
+    pdf417/PDF417ScanningDecoderTest.cpp
     pdf417/PDF417WriterTest.cpp
 )
 
