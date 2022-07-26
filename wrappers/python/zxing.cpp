@@ -14,7 +14,6 @@
 // Writer
 #include "BitMatrix.h"
 #include "MultiFormatWriter.h"
-#include "TextUtfEncoding.h"
 
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
@@ -104,7 +103,7 @@ Results read_barcodes(py::object _image, const BarcodeFormats& formats, bool try
 Image write_barcode(BarcodeFormat format, std::string text, int width, int height, int quiet_zone, int ec_level)
 {
 	auto writer = MultiFormatWriter(format).setMargin(quiet_zone).setEccLevel(ec_level);
-	auto bitmap = writer.encode(TextUtfEncoding::FromUtf8(text), width, height);
+	auto bitmap = writer.encode(text, width, height);
 
 	auto result = Image({bitmap.height(), bitmap.width()});
 	auto r = result.mutable_unchecked<2>();
