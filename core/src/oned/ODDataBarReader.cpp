@@ -204,7 +204,7 @@ Result DataBarReader::decodePattern(int rowNumber, PatternView& next,
 			}
 #endif
 
-	// guaratee progress (see loop in ODReader.cpp)
+	// guarantee progress (see loop in ODReader.cpp)
 	next = {};
 
 	return {};
