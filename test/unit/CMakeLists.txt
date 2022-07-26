@@ -42,12 +42,13 @@ add_executable (UnitTest
     oned/ODCode93WriterTest.cpp
     oned/ODCode128ReaderTest.cpp
     oned/ODCode128WriterTest.cpp
+    oned/ODDataBarReaderTest.cpp
+    oned/ODDataBarExpandedBitDecoderTest.cpp
     oned/ODEAN8WriterTest.cpp
     oned/ODEAN13WriterTest.cpp
     oned/ODITFWriterTest.cpp
     oned/ODUPCAWriterTest.cpp
     oned/ODUPCEWriterTest.cpp
-    oned/ODDataBarExpandedBitDecoderTest.cpp
     qrcode/MQRDecoderTest.cpp
     qrcode/QRBitMatrixParserTest.cpp
     qrcode/QRDataMaskTest.cpp
