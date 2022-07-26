@@ -18,7 +18,6 @@
 #include "QRVersion.h"
 #include "ReedSolomonDecoder.h"
 #include "StructuredAppend.h"
-#include "TextDecoder.h"
 #include "ZXAlgorithms.h"
 #include "ZXTestSupport.h"
 

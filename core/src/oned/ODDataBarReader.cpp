@@ -12,7 +12,6 @@
 #include "GTIN.h"
 #include "ODDataBarCommon.h"
 #include "Result.h"
-#include "TextDecoder.h"
 
 #include <unordered_set>
 

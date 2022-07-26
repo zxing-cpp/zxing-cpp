@@ -15,7 +15,6 @@
 #include "DecoderResult.h"
 #include "GenericGF.h"
 #include "ReedSolomonDecoder.h"
-#include "TextDecoder.h"
 #include "ZXAlgorithms.h"
 #include "ZXTestSupport.h"
 

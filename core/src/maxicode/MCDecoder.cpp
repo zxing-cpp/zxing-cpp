@@ -12,7 +12,6 @@
 #include "GenericGF.h"
 #include "MCBitMatrixParser.h"
 #include "ReedSolomonDecoder.h"
-#include "TextDecoder.h"
 #include "ZXTestSupport.h"
 
 #include <algorithm>

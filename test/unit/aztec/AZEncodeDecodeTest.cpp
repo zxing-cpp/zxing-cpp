@@ -8,7 +8,6 @@
 #include "CharacterSet.h"
 #include "DecoderResult.h"
 #include "PseudoRandom.h"
-#include "TextDecoder.h"
 #include "TextEncoder.h"
 #include "aztec/AZDecoder.h"
 #include "aztec/AZDetectorResult.h"

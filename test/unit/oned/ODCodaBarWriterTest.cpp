@@ -10,7 +10,6 @@
 #include "DecodeHints.h"
 #include "Result.h"
 #include "oned/ODCodabarReader.h"
-#include "TextUtfEncoding.h"
 
 #include "gtest/gtest.h"
 #include <stdexcept>

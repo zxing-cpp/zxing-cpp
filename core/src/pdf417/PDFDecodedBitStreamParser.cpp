@@ -10,7 +10,6 @@
 #include "CharacterSet.h"
 #include "DecoderResult.h"
 #include "PDFDecoderResultExtra.h"
-#include "TextDecoder.h"
 #include "TextUtfEncoding.h"
 #include "ZXBigInteger.h"
 #include "ZXTestSupport.h"

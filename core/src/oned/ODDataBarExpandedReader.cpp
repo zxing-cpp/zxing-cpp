@@ -13,7 +13,6 @@
 #include "ODDataBarCommon.h"
 #include "ODDataBarExpandedBitDecoder.h"
 #include "Result.h"
-#include "TextDecoder.h"
 
 #include <map>
 #include <vector>
