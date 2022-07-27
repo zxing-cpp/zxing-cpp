@@ -5,7 +5,7 @@
 
 #include "TextUtfEncoding.h"
 
-#include <cwctype>
+#include <locale>
 #include <iomanip>
 #include <sstream>
 
