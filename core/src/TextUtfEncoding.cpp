@@ -182,7 +182,6 @@ std::string ToUtf8(const std::wstring& str)
 }
 
 // Same as `ToUtf8()` above, except if angleEscape set, places non-graphical characters in angle brackets with text name
-// Note `std::setlocale(LC_CTYPE, "en_US.UTF-8")` must be set beforehand for `std::iswraph()` to work
 std::string ToUtf8(const std::wstring& str, const bool angleEscape)
 {
 	if (!angleEscape) {
@@ -195,8 +194,10 @@ std::string ToUtf8(const std::wstring& str, const bool angleEscape)
 		"CAN",  "EM", "SUB", "ESC",  "FS",  "GS",  "RS",  "US",
 		"DEL",
 	};
-	std::wostringstream ws;
 
+	std::locale utf8Loc("en_US.UTF-8");
+
+	std::wostringstream ws;
 	ws.fill(L'0');
 
 	for (unsigned int i = 0; i < str.length(); i++) {
@@ -213,7 +214,7 @@ std::string ToUtf8(const std::wstring& str, const bool angleEscape)
 				ws.write(str.c_str() + i++, 2);
 			} else {
 				// Exclude unpaired surrogates and NO-BREAK spaces NBSP and NUMSP
-				if ((wc < 0xd800 || wc >= 0xe000) && (std::iswgraph(wc) && wc != 0xA0 && wc != 0x2007)) {
+				if ((wc < 0xd800 || wc >= 0xe000) && (std::isgraph(wc, utf8Loc) && wc != 0xA0 && wc != 0x2007 && wc != 0xfffd)) {
 					ws << wc;
 				} else { // Non-graphical Unicode
 					int width = wc < 256 ? 2 : 4;

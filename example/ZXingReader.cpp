@@ -140,9 +140,6 @@ int main(int argc, char* argv[])
 
 	hints.setEanAddOnSymbol(EanAddOnSymbol::Read);
 
-	if (angleEscape)
-		std::setlocale(LC_CTYPE, "en_US.UTF-8"); // Needed so `std::iswgraph()` in `ToUtf8(angleEscape)` does not 'swallow' all printable non-ascii utf8 chars
-
 	std::cout.setf(std::ios::boolalpha);
 
 	for (const auto& filePath : filePaths) {
