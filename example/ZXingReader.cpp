@@ -140,9 +140,6 @@ int main(int argc, char* argv[])
 
 	hints.setEanAddOnSymbol(EanAddOnSymbol::Read);
 
-	if (angleEscape)
-		std::setlocale(LC_CTYPE, "en_US.UTF-8"); // Needed so `std::iswgraph()` in `ToUtf8(angleEscape)` does not 'swallow' all printable non-ascii utf8 chars
-
 	std::cout.setf(std::ios::boolalpha);
 
 	for (const auto& filePath : filePaths) {
@@ -249,6 +246,20 @@ int main(int argc, char* argv[])
 		if (Size(filePaths) == 1 && !outPath.empty())
 			stbi_write_png(outPath.c_str(), image.width(), image.height(), 3, image.data(0, 0), image.rowStride());
 
+#ifdef NDEBUG
+		if (getenv("MEASURE_PERF")) {
+			auto startTime = std::chrono::high_resolution_clock::now();
+			auto duration = startTime - startTime;
+			int N = 0;
+			do {
+				for (int i = 0; i < 100; ++i)
+					ReadBarcodes(image, hints);
+				N += 100;
+				duration = std::chrono::high_resolution_clock::now() - startTime;
+			} while (duration < std::chrono::seconds(1));
+			printf("time: %5.1f ms per frame\n", double(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count()) / N);
+		}
+#endif
 	}
 
 	return ret;

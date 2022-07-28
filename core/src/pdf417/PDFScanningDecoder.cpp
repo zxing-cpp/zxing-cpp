@@ -5,23 +5,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "PDFScanningDecoder.h"
-#include "PDFBoundingBox.h"
-#include "PDFDetectionResultColumn.h"
-#include "PDFCodewordDecoder.h"
-#include "PDFBarcodeMetadata.h"
-#include "PDFDetectionResult.h"
-#include "PDFBarcodeValue.h"
-#include "PDFDecodedBitStreamParser.h"
-#include "PDFModulusGF.h"
-#include "ResultPoint.h"
-#include "ZXNullable.h"
+
 #include "BitMatrix.h"
 #include "DecoderResult.h"
+#include "PDFBarcodeMetadata.h"
+#include "PDFBarcodeValue.h"
+#include "PDFCodewordDecoder.h"
+#include "PDFDetectionResult.h"
+#include "PDFDecodedBitStreamParser.h"
+#include "PDFModulusGF.h"
 #include "ZXTestSupport.h"
-
-#include <cstdlib>
-#include <array>
-#include <algorithm>
 
 namespace ZXing {
 namespace Pdf417 {
@@ -555,8 +548,10 @@ static bool VerifyCodewordCount(std::vector<int>& codewords, int numECCodewords)
 	if (numberOfCodewords > Size(codewords)) {
 		return false;
 	}
-	if (numberOfCodewords == 0) {
-		// Reset to the length of the array - 8 (Allow for at least level 3 Error Correction (8 Error Codewords)
+
+	assert(numECCodewords >= 2);
+	if (numberOfCodewords + numECCodewords != Size(codewords)) {
+		// Reset to the length of the array less number of Error Codewords
 		if (numECCodewords < Size(codewords)) {
 			codewords[0] = Size(codewords) - numECCodewords;
 		}

@@ -12,7 +12,6 @@
 #include "GTIN.h"
 #include "ODDataBarCommon.h"
 #include "Result.h"
-#include "TextDecoder.h"
 
 #include <unordered_set>
 
@@ -136,6 +135,10 @@ static std::string ConstructText(Pair leftPair, Pair rightPair)
 {
 	auto value = [](Pair p) { return 1597 * p.left.value + p.right.value; };
 	auto res = 4537077LL * value(leftPair) + value(rightPair);
+	if (res >= 10000000000000LL) { // Strip 2D linkage flag (GS1 Composite) if any (ISO/IEC 24724:2011 Section 5.2.3)
+		res -= 10000000000000LL;
+		assert(res <= 9999999999999LL); // 13 digits
+	}
 	auto txt = ToString(res, 13);
 	return txt + GTIN::ComputeCheckDigit(txt);
 }
@@ -201,7 +204,7 @@ Result DataBarReader::decodePattern(int rowNumber, PatternView& next,
 			}
 #endif
 
-	// guaratee progress (see loop in ODReader.cpp)
+	// guarantee progress (see loop in ODReader.cpp)
 	next = {};
 
 	return {};
