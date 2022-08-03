@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "TextUtfEncoding.h"
+#include "ZXAlgorithms.h"
 
 #include <locale>
 #include <iomanip>
@@ -85,10 +86,11 @@ static void ConvertFromUtf8(const uint8_t* src, size_t length, std::wstring& buf
 			continue;
 
 		if (sizeof(wchar_t) == 2 && codePoint > 0xffff) { // surrogate pair
-			buffer.push_back(static_cast<wchar_t>(0xd7c0 + (codePoint >> 10)));
-			buffer.push_back(static_cast<wchar_t>(0xdc00 + (codePoint & 0x3ff)));
-		} else
-			buffer.push_back(static_cast<wchar_t>(codePoint));
+			buffer.push_back(narrow_cast<wchar_t>(0xd7c0 + (codePoint >> 10)));
+			buffer.push_back(narrow_cast<wchar_t>(0xdc00 + (codePoint & 0x3ff)));
+		} else {
+			buffer.push_back(narrow_cast<wchar_t>(codePoint));
+		}
 	}
 }
 
@@ -126,21 +128,21 @@ static int Utf8Encode(uint32_t utf32, char* out)
 		return 1;
 	}
 	if (utf32 < 0x800) {
-		*out++ = static_cast<uint8_t>((utf32 >> 6) | 0xc0);
-		*out++ = static_cast<uint8_t>((utf32 & 0x3f) | 0x80);
+		*out++ = narrow_cast<uint8_t>((utf32 >> 6) | 0xc0);
+		*out++ = narrow_cast<uint8_t>((utf32 & 0x3f) | 0x80);
 		return 2;
 	}
 	if (utf32 < 0x10000) {
-		*out++ = static_cast<uint8_t>((utf32 >> 12) | 0xe0);
-		*out++ = static_cast<uint8_t>(((utf32 >> 6) & 0x3f) | 0x80);
-		*out++ = static_cast<uint8_t>((utf32 & 0x3f) | 0x80);
+		*out++ = narrow_cast<uint8_t>((utf32 >> 12) | 0xe0);
+		*out++ = narrow_cast<uint8_t>(((utf32 >> 6) & 0x3f) | 0x80);
+		*out++ = narrow_cast<uint8_t>((utf32 & 0x3f) | 0x80);
 		return 3;
 	}
 
-	*out++ = static_cast<uint8_t>((utf32 >> 18) | 0xf0);
-	*out++ = static_cast<uint8_t>(((utf32 >> 12) & 0x3f) | 0x80);
-	*out++ = static_cast<uint8_t>(((utf32 >> 6) & 0x3f) | 0x80);
-	*out++ = static_cast<uint8_t>((utf32 & 0x3f) | 0x80);
+	*out++ = narrow_cast<uint8_t>((utf32 >> 18) | 0xf0);
+	*out++ = narrow_cast<uint8_t>(((utf32 >> 12) & 0x3f) | 0x80);
+	*out++ = narrow_cast<uint8_t>(((utf32 >> 6) & 0x3f) | 0x80);
+	*out++ = narrow_cast<uint8_t>((utf32 & 0x3f) | 0x80);
 	return 4;
 }
 
