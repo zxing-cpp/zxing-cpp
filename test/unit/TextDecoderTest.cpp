@@ -14,6 +14,18 @@ using namespace ZXing;
 using namespace ZXing::TextUtfEncoding;
 using namespace testing;
 
+namespace ZXing::TextUtfEncoding {
+int Utf8Encode(uint32_t utf32, char* out);
+}
+
+// Encode Unicode codepoint `utf32` as UTF-8
+std::string Utf8Encode(const uint32_t utf32)
+{
+	char buf[4];
+	int len = Utf8Encode(utf32, buf);
+	return std::string(buf, len);
+}
+
 TEST(TextDecoderTest, AppendBINARY_ASCII)
 {
 	uint8_t data[256];
@@ -37,22 +49,46 @@ TEST(TextDecoderTest, AppendBINARY_ASCII)
 
 TEST(TextDecoderTest, AppendAllASCIIRange00_7F)
 {
+	std::string expected;
 	uint8_t data[0x80];
-	uint8_t dataUnicodeBig[0x80 * 2];
+	uint8_t dataUTF16BE[0x80 * 2];
+	uint8_t dataUTF16LE[0x80 * 2];
+	uint8_t dataUTF32BE[0x80 * 4];
+	uint8_t dataUTF32LE[0x80 * 4];
+
 	for (int i = 0; i < 0x80; i++) {
-		data[i] = (uint8_t)i;
-		dataUnicodeBig[i << 1] = 0;
-		dataUnicodeBig[(i << 1) + 1] = (uint8_t)i;
+		uint8_t ch = static_cast<uint8_t>(i);
+		data[i] = ch;
+		expected.append(Utf8Encode(i));
+
+		int j = i << 1;
+		int k = j << 1;
+
+		dataUTF16BE[j] = 0;
+		dataUTF16BE[j + 1] = ch;
+
+		dataUTF16LE[j] = ch;
+		dataUTF16LE[j + 1] = 0;
+
+		dataUTF32BE[k] = dataUTF32BE[k + 1] = dataUTF32BE[k + 2] = 0;
+		dataUTF32BE[k + 3] = ch;
+
+		dataUTF32LE[k] = ch;
+		dataUTF32LE[k + 1] = dataUTF32LE[k + 2] = dataUTF32LE[k + 3] = 0;
 	}
+	EXPECT_EQ(expected.size(), 128);
 
 	for (int i = 0; i < static_cast<int>(CharacterSet::CharsetCount); i++) {
-		std::wstring str;
-		if (i == static_cast<int>(CharacterSet::UnicodeBig)) {
-			TextDecoder::Append(str, dataUnicodeBig, sizeof(dataUnicodeBig), static_cast<CharacterSet>(i));
-		} else {
-			TextDecoder::Append(str, data, sizeof(data), static_cast<CharacterSet>(i));
+		std::string str;
+		CharacterSet cs = static_cast<CharacterSet>(i);
+		switch(cs) {
+		case CharacterSet::UTF16BE: TextDecoder::Append(str, dataUTF16BE, sizeof(dataUTF16BE), cs); break;
+		case CharacterSet::UTF16LE: TextDecoder::Append(str, dataUTF16LE, sizeof(dataUTF16LE), cs); break;
+		case CharacterSet::UTF32BE: TextDecoder::Append(str, dataUTF32BE, sizeof(dataUTF32BE), cs); break;
+		case CharacterSet::UTF32LE: TextDecoder::Append(str, dataUTF32LE, sizeof(dataUTF32LE), cs); break;
+		default: TextDecoder::Append(str, data, sizeof(data), cs); break;
 		}
-		EXPECT_THAT(str, ElementsAreArray(data, sizeof(data))) << "charset: " << i;
+		EXPECT_EQ(str, expected) << " charset: " << ToString(cs);
 	}
 }
 

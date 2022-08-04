@@ -35,13 +35,16 @@ enum class ECI : int
 	Cp1251     = 22,
 	Cp1252     = 23,
 	Cp1256     = 24,
-	UTF16      = 25,
+	UTF16BE    = 25,
 	UTF8       = 26,
 	ASCII      = 27,
 	Big5       = 28,
 	GB2312     = 29,
 	EUC_KR     = 30,
 	GB18030    = 32,
+	UTF16LE    = 33,
+	UTF32BE    = 34,
+	UTF32LE    = 35,
 	ISO646_Inv = 170,
 	Binary     = 899
 };

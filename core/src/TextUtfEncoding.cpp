@@ -4,6 +4,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "TextUtfEncoding.h"
+
+#include "ZXTestSupport.h"
 #include "ZXAlgorithms.h"
 
 #include <locale>
@@ -121,7 +123,8 @@ static size_t Utf8CountBytes(const wchar_t* str, size_t length)
 	return result;
 }
 
-static int Utf8Encode(uint32_t utf32, char* out)
+ZXING_EXPORT_TEST_ONLY
+int Utf8Encode(uint32_t utf32, char* out)
 {
 	if (utf32 < 0x80) {
 		*out++ = static_cast<uint8_t>(utf32);
