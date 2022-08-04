@@ -14,6 +14,7 @@ namespace ZXing {
 enum class ECI : int
 {
 	Unknown    = -1,
+	Cp437      = 2, // obsolete
 	ISO8859_1  = 3,
 	ISO8859_2  = 4,
 	ISO8859_3  = 5,
@@ -38,8 +39,10 @@ enum class ECI : int
 	UTF8       = 26,
 	ASCII      = 27,
 	Big5       = 28,
-	GB18030    = 29,
+	GB2312     = 29,
 	EUC_KR     = 30,
+	GB18030    = 32,
+	ISO646_Inv = 170,
 	Binary     = 899
 };
 
@@ -50,7 +53,7 @@ inline constexpr int ToInt(ECI eci)
 
 inline constexpr bool IsText(ECI eci)
 {
-	return ToInt(eci) >= 0 && ToInt(eci) <= 32;
+	return ToInt(eci) >= 0 && ToInt(eci) <= 170;
 }
 
 inline constexpr bool CanProcess(ECI eci)

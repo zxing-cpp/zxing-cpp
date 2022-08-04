@@ -8,6 +8,7 @@
 #include "BitMatrixIO.h"
 #include "CharacterSet.h"
 #include "TextDecoder.h"
+#include "TextUtfEncoding.h"
 #include "qrcode/QREncoder.h"
 #include "qrcode/QRCodecMode.h"
 #include "qrcode/QREncodeResult.h"
@@ -40,9 +41,9 @@ using namespace ZXing::Utility;
 namespace {
 	std::wstring ShiftJISString(const std::vector<uint8_t>& bytes)
 	{
-		std::wstring str;
+		std::string str;
 		TextDecoder::Append(str, bytes.data(), bytes.size(), CharacterSet::Shift_JIS);
-		return str;
+		return TextUtfEncoding::FromUtf8(str);
 	}
 
 	std::string RemoveSpace(std::string s)

@@ -40,7 +40,12 @@ macro(zxing_add_package name depname git_repo git_rev)
             # Prevent overriding the parent project's compiler/linker settings on Windows
             set (gtest_force_shared_crt ON CACHE BOOL "" FORCE)
         endif()
-        FetchContent_MakeAvailable (${depname})
+        #FetchContent_MakeAvailable (${depname})
+        FetchContent_GetProperties(${depname})
+        if(NOT ${depname}_POPULATED)
+            FetchContent_Populate(${depname})
+            add_subdirectory(${${depname}_SOURCE_DIR} ${${depname}_BINARY_DIR} EXCLUDE_FROM_ALL) # prevent installing of dependencies
+        endif()
         set (${name}_POPULATED TRUE) # this is supposed to be done in MakeAvailable but it seems not to?!?
     endif()
 endmacro()

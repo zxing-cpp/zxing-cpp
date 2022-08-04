@@ -38,7 +38,7 @@ class Content
 	void ForEachECIBlock(FUNC f) const;
 
 	void switchEncoding(ECI eci, bool isECI);
-	std::wstring render(bool withECI) const;
+	std::string render(bool withECI) const;
 
 public:
 	struct Encoding
@@ -76,8 +76,8 @@ public:
 	bool canProcess() const;
 
 	std::string text(TextMode mode) const;
-	std::wstring utf16() const { return render(false); }
-	std::string utf8() const { return text(TextMode::Utf8); }
+	std::wstring utf16() const;
+	std::string utf8() const { return render(false); }
 
 	ByteArray bytesECI() const;
 	CharacterSet guessEncoding() const;

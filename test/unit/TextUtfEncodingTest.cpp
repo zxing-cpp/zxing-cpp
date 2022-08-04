@@ -27,3 +27,18 @@ TEST(TextUtfEncodingTest, ToUtf8AngleEscape)
 	EXPECT_EQ(ToUtf8(L"\xD800Z", angleEscape), "<U+D800>Z"); // Unpaired high surrogate
 	EXPECT_EQ(ToUtf8(L"A\xDC00", angleEscape), "A<U+DC00>"); // Unpaired low surrogate
 }
+
+TEST(TextUtfEncodingTest, FromUtf8)
+{
+	using namespace ZXing::TextUtfEncoding;
+
+	EXPECT_EQ(FromUtf8(u8"\U00010000"), L"\U00010000");
+	EXPECT_EQ(FromUtf8(u8"\U00010FFF"), L"\U00010FFF");
+	EXPECT_EQ(FromUtf8("A\xE8\x80\xBFG"), L"A\u803FG"); // U+803F
+
+//	EXPECT_EQ(FromUtf8("A\xE8\x80\xBF\x80G"), L"A\u803FG"); // Bad UTF-8 (extra continuation byte)
+//	EXPECT_EQ(FromUtf8("A\xE8\x80\xC0G"), L"AG");           // Bad UTF-8 (non-continuation byte)
+//	EXPECT_EQ(FromUtf8("A\xE8\x80G"), L"AG");               // Bad UTF-8 (missing continuation byte)
+//	EXPECT_EQ(FromUtf8("A\xE8G"), L"AG");                   // Bad UTF-8 (missing continuation bytes)
+//	EXPECT_EQ(FromUtf8("A\xED\xA0\x80G"), L"AG");           // Bad UTF-8 (unpaired high surrogate U+D800)
+}

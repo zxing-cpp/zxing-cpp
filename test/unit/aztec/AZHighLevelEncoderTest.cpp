@@ -9,7 +9,6 @@
 #include "BitArrayUtility.h"
 #include "DecoderResult.h"
 #include "StructuredAppend.h"
-#include "TextDecoder.h"
 
 #include "gtest/gtest.h"
 #include <algorithm>
@@ -31,7 +30,7 @@ namespace {
 	void TestHighLevelEncodeString(const std::string& s, const std::string& expectedBits) {
 		BitArray bits = Aztec::HighLevelEncoder::Encode(s);
 		EXPECT_EQ(Utility::ToString(bits), StripSpaces(expectedBits)) << "highLevelEncode() failed for input string: " + s;
-		EXPECT_EQ(TextDecoder::FromLatin1(s), Aztec::Decode(bits).text());
+		EXPECT_EQ(ByteArray(s), Aztec::Decode(bits).content().bytes);
 	}
 
 	void TestHighLevelEncodeString(const std::string& s, int expectedReceivedBits) {
