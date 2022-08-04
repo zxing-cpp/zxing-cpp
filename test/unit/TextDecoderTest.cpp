@@ -230,13 +230,13 @@ TEST(TextDecoderTest, AppendEUC_KR)
 	}
 }
 
-TEST(TextDecoderTest, AppendUnicodeBig)
+TEST(TextDecoderTest, AppendUTF16BE)
 {
 	{
 		std::wstring str;
 		static const uint8_t data[] = { 0x00, 0x01, 0x00, 0x7F, 0x00, 0x80, 0x00, 0xFF, 0x01, 0xFF, 0x10, 0xFF,
 										0xFF, 0xFD };
-		TextDecoder::Append(str, data, sizeof(data), CharacterSet::UnicodeBig);
+		TextDecoder::Append(str, data, sizeof(data), CharacterSet::UTF16BE);
 		EXPECT_EQ(str, L"\u0001\u007F\u0080\u00FF\u01FF\u10FF\uFFFD");
 		EXPECT_EQ(ToUtf8(str), "\x01\x7F\xC2\x80ÿǿჿ\xEF\xBF\xBD");
 	}
@@ -244,7 +244,7 @@ TEST(TextDecoderTest, AppendUnicodeBig)
 	{
 		std::wstring str;
 		static const uint8_t data[] = { 0xD8, 0x00, 0xDC, 0x00 }; // Surrogate pair U+10000
-		TextDecoder::Append(str, data, sizeof(data), CharacterSet::UnicodeBig);
+		TextDecoder::Append(str, data, sizeof(data), CharacterSet::UTF16BE);
 		EXPECT_EQ(str, L"\U00010000");
 		EXPECT_EQ(ToUtf8(str), "𐀀");
 	}
