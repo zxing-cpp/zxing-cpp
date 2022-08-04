@@ -15,14 +15,14 @@ using namespace ZXing::TextUtfEncoding;
 using namespace testing;
 
 namespace ZXing::TextUtfEncoding {
-int Utf8Encode(uint32_t utf32, char* out);
+int Utf32ToUtf8(uint32_t utf32, char* out);
 }
 
 // Encode Unicode codepoint `utf32` as UTF-8
-std::string Utf8Encode(const uint32_t utf32)
+std::string Utf32ToUtf8(const uint32_t utf32)
 {
 	char buf[4];
-	int len = Utf8Encode(utf32, buf);
+	int len = Utf32ToUtf8(utf32, buf);
 	return std::string(buf, len);
 }
 
@@ -59,7 +59,7 @@ TEST(TextDecoderTest, AppendAllASCIIRange00_7F)
 	for (int i = 0; i < 0x80; i++) {
 		uint8_t ch = static_cast<uint8_t>(i);
 		data[i] = ch;
-		expected.append(Utf8Encode(i));
+		expected.append(Utf32ToUtf8(i));
 
 		int j = i << 1;
 		int k = j << 1;

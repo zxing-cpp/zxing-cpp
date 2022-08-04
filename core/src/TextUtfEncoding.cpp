@@ -1,5 +1,7 @@
 /*
 * Copyright 2016 Nu-book Inc.
+* Copyright 2021 gitlost
+* Copyright 2022 Axel Waggershauser
 */
 // SPDX-License-Identifier: Apache-2.0
 
@@ -14,35 +16,14 @@
 
 namespace ZXing::TextUtfEncoding {
 
-static size_t Utf8CountCodePoints(const uint8_t* utf8, size_t length)
-{
-	size_t count = 0;
-
-	for (size_t i = 0; i < length;) {
-		if (utf8[i] < 128) {
-			++i;
-		} else {
-			switch (utf8[i] & 0xf0) {
-			case 0xc0: [[fallthrough]];
-			case 0xd0: i += 2; break;
-			case 0xe0: i += 3; break;
-			case 0xf0: i += 4; break;
-			default: // we are in middle of a sequence
-				++i;
-				while (i < length && (utf8[i] & 0xc0) == 0x80)
-					++i;
-				break;
-			}
-		}
-		++count;
-	}
-	return count;
-}
+// TODO: c++20 has char8_t
+using char8_t = uint8_t;
+using utf8_t = std::basic_string_view<char8_t>;
 
 constexpr uint32_t kAccepted = 0;
 constexpr uint32_t kRejected [[maybe_unused]] = 12;
 
-inline uint32_t Utf8Decode(uint8_t byte, uint32_t& state, uint32_t& codep)
+inline uint32_t Utf8Decode(char8_t byte, uint32_t& state, uint32_t& codep)
 {
 	// Copyright (c) 2008-2009 Bjoern Hoehrmann <bjoern@hoehrmann.de>
 	// See http://bjoern.hoehrmann.de/utf-8/decoder/dfa/ for details.
@@ -75,16 +56,59 @@ inline uint32_t Utf8Decode(uint8_t byte, uint32_t& state, uint32_t& codep)
 
 static_assert(sizeof(wchar_t) == 4 || sizeof(wchar_t) == 2, "wchar_t needs to be 2 or 4 bytes wide");
 
-static void ConvertFromUtf8(const uint8_t* src, size_t length, std::wstring& buffer)
+template <typename T>
+bool IsUtf16HighSurrogate(T c)
 {
-	size_t destLen = Utf8CountCodePoints(src, length);
+	return (c & 0xfc00) == 0xd800;
+}
 
-	buffer.reserve(buffer.size() + destLen);
+template <typename T>
+bool IsUtf16LowSurrogate(T c)
+{
+	return (c & 0xfc00) == 0xdc00;
+}
+
+template <typename T>
+uint32_t Utf32FromUtf16Surrogates(T high, T low)
+{
+	return (uint32_t(high) << 10) + low - 0x35fdc00;
+}
+
+static size_t Utf8CountCodePoints(utf8_t utf8)
+{
+	size_t count = 0;
+
+	for (size_t i = 0; i < utf8.size();) {
+		if (utf8[i] < 128) {
+			++i;
+		} else {
+			switch (utf8[i] & 0xf0) {
+			case 0xc0: [[fallthrough]];
+			case 0xd0: i += 2; break;
+			case 0xe0: i += 3; break;
+			case 0xf0: i += 4; break;
+			default: // we are in middle of a sequence
+				++i;
+				while (i < utf8.size() && (utf8[i] & 0xc0) == 0x80)
+					++i;
+				break;
+			}
+		}
+		++count;
+	}
+
+	return count;
+}
+
+static void AppendFromUtf8(utf8_t utf8, std::wstring& buffer)
+{
+	buffer.reserve(buffer.size() + Utf8CountCodePoints(utf8));
+
 	uint32_t codePoint = 0;
 	uint32_t state = kAccepted;
 
-	for (auto i = src, end = src + length; i < end; ++i) {
-		if (Utf8Decode(*i, state, codePoint) != kAccepted)
+	for (auto b : utf8) {
+		if (Utf8Decode(b, state, codePoint) != kAccepted)
 			continue;
 
 		if (sizeof(wchar_t) == 2 && codePoint > 0xffff) { // surrogate pair
@@ -96,13 +120,18 @@ static void ConvertFromUtf8(const uint8_t* src, size_t length, std::wstring& buf
 	}
 }
 
-/// <summary>
-/// Count the number of bytes required to store given code points in UTF-8.
-/// </summary>
-static size_t Utf8CountBytes(const wchar_t* str, size_t length)
+std::wstring FromUtf8(std::string_view utf8)
+{
+	std::wstring str;
+	AppendFromUtf8({reinterpret_cast<const char8_t*>(utf8.data()), utf8.size()}, str);
+	return str;
+}
+
+// Count the number of bytes required to store given code points in UTF-8.
+static size_t Utf8CountBytes(std::wstring_view str)
 {
 	int result = 0;
-	for (size_t i = 0; i < length; ++i) {
+	for (size_t i = 0; i < str.size(); ++i) {
 		if (str[i] < 0x80)
 			result += 1;
 		else if (str[i] < 0x800)
@@ -124,7 +153,7 @@ static size_t Utf8CountBytes(const wchar_t* str, size_t length)
 }
 
 ZXING_EXPORT_TEST_ONLY
-int Utf8Encode(uint32_t utf32, char* out)
+int Utf32ToUtf8(uint32_t utf32, char* out)
 {
 	if (utf32 < 0x80) {
 		*out++ = static_cast<uint8_t>(utf32);
@@ -149,50 +178,40 @@ int Utf8Encode(uint32_t utf32, char* out)
 	return 4;
 }
 
-static void ConvertToUtf8(const std::wstring& str, std::string& utf8)
+static void AppendToUtf8(std::wstring_view str, std::string& utf8)
 {
+	utf8.reserve(utf8.size() + Utf8CountBytes(str));
+
 	char buffer[4];
-	for (size_t i = 0; i < str.length(); ++i)
+	for (size_t i = 0; i < str.size(); ++i)
 	{
-		uint32_t c;
-		if (sizeof(wchar_t) == 2 && i + 1 < str.length() && IsUtf16HighSurrogate(str[i]) &&
-			IsUtf16LowSurrogate(str[i + 1])) {
-			c = CodePointFromUtf16Surrogates(str[i], str[i + 1]);
+		uint32_t cp;
+		if (sizeof(wchar_t) == 2 && i + 1 < str.size() && IsUtf16HighSurrogate(str[i]) && IsUtf16LowSurrogate(str[i + 1])) {
+			cp = Utf32FromUtf16Surrogates(str[i], str[i + 1]);
 			++i;
 		} else
-			c = str[i];
+			cp = str[i];
 
-		auto bufLength = Utf8Encode(c, buffer);
+		auto bufLength = Utf32ToUtf8(cp, buffer);
 		utf8.append(buffer, bufLength);
 	}
 }
 
-void ToUtf8(const std::wstring& str, std::string& utf8)
-{
-	utf8.reserve(str.length() + Utf8CountBytes(str.data(), str.length()));
-	ConvertToUtf8(str, utf8);
-}
-
-std::wstring FromUtf8(const std::string& utf8)
-{
-	std::wstring str;
-	ConvertFromUtf8(reinterpret_cast<const uint8_t*>(utf8.data()), utf8.length(), str);
-	return str;
-}
-
-std::string ToUtf8(const std::wstring& str)
+std::string ToUtf8(std::wstring_view str)
 {
 	std::string utf8;
-	ToUtf8(str, utf8);
+	AppendToUtf8(str, utf8);
 	return utf8;
 }
 
 // Same as `ToUtf8()` above, except if angleEscape set, places non-graphical characters in angle brackets with text name
-std::string ToUtf8(const std::wstring& str, const bool angleEscape)
+std::string ToUtf8(std::wstring_view str, const bool angleEscape)
 {
-	if (!angleEscape) {
-		return ToUtf8(str);
-	}
+	return ToUtf8(angleEscape ? EscapeNonGraphical(str) : str);
+}
+
+std::wstring EscapeNonGraphical(std::wstring_view str)
+{
 	static const char* const ascii_nongraphs[33] = {
 		"NUL", "SOH", "STX", "ETX", "EOT", "ENQ", "ACK", "BEL",
 		 "BS",  "HT",  "LF",  "VT",  "FF",  "CR",  "SO",  "SI",
@@ -206,61 +225,27 @@ std::string ToUtf8(const std::wstring& str, const bool angleEscape)
 	std::wostringstream ws;
 	ws.fill(L'0');
 
-	for (unsigned int i = 0; i < str.length(); i++) {
+	for (size_t i = 0; i < str.size(); i++) {
 		wchar_t wc = str[i];
-		if (wc < 128) { // ASCII
-			if (wc < 32 || wc == 127) { // Non-graphical ASCII, excluding space
-				ws << "<" << ascii_nongraphs[wc == 127 ? 32 : wc] << ">";
-			} else {
-				ws << wc;
-			}
-		} else {
-			// Surrogates (Windows) need special treatment
-			if (i + 1 < str.length() && IsUtf16HighSurrogate(wc) && IsUtf16LowSurrogate(str[i + 1])) {
-				ws.write(str.c_str() + i++, 2);
-			} else {
-				// Exclude unpaired surrogates and NO-BREAK spaces NBSP and NUMSP
-				if ((wc < 0xd800 || wc >= 0xe000) && (std::isgraph(wc, utf8Loc) && wc != 0xA0 && wc != 0x2007 && wc != 0xfffd)) {
-					ws << wc;
-				} else { // Non-graphical Unicode
-					int width = wc < 256 ? 2 : 4;
-					ws << "<U+" << std::setw(width) << std::uppercase << std::hex
-					   << static_cast<unsigned int>(wc) << ">";
-				}
-			}
-		}
+		if (wc < 32 || wc == 127) // Non-graphical ASCII, excluding space
+			ws << "<" << ascii_nongraphs[wc == 127 ? 32 : wc] << ">";
+		else if (wc < 128) // ASCII
+			ws << wc;
+		else if (sizeof(wchar_t) == 2 && i + 1 < str.size() && IsUtf16HighSurrogate(wc) && IsUtf16LowSurrogate(str[i + 1]))
+			ws.write(str.data() + i++, 2);
+		else if ((wc < 0xd800 || wc >= 0xe000) && (std::isgraph(wc, utf8Loc) && wc != 0xA0 && wc != 0x2007 &&
+												   wc != 0xfffd)) // Exclude unpaired surrogates and NO-BREAK spaces NBSP and NUMSP
+			ws << wc;
+		else // Non-graphical Unicode
+			ws << "<U+" << std::setw(wc < 256 ? 2 : 4) << std::uppercase << std::hex << static_cast<uint32_t>(wc) << ">";
 	}
 
-	return ToUtf8(ws.str());
+	return ws.str();
 }
 
-void AppendUtf16(std::wstring& str, const uint16_t* utf16, size_t length)
+std::string EscapeNonGraphical(std::string_view utf8)
 {
-	if (sizeof(wchar_t) == 2) {
-		str.append(reinterpret_cast<const wchar_t*>(utf16), length);
-	}
-	else {
-		str.reserve(str.length() + length);
-		for (size_t i = 0; i < length; ++i)
-		{
-			unsigned u = utf16[i];
-			if (IsUtf16HighSurrogate(u) && i + 1 < length)
-			{
-				unsigned low = utf16[i + 1];
-				if (IsUtf16LowSurrogate(low))
-				{
-					++i;
-					u = CodePointFromUtf16Surrogates(u, low);
-				}
-			}
-			str.push_back(static_cast<wchar_t>(u));
-		}
-	}
-}
-
-void AppendUtf8(std::wstring& str, const uint8_t* utf8, size_t length)
-{
-	ConvertFromUtf8(utf8, length, str);
+	return ToUtf8(EscapeNonGraphical(FromUtf8(utf8)));
 }
 
 } // namespace ZXing::TextUtfEncoding

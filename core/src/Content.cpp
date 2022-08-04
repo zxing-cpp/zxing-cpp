@@ -149,7 +149,7 @@ std::string Content::text(TextMode mode) const
 		else
 			return text(TextMode::Escaped);
 	case TextMode::Hex: return ToHex(bytes);
-	case TextMode::Escaped: return TextUtfEncoding::ToUtf8(TextUtfEncoding::FromUtf8(render(false)), true);
+	case TextMode::Escaped: return TextUtfEncoding::EscapeNonGraphical(render(false));
 	}
 
 	return {}; // silence compiler warning
