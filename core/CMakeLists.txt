@@ -476,8 +476,14 @@ endif()
 
 include (GNUInstallDirs)
 
+# TODO: find a working generator expression for this... :-/
+set(ZX_INSTALL_TARGETS ZXing)
+if (NOT BUILD_SHARED_LIBS)
+    set(ZX_INSTALL_TARGETS ZXing;zueci-static)
+endif()
+
 install (
-    TARGETS ZXing EXPORT ZXingTargets
+    TARGETS ${ZX_INSTALL_TARGETS} EXPORT ZXingTargets
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
