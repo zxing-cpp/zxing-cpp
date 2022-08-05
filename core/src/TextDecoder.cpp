@@ -13,6 +13,7 @@
 #include "zueci.h"
 
 #include <cassert>
+#include <stdexcept>
 
 namespace ZXing {
 
