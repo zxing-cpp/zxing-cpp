@@ -41,8 +41,12 @@ enum class CharacterSet : unsigned char
 	GB18030,
 	EUC_JP,
 	EUC_KR,
-	UnicodeBig,
+	UTF16BE,
+	UnicodeBig [[deprecated]] = UTF16BE,
 	UTF8,
+	UTF16LE,
+	UTF32BE,
+	UTF32LE,
 
 	BINARY,
 

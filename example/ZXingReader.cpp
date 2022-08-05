@@ -116,11 +116,6 @@ void drawRect(const ImageView& image, const Position& pos, bool error)
 		drawLine(image, pos[i], pos[(i + 1) % 4], error);
 }
 
-std::string escapeNonGraphical(const std::string& str)
-{
-	return TextUtfEncoding::ToUtf8(TextUtfEncoding::FromUtf8(str), true);
-}
-
 int main(int argc, char* argv[])
 {
 	DecodeHints hints;
@@ -179,7 +174,7 @@ int main(int argc, char* argv[])
 			if (oneLine) {
 				std::cout << filePath << " " << ToString(result.format());
 				if (result.isValid())
-					std::cout << " \"" << escapeNonGraphical(result.text()) << "\"";
+					std::cout << " \"" << TextUtfEncoding::EscapeNonGraphical(result.text()) << "\"";
 				else if (result.error())
 					std::cout << " " << ToString(result.error());
 				std::cout << "\n";
@@ -200,7 +195,7 @@ int main(int argc, char* argv[])
 				continue;
 			}
 
-			std::cout << "Text:       \"" << (angleEscape ? escapeNonGraphical(result.text()) : result.text()) << "\"\n"
+			std::cout << "Text:       \"" << (angleEscape ? TextUtfEncoding::EscapeNonGraphical(result.text()) : result.text()) << "\"\n"
 					  << "Bytes:      " << ToHex(result.bytes()) << "\n"
 					  << "BytesECI:   " << ToHex(result.bytesECI()) << "\n"
 					  << "Format:     " << ToString(result.format()) << "\n"
