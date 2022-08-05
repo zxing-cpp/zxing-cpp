@@ -122,25 +122,31 @@ static int GetBit(int bit, const ByteArray& bytes)
 	return (bytes[bit / 6] & (1 << (5 - (bit % 6)))) == 0 ? 0 : 1;
 }
 
-static int GetInt(const ByteArray& bytes, const ByteArray& x)
+static unsigned int GetInt(const ByteArray& bytes, const ByteArray& x)
 {
 	int len = Size(x);
-	int val = 0;
+	unsigned int val = 0;
 	for (int i = 0; i < len; i++)
 		val += GetBit(x[i], bytes) << (len - i - 1);
 
 	return val;
 }
 
-static int GetPostCode2(const ByteArray& bytes)
+static unsigned int GetPostCode2Length(const ByteArray& bytes)
 {
-	return GetInt(bytes,
-				  {33, 34, 35, 36, 25, 26, 27, 28, 29, 30, 19, 20, 21, 22, 23, 24, 13, 14, 15, 16, 17, 18, 7, 8, 9, 10, 11, 12, 1, 2});
+	return std::min(GetInt(bytes, {39, 40, 41, 42, 31, 32}), 9U);
 }
 
-static int GetPostCode2Length(const ByteArray& bytes)
+static std::string GetPostCode2(const ByteArray& bytes)
 {
-	return GetInt(bytes, {39, 40, 41, 42, 31, 32});
+	unsigned int val = GetInt(bytes,
+				  {33, 34, 35, 36, 25, 26, 27, 28, 29, 30, 19, 20, 21, 22, 23, 24, 13, 14, 15, 16, 17, 18, 7, 8, 9, 10, 11, 12, 1, 2});
+	unsigned int len = GetPostCode2Length(bytes);
+	// Pad or truncate to length
+	char buf[11]; // 30 bits 0x3FFFFFFF == 1073741823 (10 digits)
+	sprintf(buf, "%0*d", len, val);
+	buf[len] = '\0';
+	return buf;
 }
 
 static std::string GetPostCode3(const ByteArray& bytes)
@@ -155,14 +161,14 @@ static std::string GetPostCode3(const ByteArray& bytes)
 	};
 }
 
-static int GetCountry(const ByteArray& bytes)
+static unsigned int GetCountry(const ByteArray& bytes)
 {
-	return GetInt(bytes, {53, 54, 43, 44, 45, 46, 47, 48, 37, 38});
+	return std::min(GetInt(bytes, {53, 54, 43, 44, 45, 46, 47, 48, 37, 38}), 999U);
 }
 
-static int GetServiceClass(const ByteArray& bytes)
+static unsigned int GetServiceClass(const ByteArray& bytes)
 {
-	return GetInt(bytes, {55, 56, 57, 58, 59, 60, 49, 50, 51, 52});
+	return std::min(GetInt(bytes, {55, 56, 57, 58, 59, 60, 49, 50, 51, 52}), 999U);
 }
 
 /**
@@ -266,7 +272,7 @@ DecoderResult Decode(ByteArray&& bytes, const int mode)
 	switch (mode) {
 	case 2:
 	case 3: {
-		auto postcode = mode == 2 ? ToString(GetPostCode2(bytes), GetPostCode2Length(bytes)) : GetPostCode3(bytes);
+		auto postcode = mode == 2 ? GetPostCode2(bytes) : GetPostCode3(bytes);
 		auto country  = ToString(GetCountry(bytes), 3);
 		auto service  = ToString(GetServiceClass(bytes), 3);
 		GetMessage(bytes, 10, 84, result, sai);
