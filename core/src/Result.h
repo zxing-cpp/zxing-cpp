@@ -35,7 +35,7 @@ class Result
 	 * see https://github.com/nu-book/zxing-cpp/issues/338 for a background discussion on the issue.
 	 */
 	std::string utf8() const;
-	std::wstring utf16() const;
+	std::wstring utfW() const;
 
 public:
 	Result() = default;
@@ -66,7 +66,7 @@ public:
 	std::string text() const { return utf8(); }
 	std::string ecLevel() const { return _ecLevel; }
 #else
-	std::wstring text() const { return utf16(); }
+	std::wstring text() const { return utfW(); }
 	std::wstring ecLevel() const { return {_ecLevel.begin(), _ecLevel.end()}; }
 #endif
 

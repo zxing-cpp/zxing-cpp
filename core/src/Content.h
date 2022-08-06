@@ -76,7 +76,7 @@ public:
 	bool canProcess() const;
 
 	std::string text(TextMode mode) const;
-	std::wstring utf16() const;
+	std::wstring utfW() const; // utf16 or utf32 depending on the platform, i.e. on size_of(wchar_t)
 	std::string utf8() const { return render(false); }
 
 	ByteArray bytesECI() const;

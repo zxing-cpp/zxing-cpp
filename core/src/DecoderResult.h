@@ -51,7 +51,7 @@ public:
 	Content&& content() && { return std::move(_content); }
 
 	// to keep the unit tests happy for now:
-	std::wstring text() const { return _content.utf16(); }
+	std::wstring text() const { return _content.utfW(); }
 	std::string symbologyIdentifier() const { return _content.symbology.toString(false); }
 
 	// Simple macro to set up getter/setter methods that save lots of boilerplate.

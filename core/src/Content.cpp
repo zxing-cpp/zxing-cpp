@@ -155,7 +155,7 @@ std::string Content::text(TextMode mode) const
 	return {}; // silence compiler warning
 }
 
-std::wstring Content::utf16() const
+std::wstring Content::utfW() const
 {
 	return TextUtfEncoding::FromUtf8(render(false));
 }

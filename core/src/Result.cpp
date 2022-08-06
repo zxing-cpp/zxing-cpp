@@ -61,9 +61,9 @@ std::string Result::utf8() const
 	return _content.utf8();
 }
 
-std::wstring Result::utf16() const
+std::wstring Result::utfW() const
 {
-	return _content.utf16();
+	return _content.utfW();
 }
 
 #if 0
