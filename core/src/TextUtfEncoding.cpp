@@ -56,22 +56,14 @@ inline uint32_t Utf8Decode(char8_t byte, uint32_t& state, uint32_t& codep)
 
 static_assert(sizeof(wchar_t) == 4 || sizeof(wchar_t) == 2, "wchar_t needs to be 2 or 4 bytes wide");
 
-template <typename T>
-bool IsUtf16HighSurrogate(T c)
+inline bool IsUtf16SurrogatePair(std::wstring_view str)
 {
-	return (c & 0xfc00) == 0xd800;
+	return sizeof(wchar_t) == 2 && str.size() >= 2 && (str[0] & 0xfc00) == 0xd800 && (str[1] & 0xfc00) == 0xdc00;
 }
 
-template <typename T>
-bool IsUtf16LowSurrogate(T c)
+inline uint32_t Utf32FromUtf16Surrogates(std::wstring_view str)
 {
-	return (c & 0xfc00) == 0xdc00;
-}
-
-template <typename T>
-uint32_t Utf32FromUtf16Surrogates(T high, T low)
-{
-	return (uint32_t(high) << 10) + low - 0x35fdc00;
+	return (static_cast<uint32_t>(str[0]) << 10) + str[1] - 0x35fdc00;
 }
 
 static size_t Utf8CountCodePoints(utf8_t utf8)
@@ -131,20 +123,20 @@ std::wstring FromUtf8(std::string_view utf8)
 static size_t Utf8CountBytes(std::wstring_view str)
 {
 	int result = 0;
-	for (size_t i = 0; i < str.size(); ++i) {
-		if (str[i] < 0x80)
+	for (; str.size(); str.remove_prefix(1)) {
+		if (str.front() < 0x80)
 			result += 1;
-		else if (str[i] < 0x800)
+		else if (str.front() < 0x800)
 			result += 2;
 		else if (sizeof(wchar_t) == 4) {
-			if (str[i] < 0x10000)
+			if (str.front() < 0x10000)
 				result += 3;
 			else
 				result += 4;
 		} else {
-			if (IsUtf16HighSurrogate(str[i])) {
+			if (IsUtf16SurrogatePair(str)) {
 				result += 4;
-				++i;
+				str.remove_prefix(1);
 			} else
 				result += 3;
 		}
@@ -183,14 +175,14 @@ static void AppendToUtf8(std::wstring_view str, std::string& utf8)
 	utf8.reserve(utf8.size() + Utf8CountBytes(str));
 
 	char buffer[4];
-	for (size_t i = 0; i < str.size(); ++i)
+	for (; str.size(); str.remove_prefix(1))
 	{
 		uint32_t cp;
-		if (sizeof(wchar_t) == 2 && i + 1 < str.size() && IsUtf16HighSurrogate(str[i]) && IsUtf16LowSurrogate(str[i + 1])) {
-			cp = Utf32FromUtf16Surrogates(str[i], str[i + 1]);
-			++i;
+		if (IsUtf16SurrogatePair(str)) {
+			cp = Utf32FromUtf16Surrogates(str);
+			str.remove_prefix(1);
 		} else
-			cp = str[i];
+			cp = str.front();
 
 		auto bufLength = Utf32ToUtf8(cp, buffer);
 		utf8.append(buffer, bufLength);
@@ -225,14 +217,14 @@ std::wstring EscapeNonGraphical(std::wstring_view str)
 	std::wostringstream ws;
 	ws.fill(L'0');
 
-	for (size_t i = 0; i < str.size(); i++) {
-		wchar_t wc = str[i];
+	for (; str.size(); str.remove_prefix(1)) {
+		wchar_t wc = str.front();
 		if (wc < 32 || wc == 127) // Non-graphical ASCII, excluding space
 			ws << "<" << ascii_nongraphs[wc == 127 ? 32 : wc] << ">";
 		else if (wc < 128) // ASCII
 			ws << wc;
-		else if (sizeof(wchar_t) == 2 && i + 1 < str.size() && IsUtf16HighSurrogate(wc) && IsUtf16LowSurrogate(str[i + 1]))
-			ws.write(str.data() + i++, 2);
+		else if (IsUtf16SurrogatePair(str))
+			ws.write(str.data(), 2), str.remove_prefix(1);
 		else if ((wc < 0xd800 || wc >= 0xe000) && (std::isgraph(wc, utf8Loc) && wc != 0xA0 && wc != 0x2007 &&
 												   wc != 0xfffd)) // Exclude unpaired surrogates and NO-BREAK spaces NBSP and NUMSP
 			ws << wc;
