@@ -5,9 +5,11 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "GS1.h"
+#include "HRI.h"
 
 #include "ZXAlgorithms.h"
+
+#include <sstream>
 
 namespace ZXing {
 
@@ -233,7 +235,7 @@ static const AiInfo aiInfos[] = {
 	{ "8200", -70 },
 };
 
-std::string HRIFromGS1(const std::string& gs1)
+std::string HRIFromGS1(std::string_view gs1)
 {
 	//TODO: c++20
 	auto starts_with = [](std::string_view str, std::string_view pre) { return str.substr(0, pre.size()) == pre; };
@@ -279,6 +281,27 @@ std::string HRIFromGS1(const std::string& gs1)
 	}
 
 	return res;
+}
+
+std::string HRIFromISO15434(std::string_view str)
+{
+	// Use available unicode symbols to simulate sub- and superscript letters as specified in
+	// ISO/IEC 15434:2019(E) 6. Human readable representation
+
+	std::ostringstream oss;
+
+	for (char c : str) {
+		switch (c) {
+		case 4: oss << u8"\u1d31\u1d52\u209c"; break; // EOT
+		case 28: oss << u8"\ua7f3\u209b"; break; // FS
+		case 29: oss << u8"\u1d33\u209b"; break; // GS
+		case 30: oss << u8"\u1d3f\u209b"; break; // RS
+		case 31: oss << u8"\u1d41\u209b"; break; // US
+		default: oss << c;
+		}
+	}
+
+	return oss.str();
 }
 
 } // namespace ZXing

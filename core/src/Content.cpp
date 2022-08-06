@@ -7,7 +7,7 @@
 
 #include "CharacterSet.h"
 #include "ECI.h"
-#include "GS1.h"
+#include "HRI.h"
 #include "TextDecoder.h"
 #include "TextUtfEncoding.h"
 #include "ZXAlgorithms.h"
@@ -142,12 +142,12 @@ std::string Content::text(TextMode mode) const
 	case TextMode::Utf8: return render(false);
 	case TextMode::Utf8ECI: return render(true);
 	case TextMode::HRI:
-		if (symbology.aiFlag == AIFlag::GS1)
-			return HRIFromGS1(text(TextMode::Utf8));
-		else if (type() == ContentType::Text)
-			return text(TextMode::Utf8);
-		else
-			return text(TextMode::Escaped);
+		switch (type()) {
+		case ContentType::GS1: return HRIFromGS1(render(false));
+		case ContentType::ISO15434: return HRIFromISO15434(render(false));
+		case ContentType::Text: return render(false);
+		default: return text(TextMode::Escaped);
+		}
 	case TextMode::Hex: return ToHex(bytes);
 	case TextMode::Escaped: return TextUtfEncoding::EscapeNonGraphical(render(false));
 	}

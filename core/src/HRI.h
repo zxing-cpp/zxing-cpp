@@ -6,9 +6,11 @@
 #pragma once
 
 #include <string>
+#include <string_view>
 
 namespace ZXing {
 
-std::string HRIFromGS1(const std::string& gs1);
+std::string HRIFromGS1(std::string_view gs1);
+std::string HRIFromISO15434(std::string_view str);
 
 } // namespace ZXing

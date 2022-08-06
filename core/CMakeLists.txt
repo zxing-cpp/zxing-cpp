@@ -102,8 +102,8 @@ if (BUILD_READERS)
         src/GlobalHistogramBinarizer.cpp
         src/GridSampler.h
         src/GridSampler.cpp
-        src/GS1.h
-        src/GS1.cpp
+        src/HRI.h
+        src/HRI.cpp
         src/HybridBinarizer.h
         src/HybridBinarizer.cpp
         src/ImageView.h
