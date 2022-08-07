@@ -8,7 +8,7 @@
 
 #include "CharacterSet.h"
 #include "ECI.h"
-#include "TextUtfEncoding.h"
+#include "Utf.h"
 #include "ZXAlgorithms.h"
 #include "zueci.h"
 
@@ -48,7 +48,7 @@ void TextDecoder::Append(std::wstring& str, const uint8_t* bytes, size_t length,
 {
 	std::string u8str;
 	Append(u8str, bytes, length, charset);
-	str.append(TextUtfEncoding::FromUtf8(u8str));
+	str.append(FromUtf8(u8str));
 }
 
 /**

@@ -14,7 +14,7 @@
 #include "DecodeHints.h"
 #include "ReadBarcode.h"
 #include "ReadResult.h"
-#include "TextUtfEncoding.h"
+#include "Utf.h"
 
 #include <algorithm>
 #include <MemoryBuffer.h>
@@ -101,7 +101,7 @@ BarcodeFormat BarcodeReader::ConvertRuntimeToNative(BarcodeType type)
 		return BarcodeFormat::UPCE;
 	default:
 		std::wstring typeAsString = type.ToString()->Begin();
-		throw std::invalid_argument("Unknown Barcode Type: " + TextUtfEncoding::ToUtf8(typeAsString));
+		throw std::invalid_argument("Unknown Barcode Type: " + ToUtf8(typeAsString));
 	}
 }
 
@@ -149,7 +149,7 @@ BarcodeType BarcodeReader::ConvertNativeToRuntime(BarcodeFormat format)
 
 static Platform::String^ ToPlatformString(const std::string& str)
 {
-	std::wstring wstr = TextUtfEncoding::FromUtf8(str);
+	std::wstring wstr = FromUtf8(str);
 	return ref new Platform::String(wstr.c_str(), (unsigned)wstr.length());
 }
 

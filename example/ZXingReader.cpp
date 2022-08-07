@@ -5,7 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "ReadBarcode.h"
-#include "TextUtfEncoding.h"
 #include "GTIN.h"
 
 #include <cctype>

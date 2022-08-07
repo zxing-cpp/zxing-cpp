@@ -8,7 +8,7 @@
 #include "BitMatrixIO.h"
 #include "CharacterSet.h"
 #include "TextDecoder.h"
-#include "TextUtfEncoding.h"
+#include "Utf.h"
 #include "qrcode/QREncoder.h"
 #include "qrcode/QRCodecMode.h"
 #include "qrcode/QREncodeResult.h"
@@ -43,7 +43,7 @@ namespace {
 	{
 		std::string str;
 		TextDecoder::Append(str, bytes.data(), bytes.size(), CharacterSet::Shift_JIS);
-		return TextUtfEncoding::FromUtf8(str);
+		return FromUtf8(str);
 	}
 
 	std::string RemoveSpace(std::string s)

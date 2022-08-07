@@ -8,7 +8,6 @@
 
 #include "DecoderResult.h"
 #include "TextDecoder.h"
-#include "TextUtfEncoding.h"
 #include "ZXAlgorithms.h"
 
 #include <cmath>

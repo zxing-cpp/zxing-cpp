@@ -12,7 +12,7 @@
 #include "DMECEncoder.h"
 #include "DMHighLevelEncoder.h"
 #include "DMSymbolInfo.h"
-#include "TextUtfEncoding.h"
+#include "Utf.h"
 
 #include <stdexcept>
 #include <string>
@@ -112,7 +112,7 @@ Writer::encode(const std::wstring& contents, int width, int height) const
 
 BitMatrix Writer::encode(const std::string& contents, int width, int height) const
 {
-	return encode(TextUtfEncoding::FromUtf8(contents), width, height);
+	return encode(FromUtf8(contents), width, height);
 }
 
 } // namespace ZXing::DataMatrix

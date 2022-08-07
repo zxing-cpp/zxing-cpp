@@ -20,7 +20,7 @@
 #include "pdf417/PDFWriter.h"
 #include "qrcode/QRErrorCorrectionLevel.h"
 #include "qrcode/QRWriter.h"
-#include "TextUtfEncoding.h"
+#include "Utf.h"
 
 #include <stdexcept>
 
@@ -69,7 +69,7 @@ MultiFormatWriter::encode(const std::wstring& contents, int width, int height) c
 
 BitMatrix MultiFormatWriter::encode(const std::string& contents, int width, int height) const
 {
-	return encode(TextUtfEncoding::FromUtf8(contents), width, height);
+	return encode(FromUtf8(contents), width, height);
 }
 
 } // ZXing

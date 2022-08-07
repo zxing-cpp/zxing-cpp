@@ -9,7 +9,7 @@
 #include "ECI.h"
 #include "HRI.h"
 #include "TextDecoder.h"
-#include "TextUtfEncoding.h"
+#include "Utf.h"
 #include "ZXAlgorithms.h"
 
 namespace ZXing {
@@ -149,7 +149,7 @@ std::string Content::text(TextMode mode) const
 		default: return text(TextMode::Escaped);
 		}
 	case TextMode::Hex: return ToHex(bytes);
-	case TextMode::Escaped: return TextUtfEncoding::EscapeNonGraphical(render(false));
+	case TextMode::Escaped: return EscapeNonGraphical(render(false));
 	}
 
 	return {}; // silence compiler warning
@@ -157,7 +157,7 @@ std::string Content::text(TextMode mode) const
 
 std::wstring Content::utfW() const
 {
-	return TextUtfEncoding::FromUtf8(render(false));
+	return FromUtf8(render(false));
 }
 
 ByteArray Content::bytesECI() const

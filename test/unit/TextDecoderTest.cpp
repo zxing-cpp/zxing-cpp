@@ -5,16 +5,15 @@
 
 #include "CharacterSet.h"
 #include "TextDecoder.h"
-#include "TextUtfEncoding.h"
+#include "Utf.h"
 
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
 using namespace ZXing;
-using namespace ZXing::TextUtfEncoding;
 using namespace testing;
 
-namespace ZXing::TextUtfEncoding {
+namespace ZXing {
 int Utf32ToUtf8(char32_t utf32, char* out);
 }
 

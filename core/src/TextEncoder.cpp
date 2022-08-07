@@ -7,7 +7,7 @@
 
 #include "CharacterSet.h"
 #include "ECI.h"
-#include "TextUtfEncoding.h"
+#include "Utf.h"
 #include "ZXAlgorithms.h"
 #include "zueci.h"
 
@@ -44,7 +44,7 @@ void TextEncoder::GetBytes(const std::string& str, CharacterSet charset, std::st
 
 void TextEncoder::GetBytes(const std::wstring& str, CharacterSet charset, std::string& bytes)
 {
-	GetBytes(TextUtfEncoding::ToUtf8(str), charset, bytes);
+	GetBytes(ToUtf8(str), charset, bytes);
 }
 
 } // ZXing

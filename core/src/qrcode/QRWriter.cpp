@@ -11,7 +11,7 @@
 #include "QREncodeResult.h"
 #include "QREncoder.h"
 #include "QRErrorCorrectionLevel.h"
-#include "TextUtfEncoding.h"
+#include "Utf.h"
 
 #include <stdexcept>
 #include <utility>
@@ -45,7 +45,7 @@ BitMatrix Writer::encode(const std::wstring& contents, int width, int height) co
 
 BitMatrix Writer::encode(const std::string& contents, int width, int height) const
 {
-	return encode(TextUtfEncoding::FromUtf8(contents), width, height);
+	return encode(FromUtf8(contents), width, height);
 }
 
 } // namespace ZXing::QRCode

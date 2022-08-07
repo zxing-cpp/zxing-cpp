@@ -8,7 +8,7 @@
 
 #include "ODUPCEANCommon.h"
 #include "ODWriterHelper.h"
-#include "TextUtfEncoding.h"
+#include "Utf.h"
 
 #include <array>
 #include <vector>
@@ -56,7 +56,7 @@ EAN13Writer::encode(const std::wstring& contents, int width, int height) const
 
 BitMatrix EAN13Writer::encode(const std::string& contents, int width, int height) const
 {
-	return encode(TextUtfEncoding::FromUtf8(contents), width, height);
+	return encode(FromUtf8(contents), width, height);
 }
 
 } // namespace ZXing::OneD

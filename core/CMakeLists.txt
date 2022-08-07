@@ -75,9 +75,11 @@ set (COMMON_FILES
     src/Range.h
     src/RegressionLine.h
     src/Scope.h
-    src/TextUtfEncoding.h
-    src/TextUtfEncoding.cpp
+    src/TextUtfEncoding.h # [[deprecated]]
+    src/TextUtfEncoding.cpp # [[deprecated]]
     src/TritMatrix.h
+    src/Utf.h
+    src/Utf.cpp
     src/ZXAlgorithms.h
     src/ZXBigInteger.h
     src/ZXBigInteger.cpp
@@ -148,7 +150,7 @@ set (PUBLIC_HEADERS
     src/CharacterSet.h
     src/Flags.h
     src/GTIN.h
-    src/TextUtfEncoding.h
+    src/TextUtfEncoding.h # [[deprecated]]
     src/ZXAlgorithms.h
     src/ZXConfig.h
 )

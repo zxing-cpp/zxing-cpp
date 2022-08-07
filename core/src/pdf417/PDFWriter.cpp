@@ -7,7 +7,7 @@
 #include "PDFWriter.h"
 #include "PDFEncoder.h"
 #include "BitMatrix.h"
-#include "TextUtfEncoding.h"
+#include "Utf.h"
 
 #include <utility>
 
@@ -114,7 +114,7 @@ Writer::encode(const std::wstring& contents, int width, int height) const
 
 BitMatrix Writer::encode(const std::string& contents, int width, int height) const
 {
-	return encode(TextUtfEncoding::FromUtf8(contents), width, height);
+	return encode(FromUtf8(contents), width, height);
 }
 
 Writer::Writer()
