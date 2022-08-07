@@ -20,14 +20,15 @@ namespace ZXing::TextUtfEncoding {
 using char8_t = uint8_t;
 using utf8_t = std::basic_string_view<char8_t>;
 
-constexpr uint32_t kAccepted = 0;
-constexpr uint32_t kRejected [[maybe_unused]] = 12;
+using state_t = uint8_t;
+constexpr state_t kAccepted = 0;
+constexpr state_t kRejected [[maybe_unused]] = 12;
 
-inline uint32_t Utf8Decode(char8_t byte, uint32_t& state, uint32_t& codep)
+inline char32_t Utf8Decode(char8_t byte, state_t& state, char32_t& codep)
 {
 	// Copyright (c) 2008-2009 Bjoern Hoehrmann <bjoern@hoehrmann.de>
 	// See http://bjoern.hoehrmann.de/utf-8/decoder/dfa/ for details.
-	static const uint8_t kUtf8Data[] = {
+	static constexpr const state_t kUtf8Data[] = {
 		/* The first part of the table maps bytes to character classes that
 		 * reduce the size of the transition table and create bitmasks. */
 		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -48,7 +49,7 @@ inline uint32_t Utf8Decode(char8_t byte, uint32_t& state, uint32_t& codep)
 		12,36,12,12,12,12,12,12,12,12,12,12,
 	};
 
-	uint32_t type = kUtf8Data[byte];
+	state_t type = kUtf8Data[byte];
 	codep = (state != kAccepted) ? (byte & 0x3fu) | (codep << 6) : (0xff >> type) & (byte);
 	state = kUtf8Data[256 + state + type];
 	return state;
@@ -61,9 +62,9 @@ inline bool IsUtf16SurrogatePair(std::wstring_view str)
 	return sizeof(wchar_t) == 2 && str.size() >= 2 && (str[0] & 0xfc00) == 0xd800 && (str[1] & 0xfc00) == 0xdc00;
 }
 
-inline uint32_t Utf32FromUtf16Surrogates(std::wstring_view str)
+inline char32_t Utf32FromUtf16Surrogates(std::wstring_view str)
 {
-	return (static_cast<uint32_t>(str[0]) << 10) + str[1] - 0x35fdc00;
+	return (static_cast<char32_t>(str[0]) << 10) + str[1] - 0x35fdc00;
 }
 
 static size_t Utf8CountCodePoints(utf8_t utf8)
@@ -96,8 +97,8 @@ static void AppendFromUtf8(utf8_t utf8, std::wstring& buffer)
 {
 	buffer.reserve(buffer.size() + Utf8CountCodePoints(utf8));
 
-	uint32_t codePoint = 0;
-	uint32_t state = kAccepted;
+	char32_t codePoint = 0;
+	state_t state = kAccepted;
 
 	for (auto b : utf8) {
 		if (Utf8Decode(b, state, codePoint) != kAccepted)
@@ -145,28 +146,28 @@ static size_t Utf8CountBytes(std::wstring_view str)
 }
 
 ZXING_EXPORT_TEST_ONLY
-int Utf32ToUtf8(uint32_t utf32, char* out)
+int Utf32ToUtf8(char32_t utf32, char* out)
 {
 	if (utf32 < 0x80) {
-		*out++ = static_cast<uint8_t>(utf32);
+		*out++ = narrow_cast<char8_t>(utf32);
 		return 1;
 	}
 	if (utf32 < 0x800) {
-		*out++ = narrow_cast<uint8_t>((utf32 >> 6) | 0xc0);
-		*out++ = narrow_cast<uint8_t>((utf32 & 0x3f) | 0x80);
+		*out++ = narrow_cast<char8_t>((utf32 >> 6) | 0xc0);
+		*out++ = narrow_cast<char8_t>((utf32 & 0x3f) | 0x80);
 		return 2;
 	}
 	if (utf32 < 0x10000) {
-		*out++ = narrow_cast<uint8_t>((utf32 >> 12) | 0xe0);
-		*out++ = narrow_cast<uint8_t>(((utf32 >> 6) & 0x3f) | 0x80);
-		*out++ = narrow_cast<uint8_t>((utf32 & 0x3f) | 0x80);
+		*out++ = narrow_cast<char8_t>((utf32 >> 12) | 0xe0);
+		*out++ = narrow_cast<char8_t>(((utf32 >> 6) & 0x3f) | 0x80);
+		*out++ = narrow_cast<char8_t>((utf32 & 0x3f) | 0x80);
 		return 3;
 	}
 
-	*out++ = narrow_cast<uint8_t>((utf32 >> 18) | 0xf0);
-	*out++ = narrow_cast<uint8_t>(((utf32 >> 12) & 0x3f) | 0x80);
-	*out++ = narrow_cast<uint8_t>(((utf32 >> 6) & 0x3f) | 0x80);
-	*out++ = narrow_cast<uint8_t>((utf32 & 0x3f) | 0x80);
+	*out++ = narrow_cast<char8_t>((utf32 >> 18) | 0xf0);
+	*out++ = narrow_cast<char8_t>(((utf32 >> 12) & 0x3f) | 0x80);
+	*out++ = narrow_cast<char8_t>(((utf32 >> 6) & 0x3f) | 0x80);
+	*out++ = narrow_cast<char8_t>((utf32 & 0x3f) | 0x80);
 	return 4;
 }
 
