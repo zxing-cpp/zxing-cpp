@@ -12,19 +12,16 @@
 TEST(TextUtfEncodingTest, EscapeNonGraphical)
 {
 	using namespace ZXing::TextUtfEncoding;
-	auto escape = [](const wchar_t* str) { return ToUtf8(EscapeNonGraphical(str)); };
 
-	EXPECT_EQ(escape(L"\u00B6\u0416"), "¶Ж");
-	EXPECT_EQ(escape(L"\x01\x1F\x7F"), "<SOH><US><DEL>");
-	EXPECT_EQ(escape(L"\x80\x9F"), "<U+80><U+9F>");
-	EXPECT_EQ(escape(L"\xA0"), "<U+A0>"); // NO-BREAK space (nbsp)
-	EXPECT_EQ(escape(L"\x2007"), "<U+2007>"); // NO-BREAK space (numsp)
-	EXPECT_EQ(escape(L"\xFFEF"), "<U+FFEF>"); // Was NO-BREAK space but now isn't (BOM)
-	EXPECT_EQ(escape(L"\u2000"), "<U+2000>"); // Space char (nqsp)
-	EXPECT_EQ(escape(L"\uFFFD"), "<U+FFFD>");
-	EXPECT_EQ(escape(L"\uFFFF"), "<U+FFFF>");
-	EXPECT_EQ(escape(L"\xD800Z"), "<U+D800>Z"); // Unpaired high surrogate
-	EXPECT_EQ(escape(L"A\xDC00"), "A<U+DC00>"); // Unpaired low surrogate
+	EXPECT_EQ(EscapeNonGraphical(u8"\u00B6\u0416"), "¶Ж");
+	EXPECT_EQ(EscapeNonGraphical(u8"\x01\x1F\x7F"), "<SOH><US><DEL>");
+	EXPECT_EQ(EscapeNonGraphical(u8"\u0080\u009F"), "<U+80><U+9F>");
+	EXPECT_EQ(EscapeNonGraphical(u8"\u00A0"), "<U+A0>"); // NO-BREAK space (nbsp)
+	EXPECT_EQ(EscapeNonGraphical(u8"\u2007"), "<U+2007>"); // NO-BREAK space (numsp)
+	EXPECT_EQ(EscapeNonGraphical(u8"\uFFEF"), "<U+FFEF>"); // Was NO-BREAK space but now isn't (BOM)
+	EXPECT_EQ(EscapeNonGraphical(u8"\u2000"), "<U+2000>"); // Space char (nqsp)
+	EXPECT_EQ(EscapeNonGraphical(u8"\uFFFD"), "<U+FFFD>");
+	EXPECT_EQ(EscapeNonGraphical(u8"\uFFFF"), "<U+FFFF>");
 }
 
 TEST(TextUtfEncodingTest, FromUtf8)
