@@ -202,7 +202,7 @@ PYBIND11_MODULE(zxingcpp, m)
 		.def_property_readonly("valid", &Result::isValid,
 			":return: whether or not result is valid (i.e. a symbol was found)\n"
 			":rtype: bool")
-		.def_property_readonly("text", &Result::text,
+		.def_property_readonly("text", [](const Result& res) { return res.text(); },
 			":return: text of the decoded symbol\n"
 			":rtype: str")
 		.def_property_readonly("bytes", [](const Result& res) { return py::bytes(res.bytes().asString()); },

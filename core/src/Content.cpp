@@ -138,9 +138,9 @@ std::string Content::render(bool withECI) const
 
 std::string Content::text(TextMode mode) const
 {
-	switch(mode) {
-	case TextMode::Utf8: return render(false);
-	case TextMode::Utf8ECI: return render(true);
+	switch (mode) {
+	case TextMode::Plain: return render(false);
+	case TextMode::ECI: return render(true);
 	case TextMode::HRI:
 		switch (type()) {
 		case ContentType::GS1: return HRIFromGS1(render(false));

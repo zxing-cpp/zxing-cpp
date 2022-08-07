@@ -7,6 +7,7 @@
 
 #include "ByteArray.h"
 #include "CharacterSet.h"
+#include "DecodeHints.h"
 
 #include <string>
 #include <vector>
@@ -16,7 +17,6 @@ namespace ZXing {
 enum class ECI : int;
 
 enum class ContentType { Text, Binary, Mixed, GS1, ISO15434, UnknownECI };
-enum class TextMode { Utf8, Utf8ECI, HRI, Hex, Escaped };
 enum class AIFlag : char { None, GS1, AIM };
 
 std::string ToString(ContentType type);

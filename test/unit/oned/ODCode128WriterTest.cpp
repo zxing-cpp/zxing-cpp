@@ -92,24 +92,19 @@ TEST(ODCode128Writer, EncodeWithFncsAndNumberInCodesetA)
 TEST(ODCode128Writer, RoundtripGS1)
 {
 	auto toEncode = L"\xf1" "10958" "\xf1" "17160526";
-	auto expected = "10958\u001D17160526";
 
-	auto encResult = Code128Writer().encode(toEncode, 0, 0);
-	auto decResult = Decode(encResult);
-	auto actual = decResult.text();
-	EXPECT_EQ(actual, expected);
+	auto decResult = Decode(Code128Writer().encode(toEncode, 0, 0));
+	EXPECT_EQ(decResult.text(TextMode::HRI), "(10)958(17)160526");
 	EXPECT_EQ(decResult.symbologyIdentifier(), "]C1");
 }
 
 TEST(ODCode128Writer, RoundtripFNC1)
 {
 	auto toEncode = L"1\xf1" "0958" "\xf1" "17160526";
-	auto expected = "1\u001D0958\u001D17160526";
 
 	auto encResult = Code128Writer().encode(toEncode, 0, 0);
 	auto decResult = Decode(encResult);
-	auto actual = decResult.text();
-	EXPECT_EQ(actual, expected);
+	EXPECT_EQ(decResult.bytes().asString(), "1\u001D0958\u001D17160526");
 	EXPECT_EQ(decResult.symbologyIdentifier(), "]C0");
 }
 

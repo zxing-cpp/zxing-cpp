@@ -10,6 +10,7 @@
 #include "BarcodeFormat.h"
 #include "ByteArray.h"
 #include "Content.h"
+#include "DecodeHints.h"
 #include "Error.h"
 #include "Quadrilateral.h"
 #include "StructuredAppend.h"
@@ -62,19 +63,20 @@ public:
 	 */
 	ByteArray bytesECI() const;
 
+	/**
+	 * @brief text returns the bytes() content rendered to unicode/utf8 text accoring to specified TextMode
+	 */
+	std::string text(TextMode mode) const;
+
+	/**
+	 * @brief text returns the bytes() content rendered to unicode/utf8 text accoring to the TextMode set in the DecodingHints
+	 */
 #ifndef ZX_USE_UTF16
-	std::string text() const { return utf8(); }
+	std::string text() const { return text(_decodeHints.textMode()); }
 	std::string ecLevel() const { return _ecLevel; }
 #else
 	std::wstring text() const { return utfW(); }
 	std::wstring ecLevel() const { return {_ecLevel.begin(), _ecLevel.end()}; }
-#endif
-
-#if 0 // disabled until final API decission is made
-	/**
-	 * @brief utf8ECI is the standard content following the ECI protocol with every character set ECI segment transcoded to utf8
-	 */
-	std::string utf8ECI() const;
 #endif
 
 	/**
@@ -143,7 +145,7 @@ public:
 
 	// only for internal use
 	void incrementLineCount() { ++_lineCount; }
-	Result& setCharacterSet(CharacterSet defaultCS);
+	Result& setDecodeHints(DecodeHints hints);
 
 	bool operator==(const Result& o) const;
 
@@ -153,6 +155,7 @@ private:
 	Content _content;
 	Error _error;
 	Position _position;
+	DecodeHints _decodeHints;
 	std::string _ecLevel;
 	StructuredAppendInfo _sai;
 	BarcodeFormat _format = BarcodeFormat::None;
