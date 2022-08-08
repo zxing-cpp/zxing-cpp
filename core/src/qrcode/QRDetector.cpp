@@ -151,7 +151,8 @@ FinderPatternSets GenerateFinderPatternSets(FinderPatterns& patterns)
 					std::swap(a, c);
 
 				// arbitrarily limit the number of potential sets
-				const auto setSizeLimit = 16;
+				// (this has performance implications while limiting the maximal number of detected symbols)
+				const auto setSizeLimit = 256;
 				if (sets.size() < setSizeLimit || sets.crbegin()->first > d) {
 					sets.emplace(d, FinderPatternSet{*a, *b, *c});
 					if (sets.size() > setSizeLimit)
