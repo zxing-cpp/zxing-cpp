@@ -141,7 +141,7 @@ FinderPatternSets GenerateFinderPatternSets(FinderPatterns& patterns)
 				// we need to check both two equal sides separately.
 				// The value of |c^2 - 2 * b^2| + |c^2 - 2 * a^2| increases as dissimilarity
 				// from isosceles right triangle.
-				double d = (std::abs(distAC2 - 2 * distAB2) + std::abs(distAC2 - 2 * distBC2)) / distAC2;
+				double d = (std::abs(distAC2 - 2 * distAB2) + std::abs(distAC2 - 2 * distBC2));
 
 				// Use cross product to figure out whether A and C are correct or flipped.
 				// This asks whether BC x BA has a positive z component, which is the arrangement
