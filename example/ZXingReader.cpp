@@ -5,7 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "ReadBarcode.h"
-#include "TextUtfEncoding.h"
 #include "GTIN.h"
 
 #include <cctype>
@@ -34,8 +33,9 @@ static void PrintUsage(const char* exePath)
 			  << "               Only detect given format(s) (faster)\n"
 			  << "    -ispure    Assume the image contains only a 'pure'/perfect code (faster)\n"
 			  << "    -errors    Include results with errors (like checksum error)\n"
-			  << "    -1         Print only file name, content/error on one line per file/barcode (implies '-escape')\n"
-			  << "    -escape    Escape non-graphical characters in angle brackets\n"
+			  << "    -mode <plain|eci|hri|escaped>\n"
+			  << "               Text mode used to render the raw byte content into text\n"
+			  << "    -1         Print only file name, content/error on one line per file/barcode (implies '-mode Escaped')\n"
 			  << "    -bytes     Write (only) the bytes content of the symbol(s) to stdout\n"
 			  << "    -pngout <file name>\n"
 			  << "               Write a copy of the input image with barcodes outlined by a green line\n"
@@ -47,22 +47,23 @@ static void PrintUsage(const char* exePath)
 	std::cout << "Formats can be lowercase, with or without '-', separated by ',' and/or '|'\n";
 }
 
-static bool ParseOptions(int argc, char* argv[], DecodeHints& hints, bool& oneLine, bool& angleEscape, bool& bytesOnly,
+static bool ParseOptions(int argc, char* argv[], DecodeHints& hints, bool& oneLine, bool& bytesOnly,
 						 std::vector<std::string>& filePaths, std::string& outPath)
 {
 	for (int i = 1; i < argc; ++i) {
-		if (strcmp(argv[i], "-fast") == 0) {
+		auto is = [&](const char* str) { return strncmp(argv[i], str, strlen(argv[i])) == 0; };
+		if (is("-fast")) {
 			hints.setTryHarder(false);
-		} else if (strcmp(argv[i], "-norotate") == 0) {
+		} else if (is("-norotate")) {
 			hints.setTryRotate(false);
-		} else if (strcmp(argv[i], "-noscale") == 0) {
+		} else if (is("-noscale")) {
 			hints.setDownscaleThreshold(0);
-		} else if (strcmp(argv[i], "-ispure") == 0) {
+		} else if (is("-ispure")) {
 			hints.setIsPure(true);
 			hints.setBinarizer(Binarizer::FixedThreshold);
-		} else if (strcmp(argv[i], "-errors") == 0) {
+		} else if (is("-errors")) {
 			hints.setReturnErrors(true);
-		} else if (strcmp(argv[i], "-format") == 0) {
+		} else if (is("-format")) {
 			if (++i == argc)
 				return false;
 			try {
@@ -71,13 +72,24 @@ static bool ParseOptions(int argc, char* argv[], DecodeHints& hints, bool& oneLi
 				std::cerr << e.what() << "\n";
 				return false;
 			}
-		} else if (strcmp(argv[i], "-1") == 0) {
+		} else if (is("-mode")) {
+			if (++i == argc)
+				return false;
+			else if (is("plain"))
+				hints.setTextMode(TextMode::Plain);
+			else if (is("eci"))
+				hints.setTextMode(TextMode::ECI);
+			else if (is("hri"))
+				hints.setTextMode(TextMode::HRI);
+			else if (is("escaped"))
+				hints.setTextMode(TextMode::Escaped);
+			else
+				return false;
+		} else if (is("-1")) {
 			oneLine = true;
-		} else if (strcmp(argv[i], "-escape") == 0) {
-			angleEscape = true;
-		} else if (strcmp(argv[i], "-bytes") == 0) {
+		} else if (is("-bytes")) {
 			bytesOnly = true;
-		} else if (strcmp(argv[i], "-pngout") == 0) {
+		} else if (is("-pngout")) {
 			if (++i == argc)
 				return false;
 			outPath = argv[i];
@@ -123,17 +135,17 @@ int main(int argc, char* argv[])
 	Results allResults;
 	std::string outPath;
 	bool oneLine = false;
-	bool angleEscape = false;
 	bool bytesOnly = false;
 	int ret = 0;
 
+	hints.setTextMode(TextMode::HRI);
+	hints.setEanAddOnSymbol(EanAddOnSymbol::Read);
 
-	if (!ParseOptions(argc, argv, hints, oneLine, angleEscape, bytesOnly, filePaths, outPath)) {
+	if (!ParseOptions(argc, argv, hints, oneLine, bytesOnly, filePaths, outPath)) {
 		PrintUsage(argv[0]);
 		return -1;
 	}
 
-	hints.setEanAddOnSymbol(EanAddOnSymbol::Read);
 
 	std::cout.setf(std::ios::boolalpha);
 
@@ -174,7 +186,7 @@ int main(int argc, char* argv[])
 			if (oneLine) {
 				std::cout << filePath << " " << ToString(result.format());
 				if (result.isValid())
-					std::cout << " \"" << TextUtfEncoding::EscapeNonGraphical(result.text()) << "\"";
+					std::cout << " \"" << result.text(TextMode::Escaped) << "\"";
 				else if (result.error())
 					std::cout << " " << ToString(result.error());
 				std::cout << "\n";
@@ -195,7 +207,7 @@ int main(int argc, char* argv[])
 				continue;
 			}
 
-			std::cout << "Text:       \"" << (angleEscape ? TextUtfEncoding::EscapeNonGraphical(result.text()) : result.text()) << "\"\n"
+			std::cout << "Text:       \"" << result.text() << "\"\n"
 					  << "Bytes:      " << ToHex(result.bytes()) << "\n"
 					  << "BytesECI:   " << ToHex(result.bytesECI()) << "\n"
 					  << "Format:     " << ToString(result.format()) << "\n"

@@ -7,7 +7,6 @@
 #include "GTIN.h"
 
 #include "Result.h"
-#include "TextUtfEncoding.h"
 
 #include <algorithm>
 #include <iomanip>

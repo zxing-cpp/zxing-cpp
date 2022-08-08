@@ -7,7 +7,7 @@
 #include "ODCode93Writer.h"
 
 #include "ODWriterHelper.h"
-#include "TextUtfEncoding.h"
+#include "Utf.h"
 #include "ZXAlgorithms.h"
 #include "ZXTestSupport.h"
 
@@ -186,7 +186,7 @@ Code93Writer::encode(const std::wstring& contents_, int width, int height) const
 
 BitMatrix Code93Writer::encode(const std::string& contents, int width, int height) const
 {
-	return encode(TextUtfEncoding::FromUtf8(contents), width, height);
+	return encode(FromUtf8(contents), width, height);
 }
 
 } // namespace ZXing::OneD

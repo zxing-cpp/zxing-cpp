@@ -9,7 +9,6 @@
 
 #include "BarcodeFormat.h"
 #include "DecoderResult.h"
-#include "GS1.h"
 #include "ODDataBarCommon.h"
 #include "ODDataBarExpandedBitDecoder.h"
 #include "Result.h"

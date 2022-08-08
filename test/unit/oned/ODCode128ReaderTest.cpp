@@ -47,7 +47,7 @@ TEST(ODCode128ReaderTest, SymbologyIdentifier)
 		PatternRow row({ 4, 1, 1, 1, 3, 1, 2, 2, 1, 2, 3, 1, 2, 2, 2, 1, 2, 2, 1, 3, 2, 1, 3, 1 });
 		auto result = parse('C', row);
 		EXPECT_EQ(result.symbologyIdentifier(), "]C1");
-		EXPECT_EQ(result.text(), "2001");
+		EXPECT_EQ(result.text(TextMode::HRI), "(20)01");
 	}
 
 	{

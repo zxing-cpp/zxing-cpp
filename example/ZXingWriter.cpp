@@ -8,7 +8,6 @@
 #include "BitMatrixIO.h"
 #include "CharacterSet.h"
 #include "MultiFormatWriter.h"
-#include "TextUtfEncoding.h"
 
 #include <algorithm>
 #include <cctype>
@@ -121,7 +120,7 @@ int main(int argc, char* argv[])
 
 	try {
 		auto writer = MultiFormatWriter(format).setMargin(margin).setEncoding(encoding).setEccLevel(eccLevel);
-		auto matrix = writer.encode(TextUtfEncoding::FromUtf8(text), width, height);
+		auto matrix = writer.encode(text, width, height);
 		auto bitmap = ToMatrix<uint8_t>(matrix);
 
 		auto ext = GetExtension(filePath);

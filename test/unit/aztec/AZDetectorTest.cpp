@@ -9,7 +9,7 @@
 #include "BitMatrixIO.h"
 #include "DecoderResult.h"
 #include "PseudoRandom.h"
-#include "TextUtfEncoding.h"
+#include "Utf.h"
 #include "aztec/AZDecoder.h"
 #include "aztec/AZDetectorResult.h"
 
@@ -65,7 +65,7 @@ namespace {
 						EXPECT_EQ(r.isValid(), true);
 						EXPECT_EQ(r.nbLayers(), nbLayers);
 						EXPECT_EQ(r.isCompact(), isCompact);
-						EXPECT_EQ(data, TextUtfEncoding::ToUtf8(Aztec::Decode(r).text()));
+						EXPECT_EQ(data, ToUtf8(Aztec::Decode(r).text()));
 					}
 				}
 				// Try a few random three-bit errors;

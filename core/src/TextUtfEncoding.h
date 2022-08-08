@@ -10,11 +10,10 @@
 
 namespace ZXing::TextUtfEncoding {
 
-std::string ToUtf8(std::wstring_view str);
-[[deprecated]] std::string ToUtf8(std::wstring_view str, const bool angleEscape);
-std::wstring FromUtf8(std::string_view utf8);
+// The following functions are not required anymore after Result::text() now returns utf8 natively and the encoders accept utf8 as well.
 
-std::wstring EscapeNonGraphical(std::wstring_view str);
-std::string EscapeNonGraphical(std::string_view utf8);
+[[deprecated]] std::string ToUtf8(std::wstring_view str);
+[[deprecated]] std::string ToUtf8(std::wstring_view str, const bool angleEscape);
+[[deprecated]] std::wstring FromUtf8(std::string_view utf8);
 
 } // namespace ZXing::TextUtfEncoding

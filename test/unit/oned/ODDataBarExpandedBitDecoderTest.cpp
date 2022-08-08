@@ -5,7 +5,7 @@
 
 #include "BitArray.h"
 #include "BitArrayUtility.h"
-#include "GS1.h"
+#include "HRI.h"
 #include "oned/ODDataBarExpandedBitDecoder.h"
 
 #include "gtest/gtest.h"

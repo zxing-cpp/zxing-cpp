@@ -7,9 +7,9 @@
 
 #include "CharacterSet.h"
 #include "ECI.h"
-#include "GS1.h"
+#include "HRI.h"
 #include "TextDecoder.h"
-#include "TextUtfEncoding.h"
+#include "Utf.h"
 #include "ZXAlgorithms.h"
 
 namespace ZXing {
@@ -138,26 +138,26 @@ std::string Content::render(bool withECI) const
 
 std::string Content::text(TextMode mode) const
 {
-	switch(mode) {
-	case TextMode::Utf8: return render(false);
-	case TextMode::Utf8ECI: return render(true);
+	switch (mode) {
+	case TextMode::Plain: return render(false);
+	case TextMode::ECI: return render(true);
 	case TextMode::HRI:
-		if (symbology.aiFlag == AIFlag::GS1)
-			return HRIFromGS1(text(TextMode::Utf8));
-		else if (type() == ContentType::Text)
-			return text(TextMode::Utf8);
-		else
-			return text(TextMode::Escaped);
+		switch (type()) {
+		case ContentType::GS1: return HRIFromGS1(render(false));
+		case ContentType::ISO15434: return HRIFromISO15434(render(false));
+		case ContentType::Text: return render(false);
+		default: return text(TextMode::Escaped);
+		}
 	case TextMode::Hex: return ToHex(bytes);
-	case TextMode::Escaped: return TextUtfEncoding::EscapeNonGraphical(render(false));
+	case TextMode::Escaped: return EscapeNonGraphical(render(false));
 	}
 
 	return {}; // silence compiler warning
 }
 
-std::wstring Content::utf16() const
+std::wstring Content::utfW() const
 {
-	return TextUtfEncoding::FromUtf8(render(false));
+	return FromUtf8(render(false));
 }
 
 ByteArray Content::bytesECI() const

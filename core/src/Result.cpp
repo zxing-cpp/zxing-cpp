@@ -8,7 +8,6 @@
 
 #include "DecoderResult.h"
 #include "TextDecoder.h"
-#include "TextUtfEncoding.h"
 #include "ZXAlgorithms.h"
 
 #include <cmath>
@@ -56,22 +55,20 @@ ByteArray Result::bytesECI() const
 	return _content.bytesECI();
 }
 
+std::string Result::text(TextMode mode) const
+{
+	return _content.text(mode);
+}
+
 std::string Result::utf8() const
 {
 	return _content.utf8();
 }
 
-std::wstring Result::utf16() const
+std::wstring Result::utfW() const
 {
-	return _content.utf16();
+	return _content.utfW();
 }
-
-#if 0
-std::string Result::utf8ECI() const
-{
-	return _content.text(TextMode::Utf8ECI);
-}
-#endif
 
 ContentType Result::contentType() const
 {
@@ -109,10 +106,11 @@ std::string Result::sequenceId() const
 	return _sai.id;
 }
 
-Result& Result::setCharacterSet(CharacterSet defaultCS)
+Result& Result::setDecodeHints(DecodeHints hints)
 {
-	if (defaultCS != CharacterSet::Unknown)
-		_content.defaultCharset = defaultCS;
+	if (hints.characterSet() != CharacterSet::Unknown)
+		_content.defaultCharset = hints.characterSet();
+	_decodeHints = hints;
 	return *this;
 }
 

@@ -5,21 +5,20 @@
 
 #include "CharacterSet.h"
 #include "TextDecoder.h"
-#include "TextUtfEncoding.h"
+#include "Utf.h"
 
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
 using namespace ZXing;
-using namespace ZXing::TextUtfEncoding;
 using namespace testing;
 
-namespace ZXing::TextUtfEncoding {
-int Utf32ToUtf8(uint32_t utf32, char* out);
+namespace ZXing {
+int Utf32ToUtf8(char32_t utf32, char* out);
 }
 
 // Encode Unicode codepoint `utf32` as UTF-8
-std::string Utf32ToUtf8(const uint32_t utf32)
+std::string Utf32ToUtf8(const char32_t utf32)
 {
 	char buf[4];
 	int len = Utf32ToUtf8(utf32, buf);

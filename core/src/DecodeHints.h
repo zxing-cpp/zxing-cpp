@@ -12,7 +12,6 @@
 
 #include <string_view>
 #include <utility>
-#include <vector>
 
 namespace ZXing {
 
@@ -23,7 +22,7 @@ namespace ZXing {
  * The difference is how to get to a threshold value T which results in a bit
  * value R = L <= T.
  */
-enum class Binarizer : unsigned char // needs to unsigned for the bitfield below to work, uint8_t fails as well
+enum class Binarizer : unsigned char // needs to be unsigned for the bitfield below to work, uint8_t fails as well
 {
 	LocalAverage,    ///< T = average of neighboring pixels for matrix and GlobalHistogram for linear (HybridBinarizer)
 	GlobalHistogram, ///< T = valley between the 2 largest peaks in the histogram (per line in linear case)
@@ -36,6 +35,15 @@ enum class EanAddOnSymbol : unsigned char // see above
 	Ignore,  ///< Ignore any Add-On symbol during read/scan
 	Read,    ///< Read EAN-2/EAN-5 Add-On symbol if found
 	Require, ///< Require EAN-2/EAN-5 Add-On symbol to be present
+};
+
+enum class TextMode : unsigned char // see above
+{
+	Plain,   ///< bytes() transcoded to unicode based on ECI info or guessed charset (the default mode prior to 2.0)
+	ECI,     ///< standard content following the ECI protocol with every character set ECI segment transcoded to unicode
+	HRI,     ///< Human Readable Interpretation (dependent on the ContentType)
+	Hex,     ///< bytes() transcoded to ASCII string of HEX values
+	Escaped, ///< Use the EscapeNonGraphical() function (e.g. ASCII 29 will be transcoded to "<GS>")
 };
 
 class DecodeHints
@@ -51,6 +59,7 @@ class DecodeHints
 	bool _returnErrors             : 1;
 	EanAddOnSymbol _eanAddOnSymbol : 2;
 	Binarizer _binarizer           : 2;
+	TextMode _textMode             : 3;
 
 	CharacterSet _characterSet   = CharacterSet::Unknown;
 	uint8_t _minLineCount        = 2;
@@ -72,7 +81,8 @@ public:
 		  _returnCodabarStartEnd(0),
 		  _returnErrors(0),
 		  _eanAddOnSymbol(EanAddOnSymbol::Ignore),
-		  _binarizer(Binarizer::LocalAverage)
+		  _binarizer(Binarizer::LocalAverage),
+		  _textMode(TextMode::Plain)
 	{}
 
 #define ZX_PROPERTY(TYPE, GETTER, SETTER) \
@@ -129,6 +139,9 @@ public:
 
 	/// Specify whether to ignore, read or require EAN-2/5 add-on symbols while scanning EAN/UPC codes
 	ZX_PROPERTY(EanAddOnSymbol, eanAddOnSymbol, setEanAddOnSymbol)
+
+	/// Specifies the TextMode that controls the return of the Result::text() function
+	ZX_PROPERTY(TextMode, textMode, setTextMode)
 
 	/// Specifies fallback character set to use instead of auto-detecting it (when applicable)
 	ZX_PROPERTY(CharacterSet, characterSet, setCharacterSet)
