@@ -53,6 +53,31 @@ jobs:
       # Execute tests defined by the CMake configuration.
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest -V -C $BUILD_TYPE
+
+  build-macOS-sanitize:
+    # Use clang as better sanitize
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Create Build Environment
+      run: cmake -E make_directory ${{runner.workspace}}/build
+
+    - name: Configure CMake
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      # Omit python test as doesn't work with sanitize
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=Release -DBUILD_BLACKBOX_TESTS=ON -DBUILD_UNIT_TESTS=ON -DBUILD_SANITIZE=ON
+
+    - name: Build
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: cmake --build . -j8 --config Release
+
+    - name: Test
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: ctest -V -C Release
       
   build-ios:
     runs-on: macos-latest
