@@ -193,8 +193,8 @@ static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, 
 						}
 					}
 					// make sure we make progress and we start the next try on a bar
-					next.shift(2 - (next.index() % 2));
-					next.extend();
+					if (next.size() && next.shift(2 - (next.index() % 2)))
+						next.extend();
 				} while (tryHarder && next.size());
 			}
 		}
