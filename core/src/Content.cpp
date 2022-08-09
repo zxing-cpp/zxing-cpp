@@ -143,7 +143,11 @@ std::string Content::text(TextMode mode) const
 	case TextMode::ECI: return render(true);
 	case TextMode::HRI:
 		switch (type()) {
-		case ContentType::GS1: return HRIFromGS1(render(false));
+		case ContentType::GS1: {
+			auto plain = render(false);
+			auto hri = HRIFromGS1(plain);
+			return hri.empty() ? plain : hri;
+		}
 		case ContentType::ISO15434: return HRIFromISO15434(render(false));
 		case ContentType::Text: return render(false);
 		default: return text(TextMode::Escaped);

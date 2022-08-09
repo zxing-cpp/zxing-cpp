@@ -94,6 +94,8 @@ FinderPatternSets GenerateFinderPatternSets(FinderPatterns& patterns)
 		// Test image: fix-finderpattern-order.jpg
 		return dot((*a - *b), (*a - *b)) * std::pow(double(b->size) / a->size, 2);
 	};
+	const double cosUpper = std::cos(45. / 180 * 3.1415); // TODO: use c++20 std::numbers::pi_v
+	const double cosLower = std::cos(135. / 180 * 3.1415);
 
 	int nbPatterns = Size(patterns);
 	for (int i = 0; i < nbPatterns - 2; i++) {
@@ -131,9 +133,8 @@ FinderPatternSets GenerateFinderPatternSets(FinderPatterns& patterns)
 					continue;
 
 				// Make sure the angle between AB and BC does not deviate from 90° by more than 45°
-				auto alpha = std::acos((distAB2 + distBC2 - distAC2) / (2 * distAB * distBC)) / 3.1415 * 180;
-//				printf("alpha: %.1f\n", alpha);
-				if (std::isnan(alpha) || std::abs(90 - alpha) > 45)
+				auto cosAB_BC = (distAB2 + distBC2 - distAC2) / (2 * distAB * distBC);
+				if (std::isnan(cosAB_BC) || cosAB_BC > cosUpper || cosAB_BC < cosLower)
 					continue;
 
 				// a^2 + b^2 = c^2 (Pythagorean theorem), and a = b (isosceles triangle).
@@ -141,7 +142,7 @@ FinderPatternSets GenerateFinderPatternSets(FinderPatterns& patterns)
 				// we need to check both two equal sides separately.
 				// The value of |c^2 - 2 * b^2| + |c^2 - 2 * a^2| increases as dissimilarity
 				// from isosceles right triangle.
-				double d = (std::abs(distAC2 - 2 * distAB2) + std::abs(distAC2 - 2 * distBC2)) / distAC2;
+				double d = (std::abs(distAC2 - 2 * distAB2) + std::abs(distAC2 - 2 * distBC2));
 
 				// Use cross product to figure out whether A and C are correct or flipped.
 				// This asks whether BC x BA has a positive z component, which is the arrangement
@@ -150,7 +151,8 @@ FinderPatternSets GenerateFinderPatternSets(FinderPatterns& patterns)
 					std::swap(a, c);
 
 				// arbitrarily limit the number of potential sets
-				const auto setSizeLimit = 16;
+				// (this has performance implications while limiting the maximal number of detected symbols)
+				const auto setSizeLimit = 256;
 				if (sets.size() < setSizeLimit || sets.crbegin()->first > d) {
 					sets.emplace(d, FinderPatternSet{*a, *b, *c});
 					if (sets.size() > setSizeLimit)

@@ -258,11 +258,14 @@ int main(int argc, char* argv[])
 			auto startTime = std::chrono::high_resolution_clock::now();
 			auto duration = startTime - startTime;
 			int N = 0;
+			int blockSize = 1;
 			do {
-				for (int i = 0; i < 100; ++i)
+				for (int i = 0; i < blockSize; ++i)
 					ReadBarcodes(image, hints);
-				N += 100;
+				N += blockSize;
 				duration = std::chrono::high_resolution_clock::now() - startTime;
+				if (blockSize < 1000 && duration < std::chrono::milliseconds(100))
+					blockSize *= 10;
 			} while (duration < std::chrono::seconds(1));
 			printf("time: %5.1f ms per frame\n", double(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count()) / N);
 		}
