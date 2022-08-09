@@ -97,7 +97,10 @@ TEST(ThresholdBinarizerTest, PatternRowClear)
 	hints.setFormats(BarcodeFormat::DataBarExpanded);
 	OneD::Reader reader(hints);
 
+	testing::internal::CaptureStderr(); // Capture any runtime error warnings if BUILD_SANITIZE set
 	Result result = reader.decode(ThresholdBinarizer(getImageView(buf, bits), 0x7F));
+	std::string captured = testing::internal::GetCapturedStderr();
 	EXPECT_TRUE(result.isValid());
 	EXPECT_EQ(result.text(TextMode::HRI), "(91)12345678901234567890123456789012345678901234567890123456789012345678");
+	EXPECT_TRUE(captured.empty()) << "stderr:\n" << captured;
 }
