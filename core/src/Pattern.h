@@ -60,7 +60,7 @@ public:
 	int size() const { return _size; }
 
 	// index is the number of bars and spaces from the first bar to the current position
-	int index() const { return narrow_cast<int>(_data - (_base + 1)); }
+	int index() const { return narrow_cast<int>(_data - _base) - 1; }
 	int pixelsInFront() const { return std::accumulate(_base, _data, 0); }
 	int pixelsTillEnd() const { return std::accumulate(_base, _data + _size, 0) - 1; }
 	bool isAtFirstBar() const { return _data == _base + 1; }
@@ -94,8 +94,7 @@ public:
 
 	bool shift(int n)
 	{
-		_data += n;
-		return _data + _size <= _end;
+		return _data && ((_data += n) + _size <= _end);
 	}
 
 	bool skipPair()
