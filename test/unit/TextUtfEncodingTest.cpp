@@ -13,21 +13,21 @@ using namespace ZXing;
 
 TEST(TextUtfEncodingTest, EscapeNonGraphical)
 {
-	EXPECT_EQ(EscapeNonGraphical("\u00B6\u0416"), "¶Ж");
-	EXPECT_EQ(EscapeNonGraphical("\x01\x1F\x7F"), "<SOH><US><DEL>");
-	EXPECT_EQ(EscapeNonGraphical("\u0080\u009F"), "<U+80><U+9F>");
-	EXPECT_EQ(EscapeNonGraphical("\u00A0"), "<U+A0>"); // NO-BREAK space (nbsp)
-	EXPECT_EQ(EscapeNonGraphical("\u2007"), "<U+2007>"); // NO-BREAK space (numsp)
-	EXPECT_EQ(EscapeNonGraphical("\uFFEF"), "<U+FFEF>"); // Was NO-BREAK space but now isn't (BOM)
-	EXPECT_EQ(EscapeNonGraphical("\u2000"), "<U+2000>"); // Space char (nqsp)
-	EXPECT_EQ(EscapeNonGraphical("\uFFFD"), "<U+FFFD>");
-	EXPECT_EQ(EscapeNonGraphical("\uFFFF"), "<U+FFFF>");
+	EXPECT_EQ(EscapeNonGraphical(u8"\u00B6\u0416"), "¶Ж");
+	EXPECT_EQ(EscapeNonGraphical(u8"\x01\x1F\x7F"), "<SOH><US><DEL>");
+	EXPECT_EQ(EscapeNonGraphical(u8"\u0080\u009F"), "<U+80><U+9F>");
+	EXPECT_EQ(EscapeNonGraphical(u8"\u00A0"), "<U+A0>"); // NO-BREAK space (nbsp)
+	EXPECT_EQ(EscapeNonGraphical(u8"\u2007"), "<U+2007>"); // NO-BREAK space (numsp)
+	EXPECT_EQ(EscapeNonGraphical(u8"\uFFEF"), "<U+FFEF>"); // Was NO-BREAK space but now isn't (BOM)
+	EXPECT_EQ(EscapeNonGraphical(u8"\u2000"), "<U+2000>"); // Space char (nqsp)
+	EXPECT_EQ(EscapeNonGraphical(u8"\uFFFD"), "<U+FFFD>");
+	EXPECT_EQ(EscapeNonGraphical(u8"\uFFFF"), "<U+FFFF>");
 }
 
 TEST(TextUtfEncodingTest, FromUtf8)
 {
-	EXPECT_EQ(FromUtf8("\U00010000"), L"\U00010000");
-	EXPECT_EQ(FromUtf8("\U00010FFF"), L"\U00010FFF");
+	EXPECT_EQ(FromUtf8(u8"\U00010000"), L"\U00010000");
+	EXPECT_EQ(FromUtf8(u8"\U00010FFF"), L"\U00010FFF");
 	EXPECT_EQ(FromUtf8("A\xE8\x80\xBFG"), L"A\u803FG"); // U+803F
 
 //	EXPECT_EQ(FromUtf8("A\xE8\x80\xBF\x80G"), L"A\u803FG"); // Bad UTF-8 (extra continuation byte)
