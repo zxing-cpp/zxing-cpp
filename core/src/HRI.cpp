@@ -283,6 +283,13 @@ std::string HRIFromGS1(std::string_view gs1)
 	return res;
 }
 
+#if __cplusplus > 201703L
+std::ostream& operator<<(std::ostream& os, const char8_t* str)
+{
+	return os << reinterpret_cast<const char*>(str);
+}
+#endif
+
 std::string HRIFromISO15434(std::string_view str)
 {
 	// Use available unicode symbols to simulate sub- and superscript letters as specified in

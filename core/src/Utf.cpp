@@ -18,7 +18,9 @@
 namespace ZXing {
 
 // TODO: c++20 has char8_t
+#if __cplusplus <= 201703L
 using char8_t = uint8_t;
+#endif
 using utf8_t = std::basic_string_view<char8_t>;
 
 using state_t = uint8_t;
@@ -120,6 +122,15 @@ std::wstring FromUtf8(std::string_view utf8)
 	AppendFromUtf8({reinterpret_cast<const char8_t*>(utf8.data()), utf8.size()}, str);
 	return str;
 }
+
+#if __cplusplus > 201703L
+std::wstring FromUtf8(std::u8string_view utf8)
+{
+	std::wstring str;
+	AppendFromUtf8(utf8, str);
+	return str;
+}
+#endif
 
 // Count the number of bytes required to store given code points in UTF-8.
 static size_t Utf8CountBytes(std::wstring_view str)
