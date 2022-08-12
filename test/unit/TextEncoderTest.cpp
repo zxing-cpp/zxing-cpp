@@ -12,14 +12,15 @@
 using namespace ZXing;
 using namespace testing;
 
-void EnDeCode(CharacterSet cs, const char* in, std::string_view out)
+template <typename CharT>
+void EnDeCode(CharacterSet cs, const CharT* in, std::string_view out)
 {
-	std::string bytes = TextEncoder::FromUnicode(in, cs);
+	std::string bytes = TextEncoder::FromUnicode(reinterpret_cast<const char*>(in), cs);
 	EXPECT_EQ(bytes, out);
 
 	std::string dec;
 	TextDecoder::Append(dec, reinterpret_cast<const uint8_t*>(bytes.data()), bytes.size(), cs);
-	EXPECT_EQ(dec, in);
+	EXPECT_EQ(dec, reinterpret_cast<const char*>(in));
 }
 
 TEST(TextEncoderTest, FullCycleEncodeDecode)
@@ -49,7 +50,7 @@ TEST(TextEncoderTest, FullCycleEncodeDecode)
 	EnDeCode(CharacterSet::Cp1256, u8"\u0686", "\x8D"); // ARABIC LETTER TCHEH
 	EnDeCode(CharacterSet::UTF16BE, u8"\u20AC", "\x20\xAC"); // EURO SIGN
 	EnDeCode(CharacterSet::UTF8, u8"\u20AC", "\xE2\x82\xAC"); // EURO SIGN
-	EnDeCode(CharacterSet::ASCII, "#", "#");
+	EnDeCode(CharacterSet::ASCII, u8"#", "#");
 	EnDeCode(CharacterSet::Big5, u8"\u3000", "\xA1\x40"); // IDEOGRAPHIC SPACE
 	EnDeCode(CharacterSet::GB2312, u8"\u3000", "\xA1\xA1"); // IDEOGRAPHIC SPACE
 	EnDeCode(CharacterSet::EUC_KR, u8"\u3000", "\xA1\xA1"); // IDEOGRAPHIC SPACE
