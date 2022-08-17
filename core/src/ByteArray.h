@@ -38,7 +38,13 @@ inline std::string ToHex(const ByteArray& bytes)
 	std::string res(bytes.size() * 3, ' ');
 
 	for (size_t i = 0; i < bytes.size(); ++i)
+	{
+#ifdef _MSC_VER
+		sprintf_s(&res[i * 3], 4, "%02X ", bytes[i]);
+#else
 		sprintf(&res[i * 3], "%02X ", bytes[i]);
+#endif
+	}
 
 	return res.substr(0, res.size()-1);
 }
