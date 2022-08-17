@@ -298,6 +298,12 @@ std::string HRIFromISO15434(std::string_view str)
 	std::ostringstream oss;
 
 	for (char c : str) {
+#if 1
+		if (0 <= c && c <= 0x20)
+			oss << "\xe2\x90" << char(0x80 + c); // Unicode Block “Control Pictures”: 0x2400
+		else
+			oss << c;
+#else
 		switch (c) {
 		case 4: oss << u8"\u1d31\u1d52\u209c"; break; // EOT
 		case 28: oss << u8"\ua7f3\u209b"; break; // FS
@@ -306,6 +312,7 @@ std::string HRIFromISO15434(std::string_view str)
 		case 31: oss << u8"\u1d41\u209b"; break; // US
 		default: oss << c;
 		}
+#endif
 	}
 
 	return oss.str();

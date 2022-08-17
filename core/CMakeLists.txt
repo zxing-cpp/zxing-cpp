@@ -2,6 +2,9 @@ cmake_minimum_required (VERSION 3.10)
 
 include(../zxing.cmake)
 set(ZUECI_STATIC ON CACHE INTERNAL "")
+if (BUILD_SHARED_LIBS)
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+endif()
 zxing_add_package(zueci zueci https://git.code.sf.net/p/libzueci/code master)
 
 if (NOT DEFINED BUILD_WRITERS)
