@@ -29,7 +29,7 @@ It was originally ported from the Java [ZXing Library](https://github.com/zxing/
 | DataBar        | DataBar Exanded   | PDF417             |
 |                | ITF               | MaxiCode (partial) |
 
-[Note: DataBar used to be called RSS. DataBar is not supported for writing.]
+[Note: DataBar used to be called RSS. DataBar, MaxiCode and Micro QR Code are not supported for writing.]
 
 ## Getting Started
 
