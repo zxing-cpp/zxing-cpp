@@ -136,8 +136,6 @@ static std::string DecodeAI01AndOtherAIs(BitArrayView& bits)
 
 	auto header = DecodeCompressedGTIN("01" + std::to_string(bits.readBits(4)), bits);
 	auto trailer = DecodeGeneralPurposeBits(bits);
-	if (trailer.empty())
-		return {};
 
 	return header + trailer;
 }

@@ -525,10 +525,10 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 9, 10, 180 },
 		});
 
-		runTests("rssexpanded-1", "DataBarExpanded", 33, {
-			{ 33, 33, 0   },
-			{ 33, 33, 180 },
-			{ 33, 0, pure },
+		runTests("rssexpanded-1", "DataBarExpanded", 34, {
+			{ 34, 34, 0   },
+			{ 34, 34, 180 },
+			{ 34, 0, pure },
 		});
 
 		runTests("rssexpanded-2", "DataBarExpanded", 15, {
