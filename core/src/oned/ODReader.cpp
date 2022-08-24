@@ -117,7 +117,7 @@ static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, 
 		// TODO: the DataBarExpanded (stacked) decoder depends on seeing each line from both directions. This
 		// 'surprising' and inconsistent. It also requires the decoderState to be shared between normal and reversed
 		// scans, which makes no sense in general because it would mix partial detection data from two codes of the same
-		// type next to each other. See also https://github.com/nu-book/zxing-cpp/issues/87
+		// type next to each other. See also https://github.com/zxing-cpp/zxing-cpp/issues/87
 		for (bool upsideDown : {false, true}) {
 			// trying again?
 			if (upsideDown) {

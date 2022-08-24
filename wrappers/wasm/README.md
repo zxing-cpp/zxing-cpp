@@ -8,4 +8,4 @@
 4. To see how to include these into a working HTML page, have a look at the [reader](demo_reader.html) and [writer](demo_writer.html) demos.
 5. To quickly test your build, copy those demo files into your build directory and run e.g. `emrun --serve_after_close demo_reader.html`.
 
-You can also download the latest build output from the continuous integration system from the [Actions](https://github.com/nu-book/zxing-cpp/actions) tab. Look for 'wasm-artifacts'. Also check out the [live demos](https://nu-book.github.io/zxing-cpp/).
+You can also download the latest build output from the continuous integration system from the [Actions](https://github.com/zxing-cpp/zxing-cpp/actions) tab. Look for 'wasm-artifacts'. Also check out the [live demos](https://zxing-cpp.github.io/zxing-cpp/).

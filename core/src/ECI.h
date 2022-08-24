@@ -61,7 +61,7 @@ inline constexpr bool IsText(ECI eci)
 
 inline constexpr bool CanProcess(ECI eci)
 {
-	// see https://github.com/nu-book/zxing-cpp/commit/d8587545434d533c4e568181e1c12ef04a8e42d9#r74864359
+	// see https://github.com/zxing-cpp/zxing-cpp/commit/d8587545434d533c4e568181e1c12ef04a8e42d9#r74864359
 	return ToInt(eci) <= 899;
 }
 

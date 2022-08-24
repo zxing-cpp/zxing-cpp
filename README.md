@@ -1,4 +1,4 @@
-[![Build Status](https://github.com/nu-book/zxing-cpp/workflows/CI/badge.svg?branch=master)](https://github.com/nu-book/zxing-cpp/actions?query=workflow%3ACI)
+[![Build Status](https://github.com/zxing-cpp/zxing-cpp/workflows/CI/badge.svg?branch=master)](https://github.com/zxing-cpp/zxing-cpp/actions?query=workflow%3ACI)
 
 # ZXing-C++
 
@@ -45,9 +45,9 @@ As an example, have a look at [`ZXingWriter.cpp`](example/ZXingWriter.cpp).
 3. Convert the bit matrix to your native image format. See also the `ToMatrix<T>(BitMatrix&)` helper function.
 
 ## Web Demos
-- [Read barcodes](https://nu-book.github.io/zxing-cpp/demo_reader.html)
-- [Write barcodes](https://nu-book.github.io/zxing-cpp/demo_writer.html)
-- [Scan with camera](https://nu-book.github.io/zxing-cpp/zxing_viddemo.html)
+- [Read barcodes](https://zxing-cpp.github.io/zxing-cpp/demo_reader.html)
+- [Write barcodes](https://zxing-cpp.github.io/zxing-cpp/demo_writer.html)
+- [Scan with camera](https://zxing-cpp.github.io/zxing-cpp/zxing_viddemo.html)
 
 [Note: those live demos are not necessarily fully up-to-date at all times.]
 
@@ -59,7 +59,7 @@ These are the generic instructions to build the library on Windows/macOS/Linux. 
 3. See the cmake `BUILD_...` options to enable the testing code, python wrapper, etc.
 
 ```
-git clone https://github.com/nu-book/zxing-cpp.git --single-branch --depth 1
+git clone https://github.com/zxing-cpp/zxing-cpp.git --single-branch --depth 1
 cmake -S zxing-cpp -B zxing-cpp.release -DCMAKE_BUILD_TYPE=Release
 cmake --build zxing-cpp.release -j8
 ```

@@ -36,17 +36,17 @@ if (NOT hasParent)
         # related tag.
         find_package (Git REQUIRED)
         execute_process(
-            COMMAND ${GIT_EXECUTABLE} ls-remote https://github.com/nu-book/zxing-cpp.git tags/*
+            COMMAND ${GIT_EXECUTABLE} ls-remote https://github.com/zxing-cpp/zxing-cpp.git tags/*
             RESULT_VARIABLE RESULT
             OUTPUT_VARIABLE OUTPUT)
         string (FIND "${OUTPUT}" "refs/tags/v${VERSION_INFO}\n" FOUND_IDX)
         if (FOUND_IDX LESS 0)
             # Version not found in tags (suppose we are preparing future version), use master branch
             FetchContent_Declare(zxing-cpp
-                GIT_REPOSITORY https://github.com/nu-book/zxing-cpp.git)
+                GIT_REPOSITORY https://github.com/zxing-cpp/zxing-cpp.git)
         else()
             FetchContent_Declare(zxing-cpp
-                GIT_REPOSITORY https://github.com/nu-book/zxing-cpp.git
+                GIT_REPOSITORY https://github.com/zxing-cpp/zxing-cpp.git
                 GIT_TAG v${VERSION_INFO})
         endif()
         if(NOT zxing-cpp_POPULATED)
