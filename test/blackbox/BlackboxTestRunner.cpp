@@ -601,6 +601,10 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 1, 1, 0   },
 		});
 
+		runTests("qrcode-8", "QRCode", 2, {
+			{ 2, 2, 0   },
+		}, DecodeHints().setInvert(true));
+
 		runTests("microqrcode-1", "MicroQRCode", 16, {
 			{ 15, 15, 0   },
 			{ 15, 15, 90  },

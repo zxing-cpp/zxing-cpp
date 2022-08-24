@@ -30,6 +30,7 @@ class BinaryBitmap
 
 protected:
 	const ImageView _buffer;
+	bool (*_step)(int, int);
 
 	/**
 	* Converts a 2D array of luminance data to 1 bit (true means black).
@@ -39,7 +40,7 @@ protected:
 	virtual std::shared_ptr<const BitMatrix> getBlackMatrix() const = 0;
 
 public:
-	BinaryBitmap(const ImageView& buffer);
+	BinaryBitmap(const ImageView& buffer, bool invert = false);
 	virtual ~BinaryBitmap();
 
 	int width() const { return _buffer.width(); }

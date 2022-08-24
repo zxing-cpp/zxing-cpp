@@ -24,7 +24,7 @@ namespace ZXing {
 class GlobalHistogramBinarizer : public BinaryBitmap
 {
 public:
-	explicit GlobalHistogramBinarizer(const ImageView& buffer);
+	explicit GlobalHistogramBinarizer(const ImageView& buffer, bool invert = false);
 	~GlobalHistogramBinarizer() override;
 
 	bool getPatternRow(int row, int rotation, PatternRow &res) const override;

@@ -105,13 +105,13 @@ ImageView SetupLumImageView(ImageView iv, LumImage& lum, const DecodeHints& hint
 	return iv;
 }
 
-std::unique_ptr<BinaryBitmap> CreateBitmap(ZXing::Binarizer binarizer, const ImageView& iv)
+std::unique_ptr<BinaryBitmap> CreateBitmap(ZXing::Binarizer binarizer, const ImageView& iv, bool invert)
 {
 	switch (binarizer) {
-	case Binarizer::BoolCast: return std::make_unique<ThresholdBinarizer>(iv, 0);
-	case Binarizer::FixedThreshold: return std::make_unique<ThresholdBinarizer>(iv, 127);
-	case Binarizer::GlobalHistogram: return std::make_unique<GlobalHistogramBinarizer>(iv);
-	case Binarizer::LocalAverage: return std::make_unique<HybridBinarizer>(iv);
+	case Binarizer::BoolCast: return std::make_unique<ThresholdBinarizer>(iv, 0, invert);
+	case Binarizer::FixedThreshold: return std::make_unique<ThresholdBinarizer>(iv, 127, invert);
+	case Binarizer::GlobalHistogram: return std::make_unique<GlobalHistogramBinarizer>(iv, invert);
+	case Binarizer::LocalAverage: return std::make_unique<HybridBinarizer>(iv, invert);
 	}
 	return {}; // silence gcc warning
 }
@@ -126,7 +126,7 @@ Result ReadBarcode(const ImageView& _iv, const DecodeHints& hints)
 		LumImage lum;
 		ImageView iv = SetupLumImageView(_iv, lum, hints);
 
-		return MultiFormatReader(hints).read(*CreateBitmap(hints.binarizer(), iv)).setDecodeHints(hints);
+		return MultiFormatReader(hints).read(*CreateBitmap(hints.binarizer(), iv, hints.invert())).setDecodeHints(hints);
 	}
 }
 
@@ -137,14 +137,14 @@ Results ReadBarcodes(const ImageView& _iv, const DecodeHints& hints)
 	MultiFormatReader reader(hints);
 
 	if (hints.isPure())
-		return {reader.read(*CreateBitmap(hints.binarizer(), iv))};
+		return {reader.read(*CreateBitmap(hints.binarizer(), iv, hints.invert()))};
 
 	LumImagePyramid pyramid(iv, hints.downscaleThreshold() * hints.tryDownscale(), hints.downscaleFactor());
 
 	Results results;
 	int maxSymbols = hints.maxNumberOfSymbols();
 	for (auto&& iv : pyramid.layers) {
-		auto bitmap = CreateBitmap(hints.binarizer(), iv);
+		auto bitmap = CreateBitmap(hints.binarizer(), iv, hints.invert());
 		auto rs = reader.readMultiple(*bitmap, maxSymbols);
 		for (auto& r : rs) {
 			if (iv.width() != _iv.width())

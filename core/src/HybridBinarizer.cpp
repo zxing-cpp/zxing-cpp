@@ -25,7 +25,7 @@ static const int BLOCK_SIZE = 8;
 static const int MINIMUM_DIMENSION = BLOCK_SIZE * 5;
 static const int MIN_DYNAMIC_RANGE = 24;
 
-HybridBinarizer::HybridBinarizer(const ImageView& iv) : GlobalHistogramBinarizer(iv) {}
+HybridBinarizer::HybridBinarizer(const ImageView& iv, bool invert) : GlobalHistogramBinarizer(iv, invert) {}
 
 HybridBinarizer::~HybridBinarizer() = default;
 
@@ -101,13 +101,13 @@ static Matrix<int> CalculateBlackPoints(const uint8_t* luminances, int subWidth,
 /**
 * Applies a single threshold to a block of pixels.
 */
-static void ThresholdBlock(const uint8_t* luminances, int xoffset, int yoffset, int threshold, int rowStride, BitMatrix& matrix)
+static void ThresholdBlock(const uint8_t* luminances, int xoffset, int yoffset, int threshold, int rowStride, BitMatrix& matrix, bool (*step)(int, int))
 {
 	for (int y = yoffset; y < yoffset + BLOCK_SIZE; ++y) {
 		auto* src = luminances + y * rowStride + xoffset;
 		auto* const dstBegin = matrix.row(y).begin() + xoffset;
 		for (auto* dst = dstBegin; dst < dstBegin + BLOCK_SIZE; ++dst, ++src)
-			*dst = *src <= threshold;
+			*dst = step(*src, threshold);
 	}
 }
 
@@ -117,7 +117,7 @@ static void ThresholdBlock(const uint8_t* luminances, int xoffset, int yoffset, 
 * on the last pixels in the row/column which are also used in the previous block).
 */
 static std::shared_ptr<BitMatrix> CalculateMatrix(const uint8_t* luminances, int subWidth, int subHeight, int width,
-												  int height, int rowStride, const Matrix<int>& blackPoints)
+												  int height, int rowStride, const Matrix<int>& blackPoints, bool (*step)(int, int))
 {
 	auto matrix = std::make_shared<BitMatrix>(width, height);
 
@@ -134,7 +134,7 @@ static std::shared_ptr<BitMatrix> CalculateMatrix(const uint8_t* luminances, int
 				}
 			}
 			int average = sum / 25;
-			ThresholdBlock(luminances, xoffset, yoffset, average, rowStride, *matrix);
+			ThresholdBlock(luminances, xoffset, yoffset, average, rowStride, *matrix, step);
 		}
 	}
 
@@ -150,7 +150,7 @@ std::shared_ptr<const BitMatrix> HybridBinarizer::getBlackMatrix() const
 		auto blackPoints =
 			CalculateBlackPoints(luminances, subWidth, subHeight, width(), height(), _buffer.rowStride());
 
-		return CalculateMatrix(luminances, subWidth, subHeight, width(), height(), _buffer.rowStride(), blackPoints);
+		return CalculateMatrix(luminances, subWidth, subHeight, width(), height(), _buffer.rowStride(), blackPoints, _step);
 	} else {
 		// If the image is too small, fall back to the global histogram approach.
 		return GlobalHistogramBinarizer::getBlackMatrix();

@@ -21,7 +21,7 @@ static const int LUMINANCE_BITS = 5;
 static const int LUMINANCE_SHIFT = 8 - LUMINANCE_BITS;
 static const int LUMINANCE_BUCKETS = 1 << LUMINANCE_BITS;
 
-GlobalHistogramBinarizer::GlobalHistogramBinarizer(const ImageView& buffer) : BinaryBitmap(buffer) {}
+GlobalHistogramBinarizer::GlobalHistogramBinarizer(const ImageView& buffer, bool invert) : BinaryBitmap(buffer, invert) {}
 
 GlobalHistogramBinarizer::~GlobalHistogramBinarizer() = default;
 
@@ -91,9 +91,10 @@ bool GlobalHistogramBinarizer::getPatternRow(int row, int rotation, PatternRow& 
 	int blackPoint = EstimateBlackPoint(buckets);
 	if (blackPoint <= 0)
 		return false;
+	--blackPoint; // Decrement blackPoint value for _step().
 
 	auto* lastPos = luminances;
-	bool lastVal = luminances[0] < blackPoint;
+	bool lastVal = _step(luminances[0], blackPoint);
 	if (lastVal)
 		res.push_back(0); // first value is number of white pixels, here 0
 
@@ -106,10 +107,10 @@ bool GlobalHistogramBinarizer::getPatternRow(int row, int rotation, PatternRow& 
 	};
 
 	for (auto *p = luminances + pixStride, *e = luminances + (buffer.width() - 1) * pixStride; p < e; p += pixStride)
-		process((-*(p - pixStride) + (int(*p) * 4) - *(p + pixStride)) / 2 < blackPoint, p);
+		process(_step((-*(p - pixStride) + (int(*p) * 4) - *(p + pixStride)) / 2, blackPoint), p);
 
 	auto* backPos = buffer.data(buffer.width() - 1, row);
-	bool backVal = *backPos < blackPoint;
+	bool backVal = _step(*backPos, blackPoint);
 	process(backVal, backPos);
 
 	res.push_back(narrow_cast<PatternRow::value_type>((backPos - lastPos) / pixStride + 1));
@@ -142,6 +143,7 @@ GlobalHistogramBinarizer::getBlackMatrix() const
 	int blackPoint = EstimateBlackPoint(localBuckets);
 	if (blackPoint <= 0)
 		return {};
+	--blackPoint; // Decrement blackPoint value for _step().
 
 	// We delay reading the entire image luminance until the black point estimation succeeds.
 	// Although we end up reading four rows twice, it is consistent with our motto of
@@ -149,7 +151,7 @@ GlobalHistogramBinarizer::getBlackMatrix() const
 	auto matrix = std::make_shared<BitMatrix>(width(), height());
 	for(int y = 0; y < height(); ++y)
 		for(int x = 0; x < width(); ++x)
-			matrix->set(x, y, *_buffer.data(x, y) < blackPoint);
+			matrix->set(x, y, _step(*_buffer.data(x, y), blackPoint));
 
 	return matrix;
 }

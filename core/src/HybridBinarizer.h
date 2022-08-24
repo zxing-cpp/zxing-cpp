@@ -30,7 +30,7 @@ namespace ZXing {
 class HybridBinarizer : public GlobalHistogramBinarizer
 {
 public:
-	explicit HybridBinarizer(const ImageView& iv);
+	explicit HybridBinarizer(const ImageView& iv, bool invert = false);
 	~HybridBinarizer() override;
 
 	std::shared_ptr<const BitMatrix> getBlackMatrix() const override;

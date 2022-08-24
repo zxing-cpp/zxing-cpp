@@ -15,7 +15,17 @@ struct BinaryBitmap::Cache
 	std::shared_ptr<const BitMatrix> matrix;
 };
 
-BinaryBitmap::BinaryBitmap(const ImageView& buffer) : _cache(new Cache), _buffer(buffer) {}
+static inline bool _positive(int value, int threshold)
+{
+	return value <= threshold;
+}
+
+static inline bool _negative(int value, int threshold)
+{
+	return value > threshold;
+}
+
+BinaryBitmap::BinaryBitmap(const ImageView& buffer, bool invert) : _cache(new Cache), _buffer(buffer), _step(invert ? _negative : _positive) {}
 
 BinaryBitmap::~BinaryBitmap() = default;
 

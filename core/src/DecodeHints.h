@@ -52,6 +52,7 @@ class DecodeHints
 	bool _tryRotate                : 1;
 	bool _tryDownscale             : 1;
 	bool _isPure                   : 1;
+	bool _invert                   : 1;
 	bool _tryCode39ExtendedMode    : 1;
 	bool _validateCode39CheckSum   : 1;
 	bool _validateITFCheckSum      : 1;
@@ -75,6 +76,7 @@ public:
 		  _tryRotate(1),
 		  _tryDownscale(1),
 		  _isPure(0),
+		  _invert(0),
 		  _tryCode39ExtendedMode(0),
 		  _validateCode39CheckSum(0),
 		  _validateITFCheckSum(0),
@@ -107,6 +109,9 @@ public:
 
 	/// Set to true if the input contains nothing but a single perfectly aligned barcode (generated image)
 	ZX_PROPERTY(bool, isPure, setIsPure)
+
+	/// Detect inverted barcodes only.
+	ZX_PROPERTY(bool, invert, setInvert)
 
 	/// Image size ( min(width, height) ) threshold at which to start downscaled scanning
 	// WARNING: this API is experimental and may change/disappear

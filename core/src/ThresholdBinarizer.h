@@ -17,7 +17,7 @@ class ThresholdBinarizer : public BinaryBitmap
 	const uint8_t _threshold = 0;
 
 public:
-	ThresholdBinarizer(const ImageView& buffer, uint8_t threshold = 1) : BinaryBitmap(buffer), _threshold(threshold) {}
+	ThresholdBinarizer(const ImageView& buffer, uint8_t threshold = 1, bool invert = false) : BinaryBitmap(buffer, invert), _threshold(threshold) {}
 
 	bool getPatternRow(int row, int rotation, PatternRow& res) const override
 	{
@@ -33,7 +33,7 @@ public:
 		res.clear();
 
 		for (const uint8_t* p = begin; p < end; p += stride) {
-			bool val = *p <= _threshold;
+			bool val = _step(*p, _threshold);
 			if (val != lastVal) {
 				res.push_back(narrow_cast<PatternRow::value_type>(p - lastPos) / stride);
 				lastVal = val;
@@ -43,7 +43,7 @@ public:
 
 		res.push_back(narrow_cast<PatternRow::value_type>(end - lastPos) / stride);
 
-		if (*(end - stride) <= _threshold)
+		if (_step(*(end - stride), _threshold))
 			res.push_back(0); // last value is number of white pixels, here 0
 
 		return true;
@@ -57,11 +57,11 @@ public:
 			// Specialize for a packed buffer with pixStride 1 to support auto vectorization (16x speedup on AVX2)
 			auto dst = res.row(0).begin();
 			for (auto src = _buffer.data(0, 0), end = _buffer.data(0, height()); src != end; ++src, ++dst)
-				*dst = *src <= _threshold;
+				*dst = _step(*src, _threshold);
 		} else {
 			auto processLine = [this, &res](int y, const auto* src, const int stride) {
 				for (auto& dst : res.row(y)) {
-					dst = *src <= _threshold;
+					dst = _step(*src, _threshold);
 					src += stride;
 				}
 			};
