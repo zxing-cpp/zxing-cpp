@@ -33,7 +33,7 @@ class Result
 	 * @brief utf8/utf16 is the bytes() content converted to utf8/16 based on ECI or guessed character set information
 	 *
 	 * Note: these two properties might only be available while transitioning text() from std::wstring to std::string. time will tell.
-	 * see https://github.com/nu-book/zxing-cpp/issues/338 for a background discussion on the issue.
+	 * see https://github.com/zxing-cpp/zxing-cpp/issues/338 for a background discussion on the issue.
 	 */
 	std::string utf8() const;
 	std::wstring utfW() const;

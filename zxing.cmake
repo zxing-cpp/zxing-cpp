@@ -23,7 +23,7 @@ macro(zxing_add_package_stb)
 endmacro()
 
 macro(zxing_add_package name depname git_repo git_rev)
-    unset(${name}_FOUND CACHE) # see https://github.com/nu-book/zxing-cpp/commit/8db14eeead45e0f1961532f55061d5e4dd0f78be#commitcomment-66464026
+    unset(${name}_FOUND CACHE) # see https://github.com/zxing-cpp/zxing-cpp/commit/8db14eeead45e0f1961532f55061d5e4dd0f78be#commitcomment-66464026
 
     if (BUILD_DEPENDENCIES STREQUAL "AUTO")
         find_package (${name} CONFIG)

@@ -65,7 +65,7 @@ setup(
     long_description_content_type="text/markdown",
     author='ZXing-C++ Community',
     author_email='zxingcpp@gmail.com',
-    url='https://github.com/nu-book/zxing-cpp',
+    url='https://github.com/zxing-cpp/zxing-cpp',
     license='Apache License 2.0',
     keywords=['barcode'],
     classifiers=[
