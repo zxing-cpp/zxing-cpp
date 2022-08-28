@@ -216,7 +216,8 @@ int main(int argc, char* argv[])
 					  << "HasECI:     " << result.hasECI() << "\n"
 					  << "Position:   " << result.position() << "\n"
 					  << "Rotation:   " << result.orientation() << " deg\n"
-					  << "IsMirrored: " << result.isMirrored() << "\n";
+					  << "IsMirrored: " << result.isMirrored() << "\n"
+					  << "IsInverted: " << result.isInverted() << "\n";
 
 			auto printOptional = [](const char* key, const std::string& v) {
 				if (!v.empty())

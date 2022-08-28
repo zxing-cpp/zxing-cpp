@@ -145,6 +145,7 @@ Results ReadBarcodes(const ImageView& _iv, const DecodeHints& hints)
 					r.setPosition(Scale(r.position(), _iv.width() / iv.width()));
 				if (!Contains(results, r)) {
 					r.setDecodeHints(hints);
+					r.setIsInverted(bitmap->inverted());
 					results.push_back(std::move(r)); // TODO: keep the one with no error instead of the first found
 					--maxSymbols;
 				}
