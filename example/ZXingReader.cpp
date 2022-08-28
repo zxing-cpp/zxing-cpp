@@ -211,8 +211,7 @@ int main(int argc, char* argv[])
 			}
 
 			std::cout << "Text:       \"" << result.text() << "\"\n"
-					  << "Bytes:      " << ToHex(result.bytes()) << "\n"
-					  << "BytesECI:   " << ToHex(result.bytesECI()) << "\n"
+					  << "Bytes:      " << ToHex(hints.textMode() == TextMode::ECI ? result.bytesECI() : result.bytes()) << "\n"
 					  << "Format:     " << ToString(result.format()) << "\n"
 					  << "Identifier: " << result.symbologyIdentifier() << "\n"
 					  << "Content:    " << ToString(result.contentType()) << "\n"
