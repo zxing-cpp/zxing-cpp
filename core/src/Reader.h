@@ -20,7 +20,9 @@ protected:
 	const DecodeHints& _hints;
 
 public:
-	explicit Reader(const DecodeHints& hints) : _hints(hints) {}
+	const bool supportsInversion;
+
+	explicit Reader(const DecodeHints& hints, bool supportsInversion = false) : _hints(hints), supportsInversion(supportsInversion) {}
 	explicit Reader(DecodeHints&& hints) = delete;
 	virtual ~Reader() = default;
 

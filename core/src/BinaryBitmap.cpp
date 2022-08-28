@@ -5,6 +5,8 @@
 
 #include "BinaryBitmap.h"
 
+#include "BitMatrix.h"
+
 #include <mutex>
 
 namespace ZXing {
@@ -23,6 +25,15 @@ const BitMatrix* BinaryBitmap::getBitMatrix() const
 {
 	std::call_once(_cache->once, [&](){_cache->matrix = getBlackMatrix();});
 	return _cache->matrix.get();
+}
+
+void BinaryBitmap::invert()
+{
+	if (_cache->matrix) {
+		auto matrix = const_cast<BitMatrix*>(_cache->matrix.get());
+		matrix->flipAll();
+	}
+	_inverted = true;
 }
 
 } // ZXing

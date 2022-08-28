@@ -150,6 +150,7 @@ class MainActivity : AppCompatActivity() {
 						formats = if (binding.qrcode.isChecked) setOf(Format.QR_CODE) else setOf(),
 						tryHarder = binding.tryHarder.isChecked,
 						tryRotate = binding.tryRotate.isChecked,
+						tryInvert = binding.tryInvert.isChecked,
 						tryDownscale = binding.tryDownscale.isChecked
 					)
 

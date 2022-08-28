@@ -233,6 +233,7 @@ static void doRunTests(const fs::path& directory, std::string_view format, int t
 			hints.setTryDownscale(false);
 			hints.setTryHarder(tc.name == "slow");
 			hints.setTryRotate(tc.name == "slow");
+			hints.setTryInvert(tc.name == "slow");
 			hints.setIsPure(tc.name == "pure");
 			if (hints.isPure())
 				hints.setBinarizer(Binarizer::FixedThreshold);
@@ -563,11 +564,11 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 16, 16, 270 },
 		});
 
-		runTests("qrcode-2", "QRCode", 46, {
-			{ 44, 44, 0   },
-			{ 44, 44, 90  },
-			{ 44, 44, 180 },
-			{ 44, 44, 270 },
+		runTests("qrcode-2", "QRCode", 48, {
+			{ 44, 46, 0   },
+			{ 44, 46, 90  },
+			{ 44, 46, 180 },
+			{ 44, 45, 270 },
 			{ 21, 1, pure }, // the misread is the 'outer' symbol in 16.png
 		});
 

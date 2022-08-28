@@ -28,6 +28,7 @@ ReadResult readBarcodeFromImageView(ZXing::ImageView iv, bool tryHarder, const s
 		DecodeHints hints;
 		hints.setTryHarder(tryHarder);
 		hints.setTryRotate(tryHarder);
+		hints.setTryInvert(tryHarder);
 		hints.setTryDownscale(tryHarder);
 		hints.setFormats(BarcodeFormatsFromString(format));
 		hints.setMaxNumberOfSymbols(1);
