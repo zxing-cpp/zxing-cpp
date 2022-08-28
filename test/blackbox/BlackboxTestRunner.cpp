@@ -10,6 +10,7 @@
 #include "ImageLoader.h"
 #include "ReadBarcode.h"
 #include "ThresholdBinarizer.h"
+#include "Utf.h"
 #include "ZXAlgorithms.h"
 #include "pdf417/PDFReader.h"
 #include "qrcode/QRReader.h"
@@ -136,7 +137,8 @@ static std::string checkResult(const fs::path& imgPath, std::string_view expecte
 	}
 
 	if (auto expected = readFile(".txt")) {
-		auto utf8Result = result.text();
+		expected = EscapeNonGraphical(*expected);
+		auto utf8Result = result.text(TextMode::Escaped);
 		return utf8Result != *expected ? fmt::format("Content mismatch: expected '{}' but got '{}'", *expected, utf8Result) : "";
 	}
 
@@ -228,8 +230,10 @@ static void doRunTests(const fs::path& directory, std::string_view format, int t
 			if (tc.name.empty())
 				break;
 			auto startTime = std::chrono::steady_clock::now();
+			hints.setTryDownscale(false);
 			hints.setTryHarder(tc.name == "slow");
 			hints.setTryRotate(tc.name == "slow");
+			hints.setTryInvert(tc.name == "slow");
 			hints.setIsPure(tc.name == "pure");
 			if (hints.isPure())
 				hints.setBinarizer(Binarizer::FixedThreshold);
@@ -560,11 +564,11 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 16, 16, 270 },
 		});
 
-		runTests("qrcode-2", "QRCode", 46, {
-			{ 44, 44, 0   },
-			{ 44, 44, 90  },
-			{ 44, 44, 180 },
-			{ 44, 44, 270 },
+		runTests("qrcode-2", "QRCode", 48, {
+			{ 44, 46, 0   },
+			{ 44, 46, 90  },
+			{ 44, 46, 180 },
+			{ 44, 45, 270 },
 			{ 21, 1, pure }, // the misread is the 'outer' symbol in 16.png
 		});
 

@@ -50,6 +50,7 @@ class DecodeHints
 {
 	bool _tryHarder                : 1;
 	bool _tryRotate                : 1;
+	bool _tryInvert                : 1;
 	bool _tryDownscale             : 1;
 	bool _isPure                   : 1;
 	bool _tryCode39ExtendedMode    : 1;
@@ -73,6 +74,7 @@ public:
 	DecodeHints()
 		: _tryHarder(1),
 		  _tryRotate(1),
+		  _tryInvert(1),
 		  _tryDownscale(1),
 		  _isPure(0),
 		  _tryCode39ExtendedMode(0),
@@ -98,6 +100,9 @@ public:
 
 	/// Also try detecting code in 90, 180 and 270 degree rotated images.
 	ZX_PROPERTY(bool, tryRotate, setTryRotate)
+
+	/// Also try detecting inverted ("reversed reflectance") codes if the format allows for those.
+	ZX_PROPERTY(bool, tryInvert, setTryInvert)
 
 	/// Also try detecting code in downscaled images (depending on image size).
 	ZX_PROPERTY(bool, tryDownscale, setTryDownscale)

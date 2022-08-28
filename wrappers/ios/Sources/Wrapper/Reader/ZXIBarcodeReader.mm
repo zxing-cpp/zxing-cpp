@@ -99,6 +99,7 @@ using namespace ZXing;
     DecodeHints resultingHints = DecodeHints()
         .setTryRotate(hints.tryRotate)
         .setTryHarder(hints.tryHarder)
+        .setTryInvert(hints.tryHarder) // TODO: add separate tryInvert hint to iOS wrapper?
         .setTryDownscale(hints.tryDownscale)
         .setFormats(formats)
         .setMaxNumberOfSymbols(hints.maxNumberOfSymbols);

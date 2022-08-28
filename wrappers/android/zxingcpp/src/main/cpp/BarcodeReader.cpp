@@ -96,13 +96,14 @@ static jobject CreatePosition(JNIEnv* env, const Position& position)
 }
 
 jstring Read(JNIEnv *env, ImageView image, jstring formats, jboolean tryHarder, jboolean tryRotate,
-			 jboolean tryDownscale, jobject result)
+			 jboolean tryInvert, jboolean tryDownscale, jobject result)
 {
 	try {
 		auto hints = DecodeHints()
 						 .setFormats(BarcodeFormatsFromString(J2CString(env, formats)))
 						 .setTryHarder(tryHarder)
-						 .setTryRotate( tryRotate )
+						 .setTryRotate(tryRotate)
+						 .setTryInvert(tryInvert)
 						 .setTryDownscale(tryDownscale)
 						 .setMaxNumberOfSymbols(1);
 
@@ -156,7 +157,7 @@ extern "C" JNIEXPORT jstring JNICALL
 Java_com_zxingcpp_BarcodeReader_readYBuffer(
 	JNIEnv *env, jobject thiz, jobject yBuffer, jint rowStride,
 	jint left, jint top, jint width, jint height, jint rotation,
-	jstring formats, jboolean tryHarder, jboolean tryRotate, jboolean tryDownscale,
+	jstring formats, jboolean tryHarder, jboolean tryRotate, jboolean tryInvert, jboolean tryDownscale,
 	jobject result)
 {
 	const uint8_t* pixels = static_cast<uint8_t *>(env->GetDirectBufferAddress(yBuffer));
@@ -165,7 +166,7 @@ Java_com_zxingcpp_BarcodeReader_readYBuffer(
 		ImageView{pixels + top * rowStride + left, width, height, ImageFormat::Lum, rowStride}
 			.rotated(rotation);
 
-	return Read(env, image, formats, tryHarder, tryRotate, tryDownscale, result);
+	return Read(env, image, formats, tryHarder, tryRotate, tryInvert, tryDownscale, result);
 }
 
 struct LockedPixels
@@ -191,7 +192,7 @@ extern "C" JNIEXPORT jstring JNICALL
 Java_com_zxingcpp_BarcodeReader_readBitmap(
 	JNIEnv* env, jobject thiz, jobject bitmap,
 	jint left, jint top, jint width, jint height, jint rotation,
-	jstring formats, jboolean tryHarder, jboolean tryRotate, jboolean tryDownscale,
+	jstring formats, jboolean tryHarder, jboolean tryRotate, jboolean tryInvert, jboolean tryDownscale,
 	jobject result)
 {
 	AndroidBitmapInfo bmInfo;
@@ -213,5 +214,5 @@ Java_com_zxingcpp_BarcodeReader_readBitmap(
 					 .cropped(left, top, width, height)
 					 .rotated(rotation);
 
-	return Read(env, image, formats, tryHarder, tryRotate, tryDownscale, result);
+	return Read(env, image, formats, tryHarder, tryRotate, tryInvert, tryDownscale, result);
 }

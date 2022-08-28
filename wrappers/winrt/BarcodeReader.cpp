@@ -48,6 +48,7 @@ BarcodeReader::init(bool tryHarder, bool tryRotate, const Platform::Array<Barcod
 	m_hints.reset(new DecodeHints());
 	m_hints->setTryHarder(tryHarder);
 	m_hints->setTryRotate(tryRotate);
+	m_hints->setTryInvert(tryHarder);
 
 	if (types != nullptr && types->Length > 0) {
 		BarcodeFormats barcodeFormats;
