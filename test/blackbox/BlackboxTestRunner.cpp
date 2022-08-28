@@ -230,6 +230,7 @@ static void doRunTests(const fs::path& directory, std::string_view format, int t
 			if (tc.name.empty())
 				break;
 			auto startTime = std::chrono::steady_clock::now();
+			hints.setTryDownscale(false);
 			hints.setTryHarder(tc.name == "slow");
 			hints.setTryRotate(tc.name == "slow");
 			hints.setIsPure(tc.name == "pure");
