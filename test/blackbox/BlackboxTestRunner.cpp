@@ -10,6 +10,7 @@
 #include "ImageLoader.h"
 #include "ReadBarcode.h"
 #include "ThresholdBinarizer.h"
+#include "Utf.h"
 #include "ZXAlgorithms.h"
 #include "pdf417/PDFReader.h"
 #include "qrcode/QRReader.h"
@@ -136,7 +137,8 @@ static std::string checkResult(const fs::path& imgPath, std::string_view expecte
 	}
 
 	if (auto expected = readFile(".txt")) {
-		auto utf8Result = result.text();
+		expected = EscapeNonGraphical(*expected);
+		auto utf8Result = result.text(TextMode::Escaped);
 		return utf8Result != *expected ? fmt::format("Content mismatch: expected '{}' but got '{}'", *expected, utf8Result) : "";
 	}
 
