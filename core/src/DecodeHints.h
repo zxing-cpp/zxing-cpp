@@ -58,14 +58,14 @@ class DecodeHints
 	bool _validateITFCheckSum      : 1;
 	bool _returnCodabarStartEnd    : 1;
 	bool _returnErrors             : 1;
+	uint8_t _downscaleFactor       : 3;
 	EanAddOnSymbol _eanAddOnSymbol : 2;
 	Binarizer _binarizer           : 2;
 	TextMode _textMode             : 3;
+	CharacterSet _characterSet     : 6;
 
-	CharacterSet _characterSet   = CharacterSet::Unknown;
 	uint8_t _minLineCount        = 2;
 	uint8_t _maxNumberOfSymbols  = 0xff;
-	uint8_t _downscaleFactor     = 3;
 	uint16_t _downscaleThreshold = 500;
 	BarcodeFormats _formats      = BarcodeFormat::None;
 
@@ -82,9 +82,11 @@ public:
 		  _validateITFCheckSum(0),
 		  _returnCodabarStartEnd(0),
 		  _returnErrors(0),
+		  _downscaleFactor(3),
 		  _eanAddOnSymbol(EanAddOnSymbol::Ignore),
 		  _binarizer(Binarizer::LocalAverage),
-		  _textMode(TextMode::Plain)
+		  _textMode(TextMode::Plain),
+		  _characterSet(CharacterSet::Unknown)
 	{}
 
 #define ZX_PROPERTY(TYPE, GETTER, SETTER) \
