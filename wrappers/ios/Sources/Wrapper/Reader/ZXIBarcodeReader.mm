@@ -23,7 +23,7 @@ using namespace ZXing;
 
 - (instancetype)initWithHints:(ZXIDecodeHints*)hints{
     self = [super init];
-    self.ciContext = [CIContext new];
+    self.ciContext = [[CIContext alloc] initWithOptions:@{kCIContextWorkingColorSpace: [NSNull new]}];
     self.hints = hints;
     return self;
 }
