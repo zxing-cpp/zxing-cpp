@@ -103,6 +103,11 @@ public:
 	bool isMirrored() const { return _isMirrored; }
 
 	/**
+	 * @brief isInverted is the symbol inverted / has reveresed reflectance (see DecodeHints::tryInvert)
+	 */
+	bool isInverted() const { return _isInverted; }
+
+	/**
 	 * @brief symbologyIdentifier Symbology identifier "]cm" where "c" is symbology code character, "m" the modifier.
 	 */
 	std::string symbologyIdentifier() const;
@@ -145,6 +150,7 @@ public:
 
 	// only for internal use
 	void incrementLineCount() { ++_lineCount; }
+	void setIsInverted(bool v) { _isInverted = v; }
 	Result& setDecodeHints(DecodeHints hints);
 
 	bool operator==(const Result& o) const;
@@ -161,6 +167,7 @@ private:
 	BarcodeFormat _format = BarcodeFormat::None;
 	int _lineCount = 0;
 	bool _isMirrored = false;
+	bool _isInverted = false;
 	bool _readerInit = false;
 };
 
