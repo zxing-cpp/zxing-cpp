@@ -18,7 +18,7 @@ using namespace ZXing;
 @implementation ZXIBarcodeReader
 
 - (instancetype)init {
-    return [self initWithHints: [[ZXIDecodeHints alloc]initWithTryHarder:NO tryRotate:NO tryDownscale:NO maxNumberOfSymbols:1 formats:@[]]];
+    return [self initWithHints: [[ZXIDecodeHints alloc] init]];
 }
 
 - (instancetype)initWithHints:(ZXIDecodeHints*)hints{
@@ -99,8 +99,12 @@ using namespace ZXing;
     DecodeHints resultingHints = DecodeHints()
         .setTryRotate(hints.tryRotate)
         .setTryHarder(hints.tryHarder)
-        .setTryInvert(hints.tryHarder) // TODO: add separate tryInvert hint to iOS wrapper?
+        .setTryInvert(hints.tryInvert)
         .setTryDownscale(hints.tryDownscale)
+        .setTryCode39ExtendedMode(hints.tryCode39ExtendedMode)
+        .setValidateCode39CheckSum(hints.validateCode39CheckSum)
+        .setValidateITFCheckSum(hints.validateITFCheckSum)
+
         .setFormats(formats)
         .setMaxNumberOfSymbols(hints.maxNumberOfSymbols);
     return resultingHints;
