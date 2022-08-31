@@ -308,6 +308,7 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 	return DecoderResult(std::move(result))
 		.setError(std::move(error))
 		.setEcLevel(ToString(ecLevel))
+		.setVersionNumber(version.versionNumber())
 		.setStructuredAppend(structuredAppend);
 }
 

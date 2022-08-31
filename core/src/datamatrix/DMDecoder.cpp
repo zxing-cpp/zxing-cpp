@@ -421,7 +421,8 @@ static DecoderResult DoDecode(const BitMatrix& bits)
 	}
 
 	// Decode the contents of that stream of bytes
-	return DecodedBitStreamParser::Decode(std::move(resultBytes), version->isDMRE());
+	return DecodedBitStreamParser::Decode(std::move(resultBytes), version->isDMRE())
+		.setVersionNumber(version->versionNumber);
 }
 
 static BitMatrix FlippedL(const BitMatrix& bits)
