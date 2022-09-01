@@ -23,6 +23,7 @@ Result::Result(const std::string& text, int y, int xStart, int xStop, BarcodeFor
 	  _position(Line(y, xStart, xStop)),
 	  _format(format),
 	  _lineCount(0),
+	  _versionNumber(0),
 	  _readerInit(readerInit)
 {}
 
@@ -34,6 +35,7 @@ Result::Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat 
 	  _sai(decodeResult.structuredAppend()),
 	  _format(format),
 	  _lineCount(decodeResult.lineCount()),
+	  _versionNumber(decodeResult.versionNumber()),
 	  _isMirrored(decodeResult.isMirrored()),
 	  _readerInit(decodeResult.readerInit())
 {
@@ -116,7 +118,7 @@ Result& Result::setDecodeHints(DecodeHints hints)
 
 bool Result::operator==(const Result& o) const
 {
-	// two symbols may be considered the same if at least one of them has an error
+	// two symbols may not be considered the same if at least one of them has an error
 	if (!(format() == o.format() && (bytes() == o.bytes() || error() || o.error())))
 		return false;
 

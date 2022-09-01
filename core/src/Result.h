@@ -144,9 +144,14 @@ public:
 	bool readerInit() const { return _readerInit; }
 
 	/**
-	 * @brief How many lines have been detected with this code (applies only to linear symbologies)
+	 * @brief lineCount How many lines have been detected with this code (applies only to linear symbologies)
 	 */
 	int lineCount() const { return _lineCount; }
+
+	/**
+	 * @brief versionNumber QR Code or DataMatrix version number.
+	 */
+	int versionNumber() const { return _versionNumber; }
 
 	// only for internal use
 	void incrementLineCount() { ++_lineCount; }
@@ -166,6 +171,7 @@ private:
 	StructuredAppendInfo _sai;
 	BarcodeFormat _format = BarcodeFormat::None;
 	int _lineCount = 0;
+	int _versionNumber = 0;
 	bool _isMirrored = false;
 	bool _isInverted = false;
 	bool _readerInit = false;
