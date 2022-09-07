@@ -46,6 +46,12 @@ inline bool Contains(const char* str, char c) {
 	return strchr(str, c) != nullptr;
 }
 
+template <template <typename...> typename C, typename... Ts>
+auto FirstOrDefault(C<Ts...>&& results)
+{
+	return results.empty() ? typename C<Ts...>::value_type() : std::move(results.front());
+}
+
 template <typename Container, typename Value = typename Container::value_type, typename Op = std::plus<Value>>
 Value Reduce(const Container& c, Value v = Value{}, Op op = {}) {
 	return std::accumulate(std::begin(c), std::end(c), v, op);
