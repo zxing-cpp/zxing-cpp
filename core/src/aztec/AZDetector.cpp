@@ -315,10 +315,16 @@ static void ExtractParameters(int modeMessage, bool compact, int& nbLayers, int&
 
 DetectorResult Detect(const BitMatrix& image, bool isPure, bool tryHarder)
 {
+	return FirstOrDefault(Detect(image, isPure, tryHarder, 1));
+}
+
+DetectorResults Detect(const BitMatrix& image, bool isPure, bool tryHarder, int maxSymbols)
+{
 #ifdef PRINT_DEBUG
 	LogMatrixWriter lmw(log, image, 5, "az-log.pnm");
 #endif
 
+	DetectorResults res;
 	auto fps = isPure ? FindPureFinderPattern(image) : FindFinderPatterns(image, tryHarder);
 	for (auto fp : fps) {
 		auto fpQuad = FindConcentricPatternCorners(image, fp, fp.size, 3);
@@ -385,11 +391,17 @@ DetectorResult Detect(const BitMatrix& image, bool isPure, bool tryHarder)
 		double low = dim / 2.0 + srcQuad[0].x;
 		double high = dim / 2.0 + srcQuad[2].x;
 
-		return {SampleGrid(image, dim, dim, PerspectiveTransform{{PointF{low, low}, {high, low}, {high, high}, {low, high}}, *fpQuad}),
-				radius == 5, nbDataBlocks, nbLayers, readerInit, mirror != 0};
+		auto bits = SampleGrid(image, dim, dim, PerspectiveTransform{{PointF{low, low}, {high, low}, {high, high}, {low, high}}, *fpQuad});
+		if (!bits.isValid())
+			continue;
+
+		res.emplace_back(std::move(bits), radius == 5, nbDataBlocks, nbLayers, readerInit, mirror != 0);
+
+		if (Size(res) == maxSymbols)
+			break;
 	}
 
-	return {};
+	return res;
 }
 
 } // namespace ZXing::Aztec
