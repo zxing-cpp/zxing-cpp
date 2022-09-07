@@ -42,44 +42,50 @@ namespace {
 	}
 
 	// Test that we can tolerate errors in the parameter locator bits
-	void TestErrorInParameterLocator(std::string_view data, int nbLayers, bool isCompact, const BitMatrix &matrix_)
+	void TestErrorInOrientationBits(std::string_view data, int nbLayers, bool isCompact, const BitMatrix &matrix_)
 	{
 		PseudoRandom random(std::hash<std::string_view>()(data));
 		auto orientationPoints = GetOrientationPoints(matrix_, isCompact);
-		for (bool isMirror : { false, true }) {
+		for (bool mirror : { false, true }) {
 			BitMatrix matrix = matrix_.copy();
+			if (mirror)
+				matrix.mirror();
 			for (int i = 0; i < 4; ++i) {
+				Aztec::DetectorResult r = Aztec::Detect(matrix, true, false);
+				EXPECT_EQ(r.isValid(), true);
+				EXPECT_EQ(r.nbLayers(), nbLayers);
+				EXPECT_EQ(r.isCompact(), isCompact);
+				EXPECT_EQ(r.isMirrored(), mirror);
+				EXPECT_EQ(data, ToUtf8(Aztec::Decode(r).text()));
+
 				// Systematically try every possible 1- and 2-bit error.
 				for (int error1 = 0; error1 < Size(orientationPoints); error1++) {
 					for (int error2 = error1; error2 < Size(orientationPoints); error2++) {
 						BitMatrix copy = matrix.copy();
-						if (isMirror) {
-							copy.mirror();
-						}
 						copy.flip(orientationPoints[error1].x, orientationPoints[error1].y);
-						if (error2 > error1) {
+						if (error2 > error1 && (nbLayers > 1 || !mirror)) { // in ErrorInModeMessageZero and mirror==true test only 1-bit errors
 							// if error2 == error1, we only test a single error
 							copy.flip(orientationPoints[error2].x, orientationPoints[error2].y);
 						}
-						Aztec::DetectorResult r = Aztec::Detect(copy, isMirror, true);
+						Aztec::DetectorResult r = Aztec::Detect(copy, true, false);
 						EXPECT_EQ(r.isValid(), true);
 						EXPECT_EQ(r.nbLayers(), nbLayers);
 						EXPECT_EQ(r.isCompact(), isCompact);
+						EXPECT_EQ(r.isMirrored(), mirror);
 						EXPECT_EQ(data, ToUtf8(Aztec::Decode(r).text()));
 					}
 				}
-				// Try a few random three-bit errors;
+
+				// Try a few random 3-bit errors
 				for (int i = 0; i < 5; i++) {
 					BitMatrix copy = matrix.copy();
 					std::set<size_t> errors;
-					while (errors.size() < 3) {
+					while (errors.size() < 3)
 						errors.insert(random.next(size_t(0), orientationPoints.size() - 1));
-					}
-					for (auto error : errors) {
+					for (auto error : errors)
 						copy.flip(orientationPoints[error].x, orientationPoints[error].y);
-					}
-					Aztec::DetectorResult r = Aztec::Detect(copy, false, true);
-					EXPECT_EQ(r.isValid(), false);
+					Aztec::DetectorResult r = Aztec::Detect(copy, true, false);
+					EXPECT_FALSE(r.isValid());
 				}
 
 				matrix.rotate90();
@@ -88,11 +94,10 @@ namespace {
 	}
 } // anonymous
 
-TEST(AZDetectorTest, ErrorInParameterLocatorZeroZero)
+TEST(AZDetectorTest, ErrorInModeMessageZero)
 {
-	// Layers=1, CodeWords=1.  So the parameter info and its Reed-Solomon info
-	// will be completely zero!
-	TestErrorInParameterLocator("X", 1, true, ParseBitMatrix(
+	// Layers=1, CodeWords=1. So the ModeMessage and its Reed-Solomon bits will be completely zero!
+	TestErrorInOrientationBits("X", 1, true, ParseBitMatrix(
 		"    X X X X X X X   X X X X X \n"
 		"X X X X   X     X X         X \n"
 		"    X X                 X   X \n"
@@ -112,9 +117,9 @@ TEST(AZDetectorTest, ErrorInParameterLocatorZeroZero)
 	);
 }
 
-TEST(AZDetectorTest, ErrorInParameterLocatorCompact)
+TEST(AZDetectorTest, ErrorInOrientationBitsCompact)
 {
-	TestErrorInParameterLocator("This is an example Aztec symbol for Wikipedia.", 3, true, ParseBitMatrix(
+	TestErrorInOrientationBits("This is an example Aztec symbol for Wikipedia.", 3, true, ParseBitMatrix(
 		"X     X X       X     X X     X     X         \n"
 		"X         X     X X     X   X X   X X       X \n"
 		"X X   X X X X X   X X X                 X     \n"
@@ -142,10 +147,10 @@ TEST(AZDetectorTest, ErrorInParameterLocatorCompact)
 	);
 }
 
-TEST(AZDetectorTest, ErrorInParameterLocatorNotCompact)
+TEST(AZDetectorTest, ErrorInOrientationBitsNotCompact)
 {
 	std::string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYabcdefghijklmnopqrstuvwxyz";
-	TestErrorInParameterLocator(alphabet + alphabet + alphabet, 6, false, ParseBitMatrix(
+	TestErrorInOrientationBits(alphabet + alphabet + alphabet, 6, false, ParseBitMatrix(
 		"    X   X     X     X     X   X X X X   X   X   X     X X     X X       X X X X   \n"
 		"  X         X   X         X X X X X   X   X X X   X   X X X X X   X X X       X   \n"
 		"    X   X       X X X X X   X X X X   X X   X X X X X   X X X     X   X X X   X   \n"
@@ -219,7 +224,7 @@ TEST(AZDetectorTest, ReaderInitFull2Layers)
 			"    X     X X X         X   X X X     X       \n"
 			"    X X X         X   X   X X   X       X   X \n"
 			"  X   X X X             X   X   X       X     \n"
-		), false /*isMirror*/, true /*isPure*/);
+		), false /*isPure*/, false /*tryHarder*/);
 		EXPECT_TRUE(r.isValid());
 		EXPECT_FALSE(r.readerInit());
 		EXPECT_FALSE(r.isCompact());
@@ -251,7 +256,7 @@ TEST(AZDetectorTest, ReaderInitFull2Layers)
 			"    X     X X X         X   X X X     X       \n"
 			"    X X X         X   X   X X   X       X   X \n"
 			"  X   X X X             X   X   X       X     \n"
-		), false /*isMirror*/, true /*isPure*/);
+		), true /*isPure*/, false /*tryHarder*/);
 		EXPECT_TRUE(r.isValid());
 		EXPECT_TRUE(r.readerInit());
 		EXPECT_FALSE(r.isCompact());
@@ -372,7 +377,7 @@ TEST(AZDetectorTest, ReaderInitFull22Layers)
 		"X X X     X X   X   X   X X X   X X X     X X X X   X   X X X   X   X X   X X       X             X X X     X   X X   X X     X X           X X X             X X     X   X X       X X X X X X         X   X   X       X \n"
 		"  X   X   X   X   X   X X X X     X X X X     X X       X X X   X X X     X     X X X X X X X X       X X     X X   X   X       X         X   X X   X X X X   X   X   X X     X     X X   X X   X X X X   X           X   \n"
 		"X X X X X   X X X X   X X X   X X X         X X       X       X       X X X X X X X     X   X X X         X X       X X X X X   X     X   X X X X X   X   X     X           X X X   X X X X X X       X X X X       X X   \n"
-	), false /*isMirror*/, true /*isPure*/);
+	), true /*isPure*/, false /*tryHarder*/);
 	EXPECT_TRUE(r.isValid());
 	EXPECT_TRUE(r.readerInit());
 	EXPECT_FALSE(r.isCompact());
@@ -399,7 +404,7 @@ TEST(AZDetectorTest, ReaderInitCompact)
 			"X             X X         X X \n"
 			"X         X   X     X X       \n"
 			"X X X X     X X X         X X \n"
-		), false /*isMirror*/, true /*isPure*/);
+		), true /*isPure*/, false /*tryHarder*/);
 		EXPECT_TRUE(r.isValid());
 		EXPECT_FALSE(r.readerInit());
 		EXPECT_TRUE(r.isCompact());
@@ -423,7 +428,7 @@ TEST(AZDetectorTest, ReaderInitCompact)
 			"X       X X   X   X X     X X \n"
 			"X         X   X     X X       \n"
 			"X X X X     X X X         X X \n"
-		), false /*isMirror*/, true /*isPure*/);
+		), true /*isPure*/, false /*tryHarder*/);
 		EXPECT_TRUE(r.isValid());
 		EXPECT_TRUE(r.readerInit());
 		EXPECT_TRUE(r.isCompact());

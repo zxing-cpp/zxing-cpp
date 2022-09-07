@@ -348,7 +348,7 @@ DecoderResult Decode(const DetectorResult& detectorResult)
 {
 	try {
 		auto bits = CorrectBits(detectorResult, ExtractBits(detectorResult));
-		return Decode(bits).setReaderInit(detectorResult.readerInit());
+		return Decode(bits);
 	} catch (Error e) {
 		return e;
 	}

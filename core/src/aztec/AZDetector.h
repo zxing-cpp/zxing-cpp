@@ -19,7 +19,7 @@ class DetectorResult;
  *
  * @param isMirror if true, image is a mirror-image of original
  */
-DetectorResult Detect(const BitMatrix& image, bool isMirror, bool isPure);
+DetectorResult Detect(const BitMatrix& image, bool isPure, bool tryHarder = true);
 
 } // Aztec
 } // ZXing
