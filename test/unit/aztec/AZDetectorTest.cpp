@@ -76,19 +76,9 @@ namespace {
 					}
 				}
 
-#ifndef _WIN32 // the following succeeds on msvc when it expected not to. without access to a windows machine, disabling it is my only option
-				// Try a few random 3-bit errors
-				for (int i = 0; i < 5; i++) {
-					BitMatrix copy = matrix.copy();
-					std::set<size_t> errors;
-					while (errors.size() < 3)
-						errors.insert(random.next(size_t(0), orientationPoints.size() - 1));
-					for (auto error : errors)
-						copy.flip(orientationPoints[error].x, orientationPoints[error].y);
-					Aztec::DetectorResult r = Aztec::Detect(copy, true, false);
-					EXPECT_FALSE(r.isValid());
-				}
-#endif
+				// here used to be a test for 3-bit errors but since we determine both the rotation and the mirrored info
+				// from the orentation bits (as suggested in the specification) this does not work anymore.
+
 				matrix.rotate90();
 			}
 		}
