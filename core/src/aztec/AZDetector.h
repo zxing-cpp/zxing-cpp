@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include <vector>
+
 namespace ZXing {
 
 class BitMatrix;
@@ -19,7 +21,10 @@ class DetectorResult;
  *
  * @param isMirror if true, image is a mirror-image of original
  */
-DetectorResult Detect(const BitMatrix& image, bool isMirror, bool isPure);
+DetectorResult Detect(const BitMatrix& image, bool isPure, bool tryHarder = true);
+
+using DetectorResults = std::vector<DetectorResult>;
+DetectorResults Detect(const BitMatrix& image, bool isPure, bool tryHarder, int maxSymbols);
 
 } // Aztec
 } // ZXing

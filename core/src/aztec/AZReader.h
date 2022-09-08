@@ -16,6 +16,7 @@ public:
 	using ZXing::Reader::Reader;
 
 	Result decode(const BinaryBitmap& image) const override;
+	Results decode(const BinaryBitmap& image, int maxSymbols) const override;
 };
 
 } // namespace ZXing::Aztec

@@ -17,6 +17,7 @@ add_executable (UnitTest
     ErrorTest.cpp
     GTINTest.cpp
     GS1Test.cpp
+    PatternTest.cpp
     ReedSolomonTest.cpp
     SanitizerSupport.cpp
     TextDecoderTest.cpp
