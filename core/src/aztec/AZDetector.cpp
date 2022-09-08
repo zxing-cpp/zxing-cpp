@@ -28,23 +28,19 @@ namespace ZXing::Aztec {
 
 static bool IsAztectCenterPattern(const PatternView& view)
 {
-#if 0 // find min/max and check that they not more than factor 2 appart
-	auto m = view[0];
+	// find min/max of all subsequent black/white pairs and check that they 'close together'
+	auto m = view[0] + view[1];
 	auto M = m;
-	for (int i = 1; i < Size(view); ++i)
-		if (view[i] < m)
-			m = view[i];
-		else if (view[i] > M)
-			M = view[i];
-	return M - 2 <= 2 * m && view[-1] >= m && view[Size(view)] >= m;
-#else // estimate min/max from first entry and check all others are within [min,max]
-	auto m = std::max(1, view[0] * 2 / 3 - 1);
-	auto M = view[0] * 4 / 3 + 1;
-	for (int i = 1; i < Size(view); ++i)
-		if (view[i] < m || view[i] > M)
+	for (int i = 1; i < Size(view) - 1; ++i) {
+		int v = view[i] + view[i + 1];
+		if (v < m)
+			m = v;
+		else if (v > M)
+			M = v;
+		if (M > m * 4 / 3)
 			return false;
-	return view[-1] >= m && view[Size(view)] >= m;
-#endif
+	}
+	return view[-1] >= view[Size(view) / 2] - 2 && view[Size(view)] >= view[Size(view) / 2] - 2;
 };
 
 // specialized version of FindLeftGuard to find the '1,1,1,1,1,1,1' pattern of a compact Aztec center pattern
@@ -67,28 +63,39 @@ static int CheckDirection(BitMatrixCursorF& cur, PointF dir, int range, bool upd
 	cur.setDirection(dir);
 	cuo.setDirection(-dir);
 
-	int spread = cur.stepToEdge(1, range);
-	if (!spread)
+	int centerUp = cur.stepToEdge(1, range);
+	if (!centerUp)
 		return 0;
-	int spreadO = cuo.stepToEdge(1, range);
-	if (!spreadO)
+	int centerDown = cuo.stepToEdge(1, range);
+	if (!centerDown)
 		return 0;
-	spread += spreadO - 1; // -1 because the starting pixel is counted twice
-	if (spread > range || spread < range / 6)
+	int center = centerUp + centerDown - 1; // -1 because the starting pixel is counted twice
+	if (center > range || center < range / 6)
 		return 0;
 
 	if (updatePosition)
 		pOri = (cur.p + cuo.p) / 2;
 
-	auto m = std::max(1, spread * 2 / 3 - 1);
-	auto M = spread * 3 / 2 + 1;
-	for (auto c : {&cur, &cuo})
+	int spread = center;
+	int m = 0;
+	int M = 0;
+	for (auto c : {&cur, &cuo}) {
+		int lastS = center;
 		for (int i = 0; i < 3; ++i) {
 			int s = c->stepToEdge(1, M);
-			if (s < m)
+			int v = s + lastS;
+			if (m == 0)
+				m = M = v;
+			else if (v < m)
+				m = v;
+			else if (v > M)
+				M = v;
+			if (M > m * 4 / 3)
 				return 0;
 			spread += s;
+			lastS = s;
 		}
+	}
 
 	cur.p = pOri;
 
@@ -99,7 +106,7 @@ static std::optional<ConcentricPattern> LocateAztecCenter(const BitMatrix& image
 {
 	auto cur = BitMatrixCursorF(image, center, {});
 	int minSpread = spreadH, maxSpread = spreadH;
-	for (auto d : {PointF{0, 1}, {1, 1}, {1, -1}}) {
+	for (auto d : {PointF{0, 1}, {1, 0}, {1, 1}, {1, -1}}) {
 		int spread = CheckDirection(cur, d, spreadH, d.x == 0);
 		if (!spread)
 			return {};
@@ -131,6 +138,7 @@ static std::vector<ConcentricPattern> FindFinderPatterns(const BitMatrix& image,
 	int N = 0;
 
 #if 0 // reference algorithm for finding aztec center candidates
+	constexpr auto PATTERN = FixedPattern<7, 7>{1, 1, 1, 1, 1, 1, 1};
 	auto l0 = image.row(0);
 	std::vector<uint8_t> line(l0.begin(), l0.end());
 	const int width = image.width();
@@ -166,6 +174,7 @@ static std::vector<ConcentricPattern> FindFinderPatterns(const BitMatrix& image,
 				auto p = centered(PointI((first + last) / 2, y));
 				// make sure p is not 'inside' an already found pattern area
 				if (FindIf(res, [p](const auto& old) { return distance(p, old) < old.size / 2; }) == res.end()) {
+					++N;
 					auto pattern = LocateConcentricPattern(image, PATTERN, p, image.width() / 3);
 					if (pattern){
 						log(*pattern, 2);
@@ -366,7 +375,7 @@ DetectorResults Detect(const BitMatrix& image, bool isPure, bool tryHarder, int 
 		if (modeMessage == -1)
 			continue;
 
-#if 0
+#if 1
 		// improve prescision of sample grid by extrapolating from outer square of white pixels (5 edges away from center)
 		if (radius == 7) {
 			if (auto fpQuad5 = FindConcentricPatternCorners(image, fp, fp.size * 5 / 3, 5)) {
