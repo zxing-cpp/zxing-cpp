@@ -125,7 +125,13 @@ bool Result::operator==(const Result& o) const
 	if (BarcodeFormats(BarcodeFormat::MatrixCodes).testFlag(format()))
 		return IsInside(Center(o.position()), position());
 
-	// linear symbology comparisons only implemented for this->lineCount == 1
+	if (orientation() != o.orientation())
+		return false;
+
+	if (lineCount() > 1 && o.lineCount() > 1)
+		return IsInside(Center(o.position()), position());
+
+	// the following code is only meant for this->lineCount == 1
 	assert(lineCount() == 1);
 
 	// if one line is less than half the length of the other away from the
