@@ -135,12 +135,14 @@ bool Result::operator==(const Result& o) const
 	assert(lineCount() == 1);
 
 	// if one line is less than half the length of the other away from the
-	// latter, we consider it to belong to the same symbol
+	// latter, we consider it to belong to the same symbol. additionally, both need to have
+	// roughly the same length (see #367)
 	auto dTop = maxAbsComponent(o.position().topLeft() - position().topLeft());
 	auto dBot = maxAbsComponent(o.position().bottomLeft() - position().topLeft());
 	auto length = maxAbsComponent(position().topLeft() - position().bottomRight());
+	auto dLength = std::abs(length - maxAbsComponent(o.position().topLeft() - o.position().bottomRight()));
 
-	return std::min(dTop, dBot) < length / 2;
+	return std::min(dTop, dBot) < length / 2 && dLength < length / 5;
 }
 
 Result MergeStructuredAppendSequence(const Results& results)
