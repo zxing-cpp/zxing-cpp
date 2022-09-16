@@ -79,7 +79,7 @@ TEST(ODCode128ReaderTest, SymbologyIdentifier)
 		PatternRow row({ 2, 1, 2, 3, 2, 1, 4, 1, 1, 1, 3, 1, 1, 3, 1, 1, 2, 3, 3, 2, 2, 2, 1, 1 });
 		auto result = parse('B', row);
 		EXPECT_EQ(result.symbologyIdentifier(), "]C0"); // Just ignoring, not giving FormatError
-		EXPECT_EQ(result.text(), "?\u001DB");
+		EXPECT_EQ(result.text(), "?<GS>B");
 	}
 }
 

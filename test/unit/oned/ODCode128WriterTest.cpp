@@ -119,7 +119,7 @@ TEST(ODCode128Writer, EncodeSwitchCodesetFromAToB)
 	auto actual = LineMatrixToString(encoded);
 	EXPECT_EQ(actual, expected);
 
-	auto actualRoundTrip = Decode(encoded).text();
+	auto actualRoundTrip = Decode(encoded).text(TextMode::Plain);
 	EXPECT_EQ(actualRoundTrip, toEncode);
 }
 
@@ -134,6 +134,6 @@ TEST(ODCode128Writer, EncodeSwitchCodesetFromBToA)
 	auto actual = LineMatrixToString(encoded);
 	EXPECT_EQ(actual, expected);
 
-	auto actualRoundTrip = Decode(encoded).text();
+	auto actualRoundTrip = Decode(encoded).text(TextMode::Plain);
 	EXPECT_EQ(actualRoundTrip, toEncode);
 }

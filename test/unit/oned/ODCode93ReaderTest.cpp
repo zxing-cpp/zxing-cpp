@@ -20,7 +20,7 @@ static std::string Decode(std::string_view input)
 	DecodeHints hints;
 	auto row    = Utility::ParseBitArray(input, '1');
 	auto result = DecodeSingleRow(Code93Reader(hints), row.range());
-	return result.text();
+	return result.text(TextMode::Plain);
 }
 
 TEST(ODCode93ReaderTest, Decode)
