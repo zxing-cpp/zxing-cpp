@@ -119,6 +119,8 @@ void drawLine(const ImageView& iv, PointI a, PointI b, bool error)
 	for (int i = 0; i < steps; ++i) {
 		auto p = PointI(centered(a + i * dir));
 		auto* dst = const_cast<uint8_t*>(iv.data(p.x, p.y));
+		if (dst < iv.data(0, 0) || dst > iv.data(iv.width() - 1, iv.height() - 1))
+			continue;
 		dst[R] = error ? 0xff : 0;
 		dst[G] = error ? 0 : 0xff;
 		dst[B] = 0;
