@@ -462,7 +462,7 @@ endif()
 
 set_target_properties(ZXing PROPERTIES PUBLIC_HEADER "${PUBLIC_HEADERS}")
 
-if (APPLE)
+if (APPLE AND INCLUDE_IOS_WRAPPERS)
     set_target_properties(ZXing PROPERTIES
         FRAMEWORK TRUE
         FRAMEWORK_VERSION "C"
