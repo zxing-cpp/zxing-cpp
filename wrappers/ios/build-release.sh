@@ -11,7 +11,7 @@ cmake -S../../ -B_builds -GXcode \
     -DCMAKE_XCODE_ATTRIBUTE_ONLY_ACTIVE_ARCH=NO \
     -DBUILD_UNIT_TESTS=NO \
     -DBUILD_BLACKBOX_TESTS=NO \
-    -DBUILD_EXAMPLES=NO
+    -DBUILD_EXAMPLES=NO \
     -DINCLUDE_IOS_WRAPPERS=YES
 
 echo ========= Build the sdk for simulators
