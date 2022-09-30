@@ -301,6 +301,7 @@ DecoderResult Decode(ByteArray&& bytes, const bool isDMRE)
 	// See ISO 16022:2006, 5.2.3 and Annex C, Table C.2
 	try {
 		while (!done && bits.available() >= 8) {
+      int oneByte = bits.readBits(8);
 			switch (oneByte) {
 			case 0: throw FormatError("invalid 0 code word");
 			case 129: done = true; break; // Pad -> we are done, ignore the rest of the bits
