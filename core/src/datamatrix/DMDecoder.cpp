@@ -26,6 +26,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <iostream>
 
 namespace ZXing::DataMatrix {
 
@@ -166,7 +167,16 @@ static void DecodeC40OrTextSegment(BitSource& bits, Content& result, Mode mode)
 			case 1: result.push_back(upperShift(cValue)); break;
 			case 2:
 				if (cValue < 28) // Size(SHIFT_SET_CHARS))
-					result.push_back(upperShift(SHIFT_SET_CHARS[cValue]));
+          if (SHIFT_SET_CHARS[cValue] == (char)29) {
+            result.push_back((char)'{');
+            result.push_back((char)'F');
+            result.push_back((char)'N');
+            result.push_back((char)'C');
+            result.push_back((char)'1');
+            result.push_back((char)'}');
+          } else {
+            result.push_back(upperShift(SHIFT_SET_CHARS[cValue]));
+          }
 				else if (cValue == 30) // Upper Shift
 					upperShift.set = true;
 				else
@@ -285,13 +295,14 @@ DecoderResult Decode(ByteArray&& bytes, const bool isDMRE)
 	bool readerInit = false;
 	bool firstCodeword = true;
 	bool done = false;
-	int firstFNC1Position = 1;
+	// int firstFNC1Position = 1;
 	Shift128 upperShift;
 
 	// See ISO 16022:2006, 5.2.3 and Annex C, Table C.2
 	try {
 		while (!done && bits.available() >= 8) {
 			int oneByte = bits.readBits(8);
+            std::cout << "oneByte: '" << oneByte << "';" << std::endl;
 			switch (oneByte) {
 			case 0: throw FormatError("invalid 0 code word");
 			case 129: done = true; break; // Pad -> we are done, ignore the rest of the bits
@@ -306,7 +317,7 @@ DecoderResult Decode(ByteArray&& bytes, const bool isDMRE)
 				// else if (bits.byteOffset() == firstFNC1Position + 1)
 				// 	result.symbology.modifier = '3'; // AIM, note no AIM Application Indicator format defined, ISO 16022:2006 11.2
 				// else
-					// result.push_back((char)29); // translate as ASCII 29 <GS>
+				// 	result.push_back((char)29); // translate as ASCII 29 <GS>
                 result.push_back((char)'{');
                 result.push_back((char)'F');
                 result.push_back((char)'N');
@@ -318,7 +329,7 @@ DecoderResult Decode(ByteArray&& bytes, const bool isDMRE)
 				if (!firstCodeword) // Must be first ISO 16022:2006 5.6.1
 					throw FormatError("structured append tag must be first code word");
 				ParseStructuredAppend(bits, sai);
-				firstFNC1Position = 5;
+				// firstFNC1Position = 5;
 				break;
 			case 234: // Reader Programming
 				if (!firstCodeword) // Must be first ISO 16022:2006 5.2.4.9
@@ -360,8 +371,10 @@ DecoderResult Decode(ByteArray&& bytes, const bool isDMRE)
 	}
 
 	result.append(resultTrailer);
+    std::cout << result.utf8() << std::endl;
 	result.applicationIndicator = result.symbology.modifier == '2' ? "GS1" : "";
 	result.symbology.modifier += isDMRE * 6;
+    std::cout << result.utf8() << std::endl;
 
 	return DecoderResult(std::move(bytes), std::move(result))
 		.setError(std::move(error))
