@@ -10,7 +10,6 @@
 #include "ZXTestSupport.h"
 #include "ZXAlgorithms.h"
 
-#include <locale>
 #include <iomanip>
 #include <cstdint>
 #include <sstream>
@@ -209,6 +208,26 @@ std::string ToUtf8(std::wstring_view str)
 	return utf8;
 }
 
+static bool iswgraph(wchar_t wc)
+{
+	/* Consider all legal codepoints as graphical except for:
+	 * - whitespace
+	 * - C0 and C1 control characters
+	 * - U+2028 and U+2029 (line/para break)
+	 * - U+FFF9 through U+FFFB (interlinear annotation controls)
+	 * The following code is based on libmusls implementation */
+
+	if (wc == ' ' || (unsigned)wc - '\t' < 5)
+		return false;
+	if (wc < 0xff)
+		return ((wc + 1) & 0x7f) >= 0x21;
+	if (wc < 0x2028 || wc - 0x202a < 0xd800 - 0x202a || wc - 0xe000 < 0xfff9 - 0xe000)
+		return true;
+	if (wc - 0xfffc > 0x10ffff - 0xfffc || (wc & 0xfffe) == 0xfffe)
+		return false;
+	return true;
+}
+
 std::wstring EscapeNonGraphical(std::wstring_view str)
 {
 	static const char* const ascii_nongraphs[33] = {
@@ -218,8 +237,6 @@ std::wstring EscapeNonGraphical(std::wstring_view str)
 		"CAN",  "EM", "SUB", "ESC",  "FS",  "GS",  "RS",  "US",
 		"DEL",
 	};
-
-	std::locale utf8Loc("en_US.UTF-8");
 
 	std::wostringstream ws;
 	ws.fill(L'0');
@@ -232,8 +249,8 @@ std::wstring EscapeNonGraphical(std::wstring_view str)
 			ws << wc;
 		else if (IsUtf16SurrogatePair(str))
 			ws.write(str.data(), 2), str.remove_prefix(1);
-		else if ((wc < 0xd800 || wc >= 0xe000) && (std::isgraph(wc, utf8Loc) && wc != 0xA0 && wc != 0x2007 &&
-												   wc != 0xfffd)) // Exclude unpaired surrogates and NO-BREAK spaces NBSP and NUMSP
+		// Exclude unpaired surrogates and NO-BREAK spaces NBSP and NUMSP
+		else if ((wc < 0xd800 || wc >= 0xe000) && (iswgraph(wc) && wc != 0xA0 && wc != 0x2007 && wc != 0x2000 && wc != 0xfffd))
 			ws << wc;
 		else // Non-graphical Unicode
 			ws << "<U+" << std::setw(wc < 256 ? 2 : 4) << std::uppercase << std::hex << static_cast<uint32_t>(wc) << ">";

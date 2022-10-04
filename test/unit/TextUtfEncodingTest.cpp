@@ -25,7 +25,6 @@ TEST(TextUtfEncodingTest, EscapeNonGraphical)
 	EXPECT_EQ(EscapeNonGraphical(u8"\u0080\u009F"), "<U+80><U+9F>");
 	EXPECT_EQ(EscapeNonGraphical(u8"\u00A0"), "<U+A0>"); // NO-BREAK space (nbsp)
 	EXPECT_EQ(EscapeNonGraphical(u8"\u2007"), "<U+2007>"); // NO-BREAK space (numsp)
-	EXPECT_EQ(EscapeNonGraphical(u8"\uFFEF"), "<U+FFEF>"); // Was NO-BREAK space but now isn't (BOM)
 	EXPECT_EQ(EscapeNonGraphical(u8"\u2000"), "<U+2000>"); // Space char (nqsp)
 	EXPECT_EQ(EscapeNonGraphical(u8"\uFFFD"), "<U+FFFD>");
 	EXPECT_EQ(EscapeNonGraphical(u8"\uFFFF"), "<U+FFFF>");
