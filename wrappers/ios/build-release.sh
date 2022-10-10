@@ -11,7 +11,8 @@ cmake -S../../ -B_builds -GXcode \
     -DCMAKE_XCODE_ATTRIBUTE_ONLY_ACTIVE_ARCH=NO \
     -DBUILD_UNIT_TESTS=NO \
     -DBUILD_BLACKBOX_TESTS=NO \
-    -DBUILD_EXAMPLES=NO
+    -DBUILD_EXAMPLES=NO \
+    -DBUILD_APPLE_FRAMEWORK=YES
 
 echo ========= Build the sdk for simulators
 xcodebuild -project _builds/ZXing.xcodeproj build \
