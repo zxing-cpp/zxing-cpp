@@ -8,6 +8,7 @@
 #ifdef __cpp_impl_coroutine
 #include <coroutine>
 #include <optional>
+#include <iterator>
 
 // this code is based on https://en.cppreference.com/w/cpp/coroutine/coroutine_handle#Example
 // but modified trying to prevent accidental copying of generated objects
