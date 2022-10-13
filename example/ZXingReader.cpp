@@ -40,6 +40,7 @@ static void PrintUsage(const char* exePath)
 			  << "    -bytes     Write (only) the bytes content of the symbol(s) to stdout\n"
 			  << "    -pngout <file name>\n"
 			  << "               Write a copy of the input image with barcodes outlined by a green line\n"
+			  << "    -help      Print usage information and exit\n"
 			  << "\n"
 			  << "Supported formats are:\n";
 	for (auto f : BarcodeFormats::all()) {
@@ -96,6 +97,9 @@ static bool ParseOptions(int argc, char* argv[], DecodeHints& hints, bool& oneLi
 			if (++i == argc)
 				return false;
 			outPath = argv[i];
+		} else if (is("-help") || is("--help")) {
+			PrintUsage(argv[0]);
+			exit(0);
 		} else {
 			filePaths.push_back(argv[i]);
 		}
