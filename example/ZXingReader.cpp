@@ -61,7 +61,7 @@ static bool ParseOptions(int argc, char* argv[], DecodeHints& hints, bool& oneLi
 		} else if (is("-noinvert")) {
 			hints.setTryInvert(false);
 		} else if (is("-noscale")) {
-			hints.setDownscaleThreshold(0);
+			hints.setTryDownscale(false);
 		} else if (is("-ispure")) {
 			hints.setIsPure(true);
 			hints.setBinarizer(Binarizer::FixedThreshold);
