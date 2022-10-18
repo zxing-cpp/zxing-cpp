@@ -75,7 +75,8 @@ public:
 			throw std::invalid_argument("Invalid DecodeHints::downscaleFactor");
 
 		layers.push_back(iv);
-		while (threshold > 0 && std::min(layers.back().width(), layers.back().height()) > threshold)
+		// TODO: if only matrix codes were considered, then using std::min would be sufficient (see #425)
+		while (threshold > 0 && std::max(layers.back().width(), layers.back().height()) > threshold)
 			addLayer();
 #if 0
 		// Reversing the layers means we'd start with the smallest. that can make sense if we are only looking for a
