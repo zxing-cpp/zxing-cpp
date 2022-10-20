@@ -323,7 +323,7 @@ DecoderResult Decode(const BitMatrix& bits)
 
 	auto formatInfo = ReadFormatInformation(bits, version.isMicroQRCode());
 	if (!formatInfo.isValid())
-		return FormatError("Invalid format informatino");
+		return FormatError("Invalid format information");
 
 	// Read codewords
 	ByteArray codewords = ReadCodewords(bits, version, formatInfo);
