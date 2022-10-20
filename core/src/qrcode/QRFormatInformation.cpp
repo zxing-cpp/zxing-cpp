@@ -95,10 +95,10 @@ static FormatInformation FindBestFormatInfo(int mask, const std::array<std::pair
 	// Some QR codes apparently do not apply the XOR mask. Try without and with additional masking.
 	for (auto mask : {0, mask})
 		for (uint32_t bits : bits)
-			for (bool mirror : {false, true})
+			for (bool mirror : {false, true}) {
+				if (mirror)
+					bits = BitHacks::Reverse(bits) >> 17;
 				for (const auto& [pattern, index] : lookup) {
-					if (mirror)
-						bits = BitHacks::Reverse(bits) >> 17;
 					// Find the int in lookup with fewest bits differing
 					if (int hammingDist = BitHacks::CountBitsSet((bits ^ mask) ^ pattern); hammingDist < fi.hammingDistance) {
 						fi.index = index;
@@ -106,6 +106,7 @@ static FormatInformation FindBestFormatInfo(int mask, const std::array<std::pair
 						fi.isMirrored = mirror;
 					}
 				}
+			}
 
 	return fi;
 }
