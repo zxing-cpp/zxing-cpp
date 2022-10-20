@@ -87,6 +87,11 @@ static const std::array<std::pair<int, int>, 32> FORMAT_INFO_DECODE_LOOKUP_MICRO
 	{0x3BBA, 0x1F},
 }};
 
+static uint32_t MirrorBits(uint32_t bits)
+{
+	return BitHacks::Reverse(bits) >> 17;
+}
+
 static FormatInformation FindBestFormatInfo(int mask, const std::array<std::pair<int, int>, 32> lookup,
 											const std::vector<uint32_t>& bits)
 {
@@ -94,17 +99,13 @@ static FormatInformation FindBestFormatInfo(int mask, const std::array<std::pair
 
 	// Some QR codes apparently do not apply the XOR mask. Try without and with additional masking.
 	for (auto mask : {0, mask})
-		for (uint32_t bits : bits)
-			for (bool mirror : {false, true}) {
-				if (mirror)
-					bits = BitHacks::Reverse(bits) >> 17;
-				for (const auto& [pattern, index] : lookup) {
-					// Find the int in lookup with fewest bits differing
-					if (int hammingDist = BitHacks::CountBitsSet((bits ^ mask) ^ pattern); hammingDist < fi.hammingDistance) {
-						fi.index = index;
-						fi.hammingDistance = hammingDist;
-						fi.isMirrored = mirror;
-					}
+		for (uint8_t bitsIndex = 0; bitsIndex < bits.size(); ++bitsIndex)
+			for (const auto& [pattern, index] : lookup) {
+				// Find the int in lookup with fewest bits differing
+				if (int hammingDist = BitHacks::CountBitsSet((bits[bitsIndex] ^ mask) ^ pattern); hammingDist < fi.hammingDistance) {
+					fi.index = index;
+					fi.hammingDistance = hammingDist;
+					fi.bitsIndex = bitsIndex;
 				}
 			}
 
@@ -117,11 +118,16 @@ static FormatInformation FindBestFormatInfo(int mask, const std::array<std::pair
 */
 FormatInformation FormatInformation::DecodeQR(uint32_t formatInfoBits1, uint32_t formatInfoBits2)
 {
-	auto fi = FindBestFormatInfo(FORMAT_INFO_MASK_QR, FORMAT_INFO_DECODE_LOOKUP, {formatInfoBits1, formatInfoBits2});
+	// maks out the 'Dark Module' for mirrored and non-mirrored case (see Figure 25 in ISO/IEC 18004:2015)
+	uint32_t mirroredFormatInfoBits2 = MirrorBits(((formatInfoBits2 >> 1) & 0b111111110000000) | (formatInfoBits2 & 0b1111111));
+	formatInfoBits2 = ((formatInfoBits2 >> 1) & 0b111111100000000) | (formatInfoBits2 & 0b11111111);
+	auto fi = FindBestFormatInfo(FORMAT_INFO_MASK_QR, FORMAT_INFO_DECODE_LOOKUP,
+								 {formatInfoBits1, formatInfoBits2, MirrorBits(formatInfoBits1), mirroredFormatInfoBits2});
 
 	// Use bits 3/4 for error correction, and 0-2 for mask.
 	fi.ecLevel = ECLevelFromBits((fi.index >> 3) & 0x03);
 	fi.dataMask = static_cast<uint8_t>(fi.index & 0x07);
+	fi.isMirrored = fi.bitsIndex > 1;
 
 	return fi;
 }
@@ -132,7 +138,7 @@ FormatInformation FormatInformation::DecodeQR(uint32_t formatInfoBits1, uint32_t
 FormatInformation FormatInformation::DecodeMQR(uint32_t formatInfoBits)
 {
 	// We don't use the additional masking (with 0x4445) to work around potentially non complying MircoQRCode encoders
-	auto fi = FindBestFormatInfo(0, FORMAT_INFO_DECODE_LOOKUP_MICRO, {formatInfoBits});
+	auto fi = FindBestFormatInfo(0, FORMAT_INFO_DECODE_LOOKUP_MICRO, {formatInfoBits, MirrorBits(formatInfoBits)});
 
 	constexpr uint8_t BITS_TO_VERSION[] = {1, 2, 2, 3, 3, 4, 4, 4};
 
@@ -140,6 +146,7 @@ FormatInformation FormatInformation::DecodeMQR(uint32_t formatInfoBits)
 	fi.ecLevel = ECLevelFromBits((fi.index >> 2) & 0x07, true);
 	fi.dataMask = static_cast<uint8_t>(fi.index & 0x03);
 	fi.microVersion = BITS_TO_VERSION[(fi.index >> 2) & 0x07];
+	fi.isMirrored = fi.bitsIndex == 1;
 
 	return fi;
 }

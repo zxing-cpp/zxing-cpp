@@ -12,6 +12,7 @@ using namespace ZXing;
 using namespace ZXing::QRCode;
 
 static const int MASKED_TEST_FORMAT_INFO = 0x2BED;
+static const int MASKED_TEST_FORMAT_INFO2 = ((0x2BED << 1) & 0b1111111000000000) | 0b100000000 | (0x2BED & 0b11111111); // insert the 'Dark Module'
 static const int UNMASKED_TEST_FORMAT_INFO = MASKED_TEST_FORMAT_INFO ^ 0x5412;
 static const int MICRO_MASKED_TEST_FORMAT_INFO = 0x3BBA;
 static const int MICRO_UNMASKED_TEST_FORMAT_INFO = MICRO_MASKED_TEST_FORMAT_INFO ^ 0x4445;
@@ -27,28 +28,28 @@ static void DoFormatInformationTest(const int formatInfo, const uint8_t expected
 TEST(QRFormatInformationTest, Decode)
 {
     // Normal case
-    FormatInformation expected = FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO, MASKED_TEST_FORMAT_INFO);
+    FormatInformation expected = FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO, MASKED_TEST_FORMAT_INFO2);
     EXPECT_TRUE(expected.isValid());
     EXPECT_EQ(0x07, expected.dataMask);
 	EXPECT_EQ(ErrorCorrectionLevel::Quality, expected.ecLevel);
     // where the code forgot the mask!
-	EXPECT_EQ(expected, FormatInformation::DecodeQR(UNMASKED_TEST_FORMAT_INFO, MASKED_TEST_FORMAT_INFO));
+	EXPECT_EQ(expected, FormatInformation::DecodeQR(UNMASKED_TEST_FORMAT_INFO, MASKED_TEST_FORMAT_INFO2));
 }
 
 TEST(QRFormatInformationTest, DecodeWithBitDifference)
 {
-    FormatInformation expected = FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO, MASKED_TEST_FORMAT_INFO);
+    FormatInformation expected = FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO, MASKED_TEST_FORMAT_INFO2);
     // 1,2,3,4 bits difference
-	EXPECT_EQ(expected, FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO ^ 0x01, MASKED_TEST_FORMAT_INFO ^ 0x01));
-	EXPECT_EQ(expected, FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO ^ 0x03, MASKED_TEST_FORMAT_INFO ^ 0x03));
-	EXPECT_EQ(expected, FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO ^ 0x07, MASKED_TEST_FORMAT_INFO ^ 0x07));
-	EXPECT_TRUE(!FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO ^ 0x0F, MASKED_TEST_FORMAT_INFO ^ 0x0F).isValid());
+	EXPECT_EQ(expected, FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO ^ 0x01, MASKED_TEST_FORMAT_INFO2 ^ 0x01));
+	EXPECT_EQ(expected, FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO ^ 0x03, MASKED_TEST_FORMAT_INFO2 ^ 0x03));
+	EXPECT_EQ(expected, FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO ^ 0x07, MASKED_TEST_FORMAT_INFO2 ^ 0x07));
+	EXPECT_TRUE(!FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO ^ 0x0F, MASKED_TEST_FORMAT_INFO2 ^ 0x0F).isValid());
 }
 
 TEST(QRFormatInformationTest, DecodeWithMisread)
 {
-    FormatInformation expected = FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO, MASKED_TEST_FORMAT_INFO);
-	EXPECT_EQ(expected, FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO ^ 0x03, MASKED_TEST_FORMAT_INFO ^ 0x0F));
+    FormatInformation expected = FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO, MASKED_TEST_FORMAT_INFO2);
+	EXPECT_EQ(expected, FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO ^ 0x03, MASKED_TEST_FORMAT_INFO2 ^ 0x0F));
 }
 
 TEST(QRFormatInformationTest, DecodeMicro)

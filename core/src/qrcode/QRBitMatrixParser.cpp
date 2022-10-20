@@ -88,10 +88,12 @@ FormatInformation ReadFormatInformation(const BitMatrix& bitMatrix, bool isMicro
 	for (int y = 5; y >= 0; y--)
 		AppendBit(formatInfoBits1, getBit(bitMatrix, 8, y));
 
-	// Read the top-right/bottom-left pattern too
+	// Read the top-right/bottom-left pattern including the 'Dark Module' from the bottom-left
+	// part that has to be considered separately when looking for mirrored symbols.
+	// See also FormatInformation::DecodeQR
 	int dimension = bitMatrix.height();
 	int formatInfoBits2 = 0;
-	for (int y = dimension - 1; y >= dimension - 7; y--)
+	for (int y = dimension - 1; y >= dimension - 8; y--)
 		AppendBit(formatInfoBits2, getBit(bitMatrix, 8, y));
 	for (int x = dimension - 8; x < dimension; x++)
 		AppendBit(formatInfoBits2, getBit(bitMatrix, x, 8));

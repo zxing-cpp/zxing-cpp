@@ -20,6 +20,7 @@ public:
 	bool isMirrored = false;
 	uint8_t dataMask = 0;
 	uint8_t microVersion = 0;
+	uint8_t bitsIndex = 255;
 	ErrorCorrectionLevel ecLevel = ErrorCorrectionLevel::Invalid;
 
 	FormatInformation() = default;
