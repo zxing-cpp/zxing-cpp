@@ -27,19 +27,19 @@ static void DoFormatInformationTest(const int formatInfo, const uint8_t expected
 
 TEST(QRFormatInformationTest, Decode)
 {
-    // Normal case
-    FormatInformation expected = FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO, MASKED_TEST_FORMAT_INFO2);
-    EXPECT_TRUE(expected.isValid());
-    EXPECT_EQ(0x07, expected.dataMask);
+	// Normal case
+	FormatInformation expected = FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO, MASKED_TEST_FORMAT_INFO2);
+	EXPECT_TRUE(expected.isValid());
+	EXPECT_EQ(0x07, expected.dataMask);
 	EXPECT_EQ(ErrorCorrectionLevel::Quality, expected.ecLevel);
-    // where the code forgot the mask!
+	// where the code forgot the mask!
 	EXPECT_EQ(expected, FormatInformation::DecodeQR(UNMASKED_TEST_FORMAT_INFO, MASKED_TEST_FORMAT_INFO2));
 }
 
 TEST(QRFormatInformationTest, DecodeWithBitDifference)
 {
-    FormatInformation expected = FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO, MASKED_TEST_FORMAT_INFO2);
-    // 1,2,3,4 bits difference
+	FormatInformation expected = FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO, MASKED_TEST_FORMAT_INFO2);
+	// 1,2,3,4 bits difference
 	EXPECT_EQ(expected, FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO ^ 0x01, MASKED_TEST_FORMAT_INFO2 ^ 0x01));
 	EXPECT_EQ(expected, FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO ^ 0x03, MASKED_TEST_FORMAT_INFO2 ^ 0x03));
 	EXPECT_EQ(expected, FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO ^ 0x07, MASKED_TEST_FORMAT_INFO2 ^ 0x07));
@@ -48,7 +48,7 @@ TEST(QRFormatInformationTest, DecodeWithBitDifference)
 
 TEST(QRFormatInformationTest, DecodeWithMisread)
 {
-    FormatInformation expected = FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO, MASKED_TEST_FORMAT_INFO2);
+	FormatInformation expected = FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO, MASKED_TEST_FORMAT_INFO2);
 	EXPECT_EQ(expected, FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO ^ 0x03, MASKED_TEST_FORMAT_INFO2 ^ 0x0F));
 }
 
