@@ -340,7 +340,7 @@ Detector::Result Detector::Detect(const BinaryBitmap& image, bool multiple, bool
 
 	Result result;
 
-	for (int rotate90 = 0; rotate90 <= static_cast<int>(tryRotate) && result.points.empty(); ++rotate90) {
+	for (int rotate90 = 0; rotate90 <= static_cast<int>(tryRotate); ++rotate90) {
 		if (!HasStartPattern(*binImg, rotate90))
 			continue;
 
@@ -352,20 +352,20 @@ Detector::Result Detector::Detect(const BinaryBitmap& image, bool multiple, bool
 		}
 
 		result.points = DetectBarcode(*binImg, multiple);
+		result.bits = binImg;
 		if (result.points.empty()) {
 			auto newBits = std::make_shared<BitMatrix>(binImg->copy());
 			newBits->rotate180();
-			binImg = newBits;
-			result.points = DetectBarcode(*binImg, multiple);
+			result.points = DetectBarcode(*newBits, multiple);
 			result.rotation += 180;
+			result.bits = newBits;
 		}
+
+		if (!result.points.empty())
+			return result;
 	}
 
-	if (result.points.empty())
-		return {};
-
-	result.bits = binImg;
-	return result;
+	return {};
 }
 
 } // Pdf417
