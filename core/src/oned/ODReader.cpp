@@ -175,21 +175,22 @@ static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, 
 							}
 						}
 
-						if (result.format() != BarcodeFormat::None)
+						if (result.format() != BarcodeFormat::None) {
 							res.push_back(std::move(result));
+
+							// if we found a valid code we have not seen before but a minLineCount > 1,
+							// add additional check rows above and below the current one
+							if (!isCheckRow && minLineCount > 1 && rowStep > 1) {
+								checkRows = {rowNumber - 1, rowNumber + 1};
+								if (rowStep > 2)
+									checkRows.insert(checkRows.end(), {rowNumber - 2, rowNumber + 2});
+							}
+						}
 
 						if (maxSymbols && Reduce(res, 0, [&](int s, const Result& r) {
 											  return s + (r.lineCount() >= minLineCount);
 										  }) == maxSymbols) {
 							goto out;
-						}
-
-						// if we found a valid code but have a minLineCount > 1, add additional check rows above and
-						// below the current one
-						if (!isCheckRow && minLineCount > 1 && rowStep > 1) {
-							checkRows = {rowNumber - 1, rowNumber + 1};
-							if (rowStep > 2)
-								checkRows.insert(checkRows.end(), {rowNumber - 2, rowNumber + 2});
 						}
 					}
 					// make sure we make progress and we start the next try on a bar
