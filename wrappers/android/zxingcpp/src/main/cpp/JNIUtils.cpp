@@ -60,11 +60,13 @@ jstring C2JString(JNIEnv* env, const std::string& str)
 
 std::string J2CString(JNIEnv* env, jstring str)
 {
-	const jsize len = env->GetStringLength(str);
-	std::string res(len, 0);
+	// Buffer size must be in bytes.
+	const jsize size = env->GetStringUTFLength(str);
+	std::string res(size, 0);
 
 	// Translates 'len' number of Unicode characters into modified
 	// UTF-8 encoding and place the result in the given buffer.
+	const jsize len = env->GetStringLength(str);
 	env->GetStringUTFRegion(str, 0, len, res.data());
 
 	return res;
