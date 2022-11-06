@@ -103,7 +103,7 @@ Results read_barcodes(py::object _image, const BarcodeFormats& formats, bool try
 
 Image write_barcode(BarcodeFormat format, std::string text, int width, int height, int quiet_zone, int ec_level)
 {
-	auto writer = MultiFormatWriter(format).setMargin(quiet_zone).setEccLevel(ec_level);
+	auto writer = MultiFormatWriter(format).setEncoding(CharacterSet::UTF8).setMargin(quiet_zone).setEccLevel(ec_level);
 	auto bitmap = writer.encode(text, width, height);
 
 	auto result = Image({bitmap.height(), bitmap.width()});
