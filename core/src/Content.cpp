@@ -224,7 +224,7 @@ ContentType Content::type() const
 		binaryECIs.push_back((!IsText(eci)
 							  || (ToInt(eci) > 0 && ToInt(eci) < 28 && ToInt(eci) != 25
 								  && std::any_of(bytes.begin() + begin, bytes.begin() + end,
-												 [](auto c) { return c < 0x20 && c != 0xa && c != 0xd; }))));
+												 [](auto c) { return c < 0x20 && c != 0x9 && c != 0xa && c != 0xd; }))));
 	});
 
 	if (!Contains(binaryECIs, true))
