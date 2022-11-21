@@ -21,7 +21,13 @@ struct ReadResult
 	ZXing::Position position{};
 };
 
-ReadResult readBarcodeFromImageView(ZXing::ImageView iv, bool tryHarder, const std::string& format)
+struct ReadResults
+{
+	std::vector<ReadResult> results{};
+	std::string error{};
+};
+
+ReadResults readBarcodesFromImageView(ZXing::ImageView iv, bool tryHarder, const std::string& format, const int maxSymbols = 0xff)
 {
 	using namespace ZXing;
 	try {
@@ -31,17 +37,22 @@ ReadResult readBarcodeFromImageView(ZXing::ImageView iv, bool tryHarder, const s
 		hints.setTryInvert(tryHarder);
 		hints.setTryDownscale(tryHarder);
 		hints.setFormats(BarcodeFormatsFromString(format));
-		hints.setMaxNumberOfSymbols(1);
+		hints.setMaxNumberOfSymbols(maxSymbols);
 
 		auto results = ReadBarcodes(iv, hints);
-		if (!results.empty()) {
-			auto& result = results.front();
-			return {ToString(result.format()), result.text(), "", result.position()};
+
+		ReadResults readResults{};
+		readResults.results.reserve(results.size());
+
+		for ( auto& result : results) {
+			readResults.results.push_back({ ToString(result.format()), result.text(), {}, result.position() });
 		}
+
+		return readResults;
 	} catch (const std::exception& e) {
-		return {"", "", e.what()};
+		return {{}, e.what()};
 	} catch (...) {
-		return {"", "", "Unknown error"};
+		return {{}, "Unknown error"};
 	}
 	return {};
 }
@@ -57,13 +68,49 @@ ReadResult readBarcodeFromImage(int bufferPtr, int bufferLength, bool tryHarder,
 	if (buffer == nullptr)
 		return {"", "", "Error loading image"};
 
-	return readBarcodeFromImageView({buffer.get(), width, height, ImageFormat::Lum}, tryHarder, format);
+	ReadResults results = readBarcodesFromImageView({buffer.get(), width, height, ImageFormat::Lum}, tryHarder, format, 1);
+	ReadResult result{{}, results.error};
+	if (results.results.size() == 1) {
+		auto& first = results.results.at(0);
+		result.format = first.format;
+		result.text = first.text;
+		result.position = first.position;
+	}
+	return result;
+}
+
+ReadResults readBarcodesFromImage(int bufferPtr, int bufferLength, bool tryHarder, std::string format, const int maxSymbols)
+{
+	using namespace ZXing;
+
+	int width, height, channels;
+	std::unique_ptr<stbi_uc, void (*)(void*)> buffer(
+		stbi_load_from_memory(reinterpret_cast<const unsigned char*>(bufferPtr), bufferLength, &width, &height, &channels, 1),
+		stbi_image_free);
+	if (buffer == nullptr)
+		return {{}, "Error loading image"};
+
+	return readBarcodesFromImageView({buffer.get(), width, height, ImageFormat::Lum}, tryHarder, format, maxSymbols);
 }
 
 ReadResult readBarcodeFromPixmap(int bufferPtr, int imgWidth, int imgHeight, bool tryHarder, std::string format)
 {
 	using namespace ZXing;
-	return readBarcodeFromImageView({reinterpret_cast<uint8_t*>(bufferPtr), imgWidth, imgHeight, ImageFormat::RGBX}, tryHarder, format);
+	ReadResults results = readBarcodesFromImageView({reinterpret_cast<uint8_t*>(bufferPtr), imgWidth, imgHeight, ImageFormat::RGBX}, tryHarder, format, 1);
+	ReadResult result{{}, results.error};
+	if (results.results.size() == 1) {
+		auto& first = results.results.at(0);
+		result.format = first.format;
+		result.text = first.text;
+		result.position = first.position;
+	}
+	return result;
+}
+
+ReadResults readBarcodesFromPixmap(int bufferPtr, int imgWidth, int imgHeight, bool tryHarder, std::string format, const int maxSymbols)
+{
+	using namespace ZXing;
+	return readBarcodesFromImageView({reinterpret_cast<uint8_t*>(bufferPtr), imgWidth, imgHeight, ImageFormat::RGBX}, tryHarder, format, maxSymbols);
 }
 
 EMSCRIPTEN_BINDINGS(BarcodeReader)
@@ -89,6 +136,16 @@ EMSCRIPTEN_BINDINGS(BarcodeReader)
 			.field("bottomLeft", emscripten::index<3>())
 			;
 
+	register_vector<ReadResult>("vector<ReadResult>");
+
+	value_object<ReadResults>("ReadResults")
+			.field("results", &ReadResults::results)
+			.field("error", &ReadResults::error)
+			;
+
 	function("readBarcodeFromImage", &readBarcodeFromImage);
 	function("readBarcodeFromPixmap", &readBarcodeFromPixmap);
+
+	function("readBarcodesFromImage", &readBarcodesFromImage);
+	function("readBarcodesFromPixmap", &readBarcodesFromPixmap);
 };
