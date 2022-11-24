@@ -204,7 +204,18 @@ static std::vector<ConcentricPattern> FindFinderPatterns(const BitMatrix& image,
 			PointF p(next.pixelsInFront() + next[0] + next[1] + next[2] + next[3] / 2.0, y + 0.5);
 
 			// make sure p is not 'inside' an already found pattern area
-			if (FindIf(res, [p](const auto& old) { return distance(p, old) < old.size / 2; }) == res.end()) {
+			bool found = false;
+			for (auto old = res.rbegin(); old != res.rend(); ++old) {
+				// search from back to front, stop once we are out of range due to the y-coordinate
+				if (p.y - old->y > old->size / 2)
+					break;
+				if (distance(p, *old) < old->size / 2) {
+					found = true;
+					break;
+				}
+			}
+
+			if (!found) {
 				++N;
 				log(p, 1);
 
