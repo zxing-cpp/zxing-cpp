@@ -44,7 +44,8 @@ public:
 		// Write pixels
 		for (int y = 0; y < _log.height(); ++y)
 			for (int x = 0; x < _log.width(); ++x) {
-				unsigned char r, g, b;
+				unsigned char pix[3];
+				unsigned char &r = pix[0], &g = pix[1], &b = pix[2];
 				r = g = b = _image->get(x / _scale, y / _scale) ? 0 : 255;
 				if (_scale > 1 && x % _scale == _scale / 2 && y % _scale == _scale / 2)
 					r = g = b = r ? 230 : 50;
@@ -54,9 +55,7 @@ public:
 				case 3: g = r = 100, b = 250; break;
 				case 4: g = b = 100, r = 250; break;
 				}
-				fwrite(&r, 1, 1, f);
-				fwrite(&g, 1, 1, f);
-				fwrite(&b, 1, 1, f);
+				fwrite(&pix, 3, 1, f);
 			}
 		fclose(f);
 	}
