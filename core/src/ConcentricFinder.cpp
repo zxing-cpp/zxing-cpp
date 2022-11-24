@@ -135,7 +135,7 @@ static std::vector<PointF> CollectRingPoints(const BitMatrix& image, PointF cent
 	return points;
 }
 
-static QuadrilateralF FitQadrilateralToPoints(PointF center, std::vector<PointF>& points)
+static std::optional<QuadrilateralF> FitQadrilateralToPoints(PointF center, std::vector<PointF>& points)
 {
 	auto dist2Center = [c = center](auto a, auto b) { return distance(a, c) < distance(b, c); };
 	// rotate points such that the first one is the furthest away from the center (hence, a corner)
@@ -154,11 +154,27 @@ static QuadrilateralF FitQadrilateralToPoints(PointF center, std::vector<PointF>
 	std::array lines{RegressionLine{corners[0] + 1, corners[1]}, RegressionLine{corners[1] + 1, corners[2]},
 					 RegressionLine{corners[2] + 1, corners[3]}, RegressionLine{corners[3] + 1, &points.back() + 1}};
 
+	if (std::any_of(lines.begin(), lines.end(), [](auto line) { return !line.isValid(); }))
+		return {};
+
 	QuadrilateralF res;
 	for (int i = 0; i < 4; ++i)
 		res[i] = intersect(lines[i], lines[(i + 1) % 4]);
 
 	return res;
+}
+
+static bool QuadrilateralIsPlausibleSquare(const QuadrilateralF q, int lineIndex)
+{
+	double m, M;
+	m = M = distance(q[0], q[3]);
+	for (int i = 1; i < 4; ++i) {
+		double d = distance(q[i - 1], q[i]);
+		m = std::min(m, d);
+		M = std::max(M, d);
+	}
+
+	return m >= lineIndex * 2 && m > M / 3;
 }
 
 std::optional<QuadrilateralF> FindConcentricPatternCorners(const BitMatrix& image, PointF center, int range, int lineIndex)
@@ -169,8 +185,16 @@ std::optional<QuadrilateralF> FindConcentricPatternCorners(const BitMatrix& imag
 	if (innerPoints.empty() || outerPoints.empty())
 		return {};
 
-	auto innerCorners = FitQadrilateralToPoints(center, innerPoints);
-	auto outerCorners = FitQadrilateralToPoints(center, outerPoints);
+	auto oInnerCorners = FitQadrilateralToPoints(center, innerPoints);
+	if (!oInnerCorners || !QuadrilateralIsPlausibleSquare(*oInnerCorners, lineIndex))
+		return {};
+
+	auto oOuterCorners = FitQadrilateralToPoints(center, outerPoints);
+	if (!oOuterCorners || !QuadrilateralIsPlausibleSquare(*oOuterCorners, lineIndex))
+		return {};
+
+	auto& innerCorners = *oInnerCorners;
+	auto& outerCorners = *oOuterCorners;
 
 	auto dist2First = [c = innerCorners[0]](auto a, auto b) { return distance(a, c) < distance(b, c); };
 	// rotate points such that the the two topLeft points are closest to each other
