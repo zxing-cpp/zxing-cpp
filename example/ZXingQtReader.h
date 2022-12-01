@@ -143,6 +143,8 @@ inline QList<Result> QListResults(ZXing::Results&& zxres)
 inline QList<Result> ReadBarcodes(const QImage& img, const DecodeHints& hints = {})
 {
 	using namespace ZXing;
+    if (img.format() == QImage::Format_Invalid)
+        return QList<Result>();
 
 	auto ImgFmtFromQImg = [](const QImage& img) {
 		switch (img.format()) {
