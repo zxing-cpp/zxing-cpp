@@ -38,7 +38,7 @@ Window {
         // onFoundBarcode: {}
 
         // callback with parameter 'result', called for every processed frame
-        onNewResult: {
+        onNewResult: (result)=> {
             points = result.isValid
                     ? [result.position.topLeft, result.position.topRight, result.position.bottomRight, result.position.bottomLeft]
                     : nullPoints
@@ -62,6 +62,7 @@ Window {
         cameraDevice: devices.videoInputs[camerasComboBox.currentIndex] ? devices.videoInputs[camerasComboBox.currentIndex] : devices.defaultVideoInput
         focusMode: Camera.FocusModeAutoNear
         onErrorOccurred: console.log("camera error:" + errorString)
+        active: true
     }
 
     CaptureSession {
