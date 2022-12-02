@@ -180,17 +180,6 @@ inline QList<Result> ReadBarcodes(const QVideoFrame& frame, const DecodeHints& h
 {
 	using namespace ZXing;
 
-	auto img = frame; // shallow copy just get access to non-const map() function
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-	if (!frame.isValid() || !img.map(QAbstractVideoBuffer::ReadOnly)){
-#else
-	if (!frame.isValid() || !img.map(QVideoFrame::ReadOnly)){
-#endif
-		qWarning() << "invalid QVideoFrame: could not map memory";
-		return {};
-	}
-	auto unmap = qScopeGuard([&] { img.unmap(); });
-
 	ImageFormat fmt = ImageFormat::None;
 	int pixStride = 0;
 	int pixOffset = 0;
@@ -203,7 +192,7 @@ inline QList<Result> ReadBarcodes(const QVideoFrame& frame, const DecodeHints& h
 #define FIRST_PLANE 0
 #endif
 
-	switch (img.pixelFormat()) {
+	switch (frame.pixelFormat()) {
 	case FORMAT(ARGB32, ARGB8888):
 	case FORMAT(ARGB32_Premultiplied, ARGB8888_Premultiplied):
 	case FORMAT(RGB32, RGBX8888):
@@ -272,17 +261,29 @@ inline QList<Result> ReadBarcodes(const QVideoFrame& frame, const DecodeHints& h
 	}
 
 	if (fmt != ImageFormat::None) {
+		auto img = frame; // shallow copy just get access to non-const map() function
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+		if (!img.isValid() || !img.map(QAbstractVideoBuffer::ReadOnly)){
+#else
+		if (!img.isValid() || !img.map(QVideoFrame::ReadOnly)){
+#endif
+			qWarning() << "invalid QVideoFrame: could not map memory";
+			return {};
+		}
+		QScopeGuard unmap([&] { img.unmap(); });
+
 		return QListResults(ZXing::ReadBarcodes(
 			{img.bits(FIRST_PLANE) + pixOffset, img.width(), img.height(), fmt, img.bytesPerLine(FIRST_PLANE), pixStride}, hints));
-	} else {
+	}
+	else {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-		if (QVideoFrame::imageFormatFromPixelFormat(img.pixelFormat()) != QImage::Format_Invalid) {
+		if (QVideoFrame::imageFormatFromPixelFormat(frame.pixelFormat()) != QImage::Format_Invalid) {
 			qWarning() << "unsupported QVideoFrame::pixelFormat";
 			return {};
 		}
-		auto qimg = img.image();
+		auto qimg = frame.image();
 #else
-		auto qimg = img.toImage();
+		auto qimg = frame.toImage();
 #endif
 		if (qimg.format() != QImage::Format_Invalid)
 			return ReadBarcodes(qimg, hints);
