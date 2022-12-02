@@ -276,16 +276,18 @@ inline QList<Result> ReadBarcodes(const QVideoFrame& frame, const DecodeHints& h
 			{img.bits(FIRST_PLANE) + pixOffset, img.width(), img.height(), fmt, img.bytesPerLine(FIRST_PLANE), pixStride}, hints));
 	} else {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-		if (QVideoFrame::imageFormatFromPixelFormat(img.pixelFormat()) != QImage::Format_Invalid)
-			return ReadBarcodes(img.image(), hints);
-		qWarning() << "unsupported QVideoFrame::pixelFormat";
-		return {};
+		if (QVideoFrame::imageFormatFromPixelFormat(img.pixelFormat()) != QImage::Format_Invalid) {
+			qWarning() << "unsupported QVideoFrame::pixelFormat";
+			return {};
+		}
+		auto qimg = img.image();
 #else
-		if (auto qimg = img.toImage(); qimg.format() != QImage::Format_Invalid)
+		auto qimg = img.toImage();
+#endif
+		if (qimg.format() != QImage::Format_Invalid)
 			return ReadBarcodes(qimg, hints);
 		qWarning() << "failed to convert QVideoFrame to QImage";
 		return {};
-#endif
 	}
 }
 
