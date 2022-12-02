@@ -281,7 +281,10 @@ inline QList<Result> ReadBarcodes(const QVideoFrame& frame, const DecodeHints& h
 		qWarning() << "unsupported QVideoFrame::pixelFormat";
 		return {};
 #else
-		return ReadBarcodes(img.toImage(), hints);
+		if (auto qimg = img.toImage(); qimg.format() != QImage::Format_Invalid)
+			return ReadBarcodes(qimg, hints);
+		qWarning() << "failed to convert QVideoFrame to QImage";
+		return {};
 #endif
 	}
 }
