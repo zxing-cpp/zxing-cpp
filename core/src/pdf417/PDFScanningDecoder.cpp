@@ -16,6 +16,8 @@
 #include "PDFModulusGF.h"
 #include "ZXTestSupport.h"
 
+#include <cmath>
+
 namespace ZXing {
 namespace Pdf417 {
 

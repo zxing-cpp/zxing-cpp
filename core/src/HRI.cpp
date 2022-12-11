@@ -9,6 +9,7 @@
 
 #include "ZXAlgorithms.h"
 
+#include <cmath>
 #include <sstream>
 
 namespace ZXing {

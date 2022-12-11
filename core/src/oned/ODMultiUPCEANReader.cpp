@@ -14,6 +14,8 @@
 #include "ODUPCEANCommon.h"
 #include "Result.h"
 
+#include <cmath>
+
 namespace ZXing::OneD {
 
 constexpr int CHAR_LEN = 4;
