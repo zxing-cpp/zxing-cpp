@@ -42,7 +42,7 @@ inline std::string ToHex(const ByteArray& bytes)
 #ifdef _MSC_VER
 		sprintf_s(&res[i * 3], 4, "%02X ", bytes[i]);
 #else
-		sprintf(&res[i * 3], "%02X ", bytes[i]);
+		snprintf(&res[i * 3], 4, "%02X ", bytes[i]);
 #endif
 	}
 
