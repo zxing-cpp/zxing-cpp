@@ -4,4 +4,5 @@ CMakeLists.txt.user
 *.lib
 *.d
 *.a
+*.swp
 
