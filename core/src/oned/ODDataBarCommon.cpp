@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "ODDataBarCommon.h"
+#include <cmath>
 
 namespace ZXing::OneD::DataBar {
 

@@ -10,6 +10,7 @@
 #include "Result.h"
 
 #include <array>
+#include <cmath>
 
 namespace ZXing::OneD::DataBar {
 
