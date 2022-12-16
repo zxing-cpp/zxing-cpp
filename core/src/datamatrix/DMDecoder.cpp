@@ -168,12 +168,7 @@ static void DecodeC40OrTextSegment(BitSource& bits, Content& result, Mode mode)
 			case 2:
 				if (cValue < 28) // Size(SHIFT_SET_CHARS))
           if (SHIFT_SET_CHARS[cValue] == (char)29) {
-            result.push_back((char)'{');
-            result.push_back((char)'F');
-            result.push_back((char)'N');
-            result.push_back((char)'C');
-            result.push_back((char)'1');
-            result.push_back((char)'}');
+            result.push_back((char)232);
           } else {
             result.push_back(upperShift(SHIFT_SET_CHARS[cValue]));
           }
@@ -317,12 +312,7 @@ DecoderResult Decode(ByteArray&& bytes, const bool isDMRE)
 				// 	result.symbology.modifier = '3'; // AIM, note no AIM Application Indicator format defined, ISO 16022:2006 11.2
 				// else
 				// 	result.push_back((char)29); // translate as ASCII 29 <GS>
-                result.push_back((char)'{');
-                result.push_back((char)'F');
-                result.push_back((char)'N');
-                result.push_back((char)'C');
-                result.push_back((char)'1');
-                result.push_back((char)'}');
+                result.push_back((char)232);
 				break;
 			case 233: // Structured Append
 				if (!firstCodeword) // Must be first ISO 16022:2006 5.6.1
