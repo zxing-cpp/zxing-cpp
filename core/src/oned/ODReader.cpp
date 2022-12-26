@@ -17,6 +17,7 @@
 #include "ODDataBarReader.h"
 #include "ODITFReader.h"
 #include "ODMultiUPCEANReader.h"
+#include "ODNWReader.h"
 #include "Result.h"
 
 #include <algorithm>
@@ -26,7 +27,7 @@ namespace ZXing::OneD {
 
 Reader::Reader(const DecodeHints& hints) : ZXing::Reader(hints)
 {
-	_readers.reserve(8);
+	_readers.reserve(9);
 
 	auto formats = hints.formats().empty() ? BarcodeFormat::Any : hints.formats();
 
@@ -47,6 +48,8 @@ Reader::Reader(const DecodeHints& hints) : ZXing::Reader(hints)
 		_readers.emplace_back(new DataBarReader(hints));
 	if (formats.testFlags(BarcodeFormat::DataBarExpanded))
 		_readers.emplace_back(new DataBarExpandedReader(hints));
+	if (formats.testFlags(BarcodeFormat::NWCode))
+		_readers.emplace_back(new ODNWReader(hints));
 }
 
 Reader::~Reader() = default;

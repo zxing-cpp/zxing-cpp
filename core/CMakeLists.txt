@@ -289,7 +289,9 @@ if (BUILD_READERS)
         src/oned/ODReader.cpp
         src/oned/ODRowReader.h
         src/oned/ODRowReader.cpp
-    )
+            src/oned/ODNWReader.h
+            src/oned/ODNWReader.cpp
+        )
 endif()
 if (BUILD_WRITERS)
     set (ONED_FILES ${ONED_FILES}

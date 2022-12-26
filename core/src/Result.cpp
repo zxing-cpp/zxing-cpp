@@ -44,6 +44,12 @@ Result::Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat 
 
 bool Result::isValid() const
 {
+	// always return true when try to decode "NW" style
+	if(!error()) {
+		if(format() == BarcodeFormat::NWCode) {
+			return true;
+		}
+	}
 	return format() != BarcodeFormat::None && _content.symbology.code != 0 && !error();
 }
 
