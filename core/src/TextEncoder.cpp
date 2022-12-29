@@ -9,7 +9,7 @@
 #include "ECI.h"
 #include "Utf.h"
 #include "ZXAlgorithms.h"
-#include "zueci.h"
+#include "libzueci/zueci.h"
 
 #include <stdexcept>
 

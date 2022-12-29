@@ -1,11 +1,9 @@
 cmake_minimum_required (VERSION 3.10)
 
 include(../zxing.cmake)
-set(ZUECI_STATIC ON CACHE INTERNAL "")
 if (BUILD_SHARED_LIBS)
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif()
-zxing_add_package(zueci zueci https://git.code.sf.net/p/libzueci/code master)
 
 if (NOT DEFINED BUILD_WRITERS)
     set (BUILD_WRITERS OFF)
@@ -401,6 +399,18 @@ if (BUILD_WRITERS)
     )
 endif()
 
+set (LIBZUECI_FILES
+    src/libzueci/zueci.cpp
+    src/libzueci/zueci.h
+)
+
+if (NOT BUILD_READERS)
+    set_source_files_properties(src/libzueci/zueci.cpp PROPERTIES COMPILE_FLAGS -DZUECI_EMBED_NO_TO_UTF)
+endif()
+if (NOT BUILD_WRITERS)
+    set_source_files_properties(src/libzueci/zueci.cpp PROPERTIES COMPILE_FLAGS -DZUECI_EMBED_NO_TO_ECI)
+endif()
+
 source_group (Sources FILES ${COMMON_FILES})
 source_group (Sources\\aztec FILES ${AZTEC_FILES})
 source_group (Sources\\datamatrix FILES ${DATAMATRIX_FILES})
@@ -408,6 +418,7 @@ source_group (Sources\\maxicode FILES ${MAXICODE_FILES})
 source_group (Sources\\oned FILES ${ONED_FILES})
 source_group (Sources\\pdf417 FILES ${PDF417_FILES})
 source_group (Sources\\qrcode FILES ${QRCODE_FILES})
+source_group (Sources\\libzueci FILES ${LIBZUECI_FILES})
 
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
@@ -421,6 +432,7 @@ add_library (ZXing
     ${ONED_FILES}
     ${PDF417_FILES}
     ${QRCODE_FILES}
+    ${LIBZUECI_FILES}
 )
 
 target_include_directories (ZXing
@@ -444,7 +456,7 @@ endif()
 
 target_compile_features(ZXing PUBLIC cxx_std_17)
 
-target_link_libraries (ZXing PRIVATE Threads::Threads zueci-static)
+target_link_libraries (ZXing PRIVATE Threads::Threads)
 
 add_library(ZXing::ZXing ALIAS ZXing)
 # add the old alias as well, to keep old clients compiling
@@ -481,11 +493,7 @@ endif()
 
 include (GNUInstallDirs)
 
-# TODO: find a working generator expression for this... :-/
 set(ZX_INSTALL_TARGETS ZXing)
-if (NOT BUILD_SHARED_LIBS)
-    set(ZX_INSTALL_TARGETS ZXing;zueci-static)
-endif()
 
 install (
     TARGETS ${ZX_INSTALL_TARGETS} EXPORT ZXingTargets
