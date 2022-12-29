@@ -233,6 +233,7 @@ int main(int argc, char* argv[])
 			};
 
 			printOptional("EC Level:   ", result.ecLevel());
+			printOptional("Version:    ", result.version());
 			printOptional("Error:      ", ToString(result.error()));
 
 			if (result.lineCount())

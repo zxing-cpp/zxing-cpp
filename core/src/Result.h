@@ -149,9 +149,9 @@ public:
 	int lineCount() const { return _lineCount; }
 
 	/**
-	 * @brief versionNumber QR Code or DataMatrix version number.
+	 * @brief version QRCode / DataMatrix / Aztec version or size.
 	 */
-	int versionNumber() const { return _versionNumber; }
+	std::string version() const;
 
 	// only for internal use
 	void incrementLineCount() { ++_lineCount; }
@@ -170,8 +170,8 @@ private:
 	std::string _ecLevel;
 	StructuredAppendInfo _sai;
 	BarcodeFormat _format = BarcodeFormat::None;
+	char _version[4] = {};
 	int _lineCount = 0;
-	int _versionNumber = 0;
 	bool _isMirrored = false;
 	bool _isInverted = false;
 	bool _readerInit = false;

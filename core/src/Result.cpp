@@ -22,8 +22,6 @@ Result::Result(const std::string& text, int y, int xStart, int xStop, BarcodeFor
 	  _error(error),
 	  _position(Line(y, xStart, xStop)),
 	  _format(format),
-	  _lineCount(0),
-	  _versionNumber(0),
 	  _readerInit(readerInit)
 {}
 
@@ -35,10 +33,12 @@ Result::Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat 
 	  _sai(decodeResult.structuredAppend()),
 	  _format(format),
 	  _lineCount(decodeResult.lineCount()),
-	  _versionNumber(decodeResult.versionNumber()),
 	  _isMirrored(decodeResult.isMirrored()),
 	  _readerInit(decodeResult.readerInit())
 {
+	if (decodeResult.versionNumber())
+		snprintf(_version, 4, "%d", decodeResult.versionNumber());
+
 	// TODO: add type opaque and code specific 'extra data'? (see DecoderResult::extra())
 }
 
@@ -106,6 +106,11 @@ int Result::sequenceIndex() const
 std::string Result::sequenceId() const
 {
 	return _sai.id;
+}
+
+std::string Result::version() const
+{
+	return _version;
 }
 
 Result& Result::setDecodeHints(DecodeHints hints)
