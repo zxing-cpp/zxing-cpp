@@ -62,16 +62,6 @@ std::string Result::text(TextMode mode) const
 	return _content.text(mode);
 }
 
-std::string Result::utf8() const
-{
-	return _content.utf8();
-}
-
-std::wstring Result::utfW() const
-{
-	return _content.utfW();
-}
-
 ContentType Result::contentType() const
 {
 	return _content.type();
