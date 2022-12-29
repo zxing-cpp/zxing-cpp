@@ -21,6 +21,7 @@
 namespace ZXing {
 
 class DecoderResult;
+class ImageView;
 
 using Position = QuadrilateralI;
 
@@ -29,6 +30,13 @@ using Position = QuadrilateralI;
  */
 class Result
 {
+	void setIsInverted(bool v) { _isInverted = v; }
+	Result& setDecodeHints(DecodeHints hints);
+
+	friend Result MergeStructuredAppendSequence(const std::vector<Result>& results);
+	friend std::vector<Result> ReadBarcodes(const ImageView&, const DecodeHints&);
+	friend void IncrementLineCount(Result&);
+
 public:
 	Result() = default;
 
@@ -143,14 +151,7 @@ public:
 	 */
 	std::string version() const;
 
-	// only for internal use
-	void incrementLineCount() { ++_lineCount; }
-	void setIsInverted(bool v) { _isInverted = v; }
-	Result& setDecodeHints(DecodeHints hints);
-
 	bool operator==(const Result& o) const;
-
-	friend Result MergeStructuredAppendSequence(const std::vector<Result>& results);
 
 private:
 	Content _content;

@@ -22,6 +22,15 @@
 #include <algorithm>
 #include <utility>
 
+namespace ZXing {
+
+void IncrementLineCount(Result& r)
+{
+	++r._lineCount;
+}
+
+} // namespace ZXing
+
 namespace ZXing::OneD {
 
 Reader::Reader(const DecodeHints& hints) : ZXing::Reader(hints)
@@ -135,7 +144,7 @@ static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, 
 				do {
 					Result result = readers[r]->decodePattern(rowNumber, next, decodingState[r]);
 					if (result.isValid() || (returnErrors && result.error())) {
-						result.incrementLineCount();
+						IncrementLineCount(result);
 						if (upsideDown) {
 							// update position (flip horizontally).
 							auto points = result.position();
@@ -168,7 +177,7 @@ static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, 
 									points[3] = result.position()[3];
 								}
 								other.setPosition(points);
-								other.incrementLineCount();
+								IncrementLineCount(other);
 								// clear the result, so we don't insert it again below
 								result = Result();
 								break;
