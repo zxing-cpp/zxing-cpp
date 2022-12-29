@@ -31,7 +31,7 @@
 #endif
 
 #ifdef __cplusplus
-// extern "C" {
+extern "C" {
 #endif
 
 /*
@@ -172,7 +172,7 @@ ZUECI_EXTERN int zueci_dest_len_utf8(const int eci, const unsigned char src[], c
 #endif /* ZUECI_EMBED_NO_TO_UTF8 */
 
 #ifdef __cplusplus
-// }
+}
 #endif
 
 /* vim: set ts=4 sw=4 et : */

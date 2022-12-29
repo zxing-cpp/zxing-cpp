@@ -400,15 +400,15 @@ if (BUILD_WRITERS)
 endif()
 
 set (LIBZUECI_FILES
-    src/libzueci/zueci.cpp
+    src/libzueci/zueci.c
     src/libzueci/zueci.h
 )
 
 if (NOT BUILD_READERS)
-    set_source_files_properties(src/libzueci/zueci.cpp PROPERTIES COMPILE_FLAGS -DZUECI_EMBED_NO_TO_UTF)
+    set_source_files_properties(src/libzueci/zueci.c PROPERTIES COMPILE_FLAGS -DZUECI_EMBED_NO_TO_UTF)
 endif()
 if (NOT BUILD_WRITERS)
-    set_source_files_properties(src/libzueci/zueci.cpp PROPERTIES COMPILE_FLAGS -DZUECI_EMBED_NO_TO_ECI)
+    set_source_files_properties(src/libzueci/zueci.c PROPERTIES COMPILE_FLAGS -DZUECI_EMBED_NO_TO_ECI)
 endif()
 
 source_group (Sources FILES ${COMMON_FILES})
