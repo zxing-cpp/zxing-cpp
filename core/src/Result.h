@@ -62,8 +62,12 @@ public:
 	/**
 	 * @brief text returns the bytes() content rendered to unicode/utf8 text accoring to the TextMode set in the DecodingHints
 	 */
-	std::string text() const { return text(_decodeHints.textMode()); }
-	std::string ecLevel() const { return _ecLevel; }
+	std::string text() const;
+
+	/**
+	 * @brief ecLevel returns the error correction level of the symbol (empty string if not applicable)
+	 */
+	std::string ecLevel() const;
 
 	/**
 	 * @brief contentType gives a hint to the type of content found (Text/Binary/GS1/etc.)
@@ -153,9 +157,9 @@ private:
 	Error _error;
 	Position _position;
 	DecodeHints _decodeHints;
-	std::string _ecLevel;
 	StructuredAppendInfo _sai;
 	BarcodeFormat _format = BarcodeFormat::None;
+	char _ecLevel[4] = {};
 	char _version[4] = {};
 	int _lineCount = 0;
 	bool _isMirrored = false;

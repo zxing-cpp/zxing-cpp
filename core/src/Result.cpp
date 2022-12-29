@@ -29,7 +29,6 @@ Result::Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat 
 	: _content(std::move(decodeResult).content()),
 	  _error(std::move(decodeResult).error()),
 	  _position(std::move(position)),
-	  _ecLevel(decodeResult.ecLevel()),
 	  _sai(decodeResult.structuredAppend()),
 	  _format(format),
 	  _lineCount(decodeResult.lineCount()),
@@ -38,6 +37,7 @@ Result::Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat 
 {
 	if (decodeResult.versionNumber())
 		snprintf(_version, 4, "%d", decodeResult.versionNumber());
+	snprintf(_ecLevel, 4, "%s", decodeResult.ecLevel().data());
 
 	// TODO: add type opaque and code specific 'extra data'? (see DecoderResult::extra())
 }
@@ -60,6 +60,16 @@ ByteArray Result::bytesECI() const
 std::string Result::text(TextMode mode) const
 {
 	return _content.text(mode);
+}
+
+std::string Result::text() const
+{
+	return text(_decodeHints.textMode());
+}
+
+std::string Result::ecLevel() const
+{
+	return _ecLevel;
 }
 
 ContentType Result::contentType() const
