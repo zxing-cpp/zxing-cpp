@@ -15,6 +15,7 @@ namespace std {
 	struct default_sentinel_t {};
 }
 #else
+#include <concepts>
 #include <coroutine>
 #endif
 
