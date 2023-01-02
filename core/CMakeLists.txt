@@ -1,4 +1,6 @@
-cmake_minimum_required (VERSION 3.10)
+cmake_minimum_required (VERSION 3.14)
+
+project (ZXing VERSION "1.4.0")
 
 include(../zxing.cmake)
 if (BUILD_SHARED_LIBS)
@@ -521,3 +523,36 @@ if(MSVC)
             CONFIGURATIONS Debug RelWithDebInfo 
             OPTIONAL)
 endif()
+
+set (CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/ZXing")
+
+install (
+    EXPORT ZXingTargets
+    DESTINATION ${CMAKECONFIG_INSTALL_DIR} NAMESPACE ZXing::
+)
+
+IF (NOT WIN32 OR MINGW)
+    configure_file(zxing.pc.in zxing.pc @ONLY)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/zxing.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+ENDIF()
+
+include (CMakePackageConfigHelpers)
+
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/ZXingConfigVersion.cmake"
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY SameMajorVersion
+)
+
+configure_package_config_file (
+    ZXingConfig.cmake.in
+    ZXingConfig.cmake
+    INSTALL_DESTINATION ${CMAKECONFIG_INSTALL_DIR}
+)
+
+install (
+    FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/ZXingConfig.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/ZXingConfigVersion.cmake"
+    DESTINATION ${CMAKECONFIG_INSTALL_DIR}
+)

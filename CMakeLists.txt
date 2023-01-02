@@ -1,7 +1,5 @@
 cmake_minimum_required (VERSION 3.14)
 
-project (ZXing VERSION "1.4.0")
-
 option (BUILD_WRITERS "Build with writer support (encoders)" ON)
 option (BUILD_READERS "Build with reader support (decoders)" ON)
 option (BUILD_EXAMPLES "Build the example barcode reader/writer applications" ON)
@@ -79,42 +77,3 @@ endif()
 if (BUILD_PYTHON_MODULE)
     add_subdirectory (wrappers/python)
 endif()
-
-set (CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/ZXing")
-
-install (
-    EXPORT ZXingTargets
-    DESTINATION ${CMAKECONFIG_INSTALL_DIR} NAMESPACE ZXing::
-)
-
-# PC file generation.
-if (NOT DEFINED INSTALLDIR)
-    set (INSTALLDIR ${CMAKE_INSTALL_PREFIX})
-    get_filename_component(INSTALLDIR ${INSTALLDIR} ABSOLUTE)
-endif()
-
-IF (NOT WIN32 OR MINGW)
-    configure_file(zxing.pc.in zxing.pc @ONLY)
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/zxing.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
-ENDIF()
-
-include (CMakePackageConfigHelpers)
-
-write_basic_package_version_file(
-    "${CMAKE_CURRENT_BINARY_DIR}/ZXingConfigVersion.cmake"
-    VERSION ${PROJECT_VERSION}
-    COMPATIBILITY SameMajorVersion
-)
-
-configure_package_config_file (
-    core/ZXingConfig.cmake.in
-    ZXingConfig.cmake
-    INSTALL_DESTINATION ${CMAKECONFIG_INSTALL_DIR}
-)
-
-install (
-    FILES
-        "${CMAKE_CURRENT_BINARY_DIR}/ZXingConfig.cmake"
-        "${CMAKE_CURRENT_BINARY_DIR}/ZXingConfigVersion.cmake"
-    DESTINATION ${CMAKECONFIG_INSTALL_DIR}
-)
