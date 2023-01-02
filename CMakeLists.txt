@@ -94,6 +94,7 @@ if (NOT DEFINED INSTALLDIR)
 endif()
 
 IF (NOT WIN32 OR MINGW)
+    include(GNUInstallDirs)
     configure_file(zxing.pc.in zxing.pc @ONLY)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/zxing.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 ENDIF()
