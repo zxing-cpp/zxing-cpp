@@ -1,6 +1,7 @@
 cmake_minimum_required (VERSION 3.14)
 
-project (ZXing VERSION "1.4.0")
+project (ZXing VERSION "2.0.0")
+set (ZXING_SONAME 3) # see https://github.com/zxing-cpp/zxing-cpp/issues/333
 
 include(../zxing.cmake)
 if (BUILD_SHARED_LIBS)
@@ -471,7 +472,7 @@ set_target_properties(ZXing PROPERTIES EXPORT_NAME ZXing)
 set_target_properties(ZXing PROPERTIES POSITION_INDEPENDENT_CODE ON)
 if (PROJECT_VERSION)
     set_target_properties(ZXing PROPERTIES VERSION ${PROJECT_VERSION})
-    set_target_properties(ZXing PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
+    set_target_properties(ZXing PROPERTIES SOVERSION ${ZXING_SONAME})
 endif()
 
 set_target_properties(ZXing PROPERTIES PUBLIC_HEADER "${PUBLIC_HEADERS}")

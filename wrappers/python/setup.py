@@ -59,7 +59,7 @@ setup(
     #     "local_scheme": "no-local-version",
     #     "tag_regex": "v?([0-9]+.[0-9]+.[0-9]+)",
     # },
-    version='1.4.0',
+    version='2.0.0',
     description='Python bindings for the zxing-cpp barcode library',
     long_description=long_description,
     long_description_content_type="text/markdown",
