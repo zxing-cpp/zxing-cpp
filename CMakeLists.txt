@@ -1,5 +1,7 @@
 cmake_minimum_required (VERSION 3.14)
 
+project(ZXing)
+
 option (BUILD_WRITERS "Build with writer support (encoders)" ON)
 option (BUILD_READERS "Build with reader support (decoders)" ON)
 option (BUILD_EXAMPLES "Build the example barcode reader/writer applications" ON)
