@@ -48,6 +48,9 @@ TEST(QRWriterTest, OverSize)
 	matrix = writer.encode(L"http://www.google.com/", strangeWidth, strangeHeight);
 	EXPECT_EQ(matrix.width(), strangeWidth);
 	EXPECT_EQ(matrix.height(), strangeHeight);
+
+	int overflowSize = 0x1000000;
+	EXPECT_THROW(writer.encode(L"http://www.google.com/", overflowSize, overflowSize), std::invalid_argument);
 }
 
 TEST(QRWriterTest, RegressionTest)
