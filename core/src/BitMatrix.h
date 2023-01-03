@@ -57,6 +57,9 @@ class BitMatrix
 public:
 	BitMatrix() = default;
 
+#ifdef __GNUC__
+	__attribute__((no_sanitize("signed-integer-overflow")))
+#endif
 	BitMatrix(int width, int height) : _width(width), _height(height), _bits(width * height, UNSET_V)
 	{
 		if (width != 0 && Size(_bits) / width != height)
