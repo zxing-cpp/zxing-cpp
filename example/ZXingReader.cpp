@@ -9,7 +9,6 @@
 
 #include <cctype>
 #include <chrono>
-#include <clocale>
 #include <cstring>
 #include <iostream>
 #include <memory>

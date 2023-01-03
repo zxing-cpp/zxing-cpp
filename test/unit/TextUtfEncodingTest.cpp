@@ -6,7 +6,6 @@
 #include "Utf.h"
 
 #include "gtest/gtest.h"
-#include <clocale>
 #include <vector>
 
 using namespace ZXing;
