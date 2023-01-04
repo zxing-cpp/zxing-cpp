@@ -34,6 +34,12 @@ public:
 	static constexpr auto Checksum = Type::Checksum;
 	static constexpr auto Unsupported = Type::Unsupported;
 
+	inline bool operator==(const Error& o) const noexcept
+	{
+		return _type == o._type && _msg == o._msg && _file == o._file && _line == o._line;
+	}
+	inline bool operator!=(const Error& o) const noexcept { return !(*this == o); }
+
 protected:
 	std::string _msg;
 	const char* _file = nullptr;

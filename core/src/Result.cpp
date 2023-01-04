@@ -123,8 +123,7 @@ Result& Result::setDecodeHints(DecodeHints hints)
 
 bool Result::operator==(const Result& o) const
 {
-	// two symbols may not be considered the same if at least one of them has an error
-	if (!(format() == o.format() && (bytes() == o.bytes() || error() || o.error())))
+	if (format() != o.format() || bytes() != o.bytes() || error() != o.error())
 		return false;
 
 	if (BarcodeFormats(BarcodeFormat::MatrixCodes).testFlag(format()))
