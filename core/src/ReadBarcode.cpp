@@ -144,12 +144,23 @@ Results ReadBarcodes(const ImageView& _iv, const DecodeHints& hints)
 			for (auto& r : rs) {
 				if (iv.width() != _iv.width())
 					r.setPosition(Scale(r.position(), _iv.width() / iv.width()));
-				if (!Contains(results, r)) {
-					r.setDecodeHints(hints);
-					r.setIsInverted(bitmap->inverted());
-					results.push_back(std::move(r)); // TODO: keep the one with no error instead of the first found
+				auto iter = Find(results, r);
+				if(iter == results.end()){
+					// This is a new barcode.
 					--maxSymbols;
 				}
+				else if(!iter->isValid() && r.isValid()){
+					// The existing result is not valid but the current one is. Replace the existing result.
+					results.erase(iter);
+				}
+				else{
+					continue;
+				}
+
+				// Add the current result into `results`.
+				r.setDecodeHints(hints);
+				r.setIsInverted(bitmap->inverted());
+				results.push_back(std::move(r));				
 			}
 			if (maxSymbols <= 0)
 				return results;
