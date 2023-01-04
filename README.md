@@ -26,7 +26,7 @@ It was originally ported from the Java [ZXing Library](https://github.com/zxing/
 | UPC-E          | Code 93           | Micro QR Code      |
 | EAN-8          | Code 128          | Aztec              |
 | EAN-13         | Codabar           | DataMatrix         |
-| DataBar        | DataBar Exanded   | PDF417             |
+| DataBar        | DataBar Expanded  | PDF417             |
 |                | ITF               | MaxiCode (partial) |
 
 [Note: DataBar used to be called RSS. DataBar, MaxiCode and Micro QR Code are not supported for writing.]
