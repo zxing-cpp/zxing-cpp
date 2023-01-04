@@ -135,7 +135,7 @@ static std::vector<ConcentricPattern> FindFinderPatterns(const BitMatrix& image,
 {
 	std::vector<ConcentricPattern> res;
 
-	int N = 0;
+	[[maybe_unused]] int N = 0;
 
 #if 0 // reference algorithm for finding aztec center candidates
 	constexpr auto PATTERN = FixedPattern<7, 7>{1, 1, 1, 1, 1, 1, 1};
