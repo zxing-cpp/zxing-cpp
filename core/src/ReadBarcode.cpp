@@ -76,7 +76,8 @@ public:
 
 		layers.push_back(iv);
 		// TODO: if only matrix codes were considered, then using std::min would be sufficient (see #425)
-		while (threshold > 0 && std::max(layers.back().width(), layers.back().height()) > threshold)
+		while (threshold > 0 && std::max(layers.back().width(), layers.back().height()) > threshold &&
+			   std::min(layers.back().width(), layers.back().height()) >= N)
 			addLayer();
 #if 0
 		// Reversing the layers means we'd start with the smallest. that can make sense if we are only looking for a
