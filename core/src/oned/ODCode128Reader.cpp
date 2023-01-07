@@ -34,7 +34,6 @@ static const int CODE_FNC_2 = 97;
 static const int CODE_FNC_3 = 96;
 
 static const int CODE_START_A = 103;
-static const int CODE_START_B = 104;
 static const int CODE_START_C = 105;
 static const int CODE_STOP = 106;
 
@@ -157,68 +156,36 @@ public:
 	bool readerInit() const { return _readerInit; }
 };
 
-template <typename C>
-static int DetectStartCode(const C& c)
-{
-	int bestCode = 0;
-	float bestVariance = MAX_AVG_VARIANCE;
-	for (int code : {CODE_START_A, CODE_START_B, CODE_START_C}) {
-		float variance = RowReader::PatternMatchVariance(c, Code128::CODE_PATTERNS[code], MAX_INDIVIDUAL_VARIANCE);
-		if (variance < bestVariance) {
-			bestVariance = variance;
-			bestCode = code;
-		}
-	}
-	return bestVariance < MAX_AVG_VARIANCE ? bestCode : 0;
-}
-
 // all 3 start patterns share the same 2-1-1 prefix
 constexpr auto START_PATTERN_PREFIX = FixedPattern<3, 4>{2, 1, 1};
 constexpr int CHAR_LEN = 6;
 constexpr float QUIET_ZONE = 5;	// quiet zone spec is 10 modules, real world examples ignore that, see #138
-
-//#define USE_FAST_1_TO_4_BIT_PATTERN_DECODING
-#ifdef USE_FAST_1_TO_4_BIT_PATTERN_DECODING
 constexpr int CHAR_SUM = 11;
-constexpr int CHARACTER_ENCODINGS[] = {
-	0b11011001100, 0b11001101100, 0b11001100110, 0b10010011000, 0b10010001100, // 0
-	0b10001001100, 0b10011001000, 0b10011000100, 0b10001100100, 0b11001001000, // 5
-	0b11001000100, 0b11000100100, 0b10110011100, 0b10011011100, 0b10011001110, // 10
-	0b10111001100, 0b10011101100, 0b10011100110, 0b11001110010, 0b11001011100, // 15
-	0b11001001110, 0b11011100100, 0b11001110100, 0b11101101110, 0b11101001100, // 20
-	0b11100101100, 0b11100100110, 0b11101100100, 0b11100110100, 0b11100110010, // 25
-	0b11011011000, 0b11011000110, 0b11000110110, 0b10100011000, 0b10001011000, // 30
-	0b10001000110, 0b10110001000, 0b10001101000, 0b10001100010, 0b11010001000, // 35
-	0b11000101000, 0b11000100010, 0b10110111000, 0b10110001110, 0b10001101110, // 40
-	0b10111011000, 0b10111000110, 0b10001110110, 0b11101110110, 0b11010001110, // 45
-	0b11000101110, 0b11011101000, 0b11011100010, 0b11011101110, 0b11101011000, // 50
-	0b11101000110, 0b11100010110, 0b11101101000, 0b11101100010, 0b11100011010, // 55
-	0b11101111010, 0b11001000010, 0b11110001010, 0b10100110000, 0b10100001100, // 60
-	0b10010110000, 0b10010000110, 0b10000101100, 0b10000100110, 0b10110010000, // 65
-	0b10110000100, 0b10011010000, 0b10011000010, 0b10000110100, 0b10000110010, // 70
-	0b11000010010, 0b11001010000, 0b11110111010, 0b11000010100, 0b10001111010, // 75
-	0b10100111100, 0b10010111100, 0b10010011110, 0b10111100100, 0b10011110100, // 80
-	0b10011110010, 0b11110100100, 0b11110010100, 0b11110010010, 0b11011011110, // 85
-	0b11011110110, 0b11110110110, 0b10101111000, 0b10100011110, 0b10001011110, // 90
-	0b10111101000, 0b10111100010, 0b11110101000, 0b11110100010, 0b10111011110, // 95
-	0b10111101110, 0b11101011110, 0b11110101110, 0b11010000100, 0b11010010000, // 100
-	0b11010011100, 0b11000111010,                                              // 105
-};
-#endif
+
+//TODO: make this a constexpr variable initialization
+static auto E2E_PATTERNS = [] {
+	// This creates an array of ints for fast IndexOf lookup of the edge-2-edge patterns (ISO/IEC 15417:2007(E) Table 2)
+	// e.g. a code pattern of { 2, 1, 2, 2, 2, 2 } becomes the e2e pattern { 3, 3, 4, 4 } and the value 0b11100011110000.
+	std::array<int, 107> res;
+	for (int i = 0; i < Size(res); ++i) {
+		const auto& a = Code128::CODE_PATTERNS[i];
+		std::array<int, 4> e2e;
+		for (int j = 0; j < 4; j++)
+			e2e[j] = a[j] + a[j + 1];
+		res[i] = ToInt(e2e);
+	}
+	return res;
+}();
 
 Result Code128Reader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<DecodingState>&) const
 {
 	int minCharCount = 4; // start + payload + checksum + stop
-	auto decodePattern = [](const PatternView& view, bool start = false) {
-	// TODO: the intention was to always use the way faster OneToFourBitPattern approach but it turned out
-	// the old DecodeDigit currently detects more test samples. There could be gained another 20% in
-	// in performance. This might work once the subpixel binarizer is in place.
-#ifdef USE_FAST_1_TO_4_BIT_PATTERN_DECODING
-		return IndexOf(CHARACTER_ENCODINGS, OneToFourBitPattern<CHAR_LEN, CHAR_SUM>(view));
-#else
-		return start ? DetectStartCode(view)
-					 : DecodeDigit(view, Code128::CODE_PATTERNS, MAX_AVG_VARIANCE, MAX_INDIVIDUAL_VARIANCE);
-#endif
+	auto decodePattern = [](const PatternView& view) {
+		// This is basically the reference algorithm from the specification
+		int code = IndexOf(E2E_PATTERNS, ToInt(NormalizedE2EPattern<CHAR_LEN, CHAR_SUM>(view)));
+		if (code == -1) // if the reference algo fails, give the original upstream version a try (required to decode a few samples)
+			code = DecodeDigit(view, Code128::CODE_PATTERNS, MAX_AVG_VARIANCE, MAX_INDIVIDUAL_VARIANCE);
+		return code;
 	};
 
 	next = FindLeftGuard(next, minCharCount * CHAR_LEN, START_PATTERN_PREFIX, QUIET_ZONE);
@@ -226,7 +193,7 @@ Result Code128Reader::decodePattern(int rowNumber, PatternView& next, std::uniqu
 		return {};
 
 	next = next.subView(0, CHAR_LEN);
-	int startCode = decodePattern(next, true);
+	int startCode = decodePattern(next);
 	if (!(CODE_START_A <= startCode && startCode <= CODE_START_C))
 		return {};
 

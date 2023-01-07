@@ -246,6 +246,20 @@ PatternView FindLeftGuard(const PatternView& view, int minSize, const FixedPatte
 }
 
 template <int LEN, int SUM>
+std::array<int, LEN - 2> NormalizedE2EPattern(const PatternView& view)
+{
+	float moduleSize = static_cast<float>(view.sum(LEN)) / SUM;
+	std::array<int, LEN - 2> e2e;
+
+	for (int i = 0; i < LEN - 2; i++) {
+		float v = (view[i] + view[i + 1]) / moduleSize;
+		e2e[i] = int(v + .5f);
+	}
+
+	return e2e;
+}
+
+template <int LEN, int SUM>
 std::array<int, LEN> NormalizedPattern(const PatternView& view)
 {
 	float moduleSize = static_cast<float>(view.sum(LEN)) / SUM;
