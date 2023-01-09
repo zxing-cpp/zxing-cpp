@@ -33,7 +33,7 @@ public:
 
 	int totalCodewords() const { return _totalCodewords; }
 
-	int dimensionForVersion() const { return DimensionOfVersion(_versionNumber, _isMicro); }
+	int dimension() const { return DimensionOfVersion(_versionNumber, _isMicro); }
 
 	const ECBlocks& ecBlocksForLevel(ErrorCorrectionLevel ecLevel) const { return _ecBlocks[(int)ecLevel]; }
 
@@ -54,11 +54,12 @@ public:
 	* @param dimension dimension in modules
 	* @return Version for a QR Code of that dimension
 	*/
-	static const Version* ProvisionalVersionForDimension(int dimension, bool isMicro = false);
+	static const Version* FromDimension(int dimension);
 	
-	static const Version* VersionForNumber(int versionNumber, bool isMicro = false);
+	static const Version* FromNumber(int versionNumber, bool isMicro = false);
 
 	static const Version* DecodeVersionInformation(int versionBits);
+
 private:
 	int _versionNumber;
 	std::vector<int> _alignmentPatternCenters;
