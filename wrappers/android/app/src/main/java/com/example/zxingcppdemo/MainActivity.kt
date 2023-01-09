@@ -17,14 +17,19 @@
 package com.example.zxingcppdemo
 
 import android.Manifest
+import android.content.ContentValues
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.*
 import android.hardware.camera2.CaptureRequest
 import android.media.AudioManager
 import android.media.ToneGenerator
+import android.os.Build
 import android.os.Bundle
+import android.provider.MediaStore
+import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.camera2.interop.Camera2CameraControl
 import androidx.camera.camera2.interop.CaptureRequestOptions
@@ -32,7 +37,7 @@ import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.toPoint
+//import androidx.core.graphics.toPoint
 import androidx.core.graphics.toPointF
 import androidx.lifecycle.LifecycleOwner
 import com.example.zxingcppdemo.databinding.ActivityCameraBinding
@@ -40,15 +45,21 @@ import com.google.zxing.*
 import com.google.zxing.common.HybridBinarizer
 import com.zxingcpp.BarcodeReader
 import com.zxingcpp.BarcodeReader.Format
+import java.text.SimpleDateFormat
+import java.util.*
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import kotlin.random.Random
+//import kotlin.random.Random
 
 
 class MainActivity : AppCompatActivity() {
 	private lateinit var binding: ActivityCameraBinding
-	private val executor = Executors.newSingleThreadExecutor()
-	private val permissions = listOf(Manifest.permission.CAMERA)
-	private val permissionsRequestCode = Random.nextInt(0, 10000)
+	private var imageCapture: ImageCapture? = null
+	private lateinit var cameraExecutor: ExecutorService
+
+	//private val executor = Executors.newSingleThreadExecutor()
+	//private val permissions = listOf(Manifest.permission.CAMERA)
+	//private val permissionsRequestCode = Random.nextInt(0, 10000)
 
 	private val beeper = ToneGenerator(AudioManager.STREAM_NOTIFICATION, 50)
 	private var lastText = String()
@@ -58,16 +69,63 @@ class MainActivity : AppCompatActivity() {
 		binding = ActivityCameraBinding.inflate(layoutInflater)
 		setContentView(binding.root)
 
+		// Request camera permissions
+		if (allPermissionsGranted()) {
+			bindCameraUseCases()
+		} else {
+			ActivityCompat.requestPermissions(
+				this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS
+			)
+		}
+
 		binding.capture.setOnClickListener {
 			// Disable all camera controls
 			it.isEnabled = false
 
 			//TODO: save image
+			takePhoto()
 
 			// Re-enable camera controls
 			it.isEnabled = true
 		}
+		cameraExecutor = Executors.newSingleThreadExecutor()
 	}
+
+	private fun takePhoto() {
+		val imageCapture = imageCapture ?: return
+
+		val name = SimpleDateFormat(FILENAME_FORMAT, Locale.ROOT).format(System.currentTimeMillis())
+		val contentValues = ContentValues().apply {
+			put(MediaStore.MediaColumns.DISPLAY_NAME, name)
+			put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+			if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+				put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/CameraX-Image")
+			}
+		}
+
+		// Create output options object which contains file + metadata
+		val outputOptions = ImageCapture.OutputFileOptions.Builder(
+			contentResolver, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues
+		).build()
+
+		// Set up image capture listener, which is triggered after photo has
+		// been taken
+		imageCapture.takePicture(
+			outputOptions,
+			ContextCompat.getMainExecutor(this),
+			object : ImageCapture.OnImageSavedCallback {
+				override fun onError(exc: ImageCaptureException) {
+					Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
+				}
+
+				override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+					val msg = "Photo captured: ${output.savedUri}"
+					Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
+					Log.d(TAG, msg)
+				}
+			})
+	}
+
 
 	private fun bindCameraUseCases() = binding.viewFinder.post {
 
@@ -89,6 +147,8 @@ class MainActivity : AppCompatActivity() {
 				.setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
 				.build()
 
+			imageCapture = ImageCapture.Builder().setTargetAspectRatio(AspectRatio.RATIO_16_9).build()
+
 			var frameCounter = 0
 			var lastFpsTimestamp = System.currentTimeMillis()
 			var runtimes: Long = 0
@@ -96,7 +156,7 @@ class MainActivity : AppCompatActivity() {
 			val readerJava = MultiFormatReader()
 			val readerCpp = BarcodeReader()
 
-			imageAnalysis.setAnalyzer(executor, ImageAnalysis.Analyzer { image ->
+			imageAnalysis.setAnalyzer(cameraExecutor, ImageAnalysis.Analyzer { image ->
 				// Early exit: image analysis is in paused state
 				if (binding.pause.isChecked) {
 					image.close()
@@ -202,7 +262,7 @@ class MainActivity : AppCompatActivity() {
 			// Apply declared configs to CameraX using the same lifecycle owner
 			cameraProvider.unbindAll()
 			val camera = cameraProvider.bindToLifecycle(
-				this as LifecycleOwner, cameraSelector, preview, imageAnalysis
+				this as LifecycleOwner, cameraSelector, preview, imageAnalysis, imageCapture
 			)
 
 			// Reduce exposure time to decrease effect of motion blur
@@ -216,6 +276,12 @@ class MainActivity : AppCompatActivity() {
 			preview.setSurfaceProvider(binding.viewFinder.surfaceProvider)
 
 		}, ContextCompat.getMainExecutor(this))
+	}
+
+	private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
+		ContextCompat.checkSelfPermission(
+			baseContext, it
+		) == PackageManager.PERMISSION_GRANTED
 	}
 
 	private fun showResult(resultText: String, fpsText: String?, points: List<PointF>?, image: ImageProxy) =
@@ -240,7 +306,7 @@ class MainActivity : AppCompatActivity() {
 
 		// Request permissions each time the app resumes, since they can be revoked at any time
 		if (!hasPermissions(this)) {
-			ActivityCompat.requestPermissions(this, permissions.toTypedArray(), permissionsRequestCode)
+			ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
 		} else {
 			bindCameraUseCases()
 		}
@@ -252,14 +318,32 @@ class MainActivity : AppCompatActivity() {
 		grantResults: IntArray,
 	) {
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-		if (requestCode == permissionsRequestCode && hasPermissions(this)) {
+		if (requestCode == REQUEST_CODE_PERMISSIONS) {
+			if (allPermissionsGranted()) {
 			bindCameraUseCases()
 		} else {
-			finish() // If we don't have the required permissions, we can't run
+				Toast.makeText(
+					this, "Permissions not granted by the user.", Toast.LENGTH_SHORT
+				).show()
+				finish()
+			}
 		}
 	}
 
-	private fun hasPermissions(context: Context) = permissions.all {
+	private fun hasPermissions(context: Context) = REQUIRED_PERMISSIONS.all {
 		ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+	}
+
+	companion object {
+		private const val TAG = "ZXing-cpp Android Demo"
+		private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
+		private const val REQUEST_CODE_PERMISSIONS = 10
+		private val REQUIRED_PERMISSIONS = mutableListOf(
+			Manifest.permission.CAMERA
+		).apply {
+			if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
+				add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+			}
+		}.toTypedArray()
 	}
 }
