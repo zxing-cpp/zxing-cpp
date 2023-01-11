@@ -17,6 +17,7 @@
 package com.example.zxingcppdemo
 
 import android.Manifest
+import android.content.ContentValues
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.*
@@ -24,6 +25,7 @@ import android.hardware.camera2.CaptureRequest
 import android.media.AudioManager
 import android.media.ToneGenerator
 import android.os.Bundle
+import android.provider.MediaStore
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.camera2.interop.Camera2CameraControl
@@ -46,6 +48,7 @@ import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
 	private lateinit var binding: ActivityCameraBinding
+	private var imageCapture: ImageCapture? = null
 	private val executor = Executors.newSingleThreadExecutor()
 	private val permissions = listOf(Manifest.permission.CAMERA)
 	private val permissionsRequestCode = Random.nextInt(0, 10000)
@@ -61,12 +64,35 @@ class MainActivity : AppCompatActivity() {
 		binding.capture.setOnClickListener {
 			// Disable all camera controls
 			it.isEnabled = false
-
-			//TODO: save image
-
+			takePhoto()
 			// Re-enable camera controls
 			it.isEnabled = true
 		}
+	}
+
+	private fun takePhoto() {
+		val imageCapture = imageCapture ?: return
+
+		val contentValues = ContentValues().apply {
+			put(MediaStore.MediaColumns.DISPLAY_NAME, System.currentTimeMillis())
+			put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+		}
+
+		val outputOptions = ImageCapture.OutputFileOptions.Builder(
+			contentResolver, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues
+		).build()
+
+		imageCapture.takePicture(
+			outputOptions,
+			ContextCompat.getMainExecutor(this),
+			object : ImageCapture.OnImageSavedCallback {
+				override fun onError(exc: ImageCaptureException) {
+					beeper.startTone(ToneGenerator.TONE_CDMA_SOFT_ERROR_LITE)
+				}
+				override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+					beeper.startTone(ToneGenerator.TONE_CDMA_CONFIRM)
+				}
+			})
 	}
 
 	private fun bindCameraUseCases() = binding.viewFinder.post {
@@ -88,6 +114,8 @@ class MainActivity : AppCompatActivity() {
 //				.setTargetResolution(size)
 				.setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
 				.build()
+
+			imageCapture = ImageCapture.Builder().setTargetAspectRatio(AspectRatio.RATIO_16_9).build()
 
 			var frameCounter = 0
 			var lastFpsTimestamp = System.currentTimeMillis()
@@ -202,7 +230,7 @@ class MainActivity : AppCompatActivity() {
 			// Apply declared configs to CameraX using the same lifecycle owner
 			cameraProvider.unbindAll()
 			val camera = cameraProvider.bindToLifecycle(
-				this as LifecycleOwner, cameraSelector, preview, imageAnalysis
+				this as LifecycleOwner, cameraSelector, preview, imageAnalysis, imageCapture
 			)
 
 			// Reduce exposure time to decrease effect of motion blur
