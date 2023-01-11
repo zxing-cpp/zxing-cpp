@@ -9,6 +9,7 @@
 #include "Point.h"
 #include "ZXAlgorithms.h"
 
+#include <stdexcept>
 #include <algorithm>
 #include <cassert>
 #include <vector>
