@@ -25,8 +25,8 @@ class CMakeBuild(build_ext):
         build_args = ['--config', cfg,
                       '-j', '8']
 
-        if platform.system() == "Windows":
-            cmake_args += ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{}={}'.format(cfg.upper(), extdir)]
+        if platform.system() == 'Windows':
+            cmake_args += [f'-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{cfg.upper()}={extdir}']
             if sys.maxsize > 2**32:
                 cmake_args += ['-A', 'x64']
             else:
@@ -42,17 +42,19 @@ class CMakeBuild(build_ext):
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
 
 
-with open("README.md", "r", encoding="utf-8") as fh:
+with open('README.md', encoding='utf-8') as fh:
     long_description = fh.read()
 
 
 setup(
     name='zxing-cpp',
-    # setuptools_scm cannot be used because of the structure of the project until the following issues are solved:
+    # setuptools_scm cannot be used because of the structure of the project
+    # until the following issues are solved:
     # https://github.com/pypa/setuptools_scm/issues/357
     # https://github.com/pypa/pip/issues/7549
-    # Because pip works on a copy of current directory in a temporary directory, the temporary directory does not hold
-    # the .git directory of the repo, so that setuptools_scm cannot guess the current version.
+    # Because pip works on a copy of current directory in a temporary
+    # directory, the temporary directory does not hold the .git directory of
+    # the repo, so that setuptools_scm cannot guess the current version.
     # use_scm_version={
     #     "root": "../..",
     #     "version_scheme": "guess-next-dev",
@@ -62,21 +64,22 @@ setup(
     version='2.0.0',
     description='Python bindings for the zxing-cpp barcode library',
     long_description=long_description,
-    long_description_content_type="text/markdown",
+    long_description_content_type='text/markdown',
     author='ZXing-C++ Community',
     author_email='zxingcpp@gmail.com',
     url='https://github.com/zxing-cpp/zxing-cpp',
     license='Apache License 2.0',
     keywords=['barcode'],
     classifiers=[
-        "Development Status :: 4 - Beta",
-        "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: Apache Software License",
-        "Operating System :: OS Independent",
-        "Topic :: Multimedia :: Graphics",
+        'Development Status :: 4 - Beta',
+        'Programming Language :: Python :: 3',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: Apache Software License',
+        'Operating System :: OS Independent',
+        'Topic :: Multimedia :: Graphics',
     ],
-    python_requires=">=3.6",
-    install_requires=["numpy"],
+    python_requires='>=3.6',
+    install_requires=['numpy'],
     ext_modules=[CMakeExtension('zxingcpp')],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
