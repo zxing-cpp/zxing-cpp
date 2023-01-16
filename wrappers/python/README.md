@@ -14,7 +14,7 @@ or
 python setup.py install
 ```
 
-Note: To install via `setup.py`, you need a suitable [build environment](https://github.com/zxing-cpp/zxing-cpp#build-instructions) including a c++ compiler.
+[Note: To install via `setup.py` (or via `pip install` in case there is no pre-build wheel available for your python version), you need a suitable [build environment](https://github.com/zxing-cpp/zxing-cpp#build-instructions) including a c++ compiler and git.]
 
 ## Usage
 
