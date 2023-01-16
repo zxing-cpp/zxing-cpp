@@ -7,6 +7,7 @@
 #include "qrcode/QRCodecMode.h"
 #include "qrcode/QRVersion.h"
 
+#include <stdexcept>
 #include "gtest/gtest.h"
 
 using namespace ZXing;

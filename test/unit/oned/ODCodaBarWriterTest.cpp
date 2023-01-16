@@ -5,7 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "oned/ODCodabarWriter.h"
-#include "BitArray.h"
 #include "BitMatrixIO.h"
 #include "DecodeHints.h"
 #include "Result.h"

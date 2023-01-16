@@ -9,6 +9,7 @@
 #include "qrcode/QRErrorCorrectionLevel.h"
 
 #include "gtest/gtest.h"
+#include <stdexcept>
 
 using namespace ZXing;
 using namespace ZXing::QRCode;

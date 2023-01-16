@@ -8,7 +8,6 @@
 #include "GenericGFPoly.h"
 
 #include "GenericGF.h"
-#include "ZXConfig.h"
 #include "ZXAlgorithms.h"
 
 #include <algorithm>

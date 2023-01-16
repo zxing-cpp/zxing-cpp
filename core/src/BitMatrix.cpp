@@ -6,7 +6,6 @@
 
 #include "BitMatrix.h"
 
-#include "BitArray.h"
 #include "Pattern.h"
 
 #include <algorithm>
