@@ -7,6 +7,7 @@
 #include "qrcode/QRCodecMode.h"
 #include "qrcode/QRVersion.h"
 
+#include <stdexcept>
 #include "gtest/gtest.h"
 
 using namespace ZXing;
@@ -25,12 +26,12 @@ TEST(QRModeTest, ForBits)
 TEST(QRModeTest, CharacterCount)
 {
     // Spot check a few values
-    ASSERT_EQ(10, CharacterCountBits(CodecMode::NUMERIC, *Version::VersionForNumber(5)));
-    ASSERT_EQ(12, CharacterCountBits(CodecMode::NUMERIC, *Version::VersionForNumber(26)));
-    ASSERT_EQ(14, CharacterCountBits(CodecMode::NUMERIC, *Version::VersionForNumber(40)));
-    ASSERT_EQ(9, CharacterCountBits(CodecMode::ALPHANUMERIC, *Version::VersionForNumber(6)));
-    ASSERT_EQ(8, CharacterCountBits(CodecMode::BYTE, *Version::VersionForNumber(7)));
-    ASSERT_EQ(8, CharacterCountBits(CodecMode::KANJI, *Version::VersionForNumber(8)));
+    ASSERT_EQ(10, CharacterCountBits(CodecMode::NUMERIC, *Version::FromNumber(5)));
+    ASSERT_EQ(12, CharacterCountBits(CodecMode::NUMERIC, *Version::FromNumber(26)));
+    ASSERT_EQ(14, CharacterCountBits(CodecMode::NUMERIC, *Version::FromNumber(40)));
+    ASSERT_EQ(9, CharacterCountBits(CodecMode::ALPHANUMERIC, *Version::FromNumber(6)));
+    ASSERT_EQ(8, CharacterCountBits(CodecMode::BYTE, *Version::FromNumber(7)));
+    ASSERT_EQ(8, CharacterCountBits(CodecMode::KANJI, *Version::FromNumber(8)));
 }
 
 TEST(QRModeTest, MicroForBits)
@@ -57,10 +58,10 @@ TEST(QRModeTest, MicroForBits)
 TEST(QRModeTest, MicroCharacterCount)
 {
 	// Spot check a few values
-	ASSERT_EQ(3, CharacterCountBits(CodecMode::NUMERIC, *Version::VersionForNumber(1, true)));
-	ASSERT_EQ(4, CharacterCountBits(CodecMode::NUMERIC, *Version::VersionForNumber(2, true)));
-	ASSERT_EQ(6, CharacterCountBits(CodecMode::NUMERIC, *Version::VersionForNumber(4, true)));
-	ASSERT_EQ(3, CharacterCountBits(CodecMode::ALPHANUMERIC, *Version::VersionForNumber(2, true)));
-	ASSERT_EQ(4, CharacterCountBits(CodecMode::BYTE, *Version::VersionForNumber(3, true)));
-	ASSERT_EQ(4, CharacterCountBits(CodecMode::KANJI, *Version::VersionForNumber(4, true)));
+	ASSERT_EQ(3, CharacterCountBits(CodecMode::NUMERIC, *Version::FromNumber(1, true)));
+	ASSERT_EQ(4, CharacterCountBits(CodecMode::NUMERIC, *Version::FromNumber(2, true)));
+	ASSERT_EQ(6, CharacterCountBits(CodecMode::NUMERIC, *Version::FromNumber(4, true)));
+	ASSERT_EQ(3, CharacterCountBits(CodecMode::ALPHANUMERIC, *Version::FromNumber(2, true)));
+	ASSERT_EQ(4, CharacterCountBits(CodecMode::BYTE, *Version::FromNumber(3, true)));
+	ASSERT_EQ(4, CharacterCountBits(CodecMode::KANJI, *Version::FromNumber(4, true)));
 }

@@ -304,7 +304,7 @@ Version::Version(int versionNumber, const std::array<ECBlocks, 4>& ecBlocks)
 	_totalCodewords = ecBlocks[0].totalDataCodewords();
 }
 
-const Version* Version::VersionForNumber(int versionNumber, bool isMicro)
+const Version* Version::FromNumber(int versionNumber, bool isMicro)
 {
 	if (versionNumber < 1 || versionNumber > (isMicro ? 4 : 40)) {
 		//throw std::invalid_argument("Version should be in range [1-40].");
@@ -313,13 +313,14 @@ const Version* Version::VersionForNumber(int versionNumber, bool isMicro)
 	return &(isMicro ? AllMicroVersions() : AllVersions())[versionNumber - 1];
 }
 
-const Version* Version::ProvisionalVersionForDimension(int dimension, bool isMicro)
+const Version* Version::FromDimension(int dimension)
 {
+	bool isMicro = dimension < 21;
 	if (dimension % DimensionStep(isMicro) != 1) {
 		//throw std::invalid_argument("Unexpected dimension");
 		return nullptr;
 	}
-	return VersionForNumber((dimension - DimensionOffset(isMicro)) / DimensionStep(isMicro), isMicro);
+	return FromNumber((dimension - DimensionOffset(isMicro)) / DimensionStep(isMicro), isMicro);
 }
 
 const Version* Version::DecodeVersionInformation(int versionBits)
@@ -330,7 +331,7 @@ const Version* Version::DecodeVersionInformation(int versionBits)
 	for (int targetVersion : VERSION_DECODE_INFO) {
 		// Do the version info bits match exactly? done.
 		if (targetVersion == versionBits) {
-			return VersionForNumber(i + 7);
+			return FromNumber(i + 7);
 		}
 		// Otherwise see if this is the closest to a real version info bit string
 		// we have seen so far
@@ -344,7 +345,7 @@ const Version* Version::DecodeVersionInformation(int versionBits)
 	// We can tolerate up to 3 bits of error since no two version info codewords will
 	// differ in less than 8 bits.
 	if (bestDifference <= 3) {
-		return VersionForNumber(bestVersion);
+		return FromNumber(bestVersion);
 	}
 	// If we didn't find a close enough match, fail
 	return nullptr;
@@ -355,7 +356,7 @@ const Version* Version::DecodeVersionInformation(int versionBits)
 */
 BitMatrix Version::buildFunctionPattern() const
 {
-	int dimension = dimensionForVersion();
+	int dimension = this->dimension();
 	BitMatrix bitMatrix(dimension, dimension);
 
 	// Top left finder pattern + separator + format

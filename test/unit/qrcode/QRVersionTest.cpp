@@ -21,7 +21,7 @@ namespace {
 		if (number > 1 && !version->isMicroQRCode()) {
 			EXPECT_FALSE(version->alignmentPatternCenters().empty());
 		}
-		EXPECT_EQ(dimension, version->dimensionForVersion());
+		EXPECT_EQ(dimension, version->dimension());
 	}
 
 	void DoTestVersion(int expectedVersion, int mask) {
@@ -34,11 +34,11 @@ namespace {
 
 TEST(QRVersionTest, VersionForNumber)
 {
-    auto version = Version::VersionForNumber(0);
+    auto version = Version::FromNumber(0);
     EXPECT_EQ(version, nullptr) << "There is version with number 0";
 
 	for (int i = 1; i <= 40; i++) {
-		CheckVersion(Version::VersionForNumber(i), i, 4*i + 17);
+		CheckVersion(Version::FromNumber(i), i, 4*i + 17);
     }
 }
 
@@ -46,7 +46,7 @@ TEST(QRVersionTest, VersionForNumber)
 TEST(QRVersionTest, GetProvisionalVersionForDimension)
 {
     for (int i = 1; i <= 40; i++) {
-		auto prov = Version::ProvisionalVersionForDimension(4 * i + 17);
+		auto prov = Version::FromDimension(4 * i + 17);
 		ASSERT_NE(prov, nullptr);
 		EXPECT_EQ(i, prov->versionNumber());
     }
@@ -65,18 +65,18 @@ TEST(QRVersionTest, DecodeVersionInformation)
   
 TEST(QRVersionTest, MicroVersionForNumber)
 {
-	auto version = Version::VersionForNumber(0, true);
+	auto version = Version::FromNumber(0, true);
 	EXPECT_EQ(version, nullptr) << "There is version with number 0";
 
 	for (int i = 1; i <= 4; i++) {
-		CheckVersion(Version::VersionForNumber(i, true), i, 2 * i + 9);
+		CheckVersion(Version::FromNumber(i, true), i, 2 * i + 9);
 	}
 }
 
 TEST(QRVersionTest, GetProvisionalMicroVersionForDimension)
 {
 	for (int i = 1; i <= 4; i++) {
-		auto prov = Version::ProvisionalVersionForDimension(2 * i + 9, true);
+		auto prov = Version::FromDimension(2 * i + 9);
 		ASSERT_NE(prov, nullptr);
 		EXPECT_EQ(i, prov->versionNumber());
 	}
@@ -90,12 +90,12 @@ TEST(QRVersionTest, FunctionPattern)
 				EXPECT_TRUE(bitMatrix.get(col, row));
 	};
 	for (int i = 1; i <= 4; i++) {
-		const auto version = Version::VersionForNumber(i, true);
+		const auto version = Version::FromNumber(i, true);
 		const auto functionPattern = version->buildFunctionPattern();
 		testFinderPatternRegion(functionPattern);
 
 		// Check timing pattern areas.
-		const auto dimension = version->dimensionForVersion();
+		const auto dimension = version->dimension();
 		for (int row = dimension; row < functionPattern.height(); row++)
 			EXPECT_TRUE(functionPattern.get(0, row));
 		for (int col = dimension; col < functionPattern.width(); col++)

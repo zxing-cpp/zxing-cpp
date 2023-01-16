@@ -34,15 +34,11 @@ static bool hasValidDimension(const BitMatrix& bitMatrix, bool isMicro)
 const Version* ReadVersion(const BitMatrix& bitMatrix)
 {
 	int dimension = bitMatrix.height();
-	bool isMicro = dimension < 21;
 
-	if (!hasValidDimension(bitMatrix, isMicro))
-		return nullptr;
+	const Version* version = Version::FromDimension(dimension);
 
-	int provisionalVersion = (dimension - Version::DimensionOffset(isMicro)) / Version::DimensionStep(isMicro);
-
-	if (provisionalVersion <= 6)
-		return Version::VersionForNumber(provisionalVersion, isMicro);
+	if (!version || version->versionNumber() < 7)
+		return version;
 
 	for (bool mirror : {false, true}) {
 		// Read top-right/bottom-left version info: 3 wide by 6 tall (depending on mirrored)
@@ -51,10 +47,9 @@ const Version* ReadVersion(const BitMatrix& bitMatrix)
 			for (int x = dimension - 9; x >= dimension - 11; --x)
 				AppendBit(versionBits, getBit(bitMatrix, x, y, mirror));
 
-		auto theParsedVersion = Version::DecodeVersionInformation(versionBits);
-		// TODO: why care for the contents of the version bits if we know the dimension already?
-		if (theParsedVersion != nullptr && theParsedVersion->dimensionForVersion() == dimension)
-			return theParsedVersion;
+		version = Version::DecodeVersionInformation(versionBits);
+		if (version && version->dimension() == dimension)
+			return version;
 	}
 
 	return nullptr;
