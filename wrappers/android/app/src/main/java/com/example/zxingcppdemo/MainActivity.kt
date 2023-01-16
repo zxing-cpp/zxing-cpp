@@ -17,7 +17,6 @@
 package com.example.zxingcppdemo
 
 import android.Manifest
-import android.content.ContentValues
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.*
@@ -25,7 +24,7 @@ import android.hardware.camera2.CaptureRequest
 import android.media.AudioManager
 import android.media.ToneGenerator
 import android.os.Bundle
-import android.provider.MediaStore
+import android.os.Environment
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.camera2.interop.Camera2CameraControl
@@ -34,7 +33,6 @@ import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.toPoint
 import androidx.core.graphics.toPointF
 import androidx.lifecycle.LifecycleOwner
 import com.example.zxingcppdemo.databinding.ActivityCameraBinding
@@ -42,19 +40,23 @@ import com.google.zxing.*
 import com.google.zxing.common.HybridBinarizer
 import com.zxingcpp.BarcodeReader
 import com.zxingcpp.BarcodeReader.Format
+import java.io.ByteArrayOutputStream
+import java.io.File
 import java.util.concurrent.Executors
 import kotlin.random.Random
 
 
 class MainActivity : AppCompatActivity() {
 	private lateinit var binding: ActivityCameraBinding
-	private var imageCapture: ImageCapture? = null
+
 	private val executor = Executors.newSingleThreadExecutor()
-	private val permissions = listOf(Manifest.permission.CAMERA)
+	private val permissions = listOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
 	private val permissionsRequestCode = Random.nextInt(0, 10000)
 
 	private val beeper = ToneGenerator(AudioManager.STREAM_NOTIFICATION, 50)
 	private var lastText = String()
+
+	private lateinit var imageBitmap: Bitmap //Shared variable to save ImageProxy as Bitmap
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -64,35 +66,53 @@ class MainActivity : AppCompatActivity() {
 		binding.capture.setOnClickListener {
 			// Disable all camera controls
 			it.isEnabled = false
-			takePhoto()
+			saveImage()
 			// Re-enable camera controls
 			it.isEnabled = true
 		}
 	}
 
-	private fun takePhoto() {
-		val imageCapture = imageCapture ?: return
+	private fun ImageProxy.toBitmap(): Bitmap {
+	//This converts the ImageProxy (from the imageAnalysis Use Case)
+	//to a Bitmap for then to be saved for debugging purposes
+	//This is the closest representation of the image that is passed to the
+	//decoding algorithm.
 
-		val contentValues = ContentValues().apply {
-			put(MediaStore.MediaColumns.DISPLAY_NAME, System.currentTimeMillis())
-			put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+		val yBuffer = planes[0].buffer // Y
+		val uBuffer = planes[1].buffer // U
+		val vBuffer = planes[2].buffer // V
+
+		val ySize = yBuffer.remaining()
+		val uSize = uBuffer.remaining()
+		val vSize = vBuffer.remaining()
+
+		val nv21 = ByteArray(ySize + uSize + vSize)
+
+		yBuffer.get(nv21, 0, ySize)
+		vBuffer.get(nv21, ySize, vSize)
+		uBuffer.get(nv21, ySize + vSize, uSize)
+
+		val yuvImage = YuvImage(nv21, ImageFormat.NV21, this.width, this.height, null)
+		val out = ByteArrayOutputStream()
+		yuvImage.compressToJpeg(Rect(0, 0, yuvImage.width, yuvImage.height), 100, out)
+		val imageBytes = out.toByteArray()
+		return BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+	}
+
+	private fun saveImage() {
+		try {
+			val currentMillis = System.currentTimeMillis().toString()
+			val filename = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+				.toString() + "/" + currentMillis + "_ZXingCpp_bufferImage.jpg"
+
+			File(filename).outputStream().use { out ->
+				imageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
+				out.flush()
+			}
+			beeper.startTone(ToneGenerator.TONE_CDMA_CONFIRM) //Success Tone
+		}catch (e: Exception){
+			beeper.startTone(ToneGenerator.TONE_CDMA_SOFT_ERROR_LITE) //Fail Tone
 		}
-
-		val outputOptions = ImageCapture.OutputFileOptions.Builder(
-			contentResolver, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues
-		).build()
-
-		imageCapture.takePicture(
-			outputOptions,
-			ContextCompat.getMainExecutor(this),
-			object : ImageCapture.OnImageSavedCallback {
-				override fun onError(exc: ImageCaptureException) {
-					beeper.startTone(ToneGenerator.TONE_CDMA_SOFT_ERROR_LITE)
-				}
-				override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-					beeper.startTone(ToneGenerator.TONE_CDMA_CONFIRM)
-				}
-			})
 	}
 
 	private fun bindCameraUseCases() = binding.viewFinder.post {
@@ -115,8 +135,6 @@ class MainActivity : AppCompatActivity() {
 				.setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
 				.build()
 
-			imageCapture = ImageCapture.Builder().setTargetAspectRatio(AspectRatio.RATIO_16_9).build()
-
 			var frameCounter = 0
 			var lastFpsTimestamp = System.currentTimeMillis()
 			var runtimes: Long = 0
@@ -124,12 +142,36 @@ class MainActivity : AppCompatActivity() {
 			val readerJava = MultiFormatReader()
 			val readerCpp = BarcodeReader()
 
+			// Create a new camera selector each time, enforcing lens facing
+			val cameraSelector = CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_BACK).build()
+
+			// Camera provider is now guaranteed to be available
+			val cameraProvider = cameraProviderFuture.get()
+
+			// Apply declared configs to CameraX using the same lifecycle owner
+			cameraProvider.unbindAll()
+			val camera = cameraProvider.bindToLifecycle(
+				this as LifecycleOwner, cameraSelector, preview, imageAnalysis
+			)
+
+			// Reduce exposure time to decrease effect of motion blur
+			val camera2 = Camera2CameraControl.from(camera.cameraControl)
+			camera2.captureRequestOptions = CaptureRequestOptions.Builder()
+				.setCaptureRequestOption(CaptureRequest.SENSOR_SENSITIVITY, 1600)
+				.setCaptureRequestOption(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION, -8)
+				.build()
+
+			// Use the camera object to link our preview use case with the view
+			preview.setSurfaceProvider(binding.viewFinder.surfaceProvider)
+
 			imageAnalysis.setAnalyzer(executor, ImageAnalysis.Analyzer { image ->
 				// Early exit: image analysis is in paused state
 				if (binding.pause.isChecked) {
 					image.close()
 					return@Analyzer
 				}
+
+				imageBitmap = image.toBitmap()  //Update Shared variable from current ImageProxy buffer
 
 				val cropSize = image.height / 3 * 2
 				val cropRect = if (binding.crop.isChecked)
@@ -218,30 +260,10 @@ class MainActivity : AppCompatActivity() {
 					runtime2 = 0
 				}
 
+				camera.cameraControl.enableTorch(binding.torch.isChecked)
+
 				showResult(resultText, infoText, resultPoints, image)
 			})
-
-			// Create a new camera selector each time, enforcing lens facing
-			val cameraSelector = CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_BACK).build()
-
-			// Camera provider is now guaranteed to be available
-			val cameraProvider = cameraProviderFuture.get()
-
-			// Apply declared configs to CameraX using the same lifecycle owner
-			cameraProvider.unbindAll()
-			val camera = cameraProvider.bindToLifecycle(
-				this as LifecycleOwner, cameraSelector, preview, imageAnalysis, imageCapture
-			)
-
-			// Reduce exposure time to decrease effect of motion blur
-			val camera2 = Camera2CameraControl.from(camera.cameraControl)
-			camera2.captureRequestOptions = CaptureRequestOptions.Builder()
-				.setCaptureRequestOption(CaptureRequest.SENSOR_SENSITIVITY, 1600)
-				.setCaptureRequestOption(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION, -8)
-				.build()
-
-			// Use the camera object to link our preview use case with the view
-			preview.setSurfaceProvider(binding.viewFinder.surfaceProvider)
 
 		}, ContextCompat.getMainExecutor(this))
 	}
