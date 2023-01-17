@@ -108,6 +108,11 @@
             android:text="crop" />
 
         <com.google.android.material.chip.Chip
+            android:id="@+id/torch"
+            style="@style/ChipR"
+            android:text="Torch" />
+
+        <com.google.android.material.chip.Chip
             android:id="@+id/pause"
             style="@style/ChipR"
             android:text="pause" />
