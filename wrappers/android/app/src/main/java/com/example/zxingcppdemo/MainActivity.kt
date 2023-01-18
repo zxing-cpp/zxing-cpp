@@ -22,6 +22,7 @@ import android.content.pm.PackageManager
 import android.graphics.*
 import android.hardware.camera2.CaptureRequest
 import android.media.AudioManager
+import android.media.MediaActionSound
 import android.media.ToneGenerator
 import android.os.Bundle
 import android.os.Environment
@@ -72,7 +73,7 @@ class MainActivity : AppCompatActivity() {
 	}
 
 
-	private fun ImageProxy.toByteArray(): ByteArray {
+	private fun ImageProxy.toJpeg(): ByteArray {
 		//This converts the ImageProxy (from the imageAnalysis Use Case)
 		//to a ByteArray (compressed as JPEG) for then to be saved for debugging purposes
 		//This is the closest representation of the image that is passed to the
@@ -91,7 +92,7 @@ class MainActivity : AppCompatActivity() {
 
 		val yuvImage = YuvImage(nv21, ImageFormat.NV21, this.width, this.height, null)
 		val out = ByteArrayOutputStream()
-		yuvImage.compressToJpeg(Rect(0, 0, yuvImage.width, yuvImage.height),100, out)
+		yuvImage.compressToJpeg(Rect(0, 0, yuvImage.width, yuvImage.height), 100, out)
 		return out.toByteArray()
 	}
 
@@ -99,15 +100,13 @@ class MainActivity : AppCompatActivity() {
 		try {
 			val currentMillis = System.currentTimeMillis().toString()
 			val filename = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-				.toString() + "/" + currentMillis + "_ZXingCpp_bufferImage.jpg"
+				.toString() + "/" + currentMillis + "_ZXingCpp.jpg"
 
 			File(filename).outputStream().use { out ->
-				out.write(image.toByteArray())
-				out.flush()
-				out.close()
+				out.write(image.toJpeg())
 			}
-			beeper.startTone(ToneGenerator.TONE_CDMA_CONFIRM) //Success Tone
-		}catch (e: Exception){
+			MediaActionSound().play(MediaActionSound.SHUTTER_CLICK)
+		} catch (e: Exception) {
 			beeper.startTone(ToneGenerator.TONE_CDMA_SOFT_ERROR_LITE) //Fail Tone
 		}
 	}
@@ -168,7 +167,7 @@ class MainActivity : AppCompatActivity() {
 					return@Analyzer
 				}
 
-				if (doSaveImage){
+				if (doSaveImage) {
 					doSaveImage = false
 					saveImage(image)
 				}
