@@ -39,7 +39,8 @@ std::optional<PointF> CenterOfDoubleCross(const BitMatrix& image, PointI center,
 std::optional<PointF> CenterOfRing(const BitMatrix& image, PointI center, int range, int nth, bool requireCircle)
 {
 	BitMatrixCursorI cur(image, center, {0, 1});
-	cur.stepToEdge(nth, range);
+	if (!cur.stepToEdge(nth, range))
+		return {};
 	cur.turnRight(); // move clock wise and keep edge on the right
 
 	uint32_t neighbourMask = 0;
