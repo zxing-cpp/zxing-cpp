@@ -123,11 +123,17 @@ Result& Result::setDecodeHints(DecodeHints hints)
 
 bool Result::operator==(const Result& o) const
 {
+	// handle case where both are MatrixCodes first
+	if (!BarcodeFormats(BarcodeFormat::LinearCodes).testFlags(format() | o.format())) {
+		if (format() != o.format() || (bytes() != o.bytes() && isValid() && o.isValid()))
+			return false;
+
+		// check for equal position if both are valid with equal bytes or at least one is in error
+		return IsInside(Center(o.position()), position());
+	}
+
 	if (format() != o.format() || bytes() != o.bytes() || error() != o.error())
 		return false;
-
-	if (BarcodeFormats(BarcodeFormat::MatrixCodes).testFlag(format()))
-		return IsInside(Center(o.position()), position());
 
 	if (orientation() != o.orientation())
 		return false;
