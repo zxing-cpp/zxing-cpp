@@ -6,6 +6,7 @@
 
 #include "qrcode/QRCodecMode.h"
 #include "qrcode/QRVersion.h"
+#include "Error.h"
 
 #include <stdexcept>
 #include "gtest/gtest.h"
@@ -20,7 +21,7 @@ TEST(QRModeTest, ForBits)
     ASSERT_EQ(CodecMode::ALPHANUMERIC, CodecModeForBits(0x02));
     ASSERT_EQ(CodecMode::BYTE, CodecModeForBits(0x04));
     ASSERT_EQ(CodecMode::KANJI, CodecModeForBits(0x08));
-	ASSERT_THROW(CodecModeForBits(0x10), std::invalid_argument);
+	ASSERT_THROW(CodecModeForBits(0x10), Error);
 }
 
 TEST(QRModeTest, CharacterCount)
@@ -52,7 +53,7 @@ TEST(QRModeTest, MicroForBits)
 	ASSERT_EQ(CodecMode::BYTE, CodecModeForBits(0x02, true));
 	ASSERT_EQ(CodecMode::KANJI, CodecModeForBits(0x03, true));
 
-	ASSERT_THROW(CodecModeForBits(0x04, true), std::invalid_argument);
+	ASSERT_THROW(CodecModeForBits(0x04, true), Error);
 }
 
 TEST(QRModeTest, MicroCharacterCount)
