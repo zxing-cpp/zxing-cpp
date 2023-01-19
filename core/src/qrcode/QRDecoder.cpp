@@ -209,7 +209,7 @@ static ECI ParseECIValue(BitSource& bits)
  * a terminator code.  If true, then the decoding can finish. If false, then the decoding
  * can read off the next mode code.
  *
- * See ISO 18004:2006, 6.4.1 Table 2
+ * See ISO 18004:2015, 7.4.1 Table 2
  *
  * @param bits the stream of bits that might have a terminator code
  * @param version the QR or micro QR code version
