@@ -72,7 +72,6 @@ class MainActivity : AppCompatActivity() {
 		}
 	}
 
-
 	private fun ImageProxy.toJpeg(): ByteArray {
 		//This converts the ImageProxy (from the imageAnalysis Use Case)
 		//to a ByteArray (compressed as JPEG) for then to be saved for debugging purposes
@@ -92,7 +91,7 @@ class MainActivity : AppCompatActivity() {
 
 		val yuvImage = YuvImage(nv21, ImageFormat.NV21, this.width, this.height, null)
 		val out = ByteArrayOutputStream()
-		yuvImage.compressToJpeg(Rect(0, 0, yuvImage.width, yuvImage.height), 100, out)
+		yuvImage.compressToJpeg(Rect(0, 0, yuvImage.width, yuvImage.height), 90, out)
 		return out.toByteArray()
 	}
 
