@@ -7,10 +7,7 @@
 #include "HybridBinarizer.h"
 
 #include "BitMatrix.h"
-#include "BitMatrixIO.h"
-#include "ByteArray.h"
 #include "Matrix.h"
-#include "ZXAlgorithms.h"
 
 #include <cstdint>
 #include <memory>
