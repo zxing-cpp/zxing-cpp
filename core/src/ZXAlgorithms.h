@@ -107,4 +107,30 @@ std::string ToString(T val, int len)
 	return result;
 }
 
+template <typename T>
+void UpdateMin(T& min, T val)
+{
+	min = std::min(min, val);
+}
+
+template <typename T>
+void UpdateMax(T& max, T val)
+{
+	max = std::max(max, val);
+}
+
+template <typename T>
+void UpdateMinMax(T& min, T& max, T val)
+{
+	min = std::min(min, val);
+	max = std::max(max, val);
+
+	// Note: the above code is not equivalent to
+	//    if (val < min)        min = val;
+	//    else if (val > max)   max = val;
+	// It is basically the same but without the 'else'. For the 'else'-variant to work,
+	// both min and max have to be initialized with a value that is part of the sequence.
+	// Also it turns out clang and gcc can vectorize the code above but not the code below.
+}
+
 } // ZXing

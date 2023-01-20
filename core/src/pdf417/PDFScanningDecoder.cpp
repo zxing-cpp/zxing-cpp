@@ -14,6 +14,7 @@
 #include "PDFDetectionResult.h"
 #include "PDFDecodedBitStreamParser.h"
 #include "PDFModulusGF.h"
+#include "ZXAlgorithms.h"
 #include "ZXTestSupport.h"
 
 #include <cmath>
@@ -729,8 +730,7 @@ ScanningDecoder::Decode(const BitMatrix& image, const Nullable<ResultPoint>& ima
 			if (codeword != nullptr) {
 				detectionResult.column(barcodeColumn).value().setCodeword(imageRow, codeword);
 				previousStartColumn = startColumn;
-				minCodewordWidth = std::min(minCodewordWidth, codeword.value().width());
-				maxCodewordWidth = std::max(maxCodewordWidth, codeword.value().width());
+				UpdateMinMax(minCodewordWidth, maxCodewordWidth, codeword.value().width());
 			}
 		}
 	}

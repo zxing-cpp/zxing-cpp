@@ -105,13 +105,12 @@ static int CheckDirection(BitMatrixCursorF& cur, PointF dir, int range, bool upd
 static std::optional<ConcentricPattern> LocateAztecCenter(const BitMatrix& image, PointF center, int spreadH)
 {
 	auto cur = BitMatrixCursorF(image, center, {});
-	int minSpread = spreadH, maxSpread = spreadH;
+	int minSpread = spreadH, maxSpread = 0;
 	for (auto d : {PointF{0, 1}, {1, 0}, {1, 1}, {1, -1}}) {
 		int spread = CheckDirection(cur, d, spreadH, d.x == 0);
 		if (!spread)
 			return {};
-		minSpread = std::min(spread, minSpread);
-		maxSpread = std::max(spread, maxSpread);
+		UpdateMinMax(minSpread, maxSpread, spread);
 	}
 
 	return ConcentricPattern{cur.p, (maxSpread + minSpread) / 2};

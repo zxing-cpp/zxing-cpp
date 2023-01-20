@@ -7,6 +7,7 @@
 
 #include "LogMatrix.h"
 #include "RegressionLine.h"
+#include "ZXAlgorithms.h"
 
 namespace ZXing {
 
@@ -169,11 +170,8 @@ static bool QuadrilateralIsPlausibleSquare(const QuadrilateralF q, int lineIndex
 {
 	double m, M;
 	m = M = distance(q[0], q[3]);
-	for (int i = 1; i < 4; ++i) {
-		double d = distance(q[i - 1], q[i]);
-		m = std::min(m, d);
-		M = std::max(M, d);
-	}
+	for (int i = 1; i < 4; ++i)
+		UpdateMinMax(m, M, distance(q[i - 1], q[i]));
 
 	return m >= lineIndex * 2 && m > M / 3;
 }

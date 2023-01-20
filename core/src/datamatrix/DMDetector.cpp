@@ -609,7 +609,7 @@ public:
 			}
 
 			if (finishLine.isValid())
-				maxStepSize = std::min(maxStepSize, static_cast<int>(finishLine.signedDistance(p)));
+				UpdateMin(maxStepSize, static_cast<int>(finishLine.signedDistance(p)));
 
 			auto stepResult = traceStep(dEdge, maxStepSize, line.isValid());
 
