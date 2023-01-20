@@ -51,7 +51,7 @@ static Matrix<int> CalculateBlackPoints(const uint8_t* luminances, int subWidth,
 					sum += pixel;
 					if (pixel < min)
 						min = pixel;
-					else if (pixel > max)
+					if (pixel > max)
 						max = pixel;
 				}
 				// short-circuit min/max tests once dynamic range is met
