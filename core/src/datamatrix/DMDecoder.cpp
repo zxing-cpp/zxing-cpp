@@ -397,8 +397,10 @@ static DecoderResult DoDecode(const BitMatrix& bits)
 	if (codewords.empty())
 		return FormatError("Invalid number of code words");
 
+	bool fix259 = false; // see https://github.com/zxing-cpp/zxing-cpp/issues/259
+retry:
 	// Separate into data blocks
-	std::vector<DataBlock> dataBlocks = GetDataBlocks(codewords, *version);
+	std::vector<DataBlock> dataBlocks = GetDataBlocks(codewords, *version, fix259);
 	if (dataBlocks.empty())
 		return FormatError("Invalid number of data blocks");
 
@@ -409,14 +411,23 @@ static DecoderResult DoDecode(const BitMatrix& bits)
 	const int dataBlocksCount = Size(dataBlocks);
 	for (int j = 0; j < dataBlocksCount; j++) {
 		auto& [numDataCodewords, codewords] = dataBlocks[j];
-		if (!CorrectErrors(codewords, numDataCodewords))
+		if (!CorrectErrors(codewords, numDataCodewords)) {
+			if(version->versionNumber == 24 && !fix259) {
+				fix259 = true;
+				goto retry;
+			}
 			return ChecksumError();
+		}
 
 		for (int i = 0; i < numDataCodewords; i++) {
 			// De-interlace data blocks.
 			resultBytes[i * dataBlocksCount + j] = codewords[i];
 		}
 	}
+#ifdef PRINT_DEBUG
+	if (fix259)
+		printf("-> needed retry with fix259 for 144x144 symbol\n");
+#endif
 
 	// Decode the contents of that stream of bytes
 	return DecodedBitStreamParser::Decode(std::move(resultBytes), version->isDMRE())

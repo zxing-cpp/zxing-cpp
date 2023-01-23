@@ -1,6 +1,7 @@
 /*
 * Copyright 2016 Nu-book Inc.
 * Copyright 2016 ZXing authors
+* Copyright 2023 Axel Waggershauser
 */
 // SPDX-License-Identifier: Apache-2.0
 
@@ -13,7 +14,7 @@
 
 namespace ZXing::DataMatrix {
 
-std::vector<DataBlock> GetDataBlocks(const ByteArray& rawCodewords, const Version& version)
+std::vector<DataBlock> GetDataBlocks(const ByteArray& rawCodewords, const Version& version, bool fix259)
 {
 	// First count the total number of data blocks
 	// Now establish DataBlocks of the appropriate size and number of data codewords
@@ -47,7 +48,7 @@ std::vector<DataBlock> GetDataBlocks(const ByteArray& rawCodewords, const Versio
 	// Now add in error correction blocks
 	for (int i = numDataCodewords; i < numCodewords; i++) {
 		for (int j = 0; j < numResultBlocks; j++) {
-			int jOffset = size144x144 ? (j + 8) % numResultBlocks : j;
+			int jOffset = size144x144 && fix259 ? (j + 8) % numResultBlocks : j;
 			int iOffset = size144x144 && jOffset > 7 ? i - 1 : i;
 			result[jOffset].codewords[iOffset] = rawCodewords[rawCodewordsOffset++];
 		}
