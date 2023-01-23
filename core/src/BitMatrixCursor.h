@@ -155,11 +155,11 @@ public:
 		return ret;
 	}
 
-	int countEdges(int range = 0)
+	int countEdges(int range)
 	{
 		int res = 0;
 
-		while (int steps = stepToEdge(1, range)) {
+		while (int steps = range ? stepToEdge(1, range) : 0) {
 			range -= steps;
 			++res;
 		}
