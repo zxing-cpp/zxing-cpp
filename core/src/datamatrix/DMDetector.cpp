@@ -571,6 +571,10 @@ public:
 				if (std::abs(dot(normalized(d), line.normal())) > 0.7) // thresh is approx. sin(45 deg)
 					return false;
 
+				// re-evaluate line with all the points up to here before projecting
+				if (!line.evaluate(1.5))
+					return false;
+
 				auto np = line.project(p);
 				// make sure we are making progress even when back-projecting:
 				// consider a 90deg corner, rotated 45deg. we step away perpendicular from the line and get
