@@ -408,15 +408,13 @@ static DecoderResult DoDecode(const BitMatrix& bits)
 	// Error-correct and copy data blocks together into a stream of bytes
 	const int dataBlocksCount = Size(dataBlocks);
 	for (int j = 0; j < dataBlocksCount; j++) {
-		auto& dataBlock = dataBlocks[j];
-		ByteArray& codewordBytes = dataBlock.codewords;
-		int numDataCodewords = dataBlock.numDataCodewords;
-		if (!CorrectErrors(codewordBytes, numDataCodewords))
+		auto& [numDataCodewords, codewords] = dataBlocks[j];
+		if (!CorrectErrors(codewords, numDataCodewords))
 			return ChecksumError();
 
 		for (int i = 0; i < numDataCodewords; i++) {
 			// De-interlace data blocks.
-			resultBytes[i * dataBlocksCount + j] = codewordBytes[i];
+			resultBytes[i * dataBlocksCount + j] = codewords[i];
 		}
 	}
 
