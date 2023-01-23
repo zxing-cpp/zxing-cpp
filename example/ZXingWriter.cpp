@@ -8,6 +8,7 @@
 #include "BitMatrixIO.h"
 #include "CharacterSet.h"
 #include "MultiFormatWriter.h"
+#include "ZXVersion.h"
 
 #include <algorithm>
 #include <cctype>
@@ -28,7 +29,8 @@ static void PrintUsage(const char* exePath)
 	          << "    -margin    Margin around barcode\n"
 	          << "    -encoding  Encoding used to encode input text\n"
 	          << "    -ecc       Error correction level, [0-8]\n"
-	          << "    -help      Print usage information and exit\n"
+	          << "    -help      Print usage information\n"
+			  << "    -version   Print version information\n"
 	          << "\n"
 			  << "Supported formats are:\n";
 	for (auto f : BarcodeFormatsFromString("Aztec Codabar Code39 Code93 Code128 DataMatrix EAN8 EAN13 ITF PDF417 QRCode UPCA UPCE"))
@@ -76,6 +78,9 @@ static bool ParseOptions(int argc, char* argv[], int* width, int* height, int* m
 			*encoding = CharacterSetFromString(argv[i]);
 		} else if (strcmp(argv[i], "-help") == 0 || strcmp(argv[i], "--help") == 0) {
 			PrintUsage(argv[0]);
+			exit(0);
+		} else if (strcmp(argv[i], "-version") || strcmp(argv[i], "--version")) {
+			std::cout << "ZXingWriter " << ZXING_VERSION_STR << "\n";
 			exit(0);
 		} else if (nonOptArgCount == 0) {
 			*format = BarcodeFormatFromString(argv[i]);

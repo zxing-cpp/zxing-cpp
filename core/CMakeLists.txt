@@ -439,7 +439,7 @@ add_library (ZXing
 )
 
 target_include_directories (ZXing
-    PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>"
+    PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>" "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
     INTERFACE "$<INSTALL_INTERFACE:include>"
 )
 
