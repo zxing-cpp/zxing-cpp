@@ -103,6 +103,7 @@ static void ThresholdBlock(const uint8_t* luminances, int xoffset, int yoffset, 
 	for (int y = yoffset; y < yoffset + BLOCK_SIZE; ++y) {
 		auto* src = luminances + y * rowStride + xoffset;
 		auto* const dstBegin = matrix.row(y).begin() + xoffset;
+		// TODO: fix pixelStride > 1 case
 		for (auto* dst = dstBegin; dst < dstBegin + BLOCK_SIZE; ++dst, ++src)
 			*dst = *src <= threshold;
 	}

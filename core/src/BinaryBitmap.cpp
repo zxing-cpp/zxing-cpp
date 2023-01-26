@@ -17,6 +17,36 @@ struct BinaryBitmap::Cache
 	std::shared_ptr<const BitMatrix> matrix;
 };
 
+BitMatrix BinaryBitmap::binarize(const uint8_t threshold) const
+{
+	BitMatrix res(width(), height());
+
+	if (_buffer.pixStride() == 1 && _buffer.rowStride() == _buffer.width()) {
+		// Specialize for a packed buffer with pixStride 1 to support auto vectorization (16x speedup on AVX2)
+		auto dst = res.row(0).begin();
+		for (auto src = _buffer.data(0, 0), end = _buffer.data(0, height()); src != end; ++src, ++dst)
+			*dst = *src <= threshold;
+	} else {
+		auto processLine = [&res, threshold](int y, const auto* src, const int stride) {
+			for (auto& dst : res.row(y)) {
+				dst = *src <= threshold;
+				src += stride;
+			}
+		};
+		for (int y = 0; y < res.height(); ++y) {
+			auto src = _buffer.data(0, y) + GreenIndex(_buffer.format());
+			// Specialize the inner loop for strides 1 and 4 to support auto vectorization
+			switch (_buffer.pixStride()) {
+			case 1: processLine(y, src, 1); break;
+			case 4: processLine(y, src, 4); break;
+			default: processLine(y, src, _buffer.pixStride()); break;
+			}
+		}
+	}
+
+	return res;
+}
+
 BinaryBitmap::BinaryBitmap(const ImageView& buffer) : _cache(new Cache), _buffer(buffer) {}
 
 BinaryBitmap::~BinaryBitmap() = default;

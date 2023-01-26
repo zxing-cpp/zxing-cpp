@@ -7,7 +7,6 @@
 #include "GlobalHistogramBinarizer.h"
 
 #include "BitMatrix.h"
-#include "ByteArray.h"
 
 #include <algorithm>
 #include <array>
@@ -143,15 +142,9 @@ GlobalHistogramBinarizer::getBlackMatrix() const
 	if (blackPoint <= 0)
 		return {};
 
-	// We delay reading the entire image luminance until the black point estimation succeeds.
-	// Although we end up reading four rows twice, it is consistent with our motto of
-	// "fail quickly" which is necessary for continuous scanning.
-	auto matrix = std::make_shared<BitMatrix>(width(), height());
-	for(int y = 0; y < height(); ++y)
-		for(int x = 0; x < width(); ++x)
-			matrix->set(x, y, *_buffer.data(x, y) < blackPoint);
 
-	return matrix;
+
+	return std::make_shared<const BitMatrix>(binarize(blackPoint));
 }
 
 } // ZXing

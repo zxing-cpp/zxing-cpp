@@ -39,6 +39,8 @@ protected:
 	*/
 	virtual std::shared_ptr<const BitMatrix> getBlackMatrix() const = 0;
 
+	BitMatrix binarize(const uint8_t threshold) const;
+
 public:
 	BinaryBitmap(const ImageView& buffer);
 	virtual ~BinaryBitmap();
