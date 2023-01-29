@@ -88,12 +88,12 @@ public:
 	}
 };
 
-ImageView SetupLumImageView(ImageView iv, LumImage& lum, const DecodeHints& hints)
+ImageView SetupLumImageView(ImageView iv, LumImage& lum, BinarizerV2 binarizer)
 {
 	if (iv.format() == ImageFormat::None)
 		throw std::invalid_argument("Invalid image format");
 
-	if (hints.binarizer() == Binarizer::GlobalHistogram || hints.binarizer() == Binarizer::LocalAverage) {
+	if (binarizer == BinarizerV2::GlobalHistogram || binarizer == BinarizerV2::LocalAverage) {
 		if (iv.format() != ImageFormat::Lum) {
 			lum = ExtractLum(iv, [r = RedIndex(iv.format()), g = GreenIndex(iv.format()), b = BlueIndex(iv.format())](
 									 const uint8_t* src) { return RGBToLum(src[r], src[g], src[b]); });
@@ -107,13 +107,13 @@ ImageView SetupLumImageView(ImageView iv, LumImage& lum, const DecodeHints& hint
 	return iv;
 }
 
-std::unique_ptr<BinaryBitmap> CreateBitmap(ZXing::Binarizer binarizer, const ImageView& iv)
+std::unique_ptr<BinaryBitmap> CreateBitmap(ZXing::BinarizerV2 binarizer, const ImageView& iv)
 {
 	switch (binarizer) {
-	case Binarizer::BoolCast: return std::make_unique<ThresholdBinarizer>(iv, 0);
-	case Binarizer::FixedThreshold: return std::make_unique<ThresholdBinarizer>(iv, 127);
-	case Binarizer::GlobalHistogram: return std::make_unique<GlobalHistogramBinarizer>(iv);
-	case Binarizer::LocalAverage: return std::make_unique<HybridBinarizer>(iv);
+	case BinarizerV2::BoolCast: return std::make_unique<ThresholdBinarizer>(iv, 0);
+	case BinarizerV2::FixedThreshold: return std::make_unique<ThresholdBinarizer>(iv, 127);
+	case BinarizerV2::GlobalHistogram: return std::make_unique<GlobalHistogramBinarizer>(iv);
+	case BinarizerV2::LocalAverage: return std::make_unique<HybridBinarizer>(iv);
 	}
 	return {}; // silence gcc warning
 }
@@ -126,34 +126,51 @@ Result ReadBarcode(const ImageView& _iv, const DecodeHints& hints)
 Results ReadBarcodes(const ImageView& _iv, const DecodeHints& hints)
 {
 	LumImage lum;
-	ImageView iv = SetupLumImageView(_iv, lum, hints);
-	MultiFormatReader reader(hints);
 
-	if (hints.isPure())
-		return {reader.read(*CreateBitmap(hints.binarizer(), iv))};
+	auto binarizers = hints.binarizerSequence();
+	if(binarizers.empty()){
+		// Try use the legacy entry
+		binarizers.setFlag(UpgradeBinarizer(hints.binarizer()));
+	}
 
-	LumImagePyramid pyramid(iv, hints.downscaleThreshold() * hints.tryDownscale(), hints.downscaleFactor());
+	if (hints.isPure()){
+		// No support for multiple binarizers in pure mode.
+		BinarizerV2 firstBinarizer = binarizers.unpackNext();
+		ImageView iv = SetupLumImageView(_iv, lum, firstBinarizer);
+		MultiFormatReader reader(hints);
+		return {reader.read(*CreateBitmap(firstBinarizer, iv))};
+	}
 
 	Results results;
 	int maxSymbols = hints.maxNumberOfSymbols();
-	for (auto&& iv : pyramid.layers) {
-		auto bitmap = CreateBitmap(hints.binarizer(), iv);
-		for (int invert = 0; invert <= static_cast<int>(hints.tryInvert()); ++invert) {
-			if (invert)
-				bitmap->invert();
-			auto rs = reader.readMultiple(*bitmap, maxSymbols);
-			for (auto& r : rs) {
-				if (iv.width() != _iv.width())
-					r.setPosition(Scale(r.position(), _iv.width() / iv.width()));
-				if (!Contains(results, r)) {
-					r.setDecodeHints(hints);
-					r.setIsInverted(bitmap->inverted());
-					results.push_back(std::move(r));
-					--maxSymbols;
+	BinarizerV2 currentBinarizer = BinarizerV2::None;
+	while((currentBinarizer = binarizers.unpackNext()) != BinarizerV2::None){
+		ImageView iv = SetupLumImageView(_iv, lum, currentBinarizer);
+
+		// TODO: If GlobalHistogram and LocalAverage are both specified, only read 1D barcodes once.
+		MultiFormatReader reader(hints);
+
+		LumImagePyramid pyramid(iv, hints.downscaleThreshold() * hints.tryDownscale(), hints.downscaleFactor());
+
+		for (auto&& iv : pyramid.layers) {
+			auto bitmap = CreateBitmap(currentBinarizer, iv);
+			for (int invert = 0; invert <= static_cast<int>(hints.tryInvert()); ++invert) {
+				if (invert)
+					bitmap->invert();
+				auto rs = reader.readMultiple(*bitmap, maxSymbols);
+				for (auto& r : rs) {
+					if (iv.width() != _iv.width())
+						r.setPosition(Scale(r.position(), _iv.width() / iv.width()));
+					if (!Contains(results, r)) {
+						r.setDecodeHints(hints);
+						r.setIsInverted(bitmap->inverted());
+						results.push_back(std::move(r));
+						--maxSymbols;
+					}
 				}
+				if (maxSymbols <= 0)
+					return results;
 			}
-			if (maxSymbols <= 0)
-				return results;
 		}
 	}
 
