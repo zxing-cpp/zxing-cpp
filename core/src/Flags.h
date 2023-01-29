@@ -100,6 +100,12 @@ public:
 
 	constexpr static Flags all() noexcept { return ~(unsigned(~0) << highestBitSet(Int(Enum::_max))); }
 
+	Enum unpackNext() {
+		Enum res = static_cast<Enum>(BitHacks::FilterLowestBit(i));
+		setFlag(res, false);
+		return res;
+	}
+
 private:
 //	constexpr static inline Int
 //	initializer_list_helper(typename std::initializer_list<Enum>::const_iterator it,

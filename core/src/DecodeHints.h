@@ -9,7 +9,9 @@
 
 #include "BarcodeFormat.h"
 #include "CharacterSet.h"
+#include "Flags.h"
 
+#include <cstdint>
 #include <string_view>
 #include <utility>
 
@@ -29,6 +31,19 @@ enum class Binarizer : unsigned char // needs to be unsigned for the bitfield be
 	FixedThreshold,  ///< T = 127
 	BoolCast,        ///< T = 0, fastest possible
 };
+
+enum class BinarizerV2 : uint32_t
+{
+	None			= 0,
+	LocalAverage 	= (1 << 0),	///< T = average of neighboring pixels for matrix and GlobalHistogram for linear (HybridBinarizer)
+	GlobalHistogram = (1 << 1), ///< T = valley between the 2 largest peaks in the histogram (per line in linear case)
+	FixedThreshold 	= (1 << 2),	///< T = 127
+	BoolCast 		= (1 << 3),	///< T = 0, fastest possible
+};
+
+BinarizerV2 UpgradeBinarizer(Binarizer binarizer);
+
+ZX_DECLARE_FLAGS(BinarizerSequence, BinarizerV2)
 
 enum class EanAddOnSymbol : unsigned char // see above
 {
@@ -68,6 +83,7 @@ class DecodeHints
 	uint8_t _maxNumberOfSymbols  = 0xff;
 	uint16_t _downscaleThreshold = 500;
 	BarcodeFormats _formats      = BarcodeFormat::None;
+	BinarizerSequence _binarizerSequence = BinarizerV2::None;
 
 public:
 	// bitfields don't get default initialized to 0 before c++20
@@ -154,6 +170,8 @@ public:
 	ZX_PROPERTY(CharacterSet, characterSet, setCharacterSet)
 	DecodeHints& setCharacterSet(std::string_view v)& { return _characterSet = CharacterSetFromString(v), *this; }
 	DecodeHints&& setCharacterSet(std::string_view v) && { return _characterSet = CharacterSetFromString(v), std::move(*this); }
+
+	ZX_PROPERTY(BinarizerSequence, binarizerSequence, setBinarizerSequence)
 
 #undef ZX_PROPERTY
 

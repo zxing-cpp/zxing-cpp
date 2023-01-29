@@ -97,6 +97,12 @@ inline int HighestBitSet(uint32_t v)
 	return 31 - NumberOfLeadingZeros(v);
 }
 
+template <typename Int>
+inline Int FilterLowestBit(Int v)
+{
+	return v & ~(v - 1);
+}
+
 // shift a whole array of bits by offset bits to the right (thinking of the array as a contiguous stream of bits
 // starting with the LSB of the first int and ending with the MSB of the last int, this is actually a left shift)
 template <typename T>
