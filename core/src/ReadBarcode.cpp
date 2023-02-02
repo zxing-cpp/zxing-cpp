@@ -11,6 +11,7 @@
 #include "MultiFormatReader.h"
 #include "ThresholdBinarizer.h"
 
+#include <climits>
 #include <memory>
 #include <stdexcept>
 
@@ -143,7 +144,7 @@ Results ReadBarcodes(const ImageView& _iv, const DecodeHints& hints)
 	LumImagePyramid pyramid(iv, hints.downscaleThreshold() * hints.tryDownscale(), hints.downscaleFactor());
 
 	Results results;
-	int maxSymbols = hints.maxNumberOfSymbols();
+	int maxSymbols = hints.maxNumberOfSymbols() ? hints.maxNumberOfSymbols() : INT_MAX;
 	for (auto&& iv : pyramid.layers) {
 		auto bitmap = CreateBitmap(hints.binarizer(), iv);
 		for (int invert = 0; invert <= static_cast<int>(hints.tryInvert()); ++invert) {
