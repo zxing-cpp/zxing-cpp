@@ -25,11 +25,11 @@ BitMatrix BinaryBitmap::binarize(const uint8_t threshold) const
 		// Specialize for a packed buffer with pixStride 1 to support auto vectorization (16x speedup on AVX2)
 		auto dst = res.row(0).begin();
 		for (auto src = _buffer.data(0, 0), end = _buffer.data(0, height()); src != end; ++src, ++dst)
-			*dst = *src <= threshold;
+			*dst = (*src <= threshold) * BitMatrix::SET_V;
 	} else {
 		auto processLine = [&res, threshold](int y, const auto* src, const int stride) {
 			for (auto& dst : res.row(y)) {
-				dst = *src <= threshold;
+				dst = (*src <= threshold) * BitMatrix::SET_V;
 				src += stride;
 			}
 		};

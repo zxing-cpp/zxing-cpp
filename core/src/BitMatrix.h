@@ -30,9 +30,6 @@ class BitMatrix
 	int _width = 0;
 	int _height = 0;
 	using data_t = uint8_t;
-	static constexpr data_t SET_V = 0xff; // allows playing with SIMD binarization
-	static constexpr data_t UNSET_V = 0;
-	static_assert(bool(SET_V) && !bool(UNSET_V), "SET_V needs to evaluate to true, UNSET_V to false, see iterator usage");
 
 	std::vector<data_t> _bits;
 	// There is nothing wrong to support this but disable to make it explicit since we may copy something very big here.
@@ -55,6 +52,10 @@ class BitMatrix
 	bool getBottomRightOnBit(int &right, int& bottom) const;
 
 public:
+	static constexpr data_t SET_V = 0xff; // allows playing with SIMD binarization
+	static constexpr data_t UNSET_V = 0;
+	static_assert(bool(SET_V) && !bool(UNSET_V), "SET_V needs to evaluate to true, UNSET_V to false, see iterator usage");
+
 	BitMatrix() = default;
 
 #ifdef __GNUC__
@@ -96,7 +97,7 @@ public:
 	void flipAll()
 	{
 		for (auto& i : _bits)
-			i = !i;
+			i = !i * SET_V;
 	}
 
 	/**
