@@ -59,10 +59,8 @@ const BitMatrix* BinaryBitmap::getBitMatrix() const
 
 void BinaryBitmap::invert()
 {
-	if (_cache->matrix) {
-		auto matrix = const_cast<BitMatrix*>(_cache->matrix.get());
+	if (auto matrix = const_cast<BitMatrix*>(getBitMatrix()))
 		matrix->flipAll();
-	}
 	_inverted = true;
 }
 
