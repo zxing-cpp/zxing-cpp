@@ -79,8 +79,6 @@ bool GlobalHistogramBinarizer::getPatternRow(int row, int rotation, PatternRow& 
 	if (buffer.width() < 3)
 		return false; // special casing the code below for a width < 3 makes no sense
 
-	res.clear();
-
 	const uint8_t* luminances = buffer.data(0, row);
 	const int pixStride = buffer.pixStride();
 	std::array<int, LUMINANCE_BUCKETS> buckets = {};
@@ -91,31 +89,42 @@ bool GlobalHistogramBinarizer::getPatternRow(int row, int rotation, PatternRow& 
 	if (blackPoint <= 0)
 		return false;
 
+	res.resize(buffer.width() + 2);
+	std::fill(res.begin(), res.end(), 0);
+	auto* intPos = res.data();
+
 	auto* lastPos = luminances;
 	bool lastVal = luminances[0] < blackPoint;
 	if (lastVal)
-		res.push_back(0); // first value is number of white pixels, here 0
+		intPos++; // first value is number of white pixels, here 0
 
 	auto process = [&](bool val, const uint8_t* p) {
-		if (val != lastVal) {
-			res.push_back(narrow_cast<PatternRow::value_type>((p - lastPos) / pixStride));
-			lastVal = val;
+		bool update = val != lastVal;
+		*intPos = update * narrow_cast<PatternRow::value_type>((p - lastPos) / pixStride);
+		intPos += update;
+		lastVal = val;
+		if (update)
 			lastPos = p;
-		}
 	};
 
-	for (auto *p = luminances + pixStride, *e = luminances + (buffer.width() - 1) * pixStride; p < e; p += pixStride)
-		process((-*(p - pixStride) + (int(*p) * 4) - *(p + pixStride)) / 2 < blackPoint, p);
+	// the optimizer can generate a specialized version for pixStride==1 (non-rotated input) that is about 2x faster
+	if (pixStride == 1)
+		for (auto *p = luminances + pixStride, *e = luminances + (buffer.width() - 1) * pixStride; p < e; p += pixStride)
+			process((-*(p - pixStride) + (int(*p) * 4) - *(p + pixStride)) / 2 < blackPoint, p);
+	else
+		for (auto *p = luminances + pixStride, *e = luminances + (buffer.width() - 1) * pixStride; p < e; p += pixStride)
+			process((-*(p - pixStride) + (int(*p) * 4) - *(p + pixStride)) / 2 < blackPoint, p);
 
 	auto* backPos = buffer.data(buffer.width() - 1, row);
 	bool backVal = *backPos < blackPoint;
 	process(backVal, backPos);
 
-	res.push_back(narrow_cast<PatternRow::value_type>((backPos - lastPos) / pixStride + 1));
+	*intPos++ = narrow_cast<PatternRow::value_type>((backPos - lastPos) / pixStride + 1);
 
 	if (backVal)
-		res.push_back(0); // last value is number of white pixels, here 0
+		intPos++;
 
+	res.resize(intPos - res.data());
 	assert(res.size() % 2 == 1);
 
 	return true;
