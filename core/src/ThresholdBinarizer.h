@@ -17,7 +17,7 @@ class ThresholdBinarizer : public BinaryBitmap
 	const uint8_t _threshold = 0;
 
 public:
-	ThresholdBinarizer(const ImageView& buffer, uint8_t threshold = 1) : BinaryBitmap(buffer), _threshold(threshold) {}
+	ThresholdBinarizer(const ImageView& buffer, uint8_t threshold = 128) : BinaryBitmap(buffer), _threshold(threshold) {}
 
 	bool getPatternRow(int row, int rotation, PatternRow& res) const override
 	{
