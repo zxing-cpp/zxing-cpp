@@ -35,16 +35,24 @@ static float CenterFromEnd(const std::array<T, N>& pattern, float end)
 template<typename Pattern, typename Cursor>
 std::optional<Pattern> ReadSymmetricPattern(Cursor& cur, int range)
 {
-	if (!cur.stepToEdge(std::tuple_size<Pattern>::value / 2 + 1, range))
-		return std::nullopt;
-
+	Pattern res = {};
+	auto constexpr s_2 = Size(res)/2;
+	auto cuo = cur;
 	cur.turnBack();
-	cur.step();
 
-	auto pattern = cur.template readPattern<Pattern>(range);
-	if (pattern.back() == 0)
-		return std::nullopt;
-	return pattern;
+	auto next = [&](auto& cur, int i) {
+		auto v = cur.stepToEdge(1, range);
+		res[s_2 + i] += v;
+		return v;
+	};
+
+	for (int i = 0; i <= s_2; ++i) {
+		if (!next(cur, i) || !next(cuo, -i))
+			return {};
+	}
+	res[s_2]--; // the starting pixel has been counted twice, fix this
+
+	return res;
 }
 
 template<bool RELAXED_THRESHOLD = false, typename FinderPattern>
