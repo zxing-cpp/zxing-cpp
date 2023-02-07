@@ -20,7 +20,7 @@ function scanBarcode(file) {
 
 		var buffer = zxing._malloc(fileData.length);
 		zxing.HEAPU8.set(fileData, buffer);
-		var result = zxing.readBarcode(buffer, fileData.length, true, format);
+		var result = zxing.readBarcodeFromImage(buffer, fileData.length, true, format);
 		zxing._free(buffer);
 
 		showImage(document.getElementById("drop_zone"), fileData, file.type, result.position);
