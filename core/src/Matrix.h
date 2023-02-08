@@ -43,8 +43,8 @@ public:
 			throw std::invalid_argument("invalid size: width * height is too big");
 	}
 
-	Matrix(Matrix&&) = default;
-	Matrix& operator=(Matrix&&) = default;
+	Matrix(Matrix&&) noexcept = default;
+	Matrix& operator=(Matrix&&) noexcept = default;
 
 	Matrix copy() const {
 		return *this;

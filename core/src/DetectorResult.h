@@ -28,8 +28,8 @@ class DetectorResult
 
 public:
 	DetectorResult() = default;
-	DetectorResult(DetectorResult&&) = default;
-	DetectorResult& operator=(DetectorResult&&) = default;
+	DetectorResult(DetectorResult&&) noexcept = default;
+	DetectorResult& operator=(DetectorResult&&) noexcept = default;
 
 	DetectorResult(BitMatrix&& bits, QuadrilateralI&& position) : _bits(std::move(bits)), _position(std::move(position)) {}
 

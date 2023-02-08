@@ -25,8 +25,8 @@ class DetectorResult : public ZXing::DetectorResult
 
 public:
 	DetectorResult() = default;
-	DetectorResult(DetectorResult&&) = default;
-	DetectorResult& operator=(DetectorResult&&) = default;
+	DetectorResult(DetectorResult&&) noexcept = default;
+	DetectorResult& operator=(DetectorResult&&) noexcept = default;
 
 	DetectorResult(ZXing::DetectorResult&& result, bool isCompact, int nbDatablocks, int nbLayers, bool readerInit, bool isMirrored)
 		: ZXing::DetectorResult{std::move(result)},

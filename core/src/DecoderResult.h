@@ -41,7 +41,7 @@ public:
 	DecoderResult(Content&& bytes) : _content(std::move(bytes)) {}
 
 	DecoderResult(DecoderResult&&) noexcept = default;
-	DecoderResult& operator=(DecoderResult&&) = default;
+	DecoderResult& operator=(DecoderResult&&) noexcept = default;
 
 	bool isValid(bool includeErrors = false) const
 	{
