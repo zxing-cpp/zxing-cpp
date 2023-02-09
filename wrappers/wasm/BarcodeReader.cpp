@@ -15,10 +15,10 @@
 
 struct ReadResult
 {
-	std::string format;
-	std::string text;
-	std::string error;
-	ZXing::Position position;
+	std::string format{};
+	std::string text{};
+	std::string error{};
+	ZXing::Position position{};
 };
 
 ReadResult readBarcodeFromImageView(ZXing::ImageView iv, bool tryHarder, const std::string& format)
@@ -36,14 +36,12 @@ ReadResult readBarcodeFromImageView(ZXing::ImageView iv, bool tryHarder, const s
 		auto results = ReadBarcodes(iv, hints);
 		if (!results.empty()) {
 			auto& result = results.front();
-			return { ToString(result.format()), result.text(), "", result.position() };
+			return {ToString(result.format()), result.text(), "", result.position()};
 		}
-	}
-	catch (const std::exception& e) {
-		return { "", "", e.what() };
-	}
-	catch (...) {
-		return { "", "", "Unknown error" };
+	} catch (const std::exception& e) {
+		return {"", "", e.what()};
+	} catch (...) {
+		return {"", "", "Unknown error"};
 	}
 	return {};
 }
@@ -56,9 +54,8 @@ ReadResult readBarcodeFromImage(int bufferPtr, int bufferLength, bool tryHarder,
 	std::unique_ptr<stbi_uc, void (*)(void*)> buffer(
 		stbi_load_from_memory(reinterpret_cast<const unsigned char*>(bufferPtr), bufferLength, &width, &height, &channels, 4),
 		stbi_image_free);
-	if (buffer == nullptr) {
+	if (buffer == nullptr)
 		return {"", "", "Error loading image"};
-	}
 
 	return readBarcodeFromImageView({buffer.get(), width, height, ImageFormat::RGBX}, tryHarder, format);
 }
@@ -94,4 +91,4 @@ EMSCRIPTEN_BINDINGS(BarcodeReader)
 
 	function("readBarcodeFromImage", &readBarcodeFromImage);
 	function("readBarcodeFromPixmap", &readBarcodeFromPixmap);
-}
+};
