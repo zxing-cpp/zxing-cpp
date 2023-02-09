@@ -52,12 +52,12 @@ ReadResult readBarcodeFromImage(int bufferPtr, int bufferLength, bool tryHarder,
 
 	int width, height, channels;
 	std::unique_ptr<stbi_uc, void (*)(void*)> buffer(
-		stbi_load_from_memory(reinterpret_cast<const unsigned char*>(bufferPtr), bufferLength, &width, &height, &channels, 4),
+		stbi_load_from_memory(reinterpret_cast<const unsigned char*>(bufferPtr), bufferLength, &width, &height, &channels, 1),
 		stbi_image_free);
 	if (buffer == nullptr)
 		return {"", "", "Error loading image"};
 
-	return readBarcodeFromImageView({buffer.get(), width, height, ImageFormat::RGBX}, tryHarder, format);
+	return readBarcodeFromImageView({buffer.get(), width, height, ImageFormat::Lum}, tryHarder, format);
 }
 
 ReadResult readBarcodeFromPixmap(int bufferPtr, int imgWidth, int imgHeight, bool tryHarder, std::string format)
