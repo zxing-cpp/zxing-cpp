@@ -13,7 +13,7 @@ option (BUILD_READERS "Build with reader support (decoders)" ON)
 set(BUILD_EMSCRIPTEN_ENVIRONMENT "web" CACHE STRING "Optimize build for given emscripten runtime environment (web/node/shell/worker)")
 
 if (NOT CMAKE_BUILD_TYPE)
-    set (CMAKE_BUILD_TYPE "MinSizeRel" CACHE STRING "Choose the type of build." FORCE)
+    set (CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build." FORCE)
 endif()
 
 add_definitions ("-s DISABLE_EXCEPTION_CATCHING=0")
