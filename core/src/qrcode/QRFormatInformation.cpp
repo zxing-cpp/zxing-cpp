@@ -137,7 +137,7 @@ FormatInformation FormatInformation::DecodeQR(uint32_t formatInfoBits1, uint32_t
  */
 FormatInformation FormatInformation::DecodeMQR(uint32_t formatInfoBits)
 {
-	// We don't use the additional masking (with 0x4445) to work around potentially non complying MircoQRCode encoders
+	// We don't use the additional masking (with 0x4445) to work around potentially non complying MicroQRCode encoders
 	auto fi = FindBestFormatInfo(0, FORMAT_INFO_DECODE_LOOKUP_MICRO, {formatInfoBits, MirrorBits(formatInfoBits)});
 
 	constexpr uint8_t BITS_TO_VERSION[] = {1, 2, 2, 3, 3, 4, 4, 4};
