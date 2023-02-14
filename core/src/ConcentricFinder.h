@@ -43,6 +43,8 @@ std::optional<Pattern> ReadSymmetricPattern(Cursor& cur, int range)
 	auto next = [&](auto& cur, int i) {
 		auto v = cur.stepToEdge(1, range);
 		res[s_2 + i] += v;
+		if (range)
+			range -= v;
 		return v;
 	};
 

@@ -124,7 +124,7 @@ static std::vector<ConcentricPattern> FindPureFinderPattern(const BitMatrix& ima
 
 	PointF p(left + width / 2, top + height / 2);
 	constexpr auto PATTERN = FixedPattern<7, 7>{1, 1, 1, 1, 1, 1, 1};
-	if (auto pattern = LocateConcentricPattern(image, PATTERN, p, width / 3))
+	if (auto pattern = LocateConcentricPattern(image, PATTERN, p, width / 2))
 		return {*pattern};
 	else
 		return {};

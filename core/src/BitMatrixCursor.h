@@ -171,8 +171,13 @@ public:
 	ARRAY readPattern(int range = 0)
 	{
 		ARRAY res;
-		for (auto& i : res)
+		for (auto& i : res) {
 			i = stepToEdge(1, range);
+			if (!i)
+				return res;
+			if (range)
+				range -= i;
+		}
 		return res;
 	}
 

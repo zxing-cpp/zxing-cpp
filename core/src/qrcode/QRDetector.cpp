@@ -60,7 +60,7 @@ std::vector<ConcentricPattern> FindFinderPatterns(const BitMatrix& image, bool t
 			// make sure p is not 'inside' an already found pattern area
 			if (FindIf(res, [p](const auto& old) { return distance(p, old) < old.size / 2; }) == res.end()) {
 				auto pattern = LocateConcentricPattern(image, PATTERN, p,
-													   Reduce(next) * 3 / 2); // 1.5 for very skewed samples
+													   Reduce(next) * 3); // 3 for very skewed samples
 				if (pattern) {
 					log(*pattern, 3);
 					assert(image.get(pattern->x, pattern->y));
@@ -302,7 +302,7 @@ DetectorResult SampleQR(const BitMatrix& image, const FinderPatternSet& fp)
 				// if we did not land on a black pixel or the concentric pattern finder fails,
 				// leave the intersection of the lines as the best guess
 				if (image.get(brCoR)) {
-					if (auto brCP = LocateConcentricPattern<true>(image, FixedPattern<3, 3>{1, 1, 1}, brCoR, moduleSize * 3))
+					if (auto brCP = LocateConcentricPattern<true>(image, FixedPattern<3, 3>{1, 1, 1}, brCoR, moduleSize * 3 * 2))
 						return sample(*brCP, quad[2] - PointF(3, 3));
 				}
 			}
@@ -345,7 +345,7 @@ DetectorResult DetectPureQR(const BitMatrix& image)
 	Pattern diagonal;
 	// allow corners be moved one pixel inside to accommodate for possible aliasing artifacts
 	for (auto [p, d] : {std::pair(tl, PointI{1, 1}), {tr, {-1, 1}}, {bl, {1, -1}}}) {
-		diagonal = BitMatrixCursorI(image, p, d).readPatternFromBlack<Pattern>(1, width / 3);
+		diagonal = BitMatrixCursorI(image, p, d).readPatternFromBlack<Pattern>(1, width / 3 + 1);
 		if (!IsPattern(diagonal, PATTERN))
 			return {};
 	}
