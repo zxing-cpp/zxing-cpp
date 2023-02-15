@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.15)
 project(ZXingPython)
 
 set (pybind11_git_repo https://github.com/pybind/pybind11.git)
