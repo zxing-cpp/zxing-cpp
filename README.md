@@ -6,6 +6,16 @@ ZXing-C++ ("zebra crossing") is an open-source, multi-format linear/matrix barco
 
 It was originally ported from the Java [ZXing Library](https://github.com/zxing/zxing) but has been developed further and now includes many improvements in terms of quality and performance. It can both read and write barcodes in a number of formats.
 
+## Sponsors
+
+You can sponsor this library at [GitHub Sponsors](https://github.com/sponsors/axxel).
+
+Named Sponsors:
+* [Useful Sensors Inc](https://github.com/usefulsensors)
+* [Sergio Olivo](https://github.com/sergio-)
+
+Thanks a lot for your contribution!
+
 ## Features
 
 * Written in pure C++17 (/C++20), no third-party dependencies (for the library itself)
