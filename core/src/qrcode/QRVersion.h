@@ -58,7 +58,7 @@ public:
 	
 	static const Version* FromNumber(int versionNumber, bool isMicro = false);
 
-	static const Version* DecodeVersionInformation(int versionBits);
+	static const Version* DecodeVersionInformation(int versionBitsA, int versionBitsB = 0);
 
 private:
 	int _versionNumber;

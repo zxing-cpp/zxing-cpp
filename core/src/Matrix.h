@@ -78,16 +78,16 @@ public:
 		return operator()(x, y);
 	}
 
-	void set(int x, int y, value_t value) {
-		operator()(x, y) = value;
+	value_t& set(int x, int y, value_t value) {
+		return operator()(x, y) = value;
 	}
 
 	const value_t& get(PointI p) const {
 		return operator()(p.x, p.y);
 	}
 
-	void set(PointI p, value_t value) {
-		operator()(p.x, p.y) = value;
+	value_t& set(PointI p, value_t value) {
+		return operator()(p.x, p.y) = value;
 	}
 
 	const value_t* data() const {

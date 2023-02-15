@@ -39,8 +39,9 @@ std::optional<PointF> CenterOfDoubleCross(const BitMatrix& image, PointI center,
 
 std::optional<PointF> CenterOfRing(const BitMatrix& image, PointI center, int range, int nth, bool requireCircle)
 {
-	// range is the approximate width/height of the nth ring, if nth>1 then we can savely reduce the expected radius
-	int radius = nth > 1 && requireCircle ? range * 2 / 3 : range;
+	// range is the approximate width/height of the nth ring, if nth>1 then it would be plausible to limit the search radius
+	// to approximately range / 2 * sqrt(2) == range * 0.75 but it turned out to be too limiting with realworld/noisy data.
+	int radius = range;
 	log(center, 3);
 	BitMatrixCursorI cur(image, center, {0, 1});
 	if (!cur.stepToEdge(nth, radius))

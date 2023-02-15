@@ -323,22 +323,24 @@ const Version* Version::FromDimension(int dimension)
 	return FromNumber((dimension - DimensionOffset(isMicro)) / DimensionStep(isMicro), isMicro);
 }
 
-const Version* Version::DecodeVersionInformation(int versionBits)
+const Version* Version::DecodeVersionInformation(int versionBitsA, int versionBitsB)
 {
 	int bestDifference = std::numeric_limits<int>::max();
 	int bestVersion = 0;
 	int i = 0;
 	for (int targetVersion : VERSION_DECODE_INFO) {
 		// Do the version info bits match exactly? done.
-		if (targetVersion == versionBits) {
+		if (targetVersion == versionBitsA || targetVersion == versionBitsB) {
 			return FromNumber(i + 7);
 		}
 		// Otherwise see if this is the closest to a real version info bit string
 		// we have seen so far
-		int bitsDifference = BitHacks::CountBitsSet(versionBits ^ targetVersion);
-		if (bitsDifference < bestDifference) {
-			bestVersion = i + 7;
-			bestDifference = bitsDifference;
+		for (int bits : {versionBitsA, versionBitsB}) {
+			int bitsDifference = BitHacks::CountBitsSet(bits ^ targetVersion);
+			if (bitsDifference < bestDifference) {
+				bestVersion = i + 7;
+				bestDifference = bitsDifference;
+			}
 		}
 		++i;
 	}
