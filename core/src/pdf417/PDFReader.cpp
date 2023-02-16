@@ -25,8 +25,6 @@
 #include <utility>
 
 #ifdef PRINT_DEBUG
-#include "PDFDecoderResultExtra.h"
-#include "PDFDecodedBitStreamParser.h"
 #include "BitMatrixIO.h"
 #include <iostream>
 #endif

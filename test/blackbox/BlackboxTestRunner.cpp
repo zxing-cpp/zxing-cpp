@@ -6,14 +6,10 @@
 
 #include "BlackboxTestRunner.h"
 
-#include "DecoderResult.h"
 #include "ImageLoader.h"
 #include "ReadBarcode.h"
-#include "ThresholdBinarizer.h"
 #include "Utf.h"
 #include "ZXAlgorithms.h"
-#include "pdf417/PDFReader.h"
-#include "qrcode/QRReader.h"
 
 #include <fmt/core.h>
 #include <fmt/ostream.h>

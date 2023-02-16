@@ -6,11 +6,9 @@
 
 #pragma once
 
-#include "ByteArray.h"
 #include "Content.h"
 #include "Error.h"
 #include "StructuredAppend.h"
-#include "ZXAlgorithms.h"
 
 #include <memory>
 #include <string>
