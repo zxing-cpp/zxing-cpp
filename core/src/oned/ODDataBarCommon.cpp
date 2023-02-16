@@ -145,10 +145,16 @@ bool ReadDataCharacterRaw(const PatternView& view, int numModules, bool reversed
 #endif
 }
 
+static bool IsStacked(const Pair& first, const Pair& last)
+{
+	// check if we see two halfes that are far away from each other in y or overlapping in x
+	return std::abs(first.y - last.y) > (first.xStop - first.xStart) || last.xStart < (first.xStart + first.xStop) / 2;
+}
+
 Position EstimatePosition(const Pair& first, const Pair& last)
 {
-	if (first.y == last.y)
-		return Line(first.y, first.xStart, last.xStop);
+	if (!IsStacked(first, last))
+		return Line((first.y + last.y) / 2, first.xStart, last.xStop);
 	else
 		return Position{{first.xStart, first.y}, {first.xStop, first.y}, {last.xStop, last.y}, {last.xStart, last.y}};
 }
@@ -156,7 +162,7 @@ Position EstimatePosition(const Pair& first, const Pair& last)
 int EstimateLineCount(const Pair& first, const Pair& last)
 {
 	// see incrementLineCount() in ODReader.cpp for the -1 here
-	return std::min(first.count, last.count) * ((first.y == last.y) ? 1 : 2) - 1;
+	return std::min(first.count, last.count) - 1 + IsStacked(first, last);
 }
 
 } // namespace ZXing::OneD::DataBar

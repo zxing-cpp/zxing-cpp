@@ -95,6 +95,7 @@ TEST(ThresholdBinarizerTest, PatternRowClear)
 
 	bits = ParseBitMatrix(bitstream, 53 /*width*/);
 	hints.setFormats(BarcodeFormat::DataBarExpanded);
+	hints.setMinLineCount(1);
 	OneD::Reader reader(hints);
 
 	Result result = reader.decode(ThresholdBinarizer(getImageView(buf, bits), 0x7F));

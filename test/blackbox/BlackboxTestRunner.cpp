@@ -549,8 +549,8 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		});
 
 		runTests("rssexpandedstacked-1", "DataBarExpanded", 65, {
-			{ 60, 65, 0   },
-			{ 60, 65, 180 },
+			{ 55, 65, 0   },
+			{ 55, 65, 180 },
 			{ 60, 0, pure },
 		});
 
