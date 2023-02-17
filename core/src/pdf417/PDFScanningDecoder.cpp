@@ -341,13 +341,14 @@ static bool AdjustCodewordCount(const DetectionResult& detectionResult, std::vec
 {
 	auto numberOfCodewords = barcodeMatrix[0][1].value();
 	int calculatedNumberOfCodewords = detectionResult.barcodeColumnCount() * detectionResult.barcodeRowCount() - GetNumberOfECCodeWords(detectionResult.barcodeECLevel());
+	if (calculatedNumberOfCodewords < 1 || calculatedNumberOfCodewords > CodewordDecoder::MAX_CODEWORDS_IN_BARCODE)
+		calculatedNumberOfCodewords = 0;
 	if (numberOfCodewords.empty()) {
-		if (calculatedNumberOfCodewords < 1 || calculatedNumberOfCodewords > CodewordDecoder::MAX_CODEWORDS_IN_BARCODE) {
+		if (!calculatedNumberOfCodewords)
 			return false;
-		}
 		barcodeMatrix[0][1].setValue(calculatedNumberOfCodewords);
 	}
-	else if (numberOfCodewords[0] != calculatedNumberOfCodewords) {
+	else if (calculatedNumberOfCodewords && numberOfCodewords[0] != calculatedNumberOfCodewords) {
 		// The calculated one is more reliable as it is derived from the row indicator columns
 		barcodeMatrix[0][1].setValue(calculatedNumberOfCodewords);
 	}
