@@ -201,13 +201,7 @@ std::optional<QuadrilateralF> FindConcentricPatternCorners(const BitMatrix& imag
 	auto& innerCorners = *oInnerCorners;
 	auto& outerCorners = *oOuterCorners;
 
-	auto dist2First = [c = innerCorners[0]](auto a, auto b) { return distance(a, c) < distance(b, c); };
-	// rotate points such that the the two topLeft points are closest to each other
-	std::rotate(outerCorners.begin(), std::min_element(outerCorners.begin(), outerCorners.end(), dist2First), outerCorners.end());
-
-	QuadrilateralF res;
-	for (int i=0; i<4; ++i)
-		res[i] = (innerCorners[i] + outerCorners[i]) / 2;
+	auto res = Blend(innerCorners, outerCorners);
 
 	for (auto p : innerCorners)
 		log(p, 3);
