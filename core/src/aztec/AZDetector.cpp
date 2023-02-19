@@ -26,7 +26,7 @@
 
 namespace ZXing::Aztec {
 
-static bool IsAztectCenterPattern(const PatternView& view)
+static bool IsAztecCenterPattern(const PatternView& view)
 {
 	// find min/max of all subsequent black/white pairs and check that they 'close together'
 	auto m = view[0] + view[1];
@@ -38,7 +38,7 @@ static bool IsAztectCenterPattern(const PatternView& view)
 		else if (v > M)
 			M = v;
 	}
-	return M <= m * 4 / 3 && view[-1] >= view[Size(view) / 2] - 2 && view[Size(view)] >= view[Size(view) / 2] - 2;
+	return M <= m * 4 / 3 + 1 && view[-1] >= view[Size(view) / 2] - 2 && view[Size(view)] >= view[Size(view) / 2] - 2;
 };
 
 // specialized version of FindLeftGuard to find the '1,1,1,1,1,1,1' pattern of a compact Aztec center pattern
@@ -47,7 +47,7 @@ static PatternView FindAztecCenterPattern(const PatternView& view)
 	constexpr int minSize = 8; // Aztec runes
 	auto window = view.subView(0, 7);
 	for (auto end = view.end() - minSize; window.data() < end; window.skipPair())
-		if (IsAztectCenterPattern(window))
+		if (IsAztecCenterPattern(window))
 			return window;
 
 	return {};
@@ -90,7 +90,7 @@ static int CheckDirection(BitMatrixCursorF& cur, PointF dir, int range, bool upd
 				m = v;
 			else if (v > M)
 				M = v;
-			if (M > m * 4 / 3)
+			if (M > m * 4 / 3 + 1)
 				return 0;
 			spread += s;
 			lastS = s;
