@@ -179,31 +179,26 @@ FinderPatternSets GenerateFinderPatternSets(FinderPatterns& patterns)
 	return res;
 }
 
-static double EstimateModuleSize(const BitMatrix& image, PointF a, PointF b)
+static double EstimateModuleSize(const BitMatrix& image, ConcentricPattern a, ConcentricPattern b)
 {
 	BitMatrixCursorF cur(image, a, b - a);
 	assert(cur.isBlack());
 
-	if (!cur.stepToEdge(3, static_cast<int>(distance(a, b) / 3), true))
+	auto pattern = ReadSymmetricPattern<std::array<PatternView::value_type, 5>>(cur, a.size * 2);
+	if (!pattern || !IsPattern<true>(*pattern, PATTERN))
 		return -1;
 
-	assert(cur.isBlack());
-	cur.turnBack();
-
-
-	auto pattern = cur.readPattern<std::array<int, 5>>();
-
-	return (2 * Reduce(pattern) - pattern[0] - pattern[4]) / 12.0 * length(cur.d);
+	return (2 * Reduce(*pattern) - (*pattern)[0] - (*pattern)[4]) / 12.0 * length(cur.d);
 }
 
 struct DimensionEstimate
 {
 	int dim = 0;
 	double ms = 0;
-	int err = 0;
+	int err = 4;
 };
 
-static DimensionEstimate EstimateDimension(const BitMatrix& image, PointF a, PointF b)
+static DimensionEstimate EstimateDimension(const BitMatrix& image, ConcentricPattern a, ConcentricPattern b)
 {
 	auto ms_a = EstimateModuleSize(image, a, b);
 	auto ms_b = EstimateModuleSize(image, b, a);
@@ -329,10 +324,10 @@ DetectorResult SampleQR(const BitMatrix& image, const FinderPatternSet& fp)
 	auto top  = EstimateDimension(image, fp.tl, fp.tr);
 	auto left = EstimateDimension(image, fp.tl, fp.bl);
 
-	if (!top.dim || !left.dim)
+	if (!top.dim && !left.dim)
 		return {};
 
-	auto best = top.err < left.err ? top : left;
+	auto best = top.err == left.err ? (top.dim > left.dim ? top : left) : (top.err < left.err ? top : left);
 	int dimension = best.dim;
 	int moduleSize = static_cast<int>(best.ms + 1);
 
@@ -515,7 +510,8 @@ DetectorResult DetectPureQR(const BitMatrix& image)
 	}
 
 	auto fpWidth = Reduce(diagonal);
-	auto dimension = EstimateDimension(image, tl + fpWidth / 2 * PointF(1, 1), tr + fpWidth / 2 * PointF(-1, 1)).dim;
+	auto dimension =
+		EstimateDimension(image, {tl + fpWidth / 2 * PointF(1, 1), fpWidth}, {tr + fpWidth / 2 * PointF(-1, 1), fpWidth}).dim;
 
 	float moduleSize = float(width) / dimension;
 	if (dimension < MIN_MODULES || dimension > MAX_MODULES ||
