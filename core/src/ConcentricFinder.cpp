@@ -182,31 +182,35 @@ static bool QuadrilateralIsPlausibleSquare(const QuadrilateralF q, int lineIndex
 	return m >= lineIndex * 2 && m > M / 3;
 }
 
+static std::optional<QuadrilateralF> FitSquareToPoints(const BitMatrix& image, PointF center, int range, int lineIndex, bool backup)
+{
+	auto points = CollectRingPoints(image, center, range, lineIndex, backup);
+	if (points.empty())
+		return {};
+
+	auto res = FitQadrilateralToPoints(center, points);
+	if (!res || !QuadrilateralIsPlausibleSquare(*res, lineIndex - backup))
+		return {};
+
+	return res;
+}
+
 std::optional<QuadrilateralF> FindConcentricPatternCorners(const BitMatrix& image, PointF center, int range, int lineIndex)
 {
-	auto innerPoints = CollectRingPoints(image, center, range, lineIndex, false);
-	auto outerPoints = CollectRingPoints(image, center, range, lineIndex + 1, true);
-
-	if (innerPoints.empty() || outerPoints.empty())
+	auto innerCorners = FitSquareToPoints(image, center, range, lineIndex, false);
+	if (!innerCorners)
 		return {};
 
-	auto oInnerCorners = FitQadrilateralToPoints(center, innerPoints);
-	if (!oInnerCorners || !QuadrilateralIsPlausibleSquare(*oInnerCorners, lineIndex))
+	auto outerCorners = FitSquareToPoints(image, center, range, lineIndex + 1, true);
+	if (!outerCorners)
 		return {};
 
-	auto oOuterCorners = FitQadrilateralToPoints(center, outerPoints);
-	if (!oOuterCorners || !QuadrilateralIsPlausibleSquare(*oOuterCorners, lineIndex))
-		return {};
+	auto res = Blend(*innerCorners, *outerCorners);
 
-	auto& innerCorners = *oInnerCorners;
-	auto& outerCorners = *oOuterCorners;
-
-	auto res = Blend(innerCorners, outerCorners);
-
-	for (auto p : innerCorners)
+	for (auto p : *innerCorners)
 		log(p, 3);
 
-	for (auto p : outerCorners)
+	for (auto p : *outerCorners)
 		log(p, 3);
 
 	for (auto p : res)
