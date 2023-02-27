@@ -156,12 +156,12 @@ struct FixedPattern
 template <int N, int SUM>
 using FixedSparcePattern = FixedPattern<N, SUM, true>;
 
-template <bool RELAXED_THRESHOLD = false, int N, int SUM>
-float IsPattern(const PatternView& view, const FixedPattern<N, SUM, false>& pattern, int spaceInPixel = 0,
+template <bool RELAXED_THRESHOLD = false, int LEN, int SUM>
+float IsPattern(const PatternView& view, const FixedPattern<LEN, SUM, false>& pattern, int spaceInPixel = 0,
 				float minQuietZone = 0, float moduleSizeRef = 0)
 {
-	int width = view.sum(N);
-	if (SUM > N && width < SUM)
+	int width = view.sum(LEN);
+	if (SUM > LEN && width < SUM)
 		return 0;
 
 	const float moduleSize = (float)width / SUM;
@@ -176,7 +176,7 @@ float IsPattern(const PatternView& view, const FixedPattern<N, SUM, false>& patt
 	// TODO: review once we have upsampling in the binarizer in place.
 	const float threshold = moduleSizeRef * (0.5f + RELAXED_THRESHOLD * 0.25f) + 0.5f;
 
-	for (int x = 0; x < N; ++x)
+	for (int x = 0; x < LEN; ++x)
 		if (std::abs(view[x] - pattern[x] * moduleSizeRef) > threshold)
 			return 0;
 
