@@ -28,6 +28,7 @@ class BinaryBitmap
 	struct Cache;
 	std::unique_ptr<Cache> _cache;
 	bool _inverted = false;
+	bool _closed = false;
 
 protected:
 	const ImageView _buffer;
@@ -57,6 +58,9 @@ public:
 
 	void invert();
 	bool inverted() const { return _inverted; }
+
+	void close();
+	bool closed() const { return _closed; }
 };
 
 } // ZXing

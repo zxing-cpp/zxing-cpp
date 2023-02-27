@@ -152,6 +152,7 @@ int main(int argc, char* argv[])
 	bool bytesOnly = false;
 	int ret = 0;
 
+	hints.setTryDenoise(true);
 	hints.setTextMode(TextMode::HRI);
 	hints.setEanAddOnSymbol(EanAddOnSymbol::Read);
 
