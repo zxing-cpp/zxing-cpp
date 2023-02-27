@@ -114,8 +114,10 @@ std::optional<PointF> FinetuneConcentricPatternCenter(const BitMatrix& image, Po
 static std::vector<PointF> CollectRingPoints(const BitMatrix& image, PointF center, int range, int edgeIndex, bool backup)
 {
 	PointI centerI(center);
+	int radius = range;
 	BitMatrixCursorI cur(image, centerI, {0, 1});
-	cur.stepToEdge(edgeIndex, range, backup);
+	if (!cur.stepToEdge(edgeIndex, radius, backup))
+		return {};
 	cur.turnRight(); // move clock wise and keep edge on the right/left depending on backup
 	const auto edgeDir = backup ? Direction::LEFT : Direction::RIGHT;
 
@@ -135,7 +137,7 @@ static std::vector<PointF> CollectRingPoints(const BitMatrix& image, PointF cent
 			return {};
 
 		// use L-inf norm, simply because it is a lot faster than L2-norm and sufficiently accurate
-		if (maxAbsComponent(cur.p - center) > range || centerI == cur.p || Size(points) > 4 * 2 * range)
+		if (maxAbsComponent(cur.p - centerI) > radius || centerI == cur.p || Size(points) > 4 * 2 * range)
 			return {};
 
 	} while (cur.p != start);
