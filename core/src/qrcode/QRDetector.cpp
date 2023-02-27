@@ -430,12 +430,12 @@ DetectorResult SampleQR(const BitMatrix& image, const FinderPatternSet& fp)
 
 				// find the two closest valid alignment pattern pixel positions both horizontally and vertically
 				std::vector<PointF> hori, verti;
-				for (int i = 2; i < 2 * N && Size(hori) < 2; ++i) {
+				for (int i = 2; i < 2 * N + 2 && Size(hori) < 2; ++i) {
 					int xi = x + i / 2 * (i%2 ? 1 : -1);
 					if (0 <= xi && xi <= N && apP(xi, y))
 						hori.push_back(*apP(xi, y));
 				}
-				for (int i = 2; i < 2 * N && Size(verti) < 2; ++i) {
+				for (int i = 2; i < 2 * N + 2 && Size(verti) < 2; ++i) {
 					int yi = y + i / 2 * (i%2 ? 1 : -1);
 					if (0 <= yi && yi <= N && apP(x, yi))
 						verti.push_back(*apP(x, yi));
@@ -455,7 +455,7 @@ DetectorResult SampleQR(const BitMatrix& image, const FinderPatternSet& fp)
 			mod2Pix = Mod2Pix(dimension, PointF(3, 3), {fp.tl, fp.tr, *c, fp.bl});
 
 		// go over the whole set of alignment patters again and fill any remaining gaps by a projection based on an updated mod2Pix
-		// projection. This works if the symbol is flat, wich is a reasonable fall-back assumption
+		// projection. This works if the symbol is flat, wich is a reasonable fall-back assumption.
 		for (int y = 0; y <= N; ++y)
 			for (int x = 0; x <= N; ++x) {
 				if (apP(x, y))
