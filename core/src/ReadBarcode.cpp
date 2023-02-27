@@ -142,9 +142,12 @@ Results ReadBarcodes(const ImageView& _iv, const DecodeHints& hints)
 		return {reader.read(*CreateBitmap(hints.binarizer(), iv))};
 
 	auto formatsBenefittingFromClosing = BarcodeFormat::Aztec | BarcodeFormat::DataMatrix | BarcodeFormat::QRCode;
+	DecodeHints closedHints = hints;
 	std::unique_ptr<MultiFormatReader> closedReader;
-	if (hints.tryDenoise() && (hints.formats().empty() || hints.formats().testFlags(formatsBenefittingFromClosing)))
-		closedReader = std::make_unique<MultiFormatReader>(DecodeHints(hints).setFormats(hints.formats() & formatsBenefittingFromClosing));
+	if (hints.tryDenoise() && hints.hasFormat(formatsBenefittingFromClosing)) {
+		closedHints.setFormats((hints.formats().empty() ? BarcodeFormat::Any : hints.formats()) & formatsBenefittingFromClosing);
+		closedReader = std::make_unique<MultiFormatReader>(closedHints);
+	}
 
 	LumImagePyramid pyramid(iv, hints.downscaleThreshold() * hints.tryDownscale(), hints.downscaleFactor());
 
