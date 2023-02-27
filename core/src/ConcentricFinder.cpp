@@ -42,11 +42,14 @@ std::optional<PointF> CenterOfRing(const BitMatrix& image, PointI center, int ra
 	// range is the approximate width/height of the nth ring, if nth>1 then it would be plausible to limit the search radius
 	// to approximately range / 2 * sqrt(2) == range * 0.75 but it turned out to be too limiting with realworld/noisy data.
 	int radius = range;
+	bool inner = nth < 0;
+	nth = std::abs(nth);
 	log(center, 3);
 	BitMatrixCursorI cur(image, center, {0, 1});
-	if (!cur.stepToEdge(nth, radius))
+	if (!cur.stepToEdge(nth, radius, inner))
 		return {};
-	cur.turnRight(); // move clock wise and keep edge on the right
+	cur.turnRight(); // move clock wise and keep edge on the right/left depending on backup
+	const auto edgeDir = inner ? Direction::LEFT : Direction::RIGHT;
 
 	uint32_t neighbourMask = 0;
 	auto start = cur.p;
@@ -60,7 +63,7 @@ std::optional<PointF> CenterOfRing(const BitMatrix& image, PointI center, int ra
 		// find out if we come full circle around the center. 8 bits have to be set in the end.
 		neighbourMask |= (1 << (4 + dot(bresenhamDirection(cur.p - center), PointI(1, 3))));
 
-		if (!cur.stepAlongEdge(Direction::RIGHT))
+		if (!cur.stepAlongEdge(edgeDir))
 			return {};
 
 		// use L-inf norm, simply because it is a lot faster than L2-norm and sufficiently accurate

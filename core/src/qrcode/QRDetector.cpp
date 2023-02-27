@@ -285,7 +285,7 @@ static std::optional<PointF> LocateAlignmentPattern(const BitMatrix& image, int 
 			continue;
 
 		if (auto cor1 = CenterOfRing(image, PointI(*cor), moduleSize, 1))
-			if (auto cor2 = CenterOfRing(image, PointI(*cor), moduleSize * 3, 2))
+			if (auto cor2 = CenterOfRing(image, PointI(*cor), moduleSize * 3, -2))
 				if (distance(*cor1, *cor2) < moduleSize / 2) {
 					auto res = (*cor1 + *cor2) / 2;
 					log(res, 3);
