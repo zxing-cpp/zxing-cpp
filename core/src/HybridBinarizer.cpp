@@ -31,7 +31,8 @@ HybridBinarizer::~HybridBinarizer() = default;
 * See the following thread for a discussion of this algorithm:
 *  http://groups.google.com/group/zxing/browse_thread/thread/d06efa2c35a7ddc0
 */
-static Matrix<int> CalculateBlackPoints(const uint8_t* luminances, int subWidth, int subHeight, int width, int height, int rowStride)
+static Matrix<int> CalculateBlackPoints(const uint8_t* __restrict luminances, int subWidth, int subHeight, int width, int height,
+										int rowStride)
 {
 	Matrix<int>	blackPoints(subWidth, subHeight);
 
@@ -98,7 +99,8 @@ static Matrix<int> CalculateBlackPoints(const uint8_t* luminances, int subWidth,
 /**
 * Applies a single threshold to a block of pixels.
 */
-static void ThresholdBlock(const uint8_t* luminances, int xoffset, int yoffset, int threshold, int rowStride, BitMatrix& matrix)
+static void ThresholdBlock(const uint8_t* __restrict luminances, int xoffset, int yoffset, int threshold, int rowStride,
+						   BitMatrix& matrix)
 {
 	for (int y = yoffset; y < yoffset + BLOCK_SIZE; ++y) {
 		auto* src = luminances + y * rowStride + xoffset;
@@ -114,7 +116,7 @@ static void ThresholdBlock(const uint8_t* luminances, int xoffset, int yoffset, 
 * of the blocks around it. Also handles the corner cases (fractional blocks are computed based
 * on the last pixels in the row/column which are also used in the previous block).
 */
-static std::shared_ptr<BitMatrix> CalculateMatrix(const uint8_t* luminances, int subWidth, int subHeight, int width,
+static std::shared_ptr<BitMatrix> CalculateMatrix(const uint8_t* __restrict luminances, int subWidth, int subHeight, int width,
 												  int height, int rowStride, const Matrix<int>& blackPoints)
 {
 	auto matrix = std::make_shared<BitMatrix>(width, height);
