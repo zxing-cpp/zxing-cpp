@@ -12,6 +12,8 @@
 #include "Utf.h"
 #include "ZXAlgorithms.h"
 
+#include <cctype>
+
 namespace ZXing {
 
 std::string ToString(ContentType type)
