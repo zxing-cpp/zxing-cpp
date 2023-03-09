@@ -19,7 +19,9 @@
 
 namespace ZXing {
 
-using PatternRow = std::vector<uint16_t>;
+using PatternType = uint16_t;
+template<int N> using Pattern = std::array<PatternType, N>;
+using PatternRow = std::vector<PatternType>;
 
 class PatternView
 {
@@ -43,7 +45,7 @@ public:
 	PatternView(Iterator data, int size, Iterator base, Iterator end) : _data(data), _size(size), _base(base), _end(end) {}
 
 	template <size_t N>
-	PatternView(const std::array<value_type, N>& row) : _data(row.data()), _size(N)
+	PatternView(const Pattern<N>& row) : _data(row.data()), _size(N)
 	{}
 
 	Iterator data() const { return _data; }
@@ -134,7 +136,7 @@ struct BarAndSpace
 	bool isValid() const { return bar != T{} && space != T{}; }
 };
 
-using BarAndSpaceI = BarAndSpace<PatternView::value_type>;
+using BarAndSpaceI = BarAndSpace<PatternType>;
 
 /**
  * @brief FixedPattern describes a compile-time constant (start/stop) pattern.

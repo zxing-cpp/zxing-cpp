@@ -27,6 +27,8 @@ inline Direction opposite(Direction dir) noexcept
 template<typename POINT>
 class BitMatrixCursor
 {
+	using this_t = BitMatrixCursor<POINT>;
+
 public:
 	const BitMatrix* img;
 
@@ -89,8 +91,8 @@ public:
 	Value edgeAtRight() const noexcept { return edgeAt(right()); }
 	Value edgeAt(Direction dir) const noexcept { return edgeAt(direction(dir)); }
 
-	void setDirection(PointF dir) { d = bresenhamDirection(dir); }
-	void setDirection(PointI dir) { d = dir; }
+	this_t& setDirection(PointF dir) { return d = bresenhamDirection(dir), *this; }
+	this_t& setDirection(PointI dir) { return d = dir, *this; }
 
 	bool step(typename POINT::value_t s = 1)
 	{
@@ -98,12 +100,8 @@ public:
 		return isIn(p);
 	}
 
-	BitMatrixCursor<POINT> movedBy(POINT d) const
-	{
-		auto res = *this;
-		res.p += d;
-		return res;
-	}
+	this_t movedBy(POINT o) const noexcept { return {*img, p + o, d}; }
+	this_t turnedBack() const noexcept { return {*img, p, back()}; }
 
 	/**
 	 * @brief stepToEdge advances cursor to one step behind the next (or n-th) edge.

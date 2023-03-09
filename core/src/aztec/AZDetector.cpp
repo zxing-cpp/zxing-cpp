@@ -53,13 +53,11 @@ static PatternView FindAztecCenterPattern(const PatternView& view)
 	return {};
 };
 
-static int CheckDirection(BitMatrixCursorF& cur, PointF dir, int range, bool updatePosition)
+static int CheckSymmetricAztecCenterPattern(BitMatrixCursorI& cur, int range, bool updatePosition)
 {
 	range *= 2; // tilted symbols may have a larger vertical than horizontal range
 	auto pOri = cur.p;
-	auto cuo = cur;
-	cur.setDirection(dir);
-	cuo.setDirection(-dir);
+	auto cuo = cur.turnedBack();
 
 	int centerUp = cur.stepToEdge(1, range / 7);
 	if (!centerUp)
@@ -104,16 +102,16 @@ static int CheckDirection(BitMatrixCursorF& cur, PointF dir, int range, bool upd
 
 static std::optional<ConcentricPattern> LocateAztecCenter(const BitMatrix& image, PointF center, int spreadH)
 {
-	auto cur = BitMatrixCursorF(image, center, {});
+	auto cur = BitMatrixCursor(image, PointI(center), {});
 	int minSpread = spreadH, maxSpread = 0;
-	for (auto d : {PointF{0, 1}, {1, 0}, {1, 1}, {1, -1}}) {
-		int spread = CheckDirection(cur, d, spreadH, d.x == 0);
+	for (auto d : {PointI{0, 1}, {1, 0}, {1, 1}, {1, -1}}) {
+		int spread = CheckSymmetricAztecCenterPattern(cur.setDirection(d), spreadH, d.x == 0);
 		if (!spread)
 			return {};
 		UpdateMinMax(minSpread, maxSpread, spread);
 	}
 
-	return ConcentricPattern{cur.p, (maxSpread + minSpread) / 2};
+	return ConcentricPattern{centered(cur.p), (maxSpread + minSpread) / 2};
 }
 
 static std::vector<ConcentricPattern> FindPureFinderPattern(const BitMatrix& image)

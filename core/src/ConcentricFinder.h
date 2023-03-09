@@ -32,13 +32,14 @@ static float CenterFromEnd(const std::array<T, N>& pattern, float end)
 	}
 }
 
-template<typename Pattern, typename Cursor>
-std::optional<Pattern> ReadSymmetricPattern(Cursor& cur, int range)
+template<int N, typename Cursor>
+std::optional<Pattern<N>> ReadSymmetricPattern(Cursor& cur, int range)
 {
-	Pattern res = {};
+	static_assert(N % 2 == 1);
+	assert(range > 0);
+	Pattern<N> res = {};
 	auto constexpr s_2 = Size(res)/2;
-	auto cuo = cur;
-	cur.turnBack();
+	auto cuo = cur.turnedBack();
 
 	auto next = [&](auto& cur, int i) {
 		auto v = cur.stepToEdge(1, range);
@@ -57,23 +58,20 @@ std::optional<Pattern> ReadSymmetricPattern(Cursor& cur, int range)
 	return res;
 }
 
-template<bool RELAXED_THRESHOLD = false, typename FinderPattern>
-int CheckDirection(BitMatrixCursorF& cur, PointF dir, FinderPattern finderPattern, int range, bool updatePosition)
+template<bool RELAXED_THRESHOLD = false, typename PATTERN>
+int CheckSymmetricPattern(BitMatrixCursorI& cur, PATTERN pattern, int range, bool updatePosition)
 {
-	using Pattern = std::array<PatternView::value_type, finderPattern.size()>;
-
 	auto pOri = cur.p;
-	cur.setDirection(dir);
-	auto pattern = ReadSymmetricPattern<Pattern>(cur, range);
-	if (!pattern || !IsPattern<RELAXED_THRESHOLD>(*pattern, finderPattern))
-		return 0;
+	auto view = ReadSymmetricPattern<pattern.size()>(cur, range);
+	if (!view || !IsPattern<RELAXED_THRESHOLD>(*view, pattern))
+		return cur.p = pOri, 0;
 
 	if (updatePosition)
-		cur.step(CenterFromEnd(*pattern, 0.5) - 1);
+		cur.step(CenterFromEnd(*view, 0.5) - 1);
 	else
 		cur.p = pOri;
 
-	return Reduce(*pattern);
+	return Reduce(*view);
 }
 
 std::optional<PointF> CenterOfRing(const BitMatrix& image, PointI center, int range, int nth, bool requireCircle = true);
@@ -87,21 +85,21 @@ struct ConcentricPattern : public PointF
 	int size = 0;
 };
 
-template <bool RELAXED_THRESHOLD = false, typename FINDER_PATTERN>
-std::optional<ConcentricPattern> LocateConcentricPattern(const BitMatrix& image, FINDER_PATTERN finderPattern, PointF center, int range)
+template <bool RELAXED_THRESHOLD = false, typename PATTERN>
+std::optional<ConcentricPattern> LocateConcentricPattern(const BitMatrix& image, PATTERN pattern, PointF center, int range)
 {
-	auto cur = BitMatrixCursorF(image, center, {});
+	auto cur = BitMatrixCursor(image, PointI(center), {});
 	int minSpread = image.width(), maxSpread = 0;
-	for (auto d : {PointF{0, 1}, {1, 0}}) {
-		int spread = CheckDirection<RELAXED_THRESHOLD>(cur, d, finderPattern, range, !RELAXED_THRESHOLD);
+	for (auto d : {PointI{0, 1}, {1, 0}}) {
+		int spread = CheckSymmetricPattern<RELAXED_THRESHOLD>(cur.setDirection(d), pattern, range, true);
 		if (!spread)
 			return {};
 		UpdateMinMax(minSpread, maxSpread, spread);
 	}
 
 #if 1
-	for (auto d : {PointF{1, 1}, {1, -1}}) {
-		int spread = CheckDirection<true>(cur, d, finderPattern, range, false);
+	for (auto d : {PointI{1, 1}, {1, -1}}) {
+		int spread = CheckSymmetricPattern<true>(cur.setDirection(d), pattern, range * 2, false);
 		if (!spread)
 			return {};
 		UpdateMinMax(minSpread, maxSpread, spread);
@@ -111,7 +109,7 @@ std::optional<ConcentricPattern> LocateConcentricPattern(const BitMatrix& image,
 	if (maxSpread > 5 * minSpread)
 		return {};
 
-	auto newCenter = FinetuneConcentricPatternCenter(image, cur.p, range, finderPattern.size());
+	auto newCenter = FinetuneConcentricPatternCenter(image, PointF(cur.p), range, pattern.size());
 	if (!newCenter)
 		return {};
 

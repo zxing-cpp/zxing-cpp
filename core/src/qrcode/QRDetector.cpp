@@ -184,7 +184,7 @@ static double EstimateModuleSize(const BitMatrix& image, ConcentricPattern a, Co
 	BitMatrixCursorF cur(image, a, b - a);
 	assert(cur.isBlack());
 
-	auto pattern = ReadSymmetricPattern<std::array<PatternView::value_type, 5>>(cur, a.size * 2);
+	auto pattern = ReadSymmetricPattern<5>(cur, a.size * 2);
 	if (!pattern || !IsPattern<true>(*pattern, PATTERN))
 		return -1;
 
