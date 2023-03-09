@@ -61,17 +61,40 @@ std::optional<Pattern<N>> ReadSymmetricPattern(Cursor& cur, int range)
 template<bool RELAXED_THRESHOLD = false, typename PATTERN>
 int CheckSymmetricPattern(BitMatrixCursorI& cur, PATTERN pattern, int range, bool updatePosition)
 {
-	auto pOri = cur.p;
-	auto view = ReadSymmetricPattern<pattern.size()>(cur, range);
-	if (!view || !IsPattern<RELAXED_THRESHOLD>(*view, pattern))
-		return cur.p = pOri, 0;
+	FastEdgeToEdgeCounter curFwd(cur), curBwd(cur.turnedBack());
+
+	int centerFwd = curFwd.stepToNextEdge(range);
+	if (!centerFwd)
+		return 0;
+	int centerBwd = curBwd.stepToNextEdge(range);
+	if (!centerBwd)
+		return 0;
+
+	assert(range > 0);
+	Pattern<pattern.size()> res = {};
+	auto constexpr s_2 = Size(res)/2;
+	res[s_2] = centerFwd + centerBwd - 1; // -1 because the starting pixel is counted twice
+	range -= res[s_2];
+
+	auto next = [&](auto& cur, int i) {
+		auto v = cur.stepToNextEdge(range);
+		res[s_2 + i] = v;
+		range -= v;
+		return v;
+	};
+
+	for (int i = 1; i <= s_2; ++i) {
+		if (!next(curFwd, i) || !next(curBwd, -i))
+			return 0;
+	}
+
+	if (!IsPattern<RELAXED_THRESHOLD>(res, pattern))
+		return 0;
 
 	if (updatePosition)
-		cur.step(CenterFromEnd(*view, 0.5) - 1);
-	else
-		cur.p = pOri;
+		cur.step(res[s_2] / 2 - (centerBwd - 1));
 
-	return Reduce(*view);
+	return Reduce(res);
 }
 
 std::optional<PointF> CenterOfRing(const BitMatrix& image, PointI center, int range, int nth, bool requireCircle = true);

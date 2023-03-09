@@ -33,10 +33,7 @@ static bool IsAztecCenterPattern(const PatternView& view)
 	auto M = m;
 	for (int i = 1; i < Size(view) - 1; ++i) {
 		int v = view[i] + view[i + 1];
-		if (v < m)
-			m = v;
-		else if (v > M)
-			M = v;
+		UpdateMinMax(m, M, v);
 	}
 	return M <= m * 4 / 3 + 1 && view[-1] >= view[Size(view) / 2] - 2 && view[Size(view)] >= view[Size(view) / 2] - 2;
 };
@@ -56,38 +53,33 @@ static PatternView FindAztecCenterPattern(const PatternView& view)
 static int CheckSymmetricAztecCenterPattern(BitMatrixCursorI& cur, int range, bool updatePosition)
 {
 	range *= 2; // tilted symbols may have a larger vertical than horizontal range
-	auto pOri = cur.p;
-	auto cuo = cur.turnedBack();
 
-	int centerUp = cur.stepToEdge(1, range / 7);
-	if (!centerUp)
+	FastEdgeToEdgeCounter curFwd(cur), curBwd(cur.turnedBack());
+
+	int centerFwd = curFwd.stepToNextEdge(range / 7);
+	if (!centerFwd)
 		return 0;
-	int centerDown = cuo.stepToEdge(1, range / 7);
-	if (!centerDown)
+	int centerBwd = curBwd.stepToNextEdge(range / 7);
+	if (!centerBwd)
 		return 0;
-	int center = centerUp + centerDown - 1; // -1 because the starting pixel is counted twice
+	int center = centerFwd + centerBwd - 1; // -1 because the starting pixel is counted twice
 	if (center > range / 7 || center < range / (4 * 7))
 		return 0;
-
-	if (updatePosition)
-		pOri = (cur.p + cuo.p) / 2;
 
 	int spread = center;
 	int m = 0;
 	int M = 0;
-	for (auto c : {&cur, &cuo}) {
+	for (auto c : {&curFwd, &curBwd}) {
 		int lastS = center;
 		for (int i = 0; i < 3; ++i) {
-			int s = c->stepToEdge(1, range - spread);
+			int s = c->stepToNextEdge(range - spread);
 			if (s == 0)
 				return 0;
 			int v = s + lastS;
 			if (m == 0)
 				m = M = v;
-			else if (v < m)
-				m = v;
-			else if (v > M)
-				M = v;
+			else
+				UpdateMinMax(m, M, v);
 			if (M > m * 4 / 3 + 1)
 				return 0;
 			spread += s;
@@ -95,7 +87,8 @@ static int CheckSymmetricAztecCenterPattern(BitMatrixCursorI& cur, int range, bo
 		}
 	}
 
-	cur.p = pOri;
+	if (updatePosition)
+		cur.step(centerFwd - centerBwd);
 
 	return spread;
 }

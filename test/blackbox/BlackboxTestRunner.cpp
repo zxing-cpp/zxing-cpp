@@ -607,7 +607,7 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 15, 15, 0   },
 			{ 15, 15, 90  },
 			{ 15, 15, 180 },
-			{ 14, 14, 270 },
+			{ 15, 15, 270 },
 			{ 9, 0, pure },
 		});
 
