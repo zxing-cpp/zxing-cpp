@@ -74,7 +74,7 @@ inline int NumberOfTrailingZeros(T v)
 		return __builtin_ctz(v);
 #elif defined(ZX_HAS_MSC_BUILTINS)
 		unsigned long where;
-		if (_BitScanForward(&where, mask))
+		if (_BitScanForward(&where, v))
 			return static_cast<int>(where);
 		return 32;
 #else
@@ -94,12 +94,12 @@ inline int NumberOfTrailingZeros(T v)
 #elif defined(ZX_HAS_MSC_BUILTINS)
 		unsigned long where;
 	#if defined(_WIN64)
-		if (_BitScanForward64(&where, mask))
+		if (_BitScanForward64(&where, v))
 			return static_cast<int>(where);
 	#elif defined(_WIN32)
-		if (_BitScanForward(&where, static_cast<unsigned long>(mask)))
+		if (_BitScanForward(&where, static_cast<unsigned long>(v)))
 			return static_cast<int>(where);
-		if (_BitScanForward(&where, static_cast<unsigned long>(mask >> 32)))
+		if (_BitScanForward(&where, static_cast<unsigned long>(v >> 32)))
 			return static_cast<int>(where + 32);
 	#else
 		#error "Implementation of __builtin_ctzll required"
