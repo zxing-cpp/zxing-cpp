@@ -28,10 +28,18 @@ struct Range
 {
 	Iterator _begin, _end;
 
+	Range(Iterator b, Iterator e) : _begin(b), _end(e) {}
+
+	template <typename C>
+	Range(const C& c) : _begin(std::begin(c)), _end(std::end(c)) {}
+
 	Iterator begin() const noexcept { return _begin; }
 	Iterator end() const noexcept { return _end; }
 	explicit operator bool() const { return begin() < end(); }
 	int size() const { return narrow_cast<int>(end() - begin()); }
 };
+
+template <typename C>
+Range(const C&) -> Range<typename C::const_iterator>;
 
 } // namespace ZXing
