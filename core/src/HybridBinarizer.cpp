@@ -26,6 +26,23 @@ HybridBinarizer::HybridBinarizer(const ImageView& iv) : GlobalHistogramBinarizer
 
 HybridBinarizer::~HybridBinarizer() = default;
 
+bool HybridBinarizer::getPatternRow(int row, int rotation, PatternRow& res) const
+{
+#if 1
+	// This is the original "hybrid" behavior: use GlobalHistogram for the 1D case
+	return GlobalHistogramBinarizer::getPatternRow(row, rotation, res);
+#else
+	// This is an alternative that can be faster in general and perform better in unevenly lit sitations like
+	// https://github.com/zxing-cpp/zxing-cpp/blob/master/test/samples/ean13-2/21.png. That said, it fairs
+	// worse in borderline low resolution situations. With the current black box sample set we'd loose 94
+	// test cases while gaining 53 others.
+	auto bits = getBitMatrix();
+	if (bits)
+		GetPatternRow(*bits, row, res, rotation % 180 != 0);
+	return bits != nullptr;
+#endif
+}
+
 /**
 * Calculates a single black point for each block of pixels and saves it away.
 * See the following thread for a discussion of this algorithm:
