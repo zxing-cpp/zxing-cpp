@@ -12,6 +12,9 @@
 
 #if defined(__clang__) || defined(__GNUC__)
 #define ZX_HAS_GCC_BUILTINS
+#elif defined(_MSC_VER)
+#include <intrin.h>
+#define ZX_HAS_MSC_BUILTINS
 #endif
 
 namespace ZXing::BitHacks {
@@ -24,42 +27,90 @@ namespace ZXing::BitHacks {
 /// <summary>
 /// Compute the number of zero bits on the left.
 /// </summary>
-inline int NumberOfLeadingZeros(uint32_t x)
+template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
+inline int NumberOfLeadingZeros(T x)
 {
-	if (x == 0)
-		return 32;
+	if constexpr (sizeof(x) <= 4) {
+		if (x == 0)
+			return 32;
 #ifdef ZX_HAS_GCC_BUILTINS
-	return __builtin_clz(x);
+		return __builtin_clz(x);
+#elif defined(ZX_HAS_MSC_BUILTINS)
+		return __lzcnt(x);
 #else
-	int n = 0;
-	if ((x & 0xFFFF0000) == 0) { n = n + 16; x = x << 16; }
-	if ((x & 0xFF000000) == 0) { n = n + 8; x = x << 8; }
-	if ((x & 0xF0000000) == 0) { n = n + 4; x = x << 4; }
-	if ((x & 0xC0000000) == 0) { n = n + 2; x = x << 2; }
-	if ((x & 0x80000000) == 0) { n = n + 1; }
-	return n;
+		int n = 0;
+		if ((x & 0xFFFF0000) == 0) { n = n + 16; x = x << 16; }
+		if ((x & 0xFF000000) == 0) { n = n + 8; x = x << 8; }
+		if ((x & 0xF0000000) == 0) { n = n + 4; x = x << 4; }
+		if ((x & 0xC0000000) == 0) { n = n + 2; x = x << 2; }
+		if ((x & 0x80000000) == 0) { n = n + 1; }
+		return n;
 #endif
+	} else {
+		if (x == 0)
+			return 64;
+#ifdef ZX_HAS_GCC_BUILTINS
+		return __builtin_clzll(x);
+#elif defined(ZX_HAS_MSC_BUILTINS)
+		return __lzcnt64(x);
+#else
+		int n = NumberOfLeadingZeros(static_cast<uint32_t>(x >> 32));
+		if (n == 32)
+			n += NumberOfLeadingZeros(static_cast<uint32_t>(x));
+		return n;
+#endif
+	}
 }
 
 /// <summary>
 /// Compute the number of zero bits on the right.
 /// </summary>
-inline int NumberOfTrailingZeros(uint32_t v)
+template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
+inline int NumberOfTrailingZeros(T v)
 {
-#ifdef ZX_HAS_GCC_BUILTINS
 	assert(v != 0);
-	return __builtin_ctz(v);
+	if constexpr (sizeof(v) <= 4) {
+#ifdef ZX_HAS_GCC_BUILTINS
+		return __builtin_ctz(v);
+#elif defined(ZX_HAS_MSC_BUILTINS)
+		unsigned long where;
+		if (_BitScanForward(&where, mask))
+			return static_cast<int>(where);
+		return 32;
 #else
-	int c = 32;
-	v &= -int32_t(v);
-	if (v) c--;
-	if (v & 0x0000FFFF) c -= 16;
-	if (v & 0x00FF00FF) c -= 8;
-	if (v & 0x0F0F0F0F) c -= 4;
-	if (v & 0x33333333) c -= 2;
-	if (v & 0x55555555) c -= 1;
-	return c;
+		int c = 32;
+		v &= -int32_t(v);
+		if (v) c--;
+		if (v & 0x0000FFFF) c -= 16;
+		if (v & 0x00FF00FF) c -= 8;
+		if (v & 0x0F0F0F0F) c -= 4;
+		if (v & 0x33333333) c -= 2;
+		if (v & 0x55555555) c -= 1;
+		return c;
 #endif
+	} else {
+#ifdef ZX_HAS_GCC_BUILTINS
+		return __builtin_ctzll(v);
+#elif defined(ZX_HAS_MSC_BUILTINS)
+		unsigned long where;
+	#if defined(_WIN64)
+		if (_BitScanForward64(&where, mask))
+			return static_cast<int>(where);
+	#elif defined(_WIN32)
+		if (_BitScanForward(&where, static_cast<unsigned long>(mask)))
+			return static_cast<int>(where);
+		if (_BitScanForward(&where, static_cast<unsigned long>(mask >> 32)))
+			return static_cast<int>(where + 32);
+	#else
+		#error "Implementation of __builtin_ctzll required"
+	#endif
+#else
+		int n = NumberOfTrailingZeros(static_cast<uint32_t>(v));
+		if (n == 32)
+			n += NumberOfTrailingZeros(static_cast<uint32_t>(v >> 32));
+		return n;
+#endif
+	}
 }
 
 inline uint32_t Reverse(uint32_t v)
