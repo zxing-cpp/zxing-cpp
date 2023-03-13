@@ -77,7 +77,10 @@ public:
 	Range<data_t*> row(int y) { return {_bits.data() + y * _width, _bits.data() + (y + 1) * _width}; }
 	Range<const data_t*> row(int y) const { return {_bits.data() + y * _width, _bits.data() + (y + 1) * _width}; }
 
-	Range<StrideIter<const data_t*>> col(int x) const { return {{_bits.data() + x, _width}, {_bits.data() + x + _height * _width, _width}}; }
+	Range<StrideIter<const data_t*>> col(int x) const
+	{
+		return {{_bits.data() + x + (_height - 1) * _width, -_width}, {_bits.data() + x - _width, -_width}};
+	}
 
 	bool get(int x, int y) const { return get(y * _width + x); }
 	void set(int x, int y, bool val = true) { get(y * _width + x) = val * SET_V; }

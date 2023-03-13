@@ -127,7 +127,7 @@ static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, 
 				continue;
 		}
 
-		if (!image.getPatternRow(rowNumber, rotate ? 270 : 0, bars))
+		if (!image.getPatternRow(rowNumber, rotate ? 90 : 0, bars))
 			continue;
 
 #ifdef PRINT_DEBUG
@@ -175,7 +175,7 @@ static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, 
 						if (rotate) {
 							auto points = result.position();
 							for (auto& p : points) {
-								p = {height - p.y - 1, p.x};
+								p = {p.y, width - p.x - 1};
 							}
 							result.setPosition(std::move(points));
 						}
