@@ -109,10 +109,10 @@ bool GlobalHistogramBinarizer::getPatternRow(int row, int rotation, PatternRow& 
 
 	// the optimizer can generate a specialized version for pixStride==1 (non-rotated input) that is about 2x faster
 	if (pixStride == 1)
-		for (auto *p = luminances + pixStride, *e = luminances + (buffer.width() - 1) * pixStride; p < e; p += pixStride)
+		for (auto *p = luminances + pixStride, *e = luminances + (buffer.width() - 1) * pixStride; p != e; p += pixStride)
 			process((-*(p - pixStride) + (int(*p) * 4) - *(p + pixStride)) / 2 < blackPoint, p);
 	else
-		for (auto *p = luminances + pixStride, *e = luminances + (buffer.width() - 1) * pixStride; p < e; p += pixStride)
+		for (auto *p = luminances + pixStride, *e = luminances + (buffer.width() - 1) * pixStride; p != e; p += pixStride)
 			process((-*(p - pixStride) + (int(*p) * 4) - *(p + pixStride)) / 2 < blackPoint, p);
 
 	auto* backPos = buffer.data(buffer.width() - 1, row);
