@@ -316,12 +316,13 @@ void GetPatternRow(Range<I> b_row, PatternRow& p_row)
 	std::fill(p_row.begin(), p_row.end(), 0);
 
 	auto bitPos = b_row.begin();
+	const auto bitPosEnd = b_row.end();
 	auto intPos = p_row.data();
 
 	if (*bitPos)
 		intPos++; // first value is number of white pixels, here 0
 
-	while (++bitPos < b_row.end()) {
+	while (++bitPos != bitPosEnd) {
 		++(*intPos);
 		intPos += bitPos[0] != bitPos[-1];
 	}

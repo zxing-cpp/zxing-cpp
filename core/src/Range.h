@@ -7,6 +7,8 @@
 
 #include "ZXAlgorithms.h"
 
+#include <iterator>
+
 namespace ZXing {
 
 template <typename Iterator>
@@ -15,13 +17,25 @@ struct StrideIter
 	Iterator pos;
 	int stride;
 
+	using iterator_category = std::random_access_iterator_tag;
+	using difference_type   = typename std::iterator_traits<Iterator>::difference_type;
+	using value_type        = typename std::iterator_traits<Iterator>::value_type;
+	using pointer           = Iterator;
+	using reference         = typename std::iterator_traits<Iterator>::reference;
+
 	auto operator*() const { return *pos; }
 	auto operator[](int i) const { return *(pos + i * stride); }
 	StrideIter<Iterator>& operator++() { return pos += stride, *this; }
-	bool operator<(const StrideIter<Iterator>& rhs) const { return pos < rhs.pos; }
+	StrideIter<Iterator> operator++(int) { auto temp = *this; ++*this; return temp; }
+	bool operator!=(const StrideIter<Iterator>& rhs) const { return pos != rhs.pos; }
 	StrideIter<Iterator> operator+(int i) const { return {pos + i * stride, stride}; }
+	StrideIter<Iterator> operator-(int i) const { return {pos - i * stride, stride}; }
 	int operator-(const StrideIter<Iterator>& rhs) const { return narrow_cast<int>((pos - rhs.pos) / stride); }
 };
+
+template <typename Iterator>
+StrideIter(const Iterator&, int) -> StrideIter<Iterator>;
+
 
 template <typename Iterator>
 struct Range
