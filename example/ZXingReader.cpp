@@ -283,7 +283,7 @@ int main(int argc, char* argv[])
 				if (blockSize < 1000 && duration < std::chrono::milliseconds(100))
 					blockSize *= 10;
 			} while (duration < std::chrono::seconds(1));
-			printf("time: %5.1f ms per frame\n", double(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count()) / N);
+			printf("time: %5.2f ms per frame\n", double(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count()) / N);
 		}
 #endif
 	}

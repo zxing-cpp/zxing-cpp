@@ -185,4 +185,14 @@ void Reverse(std::vector<T>& bits, std::size_t padding)
 	ShiftRight(bits, padding);
 }
 
+// use to avoid "load of misaligned address" when using a simple type cast
+template <typename T>
+T LoadU(const void* ptr)
+{
+	static_assert(std::is_integral<T>::value, "T must be an integer");
+	T res;
+	memcpy(&res, ptr, sizeof(T));
+	return res;
+}
+
 } // namespace ZXing::BitHacks

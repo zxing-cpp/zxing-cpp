@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include "BitHacks.h"
 #include "Range.h"
 #include "ZXAlgorithms.h"
 
@@ -321,6 +322,27 @@ void GetPatternRow(Range<I> b_row, PatternRow& p_row)
 
 	if (*bitPos)
 		intPos++; // first value is number of white pixels, here 0
+
+#if defined(__AVX__) && (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
+	// The following code as been observed to cause a speedup of up to 30% on large images on an AVX cpu
+	// but also to cause a 50% slowdown on an a Google Pixel 3 Android phone.
+	if constexpr (std::is_pointer_v<I> && sizeof(std::remove_pointer_t<I>) == 1) {
+		using simd_t = uint64_t;
+		while (bitPos < bitPosEnd - sizeof(simd_t)) {
+			auto asSimd0 = BitHacks::LoadU<simd_t>(bitPos);
+			auto asSimd1 = BitHacks::LoadU<simd_t>(bitPos + 1);
+			auto z = asSimd0 ^ asSimd1;
+			if (z) {
+				int step = BitHacks::NumberOfTrailingZeros(z) / 8 + 1;
+				(*intPos++) += step;
+				bitPos += step;
+			} else {
+				(*intPos) += sizeof(simd_t);
+				bitPos += sizeof(simd_t);
+			}
+		}
+	}
+#endif
 
 	while (++bitPos != bitPosEnd) {
 		++(*intPos);
