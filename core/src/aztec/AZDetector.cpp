@@ -178,9 +178,10 @@ static std::vector<ConcentricPattern> FindFinderPatterns(const BitMatrix& image,
 	int skip = tryHarder ? 1 : std::clamp(image.height() / 2 / 100, 1, 5);
 	int margin = tryHarder ? 5 : image.height() / 4;
 
+	PatternRow row;
+
 	for (int y = margin; y < image.height() - margin; y += skip)
 	{
-		PatternRow row;
 		GetPatternRow(image, y, row, false);
 		PatternView next = row;
 		next.shift(1); // the center pattern we are looking for starts with white and is 7 wide (compact code)

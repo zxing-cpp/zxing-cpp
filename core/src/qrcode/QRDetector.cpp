@@ -52,9 +52,9 @@ std::vector<ConcentricPattern> FindFinderPatterns(const BitMatrix& image, bool t
 		skip = MIN_SKIP;
 
 	std::vector<ConcentricPattern> res;
+	PatternRow row;
 
 	for (int y = skip - 1; y < height; y += skip) {
-		PatternRow row;
 		GetPatternRow(image, y, row, false);
 		PatternView next = row;
 
