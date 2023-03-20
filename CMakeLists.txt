@@ -22,6 +22,8 @@ if (MSVC)
     if (LINK_CPP_STATICALLY)
         set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
     endif()
+    # Set __cplusplus properly
+    add_compile_options(/Zc:__cplusplus)
 endif()
 
 if (NOT CMAKE_BUILD_TYPE)
