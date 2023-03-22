@@ -12,7 +12,7 @@
 
 #if defined(__clang__) || defined(__GNUC__)
 #define ZX_HAS_GCC_BUILTINS
-#elif defined(_MSC_VER)
+#elif defined(_MSC_VER) && !defined(_M_ARM) && !defined(_M_ARM64)
 #include <intrin.h>
 #define ZX_HAS_MSC_BUILTINS
 #endif
