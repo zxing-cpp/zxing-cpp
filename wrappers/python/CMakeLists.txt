@@ -14,22 +14,16 @@ if (NOT hasParent)
     option (BUILD_SHARED_LIBS "Link python module to shared lib" OFF)
     option (BUILD_WRITERS "Build with writer support (encoders)" ON)
     option (BUILD_READERS "Build with reader support (decoders)" ON)
+    set(BUILD_DEPENDENCIES "AUTO")
     if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/core)
         add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/core ZXing EXCLUDE_FROM_ALL)
         include(${CMAKE_CURRENT_SOURCE_DIR}/zxing.cmake)
     else()
         message(FATAL_ERROR "Unable to locate zxing source code")
     endif()
-else()
-    zxing_add_package(pybind11 pybind11 ${pybind11_git_repo} ${pybind11_git_rev})
 endif()
 
-# Check pybind helpers are availible
-find_package(pybind11 CONFIG)
-
-if (NOT pybind11_FOUND)
-    zxing_add_package(pybind11 pybind11 ${pybind11_git_repo} ${pybind11_git_rev})
-endif()
+zxing_add_package(pybind11 pybind11 ${pybind11_git_repo} ${pybind11_git_rev})
 
 # build the python module
 pybind11_add_module(zxingcpp zxing.cpp)
