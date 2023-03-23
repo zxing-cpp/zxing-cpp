@@ -21,6 +21,7 @@ on: workflow_dispatch
 env:
   # Path to the CMake build directory.
   build: '${{ github.workspace }}/build'
+  config: 'Debug'
 
 permissions:
   contents: read
