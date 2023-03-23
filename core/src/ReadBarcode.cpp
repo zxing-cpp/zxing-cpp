@@ -52,7 +52,7 @@ class LumImagePyramid
 	template<int N>
 	void addLayer()
 	{
-		auto siv = layers.back();
+		const auto& siv = layers.back();
 		buffers.emplace_back(siv.width() / N, siv.height() / N);
 		layers.push_back(buffers.back());
 		auto& div = buffers.back();

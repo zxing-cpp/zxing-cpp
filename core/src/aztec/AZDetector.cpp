@@ -337,7 +337,7 @@ DetectorResults Detect(const BitMatrix& image, bool isPure, bool tryHarder, int 
 
 	DetectorResults res;
 	auto fps = isPure ? FindPureFinderPattern(image) : FindFinderPatterns(image, tryHarder);
-	for (auto fp : fps) {
+	for (const auto& fp : fps) {
 		auto fpQuad = FindConcentricPatternCorners(image, fp, fp.size, 3);
 		if (!fpQuad)
 			continue;

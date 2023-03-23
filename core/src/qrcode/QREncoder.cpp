@@ -256,7 +256,7 @@ static bool WillFit(int numInputBits, const Version& version, ErrorCorrectionLev
 	// numBytes = 196
 	int numBytes = version.totalCodewords();
 	// getNumECBytes = 130
-	auto ecBlocks = version.ecBlocksForLevel(ecLevel);
+	auto& ecBlocks = version.ecBlocksForLevel(ecLevel);
 	int numEcBytes = ecBlocks.totalCodewords();
 	// getNumDataBytes = 196 - 130 = 66
 	int numDataBytes = numBytes - numEcBytes;

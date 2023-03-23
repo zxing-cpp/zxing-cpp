@@ -65,7 +65,7 @@ Results Reader::decode(const BinaryBitmap& image, int maxSymbols) const
 
 	if (_hints.hasFormat(BarcodeFormat::QRCode)) {
 		auto allFPSets = GenerateFinderPatternSets(allFPs);
-		for (auto& fpSet : allFPSets) {
+		for (const auto& fpSet : allFPSets) {
 			if (Contains(usedFPs, fpSet.bl) || Contains(usedFPs, fpSet.tl) || Contains(usedFPs, fpSet.tr))
 				continue;
 
@@ -88,7 +88,7 @@ Results Reader::decode(const BinaryBitmap& image, int maxSymbols) const
 	}
 
 	if (_hints.hasFormat(BarcodeFormat::MicroQRCode) && !(maxSymbols && Size(results) == maxSymbols)) {
-		for (auto fp : allFPs) {
+		for (const auto& fp : allFPs) {
 			if (Contains(usedFPs, fp))
 				continue;
 
