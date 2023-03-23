@@ -29,7 +29,7 @@ BitMatrix::setRegion(int left, int top, int width, int height)
 		throw std::invalid_argument("BitMatrix::setRegion(): The region must fit inside the matrix");
 	}
 	for (int y = top; y < bottom; y++) {
-		size_t offset = y * _width;
+		auto offset = y * _width;
 		for (int x = left; x < right; x++) {
 			_bits[offset + x] = SET_V;
 		}
