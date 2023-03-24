@@ -29,6 +29,16 @@
 #include <utility>
 #include <vector>
 
+#ifndef PRINT_DEBUG
+#define printf(...){}
+#define printv(...){}
+#else
+#define printv(fmt, vec) \
+for (auto v : vec) \
+	printf(fmt, v); \
+printf("\n");
+#endif
+
 namespace ZXing::DataMatrix {
 
 /**
@@ -454,14 +464,11 @@ public:
 		auto lineLength = distance(beg, end) - unitPixelDist;
 		auto [iMin, iMax] = std::minmax_element(modSizes.begin() + 1, modSizes.end());
 		auto meanModSize = average(modSizes, [](double dist){ return dist > 0; });
-#ifdef PRINT_DEBUG
+
 		printf("unit pixel dist: %.1f\n", unitPixelDist);
 		printf("lineLength: %.1f, meanModSize: %.1f (min: %.1f, max: %.1f), gaps: %lu\n", lineLength, meanModSize, *iMin, *iMax,
 			   modSizes.size());
-		for (auto v : modSizes)
-			printf("%.1f ", v);
-		printf("\n");
-#endif
+		printv("%.1f ", modSizes);
 
 		if (*iMax > 2 * *iMin) {
 			for (int i = 1; i < Size(modSizes) - 2; ++i) {
@@ -470,16 +477,12 @@ public:
 				else if (modSizes[i] > meanModSize * 1.6)
 					modSizes[i] = 0;
 			}
-#ifdef PRINT_DEBUG
-			for (auto v : modSizes)
-				printf("%.1f ", v);
-			printf("\n");
-#endif
+			printv("%.1f ", modSizes);
+
 			meanModSize = average(modSizes, [](double dist) { return dist > 0; });
 		}
-#ifdef PRINT_DEBUG
 		printf("post filter meanModSize: %.1f\n", meanModSize);
-#endif
+
 		return lineLength / meanModSize;
 	}
 };
@@ -649,9 +652,8 @@ public:
 		corner = p;
 		std::swap(d, dir);
 		traceStep(-1 * dir, 2, false);
-#ifdef PRINT_DEBUG
 		printf("turn: %.0f x %.0f -> %.2f, %.2f\n", p.x, p.y, d.x, d.y);
-#endif
+
 		return isIn(corner) && isIn(p);
 	}
 };
@@ -737,10 +739,8 @@ static DetectorResult Scan(EdgeTracer& startTracer, std::array<DMRegressionLine,
 		// continue top row right until we cross the right line
 		CHECK(tlTracer.traceGaps(tlTracer.right(), lineT, maxStepSize, lineR));
 
-#ifdef PRINT_DEBUG
 		printf("L: %.1f, %.1f ^ %.1f, %.1f > %.1f, %.1f (%d : %d : %d : %d)\n", bl.x, bl.y,
 			   tl.x - bl.x, tl.y - bl.y, br.x - bl.x, br.y - bl.y, (int)lenL, (int)lenB, (int)lenT, (int)lenR);
-#endif
 
 		for (auto* l : {&lineL, &lineB, &lineT, &lineR})
 			l->evaluate(1.0);
@@ -764,11 +764,9 @@ static DetectorResult Scan(EdgeTracer& startTracer, std::array<DMRegressionLine,
 		dimT *= 2;
 		dimR *= 2;
 
-#ifdef PRINT_DEBUG
 		printf("L: %.1f, %.1f ^ %.1f, %.1f > %.1f, %.1f ^> %.1f, %.1f\n", bl.x, bl.y,
 			   tl.x - bl.x, tl.y - bl.y, br.x - bl.x, br.y - bl.y, tr.x, tr.y);
 		printf("dim: %d x %d\n", dimT, dimR);
-#endif
 
 		// if we have an almost square (invalid rectangular) data matrix dimension, we try to parse it by assuming a
 		// square. we use the dimension that is closer to an integral value. all valid rectangular symbols differ in
