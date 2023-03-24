@@ -656,16 +656,30 @@ public:
 
 		return isIn(corner) && isIn(p);
 	}
+
+	bool moveToNextWhiteAfterBlack()
+	{
+		assert(std::abs(d.x + d.y) == 1);
+
+		FastEdgeToEdgeCounter e2e(BitMatrixCursorI(*img, PointI(p), PointI(d)));
+		int steps = e2e.stepToNextEdge(INT_MAX);
+		if (!steps)
+			return false;
+		step(steps);
+		if(isWhite())
+			return true;
+
+		steps = e2e.stepToNextEdge(INT_MAX);
+		if (!steps)
+			return false;
+		return step(steps);
+	}
 };
 
 static DetectorResult Scan(EdgeTracer& startTracer, std::array<DMRegressionLine, 4>& lines)
 {
-	while (startTracer.step()) {
+	while (startTracer.moveToNextWhiteAfterBlack()) {
 		log(startTracer.p);
-
-		// continue until we cross from black into white
-		if (!startTracer.edgeAtBack().isWhite())
-			continue;
 
 		PointF tl, bl, br, tr;
 		auto& [lineL, lineB, lineR, lineT] = lines;
@@ -822,8 +836,8 @@ static DetectorResults DetectNew(const BitMatrix& image, bool tryHarder, bool tr
 
 	constexpr int minSymbolSize = 8 * 2; // minimum realistic size in pixel: 8 modules x 2 pixels per module
 
-	for (auto dir : {PointF(-1, 0), PointF(1, 0), PointF(0, -1), PointF(0, 1)}) {
-		auto center = PointF(image.width() / 2, image.height() / 2);
+	for (auto dir : {PointF{-1, 0}, {1, 0}, {0, -1}, {0, 1}}) {
+		auto center = PointI(image.width() / 2, image.height() / 2);
 		auto startPos = centered(center - center * dir + minSymbolSize / 2 * dir);
 
 		history.clear();
