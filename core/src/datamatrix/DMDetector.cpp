@@ -742,6 +742,10 @@ static DetectorResult Scan(EdgeTracer& startTracer, std::array<DMRegressionLine,
 		splitDouble(lineT.modules(tl, tr), &dimT, &fracT);
 		splitDouble(lineR.modules(br, tr), &dimR, &fracR);
 
+		// the dimension is 2x the number of black/white transitions
+		dimT *= 2;
+		dimR *= 2;
+
 #ifdef PRINT_DEBUG
 		printf("L: %.1f, %.1f ^ %.1f, %.1f > %.1f, %.1f ^> %.1f, %.1f\n", bl.x, bl.y,
 			   tl.x - bl.x, tl.y - bl.y, br.x - bl.x, br.y - bl.y, tr.x, tr.y);
@@ -750,18 +754,13 @@ static DetectorResult Scan(EdgeTracer& startTracer, std::array<DMRegressionLine,
 
 		// if we have an almost square (invalid rectangular) data matrix dimension, we try to parse it by assuming a
 		// square. we use the dimension that is closer to an integral value. all valid rectangular symbols differ in
-		// their dimension by at least 10 (here 5, see doubling below). Note: this is currently not required for the
-		// black-box tests to complete.
-		if (std::abs(dimT - dimR) < 5)
+		// their dimension by at least 10. Note: this is currently not required for the black-box tests to complete.
+		if (std::abs(dimT - dimR) < 10)
 			dimT = dimR = fracR < fracT ? dimR : dimT;
-
-		// the dimension is 2x the number of black/white transitions
-		dimT *= 2;
-		dimR *= 2;
 
 		CHECK(dimT >= 10 && dimT <= 144 && dimR >= 8 && dimR <= 144);
 
-		auto movedTowardsBy = [](PointF& a, PointF b1, PointF b2, auto d) {
+		auto movedTowardsBy = [](PointF a, PointF b1, PointF b2, auto d) {
 			return a + d * normalized(normalized(b1 - a) + normalized(b2 - a));
 		};
 
