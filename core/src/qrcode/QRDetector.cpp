@@ -52,6 +52,7 @@ std::vector<ConcentricPattern> FindFinderPatterns(const BitMatrix& image, bool t
 		skip = MIN_SKIP;
 
 	std::vector<ConcentricPattern> res;
+	[[maybe_unused]] int N = 0;
 	PatternRow row;
 
 	for (int y = skip - 1; y < height; y += skip) {
@@ -63,10 +64,16 @@ std::vector<ConcentricPattern> FindFinderPatterns(const BitMatrix& image, bool t
 
 			// make sure p is not 'inside' an already found pattern area
 			if (FindIf(res, [p](const auto& old) { return distance(p, old) < old.size / 2; }) == res.end()) {
+				log(p);
+				N++;
 				auto pattern = LocateConcentricPattern(image, PATTERN, p,
 													   Reduce(next) * 3); // 3 for very skewed samples
 				if (pattern) {
 					log(*pattern, 3);
+					log(*pattern + PointF(.2, 0), 3);
+					log(*pattern - PointF(.2, 0), 3);
+					log(*pattern + PointF(0, .2), 3);
+					log(*pattern - PointF(0, .2), 3);
 					assert(image.get(pattern->x, pattern->y));
 					res.push_back(*pattern);
 				}
@@ -77,6 +84,8 @@ std::vector<ConcentricPattern> FindFinderPatterns(const BitMatrix& image, bool t
 			next.extend();
 		}
 	}
+
+	printf("FPs?  : %d\n", N);
 
 	return res;
 }
@@ -176,6 +185,9 @@ FinderPatternSets GenerateFinderPatternSets(FinderPatterns& patterns)
 	res.reserve(sets.size());
 	for (auto& [d, s] : sets)
 		res.push_back(s);
+
+	printf("FPSets: %d\n", Size(res));
+
 	return res;
 }
 
@@ -270,7 +282,7 @@ static PerspectiveTransform Mod2Pix(int dimension, PointF brOffset, Quadrilatera
 
 static std::optional<PointF> LocateAlignmentPattern(const BitMatrix& image, int moduleSize, PointF estimate)
 {
-	log(estimate, 2);
+	log(estimate, 4);
 
 	for (auto d : {PointF{0, 0}, {0, -1}, {0, 1}, {-1, 0}, {1, 0}, {-1, -1}, {1, -1}, {1, 1}, {-1, 1},
 #if 1
@@ -459,6 +471,12 @@ DetectorResult SampleQR(const BitMatrix& image, const FinderPatternSet& fp)
 				printf("locate failed at %dx%d\n", x, y);
 				apP.set(x, y, projectM2P(x, y));
 			}
+
+#ifdef PRINT_DEBUG
+		for (int y = 0; y <= N; ++y)
+			for (int x = 0; x <= N; ++x)
+				log(*apP(x, y), 2);
+#endif
 
 		// assemble a list of region-of-interests based on the found alignment pattern pixel positions
 		ROIs rois;

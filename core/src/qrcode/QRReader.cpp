@@ -48,6 +48,22 @@ Result Reader::decode(const BinaryBitmap& image) const
 				  detectorResult.bits().width() < 21 ? BarcodeFormat::MicroQRCode : BarcodeFormat::QRCode);
 }
 
+void logFPSet(const FinderPatternSet& fps [[maybe_unused]])
+{
+#ifdef PRINT_DEBUG
+	auto drawLine = [](PointF a, PointF b) {
+		int steps = maxAbsComponent(b - a);
+		PointF dir = bresenhamDirection(PointF(b - a));
+		for (int i = 0; i < steps; ++i)
+			log(centered(a + i * dir), 2);
+	};
+
+	drawLine(fps.bl, fps.tl);
+	drawLine(fps.tl, fps.tr);
+	drawLine(fps.tr, fps.bl);
+#endif
+}
+
 Results Reader::decode(const BinaryBitmap& image, int maxSymbols) const
 {
 	auto binImg = image.getBitMatrix();
@@ -60,6 +76,10 @@ Results Reader::decode(const BinaryBitmap& image, int maxSymbols) const
 
 	auto allFPs = FindFinderPatterns(*binImg, _hints.tryHarder());
 
+#ifdef PRINT_DEBUG
+	printf("allFPs: %d\n", Size(allFPs));
+#endif
+
 	std::vector<ConcentricPattern> usedFPs;
 	Results results;
 
@@ -68,6 +88,8 @@ Results Reader::decode(const BinaryBitmap& image, int maxSymbols) const
 		for (const auto& fpSet : allFPSets) {
 			if (Contains(usedFPs, fpSet.bl) || Contains(usedFPs, fpSet.tl) || Contains(usedFPs, fpSet.tr))
 				continue;
+
+			logFPSet(fpSet);
 
 			auto detectorResult = SampleQR(*binImg, fpSet);
 			if (detectorResult.isValid()) {
