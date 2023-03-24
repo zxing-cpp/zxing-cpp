@@ -95,6 +95,11 @@ public:
 	}
 
 	void pop_back() { _points.pop_back(); }
+	void pop_front()
+	{
+		std::rotate(_points.begin(), _points.begin() + 1, _points.end());
+		_points.pop_back();
+	}
 
 	void setDirectionInward(PointF d) { _directionInward = normalized(d); }
 
