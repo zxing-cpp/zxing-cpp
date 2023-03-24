@@ -10,6 +10,13 @@
 #include <cstdint>
 #include <vector>
 
+#if __has_include(<bit>)
+#include <bit>
+#if __cplusplus > 201703L && defined(__ANDROID__) // NDK 25.1.8937393 has the implementation but fails to advertise it
+#define __cpp_lib_bitops 201907L
+#endif
+#endif
+
 #if defined(__clang__) || defined(__GNUC__)
 #define ZX_HAS_GCC_BUILTINS
 #elif defined(_MSC_VER) && !defined(_M_ARM) && !defined(_M_ARM64)
@@ -30,6 +37,9 @@ namespace ZXing::BitHacks {
 template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
 inline int NumberOfLeadingZeros(T x)
 {
+#ifdef __cpp_lib_bitops
+	return std::countl_zero(static_cast<std::make_unsigned_t<T>>(x));
+#else
 	if constexpr (sizeof(x) <= 4) {
 		if (x == 0)
 			return 32;
@@ -60,6 +70,7 @@ inline int NumberOfLeadingZeros(T x)
 		return n;
 #endif
 	}
+#endif
 }
 
 /// <summary>
@@ -69,6 +80,9 @@ template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
 inline int NumberOfTrailingZeros(T v)
 {
 	assert(v != 0);
+#ifdef __cpp_lib_bitops
+	return std::countr_zero(static_cast<std::make_unsigned_t<T>>(v));
+#else
 	if constexpr (sizeof(v) <= 4) {
 #ifdef ZX_HAS_GCC_BUILTINS
 		return __builtin_ctz(v);
@@ -111,6 +125,7 @@ inline int NumberOfTrailingZeros(T v)
 		return n;
 #endif
 	}
+#endif
 }
 
 inline uint32_t Reverse(uint32_t v)
@@ -133,7 +148,9 @@ inline uint32_t Reverse(uint32_t v)
 
 inline int CountBitsSet(uint32_t v)
 {
-#ifdef ZX_HAS_GCC_BUILTINS
+#ifdef __cpp_lib_bitops
+	return std::popcount(v);
+#elif defined(ZX_HAS_GCC_BUILTINS)
 	return __builtin_popcount(v);
 #else
 	v = v - ((v >> 1) & 0x55555555);							// reuse input as temporary
