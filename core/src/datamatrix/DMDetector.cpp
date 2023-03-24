@@ -426,7 +426,7 @@ public:
 		assert(_points.size() > 3);
 
 		// re-evaluate and filter out all points too far away. required for the gapSizes calculation.
-		evaluate(1.0, true);
+		evaluate(1.2, true);
 
 		std::vector<double> gapSizes, modSizes;
 		gapSizes.reserve(_points.size());
@@ -452,13 +452,31 @@ public:
 		modSizes.push_back(sumFront + distance(end, project(_points.back())));
 		modSizes.front() = 0; // the first element is an invalid sumBack value, would be pop_front() if vector supported this
 		auto lineLength = distance(beg, end) - unitPixelDist;
-		auto meanModSize = average(modSizes, [](double){ return true; });
+		auto [iMin, iMax] = std::minmax_element(modSizes.begin() + 1, modSizes.end());
+		auto meanModSize = average(modSizes, [](double dist){ return dist > 0; });
 #ifdef PRINT_DEBUG
 		printf("unit pixel dist: %.1f\n", unitPixelDist);
-		printf("lineLength: %.1f, meanModSize: %.1f, gaps: %lu\n", lineLength, meanModSize, modSizes.size());
+		printf("lineLength: %.1f, meanModSize: %.1f (min: %.1f, max: %.1f), gaps: %lu\n", lineLength, meanModSize, *iMin, *iMax,
+			   modSizes.size());
+		for (auto v : modSizes)
+			printf("%.1f ", v);
+		printf("\n");
 #endif
-		for (int i = 0; i < 2; ++i)
-			meanModSize = average(modSizes, [=](double dist) { return std::abs(dist - meanModSize) < meanModSize / (2 + i); });
+
+		if (*iMax > 2 * *iMin) {
+			for (int i = 1; i < Size(modSizes) - 2; ++i) {
+				if (modSizes[i] > 0 && modSizes[i] + modSizes[i + 2] < meanModSize * 1.4)
+					modSizes[i] += std::exchange(modSizes[i + 2], 0);
+				else if (modSizes[i] > meanModSize * 1.6)
+					modSizes[i] = 0;
+			}
+#ifdef PRINT_DEBUG
+			for (auto v : modSizes)
+				printf("%.1f ", v);
+			printf("\n");
+#endif
+			meanModSize = average(modSizes, [](double dist) { return dist > 0; });
+		}
 #ifdef PRINT_DEBUG
 		printf("post filter meanModSize: %.1f\n", meanModSize);
 #endif
