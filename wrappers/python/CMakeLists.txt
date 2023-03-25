@@ -7,9 +7,10 @@ set (pybind11_git_rev v2.10.4)
 # check if we are called from the top-level ZXing project
 get_directory_property(hasParent PARENT_DIRECTORY)
 if (NOT hasParent)
-    # Force to build by C++17. The zxing-cpp require C++17 to build
-    set(CMAKE_CXX_STANDARD 17)
-    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+    # Build with C++20 by default (which enables position independent DataMatrix detection).
+    set(CMAKE_CXX_STANDARD 20)
+    # Allow the fallback to earlier versions of the compiler does not support it.
+    set(CMAKE_CXX_STANDARD_REQUIRED OFF)
 
     option (BUILD_SHARED_LIBS "Link python module to shared lib" OFF)
     option (BUILD_WRITERS "Build with writer support (encoders)" ON)
