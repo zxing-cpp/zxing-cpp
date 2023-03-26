@@ -40,7 +40,8 @@ jobs:
       env:
         CIBW_BUILD: cp39-* cp310-* cp311-*
         CIBW_SKIP: "*musllinux*"
-        CIBW_ARCHS_MACOS: x86_64 arm64
+        CIBW_ARCHS_MACOS: universal2
+        CIBW_ENVIRONMENT_MACOS: CMAKE_OSX_ARCHITECTURES="arm64;x86_64"
 
     - uses: actions/upload-artifact@v3
       with:
