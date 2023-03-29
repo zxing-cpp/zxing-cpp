@@ -19,8 +19,6 @@
 #include "Quadrilateral.h"
 #include "RegressionLine.h"
 
-#include "BitMatrixIO.h"
-
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
@@ -29,7 +27,9 @@
 #include <utility>
 #include <vector>
 
-#ifndef PRINT_DEBUG
+#ifdef PRINT_DEBUG
+#include "BitMatrixIO.h"
+#else
 #define printf(...){}
 #endif
 
