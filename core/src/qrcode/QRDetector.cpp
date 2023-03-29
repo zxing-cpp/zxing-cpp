@@ -37,6 +37,16 @@ namespace ZXing::QRCode {
 
 constexpr auto PATTERN = FixedPattern<5, 7>{1, 1, 3, 1, 1};
 
+PatternView FindPattern(const PatternView& view)
+{
+	return FindLeftGuard<PATTERN.size()>(view, PATTERN.size(), [](const PatternView& view, int spaceInPixel) {
+		// perform a fast plausability test for 1:1:3:1:1 pattern
+		if (view[2] < 2 * std::max(view[0], view[4]) || view[2] < std::max(view[1], view[3]))
+			return 0.f;
+		return IsPattern(view, PATTERN, spaceInPixel, 0.5);
+	});
+}
+
 std::vector<ConcentricPattern> FindFinderPatterns(const BitMatrix& image, bool tryHarder)
 {
 	constexpr int MIN_SKIP         = 3;           // 1 pixel/module times 3 modules/center
@@ -59,7 +69,7 @@ std::vector<ConcentricPattern> FindFinderPatterns(const BitMatrix& image, bool t
 		GetPatternRow(image, y, row, false);
 		PatternView next = row;
 
-		while (next = FindLeftGuard(next, 0, PATTERN, 0.5), next.isValid()) {
+		while (next = FindPattern(next), next.isValid()) {
 			PointF p(next.pixelsInFront() + next[0] + next[1] + next[2] / 2.0, y + 0.5);
 
 			// make sure p is not 'inside' an already found pattern area
