@@ -121,6 +121,8 @@ public:
 #ifdef PRINT_DEBUG
 				printf("removed %zu points\n", old_points_size - points.size());
 #endif
+                if (points.empty())
+                    return false;
 				ret = evaluate(points);
 			}
 
