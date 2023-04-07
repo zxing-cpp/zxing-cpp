@@ -10,7 +10,7 @@
 #include <cstdint>
 #include <vector>
 
-#if __has_include(<bit>)
+#if __has_include(<bit>) && __cplusplus > 201703L // MSVC has the <bit> header but then warns about including it
 #include <bit>
 #if __cplusplus > 201703L && defined(__ANDROID__) // NDK 25.1.8937393 has the implementation but fails to advertise it
 #define __cpp_lib_bitops 201907L
@@ -118,6 +118,7 @@ inline int NumberOfTrailingZeros(T v)
 	#else
 		#error "Implementation of __builtin_ctzll required"
 	#endif
+		return 64;
 #else
 		int n = NumberOfTrailingZeros(static_cast<uint32_t>(v));
 		if (n == 32)
