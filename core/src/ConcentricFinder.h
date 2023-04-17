@@ -108,24 +108,29 @@ struct ConcentricPattern : public PointF
 	int size = 0;
 };
 
-template <bool RELAXED_THRESHOLD = false, typename PATTERN>
+template <bool E2E = false, typename PATTERN>
 std::optional<ConcentricPattern> LocateConcentricPattern(const BitMatrix& image, PATTERN pattern, PointF center, int range)
 {
 	auto cur = BitMatrixCursor(image, PointI(center), {});
 	int minSpread = image.width(), maxSpread = 0;
+	// TODO: setting maxError to 1 can subtantially help with detecting symbols with low print quality resulting in damaged
+	// finder patterns, but it sutantially increases the runtime (approx. 20% slower for the falsepositive images).
+	int maxError = 0;
 	for (auto d : {PointI{0, 1}, {1, 0}}) {
-		int spread = CheckSymmetricPattern<RELAXED_THRESHOLD>(cur.setDirection(d), pattern, range, true);
-		if (!spread)
+		int spread = CheckSymmetricPattern<E2E>(cur.setDirection(d), pattern, range, true);
+		if (spread)
+			UpdateMinMax(minSpread, maxSpread, spread);
+		else if (--maxError < 0)
 			return {};
-		UpdateMinMax(minSpread, maxSpread, spread);
 	}
 
 #if 1
 	for (auto d : {PointI{1, 1}, {1, -1}}) {
 		int spread = CheckSymmetricPattern<true>(cur.setDirection(d), pattern, range * 2, false);
-		if (!spread)
+		if (spread)
+			UpdateMinMax(minSpread, maxSpread, spread);
+		else if (--maxError < 0)
 			return {};
-		UpdateMinMax(minSpread, maxSpread, spread);
 	}
 #endif
 

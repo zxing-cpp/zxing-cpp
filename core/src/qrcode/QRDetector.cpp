@@ -36,6 +36,7 @@
 namespace ZXing::QRCode {
 
 constexpr auto PATTERN = FixedPattern<5, 7>{1, 1, 3, 1, 1};
+constexpr bool E2E = true;
 
 PatternView FindPattern(const PatternView& view)
 {
@@ -43,7 +44,7 @@ PatternView FindPattern(const PatternView& view)
 		// perform a fast plausability test for 1:1:3:1:1 pattern
 		if (view[2] < 2 * std::max(view[0], view[4]) || view[2] < std::max(view[1], view[3]))
 			return 0.f;
-		return IsPattern(view, PATTERN, spaceInPixel, 0.5);
+		return IsPattern<E2E>(view, PATTERN, spaceInPixel, 0.5);
 	});
 }
 
@@ -76,8 +77,8 @@ std::vector<ConcentricPattern> FindFinderPatterns(const BitMatrix& image, bool t
 			if (FindIf(res, [p](const auto& old) { return distance(p, old) < old.size / 2; }) == res.end()) {
 				log(p);
 				N++;
-				auto pattern = LocateConcentricPattern(image, PATTERN, p,
-													   Reduce(next) * 3); // 3 for very skewed samples
+				auto pattern = LocateConcentricPattern<E2E>(image, PATTERN, p,
+															Reduce(next) * 3); // 3 for very skewed samples
 				if (pattern) {
 					log(*pattern, 3);
 					log(*pattern + PointF(.2, 0), 3);
