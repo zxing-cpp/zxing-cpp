@@ -170,6 +170,21 @@ static std::optional<QuadrilateralF> FitQadrilateralToPoints(PointF center, std:
 	if (std::any_of(lines.begin(), lines.end(), [](auto line) { return !line.isValid(); }))
 		return {};
 
+	std::array<const PointF*, 4> beg = {corners[0] + 1, corners[1] + 1, corners[2] + 1, corners[3] + 1};
+	std::array<const PointF*, 4> end = {corners[1], corners[2], corners[3], &points.back() + 1};
+
+	// check if all points belonging to each line segment are sufficiently close to that line
+	for (int i = 0; i < 4; ++i)
+		for (const PointF* p = beg[i]; p != end[i]; ++p) {
+			auto len = std::distance(beg[i], end[i]);
+			if (len > 3 && lines[i].distance(*p) > std::max(1., std::min(8., len / 8.))) {
+#ifdef PRINT_DEBUG
+				printf("%d: %.2f > %.2f @ %.fx%.f\n", i, lines[i].distance(*p), std::distance(beg[i], end[i]) / 1., p->x, p->y);
+#endif
+				return {};
+			}
+		}
+
 	QuadrilateralF res;
 	for (int i = 0; i < 4; ++i)
 		res[i] = intersect(lines[i], lines[(i + 1) % 4]);
