@@ -1,10 +1,20 @@
 import sys
 import zxingcpp
-from cv2 import imread
+import cv2
+#from PIL import Image
 
-img = imread(sys.argv[1])
+if len(sys.argv) == 1:
+	img = cv2.imread('test.png')
+#	img = Image.open('test.png')
+else:
+	img = cv2.imread(sys.argv[1])
+#	img = Image.open(sys.argv[1])
 results = zxingcpp.read_barcodes(img)
 for result in results:
-    print(f'Found barcode:\n Text:    "{result.text}"\n Format:   {result.format}\n Content:  {result.content_type}\n Position: {result.position}')
+	print('Found barcode:'
+		f'\n Text:    "{result.text}"'
+		f'\n Format:   {result.format}'
+		f'\n Content:  {result.content_type}'
+		f'\n Position: {result.position}')
 if len(results) == 0:
-    print("Could not find any barcode.")
+	print("Could not find any barcode.")
