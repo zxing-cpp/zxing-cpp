@@ -32,9 +32,9 @@ enum class CodecMode
  * @param bits variable number of bits encoding a QR Code data mode
  * @param isMicro is this a MicroQRCode
  * @return Mode encoded by these bits
- * @throws std::invalid_argument if bits do not correspond to a known mode
+ * @throws FormatError if bits do not correspond to a known mode
  */
-CodecMode CodecModeForBits(int bits, bool isMirco = false);
+CodecMode CodecModeForBits(int bits, bool isMicro = false);
 
 /**
  * @param version version in question

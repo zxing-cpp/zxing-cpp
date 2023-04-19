@@ -6,6 +6,7 @@
 
 #include "ReadBarcode.h"
 #include "GTIN.h"
+#include "ZXVersion.h"
 
 #include <cctype>
 #include <chrono>
@@ -40,7 +41,8 @@ static void PrintUsage(const char* exePath)
 			  << "    -bytes     Write (only) the bytes content of the symbol(s) to stdout\n"
 			  << "    -pngout <file name>\n"
 			  << "               Write a copy of the input image with barcodes outlined by a green line\n"
-			  << "    -help      Print usage information and exit\n"
+			  << "    -help      Print usage information\n"
+			  << "    -version   Print version information\n"
 			  << "\n"
 			  << "Supported formats are:\n";
 	for (auto f : BarcodeFormats::all()) {
@@ -52,10 +54,13 @@ static void PrintUsage(const char* exePath)
 static bool ParseOptions(int argc, char* argv[], DecodeHints& hints, bool& oneLine, bool& bytesOnly,
 						 std::vector<std::string>& filePaths, std::string& outPath)
 {
+	hints.setTryDenoise(true);
+
 	for (int i = 1; i < argc; ++i) {
 		auto is = [&](const char* str) { return strncmp(argv[i], str, strlen(argv[i])) == 0; };
 		if (is("-fast")) {
 			hints.setTryHarder(false);
+			hints.setTryDenoise(false);
 		} else if (is("-norotate")) {
 			hints.setTryRotate(false);
 		} else if (is("-noinvert")) {
@@ -99,6 +104,9 @@ static bool ParseOptions(int argc, char* argv[], DecodeHints& hints, bool& oneLi
 			outPath = argv[i];
 		} else if (is("-help") || is("--help")) {
 			PrintUsage(argv[0]);
+			exit(0);
+		} else if (is("-version") || is("--version")) {
+			std::cout << "ZXingReader " << ZXING_VERSION_STR << "\n";
 			exit(0);
 		} else {
 			filePaths.push_back(argv[i]);
@@ -277,7 +285,7 @@ int main(int argc, char* argv[])
 				if (blockSize < 1000 && duration < std::chrono::milliseconds(100))
 					blockSize *= 10;
 			} while (duration < std::chrono::seconds(1));
-			printf("time: %5.1f ms per frame\n", double(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count()) / N);
+			printf("time: %5.2f ms per frame\n", double(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count()) / N);
 		}
 #endif
 	}

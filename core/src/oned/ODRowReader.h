@@ -10,6 +10,7 @@
 #include "BitArray.h"
 #include "Pattern.h"
 #include "Result.h"
+#include "ZXAlgorithms.h"
 
 #include <algorithm>
 #include <cassert>
@@ -146,13 +147,10 @@ public:
 	 */
 	static BarAndSpaceI NarrowWideThreshold(const PatternView& view)
 	{
-		BarAndSpaceI m = {std::numeric_limits<BarAndSpaceI::value_type>::max(),
-						  std::numeric_limits<BarAndSpaceI::value_type>::max()};
-		BarAndSpaceI M = {0, 0};
-		for (int i = 0; i < view.size(); ++i) {
-			m[i] = std::min(m[i], view[i]);
-			M[i] = std::max(M[i], view[i]);
-		}
+		BarAndSpaceI m = {view[0], view[1]};
+		BarAndSpaceI M = m;
+		for (int i = 2; i < view.size(); ++i)
+			UpdateMinMax(m[i], M[i], view[i]);
 
 		BarAndSpaceI res;
 		for (int i = 0; i < 2; ++i) {

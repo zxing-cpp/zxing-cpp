@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.14)
+cmake_minimum_required(VERSION 3.15)
 
 project (ZXing VERSION "2.0.0")
 set (ZXING_SONAME 3) # see https://github.com/zxing-cpp/zxing-cpp/issues/333
@@ -34,6 +34,7 @@ if (MSVC)
         -D_CRT_SECURE_NO_WARNINGS
         -D_CRT_NONSTDC_NO_WARNINGS
         -DNOMINMAX
+        /Zc:__cplusplus
     )
 else()
     set (ZXING_CORE_LOCAL_DEFINES ${ZXING_CORE_LOCAL_DEFINES}
@@ -439,7 +440,7 @@ add_library (ZXing
 )
 
 target_include_directories (ZXing
-    PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>"
+    PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>" "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
     INTERFACE "$<INSTALL_INTERFACE:include>"
 )
 
@@ -515,7 +516,7 @@ install (
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/ZXing"
 )
 
-if(MSVC)
+if (MSVC)
     set_target_properties(ZXing PROPERTIES
         COMPILE_PDB_NAME ZXing
         COMPILE_PDB_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR})

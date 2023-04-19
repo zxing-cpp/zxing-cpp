@@ -6,11 +6,9 @@
 
 #pragma once
 
-#include "ByteArray.h"
 #include "Content.h"
 #include "Error.h"
 #include "StructuredAppend.h"
-#include "ZXAlgorithms.h"
 
 #include <memory>
 #include <string>
@@ -41,7 +39,7 @@ public:
 	DecoderResult(Content&& bytes) : _content(std::move(bytes)) {}
 
 	DecoderResult(DecoderResult&&) noexcept = default;
-	DecoderResult& operator=(DecoderResult&&) = default;
+	DecoderResult& operator=(DecoderResult&&) noexcept = default;
 
 	bool isValid(bool includeErrors = false) const
 	{

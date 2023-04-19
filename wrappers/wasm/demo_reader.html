@@ -3,7 +3,8 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-	<title>ZXing in Javascript demo</title>
+	<title>zxing-cpp/wasm reader demo</title>
+	<link rel="shortcut icon" href="#" />
 	<script src="zxing_reader.js"></script>
 	<script src="base64ArrayBuffer.js"></script>
 	<script>
@@ -19,7 +20,7 @@ function scanBarcode(file) {
 
 		var buffer = zxing._malloc(fileData.length);
 		zxing.HEAPU8.set(fileData, buffer);
-		var result = zxing.readBarcode(buffer, fileData.length, true, format);
+		var result = zxing.readBarcodeFromImage(buffer, fileData.length, true, format);
 		zxing._free(buffer);
 
 		showImage(document.getElementById("drop_zone"), fileData, file.type, result.position);
@@ -141,9 +142,10 @@ body>div {
 </head>
 
 <body>
-	<h3>Read barcodes</h3>
+	<h2>zxing-cpp/wasm reader demo</h2>
 	<p>
-		This is a simple demo of WebAssembly build (using Emcripten) of <a href="https://github.com/nu-book/zxing-cpp">zxing-cpp</a>
+		This is a simple demo of the wasm wrapper of <a href="https://github.com/zxing-cpp/zxing-cpp">zxing-cpp</a>
+		scanning for barcodes in image files.
 	</p>
 	<p></p>
 	<div>
@@ -156,14 +158,19 @@ body>div {
 			<option value="Code93">Code 93</option>
 			<option value="Code128">Code 128</option>
 			<option value="DataMatrix">DataMatrix</option>
+			<option value="DataBar">DataBar</option>
+			<option value="DataBarExpanded">DataBarExpanded</option>
 			<option value="EAN8">EAN-8</option>
 			<option value="EAN13">EAN-13</option>
 			<option value="ITF">ITF</option>
 			<option value="PDF417">PDF417</option>
 			<option value="QRCode">QR Code</option>
+			<option value="MicroQRCode">Micro QRCode</option>
 			<option value="UPCA">UPC-A</option>
 			<option value="UPCE">UPC-E</option>
-		</select>
+			<option value="LinearCodes">Linear Codes</option>
+			<option value="MatrixCodes">Matrix Codes</option>
+			</select>
 		<br />
 		<div id="drop_zone" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);">
 			Drag your image here...

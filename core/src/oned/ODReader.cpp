@@ -22,6 +22,11 @@
 #include <algorithm>
 #include <utility>
 
+#ifdef PRINT_DEBUG
+#include "BitMatrix.h"
+#include "BitMatrixIO.h"
+#endif
+
 namespace ZXing {
 
 void IncrementLineCount(Result& r)
@@ -96,6 +101,10 @@ static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, 
 	PatternRow bars;
 	bars.reserve(128); // e.g. EAN-13 has 59 bars/spaces
 
+#ifdef PRINT_DEBUG
+	BitMatrix dbg(width, height);
+#endif
+
 	for (int i = 0; i < maxLines; i++) {
 
 		// Scanning from the middle out. Determine which row we're looking at next:
@@ -118,8 +127,18 @@ static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, 
 				continue;
 		}
 
-		if (!image.getPatternRow(rowNumber, rotate ? 270 : 0, bars))
+		if (!image.getPatternRow(rowNumber, rotate ? 90 : 0, bars))
 			continue;
+
+#ifdef PRINT_DEBUG
+		bool val = false;
+		int x = 0;
+		for (auto b : bars) {
+			for(int j = 0; j < b; ++j)
+				dbg.set(x++, rowNumber, val);
+			val = !val;
+		}
+#endif
 
 		// While we have the image data in a PatternRow, it's fairly cheap to reverse it in place to
 		// handle decoding upside down barcodes.
@@ -156,7 +175,7 @@ static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, 
 						if (rotate) {
 							auto points = result.position();
 							for (auto& p : points) {
-								p = {height - p.y - 1, p.x};
+								p = {p.y, width - p.x - 1};
 							}
 							result.setPosition(std::move(points));
 						}
@@ -224,6 +243,10 @@ out:
 	//TODO: C++20 res.erase_if()
 	it = std::remove_if(res.begin(), res.end(), [](auto&& r) { return r.format() == BarcodeFormat::None; });
 	res.erase(it, res.end());
+
+#ifdef PRINT_DEBUG
+	SaveAsPBM(dbg, rotate ? "od-log-r.pnm" : "od-log.pnm");
+#endif
 
 	return res;
 }

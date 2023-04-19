@@ -6,8 +6,6 @@
 
 #include "BitMatrixIO.h"
 
-#include "BitArray.h"
-
 #include <fstream>
 #include <sstream>
 

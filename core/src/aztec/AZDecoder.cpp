@@ -16,6 +16,7 @@
 #include "ReedSolomonDecoder.h"
 #include "ZXTestSupport.h"
 
+#include <cctype>
 #include <cstring>
 #include <numeric>
 #include <string>

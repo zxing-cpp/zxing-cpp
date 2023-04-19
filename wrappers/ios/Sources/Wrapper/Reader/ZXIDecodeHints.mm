@@ -44,6 +44,10 @@
     return self;
 }
 
+-(void)setMaxNumberOfSymbols:(NSInteger)maxNumberOfSymbols {
+    self.zxingHints.setMaxNumberOfSymbols(maxNumberOfSymbols);
+}
+
 -(void)setTryHarder:(BOOL)tryHarder {
     self.zxingHints.setTryHarder(tryHarder);
 }
@@ -78,6 +82,10 @@
 
 -(void)setDownscalethreshold:(uint16_t)downscaleThreshold {
     self.zxingHints.setDownscaleThreshold(downscaleThreshold);
+}
+
+- (NSInteger)maxNumberOfSymbols {
+    return self.zxingHints.maxNumberOfSymbols();
 }
 
 -(BOOL)tryHarder {

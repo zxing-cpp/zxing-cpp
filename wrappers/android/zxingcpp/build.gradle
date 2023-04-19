@@ -47,7 +47,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'androidx.core:core-ktx:1.9.0'
 
-    def camerax_version = "1.0.2"
+    def camerax_version = "1.2.1"
     implementation "androidx.camera:camera-core:${camerax_version}"
 
 }

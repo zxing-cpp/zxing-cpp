@@ -1500,7 +1500,7 @@ ZUECI_EXTERN int zueci_eci_to_utf8(const int eci, const unsigned char src[], con
     zueci_u32 u;
     int src_incr;
     unsigned char replacement[5];
-    int replacement_len;
+    int replacement_len = 0; /* g++ complains with "-Wmaybe-uninitialized" if this isn't set */
     int ret = 0;
 
     if (!zueci_is_valid_eci(eci)) {

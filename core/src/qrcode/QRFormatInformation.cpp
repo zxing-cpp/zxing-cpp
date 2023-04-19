@@ -7,6 +7,7 @@
 #include "QRFormatInformation.h"
 
 #include "BitHacks.h"
+#include "ZXAlgorithms.h"
 
 #include <array>
 
@@ -99,7 +100,7 @@ static FormatInformation FindBestFormatInfo(int mask, const std::array<std::pair
 
 	// Some QR codes apparently do not apply the XOR mask. Try without and with additional masking.
 	for (auto mask : {0, mask})
-		for (uint8_t bitsIndex = 0; bitsIndex < bits.size(); ++bitsIndex)
+		for (int bitsIndex = 0; bitsIndex < Size(bits); ++bitsIndex)
 			for (const auto& [pattern, index] : lookup) {
 				// Find the int in lookup with fewest bits differing
 				if (int hammingDist = BitHacks::CountBitsSet((bits[bitsIndex] ^ mask) ^ pattern); hammingDist < fi.hammingDistance) {
@@ -137,7 +138,7 @@ FormatInformation FormatInformation::DecodeQR(uint32_t formatInfoBits1, uint32_t
  */
 FormatInformation FormatInformation::DecodeMQR(uint32_t formatInfoBits)
 {
-	// We don't use the additional masking (with 0x4445) to work around potentially non complying MircoQRCode encoders
+	// We don't use the additional masking (with 0x4445) to work around potentially non complying MicroQRCode encoders
 	auto fi = FindBestFormatInfo(0, FORMAT_INFO_DECODE_LOOKUP_MICRO, {formatInfoBits, MirrorBits(formatInfoBits)});
 
 	constexpr uint8_t BITS_TO_VERSION[] = {1, 2, 2, 3, 3, 4, 4, 4};

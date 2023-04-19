@@ -79,8 +79,9 @@ bool IsConvex(const Quadrilateral<PointT>& poly)
 		auto d2 = poly[i] - poly[(i + 1) % N];
 		auto cp = cross(d1, d2);
 
-		m = std::min(std::fabs(m), cp);
-		M = std::max(std::fabs(M), cp);
+		// TODO: see if the isInside check for all boundary points in GridSampler is still required after fixing the wrong fabs()
+		// application in the following line
+		UpdateMinMax(m, M, std::fabs(cp));
 
 		if (i == 0)
 			sign = cp > 0;
@@ -137,6 +138,20 @@ bool HaveIntersectingBoundingBoxes(const Quadrilateral<PointT>& a, const Quadril
 	bool x = b.topRight().x < a.topLeft().x || b.topLeft().x > a.topRight().x;
 	bool y = b.bottomLeft().y < a.topLeft().y || b.topLeft().y > a.bottomLeft().y;
 	return !(x || y);
+}
+
+template <typename PointT>
+Quadrilateral<PointT> Blend(const Quadrilateral<PointT>& a, const Quadrilateral<PointT>& b)
+{
+	auto dist2First = [c = a[0]](auto a, auto b) { return distance(a, c) < distance(b, c); };
+	// rotate points such that the the two topLeft points are closest to each other
+	auto offset = std::min_element(b.begin(), b.end(), dist2First) - b.begin();
+
+	Quadrilateral<PointT> res;
+	for (int i = 0; i < 4; ++i)
+		res[i] = (a[i] + b[(i + offset) % 4]) / 2;
+
+	return res;
 }
 
 } // ZXing

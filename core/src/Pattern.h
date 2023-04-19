@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include "BitHacks.h"
 #include "Range.h"
 #include "ZXAlgorithms.h"
 
@@ -19,7 +20,9 @@
 
 namespace ZXing {
 
-using PatternRow = std::vector<uint16_t>;
+using PatternType = uint16_t;
+template<int N> using Pattern = std::array<PatternType, N>;
+using PatternRow = std::vector<PatternType>;
 
 class PatternView
 {
@@ -43,7 +46,7 @@ public:
 	PatternView(Iterator data, int size, Iterator base, Iterator end) : _data(data), _size(size), _base(base), _end(end) {}
 
 	template <size_t N>
-	PatternView(const std::array<value_type, N>& row) : _data(row.data()), _size(N)
+	PatternView(const Pattern<N>& row) : _data(row.data()), _size(N)
 	{}
 
 	Iterator data() const { return _data; }
@@ -129,12 +132,21 @@ struct BarAndSpace
 	using value_type = T;
 	T bar = {}, space = {};
 	// even index -> bar, odd index -> space
-	T& operator[](int i) { return reinterpret_cast<T*>(this)[i & 1]; }
-	T operator[](int i) const { return reinterpret_cast<const T*>(this)[i & 1]; }
+	constexpr T& operator[](int i) noexcept { return reinterpret_cast<T*>(this)[i & 1]; }
+	constexpr T operator[](int i) const noexcept { return reinterpret_cast<const T*>(this)[i & 1]; }
 	bool isValid() const { return bar != T{} && space != T{}; }
 };
 
-using BarAndSpaceI = BarAndSpace<PatternView::value_type>;
+using BarAndSpaceI = BarAndSpace<PatternType>;
+
+template <int LEN, typename T, typename RT = T>
+constexpr auto BarAndSpaceSum(const T* view) noexcept
+{
+	BarAndSpace<RT> res;
+	for (int i = 0; i < LEN; ++i)
+		res[i] += view[i];
+	return res;
+}
 
 /**
  * @brief FixedPattern describes a compile-time constant (start/stop) pattern.
@@ -151,17 +163,42 @@ struct FixedPattern
 	constexpr value_type operator[](int i) const noexcept { return _data[i]; }
 	constexpr const value_type* data() const noexcept { return _data; }
 	constexpr int size() const noexcept { return N; }
+	constexpr BarAndSpace<value_type> sums() const noexcept { return BarAndSpaceSum<N>(_data); }
 };
 
 template <int N, int SUM>
 using FixedSparcePattern = FixedPattern<N, SUM, true>;
 
-template <bool RELAXED_THRESHOLD = false, int N, int SUM>
-float IsPattern(const PatternView& view, const FixedPattern<N, SUM, false>& pattern, int spaceInPixel = 0,
+template <bool E2E = false, int LEN, int SUM>
+float IsPattern(const PatternView& view, const FixedPattern<LEN, SUM, false>& pattern, int spaceInPixel = 0,
 				float minQuietZone = 0, float moduleSizeRef = 0)
 {
-	int width = view.sum(N);
-	if (SUM > N && width < SUM)
+	if constexpr (E2E) {
+		using float_t = double;
+
+		auto widths = BarAndSpaceSum<LEN, PatternView::value_type, float_t>(view.data());
+		auto sums = pattern.sums();
+		BarAndSpace<float_t> modSize = {widths[0] / sums[0], widths[1] / sums[1]};
+
+		auto [m, M] = std::minmax(modSize[0], modSize[1]);
+		if (M > 4 * m) // make sure module sizes of bars and spaces are not too far away from each other
+			return 0;
+
+		if (minQuietZone && spaceInPixel < minQuietZone * modSize.space)
+			return 0;
+
+		const BarAndSpace<float_t> thr = {modSize[0] * .75 + .5, modSize[1] / (2 + (LEN < 6)) + .5};
+
+		for (int x = 0; x < LEN; ++x)
+			if (std::abs(view[x] - pattern[x] * modSize[x]) > thr[x])
+				return 0;
+
+		const float_t moduleSize = (modSize[0] + modSize[1]) / 2;
+		return moduleSize;
+	}
+
+	int width = view.sum(LEN);
+	if (SUM > LEN && width < SUM)
 		return 0;
 
 	const float moduleSize = (float)width / SUM;
@@ -174,9 +211,9 @@ float IsPattern(const PatternView& view, const FixedPattern<N, SUM, false>& patt
 
 	// the offset of 0.5 is to make the code less sensitive to quantization errors for small (near 1) module sizes.
 	// TODO: review once we have upsampling in the binarizer in place.
-	const float threshold = moduleSizeRef * (0.5f + RELAXED_THRESHOLD * 0.25f) + 0.5f;
+	const float threshold = moduleSizeRef * (0.5f + E2E * 0.25f) + 0.5f;
 
-	for (int x = 0; x < N; ++x)
+	for (int x = 0; x < LEN; ++x)
 		if (std::abs(view[x] - pattern[x] * moduleSizeRef) > threshold)
 			return 0;
 
@@ -314,12 +351,36 @@ void GetPatternRow(Range<I> b_row, PatternRow& p_row)
 	std::fill(p_row.begin(), p_row.end(), 0);
 
 	auto bitPos = b_row.begin();
+	const auto bitPosEnd = b_row.end();
 	auto intPos = p_row.data();
 
 	if (*bitPos)
 		intPos++; // first value is number of white pixels, here 0
 
-	while (++bitPos < b_row.end()) {
+	// The following code as been observed to cause a speedup of up to 30% on large images on an AVX cpu
+	// and on an a Google Pixel 3 Android phone. Your mileage may vary.
+	if constexpr (std::is_pointer_v<I> && sizeof(I) == 8 && sizeof(std::remove_pointer_t<I>) == 1) {
+		using simd_t = uint64_t;
+		while (bitPos < bitPosEnd - sizeof(simd_t)) {
+			auto asSimd0 = BitHacks::LoadU<simd_t>(bitPos);
+			auto asSimd1 = BitHacks::LoadU<simd_t>(bitPos + 1);
+			auto z = asSimd0 ^ asSimd1;
+			if (z) {
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+				int step = BitHacks::NumberOfTrailingZeros(z) / 8 + 1;
+#else
+				int step = BitHacks::NumberOfLeadingZeros(z) / 8 + 1;
+#endif
+				(*intPos++) += step;
+				bitPos += step;
+			} else {
+				(*intPos) += sizeof(simd_t);
+				bitPos += sizeof(simd_t);
+			}
+		}
+	}
+
+	while (++bitPos != bitPosEnd) {
 		++(*intPos);
 		intPos += bitPos[0] != bitPos[-1];
 	}

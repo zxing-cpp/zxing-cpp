@@ -8,6 +8,7 @@
 #include "BitMatrixIO.h"
 #include "CharacterSet.h"
 #include "MultiFormatWriter.h"
+#include "ZXVersion.h"
 
 #include <algorithm>
 #include <cctype>
@@ -28,7 +29,8 @@ static void PrintUsage(const char* exePath)
 	          << "    -margin    Margin around barcode\n"
 	          << "    -encoding  Encoding used to encode input text\n"
 	          << "    -ecc       Error correction level, [0-8]\n"
-	          << "    -help      Print usage information and exit\n"
+	          << "    -help      Print usage information\n"
+			  << "    -version   Print version information\n"
 	          << "\n"
 			  << "Supported formats are:\n";
 	for (auto f : BarcodeFormatsFromString("Aztec Codabar Code39 Code93 Code128 DataMatrix EAN8 EAN13 ITF PDF417 QRCode UPCA UPCE"))
@@ -55,27 +57,31 @@ static bool ParseOptions(int argc, char* argv[], int* width, int* height, int* m
 {
 	int nonOptArgCount = 0;
 	for (int i = 1; i < argc; ++i) {
-		if (strcmp(argv[i], "-size") == 0) {
+		auto is = [&](const char* str) { return strncmp(argv[i], str, strlen(argv[i])) == 0; };
+		if (is("-size")) {
 			if (++i == argc)
 				return false;
 			if (!ParseSize(argv[i], width, height)) {
 				std::cerr << "Invalid size specification: " << argv[i] << std::endl;
 				return false;
 			}
-		} else if (strcmp(argv[i], "-margin") == 0) {
+		} else if (is("-margin")) {
 			if (++i == argc)
 				return false;
 			*margin = std::stoi(argv[i]);
-		} else if (strcmp(argv[i], "-ecc") == 0) {
+		} else if (is("-ecc")) {
 			if (++i == argc)
 				return false;
 			*eccLevel = std::stoi(argv[i]);
-		} else if (strcmp(argv[i], "-encoding") == 0) {
+		} else if (is("-encoding")) {
 			if (++i == argc)
 				return false;
 			*encoding = CharacterSetFromString(argv[i]);
-		} else if (strcmp(argv[i], "-help") == 0 || strcmp(argv[i], "--help") == 0) {
+		} else if (is("-help") || is("--help")) {
 			PrintUsage(argv[0]);
+			exit(0);
+		} else if (is("-version") || is("--version")) {
+			std::cout << "ZXingWriter " << ZXING_VERSION_STR << "\n";
 			exit(0);
 		} else if (nonOptArgCount == 0) {
 			*format = BarcodeFormatFromString(argv[i]);

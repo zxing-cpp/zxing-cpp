@@ -180,10 +180,10 @@ static auto E2E_PATTERNS = [] {
 Result Code128Reader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<DecodingState>&) const
 {
 	int minCharCount = 4; // start + payload + checksum + stop
-	auto decodePattern = [](const PatternView& view) {
+	auto decodePattern = [](const PatternView& view, bool start = false) {
 		// This is basically the reference algorithm from the specification
 		int code = IndexOf(E2E_PATTERNS, ToInt(NormalizedE2EPattern<CHAR_LEN, CHAR_SUM>(view)));
-		if (code == -1) // if the reference algo fails, give the original upstream version a try (required to decode a few samples)
+		if (code == -1 && !start) // if the reference algo fails, give the original upstream version a try (required to decode a few samples)
 			code = DecodeDigit(view, Code128::CODE_PATTERNS, MAX_AVG_VARIANCE, MAX_INDIVIDUAL_VARIANCE);
 		return code;
 	};
@@ -193,7 +193,7 @@ Result Code128Reader::decodePattern(int rowNumber, PatternView& next, std::uniqu
 		return {};
 
 	next = next.subView(0, CHAR_LEN);
-	int startCode = decodePattern(next);
+	int startCode = decodePattern(next, true);
 	if (!(CODE_START_A <= startCode && startCode <= CODE_START_C))
 		return {};
 

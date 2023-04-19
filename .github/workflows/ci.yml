@@ -24,9 +24,9 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Setup Python 3
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: '3.x'
     - name: Create Build Environment
@@ -79,18 +79,18 @@ jobs:
     - uses: actions/checkout@v3
       with:
         ref: ${{github.ref}}
-    
+
     - name: Build the ZXingCpp.xcframework
       shell: sh
       working-directory: ${{runner.workspace}}/${{github.event.repository.name}}/wrappers/ios
       run: ./build-release.sh
-      
+
     - name: Upload .xcframework
       uses: actions/upload-artifact@v3
       with:
         name: ios-artifacts
         path: ${{runner.workspace}}/${{github.event.repository.name}}/wrappers/ios/ZXingCpp.xcframework
-        
+
     - name: Build the demo app
       shell: sh
       working-directory: ${{runner.workspace}}/${{github.event.repository.name}}/wrappers/ios/demo
@@ -99,13 +99,13 @@ jobs:
   build-android:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Build the lib/app
       working-directory: wrappers/android
       run: ./gradlew assembleDebug # build only the debug version of the aar (faster build)
 
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: android-artifacts
         path: "wrappers/android/zxingcpp/build/outputs/aar/zxingcpp-debug.aar"
@@ -113,8 +113,8 @@ jobs:
   build-wasm:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: mymindstorm/setup-emsdk@v7
+    - uses: actions/checkout@v3
+    - uses: mymindstorm/setup-emsdk@v12
 
     - name: Configure
       run: emcmake cmake -Swrappers/wasm -Bbuild
@@ -125,7 +125,7 @@ jobs:
 #    - name: Test
 #      run: node build/EmGlueTests.js
 
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: wasm-artifacts
         path: "build/zxing*"
@@ -138,10 +138,10 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
 

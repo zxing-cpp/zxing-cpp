@@ -33,6 +33,7 @@ public:
 	explicit HybridBinarizer(const ImageView& iv);
 	~HybridBinarizer() override;
 
+	bool getPatternRow(int row, int rotation, PatternRow &res) const override;
 	std::shared_ptr<const BitMatrix> getBlackMatrix() const override;
 };
 

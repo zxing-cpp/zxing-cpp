@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.14)
+cmake_minimum_required(VERSION 3.15)
 
 project(ZXing)
 
@@ -17,17 +17,10 @@ else()
 endif()
 
 if (MSVC)
-    option (LINK_CPP_STATICALLY "MSVC only, link standard library statically (/MT and /MTd)" OFF)
-
     add_definitions (-DUNICODE -D_UNICODE -D_CRT_SECURE_NO_WARNINGS)
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
-    set (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /Oi /GS-")
-    set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Oi /GS-")
+    option (LINK_CPP_STATICALLY "MSVC only, link standard library statically (/MT and /MTd)" OFF)
     if (LINK_CPP_STATICALLY)
-        set (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /MT")
-        set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
-        set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /MTd")
-        set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
+        set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
     endif()
 endif()
 
@@ -42,8 +35,12 @@ if (BUILD_SHARED_LIBS)
     set (CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif()
 
-set (CMAKE_CXX_STANDARD 17)
-set (CMAKE_CXX_EXTENSIONS OFF)
+if (NOT CMAKE_CXX_STANDARD)
+    set (CMAKE_CXX_STANDARD 17)
+endif()
+if (NOT CMAKE_CXX_EXTENSIONS)
+    set (CMAKE_CXX_EXTENSIONS OFF)
+endif()
 
 if (NOT (BUILD_READERS OR BUILD_WRITERS))
     message(FATAL_ERROR "At least one of BUILD_READERS/BUILD_WRITERS must be enabled.")
