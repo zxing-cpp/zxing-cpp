@@ -84,13 +84,13 @@ class TestReadWrite(unittest.TestCase):
 
 	def test_read_invalid_type(self):
 		self.assertRaisesRegex(
-			TypeError, "Unsupported type <class 'str'>. Expect a PIL Image or numpy array", zxingcpp.read_barcode, "foo"
+			TypeError, "Could not convert <class 'str'> to numpy array.", zxingcpp.read_barcode, "foo"
 		)
 
 	def test_read_invalid_numpy_array_channels(self):
 		import numpy as np
 		self.assertRaisesRegex(
-			TypeError, "Unsupported number of channels for numpy array: 4", zxingcpp.read_barcode,
+			ValueError, "Unsupported number of channels for numpy array: 4", zxingcpp.read_barcode,
 			np.zeros((100, 100, 4), np.uint8)
 		)
 

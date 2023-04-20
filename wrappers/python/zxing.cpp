@@ -50,38 +50,43 @@ auto read_barcodes_impl(py::object _image, const BarcodeFormats& formats, bool t
 		.setEanAddOnSymbol(ean_add_on_symbol);
 	const auto _type = std::string(py::str(py::type::of(_image)));
 	Image image;
+	ImageFormat imgfmt = ImageFormat::None;
 	try {
+		if (_type.find("PIL.") != std::string::npos) {
+			_image.attr("load")();
+			const auto mode = _image.attr("mode").cast<std::string>();
+			if (mode == "L")
+				imgfmt = ImageFormat::Lum;
+			else if (mode == "RGB")
+				imgfmt = ImageFormat::RGB;
+			else if (mode == "RGBA")
+				imgfmt = ImageFormat::RGBX;
+			else {
+				// Unsupported mode in ImageFormat. Let's do conversion to L mode with PIL.
+				_image = _image.attr("convert")("L");
+				imgfmt = ImageFormat::Lum;
+			}
+		}
 		image = _image.cast<Image>();
-	}
-	catch(...) {
-		throw py::type_error("Unsupported type " + _type + ". Expect a PIL Image or numpy array");
+#if PYBIND11_VERSION_HEX > 0x02080000 // py::raise_from is available starting from 2.8.0
+	} catch (py::error_already_set &e) {
+		py::raise_from(e, PyExc_TypeError, ("Could not convert " + _type + " to numpy array.").c_str());
+		throw py::error_already_set();
+#endif
+	} catch (...) {
+		throw py::type_error("Could not convert " + _type + " to numpy array. Expecting a PIL Image or numpy array.");
 	}
 	const auto height = narrow_cast<int>(image.shape(0));
 	const auto width = narrow_cast<int>(image.shape(1));
-	auto channels = image.ndim() == 2 ? 1 : narrow_cast<int>(image.shape(2));
-	ImageFormat imgfmt;
-	if (_type.find("PIL.") != std::string::npos) {
-		const auto mode = _image.attr("mode").cast<std::string>();
-		if (mode == "L")
-			imgfmt = ImageFormat::Lum;
-		else if (mode == "RGB")
-			imgfmt = ImageFormat::RGB;
-		else if (mode == "RGBA")
-			imgfmt = ImageFormat::RGBX;
-		else {
-			// Unsupported mode in ImageFormat. Let's do conversion to L mode with PIL
-			image = _image.attr("convert")("L").cast<Image>();
-			imgfmt = ImageFormat::Lum;
-			channels = 1;
-		}
-	} else {
+	const auto channels = image.ndim() == 2 ? 1 : narrow_cast<int>(image.shape(2));
+	if (imgfmt == ImageFormat::None) {
 		// Assume grayscale or BGR image depending on channels number
 		if (channels == 1)
 			imgfmt = ImageFormat::Lum;
 		else if (channels == 3)
 			imgfmt = ImageFormat::BGR;
 		else
-			throw py::type_error("Unsupported number of channels for numpy array: " + std::to_string(channels));
+			throw py::value_error("Unsupported number of channels for numpy array: " + std::to_string(channels));
 	}
 
 	const auto bytes = image.data();
