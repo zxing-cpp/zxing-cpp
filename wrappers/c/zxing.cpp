@@ -15,46 +15,37 @@ extern "C" {
 zxing_ImageView zxing_ImageView_new (const uint8_t * data, int width, int height, zxing_ImageFormat format, int rowStride, int pixStride)
 {
 	ZXing::ImageFormat cppformat = (ZXing::ImageFormat) format;
-	ZXing::ImageView * cppiv = new ZXing::ImageView(data, width, height, cppformat, rowStride, pixStride);
-	return (zxing_ImageView) cppiv;
+	return new ZXing::ImageView(data, width, height, cppformat, rowStride, pixStride);
 }
 
 void zxing_ImageView_delete (zxing_ImageView iv)
 {
-	ZXing::ImageView * cppiv = (ZXing::ImageView *) iv;
-	delete cppiv;
-	//cppiv->~ImageView();
+	delete iv;
 }
 
 int zxing_ImageView_width (zxing_ImageView iv)
 {
-	ZXing::ImageView * cppiv = (ZXing::ImageView *) iv;
-	return cppiv->width();
+	return iv->width();
 }
 
 int zxing_ImageView_height (zxing_ImageView iv)
 {
-	ZXing::ImageView * cppiv = (ZXing::ImageView *) iv;
-	return cppiv->height();
+	return iv->height();
 }
 
 int zxing_ImageView_pixStride (zxing_ImageView iv)
 {
-	ZXing::ImageView * cppiv = (ZXing::ImageView *) iv;
-	return cppiv->pixStride();
+	return iv->pixStride();
 }
 
 int zxing_ImageView_rowStride (zxing_ImageView iv)
 {
-	ZXing::ImageView * cppiv = (ZXing::ImageView *) iv;
-	return cppiv->rowStride();
+	return iv->rowStride();
 }
 
 zxing_ImageFormat zxing_ImageView_format (zxing_ImageView iv)
 {
-	ZXing::ImageView * cppiv = (ZXing::ImageView *) iv;
-	ZXing::ImageFormat cppformat = cppiv->format();
-	return (zxing_ImageFormat) cppformat;
+	return (zxing_ImageFormat) iv->format();
 }
 
 /*
@@ -82,54 +73,42 @@ zxing_BarcodeFormat zxing_BarcodeFormatFromString (const char * format)
 
 zxing_DecodeHints zxing_DecodeHints_new ()
 {
-	ZXing::DecodeHints * cpphints = new ZXing::DecodeHints();
-	return (zxing_DecodeHints) cpphints;
+	return new ZXing::DecodeHints();
 }
 
 void zxing_DecodeHints_delete (zxing_DecodeHints hints)
 {
-	ZXing::DecodeHints * cpphints = (ZXing::DecodeHints *) hints;
-	delete cpphints;
+	delete hints;
 }
 
 void zxing_DecodeHints_setTryHarder (zxing_DecodeHints hints, bool tryHarder)
 {
-	ZXing::DecodeHints * cpphints = (ZXing::DecodeHints *) hints;
-	cpphints->setTryHarder(tryHarder);
+	hints->setTryHarder(tryHarder);
 }
 
 void zxing_DecodeHints_setTryDownscale (zxing_DecodeHints hints, bool tryDownscale)
 {
-	ZXing::DecodeHints * cpphints = (ZXing::DecodeHints *) hints;
-	cpphints->setTryDownscale(tryDownscale);
+	hints->setTryDownscale(tryDownscale);
 }
 
 void zxing_DecodeHints_setFormats (zxing_DecodeHints hints, zxing_BarcodeFormat formats)
 {
-	ZXing::DecodeHints * cpphints = (ZXing::DecodeHints *) hints;
-	ZXing::BarcodeFormat cppformats = (ZXing::BarcodeFormat) formats;
-	cpphints->setFormats(cppformats);
+	hints->setFormats((ZXing::BarcodeFormat) formats);
 }
 
 void zxing_DecodeHints_setBinarizer (zxing_DecodeHints hints, zxing_Binarizer binarizer)
 {
-	ZXing::DecodeHints * cpphints = (ZXing::DecodeHints *) hints;
-	ZXing::Binarizer cppbinarizer = (ZXing::Binarizer) binarizer;
-	cpphints->setBinarizer(cppbinarizer);
+	hints->setBinarizer((ZXing::Binarizer) binarizer);
 }
 
 void zxing_DecodeHints_setEanAddOnSymbol (zxing_DecodeHints hints, zxing_EanAddOnSymbol eanAddOnSymbol)
 {
-	ZXing::DecodeHints * cpphints = (ZXing::DecodeHints *) hints;
-	ZXing::EanAddOnSymbol cppeanAddOnSymbol = (ZXing::EanAddOnSymbol) eanAddOnSymbol;
-	cpphints->setEanAddOnSymbol(cppeanAddOnSymbol);
+	hints->setEanAddOnSymbol((ZXing::EanAddOnSymbol) eanAddOnSymbol);
 }
 
 void zxing_DecodeHints_setTextMode (zxing_DecodeHints hints, zxing_TextMode textMode)
 {
-	ZXing::DecodeHints * cpphints = (ZXing::DecodeHints *) hints;
-	ZXing::TextMode cpptextMode = (ZXing::TextMode) textMode;
-	cpphints->setTextMode(cpptextMode);
+	hints->setTextMode((ZXing::TextMode) textMode);
 }
 
 /*
@@ -142,20 +121,17 @@ void zxing_DecodeHints_setTextMode (zxing_DecodeHints hints, zxing_TextMode text
 
 void zxing_Result_delete (zxing_Result result)
 {
-	ZXing::Result * cppresult = (ZXing::Result *) result;
-	delete cppresult;
+	delete result;
 }
 
 bool zxing_Result_isValid (zxing_Result result)
 {
-	ZXing::Result * cppresult = (ZXing::Result *) result;
-	return cppresult->isValid();
+	return result->isValid();
 }
 
 zxing_BarcodeFormat zxing_Result_format (zxing_Result result)
 {
-	ZXing::Result * cppresult = (ZXing::Result *) result;
-	return (zxing_BarcodeFormat) cppresult->format();
+	return (zxing_BarcodeFormat) result->format();
 }
 
 /*
@@ -169,28 +145,15 @@ zxing_BarcodeFormat zxing_Result_format (zxing_Result result)
 zxing_Result zxing_ReadBarcode (const zxing_ImageView iv, const zxing_DecodeHints hints)
 {
 	const ZXing::ImageView & cppiv = (const ZXing::ImageView &) iv;
-	// TODO
-	//zxing.cpp: In function ‘void* zxing_ReadBarcode(zxing_ImageView, zxing_DecodeHints)’:
-	//zxing.cpp:157:76: warning: dereferencing type-punned pointer will break strict-aliasing rules [-Wstrict-aliasing]
-	//  157 |         const ZXing::DecodeHints & cpphints = (const ZXing::DecodeHints &) hints;
 	const ZXing::DecodeHints & cpphints = (const ZXing::DecodeHints &) hints;
-	ZXing::Result cppresult = ZXing::ReadBarcode(cppiv, cpphints);
-	ZXing::Result * cppresultptr = new ZXing::Result(std::move(cppresult));
-	return (zxing_Result) cppresultptr;
+	return new ZXing::Result(std::move(ZXing::ReadBarcode(cppiv, cpphints)));
 }
 
 zxing_Results zxing_ReadBarcodes (const zxing_ImageView iv, const zxing_DecodeHints hints)
 {
 	const ZXing::ImageView & cppiv = (const ZXing::ImageView &) iv;
-	// TODO
-	//zxing.cpp: In function ‘void* zxing_ReadBarcodes(zxing_ImageView, zxing_DecodeHints)’:
-	//zxing.cpp:173:76: warning: dereferencing type-punned pointer will break strict-aliasing rules [-Wstrict-aliasing]
-	//  173 |         const ZXing::DecodeHints & cpphints = (const ZXing::DecodeHints &) hints;
 	const ZXing::DecodeHints & cpphints = (const ZXing::DecodeHints &) hints;
-	ZXing::Results cppresults = ZXing::ReadBarcodes(cppiv, cpphints);
-	ZXing::Results * cppresultsptr = new ZXing::Results(std::move(cppresults));
-	return (zxing_Results) cppresultsptr;
-	return NULL;
+	return new ZXing::Results(std::move(ZXing::ReadBarcodes(cppiv, cpphints)));
 }
 
 }
