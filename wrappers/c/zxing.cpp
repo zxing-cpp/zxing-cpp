@@ -6,9 +6,7 @@
 #include <ZXing/Result.h>
 #include <ZXing/ReadBarcode.h>
 
-#ifdef __cplusplus
 extern "C" {
-#endif
 
 /*
  * ZXing/ImageView.h
@@ -197,6 +195,4 @@ zxing_Results zxing_ReadBarcodes (const zxing_ImageView iv, const zxing_DecodeHi
 	return NULL;
 }
 
-#ifdef __cplusplus
 }
-#endif
