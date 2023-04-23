@@ -12,14 +12,29 @@
 #include <stdint.h>
 
 #ifdef __cplusplus
+
+#include <ZXing/ImageView.h>
+#include <ZXing/DecodeHints.h>
+#include <ZXing/Result.h>
+
+typedef ZXing::ImageView * zxing_ImageView;
+typedef ZXing::DecodeHints * zxing_DecodeHints;
+typedef ZXing::Result * zxing_Result;
+typedef ZXing::Results * zxing_Results;
+
 extern "C" {
+#else
+
+typedef struct zxing_ImageView * zxing_ImageView;
+typedef struct zxing_DecodeHints * zxing_DecodeHints;
+typedef struct zxing_Result * zxing_Result;
+typedef struct zxing_Results * zxing_Results;
+
 #endif
 
 /*
  * ZXing/ImageView.h
  */
-
-typedef void * zxing_ImageView;
 
 typedef enum {
 	zxing_ImageFormat_None = 0,
@@ -103,8 +118,6 @@ typedef enum {
 	zxing_TextMode_Escaped,
 } zxing_TextMode;
 
-typedef void * zxing_DecodeHints;
-
 zxing_DecodeHints zxing_DecodeHints_new ();
 void zxing_DecodeHints_free (zxing_DecodeHints hints);
 
@@ -119,9 +132,6 @@ void zxing_DecodeHints_setTextMode (zxing_DecodeHints hints, zxing_TextMode text
 /*
  * ZXing/Result.h
  */
-
-typedef void * zxing_Result;
-typedef void * zxing_Results;
 
 void zxing_Result_free (zxing_Result result);
 
