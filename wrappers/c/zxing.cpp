@@ -67,7 +67,7 @@ zxing_ImageFormat zxing_ImageView_format (zxing_ImageView iv)
 
 zxing_BarcodeFormat zxing_BarcodeFormatFromString (const char * format)
 {
-    return (zxing_BarcodeFormat) ZXing::BarcodeFormatFromString(std::string(format));
+	return (zxing_BarcodeFormat) ZXing::BarcodeFormatFromString(std::string(format));
 }
 
 // TODO:
@@ -175,7 +175,7 @@ zxing_Result zxing_ReadBarcode (const zxing_ImageView iv, const zxing_DecodeHint
 	//  157 |         const ZXing::DecodeHints & cpphints = (const ZXing::DecodeHints &) hints;
 	const ZXing::DecodeHints & cpphints = (const ZXing::DecodeHints &) hints;
 	ZXing::Result cppresult = ZXing::ReadBarcode(cppiv, cpphints);
-    ZXing::Result * cppresultptr = new ZXing::Result(cppresult);
+	ZXing::Result * cppresultptr = new ZXing::Result(std::move(cppresult));
 	return (zxing_Result) cppresultptr;
 }
 
@@ -187,11 +187,9 @@ zxing_Results zxing_ReadBarcodes (const zxing_ImageView iv, const zxing_DecodeHi
 	//zxing.cpp:173:76: warning: dereferencing type-punned pointer will break strict-aliasing rules [-Wstrict-aliasing]
 	//  173 |         const ZXing::DecodeHints & cpphints = (const ZXing::DecodeHints &) hints;
 	const ZXing::DecodeHints & cpphints = (const ZXing::DecodeHints &) hints;
-	(void) cppiv;
-	(void) cpphints;
-	// TODO
-	//ZXing::Results * cppresults = new ZXing::ReadBarcodes(cppiv, cpphints);
-	//return (zxing_Results) cppresults;
+	ZXing::Results cppresults = ZXing::ReadBarcodes(cppiv, cpphints);
+	ZXing::Results * cppresultsptr = new ZXing::Results(std::move(cppresults));
+	return (zxing_Results) cppresultsptr;
 	return NULL;
 }
 
