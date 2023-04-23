@@ -48,7 +48,7 @@ typedef enum {
 } zxing_ImageFormat;
 
 zxing_ImageView zxing_ImageView_new (const uint8_t * data, int width, int height, zxing_ImageFormat format, int rowStride, int pixStride);
-void zxing_ImageView_free (zxing_ImageView iv);
+void zxing_ImageView_delete (zxing_ImageView iv);
 
 int zxing_ImageView_width (zxing_ImageView iv);
 int zxing_ImageView_height (zxing_ImageView iv);
@@ -119,7 +119,7 @@ typedef enum {
 } zxing_TextMode;
 
 zxing_DecodeHints zxing_DecodeHints_new ();
-void zxing_DecodeHints_free (zxing_DecodeHints hints);
+void zxing_DecodeHints_delete (zxing_DecodeHints hints);
 
 void zxing_DecodeHints_setTryHarder (zxing_DecodeHints hints, bool tryHarder);
 void zxing_DecodeHints_setTryDownscale (zxing_DecodeHints hints, bool tryDownscale);
@@ -133,7 +133,7 @@ void zxing_DecodeHints_setTextMode (zxing_DecodeHints hints, zxing_TextMode text
  * ZXing/Result.h
  */
 
-void zxing_Result_free (zxing_Result result);
+void zxing_Result_delete (zxing_Result result);
 
 bool zxing_Result_isValid (zxing_Result result);
 zxing_BarcodeFormat zxing_Result_format (zxing_Result result);

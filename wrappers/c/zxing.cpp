@@ -19,7 +19,7 @@ zxing_ImageView zxing_ImageView_new (const uint8_t * data, int width, int height
 	return (zxing_ImageView) cppiv;
 }
 
-void zxing_ImageView_free (zxing_ImageView iv)
+void zxing_ImageView_delete (zxing_ImageView iv)
 {
 	ZXing::ImageView * cppiv = (ZXing::ImageView *) iv;
 	delete cppiv;
@@ -86,7 +86,7 @@ zxing_DecodeHints zxing_DecodeHints_new ()
 	return (zxing_DecodeHints) cpphints;
 }
 
-void zxing_DecodeHints_free (zxing_DecodeHints hints)
+void zxing_DecodeHints_delete (zxing_DecodeHints hints)
 {
 	ZXing::DecodeHints * cpphints = (ZXing::DecodeHints *) hints;
 	delete cpphints;
@@ -140,10 +140,10 @@ void zxing_DecodeHints_setTextMode (zxing_DecodeHints hints, zxing_TextMode text
  * ZXing/Result.h
  */
 
-void zxing_Result_free (zxing_Result result)
+void zxing_Result_delete (zxing_Result result)
 {
-    ZXing::Result * cppresult = (ZXing::Result *) result;
-    delete cppresult;
+	ZXing::Result * cppresult = (ZXing::Result *) result;
+	delete cppresult;
 }
 
 bool zxing_Result_isValid (zxing_Result result)
