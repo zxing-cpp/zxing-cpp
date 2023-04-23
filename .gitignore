@@ -4,4 +4,4 @@ CMakeLists.txt.user
 *.lib
 *.d
 *.a
-
+compile_commands.json
