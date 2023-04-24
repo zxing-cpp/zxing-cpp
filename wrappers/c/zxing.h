@@ -17,18 +17,18 @@
 #include <ZXing/DecodeHints.h>
 #include <ZXing/Result.h>
 
-typedef ZXing::ImageView * zxing_ImageView;
-typedef ZXing::DecodeHints * zxing_DecodeHints;
-typedef ZXing::Result * zxing_Result;
-typedef ZXing::Results * zxing_Results;
+typedef ZXing::ImageView zxing_ImageView;
+typedef ZXing::DecodeHints zxing_DecodeHints;
+typedef ZXing::Result zxing_Result;
+typedef ZXing::Results zxing_Results;
 
 extern "C" {
 #else
 
-typedef struct zxing_ImageView * zxing_ImageView;
-typedef struct zxing_DecodeHints * zxing_DecodeHints;
-typedef struct zxing_Result * zxing_Result;
-typedef struct zxing_Results * zxing_Results;
+typedef struct zxing_ImageView zxing_ImageView;
+typedef struct zxing_DecodeHints zxing_DecodeHints;
+typedef struct zxing_Result zxing_Result;
+typedef struct zxing_Results zxing_Results;
 
 #endif
 
@@ -47,14 +47,14 @@ typedef enum {
 	zxing_ImageFormat_XBGR = 0x04030201,
 } zxing_ImageFormat;
 
-zxing_ImageView zxing_ImageView_new (const uint8_t * data, int width, int height, zxing_ImageFormat format, int rowStride, int pixStride);
-void zxing_ImageView_delete (zxing_ImageView iv);
+zxing_ImageView * zxing_ImageView_new (const uint8_t * data, int width, int height, zxing_ImageFormat format, int rowStride, int pixStride);
+void zxing_ImageView_delete (zxing_ImageView * iv);
 
-int zxing_ImageView_width (zxing_ImageView iv);
-int zxing_ImageView_height (zxing_ImageView iv);
-int zxing_ImageView_pixStride (zxing_ImageView iv);
-int zxing_ImageView_rowStride (zxing_ImageView iv);
-zxing_ImageFormat zxing_ImageView_format (zxing_ImageView iv);
+int zxing_ImageView_width (zxing_ImageView * iv);
+int zxing_ImageView_height (zxing_ImageView * iv);
+int zxing_ImageView_pixStride (zxing_ImageView * iv);
+int zxing_ImageView_rowStride (zxing_ImageView * iv);
+zxing_ImageFormat zxing_ImageView_format (zxing_ImageView * iv);
 /* ... */
 
 /*
@@ -118,33 +118,33 @@ typedef enum {
 	zxing_TextMode_Escaped,
 } zxing_TextMode;
 
-zxing_DecodeHints zxing_DecodeHints_new ();
-void zxing_DecodeHints_delete (zxing_DecodeHints hints);
+zxing_DecodeHints * zxing_DecodeHints_new ();
+void zxing_DecodeHints_delete (zxing_DecodeHints * hints);
 
-void zxing_DecodeHints_setTryHarder (zxing_DecodeHints hints, bool tryHarder);
-void zxing_DecodeHints_setTryDownscale (zxing_DecodeHints hints, bool tryDownscale);
-void zxing_DecodeHints_setFormats (zxing_DecodeHints hints, zxing_BarcodeFormat formats);
-void zxing_DecodeHints_setBinarizer (zxing_DecodeHints hints, zxing_Binarizer binarizer);
-void zxing_DecodeHints_setEanAddOnSymbol (zxing_DecodeHints hints, zxing_EanAddOnSymbol eanAddOnSymbol);
-void zxing_DecodeHints_setTextMode (zxing_DecodeHints hints, zxing_TextMode textMode);
+void zxing_DecodeHints_setTryHarder (zxing_DecodeHints * hints, bool tryHarder);
+void zxing_DecodeHints_setTryDownscale (zxing_DecodeHints * hints, bool tryDownscale);
+void zxing_DecodeHints_setFormats (zxing_DecodeHints * hints, zxing_BarcodeFormat formats);
+void zxing_DecodeHints_setBinarizer (zxing_DecodeHints * hints, zxing_Binarizer binarizer);
+void zxing_DecodeHints_setEanAddOnSymbol (zxing_DecodeHints * hints, zxing_EanAddOnSymbol eanAddOnSymbol);
+void zxing_DecodeHints_setTextMode (zxing_DecodeHints * hints, zxing_TextMode textMode);
 /* ... */
 
 /*
  * ZXing/Result.h
  */
 
-void zxing_Result_delete (zxing_Result result);
+void zxing_Result_delete (zxing_Result * result);
 
-bool zxing_Result_isValid (zxing_Result result);
-zxing_BarcodeFormat zxing_Result_format (zxing_Result result);
+bool zxing_Result_isValid (zxing_Result * result);
+zxing_BarcodeFormat zxing_Result_format (zxing_Result * result);
 /* ... */
 
 /*
  * ZXing/ReadBarcode.h
  */
 
-zxing_Result zxing_ReadBarcode (const zxing_ImageView iv, const zxing_DecodeHints hints);
-zxing_Results zxing_ReadBarcodes (const zxing_ImageView iv, const zxing_DecodeHints hints);
+zxing_Result * zxing_ReadBarcode (const zxing_ImageView * iv, const zxing_DecodeHints * hints);
+zxing_Results * zxing_ReadBarcodes (const zxing_ImageView * iv, const zxing_DecodeHints * hints);
 
 #ifdef __cplusplus
 }
