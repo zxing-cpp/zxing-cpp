@@ -35,7 +35,7 @@ private:
 public:
 	Matrix() = default;
 
-#ifdef __GNUC__
+#if defined(__llvm__) || (defined(__GNUC__) && (__GNUC__ > 7))
 	__attribute__((no_sanitize("signed-integer-overflow")))
 #endif
 	Matrix(int width, int height, value_t val = {}) : _width(width), _height(height), _data(_width * _height, val) {
