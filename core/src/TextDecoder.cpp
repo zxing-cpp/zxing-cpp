@@ -19,6 +19,12 @@ namespace ZXing {
 
 void TextDecoder::Append(std::string& str, const uint8_t* bytes, size_t length, CharacterSet charset, bool sjisASCII)
 {
+	if (charset == CharacterSet::BINARY) {
+		str.reserve(str.length() + length);
+		std::copy(bytes, bytes + length, std::back_inserter(str));
+		return;
+	}
+
 	int eci = ToInt(ToECI(charset));
 	const size_t str_len = str.length();
 	const int bytes_len = narrow_cast<int>(length);
@@ -46,9 +52,14 @@ void TextDecoder::Append(std::string& str, const uint8_t* bytes, size_t length, 
 
 void TextDecoder::Append(std::wstring& str, const uint8_t* bytes, size_t length, CharacterSet charset)
 {
-	std::string u8str;
-	Append(u8str, bytes, length, charset);
-	str.append(FromUtf8(u8str));
+	if (charset == CharacterSet::BINARY) {
+		str.reserve(str.size() + length);
+		std::copy(bytes, bytes + length, std::back_inserter(str));
+	} else {
+		std::string u8str;
+		Append(u8str, bytes, length, charset);
+		str.append(FromUtf8(u8str));
+	}
 }
 
 /**

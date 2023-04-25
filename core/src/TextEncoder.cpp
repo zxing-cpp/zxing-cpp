@@ -17,6 +17,11 @@ namespace ZXing {
 
 void TextEncoder::GetBytes(const std::string& str, CharacterSet charset, std::string& bytes)
 {
+	if (charset == CharacterSet::BINARY) {
+		bytes = str;
+		return;
+	}
+
 	int eci = ToInt(ToECI(charset));
 	const int str_len = narrow_cast<int>(str.length());
 	int eci_len;
@@ -44,7 +49,13 @@ void TextEncoder::GetBytes(const std::string& str, CharacterSet charset, std::st
 
 void TextEncoder::GetBytes(const std::wstring& str, CharacterSet charset, std::string& bytes)
 {
-	GetBytes(ToUtf8(str), charset, bytes);
+	if (charset == CharacterSet::BINARY) {
+		bytes.clear();
+		bytes.reserve(str.size());
+		std::copy(str.begin(), str.end(), std::back_inserter(bytes));
+	} else {
+		GetBytes(ToUtf8(str), charset, bytes);
+	}
 }
 
 } // ZXing

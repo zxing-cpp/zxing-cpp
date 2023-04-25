@@ -60,7 +60,7 @@ TEST(TextEncoderTest, FullCycleEncodeDecode)
 	EnDeCode(CharacterSet::UTF32BE, u8"\u20AC", std::string("\x00\x00\x20\xAC", 4)); // EURO SIGN
 	EnDeCode(CharacterSet::UTF32LE, u8"\u20AC", std::string("\xAC\x20\x00\x00", 4)); // EURO SIGN
 //	EnDeCode(CharacterSet::ISO646_Inv, "%", "%");
-	EnDeCode(CharacterSet::BINARY, u8"\u0080\u00FF", "\x80\xFF");
+	EnDeCode(CharacterSet::BINARY, u8"\u0080\u00FF", "\xC2\x80\xC3\xBF");
 	EnDeCode(CharacterSet::Unknown, u8"\u0080", "\x80"); // Treated as binary
 	EnDeCode(CharacterSet::EUC_JP, u8"\u0080", "\x80"); // Not supported, treated as binary
 }
