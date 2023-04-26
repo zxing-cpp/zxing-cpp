@@ -14,7 +14,7 @@ extern "C" {
 
 zxing_ImageView * zxing_ImageView_new (const uint8_t * data, int width, int height, zxing_ImageFormat format, int rowStride, int pixStride)
 {
-	ZXing::ImageFormat cppformat = (ZXing::ImageFormat) format;
+	ZXing::ImageFormat cppformat = static_cast<ZXing::ImageFormat>(format);
 	return new ZXing::ImageView(data, width, height, cppformat, rowStride, pixStride);
 }
 
@@ -45,7 +45,7 @@ int zxing_ImageView_rowStride (const zxing_ImageView * iv)
 
 zxing_ImageFormat zxing_ImageView_format (const zxing_ImageView * iv)
 {
-	return (zxing_ImageFormat) iv->format();
+	return static_cast<zxing_ImageFormat>(iv->format());
 }
 
 /*
@@ -58,7 +58,7 @@ zxing_ImageFormat zxing_ImageView_format (const zxing_ImageView * iv)
 
 zxing_BarcodeFormat zxing_BarcodeFormatFromString (const char * format)
 {
-	return (zxing_BarcodeFormat) ZXing::BarcodeFormatFromString(std::string(format));
+	return static_cast<zxing_BarcodeFormat>(ZXing::BarcodeFormatFromString(std::string(format)));
 }
 
 // TODO:
@@ -93,22 +93,22 @@ void zxing_DecodeHints_setTryDownscale (zxing_DecodeHints * hints, bool tryDowns
 
 void zxing_DecodeHints_setFormats (zxing_DecodeHints * hints, zxing_BarcodeFormat formats)
 {
-	hints->setFormats((ZXing::BarcodeFormat) formats);
+	hints->setFormats(static_cast<ZXing::BarcodeFormat>(formats));
 }
 
 void zxing_DecodeHints_setBinarizer (zxing_DecodeHints * hints, zxing_Binarizer binarizer)
 {
-	hints->setBinarizer((ZXing::Binarizer) binarizer);
+	hints->setBinarizer(static_cast<ZXing::Binarizer>(binarizer));
 }
 
 void zxing_DecodeHints_setEanAddOnSymbol (zxing_DecodeHints * hints, zxing_EanAddOnSymbol eanAddOnSymbol)
 {
-	hints->setEanAddOnSymbol((ZXing::EanAddOnSymbol) eanAddOnSymbol);
+	hints->setEanAddOnSymbol(static_cast<ZXing::EanAddOnSymbol>(eanAddOnSymbol));
 }
 
 void zxing_DecodeHints_setTextMode (zxing_DecodeHints * hints, zxing_TextMode textMode)
 {
-	hints->setTextMode((ZXing::TextMode) textMode);
+	hints->setTextMode(static_cast<ZXing::TextMode>(textMode));
 }
 
 /*
@@ -131,7 +131,7 @@ bool zxing_Result_isValid (const zxing_Result * result)
 
 zxing_BarcodeFormat zxing_Result_format (const zxing_Result * result)
 {
-	return (zxing_BarcodeFormat) result->format();
+	return static_cast<zxing_BarcodeFormat>(result->format());
 }
 
 /*
