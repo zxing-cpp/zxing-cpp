@@ -50,11 +50,11 @@ typedef enum {
 zxing_ImageView * zxing_ImageView_new (const uint8_t * data, int width, int height, zxing_ImageFormat format, int rowStride, int pixStride);
 void zxing_ImageView_delete (zxing_ImageView * iv);
 
-int zxing_ImageView_width (zxing_ImageView * iv);
-int zxing_ImageView_height (zxing_ImageView * iv);
-int zxing_ImageView_pixStride (zxing_ImageView * iv);
-int zxing_ImageView_rowStride (zxing_ImageView * iv);
-zxing_ImageFormat zxing_ImageView_format (zxing_ImageView * iv);
+int zxing_ImageView_width (const zxing_ImageView * iv);
+int zxing_ImageView_height (const zxing_ImageView * iv);
+int zxing_ImageView_pixStride (const zxing_ImageView * iv);
+int zxing_ImageView_rowStride (const zxing_ImageView * iv);
+zxing_ImageFormat zxing_ImageView_format (const zxing_ImageView * iv);
 /* ... */
 
 /*
@@ -135,8 +135,8 @@ void zxing_DecodeHints_setTextMode (zxing_DecodeHints * hints, zxing_TextMode te
 
 void zxing_Result_delete (zxing_Result * result);
 
-bool zxing_Result_isValid (zxing_Result * result);
-zxing_BarcodeFormat zxing_Result_format (zxing_Result * result);
+bool zxing_Result_isValid (const zxing_Result * result);
+zxing_BarcodeFormat zxing_Result_format (const zxing_Result * result);
 /* ... */
 
 /*

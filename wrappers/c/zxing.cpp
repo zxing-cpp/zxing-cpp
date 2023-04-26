@@ -23,27 +23,27 @@ void zxing_ImageView_delete (zxing_ImageView * iv)
 	delete iv;
 }
 
-int zxing_ImageView_width (zxing_ImageView * iv)
+int zxing_ImageView_width (const zxing_ImageView * iv)
 {
 	return iv->width();
 }
 
-int zxing_ImageView_height (zxing_ImageView * iv)
+int zxing_ImageView_height (const zxing_ImageView * iv)
 {
 	return iv->height();
 }
 
-int zxing_ImageView_pixStride (zxing_ImageView * iv)
+int zxing_ImageView_pixStride (const zxing_ImageView * iv)
 {
 	return iv->pixStride();
 }
 
-int zxing_ImageView_rowStride (zxing_ImageView * iv)
+int zxing_ImageView_rowStride (const zxing_ImageView * iv)
 {
 	return iv->rowStride();
 }
 
-zxing_ImageFormat zxing_ImageView_format (zxing_ImageView * iv)
+zxing_ImageFormat zxing_ImageView_format (const zxing_ImageView * iv)
 {
 	return (zxing_ImageFormat) iv->format();
 }
@@ -124,12 +124,12 @@ void zxing_Result_delete (zxing_Result * result)
 	delete result;
 }
 
-bool zxing_Result_isValid (zxing_Result * result)
+bool zxing_Result_isValid (const zxing_Result * result)
 {
 	return result->isValid();
 }
 
-zxing_BarcodeFormat zxing_Result_format (zxing_Result * result)
+zxing_BarcodeFormat zxing_Result_format (const zxing_Result * result)
 {
 	return (zxing_BarcodeFormat) result->format();
 }
