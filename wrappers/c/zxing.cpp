@@ -146,16 +146,14 @@ zxing_Result * zxing_ReadBarcode (const zxing_ImageView * iv, const zxing_Decode
 {
 	const ZXing::ImageView * cppiv = reinterpret_cast<const ZXing::ImageView *>(iv);
 	const ZXing::DecodeHints * cpphints = reinterpret_cast<const ZXing::DecodeHints *>(hints);
-	ZXing::Result result = ZXing::ReadBarcode(*cppiv, *cpphints);
-	return new ZXing::Result(result);
+	return new ZXing::Result(ZXing::ReadBarcode(*cppiv, *cpphints));
 }
 
 zxing_Results * zxing_ReadBarcodes (const zxing_ImageView * iv, const zxing_DecodeHints * hints)
 {
 	const ZXing::ImageView * cppiv = reinterpret_cast<const ZXing::ImageView *>(iv);
 	const ZXing::DecodeHints * cpphints = reinterpret_cast<const ZXing::DecodeHints *>(hints);
-	ZXing::Results results = ZXing::ReadBarcodes(*cppiv, *cpphints);
-	return new ZXing::Results(results);
+	return new ZXing::Results(ZXing::ReadBarcodes(*cppiv, *cpphints));
 }
 
 }
