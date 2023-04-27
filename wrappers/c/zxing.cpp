@@ -144,16 +144,12 @@ zxing_BarcodeFormat zxing_Result_format (const zxing_Result * result)
 
 zxing_Result * zxing_ReadBarcode (const zxing_ImageView * iv, const zxing_DecodeHints * hints)
 {
-	const ZXing::ImageView * cppiv = reinterpret_cast<const ZXing::ImageView *>(iv);
-	const ZXing::DecodeHints * cpphints = reinterpret_cast<const ZXing::DecodeHints *>(hints);
-	return new ZXing::Result(ZXing::ReadBarcode(*cppiv, *cpphints));
+	return new ZXing::Result(ZXing::ReadBarcode(*iv, *hints));
 }
 
 zxing_Results * zxing_ReadBarcodes (const zxing_ImageView * iv, const zxing_DecodeHints * hints)
 {
-	const ZXing::ImageView * cppiv = reinterpret_cast<const ZXing::ImageView *>(iv);
-	const ZXing::DecodeHints * cpphints = reinterpret_cast<const ZXing::DecodeHints *>(hints);
-	return new ZXing::Results(ZXing::ReadBarcodes(*cppiv, *cpphints));
+	return new ZXing::Results(ZXing::ReadBarcodes(*iv, *hints));
 }
 
 }
