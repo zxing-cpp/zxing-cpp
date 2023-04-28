@@ -26,10 +26,10 @@ int main(int argc, char** argv)
 	if (!parse_args(argc, argv, &filename, &formats))
 		return usage(argv[0]);
 
-	int x = 0;
-	int y = 0;
-	int channels_in_file = 0;
-	stbi_uc* data = stbi_load(filename, &x, &y, &channels_in_file, STBI_rgb);
+	int width = 0;
+	int height = 0;
+	int channels = 0;
+	stbi_uc* data = stbi_load(filename, &width, &height, &channels, STBI_grey);
 	if (!data)
 		return 2;
 
@@ -38,7 +38,7 @@ int main(int argc, char** argv)
 	zxing_DecodeHints_setEanAddOnSymbol(hints, zxing_EanAddOnSymbol_Ignore);
 	zxing_DecodeHints_setFormats(hints, zxing_BarcodeFormatFromString(formats));
 
-	zxing_ImageView* iv = zxing_ImageView_new(data, x, y, zxing_ImageFormat_RGB, 0, 0);
+	zxing_ImageView* iv = zxing_ImageView_new(data, width, height, zxing_ImageFormat_Lum, 0, 0);
 
 	zxing_Result* result = zxing_ReadBarcode(iv, hints);
 	fprintf(stderr, "Result is %s\n", zxing_Result_isValid(result) ? "valid" : "invalid");
