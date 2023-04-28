@@ -1,7 +1,7 @@
 #include "zxing.h"
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "jpeg.h"
+#include <stb_image.h>
 
 int usage(char* pname)
 {
