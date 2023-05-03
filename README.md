@@ -11,6 +11,7 @@ It was originally ported from the Java [ZXing Library](https://github.com/zxing/
 You can sponsor this library at [GitHub Sponsors](https://github.com/sponsors/axxel).
 
 Named Sponsors:
+* [KURZ Digital Solutions GmbH & Co. KG](https://github.com/kurzdigital)
 * [Useful Sensors Inc](https://github.com/usefulsensors)
 * [Sergio Olivo](https://github.com/sergio-)
 
