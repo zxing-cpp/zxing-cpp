@@ -18,10 +18,10 @@ using namespace ZXing;
 using namespace ZXing::Pdf417;
 
 // Shorthand for Decode()
-static DecoderResult parse(const std::vector<int>& codewords, int ecLevel = 0)
+static DecoderResult parse(const std::vector<int>& codewords)
 {
 	try {
-		return DecodedBitStreamParser::Decode(codewords, ecLevel);
+		return DecodedBitStreamParser::Decode(codewords);
 	} catch (Error e) {
 		return e;
 	}

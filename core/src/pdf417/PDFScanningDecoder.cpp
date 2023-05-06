@@ -457,7 +457,7 @@ static std::vector<int> FindErrorMagnitudes(const ModulusPoly& errorEvaluator, c
 * @return false if errors cannot be corrected, maybe because of too many errors
 */
 ZXING_EXPORT_TEST_ONLY
-bool DecodeErrorCorrection(std::vector<int>& received, int numECCodewords, const std::vector<int>& erasures, int& nbErrors)
+bool DecodeErrorCorrection(std::vector<int>& received, int numECCodewords, const std::vector<int>& erasures [[maybe_unused]], int& nbErrors)
 {
 	const ModulusGF& field = GetModulusGF();
 	ModulusPoly poly(field, received);
@@ -476,23 +476,23 @@ bool DecodeErrorCorrection(std::vector<int>& received, int numECCodewords, const
 		return true;
 	}
 
-	ModulusPoly knownErrors = field.one();
-	for (int erasure : erasures) {
-		int b = field.exp(Size(received) - 1 - erasure);
-		// Add (1 - bx) term:
-		ModulusPoly term(field, { field.subtract(0, b), 1 });
-		knownErrors = knownErrors.multiply(term);
-	}
+//	ModulusPoly knownErrors = field.one();
+//	for (int erasure : erasures) {
+//		int b = field.exp(Size(received) - 1 - erasure);
+//		// Add (1 - bx) term:
+//		ModulusPoly term(field, { field.subtract(0, b), 1 });
+//		knownErrors = knownErrors.multiply(term);
+//	}
 
 	ModulusPoly syndrome(field, S);
-	//syndrome = syndrome.multiply(knownErrors);
+//	syndrome = syndrome.multiply(knownErrors);
 
 	ModulusPoly sigma, omega;
 	if (!RunEuclideanAlgorithm(field.buildMonomial(numECCodewords, 1), syndrome, numECCodewords, sigma, omega)) {
 		return false;
 	}
 
-	//sigma = sigma.multiply(knownErrors);
+//	sigma = sigma.multiply(knownErrors);
 
 	std::vector<int> errorLocations;
 	if (!FindErrorLocations(sigma, errorLocations)) {
@@ -566,12 +566,11 @@ static bool VerifyCodewordCount(std::vector<int>& codewords, int numECCodewords)
 	return true;
 }
 
-DecoderResult DecodeCodewords(std::vector<int>& codewords, int ecLevel, const std::vector<int>& erasures)
+static DecoderResult DecodeCodewords(std::vector<int>& codewords, int numECCodewords, const std::vector<int>& erasures)
 {
 	if (codewords.empty())
 		return FormatError();
 
-	int numECCodewords = 1 << (ecLevel + 1);
 	int correctedErrorsCount = 0;
 	if (!CorrectErrors(codewords, erasures, numECCodewords, correctedErrorsCount))
 		return ChecksumError();
@@ -581,10 +580,16 @@ DecoderResult DecodeCodewords(std::vector<int>& codewords, int ecLevel, const st
 
 	// Decode the codewords
 	try {
-		return DecodedBitStreamParser::Decode(codewords, ecLevel);
+		return DecodedBitStreamParser::Decode(codewords).setEcLevel(std::to_string(numECCodewords * 100 / Size(codewords)) + "%");
 	} catch (Error e) {
 		return e;
 	}
+}
+
+DecoderResult DecodeCodewords(std::vector<int>& codewords, int numECCodeWords)
+{
+	// erasures array has never been actually used inside the error correction code
+	return DecodeCodewords(codewords, numECCodeWords, {});
 }
 
 
@@ -612,7 +617,7 @@ static DecoderResult CreateDecoderResultFromAmbiguousValues(int ecLevel, std::ve
 		for (size_t i = 0; i < ambiguousIndexCount.size(); i++) {
 			codewords[ambiguousIndexes[i]] = ambiguousIndexValues[i][ambiguousIndexCount[i]];
 		}
-		auto result = DecodeCodewords(codewords, ecLevel, erasureArray);
+		auto result = DecodeCodewords(codewords, NumECCodeWords(ecLevel), erasureArray);
 		if (result.error() != Error::Checksum) {
 			return result;
 		}

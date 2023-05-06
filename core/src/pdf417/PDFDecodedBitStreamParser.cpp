@@ -672,7 +672,7 @@ int DecodeMacroBlock(const std::vector<int>& codewords, int codeIndex, DecoderRe
 }
 
 DecoderResult
-DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel)
+DecodedBitStreamParser::Decode(const std::vector<int>& codewords)
 {
 	Content result;
 	result.symbology = { 'L', '2', char(-1) };
@@ -752,7 +752,6 @@ DecodedBitStreamParser::Decode(const std::vector<int>& codewords, int ecLevel)
 	}
 
 	return DecoderResult(std::move(result))
-		.setEcLevel(std::to_string(ecLevel))
 		.setStructuredAppend(sai)
 		.setReaderInit(readerInit)
 		.setExtra(resultMetadata);
