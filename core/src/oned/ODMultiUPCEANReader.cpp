@@ -34,7 +34,7 @@ static const int FIRST_DIGIT_ENCODINGS[] = {0x00, 0x0B, 0x0D, 0x0E, 0x13, 0x19, 
 // QZ R:    7   |   7   |   9   |   7   |        5   |        5
 
 constexpr float QUIET_ZONE_LEFT = 6;
-constexpr float QUIET_ZONE_RIGHT = 6;
+constexpr float QUIET_ZONE_RIGHT = 3; // used to be 6, see #526 and #558
 constexpr float QUIET_ZONE_ADDON = 3;
 
 // There is a single sample (ean13-1/12.png) that fails to decode with these (new) settings because
