@@ -34,7 +34,8 @@ static const int FIRST_DIGIT_ENCODINGS[] = {0x00, 0x0B, 0x0D, 0x0E, 0x13, 0x19, 
 // QZ R:    7   |   7   |   9   |   7   |        5   |        5
 
 constexpr float QUIET_ZONE_LEFT = 6;
-constexpr float QUIET_ZONE_RIGHT = 3; // used to be 6, see #526 and #558
+constexpr float QUIET_ZONE_RIGHT_EAN = 3; // used to be 6, see #526 and #558
+constexpr float QUIET_ZONE_RIGHT_UPC = 6;
 constexpr float QUIET_ZONE_ADDON = 3;
 
 // There is a single sample (ean13-1/12.png) that fails to decode with these (new) settings because
@@ -131,7 +132,7 @@ static bool EAN13(PartialResult& res, PatternView begin)
 	auto mid = begin.subView(27, MID_PATTERN.size());
 	auto end = begin.subView(56, END_PATTERN.size());
 
-	CHECK(end.isValid() && IsRightGuard(end, END_PATTERN, QUIET_ZONE_RIGHT) && IsPattern(mid, MID_PATTERN));
+	CHECK(end.isValid() && IsRightGuard(end, END_PATTERN, QUIET_ZONE_RIGHT_EAN) && IsPattern(mid, MID_PATTERN));
 
 	auto next = begin.subView(END_PATTERN.size(), CHAR_LEN);
 	res.txt = " "; // make space for lgPattern character
@@ -163,7 +164,7 @@ static bool EAN8(PartialResult& res, PatternView begin)
 	auto mid = begin.subView(19, MID_PATTERN.size());
 	auto end = begin.subView(40, END_PATTERN.size());
 
-	CHECK(end.isValid() && IsRightGuard(end, END_PATTERN, QUIET_ZONE_RIGHT) && IsPattern(mid, MID_PATTERN));
+	CHECK(end.isValid() && IsRightGuard(end, END_PATTERN, QUIET_ZONE_RIGHT_EAN) && IsPattern(mid, MID_PATTERN));
 
 	// additional plausibility check for the module size: it has to be about the same for both
 	// the guard patterns and the payload/data part.
@@ -190,7 +191,7 @@ static bool UPCE(PartialResult& res, PatternView begin)
 {
 	auto end = begin.subView(27, UPCE_END_PATTERN.size());
 
-	CHECK(end.isValid() && IsRightGuard(end, UPCE_END_PATTERN, QUIET_ZONE_RIGHT));
+	CHECK(end.isValid() && IsRightGuard(end, UPCE_END_PATTERN, QUIET_ZONE_RIGHT_UPC));
 
 	// additional plausibility check for the module size: it has to be about the same for both
 	// the guard patterns and the payload/data part. This speeds up the falsepositives use case
