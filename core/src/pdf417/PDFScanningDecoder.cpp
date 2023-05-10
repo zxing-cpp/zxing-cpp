@@ -588,6 +588,9 @@ static DecoderResult DecodeCodewords(std::vector<int>& codewords, int numECCodew
 
 DecoderResult DecodeCodewords(std::vector<int>& codewords, int numECCodeWords)
 {
+	for (auto& cw : codewords)
+        cw = std::clamp(cw, 0, CodewordDecoder::MAX_CODEWORDS_IN_BARCODE);
+
 	// erasures array has never been actually used inside the error correction code
 	return DecodeCodewords(codewords, numECCodeWords, {});
 }
