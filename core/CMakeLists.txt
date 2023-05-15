@@ -331,8 +331,8 @@ if (BUILD_READERS)
         src/pdf417/PDFCodeword.h
         src/pdf417/PDFCodewordDecoder.h
         src/pdf417/PDFCodewordDecoder.cpp
-        src/pdf417/PDFDecodedBitStreamParser.h
-        src/pdf417/PDFDecodedBitStreamParser.cpp
+        src/pdf417/PDFDecoder.h
+        src/pdf417/PDFDecoder.cpp
         src/pdf417/PDFDecoderResultExtra.h
         src/pdf417/PDFDetectionResult.h
         src/pdf417/PDFDetectionResult.cpp

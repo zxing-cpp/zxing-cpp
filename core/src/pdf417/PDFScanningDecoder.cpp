@@ -12,7 +12,7 @@
 #include "PDFBarcodeValue.h"
 #include "PDFCodewordDecoder.h"
 #include "PDFDetectionResult.h"
-#include "PDFDecodedBitStreamParser.h"
+#include "PDFDecoder.h"
 #include "PDFModulusGF.h"
 #include "ZXAlgorithms.h"
 #include "ZXTestSupport.h"
@@ -579,11 +579,7 @@ static DecoderResult DecodeCodewords(std::vector<int>& codewords, int numECCodew
 		return FormatError();
 
 	// Decode the codewords
-	try {
-		return DecodedBitStreamParser::Decode(codewords).setEcLevel(std::to_string(numECCodewords * 100 / Size(codewords)) + "%");
-	} catch (Error e) {
-		return e;
-	}
+    return Decode(codewords).setEcLevel(std::to_string(numECCodewords * 100 / Size(codewords)) + "%");
 }
 
 DecoderResult DecodeCodewords(std::vector<int>& codewords, int numECCodeWords)

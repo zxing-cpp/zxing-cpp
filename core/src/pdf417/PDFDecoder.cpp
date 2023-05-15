@@ -4,7 +4,7 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "PDFDecodedBitStreamParser.h"
+#include "PDFDecoder.h"
 
 #include "CharacterSet.h"
 #include "DecoderResult.h"
@@ -15,7 +15,6 @@
 
 #include <array>
 #include <cassert>
-#include <iomanip>
 #include <sstream>
 #include <utility>
 
@@ -31,38 +30,38 @@ enum class Mode
 	PUNCT_SHIFT
 };
 
-static const int TEXT_COMPACTION_MODE_LATCH = 900;
-static const int BYTE_COMPACTION_MODE_LATCH = 901;
-static const int NUMERIC_COMPACTION_MODE_LATCH = 902;
+constexpr int TEXT_COMPACTION_MODE_LATCH = 900;
+constexpr int BYTE_COMPACTION_MODE_LATCH = 901;
+constexpr int NUMERIC_COMPACTION_MODE_LATCH = 902;
 // 903-912 reserved
-static const int MODE_SHIFT_TO_BYTE_COMPACTION_MODE = 913;
+constexpr int MODE_SHIFT_TO_BYTE_COMPACTION_MODE = 913;
 // 914-917 reserved
-static const int LINKAGE_OTHER = 918;
+constexpr int LINKAGE_OTHER = 918;
 // 919 reserved
-static const int LINKAGE_EANUCC = 920; // GS1 Composite
-static const int READER_INIT = 921; // Reader Initialisation/Programming
-static const int MACRO_PDF417_TERMINATOR = 922;
-static const int BEGIN_MACRO_PDF417_OPTIONAL_FIELD = 923;
-static const int BYTE_COMPACTION_MODE_LATCH_6 = 924;
-static const int ECI_USER_DEFINED = 925; // 810900-811799 (1 codeword)
-static const int ECI_GENERAL_PURPOSE = 926; // 900-810899 (2 codewords)
-static const int ECI_CHARSET = 927; // 0-899 (1 codeword)
-static const int BEGIN_MACRO_PDF417_CONTROL_BLOCK = 928;
+constexpr int LINKAGE_EANUCC = 920; // GS1 Composite
+constexpr int READER_INIT = 921; // Reader Initialisation/Programming
+constexpr int MACRO_PDF417_TERMINATOR = 922;
+constexpr int BEGIN_MACRO_PDF417_OPTIONAL_FIELD = 923;
+constexpr int BYTE_COMPACTION_MODE_LATCH_6 = 924;
+constexpr int ECI_USER_DEFINED = 925; // 810900-811799 (1 codeword)
+constexpr int ECI_GENERAL_PURPOSE = 926; // 900-810899 (2 codewords)
+constexpr int ECI_CHARSET = 927; // 0-899 (1 codeword)
+constexpr int BEGIN_MACRO_PDF417_CONTROL_BLOCK = 928;
 
-static const int MAX_NUMERIC_CODEWORDS = 15;
+constexpr int MAX_NUMERIC_CODEWORDS = 15;
 
-static const int MACRO_PDF417_OPTIONAL_FIELD_FILE_NAME = 0;
-static const int MACRO_PDF417_OPTIONAL_FIELD_SEGMENT_COUNT = 1;
-static const int MACRO_PDF417_OPTIONAL_FIELD_TIME_STAMP = 2;
-static const int MACRO_PDF417_OPTIONAL_FIELD_SENDER = 3;
-static const int MACRO_PDF417_OPTIONAL_FIELD_ADDRESSEE = 4;
-static const int MACRO_PDF417_OPTIONAL_FIELD_FILE_SIZE = 5;
-static const int MACRO_PDF417_OPTIONAL_FIELD_CHECKSUM = 6;
+constexpr int MACRO_PDF417_OPTIONAL_FIELD_FILE_NAME = 0;
+constexpr int MACRO_PDF417_OPTIONAL_FIELD_SEGMENT_COUNT = 1;
+constexpr int MACRO_PDF417_OPTIONAL_FIELD_TIME_STAMP = 2;
+constexpr int MACRO_PDF417_OPTIONAL_FIELD_SENDER = 3;
+constexpr int MACRO_PDF417_OPTIONAL_FIELD_ADDRESSEE = 4;
+constexpr int MACRO_PDF417_OPTIONAL_FIELD_FILE_SIZE = 5;
+constexpr int MACRO_PDF417_OPTIONAL_FIELD_CHECKSUM = 6;
 
 static const char* PUNCT_CHARS = ";<>@[\\]_`~!\r\t,:\n-.$/\"|*()?{}'";
 static const char* MIXED_CHARS = "0123456789&\r\t,:#-.$/+%*=^";
 
-static const int NUMBER_OF_SEQUENCE_CODEWORDS = 2;
+constexpr int NUMBER_OF_SEQUENCE_CODEWORDS = 2;
 
 inline bool IsECI(int code)
 {
@@ -449,7 +448,7 @@ Decode the above codewords involves
 
 Remove leading 1 =>  Result is 000213298174000
 */
-static std::string DecodeBase900toBase10(const std::vector<int>& codewords, int count)
+static std::string DecodeBase900toBase10(const std::vector<int>& codewords, int endIndex, int count)
 {
 	// Table containing values for the exponent of 900.
 	static const auto EXP900 = []() {
@@ -463,7 +462,7 @@ static std::string DecodeBase900toBase10(const std::vector<int>& codewords, int 
 
 	BigInteger result;
 	for (int i = 0; i < count; i++)
-		result += EXP900[count - i - 1] * codewords[i];
+		result += EXP900[count - i - 1] * codewords[endIndex - count + i];
 
 	std::string resultString = result.toString();
 	if (!resultString.empty() && resultString.front() == '1')
@@ -486,44 +485,27 @@ static std::string DecodeBase900toBase10(const std::vector<int>& codewords, int 
 static int NumericCompaction(const std::vector<int>& codewords, int codeIndex, Content& result)
 {
 	int count = 0;
-	bool end = false;
 
-	std::vector<int> numericCodewords(MAX_NUMERIC_CODEWORDS);
+	while (codeIndex < codewords[0]) {
+		int code = codewords[codeIndex];
+		if (code < TEXT_COMPACTION_MODE_LATCH) {
+			count++;
+			codeIndex++;
+		}
+		if (count > 0 && (count == MAX_NUMERIC_CODEWORDS || codeIndex == codewords[0] || code >= TEXT_COMPACTION_MODE_LATCH)) {
+			result += DecodeBase900toBase10(codewords, codeIndex, count);
+			count = 0;
+		}
 
-	while (codeIndex < codewords[0] && !end) {
-		int code = codewords[codeIndex++];
 		if (code >= TEXT_COMPACTION_MODE_LATCH) {
 			if (IsECI(code)) {
 				// As operating in Basic Channel Mode (i.e. not embedding backslashed ECIs and doubling backslashes)
 				// allow ECIs anywhere in Numeric Compaction (i.e. ISO/IEC 15438:2015 5.5.3.4 doesn't apply).
-				if (count > 0) {
-					result += DecodeBase900toBase10(numericCodewords, count);
-					count = 0;
-				}
-				codeIndex = ProcessECI(codewords, codeIndex, codewords[0], code, result);
-				continue;
-			}
-			if (!TerminatesCompaction(code))
+				codeIndex = ProcessECI(codewords, codeIndex + 1, codewords[0], code, result);
+			} else if (TerminatesCompaction(code)) {
+				break;
+			} else {
 				throw FormatError();
-
-			codeIndex--;
-			end = true;
-		}
-		if (codeIndex == codewords[0]) {
-			end = true;
-		}
-		if (code < TEXT_COMPACTION_MODE_LATCH) {
-			numericCodewords[count] = code;
-			count++;
-		}
-		if (count % MAX_NUMERIC_CODEWORDS == 0 || code == NUMERIC_COMPACTION_MODE_LATCH || end) {
-			// Re-invoking Numeric Compaction mode (by using codeword 902
-			// while in Numeric Compaction mode) serves  to terminate the
-			// current Numeric Compaction mode grouping as described in 5.4.4.2,
-			// and then to start a new one grouping.
-			if (count > 0) {
-				result += DecodeBase900toBase10(numericCodewords, count);
-				count = 0;
 			}
 		}
 	}
@@ -568,15 +550,11 @@ static int DecodeMacroOptionalNumericField(const std::vector<int>& codewords, in
 ZXING_EXPORT_TEST_ONLY
 int DecodeMacroBlock(const std::vector<int>& codewords, int codeIndex, DecoderResultExtra& resultMetadata)
 {
-	// we must have at least two bytes left for the segment index
+	// we must have at least two codewords left for the segment index
 	if (codeIndex + NUMBER_OF_SEQUENCE_CODEWORDS > codewords[0])
 		throw FormatError();
 
-	std::vector<int> segmentIndexArray(NUMBER_OF_SEQUENCE_CODEWORDS);
-	for (int i = 0; i < NUMBER_OF_SEQUENCE_CODEWORDS; i++, codeIndex++)
-		segmentIndexArray[i] = codewords[codeIndex];
-
-	std::string strBuf = DecodeBase900toBase10(segmentIndexArray, NUMBER_OF_SEQUENCE_CODEWORDS);
+	std::string strBuf = DecodeBase900toBase10(codewords, codeIndex += NUMBER_OF_SEQUENCE_CODEWORDS, NUMBER_OF_SEQUENCE_CODEWORDS);
 
 	resultMetadata.setSegmentIndex(std::stoi(strBuf));
 
@@ -584,11 +562,10 @@ int DecodeMacroBlock(const std::vector<int>& codewords, int codeIndex, DecoderRe
 	// (See ISO/IEC 15438:2015 Annex H.6) and preserves all info, but some generators (e.g. TEC-IT) write
 	// the fileId using text compaction, so in those cases the fileId will appear mangled.
 	std::ostringstream fileId;
-	fileId.fill('0');
 	for (; codeIndex < codewords[0] && codewords[codeIndex] != MACRO_PDF417_TERMINATOR
 		   && codewords[codeIndex] != BEGIN_MACRO_PDF417_OPTIONAL_FIELD;
 		 codeIndex++) {
-		fileId << std::setw(3) << codewords[codeIndex];
+		fileId << ToString(codewords[codeIndex], 3);
 	}
 	resultMetadata.setFileId(fileId.str());
 
@@ -664,79 +641,69 @@ int DecodeMacroBlock(const std::vector<int>& codewords, int codeIndex, DecoderRe
 		if (resultMetadata.isLastSegment())
 			optionalFieldsLength--; // do not include terminator
 
-		resultMetadata.setOptionalData(std::vector<int>(codewords.begin() + optionalFieldsStart,
-									   codewords.begin() + optionalFieldsStart + optionalFieldsLength));
+		resultMetadata.setOptionalData(
+			std::vector<int>(codewords.begin() + optionalFieldsStart, codewords.begin() + optionalFieldsStart + optionalFieldsLength));
 	}
 
 	return codeIndex;
 }
 
-DecoderResult
-DecodedBitStreamParser::Decode(const std::vector<int>& codewords)
+DecoderResult Decode(const std::vector<int>& codewords)
 {
 	Content result;
-	result.symbology = { 'L', '2', char(-1) };
+	result.symbology = {'L', '2', char(-1)};
 
 	bool readerInit = false;
 	auto resultMetadata = std::make_shared<DecoderResultExtra>();
-	int codeIndex = 1;
 
-	while (codeIndex < codewords[0]) {
-		int code = codewords[codeIndex++];
-		switch (code) {
-		case TEXT_COMPACTION_MODE_LATCH:
-			codeIndex = TextCompaction(codewords, codeIndex, result);
-			break;
-		case MODE_SHIFT_TO_BYTE_COMPACTION_MODE:
-			// This should only be encountered once in this loop, when default Text Compaction mode applies
-			// (see default case below)
-			codeIndex = TextCompaction(codewords, codeIndex - 1, result);
-			break;
-		case BYTE_COMPACTION_MODE_LATCH:
-		case BYTE_COMPACTION_MODE_LATCH_6:
-			codeIndex = ByteCompaction(code, codewords, codeIndex, result);
-			break;
-		case NUMERIC_COMPACTION_MODE_LATCH:
-			codeIndex = NumericCompaction(codewords, codeIndex, result);
-			break;
-		case ECI_CHARSET:
-		case ECI_GENERAL_PURPOSE:
-		case ECI_USER_DEFINED:
-			codeIndex = ProcessECI(codewords, codeIndex, codewords[0], code, result);
-			break;
-		case BEGIN_MACRO_PDF417_CONTROL_BLOCK:
-			codeIndex = DecodeMacroBlock(codewords, codeIndex, *resultMetadata);
-			break;
-		case BEGIN_MACRO_PDF417_OPTIONAL_FIELD:
-		case MACRO_PDF417_TERMINATOR:
-			// Should not see these outside a macro block
-			throw FormatError();
-			break;
-		case READER_INIT:
-			if (codeIndex != 2) // Must be first codeword after symbol length (ISO/IEC 15438:2015 5.4.1.4)
+	try {
+		for (int codeIndex = 1; codeIndex < codewords[0];) {
+			int code = codewords[codeIndex++];
+			switch (code) {
+			case TEXT_COMPACTION_MODE_LATCH: codeIndex = TextCompaction(codewords, codeIndex, result); break;
+				// This should only be encountered once in this loop, when default Text Compaction mode applies
+				// (see default case below)
+			case MODE_SHIFT_TO_BYTE_COMPACTION_MODE: codeIndex = TextCompaction(codewords, codeIndex - 1, result); break;
+			case BYTE_COMPACTION_MODE_LATCH:
+			case BYTE_COMPACTION_MODE_LATCH_6: codeIndex = ByteCompaction(code, codewords, codeIndex, result); break;
+			case NUMERIC_COMPACTION_MODE_LATCH: codeIndex = NumericCompaction(codewords, codeIndex, result); break;
+			case ECI_CHARSET:
+			case ECI_GENERAL_PURPOSE:
+			case ECI_USER_DEFINED: codeIndex = ProcessECI(codewords, codeIndex, codewords[0], code, result); break;
+			case BEGIN_MACRO_PDF417_CONTROL_BLOCK: codeIndex = DecodeMacroBlock(codewords, codeIndex, *resultMetadata); break;
+			case BEGIN_MACRO_PDF417_OPTIONAL_FIELD:
+			case MACRO_PDF417_TERMINATOR:
+				// Should not see these outside a macro block
 				throw FormatError();
-			else
-				readerInit = true;
-			break;
-		case LINKAGE_EANUCC:
-			if (codeIndex != 2) // Must be first codeword after symbol length (GS1 Composite ISO/IEC 24723:2010 4.3)
-				throw FormatError();
-			// TODO: handle else case
-			break;
-		case LINKAGE_OTHER:
-			// Allowed to treat as invalid by ISO/IEC 24723:2010 5.4.1.5 and 5.4.6.1 when in Basic Channel Mode
-			throw UnsupportedError("LINKAGE_OTHER, see ISO/IEC 24723:2010 5.4.1.5");
-			break;
-		default:
-			if (code >= TEXT_COMPACTION_MODE_LATCH) { // Reserved codewords (all others in switch)
-				// Allowed to treat as invalid by ISO/IEC 24723:2010 5.4.6.1 when in Basic Channel Mode
-				throw UnsupportedError("TEXT_COMPACTION_MODE_LATCH, see ISO/IEC 24723:2010 5.4.6.1");
-			} else {
-				// Default mode is Text Compaction mode Alpha sub-mode (ISO/IEC 15438:2015 5.4.2.1)
-				codeIndex = TextCompaction(codewords, codeIndex - 1, result);
+				break;
+			case READER_INIT:
+				if (codeIndex != 2) // Must be first codeword after symbol length (ISO/IEC 15438:2015 5.4.1.4)
+					throw FormatError();
+				else
+					readerInit = true;
+				break;
+			case LINKAGE_EANUCC:
+				if (codeIndex != 2) // Must be first codeword after symbol length (GS1 Composite ISO/IEC 24723:2010 4.3)
+					throw FormatError();
+				// TODO: handle else case
+				break;
+			case LINKAGE_OTHER:
+				// Allowed to treat as invalid by ISO/IEC 24723:2010 5.4.1.5 and 5.4.6.1 when in Basic Channel Mode
+				throw UnsupportedError("LINKAGE_OTHER, see ISO/IEC 15438:2015 5.4.1.5");
+				break;
+			default:
+				if (code >= TEXT_COMPACTION_MODE_LATCH) { // Reserved codewords (all others in switch)
+					// Allowed to treat as invalid by ISO/IEC 24723:2010 5.4.6.1 when in Basic Channel Mode
+					throw UnsupportedError("Reserved codeword, see ISO/IEC 15438:2015 5.4.6.1");
+				} else {
+					// Default mode is Text Compaction mode Alpha sub-mode (ISO/IEC 15438:2015 5.4.2.1)
+					codeIndex = TextCompaction(codewords, codeIndex - 1, result);
+				}
+				break;
 			}
-			break;
 		}
+	} catch (Error e) {
+		return e;
 	}
 
 	if (result.empty() && resultMetadata->segmentIndex() == -1)
