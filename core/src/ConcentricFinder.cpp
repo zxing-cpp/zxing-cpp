@@ -231,13 +231,13 @@ std::optional<PointF> FinetuneConcentricPatternCenter(const BitMatrix& image, Po
 	// make sure we have at least one path of white around the center
 	if (auto res1 = CenterOfRing(image, PointI(center), range, 1); res1 && image.get(*res1)) {
 		// and then either at least one more ring around that
-		if (auto res2 = CenterOfRings(image, *res1, range, finderPatternSize / 2))
+		if (auto res2 = CenterOfRings(image, *res1, range, finderPatternSize / 2); res2 && image.get(*res2))
 			return res2;
 		// or the center can be approximated by a square
 		if (FitSquareToPoints(image, *res1, range, 1, false))
 			return res1;
 		// TODO: this is currently only keeping #258 alive, evaluate if still worth it
-		if (auto res2 = CenterOfDoubleCross(image, PointI(*res1), range, finderPatternSize / 2 + 1))
+		if (auto res2 = CenterOfDoubleCross(image, PointI(*res1), range, finderPatternSize / 2 + 1); res2 && image.get(*res2))
 			return res2;
 	}
 	return {};
