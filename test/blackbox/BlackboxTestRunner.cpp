@@ -566,7 +566,7 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 45, 47, 0   },
 			{ 45, 47, 90  },
 			{ 45, 47, 180 },
-			{ 45, 46, 270 },
+			{ 45, 47, 270 },
 			{ 21, 1, pure }, // the misread is the 'outer' symbol in 16.png
 		});
 

@@ -44,7 +44,7 @@ PatternView FindPattern(const PatternView& view)
 		// perform a fast plausability test for 1:1:3:1:1 pattern
 		if (view[2] < 2 * std::max(view[0], view[4]) || view[2] < std::max(view[1], view[3]))
 			return 0.f;
-		return IsPattern<E2E>(view, PATTERN, spaceInPixel, 0.5);
+		return IsPattern<E2E>(view, PATTERN, spaceInPixel, 0.1); // the requires 4, here we accept almost 0
 	});
 }
 
