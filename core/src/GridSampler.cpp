@@ -34,16 +34,10 @@ DetectorResult SampleGrid(const BitMatrix& image, int width, int height, const R
 		return {};
 
 	for (auto&& [x0, x1, y0, y1, mod2Pix] : rois) {
-		// To deal with remaining examples (see #251 and #267) of "numercial instabilities" that have not been
-		// prevented with the Quadrilateral.h:IsConvex() check, we check for all boundary points of the grid to
-		// be inside.
-		auto isInside = [&mod2Pix = mod2Pix, &image](PointI p) { return image.isIn(mod2Pix(centered(p))); };
-		for (int y = y0; y < y1; ++y)
-			if (!isInside({x0, y}) || !isInside({x1 - 1, y}))
-				return {};
-		for (int x = x0; x < x1; ++x)
-			if (!isInside({x, y0}) || !isInside({x, y1 - 1}))
-				return {};
+		// Precheck the corners of every roi to bail out early if the grid is "obviously" not completely inside the image
+		auto isInside = [&mod2Pix = mod2Pix, &image](int x, int y) { return image.isIn(mod2Pix(centered(PointI(x, y)))); };
+		if (!mod2Pix.isValid() || !isInside(x0, y0) || !isInside(x1 - 1, y0) || !isInside(x1 - 1, y1 - 1) || !isInside(x0, y1 - 1))
+			return {};
 	}
 
 	BitMatrix res(width, height);
@@ -51,6 +45,14 @@ DetectorResult SampleGrid(const BitMatrix& image, int width, int height, const R
 		for (int y = y0; y < y1; ++y)
 			for (int x = x0; x < x1; ++x) {
 				auto p = mod2Pix(centered(PointI{x, y}));
+				// Due to a "numerical instability" in the PerspectiveTransform generation/application it has been observed
+				// that even though all boundary grid points get projected inside the image, it can still happen that an
+				// inner grid points is not. See #563. A true perspective transformation cannot have this property.
+				// The following check takes 100% care of the issue and turned out to be less of a performance impact than feared.
+				// TODO: Check some mathematical/numercial property of mod2Pix to determine if it is a perspective transforation.
+				if (!image.isIn(p))
+					return {};
+
 #ifdef PRINT_DEBUG
 				log(p, 3);
 #endif
