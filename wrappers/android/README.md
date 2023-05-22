@@ -16,3 +16,9 @@ To build the AAR (Android Archive) from the command line:
 
 Then copy `zxingcpp/build/outputs/aar/zxingcpp-release.aar` into `app/libs` of your app.
 
+## Publish to GitHub Packages
+
+1. Configure `github.properties` file by passing your GitHub userId and token with read and write permissions. 
+2. If you don't want to use `github.properties` use system env variables. Set GPR_USER and GPR_API_KEY
+3. Execute `$ gradle publish` from command line
+

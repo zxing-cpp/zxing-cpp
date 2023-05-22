@@ -20,3 +20,6 @@ captures/
 .DS_Store
 .cxx
 
+# GitHub
+github.properties
+
