@@ -1,14 +1,14 @@
 /*
-* Copyright 2016 Nu-book Inc.
-*/
+ * Copyright 2016 Nu-book Inc.
+ */
 // SPDX-License-Identifier: Apache-2.0
 
 #include "ReadBarcode.h"
 
-#include <string>
+#include <emscripten/bind.h>
 #include <memory>
 #include <stdexcept>
-#include <emscripten/bind.h>
+#include <string>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -21,7 +21,8 @@ struct ReadResult
 	ZXing::Position position{};
 };
 
-std::vector<ReadResult> readBarcodesFromImageView(ZXing::ImageView iv, bool tryHarder, const std::string& format, const int maxSymbols = 0xff)
+std::vector<ReadResult> readBarcodesFromImageView(ZXing::ImageView iv, bool tryHarder, const std::string& format,
+												  const int maxSymbols = 0xff)
 {
 	using namespace ZXing;
 	try {
@@ -51,7 +52,8 @@ std::vector<ReadResult> readBarcodesFromImageView(ZXing::ImageView iv, bool tryH
 	return {};
 }
 
-std::vector<ReadResult> readBarcodesFromImage(int bufferPtr, int bufferLength, bool tryHarder, std::string format, const int maxSymbols)
+std::vector<ReadResult> readBarcodesFromImage(int bufferPtr, int bufferLength, bool tryHarder, std::string format,
+											  const int maxSymbols)
 {
 	using namespace ZXing;
 
@@ -72,10 +74,12 @@ ReadResult readBarcodeFromImage(int bufferPtr, int bufferLength, bool tryHarder,
 	return results.front();
 }
 
-std::vector<ReadResult> readBarcodesFromPixmap(int bufferPtr, int imgWidth, int imgHeight, bool tryHarder, std::string format, const int maxSymbols)
+std::vector<ReadResult> readBarcodesFromPixmap(int bufferPtr, int imgWidth, int imgHeight, bool tryHarder, std::string format,
+											   const int maxSymbols)
 {
 	using namespace ZXing;
-	return readBarcodesFromImageView({reinterpret_cast<uint8_t*>(bufferPtr), imgWidth, imgHeight, ImageFormat::RGBX}, tryHarder, format, maxSymbols);
+	return readBarcodesFromImageView({reinterpret_cast<uint8_t*>(bufferPtr), imgWidth, imgHeight, ImageFormat::RGBX}, tryHarder,
+									 format, maxSymbols);
 }
 
 ReadResult readBarcodeFromPixmap(int bufferPtr, int imgWidth, int imgHeight, bool tryHarder, std::string format)
@@ -90,23 +94,18 @@ EMSCRIPTEN_BINDINGS(BarcodeReader)
 	using namespace emscripten;
 
 	value_object<ReadResult>("ReadResult")
-			.field("format", &ReadResult::format)
-			.field("text", &ReadResult::text)
-			.field("error", &ReadResult::error)
-			.field("position", &ReadResult::position)
-			;
+		.field("format", &ReadResult::format)
+		.field("text", &ReadResult::text)
+		.field("error", &ReadResult::error)
+		.field("position", &ReadResult::position);
 
-	value_object<ZXing::PointI>("Point")
-			.field("x", &ZXing::PointI::x)
-			.field("y", &ZXing::PointI::y)
-			;
+	value_object<ZXing::PointI>("Point").field("x", &ZXing::PointI::x).field("y", &ZXing::PointI::y);
 
 	value_object<ZXing::Position>("Position")
-			.field("topLeft", emscripten::index<0>())
-			.field("topRight", emscripten::index<1>())
-			.field("bottomRight", emscripten::index<2>())
-			.field("bottomLeft", emscripten::index<3>())
-			;
+		.field("topLeft", emscripten::index<0>())
+		.field("topRight", emscripten::index<1>())
+		.field("bottomRight", emscripten::index<2>())
+		.field("bottomLeft", emscripten::index<3>());
 
 	register_vector<ReadResult>("vector<ReadResult>");
 
