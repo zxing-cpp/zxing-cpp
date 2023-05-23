@@ -1,0 +1,18 @@
+name: fitatu_barcode_scanner
+
+packages:
+  - .
+  - example
+
+command:
+  bootstrap:
+    usePubspecOverrides: true
+
+scripts:
+  pigeon:
+    name: Run pigeon
+    run: flutter pub run pigeon --input pigeons/api.dart --dart_out lib/pigeon.dart --swift_out ios/Runner/Pigeon.swift --kotlin_out android/src/main/kotlin/com/fitatu/barcodescanner/fitatu_barcode_scanner/Pigeon.kt --kotlin_package "com.fitatu.barcodescanner.fitatu_barcode_scanner"
+    packageFilters:
+      pigeon: true
+    exec:
+      concurrency: 1
