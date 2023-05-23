@@ -12,46 +12,6 @@ var zxing = ZXing().then(function(instance) {
 	zxing = instance; // this line is supposedly not required but with current emsdk it is :-/
 });
 
-/*
- * This class implement a JavaScript Iterator which can be used then
- * either in a JavaScript for...of loop
- * or as parameter of Array.from to create a JavaScript Array
- *
- * This rely on `size()` and `get()` functions defined in the C++ vector
- * binding interface from Emscripten:
- * https://github.com/emscripten-core/emscripten/blob/98b618f09bc106d401c0045fa7252f1cd15bd3c0/system/include/emscripten/bind.h#L1894
- *
- * Note: you can also simply iterate through results with a C-like for loop
- * without needing to create an Iterator.
- */
-class ReaderResultVectorIterator {
-	// This property is bound to a C++ std::vector<ReaderResult>
-	#readerResultVector;
-
-	constructor(readerResultVector) {
-		this.#readerResultVector = readerResultVector;
-	}
-
-	[Symbol.iterator]() {
-		let index = 0;
-
-		return {
-			next: () => {
-				if (index < this.#readerResultVector.size()) {
-					const next = {
-						done: false,
-						value: this.#readerResultVector.get(index),
-					};
-					index += 1;
-					return next;
-				}
-				return { done: true };
-			},
-		};
-	}
-}
-
-
 function scanBarcode(file) {
 	var reader = new FileReader();
 	reader.onloadend = function(evt) {
@@ -60,11 +20,11 @@ function scanBarcode(file) {
 
 		var buffer = zxing._malloc(fileData.length);
 		zxing.HEAPU8.set(fileData, buffer);
-		var readerResults = zxing.readBarcodesFromImage(buffer, fileData.length, true, format, 0xff);
+		var results = zxing.readBarcodesFromImage(buffer, fileData.length, true, format, 0xff);
 		zxing._free(buffer);
 
-		showScanResults(readerResults);
-		showImageWithResults(document.getElementById("drop_zone"), fileData, file.type, readerResults.results);
+		showScanResults(results);
+		showImageWithResults(document.getElementById("drop_zone"), fileData, file.type, results);
 	}
 	reader.readAsArrayBuffer(file);
 }
@@ -82,10 +42,8 @@ function showImageWithResults(container, fileData, fileType, results) {
 		const ctx = canvas.getContext("2d");
 		ctx.drawImage(img, 0, 0);
 
-		// Example to use JavaScript Array created from an Iterator
-		const resultArray = Array.from(new ReaderResultVectorIterator(results));
-		for (let i = 0; i < resultArray.length; i += 1) {
-			const { position } = resultArray[i];
+		for (let i = 0; i < results.size(); i += 1) {
+			const { position } = results.get(i);
 			// Draw outline square
 			ctx.beginPath();
 			ctx.moveTo(position.topLeft.x, position.topLeft.y);
@@ -119,21 +77,20 @@ function showImageWithResults(container, fileData, fileType, results) {
 	img.src = "data:" + fileType + ";base64," + base64ArrayBuffer(fileData);
 }
 
-function showScanResults(readerResults) {
+function showScanResults(results) {
 	const scanResult = document.getElementById("scan_result");
 	scanResult.innerHTML = "";
-	if (readerResults.error) {
-		scanResult.innerHTML = '<li><font color="red">Error: ' + readerResults.error + '</font></li>';
+	if (results.size() >= 1 && results.get(0).error) {
+		scanResult.innerHTML = '<li><font color="red">Error: ' + results.get(0).error + '</font></li>';
 	}
 
-	if (readerResults.results.size() === 0) {
+	if (results.size() === 0) {
 		scanResult.innerHTML += "<li>No " + (document.getElementById("scan_format").value || "barcode") + " found </li>";
 	}
 
-	// Example to iterate over results with the for...of loop
-	const resultsIterator = new ReaderResultVectorIterator(readerResults.results);
-  	for (const result of resultsIterator) {
-		scanResult.innerHTML += "<li>Format: <strong>" + result.format + "</strong><pre>" + result.text + "</pre></li>";
+	for (let i = 0; i < results.size(); i += 1) {
+		const { format, text } = results.get(i);
+		scanResult.innerHTML += "<li>Format: <strong>" + format + "</strong><pre>" + text + "</pre></li>";
   	}
 }
 
