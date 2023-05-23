@@ -69,6 +69,13 @@ class _MyAppState extends State<MyApp> {
                           code = value;
                         });
                       },
+                      onChanged: () {
+                        setState(() {
+                          enableTorch =
+                              _previewKey.currentState?.isTorchEnabled() ??
+                                  false;
+                        });
+                      },
                     ),
                     Align(
                       alignment: Alignment.topCenter,

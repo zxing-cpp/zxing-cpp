@@ -12,11 +12,13 @@ class AndroidFitatuScannerPreview extends StatefulWidget {
     required this.onSuccess,
     required this.options,
     this.overlayBuilder,
+    this.onChanged,
   });
 
   final ScannerOptions options;
   final ValueChanged<String> onSuccess;
   final ValueWidgetBuilder<CameraImage>? overlayBuilder;
+  final VoidCallback? onChanged;
 
   @override
   State<AndroidFitatuScannerPreview> createState() =>
@@ -24,10 +26,9 @@ class AndroidFitatuScannerPreview extends StatefulWidget {
 }
 
 class AndroidFitatuScannerPreviewState
-    extends State<AndroidFitatuScannerPreview> with ScannerPreviewMixin {
-  late FitatuBarcodeScanner scanner;
-  late ValueNotifier<CameraImage?> cameraImage;
-  int? textureId;
+    extends State<AndroidFitatuScannerPreview>
+    with ScannerPreviewMixin, WidgetsBindingObserver {
+  late FitatuBarcodeScanner _scanner;
 
   void setStateIfMounted() {
     if (mounted) {
@@ -36,46 +37,62 @@ class AndroidFitatuScannerPreviewState
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      _scanner.onMovedToBackground();
+    } else if (state == AppLifecycleState.resumed) {
+      _scanner.onMovedToForeground();
+    }
+  }
+
+  @override
   void initState() {
     super.initState();
-    cameraImage = ValueNotifier(null);
-    scanner = FitatuBarcodeScanner(
-      onReady: (textureId) {
-        this.textureId = textureId;
-        setStateIfMounted();
-      },
-      onSuccess: widget.onSuccess,
-      onCameraImage: (value) => cameraImage.value = value,
-    );
-    scanner.init(widget.options);
+    WidgetsBinding.instance.addObserver(this);
+    _scanner = FitatuBarcodeScanner(onSuccess: widget.onSuccess)
+      ..addListener(_scannerListener);
+    _scanner.init(widget.options);
+  }
+
+  void _scannerListener() {
+    setStateIfMounted();
+    widget.onChanged?.call();
   }
 
   @override
   void dispose() {
-    scanner.dispose();
+    WidgetsBinding.instance.removeObserver(this);
+    _scanner
+      ..removeListener(_scannerListener)
+      ..dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final textureId = _scanner.textureId;
     if (textureId != null) {
       return Stack(
         fit: StackFit.expand,
         children: [
-          Texture(textureId: textureId!),
-          ValueListenableBuilder(
-            valueListenable: cameraImage,
-            builder: (context, value, child) {
-              if (value == null || widget.overlayBuilder == null) {
+          Texture(
+            key: ValueKey(textureId),
+            textureId: textureId,
+          ),
+          Builder(
+            key: ValueKey(_scanner.cameraImage),
+            builder: (context) {
+              final cameraImage = _scanner.cameraImage;
+              if (cameraImage == null || widget.overlayBuilder == null) {
                 return const SizedBox.shrink();
               }
 
               return widget.overlayBuilder!(
                 context,
-                value,
+                cameraImage,
                 CustomPaint(
                   painter: CropRectPainter(
-                    value,
+                    cameraImage,
                     Paint()
                       ..color = Colors.green
                       ..style = PaintingStyle.stroke
@@ -93,8 +110,11 @@ class AndroidFitatuScannerPreviewState
 
   @override
   void setTorchEnabled({required bool isEnabled}) {
-    scanner.setTorchEnabled(isEnabled);
+    _scanner.setTorchEnabled(isEnabled);
   }
+
+  @override
+  bool isTorchEnabled() => _scanner.isTorchEnabled;
 }
 
 /// Painter which takes [cameraImage] and

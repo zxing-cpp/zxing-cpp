@@ -167,7 +167,9 @@ class FitatuBarcodeScannerHostApiCodec: FlutterStandardMessageCodec {
 protocol FitatuBarcodeScannerHostApi {
   func init(options: ScannerOptions) throws
   func setTorchEnabled(isEnabled: Bool) throws
-  func dispose() throws
+  func onMovedToForeground() throws
+  func onMovedToBackground() throws
+  func release() throws
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -206,18 +208,44 @@ class FitatuBarcodeScannerHostApiSetup {
     } else {
       setTorchEnabledChannel.setMessageHandler(nil)
     }
-    let disposeChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.FitatuBarcodeScannerHostApi.dispose", binaryMessenger: binaryMessenger, codec: codec)
+    let onMovedToForegroundChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.FitatuBarcodeScannerHostApi.onMovedToForeground", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
-      disposeChannel.setMessageHandler { _, reply in
+      onMovedToForegroundChannel.setMessageHandler { _, reply in
         do {
-          try api.dispose()
+          try api.onMovedToForeground()
           reply(wrapResult(nil))
         } catch {
           reply(wrapError(error))
         }
       }
     } else {
-      disposeChannel.setMessageHandler(nil)
+      onMovedToForegroundChannel.setMessageHandler(nil)
+    }
+    let onMovedToBackgroundChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.FitatuBarcodeScannerHostApi.onMovedToBackground", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      onMovedToBackgroundChannel.setMessageHandler { _, reply in
+        do {
+          try api.onMovedToBackground()
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      onMovedToBackgroundChannel.setMessageHandler(nil)
+    }
+    let releaseChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.FitatuBarcodeScannerHostApi.release", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      releaseChannel.setMessageHandler { _, reply in
+        do {
+          try api.release()
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      releaseChannel.setMessageHandler(nil)
     }
   }
 }

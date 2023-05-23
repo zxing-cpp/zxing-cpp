@@ -54,8 +54,7 @@ class FitatuBarcodeScanner(
     private var camera: Camera? = null
 
     override fun init(options: ScannerOptions) {
-        flutterLifecycleOwner.created()
-
+        flutterLifecycleOwner.onCreate()
         cameraProviderFuture = ProcessCameraProvider.getInstance(context).apply {
             addListener(
                 {
@@ -69,6 +68,16 @@ class FitatuBarcodeScanner(
 
     override fun setTorchEnabled(isEnabled: Boolean) {
         camera?.cameraControl?.enableTorch(isEnabled)
+    }
+
+    override fun onMovedToForeground() {
+        flutterLifecycleOwner.onStart()
+        flutterLifecycleOwner.onResume()
+    }
+
+    override fun onMovedToBackground() {
+        flutterLifecycleOwner.onPause()
+        flutterLifecycleOwner.onStop()
     }
 
     private fun configureCamera(
@@ -146,8 +155,8 @@ class FitatuBarcodeScanner(
                 }
             }
 
-
-            flutterLifecycleOwner.started()
+            flutterLifecycleOwner.onStart()
+            flutterLifecycleOwner.onResume()
         }
 
     /**
@@ -164,8 +173,10 @@ class FitatuBarcodeScanner(
             .let(::Surface)
     }
 
-    override fun dispose() {
-        flutterLifecycleOwner.destroyed()
+    override fun release() {
+        flutterLifecycleOwner.onPause()
+        flutterLifecycleOwner.onStop()
+        flutterLifecycleOwner.onDestroy()
     }
 }
 
@@ -175,16 +186,28 @@ private class FlutterLifecycleOwner : LifecycleOwner {
         currentState = Lifecycle.State.CREATED
     }
 
-    fun created() {
-        lifecycleRegistry.currentState = Lifecycle.State.CREATED
+    fun onCreate() {
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
     }
 
-    fun started() {
-        lifecycleRegistry.currentState = Lifecycle.State.STARTED
+    fun onStart() {
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
     }
 
-    fun destroyed() {
-        lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
+    fun onResume() {
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    }
+
+    fun onPause() {
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+    }
+
+    fun onStop() {
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
+    }
+
+    fun onDestroy() {
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     }
 
     override fun getLifecycle(): Lifecycle = lifecycleRegistry

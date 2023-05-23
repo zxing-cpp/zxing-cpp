@@ -156,7 +156,9 @@ private object FitatuBarcodeScannerHostApiCodec : StandardMessageCodec() {
 interface FitatuBarcodeScannerHostApi {
   fun init(options: ScannerOptions)
   fun setTorchEnabled(isEnabled: Boolean)
-  fun dispose()
+  fun onMovedToForeground()
+  fun onMovedToBackground()
+  fun release()
 
   companion object {
     /** The codec used by FitatuBarcodeScannerHostApi. */
@@ -205,12 +207,46 @@ interface FitatuBarcodeScannerHostApi {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.FitatuBarcodeScannerHostApi.dispose", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.FitatuBarcodeScannerHostApi.onMovedToForeground", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
             var wrapped: List<Any?>
             try {
-              api.dispose()
+              api.onMovedToForeground()
+              wrapped = listOf<Any?>(null)
+            } catch (exception: Throwable) {
+              wrapped = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.FitatuBarcodeScannerHostApi.onMovedToBackground", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            var wrapped: List<Any?>
+            try {
+              api.onMovedToBackground()
+              wrapped = listOf<Any?>(null)
+            } catch (exception: Throwable) {
+              wrapped = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.FitatuBarcodeScannerHostApi.release", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            var wrapped: List<Any?>
+            try {
+              api.release()
               wrapped = listOf<Any?>(null)
             } catch (exception: Throwable) {
               wrapped = wrapError(exception)

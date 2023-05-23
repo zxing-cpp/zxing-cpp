@@ -16,7 +16,7 @@ class FitatuBarcodeScannerPlugin : FlutterPlugin {
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-        scanner.dispose()
+        scanner.release()
     }
 }
 

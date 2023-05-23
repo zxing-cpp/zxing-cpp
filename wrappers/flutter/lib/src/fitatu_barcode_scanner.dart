@@ -1,30 +1,35 @@
 import 'package:fitatu_barcode_scanner/pigeon.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 
-class FitatuBarcodeScanner
+class FitatuBarcodeScanner extends ChangeNotifier
     implements FitatuBarcodeScannerHostApi, FitatuBarcodeScannerFlutterApi {
   FitatuBarcodeScanner({
-    required this.onReady,
     required this.onSuccess,
-    this.onError,
-    this.onCameraImage,
-    this.onTorchState,
   }) {
     FitatuBarcodeScannerFlutterApi.setup(this);
   }
 
   final _api = FitatuBarcodeScannerHostApi();
 
-  final ValueChanged<int> onReady;
   final ValueChanged<String> onSuccess;
-  final ValueChanged<String>? onError;
-  final ValueChanged<CameraImage>? onCameraImage;
-  final ValueChanged<bool>? onTorchState;
+  var _isTorchEnabled = false;
+  bool get isTorchEnabled => _isTorchEnabled;
+  int? _textureId;
+  int? get textureId => _textureId;
+  CameraImage? _cameraImage;
+  CameraImage? get cameraImage => _cameraImage;
 
   @override
-  Future<void> dispose() {
-    return _api.dispose();
+  void dispose() async {
+    await release();
+    super.dispose();
+  }
+
+  @override
+  Future<void> release() async {
+    _textureId = null;
+    notifyListeners();
+    await _api.release();
   }
 
   @override
@@ -33,16 +38,18 @@ class FitatuBarcodeScanner
   }
 
   @override
-  void ready(int textureId) => onReady(textureId);
+  void ready(int textureId) {
+    _textureId = textureId;
+    notifyListeners();
+  }
 
   @override
   void result(String? code, CameraImage cameraImage, String? error) {
+    _cameraImage = cameraImage;
+    notifyListeners();
     if (code != null) {
       onSuccess(code);
-    } else if (error != null) {
-      onError?.call(error);
     }
-    onCameraImage?.call(cameraImage);
   }
 
   @override
@@ -50,7 +57,14 @@ class FitatuBarcodeScanner
       _api.setTorchEnabled(isEnabled);
 
   @override
+  Future<void> onMovedToBackground() => _api.onMovedToBackground();
+
+  @override
+  Future<void> onMovedToForeground() => _api.onMovedToForeground();
+
+  @override
   void onTorchStateChanged(bool isEnabled) {
-    onTorchState?.call(isEnabled);
+    _isTorchEnabled = isEnabled;
+    notifyListeners();
   }
 }

@@ -12,11 +12,13 @@ class CommonFitatuScannerPreview extends StatefulWidget {
     required this.onSuccess,
     required this.options,
     this.overlayBuilder,
+    this.onChanged,
   });
 
   final ValueChanged<String> onSuccess;
   final ScannerOptions options;
   final WidgetBuilder? overlayBuilder;
+  final VoidCallback? onChanged;
 
   @override
   State<CommonFitatuScannerPreview> createState() =>
@@ -27,6 +29,16 @@ class CommonFitatuScannerPreviewState extends State<CommonFitatuScannerPreview>
     with ScannerPreviewMixin {
   CameraController? controller;
 
+  void _controllerListener() {
+    widget.onChanged?.call();
+  }
+
+  @override
+  void dispose() {
+    controller?.removeListener(_controllerListener);
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -34,7 +46,8 @@ class CommonFitatuScannerPreviewState extends State<CommonFitatuScannerPreview>
       children: [
         ReaderWidget(
           onControllerCreated: (controller) {
-            this.controller = controller;
+            this.controller?.removeListener(_controllerListener);
+            this.controller = controller?..addListener(_controllerListener);
           },
           tryHarder: widget.options.tryHarder,
           tryRotate: widget.options.tryRotate,
@@ -66,4 +79,7 @@ class CommonFitatuScannerPreviewState extends State<CommonFitatuScannerPreview>
       isEnabled ? FlashMode.torch : FlashMode.off,
     );
   }
+
+  @override
+  bool isTorchEnabled() => controller?.value.flashMode == FlashMode.torch;
 }

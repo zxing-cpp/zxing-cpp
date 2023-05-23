@@ -17,6 +17,7 @@ class FitatuBarcodeScannerPreview extends StatefulWidget {
     ScannerOptions? options,
     this.alwaysUseCommon = false,
     this.overlayBuilder,
+    this.onChanged,
   }) : options = options ??
             ScannerOptions(
               tryHarder: false,
@@ -30,6 +31,7 @@ class FitatuBarcodeScannerPreview extends StatefulWidget {
   final ValueChanged<String> onSuccess;
   final bool alwaysUseCommon;
   final WidgetBuilder? overlayBuilder;
+  final VoidCallback? onChanged;
 
   @override
   State<FitatuBarcodeScannerPreview> createState() =>
@@ -47,6 +49,7 @@ class FitatuBarcodeScannerPreviewState
           onSuccess: widget.onSuccess,
           options: widget.options,
           overlayBuilder: widget.overlayBuilder,
+          onChanged: widget.onChanged,
         );
 
     if (widget.alwaysUseCommon || kIsWeb) {
@@ -63,6 +66,7 @@ class FitatuBarcodeScannerPreviewState
             return widget.overlayBuilder?.call(context) ??
                 const SizedBox.shrink();
           },
+          onChanged: widget.onChanged,
         ),
       );
     }
@@ -74,4 +78,7 @@ class FitatuBarcodeScannerPreviewState
   void setTorchEnabled({required bool isEnabled}) {
     _key.currentState?.setTorchEnabled(isEnabled: isEnabled);
   }
+
+  @override
+  bool isTorchEnabled() => _key.currentState?.isTorchEnabled() ?? false;
 }
