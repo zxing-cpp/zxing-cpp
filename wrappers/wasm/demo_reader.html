@@ -82,16 +82,18 @@ function showScanResults(results) {
 	scanResult.innerHTML = "";
 	if (results.size() >= 1 && results.get(0).error) {
 		scanResult.innerHTML = '<li><font color="red">Error: ' + results.get(0).error + '</font></li>';
-	}
+	} else {
+		if (results.size() === 0) {
+			scanResult.innerHTML += "<li>No " + (document.getElementById("scan_format").value || "barcode") + " found </li>";
+		}
 
-	if (results.size() === 0) {
-		scanResult.innerHTML += "<li>No " + (document.getElementById("scan_format").value || "barcode") + " found </li>";
+		for (let i = 0; i < results.size(); i += 1) {
+			const { error, format, text } = results.get(i);
+			if (!error) {
+				scanResult.innerHTML += "<li>Format: <strong>" + format + "</strong><pre>" + text + "</pre></li>";
+			}
+  		}
 	}
-
-	for (let i = 0; i < results.size(); i += 1) {
-		const { format, text } = results.get(i);
-		scanResult.innerHTML += "<li>Format: <strong>" + format + "</strong><pre>" + text + "</pre></li>";
-  	}
 }
 
 function dragOverHandler(ev) {
