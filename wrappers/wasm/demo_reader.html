@@ -20,48 +20,79 @@ function scanBarcode(file) {
 
 		var buffer = zxing._malloc(fileData.length);
 		zxing.HEAPU8.set(fileData, buffer);
-		var result = zxing.readBarcodeFromImage(buffer, fileData.length, true, format);
+		var results = zxing.readBarcodesFromImage(buffer, fileData.length, true, format, 0xff);
 		zxing._free(buffer);
 
-		showImage(document.getElementById("drop_zone"), fileData, file.type, result.position);
-		showScanResult(result);
+		showScanResults(results);
+		showImageWithResults(document.getElementById("drop_zone"), fileData, file.type, results);
 	}
 	reader.readAsArrayBuffer(file);
 }
 
-function showImage(container, fileData, fileType, position) {
+function showImageWithResults(container, fileData, fileType, results) {
 	fileType = fileType || "image/jpeg";
 	container.innerHTML = "";
 	var img = document.createElement("img");
 	img.addEventListener('load', function() {
+		const canvas = document.createElement("canvas");
 		container.style.width = img.width + 'px';
 		container.style.height = img.height + 'px';
-		const canvas = document.createElement("canvas");
 		canvas.width = img.width;
 		canvas.height = img.height;
 		const ctx = canvas.getContext("2d");
 		ctx.drawImage(img, 0, 0);
-		ctx.beginPath();
-		ctx.moveTo(position.topLeft.x, position.topLeft.y);
-		ctx.lineTo(position.topRight.x, position.topRight.y);
-		ctx.lineTo(position.bottomRight.x, position.bottomRight.y);
-		ctx.lineTo(position.bottomLeft.x, position.bottomLeft.y);
-		ctx.closePath();
-		ctx.strokeStyle = "red";
-		ctx.lineWidth = 5;
-		ctx.stroke();
+
+		for (let i = 0; i < results.size(); i += 1) {
+			const { position } = results.get(i);
+			// Draw outline square
+			ctx.beginPath();
+			ctx.moveTo(position.topLeft.x, position.topLeft.y);
+			ctx.lineTo(position.topRight.x, position.topRight.y);
+			ctx.lineTo(position.bottomRight.x, position.bottomRight.y);
+			ctx.lineTo(position.bottomLeft.x, position.bottomLeft.y);
+			ctx.closePath();
+			ctx.strokeStyle = "red";
+			ctx.lineWidth = 5;
+			ctx.stroke();
+
+			// Draw number inside square
+			const text = {
+				text: i + 1,
+				size: Math.abs((position.bottomLeft.y - position.topLeft.y)),
+				x: (position.topLeft.x + position.topRight.x) / 2.0,
+				y: (position.topLeft.y + position.bottomLeft.y) / 2.0,
+			};
+			ctx.fillStyle = "white";
+			ctx.font = `bold ${text.size}px sans`;
+			ctx.textAlign = "center";
+			ctx.textBaseline = "middle";
+			ctx.fillText(text.text, text.x, text.y);
+			ctx.strokeStyle = "red";
+			ctx.lineWidth = 1;
+			ctx.strokeText(text.text, text.x, text.y);
+		}
+
 		container.appendChild(canvas);
 	});
 	img.src = "data:" + fileType + ";base64," + base64ArrayBuffer(fileData);
 }
 
-function showScanResult(result) {
-	if (result.error) {
-		document.getElementById("scan_result").innerHTML = '<font color="red">Error: ' + result.error + '</font>';
-	} else if (result.format) {
-		document.getElementById("scan_result").innerHTML = "Format: <strong>" + result.format + "</strong><pre>" + result.text + "</pre>";
+function showScanResults(results) {
+	const scanResult = document.getElementById("scan_result");
+	scanResult.innerHTML = "";
+	if (results.size() >= 1 && results.get(0).error) {
+		scanResult.innerHTML = '<li><font color="red">Error: ' + results.get(0).error + '</font></li>';
 	} else {
-		document.getElementById("scan_result").innerHTML = "No " + (document.getElementById("scan_format").value || "barcode") + " found";
+		if (results.size() === 0) {
+			scanResult.innerHTML += "<li>No " + (document.getElementById("scan_format").value || "barcode") + " found </li>";
+		}
+
+		for (let i = 0; i < results.size(); i += 1) {
+			const { error, format, text } = results.get(i);
+			if (!error) {
+				scanResult.innerHTML += "<li>Format: <strong>" + format + "</strong><pre>" + text + "</pre></li>";
+			}
+  		}
 	}
 }
 
@@ -104,8 +135,12 @@ function fileSelected(input) {
 	scanBarcode(input.files[0]);
 }
 
-function clearScanImage() {
-	document.getElementById("drop_zone").innerHTML = "Drag your image here...";
+function clearScanResults() {
+	const dropZone = document.getElementById("drop_zone")
+	dropZone.innerHTML = "Drag your image here...";
+	dropZone.style.width = "220px";
+	dropZone.style.height = "150px";
+	document.getElementById("scan_result").innerHTML = "";
 }
 	</script>
 	<style>
@@ -150,7 +185,7 @@ body>div {
 	<p></p>
 	<div>
 		Scan Format:
-		<select id="scan_format" onchange="clearScanImage()">
+		<select id="scan_format" onchange="clearScanResults()">
 			<option value="" selected="">Any</option>
 			<option value="Aztec">Aztec</option>
 			<option value="Codabar">Codabar</option>
@@ -177,7 +212,9 @@ body>div {
 		</div>
 		Or <input type="file" accept="image/png, image/jpeg" onchange="fileSelected(this)" />
 		<br />
-		<div id="scan_result"></div>
+		Then see scan result below:
+		<br />
+		<ol id="scan_result"></ol>
 	</div>
 </body>
 
