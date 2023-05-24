@@ -44,25 +44,37 @@ class _MyAppState extends State<MyApp> {
       scanDelay: 50,
       scanDelaySuccess: 300,
     );
-    var lastOnSuccess = DateTime.now().millisecond;
     final preview = Material(
-      child: FitatuBarcodeScannerPreview(
-        key: _previewKey,
-        options: options,
-        alwaysUseCommon: alwaysUseCommon,
-        onSuccess: (value) {
-          final now = DateTime.now().millisecond;
-          final delta = now - lastOnSuccess;
-          print('Code: $value, Delta: $delta');
-          setState(() {
-            code = value;
-          });
-        },
-        onChanged: () {
-          setState(() {
-            enableTorch = _previewKey.currentState?.isTorchEnabled() ?? false;
-          });
-        },
+      child: Stack(
+        children: [
+          FitatuBarcodeScannerPreview(
+            key: _previewKey,
+            options: options,
+            alwaysUseCommon: alwaysUseCommon,
+            onSuccess: (value) {
+              setState(() {
+                code = value;
+              });
+            },
+            onChanged: () {
+              setState(() {
+                enableTorch =
+                    _previewKey.currentState?.isTorchEnabled() ?? false;
+              });
+            },
+          ),
+          Align(
+            alignment: Alignment.bottomLeft,
+            child: IconButton(
+              icon: Icon(fullscreen ? Icons.fullscreen_exit : Icons.fullscreen),
+              onPressed: () {
+                setState(() {
+                  fullscreen = !fullscreen;
+                });
+              },
+            ),
+          ),
+        ],
       ),
     );
 

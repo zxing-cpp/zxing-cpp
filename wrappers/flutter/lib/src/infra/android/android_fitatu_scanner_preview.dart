@@ -64,18 +64,21 @@ class AndroidFitatuScannerPreviewState
     final cameraConfig = _scanner.cameraConfig;
     if (cameraConfig != null) {
       return ClipRect(
-        child: FittedBox(
-          fit: BoxFit.cover,
-          child: SizedBox.fromSize(
-            size: Size(
-              min(cameraConfig.previewHeight, cameraConfig.previewWidth)
-                  .toDouble(),
-              max(cameraConfig.previewHeight, cameraConfig.previewWidth)
-                  .toDouble(),
-            ),
-            child: Texture(
-              key: ValueKey(cameraConfig),
-              textureId: cameraConfig.textureId,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints.expand(),
+          child: FittedBox(
+            fit: BoxFit.cover,
+            child: SizedBox.fromSize(
+              size: Size(
+                min(cameraConfig.previewHeight, cameraConfig.previewWidth)
+                    .toDouble(),
+                max(cameraConfig.previewHeight, cameraConfig.previewWidth)
+                    .toDouble(),
+              ),
+              child: Texture(
+                key: ValueKey(cameraConfig),
+                textureId: cameraConfig.textureId,
+              ),
             ),
           ),
         ),
