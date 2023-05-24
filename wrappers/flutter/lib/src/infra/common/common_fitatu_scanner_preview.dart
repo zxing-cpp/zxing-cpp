@@ -11,13 +11,11 @@ class CommonFitatuScannerPreview extends StatefulWidget {
     super.key,
     required this.onSuccess,
     required this.options,
-    this.overlayBuilder,
     this.onChanged,
   });
 
   final ValueChanged<String> onSuccess;
   final ScannerOptions options;
-  final WidgetBuilder? overlayBuilder;
   final VoidCallback? onChanged;
 
   @override
@@ -68,7 +66,6 @@ class CommonFitatuScannerPreviewState extends State<CommonFitatuScannerPreview>
             }
           },
         ),
-        if (widget.overlayBuilder != null) widget.overlayBuilder!(context),
       ],
     );
   }

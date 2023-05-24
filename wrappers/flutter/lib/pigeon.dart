@@ -198,50 +198,6 @@ class FitatuBarcodeScannerHostApi {
     }
   }
 
-  Future<void> onMovedToForeground() async {
-    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.FitatuBarcodeScannerHostApi.onMovedToForeground', codec,
-        binaryMessenger: _binaryMessenger);
-    final List<Object?>? replyList =
-        await channel.send(null) as List<Object?>?;
-    if (replyList == null) {
-      throw PlatformException(
-        code: 'channel-error',
-        message: 'Unable to establish connection on channel.',
-      );
-    } else if (replyList.length > 1) {
-      throw PlatformException(
-        code: replyList[0]! as String,
-        message: replyList[1] as String?,
-        details: replyList[2],
-      );
-    } else {
-      return;
-    }
-  }
-
-  Future<void> onMovedToBackground() async {
-    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.FitatuBarcodeScannerHostApi.onMovedToBackground', codec,
-        binaryMessenger: _binaryMessenger);
-    final List<Object?>? replyList =
-        await channel.send(null) as List<Object?>?;
-    if (replyList == null) {
-      throw PlatformException(
-        code: 'channel-error',
-        message: 'Unable to establish connection on channel.',
-      );
-    } else if (replyList.length > 1) {
-      throw PlatformException(
-        code: replyList[0]! as String,
-        message: replyList[1] as String?,
-        details: replyList[2],
-      );
-    } else {
-      return;
-    }
-  }
-
   Future<void> release() async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.FitatuBarcodeScannerHostApi.release', codec,
@@ -296,7 +252,7 @@ class _FitatuBarcodeScannerFlutterApiCodec extends StandardMessageCodec {
 abstract class FitatuBarcodeScannerFlutterApi {
   static const MessageCodec<Object?> codec = _FitatuBarcodeScannerFlutterApiCodec();
 
-  void ready(int textureId);
+  void onTextureChanged(int? textureId);
 
   void result(String? code, CameraImage cameraImage, String? error);
 
@@ -305,19 +261,17 @@ abstract class FitatuBarcodeScannerFlutterApi {
   static void setup(FitatuBarcodeScannerFlutterApi? api, {BinaryMessenger? binaryMessenger}) {
     {
       final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.FitatuBarcodeScannerFlutterApi.ready', codec,
+          'dev.flutter.pigeon.FitatuBarcodeScannerFlutterApi.onTextureChanged', codec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         channel.setMessageHandler(null);
       } else {
         channel.setMessageHandler((Object? message) async {
           assert(message != null,
-          'Argument for dev.flutter.pigeon.FitatuBarcodeScannerFlutterApi.ready was null.');
+          'Argument for dev.flutter.pigeon.FitatuBarcodeScannerFlutterApi.onTextureChanged was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final int? arg_textureId = (args[0] as int?);
-          assert(arg_textureId != null,
-              'Argument for dev.flutter.pigeon.FitatuBarcodeScannerFlutterApi.ready was null, expected non-null int.');
-          api.ready(arg_textureId!);
+          api.onTextureChanged(arg_textureId);
           return;
         });
       }

@@ -19,8 +19,11 @@ class FitatuBarcodeScanner extends ChangeNotifier
   CameraImage? _cameraImage;
   CameraImage? get cameraImage => _cameraImage;
 
+  var _isDisposed = false;
+
   @override
   void dispose() async {
+    _isDisposed = true;
     await release();
     super.dispose();
   }
@@ -38,7 +41,7 @@ class FitatuBarcodeScanner extends ChangeNotifier
   }
 
   @override
-  void ready(int textureId) {
+  void onTextureChanged(int? textureId) {
     _textureId = textureId;
     notifyListeners();
   }
@@ -57,14 +60,14 @@ class FitatuBarcodeScanner extends ChangeNotifier
       _api.setTorchEnabled(isEnabled);
 
   @override
-  Future<void> onMovedToBackground() => _api.onMovedToBackground();
-
-  @override
-  Future<void> onMovedToForeground() => _api.onMovedToForeground();
-
-  @override
   void onTorchStateChanged(bool isEnabled) {
     _isTorchEnabled = isEnabled;
     notifyListeners();
+  }
+
+  @override
+  void notifyListeners() {
+    if (_isDisposed) return;
+    super.notifyListeners();
   }
 }

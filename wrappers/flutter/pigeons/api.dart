@@ -4,14 +4,12 @@ import 'package:pigeon/pigeon.dart';
 abstract class FitatuBarcodeScannerHostApi {
   void init(ScannerOptions options);
   void setTorchEnabled(bool isEnabled);
-  void onMovedToForeground();
-  void onMovedToBackground();
   void release();
 }
 
 @FlutterApi()
 abstract class FitatuBarcodeScannerFlutterApi {
-  void ready(int textureId);
+  void onTextureChanged(int? textureId);
   void result(String? code, CameraImage cameraImage, String? error);
   void onTorchStateChanged(bool isEnabled);
 }

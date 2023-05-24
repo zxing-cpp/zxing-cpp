@@ -16,7 +16,6 @@ class FitatuBarcodeScannerPreview extends StatefulWidget {
     required this.onSuccess,
     ScannerOptions? options,
     this.alwaysUseCommon = false,
-    this.overlayBuilder,
     this.onChanged,
   }) : options = options ??
             ScannerOptions(
@@ -30,7 +29,6 @@ class FitatuBarcodeScannerPreview extends StatefulWidget {
   final ScannerOptions options;
   final ValueChanged<String> onSuccess;
   final bool alwaysUseCommon;
-  final WidgetBuilder? overlayBuilder;
   final VoidCallback? onChanged;
 
   @override
@@ -48,7 +46,6 @@ class FitatuBarcodeScannerPreviewState
           key: _key,
           onSuccess: widget.onSuccess,
           options: widget.options,
-          overlayBuilder: widget.overlayBuilder,
           onChanged: widget.onChanged,
         );
 
@@ -62,10 +59,6 @@ class FitatuBarcodeScannerPreviewState
           key: _key,
           onSuccess: widget.onSuccess,
           options: widget.options,
-          overlayBuilder: (context, value, child) {
-            return widget.overlayBuilder?.call(context) ??
-                const SizedBox.shrink();
-          },
           onChanged: widget.onChanged,
         ),
       );

@@ -156,8 +156,6 @@ private object FitatuBarcodeScannerHostApiCodec : StandardMessageCodec() {
 interface FitatuBarcodeScannerHostApi {
   fun init(options: ScannerOptions)
   fun setTorchEnabled(isEnabled: Boolean)
-  fun onMovedToForeground()
-  fun onMovedToBackground()
   fun release()
 
   companion object {
@@ -196,40 +194,6 @@ interface FitatuBarcodeScannerHostApi {
             var wrapped: List<Any?>
             try {
               api.setTorchEnabled(isEnabledArg)
-              wrapped = listOf<Any?>(null)
-            } catch (exception: Throwable) {
-              wrapped = wrapError(exception)
-            }
-            reply.reply(wrapped)
-          }
-        } else {
-          channel.setMessageHandler(null)
-        }
-      }
-      run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.FitatuBarcodeScannerHostApi.onMovedToForeground", codec)
-        if (api != null) {
-          channel.setMessageHandler { _, reply ->
-            var wrapped: List<Any?>
-            try {
-              api.onMovedToForeground()
-              wrapped = listOf<Any?>(null)
-            } catch (exception: Throwable) {
-              wrapped = wrapError(exception)
-            }
-            reply.reply(wrapped)
-          }
-        } else {
-          channel.setMessageHandler(null)
-        }
-      }
-      run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.FitatuBarcodeScannerHostApi.onMovedToBackground", codec)
-        if (api != null) {
-          channel.setMessageHandler { _, reply ->
-            var wrapped: List<Any?>
-            try {
-              api.onMovedToBackground()
               wrapped = listOf<Any?>(null)
             } catch (exception: Throwable) {
               wrapped = wrapError(exception)
@@ -301,8 +265,8 @@ class FitatuBarcodeScannerFlutterApi(private val binaryMessenger: BinaryMessenge
       FitatuBarcodeScannerFlutterApiCodec
     }
   }
-  fun ready(textureIdArg: Long, callback: () -> Unit) {
-    val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.FitatuBarcodeScannerFlutterApi.ready", codec)
+  fun onTextureChanged(textureIdArg: Long?, callback: () -> Unit) {
+    val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.FitatuBarcodeScannerFlutterApi.onTextureChanged", codec)
     channel.send(listOf(textureIdArg)) {
       callback()
     }

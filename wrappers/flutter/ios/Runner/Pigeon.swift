@@ -167,8 +167,6 @@ class FitatuBarcodeScannerHostApiCodec: FlutterStandardMessageCodec {
 protocol FitatuBarcodeScannerHostApi {
   func init(options: ScannerOptions) throws
   func setTorchEnabled(isEnabled: Bool) throws
-  func onMovedToForeground() throws
-  func onMovedToBackground() throws
   func release() throws
 }
 
@@ -207,32 +205,6 @@ class FitatuBarcodeScannerHostApiSetup {
       }
     } else {
       setTorchEnabledChannel.setMessageHandler(nil)
-    }
-    let onMovedToForegroundChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.FitatuBarcodeScannerHostApi.onMovedToForeground", binaryMessenger: binaryMessenger, codec: codec)
-    if let api = api {
-      onMovedToForegroundChannel.setMessageHandler { _, reply in
-        do {
-          try api.onMovedToForeground()
-          reply(wrapResult(nil))
-        } catch {
-          reply(wrapError(error))
-        }
-      }
-    } else {
-      onMovedToForegroundChannel.setMessageHandler(nil)
-    }
-    let onMovedToBackgroundChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.FitatuBarcodeScannerHostApi.onMovedToBackground", binaryMessenger: binaryMessenger, codec: codec)
-    if let api = api {
-      onMovedToBackgroundChannel.setMessageHandler { _, reply in
-        do {
-          try api.onMovedToBackground()
-          reply(wrapResult(nil))
-        } catch {
-          reply(wrapError(error))
-        }
-      }
-    } else {
-      onMovedToBackgroundChannel.setMessageHandler(nil)
     }
     let releaseChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.FitatuBarcodeScannerHostApi.release", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
@@ -299,8 +271,8 @@ class FitatuBarcodeScannerFlutterApi {
   var codec: FlutterStandardMessageCodec {
     return FitatuBarcodeScannerFlutterApiCodec.shared
   }
-  func ready(textureId textureIdArg: Int64, completion: @escaping () -> Void) {
-    let channel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.FitatuBarcodeScannerFlutterApi.ready", binaryMessenger: binaryMessenger, codec: codec)
+  func onTextureChanged(textureId textureIdArg: Int64?, completion: @escaping () -> Void) {
+    let channel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.FitatuBarcodeScannerFlutterApi.onTextureChanged", binaryMessenger: binaryMessenger, codec: codec)
     channel.sendMessage([textureIdArg] as [Any?]) { _ in
       completion()
     }

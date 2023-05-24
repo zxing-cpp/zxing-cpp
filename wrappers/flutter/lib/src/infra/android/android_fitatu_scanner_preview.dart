@@ -11,13 +11,11 @@ class AndroidFitatuScannerPreview extends StatefulWidget {
     super.key,
     required this.onSuccess,
     required this.options,
-    this.overlayBuilder,
     this.onChanged,
   });
 
   final ScannerOptions options;
   final ValueChanged<String> onSuccess;
-  final ValueWidgetBuilder<CameraImage>? overlayBuilder;
   final VoidCallback? onChanged;
 
   @override
@@ -26,8 +24,7 @@ class AndroidFitatuScannerPreview extends StatefulWidget {
 }
 
 class AndroidFitatuScannerPreviewState
-    extends State<AndroidFitatuScannerPreview>
-    with ScannerPreviewMixin, WidgetsBindingObserver {
+    extends State<AndroidFitatuScannerPreview> with ScannerPreviewMixin {
   late FitatuBarcodeScanner _scanner;
 
   void setStateIfMounted() {
@@ -37,18 +34,8 @@ class AndroidFitatuScannerPreviewState
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused) {
-      _scanner.onMovedToBackground();
-    } else if (state == AppLifecycleState.resumed) {
-      _scanner.onMovedToForeground();
-    }
-  }
-
-  @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
     _scanner = FitatuBarcodeScanner(onSuccess: widget.onSuccess)
       ..addListener(_scannerListener);
     _scanner.init(widget.options);
@@ -61,7 +48,6 @@ class AndroidFitatuScannerPreviewState
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
     _scanner
       ..removeListener(_scannerListener)
       ..dispose();
@@ -79,29 +65,6 @@ class AndroidFitatuScannerPreviewState
             key: ValueKey(textureId),
             textureId: textureId,
           ),
-          Builder(
-            key: ValueKey(_scanner.cameraImage),
-            builder: (context) {
-              final cameraImage = _scanner.cameraImage;
-              if (cameraImage == null || widget.overlayBuilder == null) {
-                return const SizedBox.shrink();
-              }
-
-              return widget.overlayBuilder!(
-                context,
-                cameraImage,
-                CustomPaint(
-                  painter: CropRectPainter(
-                    cameraImage,
-                    Paint()
-                      ..color = Colors.green
-                      ..style = PaintingStyle.stroke
-                      ..strokeWidth = 8,
-                  ),
-                ),
-              );
-            },
-          )
         ],
       );
     }
