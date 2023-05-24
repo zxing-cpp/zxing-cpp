@@ -1,12 +1,9 @@
 package com.fitatu.barcodescanner.fitatu_barcode_scanner
 
-import androidx.core.app.ComponentActivity
 import androidx.lifecycle.LifecycleOwner
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
-import kotlinx.coroutines.CoroutineScope
-import kotlin.concurrent.fixedRateTimer
 
 /** FitatuBarcodeScannerPlugin */
 class FitatuBarcodeScannerPlugin : FlutterPlugin, ActivityAware {

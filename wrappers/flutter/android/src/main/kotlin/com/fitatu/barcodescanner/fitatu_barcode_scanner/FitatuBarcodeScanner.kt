@@ -15,15 +15,19 @@ import androidx.camera.core.TorchState
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.lifecycleScope
 import com.zxingcpp.BarcodeReader
 import io.flutter.view.TextureRegistry
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.util.concurrent.Executors
 
@@ -44,6 +48,7 @@ class FitatuBarcodeScanner(
     private var options: ScannerOptions? = null
 
     private lateinit var surfaceTexture: SurfaceTexture
+    private var scanResultJob: Job? = null
 
     override fun init(options: ScannerOptions) {
         this.options = options
@@ -77,7 +82,7 @@ class FitatuBarcodeScanner(
         camera?.cameraControl?.enableTorch(isEnabled)
     }
 
-    @OptIn(FlowPreview::class)
+    @OptIn(FlowPreview::class, DelicateCoroutinesApi::class)
     private fun configureCamera(
         options: ScannerOptions,
         processCameraProvider: ProcessCameraProvider
@@ -85,8 +90,8 @@ class FitatuBarcodeScanner(
         processCameraProvider.runCatching {
             // Barcode reading
             val codeFlow = MutableStateFlow<ScanResult?>(null)
-            val lifecycleScope = lifecycleOwner.lifecycleScope
-            lifecycleScope.launch(Dispatchers.Default) {
+            scanResultJob?.cancel()
+            scanResultJob = GlobalScope.launch(Dispatchers.Default) {
                 codeFlow
                     .debounce {
                         if (it?.code == null) return@debounce options.scanDelay
@@ -95,7 +100,8 @@ class FitatuBarcodeScanner(
                     .filter { it != null }
                     .map { it!! }
                     .collect {
-                        lifecycleScope.launch(Dispatchers.Main) {
+                        if (!isActive) return@collect
+                        launch(Dispatchers.Main) {
                             flutterApi.result(it) {}
                         }
                     }
@@ -215,6 +221,7 @@ class FitatuBarcodeScanner(
     }
 
     override fun release() {
+        scanResultJob?.cancel()
         cameraProvider?.unbindAll()
     }
 }
