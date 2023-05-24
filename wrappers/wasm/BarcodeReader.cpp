@@ -71,7 +71,7 @@ ReadResult readBarcodeFromImage(int bufferPtr, int bufferLength, bool tryHarder,
 {
 	using namespace ZXing;
 	auto results = readBarcodesFromImage(bufferPtr, bufferLength, tryHarder, format, 1);
-	return results.front();
+	return results.empty() ? ReadResult() : results.front();
 }
 
 std::vector<ReadResult> readBarcodesFromPixmap(int bufferPtr, int imgWidth, int imgHeight, bool tryHarder, std::string format,
@@ -86,7 +86,7 @@ ReadResult readBarcodeFromPixmap(int bufferPtr, int imgWidth, int imgHeight, boo
 {
 	using namespace ZXing;
 	auto results = readBarcodesFromPixmap(bufferPtr, imgWidth, imgHeight, tryHarder, format, 1);
-	return results.front();
+	return results.empty() ? ReadResult() : results.front();
 }
 
 EMSCRIPTEN_BINDINGS(BarcodeReader)
