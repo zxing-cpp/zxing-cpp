@@ -69,6 +69,31 @@ data class CameraConfig (
 }
 
 /** Generated class from Pigeon that represents data sent in messages. */
+data class ScanResult (
+  val code: String? = null,
+  val cameraImage: CameraImage,
+  val error: String? = null
+
+) {
+  companion object {
+    @Suppress("UNCHECKED_CAST")
+    fun fromList(list: List<Any?>): ScanResult {
+      val code = list[0] as String?
+      val cameraImage = CameraImage.fromList(list[1] as List<Any?>)
+      val error = list[2] as String?
+      return ScanResult(code, cameraImage, error)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf<Any?>(
+      code,
+      cameraImage.toList(),
+      error,
+    )
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
 data class CameraImage (
   val cropRect: CropRect,
   val width: Long,
@@ -130,7 +155,9 @@ data class ScannerOptions (
   val tryRotate: Boolean,
   val tryInvert: Boolean,
   val qrCode: Boolean,
-  val cropPercent: Double
+  val cropPercent: Double,
+  val scanDelay: Long,
+  val scanDelaySuccess: Long
 
 ) {
   companion object {
@@ -141,7 +168,9 @@ data class ScannerOptions (
       val tryInvert = list[2] as Boolean
       val qrCode = list[3] as Boolean
       val cropPercent = list[4] as Double
-      return ScannerOptions(tryHarder, tryRotate, tryInvert, qrCode, cropPercent)
+      val scanDelay = list[5].let { if (it is Int) it.toLong() else it as Long }
+      val scanDelaySuccess = list[6].let { if (it is Int) it.toLong() else it as Long }
+      return ScannerOptions(tryHarder, tryRotate, tryInvert, qrCode, cropPercent, scanDelay, scanDelaySuccess)
     }
   }
   fun toList(): List<Any?> {
@@ -151,6 +180,8 @@ data class ScannerOptions (
       tryInvert,
       qrCode,
       cropPercent,
+      scanDelay,
+      scanDelaySuccess,
     )
   }
 }
@@ -268,6 +299,11 @@ private object FitatuBarcodeScannerFlutterApiCodec : StandardMessageCodec() {
           CropRect.fromList(it)
         }
       }
+      131.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          ScanResult.fromList(it)
+        }
+      }
       else -> super.readValueOfType(type, buffer)
     }
   }
@@ -283,6 +319,10 @@ private object FitatuBarcodeScannerFlutterApiCodec : StandardMessageCodec() {
       }
       is CropRect -> {
         stream.write(130)
+        writeValue(stream, value.toList())
+      }
+      is ScanResult -> {
+        stream.write(131)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -305,9 +345,9 @@ class FitatuBarcodeScannerFlutterApi(private val binaryMessenger: BinaryMessenge
       callback()
     }
   }
-  fun result(codeArg: String?, cameraImageArg: CameraImage, errorArg: String?, callback: () -> Unit) {
+  fun result(scanResultArg: ScanResult, callback: () -> Unit) {
     val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.FitatuBarcodeScannerFlutterApi.result", codec)
-    channel.send(listOf(codeArg, cameraImageArg, errorArg)) {
+    channel.send(listOf(scanResultArg)) {
       callback()
     }
   }

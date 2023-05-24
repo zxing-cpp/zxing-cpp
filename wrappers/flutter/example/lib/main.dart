@@ -5,10 +5,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:fitatu_barcode_scanner/fitatu_barcode_scanner.dart';
+import 'package:flutter/services.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  // SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   runApp(const MyApp());
 }
 
@@ -40,13 +41,19 @@ class _MyAppState extends State<MyApp> {
       tryInvert: tryInvert,
       qrCode: qrCode,
       cropPercent: 0.8,
+      scanDelay: 50,
+      scanDelaySuccess: 300,
     );
+    var lastOnSuccess = DateTime.now().millisecond;
     final preview = Material(
       child: FitatuBarcodeScannerPreview(
         key: _previewKey,
         options: options,
         alwaysUseCommon: alwaysUseCommon,
         onSuccess: (value) {
+          final now = DateTime.now().millisecond;
+          final delta = now - lastOnSuccess;
+          print('Code: $value, Delta: $delta');
           setState(() {
             code = value;
           });

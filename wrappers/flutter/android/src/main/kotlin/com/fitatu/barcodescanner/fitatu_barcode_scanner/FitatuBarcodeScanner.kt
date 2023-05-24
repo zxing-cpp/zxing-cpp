@@ -6,7 +6,6 @@ import android.graphics.SurfaceTexture
 import android.util.Size
 import android.view.Surface
 import android.view.Surface.ROTATION_0
-import android.view.SurfaceHolder
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
@@ -15,12 +14,17 @@ import androidx.camera.core.SurfaceRequest
 import androidx.camera.core.TorchState
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.OnLifecycleEvent
+import androidx.lifecycle.lifecycleScope
 import com.zxingcpp.BarcodeReader
 import io.flutter.view.TextureRegistry
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import java.util.concurrent.Executors
 
 
@@ -30,20 +34,16 @@ class FitatuBarcodeScanner(
     private val textureRegistry: TextureRegistry,
     private val flutterApi: FitatuBarcodeScannerFlutterApi,
 ) :
-    FitatuBarcodeScannerHostApi, LifecycleObserver {
+    FitatuBarcodeScannerHostApi {
 
-    init {
-        lifecycleOwner.lifecycle.addObserver(this)
-    }
-
-    private val imageAnalysisExecutor by lazy { Executors.newSingleThreadExecutor() }
-    private val mainThreadExecutor by lazy { ContextCompat.getMainExecutor(context) }
     private val barcodeReader by lazy { BarcodeReader() }
     private val targetResolution by lazy { Size(1280, 720) }
 
     private var camera: Camera? = null
     private var cameraProvider: ProcessCameraProvider? = null
     private var options: ScannerOptions? = null
+
+    private lateinit var surfaceTexture: SurfaceTexture
 
     override fun init(options: ScannerOptions) {
         this.options = options
@@ -68,7 +68,7 @@ class FitatuBarcodeScanner(
                         }
                     }
                 },
-                mainThreadExecutor
+                ContextCompat.getMainExecutor(context)
             )
         }
     }
@@ -77,16 +77,34 @@ class FitatuBarcodeScanner(
         camera?.cameraControl?.enableTorch(isEnabled)
     }
 
+    @OptIn(FlowPreview::class)
     private fun configureCamera(
         options: ScannerOptions,
         processCameraProvider: ProcessCameraProvider
     ) =
         processCameraProvider.runCatching {
             // Barcode reading
+            val codeFlow = MutableStateFlow<ScanResult?>(null)
+            val lifecycleScope = lifecycleOwner.lifecycleScope
+            lifecycleScope.launch(Dispatchers.Default) {
+                codeFlow
+                    .debounce {
+                        if (it?.code == null) return@debounce options.scanDelay
+                        return@debounce options.scanDelaySuccess
+                    }
+                    .filter { it != null }
+                    .map { it!! }
+                    .collect {
+                        lifecycleScope.launch(Dispatchers.Main) {
+                            flutterApi.result(it) {}
+                        }
+                    }
+            }
+
             val imageAnalysis = ImageAnalysis.Builder()
-                .setTargetResolution(targetResolution)
+                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build().apply {
-                    setAnalyzer(imageAnalysisExecutor) { image ->
+                    setAnalyzer(Executors.newSingleThreadExecutor()) { image ->
                         val cropSize = image.height.times(options.cropPercent).toInt()
 
                         val cropRect = Rect(
@@ -112,14 +130,19 @@ class FitatuBarcodeScanner(
                         try {
                             val result = barcodeReader.read(image)
                             val code = result?.text?.trim()?.takeIf { it.isNotBlank() }
-                            mainThreadExecutor.execute {
-                                flutterApi.result(code, cameraImage, null) {}
-                            }
+                            codeFlow.value = ScanResult(
+                                code,
+                                cameraImage,
+                                null
+                            )
                         } catch (e: Exception) {
-                            flutterApi.result(null, cameraImage, e.message) {}
-                        } finally {
-                            image.close()
+                            codeFlow.value = ScanResult(
+                                null,
+                                cameraImage,
+                                null
+                            )
                         }
+                        image.close()
                     }
                 }
 
@@ -151,7 +174,9 @@ class FitatuBarcodeScanner(
                     request.resolution.width,
                     request.resolution.height
                 )
-                val flutterSurface = Surface(surfaceTexture)
+                this@FitatuBarcodeScanner.surfaceTexture = surfaceTexture
+                val flutterSurface = Surface(this@FitatuBarcodeScanner.surfaceTexture)
+
                 request.provideSurface(
                     flutterSurface,
                     Executors.newSingleThreadExecutor()
@@ -190,19 +215,7 @@ class FitatuBarcodeScanner(
     }
 
     override fun release() {
-        options = null
-        imageAnalysisExecutor.shutdown()
         cameraProvider?.unbindAll()
-    }
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
-    fun onResume() {
-        options?.let(::init)
-    }
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-    fun onDestroy() {
-        release()
     }
 }
 

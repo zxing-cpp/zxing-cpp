@@ -11,20 +11,13 @@ import '../scanner_preview_mixin.dart';
 import 'android/camera_permissions_guard.dart';
 
 class FitatuBarcodeScannerPreview extends StatefulWidget {
-  FitatuBarcodeScannerPreview({
+  const FitatuBarcodeScannerPreview({
     super.key,
     required this.onSuccess,
-    ScannerOptions? options,
+    required this.options,
     this.alwaysUseCommon = false,
     this.onChanged,
-  }) : options = options ??
-            ScannerOptions(
-              tryHarder: false,
-              tryRotate: true,
-              tryInvert: true,
-              qrCode: false,
-              cropPercent: 0.8,
-            );
+  });
 
   final ScannerOptions options;
   final ValueChanged<String> onSuccess;

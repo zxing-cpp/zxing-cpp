@@ -61,6 +61,32 @@ struct CameraConfig {
 }
 
 /// Generated class from Pigeon that represents data sent in messages.
+struct ScanResult {
+  var code: String? = nil
+  var cameraImage: CameraImage
+  var error: String? = nil
+
+  static func fromList(_ list: [Any?]) -> ScanResult? {
+    let code: String? = nilOrValue(list[0])
+    let cameraImage = CameraImage.fromList(list[1] as! [Any?])!
+    let error: String? = nilOrValue(list[2])
+
+    return ScanResult(
+      code: code,
+      cameraImage: cameraImage,
+      error: error
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      code,
+      cameraImage.toList(),
+      error,
+    ]
+  }
+}
+
+/// Generated class from Pigeon that represents data sent in messages.
 struct CameraImage {
   var cropRect: CropRect
   var width: Int64
@@ -127,6 +153,8 @@ struct ScannerOptions {
   var tryInvert: Bool
   var qrCode: Bool
   var cropPercent: Double
+  var scanDelay: Int64
+  var scanDelaySuccess: Int64
 
   static func fromList(_ list: [Any?]) -> ScannerOptions? {
     let tryHarder = list[0] as! Bool
@@ -134,13 +162,17 @@ struct ScannerOptions {
     let tryInvert = list[2] as! Bool
     let qrCode = list[3] as! Bool
     let cropPercent = list[4] as! Double
+    let scanDelay = list[5] is Int64 ? list[5] as! Int64 : Int64(list[5] as! Int32)
+    let scanDelaySuccess = list[6] is Int64 ? list[6] as! Int64 : Int64(list[6] as! Int32)
 
     return ScannerOptions(
       tryHarder: tryHarder,
       tryRotate: tryRotate,
       tryInvert: tryInvert,
       qrCode: qrCode,
-      cropPercent: cropPercent
+      cropPercent: cropPercent,
+      scanDelay: scanDelay,
+      scanDelaySuccess: scanDelaySuccess
     )
   }
   func toList() -> [Any?] {
@@ -150,6 +182,8 @@ struct ScannerOptions {
       tryInvert,
       qrCode,
       cropPercent,
+      scanDelay,
+      scanDelaySuccess,
     ]
   }
 }
@@ -256,6 +290,8 @@ private class FitatuBarcodeScannerFlutterApiCodecReader: FlutterStandardReader {
         return CameraImage.fromList(self.readValue() as! [Any?])
       case 130:
         return CropRect.fromList(self.readValue() as! [Any?])
+      case 131:
+        return ScanResult.fromList(self.readValue() as! [Any?])
       default:
         return super.readValue(ofType: type)
     }
@@ -272,6 +308,9 @@ private class FitatuBarcodeScannerFlutterApiCodecWriter: FlutterStandardWriter {
       super.writeValue(value.toList())
     } else if let value = value as? CropRect {
       super.writeByte(130)
+      super.writeValue(value.toList())
+    } else if let value = value as? ScanResult {
+      super.writeByte(131)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -308,9 +347,9 @@ class FitatuBarcodeScannerFlutterApi {
       completion()
     }
   }
-  func result(code codeArg: String?, cameraImage cameraImageArg: CameraImage, error errorArg: String?, completion: @escaping () -> Void) {
+  func result(scanResult scanResultArg: ScanResult, completion: @escaping () -> Void) {
     let channel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.FitatuBarcodeScannerFlutterApi.result", binaryMessenger: binaryMessenger, codec: codec)
-    channel.sendMessage([codeArg, cameraImageArg, errorArg] as [Any?]) { _ in
+    channel.sendMessage([scanResultArg] as [Any?]) { _ in
       completion()
     }
   }

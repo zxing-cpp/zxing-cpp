@@ -39,6 +39,37 @@ class CameraConfig {
   }
 }
 
+class ScanResult {
+  ScanResult({
+    this.code,
+    required this.cameraImage,
+    this.error,
+  });
+
+  String? code;
+
+  CameraImage cameraImage;
+
+  String? error;
+
+  Object encode() {
+    return <Object?>[
+      code,
+      cameraImage.encode(),
+      error,
+    ];
+  }
+
+  static ScanResult decode(Object result) {
+    result as List<Object?>;
+    return ScanResult(
+      code: result[0] as String?,
+      cameraImage: CameraImage.decode(result[1]! as List<Object?>),
+      error: result[2] as String?,
+    );
+  }
+}
+
 class CameraImage {
   CameraImage({
     required this.cropRect,
@@ -118,6 +149,8 @@ class ScannerOptions {
     required this.tryInvert,
     required this.qrCode,
     required this.cropPercent,
+    required this.scanDelay,
+    required this.scanDelaySuccess,
   });
 
   bool tryHarder;
@@ -130,6 +163,10 @@ class ScannerOptions {
 
   double cropPercent;
 
+  int scanDelay;
+
+  int scanDelaySuccess;
+
   Object encode() {
     return <Object?>[
       tryHarder,
@@ -137,6 +174,8 @@ class ScannerOptions {
       tryInvert,
       qrCode,
       cropPercent,
+      scanDelay,
+      scanDelaySuccess,
     ];
   }
 
@@ -148,6 +187,8 @@ class ScannerOptions {
       tryInvert: result[2]! as bool,
       qrCode: result[3]! as bool,
       cropPercent: result[4]! as double,
+      scanDelay: result[5]! as int,
+      scanDelaySuccess: result[6]! as int,
     );
   }
 }
@@ -265,6 +306,9 @@ class _FitatuBarcodeScannerFlutterApiCodec extends StandardMessageCodec {
     } else if (value is CropRect) {
       buffer.putUint8(130);
       writeValue(buffer, value.encode());
+    } else if (value is ScanResult) {
+      buffer.putUint8(131);
+      writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
     }
@@ -279,6 +323,8 @@ class _FitatuBarcodeScannerFlutterApiCodec extends StandardMessageCodec {
         return CameraImage.decode(readValue(buffer)!);
       case 130: 
         return CropRect.decode(readValue(buffer)!);
+      case 131: 
+        return ScanResult.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -290,7 +336,7 @@ abstract class FitatuBarcodeScannerFlutterApi {
 
   void onTextureChanged(CameraConfig? cameraConfig);
 
-  void result(String? code, CameraImage cameraImage, String? error);
+  void result(ScanResult scanResult);
 
   void onTorchStateChanged(bool isEnabled);
 
@@ -323,12 +369,10 @@ abstract class FitatuBarcodeScannerFlutterApi {
           assert(message != null,
           'Argument for dev.flutter.pigeon.FitatuBarcodeScannerFlutterApi.result was null.');
           final List<Object?> args = (message as List<Object?>?)!;
-          final String? arg_code = (args[0] as String?);
-          final CameraImage? arg_cameraImage = (args[1] as CameraImage?);
-          assert(arg_cameraImage != null,
-              'Argument for dev.flutter.pigeon.FitatuBarcodeScannerFlutterApi.result was null, expected non-null CameraImage.');
-          final String? arg_error = (args[2] as String?);
-          api.result(arg_code, arg_cameraImage!, arg_error);
+          final ScanResult? arg_scanResult = (args[0] as ScanResult?);
+          assert(arg_scanResult != null,
+              'Argument for dev.flutter.pigeon.FitatuBarcodeScannerFlutterApi.result was null, expected non-null ScanResult.');
+          api.result(arg_scanResult!);
           return;
         });
       }

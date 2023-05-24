@@ -4,20 +4,20 @@ import 'package:flutter/foundation.dart';
 class FitatuBarcodeScanner extends ChangeNotifier
     implements FitatuBarcodeScannerHostApi, FitatuBarcodeScannerFlutterApi {
   FitatuBarcodeScanner({
-    required this.onSuccess,
+    required this.onResult,
   }) {
     FitatuBarcodeScannerFlutterApi.setup(this);
   }
 
   final _api = FitatuBarcodeScannerHostApi();
 
-  final ValueChanged<String> onSuccess;
+  final ValueChanged<ScanResult> onResult;
   var _isTorchEnabled = false;
   bool get isTorchEnabled => _isTorchEnabled;
   CameraConfig? _cameraConfig;
   CameraConfig? get cameraConfig => _cameraConfig;
-  CameraImage? _cameraImage;
-  CameraImage? get cameraImage => _cameraImage;
+  ScanResult? _scanResult;
+  ScanResult? get scanResult => _scanResult;
 
   var _isDisposed = false;
 
@@ -47,12 +47,10 @@ class FitatuBarcodeScanner extends ChangeNotifier
   }
 
   @override
-  void result(String? code, CameraImage cameraImage, String? error) {
-    _cameraImage = cameraImage;
+  void result(ScanResult scanResult) {
+    _scanResult = scanResult;
+    onResult(scanResult);
     notifyListeners();
-    if (code != null) {
-      onSuccess(code);
-    }
   }
 
   @override

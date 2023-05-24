@@ -10,7 +10,7 @@ abstract class FitatuBarcodeScannerHostApi {
 @FlutterApi()
 abstract class FitatuBarcodeScannerFlutterApi {
   void onTextureChanged(CameraConfig? cameraConfig);
-  void result(String? code, CameraImage cameraImage, String? error);
+  void result(ScanResult scanResult);
   void onTorchStateChanged(bool isEnabled);
 }
 
@@ -20,6 +20,14 @@ class CameraConfig {
   final int previewHeight;
 
   CameraConfig(this.textureId, this.previewWidth, this.previewHeight);
+}
+
+class ScanResult {
+  final String? code;
+  final CameraImage cameraImage;
+  final String? error;
+
+  ScanResult(this.code, this.cameraImage, this.error);
 }
 
 class CameraImage {
@@ -56,6 +64,8 @@ class ScannerOptions {
   final bool tryInvert;
   final bool qrCode;
   final double cropPercent;
+  final int scanDelay;
+  final int scanDelaySuccess;
 
   const ScannerOptions({
     required this.tryHarder,
@@ -63,5 +73,7 @@ class ScannerOptions {
     required this.tryInvert,
     required this.qrCode,
     required this.cropPercent,
+    required this.scanDelay,
+    required this.scanDelaySuccess,
   });
 }

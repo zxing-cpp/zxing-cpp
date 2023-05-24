@@ -39,34 +39,31 @@ class CommonFitatuScannerPreviewState extends State<CommonFitatuScannerPreview>
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        ReaderWidget(
-          onControllerCreated: (controller) {
-            this.controller?.removeListener(_controllerListener);
-            this.controller = controller?..addListener(_controllerListener);
-          },
-          tryHarder: widget.options.tryHarder,
-          tryRotate: widget.options.tryRotate,
-          tryInverted: widget.options.tryInvert,
-          showGallery: false,
-          showToggleCamera: false,
-          scanDelay: const Duration(milliseconds: 50),
-          scanDelaySuccess: const Duration(milliseconds: 300),
-          showScannerOverlay: false,
-          cropPercent: widget.options.cropPercent,
-          resolution: ResolutionPreset.max,
-          allowPinchZoom: false,
-          showFlashlight: false,
-          onScan: (result) {
-            final code = result.text;
-            if (code != null) {
-              widget.onSuccess(code);
-            }
-          },
-        ),
-      ],
+    return ReaderWidget(
+      onControllerCreated: (controller) {
+        this.controller?.removeListener(_controllerListener);
+        this.controller = controller?..addListener(_controllerListener);
+      },
+      tryHarder: widget.options.tryHarder,
+      tryRotate: widget.options.tryRotate,
+      tryInverted: widget.options.tryInvert,
+      showGallery: false,
+      showToggleCamera: false,
+      scanDelay: Duration(milliseconds: widget.options.scanDelay),
+      scanDelaySuccess: Duration(
+        milliseconds: widget.options.scanDelaySuccess,
+      ),
+      showScannerOverlay: false,
+      cropPercent: widget.options.cropPercent,
+      resolution: ResolutionPreset.max,
+      allowPinchZoom: false,
+      showFlashlight: false,
+      onScan: (result) {
+        final code = result.text;
+        if (code != null) {
+          widget.onSuccess(code);
+        }
+      },
     );
   }
 

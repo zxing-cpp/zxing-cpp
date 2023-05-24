@@ -36,8 +36,13 @@ class AndroidFitatuScannerPreviewState
   @override
   void initState() {
     super.initState();
-    _scanner = FitatuBarcodeScanner(onSuccess: widget.onSuccess)
-      ..addListener(_scannerListener);
+    _scanner = FitatuBarcodeScanner(
+      onResult: (result) {
+        if (result.code != null) {
+          widget.onSuccess(result.code!);
+        }
+      },
+    )..addListener(_scannerListener);
     _scanner.init(widget.options);
   }
 
@@ -58,16 +63,20 @@ class AndroidFitatuScannerPreviewState
   Widget build(BuildContext context) {
     final cameraConfig = _scanner.cameraConfig;
     if (cameraConfig != null) {
-      return FittedBox(
-        fit: BoxFit.cover,
-        child: SizedBox.fromSize(
-          size: Size(
-            cameraConfig.previewHeight.toDouble(),
-            cameraConfig.previewWidth.toDouble(),
-          ),
-          child: Texture(
-            key: ValueKey(cameraConfig),
-            textureId: cameraConfig.textureId,
+      return ClipRect(
+        child: FittedBox(
+          fit: BoxFit.cover,
+          child: SizedBox.fromSize(
+            size: Size(
+              min(cameraConfig.previewHeight, cameraConfig.previewWidth)
+                  .toDouble(),
+              max(cameraConfig.previewHeight, cameraConfig.previewWidth)
+                  .toDouble(),
+            ),
+            child: Texture(
+              key: ValueKey(cameraConfig),
+              textureId: cameraConfig.textureId,
+            ),
           ),
         ),
       );
