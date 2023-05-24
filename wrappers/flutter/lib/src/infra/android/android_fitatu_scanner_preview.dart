@@ -58,14 +58,17 @@ class AndroidFitatuScannerPreviewState
   Widget build(BuildContext context) {
     final cameraConfig = _scanner.cameraConfig;
     if (cameraConfig != null) {
-      final cameraAspectRatio =
-          cameraConfig.previewHeight / cameraConfig.previewWidth;
-
-      return AspectRatio(
-        aspectRatio: cameraConfig.previewWidth / cameraConfig.previewHeight,
-        child: Texture(
-          key: ValueKey(cameraConfig),
-          textureId: cameraConfig.textureId,
+      return FittedBox(
+        fit: BoxFit.cover,
+        child: SizedBox.fromSize(
+          size: Size(
+            cameraConfig.previewHeight.toDouble(),
+            cameraConfig.previewWidth.toDouble(),
+          ),
+          child: Texture(
+            key: ValueKey(cameraConfig),
+            textureId: cameraConfig.textureId,
+          ),
         ),
       );
     }
