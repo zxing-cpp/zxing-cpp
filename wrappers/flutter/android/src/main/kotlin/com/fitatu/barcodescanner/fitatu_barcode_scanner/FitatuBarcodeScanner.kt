@@ -2,12 +2,14 @@ package com.fitatu.barcodescanner.fitatu_barcode_scanner
 
 import android.content.Context
 import android.graphics.Rect
+import android.graphics.SurfaceTexture
 import android.util.Size
 import android.view.Surface
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
+import androidx.camera.core.SurfaceRequest
 import androidx.camera.core.TorchState
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
@@ -18,6 +20,7 @@ import androidx.lifecycle.OnLifecycleEvent
 import com.zxingcpp.BarcodeReader
 import io.flutter.view.TextureRegistry
 import java.util.concurrent.Executors
+
 
 class FitatuBarcodeScanner(
     private val lifecycleOwner: LifecycleOwner,
@@ -122,18 +125,6 @@ class FitatuBarcodeScanner(
             val preview = Preview.Builder()
                 .setTargetResolution(targetResolution)
                 .build()
-                .apply {
-                    setSurfaceProvider(mainThreadExecutor) { request ->
-                        val (textureId, surface) = constructSurface()
-                        request.provideSurface(
-                            surface,
-                            mainThreadExecutor
-                        ) {
-                            flutterApi.onTextureChanged(null) {}
-                        }
-                        flutterApi.onTextureChanged(textureId) {}
-                    }
-                }
 
             val cameraSelector = CameraSelector.Builder()
                 .requireLensFacing(CameraSelector.LENS_FACING_BACK)
@@ -150,6 +141,33 @@ class FitatuBarcodeScanner(
                     flutterApi.onTorchStateChanged(it == TorchState.ON) {}
                 }
             }
+
+            preview.setSurfaceProvider { request ->
+                val (textureId, surfaceTexture) = constructSurfaceTexture()
+                surfaceTexture.setDefaultBufferSize(
+                    request.resolution.width,
+                    request.resolution.height
+                )
+                val flutterSurface = Surface(surfaceTexture)
+                request.provideSurface(
+                    flutterSurface,
+                    Executors.newSingleThreadExecutor()
+                ) {
+                    flutterSurface.release()
+                    when (it.resultCode) {
+                        SurfaceRequest.Result.RESULT_REQUEST_CANCELLED,
+                        SurfaceRequest.Result.RESULT_WILL_NOT_PROVIDE_SURFACE,
+                        SurfaceRequest.Result.RESULT_SURFACE_ALREADY_PROVIDED,
+                        SurfaceRequest.Result.RESULT_SURFACE_USED_SUCCESSFULLY -> {
+                        }
+
+                        else -> {
+                            flutterApi.onTextureChanged(null) {}
+                        }
+                    }
+                }
+                flutterApi.onTextureChanged(textureId) {}
+            }
         }
 
     /**
@@ -157,13 +175,9 @@ class FitatuBarcodeScanner(
      *
      * @return Pair of surface id and [Surface]
      */
-    private fun constructSurface(): Pair<Long, Surface> {
+    private fun constructSurfaceTexture(): Pair<Long, SurfaceTexture> {
         val entry = textureRegistry.createSurfaceTexture()
         return entry.id() to entry.surfaceTexture()
-            .apply {
-                setDefaultBufferSize(targetResolution.width, targetResolution.height)
-            }
-            .let(::Surface)
     }
 
     override fun release() {
@@ -171,7 +185,7 @@ class FitatuBarcodeScanner(
         imageAnalysisExecutor.shutdown()
         cameraProvider?.unbindAll()
     }
-    
+
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
     fun onResume() {
         options?.let(::init)
