@@ -44,6 +44,31 @@ class FlutterError (
 ) : Throwable()
 
 /** Generated class from Pigeon that represents data sent in messages. */
+data class CameraConfig (
+  val textureId: Long,
+  val previewWidth: Long,
+  val previewHeight: Long
+
+) {
+  companion object {
+    @Suppress("UNCHECKED_CAST")
+    fun fromList(list: List<Any?>): CameraConfig {
+      val textureId = list[0].let { if (it is Int) it.toLong() else it as Long }
+      val previewWidth = list[1].let { if (it is Int) it.toLong() else it as Long }
+      val previewHeight = list[2].let { if (it is Int) it.toLong() else it as Long }
+      return CameraConfig(textureId, previewWidth, previewHeight)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf<Any?>(
+      textureId,
+      previewWidth,
+      previewHeight,
+    )
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
 data class CameraImage (
   val cropRect: CropRect,
   val width: Long,
@@ -230,10 +255,15 @@ private object FitatuBarcodeScannerFlutterApiCodec : StandardMessageCodec() {
     return when (type) {
       128.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          CameraImage.fromList(it)
+          CameraConfig.fromList(it)
         }
       }
       129.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          CameraImage.fromList(it)
+        }
+      }
+      130.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
           CropRect.fromList(it)
         }
@@ -243,12 +273,16 @@ private object FitatuBarcodeScannerFlutterApiCodec : StandardMessageCodec() {
   }
   override fun writeValue(stream: ByteArrayOutputStream, value: Any?)   {
     when (value) {
-      is CameraImage -> {
+      is CameraConfig -> {
         stream.write(128)
         writeValue(stream, value.toList())
       }
-      is CropRect -> {
+      is CameraImage -> {
         stream.write(129)
+        writeValue(stream, value.toList())
+      }
+      is CropRect -> {
+        stream.write(130)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -265,9 +299,9 @@ class FitatuBarcodeScannerFlutterApi(private val binaryMessenger: BinaryMessenge
       FitatuBarcodeScannerFlutterApiCodec
     }
   }
-  fun onTextureChanged(textureIdArg: Long?, callback: () -> Unit) {
+  fun onTextureChanged(cameraConfigArg: CameraConfig?, callback: () -> Unit) {
     val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.FitatuBarcodeScannerFlutterApi.onTextureChanged", codec)
-    channel.send(listOf(textureIdArg)) {
+    channel.send(listOf(cameraConfigArg)) {
       callback()
     }
   }

@@ -9,9 +9,17 @@ abstract class FitatuBarcodeScannerHostApi {
 
 @FlutterApi()
 abstract class FitatuBarcodeScannerFlutterApi {
-  void onTextureChanged(int? textureId);
+  void onTextureChanged(CameraConfig? cameraConfig);
   void result(String? code, CameraImage cameraImage, String? error);
   void onTorchStateChanged(bool isEnabled);
+}
+
+class CameraConfig {
+  final int textureId;
+  final int previewWidth;
+  final int previewHeight;
+
+  CameraConfig(this.textureId, this.previewWidth, this.previewHeight);
 }
 
 class CameraImage {

@@ -14,8 +14,8 @@ class FitatuBarcodeScanner extends ChangeNotifier
   final ValueChanged<String> onSuccess;
   var _isTorchEnabled = false;
   bool get isTorchEnabled => _isTorchEnabled;
-  int? _textureId;
-  int? get textureId => _textureId;
+  CameraConfig? _cameraConfig;
+  CameraConfig? get cameraConfig => _cameraConfig;
   CameraImage? _cameraImage;
   CameraImage? get cameraImage => _cameraImage;
 
@@ -30,7 +30,7 @@ class FitatuBarcodeScanner extends ChangeNotifier
 
   @override
   Future<void> release() async {
-    _textureId = null;
+    _cameraConfig = null;
     notifyListeners();
     await _api.release();
   }
@@ -41,8 +41,8 @@ class FitatuBarcodeScanner extends ChangeNotifier
   }
 
   @override
-  void onTextureChanged(int? textureId) {
-    _textureId = textureId;
+  void onTextureChanged(CameraConfig? cameraConfig) {
+    _cameraConfig = cameraConfig;
     notifyListeners();
   }
 

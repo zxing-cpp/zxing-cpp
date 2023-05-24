@@ -35,6 +35,32 @@ private func nilOrValue<T>(_ value: Any?) -> T? {
 }
 
 /// Generated class from Pigeon that represents data sent in messages.
+struct CameraConfig {
+  var textureId: Int64
+  var previewWidth: Int64
+  var previewHeight: Int64
+
+  static func fromList(_ list: [Any?]) -> CameraConfig? {
+    let textureId = list[0] is Int64 ? list[0] as! Int64 : Int64(list[0] as! Int32)
+    let previewWidth = list[1] is Int64 ? list[1] as! Int64 : Int64(list[1] as! Int32)
+    let previewHeight = list[2] is Int64 ? list[2] as! Int64 : Int64(list[2] as! Int32)
+
+    return CameraConfig(
+      textureId: textureId,
+      previewWidth: previewWidth,
+      previewHeight: previewHeight
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      textureId,
+      previewWidth,
+      previewHeight,
+    ]
+  }
+}
+
+/// Generated class from Pigeon that represents data sent in messages.
 struct CameraImage {
   var cropRect: CropRect
   var width: Int64
@@ -225,8 +251,10 @@ private class FitatuBarcodeScannerFlutterApiCodecReader: FlutterStandardReader {
   override func readValue(ofType type: UInt8) -> Any? {
     switch type {
       case 128:
-        return CameraImage.fromList(self.readValue() as! [Any?])
+        return CameraConfig.fromList(self.readValue() as! [Any?])
       case 129:
+        return CameraImage.fromList(self.readValue() as! [Any?])
+      case 130:
         return CropRect.fromList(self.readValue() as! [Any?])
       default:
         return super.readValue(ofType: type)
@@ -236,11 +264,14 @@ private class FitatuBarcodeScannerFlutterApiCodecReader: FlutterStandardReader {
 
 private class FitatuBarcodeScannerFlutterApiCodecWriter: FlutterStandardWriter {
   override func writeValue(_ value: Any) {
-    if let value = value as? CameraImage {
+    if let value = value as? CameraConfig {
       super.writeByte(128)
       super.writeValue(value.toList())
-    } else if let value = value as? CropRect {
+    } else if let value = value as? CameraImage {
       super.writeByte(129)
+      super.writeValue(value.toList())
+    } else if let value = value as? CropRect {
+      super.writeByte(130)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -271,9 +302,9 @@ class FitatuBarcodeScannerFlutterApi {
   var codec: FlutterStandardMessageCodec {
     return FitatuBarcodeScannerFlutterApiCodec.shared
   }
-  func onTextureChanged(textureId textureIdArg: Int64?, completion: @escaping () -> Void) {
+  func onTextureChanged(cameraConfig cameraConfigArg: CameraConfig?, completion: @escaping () -> Void) {
     let channel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.FitatuBarcodeScannerFlutterApi.onTextureChanged", binaryMessenger: binaryMessenger, codec: codec)
-    channel.sendMessage([textureIdArg] as [Any?]) { _ in
+    channel.sendMessage([cameraConfigArg] as [Any?]) { _ in
       completion()
     }
   }

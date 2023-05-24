@@ -8,6 +8,37 @@ import 'dart:typed_data' show Float64List, Int32List, Int64List, Uint8List;
 import 'package:flutter/foundation.dart' show ReadBuffer, WriteBuffer;
 import 'package:flutter/services.dart';
 
+class CameraConfig {
+  CameraConfig({
+    required this.textureId,
+    required this.previewWidth,
+    required this.previewHeight,
+  });
+
+  int textureId;
+
+  int previewWidth;
+
+  int previewHeight;
+
+  Object encode() {
+    return <Object?>[
+      textureId,
+      previewWidth,
+      previewHeight,
+    ];
+  }
+
+  static CameraConfig decode(Object result) {
+    result as List<Object?>;
+    return CameraConfig(
+      textureId: result[0]! as int,
+      previewWidth: result[1]! as int,
+      previewHeight: result[2]! as int,
+    );
+  }
+}
+
 class CameraImage {
   CameraImage({
     required this.cropRect,
@@ -225,11 +256,14 @@ class _FitatuBarcodeScannerFlutterApiCodec extends StandardMessageCodec {
   const _FitatuBarcodeScannerFlutterApiCodec();
   @override
   void writeValue(WriteBuffer buffer, Object? value) {
-    if (value is CameraImage) {
+    if (value is CameraConfig) {
       buffer.putUint8(128);
       writeValue(buffer, value.encode());
-    } else if (value is CropRect) {
+    } else if (value is CameraImage) {
       buffer.putUint8(129);
+      writeValue(buffer, value.encode());
+    } else if (value is CropRect) {
+      buffer.putUint8(130);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -240,8 +274,10 @@ class _FitatuBarcodeScannerFlutterApiCodec extends StandardMessageCodec {
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
       case 128: 
-        return CameraImage.decode(readValue(buffer)!);
+        return CameraConfig.decode(readValue(buffer)!);
       case 129: 
+        return CameraImage.decode(readValue(buffer)!);
+      case 130: 
         return CropRect.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -252,7 +288,7 @@ class _FitatuBarcodeScannerFlutterApiCodec extends StandardMessageCodec {
 abstract class FitatuBarcodeScannerFlutterApi {
   static const MessageCodec<Object?> codec = _FitatuBarcodeScannerFlutterApiCodec();
 
-  void onTextureChanged(int? textureId);
+  void onTextureChanged(CameraConfig? cameraConfig);
 
   void result(String? code, CameraImage cameraImage, String? error);
 
@@ -270,8 +306,8 @@ abstract class FitatuBarcodeScannerFlutterApi {
           assert(message != null,
           'Argument for dev.flutter.pigeon.FitatuBarcodeScannerFlutterApi.onTextureChanged was null.');
           final List<Object?> args = (message as List<Object?>?)!;
-          final int? arg_textureId = (args[0] as int?);
-          api.onTextureChanged(arg_textureId);
+          final CameraConfig? arg_cameraConfig = (args[0] as CameraConfig?);
+          api.onTextureChanged(arg_cameraConfig);
           return;
         });
       }

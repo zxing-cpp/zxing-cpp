@@ -50,22 +50,23 @@ class AndroidFitatuScannerPreviewState
   void dispose() {
     _scanner
       ..removeListener(_scannerListener)
-      ..dispose();
+      ..release();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final textureId = _scanner.textureId;
-    if (textureId != null) {
-      return Stack(
-        fit: StackFit.expand,
-        children: [
-          Texture(
-            key: ValueKey(textureId),
-            textureId: textureId,
-          ),
-        ],
+    final cameraConfig = _scanner.cameraConfig;
+    if (cameraConfig != null) {
+      final cameraAspectRatio =
+          cameraConfig.previewHeight / cameraConfig.previewWidth;
+
+      return AspectRatio(
+        aspectRatio: cameraConfig.previewWidth / cameraConfig.previewHeight,
+        child: Texture(
+          key: ValueKey(cameraConfig),
+          textureId: cameraConfig.textureId,
+        ),
       );
     }
     return const SizedBox.shrink();

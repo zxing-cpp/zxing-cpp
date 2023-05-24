@@ -5,6 +5,8 @@ import android.graphics.Rect
 import android.graphics.SurfaceTexture
 import android.util.Size
 import android.view.Surface
+import android.view.Surface.ROTATION_0
+import android.view.SurfaceHolder
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
@@ -124,6 +126,7 @@ class FitatuBarcodeScanner(
             // Surface
             val preview = Preview.Builder()
                 .setTargetResolution(targetResolution)
+                .setTargetRotation(ROTATION_0)
                 .build()
 
             val cameraSelector = CameraSelector.Builder()
@@ -166,7 +169,13 @@ class FitatuBarcodeScanner(
                         }
                     }
                 }
-                flutterApi.onTextureChanged(textureId) {}
+                flutterApi.onTextureChanged(
+                    CameraConfig(
+                        textureId,
+                        request.resolution.width.toLong(),
+                        request.resolution.height.toLong()
+                    )
+                ) {}
             }
         }
 
