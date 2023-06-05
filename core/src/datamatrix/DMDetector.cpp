@@ -572,10 +572,11 @@ public:
 	{
 		line.setDirectionInward(dEdge);
 		int gaps = 0;
+		PointF lastP;
 		do {
 			// detect an endless loop (lack of progress). if encountered, please report.
-			assert(line.points().empty() || p != line.points().back());
-			if (!line.points().empty() && p == line.points().back())
+			assert(p != lastP);
+			if (p == std::exchange(lastP, p))
 				return false;
 			log(p);
 
@@ -629,8 +630,14 @@ public:
 							return true;
 						}
 					}
-				} else if (gaps == 0 && line.points().size() >= static_cast<size_t>(2 * maxStepSize))
-					return false; // no point in following a line that has no gaps
+				} else if (gaps == 0) {
+					if (Size(line.points()) >= 2 * maxStepSize)
+						return false; // no point in following a line that has no gaps
+					// enable the above drift check for lines with no gaps (yet) if they are 'long enough'
+					// this fixes a deadlock in falsepositives-1/#570.png
+					if (Size(line.points()) >= std::max(5, maxStepSize / 2) && !line.evaluate(1.5))
+						return false;
+				}
 			}
 
 			if (finishLine.isValid())
