@@ -459,6 +459,8 @@ public:
 			if (dist > 1.9 * unitPixelDist)
 				modSizes.push_back(std::exchange(sumFront, 0.0));
 		}
+		if (modSizes.empty())
+			return 0;
 		modSizes.push_back(sumFront + distance(end, project(_points.back())));
 		modSizes.front() = 0; // the first element is an invalid sumBack value, would be pop_front() if vector supported this
 		auto lineLength = distance(beg, end) - unitPixelDist;
