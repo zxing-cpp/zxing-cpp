@@ -32,7 +32,7 @@ public:
 
 		res.clear();
 
-		for (const uint8_t* p = begin; p < end; p += stride) {
+		for (const uint8_t* p = begin; p != end; p += stride) {
 			bool val = *p <= _threshold;
 			if (val != lastVal) {
 				res.push_back(narrow_cast<PatternRow::value_type>((p - lastPos) / stride));
