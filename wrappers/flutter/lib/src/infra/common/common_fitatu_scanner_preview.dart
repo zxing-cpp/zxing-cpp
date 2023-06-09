@@ -1,7 +1,6 @@
-import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_zxing/flutter_zxing.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../../../pigeon.dart';
 import '../../scanner_preview_mixin.dart';
@@ -19,49 +18,21 @@ class CommonFitatuScannerPreview extends StatefulWidget {
   final VoidCallback? onChanged;
 
   @override
-  State<CommonFitatuScannerPreview> createState() =>
-      CommonFitatuScannerPreviewState();
+  State<CommonFitatuScannerPreview> createState() => CommonFitatuScannerPreviewState();
 }
 
-class CommonFitatuScannerPreviewState extends State<CommonFitatuScannerPreview>
-    with ScannerPreviewMixin {
-  CameraController? controller;
-
-  void _controllerListener() {
-    widget.onChanged?.call();
-  }
-
-  @override
-  void dispose() {
-    controller?.removeListener(_controllerListener);
-    super.dispose();
-  }
+class CommonFitatuScannerPreviewState extends State<CommonFitatuScannerPreview> with ScannerPreviewMixin {
+  final MobileScannerController controller = MobileScannerController();
 
   @override
   Widget build(BuildContext context) {
-    return ReaderWidget(
-      onControllerCreated: (controller) {
-        this.controller?.removeListener(_controllerListener);
-        this.controller = controller?..addListener(_controllerListener);
-      },
-      tryHarder: widget.options.tryHarder,
-      tryRotate: widget.options.tryRotate,
-      tryInverted: widget.options.tryInvert,
-      showGallery: false,
-      showToggleCamera: false,
-      scanDelay: Duration(milliseconds: widget.options.scanDelay),
-      scanDelaySuccess: Duration(
-        milliseconds: widget.options.scanDelaySuccess,
-      ),
-      showScannerOverlay: false,
-      cropPercent: widget.options.cropPercent,
-      resolution: ResolutionPreset.max,
-      allowPinchZoom: false,
-      showFlashlight: false,
-      onScan: (result) {
-        final code = result.text;
-        if (code != null) {
-          widget.onSuccess(code);
+    return MobileScanner(
+      controller: controller,
+      onDetect: (response) {
+        final List<Barcode> nonEmptyBarcodes = response.barcodes.where((barcode) => barcode.rawValue != null).toList();
+        for (final barcode in nonEmptyBarcodes) {
+          widget.onSuccess(barcode.rawValue!);
+          return;
         }
       },
     );
@@ -69,11 +40,9 @@ class CommonFitatuScannerPreviewState extends State<CommonFitatuScannerPreview>
 
   @override
   void setTorchEnabled({required bool isEnabled}) {
-    controller?.setFlashMode(
-      isEnabled ? FlashMode.torch : FlashMode.off,
-    );
+    controller.torchState.value = isEnabled ? TorchState.on : TorchState.off;
   }
 
   @override
-  bool isTorchEnabled() => controller?.value.flashMode == FlashMode.torch;
+  bool isTorchEnabled() => controller.torchState.value == TorchState.on;
 }
