@@ -139,7 +139,7 @@ bool Result::operator==(const Result& o) const
 		return false;
 
 	if (lineCount() > 1 && o.lineCount() > 1)
-		return IsInside(Center(o.position()), position());
+		return HaveIntersectingBoundingBoxes(o.position(), position());
 
 	// the following code is only meant for this->lineCount == 1
 	assert(lineCount() == 1);
