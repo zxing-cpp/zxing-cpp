@@ -573,12 +573,12 @@ public:
 	bool traceGaps(PointF dEdge, RegressionLine& line, int maxStepSize, const RegressionLine& finishLine = {}, double minDist = 0)
 	{
 		line.setDirectionInward(dEdge);
-		int gaps = 0;
+		int gaps = 0, steps = 0, maxStepsPerGap = maxStepSize;
 		PointF lastP;
 		do {
 			// detect an endless loop (lack of progress). if encountered, please report.
-			assert(p != lastP);
-			if (p == std::exchange(lastP, p))
+			// this fixes a deadlock in falsepositives-1/#570.png and the regression in #574
+			if (p == std::exchange(lastP, p) || steps++ > (gaps == 0 ? 2 : gaps + 1) * maxStepsPerGap)
 				return false;
 			log(p);
 
@@ -631,13 +631,8 @@ public:
 							return true;
 						}
 					}
-				} else if (gaps == 0) {
-					if (Size(line.points()) >= 2 * maxStepSize)
-						return false; // no point in following a line that has no gaps
-					// enable the above drift check for lines with no gaps (yet) if they are 'long enough'
-					// this fixes a deadlock in falsepositives-1/#570.png
-					if (Size(line.points()) >= std::max(5, maxStepSize / 2) && !line.evaluate(1.5))
-						return false;
+				} else if (gaps == 0 && Size(line.points()) >= 2 * maxStepSize) {
+					return false; // no point in following a line that has no gaps
 				}
 			}
 
