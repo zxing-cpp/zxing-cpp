@@ -12,9 +12,8 @@ dependencies:
   plugin_platform_interface: ^2.0.2
   permission_handler: ^10.2.0
   # support iOS
-  flutter_zxing: ^1.2.0
-  camera: ^0.10.5+1
-  
+  mobile_scanner: ^3.2.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
