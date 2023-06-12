@@ -113,7 +113,7 @@ public:
 				// remove points that are further 'inside' than maxSignedDist or further 'outside' than 2 x maxSignedDist
 				auto end = std::remove_if(points.begin(), points.end(), [this, maxSignedDist](auto p) {
 					auto sd = this->signedDistance(p);
-                    return sd > maxSignedDist || sd < -2 * maxSignedDist;
+					return sd > maxSignedDist || sd < -2 * maxSignedDist;
 				});
 				points.erase(end, points.end());
 				if (old_points_size == points.size())

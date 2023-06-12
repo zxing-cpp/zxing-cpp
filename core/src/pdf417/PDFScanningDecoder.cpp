@@ -76,8 +76,8 @@ static bool CheckCodewordSkew(int codewordSize, int minCodewordWidth, int maxCod
 
 static ModuleBitCountType GetBitCountForCodeword(int codeword)
 {
-    ModuleBitCountType result;
-    result.fill(0);
+	ModuleBitCountType result;
+	result.fill(0);
 	int previousValue = 0;
 	int i = Size(result) - 1;
 	while (true) {
@@ -579,13 +579,13 @@ static DecoderResult DecodeCodewords(std::vector<int>& codewords, int numECCodew
 		return FormatError();
 
 	// Decode the codewords
-    return Decode(codewords).setEcLevel(std::to_string(numECCodewords * 100 / Size(codewords)) + "%");
+	return Decode(codewords).setEcLevel(std::to_string(numECCodewords * 100 / Size(codewords)) + "%");
 }
 
 DecoderResult DecodeCodewords(std::vector<int>& codewords, int numECCodeWords)
 {
 	for (auto& cw : codewords)
-        cw = std::clamp(cw, 0, CodewordDecoder::MAX_CODEWORDS_IN_BARCODE);
+		cw = std::clamp(cw, 0, CodewordDecoder::MAX_CODEWORDS_IN_BARCODE);
 
 	// erasures array has never been actually used inside the error correction code
 	return DecodeCodewords(codewords, numECCodeWords, {});

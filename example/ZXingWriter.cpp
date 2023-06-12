@@ -24,15 +24,16 @@ using namespace ZXing;
 
 static void PrintUsage(const char* exePath)
 {
-	std::cout << "Usage: " << exePath << " [-size <width>x<height>] [-margin <margin>] [-encoding <encoding>] [-ecc <level>] <format> <text> <output>\n"
-	          << "    -size      Size of generated image\n"
-	          << "    -margin    Margin around barcode\n"
-	          << "    -encoding  Encoding used to encode input text\n"
-	          << "    -ecc       Error correction level, [0-8]\n"
+	std::cout << "Usage: " << exePath
+			  << " [-size <width>x<height>] [-margin <margin>] [-encoding <encoding>] [-ecc <level>] <format> <text> <output>\n"
+			  << "    -size      Size of generated image\n"
+			  << "    -margin    Margin around barcode\n"
+			  << "    -encoding  Encoding used to encode input text\n"
+			  << "    -ecc       Error correction level, [0-8]\n"
 			  << "    -binary    Interpret <text> as a file name containing binary data\n"
-	          << "    -help      Print usage information\n"
+			  << "    -help      Print usage information\n"
 			  << "    -version   Print version information\n"
-	          << "\n"
+			  << "\n"
 			  << "Supported formats are:\n";
 	for (auto f : BarcodeFormatsFromString("Aztec Codabar Code39 Code93 Code128 DataMatrix EAN8 EAN13 ITF PDF417 QRCode UPCA UPCE"))
 		std::cout << "    " << ToString(f) << "\n";

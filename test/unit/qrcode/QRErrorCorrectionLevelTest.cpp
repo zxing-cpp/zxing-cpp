@@ -13,7 +13,7 @@ using namespace ZXing::QRCode;
 
 TEST(QRErrorCorrectionLevelTest, ForBits)
 {
-    EXPECT_EQ(ErrorCorrectionLevel::Medium, ECLevelFromBits(0));
+	EXPECT_EQ(ErrorCorrectionLevel::Medium, ECLevelFromBits(0));
 	EXPECT_EQ(ErrorCorrectionLevel::Low, ECLevelFromBits(1));
 	EXPECT_EQ(ErrorCorrectionLevel::High, ECLevelFromBits(2));
 	EXPECT_EQ(ErrorCorrectionLevel::Quality, ECLevelFromBits(3));

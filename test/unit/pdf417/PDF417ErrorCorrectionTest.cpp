@@ -68,28 +68,28 @@ static void Corrupt(std::vector<int>& received, int howMany, PseudoRandom& rando
 TEST(PDF417ErrorCorrectionTest, NoError)
 {
 	std::vector<int> received(PDF417_TEST_WITH_EC, PDF417_TEST_WITH_EC + Size(PDF417_TEST_WITH_EC));
-    // no errors
+	// no errors
 	CheckDecode(received);
 }
 
 TEST(PDF417ErrorCorrectionTest, OneError)
 {
 	PseudoRandom random(0x12345678);
-    for (int i = 0; i < Size(PDF417_TEST_WITH_EC); i++) {
+	for (int i = 0; i < Size(PDF417_TEST_WITH_EC); i++) {
 		std::vector<int> received(PDF417_TEST_WITH_EC, PDF417_TEST_WITH_EC + Size(PDF417_TEST_WITH_EC));
 		received[i] = random.next(0, 255);
 		CheckDecode(received);
-    }
+	}
 }
 
 TEST(PDF417ErrorCorrectionTest, MaxErrors)
 {
 	PseudoRandom random(0x12345678);
-    for (int testIterations = 0; testIterations < 100; testIterations++) { // # iterations is kind of arbitrary
+	for (int testIterations = 0; testIterations < 100; testIterations++) { // # iterations is kind of arbitrary
 		std::vector<int> received(PDF417_TEST_WITH_EC, PDF417_TEST_WITH_EC + Size(PDF417_TEST_WITH_EC));
 		Corrupt(received, MAX_ERRORS, random, 929);
 		CheckDecode(received);
-    }
+	}
 }
 
 TEST(PDF417ErrorCorrectionTest, TooManyErrors)

@@ -25,50 +25,50 @@ using namespace ZXing::QRCode;
 
 TEST(QRDecodedBitStreamParserTest, SimpleByteMode)
 {
-    BitArray ba;
-    ba.appendBits(0x04, 4); // Byte mode
-    ba.appendBits(0x03, 8); // 3 bytes
-    ba.appendBits(0xF1, 8);
-    ba.appendBits(0xF2, 8);
-    ba.appendBits(0xF3, 8);
-    auto result = DecodeBitStream(ba.toBytes(), *Version::FromNumber(1), ErrorCorrectionLevel::Medium).text();
-    EXPECT_EQ(L"\xF1\xF2\xF3", result);
+	BitArray ba;
+	ba.appendBits(0x04, 4); // Byte mode
+	ba.appendBits(0x03, 8); // 3 bytes
+	ba.appendBits(0xF1, 8);
+	ba.appendBits(0xF2, 8);
+	ba.appendBits(0xF3, 8);
+	auto result = DecodeBitStream(ba.toBytes(), *Version::FromNumber(1), ErrorCorrectionLevel::Medium).text();
+	EXPECT_EQ(L"\xF1\xF2\xF3", result);
 }
 
 TEST(QRDecodedBitStreamParserTest, SimpleSJIS)
 {
-    BitArray ba;
-    ba.appendBits(0x04, 4); // Byte mode
-    ba.appendBits(0x04, 8); // 4 bytes
-    ba.appendBits(0xA1, 8);
-    ba.appendBits(0xA2, 8);
-    ba.appendBits(0xA3, 8);
-    ba.appendBits(0xD0, 8);
+	BitArray ba;
+	ba.appendBits(0x04, 4); // Byte mode
+	ba.appendBits(0x04, 8); // 4 bytes
+	ba.appendBits(0xA1, 8);
+	ba.appendBits(0xA2, 8);
+	ba.appendBits(0xA3, 8);
+	ba.appendBits(0xD0, 8);
 	auto result = DecodeBitStream(ba.toBytes(), *Version::FromNumber(1), ErrorCorrectionLevel::Medium).text();
 	EXPECT_EQ(L"\uff61\uff62\uff63\uff90", result);
 }
 
 TEST(QRDecodedBitStreamParserTest, ECI)
 {
-    BitArray ba;
-    ba.appendBits(0x07, 4); // ECI mode
-    ba.appendBits(0x02, 8); // ECI 2 = CP437 encoding
-    ba.appendBits(0x04, 4); // Byte mode
-    ba.appendBits(0x03, 8); // 3 bytes
-    ba.appendBits(0xA1, 8);
-    ba.appendBits(0xA2, 8);
-    ba.appendBits(0xA3, 8);
+	BitArray ba;
+	ba.appendBits(0x07, 4); // ECI mode
+	ba.appendBits(0x02, 8); // ECI 2 = CP437 encoding
+	ba.appendBits(0x04, 4); // Byte mode
+	ba.appendBits(0x03, 8); // 3 bytes
+	ba.appendBits(0xA1, 8);
+	ba.appendBits(0xA2, 8);
+	ba.appendBits(0xA3, 8);
 	auto result = DecodeBitStream(ba.toBytes(), *Version::FromNumber(1), ErrorCorrectionLevel::Medium).text();
 	EXPECT_EQ(L"\xED\xF3\xFA", result);
 }
 
 TEST(QRDecodedBitStreamParserTest, Hanzi)
 {
-    BitArray ba;
-    ba.appendBits(0x0D, 4); // Hanzi mode
-    ba.appendBits(0x01, 4); // Subset 1 = GB2312 encoding
-    ba.appendBits(0x01, 8); // 1 characters
-    ba.appendBits(0x03C1, 13);
+	BitArray ba;
+	ba.appendBits(0x0D, 4); // Hanzi mode
+	ba.appendBits(0x01, 4); // Subset 1 = GB2312 encoding
+	ba.appendBits(0x01, 8); // 1 characters
+	ba.appendBits(0x03C1, 13);
 	auto result = DecodeBitStream(ba.toBytes(), *Version::FromNumber(1), ErrorCorrectionLevel::Medium).text();
 	EXPECT_EQ(L"\u963f", result);
 }
