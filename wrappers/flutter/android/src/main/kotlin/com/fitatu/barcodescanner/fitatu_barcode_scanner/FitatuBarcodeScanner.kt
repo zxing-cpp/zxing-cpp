@@ -41,6 +41,12 @@ class FitatuBarcodeScanner(
     FitatuBarcodeScannerHostApi {
 
     private val barcodeReader by lazy { BarcodeReader() }
+
+    /**
+     * Target resolution defines expected resolution used by camera preview and image analysis.
+     * This is not guarantee that camera will use this resolution. If camera doesn't support this
+     * resolution then the closest one will be picked
+     */
     private val targetResolution by lazy { Size(1280, 720) }
 
     private var camera: Camera? = null
@@ -108,6 +114,7 @@ class FitatuBarcodeScanner(
             }
 
             val imageAnalysis = ImageAnalysis.Builder()
+                .setTargetResolution(targetResolution)
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build().apply {
                     setAnalyzer(Executors.newSingleThreadExecutor()) { image ->
