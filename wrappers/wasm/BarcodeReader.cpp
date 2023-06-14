@@ -19,6 +19,7 @@ struct ReadResult
 	std::string text{};
 	std::string error{};
 	ZXing::Position position{};
+	std::string symbologyIdentifier;
 };
 
 std::vector<ReadResult> readBarcodesFromImageView(ZXing::ImageView iv, bool tryHarder, const std::string& format,
@@ -40,7 +41,7 @@ std::vector<ReadResult> readBarcodesFromImageView(ZXing::ImageView iv, bool tryH
 		readResults.reserve(results.size());
 
 		for (auto& result : results) {
-			readResults.push_back({ToString(result.format()), result.text(), {}, result.position()});
+			readResults.push_back({ToString(result.format()), result.text(), {}, result.position(), result.symbologyIdentifier()});
 		}
 
 		return readResults;
@@ -97,7 +98,8 @@ EMSCRIPTEN_BINDINGS(BarcodeReader)
 		.field("format", &ReadResult::format)
 		.field("text", &ReadResult::text)
 		.field("error", &ReadResult::error)
-		.field("position", &ReadResult::position);
+		.field("position", &ReadResult::position)
+		.field("symbologyIdentifier", &ReadResult::symbologyIdentifier);
 
 	value_object<ZXing::PointI>("Point").field("x", &ZXing::PointI::x).field("y", &ZXing::PointI::y);
 
