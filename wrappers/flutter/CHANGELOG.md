@@ -1,3 +1,7 @@
-## 0.0.1
+## 2.0.0
 
-* TODO: Describe initial release.
+* Initial release
+
+## 2.1.1
+ 
+ * Fix problem with scanning barcodes placed far from camera 
