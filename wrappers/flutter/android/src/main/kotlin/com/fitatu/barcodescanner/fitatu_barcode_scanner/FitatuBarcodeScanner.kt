@@ -30,7 +30,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.util.concurrent.Executors
-import kotlin.math.min
 
 
 class FitatuBarcodeScanner(
@@ -113,15 +112,12 @@ class FitatuBarcodeScanner(
                         }
                     }
             }
-
-            val processors = min(Runtime.getRuntime().availableProcessors() - 1, 2)
-            val executor = Executors.newFixedThreadPool(processors)
-
+            
             val imageAnalysis = ImageAnalysis.Builder()
                 .setTargetResolution(targetResolution)
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build().apply {
-                    setAnalyzer(executor) { image ->
+                    setAnalyzer(Executors.newSingleThreadExecutor()) { image ->
                         val cropSize = image.height.times(options.cropPercent).toInt()
 
                         val cropRect = Rect(
@@ -153,6 +149,7 @@ class FitatuBarcodeScanner(
                                 null
                             )
                         } catch (e: Exception) {
+                            image.close()
                             codeFlow.value = ScanResult(
                                 null,
                                 cameraImage,
