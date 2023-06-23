@@ -148,6 +148,7 @@ typedef struct zxing_Results zxing_Results;
 
 	bool zxing_Result_isValid(const zxing_Result* result);
 	zxing_BarcodeFormat zxing_Result_format(const zxing_Result* result);
+	char* zxing_Result_bytes(const zxing_Result* result, int* len);
 	/* ... */
 
 	/*

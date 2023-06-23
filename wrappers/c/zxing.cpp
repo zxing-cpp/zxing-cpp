@@ -135,6 +135,24 @@ extern "C"
 		return static_cast<zxing_BarcodeFormat>(result->format());
 	}
 
+	char* zxing_Result_bytes(const zxing_Result* result, int* len)
+	{
+		const ZXing::ByteArray& bytes = result->bytes();
+		size_t nbytes = bytes.size();
+
+		char* ret = (char*) malloc(nbytes + 1);
+		if (!ret) {
+			*len = 0;
+			return ret;
+		}
+
+		const char* data = (const char*) bytes.data();
+		strncpy(ret, data, nbytes);
+		*len = nbytes;
+
+		return ret;
+	}
+
 	/*
 	 * ...
 	 */
