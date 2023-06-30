@@ -1,10 +1,6 @@
-#include "zxing.h"
+#include "zxing-c.h"
 
-#include <ZXing/BarcodeFormat.h>
-#include <ZXing/DecodeHints.h>
-#include <ZXing/ImageView.h>
-#include <ZXing/ReadBarcode.h>
-#include <ZXing/Result.h>
+#include "ReadBarcode.h"
 
 extern "C"
 {

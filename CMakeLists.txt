@@ -76,3 +76,6 @@ endif()
 if (BUILD_PYTHON_MODULE)
     add_subdirectory (wrappers/python)
 endif()
+
+add_subdirectory (wrappers/c)
+

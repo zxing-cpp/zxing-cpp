@@ -13,9 +13,9 @@
 
 #ifdef __cplusplus
 
-#include <ZXing/DecodeHints.h>
-#include <ZXing/ImageView.h>
-#include <ZXing/Result.h>
+#include "DecodeHints.h"
+#include "ImageView.h"
+#include "Result.h"
 
 typedef ZXing::ImageView zxing_ImageView;
 typedef ZXing::DecodeHints zxing_DecodeHints;
