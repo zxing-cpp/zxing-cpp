@@ -8,6 +8,7 @@ option (BUILD_EXAMPLES "Build the example barcode reader/writer applications" ON
 option (BUILD_BLACKBOX_TESTS "Build the black box reader/writer tests" OFF)
 option (BUILD_UNIT_TESTS "Build the unit tests (don't enable for production builds)" OFF)
 option (BUILD_PYTHON_MODULE "Build the python module" OFF)
+option (BUILD_C_API "Build the C-API" OFF)
 set(BUILD_DEPENDENCIES "AUTO" CACHE STRING "Fetch from github or use locally installed (AUTO/GITHUB/LOCAL)")
 
 if (WIN32)
@@ -75,4 +76,8 @@ if (BUILD_UNIT_TESTS)
 endif()
 if (BUILD_PYTHON_MODULE)
     add_subdirectory (wrappers/python)
+endif()
+
+if (BUILD_C_API)
+    add_subdirectory (wrappers/c)
 endif()
