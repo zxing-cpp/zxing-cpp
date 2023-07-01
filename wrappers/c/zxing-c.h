@@ -1,13 +1,12 @@
+/*
+* Copyright 2023 siiky
+* Copyright 2023 Axel Waggershauser
+*/
+// SPDX-License-Identifier: Apache-2.0
+
 #ifndef _ZXING_C_H
 #define _ZXING_C_H
 
-/*
- * <stdbool.h>
- *  bool
- *
- * <stdint.h>
- *  uint8_t
- */
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -93,13 +92,13 @@ typedef struct zxing_Results zxing_Results;
 										  | zxing_BarcodeFormat_PDF417 | zxing_BarcodeFormat_QRCode | zxing_BarcodeFormat_MicroQRCode,
 		zxing_BarcodeFormat_Any = zxing_BarcodeFormat_LinearCodes | zxing_BarcodeFormat_MatrixCodes,
 
-		zxing_BarcodeFormat__max = zxing_BarcodeFormat_MicroQRCode,
+		zxing_BarcodeFormat_Invalid = -1 /* return value when BarcodeFormatsFromString() throws */
 	} zxing_BarcodeFormat;
 
-	zxing_BarcodeFormat zxing_BarcodeFormatFromString(const char* format);
+	typedef zxing_BarcodeFormat zxing_BarcodeFormats;
 
-	// TODO:
-	// zxing_BarcodeFormat zxing_BarcodesFormatFromString (const char * formats);
+	zxing_BarcodeFormats zxing_BarcodeFormatsFromString(const char* str);
+	char* zxing_BarcodeFormatToString(zxing_BarcodeFormat format);
 
 	/*
 	 * ZXing/DecodeHints.h
@@ -133,8 +132,12 @@ typedef struct zxing_Results zxing_Results;
 	void zxing_DecodeHints_delete(zxing_DecodeHints* hints);
 
 	void zxing_DecodeHints_setTryHarder(zxing_DecodeHints* hints, bool tryHarder);
+	void zxing_DecodeHints_setTryRotate(zxing_DecodeHints* hints, bool tryRotate);
+	void zxing_DecodeHints_setTryInvert(zxing_DecodeHints* hints, bool tryInvert);
 	void zxing_DecodeHints_setTryDownscale(zxing_DecodeHints* hints, bool tryDownscale);
-	void zxing_DecodeHints_setFormats(zxing_DecodeHints* hints, zxing_BarcodeFormat formats);
+	void zxing_DecodeHints_setIsPure(zxing_DecodeHints* hints, bool isPure);
+	void zxing_DecodeHints_setReturnErrors(zxing_DecodeHints* hints, bool returnErrors);
+	void zxing_DecodeHints_setFormats(zxing_DecodeHints* hints, zxing_BarcodeFormats formats);
 	void zxing_DecodeHints_setBinarizer(zxing_DecodeHints* hints, zxing_Binarizer binarizer);
 	void zxing_DecodeHints_setEanAddOnSymbol(zxing_DecodeHints* hints, zxing_EanAddOnSymbol eanAddOnSymbol);
 	void zxing_DecodeHints_setTextMode(zxing_DecodeHints* hints, zxing_TextMode textMode);
@@ -147,8 +150,17 @@ typedef struct zxing_Results zxing_Results;
 	void zxing_Result_delete(zxing_Result* result);
 
 	bool zxing_Result_isValid(const zxing_Result* result);
+	char* zxing_Result_errorMsg(const zxing_Result* result);
 	zxing_BarcodeFormat zxing_Result_format(const zxing_Result* result);
-	char* zxing_Result_bytes(const zxing_Result* result, int* len);
+	uint8_t* zxing_Result_bytes(const zxing_Result* result, int* len);
+	char* zxing_Result_text(const zxing_Result* result);
+	char* zxing_Result_ecLevel(const zxing_Result* result);
+	char* zxing_Result_symbologyIdentifier(const zxing_Result* result);
+	int zxing_Result_orientation(const zxing_Result* result);
+	bool zxing_Result_isInverted(const zxing_Result* result);
+	bool zxing_Result_isMirrored(const zxing_Result* result);
+
+
 	/* ... */
 
 	/*
