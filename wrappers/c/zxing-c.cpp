@@ -140,7 +140,7 @@ extern "C"
 
 	bool zxing_Result_isValid(const zxing_Result* result)
 	{
-		return result->isValid();
+		return result != NULL && result->isValid();
 	}
 
 	char* zxing_Result_errorMsg(const zxing_Result* result)
@@ -229,12 +229,12 @@ extern "C"
 
 	int zxing_Results_size(const zxing_Results* results)
 	{
-		return Size(*results);
+		return results ? Size(*results) : 0;
 	}
 
 	const zxing_Result* zxing_Results_at(const zxing_Results* results, int i)
 	{
-		if (i < 0 || i >= Size(*results))
+		if (!results || i < 0 || i >= Size(*results))
 			return NULL;
 		return &(*results)[i];
 	}
