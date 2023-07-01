@@ -38,35 +38,6 @@ extern "C"
 		delete iv;
 	}
 
-	int zxing_ImageView_width(const zxing_ImageView* iv)
-	{
-		return iv->width();
-	}
-
-	int zxing_ImageView_height(const zxing_ImageView* iv)
-	{
-		return iv->height();
-	}
-
-	int zxing_ImageView_pixStride(const zxing_ImageView* iv)
-	{
-		return iv->pixStride();
-	}
-
-	int zxing_ImageView_rowStride(const zxing_ImageView* iv)
-	{
-		return iv->rowStride();
-	}
-
-	zxing_ImageFormat zxing_ImageView_format(const zxing_ImageView* iv)
-	{
-		return static_cast<zxing_ImageFormat>(iv->format());
-	}
-
-	/*
-	 * ...
-	 */
-
 	/*
 	 * ZXing/BarcodeFormat.h
 	 */
@@ -81,6 +52,12 @@ extern "C"
 		} catch (...) {
 			return zxing_BarcodeFormat_Invalid;
 		}
+	}
+
+	zxing_BarcodeFormat zxing_BarcodeFormatFromString(const char* str)
+	{
+		zxing_BarcodeFormat res = zxing_BarcodeFormatsFromString(str);
+		return BitHacks::CountBitsSet(res) == 1 ? res : zxing_BarcodeFormat_Invalid;
 	}
 
 	char* zxing_BarcodeFormatToString(zxing_BarcodeFormat format)
@@ -153,16 +130,12 @@ extern "C"
 	}
 
 	/*
-	 * ...
-	 */
-
-	/*
 	 * ZXing/Result.h
 	 */
 
-	void zxing_Result_delete(zxing_Result* result)
+	char* zxing_ContentTypeToString(zxing_ContentType type)
 	{
-		delete result;
+		return copy(ToString(static_cast<ContentType>(type)));
 	}
 
 	bool zxing_Result_isValid(const zxing_Result* result)
@@ -178,6 +151,11 @@ extern "C"
 	zxing_BarcodeFormat zxing_Result_format(const zxing_Result* result)
 	{
 		return static_cast<zxing_BarcodeFormat>(result->format());
+	}
+
+	zxing_ContentType zxing_Result_contentType(const zxing_Result* result)
+	{
+		return static_cast<zxing_ContentType>(result->contentType());
 	}
 
 	uint8_t* zxing_Result_bytes(const zxing_Result* result, int* len)
@@ -224,10 +202,6 @@ extern "C"
 	}
 
 	/*
-	 * ...
-	 */
-
-	/*
 	 * ZXing/ReadBarcode.h
 	 */
 
@@ -239,6 +213,29 @@ extern "C"
 
 	zxing_Results* zxing_ReadBarcodes(const zxing_ImageView* iv, const zxing_DecodeHints* hints)
 	{
-		return new Results(ReadBarcodes(*iv, *hints));
+		auto res = ReadBarcodes(*iv, *hints);
+		return !res.empty() ? new Results(std::move(res)) : NULL;
+	}
+
+	void zxing_Result_delete(zxing_Result* result)
+	{
+		delete result;
+	}
+
+	void zxing_Results_delete(zxing_Results* results)
+	{
+		delete results;
+	}
+
+	int zxing_Results_size(const zxing_Results* results)
+	{
+		return Size(*results);
+	}
+
+	const zxing_Result* zxing_Results_at(const zxing_Results* results, int i)
+	{
+		if (i < 0 || i >= Size(*results))
+			return NULL;
+		return &(*results)[i];
 	}
 }

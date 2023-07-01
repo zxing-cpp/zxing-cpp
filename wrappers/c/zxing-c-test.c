@@ -62,19 +62,25 @@ int main(int argc, char** argv)
 
 	zxing_ImageView* iv = zxing_ImageView_new(data, width, height, zxing_ImageFormat_Lum, 0, 0);
 
-	zxing_Result* result = zxing_ReadBarcode(iv, hints);
+	zxing_Results* results = zxing_ReadBarcodes(iv, hints);
 
-	if (result) {
-		printF("Text       : %s\n", zxing_Result_text(result));
-		printF("Format     : %s\n", zxing_BarcodeFormatToString(zxing_Result_format(result)));
-		printF("Identifier : %s\n", zxing_Result_symbologyIdentifier(result));
-		printF("EC Level   : %s\n", zxing_Result_ecLevel(result));
-		printF("Error      : %s\n", zxing_Result_errorMsg(result));
-		printf("Rotation   : %d\n", zxing_Result_orientation(result));
-		printf("isMirrored : %d\n", zxing_Result_isMirrored(result));
-		printf("isInverted : %d\n", zxing_Result_isInverted(result));
+	if (results) {
+		for (int i = 0, n = zxing_Results_size(results); i < n; ++i) {
+			const zxing_Result* result = zxing_Results_at(results, i);
 
-		zxing_Result_delete(result);
+			printF("Text       : %s\n", zxing_Result_text(result));
+			printF("Format     : %s\n", zxing_BarcodeFormatToString(zxing_Result_format(result)));
+			printF("Content    : %s\n", zxing_ContentTypeToString(zxing_Result_contentType(result)));
+			printF("Identifier : %s\n", zxing_Result_symbologyIdentifier(result));
+			printF("EC Level   : %s\n", zxing_Result_ecLevel(result));
+			printF("Error      : %s\n", zxing_Result_errorMsg(result));
+			printf("Rotation   : %d\n", zxing_Result_orientation(result));
+
+			if (i < n-1)
+				printf("\n");
+		}
+
+		zxing_Results_delete(results);
 	} else {
 		printf("No barcode found\n");
 	}

@@ -52,13 +52,6 @@ typedef struct zxing_Results zxing_Results;
 										 int pixStride);
 	void zxing_ImageView_delete(zxing_ImageView* iv);
 
-	int zxing_ImageView_width(const zxing_ImageView* iv);
-	int zxing_ImageView_height(const zxing_ImageView* iv);
-	int zxing_ImageView_pixStride(const zxing_ImageView* iv);
-	int zxing_ImageView_rowStride(const zxing_ImageView* iv);
-	zxing_ImageFormat zxing_ImageView_format(const zxing_ImageView* iv);
-	/* ... */
-
 	/*
 	 * ZXing/BarcodeFormat.h
 	 */
@@ -98,6 +91,7 @@ typedef struct zxing_Results zxing_Results;
 	typedef zxing_BarcodeFormat zxing_BarcodeFormats;
 
 	zxing_BarcodeFormats zxing_BarcodeFormatsFromString(const char* str);
+	zxing_BarcodeFormat zxing_BarcodeFormatFromString(const char* str);
 	char* zxing_BarcodeFormatToString(zxing_BarcodeFormat format);
 
 	/*
@@ -141,17 +135,27 @@ typedef struct zxing_Results zxing_Results;
 	void zxing_DecodeHints_setBinarizer(zxing_DecodeHints* hints, zxing_Binarizer binarizer);
 	void zxing_DecodeHints_setEanAddOnSymbol(zxing_DecodeHints* hints, zxing_EanAddOnSymbol eanAddOnSymbol);
 	void zxing_DecodeHints_setTextMode(zxing_DecodeHints* hints, zxing_TextMode textMode);
-	/* ... */
 
 	/*
 	 * ZXing/Result.h
 	 */
 
-	void zxing_Result_delete(zxing_Result* result);
+	typedef enum
+	{
+		zxing_ContentType_Text,
+		zxing_ContentType_Binary,
+		zxing_ContentType_Mixed,
+		zxing_ContentType_GS1,
+		zxing_ContentType_ISO15434,
+		zxing_ContentType_UnknownECI
+	} zxing_ContentType;
+
+	char* zxing_ContentTypeToString(zxing_ContentType type);
 
 	bool zxing_Result_isValid(const zxing_Result* result);
 	char* zxing_Result_errorMsg(const zxing_Result* result);
 	zxing_BarcodeFormat zxing_Result_format(const zxing_Result* result);
+	zxing_ContentType zxing_Result_contentType(const zxing_Result* result);
 	uint8_t* zxing_Result_bytes(const zxing_Result* result, int* len);
 	char* zxing_Result_text(const zxing_Result* result);
 	char* zxing_Result_ecLevel(const zxing_Result* result);
@@ -160,15 +164,18 @@ typedef struct zxing_Results zxing_Results;
 	bool zxing_Result_isInverted(const zxing_Result* result);
 	bool zxing_Result_isMirrored(const zxing_Result* result);
 
-
-	/* ... */
-
 	/*
 	 * ZXing/ReadBarcode.h
 	 */
 
 	zxing_Result* zxing_ReadBarcode(const zxing_ImageView* iv, const zxing_DecodeHints* hints);
 	zxing_Results* zxing_ReadBarcodes(const zxing_ImageView* iv, const zxing_DecodeHints* hints);
+
+	void zxing_Result_delete(zxing_Result* result);
+	void zxing_Results_delete(zxing_Results* results);
+
+	int zxing_Results_size(const zxing_Results* results);
+	const zxing_Result* zxing_Results_at(const zxing_Results* results, int i);
 
 #ifdef __cplusplus
 }
