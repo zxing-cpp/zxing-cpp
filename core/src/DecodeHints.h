@@ -111,9 +111,10 @@ public:
 	/// Also try detecting code in downscaled images (depending on image size).
 	ZX_PROPERTY(bool, tryDownscale, setTryDownscale)
 
+#ifdef BUILD_EXPERIMENTAL_API
 	/// Also try detecting code after denoising (currently morphological closing filter for 2D symbologies only).
-	// WARNING: this API is experimental and may change/disappear
 	ZX_PROPERTY(bool, tryDenoise, setTryDenoise)
+#endif
 
 	/// Binarizer to use internally when using the ReadBarcode function
 	ZX_PROPERTY(Binarizer, binarizer, setBinarizer)
