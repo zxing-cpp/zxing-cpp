@@ -63,7 +63,9 @@ class DecodeHints
 	Binarizer _binarizer           : 2;
 	TextMode _textMode             : 3;
 	CharacterSet _characterSet     : 6;
+#ifdef BUILD_EXPERIMENTAL_API
 	bool _tryDenoise               : 1;
+#endif
 
 	uint8_t _minLineCount        = 2;
 	uint8_t _maxNumberOfSymbols  = 0xff;
@@ -87,8 +89,11 @@ public:
 		  _eanAddOnSymbol(EanAddOnSymbol::Ignore),
 		  _binarizer(Binarizer::LocalAverage),
 		  _textMode(TextMode::HRI),
-		  _characterSet(CharacterSet::Unknown),
+		  _characterSet(CharacterSet::Unknown)
+#ifdef BUILD_EXPERIMENTAL_API
+		  ,
 		  _tryDenoise(0)
+#endif
 	{}
 
 #define ZX_PROPERTY(TYPE, GETTER, SETTER) \
