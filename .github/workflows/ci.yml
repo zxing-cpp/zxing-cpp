@@ -128,7 +128,9 @@ jobs:
     - uses: actions/upload-artifact@v3
       with:
         name: wasm-artifacts
-        path: "build/zxing*"
+        path: |
+            "build/zxing*"
+            "build/demo*"
 
   build-python:
     runs-on: ${{ matrix.os }}
