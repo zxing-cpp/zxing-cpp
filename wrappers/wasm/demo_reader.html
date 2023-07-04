@@ -74,16 +74,12 @@ function showResults(results) {
 	const resultsDiv = document.getElementById("results");
 	resultsDiv.innerHTML = "";
 	if (results.size() === 0) {
-		resultsDiv.innerHTML += "<li>No " + (document.getElementById("format").value || "barcode") + " found </li>";
+		resultsDiv.innerHTML += "No " + (document.getElementById("format").value || "barcode") + " found";
 	}
 	else {
 		for (let i = 0; i < results.size(); i += 1) {
 			const { error, format, text } = results.get(i);
-			if (!error) {
-				resultsDiv.innerHTML += "<li>Format: <strong>" + format + "</strong><pre>" + text + "</pre></li>";
-			} else {
-				resultsDiv.innerHTML += '<li><font color="red">Error: ' + error + '</font></li>';
-			}
+			resultsDiv.innerHTML += "<li>Format: <strong>" + format + "</strong><pre>" + (text || '<font color="red">Error: ' + error + '</font>') + "</pre></li>";
 		}
 	}
 }
