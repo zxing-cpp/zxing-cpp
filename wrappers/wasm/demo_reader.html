@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -6,37 +7,31 @@
 	<title>zxing-cpp/wasm reader demo</title>
 	<link rel="shortcut icon" href="#" />
 	<script src="zxing_reader.js"></script>
-	<script src="base64ArrayBuffer.js"></script>
 	<script>
 var zxing = ZXing().then(function(instance) {
 	zxing = instance; // this line is supposedly not required but with current emsdk it is :-/
 });
 
-function scanBarcode(file) {
-	var reader = new FileReader();
-	reader.onloadend = function(evt) {
-		var format = document.getElementById("scan_format").value;
-		var fileData = new Uint8Array(evt.target.result);
+async function readBarcodes() {
+	let format = document.getElementById("format").value;
+	let file = document.getElementById("file").files[0];
 
-		var buffer = zxing._malloc(fileData.length);
-		zxing.HEAPU8.set(fileData, buffer);
-		var results = zxing.readBarcodesFromImage(buffer, fileData.length, true, format, 0xff);
-		zxing._free(buffer);
+	let arrayBuffer = await file.arrayBuffer();
+	let u8Buffer = new Uint8Array(arrayBuffer);
 
-		showScanResults(results);
-		showImageWithResults(document.getElementById("drop_zone"), fileData, file.type, results);
-	}
-	reader.readAsArrayBuffer(file);
+	let zxingBuffer = zxing._malloc(u8Buffer.length);
+	zxing.HEAPU8.set(u8Buffer, zxingBuffer);
+	let results = zxing.readBarcodesFromImage(zxingBuffer, u8Buffer.length, true, format, 0xff);
+	zxing._free(zxingBuffer);
+
+	showResults(results);
+	showImageWithResults(file, results);
 }
 
-function showImageWithResults(container, fileData, fileType, results) {
-	fileType = fileType || "image/jpeg";
-	container.innerHTML = "";
-	var img = document.createElement("img");
+function showImageWithResults(file, results) {
+	var canvas = document.getElementById("canvas");
+	var img = new Image()
 	img.addEventListener('load', function() {
-		const canvas = document.createElement("canvas");
-		container.style.width = img.width + 'px';
-		container.style.height = img.height + 'px';
 		canvas.width = img.width;
 		canvas.height = img.height;
 		const ctx = canvas.getContext("2d");
@@ -52,15 +47,15 @@ function showImageWithResults(container, fileData, fileType, results) {
 			ctx.lineTo(position.bottomLeft.x, position.bottomLeft.y);
 			ctx.closePath();
 			ctx.strokeStyle = "red";
-			ctx.lineWidth = 5;
+			ctx.lineWidth = 4;
 			ctx.stroke();
 
 			// Draw number inside square
 			const text = {
 				text: i + 1,
-				size: Math.abs((position.bottomLeft.y - position.topLeft.y)),
-				x: (position.topLeft.x + position.topRight.x) / 2.0,
-				y: (position.topLeft.y + position.bottomLeft.y) / 2.0,
+				size: Math.abs((position.bottomRight.y - position.topLeft.y)) / 2,
+				x: (position.topLeft.x + position.bottomRight.x) / 2.0,
+				y: (position.topLeft.y + position.bottomRight.y) / 2.0,
 			};
 			ctx.fillStyle = "white";
 			ctx.font = `bold ${text.size}px sans`;
@@ -68,115 +63,34 @@ function showImageWithResults(container, fileData, fileType, results) {
 			ctx.textBaseline = "middle";
 			ctx.fillText(text.text, text.x, text.y);
 			ctx.strokeStyle = "red";
-			ctx.lineWidth = 1;
+			ctx.lineWidth = 2;
 			ctx.strokeText(text.text, text.x, text.y);
 		}
-
-		container.appendChild(canvas);
 	});
-	img.src = "data:" + fileType + ";base64," + base64ArrayBuffer(fileData);
+	img.src = URL.createObjectURL(file)
 }
 
-function showScanResults(results) {
-	const scanResult = document.getElementById("scan_result");
-	scanResult.innerHTML = "";
-	if (results.size() >= 1 && results.get(0).error) {
-		scanResult.innerHTML = '<li><font color="red">Error: ' + results.get(0).error + '</font></li>';
-	} else {
-		if (results.size() === 0) {
-			scanResult.innerHTML += "<li>No " + (document.getElementById("scan_format").value || "barcode") + " found </li>";
-		}
-
+function showResults(results) {
+	const resultsDiv = document.getElementById("results");
+	resultsDiv.innerHTML = "";
+	if (results.size() === 0) {
+		resultsDiv.innerHTML += "<li>No " + (document.getElementById("format").value || "barcode") + " found </li>";
+	}
+	else {
 		for (let i = 0; i < results.size(); i += 1) {
 			const { error, format, text } = results.get(i);
 			if (!error) {
-				scanResult.innerHTML += "<li>Format: <strong>" + format + "</strong><pre>" + text + "</pre></li>";
-			}
-  		}
-	}
-}
-
-function dragOverHandler(ev) {
-	ev.preventDefault();
-}
-
-function dropHandler(ev) {
-	ev.preventDefault();
-
-	if (ev.dataTransfer.items) {
-		for (var i = 0; i < ev.dataTransfer.items.length; i++) {
-			if (ev.dataTransfer.items[i].kind === 'file') {
-				var file = ev.dataTransfer.items[i].getAsFile();
-				scanBarcode(file);
-				break;
+				resultsDiv.innerHTML += "<li>Format: <strong>" + format + "</strong><pre>" + text + "</pre></li>";
+			} else {
+				resultsDiv.innerHTML += '<li><font color="red">Error: ' + error + '</font></li>';
 			}
 		}
-	} else {
-		// Use DataTransfer interface to access the file(s)
-		for (var i = 0; i < ev.dataTransfer.files.length; i++) {
-			scanBarcode(file);
-			break;
-		}
 	}
-
-	// Pass event to removeDragData for cleanup
-	removeDragData(ev)
-}
-
-function removeDragData(ev) {
-	if (ev.dataTransfer.items) {
-		ev.dataTransfer.items.clear();
-	} else {
-		ev.dataTransfer.clearData();
-	}
-}
-
-function fileSelected(input) {
-	scanBarcode(input.files[0]);
-}
-
-function clearScanResults() {
-	const dropZone = document.getElementById("drop_zone")
-	dropZone.innerHTML = "Drag your image here...";
-	dropZone.style.width = "220px";
-	dropZone.style.height = "150px";
-	document.getElementById("scan_result").innerHTML = "";
 }
 	</script>
-	<style>
-#drop_zone {
-	border: 1px solid blue;
-	width: 220px;
-	height: 150px;
-	line-height: 150px;
-	text-align: center;
-}
-
-#input_text {
-	width: 220px;
-}
-
-select {
-	margin: 3px 0px;
-	width: 120px;
-}
-
-input {
-	margin: 3px 0px;
-}
-
-tr td:first-child {
-	text-align: right;
-}
-
-body>div {
-	float: left;
-	margin: 0.5em;
-}
-	</style>
 </head>
 
-<body>
+<body style="text-align: left">
 	<h2>zxing-cpp/wasm reader demo</h2>
 	<p>
 		This is a simple demo of the wasm wrapper of <a href="https://github.com/zxing-cpp/zxing-cpp">zxing-cpp</a>
@@ -185,7 +99,7 @@ body>div {
 	<p></p>
 	<div>
 		Scan Format:
-		<select id="scan_format" onchange="clearScanResults()">
+		<select id="format" onchange='readBarcodes()'>
 			<option value="" selected="">Any</option>
 			<option value="Aztec">Aztec</option>
 			<option value="Codabar">Codabar</option>
@@ -205,16 +119,20 @@ body>div {
 			<option value="UPCE">UPC-E</option>
 			<option value="LinearCodes">Linear Codes</option>
 			<option value="MatrixCodes">Matrix Codes</option>
-			</select>
-		<br />
-		<div id="drop_zone" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);">
-			Drag your image here...
-		</div>
-		Or <input type="file" accept="image/png, image/jpeg" onchange="fileSelected(this)" />
-		<br />
-		Then see scan result below:
-		<br />
-		<ol id="scan_result"></ol>
+		</select>
+
+		&nbsp;&nbsp;
+
+		Image File: <input id="file" type="file" accept="image/png, image/jpeg" onchange="readBarcodes()" />
+
+		<br /><br />
+
+		<canvas id="canvas" width="640" height="480"></canvas>
+
+		<br /><br />
+
+		<ol id="results"></ol>
+
 	</div>
 </body>
 

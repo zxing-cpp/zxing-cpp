@@ -34,6 +34,7 @@ std::vector<ReadResult> readBarcodesFromImageView(ZXing::ImageView iv, bool tryH
 		hints.setTryDownscale(tryHarder);
 		hints.setFormats(BarcodeFormatsFromString(format));
 		hints.setMaxNumberOfSymbols(maxSymbols);
+		hints.setReturnErrors(maxSymbols > 1);
 
 		auto results = ReadBarcodes(iv, hints);
 
@@ -41,7 +42,7 @@ std::vector<ReadResult> readBarcodesFromImageView(ZXing::ImageView iv, bool tryH
 		readResults.reserve(results.size());
 
 		for (auto& result : results) {
-			readResults.push_back({ToString(result.format()), result.text(), {}, result.position(), result.symbologyIdentifier()});
+			readResults.push_back({ToString(result.format()), result.text(), ToString(result.error()), result.position(), result.symbologyIdentifier()});
 		}
 
 		return readResults;
