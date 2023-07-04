@@ -129,8 +129,8 @@ jobs:
       with:
         name: wasm-artifacts
         path: |
-            "build/zxing*"
-            "build/demo*"
+            build/zxing*
+            build/demo*
 
   build-python:
     runs-on: ${{ matrix.os }}
