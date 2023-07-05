@@ -20,6 +20,7 @@ struct ReadResult
 {
 	std::string format{};
 	std::string text{};
+	std::string hex{};
 	std::string error{};
 	Position position{};
 	std::string symbologyIdentifier{};
@@ -43,7 +44,7 @@ std::vector<ReadResult> readBarcodes(ImageView iv, bool tryHarder, const std::st
 		readResults.reserve(results.size());
 
 		for (auto& result : results) {
-			readResults.push_back({ToString(result.format()), result.text(), ToString(result.error()), result.position(), result.symbologyIdentifier()});
+			readResults.push_back({ToString(result.format()), result.text(), ToHex(result.bytes()), ToString(result.error()), result.position(), result.symbologyIdentifier()});
 		}
 
 		return readResults;
@@ -89,6 +90,7 @@ EMSCRIPTEN_BINDINGS(BarcodeReader)
 	value_object<ReadResult>("ReadResult")
 		.field("format", &ReadResult::format)
 		.field("text", &ReadResult::text)
+		.field("hex", &ReadResult::hex)
 		.field("error", &ReadResult::error)
 		.field("position", &ReadResult::position)
 		.field("symbologyIdentifier", &ReadResult::symbologyIdentifier);

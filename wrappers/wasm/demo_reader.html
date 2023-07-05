@@ -78,8 +78,11 @@ function showResults(results) {
 	}
 	else {
 		for (let i = 0; i < results.size(); i += 1) {
-			const { error, format, text } = results.get(i);
-			resultsDiv.innerHTML += "<li>Format: <strong>" + format + "</strong><pre>" + (text || '<font color="red">Error: ' + error + '</font>') + "</pre></li>";
+			const { error, format, text, hex } = results.get(i);
+			resultsDiv.innerHTML += "<li>Format: <strong>" + format + "</strong>"
+				+ "<p>Hex:" + hex + "</p>"
+				+ "<pre><a>" + (text || '<font color="red">Error: ' + error + '</font>') + "</a></pre>"+
+				+"</li>";
 		}
 	}
 }
