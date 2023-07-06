@@ -54,7 +54,7 @@ static void PrintUsage(const char* exePath)
 static bool ParseOptions(int argc, char* argv[], DecodeHints& hints, bool& oneLine, bool& bytesOnly,
 						 std::vector<std::string>& filePaths, std::string& outPath)
 {
-#ifdef BUILD_EXPERIMENTAL_API
+#ifdef ZXING_BUILD_EXPERIMENTAL_API
 	hints.setTryDenoise(true);
 #endif
 
@@ -62,7 +62,7 @@ static bool ParseOptions(int argc, char* argv[], DecodeHints& hints, bool& oneLi
 		auto is = [&](const char* str) { return strncmp(argv[i], str, strlen(argv[i])) == 0; };
 		if (is("-fast")) {
 			hints.setTryHarder(false);
-#ifdef BUILD_EXPERIMENTAL_API
+#ifdef ZXING_BUILD_EXPERIMENTAL_API
 			hints.setTryDenoise(false);
 #endif
 		} else if (is("-norotate")) {

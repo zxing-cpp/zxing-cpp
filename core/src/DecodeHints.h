@@ -63,7 +63,7 @@ class DecodeHints
 	Binarizer _binarizer           : 2;
 	TextMode _textMode             : 3;
 	CharacterSet _characterSet     : 6;
-#ifdef BUILD_EXPERIMENTAL_API
+#ifdef ZXING_BUILD_EXPERIMENTAL_API
 	bool _tryDenoise               : 1;
 #endif
 
@@ -90,7 +90,7 @@ public:
 		  _binarizer(Binarizer::LocalAverage),
 		  _textMode(TextMode::HRI),
 		  _characterSet(CharacterSet::Unknown)
-#ifdef BUILD_EXPERIMENTAL_API
+#ifdef ZXING_BUILD_EXPERIMENTAL_API
 		  ,
 		  _tryDenoise(0)
 #endif
@@ -116,7 +116,7 @@ public:
 	/// Also try detecting code in downscaled images (depending on image size).
 	ZX_PROPERTY(bool, tryDownscale, setTryDownscale)
 
-#ifdef BUILD_EXPERIMENTAL_API
+#ifdef ZXING_BUILD_EXPERIMENTAL_API
 	/// Also try detecting code after denoising (currently morphological closing filter for 2D symbologies only).
 	ZX_PROPERTY(bool, tryDenoise, setTryDenoise)
 #endif
