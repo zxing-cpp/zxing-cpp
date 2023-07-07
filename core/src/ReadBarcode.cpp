@@ -145,14 +145,15 @@ Results ReadBarcodes(const ImageView& _iv, const DecodeHints& hints)
 	if (hints.isPure())
 		return {reader.read(*CreateBitmap(hints.binarizer(), iv))};
 
-	auto formatsBenefittingFromClosing = BarcodeFormat::Aztec | BarcodeFormat::DataMatrix | BarcodeFormat::QRCode | BarcodeFormat::MicroQRCode;
-	DecodeHints closedHints = hints;
 	std::unique_ptr<MultiFormatReader> closedReader;
+#ifdef BUILD_EXPERIMENTAL_API
+	auto formatsBenefittingFromClosing = BarcodeFormat::Aztec | BarcodeFormat::DataMatrix | BarcodeFormat::QRCode | BarcodeFormat::MicroQRCode;
 	if (hints.tryDenoise() && hints.hasFormat(formatsBenefittingFromClosing)) {
+		DecodeHints closedHints = hints;
 		closedHints.setFormats((hints.formats().empty() ? BarcodeFormat::Any : hints.formats()) & formatsBenefittingFromClosing);
 		closedReader = std::make_unique<MultiFormatReader>(closedHints);
 	}
-
+#endif
 	LumImagePyramid pyramid(iv, hints.downscaleThreshold() * hints.tryDownscale(), hints.downscaleFactor());
 
 	Results results;

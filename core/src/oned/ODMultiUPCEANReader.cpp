@@ -290,6 +290,10 @@ Result MultiUPCEANReader::decodePattern(int rowNumber, PatternView& next, std::u
 		res.format = BarcodeFormat::UPCA;
 	}
 
+	// if we explicitly requested UPCA but not EAN13, don't return an EAN13 symbol
+	if (res.format == BarcodeFormat::EAN13 && ! _hints.hasFormat(BarcodeFormat::EAN13))
+		return {};
+
 	// Symbology identifier modifiers ISO/IEC 15420:2009 Annex B Table B.1
 	// ISO/IEC 15420:2009 (& GS1 General Specifications 5.1.3) states that the content for "]E0" should be 13 digits,
 	// i.e. converted to EAN-13 if UPC-A/E, but not doing this here to maintain backward compatibility

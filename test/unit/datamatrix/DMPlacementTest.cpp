@@ -28,20 +28,20 @@ namespace {
 
 TEST(DMPlacementTest, Placement)
 {
-    auto codewords = Unvisualize("66 74 78 66 74 78 129 56 35 102 192 96 226 100 156 1 107 221"); //"AIMAIM" encoded
-    auto matrix = BitMatrixFromCodewords(codewords, 12, 12);
-    std::string expected =
-        "011100001111\n"
-        "001010101000\n"
-        "010001010100\n"
-        "001010100010\n"
-        "000111000100\n"
-        "011000010100\n"
-        "000100001101\n"
-        "011000010000\n"
-        "001100001101\n"
-        "100010010111\n"
-        "011101011010\n"
-        "001011001010\n";
-    EXPECT_EQ(expected, ToString(matrix, '1', '0', false));
-  }
+		auto codewords = Unvisualize("66 74 78 66 74 78 129 56 35 102 192 96 226 100 156 1 107 221"); //"AIMAIM" encoded
+		auto matrix = BitMatrixFromCodewords(codewords, 12, 12);
+		std::string expected =
+			"011100001111\n"
+			"001010101000\n"
+			"010001010100\n"
+			"001010100010\n"
+			"000111000100\n"
+			"011000010100\n"
+			"000100001101\n"
+			"011000010000\n"
+			"001100001101\n"
+			"100010010111\n"
+			"011101011010\n"
+			"001011001010\n";
+		EXPECT_EQ(expected, ToString(matrix, '1', '0', false));
+}

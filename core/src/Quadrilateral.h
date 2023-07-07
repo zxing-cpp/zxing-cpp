@@ -132,11 +132,20 @@ bool IsInside(const PointT& p, const Quadrilateral<PointT>& q)
 }
 
 template <typename PointT>
+Quadrilateral<PointT> BoundingBox(const Quadrilateral<PointT>& q)
+{
+	auto [minX, maxX] = std::minmax({q[0].x, q[1].x, q[2].x, q[3].x});
+	auto [minY, maxY] = std::minmax({q[0].y, q[1].y, q[2].y, q[3].y});
+	return {PointT{minX, minY}, {maxX, minY}, {maxX, maxY}, {minX, maxY}};
+}
+
+template <typename PointT>
 bool HaveIntersectingBoundingBoxes(const Quadrilateral<PointT>& a, const Quadrilateral<PointT>& b)
 {
-	// TODO: this is only a quick and dirty approximation that works for the trivial standard cases
-	bool x = b.topRight().x < a.topLeft().x || b.topLeft().x > a.topRight().x;
-	bool y = b.bottomLeft().y < a.topLeft().y || b.topLeft().y > a.bottomLeft().y;
+	auto bba = BoundingBox(a), bbb = BoundingBox(b);
+
+	bool x = bbb.topRight().x < bba.topLeft().x || bbb.topLeft().x > bba.topRight().x;
+	bool y = bbb.bottomLeft().y < bba.topLeft().y || bbb.topLeft().y > bba.bottomLeft().y;
 	return !(x || y);
 }
 

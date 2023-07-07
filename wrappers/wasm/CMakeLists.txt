@@ -5,7 +5,7 @@ project (ZXingWasm)
 include (${CMAKE_CURRENT_SOURCE_DIR}/../../zxing.cmake)
 zxing_add_package_stb()
 
-set (CMAKE_CXX_STANDARD 17)
+set (CMAKE_CXX_STANDARD 20)
 
 option (BUILD_WRITERS "Build with writer support (encoders)" ON)
 option (BUILD_READERS "Build with reader support (decoders)" ON)
@@ -28,11 +28,14 @@ if (BUILD_READERS AND BUILD_WRITERS)
 endif()
 
 if (BUILD_READERS)
+    configure_file(demo_cam_reader.html demo_cam_reader.html COPYONLY)
+    configure_file(demo_reader.html demo_reader.html COPYONLY)
     add_executable (zxing_reader BarcodeReader.cpp)
     target_link_libraries (zxing_reader ZXing::ZXing stb::stb)
 endif()
 
 if (BUILD_WRITERS)
+    configure_file(demo_writer.html demo_writer.html COPYONLY)
     add_executable (zxing_writer BarcodeWriter.cpp )
     target_link_libraries (zxing_writer ZXing::ZXing stb::stb)
 endif()

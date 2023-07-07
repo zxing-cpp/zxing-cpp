@@ -31,7 +31,7 @@ class MultiFormatReader
 public:
 	explicit MultiFormatReader(const DecodeHints& hints);
 	explicit MultiFormatReader(DecodeHints&& hints) = delete;
-    ~MultiFormatReader();
+	~MultiFormatReader();
 
 	Result read(const BinaryBitmap& image) const;
 

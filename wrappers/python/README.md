@@ -30,3 +30,5 @@ for result in results:
 if len(results) == 0:
 	print("Could not find any barcode.")
 ```
+
+To get a full list of available parameters for `read_barcodes` and `write_barcode` as well as the properties of the result objects, have a look at the `PYBIND11_MODULE` definition in [this c++ source file](https://github.com/zxing-cpp/zxing-cpp/blob/master/wrappers/python/zxing.cpp).
