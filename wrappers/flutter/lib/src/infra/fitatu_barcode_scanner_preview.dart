@@ -4,11 +4,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../pigeon.dart';
-
-import 'android/android_fitatu_scanner_preview.dart';
-import 'common/common_fitatu_scanner_preview.dart';
 import '../scanner_preview_mixin.dart';
+import 'android/android_fitatu_scanner_preview.dart';
 import 'android/camera_permissions_guard.dart';
+import 'common/common_fitatu_scanner_preview.dart';
 
 class FitatuBarcodeScannerPreview extends StatefulWidget {
   const FitatuBarcodeScannerPreview({
@@ -17,20 +16,20 @@ class FitatuBarcodeScannerPreview extends StatefulWidget {
     required this.options,
     this.alwaysUseCommon = false,
     this.onChanged,
+    this.onError,
   });
 
   final ScannerOptions options;
   final ValueChanged<String> onSuccess;
   final bool alwaysUseCommon;
   final VoidCallback? onChanged;
+  final Function(String error)? onError;
 
   @override
-  State<FitatuBarcodeScannerPreview> createState() =>
-      FitatuBarcodeScannerPreviewState();
+  State<FitatuBarcodeScannerPreview> createState() => FitatuBarcodeScannerPreviewState();
 }
 
-class FitatuBarcodeScannerPreviewState
-    extends State<FitatuBarcodeScannerPreview> with ScannerPreviewMixin {
+class FitatuBarcodeScannerPreviewState extends State<FitatuBarcodeScannerPreview> with ScannerPreviewMixin {
   late final _key = GlobalKey<ScannerPreviewMixin>();
 
   @override
@@ -40,6 +39,7 @@ class FitatuBarcodeScannerPreviewState
           onSuccess: widget.onSuccess,
           options: widget.options,
           onChanged: widget.onChanged,
+          onError: widget.onError,
         );
 
     if (widget.alwaysUseCommon || kIsWeb) {
