@@ -23,7 +23,7 @@ class Reader : public ZXing::Reader
 {
 public:
 	explicit Reader(const DecodeHints& hints);
-    ~Reader() override;
+	~Reader() override;
 
 	Result decode(const BinaryBitmap& image) const override;
 	Results decode(const BinaryBitmap& image, int maxSymbols) const override;

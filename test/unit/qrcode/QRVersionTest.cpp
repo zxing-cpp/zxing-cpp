@@ -34,35 +34,35 @@ namespace {
 
 TEST(QRVersionTest, VersionForNumber)
 {
-    auto version = Version::FromNumber(0);
-    EXPECT_EQ(version, nullptr) << "There is version with number 0";
+	auto version = Version::FromNumber(0);
+	EXPECT_EQ(version, nullptr) << "There is version with number 0";
 
 	for (int i = 1; i <= 40; i++) {
 		CheckVersion(Version::FromNumber(i), i, 4*i + 17);
-    }
+	}
 }
 
 
 TEST(QRVersionTest, GetProvisionalVersionForDimension)
 {
-    for (int i = 1; i <= 40; i++) {
+	for (int i = 1; i <= 40; i++) {
 		auto prov = Version::FromDimension(4 * i + 17);
 		ASSERT_NE(prov, nullptr);
 		EXPECT_EQ(i, prov->versionNumber());
-    }
+	}
 }
 
 TEST(QRVersionTest, DecodeVersionInformation)
 {
-    // Spot check
-    DoTestVersion(7, 0x07C94);
-    DoTestVersion(12, 0x0C762);
-    DoTestVersion(17, 0x1145D);
-    DoTestVersion(22, 0x168C9);
-    DoTestVersion(27, 0x1B08E);
-    DoTestVersion(32, 0x209D5);
+	// Spot check
+	DoTestVersion(7, 0x07C94);
+	DoTestVersion(12, 0x0C762);
+	DoTestVersion(17, 0x1145D);
+	DoTestVersion(22, 0x168C9);
+	DoTestVersion(27, 0x1B08E);
+	DoTestVersion(32, 0x209D5);
 }
-  
+
 TEST(QRVersionTest, MicroVersionForNumber)
 {
 	auto version = Version::FromNumber(0, true);

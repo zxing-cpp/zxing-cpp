@@ -16,8 +16,8 @@ TEST(PDF417WriterTest, DataMatrixImageWriter)
 {
 	Writer writer;
 	writer.setMargin(0);
-    int size = 64;
-    BitMatrix matrix = writer.encode(L"Hello Google", size, size);
+	int size = 64;
+	BitMatrix matrix = writer.encode(L"Hello Google", size, size);
 	auto actual = ToString(matrix, 'X', ' ', true);
 	EXPECT_EQ(actual,
         "X X X X X X X X   X   X   X       X X X X X   X   X   X X X X X     X X   X   X         X X           X X X X   X X     X     X X X     X X X X   X   X   X X X X         X X X X X X X   X       X   X     X \n"

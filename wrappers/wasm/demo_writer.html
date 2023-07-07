@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -6,7 +7,6 @@
 	<title>zxing-cpp/wasm writer demo</title>
 	<link rel="shortcut icon" href="#" />
 	<script src="zxing_writer.js"></script>
-	<script src="base64ArrayBuffer.js"></script>
 	<script>
 var zxing = ZXing().then(function(instance) {
 	zxing = instance; // this line is supposedly not required but with current emsdk it is :-/
@@ -39,7 +39,7 @@ function showImage(container, fileData) {
 		container.style.width = img.width + 'px';
 		container.style.height = img.height + 'px';
 	});
-	img.src = "data:image/png;base64," + base64ArrayBuffer(fileData);
+	img.src = URL.createObjectURL(new Blob([fileData]))
 	container.appendChild(img);
 }
 	</script>

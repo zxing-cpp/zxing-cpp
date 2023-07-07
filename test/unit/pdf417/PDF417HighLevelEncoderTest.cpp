@@ -24,7 +24,7 @@ TEST(PDF417HighLevelEncoderTest, EncodeAutoWithSpecialChars)
 	//Just check if this does not throw an exception
 	HighLevelEncoder::EncodeHighLevel(L"1%\xA7""s ?aG$", Compaction::AUTO, CharacterSet::UTF8);
 }
-  
+
 TEST(PDF417HighLevelEncoderTest, EncodeIso88591WithSpecialChars)
 {
 	// Just check if this does not throw an exception
@@ -33,7 +33,7 @@ TEST(PDF417HighLevelEncoderTest, EncodeIso88591WithSpecialChars)
 
 TEST(PDF417HighLevelEncoderTest, EncodeText)
 {
-    auto encoded = HighLevelEncoder::EncodeHighLevel(L"ABCD", Compaction::TEXT, CharacterSet::UTF8);
+	auto encoded = HighLevelEncoder::EncodeHighLevel(L"ABCD", Compaction::TEXT, CharacterSet::UTF8);
 	EXPECT_EQ(encoded, std::vector<int>({ 0x39f, 0x1a, 1, '?' }));
 }
 

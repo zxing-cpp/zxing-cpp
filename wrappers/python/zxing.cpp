@@ -70,7 +70,7 @@ auto read_barcodes_impl(py::object _image, const BarcodeFormats& formats, bool t
 		image = _image.cast<Image>();
 #if PYBIND11_VERSION_HEX > 0x02080000 // py::raise_from is available starting from 2.8.0
 	} catch (py::error_already_set &e) {
-		py::raise_from(e, PyExc_TypeError, ("Could not convert " + _type + " to numpy array.").c_str());
+		py::raise_from(e, PyExc_TypeError, ("Could not convert " + _type + " to numpy array of dtype 'uint8'.").c_str());
 		throw py::error_already_set();
 #endif
 	} catch (...) {

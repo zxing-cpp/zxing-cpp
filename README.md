@@ -62,7 +62,7 @@ As an example, have a look at [`ZXingWriter.cpp`](example/ZXingWriter.cpp).
 ## Web Demos
 - [Read barcodes](https://zxing-cpp.github.io/zxing-cpp/demo_reader.html)
 - [Write barcodes](https://zxing-cpp.github.io/zxing-cpp/demo_writer.html)
-- [Scan with camera](https://zxing-cpp.github.io/zxing-cpp/zxing_viddemo.html)
+- [Read barcodes from camera](https://zxing-cpp.github.io/zxing-cpp/demo_cam_reader.html)
 
 [Note: those live demos are not necessarily fully up-to-date at all times.]
 
