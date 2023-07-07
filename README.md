@@ -83,4 +83,4 @@ cmake --build zxing-cpp.release -j8
 [vcpkg](https://github.com/Microsoft/vcpkg/tree/master/ports/nu-book-zxing-cpp),
 [conan](https://github.com/conan-io/conan-center-index/tree/master/recipes/zxing-cpp),
 [mingw](https://github.com/msys2/MINGW-packages/tree/master/mingw-w64-zxing-cpp) and a bunch of
-[linux distributions](https://repology.org/project/zxing-cpp-nu-book/versions).]
+[linux distributions](https://repology.org/project/zxing-cpp/versions).]
