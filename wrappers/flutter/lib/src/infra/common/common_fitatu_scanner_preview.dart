@@ -26,6 +26,7 @@ class CommonFitatuScannerPreview extends StatefulWidget {
 
 class CommonFitatuScannerPreviewState extends State<CommonFitatuScannerPreview> with ScannerPreviewMixin {
   late final MobileScannerController controller;
+  String? scannerError;
 
   @override
   void initState() {
@@ -40,26 +41,18 @@ class CommonFitatuScannerPreviewState extends State<CommonFitatuScannerPreview> 
   void dispose() {
     controller.hasTorchState.removeListener(_torchChangeListener);
     controller.dispose();
+    scannerError = null;
 
     super.dispose();
   }
 
   void _handleError(MobileScannerException exception) {
-    late String errorMessage;
-    switch (exception.errorCode) {
-      case MobileScannerErrorCode.controllerUninitialized:
-        errorMessage = '[Scanner] Controller not ready.';
-        break;
-      case MobileScannerErrorCode.permissionDenied:
-        errorMessage = '[Scanner] Permission denied';
-        break;
-      default:
-        errorMessage = '[Scanner] Generic Error';
-        break;
-    }
-
-    errorMessage = exception.errorDetails?.message != null ? '$errorMessage - ${exception.errorDetails!.message}' : errorMessage;
-    widget.onError?.call(errorMessage);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (scannerError != exception.toString()) {
+        widget.onError?.call(exception.toString());
+        scannerError = exception.toString();
+      }
+    });
   }
 
   void _torchChangeListener() => widget.onChanged?.call();
