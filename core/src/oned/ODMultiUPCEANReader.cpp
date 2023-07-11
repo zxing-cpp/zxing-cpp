@@ -70,7 +70,7 @@ static bool DecodeDigit(const PatternView& view, std::string& txt, int* lgPatter
 
 	// clang-format off
 /* pattern now contains the central 5 bits of the L/G/R code
- * L/G-codes always wart with 1 and end with 0, R-codes are simply
+ * L/G-codes always start with 1 and end with 0, R-codes are simply
  * inverted L-codes.
 
 		L-Code  G-Code  R-Code
