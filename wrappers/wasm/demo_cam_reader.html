@@ -111,12 +111,16 @@
 			}
 		}
 
+		function escapeTags(htmlStr) {
+			return htmlStr.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+		}
+
 		const processFrame = function () {
 			ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
 			const code = readBarcodeFromCanvas(canvas, format.value, mode.value === 'true');
 			if (code.format) {
-				resultElement.innerText = code.format + ": " + code.text;
+				resultElement.innerText = code.format + ": " + escapeTags(code.text);
 				drawResult(code)
 			} else {
 				resultElement.innerText = "No barcode found";

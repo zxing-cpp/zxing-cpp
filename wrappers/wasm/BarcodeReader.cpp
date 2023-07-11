@@ -20,9 +20,16 @@ struct ReadResult
 {
 	std::string format{};
 	std::string text{};
+	std::string bytes{};
 	std::string error{};
 	Position position{};
 	std::string symbologyIdentifier{};
+
+//	The following seemed like the way to go, because the bytes member on the JS side would then automatically be a Uint8Array
+//	but unfortunatelly, I don't understand something about the memory management, because the resulting array could contain 8 bytes of garbage.
+//	ByteArray bytes;
+//	emscripten::val get_bytes() const { return emscripten::val(emscripten::typed_memory_view(bytes.size(), bytes.data())); }
+//	void set_bytes(emscripten::val) {} // dummy setter
 };
 
 std::vector<ReadResult> readBarcodes(ImageView iv, bool tryHarder, const std::string& format, int maxSymbols)
@@ -42,15 +49,16 @@ std::vector<ReadResult> readBarcodes(ImageView iv, bool tryHarder, const std::st
 		std::vector<ReadResult> readResults{};
 		readResults.reserve(results.size());
 
-		for (auto& result : results) {
-			readResults.push_back({ToString(result.format()), result.text(), ToString(result.error()), result.position(), result.symbologyIdentifier()});
+		for (auto&& result : results) {
+			readResults.push_back({ToString(result.format()), result.text(), std::string(result.bytes().asString()),
+								   ToString(result.error()), result.position(), result.symbologyIdentifier()});
 		}
 
 		return readResults;
 	} catch (const std::exception& e) {
-		return {{"", "", e.what()}};
+		return {{"", "", {}, e.what()}};
 	} catch (...) {
-		return {{"", "", "Unknown error"}};
+		return {{"", "", {}, "Unknown error"}};
 	}
 	return {};
 }
@@ -62,7 +70,7 @@ std::vector<ReadResult> readBarcodesFromImage(int bufferPtr, int bufferLength, b
 		stbi_load_from_memory(reinterpret_cast<const unsigned char*>(bufferPtr), bufferLength, &width, &height, &channels, 1),
 		stbi_image_free);
 	if (buffer == nullptr)
-		return {{"", "", "Error loading image"}};
+		return {{"", "", {}, "Error loading image"}};
 
 	return readBarcodes({buffer.get(), width, height, ImageFormat::Lum}, tryHarder, format, maxSymbols);
 }
@@ -89,6 +97,7 @@ EMSCRIPTEN_BINDINGS(BarcodeReader)
 	value_object<ReadResult>("ReadResult")
 		.field("format", &ReadResult::format)
 		.field("text", &ReadResult::text)
+		.field("bytes", &ReadResult::bytes)
 		.field("error", &ReadResult::error)
 		.field("position", &ReadResult::position)
 		.field("symbologyIdentifier", &ReadResult::symbologyIdentifier);
