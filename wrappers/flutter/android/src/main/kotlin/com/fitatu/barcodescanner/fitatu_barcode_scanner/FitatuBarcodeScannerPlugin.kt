@@ -9,6 +9,9 @@ import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 class FitatuBarcodeScannerPlugin : FlutterPlugin, ActivityAware {
     private lateinit var scanner: FitatuBarcodeScanner
     private lateinit var flutterPluginBinding: FlutterPlugin.FlutterPluginBinding
+    private lateinit var fitatuBarcodeScannerFlutterApi: FitatuBarcodeScannerFlutterApi
+    private lateinit var legacyFitatuBarcodeScanner: LegacyFitatuBarcodeScanner
+    private lateinit var legacyFitatuBarcodeScannerHostApi: LegacyFitatuBarcodeScannerHostApi
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         this.flutterPluginBinding = flutterPluginBinding
@@ -18,11 +21,22 @@ class FitatuBarcodeScannerPlugin : FlutterPlugin, ActivityAware {
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+        fitatuBarcodeScannerFlutterApi = FitatuBarcodeScannerFlutterApi(
+            flutterPluginBinding.binaryMessenger
+        )
+        legacyFitatuBarcodeScanner = LegacyFitatuBarcodeScanner(
+            fitatuBarcodeScannerFlutterApi,
+            binding
+        )
         scanner = FitatuBarcodeScanner(
             binding.activity as LifecycleOwner,
             flutterPluginBinding.applicationContext,
             flutterPluginBinding.textureRegistry,
-            FitatuBarcodeScannerFlutterApi(flutterPluginBinding.binaryMessenger),
+            fitatuBarcodeScannerFlutterApi,
+        )
+        LegacyFitatuBarcodeScannerHostApi.setUp(
+            flutterPluginBinding.binaryMessenger,
+            legacyFitatuBarcodeScanner
         )
         FitatuBarcodeScannerHostApi.setUp(flutterPluginBinding.binaryMessenger, scanner)
     }

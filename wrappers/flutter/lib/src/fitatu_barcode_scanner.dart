@@ -1,23 +1,30 @@
 import 'package:fitatu_barcode_scanner/pigeon.dart';
 import 'package:flutter/foundation.dart';
 
-class FitatuBarcodeScanner extends ChangeNotifier
-    implements FitatuBarcodeScannerHostApi, FitatuBarcodeScannerFlutterApi {
+typedef ScannerErrorCallback = void Function(String? error);
+
+class FitatuBarcodeScanner extends ChangeNotifier implements FitatuBarcodeScannerHostApi, FitatuBarcodeScannerFlutterApi {
   FitatuBarcodeScanner({
     required this.onResult,
+    required this.onError,
   }) {
     FitatuBarcodeScannerFlutterApi.setup(this);
   }
 
   final _api = FitatuBarcodeScannerHostApi();
 
-  final ValueChanged<ScanResult> onResult;
+  final ValueChanged<String?> onResult;
+  final ScannerErrorCallback? onError;
   var _isTorchEnabled = false;
   bool get isTorchEnabled => _isTorchEnabled;
   CameraConfig? _cameraConfig;
   CameraConfig? get cameraConfig => _cameraConfig;
-  ScanResult? _scanResult;
-  ScanResult? get scanResult => _scanResult;
+  String? _code;
+  String? get code => _code;
+  String? _error;
+  String? get error => _error;
+  CameraImage? _cameraImage;
+  CameraImage? get cameraImage => _cameraImage;
 
   var _isDisposed = false;
 
@@ -47,15 +54,15 @@ class FitatuBarcodeScanner extends ChangeNotifier
   }
 
   @override
-  void result(ScanResult scanResult) {
-    _scanResult = scanResult;
-    onResult(scanResult);
+  void result(String? code) {
+    _code = code;
+    _error = null;
+    onResult(code);
     notifyListeners();
   }
 
   @override
-  Future<void> setTorchEnabled(bool isEnabled) =>
-      _api.setTorchEnabled(isEnabled);
+  Future<void> setTorchEnabled(bool isEnabled) => _api.setTorchEnabled(isEnabled);
 
   @override
   void onTorchStateChanged(bool isEnabled) {
@@ -67,5 +74,18 @@ class FitatuBarcodeScanner extends ChangeNotifier
   void notifyListeners() {
     if (_isDisposed) return;
     super.notifyListeners();
+  }
+
+  @override
+  void onScanError(String error) {
+    _error = error;
+    onError?.call(error);
+    notifyListeners();
+  }
+
+  @override
+  void onCameraImage(CameraImage cameraImage) {
+    _cameraImage = cameraImage;
+    notifyListeners();
   }
 }

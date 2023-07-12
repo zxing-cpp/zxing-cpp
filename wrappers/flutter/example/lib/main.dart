@@ -29,7 +29,9 @@ class _MyAppState extends State<MyApp> {
   bool started = false;
   bool enableTorch = false;
   bool fullscreen = false;
+  double cropPercent = 0.8;
   String? code;
+  String? error;
   late final _previewKey = GlobalKey<FitatuBarcodeScannerPreviewState>();
 
   @override
@@ -40,7 +42,7 @@ class _MyAppState extends State<MyApp> {
       tryRotate: tryRotate,
       tryInvert: tryInvert,
       qrCode: qrCode,
-      cropPercent: 0.8,
+      cropPercent: cropPercent,
       scanDelay: 50,
       scanDelaySuccess: 300,
     );
@@ -51,17 +53,75 @@ class _MyAppState extends State<MyApp> {
             key: _previewKey,
             options: options,
             alwaysUseCommon: alwaysUseCommon,
-            onSuccess: (value) {
+            onResult: (value) {
               setState(() {
                 code = value;
+                error = null;
+              });
+            },
+            onError: (value) {
+              setState(() {
+                code = null;
+                error = value;
               });
             },
             onChanged: () {
               setState(() {
-                enableTorch =
-                    _previewKey.currentState?.isTorchEnabled() ?? false;
+                enableTorch = _previewKey.currentState?.isTorchEnabled() ?? false;
               });
             },
+          ),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Align(
+                alignment: Alignment.topCenter,
+                child: Container(
+                  margin: const EdgeInsets.all(16),
+                  constraints: const BoxConstraints(
+                    minWidth: 200,
+                    minHeight: 20,
+                  ),
+                  color: Colors.white.withOpacity(0.5),
+                  child: Text(
+                    code ?? '<no results>',
+                    style: const TextStyle(color: Colors.black),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+              Align(
+                alignment: Alignment.topCenter,
+                child: Container(
+                  margin: const EdgeInsets.all(16),
+                  constraints: const BoxConstraints(
+                    minWidth: 200,
+                    minHeight: 20,
+                  ),
+                  color: Colors.white.withOpacity(0.5),
+                  child: Text(
+                    error ?? '<no errors>',
+                    style: const TextStyle(color: Colors.black),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          Align(
+            alignment: Alignment.bottomRight,
+            child: IconButton(
+              onPressed: () {
+                setState(() {
+                  enableTorch = !enableTorch;
+                });
+                _previewKey.currentState?.setTorchEnabled(isEnabled: enableTorch);
+              },
+              icon: Icon(
+                enableTorch ? Icons.flash_off : Icons.flash_on,
+              ),
+            ),
           ),
           Align(
             alignment: Alignment.bottomLeft,
@@ -79,6 +139,11 @@ class _MyAppState extends State<MyApp> {
     );
 
     return MaterialApp(
+      theme: ThemeData(
+        iconTheme: const IconThemeData(
+          color: Colors.white,
+        ),
+      ),
       home: fullscreen
           ? preview
           : DefaultTabController(
@@ -96,44 +161,7 @@ class _MyAppState extends State<MyApp> {
                 body: TabBarView(
                   children: [
                     if (started)
-                      Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          preview,
-                          Align(
-                            alignment: Alignment.topCenter,
-                            child: Container(
-                              margin: const EdgeInsets.all(16),
-                              constraints: const BoxConstraints(
-                                minWidth: 200,
-                                minHeight: 20,
-                              ),
-                              color: Colors.white.withOpacity(0.5),
-                              child: Text(
-                                code ?? '<no results>',
-                                style: const TextStyle(color: Colors.black),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          ),
-                          Align(
-                            alignment: Alignment.bottomRight,
-                            child: IconButton(
-                              onPressed: () {
-                                setState(() {
-                                  enableTorch = !enableTorch;
-                                });
-                                _previewKey.currentState
-                                    ?.setTorchEnabled(isEnabled: enableTorch);
-                              },
-                              icon: Icon(
-                                enableTorch ? Icons.flash_off : Icons.flash_on,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ),
-                        ],
-                      )
+                      preview
                     else
                       MaterialButton(
                         child: const Text('Tap to start'),
@@ -145,10 +173,7 @@ class _MyAppState extends State<MyApp> {
                           SwitchListTile(
                             value: alwaysUseCommon,
                             title: const Text('alwaysUseCommon'),
-                            onChanged: isAndroid
-                                ? (value) => setState(
-                                    () => alwaysUseCommon = !alwaysUseCommon)
-                                : null,
+                            onChanged: isAndroid ? (value) => setState(() => alwaysUseCommon = !alwaysUseCommon) : null,
                             subtitle: !isAndroid
                                 ? const Text(
                                     'Options is available only on Android device',
@@ -158,26 +183,34 @@ class _MyAppState extends State<MyApp> {
                           SwitchListTile(
                             value: tryHarder,
                             title: const Text('tryHarder'),
-                            onChanged: (value) =>
-                                setState(() => tryHarder = !tryHarder),
+                            onChanged: (value) => setState(() => tryHarder = !tryHarder),
                           ),
                           SwitchListTile(
                             value: tryRotate,
                             title: const Text('tryRotate'),
-                            onChanged: (value) =>
-                                setState(() => tryRotate = !tryRotate),
+                            onChanged: (value) => setState(() => tryRotate = !tryRotate),
                           ),
                           SwitchListTile(
                             value: tryInvert,
                             title: const Text('tryInvert'),
-                            onChanged: (value) =>
-                                setState(() => tryInvert = !tryInvert),
+                            onChanged: (value) => setState(() => tryInvert = !tryInvert),
                           ),
                           SwitchListTile(
                             value: qrCode,
                             title: const Text('qrCode'),
-                            onChanged: (value) =>
-                                setState(() => qrCode = !qrCode),
+                            onChanged: (value) => setState(() => qrCode = !qrCode),
+                          ),
+                          Slider(
+                            value: cropPercent,
+                            max: 1,
+                            divisions: 10,
+                            label: cropPercent.toString(),
+                            onChanged: (value) {
+                              if (value < 0.1) return;
+                              setState(() {
+                                cropPercent = value;
+                              });
+                            },
                           ),
                         ],
                       ),

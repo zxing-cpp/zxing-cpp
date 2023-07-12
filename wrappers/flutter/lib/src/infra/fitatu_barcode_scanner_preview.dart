@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:fitatu_barcode_scanner/fitatu_barcode_scanner.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -10,54 +11,66 @@ import 'common/common_fitatu_scanner_preview.dart';
 import '../scanner_preview_mixin.dart';
 import 'android/camera_permissions_guard.dart';
 
+typedef PreviewOverlayBuilder = Widget Function(BuildContext context, CameraPreviewMetrix metrix);
+
 class FitatuBarcodeScannerPreview extends StatefulWidget {
   const FitatuBarcodeScannerPreview({
     super.key,
-    required this.onSuccess,
+    required this.onResult,
     required this.options,
-    this.alwaysUseCommon = false,
+    this.onError,
     this.onChanged,
+    this.alwaysUseCommon = false,
+    this.previewOverlayBuilder,
+    this.theme = const PreviewOverlayThemeData(),
   });
 
   final ScannerOptions options;
-  final ValueChanged<String> onSuccess;
-  final bool alwaysUseCommon;
+  final ValueChanged<String?> onResult;
+  final ScannerErrorCallback? onError;
   final VoidCallback? onChanged;
+  final bool alwaysUseCommon;
+  final PreviewOverlayBuilder? previewOverlayBuilder;
+  final PreviewOverlayThemeData theme;
 
   @override
-  State<FitatuBarcodeScannerPreview> createState() =>
-      FitatuBarcodeScannerPreviewState();
+  State<FitatuBarcodeScannerPreview> createState() => FitatuBarcodeScannerPreviewState();
 }
 
-class FitatuBarcodeScannerPreviewState
-    extends State<FitatuBarcodeScannerPreview> with ScannerPreviewMixin {
+class FitatuBarcodeScannerPreviewState extends State<FitatuBarcodeScannerPreview> with ScannerPreviewMixin {
   late final _key = GlobalKey<ScannerPreviewMixin>();
 
   @override
   Widget build(BuildContext context) {
+    late Widget preview;
+
     Widget getCommonScanner() => CommonFitatuScannerPreview(
           key: _key,
-          onSuccess: widget.onSuccess,
+          onResult: widget.onResult,
           options: widget.options,
           onChanged: widget.onChanged,
+          onError: widget.onError,
+          overlayBuilder: widget.previewOverlayBuilder,
         );
 
     if (widget.alwaysUseCommon || kIsWeb) {
-      return getCommonScanner();
-    }
-
-    if (Platform.isAndroid) {
-      return CameraPermissionsGuard(
+      preview = getCommonScanner();
+    } else if (Platform.isAndroid) {
+      preview = CameraPermissionsGuard(
         child: AndroidFitatuScannerPreview(
           key: _key,
-          onSuccess: widget.onSuccess,
+          onResult: widget.onResult,
           options: widget.options,
           onChanged: widget.onChanged,
+          onError: widget.onError,
+          overlayBuilder: widget.previewOverlayBuilder,
         ),
       );
+    } else {
+      preview = getCommonScanner();
     }
 
-    return getCommonScanner();
+    return PreviewOverlayTheme(themeData: widget.theme, child: preview);
   }
 
   @override
