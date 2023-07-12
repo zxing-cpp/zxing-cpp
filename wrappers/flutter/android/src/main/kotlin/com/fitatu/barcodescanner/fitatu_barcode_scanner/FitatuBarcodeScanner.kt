@@ -2,17 +2,8 @@ package com.fitatu.barcodescanner.fitatu_barcode_scanner
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Canvas
-import android.graphics.ColorMatrix
-import android.graphics.ColorMatrixColorFilter
-import android.graphics.ImageFormat
-import android.graphics.Matrix
-import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.SurfaceTexture
-import android.graphics.YuvImage
 import android.hardware.camera2.CameraMetadata
 import android.hardware.camera2.CaptureRequest
 import android.view.Surface
@@ -21,7 +12,6 @@ import androidx.camera.core.AspectRatio
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
-import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.core.SurfaceRequest
 import androidx.camera.core.TorchState
@@ -30,7 +20,6 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import com.zxingcpp.BarcodeReader
 import io.flutter.view.TextureRegistry
-import java.io.ByteArrayOutputStream
 import java.util.concurrent.Executors
 
 
@@ -205,51 +194,5 @@ class FitatuBarcodeScanner(
 
     override fun release() {
         cameraProvider?.unbindAll()
-    }
-
-    private fun createBitmap(imageProxy: ImageProxy): Bitmap = imageProxy.run {
-        val yBuffer = planes[0].buffer // Y
-        val vuBuffer = planes[2].buffer // VU
-
-        val ySize = yBuffer.remaining()
-        val vuSize = vuBuffer.remaining()
-
-        val nv21 = ByteArray(ySize + vuSize)
-
-        yBuffer.get(nv21, 0, ySize)
-        vuBuffer.get(nv21, ySize, vuSize)
-
-        val yuvImage = YuvImage(nv21, ImageFormat.NV21, width, height, null)
-        val outputStream = ByteArrayOutputStream()
-        yuvImage.compressToJpeg(cropRect, 75, outputStream)
-        val imageBytes = outputStream.toByteArray()
-
-        BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size).run {
-            val bmpGrayscale = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-            val canvas = Canvas(bmpGrayscale)
-            val paint = Paint()
-
-            val contrast = 5f
-            val brightness = 128f
-
-            val cm = ColorMatrix(
-                floatArrayOf(
-                    contrast, 0f, 0f, 0f, brightness,
-                    0f, contrast, 0f, 0f, brightness,
-                    0f, 0f, contrast, 0f, brightness,
-                    0f, 0f, 0f, 1f, 0f
-                )
-            ).apply { setSaturation(0f) }
-
-            val f = ColorMatrixColorFilter(cm)
-            paint.colorFilter = f
-
-            val matrix = Matrix().apply { postRotate(imageInfo.rotationDegrees.toFloat()) }
-            val rotatedBitmap = Bitmap.createBitmap(this, 0, 0, width, height, matrix, true)
-
-            canvas.drawBitmap(rotatedBitmap, 0f, 0f, paint)
-
-            rotatedBitmap
-        }
     }
 }
