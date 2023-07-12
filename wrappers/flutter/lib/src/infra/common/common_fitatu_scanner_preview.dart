@@ -38,6 +38,7 @@ class _CommonFitatuScannerPreviewState extends State<CommonFitatuScannerPreview>
   void initState() {
     WidgetsBinding.instance.addObserver(this);
     controller = MobileScannerController(autoStart: false);
+    controller.torchState.addListener(torchChangeListener);
     startScanner();
     super.initState();
   }
@@ -45,6 +46,7 @@ class _CommonFitatuScannerPreviewState extends State<CommonFitatuScannerPreview>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    controller.torchState.removeListener(torchChangeListener);
     stopScanner();
     super.dispose();
   }
@@ -122,7 +124,6 @@ class _CommonFitatuScannerPreviewState extends State<CommonFitatuScannerPreview>
   Future<void> setTorchEnabled({required bool isEnabled}) async {
     try {
       await controller.toggleTorch();
-      widget.onChanged?.call();
     } on Exception catch (e) {
       setException(e);
     } finally {
@@ -141,6 +142,7 @@ class _CommonFitatuScannerPreviewState extends State<CommonFitatuScannerPreview>
     try {
       isStarted = true;
       mobileScannerArguments = await controller.start();
+      await controller.resetZoomScale();
       setException(null);
     } on Exception catch (e) {
       isStarted = false;
@@ -176,4 +178,6 @@ class _CommonFitatuScannerPreviewState extends State<CommonFitatuScannerPreview>
   void setException(Exception? exception) {
     widget.onError?.call(exception?.toString());
   }
+
+  void torchChangeListener() => widget.onChanged?.call();
 }
