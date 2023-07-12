@@ -95,6 +95,8 @@ class FitatuBarcodeScanner(
                         CaptureRequest.CONTROL_SCENE_MODE,
                         CameraMetadata.CONTROL_SCENE_MODE_BARCODE
                     )
+                    // Those values are copied from zxingcpp android example.
+                    // This should reduce motion blur and improve barcode reading
                     setCaptureRequestOption(CaptureRequest.SENSOR_SENSITIVITY, 1600)
                     setCaptureRequestOption(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION, -8)
                 }
