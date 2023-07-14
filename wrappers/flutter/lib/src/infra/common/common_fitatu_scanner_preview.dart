@@ -143,6 +143,7 @@ class _CommonFitatuScannerPreviewState extends State<CommonFitatuScannerPreview>
       mobileScannerArguments = await controller.start();
       await controller.resetZoomScale();
       setException(null);
+      startRetryCount = 0;
     } on Exception catch (e) {
       isStarted = false;
       if (startRetryCount < 1) {
