@@ -43,6 +43,7 @@ class PreviewOverlayThemeData {
         laserLineColor,
         laserLineThickness,
         showLaserLine,
+        supportedOrientations,
       );
 
   @override
