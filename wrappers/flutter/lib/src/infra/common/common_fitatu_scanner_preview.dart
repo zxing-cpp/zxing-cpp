@@ -46,8 +46,7 @@ class _CommonFitatuScannerPreviewState extends State<CommonFitatuScannerPreview>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    controller.torchState.removeListener(torchChangeListener);
-    stopScanner();
+    disposeScanner();
     super.dispose();
   }
 
@@ -166,6 +165,16 @@ class _CommonFitatuScannerPreviewState extends State<CommonFitatuScannerPreview>
       setException(e);
     } finally {
       safeSetState();
+    }
+  }
+
+  void disposeScanner() {
+    try {
+      isStarted = false;
+      controller.torchState.removeListener(torchChangeListener);
+      controller.dispose();
+    } on Exception catch (e) {
+      setException(e);
     }
   }
 
