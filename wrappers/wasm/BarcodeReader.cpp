@@ -7,6 +7,7 @@
 #include "ReadBarcode.h"
 
 #include <emscripten/bind.h>
+#include <emscripten/val.h>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -20,16 +21,10 @@ struct ReadResult
 {
 	std::string format{};
 	std::string text{};
-	std::string bytes{};
+	emscripten::val bytes;
 	std::string error{};
 	Position position{};
 	std::string symbologyIdentifier{};
-
-//	The following seemed like the way to go, because the bytes member on the JS side would then automatically be a Uint8Array
-//	but unfortunatelly, I don't understand something about the memory management, because the resulting array could contain 8 bytes of garbage.
-//	ByteArray bytes;
-//	emscripten::val get_bytes() const { return emscripten::val(emscripten::typed_memory_view(bytes.size(), bytes.data())); }
-//	void set_bytes(emscripten::val) {} // dummy setter
 };
 
 std::vector<ReadResult> readBarcodes(ImageView iv, bool tryHarder, const std::string& format, int maxSymbols)
@@ -49,9 +44,18 @@ std::vector<ReadResult> readBarcodes(ImageView iv, bool tryHarder, const std::st
 		std::vector<ReadResult> readResults{};
 		readResults.reserve(results.size());
 
+		thread_local const emscripten::val Uint8Array = emscripten::val::global("Uint8Array");
+
 		for (auto&& result : results) {
-			readResults.push_back({ToString(result.format()), result.text(), std::string(result.bytes().asString()),
-								   ToString(result.error()), result.position(), result.symbologyIdentifier()});
+			const ByteArray& bytes = result.bytes();
+			readResults.push_back({
+				ToString(result.format()),
+				result.text(),
+				Uint8Array.new_(emscripten::typed_memory_view(bytes.size(), bytes.data())),
+				ToString(result.error()),
+				result.position(),
+				result.symbologyIdentifier()
+			});
 		}
 
 		return readResults;

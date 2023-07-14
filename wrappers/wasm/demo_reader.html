@@ -74,14 +74,6 @@ function escapeTags(htmlStr) {
 	return htmlStr.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
-function str2u8a(str) {
-	var bufView = new Uint8Array(new ArrayBuffer(str.length));
-	for (var i = 0; i < bufView.length; i++) {
-		bufView[i] = str.charCodeAt(i);
-	}
-	return bufView;
-}
-
 function u8a2hex(bytes) {
 	return bytes.reduce((a, b) => a + b.toString(16).padStart(2, '0') + ' ', '');
 }
@@ -97,7 +89,7 @@ function showResults(results) {
 			const { format, text, bytes, error } = results.get(i);
 			resultsDiv.innerHTML += "<li>Format: <strong>" + format + "</strong>"
 				+ "<pre>" + (escapeTags(text) || '<font color="red">Error: ' + error + '</font>') + "</pre>"
-				+ "<pre>" + u8a2hex(str2u8a(bytes)) + "</pre>"
+				+ "<pre>" + u8a2hex(bytes) + "</pre>"
 				+ "</li>";
 		}
 	}
