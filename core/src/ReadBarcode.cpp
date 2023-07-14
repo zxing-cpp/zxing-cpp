@@ -146,7 +146,7 @@ Results ReadBarcodes(const ImageView& _iv, const DecodeHints& hints)
 		return {reader.read(*CreateBitmap(hints.binarizer(), iv))};
 
 	std::unique_ptr<MultiFormatReader> closedReader;
-#ifdef BUILD_EXPERIMENTAL_API
+#ifdef ZXING_BUILD_EXPERIMENTAL_API
 	auto formatsBenefittingFromClosing = BarcodeFormat::Aztec | BarcodeFormat::DataMatrix | BarcodeFormat::QRCode | BarcodeFormat::MicroQRCode;
 	if (hints.tryDenoise() && hints.hasFormat(formatsBenefittingFromClosing)) {
 		DecodeHints closedHints = hints;
