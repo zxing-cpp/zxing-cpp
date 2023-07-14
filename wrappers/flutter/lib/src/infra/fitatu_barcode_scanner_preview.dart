@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:fitatu_barcode_scanner/fitatu_barcode_scanner.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../pigeon.dart';
 import '../scanner_preview_mixin.dart';
@@ -40,6 +42,18 @@ class FitatuBarcodeScannerPreviewState extends State<FitatuBarcodeScannerPreview
   late final _key = GlobalKey<ScannerPreviewMixin>();
 
   @override
+  void initState() {
+    unawaited(SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]));
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    unawaited(SystemChrome.setPreferredOrientations(widget.theme.supportedOrientations));
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     late Widget preview;
 
@@ -69,7 +83,10 @@ class FitatuBarcodeScannerPreviewState extends State<FitatuBarcodeScannerPreview
       preview = getCommonScanner();
     }
 
-    return PreviewOverlayTheme(themeData: widget.theme, child: preview);
+    return PreviewOverlayTheme(
+      themeData: widget.theme,
+      child: preview,
+    );
   }
 
   @override

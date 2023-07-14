@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 class PreviewOverlayTheme extends InheritedWidget {
@@ -26,12 +27,14 @@ class PreviewOverlayThemeData {
   final Color laserLineColor;
   final double laserLineThickness;
   final bool showLaserLine;
+  final List<DeviceOrientation> supportedOrientations;
 
   const PreviewOverlayThemeData({
     this.overlayColor = const Color(0x80000000),
     this.laserLineColor = const Color(0xFFFF3939),
     this.laserLineThickness = 1.0,
     this.showLaserLine = true,
+    this.supportedOrientations = DeviceOrientation.values,
   });
 
   @override
