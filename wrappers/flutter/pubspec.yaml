@@ -12,7 +12,7 @@ dependencies:
   plugin_platform_interface: ^2.0.2
   permission_handler: ^10.2.0
   # support iOS
-  mobile_scanner: ^3.2.0
+  mobile_scanner: ^3.3.0
 
 dev_dependencies:
   flutter_test:

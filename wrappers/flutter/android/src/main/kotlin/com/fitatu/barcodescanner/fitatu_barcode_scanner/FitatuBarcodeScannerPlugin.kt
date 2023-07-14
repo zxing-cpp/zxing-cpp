@@ -9,6 +9,7 @@ import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 class FitatuBarcodeScannerPlugin : FlutterPlugin, ActivityAware {
     private lateinit var scanner: FitatuBarcodeScanner
     private lateinit var flutterPluginBinding: FlutterPlugin.FlutterPluginBinding
+    private lateinit var fitatuBarcodeScannerFlutterApi: FitatuBarcodeScannerFlutterApi
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         this.flutterPluginBinding = flutterPluginBinding
@@ -18,11 +19,14 @@ class FitatuBarcodeScannerPlugin : FlutterPlugin, ActivityAware {
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+        fitatuBarcodeScannerFlutterApi = FitatuBarcodeScannerFlutterApi(
+            flutterPluginBinding.binaryMessenger
+        )
         scanner = FitatuBarcodeScanner(
             binding.activity as LifecycleOwner,
             flutterPluginBinding.applicationContext,
             flutterPluginBinding.textureRegistry,
-            FitatuBarcodeScannerFlutterApi(flutterPluginBinding.binaryMessenger),
+            fitatuBarcodeScannerFlutterApi,
         )
         FitatuBarcodeScannerHostApi.setUp(flutterPluginBinding.binaryMessenger, scanner)
     }

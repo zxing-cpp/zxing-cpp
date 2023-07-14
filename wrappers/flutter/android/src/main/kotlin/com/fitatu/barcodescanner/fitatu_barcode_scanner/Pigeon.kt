@@ -69,31 +69,6 @@ data class CameraConfig (
 }
 
 /** Generated class from Pigeon that represents data sent in messages. */
-data class ScanResult (
-  val code: String? = null,
-  val cameraImage: CameraImage,
-  val error: String? = null
-
-) {
-  companion object {
-    @Suppress("UNCHECKED_CAST")
-    fun fromList(list: List<Any?>): ScanResult {
-      val code = list[0] as String?
-      val cameraImage = CameraImage.fromList(list[1] as List<Any?>)
-      val error = list[2] as String?
-      return ScanResult(code, cameraImage, error)
-    }
-  }
-  fun toList(): List<Any?> {
-    return listOf<Any?>(
-      code,
-      cameraImage.toList(),
-      error,
-    )
-  }
-}
-
-/** Generated class from Pigeon that represents data sent in messages. */
 data class CameraImage (
   val cropRect: CropRect,
   val width: Long,
@@ -211,8 +186,8 @@ private object FitatuBarcodeScannerHostApiCodec : StandardMessageCodec() {
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface FitatuBarcodeScannerHostApi {
   fun init(options: ScannerOptions)
-  fun setTorchEnabled(isEnabled: Boolean)
   fun release()
+  fun setTorchEnabled(isEnabled: Boolean)
 
   companion object {
     /** The codec used by FitatuBarcodeScannerHostApi. */
@@ -242,14 +217,12 @@ interface FitatuBarcodeScannerHostApi {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.FitatuBarcodeScannerHostApi.setTorchEnabled", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.FitatuBarcodeScannerHostApi.release", codec)
         if (api != null) {
-          channel.setMessageHandler { message, reply ->
-            val args = message as List<Any?>
-            val isEnabledArg = args[0] as Boolean
+          channel.setMessageHandler { _, reply ->
             var wrapped: List<Any?>
             try {
-              api.setTorchEnabled(isEnabledArg)
+              api.release()
               wrapped = listOf<Any?>(null)
             } catch (exception: Throwable) {
               wrapped = wrapError(exception)
@@ -261,12 +234,14 @@ interface FitatuBarcodeScannerHostApi {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.FitatuBarcodeScannerHostApi.release", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.FitatuBarcodeScannerHostApi.setTorchEnabled", codec)
         if (api != null) {
-          channel.setMessageHandler { _, reply ->
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val isEnabledArg = args[0] as Boolean
             var wrapped: List<Any?>
             try {
-              api.release()
+              api.setTorchEnabled(isEnabledArg)
               wrapped = listOf<Any?>(null)
             } catch (exception: Throwable) {
               wrapped = wrapError(exception)
@@ -299,11 +274,6 @@ private object FitatuBarcodeScannerFlutterApiCodec : StandardMessageCodec() {
           CropRect.fromList(it)
         }
       }
-      131.toByte() -> {
-        return (readValue(buffer) as? List<Any?>)?.let {
-          ScanResult.fromList(it)
-        }
-      }
       else -> super.readValueOfType(type, buffer)
     }
   }
@@ -319,10 +289,6 @@ private object FitatuBarcodeScannerFlutterApiCodec : StandardMessageCodec() {
       }
       is CropRect -> {
         stream.write(130)
-        writeValue(stream, value.toList())
-      }
-      is ScanResult -> {
-        stream.write(131)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -345,15 +311,27 @@ class FitatuBarcodeScannerFlutterApi(private val binaryMessenger: BinaryMessenge
       callback()
     }
   }
-  fun result(scanResultArg: ScanResult, callback: () -> Unit) {
-    val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.FitatuBarcodeScannerFlutterApi.result", codec)
-    channel.send(listOf(scanResultArg)) {
-      callback()
-    }
-  }
   fun onTorchStateChanged(isEnabledArg: Boolean, callback: () -> Unit) {
     val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.FitatuBarcodeScannerFlutterApi.onTorchStateChanged", codec)
     channel.send(listOf(isEnabledArg)) {
+      callback()
+    }
+  }
+  fun onCameraImage(cameraImageArg: CameraImage, callback: () -> Unit) {
+    val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.FitatuBarcodeScannerFlutterApi.onCameraImage", codec)
+    channel.send(listOf(cameraImageArg)) {
+      callback()
+    }
+  }
+  fun result(codeArg: String?, callback: () -> Unit) {
+    val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.FitatuBarcodeScannerFlutterApi.result", codec)
+    channel.send(listOf(codeArg)) {
+      callback()
+    }
+  }
+  fun onScanError(errorArg: String, callback: () -> Unit) {
+    val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.FitatuBarcodeScannerFlutterApi.onScanError", codec)
+    channel.send(listOf(errorArg)) {
       callback()
     }
   }

@@ -1,4 +1,5 @@
-import 'package:fitatu_barcode_scanner/src/infra/common/common_scanner_error.dart';
+import 'package:fitatu_barcode_scanner/fitatu_barcode_scanner.dart';
+import 'package:fitatu_barcode_scanner/src/infra/common/preview_overlay.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -9,77 +10,184 @@ import '../../scanner_preview_mixin.dart';
 class CommonFitatuScannerPreview extends StatefulWidget {
   const CommonFitatuScannerPreview({
     super.key,
-    required this.onSuccess,
     required this.options,
-    this.onChanged,
+    required this.onResult,
     this.onError,
+    this.onChanged,
+    this.overlayBuilder,
   });
 
-  final ValueChanged<String> onSuccess;
   final ScannerOptions options;
+  final ValueChanged<String?> onResult;
+  final ScannerErrorCallback? onError;
   final VoidCallback? onChanged;
-  final Function(String error)? onError;
+  final PreviewOverlayBuilder? overlayBuilder;
 
   @override
-  State<CommonFitatuScannerPreview> createState() => CommonFitatuScannerPreviewState();
+  State<CommonFitatuScannerPreview> createState() => _CommonFitatuScannerPreviewState();
 }
 
-class CommonFitatuScannerPreviewState extends State<CommonFitatuScannerPreview> with ScannerPreviewMixin {
-  late final MobileScannerController controller;
-  String? scannerError;
+class _CommonFitatuScannerPreviewState extends State<CommonFitatuScannerPreview> with ScannerPreviewMixin, WidgetsBindingObserver {
+  late MobileScannerController controller;
+  MobileScannerArguments? mobileScannerArguments;
+  bool isStarted = false;
+  bool resumeFromBackground = false;
+  int startRetryCount = 0;
 
   @override
   void initState() {
-    controller = MobileScannerController();
-    controller.hasTorchState.addListener(_torchChangeListener);
-    controller.resetZoomScale();
-
+    WidgetsBinding.instance.addObserver(this);
+    controller = MobileScannerController(autoStart: false);
+    controller.torchState.addListener(torchChangeListener);
+    startScanner();
     super.initState();
   }
 
   @override
   void dispose() {
-    controller.hasTorchState.removeListener(_torchChangeListener);
-    controller.dispose();
-    scannerError = null;
-
+    WidgetsBinding.instance.removeObserver(this);
+    disposeScanner();
     super.dispose();
   }
 
-  void _handleError(MobileScannerException exception) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (scannerError != exception.toString()) {
-        widget.onError?.call(exception.toString());
-        scannerError = exception.toString();
-      }
-    });
-  }
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // App state changed before the controller was initialized.
+    if (controller.isStarting) {
+      return;
+    }
 
-  void _torchChangeListener() => widget.onChanged?.call();
+    switch (state) {
+      case AppLifecycleState.resumed:
+        resumeFromBackground = false;
+        startScanner();
+        break;
+      case AppLifecycleState.paused:
+        resumeFromBackground = true;
+        break;
+      case AppLifecycleState.inactive:
+        if (!resumeFromBackground) {
+          stopScanner();
+        }
+        break;
+      case AppLifecycleState.detached:
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return MobileScanner(
-      controller: controller,
-      onScannerStarted: (_) async => await controller.resetZoomScale(),
-      onDetect: (response) {
-        final List<Barcode> nonEmptyBarcodes = response.barcodes.where((barcode) => barcode.rawValue != null).toList();
-        for (final barcode in nonEmptyBarcodes) {
-          widget.onSuccess(barcode.rawValue!);
-          return;
-        }
-      },
-      errorBuilder: (_, exception, __) {
-        _handleError(exception);
+    final arguments = mobileScannerArguments;
+    return LayoutBuilder(builder: (context, constraints) {
+      final scanWindowSize = constraints.maxHeight * widget.options.cropPercent;
+      final scanWindow = Rect.fromCenter(
+        center: Offset(constraints.maxWidth / 2, constraints.maxHeight / 2),
+        width: scanWindowSize,
+        height: scanWindowSize,
+      );
 
-        return const CommonScannerError();
-      },
-    );
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          MobileScanner(
+            controller: controller,
+            scanWindow: scanWindow,
+            onDetect: (response) {
+              final barcodes = response.barcodes.where((b) => b.rawValue != null).whereType<Barcode>().toList();
+              if (barcodes.isEmpty) {
+                widget.onResult(null);
+              } else {
+                widget.onResult(barcodes.first.rawValue);
+              }
+            },
+          ),
+          if (arguments != null)
+            Builder(
+              builder: (context) {
+                final metrix = CameraPreviewMetrix(
+                  cropRect: scanWindow,
+                  width: constraints.maxWidth,
+                  height: constraints.maxHeight,
+                  rotationDegrees: 90,
+                );
+
+                return widget.overlayBuilder?.call(context, metrix) ?? PreviewOverlay(cameraPreviewMetrix: metrix);
+              },
+            ),
+        ],
+      );
+    });
   }
 
   @override
-  void setTorchEnabled({required bool isEnabled}) => controller.toggleTorch();
+  Future<void> setTorchEnabled({required bool isEnabled}) async {
+    try {
+      await controller.toggleTorch();
+    } on Exception catch (e) {
+      setException(e);
+    } finally {
+      safeSetState();
+    }
+  }
 
   @override
   bool isTorchEnabled() => controller.torchState.value == TorchState.on;
+
+  Future<void> startScanner() async {
+    if (isStarted || controller.isStarting) {
+      return;
+    }
+
+    try {
+      isStarted = true;
+      mobileScannerArguments = await controller.start();
+      await controller.resetZoomScale();
+      setException(null);
+      startRetryCount = 0;
+    } on Exception catch (e) {
+      isStarted = false;
+      if (startRetryCount < 1) {
+        startRetryCount++;
+        await stopScanner();
+        await startScanner();
+      } else {
+        setException(e);
+      }
+    } finally {
+      safeSetState();
+    }
+  }
+
+  Future<void> stopScanner() async {
+    try {
+      isStarted = false;
+      await controller.stop();
+    } on Exception catch (e) {
+      setException(e);
+    } finally {
+      safeSetState();
+    }
+  }
+
+  void disposeScanner() {
+    try {
+      isStarted = false;
+      controller.torchState.removeListener(torchChangeListener);
+      controller.dispose();
+    } on Exception catch (e) {
+      setException(e);
+    }
+  }
+
+  void safeSetState() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  void setException(Exception? exception) {
+    widget.onError?.call(exception?.toString());
+  }
+
+  void torchChangeListener() => widget.onChanged?.call();
 }

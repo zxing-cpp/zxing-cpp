@@ -39,37 +39,6 @@ class CameraConfig {
   }
 }
 
-class ScanResult {
-  ScanResult({
-    this.code,
-    required this.cameraImage,
-    this.error,
-  });
-
-  String? code;
-
-  CameraImage cameraImage;
-
-  String? error;
-
-  Object encode() {
-    return <Object?>[
-      code,
-      cameraImage.encode(),
-      error,
-    ];
-  }
-
-  static ScanResult decode(Object result) {
-    result as List<Object?>;
-    return ScanResult(
-      code: result[0] as String?,
-      cameraImage: CameraImage.decode(result[1]! as List<Object?>),
-      error: result[2] as String?,
-    );
-  }
-}
-
 class CameraImage {
   CameraImage({
     required this.cropRect,
@@ -248,12 +217,12 @@ class FitatuBarcodeScannerHostApi {
     }
   }
 
-  Future<void> setTorchEnabled(bool arg_isEnabled) async {
+  Future<void> release() async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.FitatuBarcodeScannerHostApi.setTorchEnabled', codec,
+        'dev.flutter.pigeon.FitatuBarcodeScannerHostApi.release', codec,
         binaryMessenger: _binaryMessenger);
     final List<Object?>? replyList =
-        await channel.send(<Object?>[arg_isEnabled]) as List<Object?>?;
+        await channel.send(null) as List<Object?>?;
     if (replyList == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -270,12 +239,12 @@ class FitatuBarcodeScannerHostApi {
     }
   }
 
-  Future<void> release() async {
+  Future<void> setTorchEnabled(bool arg_isEnabled) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.FitatuBarcodeScannerHostApi.release', codec,
+        'dev.flutter.pigeon.FitatuBarcodeScannerHostApi.setTorchEnabled', codec,
         binaryMessenger: _binaryMessenger);
     final List<Object?>? replyList =
-        await channel.send(null) as List<Object?>?;
+        await channel.send(<Object?>[arg_isEnabled]) as List<Object?>?;
     if (replyList == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -306,9 +275,6 @@ class _FitatuBarcodeScannerFlutterApiCodec extends StandardMessageCodec {
     } else if (value is CropRect) {
       buffer.putUint8(130);
       writeValue(buffer, value.encode());
-    } else if (value is ScanResult) {
-      buffer.putUint8(131);
-      writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
     }
@@ -323,8 +289,6 @@ class _FitatuBarcodeScannerFlutterApiCodec extends StandardMessageCodec {
         return CameraImage.decode(readValue(buffer)!);
       case 130: 
         return CropRect.decode(readValue(buffer)!);
-      case 131: 
-        return ScanResult.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -336,9 +300,13 @@ abstract class FitatuBarcodeScannerFlutterApi {
 
   void onTextureChanged(CameraConfig? cameraConfig);
 
-  void result(ScanResult scanResult);
-
   void onTorchStateChanged(bool isEnabled);
+
+  void onCameraImage(CameraImage cameraImage);
+
+  void result(String? code);
+
+  void onScanError(String error);
 
   static void setup(FitatuBarcodeScannerFlutterApi? api, {BinaryMessenger? binaryMessenger}) {
     {
@@ -360,25 +328,6 @@ abstract class FitatuBarcodeScannerFlutterApi {
     }
     {
       final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.FitatuBarcodeScannerFlutterApi.result', codec,
-          binaryMessenger: binaryMessenger);
-      if (api == null) {
-        channel.setMessageHandler(null);
-      } else {
-        channel.setMessageHandler((Object? message) async {
-          assert(message != null,
-          'Argument for dev.flutter.pigeon.FitatuBarcodeScannerFlutterApi.result was null.');
-          final List<Object?> args = (message as List<Object?>?)!;
-          final ScanResult? arg_scanResult = (args[0] as ScanResult?);
-          assert(arg_scanResult != null,
-              'Argument for dev.flutter.pigeon.FitatuBarcodeScannerFlutterApi.result was null, expected non-null ScanResult.');
-          api.result(arg_scanResult!);
-          return;
-        });
-      }
-    }
-    {
-      final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
           'dev.flutter.pigeon.FitatuBarcodeScannerFlutterApi.onTorchStateChanged', codec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
@@ -392,6 +341,61 @@ abstract class FitatuBarcodeScannerFlutterApi {
           assert(arg_isEnabled != null,
               'Argument for dev.flutter.pigeon.FitatuBarcodeScannerFlutterApi.onTorchStateChanged was null, expected non-null bool.');
           api.onTorchStateChanged(arg_isEnabled!);
+          return;
+        });
+      }
+    }
+    {
+      final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.FitatuBarcodeScannerFlutterApi.onCameraImage', codec,
+          binaryMessenger: binaryMessenger);
+      if (api == null) {
+        channel.setMessageHandler(null);
+      } else {
+        channel.setMessageHandler((Object? message) async {
+          assert(message != null,
+          'Argument for dev.flutter.pigeon.FitatuBarcodeScannerFlutterApi.onCameraImage was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final CameraImage? arg_cameraImage = (args[0] as CameraImage?);
+          assert(arg_cameraImage != null,
+              'Argument for dev.flutter.pigeon.FitatuBarcodeScannerFlutterApi.onCameraImage was null, expected non-null CameraImage.');
+          api.onCameraImage(arg_cameraImage!);
+          return;
+        });
+      }
+    }
+    {
+      final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.FitatuBarcodeScannerFlutterApi.result', codec,
+          binaryMessenger: binaryMessenger);
+      if (api == null) {
+        channel.setMessageHandler(null);
+      } else {
+        channel.setMessageHandler((Object? message) async {
+          assert(message != null,
+          'Argument for dev.flutter.pigeon.FitatuBarcodeScannerFlutterApi.result was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final String? arg_code = (args[0] as String?);
+          api.result(arg_code);
+          return;
+        });
+      }
+    }
+    {
+      final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.FitatuBarcodeScannerFlutterApi.onScanError', codec,
+          binaryMessenger: binaryMessenger);
+      if (api == null) {
+        channel.setMessageHandler(null);
+      } else {
+        channel.setMessageHandler((Object? message) async {
+          assert(message != null,
+          'Argument for dev.flutter.pigeon.FitatuBarcodeScannerFlutterApi.onScanError was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final String? arg_error = (args[0] as String?);
+          assert(arg_error != null,
+              'Argument for dev.flutter.pigeon.FitatuBarcodeScannerFlutterApi.onScanError was null, expected non-null String.');
+          api.onScanError(arg_error!);
           return;
         });
       }
