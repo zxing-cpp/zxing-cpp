@@ -878,7 +878,7 @@ static DetectorResults DetectNew(const BitMatrix& image, bool tryHarder, bool tr
 
 /**
 * This method detects a code in a "pure" image -- that is, pure monochrome image
-* which contains only an unrotated, unskewed, image of a code, with some white border
+* which contains only an unrotated, unskewed, image of a code, with some optional white border
 * around it. This is a specialized method that works exceptionally fast in this special
 * case.
 */
@@ -928,6 +928,7 @@ DetectorResults Detect(const BitMatrix& image, bool tryHarder, bool tryRotate, b
 			co_yield std::move(r);
 		}
 		if (!found && tryHarder) {
+			//TODO: implement a tryRotate version of DetectPure, see #590.
 			if (auto r = DetectPure(image); r.isValid())
 				co_yield std::move(r);
 			else if(auto r = DetectOld(image); r.isValid())
