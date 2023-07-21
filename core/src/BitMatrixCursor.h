@@ -168,7 +168,7 @@ public:
 	template<typename ARRAY>
 	ARRAY readPattern(int range = 0)
 	{
-		ARRAY res;
+		ARRAY res = {};
 		for (auto& i : res) {
 			i = stepToEdge(1, range);
 			if (!i)
