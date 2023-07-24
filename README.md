@@ -24,6 +24,7 @@ Thanks a lot for your contribution!
 * Thread safe
 * Wrappers/Bindings for:
   * [Android](wrappers/android/README.md)
+  * [C](wrappers/c/README.md)
   * [iOS](wrappers/ios/README.md)
   * [Python](wrappers/python/README.md)
   * [WebAssembly](wrappers/wasm/README.md)
