@@ -110,7 +110,7 @@ Window {
             Shape {
                 id: polygon
                 anchors.fill: parent
-                visible: control.points.length == 4
+                visible: control.points.length === 4
 
                 ShapePath {
                     strokeWidth: 3
