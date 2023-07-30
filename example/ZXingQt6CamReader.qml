@@ -86,7 +86,7 @@ Window {
                 id: camerasComboBox
                 Layout.fillWidth: true
                 model: devices.videoInputs
-                textRole: "displayName"
+                textRole: "description"
                 currentIndex: 0
             }
         }
@@ -96,36 +96,71 @@ Window {
             Layout.fillHeight: true
             Layout.fillWidth: true
 
-//            Shape {
-//                id: polygon
-//                anchors.fill: parent
-//                visible: points.length == 4
-//                ShapePath {
-//                    strokeWidth: 3
-//                    strokeColor: "red"
-//                    strokeStyle: ShapePath.SolidLine
-//                    fillColor: "transparent"
-//                    //TODO: really? I don't know qml...
-//                    startX: videoOutput.mapPointToItem(points[3]).x
-//                    startY: videoOutput.mapPointToItem(points[3]).y
-//                    PathLine {
-//                        x: videoOutput.mapPointToItem(points[0]).x
-//                        y: videoOutput.mapPointToItem(points[0]).y
-//                    }
-//                    PathLine {
-//                        x: videoOutput.mapPointToItem(points[1]).x
-//                        y: videoOutput.mapPointToItem(points[1]).y
-//                    }
-//                    PathLine {
-//                        x: videoOutput.mapPointToItem(points[2]).x
-//                        y: videoOutput.mapPointToItem(points[2]).y
-//                    }
-//                    PathLine {
-//                        x: videoOutput.mapPointToItem(points[3]).x
-//                        y: videoOutput.mapPointToItem(points[3]).y
-//                    }
-//                }
-//            }
+            function mapPointToItem(point)
+            {
+                if (videoOutput.sourceRect.width === 0 || videoOutput.sourceRect.height === 0)
+                    return Qt.point(0, 0);
+
+                let dx = point.x;
+                let dy = point.y;
+
+                if ((videoOutput.orientation % 180) == 0)
+                {
+                    dx = dx * videoOutput.contentRect.width / videoOutput.sourceRect.width;
+                    dy = dy * videoOutput.contentRect.height / videoOutput.sourceRect.height;
+                }
+                else
+                {
+                    dx = dx * videoOutput.contentRect.height / videoOutput.sourceRect.height;
+                    dy = dx * videoOutput.contentRect.width / videoOutput.sourceRect.width;
+                }
+
+                switch ((videoOutput.orientation + 360) % 360)
+                {
+                    case 0:
+                    default:
+                        return Qt.point(videoOutput.contentRect.x + dx, videoOutput.contentRect.y + dy);
+                    case 90:
+                        return Qt.point(videoOutput.contentRect.x + dy, videoOutput.contentRect.y + videoOutput.contentRect.height - dx);
+                    case 180:
+                        return Qt.point(videoOutput.contentRect.x + videoOutput.contentRect.width - dx, videoOutput.contentRect.y + videoOutput.contentRect.height -dy);
+                    case 270:
+                        return Qt.point(videoOutput.contentRect.x + videoOutput.contentRect.width - dy, videoOutput.contentRect.y + dx);
+                }
+            }
+
+            Shape {
+                id: polygon
+                anchors.fill: parent
+                visible: control.points.length === 4
+
+                ShapePath {
+                    strokeWidth: 3
+                    strokeColor: "red"
+                    strokeStyle: ShapePath.SolidLine
+                    fillColor: "transparent"
+                    //TODO: really? I don't know qml...
+                    startX: videoOutput.mapPointToItem(points[3]).x
+                    startY: videoOutput.mapPointToItem(points[3]).y
+
+                    PathLine {
+                        x: videoOutput.mapPointToItem(points[0]).x
+                        y: videoOutput.mapPointToItem(points[0]).y
+                    }
+                    PathLine {
+                        x: videoOutput.mapPointToItem(points[1]).x
+                        y: videoOutput.mapPointToItem(points[1]).y
+                    }
+                    PathLine {
+                        x: videoOutput.mapPointToItem(points[2]).x
+                        y: videoOutput.mapPointToItem(points[2]).y
+                    }
+                    PathLine {
+                        x: videoOutput.mapPointToItem(points[3]).x
+                        y: videoOutput.mapPointToItem(points[3]).y
+                    }
+                }
+            }
 
             Label {
                 id: info
