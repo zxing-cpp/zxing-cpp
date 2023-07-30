@@ -101,10 +101,10 @@ Window {
                 const xPointPercentage = 100 * point.x / videoOutput.sourceRect.width;
                 const yPointPercentage = 100 * point.y / videoOutput.sourceRect.height;
 
-                const xMapped = xPointPercentage * videoOutput.width / 100;
-                const yMapped = yPointPercentage * videoOutput.height / 100;
+                const xMapped = (xPointPercentage * videoOutput.contentRect.width / 100) + videoOutput.contentRect.x;
+                const yMapped = (yPointPercentage * videoOutput.contentRect.height / 100) + videoOutput.contentRect.y;
 
-                return Qt.point(xMapped,yMapped);
+                return Qt.point(xMapped, yMapped);
             }
 
             Shape {
