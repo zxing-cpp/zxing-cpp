@@ -96,37 +96,26 @@ Window {
             Layout.fillHeight: true
             Layout.fillWidth: true
 
-            function isDefaultAspect()
+            function mapPointToItem(point)
             {
-                return (videoOutput.orientation % 180) == 0;
-            }
+                if (videoOutput.sourceRect.width === 0 || videoOutput.sourceRect.height === 0)
+                    return Qt.point(0, 0);
 
-            function normalizedOrientation(value)
-            {
-                // Negative orientations give negative results
-                let o2 = value % 360;
-                if (o2 < 0)
-                    o2 += 360;
-                return o2;
-            }
-
-            function mapNormalizedPointToItem(point)
-            {
                 let dx = point.x;
                 let dy = point.y;
 
-                if (videoOutput.isDefaultAspect())
+                if ((videoOutput.orientation % 180) == 0)
                 {
-                    dx *= videoOutput.contentRect.width;
-                    dy *= videoOutput.contentRect.height;
+                    dx = dx * videoOutput.contentRect.width / videoOutput.sourceRect.width;
+                    dy = dy * videoOutput.contentRect.height / videoOutput.sourceRect.height;
                 }
                 else
                 {
-                    dx *= videoOutput.contentRect.height;
-                    dy *= videoOutput.contentRect.width;
+                    dx = dx * videoOutput.contentRect.height / videoOutput.sourceRect.height;
+                    dy = dx * videoOutput.contentRect.width / videoOutput.sourceRect.width;
                 }
 
-                switch (videoOutput.normalizedOrientation(videoOutput.orientation))
+                switch ((videoOutput.orientation + 360) % 360)
                 {
                     case 0:
                     default:
@@ -138,17 +127,6 @@ Window {
                     case 270:
                         return Qt.point(videoOutput.contentRect.x + videoOutput.contentRect.width - dy, videoOutput.contentRect.y + dx);
                 }
-            }
-
-            function mapPointToItem(point)
-            {
-                if (videoOutput.sourceRect.width === 0 && videoOutput.sourceRect.height === 0)
-                    return Qt.point(0, 0);
-
-                if (videoOutput.isDefaultAspect())
-                    return videoOutput.mapNormalizedPointToItem(Qt.point(point.x / videoOutput.sourceRect.width, point.y / videoOutput.sourceRect.height));
-                else
-                    return videoOutput.mapNormalizedPointToItem(Qt.point(point.x / videoOutput.sourceRect.height, point.y / videoOutput.sourceRect.width));
             }
 
             Shape {
