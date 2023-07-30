@@ -86,7 +86,7 @@ Window {
                 id: camerasComboBox
                 Layout.fillWidth: true
                 model: devices.videoInputs
-                textRole: "displayName"
+                textRole: "description"
                 currentIndex: 0
             }
         }
