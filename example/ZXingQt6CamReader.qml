@@ -96,36 +96,49 @@ Window {
             Layout.fillHeight: true
             Layout.fillWidth: true
 
-//            Shape {
-//                id: polygon
-//                anchors.fill: parent
-//                visible: points.length == 4
-//                ShapePath {
-//                    strokeWidth: 3
-//                    strokeColor: "red"
-//                    strokeStyle: ShapePath.SolidLine
-//                    fillColor: "transparent"
-//                    //TODO: really? I don't know qml...
-//                    startX: videoOutput.mapPointToItem(points[3]).x
-//                    startY: videoOutput.mapPointToItem(points[3]).y
-//                    PathLine {
-//                        x: videoOutput.mapPointToItem(points[0]).x
-//                        y: videoOutput.mapPointToItem(points[0]).y
-//                    }
-//                    PathLine {
-//                        x: videoOutput.mapPointToItem(points[1]).x
-//                        y: videoOutput.mapPointToItem(points[1]).y
-//                    }
-//                    PathLine {
-//                        x: videoOutput.mapPointToItem(points[2]).x
-//                        y: videoOutput.mapPointToItem(points[2]).y
-//                    }
-//                    PathLine {
-//                        x: videoOutput.mapPointToItem(points[3]).x
-//                        y: videoOutput.mapPointToItem(points[3]).y
-//                    }
-//                }
-//            }
+            function mapPointToItem(point)
+            {
+                const xPointPercentage = 100 * point.x / videoOutput.sourceRect.width;
+                const yPointPercentage = 100 * point.y / videoOutput.sourceRect.height;
+
+                const xMapped = xPointPercentage * videoOutput.width / 100;
+                const yMapped = yPointPercentage * videoOutput.height / 100;
+
+                return Qt.point(xMapped,yMapped);
+            }
+
+            Shape {
+                id: polygon
+                anchors.fill: parent
+                visible: control.points.length == 4
+
+                ShapePath {
+                    strokeWidth: 3
+                    strokeColor: "red"
+                    strokeStyle: ShapePath.SolidLine
+                    fillColor: "transparent"
+                    //TODO: really? I don't know qml...
+                    startX: videoOutput.mapPointToItem(points[3]).x
+                    startY: videoOutput.mapPointToItem(points[3]).y
+
+                    PathLine {
+                        x: videoOutput.mapPointToItem(points[0]).x
+                        y: videoOutput.mapPointToItem(points[0]).y
+                    }
+                    PathLine {
+                        x: videoOutput.mapPointToItem(points[1]).x
+                        y: videoOutput.mapPointToItem(points[1]).y
+                    }
+                    PathLine {
+                        x: videoOutput.mapPointToItem(points[2]).x
+                        y: videoOutput.mapPointToItem(points[2]).y
+                    }
+                    PathLine {
+                        x: videoOutput.mapPointToItem(points[3]).x
+                        y: videoOutput.mapPointToItem(points[3]).y
+                    }
+                }
+            }
 
             Label {
                 id: info
