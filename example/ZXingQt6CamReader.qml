@@ -96,15 +96,59 @@ Window {
             Layout.fillHeight: true
             Layout.fillWidth: true
 
+            function isDefaultAspect()
+            {
+                return (videoOutput.orientation % 180) == 0;
+            }
+
+            function normalizedOrientation(value)
+            {
+                // Negative orientations give negative results
+                let o2 = value % 360;
+                if (o2 < 0)
+                    o2 += 360;
+                return o2;
+            }
+
+            function mapNormalizedPointToItem(point)
+            {
+                let dx = point.x;
+                let dy = point.y;
+
+                if (videoOutput.isDefaultAspect())
+                {
+                    dx *= videoOutput.contentRect.width;
+                    dy *= videoOutput.contentRect.height;
+                }
+                else
+                {
+                    dx *= videoOutput.contentRect.height;
+                    dy *= videoOutput.contentRect.width;
+                }
+
+                switch (videoOutput.normalizedOrientation(videoOutput.orientation))
+                {
+                    case 0:
+                    default:
+                        return Qt.point(videoOutput.contentRect.x + dx, videoOutput.contentRect.y + dy);
+                    case 90:
+                        return Qt.point(videoOutput.contentRect.x + dy, videoOutput.contentRect.y + videoOutput.contentRect.height - dx);
+                    case 180:
+                        return Qt.point(videoOutput.contentRect.x + videoOutput.contentRect.width - dx, videoOutput.contentRect.y + videoOutput.contentRect.height -dy);
+                    case 270:
+                        return Qt.point(videoOutput.contentRect.x + videoOutput.contentRect.width - dy, videoOutput.contentRect.y + dx);
+                }
+            }
+
             function mapPointToItem(point)
             {
-                const xPointPercentage = 100 * point.x / videoOutput.sourceRect.width;
-                const yPointPercentage = 100 * point.y / videoOutput.sourceRect.height;
+                if (videoOutput.sourceRect.width === 0 && videoOutput.sourceRect.height === 0)
+                    return Qt.point(0, 0);
 
-                const xMapped = (xPointPercentage * videoOutput.contentRect.width / 100) + videoOutput.contentRect.x;
-                const yMapped = (yPointPercentage * videoOutput.contentRect.height / 100) + videoOutput.contentRect.y;
-
-                return Qt.point(xMapped, yMapped);
+                if (videoOutput.isDefaultAspect())
+                    return videoOutput.mapNormalizedPointToItem(Qt.point(point.x / videoOutput.sourceRect.width, point.y / videoOutput.sourceRect.height));
+                else
+                    return videoOutput.mapNormalizedPointToItem(Qt.point(point.x / videoOutput.sourceRect.height, point.y / videoOutput.sourceRect.width));
             }
 
             Shape {
@@ -152,10 +196,9 @@ Window {
                 anchors.bottom: parent.bottom
 
                 Switch {id: tryRotateSwitch; text: qsTr("Try Rotate"); checked: true }
-                Switch {id: tryHarderSwitch; text: qsTr("Try Harder"); checked: true }
+                Switch {id: tryHarderSwitch; text: qsTr("Try Harder"); checked: false }
                 Switch {id: tryDownscaleSwitch; text: qsTr("Try Downscale"); checked: true }
                 Switch {id: linearSwitch; text: qsTr("Linear Codes"); checked: true }
-                Switch {id: matrixSwitch; text: qsTr("Matrix Codes"); checked: true }
             }
         }
     }
