@@ -196,9 +196,10 @@ Window {
                 anchors.bottom: parent.bottom
 
                 Switch {id: tryRotateSwitch; text: qsTr("Try Rotate"); checked: true }
-                Switch {id: tryHarderSwitch; text: qsTr("Try Harder"); checked: false }
+                Switch {id: tryHarderSwitch; text: qsTr("Try Harder"); checked: true }
                 Switch {id: tryDownscaleSwitch; text: qsTr("Try Downscale"); checked: true }
                 Switch {id: linearSwitch; text: qsTr("Linear Codes"); checked: true }
+                Switch {id: matrixSwitch; text: qsTr("Matrix Codes"); checked: true }
             }
         }
     }
