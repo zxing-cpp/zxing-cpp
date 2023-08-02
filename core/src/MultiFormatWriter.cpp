@@ -67,9 +67,24 @@ MultiFormatWriter::encode(const std::wstring& contents, int width, int height) c
 	}
 }
 
+static std::wstring ToUInt8WideString(const std::string& s) {
+	std::wstring ws(s.begin(), s.end());
+	// Keep only the first byte of `wchar_t` and remove the sign bits
+	// from the `char` conversion. Without this, any `char` > 127 will
+	// be negative in `wchar_t`, too, which breaks later.
+	for (int i = 0, l = ws.length(); i < l; ++i) {
+		ws[i] &= 0xff;
+	}
+	return ws;
+}
+
 BitMatrix MultiFormatWriter::encode(const std::string& contents, int width, int height) const
 {
-	return encode(FromUtf8(contents), width, height);
+	return encode(
+		_encoding == CharacterSet::BINARY
+			? ToUInt8WideString(contents)
+			: FromUtf8(contents),
+		width, height);
 }
 
 } // ZXing
