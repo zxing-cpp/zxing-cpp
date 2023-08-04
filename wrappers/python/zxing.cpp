@@ -227,6 +227,9 @@ PYBIND11_MODULE(zxingcpp, m)
 		.def_property_readonly("symbology_identifier", &Result::symbologyIdentifier,
 			":return: decoded symbology idendifier\n"
 			":rtype: str")
+		.def_property_readonly("ec_level", &Result::ecLevel,
+			":return: error correction level of the symbol (empty string if not applicable)\n"
+			":rtype: str")
 		.def_property_readonly("content_type", &Result::contentType,
 			":return: content type of symbol\n"
 			":rtype: zxing.ContentType")
