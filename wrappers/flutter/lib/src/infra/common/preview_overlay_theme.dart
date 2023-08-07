@@ -30,7 +30,7 @@ class PreviewOverlayThemeData {
   final List<DeviceOrientation> supportedOrientations;
 
   const PreviewOverlayThemeData({
-    this.overlayColor = const Color(0x80000000),
+    this.overlayColor = const Color(0x00000000),
     this.laserLineColor = const Color(0xFFFF3939),
     this.laserLineThickness = 1.0,
     this.showLaserLine = true,
