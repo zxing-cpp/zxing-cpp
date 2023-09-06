@@ -15,18 +15,17 @@
 #include "BitMatrix.h"
 #include "MultiFormatWriter.h"
 
-#include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <optional>
 #include <memory>
 #include <vector>
+#include <sstream>
+#include <functional>
+#include <list>
 
 using namespace ZXing;
 namespace py = pybind11;
-
-// Numpy array wrapper class for images (either BGR or GRAYSCALE)
-using Image = py::array_t<uint8_t, py::array::c_style>;
 
 std::ostream& operator<<(std::ostream& os, const Position& points) {
 	for (const auto& p : points)
@@ -49,36 +48,80 @@ auto read_barcodes_impl(py::object _image, const BarcodeFormats& formats, bool t
 		.setMaxNumberOfSymbols(max_number_of_symbols)
 		.setEanAddOnSymbol(ean_add_on_symbol);
 	const auto _type = std::string(py::str(py::type::of(_image)));
-	Image image;
+	py::buffer buffer;
 	ImageFormat imgfmt = ImageFormat::None;
 	try {
-		if (_type.find("PIL.") != std::string::npos) {
-			_image.attr("load")();
-			const auto mode = _image.attr("mode").cast<std::string>();
-			if (mode == "L")
-				imgfmt = ImageFormat::Lum;
-			else if (mode == "RGB")
-				imgfmt = ImageFormat::RGB;
-			else if (mode == "RGBA")
-				imgfmt = ImageFormat::RGBX;
-			else {
-				// Unsupported mode in ImageFormat. Let's do conversion to L mode with PIL.
-				_image = _image.attr("convert")("L");
-				imgfmt = ImageFormat::Lum;
+		if (py::hasattr(_image, "__array_interface__")) {
+			if (_type.find("PIL.") != std::string::npos) {
+				_image.attr("load")();
+				const auto mode = _image.attr("mode").cast<std::string>();
+				if (mode == "L")
+					imgfmt = ImageFormat::Lum;
+				else if (mode == "RGB")
+					imgfmt = ImageFormat::RGB;
+				else if (mode == "RGBA")
+					imgfmt = ImageFormat::RGBX;
+				else {
+					// Unsupported mode in ImageFormat. Let's do conversion to L mode with PIL.
+					_image = _image.attr("convert")("L");
+					imgfmt = ImageFormat::Lum;
+				}
 			}
+
+			auto ai = _image.attr("__array_interface__").cast<py::dict>();
+			auto ashape = ai["shape"].cast<py::tuple>();
+
+			if (ai.contains("data")) {
+				auto adata = ai["data"];
+
+				if (py::isinstance<py::tuple>(adata)) {
+					auto data_tuple = adata.cast<py::tuple>();
+					auto ashape_std = ashape.cast<std::list<py::size_t>>();
+					auto data_len = Reduce(ashape_std, py::size_t(1u), std::multiplies<py::size_t>());
+					buffer = py::memoryview::from_memory(reinterpret_cast<void*>(data_tuple[0].cast<py::size_t>()), data_len, true);
+				} else if (py::isinstance<py::buffer>(adata)) {
+					// Numpy and our own __array_interface__ passes data as a buffer/bytes object
+					buffer = adata.cast<py::buffer>();
+				} else {
+					throw py::type_error("No way to get data from __array_interface__");
+				}
+			} else {
+				buffer = _image.cast<py::buffer>();
+			}
+
+			py::tuple bshape;
+			if (py::hasattr(buffer, "shape")) {
+				bshape = buffer.attr("shape").cast<py::tuple>();
+			}
+
+			if (!ashape.equal(bshape)) {
+				auto bufferview = py::memoryview(buffer);
+				buffer = bufferview.attr("cast")("B", ashape).cast<py::buffer>();
+			}
+		} else {
+			buffer = _image.cast<py::buffer>();
 		}
-		image = _image.cast<Image>();
 #if PYBIND11_VERSION_HEX > 0x02080000 // py::raise_from is available starting from 2.8.0
 	} catch (py::error_already_set &e) {
-		py::raise_from(e, PyExc_TypeError, ("Could not convert " + _type + " to numpy array of dtype 'uint8'.").c_str());
+		py::raise_from(e, PyExc_TypeError, ("Could not convert " + _type + " to buffer.").c_str());
 		throw py::error_already_set();
 #endif
 	} catch (...) {
-		throw py::type_error("Could not convert " + _type + " to numpy array. Expecting a PIL Image or numpy array.");
+		throw py::type_error("Could not convert " + _type + " to buffer. Expecting a PIL Image or buffer.");
 	}
-	const auto height = narrow_cast<int>(image.shape(0));
-	const auto width = narrow_cast<int>(image.shape(1));
-	const auto channels = image.ndim() == 2 ? 1 : narrow_cast<int>(image.shape(2));
+
+	/* Request a buffer descriptor from Python */
+	py::buffer_info info = buffer.request();
+
+	if (info.format != py::format_descriptor<uint8_t>::format())
+		throw py::type_error("Incompatible format: expected a uint8_t array.");
+
+	if (info.ndim != 2 && info.ndim != 3)
+		throw py::type_error("Incompatible buffer dimension.");
+
+	const auto height = narrow_cast<int>(info.shape[0]);
+	const auto width = narrow_cast<int>(info.shape[1]);
+	const auto channels = info.ndim == 2 ? 1 : narrow_cast<int>(info.shape[2]);
 	if (imgfmt == ImageFormat::None) {
 		// Assume grayscale or BGR image depending on channels number
 		if (channels == 1)
@@ -86,10 +129,10 @@ auto read_barcodes_impl(py::object _image, const BarcodeFormats& formats, bool t
 		else if (channels == 3)
 			imgfmt = ImageFormat::BGR;
 		else
-			throw py::value_error("Unsupported number of channels for numpy array: " + std::to_string(channels));
+			throw py::value_error("Unsupported number of channels for buffer: " + std::to_string(channels));
 	}
 
-	const auto bytes = image.data();
+	const auto bytes = static_cast<uint8_t*>(info.ptr);
 	// Disables the GIL during zxing processing (restored automatically upon completion)
 	py::gil_scoped_release release;
 	return ReadBarcodes({bytes, width, height, imgfmt, width * channels, channels}, hints);
@@ -108,17 +151,60 @@ Results read_barcodes(py::object _image, const BarcodeFormats& formats, bool try
 	return read_barcodes_impl(_image, formats, try_rotate, try_downscale, text_mode, binarizer, is_pure, ean_add_on_symbol);
 }
 
-Image write_barcode(BarcodeFormat format, std::string text, int width, int height, int quiet_zone, int ec_level)
+class WriteResult
+{
+public:
+	WriteResult(std::vector<char>&& result_data_, std::vector<py::ssize_t>&& shape_)
+	{
+		result_data = result_data_;
+		shape = shape_;
+		ndim = shape.size();
+	}
+
+	WriteResult(WriteResult const& o) : ndim(o.ndim), shape(o.shape), result_data(o.result_data) {}
+
+	const std::vector<char>& get_result_data() const { return result_data; }
+
+	static py::buffer_info get_buffer(const WriteResult& wr)
+	{
+		return py::buffer_info(
+			reinterpret_cast<void*>(const_cast<char*>(wr.result_data.data())),
+			sizeof(char), "B", wr.shape.size(), wr.shape, { wr.shape[0], py::ssize_t(1) }
+		);
+	}
+
+	const std::vector<py::ssize_t> get_shape() const { return shape; }
+
+private:
+	py::ssize_t ndim;
+	std::vector<py::ssize_t> shape;
+	std::vector<char> result_data;
+};
+
+py::object write_barcode(BarcodeFormat format, std::string text, int width, int height, int quiet_zone, int ec_level)
 {
 	auto writer = MultiFormatWriter(format).setEncoding(CharacterSet::UTF8).setMargin(quiet_zone).setEccLevel(ec_level);
 	auto bitmap = writer.encode(text, width, height);
 
-	auto result = Image({bitmap.height(), bitmap.width()});
-	auto r = result.mutable_unchecked<2>();
-	for (py::ssize_t y = 0; y < r.shape(0); y++)
-		for (py::ssize_t x = 0; x < r.shape(1); x++)
-			r(y, x) = bitmap.get(narrow_cast<int>(x), narrow_cast<int>(y)) ? 0 : 255;
-	return result;
+	std::vector<char> result_data(bitmap.width() * bitmap.height());
+	for (py::ssize_t y = 0; y < bitmap.height(); y++)
+		for (py::ssize_t x = 0; x < bitmap.width(); x++)
+			result_data[x + (y * bitmap.width())] = bitmap.get(narrow_cast<int>(x), narrow_cast<int>(y)) ? 0 : 255;
+
+	WriteResult res(std::move(result_data), {bitmap.height(), bitmap.width()});
+
+	auto resobj = py::cast(res);
+
+	// We add an __array_interface__ here to make the returned type easily convertible to PIL images,
+	// Numpy arrays and other libraries that spport the interface.
+	py::dict array_interface;
+	array_interface["version"] = py::cast(3);
+	array_interface["data"] = resobj;
+	array_interface["shape"] = res.get_shape();
+	array_interface["typestr"] = py::cast("|u1");
+	resobj.attr("__array_interface__") = array_interface;
+
+	return resobj;
 }
 
 
@@ -213,6 +299,10 @@ PYBIND11_MODULE(zxingcpp, m)
 			oss << pos;
 			return oss.str();
 		});
+	py::class_<WriteResult>(m, "WriteResult", "Result of barcode writing", py::buffer_protocol(), py::dynamic_attr())
+		.def_property_readonly("shape", &WriteResult::get_shape,
+			":rtype: tuple")
+		.def_buffer(&WriteResult::get_buffer);
 	py::class_<Result>(m, "Result", "Result of barcode reading")
 		.def_property_readonly("valid", &Result::isValid,
 			":return: whether or not result is valid (i.e. a symbol was found)\n"
@@ -265,8 +355,9 @@ PYBIND11_MODULE(zxingcpp, m)
 		py::arg("is_pure") = false,
 		py::arg("ean_add_on_symbol") = EanAddOnSymbol::Ignore,
 		"Read (decode) a barcode from a numpy BGR or grayscale image array or from a PIL image.\n\n"
-		":type image: numpy.ndarray|PIL.Image.Image\n"
+		":type image: buffer|numpy.ndarray|PIL.Image.Image\n"
 		":param image: The image object to decode. The image can be either:\n"
+		"  - a buffer with the correct shape, use .cast on memory view to convert\n"
 		"  - a numpy array containing image either in grayscale (1 byte per pixel) or BGR mode (3 bytes per pixel)\n"
 		"  - a PIL Image\n"
 		":type formats: zxing.BarcodeFormat|zxing.BarcodeFormats\n"
@@ -302,8 +393,9 @@ PYBIND11_MODULE(zxingcpp, m)
 		py::arg("is_pure") = false,
 		py::arg("ean_add_on_symbol") = EanAddOnSymbol::Ignore,
 		"Read (decode) multiple barcodes from a numpy BGR or grayscale image array or from a PIL image.\n\n"
-		":type image: numpy.ndarray|PIL.Image.Image\n"
+		":type image: buffer|numpy.ndarray|PIL.Image.Image\n"
 		":param image: The image object to decode. The image can be either:\n"
+		"  - a buffer with the correct shape, use .cast on memory view to convert\n"
 		"  - a numpy array containing image either in grayscale (1 byte per pixel) or BGR mode (3 bytes per pixel)\n"
 		"  - a PIL Image\n"
 		":type formats: zxing.BarcodeFormat|zxing.BarcodeFormats\n"
@@ -336,7 +428,7 @@ PYBIND11_MODULE(zxingcpp, m)
 		py::arg("height") = 0,
 		py::arg("quiet_zone") = -1,
 		py::arg("ec_level") = -1,
-		"Write (encode) a text into a barcode and return numpy (grayscale) image array\n\n"
+		"Write (encode) a text into a barcode and return 8-bit grayscale bitmap buffer\n\n"
 		":type format: zxing.BarcodeFormat\n"
 		":param format: format of the barcode to create\n"
 		":type text: str\n"
@@ -353,5 +445,6 @@ PYBIND11_MODULE(zxingcpp, m)
 		":type ec_level: int\n"
 		":param ec_level: error correction level of the barcode\n"
 		"  (Used for Aztec, PDF417, and QRCode only)."
+		":rtype: zxing.WriteResult\n"
 	);
 }
