@@ -22,6 +22,11 @@ if (WINRT)
         -DWINRT
     )
 endif()
+if (MSVC)
+    set (ZXING_CORE_DEFINES ${ZXING_CORE_DEFINES}
+        /Zc:__cplusplus
+    )
+endif()
 
 set (ZXING_CORE_LOCAL_DEFINES
     $<$<BOOL:${BUILD_READERS}>:-DZXING_BUILD_READERS>
@@ -34,7 +39,6 @@ if (MSVC)
         -D_CRT_SECURE_NO_WARNINGS
         -D_CRT_NONSTDC_NO_WARNINGS
         -DNOMINMAX
-        /Zc:__cplusplus
     )
 else()
     set (ZXING_CORE_LOCAL_DEFINES ${ZXING_CORE_LOCAL_DEFINES}
