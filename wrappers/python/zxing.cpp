@@ -90,6 +90,8 @@ auto read_barcodes_impl(py::object _image, const BarcodeFormats& formats, bool t
 	}
 
 	const auto bytes = image.data();
+	// Disables the GIL during zxing processing (restored automatically upon completion)
+	py::gil_scoped_release release;
 	return ReadBarcodes({bytes, width, height, imgfmt, width * channels, channels}, hints);
 }
 
