@@ -13,19 +13,20 @@
 
 // Writer
 #include "BitMatrix.h"
+#include "Matrix.h"
 #include "MultiFormatWriter.h"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <optional>
-#include <memory>
-#include <vector>
-#include <sstream>
 #include <functional>
-#include <list>
+#include <memory>
+#include <sstream>
+#include <vector>
 
 using namespace ZXing;
 namespace py = pybind11;
+using namespace pybind11::literals; // to bring in the `_a` literal
 
 std::ostream& operator<<(std::ostream& os, const Position& points) {
 	for (const auto& p : points)
@@ -75,10 +76,9 @@ auto read_barcodes_impl(py::object _image, const BarcodeFormats& formats, bool t
 				auto adata = ai["data"];
 
 				if (py::isinstance<py::tuple>(adata)) {
-					auto data_tuple = adata.cast<py::tuple>();
-					auto ashape_std = ashape.cast<std::list<py::size_t>>();
-					auto data_len = Reduce(ashape_std, py::size_t(1u), std::multiplies<py::size_t>());
-					buffer = py::memoryview::from_memory(reinterpret_cast<void*>(data_tuple[0].cast<py::size_t>()), data_len, true);
+					auto data_ptr = adata.cast<py::tuple>()[0].cast<py::size_t>();
+					auto data_len = Reduce(ashape.cast<std::vector<int>>(), 1, std::multiplies{});
+					buffer = py::memoryview::from_memory(reinterpret_cast<void*>(data_ptr), data_len, true);
 				} else if (py::isinstance<py::buffer>(adata)) {
 					// Numpy and our own __array_interface__ passes data as a buffer/bytes object
 					buffer = adata.cast<py::buffer>();
@@ -114,10 +114,10 @@ auto read_barcodes_impl(py::object _image, const BarcodeFormats& formats, bool t
 	py::buffer_info info = buffer.request();
 
 	if (info.format != py::format_descriptor<uint8_t>::format())
-		throw py::type_error("Incompatible format: expected a uint8_t array.");
+		throw py::type_error("Incompatible buffer format: expected a uint8_t array.");
 
 	if (info.ndim != 2 && info.ndim != 3)
-		throw py::type_error("Incompatible buffer dimension.");
+		throw py::type_error("Incompatible buffer dimension (needs to be 2 or 3).");
 
 	const auto height = narrow_cast<int>(info.shape[0]);
 	const auto width = narrow_cast<int>(info.shape[1]);
@@ -151,60 +151,11 @@ Results read_barcodes(py::object _image, const BarcodeFormats& formats, bool try
 	return read_barcodes_impl(_image, formats, try_rotate, try_downscale, text_mode, binarizer, is_pure, ean_add_on_symbol);
 }
 
-class WriteResult
-{
-public:
-	WriteResult(std::vector<char>&& result_data_, std::vector<py::ssize_t>&& shape_)
-	{
-		result_data = result_data_;
-		shape = shape_;
-		ndim = shape.size();
-	}
-
-	WriteResult(WriteResult const& o) : ndim(o.ndim), shape(o.shape), result_data(o.result_data) {}
-
-	const std::vector<char>& get_result_data() const { return result_data; }
-
-	static py::buffer_info get_buffer(const WriteResult& wr)
-	{
-		return py::buffer_info(
-			reinterpret_cast<void*>(const_cast<char*>(wr.result_data.data())),
-			sizeof(char), "B", wr.shape.size(), wr.shape, { wr.shape[0], py::ssize_t(1) }
-		);
-	}
-
-	const std::vector<py::ssize_t> get_shape() const { return shape; }
-
-private:
-	py::ssize_t ndim;
-	std::vector<py::ssize_t> shape;
-	std::vector<char> result_data;
-};
-
-py::object write_barcode(BarcodeFormat format, std::string text, int width, int height, int quiet_zone, int ec_level)
+Matrix<uint8_t> write_barcode(BarcodeFormat format, std::string text, int width, int height, int quiet_zone, int ec_level)
 {
 	auto writer = MultiFormatWriter(format).setEncoding(CharacterSet::UTF8).setMargin(quiet_zone).setEccLevel(ec_level);
 	auto bitmap = writer.encode(text, width, height);
-
-	std::vector<char> result_data(bitmap.width() * bitmap.height());
-	for (py::ssize_t y = 0; y < bitmap.height(); y++)
-		for (py::ssize_t x = 0; x < bitmap.width(); x++)
-			result_data[x + (y * bitmap.width())] = bitmap.get(narrow_cast<int>(x), narrow_cast<int>(y)) ? 0 : 255;
-
-	WriteResult res(std::move(result_data), {bitmap.height(), bitmap.width()});
-
-	auto resobj = py::cast(res);
-
-	// We add an __array_interface__ here to make the returned type easily convertible to PIL images,
-	// Numpy arrays and other libraries that spport the interface.
-	py::dict array_interface;
-	array_interface["version"] = py::cast(3);
-	array_interface["data"] = resobj;
-	array_interface["shape"] = res.get_shape();
-	array_interface["typestr"] = py::cast("|u1");
-	resobj.attr("__array_interface__") = array_interface;
-
-	return resobj;
+	return ToMatrix<uint8_t>(bitmap);
 }
 
 
@@ -299,10 +250,6 @@ PYBIND11_MODULE(zxingcpp, m)
 			oss << pos;
 			return oss.str();
 		});
-	py::class_<WriteResult>(m, "WriteResult", "Result of barcode writing", py::buffer_protocol(), py::dynamic_attr())
-		.def_property_readonly("shape", &WriteResult::get_shape,
-			":rtype: tuple")
-		.def_buffer(&WriteResult::get_buffer);
 	py::class_<Result>(m, "Result", "Result of barcode reading")
 		.def_property_readonly("valid", &Result::isValid,
 			":return: whether or not result is valid (i.e. a symbol was found)\n"
@@ -421,6 +368,26 @@ PYBIND11_MODULE(zxingcpp, m)
 		":rtype: zxing.Result\n"
 		":return: a list of zxing results containing decoded symbols, the list is empty if none is found"
 		);
+
+	py::class_<Matrix<uint8_t>>(m, "Bitmap", py::buffer_protocol())
+		.def_property_readonly(
+			"__array_interface__",
+			[](const Matrix<uint8_t>& m) {
+				return py::dict("version"_a = 3, "data"_a = m, "shape"_a = py::make_tuple(m.height(), m.width()), "typestr"_a = "|u1");
+			})
+		.def_property_readonly("shape", [](const Matrix<uint8_t>& m) { return py::make_tuple(m.height(), m.width()); })
+		.def_buffer([](const Matrix<uint8_t>& m) -> py::buffer_info {
+			return {
+				const_cast<uint8_t*>(m.data()),                 // Pointer to buffer
+				sizeof(uint8_t),                                // Size of one scalar
+				py::format_descriptor<uint8_t>::format(),       // Python struct-style format descriptor
+				2,                                              // Number of dimensions
+				{m.height(), m.width()},                        // Buffer dimensions
+				{sizeof(uint8_t) * m.width(), sizeof(uint8_t)}, // Strides (in bytes) for each index
+				true                                            // read-only
+			};
+		});
+
 	m.def("write_barcode", &write_barcode,
 		py::arg("format"),
 		py::arg("text"),
