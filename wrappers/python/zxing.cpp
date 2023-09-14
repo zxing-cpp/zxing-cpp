@@ -37,7 +37,8 @@ std::ostream& operator<<(std::ostream& os, const Position& points) {
 }
 
 auto read_barcodes_impl(py::object _image, const BarcodeFormats& formats, bool try_rotate, bool try_downscale, TextMode text_mode,
-						Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol, uint8_t max_number_of_symbols = 0xff)
+						Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol, bool return_errors,
+						uint8_t max_number_of_symbols = 0xff)
 {
 	const auto hints = DecodeHints()
 		.setFormats(formats)
@@ -47,7 +48,8 @@ auto read_barcodes_impl(py::object _image, const BarcodeFormats& formats, bool t
 		.setBinarizer(binarizer)
 		.setIsPure(is_pure)
 		.setMaxNumberOfSymbols(max_number_of_symbols)
-		.setEanAddOnSymbol(ean_add_on_symbol);
+		.setEanAddOnSymbol(ean_add_on_symbol)
+		.setReturnErrors(return_errors);
 	const auto _type = std::string(py::str(py::type::of(_image)));
 	py::buffer buffer;
 	ImageFormat imgfmt = ImageFormat::None;
@@ -144,16 +146,19 @@ auto read_barcodes_impl(py::object _image, const BarcodeFormats& formats, bool t
 }
 
 std::optional<Result> read_barcode(py::object _image, const BarcodeFormats& formats, bool try_rotate, bool try_downscale,
-								   TextMode text_mode, Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol)
+								   TextMode text_mode, Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol,
+								   bool return_errors)
 {
-	auto res = read_barcodes_impl(_image, formats, try_rotate, try_downscale, text_mode, binarizer, is_pure, ean_add_on_symbol, 1);
+	auto res = read_barcodes_impl(_image, formats, try_rotate, try_downscale, text_mode, binarizer, is_pure, ean_add_on_symbol,
+								  return_errors, 1);
 	return res.empty() ? std::nullopt : std::optional(res.front());
 }
 
 Results read_barcodes(py::object _image, const BarcodeFormats& formats, bool try_rotate, bool try_downscale,
-					  TextMode text_mode, Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol)
+					  TextMode text_mode, Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol, bool return_errors)
 {
-	return read_barcodes_impl(_image, formats, try_rotate, try_downscale, text_mode, binarizer, is_pure, ean_add_on_symbol);
+	return read_barcodes_impl(_image, formats, try_rotate, try_downscale, text_mode, binarizer, is_pure, ean_add_on_symbol,
+							  return_errors);
 }
 
 Matrix<uint8_t> write_barcode(BarcodeFormat format, std::string text, int width, int height, int quiet_zone, int ec_level)
@@ -255,6 +260,20 @@ PYBIND11_MODULE(zxingcpp, m)
 			oss << pos;
 			return oss.str();
 		});
+	py::enum_<Error::Type>(m, "ErrorType", "")
+		.value("None", Error::Type::None, "No error")
+		.value("Format", Error::Type::Format, "Data format error")
+		.value("Checksum", Error::Type::Checksum, "Checksum error")
+		.value("Unsupported", Error::Type::Unsupported, "Unsupported content error")
+		.export_values();
+	py::class_<Error>(m, "Error", "Barcode reading error")
+		.def_property_readonly("type", &Error::type,
+		   ":return: Error type\n"
+		   ":rtype: zxing.ErrorType")
+		.def_property_readonly("message", &Error::msg,
+			":return: Error message\n"
+			":rtype: str")
+		.def("__str__", [](Error e) { return ToString(e); });
 	py::class_<Result>(m, "Result", "Result of barcode reading")
 		.def_property_readonly("valid", &Result::isValid,
 			":return: whether or not result is valid (i.e. a symbol was found)\n"
@@ -282,7 +301,11 @@ PYBIND11_MODULE(zxingcpp, m)
 			":rtype: zxing.Position")
 		.def_property_readonly("orientation", &Result::orientation,
 			":return: orientation (in degree) of the decoded symbol\n"
-			":rtype: int");
+			":rtype: int")
+		.def_property_readonly(
+			"error", [](const Result& res) { return res.error() ? std::optional(res.error()) : std::nullopt; },
+			":return: Error code or None\n"
+			":rtype: zxing.Error");
 	m.def("barcode_format_from_str", &BarcodeFormatFromString,
 		py::arg("str"),
 		"Convert string to BarcodeFormat\n\n"
@@ -306,6 +329,7 @@ PYBIND11_MODULE(zxingcpp, m)
 		py::arg("binarizer") = Binarizer::LocalAverage,
 		py::arg("is_pure") = false,
 		py::arg("ean_add_on_symbol") = EanAddOnSymbol::Ignore,
+		py::arg("return_errors") = false,
 		"Read (decode) a barcode from a numpy BGR or grayscale image array or from a PIL image.\n\n"
 		":type image: buffer|numpy.ndarray|PIL.Image.Image\n"
 		":param image: The image object to decode. The image can be either:\n"
@@ -332,6 +356,9 @@ PYBIND11_MODULE(zxingcpp, m)
 		":type ean_add_on_symbol: zxing.EanAddOnSymbol\n"
 		":param ean_add_on_symbol: Specify whether to Ignore, Read or Require EAN-2/5 add-on symbols while scanning \n"
 		"  EAN/UPC codes. Default is ``Ignore``.\n"
+		":type return_errors: bool\n"
+		":param return_errors: Set to True to return the barcodes with errors as well (e.g. checksum errors); see ``Result.error``.\n"
+		" Default is False."
 		":rtype: zxing.Result\n"
 		":return: a zxing result containing decoded symbol if found, None otherwise"
 	);
@@ -344,6 +371,7 @@ PYBIND11_MODULE(zxingcpp, m)
 		py::arg("binarizer") = Binarizer::LocalAverage,
 		py::arg("is_pure") = false,
 		py::arg("ean_add_on_symbol") = EanAddOnSymbol::Ignore,
+		py::arg("return_errors") = false,
 		"Read (decode) multiple barcodes from a numpy BGR or grayscale image array or from a PIL image.\n\n"
 		":type image: buffer|numpy.ndarray|PIL.Image.Image\n"
 		":param image: The image object to decode. The image can be either:\n"
@@ -370,10 +398,12 @@ PYBIND11_MODULE(zxingcpp, m)
 		":type ean_add_on_symbol: zxing.EanAddOnSymbol\n"
 		":param ean_add_on_symbol: Specify whether to Ignore, Read or Require EAN-2/5 add-on symbols while scanning \n"
 		"  EAN/UPC codes. Default is ``Ignore``.\n"
+		":type return_errors: bool\n"
+		":param return_errors: Set to True to return the barcodes with errors as well (e.g. checksum errors); see ``Result.error``.\n"
+		" Default is False.\n"
 		":rtype: zxing.Result\n"
 		":return: a list of zxing results containing decoded symbols, the list is empty if none is found"
-		);
-
+	);
 	py::class_<Matrix<uint8_t>>(m, "Bitmap", py::buffer_protocol())
 		.def_property_readonly(
 			"__array_interface__",
