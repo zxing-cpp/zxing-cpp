@@ -76,7 +76,6 @@ setup(
         "Topic :: Multimedia :: Graphics",
     ],
     python_requires=">=3.6",
-    install_requires=["numpy"],
     ext_modules=[CMakeExtension('zxingcpp')],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
