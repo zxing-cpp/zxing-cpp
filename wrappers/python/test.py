@@ -94,7 +94,6 @@ class TestReadWrite(unittest.TestCase):
 		text = "I have the best words."
 		img = zxingcpp.write_barcode(format, text)
 		img = np.array(img)
-		#img = np.ndarray(img.shape, dtype=np.uint8, buffer=img)
 
 		self.check_res(zxingcpp.read_barcode(img), format, text)
 
@@ -105,7 +104,6 @@ class TestReadWrite(unittest.TestCase):
 		text = "I have the best words."
 		img = zxingcpp.write_barcode(format, text)
 		img = Image.fromarray(img, "L")
-		#img = Image.frombuffer("L", img.shape, img)
 
 		self.check_res(zxingcpp.read_barcode(img), format, text)
 		self.check_res(zxingcpp.read_barcode(img.convert("RGB")), format, text)
@@ -115,7 +113,7 @@ class TestReadWrite(unittest.TestCase):
 
 	def test_read_invalid_type(self):
 		self.assertRaisesRegex(
-			TypeError, "Could not convert <class 'str'> to buffer.", zxingcpp.read_barcode, "foo"
+			TypeError, "Invalid input: <class 'str'> does not support the buffer protocol.", zxingcpp.read_barcode, "foo"
 		)
 
 	def test_read_invalid_numpy_array_channels_buffer(self):

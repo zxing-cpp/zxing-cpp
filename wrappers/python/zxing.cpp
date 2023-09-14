@@ -108,11 +108,11 @@ auto read_barcodes_impl(py::object _image, const BarcodeFormats& formats, bool t
 		}
 #if PYBIND11_VERSION_HEX > 0x02080000 // py::raise_from is available starting from 2.8.0
 	} catch (py::error_already_set &e) {
-		py::raise_from(e, PyExc_TypeError, ("Could not convert " + _type + " to buffer.").c_str());
+		py::raise_from(e, PyExc_TypeError, ("Invalid input: " + _type + " does not support the buffer protocol.").c_str());
 		throw py::error_already_set();
 #endif
 	} catch (...) {
-		throw py::type_error("Could not convert " + _type + " to buffer. Expecting a PIL Image or buffer.");
+		throw py::type_error("Invalid input: " + _type + " does not support the buffer protocol.");
 	}
 
 	/* Request a buffer descriptor from Python */
@@ -415,8 +415,7 @@ PYBIND11_MODULE(zxingcpp, m)
 		":param quiet_zone: minimum size (in pixels) of the quiet zone around barcode. If undefined (or set to -1), \n"
 		"  the minimum quiet zone of respective barcode is used."
 		":type ec_level: int\n"
-		":param ec_level: error correction level of the barcode\n"
-		"  (Used for Aztec, PDF417, and QRCode only)."
-		":rtype: zxing.WriteResult\n"
+		":param ec_level: error correction level of the barcode (Used for Aztec, PDF417, and QRCode only).\n"
+		":rtype: zxing.Bitmap\n"
 	);
 }
