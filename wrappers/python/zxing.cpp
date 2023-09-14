@@ -94,6 +94,11 @@ auto read_barcodes_impl(py::object _image, const BarcodeFormats& formats, bool t
 				bshape = buffer.attr("shape").cast<py::tuple>();
 			}
 
+			// We need to check if the shape is equal because memoryviews can only be cast from 1D
+			// to ND and in reverse, not from ND to ND. If the shape is already correct, as with our
+			// return value from write_barcode, we don't need to cast. There are libraries (PIL for
+			// example) that pass 1D data here, in that case we need to cast because the later code
+			// expects a buffer in the correct shape.
 			if (!ashape.equal(bshape)) {
 				auto bufferview = py::memoryview(buffer);
 				buffer = bufferview.attr("cast")("B", ashape).cast<py::buffer>();
