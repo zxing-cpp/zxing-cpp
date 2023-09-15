@@ -77,7 +77,7 @@ These are the generic instructions to build the library on Windows/macOS/Linux. 
 ```
 git clone https://github.com/zxing-cpp/zxing-cpp.git --single-branch --depth 1
 cmake -S zxing-cpp -B zxing-cpp.release -DCMAKE_BUILD_TYPE=Release
-cmake --build zxing-cpp.release -j8
+cmake --build zxing-cpp.release -j8 --config Release
 ```
 
 [Note: binary packages are available for/as
