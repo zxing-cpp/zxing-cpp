@@ -920,7 +920,8 @@ DetectorResults Detect(const BitMatrix& image, bool tryHarder, bool tryRotate, b
 {
 #ifdef __cpp_impl_coroutine
 	if (isPure) {
-		co_yield DetectPure(image);
+		if (auto r = DetectPure(image); r.isValid())
+			co_yield std::move(r);
 	} else {
 		bool found = false;
 		for (auto&& r : DetectNew(image, tryHarder, tryRotate)) {
