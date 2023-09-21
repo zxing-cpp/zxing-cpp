@@ -25,6 +25,9 @@ import java.lang.RuntimeException
 import java.nio.ByteBuffer
 
 public class BarcodeReader {
+    init {
+        System.loadLibrary("zxing_android")
+    }
 
     // Enumerates barcode formats known to this package.
     // Note that this has to be kept synchronized with native (C++/JNI) side.
@@ -129,8 +132,4 @@ public class BarcodeReader {
         formats: String, tryHarder: Boolean, tryRotate: Boolean, tryInvert: Boolean, tryDownscale: Boolean,
         result: Result,
     ): String?
-
-    init {
-        System.loadLibrary("zxing_android")
-    }
 }
