@@ -20,11 +20,19 @@ import android.graphics.Bitmap
 import android.graphics.ImageFormat
 import android.graphics.Point
 import android.graphics.Rect
+import android.os.Build
 import androidx.camera.core.ImageProxy
 import java.lang.RuntimeException
 import java.nio.ByteBuffer
 
 public class BarcodeReader {
+    private val supportedYUVFormats: List<Int> =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            listOf(ImageFormat.YUV_420_888, ImageFormat.YUV_422_888, ImageFormat.YUV_444_888)
+        } else {
+            listOf(ImageFormat.YUV_420_888)
+        }
+
     init {
         System.loadLibrary("zxing_android")
     }
@@ -71,9 +79,8 @@ public class BarcodeReader {
     public var options : Options = Options()
 
     public fun read(image: ImageProxy): Result? {
-        val supportedYUVFormats = arrayOf(ImageFormat.YUV_420_888, ImageFormat.YUV_422_888, ImageFormat.YUV_444_888)
-        if (image.format !in supportedYUVFormats) {
-            error("invalid image format")
+        check(image.format in supportedYUVFormats) {
+            "Invalid image format: ${image.format}. Must be one of: $supportedYUVFormats"
         }
 
         var result = Result()
