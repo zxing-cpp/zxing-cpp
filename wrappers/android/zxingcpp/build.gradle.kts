@@ -44,6 +44,10 @@ android {
     }
 }
 
+kotlin {
+    explicitApi()
+}
+
 dependencies {
     implementation(libs.androidx.camera.core)
 }
