@@ -5,3 +5,4 @@ CMakeLists.txt.user
 *.d
 *.a
 compile_commands.json
+.idea
