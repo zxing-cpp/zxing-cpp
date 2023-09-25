@@ -20,23 +20,35 @@ import android.graphics.Bitmap
 import android.graphics.ImageFormat
 import android.graphics.Point
 import android.graphics.Rect
+import android.os.Build
 import androidx.camera.core.ImageProxy
 import java.lang.RuntimeException
 import java.nio.ByteBuffer
 
-class BarcodeReader {
+public class BarcodeReader {
+    private val supportedYUVFormats: List<Int> =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            listOf(ImageFormat.YUV_420_888, ImageFormat.YUV_422_888, ImageFormat.YUV_444_888)
+        } else {
+            listOf(ImageFormat.YUV_420_888)
+        }
+
+    init {
+        System.loadLibrary("zxing_android")
+    }
 
     // Enumerates barcode formats known to this package.
     // Note that this has to be kept synchronized with native (C++/JNI) side.
-    enum class Format {
+    public enum class Format {
         NONE, AZTEC, CODABAR, CODE_39, CODE_93, CODE_128, DATA_BAR, DATA_BAR_EXPANDED,
         DATA_MATRIX, EAN_8, EAN_13, ITF, MAXICODE, PDF_417, QR_CODE, MICRO_QR_CODE, UPC_A, UPC_E
     }
-    enum class ContentType {
+
+    public enum class ContentType {
         TEXT, BINARY, MIXED, GS1, ISO15434, UNKNOWN_ECI
     }
 
-    data class Options(
+    public data class Options(
         val formats: Set<Format> = setOf(),
         val tryHarder: Boolean = false,
         val tryRotate: Boolean = false,
@@ -44,7 +56,7 @@ class BarcodeReader {
         val tryDownscale: Boolean = false
     )
 
-    data class Position(
+    public data class Position(
         val topLeft: Point,
         val topRight: Point,
         val bottomLeft: Point,
@@ -52,7 +64,7 @@ class BarcodeReader {
         val orientation: Double
     )
 
-    data class Result(
+    public data class Result(
         val format: Format = Format.NONE,
         val bytes: ByteArray? = null,
         val text: String? = null,
@@ -64,12 +76,11 @@ class BarcodeReader {
         val symbologyIdentifier: String? = null
     )
 
-    var options : Options = Options()
+    public var options : Options = Options()
 
-    fun read(image: ImageProxy): Result? {
-        val supportedYUVFormats = arrayOf(ImageFormat.YUV_420_888, ImageFormat.YUV_422_888, ImageFormat.YUV_444_888)
-        if (image.format !in supportedYUVFormats) {
-            error("invalid image format")
+    public fun read(image: ImageProxy): Result? {
+        check(image.format in supportedYUVFormats) {
+            "Invalid image format: ${image.format}. Must be one of: $supportedYUVFormats"
         }
 
         var result = Result()
@@ -97,11 +108,11 @@ class BarcodeReader {
         }
     }
 
-    fun read(bitmap: Bitmap, cropRect: Rect = Rect(), rotation: Int = 0): Result? {
+    public fun read(bitmap: Bitmap, cropRect: Rect = Rect(), rotation: Int = 0): Result? {
         return read(bitmap, options, cropRect, rotation)
     }
 
-    fun read(bitmap: Bitmap, options: Options, cropRect: Rect = Rect(), rotation: Int = 0): Result? {
+    public fun read(bitmap: Bitmap, options: Options, cropRect: Rect = Rect(), rotation: Int = 0): Result? {
         var result = Result()
         val status = with(options) {
             readBitmap(
@@ -128,8 +139,4 @@ class BarcodeReader {
         formats: String, tryHarder: Boolean, tryRotate: Boolean, tryInvert: Boolean, tryDownscale: Boolean,
         result: Result,
     ): String?
-
-    init {
-        System.loadLibrary("zxing_android")
-    }
 }
