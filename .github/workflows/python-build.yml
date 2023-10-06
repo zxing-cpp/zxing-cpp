@@ -30,7 +30,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.9'
+        python-version: '3.12'
 
     - name: Install cibuildwheel
       run: python3 -m pip install cibuildwheel==2.16.2
@@ -38,7 +38,7 @@ jobs:
     - name: Build wheels
       run: python3 -m cibuildwheel --output-dir wheelhouse wrappers/python
       env:
-        CIBW_BUILD: cp39-* cp310-* cp311-* cp312-*
+        CIBW_BUILD: cp38-* cp39-* cp310-* cp311-* cp312-*
         CIBW_SKIP: "*musllinux*"
         CIBW_ARCHS_MACOS: universal2
         CIBW_ENVIRONMENT_MACOS: CMAKE_OSX_ARCHITECTURES="arm64;x86_64"
@@ -58,7 +58,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.9'
+        python-version: '3.12'
 
     - name: Build sdist
       working-directory: wrappers/python
