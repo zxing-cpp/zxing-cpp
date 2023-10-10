@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include "CharacterSet.h"
 #include "DMSymbolShape.h"
 
 #include <string>
@@ -43,12 +44,18 @@ public:
 		return *this;
 	}
 
+	Writer& setEncoding(CharacterSet encoding) {
+		_encoding = encoding;
+		return *this;
+	}
+
 	BitMatrix encode(const std::wstring& contents, int width, int height) const;
 	BitMatrix encode(const std::string& contents, int width, int height) const;
 
 private:
 	SymbolShape _shapeHint;
 	int _quietZone = 1, _minWidth = -1, _minHeight = -1, _maxWidth = -1, _maxHeight = -1;
+	CharacterSet _encoding;
 };
 
 } // DataMatrix
