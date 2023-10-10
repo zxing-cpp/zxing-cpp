@@ -857,7 +857,7 @@ static bool EndsWith(const std::wstring& s, const std::wstring& ss)
 
 ByteArray Encode(const std::wstring& msg)
 {
-	return Encode(msg, CharacterSet::UTF8, SymbolShape::NONE, -1, -1, -1, -1);
+	return Encode(msg, CharacterSet::ISO8859_1, SymbolShape::NONE, -1, -1, -1, -1);
 }
 
 /**
@@ -878,6 +878,10 @@ ByteArray Encode(const std::wstring& msg, CharacterSet charset, SymbolShape shap
 	//	new ASCIIEncoder(), new C40Encoder(), new TextEncoder(),
 	//	new X12Encoder(), new EdifactEncoder(),  new Base256Encoder()
 	//};
+
+	if (charset == CharacterSet::Unknown) {
+		charset = CharacterSet::ISO8859_1;
+	}
 
 	EncoderContext context(TextEncoder::FromUnicode(msg, charset));
 	context.setSymbolShape(shape);

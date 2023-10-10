@@ -77,7 +77,7 @@ static BitMatrix EncodeLowLevel(const BitMatrix& placement, const SymbolInfo& sy
 
 Writer::Writer() :
 	_shapeHint(SymbolShape::NONE),
-	_encoding(CharacterSet::UTF8)
+	_encoding(CharacterSet::Unknown)
 {
 }
 
