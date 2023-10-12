@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include "CharacterSet.h"
+
 #include <string>
 
 namespace ZXing {
@@ -21,7 +23,7 @@ enum class SymbolShape;
 * annex S.
 */
 ByteArray Encode(const std::wstring& msg);
-ByteArray Encode(const std::wstring& msg, SymbolShape shape, int minWidth, int minHeight, int maxWidth, int maxHeight);
+ByteArray Encode(const std::wstring& msg, CharacterSet encoding, SymbolShape shape, int minWidth, int minHeight, int maxWidth, int maxHeight);
 
 } // DataMatrix
 } // ZXing

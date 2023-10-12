@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "ByteArray.h"
+#include "CharacterSet.h"
 #include "ZXAlgorithms.h"
 #include "datamatrix/DMHighLevelEncoder.h"
 #include "datamatrix/DMSymbolInfo.h"
@@ -346,7 +347,7 @@ TEST(DMHighLevelEncodeTest, EncodingWithStartAsX12AndLatchToEDIFACTInTheMiddle)
 TEST(DMHighLevelEncodeTest, EDIFACTWithEODBug)
 {
 	std::string visualized = Visualize(
-		DataMatrix::Encode(L"abc<->ABCDE", DataMatrix::SymbolShape::SQUARE, -1, -1, -1, -1));
+		DataMatrix::Encode(L"abc<->ABCDE", CharacterSet::ISO8859_1, DataMatrix::SymbolShape::SQUARE, -1, -1, -1, -1));
 	// switch to EDIFACT on '<', uses 10 code words + 2 padding. Buggy code introduced invalid 254 after the 5
 	EXPECT_EQ(visualized, "98 99 100 240 242 223 129 8 49 5 129 147");
 }
