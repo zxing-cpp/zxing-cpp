@@ -228,7 +228,7 @@ bool IsEndOfStream(const BitSource& bits, const Version& version)
 * <p>See ISO 18004:2006, 6.4.3 - 6.4.7</p>
 */
 ZXING_EXPORT_TEST_ONLY
-DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCorrectionLevel ecLevel)
+DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCorrectionLevel ecLevel, bool isModel1)
 {
 	BitSource bits(bytes);
 	Content result;
@@ -237,6 +237,11 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 	StructuredAppendInfo structuredAppend;
 	const int modeBitLength = CodecModeBitsLength(version);
 
+	if (isModel1)
+	{
+		bits.readBits(4); // model1
+	}
+		
 	try
 	{
 		while(!IsEndOfStream(bits, version)) {
@@ -316,17 +321,28 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 
 DecoderResult Decode(const BitMatrix& bits)
 {
-	const Version* pversion = ReadVersion(bits);
+	bool isModel1 = false;
+
+	const Version* pversion = ReadVersion(bits, isModel1);
 	if (!pversion)
 		return FormatError("Invalid version");
-	const Version& version = *pversion;
+	const Version& preversion = *pversion;
 
-	auto formatInfo = ReadFormatInformation(bits, version.isMicroQRCode());
+	auto formatInfo = ReadFormatInformation(bits, preversion.isMicroQRCode(), isModel1);
 	if (!formatInfo.isValid())
 		return FormatError("Invalid format information");
 
+	if (isModel1)
+	{
+		pversion = nullptr;
+		pversion = ReadVersion(bits, isModel1);
+		if (!pversion)
+			return FormatError("Invalid version");
+	}
+	const Version& version = *pversion;
+
 	// Read codewords
-	ByteArray codewords = ReadCodewords(bits, version, formatInfo);
+	ByteArray codewords = ReadCodewords(bits, version, formatInfo, isModel1);
 	if (codewords.empty())
 		return FormatError("Failed to read codewords");
 
@@ -354,7 +370,7 @@ DecoderResult Decode(const BitMatrix& bits)
 	}
 
 	// Decode the contents of that stream of bytes
-	return DecodeBitStream(std::move(resultBytes), version, formatInfo.ecLevel).setIsMirrored(formatInfo.isMirrored);
+	return DecodeBitStream(std::move(resultBytes), version, formatInfo.ecLevel, isModel1).setIsMirrored(formatInfo.isMirrored);
 }
 
 } // namespace ZXing::QRCode

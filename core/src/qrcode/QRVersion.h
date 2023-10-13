@@ -54,9 +54,9 @@ public:
 	* @param dimension dimension in modules
 	* @return Version for a QR Code of that dimension
 	*/
-	static const Version* FromDimension(int dimension);
+	static const Version* FromDimension(int dimension ,bool isModel1);
 	
-	static const Version* FromNumber(int versionNumber, bool isMicro = false);
+	static const Version* FromNumber(int versionNumber, bool isMicro = false, bool isModel1 = false);
 
 	static const Version* DecodeVersionInformation(int versionBitsA, int versionBitsB = 0);
 
@@ -71,6 +71,7 @@ private:
 	Version(int versionNumber, const std::array<ECBlocks, 4>& ecBlocks);
 	static const Version* AllVersions();
 	static const Version* AllMicroVersions();
+	static const Version* AllModel1Versions();
 };
 
 } // QRCode

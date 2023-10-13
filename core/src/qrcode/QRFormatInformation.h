@@ -25,7 +25,7 @@ public:
 
 	FormatInformation() = default;
 
-	static FormatInformation DecodeQR(uint32_t formatInfoBits1, uint32_t formatInfoBits2);
+	static FormatInformation DecodeQR(uint32_t formatInfoBits1, uint32_t formatInfoBits2, bool& isModel1);
 	static FormatInformation DecodeMQR(uint32_t formatInfoBits);
 
 	// Hamming distance of the 32 masked codes is 7, by construction, so <= 3 bits differing means we found a match
