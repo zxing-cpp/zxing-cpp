@@ -13,8 +13,8 @@
 		388BF030283CC49D005CE271 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 388BF02E283CC49D005CE271 /* Main.storyboard */; };
 		388BF032283CC49E005CE271 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 388BF031283CC49E005CE271 /* Assets.xcassets */; };
 		388BF035283CC49E005CE271 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 388BF033283CC49E005CE271 /* LaunchScreen.storyboard */; };
-		52A975472ADAD7DE002D6BD8 /* ZXingCppWrapper in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 9507444F28609C0500E02D06 /* ZXingCppWrapper */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		52A9754D2ADADA2B002D6BD8 /* ZXingCppWrapper in Frameworks */ = {isa = PBXBuildFile; productRef = 52A9754C2ADADA2B002D6BD8 /* ZXingCppWrapper */; };
+		52A4CB722ADAE13500A1BF26 /* ZXingCppWrapper in Frameworks */ = {isa = PBXBuildFile; productRef = 52A4CB712ADAE13500A1BF26 /* ZXingCppWrapper */; };
+		52A4CB732ADAE13500A1BF26 /* ZXingCppWrapper in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 52A4CB712ADAE13500A1BF26 /* ZXingCppWrapper */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		950744522860A3A300E02D06 /* WriteViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 950744512860A3A300E02D06 /* WriteViewController.swift */; };
 /* End PBXBuildFile section */
 
@@ -25,7 +25,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				52A975472ADAD7DE002D6BD8 /* ZXingCppWrapper in Embed Frameworks */,
+				52A4CB732ADAE13500A1BF26 /* ZXingCppWrapper in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -51,7 +51,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				52A9754D2ADADA2B002D6BD8 /* ZXingCppWrapper in Frameworks */,
+				52A4CB722ADAE13500A1BF26 /* ZXingCppWrapper in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -117,8 +117,7 @@
 			);
 			name = demo;
 			packageProductDependencies = (
-				9507444F28609C0500E02D06 /* ZXingCppWrapper */,
-				52A9754C2ADADA2B002D6BD8 /* ZXingCppWrapper */,
+				52A4CB712ADAE13500A1BF26 /* ZXingCppWrapper */,
 			);
 			productName = demo;
 			productReference = 388BF025283CC49D005CE271 /* demo.app */;
@@ -420,11 +419,7 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		52A9754C2ADADA2B002D6BD8 /* ZXingCppWrapper */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ZXingCppWrapper;
-		};
-		9507444F28609C0500E02D06 /* ZXingCppWrapper */ = {
+		52A4CB712ADAE13500A1BF26 /* ZXingCppWrapper */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ZXingCppWrapper;
 		};
