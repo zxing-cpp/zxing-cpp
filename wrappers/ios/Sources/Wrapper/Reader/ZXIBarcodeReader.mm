@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #import "ZXIBarcodeReader.h"
-#import "ZXing/ReadBarcode.h"
-#import "ZXing/ImageView.h"
-#import "ZXing/Result.h"
+#import "ReadBarcode.h"
+#import "ImageView.h"
+#import "Result.h"
 #import "ZXIFormatHelper.h"
 #import "ZXIPosition+Helper.h"
 

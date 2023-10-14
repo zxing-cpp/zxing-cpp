@@ -4,8 +4,8 @@
 
 #import <CoreGraphics/CoreGraphics.h>
 #import "ZXIBarcodeWriter.h"
-#import "ZXing/MultiFormatWriter.h"
-#import "ZXing/BitMatrix.h"
+#import "MultiFormatWriter.h"
+#import "BitMatrix.h"
 #import "ZXIFormatHelper.h"
 #import "ZXIErrors.h"
 #import <iostream>
