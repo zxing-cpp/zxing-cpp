@@ -9,7 +9,6 @@ let package = Package(
     products: [
         .library(
             name: "ZXingCppWrapper",
-            type: .dynamic,
             targets: ["ZXingCppWrapper"])
     ],
     targets: [

@@ -13,8 +13,7 @@
 		388BF030283CC49D005CE271 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 388BF02E283CC49D005CE271 /* Main.storyboard */; };
 		388BF032283CC49E005CE271 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 388BF031283CC49E005CE271 /* Assets.xcassets */; };
 		388BF035283CC49E005CE271 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 388BF033283CC49E005CE271 /* LaunchScreen.storyboard */; };
-		52A4CB722ADAE13500A1BF26 /* ZXingCppWrapper in Frameworks */ = {isa = PBXBuildFile; productRef = 52A4CB712ADAE13500A1BF26 /* ZXingCppWrapper */; };
-		52A4CB732ADAE13500A1BF26 /* ZXingCppWrapper in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 52A4CB712ADAE13500A1BF26 /* ZXingCppWrapper */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		52F9E5E92ADD921E000304E3 /* ZXingCppWrapper in Frameworks */ = {isa = PBXBuildFile; productRef = 52F9E5E82ADD921E000304E3 /* ZXingCppWrapper */; };
 		950744522860A3A300E02D06 /* WriteViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 950744512860A3A300E02D06 /* WriteViewController.swift */; };
 /* End PBXBuildFile section */
 
@@ -25,7 +24,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				52A4CB732ADAE13500A1BF26 /* ZXingCppWrapper in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -50,7 +48,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				52A4CB722ADAE13500A1BF26 /* ZXingCppWrapper in Frameworks */,
+				52F9E5E92ADD921E000304E3 /* ZXingCppWrapper in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -107,7 +105,7 @@
 			);
 			name = demo;
 			packageProductDependencies = (
-				52A4CB712ADAE13500A1BF26 /* ZXingCppWrapper */,
+				52F9E5E82ADD921E000304E3 /* ZXingCppWrapper */,
 			);
 			productName = demo;
 			productReference = 388BF025283CC49D005CE271 /* demo.app */;
@@ -138,7 +136,7 @@
 			);
 			mainGroup = 388BF01C283CC49D005CE271;
 			packageReferences = (
-				52A9754B2ADADA2B002D6BD8 /* XCLocalSwiftPackageReference "../../.." */,
+				52F9E5E72ADD921E000304E3 /* XCLocalSwiftPackageReference "../../.." */,
 			);
 			productRefGroup = 388BF026283CC49D005CE271 /* Products */;
 			projectDirPath = "";
@@ -402,14 +400,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		52A9754B2ADADA2B002D6BD8 /* XCLocalSwiftPackageReference "../../.." */ = {
+		52F9E5E72ADD921E000304E3 /* XCLocalSwiftPackageReference "../../.." */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../../..;
 		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		52A4CB712ADAE13500A1BF26 /* ZXingCppWrapper */ = {
+		52F9E5E82ADD921E000304E3 /* ZXingCppWrapper */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ZXingCppWrapper;
 		};
