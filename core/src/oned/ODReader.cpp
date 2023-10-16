@@ -172,13 +172,6 @@ static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, 
 							}
 							result.setPosition(std::move(points));
 						}
-						if (rotate) {
-							auto points = result.position();
-							for (auto& p : points) {
-								p = {p.y, width - p.x - 1};
-							}
-							result.setPosition(std::move(points));
-						}
 
 						// check if we know this code already
 						for (auto& other : res) {
@@ -187,8 +180,8 @@ static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, 
 								auto dTop = maxAbsComponent(other.position().topLeft() - result.position().topLeft());
 								auto dBot = maxAbsComponent(other.position().bottomLeft() - result.position().topLeft());
 								auto points = other.position();
-								if (dTop < dBot || (dTop == dBot && rotate ^ (sumAbsComponent(points[0]) >
-																			  sumAbsComponent(result.position()[0])))) {
+								if (dTop < dBot || (dTop == dBot && (sumAbsComponent(points[0]) >
+																	 sumAbsComponent(result.position()[0])))) {
 									points[0] = result.position()[0];
 									points[1] = result.position()[1];
 								} else {
@@ -243,6 +236,16 @@ out:
 	//TODO: C++20 res.erase_if()
 	it = std::remove_if(res.begin(), res.end(), [](auto&& r) { return r.format() == BarcodeFormat::None; });
 	res.erase(it, res.end());
+
+	if (rotate) {
+		for (auto& result : res) {
+			auto points = result.position();
+			for (auto& p : points) {
+				p = {p.y, width - p.x - 1};
+			}
+			result.setPosition(Position(points.bottomLeft(), points.topLeft(), points.topRight(), points.bottomRight()));
+		}
+	}
 
 #ifdef PRINT_DEBUG
 	SaveAsPBM(dbg, rotate ? "od-log-r.pnm" : "od-log.pnm");
