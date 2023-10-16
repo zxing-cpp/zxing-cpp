@@ -42,7 +42,6 @@
 		388BF034283CC49E005CE271 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		388BF036283CC49E005CE271 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		388BF043283CE0AC005CE271 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
-		52A975492ADADA1B002D6BD8 /* zxing-cpp */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "zxing-cpp"; path = "/Users/john/git/private/zxing-cpp"; sourceTree = "<absolute>"; };
 		950744512860A3A300E02D06 /* WriteViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WriteViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -64,7 +63,6 @@
 				388BF043283CE0AC005CE271 /* README.md */,
 				388BF027283CC49D005CE271 /* demo */,
 				388BF026283CC49D005CE271 /* Products */,
-				388BF040283CD908005CE271 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -89,14 +87,6 @@
 				388BF036283CC49E005CE271 /* Info.plist */,
 			);
 			path = demo;
-			sourceTree = "<group>";
-		};
-		388BF040283CD908005CE271 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				52A975492ADADA1B002D6BD8 /* zxing-cpp */,
-			);
-			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
