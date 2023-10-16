@@ -40,7 +40,7 @@ class ViewController: UIViewController {
             self.captureSession.addInput(cameraInput)
             let videoDataOutput = AVCaptureVideoDataOutput()
             videoDataOutput.setSampleBufferDelegate(self, queue: self.queue)
-            videoDataOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA]
+            videoDataOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange]
             videoDataOutput.alwaysDiscardsLateVideoFrames = true
             self.captureSession.addOutput(videoDataOutput)
             self.captureSession.commitConfiguration()
