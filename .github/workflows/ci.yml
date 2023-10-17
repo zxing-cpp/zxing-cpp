@@ -74,7 +74,7 @@ jobs:
       run: ctest -V
 
   build-ios:
-    runs-on: macos-13
+    runs-on: macos-latest
     steps:
     - uses: actions/checkout@v3
       with:
