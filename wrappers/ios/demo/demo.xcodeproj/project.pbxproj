@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 60;
+	objectVersion = 55;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -13,7 +13,7 @@
 		388BF030283CC49D005CE271 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 388BF02E283CC49D005CE271 /* Main.storyboard */; };
 		388BF032283CC49E005CE271 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 388BF031283CC49E005CE271 /* Assets.xcassets */; };
 		388BF035283CC49E005CE271 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 388BF033283CC49E005CE271 /* LaunchScreen.storyboard */; };
-		52F9E5E92ADD921E000304E3 /* ZXingCppWrapper in Frameworks */ = {isa = PBXBuildFile; productRef = 52F9E5E82ADD921E000304E3 /* ZXingCppWrapper */; };
+		5EFA4B742ADF0F35000132A0 /* ZXingCppWrapper in Frameworks */ = {isa = PBXBuildFile; productRef = 5EFA4B732ADF0F35000132A0 /* ZXingCppWrapper */; };
 		950744522860A3A300E02D06 /* WriteViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 950744512860A3A300E02D06 /* WriteViewController.swift */; };
 /* End PBXBuildFile section */
 
@@ -40,6 +40,7 @@
 		388BF034283CC49E005CE271 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		388BF036283CC49E005CE271 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		388BF043283CE0AC005CE271 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		5EFA4B712ADF0F16000132A0 /* zxing-cpp */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "zxing-cpp"; path = ../../..; sourceTree = "<group>"; };
 		950744512860A3A300E02D06 /* WriteViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WriteViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -48,7 +49,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				52F9E5E92ADD921E000304E3 /* ZXingCppWrapper in Frameworks */,
+				5EFA4B742ADF0F35000132A0 /* ZXingCppWrapper in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -58,9 +59,11 @@
 		388BF01C283CC49D005CE271 = {
 			isa = PBXGroup;
 			children = (
+				5EFA4B702ADF0F16000132A0 /* Packages */,
 				388BF043283CE0AC005CE271 /* README.md */,
 				388BF027283CC49D005CE271 /* demo */,
 				388BF026283CC49D005CE271 /* Products */,
+				5EFA4B722ADF0F35000132A0 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -87,6 +90,21 @@
 			path = demo;
 			sourceTree = "<group>";
 		};
+		5EFA4B702ADF0F16000132A0 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				5EFA4B712ADF0F16000132A0 /* zxing-cpp */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		5EFA4B722ADF0F35000132A0 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -105,7 +123,7 @@
 			);
 			name = demo;
 			packageProductDependencies = (
-				52F9E5E82ADD921E000304E3 /* ZXingCppWrapper */,
+				5EFA4B732ADF0F35000132A0 /* ZXingCppWrapper */,
 			);
 			productName = demo;
 			productReference = 388BF025283CC49D005CE271 /* demo.app */;
@@ -136,7 +154,6 @@
 			);
 			mainGroup = 388BF01C283CC49D005CE271;
 			packageReferences = (
-				52F9E5E72ADD921E000304E3 /* XCLocalSwiftPackageReference "../../.." */,
 			);
 			productRefGroup = 388BF026283CC49D005CE271 /* Products */;
 			projectDirPath = "";
@@ -399,15 +416,8 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCLocalSwiftPackageReference section */
-		52F9E5E72ADD921E000304E3 /* XCLocalSwiftPackageReference "../../.." */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../../..;
-		};
-/* End XCLocalSwiftPackageReference section */
-
 /* Begin XCSwiftPackageProductDependency section */
-		52F9E5E82ADD921E000304E3 /* ZXingCppWrapper */ = {
+		5EFA4B732ADF0F35000132A0 /* ZXingCppWrapper */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ZXingCppWrapper;
 		};
