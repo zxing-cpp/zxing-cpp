@@ -19,7 +19,6 @@ NS_ASSUME_NONNULL_BEGIN
                           width:(int)width
                          height:(int)height
                          format:(ZXIFormat)format
-                         hidden:(nullable NSString *)hidden
                           error:(NSError *__autoreleasing  _Nullable *)error;
 
 @end

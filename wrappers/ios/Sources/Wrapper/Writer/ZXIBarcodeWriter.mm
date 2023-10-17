@@ -31,7 +31,7 @@ std::wstring NSDataToStringW(NSData *data) {
 }
 
 #ifdef  DEBUG
-std::string ToString(const BitMatrix& matrix, char one, char zero, bool addSpace, bool printAsCString)
+std::string ToString(BitMatrix& matrix, char one, char zero, bool addSpace, bool printAsCString)
 {
     std::string result;
     result.reserve((addSpace ? 2 : 1) * (matrix.width() * matrix.height()) + matrix.height());
@@ -105,7 +105,7 @@ std::string ToString(const BitMatrix& matrix, char one, char zero, bool addSpace
     int realHeight = bitMatrix->height();
 
 #ifdef DEBUG
-    std::cout << ToString(bitMatrix, 'X', ' ', false, false);
+    std::cout << ToString(*bitMatrix, 'X', ' ', false, false);
 #endif
 
     NSMutableData *resultAsNSData = [[NSMutableData alloc] initWithLength:realWidth * realHeight];
