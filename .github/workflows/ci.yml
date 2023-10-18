@@ -80,7 +80,7 @@ jobs:
       with:
         ref: ${{github.ref}}
 
-    - name: Build the swift package //  pod lib lint --allow-warnings
+    - name: Build the swift package
       shell: sh
       working-directory: ${{runner.workspace}}/${{github.event.repository.name}}
       run: swift build
