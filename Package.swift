@@ -1,4 +1,4 @@
-// swift-tools-version:5.3
+// swift-tools-version:5.7.1
 import PackageDescription
 
 let package = Package(
@@ -9,23 +9,25 @@ let package = Package(
     products: [
         .library(
             name: "ZXingCppWrapper",
-            type: .static,
             targets: ["ZXingCppWrapper"])
     ],
     targets: [
-        .binaryTarget(
+        .target(
             name: "ZXingCpp",
-            path: "ZXingCpp.xcframework"
+            path: "core/src",
+            publicHeadersPath: "."
         ),
         .target(
             name: "ZXingCppWrapper",
             dependencies: ["ZXingCpp"],
-            path: "Sources/Wrapper",
+            path: "wrappers/ios/Sources/Wrapper",
             publicHeadersPath: ".",
-            cxxSettings: [
-                .unsafeFlags(["-stdlib=libc++"]),
-                .unsafeFlags(["-std=gnu++17"])
+            linkerSettings: [
+                .linkedFramework("CoreGraphics"),
+                .linkedFramework("CoreImage"),
+                .linkedFramework("CoreVideo")
             ]
         )
-    ]
+    ],
+    cxxLanguageStandard: CXXLanguageStandard.gnucxx20
 )

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #import "ZXIDecodeHints.h"
-#import "ZXing/DecodeHints.h"
+#import "DecodeHints.h"
 
 @interface ZXIDecodeHints()
 @property(nonatomic) ZXing::DecodeHints zxingHints;
