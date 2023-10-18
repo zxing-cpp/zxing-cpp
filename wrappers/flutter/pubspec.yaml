@@ -1,5 +1,6 @@
 name: fitatu_barcode_scanner
 description: Fitatu implementation of zxing scanner and navite camera API's
+publish_to: none
 version: 2.1.7
 
 environment:
@@ -12,7 +13,10 @@ dependencies:
   plugin_platform_interface: ^2.0.2
   permission_handler: ^10.2.0
   # support iOS
-  mobile_scanner: ^3.4.1
+  mobile_scanner:
+    git:
+      url: https://github.com/SymetriaSpJ/ios_mobile_scanner
+      ref: 3.4.1
 
 dev_dependencies:
   flutter_test:
