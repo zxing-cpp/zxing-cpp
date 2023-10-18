@@ -15,7 +15,7 @@ dependencies:
   # support iOS
   mobile_scanner:
     git:
-      url: https://github.com/SymetriaSpJ/ios_mobile_scanner
+      url: https://github.com/SymetriaSpJ/ios_mobile_scanner.git
       ref: 3.4.1
 
 dev_dependencies:
