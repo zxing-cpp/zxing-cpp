@@ -6,6 +6,7 @@
 #import "ZXIBarcodeWriter.h"
 #import "MultiFormatWriter.h"
 #import "BitMatrix.h"
+#import "BitMatrixIO.h"
 #import "ZXIFormatHelper.h"
 #import "ZXIErrors.h"
 #import <iostream>
@@ -30,32 +31,13 @@ std::wstring NSDataToStringW(NSData *data) {
     return s;
 }
 
-#ifdef  DEBUG
-std::string ToString(BitMatrix& matrix, char one, char zero, bool addSpace, bool printAsCString)
-{
-    std::string result;
-    result.reserve((addSpace ? 2 : 1) * (matrix.width() * matrix.height()) + matrix.height());
-    for (int y = 0; y < matrix.height(); ++y) {
-        for (int x = 0; x < matrix.width(); ++x) {
-            result += matrix.get(x, y) ? one : zero;
-            if (addSpace)
-                result += ' ';
-        }
-        if (printAsCString)
-            result += "\\n\"";
-        result += '\n';
-    }
-    return result;
-}
-#endif
-
 @implementation ZXIBarcodeWriter
 
--(CGImageRef)writeData:(NSData *)data
-                 width:(int)width
-                height:(int)height
-                format:(ZXIFormat)format
-                 error:(NSError *__autoreleasing  _Nullable *)error {
+-(CGImageRef)writeBytes:(NSData *)data
+                  width:(int)width
+                 height:(int)height
+                 format:(ZXIFormat)format
+                  error:(NSError *__autoreleasing  _Nullable *)error {
     return [self encode: NSDataToStringW(data)
                   width: width
                  height: height
@@ -64,11 +46,11 @@ std::string ToString(BitMatrix& matrix, char one, char zero, bool addSpace, bool
                   error: error];
 }
 
--(CGImageRef)write:(NSString *)contents
-             width:(int)width
-            height:(int)height
-            format:(ZXIFormat)format
-             error:(NSError *__autoreleasing  _Nullable *)error {
+-(CGImageRef)writeText:(NSString *)contents
+                 width:(int)width
+                height:(int)height
+                format:(ZXIFormat)format
+                 error:(NSError *__autoreleasing  _Nullable *)error {
     return [self encode: NSStringToStringW(contents)
                   width: width
                  height: height
