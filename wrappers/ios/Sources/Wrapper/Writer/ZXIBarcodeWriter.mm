@@ -23,11 +23,9 @@ std::wstring NSDataToStringW(NSData *data) {
     std::wstring s;
     const unsigned char *bytes = (const unsigned char *) [data bytes];
     size_t len = [data length];
-    wchar_t buf[len];
-    for (int i = 0; i < len; ++i) {
-        buf[i] = bytes[i];
+	for (int i = 0; i < len; ++i) {
+        s.push_back(bytes[i]);
     }
-    s.assign(buf, len);
     return s;
 }
 
