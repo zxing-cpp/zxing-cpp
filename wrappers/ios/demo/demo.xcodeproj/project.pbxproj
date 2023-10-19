@@ -13,7 +13,7 @@
 		388BF030283CC49D005CE271 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 388BF02E283CC49D005CE271 /* Main.storyboard */; };
 		388BF032283CC49E005CE271 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 388BF031283CC49E005CE271 /* Assets.xcassets */; };
 		388BF035283CC49E005CE271 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 388BF033283CC49E005CE271 /* LaunchScreen.storyboard */; };
-		5EFA4B742ADF0F35000132A0 /* ZXingCppWrapper in Frameworks */ = {isa = PBXBuildFile; productRef = 5EFA4B732ADF0F35000132A0 /* ZXingCppWrapper */; };
+		5EFA4B742ADF0F35000132A0 /* ZXingCpp in Frameworks */ = {isa = PBXBuildFile; productRef = 5EFA4B732ADF0F35000132A0 /* ZXingCpp */; };
 		950744522860A3A300E02D06 /* WriteViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 950744512860A3A300E02D06 /* WriteViewController.swift */; };
 /* End PBXBuildFile section */
 
@@ -49,7 +49,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5EFA4B742ADF0F35000132A0 /* ZXingCppWrapper in Frameworks */,
+				5EFA4B742ADF0F35000132A0 /* ZXingCpp in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -123,7 +123,7 @@
 			);
 			name = demo;
 			packageProductDependencies = (
-				5EFA4B732ADF0F35000132A0 /* ZXingCppWrapper */,
+				5EFA4B732ADF0F35000132A0 /* ZXingCpp */,
 			);
 			productName = demo;
 			productReference = 388BF025283CC49D005CE271 /* demo.app */;
@@ -417,9 +417,9 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		5EFA4B732ADF0F35000132A0 /* ZXingCppWrapper */ = {
+		5EFA4B732ADF0F35000132A0 /* ZXingCpp */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = ZXingCppWrapper;
+			productName = ZXingCpp;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
