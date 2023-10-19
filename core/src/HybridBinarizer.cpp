@@ -18,9 +18,9 @@ namespace ZXing {
 
 // This class uses 5x5 blocks to compute local luminance, where each block is 8x8 pixels.
 // So this is the smallest dimension in each axis we can accept.
-static const int BLOCK_SIZE = 8;
-static const int MINIMUM_DIMENSION = BLOCK_SIZE * 5;
-static const int MIN_DYNAMIC_RANGE = 24;
+static constexpr int BLOCK_SIZE = 8;
+static constexpr int MINIMUM_DIMENSION = BLOCK_SIZE * 5;
+static constexpr int MIN_DYNAMIC_RANGE = 24;
 
 HybridBinarizer::HybridBinarizer(const ImageView& iv) : GlobalHistogramBinarizer(iv) {}
 
