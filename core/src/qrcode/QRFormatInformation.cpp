@@ -119,7 +119,7 @@ static FormatInformation FindBestFormatInfo(int mask, const std::array<std::pair
 * @param formatInfoBits1 format info indicator, with mask still applied
 * @param formatInfoBits2 second copy of same info; both are checked at the same time to establish best match
 */
-FormatInformation FormatInformation::DecodeQR(uint32_t formatInfoBits1, uint32_t formatInfoBits2, bool& isModel1)
+FormatInformation FormatInformation::DecodeQR(uint32_t formatInfoBits1, uint32_t formatInfoBits2)
 {
 	// maks out the 'Dark Module' for mirrored and non-mirrored case (see Figure 25 in ISO/IEC 18004:2015)
 	uint32_t mirroredFormatInfoBits2 = MirrorBits(((formatInfoBits2 >> 1) & 0b111111110000000) | (formatInfoBits2 & 0b1111111));
@@ -129,9 +129,8 @@ FormatInformation FormatInformation::DecodeQR(uint32_t formatInfoBits1, uint32_t
 	auto fi_model1 = FindBestFormatInfo(FORMAT_INFO_MASK_QR ^ FORMAT_INFO_MASK_QR_MODEL1, FORMAT_INFO_DECODE_LOOKUP,
 								 {formatInfoBits1, formatInfoBits2, MirrorBits(formatInfoBits1), mirroredFormatInfoBits2});
 
-	if (fi_model1.hammingDistance < fi.hammingDistance)
-	{
-		isModel1 = true;
+	if (fi_model1.hammingDistance < fi.hammingDistance){
+		fi_model1.isModel1 = true;
 		fi = fi_model1;
 	}
 

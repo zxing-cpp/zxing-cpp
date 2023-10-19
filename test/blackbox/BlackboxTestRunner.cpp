@@ -562,12 +562,12 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 16, 16, 270 },
 		});
 
-		runTests("qrcode-2", "QRCode", 49, {
-			{ 45, 47, 0   },
-			{ 45, 47, 90  },
-			{ 45, 47, 180 },
-			{ 45, 47, 270 },
-			{ 21, 1, pure }, // the misread is the 'outer' symbol in 16.png
+		runTests("qrcode-2", "QRCode", 50, {
+			{ 46, 48, 0   },
+			{ 46, 48, 90  },
+			{ 46, 48, 180 },
+			{ 46, 48, 270 },
+			{ 22, 1, pure }, // the misread is the 'outer' symbol in 16.png
 		});
 
 		runTests("qrcode-3", "QRCode", 28, {

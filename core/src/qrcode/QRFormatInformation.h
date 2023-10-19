@@ -18,6 +18,7 @@ public:
 	uint8_t index = 255;
 	uint8_t hammingDistance = 255;
 	bool isMirrored = false;
+	bool isModel1 = false;
 	uint8_t dataMask = 0;
 	uint8_t microVersion = 0;
 	uint8_t bitsIndex = 255;
@@ -25,7 +26,7 @@ public:
 
 	FormatInformation() = default;
 
-	static FormatInformation DecodeQR(uint32_t formatInfoBits1, uint32_t formatInfoBits2, bool& isModel1);
+	static FormatInformation DecodeQR(uint32_t formatInfoBits1, uint32_t formatInfoBits2);
 	static FormatInformation DecodeMQR(uint32_t formatInfoBits);
 
 	// Hamming distance of the 32 masked codes is 7, by construction, so <= 3 bits differing means we found a match

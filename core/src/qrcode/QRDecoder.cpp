@@ -321,28 +321,27 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 
 DecoderResult Decode(const BitMatrix& bits)
 {
-	bool isModel1 = false;
 
-	const Version* pversion = ReadVersion(bits, isModel1);
+	const Version* pversion = ReadVersion(bits, false);
 	if (!pversion)
 		return FormatError("Invalid version");
 	const Version& preversion = *pversion;
 
-	auto formatInfo = ReadFormatInformation(bits, preversion.isMicroQRCode(), isModel1);
+	auto formatInfo = ReadFormatInformation(bits, preversion.isMicroQRCode());
 	if (!formatInfo.isValid())
 		return FormatError("Invalid format information");
 
-	if (isModel1)
+	if (formatInfo.isModel1)
 	{
 		pversion = nullptr;
-		pversion = ReadVersion(bits, isModel1);
+		pversion = ReadVersion(bits, formatInfo.isModel1);
 		if (!pversion)
 			return FormatError("Invalid version");
 	}
 	const Version& version = *pversion;
 
 	// Read codewords
-	ByteArray codewords = ReadCodewords(bits, version, formatInfo, isModel1);
+	ByteArray codewords = ReadCodewords(bits, version, formatInfo);
 	if (codewords.empty())
 		return FormatError("Failed to read codewords");
 
@@ -370,7 +369,8 @@ DecoderResult Decode(const BitMatrix& bits)
 	}
 
 	// Decode the contents of that stream of bytes
-	return DecodeBitStream(std::move(resultBytes), version, formatInfo.ecLevel, isModel1).setIsMirrored(formatInfo.isMirrored);
+	return DecodeBitStream(std::move(resultBytes), version, formatInfo.ecLevel, formatInfo.isModel1)
+		.setIsMirrored(formatInfo.isMirrored);
 }
 
 } // namespace ZXing::QRCode

@@ -55,7 +55,7 @@ const Version* ReadVersion(const BitMatrix& bitMatrix, bool isModel1)
 	return nullptr;
 }
 
-FormatInformation ReadFormatInformation(const BitMatrix& bitMatrix, bool isMicro, bool& isModel1)
+FormatInformation ReadFormatInformation(const BitMatrix& bitMatrix, bool isMicro)
 {
 	if (!hasValidDimension(bitMatrix, isMicro))
 		return {};
@@ -93,7 +93,7 @@ FormatInformation ReadFormatInformation(const BitMatrix& bitMatrix, bool isMicro
 	for (int x = dimension - 8; x < dimension; x++)
 		AppendBit(formatInfoBits2, getBit(bitMatrix, x, 8));
 
-	return FormatInformation::DecodeQR(formatInfoBits1, formatInfoBits2, isModel1);
+	return FormatInformation::DecodeQR(formatInfoBits1, formatInfoBits2);
 }
 
 static ByteArray ReadQRCodewords(const BitMatrix& bitMatrix, const Version& version, const FormatInformation& formatInfo)
@@ -141,33 +141,34 @@ static ByteArray ReadQRCodewordsModel1(const BitMatrix& bitMatrix, const Version
 	ByteArray result;
 	result.reserve(version.totalCodewords());
 	int dimension = bitMatrix.height();
-	uint8_t currentByte = 0;
 	int columns = dimension / 4 + 1 + 2;
 	for (int j = 0; j < columns; j++) {
 		if (j <= 1) { // vertical symbols on the right side
 			int rows = (dimension - 8) / 4;
 			for (int i = 0; i < rows; i++) {
+				if (j == 0 && i % 2 == 0 && i > 0 && i < rows - 1) { // extension
+					continue;
+				}
 				int x = (dimension - 1) - (j * 2);
 				int y = (dimension - 1) - (i * 4);
+				uint8_t currentByte = 0;
 				for (int b = 0; b < 8; b++) {
 					AppendBit(currentByte, GetDataMaskBit(formatInfo.dataMask, x - b % 2, y - (b / 2))
 											   != getBit(bitMatrix, x - b % 2, y - (b / 2), formatInfo.isMirrored));
 				}
-				if (j == 0 && i % 2 == 0 && i > 0 && i < rows - 1) { // extension
-					continue;
-				}
-				result.push_back(std::exchange(currentByte, 0));
+				result.push_back(currentByte);
 			}
 		} else if (columns - j <= 4) { // vertical symbols on the left side
 			int rows = (dimension - 16) / 4;
 			for (int i = 0; i < rows; i++) {
 				int x = (columns - j - 1) * 2 + 1 + (columns - j == 4 ? 1 : 0); // timing
 				int y = (dimension - 1) - 8 - (i * 4);
+				uint8_t currentByte = 0;
 				for (int b = 0; b < 8; b++) {
 					AppendBit(currentByte, GetDataMaskBit(formatInfo.dataMask, x - b % 2, y - (b / 2))
 											   != getBit(bitMatrix, x - b % 2, y - (b / 2), formatInfo.isMirrored));
 				}
-				result.push_back(std::exchange(currentByte, 0));
+				result.push_back(currentByte);
 			}
 		} else { // horizontal symbols
 			int rows = dimension / 2;
@@ -180,11 +181,12 @@ static ByteArray ReadQRCodewordsModel1(const BitMatrix& bitMatrix, const Version
 				}
 				int x = (dimension - 1) - (2 * 2) - (j - 2) * 4;
 				int y = (dimension - 1) - (i * 2) - (i >= rows - 3 ? 1 : 0); // timing
+				uint8_t currentByte = 0;
 				for (int b = 0; b < 8; b++) {
 					AppendBit(currentByte, GetDataMaskBit(formatInfo.dataMask, x - b % 4, y - (b / 4))
 											   != getBit(bitMatrix, x - b % 4, y - (b / 4), formatInfo.isMirrored));
 				}
-				result.push_back(std::exchange(currentByte, 0));
+				result.push_back(currentByte);
 			}
 		}
 	}
@@ -241,20 +243,15 @@ static ByteArray ReadMQRCodewords(const BitMatrix& bitMatrix, const QRCode::Vers
 	return result;
 }
 
-ByteArray ReadCodewords(const BitMatrix& bitMatrix, const Version& version, const FormatInformation& formatInfo,bool isModel1)
+ByteArray ReadCodewords(const BitMatrix& bitMatrix, const Version& version, const FormatInformation& formatInfo)
 {
 	if (!hasValidDimension(bitMatrix, version.isMicroQRCode()))
 		return {};
-	if (version.isMicroQRCode())
-	{
+	if (version.isMicroQRCode()) {
 		return ReadMQRCodewords(bitMatrix, version, formatInfo);
-	}
-	else if (isModel1)
-	{
+	} else if (formatInfo.isModel1) {
 		return ReadQRCodewordsModel1(bitMatrix, version, formatInfo);
-	}
-	else
-	{
+	} else {
 		return ReadQRCodewords(bitMatrix, version, formatInfo);
 	}
 }

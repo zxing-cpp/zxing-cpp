@@ -406,16 +406,13 @@ const Version* Version::FromNumber(int versionNumber, bool isMicro, bool isModel
 		return nullptr;
 	}
 
-	if (isMicro)
-	{
+	if (isMicro){
 		return &AllMicroVersions()[versionNumber - 1];
 	}
-	else if (isModel1)
-	{
+	else if (isModel1){
 		return &AllModel1Versions()[versionNumber - 1];
 	}
-	else
-	{
+	else{
 		return &AllVersions()[versionNumber - 1];
 	}
 }
