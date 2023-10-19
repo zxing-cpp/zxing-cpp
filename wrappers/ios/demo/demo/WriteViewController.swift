@@ -6,7 +6,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import UIKit
-import ZXingCppWrapper
+import ZXingCpp
 
 class WriteViewController: UIViewController {
     @IBOutlet fileprivate var imageView: UIImageView!

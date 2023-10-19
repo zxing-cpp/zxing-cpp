@@ -2,24 +2,24 @@
 import PackageDescription
 
 let package = Package(
-    name: "ZXingCppWrapper",
+    name: "ZXingCpp",
     platforms: [
         .iOS(.v11)
     ],
     products: [
         .library(
-            name: "ZXingCppWrapper",
-            targets: ["ZXingCppWrapper"])
+            name: "ZXingCpp",
+            targets: ["ZXingCpp"])
     ],
     targets: [
         .target(
-            name: "ZXingCpp",
+            name: "ZXingCppCore",
             path: "core/src",
             publicHeadersPath: "."
         ),
         .target(
-            name: "ZXingCppWrapper",
-            dependencies: ["ZXingCpp"],
+            name: "ZXingCpp",
+            dependencies: ["ZXingCppCore"],
             path: "wrappers/ios/Sources/Wrapper",
             publicHeadersPath: ".",
             linkerSettings: [
