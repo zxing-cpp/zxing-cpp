@@ -54,7 +54,7 @@ public:
 	* @param dimension dimension in modules
 	* @return Version for a QR Code of that dimension
 	*/
-	static const Version* FromDimension(int dimension ,bool isModel1);
+	static const Version* FromDimension(int dimension, bool isModel1 = false);
 	
 	static const Version* FromNumber(int versionNumber, bool isMicro = false, bool isModel1 = false);
 
