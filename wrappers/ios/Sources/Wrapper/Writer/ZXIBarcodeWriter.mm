@@ -31,11 +31,11 @@ std::wstring NSDataToStringW(NSData *data) {
 
 @implementation ZXIBarcodeWriter
 
--(CGImageRef)writeBytes:(NSData *)data
-                  width:(int)width
-                 height:(int)height
-                 format:(ZXIFormat)format
-                  error:(NSError *__autoreleasing  _Nullable *)error {
+-(CGImageRef)writeData:(NSData *)data
+                 width:(int)width
+                height:(int)height
+                format:(ZXIFormat)format
+                 error:(NSError *__autoreleasing  _Nullable *)error {
     return [self encode: NSDataToStringW(data)
                   width: width
                  height: height
@@ -44,11 +44,11 @@ std::wstring NSDataToStringW(NSData *data) {
                   error: error];
 }
 
--(CGImageRef)writeText:(NSString *)contents
-                 width:(int)width
-                height:(int)height
-                format:(ZXIFormat)format
-                 error:(NSError *__autoreleasing  _Nullable *)error {
+-(CGImageRef)writeString:(NSString *)contents
+                   width:(int)width
+                  height:(int)height
+                  format:(ZXIFormat)format
+                   error:(NSError *__autoreleasing  _Nullable *)error {
     return [self encode: NSStringToStringW(contents)
                   width: width
                  height: height
