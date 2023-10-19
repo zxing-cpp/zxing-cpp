@@ -227,7 +227,6 @@ bool IsEndOfStream(const BitSource& bits, const Version& version)
 *
 * <p>See ISO 18004:2006, 6.4.3 - 6.4.7</p>
 */
-ZXING_EXPORT_TEST_ONLY
 DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCorrectionLevel ecLevel, bool isModel1)
 {
 	BitSource bits(bytes);
@@ -317,6 +316,13 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 		.setEcLevel(ToString(ecLevel))
 		.setVersionNumber(version.versionNumber())
 		.setStructuredAppend(structuredAppend);
+}
+
+ZXING_EXPORT_TEST_ONLY
+DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCorrectionLevel ecLevel)
+{
+	//TODO: cleanup
+	return DecodeBitStream(bytes, version, ecLevel, false);
 }
 
 DecoderResult Decode(const BitMatrix& bits)
