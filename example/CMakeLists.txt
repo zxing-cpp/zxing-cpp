@@ -22,7 +22,7 @@ if (BUILD_READERS)
     install(TARGETS ZXingReader DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
 
-find_package(Qt5 COMPONENTS Gui Multimedia Quick QUIET)
+find_package(Qt6 COMPONENTS Gui Multimedia Quick QUIET)
 if (NOT (Qt5_FOUND OR Qt6_FOUND))
     message("INFO: Qt (Gui/Multimedia/Quick) not found, skipping Qt examples")
 endif()
