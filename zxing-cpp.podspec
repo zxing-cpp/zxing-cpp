@@ -14,16 +14,23 @@ Pod::Spec.new do |s|
   }
   s.module_name = 'ZXingCpp'
   s.platform = :ios, '11.0'
-  s.frameworks = 'CoreGraphics', 'CoreImage', 'CoreVideo'
   s.library = ['c++']
   s.pod_target_xcconfig = {
     'CLANG_CXX_LANGUAGE_STANDARD' => 'c++20'
   }
-  s.source_files = 'core/src/**/*.{h,c,cpp}',
-                   'wrappers/ios/Sources/Wrapper/**/*.{h,m,mm}'
-  s.public_header_files = 'wrappers/ios/Sources/Wrapper/Reader/{ZXIBarcodeReader,ZXIResult,ZXIPosition,ZXIPoint,ZXIDecodeHints}.h',
-                          'wrappers/ios/Sources/Wrapper/Writer/ZXIBarcodeWriter.h',
-                          'wrappers/ios/Sources/Wrapper/{ZXIErrors,ZXIFormat}.h'
-  s.private_header_files = 'core/src/**/*.h'
-  s.exclude_files = 'wrappers/ios/Sources/Wrapper/UmbrellaHeader.h'
+
+  s.subspec 'Core' do |ss|
+    ss.source_files = 'core/src/**/*.{h,c,cpp}'
+    ss.private_header_files = 'core/src/**/*.h'
+  end
+
+  s.subspec 'Wrapper' do |ss|
+    ss.dependency 'zxing-cpp/Core'
+    ss.frameworks = 'CoreGraphics', 'CoreImage', 'CoreVideo'
+    ss.source_files = 'wrappers/ios/Sources/Wrapper/**/*.{h,m,mm}'
+    ss.public_header_files = 'wrappers/ios/Sources/Wrapper/Reader/{ZXIBarcodeReader,ZXIResult,ZXIPosition,ZXIPoint,ZXIDecodeHints}.h',
+                             'wrappers/ios/Sources/Wrapper/Writer/ZXIBarcodeWriter.h',
+                             'wrappers/ios/Sources/Wrapper/{ZXIErrors,ZXIFormat}.h'
+    ss.exclude_files = 'wrappers/ios/Sources/Wrapper/UmbrellaHeader.h'
+  end
 end
