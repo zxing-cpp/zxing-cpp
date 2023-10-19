@@ -348,7 +348,7 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		});
 
 		runTests("datamatrix-1", "DataMatrix", 29, {
-			{ 27, 29, 0   },
+			{ 29, 29, 0   },
 			{  0, 27, 90  },
 			{  0, 27, 180 },
 			{  0, 27, 270 },
