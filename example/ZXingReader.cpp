@@ -174,7 +174,7 @@ int main(int argc, char* argv[])
 		int width, height, channels;
 		std::unique_ptr<stbi_uc, void(*)(void*)> buffer(stbi_load(filePath.c_str(), &width, &height, &channels, 3), stbi_image_free);
 		if (buffer == nullptr) {
-			std::cerr << "Failed to read image: " << filePath << "\n";
+			std::cerr << "Failed to read image: " << filePath << " (" << stbi_failure_reason() << ")" << "\n";
 			return -1;
 		}
 
