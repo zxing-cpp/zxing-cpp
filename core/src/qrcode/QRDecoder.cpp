@@ -322,7 +322,7 @@ ZXING_EXPORT_TEST_ONLY
 DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCorrectionLevel ecLevel)
 {
 	//TODO: cleanup
-	return DecodeBitStream(bytes, version, ecLevel, false);
+	return DecodeBitStream(std::move(bytes), version, ecLevel, false);
 }
 
 DecoderResult Decode(const BitMatrix& bits)
