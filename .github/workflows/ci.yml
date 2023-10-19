@@ -90,6 +90,11 @@ jobs:
       working-directory: ${{runner.workspace}}/${{github.event.repository.name}}/wrappers/ios/demo
       run: xcodebuild build -scheme demo -sdk "iphonesimulator"
 
+    - name: Validate the Pod
+      shell: sh
+      working-directory: ${{runner.workspace}}/${{github.event.repository.name}}
+      run: pod lib lint --allow-warnings
+
   build-android:
     runs-on: ubuntu-latest
     steps:
