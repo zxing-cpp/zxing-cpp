@@ -12,7 +12,7 @@ Pod::Spec.new do |s|
     :git => 'https://github.com/zxing-cpp/zxing-cpp.git',
     :tag => "v#{s.version}"
   }
-  s.module_name = 'ZXingCppWrapper'
+  s.module_name = 'ZXingCpp'
   s.platform = :ios, '11.0'
   s.frameworks = 'CoreGraphics', 'CoreImage', 'CoreVideo'
   s.library = ['c++']
