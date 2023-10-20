@@ -292,35 +292,136 @@ const Version* Version::AllMicroVersions()
 	return allVersions;
 }
 
+const Version* Version::AllModel1Versions()
+{
+	/**
+	 * See ISO 18004:2000 M.4.2 Table M.2
+	 * See ISO 18004:2000 M.5 Table M.4
+	 */
+	static const Version allVersions[] = {
+		{1, {
+			7 , 1, 19, 0, 0,
+			10, 1, 16, 0, 0,
+			13, 1, 13, 0, 0,
+			17, 1, 9 , 0, 0
+		}},
+		{2, {
+			10, 1, 36, 0, 0,
+			16, 1, 30, 0, 0,
+			22, 1, 24, 0, 0,
+			30, 1, 16, 0, 0,
+		 }},
+		{3, {
+			15, 1, 57, 0, 0,
+			28, 1, 44, 0, 0,
+			36, 1, 36, 0, 0,
+			48, 1, 24, 0, 0,
+		 }},
+		{4, {
+			20, 1, 80, 0, 0,
+			40, 1, 60, 0, 0,
+			50, 1, 50, 0, 0,
+			66, 1, 34, 0, 0,
+		 }},
+		{5, {
+			26, 1, 108, 0, 0,
+			52, 1, 82 , 0, 0,
+			66, 1, 68 , 0, 0,
+			88, 2, 46 , 0, 0,
+			}},
+		{6, {
+			34 , 1, 136, 0, 0,
+			63 , 2, 106, 0, 0,
+			84 , 2, 86 , 0, 0,
+			112, 2, 58 , 0, 0,
+			}},
+		{7, {
+			42 , 1, 170, 0, 0,
+			80 , 2, 132, 0, 0,
+			104, 2, 108, 0, 0,
+			138, 3, 72 , 0, 0,
+			}},
+		{8, {
+			48 , 2, 208, 0, 0,
+			96 , 2, 160, 0, 0,
+			128, 2, 128, 0, 0,
+			168, 3, 87 , 0, 0,
+			}},
+		{9, {
+			60 , 2, 246, 0, 0,
+			120, 2, 186, 0, 0,
+			150, 3, 156, 0, 0,
+			204, 3, 102, 0, 0,
+			}},
+		{10, {
+			68 , 2, 290, 0, 0,
+			136, 2, 222, 0, 0,
+			174, 3, 183, 0, 0,
+			232, 4, 124, 0, 0,
+			}},
+		{11, {
+			80 , 2, 336, 0, 0,
+			160, 4, 256, 0, 0,
+			208, 4, 208, 0, 0,
+			270, 5, 145, 0, 0,
+			}},
+		{12, {
+			92 , 2, 384, 0, 0,
+			184, 4, 292, 0, 0,
+			232, 4, 244, 0, 0,
+			310, 5, 165, 0, 0,
+			}},
+		{13, {
+			108, 3, 432, 0, 0,
+			208, 4, 332, 0, 0,
+			264, 4, 276, 0, 0,
+			348, 6, 192, 0, 0,
+			}},
+		{14, {
+			120, 3, 489, 0, 0,
+			240, 4, 368, 0, 0,
+			300, 5, 310, 0, 0,
+			396, 6, 210, 0, 0,
+			}},
+	};
+	return allVersions;
+}
+
+static inline bool isMicro(const std::array<ECBlocks, 4>& ecBlocks)
+{
+	return ecBlocks[0].codewordsPerBlock < 7 || ecBlocks[0].codewordsPerBlock == 8;
+}
+
 Version::Version(int versionNumber, std::initializer_list<int> alignmentPatternCenters, const std::array<ECBlocks, 4>& ecBlocks)
-	: _versionNumber(versionNumber), _alignmentPatternCenters(alignmentPatternCenters), _ecBlocks(ecBlocks), _isMicro(false)
+	: _versionNumber(versionNumber), _alignmentPatternCenters(alignmentPatternCenters), _ecBlocks(ecBlocks), _isMicro(false), _isModel1(false)
 {
 	_totalCodewords = ecBlocks[0].totalDataCodewords();
 }
 
 Version::Version(int versionNumber, const std::array<ECBlocks, 4>& ecBlocks)
-	: _versionNumber(versionNumber), _ecBlocks(ecBlocks), _isMicro(true)
+	: _versionNumber(versionNumber), _ecBlocks(ecBlocks), _isMicro(isMicro(ecBlocks)), _isModel1(!isMicro(ecBlocks))
 {
 	_totalCodewords = ecBlocks[0].totalDataCodewords();
 }
 
-const Version* Version::FromNumber(int versionNumber, bool isMicro)
+const Version* Version::FromNumber(int versionNumber, bool isMicro, bool isModel1)
 {
-	if (versionNumber < 1 || versionNumber > (isMicro ? 4 : 40)) {
+	if (versionNumber < 1 || versionNumber > (isMicro ? 4 : (isModel1 ? 14 : 40))) {
 		//throw std::invalid_argument("Version should be in range [1-40].");
 		return nullptr;
 	}
-	return &(isMicro ? AllMicroVersions() : AllVersions())[versionNumber - 1];
+
+    return &(isMicro ? AllMicroVersions() : (isModel1 ? AllModel1Versions() : AllVersions()))[versionNumber - 1];
 }
 
-const Version* Version::FromDimension(int dimension)
+const Version* Version::FromDimension(int dimension, bool isModel1)
 {
 	bool isMicro = dimension < 21;
 	if (dimension % DimensionStep(isMicro) != 1) {
 		//throw std::invalid_argument("Unexpected dimension");
 		return nullptr;
 	}
-	return FromNumber((dimension - DimensionOffset(isMicro)) / DimensionStep(isMicro), isMicro);
+	return FromNumber((dimension - DimensionOffset(isMicro)) / DimensionStep(isMicro), isMicro, isModel1);
 }
 
 const Version* Version::DecodeVersionInformation(int versionBitsA, int versionBitsB)

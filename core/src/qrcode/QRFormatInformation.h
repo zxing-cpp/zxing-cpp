@@ -18,6 +18,7 @@ public:
 	uint8_t index = 255;
 	uint8_t hammingDistance = 255;
 	bool isMirrored = false;
+	bool isModel1 = false;
 	uint8_t dataMask = 0;
 	uint8_t microVersion = 0;
 	uint8_t bitsIndex = 255;

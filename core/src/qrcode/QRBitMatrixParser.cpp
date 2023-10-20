@@ -135,6 +135,66 @@ static ByteArray ReadQRCodewords(const BitMatrix& bitMatrix, const Version& vers
 	return result;
 }
 
+static ByteArray ReadQRCodewordsModel1(const BitMatrix& bitMatrix, const Version& version, const FormatInformation& formatInfo)
+{
+
+	ByteArray result;
+	result.reserve(version.totalCodewords());
+	int dimension = bitMatrix.height();
+	int columns = dimension / 4 + 1 + 2;
+	for (int j = 0; j < columns; j++) {
+		if (j <= 1) { // vertical symbols on the right side
+			int rows = (dimension - 8) / 4;
+			for (int i = 0; i < rows; i++) {
+				if (j == 0 && i % 2 == 0 && i > 0 && i < rows - 1) // extension
+					continue;
+				int x = (dimension - 1) - (j * 2);
+				int y = (dimension - 1) - (i * 4);
+				uint8_t currentByte = 0;
+				for (int b = 0; b < 8; b++) {
+					AppendBit(currentByte, GetDataMaskBit(formatInfo.dataMask, x - b % 2, y - (b / 2))
+											   != getBit(bitMatrix, x - b % 2, y - (b / 2), formatInfo.isMirrored));
+				}
+				result.push_back(currentByte);
+			}
+		} else if (columns - j <= 4) { // vertical symbols on the left side
+			int rows = (dimension - 16) / 4;
+			for (int i = 0; i < rows; i++) {
+				int x = (columns - j - 1) * 2 + 1 + (columns - j == 4 ? 1 : 0); // timing
+				int y = (dimension - 1) - 8 - (i * 4);
+				uint8_t currentByte = 0;
+				for (int b = 0; b < 8; b++) {
+					AppendBit(currentByte, GetDataMaskBit(formatInfo.dataMask, x - b % 2, y - (b / 2))
+											   != getBit(bitMatrix, x - b % 2, y - (b / 2), formatInfo.isMirrored));
+				}
+				result.push_back(currentByte);
+			}
+		} else { // horizontal symbols
+			int rows = dimension / 2;
+			for (int i = 0; i < rows; i++) {
+				if (j == 2 && i >= rows - 4) // alignment & finder
+					continue;
+				if (i == 0 && j % 2 == 1 && j + 1 != columns - 4) // extension
+					continue;
+				int x = (dimension - 1) - (2 * 2) - (j - 2) * 4;
+				int y = (dimension - 1) - (i * 2) - (i >= rows - 3 ? 1 : 0); // timing
+				uint8_t currentByte = 0;
+				for (int b = 0; b < 8; b++) {
+					AppendBit(currentByte, GetDataMaskBit(formatInfo.dataMask, x - b % 4, y - (b / 4))
+											   != getBit(bitMatrix, x - b % 4, y - (b / 4), formatInfo.isMirrored));
+				}
+				result.push_back(currentByte);
+			}
+		}
+	}
+
+	result[0] &= 0xf; // ignore corner
+	if (Size(result) != version.totalCodewords())
+		return {};
+
+	return result;
+}
+
 static ByteArray ReadMQRCodewords(const BitMatrix& bitMatrix, const QRCode::Version& version, const FormatInformation& formatInfo)
 {
 	BitMatrix functionPattern = version.buildFunctionPattern();
@@ -185,9 +245,12 @@ ByteArray ReadCodewords(const BitMatrix& bitMatrix, const Version& version, cons
 {
 	if (!hasValidDimension(bitMatrix, version.isMicroQRCode()))
 		return {};
-
-	return version.isMicroQRCode() ? ReadMQRCodewords(bitMatrix, version, formatInfo)
-								   : ReadQRCodewords(bitMatrix, version, formatInfo);
+	if (version.isMicroQRCode())
+		return ReadMQRCodewords(bitMatrix, version, formatInfo);
+	else if (formatInfo.isModel1)
+		return ReadQRCodewordsModel1(bitMatrix, version, formatInfo);
+	else
+		return ReadQRCodewords(bitMatrix, version, formatInfo);
 }
 
 } // namespace ZXing::QRCode

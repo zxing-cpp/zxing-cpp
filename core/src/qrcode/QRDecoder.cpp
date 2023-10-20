@@ -237,6 +237,9 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 	StructuredAppendInfo structuredAppend;
 	const int modeBitLength = CodecModeBitsLength(version);
 
+	if (version.isQRCodeModel1())
+		bits.readBits(4); // Model 1 is leading with 4 0-bits -> drop them
+
 	try
 	{
 		while(!IsEndOfStream(bits, version)) {
@@ -316,14 +319,16 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 
 DecoderResult Decode(const BitMatrix& bits)
 {
-	const Version* pversion = ReadVersion(bits);
-	if (!pversion)
-		return FormatError("Invalid version");
-	const Version& version = *pversion;
-
-	auto formatInfo = ReadFormatInformation(bits, version.isMicroQRCode());
+	bool isMicroQRCode = bits.height() < 21;
+	auto formatInfo = ReadFormatInformation(bits, isMicroQRCode);
 	if (!formatInfo.isValid())
 		return FormatError("Invalid format information");
+
+	const Version* pversion = formatInfo.isModel1 ? Version::FromDimension(bits.height(), true) : ReadVersion(bits);
+	if (!pversion)
+		return FormatError("Invalid version");
+
+	const Version& version = *pversion;
 
 	// Read codewords
 	ByteArray codewords = ReadCodewords(bits, version, formatInfo);
