@@ -40,6 +40,7 @@ public:
 	BitMatrix buildFunctionPattern() const;
 
 	bool isMicroQRCode() const { return _isMicro; }
+	bool isQRCodeModel1() const { return _isModel1; }
 
 	static constexpr int DimensionStep(bool isMicro) { return std::array{4, 2}[isMicro]; }
 	static constexpr int DimensionOffset(bool isMicro) { return std::array{17, 9}[isMicro]; }
@@ -66,6 +67,7 @@ private:
 	std::array<ECBlocks, 4> _ecBlocks;
 	int _totalCodewords;
 	bool _isMicro;
+	bool _isModel1;
 
 	Version(int versionNumber, std::initializer_list<int> alignmentPatternCenters, const std::array<ECBlocks, 4> &ecBlocks);
 	Version(int versionNumber, const std::array<ECBlocks, 4>& ecBlocks);

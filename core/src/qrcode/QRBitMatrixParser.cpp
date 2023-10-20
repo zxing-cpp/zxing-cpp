@@ -31,11 +31,11 @@ static bool hasValidDimension(const BitMatrix& bitMatrix, bool isMicro)
 		return dimension >= 21 && dimension <= 177 && (dimension % 4) == 1;
 }
 
-const Version* ReadVersion(const BitMatrix& bitMatrix, bool isModel1)
+const Version* ReadVersion(const BitMatrix& bitMatrix)
 {
 	int dimension = bitMatrix.height();
 
-	const Version* version = Version::FromDimension(dimension, isModel1);
+	const Version* version = Version::FromDimension(dimension);
 
 	if (!version || version->versionNumber() < 7)
 		return version;

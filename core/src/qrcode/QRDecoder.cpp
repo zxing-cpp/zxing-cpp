@@ -227,7 +227,8 @@ bool IsEndOfStream(const BitSource& bits, const Version& version)
 *
 * <p>See ISO 18004:2006, 6.4.3 - 6.4.7</p>
 */
-DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCorrectionLevel ecLevel, bool isModel1)
+ZXING_EXPORT_TEST_ONLY
+DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCorrectionLevel ecLevel)
 {
 	BitSource bits(bytes);
 	Content result;
@@ -236,11 +237,9 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 	StructuredAppendInfo structuredAppend;
 	const int modeBitLength = CodecModeBitsLength(version);
 
-	if (isModel1)
-	{
-		bits.readBits(4); // model1
-	}
-		
+	if (version.isQRCodeModel1())
+		bits.readBits(4); // Model 1 is leading with 4 0-bits -> drop them
+
 	try
 	{
 		while(!IsEndOfStream(bits, version)) {
@@ -318,13 +317,6 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 		.setStructuredAppend(structuredAppend);
 }
 
-ZXING_EXPORT_TEST_ONLY
-DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCorrectionLevel ecLevel)
-{
-	//TODO: cleanup
-	return DecodeBitStream(std::move(bytes), version, ecLevel, false);
-}
-
 DecoderResult Decode(const BitMatrix& bits)
 {
 	bool isMicroQRCode = bits.height() < 21;
@@ -332,7 +324,7 @@ DecoderResult Decode(const BitMatrix& bits)
 	if (!formatInfo.isValid())
 		return FormatError("Invalid format information");
 
-	const Version* pversion = formatInfo.isModel1 ? Version::FromDimension(bits.height(), true) : ReadVersion(bits, false);
+	const Version* pversion = formatInfo.isModel1 ? Version::FromDimension(bits.height(), true) : ReadVersion(bits);
 	if (!pversion)
 		return FormatError("Invalid version");
 
@@ -367,8 +359,7 @@ DecoderResult Decode(const BitMatrix& bits)
 	}
 
 	// Decode the contents of that stream of bytes
-	return DecodeBitStream(std::move(resultBytes), version, formatInfo.ecLevel, formatInfo.isModel1)
-		.setIsMirrored(formatInfo.isMirrored);
+	return DecodeBitStream(std::move(resultBytes), version, formatInfo.ecLevel).setIsMirrored(formatInfo.isMirrored);
 }
 
 } // namespace ZXing::QRCode
