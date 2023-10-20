@@ -4,6 +4,7 @@ Pod::Spec.new do |s|
   s.summary = 'C++ port of ZXing'
   s.homepage = 'https://github.com/zxing-cpp/zxing-cpp'
   s.author = 'axxel'
+  s.readme = 'https://raw.githubusercontent.com/zxing-cpp/zxing-cpp/master/wrappers/ios/README.md'
   s.license = {
     :type => 'Apache License 2.0',
     :file => 'LICENSE'
