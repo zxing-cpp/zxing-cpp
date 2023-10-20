@@ -19,6 +19,8 @@ Pod::Spec.new do |s|
     'CLANG_CXX_LANGUAGE_STANDARD' => 'c++20'
   }
 
+  s.default_subspec = 'Wrapper'
+
   s.subspec 'Core' do |ss|
     ss.source_files = 'core/src/**/*.{h,c,cpp}'
     ss.private_header_files = 'core/src/**/*.h'
