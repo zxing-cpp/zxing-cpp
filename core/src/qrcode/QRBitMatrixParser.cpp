@@ -146,9 +146,8 @@ static ByteArray ReadQRCodewordsModel1(const BitMatrix& bitMatrix, const Version
 		if (j <= 1) { // vertical symbols on the right side
 			int rows = (dimension - 8) / 4;
 			for (int i = 0; i < rows; i++) {
-				if (j == 0 && i % 2 == 0 && i > 0 && i < rows - 1) { // extension
+				if (j == 0 && i % 2 == 0 && i > 0 && i < rows - 1) // extension
 					continue;
-				}
 				int x = (dimension - 1) - (j * 2);
 				int y = (dimension - 1) - (i * 4);
 				uint8_t currentByte = 0;
@@ -173,12 +172,10 @@ static ByteArray ReadQRCodewordsModel1(const BitMatrix& bitMatrix, const Version
 		} else { // horizontal symbols
 			int rows = dimension / 2;
 			for (int i = 0; i < rows; i++) {
-				if (j == 2 && i >= rows - 4) { // alignment & finder
+				if (j == 2 && i >= rows - 4) // alignment & finder
 					continue;
-				}
-				if (i == 0 && j % 2 == 1 && j + 1 != columns - 4) { // extension
+				if (i == 0 && j % 2 == 1 && j + 1 != columns - 4) // extension
 					continue;
-				}
 				int x = (dimension - 1) - (2 * 2) - (j - 2) * 4;
 				int y = (dimension - 1) - (i * 2) - (i >= rows - 3 ? 1 : 0); // timing
 				uint8_t currentByte = 0;
@@ -194,6 +191,7 @@ static ByteArray ReadQRCodewordsModel1(const BitMatrix& bitMatrix, const Version
 	result[0] &= 0xf; // ignore corner
 	if (Size(result) != version.totalCodewords())
 		return {};
+
 	return result;
 }
 
@@ -247,13 +245,12 @@ ByteArray ReadCodewords(const BitMatrix& bitMatrix, const Version& version, cons
 {
 	if (!hasValidDimension(bitMatrix, version.isMicroQRCode()))
 		return {};
-	if (version.isMicroQRCode()) {
+	if (version.isMicroQRCode())
 		return ReadMQRCodewords(bitMatrix, version, formatInfo);
-	} else if (formatInfo.isModel1) {
+	else if (formatInfo.isModel1)
 		return ReadQRCodewordsModel1(bitMatrix, version, formatInfo);
-	} else {
+	else
 		return ReadQRCodewords(bitMatrix, version, formatInfo);
-	}
 }
 
 } // namespace ZXing::QRCode

@@ -129,7 +129,7 @@ FormatInformation FormatInformation::DecodeQR(uint32_t formatInfoBits1, uint32_t
 	auto fi_model1 = FindBestFormatInfo({FORMAT_INFO_MASK_QR ^ FORMAT_INFO_MASK_QR_MODEL1}, FORMAT_INFO_DECODE_LOOKUP,
 										{formatInfoBits1, formatInfoBits2, MirrorBits(formatInfoBits1), mirroredFormatInfoBits2});
 
-	if (fi_model1.hammingDistance < fi.hammingDistance){
+	if (fi_model1.hammingDistance < fi.hammingDistance) {
 		fi_model1.isModel1 = true;
 		fi = fi_model1;
 	}

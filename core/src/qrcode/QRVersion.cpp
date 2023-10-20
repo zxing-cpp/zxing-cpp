@@ -401,20 +401,12 @@ Version::Version(int versionNumber, const std::array<ECBlocks, 4>& ecBlocks)
 
 const Version* Version::FromNumber(int versionNumber, bool isMicro, bool isModel1)
 {
-	if (versionNumber < 1 || versionNumber > (isMicro ? 4 : 40)) {
+	if (versionNumber < 1 || versionNumber > (isMicro ? 4 : (isModel1 ? 14 : 40))) {
 		//throw std::invalid_argument("Version should be in range [1-40].");
 		return nullptr;
 	}
 
-	if (isMicro){
-		return &AllMicroVersions()[versionNumber - 1];
-	}
-	else if (isModel1){
-		return &AllModel1Versions()[versionNumber - 1];
-	}
-	else{
-		return &AllVersions()[versionNumber - 1];
-	}
+    return &(isMicro ? AllMicroVersions() : (isModel1 ? AllModel1Versions() : AllVersions()))[versionNumber - 1];
 }
 
 const Version* Version::FromDimension(int dimension, bool isModel1)

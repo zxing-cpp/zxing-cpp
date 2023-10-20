@@ -327,23 +327,15 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 
 DecoderResult Decode(const BitMatrix& bits)
 {
-
-	const Version* pversion = ReadVersion(bits, false);
-	if (!pversion)
-		return FormatError("Invalid version");
-	const Version& preversion = *pversion;
-
-	auto formatInfo = ReadFormatInformation(bits, preversion.isMicroQRCode());
+	bool isMicroQRCode = bits.height() < 21;
+	auto formatInfo = ReadFormatInformation(bits, isMicroQRCode);
 	if (!formatInfo.isValid())
 		return FormatError("Invalid format information");
 
-	if (formatInfo.isModel1)
-	{
-		pversion = nullptr;
-		pversion = ReadVersion(bits, formatInfo.isModel1);
-		if (!pversion)
-			return FormatError("Invalid version");
-	}
+	const Version* pversion = formatInfo.isModel1 ? Version::FromDimension(bits.height(), true) : ReadVersion(bits, false);
+	if (!pversion)
+		return FormatError("Invalid version");
+
 	const Version& version = *pversion;
 
 	// Read codewords
