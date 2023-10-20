@@ -15,7 +15,6 @@ static const int MASKED_TEST_FORMAT_INFO = 0x2BED;
 static const int MASKED_TEST_FORMAT_INFO2 = ((0x2BED << 1) & 0b1111111000000000) | 0b100000000 | (0x2BED & 0b11111111); // insert the 'Dark Module'
 static const int UNMASKED_TEST_FORMAT_INFO = MASKED_TEST_FORMAT_INFO ^ 0x5412;
 static const int MICRO_MASKED_TEST_FORMAT_INFO = 0x3BBA;
-static const int MICRO_UNMASKED_TEST_FORMAT_INFO = MICRO_MASKED_TEST_FORMAT_INFO ^ 0x4445;
 
 static void DoFormatInformationTest(const int formatInfo, const uint8_t expectedMask, const ErrorCorrectionLevel& expectedECL)
 {
@@ -43,7 +42,9 @@ TEST(QRFormatInformationTest, DecodeWithBitDifference)
 	EXPECT_EQ(expected, FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO ^ 0x01, MASKED_TEST_FORMAT_INFO2 ^ 0x01));
 	EXPECT_EQ(expected, FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO ^ 0x03, MASKED_TEST_FORMAT_INFO2 ^ 0x03));
 	EXPECT_EQ(expected, FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO ^ 0x07, MASKED_TEST_FORMAT_INFO2 ^ 0x07));
-	EXPECT_TRUE(!FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO ^ 0x0F, MASKED_TEST_FORMAT_INFO2 ^ 0x0F).isValid());
+	auto unexpected = FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO ^ 0x0F, MASKED_TEST_FORMAT_INFO2 ^ 0x0F);
+	EXPECT_FALSE(expected == unexpected);
+	EXPECT_FALSE(unexpected.isValid() && !unexpected.isModel1);
 }
 
 TEST(QRFormatInformationTest, DecodeWithMisread)
@@ -65,6 +66,7 @@ TEST(QRFormatInformationTest, DecodeMicro)
 	DoFormatInformationTest(MICRO_MASKED_TEST_FORMAT_INFO, 0x3, ErrorCorrectionLevel::Quality);
 
 	// where the code forgot the mask!
+//	static const int MICRO_UNMASKED_TEST_FORMAT_INFO = MICRO_MASKED_TEST_FORMAT_INFO ^ 0x4445;
 //	DoFormatInformationTest(MICRO_UNMASKED_TEST_FORMAT_INFO, 0x3, ErrorCorrectionLevel::Quality);
 }
 
