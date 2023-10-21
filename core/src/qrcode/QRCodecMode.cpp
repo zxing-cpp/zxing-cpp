@@ -32,7 +32,7 @@ CodecMode CodecModeForBits(int bits, bool isMicro)
 int CharacterCountBits(CodecMode mode, const Version& version)
 {
 	int number = version.versionNumber();
-	if (version.isMicroQRCode()) {
+	if (version.isMicro()) {
 		switch (mode) {
 		case CodecMode::NUMERIC:      return std::array{3, 4, 5, 6}[number - 1];
 		case CodecMode::ALPHANUMERIC: return std::array{3, 4, 5}[number - 2];
@@ -63,12 +63,12 @@ int CharacterCountBits(CodecMode mode, const Version& version)
 
 int CodecModeBitsLength(const Version& version)
 {
-	return version.isMicroQRCode() ? version.versionNumber() - 1 : 4;
+	return version.isMicro() ? version.versionNumber() - 1 : 4;
 }
 
 int TerminatorBitsLength(const Version& version)
 {
-	return version.isMicroQRCode() ? version.versionNumber() * 2 + 1 : 4;
+	return version.isMicro() ? version.versionNumber() * 2 + 1 : 4;
 }
 
 } // namespace ZXing::QRCode

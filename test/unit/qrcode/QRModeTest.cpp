@@ -27,12 +27,12 @@ TEST(QRModeTest, ForBits)
 TEST(QRModeTest, CharacterCount)
 {
 	// Spot check a few values
-	ASSERT_EQ(10, CharacterCountBits(CodecMode::NUMERIC, *Version::FromNumber(5)));
-	ASSERT_EQ(12, CharacterCountBits(CodecMode::NUMERIC, *Version::FromNumber(26)));
-	ASSERT_EQ(14, CharacterCountBits(CodecMode::NUMERIC, *Version::FromNumber(40)));
-	ASSERT_EQ(9, CharacterCountBits(CodecMode::ALPHANUMERIC, *Version::FromNumber(6)));
-	ASSERT_EQ(8, CharacterCountBits(CodecMode::BYTE, *Version::FromNumber(7)));
-	ASSERT_EQ(8, CharacterCountBits(CodecMode::KANJI, *Version::FromNumber(8)));
+	ASSERT_EQ(10, CharacterCountBits(CodecMode::NUMERIC, *Version::Model2(5)));
+	ASSERT_EQ(12, CharacterCountBits(CodecMode::NUMERIC, *Version::Model2(26)));
+	ASSERT_EQ(14, CharacterCountBits(CodecMode::NUMERIC, *Version::Model2(40)));
+	ASSERT_EQ(9, CharacterCountBits(CodecMode::ALPHANUMERIC, *Version::Model2(6)));
+	ASSERT_EQ(8, CharacterCountBits(CodecMode::BYTE, *Version::Model2(7)));
+	ASSERT_EQ(8, CharacterCountBits(CodecMode::KANJI, *Version::Model2(8)));
 }
 
 TEST(QRModeTest, MicroForBits)
@@ -59,10 +59,10 @@ TEST(QRModeTest, MicroForBits)
 TEST(QRModeTest, MicroCharacterCount)
 {
 	// Spot check a few values
-	ASSERT_EQ(3, CharacterCountBits(CodecMode::NUMERIC, *Version::FromNumber(1, true)));
-	ASSERT_EQ(4, CharacterCountBits(CodecMode::NUMERIC, *Version::FromNumber(2, true)));
-	ASSERT_EQ(6, CharacterCountBits(CodecMode::NUMERIC, *Version::FromNumber(4, true)));
-	ASSERT_EQ(3, CharacterCountBits(CodecMode::ALPHANUMERIC, *Version::FromNumber(2, true)));
-	ASSERT_EQ(4, CharacterCountBits(CodecMode::BYTE, *Version::FromNumber(3, true)));
-	ASSERT_EQ(4, CharacterCountBits(CodecMode::KANJI, *Version::FromNumber(4, true)));
+	ASSERT_EQ(3, CharacterCountBits(CodecMode::NUMERIC, *Version::Micro(1)));
+	ASSERT_EQ(4, CharacterCountBits(CodecMode::NUMERIC, *Version::Micro(2)));
+	ASSERT_EQ(6, CharacterCountBits(CodecMode::NUMERIC, *Version::Micro(4)));
+	ASSERT_EQ(3, CharacterCountBits(CodecMode::ALPHANUMERIC, *Version::Micro(2)));
+	ASSERT_EQ(4, CharacterCountBits(CodecMode::BYTE, *Version::Micro(3)));
+	ASSERT_EQ(4, CharacterCountBits(CodecMode::KANJI, *Version::Micro(4)));
 }

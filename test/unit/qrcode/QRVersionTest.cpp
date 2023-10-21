@@ -18,7 +18,7 @@ namespace {
 	void CheckVersion(const Version* version, int number, int dimension) {
 		ASSERT_NE(version, nullptr);
 		EXPECT_EQ(number, version->versionNumber());
-		if (number > 1 && !version->isMicroQRCode()) {
+		if (number > 1 && version->isModel2()) {
 			EXPECT_FALSE(version->alignmentPatternCenters().empty());
 		}
 		EXPECT_EQ(dimension, version->dimension());
@@ -34,11 +34,11 @@ namespace {
 
 TEST(QRVersionTest, VersionForNumber)
 {
-	auto version = Version::FromNumber(0);
+	auto version = Version::Model2(0);
 	EXPECT_EQ(version, nullptr) << "There is version with number 0";
 
 	for (int i = 1; i <= 40; i++) {
-		CheckVersion(Version::FromNumber(i), i, 4*i + 17);
+		CheckVersion(Version::Model2(i), i, 4*i + 17);
 	}
 }
 
@@ -46,9 +46,7 @@ TEST(QRVersionTest, VersionForNumber)
 TEST(QRVersionTest, GetProvisionalVersionForDimension)
 {
 	for (int i = 1; i <= 40; i++) {
-		auto prov = Version::FromDimension(4 * i + 17);
-		ASSERT_NE(prov, nullptr);
-		EXPECT_EQ(i, prov->versionNumber());
+		EXPECT_EQ(i, Version::Number(BitMatrix(4 * i + 17)));
 	}
 }
 
@@ -65,20 +63,18 @@ TEST(QRVersionTest, DecodeVersionInformation)
 
 TEST(QRVersionTest, MicroVersionForNumber)
 {
-	auto version = Version::FromNumber(0, true);
+	auto version = Version::Micro(0);
 	EXPECT_EQ(version, nullptr) << "There is version with number 0";
 
 	for (int i = 1; i <= 4; i++) {
-		CheckVersion(Version::FromNumber(i, true), i, 2 * i + 9);
+		CheckVersion(Version::Micro(i), i, 2 * i + 9);
 	}
 }
 
 TEST(QRVersionTest, GetProvisionalMicroVersionForDimension)
 {
 	for (int i = 1; i <= 4; i++) {
-		auto prov = Version::FromDimension(2 * i + 9);
-		ASSERT_NE(prov, nullptr);
-		EXPECT_EQ(i, prov->versionNumber());
+		EXPECT_EQ(i, Version::Number(BitMatrix(2 * i + 9)));
 	}
 }
 
@@ -90,7 +86,7 @@ TEST(QRVersionTest, FunctionPattern)
 				EXPECT_TRUE(bitMatrix.get(col, row));
 	};
 	for (int i = 1; i <= 4; i++) {
-		const auto version = Version::FromNumber(i, true);
+		const auto version = Version::Micro(i);
 		const auto functionPattern = version->buildFunctionPattern();
 		testFinderPatternRegion(functionPattern);
 

@@ -44,7 +44,7 @@ TEST(QRFormatInformationTest, DecodeWithBitDifference)
 	EXPECT_EQ(expected, FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO ^ 0x07, MASKED_TEST_FORMAT_INFO2 ^ 0x07));
 	auto unexpected = FormatInformation::DecodeQR(MASKED_TEST_FORMAT_INFO ^ 0x0F, MASKED_TEST_FORMAT_INFO2 ^ 0x0F);
 	EXPECT_FALSE(expected == unexpected);
-	EXPECT_FALSE(unexpected.isValid() && !unexpected.isModel1);
+	EXPECT_FALSE(unexpected.isValid() && unexpected.type() == Type::Model2);
 }
 
 TEST(QRFormatInformationTest, DecodeWithMisread)

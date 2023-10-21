@@ -22,23 +22,23 @@ static bool getBit(const BitMatrix& bitMatrix, int x, int y, bool mirrored = fal
 	return mirrored ? bitMatrix.get(y, x) : bitMatrix.get(x, y);
 }
 
-static bool hasValidDimension(const BitMatrix& bitMatrix, bool isMicro)
+const Version* ReadVersion(const BitMatrix& bitMatrix, Type type)
 {
-	int dimension = bitMatrix.height();
-	if (isMicro)
-		return dimension >= 11 && dimension <= 17 && (dimension % 2) == 1;
-	else
-		return dimension >= 21 && dimension <= 177 && (dimension % 4) == 1;
-}
+	assert(Version::HasValidSize(bitMatrix));
 
-const Version* ReadVersion(const BitMatrix& bitMatrix)
-{
-	int dimension = bitMatrix.height();
+	int number = Version::Number(bitMatrix);
 
-	const Version* version = Version::FromDimension(dimension);
+	switch (type) {
+	case Type::Micro: return Version::Micro(number);
+	case Type::Model1: return Version::Model1(number);
+	case Type::Model2: break;
+	}
 
+	const Version* version = Version::Model2(number);
 	if (!version || version->versionNumber() < 7)
 		return version;
+
+	int dimension = bitMatrix.height();
 
 	for (bool mirror : {false, true}) {
 		// Read top-right/bottom-left version info: 3 wide by 6 tall (depending on mirrored)
@@ -55,12 +55,9 @@ const Version* ReadVersion(const BitMatrix& bitMatrix)
 	return nullptr;
 }
 
-FormatInformation ReadFormatInformation(const BitMatrix& bitMatrix, bool isMicro)
+FormatInformation ReadFormatInformation(const BitMatrix& bitMatrix)
 {
-	if (!hasValidDimension(bitMatrix, isMicro))
-		return {};
-
-	if (isMicro) {
+	if (Version::HasMicroSize(bitMatrix)) {
 		// Read top-left format info bits
 		int formatInfoBits = 0;
 		for (int x = 1; x < 9; x++)
@@ -137,7 +134,6 @@ static ByteArray ReadQRCodewords(const BitMatrix& bitMatrix, const Version& vers
 
 static ByteArray ReadQRCodewordsModel1(const BitMatrix& bitMatrix, const Version& version, const FormatInformation& formatInfo)
 {
-
 	ByteArray result;
 	result.reserve(version.totalCodewords());
 	int dimension = bitMatrix.height();
@@ -243,14 +239,13 @@ static ByteArray ReadMQRCodewords(const BitMatrix& bitMatrix, const QRCode::Vers
 
 ByteArray ReadCodewords(const BitMatrix& bitMatrix, const Version& version, const FormatInformation& formatInfo)
 {
-	if (!hasValidDimension(bitMatrix, version.isMicroQRCode()))
-		return {};
-	if (version.isMicroQRCode())
-		return ReadMQRCodewords(bitMatrix, version, formatInfo);
-	else if (formatInfo.isModel1)
-		return ReadQRCodewordsModel1(bitMatrix, version, formatInfo);
-	else
-		return ReadQRCodewords(bitMatrix, version, formatInfo);
+	switch (version.type()) {
+	case Type::Micro: return ReadMQRCodewords(bitMatrix, version, formatInfo);
+	case Type::Model1: return ReadQRCodewordsModel1(bitMatrix, version, formatInfo);
+	case Type::Model2: return ReadQRCodewords(bitMatrix, version, formatInfo);
+	}
+
+	return {};
 }
 
 } // namespace ZXing::QRCode
