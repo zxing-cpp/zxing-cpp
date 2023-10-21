@@ -233,7 +233,7 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 	BitSource bits(bytes);
 	Content result;
 	Error error;
-	result.symbology = {'Q', '1', 1};
+	result.symbology = {'Q', version.isQRCodeModel1() ? '0' : '1', 1};
 	StructuredAppendInfo structuredAppend;
 	const int modeBitLength = CodecModeBitsLength(version);
 
@@ -277,6 +277,8 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 				structuredAppend.id    = std::to_string(bits.readBits(8));
 				break;
 			case CodecMode::ECI:
+				if (version.isQRCodeModel1())
+					throw FormatError("QRCode Model 1 does not support ECI");
 				// Count doesn't apply to ECI
 				result.switchEncoding(ParseECIValue(bits));
 				break;
