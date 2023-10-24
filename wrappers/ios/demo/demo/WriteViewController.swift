@@ -15,7 +15,7 @@ class WriteViewController: UIViewController {
 
     @IBAction func textFieldChanged(_ sender: UITextField) {
         guard let text = sender.text,
-              let image = try? ZXIBarcodeWriter().write(text, width: 200, height: 200, format: .QR_CODE)
+              let image = try? ZXIBarcodeWriter().write(text, format: .QR_CODE, width: 200, height: 200, margin: -1, ecLevel: QR_ERROR_CORRECTION_LOW)
         else {
             return
         }

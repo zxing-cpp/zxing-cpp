@@ -23,7 +23,7 @@ std::wstring NSDataToStringW(NSData *data) {
     std::wstring s;
     const unsigned char *bytes = (const unsigned char *) [data bytes];
     size_t len = [data length];
-	for (int i = 0; i < len; ++i) {
+    for (int i = 0; i < len; ++i) {
         s.push_back(bytes[i]);
     }
     return s;
@@ -32,39 +32,51 @@ std::wstring NSDataToStringW(NSData *data) {
 @implementation ZXIBarcodeWriter
 
 -(CGImageRef)writeData:(NSData *)data
+                format:(ZXIFormat)format
                  width:(int)width
                 height:(int)height
-                format:(ZXIFormat)format
+                margin:(int)margin
+               ecLevel:(int)ecLevel
                  error:(NSError *__autoreleasing  _Nullable *)error {
     return [self encode: NSDataToStringW(data)
+               encoding: CharacterSet::BINARY
+                 format: format
                   width: width
                  height: height
-                 format: format
-               encoding: CharacterSet::BINARY
+                 margin: margin
+                ecLevel: ecLevel
                   error: error];
 }
 
 -(CGImageRef)writeString:(NSString *)contents
+                  format:(ZXIFormat)format
                    width:(int)width
                   height:(int)height
-                  format:(ZXIFormat)format
+                  margin:(int)margin
+                 ecLevel:(int)ecLevel
                    error:(NSError *__autoreleasing  _Nullable *)error {
     return [self encode: NSStringToStringW(contents)
+               encoding: CharacterSet::UTF8
+                 format: format
                   width: width
                  height: height
-                 format: format
-               encoding: CharacterSet::UTF8
+                 margin: margin
+                ecLevel: ecLevel
                   error: error];
 }
 
 -(CGImageRef)encode:(std::wstring)content
+           encoding:(CharacterSet)encoding
+             format:(ZXIFormat)format
               width:(int)width
              height:(int)height
-             format:(ZXIFormat)format
-           encoding:(CharacterSet)encoding
+             margin:(int)margin
+            ecLevel:(int)ecLevel
               error:(NSError *__autoreleasing  _Nullable *)error {
     MultiFormatWriter writer { BarcodeFormatFromZXIFormat(format) };
     writer.setEncoding(encoding);
+    writer.setMargin(margin);
+    writer.setEccLevel(ecLevel);
     // Catch exception for invalid formats
     try {
         BitMatrix bitMatrix = writer.encode(content, width, height);
