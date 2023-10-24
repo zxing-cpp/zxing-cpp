@@ -35,6 +35,20 @@ std::wstring NSDataToStringW(NSData *data) {
                 format:(ZXIFormat)format
                  width:(int)width
                 height:(int)height
+                 error:(NSError *__autoreleasing  _Nullable *)error {
+    return [self writeData: data
+                    format: format
+                     width: width
+                    height: height
+                    margin: -1
+                   ecLevel: -1
+                     error: error];
+}
+
+-(CGImageRef)writeData:(NSData *)data
+                format:(ZXIFormat)format
+                 width:(int)width
+                height:(int)height
                 margin:(int)margin
                ecLevel:(int)ecLevel
                  error:(NSError *__autoreleasing  _Nullable *)error {
@@ -46,6 +60,20 @@ std::wstring NSDataToStringW(NSData *data) {
                  margin: margin
                 ecLevel: ecLevel
                   error: error];
+}
+
+-(CGImageRef)writeString:(NSString *)contents
+                  format:(ZXIFormat)format
+                   width:(int)width
+                  height:(int)height
+                   error:(NSError *__autoreleasing  _Nullable *)error {
+    return [self writeString: contents
+                      format: format
+                       width: width
+                      height: height
+                      margin: -1
+                     ecLevel: -1
+                       error: error];
 }
 
 -(CGImageRef)writeString:(NSString *)contents
