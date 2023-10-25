@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #import <Foundation/Foundation.h>
-#import "ZXIFormat.h"
+#import "ZXIEncodeHints.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -33,31 +33,11 @@ const int PDF417_ERROR_CORRECTION_8 = 8;
 @interface ZXIBarcodeWriter : NSObject
 
 -(nullable CGImageRef)writeString:(NSString *)contents
-                           format:(ZXIFormat)format
-                            width:(int)width
-                           height:(int)height
-                            error:(NSError *__autoreleasing  _Nullable *)error;
-
--(nullable CGImageRef)writeString:(NSString *)contents
-                           format:(ZXIFormat)format
-                            width:(int)width
-                           height:(int)height
-                           margin:(int)margin
-                          ecLevel:(int)ecLevel
+                            hints:(ZXIEncodeHints *)hints
                             error:(NSError *__autoreleasing  _Nullable *)error;
 
 -(nullable CGImageRef)writeData:(NSData *)data
-                         format:(ZXIFormat)format
-                          width:(int)width
-                         height:(int)height
-                          error:(NSError *__autoreleasing  _Nullable *)error;
-
--(nullable CGImageRef)writeData:(NSData *)data
-                         format:(ZXIFormat)format
-                          width:(int)width
-                         height:(int)height
-                         margin:(int)margin
-                        ecLevel:(int)ecLevel
+                          hints:(ZXIEncodeHints *)hints
                           error:(NSError *__autoreleasing  _Nullable *)error;
 
 @end

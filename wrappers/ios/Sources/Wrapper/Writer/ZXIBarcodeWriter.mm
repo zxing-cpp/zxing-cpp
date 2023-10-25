@@ -4,6 +4,7 @@
 
 #import <CoreGraphics/CoreGraphics.h>
 #import "ZXIBarcodeWriter.h"
+#import "ZXIEncodeHints.h"
 #import "MultiFormatWriter.h"
 #import "BitMatrix.h"
 #import "BitMatrixIO.h"
@@ -32,64 +33,28 @@ std::wstring NSDataToStringW(NSData *data) {
 @implementation ZXIBarcodeWriter
 
 -(CGImageRef)writeData:(NSData *)data
-                format:(ZXIFormat)format
-                 width:(int)width
-                height:(int)height
-                 error:(NSError *__autoreleasing  _Nullable *)error {
-    return [self writeData: data
-                    format: format
-                     width: width
-                    height: height
-                    margin: -1
-                   ecLevel: -1
-                     error: error];
-}
-
--(CGImageRef)writeData:(NSData *)data
-                format:(ZXIFormat)format
-                 width:(int)width
-                height:(int)height
-                margin:(int)margin
-               ecLevel:(int)ecLevel
+                 hints:(ZXIEncodeHints *)hints
                  error:(NSError *__autoreleasing  _Nullable *)error {
     return [self encode: NSDataToStringW(data)
                encoding: CharacterSet::BINARY
-                 format: format
-                  width: width
-                 height: height
-                 margin: margin
-                ecLevel: ecLevel
+                 format: hints.format
+                  width: hints.width
+                 height: hints.height
+                 margin: hints.margin
+                ecLevel: hints.ecLevel
                   error: error];
 }
 
 -(CGImageRef)writeString:(NSString *)contents
-                  format:(ZXIFormat)format
-                   width:(int)width
-                  height:(int)height
-                   error:(NSError *__autoreleasing  _Nullable *)error {
-    return [self writeString: contents
-                      format: format
-                       width: width
-                      height: height
-                      margin: -1
-                     ecLevel: -1
-                       error: error];
-}
-
--(CGImageRef)writeString:(NSString *)contents
-                  format:(ZXIFormat)format
-                   width:(int)width
-                  height:(int)height
-                  margin:(int)margin
-                 ecLevel:(int)ecLevel
+                   hints:(ZXIEncodeHints *)hints
                    error:(NSError *__autoreleasing  _Nullable *)error {
     return [self encode: NSStringToStringW(contents)
                encoding: CharacterSet::UTF8
-                 format: format
-                  width: width
-                 height: height
-                 margin: margin
-                ecLevel: ecLevel
+                 format: hints.format
+                  width: hints.width
+                 height: hints.height
+                 margin: hints.margin
+                ecLevel: hints.ecLevel
                   error: error];
 }
 
