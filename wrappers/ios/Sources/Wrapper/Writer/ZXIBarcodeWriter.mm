@@ -4,6 +4,7 @@
 
 #import <CoreGraphics/CoreGraphics.h>
 #import "ZXIBarcodeWriter.h"
+#import "ZXIEncodeHints.h"
 #import "MultiFormatWriter.h"
 #import "BitMatrix.h"
 #import "BitMatrixIO.h"
@@ -23,7 +24,7 @@ std::wstring NSDataToStringW(NSData *data) {
     std::wstring s;
     const unsigned char *bytes = (const unsigned char *) [data bytes];
     size_t len = [data length];
-	for (int i = 0; i < len; ++i) {
+    for (int i = 0; i < len; ++i) {
         s.push_back(bytes[i]);
     }
     return s;
@@ -32,39 +33,43 @@ std::wstring NSDataToStringW(NSData *data) {
 @implementation ZXIBarcodeWriter
 
 -(CGImageRef)writeData:(NSData *)data
-                 width:(int)width
-                height:(int)height
-                format:(ZXIFormat)format
+                 hints:(ZXIEncodeHints *)hints
                  error:(NSError *__autoreleasing  _Nullable *)error {
     return [self encode: NSDataToStringW(data)
-                  width: width
-                 height: height
-                 format: format
                encoding: CharacterSet::BINARY
+                 format: hints.format
+                  width: hints.width
+                 height: hints.height
+                 margin: hints.margin
+                ecLevel: hints.ecLevel
                   error: error];
 }
 
 -(CGImageRef)writeString:(NSString *)contents
-                   width:(int)width
-                  height:(int)height
-                  format:(ZXIFormat)format
+                   hints:(ZXIEncodeHints *)hints
                    error:(NSError *__autoreleasing  _Nullable *)error {
     return [self encode: NSStringToStringW(contents)
-                  width: width
-                 height: height
-                 format: format
                encoding: CharacterSet::UTF8
+                 format: hints.format
+                  width: hints.width
+                 height: hints.height
+                 margin: hints.margin
+                ecLevel: hints.ecLevel
                   error: error];
 }
 
 -(CGImageRef)encode:(std::wstring)content
+           encoding:(CharacterSet)encoding
+             format:(ZXIFormat)format
               width:(int)width
              height:(int)height
-             format:(ZXIFormat)format
-           encoding:(CharacterSet)encoding
+             margin:(int)margin
+            ecLevel:(int)ecLevel
               error:(NSError *__autoreleasing  _Nullable *)error {
     MultiFormatWriter writer { BarcodeFormatFromZXIFormat(format) };
     writer.setEncoding(encoding);
+    writer.setMargin(margin);
+    writer.setEccLevel(ecLevel);
     // Catch exception for invalid formats
     try {
         BitMatrix bitMatrix = writer.encode(content, width, height);

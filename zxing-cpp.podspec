@@ -32,7 +32,7 @@ Pod::Spec.new do |s|
     ss.frameworks = 'CoreGraphics', 'CoreImage', 'CoreVideo'
     ss.source_files = 'wrappers/ios/Sources/Wrapper/**/*.{h,m,mm}'
     ss.public_header_files = 'wrappers/ios/Sources/Wrapper/Reader/{ZXIBarcodeReader,ZXIResult,ZXIPosition,ZXIPoint,ZXIDecodeHints}.h',
-                             'wrappers/ios/Sources/Wrapper/Writer/ZXIBarcodeWriter.h',
+                             'wrappers/ios/Sources/Wrapper/Writer/{ZXIBarcodeWriter,ZXIEncodeHints}.h',
                              'wrappers/ios/Sources/Wrapper/{ZXIErrors,ZXIFormat}.h'
     ss.exclude_files = 'wrappers/ios/Sources/Wrapper/UmbrellaHeader.h'
   end
