@@ -42,7 +42,7 @@
     self.height = height;
 }
 
--(void)setErrorCorrectionLevel:(int)ecLevel {
+-(void)setEcLevel:(int)ecLevel {
     self.ecLevel = ecLevel;
 }
 
