@@ -557,19 +557,23 @@ public:
 		return line.evaluate(1.5) && updateDirectionFromOrigin(p - line.project(p) + line.points().front());
 	}
 
+	bool updateDirectionFromLineCentroid(RegressionLine& line)
+	{
+		// Basically a faster, less accurate version of the above without the line evaluation
+		return updateDirectionFromOrigin(line.centroid());
+	}
+
 	bool traceLine(PointF dEdge, RegressionLine& line)
 	{
 		line.setDirectionInward(dEdge);
 		do {
 			log(p);
 			line.add(p);
-			if (line.points().size() % 50 == 10 && !updateDirectionFromLine(line))
+			if (line.points().size() % 50 == 10 && !updateDirectionFromLineCentroid(line))
 				return false;
 			auto stepResult = traceStep(dEdge, 1, line.isValid());
-			if (stepResult != StepResult::FOUND) {
-				updateDirectionFromLine(line);
-				return stepResult == StepResult::OPEN_END && line.points().size() > 1;
-			}
+			if (stepResult != StepResult::FOUND)
+				return stepResult == StepResult::OPEN_END && line.points().size() > 1 && updateDirectionFromLineCentroid(line);
 		} while (true);
 	}
 
