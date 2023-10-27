@@ -22,7 +22,6 @@ import android.graphics.Point
 import android.graphics.Rect
 import android.os.Build
 import androidx.camera.core.ImageProxy
-import java.lang.RuntimeException
 import java.nio.ByteBuffer
 
 public class BarcodeReader {
@@ -84,23 +83,7 @@ public class BarcodeReader {
         }
 
         var result = Result()
-        val status = image.use {
-            readYBuffer(
-                it.planes[0].buffer,
-                it.planes[0].rowStride,
-                it.cropRect.left,
-                it.cropRect.top,
-                it.cropRect.width(),
-                it.cropRect.height(),
-                it.imageInfo.rotationDegrees,
-                options.formats.joinToString(),
-                options.tryHarder,
-                options.tryRotate,
-                options.tryInvert,
-                options.tryDownscale,
-                result
-            )
-        }
+        val status = image.process(result)
         return try {
             result.copy(format = Format.valueOf(status!!))
         } catch (e: Throwable) {
@@ -126,6 +109,22 @@ public class BarcodeReader {
             if (status == "NotFound") null else throw RuntimeException(status!!)
         }
     }
+
+    private fun ImageProxy.process(result: Result): String? = readYBuffer(
+        planes[0].buffer,
+        planes[0].rowStride,
+        cropRect.left,
+        cropRect.top,
+        cropRect.width(),
+        cropRect.height(),
+        imageInfo.rotationDegrees,
+        options.formats.joinToString(),
+        options.tryHarder,
+        options.tryRotate,
+        options.tryInvert,
+        options.tryDownscale,
+        result
+    )
 
     // setting the format enum from inside the JNI code is a hassle -> use returned String instead
     private external fun readYBuffer(
