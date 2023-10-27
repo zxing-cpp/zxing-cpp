@@ -30,24 +30,4 @@
     return self;
 }
 
--(void)setFormat:(ZXIFormat)format {
-    self.format = format;
-}
-
--(void)setWidth:(int)width {
-    self.width = width;
-}
-
--(void)setHeight:(int)height {
-    self.height = height;
-}
-
--(void)setEcLevel:(int)ecLevel {
-    self.ecLevel = ecLevel;
-}
-
--(void)setMargin:(int)margin {
-    self.margin = margin;
-}
-
 @end
