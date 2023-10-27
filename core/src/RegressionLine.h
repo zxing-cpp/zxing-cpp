@@ -117,6 +117,9 @@ public:
 					return sd > maxSignedDist || sd < -2 * maxSignedDist;
 				});
 				points.erase(end, points.end());
+				// if we threw away too many points, something is off with the line to begin with
+				if (points.size() < old_points_size / 2 || points.size() < 2)
+					return false;
 				if (old_points_size == points.size())
 					break;
 #ifdef PRINT_DEBUG
