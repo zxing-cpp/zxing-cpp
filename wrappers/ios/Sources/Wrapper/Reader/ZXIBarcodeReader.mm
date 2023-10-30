@@ -6,10 +6,42 @@
 #import "ReadBarcode.h"
 #import "ImageView.h"
 #import "Result.h"
+#import "GTIN.h"
 #import "ZXIFormatHelper.h"
 #import "ZXIPosition+Helper.h"
 
 using namespace ZXing;
+
+NSString *stringToNSString(const std::string &text) {
+    return [[NSString alloc]initWithBytes:text.data() length:text.size() encoding:NSUTF8StringEncoding];
+}
+
+ZXIGTIN *getGTIN(const Result &result) {
+    auto format = result.format();
+    auto text = result.text(TextMode::Plain);
+    NSString *country;
+    NSString *addOn;
+    NSString *price;
+    NSString *issueNumber;
+    if ((BarcodeFormat::EAN13 | BarcodeFormat::EAN8 | BarcodeFormat::UPCA |
+        BarcodeFormat::UPCE).testFlag(format)) {
+        country = stringToNSString(GTIN::LookupCountryIdentifier(text, format));
+        addOn = stringToNSString(GTIN::EanAddOn(result));
+        price = stringToNSString(GTIN::Price(GTIN::EanAddOn(result)));
+        issueNumber = stringToNSString(GTIN::IssueNr(GTIN::EanAddOn(result)));
+    } else if (format == BarcodeFormat::ITF && text.length() == 14) {
+        country = stringToNSString(GTIN::LookupCountryIdentifier(text, format));
+        addOn = stringToNSString("");
+        price = stringToNSString("");
+        issueNumber = stringToNSString("");
+    }
+    return country
+        ? [[ZXIGTIN alloc]initWithCountry:country
+                                    addOn:addOn
+                                    price:price
+                              issueNumber:issueNumber]
+        : nullptr;
+}
 
 @interface ZXIBarcodeReader()
 @property (nonatomic, strong) CIContext* ciContext;
@@ -115,16 +147,22 @@ using namespace ZXing;
 
     NSMutableArray* zxiResults = [NSMutableArray array];
     for (auto result: results) {
-        auto resultText = result.text();
-        NSString *text = [[NSString alloc]initWithBytes:resultText.data() length:resultText.size() encoding:NSUTF8StringEncoding];
-
-        NSData *bytes = [[NSData alloc] initWithBytes:result.bytes().data() length:result.bytes().size()];
         [zxiResults addObject:
-         [[ZXIResult alloc] init:text
+         [[ZXIResult alloc] init:stringToNSString(result.text())
                           format:ZXIFormatFromBarcodeFormat(result.format())
-                           bytes:bytes
+                           bytes:[[NSData alloc] initWithBytes:result.bytes().data() length:result.bytes().size()]
                         position:[[ZXIPosition alloc]initWithPosition: result.position()]
-         ]];
+                     orientation:result.orientation()
+                         ecLevel:stringToNSString(result.ecLevel())
+             symbologyIdentifier:stringToNSString(result.symbologyIdentifier())
+                    sequenceSize:result.sequenceSize()
+                   sequenceIndex:result.sequenceIndex()
+                      sequenceId:stringToNSString(result.sequenceId())
+                      readerInit:result.readerInit()
+                       lineCount:result.lineCount()
+                         version:stringToNSString(result.version())
+                            gtin:getGTIN(result)]
+         ];
     }
     return zxiResults;
 }
