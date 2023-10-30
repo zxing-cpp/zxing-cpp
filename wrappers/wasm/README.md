@@ -1,4 +1,4 @@
-# WebAssembly/WASM Wrapper/Library
+# WebAssembly/WASM Wrapper
 
 ## Build
 
@@ -9,6 +9,10 @@
 5. To quickly test your build, copy those demo files into your build directory and run e.g. `emrun --serve_after_close demo_reader.html`.
 
 You can also download the latest build output from the continuous integration system from the [Actions](https://github.com/zxing-cpp/zxing-cpp/actions) tab. Look for 'wasm-artifacts'. Also check out the [live demos](https://github.com/zxing-cpp/zxing-cpp#web-demos).
+
+## Alternative Wrapper Project
+
+There is an alternative (external) wrapper project called [zxing-wasm](https://github.com/Sec-ant/zxing-wasm). It is written in TypeScript, has a more feature complete interface closer to the C++ API, spares you from dealing with WASM intricacies and is provided as a fully fledged ES module on [npmjs](https://www.npmjs.com/package/zxing-wasm).
 
 ## Performance
 
