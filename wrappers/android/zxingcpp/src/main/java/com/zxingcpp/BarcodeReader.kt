@@ -84,7 +84,7 @@ public class BarcodeReader {
         }
 
         var result = Result()
-        val status = image.use {
+        val status = image.let {
             readYBuffer(
                 it.planes[0].buffer,
                 it.planes[0].rowStride,

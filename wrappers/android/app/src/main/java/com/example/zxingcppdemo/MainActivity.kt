@@ -223,7 +223,7 @@ class MainActivity : AppCompatActivity() {
 					)
 
 					resultText = try {
-						val result = readerCpp.read(image)
+						val result = image.use{ readerCpp.read(it) }
 						runtime2 += result?.time?.toInt() ?: 0
 						resultPoints = result?.position?.let {
 							listOf(
