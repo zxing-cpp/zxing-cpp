@@ -25,8 +25,6 @@
 #include <utility>
 
 #ifdef PRINT_DEBUG
-#include "PDFDecoderResultExtra.h"
-#include "PDFDecodedBitStreamParser.h"
 #include "BitMatrixIO.h"
 #include <iostream>
 #endif
@@ -256,9 +254,6 @@ std::vector<int> ReadCodeWords(BitMatrixCursor<POINT> topCur, SymbolInfo info)
 	return codeWords;
 }
 
-// forward declaration from PDFScanningDecoder.cpp
-DecoderResult DecodeCodewords(std::vector<int>& codewords, int ecLevel, const std::vector<int>& erasures);
-
 static Result DecodePure(const BinaryBitmap& image_)
 {
 	auto pimage = image_.getBitMatrix();
@@ -295,14 +290,7 @@ static Result DecodePure(const BinaryBitmap& image_)
 
 	auto codeWords = ReadCodeWords(cur, info);
 
-	std::vector<int> erasures;
-	for (int i = 0; i < Size(codeWords); ++i)
-		if (codeWords[i] == -1) {
-			codeWords[i] = 0;
-			erasures.push_back(i);
-		}
-
-	auto res = DecodeCodewords(codeWords, info.ecLevel, erasures);
+	auto res = DecodeCodewords(codeWords, NumECCodeWords(info.ecLevel));
 
 	return Result(std::move(res), {{left, top}, {right, top}, {right, bottom}, {left, bottom}}, BarcodeFormat::PDF417);
 }

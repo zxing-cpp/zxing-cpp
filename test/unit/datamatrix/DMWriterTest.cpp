@@ -14,11 +14,11 @@ using namespace ZXing::DataMatrix;
 
 TEST(DMWriterTest, ImageWriter)
 {
-    int bigEnough = 64;
+	int bigEnough = 64;
 	Writer writer;
 	writer.setMargin(0).setShapeHint(SymbolShape::SQUARE);
 	auto matrix = writer.encode(L"Hello Google", bigEnough, bigEnough);
-    EXPECT_LE(matrix.width(), bigEnough);
+	EXPECT_LE(matrix.width(), bigEnough);
 	EXPECT_LE(matrix.height(), bigEnough);
 }
 
@@ -34,8 +34,8 @@ TEST(DMWriterTest, Writer2)
 
 TEST(DMWriterTest, TooSmallSize)
 {
-    // The DataMatrix will not fit in this size, so the matrix should come back bigger
-    int tooSmall = 8;
+	// The DataMatrix will not fit in this size, so the matrix should come back bigger
+	int tooSmall = 8;
 	Writer writer;
 	writer.setMargin(0);
 	auto matrix = writer.encode(L"http://www.google.com/", tooSmall, tooSmall);

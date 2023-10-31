@@ -17,7 +17,7 @@ class ThresholdBinarizer : public BinaryBitmap
 	const uint8_t _threshold = 0;
 
 public:
-	ThresholdBinarizer(const ImageView& buffer, uint8_t threshold = 1) : BinaryBitmap(buffer), _threshold(threshold) {}
+	ThresholdBinarizer(const ImageView& buffer, uint8_t threshold = 128) : BinaryBitmap(buffer), _threshold(threshold) {}
 
 	bool getPatternRow(int row, int rotation, PatternRow& res) const override
 	{
@@ -32,7 +32,7 @@ public:
 
 		res.clear();
 
-		for (const uint8_t* p = begin; p < end; p += stride) {
+		for (const uint8_t* p = begin; p != end; p += stride) {
 			bool val = *p <= _threshold;
 			if (val != lastVal) {
 				res.push_back(narrow_cast<PatternRow::value_type>((p - lastPos) / stride));
@@ -51,32 +51,7 @@ public:
 
 	std::shared_ptr<const BitMatrix> getBlackMatrix() const override
 	{
-		BitMatrix res(width(), height());
-
-		if (_buffer.pixStride() == 1 && _buffer.rowStride() == _buffer.width()) {
-			// Specialize for a packed buffer with pixStride 1 to support auto vectorization (16x speedup on AVX2)
-			auto dst = res.row(0).begin();
-			for (auto src = _buffer.data(0, 0), end = _buffer.data(0, height()); src != end; ++src, ++dst)
-				*dst = *src <= _threshold;
-		} else {
-			auto processLine = [this, &res](int y, const auto* src, const int stride) {
-				for (auto& dst : res.row(y)) {
-					dst = *src <= _threshold;
-					src += stride;
-				}
-			};
-			for (int y = 0; y < res.height(); ++y) {
-				auto src = _buffer.data(0, y) + GreenIndex(_buffer.format());
-				// Specialize the inner loop for strides 1 and 4 to support auto vectorization
-				switch (_buffer.pixStride()) {
-				case 1: processLine(y, src, 1); break;
-				case 4: processLine(y, src, 4); break;
-				default: processLine(y, src, _buffer.pixStride()); break;
-				}
-			}
-		}
-
-		return std::make_shared<const BitMatrix>(std::move(res));
+		return std::make_shared<const BitMatrix>(binarize(_threshold));
 	}
 };
 

@@ -1,154 +1,112 @@
+<!DOCTYPE html>
 <html>
 
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-	<title>ZXing in Javascript demo</title>
+	<title>zxing-cpp/wasm reader demo</title>
+	<link rel="shortcut icon" href="#" />
 	<script src="zxing_reader.js"></script>
-	<script src="base64ArrayBuffer.js"></script>
 	<script>
 var zxing = ZXing().then(function(instance) {
 	zxing = instance; // this line is supposedly not required but with current emsdk it is :-/
 });
 
-function scanBarcode(file) {
-	var reader = new FileReader();
-	reader.onloadend = function(evt) {
-		var format = document.getElementById("scan_format").value;
-		var fileData = new Uint8Array(evt.target.result);
+async function readBarcodes() {
+	let format = document.getElementById("format").value;
+	let file = document.getElementById("file").files[0];
 
-		var buffer = zxing._malloc(fileData.length);
-		zxing.HEAPU8.set(fileData, buffer);
-		var result = zxing.readBarcode(buffer, fileData.length, true, format);
-		zxing._free(buffer);
+	let arrayBuffer = await file.arrayBuffer();
+	let u8Buffer = new Uint8Array(arrayBuffer);
 
-		showImage(document.getElementById("drop_zone"), fileData, file.type, result.position);
-		showScanResult(result);
-	}
-	reader.readAsArrayBuffer(file);
+	let zxingBuffer = zxing._malloc(u8Buffer.length);
+	zxing.HEAPU8.set(u8Buffer, zxingBuffer);
+	let results = zxing.readBarcodesFromImage(zxingBuffer, u8Buffer.length, true, format, 0xff);
+	zxing._free(zxingBuffer);
+
+	showResults(results);
+	showImageWithResults(file, results);
 }
 
-function showImage(container, fileData, fileType, position) {
-	fileType = fileType || "image/jpeg";
-	container.innerHTML = "";
-	var img = document.createElement("img");
+function showImageWithResults(file, results) {
+	var canvas = document.getElementById("canvas");
+	var img = new Image()
 	img.addEventListener('load', function() {
-		container.style.width = img.width + 'px';
-		container.style.height = img.height + 'px';
-		const canvas = document.createElement("canvas");
 		canvas.width = img.width;
 		canvas.height = img.height;
 		const ctx = canvas.getContext("2d");
 		ctx.drawImage(img, 0, 0);
-		ctx.beginPath();
-		ctx.moveTo(position.topLeft.x, position.topLeft.y);
-		ctx.lineTo(position.topRight.x, position.topRight.y);
-		ctx.lineTo(position.bottomRight.x, position.bottomRight.y);
-		ctx.lineTo(position.bottomLeft.x, position.bottomLeft.y);
-		ctx.closePath();
-		ctx.strokeStyle = "red";
-		ctx.lineWidth = 5;
-		ctx.stroke();
-		container.appendChild(canvas);
+
+		for (let i = 0; i < results.size(); i += 1) {
+			const { position } = results.get(i);
+			// Draw outline square
+			ctx.beginPath();
+			ctx.moveTo(position.topLeft.x, position.topLeft.y);
+			ctx.lineTo(position.topRight.x, position.topRight.y);
+			ctx.lineTo(position.bottomRight.x, position.bottomRight.y);
+			ctx.lineTo(position.bottomLeft.x, position.bottomLeft.y);
+			ctx.closePath();
+			ctx.strokeStyle = "red";
+			ctx.lineWidth = 4;
+			ctx.stroke();
+
+			// Draw number inside square
+			const text = {
+				text: i + 1,
+				size: Math.abs((position.bottomRight.y - position.topLeft.y)) / 2,
+				x: (position.topLeft.x + position.bottomRight.x) / 2.0,
+				y: (position.topLeft.y + position.bottomRight.y) / 2.0,
+			};
+			ctx.fillStyle = "white";
+			ctx.font = `bold ${text.size}px sans`;
+			ctx.textAlign = "center";
+			ctx.textBaseline = "middle";
+			ctx.fillText(text.text, text.x, text.y);
+			ctx.strokeStyle = "red";
+			ctx.lineWidth = 2;
+			ctx.strokeText(text.text, text.x, text.y);
+		}
 	});
-	img.src = "data:" + fileType + ";base64," + base64ArrayBuffer(fileData);
+	img.src = URL.createObjectURL(file)
 }
 
-function showScanResult(result) {
-	if (result.error) {
-		document.getElementById("scan_result").innerHTML = '<font color="red">Error: ' + result.error + '</font>';
-	} else if (result.format) {
-		document.getElementById("scan_result").innerHTML = "Format: <strong>" + result.format + "</strong><pre>" + result.text + "</pre>";
-	} else {
-		document.getElementById("scan_result").innerHTML = "No " + (document.getElementById("scan_format").value || "barcode") + " found";
+function escapeTags(htmlStr) {
+	return htmlStr.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+function u8a2hex(bytes) {
+	return bytes.reduce((a, b) => a + b.toString(16).padStart(2, '0') + ' ', '');
+}
+
+function showResults(results) {
+	const resultsDiv = document.getElementById("results");
+	resultsDiv.innerHTML = "";
+	if (results.size() === 0) {
+		resultsDiv.innerHTML += "No " + (document.getElementById("format").value || "barcode") + " found";
 	}
-}
-
-function dragOverHandler(ev) {
-	ev.preventDefault();
-}
-
-function dropHandler(ev) {
-	ev.preventDefault();
-
-	if (ev.dataTransfer.items) {
-		for (var i = 0; i < ev.dataTransfer.items.length; i++) {
-			if (ev.dataTransfer.items[i].kind === 'file') {
-				var file = ev.dataTransfer.items[i].getAsFile();
-				scanBarcode(file);
-				break;
-			}
-		}
-	} else {
-		// Use DataTransfer interface to access the file(s)
-		for (var i = 0; i < ev.dataTransfer.files.length; i++) {
-			scanBarcode(file);
-			break;
+	else {
+		for (let i = 0; i < results.size(); i += 1) {
+			const { format, text, bytes, error } = results.get(i);
+			resultsDiv.innerHTML += "<li>Format: <strong>" + format + "</strong>"
+				+ "<pre>" + (escapeTags(text) || '<font color="red">Error: ' + error + '</font>') + "</pre>"
+				+ "<pre>" + u8a2hex(bytes) + "</pre>"
+				+ "</li>";
 		}
 	}
-
-	// Pass event to removeDragData for cleanup
-	removeDragData(ev)
-}
-
-function removeDragData(ev) {
-	if (ev.dataTransfer.items) {
-		ev.dataTransfer.items.clear();
-	} else {
-		ev.dataTransfer.clearData();
-	}
-}
-
-function fileSelected(input) {
-	scanBarcode(input.files[0]);
-}
-
-function clearScanImage() {
-	document.getElementById("drop_zone").innerHTML = "Drag your image here...";
 }
 	</script>
-	<style>
-#drop_zone {
-	border: 1px solid blue;
-	width: 220px;
-	height: 150px;
-	line-height: 150px;
-	text-align: center;
-}
-
-#input_text {
-	width: 220px;
-}
-
-select {
-	margin: 3px 0px;
-	width: 120px;
-}
-
-input {
-	margin: 3px 0px;
-}
-
-tr td:first-child {
-	text-align: right;
-}
-
-body>div {
-	float: left;
-	margin: 0.5em;
-}
-	</style>
 </head>
 
-<body>
-	<h3>Read barcodes</h3>
+<body style="text-align: left">
+	<h2>zxing-cpp/wasm reader demo</h2>
 	<p>
-		This is a simple demo of WebAssembly build (using Emcripten) of <a href="https://github.com/nu-book/zxing-cpp">zxing-cpp</a>
+		This is a simple demo of the wasm wrapper of <a href="https://github.com/zxing-cpp/zxing-cpp">zxing-cpp</a>
+		scanning for barcodes in image files.
 	</p>
 	<p></p>
 	<div>
 		Scan Format:
-		<select id="scan_format" onchange="clearScanImage()">
+		<select id="format" onchange='readBarcodes()'>
 			<option value="" selected="">Any</option>
 			<option value="Aztec">Aztec</option>
 			<option value="Codabar">Codabar</option>
@@ -156,21 +114,32 @@ body>div {
 			<option value="Code93">Code 93</option>
 			<option value="Code128">Code 128</option>
 			<option value="DataMatrix">DataMatrix</option>
+			<option value="DataBar">DataBar</option>
+			<option value="DataBarExpanded">DataBarExpanded</option>
 			<option value="EAN8">EAN-8</option>
 			<option value="EAN13">EAN-13</option>
 			<option value="ITF">ITF</option>
 			<option value="PDF417">PDF417</option>
 			<option value="QRCode">QR Code</option>
+			<option value="MicroQRCode">Micro QRCode</option>
 			<option value="UPCA">UPC-A</option>
 			<option value="UPCE">UPC-E</option>
+			<option value="LinearCodes">Linear Codes</option>
+			<option value="MatrixCodes">Matrix Codes</option>
 		</select>
-		<br />
-		<div id="drop_zone" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);">
-			Drag your image here...
-		</div>
-		Or <input type="file" accept="image/png, image/jpeg" onchange="fileSelected(this)" />
-		<br />
-		<div id="scan_result"></div>
+
+		&nbsp;&nbsp;
+
+		Image File: <input id="file" type="file" accept="image/png, image/jpeg" onchange="readBarcodes()" />
+
+		<br /><br />
+
+		<canvas id="canvas" width="640" height="480"></canvas>
+
+		<br /><br />
+
+		<ol id="results"></ol>
+
 	</div>
 </body>
 

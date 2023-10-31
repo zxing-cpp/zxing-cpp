@@ -8,18 +8,14 @@
 
 #include "gtest/gtest.h"
 
-namespace ZXing::Pdf417 {
-	DecoderResult DecodeCodewords(std::vector<int>& codewords, int ecLevel, const std::vector<int>& erasures);
-}
-
 using namespace ZXing;
 using namespace ZXing::Pdf417;
 
 // Shorthand for DecodeCodewords()
-static DecoderResult decode(std::vector<int>& codewords, int ecLevel = 0)
+static DecoderResult decode(std::vector<int>& codewords)
 {
 	std::vector<int> erasures;
-	auto result = DecodeCodewords(codewords, ecLevel, erasures);
+	auto result = DecodeCodewords(codewords, NumECCodeWords(0));
 
 	return result;
 }

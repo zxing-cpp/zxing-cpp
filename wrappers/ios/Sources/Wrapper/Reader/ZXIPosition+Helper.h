@@ -4,7 +4,7 @@
 
 #import <Foundation/Foundation.h>
 #import "ZXIPosition.h"
-#import "ZXing/Result.h"
+#import "Result.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

@@ -363,22 +363,22 @@ TEST(QREncoderTest, AppendLengthInfo)
 {
 	BitArray bits;
 	AppendLengthInfo(1, // 1 letter (1/1).
-					 *Version::VersionForNumber(1), CodecMode::NUMERIC, bits);
+					 *Version::Model2(1), CodecMode::NUMERIC, bits);
 	EXPECT_EQ(ToString(bits), RemoveSpace("........ .X")); // 10 bits.
 
 	bits = BitArray();
 	AppendLengthInfo(2, // 2 letters (2/1).
-					 *Version::VersionForNumber(10), CodecMode::ALPHANUMERIC, bits);
+					 *Version::Model2(10), CodecMode::ALPHANUMERIC, bits);
 	EXPECT_EQ(ToString(bits), RemoveSpace("........ .X.")); // 11 bits.
 
 	bits = BitArray();
 	AppendLengthInfo(255, // 255 letter (255/1).
-					 *Version::VersionForNumber(27), CodecMode::BYTE, bits);
+					 *Version::Model2(27), CodecMode::BYTE, bits);
 	EXPECT_EQ(ToString(bits), RemoveSpace("........ XXXXXXXX")); // 16 bits.
 
 	bits = BitArray();
 	AppendLengthInfo(512, // 512 letters (1024/2).
-					 *Version::VersionForNumber(40), CodecMode::KANJI, bits);
+					 *Version::Model2(40), CodecMode::KANJI, bits);
 	EXPECT_EQ(ToString(bits), RemoveSpace("..X..... ....")); // 12 bits.
 }
 

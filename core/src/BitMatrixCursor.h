@@ -8,6 +8,7 @@
 #include "BitMatrix.h"
 
 #include <array>
+#include <climits>
 
 namespace ZXing {
 
@@ -27,6 +28,8 @@ inline Direction opposite(Direction dir) noexcept
 template<typename POINT>
 class BitMatrixCursor
 {
+	using this_t = BitMatrixCursor<POINT>;
+
 public:
 	const BitMatrix* img;
 
@@ -89,8 +92,8 @@ public:
 	Value edgeAtRight() const noexcept { return edgeAt(right()); }
 	Value edgeAt(Direction dir) const noexcept { return edgeAt(direction(dir)); }
 
-	void setDirection(PointF dir) { d = bresenhamDirection(dir); }
-	void setDirection(PointI dir) { d = dir; }
+	this_t& setDirection(PointF dir) { return d = bresenhamDirection(dir), *this; }
+	this_t& setDirection(PointI dir) { return d = dir, *this; }
 
 	bool step(typename POINT::value_t s = 1)
 	{
@@ -98,12 +101,8 @@ public:
 		return isIn(p);
 	}
 
-	BitMatrixCursor<POINT> movedBy(POINT d) const
-	{
-		auto res = *this;
-		res.p += d;
-		return res;
-	}
+	this_t movedBy(POINT o) const noexcept { return {*img, p + o, d}; }
+	this_t turnedBack() const noexcept { return {*img, p, back()}; }
 
 	/**
 	 * @brief stepToEdge advances cursor to one step behind the next (or n-th) edge.
@@ -114,7 +113,6 @@ public:
 	 */
 	int stepToEdge(int nth = 1, int range = 0, bool backup = false)
 	{
-		// TODO: provide an alternative and faster out-of-bounds check than isIn() inside testAt()
 		int steps = 0;
 		auto lv = testAt(p);
 
@@ -155,11 +153,11 @@ public:
 		return ret;
 	}
 
-	int countEdges(int range = 0)
+	int countEdges(int range)
 	{
 		int res = 0;
 
-		while (int steps = stepToEdge(1, range)) {
+		while (int steps = range ? stepToEdge(1, range) : 0) {
 			range -= steps;
 			++res;
 		}
@@ -170,9 +168,14 @@ public:
 	template<typename ARRAY>
 	ARRAY readPattern(int range = 0)
 	{
-		ARRAY res;
-		for (auto& i : res)
+		ARRAY res = {};
+		for (auto& i : res) {
 			i = stepToEdge(1, range);
+			if (!i)
+				return res;
+			if (range)
+				range -= i;
+		}
 		return res;
 	}
 
@@ -187,5 +190,42 @@ public:
 
 using BitMatrixCursorF = BitMatrixCursor<PointF>;
 using BitMatrixCursorI = BitMatrixCursor<PointI>;
+
+class FastEdgeToEdgeCounter
+{
+	const uint8_t* p = nullptr;
+	int stride = 0;
+	int stepsToBorder = 0;
+
+public:
+	FastEdgeToEdgeCounter(const BitMatrixCursorI& cur)
+	{
+		stride = cur.d.y * cur.img->width() + cur.d.x;
+		p = cur.img->row(cur.p.y).begin() + cur.p.x;
+
+		int maxStepsX = cur.d.x ? (cur.d.x > 0 ? cur.img->width() - 1 - cur.p.x : cur.p.x) : INT_MAX;
+		int maxStepsY = cur.d.y ? (cur.d.y > 0 ? cur.img->height() - 1 - cur.p.y : cur.p.y) : INT_MAX;
+		stepsToBorder = std::min(maxStepsX, maxStepsY);
+	}
+
+	int stepToNextEdge(int range)
+	{
+		int maxSteps = std::min(stepsToBorder, range);
+		int steps = 0;
+		do {
+			if (++steps > maxSteps) {
+				if (maxSteps == stepsToBorder)
+					break;
+				else
+					return 0;
+			}
+		} while (p[steps * stride] == p[0]);
+
+		p += steps * stride;
+		stepsToBorder -= steps;
+
+		return steps;
+	}
+};
 
 } // ZXing

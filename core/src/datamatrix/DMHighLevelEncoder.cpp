@@ -857,7 +857,7 @@ static bool EndsWith(const std::wstring& s, const std::wstring& ss)
 
 ByteArray Encode(const std::wstring& msg)
 {
-	return Encode(msg, SymbolShape::NONE, -1, -1, -1, -1);
+	return Encode(msg, CharacterSet::ISO8859_1, SymbolShape::NONE, -1, -1, -1, -1);
 }
 
 /**
@@ -871,7 +871,7 @@ ByteArray Encode(const std::wstring& msg)
 * @param maxSize the maximum symbol size constraint or null for no constraint
 * @return the encoded message (the char values range from 0 to 255)
 */
-ByteArray Encode(const std::wstring& msg, SymbolShape shape, int minWidth, int minHeight, int maxWidth, int maxHeight)
+ByteArray Encode(const std::wstring& msg, CharacterSet charset, SymbolShape shape, int minWidth, int minHeight, int maxWidth, int maxHeight)
 {
 	//the codewords 0..255 are encoded as Unicode characters
 	//Encoder[] encoders = {
@@ -879,7 +879,11 @@ ByteArray Encode(const std::wstring& msg, SymbolShape shape, int minWidth, int m
 	//	new X12Encoder(), new EdifactEncoder(),  new Base256Encoder()
 	//};
 
-	EncoderContext context(TextEncoder::FromUnicode(msg, CharacterSet::ISO8859_1));
+	if (charset == CharacterSet::Unknown) {
+		charset = CharacterSet::ISO8859_1;
+	}
+
+	EncoderContext context(TextEncoder::FromUnicode(msg, charset));
 	context.setSymbolShape(shape);
 	context.setSizeConstraints(minWidth, minHeight, maxWidth, maxHeight);
 

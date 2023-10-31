@@ -68,8 +68,8 @@ public:
 	}
 	GenericGFPoly(const GenericGF& field, const std::vector<int>& coefficients) : GenericGFPoly(field, std::vector<int>(coefficients)) {}
 
-	GenericGFPoly& operator=(GenericGFPoly&& other) = default;
-	GenericGFPoly(GenericGFPoly&& other) = default;
+	GenericGFPoly& operator=(GenericGFPoly&& other) noexcept = default;
+	GenericGFPoly(GenericGFPoly&& other) noexcept = default;
 
 	GenericGFPoly& operator=(const GenericGFPoly& other) {
 		assert(_field == other._field);

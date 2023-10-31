@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include "QRErrorCorrectionLevel.h"
+
 namespace ZXing {
 
 class BitMatrix;
@@ -20,14 +22,14 @@ class FormatInformation;
  * @brief Reads version information from the QR Code.
  * @return {@link Version} encapsulating the QR Code's version, nullptr if neither location can be parsed
  */
-const Version* ReadVersion(const BitMatrix& bitMatrix);
+const Version* ReadVersion(const BitMatrix& bitMatrix, Type type);
 
 /**
  * @brief Reads format information from one of its two locations within the QR Code.
  * @return {@link FormatInformation} encapsulating the QR Code's format info, result is invalid if both format
  * information locations cannot be parsed as the valid encoding of format information
  */
-FormatInformation ReadFormatInformation(const BitMatrix& bitMatrix, bool isMicro);
+FormatInformation ReadFormatInformation(const BitMatrix& bitMatrix);
 
 /**
  * @brief Reads the codewords from the BitMatrix.

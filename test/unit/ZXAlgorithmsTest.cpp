@@ -28,3 +28,24 @@ TEST(ZXAlgorithmsTest, ToString)
 	EXPECT_THROW(ToString(-1, 2), Error);
 	EXPECT_THROW(ToString(111, 2), Error);
 }
+
+TEST(ZXAlgorithmsTest, UpdateMinMax)
+{
+	int m = 10, M = 0;
+	UpdateMinMax(m, M, 5);
+	EXPECT_EQ(m, 5);
+	EXPECT_EQ(M, 5);
+
+	UpdateMinMax(m, M, 2);
+	EXPECT_EQ(m, 2);
+	EXPECT_EQ(M, 5);
+
+	m = 1, M = 1;
+	UpdateMinMax(m, M, 0);
+	EXPECT_EQ(m, 0);
+	EXPECT_EQ(M, 1);
+
+	UpdateMinMax(m, M, 2);
+	EXPECT_EQ(m, 0);
+	EXPECT_EQ(M, 2);
+}

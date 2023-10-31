@@ -6,14 +6,10 @@
 
 #include "BlackboxTestRunner.h"
 
-#include "DecoderResult.h"
 #include "ImageLoader.h"
 #include "ReadBarcode.h"
-#include "ThresholdBinarizer.h"
 #include "Utf.h"
 #include "ZXAlgorithms.h"
-#include "pdf417/PDFReader.h"
-#include "qrcode/QRReader.h"
 
 #include <fmt/core.h>
 #include <fmt/ostream.h>
@@ -351,12 +347,12 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 21, 21, 270 },
 		});
 
-		runTests("datamatrix-1", "DataMatrix", 27, {
-			{ 26, 27, 0   },
-			{  0, 26, 90  },
-			{  0, 26, 180 },
-			{  0, 26, 270 },
-			{ 26, 0, pure },
+		runTests("datamatrix-1", "DataMatrix", 29, {
+			{ 29, 29, 0   },
+			{  0, 27, 90  },
+			{  0, 27, 180 },
+			{  0, 27, 270 },
+			{ 28, 0, pure },
 		});
 
 		runTests("datamatrix-2", "DataMatrix", 13, {
@@ -416,9 +412,9 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 6, 6, 180 },
 		});
 
-		runTests("code128-2", "Code128", 21, {
-			{ 18, 21, 0   },
-			{ 19, 21, 180 },
+		runTests("code128-2", "Code128", 22, {
+			{ 19, 22, 0   },
+			{ 20, 22, 180 },
 		});
 
 		runTests("code128-3", "Code128", 2, {
@@ -432,9 +428,9 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 7, 0, pure },
 		});
 
-		runTests("ean13-1", "EAN-13", 31, {
-			{ 24, 29, 0   },
-			{ 23, 29, 180 },
+		runTests("ean13-1", "EAN-13", 32, {
+			{ 26, 30, 0   },
+			{ 25, 30, 180 },
 		});
 
 		runTests("ean13-2", "EAN-13", 24, {
@@ -549,8 +545,8 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		});
 
 		runTests("rssexpandedstacked-1", "DataBarExpanded", 65, {
-			{ 60, 65, 0   },
-			{ 60, 65, 180 },
+			{ 55, 65, 0   },
+			{ 55, 65, 180 },
 			{ 60, 0, pure },
 		});
 
@@ -566,19 +562,19 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 16, 16, 270 },
 		});
 
-		runTests("qrcode-2", "QRCode", 48, {
-			{ 44, 46, 0   },
-			{ 44, 46, 90  },
-			{ 44, 46, 180 },
-			{ 44, 45, 270 },
-			{ 21, 1, pure }, // the misread is the 'outer' symbol in 16.png
+		runTests("qrcode-2", "QRCode", 50, {
+			{ 46, 48, 0   },
+			{ 46, 48, 90  },
+			{ 46, 48, 180 },
+			{ 46, 48, 270 },
+			{ 22, 1, pure }, // the misread is the 'outer' symbol in 16.png
 		});
 
 		runTests("qrcode-3", "QRCode", 28, {
-			{ 25, 25, 0   },
-			{ 25, 25, 90  },
-			{ 25, 25, 180 },
-			{ 24, 24, 270 },
+			{ 28, 28, 0   },
+			{ 28, 28, 90  },
+			{ 28, 28, 180 },
+			{ 27, 27, 270 },
 		});
 
 		runTests("qrcode-4", "QRCode", 41, {
@@ -611,7 +607,7 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 15, 15, 0   },
 			{ 15, 15, 90  },
 			{ 15, 15, 180 },
-			{ 14, 14, 270 },
+			{ 15, 15, 270 },
 			{ 9, 0, pure },
 		});
 
@@ -620,7 +616,7 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{  1, 17, 90  },
 			{ 16, 17, 180 },
 			{  1, 17, 270 },
-			{ 17, 0, pure },
+			{ 16, 0, pure },
 		});
 
 		runTests("pdf417-2", "PDF417", 25, {
@@ -642,7 +638,7 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 3, 3, 0   },
 		});
 
-		runTests("falsepositives-1", "None", 26, {
+		runTests("falsepositives-1", "None", 27, {
 			{ 0, 0, 0, 0, 0   },
 			{ 0, 0, 0, 0, 90  },
 			{ 0, 0, 0, 0, 180 },

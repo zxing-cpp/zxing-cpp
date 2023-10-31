@@ -209,7 +209,7 @@ static ECI ParseECIValue(BitSource& bits)
  * a terminator code.  If true, then the decoding can finish. If false, then the decoding
  * can read off the next mode code.
  *
- * See ISO 18004:2006, 6.4.1 Table 2
+ * See ISO 18004:2015, 7.4.1 Table 2
  *
  * @param bits the stream of bits that might have a terminator code
  * @param version the QR or micro QR code version
@@ -233,9 +233,12 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 	BitSource bits(bytes);
 	Content result;
 	Error error;
-	result.symbology = {'Q', '1', 1};
+	result.symbology = {'Q', version.isModel1() ? '0' : '1', 1};
 	StructuredAppendInfo structuredAppend;
 	const int modeBitLength = CodecModeBitsLength(version);
+
+	if (version.isModel1())
+		bits.readBits(4); // Model 1 is leading with 4 0-bits -> drop them
 
 	try
 	{
@@ -244,7 +247,7 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 			if (modeBitLength == 0)
 				mode = CodecMode::NUMERIC; // MicroQRCode version 1 is always NUMERIC and modeBitLength is 0
 			else
-				mode = CodecModeForBits(bits.readBits(modeBitLength), version.isMicroQRCode());
+				mode = CodecModeForBits(bits.readBits(modeBitLength), version.isMicro());
 
 			switch (mode) {
 			case CodecMode::FNC1_FIRST_POSITION:
@@ -274,6 +277,8 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 				structuredAppend.id    = std::to_string(bits.readBits(8));
 				break;
 			case CodecMode::ECI:
+				if (version.isModel1())
+					throw FormatError("QRCode Model 1 does not support ECI");
 				// Count doesn't apply to ECI
 				result.switchEncoding(ParseECIValue(bits));
 				break;
@@ -316,14 +321,18 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 
 DecoderResult Decode(const BitMatrix& bits)
 {
-	const Version* pversion = ReadVersion(bits);
-	if (!pversion)
-		return FormatError("Invalid version");
-	const Version& version = *pversion;
+	if (!Version::HasValidSize(bits))
+		return FormatError("Invalid symbol size");
 
-	auto formatInfo = ReadFormatInformation(bits, version.isMicroQRCode());
+	auto formatInfo = ReadFormatInformation(bits);
 	if (!formatInfo.isValid())
 		return FormatError("Invalid format information");
+
+	const Version* pversion = ReadVersion(bits, formatInfo.type());
+	if (!pversion)
+		return FormatError("Invalid version");
+
+	const Version& version = *pversion;
 
 	// Read codewords
 	ByteArray codewords = ReadCodewords(bits, version, formatInfo);

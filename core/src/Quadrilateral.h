@@ -79,8 +79,9 @@ bool IsConvex(const Quadrilateral<PointT>& poly)
 		auto d2 = poly[i] - poly[(i + 1) % N];
 		auto cp = cross(d1, d2);
 
-		m = std::min(std::fabs(m), cp);
-		M = std::max(std::fabs(M), cp);
+		// TODO: see if the isInside check for all boundary points in GridSampler is still required after fixing the wrong fabs()
+		// application in the following line
+		UpdateMinMax(m, M, std::fabs(cp));
 
 		if (i == 0)
 			sign = cp > 0;
@@ -131,12 +132,35 @@ bool IsInside(const PointT& p, const Quadrilateral<PointT>& q)
 }
 
 template <typename PointT>
+Quadrilateral<PointT> BoundingBox(const Quadrilateral<PointT>& q)
+{
+	auto [minX, maxX] = std::minmax({q[0].x, q[1].x, q[2].x, q[3].x});
+	auto [minY, maxY] = std::minmax({q[0].y, q[1].y, q[2].y, q[3].y});
+	return {PointT{minX, minY}, {maxX, minY}, {maxX, maxY}, {minX, maxY}};
+}
+
+template <typename PointT>
 bool HaveIntersectingBoundingBoxes(const Quadrilateral<PointT>& a, const Quadrilateral<PointT>& b)
 {
-	// TODO: this is only a quick and dirty approximation that works for the trivial standard cases
-	bool x = b.topRight().x < a.topLeft().x || b.topLeft().x > a.topRight().x;
-	bool y = b.bottomLeft().y < a.topLeft().y || b.topLeft().y > a.bottomLeft().y;
+	auto bba = BoundingBox(a), bbb = BoundingBox(b);
+
+	bool x = bbb.topRight().x < bba.topLeft().x || bbb.topLeft().x > bba.topRight().x;
+	bool y = bbb.bottomLeft().y < bba.topLeft().y || bbb.topLeft().y > bba.bottomLeft().y;
 	return !(x || y);
+}
+
+template <typename PointT>
+Quadrilateral<PointT> Blend(const Quadrilateral<PointT>& a, const Quadrilateral<PointT>& b)
+{
+	auto dist2First = [c = a[0]](auto a, auto b) { return distance(a, c) < distance(b, c); };
+	// rotate points such that the the two topLeft points are closest to each other
+	auto offset = std::min_element(b.begin(), b.end(), dist2First) - b.begin();
+
+	Quadrilateral<PointT> res;
+	for (int i = 0; i < 4; ++i)
+		res[i] = (a[i] + b[(i + offset) % 4]) / 2;
+
+	return res;
 }
 
 } // ZXing

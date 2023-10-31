@@ -6,7 +6,7 @@
 
 import UIKit
 import AVFoundation
-import ZXingCppWrapper
+import ZXingCpp
 
 class ViewController: UIViewController {
     let captureSession = AVCaptureSession()
@@ -25,8 +25,13 @@ class ViewController: UIViewController {
         // setup camera session
         self.requestAccess {
             let discoverySession = AVCaptureDevice.DiscoverySession(
-                deviceTypes: [.builtInWideAngleCamera],
-                mediaType: AVMediaType.video,
+                deviceTypes: [
+                    .builtInTripleCamera,
+                    .builtInDualWideCamera,
+                    .builtInDualCamera,
+                    .builtInWideAngleCamera
+                ],
+                mediaType: .video,
                 position: .back)
 
             let device = discoverySession.devices.first!
@@ -35,11 +40,13 @@ class ViewController: UIViewController {
             self.captureSession.addInput(cameraInput)
             let videoDataOutput = AVCaptureVideoDataOutput()
             videoDataOutput.setSampleBufferDelegate(self, queue: self.queue)
-            videoDataOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: Int(kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange)]
+            videoDataOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange]
             videoDataOutput.alwaysDiscardsLateVideoFrames = true
             self.captureSession.addOutput(videoDataOutput)
             self.captureSession.commitConfiguration()
-            self.captureSession.startRunning()
+            DispatchQueue.global(qos: .background).async {
+                self.captureSession.startRunning()
+            }
         }
     }
 }

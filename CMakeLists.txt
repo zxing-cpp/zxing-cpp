@@ -1,6 +1,6 @@
-cmake_minimum_required (VERSION 3.14)
+cmake_minimum_required(VERSION 3.15)
 
-project (ZXing VERSION "1.4.0" LANGUAGES CXX)
+project(ZXing)
 
 option (BUILD_WRITERS "Build with writer support (encoders)" ON)
 option (BUILD_READERS "Build with reader support (decoders)" ON)
@@ -8,6 +8,8 @@ option (BUILD_EXAMPLES "Build the example barcode reader/writer applications" ON
 option (BUILD_BLACKBOX_TESTS "Build the black box reader/writer tests" OFF)
 option (BUILD_UNIT_TESTS "Build the unit tests (don't enable for production builds)" OFF)
 option (BUILD_PYTHON_MODULE "Build the python module" OFF)
+option (BUILD_C_API "Build the C-API" OFF)
+option (BUILD_EXPERIMENTAL_API "Build with experimental API" OFF)
 set(BUILD_DEPENDENCIES "AUTO" CACHE STRING "Fetch from github or use locally installed (AUTO/GITHUB/LOCAL)")
 
 if (WIN32)
@@ -17,17 +19,10 @@ else()
 endif()
 
 if (MSVC)
-    option (LINK_CPP_STATICALLY "MSVC only, link standard library statically (/MT and /MTd)" OFF)
-
     add_definitions (-DUNICODE -D_UNICODE -D_CRT_SECURE_NO_WARNINGS)
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
-    set (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /Oi /GS-")
-    set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Oi /GS-")
+    option (LINK_CPP_STATICALLY "MSVC only, link standard library statically (/MT and /MTd)" OFF)
     if (LINK_CPP_STATICALLY)
-        set (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /MT")
-        set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
-        set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /MTd")
-        set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
+        set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
     endif()
 endif()
 
@@ -42,8 +37,12 @@ if (BUILD_SHARED_LIBS)
     set (CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif()
 
-set (CMAKE_CXX_STANDARD 17)
-set (CMAKE_CXX_EXTENSIONS OFF)
+if (NOT CMAKE_CXX_STANDARD)
+    set (CMAKE_CXX_STANDARD 17)
+endif()
+if (NOT CMAKE_CXX_EXTENSIONS)
+    set (CMAKE_CXX_EXTENSIONS OFF)
+endif()
 
 if (NOT (BUILD_READERS OR BUILD_WRITERS))
     message(FATAL_ERROR "At least one of BUILD_READERS/BUILD_WRITERS must be enabled.")
@@ -53,6 +52,10 @@ if (BUILD_UNIT_TESTS AND (NOT BUILD_WRITERS OR NOT BUILD_READERS))
     message("Note: To build with unit tests, the library will be build with READERS and WRITERS.")
     set (BUILD_WRITERS ON)
     set (BUILD_READERS ON)
+endif()
+
+if (BUILD_EXPERIMENTAL_API)
+    add_definitions (-DZXING_BUILD_EXPERIMENTAL_API)
 endif()
 
 set(BUILD_DEPENDENCIES_LIST AUTO GITHUB LOCAL)
@@ -79,42 +82,6 @@ endif()
 if (BUILD_PYTHON_MODULE)
     add_subdirectory (wrappers/python)
 endif()
-
-set (CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/ZXing")
-
-install (
-    EXPORT ZXingTargets
-    DESTINATION ${CMAKECONFIG_INSTALL_DIR} NAMESPACE ZXing::
-)
-
-# PC file generation.
-if (NOT DEFINED INSTALLDIR)
-    set (INSTALLDIR ${CMAKE_INSTALL_PREFIX})
-    get_filename_component(INSTALLDIR ${INSTALLDIR} ABSOLUTE)
+if (BUILD_C_API)
+    add_subdirectory (wrappers/c)
 endif()
-
-IF (NOT WIN32 OR MINGW)
-    configure_file(zxing.pc.in zxing.pc @ONLY)
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/zxing.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
-ENDIF()
-
-include (CMakePackageConfigHelpers)
-
-write_basic_package_version_file(
-    "${CMAKE_CURRENT_BINARY_DIR}/ZXingConfigVersion.cmake"
-    VERSION ${PROJECT_VERSION}
-    COMPATIBILITY SameMajorVersion
-)
-
-configure_package_config_file (
-    core/ZXingConfig.cmake.in
-    ZXingConfig.cmake
-    INSTALL_DESTINATION ${CMAKECONFIG_INSTALL_DIR}
-)
-
-install (
-    FILES
-        "${CMAKE_CURRENT_BINARY_DIR}/ZXingConfig.cmake"
-        "${CMAKE_CURRENT_BINARY_DIR}/ZXingConfigVersion.cmake"
-    DESTINATION ${CMAKECONFIG_INSTALL_DIR}
-)

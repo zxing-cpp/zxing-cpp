@@ -24,7 +24,14 @@ AllowAllParametersOfDeclarationOnNextLine: true
 
 AlwaysBreakAfterDefinitionReturnType: None
 AlwaysBreakTemplateDeclarations: Yes
-BreakBeforeBraces: Mozilla
+BreakBeforeBraces: Custom
+BraceWrapping:
+    AfterClass: true
+    AfterEnum: true
+    AfterStruct: true
+    AfterUnion: true
+    AfterFunction: true
+    SplitEmptyFunction: false
 BreakBeforeBinaryOperators: NonAssignment
 BreakBeforeTernaryOperators: true
 ConstructorInitializerAllOnOneLineOrOnePerLine: true

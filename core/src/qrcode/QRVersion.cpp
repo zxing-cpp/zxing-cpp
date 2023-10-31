@@ -28,8 +28,7 @@ namespace ZXing::QRCode {
 		0x2542E, 0x26A64, 0x27541, 0x28C69
 	};
 
-const Version *
-Version::AllVersions()
+const Version* Version::Model2(int number)
 {
 	/**
 	* See ISO 18004:2006 6.5.1 Table 9
@@ -276,10 +275,13 @@ Version::AllVersions()
 			30, 20, 15, 61, 16
 			}},
 	};
-	return allVersions;
+
+	if (number < 1 || number > 40)
+		return nullptr;
+	return allVersions + number - 1;
 }
 
-const Version* Version::AllMicroVersions()
+const Version* Version::Micro(int number)
 {
 	/**
 	 * See ISO 18004:2006 6.5.1 Table 9
@@ -289,63 +291,167 @@ const Version* Version::AllMicroVersions()
 		{2, {5, 1, 5, 0, 0, 6, 1, 4, 0, 0}},
 		{3, {6, 1, 11, 0, 0, 8, 1, 9, 0, 0}},
 		{4, {8, 1, 16, 0, 0, 10, 1, 14, 0, 0, 14, 1, 10, 0, 0}}};
-	return allVersions;
+
+	if (number < 1 || number > 4)
+		return nullptr;
+	return allVersions + number - 1;
+}
+
+const Version* Version::Model1(int number)
+{
+	/**
+	 * See ISO 18004:2000 M.4.2 Table M.2
+	 * See ISO 18004:2000 M.5 Table M.4
+	 */
+	static const Version allVersions[] = {
+		{1, {
+			7 , 1, 19, 0, 0,
+			10, 1, 16, 0, 0,
+			13, 1, 13, 0, 0,
+			17, 1, 9 , 0, 0
+		}},
+		{2, {
+			10, 1, 36, 0, 0,
+			16, 1, 30, 0, 0,
+			22, 1, 24, 0, 0,
+			30, 1, 16, 0, 0,
+		 }},
+		{3, {
+			15, 1, 57, 0, 0,
+			28, 1, 44, 0, 0,
+			36, 1, 36, 0, 0,
+			48, 1, 24, 0, 0,
+		 }},
+		{4, {
+			20, 1, 80, 0, 0,
+			40, 1, 60, 0, 0,
+			50, 1, 50, 0, 0,
+			66, 1, 34, 0, 0,
+		 }},
+		{5, {
+			26, 1, 108, 0, 0,
+			52, 1, 82 , 0, 0,
+			66, 1, 68 , 0, 0,
+			88, 2, 46 , 0, 0,
+			}},
+		{6, {
+			34 , 1, 136, 0, 0,
+			63 , 2, 106, 0, 0,
+			84 , 2, 86 , 0, 0,
+			112, 2, 58 , 0, 0,
+			}},
+		{7, {
+			42 , 1, 170, 0, 0,
+			80 , 2, 132, 0, 0,
+			104, 2, 108, 0, 0,
+			138, 3, 72 , 0, 0,
+			}},
+		{8, {
+			48 , 2, 208, 0, 0,
+			96 , 2, 160, 0, 0,
+			128, 2, 128, 0, 0,
+			168, 3, 87 , 0, 0,
+			}},
+		{9, {
+			60 , 2, 246, 0, 0,
+			120, 2, 186, 0, 0,
+			150, 3, 156, 0, 0,
+			204, 3, 102, 0, 0,
+			}},
+		{10, {
+			68 , 2, 290, 0, 0,
+			136, 2, 222, 0, 0,
+			174, 3, 183, 0, 0,
+			232, 4, 124, 0, 0,
+			}},
+		{11, {
+			80 , 2, 336, 0, 0,
+			160, 4, 256, 0, 0,
+			208, 4, 208, 0, 0,
+			270, 5, 145, 0, 0,
+			}},
+		{12, {
+			92 , 2, 384, 0, 0,
+			184, 4, 292, 0, 0,
+			232, 4, 244, 0, 0,
+			310, 5, 165, 0, 0,
+			}},
+		{13, {
+			108, 3, 432, 0, 0,
+			208, 4, 332, 0, 0,
+			264, 4, 276, 0, 0,
+			348, 6, 192, 0, 0,
+			}},
+		{14, {
+			120, 3, 489, 0, 0,
+			240, 4, 368, 0, 0,
+			300, 5, 310, 0, 0,
+			396, 6, 210, 0, 0,
+			}},
+	};
+
+	if (number < 1 || number > 14)
+		return nullptr;
+	return allVersions + number - 1;
 }
 
 Version::Version(int versionNumber, std::initializer_list<int> alignmentPatternCenters, const std::array<ECBlocks, 4>& ecBlocks)
-	: _versionNumber(versionNumber), _alignmentPatternCenters(alignmentPatternCenters), _ecBlocks(ecBlocks), _isMicro(false)
+	: _versionNumber(versionNumber), _alignmentPatternCenters(alignmentPatternCenters), _ecBlocks(ecBlocks), _type(Type::Model2)
 {
 	_totalCodewords = ecBlocks[0].totalDataCodewords();
 }
 
 Version::Version(int versionNumber, const std::array<ECBlocks, 4>& ecBlocks)
-	: _versionNumber(versionNumber), _ecBlocks(ecBlocks), _isMicro(true)
+	: _versionNumber(versionNumber),
+	  _ecBlocks(ecBlocks),
+	  _type(ecBlocks[0].codewordsPerBlock < 7 || ecBlocks[0].codewordsPerBlock == 8 ? Type::Micro : Type::Model1)
 {
 	_totalCodewords = ecBlocks[0].totalDataCodewords();
 }
 
-const Version* Version::VersionForNumber(int versionNumber, bool isMicro)
+bool Version::HasMicroSize(const BitMatrix& bitMatrix)
 {
-	if (versionNumber < 1 || versionNumber > (isMicro ? 4 : 40)) {
-		//throw std::invalid_argument("Version should be in range [1-40].");
-		return nullptr;
-	}
-	return &(isMicro ? AllMicroVersions() : AllVersions())[versionNumber - 1];
+	int size = bitMatrix.height();
+	return size >= 11 && size <= 17 && (size % 2) == 1;
 }
 
-const Version* Version::ProvisionalVersionForDimension(int dimension, bool isMicro)
+bool Version::HasValidSize(const BitMatrix& bitMatrix)
 {
-	if (dimension % DimensionStep(isMicro) != 1) {
-		//throw std::invalid_argument("Unexpected dimension");
-		return nullptr;
-	}
-	return VersionForNumber((dimension - DimensionOffset(isMicro)) / DimensionStep(isMicro), isMicro);
+	int size = bitMatrix.height();
+	return HasMicroSize(bitMatrix) || (size >= 21 && size <= 177 && (size % 4) == 1);
 }
 
-const Version* Version::DecodeVersionInformation(int versionBits)
+int Version::Number(const BitMatrix& bitMatrix)
+{
+	if (!HasValidSize(bitMatrix))
+		return 0;
+
+	bool isMicro = HasMicroSize(bitMatrix);
+	return (bitMatrix.height() - DimensionOffset(isMicro)) / DimensionStep(isMicro);
+}
+
+const Version* Version::DecodeVersionInformation(int versionBitsA, int versionBitsB)
 {
 	int bestDifference = std::numeric_limits<int>::max();
 	int bestVersion = 0;
 	int i = 0;
 	for (int targetVersion : VERSION_DECODE_INFO) {
-		// Do the version info bits match exactly? done.
-		if (targetVersion == versionBits) {
-			return VersionForNumber(i + 7);
+		for (int bits : {versionBitsA, versionBitsB}) {
+			int bitsDifference = BitHacks::CountBitsSet(bits ^ targetVersion);
+			if (bitsDifference < bestDifference) {
+				bestVersion = i + 7;
+				bestDifference = bitsDifference;
+			}
 		}
-		// Otherwise see if this is the closest to a real version info bit string
-		// we have seen so far
-		int bitsDifference = BitHacks::CountBitsSet(versionBits ^ targetVersion);
-		if (bitsDifference < bestDifference) {
-			bestVersion = i + 7;
-			bestDifference = bitsDifference;
-		}
+		if (bestDifference == 0)
+			break;
 		++i;
 	}
 	// We can tolerate up to 3 bits of error since no two version info codewords will
 	// differ in less than 8 bits.
-	if (bestDifference <= 3) {
-		return VersionForNumber(bestVersion);
-	}
+	if (bestDifference <= 3)
+		return Model2(bestVersion);
+
 	// If we didn't find a close enough match, fail
 	return nullptr;
 }
@@ -355,13 +461,13 @@ const Version* Version::DecodeVersionInformation(int versionBits)
 */
 BitMatrix Version::buildFunctionPattern() const
 {
-	int dimension = dimensionForVersion();
+	int dimension = this->dimension();
 	BitMatrix bitMatrix(dimension, dimension);
 
 	// Top left finder pattern + separator + format
 	bitMatrix.setRegion(0, 0, 9, 9);
 
-	if (!_isMicro) {
+	if (!isMicro()) {
 		// Top right finder pattern + separator + format
 		bitMatrix.setRegion(dimension - 8, 0, 8, 9);
 		// Bottom left finder pattern + separator + format

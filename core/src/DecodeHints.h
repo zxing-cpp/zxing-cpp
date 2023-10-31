@@ -63,6 +63,9 @@ class DecodeHints
 	Binarizer _binarizer           : 2;
 	TextMode _textMode             : 3;
 	CharacterSet _characterSet     : 6;
+#ifdef ZXING_BUILD_EXPERIMENTAL_API
+	bool _tryDenoise               : 1;
+#endif
 
 	uint8_t _minLineCount        = 2;
 	uint8_t _maxNumberOfSymbols  = 0xff;
@@ -87,6 +90,10 @@ public:
 		  _binarizer(Binarizer::LocalAverage),
 		  _textMode(TextMode::HRI),
 		  _characterSet(CharacterSet::Unknown)
+#ifdef ZXING_BUILD_EXPERIMENTAL_API
+		  ,
+		  _tryDenoise(0)
+#endif
 	{}
 
 #define ZX_PROPERTY(TYPE, GETTER, SETTER) \
@@ -108,6 +115,11 @@ public:
 
 	/// Also try detecting code in downscaled images (depending on image size).
 	ZX_PROPERTY(bool, tryDownscale, setTryDownscale)
+
+#ifdef ZXING_BUILD_EXPERIMENTAL_API
+	/// Also try detecting code after denoising (currently morphological closing filter for 2D symbologies only).
+	ZX_PROPERTY(bool, tryDenoise, setTryDenoise)
+#endif
 
 	/// Binarizer to use internally when using the ReadBarcode function
 	ZX_PROPERTY(Binarizer, binarizer, setBinarizer)

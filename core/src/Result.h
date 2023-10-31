@@ -21,6 +21,7 @@
 namespace ZXing {
 
 class DecoderResult;
+class ImageView;
 
 using Position = QuadrilateralI;
 
@@ -29,14 +30,12 @@ using Position = QuadrilateralI;
  */
 class Result
 {
-	/**
-	 * @brief utf8/utf16 is the bytes() content converted to utf8/16 based on ECI or guessed character set information
-	 *
-	 * Note: these two properties might only be available while transitioning text() from std::wstring to std::string. time will tell.
-	 * see https://github.com/zxing-cpp/zxing-cpp/issues/338 for a background discussion on the issue.
-	 */
-	std::string utf8() const;
-	std::wstring utfW() const;
+	void setIsInverted(bool v) { _isInverted = v; }
+	Result& setDecodeHints(DecodeHints hints);
+
+	friend Result MergeStructuredAppendSequence(const std::vector<Result>& results);
+	friend std::vector<Result> ReadBarcodes(const ImageView&, const DecodeHints&);
+	friend void IncrementLineCount(Result&);
 
 public:
 	Result() = default;
@@ -71,13 +70,12 @@ public:
 	/**
 	 * @brief text returns the bytes() content rendered to unicode/utf8 text accoring to the TextMode set in the DecodingHints
 	 */
-#ifndef ZX_USE_UTF16
-	std::string text() const { return text(_decodeHints.textMode()); }
-	std::string ecLevel() const { return _ecLevel; }
-#else
-	std::wstring text() const { return utfW(); }
-	std::wstring ecLevel() const { return {_ecLevel.begin(), _ecLevel.end()}; }
-#endif
+	std::string text() const;
+
+	/**
+	 * @brief ecLevel returns the error correction level of the symbol (empty string if not applicable)
+	 */
+	std::string ecLevel() const;
 
 	/**
 	 * @brief contentType gives a hint to the type of content found (Text/Binary/GS1/etc.)
@@ -149,29 +147,22 @@ public:
 	int lineCount() const { return _lineCount; }
 
 	/**
-	 * @brief versionNumber QR Code or DataMatrix version number.
+	 * @brief version QRCode / DataMatrix / Aztec version or size.
 	 */
-	int versionNumber() const { return _versionNumber; }
-
-	// only for internal use
-	void incrementLineCount() { ++_lineCount; }
-	void setIsInverted(bool v) { _isInverted = v; }
-	Result& setDecodeHints(DecodeHints hints);
+	std::string version() const;
 
 	bool operator==(const Result& o) const;
-
-	friend Result MergeStructuredAppendSequence(const std::vector<Result>& results);
 
 private:
 	Content _content;
 	Error _error;
 	Position _position;
 	DecodeHints _decodeHints;
-	std::string _ecLevel;
 	StructuredAppendInfo _sai;
 	BarcodeFormat _format = BarcodeFormat::None;
+	char _ecLevel[4] = {};
+	char _version[4] = {};
 	int _lineCount = 0;
-	int _versionNumber = 0;
 	bool _isMirrored = false;
 	bool _isInverted = false;
 	bool _readerInit = false;

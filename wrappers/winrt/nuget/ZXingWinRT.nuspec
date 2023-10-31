@@ -6,8 +6,8 @@
     <title>ZXingWinRT</title>
     <authors>Nu-book Inc.</authors>
     <owners>Nu-book Inc.</owners>
-    <licenseUrl>https://github.com/nu-book/zxing-cpp/blob/master/LICENSE</licenseUrl>
-    <projectUrl>https://github.com/nu-book/zxing-cpp</projectUrl>
+    <licenseUrl>https://github.com/zxing-cpp/zxing-cpp/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/zxing-cpp/zxing-cpp</projectUrl>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <description>C++ port of ZXing barcode scanner library</description>
     <releaseNotes>Bug fixes and improvements for many readers and decoders</releaseNotes>

@@ -14,6 +14,8 @@
 #include "ODUPCEANCommon.h"
 #include "Result.h"
 
+#include <cmath>
+
 namespace ZXing::OneD {
 
 constexpr int CHAR_LEN = 4;
@@ -32,7 +34,8 @@ static const int FIRST_DIGIT_ENCODINGS[] = {0x00, 0x0B, 0x0D, 0x0E, 0x13, 0x19, 
 // QZ R:    7   |   7   |   9   |   7   |        5   |        5
 
 constexpr float QUIET_ZONE_LEFT = 6;
-constexpr float QUIET_ZONE_RIGHT = 6;
+constexpr float QUIET_ZONE_RIGHT_EAN = 3; // used to be 6, see #526 and #558
+constexpr float QUIET_ZONE_RIGHT_UPC = 6;
 constexpr float QUIET_ZONE_ADDON = 3;
 
 // There is a single sample (ean13-1/12.png) that fails to decode with these (new) settings because
@@ -67,7 +70,7 @@ static bool DecodeDigit(const PatternView& view, std::string& txt, int* lgPatter
 
 	// clang-format off
 /* pattern now contains the central 5 bits of the L/G/R code
- * L/G-codes always wart with 1 and end with 0, R-codes are simply
+ * L/G-codes always start with 1 and end with 0, R-codes are simply
  * inverted L-codes.
 
 		L-Code  G-Code  R-Code
@@ -129,7 +132,7 @@ static bool EAN13(PartialResult& res, PatternView begin)
 	auto mid = begin.subView(27, MID_PATTERN.size());
 	auto end = begin.subView(56, END_PATTERN.size());
 
-	CHECK(end.isValid() && IsRightGuard(end, END_PATTERN, QUIET_ZONE_RIGHT) && IsPattern(mid, MID_PATTERN));
+	CHECK(end.isValid() && IsRightGuard(end, END_PATTERN, QUIET_ZONE_RIGHT_EAN) && IsPattern(mid, MID_PATTERN));
 
 	auto next = begin.subView(END_PATTERN.size(), CHAR_LEN);
 	res.txt = " "; // make space for lgPattern character
@@ -161,7 +164,7 @@ static bool EAN8(PartialResult& res, PatternView begin)
 	auto mid = begin.subView(19, MID_PATTERN.size());
 	auto end = begin.subView(40, END_PATTERN.size());
 
-	CHECK(end.isValid() && IsRightGuard(end, END_PATTERN, QUIET_ZONE_RIGHT) && IsPattern(mid, MID_PATTERN));
+	CHECK(end.isValid() && IsRightGuard(end, END_PATTERN, QUIET_ZONE_RIGHT_EAN) && IsPattern(mid, MID_PATTERN));
 
 	// additional plausibility check for the module size: it has to be about the same for both
 	// the guard patterns and the payload/data part.
@@ -188,7 +191,7 @@ static bool UPCE(PartialResult& res, PatternView begin)
 {
 	auto end = begin.subView(27, UPCE_END_PATTERN.size());
 
-	CHECK(end.isValid() && IsRightGuard(end, UPCE_END_PATTERN, QUIET_ZONE_RIGHT));
+	CHECK(end.isValid() && IsRightGuard(end, UPCE_END_PATTERN, QUIET_ZONE_RIGHT_UPC));
 
 	// additional plausibility check for the module size: it has to be about the same for both
 	// the guard patterns and the payload/data part. This speeds up the falsepositives use case
@@ -287,10 +290,16 @@ Result MultiUPCEANReader::decodePattern(int rowNumber, PatternView& next, std::u
 		res.format = BarcodeFormat::UPCA;
 	}
 
+	// if we explicitly requested UPCA but not EAN13, don't return an EAN13 symbol
+	if (res.format == BarcodeFormat::EAN13 && ! _hints.hasFormat(BarcodeFormat::EAN13))
+		return {};
+
 	// Symbology identifier modifiers ISO/IEC 15420:2009 Annex B Table B.1
 	// ISO/IEC 15420:2009 (& GS1 General Specifications 5.1.3) states that the content for "]E0" should be 13 digits,
 	// i.e. converted to EAN-13 if UPC-A/E, but not doing this here to maintain backward compatibility
 	SymbologyIdentifier symbologyIdentifier = {'E', res.format == BarcodeFormat::EAN8 ? '4' : '0'};
+
+	next = res.end;
 
 	auto ext = res.end;
 	PartialResult addOnRes;
@@ -298,19 +307,17 @@ Result MultiUPCEANReader::decodePattern(int rowNumber, PatternView& next, std::u
 		&& (AddOn(addOnRes, ext, 5) || AddOn(addOnRes, ext, 2))) {
 		// ISO/IEC 15420:2009 states that the content for "]E3" should be 15 or 18 digits, i.e. converted to EAN-13
 		// and extended with no separator, and that the content for "]E4" should be 8 digits, i.e. no add-on
-		//TODO: extend position in include extension
 		res.txt += " " + addOnRes.txt;
+		next = addOnRes.end;
 
 		if (res.format != BarcodeFormat::EAN8) // Keeping EAN-8 with add-on as "]E4"
 			symbologyIdentifier.modifier = '3'; // Combined packet, EAN-13, UPC-A, UPC-E, with add-on
 	}
 
-	next = res.end;
-
 	if (_hints.eanAddOnSymbol() == EanAddOnSymbol::Require && !addOnRes.isValid())
 		return {};
 
-	return Result(res.txt, rowNumber, begin.pixelsInFront(), res.end.pixelsTillEnd(), res.format, symbologyIdentifier, error);
+	return Result(res.txt, rowNumber, begin.pixelsInFront(), next.pixelsTillEnd(), res.format, symbologyIdentifier, error);
 }
 
 } // namespace ZXing::OneD

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.zxingcppdemo">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- Declare features -->
     <uses-feature android:name="android.hardware.camera" />
 
     <!-- Declare permissions -->
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
     <application
         android:allowBackup="false"

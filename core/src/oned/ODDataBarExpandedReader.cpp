@@ -13,6 +13,7 @@
 #include "ODDataBarExpandedBitDecoder.h"
 #include "Result.h"
 
+#include <cmath>
 #include <map>
 #include <vector>
 

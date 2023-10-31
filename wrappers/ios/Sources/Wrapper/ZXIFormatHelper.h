@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #import <Foundation/Foundation.h>
-#import "ZXing/BarcodeFormat.h"
+#import "BarcodeFormat.h"
 #import "ZXIFormat.h"
 
 NS_ASSUME_NONNULL_BEGIN

@@ -22,8 +22,6 @@ Result::Result(const std::string& text, int y, int xStart, int xStop, BarcodeFor
 	  _error(error),
 	  _position(Line(y, xStart, xStop)),
 	  _format(format),
-	  _lineCount(0),
-	  _versionNumber(0),
 	  _readerInit(readerInit)
 {}
 
@@ -31,14 +29,16 @@ Result::Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat 
 	: _content(std::move(decodeResult).content()),
 	  _error(std::move(decodeResult).error()),
 	  _position(std::move(position)),
-	  _ecLevel(decodeResult.ecLevel()),
 	  _sai(decodeResult.structuredAppend()),
 	  _format(format),
 	  _lineCount(decodeResult.lineCount()),
-	  _versionNumber(decodeResult.versionNumber()),
 	  _isMirrored(decodeResult.isMirrored()),
 	  _readerInit(decodeResult.readerInit())
 {
+	if (decodeResult.versionNumber())
+		snprintf(_version, 4, "%d", decodeResult.versionNumber());
+	snprintf(_ecLevel, 4, "%s", decodeResult.ecLevel().data());
+
 	// TODO: add type opaque and code specific 'extra data'? (see DecoderResult::extra())
 }
 
@@ -62,14 +62,14 @@ std::string Result::text(TextMode mode) const
 	return _content.text(mode);
 }
 
-std::string Result::utf8() const
+std::string Result::text() const
 {
-	return _content.utf8();
+	return text(_decodeHints.textMode());
 }
 
-std::wstring Result::utfW() const
+std::string Result::ecLevel() const
 {
-	return _content.utfW();
+	return _ecLevel;
 }
 
 ContentType Result::contentType() const
@@ -108,6 +108,11 @@ std::string Result::sequenceId() const
 	return _sai.id;
 }
 
+std::string Result::version() const
+{
+	return _version;
+}
+
 Result& Result::setDecodeHints(DecodeHints hints)
 {
 	if (hints.characterSet() != CharacterSet::Unknown)
@@ -118,18 +123,23 @@ Result& Result::setDecodeHints(DecodeHints hints)
 
 bool Result::operator==(const Result& o) const
 {
-	// two symbols may not be considered the same if at least one of them has an error
-	if (!(format() == o.format() && (bytes() == o.bytes() || error() || o.error())))
-		return false;
+	// handle case where both are MatrixCodes first
+	if (!BarcodeFormats(BarcodeFormat::LinearCodes).testFlags(format() | o.format())) {
+		if (format() != o.format() || (bytes() != o.bytes() && isValid() && o.isValid()))
+			return false;
 
-	if (BarcodeFormats(BarcodeFormat::MatrixCodes).testFlag(format()))
+		// check for equal position if both are valid with equal bytes or at least one is in error
 		return IsInside(Center(o.position()), position());
+	}
+
+	if (format() != o.format() || bytes() != o.bytes() || error() != o.error())
+		return false;
 
 	if (orientation() != o.orientation())
 		return false;
 
 	if (lineCount() > 1 && o.lineCount() > 1)
-		return IsInside(Center(o.position()), position());
+		return HaveIntersectingBoundingBoxes(o.position(), position());
 
 	// the following code is only meant for this->lineCount == 1
 	assert(lineCount() == 1);
