@@ -19,27 +19,27 @@
 
 - (instancetype)initWithTryHarder:(BOOL)tryHarder
                         tryRotate:(BOOL)tryRotate
-                     tryDownscale:(BOOL)tryDownscale
-               maxNumberOfSymbols:(NSInteger)maxNumberOfSymbols
                         tryInvert:(BOOL)tryInvert
+                     tryDownscale:(BOOL)tryDownscale
             tryCode39ExtendedMode:(BOOL)tryCode39ExtendedMode
            validateCode39CheckSum:(BOOL)validateCode39CheckSum
               validateITFCheckSum:(BOOL)validateITFCheckSum
                   downscaleFactor:(uint8_t)downscaleFactor
                downscaleThreshold:(uint16_t)downscaleThreshold
+               maxNumberOfSymbols:(NSInteger)maxNumberOfSymbols
                           formats:(NSArray<NSNumber*>*)formats {
     self = [super init];
     self.zxingHints = ZXing::DecodeHints();
     self.tryHarder = tryHarder;
     self.tryRotate = tryRotate;
-    self.tryDownscale = tryDownscale;
     self.tryInvert = tryInvert;
-    self.maxNumberOfSymbols = maxNumberOfSymbols;
+    self.tryDownscale = tryDownscale;
     self.tryCode39ExtendedMode = tryCode39ExtendedMode;
     self.validateCode39CheckSum = validateCode39CheckSum;
     self.validateITFCheckSum = validateITFCheckSum;
     self.downscaleFactor = downscaleFactor;
     self.downscaleThreshold = downscaleThreshold;
+    self.maxNumberOfSymbols = maxNumberOfSymbols;
     self.formats = formats;
     return self;
 }
@@ -52,16 +52,12 @@
     self.zxingHints.setTryRotate(tryRotate);
 }
 
--(void)setTryDownscale:(BOOL)tryDownscale {
-    self.zxingHints.setTryDownscale(tryDownscale);
-}
-
 -(void)setTryInvert:(BOOL)tryInvert {
     self.zxingHints.setTryInvert(tryInvert);
 }
 
--(void)setMaxNumberOfSymbols:(NSInteger)maxNumberOfSymbols {
-    self.zxingHints.setMaxNumberOfSymbols(maxNumberOfSymbols);
+-(void)setTryDownscale:(BOOL)tryDownscale {
+    self.zxingHints.setTryDownscale(tryDownscale);
 }
 
 -(void)setTryCode39ExtendedMode:(BOOL)tryCode39ExtendedMode {
@@ -84,6 +80,10 @@
     self.zxingHints.setDownscaleThreshold(downscaleThreshold);
 }
 
+-(void)setMaxNumberOfSymbols:(NSInteger)maxNumberOfSymbols {
+    self.zxingHints.setMaxNumberOfSymbols(maxNumberOfSymbols);
+}
+
 -(BOOL)tryHarder {
     return self.zxingHints.tryHarder();
 }
@@ -92,16 +92,12 @@
     return self.zxingHints.tryRotate();
 }
 
--(BOOL)tryDownscale {
-    return self.zxingHints.tryDownscale();
-}
-
 -(BOOL)tryInvert {
     return self.zxingHints.tryInvert();
 }
 
-- (NSInteger)maxNumberOfSymbols {
-    return self.zxingHints.maxNumberOfSymbols();
+-(BOOL)tryDownscale {
+    return self.zxingHints.tryDownscale();
 }
 
 -(BOOL)tryCode39ExtendedMode {
@@ -122,6 +118,10 @@
 
 -(uint16_t)downscaleThreshold {
     return self.zxingHints.downscaleThreshold();
+}
+
+- (NSInteger)maxNumberOfSymbols {
+    return self.zxingHints.maxNumberOfSymbols();
 }
 
 @end
