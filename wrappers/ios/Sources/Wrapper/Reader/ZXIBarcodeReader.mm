@@ -17,30 +17,14 @@ NSString *stringToNSString(const std::string &text) {
 }
 
 ZXIGTIN *getGTIN(const Result &result) {
-    auto format = result.format();
-    auto text = result.text(TextMode::Plain);
-    NSString *country;
-    NSString *addOn;
-    NSString *price;
-    NSString *issueNumber;
-    if ((BarcodeFormat::EAN13 | BarcodeFormat::EAN8 | BarcodeFormat::UPCA |
-        BarcodeFormat::UPCE).testFlag(format)) {
-        country = stringToNSString(GTIN::LookupCountryIdentifier(text, format));
-        addOn = stringToNSString(GTIN::EanAddOn(result));
-        price = stringToNSString(GTIN::Price(GTIN::EanAddOn(result)));
-        issueNumber = stringToNSString(GTIN::IssueNr(GTIN::EanAddOn(result)));
-    } else if (format == BarcodeFormat::ITF && text.length() == 14) {
-        country = stringToNSString(GTIN::LookupCountryIdentifier(text, format));
-        addOn = stringToNSString("");
-        price = stringToNSString("");
-        issueNumber = stringToNSString("");
-    }
-    return country
-        ? [[ZXIGTIN alloc]initWithCountry:country
-                                    addOn:addOn
-                                    price:price
-                              issueNumber:issueNumber]
-        : nullptr;
+    auto country = GTIN::LookupCountryIdentifier(result.text(TextMode::Plain), result.format());
+    auto addOn = GTIN::EanAddOn(result);
+    return country.empty()
+        ? nullptr
+        : [[ZXIGTIN alloc]initWithCountry:stringToNSString(country)
+                                    addOn:stringToNSString(addOn)
+                                    price:stringToNSString(GTIN::Price(addOn))
+                              issueNumber:stringToNSString(GTIN::IssueNr(addOn))];
 }
 
 @interface ZXIBarcodeReader()
