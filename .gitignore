@@ -1,9 +1,19 @@
-CMakeLists.txt.user
 *.o
 *.so
 *.lib
 *.d
 *.a
 compile_commands.json
+
+# QtCreator
+CMakeLists.txt.user
+
+# Vim
+*.swp
+
+# XCode/Swift
 .swiftpm
 .build
+
+# JetBrain (AndroidStudio, clion)
+.idea
