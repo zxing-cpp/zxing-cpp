@@ -6,10 +6,26 @@
 #import "ReadBarcode.h"
 #import "ImageView.h"
 #import "Result.h"
+#import "GTIN.h"
 #import "ZXIFormatHelper.h"
 #import "ZXIPosition+Helper.h"
 
 using namespace ZXing;
+
+NSString *stringToNSString(const std::string &text) {
+    return [[NSString alloc]initWithBytes:text.data() length:text.size() encoding:NSUTF8StringEncoding];
+}
+
+ZXIGTIN *getGTIN(const Result &result) {
+    auto country = GTIN::LookupCountryIdentifier(result.text(TextMode::Plain), result.format());
+    auto addOn = GTIN::EanAddOn(result);
+    return country.empty()
+        ? nullptr
+        : [[ZXIGTIN alloc]initWithCountry:stringToNSString(country)
+                                    addOn:stringToNSString(addOn)
+                                    price:stringToNSString(GTIN::Price(addOn))
+                              issueNumber:stringToNSString(GTIN::IssueNr(addOn))];
+}
 
 @interface ZXIBarcodeReader()
 @property (nonatomic, strong) CIContext* ciContext;
@@ -115,16 +131,21 @@ using namespace ZXing;
 
     NSMutableArray* zxiResults = [NSMutableArray array];
     for (auto result: results) {
-        auto resultText = result.text();
-        NSString *text = [[NSString alloc]initWithBytes:resultText.data() length:resultText.size() encoding:NSUTF8StringEncoding];
-
-        NSData *bytes = [[NSData alloc] initWithBytes:result.bytes().data() length:result.bytes().size()];
         [zxiResults addObject:
-         [[ZXIResult alloc] init:text
+         [[ZXIResult alloc] init:stringToNSString(result.text())
                           format:ZXIFormatFromBarcodeFormat(result.format())
-                           bytes:bytes
+                           bytes:[[NSData alloc] initWithBytes:result.bytes().data() length:result.bytes().size()]
                         position:[[ZXIPosition alloc]initWithPosition: result.position()]
-         ]];
+                     orientation:result.orientation()
+                         ecLevel:stringToNSString(result.ecLevel())
+             symbologyIdentifier:stringToNSString(result.symbologyIdentifier())
+                    sequenceSize:result.sequenceSize()
+                   sequenceIndex:result.sequenceIndex()
+                      sequenceId:stringToNSString(result.sequenceId())
+                      readerInit:result.readerInit()
+                       lineCount:result.lineCount()
+                            gtin:getGTIN(result)]
+         ];
     }
     return zxiResults;
 }
