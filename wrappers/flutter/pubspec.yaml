@@ -16,7 +16,7 @@ dependencies:
   mobile_scanner:
     git:
       url: https://github.com/SymetriaSpJ/ios_mobile_scanner.git
-      ref: 3.4.1
+      ref: 3.5.1
 
 dev_dependencies:
   flutter_test:
