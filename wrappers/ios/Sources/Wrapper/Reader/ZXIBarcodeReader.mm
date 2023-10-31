@@ -144,7 +144,6 @@ ZXIGTIN *getGTIN(const Result &result) {
                       sequenceId:stringToNSString(result.sequenceId())
                       readerInit:result.readerInit()
                        lineCount:result.lineCount()
-                         version:stringToNSString(result.version())
                             gtin:getGTIN(result)]
          ];
     }

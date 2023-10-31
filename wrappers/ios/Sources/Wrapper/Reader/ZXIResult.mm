@@ -17,7 +17,6 @@
           sequenceId:(NSString *)sequenceId
           readerInit:(BOOL)readerInit
            lineCount:(NSInteger)lineCount
-             version:(NSString *)version
                 gtin:(ZXIGTIN *)gtin {
     self = [super init];
     self.text = text;
@@ -32,7 +31,6 @@
     self.sequenceId = sequenceId;
     self.readerInit = readerInit;
     self.lineCount = lineCount;
-    self.version = version;
     self.gtin = gtin;
     return self;
 }
