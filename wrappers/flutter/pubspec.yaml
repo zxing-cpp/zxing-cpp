@@ -11,7 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   plugin_platform_interface: ^2.0.2
-  permission_handler: ^10.2.0
+  permission_handler: ^11.0.1
   # support iOS
   mobile_scanner:
     git:
@@ -22,7 +22,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^2.0.0
-  melos: ^3.0.1
+  melos: ^3.1.0
   pigeon: ^10.0.0
 
 # For information on the generic Dart part of this file, see the
