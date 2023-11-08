@@ -21,6 +21,7 @@ import android.graphics.ImageFormat
 import android.graphics.Point
 import android.graphics.Rect
 import android.os.Build
+import androidx.annotation.Keep
 import androidx.camera.core.ImageProxy
 import java.lang.RuntimeException
 import java.nio.ByteBuffer
@@ -44,6 +45,7 @@ public class BarcodeReader {
         DATA_MATRIX, EAN_8, EAN_13, ITF, MAXICODE, PDF_417, QR_CODE, MICRO_QR_CODE, UPC_A, UPC_E
     }
 
+    @Keep
     public enum class ContentType {
         TEXT, BINARY, MIXED, GS1, ISO15434, UNKNOWN_ECI
     }
@@ -56,6 +58,7 @@ public class BarcodeReader {
         val tryDownscale: Boolean = false
     )
 
+    @Keep
     public data class Position(
         val topLeft: Point,
         val topRight: Point,
@@ -64,6 +67,7 @@ public class BarcodeReader {
         val orientation: Double
     )
 
+    @Keep
     public data class Result(
         val format: Format = Format.NONE,
         val bytes: ByteArray? = null,
@@ -127,6 +131,7 @@ public class BarcodeReader {
         }
     }
 
+    @Keep
     // setting the format enum from inside the JNI code is a hassle -> use returned String instead
     private external fun readYBuffer(
         yBuffer: ByteBuffer, rowStride: Int, left: Int, top: Int, width: Int, height: Int, rotation: Int,
@@ -134,6 +139,7 @@ public class BarcodeReader {
         result: Result,
     ): String?
 
+    @Keep
     private external fun readBitmap(
         bitmap: Bitmap, left: Int, top: Int, width: Int, height: Int, rotation: Int,
         formats: String, tryHarder: Boolean, tryRotate: Boolean, tryInvert: Boolean, tryDownscale: Boolean,
