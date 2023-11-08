@@ -78,65 +78,47 @@ public class BarcodeReader {
 
     public var options : Options = Options()
 
-    public fun read(image: ImageProxy): Result? {
+    public fun read(image: ImageProxy): List<Result>? {
         check(image.format in supportedYUVFormats) {
             "Invalid image format: ${image.format}. Must be one of: $supportedYUVFormats"
         }
 
-        var result = Result()
-        val status = image.let {
-            readYBuffer(
-                it.planes[0].buffer,
-                it.planes[0].rowStride,
-                it.cropRect.left,
-                it.cropRect.top,
-                it.cropRect.width(),
-                it.cropRect.height(),
-                it.imageInfo.rotationDegrees,
-                options.formats.joinToString(),
-                options.tryHarder,
-                options.tryRotate,
-                options.tryInvert,
-                options.tryDownscale,
-                result
-            )
-        }
-        return try {
-            result.copy(format = Format.valueOf(status!!))
-        } catch (e: Throwable) {
-            if (status == "NotFound") null else throw RuntimeException(status!!)
-        }
+        return readYBuffer(
+            image.planes[0].buffer,
+            image.planes[0].rowStride,
+            image.cropRect.left,
+            image.cropRect.top,
+            image.cropRect.width(),
+            image.cropRect.height(),
+            image.imageInfo.rotationDegrees,
+            options.formats.joinToString(),
+            options.tryHarder,
+            options.tryRotate,
+            options.tryInvert,
+            options.tryDownscale,
+        )
     }
 
-    public fun read(bitmap: Bitmap, cropRect: Rect = Rect(), rotation: Int = 0): Result? {
+    public fun read(bitmap: Bitmap, cropRect: Rect = Rect(), rotation: Int = 0): List<Result>? {
         return read(bitmap, options, cropRect, rotation)
     }
 
-    public fun read(bitmap: Bitmap, options: Options, cropRect: Rect = Rect(), rotation: Int = 0): Result? {
-        var result = Result()
-        val status = with(options) {
+    public fun read(bitmap: Bitmap, options: Options, cropRect: Rect = Rect(), rotation: Int = 0): List<Result>? {
+        return with(options) {
             readBitmap(
                 bitmap, cropRect.left, cropRect.top, cropRect.width(), cropRect.height(), rotation,
-                formats.joinToString(), tryHarder, tryRotate, tryInvert, tryDownscale, result
+                formats.joinToString(), tryHarder, tryRotate, tryInvert, tryDownscale,
             )
-        }
-        return try {
-            result.copy(format = Format.valueOf(status!!))
-        } catch (e: Throwable) {
-            if (status == "NotFound") null else throw RuntimeException(status!!)
         }
     }
 
-    // setting the format enum from inside the JNI code is a hassle -> use returned String instead
     private external fun readYBuffer(
         yBuffer: ByteBuffer, rowStride: Int, left: Int, top: Int, width: Int, height: Int, rotation: Int,
         formats: String, tryHarder: Boolean, tryRotate: Boolean, tryInvert: Boolean, tryDownscale: Boolean,
-        result: Result,
-    ): String?
+    ): List<Result>?
 
     private external fun readBitmap(
         bitmap: Bitmap, left: Int, top: Int, width: Int, height: Int, rotation: Int,
         formats: String, tryHarder: Boolean, tryRotate: Boolean, tryInvert: Boolean, tryDownscale: Boolean,
-        result: Result,
-    ): String?
+    ): List<Result>?
 }

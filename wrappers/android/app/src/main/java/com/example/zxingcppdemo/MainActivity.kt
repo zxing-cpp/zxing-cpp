@@ -231,21 +231,22 @@ class MainActivity : AppCompatActivity() {
 					)
 
 					resultText = try {
-						val result = image.use{ readerCpp.read(it) }
-						runtime2 += result?.time?.toInt() ?: 0
-						resultPoints = result?.position?.let {
-							listOf(
-								it.topLeft,
-								it.topRight,
-								it.bottomRight,
-								it.bottomLeft
-							).map { p ->
-								p.toPointF()
+						val results = image.use { readerCpp.read(it) }
+						results?.first()?.let {
+							runtime2 += it.time?.toInt() ?: 0
+							resultPoints = it.position?.let {
+								listOf(
+									it.topLeft,
+									it.topRight,
+									it.bottomRight,
+									it.bottomLeft
+								).map { p ->
+									p.toPointF()
+								}
 							}
-						}
-						(result?.let { "${it.format} (${it.contentType}): " +
-								"${if (it.contentType != BarcodeReader.ContentType.BINARY) it.text else it.bytes!!.joinToString(separator = "") { v -> "%02x".format(v) }}" }
-							?: "")
+							"${it.format} (${it.contentType}): " +
+									"${if (it.contentType != BarcodeReader.ContentType.BINARY) it.text else it.bytes!!.joinToString(separator = "") { v -> "%02x".format(v) }}"
+						} ?: ""
 					} catch (e: Throwable) {
 						e.message ?: "Error"
 					}

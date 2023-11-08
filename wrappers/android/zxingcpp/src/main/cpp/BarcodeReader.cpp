@@ -62,13 +62,6 @@ static jstring ThrowJavaException(JNIEnv* env, const char* message)
 	return nullptr;
 }
 
-static jobject CreateContentType(JNIEnv* env, ContentType contentType)
-{
-	jclass cls = env->FindClass("com/zxingcpp/BarcodeReader$ContentType");
-	jfieldID fidCT = env->GetStaticFieldID(cls , JavaContentTypeName(contentType), "Lcom/zxingcpp/BarcodeReader$ContentType;");
-	return env->GetStaticObjectField(cls, fidCT);
-}
-
 static jobject CreateAndroidPoint(JNIEnv* env, const PointT<int>& point)
 {
 	jclass cls = env->FindClass("android/graphics/Point");
@@ -95,8 +88,73 @@ static jobject CreatePosition(JNIEnv* env, const Position& position)
 		position.orientation());
 }
 
-jstring Read(JNIEnv *env, ImageView image, jstring formats, jboolean tryHarder, jboolean tryRotate,
-			 jboolean tryInvert, jboolean tryDownscale, jobject result)
+static jobject CreateContentType(JNIEnv* env, ContentType contentType)
+{
+	jclass cls = env->FindClass("com/zxingcpp/BarcodeReader$ContentType");
+	jfieldID fidCT = env->GetStaticFieldID(cls,
+		JavaContentTypeName(contentType),
+		"Lcom/zxingcpp/BarcodeReader$ContentType;");
+	return env->GetStaticObjectField(cls, fidCT);
+}
+
+static jbyteArray CreateByteArray(JNIEnv* env, const void* data,
+	unsigned int length)
+{
+	auto size = static_cast<jsize>(length);
+	jbyteArray byteArray = env->NewByteArray(size);
+	env->SetByteArrayRegion(
+		byteArray, 0, size, reinterpret_cast<const jbyte*>(data));
+	return byteArray;
+}
+
+static jbyteArray CreateByteArray(JNIEnv* env,
+	const std::vector<uint8_t>& byteArray)
+{
+	return CreateByteArray(env,
+		reinterpret_cast<const void*>(byteArray.data()),
+		byteArray.size());
+}
+
+static jobject CreateFormat(JNIEnv* env, BarcodeFormat format)
+{
+	jclass cls = env->FindClass("com/zxingcpp/BarcodeReader$Format");
+	jfieldID fidCT = env->GetStaticFieldID(cls,
+		JavaBarcodeFormatName(format),
+		"Lcom/zxingcpp/BarcodeReader$Format;");
+	return env->GetStaticObjectField(cls, fidCT);
+}
+
+static jobject CreateResult(JNIEnv* env, const Result& result,
+	const jstring& timeString)
+{
+	jclass cls = env->FindClass(
+		"com/zxingcpp/BarcodeReader$Result");
+	auto constructor = env->GetMethodID(
+		cls, "<init>",
+		"(Lcom/zxingcpp/BarcodeReader$Format;"
+		"[B"
+		"Ljava/lang/String;"
+		"Ljava/lang/String;"
+		"Lcom/zxingcpp/BarcodeReader$ContentType;"
+		"Lcom/zxingcpp/BarcodeReader$Position;"
+		"I"
+		"Ljava/lang/String;"
+		"Ljava/lang/String;)V");
+	return env->NewObject(
+		cls, constructor,
+		CreateFormat(env, result.format()),
+		CreateByteArray(env, result.bytes()),
+		C2JString(env, result.text()),
+		timeString,
+		CreateContentType(env, result.contentType()),
+		CreatePosition(env, result.position()),
+		result.orientation(),
+		C2JString(env, result.ecLevel()),
+		C2JString(env, result.symbologyIdentifier()));
+}
+
+static jobject Read(JNIEnv *env, ImageView image, jstring formats, jboolean tryHarder, jboolean tryRotate,
+			 jboolean tryInvert, jboolean tryDownscale)
 {
 	try {
 		auto hints = DecodeHints()
@@ -111,41 +169,22 @@ jstring Read(JNIEnv *env, ImageView image, jstring formats, jboolean tryHarder, 
 		auto results = ReadBarcodes(image, hints);
 		auto duration = std::chrono::high_resolution_clock::now() - startTime;
 //		LOGD("time: %4d ms\n", (int)std::chrono::duration_cast<std::chrono::milliseconds>(duration).count());
-
-		jclass clResult = env->GetObjectClass(result);
-
-		jfieldID fidTime = env->GetFieldID(clResult, "time", "Ljava/lang/String;");
 		auto time = std::to_wstring(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count());
-		env->SetObjectField(result, fidTime, C2JString(env, time));
+		auto timeString = C2JString(env, time);
 
 		if (!results.empty()) {
-			auto& res = results.front();
-			jbyteArray jByteArray = env->NewByteArray(res.bytes().size());
-			env->SetByteArrayRegion(jByteArray, 0, res.bytes().size(), (jbyte*)res.bytes().data());
-			jfieldID fidBytes = env->GetFieldID(clResult, "bytes", "[B");
-			env->SetObjectField(result, fidBytes, jByteArray);
-
-			jfieldID fidText = env->GetFieldID(clResult, "text", "Ljava/lang/String;");
-			env->SetObjectField(result, fidText, C2JString(env, res.text()));
-
-			jfieldID fidContentType = env->GetFieldID(clResult , "contentType", "Lcom/zxingcpp/BarcodeReader$ContentType;");
-			env->SetObjectField(result, fidContentType, CreateContentType(env, res.contentType()));
-
-			jfieldID fidPosition = env->GetFieldID(clResult, "position", "Lcom/zxingcpp/BarcodeReader$Position;");
-			env->SetObjectField(result, fidPosition, CreatePosition(env, res.position()));
-
-			jfieldID fidOrientation = env->GetFieldID(clResult, "orientation", "I");
-			env->SetIntField(result, fidOrientation, res.orientation());
-
-			jfieldID fidEcLevel = env->GetFieldID(clResult, "ecLevel", "Ljava/lang/String;");
-			env->SetObjectField(result, fidEcLevel, C2JString(env, res.ecLevel()));
-
-			jfieldID fidSymbologyIdentifier = env->GetFieldID(clResult, "symbologyIdentifier", "Ljava/lang/String;");
-			env->SetObjectField(result, fidSymbologyIdentifier, C2JString(env, res.symbologyIdentifier()));
-
-			return C2JString(env, JavaBarcodeFormatName(res.format()));
-		} else
-			return C2JString(env, "NotFound");
+			// Only allocate when something is found.
+			auto cls = env->FindClass("java/util/ArrayList");
+			auto list = env->NewObject(cls,
+				env->GetMethodID(cls, "<init>", "()V"));
+			auto add = env->GetMethodID(cls, "add", "(Ljava/lang/Object;)Z");
+			for (const auto& result: results) {
+				env->CallBooleanMethod(list, add, CreateResult(env, result, timeString));
+			}
+			return list;
+		} else {
+			return nullptr;
+		}
 	} catch (const std::exception& e) {
 		return ThrowJavaException(env, e.what());
 	} catch (...) {
@@ -153,12 +192,11 @@ jstring Read(JNIEnv *env, ImageView image, jstring formats, jboolean tryHarder, 
 	}
 }
 
-extern "C" JNIEXPORT jstring JNICALL
+extern "C" JNIEXPORT jobject JNICALL
 Java_com_zxingcpp_BarcodeReader_readYBuffer(
 	JNIEnv *env, jobject thiz, jobject yBuffer, jint rowStride,
 	jint left, jint top, jint width, jint height, jint rotation,
-	jstring formats, jboolean tryHarder, jboolean tryRotate, jboolean tryInvert, jboolean tryDownscale,
-	jobject result)
+	jstring formats, jboolean tryHarder, jboolean tryRotate, jboolean tryInvert, jboolean tryDownscale)
 {
 	const uint8_t* pixels = static_cast<uint8_t *>(env->GetDirectBufferAddress(yBuffer));
 
@@ -166,7 +204,7 @@ Java_com_zxingcpp_BarcodeReader_readYBuffer(
 		ImageView{pixels + top * rowStride + left, width, height, ImageFormat::Lum, rowStride}
 			.rotated(rotation);
 
-	return Read(env, image, formats, tryHarder, tryRotate, tryInvert, tryDownscale, result);
+	return Read(env, image, formats, tryHarder, tryRotate, tryInvert, tryDownscale);
 }
 
 struct LockedPixels
@@ -188,12 +226,11 @@ struct LockedPixels
 	}
 };
 
-extern "C" JNIEXPORT jstring JNICALL
+extern "C" JNIEXPORT jobject JNICALL
 Java_com_zxingcpp_BarcodeReader_readBitmap(
 	JNIEnv* env, jobject thiz, jobject bitmap,
 	jint left, jint top, jint width, jint height, jint rotation,
-	jstring formats, jboolean tryHarder, jboolean tryRotate, jboolean tryInvert, jboolean tryDownscale,
-	jobject result)
+	jstring formats, jboolean tryHarder, jboolean tryRotate, jboolean tryInvert, jboolean tryDownscale)
 {
 	AndroidBitmapInfo bmInfo;
 	AndroidBitmap_getInfo(env, bitmap, &bmInfo);
@@ -214,5 +251,5 @@ Java_com_zxingcpp_BarcodeReader_readBitmap(
 					 .cropped(left, top, width, height)
 					 .rotated(rotation);
 
-	return Read(env, image, formats, tryHarder, tryRotate, tryInvert, tryDownscale, result);
+	return Read(env, image, formats, tryHarder, tryRotate, tryInvert, tryDownscale);
 }
