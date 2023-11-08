@@ -45,7 +45,6 @@ import com.zxingcpp.BarcodeReader.Format
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.util.concurrent.Executors
-import kotlin.random.Random
 
 
 class MainActivity : AppCompatActivity() {
@@ -53,7 +52,7 @@ class MainActivity : AppCompatActivity() {
 
 	private val executor = Executors.newSingleThreadExecutor()
 	private val permissions = mutableListOf(Manifest.permission.CAMERA)
-	private val permissionsRequestCode = Random.nextInt(0, 10000)
+	private val permissionsRequestCode = 1
 
 	private val beeper = ToneGenerator(AudioManager.STREAM_NOTIFICATION, 50)
 	private var lastText = String()
