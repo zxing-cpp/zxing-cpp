@@ -184,7 +184,12 @@ static jobject CreateResult(JNIEnv* env, const Result& result,
 		"Lcom/zxingcpp/BarcodeReader$Position;"
 		"I"
 		"Ljava/lang/String;"
-		"Ljava/lang/String;)V");
+		"Ljava/lang/String;"
+		"I"
+		"I"
+		"Ljava/lang/String;"
+		"Z"
+		"I)V");
 	return env->NewObject(
 		cls, constructor,
 		CreateFormat(env, result.format()),
@@ -195,7 +200,12 @@ static jobject CreateResult(JNIEnv* env, const Result& result,
 		CreatePosition(env, result.position()),
 		result.orientation(),
 		C2JString(env, result.ecLevel()),
-		C2JString(env, result.symbologyIdentifier()));
+		C2JString(env, result.symbologyIdentifier()),
+		result.sequenceSize(),
+		result.sequenceIndex(),
+		C2JString(env, result.sequenceId()),
+		result.readerInit(),
+		result.lineCount());
 }
 
 static jobject Read(JNIEnv *env, ImageView image, const DecodeHints& hints)

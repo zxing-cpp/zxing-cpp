@@ -90,15 +90,20 @@ public class BarcodeReader {
     )
 
     public data class Result(
-        val format: Format = Format.NONE,
-        val bytes: ByteArray? = null,
-        val text: String? = null,
-        val time: String? = null, // for development/debug purposes only
-        val contentType: ContentType = ContentType.TEXT,
-        val position: Position? = null,
-        val orientation: Int = 0,
-        val ecLevel: String? = null,
-        val symbologyIdentifier: String? = null
+        val format: Format,
+        val bytes: ByteArray?,
+        val text: String?,
+        val time: String?, // for development/debug purposes only
+        val contentType: ContentType,
+        val position: Position?,
+        val orientation: Int,
+        val ecLevel: String?,
+        val symbologyIdentifier: String?,
+        val sequenceSize: Int,
+        val sequenceIndex: Int,
+        val sequenceId: String,
+        val readerInit: Boolean,
+        val lineCount: Int
     )
 
     public var options: Options = Options()
