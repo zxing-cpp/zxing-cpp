@@ -48,12 +48,37 @@ public class BarcodeReader {
         TEXT, BINARY, MIXED, GS1, ISO15434, UNKNOWN_ECI
     }
 
+    public enum class Binarizer {
+        LOCAL_AVERAGE, GLOBAL_HISTOGRAM, FIXED_THRESHOLD, BOOL_CAST
+    }
+
+    public enum class EanAddOnSymbol {
+        IGNORE, READ, REQUIRE
+    }
+
+    public enum class TextMode {
+        PLAIN, ECI, HRI, HEX, ESCAPED
+    }
+
     public data class Options(
         val formats: Set<Format> = setOf(),
         val tryHarder: Boolean = false,
         val tryRotate: Boolean = false,
         val tryInvert: Boolean = false,
-        val tryDownscale: Boolean = false
+        val tryDownscale: Boolean = false,
+        val isPure: Boolean = false,
+        val tryCode39ExtendedMode: Boolean = false,
+        val validateCode39CheckSum: Boolean = false,
+        val validateITFCheckSum: Boolean = false,
+        val returnCodabarStartEnd: Boolean = false,
+        val returnErrors: Boolean = false,
+        val downscaleFactor: Int = 3,
+        val eanAddOnSymbol: EanAddOnSymbol = EanAddOnSymbol.IGNORE,
+        val binarizer: Binarizer = Binarizer.LOCAL_AVERAGE,
+        val textMode: TextMode = TextMode.HRI,
+        val minLineCount: Int = 2,
+        val maxNumberOfSymbols: Int = 0xff,
+        val downscaleThreshold: Int = 500
     )
 
     public data class Position(
@@ -76,7 +101,7 @@ public class BarcodeReader {
         val symbologyIdentifier: String? = null
     )
 
-    public var options : Options = Options()
+    public var options: Options = Options()
 
     public fun read(image: ImageProxy): List<Result>? {
         check(image.format in supportedYUVFormats) {
@@ -91,11 +116,7 @@ public class BarcodeReader {
             image.cropRect.width(),
             image.cropRect.height(),
             image.imageInfo.rotationDegrees,
-            options.formats.joinToString(),
-            options.tryHarder,
-            options.tryRotate,
-            options.tryInvert,
-            options.tryDownscale,
+            options
         )
     }
 
@@ -104,21 +125,19 @@ public class BarcodeReader {
     }
 
     public fun read(bitmap: Bitmap, options: Options, cropRect: Rect = Rect(), rotation: Int = 0): List<Result>? {
-        return with(options) {
-            readBitmap(
-                bitmap, cropRect.left, cropRect.top, cropRect.width(), cropRect.height(), rotation,
-                formats.joinToString(), tryHarder, tryRotate, tryInvert, tryDownscale,
-            )
-        }
+        return readBitmap(
+            bitmap, cropRect.left, cropRect.top, cropRect.width(), cropRect.height(), rotation,
+            options
+        )
     }
 
     private external fun readYBuffer(
         yBuffer: ByteBuffer, rowStride: Int, left: Int, top: Int, width: Int, height: Int, rotation: Int,
-        formats: String, tryHarder: Boolean, tryRotate: Boolean, tryInvert: Boolean, tryDownscale: Boolean,
+        options: Options
     ): List<Result>?
 
     private external fun readBitmap(
         bitmap: Bitmap, left: Int, top: Int, width: Int, height: Int, rotation: Int,
-        formats: String, tryHarder: Boolean, tryRotate: Boolean, tryInvert: Boolean, tryDownscale: Boolean,
+        options: Options
     ): List<Result>?
 }

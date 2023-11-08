@@ -53,6 +53,51 @@ static const char* JavaContentTypeName(ContentType contentType)
 	}
 }
 
+static EanAddOnSymbol EanAddOnSymbolFromString(const std::string& name)
+{
+	if (name == "IGNORE") {
+		return EanAddOnSymbol::Ignore;
+	} else if (name == "READ") {
+		return EanAddOnSymbol::Read;
+	} else if (name == "REQUIRE") {
+		return EanAddOnSymbol::Require;
+	} else {
+		throw std::invalid_argument("Invalid eanAddOnSymbol name");
+	}
+}
+
+static Binarizer BinarizerFromString(const std::string& name)
+{
+	if (name == "LOCAL_AVERAGE") {
+		return Binarizer::LocalAverage;
+	} else if (name == "GLOBAL_HISTOGRAM") {
+		return Binarizer::GlobalHistogram;
+	} else if (name == "FIXED_THRESHOLD") {
+		return Binarizer::FixedThreshold;
+	} else if (name == "BOOL_CAST") {
+		return Binarizer::BoolCast;
+	} else {
+		throw std::invalid_argument("Invalid binarizer name");
+	}
+}
+
+static TextMode TextModeFromString(const std::string& name)
+{
+	if (name == "PLAIN") {
+		return TextMode::Plain;
+	} else if (name == "ECI") {
+		return TextMode::ECI;
+	} else if (name == "HRI") {
+		return TextMode::HRI;
+	} else if (name == "HEX") {
+		return TextMode::Hex;
+	} else if (name == "ESCAPED") {
+		return TextMode::Escaped;
+	} else {
+		throw std::invalid_argument("Invalid textMode name");
+	}
+}
+
 static jstring ThrowJavaException(JNIEnv* env, const char* message)
 {
 	//	if (env->ExceptionCheck())
@@ -153,18 +198,9 @@ static jobject CreateResult(JNIEnv* env, const Result& result,
 		C2JString(env, result.symbologyIdentifier()));
 }
 
-static jobject Read(JNIEnv *env, ImageView image, jstring formats, jboolean tryHarder, jboolean tryRotate,
-			 jboolean tryInvert, jboolean tryDownscale)
+static jobject Read(JNIEnv *env, ImageView image, const DecodeHints& hints)
 {
 	try {
-		auto hints = DecodeHints()
-						 .setFormats(BarcodeFormatsFromString(J2CString(env, formats)))
-						 .setTryHarder(tryHarder)
-						 .setTryRotate(tryRotate)
-						 .setTryInvert(tryInvert)
-						 .setTryDownscale(tryDownscale)
-						 .setMaxNumberOfSymbols(1);
-
 		auto startTime = std::chrono::high_resolution_clock::now();
 		auto results = ReadBarcodes(image, hints);
 		auto duration = std::chrono::high_resolution_clock::now() - startTime;
@@ -192,11 +228,78 @@ static jobject Read(JNIEnv *env, ImageView image, jstring formats, jboolean tryH
 	}
 }
 
+static bool GetBooleanField(JNIEnv* env, jclass cls, jobject hints,
+	const char* name)
+{
+	return env->GetBooleanField(hints, env->GetFieldID(cls, name, "Z"));
+}
+
+static int GetIntField(JNIEnv* env, jclass cls, jobject hints,
+	const char* name)
+{
+	return env->GetIntField(hints, env->GetFieldID(cls, name, "I"));
+}
+
+static std::string GetEnumField(JNIEnv* env, jclass hintClass, jobject hints,
+	const char* enumClass, const char* name)
+{
+	jclass cls = env->FindClass(enumClass);
+	jstring s = (jstring) env->CallObjectMethod(
+		env->GetObjectField(hints, env->GetFieldID(hintClass, name,
+			("L" + std::string(enumClass) + ";").c_str())),
+		env->GetMethodID(cls, "name", "()Ljava/lang/String;"));
+	return J2CString(env, s);
+}
+
+static std::string JoinFormats(JNIEnv* env, jclass hintClass, jobject hints)
+{
+	const char* setClass = "java/util/Set";
+	jclass cls = env->FindClass(setClass);
+	jstring jStr = (jstring) env->CallObjectMethod(
+		env->GetObjectField(hints, env->GetFieldID(hintClass, "formats",
+			("L" + std::string(setClass) + ";").c_str())),
+		env->GetMethodID(cls, "toString", "()Ljava/lang/String;"));
+	std::string s = J2CString(env, jStr);
+	s.erase(0, s.find_first_not_of("["));
+	s.erase(s.find_last_not_of("]") + 1);
+	return s;
+}
+
+static DecodeHints CreateDecodeHints(JNIEnv* env, jobject hints)
+{
+	jclass cls = env->GetObjectClass(hints);
+	return DecodeHints()
+		.setFormats(BarcodeFormatsFromString(JoinFormats(env, cls, hints)))
+		.setTryHarder(GetBooleanField(env, cls, hints, "tryHarder"))
+		.setTryRotate(GetBooleanField(env, cls, hints, "tryRotate"))
+		.setTryInvert(GetBooleanField(env, cls, hints, "tryInvert"))
+		.setTryDownscale(GetBooleanField(env, cls, hints, "tryDownscale"))
+		.setIsPure(GetBooleanField(env, cls, hints, "isPure"))
+		.setTryCode39ExtendedMode(GetBooleanField(env, cls, hints, "tryCode39ExtendedMode"))
+		.setValidateCode39CheckSum(GetBooleanField(env, cls, hints, "validateCode39CheckSum"))
+		.setValidateITFCheckSum(GetBooleanField(env, cls, hints, "validateITFCheckSum"))
+		.setReturnCodabarStartEnd(GetBooleanField(env, cls, hints, "returnCodabarStartEnd"))
+		.setReturnErrors(GetBooleanField(env, cls, hints, "returnErrors"))
+		.setDownscaleFactor(GetIntField(env, cls, hints, "downscaleFactor"))
+		.setEanAddOnSymbol(EanAddOnSymbolFromString(GetEnumField(env, cls, hints,
+			"com/zxingcpp/BarcodeReader$EanAddOnSymbol",
+			"eanAddOnSymbol")))
+		.setBinarizer(BinarizerFromString(GetEnumField(env, cls, hints,
+			"com/zxingcpp/BarcodeReader$Binarizer",
+			"binarizer")))
+		.setTextMode(TextModeFromString(GetEnumField(env, cls, hints,
+			"com/zxingcpp/BarcodeReader$TextMode",
+			"textMode")))
+		.setMinLineCount(GetIntField(env, cls, hints, "minLineCount"))
+		.setMaxNumberOfSymbols(GetIntField(env, cls, hints, "maxNumberOfSymbols"))
+		.setDownscaleThreshold(GetIntField(env, cls, hints, "downscaleThreshold"));
+}
+
 extern "C" JNIEXPORT jobject JNICALL
 Java_com_zxingcpp_BarcodeReader_readYBuffer(
 	JNIEnv *env, jobject thiz, jobject yBuffer, jint rowStride,
 	jint left, jint top, jint width, jint height, jint rotation,
-	jstring formats, jboolean tryHarder, jboolean tryRotate, jboolean tryInvert, jboolean tryDownscale)
+	jobject hints)
 {
 	const uint8_t* pixels = static_cast<uint8_t *>(env->GetDirectBufferAddress(yBuffer));
 
@@ -204,7 +307,7 @@ Java_com_zxingcpp_BarcodeReader_readYBuffer(
 		ImageView{pixels + top * rowStride + left, width, height, ImageFormat::Lum, rowStride}
 			.rotated(rotation);
 
-	return Read(env, image, formats, tryHarder, tryRotate, tryInvert, tryDownscale);
+	return Read(env, image, CreateDecodeHints(env, hints));
 }
 
 struct LockedPixels
@@ -230,7 +333,7 @@ extern "C" JNIEXPORT jobject JNICALL
 Java_com_zxingcpp_BarcodeReader_readBitmap(
 	JNIEnv* env, jobject thiz, jobject bitmap,
 	jint left, jint top, jint width, jint height, jint rotation,
-	jstring formats, jboolean tryHarder, jboolean tryRotate, jboolean tryInvert, jboolean tryDownscale)
+	jobject hints)
 {
 	AndroidBitmapInfo bmInfo;
 	AndroidBitmap_getInfo(env, bitmap, &bmInfo);
@@ -251,5 +354,5 @@ Java_com_zxingcpp_BarcodeReader_readBitmap(
 					 .cropped(left, top, width, height)
 					 .rotated(rotation);
 
-	return Read(env, image, formats, tryHarder, tryRotate, tryInvert, tryDownscale);
+	return Read(env, image, CreateDecodeHints(env, hints));
 }
