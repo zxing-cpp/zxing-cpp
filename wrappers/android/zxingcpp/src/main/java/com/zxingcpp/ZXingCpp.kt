@@ -60,7 +60,7 @@ public object ZXingCpp {
         PLAIN, ECI, HRI, HEX, ESCAPED
     }
 
-    public data class Options(
+    public data class DecodeHints(
         val formats: Set<Format> = setOf(),
         val tryHarder: Boolean = false,
         val tryRotate: Boolean = false,
@@ -106,7 +106,7 @@ public object ZXingCpp {
         val lineCount: Int
     )
 
-    public fun read(image: ImageProxy, options: Options): List<Result>? {
+    public fun read(image: ImageProxy, decodeHints: DecodeHints): List<Result>? {
         check(image.format in supportedYUVFormats) {
             "Invalid image format: ${image.format}. Must be one of: $supportedYUVFormats"
         }
@@ -119,24 +119,24 @@ public object ZXingCpp {
             image.cropRect.width(),
             image.cropRect.height(),
             image.imageInfo.rotationDegrees,
-            options
+            decodeHints
         )
     }
 
-    public fun read(bitmap: Bitmap, options: Options, cropRect: Rect = Rect(), rotation: Int = 0): List<Result>? {
+    public fun read(bitmap: Bitmap, decodeHints: DecodeHints, cropRect: Rect = Rect(), rotation: Int = 0): List<Result>? {
         return readBitmap(
             bitmap, cropRect.left, cropRect.top, cropRect.width(), cropRect.height(), rotation,
-            options
+            decodeHints
         )
     }
 
     private external fun readYBuffer(
         yBuffer: ByteBuffer, rowStride: Int, left: Int, top: Int, width: Int, height: Int, rotation: Int,
-        options: Options
+        decodeHints: DecodeHints
     ): List<Result>?
 
     private external fun readBitmap(
         bitmap: Bitmap, left: Int, top: Int, width: Int, height: Int, rotation: Int,
-        options: Options
+        decodeHints: DecodeHints
     ): List<Result>?
 }

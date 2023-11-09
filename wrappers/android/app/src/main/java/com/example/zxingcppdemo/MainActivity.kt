@@ -221,7 +221,7 @@ class MainActivity : AppCompatActivity() {
 						if (e.toString() != "com.google.zxing.NotFoundException") e.toString() else ""
 					}
 				} else {
-					val options = ZXingCpp.Options(
+					val options = ZXingCpp.DecodeHints(
 						formats = if (binding.qrcode.isChecked) setOf(Format.QR_CODE) else setOf(),
 						tryHarder = binding.tryHarder.isChecked,
 						tryRotate = binding.tryRotate.isChecked,
