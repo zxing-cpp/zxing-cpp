@@ -44,7 +44,7 @@ class PreviewOverlay constructor(context: Context, attributeSet: AttributeSet?) 
 	private var s: Float = 0f
 	private var o: Float = 0f
 
-	fun update(viewFinder: View, image: ImageProxy, points: List<PointF>?) {
+	fun update(viewFinder: View, image: ImageProxy, points: List<List<PointF>>) {
 		cropRect = image.cropRect
 		rotation = image.imageInfo.rotationDegrees
 		s = min(viewFinder.width, viewFinder.height).toFloat() / image.height
@@ -52,10 +52,14 @@ class PreviewOverlay constructor(context: Context, attributeSet: AttributeSet?) 
 
 		path.apply {
 			rewind()
-			if (!points.isNullOrEmpty()) {
-				moveTo(points.last().x, points.last().y)
-				for (p in points)
-					lineTo(p.x, p.y)
+			points.forEach {
+				if (!it.isEmpty()) {
+					val last = it.last()
+					moveTo(last.x, last.y)
+					for (p in it) {
+						lineTo(p.x, p.y)
+					}
+				}
 			}
 		}
 		invalidate()

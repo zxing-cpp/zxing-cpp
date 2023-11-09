@@ -190,7 +190,7 @@ class MainActivity : AppCompatActivity() {
 
 				val startTime = System.currentTimeMillis()
 				var resultText: String
-				var resultPoints: List<PointF>? = null
+				val resultPoints = mutableListOf<List<PointF>>()
 
 				if (binding.java.isChecked) {
 					val yPlane = image.planes[0]
@@ -230,21 +230,34 @@ class MainActivity : AppCompatActivity() {
 					)
 
 					resultText = try {
-						val results = image.use { ZXingCpp.read(it, options) }
-						results?.first()?.let {
-							runtime2 += it.time?.toInt() ?: 0
-							resultPoints = it.position?.let {
-								listOf(
-									it.topLeft,
-									it.topRight,
-									it.bottomRight,
-									it.bottomLeft
-								).map { p ->
-									p.toPointF()
-								}
+						image.use {
+							ZXingCpp.read(it, options)
+						}?.apply {
+							runtime2 += this[0].time?.toInt() ?: 0
+						}?.joinToString("\n") { result ->
+							result.position?.let {
+								resultPoints.add(
+									listOf(
+										it.topLeft,
+										it.topRight,
+										it.bottomRight,
+										it.bottomLeft
+									).map { p ->
+										p.toPointF()
+									}
+								)
 							}
-							"${it.format} (${it.contentType}): " +
-									"${if (it.contentType != ZXingCpp.ContentType.BINARY) it.text else it.bytes!!.joinToString(separator = "") { v -> "%02x".format(v) }}"
+							"${result.format} (${result.contentType}): ${
+								if (result.contentType != ZXingCpp.ContentType.BINARY) {
+									result.text
+								} else {
+									result.bytes!!.joinToString(separator = "") { v ->
+										"%02x".format(
+											v
+										)
+									}
+								}
+							}"
 						} ?: ""
 					} catch (e: Throwable) {
 						e.message ?: "Error"
@@ -274,7 +287,7 @@ class MainActivity : AppCompatActivity() {
 		}, ContextCompat.getMainExecutor(this))
 	}
 
-	private fun showResult(resultText: String, fpsText: String?, points: List<PointF>?, image: ImageProxy) =
+	private fun showResult(resultText: String, fpsText: String?, points: List<List<PointF>>, image: ImageProxy) =
 		binding.viewFinder.post {
 			// Update the text and UI
 			binding.result.text = resultText
