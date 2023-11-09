@@ -40,8 +40,8 @@ import androidx.lifecycle.LifecycleOwner
 import com.example.zxingcppdemo.databinding.ActivityCameraBinding
 import com.google.zxing.*
 import com.google.zxing.common.HybridBinarizer
-import com.zxingcpp.BarcodeReader
-import com.zxingcpp.BarcodeReader.Format
+import com.zxingcpp.ZXingCpp
+import com.zxingcpp.ZXingCpp.Format
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.util.concurrent.Executors
@@ -143,7 +143,7 @@ class MainActivity : AppCompatActivity() {
 			var runtimes: Long = 0
 			var runtime2: Long = 0
 			val readerJava = MultiFormatReader()
-			val readerCpp = BarcodeReader()
+			val readerCpp = ZXingCpp()
 
 			// Create a new camera selector each time, enforcing lens facing
 			val cameraSelector = CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_BACK).build()
@@ -222,7 +222,7 @@ class MainActivity : AppCompatActivity() {
 						if (e.toString() != "com.google.zxing.NotFoundException") e.toString() else ""
 					}
 				} else {
-					readerCpp.options = BarcodeReader.Options(
+					readerCpp.options = ZXingCpp.Options(
 						formats = if (binding.qrcode.isChecked) setOf(Format.QR_CODE) else setOf(),
 						tryHarder = binding.tryHarder.isChecked,
 						tryRotate = binding.tryRotate.isChecked,
@@ -245,7 +245,7 @@ class MainActivity : AppCompatActivity() {
 								}
 							}
 							"${it.format} (${it.contentType}): " +
-									"${if (it.contentType != BarcodeReader.ContentType.BINARY) it.text else it.bytes!!.joinToString(separator = "") { v -> "%02x".format(v) }}"
+									"${if (it.contentType != ZXingCpp.ContentType.BINARY) it.text else it.bytes!!.joinToString(separator = "") { v -> "%02x".format(v) }}"
 						} ?: ""
 					} catch (e: Throwable) {
 						e.message ?: "Error"

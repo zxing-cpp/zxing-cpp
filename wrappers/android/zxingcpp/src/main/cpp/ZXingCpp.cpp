@@ -116,7 +116,7 @@ static jobject CreateAndroidPoint(JNIEnv* env, const PointT<int>& point)
 
 static jobject CreatePosition(JNIEnv* env, const Position& position)
 {
-	jclass cls = env->FindClass("com/zxingcpp/BarcodeReader$Position");
+	jclass cls = env->FindClass("com/zxingcpp/ZXingCpp$Position");
 	auto constructor = env->GetMethodID(
 		cls, "<init>",
 		"(Landroid/graphics/Point;"
@@ -135,10 +135,10 @@ static jobject CreatePosition(JNIEnv* env, const Position& position)
 
 static jobject CreateContentType(JNIEnv* env, ContentType contentType)
 {
-	jclass cls = env->FindClass("com/zxingcpp/BarcodeReader$ContentType");
+	jclass cls = env->FindClass("com/zxingcpp/ZXingCpp$ContentType");
 	jfieldID fidCT = env->GetStaticFieldID(cls,
 		JavaContentTypeName(contentType),
-		"Lcom/zxingcpp/BarcodeReader$ContentType;");
+		"Lcom/zxingcpp/ZXingCpp$ContentType;");
 	return env->GetStaticObjectField(cls, fidCT);
 }
 
@@ -162,10 +162,10 @@ static jbyteArray CreateByteArray(JNIEnv* env,
 
 static jobject CreateFormat(JNIEnv* env, BarcodeFormat format)
 {
-	jclass cls = env->FindClass("com/zxingcpp/BarcodeReader$Format");
+	jclass cls = env->FindClass("com/zxingcpp/ZXingCpp$Format");
 	jfieldID fidCT = env->GetStaticFieldID(cls,
 		JavaBarcodeFormatName(format),
-		"Lcom/zxingcpp/BarcodeReader$Format;");
+		"Lcom/zxingcpp/ZXingCpp$Format;");
 	return env->GetStaticObjectField(cls, fidCT);
 }
 
@@ -173,15 +173,15 @@ static jobject CreateResult(JNIEnv* env, const Result& result,
 	const jstring& timeString)
 {
 	jclass cls = env->FindClass(
-		"com/zxingcpp/BarcodeReader$Result");
+		"com/zxingcpp/ZXingCpp$Result");
 	auto constructor = env->GetMethodID(
 		cls, "<init>",
-		"(Lcom/zxingcpp/BarcodeReader$Format;"
+		"(Lcom/zxingcpp/ZXingCpp$Format;"
 		"[B"
 		"Ljava/lang/String;"
 		"Ljava/lang/String;"
-		"Lcom/zxingcpp/BarcodeReader$ContentType;"
-		"Lcom/zxingcpp/BarcodeReader$Position;"
+		"Lcom/zxingcpp/ZXingCpp$ContentType;"
+		"Lcom/zxingcpp/ZXingCpp$Position;"
 		"I"
 		"Ljava/lang/String;"
 		"Ljava/lang/String;"
@@ -292,13 +292,13 @@ static DecodeHints CreateDecodeHints(JNIEnv* env, jobject hints)
 		.setReturnErrors(GetBooleanField(env, cls, hints, "returnErrors"))
 		.setDownscaleFactor(GetIntField(env, cls, hints, "downscaleFactor"))
 		.setEanAddOnSymbol(EanAddOnSymbolFromString(GetEnumField(env, cls, hints,
-			"com/zxingcpp/BarcodeReader$EanAddOnSymbol",
+			"com/zxingcpp/ZXingCpp$EanAddOnSymbol",
 			"eanAddOnSymbol")))
 		.setBinarizer(BinarizerFromString(GetEnumField(env, cls, hints,
-			"com/zxingcpp/BarcodeReader$Binarizer",
+			"com/zxingcpp/ZXingCpp$Binarizer",
 			"binarizer")))
 		.setTextMode(TextModeFromString(GetEnumField(env, cls, hints,
-			"com/zxingcpp/BarcodeReader$TextMode",
+			"com/zxingcpp/ZXingCpp$TextMode",
 			"textMode")))
 		.setMinLineCount(GetIntField(env, cls, hints, "minLineCount"))
 		.setMaxNumberOfSymbols(GetIntField(env, cls, hints, "maxNumberOfSymbols"))
@@ -306,7 +306,7 @@ static DecodeHints CreateDecodeHints(JNIEnv* env, jobject hints)
 }
 
 extern "C" JNIEXPORT jobject JNICALL
-Java_com_zxingcpp_BarcodeReader_readYBuffer(
+Java_com_zxingcpp_ZXingCpp_readYBuffer(
 	JNIEnv *env, jobject thiz, jobject yBuffer, jint rowStride,
 	jint left, jint top, jint width, jint height, jint rotation,
 	jobject hints)
@@ -340,7 +340,7 @@ struct LockedPixels
 };
 
 extern "C" JNIEXPORT jobject JNICALL
-Java_com_zxingcpp_BarcodeReader_readBitmap(
+Java_com_zxingcpp_ZXingCpp_readBitmap(
 	JNIEnv* env, jobject thiz, jobject bitmap,
 	jint left, jint top, jint width, jint height, jint rotation,
 	jobject hints)
