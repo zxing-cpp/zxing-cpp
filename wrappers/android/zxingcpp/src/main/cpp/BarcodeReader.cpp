@@ -361,8 +361,8 @@ Java_com_zxingcpp_BarcodeReader_readBitmap(
 		return ThrowJavaException(env, "Failed to lock/Read AndroidBitmap data");
 
 	auto image = ImageView{pixels, (int)bmInfo.width, (int)bmInfo.height, fmt, (int)bmInfo.stride}
-					 .cropped(left, top, width, height)
-					 .rotated(rotation);
+		.cropped(left, top, width, height)
+		.rotated(rotation);
 
 	return Read(env, image, CreateDecodeHints(env, hints));
 }

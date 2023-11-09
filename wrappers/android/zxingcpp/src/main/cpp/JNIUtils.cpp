@@ -28,7 +28,7 @@ static void Utf32toUtf16(const uint32_t* utf32, size_t length, std::vector<uint1
 {
 	result.clear();
 	result.reserve(length);
-	for (size_t i = 0; i < length; ++i)	{
+	for (size_t i = 0; i < length; ++i) {
 		uint32_t c = utf32[i];
 		if (RequiresSurrogates(c)) {
 			result.push_back(HighSurrogate(c));
