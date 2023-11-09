@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    `maven-publish`
 }
 
 android {
@@ -50,4 +51,18 @@ kotlin {
 
 dependencies {
     implementation(libs.androidx.camera.core)
+}
+
+publishing {
+    publications {
+        register<MavenPublication>("release") {
+            groupId = "com.zxingcpp"
+                artifactId = "zxingcpp"
+                version = "2.1.0"
+
+                afterEvaluate {
+                    from(components["release"])
+                }
+        }
+    }
 }
