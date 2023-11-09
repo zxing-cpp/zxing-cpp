@@ -143,7 +143,6 @@ class MainActivity : AppCompatActivity() {
 			var runtimes: Long = 0
 			var runtime2: Long = 0
 			val readerJava = MultiFormatReader()
-			val readerCpp = ZXingCpp()
 
 			// Create a new camera selector each time, enforcing lens facing
 			val cameraSelector = CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_BACK).build()
@@ -231,7 +230,7 @@ class MainActivity : AppCompatActivity() {
 					)
 
 					resultText = try {
-						val results = image.use { readerCpp.read(it, options) }
+						val results = image.use { ZXingCpp.read(it, options) }
 						results?.first()?.let {
 							runtime2 += it.time?.toInt() ?: 0
 							resultPoints = it.position?.let {

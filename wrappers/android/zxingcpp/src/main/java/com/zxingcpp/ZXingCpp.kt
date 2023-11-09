@@ -25,7 +25,7 @@ import androidx.camera.core.ImageProxy
 import java.lang.RuntimeException
 import java.nio.ByteBuffer
 
-public class ZXingCpp {
+public object ZXingCpp {
     private val supportedYUVFormats: List<Int> =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             listOf(ImageFormat.YUV_420_888, ImageFormat.YUV_422_888, ImageFormat.YUV_444_888)
