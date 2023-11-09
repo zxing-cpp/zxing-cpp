@@ -106,9 +106,7 @@ public class ZXingCpp {
         val lineCount: Int
     )
 
-    public var options: Options = Options()
-
-    public fun read(image: ImageProxy): List<Result>? {
+    public fun read(image: ImageProxy, options: Options): List<Result>? {
         check(image.format in supportedYUVFormats) {
             "Invalid image format: ${image.format}. Must be one of: $supportedYUVFormats"
         }
@@ -123,10 +121,6 @@ public class ZXingCpp {
             image.imageInfo.rotationDegrees,
             options
         )
-    }
-
-    public fun read(bitmap: Bitmap, cropRect: Rect = Rect(), rotation: Int = 0): List<Result>? {
-        return read(bitmap, options, cropRect, rotation)
     }
 
     public fun read(bitmap: Bitmap, options: Options, cropRect: Rect = Rect(), rotation: Int = 0): List<Result>? {

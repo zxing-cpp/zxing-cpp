@@ -222,7 +222,7 @@ class MainActivity : AppCompatActivity() {
 						if (e.toString() != "com.google.zxing.NotFoundException") e.toString() else ""
 					}
 				} else {
-					readerCpp.options = ZXingCpp.Options(
+					val options = ZXingCpp.Options(
 						formats = if (binding.qrcode.isChecked) setOf(Format.QR_CODE) else setOf(),
 						tryHarder = binding.tryHarder.isChecked,
 						tryRotate = binding.tryRotate.isChecked,
@@ -231,7 +231,7 @@ class MainActivity : AppCompatActivity() {
 					)
 
 					resultText = try {
-						val results = image.use { readerCpp.read(it) }
+						val results = image.use { readerCpp.read(it, options) }
 						results?.first()?.let {
 							runtime2 += it.time?.toInt() ?: 0
 							resultPoints = it.position?.let {
