@@ -133,15 +133,6 @@ static jobject CreatePosition(JNIEnv* env, const Position& position)
 		position.orientation());
 }
 
-static jobject CreateContentType(JNIEnv* env, ContentType contentType)
-{
-	jclass cls = env->FindClass("com/zxingcpp/ZXingCpp$ContentType");
-	jfieldID fidCT = env->GetStaticFieldID(cls,
-		JavaContentTypeName(contentType),
-		"Lcom/zxingcpp/ZXingCpp$ContentType;");
-	return env->GetStaticObjectField(cls, fidCT);
-}
-
 static jbyteArray CreateByteArray(JNIEnv* env, const void* data,
 	unsigned int length)
 {
@@ -160,13 +151,27 @@ static jbyteArray CreateByteArray(JNIEnv* env,
 		byteArray.size());
 }
 
+static jobject CreateEnum(JNIEnv* env, const char* enumClass,
+	const char* value)
+{
+	jclass cls = env->FindClass(enumClass);
+	jfieldID fidCT = env->GetStaticFieldID(cls, value,
+		("L" + std::string(enumClass) + ";").c_str());
+	return env->GetStaticObjectField(cls, fidCT);
+}
+
+static jobject CreateContentType(JNIEnv* env, ContentType contentType)
+{
+	return CreateEnum(env,
+		"com/zxingcpp/ZXingCpp$ContentType",
+		JavaContentTypeName(contentType));
+}
+
 static jobject CreateFormat(JNIEnv* env, BarcodeFormat format)
 {
-	jclass cls = env->FindClass("com/zxingcpp/ZXingCpp$Format");
-	jfieldID fidCT = env->GetStaticFieldID(cls,
-		JavaBarcodeFormatName(format),
-		"Lcom/zxingcpp/ZXingCpp$Format;");
-	return env->GetStaticObjectField(cls, fidCT);
+	return CreateEnum(env,
+		"com/zxingcpp/ZXingCpp$Format",
+		JavaBarcodeFormatName(format));
 }
 
 static jobject CreateResult(JNIEnv* env, const Result& result,
