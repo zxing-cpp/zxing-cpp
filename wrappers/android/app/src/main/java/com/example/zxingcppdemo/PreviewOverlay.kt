@@ -18,7 +18,11 @@
 package com.example.zxingcppdemo
 
 import android.content.Context
-import android.graphics.*
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.Path
+import android.graphics.PointF
+import android.graphics.Rect
 import android.util.AttributeSet
 import android.view.View
 import androidx.camera.core.ImageProxy

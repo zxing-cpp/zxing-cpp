@@ -19,7 +19,10 @@ package com.example.zxingcppdemo
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
-import android.graphics.*
+import android.graphics.ImageFormat
+import android.graphics.PointF
+import android.graphics.Rect
+import android.graphics.YuvImage
 import android.hardware.camera2.CaptureRequest
 import android.media.AudioManager
 import android.media.MediaActionSound
@@ -31,14 +34,22 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.camera2.interop.Camera2CameraControl
 import androidx.camera.camera2.interop.CaptureRequestOptions
-import androidx.camera.core.*
+import androidx.camera.core.AspectRatio
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.ImageProxy
+import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.toPointF
 import androidx.lifecycle.LifecycleOwner
 import com.example.zxingcppdemo.databinding.ActivityCameraBinding
-import com.google.zxing.*
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.BinaryBitmap
+import com.google.zxing.DecodeHintType
+import com.google.zxing.MultiFormatReader
+import com.google.zxing.PlanarYUVLuminanceSource
 import com.google.zxing.common.HybridBinarizer
 import com.zxingcpp.ZXingCpp
 import com.zxingcpp.ZXingCpp.Format
@@ -106,8 +117,9 @@ class MainActivity : AppCompatActivity() {
 	private fun saveImage(image: ImageProxy) {
 		try {
 			val currentMillis = System.currentTimeMillis().toString()
-			val filename = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-				.toString() + "/" + currentMillis + "_ZXingCpp.jpg"
+			val filename =
+				Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+					.toString() + "/" + currentMillis + "_ZXingCpp.jpg"
 
 			File(filename).outputStream().use { out ->
 				out.write(image.toJpeg())
@@ -145,7 +157,8 @@ class MainActivity : AppCompatActivity() {
 			val readerJava = MultiFormatReader()
 
 			// Create a new camera selector each time, enforcing lens facing
-			val cameraSelector = CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_BACK).build()
+			val cameraSelector =
+				CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_BACK).build()
 
 			// Camera provider is now guaranteed to be available
 			val cameraProvider = cameraProviderFuture.get()
@@ -181,8 +194,10 @@ class MainActivity : AppCompatActivity() {
 				val cropSize = image.height / 3 * 2
 				val cropRect = if (binding.crop.isChecked)
 					Rect(
-						(image.width - cropSize) / 2, (image.height - cropSize) / 2,
-						(image.width - cropSize) / 2 + cropSize, (image.height - cropSize) / 2 + cropSize
+						(image.width - cropSize) / 2,
+						(image.height - cropSize) / 2,
+						(image.width - cropSize) / 2 + cropSize,
+						(image.height - cropSize) / 2 + cropSize
 					)
 				else
 					Rect(0, 0, image.width, image.height)
@@ -209,8 +224,13 @@ class MainActivity : AppCompatActivity() {
 						val bitmap = BinaryBitmap(
 							HybridBinarizer(
 								PlanarYUVLuminanceSource(
-									data, yStride, image.height,
-									cropRect.left, cropRect.top, cropRect.width(), cropRect.height(),
+									data,
+									yStride,
+									image.height,
+									cropRect.left,
+									cropRect.top,
+									cropRect.width(),
+									cropRect.height(),
 									false
 								)
 							)
@@ -272,7 +292,13 @@ class MainActivity : AppCompatActivity() {
 					val fps = 1000 * frameCounter.toDouble() / (now - lastFpsTimestamp)
 
 					infoText = "Time: %2d/%2d ms, FPS: %.02f, (%dx%d)"
-						.format(runtimes / frameCounter, runtime2 / frameCounter, fps, image.width, image.height)
+						.format(
+							runtimes / frameCounter,
+							runtime2 / frameCounter,
+							fps,
+							image.width,
+							image.height
+						)
 					lastFpsTimestamp = now
 					frameCounter = 0
 					runtimes = 0
@@ -287,7 +313,12 @@ class MainActivity : AppCompatActivity() {
 		}, ContextCompat.getMainExecutor(this))
 	}
 
-	private fun showResult(resultText: String, fpsText: String?, points: List<List<PointF>>, image: ImageProxy) =
+	private fun showResult(
+		resultText: String,
+		fpsText: String?,
+		points: List<List<PointF>>,
+		image: ImageProxy
+	) =
 		binding.viewFinder.post {
 			// Update the text and UI
 			binding.result.text = resultText
@@ -309,7 +340,11 @@ class MainActivity : AppCompatActivity() {
 
 		// Request permissions each time the app resumes, since they can be revoked at any time
 		if (!hasPermissions(this)) {
-			ActivityCompat.requestPermissions(this, permissions.toTypedArray(), permissionsRequestCode)
+			ActivityCompat.requestPermissions(
+				this,
+				permissions.toTypedArray(),
+				permissionsRequestCode
+			)
 		} else {
 			bindCameraUseCases()
 		}
