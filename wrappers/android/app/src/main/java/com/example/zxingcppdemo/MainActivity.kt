@@ -64,8 +64,8 @@ class MainActivity : AppCompatActivity() {
 	private val executor = Executors.newSingleThreadExecutor()
 	private val permissions = mutableListOf(Manifest.permission.CAMERA)
 	private val permissionsRequestCode = 1
-
 	private val beeper = ToneGenerator(AudioManager.STREAM_NOTIFICATION, 50)
+
 	private var lastText = String()
 	private var doSaveImage: Boolean = false
 
