@@ -60,24 +60,24 @@ public object ZXingCpp {
 	}
 
 	public data class DecodeHints(
-		val formats: Set<Format> = setOf(),
-		val tryHarder: Boolean = false,
-		val tryRotate: Boolean = false,
-		val tryInvert: Boolean = false,
-		val tryDownscale: Boolean = false,
-		val isPure: Boolean = false,
-		val tryCode39ExtendedMode: Boolean = false,
-		val validateCode39CheckSum: Boolean = false,
-		val validateITFCheckSum: Boolean = false,
-		val returnCodabarStartEnd: Boolean = false,
-		val returnErrors: Boolean = false,
-		val downscaleFactor: Int = 3,
-		val eanAddOnSymbol: EanAddOnSymbol = EanAddOnSymbol.IGNORE,
-		val binarizer: Binarizer = Binarizer.LOCAL_AVERAGE,
-		val textMode: TextMode = TextMode.HRI,
-		val minLineCount: Int = 2,
-		val maxNumberOfSymbols: Int = 0xff,
-		val downscaleThreshold: Int = 500
+		var formats: Set<Format> = setOf(),
+		var tryHarder: Boolean = false,
+		var tryRotate: Boolean = false,
+		var tryInvert: Boolean = false,
+		var tryDownscale: Boolean = false,
+		var isPure: Boolean = false,
+		var tryCode39ExtendedMode: Boolean = false,
+		var validateCode39CheckSum: Boolean = false,
+		var validateITFCheckSum: Boolean = false,
+		var returnCodabarStartEnd: Boolean = false,
+		var returnErrors: Boolean = false,
+		var downscaleFactor: Int = 3,
+		var eanAddOnSymbol: EanAddOnSymbol = EanAddOnSymbol.IGNORE,
+		var binarizer: Binarizer = Binarizer.LOCAL_AVERAGE,
+		var textMode: TextMode = TextMode.HRI,
+		var minLineCount: Int = 2,
+		var maxNumberOfSymbols: Int = 0xff,
+		var downscaleThreshold: Int = 500
 	)
 
 	public data class Position(

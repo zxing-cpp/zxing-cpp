@@ -65,6 +65,7 @@ class MainActivity : AppCompatActivity() {
 	private val permissions = mutableListOf(Manifest.permission.CAMERA)
 	private val permissionsRequestCode = 1
 	private val beeper = ToneGenerator(AudioManager.STREAM_NOTIFICATION, 50)
+	private val decodeHints = ZXingCpp.DecodeHints()
 
 	private var lastText = String()
 	private var doSaveImage: Boolean = false
@@ -237,17 +238,17 @@ class MainActivity : AppCompatActivity() {
 						if (e.toString() != "com.google.zxing.NotFoundException") e.toString() else ""
 					}
 				} else {
-					val options = ZXingCpp.DecodeHints(
-						formats = if (binding.qrcode.isChecked) setOf(Format.QR_CODE) else setOf(),
-						tryHarder = binding.tryHarder.isChecked,
-						tryRotate = binding.tryRotate.isChecked,
-						tryInvert = binding.tryInvert.isChecked,
+					decodeHints.apply {
+						formats = if (binding.qrcode.isChecked) setOf(Format.QR_CODE) else setOf()
+						tryHarder = binding.tryHarder.isChecked
+						tryRotate = binding.tryRotate.isChecked
+						tryInvert = binding.tryInvert.isChecked
 						tryDownscale = binding.tryDownscale.isChecked
-					)
+					}
 
 					resultText = try {
 						image.use {
-							ZXingCpp.read(it, options)
+							ZXingCpp.read(it, decodeHints)
 						}?.apply {
 							runtime2 += this[0].time?.toInt() ?: 0
 						}?.joinToString("\n") { result ->
