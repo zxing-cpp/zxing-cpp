@@ -135,18 +135,14 @@ class MainActivity : AppCompatActivity() {
 		val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 		cameraProviderFuture.addListener({
 
-//			val size = Size(1600, 1200)
-
 			// Set up the view finder use case to display camera preview
 			val preview = Preview.Builder()
 				.setTargetAspectRatio(AspectRatio.RATIO_16_9)
-//				.setTargetResolution(size)
 				.build()
 
 			// Set up the image analysis use case which will process frames in real time
 			val imageAnalysis = ImageAnalysis.Builder()
 				.setTargetAspectRatio(AspectRatio.RATIO_16_9) // -> 1280x720
-//				.setTargetResolution(size)
 				.setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
 				.build()
 
