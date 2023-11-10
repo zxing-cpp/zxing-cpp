@@ -92,10 +92,10 @@ class MainActivity : AppCompatActivity() {
 	}
 
 	private fun ImageProxy.toJpeg(): ByteArray {
-		//This converts the ImageProxy (from the imageAnalysis Use Case)
-		//to a ByteArray (compressed as JPEG) for then to be saved for debugging purposes
-		//This is the closest representation of the image that is passed to the
-		//decoding algorithm.
+		// This converts the ImageProxy (from the imageAnalysis Use Case)
+		// to a ByteArray (compressed as JPEG) for then to be saved for debugging purposes
+		// This is the closest representation of the image that is passed to the
+		// decoding algorithm.
 
 		val yBuffer = planes[0].buffer // Y
 		val vuBuffer = planes[2].buffer // VU
