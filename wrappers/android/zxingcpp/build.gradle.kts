@@ -26,6 +26,8 @@ android {
                 arguments("-DCMAKE_BUILD_TYPE=RelWithDebInfo")
             }
         }
+
+        consumerProguardFiles("consumer-rules.pro")
     }
     compileOptions {
         sourceCompatibility(JavaVersion.VERSION_1_8)
