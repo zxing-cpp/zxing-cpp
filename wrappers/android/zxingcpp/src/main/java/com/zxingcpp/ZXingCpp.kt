@@ -59,6 +59,10 @@ public object ZXingCpp {
 		PLAIN, ECI, HRI, HEX, ESCAPED
 	}
 
+	public enum class ErrorType {
+		FORMAT, CHECKSUM, UNSUPPORTED
+	}
+
 	public data class DecodeHints(
 		var formats: Set<Format> = setOf(),
 		var tryHarder: Boolean = false,
@@ -78,6 +82,11 @@ public object ZXingCpp {
 		var minLineCount: Int = 2,
 		var maxNumberOfSymbols: Int = 0xff,
 		var downscaleThreshold: Int = 500
+	)
+
+	public data class Error(
+		val type: ErrorType,
+		val message: String
 	)
 
 	public data class Position(
@@ -103,7 +112,7 @@ public object ZXingCpp {
 		val sequenceId: String,
 		val readerInit: Boolean,
 		val lineCount: Int,
-		val error: String
+		val error: Error?
 	)
 
 	public fun read(image: ImageProxy, decodeHints: DecodeHints): List<Result>? {
