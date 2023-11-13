@@ -102,7 +102,8 @@ public object ZXingCpp {
 		val sequenceIndex: Int,
 		val sequenceId: String,
 		val readerInit: Boolean,
-		val lineCount: Int
+		val lineCount: Int,
+		val error: String
 	)
 
 	public fun read(image: ImageProxy, decodeHints: DecodeHints): List<Result>? {

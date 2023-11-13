@@ -194,7 +194,8 @@ static jobject CreateResult(JNIEnv* env, const Result& result,
 		"I"
 		"Ljava/lang/String;"
 		"Z"
-		"I)V");
+		"I"
+		"Ljava/lang/String;)V");
 	return env->NewObject(
 		cls, constructor,
 		CreateFormat(env, result.format()),
@@ -210,7 +211,8 @@ static jobject CreateResult(JNIEnv* env, const Result& result,
 		result.sequenceIndex(),
 		C2JString(env, result.sequenceId()),
 		result.readerInit(),
-		result.lineCount());
+		result.lineCount(),
+		C2JString(env, result.error().msg()));
 }
 
 static jobject Read(JNIEnv *env, ImageView image, const DecodeHints& hints)
