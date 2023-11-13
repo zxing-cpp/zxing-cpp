@@ -227,20 +227,21 @@ static jobject CreateResult(JNIEnv* env, const Result& result,
 		"Z"
 		"I"
 		"Lcom/zxingcpp/ZXingCpp$Error;)V");
+	bool valid = result.isValid();
 	return env->NewObject(
 		cls, constructor,
 		CreateFormat(env, result.format()),
-		CreateByteArray(env, result.bytes()),
-		C2JString(env, result.text()),
+		valid ? CreateByteArray(env, result.bytes()) : nullptr,
+		valid ? C2JString(env, result.text()) : nullptr,
 		timeString,
 		CreateContentType(env, result.contentType()),
 		CreatePosition(env, result.position()),
 		result.orientation(),
-		C2JString(env, result.ecLevel()),
-		C2JString(env, result.symbologyIdentifier()),
+		valid ? C2JString(env, result.ecLevel()) : nullptr,
+		valid ? C2JString(env, result.symbologyIdentifier()) : nullptr,
 		result.sequenceSize(),
 		result.sequenceIndex(),
-		C2JString(env, result.sequenceId()),
+		valid ? C2JString(env, result.sequenceId()) : nullptr,
 		result.readerInit(),
 		result.lineCount(),
 		result.error() ? CreateError(env, result.error()) : nullptr);

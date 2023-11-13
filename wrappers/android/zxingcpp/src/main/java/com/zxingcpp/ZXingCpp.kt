@@ -109,7 +109,7 @@ public object ZXingCpp {
 		val symbologyIdentifier: String?,
 		val sequenceSize: Int,
 		val sequenceIndex: Int,
-		val sequenceId: String,
+		val sequenceId: String?,
 		val readerInit: Boolean,
 		val lineCount: Int,
 		val error: Error?
