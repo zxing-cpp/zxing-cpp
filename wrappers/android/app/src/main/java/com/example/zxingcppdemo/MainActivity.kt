@@ -250,9 +250,9 @@ class MainActivity : AppCompatActivity() {
 						image.use {
 							ZXingCpp.read(it, decodeHints)
 						}?.apply {
-							runtime2 += this[0].time?.toInt() ?: 0
+							runtime2 += this[0].time.toInt()
 						}?.joinToString("\n") { result ->
-							result.position?.let {
+							result.position.let {
 								resultPoints.add(
 									listOf(
 										it.topLeft,
