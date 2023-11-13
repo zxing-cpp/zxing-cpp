@@ -249,9 +249,9 @@ class MainActivity : AppCompatActivity() {
 					resultText = try {
 						image.use {
 							ZXingCpp.read(it, decodeHints)
-						}?.apply {
+						}.apply {
 							runtime2 += this[0].time.toInt()
-						}?.joinToString("\n") { result ->
+						}.joinToString("\n") { result ->
 							result.position.let {
 								resultPoints.add(
 									listOf(

@@ -115,7 +115,7 @@ public object ZXingCpp {
 		val error: Error?
 	)
 
-	public fun read(image: ImageProxy, decodeHints: DecodeHints): List<Result>? {
+	public fun read(image: ImageProxy, decodeHints: DecodeHints): List<Result> {
 		check(image.format in supportedYUVFormats) {
 			"Invalid image format: ${image.format}. Must be one of: $supportedYUVFormats"
 		}
@@ -137,7 +137,7 @@ public object ZXingCpp {
 		decodeHints: DecodeHints,
 		cropRect: Rect = Rect(),
 		rotation: Int = 0
-	): List<Result>? {
+	): List<Result> {
 		return readBitmap(
 			bitmap, cropRect.left, cropRect.top, cropRect.width(), cropRect.height(), rotation,
 			decodeHints
@@ -153,10 +153,10 @@ public object ZXingCpp {
 		height: Int,
 		rotation: Int,
 		decodeHints: DecodeHints
-	): List<Result>?
+	): List<Result>
 
 	private external fun readBitmap(
 		bitmap: Bitmap, left: Int, top: Int, width: Int, height: Int, rotation: Int,
 		decodeHints: DecodeHints
-	): List<Result>?
+	): List<Result>
 }

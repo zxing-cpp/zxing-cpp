@@ -257,19 +257,16 @@ static jobject Read(JNIEnv *env, ImageView image, const DecodeHints& hints)
 		auto time = std::to_wstring(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count());
 		auto timeString = C2JString(env, time);
 
+		auto cls = env->FindClass("java/util/ArrayList");
+		auto list = env->NewObject(cls,
+			env->GetMethodID(cls, "<init>", "()V"));
 		if (!results.empty()) {
-			// Only allocate when something is found.
-			auto cls = env->FindClass("java/util/ArrayList");
-			auto list = env->NewObject(cls,
-				env->GetMethodID(cls, "<init>", "()V"));
 			auto add = env->GetMethodID(cls, "add", "(Ljava/lang/Object;)Z");
 			for (const auto& result: results) {
 				env->CallBooleanMethod(list, add, CreateResult(env, result, timeString));
 			}
-			return list;
-		} else {
-			return nullptr;
 		}
+		return list;
 	} catch (const std::exception& e) {
 		return ThrowJavaException(env, e.what());
 	} catch (...) {
