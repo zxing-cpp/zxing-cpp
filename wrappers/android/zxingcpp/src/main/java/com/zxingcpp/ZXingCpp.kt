@@ -92,9 +92,9 @@ public object ZXingCpp {
 		val format: Format,
 		val bytes: ByteArray?,
 		val text: String?,
-		val time: String?, // for development/debug purposes only
+		val time: String, // for development/debug purposes only
 		val contentType: ContentType,
-		val position: Position?,
+		val position: Position,
 		val orientation: Int,
 		val ecLevel: String?,
 		val symbologyIdentifier: String?,
