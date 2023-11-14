@@ -19,7 +19,10 @@ package com.example.zxingcppdemo
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
-import android.graphics.*
+import android.graphics.ImageFormat
+import android.graphics.PointF
+import android.graphics.Rect
+import android.graphics.YuvImage
 import android.hardware.camera2.CaptureRequest
 import android.media.AudioManager
 import android.media.MediaActionSound
@@ -31,17 +34,25 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.camera2.interop.Camera2CameraControl
 import androidx.camera.camera2.interop.CaptureRequestOptions
-import androidx.camera.core.*
+import androidx.camera.core.AspectRatio
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.ImageProxy
+import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.toPointF
 import androidx.lifecycle.LifecycleOwner
 import com.example.zxingcppdemo.databinding.ActivityCameraBinding
-import com.google.zxing.*
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.BinaryBitmap
+import com.google.zxing.DecodeHintType
+import com.google.zxing.MultiFormatReader
+import com.google.zxing.PlanarYUVLuminanceSource
 import com.google.zxing.common.HybridBinarizer
-import com.zxingcpp.BarcodeReader
-import com.zxingcpp.BarcodeReader.Format
+import com.zxingcpp.ZXingCpp
+import com.zxingcpp.ZXingCpp.Format
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.util.concurrent.Executors
@@ -53,8 +64,9 @@ class MainActivity : AppCompatActivity() {
 	private val executor = Executors.newSingleThreadExecutor()
 	private val permissions = mutableListOf(Manifest.permission.CAMERA)
 	private val permissionsRequestCode = 1
-
 	private val beeper = ToneGenerator(AudioManager.STREAM_NOTIFICATION, 50)
+	private val decodeHints = ZXingCpp.DecodeHints()
+
 	private var lastText = String()
 	private var doSaveImage: Boolean = false
 
@@ -81,10 +93,10 @@ class MainActivity : AppCompatActivity() {
 	}
 
 	private fun ImageProxy.toJpeg(): ByteArray {
-		//This converts the ImageProxy (from the imageAnalysis Use Case)
-		//to a ByteArray (compressed as JPEG) for then to be saved for debugging purposes
-		//This is the closest representation of the image that is passed to the
-		//decoding algorithm.
+		// This converts the ImageProxy (from the imageAnalysis Use Case)
+		// to a ByteArray (compressed as JPEG) for then to be saved for debugging purposes
+		// This is the closest representation of the image that is passed to the
+		// decoding algorithm.
 
 		val yBuffer = planes[0].buffer // Y
 		val vuBuffer = planes[2].buffer // VU
@@ -106,8 +118,9 @@ class MainActivity : AppCompatActivity() {
 	private fun saveImage(image: ImageProxy) {
 		try {
 			val currentMillis = System.currentTimeMillis().toString()
-			val filename = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-				.toString() + "/" + currentMillis + "_ZXingCpp.jpg"
+			val filename =
+				Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+					.toString() + "/" + currentMillis + "_ZXingCpp.jpg"
 
 			File(filename).outputStream().use { out ->
 				out.write(image.toJpeg())
@@ -123,18 +136,14 @@ class MainActivity : AppCompatActivity() {
 		val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 		cameraProviderFuture.addListener({
 
-//			val size = Size(1600, 1200)
-
 			// Set up the view finder use case to display camera preview
 			val preview = Preview.Builder()
 				.setTargetAspectRatio(AspectRatio.RATIO_16_9)
-//				.setTargetResolution(size)
 				.build()
 
 			// Set up the image analysis use case which will process frames in real time
 			val imageAnalysis = ImageAnalysis.Builder()
 				.setTargetAspectRatio(AspectRatio.RATIO_16_9) // -> 1280x720
-//				.setTargetResolution(size)
 				.setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
 				.build()
 
@@ -143,10 +152,10 @@ class MainActivity : AppCompatActivity() {
 			var runtimes: Long = 0
 			var runtime2: Long = 0
 			val readerJava = MultiFormatReader()
-			val readerCpp = BarcodeReader()
 
 			// Create a new camera selector each time, enforcing lens facing
-			val cameraSelector = CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_BACK).build()
+			val cameraSelector =
+				CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_BACK).build()
 
 			// Camera provider is now guaranteed to be available
 			val cameraProvider = cameraProviderFuture.get()
@@ -182,8 +191,10 @@ class MainActivity : AppCompatActivity() {
 				val cropSize = image.height / 3 * 2
 				val cropRect = if (binding.crop.isChecked)
 					Rect(
-						(image.width - cropSize) / 2, (image.height - cropSize) / 2,
-						(image.width - cropSize) / 2 + cropSize, (image.height - cropSize) / 2 + cropSize
+						(image.width - cropSize) / 2,
+						(image.height - cropSize) / 2,
+						(image.width - cropSize) / 2 + cropSize,
+						(image.height - cropSize) / 2 + cropSize
 					)
 				else
 					Rect(0, 0, image.width, image.height)
@@ -191,7 +202,7 @@ class MainActivity : AppCompatActivity() {
 
 				val startTime = System.currentTimeMillis()
 				var resultText: String
-				var resultPoints: List<PointF>? = null
+				val resultPoints = mutableListOf<List<PointF>>()
 
 				if (binding.java.isChecked) {
 					val yPlane = image.planes[0]
@@ -210,8 +221,13 @@ class MainActivity : AppCompatActivity() {
 						val bitmap = BinaryBitmap(
 							HybridBinarizer(
 								PlanarYUVLuminanceSource(
-									data, yStride, image.height,
-									cropRect.left, cropRect.top, cropRect.width(), cropRect.height(),
+									data,
+									yStride,
+									image.height,
+									cropRect.left,
+									cropRect.top,
+									cropRect.width(),
+									cropRect.height(),
 									false
 								)
 							)
@@ -222,30 +238,44 @@ class MainActivity : AppCompatActivity() {
 						if (e.toString() != "com.google.zxing.NotFoundException") e.toString() else ""
 					}
 				} else {
-					readerCpp.options = BarcodeReader.Options(
-						formats = if (binding.qrcode.isChecked) setOf(Format.QR_CODE) else setOf(),
-						tryHarder = binding.tryHarder.isChecked,
-						tryRotate = binding.tryRotate.isChecked,
-						tryInvert = binding.tryInvert.isChecked,
+					decodeHints.apply {
+						formats = if (binding.qrcode.isChecked) setOf(Format.QR_CODE) else setOf()
+						tryHarder = binding.tryHarder.isChecked
+						tryRotate = binding.tryRotate.isChecked
+						tryInvert = binding.tryInvert.isChecked
 						tryDownscale = binding.tryDownscale.isChecked
-					)
+					}
 
 					resultText = try {
-						val result = image.use{ readerCpp.read(it) }
-						runtime2 += result?.time?.toInt() ?: 0
-						resultPoints = result?.position?.let {
-							listOf(
-								it.topLeft,
-								it.topRight,
-								it.bottomRight,
-								it.bottomLeft
-							).map { p ->
-								p.toPointF()
+						image.use {
+							ZXingCpp.read(it, decodeHints)
+						}.apply {
+							runtime2 += this[0].time.toInt()
+						}.joinToString("\n") { result ->
+							result.position.let {
+								resultPoints.add(
+									listOf(
+										it.topLeft,
+										it.topRight,
+										it.bottomRight,
+										it.bottomLeft
+									).map { p ->
+										p.toPointF()
+									}
+								)
 							}
-						}
-						(result?.let { "${it.format} (${it.contentType}): " +
-								"${if (it.contentType != BarcodeReader.ContentType.BINARY) it.text else it.bytes!!.joinToString(separator = "") { v -> "%02x".format(v) }}" }
-							?: "")
+							"${result.format} (${result.contentType}): ${
+								if (result.contentType != ZXingCpp.ContentType.BINARY) {
+									result.text
+								} else {
+									result.bytes!!.joinToString(separator = "") { v ->
+										"%02x".format(
+											v
+										)
+									}
+								}
+							}"
+						} ?: ""
 					} catch (e: Throwable) {
 						e.message ?: "Error"
 					}
@@ -259,7 +289,13 @@ class MainActivity : AppCompatActivity() {
 					val fps = 1000 * frameCounter.toDouble() / (now - lastFpsTimestamp)
 
 					infoText = "Time: %2d/%2d ms, FPS: %.02f, (%dx%d)"
-						.format(runtimes / frameCounter, runtime2 / frameCounter, fps, image.width, image.height)
+						.format(
+							runtimes / frameCounter,
+							runtime2 / frameCounter,
+							fps,
+							image.width,
+							image.height
+						)
 					lastFpsTimestamp = now
 					frameCounter = 0
 					runtimes = 0
@@ -274,7 +310,12 @@ class MainActivity : AppCompatActivity() {
 		}, ContextCompat.getMainExecutor(this))
 	}
 
-	private fun showResult(resultText: String, fpsText: String?, points: List<PointF>?, image: ImageProxy) =
+	private fun showResult(
+		resultText: String,
+		fpsText: String?,
+		points: List<List<PointF>>,
+		image: ImageProxy
+	) =
 		binding.viewFinder.post {
 			// Update the text and UI
 			binding.result.text = resultText
@@ -296,7 +337,11 @@ class MainActivity : AppCompatActivity() {
 
 		// Request permissions each time the app resumes, since they can be revoked at any time
 		if (!hasPermissions(this)) {
-			ActivityCompat.requestPermissions(this, permissions.toTypedArray(), permissionsRequestCode)
+			ActivityCompat.requestPermissions(
+				this,
+				permissions.toTypedArray(),
+				permissionsRequestCode
+			)
 		} else {
 			bindCameraUseCases()
 		}
