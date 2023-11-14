@@ -76,10 +76,10 @@ std::wstring NSDataToStringW(NSData *data) {
         return [self inflate:&bitMatrix];
     } catch(std::exception &e) {
         if (error != nil) {
-            NSDictionary *userInfo = @{
-                NSLocalizedDescriptionKey: [[NSString alloc] initWithUTF8String:e.what()]
-            };
-            *error = [[NSError alloc] initWithDomain:ZXIErrorDomain code:ZXIWriterError userInfo:userInfo];
+            const char *errorCString = e.what();
+            NSString *errorDescription = errorCString ? [NSString stringWithUTF8String:errorCString] : @"Unknown error";
+            NSDictionary *userInfo = @{ NSLocalizedDescriptionKey: errorDescription };
+            *error = [NSError errorWithDomain:ZXIErrorDomain code:ZXIWriterError userInfo:userInfo];
         }
         return nil;
     }
