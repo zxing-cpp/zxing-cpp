@@ -15,6 +15,7 @@
 #include "ODCode93Reader.h"
 #include "ODDataBarExpandedReader.h"
 #include "ODDataBarReader.h"
+#include "ODDXFilmEdgeReader.h"
 #include "ODITFReader.h"
 #include "ODMultiUPCEANReader.h"
 #include "Result.h"
@@ -61,6 +62,8 @@ Reader::Reader(const ReaderOptions& opts) : ZXing::Reader(opts)
 		_readers.emplace_back(new DataBarReader(opts));
 	if (formats.testFlags(BarcodeFormat::DataBarExpanded))
 		_readers.emplace_back(new DataBarExpandedReader(opts));
+	if (formats.testFlag(BarcodeFormat::DXFilmEdge))
+		_readers.emplace_back(new DXFilmEdgeReader(opts));
 }
 
 Reader::~Reader() = default;

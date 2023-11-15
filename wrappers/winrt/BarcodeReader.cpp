@@ -78,6 +78,8 @@ BarcodeFormat BarcodeReader::ConvertRuntimeToNative(BarcodeType type)
 		return BarcodeFormat::Code93;
 	case BarcodeType::DATA_MATRIX:
 		return BarcodeFormat::DataMatrix;
+	case BarcodeType::DX_FILM_EDGE:
+		return BarcodeFormat::DXFilmEdge;
 	case BarcodeType::EAN_13:
 		return BarcodeFormat::EAN13;
 	case BarcodeType::EAN_8:
