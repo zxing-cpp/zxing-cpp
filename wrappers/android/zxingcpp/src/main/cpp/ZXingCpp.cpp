@@ -306,8 +306,8 @@ static std::string JoinFormats(JNIEnv* env, jclass hintClass, jobject hints)
 			("L" + std::string(setClass) + ";").c_str())),
 		env->GetMethodID(cls, "toString", "()Ljava/lang/String;"));
 	std::string s = J2CString(env, jStr);
-	s.erase(0, s.find_first_not_of("["));
-	s.erase(s.find_last_not_of("]") + 1);
+	s.erase(0, s.find_first_not_of('['));
+	s.erase(s.find_last_not_of(']') + 1);
 	return s;
 }
 
