@@ -18,14 +18,20 @@ NSString *stringToNSString(const std::string &text) {
 }
 
 ZXIGTIN *getGTIN(const Result &result) {
-    auto country = GTIN::LookupCountryIdentifier(result.text(TextMode::Plain), result.format());
-    auto addOn = GTIN::EanAddOn(result);
-    return country.empty()
-        ? nullptr
-        : [[ZXIGTIN alloc]initWithCountry:stringToNSString(country)
-                                    addOn:stringToNSString(addOn)
-                                    price:stringToNSString(GTIN::Price(addOn))
-                              issueNumber:stringToNSString(GTIN::IssueNr(addOn))];
+    try {
+        auto country = GTIN::LookupCountryIdentifier(result.text(TextMode::Plain), result.format());
+        auto addOn = GTIN::EanAddOn(result);
+        return country.empty()
+            ? nullptr
+            : [[ZXIGTIN alloc]initWithCountry:stringToNSString(country)
+                                        addOn:stringToNSString(addOn)
+                                        price:stringToNSString(GTIN::Price(addOn))
+                                  issueNumber:stringToNSString(GTIN::IssueNr(addOn))];
+    } catch (std::exception e) {
+        // Because invalid GTIN data can lead to exceptions, in which case
+        // we don't want to discard the whole result.
+        return nullptr;
+    }
 }
 
 @interface ZXIBarcodeReader()
