@@ -128,6 +128,11 @@ void zxing_DecodeHints_setTextMode(zxing_DecodeHints* hints, zxing_TextMode text
 	hints->setTextMode(static_cast<TextMode>(textMode));
 }
 
+void zxing_DecodeHints_setMaxNumberOfSymbols(zxing_DecodeHints* hints, int n)
+{
+	hints->setMaxNumberOfSymbols(n);
+}
+
 /*
  * ZXing/Result.h
  */

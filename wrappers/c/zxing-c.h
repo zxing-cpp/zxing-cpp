@@ -135,6 +135,7 @@ void zxing_DecodeHints_setFormats(zxing_DecodeHints* hints, zxing_BarcodeFormats
 void zxing_DecodeHints_setBinarizer(zxing_DecodeHints* hints, zxing_Binarizer binarizer);
 void zxing_DecodeHints_setEanAddOnSymbol(zxing_DecodeHints* hints, zxing_EanAddOnSymbol eanAddOnSymbol);
 void zxing_DecodeHints_setTextMode(zxing_DecodeHints* hints, zxing_TextMode textMode);
+void zxing_DecodeHints_setMaxNumberOfSymbols(zxing_DecodeHints* hints, int n);
 
 /*
  * ZXing/Result.h
