@@ -145,46 +145,28 @@ static jobject CreatePosition(JNIEnv* env, const Position& position)
 		position.orientation());
 }
 
-static jbyteArray CreateByteArray(JNIEnv* env, const void* data, unsigned int length)
-{
-	auto size = static_cast<jsize>(length);
-	jbyteArray byteArray = env->NewByteArray(size);
-	env->SetByteArrayRegion(byteArray, 0, size, reinterpret_cast<const jbyte*>(data));
-	return byteArray;
-}
-
 static jbyteArray CreateByteArray(JNIEnv* env, const std::vector<uint8_t>& byteArray)
 {
-	return CreateByteArray(env, reinterpret_cast<const void*>(byteArray.data()), byteArray.size());
+	auto size = static_cast<jsize>(byteArray.size());
+	jbyteArray res = env->NewByteArray(size);
+	env->SetByteArrayRegion(res, 0, size, reinterpret_cast<const jbyte*>(byteArray.data()));
+	return res;
 }
 
-static jobject CreateEnum(JNIEnv* env, const char* enumClass, const char* value)
+static jobject CreateEnum(JNIEnv* env, const char* value, const char* type)
 {
-	jclass cls = env->FindClass(enumClass);
-	jfieldID fidCT = env->GetStaticFieldID(cls, value, ("L"s + enumClass + ";").c_str());
+	auto className = "com/zxingcpp/ZXingCpp$"s + type;
+	jclass cls = env->FindClass(className.c_str());
+	jfieldID fidCT = env->GetStaticFieldID(cls, value, ("L" + className + ";").c_str());
 	return env->GetStaticObjectField(cls, fidCT);
-}
-
-static jobject CreateErrorType(JNIEnv* env, Error::Type errorType)
-{
-	return CreateEnum(env, "com/zxingcpp/ZXingCpp$ErrorType", JavaErrorTypeName(errorType));
 }
 
 static jobject CreateError(JNIEnv* env, const Error& error)
 {
 	jclass cls = env->FindClass("com/zxingcpp/ZXingCpp$Error");
 	auto constructor = env->GetMethodID(cls, "<init>", "(Lcom/zxingcpp/ZXingCpp$ErrorType;" "Ljava/lang/String;)V");
-	return env->NewObject(cls, constructor, CreateErrorType(env, error.type()), C2JString(env, error.msg()));
-}
-
-static jobject CreateContentType(JNIEnv* env, ContentType contentType)
-{
-	return CreateEnum(env, "com/zxingcpp/ZXingCpp$ContentType", JavaContentTypeName(contentType));
-}
-
-static jobject CreateFormat(JNIEnv* env, BarcodeFormat format)
-{
-	return CreateEnum(env, "com/zxingcpp/ZXingCpp$Format", JavaBarcodeFormatName(format));
+	return env->NewObject(cls, constructor, CreateEnum(env, JavaErrorTypeName(error.type()), "ErrorType"),
+						  C2JString(env, error.msg()));
 }
 
 static jobject CreateResult(JNIEnv* env, const Result& result, int time)
@@ -210,10 +192,10 @@ static jobject CreateResult(JNIEnv* env, const Result& result, int time)
 	bool valid = result.isValid();
 	return env->NewObject(
 		cls, constructor,
-		CreateFormat(env, result.format()),
+		CreateEnum(env, JavaBarcodeFormatName(result.format()), "Format"),
 		valid ? CreateByteArray(env, result.bytes()) : nullptr,
 		valid ? C2JString(env, result.text()) : nullptr,
-		CreateContentType(env, result.contentType()),
+		CreateEnum(env, JavaContentTypeName(result.contentType()), "ContentType"),
 		CreatePosition(env, result.position()),
 		result.orientation(),
 		valid ? C2JString(env, result.ecLevel()) : nullptr,
@@ -262,14 +244,13 @@ static int GetIntField(JNIEnv* env, jclass cls, jobject hints, const char* name)
 	return env->GetIntField(hints, env->GetFieldID(cls, name, "I"));
 }
 
-static std::string GetEnumField(JNIEnv* env, jclass hintClass, jobject hints,
-	const char* enumClass, const char* name)
+static std::string GetEnumField(JNIEnv* env, jclass hintClass, jobject hints, const char* name, const char* type)
 {
-	jclass cls = env->FindClass(enumClass);
+	auto className = "com/zxingcpp/ZXingCpp$"s + type;
+	jclass cls = env->FindClass(className.c_str());
 	jstring s = (jstring) env->CallObjectMethod(
-		env->GetObjectField(hints, env->GetFieldID(hintClass, name,
-			("L" + std::string(enumClass) + ";").c_str())),
-		env->GetMethodID(cls, "name", "()Ljava/lang/String;"));
+			env->GetObjectField(hints, env->GetFieldID(hintClass, name, ("L"s + className + ";").c_str())),
+			env->GetMethodID(cls, "name", "()Ljava/lang/String;"));
 	return J2CString(env, s);
 }
 
@@ -295,24 +276,19 @@ static DecodeHints CreateDecodeHints(JNIEnv* env, jobject hints)
 		.setTryInvert(GetBooleanField(env, cls, hints, "tryInvert"))
 		.setTryDownscale(GetBooleanField(env, cls, hints, "tryDownscale"))
 		.setIsPure(GetBooleanField(env, cls, hints, "isPure"))
+		.setBinarizer(BinarizerFromString(GetEnumField(env, cls, hints, "binarizer", "Binarizer")))
+		.setDownscaleThreshold(GetIntField(env, cls, hints, "downscaleThreshold"))
+		.setDownscaleFactor(GetIntField(env, cls, hints, "downscaleFactor"))
+		.setMinLineCount(GetIntField(env, cls, hints, "minLineCount"))
+		.setMaxNumberOfSymbols(GetIntField(env, cls, hints, "maxNumberOfSymbols"))
 		.setTryCode39ExtendedMode(GetBooleanField(env, cls, hints, "tryCode39ExtendedMode"))
 		.setValidateCode39CheckSum(GetBooleanField(env, cls, hints, "validateCode39CheckSum"))
 		.setValidateITFCheckSum(GetBooleanField(env, cls, hints, "validateITFCheckSum"))
 		.setReturnCodabarStartEnd(GetBooleanField(env, cls, hints, "returnCodabarStartEnd"))
 		.setReturnErrors(GetBooleanField(env, cls, hints, "returnErrors"))
-		.setDownscaleFactor(GetIntField(env, cls, hints, "downscaleFactor"))
-		.setEanAddOnSymbol(EanAddOnSymbolFromString(GetEnumField(env, cls, hints,
-			"com/zxingcpp/ZXingCpp$EanAddOnSymbol",
-			"eanAddOnSymbol")))
-		.setBinarizer(BinarizerFromString(GetEnumField(env, cls, hints,
-			"com/zxingcpp/ZXingCpp$Binarizer",
-			"binarizer")))
-		.setTextMode(TextModeFromString(GetEnumField(env, cls, hints,
-			"com/zxingcpp/ZXingCpp$TextMode",
-			"textMode")))
-		.setMinLineCount(GetIntField(env, cls, hints, "minLineCount"))
-		.setMaxNumberOfSymbols(GetIntField(env, cls, hints, "maxNumberOfSymbols"))
-		.setDownscaleThreshold(GetIntField(env, cls, hints, "downscaleThreshold"));
+		.setEanAddOnSymbol(EanAddOnSymbolFromString(GetEnumField(env, cls, hints, "eanAddOnSymbol", "EanAddOnSymbol")))
+		.setTextMode(TextModeFromString(GetEnumField(env, cls, hints, "textMode", "TextMode")))
+		;
 }
 
 extern "C" JNIEXPORT jobject JNICALL
