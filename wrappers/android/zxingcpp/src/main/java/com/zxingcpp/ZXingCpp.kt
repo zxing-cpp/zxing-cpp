@@ -70,18 +70,18 @@ public object ZXingCpp {
 		var tryInvert: Boolean = false,
 		var tryDownscale: Boolean = false,
 		var isPure: Boolean = false,
+		var binarizer: Binarizer = Binarizer.LOCAL_AVERAGE,
+		var downscaleFactor: Int = 3,
+		var downscaleThreshold: Int = 500,
+		var minLineCount: Int = 2,
+		var maxNumberOfSymbols: Int = 0xff,
 		var tryCode39ExtendedMode: Boolean = false,
 		var validateCode39CheckSum: Boolean = false,
 		var validateITFCheckSum: Boolean = false,
 		var returnCodabarStartEnd: Boolean = false,
 		var returnErrors: Boolean = false,
-		var downscaleFactor: Int = 3,
 		var eanAddOnSymbol: EanAddOnSymbol = EanAddOnSymbol.IGNORE,
-		var binarizer: Binarizer = Binarizer.LOCAL_AVERAGE,
 		var textMode: TextMode = TextMode.HRI,
-		var minLineCount: Int = 2,
-		var maxNumberOfSymbols: Int = 0xff,
-		var downscaleThreshold: Int = 500
 	)
 
 	public data class Error(
@@ -101,7 +101,6 @@ public object ZXingCpp {
 		val format: Format,
 		val bytes: ByteArray?,
 		val text: String?,
-		val time: String, // for development/debug purposes only
 		val contentType: ContentType,
 		val position: Position,
 		val orientation: Int,
@@ -112,10 +111,11 @@ public object ZXingCpp {
 		val sequenceId: String?,
 		val readerInit: Boolean,
 		val lineCount: Int,
-		val error: Error?
+		val error: Error?,
+		val time: Int // for development/debug purposes only
 	)
 
-	public fun read(image: ImageProxy, decodeHints: DecodeHints): List<Result> {
+	public fun read(image: ImageProxy, hints: DecodeHints): List<Result> {
 		check(image.format in supportedYUVFormats) {
 			"Invalid image format: ${image.format}. Must be one of: $supportedYUVFormats"
 		}
@@ -128,35 +128,23 @@ public object ZXingCpp {
 			image.cropRect.width(),
 			image.cropRect.height(),
 			image.imageInfo.rotationDegrees,
-			decodeHints
+			hints
 		)
 	}
 
 	public fun read(
-		bitmap: Bitmap,
-		decodeHints: DecodeHints,
-		cropRect: Rect = Rect(),
-		rotation: Int = 0
+		bitmap: Bitmap, hints: DecodeHints, cropRect: Rect = Rect(), rotation: Int = 0
 	): List<Result> {
 		return readBitmap(
-			bitmap, cropRect.left, cropRect.top, cropRect.width(), cropRect.height(), rotation,
-			decodeHints
+			bitmap, cropRect.left, cropRect.top, cropRect.width(), cropRect.height(), rotation, hints
 		)
 	}
 
 	private external fun readYBuffer(
-		yBuffer: ByteBuffer,
-		rowStride: Int,
-		left: Int,
-		top: Int,
-		width: Int,
-		height: Int,
-		rotation: Int,
-		decodeHints: DecodeHints
+		yBuffer: ByteBuffer, rowStride: Int, left: Int, top: Int, width: Int, height: Int, rotation: Int, hints: DecodeHints
 	): List<Result>
 
 	private external fun readBitmap(
-		bitmap: Bitmap, left: Int, top: Int, width: Int, height: Int, rotation: Int,
-		decodeHints: DecodeHints
+		bitmap: Bitmap, left: Int, top: Int, width: Int, height: Int, rotation: Int, hints: DecodeHints
 	): List<Result>
 }
