@@ -5,9 +5,10 @@ insert_final_newline = true
 trim_trailing_whitespace = true
 charset = utf-8
 
-[*.{cpp,c,h,html,py}]
+[*.{cpp,c,h,html,py,kt}]
 indent_style = tab
 indent_size = 4
+max_line_length = 135
 
 [CMakeLists.txt]
 indent_style = space

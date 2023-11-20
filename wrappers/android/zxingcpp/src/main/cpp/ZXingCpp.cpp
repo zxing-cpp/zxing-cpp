@@ -12,6 +12,7 @@
 #include <stdexcept>
 
 using namespace ZXing;
+using namespace std::string_literals;
 
 static const char* JavaBarcodeFormatName(BarcodeFormat format)
 {
@@ -144,72 +145,52 @@ static jobject CreatePosition(JNIEnv* env, const Position& position)
 		position.orientation());
 }
 
-static jbyteArray CreateByteArray(JNIEnv* env, const void* data,
-	unsigned int length)
+static jbyteArray CreateByteArray(JNIEnv* env, const void* data, unsigned int length)
 {
 	auto size = static_cast<jsize>(length);
 	jbyteArray byteArray = env->NewByteArray(size);
-	env->SetByteArrayRegion(
-		byteArray, 0, size, reinterpret_cast<const jbyte*>(data));
+	env->SetByteArrayRegion(byteArray, 0, size, reinterpret_cast<const jbyte*>(data));
 	return byteArray;
 }
 
-static jbyteArray CreateByteArray(JNIEnv* env,
-	const std::vector<uint8_t>& byteArray)
+static jbyteArray CreateByteArray(JNIEnv* env, const std::vector<uint8_t>& byteArray)
 {
-	return CreateByteArray(env,
-		reinterpret_cast<const void*>(byteArray.data()),
-		byteArray.size());
+	return CreateByteArray(env, reinterpret_cast<const void*>(byteArray.data()), byteArray.size());
 }
 
-static jobject CreateEnum(JNIEnv* env, const char* enumClass,
-	const char* value)
+static jobject CreateEnum(JNIEnv* env, const char* enumClass, const char* value)
 {
 	jclass cls = env->FindClass(enumClass);
-	jfieldID fidCT = env->GetStaticFieldID(cls, value,
-		("L" + std::string(enumClass) + ";").c_str());
+	jfieldID fidCT = env->GetStaticFieldID(cls, value, ("L"s + enumClass + ";").c_str());
 	return env->GetStaticObjectField(cls, fidCT);
 }
 
 static jobject CreateErrorType(JNIEnv* env, Error::Type errorType)
 {
-	return CreateEnum(env,
-		"com/zxingcpp/ZXingCpp$ErrorType",
-		JavaErrorTypeName(errorType));
+	return CreateEnum(env, "com/zxingcpp/ZXingCpp$ErrorType", JavaErrorTypeName(errorType));
 }
 
 static jobject CreateError(JNIEnv* env, const Error& error)
 {
 	jclass cls = env->FindClass("com/zxingcpp/ZXingCpp$Error");
-	auto constructor = env->GetMethodID(
-		cls, "<init>",
-		"(Lcom/zxingcpp/ZXingCpp$ErrorType;"
-		"Ljava/lang/String;)V");
-	return env->NewObject(
-		cls, constructor,
-		CreateErrorType(env, error.type()),
-		C2JString(env, error.msg()));
+	auto constructor = env->GetMethodID(cls, "<init>", "(Lcom/zxingcpp/ZXingCpp$ErrorType;" "Ljava/lang/String;)V");
+	return env->NewObject(cls, constructor, CreateErrorType(env, error.type()), C2JString(env, error.msg()));
 }
 
 static jobject CreateContentType(JNIEnv* env, ContentType contentType)
 {
-	return CreateEnum(env,
-		"com/zxingcpp/ZXingCpp$ContentType",
-		JavaContentTypeName(contentType));
+	return CreateEnum(env, "com/zxingcpp/ZXingCpp$ContentType", JavaContentTypeName(contentType));
 }
 
 static jobject CreateFormat(JNIEnv* env, BarcodeFormat format)
 {
-	return CreateEnum(env,
-		"com/zxingcpp/ZXingCpp$Format",
-		JavaBarcodeFormatName(format));
+	return CreateEnum(env, "com/zxingcpp/ZXingCpp$Format", JavaBarcodeFormatName(format));
 }
 
 static jobject CreateResult(JNIEnv* env, const Result& result,
 	const jstring& timeString)
 {
-	jclass cls = env->FindClass(
-		"com/zxingcpp/ZXingCpp$Result");
+	jclass cls = env->FindClass("com/zxingcpp/ZXingCpp$Result");
 	auto constructor = env->GetMethodID(
 		cls, "<init>",
 		"(Lcom/zxingcpp/ZXingCpp$Format;"
@@ -258,8 +239,7 @@ static jobject Read(JNIEnv *env, ImageView image, const DecodeHints& hints)
 		auto timeString = C2JString(env, time);
 
 		auto cls = env->FindClass("java/util/ArrayList");
-		auto list = env->NewObject(cls,
-			env->GetMethodID(cls, "<init>", "()V"));
+		auto list = env->NewObject(cls, env->GetMethodID(cls, "<init>", "()V"));
 		if (!results.empty()) {
 			auto add = env->GetMethodID(cls, "add", "(Ljava/lang/Object;)Z");
 			for (const auto& result: results) {
@@ -274,14 +254,12 @@ static jobject Read(JNIEnv *env, ImageView image, const DecodeHints& hints)
 	}
 }
 
-static bool GetBooleanField(JNIEnv* env, jclass cls, jobject hints,
-	const char* name)
+static bool GetBooleanField(JNIEnv* env, jclass cls, jobject hints, const char* name)
 {
 	return env->GetBooleanField(hints, env->GetFieldID(cls, name, "Z"));
 }
 
-static int GetIntField(JNIEnv* env, jclass cls, jobject hints,
-	const char* name)
+static int GetIntField(JNIEnv* env, jclass cls, jobject hints, const char* name)
 {
 	return env->GetIntField(hints, env->GetFieldID(cls, name, "I"));
 }
@@ -299,12 +277,10 @@ static std::string GetEnumField(JNIEnv* env, jclass hintClass, jobject hints,
 
 static std::string JoinFormats(JNIEnv* env, jclass hintClass, jobject hints)
 {
-	const char* setClass = "java/util/Set";
-	jclass cls = env->FindClass(setClass);
+	jclass cls = env->FindClass("java/util/Set");
 	jstring jStr = (jstring) env->CallObjectMethod(
-		env->GetObjectField(hints, env->GetFieldID(hintClass, "formats",
-			("L" + std::string(setClass) + ";").c_str())),
-		env->GetMethodID(cls, "toString", "()Ljava/lang/String;"));
+			env->GetObjectField(hints, env->GetFieldID(hintClass, "formats","Ljava/util/Set;")),
+			env->GetMethodID(cls, "toString", "()Ljava/lang/String;"));
 	std::string s = J2CString(env, jStr);
 	s.erase(0, s.find_first_not_of('['));
 	s.erase(s.find_last_not_of(']') + 1);
@@ -344,8 +320,7 @@ static DecodeHints CreateDecodeHints(JNIEnv* env, jobject hints)
 extern "C" JNIEXPORT jobject JNICALL
 Java_com_zxingcpp_ZXingCpp_readYBuffer(
 	JNIEnv *env, jobject thiz, jobject yBuffer, jint rowStride,
-	jint left, jint top, jint width, jint height, jint rotation,
-	jobject hints)
+	jint left, jint top, jint width, jint height, jint rotation, jobject hints)
 {
 	const uint8_t* pixels = static_cast<uint8_t *>(env->GetDirectBufferAddress(yBuffer));
 
@@ -378,8 +353,7 @@ struct LockedPixels
 extern "C" JNIEXPORT jobject JNICALL
 Java_com_zxingcpp_ZXingCpp_readBitmap(
 	JNIEnv* env, jobject thiz, jobject bitmap,
-	jint left, jint top, jint width, jint height, jint rotation,
-	jobject hints)
+	jint left, jint top, jint width, jint height, jint rotation, jobject hints)
 {
 	AndroidBitmapInfo bmInfo;
 	AndroidBitmap_getInfo(env, bitmap, &bmInfo);
@@ -396,9 +370,10 @@ Java_com_zxingcpp_ZXingCpp_readBitmap(
 	if (!pixels)
 		return ThrowJavaException(env, "Failed to lock/Read AndroidBitmap data");
 
-	auto image = ImageView{pixels, (int)bmInfo.width, (int)bmInfo.height, fmt, (int)bmInfo.stride}
-		.cropped(left, top, width, height)
-		.rotated(rotation);
+	auto image =
+		ImageView{pixels, (int)bmInfo.width, (int)bmInfo.height, fmt, (int)bmInfo.stride}
+			.cropped(left, top, width, height)
+			.rotated(rotation);
 
 	return Read(env, image, CreateDecodeHints(env, hints));
 }

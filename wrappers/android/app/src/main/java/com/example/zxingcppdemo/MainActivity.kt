@@ -255,26 +255,17 @@ class MainActivity : AppCompatActivity() {
 							} else 0
 						}.joinToString("\n") { result ->
 							result.position.let {
-								resultPoints.add(
-									listOf(
-										it.topLeft,
-										it.topRight,
-										it.bottomRight,
-										it.bottomLeft
-									).map { p ->
-										p.toPointF()
-									}
-								)
+								resultPoints.add(listOf(
+									it.topLeft, it.topRight, it.bottomRight, it.bottomLeft
+								).map { p ->
+									p.toPointF()
+								})
 							}
 							"${result.format} (${result.contentType}): ${
 								if (result.contentType != ZXingCpp.ContentType.BINARY) {
 									result.text
 								} else {
-									result.bytes!!.joinToString(separator = "") { v ->
-										"%02x".format(
-											v
-										)
-									}
+									result.bytes!!.joinToString(separator = "") { v -> "%02x".format(v) }
 								}
 							}"
 						} ?: ""
@@ -290,14 +281,9 @@ class MainActivity : AppCompatActivity() {
 					val now = System.currentTimeMillis()
 					val fps = 1000 * frameCounter.toDouble() / (now - lastFpsTimestamp)
 
-					infoText = "Time: %2d/%2d ms, FPS: %.02f, (%dx%d)"
-						.format(
-							runtimes / frameCounter,
-							runtime2 / frameCounter,
-							fps,
-							image.width,
-							image.height
-						)
+					infoText = "Time: %2d/%2d ms, FPS: %.02f, (%dx%d)".format(
+						runtimes / frameCounter, runtime2 / frameCounter, fps, image.width, image.height
+					)
 					lastFpsTimestamp = now
 					frameCounter = 0
 					runtimes = 0
