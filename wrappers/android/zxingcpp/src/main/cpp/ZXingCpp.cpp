@@ -299,15 +299,27 @@ static std::string GetEnumField(JNIEnv* env, jclass hintClass, jobject hints,
 
 static std::string JoinFormats(JNIEnv* env, jclass hintClass, jobject hints)
 {
-	const char* setClass = "java/util/Set";
-	jclass cls = env->FindClass(setClass);
-	jstring jStr = (jstring) env->CallObjectMethod(
+	const char* setPath = "java/util/Set";
+	jclass setClass = env->FindClass(setPath);
+	jobjectArray array = (jobjectArray) env->CallObjectMethod(
 		env->GetObjectField(hints, env->GetFieldID(hintClass, "formats",
-			("L" + std::string(setClass) + ";").c_str())),
-		env->GetMethodID(cls, "toString", "()Ljava/lang/String;"));
-	std::string s = J2CString(env, jStr);
-	s.erase(0, s.find_first_not_of("["));
-	s.erase(s.find_last_not_of("]") + 1);
+			("L" + std::string(setPath) + ";").c_str())),
+		env->GetMethodID(setClass, "toArray", "()[Ljava/lang/Object;"));
+	if (!array) {
+		return "";
+	}
+	jclass formatClass = env->FindClass("com/zxingcpp/ZXingCpp$Format");
+	int size = env->GetArrayLength(array);
+	std::string s;
+	for (int i = 0; i < size; ++i) {
+		jobject format = env->GetObjectArrayElement(array, i);
+		jstring name = (jstring) env->CallObjectMethod(format,
+			env->GetMethodID(formatClass, "toString", "()Ljava/lang/String;"));
+		if (!s.empty()) {
+			s += ",";
+		}
+		s += J2CString(env, name);
+	}
 	return s;
 }
 
