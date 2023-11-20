@@ -187,15 +187,13 @@ static jobject CreateFormat(JNIEnv* env, BarcodeFormat format)
 	return CreateEnum(env, "com/zxingcpp/ZXingCpp$Format", JavaBarcodeFormatName(format));
 }
 
-static jobject CreateResult(JNIEnv* env, const Result& result,
-	const jstring& timeString)
+static jobject CreateResult(JNIEnv* env, const Result& result, int time)
 {
 	jclass cls = env->FindClass("com/zxingcpp/ZXingCpp$Result");
 	auto constructor = env->GetMethodID(
 		cls, "<init>",
 		"(Lcom/zxingcpp/ZXingCpp$Format;"
 		"[B"
-		"Ljava/lang/String;"
 		"Ljava/lang/String;"
 		"Lcom/zxingcpp/ZXingCpp$ContentType;"
 		"Lcom/zxingcpp/ZXingCpp$Position;"
@@ -207,14 +205,14 @@ static jobject CreateResult(JNIEnv* env, const Result& result,
 		"Ljava/lang/String;"
 		"Z"
 		"I"
-		"Lcom/zxingcpp/ZXingCpp$Error;)V");
+		"Lcom/zxingcpp/ZXingCpp$Error;"
+		"I)V");
 	bool valid = result.isValid();
 	return env->NewObject(
 		cls, constructor,
 		CreateFormat(env, result.format()),
 		valid ? CreateByteArray(env, result.bytes()) : nullptr,
 		valid ? C2JString(env, result.text()) : nullptr,
-		timeString,
 		CreateContentType(env, result.contentType()),
 		CreatePosition(env, result.position()),
 		result.orientation(),
@@ -225,7 +223,9 @@ static jobject CreateResult(JNIEnv* env, const Result& result,
 		valid ? C2JString(env, result.sequenceId()) : nullptr,
 		result.readerInit(),
 		result.lineCount(),
-		result.error() ? CreateError(env, result.error()) : nullptr);
+		result.error() ? CreateError(env, result.error()) : nullptr,
+		time
+	);
 }
 
 static jobject Read(JNIEnv *env, ImageView image, const DecodeHints& hints)
@@ -235,16 +235,14 @@ static jobject Read(JNIEnv *env, ImageView image, const DecodeHints& hints)
 		auto results = ReadBarcodes(image, hints);
 		auto duration = std::chrono::high_resolution_clock::now() - startTime;
 //		LOGD("time: %4d ms\n", (int)std::chrono::duration_cast<std::chrono::milliseconds>(duration).count());
-		auto time = std::to_wstring(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count());
-		auto timeString = C2JString(env, time);
+		auto time = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
 
 		auto cls = env->FindClass("java/util/ArrayList");
 		auto list = env->NewObject(cls, env->GetMethodID(cls, "<init>", "()V"));
 		if (!results.empty()) {
 			auto add = env->GetMethodID(cls, "add", "(Ljava/lang/Object;)Z");
-			for (const auto& result: results) {
-				env->CallBooleanMethod(list, add, CreateResult(env, result, timeString));
-			}
+			for (const auto& result: results)
+				env->CallBooleanMethod(list, add, CreateResult(env, result, time));
 		}
 		return list;
 	} catch (const std::exception& e) {

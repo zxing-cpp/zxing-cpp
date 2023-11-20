@@ -101,7 +101,6 @@ public object ZXingCpp {
 		val format: Format,
 		val bytes: ByteArray?,
 		val text: String?,
-		val time: String, // for development/debug purposes only
 		val contentType: ContentType,
 		val position: Position,
 		val orientation: Int,
@@ -112,7 +111,8 @@ public object ZXingCpp {
 		val sequenceId: String?,
 		val readerInit: Boolean,
 		val lineCount: Int,
-		val error: Error?
+		val error: Error?,
+		val time: Int // for development/debug purposes only
 	)
 
 	public fun read(image: ImageProxy, hints: DecodeHints): List<Result> {
