@@ -254,23 +254,28 @@ static std::string GetEnumField(JNIEnv* env, jclass hintClass, jobject hints, co
 	return J2CString(env, s);
 }
 
-static std::string JoinFormats(JNIEnv* env, jclass hintClass, jobject hints)
+static BarcodeFormats GetFormats(JNIEnv* env, jclass hintClass, jobject hints)
 {
-	jclass cls = env->FindClass("java/util/Set");
-	jstring jStr = (jstring) env->CallObjectMethod(
-			env->GetObjectField(hints, env->GetFieldID(hintClass, "formats","Ljava/util/Set;")),
-			env->GetMethodID(cls, "toString", "()Ljava/lang/String;"));
-	std::string s = J2CString(env, jStr);
-	s.erase(0, s.find_first_not_of('['));
-	s.erase(s.find_last_not_of(']') + 1);
-	return s;
+	auto objArray = static_cast<jobjectArray>(env->CallObjectMethod(
+			env->GetObjectField(hints, env->GetFieldID(hintClass, "formats", "Ljava/util/Set;")),
+			env->GetMethodID(env->FindClass("java/util/Set"), "toArray", "()[Ljava/lang/Object;")));
+	if (!objArray)
+		return {};
+
+	auto midName = env->GetMethodID(env->FindClass("com/zxingcpp/ZXingCpp$Format"), "name", "()Ljava/lang/String;");
+	BarcodeFormats ret;
+	for (int i = 0, size = env->GetArrayLength(objArray); i < size; ++i) {
+		auto objName = static_cast<jstring>(env->CallObjectMethod(env->GetObjectArrayElement(objArray, i), midName));
+		ret |= BarcodeFormatFromString(J2CString(env, objName));
+	}
+	return ret;
 }
 
 static DecodeHints CreateDecodeHints(JNIEnv* env, jobject hints)
 {
 	jclass cls = env->GetObjectClass(hints);
 	return DecodeHints()
-		.setFormats(BarcodeFormatsFromString(JoinFormats(env, cls, hints)))
+		.setFormats(GetFormats(env, cls, hints))
 		.setTryHarder(GetBooleanField(env, cls, hints, "tryHarder"))
 		.setTryRotate(GetBooleanField(env, cls, hints, "tryRotate"))
 		.setTryInvert(GetBooleanField(env, cls, hints, "tryInvert"))
