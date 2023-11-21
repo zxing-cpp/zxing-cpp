@@ -119,30 +119,28 @@ static jstring ThrowJavaException(JNIEnv* env, const char* message)
 	return nullptr;
 }
 
-static jobject CreateAndroidPoint(JNIEnv* env, const PointT<int>& point)
-{
-	jclass cls = env->FindClass("android/graphics/Point");
-	auto constructor = env->GetMethodID(cls, "<init>", "(II)V");
-	return env->NewObject(cls, constructor, point.x, point.y);
-}
-
 static jobject CreatePosition(JNIEnv* env, const Position& position)
 {
-	jclass cls = env->FindClass("com/zxingcpp/ZXingCpp$Position");
-	auto constructor = env->GetMethodID(
-		cls, "<init>",
+	jclass clsPosition = env->FindClass("com/zxingcpp/ZXingCpp$Position");
+	jclass clsPoint = env->FindClass("android/graphics/Point");
+	auto midPointInit= env->GetMethodID(clsPoint, "<init>", "(II)V");
+	auto NewPoint = [&](const PointI& point) {
+		return env->NewObject(clsPoint, midPointInit, point.x, point.y);
+	};
+	auto midPositionInit= env->GetMethodID(
+		clsPosition, "<init>",
 		"(Landroid/graphics/Point;"
 		"Landroid/graphics/Point;"
 		"Landroid/graphics/Point;"
 		"Landroid/graphics/Point;"
 		"D)V");
 	return env->NewObject(
-		cls, constructor,
-		CreateAndroidPoint(env, position.topLeft()),
-		CreateAndroidPoint(env, position.topRight()),
-		CreateAndroidPoint(env, position.bottomLeft()),
-		CreateAndroidPoint(env, position.bottomRight()),
-		position.orientation());
+			clsPosition, midPositionInit,
+			NewPoint(position[0]),
+			NewPoint(position[1]),
+			NewPoint(position[2]),
+			NewPoint(position[3]),
+			position.orientation());
 }
 
 static jbyteArray CreateByteArray(JNIEnv* env, const std::vector<uint8_t>& byteArray)

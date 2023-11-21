@@ -92,8 +92,8 @@ public object ZXingCpp {
 	public data class Position(
 		val topLeft: Point,
 		val topRight: Point,
-		val bottomLeft: Point,
 		val bottomRight: Point,
+		val bottomLeft: Point,
 		val orientation: Double
 	)
 
