@@ -258,6 +258,8 @@ static void DecodeContent(const BitArray& bits, Content& res)
 
 	while (remBits.size() >= (shiftTable == Table::DIGIT ? 4 : 5)) { // see ISO/IEC 24778:2008 7.3.1.2 regarding padding bits
 		if (shiftTable == Table::BINARY) {
+			if (remBits.size() <= 5) // padding bits
+				break;
 			int length = remBits.readBits(5);
 			if (length == 0)
 				length = remBits.readBits(11) + 31;
