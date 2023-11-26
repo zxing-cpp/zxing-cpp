@@ -51,7 +51,7 @@ auto read_barcodes_impl(py::object _image, const BarcodeFormats& formats, bool t
 		.setEanAddOnSymbol(ean_add_on_symbol)
 		.setReturnErrors(return_errors);
 	const auto _type = std::string(py::str(py::type::of(_image)));
-	py::buffer buffer;
+	py::buffer_info info;
 	ImageFormat imgfmt = ImageFormat::None;
 	try {
 		if (py::hasattr(_image, "__array_interface__")) {
@@ -72,41 +72,39 @@ auto read_barcodes_impl(py::object _image, const BarcodeFormats& formats, bool t
 			}
 
 			auto ai = _image.attr("__array_interface__").cast<py::dict>();
-			auto ashape = ai["shape"].cast<py::tuple>();
+			auto shape = ai["shape"].cast<std::vector<ssize_t>>();
+			auto typestr = ai["typestr"].cast<std::string>();
+
+			if (typestr != "|u1")
+				throw py::type_error("Incompatible __array_interface__ data type (" + typestr + "): expected a uint8_t array (|u1).");
 
 			if (ai.contains("data")) {
 				auto adata = ai["data"];
 
-				if (py::isinstance<py::tuple>(adata)) {
-					auto data_ptr = adata.cast<py::tuple>()[0].cast<py::size_t>();
-					auto data_len = Reduce(ashape.cast<std::vector<int>>(), 1, std::multiplies{});
-					buffer = py::memoryview::from_memory(reinterpret_cast<void*>(data_ptr), data_len, true);
-				} else if (py::isinstance<py::buffer>(adata)) {
-					// Numpy and our own __array_interface__ passes data as a buffer/bytes object
-					buffer = adata.cast<py::buffer>();
+				if (py::isinstance<py::buffer>(adata)) {
+					// PIL and our own __array_interface__ passes data as a buffer/bytes object
+					info = adata.cast<py::buffer>().request();
+					// PIL's bytes object has wrong dim/shape/strides info
+					if (info.ndim != Size(shape)) {
+						info.ndim = Size(shape);
+						info.shape = shape;
+						info.strides = py::detail::c_strides(shape, 1);
+					}
+				} else if (py::isinstance<py::tuple>(adata)) {
+					// numpy data is passed as a tuple
+					auto strides = py::detail::c_strides(shape, 1);
+					if (ai.contains("strides") && !ai["strides"].is_none())
+						strides = ai["strides"].cast<std::vector<ssize_t>>();
+					auto data_ptr = reinterpret_cast<void*>(adata.cast<py::tuple>()[0].cast<py::size_t>());
+					info = py::buffer_info(data_ptr, 1, "B", Size(shape), shape, strides);
 				} else {
 					throw py::type_error("No way to get data from __array_interface__");
 				}
 			} else {
-				buffer = _image.cast<py::buffer>();
-			}
-
-			py::tuple bshape;
-			if (py::hasattr(buffer, "shape")) {
-				bshape = buffer.attr("shape").cast<py::tuple>();
-			}
-
-			// We need to check if the shape is equal because memoryviews can only be cast from 1D
-			// to ND and in reverse, not from ND to ND. If the shape is already correct, as with our
-			// return value from write_barcode, we don't need to cast. There are libraries (PIL for
-			// example) that pass 1D data here, in that case we need to cast because the later code
-			// expects a buffer in the correct shape.
-			if (!ashape.equal(bshape)) {
-				auto bufferview = py::memoryview(buffer);
-				buffer = bufferview.attr("cast")("B", ashape).cast<py::buffer>();
+				info = _image.cast<py::buffer>().request();
 			}
 		} else {
-			buffer = _image.cast<py::buffer>();
+			info = _image.cast<py::buffer>().request();
 		}
 #if PYBIND11_VERSION_HEX > 0x02080000 // py::raise_from is available starting from 2.8.0
 	} catch (py::error_already_set &e) {
@@ -117,18 +115,17 @@ auto read_barcodes_impl(py::object _image, const BarcodeFormats& formats, bool t
 		throw py::type_error("Invalid input: " + _type + " does not support the buffer protocol.");
 	}
 
-	/* Request a buffer descriptor from Python */
-	py::buffer_info info = buffer.request();
-
 	if (info.format != py::format_descriptor<uint8_t>::format())
-		throw py::type_error("Incompatible buffer format: expected a uint8_t array.");
+		throw py::type_error("Incompatible buffer format '" + info.format + "': expected a uint8_t array.");
 
 	if (info.ndim != 2 && info.ndim != 3)
-		throw py::type_error("Incompatible buffer dimension (needs to be 2 or 3).");
+		throw py::type_error("Incompatible buffer dimension " + std::to_string(info.ndim) + " (needs to be 2 or 3).");
 
 	const auto height = narrow_cast<int>(info.shape[0]);
 	const auto width = narrow_cast<int>(info.shape[1]);
 	const auto channels = info.ndim == 2 ? 1 : narrow_cast<int>(info.shape[2]);
+	const auto rowStride = narrow_cast<int>(info.strides[0]);
+	const auto pixStride = narrow_cast<int>(info.strides[1]);
 	if (imgfmt == ImageFormat::None) {
 		// Assume grayscale or BGR image depending on channels number
 		if (channels == 1)
@@ -142,7 +139,7 @@ auto read_barcodes_impl(py::object _image, const BarcodeFormats& formats, bool t
 	const auto bytes = static_cast<uint8_t*>(info.ptr);
 	// Disables the GIL during zxing processing (restored automatically upon completion)
 	py::gil_scoped_release release;
-	return ReadBarcodes({bytes, width, height, imgfmt, width * channels, channels}, hints);
+	return ReadBarcodes({bytes, width, height, imgfmt, rowStride, pixStride}, hints);
 }
 
 std::optional<Result> read_barcode(py::object _image, const BarcodeFormats& formats, bool try_rotate, bool try_downscale,

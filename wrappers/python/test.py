@@ -6,6 +6,7 @@ import zxingcpp
 
 has_numpy = importlib.util.find_spec('numpy') is not None
 has_pil = importlib.util.find_spec('PIL') is not None
+has_cv2 = importlib.util.find_spec('cv2') is not None
 
 BF = zxingcpp.BarcodeFormat
 
@@ -92,10 +93,11 @@ class TestReadWrite(unittest.TestCase):
 		import numpy as np
 		format = BF.QRCode
 		text = "I have the best words."
-		img = zxingcpp.write_barcode(format, text)
+		img = zxingcpp.write_barcode(format, text, quiet_zone=10)
 		img = np.array(img)
 
 		self.check_res(zxingcpp.read_barcode(img), format, text)
+		self.check_res(zxingcpp.read_barcode(img[5:40,5:40]), format, text)
 
 	@unittest.skipIf(not has_pil, "need PIL for read/write tests")
 	def test_write_read_cycle_pil(self):
@@ -110,6 +112,17 @@ class TestReadWrite(unittest.TestCase):
 		self.check_res(zxingcpp.read_barcode(img.convert("RGBA")), format, text)
 		self.check_res(zxingcpp.read_barcode(img.convert("1")), format, text)
 		self.check_res(zxingcpp.read_barcode(img.convert("CMYK")), format, text)
+
+	@unittest.skipIf(not has_cv2, "need cv2 for read/write tests")
+	def test_write_read_cycle_cv2(self):
+		import cv2, numpy
+		format = BF.QRCode
+		text = "I have the best words."
+		img = zxingcpp.write_barcode(format, text, quiet_zone=10)
+		img = cv2.cvtColor(numpy.array(img), cv2.COLOR_GRAY2BGR )
+
+		self.check_res(zxingcpp.read_barcode(img), format, text)
+		self.check_res(zxingcpp.read_barcode(img[5:40,5:40,:]), format, text)
 
 	def test_read_invalid_type(self):
 		self.assertRaisesRegex(
