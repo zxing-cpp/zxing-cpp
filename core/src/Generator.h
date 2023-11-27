@@ -5,8 +5,12 @@
 
 #pragma once
 
-#ifdef __cpp_impl_coroutine
 #ifdef __ANDROID__
+#include <android/ndk-version.h>
+#endif
+
+#ifdef __cpp_impl_coroutine
+#if defined __ANDROID__ && __NDK_MAJOR__ < 26
 // NDK 25.1.8937393 can compile this code with c++20 but needs a few tweaks:
 #include <experimental/coroutine>
 namespace std {
@@ -25,7 +29,7 @@ namespace std {
 // this code is based on https://en.cppreference.com/w/cpp/coroutine/coroutine_handle#Example
 // but modified trying to prevent accidental copying of generated objects
 
-#ifdef __ANDROID__
+#if defined __ANDROID__ && __NDK_MAJOR__ < 26
 template <class T>
 #else
 template <std::movable T>
