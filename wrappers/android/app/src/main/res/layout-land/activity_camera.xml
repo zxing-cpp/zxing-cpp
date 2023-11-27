@@ -105,6 +105,11 @@
             android:text="crop" />
 
         <com.google.android.material.chip.Chip
+            android:id="@+id/single"
+            style="@style/Chip"
+            android:text="single" />
+
+        <com.google.android.material.chip.Chip
             android:id="@+id/torch"
             style="@style/Chip"
             android:text="Torch" />
