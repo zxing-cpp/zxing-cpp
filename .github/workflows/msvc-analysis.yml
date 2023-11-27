@@ -55,7 +55,8 @@ jobs:
           buildConfiguration: ${{ env.config }}
           # Ruleset file that will determine what checks will be run
           ruleset: NativeRecommendedRules.ruleset
-          additionalArgs: /wd26451 # Suppress C26451, apparently bogous in VS2019
+          # additionalArgs: /wd26451 # Suppress C26451, apparently bogous in VS2019
+          # still fails, see https://github.com/microsoft/msvc-code-analysis-action/issues/31
 
       # Upload SARIF file to GitHub Code Scanning Alerts
       - name: Upload SARIF to GitHub
