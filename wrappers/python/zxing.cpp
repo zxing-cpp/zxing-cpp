@@ -72,7 +72,7 @@ auto read_barcodes_impl(py::object _image, const BarcodeFormats& formats, bool t
 			}
 
 			auto ai = _image.attr("__array_interface__").cast<py::dict>();
-			auto shape = ai["shape"].cast<std::vector<ssize_t>>();
+			auto shape = ai["shape"].cast<std::vector<py::ssize_t>>();
 			auto typestr = ai["typestr"].cast<std::string>();
 
 			if (typestr != "|u1")
@@ -94,7 +94,7 @@ auto read_barcodes_impl(py::object _image, const BarcodeFormats& formats, bool t
 					// numpy data is passed as a tuple
 					auto strides = py::detail::c_strides(shape, 1);
 					if (ai.contains("strides") && !ai["strides"].is_none())
-						strides = ai["strides"].cast<std::vector<ssize_t>>();
+						strides = ai["strides"].cast<std::vector<py::ssize_t>>();
 					auto data_ptr = reinterpret_cast<void*>(adata.cast<py::tuple>()[0].cast<py::size_t>());
 					info = py::buffer_info(data_ptr, 1, "B", Size(shape), shape, strides);
 				} else {
