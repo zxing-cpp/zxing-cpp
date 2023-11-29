@@ -147,14 +147,14 @@ static void DecodeAlphanumericSegment(BitSource& bits, int count, Content& resul
 	// See section 6.4.8.1, 6.4.8.2
 	if (result.symbology.aiFlag != AIFlag::None) {
 		// We need to massage the result a bit if in an FNC1 mode:
-		for (size_t i = 0; i < buffer.length(); i++) {
-			if (buffer[i] == '%') {
-				if (i < buffer.length() - 1 && buffer[i + 1] == '%') {
+		for (auto i = buffer.begin(); i != buffer.end(); i++) {
+			if (*i == '%') {
+				if (i + 1 != buffer.end() && *(i + 1) == '%') {
 					// %% is rendered as %
-					buffer.erase(i + 1);
+					i = buffer.erase(i);
 				} else {
 					// In alpha mode, % should be converted to FNC1 separator 0x1D
-					buffer[i] = static_cast<char>(0x1D);
+					*i = static_cast<char>(0x1D);
 				}
 			}
 		}

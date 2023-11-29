@@ -130,3 +130,15 @@ TEST(QRDecodedBitStreamParserTest, SymbologyIdentifier)
 	result = DecodeBitStream({0x9A, 0x42, 0x00, 0x96, 0x00}, version, ecLevel);
 	EXPECT_FALSE(result.isValid());
 }
+
+TEST(QRDecodedBitStreamParserTest, GS1PercentGS)
+{
+	const Version& version = *Version::Model2(1);
+	const ErrorCorrectionLevel ecLevel = ErrorCorrectionLevel::Quality;
+	DecoderResult result;
+
+	// GS1 "FNC1(1st) A(11) 9112%%%2012 (9112%<FNC1>2012)"
+	result = DecodeBitStream({0x52, 0x05, 0x99, 0x60, 0x5F, 0xB5, 0x35, 0x80, 0x01, 0x08, 0x00, 0xEC, 0x11}, version, ecLevel);
+	EXPECT_EQ(result.content().text(TextMode::Plain), "9112%\x1D" "2012");
+	EXPECT_EQ(result.content().text(TextMode::HRI), "(91)12%(20)12");
+}
