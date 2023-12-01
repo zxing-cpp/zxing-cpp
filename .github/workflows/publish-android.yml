@@ -1,0 +1,32 @@
+name: publish-adroid
+
+on:
+#  release:
+#    types: [published]
+
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Publish package (y/n)'
+        default: 'n'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+#    - name: Grant Permission to Execute
+#      run: chmod +x gradlew
+#    - name: New version
+#      run: ./gradlew versionDisplay
+    - name: Publish Library
+      env:
+        ORG_GRADLE_PROJECT_signingKey: ${{ secrets.OSSRH_GPG_SECRET_KEY }}
+        ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }}
+        ORG_GRADLE_PROJECT_ossrhUsername: ${{ secrets.OSSRH_USERNAME }}
+        ORG_GRADLE_PROJECT_ossrhPassword: ${{ secrets.OSSRH_PASSWORD }}
+      run: ./gradlew publishAllPublicationsToSonatypeRepository
