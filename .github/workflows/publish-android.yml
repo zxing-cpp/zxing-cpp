@@ -20,10 +20,12 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 #    - name: Grant Permission to Execute
-#      run: chmod +x gradlew
+#      run: chmod +x wrappers/android/gradlew
 #    - name: New version
+#      working-directory: wrappers/android
 #      run: ./gradlew versionDisplay
     - name: Publish Library
+      working-directory: wrappers/android
       env:
         ORG_GRADLE_PROJECT_signingKey: ${{ secrets.OSSRH_GPG_SECRET_KEY }}
         ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }}
