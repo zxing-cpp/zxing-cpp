@@ -22,7 +22,7 @@
     </style>
 
 
-    <string name="app_name">ZXingCpp-Demo</string>
+    <string name="app_name">zxing-cpp</string>
     <string name="capture_button_alt">Capture</string>
     <string name="unknown">UNKNOWN</string>
 

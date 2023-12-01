@@ -14,7 +14,7 @@
 * limitations under the License.
 */
 
-package com.example.zxingcppdemo
+package zxingcpp.app
 
 import android.Manifest
 import android.content.Context
@@ -44,18 +44,18 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.toPointF
 import androidx.lifecycle.LifecycleOwner
-import com.example.zxingcppdemo.databinding.ActivityCameraBinding
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.BinaryBitmap
 import com.google.zxing.DecodeHintType
 import com.google.zxing.MultiFormatReader
 import com.google.zxing.PlanarYUVLuminanceSource
 import com.google.zxing.common.HybridBinarizer
-import com.zxingcpp.ZXingCpp
-import com.zxingcpp.ZXingCpp.Format
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.util.concurrent.Executors
+import zxingcpp.app.databinding.ActivityCameraBinding
+import zxingcpp.ZXingCpp
+import zxingcpp.ZXingCpp.Format
 
 
 class MainActivity : AppCompatActivity() {

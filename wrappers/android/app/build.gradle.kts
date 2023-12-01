@@ -4,9 +4,9 @@ plugins {
 }
 
 android {
-    namespace = "com.example.zxingcppdemo"
+    namespace = "zxingcpp.app"
     defaultConfig {
-        applicationId = "com.example.zxingdemo"
+        applicationId = "io.github.zxingcpp.app"
         compileSdk = libs.versions.androidCompileSdk.get().toInt()
         minSdk = 26 // for the adaptive icons. TODO: remove adaptive icons and lower to API 21
         targetSdk = libs.versions.androidTargetSdk.get().toInt()

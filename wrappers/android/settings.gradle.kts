@@ -16,4 +16,4 @@ dependencyResolutionManagement {
 include(":app")
 include(":zxingcpp")
 
-rootProject.name = "ZXingCpp"
+rootProject.name = "zxing-cpp"

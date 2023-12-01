@@ -14,6 +14,8 @@
 using namespace ZXing;
 using namespace std::string_literals;
 
+#define PACKAGE "zxingcpp/ZXingCpp$"
+
 static const char* JavaBarcodeFormatName(BarcodeFormat format)
 {
 	// These have to be the names of the enum constants in the kotlin code.
@@ -121,7 +123,7 @@ static jstring ThrowJavaException(JNIEnv* env, const char* message)
 
 static jobject NewPosition(JNIEnv* env, const Position& position)
 {
-	jclass clsPosition = env->FindClass("com/zxingcpp/ZXingCpp$Position");
+	jclass clsPosition = env->FindClass(PACKAGE "Position");
 	jclass clsPoint = env->FindClass("android/graphics/Point");
 	jmethodID midPointInit= env->GetMethodID(clsPoint, "<init>", "(II)V");
 	auto NewPoint = [&](const PointI& point) {
@@ -153,7 +155,7 @@ static jbyteArray NewByteArray(JNIEnv* env, const std::vector<uint8_t>& byteArra
 
 static jobject NewEnum(JNIEnv* env, const char* value, const char* type)
 {
-	auto className = "com/zxingcpp/ZXingCpp$"s + type;
+	auto className = PACKAGE ""s + type;
 	jclass cls = env->FindClass(className.c_str());
 	jfieldID fidCT = env->GetStaticFieldID(cls, value, ("L" + className + ";").c_str());
 	return env->GetStaticObjectField(cls, fidCT);
@@ -161,21 +163,21 @@ static jobject NewEnum(JNIEnv* env, const char* value, const char* type)
 
 static jobject NewError(JNIEnv* env, const Error& error)
 {
-	jclass cls = env->FindClass("com/zxingcpp/ZXingCpp$Error");
-	jmethodID midInit = env->GetMethodID(cls, "<init>", "(Lcom/zxingcpp/ZXingCpp$ErrorType;" "Ljava/lang/String;)V");
+	jclass cls = env->FindClass(PACKAGE "Error");
+	jmethodID midInit = env->GetMethodID(cls, "<init>", "(L" PACKAGE "ErrorType;" "Ljava/lang/String;)V");
 	return env->NewObject(cls, midInit, NewEnum(env, JavaErrorTypeName(error.type()), "ErrorType"), C2JString(env, error.msg()));
 }
 
 static jobject NewResult(JNIEnv* env, const Result& result, int time)
 {
-	jclass cls = env->FindClass("com/zxingcpp/ZXingCpp$Result");
+	jclass cls = env->FindClass(PACKAGE "Result");
 	jmethodID midInit = env->GetMethodID(
 		cls, "<init>",
-		"(Lcom/zxingcpp/ZXingCpp$Format;"
+		"(L" PACKAGE "Format;"
 		"[B"
 		"Ljava/lang/String;"
-		"Lcom/zxingcpp/ZXingCpp$ContentType;"
-		"Lcom/zxingcpp/ZXingCpp$Position;"
+		"L" PACKAGE "ContentType;"
+		"L" PACKAGE "Position;"
 		"I"
 		"Ljava/lang/String;"
 		"Ljava/lang/String;"
@@ -184,7 +186,7 @@ static jobject NewResult(JNIEnv* env, const Result& result, int time)
 		"Ljava/lang/String;"
 		"Z"
 		"I"
-		"Lcom/zxingcpp/ZXingCpp$Error;"
+		"L" PACKAGE "Error;"
 		"I)V");
 	bool valid = result.isValid();
 	return env->NewObject(cls, midInit,
@@ -242,7 +244,7 @@ static int GetIntField(JNIEnv* env, jclass cls, jobject hints, const char* name)
 
 static std::string GetEnumField(JNIEnv* env, jclass cls, jobject hints, const char* name, const char* type)
 {
-	auto className = "com/zxingcpp/ZXingCpp$"s + type;
+	auto className = PACKAGE ""s + type;
 	jmethodID midName = env->GetMethodID(env->FindClass(className.c_str()), "name", "()Ljava/lang/String;");
 	jobject objField = env->GetObjectField(hints, env->GetFieldID(cls, name, ("L"s + className + ";").c_str()));
 	return J2CString(env, static_cast<jstring>(env->CallObjectMethod(objField, midName)));
@@ -256,7 +258,7 @@ static BarcodeFormats GetFormats(JNIEnv* env, jclass hintClass, jobject hints)
 	if (!objArray)
 		return {};
 
-	jmethodID midName = env->GetMethodID(env->FindClass("com/zxingcpp/ZXingCpp$Format"), "name", "()Ljava/lang/String;");
+	jmethodID midName = env->GetMethodID(env->FindClass(PACKAGE "Format"), "name", "()Ljava/lang/String;");
 	BarcodeFormats ret;
 	for (int i = 0, size = env->GetArrayLength(objArray); i < size; ++i) {
 		auto objName = static_cast<jstring>(env->CallObjectMethod(env->GetObjectArrayElement(objArray, i), midName));
@@ -291,7 +293,7 @@ static DecodeHints CreateDecodeHints(JNIEnv* env, jobject hints)
 }
 
 extern "C" JNIEXPORT jobject JNICALL
-Java_com_zxingcpp_ZXingCpp_readYBuffer(
+Java_zxingcpp_ZXingCpp_readYBuffer(
 	JNIEnv *env, jobject thiz, jobject yBuffer, jint rowStride,
 	jint left, jint top, jint width, jint height, jint rotation, jobject hints)
 {
@@ -324,7 +326,7 @@ struct LockedPixels
 };
 
 extern "C" JNIEXPORT jobject JNICALL
-Java_com_zxingcpp_ZXingCpp_readBitmap(
+Java_zxingcpp_ZXingCpp_readBitmap(
 	JNIEnv* env, jobject thiz, jobject bitmap,
 	jint left, jint top, jint width, jint height, jint rotation, jobject hints)
 {
