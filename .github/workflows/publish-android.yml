@@ -19,9 +19,6 @@ jobs:
       with:
         distribution: 'temurin'
         java-version: '17'
-#    - name: Grant Permission to Execute
-#      run: chmod +x wrappers/android/gradlew
-#    - name: New version
 #      working-directory: wrappers/android
 #      run: ./gradlew versionDisplay
     - name: Publish Library
@@ -31,4 +28,4 @@ jobs:
         ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }}
         ORG_GRADLE_PROJECT_ossrhUsername: ${{ secrets.OSSRH_USERNAME }}
         ORG_GRADLE_PROJECT_ossrhPassword: ${{ secrets.OSSRH_PASSWORD }}
-      run: ./gradlew publishAllPublicationsToSonatypeRepository
+      run: ./gradlew publishRleasePublicationsToSonatypeRepository
