@@ -45,7 +45,7 @@ static const char* JavaBarcodeFormatName(BarcodeFormat format)
 	case BarcodeFormat::DataBarExpanded: return "DATA_BAR_EXPANDED";
 	case BarcodeFormat::UPCA: return "UPC_A";
 	case BarcodeFormat::UPCE: return "UPC_E";
-	default: throw std::invalid_argument("Invalid format");
+	default: throw std::invalid_argument("Invalid BarcodeFormat");
 	}
 }
 
@@ -199,7 +199,7 @@ static jobject NewResult(JNIEnv* env, const Result& result, int time)
 	jclass cls = env->FindClass(PACKAGE "Result");
 	jmethodID midInit = env->GetMethodID(
 		cls, "<init>",
-		"(L" PACKAGE "Format;"
+		"(L" PACKAGE "BarcodeFormat;"
 		"[B"
 		"Ljava/lang/String;"
 		"L" PACKAGE "ContentType;"
@@ -216,7 +216,7 @@ static jobject NewResult(JNIEnv* env, const Result& result, int time)
 		"I)V");
 	bool valid = result.isValid();
 	return env->NewObject(cls, midInit,
-		NewEnum(env, JavaBarcodeFormatName(result.format()), "Format"),
+		NewEnum(env, JavaBarcodeFormatName(result.format()), "BarcodeFormat"),
 		valid ? NewByteArray(env, result.bytes()) : nullptr,
 		valid ? C2JString(env, result.text()) : nullptr,
 		NewEnum(env, JavaContentTypeName(result.contentType()), "ContentType"),
@@ -284,7 +284,7 @@ static BarcodeFormats GetFormats(JNIEnv* env, jclass hintClass, jobject hints)
 	if (!objArray)
 		return {};
 
-	jmethodID midName = env->GetMethodID(env->FindClass(PACKAGE "Format"), "name", "()Ljava/lang/String;");
+	jmethodID midName = env->GetMethodID(env->FindClass(PACKAGE "BarcodeFormat"), "name", "()Ljava/lang/String;");
 	BarcodeFormats ret;
 	for (int i = 0, size = env->GetArrayLength(objArray); i < size; ++i) {
 		auto objName = static_cast<jstring>(env->CallObjectMethod(env->GetObjectArrayElement(objArray, i), midName));
@@ -363,13 +363,13 @@ Java_zxingcpp_ZXingCpp_readBitmap(
 	switch (bmInfo.format) {
 	case ANDROID_BITMAP_FORMAT_A_8: fmt = ImageFormat::Lum; break;
 	case ANDROID_BITMAP_FORMAT_RGBA_8888: fmt = ImageFormat::RGBX; break;
-	default: return ThrowJavaException(env, "Unsupported format");
+	default: return ThrowJavaException(env, "Unsupported image format in AndroidBitmap");
 	}
 
 	auto pixels = LockedPixels(env, bitmap);
 
 	if (!pixels)
-		return ThrowJavaException(env, "Failed to lock/Read AndroidBitmap data");
+		return ThrowJavaException(env, "Failed to lock/read AndroidBitmap data");
 
 	auto image =
 		ImageView{pixels, (int)bmInfo.width, (int)bmInfo.height, fmt, (int)bmInfo.stride}

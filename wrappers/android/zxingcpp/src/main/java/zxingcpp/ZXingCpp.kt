@@ -38,7 +38,7 @@ public object ZXingCpp {
 
 	// Enumerates barcode formats known to this package.
 	// Note that this has to be kept synchronized with native (C++/JNI) side.
-	public enum class Format {
+	public enum class BarcodeFormat {
 		NONE, AZTEC, CODABAR, CODE_39, CODE_93, CODE_128, DATA_BAR, DATA_BAR_EXPANDED,
 		DATA_MATRIX, EAN_8, EAN_13, ITF, MAXICODE, PDF_417, QR_CODE, MICRO_QR_CODE, UPC_A, UPC_E
 	}
@@ -64,7 +64,7 @@ public object ZXingCpp {
 	}
 
 	public data class DecodeHints(
-		var formats: Set<Format> = setOf(),
+		var formats: Set<BarcodeFormat> = setOf(),
 		var tryHarder: Boolean = false,
 		var tryRotate: Boolean = false,
 		var tryInvert: Boolean = false,
@@ -98,7 +98,7 @@ public object ZXingCpp {
 	)
 
 	public data class Result(
-		val format: Format,
+		val format: BarcodeFormat,
 		val bytes: ByteArray?,
 		val text: String?,
 		val contentType: ContentType,
@@ -115,7 +115,7 @@ public object ZXingCpp {
 		val time: Int // for development/debug purposes only
 	)
 
-	public fun read(image: ImageProxy, hints: DecodeHints): List<Result> {
+	public fun readBarcodes(image: ImageProxy, hints: DecodeHints = DecodeHints()): List<Result> {
 		check(image.format in supportedYUVFormats) {
 			"Invalid image format: ${image.format}. Must be one of: $supportedYUVFormats"
 		}
@@ -132,8 +132,8 @@ public object ZXingCpp {
 		)
 	}
 
-	public fun read(
-		bitmap: Bitmap, hints: DecodeHints, cropRect: Rect = Rect(), rotation: Int = 0
+	public fun readBarcodes(
+		bitmap: Bitmap, hints: DecodeHints = DecodeHints(), cropRect: Rect = Rect(), rotation: Int = 0
 	): List<Result> {
 		return readBitmap(
 			bitmap, cropRect.left, cropRect.top, cropRect.width(), cropRect.height(), rotation, hints

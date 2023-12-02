@@ -55,8 +55,7 @@ import java.io.File
 import java.util.concurrent.Executors
 import zxingcpp.app.databinding.ActivityCameraBinding
 import zxingcpp.ZXingCpp
-import zxingcpp.ZXingCpp.Format
-
+import zxingcpp.ZXingCpp.BarcodeFormat.*
 
 class MainActivity : AppCompatActivity() {
 	private lateinit var binding: ActivityCameraBinding
@@ -239,7 +238,7 @@ class MainActivity : AppCompatActivity() {
 					}
 				} else {
 					decodeHints.apply {
-						formats = if (binding.qrcode.isChecked) setOf(Format.QR_CODE) else setOf()
+						formats = if (binding.qrcode.isChecked) setOf(QR_CODE) else setOf()
 						tryHarder = binding.tryHarder.isChecked
 						tryRotate = binding.tryRotate.isChecked
 						tryInvert = binding.tryInvert.isChecked
@@ -249,7 +248,7 @@ class MainActivity : AppCompatActivity() {
 
 					resultText = try {
 						image.use {
-							ZXingCpp.read(it, decodeHints)
+							ZXingCpp.readBarcodes(it, decodeHints)
 						}.apply {
 							runtime2 += firstOrNull()?.time ?: 0
 						}.joinToString("\n") { result ->
