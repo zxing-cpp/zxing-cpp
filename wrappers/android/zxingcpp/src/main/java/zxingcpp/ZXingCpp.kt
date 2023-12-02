@@ -33,7 +33,7 @@ public object ZXingCpp {
 		}
 
 	init {
-		System.loadLibrary("zxing_android")
+		System.loadLibrary("zxingcpp_android")
 	}
 
 	// Enumerates barcode formats known to this package.

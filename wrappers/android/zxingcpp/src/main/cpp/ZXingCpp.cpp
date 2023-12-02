@@ -3,18 +3,25 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "JNIUtils.h"
 #include "ReadBarcode.h"
 
 #include <android/bitmap.h>
+#include <android/log.h>
 #include <chrono>
 #include <exception>
 #include <stdexcept>
+#include <string>
 
 using namespace ZXing;
 using namespace std::string_literals;
 
 #define PACKAGE "zxingcpp/ZXingCpp$"
+
+#define ZX_LOG_TAG "zxingcpp"
+#define LOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, ZX_LOG_TAG, __VA_ARGS__)
+#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, ZX_LOG_TAG, __VA_ARGS__)
+#define LOGW(...) __android_log_print(ANDROID_LOG_WARN, ZX_LOG_TAG, __VA_ARGS__)
+#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, ZX_LOG_TAG, __VA_ARGS__)
 
 static const char* JavaBarcodeFormatName(BarcodeFormat format)
 {
@@ -119,6 +126,25 @@ static jstring ThrowJavaException(JNIEnv* env, const char* message)
 	jclass cls = env->FindClass("java/lang/RuntimeException");
 	env->ThrowNew(cls, message);
 	return nullptr;
+}
+
+jstring C2JString(JNIEnv* env, const std::string& str)
+{
+	return env->NewStringUTF(str.c_str());
+}
+
+std::string J2CString(JNIEnv* env, jstring str)
+{
+	// Buffer size must be in bytes.
+	const jsize size = env->GetStringUTFLength(str);
+	std::string res(size, 0);
+
+	// Translates 'len' number of Unicode characters into modified
+	// UTF-8 encoding and place the result in the given buffer.
+	const jsize len = env->GetStringLength(str);
+	env->GetStringUTFRegion(str, 0, len, res.data());
+
+	return res;
 }
 
 static jobject NewPosition(JNIEnv* env, const Position& position)
