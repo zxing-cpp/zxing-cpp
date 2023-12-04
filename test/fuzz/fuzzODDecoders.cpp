@@ -24,7 +24,7 @@ static std::vector<std::unique_ptr<RowReader>> readers;
 
 bool init()
 {
-	DecodeHints hints;
+	static DecodeHints hints;
 	readers.emplace_back(new MultiUPCEANReader(hints));
 	readers.emplace_back(new Code39Reader(hints));
 	readers.emplace_back(new Code93Reader(hints));
