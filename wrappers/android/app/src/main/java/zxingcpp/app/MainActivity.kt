@@ -244,7 +244,7 @@ class MainActivity : AppCompatActivity() {
 						tryRotate = binding.tryRotate.isChecked
 						tryInvert = binding.tryInvert.isChecked
 						tryDownscale = binding.tryDownscale.isChecked
-						maxNumberOfSymbols = if (binding.single.isChecked) 1 else 255
+						maxNumberOfSymbols = if (binding.multiSymbol.isChecked) 255 else 1
 					}
 
 					resultText = try {

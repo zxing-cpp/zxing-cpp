@@ -100,14 +100,14 @@
             android:text="tryDownscale" />
 
         <com.google.android.material.chip.Chip
+            android:id="@+id/multiSymbol"
+            style="@style/Chip"
+            android:text="multiSymbol" />
+
+        <com.google.android.material.chip.Chip
             android:id="@+id/crop"
             style="@style/Chip"
             android:text="crop" />
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/single"
-            style="@style/Chip"
-            android:text="single" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/torch"
