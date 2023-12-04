@@ -6,6 +6,7 @@
 
 #include "BitMatrixIO.h"
 
+#include <array>
 #include <fstream>
 #include <sstream>
 
@@ -28,6 +29,23 @@ std::string ToString(const BitMatrix& matrix, char one, char zero, bool addSpace
 		result += '\n';
 	}
 	return result;
+}
+
+std::string ToString(const BitMatrix& matrix, bool inverted)
+{
+	constexpr auto map = std::array{" ", "▀", "▄", "█"};
+	std::string res;
+
+	for (int y = 0; y < matrix.height(); y += 2) {
+		for (int x = 0; x < matrix.width(); ++x) {
+			int tp = matrix.get(x, y) ^ inverted;
+			int bt = (matrix.height() == 1 && tp) || (y + 1 < matrix.height() && (matrix.get(x, y + 1) ^ inverted));
+			res += map[tp | (bt << 1)];
+		}
+		res.push_back('\n');
+	}
+
+	return res;
 }
 
 std::string ToSVG(const BitMatrix& matrix)
