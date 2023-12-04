@@ -151,9 +151,9 @@ constexpr auto BarAndSpaceSum(const T* view) noexcept
 /**
  * @brief FixedPattern describes a compile-time constant (start/stop) pattern.
  *
- * @param N  number of bars/spaces
- * @param SUM  sum over all N elements (size of pattern in modules)
- * @param IS_SPARCE  whether or not the pattern contains '0's denoting 'wide' bars/spaces
+ * N = number of bars/spaces
+ * SUM = sum over all N elements (size of pattern in modules)
+ * IS_SPARCE = whether or not the pattern contains '0's denoting 'wide' bars/spaces
  */
 template <int N, int SUM, bool IS_SPARCE = false>
 struct FixedPattern

@@ -367,7 +367,6 @@ static int ProcessByteECIs(const std::vector<int>& codewords, int codeIndex, Con
 * This includes all ASCII characters value 0 to 127 inclusive and provides for international
 * character set support.
 *
-* @param status        Set on format error.
 * @param mode          The byte compaction mode i.e. 901 or 924
 * @param codewords     The array of codewords (data + error)
 * @param codeIndex     The current index into the codeword array.
@@ -475,11 +474,9 @@ static std::string DecodeBase900toBase10(const std::vector<int>& codewords, int 
 /**
 * Numeric Compaction mode (see 5.4.4) permits efficient encoding of numeric data strings.
 *
-* @param status    Set on format error.
 * @param codewords The array of codewords (data + error)
 * @param codeIndex The current index into the codeword array.
 * @param result    The decoded data is appended to the result.
-* @param encoding  Currently active character encoding.
 * @return The next index into the codeword array.
 */
 static int NumericCompaction(const std::vector<int>& codewords, int codeIndex, Content& result)

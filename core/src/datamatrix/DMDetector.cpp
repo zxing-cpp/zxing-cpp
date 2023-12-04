@@ -213,8 +213,6 @@ static float CrossProductZ(const ResultPoint& a, const ResultPoint& b, const Res
 /**
 * Orders an array of three ResultPoints in an order [A,B,C] such that AB is less than AC
 * and BC is less than AC, and the angle between BC and BA is less than 180 degrees.
-*
-* @param patterns array of three {@code ResultPoint} to order
 */
 static void OrderByBestPatterns(const ResultPoint*& p0, const ResultPoint*& p1, const ResultPoint*& p2)
 {

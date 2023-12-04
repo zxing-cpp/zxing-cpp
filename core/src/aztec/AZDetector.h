@@ -16,11 +16,6 @@ namespace Aztec {
 
 class DetectorResult;
 
-/**
- * Detects an Aztec Code in an image.
- *
- * @param isMirror if true, image is a mirror-image of original
- */
 DetectorResult Detect(const BitMatrix& image, bool isPure, bool tryHarder = true);
 
 using DetectorResults = std::vector<DetectorResult>;

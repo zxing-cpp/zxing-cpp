@@ -50,7 +50,7 @@ public:
 	* This function scales the row
 	*
 	* @param scale How much you want the image to be scaled, must be greater than or equal to 1.
-	* @return the scaled row
+	* @param output the scaled row
 	*/
 	void getScaledRow(int scale, std::vector<bool>& output) const {
 		output.resize(_row.size() * scale);

@@ -153,7 +153,7 @@ void GetPatternRow(const BitMatrix& matrix, int r, std::vector<uint16_t>& pr, bo
 
 /**
  * @brief Inflate scales a BitMatrix up and adds a quiet Zone plus padding
- * @param matrix input to be expanded
+ * @param input matrix to be expanded
  * @param width new width in bits (pixel)
  * @param height new height in bits (pixel)
  * @param quietZone size of quiet zone to add in modules
@@ -163,7 +163,7 @@ BitMatrix Inflate(BitMatrix&& input, int width, int height, int quietZone);
 
 /**
  * @brief Deflate (crop + subsample) a bit matrix
- * @param matrix
+ * @param input matrix to be shrinked
  * @param width new width
  * @param height new height
  * @param top cropping starts at top row
@@ -171,7 +171,7 @@ BitMatrix Inflate(BitMatrix&& input, int width, int height, int quietZone);
  * @param subSampling typically the module size
  * @return deflated input
  */
-BitMatrix Deflate(const BitMatrix& matrix, int width, int height, float top, float left, float subSampling);
+BitMatrix Deflate(const BitMatrix& input, int width, int height, float top, float left, float subSampling);
 
 template<typename T>
 BitMatrix ToBitMatrix(const Matrix<T>& in, T trueValue = {true})

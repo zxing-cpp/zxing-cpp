@@ -17,9 +17,8 @@ class SymbolInfo;
 /**
  * Creates and interleaves the ECC200 error correction for an encoded message.
  *
- * @param codewords  the codewords
+ * @param codewords  the codewords (with interleaved error correction after function return)
  * @param symbolInfo information about the symbol to be encoded
- * @return the codewords with interleaved error correction.
  */
 void EncodeECC200(ByteArray& codewords, const SymbolInfo& symbolInfo);
 

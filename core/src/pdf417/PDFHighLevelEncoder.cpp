@@ -205,11 +205,11 @@ static bool IsText(int ch)
 * Encode parts of the message using Text Compaction as described in ISO/IEC 15438:2001(E),
 * chapter 4.4.2.
 *
-* @param msg            the message
-* @param startpos       the start position within the message
-* @param count          the number of characters to encode
-* @param sb             receives the encoded codewords
-* @param initialSubmode should normally be SUBMODE_ALPHA
+* @param msg      the message
+* @param startpos the start position within the message
+* @param count    the number of characters to encode
+* @param submode  should normally be SUBMODE_ALPHA
+* @param output   receives the encoded codewords
 * @return the text submode in which this method ends
 */
 static int EncodeText(const std::wstring& msg, int startpos, int count, int submode, std::vector<int>& output)
@@ -318,7 +318,7 @@ static int EncodeText(const std::wstring& msg, int startpos, int count, int subm
 * @param startpos  the start position within the message
 * @param count     the number of bytes to encode
 * @param startmode the mode from which this method starts
-* @param sb        receives the encoded codewords
+* @param output    receives the encoded codewords
 */
 static void EncodeBinary(const std::string& bytes, int startpos, int count, int startmode, std::vector<int>& output)
 {
@@ -456,7 +456,6 @@ static int DetermineConsecutiveTextCount(const std::wstring& msg, int startpos)
 *
 * @param msg      the message
 * @param startpos the start position within the message
-* @param encoding the charset used to convert the message to a byte array
 * @return the requested character count
 */
 static int DetermineConsecutiveBinaryCount(const std::wstring& msg, int startpos)

@@ -305,9 +305,8 @@ static int GetErrorCorrectionCodewordCount(int errorCorrectionLevel)
 /**
 * Generates the error correction codewords according to 4.10 in ISO/IEC 15438:2001(E).
 *
-* @param dataCodewords        the data codewords
+* @param dataCodewords        the data codewords (including error correction after return)
 * @param errorCorrectionLevel the error correction level (0-8)
-* @return the String representing the error correction codewords
 */
 static void GenerateErrorCorrection(std::vector<int>& dataCodewords, int errorCorrectionLevel)
 {
@@ -446,7 +445,6 @@ static BarcodeMatrix EncodeLowLevel(const std::vector<int>& fullCodewords, int c
 *
 * @param sourceCodeWords number of code words
 * @param errorCorrectionCodeWords number of error correction code words
-* @return dimension object containing cols as width and rows as height
 */
 static void DetermineDimensions(int minCols, int maxCols, int minRows, int maxRows, int sourceCodeWords, int errorCorrectionCodeWords, int& outCols, int& outRows)
 {

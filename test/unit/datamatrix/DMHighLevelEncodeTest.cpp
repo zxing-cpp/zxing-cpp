@@ -236,7 +236,7 @@ TEST(DMHighLevelEncodeTest, EDIFACTEncodation)
 	// Checking temporary unlatch from EDIFACT
 	visualized = Encode(L".XXX.XXX.XXX.XXX.XXX.XXX.\xFCXX.XXX.XXX.XXX.XXX.XXX.XXX");
 	EXPECT_EQ(visualized, "240 185 134 24 185 134 24 185 134 24 185 134 24 185 134 24 185 134 24"
-						  " 124 47 235 125 240" //<-- this is the temporary unlatch
+						  " 124 47 235 125 240" // <- this is the temporary unlatch
 						  " 97 139 152 97 139 152 97 139 152 97 139 152 97 139 152 97 139 152 89 89");
 }
 

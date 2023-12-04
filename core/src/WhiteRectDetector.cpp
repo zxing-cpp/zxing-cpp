@@ -76,15 +76,16 @@ static bool GetBlackPointOnSegment(const BitMatrix& image, int aX, int aY, int b
 /**
 * recenters the points of a constant distance towards the center
 *
+* p0 to p3 describing the corners of the rectangular
+* region. The first and last points are opposed on the diagonal, as
+* are the second and third. The first point will be the topmost
+* point and the last, the bottommost. The second point will be
+* leftmost and the third, the rightmost
+*
 * @param y bottom most point
 * @param z left most point
 * @param x right most point
 * @param t top most point
-* @return {@link ResultPoint}[] describing the corners of the rectangular
-*         region. The first and last points are opposed on the diagonal, as
-*         are the second and third. The first point will be the topmost
-*         point and the last, the bottommost. The second point will be
-*         leftmost and the third, the rightmost
 */
 static void CenterEdges(const ResultPoint& y, const ResultPoint& z, const ResultPoint& x, const ResultPoint& t, int width, ResultPoint& p0, ResultPoint& p1, ResultPoint& p2, ResultPoint& p3)
 {
