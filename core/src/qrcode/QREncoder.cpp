@@ -136,7 +136,7 @@ void AppendLengthInfo(int numLetters, const Version& version, CodecMode mode, Bi
 {
 	int numBits = CharacterCountBits(mode, version);
 	if (numLetters >= (1 << numBits)) {
-		return throw std::invalid_argument(std::to_string(numLetters) + " is bigger than " + std::to_string((1 << numBits) - 1));
+		throw std::invalid_argument(std::to_string(numLetters) + " is bigger than " + std::to_string((1 << numBits) - 1));
 	}
 	bits.appendBits(numLetters, numBits);
 }
