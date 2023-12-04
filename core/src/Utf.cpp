@@ -247,8 +247,10 @@ std::wstring EscapeNonGraphical(std::wstring_view str)
 			ws << "<" << ascii_nongraphs[wc == 127 ? 32 : wc] << ">";
 		else if (wc < 128) // ASCII
 			ws << wc;
-		else if (IsUtf16SurrogatePair(str))
-			ws.write(str.data(), 2), str.remove_prefix(1);
+		else if (IsUtf16SurrogatePair(str)) {
+			ws.write(str.data(), 2);
+			str.remove_prefix(1);
+		}
 		// Exclude unpaired surrogates and NO-BREAK spaces NBSP and NUMSP
 		else if ((wc < 0xd800 || wc >= 0xe000) && (iswgraph(wc) && wc != 0xA0 && wc != 0x2007 && wc != 0x2000 && wc != 0xfffd))
 			ws << wc;

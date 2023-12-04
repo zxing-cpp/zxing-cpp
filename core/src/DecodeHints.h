@@ -98,8 +98,8 @@ public:
 
 #define ZX_PROPERTY(TYPE, GETTER, SETTER) \
 	TYPE GETTER() const noexcept { return _##GETTER; } \
-	DecodeHints& SETTER(TYPE v)& { return _##GETTER = std::move(v), *this; } \
-	DecodeHints&& SETTER(TYPE v)&& { return _##GETTER = std::move(v), std::move(*this); }
+	DecodeHints& SETTER(TYPE v)& { return (void)(_##GETTER = std::move(v)), *this; } \
+	DecodeHints&& SETTER(TYPE v)&& { return (void)(_##GETTER = std::move(v)), std::move(*this); }
 
 	/// Specify a set of BarcodeFormats that should be searched for, the default is all supported formats.
 	ZX_PROPERTY(BarcodeFormats, formats, setFormats)
@@ -164,8 +164,8 @@ public:
 
 	/// Specifies fallback character set to use instead of auto-detecting it (when applicable)
 	ZX_PROPERTY(CharacterSet, characterSet, setCharacterSet)
-	DecodeHints& setCharacterSet(std::string_view v)& { return _characterSet = CharacterSetFromString(v), *this; }
-	DecodeHints&& setCharacterSet(std::string_view v) && { return _characterSet = CharacterSetFromString(v), std::move(*this); }
+	DecodeHints& setCharacterSet(std::string_view v)& { return (void)(_characterSet = CharacterSetFromString(v)), *this; }
+	DecodeHints&& setCharacterSet(std::string_view v) && { return (void)(_characterSet = CharacterSetFromString(v)), std::move(*this); }
 
 #undef ZX_PROPERTY
 

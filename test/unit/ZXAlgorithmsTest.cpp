@@ -40,7 +40,7 @@ TEST(ZXAlgorithmsTest, UpdateMinMax)
 	EXPECT_EQ(m, 2);
 	EXPECT_EQ(M, 5);
 
-	m = 1, M = 1;
+	m = M = 1;
 	UpdateMinMax(m, M, 0);
 	EXPECT_EQ(m, 0);
 	EXPECT_EQ(M, 1);
