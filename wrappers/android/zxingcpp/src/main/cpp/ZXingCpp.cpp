@@ -15,7 +15,7 @@
 using namespace ZXing;
 using namespace std::string_literals;
 
-#define PACKAGE "zxingcpp/ZXingCpp$"
+#define PACKAGE "zxingcpp/BarcodeReader$"
 
 #define ZX_LOG_TAG "zxingcpp"
 #define LOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, ZX_LOG_TAG, __VA_ARGS__)
@@ -199,7 +199,7 @@ static jobject NewResult(JNIEnv* env, const Result& result, int time)
 	jclass cls = env->FindClass(PACKAGE "Result");
 	jmethodID midInit = env->GetMethodID(
 		cls, "<init>",
-		"(L" PACKAGE "BarcodeFormat;"
+		"(L" PACKAGE "Format;"
 		"[B"
 		"Ljava/lang/String;"
 		"L" PACKAGE "ContentType;"
@@ -216,7 +216,7 @@ static jobject NewResult(JNIEnv* env, const Result& result, int time)
 		"I)V");
 	bool valid = result.isValid();
 	return env->NewObject(cls, midInit,
-		NewEnum(env, JavaBarcodeFormatName(result.format()), "BarcodeFormat"),
+		NewEnum(env, JavaBarcodeFormatName(result.format()), "Format"),
 		valid ? NewByteArray(env, result.bytes()) : nullptr,
 		valid ? C2JString(env, result.text()) : nullptr,
 		NewEnum(env, JavaContentTypeName(result.contentType()), "ContentType"),
@@ -284,7 +284,7 @@ static BarcodeFormats GetFormats(JNIEnv* env, jclass hintClass, jobject hints)
 	if (!objArray)
 		return {};
 
-	jmethodID midName = env->GetMethodID(env->FindClass(PACKAGE "BarcodeFormat"), "name", "()Ljava/lang/String;");
+	jmethodID midName = env->GetMethodID(env->FindClass(PACKAGE "Format"), "name", "()Ljava/lang/String;");
 	BarcodeFormats ret;
 	for (int i = 0, size = env->GetArrayLength(objArray); i < size; ++i) {
 		auto objName = static_cast<jstring>(env->CallObjectMethod(env->GetObjectArrayElement(objArray, i), midName));
@@ -319,9 +319,9 @@ static DecodeHints CreateDecodeHints(JNIEnv* env, jobject hints)
 }
 
 extern "C" JNIEXPORT jobject JNICALL
-Java_zxingcpp_ZXingCpp_readYBuffer(
+Java_zxingcpp_BarcodeReader_readYBuffer(
 	JNIEnv *env, jobject thiz, jobject yBuffer, jint rowStride,
-	jint left, jint top, jint width, jint height, jint rotation, jobject hints)
+	jint left, jint top, jint width, jint height, jint rotation, jobject options)
 {
 	const uint8_t* pixels = static_cast<uint8_t *>(env->GetDirectBufferAddress(yBuffer));
 
@@ -329,7 +329,7 @@ Java_zxingcpp_ZXingCpp_readYBuffer(
 		ImageView{pixels + top * rowStride + left, width, height, ImageFormat::Lum, rowStride}
 			.rotated(rotation);
 
-	return Read(env, image, CreateDecodeHints(env, hints));
+	return Read(env, image, CreateDecodeHints(env, options));
 }
 
 struct LockedPixels
@@ -352,9 +352,9 @@ struct LockedPixels
 };
 
 extern "C" JNIEXPORT jobject JNICALL
-Java_zxingcpp_ZXingCpp_readBitmap(
+Java_zxingcpp_BarcodeReader_readBitmap(
 	JNIEnv* env, jobject thiz, jobject bitmap,
-	jint left, jint top, jint width, jint height, jint rotation, jobject hints)
+	jint left, jint top, jint width, jint height, jint rotation, jobject options)
 {
 	AndroidBitmapInfo bmInfo;
 	AndroidBitmap_getInfo(env, bitmap, &bmInfo);
@@ -376,5 +376,5 @@ Java_zxingcpp_ZXingCpp_readBitmap(
 			.cropped(left, top, width, height)
 			.rotated(rotation);
 
-	return Read(env, image, CreateDecodeHints(env, hints));
+	return Read(env, image, CreateDecodeHints(env, options));
 }

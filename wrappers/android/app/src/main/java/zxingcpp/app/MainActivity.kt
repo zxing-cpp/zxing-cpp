@@ -54,8 +54,8 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.util.concurrent.Executors
 import zxingcpp.app.databinding.ActivityCameraBinding
-import zxingcpp.ZXingCpp
-import zxingcpp.ZXingCpp.BarcodeFormat.*
+import zxingcpp.BarcodeReader
+import zxingcpp.BarcodeReader.Format.*
 
 class MainActivity : AppCompatActivity() {
 	private lateinit var binding: ActivityCameraBinding
@@ -64,7 +64,6 @@ class MainActivity : AppCompatActivity() {
 	private val permissions = mutableListOf(Manifest.permission.CAMERA)
 	private val permissionsRequestCode = 1
 	private val beeper = ToneGenerator(AudioManager.STREAM_NOTIFICATION, 50)
-	private val decodeHints = ZXingCpp.DecodeHints()
 
 	private var lastText = String()
 	private var doSaveImage: Boolean = false
@@ -151,6 +150,8 @@ class MainActivity : AppCompatActivity() {
 			var runtimes: Long = 0
 			var runtime2: Long = 0
 			val readerJava = MultiFormatReader()
+			val readerCpp = BarcodeReader()
+
 
 			// Create a new camera selector each time, enforcing lens facing
 			val cameraSelector =
@@ -237,7 +238,7 @@ class MainActivity : AppCompatActivity() {
 						if (e.toString() != "com.google.zxing.NotFoundException") e.toString() else ""
 					}
 				} else {
-					decodeHints.apply {
+					readerCpp.options.apply {
 						formats = if (binding.qrcode.isChecked) setOf(QR_CODE) else setOf()
 						tryHarder = binding.tryHarder.isChecked
 						tryRotate = binding.tryRotate.isChecked
@@ -248,7 +249,7 @@ class MainActivity : AppCompatActivity() {
 
 					resultText = try {
 						image.use {
-							ZXingCpp.readBarcodes(it, decodeHints)
+							readerCpp.read(it)
 						}.apply {
 							runtime2 += firstOrNull()?.time ?: 0
 						}.joinToString("\n") { result ->
@@ -260,7 +261,7 @@ class MainActivity : AppCompatActivity() {
 								})
 							}
 							"${result.format} (${result.contentType}): ${
-								if (result.contentType != ZXingCpp.ContentType.BINARY) {
+								if (result.contentType != BarcodeReader.ContentType.BINARY) {
 									result.text
 								} else {
 									result.bytes!!.joinToString(separator = "") { v -> "%02x".format(v) }

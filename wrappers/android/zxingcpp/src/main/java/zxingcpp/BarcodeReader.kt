@@ -24,7 +24,7 @@ import android.os.Build
 import androidx.camera.core.ImageProxy
 import java.nio.ByteBuffer
 
-public object ZXingCpp {
+public class BarcodeReader(public var options: Options = Options()) {
 	private val supportedYUVFormats: List<Int> =
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 			listOf(ImageFormat.YUV_420_888, ImageFormat.YUV_422_888, ImageFormat.YUV_444_888)
@@ -38,7 +38,7 @@ public object ZXingCpp {
 
 	// Enumerates barcode formats known to this package.
 	// Note that this has to be kept synchronized with native (C++/JNI) side.
-	public enum class BarcodeFormat {
+	public enum class Format {
 		NONE, AZTEC, CODABAR, CODE_39, CODE_93, CODE_128, DATA_BAR, DATA_BAR_EXPANDED,
 		DATA_MATRIX, EAN_8, EAN_13, ITF, MAXICODE, PDF_417, QR_CODE, MICRO_QR_CODE, UPC_A, UPC_E
 	}
@@ -63,8 +63,8 @@ public object ZXingCpp {
 		FORMAT, CHECKSUM, UNSUPPORTED
 	}
 
-	public data class DecodeHints(
-		var formats: Set<BarcodeFormat> = setOf(),
+	public data class Options(
+		var formats: Set<Format> = setOf(),
 		var tryHarder: Boolean = false,
 		var tryRotate: Boolean = false,
 		var tryInvert: Boolean = false,
@@ -98,7 +98,7 @@ public object ZXingCpp {
 	)
 
 	public data class Result(
-		val format: BarcodeFormat,
+		val format: Format,
 		val bytes: ByteArray?,
 		val text: String?,
 		val contentType: ContentType,
@@ -115,7 +115,7 @@ public object ZXingCpp {
 		val time: Int // for development/debug purposes only
 	)
 
-	public fun readBarcodes(image: ImageProxy, hints: DecodeHints = DecodeHints()): List<Result> {
+	public fun read(image: ImageProxy): List<Result> {
 		check(image.format in supportedYUVFormats) {
 			"Invalid image format: ${image.format}. Must be one of: $supportedYUVFormats"
 		}
@@ -128,23 +128,23 @@ public object ZXingCpp {
 			image.cropRect.width(),
 			image.cropRect.height(),
 			image.imageInfo.rotationDegrees,
-			hints
+			options
 		)
 	}
 
-	public fun readBarcodes(
-		bitmap: Bitmap, hints: DecodeHints = DecodeHints(), cropRect: Rect = Rect(), rotation: Int = 0
+	public fun read(
+		bitmap: Bitmap, cropRect: Rect = Rect(), rotation: Int = 0
 	): List<Result> {
 		return readBitmap(
-			bitmap, cropRect.left, cropRect.top, cropRect.width(), cropRect.height(), rotation, hints
+			bitmap, cropRect.left, cropRect.top, cropRect.width(), cropRect.height(), rotation, options
 		)
 	}
 
 	private external fun readYBuffer(
-		yBuffer: ByteBuffer, rowStride: Int, left: Int, top: Int, width: Int, height: Int, rotation: Int, hints: DecodeHints
+		yBuffer: ByteBuffer, rowStride: Int, left: Int, top: Int, width: Int, height: Int, rotation: Int, hints: Options
 	): List<Result>
 
 	private external fun readBitmap(
-		bitmap: Bitmap, left: Int, top: Int, width: Int, height: Int, rotation: Int, hints: DecodeHints
+		bitmap: Bitmap, left: Int, top: Int, width: Int, height: Int, rotation: Int, hints: Options
 	): List<Result>
 }
