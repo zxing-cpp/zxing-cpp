@@ -11,6 +11,7 @@
 #include <exception>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 
 using namespace ZXing;
 using namespace std::string_literals;
@@ -74,48 +75,46 @@ static const char* JavaErrorTypeName(Error::Type errorType)
 	}
 }
 
-static EanAddOnSymbol EanAddOnSymbolFromString(const std::string& name)
+inline constexpr auto hash(std::string_view sv)
 {
-	if (name == "IGNORE") {
-		return EanAddOnSymbol::Ignore;
-	} else if (name == "READ") {
-		return EanAddOnSymbol::Read;
-	} else if (name == "REQUIRE") {
-		return EanAddOnSymbol::Require;
-	} else {
-		throw std::invalid_argument("Invalid eanAddOnSymbol name");
+	unsigned int hash = 5381;
+	for (unsigned char c : sv)
+		hash = ((hash << 5) + hash) ^ c;
+	return hash;
+}
+
+inline constexpr auto operator "" _h(const char* str, size_t len){ return hash({str, len}); }
+
+static EanAddOnSymbol EanAddOnSymbolFromString(std::string_view name)
+{
+	switch (hash(name)) {
+		case "IGNORE"_h :  return EanAddOnSymbol::Ignore;
+		case "READ"_h :    return EanAddOnSymbol::Read;
+		case "REQUIRE"_h : return EanAddOnSymbol::Require;
+		default: throw std::invalid_argument("Invalid eanAddOnSymbol name");
 	}
 }
 
-static Binarizer BinarizerFromString(const std::string& name)
+static Binarizer BinarizerFromString(std::string_view name)
 {
-	if (name == "LOCAL_AVERAGE") {
-		return Binarizer::LocalAverage;
-	} else if (name == "GLOBAL_HISTOGRAM") {
-		return Binarizer::GlobalHistogram;
-	} else if (name == "FIXED_THRESHOLD") {
-		return Binarizer::FixedThreshold;
-	} else if (name == "BOOL_CAST") {
-		return Binarizer::BoolCast;
-	} else {
-		throw std::invalid_argument("Invalid binarizer name");
+	switch (hash(name)) {
+		case "LOCAL_AVERAGE"_h :    return Binarizer::LocalAverage;
+		case "GLOBAL_HISTOGRAM"_h : return Binarizer::GlobalHistogram;
+		case "FIXED_THRESHOLD"_h :  return Binarizer::FixedThreshold;
+		case "BOOL_CAST"_h :        return Binarizer::BoolCast;
+		default: throw std::invalid_argument("Invalid binarizer name");
 	}
 }
 
-static TextMode TextModeFromString(const std::string& name)
+static TextMode TextModeFromString(std::string_view name)
 {
-	if (name == "PLAIN") {
-		return TextMode::Plain;
-	} else if (name == "ECI") {
-		return TextMode::ECI;
-	} else if (name == "HRI") {
-		return TextMode::HRI;
-	} else if (name == "HEX") {
-		return TextMode::Hex;
-	} else if (name == "ESCAPED") {
-		return TextMode::Escaped;
-	} else {
-		throw std::invalid_argument("Invalid textMode name");
+	switch (hash(name)) {
+		case "PLAIN"_h :   return TextMode::Plain;
+		case "ECI"_h :     return TextMode::ECI;
+		case "HRI"_h :     return TextMode::HRI;
+		case "HEX"_h :     return TextMode::Hex;
+		case "ESCAPED"_h : return TextMode::Escaped;
+		default: throw std::invalid_argument("Invalid textMode name");
 	}
 }
 
