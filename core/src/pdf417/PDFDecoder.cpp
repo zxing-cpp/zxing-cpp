@@ -699,6 +699,8 @@ DecoderResult Decode(const std::vector<int>& codewords)
 				break;
 			}
 		}
+	} catch (std::exception& e) {
+		return FormatError(e.what());
 	} catch (Error e) {
 		return e;
 	}
