@@ -323,7 +323,7 @@ DecoderResult Decode(const BitArray& bits)
 
 	// As converting character set ECIs ourselves and ignoring/skipping non-character ECIs, not using
 	// modifiers that indicate ECI protocol (ISO/IEC 24778:2008 Annex F Table F.1)
-	if (res.bytes[0] == 29) {
+	if (res.bytes.size() > 1 && res.bytes[0] == 29) {
 		res.symbology.modifier = '1'; // GS1
 		res.symbology.aiFlag = AIFlag::GS1;
 		res.erase(0, 1); // Remove FNC1
