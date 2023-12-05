@@ -5,7 +5,7 @@ set (CMAKE_CXX_COMPILER /usr/bin/clang++)
 
 project (ZXingFuzz)
 
-set (CMAKE_CXX_STANDARD 17)
+set (CMAKE_CXX_STANDARD 20)
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -march=native -fsanitize=address,fuzzer")
 
 set (BUILD_WRITERS ON)
@@ -15,10 +15,12 @@ add_definitions (-DZXING_BUILD_FOR_TEST)
 add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/../../core ${CMAKE_BINARY_DIR}/ZXing)
 
 set (TESTS
+    AZDecoder
     DBEDecoder
     DMDecoder
     DMEncoder
     ODDecoders
+    QRDecoder
 )
 
 foreach (test ${TESTS})
