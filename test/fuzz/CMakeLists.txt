@@ -15,12 +15,11 @@ add_definitions (-DZXING_BUILD_FOR_TEST)
 add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/../../core ${CMAKE_BINARY_DIR}/ZXing)
 
 set (TESTS
-    AZDecoder
     DBEDecoder
-    DMDecoder
     DMEncoder
-    ODDecoders
-    QRDecoder
+    ReadLinear
+    ReadMatrix
+    DecodeMatrix
 )
 
 foreach (test ${TESTS})
@@ -28,3 +27,4 @@ foreach (test ${TESTS})
     add_executable (${name} "${name}.cpp")
     target_link_libraries (${name} ZXing::ZXing)
 endforeach()
+
