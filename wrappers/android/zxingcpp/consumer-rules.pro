@@ -1,1 +1,1 @@
--keep class com.zxingcpp.** { *; }
+-keep class zxingcpp.** { *; }
