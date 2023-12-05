@@ -7,6 +7,7 @@
 #include "qrcode/QRVersion.h"
 
 #include "BitMatrix.h"
+#include "BitMatrixIO.h"
 
 #include "gtest/gtest.h"
 
@@ -96,5 +97,113 @@ TEST(QRVersionTest, FunctionPattern)
 			EXPECT_TRUE(functionPattern.get(0, row));
 		for (int col = dimension; col < functionPattern.width(); col++)
 			EXPECT_TRUE(functionPattern.get(col, 0));
+	}
+}
+
+namespace {
+
+	void CheckRMQRVersion(const Version* version, int number) {
+		ASSERT_NE(version, nullptr);
+		EXPECT_EQ(number, version->versionNumber());
+		EXPECT_EQ(Version::DimensionOfVersionRMQR(number).x == 27, version->alignmentPatternCenters().empty());
+	}
+
+}
+
+TEST(QRVersionTest, RMQRVersionForNumber)
+{
+	auto version = Version::rMQR(0);
+	EXPECT_EQ(version, nullptr) << "There is version with number 0";
+
+	for (int i = 1; i <= 32; i++) {
+		CheckRMQRVersion(Version::rMQR(i), i);
+	}
+}
+
+TEST(QRVersionTest, RMQRFunctionPattern)
+{
+	{
+		const auto expected = ParseBitMatrix(
+			"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n"
+			"XXXXXXXXXXXX        XXX            XXXXXXXX\n"
+			"XXXXXXXXXXXX        XXX            XXXXXXXX\n"
+			"XXXXXXXXXXXX         X             XXXXXXXX\n"
+			"XXXXXXXXXXX         XXX            XXXXXXXX\n"
+			"XXXXXXXXXXX         XXX            XXXXXXXX\n"
+			"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n",
+			'X', false);
+		const auto version = Version::rMQR(1); // R7x43
+		const auto functionPattern = version->buildFunctionPattern();
+		EXPECT_EQ(expected, functionPattern);
+	}
+	{
+		const auto expected = ParseBitMatrix(
+			"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n"
+			"XXXXXXXXXXXX        XXX                  XX\n"
+			"XXXXXXXXXXXX        XXX                   X\n"
+			"XXXXXXXXXXXX         X             XXXXXX X\n"
+			"XXXXXXXXXXX          X             XXXXXXXX\n"
+			"XXXXXXXXXXX          X             XXXXXXXX\n"
+			"XXXXXXXX            XXX            XXXXXXXX\n"
+			"XXXXXXXX            XXX            XXXXXXXX\n"
+			"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n",
+			'X', false);
+		const auto version = Version::rMQR(6); // R9x43
+		const auto functionPattern = version->buildFunctionPattern();
+		EXPECT_EQ(expected, functionPattern);
+	}
+	{
+		const auto expected = ParseBitMatrix(
+			"XXXXXXXXXXXXXXXXXXXXXXXXXXX\n"
+			"XXXXXXXXXXXX             XX\n"
+			"XXXXXXXXXXXX              X\n"
+			"XXXXXXXXXXXX              X\n"
+			"XXXXXXXXXXX               X\n"
+			"XXXXXXXXXXX        XXXXXX X\n"
+			"XXXXXXXX           XXXXXXXX\n"
+			"XXXXXXXX           XXXXXXXX\n"
+			"X                  XXXXXXXX\n"
+			"XX                 XXXXXXXX\n"
+			"XXXXXXXXXXXXXXXXXXXXXXXXXXX\n",
+			'X', false);
+		const auto version = Version::rMQR(11); // R11x27
+		const auto functionPattern = version->buildFunctionPattern();
+		EXPECT_EQ(expected, functionPattern);
+	}
+	{
+		const auto expected = ParseBitMatrix(
+			"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n"
+			"XXXXXXXXXXXX        XXX                  XX\n"
+			"XXXXXXXXXXXX        XXX                   X\n"
+			"XXXXXXXXXXXX         X                    X\n"
+			"XXXXXXXXXXX          X                    X\n"
+			"XXXXXXXXXXX          X             XXXXXX X\n"
+			"XXXXXXXX             X             XXXXXXXX\n"
+			"XXXXXXXX             X             XXXXXXXX\n"
+			"X                   XXX            XXXXXXXX\n"
+			"XX                  XXX            XXXXXXXX\n"
+			"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n",
+			'X', false);
+		const auto version = Version::rMQR(12); // R11x43
+		const auto functionPattern = version->buildFunctionPattern();
+		EXPECT_EQ(expected, functionPattern);
+	}
+	{
+		const auto expected = ParseBitMatrix(
+			"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n"
+			"XXXXXXXXXXXX      XXX                 XXX                XX\n"
+			"XXXXXXXXXXXX      XXX                 XXX                 X\n"
+			"XXXXXXXXXXXX       X                   X                  X\n"
+			"XXXXXXXXXXX        X                   X                  X\n"
+			"XXXXXXXXXXX        X                   X           XXXXXX X\n"
+			"XXXXXXXX           X                   X           XXXXXXXX\n"
+			"XXXXXXXX           X                   X           XXXXXXXX\n"
+			"X                 XXX                 XXX          XXXXXXXX\n"
+			"XX                XXX                 XXX          XXXXXXXX\n"
+			"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n",
+			'X', false);
+		const auto version = Version::rMQR(13); // R11x59
+		const auto functionPattern = version->buildFunctionPattern();
+		EXPECT_EQ(expected, functionPattern);
 	}
 }

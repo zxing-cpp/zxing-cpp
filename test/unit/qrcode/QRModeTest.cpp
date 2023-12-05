@@ -16,12 +16,12 @@ using namespace ZXing::QRCode;
 
 TEST(QRModeTest, ForBits)
 {
-	ASSERT_EQ(CodecMode::TERMINATOR, CodecModeForBits(0x00));
-	ASSERT_EQ(CodecMode::NUMERIC, CodecModeForBits(0x01));
-	ASSERT_EQ(CodecMode::ALPHANUMERIC, CodecModeForBits(0x02));
-	ASSERT_EQ(CodecMode::BYTE, CodecModeForBits(0x04));
-	ASSERT_EQ(CodecMode::KANJI, CodecModeForBits(0x08));
-	ASSERT_THROW(CodecModeForBits(0x10), Error);
+	ASSERT_EQ(CodecMode::TERMINATOR, CodecModeForBits(0x00, Type::Model2));
+	ASSERT_EQ(CodecMode::NUMERIC, CodecModeForBits(0x01, Type::Model2));
+	ASSERT_EQ(CodecMode::ALPHANUMERIC, CodecModeForBits(0x02, Type::Model2));
+	ASSERT_EQ(CodecMode::BYTE, CodecModeForBits(0x04, Type::Model2));
+	ASSERT_EQ(CodecMode::KANJI, CodecModeForBits(0x08, Type::Model2));
+	ASSERT_THROW(CodecModeForBits(0x10, Type::Model2), Error);
 }
 
 TEST(QRModeTest, CharacterCount)
@@ -38,22 +38,22 @@ TEST(QRModeTest, CharacterCount)
 TEST(QRModeTest, MicroForBits)
 {
 	// M1
-	ASSERT_EQ(CodecMode::NUMERIC, CodecModeForBits(0x00, true));
+	ASSERT_EQ(CodecMode::NUMERIC, CodecModeForBits(0x00, Type::Micro));
 	// M2
-	ASSERT_EQ(CodecMode::NUMERIC, CodecModeForBits(0x00, true));
-	ASSERT_EQ(CodecMode::ALPHANUMERIC, CodecModeForBits(0x01, true));
+	ASSERT_EQ(CodecMode::NUMERIC, CodecModeForBits(0x00, Type::Micro));
+	ASSERT_EQ(CodecMode::ALPHANUMERIC, CodecModeForBits(0x01, Type::Micro));
 	// M3
-	ASSERT_EQ(CodecMode::NUMERIC, CodecModeForBits(0x00, true));
-	ASSERT_EQ(CodecMode::ALPHANUMERIC, CodecModeForBits(0x01, true));
-	ASSERT_EQ(CodecMode::BYTE, CodecModeForBits(0x02, true));
-	ASSERT_EQ(CodecMode::KANJI, CodecModeForBits(0x03, true));
+	ASSERT_EQ(CodecMode::NUMERIC, CodecModeForBits(0x00, Type::Micro));
+	ASSERT_EQ(CodecMode::ALPHANUMERIC, CodecModeForBits(0x01, Type::Micro));
+	ASSERT_EQ(CodecMode::BYTE, CodecModeForBits(0x02, Type::Micro));
+	ASSERT_EQ(CodecMode::KANJI, CodecModeForBits(0x03, Type::Micro));
 	// M4
-	ASSERT_EQ(CodecMode::NUMERIC, CodecModeForBits(0x00, true));
-	ASSERT_EQ(CodecMode::ALPHANUMERIC, CodecModeForBits(0x01, true));
-	ASSERT_EQ(CodecMode::BYTE, CodecModeForBits(0x02, true));
-	ASSERT_EQ(CodecMode::KANJI, CodecModeForBits(0x03, true));
+	ASSERT_EQ(CodecMode::NUMERIC, CodecModeForBits(0x00, Type::Micro));
+	ASSERT_EQ(CodecMode::ALPHANUMERIC, CodecModeForBits(0x01, Type::Micro));
+	ASSERT_EQ(CodecMode::BYTE, CodecModeForBits(0x02, Type::Micro));
+	ASSERT_EQ(CodecMode::KANJI, CodecModeForBits(0x03, Type::Micro));
 
-	ASSERT_THROW(CodecModeForBits(0x04, true), Error);
+	ASSERT_THROW(CodecModeForBits(0x04, Type::Micro), Error);
 }
 
 TEST(QRModeTest, MicroCharacterCount)
@@ -65,4 +65,28 @@ TEST(QRModeTest, MicroCharacterCount)
 	ASSERT_EQ(3, CharacterCountBits(CodecMode::ALPHANUMERIC, *Version::Micro(2)));
 	ASSERT_EQ(4, CharacterCountBits(CodecMode::BYTE, *Version::Micro(3)));
 	ASSERT_EQ(4, CharacterCountBits(CodecMode::KANJI, *Version::Micro(4)));
+}
+
+TEST(QRModeTest, RMQRForBits)
+{
+	ASSERT_EQ(CodecMode::TERMINATOR, CodecModeForBits(0x00, Type::rMQR));
+	ASSERT_EQ(CodecMode::NUMERIC, CodecModeForBits(0x01, Type::rMQR));
+	ASSERT_EQ(CodecMode::ALPHANUMERIC, CodecModeForBits(0x02, Type::rMQR));
+	ASSERT_EQ(CodecMode::BYTE, CodecModeForBits(0x03, Type::rMQR));
+	ASSERT_EQ(CodecMode::KANJI, CodecModeForBits(0x04, Type::rMQR));
+	ASSERT_EQ(CodecMode::FNC1_FIRST_POSITION, CodecModeForBits(0x05, Type::rMQR));
+	ASSERT_EQ(CodecMode::FNC1_SECOND_POSITION, CodecModeForBits(0x06, Type::rMQR));
+	ASSERT_EQ(CodecMode::ECI, CodecModeForBits(0x07, Type::rMQR));
+	ASSERT_THROW(CodecModeForBits(0x08, Type::rMQR), Error);
+}
+
+TEST(QRModeTest, RMQRCharacterCount)
+{
+	// Spot check a few values
+	ASSERT_EQ(7, CharacterCountBits(CodecMode::NUMERIC, *Version::rMQR(5)));
+	ASSERT_EQ(8, CharacterCountBits(CodecMode::NUMERIC, *Version::rMQR(26)));
+	ASSERT_EQ(9, CharacterCountBits(CodecMode::NUMERIC, *Version::rMQR(32)));
+	ASSERT_EQ(5, CharacterCountBits(CodecMode::ALPHANUMERIC, *Version::rMQR(6)));
+	ASSERT_EQ(5, CharacterCountBits(CodecMode::BYTE, *Version::rMQR(7)));
+	ASSERT_EQ(5, CharacterCountBits(CodecMode::KANJI, *Version::rMQR(8)));
 }

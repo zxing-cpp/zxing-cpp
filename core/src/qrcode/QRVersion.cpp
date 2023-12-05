@@ -297,6 +297,243 @@ const Version* Version::Micro(int number)
 	return allVersions + number - 1;
 }
 
+const Version* Version::rMQR(int number)
+{
+	/**
+	 * See ISO/IEC 23941:2022 Annex D, Table D.1 - Column coordinates of centre module of alignment patterns
+	 * See ISO/IEC 23941:2022 7.5.1, Table 8 - Error correction characteristics for rMQR
+	 */
+	static const Version allVersions[] = {
+		// Version number, alignment pattern centres, `ECBlocks`
+		{ 1, {21}, { // R7x43
+			// 4 `ECBlocks`, one for each `ecLevel` - rMQR only uses M & H but using 2 dummies to keep `ecLevel` index same as QR Code
+			// Each begins with no. of error correction codewords divided by no. of error correction blocks, followed by 2 `ECBlock`s
+			// Each `ECBlock` begins with no. of error correction blocks followed by no. of data codewords per block
+			 0, 0,  0, 0,  0, // L (dummy) - also used to differentiate rMQR from Model2 in `Version::Version()`
+			 7, 1,  6, 0,  0, // M
+			 0, 0,  0, 0,  0, // Q (dummy)
+			10, 1,  3, 0,  0, // H
+			}},
+		{ 2, {19, 39}, { // R7x59
+			 0, 0,  0, 0,  0,
+			 9, 1, 12, 0,  0,
+			 0, 0,  0, 0,  0,
+			14, 1,  7, 0,  0,
+			}},
+		{ 3, {25, 51}, { // R7x77
+			 0, 0,  0, 0,  0,
+			12, 1, 20, 0,  0,
+			 0, 0,  0, 0,  0,
+			22, 1, 10, 0,  0,
+			}},
+		{ 4, {23, 49, 75}, { // R7x99
+			 0, 0,  0, 0,  0,
+			16, 1, 28, 0,  0,
+			 0, 0,  0, 0,  0,
+			30, 1, 14, 0,  0,
+			}},
+		{ 5, {27, 55, 83, 111}, { // R7x139
+			 0, 0,  0, 0,  0,
+			24, 1, 44, 0,  0,
+			 0, 0,  0, 0,  0,
+			22, 2, 12, 0,  0,
+			}},
+		{ 6, {21}, { // R9x43
+			 0, 0,  0, 0,  0,
+			 9, 1, 12, 0,  0,
+			 0, 0,  0, 0,  0,
+			14, 1,  7, 0,  0,
+			}},
+		{ 7, {19, 39}, { // R9x59
+			 0, 0,  0, 0,  0,
+			12, 1, 21, 0,  0,
+			 0, 0,  0, 0,  0,
+			22, 1, 11, 0,  0,
+			}},
+		{ 8, {25, 51}, { // R9x77
+			 0, 0,  0, 0,  0,
+			18, 1, 31, 0,  0,
+			 0, 0,  0, 0,  0,
+			16, 1,  8, 1,  9,
+			}},
+		{ 9, {23, 49, 75}, { // R9x99
+			 0, 0,  0, 0,  0,
+			24, 1, 42, 0,  0,
+			 0, 0,  0, 0,  0,
+			22, 2, 11, 0,  0,
+			}},
+		{10, {27, 55, 83, 111}, { // R9x139
+			 0, 0,  0, 0,  0,
+			18, 1, 31, 1, 32,
+			 0, 0,  0, 0,  0,
+			22, 3, 11, 0,  0,
+			}},
+		{11, {}, { // R11x27
+			 0, 0,  0, 0,  0,
+			 8, 1,  7, 0,  0,
+			 0, 0,  0, 0,  0,
+			10, 1,  5, 0,  0,
+			}},
+		{12, {21}, { // R11x43
+			 0, 0,  0, 0,  0,
+			12, 1, 19, 0,  0,
+			 0, 0,  0, 0,  0,
+			20, 1, 11, 0,  0,
+			}},
+		{13, {19, 39}, { // R11x59
+			 0, 0,  0, 0,  0,
+			16, 1, 31, 0,  0,
+			 0, 0,  0, 0,  0,
+			16, 1,  7, 1,  8,
+			}},
+		{14, {25, 51}, { // R11x77
+			 0, 0,  0, 0,  0,
+			24, 1, 43, 0,  0,
+			 0, 0,  0, 0,  0,
+			22, 1, 11, 1, 12,
+			}},
+		{15, {23, 49, 75}, { // R11x99
+			 0, 0,  0, 0,  0,
+			16, 1, 28, 1, 29,
+			 0, 0,  0, 0,  0,
+			30, 1, 14, 1, 15,
+			}},
+		{16, {27, 55, 83, 111}, { // R11x139
+			 0, 0,  0, 0,  0,
+			24, 2, 42, 0,  0,
+			 0, 0,  0, 0,  0,
+			30, 3, 14, 0,  0,
+			}},
+		{17, {}, { // R13x27
+			 0, 0,  0, 0,  0,
+			 9, 1, 12, 0,  0,
+			 0, 0,  0, 0,  0,
+			14, 1,  7, 0,  0,
+			}},
+		{18, {21}, { // R13x43
+			 0, 0,  0, 0,  0,
+			14, 1, 27, 0,  0,
+			 0, 0,  0, 0,  0,
+			28, 1, 13, 0,  0,
+			}},
+		{19, {19, 39}, { // R13x59
+			 0, 0,  0, 0,  0,
+			22, 1, 38, 0,  0,
+			 0, 0,  0, 0,  0,
+			20, 2, 10, 0,  0,
+			}},
+		{20, {25, 51}, { // R13x77
+			 0, 0,  0, 0,  0,
+			16, 1, 26, 1, 27,
+			 0, 0,  0, 0,  0,
+			28, 1, 14, 1, 15,
+			}},
+		{21, {23, 49, 75}, { // R13x99
+			 0, 0,  0, 0,  0,
+			20, 1, 36, 1, 37,
+			 0, 0,  0, 0,  0,
+			26, 1, 11, 2, 12,
+			}},
+		{22, {27, 55, 83, 111}, { // R13x139
+			 0, 0,  0, 0,  0,
+			20, 2, 35, 1, 36,
+			 0, 0,  0, 0,  0,
+			28, 2, 13, 2, 14,
+			}},
+		{23, {21}, { // R15x43
+			 0, 0,  0, 0,  0,
+			18, 1, 33, 0,  0,
+			 0, 0,  0, 0,  0,
+			18, 1,  7, 1,  8,
+			}},
+		{24, {19, 39}, { // R15x59
+			 0, 0,  0, 0,  0,
+			26, 1, 48, 0,  0,
+			 0, 0,  0, 0,  0,
+			24, 2, 13, 0,  0,
+			}},
+		{25, {25, 51}, { // R15x77
+			 0, 0,  0, 0,  0,
+			18, 1, 33, 1, 34,
+			 0, 0,  0, 0,  0,
+			24, 2, 10, 1, 11,
+			}},
+		{26, {23, 49, 75}, { // R15x99
+			 0, 0,  0, 0,  0,
+			24, 2, 44, 0,  0,
+			 0, 0,  0, 0,  0,
+			22, 4, 12, 0,  0,
+			}},
+		{27, {27, 55, 83, 111}, { // R15x139
+			 0, 0,  0, 0,  0,
+			24, 2, 42, 1, 43,
+			 0, 0,  0, 0,  0,
+			26, 1, 13, 4, 14,
+			}},
+		{28, {21}, { // R17x43
+			 0, 0,  0, 0,  0,
+			22, 1, 39, 0,  0,
+			 0, 0,  0, 0,  0,
+			20, 1, 10, 1, 11,
+			}},
+		{29, {19, 39}, { // R17x59
+			 0, 0,  0, 0,  0,
+			16, 2, 28, 0,  0,
+			 0, 0,  0, 0,  0,
+			30, 2, 14, 0,  0,
+			}},
+		{30, {25, 51}, { // R17x77
+			 0, 0,  0, 0,  0,
+			22, 2, 39, 0,  0,
+			 0, 0,  0, 0,  0,
+			28, 1, 12, 2, 13,
+			}},
+		{31, {23, 49, 75}, { // R17x99
+			 0, 0,  0, 0,  0,
+			20, 2, 33, 1, 34,
+			 0, 0,  0, 0,  0,
+			26, 4, 14, 0,  0,
+			}},
+		{32, {27, 55, 83, 111}, { // R17x139
+			 0, 0,  0, 0,  0,
+			20, 4, 38, 0,  0,
+			 0, 0,  0, 0,  0,
+			26, 2, 12, 4, 13,
+			}},
+	};
+
+	if (number < 1 || number > Size(allVersions))
+		return nullptr;
+	return allVersions + number - 1;
+}
+
+static const PointI dimsVersionRMQR[32] {
+			  {43,  7}, {59,  7}, {77,  7}, {99,  7}, {139,  7},
+			  {43,  9}, {59,  9}, {77,  9}, {99,  9}, {139,  9},
+	{27, 11}, {43, 11}, {59, 11}, {77, 11}, {99, 11}, {139, 11},
+	{27, 13}, {43, 13}, {59, 13}, {77, 13}, {99, 13}, {139, 13},
+			  {43, 15}, {59, 15}, {77, 15}, {99, 15}, {139, 15},
+			  {43, 17}, {59, 17}, {77, 17}, {99, 17}, {139, 17},
+};
+
+static int getVersionRMQR(const BitMatrix& bitMatrix)
+{
+	const int width = bitMatrix.width();
+	const int height = bitMatrix.height();
+	if (width != height && (width & 1) && (height & 1) && width >= 27 && width <= 139 && height >= 7 && height <= 17)
+		for (int i = 0; i < Size(dimsVersionRMQR); i++)
+			if (width == dimsVersionRMQR[i].x && height == dimsVersionRMQR[i].y)
+				return i;
+	return -1;
+}
+
+PointI Version::DimensionOfVersionRMQR(int versionNumber)
+{
+	if (versionNumber < 1 || versionNumber > Size(dimsVersionRMQR))
+		return {0, 0};
+	return dimsVersionRMQR[versionNumber - 1];
+}
+
 const Version* Version::Model1(int number)
 {
 	/**
@@ -396,9 +633,10 @@ const Version* Version::Model1(int number)
 }
 
 Version::Version(int versionNumber, std::initializer_list<int> alignmentPatternCenters, const std::array<ECBlocks, 4>& ecBlocks)
-	: _versionNumber(versionNumber), _alignmentPatternCenters(alignmentPatternCenters), _ecBlocks(ecBlocks), _type(Type::Model2)
+	: _versionNumber(versionNumber), _alignmentPatternCenters(alignmentPatternCenters), _ecBlocks(ecBlocks),
+	   _type(ecBlocks[0].codewordsPerBlock == 0 ? Type::rMQR : Type::Model2)
 {
-	_totalCodewords = ecBlocks[0].totalDataCodewords();
+	_totalCodewords = ecBlocks[1].totalDataCodewords(); // Use 1 (M) as 0 dummy for rMQR
 }
 
 Version::Version(int versionNumber, const std::array<ECBlocks, 4>& ecBlocks)
@@ -412,17 +650,27 @@ Version::Version(int versionNumber, const std::array<ECBlocks, 4>& ecBlocks)
 bool Version::HasMicroSize(const BitMatrix& bitMatrix)
 {
 	int size = bitMatrix.height();
-	return size >= 11 && size <= 17 && (size % 2) == 1;
+	return size == bitMatrix.width() && size >= 11 && size <= 17 && (size % 2) == 1;
+}
+
+bool Version::HasRMQRSize(const BitMatrix& bitMatrix)
+{
+	return getVersionRMQR(bitMatrix) != -1;
 }
 
 bool Version::HasValidSize(const BitMatrix& bitMatrix)
 {
 	int size = bitMatrix.height();
+	if (bitMatrix.width() != size)
+		return HasRMQRSize(bitMatrix);
 	return HasMicroSize(bitMatrix) || (size >= 21 && size <= 177 && (size % 4) == 1);
 }
 
 int Version::Number(const BitMatrix& bitMatrix)
 {
+	if (bitMatrix.width() != bitMatrix.height())
+		return getVersionRMQR(bitMatrix) + 1;
+
 	if (!HasValidSize(bitMatrix))
 		return 0;
 
@@ -461,6 +709,47 @@ const Version* Version::DecodeVersionInformation(int versionBitsA, int versionBi
 */
 BitMatrix Version::buildFunctionPattern() const
 {
+	if (isRMQR()) {
+		PointI dimension = Version::DimensionOfVersionRMQR(_versionNumber);
+		BitMatrix bitMatrix(dimension.x, dimension.y);
+
+		// Set edge timing patterns
+		bitMatrix.setRegion(0, 0, dimension.x, 1); // Top
+		bitMatrix.setRegion(0, dimension.y - 1, dimension.x, 1); // Bottom
+		bitMatrix.setRegion(0, 1, 1, dimension.y - 2); // Left
+		bitMatrix.setRegion(dimension.x - 1, 1, 1, dimension.y - 2); // Right
+
+		// Set vertical timing and alignment patterns
+		size_t max = _alignmentPatternCenters.size(); // Same as vertical timing column
+		for (size_t x = 0; x < max; ++x) {
+			int cx = _alignmentPatternCenters[x];
+			bitMatrix.setRegion(cx - 1, 1, 3, 2); // Top alignment pattern
+			bitMatrix.setRegion(cx - 1, dimension.y - 3, 3, 2); // Bottom alignment pattern
+			bitMatrix.setRegion(cx, 3, 1, dimension.y - 6); // Vertical timing pattern
+		}
+
+		// Top left finder pattern + separator
+		bitMatrix.setRegion(1, 1, 8 - 1, 8 - 1 - (dimension.y == 7)); // R7 finder bottom flush with edge
+		// Top left format
+		bitMatrix.setRegion(8, 1, 3, 5);
+		bitMatrix.setRegion(11, 1, 1, 3);
+
+		// Bottom right finder subpattern
+		bitMatrix.setRegion(dimension.x - 5, dimension.y - 5, 5 - 1, 5 - 1);
+		// Bottom right format
+		bitMatrix.setRegion(dimension.x - 8, dimension.y - 6, 3, 5);
+		bitMatrix.setRegion(dimension.x - 5, dimension.y - 6, 3, 1);
+
+		// Top right corner finder
+		bitMatrix.set(dimension.x - 2, 1);
+		if (dimension.y > 9) {
+			// Bottom left corner finder
+			bitMatrix.set(1, dimension.y - 2);
+		}
+
+		return bitMatrix;
+	}
+
 	int dimension = this->dimension();
 	BitMatrix bitMatrix(dimension, dimension);
 

@@ -33,6 +33,7 @@ enum class Type
 	Model1,
 	Model2,
 	Micro,
+	rMQR,
 };
 
 } // namespace ZXing::QRCode

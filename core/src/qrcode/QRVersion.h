@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "Point.h"
 #include "QRECB.h"
 #include "QRErrorCorrectionLevel.h"
 
@@ -28,6 +29,7 @@ class Version
 public:
 	Type type() const { return _type; }
 	bool isMicro() const { return type() == Type::Micro; }
+	bool isRMQR() const { return type() == Type::rMQR; }
 	bool isModel1() const { return type() == Type::Model1; }
 	bool isModel2() const { return type() == Type::Model2; }
 
@@ -49,8 +51,10 @@ public:
 	{
 		return DimensionOffset(isMicro) + DimensionStep(isMicro) * version;
 	}
+	static PointI DimensionOfVersionRMQR(int versionNumber);
 
 	static bool HasMicroSize(const BitMatrix& bitMatrix);
+	static bool HasRMQRSize(const BitMatrix& bitMatrix);
 	static bool HasValidSize(const BitMatrix& bitMatrix);
 	static int Number(const BitMatrix& bitMatrix);
 
@@ -59,6 +63,7 @@ public:
 	static const Version* Model1(int number);
 	static const Version* Model2(int number);
 	static const Version* Micro(int number);
+	static const Version* rMQR(int number);
 
 private:
 	int _versionNumber;
