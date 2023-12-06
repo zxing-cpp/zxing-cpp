@@ -25,6 +25,7 @@ public enum class BarcodeType : int {
 	PDF_417,
 	QR_CODE,
 	MICRO_QR_CODE,
+	RMQR_CODE
 	RSS_14,
 	RSS_EXPANDED,
 	UPC_A,

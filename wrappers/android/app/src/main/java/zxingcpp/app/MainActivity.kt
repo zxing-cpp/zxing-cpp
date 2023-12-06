@@ -239,7 +239,7 @@ class MainActivity : AppCompatActivity() {
 					}
 				} else {
 					readerCpp.options.apply {
-						formats = if (binding.qrcode.isChecked) setOf(QR_CODE) else setOf()
+						formats = if (binding.qrcode.isChecked) setOf(QR_CODE, MICRO_QR_CODE, RMQR_CODE) else setOf()
 						tryHarder = binding.tryHarder.isChecked
 						tryRotate = binding.tryRotate.isChecked
 						tryInvert = binding.tryInvert.isChecked

@@ -37,7 +37,7 @@ Result Reader::decode(const BinaryBitmap& image) const
 		detectorResult = DetectPureQR(*binImg);
 	if (_hints.hasFormat(BarcodeFormat::MicroQRCode) && !detectorResult.isValid())
 		detectorResult = DetectPureMQR(*binImg);
-	if (_hints.hasFormat(BarcodeFormat::rMQR) && !detectorResult.isValid())
+	if (_hints.hasFormat(BarcodeFormat::RMQRCode) && !detectorResult.isValid())
 		detectorResult = DetectPureRMQR(*binImg);
 
 	if (!detectorResult.isValid())
@@ -47,7 +47,7 @@ Result Reader::decode(const BinaryBitmap& image) const
 	auto position = detectorResult.position();
 
 	return Result(std::move(decoderResult), std::move(position),
-				  detectorResult.bits().width() != detectorResult.bits().height() ? BarcodeFormat::rMQR :
+				  detectorResult.bits().width() != detectorResult.bits().height() ? BarcodeFormat::RMQRCode :
 				  detectorResult.bits().width() < 21 ? BarcodeFormat::MicroQRCode : BarcodeFormat::QRCode);
 }
 
@@ -131,7 +131,7 @@ Results Reader::decode(const BinaryBitmap& image, int maxSymbols) const
 		}
 	}
 
-	if (_hints.hasFormat(BarcodeFormat::rMQR) && !(maxSymbols && Size(results) == maxSymbols)) {
+	if (_hints.hasFormat(BarcodeFormat::RMQRCode) && !(maxSymbols && Size(results) == maxSymbols)) {
 		// TODO proper
 		for (const auto& fp : allFPs) {
 			if (Contains(usedFPs, fp))
@@ -142,7 +142,7 @@ Results Reader::decode(const BinaryBitmap& image, int maxSymbols) const
 				auto decoderResult = Decode(detectorResult.bits());
 				auto position = detectorResult.position();
 				if (decoderResult.isValid(_hints.returnErrors())) {
-					results.emplace_back(std::move(decoderResult), std::move(position), BarcodeFormat::rMQR);
+					results.emplace_back(std::move(decoderResult), std::move(position), BarcodeFormat::RMQRCode);
 					if (maxSymbols && Size(results) == maxSymbols)
 						break;
 				}

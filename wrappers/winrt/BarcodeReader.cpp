@@ -92,6 +92,8 @@ BarcodeFormat BarcodeReader::ConvertRuntimeToNative(BarcodeType type)
 		return BarcodeFormat::QRCode;
 	case BarcodeType::MICRO_QR_CODE:
 		return BarcodeFormat::MicroQRCode;
+	case BarcodeType::RMQR_CODE:
+		return BarcodeFormat::RMQRCode;
 	case BarcodeType::RSS_14:
 		return BarcodeFormat::DataBar;
 	case BarcodeType::RSS_EXPANDED:
@@ -135,6 +137,8 @@ BarcodeType BarcodeReader::ConvertNativeToRuntime(BarcodeFormat format)
 		return BarcodeType::QR_CODE;
 	case BarcodeFormat::MicroQRCode:
 		return BarcodeType::MICRO_QR_CODE;
+	case BarcodeFormat::RMQRCode:
+		return BarcodeType::RMQR_CODE;
 	case BarcodeFormat::DataBar:
 		return BarcodeType::RSS_14;
 	case BarcodeFormat::DataBarExpanded:

@@ -611,7 +611,7 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 9, 0, pure },
 		});
 
-		runTests("rmqrcode-1", "rMQR", 2, {
+		runTests("rmqrcode-1", "rMQRCode", 2, {
 			{  1,  2, 0   },
 			{  1,  2, 90  },
 			{  1,  2, 180 },

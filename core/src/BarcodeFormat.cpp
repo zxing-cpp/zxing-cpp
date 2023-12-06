@@ -39,7 +39,7 @@ static BarcodeFormatName NAMES[] = {
 	{BarcodeFormat::MicroQRCode, "MicroQRCode"},
 	{BarcodeFormat::PDF417, "PDF417"},
 	{BarcodeFormat::QRCode, "QRCode"},
-	{BarcodeFormat::rMQR, "rMQR"},
+	{BarcodeFormat::RMQRCode, "rMQRCode"},
 	{BarcodeFormat::UPCA, "UPC-A"},
 	{BarcodeFormat::UPCE, "UPC-E"},
 	{BarcodeFormat::LinearCodes, "Linear-Codes"},
