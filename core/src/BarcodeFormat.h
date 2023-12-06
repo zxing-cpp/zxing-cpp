@@ -39,12 +39,13 @@ enum class BarcodeFormat
 	UPCA            = (1 << 14), ///< UPC-A
 	UPCE            = (1 << 15), ///< UPC-E
 	MicroQRCode     = (1 << 16), ///< Micro QR Code
+	rMQR            = (1 << 17), ///< Rectangular Micro QR Code
 
 	LinearCodes = Codabar | Code39 | Code93 | Code128 | EAN8 | EAN13 | ITF | DataBar | DataBarExpanded | UPCA | UPCE,
-	MatrixCodes = Aztec | DataMatrix | MaxiCode | PDF417 | QRCode | MicroQRCode,
+	MatrixCodes = Aztec | DataMatrix | MaxiCode | PDF417 | QRCode | MicroQRCode | rMQR,
 	Any         = LinearCodes | MatrixCodes,
 
-	_max = MicroQRCode, ///> implementation detail, don't use
+	_max = rMQR, ///> implementation detail, don't use
 };
 
 ZX_DECLARE_FLAGS(BarcodeFormats, BarcodeFormat)

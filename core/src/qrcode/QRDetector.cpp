@@ -36,6 +36,8 @@
 namespace ZXing::QRCode {
 
 constexpr auto PATTERN = FixedPattern<5, 7>{1, 1, 3, 1, 1};
+constexpr auto SUBPATTERN_RMQR = FixedPattern<5, 5>{1, 1, 1, 1, 1};
+constexpr auto CORNER_EDGE_RMQR = FixedPattern<2, 4>{3, 1};
 constexpr bool E2E = true;
 
 PatternView FindPattern(const PatternView& view)
@@ -601,6 +603,84 @@ DetectorResult DetectPureMQR(const BitMatrix& image)
 			{{left, top}, {right, top}, {right, bottom}, {left, bottom}}};
 }
 
+DetectorResult DetectPureRMQR(const BitMatrix& image)
+{
+	using Pattern = std::array<PatternView::value_type, PATTERN.size()>;
+	using SubPattern = std::array<PatternView::value_type, SUBPATTERN_RMQR.size()>;
+	using CornerEdgePattern = std::array<PatternView::value_type, CORNER_EDGE_RMQR.size()>;
+
+#ifdef PRINT_DEBUG
+	SaveAsPBM(image, "weg.pbm");
+#endif
+
+	constexpr int MIN_MODULES = 7;
+	constexpr int MIN_MODULES_W = 27;
+	constexpr int MIN_MODULES_H = 7;
+	constexpr int MAX_MODULES_W = 139;
+	constexpr int MAX_MODULES_H = 17;
+
+	int left, top, width, height;
+	if (!image.findBoundingBox(left, top, width, height, MIN_MODULES))
+		return {};
+	int right  = left + width - 1;
+	int bottom = top + height - 1;
+
+	PointI tl{left, top}, tr{right, top}, br{right, bottom}, bl{left, bottom};
+
+	// allow corners be moved one pixel inside to accommodate for possible aliasing artifacts
+	auto diagonal = BitMatrixCursorI(image, tl, {1, 1}).readPatternFromBlack<Pattern>(1);
+	if (!IsPattern(diagonal, PATTERN))
+		return {};
+
+	// Finder sub pattern
+	auto subdiagonal = BitMatrixCursorI(image, br, {-1, -1}).readPatternFromBlack<SubPattern>(1);
+	if (Size(subdiagonal) == 5 && subdiagonal[4] > subdiagonal[3]) // Sub pattern has no separator so can run off along the diagonal
+		subdiagonal[4] = subdiagonal[3]; // Hack it back to previous
+	if (!IsPattern(subdiagonal, SUBPATTERN_RMQR))
+		return {};
+
+	// Horizontal corner finder patterns (for vertical ones see below)
+	for (auto [p, d] : {std::pair(tr, PointI{-1, 0}), {bl, {1, 0}}}) {
+		auto corner = BitMatrixCursorI(image, p, d).readPatternFromBlack<CornerEdgePattern>(1);
+		if (!IsPattern(corner, CORNER_EDGE_RMQR))
+			return {};
+	}
+
+	auto fpWidth = Reduce(diagonal);
+	float moduleSize = float(fpWidth) / 7;
+	int dimW = narrow_cast<int>(std::lround(width / moduleSize));
+	int dimH = narrow_cast<int>(std::lround(height / moduleSize));
+
+	if (dimW == dimH || !(dimW & 1) || !(dimH & 1) ||
+		dimW < MIN_MODULES_W || dimW > MAX_MODULES_W || dimH < MIN_MODULES_H || dimH > MAX_MODULES_H ||
+		!image.isIn(PointF{left + moduleSize / 2 + (dimW - 1) * moduleSize,
+						   top + moduleSize / 2 + (dimH - 1) * moduleSize}))
+		return {};
+
+	// Vertical corner finder patterns
+	if (dimH > 7) { // None for R7
+		auto corner = BitMatrixCursorI(image, tr, {0, 1}).readPatternFromBlack<CornerEdgePattern>(1);
+		if (!IsPattern(corner, CORNER_EDGE_RMQR))
+			return {};
+		if (dimH > 9) { // No bottom left for R9
+			corner = BitMatrixCursorI(image, bl, {0, -1}).readPatternFromBlack<CornerEdgePattern>(1);
+			if (!IsPattern(corner, CORNER_EDGE_RMQR))
+				return {};
+		}
+	}
+
+#ifdef PRINT_DEBUG
+	LogMatrix log;
+	LogMatrixWriter lmw(log, image, 5, "grid2.pnm");
+	for (int y = 0; y < dimH; y++)
+		for (int x = 0; x < dimW; x++)
+			log(PointF(left + (x + .5f) * moduleSize, top + (y + .5f) * moduleSize));
+#endif
+
+	// Now just read off the bits (this is a crop + subsample)
+	return {Deflate(image, dimW, dimH, top + moduleSize / 2, left + moduleSize / 2, moduleSize), {tl, tr, br, bl}};
+}
+
 DetectorResult SampleMQR(const BitMatrix& image, const ConcentricPattern& fp)
 {
 	auto fpQuad = FindConcentricPatternCorners(image, fp, fp.size, 2);
@@ -660,6 +740,57 @@ DetectorResult SampleMQR(const BitMatrix& image, const ConcentricPattern& fp)
 		return {};
 
 	return SampleGrid(image, dim, dim, bestPT);
+}
+
+DetectorResult SampleRMQR(const BitMatrix& image, const ConcentricPattern& fp)
+{
+	// TODO proper
+	auto fpQuad = FindConcentricPatternCorners(image, fp, fp.size, 2);
+	if (!fpQuad)
+		return {};
+
+	auto srcQuad = Rectangle(7, 7, 0.5);
+
+	static const PointI FORMAT_INFO_EDGE_COORDS[] = {{8, 0}, {9, 0}, {10, 0}, {11, 0}};
+	static const PointI FORMAT_INFO_COORDS[] = {
+		{ 8, 1}, { 8, 2}, { 8, 3}, { 8, 4}, { 8, 5},
+		{ 9, 1}, { 9, 2}, { 9, 3}, { 9, 4}, { 9, 5},
+		{10, 1}, {10, 2}, {10, 3}, {10, 4}, {10, 5},
+		{11, 1}, {11, 2}, {11, 3},
+	};
+
+	FormatInformation bestFI;
+	PerspectiveTransform bestPT;
+
+	for (int i = 0; i < 4; ++i) {
+		auto mod2Pix = PerspectiveTransform(srcQuad, RotatedCorners(*fpQuad, i));
+
+		auto check = [&](int i, bool on) {
+			auto p = mod2Pix(centered(FORMAT_INFO_EDGE_COORDS[i]));
+			return image.isIn(p) && image.get(p) == on;
+		};
+
+		// check that we see top edge timing pattern modules
+		if (!check(0, true) || !check(1, false) || !check(2, true) || !check(3, false))
+			continue;
+
+		uint32_t formatInfoBits = 0;
+		for (int i = 0; i < Size(FORMAT_INFO_COORDS); ++i)
+			AppendBit(formatInfoBits, image.get(mod2Pix(centered(FORMAT_INFO_COORDS[i]))));
+
+		auto fi = FormatInformation::DecodeRMQR(formatInfoBits, 0 /*formatInfoBits2*/);
+		if (fi.hammingDistance < bestFI.hammingDistance) {
+			bestFI = fi;
+			bestPT = mod2Pix;
+		}
+	}
+
+	if (!bestFI.isValid())
+		return {};
+
+	const PointI dim = Version::DimensionOfVersionRMQR(bestFI.rMQRVersion + 1);
+
+	return SampleGrid(image, dim.x, dim.y, bestPT);
 }
 
 } // namespace ZXing::QRCode

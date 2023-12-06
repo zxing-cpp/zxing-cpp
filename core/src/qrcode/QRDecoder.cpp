@@ -247,7 +247,7 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 			if (modeBitLength == 0)
 				mode = CodecMode::NUMERIC; // MicroQRCode version 1 is always NUMERIC and modeBitLength is 0
 			else
-				mode = CodecModeForBits(bits.readBits(modeBitLength), version.isMicro());
+				mode = CodecModeForBits(bits.readBits(modeBitLength), version.type());
 
 			switch (mode) {
 			case CodecMode::FNC1_FIRST_POSITION:
