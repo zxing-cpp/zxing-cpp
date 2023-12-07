@@ -105,7 +105,7 @@ namespace {
 	void CheckRMQRVersion(const Version* version, int number) {
 		ASSERT_NE(version, nullptr);
 		EXPECT_EQ(number, version->versionNumber());
-		EXPECT_EQ(Version::DimensionOfVersionRMQR(number).x == 27, version->alignmentPatternCenters().empty());
+		EXPECT_EQ(Version::SymbolSize(number, Type::rMQR).x == 27, version->alignmentPatternCenters().empty());
 	}
 
 }

@@ -59,7 +59,7 @@ const Version* ReadVersion(const BitMatrix& bitMatrix, Type type)
 
 FormatInformation ReadFormatInformation(const BitMatrix& bitMatrix)
 {
-	if (Version::HasMicroSize(bitMatrix)) {
+	if (Version::HasValidSize(bitMatrix, Type::Micro)) {
 		// Read top-left format info bits
 		int formatInfoBits = 0;
 		for (int x = 1; x < 9; x++)
@@ -69,7 +69,7 @@ FormatInformation ReadFormatInformation(const BitMatrix& bitMatrix)
 
 		return FormatInformation::DecodeMQR(formatInfoBits);
 	}
-	if (Version::HasRMQRSize(bitMatrix)) {
+	if (Version::HasValidSize(bitMatrix, Type::rMQR)) {
 		// Read top-left format info bits
 		uint32_t formatInfoBits1 = 0;
 		for (int y = 3; y >= 1; y--)
@@ -77,6 +77,7 @@ FormatInformation ReadFormatInformation(const BitMatrix& bitMatrix)
 		for (int x = 10; x >= 8; x--)
 			for (int y = 5; y >= 1; y--)
 				AppendBit(formatInfoBits1, getBit(bitMatrix, x, y));
+
 		// Read bottom-right format info bits
 		uint32_t formatInfoBits2 = 0;
 		const int width = bitMatrix.width();
@@ -86,6 +87,7 @@ FormatInformation ReadFormatInformation(const BitMatrix& bitMatrix)
 		for (int x = 6; x <= 8; x++)
 			for (int y = 2; y <= 6; y++)
 				AppendBit(formatInfoBits2, getBit(bitMatrix, width - x, height - y));
+
 		return FormatInformation::DecodeRMQR(formatInfoBits1, formatInfoBits2);
 	}
 

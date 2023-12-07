@@ -509,33 +509,6 @@ const Version* Version::rMQR(int number)
 	return allVersions + number - 1;
 }
 
-static const PointI dimsVersionRMQR[32] {
-			  {43,  7}, {59,  7}, {77,  7}, {99,  7}, {139,  7},
-			  {43,  9}, {59,  9}, {77,  9}, {99,  9}, {139,  9},
-	{27, 11}, {43, 11}, {59, 11}, {77, 11}, {99, 11}, {139, 11},
-	{27, 13}, {43, 13}, {59, 13}, {77, 13}, {99, 13}, {139, 13},
-			  {43, 15}, {59, 15}, {77, 15}, {99, 15}, {139, 15},
-			  {43, 17}, {59, 17}, {77, 17}, {99, 17}, {139, 17},
-};
-
-static int getVersionRMQR(const BitMatrix& bitMatrix)
-{
-	const int width = bitMatrix.width();
-	const int height = bitMatrix.height();
-	if (width != height && (width & 1) && (height & 1) && width >= 27 && width <= 139 && height >= 7 && height <= 17)
-		for (int i = 0; i < Size(dimsVersionRMQR); i++)
-			if (width == dimsVersionRMQR[i].x && height == dimsVersionRMQR[i].y)
-				return i;
-	return -1;
-}
-
-PointI Version::DimensionOfVersionRMQR(int versionNumber)
-{
-	if (versionNumber < 1 || versionNumber > Size(dimsVersionRMQR))
-		return {0, 0};
-	return dimsVersionRMQR[versionNumber - 1];
-}
-
 const Version* Version::Model1(int number)
 {
 	/**
@@ -649,35 +622,14 @@ Version::Version(int versionNumber, const std::array<ECBlocks, 4>& ecBlocks)
 	_totalCodewords = ecBlocks[0].totalDataCodewords();
 }
 
-bool Version::HasMicroSize(const BitMatrix& bitMatrix)
+bool Version::HasValidSize(const BitMatrix& bitMatrix, Type type)
 {
-	int size = bitMatrix.height();
-	return size == bitMatrix.width() && size >= 11 && size <= 17 && (size % 2) == 1;
-}
-
-bool Version::HasRMQRSize(const BitMatrix& bitMatrix)
-{
-	return getVersionRMQR(bitMatrix) != -1;
-}
-
-bool Version::HasValidSize(const BitMatrix& bitMatrix)
-{
-	int size = bitMatrix.height();
-	if (bitMatrix.width() != size)
-		return HasRMQRSize(bitMatrix);
-	return HasMicroSize(bitMatrix) || (size >= 21 && size <= 177 && (size % 4) == 1);
+	return IsValidSize(PointI{bitMatrix.width(), bitMatrix.height()}, type);
 }
 
 int Version::Number(const BitMatrix& bitMatrix)
 {
-	if (bitMatrix.width() != bitMatrix.height())
-		return getVersionRMQR(bitMatrix) + 1;
-
-	if (!HasValidSize(bitMatrix))
-		return 0;
-
-	bool isMicro = HasMicroSize(bitMatrix);
-	return (bitMatrix.height() - DimensionOffset(isMicro)) / DimensionStep(isMicro);
+	return Number(PointI{bitMatrix.width(), bitMatrix.height()});
 }
 
 const Version* Version::DecodeVersionInformation(int versionBitsA, int versionBitsB)
@@ -712,41 +664,41 @@ const Version* Version::DecodeVersionInformation(int versionBitsA, int versionBi
 BitMatrix Version::buildFunctionPattern() const
 {
 	if (isRMQR()) {
-		PointI dimension = Version::DimensionOfVersionRMQR(_versionNumber);
-		BitMatrix bitMatrix(dimension.x, dimension.y);
+		PointI size = Version::SymbolSize(versionNumber(), Type::rMQR);
+		BitMatrix bitMatrix(size.x, size.y);
 
 		// Set edge timing patterns
-		bitMatrix.setRegion(0, 0, dimension.x, 1); // Top
-		bitMatrix.setRegion(0, dimension.y - 1, dimension.x, 1); // Bottom
-		bitMatrix.setRegion(0, 1, 1, dimension.y - 2); // Left
-		bitMatrix.setRegion(dimension.x - 1, 1, 1, dimension.y - 2); // Right
+		bitMatrix.setRegion(0, 0, size.x, 1); // Top
+		bitMatrix.setRegion(0, size.y - 1, size.x, 1); // Bottom
+		bitMatrix.setRegion(0, 1, 1, size.y - 2); // Left
+		bitMatrix.setRegion(size.x - 1, 1, 1, size.y - 2); // Right
 
 		// Set vertical timing and alignment patterns
 		size_t max = _alignmentPatternCenters.size(); // Same as vertical timing column
 		for (size_t x = 0; x < max; ++x) {
 			int cx = _alignmentPatternCenters[x];
 			bitMatrix.setRegion(cx - 1, 1, 3, 2); // Top alignment pattern
-			bitMatrix.setRegion(cx - 1, dimension.y - 3, 3, 2); // Bottom alignment pattern
-			bitMatrix.setRegion(cx, 3, 1, dimension.y - 6); // Vertical timing pattern
+			bitMatrix.setRegion(cx - 1, size.y - 3, 3, 2); // Bottom alignment pattern
+			bitMatrix.setRegion(cx, 3, 1, size.y - 6); // Vertical timing pattern
 		}
 
 		// Top left finder pattern + separator
-		bitMatrix.setRegion(1, 1, 8 - 1, 8 - 1 - (dimension.y == 7)); // R7 finder bottom flush with edge
+		bitMatrix.setRegion(1, 1, 8 - 1, 8 - 1 - (size.y == 7)); // R7 finder bottom flush with edge
 		// Top left format
 		bitMatrix.setRegion(8, 1, 3, 5);
 		bitMatrix.setRegion(11, 1, 1, 3);
 
 		// Bottom right finder subpattern
-		bitMatrix.setRegion(dimension.x - 5, dimension.y - 5, 5 - 1, 5 - 1);
+		bitMatrix.setRegion(size.x - 5, size.y - 5, 5 - 1, 5 - 1);
 		// Bottom right format
-		bitMatrix.setRegion(dimension.x - 8, dimension.y - 6, 3, 5);
-		bitMatrix.setRegion(dimension.x - 5, dimension.y - 6, 3, 1);
+		bitMatrix.setRegion(size.x - 8, size.y - 6, 3, 5);
+		bitMatrix.setRegion(size.x - 5, size.y - 6, 3, 1);
 
 		// Top right corner finder
-		bitMatrix.set(dimension.x - 2, 1);
-		if (dimension.y > 9) {
+		bitMatrix.set(size.x - 2, 1);
+		if (size.y > 9) {
 			// Bottom left corner finder
-			bitMatrix.set(1, dimension.y - 2);
+			bitMatrix.set(1, size.y - 2);
 		}
 
 		return bitMatrix;

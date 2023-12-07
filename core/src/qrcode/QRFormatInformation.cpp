@@ -144,18 +144,16 @@ FormatInformation FormatInformation::DecodeMQR(uint32_t formatInfoBits)
 FormatInformation FormatInformation::DecodeRMQR(uint32_t formatInfoBits1, uint32_t formatInfoBits2)
 {
 	FormatInformation fi;
-	auto mirror18Bits = [](uint32_t bits) { return BitHacks::Reverse(bits) >> 14; };
 	if (formatInfoBits2)
-		fi = FindBestFormatInfoRMQR({formatInfoBits1, mirror18Bits(formatInfoBits1)},
-									{formatInfoBits2, mirror18Bits(formatInfoBits2)});
+		fi = FindBestFormatInfoRMQR({formatInfoBits1}, {formatInfoBits2});
 	else // TODO probably remove if `sampleRMQR()` done properly
-		fi = FindBestFormatInfoRMQR({formatInfoBits1, mirror18Bits(formatInfoBits1)}, {});
+		fi = FindBestFormatInfoRMQR({formatInfoBits1}, {});
 
 	// Bit 6 is error correction (M/H), and bits 0-5 version.
 	fi.ecLevel = ECLevelFromBits(((fi.data >> 5) & 1) << 1); // Shift to match QRCode M/H
 	fi.dataMask = 4; // ((y / 2) + (x / 3)) % 2 == 0
-	fi.rMQRVersion = fi.data & 0x1F;
-	fi.isMirrored = fi.bitsIndex > 1;
+	fi.microVersion = (fi.data & 0x1F) + 1;
+	fi.isMirrored = false; // TODO: implement mirrored format bit reading
 
 	return fi;
 }

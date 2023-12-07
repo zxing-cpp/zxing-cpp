@@ -30,7 +30,6 @@ public:
 	bool isMirrored = false;
 	uint8_t dataMask = 0;
 	uint8_t microVersion = 0;
-	uint8_t rMQRVersion = 0;
 	ErrorCorrectionLevel ecLevel = ErrorCorrectionLevel::Invalid;
 
 	FormatInformation() = default;
@@ -47,7 +46,8 @@ public:
 		switch (mask) {
 		case FORMAT_INFO_MASK_MODEL1: return Type::Model1;
 		case FORMAT_INFO_MASK_MICRO: return Type::Micro;
-		case FORMAT_INFO_MASK_RMQR: case FORMAT_INFO_MASK_RMQR_SUB: return Type::rMQR;
+		case FORMAT_INFO_MASK_RMQR: [[fallthrough]];
+		case FORMAT_INFO_MASK_RMQR_SUB: return Type::rMQR;
 		default: return Type::Model2;
 		}
 	}
