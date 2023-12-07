@@ -4,7 +4,7 @@
 
 #import <CoreGraphics/CoreGraphics.h>
 #import "ZXIBarcodeWriter.h"
-#import "ZXIEncodeHints.h"
+#import "ZXIWriterOptions.h"
 #import "MultiFormatWriter.h"
 #import "BitMatrix.h"
 #import "BitMatrixIO.h"
@@ -32,29 +32,37 @@ std::wstring NSDataToStringW(NSData *data) {
 
 @implementation ZXIBarcodeWriter
 
+- (instancetype)init {
+    return [self initWithOptions: [[ZXIWriterOptions alloc] init]];
+}
+
+- (instancetype)initWithOptions:(ZXIWriterOptions*)options{
+    self = [super init];
+    self.options = options;
+    return self;
+}
+
 -(CGImageRef)writeData:(NSData *)data
-                 hints:(ZXIEncodeHints *)hints
                  error:(NSError *__autoreleasing  _Nullable *)error {
     return [self encode: NSDataToStringW(data)
                encoding: CharacterSet::BINARY
-                 format: hints.format
-                  width: hints.width
-                 height: hints.height
-                 margin: hints.margin
-                ecLevel: hints.ecLevel
+                 format: self.options.format
+                  width: self.options.width
+                 height: self.options.height
+                 margin: self.options.margin
+                ecLevel: self.options.ecLevel
                   error: error];
 }
 
 -(CGImageRef)writeString:(NSString *)contents
-                   hints:(ZXIEncodeHints *)hints
                    error:(NSError *__autoreleasing  _Nullable *)error {
     return [self encode: NSStringToStringW(contents)
                encoding: CharacterSet::UTF8
-                 format: hints.format
-                  width: hints.width
-                 height: hints.height
-                 margin: hints.margin
-                ecLevel: hints.ecLevel
+                 format: self.options.format
+                  width: self.options.width
+                 height: self.options.height
+                 margin: self.options.margin
+                ecLevel: self.options.ecLevel
                   error: error];
 }
 

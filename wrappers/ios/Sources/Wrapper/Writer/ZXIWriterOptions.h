@@ -30,7 +30,7 @@ extern const int PDF417_ERROR_CORRECTION_6;
 extern const int PDF417_ERROR_CORRECTION_7;
 extern const int PDF417_ERROR_CORRECTION_8;
 
-@interface ZXIEncodeHints : NSObject
+@interface ZXIWriterOptions : NSObject
 @property(nonatomic) ZXIFormat format;
 @property(nonatomic) int width;
 @property(nonatomic) int height;
