@@ -43,8 +43,8 @@ dependencies {
     implementation(libs.androidx.camera.camera2)
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
-    implementation(libs.google.material)
+    implementation(libs.android.material)
 
     // Java "upstream" version of zxing (to compare performance)
-    implementation(libs.google.zxing)
+    implementation(libs.zxing.core)
 }
