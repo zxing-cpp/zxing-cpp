@@ -6,14 +6,14 @@
 #import <CoreGraphics/CoreGraphics.h>
 #import <CoreImage/CoreImage.h>
 #import "ZXIResult.h"
-#import "ZXIDecodeHints.h"
+#import "ZXIReaderOptions.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ZXIBarcodeReader : NSObject
-@property(nonatomic, strong) ZXIDecodeHints *hints;
+@property(nonatomic, strong) ZXIReaderOptions *options;
 
--(instancetype)initWithHints:(ZXIDecodeHints*)options;
+-(instancetype)initWithOptions:(ZXIReaderOptions*)options;
 
 -(nullable NSArray<ZXIResult *> *)readCIImage:(nonnull CIImage *)image
                                 error:(NSError *__autoreleasing  _Nullable *)error;

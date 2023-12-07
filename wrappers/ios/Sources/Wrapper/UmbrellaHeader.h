@@ -10,7 +10,7 @@
 #import "Reader/ZXIPosition.h"
 #import "Reader/ZXIPoint.h"
 #import "Reader/ZXIGTIN.h"
-#import "Reader/ZXIDecodeHints.h"
+#import "Reader/ZXIReaderOptions.h"
 #import "Writer/ZXIEncodeHints.h"
 #import "Writer/ZXIBarcodeWriter.h"
 #import "ZXIErrors.h"
