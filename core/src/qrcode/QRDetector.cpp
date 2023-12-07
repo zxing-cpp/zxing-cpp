@@ -728,7 +728,6 @@ DetectorResult SampleMQR(const BitMatrix& image, const ConcentricPattern& fp)
 
 DetectorResult SampleRMQR(const BitMatrix& image, const ConcentricPattern& fp)
 {
-	// TODO proper
 	auto fpQuad = FindConcentricPatternCorners(image, fp, fp.size, 2);
 	if (!fpQuad)
 		return {};
@@ -773,6 +772,47 @@ DetectorResult SampleRMQR(const BitMatrix& image, const ConcentricPattern& fp)
 		return {};
 
 	const PointI dim = Version::SymbolSize(bestFI.microVersion, Type::rMQR);
+
+	// TODO: this is a WIP
+	auto intersectQuads = [](QuadrilateralF& a, QuadrilateralF& b) {
+		auto tl = Center(a);
+		auto br = Center(b);
+		// rotate points such that topLeft of a is furthest away from b and topLeft of b is closest to a
+		auto dist2B = [c = br](auto a, auto b) { return distance(a, c) < distance(b, c); };
+		auto offsetA = std::max_element(a.begin(), a.end(), dist2B) - a.begin();
+		auto dist2A = [c = tl](auto a, auto b) { return distance(a, c) < distance(b, c); };
+		auto offsetB = std::min_element(b.begin(), b.end(), dist2A) - b.begin();
+
+		a = RotatedCorners(a, offsetA);
+		b = RotatedCorners(b, offsetB);
+
+		auto tr = (intersect(RegressionLine(a[0], a[1]), RegressionLine(b[1], b[2]))
+				   + intersect(RegressionLine(a[3], a[2]), RegressionLine(b[0], b[3])))
+				  / 2;
+		auto bl = (intersect(RegressionLine(a[0], a[3]), RegressionLine(b[2], b[3]))
+				   + intersect(RegressionLine(a[1], a[2]), RegressionLine(b[0], b[1])))
+				  / 2;
+
+		log(tr, 2);
+		log(bl, 2);
+
+		return QuadrilateralF{tl, tr, br, bl};
+	};
+
+	if (auto found = LocateAlignmentPattern(image, fp.size / 7, bestPT(dim - PointF(3, 3)))) {
+		log(*found, 2);
+		if (auto spQuad = FindConcentricPatternCorners(image, *found, fp.size / 2, 1)) {
+			auto dest = intersectQuads(*fpQuad, *spQuad);
+			if (dim.y <= 9) {
+				bestPT = PerspectiveTransform({{6.5, 0.5}, {dim.x - 1.5, dim.y - 3.5}, {dim.x - 1.5, dim.y - 1.5}, {6.5, 6.5}},
+											  {fpQuad->topRight(), spQuad->topRight(), spQuad->bottomRight(), fpQuad->bottomRight()});
+			} else {
+				dest[0] = fp;
+				dest[2] = *found;
+				bestPT = PerspectiveTransform({{3.5, 3.5}, {dim.x - 2.5, 3.5}, {dim.x - 2.5, dim.y - 2.5}, {3.5, dim.y - 2.5}}, dest);
+			}
+		}
+	}
 
 	return SampleGrid(image, dim.x, dim.y, bestPT);
 }
