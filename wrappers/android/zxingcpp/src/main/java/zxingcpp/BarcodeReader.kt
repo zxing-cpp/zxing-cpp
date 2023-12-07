@@ -112,8 +112,9 @@ public class BarcodeReader(public var options: Options = Options()) {
 		val readerInit: Boolean,
 		val lineCount: Int,
 		val error: Error?,
-		val time: Int // for development/debug purposes only
 	)
+
+	public val lastReadTime : Int = 0 // runtime of last read call in ms (for debugging purposes only)
 
 	public fun read(image: ImageProxy): List<Result> {
 		check(image.format in supportedYUVFormats) {

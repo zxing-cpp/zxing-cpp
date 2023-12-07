@@ -250,8 +250,6 @@ class MainActivity : AppCompatActivity() {
 					resultText = try {
 						image.use {
 							readerCpp.read(it)
-						}.apply {
-							runtime2 += firstOrNull()?.time ?: 0
 						}.joinToString("\n") { result ->
 							result.position.let {
 								resultPoints.add(listOf(
@@ -274,6 +272,7 @@ class MainActivity : AppCompatActivity() {
 				}
 
 				runtimes += System.currentTimeMillis() - startTime
+				runtime2 += readerCpp.lastReadTime
 
 				var infoText: String? = null
 				if (++frameCounter == 15) {

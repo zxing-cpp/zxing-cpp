@@ -194,7 +194,7 @@ static jobject NewError(JNIEnv* env, const Error& error)
 	return env->NewObject(cls, midInit, NewEnum(env, JavaErrorTypeName(error.type()), "ErrorType"), C2JString(env, error.msg()));
 }
 
-static jobject NewResult(JNIEnv* env, const Result& result, int time)
+static jobject NewResult(JNIEnv* env, const Result& result)
 {
 	jclass cls = env->FindClass(PACKAGE "Result");
 	jmethodID midInit = env->GetMethodID(
@@ -213,7 +213,7 @@ static jobject NewResult(JNIEnv* env, const Result& result, int time)
 		"Z"
 		"I"
 		"L" PACKAGE "Error;"
-		"I)V");
+		")V");
 	bool valid = result.isValid();
 	return env->NewObject(cls, midInit,
 		NewEnum(env, JavaBarcodeFormatName(result.format()), "Format"),
@@ -229,12 +229,11 @@ static jobject NewResult(JNIEnv* env, const Result& result, int time)
 		valid ? C2JString(env, result.sequenceId()) : nullptr,
 		result.readerInit(),
 		result.lineCount(),
-		result.error() ? NewError(env, result.error()) : nullptr,
-		time
+		result.error() ? NewError(env, result.error()) : nullptr
 	);
 }
 
-static jobject Read(JNIEnv *env, ImageView image, const DecodeHints& hints)
+static jobject Read(JNIEnv *env, jobject thiz, ImageView image, const DecodeHints& hints)
 {
 	try {
 		auto startTime = std::chrono::high_resolution_clock::now();
@@ -243,12 +242,14 @@ static jobject Read(JNIEnv *env, ImageView image, const DecodeHints& hints)
 //		LOGD("time: %4d ms\n", (int)std::chrono::duration_cast<std::chrono::milliseconds>(duration).count());
 		auto time = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
 
+		env->SetIntField(thiz, env->GetFieldID(env->GetObjectClass(thiz), "lastReadTime", "I"), time);
+
 		jclass clsList = env->FindClass("java/util/ArrayList");
 		jobject objList = env->NewObject(clsList, env->GetMethodID(clsList, "<init>", "()V"));
 		if (!results.empty()) {
 			jmethodID midAdd = env->GetMethodID(clsList, "add", "(Ljava/lang/Object;)Z");
 			for (const auto& result: results)
-				env->CallBooleanMethod(objList, midAdd, NewResult(env, result, time));
+				env->CallBooleanMethod(objList, midAdd, NewResult(env, result));
 		}
 		return objList;
 	} catch (const std::exception& e) {
@@ -329,7 +330,7 @@ Java_zxingcpp_BarcodeReader_readYBuffer(
 		ImageView{pixels + top * rowStride + left, width, height, ImageFormat::Lum, rowStride}
 			.rotated(rotation);
 
-	return Read(env, image, CreateDecodeHints(env, options));
+	return Read(env, thiz, image, CreateDecodeHints(env, options));
 }
 
 struct LockedPixels
@@ -376,5 +377,5 @@ Java_zxingcpp_BarcodeReader_readBitmap(
 			.cropped(left, top, width, height)
 			.rotated(rotation);
 
-	return Read(env, image, CreateDecodeHints(env, options));
+	return Read(env, thiz, image, CreateDecodeHints(env, options));
 }
