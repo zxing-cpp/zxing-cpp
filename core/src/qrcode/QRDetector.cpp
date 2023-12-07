@@ -628,18 +628,12 @@ DetectorResult DetectPureRMQR(const BitMatrix& image)
 	if (!IsPattern(diagonal, PATTERN))
 		return {};
 
-	auto fpWidth = Reduce(diagonal);
-	float moduleSize = float(fpWidth) / 7;
-	int dimW = narrow_cast<int>(std::lround(width / moduleSize));
-	int dimH = narrow_cast<int>(std::lround(height / moduleSize));
-
-	if (!Version::IsValidSize(PointI{dimW, dimH}, Type::rMQR))
-		return {};
-
 	// Finder sub pattern
 	auto subdiagonal = BitMatrixCursorI(image, br, {-1, -1}).readPatternFromBlack<SubPattern>(1);
 	if (!IsPattern(subdiagonal, SUBPATTERN))
 		return {};
+
+	float moduleSize = Reduce(diagonal) + Reduce(subdiagonal);
 
 	// Horizontal timing patterns
 	for (auto [p, d] : {std::pair(tr, PointI{-1, 0}), {bl, {1, 0}}, {tl, {1, 0}}, {br, {-1, 0}}}) {
@@ -649,7 +643,15 @@ DetectorResult DetectPureRMQR(const BitMatrix& image)
 		auto timing = cur.readPattern<TimingPattern>();
 		if (!IsPattern(timing, TIMINGPATTERN))
 			return {};
+		moduleSize += Reduce(timing);
 	}
+
+	moduleSize /= 7 + 4 + 4 * 10; // fp + sub + 4 x timing
+	int dimW = narrow_cast<int>(std::lround(width / moduleSize));
+	int dimH = narrow_cast<int>(std::lround(height / moduleSize));
+
+	if (!Version::IsValidSize(PointI{dimW, dimH}, Type::rMQR))
+		return {};
 
 #ifdef PRINT_DEBUG
 	LogMatrix log;

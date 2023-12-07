@@ -611,12 +611,12 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 9, 0, pure },
 		});
 
-		runTests("rmqrcode-1", "rMQRCode", 2, {
+		runTests("rmqrcode-1", "rMQRCode", 3, {
 			{  1,  2, 0   },
 			{  1,  2, 90  },
 			{  1,  2, 180 },
 			{  1,  2, 270 },
-			{ 1, 1, pure },
+			{  2,  2, pure },
 		});
 
 		runTests("pdf417-1", "PDF417", 17, {
