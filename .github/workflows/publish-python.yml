@@ -73,9 +73,14 @@ jobs:
         path: wrappers/python/dist/*.tar.gz
 
   upload-pypi:
-    name: Deploy
+    name: Upload to PyPI
     needs: [build-wheels, build-sdist]
     runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/zxing-cpp
+    permissions:
+      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
     # only run if the commit is tagged...
 #    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     if: github.event_name == 'release' || github.event.inputs.publish == 'y'
@@ -86,7 +91,5 @@ jobs:
           path: dist
 
       - uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          user: __token__
-          password: ${{ secrets.TEST_PYPI_TOKEN }}
-          repository_url: https://test.pypi.org/legacy/
+#        with:
+#          repository-url: https://test.pypi.org/legacy/
