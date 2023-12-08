@@ -1,4 +1,4 @@
-name: build-python-dist
+name: publish-python
 
 on:
   release:
