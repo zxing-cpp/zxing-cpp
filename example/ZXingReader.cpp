@@ -51,36 +51,36 @@ static void PrintUsage(const char* exePath)
 	std::cout << "Formats can be lowercase, with or without '-', separated by ',' and/or '|'\n";
 }
 
-static bool ParseOptions(int argc, char* argv[], DecodeHints& hints, bool& oneLine, bool& bytesOnly,
+static bool ParseOptions(int argc, char* argv[], ReaderOptions& options, bool& oneLine, bool& bytesOnly,
 						 std::vector<std::string>& filePaths, std::string& outPath)
 {
 #ifdef ZXING_BUILD_EXPERIMENTAL_API
-	hints.setTryDenoise(true);
+	options.setTryDenoise(true);
 #endif
 
 	for (int i = 1; i < argc; ++i) {
 		auto is = [&](const char* str) { return strncmp(argv[i], str, strlen(argv[i])) == 0; };
 		if (is("-fast")) {
-			hints.setTryHarder(false);
+			options.setTryHarder(false);
 #ifdef ZXING_BUILD_EXPERIMENTAL_API
-			hints.setTryDenoise(false);
+			options.setTryDenoise(false);
 #endif
 		} else if (is("-norotate")) {
-			hints.setTryRotate(false);
+			options.setTryRotate(false);
 		} else if (is("-noinvert")) {
-			hints.setTryInvert(false);
+			options.setTryInvert(false);
 		} else if (is("-noscale")) {
-			hints.setTryDownscale(false);
+			options.setTryDownscale(false);
 		} else if (is("-ispure")) {
-			hints.setIsPure(true);
-			hints.setBinarizer(Binarizer::FixedThreshold);
+			options.setIsPure(true);
+			options.setBinarizer(Binarizer::FixedThreshold);
 		} else if (is("-errors")) {
-			hints.setReturnErrors(true);
+			options.setReturnErrors(true);
 		} else if (is("-format")) {
 			if (++i == argc)
 				return false;
 			try {
-				hints.setFormats(BarcodeFormatsFromString(argv[i]));
+				options.setFormats(BarcodeFormatsFromString(argv[i]));
 			} catch (const std::exception& e) {
 				std::cerr << e.what() << "\n";
 				return false;
@@ -89,13 +89,13 @@ static bool ParseOptions(int argc, char* argv[], DecodeHints& hints, bool& oneLi
 			if (++i == argc)
 				return false;
 			else if (is("plain"))
-				hints.setTextMode(TextMode::Plain);
+				options.setTextMode(TextMode::Plain);
 			else if (is("eci"))
-				hints.setTextMode(TextMode::ECI);
+				options.setTextMode(TextMode::ECI);
 			else if (is("hri"))
-				hints.setTextMode(TextMode::HRI);
+				options.setTextMode(TextMode::HRI);
 			else if (is("escaped"))
-				hints.setTextMode(TextMode::Escaped);
+				options.setTextMode(TextMode::Escaped);
 			else
 				return false;
 		} else if (is("-1")) {
@@ -151,7 +151,7 @@ void drawRect(const ImageView& image, const Position& pos, bool error)
 
 int main(int argc, char* argv[])
 {
-	DecodeHints hints;
+	ReaderOptions options;
 	std::vector<std::string> filePaths;
 	Results allResults;
 	std::string outPath;
@@ -159,10 +159,10 @@ int main(int argc, char* argv[])
 	bool bytesOnly = false;
 	int ret = 0;
 
-	hints.setTextMode(TextMode::HRI);
-	hints.setEanAddOnSymbol(EanAddOnSymbol::Read);
+	options.setTextMode(TextMode::HRI);
+	options.setEanAddOnSymbol(EanAddOnSymbol::Read);
 
-	if (!ParseOptions(argc, argv, hints, oneLine, bytesOnly, filePaths, outPath)) {
+	if (!ParseOptions(argc, argv, options, oneLine, bytesOnly, filePaths, outPath)) {
 		PrintUsage(argv[0]);
 		return -1;
 	}
@@ -179,7 +179,7 @@ int main(int argc, char* argv[])
 		}
 
 		ImageView image{buffer.get(), width, height, ImageFormat::RGB};
-		auto results = ReadBarcodes(image, hints);
+		auto results = ReadBarcodes(image, options);
 
 		// if we did not find anything, insert a dummy to produce some output for each file
 		if (results.empty())
@@ -229,7 +229,7 @@ int main(int argc, char* argv[])
 			}
 
 			std::cout << "Text:       \"" << result.text() << "\"\n"
-					  << "Bytes:      " << ToHex(hints.textMode() == TextMode::ECI ? result.bytesECI() : result.bytes()) << "\n"
+					  << "Bytes:      " << ToHex(options.textMode() == TextMode::ECI ? result.bytesECI() : result.bytes()) << "\n"
 					  << "Format:     " << ToString(result.format()) << "\n"
 					  << "Identifier: " << result.symbologyIdentifier() << "\n"
 					  << "Content:    " << ToString(result.contentType()) << "\n"
@@ -283,7 +283,7 @@ int main(int argc, char* argv[])
 			int blockSize = 1;
 			do {
 				for (int i = 0; i < blockSize; ++i)
-					ReadBarcodes(image, hints);
+					ReadBarcodes(image, options);
 				N += blockSize;
 				duration = std::chrono::high_resolution_clock::now() - startTime;
 				if (blockSize < 1000 && duration < std::chrono::milliseconds(100))

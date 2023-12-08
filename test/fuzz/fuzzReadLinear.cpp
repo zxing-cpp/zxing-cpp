@@ -24,16 +24,16 @@ static std::vector<std::unique_ptr<RowReader>> readers;
 
 bool init()
 {
-	static DecodeHints hints;
-	hints.setReturnErrors(true);
-	readers.emplace_back(new MultiUPCEANReader(hints));
-	readers.emplace_back(new Code39Reader(hints));
-	readers.emplace_back(new Code93Reader(hints));
-	readers.emplace_back(new Code128Reader(hints));
-	readers.emplace_back(new ITFReader(hints));
-	readers.emplace_back(new CodabarReader(hints));
-	readers.emplace_back(new DataBarReader(hints));
-	readers.emplace_back(new DataBarExpandedReader(hints));
+	static ReaderOptions opts;
+	opts.setReturnErrors(true);
+	readers.emplace_back(new MultiUPCEANReader(opts));
+	readers.emplace_back(new Code39Reader(opts));
+	readers.emplace_back(new Code93Reader(opts));
+	readers.emplace_back(new Code128Reader(opts));
+	readers.emplace_back(new ITFReader(opts));
+	readers.emplace_back(new CodabarReader(opts));
+	readers.emplace_back(new DataBarReader(opts));
+	readers.emplace_back(new DataBarExpandedReader(opts));
 	return true;
 }
 

@@ -68,69 +68,69 @@ char* zxing_BarcodeFormatToString(zxing_BarcodeFormat format)
  * ZXing/DecodeHints.h
  */
 
-zxing_DecodeHints* zxing_DecodeHints_new()
+zxing_ReaderOptions* zxing_ReaderOptions_new()
 {
-	return new DecodeHints();
+	return new ReaderOptions();
 }
 
-void zxing_DecodeHints_delete(zxing_DecodeHints* hints)
+void zxing_ReaderOptions_delete(zxing_ReaderOptions* opts)
 {
-	delete hints;
+	delete opts;
 }
 
-void zxing_DecodeHints_setTryHarder(zxing_DecodeHints* hints, bool tryHarder)
+void zxing_ReaderOptions_setTryHarder(zxing_ReaderOptions* opts, bool tryHarder)
 {
-	hints->setTryHarder(tryHarder);
+	opts->setTryHarder(tryHarder);
 }
 
-void zxing_DecodeHints_setTryRotate(zxing_DecodeHints* hints, bool tryRotate)
+void zxing_ReaderOptions_setTryRotate(zxing_ReaderOptions* opts, bool tryRotate)
 {
-	hints->setTryRotate(tryRotate);
+	opts->setTryRotate(tryRotate);
 }
 
-void zxing_DecodeHints_setTryInvert(zxing_DecodeHints* hints, bool tryInvert)
+void zxing_ReaderOptions_setTryInvert(zxing_ReaderOptions* opts, bool tryInvert)
 {
-	hints->setTryInvert(tryInvert);
+	opts->setTryInvert(tryInvert);
 }
 
-void zxing_DecodeHints_setTryDownscale(zxing_DecodeHints* hints, bool tryDownscale)
+void zxing_ReaderOptions_setTryDownscale(zxing_ReaderOptions* opts, bool tryDownscale)
 {
-	hints->setTryDownscale(tryDownscale);
+	opts->setTryDownscale(tryDownscale);
 }
 
-void zxing_DecodeHints_setIsPure(zxing_DecodeHints* hints, bool isPure)
+void zxing_ReaderOptions_setIsPure(zxing_ReaderOptions* opts, bool isPure)
 {
-	hints->setIsPure(isPure);
+	opts->setIsPure(isPure);
 }
 
-void zxing_DecodeHints_setReturnErrors(zxing_DecodeHints* hints, bool returnErrors)
+void zxing_ReaderOptions_setReturnErrors(zxing_ReaderOptions* opts, bool returnErrors)
 {
-	hints->setReturnErrors(returnErrors);
+	opts->setReturnErrors(returnErrors);
 }
 
-void zxing_DecodeHints_setFormats(zxing_DecodeHints* hints, zxing_BarcodeFormats formats)
+void zxing_ReaderOptions_setFormats(zxing_ReaderOptions* opts, zxing_BarcodeFormats formats)
 {
-	hints->setFormats(static_cast<BarcodeFormat>(formats));
+	opts->setFormats(static_cast<BarcodeFormat>(formats));
 }
 
-void zxing_DecodeHints_setBinarizer(zxing_DecodeHints* hints, zxing_Binarizer binarizer)
+void zxing_ReaderOptions_setBinarizer(zxing_ReaderOptions* opts, zxing_Binarizer binarizer)
 {
-	hints->setBinarizer(static_cast<Binarizer>(binarizer));
+	opts->setBinarizer(static_cast<Binarizer>(binarizer));
 }
 
-void zxing_DecodeHints_setEanAddOnSymbol(zxing_DecodeHints* hints, zxing_EanAddOnSymbol eanAddOnSymbol)
+void zxing_ReaderOptions_setEanAddOnSymbol(zxing_ReaderOptions* opts, zxing_EanAddOnSymbol eanAddOnSymbol)
 {
-	hints->setEanAddOnSymbol(static_cast<EanAddOnSymbol>(eanAddOnSymbol));
+	opts->setEanAddOnSymbol(static_cast<EanAddOnSymbol>(eanAddOnSymbol));
 }
 
-void zxing_DecodeHints_setTextMode(zxing_DecodeHints* hints, zxing_TextMode textMode)
+void zxing_ReaderOptions_setTextMode(zxing_ReaderOptions* opts, zxing_TextMode textMode)
 {
-	hints->setTextMode(static_cast<TextMode>(textMode));
+	opts->setTextMode(static_cast<TextMode>(textMode));
 }
 
-void zxing_DecodeHints_setMaxNumberOfSymbols(zxing_DecodeHints* hints, int n)
+void zxing_ReaderOptions_setMaxNumberOfSymbols(zxing_ReaderOptions* opts, int n)
 {
-	hints->setMaxNumberOfSymbols(n);
+	opts->setMaxNumberOfSymbols(n);
 }
 
 /*
@@ -209,15 +209,15 @@ bool zxing_Result_isMirrored(const zxing_Result* result)
  * ZXing/ReadBarcode.h
  */
 
-zxing_Result* zxing_ReadBarcode(const zxing_ImageView* iv, const zxing_DecodeHints* hints)
+zxing_Result* zxing_ReadBarcode(const zxing_ImageView* iv, const zxing_ReaderOptions* opts)
 {
-	auto res = ReadBarcode(*iv, *hints);
+	auto res = ReadBarcode(*iv, *opts);
 	return res.format() != BarcodeFormat::None ? new Result(std::move(res)) : NULL;
 }
 
-zxing_Results* zxing_ReadBarcodes(const zxing_ImageView* iv, const zxing_DecodeHints* hints)
+zxing_Results* zxing_ReadBarcodes(const zxing_ImageView* iv, const zxing_ReaderOptions* opts)
 {
-	auto res = ReadBarcodes(*iv, *hints);
+	auto res = ReadBarcodes(*iv, *opts);
 	return !res.empty() ? new Results(std::move(res)) : NULL;
 }
 

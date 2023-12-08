@@ -25,12 +25,12 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
-	auto hints = DecodeHints()
+	auto options = ReaderOptions()
 					 .setFormats(BarcodeFormat::Any)
 					 .setTryRotate(false)
 					 .setMaxNumberOfSymbols(10);
 
-	auto results = ReadBarcodes(fileImage, hints);
+	auto results = ReadBarcodes(fileImage, options);
 
 	for (auto& result : results) {
 		qDebug() << "Text:   " << result.text();

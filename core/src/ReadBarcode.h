@@ -14,20 +14,20 @@ namespace ZXing {
 /**
  * Read barcode from an ImageView
  *
- * @param buffer  view of the image data including layout and format
- * @param hints  optional DecodeHints to parameterize / speed up decoding
+ * @param image  view of the image data including layout and format
+ * @param options  optional ReaderOptions to parameterize / speed up detection
  * @return #Result structure
  */
-Result ReadBarcode(const ImageView& buffer, const DecodeHints& hints = {});
+Result ReadBarcode(const ImageView& image, const ReaderOptions& options = {});
 
 /**
  * Read barcodes from an ImageView
  *
- * @param buffer  view of the image data including layout and format
- * @param hints  optional DecodeHints to parameterize / speed up decoding
+ * @param image  view of the image data including layout and format
+ * @param options  optional ReaderOptions to parameterize / speed up detection
  * @return #Results list of results found, may be empty
  */
-Results ReadBarcodes(const ImageView& buffer, const DecodeHints& hints = {});
+Results ReadBarcodes(const ImageView& image, const ReaderOptions& options = {});
 
 } // ZXing
 

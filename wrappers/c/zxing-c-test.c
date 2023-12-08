@@ -54,15 +54,15 @@ int main(int argc, char** argv)
 	if (!data)
 		return 2;
 
-	zxing_DecodeHints* hints = zxing_DecodeHints_new();
-	zxing_DecodeHints_setTextMode(hints, zxing_TextMode_HRI);
-	zxing_DecodeHints_setEanAddOnSymbol(hints, zxing_EanAddOnSymbol_Ignore);
-	zxing_DecodeHints_setFormats(hints, formats);
-	zxing_DecodeHints_setReturnErrors(hints, true);
+	zxing_ReaderOptions* opts = zxing_ReaderOptions_new();
+	zxing_ReaderOptions_setTextMode(opts, zxing_TextMode_HRI);
+	zxing_ReaderOptions_setEanAddOnSymbol(opts, zxing_EanAddOnSymbol_Ignore);
+	zxing_ReaderOptions_setFormats(opts, formats);
+	zxing_ReaderOptions_setReturnErrors(opts, true);
 
 	zxing_ImageView* iv = zxing_ImageView_new(data, width, height, zxing_ImageFormat_Lum, 0, 0);
 
-	zxing_Results* results = zxing_ReadBarcodes(iv, hints);
+	zxing_Results* results = zxing_ReadBarcodes(iv, opts);
 
 	if (results) {
 		for (int i = 0, n = zxing_Results_size(results); i < n; ++i) {
@@ -86,7 +86,7 @@ int main(int argc, char** argv)
 	}
 
 	zxing_ImageView_delete(iv);
-	zxing_DecodeHints_delete(hints);
+	zxing_ReaderOptions_delete(opts);
 	stbi_image_free(data);
 
 	return 0;

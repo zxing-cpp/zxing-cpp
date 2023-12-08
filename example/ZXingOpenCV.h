@@ -26,9 +26,9 @@ inline ZXing::ImageView ImageViewFromMat(const cv::Mat& image)
 	return {image.data, image.cols, image.rows, fmt};
 }
 
-inline ZXing::Results ReadBarcodes(const cv::Mat& image, const ZXing::DecodeHints& hints = {})
+inline ZXing::Results ReadBarcodes(const cv::Mat& image, const ZXing::ReaderOptions& options = {})
 {
-	return ZXing::ReadBarcodes(ImageViewFromMat(image), hints);
+	return ZXing::ReadBarcodes(ImageViewFromMat(image), options);
 }
 
 inline void DrawResult(cv::Mat& img, ZXing::Result res)

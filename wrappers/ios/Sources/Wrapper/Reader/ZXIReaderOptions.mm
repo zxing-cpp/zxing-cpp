@@ -6,14 +6,14 @@
 #import "DecodeHints.h"
 
 @interface ZXIReaderOptions()
-@property(nonatomic) ZXing::DecodeHints zxingHints;
+@property(nonatomic) ZXing::ReaderOptions cppOpts;
 @end
 
 @implementation ZXIReaderOptions
 
 -(instancetype)init {
     self = [super init];
-    self.zxingHints = ZXing::DecodeHints();
+    self.cppOpts = ZXing::ReaderOptions();
     return self;
 }
 
@@ -29,7 +29,7 @@
                downscaleThreshold:(uint16_t)downscaleThreshold
                maxNumberOfSymbols:(NSInteger)maxNumberOfSymbols {
     self = [super init];
-    self.zxingHints = ZXing::DecodeHints();
+    self.cppOpts = ZXing::ReaderOptions();
     self.tryHarder = tryHarder;
     self.tryRotate = tryRotate;
     self.tryInvert = tryInvert;
@@ -45,83 +45,83 @@
 }
 
 -(void)setTryHarder:(BOOL)tryHarder {
-    self.zxingHints.setTryHarder(tryHarder);
+    self.cppOpts.setTryHarder(tryHarder);
 }
 
 -(void)setTryRotate:(BOOL)tryRotate {
-    self.zxingHints.setTryRotate(tryRotate);
+    self.cppOpts.setTryRotate(tryRotate);
 }
 
 -(void)setTryInvert:(BOOL)tryInvert {
-    self.zxingHints.setTryInvert(tryInvert);
+    self.cppOpts.setTryInvert(tryInvert);
 }
 
 -(void)setTryDownscale:(BOOL)tryDownscale {
-    self.zxingHints.setTryDownscale(tryDownscale);
+    self.cppOpts.setTryDownscale(tryDownscale);
 }
 
 -(void)setTryCode39ExtendedMode:(BOOL)tryCode39ExtendedMode {
-    self.zxingHints.setTryCode39ExtendedMode(tryCode39ExtendedMode);
+    self.cppOpts.setTryCode39ExtendedMode(tryCode39ExtendedMode);
 }
 
 -(void)setValidateCode39CheckSum:(BOOL)validateCode39CheckSum {
-    self.zxingHints.setValidateCode39CheckSum(validateCode39CheckSum);
+    self.cppOpts.setValidateCode39CheckSum(validateCode39CheckSum);
 }
 
 -(void)setValidateITFCheckSum:(BOOL)validateITFCheckSum {
-    self.zxingHints.setValidateITFCheckSum(validateITFCheckSum);
+    self.cppOpts.setValidateITFCheckSum(validateITFCheckSum);
 }
 
 -(void)setDownscaleFactor:(uint8_t)downscaleFactor {
-    self.zxingHints.setDownscaleFactor(downscaleFactor);
+    self.cppOpts.setDownscaleFactor(downscaleFactor);
 }
 
 -(void)setDownscaleThreshold:(uint16_t)downscaleThreshold {
-    self.zxingHints.setDownscaleThreshold(downscaleThreshold);
+    self.cppOpts.setDownscaleThreshold(downscaleThreshold);
 }
 
 -(void)setMaxNumberOfSymbols:(NSInteger)maxNumberOfSymbols {
-    self.zxingHints.setMaxNumberOfSymbols(maxNumberOfSymbols);
+    self.cppOpts.setMaxNumberOfSymbols(maxNumberOfSymbols);
 }
 
 -(BOOL)tryHarder {
-    return self.zxingHints.tryHarder();
+    return self.cppOpts.tryHarder();
 }
 
 -(BOOL)tryRotate {
-    return self.zxingHints.tryRotate();
+    return self.cppOpts.tryRotate();
 }
 
 -(BOOL)tryInvert {
-    return self.zxingHints.tryInvert();
+    return self.cppOpts.tryInvert();
 }
 
 -(BOOL)tryDownscale {
-    return self.zxingHints.tryDownscale();
+    return self.cppOpts.tryDownscale();
 }
 
 -(BOOL)tryCode39ExtendedMode {
-    return self.zxingHints.tryCode39ExtendedMode();
+    return self.cppOpts.tryCode39ExtendedMode();
 }
 
 -(BOOL)validateCode39CheckSum {
-    return self.zxingHints.validateCode39CheckSum();
+    return self.cppOpts.validateCode39CheckSum();
 }
 
 -(BOOL)validateITFCheckSum {
-    return self.zxingHints.validateITFCheckSum();
+    return self.cppOpts.validateITFCheckSum();
 }
 
 -(uint8_t)downscaleFactor {
-    return self.zxingHints.downscaleFactor();
+    return self.cppOpts.downscaleFactor();
 }
 
 -(uint16_t)downscaleThreshold {
-    return self.zxingHints.downscaleThreshold();
+    return self.cppOpts.downscaleThreshold();
 }
 
 - (NSInteger)maxNumberOfSymbols {
-    return self.zxingHints.maxNumberOfSymbols();
+    return self.cppOpts.maxNumberOfSymbols();
 }
 
 @end

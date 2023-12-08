@@ -117,12 +117,12 @@ ZXIGTIN *getGTIN(const Result &result) {
     return [self readImageView:imageView error:error];
 }
 
-+ (DecodeHints)DecodeHintsFromZXIReaderOptions:(ZXIReaderOptions*)options {
++ (ReaderOptions)ReaderOptionsFromZXIReaderOptions:(ZXIReaderOptions*)options {
     BarcodeFormats formats;
     for(NSNumber* flag in options.formats) {
         formats.setFlag(BarcodeFormatFromZXIFormat((ZXIFormat)flag.integerValue));
     }
-    DecodeHints resultingHints = DecodeHints()
+    ReaderOptions cppOpts = ReaderOptions()
         .setFormats(formats)
         .setTryRotate(options.tryRotate)
         .setTryHarder(options.tryHarder)
@@ -132,13 +132,13 @@ ZXIGTIN *getGTIN(const Result &result) {
         .setValidateCode39CheckSum(options.validateCode39CheckSum)
         .setValidateITFCheckSum(options.validateITFCheckSum)
         .setMaxNumberOfSymbols(options.maxNumberOfSymbols);
-    return resultingHints;
+    return cppOpts;
 }
 
 - (NSArray<ZXIResult*> *)readImageView:(ImageView)imageView
                                  error:(NSError *__autoreleasing _Nullable *)error {
     try {
-        Results results = ReadBarcodes(imageView, [ZXIBarcodeReader DecodeHintsFromZXIReaderOptions:self.options]);
+        Results results = ReadBarcodes(imageView, [ZXIBarcodeReader ReaderOptionsFromZXIReaderOptions:self.options]);
         NSMutableArray* zxiResults = [NSMutableArray array];
         for (auto result: results) {
             [zxiResults addObject:

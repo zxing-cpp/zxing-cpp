@@ -40,7 +40,7 @@ auto read_barcodes_impl(py::object _image, const BarcodeFormats& formats, bool t
 						Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol, bool return_errors,
 						uint8_t max_number_of_symbols = 0xff)
 {
-	const auto hints = DecodeHints()
+	const auto opts = ReaderOptions()
 		.setFormats(formats)
 		.setTryRotate(try_rotate)
 		.setTryDownscale(try_downscale)
@@ -139,7 +139,7 @@ auto read_barcodes_impl(py::object _image, const BarcodeFormats& formats, bool t
 	const auto bytes = static_cast<uint8_t*>(info.ptr);
 	// Disables the GIL during zxing processing (restored automatically upon completion)
 	py::gil_scoped_release release;
-	return ReadBarcodes({bytes, width, height, imgfmt, rowStride, pixStride}, hints);
+	return ReadBarcodes({bytes, width, height, imgfmt, rowStride, pixStride}, opts);
 }
 
 std::optional<Result> read_barcode(py::object _image, const BarcodeFormats& formats, bool try_rotate, bool try_downscale,

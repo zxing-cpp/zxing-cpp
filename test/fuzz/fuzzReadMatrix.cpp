@@ -24,12 +24,12 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
 	if (size < 3)
 		return 0;
 
-	static auto options = DecodeHints()
-							  .setFormats(BarcodeFormat::MatrixCodes)
-							  .setBinarizer(Binarizer::BoolCast)
-							  .setReturnErrors(true)
-							  .setTryInvert(false)
-							  .setTryRotate(false);
+	static auto opts = ReaderOptions()
+						   .setFormats(BarcodeFormat::MatrixCodes)
+						   .setBinarizer(Binarizer::BoolCast)
+						   .setReturnErrors(true)
+						   .setTryInvert(false)
+						   .setTryRotate(false);
 
 	int ratio = data[0] + 1;
 	int nBits = (size - 1) * 8;
@@ -47,7 +47,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
 #endif
 
 	auto image = ImageView(buffer.data(), width, height, ImageFormat::Lum);
-	auto res = ReadBarcodes(image, options);
+	auto res = ReadBarcodes(image, opts);
 
 #ifdef PRINT_DEBUG
 	for (const auto& r : res)

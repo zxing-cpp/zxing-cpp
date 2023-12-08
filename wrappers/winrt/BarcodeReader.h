@@ -32,7 +32,7 @@ public enum class BarcodeType : int {
 	UPC_E
 };
 
-class DecodeHints;
+class ReaderOptions;
 ref class ReadResult;
 
 public ref class BarcodeReader sealed
@@ -52,7 +52,7 @@ private:
 	static BarcodeFormat ConvertRuntimeToNative(BarcodeType type);
 	static BarcodeType ConvertNativeToRuntime(BarcodeFormat format);
 
-	std::unique_ptr<DecodeHints> m_hints;
+	std::unique_ptr<ReaderOptions> m_opts;
 };
 
 } // ZXing

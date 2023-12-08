@@ -172,4 +172,6 @@ public:
 	bool hasFormat(BarcodeFormats f) const noexcept { return _formats.testFlags(f) || _formats.empty(); }
 };
 
+using ReaderOptions = DecodeHints;
+
 } // ZXing

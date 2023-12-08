@@ -21,10 +21,10 @@ int main(int argc, char** argv)
 
 	zxing_ImageView* iv = zxing_ImageView_new(data, width, height, zxing_ImageFormat_Lum, 0, 0);
 
-	zxing_DecodeHints* hints = zxing_DecodeHints_new();
-	/* set DecodeHints properties, if requried */
+	zxing_ReaderOptions* opts = zxing_ReaderOptions_new();
+	/* set ReaderOptions properties, if requried */
 
-	zxing_Result* result = zxing_ReadBarcode(iv, hints);
+	zxing_Result* result = zxing_ReadBarcode(iv, opts);
 
 	if (result) {
 		printf("Format     : %s\n", zxing_BarcodeFormatToString(zxing_Result_format(result)));
@@ -39,7 +39,7 @@ int main(int argc, char** argv)
 	}
 
 	zxing_ImageView_delete(iv);
-	zxing_DecodeHints_delete(hints);
+	zxing_ReaderOptions_delete(opts);
 
 	return 0;
 }

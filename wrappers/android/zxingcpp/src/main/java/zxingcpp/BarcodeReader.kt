@@ -142,10 +142,10 @@ public class BarcodeReader(public var options: Options = Options()) {
 	}
 
 	private external fun readYBuffer(
-		yBuffer: ByteBuffer, rowStride: Int, left: Int, top: Int, width: Int, height: Int, rotation: Int, hints: Options
+		yBuffer: ByteBuffer, rowStride: Int, left: Int, top: Int, width: Int, height: Int, rotation: Int, options: Options
 	): List<Result>
 
 	private external fun readBitmap(
-		bitmap: Bitmap, left: Int, top: Int, width: Int, height: Int, rotation: Int, hints: Options
+		bitmap: Bitmap, left: Int, top: Int, width: Int, height: Int, rotation: Int, options: Options
 	): List<Result>
 }

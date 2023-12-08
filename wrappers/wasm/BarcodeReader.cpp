@@ -30,16 +30,16 @@ struct ReadResult
 std::vector<ReadResult> readBarcodes(ImageView iv, bool tryHarder, const std::string& format, int maxSymbols)
 {
 	try {
-		DecodeHints hints;
-		hints.setTryHarder(tryHarder);
-		hints.setTryRotate(tryHarder);
-		hints.setTryInvert(tryHarder);
-		hints.setTryDownscale(tryHarder);
-		hints.setFormats(BarcodeFormatsFromString(format));
-		hints.setMaxNumberOfSymbols(maxSymbols);
-//		hints.setReturnErrors(maxSymbols > 1);
+		ReaderOptions opts;
+		opts.setTryHarder(tryHarder);
+		opts.setTryRotate(tryHarder);
+		opts.setTryInvert(tryHarder);
+		opts.setTryDownscale(tryHarder);
+		opts.setFormats(BarcodeFormatsFromString(format));
+		opts.setMaxNumberOfSymbols(maxSymbols);
+//		opts.setReturnErrors(maxSymbols > 1);
 
-		auto results = ReadBarcodes(iv, hints);
+		auto results = ReadBarcodes(iv, opts);
 
 		std::vector<ReadResult> readResults{};
 		readResults.reserve(results.size());
