@@ -28,4 +28,4 @@ jobs:
         ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }}
         ORG_GRADLE_PROJECT_ossrhUsername: ${{ secrets.OSSRH_USERNAME }}
         ORG_GRADLE_PROJECT_ossrhPassword: ${{ secrets.OSSRH_PASSWORD }}
-      run: ./gradlew publishRleasePublicationsToSonatypeRepository
+      run: ./gradlew publishReleasePublicationToSonatypeRepository
