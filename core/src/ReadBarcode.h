@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "DecodeHints.h"
+#include "ReaderOptions.h"
 #include "ImageView.h"
 #include "Result.h"
 

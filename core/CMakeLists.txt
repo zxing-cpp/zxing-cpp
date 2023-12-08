@@ -122,6 +122,7 @@ if (BUILD_READERS)
         src/PerspectiveTransform.h
         src/PerspectiveTransform.cpp
         src/Reader.h
+        src/ReaderOptions.h
         src/ReadBarcode.h
         src/ReadBarcode.cpp
         src/ReedSolomonDecoder.h
@@ -171,6 +172,7 @@ if (BUILD_READERS)
         src/Point.h
         src/Quadrilateral.h
         src/ReadBarcode.h
+        src/ReaderOptions.h
         src/Result.h
         src/StructuredAppend.h
     )

@@ -5,7 +5,7 @@
 
 #include "oned/ODCode128Reader.h"
 
-#include "DecodeHints.h"
+#include "ReaderOptions.h"
 #include "Result.h"
 
 #include "gtest/gtest.h"
@@ -26,8 +26,8 @@ static Result parse(const int startPattern, PatternRow row)
 	row.insert(row.end(), { 2, 3, 3, 1, 1, 1, 2, 0 }); // Stop pattern
 
 	std::unique_ptr<Code128Reader::DecodingState> state;
-	DecodeHints hints;
-	Code128Reader reader(hints);
+	ReaderOptions opts;
+	Code128Reader reader(opts);
 	PatternView next(row);
 	return reader.decodePattern(0, next, state);
 }

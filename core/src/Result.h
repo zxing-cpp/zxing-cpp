@@ -10,7 +10,7 @@
 #include "BarcodeFormat.h"
 #include "ByteArray.h"
 #include "Content.h"
-#include "DecodeHints.h"
+#include "ReaderOptions.h"
 #include "Error.h"
 #include "Quadrilateral.h"
 #include "StructuredAppend.h"
@@ -31,10 +31,10 @@ using Position = QuadrilateralI;
 class Result
 {
 	void setIsInverted(bool v) { _isInverted = v; }
-	Result& setDecodeHints(DecodeHints hints);
+	Result& setReaderOptions(const ReaderOptions& opts);
 
 	friend Result MergeStructuredAppendSequence(const std::vector<Result>& results);
-	friend std::vector<Result> ReadBarcodes(const ImageView&, const DecodeHints&);
+	friend std::vector<Result> ReadBarcodes(const ImageView&, const ReaderOptions&);
 	friend void IncrementLineCount(Result&);
 
 public:
@@ -68,7 +68,7 @@ public:
 	std::string text(TextMode mode) const;
 
 	/**
-	 * @brief text returns the bytes() content rendered to unicode/utf8 text accoring to the TextMode set in the DecodingHints
+	 * @brief text returns the bytes() content rendered to unicode/utf8 text accoring to the TextMode set in the ReaderOptions
 	 */
 	std::string text() const;
 
@@ -101,7 +101,7 @@ public:
 	bool isMirrored() const { return _isMirrored; }
 
 	/**
-	 * @brief isInverted is the symbol inverted / has reveresed reflectance (see DecodeHints::tryInvert)
+	 * @brief isInverted is the symbol inverted / has reveresed reflectance (see ReaderOptions::tryInvert)
 	 */
 	bool isInverted() const { return _isInverted; }
 
@@ -157,7 +157,7 @@ private:
 	Content _content;
 	Error _error;
 	Position _position;
-	DecodeHints _decodeHints;
+	ReaderOptions _readerOpts;
 	StructuredAppendInfo _sai;
 	BarcodeFormat _format = BarcodeFormat::None;
 	char _ecLevel[4] = {};

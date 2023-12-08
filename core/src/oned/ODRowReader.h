@@ -40,7 +40,7 @@ RSSExp.:  v?-74d/?-41c
 
 namespace ZXing {
 
-class DecodeHints;
+class ReaderOptions;
 
 namespace OneD {
 
@@ -51,11 +51,11 @@ namespace OneD {
 class RowReader
 {
 protected:
-	const DecodeHints& _hints;
+	const ReaderOptions& _opts;
 
 public:
-	explicit RowReader(const DecodeHints& hints) : _hints(hints) {}
-	explicit RowReader(DecodeHints&& hints) = delete;
+	explicit RowReader(const ReaderOptions& opts) : _opts(opts) {}
+	explicit RowReader(ReaderOptions&&) = delete;
 
 	struct DecodingState
 	{

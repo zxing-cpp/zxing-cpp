@@ -8,7 +8,7 @@
 #include "ODReader.h"
 
 #include "BinaryBitmap.h"
-#include "DecodeHints.h"
+#include "ReaderOptions.h"
 #include "ODCodabarReader.h"
 #include "ODCode128Reader.h"
 #include "ODCode39Reader.h"
@@ -38,29 +38,29 @@ void IncrementLineCount(Result& r)
 
 namespace ZXing::OneD {
 
-Reader::Reader(const DecodeHints& hints) : ZXing::Reader(hints)
+Reader::Reader(const ReaderOptions& opts) : ZXing::Reader(opts)
 {
 	_readers.reserve(8);
 
-	auto formats = hints.formats().empty() ? BarcodeFormat::Any : hints.formats();
+	auto formats = opts.formats().empty() ? BarcodeFormat::Any : opts.formats();
 
 	if (formats.testFlags(BarcodeFormat::EAN13 | BarcodeFormat::UPCA | BarcodeFormat::EAN8 | BarcodeFormat::UPCE))
-		_readers.emplace_back(new MultiUPCEANReader(hints));
+		_readers.emplace_back(new MultiUPCEANReader(opts));
 
 	if (formats.testFlag(BarcodeFormat::Code39))
-		_readers.emplace_back(new Code39Reader(hints));
+		_readers.emplace_back(new Code39Reader(opts));
 	if (formats.testFlag(BarcodeFormat::Code93))
-		_readers.emplace_back(new Code93Reader(hints));
+		_readers.emplace_back(new Code93Reader(opts));
 	if (formats.testFlag(BarcodeFormat::Code128))
-		_readers.emplace_back(new Code128Reader(hints));
+		_readers.emplace_back(new Code128Reader(opts));
 	if (formats.testFlag(BarcodeFormat::ITF))
-		_readers.emplace_back(new ITFReader(hints));
+		_readers.emplace_back(new ITFReader(opts));
 	if (formats.testFlag(BarcodeFormat::Codabar))
-		_readers.emplace_back(new CodabarReader(hints));
+		_readers.emplace_back(new CodabarReader(opts));
 	if (formats.testFlags(BarcodeFormat::DataBar))
-		_readers.emplace_back(new DataBarReader(hints));
+		_readers.emplace_back(new DataBarReader(opts));
 	if (formats.testFlags(BarcodeFormat::DataBarExpanded))
-		_readers.emplace_back(new DataBarExpandedReader(hints));
+		_readers.emplace_back(new DataBarExpandedReader(opts));
 }
 
 Reader::~Reader() = default;
@@ -255,21 +255,21 @@ Result
 Reader::decode(const BinaryBitmap& image) const
 {
 	auto result =
-		DoDecode(_readers, image, _hints.tryHarder(), false, _hints.isPure(), 1, _hints.minLineCount(), _hints.returnErrors());
-
-	if (result.empty() && _hints.tryRotate())
-		result = DoDecode(_readers, image, _hints.tryHarder(), true, _hints.isPure(), 1, _hints.minLineCount(), _hints.returnErrors());
+		DoDecode(_readers, image, _opts.tryHarder(), false, _opts.isPure(), 1, _opts.minLineCount(), _opts.returnErrors());
+	
+	if (result.empty() && _opts.tryRotate())
+		result = DoDecode(_readers, image, _opts.tryHarder(), true, _opts.isPure(), 1, _opts.minLineCount(), _opts.returnErrors());
 
 	return FirstOrDefault(std::move(result));
 }
 
 Results Reader::decode(const BinaryBitmap& image, int maxSymbols) const
 {
-	auto resH = DoDecode(_readers, image, _hints.tryHarder(), false, _hints.isPure(), maxSymbols, _hints.minLineCount(),
-						 _hints.returnErrors());
-	if ((!maxSymbols || Size(resH) < maxSymbols) && _hints.tryRotate()) {
-		auto resV = DoDecode(_readers, image, _hints.tryHarder(), true, _hints.isPure(), maxSymbols - Size(resH),
-							 _hints.minLineCount(), _hints.returnErrors());
+	auto resH = DoDecode(_readers, image, _opts.tryHarder(), false, _opts.isPure(), maxSymbols, _opts.minLineCount(),
+						 _opts.returnErrors());
+	if ((!maxSymbols || Size(resH) < maxSymbols) && _opts.tryRotate()) {
+		auto resV = DoDecode(_readers, image, _opts.tryHarder(), true, _opts.isPure(), maxSymbols - Size(resH),
+							 _opts.minLineCount(), _opts.returnErrors());
 		resH.insert(resH.end(), resV.begin(), resV.end());
 	}
 	return resH;

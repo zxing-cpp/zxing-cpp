@@ -14,7 +14,7 @@
 #include "oned/ODDataBarExpandedReader.h"
 #include "oned/ODITFReader.h"
 #include "oned/ODCodabarReader.h"
-#include "DecodeHints.h"
+#include "ReaderOptions.h"
 #include "Result.h"
 
 using namespace ZXing;

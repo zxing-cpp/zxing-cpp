@@ -12,7 +12,7 @@
 
 #ifdef __cplusplus
 
-#include "DecodeHints.h"
+#include "ReaderOptions.h"
 #include "ImageView.h"
 #include "Result.h"
 
@@ -97,7 +97,7 @@ zxing_BarcodeFormat zxing_BarcodeFormatFromString(const char* str);
 char* zxing_BarcodeFormatToString(zxing_BarcodeFormat format);
 
 /*
- * ZXing/DecodeHints.h
+ * ZXing/ReaderOptions.h
  */
 
 typedef enum

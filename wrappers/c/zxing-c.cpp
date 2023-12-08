@@ -65,7 +65,7 @@ char* zxing_BarcodeFormatToString(zxing_BarcodeFormat format)
 }
 
 /*
- * ZXing/DecodeHints.h
+ * ZXing/ReaderOptions.h
  */
 
 zxing_ReaderOptions* zxing_ReaderOptions_new()

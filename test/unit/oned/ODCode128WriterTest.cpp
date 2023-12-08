@@ -6,7 +6,7 @@
 
 #include "oned/ODCode128Writer.h"
 #include "BitMatrixIO.h"
-#include "DecodeHints.h"
+#include "ReaderOptions.h"
 #include "Result.h"
 #include "oned/ODCode128Reader.h"
 
@@ -37,8 +37,8 @@ static std::string LineMatrixToString(const BitMatrix& matrix)
 
 static ZXing::Result Decode(const BitMatrix &matrix)
 {
-	DecodeHints hints;
-	return DecodeSingleRow(Code128Reader(hints), matrix.row(0));
+	ReaderOptions opts;
+	return DecodeSingleRow(Code128Reader(opts), matrix.row(0));
 }
 
 TEST(ODCode128Writer, EncodeWithFunc1)

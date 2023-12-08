@@ -7,7 +7,7 @@
 #include "oned/ODCode93Reader.h"
 #include "BitArray.h"
 #include "BitArrayUtility.h"
-#include "DecodeHints.h"
+#include "ReaderOptions.h"
 #include "Result.h"
 
 #include "gtest/gtest.h"
@@ -17,9 +17,9 @@ using namespace ZXing::OneD;
 
 static std::string Decode(std::string_view input)
 {
-	DecodeHints hints;
+	ReaderOptions opts;
 	auto row    = Utility::ParseBitArray(input, '1');
-	auto result = DecodeSingleRow(Code93Reader(hints), row.range());
+	auto result = DecodeSingleRow(Code93Reader(opts), row.range());
 	return result.text(TextMode::Plain);
 }
 

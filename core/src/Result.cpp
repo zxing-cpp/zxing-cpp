@@ -64,7 +64,7 @@ std::string Result::text(TextMode mode) const
 
 std::string Result::text() const
 {
-	return text(_decodeHints.textMode());
+	return text(_readerOpts.textMode());
 }
 
 std::string Result::ecLevel() const
@@ -113,11 +113,11 @@ std::string Result::version() const
 	return _version;
 }
 
-Result& Result::setDecodeHints(DecodeHints hints)
+Result& Result::setReaderOptions(const ReaderOptions& opts)
 {
-	if (hints.characterSet() != CharacterSet::Unknown)
-		_content.defaultCharset = hints.characterSet();
-	_decodeHints = hints;
+	if (opts.characterSet() != CharacterSet::Unknown)
+		_content.defaultCharset = opts.characterSet();
+	_readerOpts = opts;
 	return *this;
 }
 

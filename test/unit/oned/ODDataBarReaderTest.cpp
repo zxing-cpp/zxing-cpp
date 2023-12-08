@@ -5,7 +5,7 @@
 
 #include "oned/ODDataBarReader.h"
 
-#include "DecodeHints.h"
+#include "ReaderOptions.h"
 #include "Result.h"
 
 #include "gtest/gtest.h"
@@ -14,9 +14,9 @@ using namespace ZXing;
 using namespace ZXing::OneD;
 
 // Helper to call decodePattern()
-static Result parse(PatternRow row, DecodeHints hints = {})
+static Result parse(PatternRow row, ReaderOptions opts = {})
 {
-	DataBarReader reader(hints);
+	DataBarReader reader(opts);
 
 	row.insert(row.begin(), { 1, 1 }); // Left guard
 	row.insert(row.end(), { 1, 1 }); // Right guard

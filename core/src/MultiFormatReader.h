@@ -16,21 +16,13 @@ namespace ZXing {
 class Result;
 class Reader;
 class BinaryBitmap;
-class DecodeHints;
+class ReaderOptions;
 
-/**
-* MultiFormatReader is a convenience class and the main entry point into the library for most uses.
-* By default it attempts to decode all barcode formats that the library supports. Optionally, you
-* can provide a hints object to request different behavior, for example only decoding QR codes.
-*
-* @author Sean Owen
-* @author dswitkin@google.com (Daniel Switkin)
-*/
 class MultiFormatReader
 {
 public:
-	explicit MultiFormatReader(const DecodeHints& hints);
-	explicit MultiFormatReader(DecodeHints&& hints) = delete;
+	explicit MultiFormatReader(const ReaderOptions& opts);
+	explicit MultiFormatReader(ReaderOptions&& opts) = delete;
 	~MultiFormatReader();
 
 	Result read(const BinaryBitmap& image) const;
@@ -40,7 +32,7 @@ public:
 
 private:
 	std::vector<std::unique_ptr<Reader>> _readers;
-	const DecodeHints& _hints;
+	const ReaderOptions& _opts;
 };
 
 } // ZXing

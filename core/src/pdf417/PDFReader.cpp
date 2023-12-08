@@ -9,7 +9,7 @@
 #include "PDFDetector.h"
 #include "PDFScanningDecoder.h"
 #include "PDFCodewordDecoder.h"
-#include "DecodeHints.h"
+#include "ReaderOptions.h"
 #include "DecoderResult.h"
 #include "Result.h"
 
@@ -298,20 +298,20 @@ static Result DecodePure(const BinaryBitmap& image_)
 Result
 Reader::decode(const BinaryBitmap& image) const
 {
-	if (_hints.isPure()) {
+	if (_opts.isPure()) {
 		auto res = DecodePure(image);
 		if (res.error() != Error::Checksum)
 			return res;
 		// This falls through and tries the non-pure code path if we have a checksum error. This approach is
 		// currently the best option to deal with 'aliased' input like e.g. 03-aliased.png
 	}
-
-	return FirstOrDefault(DoDecode(image, false, _hints.tryRotate(), _hints.returnErrors()));
+	
+	return FirstOrDefault(DoDecode(image, false, _opts.tryRotate(), _opts.returnErrors()));
 }
 
 Results Reader::decode(const BinaryBitmap& image, [[maybe_unused]] int maxSymbols) const
 {
-	return DoDecode(image, true, _hints.tryRotate(), _hints.returnErrors());
+	return DoDecode(image, true, _opts.tryRotate(), _opts.returnErrors());
 }
 
 } // Pdf417

@@ -11,7 +11,7 @@
 #include "BarcodeReader.h"
 
 #include "BarcodeFormat.h"
-#include "DecodeHints.h"
+#include "ReaderOptions.h"
 #include "ReadBarcode.h"
 #include "ReadResult.h"
 #include "Utf.h"

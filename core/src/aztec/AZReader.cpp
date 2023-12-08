@@ -11,7 +11,7 @@
 #include "AZDetector.h"
 #include "AZDetectorResult.h"
 #include "BinaryBitmap.h"
-#include "DecodeHints.h"
+#include "ReaderOptions.h"
 #include "DecoderResult.h"
 #include "Result.h"
 
@@ -26,8 +26,8 @@ Reader::decode(const BinaryBitmap& image) const
 	auto binImg = image.getBitMatrix();
 	if (binImg == nullptr)
 		return {};
-
-	DetectorResult detectorResult = Detect(*binImg, _hints.isPure(), _hints.tryHarder());
+	
+	DetectorResult detectorResult = Detect(*binImg, _opts.isPure(), _opts.tryHarder());
 	if (!detectorResult.isValid())
 		return {};
 
@@ -44,14 +44,14 @@ Results Reader::decode(const BinaryBitmap& image, int maxSymbols) const
 	auto binImg = image.getBitMatrix();
 	if (binImg == nullptr)
 		return {};
-
-	auto detRess = Detect(*binImg, _hints.isPure(), _hints.tryHarder(), maxSymbols);
+	
+	auto detRess = Detect(*binImg, _opts.isPure(), _opts.tryHarder(), maxSymbols);
 
 	Results results;
 	for (auto&& detRes : detRess) {
 		auto decRes =
 			Decode(detRes).setReaderInit(detRes.readerInit()).setIsMirrored(detRes.isMirrored()).setVersionNumber(detRes.nbLayers());
-		if (decRes.isValid(_hints.returnErrors())) {
+		if (decRes.isValid(_opts.returnErrors())) {
 			results.emplace_back(std::move(decRes), std::move(detRes).position(), BarcodeFormat::Aztec);
 			if (maxSymbols > 0 && Size(results) >= maxSymbols)
 				break;

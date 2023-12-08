@@ -9,7 +9,7 @@
 #include "BinaryBitmap.h"
 #include "DMDecoder.h"
 #include "DMDetector.h"
-#include "DecodeHints.h"
+#include "ReaderOptions.h"
 #include "DecoderResult.h"
 #include "DetectorResult.h"
 #include "Result.h"
@@ -26,8 +26,8 @@ Result Reader::decode(const BinaryBitmap& image) const
 	auto binImg = image.getBitMatrix();
 	if (binImg == nullptr)
 		return {};
-
-	auto detectorResult = Detect(*binImg, _hints.tryHarder(), _hints.tryRotate(), _hints.isPure());
+	
+	auto detectorResult = Detect(*binImg, _opts.tryHarder(), _opts.tryRotate(), _opts.isPure());
 	if (!detectorResult.isValid())
 		return {};
 
@@ -43,9 +43,9 @@ Results Reader::decode(const BinaryBitmap& image, int maxSymbols) const
 		return {};
 
 	Results results;
-	for (auto&& detRes : Detect(*binImg, _hints.tryHarder(), _hints.tryRotate(), _hints.isPure())) {
+	for (auto&& detRes : Detect(*binImg, _opts.tryHarder(), _opts.tryRotate(), _opts.isPure())) {
 		auto decRes = Decode(detRes.bits());
-		if (decRes.isValid(_hints.returnErrors())) {
+		if (decRes.isValid(_opts.returnErrors())) {
 			results.emplace_back(std::move(decRes), std::move(detRes).position(), BarcodeFormat::DataMatrix);
 			if (maxSymbols > 0 && Size(results) >= maxSymbols)
 				break;

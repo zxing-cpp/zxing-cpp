@@ -8,7 +8,7 @@
 
 #include "BinaryBitmap.h"
 #include "BitMatrix.h"
-#include "DecodeHints.h"
+#include "ReaderOptions.h"
 #include "DecoderResult.h"
 #include "MCBitMatrixParser.h"
 #include "MCDecoder.h"

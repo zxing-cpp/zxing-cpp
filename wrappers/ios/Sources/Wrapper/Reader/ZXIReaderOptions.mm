@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #import "ZXIReaderOptions.h"
-#import "DecodeHints.h"
+#import "ReaderOptions.h"
 
 @interface ZXIReaderOptions()
 @property(nonatomic) ZXing::ReaderOptions cppOpts;

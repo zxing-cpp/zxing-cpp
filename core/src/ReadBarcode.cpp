@@ -5,7 +5,7 @@
 
 #include "ReadBarcode.h"
 
-#include "DecodeHints.h"
+#include "ReaderOptions.h"
 #include "GlobalHistogramBinarizer.h"
 #include "HybridBinarizer.h"
 #include "MultiFormatReader.h"
@@ -173,7 +173,7 @@ Results ReadBarcodes(const ImageView& _iv, const ReaderOptions& opts)
 					if (iv.width() != _iv.width())
 						r.setPosition(Scale(r.position(), _iv.width() / iv.width()));
 					if (!Contains(results, r)) {
-						r.setDecodeHints(opts);
+						r.setReaderOptions(opts);
 						r.setIsInverted(bitmap->inverted());
 						results.push_back(std::move(r));
 						--maxSymbols;

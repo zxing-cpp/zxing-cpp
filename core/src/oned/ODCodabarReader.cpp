@@ -7,7 +7,7 @@
 
 #include "ODCodabarReader.h"
 
-#include "DecodeHints.h"
+#include "ReaderOptions.h"
 #include "Result.h"
 #include "ZXAlgorithms.h"
 
@@ -84,7 +84,7 @@ CodabarReader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<D
 		return {};
 
 	// remove stop/start characters
-	if (!_hints.returnCodabarStartEnd())
+	if (!_opts.returnCodabarStartEnd())
 		txt = txt.substr(1, txt.size() - 2);
 
 	// symbology identifier ISO/IEC 15424:2008 4.4.9

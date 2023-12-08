@@ -6,7 +6,7 @@
 
 #include "ODITFReader.h"
 
-#include "DecodeHints.h"
+#include "ReaderOptions.h"
 #include "GTIN.h"
 #include "Result.h"
 #include "ZXAlgorithms.h"
@@ -66,14 +66,14 @@ Result ITFReader::decodePattern(int rowNumber, PatternView& next, std::unique_pt
 		return {};
 
 	Error error;
-	if (_hints.validateITFCheckSum() && !GTIN::IsCheckDigitValid(txt))
+	if (_opts.validateITFCheckSum() && !GTIN::IsCheckDigitValid(txt))
 		error = ChecksumError();
 
 	// Symbology identifier ISO/IEC 16390:2007 Annex C Table C.1
 	// See also GS1 General Specifications 5.1.3 Figure 5.1.3-2
 	SymbologyIdentifier symbologyIdentifier = {'I', '0'}; // No check character validation
-
-	if (_hints.validateITFCheckSum() || (txt.size() == 14 && GTIN::IsCheckDigitValid(txt))) // If no hint test if valid ITF-14
+	
+	if (_opts.validateITFCheckSum() || (txt.size() == 14 && GTIN::IsCheckDigitValid(txt))) // If no hint test if valid ITF-14
 		symbologyIdentifier.modifier = '1'; // Modulo 10 symbol check character validated and transmitted
 
 	int xStop = next.pixelsTillEnd();

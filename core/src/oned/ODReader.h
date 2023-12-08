@@ -13,7 +13,7 @@
 
 namespace ZXing {
 
-class DecodeHints;
+class ReaderOptions;
 
 namespace OneD {
 
@@ -22,7 +22,7 @@ class RowReader;
 class Reader : public ZXing::Reader
 {
 public:
-	explicit Reader(const DecodeHints& hints);
+	explicit Reader(const ReaderOptions& opts);
 	~Reader() override;
 
 	Result decode(const BinaryBitmap& image) const override;

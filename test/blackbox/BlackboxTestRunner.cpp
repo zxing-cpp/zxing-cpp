@@ -212,7 +212,7 @@ static std::vector<fs::path> getImagesInDirectory(const fs::path& directory)
 }
 
 static void doRunTests(const fs::path& directory, std::string_view format, int totalTests, const std::vector<TestCase>& tests,
-					   DecodeHints hints)
+					   ReaderOptions opts)
 {
 	auto imgPaths = getImagesInDirectory(directory);
 	auto folderName = directory.stem();
@@ -228,17 +228,17 @@ static void doRunTests(const fs::path& directory, std::string_view format, int t
 			if (tc.name.empty())
 				break;
 			auto startTime = std::chrono::steady_clock::now();
-			hints.setTryDownscale(tc.name == "slow_");
-			hints.setDownscaleFactor(2);
-			hints.setDownscaleThreshold(180);
-			hints.setTryHarder(tc.name == "slow");
-			hints.setTryRotate(tc.name == "slow");
-			hints.setTryInvert(tc.name == "slow");
-			hints.setIsPure(tc.name == "pure");
-			if (hints.isPure())
-				hints.setBinarizer(Binarizer::FixedThreshold);
+			opts.setTryDownscale(tc.name == "slow_");
+			opts.setDownscaleFactor(2);
+			opts.setDownscaleThreshold(180);
+			opts.setTryHarder(tc.name == "slow");
+			opts.setTryRotate(tc.name == "slow");
+			opts.setTryInvert(tc.name == "slow");
+			opts.setIsPure(tc.name == "pure");
+			if (opts.isPure())
+				opts.setBinarizer(Binarizer::FixedThreshold);
 			for (const auto& imgPath : imgPaths) {
-				auto result = ReadBarcode(ImageLoader::load(imgPath).rotated(test.rotation), hints);
+				auto result = ReadBarcode(ImageLoader::load(imgPath).rotated(test.rotation), opts);
 				if (result.isValid()) {
 					auto error = checkResult(imgPath, format, result);
 					if (!error.empty())
@@ -262,7 +262,7 @@ static Result readMultiple(const std::vector<fs::path>& imgPaths, std::string_vi
 	Results allResults;
 	for (const auto& imgPath : imgPaths) {
 		auto results = ReadBarcodes(ImageLoader::load(imgPath),
-									DecodeHints().setFormats(BarcodeFormatFromString(format)).setTryDownscale(false));
+									ReaderOptions().setFormats(BarcodeFormatFromString(format)).setTryDownscale(false));
 		allResults.insert(allResults.end(), results.begin(), results.end());
 	}
 
@@ -318,9 +318,9 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 	};
 
 	auto runTests = [&](std::string_view directory, std::string_view format, int total,
-						const std::vector<TestCase>& tests, const DecodeHints& hints = DecodeHints()) {
+						const std::vector<TestCase>& tests, const ReaderOptions& opts = ReaderOptions()) {
 		if (hasTest(directory))
-			doRunTests(testPathPrefix / directory, format, total, tests, hints);
+			doRunTests(testPathPrefix / directory, format, total, tests, opts);
 	};
 
 	auto runStructuredAppendTest = [&](std::string_view directory, std::string_view format, int total,
@@ -397,7 +397,7 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		runTests("code39-2", "Code39", 2, {
 			{ 2, 2, 0   },
 			{ 2, 2, 180 },
-		}, DecodeHints().setTryCode39ExtendedMode(true));
+		}, ReaderOptions().setTryCode39ExtendedMode(true));
 
 		runTests("code39-3", "Code39", 12, {
 			{ 12, 12, 0   },
@@ -453,7 +453,7 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		runTests("ean13-extension-1", "EAN-13", 5, {
 			{ 3, 5, 0 },
 			{ 3, 5, 180 },
-		}, DecodeHints().setEanAddOnSymbol(EanAddOnSymbol::Require));
+		}, ReaderOptions().setEanAddOnSymbol(EanAddOnSymbol::Require));
 
 		runTests("itf-1", "ITF", 11, {
 			{ 10, 11, 0   },
@@ -501,7 +501,7 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		runTests("upca-extension-1", "UPC-A", 6, {
 			{ 4, 4, 0 },
 			{ 3, 4, 180 },
-		}, DecodeHints().setEanAddOnSymbol(EanAddOnSymbol::Require));
+		}, ReaderOptions().setEanAddOnSymbol(EanAddOnSymbol::Require));
 
 		runTests("upce-1", "UPC-E", 3, {
 			{ 3, 3, 0   },

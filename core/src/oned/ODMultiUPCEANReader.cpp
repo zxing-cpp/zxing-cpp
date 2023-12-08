@@ -9,7 +9,7 @@
 
 #include "BarcodeFormat.h"
 #include "BitArray.h"
-#include "DecodeHints.h"
+#include "ReaderOptions.h"
 #include "GTIN.h"
 #include "ODUPCEANCommon.h"
 #include "Result.h"
@@ -272,10 +272,10 @@ Result MultiUPCEANReader::decodePattern(int rowNumber, PatternView& next, std::u
 
 	PartialResult res;
 	auto begin = next;
-
-	if (!(((_hints.hasFormat(BarcodeFormat::EAN13 | BarcodeFormat::UPCA)) && EAN13(res, begin)) ||
-		  (_hints.hasFormat(BarcodeFormat::EAN8) && EAN8(res, begin)) ||
-		  (_hints.hasFormat(BarcodeFormat::UPCE) && UPCE(res, begin))))
+	
+	if (!(((_opts.hasFormat(BarcodeFormat::EAN13 | BarcodeFormat::UPCA)) && EAN13(res, begin)) ||
+		  (_opts.hasFormat(BarcodeFormat::EAN8) && EAN8(res, begin)) ||
+		  (_opts.hasFormat(BarcodeFormat::UPCE) && UPCE(res, begin))))
 		return {};
 
 	Error error;
@@ -285,13 +285,13 @@ Result MultiUPCEANReader::decodePattern(int rowNumber, PatternView& next, std::u
 	// If UPC-A was a requested format and we detected a EAN-13 code with a leading '0', then we drop the '0' and call it
 	// a UPC-A code.
 	// TODO: this is questionable
-	if (_hints.hasFormat(BarcodeFormat::UPCA) && res.format == BarcodeFormat::EAN13 && res.txt.front() == '0') {
+	if (_opts.hasFormat(BarcodeFormat::UPCA) && res.format == BarcodeFormat::EAN13 && res.txt.front() == '0') {
 		res.txt = res.txt.substr(1);
 		res.format = BarcodeFormat::UPCA;
 	}
 
 	// if we explicitly requested UPCA but not EAN13, don't return an EAN13 symbol
-	if (res.format == BarcodeFormat::EAN13 && ! _hints.hasFormat(BarcodeFormat::EAN13))
+	if (res.format == BarcodeFormat::EAN13 && ! _opts.hasFormat(BarcodeFormat::EAN13))
 		return {};
 
 	// Symbology identifier modifiers ISO/IEC 15420:2009 Annex B Table B.1
@@ -303,7 +303,7 @@ Result MultiUPCEANReader::decodePattern(int rowNumber, PatternView& next, std::u
 
 	auto ext = res.end;
 	PartialResult addOnRes;
-	if (_hints.eanAddOnSymbol() != EanAddOnSymbol::Ignore && ext.skipSymbol() && ext.skipSingle(static_cast<int>(begin.sum() * 3.5))
+	if (_opts.eanAddOnSymbol() != EanAddOnSymbol::Ignore && ext.skipSymbol() && ext.skipSingle(static_cast<int>(begin.sum() * 3.5))
 		&& (AddOn(addOnRes, ext, 5) || AddOn(addOnRes, ext, 2))) {
 		// ISO/IEC 15420:2009 states that the content for "]E3" should be 15 or 18 digits, i.e. converted to EAN-13
 		// and extended with no separator, and that the content for "]E4" should be 8 digits, i.e. no add-on
@@ -313,8 +313,8 @@ Result MultiUPCEANReader::decodePattern(int rowNumber, PatternView& next, std::u
 		if (res.format != BarcodeFormat::EAN8) // Keeping EAN-8 with add-on as "]E4"
 			symbologyIdentifier.modifier = '3'; // Combined packet, EAN-13, UPC-A, UPC-E, with add-on
 	}
-
-	if (_hints.eanAddOnSymbol() == EanAddOnSymbol::Require && !addOnRes.isValid())
+	
+	if (_opts.eanAddOnSymbol() == EanAddOnSymbol::Require && !addOnRes.isValid())
 		return {};
 
 	return Result(res.txt, rowNumber, begin.pixelsInFront(), next.pixelsTillEnd(), res.format, symbologyIdentifier, error);

@@ -8,7 +8,7 @@
 
 #include "BarcodeFormat.h"
 #include "BinaryBitmap.h"
-#include "DecodeHints.h"
+#include "ReaderOptions.h"
 #include "aztec/AZReader.h"
 #include "datamatrix/DMReader.h"
 #include "maxicode/MCReader.h"
@@ -20,28 +20,28 @@
 
 namespace ZXing {
 
-MultiFormatReader::MultiFormatReader(const DecodeHints& hints) : _hints(hints)
+MultiFormatReader::MultiFormatReader(const ReaderOptions& opts) : _opts(opts)
 {
-	auto formats = hints.formats().empty() ? BarcodeFormat::Any : hints.formats();
+	auto formats = opts.formats().empty() ? BarcodeFormat::Any : opts.formats();
 
 	// Put linear readers upfront in "normal" mode
-	if (formats.testFlags(BarcodeFormat::LinearCodes) && !hints.tryHarder())
-		_readers.emplace_back(new OneD::Reader(hints));
+	if (formats.testFlags(BarcodeFormat::LinearCodes) && !opts.tryHarder())
+		_readers.emplace_back(new OneD::Reader(opts));
 
 	if (formats.testFlags(BarcodeFormat::QRCode | BarcodeFormat::MicroQRCode | BarcodeFormat::RMQRCode))
-		_readers.emplace_back(new QRCode::Reader(hints, true));
+		_readers.emplace_back(new QRCode::Reader(opts, true));
 	if (formats.testFlag(BarcodeFormat::DataMatrix))
-		_readers.emplace_back(new DataMatrix::Reader(hints, true));
+		_readers.emplace_back(new DataMatrix::Reader(opts, true));
 	if (formats.testFlag(BarcodeFormat::Aztec))
-		_readers.emplace_back(new Aztec::Reader(hints, true));
+		_readers.emplace_back(new Aztec::Reader(opts, true));
 	if (formats.testFlag(BarcodeFormat::PDF417))
-		_readers.emplace_back(new Pdf417::Reader(hints));
+		_readers.emplace_back(new Pdf417::Reader(opts));
 	if (formats.testFlag(BarcodeFormat::MaxiCode))
-		_readers.emplace_back(new MaxiCode::Reader(hints));
+		_readers.emplace_back(new MaxiCode::Reader(opts));
 
 	// At end in "try harder" mode
-	if (formats.testFlags(BarcodeFormat::LinearCodes) && hints.tryHarder())
-		_readers.emplace_back(new OneD::Reader(hints));
+	if (formats.testFlags(BarcodeFormat::LinearCodes) && opts.tryHarder())
+		_readers.emplace_back(new OneD::Reader(opts));
 }
 
 MultiFormatReader::~MultiFormatReader() = default;
@@ -55,7 +55,7 @@ MultiFormatReader::read(const BinaryBitmap& image) const
   		if (r.isValid())
 			return r;
 	}
-	return _hints.returnErrors() ? r : Result();
+	return _opts.returnErrors() ? r : Result();
 }
 
 Results MultiFormatReader::readMultiple(const BinaryBitmap& image, int maxSymbols) const
@@ -66,7 +66,7 @@ Results MultiFormatReader::readMultiple(const BinaryBitmap& image, int maxSymbol
 		if (image.inverted() && !reader->supportsInversion)
 			continue;
 		auto r = reader->decode(image, maxSymbols);
-		if (!_hints.returnErrors()) {
+		if (!_opts.returnErrors()) {
 			//TODO: C++20 res.erase_if()
 			auto it = std::remove_if(res.begin(), res.end(), [](auto&& r) { return !r.isValid(); });
 			res.erase(it, res.end());
