@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#import "ZXIEncodeHints.h"
+#import "ZXIWriterOptions.h"
 
 const int AZTEC_ERROR_CORRECTION_0 = 0;
 const int AZTEC_ERROR_CORRECTION_12 = 1;
@@ -27,7 +27,7 @@ const int PDF417_ERROR_CORRECTION_6 = 6;
 const int PDF417_ERROR_CORRECTION_7 = 7;
 const int PDF417_ERROR_CORRECTION_8 = 8;
 
-@implementation ZXIEncodeHints
+@implementation ZXIWriterOptions
 
 - (instancetype)initWithFormat:(ZXIFormat)format {
     self = [super init];

@@ -41,13 +41,13 @@ ZXIGTIN *getGTIN(const Result &result) {
 @implementation ZXIBarcodeReader
 
 - (instancetype)init {
-    return [self initWithHints: [[ZXIDecodeHints alloc] init]];
+    return [self initWithOptions: [[ZXIReaderOptions alloc] init]];
 }
 
-- (instancetype)initWithHints:(ZXIDecodeHints*)hints{
+- (instancetype)initWithOptions:(ZXIReaderOptions*)options{
     self = [super init];
     self.ciContext = [[CIContext alloc] initWithOptions:@{kCIContextWorkingColorSpace: [NSNull new]}];
-    self.hints = hints;
+    self.options = options;
     return self;
 }
 
@@ -117,29 +117,28 @@ ZXIGTIN *getGTIN(const Result &result) {
     return [self readImageView:imageView error:error];
 }
 
-+ (DecodeHints)DecodeHintsFromZXIOptions:(ZXIDecodeHints*)hints {
++ (DecodeHints)DecodeHintsFromZXIReaderOptions:(ZXIReaderOptions*)options {
     BarcodeFormats formats;
-    for(NSNumber* flag in hints.formats) {
+    for(NSNumber* flag in options.formats) {
         formats.setFlag(BarcodeFormatFromZXIFormat((ZXIFormat)flag.integerValue));
     }
     DecodeHints resultingHints = DecodeHints()
-        .setTryRotate(hints.tryRotate)
-        .setTryHarder(hints.tryHarder)
-        .setTryInvert(hints.tryInvert)
-        .setTryDownscale(hints.tryDownscale)
-        .setTryCode39ExtendedMode(hints.tryCode39ExtendedMode)
-        .setValidateCode39CheckSum(hints.validateCode39CheckSum)
-        .setValidateITFCheckSum(hints.validateITFCheckSum)
-
         .setFormats(formats)
-        .setMaxNumberOfSymbols(hints.maxNumberOfSymbols);
+        .setTryRotate(options.tryRotate)
+        .setTryHarder(options.tryHarder)
+        .setTryInvert(options.tryInvert)
+        .setTryDownscale(options.tryDownscale)
+        .setTryCode39ExtendedMode(options.tryCode39ExtendedMode)
+        .setValidateCode39CheckSum(options.validateCode39CheckSum)
+        .setValidateITFCheckSum(options.validateITFCheckSum)
+        .setMaxNumberOfSymbols(options.maxNumberOfSymbols);
     return resultingHints;
 }
 
 - (NSArray<ZXIResult*> *)readImageView:(ImageView)imageView
                                  error:(NSError *__autoreleasing _Nullable *)error {
     try {
-        Results results = ReadBarcodes(imageView, [ZXIBarcodeReader DecodeHintsFromZXIOptions:self.hints]);
+        Results results = ReadBarcodes(imageView, [ZXIBarcodeReader DecodeHintsFromZXIReaderOptions:self.options]);
         NSMutableArray* zxiResults = [NSMutableArray array];
         for (auto result: results) {
             [zxiResults addObject:

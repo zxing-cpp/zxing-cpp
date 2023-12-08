@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#import "ZXIDecodeHints.h"
+#import "ZXIReaderOptions.h"
 #import "DecodeHints.h"
 
-@interface ZXIDecodeHints()
+@interface ZXIReaderOptions()
 @property(nonatomic) ZXing::DecodeHints zxingHints;
 @end
 
-@implementation ZXIDecodeHints
+@implementation ZXIReaderOptions
 
 -(instancetype)init {
     self = [super init];
@@ -17,7 +17,8 @@
     return self;
 }
 
-- (instancetype)initWithTryHarder:(BOOL)tryHarder
+- (instancetype)initWithFormats:(NSArray<NSNumber*>*)formats
+                        tryHarder:(BOOL)tryHarder
                         tryRotate:(BOOL)tryRotate
                         tryInvert:(BOOL)tryInvert
                      tryDownscale:(BOOL)tryDownscale
@@ -26,8 +27,7 @@
               validateITFCheckSum:(BOOL)validateITFCheckSum
                   downscaleFactor:(uint8_t)downscaleFactor
                downscaleThreshold:(uint16_t)downscaleThreshold
-               maxNumberOfSymbols:(NSInteger)maxNumberOfSymbols
-                          formats:(NSArray<NSNumber*>*)formats {
+               maxNumberOfSymbols:(NSInteger)maxNumberOfSymbols {
     self = [super init];
     self.zxingHints = ZXing::DecodeHints();
     self.tryHarder = tryHarder;

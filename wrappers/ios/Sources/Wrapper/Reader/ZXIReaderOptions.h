@@ -6,7 +6,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ZXIDecodeHints : NSObject
+@interface ZXIReaderOptions : NSObject
+/// An array of ZXIFormat
+@property(nonatomic, strong) NSArray<NSNumber*> *formats;
 @property(nonatomic) BOOL tryHarder;
 @property(nonatomic) BOOL tryRotate;
 @property(nonatomic) BOOL tryInvert;
@@ -17,10 +19,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic) uint8_t downscaleFactor;
 @property(nonatomic) uint16_t downscaleThreshold;
 @property(nonatomic) NSInteger maxNumberOfSymbols;
-/// An array of ZXIFormat
-@property(nonatomic, strong) NSArray<NSNumber*> *formats;
 
-- (instancetype)initWithTryHarder:(BOOL)tryHarder
+- (instancetype)initWithFormats:(NSArray<NSNumber*>*)formats
+					    tryHarder:(BOOL)tryHarder
                         tryRotate:(BOOL)tryRotate
                         tryInvert:(BOOL)tryInvert
                      tryDownscale:(BOOL)tryDownscale
@@ -29,8 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
               validateITFCheckSum:(BOOL)validateITFCheckSum
                   downscaleFactor:(uint8_t)downscaleFactor
                downscaleThreshold:(uint16_t)downscaleThreshold
-               maxNumberOfSymbols:(NSInteger)maxNumberOfSymbols
-                          formats:(NSArray<NSNumber*>*)formats;
+               maxNumberOfSymbols:(NSInteger)maxNumberOfSymbols;
 @end
 
 NS_ASSUME_NONNULL_END
