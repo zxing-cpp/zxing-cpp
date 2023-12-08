@@ -6,6 +6,7 @@
 #pragma once
 
 #include "BarcodeFormat.h"
+#include "DecodeHints.h"
 
 #include <memory>
 
@@ -25,14 +26,13 @@ public enum class BarcodeType : int {
 	PDF_417,
 	QR_CODE,
 	MICRO_QR_CODE,
-	RMQR_CODE
+	RMQR_CODE,
 	RSS_14,
 	RSS_EXPANDED,
 	UPC_A,
 	UPC_E
 };
 
-class ReaderOptions;
 ref class ReadResult;
 
 public ref class BarcodeReader sealed
