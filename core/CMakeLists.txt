@@ -105,6 +105,7 @@ if (BUILD_READERS)
         src/Content.h
         src/Content.cpp
         src/DecodeHints.h
+        src/DecodeHints.cpp
         src/DecoderResult.h
         src/DetectorResult.h
         src/Error.h

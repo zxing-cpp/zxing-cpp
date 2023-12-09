@@ -172,6 +172,8 @@ public:
 	bool hasFormat(BarcodeFormats f) const noexcept { return _formats.testFlags(f) || _formats.empty(); }
 };
 
+#ifndef HIDE_DECODE_HINTS_ALIAS
 using DecodeHints [[deprecated]] = ReaderOptions;
+#endif
 
 } // ZXing
