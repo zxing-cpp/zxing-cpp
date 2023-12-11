@@ -22,7 +22,7 @@ Window {
 
     Timer {
         id: resetInfo
-        interval: 2000
+        interval: 1000
     }
 
     BarcodeReader {
@@ -32,7 +32,9 @@ Window {
         formats: (linearSwitch.checked ? (ZXing.LinearCodes) : ZXing.None) | (matrixSwitch.checked ? (ZXing.MatrixCodes) : ZXing.None)
         tryRotate: tryRotateSwitch.checked
         tryHarder: tryHarderSwitch.checked
+        tryInvert: tryInvertSwitch.checked
         tryDownscale: tryDownscaleSwitch.checked
+        textMode: ZXing.TextMode.HRI
 
         // callback with parameter 'result', called for every successfully processed frame
         // onFoundBarcode: {}
@@ -43,11 +45,13 @@ Window {
                     ? [result.position.topLeft, result.position.topRight, result.position.bottomRight, result.position.bottomLeft]
                     : nullPoints
 
-            if (result.isValid)
+            if (result.isValid) {
                 resetInfo.restart()
+                info.text = qsTr("Format: \t %1 \nText: \t %2 \nType: \t %3 \nTime: \t %4 ms").arg(result.formatName).arg(result.text).arg(result.contentTypeName).arg(result.runTime)
+            }
 
-            if (result.isValid || !resetInfo.running)
-                info.text = qsTr("Format: \t %1 \nText: \t %2 \nError: \t %3 \nTime: \t %4 ms").arg(result.formatName).arg(result.text).arg(result.status).arg(result.runTime)
+            if (!resetInfo.running)
+                info.text = "No barcode found"
 
 //            console.log(result)
         }
@@ -132,7 +136,7 @@ Window {
             Shape {
                 id: polygon
                 anchors.fill: parent
-                visible: control.points.length === 4
+                visible: points.length === 4
 
                 ShapePath {
                     strokeWidth: 3
@@ -175,6 +179,7 @@ Window {
 
                 Switch {id: tryRotateSwitch; text: qsTr("Try Rotate"); checked: true }
                 Switch {id: tryHarderSwitch; text: qsTr("Try Harder"); checked: true }
+                Switch {id: tryInvertSwitch; text: qsTr("Try Invert"); checked: true }
                 Switch {id: tryDownscaleSwitch; text: qsTr("Try Downscale"); checked: true }
                 Switch {id: linearSwitch; text: qsTr("Linear Codes"); checked: true }
                 Switch {id: matrixSwitch; text: qsTr("Matrix Codes"); checked: true }

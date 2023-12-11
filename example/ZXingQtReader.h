@@ -59,9 +59,12 @@ enum class BarcodeFormat
 
 enum class ContentType { Text, Binary, Mixed, GS1, ISO15434, UnknownECI };
 
+enum class TextMode { Plain, ECI, HRI, Hex, Escaped };
+
 #else
 using ZXing::BarcodeFormat;
 using ZXing::ContentType;
+using ZXing::TextMode;
 #endif
 
 using ZXing::ReaderOptions;
@@ -70,6 +73,7 @@ using ZXing::BarcodeFormats;
 
 Q_ENUM_NS(BarcodeFormat)
 Q_ENUM_NS(ContentType)
+Q_ENUM_NS(TextMode)
 
 template<typename T, typename = decltype(ZXing::ToString(T()))>
 QDebug operator<<(QDebug dbg, const T& v)
@@ -102,6 +106,7 @@ class Result : private ZXing::Result
 	Q_PROPERTY(QByteArray bytes READ bytes)
 	Q_PROPERTY(bool isValid READ isValid)
 	Q_PROPERTY(ContentType contentType READ contentType)
+	Q_PROPERTY(QString contentTypeName READ contentTypeName)
 	Q_PROPERTY(Position position READ position)
 
 	QString _text;
@@ -124,6 +129,7 @@ public:
 	BarcodeFormat format() const { return static_cast<BarcodeFormat>(ZXing::Result::format()); }
 	ContentType contentType() const { return static_cast<ContentType>(ZXing::Result::contentType()); }
 	QString formatName() const { return QString::fromStdString(ZXing::ToString(ZXing::Result::format())); }
+	QString contentTypeName() const { return QString::fromStdString(ZXing::ToString(ZXing::Result::contentType())); }
 	const QString& text() const { return _text; }
 	const QByteArray& bytes() const { return _bytes; }
 	const Position& position() const { return _position; }
@@ -347,9 +353,22 @@ public:
 	}
 	Q_SIGNAL void formatsChanged();
 
+	Q_PROPERTY(TextMode textMode READ textMode WRITE setTextMode NOTIFY textModeChanged)
+	TextMode textMode() const noexcept { return static_cast<TextMode>(ReaderOptions::textMode()); }
+	Q_SLOT void setTextMode(TextMode newVal)
+	{
+		if (textMode() != newVal) {
+			ReaderOptions::setTextMode(static_cast<ZXing::TextMode>(newVal));
+			emit textModeChanged();
+		}
+	}
+	Q_SIGNAL void textModeChanged();
+
 	ZQ_PROPERTY(bool, tryRotate, setTryRotate)
 	ZQ_PROPERTY(bool, tryHarder, setTryHarder)
+	ZQ_PROPERTY(bool, tryInvert, setTryInvert)
 	ZQ_PROPERTY(bool, tryDownscale, setTryDownscale)
+	ZQ_PROPERTY(bool, isPure, setIsPure)
 
 public slots:
 	ZXingQt::Result process(const QVideoFrame& image)
@@ -389,7 +408,7 @@ public:
 		_sink = sink;
 		connect(_sink, &QVideoSink::videoFrameChanged, this, &BarcodeReader::process);
 	}
-	Q_PROPERTY(QVideoSink* videoSink WRITE setVideoSink)
+	Q_PROPERTY(QVideoSink* videoSink MEMBER _sink WRITE setVideoSink)
 #endif
 
 };
@@ -435,6 +454,7 @@ inline void registerQmlAndMetaTypes()
 {
 	qRegisterMetaType<ZXingQt::BarcodeFormat>("BarcodeFormat");
 	qRegisterMetaType<ZXingQt::ContentType>("ContentType");
+	qRegisterMetaType<ZXingQt::TextMode>("TextMode");
 
 	// supposedly the Q_DECLARE_METATYPE should be used with the overload without a custom name
 	// but then the qml side complains about "unregistered type"
