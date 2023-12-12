@@ -44,8 +44,8 @@ static const char* JavaBarcodeFormatName(BarcodeFormat format)
 	case BarcodeFormat::MicroQRCode: return "MICRO_QR_CODE";
 	case BarcodeFormat::RMQRCode: return "RMQR_CODE";
 	case BarcodeFormat::DataBar: return "DATA_BAR";
-	case BarcodeFormat::DXFilmEdge: return "DX_FILM_EDGE";
 	case BarcodeFormat::DataBarExpanded: return "DATA_BAR_EXPANDED";
+	case BarcodeFormat::DXFilmEdge: return "DX_FILM_EDGE";
 	case BarcodeFormat::UPCA: return "UPC_A";
 	case BarcodeFormat::UPCE: return "UPC_E";
 	default: throw std::invalid_argument("Invalid BarcodeFormat");

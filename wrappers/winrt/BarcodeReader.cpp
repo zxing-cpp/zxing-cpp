@@ -78,8 +78,6 @@ BarcodeFormat BarcodeReader::ConvertRuntimeToNative(BarcodeType type)
 		return BarcodeFormat::Code93;
 	case BarcodeType::DATA_MATRIX:
 		return BarcodeFormat::DataMatrix;
-	case BarcodeType::DX_FILM_EDGE:
-		return BarcodeFormat::DXFilmEdge;
 	case BarcodeType::EAN_13:
 		return BarcodeFormat::EAN13;
 	case BarcodeType::EAN_8:
@@ -100,6 +98,8 @@ BarcodeFormat BarcodeReader::ConvertRuntimeToNative(BarcodeType type)
 		return BarcodeFormat::DataBar;
 	case BarcodeType::RSS_EXPANDED:
 		return BarcodeFormat::DataBarExpanded;
+	case BarcodeType::DX_FILM_EDGE:
+		return BarcodeFormat::DXFilmEdge;
 	case BarcodeType::UPC_A:
 		return BarcodeFormat::UPCA;
 	case BarcodeType::UPC_E:
@@ -145,6 +145,8 @@ BarcodeType BarcodeReader::ConvertNativeToRuntime(BarcodeFormat format)
 		return BarcodeType::RSS_14;
 	case BarcodeFormat::DataBarExpanded:
 		return BarcodeType::RSS_EXPANDED;
+	case BarcodeFormat::DXFilmEdge:
+		return BarcodeType::DX_FILM_EDGE;
 	case BarcodeFormat::UPCA:
 		return BarcodeType::UPC_A;
 	case BarcodeFormat::UPCE:

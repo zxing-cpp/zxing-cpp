@@ -44,7 +44,7 @@ Result::Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat 
 
 bool Result::isValid() const
 {
-	return format() != BarcodeFormat::None && _content.symbology.code != 0 && !error();
+	return format() != BarcodeFormat::None && !error();
 }
 
 const ByteArray& Result::bytes() const

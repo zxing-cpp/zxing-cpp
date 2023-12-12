@@ -12,6 +12,7 @@
 #include "oned/ODCode128Reader.h"
 #include "oned/ODDataBarReader.h"
 #include "oned/ODDataBarExpandedReader.h"
+#include "oned/ODDXFilmEdgeReader.h"
 #include "oned/ODITFReader.h"
 #include "oned/ODCodabarReader.h"
 #include "ReaderOptions.h"
@@ -34,6 +35,7 @@ bool init()
 	readers.emplace_back(new CodabarReader(opts));
 	readers.emplace_back(new DataBarReader(opts));
 	readers.emplace_back(new DataBarExpandedReader(opts));
+	readers.emplace_back(new DXFilmEdgeReader(opts));
 	return true;
 }
 
