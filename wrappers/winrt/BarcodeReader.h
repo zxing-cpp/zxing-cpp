@@ -19,6 +19,7 @@ public enum class BarcodeType : int {
 	CODE_93,
 	CODE_128,
 	DATA_MATRIX,
+	DX_FILM_EDGE,
 	EAN_8,
 	EAN_13,
 	ITF,

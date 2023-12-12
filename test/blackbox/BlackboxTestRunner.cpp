@@ -333,6 +333,13 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 	{
 		auto startTime = std::chrono::steady_clock::now();
 
+		runTests("dxfilmedge-1", "DXFilmEdge", 3, {
+			{ 1, 2, 0 },
+			{ 1, 2, 0 },
+			{ 1, 2, 0 },
+		});
+
+
 		// clang-format off
 		runTests("aztec-1", "Aztec", 27, {
 			{ 26, 27, 0   },

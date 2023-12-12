@@ -40,12 +40,12 @@ Thanks a lot for your contribution!
 | EAN-8          | Code 128          | rMQR Code          |
 | EAN-13         | Codabar           | Aztec              |
 | DataBar        | DataBar Expanded  | DataMatrix         |
-|                | ITF               | PDF417             |
-|                |                   | MaxiCode (partial) |
+|                | DX Film Edge      | PDF417             |
+|                | ITF               | MaxiCode (partial) |
 
 [Note:]
  * DataBar used to be called RSS.
- * DataBar, MaxiCode, Micro QR Code and rMQR Code are not supported for writing.
+ * DataBar, DX Film Edge, MaxiCode, Micro QR Code and rMQR Code are not supported for writing.
  * Building with C++20 (see [CMakeLists.txt](https://github.com/zxing-cpp/zxing-cpp/blob/d4b0f502775857f257d13efd25fb840ece1bca3e/CMakeLists.txt#L45)) changes the behaviour of the library: it then supports multi-symbol and position independent detection for DataMatrix. This comes at a noticable performace cost. C++20 is enabled by default for the Android, iOS, Python and WASM wrappers.
 
 ## Getting Started
