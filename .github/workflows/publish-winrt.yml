@@ -1,4 +1,4 @@
-name: build-winrt
+name: publish-winrt
 on:
   release:
     types: [published]
