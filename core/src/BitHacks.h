@@ -8,6 +8,7 @@
 
 #include <cassert>
 #include <cstdint>
+#include <cstring>
 #include <vector>
 
 #if __has_include(<bit>) && __cplusplus > 201703L // MSVC has the <bit> header but then warns about including it

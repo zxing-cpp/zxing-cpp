@@ -486,6 +486,10 @@ endif()
 
 set_target_properties(ZXing PROPERTIES PUBLIC_HEADER "${PUBLIC_HEADERS}")
 
+target_precompile_headers(ZXing PRIVATE ${PUBLIC_HEADERS})
+set_source_files_properties(src/libzueci/zueci.c PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
+set_source_files_properties(src/DecodeHints.cpp PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
+
 include (GNUInstallDirs)
 
 set(ZX_INSTALL_TARGETS ZXing)
