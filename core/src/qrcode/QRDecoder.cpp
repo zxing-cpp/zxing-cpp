@@ -306,7 +306,7 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 			}
 			}
 		}
-	} catch (std::out_of_range& e) { // see BitSource::readBits
+	} catch (std::out_of_range&) { // see BitSource::readBits
 		error = FormatError("Truncated bit stream");
 	} catch (Error e) {
 		error = std::move(e);

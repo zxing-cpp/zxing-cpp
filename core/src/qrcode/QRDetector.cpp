@@ -45,7 +45,7 @@ PatternView FindPattern(const PatternView& view)
 		// perform a fast plausability test for 1:1:3:1:1 pattern
 		if (view[2] < 2 * std::max(view[0], view[4]) || view[2] < std::max(view[1], view[3]))
 			return 0.f;
-		return IsPattern<E2E>(view, PATTERN, spaceInPixel, 0.1); // the requires 4, here we accept almost 0
+		return IsPattern<E2E>(view, PATTERN, spaceInPixel, 0.1f); // the requires 4, here we accept almost 0
 	});
 }
 
@@ -779,9 +779,9 @@ DetectorResult SampleRMQR(const BitMatrix& image, const ConcentricPattern& fp)
 		auto br = Center(b);
 		// rotate points such that topLeft of a is furthest away from b and topLeft of b is closest to a
 		auto dist2B = [c = br](auto a, auto b) { return distance(a, c) < distance(b, c); };
-		auto offsetA = std::max_element(a.begin(), a.end(), dist2B) - a.begin();
+		auto offsetA = narrow_cast<int>(std::max_element(a.begin(), a.end(), dist2B) - a.begin());
 		auto dist2A = [c = tl](auto a, auto b) { return distance(a, c) < distance(b, c); };
-		auto offsetB = std::min_element(b.begin(), b.end(), dist2A) - b.begin();
+		auto offsetB = narrow_cast<int>(std::min_element(b.begin(), b.end(), dist2A) - b.begin());
 
 		a = RotatedCorners(a, offsetA);
 		b = RotatedCorners(b, offsetB);

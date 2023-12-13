@@ -194,7 +194,7 @@ float IsPattern(const PatternView& view, const FixedPattern<LEN, SUM, false>& pa
 				return 0;
 
 		const float_t moduleSize = (modSize[0] + modSize[1]) / 2;
-		return moduleSize;
+		return static_cast<float>(moduleSize);
 	}
 
 	int width = view.sum(LEN);
