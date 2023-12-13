@@ -16,7 +16,7 @@ namespace ZXing::OneD {
 namespace {
 
 // Detection is made from center outward.
-// We ensure the clock track is decoded before the data tack to avoid false positives.
+// We ensure the clock track is decoded before the data track to avoid false positives.
 // They are two version of a DX Edge codes : with and without frame number.
 // The clock track is longer if the DX code contains the frame number (more recent version)
 constexpr int CLOCK_LENGTH_FN = 31;
@@ -44,29 +44,22 @@ bool DistIsBelowThreshold(PointI a, PointI b, PointI threshold)
 	return std::abs(a.x - b.x) < threshold.x && std::abs(a.y - b.y) < threshold.y;
 }
 
-// DX Film Edge Clock signal found on 35mm films.
+// DX Film Edge clock track found on 35mm films.
 struct Clock
 {
-	bool hasFrameNr = false; // Clock tack (thus data trac) with frame number (longer version)
+	bool hasFrameNr = false; // Clock track (thus data track) with frame number (longer version)
 	int rowNumber = 0;
 	int xStart = 0; // Beginning of the clock track on the X-axis, in pixels
-	int xStop = 0; // End of the clock tack on the X-axis, in pixels
+	int xStop = 0; // End of the clock track on the X-axis, in pixels
 
 	int dataLength() const { return hasFrameNr ? DATA_LENGTH_FN : DATA_LENGTH_NO_FN; }
 
 	float moduleSize() const { return float(xStop - xStart) / (hasFrameNr ? CLOCK_LENGTH_FN : CLOCK_LENGTH_NO_FN); }
 
-	bool isCloseToStart(int x, int y) const
-	{
-		auto ms = moduleSize();
-		return DistIsBelowThreshold({x, y}, {xStart, rowNumber}, {int(0.5 * ms), int(4 * ms)});
-	}
+	bool isCloseTo(PointI p, int x) const { return DistIsBelowThreshold(p, {x, rowNumber}, PointI(moduleSize() * PointF{0.5, 4})); }
 
-	bool isCloseToStop(int x, int y) const
-	{
-		auto ms = moduleSize();
-		return DistIsBelowThreshold({x, y}, {xStop, rowNumber}, {int(0.5 * ms), int(4 * ms)});
-	}
+	bool isCloseToStart(int x, int y) const { return isCloseTo({x, y}, xStart); }
+	bool isCloseToStop(int x, int y) const { return isCloseTo({x, y}, xStop); }
 };
 
 struct DXFEState : public RowReader::DecodingState
@@ -124,33 +117,29 @@ Result DXFilmEdgeReader::decodePattern(int rowNumber, PatternView& next, std::un
 	if (!_opts.tryRotate() && rowNumber < dxState->centerRow)
 		return {};
 
-	// Look for a pattern that is part of both the clock as well as the data pattern (starting on a space)
+	// Look for a pattern that is part of both the clock as well as the data track (ommitting the first bar)
 	constexpr auto Is4x1 = [](const PatternView& view, int spaceInPixel) {
-		// find min/max of 4 consecutive bars/spaces and make sure they are
-		auto [m, M] = std::minmax({view[0], view[1], view[2], view[3]});
+		// find min/max of 4 consecutive bars/spaces and make sure they are close together
+		auto [m, M] = std::minmax({view[1], view[2], view[3], view[4]});
 		return M <= m * 4 / 3 + 1 && spaceInPixel > m / 2;
 	};
 
-	// 8 is the minimum size of the data pattern if all data bits are 0
-	next = FindLeftGuard<4>(next.subView(1), 8, Is4x1);
+	// 12 is the minimum size of the data track (at least one product class bit + one parity bit)
+	next = FindLeftGuard<4>(next, 10, Is4x1);
 	if (!next.isValid())
 		return {};
 
-	// Reverse the shift from bar to space above
-	next.shift(-1);
-	next.extend();
-
-	// Check if the 4x1 pattern is part of clock track
+	// Check if the 4x1 pattern is part of a clock track
 	if (auto clock = CheckForClock(rowNumber, next)) {
 		dxState->addClock(*clock);
 		next.skipSymbol();
 		return {};
 	}
 
+	// Without at least one clock track, we stop here
 	if (dxState->clocks.empty())
 		return {};
 
-	// Now that we found at least one clock, attempt to decode the data track.
 	constexpr float minDataQuietZone = 0.5;
 
 	if (!IsPattern(next, DATA_START_PATTERN, minDataQuietZone))
@@ -158,20 +147,17 @@ Result DXFilmEdgeReader::decodePattern(int rowNumber, PatternView& next, std::un
 
 	auto xStart = next.pixelsInFront();
 
-	// Only considert data tracks that are next to a clock track
+	// Only consider data tracks that are next to a clock track
 	auto clock = dxState->findClock(xStart, rowNumber);
 	if (!clock)
 		return {};
 
 	// Skip the data start pattern (black, white, black, white, black)
 	// The first signal bar is always white: this is the
-	// separation between the start pattern and the product number)
+	// separation between the start pattern and the product number
 	next.skipSymbol();
 
-	// Populate a vector of booleans to represent the bits. true = black, false = white.
-	// We start the parsing just after the data start signal.
-	// The first bit is always a white bar (we include the separator just after the start pattern)
-	// Eg: {3, 1, 2} -> {0, 0, 0, 1, 0, 0}
+	// Read the data bits
 	BitArray dataBits;
 	while (next.isValid(1) && dataBits.size() < clock->dataLength()) {
 
