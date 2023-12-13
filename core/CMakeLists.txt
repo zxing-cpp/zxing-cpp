@@ -105,7 +105,7 @@ if (BUILD_READERS)
         src/Content.h
         src/Content.cpp
         src/DecodeHints.h
-        src/DecodeHints.cpp
+        $<$<BOOL:${BUILD_SHARED_LIBS}>:src/DecodeHints.cpp> # [[deprecated]]
         src/DecoderResult.h
         src/DetectorResult.h
         src/Error.h
