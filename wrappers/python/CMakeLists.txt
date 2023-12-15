@@ -24,6 +24,7 @@ if (NOT hasParent)
     endif()
 endif()
 
+find_package (Python COMPONENTS Interpreter Development) # see https://github.com/pybind/pybind11/issues/4785
 zxing_add_package(pybind11 pybind11 ${pybind11_git_repo} ${pybind11_git_rev})
 
 # build the python module
@@ -40,3 +41,4 @@ install(TARGETS zxingcpp
     RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+
