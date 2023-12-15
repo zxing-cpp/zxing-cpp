@@ -33,25 +33,7 @@ const Version* ReadVersion(const BitMatrix& bitMatrix, Type type)
 	case Type::Micro: return Version::Micro(number);
 	case Type::rMQR: return Version::rMQR(number);
 	case Type::Model1: return Version::Model1(number);
-	case Type::Model2: break;
-	}
-
-	const Version* version = Version::Model2(number);
-	if (!version || version->versionNumber() < 7)
-		return version;
-
-	int dimension = bitMatrix.height();
-
-	for (bool mirror : {false, true}) {
-		// Read top-right/bottom-left version info: 3 wide by 6 tall (depending on mirrored)
-		int versionBits = 0;
-		for (int y = 5; y >= 0; --y)
-			for (int x = dimension - 9; x >= dimension - 11; --x)
-				AppendBit(versionBits, getBit(bitMatrix, x, y, mirror));
-
-		version = Version::DecodeVersionInformation(versionBits);
-		if (version && version->dimension() == dimension)
-			return version;
+	case Type::Model2: return Version::Model2(number);
 	}
 
 	return nullptr;
