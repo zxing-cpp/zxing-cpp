@@ -24,7 +24,7 @@ if (NOT hasParent)
     endif()
 endif()
 
-find_package (Python COMPONENTS Interpreter Development) # see https://github.com/pybind/pybind11/issues/4785
+find_package(Python3 COMPONENTS Interpreter Development REQUIRED) # see https://github.com/pybind/pybind11/issues/4785
 zxing_add_package(pybind11 pybind11 ${pybind11_git_repo} ${pybind11_git_rev})
 
 # build the python module
@@ -32,7 +32,7 @@ pybind11_add_module(zxingcpp zxing.cpp)
 target_link_libraries(zxingcpp PRIVATE ZXing::ZXing)
 
 if (BUILD_READERS AND BUILD_WRITERS)
-    add_test(NAME PythonTest COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test.py -v)
+    add_test(NAME PythonTest COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test.py -v)
     set_property(TEST PythonTest PROPERTY ENVIRONMENT PYTHONPATH=$<TARGET_FILE_DIR:zxingcpp>)
 endif()
 
