@@ -18,16 +18,16 @@
 }
 
 - (instancetype)initWithFormats:(NSArray<NSNumber*>*)formats
-                        tryHarder:(BOOL)tryHarder
-                        tryRotate:(BOOL)tryRotate
-                        tryInvert:(BOOL)tryInvert
-                     tryDownscale:(BOOL)tryDownscale
-            tryCode39ExtendedMode:(BOOL)tryCode39ExtendedMode
-           validateCode39CheckSum:(BOOL)validateCode39CheckSum
-              validateITFCheckSum:(BOOL)validateITFCheckSum
-                  downscaleFactor:(uint8_t)downscaleFactor
-               downscaleThreshold:(uint16_t)downscaleThreshold
-               maxNumberOfSymbols:(NSInteger)maxNumberOfSymbols {
+                      tryHarder:(BOOL)tryHarder
+                      tryRotate:(BOOL)tryRotate
+                      tryInvert:(BOOL)tryInvert
+                   tryDownscale:(BOOL)tryDownscale
+          tryCode39ExtendedMode:(BOOL)tryCode39ExtendedMode
+         validateCode39CheckSum:(BOOL)validateCode39CheckSum
+            validateITFCheckSum:(BOOL)validateITFCheckSum
+                downscaleFactor:(uint8_t)downscaleFactor
+             downscaleThreshold:(uint16_t)downscaleThreshold
+             maxNumberOfSymbols:(NSInteger)maxNumberOfSymbols {
     self = [super init];
     self.cppOpts = ZXing::ReaderOptions();
     self.tryHarder = tryHarder;

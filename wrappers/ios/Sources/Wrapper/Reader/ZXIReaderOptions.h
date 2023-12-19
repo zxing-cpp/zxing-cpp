@@ -21,16 +21,16 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic) NSInteger maxNumberOfSymbols;
 
 - (instancetype)initWithFormats:(NSArray<NSNumber*>*)formats
-					    tryHarder:(BOOL)tryHarder
-                        tryRotate:(BOOL)tryRotate
-                        tryInvert:(BOOL)tryInvert
-                     tryDownscale:(BOOL)tryDownscale
-            tryCode39ExtendedMode:(BOOL)tryCode39ExtendedMode
-           validateCode39CheckSum:(BOOL)validateCode39CheckSum
-              validateITFCheckSum:(BOOL)validateITFCheckSum
-                  downscaleFactor:(uint8_t)downscaleFactor
-               downscaleThreshold:(uint16_t)downscaleThreshold
-               maxNumberOfSymbols:(NSInteger)maxNumberOfSymbols;
+                      tryHarder:(BOOL)tryHarder
+                      tryRotate:(BOOL)tryRotate
+                      tryInvert:(BOOL)tryInvert
+                   tryDownscale:(BOOL)tryDownscale
+          tryCode39ExtendedMode:(BOOL)tryCode39ExtendedMode
+         validateCode39CheckSum:(BOOL)validateCode39CheckSum
+            validateITFCheckSum:(BOOL)validateITFCheckSum
+                downscaleFactor:(uint8_t)downscaleFactor
+             downscaleThreshold:(uint16_t)downscaleThreshold
+             maxNumberOfSymbols:(NSInteger)maxNumberOfSymbols;
 @end
 
 NS_ASSUME_NONNULL_END
