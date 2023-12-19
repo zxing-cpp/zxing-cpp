@@ -77,6 +77,8 @@ int main(int argc, char** argv)
 ```
 To see the full capability of the API, have a look at [`ZXingReader.cpp`](example/ZXingReader.cpp).
 
+[Note: At least C++17 is reqired on the client side to use the API.]
+
 ### To write barcodes:
 1. Create a [`MultiFormatWriter`](core/src/MultiFormatWriter.h) instance with the format you want to generate. Set encoding and margins if needed.
 2. Call `encode()` with text content and the image size. This returns a [`BitMatrix`](core/src/BitMatrix.h) which is a binary image of the barcode where `true` == visual black and `false` == visual white.
