@@ -43,7 +43,7 @@ public:
 
 	bool isValid(bool includeErrors = false) const
 	{
-		return includeErrors || (_content.symbology.code != 0 && !_error);
+		return (!_content.bytes.empty() && !_error) || (includeErrors && !!_error);
 	}
 
 	const Content& content() const & { return _content; }
