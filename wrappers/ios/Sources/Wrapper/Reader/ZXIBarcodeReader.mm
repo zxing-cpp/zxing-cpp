@@ -98,8 +98,7 @@ ZXIGTIN *getGTIN(const Result &result) {
     NSMutableData *data = [NSMutableData dataWithLength: cols * rows];
 
 
-    CGContextRef contextRef = CGBitmapContextCreate(
-                                                    data.mutableBytes,// Pointer to backing data
+    CGContextRef contextRef = CGBitmapContextCreate(data.mutableBytes,// Pointer to backing data
                                                     cols,                      // Width of bitmap
                                                     rows,                     // Height of bitmap
                                                     8,                          // Bits per component

@@ -6,6 +6,27 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(NSInteger, ZXIBinarizer) {
+    ZXIBinarizerLocalAverage,
+    ZXIBinarizerGlobalHistogram,
+    ZXIBinarizerFixedThreshold,
+    ZXIBinarizerBoolCast
+};
+
+typedef NS_ENUM(NSInteger, ZXIEanAddOnSymbol) {
+    ZXIEanAddOnSymbolIgnore,
+    ZXIEanAddOnSymbolRead,
+    ZXIEanAddOnSymbolRequire
+};
+
+typedef NS_ENUM(NSInteger, ZXITextMode) {
+    ZXITextModePlain,
+    ZXITextModeECI,
+    ZXITextModeHRI,
+    ZXITextModeHex,
+    ZXITextModeEscaped
+};
+
 @interface ZXIReaderOptions : NSObject
 /// An array of ZXIFormat
 @property(nonatomic, strong) NSArray<NSNumber*> *formats;
@@ -13,24 +34,38 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic) BOOL tryRotate;
 @property(nonatomic) BOOL tryInvert;
 @property(nonatomic) BOOL tryDownscale;
+@property(nonatomic) BOOL isPure;
+@property(nonatomic) ZXIBinarizer binarizer;
+@property(nonatomic) NSInteger downscaleFactor;
+@property(nonatomic) NSInteger downscaleThreshold;
+@property(nonatomic) NSInteger minLineCount;
+@property(nonatomic) NSInteger maxNumberOfSymbols;
 @property(nonatomic) BOOL tryCode39ExtendedMode;
 @property(nonatomic) BOOL validateCode39CheckSum;
 @property(nonatomic) BOOL validateITFCheckSum;
-@property(nonatomic) uint8_t downscaleFactor;
-@property(nonatomic) uint16_t downscaleThreshold;
-@property(nonatomic) NSInteger maxNumberOfSymbols;
+@property(nonatomic) BOOL returnCodabarStartEnd;
+@property(nonatomic) BOOL returnErrors;
+@property(nonatomic) ZXIEanAddOnSymbol eanAddOnSymbol;
+@property(nonatomic) ZXITextMode textMode;
 
 - (instancetype)initWithFormats:(NSArray<NSNumber*>*)formats
-					    tryHarder:(BOOL)tryHarder
-                        tryRotate:(BOOL)tryRotate
-                        tryInvert:(BOOL)tryInvert
-                     tryDownscale:(BOOL)tryDownscale
-            tryCode39ExtendedMode:(BOOL)tryCode39ExtendedMode
-           validateCode39CheckSum:(BOOL)validateCode39CheckSum
-              validateITFCheckSum:(BOOL)validateITFCheckSum
-                  downscaleFactor:(uint8_t)downscaleFactor
-               downscaleThreshold:(uint16_t)downscaleThreshold
-               maxNumberOfSymbols:(NSInteger)maxNumberOfSymbols;
+                      tryHarder:(BOOL)tryHarder
+                      tryRotate:(BOOL)tryRotate
+                      tryInvert:(BOOL)tryInvert
+                   tryDownscale:(BOOL)tryDownscale
+                         isPure:(BOOL)isPure
+                      binarizer:(ZXIBinarizer)binarizer
+                downscaleFactor:(NSInteger)downscaleFactor
+             downscaleThreshold:(NSInteger)downscaleThreshold
+                   minLineCount:(NSInteger)minLineCount
+             maxNumberOfSymbols:(NSInteger)maxNumberOfSymbols
+          tryCode39ExtendedMode:(BOOL)tryCode39ExtendedMode
+         validateCode39CheckSum:(BOOL)validateCode39CheckSum
+            validateITFCheckSum:(BOOL)validateITFCheckSum
+          returnCodabarStartEnd:(BOOL)returnCodabarStartEnd
+                   returnErrors:(BOOL)returnErrors
+                 eanAddOnSymbol:(ZXIEanAddOnSymbol)eanAddOnSymbol
+                       textMode:(ZXITextMode)textMode;
 @end
 
 NS_ASSUME_NONNULL_END
