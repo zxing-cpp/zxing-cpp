@@ -346,7 +346,7 @@ DecoderResult Decode(const BitMatrix& bits)
 
 	// Count total number of data bytes
 	const auto op = [](auto totalBytes, const auto& dataBlock){ return totalBytes + dataBlock.numDataCodewords();};
-	const auto totalBytes = std::accumulate(std::begin(dataBlocks), std::end(dataBlocks), int{}, op);
+	const auto totalBytes = Reduce(dataBlocks, int{}, op);
 	ByteArray resultBytes(totalBytes);
 	auto resultIterator = resultBytes.begin();
 

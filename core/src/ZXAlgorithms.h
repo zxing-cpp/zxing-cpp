@@ -52,9 +52,19 @@ auto FirstOrDefault(C<Ts...>&& results)
 	return results.empty() ? typename C<Ts...>::value_type() : std::move(results.front());
 }
 
+template <typename Iterator, typename Value = typename std::iterator_traits<Iterator>::value_type, typename Op = std::plus<Value>>
+Value Reduce(Iterator b, Iterator e, Value v = Value{}, Op op = {}) {
+	// std::reduce() first sounded like a better implementation because it is not implemented as a strict left-fold
+	// operation, meaning the order of the op-application is not specified. This sounded like an optimization opportunity
+	// but it turns out that for this use case it actually does not make a difference (falsepositives runtime). And
+	// when tested with a large std::vector<uint16_t> and proper autovectorization (e.g. clang++ -O2) it turns out that
+	// std::accumulate can be twice as fast as std::reduce.
+	return std::accumulate(b, e, v, op);
+}
+
 template <typename Container, typename Value = typename Container::value_type, typename Op = std::plus<Value>>
 Value Reduce(const Container& c, Value v = Value{}, Op op = {}) {
-	return std::accumulate(std::begin(c), std::end(c), v, op);
+	return Reduce(std::begin(c), std::end(c), v, op);
 }
 
 // see C++20 ssize

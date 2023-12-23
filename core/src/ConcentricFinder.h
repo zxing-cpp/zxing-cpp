@@ -27,7 +27,7 @@ static float CenterFromEnd(const std::array<T, N>& pattern, float end)
 		float b = (pattern[2] + pattern[1] + pattern[0]) / 2.f;
 		return end - (2 * a + b) / 3;
 	} else { // aztec
-		auto a = std::accumulate(pattern.begin() + (N/2 + 1), pattern.end(), pattern[N/2] / 2.f);
+		auto a = Reduce(pattern.begin() + (N/2 + 1), pattern.end(), pattern[N/2] / 2.f);
 		return end - a;
 	}
 }

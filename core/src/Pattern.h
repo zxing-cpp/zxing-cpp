@@ -59,13 +59,13 @@ public:
 		return _data[i];
 	}
 
-	int sum(int n = 0) const { return std::accumulate(_data, _data + (n == 0 ? _size : n), 0); }
+	int sum(int n = 0) const { return Reduce(_data, _data + (n == 0 ? _size : n)); }
 	int size() const { return _size; }
 
 	// index is the number of bars and spaces from the first bar to the current position
 	int index() const { return narrow_cast<int>(_data - _base) - 1; }
-	int pixelsInFront() const { return std::accumulate(_base, _data, 0); }
-	int pixelsTillEnd() const { return std::accumulate(_base, _data + _size, 0) - 1; }
+	int pixelsInFront() const { return Reduce(_base, _data); }
+	int pixelsTillEnd() const { return Reduce(_base, _data + _size) - 1; }
 	bool isAtFirstBar() const { return _data == _base + 1; }
 	bool isAtLastBar() const { return _data + _size == _end - 1; }
 	bool isValid(int n) const { return _data && _data >= _base && _data + n <= _end; }

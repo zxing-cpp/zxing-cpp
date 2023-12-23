@@ -183,7 +183,7 @@ Result DXFilmEdgeReader::decodePattern(int rowNumber, PatternView& next, std::un
 		return {};
 
 	// Check the parity bit
-	auto signalSum = std::accumulate(dataBits.begin(), dataBits.end() - 2, 0);
+	auto signalSum = Reduce(dataBits.begin(), dataBits.end() - 2, 0);
 	auto parityBit = *(dataBits.end() - 2);
 	if (signalSum % 2 != (int)parityBit)
 		return {};

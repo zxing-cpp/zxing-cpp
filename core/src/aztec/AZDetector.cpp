@@ -210,7 +210,7 @@ static std::vector<ConcentricPattern> FindFinderPatterns(const BitMatrix& image,
 				++N;
 				log(p, 1);
 
-				auto pattern = LocateAztecCenter(image, p, Reduce(next));
+				auto pattern = LocateAztecCenter(image, p, next.sum());
 				if (pattern) {
 					log(*pattern, 3);
 					assert(image.get(*pattern));

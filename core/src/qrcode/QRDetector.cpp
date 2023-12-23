@@ -79,7 +79,7 @@ std::vector<ConcentricPattern> FindFinderPatterns(const BitMatrix& image, bool t
 				log(p);
 				N++;
 				auto pattern = LocateConcentricPattern<E2E>(image, PATTERN, p,
-															Reduce(next) * 3); // 3 for very skewed samples
+															next.sum() * 3); // 3 for very skewed samples
 				if (pattern) {
 					log(*pattern, 3);
 					log(*pattern + PointF(.2, 0), 3);

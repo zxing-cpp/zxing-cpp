@@ -10,7 +10,6 @@
 
 #include <algorithm>
 #include <cmath>
-#include <numeric>
 #include <vector>
 
 #ifdef PRINT_DEBUG
@@ -30,7 +29,7 @@ protected:
 
 	template<typename T> bool evaluate(const PointT<T>* begin, const PointT<T>* end)
 	{
-		auto mean = std::accumulate(begin, end, PointF()) / std::distance(begin, end);
+		auto mean = Reduce(begin, end, PointF()) / std::distance(begin, end);
 		PointF::value_t sumXX = 0, sumYY = 0, sumXY = 0;
 		for (auto p = begin; p != end; ++p) {
 			auto d = *p - mean;
@@ -79,7 +78,7 @@ public:
 	auto signedDistance(PointF p) const { return dot(normal(), p) - c; }
 	template <typename T> auto distance(PointT<T> p) const { return std::abs(signedDistance(PointF(p))); }
 	PointF project(PointF p) const { return p - signedDistance(p) * normal(); }
-	PointF centroid() const { return std::accumulate(_points.begin(), _points.end(), PointF()) / _points.size(); }
+	PointF centroid() const { return Reduce(_points) / _points.size(); }
 
 	void reset()
 	{
