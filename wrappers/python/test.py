@@ -9,7 +9,7 @@ has_pil = importlib.util.find_spec('PIL') is not None
 has_cv2 = importlib.util.find_spec('cv2') is not None
 
 BF = zxingcpp.BarcodeFormat
-
+CT = zxingcpp.ContentType
 
 class TestFormat(unittest.TestCase):
 
@@ -26,6 +26,7 @@ class TestReadWrite(unittest.TestCase):
 		self.assertEqual(res.text, text)
 		self.assertEqual(res.bytes, bytes(text, 'utf-8'))
 		self.assertEqual(res.orientation, 0)
+		self.assertEqual(res.content_type, CT.Text)
 
 	def test_write_read_cycle(self):
 		format = BF.QRCode
@@ -60,6 +61,16 @@ class TestReadWrite(unittest.TestCase):
 
 		res = zxingcpp.read_barcodes(img)[0]
 		self.check_res(res, format, text)
+
+	def test_write_read_bytes_cycle(self):
+		format = BF.QRCode
+		text = b"\1\2\3\4"
+		img = zxingcpp.write_barcode(format, text)
+
+		res = zxingcpp.read_barcode(img)
+		self.assertTrue(res.valid)
+		self.assertEqual(res.bytes, text)
+		self.assertEqual(res.content_type, CT.Binary)
 
 	@staticmethod
 	def zeroes(shape):

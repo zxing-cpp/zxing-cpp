@@ -158,10 +158,18 @@ Results read_barcodes(py::object _image, const BarcodeFormats& formats, bool try
 							  return_errors);
 }
 
-Matrix<uint8_t> write_barcode(BarcodeFormat format, std::string text, int width, int height, int quiet_zone, int ec_level)
+Matrix<uint8_t> write_barcode(BarcodeFormat format, py::object content, int width, int height, int quiet_zone, int ec_level)
 {
-	auto writer = MultiFormatWriter(format).setEncoding(CharacterSet::UTF8).setMargin(quiet_zone).setEccLevel(ec_level);
-	auto bitmap = writer.encode(text, width, height);
+	CharacterSet encoding;
+	if (py::isinstance<py::str>(content))
+		encoding  = CharacterSet::UTF8;
+	else if (py::isinstance<py::bytes>(content))
+		encoding = CharacterSet::BINARY;
+	else
+		throw py::type_error("Invalid input: only 'str' and 'bytes' supported.");
+
+	auto writer = MultiFormatWriter(format).setEncoding(encoding).setMargin(quiet_zone).setEccLevel(ec_level);
+	auto bitmap = writer.encode(py::cast<std::string>(content), width, height);
 	return ToMatrix<uint8_t>(bitmap);
 }
 
@@ -432,8 +440,8 @@ PYBIND11_MODULE(zxingcpp, m)
 		"Write (encode) a text into a barcode and return 8-bit grayscale bitmap buffer\n\n"
 		":type format: zxing.BarcodeFormat\n"
 		":param format: format of the barcode to create\n"
-		":type text: str\n"
-		":param text: the text of barcode\n"
+		":type text: str|bytes\n"
+		":param text: the text/content of the barcode. A str is encoded as utf8 text and bytes as binary data\n"
 		":type width: int\n"
 		":param width: width (in pixels) of the barcode to create. If undefined (or set to 0), barcode will be\n"
 		"  created with the minimum possible width\n"
