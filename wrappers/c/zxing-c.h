@@ -172,6 +172,7 @@ bool zxing_Result_isMirrored(const zxing_Result* result);
  * ZXing/ReadBarcode.h
  */
 
+/** Note: opts is optional, i.e. it can be NULL, which will imply default settings. */
 zxing_Result* zxing_ReadBarcode(const zxing_ImageView* iv, const zxing_ReaderOptions* opts);
 zxing_Results* zxing_ReadBarcodes(const zxing_ImageView* iv, const zxing_ReaderOptions* opts);
 

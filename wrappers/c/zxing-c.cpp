@@ -211,13 +211,13 @@ bool zxing_Result_isMirrored(const zxing_Result* result)
 
 zxing_Result* zxing_ReadBarcode(const zxing_ImageView* iv, const zxing_ReaderOptions* opts)
 {
-	auto res = ReadBarcode(*iv, *opts);
+	auto res = ReadBarcode(*iv, opts ? *opts : ReaderOptions{});
 	return res.format() != BarcodeFormat::None ? new Result(std::move(res)) : NULL;
 }
 
 zxing_Results* zxing_ReadBarcodes(const zxing_ImageView* iv, const zxing_ReaderOptions* opts)
 {
-	auto res = ReadBarcodes(*iv, *opts);
+	auto res = ReadBarcodes(*iv, opts ? *opts : ReaderOptions{});
 	return !res.empty() ? new Results(std::move(res)) : NULL;
 }
 
