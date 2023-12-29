@@ -40,7 +40,7 @@ public:
 #endif
 	Matrix(int width, int height, value_t val = {}) : _width(width), _height(height), _data(_width * _height, val) {
 		if (width != 0 && Size(_data) / width != height)
-			throw std::invalid_argument("invalid size: width * height is too big");
+			throw std::invalid_argument("Invalid size: width * height is too big");
 	}
 
 	Matrix(Matrix&&) noexcept = default;

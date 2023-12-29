@@ -136,7 +136,10 @@ Result ReadBarcode(const ImageView& _iv, const ReaderOptions& opts)
 Results ReadBarcodes(const ImageView& _iv, const ReaderOptions& opts)
 {
 	if (sizeof(PatternType) < 4 && opts.hasFormat(BarcodeFormat::LinearCodes) && (_iv.width() > 0xffff || _iv.height() > 0xffff))
-		throw std::invalid_argument("maximum image width/height is 65535");
+		throw std::invalid_argument("Maximum image width/height is 65535");
+
+	if (!_iv.data(0, 0) || _iv.width() * _iv.height() == 0)
+		throw std::invalid_argument("ImageView is null/empty");
 
 	LumImage lum;
 	ImageView iv = SetupLumImageView(_iv, lum, opts);
