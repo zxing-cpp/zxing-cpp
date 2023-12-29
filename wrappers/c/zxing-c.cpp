@@ -22,6 +22,22 @@ static char* copy(std::string_view sv)
 	return ret;
 }
 
+static Results ReadBarcodesAndSetLastError(const zxing_ImageView* iv, const zxing_ReaderOptions* opts)
+{
+	try {
+		if (iv)
+			return ReadBarcodes(*iv, opts ? *opts : ReaderOptions{});
+		else
+			lastErrorMsg = "ImageView param is NULL";
+	} catch (std::exception& e) {
+		lastErrorMsg = e.what();
+	} catch (...) {
+		lastErrorMsg = "Unknown error";
+	}
+
+	return {};
+}
+
 extern "C" {
 /*
  * ZXing/ImageView.h
@@ -53,7 +69,7 @@ zxing_BarcodeFormats zxing_BarcodeFormatsFromString(const char* str)
 	} catch (std::exception& e) {
 		lastErrorMsg = e.what();
 	} catch (...) {
-		lastErrorMsg = "Unknown error.";
+		lastErrorMsg = "Unknown error";
 	}
 
 	return zxing_BarcodeFormat_Invalid;
@@ -214,22 +230,6 @@ bool zxing_Result_isMirrored(const zxing_Result* result)
 /*
  * ZXing/ReadBarcode.h
  */
-
-static Results ReadBarcodesAndSetLastError(const zxing_ImageView* iv, const zxing_ReaderOptions* opts)
-{
-	try {
-		if (iv)
-			return ReadBarcodes(*iv, opts ? *opts : ReaderOptions{});
-		else
-			lastErrorMsg = "ImageView param is NULL.";
-	} catch (std::exception& e) {
-		lastErrorMsg = e.what();
-	} catch (...) {
-		lastErrorMsg = "Unknown error.";
-	}
-
-	return {};
-}
 
 zxing_Result* zxing_ReadBarcode(const zxing_ImageView* iv, const zxing_ReaderOptions* opts)
 {
