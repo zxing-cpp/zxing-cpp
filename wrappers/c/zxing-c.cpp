@@ -8,6 +8,12 @@
 
 #include "ReadBarcode.h"
 
+#include <cstdlib>
+#include <exception>
+#include <string>
+#include <string_view>
+#include <utility>
+
 using namespace ZXing;
 
 static thread_local std::string lastErrorMsg;
@@ -22,12 +28,15 @@ static char* copy(std::string_view sv)
 	return ret;
 }
 
-static Results ReadBarcodesAndSetLastError(const zxing_ImageView* iv, const zxing_ReaderOptions* opts)
+static Results ReadBarcodesAndSetLastError(const zxing_ImageView* iv, const zxing_ReaderOptions* opts, int maxSymbols)
 {
 	try {
-		if (iv)
-			return ReadBarcodes(*iv, opts ? *opts : ReaderOptions{});
-		else
+		if (iv) {
+			auto o = opts ? *opts : ReaderOptions{};
+			if (maxSymbols)
+				o.setMaxNumberOfSymbols(maxSymbols);
+			return ReadBarcodes(*iv, o);
+		} else
 			lastErrorMsg = "ImageView param is NULL";
 	} catch (std::exception& e) {
 		lastErrorMsg = e.what();
@@ -233,13 +242,13 @@ bool zxing_Result_isMirrored(const zxing_Result* result)
 
 zxing_Result* zxing_ReadBarcode(const zxing_ImageView* iv, const zxing_ReaderOptions* opts)
 {
-	auto res = ReadBarcodesAndSetLastError(iv, opts);
+	auto res = ReadBarcodesAndSetLastError(iv, opts, 1);
 	return !res.empty() ? new Result(std::move(res.front())) : NULL;
 }
 
 zxing_Results* zxing_ReadBarcodes(const zxing_ImageView* iv, const zxing_ReaderOptions* opts)
 {
-	auto res = ReadBarcodesAndSetLastError(iv, opts);
+	auto res = ReadBarcodesAndSetLastError(iv, opts, 0);
 	return !res.empty() ? new Results(std::move(res)) : NULL;
 }
 
