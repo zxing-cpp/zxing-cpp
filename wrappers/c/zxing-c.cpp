@@ -10,7 +10,9 @@
 
 using namespace ZXing;
 
-char* copy(std::string_view sv)
+static thread_local std::string lastErrorMsg;
+
+static char* copy(std::string_view sv)
 {
 	auto ret = (char*)malloc(sv.size() + 1);
 	if (ret) {
@@ -48,9 +50,13 @@ zxing_BarcodeFormats zxing_BarcodeFormatsFromString(const char* str)
 	try {
 		auto format = BarcodeFormatsFromString(str);
 		return static_cast<zxing_BarcodeFormats>(*reinterpret_cast<BarcodeFormat*>(&format));
+	} catch (std::exception& e) {
+		lastErrorMsg = e.what();
 	} catch (...) {
-		return zxing_BarcodeFormat_Invalid;
+		lastErrorMsg = "Unknown error.";
 	}
+
+	return zxing_BarcodeFormat_Invalid;
 }
 
 zxing_BarcodeFormat zxing_BarcodeFormatFromString(const char* str)
@@ -209,15 +215,31 @@ bool zxing_Result_isMirrored(const zxing_Result* result)
  * ZXing/ReadBarcode.h
  */
 
+static Results ReadBarcodesAndSetLastError(const zxing_ImageView* iv, const zxing_ReaderOptions* opts)
+{
+	try {
+		if (iv)
+			return ReadBarcodes(*iv, opts ? *opts : ReaderOptions{});
+		else
+			lastErrorMsg = "ImageView param is NULL.";
+	} catch (std::exception& e) {
+		lastErrorMsg = e.what();
+	} catch (...) {
+		lastErrorMsg = "Unknown error.";
+	}
+
+	return {};
+}
+
 zxing_Result* zxing_ReadBarcode(const zxing_ImageView* iv, const zxing_ReaderOptions* opts)
 {
-	auto res = ReadBarcode(*iv, opts ? *opts : ReaderOptions{});
-	return res.format() != BarcodeFormat::None ? new Result(std::move(res)) : NULL;
+	auto res = ReadBarcodesAndSetLastError(iv, opts);
+	return !res.empty() ? new Result(std::move(res.front())) : NULL;
 }
 
 zxing_Results* zxing_ReadBarcodes(const zxing_ImageView* iv, const zxing_ReaderOptions* opts)
 {
-	auto res = ReadBarcodes(*iv, opts ? *opts : ReaderOptions{});
+	auto res = ReadBarcodesAndSetLastError(iv, opts);
 	return !res.empty() ? new Results(std::move(res)) : NULL;
 }
 
@@ -241,6 +263,14 @@ const zxing_Result* zxing_Results_at(const zxing_Results* results, int i)
 	if (!results || i < 0 || i >= Size(*results))
 		return NULL;
 	return &(*results)[i];
+}
+
+char* zxing_LastErrorMsg()
+{
+	if (lastErrorMsg.empty())
+		return NULL;
+
+	return copy(std::exchange(lastErrorMsg, {}));
 }
 
 } // extern "C"

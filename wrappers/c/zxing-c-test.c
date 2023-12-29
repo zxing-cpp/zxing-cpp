@@ -6,6 +6,9 @@
 
 #include "zxing-c.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
@@ -23,7 +26,7 @@ bool parse_args(int argc, char** argv, char** filename, zxing_BarcodeFormats* fo
 	if (argc >= 3) {
 		*formats = zxing_BarcodeFormatsFromString(argv[2]);
 		if (*formats == zxing_BarcodeFormat_Invalid) {
-			fprintf(stderr, "Invalid barcode formats string '%s'\n", argv[2]);
+			fprintf(stderr, "%s\n", zxing_LastErrorMsg());
 			return false;
 		}
 	}
@@ -41,6 +44,7 @@ void printF(const char* fmt, char* text)
 
 int main(int argc, char** argv)
 {
+	int ret = 0;
 	char* filename = NULL;
 	zxing_BarcodeFormats formats = zxing_BarcodeFormat_None;
 
@@ -51,8 +55,10 @@ int main(int argc, char** argv)
 	int height = 0;
 	int channels = 0;
 	stbi_uc* data = stbi_load(filename, &width, &height, &channels, STBI_grey);
-	if (!data)
+	if (!data) {
+		fprintf(stderr, "Could not read image '%s'\n", filename);
 		return 2;
+	}
 
 	zxing_ReaderOptions* opts = zxing_ReaderOptions_new();
 	zxing_ReaderOptions_setTextMode(opts, zxing_TextMode_HRI);
@@ -82,12 +88,18 @@ int main(int argc, char** argv)
 
 		zxing_Results_delete(results);
 	} else {
-		printf("No barcode found\n");
+		const char* error = zxing_LastErrorMsg();
+		if (error) {
+			fprintf(stderr, "%s\n", error);
+			ret = 2;
+		} else {
+			printf("No barcode found\n");
+		}
 	}
 
 	zxing_ImageView_delete(iv);
 	zxing_ReaderOptions_delete(opts);
 	stbi_image_free(data);
 
-	return 0;
+	return ret;
 }

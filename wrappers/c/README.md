@@ -35,7 +35,13 @@ int main(int argc, char** argv)
 
 		zxing_Result_delete(result);
 	} else {
-		printf("No barcode found\n");
+		const char* error = zxing_LastErrorMsg();
+		if (error) {
+			printf("%s\n", error);
+			free(error);
+		} else {
+			printf("No barcode found\n");
+		}
 	}
 
 	zxing_ImageView_delete(iv);

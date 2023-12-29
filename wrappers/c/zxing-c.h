@@ -182,6 +182,8 @@ void zxing_Results_delete(zxing_Results* results);
 int zxing_Results_size(const zxing_Results* results);
 const zxing_Result* zxing_Results_at(const zxing_Results* results, int i);
 
+char* zxing_LastErrorMsg();
+
 #ifdef __cplusplus
 }
 #endif
