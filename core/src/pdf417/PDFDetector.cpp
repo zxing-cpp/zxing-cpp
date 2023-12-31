@@ -25,11 +25,6 @@ static const int INDEXES_STOP_PATTERN[] = { 6, 2, 7, 3 };
 static const float MAX_AVG_VARIANCE = 0.42f;
 static const float MAX_INDIVIDUAL_VARIANCE = 0.8f;
 
-// B S B S B S B S Bar/Space pattern
-// 11111111 0 1 0 1 0 1 000
-static const std::vector<int> START_PATTERN = { 8, 1, 1, 1, 1, 1, 1, 3 };
-// 1111111 0 1 000 1 0 1 00 1
-static const std::vector<int> STOP_PATTERN = { 7, 1, 1, 3, 1, 1, 1, 2, 1 };
 static const int MAX_PIXEL_DRIFT = 3;
 static const int MAX_PATTERN_DRIFT = 5;
 // if we set the value too low, then we don't detect the correct height of the bar if the start patterns are damaged.
@@ -226,6 +221,12 @@ CopyToResult(std::array<Nullable<ResultPoint>, 8>& result, const std::array<Null
 */
 static std::array<Nullable<ResultPoint>, 8> FindVertices(const BitMatrix& matrix, int startRow, int startColumn)
 {
+	// B S B S B S B S Bar/Space pattern
+	// 11111111 0 1 0 1 0 1 000
+	static const std::vector<int> START_PATTERN = { 8, 1, 1, 1, 1, 1, 1, 3 };
+	// 1111111 0 1 000 1 0 1 00 1
+	static const std::vector<int> STOP_PATTERN = { 7, 1, 1, 3, 1, 1, 1, 2, 1 };
+
 	int width = matrix.width();
 	int height = matrix.height();
 

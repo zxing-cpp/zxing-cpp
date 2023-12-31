@@ -19,7 +19,6 @@
 #include <cstdint>
 #include <functional>
 #include <limits>
-#include <numeric>
 #include <stdexcept>
 #include <string>
 
@@ -31,10 +30,6 @@ static const uint8_t MACRO_05 = 236;
 static const uint8_t MACRO_06 = 237;
 static const uint8_t C40_UNLATCH = 254;
 static const uint8_t X12_UNLATCH = 254;
-
-static const std::wstring MACRO_05_HEADER = L"[)>\x1E""05\x1D";
-static const std::wstring MACRO_06_HEADER = L"[)>\x1E""06\x1D";
-static const std::wstring MACRO_TRAILER = L"\x1E\x04";
 
 enum
 {
@@ -845,12 +840,13 @@ namespace Base256Encoder {
 
 } // Base256Encoder
 
-static bool StartsWith(const std::wstring& s, const std::wstring& ss)
+//TODO: c++20
+static bool StartsWith(std::wstring_view s, std::wstring_view ss)
 {
 	return s.length() > ss.length() && s.compare(0, ss.length(), ss) == 0;
 }
 
-static bool EndsWith(const std::wstring& s, const std::wstring& ss)
+static bool EndsWith(std::wstring_view s, std::wstring_view ss)
 {
 	return s.length() > ss.length() && s.compare(s.length() - ss.length(), ss.length(), ss) == 0;
 }
@@ -886,6 +882,10 @@ ByteArray Encode(const std::wstring& msg, CharacterSet charset, SymbolShape shap
 	EncoderContext context(TextEncoder::FromUnicode(msg, charset));
 	context.setSymbolShape(shape);
 	context.setSizeConstraints(minWidth, minHeight, maxWidth, maxHeight);
+
+	constexpr std::wstring_view MACRO_05_HEADER = L"[)>\x1E""05\x1D";
+	constexpr std::wstring_view MACRO_06_HEADER = L"[)>\x1E""06\x1D";
+	constexpr std::wstring_view MACRO_TRAILER = L"\x1E\x04";
 
 	if (StartsWith(msg, MACRO_05_HEADER) && EndsWith(msg, MACRO_TRAILER)) {
 		context.addCodeword(MACRO_05);
