@@ -40,6 +40,8 @@ jobs:
       env:
         CIBW_BUILD: cp38-* cp39-* cp310-* cp311-* cp312-*
         CIBW_SKIP: "*musllinux*"
+        # the default maylinux2014 image does not contain a c++20 compiler, see https://github.com/pypa/manylinux
+        CIBW_MANYLINUX_X86_64_IMAGE: quay.io/pypa/manylinux_2_28_x86_64
         CIBW_ARCHS_MACOS: universal2
         CIBW_ENVIRONMENT_MACOS: CMAKE_OSX_ARCHITECTURES="arm64;x86_64"
 
