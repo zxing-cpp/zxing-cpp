@@ -2,6 +2,7 @@
 
 [![PyPI](https://img.shields.io/pypi/v/zxing-cpp.svg)](https://pypi.org/project/zxing-cpp/)
 
+
 ## Installation
 
 ```bash
@@ -13,7 +14,14 @@ or
 python setup.py install
 ```
 
-[Note: To install via `setup.py` (or via `pip install` in case there is no pre-build wheel available for your platfor or python version), you need a suitable [build environment](https://github.com/zxing-cpp/zxing-cpp#build-instructions) including a c++ compiler.]
+**Note**: To enable position independent and multi-symbol DataMatrix detection, the library needs to be compiled with a c++20 compiler. Unfortunatelly some build environments used by `cibuildwheel` to generate the binary wheels that are published on [pypi.org](https://pypi.org/project/zxing-cpp/) don't include a c++20 compiler. Best chance to enable proper DataMatrix support in that case is by installing from source:
+
+```bash
+pip install zxing-cpp --no-binary zxing-cpp
+```
+
+In that case or if there is no pre-build wheel available for your platform or python version or if you use `setup.py` directly, a suitable [build environment](https://github.com/zxing-cpp/zxing-cpp#build-instructions) including a c++ compiler is required.
+
 
 ## Usage
 
