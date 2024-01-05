@@ -157,7 +157,7 @@ private:
 	Content _content;
 	Error _error;
 	Position _position;
-	ReaderOptions _readerOpts;
+	ReaderOptions _readerOpts; // TODO: 3.0 switch order to prevent 4 padding bytes
 	StructuredAppendInfo _sai;
 	BarcodeFormat _format = BarcodeFormat::None;
 	char _ecLevel[4] = {};
