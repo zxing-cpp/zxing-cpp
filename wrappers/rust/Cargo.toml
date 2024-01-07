@@ -1,0 +1,19 @@
+[package]
+name = "zxing_cpp2rs"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+autocxx = "0.26.0"
+cxx = "1.0.114"
+
+[dev-dependencies]
+anyhow = "1.0.79"
+image = "0.24.7"
+clap = {version = "4.4.13", features = ["derive"]}
+
+[build-dependencies]
+autocxx-build = "0.26.0"
+miette = {version = "5.10.0", features = ["fancy"]}
