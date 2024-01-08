@@ -1,48 +1,49 @@
 use crate::bindings;
 use std::fmt::{Display, Formatter};
 
+/// Enum representing formats known to this crate.
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq)]
 #[repr(i32)]
 pub enum BarcodeFormat {
-    ///< Used as a return value if no valid barcode has been detected
+    /// Used as a return value if no valid barcode has been detected
     None = 0,
-    ///< Aztec
+    /// Aztec
     Aztec = 1,
-    ///< Codabar
+    /// Codabar
     Codabar = 2,
-    ///< Code39
+    /// Code39
     Code39 = 4,
-    ///< Code93
+    /// Code93
     Code93 = 8,
-    ///< Code128
+    /// Code128
     Code128 = 16,
-    ///< GS1 DataBar, formerly known as RSS 14
+    /// GS1 DataBar, formerly known as RSS 14
     DataBar = 32,
-    ///< GS1 DataBar Expanded, formerly known as RSS EXPANDED
+    /// GS1 DataBar Expanded, formerly known as RSS EXPANDED
     DataBarExpanded = 64,
-    ///< DataMatrix
+    /// DataMatrix
     DataMatrix = 128,
-    ///< EAN-8
+    /// EAN-8
     EAN8 = 256,
-    ///< EAN-13
+    /// EAN-13
     EAN13 = 512,
-    ///< ITF (Interleaved Two of Five)
+    /// ITF (Interleaved Two of Five)
     ITF = 1024,
-    ///< MaxiCode
+    /// MaxiCode
     MaxiCode = 2048,
-    ///< PDF417
+    /// PDF417
     PDF417 = 4096,
-    ///< QR Code
+    /// QR Code
     QRCode = 8192,
-    ///< UPC-A
+    /// UPC-A
     UPCA = 16384,
-    ///< UPC-E
+    /// UPC-E
     UPCE = 32768,
-    ///< Micro QR Code
+    /// Micro QR Code
     MicroQRCode = 65536,
-    ///< Rectangular Micro QR Code
+    /// Rectangular Micro QR Code
     RMQRCode = 131072,
-    ///< DX Film Edge Barcode
+    /// DX Film Edge Barcode
     DXFilmEdge = 262144,
     LinearCodes = 313214,
     MatrixCodes = 211073,

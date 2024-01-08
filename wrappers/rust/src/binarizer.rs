@@ -1,10 +1,19 @@
 use crate::bindings;
 
+/// The Binarizer enum
+///
+/// Specify which algorithm to use for grayscale to binary transformation.
+/// The difference is how to get to a threshold value `T` which results in a bit
+/// value `R = L <= T`
 #[derive(Copy, Clone)]
 pub enum Binarizer {
+    /// `T` = Average of neighboring pixels for matrix and GlobalHistogram for linear (HybridBinarizer)
     LocalAverage,
+    /// `T` = valley between the 2 largest peeks in the histogram (per line in linear case)
     GlobalHistogram,
+    /// `T` = 127
     FixedThreshold,
+    /// `T` = 0, fastest possible
     BoolCast,
 }
 

@@ -98,10 +98,12 @@ fn main() -> anyhow::Result<()> {
     let data = img.into_vec();
 
     let image = ImageView::new(&data, width, height, ImageFormat::Lum, 0, 0);
-    let mut options = ReaderOptions::default();
-    for format in cli.formats {
-        options.add_format(format.into());
-    }
+    let options = cli
+        .formats
+        .into_iter()
+        .fold(ReaderOptions::default(), |acc, format| {
+            acc.add_format(format.into())
+        });
 
     let result = read_barcode(image, options);
 

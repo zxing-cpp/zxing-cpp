@@ -1,5 +1,6 @@
 use crate::bindings;
 
+/// Enum representing the format of an image's pixels
 pub enum ImageFormat {
     None = 0,
     Lum = 0x01000000,

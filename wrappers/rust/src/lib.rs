@@ -13,6 +13,8 @@ mod multi_format_writer;
 mod reader_options;
 mod text_mode;
 
+mod matrix;
+
 pub use barcode_format::*;
 pub use barcode_result::*;
 pub use binarizer::*;
@@ -21,18 +23,24 @@ pub use content_type::*;
 pub use ean_add_on_symbol::*;
 pub use image_format::*;
 pub use image_view::*;
+pub use matrix::*;
 pub use multi_format_writer::*;
 pub use reader_options::*;
 pub use text_mode::*;
 
 mod bindings;
-mod matrix;
 
 use autocxx::prelude::*;
 use std::fmt::{Display, Formatter};
 use std::io::Cursor;
 use std::pin::Pin;
 
+/// Read barcode from an [ImageView]
+///
+/// * `image` - view of the image data including layout and format
+/// * `options` - [ReaderOptions] to parameterize / speed up detection
+///
+/// Returns a [BarcodeResult]
 pub fn read_barcode(image: ImageView, mut reader_options: ReaderOptions) -> BarcodeResult {
     BarcodeResult {
         result: bindings::base_ffi::ReadBarcode(&image.image, unsafe {

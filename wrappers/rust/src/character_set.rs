@@ -4,6 +4,7 @@ use crate::bindings;
 use autocxx::WithinUniquePtrTrivial;
 use std::fmt::{Display, Formatter};
 
+/// Character sets used for decoding and encoding Aztec, PDF417, and QRCode.
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq)]
 #[repr(u8)]
 pub enum CharacterSet {

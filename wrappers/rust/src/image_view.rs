@@ -3,13 +3,23 @@ use crate::image_format::ImageFormat;
 use autocxx::{c_int, WithinUniquePtr};
 use cxx::UniquePtr;
 use std::io::Cursor;
+use std::marker::PhantomData;
 
+/// Struct that stores a reference to image data plus layout and formation information.
 pub struct ImageView<'a> {
-    _data: &'a [u8],
+    _data: PhantomData<&'a [u8]>,
     pub(crate) image: UniquePtr<bindings::base_ffi::ImageView>,
 }
 
 impl<'a> ImageView<'a> {
+    /// Creates a new [ImageView]
+    ///
+    /// * `data` - reference to image buffer
+    /// * `width` - image width in pixels
+    /// * `height` - image height in pixels
+    /// * `format` - image/pixel format
+    /// * `row_stride` - row stride in bytes. If 0, the default is `width` * `pix_stride`
+    /// * `pix_stride` - pixel stride in bytes. If 0, the default is calculated from format
     pub fn new(
         data: &'a [u8],
         width: u32,
@@ -30,7 +40,7 @@ impl<'a> ImageView<'a> {
                 )
             }
             .within_unique_ptr(),
-            _data: data,
+            _data: PhantomData,
         }
     }
 }

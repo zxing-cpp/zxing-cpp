@@ -1,6 +1,7 @@
 use crate::bindings;
 use std::fmt::{Display, Formatter};
 
+/// Enum describing the content type of decoded barcodes
 #[derive(Copy, Clone)]
 pub enum ContentType {
     Text,
