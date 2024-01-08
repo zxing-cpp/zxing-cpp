@@ -2,6 +2,7 @@
 
 #include "BarcodeFormat.h"
 #include "Content.h"
+#include "CharacterSet.h"
 #include "Error.h"
 #include "Result.h"
 #include "ReadBarcode.h"
@@ -21,6 +22,11 @@ std::string ContentTypeToString(ContentType ty)
 std::string ErrorToString(const Error& e)
 {
     return ToString(e);
+}
+
+std::string CharacterSetToString(CharacterSet cs)
+{
+    return ToString(cs);
 }
 
 const std::vector<uint8_t>& ByteArrayAsVec(const ByteArray& ba)

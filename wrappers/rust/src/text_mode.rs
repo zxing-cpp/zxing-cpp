@@ -11,9 +11,9 @@ pub enum TextMode {
     Escaped,
 }
 
-impl From<bindings::reader_options_ffi::TextMode> for TextMode {
-    fn from(value: bindings::reader_options_ffi::TextMode) -> Self {
-        use bindings::reader_options_ffi::TextMode as TM;
+impl From<bindings::wrapped_ffi::TextMode> for TextMode {
+    fn from(value: bindings::wrapped_ffi::TextMode) -> Self {
+        use bindings::wrapped_ffi::TextMode as TM;
         match value {
             TM::Plain => TextMode::Plain,
             TM::ECI => TextMode::ECI,
@@ -24,9 +24,9 @@ impl From<bindings::reader_options_ffi::TextMode> for TextMode {
     }
 }
 
-impl From<TextMode> for bindings::reader_options_ffi::TextMode {
+impl From<TextMode> for bindings::wrapped_ffi::TextMode {
     fn from(value: TextMode) -> Self {
-        use bindings::reader_options_ffi::TextMode as TM;
+        use bindings::wrapped_ffi::TextMode as TM;
         match value {
             TextMode::Plain => TM::Plain,
             TextMode::ECI => TM::ECI,

@@ -2,14 +2,14 @@
 #![allow(clippy::too_many_arguments)]
 #![allow(clippy::upper_case_acronyms)]
 
-pub(crate) mod reader_options_ffi {
+pub(crate) mod wrapped_ffi {
     use autocxx::include_cpp;
     include_cpp! {
         #include "ReaderOptionsExt.h"
         name!(reader_options_ext)
         safety!(unsafe_references_wrapped)
         generate!("ZXing::ReaderOptionsExt")
-        extern_cpp_type!("ZXing::ReaderOptions", crate::bindings::reader_options_ffi::ReaderOptions)
+        extern_cpp_type!("ZXing::ReaderOptions", crate::bindings::wrapped_ffi::ReaderOptions)
         extern_cpp_type!("ZXing::BarcodeFormat", crate::bindings::base_ffi::BarcodeFormat)
     }
 
@@ -20,6 +20,7 @@ pub(crate) mod reader_options_ffi {
         generate!("ZXing::ReaderOptions")
         extern_cpp_type!("ZXing::BarcodeFormat", crate::bindings::base_ffi::BarcodeFormat)
     }
+
     pub use reader_options::ZXing::*;
     pub use reader_options_ext::ZXing::*;
 }
@@ -35,6 +36,9 @@ pub(crate) mod base_ffi {
         #include "BarcodeFormat.h"
         #include "Quadrilateral.h"
         #include "Util.h"
+        #include "MultiFormatWriterExt.h"
+        #include "MultiFormatWriter.h"
+        #include "MatrixExt.h"
         safety!(unsafe_ffi)
         generate!("ZXing::ReadBarcode")
         generate!("ZXing::ImageView")
@@ -45,8 +49,13 @@ pub(crate) mod base_ffi {
         generate!("ZXing::BarcodeFormatToString")
         generate!("ZXing::ErrorToString")
         generate!("ZXing::ByteArrayAsVec")
-        extern_cpp_type!("ZXing::ReaderOptions", crate::bindings::reader_options_ffi::ReaderOptions)
-        extern_cpp_type!("ZXing::TextMode", crate::bindings::reader_options_ffi::TextMode)
+        generate!("ZXing::CharacterSetToString")
+        generate!("ZXing::MultiFormatWriterExt")
+        generate!("ZXing::MultiFormatWriter")
+        generate!("ZXing::MatrixExt")
+        extern_cpp_type!("ZXing::ReaderOptions", crate::bindings::wrapped_ffi::ReaderOptions)
+        extern_cpp_type!("ZXing::TextMode", crate::bindings::wrapped_ffi::TextMode)
+        extern_cpp_type!("ZXing::CharacterSet", crate::bindings::wrapped_ffi::CharacterSet)
     }
     pub use ffi::ZXing::*;
 }

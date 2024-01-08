@@ -105,7 +105,7 @@ fn main() -> anyhow::Result<()> {
 
     let result = read_barcode(image, options);
 
-    if result.format() == BarcodeFormat::None {
+    if !result.is_valid() {
         println!("No barcode found");
     } else {
         println!("Text: {}", result.text());

@@ -8,9 +8,9 @@ pub enum Binarizer {
     BoolCast,
 }
 
-impl From<bindings::reader_options_ffi::Binarizer> for Binarizer {
-    fn from(value: bindings::reader_options_ffi::Binarizer) -> Self {
-        use bindings::reader_options_ffi::Binarizer as B;
+impl From<bindings::wrapped_ffi::Binarizer> for Binarizer {
+    fn from(value: bindings::wrapped_ffi::Binarizer) -> Self {
+        use bindings::wrapped_ffi::Binarizer as B;
         match value {
             B::LocalAverage => Binarizer::LocalAverage,
             B::GlobalHistogram => Binarizer::GlobalHistogram,
@@ -20,9 +20,9 @@ impl From<bindings::reader_options_ffi::Binarizer> for Binarizer {
     }
 }
 
-impl From<Binarizer> for bindings::reader_options_ffi::Binarizer {
+impl From<Binarizer> for bindings::wrapped_ffi::Binarizer {
     fn from(value: Binarizer) -> Self {
-        use bindings::reader_options_ffi::Binarizer as B;
+        use bindings::wrapped_ffi::Binarizer as B;
         match value {
             Binarizer::LocalAverage => B::LocalAverage,
             Binarizer::GlobalHistogram => B::GlobalHistogram,

@@ -6,14 +6,14 @@ use autocxx::{AsCppMutRef, AsCppRef, CppUniquePtrPin, WithinUniquePtr, WithinUni
 use cxx::UniquePtr;
 
 pub struct ReaderOptions {
-    pub(crate) options: CppUniquePtrPin<bindings::reader_options_ffi::ReaderOptionsExt>,
+    pub(crate) options: CppUniquePtrPin<bindings::wrapped_ffi::ReaderOptionsExt>,
 }
 
 impl Default for ReaderOptions {
     fn default() -> Self {
         Self {
             options: CppUniquePtrPin::new(
-                bindings::reader_options_ffi::ReaderOptionsExt::new().within_unique_ptr(),
+                bindings::wrapped_ffi::ReaderOptionsExt::new().within_unique_ptr(),
             ),
         }
     }
