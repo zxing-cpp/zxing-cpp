@@ -33,7 +33,7 @@ impl<'a> ImageView<'a> {
                     data.as_ptr(),
                     c_int(width as i32),
                     c_int(height as i32),
-                    format.into(),
+                    format,
                     c_int(row_stride as i32),
                     c_int(pix_stride as i32),
                 )

@@ -10,6 +10,8 @@
 #include "BarcodeFormat.h"
 #include "ReaderOptions.h"
 
+#include <vector>
+
 namespace ZXing {
 
 class ReaderOptionsExt : public ReaderOptions

@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 autocxx = "0.26.0"
-cxx = "1.0.114"
+cxx = { version = "1.0.115", features = ["c++17"] }
 
 [dev-dependencies]
 anyhow = "1.0.79"

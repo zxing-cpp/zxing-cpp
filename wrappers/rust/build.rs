@@ -21,9 +21,13 @@ fn main() -> miette::Result<()> {
         .extra_clang_args(&["-std=c++17", "-Wc++17-extensions"])
         .build()?;
 
-    b.cpp(true)
-        .std("c++17")
-        .flag_if_supported("-Wc++17-extensions")
+    #[cfg(target_os = "windows")]
+    b.flag_if_supported("-std:c++17");
+
+    #[cfg(not(target_os = "windows"))]
+    b.flag_if_supported("-std=c++17");
+
+    b.flag_if_supported("-Wc++17-extensions")
         .compile("zxing-cpp2rs");
 
     println!("cargo:rerun-if-changed=src/bindings.rs");

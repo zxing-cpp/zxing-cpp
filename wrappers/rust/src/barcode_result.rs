@@ -10,7 +10,7 @@ pub struct BarcodeResult {
 impl BarcodeResult {
     /// The format of the decoded barcode
     pub fn format(&self) -> BarcodeFormat {
-        self.result.format().into()
+        self.result.format()
     }
 
     /// The contents of [BarcodeResult::bytes] rendered to unicode/utf8 text according to the [TextMode] set in [ReaderOptions]
@@ -33,7 +33,7 @@ impl BarcodeResult {
 
     /// Gives a hint to the type of content found (Text/Binary/GS1/etc.)
     pub fn content_type(&self) -> ContentType {
-        self.result.contentType().into()
+        self.result.contentType()
     }
 
     /// The raw / standard content without any modifications like character set conversions

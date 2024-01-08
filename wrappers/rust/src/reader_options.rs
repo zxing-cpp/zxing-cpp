@@ -26,7 +26,7 @@ impl ReaderOptions {
     pub fn add_format(mut self, f: BarcodeFormat) -> Self {
         self.options
             .as_cpp_mut_ref()
-            .addFormat(bindings::base_ffi::BarcodeFormat::from(f).within_unique_ptr());
+            .addFormat(f.within_unique_ptr());
         self
     }
 
@@ -88,7 +88,7 @@ impl ReaderOptions {
         self.options
             .as_cpp_mut_ref()
             .asOptions()
-            .setBinarizer(binarizer.into());
+            .setBinarizer(binarizer);
         self
     }
 
@@ -97,7 +97,7 @@ impl ReaderOptions {
         self.options
             .as_cpp_mut_ref()
             .asOptions()
-            .setEanAddOnSymbol(ean_add_on_symbol.into());
+            .setEanAddOnSymbol(ean_add_on_symbol);
     }
 
     /// Specifies the TextMode that controls the return of the [BarcodeResult::text] function
@@ -107,6 +107,6 @@ impl ReaderOptions {
         self.options
             .as_cpp_mut_ref()
             .asOptions()
-            .setTextMode(text_mode.into());
+            .setTextMode(text_mode);
     }
 }

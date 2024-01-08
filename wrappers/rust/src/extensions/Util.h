@@ -7,6 +7,9 @@
 #include "Result.h"
 #include "ReadBarcode.h"
 
+#include <vector>
+#include <string>
+
 namespace ZXing {
 
 std::string BarcodeFormatToString(BarcodeFormat format)
