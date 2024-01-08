@@ -1,34 +1,23 @@
 #![feature(arbitrary_self_types)]
 #![allow(unused_imports)]
 
-mod barcode_format;
 mod barcode_result;
-mod binarizer;
-mod character_set;
-mod content_type;
-mod ean_add_on_symbol;
-mod image_format;
 mod image_view;
-mod multi_format_writer;
 mod reader_options;
-mod text_mode;
 
-mod matrix;
-
-pub use barcode_format::*;
 pub use barcode_result::*;
-pub use binarizer::*;
-pub use character_set::*;
-pub use content_type::*;
-pub use ean_add_on_symbol::*;
-pub use image_format::*;
 pub use image_view::*;
-pub use matrix::*;
-pub use multi_format_writer::*;
 pub use reader_options::*;
-pub use text_mode::*;
 
 mod bindings;
+
+pub use bindings::base_ffi::BarcodeFormat;
+pub use bindings::base_ffi::CharacterSet;
+pub use bindings::base_ffi::ContentType;
+pub use bindings::base_ffi::ImageFormat;
+pub use bindings::base_ffi::TextMode;
+pub use bindings::wrapped_ffi::Binarizer;
+pub use bindings::wrapped_ffi::EanAddOnSymbol;
 
 use autocxx::prelude::*;
 use std::fmt::{Display, Formatter};

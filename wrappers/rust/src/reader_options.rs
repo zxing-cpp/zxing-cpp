@@ -1,7 +1,4 @@
-use crate::binarizer::Binarizer;
-use crate::ean_add_on_symbol::EanAddOnSymbol;
-use crate::text_mode::TextMode;
-use crate::{bindings, BarcodeFormat};
+use crate::{bindings, BarcodeFormat, Binarizer, EanAddOnSymbol, TextMode};
 use autocxx::{AsCppMutRef, AsCppRef, CppUniquePtrPin, WithinUniquePtr, WithinUniquePtrTrivial};
 use cxx::UniquePtr;
 

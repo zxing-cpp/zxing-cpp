@@ -1,5 +1,4 @@
-use crate::content_type::ContentType;
-use crate::{bindings, BarcodeFormat};
+use crate::{bindings, BarcodeFormat, ContentType};
 use autocxx::WithinUniquePtrTrivial;
 use cxx::UniquePtr;
 

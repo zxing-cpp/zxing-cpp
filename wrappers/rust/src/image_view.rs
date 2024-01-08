@@ -1,5 +1,4 @@
-use crate::bindings;
-use crate::image_format::ImageFormat;
+use crate::{bindings, ImageFormat};
 use autocxx::{c_int, WithinUniquePtr};
 use cxx::UniquePtr;
 use std::io::Cursor;
