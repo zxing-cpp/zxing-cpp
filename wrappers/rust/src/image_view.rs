@@ -5,7 +5,7 @@ use std::io::Cursor;
 use std::marker::PhantomData;
 
 #[cfg(feature = "image")]
-use image::{DynamicImage, EncodableLayout, GrayImage};
+use image::{DynamicImage, EncodableLayout};
 
 /// Struct that stores a reference to image data plus layout and formation information.
 pub struct ImageView<'a> {
@@ -47,21 +47,30 @@ impl<'a> ImageView<'a> {
     }
 
     #[cfg(feature = "image")]
-    /// Creates an [ImageView] from a [GrayImage]
-    pub fn from_dynamic_image(image: &'a GrayImage) -> Self {
-        Self {
+    /// Creates an [ImageView] from a [DynamicImage]
+    ///
+    /// Returns `None` when the underlying buffer does not match a compatible [ImageFormat]
+    pub fn from_dynamic_image(image: &'a DynamicImage) -> Option<Self> {
+        let format = match image {
+            DynamicImage::ImageLuma8(_) => Some(ImageFormat::Lum),
+            DynamicImage::ImageRgb8(_) => Some(ImageFormat::RGB),
+            DynamicImage::ImageRgba8(_) => Some(ImageFormat::RGBX),
+            _ => None,
+        };
+
+        Some(Self {
             _data: PhantomData,
             image: unsafe {
                 bindings::base_ffi::ImageView::new(
                     image.as_bytes().as_ptr(),
                     c_int(image.width() as i32),
                     c_int(image.height() as i32),
-                    ImageFormat::Lum,
+                    format?,
                     c_int(0),
                     c_int(0),
                 )
             }
             .within_unique_ptr(),
-        }
+        })
     }
 }

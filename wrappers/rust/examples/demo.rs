@@ -5,9 +5,6 @@ use std::path::PathBuf;
 use zxing_cpp2rs::{read_barcodes, BarcodeFormat, ImageView, ReaderOptions};
 
 #[cfg(not(feature = "image"))]
-use image::EncodableLayout;
-
-#[cfg(not(feature = "image"))]
 use zxing_cpp2rs::ImageFormat;
 
 #[derive(Parser)]
@@ -99,20 +96,19 @@ fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
     // Load image from file and convert to GrayImage
-    let img = Reader::open(cli.filename)?.decode()?.to_luma8();
+    let img = Reader::open(cli.filename)?.decode()?;
 
-    #[cfg(not(feature = "image"))]
-    // Get image width
-    let width = img.width();
-    #[cfg(not(feature = "image"))]
-    // Get image height
-    let height = img.height();
-
-    #[cfg(not(feature = "image"))]
-    let image = ImageView::new(img.as_bytes(), width, height, ImageFormat::Lum, 0, 0);
-
-    #[cfg(feature = "image")]
-    let image = ImageView::from_dynamic_image(&img);
+    cfg_if::cfg_if! {
+        if #[cfg(feature = "image")] {
+            let image_view = ImageView::from_dynamic_image(&img).ok_or(anyhow::Error::msg(
+                "Failed to convert dynamic image to ImageView",
+            ))?;
+        } else {
+            let width = img.width();
+            let height = img.height();
+            let image_view = ImageView::new(img.as_bytes(), width, height, ImageFormat::RGB, 0, 0);
+        }
+    }
 
     // Create format flags based on cli arguments
     let formats = cli
@@ -126,7 +122,7 @@ fn main() -> anyhow::Result<()> {
     let options = ReaderOptions::default().set_formats(formats);
 
     // Read barcodes from the provided image
-    let results = read_barcodes(&image, &options);
+    let results = read_barcodes(&image_view, &options);
     let last = results.len() - 1;
     for (i, result) in results.into_iter().enumerate() {
         if !result.is_valid() {
