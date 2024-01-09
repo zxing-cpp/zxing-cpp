@@ -17,8 +17,6 @@ This crate is a Rust wrapper for the C++ library [zxing-cpp](https://github.com/
 ### Restrictions
 
 This crate uses [autocxx](https://github.com/google/autocxx) to generate the underlying bindings. 
-Not everything in C++ is either easily adaptable in Rust or not yet implemented.
 
-One of these is template classes with forward declarations. 
-Wrapper C++ headers are needed to be created for those classes. 
-For now they are not implemented and functionality is restricted to basic reading and writing.
+Only reading is currently implemented. See [#332](https://github.com/zxing-cpp/zxing-cpp/issues/332) for the status of 
+writing barcodes with zxing-cpp.
