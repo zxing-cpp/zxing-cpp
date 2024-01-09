@@ -21,10 +21,10 @@ impl Default for ReaderOptions {
 }
 
 impl ReaderOptions {
-    pub fn set_formats(mut self, formats: FlagSet<BarcodeFormat>) -> Self {
+    pub fn set_formats(mut self, formats: impl Into<FlagSet<BarcodeFormat>>) -> Self {
         self.options
             .pin_mut()
-            .setFormats(c_int(formats.bits() as i32));
+            .setFormats(c_int(formats.into().bits() as i32));
         self
     }
 
