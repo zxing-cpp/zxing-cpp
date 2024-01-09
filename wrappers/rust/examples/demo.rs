@@ -1,7 +1,14 @@
 use clap::{Parser, ValueEnum};
+use flagset::FlagSet;
 use image::io::Reader;
 use std::path::PathBuf;
-use zxing_cpp2rs::{read_barcode, BarcodeFormat, ImageFormat, ImageView, ReaderOptions};
+use zxing_cpp2rs::{read_barcodes, BarcodeFormat, ImageView, ReaderOptions};
+
+#[cfg(not(feature = "image"))]
+use image::EncodableLayout;
+
+#[cfg(not(feature = "image"))]
+use zxing_cpp2rs::ImageFormat;
 
 #[derive(Parser)]
 struct Cli {
@@ -88,35 +95,54 @@ impl From<BarcodeFormatArg> for BarcodeFormat {
 }
 
 fn main() -> anyhow::Result<()> {
+    // Parse arguments
     let cli = Cli::parse();
 
-    let img = Reader::open(cli.filename)?.decode()?.into_luma8();
+    // Load image from file and convert to GrayImage
+    let img = Reader::open(cli.filename)?.decode()?.to_luma8();
 
+    #[cfg(not(feature = "image"))]
+    // Get image width
     let width = img.width();
+    #[cfg(not(feature = "image"))]
+    // Get image height
     let height = img.height();
 
-    let data = img.into_vec();
+    #[cfg(not(feature = "image"))]
+    let image = ImageView::new(img.as_bytes(), width, height, ImageFormat::Lum, 0, 0);
 
-    let image = ImageView::new(&data, width, height, ImageFormat::Lum, 0, 0);
-    let options = cli
+    #[cfg(feature = "image")]
+    let image = ImageView::from_dynamic_image(&img);
+
+    // Create format flags based on cli arguments
+    let formats = cli
         .formats
         .into_iter()
-        .fold(ReaderOptions::default(), |acc, format| {
-            acc.add_format(format.into())
+        .fold(FlagSet::<BarcodeFormat>::new_truncated(0), |acc, format| {
+            acc | BarcodeFormat::from(format)
         });
 
-    let result = read_barcode(image, options);
+    // Create options and set formats
+    let options = ReaderOptions::default().set_formats(formats);
 
-    if !result.is_valid() {
-        println!("No barcode found");
-    } else {
-        println!("Text: {}", result.text());
-        println!("Format: {}", result.format());
-        println!("Content: {}", result.content_type());
-        println!("Identifier: {}", result.symbology_identifier());
-        println!("EC Level: {}", result.ec_level());
-        println!("Error: {}", result.error_message());
-        println!("Rotation: {}", result.orientation());
+    // Read barcodes from the provided image
+    let results = read_barcodes(&image, &options);
+    let last = results.len() - 1;
+    for (i, result) in results.into_iter().enumerate() {
+        if !result.is_valid() {
+            println!("No barcode found");
+        } else {
+            println!("Text: {}", result.text());
+            println!("Format: {}", result.format());
+            println!("Content: {}", result.content_type());
+            println!("Identifier: {}", result.symbology_identifier());
+            println!("EC Level: {}", result.ec_level());
+            println!("Error: {}", result.error_message());
+            println!("Rotation: {}", result.orientation());
+        }
+        if i != last {
+            println!();
+        }
     }
 
     Ok(())

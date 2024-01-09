@@ -4,6 +4,9 @@ use cxx::UniquePtr;
 use std::io::Cursor;
 use std::marker::PhantomData;
 
+#[cfg(feature = "image")]
+use image::{DynamicImage, EncodableLayout, GrayImage};
+
 /// Struct that stores a reference to image data plus layout and formation information.
 pub struct ImageView<'a> {
     _data: PhantomData<&'a [u8]>,
@@ -40,6 +43,25 @@ impl<'a> ImageView<'a> {
             }
             .within_unique_ptr(),
             _data: PhantomData,
+        }
+    }
+
+    #[cfg(feature = "image")]
+    /// Creates an [ImageView] from a [GrayImage]
+    pub fn from_dynamic_image(image: &'a GrayImage) -> Self {
+        Self {
+            _data: PhantomData,
+            image: unsafe {
+                bindings::base_ffi::ImageView::new(
+                    image.as_bytes().as_ptr(),
+                    c_int(image.width() as i32),
+                    c_int(image.height() as i32),
+                    ImageFormat::Lum,
+                    c_int(0),
+                    c_int(0),
+                )
+            }
+            .within_unique_ptr(),
         }
     }
 }

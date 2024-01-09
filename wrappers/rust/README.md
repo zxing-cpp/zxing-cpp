@@ -6,7 +6,6 @@ This crate is a Rust wrapper for the C++ library [zxing-cpp](https://github.com/
 
 - zxing-cpp >= 2.2.1 (minimum tested)
 - C++17 compatible compiler
-- Rust Nightly (required for the underlying bindings)
 
 ## Environment Variables
 

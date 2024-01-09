@@ -7,7 +7,11 @@ edition = "2021"
 
 [dependencies]
 autocxx = "0.26.0"
-cxx = { version = "1.0.115", features = ["c++17"] }
+cxx = { version = "1.0.115" }
+flagset = "0.4.4"
+num_enum = "0.7.2"
+image = { version = "0.24.7", optional = true }
+
 
 [dev-dependencies]
 anyhow = "1.0.79"
@@ -17,3 +21,7 @@ clap = {version = "4.4.13", features = ["derive"]}
 [build-dependencies]
 autocxx-build = "0.26.0"
 miette = {version = "5.10.0", features = ["fancy"]}
+
+[features]
+default = []
+image = ["dep:image"]

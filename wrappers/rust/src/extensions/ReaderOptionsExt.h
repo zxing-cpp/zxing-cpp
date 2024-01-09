@@ -9,8 +9,9 @@
 
 #include "BarcodeFormat.h"
 #include "ReaderOptions.h"
+#include "BitHacks.h"
 
-#include <vector>
+#include <type_traits>
 
 namespace ZXing {
 
@@ -20,26 +21,82 @@ class ReaderOptionsExt : public ReaderOptions
 public:
     ReaderOptionsExt() {}
 
-    ReaderOptionsExt& addFormat(BarcodeFormat f)
+    ReaderOptionsExt& setFormats(int flags)
     {
-        BarcodeFormats newFormats(f);
-        newFormats |= this->formats();
-        this->setFormats(newFormats);
+        BarcodeFormats formats;
+        for (int32_t pos = 0; pos <= BitHacks::HighestBitSet(flags); ++pos)
+        {
+            auto bit = flags & (1 << pos);
+            formats |= static_cast<BarcodeFormat>(bit);
+        }
+        ReaderOptions::setFormats(formats);
         return *this;
     }
 
-    std::vector<BarcodeFormat> allFormats() const
+    int allFormats() const
     {
-        std::vector<BarcodeFormat> formats;
-        for(auto format : this->formats())
+        using Int = typename std::underlying_type<BarcodeFormat>::type;
+
+        Int val;
+
+        for(auto f : this->formats())
         {
-            formats.emplace_back(format);
+            val += Int(f);
         }
-        return formats;
+        return val;
     }
 
-    ReaderOptions& asOptions()
+    ReaderOptionsExt& tryHarder(bool try_harder)
     {
+        this->setTryHarder(try_harder);
+        return *this;
+    }
+
+    ReaderOptionsExt& tryRotate(bool try_rotate)
+    {
+        this->setTryRotate(try_rotate);
+        return *this;
+    }
+
+    ReaderOptionsExt& tryInvert(bool try_invert)
+    {
+        this->setTryInvert(try_invert);
+        return *this;
+    }
+    
+    ReaderOptionsExt& tryDownscale(bool try_downscale)
+    {
+        this->setTryDownscale(try_downscale);
+        return *this;
+    }
+    
+    ReaderOptionsExt& pure(bool try_invert)
+    {
+        this->setTryInvert(try_invert);
+        return *this;
+    }
+
+    ReaderOptionsExt& returnErrors(bool return_errors)
+    {
+        this->setReturnErrors(return_errors);
+        return *this;
+    }
+
+    ReaderOptionsExt& binarizer(Binarizer binarizer)
+    {
+        this->setBinarizer(binarizer);
+        return *this;
+    }
+
+    ReaderOptionsExt& eanAddOnSymbol(EanAddOnSymbol ean_add_on_symbol)
+    {
+        this->setEanAddOnSymbol(ean_add_on_symbol);
+        return *this;
+    }
+
+    ReaderOptionsExt& textMode(TextMode text_mode)
+    {
+        this->setTextMode(text_mode);
         return *this;
     }
 };
