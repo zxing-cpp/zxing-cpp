@@ -33,19 +33,6 @@ public:
         return *this;
     }
 
-    int allFormats() const
-    {
-        using Int = typename std::underlying_type<BarcodeFormat>::type;
-
-        Int val;
-
-        for(auto f : this->formats())
-        {
-            val += Int(f);
-        }
-        return val;
-    }
-
     ReaderOptionsExt& tryHarder(bool try_harder)
     {
         this->setTryHarder(try_harder);
@@ -70,9 +57,9 @@ public:
         return *this;
     }
     
-    ReaderOptionsExt& pure(bool try_invert)
+    ReaderOptionsExt& pure(bool pure)
     {
-        this->setTryInvert(try_invert);
+        this->setTryInvert(pure);
         return *this;
     }
 

@@ -1,3 +1,4 @@
+use cxx_build;
 use miette::IntoDiagnostic;
 use std::env;
 use std::path::PathBuf;
@@ -17,17 +18,11 @@ fn main() -> miette::Result<()> {
         .into();
 
     let ext_path = std::path::PathBuf::from("src/extensions");
-    let mut b = autocxx_build::Builder::new("src/bindings.rs", [&src_path, &ext_path])
-        .extra_clang_args(&["-std=c++17", "-Wc++17-extensions"])
-        .build()?;
-
-    #[cfg(target_os = "windows")]
-    b.flag_if_supported("-std:c++17");
-
-    #[cfg(not(target_os = "windows"))]
-    b.flag_if_supported("-std=c++17");
-
-    b.flag_if_supported("-Wc++17-extensions")
+    cxx_build::bridge("src/bindings.rs")
+        .include(&src_path)
+        .include(&ext_path)
+        .std("c++17")
+        .flag_if_supported("-Wc++17extensions")
         .compile("zxing-cpp2rs");
 
     println!("cargo:rerun-if-changed=src/bindings.rs");

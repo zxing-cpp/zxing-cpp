@@ -6,7 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-autocxx = "0.26.0"
 cxx = { version = "1.0.115" }
 flagset = "0.4.4"
 num_enum = "0.7.2"
@@ -20,8 +19,8 @@ clap = {version = "4.4.13", features = ["derive"]}
 cfg-if = "1.0.0"
 
 [build-dependencies]
-autocxx-build = "0.26.0"
 miette = {version = "5.10.0", features = ["fancy"]}
+cxx-build = "1.0.115"
 
 [features]
 default = []

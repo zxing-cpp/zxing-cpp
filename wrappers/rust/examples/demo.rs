@@ -119,10 +119,10 @@ fn main() -> anyhow::Result<()> {
         });
 
     // Create options and set formats
-    let options = ReaderOptions::default().set_formats(formats);
+    let options = ReaderOptions::default().formats(formats);
 
     // Read barcodes from the provided image
-    let results = read_barcodes(&image_view, &options);
+    let results = read_barcodes(&image_view, &options).map_err(anyhow::Error::msg)?;
     let last = results.len() - 1;
     for (i, result) in results.into_iter().enumerate() {
         if !result.is_valid() {

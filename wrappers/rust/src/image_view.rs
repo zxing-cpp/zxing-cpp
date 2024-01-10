@@ -1,16 +1,15 @@
-use crate::{bindings, ImageFormat};
-use autocxx::{c_int, WithinUniquePtr};
+use crate::bindings;
 use cxx::UniquePtr;
-use std::io::Cursor;
 use std::marker::PhantomData;
 
+use crate::bindings::ffi::ImageFormat;
 #[cfg(feature = "image")]
-use image::{DynamicImage, EncodableLayout};
+use image::DynamicImage;
 
 /// Struct that stores a reference to image data plus layout and formation information.
 pub struct ImageView<'a> {
-    _data: PhantomData<&'a [u8]>,
-    pub(crate) image: UniquePtr<bindings::base_ffi::ImageView>,
+    data: PhantomData<&'a [u8]>,
+    pub(crate) image: UniquePtr<bindings::ffi::ImageView>,
 }
 
 impl<'a> ImageView<'a> {
@@ -32,17 +31,16 @@ impl<'a> ImageView<'a> {
     ) -> Self {
         Self {
             image: unsafe {
-                bindings::base_ffi::ImageView::new(
+                bindings::ffi::new_image_view(
                     data.as_ptr(),
-                    c_int(width as i32),
-                    c_int(height as i32),
+                    width as i32,
+                    height as i32,
                     format,
-                    c_int(row_stride as i32),
-                    c_int(pix_stride as i32),
+                    row_stride as i32,
+                    pix_stride as i32,
                 )
-            }
-            .within_unique_ptr(),
-            _data: PhantomData,
+            },
+            data: PhantomData,
         }
     }
 
@@ -59,18 +57,17 @@ impl<'a> ImageView<'a> {
         };
 
         Some(Self {
-            _data: PhantomData,
+            data: PhantomData,
             image: unsafe {
-                bindings::base_ffi::ImageView::new(
+                bindings::ffi::new_image_view(
                     image.as_bytes().as_ptr(),
-                    c_int(image.width() as i32),
-                    c_int(image.height() as i32),
+                    image.width() as i32,
+                    image.height() as i32,
                     format?,
-                    c_int(0),
-                    c_int(0),
+                    0,
+                    0,
                 )
-            }
-            .within_unique_ptr(),
+            },
         })
     }
 }

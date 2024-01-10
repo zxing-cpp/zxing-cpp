@@ -1,6 +1,5 @@
 use crate::bindings;
-use autocxx::c_int;
-use flagset::{flags, FlagSet};
+use flagset::flags;
 use num_enum::FromPrimitive;
 use std::fmt::{Display, Formatter};
 
@@ -10,6 +9,7 @@ flags! {
     pub enum BarcodeFormat: u32 {
         #[num_enum(default)]
         None = 0,
+        /// Aztec
         Aztec = 1 << 0,
         /// Codabar
         Codabar = 1 << 1,
@@ -59,7 +59,7 @@ impl Display for BarcodeFormat {
         write!(
             f,
             "{}",
-            bindings::base_ffi::barcodeFormatToString(c_int((*self) as i32))
+            bindings::ffi::barcode_format_to_string(*self as i32)
         )
     }
 }
