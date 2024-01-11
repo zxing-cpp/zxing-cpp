@@ -52,6 +52,9 @@ zxing_ImageView* zxing_ImageView_new(const uint8_t* data, int width, int height,
 									 int pixStride);
 void zxing_ImageView_delete(zxing_ImageView* iv);
 
+void zxing_ImageView_crop(zxing_ImageView* iv, int left, int top,  int width, int height);
+void zxing_ImageView_rotate(zxing_ImageView* iv, int degree);
+
 /*
  * ZXing/BarcodeFormat.h
  */
@@ -88,7 +91,7 @@ typedef enum
 									  | zxing_BarcodeFormat_RMQRCode,
 	zxing_BarcodeFormat_Any = zxing_BarcodeFormat_LinearCodes | zxing_BarcodeFormat_MatrixCodes,
 
-	zxing_BarcodeFormat_Invalid = -1 /* return value when BarcodeFormatsFromString() throws */
+	zxing_BarcodeFormat_Invalid = -1u /* return value when BarcodeFormatsFromString() throws */
 } zxing_BarcodeFormat;
 
 typedef zxing_BarcodeFormat zxing_BarcodeFormats;
@@ -140,6 +143,18 @@ void zxing_ReaderOptions_setEanAddOnSymbol(zxing_ReaderOptions* opts, zxing_EanA
 void zxing_ReaderOptions_setTextMode(zxing_ReaderOptions* opts, zxing_TextMode textMode);
 void zxing_ReaderOptions_setMaxNumberOfSymbols(zxing_ReaderOptions* opts, int n);
 
+bool zxing_ReaderOptions_getTryHarder(const zxing_ReaderOptions* opts);
+bool zxing_ReaderOptions_getTryRotate(const zxing_ReaderOptions* opts);
+bool zxing_ReaderOptions_getTryInvert(const zxing_ReaderOptions* opts);
+bool zxing_ReaderOptions_getTryDownscale(const zxing_ReaderOptions* opts);
+bool zxing_ReaderOptions_getIsPure(const zxing_ReaderOptions* opts);
+bool zxing_ReaderOptions_getReturnErrors(const zxing_ReaderOptions* opts);
+zxing_BarcodeFormats zxing_ReaderOptions_getFormats(const zxing_ReaderOptions* opts);
+zxing_Binarizer zxing_ReaderOptions_getBinarizer(const zxing_ReaderOptions* opts);
+zxing_EanAddOnSymbol zxing_ReaderOptions_getEanAddOnSymbol(const zxing_ReaderOptions* opts);
+zxing_TextMode zxing_ReaderOptions_getTextMode(const zxing_ReaderOptions* opts);
+int zxing_ReaderOptions_getMaxNumberOfSymbols(const zxing_ReaderOptions* opts);
+
 /*
  * ZXing/Result.h
  */
@@ -181,8 +196,11 @@ void zxing_Results_delete(zxing_Results* results);
 
 int zxing_Results_size(const zxing_Results* results);
 const zxing_Result* zxing_Results_at(const zxing_Results* results, int i);
+zxing_Result* zxing_Results_move(zxing_Results* results, int i);
 
 char* zxing_LastErrorMsg();
+
+void zxing_free(void* ptr);
 
 #ifdef __cplusplus
 }

@@ -39,7 +39,7 @@ void printF(const char* fmt, char* text)
 		return;
 	if (*text)
 		printf(fmt, text);
-	free(text);
+	zxing_free(text);
 }
 
 int main(int argc, char** argv)
