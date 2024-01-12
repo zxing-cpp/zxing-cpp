@@ -758,8 +758,11 @@ DetectorResult SampleRMQR(const BitMatrix& image, const ConcentricPattern& fp)
 			continue;
 
 		uint32_t formatInfoBits = 0;
-		for (int i = 0; i < Size(FORMAT_INFO_COORDS); ++i)
-			AppendBit(formatInfoBits, image.get(mod2Pix(centered(FORMAT_INFO_COORDS[i]))));
+		for (int i = 0; i < Size(FORMAT_INFO_COORDS); ++i) {
+			auto p = mod2Pix(centered(FORMAT_INFO_COORDS[i]));
+			if (!image.isIn(p)) continue;
+			AppendBit(formatInfoBits, image.get(p));
+		}
 
 		auto fi = FormatInformation::DecodeRMQR(formatInfoBits, 0 /*formatInfoBits2*/);
 		if (fi.hammingDistance < bestFI.hammingDistance) {
