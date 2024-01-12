@@ -10,6 +10,8 @@
 #include <stdlib.h>
 
 #define STB_IMAGE_IMPLEMENTATION
+#define STBI_NO_LINEAR // prevent dependency on -lm
+#define STBI_NO_HDR
 #include <stb_image.h>
 
 int usage(char* pname)

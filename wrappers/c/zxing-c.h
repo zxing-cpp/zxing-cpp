@@ -91,7 +91,7 @@ typedef enum
 									  | zxing_BarcodeFormat_RMQRCode,
 	zxing_BarcodeFormat_Any = zxing_BarcodeFormat_LinearCodes | zxing_BarcodeFormat_MatrixCodes,
 
-	zxing_BarcodeFormat_Invalid = -1u /* return value when BarcodeFormatsFromString() throws */
+	zxing_BarcodeFormat_Invalid = 0xFFFFFFFFu /* return value when BarcodeFormatsFromString() throws */
 } zxing_BarcodeFormat;
 
 typedef zxing_BarcodeFormat zxing_BarcodeFormats;

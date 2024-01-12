@@ -64,7 +64,11 @@ jobs:
       run: cmake -E make_directory ${{runner.workspace}}/build
 
     - name: Configure
-      run: cmake -S $GITHUB_WORKSPACE -B ${{runner.workspace}}/build -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_BLACKBOX_TESTS=ON -DBUILD_UNIT_TESTS=ON -DBUILD_PYTHON_MODULE=OFF -DBUILD_C_API=ON -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="-march=native -fsanitize=address,undefined -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-omit-frame-pointer"
+      run: >
+        cmake -S $GITHUB_WORKSPACE -B ${{runner.workspace}}/build -DCMAKE_BUILD_TYPE=RelWithDebInfo
+        -DBUILD_BLACKBOX_TESTS=ON -DBUILD_UNIT_TESTS=ON -DBUILD_PYTHON_MODULE=OFF -DBUILD_C_API=OFF
+        -DCMAKE_CXX_COMPILER=clang++
+        -DCMAKE_CXX_FLAGS="-march=native -fsanitize=address,undefined -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-omit-frame-pointer"
 
     - name: Build
       run: cmake --build ${{runner.workspace}}/build -j8
@@ -175,7 +179,11 @@ jobs:
 
     - name: Configure CMake
       shell: cmd
-      run: cmake -S ${{github.workspace}}/wrappers/winrt -B ${{runner.workspace}}/build -A ARM64 -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0 -DCMAKE_BUILD_TYPE=Release -DBUILD_WINRT_LIB=ON -DBUILD_EXAMPLES=OFF -DBUILD_BLACKBOX_TESTS=OFF -DEXTENSION_SDK_OUTPUT=dist/UAP/v0.8.0.0/ExtensionSDKs/ZXingWinRT/1.0.0.0
+      run: >
+        cmake -S ${{github.workspace}}/wrappers/winrt -B ${{runner.workspace}}/build -A ARM64
+        -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0 -DCMAKE_BUILD_TYPE=Release
+        -DBUILD_WINRT_LIB=ON -DBUILD_EXAMPLES=OFF -DBUILD_BLACKBOX_TESTS=OFF
+        -DEXTENSION_SDK_OUTPUT=dist/UAP/v0.8.0.0/ExtensionSDKs/ZXingWinRT/1.0.0.0
 
     - name: Build
       shell: cmd
