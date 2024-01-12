@@ -683,6 +683,7 @@ DetectorResult SampleMQR(const BitMatrix& image, const ConcentricPattern& fp)
 
 	FormatInformation bestFI;
 	PerspectiveTransform bestPT;
+	BitMatrixCursorF cur(image, {}, {});
 
 	for (int i = 0; i < 4; ++i) {
 		auto mod2Pix = PerspectiveTransform(srcQuad, RotatedCorners(*fpQuad, i));
@@ -698,7 +699,7 @@ DetectorResult SampleMQR(const BitMatrix& image, const ConcentricPattern& fp)
 
 		int formatInfoBits = 0;
 		for (int i = 1; i <= 15; ++i)
-			AppendBit(formatInfoBits, image.get(mod2Pix(centered(FORMAT_INFO_COORDS[i]))));
+			AppendBit(formatInfoBits, cur.blackAt(mod2Pix(centered(FORMAT_INFO_COORDS[i]))));
 
 		auto fi = FormatInformation::DecodeMQR(formatInfoBits);
 		if (fi.hammingDistance < bestFI.hammingDistance) {
@@ -718,7 +719,7 @@ DetectorResult SampleMQR(const BitMatrix& image, const ConcentricPattern& fp)
 	for (int i = 0; i < dim; ++i) {
 		auto px = bestPT(centered(PointI{i, dim}));
 		auto py = bestPT(centered(PointI{dim, i}));
-		blackPixels += (image.isIn(px) && image.get(px)) + (image.isIn(py) && image.get(py));
+		blackPixels += cur.blackAt(px) && cur.blackAt(py);
 	}
 	if (blackPixels > 2 * dim / 3)
 		return {};
@@ -744,13 +745,13 @@ DetectorResult SampleRMQR(const BitMatrix& image, const ConcentricPattern& fp)
 
 	FormatInformation bestFI;
 	PerspectiveTransform bestPT;
+	BitMatrixCursorF cur(image, {}, {});
 
 	for (int i = 0; i < 4; ++i) {
 		auto mod2Pix = PerspectiveTransform(srcQuad, RotatedCorners(*fpQuad, i));
 
 		auto check = [&](int i, bool on) {
-			auto p = mod2Pix(centered(FORMAT_INFO_EDGE_COORDS[i]));
-			return image.isIn(p) && image.get(p) == on;
+			return cur.testAt(mod2Pix(centered(FORMAT_INFO_EDGE_COORDS[i]))) == BitMatrixCursorF::Value(on);
 		};
 
 		// check that we see top edge timing pattern modules
@@ -759,7 +760,7 @@ DetectorResult SampleRMQR(const BitMatrix& image, const ConcentricPattern& fp)
 
 		uint32_t formatInfoBits = 0;
 		for (int i = 0; i < Size(FORMAT_INFO_COORDS); ++i)
-			AppendBit(formatInfoBits, image.get(mod2Pix(centered(FORMAT_INFO_COORDS[i]))));
+			AppendBit(formatInfoBits, cur.blackAt(mod2Pix(centered(FORMAT_INFO_COORDS[i]))));
 
 		auto fi = FormatInformation::DecodeRMQR(formatInfoBits, 0 /*formatInfoBits2*/);
 		if (fi.hammingDistance < bestFI.hammingDistance) {
