@@ -1,0 +1,18 @@
+[package]
+name = "zxing-cpp"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+paste = "1.0.14"
+flagset = "0.4.4"
+image = "0.24.7"
+
+[dev-dependencies]
+anyhow = "1.0.79"
+clap = {version = "4.4.13", features = ["derive"]}
+
+[build-dependencies]
+miette = {version = "5.10.0", features = ["fancy"]}
