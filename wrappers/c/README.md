@@ -1,17 +1,19 @@
 # C bindings for zxing-cpp
 
-This is a preview/proposal for a C-API to zxing-cpp. If this turns out to be useful and practical, it will most likely be merged into the library itself so that it will be trivially accessible for everyone. If you have any comments or feedback, please have a look at https://github.com/zxing-cpp/zxing-cpp/discussions/583.
+This is a preview/proposal for a C-API to zxing-cpp. If you have any comments or feedback, please have a look at https://github.com/zxing-cpp/zxing-cpp/discussions/583.
 
 ## Installation
 
-Probably the easiest way to play with the C-API is to either just modify the [zxing-c-test.c](https://github.com/zxing-cpp/zxing-cpp/blob/master/wrappers/c/zxing-c-test.c) file or copy the files [zxing-c.h](https://github.com/zxing-cpp/zxing-cpp/blob/master/wrappers/c/zxing-c.h) and [zxing-c.cpp](https://github.com/zxing-cpp/zxing-cpp/blob/master/wrappers/c/zxing-c.cpp) into your own project and link it to the standard zxing-cpp library.
+It is currently included in the default build to be trivially accessible for everyone.
+
+Probably the easiest way to play with the C-API is to just modify the [zxing-c-test.c](https://github.com/zxing-cpp/zxing-cpp/blob/master/wrappers/c/zxing-c-test.c) file.
 
 ## Usage
 
 The following is close to the most trivial use case scenario that is supported.
 
 ```c
-#include "zxing-c.h"
+#include "ZXing/zxing-c.h"
 
 int main(int argc, char** argv)
 {
@@ -27,21 +29,23 @@ int main(int argc, char** argv)
 	zxing_Result* result = zxing_ReadBarcode(iv, opts);
 
 	if (result) {
-		printf("Format     : %s\n", zxing_BarcodeFormatToString(zxing_Result_format(result)));
+		const char* format = zxing_BarcodeFormatToString(zxing_Result_format(result));
+		printf("Format     : %s\n", format);
+		zxing_free(format);
 
 		const char* text = zxing_Result_text(result);
 		printf("Text       : %s\n", text);
-		free(text);
+		zxing_free(text);
 
 		zxing_Result_delete(result);
 	} else {
 		const char* error = zxing_LastErrorMsg();
 		if (error) {
 			printf("%s\n", error);
-			free(error);
 		} else {
 			printf("No barcode found\n");
 		}
+		zxing_free(error);
 	}
 
 	zxing_ImageView_delete(iv);

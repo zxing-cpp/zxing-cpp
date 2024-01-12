@@ -138,6 +138,8 @@ if (BUILD_READERS)
         src/ThresholdBinarizer.h
         src/WhiteRectDetector.h
         src/WhiteRectDetector.cpp
+        ../wrappers/c/zxing-c.h
+        ../wrappers/c/zxing-c.cpp
     )
 endif()
 if (BUILD_WRITERS)
@@ -163,6 +165,7 @@ set (PUBLIC_HEADERS
     src/TextUtfEncoding.h # [[deprecated]]
     src/ZXAlgorithms.h
     src/ZXConfig.h
+    ../wrappers/c/zxing-c.h
 )
 if (BUILD_READERS)
     set (PUBLIC_HEADERS ${PUBLIC_HEADERS}
