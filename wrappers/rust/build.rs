@@ -25,7 +25,7 @@ fn main() -> miette::Result<()> {
 		println!("cargo:rustc-link-search=native={}", lib_dir);
 		println!("cargo:rustc-link-lib=dylib=ZXing");
 	} else {
-//		panic!("ZXing library not found. Use feature 'bundled' or set environment variabale ZXING_CPP_LIB_DIR.")
+		// panic!("ZXing library not found. Use feature 'bundled' or set environment variabale ZXING_CPP_LIB_DIR.")
 	}
 
 	// manual bindings.rs generation:

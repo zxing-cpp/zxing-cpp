@@ -117,28 +117,6 @@ jobs:
         name: android-artifacts
         path: "wrappers/android/zxingcpp/build/outputs/aar/zxingcpp-debug.aar"
 
-  build-wasm:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - uses: mymindstorm/setup-emsdk@v12
-
-    - name: Configure
-      run: emcmake cmake -Swrappers/wasm -Bbuild
-
-    - name: Build
-      run: cmake --build build -j4
-
-#    - name: Test
-#      run: node build/EmGlueTests.js
-
-    - uses: actions/upload-artifact@v3
-      with:
-        name: wasm-artifacts
-        path: |
-            build/zxing*
-            build/demo*
-
   build-python:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -167,6 +145,52 @@ jobs:
     - name: Test module
       working-directory: wrappers/python
       run: python -m unittest -v
+
+  build-rust:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Lint
+      working-directory: wrappers/rust
+      run: |
+        cargo fmt --check
+        cargo clippy -- -Dwarnings
+
+    - name: Build
+      working-directory: wrappers/rust
+      run: cargo build --release --verbose --features bundled,image --examples
+
+    - name: Package
+      working-directory: wrappers/rust
+      # --allow-dirty is required on the windows build (but not the ubuntu build?!)
+      run: cargo package --verbose --allow-dirty --features bundled,image
+
+  build-wasm:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: mymindstorm/setup-emsdk@v12
+
+    - name: Configure
+      run: emcmake cmake -Swrappers/wasm -Bbuild
+
+    - name: Build
+      run: cmake --build build -j4
+
+#    - name: Test
+#      run: node build/EmGlueTests.js
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: wasm-artifacts
+        path: |
+            build/zxing*
+            build/demo*
 
   build-winrt:
     runs-on: windows-latest

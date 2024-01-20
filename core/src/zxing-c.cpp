@@ -136,7 +136,7 @@ void zxing_ReaderOptions_setFormats(zxing_ReaderOptions* opts, zxing_BarcodeForm
 	opts->setFormats(static_cast<BarcodeFormat>(formats));
 }
 
-zxing_BarcodeFormats zxing_ReaderOptions_formats(const zxing_ReaderOptions* opts)
+zxing_BarcodeFormats zxing_ReaderOptions_getFormats(const zxing_ReaderOptions* opts)
 {
 	auto v = opts->formats();
 	return *reinterpret_cast<zxing_BarcodeFormats*>(&v);
