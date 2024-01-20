@@ -2,17 +2,31 @@
 name = "zxing-cpp"
 version = "0.1.0"
 edition = "2021"
+license = "Apache-2.0"
+description = "A rust wrapper for the zxing-cpp barcode library."
+repository = "https://github.com/zxing-cpp/zxing-cpp/"
+readme = "README.md"
+keywords = ["zxing", "barcode", "barcode_reader"]
+categories = ["api-bindings"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[features]
+default = []
+image = ["dep:image"]
+bundled = []
 
 [dependencies]
 paste = "1.0.14"
 flagset = "0.4.4"
-image = "0.24.7"
+image = {version = "0.24.7", optional = true}
 
 [dev-dependencies]
+cfg-if = "1.0.0"
 anyhow = "1.0.79"
 clap = {version = "4.4.13", features = ["derive"]}
+image = {version = "0.24.7"}
 
 [build-dependencies]
+cmake = {version = "0.1.50"}
 miette = {version = "5.10.0", features = ["fancy"]}

@@ -5,13 +5,14 @@
 include!("bindings.rs");
 
 use flagset::{flags, FlagSet};
-use image;
 use paste::paste;
 use std::ffi::{c_char, c_int, c_uint, c_void, CStr, CString};
 use std::fmt::{Display, Formatter};
-use std::io::{Error, ErrorKind};
+use std::io::ErrorKind;
 use std::marker::PhantomData;
 use std::mem::transmute;
+
+pub type Error = std::io::Error;
 
 fn c2r_str(str: *mut c_char) -> String {
 	let mut res = String::new();
@@ -77,7 +78,7 @@ make_zxing_flags!(BarcodeFormat {
 	MaxiCode, PDF417, QRCode, UPCA, UPCE, MicroQRCode, RMQRCode, DXFilmEdge, LinearCodes, MatrixCodes, Any
 });
 
-type BarcodeFormats = FlagSet<BarcodeFormat>;
+pub type BarcodeFormats = FlagSet<BarcodeFormat>;
 
 impl Display for BarcodeFormat {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -133,6 +134,10 @@ impl<'a> ImageView<'a> {
 	}
 }
 
+#[cfg(feature = "image")]
+use image;
+
+#[cfg(feature = "image")]
 impl<'a> From<&'a image::GrayImage> for ImageView<'a> {
 	fn from(img: &'a image::GrayImage) -> Self {
 		ImageView::new(img.as_ref(), img.width(), img.height(), ImageFormat::Lum, 0, 0)
@@ -190,7 +195,6 @@ impl ReaderOptions {
 	property!(ean_add_on_symbol, EanAddOnSymbol);
 	property!(max_number_of_symbols, i32);
 }
-
 
 pub struct ReaderResult(*mut zxing_Result);
 
