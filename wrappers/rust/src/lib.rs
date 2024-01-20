@@ -1,6 +1,8 @@
 #![allow(non_camel_case_types)]
 #![allow(non_upper_case_globals)]
 #![allow(unused_unsafe)]
+#![allow(clippy::useless_transmute)]
+#![allow(clippy::redundant_closure_call)]
 
 include!("bindings.rs");
 
@@ -102,7 +104,7 @@ impl Drop for ImageView<'_> {
 
 impl<'a> AsRef<ImageView<'a>> for ImageView<'a> {
 	fn as_ref(&self) -> &ImageView<'a> {
-		&self
+		self
 	}
 }
 
@@ -152,9 +154,15 @@ impl Drop for ReaderOptions {
 	}
 }
 
+impl Default for ReaderOptions {
+	fn default() -> Self {
+		Self::new()
+	}
+}
+
 impl AsRef<ReaderOptions> for ReaderOptions {
 	fn as_ref(&self) -> &ReaderOptions {
-		&self
+		self
 	}
 }
 
