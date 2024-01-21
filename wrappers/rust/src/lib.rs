@@ -1,10 +1,15 @@
-#![allow(non_camel_case_types)]
-#![allow(non_upper_case_globals)]
 #![allow(unused_unsafe)]
 #![allow(clippy::useless_transmute)]
 #![allow(clippy::redundant_closure_call)]
 
-include!("bindings.rs");
+#[allow(dead_code)]
+#[allow(non_camel_case_types)]
+#[allow(non_upper_case_globals)]
+mod bindings {
+	include!("bindings.rs");
+}
+
+use bindings::*;
 
 use flagset::{flags, FlagSet};
 use paste::paste;

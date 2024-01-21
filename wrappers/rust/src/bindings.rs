@@ -134,7 +134,6 @@ extern "C" {
 	pub fn zxing_Result_orientation(result: *const zxing_Result) -> ::core::ffi::c_int;
 	pub fn zxing_Result_isInverted(result: *const zxing_Result) -> bool;
 	pub fn zxing_Result_isMirrored(result: *const zxing_Result) -> bool;
-	#[doc = " Note: opts is optional, i.e. it can be NULL, which will imply default settings."]
 	pub fn zxing_ReadBarcode(iv: *const zxing_ImageView, opts: *const zxing_ReaderOptions) -> *mut zxing_Result;
 	pub fn zxing_ReadBarcodes(iv: *const zxing_ImageView, opts: *const zxing_ReaderOptions) -> *mut zxing_Results;
 	pub fn zxing_Result_delete(result: *mut zxing_Result);
