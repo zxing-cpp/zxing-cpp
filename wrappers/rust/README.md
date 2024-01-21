@@ -42,6 +42,8 @@ fn main() -> anyhow::Result<()> {
 }
 ```
 
+Note: This should currently be considered a pre-release. The API may change slightly to be even more "rusty" depending on community feedback.
+
 ## Optional Features
 
 zxing-cpp provides several features that are behind [Cargo features](https://doc.rust-lang.org/cargo/reference/manifest.html#the-features-section). They are:
