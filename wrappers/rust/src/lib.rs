@@ -151,6 +151,24 @@ impl<'a> From<&'a image::GrayImage> for ImageView<'a> {
 	}
 }
 
+#[cfg(feature = "image")]
+impl<'a> TryFrom<&'a image::DynamicImage> for ImageView<'a> {
+	type Error = Error;
+
+	fn try_from(img: &'a image::DynamicImage) -> Result<Self, Error> {
+		let format = match img {
+			image::DynamicImage::ImageLuma8(_) => Some(ImageFormat::Lum),
+			image::DynamicImage::ImageRgb8(_) => Some(ImageFormat::RGB),
+			image::DynamicImage::ImageRgba8(_) => Some(ImageFormat::RGBX),
+			_ => None,
+		};
+		match format {
+			Some(format) => Ok(ImageView::new(img.as_bytes(), img.width(), img.height(), format, 0, 0)),
+			None => Err(Error::new(ErrorKind::InvalidInput, "Invalid image format (must be either luma8|rgb8|rgba8)")),
+		}
+	}
+}
+
 pub struct ReaderOptions(*mut zxing_ReaderOptions);
 
 impl Drop for ReaderOptions {

@@ -12,12 +12,14 @@ struct Cli {
 fn main() -> anyhow::Result<()> {
 	let cli = Cli::parse();
 
-	let image = image::open(&cli.filename)?.into_luma8();
+	let image = image::open(&cli.filename)?;
 
 	#[cfg(feature = "image")]
-	let iv = ImageView::from(&image);
+	let iv = ImageView::try_from(&image)?;
 	#[cfg(not(feature = "image"))]
-	let iv = ImageView::new(image.as_ref(), image.width(), image.height(), ImageFormat::Lum, 0, 0);
+	let lum_img = image.into_luma8();
+	#[cfg(not(feature = "image"))]
+	let iv = ImageView::new(lum_img.as_ref(), lum_img.width(), lum_img.height(), ImageFormat::Lum, 0, 0);
 
 	let formats = barcode_formats_from_string(cli.formats.unwrap_or_default())?;
 	let opts = ReaderOptions::new()
