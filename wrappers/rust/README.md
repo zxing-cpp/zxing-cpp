@@ -13,7 +13,7 @@ In your Cargo.toml:
 # `bundled` causes cargo to compile and statically link in an up to date
 # version of the c++ core library. This is the most convient and save
 # way to build the library.
-rusqlite = { version = "0.1.0", features = ["bundled", "image"] }
+zxing-cpp = { version = "0.1.0", features = ["bundled", "image"] }
 ```
 
 Simple example usage:
