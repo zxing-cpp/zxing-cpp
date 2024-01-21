@@ -99,6 +99,8 @@ static Results DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, 
 
 	if (isPure)
 		minLineCount = 1;
+	else
+		minLineCount = std::min(minLineCount, height);
 	std::vector<int> checkRows;
 
 	PatternRow bars;

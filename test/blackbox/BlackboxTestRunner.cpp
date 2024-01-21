@@ -429,10 +429,10 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 2, 2, 180 },
 		});
 
-		runTests("ean8-1", "EAN-8", 8, {
-			{ 8, 8, 0   },
-			{ 8, 8, 180 },
-			{ 7, 0, pure },
+		runTests("ean8-1", "EAN-8", 9, {
+			{ 9, 9, 0   },
+			{ 9, 9, 180 },
+			{ 8, 0, pure },
 		});
 
 		runTests("ean13-1", "EAN-13", 32, {
