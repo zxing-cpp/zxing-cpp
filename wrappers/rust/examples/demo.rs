@@ -1,3 +1,8 @@
+/*
+* Copyright 2024 Axel Waggershauser
+*/
+// SPDX-License-Identifier: Apache-2.0
+
 use clap::Parser;
 use std::path::PathBuf;
 use zxing_cpp::*;

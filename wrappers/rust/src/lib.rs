@@ -1,3 +1,8 @@
+/*
+* Copyright 2024 Axel Waggershauser
+*/
+// SPDX-License-Identifier: Apache-2.0
+
 #![allow(unused_unsafe)]
 #![allow(clippy::useless_transmute)]
 #![allow(clippy::redundant_closure_call)]
