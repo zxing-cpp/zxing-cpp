@@ -27,6 +27,7 @@ Thanks a lot for your contribution!
   * [C](wrappers/c/README.md)
   * [iOS](wrappers/ios/README.md)
   * [Python](wrappers/python/README.md)
+  * [Rust](wrappers/rust/README.md)
   * [WebAssembly](wrappers/wasm/README.md)
   * [WinRT](wrappers/winrt/README.md)
   * [Flutter](https://pub.dev/packages/flutter_zxing) (external project)
