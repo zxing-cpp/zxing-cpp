@@ -165,6 +165,11 @@ char* zxing_ContentTypeToString(zxing_ContentType type)
 	return copy(ToString(static_cast<ContentType>(type)));
 }
 
+char* zxing_PositionToString(const zxing_Position* position)
+{
+	return copy(ToString(transmute_cast<Position>(*position)));
+}
+
 bool zxing_Result_isValid(const zxing_Result* result)
 {
 	return result != NULL && result->isValid();
@@ -211,6 +216,11 @@ char* zxing_Result_ecLevel(const zxing_Result* result)
 char* zxing_Result_symbologyIdentifier(const zxing_Result* result)
 {
 	return copy(result->symbologyIdentifier());
+}
+
+zxing_Position zxing_Result_position(const zxing_Result* result)
+{
+	return transmute_cast<zxing_Position>(result->position());
 }
 
 int zxing_Result_orientation(const zxing_Result* result)

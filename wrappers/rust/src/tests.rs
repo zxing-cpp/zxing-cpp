@@ -54,5 +54,6 @@ mod tests {
 		assert_eq!(res[0].bytes(), expected.as_bytes());
 		assert_eq!(res[0].content_type(), ContentType::Text);
 		assert_eq!(res[0].orientation(), 0);
+		assert_eq!(res[0].position().top_left, PointI { x: 4, y: 0 });
 	}
 }

@@ -11,6 +11,7 @@ mod tests;
 
 #[allow(dead_code)]
 #[allow(non_camel_case_types)]
+#[allow(non_snake_case)]
 #[allow(non_upper_case_globals)]
 mod bindings {
 	include!("bindings.rs");
@@ -274,6 +275,30 @@ impl Drop for ReaderResult {
 	}
 }
 
+pub type PointI = zxing_PointI;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct Position {
+	pub top_left: PointI,
+	pub top_right: PointI,
+	pub bottom_right: PointI,
+	pub bottom_left: PointI,
+}
+
+impl Display for PointI {
+	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+		write!(f, "{}x{}", self.x, self.y)
+	}
+}
+
+impl Display for Position {
+	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+		write!(f, "{}", unsafe {
+			c2r_str(zxing_PositionToString(self as *const Position as *const zxing_Position))
+		})
+	}
+}
+
 macro_rules! getter {
 	($r_name:ident, $c_name:ident, $conv:expr, $type:ty) => {
 		pub fn $r_name(&self) -> $type {
@@ -290,6 +315,7 @@ impl ReaderResult {
 	getter!(ec_level, ecLevel, c2r_str, String);
 	getter!(error_message, errorMsg, c2r_str, String);
 	getter!(symbology_identifier, symbologyIdentifier, c2r_str, String);
+	getter!(position, position, transmute, Position);
 	getter!(orientation, orientation, transmute, i32);
 	getter!(is_inverted, isInverted, transmute, bool);
 	getter!(is_mirrored, isMirrored, transmute, bool);

@@ -47,6 +47,7 @@ fn main() -> anyhow::Result<()> {
 			println!("EC Level: {}", result.ec_level());
 			println!("Error: {}", result.error_message());
 			println!("Orientation: {}", result.orientation());
+			println!("Position: {}", result.position());
 			println!();
 		}
 	}

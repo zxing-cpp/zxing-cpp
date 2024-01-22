@@ -171,6 +171,16 @@ typedef enum
 
 char* zxing_ContentTypeToString(zxing_ContentType type);
 
+typedef struct {
+	int x, y;
+} zxing_PointI;
+
+typedef struct {
+	zxing_PointI topLeft, topRight, bottomRight, bottomLeft;
+} zxing_Position;
+
+char* zxing_PositionToString(const zxing_Position* position);
+
 bool zxing_Result_isValid(const zxing_Result* result);
 char* zxing_Result_errorMsg(const zxing_Result* result);
 zxing_BarcodeFormat zxing_Result_format(const zxing_Result* result);
@@ -179,6 +189,7 @@ uint8_t* zxing_Result_bytes(const zxing_Result* result, int* len);
 char* zxing_Result_text(const zxing_Result* result);
 char* zxing_Result_ecLevel(const zxing_Result* result);
 char* zxing_Result_symbologyIdentifier(const zxing_Result* result);
+zxing_Position zxing_Result_position(const zxing_Result* result);
 int zxing_Result_orientation(const zxing_Result* result);
 bool zxing_Result_isInverted(const zxing_Result* result);
 bool zxing_Result_isMirrored(const zxing_Result* result);
