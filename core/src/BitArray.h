@@ -13,10 +13,8 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
-#include <iterator>
 #include <stdexcept>
 #include <type_traits>
-#include <utility>
 #include <vector>
 
 namespace ZXing {

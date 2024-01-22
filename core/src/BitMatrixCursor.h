@@ -7,7 +7,6 @@
 
 #include "BitMatrix.h"
 
-#include <array>
 #include <climits>
 
 namespace ZXing {

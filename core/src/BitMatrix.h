@@ -11,10 +11,8 @@
 #include "Point.h"
 #include "Range.h"
 
-#include <algorithm>
 #include <cstdint>
 #include <stdexcept>
-#include <utility>
 #include <vector>
 
 namespace ZXing {
