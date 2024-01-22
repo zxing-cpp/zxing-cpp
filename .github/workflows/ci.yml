@@ -165,6 +165,10 @@ jobs:
       working-directory: wrappers/rust
       run: cargo build --release --verbose --features bundled,image --examples
 
+    - name: Test
+      working-directory: wrappers/rust
+      run: cargo test --release --features bundled,image
+
     - name: Package
       working-directory: wrappers/rust
       # --allow-dirty is required on the windows build (but not the ubuntu build?!)

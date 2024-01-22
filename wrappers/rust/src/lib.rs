@@ -7,6 +7,8 @@
 #![allow(clippy::useless_transmute)]
 #![allow(clippy::redundant_closure_call)]
 
+mod tests;
+
 #[allow(dead_code)]
 #[allow(non_camel_case_types)]
 #[allow(non_upper_case_globals)]
@@ -56,7 +58,7 @@ macro_rules! last_error_or {
 macro_rules! make_zxing_enum {
     ($name:ident { $($field:ident),* }) => {
         #[repr(u32)]
-        #[derive(Debug, Copy, Clone)]
+        #[derive(Debug, Copy, Clone, PartialEq)]
         pub enum $name {
             $($field = paste! { [<zxing_ $name _ $field>] },)*
         }
