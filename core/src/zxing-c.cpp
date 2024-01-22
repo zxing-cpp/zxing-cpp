@@ -18,6 +18,12 @@ using namespace ZXing;
 
 static thread_local std::string lastErrorMsg;
 
+template<typename R, typename T> R transmute_cast(const T& v)
+{
+	static_assert(sizeof(T) == sizeof(R));
+	return *(const R*)(&v);
+}
+
 static char* copy(std::string_view sv)
 {
 	auto ret = (char*)malloc(sv.size() + 1);
@@ -84,7 +90,7 @@ zxing_BarcodeFormats zxing_BarcodeFormatsFromString(const char* str)
 		return {};
 	try {
 		auto format = BarcodeFormatsFromString(str);
-		return static_cast<zxing_BarcodeFormats>(*reinterpret_cast<BarcodeFormat*>(&format));
+		return static_cast<zxing_BarcodeFormats>(transmute_cast<BarcodeFormat>(format));
 	} catch (std::exception& e) {
 		lastErrorMsg = e.what();
 	} catch (...) {
@@ -139,7 +145,7 @@ void zxing_ReaderOptions_setFormats(zxing_ReaderOptions* opts, zxing_BarcodeForm
 zxing_BarcodeFormats zxing_ReaderOptions_getFormats(const zxing_ReaderOptions* opts)
 {
 	auto v = opts->formats();
-	return *reinterpret_cast<zxing_BarcodeFormats*>(&v);
+	return transmute_cast<zxing_BarcodeFormats>(v);
 }
 
 #define ZX_ENUM_PROPERTY(TYPE, GETTER, SETTER) \
