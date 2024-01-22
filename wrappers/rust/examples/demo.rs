@@ -24,7 +24,7 @@ fn main() -> anyhow::Result<()> {
 	#[cfg(not(feature = "image"))]
 	let lum_img = image.into_luma8();
 	#[cfg(not(feature = "image"))]
-	let iv = ImageView::new(lum_img.as_ref(), lum_img.width(), lum_img.height(), ImageFormat::Lum, 0, 0);
+	let iv = ImageView::from_slice(&lum_img, lum_img.width(), lum_img.height(), ImageFormat::Lum)?;
 
 	let formats = barcode_formats_from_string(cli.formats.unwrap_or_default())?;
 	let opts = ReaderOptions::new()

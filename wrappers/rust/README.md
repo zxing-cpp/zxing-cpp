@@ -22,8 +22,8 @@ Simple example usage:
 use zxing_cpp::{ImageView, ReaderOptions, BarcodeFormat, read_barcodes};
 
 fn main() -> anyhow::Result<()> {
-	let image = image::open("some-image-file.jpg")?.into_luma8();
-	let iv = ImageView::from(&image);
+	let image = image::open("some-image-file.jpg")?;
+	let iv = ImageView::try_from(&image)?;
 	let opts = ReaderOptions::new()
 		.formats(BarcodeFormat::QRCode | BarcodeFormat::LinearCodes)
 		.try_invert(false);

@@ -119,19 +119,51 @@ impl<'a> AsRef<ImageView<'a>> for ImageView<'a> {
 }
 
 impl<'a> ImageView<'a> {
-	pub fn new(data: &'a [u8], width: u32, height: u32, format: ImageFormat, row_stride: u32, pix_stride: u32) -> Self {
-		unsafe {
-			ImageView(
-				zxing_ImageView_new(
-					data.as_ptr(),
-					width as c_int,
-					height as c_int,
-					format as zxing_ImageFormat,
-					row_stride as c_int,
-					pix_stride as c_int,
-				),
-				PhantomData,
-			)
+	fn try_into_int<T: TryInto<c_int>>(val: T) -> Result<c_int, Error> {
+		val.try_into()
+			.map_err(|_| Error::new(ErrorKind::InvalidInput, "Could not convert Integer into c_int."))
+	}
+
+	/// Constructs an ImageView from a raw pointer and the width/height (in pixels)
+	/// and row_stride/pix_stride (in bytes).
+	///
+	/// # Safety
+	///
+	/// The memory gets accessed inside the c++ library at random places between
+	/// `ptr` and `ptr + height * row_stride + width * pix_stride. Note that both
+	/// the stride values could be negative, e.g. if the image view is rotated.
+	pub unsafe fn from_ptr<T: TryInto<c_int>, U: TryInto<c_int>>(
+		ptr: *const u8,
+		width: T,
+		height: T,
+		format: ImageFormat,
+		row_stride: U,
+		pix_stride: U,
+	) -> Result<Self, Error> {
+		let res = ImageView(
+			zxing_ImageView_new(
+				ptr,
+				Self::try_into_int(width)?,
+				Self::try_into_int(height)?,
+				format as zxing_ImageFormat,
+				Self::try_into_int(row_stride)?,
+				Self::try_into_int(pix_stride)?,
+			),
+			PhantomData,
+		);
+		Ok(res)
+	}
+
+	pub fn from_slice<T: TryInto<c_int> + Clone>(data: &'a [u8], width: T, height: T, format: ImageFormat) -> Result<Self, Error> {
+		let pix_size = match format {
+			ImageFormat::Lum => 1,
+			ImageFormat::RGB => 3,
+			ImageFormat::RGBX => 4,
+		};
+		if Self::try_into_int(data.len())? < Self::try_into_int(width.clone())? * Self::try_into_int(height.clone())? * pix_size {
+			Err(Error::new(ErrorKind::InvalidInput, "data.len() < width * height * pix_size"))
+		} else {
+			unsafe { Self::from_ptr(data.as_ptr(), width, height, format, 0, 0) }
 		}
 	}
 
@@ -152,7 +184,7 @@ use image;
 #[cfg(feature = "image")]
 impl<'a> From<&'a image::GrayImage> for ImageView<'a> {
 	fn from(img: &'a image::GrayImage) -> Self {
-		ImageView::new(img.as_ref(), img.width(), img.height(), ImageFormat::Lum, 0, 0)
+		ImageView::from_slice(img.as_ref(), img.width(), img.height(), ImageFormat::Lum).unwrap()
 	}
 }
 
@@ -168,7 +200,7 @@ impl<'a> TryFrom<&'a image::DynamicImage> for ImageView<'a> {
 			_ => None,
 		};
 		match format {
-			Some(format) => Ok(ImageView::new(img.as_bytes(), img.width(), img.height(), format, 0, 0)),
+			Some(format) => Ok(ImageView::from_slice(img.as_bytes(), img.width(), img.height(), format)?),
 			None => Err(Error::new(ErrorKind::InvalidInput, "Invalid image format (must be either luma8|rgb8|rgba8)")),
 		}
 	}
