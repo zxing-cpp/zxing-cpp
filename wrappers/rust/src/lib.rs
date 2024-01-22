@@ -265,6 +265,7 @@ impl ReaderOptions {
 	property!(binarizer, Binarizer);
 	property!(ean_add_on_symbol, EanAddOnSymbol);
 	property!(max_number_of_symbols, i32);
+	property!(min_line_count, i32);
 }
 
 pub struct ReaderResult(*mut zxing_Result);
@@ -317,12 +318,18 @@ impl ReaderResult {
 	getter!(symbology_identifier, symbologyIdentifier, c2r_str, String);
 	getter!(position, position, transmute, Position);
 	getter!(orientation, orientation, transmute, i32);
+	getter!(has_eci, hasECI, transmute, bool);
 	getter!(is_inverted, isInverted, transmute, bool);
 	getter!(is_mirrored, isMirrored, transmute, bool);
+	getter!(line_count, lineCount, transmute, i32);
 
 	pub fn bytes(&self) -> Vec<u8> {
 		let mut len: c_int = 0;
 		unsafe { c2r_vec(zxing_Result_bytes(self.0, &mut len), len) }
+	}
+	pub fn bytes_eci(&self) -> Vec<u8> {
+		let mut len: c_int = 0;
+		unsafe { c2r_vec(zxing_Result_bytesECI(self.0, &mut len), len) }
 	}
 }
 

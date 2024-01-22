@@ -34,6 +34,19 @@ static char* copy(std::string_view sv)
 	return ret;
 }
 
+static uint8_t* copy(const ByteArray& ba, int* len)
+{
+	*len = Size(ba);
+
+	auto ret = (uint8_t*)malloc(*len + 1);
+	if (ret)
+		memcpy(ret, ba.data(), *len);
+	else
+		*len = 0;
+
+	return ret;
+}
+
 static Results ReadBarcodesAndSetLastError(const zxing_ImageView* iv, const zxing_ReaderOptions* opts, int maxSymbols)
 {
 	try {
@@ -135,6 +148,7 @@ ZX_PROPERTY(bool, tryInvert, TryInvert)
 ZX_PROPERTY(bool, tryDownscale, TryDownscale)
 ZX_PROPERTY(bool, isPure, IsPure)
 ZX_PROPERTY(bool, returnErrors, ReturnErrors)
+ZX_PROPERTY(int, minLineCount, MinLineCount)
 ZX_PROPERTY(int, maxNumberOfSymbols, MaxNumberOfSymbols)
 
 void zxing_ReaderOptions_setFormats(zxing_ReaderOptions* opts, zxing_BarcodeFormats formats)
@@ -170,6 +184,7 @@ char* zxing_PositionToString(const zxing_Position* position)
 	return copy(ToString(transmute_cast<Position>(*position)));
 }
 
+
 bool zxing_Result_isValid(const zxing_Result* result)
 {
 	return result != NULL && result->isValid();
@@ -180,63 +195,32 @@ char* zxing_Result_errorMsg(const zxing_Result* result)
 	return copy(ToString(result->error()));
 }
 
-zxing_BarcodeFormat zxing_Result_format(const zxing_Result* result)
-{
-	return static_cast<zxing_BarcodeFormat>(result->format());
-}
-
-zxing_ContentType zxing_Result_contentType(const zxing_Result* result)
-{
-	return static_cast<zxing_ContentType>(result->contentType());
-}
-
 uint8_t* zxing_Result_bytes(const zxing_Result* result, int* len)
 {
-	*len = Size(result->bytes());
-
-	auto ret = (uint8_t*)malloc(*len + 1);
-	if (ret)
-		memcpy(ret, result->bytes().data(), *len);
-	else
-		*len = 0;
-
-	return ret;
+	return copy(result->bytes(), len);
 }
 
-char* zxing_Result_text(const zxing_Result* result)
+uint8_t* zxing_Result_bytesECI(const zxing_Result* result, int* len)
 {
-	return copy(result->text());
+	return copy(result->bytesECI(), len);
 }
 
-char* zxing_Result_ecLevel(const zxing_Result* result)
-{
-	return copy(result->ecLevel());
-}
+#define ZX_GETTER(TYPE, GETTER, TRANS) \
+	TYPE zxing_Result_##GETTER(const zxing_Result* result) { return static_cast<TYPE>(TRANS(result->GETTER())); }
 
-char* zxing_Result_symbologyIdentifier(const zxing_Result* result)
-{
-	return copy(result->symbologyIdentifier());
-}
+ZX_GETTER(zxing_BarcodeFormat, format,)
+ZX_GETTER(zxing_ContentType, contentType,)
+ZX_GETTER(char*, text, copy)
+ZX_GETTER(char*, ecLevel, copy)
+ZX_GETTER(char*, symbologyIdentifier, copy)
+ZX_GETTER(zxing_Position, position, transmute_cast<zxing_Position>)
 
-zxing_Position zxing_Result_position(const zxing_Result* result)
-{
-	return transmute_cast<zxing_Position>(result->position());
-}
+ZX_GETTER(int, orientation,)
+ZX_GETTER(bool, hasECI,)
+ZX_GETTER(bool, isInverted,)
+ZX_GETTER(bool, isMirrored,)
+ZX_GETTER(int, lineCount,)
 
-int zxing_Result_orientation(const zxing_Result* result)
-{
-	return result->orientation();
-}
-
-bool zxing_Result_isInverted(const zxing_Result* result)
-{
-	return result->isInverted();
-}
-
-bool zxing_Result_isMirrored(const zxing_Result* result)
-{
-	return result->isMirrored();
-}
 
 /*
  * ZXing/ReadBarcode.h

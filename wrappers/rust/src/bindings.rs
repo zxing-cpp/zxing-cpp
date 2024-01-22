@@ -124,6 +124,7 @@ extern "C" {
 	pub fn zxing_ReaderOptions_setBinarizer(opts: *mut zxing_ReaderOptions, binarizer: zxing_Binarizer);
 	pub fn zxing_ReaderOptions_setEanAddOnSymbol(opts: *mut zxing_ReaderOptions, eanAddOnSymbol: zxing_EanAddOnSymbol);
 	pub fn zxing_ReaderOptions_setTextMode(opts: *mut zxing_ReaderOptions, textMode: zxing_TextMode);
+	pub fn zxing_ReaderOptions_setMinLineCount(opts: *mut zxing_ReaderOptions, n: ::core::ffi::c_int);
 	pub fn zxing_ReaderOptions_setMaxNumberOfSymbols(opts: *mut zxing_ReaderOptions, n: ::core::ffi::c_int);
 	pub fn zxing_ReaderOptions_getTryHarder(opts: *const zxing_ReaderOptions) -> bool;
 	pub fn zxing_ReaderOptions_getTryRotate(opts: *const zxing_ReaderOptions) -> bool;
@@ -135,6 +136,7 @@ extern "C" {
 	pub fn zxing_ReaderOptions_getBinarizer(opts: *const zxing_ReaderOptions) -> zxing_Binarizer;
 	pub fn zxing_ReaderOptions_getEanAddOnSymbol(opts: *const zxing_ReaderOptions) -> zxing_EanAddOnSymbol;
 	pub fn zxing_ReaderOptions_getTextMode(opts: *const zxing_ReaderOptions) -> zxing_TextMode;
+	pub fn zxing_ReaderOptions_getMinLineCount(opts: *const zxing_ReaderOptions) -> ::core::ffi::c_int;
 	pub fn zxing_ReaderOptions_getMaxNumberOfSymbols(opts: *const zxing_ReaderOptions) -> ::core::ffi::c_int;
 	pub fn zxing_ContentTypeToString(type_: zxing_ContentType) -> *mut ::core::ffi::c_char;
 	pub fn zxing_PositionToString(position: *const zxing_Position) -> *mut ::core::ffi::c_char;
@@ -143,13 +145,16 @@ extern "C" {
 	pub fn zxing_Result_format(result: *const zxing_Result) -> zxing_BarcodeFormat;
 	pub fn zxing_Result_contentType(result: *const zxing_Result) -> zxing_ContentType;
 	pub fn zxing_Result_bytes(result: *const zxing_Result, len: *mut ::core::ffi::c_int) -> *mut u8;
+	pub fn zxing_Result_bytesECI(result: *const zxing_Result, len: *mut ::core::ffi::c_int) -> *mut u8;
 	pub fn zxing_Result_text(result: *const zxing_Result) -> *mut ::core::ffi::c_char;
 	pub fn zxing_Result_ecLevel(result: *const zxing_Result) -> *mut ::core::ffi::c_char;
 	pub fn zxing_Result_symbologyIdentifier(result: *const zxing_Result) -> *mut ::core::ffi::c_char;
 	pub fn zxing_Result_position(result: *const zxing_Result) -> zxing_Position;
 	pub fn zxing_Result_orientation(result: *const zxing_Result) -> ::core::ffi::c_int;
+	pub fn zxing_Result_hasECI(result: *const zxing_Result) -> bool;
 	pub fn zxing_Result_isInverted(result: *const zxing_Result) -> bool;
 	pub fn zxing_Result_isMirrored(result: *const zxing_Result) -> bool;
+	pub fn zxing_Result_lineCount(result: *const zxing_Result) -> ::core::ffi::c_int;
 	pub fn zxing_ReadBarcode(iv: *const zxing_ImageView, opts: *const zxing_ReaderOptions) -> *mut zxing_Result;
 	pub fn zxing_ReadBarcodes(iv: *const zxing_ImageView, opts: *const zxing_ReaderOptions) -> *mut zxing_Results;
 	pub fn zxing_Result_delete(result: *mut zxing_Result);

@@ -141,6 +141,7 @@ void zxing_ReaderOptions_setFormats(zxing_ReaderOptions* opts, zxing_BarcodeForm
 void zxing_ReaderOptions_setBinarizer(zxing_ReaderOptions* opts, zxing_Binarizer binarizer);
 void zxing_ReaderOptions_setEanAddOnSymbol(zxing_ReaderOptions* opts, zxing_EanAddOnSymbol eanAddOnSymbol);
 void zxing_ReaderOptions_setTextMode(zxing_ReaderOptions* opts, zxing_TextMode textMode);
+void zxing_ReaderOptions_setMinLineCount(zxing_ReaderOptions* opts, int n);
 void zxing_ReaderOptions_setMaxNumberOfSymbols(zxing_ReaderOptions* opts, int n);
 
 bool zxing_ReaderOptions_getTryHarder(const zxing_ReaderOptions* opts);
@@ -153,6 +154,7 @@ zxing_BarcodeFormats zxing_ReaderOptions_getFormats(const zxing_ReaderOptions* o
 zxing_Binarizer zxing_ReaderOptions_getBinarizer(const zxing_ReaderOptions* opts);
 zxing_EanAddOnSymbol zxing_ReaderOptions_getEanAddOnSymbol(const zxing_ReaderOptions* opts);
 zxing_TextMode zxing_ReaderOptions_getTextMode(const zxing_ReaderOptions* opts);
+int zxing_ReaderOptions_getMinLineCount(const zxing_ReaderOptions* opts);
 int zxing_ReaderOptions_getMaxNumberOfSymbols(const zxing_ReaderOptions* opts);
 
 /*
@@ -186,13 +188,16 @@ char* zxing_Result_errorMsg(const zxing_Result* result);
 zxing_BarcodeFormat zxing_Result_format(const zxing_Result* result);
 zxing_ContentType zxing_Result_contentType(const zxing_Result* result);
 uint8_t* zxing_Result_bytes(const zxing_Result* result, int* len);
+uint8_t* zxing_Result_bytesECI(const zxing_Result* result, int* len);
 char* zxing_Result_text(const zxing_Result* result);
 char* zxing_Result_ecLevel(const zxing_Result* result);
 char* zxing_Result_symbologyIdentifier(const zxing_Result* result);
 zxing_Position zxing_Result_position(const zxing_Result* result);
 int zxing_Result_orientation(const zxing_Result* result);
+bool zxing_Result_hasECI(const zxing_Result* result);
 bool zxing_Result_isInverted(const zxing_Result* result);
 bool zxing_Result_isMirrored(const zxing_Result* result);
+int zxing_Result_lineCount(const zxing_Result* result);
 
 /*
  * ZXing/ReadBarcode.h

@@ -49,11 +49,14 @@ mod tests {
 		let expected = "96385074";
 
 		assert_eq!(res.len(), 1);
+		assert_eq!(res[0].is_valid(), true);
 		assert_eq!(res[0].format(), BarcodeFormat::EAN8);
 		assert_eq!(res[0].text(), expected);
 		assert_eq!(res[0].bytes(), expected.as_bytes());
+		assert_eq!(res[0].has_eci(), false);
 		assert_eq!(res[0].content_type(), ContentType::Text);
 		assert_eq!(res[0].orientation(), 0);
 		assert_eq!(res[0].position().top_left, PointI { x: 4, y: 0 });
+		assert_eq!(res[0].line_count(), 1);
 	}
 }
