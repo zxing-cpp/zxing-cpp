@@ -10,9 +10,9 @@ In your Cargo.toml:
 
 ```toml
 [dependencies]
-# `bundled` causes cargo to compile and statically link in an up to date
-# version of the c++ core library. This is the most convient and save
-# way to build the library.
+# `bundled` causes cargo to compile and statically link in an up to
+# date version of the c++ core library. This is the most convient
+# and safe way to build the library.
 zxing-cpp = { version = "0.2.1", features = ["bundled", "image"] }
 ```
 
@@ -24,7 +24,7 @@ use zxing_cpp::{ImageView, ReaderOptions, BarcodeFormat, read_barcodes};
 fn main() -> anyhow::Result<()> {
 	let image = image::open("some-image-file.jpg")?;
 	let iv = ImageView::try_from(&image)?;
-	let opts = ReaderOptions::new()
+	let opts = ReaderOptions::default()
 		.formats(BarcodeFormat::QRCode | BarcodeFormat::LinearCodes)
 		.try_invert(false);
 
@@ -46,7 +46,7 @@ Note: This should currently be considered a pre-release. The API may change slig
 
 ## Optional Features
 
-zxing-cpp provides several features that are behind [Cargo features](https://doc.rust-lang.org/cargo/reference/manifest.html#the-features-section). They are:
+zxing-cpp provides features that are behind [Cargo features](https://doc.rust-lang.org/cargo/reference/manifest.html#the-features-section). They are:
 
 * `bundled` uses a bundled version of the [zxing-cpp](https://github.com/zxing-cpp/zxing-cpp) c++ library.
 * [`image`](https://crates.io/crates/image) allows convenient `ImageView::from(&GreyImage)` conversion.
