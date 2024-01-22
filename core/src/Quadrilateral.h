@@ -10,6 +10,7 @@
 
 #include <array>
 #include <cmath>
+#include <string>
 
 namespace ZXing {
 
@@ -160,6 +161,15 @@ Quadrilateral<PointT> Blend(const Quadrilateral<PointT>& a, const Quadrilateral<
 	for (int i = 0; i < 4; ++i)
 		res[i] = (a[i] + b[(i + offset) % 4]) / 2;
 
+	return res;
+}
+
+template <typename T>
+std::string ToString(const Quadrilateral<PointT<T>>& points)
+{
+	std::string res;
+	for (const auto& p : points)
+		res += std::to_string(p.x) + "x" + std::to_string(p.y) + (&p == &points.back() ? "" : " ");
 	return res;
 }
 

@@ -120,13 +120,6 @@ static bool ParseOptions(int argc, char* argv[], ReaderOptions& options, bool& o
 	return !filePaths.empty();
 }
 
-std::ostream& operator<<(std::ostream& os, const Position& points)
-{
-	for (const auto& p : points)
-		os << p.x << "x" << p.y << " ";
-	return os;
-}
-
 void drawLine(const ImageView& iv, PointI a, PointI b, bool error)
 {
 	int steps = maxAbsComponent(b - a);
@@ -234,7 +227,7 @@ int main(int argc, char* argv[])
 					  << "Identifier: " << result.symbologyIdentifier() << "\n"
 					  << "Content:    " << ToString(result.contentType()) << "\n"
 					  << "HasECI:     " << result.hasECI() << "\n"
-					  << "Position:   " << result.position() << "\n"
+					  << "Position:   " << ToString(result.position()) << "\n"
 					  << "Rotation:   " << result.orientation() << " deg\n"
 					  << "IsMirrored: " << result.isMirrored() << "\n"
 					  << "IsInverted: " << result.isInverted() << "\n";
