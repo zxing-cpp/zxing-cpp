@@ -77,6 +77,7 @@ public class BarcodeReader(public var options: Options = Options()) {
 		var maxNumberOfSymbols: Int = 0xff,
 		var tryCode39ExtendedMode: Boolean = false,
 		var validateCode39CheckSum: Boolean = false,
+		@Deprecated("See https://github.com/zxing-cpp/zxing-cpp/discussions/704")
 		var validateITFCheckSum: Boolean = false,
 		var returnCodabarStartEnd: Boolean = false,
 		var returnErrors: Boolean = false,
