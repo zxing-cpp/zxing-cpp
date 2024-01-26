@@ -17,13 +17,13 @@ using namespace ZXing::OneD;
 
 static std::string Decode(std::string_view encoded)
 {
-	auto opts = ReaderOptions().setTryCode39ExtendedMode(true);
+	auto opts = ReaderOptions();
 	BitArray row = Utility::ParseBitArray(encoded, '1');
 	Result result = DecodeSingleRow(Code39Reader(opts), row.range());
 	return result.text(TextMode::Plain);
 }
 
-TEST(ODCode39ExtendedModeTest, Decode)
+TEST(ODCode39FullASCIITest, Decode)
 {
 	EXPECT_EQ(Decode(
 		"00000100101101101010100100100101100101010110100100100101011010100101101001001001"

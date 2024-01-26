@@ -48,10 +48,9 @@ using CounterContainer = std::array<int, 9>;
 // each character has 5 bars and 4 spaces
 constexpr int CHAR_LEN = 9;
 
-/** Decode the extended string in place. Return false if FormatError occurred.
+/** Decode the full ASCII string. Return empty string if FormatError occurred.
  * ctrl is either "$%/+" for code39 or "abcd" for code93. */
-bool
-DecodeExtendedCode39AndCode93(std::string& encoded, const char ctrl[4])
+std::string DecodeCode39AndCode93FullASCII(std::string encoded, const char ctrl[4])
 {
 	auto out = encoded.begin();
 	for (auto in = encoded.cbegin(); in != encoded.cend(); ++in) {
@@ -59,7 +58,7 @@ DecodeExtendedCode39AndCode93(std::string& encoded, const char ctrl[4])
 		if (Contains(ctrl, c)) {
 			char next = *++in; // if in is one short of cend(), then next == 0
 			if (next < 'A' || next > 'Z')
-				return false;
+				return {};
 			if (c == ctrl[0])
 				c = next - 64; // $A to $Z map to control codes SH to SB
 			else if (c == ctrl[1])
@@ -72,7 +71,7 @@ DecodeExtendedCode39AndCode93(std::string& encoded, const char ctrl[4])
 		*out++ = c;
 	}
 	encoded.erase(out, encoded.end());
-	return true;
+	return encoded;
 }
 
 Result Code39Reader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<RowReader::DecodingState>&) const
@@ -115,24 +114,28 @@ Result Code39Reader::decodePattern(int rowNumber, PatternView& next, std::unique
 	if (Size(txt) < minCharCount - 2 || !next.hasQuietZoneAfter(QUIET_ZONE_SCALE))
 		return {};
 
-	Error error;
-	if (_opts.validateCode39CheckSum()) {
-		auto checkDigit = txt.back();
-		txt.pop_back();
-		int checksum = TransformReduce(txt, 0, [](char c) { return IndexOf(ALPHABET, c); });
-		if (checkDigit != ALPHABET[checksum % 43])
-			error = ChecksumError();
-	}
+	auto lastChar = txt.back();
+	txt.pop_back();
+	int checksum = TransformReduce(txt, 0, [](char c) { return IndexOf(ALPHABET, c); });
+	bool hasValidCheckSum = lastChar == ALPHABET[checksum % 43];
+	if (!hasValidCheckSum)
+		txt.push_back(lastChar);
 
-	if (!error && _opts.tryCode39ExtendedMode() && !DecodeExtendedCode39AndCode93(txt, "$%/+"))
-		error = FormatError("Decoding extended Code39/Code93 failed");
+	const char shiftChars[] = "$%/+";
+	auto fullASCII = DecodeCode39AndCode93FullASCII(txt, shiftChars);
+	bool hasFullASCII = !fullASCII.empty() && std::find_first_of(txt.begin(), txt.end(), shiftChars, shiftChars + 4) != txt.end();
+	if (hasFullASCII)
+		txt = fullASCII;
+
+	if (hasValidCheckSum)
+		txt.push_back(lastChar);
 
 	// Symbology identifier modifiers ISO/IEC 16388:2007 Annex C Table C.1
-	constexpr const char symbologyModifiers[4] = { '0', '3' /*checksum*/, '4' /*extended*/, '7' /*checksum,extended*/ };
-	SymbologyIdentifier symbologyIdentifier = {'A', symbologyModifiers[(int)_opts.tryCode39ExtendedMode() * 2 + (int)_opts.validateCode39CheckSum()]};
+	constexpr const char symbologyModifiers[4] = { '0', '1' /*checksum*/, '4' /*full ASCII*/, '5' /*checksum + full ASCII*/ };
+	SymbologyIdentifier symbologyIdentifier = {'A', symbologyModifiers[(int)hasValidCheckSum + 2 * (int)hasFullASCII]};
 
 	int xStop = next.pixelsTillEnd();
-	return Result(std::move(txt), rowNumber, xStart, xStop, BarcodeFormat::Code39, symbologyIdentifier, error);
+	return Result(std::move(txt), rowNumber, xStart, xStop, BarcodeFormat::Code39, symbologyIdentifier);
 }
 
 } // namespace ZXing::OneD

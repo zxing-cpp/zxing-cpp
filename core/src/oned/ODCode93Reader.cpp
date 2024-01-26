@@ -62,7 +62,7 @@ CheckChecksums(const std::string& result)
 }
 
 // forward declare here. see ODCode39Reader.cpp. Not put in header to not pollute the public facing API
-bool DecodeExtendedCode39AndCode93(std::string& encoded, const char ctrl[4]);
+std::string DecodeCode39AndCode93FullASCII(std::string encoded, const char ctrl[4]);
 
 constexpr int CHAR_LEN = 6;
 constexpr int CHAR_SUM = 9;
@@ -121,8 +121,8 @@ Result Code93Reader::decodePattern(int rowNumber, PatternView& next, std::unique
 	// Remove checksum digits
 	txt.resize(txt.size() - 2);
 
-	if (!error && !DecodeExtendedCode39AndCode93(txt, "abcd"))
-		error = FormatError("Decoding extended Code39/Code93 failed");
+	if (!error && (txt = DecodeCode39AndCode93FullASCII(txt, "abcd")).empty())
+		error = FormatError("ASCII decoding of Code93 failed");
 
 	// Symbology identifier ISO/IEC 15424:2008 4.4.10 no modifiers
 	SymbologyIdentifier symbologyIdentifier = {'G', '0'};
