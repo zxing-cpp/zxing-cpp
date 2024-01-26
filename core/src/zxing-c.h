@@ -36,8 +36,7 @@ typedef struct zxing_Results zxing_Results;
  * ZXing/ImageView.h
  */
 
-typedef enum
-{
+typedef enum {
 	zxing_ImageFormat_None = 0,
 	zxing_ImageFormat_Lum = 0x01000000,
 	zxing_ImageFormat_RGB = 0x03000102,
@@ -52,7 +51,7 @@ zxing_ImageView* zxing_ImageView_new(const uint8_t* data, int width, int height,
 									 int pixStride);
 void zxing_ImageView_delete(zxing_ImageView* iv);
 
-void zxing_ImageView_crop(zxing_ImageView* iv, int left, int top,  int width, int height);
+void zxing_ImageView_crop(zxing_ImageView* iv, int left, int top, int width, int height);
 void zxing_ImageView_rotate(zxing_ImageView* iv, int degree);
 
 /*
@@ -173,11 +172,13 @@ typedef enum
 
 char* zxing_ContentTypeToString(zxing_ContentType type);
 
-typedef struct {
+typedef struct zxing_PointI
+{
 	int x, y;
 } zxing_PointI;
 
-typedef struct {
+typedef struct zxing_Position
+{
 	zxing_PointI topLeft, topRight, bottomRight, bottomLeft;
 } zxing_Position;
 
