@@ -12,8 +12,8 @@ In your Cargo.toml:
 
 ```toml
 [dependencies]
-# `bundled` causes cargo to compile and statically link in an up to
-# date version of the c++ core library. This is the most convient
+# `bundled` causes cargo to compile and statically link an up to
+# date version of the c++ core library. This is the most convenient
 # and safe way to build the library.
 zxing-cpp = { version = "0.2.1", features = ["bundled", "image"] }
 ```
@@ -58,5 +58,5 @@ They are:
 ## Benchmarking
 
 To compare the performance of this Rust wrapper project with other availble barcode scanner Rust libraries,
-I started the project [zxing-bench](https://github.com/axxel/zxing-bench). The README contains some a few
+I started the project [zxing-bench](https://github.com/axxel/zxing-bench). The README contains a few
 results to get an idea.
