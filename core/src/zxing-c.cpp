@@ -179,9 +179,9 @@ char* zxing_ContentTypeToString(zxing_ContentType type)
 	return copy(ToString(static_cast<ContentType>(type)));
 }
 
-char* zxing_PositionToString(const zxing_Position* position)
+char* zxing_PositionToString(zxing_Position position)
 {
-	return copy(ToString(transmute_cast<Position>(*position)));
+	return copy(ToString(transmute_cast<Position>(position)));
 }
 
 

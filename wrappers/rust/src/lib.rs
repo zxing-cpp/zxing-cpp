@@ -295,7 +295,7 @@ impl Display for PointI {
 impl Display for Position {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		write!(f, "{}", unsafe {
-			c2r_str(zxing_PositionToString(self as *const Position as *const zxing_Position))
+			c2r_str(zxing_PositionToString(*(self as *const Position as *const zxing_Position)))
 		})
 	}
 }

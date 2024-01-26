@@ -82,6 +82,7 @@ int main(int argc, char** argv)
 			printF("Identifier : %s\n", zxing_Result_symbologyIdentifier(result));
 			printF("EC Level   : %s\n", zxing_Result_ecLevel(result));
 			printF("Error      : %s\n", zxing_Result_errorMsg(result));
+			printF("Position   : %s\n", zxing_PositionToString(zxing_Result_position(result)));
 			printf("Rotation   : %d\n", zxing_Result_orientation(result));
 
 			if (i < n-1)

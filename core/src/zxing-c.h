@@ -181,7 +181,7 @@ typedef struct {
 	zxing_PointI topLeft, topRight, bottomRight, bottomLeft;
 } zxing_Position;
 
-char* zxing_PositionToString(const zxing_Position* position);
+char* zxing_PositionToString(zxing_Position position);
 
 bool zxing_Result_isValid(const zxing_Result* result);
 char* zxing_Result_errorMsg(const zxing_Result* result);

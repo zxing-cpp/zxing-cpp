@@ -139,7 +139,7 @@ extern "C" {
 	pub fn zxing_ReaderOptions_getMinLineCount(opts: *const zxing_ReaderOptions) -> ::core::ffi::c_int;
 	pub fn zxing_ReaderOptions_getMaxNumberOfSymbols(opts: *const zxing_ReaderOptions) -> ::core::ffi::c_int;
 	pub fn zxing_ContentTypeToString(type_: zxing_ContentType) -> *mut ::core::ffi::c_char;
-	pub fn zxing_PositionToString(position: *const zxing_Position) -> *mut ::core::ffi::c_char;
+	pub fn zxing_PositionToString(position: zxing_Position) -> *mut ::core::ffi::c_char;
 	pub fn zxing_Result_isValid(result: *const zxing_Result) -> bool;
 	pub fn zxing_Result_errorMsg(result: *const zxing_Result) -> *mut ::core::ffi::c_char;
 	pub fn zxing_Result_format(result: *const zxing_Result) -> zxing_BarcodeFormat;
