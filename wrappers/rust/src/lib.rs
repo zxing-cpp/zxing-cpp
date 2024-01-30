@@ -26,6 +26,7 @@ use std::fmt::{Display, Formatter};
 use std::io::ErrorKind;
 use std::marker::PhantomData;
 use std::mem::transmute;
+use std::rc::Rc;
 
 pub type Error = std::io::Error;
 
@@ -107,17 +108,20 @@ impl Display for ContentType {
 	}
 }
 
-pub struct ImageView<'a>(*mut zxing_ImageView, PhantomData<&'a u8>);
+#[derive(Debug, PartialEq)]
+struct ImageViewOwner<'a>(*mut zxing_ImageView, PhantomData<&'a u8>);
 
-impl Drop for ImageView<'_> {
+impl Drop for ImageViewOwner<'_> {
 	fn drop(&mut self) {
 		unsafe { zxing_ImageView_delete(self.0) }
 	}
 }
+#[derive(Debug, Clone, PartialEq)]
+pub struct ImageView<'a>(Rc<ImageViewOwner<'a>>);
 
-impl<'a> AsRef<ImageView<'a>> for ImageView<'a> {
-	fn as_ref(&self) -> &ImageView<'a> {
-		self
+impl<'a> From<&'a ImageView<'a>> for ImageView<'a> {
+	fn from(img: &'a ImageView) -> Self {
+		img.clone()
 	}
 }
 
@@ -143,7 +147,7 @@ impl<'a> ImageView<'a> {
 		row_stride: U,
 		pix_stride: U,
 	) -> Result<Self, Error> {
-		let res = ImageView(
+		let res = ImageView(Rc::new(ImageViewOwner(
 			zxing_ImageView_new(
 				ptr,
 				Self::try_into_int(width)?,
@@ -153,7 +157,7 @@ impl<'a> ImageView<'a> {
 				Self::try_into_int(pix_stride)?,
 			),
 			PhantomData,
-		);
+		)));
 		Ok(res)
 	}
 
@@ -171,12 +175,12 @@ impl<'a> ImageView<'a> {
 	}
 
 	pub fn cropped(self, left: i32, top: i32, width: i32, height: i32) -> Self {
-		unsafe { zxing_ImageView_crop(self.0, left, top, width, height) }
+		unsafe { zxing_ImageView_crop((self.0).0, left, top, width, height) }
 		self
 	}
 
 	pub fn rotated(self, degree: i32) -> Self {
-		unsafe { zxing_ImageView_rotate(self.0, degree) }
+		unsafe { zxing_ImageView_rotate((self.0).0, degree) }
 		self
 	}
 }
@@ -343,9 +347,12 @@ pub fn barcode_formats_from_string(str: impl AsRef<str>) -> Result<BarcodeFormat
 	}
 }
 
-pub fn read_barcodes<'a>(image: impl AsRef<ImageView<'a>>, opts: impl AsRef<ReaderOptions>) -> Result<Vec<ReaderResult>, Error> {
+pub fn read_barcodes<'a>(image: impl TryInto<ImageView<'a>>, opts: impl AsRef<ReaderOptions>) -> Result<Vec<ReaderResult>, Error> {
+	let iv_: ImageView = image
+		.try_into()
+		.map_err(|_| Error::new(ErrorKind::InvalidInput, "Failed to image.try_into::<ImageView>()"))?;
 	unsafe {
-		let results = zxing_ReadBarcodes(image.as_ref().0, opts.as_ref().0);
+		let results = zxing_ReadBarcodes((iv_.0).0, opts.as_ref().0);
 		if !results.is_null() {
 			let size = zxing_Results_size(results);
 			let mut vec = Vec::<ReaderResult>::with_capacity(size as usize);
