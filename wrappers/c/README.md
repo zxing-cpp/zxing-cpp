@@ -26,18 +26,21 @@ int main(int argc, char** argv)
 	zxing_ReaderOptions* opts = zxing_ReaderOptions_new();
 	/* set ReaderOptions properties, if requried */
 
-	zxing_Result* result = zxing_ReadBarcode(iv, opts);
+	zxing_Barcode* barcode = zxing_ReadBarcode(iv, opts);
 
-	if (result) {
-		const char* format = zxing_BarcodeFormatToString(zxing_Result_format(result));
+	zxing_ImageView_delete(iv);
+	zxing_ReaderOptions_delete(opts);
+
+	if (barcode) {
+		const char* format = zxing_BarcodeFormatToString(zxing_Barcode_format(barcode));
 		printf("Format     : %s\n", format);
 		zxing_free(format);
 
-		const char* text = zxing_Result_text(result);
+		const char* text = zxing_Barcode_text(barcode);
 		printf("Text       : %s\n", text);
 		zxing_free(text);
 
-		zxing_Result_delete(result);
+		zxing_Barcode_delete(barcode);
 	} else {
 		const char* error = zxing_LastErrorMsg();
 		if (error) {
@@ -47,9 +50,6 @@ int main(int argc, char** argv)
 		}
 		zxing_free(error);
 	}
-
-	zxing_ImageView_delete(iv);
-	zxing_ReaderOptions_delete(opts);
 
 	return 0;
 }

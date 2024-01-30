@@ -70,26 +70,30 @@ int main(int argc, char** argv)
 
 	zxing_ImageView* iv = zxing_ImageView_new(data, width, height, zxing_ImageFormat_Lum, 0, 0);
 
-	zxing_Results* results = zxing_ReadBarcodes(iv, opts);
+	zxing_Barcodes* barcodes = zxing_ReadBarcodes(iv, opts);
 
-	if (results) {
-		for (int i = 0, n = zxing_Results_size(results); i < n; ++i) {
-			const zxing_Result* result = zxing_Results_at(results, i);
+	zxing_ImageView_delete(iv);
+	zxing_ReaderOptions_delete(opts);
+	stbi_image_free(data);
 
-			printF("Text       : %s\n", zxing_Result_text(result));
-			printF("Format     : %s\n", zxing_BarcodeFormatToString(zxing_Result_format(result)));
-			printF("Content    : %s\n", zxing_ContentTypeToString(zxing_Result_contentType(result)));
-			printF("Identifier : %s\n", zxing_Result_symbologyIdentifier(result));
-			printF("EC Level   : %s\n", zxing_Result_ecLevel(result));
-			printF("Error      : %s\n", zxing_Result_errorMsg(result));
-			printF("Position   : %s\n", zxing_PositionToString(zxing_Result_position(result)));
-			printf("Rotation   : %d\n", zxing_Result_orientation(result));
+	if (barcodes) {
+		for (int i = 0, n = zxing_Barcodes_size(barcodes); i < n; ++i) {
+			const zxing_Barcode* barcode = zxing_Barcodes_at(barcodes, i);
+
+			printF("Text       : %s\n", zxing_Barcode_text(barcode));
+			printF("Format     : %s\n", zxing_BarcodeFormatToString(zxing_Barcode_format(barcode)));
+			printF("Content    : %s\n", zxing_ContentTypeToString(zxing_Barcode_contentType(barcode)));
+			printF("Identifier : %s\n", zxing_Barcode_symbologyIdentifier(barcode));
+			printF("EC Level   : %s\n", zxing_Barcode_ecLevel(barcode));
+			printF("Error      : %s\n", zxing_Barcode_errorMsg(barcode));
+			printF("Position   : %s\n", zxing_PositionToString(zxing_Barcode_position(barcode)));
+			printf("Rotation   : %d\n", zxing_Barcode_orientation(barcode));
 
 			if (i < n-1)
 				printf("\n");
 		}
 
-		zxing_Results_delete(results);
+		zxing_Barcodes_delete(barcodes);
 	} else {
 		const char* error = zxing_LastErrorMsg();
 		if (error) {
@@ -99,10 +103,6 @@ int main(int argc, char** argv)
 			printf("No barcode found\n");
 		}
 	}
-
-	zxing_ImageView_delete(iv);
-	zxing_ReaderOptions_delete(opts);
-	stbi_image_free(data);
 
 	return ret;
 }

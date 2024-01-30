@@ -272,11 +272,11 @@ impl ReaderOptions {
 	property!(min_line_count, i32);
 }
 
-pub struct Barcode(*mut zxing_Result);
+pub struct Barcode(*mut zxing_Barcode);
 
 impl Drop for Barcode {
 	fn drop(&mut self) {
-		unsafe { zxing_Result_delete(self.0) }
+		unsafe { zxing_Barcode_delete(self.0) }
 	}
 }
 
@@ -307,7 +307,7 @@ impl Display for Position {
 macro_rules! getter {
 	($r_name:ident, $c_name:ident, $conv:expr, $type:ty) => {
 		pub fn $r_name(&self) -> $type {
-			paste! { unsafe { $conv([<zxing_Result_ $c_name>](self.0)) } }
+			paste! { unsafe { $conv([<zxing_Barcode_ $c_name>](self.0)) } }
 		}
 	};
 }
@@ -329,11 +329,11 @@ impl Barcode {
 
 	pub fn bytes(&self) -> Vec<u8> {
 		let mut len: c_int = 0;
-		unsafe { c2r_vec(zxing_Result_bytes(self.0, &mut len), len) }
+		unsafe { c2r_vec(zxing_Barcode_bytes(self.0, &mut len), len) }
 	}
 	pub fn bytes_eci(&self) -> Vec<u8> {
 		let mut len: c_int = 0;
-		unsafe { c2r_vec(zxing_Result_bytesECI(self.0, &mut len), len) }
+		unsafe { c2r_vec(zxing_Barcode_bytesECI(self.0, &mut len), len) }
 	}
 }
 
@@ -354,12 +354,12 @@ pub fn read_barcodes<'a>(image: impl TryInto<ImageView<'a>>, opts: impl AsRef<Re
 	unsafe {
 		let results = zxing_ReadBarcodes((iv_.0).0, opts.as_ref().0);
 		if !results.is_null() {
-			let size = zxing_Results_size(results);
+			let size = zxing_Barcodes_size(results);
 			let mut vec = Vec::<Barcode>::with_capacity(size as usize);
 			for i in 0..size {
-				vec.push(Barcode(zxing_Results_move(results, i)));
+				vec.push(Barcode(zxing_Barcodes_move(results, i)));
 			}
-			zxing_Results_delete(results);
+			zxing_Barcodes_delete(results);
 			Ok(vec)
 		} else {
 			last_error_or!(Vec::<Barcode>::default())
