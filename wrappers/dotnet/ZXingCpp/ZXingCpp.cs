@@ -179,7 +179,7 @@ public struct Position
 {
 	public PointI topLeft, topRight, bottomRight, bottomLeft;
 
-	public override string ToString() => Dll.MarshalAsString(Dll.zxing_PositionToString(this));
+	public override string ToString() => MarshalAsString(zxing_PositionToString(this));
 };
 
 public class ImageView
