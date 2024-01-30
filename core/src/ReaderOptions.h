@@ -83,7 +83,7 @@ public:
 		  _tryCode39ExtendedMode(1),
 		  _validateCode39CheckSum(0),
 		  _validateITFCheckSum(0),
-		  _returnCodabarStartEnd(0),
+		  _returnCodabarStartEnd(1),
 		  _returnErrors(0),
 		  _downscaleFactor(3),
 		  _eanAddOnSymbol(EanAddOnSymbol::Ignore),
@@ -97,7 +97,7 @@ public:
 	{}
 
 #define ZX_PROPERTY(TYPE, GETTER, SETTER, ...) \
-	__VA_ARGS__ TYPE GETTER() const noexcept { return _##GETTER; } \
+	TYPE GETTER() const noexcept { return _##GETTER; } \
 	__VA_ARGS__ ReaderOptions& SETTER(TYPE v)& { return (void)(_##GETTER = std::move(v)), *this; } \
 	__VA_ARGS__ ReaderOptions&& SETTER(TYPE v)&& { return (void)(_##GETTER = std::move(v)), std::move(*this); }
 
@@ -150,8 +150,8 @@ public:
 	/// Deprecated / does nothing. The ITF symbol has a valid checksum iff symbologyIdentifier()[2] == '1'.
 	ZX_PROPERTY(bool, validateITFCheckSum, setValidateITFCheckSum, [[deprecated]])
 
-	/// If true, return the start and end chars in a Codabar barcode instead of stripping them.
-	ZX_PROPERTY(bool, returnCodabarStartEnd, setReturnCodabarStartEnd)
+	/// Deprecated / does nothing. Codabar start/stop characters are always returned.
+	ZX_PROPERTY(bool, returnCodabarStartEnd, setReturnCodabarStartEnd, [[deprecated]])
 
 	/// If true, return the barcodes with errors as well (e.g. checksum errors, see @Result::error())
 	ZX_PROPERTY(bool, returnErrors, setReturnErrors)

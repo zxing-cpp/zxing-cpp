@@ -50,7 +50,7 @@ TEST(ODCodaBarWriterTest, FullCircle)
 {
 	std::string text = "A0123456789-$:/.+A";
 	auto matrix = CodabarWriter().encode(text, 0, 0);
-	auto opts = ReaderOptions().setReturnCodabarStartEnd(true);
+	auto opts = ReaderOptions();
 
 	Result res = OneD::DecodeSingleRow(CodabarReader(opts), matrix.row(0));
 	EXPECT_EQ(text, res.text());
