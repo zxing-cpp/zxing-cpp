@@ -122,7 +122,7 @@ Result Code39Reader::decodePattern(int rowNumber, PatternView& next, std::unique
 		txt.push_back(lastChar);
 
 	const char shiftChars[] = "$%/+";
-	auto fullASCII = DecodeCode39AndCode93FullASCII(txt, shiftChars);
+	auto fullASCII = _opts.tryCode39ExtendedMode() ? DecodeCode39AndCode93FullASCII(txt, shiftChars) : "";
 	bool hasFullASCII = !fullASCII.empty() && std::find_first_of(txt.begin(), txt.end(), shiftChars, shiftChars + 4) != txt.end();
 	if (hasFullASCII)
 		txt = fullASCII;

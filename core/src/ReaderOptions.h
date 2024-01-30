@@ -80,7 +80,7 @@ public:
 		  _tryInvert(1),
 		  _tryDownscale(1),
 		  _isPure(0),
-		  _tryCode39ExtendedMode(0),
+		  _tryCode39ExtendedMode(1),
 		  _validateCode39CheckSum(0),
 		  _validateITFCheckSum(0),
 		  _returnCodabarStartEnd(0),
@@ -141,8 +141,8 @@ public:
 	/// The maximum number of symbols (barcodes) to detect / look for in the image with ReadBarcodes
 	ZX_PROPERTY(uint8_t, maxNumberOfSymbols, setMaxNumberOfSymbols)
 
-	/// Deprecated / does nothing. The Code39 was decoded from full ASCII iff symbologyIdentifier()[2] >= '4'
-	ZX_PROPERTY(bool, tryCode39ExtendedMode, setTryCode39ExtendedMode, [[deprecated]])
+	/// Enable the heuristic to detect and decode "full ASCII"/extended Code39 symbols
+	ZX_PROPERTY(bool, tryCode39ExtendedMode, setTryCode39ExtendedMode)
 
 	/// Deprecated / does nothing. The Code39 symbol has a valid checksum iff symbologyIdentifier()[2] is an odd digit
 	ZX_PROPERTY(bool, validateCode39CheckSum, setValidateCode39CheckSum, [[deprecated]])

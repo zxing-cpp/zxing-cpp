@@ -75,8 +75,7 @@ public class BarcodeReader(public var options: Options = Options()) {
 		var downscaleThreshold: Int = 500,
 		var minLineCount: Int = 2,
 		var maxNumberOfSymbols: Int = 0xff,
-		@Deprecated("See https://github.com/zxing-cpp/zxing-cpp/discussions/704")
-		var tryCode39ExtendedMode: Boolean = false,
+		var tryCode39ExtendedMode: Boolean = true,
 		@Deprecated("See https://github.com/zxing-cpp/zxing-cpp/discussions/704")
 		var validateCode39CheckSum: Boolean = false,
 		@Deprecated("See https://github.com/zxing-cpp/zxing-cpp/discussions/704")
