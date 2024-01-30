@@ -1,4 +1,9 @@
-﻿using System.Collections.Generic;
+﻿/*
+* Copyright 2024 Axel Waggershauser
+*/
+// SPDX-License-Identifier: Apache-2.0
+
+using System.Collections.Generic;
 using ImageMagick;
 using ZXingCpp;
 

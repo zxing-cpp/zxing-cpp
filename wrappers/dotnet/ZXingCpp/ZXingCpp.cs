@@ -1,4 +1,9 @@
-﻿namespace ZXingCpp {
+﻿/*
+* Copyright 2024 Axel Waggershauser
+*/
+// SPDX-License-Identifier: Apache-2.0
+
+namespace ZXingCpp {
 
 using System;
 using System.Runtime.InteropServices;
