@@ -1,6 +1,6 @@
 [package]
 name = "zxing-cpp"
-version = "0.2.1"
+version = "0.2.2"
 edition = "2021"
 # authors = ["Axel Waggershauser <zxingcpp@gmail.com>"]
 license = "Apache-2.0"
@@ -22,13 +22,13 @@ bundled = []
 [dependencies]
 paste = "1.0.14"
 flagset = "0.4.4"
-image = {version = "0.24.7", optional = true}
+image = {version = "0.24.8", optional = true}
 
 [dev-dependencies]
 cfg-if = "1.0.0"
 anyhow = "1.0.79"
 clap = {version = "4.4.13", features = ["derive"]}
-image = {version = "0.24.7"}
+image = {version = "0.24.8"}
 
 [build-dependencies]
 cmake = {version = "0.1.50"}
