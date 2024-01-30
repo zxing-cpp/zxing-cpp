@@ -1,0 +1,11 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <!-- <ImplicitUsings>enable</ImplicitUsings> -->
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>
+
+ <!-- .NET Standard 2. (netstandard), see https://learn.microsoft.com/en-us/dotnet/standard/net-standard?tabs=net-standard-1-0#when-to-target-net80-vs-netstandard -->

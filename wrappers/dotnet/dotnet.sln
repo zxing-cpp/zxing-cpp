@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZXingCpp", "ZXingCpp\ZXingCpp.csproj", "{64E71DE2-C1C6-4FCF-B8A6-FFC6D1605ECD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZXingCppDemo", "ZXingCppDemo\ZXingCppDemo.csproj", "{05C626FE-A5CE-4263-9419-35E44F14DB93}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{64E71DE2-C1C6-4FCF-B8A6-FFC6D1605ECD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{64E71DE2-C1C6-4FCF-B8A6-FFC6D1605ECD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{64E71DE2-C1C6-4FCF-B8A6-FFC6D1605ECD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{64E71DE2-C1C6-4FCF-B8A6-FFC6D1605ECD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{05C626FE-A5CE-4263-9419-35E44F14DB93}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{05C626FE-A5CE-4263-9419-35E44F14DB93}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{05C626FE-A5CE-4263-9419-35E44F14DB93}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{05C626FE-A5CE-4263-9419-35E44F14DB93}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
