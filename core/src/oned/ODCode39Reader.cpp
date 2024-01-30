@@ -130,12 +130,14 @@ Result Code39Reader::decodePattern(int rowNumber, PatternView& next, std::unique
 	if (hasValidCheckSum)
 		txt.push_back(lastChar);
 
+	Error error = _opts.validateCode39CheckSum() && !hasValidCheckSum ? ChecksumError() : Error();
+
 	// Symbology identifier modifiers ISO/IEC 16388:2007 Annex C Table C.1
 	constexpr const char symbologyModifiers[4] = { '0', '1' /*checksum*/, '4' /*full ASCII*/, '5' /*checksum + full ASCII*/ };
 	SymbologyIdentifier symbologyIdentifier = {'A', symbologyModifiers[(int)hasValidCheckSum + 2 * (int)hasFullASCII]};
 
 	int xStop = next.pixelsTillEnd();
-	return Result(std::move(txt), rowNumber, xStart, xStop, BarcodeFormat::Code39, symbologyIdentifier);
+	return Result(std::move(txt), rowNumber, xStart, xStop, BarcodeFormat::Code39, symbologyIdentifier, error);
 }
 
 } // namespace ZXing::OneD
