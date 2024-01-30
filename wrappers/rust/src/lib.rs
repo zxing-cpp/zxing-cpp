@@ -272,9 +272,9 @@ impl ReaderOptions {
 	property!(min_line_count, i32);
 }
 
-pub struct ReaderResult(*mut zxing_Result);
+pub struct Barcode(*mut zxing_Result);
 
-impl Drop for ReaderResult {
+impl Drop for Barcode {
 	fn drop(&mut self) {
 		unsafe { zxing_Result_delete(self.0) }
 	}
@@ -312,7 +312,7 @@ macro_rules! getter {
 	};
 }
 
-impl ReaderResult {
+impl Barcode {
 	getter!(is_valid, isValid, transmute, bool);
 	getter!(format, format, (|f| BarcodeFormats::new(f).unwrap().into_iter().last().unwrap()), BarcodeFormat);
 	getter!(content_type, contentType, transmute, ContentType);
@@ -347,7 +347,7 @@ pub fn barcode_formats_from_string(str: impl AsRef<str>) -> Result<BarcodeFormat
 	}
 }
 
-pub fn read_barcodes<'a>(image: impl TryInto<ImageView<'a>>, opts: impl AsRef<ReaderOptions>) -> Result<Vec<ReaderResult>, Error> {
+pub fn read_barcodes<'a>(image: impl TryInto<ImageView<'a>>, opts: impl AsRef<ReaderOptions>) -> Result<Vec<Barcode>, Error> {
 	let iv_: ImageView = image
 		.try_into()
 		.map_err(|_| Error::new(ErrorKind::InvalidInput, "Failed to image.try_into::<ImageView>()"))?;
@@ -355,14 +355,14 @@ pub fn read_barcodes<'a>(image: impl TryInto<ImageView<'a>>, opts: impl AsRef<Re
 		let results = zxing_ReadBarcodes((iv_.0).0, opts.as_ref().0);
 		if !results.is_null() {
 			let size = zxing_Results_size(results);
-			let mut vec = Vec::<ReaderResult>::with_capacity(size as usize);
+			let mut vec = Vec::<Barcode>::with_capacity(size as usize);
 			for i in 0..size {
-				vec.push(ReaderResult(zxing_Results_move(results, i)));
+				vec.push(Barcode(zxing_Results_move(results, i)));
 			}
 			zxing_Results_delete(results);
 			Ok(vec)
 		} else {
-			last_error_or!(Vec::<ReaderResult>::default())
+			last_error_or!(Vec::<Barcode>::default())
 		}
 	}
 }
