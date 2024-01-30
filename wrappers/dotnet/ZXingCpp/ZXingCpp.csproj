@@ -4,8 +4,26 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <!-- <ImplicitUsings>enable</ImplicitUsings> -->
     <Nullable>enable</Nullable>
+
+    <PackageId>ZXingCpp</PackageId>
+    <Version>0.1.0-alpha</Version>
+    <Authors>Axel Waggershauser</Authors>
+    <Company>zxing-cpp</Company>
+    <Description>
+      ZXingCpp is a .NET wrapper for the C++ library zxing-cpp.
+      It is an open-source, multi-format linear/matrix barcode image processing library implemented in C++.
+      It was originally ported from the Java ZXing Library but has been developed further and now includes
+      many improvements in terms of runtime and detection performance.</Description>
+    <PackageProjectUrl>https://github.com/zxing-cpp/zxing-cpp</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>Barcode;QRCode</PackageTags>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
   </PropertyGroup>
 
+  <ItemGroup>
+      <None Include="../README.md" Pack="true" PackagePath="README.md"/>
+  </ItemGroup>
 </Project>
 
- <!-- .NET Standard 2. (netstandard), see https://learn.microsoft.com/en-us/dotnet/standard/net-standard?tabs=net-standard-1-0#when-to-target-net80-vs-netstandard -->
+<!-- .NET Standard 2. (netstandard), see https://learn.microsoft.com/en-us/dotnet/standard/net-standard?tabs=net-standard-1-0#when-to-target-net80-vs-netstandard -->
+<!-- dotnet nuget push bin/Release/ZXingCpp.0.1.0-alpha.nupkg -s https://api.nuget.org/v3/index.json -k <api-key> -->
