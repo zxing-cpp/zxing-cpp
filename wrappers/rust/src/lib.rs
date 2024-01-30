@@ -362,6 +362,7 @@ pub fn read_barcodes<'a>(image: impl TryInto<ImageView<'a>>, opts: impl AsRef<Re
 			zxing_Barcodes_delete(results);
 			Ok(vec)
 		} else {
+			//TODO: maybe replace with simple Err(zxing_lastErrorMsg...)
 			last_error_or!(Vec::<Barcode>::default())
 		}
 	}

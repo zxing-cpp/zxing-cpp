@@ -93,15 +93,15 @@ int main(int argc, char** argv)
 				printf("\n");
 		}
 
+		if (zxing_Barcodes_size(barcodes) == 0)
+			printf("No barcode found\n");
+
 		zxing_Barcodes_delete(barcodes);
 	} else {
-		const char* error = zxing_LastErrorMsg();
-		if (error) {
-			fprintf(stderr, "%s\n", error);
-			ret = 2;
-		} else {
-			printf("No barcode found\n");
-		}
+		char* error = zxing_LastErrorMsg();
+		fprintf(stderr, "%s\n", error);
+		zxing_free(error);
+		ret = 2;
 	}
 
 	return ret;

@@ -26,28 +26,27 @@ int main(int argc, char** argv)
 	zxing_ReaderOptions* opts = zxing_ReaderOptions_new();
 	/* set ReaderOptions properties, if requried */
 
-	zxing_Barcode* barcode = zxing_ReadBarcode(iv, opts);
+	zxing_Barcodes* barcodes = zxing_ReadBarcodes(iv, opts);
 
 	zxing_ImageView_delete(iv);
 	zxing_ReaderOptions_delete(opts);
 
-	if (barcode) {
-		const char* format = zxing_BarcodeFormatToString(zxing_Barcode_format(barcode));
-		printf("Format     : %s\n", format);
-		zxing_free(format);
+	if (barcodes) {
+		for (int i = 0, n = zxing_Barcodes_size(barcodes); i < n; ++i) {
+			const zxing_Barcode* barcode = zxing_Barcodes_at(barcodes, i);
 
-		const char* text = zxing_Barcode_text(barcode);
-		printf("Text       : %s\n", text);
-		zxing_free(text);
+			char* format = zxing_BarcodeFormatToString(zxing_Barcode_format(barcode));
+			printf("Format     : %s\n", format);
+			zxing_free(format);
 
-		zxing_Barcode_delete(barcode);
-	} else {
-		const char* error = zxing_LastErrorMsg();
-		if (error) {
-			printf("%s\n", error);
-		} else {
-			printf("No barcode found\n");
+			char* text = zxing_Barcode_text(barcode);
+			printf("Text       : %s\n", text);
+			zxing_free(text);
 		}
+		zxing_Barcodes_delete(barcodes);
+	} else {
+		char* error = zxing_LastErrorMsg();
+		fprintf(stderr, "%s\n", error);
 		zxing_free(error);
 	}
 
