@@ -186,7 +186,7 @@ public class ImageView
 {
 	internal IntPtr _d;
 
-	public ImageView(byte[] data, int width, int height, ImageFormat format, int rowStride, int pixStride)
+	public ImageView(byte[] data, int width, int height, ImageFormat format, int rowStride = 0, int pixStride = 0)
 	{
 		_d = zxing_ImageView_new(data, width, height, format, rowStride, pixStride);
 		if (_d == IntPtr.Zero)

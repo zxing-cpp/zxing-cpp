@@ -25,7 +25,7 @@ public static class ImageMagickBarcodeReader
         if (img.DetermineBitDepth() < 8)
             img.SetBitDepth(8);
         var bytes = img.ToByteArray(MagickFormat.Gray);
-        var iv = new ImageView(bytes, img.Width, img.Height, ImageFormat.Lum, 0, 0);
+        var iv = new ImageView(bytes, img.Width, img.Height, ImageFormat.Lum);
         return BarcodeReader.Read(iv, opts);
     }
 
