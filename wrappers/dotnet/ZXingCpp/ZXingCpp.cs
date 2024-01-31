@@ -1,4 +1,4 @@
-﻿/*
+/*
 * Copyright 2024 Axel Waggershauser
 */
 // SPDX-License-Identifier: Apache-2.0
@@ -170,12 +170,12 @@ public enum ImageFormat {
 
 public struct PointI
 {
-	public int x, y;
+	public int X, Y;
 };
 
 public struct Position
 {
-	public PointI topLeft, topRight, bottomRight, bottomLeft;
+	public PointI TopLeft, TopRight, BottomRight, BottomLeft;
 
 	public override string ToString() => MarshalAsString(zxing_PositionToString(this));
 };
