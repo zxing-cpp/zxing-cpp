@@ -23,7 +23,7 @@ class STBImage : public ImageView
 	std::unique_ptr<stbi_uc[], void (*)(void*)> _memory;
 
 public:
-	STBImage() : ImageView(nullptr, 0, 0, ImageFormat::None), _memory(nullptr, stbi_image_free) {}
+	STBImage() : ImageView(), _memory(nullptr, stbi_image_free) {}
 
 	void load(const fs::path& imgPath)
 	{

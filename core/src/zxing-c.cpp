@@ -77,7 +77,24 @@ zxing_ImageView* zxing_ImageView_new(const uint8_t* data, int width, int height,
 									 int pixStride)
 {
 	ImageFormat cppformat = static_cast<ImageFormat>(format);
-	return new ImageView(data, width, height, cppformat, rowStride, pixStride);
+	try {
+		return new ImageView(data, width, height, cppformat, rowStride, pixStride);
+	} catch (std::exception& e) {
+		lastErrorMsg = e.what();
+	}
+	return NULL;
+}
+
+zxing_ImageView* zxing_ImageView_new_checked(const uint8_t* data, int size, int width, int height, zxing_ImageFormat format,
+											 int rowStride, int pixStride)
+{
+	ImageFormat cppformat = static_cast<ImageFormat>(format);
+	try {
+		return new ImageView(data, size, width, height, cppformat, rowStride, pixStride);
+	} catch (std::exception& e) {
+		lastErrorMsg = e.what();
+	}
+	return NULL;
 }
 
 void zxing_ImageView_delete(zxing_ImageView* iv)

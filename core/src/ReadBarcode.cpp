@@ -26,7 +26,7 @@ class LumImage : public ImageView
 	{}
 
 public:
-	LumImage() : ImageView(nullptr, 0, 0, ImageFormat::Lum) {}
+	LumImage() = default;
 	LumImage(int w, int h) : LumImage(std::make_unique<uint8_t[]>(w * h), w, h) {}
 
 	uint8_t* data() { return _memory.get(); }
@@ -135,7 +135,7 @@ Result ReadBarcode(const ImageView& _iv, const ReaderOptions& opts)
 
 Results ReadBarcodes(const ImageView& _iv, const ReaderOptions& opts)
 {
-	if (sizeof(PatternType) < 4 && opts.hasFormat(BarcodeFormat::LinearCodes) && (_iv.width() > 0xffff || _iv.height() > 0xffff))
+	if (sizeof(PatternType) < 4 && (_iv.width() > 0xffff || _iv.height() > 0xffff))
 		throw std::invalid_argument("Maximum image width/height is 65535");
 
 	if (!_iv.data(0, 0) || _iv.width() * _iv.height() == 0)

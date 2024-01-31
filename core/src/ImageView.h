@@ -7,6 +7,8 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <cstdio>
+#include <stdexcept>
 
 namespace ZXing {
 
@@ -42,10 +44,14 @@ class ImageView
 {
 protected:
 	const uint8_t* _data = nullptr;
-	ImageFormat _format;
+	ImageFormat _format = ImageFormat::None;
 	int _width = 0, _height = 0, _pixStride = 0, _rowStride = 0;
 
 public:
+	/** ImageView default constructor creates a 'null' image view
+	 */
+	ImageView() = default;
+
 	/**
 	 * ImageView constructor
 	 *
@@ -63,7 +69,29 @@ public:
 		  _height(height),
 		  _pixStride(pixStride ? pixStride : PixStride(format)),
 		  _rowStride(rowStride ? rowStride : width * _pixStride)
-	{}
+	{
+		// TODO: [[deprecated]] this check is to prevent exising code from suddenly throwing, remove in 3.0
+		if (_data == nullptr && _width == 0 && _height == 0 && rowStride == 0 && pixStride == 0) {
+			fprintf(stderr, "zxing-cpp deprecation warning: ImageView(nullptr, ...) will throw in the future, use ImageView()\n");
+			return;
+		}
+
+		if (_data == nullptr)
+			throw std::invalid_argument("Can not construct an ImageView from a NULL pointer");
+
+		if (_width <= 0 || _height <= 0)
+			throw std::invalid_argument("Neither width nor height of ImageView can be less or equal to 0");
+	}
+
+	/**
+	 * ImageView constructor with bounds checking
+	 */
+	ImageView(const uint8_t* data, int size, int width, int height, ImageFormat format, int rowStride = 0, int pixStride = 0)
+		: ImageView(data, width, height, format, rowStride, pixStride)
+	{
+		if (_rowStride < 0 || _pixStride < 0 || size < _height * _rowStride)
+			throw std::invalid_argument("ImageView parameters are inconsistent (out of bounds)");
+	}
 
 	int width() const { return _width; }
 	int height() const { return _height; }

@@ -48,6 +48,13 @@ fn c2r_vec(buf: *mut u8, len: c_int) -> Vec<u8> {
 	res
 }
 
+fn last_error() -> Error {
+	match unsafe { zxing_LastErrorMsg().as_mut() } {
+		None => panic!("Internal error: zxing_LastErrorMsg() returned NULL"),
+		Some(error) => Error::new(ErrorKind::InvalidInput, c2r_str(error)),
+	}
+}
+
 macro_rules! last_error_or {
 	($expr:expr) => {
 		match unsafe { zxing_LastErrorMsg().as_mut() } {
@@ -137,8 +144,9 @@ impl<'a> ImageView<'a> {
 	/// # Safety
 	///
 	/// The memory gets accessed inside the c++ library at random places between
-	/// `ptr` and `ptr + height * row_stride + width * pix_stride. Note that both
-	/// the stride values could be negative, e.g. if the image view is rotated.
+	/// `ptr` and `ptr + height * row_stride` or `ptr + width * pix_stride`.
+	/// Note that both the stride values could be negative, e.g. if the image
+	/// view is rotated.
 	pub unsafe fn from_ptr<T: TryInto<c_int>, U: TryInto<c_int>>(
 		ptr: *const u8,
 		width: T,
@@ -147,30 +155,37 @@ impl<'a> ImageView<'a> {
 		row_stride: U,
 		pix_stride: U,
 	) -> Result<Self, Error> {
-		let res = ImageView(Rc::new(ImageViewOwner(
-			zxing_ImageView_new(
-				ptr,
-				Self::try_into_int(width)?,
-				Self::try_into_int(height)?,
-				format as zxing_ImageFormat,
-				Self::try_into_int(row_stride)?,
-				Self::try_into_int(pix_stride)?,
-			),
-			PhantomData,
-		)));
-		Ok(res)
+		let iv = zxing_ImageView_new(
+			ptr,
+			Self::try_into_int(width)?,
+			Self::try_into_int(height)?,
+			format as zxing_ImageFormat,
+			Self::try_into_int(row_stride)?,
+			Self::try_into_int(pix_stride)?,
+		);
+		if iv.is_null() {
+			Err(last_error())
+		} else {
+			Ok(ImageView(Rc::new(ImageViewOwner(iv, PhantomData))))
+		}
 	}
 
 	pub fn from_slice<T: TryInto<c_int> + Clone>(data: &'a [u8], width: T, height: T, format: ImageFormat) -> Result<Self, Error> {
-		let pix_size = match format {
-			ImageFormat::Lum => 1,
-			ImageFormat::RGB => 3,
-			ImageFormat::RGBX => 4,
-		};
-		if Self::try_into_int(data.len())? < Self::try_into_int(width.clone())? * Self::try_into_int(height.clone())? * pix_size {
-			Err(Error::new(ErrorKind::InvalidInput, "data.len() < width * height * pix_size"))
-		} else {
-			unsafe { Self::from_ptr(data.as_ptr(), width, height, format, 0, 0) }
+		unsafe {
+			let iv = zxing_ImageView_new_checked(
+				data.as_ptr(),
+				data.len() as c_int,
+				Self::try_into_int(width)?,
+				Self::try_into_int(height)?,
+				format as zxing_ImageFormat,
+				0,
+				0,
+			);
+			if iv.is_null() {
+				Err(last_error())
+			} else {
+				Ok(ImageView(Rc::new(ImageViewOwner(iv, PhantomData))))
+			}
 		}
 	}
 
@@ -362,8 +377,7 @@ pub fn read_barcodes<'a>(image: impl TryInto<ImageView<'a>>, opts: impl AsRef<Re
 			zxing_Barcodes_delete(results);
 			Ok(vec)
 		} else {
-			//TODO: maybe replace with simple Err(zxing_lastErrorMsg...)
-			last_error_or!(Vec::<Barcode>::default())
+			Err(last_error())
 		}
 	}
 }

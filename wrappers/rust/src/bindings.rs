@@ -100,6 +100,15 @@ extern "C" {
 		rowStride: ::core::ffi::c_int,
 		pixStride: ::core::ffi::c_int,
 	) -> *mut zxing_ImageView;
+	pub fn zxing_ImageView_new_checked(
+		data: *const u8,
+		size: ::core::ffi::c_int,
+		width: ::core::ffi::c_int,
+		height: ::core::ffi::c_int,
+		format: zxing_ImageFormat,
+		rowStride: ::core::ffi::c_int,
+		pixStride: ::core::ffi::c_int,
+	) -> *mut zxing_ImageView;
 	pub fn zxing_ImageView_delete(iv: *mut zxing_ImageView);
 	pub fn zxing_ImageView_crop(
 		iv: *mut zxing_ImageView,

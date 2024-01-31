@@ -47,7 +47,7 @@ internal class Dll
 	[DllImport(DllName)] public static extern IntPtr zxing_PositionToString(Position position);
 	[DllImport(DllName)] public static extern BarcodeFormats zxing_BarcodeFormatsFromString(string str);
 
-	[DllImport(DllName)] public static extern IntPtr zxing_ImageView_new(byte[] data, int width, int height, ImageFormat format, int rowStride, int pixStride);
+	[DllImport(DllName)] public static extern IntPtr zxing_ImageView_new_checked(byte[] data, int size, int width, int height, ImageFormat format, int rowStride, int pixStride);
 	[DllImport(DllName)] public static extern void zxing_ImageView_delete(IntPtr iv);
 
 	[DllImport(DllName)] public static extern IntPtr zxing_ReadBarcodes(IntPtr iv, IntPtr opts);
@@ -186,9 +186,9 @@ public class ImageView
 
 	public ImageView(byte[] data, int width, int height, ImageFormat format, int rowStride = 0, int pixStride = 0)
 	{
-		_d = zxing_ImageView_new(data, width, height, format, rowStride, pixStride);
+		_d = zxing_ImageView_new_checked(data, data.Length, width, height, format, rowStride, pixStride);
 		if (_d == IntPtr.Zero)
-			throw new Exception("Failed to create ImageView.");
+			throw new Exception(MarshalAsString(zxing_LastErrorMsg()));
 	}
 
 	~ImageView() => zxing_ImageView_delete(_d);

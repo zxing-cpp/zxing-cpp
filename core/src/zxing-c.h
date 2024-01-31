@@ -49,6 +49,8 @@ typedef enum {
 
 zxing_ImageView* zxing_ImageView_new(const uint8_t* data, int width, int height, zxing_ImageFormat format, int rowStride,
 									 int pixStride);
+zxing_ImageView* zxing_ImageView_new_checked(const uint8_t* data, int size, int width, int height, zxing_ImageFormat format,
+											 int rowStride, int pixStride);
 void zxing_ImageView_delete(zxing_ImageView* iv);
 
 void zxing_ImageView_crop(zxing_ImageView* iv, int left, int top, int width, int height);
