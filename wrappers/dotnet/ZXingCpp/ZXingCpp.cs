@@ -128,8 +128,6 @@ public enum BarcodeFormats
 	LinearCodes = Codabar | Code39 | Code93 | Code128 | EAN8 | EAN13 | ITF | DataBar | DataBarExpanded | DXFilmEdge | UPCA | UPCE,
 	MatrixCodes = Aztec | DataMatrix | MaxiCode | PDF417 | QRCode | MicroQRCode | RMQRCode,
 	Any         = LinearCodes | MatrixCodes,
-
-	Invalid = -1,
 };
 
 
@@ -312,7 +310,7 @@ public class BarcodeReader : ReaderOptions
 	public static BarcodeFormats FormatsFromString(string str)
 	{
 		var fmts = zxing_BarcodeFormatsFromString(str);
-		if (fmts == BarcodeFormats.Invalid)
+		if ((int)fmts == -1) // see zxing_BarcodeFormat_Invalid
 			throw new Exception(MarshalAsString(zxing_LastErrorMsg()));
 		return fmts;
 	}
