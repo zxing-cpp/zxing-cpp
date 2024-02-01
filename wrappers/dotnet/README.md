@@ -18,7 +18,7 @@ using System.Collections.Generic;
 using ImageMagick;
 using ZXingCpp;
 
-public static class ImageMagickBarcodeReader
+public static class MagickImageBarcodeReader
 {
     public static List<Barcode> Read(MagickImage img, ReaderOptions? opts = null)
     {

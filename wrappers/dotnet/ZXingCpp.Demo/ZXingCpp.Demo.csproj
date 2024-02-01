@@ -9,8 +9,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ZXingCpp\ZXingCpp.csproj" />
+    <PackageReference Include="SkiaSharp" Version="2.88.7" ExcludeAssets="native" />
+    <!-- the following line was required to make dotnet install the missing *.so file on Linux -->
+    <!-- on another platform, you will need to remove the "ExludeAssets" property above -->
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.7" />
     <PackageReference Include="Magick.NET-Q8-x64" Version="13.5.0" />
+    <ProjectReference Include="..\ZXingCpp\ZXingCpp.csproj" />
   </ItemGroup>
 
 </Project>
