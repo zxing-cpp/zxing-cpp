@@ -49,11 +49,11 @@ public class Program
 }
 ```
 
-To run the `ZXingCppDemo` sample program, it is important that the dotnet runtime finds the native
+To run the `ZXingCpp.Demo` sample program, it is important that the dotnet runtime finds the native
 `ZXing[.dll|.so|.dylib]` in your path. E.g. on Linux a complete command line would look like this
 
 ```sh
-LD_LIBRARY_PATH=<path-to-your-ZXing.so> dotnet run --project ZXingCppDemo -- ../../test/samples/multi-1/1.png
+LD_LIBRARY_PATH=<path-to-your-ZXing.so> dotnet run --project ZXingCpp.Demo -- ../../test/samples/multi-1/1.png
 ```
 
 Note: This should currently be considered a pre-release. The API may change slightly to be even more
