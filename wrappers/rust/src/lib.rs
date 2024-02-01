@@ -170,7 +170,7 @@ impl<'a> ImageView<'a> {
 		}
 	}
 
-	pub fn from_slice<T: TryInto<c_int> + Clone>(data: &'a [u8], width: T, height: T, format: ImageFormat) -> Result<Self, Error> {
+	pub fn from_slice<T: TryInto<c_int>>(data: &'a [u8], width: T, height: T, format: ImageFormat) -> Result<Self, Error> {
 		unsafe {
 			let iv = zxing_ImageView_new_checked(
 				data.as_ptr(),
