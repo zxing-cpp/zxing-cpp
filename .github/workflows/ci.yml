@@ -23,36 +23,41 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v3
+
     - name: Setup Python 3
       uses: actions/setup-python@v4
       with:
         python-version: '3.x'
-    - name: Create Build Environment
-      # Some projects don't allow in-source building, so create a separate build directory
-      # We'll use this as our working directory for all subsequent commands
-      run: cmake -E make_directory ${{runner.workspace}}/build
 
-    - name: Configure CMake
-      working-directory: ${{runner.workspace}}/build
-      # Use a bash shell so we can use the same syntax for environment variable
-      # access regardless of the host operating system
-      shell: bash
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_BLACKBOX_TESTS=ON -DBUILD_UNIT_TESTS=ON -DBUILD_PYTHON_MODULE=ON -DBUILD_C_API=ON
+    - name: Configure
+      run: >
+        cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_SHARED_LIBS=ON
+        -DBUILD_BLACKBOX_TESTS=ON -DBUILD_UNIT_TESTS=ON -DBUILD_PYTHON_MODULE=ON -DBUILD_C_API=ON
 
     - name: Build
-      working-directory: ${{runner.workspace}}/build
-      shell: bash
-      # Execute the build.  You can specify a specific target with "--target <NAME>"
-      run: cmake --build . -j8 --config $BUILD_TYPE
+      run: cmake --build build -j8 --config ${{env.BUILD_TYPE}}
+
+    # - name: Set PATH for Tests
+    #   shell: bash # to make the $GITHUB_PATH update work
+    #   if: runner.os == 'Windows'
+    #   run: |
+    #     echo "${GITHUB_WORKSPACE}/build/core/${BUILD_TYPE}" >> $GITHUB_PATH
+    #     echo "${GITHUB_WORKSPACE}/build/lib/${BUILD_TYPE}" >> $GITHUB_PATH
 
     - name: Test
-      working-directory: ${{runner.workspace}}/build
-      shell: bash
-      # Execute tests defined by the CMake configuration.
-      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-      run: ctest -V -C $BUILD_TYPE
+      if: runner.os != 'Windows' # need to disable ctest on Windows when build as shared library for now
+      run: ctest --test-dir build -V -C ${{env.BUILD_TYPE}}
+
+    - name: Install
+      run: |
+        cmake -E make_directory install
+        cmake --install build --config ${{env.BUILD_TYPE}} --prefix ${{github.workspace}}/install
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: ${{matrix.os}}-artifacts
+        path: install
 
   build-ubuntu-sanitize:
     runs-on: ubuntu-latest
@@ -60,22 +65,19 @@ jobs:
     - uses: actions/checkout@v3
       with:
         ref: ${{github.ref}}
-    - name: Create Build Environment
-      run: cmake -E make_directory ${{runner.workspace}}/build
 
     - name: Configure
       run: >
-        cmake -S $GITHUB_WORKSPACE -B ${{runner.workspace}}/build -DCMAKE_BUILD_TYPE=RelWithDebInfo
+        cmake -S . -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo
         -DBUILD_BLACKBOX_TESTS=ON -DBUILD_UNIT_TESTS=ON -DBUILD_PYTHON_MODULE=OFF -DBUILD_C_API=OFF
         -DCMAKE_CXX_COMPILER=clang++
         -DCMAKE_CXX_FLAGS="-march=native -fsanitize=address,undefined -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-omit-frame-pointer"
 
     - name: Build
-      run: cmake --build ${{runner.workspace}}/build -j8
+      run: cmake --build build -j8
 
     - name: Test
-      working-directory: ${{runner.workspace}}/build
-      run: ctest -V
+      run: ctest -V --test-dir build
 
   build-ios:
     runs-on: macos-latest
@@ -85,18 +87,13 @@ jobs:
         ref: ${{github.ref}}
 
     - name: Build the swift package
-      shell: sh
-      working-directory: ${{runner.workspace}}/${{github.event.repository.name}}
       run: swift build
 
     - name: Build the demo app
-      shell: sh
-      working-directory: ${{runner.workspace}}/${{github.event.repository.name}}/wrappers/ios/demo
+      working-directory: wrappers/ios/demo
       run: xcodebuild build -scheme demo -sdk "iphonesimulator"
 
     - name: Validate the Pod
-      shell: sh
-      working-directory: ${{runner.workspace}}/${{github.event.repository.name}}
       run: pod lib lint --allow-warnings
 
   build-android:
@@ -202,22 +199,18 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Create Build Environment
-      run: cmake -E make_directory ${{runner.workspace}}/build
-
-    - name: Configure CMake
-      shell: cmd
+    - name: Configure
+      shell: cmd # powershell messes up the arguments containing a '.' ?!?
       run: >
-        cmake -S ${{github.workspace}}/wrappers/winrt -B ${{runner.workspace}}/build -A ARM64
+        cmake -S wrappers/winrt -B build -A ARM64
         -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0 -DCMAKE_BUILD_TYPE=Release
-        -DBUILD_WINRT_LIB=ON -DBUILD_EXAMPLES=OFF -DBUILD_BLACKBOX_TESTS=OFF
+        -DBUILD_WINRT_LIB=ON -DBUILD_EXAMPLES=OFF -DBUILD_BLACKBOX_TESTS=OFF -DBUILD_C_API=OFF
         -DEXTENSION_SDK_OUTPUT=dist/UAP/v0.8.0.0/ExtensionSDKs/ZXingWinRT/1.0.0.0
 
     - name: Build
-      shell: cmd
-      run: cmake --build ${{runner.workspace}}/build -j8 --config Release
+      run: cmake --build build -j8 --config Release
 
     - uses: actions/upload-artifact@v3
       with:
         name: winrt-ARM64-artifacts
-        path: ${{runner.workspace}}/build/dist
+        path: build/dist
