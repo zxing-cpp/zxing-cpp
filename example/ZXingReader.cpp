@@ -35,6 +35,8 @@ static void PrintUsage(const char* exePath)
 			  << "               Only detect given format(s) (faster)\n"
 			  << "    -ispure    Assume the image contains only a 'pure'/perfect code (faster)\n"
 			  << "    -errors    Include results with errors (like checksum error)\n"
+			  << "    -binarizer <local|global|fixed>\n"
+			  << "               Binarizer to be used for gray to binary conversion\n"
 			  << "    -mode <plain|eci|hri|escaped>\n"
 			  << "               Text mode used to render the raw byte content into text\n"
 			  << "    -1         Print only file name, content/error on one line per file/barcode (implies '-mode Escaped')\n"
@@ -85,6 +87,17 @@ static bool ParseOptions(int argc, char* argv[], ReaderOptions& options, bool& o
 				std::cerr << e.what() << "\n";
 				return false;
 			}
+		} else if (is("-binarizer")) {
+			if (++i == argc)
+				return false;
+			else if (is("local"))
+				options.setBinarizer(Binarizer::LocalAverage);
+			else if (is("global"))
+				options.setBinarizer(Binarizer::GlobalHistogram);
+			else if (is("fixed"))
+				options.setBinarizer(Binarizer::FixedThreshold);
+			else
+				return false;
 		} else if (is("-mode")) {
 			if (++i == argc)
 				return false;
