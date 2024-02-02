@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
 
     <PackageId>ZXingCpp</PackageId>
-    <Version>0.1.1-alpha</Version>
+    <Version>0.1.2-alpha</Version>
     <Authors>Axel Waggershauser</Authors>
     <Company>zxing-cpp</Company>
     <Description>
@@ -21,7 +21,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-      <None Include="../README.md" Pack="true" PackagePath="README.md"/>
+      <None Include="README.md" Pack="true" PackagePath="README.md"/>
   </ItemGroup>
 </Project>
 
