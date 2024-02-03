@@ -3,6 +3,9 @@
 ##
 ## Get latest from `dotnet new gitignore`
 
+# hand selected runtime/dll files
+runtimes
+
 # dotenv files
 .env
 

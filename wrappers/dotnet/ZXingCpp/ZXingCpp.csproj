@@ -6,13 +6,13 @@
     <Nullable>enable</Nullable>
 
     <PackageId>ZXingCpp</PackageId>
-    <Version>0.1.2-alpha</Version>
+    <Version>0.1.3-alpha</Version>
     <Authors>Axel Waggershauser</Authors>
     <Company>zxing-cpp</Company>
     <Description>
       ZXingCpp is a .NET wrapper for the C++ library zxing-cpp.
       It is an open-source, multi-format linear/matrix barcode image processing library implemented in C++.
-      It was originally ported from the Java ZXing Library but has been developed further and now includes
+      It was originally ported from the Java ZXing library but has been developed further and now includes
       many improvements in terms of runtime and detection performance.</Description>
     <PackageProjectUrl>https://github.com/zxing-cpp/zxing-cpp</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -22,6 +22,9 @@
 
   <ItemGroup>
       <None Include="README.md" Pack="true" PackagePath="README.md"/>
+      <None Include="../runtimes/ZXing.dll" Pack="true" PackagePath="runtimes/win-x64/native/" />
+      <None Include="../runtimes/libZXing.so" Pack="true" PackagePath="runtimes/linux-x64/native/" />
+      <None Include="../runtimes/libZXing.dylib" Pack="true" PackagePath="runtimes/osx-x64/native/" />
   </ItemGroup>
 </Project>
 

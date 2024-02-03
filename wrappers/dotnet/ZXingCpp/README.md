@@ -3,7 +3,7 @@
 ZXingCpp is a .NET wrapper for the C++ library [zxing-cpp](https://github.com/zxing-cpp/zxing-cpp).
 
 It is an open-source, multi-format linear/matrix barcode image processing library implemented in C++.
-It was originally ported from the Java ZXing Library but has been developed further and now includes
+It was originally ported from the Java ZXing library but has been developed further and now includes
 many improvements in terms of runtime and detection performance.
 
 
@@ -32,12 +32,16 @@ public class Program
 }
 ```
 
-To run the code above, it is important that the dotnet runtime finds the native
-`ZXing[.dll|.so|.dylib]` in your path. E.g. on Linux a complete command line would look like this
-
+Executing this sample code from the command line would look like this:
 ```sh
-LD_LIBRARY_PATH=<ZXing.so-path> dotnet run -- <image-file-name> [barcode-format-list]
+dotnet run -- <image-file-name> [barcode-format-list]
 ```
+
+The NuGet package includes the runtime/native c++ libraries for the x64 architecture on
+Windows, Linux and macOS. If something is not working out of the box or you need arm64 support
+then you need to build the `[lib]ZXing[.dll|.so|.dylib]` file yourself and make sure the .NET
+runtime find it (see e.g. the environment variables `LD_LIBRARY_PATH` on Linux or `PATH` on
+Windows).
 
 Note: This is an alpha release, meaning the API may still change slightly to potentially feel even
 more like a native C# library depending on community feedback.
