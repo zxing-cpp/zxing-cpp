@@ -704,6 +704,14 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 3, 3, 0   },
 		});
 
+		runTests("micropdf417-1", MicroPDF417, 5, {
+			{ 4, 4, 0   },
+			{ 0, 0, 90  },
+			{ 0, 0, 180 },
+			{ 0, 0, 270 },
+			{ 1, 0, pure },
+		});
+
 		runTests("falsepositives-1", None, 27, {
 			{ 0, 0, 0, 0, 0   },
 			{ 0, 0, 0, 0, 90  },

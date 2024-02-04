@@ -109,13 +109,13 @@ public:
 };
 
 template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
-T& AppendBit(T& val, bool bit)
+constexpr T& AppendBit(T& val, bool bit)
 {
 	return (val <<= 1) |= static_cast<T>(bit);
 }
 
 template <typename ARRAY, typename = std::enable_if_t<std::is_integral_v<typename ARRAY::value_type>>>
-int ToInt(const ARRAY& a)
+constexpr int ToInt(const ARRAY& a)
 {
 	assert(Reduce(a) <= 32);
 

@@ -423,6 +423,8 @@ if (ZXING_READERS AND ZXING_ENABLE_PDF417)
         src/pdf417/PDFScanningDecoder.h
         src/pdf417/PDFScanningDecoder.cpp
         src/pdf417/ZXNullable.h
+        src/pdf417/MicroPDFReader.h
+        src/pdf417/MicroPDFReader.cpp
     )
 endif()
 if (ZXING_WRITERS_OLD AND ZXING_ENABLE_PDF417)

@@ -55,7 +55,7 @@ auto FirstOrDefault(C<Ts...>&& container)
 }
 
 template <typename Iterator, typename Value = typename std::iterator_traits<Iterator>::value_type, typename Op = std::plus<Value>>
-Value Reduce(Iterator b, Iterator e, Value v = Value{}, Op op = {}) {
+constexpr Value Reduce(Iterator b, Iterator e, Value v = Value{}, Op op = {}) {
 	// std::reduce() first sounded like a better implementation because it is not implemented as a strict left-fold
 	// operation, meaning the order of the op-application is not specified. This sounded like an optimization opportunity
 	// but it turns out that for this use case it actually does not make a difference (falsepositives runtime). And
@@ -65,7 +65,7 @@ Value Reduce(Iterator b, Iterator e, Value v = Value{}, Op op = {}) {
 }
 
 template <typename Container, typename Value = typename Container::value_type, typename Op = std::plus<Value>>
-Value Reduce(const Container& c, Value v = Value{}, Op op = {}) {
+constexpr Value Reduce(const Container& c, Value v = Value{}, Op op = {}) {
 	return Reduce(std::begin(c), std::end(c), v, op);
 }
 

@@ -59,7 +59,7 @@
 	X(DXFilmEdge,       'X', 'x', "lr   ", 147, ZXING_ENABLE_1D,         "DX Film Edge") \
 	X(PDF417,           'L', ' ', "mrw  ",  55, ZXING_ENABLE_PDF417,     "PDF417") \
 	X(CompactPDF417,    'L', 'c', "mr   ",  56, ZXING_ENABLE_PDF417,     "Compact PDF417") \
-	X(MicroPDF417,      'L', 'm', "m    ",  84, ZXING_ENABLE_PDF417,     "MicroPDF417") \
+	X(MicroPDF417,      'L', 'm', "mr   ",  84, ZXING_ENABLE_PDF417,     "MicroPDF417") \
 	X(Aztec,            'z', ' ', "mr G ",  92, ZXING_ENABLE_AZTEC,      "Aztec") \
 	X(AztecCode,        'z', 'c', "mrwG ",  92, ZXING_ENABLE_AZTEC,      "Aztec Code") \
 	X(AztecRune,        'z', 'r', "mr   ", 128, ZXING_ENABLE_AZTEC,      "Aztec Rune") \

@@ -164,6 +164,8 @@ struct FixedPattern
 	constexpr value_type operator[](int i) const noexcept { return _data[i]; }
 	constexpr const value_type* data() const noexcept { return _data; }
 	constexpr int size() const noexcept { return N; }
+	constexpr const value_type* begin() const noexcept { return _data; }
+	constexpr const value_type* end() const noexcept { return _data + N; }
 	constexpr BarAndSpace<value_type> sums() const noexcept { return BarAndSpaceSum<N, value_type>(_data); }
 };
 

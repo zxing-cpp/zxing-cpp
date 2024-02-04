@@ -39,7 +39,7 @@ mod tests {
 		assert!(formats.len() > 25);
 		assert!(formats.contains(BarcodeFormat::QRCode));
 		assert!(formats.contains(BarcodeFormat::Aztec));
-		assert!(!formats.contains(BarcodeFormat::MicroPDF417));
+		assert!(!formats.contains(BarcodeFormat::EAN5));
 	}
 
 	#[test]
