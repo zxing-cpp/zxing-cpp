@@ -7,7 +7,6 @@
 #include "ODCode39Reader.h"
 
 #include "ReaderOptions.h"
-#include "DecoderResult.h"
 #include "Result.h"
 #include "ZXAlgorithms.h"
 

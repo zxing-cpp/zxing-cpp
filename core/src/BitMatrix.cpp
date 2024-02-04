@@ -173,4 +173,3 @@ BitMatrix Deflate(const BitMatrix& input, int width, int height, float top, floa
 }
 
 } // ZXing
-

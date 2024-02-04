@@ -11,8 +11,6 @@
 #include "BitHacks.h"
 #include "ZXAlgorithms.h"
 
-#include <array>
-
 namespace ZXing::QRCode {
 
 static uint32_t MirrorBits(uint32_t bits)

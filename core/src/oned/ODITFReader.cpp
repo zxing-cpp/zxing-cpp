@@ -11,8 +11,6 @@
 #include "Result.h"
 #include "ZXAlgorithms.h"
 
-#include <array>
-
 namespace ZXing::OneD {
 
 constexpr auto START_PATTERN_ = FixedPattern<4, 4>{1, 1, 1, 1};

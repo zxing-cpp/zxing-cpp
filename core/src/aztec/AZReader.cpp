@@ -15,7 +15,6 @@
 #include "DecoderResult.h"
 #include "Result.h"
 
-#include <memory>
 #include <utility>
 
 namespace ZXing::Aztec {

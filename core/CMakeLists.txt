@@ -300,7 +300,6 @@ if (BUILD_READERS)
         src/oned/ODReader.h
         src/oned/ODReader.cpp
         src/oned/ODRowReader.h
-        src/oned/ODRowReader.cpp
     )
 endif()
 if (BUILD_WRITERS)

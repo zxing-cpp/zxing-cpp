@@ -9,10 +9,9 @@
 #include "BitMatrix.h"
 #include "Matrix.h"
 
+#include <algorithm>
 #include <cstdint>
 #include <memory>
-#include <mutex>
-#include <utility>
 
 namespace ZXing {
 

@@ -11,8 +11,6 @@
 
 #include <algorithm>
 #include <array>
-#include <cassert>
-#include <functional>
 #include <utility>
 
 namespace ZXing {

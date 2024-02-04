@@ -7,7 +7,6 @@
 #include "Result.h"
 
 #include "DecoderResult.h"
-#include "TextDecoder.h"
 #include "ZXAlgorithms.h"
 
 #include <cmath>

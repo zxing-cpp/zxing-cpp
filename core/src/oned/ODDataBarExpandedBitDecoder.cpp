@@ -11,8 +11,6 @@
 #include "Error.h"
 #include "GTIN.h"
 
-#include <cmath>
-
 namespace ZXing::OneD::DataBar {
 
 constexpr char GS = 29; // FNC1

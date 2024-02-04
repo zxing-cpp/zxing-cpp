@@ -12,7 +12,6 @@
 #include "ZXAlgorithms.h"
 
 #include <array>
-#include <stdexcept>
 
 namespace ZXing::QRCode {
 
