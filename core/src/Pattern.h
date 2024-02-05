@@ -299,6 +299,7 @@ template <int LEN, int SUM>
 std::array<int, LEN> NormalizedPattern(const PatternView& view)
 {
 	float moduleSize = static_cast<float>(view.sum(LEN)) / SUM;
+#if 1
 	int err = SUM;
 	std::array<int, LEN> is;
 	std::array<float, LEN> rs;
@@ -318,7 +319,25 @@ std::array<int, LEN> NormalizedPattern(const PatternView& view)
 		is[mi] += err;
 		rs[mi] -= err;
 	}
+#else
+	std::array<int, LEN> is, e2e;
+	int min_v = view[0], min_i = 0;
 
+	for (int i = 1; i < LEN; i++) {
+		float v = (view[i - 1] + view[i]) / moduleSize;
+		e2e[i] = int(v + .5f);
+		if (view[i] < min_v) {
+			min_v = view[i];
+			min_i = i;
+		}
+	}
+
+	is[min_i] = 1;
+	for (int i = min_i + 1; i < LEN; ++i)
+		is[i] = e2e[i] - is[i - 1];
+	for (int i = min_i - 1; i >= 0; --i)
+		is[i] = e2e[i + 1] - is[i + 1];
+#endif
 	return is;
 }
 
