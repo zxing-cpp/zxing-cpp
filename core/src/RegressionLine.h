@@ -123,6 +123,7 @@ public:
 					break;
 #ifdef PRINT_DEBUG
 				printf("removed %zu points -> %zu remaining\n", old_points_size - points.size(), points.size());
+				fflush(stdout);
 #endif
 				ret = evaluate(points);
 			}
