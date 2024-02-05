@@ -56,7 +56,15 @@ DetectorResult SampleGrid(const BitMatrix& image, int width, int height, const R
 #ifdef PRINT_DEBUG
 				log(p, 3);
 #endif
+#if 0
+				int sum = 0;
+				for (int dy = -1; dy <= 1; ++dy)
+					for (int dx = -1; dx <= 1; ++dx)
+						sum += image.get(p + PointF(dx, dy));
+				if (sum >= 5)
+#else
 				if (image.get(p))
+#endif
 					res.set(x, y);
 			}
 	}
