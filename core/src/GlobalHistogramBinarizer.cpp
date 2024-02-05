@@ -46,6 +46,8 @@ static void ThresholdSharpened(const ImageLineView in, int threshold, std::vecto
 
 static auto GenHistogram(const ImageLineView line)
 {
+	// This code causes about 20% of the total runtime on an AVX2 system for a EAN13 search on Lum input data.
+	// Trying to increase the performance by performing 2 or 4 "parallel" histograms helped nothing.
 	Histogram res = {};
 	for (auto pix : line)
 		res[pix >> LUMINANCE_SHIFT]++;
