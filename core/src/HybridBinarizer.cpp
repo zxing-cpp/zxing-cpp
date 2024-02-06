@@ -251,7 +251,7 @@ static Matrix<T_t> SmoothThresholds(Matrix<T_t>&& in)
 			last = i;
 		}
 	}
-	std::fill(last + 1, out.end(), *last);
+	std::fill(last + 1, out.end(), *(std::max(last, out.begin())));
 
 	return out;
 }
