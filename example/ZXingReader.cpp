@@ -33,6 +33,7 @@ static void PrintUsage(const char* exePath)
 			  << "    -noscale   Don't try downscaled images during detection (faster)\n"
 			  << "    -format <FORMAT[,...]>\n"
 			  << "               Only detect given format(s) (faster)\n"
+			  << "    -single    Stop after the first barcode is detected (faster)\n"
 			  << "    -ispure    Assume the image contains only a 'pure'/perfect code (faster)\n"
 			  << "    -errors    Include results with errors (like checksum error)\n"
 			  << "    -binarizer <local|global|fixed>\n"
@@ -73,6 +74,8 @@ static bool ParseOptions(int argc, char* argv[], ReaderOptions& options, bool& o
 			options.setTryInvert(false);
 		} else if (is("-noscale")) {
 			options.setTryDownscale(false);
+		} else if (is("-single")) {
+			options.setMaxNumberOfSymbols(1);
 		} else if (is("-ispure")) {
 			options.setIsPure(true);
 			options.setBinarizer(Binarizer::FixedThreshold);
