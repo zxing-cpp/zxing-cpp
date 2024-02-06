@@ -102,6 +102,14 @@ public:
 		return _data.data() + _width * _height;
 	}
 
+	value_t* begin() {
+		return _data.data();
+	}
+
+	value_t* end() {
+		return _data.data() + _width * _height;
+	}
+
 	void clear(value_t value = {}) {
 		std::fill(_data.begin(), _data.end(), value);
 	}
