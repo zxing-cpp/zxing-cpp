@@ -460,13 +460,6 @@ target_compile_options (ZXing
 
 include (CheckCXXCompilerFlag)
 
-CHECK_CXX_COMPILER_FLAG ("-ffloat-store" COMPILER_NEEDS_FLOAT_STORE)
-if (COMPILER_NEEDS_FLOAT_STORE)
-    target_compile_options(ZXing PRIVATE
-        -ffloat-store   # same floating point precision in all optimization levels
-    )
-endif()
-
 target_compile_features(ZXing PUBLIC cxx_std_17)
 
 target_link_libraries (ZXing PRIVATE Threads::Threads)
