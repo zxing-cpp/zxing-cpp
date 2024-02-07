@@ -138,7 +138,7 @@ struct BarAndSpace
 
 using BarAndSpaceI = BarAndSpace<PatternType>;
 
-template <int LEN, typename T, typename RT = T>
+template <int LEN, typename RT, typename T>
 constexpr auto BarAndSpaceSum(const T* view) noexcept
 {
 	BarAndSpace<RT> res;
@@ -162,22 +162,20 @@ struct FixedPattern
 	constexpr value_type operator[](int i) const noexcept { return _data[i]; }
 	constexpr const value_type* data() const noexcept { return _data; }
 	constexpr int size() const noexcept { return N; }
-	constexpr BarAndSpace<value_type> sums() const noexcept { return BarAndSpaceSum<N>(_data); }
+	constexpr BarAndSpace<value_type> sums() const noexcept { return BarAndSpaceSum<N, value_type>(_data); }
 };
 
 template <int N, int SUM>
 using FixedSparcePattern = FixedPattern<N, SUM, true>;
 
 template <bool E2E = false, int LEN, int SUM>
-float IsPattern(const PatternView& view, const FixedPattern<LEN, SUM, false>& pattern, int spaceInPixel = 0,
-				float minQuietZone = 0, float moduleSizeRef = 0)
+double IsPattern(const PatternView& view, const FixedPattern<LEN, SUM, false>& pattern, int spaceInPixel = 0,
+				double minQuietZone = 0, double moduleSizeRef = 0)
 {
 	if constexpr (E2E) {
-		using float_t = double;
-
-		auto widths = BarAndSpaceSum<LEN, PatternView::value_type, float_t>(view.data());
+		auto widths = BarAndSpaceSum<LEN, double>(view.data());
 		auto sums = pattern.sums();
-		BarAndSpace<float_t> modSize = {widths[0] / sums[0], widths[1] / sums[1]};
+		BarAndSpace<double> modSize = {widths[0] / sums[0], widths[1] / sums[1]};
 
 		auto [m, M] = std::minmax(modSize[0], modSize[1]);
 		if (M > 4 * m) // make sure module sizes of bars and spaces are not too far away from each other
@@ -186,21 +184,20 @@ float IsPattern(const PatternView& view, const FixedPattern<LEN, SUM, false>& pa
 		if (minQuietZone && spaceInPixel < minQuietZone * modSize.space)
 			return 0;
 
-		const BarAndSpace<float_t> thr = {modSize[0] * .75 + .5, modSize[1] / (2 + (LEN < 6)) + .5};
+		const BarAndSpace<double> thr = {modSize[0] * .75 + .5, modSize[1] / (2 + (LEN < 6)) + .5};
 
 		for (int x = 0; x < LEN; ++x)
 			if (std::abs(view[x] - pattern[x] * modSize[x]) > thr[x])
 				return 0;
 
-		const float_t moduleSize = (modSize[0] + modSize[1]) / 2;
-		return static_cast<float>(moduleSize);
+		return (modSize[0] + modSize[1]) / 2;
 	}
 
-	int width = view.sum(LEN);
+	double width = view.sum(LEN);
 	if (SUM > LEN && width < SUM)
 		return 0;
 
-	const float moduleSize = (float)width / SUM;
+	const auto moduleSize = width / SUM;
 
 	if (minQuietZone && spaceInPixel < minQuietZone * moduleSize - 1)
 		return 0;
@@ -210,7 +207,7 @@ float IsPattern(const PatternView& view, const FixedPattern<LEN, SUM, false>& pa
 
 	// the offset of 0.5 is to make the code less sensitive to quantization errors for small (near 1) module sizes.
 	// TODO: review once we have upsampling in the binarizer in place.
-	const float threshold = moduleSizeRef * (0.5f + E2E * 0.25f) + 0.5f;
+	const auto threshold = moduleSizeRef * (0.5 + E2E * 0.25) + 0.5;
 
 	for (int x = 0; x < LEN; ++x)
 		if (std::abs(view[x] - pattern[x] * moduleSizeRef) > threshold)
@@ -220,15 +217,15 @@ float IsPattern(const PatternView& view, const FixedPattern<LEN, SUM, false>& pa
 }
 
 template <bool RELAXED_THRESHOLD = false, int N, int SUM>
-float IsPattern(const PatternView& view, const FixedPattern<N, SUM, true>& pattern, int spaceInPixel = 0,
-				float minQuietZone = 0, float moduleSizeRef = 0)
+double IsPattern(const PatternView& view, const FixedPattern<N, SUM, true>& pattern, int spaceInPixel = 0,
+				 double minQuietZone = 0, double moduleSizeRef = 0)
 {
 	// pattern contains the indices with the bars/spaces that need to be equally wide
-	int width = 0;
+	double width = 0;
 	for (int x = 0; x < SUM; ++x)
 		width += view[pattern[x]];
 
-	const float moduleSize = (float)width / SUM;
+	const auto moduleSize = width / SUM;
 
 	if (minQuietZone && spaceInPixel < minQuietZone * moduleSize - 1)
 		return 0;
@@ -238,7 +235,7 @@ float IsPattern(const PatternView& view, const FixedPattern<N, SUM, true>& patte
 
 	// the offset of 0.5 is to make the code less sensitive to quantization errors for small (near 1) module sizes.
 	// TODO: review once we have upsampling in the binarizer in place.
-	const float threshold = moduleSizeRef * (0.5f + RELAXED_THRESHOLD * 0.25f) + 0.5f;
+	const auto threshold = moduleSizeRef * (0.5 + RELAXED_THRESHOLD * 0.25) + 0.5;
 
 	for (int x = 0; x < SUM; ++x)
 		if (std::abs(view[pattern[x]] - moduleSizeRef) > threshold)
@@ -248,8 +245,8 @@ float IsPattern(const PatternView& view, const FixedPattern<N, SUM, true>& patte
 }
 
 template <int N, int SUM, bool IS_SPARCE>
-bool IsRightGuard(const PatternView& view, const FixedPattern<N, SUM, IS_SPARCE>& pattern, float minQuietZone,
-				  float moduleSizeRef = 0.f)
+bool IsRightGuard(const PatternView& view, const FixedPattern<N, SUM, IS_SPARCE>& pattern, double minQuietZone,
+				  double moduleSizeRef = 0)
 {
 	int spaceInPixel = view.isAtLastBar() ? std::numeric_limits<int>::max() : *view.end();
 	return IsPattern(view, pattern, spaceInPixel, minQuietZone, moduleSizeRef) != 0;
@@ -273,7 +270,7 @@ PatternView FindLeftGuard(const PatternView& view, int minSize, Pred isGuard)
 
 template <int LEN, int SUM, bool IS_SPARCE>
 PatternView FindLeftGuard(const PatternView& view, int minSize, const FixedPattern<LEN, SUM, IS_SPARCE>& pattern,
-						  float minQuietZone)
+						  double minQuietZone)
 {
 	return FindLeftGuard<LEN>(view, std::max(minSize, LEN),
 							  [&pattern, minQuietZone](const PatternView& window, int spaceInPixel) {
@@ -284,12 +281,12 @@ PatternView FindLeftGuard(const PatternView& view, int minSize, const FixedPatte
 template <int LEN, int SUM>
 std::array<int, LEN - 2> NormalizedE2EPattern(const PatternView& view)
 {
-	float moduleSize = static_cast<float>(view.sum(LEN)) / SUM;
+	double moduleSize = static_cast<double>(view.sum(LEN)) / SUM;
 	std::array<int, LEN - 2> e2e;
 
 	for (int i = 0; i < LEN - 2; i++) {
-		float v = (view[i] + view[i + 1]) / moduleSize;
-		e2e[i] = int(v + .5f);
+		double v = (view[i] + view[i + 1]) / moduleSize;
+		e2e[i] = int(v + .5);
 	}
 
 	return e2e;
@@ -298,14 +295,14 @@ std::array<int, LEN - 2> NormalizedE2EPattern(const PatternView& view)
 template <int LEN, int SUM>
 std::array<int, LEN> NormalizedPattern(const PatternView& view)
 {
-	float moduleSize = static_cast<float>(view.sum(LEN)) / SUM;
+	double moduleSize = static_cast<double>(view.sum(LEN)) / SUM;
 #if 1
 	int err = SUM;
 	std::array<int, LEN> is;
-	std::array<float, LEN> rs;
+	std::array<double, LEN> rs;
 	for (int i = 0; i < LEN; i++) {
-		float v = view[i] / moduleSize;
-		is[i] = int(v + .5f);
+		double v = view[i] / moduleSize;
+		is[i] = int(v + .5);
 		rs[i] = v - is[i];
 		err -= is[i];
 	}
@@ -324,8 +321,8 @@ std::array<int, LEN> NormalizedPattern(const PatternView& view)
 	int min_v = view[0], min_i = 0;
 
 	for (int i = 1; i < LEN; i++) {
-		float v = (view[i - 1] + view[i]) / moduleSize;
-		e2e[i] = int(v + .5f);
+		double v = (view[i - 1] + view[i]) / moduleSize;
+		e2e[i] = int(v + .5);
 		if (view[i] < min_v) {
 			min_v = view[i];
 			min_i = i;
