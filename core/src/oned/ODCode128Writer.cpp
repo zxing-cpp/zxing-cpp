@@ -153,7 +153,7 @@ Code128Writer::encode(const std::wstring& contents, int width, int height) const
 		default:
 			if (c > 127) {
 				// support for FNC4 isn't implemented, no full Latin-1 character set available at the moment
-				throw std::invalid_argument(std::string("Bad character in input: ") + static_cast<char>(c));
+				throw std::invalid_argument("Bad character in input: " + ToUtf8(contents.substr(i, 1)));
 			}
 		}
 	}
