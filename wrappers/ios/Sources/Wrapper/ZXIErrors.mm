@@ -10,13 +10,16 @@ void SetNSError(NSError *__autoreleasing _Nullable* error,
     if (error == nil) {
         return;
     }
-    NSString *errorDescription = @"Unknown C++ error";
+    NSString *errorDescription = nil;
     if (message && strlen(message) > 0) {
         try {
             errorDescription = [NSString stringWithUTF8String: message];
         } catch (NSException *exception) {
             errorDescription = @"Unknown ObjC error";
         }
+    }
+    if (errorDescription == nil) {
+        errorDescription = @"Unknown C++ error";
     }
     NSDictionary *userInfo = @{ NSLocalizedDescriptionKey: errorDescription };
     *error = [NSError errorWithDomain:ZXIErrorDomain
