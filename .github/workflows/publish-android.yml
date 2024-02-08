@@ -1,4 +1,4 @@
-name: publish-adroid
+name: publish-android
 
 on:
 #  release:
