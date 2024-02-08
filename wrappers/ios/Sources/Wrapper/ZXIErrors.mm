@@ -12,10 +12,9 @@ void SetNSError(NSError *__autoreleasing _Nullable* error,
     }
     NSString *errorDescription = @"Unknown C++ error";
     if (message && strlen(message) > 0) {
-        try {
-            errorDescription = [NSString stringWithUTF8String: message];
-        } catch (NSException *exception) {
-            errorDescription = @"Unknown ObjC error";
+        errorDescription = [NSString stringWithUTF8String: message];
+        if (errorDescription == nil) {
+            [NSString stringWithCString: message encoding: NSASCIIStringEncoding];
         }
     }
     NSDictionary *userInfo = @{ NSLocalizedDescriptionKey: errorDescription };
