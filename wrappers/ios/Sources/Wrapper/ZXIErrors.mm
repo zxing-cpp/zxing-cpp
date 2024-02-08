@@ -14,7 +14,8 @@ void SetNSError(NSError *__autoreleasing _Nullable* error,
     if (message && strlen(message) > 0) {
         errorDescription = [NSString stringWithUTF8String: message];
         if (errorDescription == nil) {
-            [NSString stringWithCString: message encoding: NSASCIIStringEncoding];
+            errorDescription = [NSString stringWithCString: message
+                                                  encoding: NSASCIIStringEncoding];
         }
     }
     NSDictionary *userInfo = @{ NSLocalizedDescriptionKey: errorDescription };
