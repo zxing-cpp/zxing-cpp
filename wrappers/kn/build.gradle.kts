@@ -80,8 +80,7 @@ kotlin {
     val enabledTargetList = mutableListOf<KotlinNativeTarget>()
     enabledTargetList.addAll(androidTargets())
     enabledTargetList.addAll(linuxTargets())
-    // Disabled due to https://youtrack.jetbrains.com/issue/KT-65671
-//    enabledTargetList.addAll(windowsTargets())
+    enabledTargetList.addAll(windowsTargets())
 
     applyDefaultHierarchyTemplate()
 
@@ -94,8 +93,7 @@ kotlin {
         val androidNativeX64Main by getting
         val linuxX64Main by getting
         val linuxArm64Main by getting
-        // Disabled due to https://youtrack.jetbrains.com/issue/KT-65671
-//        val mingwX64Main by getting
+        val mingwX64Main by getting
 
         if (hostOs == "Mac OS X") {
             val iosX64Main by getting
@@ -112,16 +110,17 @@ kotlin {
             val tvosSimulatorArm64Main by getting
         }
 
-        val appleAndLinuxTest by creating {
+        val nonAndroidNativeTest by creating {
             dependsOn(nativeTest.get())
             dependencies {
                 implementation(libs.test.korlibs.korim)
             }
         }
         if (hostOs == "Mac OS X") {
-            appleTest.get().dependsOn(appleAndLinuxTest)
+            appleTest.get().dependsOn(nonAndroidNativeTest)
         }
-        linuxTest.get().dependsOn(appleAndLinuxTest)
+        linuxTest.get().dependsOn(nonAndroidNativeTest)
+        mingwTest.get().dependsOn(nonAndroidNativeTest)
     }
 }
 
@@ -164,12 +163,11 @@ krossCompile {
 
             linuxX64.konan()
             linuxArm64.konan()
-            // Disabled due to https://youtrack.jetbrains.com/issue/KT-65671
-//            mingwX64.konan {
-//                cinterop {
-//                    linkerOpts += "-Wl,-Xlink=-force:multiple"
-//                }
-//            }
+            mingwX64.konan {
+                cinterop {
+                    linkerOpts += "-Wl,-Xlink=-force:multiple"
+                }
+            }
 
             if (hostOs == "Mac OS X") {
                 iosX64.konan()
