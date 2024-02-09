@@ -3,12 +3,14 @@ package zxingcpp
 import cnames.structs.zxing_ImageView
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.toCValues
+import kotlinx.cinterop.addressOf
+import kotlinx.cinterop.pin
 import zxingcpp.cinterop.*
 
 @OptIn(ExperimentalForeignApi::class)
 abstract class ImageView {
 	abstract val data: UByteArray
+	open val dataOffset: Int = 0
 	abstract val left: Int
 	abstract val top: Int
 	abstract val width: Int
@@ -19,16 +21,34 @@ abstract class ImageView {
 	open val pixStride: Int = 0
 
 	@OptIn(ExperimentalStdlibApi::class)
-	internal class ClosableCImageView(val cValue: CPointer<zxing_ImageView>?) : AutoCloseable {
+	internal class ClosableCImageView(
+		data: UByteArray,
+		dataOffset: Int,
+		width: Int,
+		height: Int,
+		format: ImageFormat,
+		rotation: Int,
+		rowStride: Int,
+		pixStride: Int,
+	) : AutoCloseable {
+		private val pinnedData = data.pin()
+		val cValue: CPointer<zxing_ImageView>? =
+			zxing_ImageView_new(pinnedData.addressOf(dataOffset), width, height, format.rawValue, rowStride, pixStride).also {
+				zxing_ImageView_rotate(it, rotation)
+			}
+
 		override fun close() {
 			zxing_ImageView_delete(cValue)
+			pinnedData.unpin()
+		}
+
+		fun finalize() {
+			close()
 		}
 	}
 
 	internal val cValueWrapped: ClosableCImageView
-		get() = ClosableCImageView(zxing_ImageView_new(data.toCValues(), width, height, format.rawValue, rowStride, pixStride).also {
-			zxing_ImageView_rotate(it, rotation)
-		})
+		get() = ClosableCImageView(data, dataOffset, width, height, format, rotation, rowStride, pixStride)
 }
 
 @OptIn(ExperimentalForeignApi::class)

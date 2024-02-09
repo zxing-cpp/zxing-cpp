@@ -11,7 +11,9 @@ data class YuvImageView(
 ) : ImageView() {
 	override val format: ImageFormat = ImageFormat.Lum
 	override val data: UByteArray
-		get() = yBuffer.sliceArray(IntRange(top * rowStride + left, yBuffer.size - 1)).asUByteArray()
+		get() = yBuffer.asUByteArray()
+	override val dataOffset: Int
+		get() = top * rowStride + left
 
 	override fun equals(other: Any?): Boolean {
 		if (this === other) return true
