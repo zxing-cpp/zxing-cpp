@@ -1,7 +1,7 @@
 package zxingcpp
 
-data class YuvImageView(
-	val yBuffer: ByteArray,
+data class LumImageView(
+    override val data: UByteArray,
 	override val rowStride: Int,
 	override val left: Int,
 	override val top: Int,
@@ -10,18 +10,16 @@ data class YuvImageView(
 	override val rotation: Int,
 ) : ImageView() {
 	override val format: ImageFormat = ImageFormat.Lum
-	override val data: UByteArray
-		get() = yBuffer.asUByteArray()
 	override val dataOffset: Int
 		get() = top * rowStride + left
 
 	override fun equals(other: Any?): Boolean {
 		if (this === other) return true
-		if ((other == null) || (other::class != YuvImageView::class)) return false
+        if ((other == null) || (other::class != LumImageView::class)) return false
 
-		other as YuvImageView
+        other as LumImageView
 
-		if (!yBuffer.contentEquals(other.yBuffer)) return false
+        if (!data.contentEquals(other.data)) return false
 		if (rowStride != other.rowStride) return false
 		if (left != other.left) return false
 		if (top != other.top) return false
@@ -33,7 +31,7 @@ data class YuvImageView(
 	}
 
 	override fun hashCode(): Int {
-		var barcode = yBuffer.contentHashCode()
+        var barcode = data.contentHashCode()
 		barcode = 31 * barcode + rowStride.hashCode()
 		barcode = 31 * barcode + left.hashCode()
 		barcode = 31 * barcode + top.hashCode()

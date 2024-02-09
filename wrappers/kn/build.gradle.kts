@@ -83,6 +83,8 @@ kotlin {
     // Disabled due to https://youtrack.jetbrains.com/issue/KT-65671
 //    enabledTargetList.addAll(windowsTargets())
 
+    applyDefaultHierarchyTemplate()
+
     if (hostOs == "Mac OS X") enabledTargetList.addAll(appleTargets())
 
     sourceSets {
@@ -109,6 +111,17 @@ kotlin {
             val tvosArm64Main by getting
             val tvosSimulatorArm64Main by getting
         }
+
+        val appleAndLinuxTest by creating {
+            dependsOn(nativeTest.get())
+            dependencies {
+                implementation(libs.test.korlibs.korim)
+            }
+        }
+        if (hostOs == "Mac OS X") {
+            appleTest.get().dependsOn(appleAndLinuxTest)
+        }
+        linuxTest.get().dependsOn(appleAndLinuxTest)
     }
 }
 

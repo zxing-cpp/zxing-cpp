@@ -1,8 +1,10 @@
 [versions]
 kotlin = "1.9.22"
 krossCompile = "0.1.6"
+korlibs-korim = "4.0.10"
 
 [libraries]
+test-korlibs-korim = { group = "com.soywiz.korlibs.korim", name = "korim", version.ref = "korlibs-korim" }
 
 [plugins]
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
