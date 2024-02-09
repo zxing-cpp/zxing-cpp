@@ -79,6 +79,64 @@ class Barcode(val cValue: CValuesRef<zxing_Barcode>) {
 	protected fun finalize() {
 		zxing_Barcode_delete(cValue)
 	}
+
+	override fun equals(other: Any?): Boolean {
+		if (this === other) return true
+		if ((other == null) || (other::class != Barcode::class)) return false
+
+		other as Barcode
+
+		if (isValid != other.isValid) return false
+		if (errorMsg != other.errorMsg) return false
+		if (format != other.format) return false
+		if (contentType != other.contentType) return false
+		if (text != other.text) return false
+		if (ecLevel != other.ecLevel) return false
+		if (symbologyIdentifier != other.symbologyIdentifier) return false
+		if (position != other.position) return false
+		if (orientation != other.orientation) return false
+		if (hasECI != other.hasECI) return false
+		if (isInverted != other.isInverted) return false
+		if (isMirrored != other.isMirrored) return false
+		if (lineCount != other.lineCount) return false
+
+		return true
+	}
+
+	override fun hashCode(): Int {
+		var result = isValid.hashCode()
+		result = 31 * result + (errorMsg?.hashCode() ?: 0)
+		result = 31 * result + format.hashCode()
+		result = 31 * result + contentType.hashCode()
+		result = 31 * result + (text?.hashCode() ?: 0)
+		result = 31 * result + (ecLevel?.hashCode() ?: 0)
+		result = 31 * result + (symbologyIdentifier?.hashCode() ?: 0)
+		result = 31 * result + position.hashCode()
+		result = 31 * result + orientation.hashCode()
+		result = 31 * result + hasECI.hashCode()
+		result = 31 * result + isInverted.hashCode()
+		result = 31 * result + isMirrored.hashCode()
+		result = 31 * result + lineCount.hashCode()
+		return result
+	}
+
+	override fun toString(): String {
+		return "Barcode(" +
+			"isValid=$isValid, " +
+			"errorMsg=$errorMsg, " +
+			"format=$format, " +
+			"contentType=$contentType, " +
+			"text=$text, " +
+			"ecLevel=$ecLevel, " +
+			"symbologyIdentifier=$symbologyIdentifier, " +
+			"position=$position, " +
+			"orientation=$orientation, " +
+			"hasECI=$hasECI, " +
+			"isInverted=$isInverted, " +
+			"isMirrored=$isMirrored, " +
+			"lineCount=$lineCount" +
+			")"
+	}
 }
 
 @OptIn(ExperimentalForeignApi::class)
