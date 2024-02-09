@@ -87,29 +87,6 @@ kotlin {
     if (hostOs == "Mac OS X") enabledTargetList.addAll(appleTargets())
 
     sourceSets {
-        val androidNativeArm32Main by getting
-        val androidNativeArm64Main by getting
-        val androidNativeX86Main by getting
-        val androidNativeX64Main by getting
-        val linuxX64Main by getting
-        val linuxArm64Main by getting
-        val mingwX64Main by getting
-
-        if (hostOs == "Mac OS X") {
-            val iosX64Main by getting
-            val iosArm64Main by getting
-            val iosSimulatorArm64Main by getting
-            val macosX64Main by getting
-            val macosArm64Main by getting
-            val watchosX64Main by getting
-            val watchosArm32Main by getting
-            val watchosArm64Main by getting
-            val watchosSimulatorArm64Main by getting
-            val tvosX64Main by getting
-            val tvosArm64Main by getting
-            val tvosSimulatorArm64Main by getting
-        }
-
         val nonAndroidNativeTest by creating {
             dependsOn(nativeTest.get())
             dependencies {
