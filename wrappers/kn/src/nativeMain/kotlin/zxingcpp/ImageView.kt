@@ -18,10 +18,17 @@ abstract class ImageView {
 	open val rowStride: Int = 0
 	open val pixStride: Int = 0
 
-	internal fun toCImageView(): CPointer<zxing_ImageView> =
-		zxing_ImageView_new(data.toCValues(), width, height, format.rawValue, rowStride, pixStride).also {
-			zxing_ImageView_rotate(it, rotation)
+	@OptIn(ExperimentalStdlibApi::class)
+	internal class ClosableCImageView(val cValue: CPointer<zxing_ImageView>?) : AutoCloseable {
+		override fun close() {
+			zxing_ImageView_delete(cValue)
 		}
+	}
+
+	internal val cValueWrapped: ClosableCImageView
+		get() = ClosableCImageView(zxing_ImageView_new(data.toCValues(), width, height, format.rawValue, rowStride, pixStride).also {
+			zxing_ImageView_rotate(it, rotation)
+		})
 }
 
 @OptIn(ExperimentalForeignApi::class)
@@ -37,5 +44,5 @@ enum class ImageFormat(internal val rawValue: zxing_ImageFormat) {
 }
 
 @OptIn(ExperimentalForeignApi::class)
-fun zxing_ImageFormat.parseIntoImageFormat(): ImageFormat =
+fun zxing_ImageFormat.parseIntoImageFormat(): ImageFormat? =
 	ImageFormat.entries.firstOrNull { it.rawValue == this }

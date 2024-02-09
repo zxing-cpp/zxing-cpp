@@ -76,6 +76,9 @@ class Barcode(val cValue: CValuesRef<zxing_Barcode>) {
 	val lineCount: Int
 		get() = zxing_Barcode_lineCount(cValue)
 
+	protected fun finalize() {
+		zxing_Barcode_delete(cValue)
+	}
 }
 
 @OptIn(ExperimentalForeignApi::class)

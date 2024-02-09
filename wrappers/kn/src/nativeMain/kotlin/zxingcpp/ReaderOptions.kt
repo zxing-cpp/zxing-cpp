@@ -24,43 +24,43 @@ class ReaderOptions(
 	textMode: TextMode = TextMode.HRI,
 ) {
 	var tryHarder: Boolean
-		get() = zxing_ReaderOptions_getTryHarder(cOptions)
-		set(value) = zxing_ReaderOptions_setTryHarder(cOptions, value)
+		get() = zxing_ReaderOptions_getTryHarder(cValue)
+		set(value) = zxing_ReaderOptions_setTryHarder(cValue, value)
 	var tryRotate: Boolean
-		get() = zxing_ReaderOptions_getTryRotate(cOptions)
-		set(value) = zxing_ReaderOptions_setTryRotate(cOptions, value)
+		get() = zxing_ReaderOptions_getTryRotate(cValue)
+		set(value) = zxing_ReaderOptions_setTryRotate(cValue, value)
 	var tryDownscale: Boolean
-		get() = zxing_ReaderOptions_getTryDownscale(cOptions)
-		set(value) = zxing_ReaderOptions_setTryDownscale(cOptions, value)
+		get() = zxing_ReaderOptions_getTryDownscale(cValue)
+		set(value) = zxing_ReaderOptions_setTryDownscale(cValue, value)
 	var tryInvert: Boolean
-		get() = zxing_ReaderOptions_getTryInvert(cOptions)
-		set(value) = zxing_ReaderOptions_setTryInvert(cOptions, value)
+		get() = zxing_ReaderOptions_getTryInvert(cValue)
+		set(value) = zxing_ReaderOptions_setTryInvert(cValue, value)
 	var isPure: Boolean
-		get() = zxing_ReaderOptions_getIsPure(cOptions)
-		set(value) = zxing_ReaderOptions_setIsPure(cOptions, value)
+		get() = zxing_ReaderOptions_getIsPure(cValue)
+		set(value) = zxing_ReaderOptions_setIsPure(cValue, value)
 	var returnErrors: Boolean
-		get() = zxing_ReaderOptions_getReturnErrors(cOptions)
-		set(value) = zxing_ReaderOptions_setReturnErrors(cOptions, value)
+		get() = zxing_ReaderOptions_getReturnErrors(cValue)
+		set(value) = zxing_ReaderOptions_setReturnErrors(cValue, value)
 	var binarizer: Binarizer
-		get() = Binarizer.fromCValue(zxing_ReaderOptions_getBinarizer(cOptions))
-		set(value) = zxing_ReaderOptions_setBinarizer(cOptions, value.cValue)
+		get() = Binarizer.fromCValue(zxing_ReaderOptions_getBinarizer(cValue))
+		set(value) = zxing_ReaderOptions_setBinarizer(cValue, value.cValue)
 	var formats: Set<BarcodeFormat>
-		get() = zxing_ReaderOptions_getFormats(cOptions).parseIntoBarcodeFormat()
-		set(value) = zxing_ReaderOptions_setFormats(cOptions, value.toValue())
+		get() = zxing_ReaderOptions_getFormats(cValue).parseIntoBarcodeFormat()
+		set(value) = zxing_ReaderOptions_setFormats(cValue, value.toValue())
 	var eanAddOnSymbol: EanAddOnSymbol
-		get() = EanAddOnSymbol.fromCValue(zxing_ReaderOptions_getEanAddOnSymbol(cOptions))
-		set(value) = zxing_ReaderOptions_setEanAddOnSymbol(cOptions, value.cValue)
+		get() = EanAddOnSymbol.fromCValue(zxing_ReaderOptions_getEanAddOnSymbol(cValue))
+		set(value) = zxing_ReaderOptions_setEanAddOnSymbol(cValue, value.cValue)
 	var textMode: TextMode
-		get() = TextMode.fromCValue(zxing_ReaderOptions_getTextMode(cOptions))
-		set(value) = zxing_ReaderOptions_setTextMode(cOptions, value.cValue)
+		get() = TextMode.fromCValue(zxing_ReaderOptions_getTextMode(cValue))
+		set(value) = zxing_ReaderOptions_setTextMode(cValue, value.cValue)
 	var minLineCount: Int
-		get() = zxing_ReaderOptions_getMinLineCount(cOptions)
-		set(value) = zxing_ReaderOptions_setMinLineCount(cOptions, value)
+		get() = zxing_ReaderOptions_getMinLineCount(cValue)
+		set(value) = zxing_ReaderOptions_setMinLineCount(cValue, value)
 	var maxNumberOfSymbols: Int
-		get() = zxing_ReaderOptions_getMaxNumberOfSymbols(cOptions)
-		set(value) = zxing_ReaderOptions_setMaxNumberOfSymbols(cOptions, value)
+		get() = zxing_ReaderOptions_getMaxNumberOfSymbols(cValue)
+		set(value) = zxing_ReaderOptions_setMaxNumberOfSymbols(cValue, value)
 
-	val cOptions: CValuesRef<zxing_ReaderOptions>? = zxing_ReaderOptions_new()
+	val cValue: CValuesRef<zxing_ReaderOptions>? = zxing_ReaderOptions_new()
 
 	init {
 		this.formats = formats
@@ -75,6 +75,10 @@ class ReaderOptions(
 		this.returnErrors = returnErrors
 		this.eanAddOnSymbol = eanAddOnSymbol
 		this.textMode = textMode
+	}
+
+	protected fun finalize() {
+		zxing_ReaderOptions_delete(cValue)
 	}
 }
 

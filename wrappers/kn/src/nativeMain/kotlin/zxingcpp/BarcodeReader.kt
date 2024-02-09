@@ -4,12 +4,16 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import zxingcpp.cinterop.zxing_ReadBarcode
 import zxingcpp.cinterop.zxing_ReadBarcodes
 
-@OptIn(ExperimentalForeignApi::class)
+@OptIn(ExperimentalForeignApi::class, ExperimentalStdlibApi::class)
 class BarcodeReader {
 	fun readBarcode(imageView: ImageView, options: ReaderOptions? = null): Barcode? =
-		zxing_ReadBarcode(imageView.toCImageView(), options?.cOptions)?.toKObject()
+		imageView.cValueWrapped.use {
+			zxing_ReadBarcode(it.cValue, options?.cValue)?.toKObject()
+		}
 
 	fun readBarcodes(imageView: ImageView, options: ReaderOptions? = null): List<Barcode> =
-		zxing_ReadBarcodes(imageView.toCImageView(), options?.cOptions)?.toKObject()
-			?: error("zxing_ReadBarcodes returned null, which is an unexpected behaviour")
+		imageView.cValueWrapped.use {
+			zxing_ReadBarcodes(it.cValue, options?.cValue)?.toKObject()
+				?: error("zxing_ReadBarcodes returned null, which is an unexpected behaviour")
+		}
 }
