@@ -144,33 +144,33 @@ krossCompile {
                 buildParams += CustomCMakeParams(listOf("-j16"))
             }
 
-            androidNativeX64.ndk()
-            androidNativeX86.ndk()
-            androidNativeArm32.ndk()
-            androidNativeArm64.ndk()
+            androidNativeX64.konan()
+            androidNativeX86.konan()
+            androidNativeArm32.konan()
+            androidNativeArm64.konan()
 
-            linuxX64.clang()
-            linuxArm64.clang()
+            linuxX64.konan()
+            linuxArm64.konan()
             // Disabled due to https://youtrack.jetbrains.com/issue/KT-65671
-//            mingwX64.clang {
+//            mingwX64.konan {
 //                cinterop {
 //                    linkerOpts += "-Wl,-Xlink=-force:multiple"
 //                }
 //            }
 
             if (hostOs == "Mac OS X") {
-                iosX64.xcode()
-                iosArm64.xcode()
-                iosSimulatorArm64.xcode()
-                macosX64.xcode()
-                macosArm64.xcode()
-                watchosX64.xcode()
-                watchosArm32.xcode()
-                watchosArm64.xcode()
-                watchosSimulatorArm64.xcode()
-                tvosX64.xcode()
-                tvosArm64.xcode()
-                tvosSimulatorArm64.xcode()
+                iosX64.konan()
+                iosArm64.konan()
+                iosSimulatorArm64.konan()
+                macosX64.konan()
+                macosArm64.konan()
+                watchosX64.konan()
+                watchosArm32.konan()
+                watchosArm64.konan()
+                watchosSimulatorArm64.konan()
+                tvosX64.konan()
+                tvosArm64.konan()
+                tvosSimulatorArm64.konan()
             }
         }
     }
