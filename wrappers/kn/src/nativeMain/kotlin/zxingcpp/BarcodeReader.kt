@@ -1,8 +1,8 @@
-package zxing
+package zxingcpp
 
 import kotlinx.cinterop.ExperimentalForeignApi
-import zxing.cinterop.zxing_ReadBarcode
-import zxing.cinterop.zxing_ReadBarcodes
+import zxingcpp.cinterop.zxing_ReadBarcode
+import zxingcpp.cinterop.zxing_ReadBarcodes
 
 @OptIn(ExperimentalForeignApi::class)
 class BarcodeReader {

@@ -1,12 +1,12 @@
-package zxing
+package zxingcpp
 
 import cnames.structs.zxing_ReaderOptions
 import kotlinx.cinterop.CValuesRef
 import kotlinx.cinterop.ExperimentalForeignApi
-import zxing.cinterop.*
-import zxing.cinterop.zxing_Binarizer.*
-import zxing.cinterop.zxing_EanAddOnSymbol.*
-import zxing.cinterop.zxing_TextMode.*
+import zxingcpp.cinterop.*
+import zxingcpp.cinterop.zxing_Binarizer.*
+import zxingcpp.cinterop.zxing_EanAddOnSymbol.*
+import zxingcpp.cinterop.zxing_TextMode.*
 
 @OptIn(ExperimentalForeignApi::class)
 class ReaderOptions(

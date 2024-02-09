@@ -1,7 +1,7 @@
-package zxing
+package zxingcpp
 
 import kotlinx.cinterop.ExperimentalForeignApi
-import zxing.cinterop.*
+import zxingcpp.cinterop.*
 
 @OptIn(ExperimentalForeignApi::class)
 enum class BarcodeFormat(internal val rawValue: UInt) {

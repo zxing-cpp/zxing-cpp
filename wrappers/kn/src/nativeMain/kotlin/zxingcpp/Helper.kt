@@ -1,4 +1,4 @@
-package zxing
+package zxingcpp
 
 data class YuvImageView(
 	val yBuffer: ByteArray,

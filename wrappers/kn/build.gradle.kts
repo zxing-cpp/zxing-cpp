@@ -126,7 +126,7 @@ krossCompile {
             libraryArtifactNames = listOf("libZXing.a")
 
             cinterop {
-                packageName = "zxing.cinterop"
+                packageName = "zxingcpp.cinterop"
                 headers = listOf("$sourceDir/src/zxing-c.h")
             }
             cmake.apply {

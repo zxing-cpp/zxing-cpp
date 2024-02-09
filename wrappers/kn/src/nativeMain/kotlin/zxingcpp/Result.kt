@@ -1,10 +1,10 @@
-package zxing
+package zxingcpp
 
 import cnames.structs.zxing_Barcode
 import cnames.structs.zxing_Barcodes
 import kotlinx.cinterop.*
-import zxing.cinterop.*
-import zxing.cinterop.zxing_ContentType.*
+import zxingcpp.cinterop.*
+import zxingcpp.cinterop.zxing_ContentType.*
 
 @OptIn(ExperimentalForeignApi::class)
 enum class ContentType(internal val cValue: zxing_ContentType) {

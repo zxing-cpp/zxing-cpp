@@ -1,10 +1,10 @@
-package zxing
+package zxingcpp
 
 import cnames.structs.zxing_ImageView
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.toCValues
-import zxing.cinterop.*
+import zxingcpp.cinterop.*
 
 @OptIn(ExperimentalForeignApi::class)
 abstract class ImageView {
