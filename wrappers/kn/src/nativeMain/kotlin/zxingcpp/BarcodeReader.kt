@@ -6,11 +6,10 @@ import zxingcpp.cinterop.zxing_ReadBarcodes
 
 @OptIn(ExperimentalForeignApi::class)
 class BarcodeReader {
-	fun readBarcode(imageView: ImageView, options: ReaderOptions? = null): Barcode =
+	fun readBarcode(imageView: ImageView, options: ReaderOptions? = null): Barcode? =
 		zxing_ReadBarcode(imageView.toCImageView(), options?.cOptions)?.toKObject()
-			?: error("zxing_ReadBarcode returned null, which is an unexpected behaviour")
 
 	fun readBarcodes(imageView: ImageView, options: ReaderOptions? = null): List<Barcode> =
 		zxing_ReadBarcodes(imageView.toCImageView(), options?.cOptions)?.toKObject()
-			?: error("zxing_ReadBarcode returned null, which is an unexpected behaviour")
+			?: error("zxing_ReadBarcodes returned null, which is an unexpected behaviour")
 }
