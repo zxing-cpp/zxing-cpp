@@ -44,47 +44,27 @@ fun zxing_Position.toKObject(): Position = Position(
 	bottomLeft.toKObject(),
 )
 
-@OptIn(ExperimentalForeignApi::class)
-class Barcode(val cValue: CValuesRef<zxing_Barcode>) {
-	val isValid: Boolean
-		get() = zxing_Barcode_isValid(cValue)
-	val errorMsg: String?
-		get() = zxing_Barcode_errorMsg(cValue)?.toKString()
-	val format: BarcodeFormat
-		get() = zxing_Barcode_format(cValue).parseIntoBarcodeFormat().first { it != BarcodeFormat.None }
-	val contentType: ContentType
-		get() = zxing_Barcode_contentType(cValue).toKObject()
+abstract class Barcode {
+	abstract val isValid: Boolean
+	abstract val errorMsg: String?
+	abstract val format: BarcodeFormat
+	abstract val contentType: ContentType
+	abstract val text: String?
+	abstract val ecLevel: String?
+	abstract val symbologyIdentifier: String?
+	abstract val position: Position
+	abstract val orientation: Int
+	abstract val hasECI: Boolean
+	abstract val isInverted: Boolean
+	abstract val isMirrored: Boolean
+	abstract val lineCount: Int
 
-	fun bytes(len: Int): ByteArray? = zxing_Barcode_bytes(cValue, cValuesOf(len))?.readBytes(len)
-	fun bytesECI(len: Int): ByteArray? = zxing_Barcode_bytesECI(cValue, cValuesOf(len))?.readBytes(len)
-	val text: String?
-		get() = zxing_Barcode_text(cValue)?.toKString()
-	val ecLevel: String?
-		get() = zxing_Barcode_ecLevel(cValue)?.toKString()
-	val symbologyIdentifier: String?
-		get() = zxing_Barcode_symbologyIdentifier(cValue)?.toKString()
-	val position: Position
-		get() = zxing_Barcode_position(cValue).useContents { toKObject() }
-	val orientation: Int
-		get() = zxing_Barcode_orientation(cValue)
-	val hasECI: Boolean
-		get() = zxing_Barcode_hasECI(cValue)
-	val isInverted: Boolean
-		get() = zxing_Barcode_isInverted(cValue)
-	val isMirrored: Boolean
-		get() = zxing_Barcode_isMirrored(cValue)
-	val lineCount: Int
-		get() = zxing_Barcode_lineCount(cValue)
-
-	protected fun finalize() {
-		zxing_Barcode_delete(cValue)
-	}
+	abstract fun bytes(len: Int): ByteArray?
+	abstract fun bytesECI(len: Int): ByteArray?
 
 	override fun equals(other: Any?): Boolean {
 		if (this === other) return true
-		if ((other == null) || (other::class != Barcode::class)) return false
-
-		other as Barcode
+		if ((other == null) || other !is Barcode) return false
 
 		if (isValid != other.isValid) return false
 		if (errorMsg != other.errorMsg) return false
@@ -139,11 +119,70 @@ class Barcode(val cValue: CValuesRef<zxing_Barcode>) {
 	}
 }
 
-@OptIn(ExperimentalForeignApi::class)
-fun CValuesRef<zxing_Barcode>.toKObject(): Barcode = Barcode(this)
+class BarcodeImpl(
+	override val isValid: Boolean,
+	override val errorMsg: String?,
+	override val format: BarcodeFormat,
+	override val contentType: ContentType,
+	override val text: String?,
+	override val ecLevel: String?,
+	override val symbologyIdentifier: String?,
+	override val position: Position,
+	override val orientation: Int,
+	override val hasECI: Boolean,
+	override val isInverted: Boolean,
+	override val isMirrored: Boolean,
+	override val lineCount: Int,
+	private val bytes: ByteArray? = null,
+	private val bytesECI: ByteArray? = null,
+) : Barcode() {
+	override fun bytes(len: Int): ByteArray? = bytes?.sliceArray(0 until len)
+	override fun bytesECI(len: Int): ByteArray? = bytesECI?.sliceArray(0 until len)
+}
 
 @OptIn(ExperimentalForeignApi::class)
-fun CValuesRef<zxing_Barcodes>.toKObject(): List<Barcode> = mutableListOf<Barcode>().apply {
+class BoundBarcode(val cValue: CValuesRef<zxing_Barcode>) : Barcode() {
+	override val isValid: Boolean
+		get() = zxing_Barcode_isValid(cValue)
+	override val errorMsg: String?
+		get() = zxing_Barcode_errorMsg(cValue)?.toKString()
+	override val format: BarcodeFormat
+		get() = zxing_Barcode_format(cValue).parseIntoBarcodeFormat().first { it != BarcodeFormat.None }
+	override val contentType: ContentType
+		get() = zxing_Barcode_contentType(cValue).toKObject()
+
+	override fun bytes(len: Int): ByteArray? = zxing_Barcode_bytes(cValue, cValuesOf(len))?.readBytes(len)
+	override fun bytesECI(len: Int): ByteArray? = zxing_Barcode_bytesECI(cValue, cValuesOf(len))?.readBytes(len)
+	override val text: String?
+		get() = zxing_Barcode_text(cValue)?.toKString()
+	override val ecLevel: String?
+		get() = zxing_Barcode_ecLevel(cValue)?.toKString()
+	override val symbologyIdentifier: String?
+		get() = zxing_Barcode_symbologyIdentifier(cValue)?.toKString()
+	override val position: Position
+		get() = zxing_Barcode_position(cValue).useContents { toKObject() }
+	override val orientation: Int
+		get() = zxing_Barcode_orientation(cValue)
+	override val hasECI: Boolean
+		get() = zxing_Barcode_hasECI(cValue)
+	override val isInverted: Boolean
+		get() = zxing_Barcode_isInverted(cValue)
+	override val isMirrored: Boolean
+		get() = zxing_Barcode_isMirrored(cValue)
+	override val lineCount: Int
+		get() = zxing_Barcode_lineCount(cValue)
+
+	protected fun finalize() {
+		zxing_Barcode_delete(cValue)
+	}
+
+}
+
+@OptIn(ExperimentalForeignApi::class)
+fun CValuesRef<zxing_Barcode>.toKObject(): BoundBarcode = BoundBarcode(this)
+
+@OptIn(ExperimentalForeignApi::class)
+fun CValuesRef<zxing_Barcodes>.toKObject(): List<BoundBarcode> = mutableListOf<BoundBarcode>().apply {
 	for (i in 0..<zxing_Barcodes_size(this@toKObject))
 		zxing_Barcodes_at(this@toKObject, i)?.toKObject()?.let { add(it) }
 }.toList()
