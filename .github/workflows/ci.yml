@@ -102,8 +102,8 @@ jobs:
     - uses: actions/checkout@v3
     - uses: actions/setup-java@v3
       with:
-        distribution: 'temurin'
-        java-version: '17'
+       distribution: 'temurin'
+       java-version: '17'
 
     - name: Build the lib/app
       working-directory: wrappers/android
@@ -113,6 +113,56 @@ jobs:
       with:
         name: android-artifacts
         path: "wrappers/android/zxingcpp/build/outputs/aar/zxingcpp-debug.aar"
+
+  build-kn:
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: ./wrappers/kn
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: 17
+        distribution: temurin
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
+
+    - name: Install required packages
+      run: |
+        brew tap messense/macos-cross-toolchains
+        brew install mingw-w64 x86_64-unknown-linux-gnu aarch64-unknown-linux-gnu
+
+    - name: Export CI properties
+      run: |
+        echo -e "linuxArm64.gccToolchain=$(brew --prefix aarch64-unknown-linux-gnu)/toolchain\n\
+        linuxArm64.sysRoot=$(brew --prefix aarch64-unknown-linux-gnu)/toolchain/aarch64-unknown-linux-gnu/sysroot\n\
+        linuxX64.gccToolchain=$(brew --prefix x86_64-unknown-linux-gnu)/toolchain\n\
+        linuxX64.sysRoot=$(brew --prefix x86_64-unknown-linux-gnu)/toolchain/x86_64-unknown-linux-gnu/sysroot\n\
+        mingwX64.extraCompilerFlags=-femulated-tls\n\
+        mingwX64.sysRoot=$(brew --prefix mingw-w64)/toolchain-x86_64" > local.properties
+
+    - name: Validate Gradle Wrapper
+      uses: gradle/wrapper-validation-action@v1
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+
+    - name: Build Library
+      run: |
+        export PATH="$(brew --prefix llvm@15)/bin:$PATH"
+        ./gradlew assemble
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: kn-artifacts
+        path: "wrappers/kn/build/bin"
 
   build-python:
     runs-on: ${{ matrix.os }}
