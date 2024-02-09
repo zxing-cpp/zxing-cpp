@@ -31,13 +31,13 @@ data class YuvImageView(
 	}
 
 	override fun hashCode(): Int {
-		var result = yBuffer.contentHashCode()
-		result = 31 * result + rowStride.hashCode()
-		result = 31 * result + left.hashCode()
-		result = 31 * result + top.hashCode()
-		result = 31 * result + width.hashCode()
-		result = 31 * result + height.hashCode()
-		result = 31 * result + rotation.hashCode()
-		return result
+		var barcode = yBuffer.contentHashCode()
+		barcode = 31 * barcode + rowStride.hashCode()
+		barcode = 31 * barcode + left.hashCode()
+		barcode = 31 * barcode + top.hashCode()
+		barcode = 31 * barcode + width.hashCode()
+		barcode = 31 * barcode + height.hashCode()
+		barcode = 31 * barcode + rotation.hashCode()
+		return barcode
 	}
 }

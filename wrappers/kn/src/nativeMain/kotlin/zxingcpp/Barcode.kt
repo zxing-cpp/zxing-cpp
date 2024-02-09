@@ -45,7 +45,7 @@ fun zxing_Position.toKObject(): Position = Position(
 )
 
 @OptIn(ExperimentalForeignApi::class)
-class Result(val cValue: CValuesRef<zxing_Barcode>) {
+class Barcode(val cValue: CValuesRef<zxing_Barcode>) {
 	val isValid: Boolean
 		get() = zxing_Barcode_isValid(cValue)
 	val errorMsg: String?
@@ -79,10 +79,10 @@ class Result(val cValue: CValuesRef<zxing_Barcode>) {
 }
 
 @OptIn(ExperimentalForeignApi::class)
-fun CValuesRef<zxing_Barcode>.toKObject(): Result = Result(this)
+fun CValuesRef<zxing_Barcode>.toKObject(): Barcode = Barcode(this)
 
 @OptIn(ExperimentalForeignApi::class)
-fun CValuesRef<zxing_Barcodes>.toKObject(): List<Result> = mutableListOf<Result>().apply {
+fun CValuesRef<zxing_Barcodes>.toKObject(): List<Barcode> = mutableListOf<Barcode>().apply {
 	for (i in 0..<zxing_Barcodes_size(this@toKObject))
 		zxing_Barcodes_at(this@toKObject, i)?.toKObject()?.let { add(it) }
 }.toList()
