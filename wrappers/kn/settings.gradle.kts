@@ -17,4 +17,4 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "zxing-cpp-kn"
+rootProject.name = "zxing-cpp"
