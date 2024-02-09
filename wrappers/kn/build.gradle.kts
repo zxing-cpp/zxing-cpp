@@ -85,12 +85,6 @@ kotlin {
 
     if (hostOs == "Mac OS X") enabledTargetList.addAll(appleTargets())
 
-    enabledTargetList.forEach {
-        it.binaries {
-            sharedLib()
-        }
-    }
-
     sourceSets {
         val androidNativeArm32Main by getting
         val androidNativeArm64Main by getting

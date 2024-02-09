@@ -159,11 +159,6 @@ jobs:
         export PATH="$(brew --prefix llvm@15)/bin:$PATH"
         ./gradlew assemble
 
-    - uses: actions/upload-artifact@v4
-      with:
-        name: kn-artifacts
-        path: "wrappers/kn/build/bin"
-
   build-python:
     runs-on: ${{ matrix.os }}
     strategy:
