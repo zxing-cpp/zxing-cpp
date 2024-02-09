@@ -46,7 +46,7 @@ jobs:
           mingwX64.sysRoot=$(brew --prefix mingw-w64)/toolchain-x86_64" > local.properties
 
       - name: Validate Gradle Wrapper
-        uses: gradle/wrapper-validation-action@v1
+        uses: gradle/wrapper-validation-action@v2
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
