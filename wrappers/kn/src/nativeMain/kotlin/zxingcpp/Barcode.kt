@@ -151,8 +151,13 @@ class BoundBarcode(val cValue: CValuesRef<zxing_Barcode>) : Barcode() {
 	override val contentType: ContentType
 		get() = zxing_Barcode_contentType(cValue).toKObject()
 
-	override fun bytes(len: Int): ByteArray? = zxing_Barcode_bytes(cValue, cValuesOf(len))?.readBytes(len)
-	override fun bytesECI(len: Int): ByteArray? = zxing_Barcode_bytesECI(cValue, cValuesOf(len))?.readBytes(len)
+	override fun bytes(len: Int): ByteArray? = zxing_Barcode_bytes(cValue, cValuesOf(len))?.run {
+		readBytes(len).also { zxing_free(this) }
+	}
+
+	override fun bytesECI(len: Int): ByteArray? = zxing_Barcode_bytesECI(cValue, cValuesOf(len))?.run {
+		readBytes(len).also { zxing_free(this) }
+	}
 	override val text: String?
 		get() = zxing_Barcode_text(cValue)?.toKString()
 	override val ecLevel: String?
