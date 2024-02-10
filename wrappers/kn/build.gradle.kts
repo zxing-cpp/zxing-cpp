@@ -6,7 +6,6 @@ import io.github.isning.gradle.plugins.cmake.params.entries.plus
 import io.github.isning.gradle.plugins.cmake.params.plus
 import io.github.isning.gradle.plugins.kn.krossCompile.invoke
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
-import java.io.ByteArrayOutputStream
 import java.util.*
 
 plugins {
@@ -16,17 +15,8 @@ plugins {
     signing
 }
 
-fun getTagName(): String {
-    val stdout = ByteArrayOutputStream()
-    exec {
-        commandLine("git", "describe", "--abbrev=0", "--tags")
-        standardOutput = stdout
-    }
-    return stdout.toString().removePrefix("v").trim()
-}
-
 group = "io.github.zxing-cpp"
-version = getTagName()
+version = "2.2.1"
 
 Properties().apply {
     rootProject.file("local.properties").takeIf { it.exists() && it.isFile }?.let { load(it.reader()) }
