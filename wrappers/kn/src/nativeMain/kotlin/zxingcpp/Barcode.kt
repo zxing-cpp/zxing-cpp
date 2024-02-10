@@ -49,7 +49,7 @@ class Barcode(val cValue: CValuesRef<zxing_Barcode>) {
 	val isValid: Boolean
 		get() = zxing_Barcode_isValid(cValue)
 	val errorMsg: String?
-		get() = zxing_Barcode_errorMsg(cValue)?.toKString()
+		get() = zxing_Barcode_errorMsg(cValue)?.toKStringAndFree()
 	val format: BarcodeFormat
 		get() = zxing_Barcode_format(cValue).parseIntoBarcodeFormat().first { it != BarcodeFormat.None }
 	val contentType: ContentType
@@ -64,11 +64,11 @@ class Barcode(val cValue: CValuesRef<zxing_Barcode>) {
 	}
 
 	val text: String?
-		get() = zxing_Barcode_text(cValue)?.toKString()
+		get() = zxing_Barcode_text(cValue)?.toKStringAndFree()
 	val ecLevel: String?
-		get() = zxing_Barcode_ecLevel(cValue)?.toKString()
+		get() = zxing_Barcode_ecLevel(cValue)?.toKStringAndFree()
 	val symbologyIdentifier: String?
-		get() = zxing_Barcode_symbologyIdentifier(cValue)?.toKString()
+		get() = zxing_Barcode_symbologyIdentifier(cValue)?.toKStringAndFree()
 	val position: Position
 		get() = zxing_Barcode_position(cValue).useContents { toKObject() }
 	val orientation: Int

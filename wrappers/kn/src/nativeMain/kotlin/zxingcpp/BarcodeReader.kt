@@ -1,7 +1,6 @@
 package zxingcpp
 
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.toKString
 import zxingcpp.cinterop.zxing_LastErrorMsg
 import zxingcpp.cinterop.zxing_ReadBarcodes
 
@@ -11,7 +10,7 @@ class BarcodeReader(val options: ReaderOptions? = null) {
 	fun read(imageView: ImageView): List<Barcode> =
 		imageView.cValueWrapped.use {
 			zxing_ReadBarcodes(it.cValue, options?.cValue)?.toKObject()
-				?: throw BarcodeReadingException(zxing_LastErrorMsg()?.toKString())
+				?: throw BarcodeReadingException(zxing_LastErrorMsg()?.toKStringAndFree())
 		}
 }
 
