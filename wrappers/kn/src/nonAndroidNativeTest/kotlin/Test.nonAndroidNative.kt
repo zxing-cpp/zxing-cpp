@@ -5,5 +5,9 @@ import kotlinx.coroutines.runBlocking
 import zxingcpp.ImageView
 
 actual fun loadImage(path: String): ImageView = runBlocking {
-    LocalVfs[posixGetcwd()]["src"]["nativeTest"]["resources"][path].readBitmap().asImageView()
+	LocalVfs[posixGetcwd()][path].readBitmap().asImageView()
+}
+
+actual fun readTextFrom(path: String): String = runBlocking {
+	LocalVfs[posixGetcwd()][path].readString()
 }
