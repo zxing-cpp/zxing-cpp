@@ -10,7 +10,7 @@ import zxingcpp.cinterop.zxing_TextMode.*
 
 @OptIn(ExperimentalForeignApi::class)
 class ReaderOptions(
-    formats: Set<BarcodeFormat> = setOf(BarcodeFormat.Any),
+	formats: Set<BarcodeFormat> = emptySet(),
 	tryHarder: Boolean = false,
 	tryRotate: Boolean = false,
 	tryInvert: Boolean = false,
