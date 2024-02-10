@@ -10,7 +10,6 @@ import zxingcpp.cinterop.*
 @OptIn(ExperimentalForeignApi::class)
 data class ImageView(
 	val data: UByteArray,
-	val dataOffset: Int = 0,
 	val left: Int,
 	val top: Int,
 	val width: Int,
@@ -24,7 +23,6 @@ data class ImageView(
 	@OptIn(ExperimentalStdlibApi::class)
 	internal class ClosableCImageView(
 		data: UByteArray,
-		dataOffset: Int,
 		width: Int,
 		height: Int,
 		format: ImageFormat,
@@ -35,7 +33,7 @@ data class ImageView(
 		private val pinnedData = data.pin()
 		val cValue: CPointer<zxing_ImageView>? =
 			zxing_ImageView_new(
-				pinnedData.addressOf(dataOffset),
+				pinnedData.addressOf(0),
 				width,
 				height,
 				format.rawValue,
@@ -56,7 +54,7 @@ data class ImageView(
 	}
 
 	internal val cValueWrapped: ClosableCImageView
-		get() = ClosableCImageView(data, dataOffset, width, height, format, rotation, rowStride, pixStride)
+		get() = ClosableCImageView(data, width, height, format, rotation, rowStride, pixStride)
 }
 
 @OptIn(ExperimentalForeignApi::class)
