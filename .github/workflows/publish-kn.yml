@@ -10,7 +10,7 @@ jobs:
   publish:
     name: Library Publish
 
-    runs-on: 'macos-latest'
+    runs-on: macos-latest
 
     defaults:
       run:
@@ -22,6 +22,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Checkout toolchain initializer repository
+        uses: actions/checkout@v4
+        with:
+          repository: ISNing/kn-toolchain-initializer
+          path: wrappers/kn/.kn-toolchain-initializer
+
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
@@ -32,21 +38,14 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
 
       - name: Install required packages
-        run: |
-          brew tap messense/macos-cross-toolchains
-          brew install mingw-w64 x86_64-unknown-linux-gnu aarch64-unknown-linux-gnu
-
-      - name: Export CI properties
-        run: |
-          echo -e "linuxArm64.gccToolchain=$(brew --prefix aarch64-unknown-linux-gnu)/toolchain\n\
-          linuxArm64.sysRoot=$(brew --prefix aarch64-unknown-linux-gnu)/toolchain/aarch64-unknown-linux-gnu/sysroot\n\
-          linuxX64.gccToolchain=$(brew --prefix x86_64-unknown-linux-gnu)/toolchain\n\
-          linuxX64.sysRoot=$(brew --prefix x86_64-unknown-linux-gnu)/toolchain/x86_64-unknown-linux-gnu/sysroot\n\
-          mingwX64.extraCompilerFlags=-femulated-tls\n\
-          mingwX64.sysRoot=$(brew --prefix mingw-w64)/toolchain-x86_64" > local.properties
+        run: brew install kotlin-native
 
       - name: Validate Gradle Wrapper
         uses: gradle/wrapper-validation-action@v2
+
+      - name: Initialize Kotlin/Native toolchain
+        working-directory: wrappers/kn/.kn-toolchain-initializer
+        run: ./gradlew build
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -57,6 +56,4 @@ jobs:
           ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }}
           ORG_GRADLE_PROJECT_ossrhUsername: ${{ secrets.OSSRH_USERNAME }}
           ORG_GRADLE_PROJECT_ossrhPassword: ${{ secrets.OSSRH_PASSWORD }}
-        run: |
-          export PATH="$(brew --prefix llvm@15)/bin:$PATH"
-          ./gradlew publishAllPublicationsToSonatypeRepository
+        run: ./gradlew publishAllPublicationsToSonatypeRepository
