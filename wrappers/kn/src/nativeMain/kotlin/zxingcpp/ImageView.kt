@@ -8,17 +8,18 @@ import kotlinx.cinterop.pin
 import zxingcpp.cinterop.*
 
 @OptIn(ExperimentalForeignApi::class)
-abstract class ImageView {
-	abstract val data: UByteArray
-	open val dataOffset: Int = 0
-	abstract val left: Int
-	abstract val top: Int
-	abstract val width: Int
-	abstract val height: Int
-	abstract val format: ImageFormat
-	abstract val rotation: Int
-	open val rowStride: Int = 0
-	open val pixStride: Int = 0
+data class ImageView(
+	val data: UByteArray,
+	val dataOffset: Int = 0,
+	val left: Int,
+	val top: Int,
+	val width: Int,
+	val height: Int,
+	val format: ImageFormat,
+	val rotation: Int,
+	val rowStride: Int = 0,
+	val pixStride: Int = 0,
+) {
 
 	@OptIn(ExperimentalStdlibApi::class)
 	internal class ClosableCImageView(
@@ -33,7 +34,14 @@ abstract class ImageView {
 	) : AutoCloseable {
 		private val pinnedData = data.pin()
 		val cValue: CPointer<zxing_ImageView>? =
-			zxing_ImageView_new(pinnedData.addressOf(dataOffset), width, height, format.rawValue, rowStride, pixStride).also {
+			zxing_ImageView_new(
+				pinnedData.addressOf(dataOffset),
+				width,
+				height,
+				format.rawValue,
+				rowStride,
+				pixStride
+			).also {
 				zxing_ImageView_rotate(it, rotation)
 			}
 
