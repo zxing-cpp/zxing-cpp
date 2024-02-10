@@ -111,5 +111,5 @@ fun CValuesRef<zxing_Barcode>.toKObject(): Barcode = Barcode(this)
 @OptIn(ExperimentalForeignApi::class)
 fun CValuesRef<zxing_Barcodes>.toKObject(): List<Barcode> = mutableListOf<Barcode>().apply {
 	for (i in 0..<zxing_Barcodes_size(this@toKObject))
-		zxing_Barcodes_at(this@toKObject, i)?.toKObject()?.let { add(it) }
+		zxing_Barcodes_move(this@toKObject, i)?.toKObject()?.let { add(it) }
 }.toList()
