@@ -125,7 +125,6 @@ krossCompile {
                     mapOf(
                         "BUILD_C_API" to "ON",
                         "BUILD_WRITERS" to "OFF",
-                        "CMAKE_CXX_STANDARD" to "20",
                     )
                 )).asCMakeParams
                 buildParams {
