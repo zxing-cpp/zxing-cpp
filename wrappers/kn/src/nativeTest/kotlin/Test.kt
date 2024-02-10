@@ -180,9 +180,8 @@ class BarcodeReaderTest {
 	fun `reads single barcode`() {
 		singleExamples.forEach { (path, expectedBarcode) ->
 			val imageView = loadImage(path)
-			val options = ReaderOptions()
 
-			val actualBarcode = barcodeReader.readBarcode(imageView, options)
+			val actualBarcode = barcodeReader.read(imageView).firstOrNull()
 
 			assertEquals(expectedBarcode, actualBarcode)
 		}
@@ -192,9 +191,8 @@ class BarcodeReaderTest {
 	fun `reads multiple barcodes`() {
 		multipleExamples.forEach { (path, expectedBarcodes) ->
 			val imageView = loadImage(path)
-			val options = ReaderOptions()
 
-			val actualBarcodes = barcodeReader.readBarcodes(imageView, options).toSet()
+			val actualBarcodes = barcodeReader.read(imageView).toSet()
 
 			println(actualBarcodes)
 
