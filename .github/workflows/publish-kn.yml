@@ -47,9 +47,6 @@ jobs:
         working-directory: wrappers/kn/.kn-toolchain-initializer
         run: ./gradlew build
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
       - name: Publish Library
         env:
           ORG_GRADLE_PROJECT_signingKey: ${{ secrets.OSSRH_GPG_SECRET_KEY }}

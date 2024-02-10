@@ -150,9 +150,6 @@ jobs:
       working-directory: wrappers/kn/.kn-toolchain-initializer
       run: ./gradlew build
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-
     - name: Build Library
       run: ./gradlew assemble
 
