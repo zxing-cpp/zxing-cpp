@@ -18,7 +18,8 @@ A trivial use case looks like this (in Kotlin):
 import zxingcpp.BarcodeReader
 import zxingcpp.ImageView
 
-val barcodeReader = BarcodeReader()
+val options = ReaderOptions()
+val barcodeReader = BarcodeReader(options)
 
 fun process(image: ImageView) {
     barcodeReader.readBarcodes(image).joinToString("\n") { result ->
@@ -27,14 +28,17 @@ fun process(image: ImageView) {
 }
 ```
 
+Here you have to implement the `ImageView` class by yourself. Which means you have to decode the image in your own way
+and then pass the decoded image wrapped in `ImageView` to the `BarcodeReader` class.
+
 ## Build locally
 
-1. Install JDK, CMake, LLVM(With Clang and LLD), Android NDK(With `$ANDROID_NDK` correctly configured) and ensure their
-   executable binaries
-   appear in `$PATH`.
-2. Prepare gcc toolchain for `aarch64-linux-gnu`, `x86_64-linux-gnu`, if clang doesn't find them correctly, you can
-   define sysroot/gcc toolchain path in `local.properties` by `linux{Arm64,X64}.{sysRoot,gccToolchain}`
+1. Install JDK, CMake and Android NDK(With `$ANDROID_NDK` correctly configured) and ensure their
+   executable binaries appear in `$PATH`.
+2. Prepare kotlin/native toolchain (You can easily do this by build
+   [K/N Toolchain Initializer](https://github.com/ISNing/kn-toolchain-initializer) for once).
+3. Ensure there's `llvm-ar` available in `$PATH` for mingwX64 target building.
 
 And then you can build the project from the command line:
 
-	$ ./gradlew :zxingcpp:assemble
+	$ ./gradlew :assemble
