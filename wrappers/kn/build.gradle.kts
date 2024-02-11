@@ -129,8 +129,24 @@ krossCompile {
             androidNativeArm32.konan()
             androidNativeArm64.konan()
 
-            linuxX64.konan()
-            linuxArm64.konan()
+            linuxX64.konan {
+                cmake {
+                    configParams += CustomCMakeCacheEntries(
+                        mapOf(
+                            "CMAKE_CXX_STANDARD" to "17",
+                        )
+                    ).asCMakeParams
+                }
+            }
+            linuxArm64.konan {
+                cmake {
+                    configParams += CustomCMakeCacheEntries(
+                        mapOf(
+                            "CMAKE_CXX_STANDARD" to "17",
+                        )
+                    ).asCMakeParams
+                }
+            }
             mingwX64.konan {
                 cinterop {
                     linkerOpts += "-Wl,-Xlink=-force:multiple"
