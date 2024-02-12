@@ -7,6 +7,8 @@ import zxingcpp.cinterop.*
 import zxingcpp.cinterop.zxing_Binarizer.*
 import zxingcpp.cinterop.zxing_EanAddOnSymbol.*
 import zxingcpp.cinterop.zxing_TextMode.*
+import kotlin.experimental.ExperimentalNativeApi
+import kotlin.native.ref.createCleaner
 
 @OptIn(ExperimentalForeignApi::class)
 class ReaderOptions(
@@ -62,6 +64,10 @@ class ReaderOptions(
 
 	val cValue: CValuesRef<zxing_ReaderOptions>? = zxing_ReaderOptions_new()
 
+	@Suppress("unused")
+	@OptIn(ExperimentalNativeApi::class)
+	private val cleaner = createCleaner(cValue) { zxing_ReaderOptions_delete(it) }
+
 	init {
 		this.formats = formats
 		this.tryHarder = tryHarder
@@ -75,10 +81,6 @@ class ReaderOptions(
 		this.returnErrors = returnErrors
 		this.eanAddOnSymbol = eanAddOnSymbol
 		this.textMode = textMode
-	}
-
-	protected fun finalize() {
-		zxing_ReaderOptions_delete(cValue)
 	}
 }
 

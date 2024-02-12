@@ -47,10 +47,6 @@ data class ImageView(
 			zxing_ImageView_delete(cValue)
 			pinnedData.unpin()
 		}
-
-		fun finalize() {
-			close()
-		}
 	}
 
 	internal val cValueWrapped: ClosableCImageView

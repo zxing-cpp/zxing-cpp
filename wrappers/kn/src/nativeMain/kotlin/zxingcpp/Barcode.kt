@@ -5,6 +5,8 @@ import cnames.structs.zxing_Barcodes
 import kotlinx.cinterop.*
 import zxingcpp.cinterop.*
 import zxingcpp.cinterop.zxing_ContentType.*
+import kotlin.experimental.ExperimentalNativeApi
+import kotlin.native.ref.createCleaner
 
 @OptIn(ExperimentalForeignApi::class)
 enum class ContentType(internal val cValue: zxing_ContentType) {
@@ -82,9 +84,9 @@ class Barcode(val cValue: CValuesRef<zxing_Barcode>) {
 	val lineCount: Int
 		get() = zxing_Barcode_lineCount(cValue)
 
-	protected fun finalize() {
-		zxing_Barcode_delete(cValue)
-	}
+	@Suppress("unused")
+	@OptIn(ExperimentalNativeApi::class)
+	private val cleaner = createCleaner(cValue) { zxing_Barcode_delete(it) }
 
 	override fun toString(): String {
 		return "Barcode(" +
