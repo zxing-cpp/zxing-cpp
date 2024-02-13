@@ -12,7 +12,7 @@ to your `build.gradle.kts` file in the `dependencies` section of `nativeMain` so
 
 ## Use
 
-A trivial use case looks like this (in Kotlin):
+A trivial use case looks like this:
 
 ```kotlin
 import zxingcpp.BarcodeReader
@@ -20,16 +20,12 @@ import zxingcpp.ImageView
 
 val options = ReaderOptions()
 val barcodeReader = BarcodeReader(options)
+val image = ImageView(data, width, height, ImageFormat.Lum)
 
-fun process(image: ImageView) {
-    barcodeReader.readBarcodes(image).joinToString("\n") { result ->
-        "${result.format} (${result.contentType}): ${result.text}"
-    }
-}
+barcodeReader.read(image).joinToString("\n")
 ```
 
-Here you have to implement the `ImageView` class by yourself. Which means you have to decode the image in your own way
-and then pass the decoded image wrapped in `ImageView` to the `BarcodeReader` class.
+Here you have to load your image into memory by yourself and pass the decoded data to the constructor of `ImageView`
 
 ## Build locally
 
