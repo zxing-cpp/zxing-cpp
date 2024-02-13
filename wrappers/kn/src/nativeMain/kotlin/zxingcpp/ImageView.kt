@@ -10,12 +10,9 @@ import zxingcpp.cinterop.*
 @OptIn(ExperimentalForeignApi::class)
 data class ImageView(
 	val data: UByteArray,
-	val left: Int,
-	val top: Int,
 	val width: Int,
 	val height: Int,
 	val format: ImageFormat,
-	val rotation: Int,
 	val rowStride: Int = 0,
 	val pixStride: Int = 0,
 ) {
@@ -26,7 +23,6 @@ data class ImageView(
 		width: Int,
 		height: Int,
 		format: ImageFormat,
-		rotation: Int,
 		rowStride: Int,
 		pixStride: Int,
 	) : AutoCloseable {
@@ -39,9 +35,7 @@ data class ImageView(
 				format.rawValue,
 				rowStride,
 				pixStride
-			).also {
-				zxing_ImageView_rotate(it, rotation)
-			}
+			)
 
 		override fun close() {
 			zxing_ImageView_delete(cValue)
@@ -50,7 +44,7 @@ data class ImageView(
 	}
 
 	internal val cValueWrapped: ClosableCImageView
-		get() = ClosableCImageView(data, width, height, format, rotation, rowStride, pixStride)
+		get() = ClosableCImageView(data, width, height, format, rowStride, pixStride)
 }
 
 @OptIn(ExperimentalForeignApi::class)

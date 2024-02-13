@@ -17,12 +17,9 @@ actual fun loadImage(path: String): ImageView = memScoped {
 		?.let { data ->
 			ImageView(
 				data = data.readBytes(width.value * height.value).toUByteArray(),
-				left = 0,
-				top = 0,
 				width = width.value,
 				height = height.value,
 				format = ImageFormat.Lum,
-				rotation = 0,
 				rowStride = 0,
 				pixStride = 0
 			).also { stbi_image_free(data) }
