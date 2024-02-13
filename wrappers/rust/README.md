@@ -52,7 +52,7 @@ zxing-cpp provides features that are behind [Cargo features](https://doc.rust-la
 They are:
 
 * `bundled` uses a bundled version of the [zxing-cpp](https://github.com/zxing-cpp/zxing-cpp) c++ library.
-* [`image`](https://crates.io/crates/image) allows convenient `ImageView` construction from `GreyImage` and `DynamicImage`.
+* [`image`](https://crates.io/crates/image) allows convenient/implicit `ImageView` construction from `GreyImage` and `DynamicImage`.
 
 ## Benchmarking
 
