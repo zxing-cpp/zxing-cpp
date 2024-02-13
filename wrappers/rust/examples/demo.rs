@@ -3,33 +3,26 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-use clap::Parser;
-use std::path::PathBuf;
 use zxing_cpp::*;
 
-#[derive(Parser)]
-struct Cli {
-	filename: PathBuf,
-	formats: Option<String>,
-	fast: bool,
-}
-
 fn main() -> anyhow::Result<()> {
-	let cli = Cli::parse();
+	let filename = std::env::args().nth(1).expect("no image file name provided");
+	let formats = std::env::args().nth(2);
+	let fast = std::env::args().nth(3).is_some();
 
-	let image = image::open(&cli.filename)?;
+	let image = image::open(&filename)?;
 
 	#[cfg(not(feature = "image"))]
 	let lum_img = image.into_luma8();
 	#[cfg(not(feature = "image"))]
 	let iv = ImageView::from_slice(&lum_img, lum_img.width(), lum_img.height(), ImageFormat::Lum)?;
 
-	let formats = barcode_formats_from_string(cli.formats.unwrap_or_default())?;
+	let formats = barcode_formats_from_string(formats.unwrap_or_default())?;
 	let opts = ReaderOptions::default()
 		.formats(formats)
-		.try_harder(!cli.fast)
-		.try_invert(!cli.fast)
-		.try_rotate(!cli.fast);
+		.try_harder(!fast)
+		.try_invert(!fast)
+		.try_rotate(!fast);
 
 	#[cfg(feature = "image")]
 	let barcodes = read_barcodes(&image, &opts)?;
