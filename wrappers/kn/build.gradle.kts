@@ -129,6 +129,7 @@ krossCompile {
             androidNativeArm32.konan()
             androidNativeArm64.konan()
 
+            // TODO: Find a way to build linux targets with cxx20. Detail: https://github.com/zxing-cpp/zxing-cpp/pull/719#discussion_r1485701269
             linuxX64.konan {
                 cmake {
                     configParams += CustomCMakeCacheEntries(
