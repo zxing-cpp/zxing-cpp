@@ -172,9 +172,8 @@ krossCompile {
 }
 
 publishing {
-    publications {
-        register<MavenPublication>("release") {
-            artifactId = "kotlin-native"
+    publications.withType<MavenPublication>().all {
+        artifactId = artifactId.replace(project.name, "kotlin-native")
             groupId = project.group.toString()
             version = project.version.toString()
 
@@ -201,7 +200,6 @@ publishing {
                     url = "https://github.com/zxing-cpp/zxing-cpp"
                 }
             }
-        }
     }
     repositories {
         maven {
