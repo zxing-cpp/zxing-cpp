@@ -60,7 +60,7 @@ fn c2r_str(str: *mut c_char) -> String {
 	let mut res = String::new();
 	if !str.is_null() {
 		unsafe { res = CStr::from_ptr(str).to_string_lossy().to_string() };
-		unsafe { zxing_free(str as *mut c_void) };
+		unsafe { ZXing_free(str as *mut c_void) };
 	}
 	res
 }
@@ -69,21 +69,21 @@ fn c2r_vec(buf: *mut u8, len: c_int) -> Vec<u8> {
 	let mut res = Vec::<u8>::new();
 	if !buf.is_null() && len > 0 {
 		unsafe { res = std::slice::from_raw_parts(buf, len as usize).to_vec() };
-		unsafe { zxing_free(buf as *mut c_void) };
+		unsafe { ZXing_free(buf as *mut c_void) };
 	}
 	res
 }
 
 fn last_error() -> Error {
-	match unsafe { zxing_LastErrorMsg().as_mut() } {
-		None => panic!("Internal error: zxing_LastErrorMsg() returned NULL"),
+	match unsafe { ZXing_LastErrorMsg().as_mut() } {
+		None => panic!("Internal error: ZXing_LastErrorMsg() returned NULL"),
 		Some(error) => Error::InvalidInput(c2r_str(error)),
 	}
 }
 
 macro_rules! last_error_or {
 	($expr:expr) => {
-		match unsafe { zxing_LastErrorMsg().as_mut() } {
+		match unsafe { ZXing_LastErrorMsg().as_mut() } {
 			None => Ok($expr),
 			Some(error) => Err(Error::InvalidInput(c2r_str(error))),
 		}
@@ -95,7 +95,7 @@ macro_rules! make_zxing_enum {
         #[repr(u32)]
         #[derive(Debug, Copy, Clone, PartialEq)]
         pub enum $name {
-            $($field = paste! { [<zxing_ $name _ $field>] },)*
+            $($field = paste! { [<ZXing_ $name _ $field>] },)*
         }
     }
 }
@@ -105,7 +105,7 @@ macro_rules! make_zxing_flags {
         flags! {
             #[repr(u32)]
             pub enum $name: c_uint {
-                $($field = paste! { [<zxing_ $name _ $field>] },)*
+                $($field = paste! { [<ZXing_ $name _ $field>] },)*
             }
         }
     }
@@ -131,22 +131,22 @@ pub type BarcodeFormats = FlagSet<BarcodeFormat>;
 
 impl Display for BarcodeFormat {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-		write!(f, "{}", unsafe { c2r_str(zxing_BarcodeFormatToString(BarcodeFormats::from(*self).bits())) })
+		write!(f, "{}", unsafe { c2r_str(ZXing_BarcodeFormatToString(BarcodeFormats::from(*self).bits())) })
 	}
 }
 
 impl Display for ContentType {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-		write!(f, "{}", unsafe { c2r_str(zxing_ContentTypeToString(transmute(*self))) })
+		write!(f, "{}", unsafe { c2r_str(ZXing_ContentTypeToString(transmute(*self))) })
 	}
 }
 
 #[derive(Debug, PartialEq)]
-struct ImageViewOwner<'a>(*mut zxing_ImageView, PhantomData<&'a u8>);
+struct ImageViewOwner<'a>(*mut ZXing_ImageView, PhantomData<&'a u8>);
 
 impl Drop for ImageViewOwner<'_> {
 	fn drop(&mut self) {
-		unsafe { zxing_ImageView_delete(self.0) }
+		unsafe { ZXing_ImageView_delete(self.0) }
 	}
 }
 #[derive(Debug, Clone, PartialEq)]
@@ -180,11 +180,11 @@ impl<'a> ImageView<'a> {
 		row_stride: U,
 		pix_stride: U,
 	) -> Result<Self, Error> {
-		let iv = zxing_ImageView_new(
+		let iv = ZXing_ImageView_new(
 			ptr,
 			Self::try_into_int(width)?,
 			Self::try_into_int(height)?,
-			format as zxing_ImageFormat,
+			format as ZXing_ImageFormat,
 			Self::try_into_int(row_stride)?,
 			Self::try_into_int(pix_stride)?,
 		);
@@ -197,12 +197,12 @@ impl<'a> ImageView<'a> {
 
 	pub fn from_slice<T: TryInto<c_int>>(data: &'a [u8], width: T, height: T, format: ImageFormat) -> Result<Self, Error> {
 		unsafe {
-			let iv = zxing_ImageView_new_checked(
+			let iv = ZXing_ImageView_new_checked(
 				data.as_ptr(),
 				data.len() as c_int,
 				Self::try_into_int(width)?,
 				Self::try_into_int(height)?,
-				format as zxing_ImageFormat,
+				format as ZXing_ImageFormat,
 				0,
 				0,
 			);
@@ -215,12 +215,12 @@ impl<'a> ImageView<'a> {
 	}
 
 	pub fn cropped(self, left: i32, top: i32, width: i32, height: i32) -> Self {
-		unsafe { zxing_ImageView_crop((self.0).0, left, top, width, height) }
+		unsafe { ZXing_ImageView_crop((self.0).0, left, top, width, height) }
 		self
 	}
 
 	pub fn rotated(self, degree: i32) -> Self {
-		unsafe { zxing_ImageView_rotate((self.0).0, degree) }
+		unsafe { ZXing_ImageView_rotate((self.0).0, degree) }
 		self
 	}
 }
@@ -253,11 +253,11 @@ impl<'a> TryFrom<&'a image::DynamicImage> for ImageView<'a> {
 	}
 }
 
-pub struct ReaderOptions(*mut zxing_ReaderOptions);
+pub struct ReaderOptions(*mut ZXing_ReaderOptions);
 
 impl Drop for ReaderOptions {
 	fn drop(&mut self) {
-		unsafe { zxing_ReaderOptions_delete(self.0) }
+		unsafe { ZXing_ReaderOptions_delete(self.0) }
 	}
 }
 
@@ -276,18 +276,18 @@ impl AsRef<ReaderOptions> for ReaderOptions {
 macro_rules! property {
 	($name:ident, $type:ty) => {
 		pub fn $name(self, v: impl Into<$type>) -> Self {
-			paste! { unsafe { [<zxing_ReaderOptions_set $name:camel>](self.0, transmute(v.into())) } };
+			paste! { unsafe { [<ZXing_ReaderOptions_set $name:camel>](self.0, transmute(v.into())) } };
 			self
 		}
 
 		paste! {
 			pub fn [<set_ $name>](&mut self, v : impl Into<$type>) -> &mut Self {
-				unsafe { [<zxing_ReaderOptions_set $name:camel>](self.0, transmute(v.into())) };
+				unsafe { [<ZXing_ReaderOptions_set $name:camel>](self.0, transmute(v.into())) };
 				self
 			}
 
 			pub fn [<get_ $name>](&self) -> $type {
-				unsafe { transmute([<zxing_ReaderOptions_get $name:camel>](self.0)) }
+				unsafe { transmute([<ZXing_ReaderOptions_get $name:camel>](self.0)) }
 			}
 		}
 	};
@@ -295,7 +295,7 @@ macro_rules! property {
 
 impl ReaderOptions {
 	pub fn new() -> Self {
-		unsafe { ReaderOptions(zxing_ReaderOptions_new()) }
+		unsafe { ReaderOptions(ZXing_ReaderOptions_new()) }
 	}
 
 	property!(try_harder, bool);
@@ -312,15 +312,15 @@ impl ReaderOptions {
 	property!(min_line_count, i32);
 }
 
-pub struct Barcode(*mut zxing_Barcode);
+pub struct Barcode(*mut ZXing_Barcode);
 
 impl Drop for Barcode {
 	fn drop(&mut self) {
-		unsafe { zxing_Barcode_delete(self.0) }
+		unsafe { ZXing_Barcode_delete(self.0) }
 	}
 }
 
-pub type PointI = zxing_PointI;
+pub type PointI = ZXing_PointI;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct Position {
@@ -339,7 +339,7 @@ impl Display for PointI {
 impl Display for Position {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		write!(f, "{}", unsafe {
-			c2r_str(zxing_PositionToString(*(self as *const Position as *const zxing_Position)))
+			c2r_str(ZXing_PositionToString(*(self as *const Position as *const ZXing_Position)))
 		})
 	}
 }
@@ -347,7 +347,7 @@ impl Display for Position {
 macro_rules! getter {
 	($r_name:ident, $c_name:ident, $conv:expr, $type:ty) => {
 		pub fn $r_name(&self) -> $type {
-			paste! { unsafe { $conv([<zxing_Barcode_ $c_name>](self.0)) } }
+			paste! { unsafe { $conv([<ZXing_Barcode_ $c_name>](self.0)) } }
 		}
 	};
 }
@@ -369,17 +369,17 @@ impl Barcode {
 
 	pub fn bytes(&self) -> Vec<u8> {
 		let mut len: c_int = 0;
-		unsafe { c2r_vec(zxing_Barcode_bytes(self.0, &mut len), len) }
+		unsafe { c2r_vec(ZXing_Barcode_bytes(self.0, &mut len), len) }
 	}
 	pub fn bytes_eci(&self) -> Vec<u8> {
 		let mut len: c_int = 0;
-		unsafe { c2r_vec(zxing_Barcode_bytesECI(self.0, &mut len), len) }
+		unsafe { c2r_vec(ZXing_Barcode_bytesECI(self.0, &mut len), len) }
 	}
 }
 
 pub fn barcode_formats_from_string(str: impl AsRef<str>) -> Result<BarcodeFormats, Error> {
 	let cstr = CString::new(str.as_ref())?;
-	let res = unsafe { BarcodeFormats::new_unchecked(zxing_BarcodeFormatsFromString(cstr.as_ptr())) };
+	let res = unsafe { BarcodeFormats::new_unchecked(ZXing_BarcodeFormatsFromString(cstr.as_ptr())) };
 	match res.bits() {
 		u32::MAX => last_error_or!(BarcodeFormats::default()),
 		0 => Ok(BarcodeFormats::full()),
@@ -395,14 +395,14 @@ where
 {
 	let iv_: ImageView = image.try_into().map_err(Into::into)?;
 	unsafe {
-		let results = zxing_ReadBarcodes((iv_.0).0, opts.as_ref().0);
+		let results = ZXing_ReadBarcodes((iv_.0).0, opts.as_ref().0);
 		if !results.is_null() {
-			let size = zxing_Barcodes_size(results);
+			let size = ZXing_Barcodes_size(results);
 			let mut vec = Vec::<Barcode>::with_capacity(size as usize);
 			for i in 0..size {
-				vec.push(Barcode(zxing_Barcodes_move(results, i)));
+				vec.push(Barcode(ZXing_Barcodes_move(results, i)));
 			}
-			zxing_Barcodes_delete(results);
+			ZXing_Barcodes_delete(results);
 			Ok(vec)
 		} else {
 			Err(last_error())

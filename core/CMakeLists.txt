@@ -137,8 +137,8 @@ if (BUILD_READERS)
         src/ThresholdBinarizer.h
         src/WhiteRectDetector.h
         src/WhiteRectDetector.cpp
-        $<$<BOOL:${BUILD_C_API}>:src/zxing-c.h>
-        $<$<BOOL:${BUILD_C_API}>:src/zxing-c.cpp>
+        $<$<BOOL:${BUILD_C_API}>:src/ZXingC.h>
+        $<$<BOOL:${BUILD_C_API}>:src/ZXingC.cpp>
     )
 endif()
 if (BUILD_WRITERS)
@@ -177,7 +177,7 @@ if (BUILD_READERS)
         src/ReaderOptions.h
         src/Result.h
         src/StructuredAppend.h
-        $<$<BOOL:${BUILD_C_API}>:${CMAKE_CURRENT_SOURCE_DIR}/src/zxing-c.h>
+        $<$<BOOL:${BUILD_C_API}>:${CMAKE_CURRENT_SOURCE_DIR}/src/ZXingC.h>
     )
 endif()
 if (BUILD_WRITERS)
@@ -481,7 +481,7 @@ endif()
 set_target_properties(ZXing PROPERTIES PUBLIC_HEADER "${PUBLIC_HEADERS}")
 
 set(PRECOMPILE_HEADERS ${PUBLIC_HEADERS})
-list(REMOVE_ITEM PRECOMPILE_HEADERS "$<$<BOOL:${BUILD_C_API}>:${CMAKE_CURRENT_SOURCE_DIR}/src/zxing-c.h>")
+list(REMOVE_ITEM PRECOMPILE_HEADERS "$<$<BOOL:${BUILD_C_API}>:${CMAKE_CURRENT_SOURCE_DIR}/src/ZXingC.h>")
 target_precompile_headers(ZXing PRIVATE ${PRECOMPILE_HEADERS})
 set_source_files_properties(src/libzueci/zueci.c PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
 set_source_files_properties(src/DecodeHints.cpp PROPERTIES SKIP_PRECOMPILE_HEADERS ON)

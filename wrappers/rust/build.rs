@@ -29,7 +29,7 @@ fn main() -> miette::Result<()> {
 	}
 
 	// manual bindings.rs generation:
-	// bindgen core/src/zxing-c.h -o src/bindings.rs --no-prepend-enum-name --merge-extern-blocks --use-core --no-doc-comments --no-layout-tests --with-derive-partialeq --allowlist-item "zxing.*"
+	// bindgen core/src/ZXingC.h -o src/bindings.rs --no-prepend-enum-name --merge-extern-blocks --use-core --no-doc-comments --no-layout-tests --with-derive-partialeq --allowlist-item "ZXing.*"
 
 	Ok(())
 }
