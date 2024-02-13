@@ -147,11 +147,7 @@ krossCompile {
                     ).asCMakeParams
                 }
             }
-            mingwX64.konan {
-                cinterop {
-                    linkerOpts += "-Wl,-Xlink=-force:multiple"
-                }
-            }
+            mingwX64.konan()
 
             if (hostOs == "Mac OS X") {
                 iosX64.konan()
