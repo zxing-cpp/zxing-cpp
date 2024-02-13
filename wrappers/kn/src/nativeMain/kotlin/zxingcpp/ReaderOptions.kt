@@ -11,20 +11,7 @@ import kotlin.experimental.ExperimentalNativeApi
 import kotlin.native.ref.createCleaner
 
 @OptIn(ExperimentalForeignApi::class)
-class ReaderOptions(
-	formats: Set<BarcodeFormat> = emptySet(),
-	tryHarder: Boolean = false,
-	tryRotate: Boolean = false,
-	tryInvert: Boolean = false,
-	tryDownscale: Boolean = false,
-	isPure: Boolean = false,
-	binarizer: Binarizer = Binarizer.LocalAverage,
-	minLineCount: Int = 2,
-	maxNumberOfSymbols: Int = 0xff,
-	returnErrors: Boolean = false,
-	eanAddOnSymbol: EanAddOnSymbol = EanAddOnSymbol.Ignore,
-	textMode: TextMode = TextMode.HRI,
-) {
+class ReaderOptions {
 	var tryHarder: Boolean
 		get() = zxing_ReaderOptions_getTryHarder(cValue)
 		set(value) = zxing_ReaderOptions_setTryHarder(cValue, value)
@@ -67,21 +54,6 @@ class ReaderOptions(
 	@Suppress("unused")
 	@OptIn(ExperimentalNativeApi::class)
 	private val cleaner = createCleaner(cValue) { zxing_ReaderOptions_delete(it) }
-
-	init {
-		this.formats = formats
-		this.tryHarder = tryHarder
-		this.tryRotate = tryRotate
-		this.tryInvert = tryInvert
-		this.tryDownscale = tryDownscale
-		this.isPure = isPure
-		this.binarizer = binarizer
-		this.minLineCount = minLineCount
-		this.maxNumberOfSymbols = maxNumberOfSymbols
-		this.returnErrors = returnErrors
-		this.eanAddOnSymbol = eanAddOnSymbol
-		this.textMode = textMode
-	}
 }
 
 @OptIn(ExperimentalForeignApi::class)
