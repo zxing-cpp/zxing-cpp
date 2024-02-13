@@ -21,14 +21,40 @@ use bindings::*;
 
 use flagset::{flags, FlagSet};
 use paste::paste;
-use std::ffi::{c_char, c_int, c_uint, c_void, CStr, CString};
+use std::ffi::{c_char, c_int, c_uint, c_void, CStr, CString, NulError};
 use std::fmt::{Display, Formatter};
-use std::io::ErrorKind;
 use std::marker::PhantomData;
 use std::mem::transmute;
 use std::rc::Rc;
+use thiserror::Error;
 
-pub type Error = std::io::Error;
+#[derive(Error, Debug)]
+pub enum Error {
+	#[error("{0}")]
+	InvalidInput(String),
+
+	#[error("NulError from CString::new")]
+	NulError(#[from] NulError),
+	//
+	// #[error("data store disconnected")]
+	// IOError(#[from] std::io::Error),
+	// #[error("the data for key `{0}` is not available")]
+	// Redaction(String),
+	// #[error("invalid header (expected {expected:?}, found {found:?})")]
+	// InvalidHeader {
+	//     expected: String,
+	//     found: String,
+	// },
+	// #[error("unknown data store error")]
+	// Unknown,
+}
+
+// see https://github.com/dtolnay/thiserror/issues/62
+impl From<std::convert::Infallible> for Error {
+	fn from(_: std::convert::Infallible) -> Self {
+		unreachable!()
+	}
+}
 
 fn c2r_str(str: *mut c_char) -> String {
 	let mut res = String::new();
@@ -51,7 +77,7 @@ fn c2r_vec(buf: *mut u8, len: c_int) -> Vec<u8> {
 fn last_error() -> Error {
 	match unsafe { zxing_LastErrorMsg().as_mut() } {
 		None => panic!("Internal error: zxing_LastErrorMsg() returned NULL"),
-		Some(error) => Error::new(ErrorKind::InvalidInput, c2r_str(error)),
+		Some(error) => Error::InvalidInput(c2r_str(error)),
 	}
 }
 
@@ -59,7 +85,7 @@ macro_rules! last_error_or {
 	($expr:expr) => {
 		match unsafe { zxing_LastErrorMsg().as_mut() } {
 			None => Ok($expr),
-			Some(error) => Err(Error::new(ErrorKind::InvalidInput, c2r_str(error))),
+			Some(error) => Err(Error::InvalidInput(c2r_str(error))),
 		}
 	};
 }
@@ -134,8 +160,7 @@ impl<'a> From<&'a ImageView<'a>> for ImageView<'a> {
 
 impl<'a> ImageView<'a> {
 	fn try_into_int<T: TryInto<c_int>>(val: T) -> Result<c_int, Error> {
-		val.try_into()
-			.map_err(|_| Error::new(ErrorKind::InvalidInput, "Could not convert Integer into c_int."))
+		val.try_into().map_err(|_| Error::InvalidInput("Could not convert Integer into c_int.".to_string()))
 	}
 
 	/// Constructs an ImageView from a raw pointer and the width/height (in pixels)
@@ -223,7 +248,7 @@ impl<'a> TryFrom<&'a image::DynamicImage> for ImageView<'a> {
 		};
 		match format {
 			Some(format) => Ok(ImageView::from_slice(img.as_bytes(), img.width(), img.height(), format)?),
-			None => Err(Error::new(ErrorKind::InvalidInput, "Invalid image format (must be either luma8|rgb8|rgba8)")),
+			None => Err(Error::InvalidInput("Invalid image format (must be either luma8|rgb8|rgba8)".to_string())),
 		}
 	}
 }
@@ -362,10 +387,13 @@ pub fn barcode_formats_from_string(str: impl AsRef<str>) -> Result<BarcodeFormat
 	}
 }
 
-pub fn read_barcodes<'a>(image: impl TryInto<ImageView<'a>>, opts: impl AsRef<ReaderOptions>) -> Result<Vec<Barcode>, Error> {
-	let iv_: ImageView = image
-		.try_into()
-		.map_err(|_| Error::new(ErrorKind::InvalidInput, "Failed to image.try_into::<ImageView>()"))?;
+pub fn read_barcodes<'a, IV, RO>(image: IV, opts: RO) -> Result<Vec<Barcode>, Error>
+where
+	IV: TryInto<ImageView<'a>>,
+	IV::Error: Into<Error>,
+	RO: AsRef<ReaderOptions>,
+{
+	let iv_: ImageView = image.try_into().map_err(Into::into)?;
 	unsafe {
 		let results = zxing_ReadBarcodes((iv_.0).0, opts.as_ref().0);
 		if !results.is_null() {
