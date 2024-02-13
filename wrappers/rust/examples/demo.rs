@@ -22,7 +22,8 @@ fn main() -> anyhow::Result<()> {
 		.formats(formats)
 		.try_harder(!fast)
 		.try_invert(!fast)
-		.try_rotate(!fast);
+		.try_rotate(!fast)
+		.try_downscale(!fast);
 
 	#[cfg(feature = "image")]
 	let barcodes = read_barcodes(&image, &opts)?;
