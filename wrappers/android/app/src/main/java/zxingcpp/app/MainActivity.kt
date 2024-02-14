@@ -219,6 +219,8 @@ class MainActivity : AppCompatActivity() {
 						hints[DecodeHintType.POSSIBLE_FORMATS] = arrayListOf(BarcodeFormat.QR_CODE)
 					if (binding.tryHarder.isChecked)
 						hints[DecodeHintType.TRY_HARDER] = true
+					if (binding.tryInvert.isChecked)
+						hints[DecodeHintType.ALSO_INVERTED] = true
 
 					resultText = try {
 						val bitmap = BinaryBitmap(
