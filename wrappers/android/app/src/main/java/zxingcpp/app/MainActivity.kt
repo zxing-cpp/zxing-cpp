@@ -31,9 +31,11 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.view.View
+import androidx.annotation.OptIn
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.camera2.interop.Camera2CameraControl
 import androidx.camera.camera2.interop.CaptureRequestOptions
+import androidx.camera.camera2.interop.ExperimentalCamera2Interop
 import androidx.camera.core.AspectRatio
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
@@ -129,6 +131,7 @@ class MainActivity : AppCompatActivity() {
 		}
 	}
 
+	@OptIn(ExperimentalCamera2Interop::class)
 	private fun bindCameraUseCases() = binding.viewFinder.post {
 
 		val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
