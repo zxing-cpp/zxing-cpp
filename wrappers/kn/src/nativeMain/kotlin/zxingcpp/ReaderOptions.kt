@@ -11,7 +11,7 @@ import kotlin.experimental.ExperimentalNativeApi
 import kotlin.native.ref.createCleaner
 
 @OptIn(ExperimentalForeignApi::class)
-class ReaderOptions {
+open class ReaderOptions {
 	var tryHarder: Boolean
 		get() = zxing_ReaderOptions_getTryHarder(cValue)
 		set(value) = zxing_ReaderOptions_setTryHarder(cValue, value)

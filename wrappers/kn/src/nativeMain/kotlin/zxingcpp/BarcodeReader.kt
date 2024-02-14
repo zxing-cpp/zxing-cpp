@@ -5,11 +5,11 @@ import zxingcpp.cinterop.zxing_LastErrorMsg
 import zxingcpp.cinterop.zxing_ReadBarcodes
 
 @OptIn(ExperimentalForeignApi::class, ExperimentalStdlibApi::class)
-class BarcodeReader(val options: ReaderOptions? = null) {
+class BarcodeReader : ReaderOptions() {
 	@Throws(BarcodeReadingException::class)
 	fun read(imageView: ImageView): List<Barcode> =
 		imageView.cValueWrapped.use {
-			zxing_ReadBarcodes(it.cValue, options?.cValue)?.toKObject()
+			zxing_ReadBarcodes(it.cValue, cValue)?.toKObject()
 				?: throw BarcodeReadingException(zxing_LastErrorMsg()?.toKStringAndFree())
 		}
 }
