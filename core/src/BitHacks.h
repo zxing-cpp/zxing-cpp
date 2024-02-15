@@ -47,7 +47,12 @@ inline int NumberOfLeadingZeros(T x)
 #ifdef ZX_HAS_GCC_BUILTINS
 		return __builtin_clz(x);
 #elif defined(ZX_HAS_MSC_BUILTINS)
-		return __lzcnt(x);
+		unsigned long highestBit;
+		bool foundBit = _BitScanReverse(&highestBit, x);
+		if (foundBit)
+			return sizeof(x) * 8 - (highestBit + 1);
+		else
+			return 0;
 #else
 		int n = 0;
 		if ((x & 0xFFFF0000) == 0) { n = n + 16; x = x << 16; }
