@@ -9,7 +9,7 @@ import zxingcpp.cinterop.zxing_ReadBarcodes
 class BarcodeReader : ReaderOptions() {
 	@Throws(BarcodeReadingException::class)
 	fun read(imageView: ImageView): List<Barcode> =
-		imageView.cValueWrapped.use {
+		imageView.use {
 			zxing_ReadBarcodes(it.cValue, cValue)?.let { cValues -> cValues.toKObject().also { zxing_Barcodes_delete(cValues) } }
 				?: throw BarcodeReadingException(zxing_LastErrorMsg()?.toKStringAndFree())
 		}

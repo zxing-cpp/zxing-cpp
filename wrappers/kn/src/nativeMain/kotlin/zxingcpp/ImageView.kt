@@ -7,7 +7,7 @@ import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.pin
 import zxingcpp.cinterop.*
 
-@OptIn(ExperimentalForeignApi::class)
+@OptIn(ExperimentalForeignApi::class, ExperimentalStdlibApi::class)
 data class ImageView(
 	val data: UByteArray,
 	val width: Int,
@@ -15,36 +15,22 @@ data class ImageView(
 	val format: ImageFormat,
 	val rowStride: Int = 0,
 	val pixStride: Int = 0,
-) {
+) : AutoCloseable {
+	private val pinnedData = data.pin()
+	val cValue: CPointer<zxing_ImageView>? =
+		zxing_ImageView_new(
+			pinnedData.addressOf(0),
+			width,
+			height,
+			format.rawValue,
+			rowStride,
+			pixStride
+		)
 
-	@OptIn(ExperimentalStdlibApi::class)
-	internal class ClosableCImageView(
-		data: UByteArray,
-		width: Int,
-		height: Int,
-		format: ImageFormat,
-		rowStride: Int,
-		pixStride: Int,
-	) : AutoCloseable {
-		private val pinnedData = data.pin()
-		val cValue: CPointer<zxing_ImageView>? =
-			zxing_ImageView_new(
-				pinnedData.addressOf(0),
-				width,
-				height,
-				format.rawValue,
-				rowStride,
-				pixStride
-			)
-
-		override fun close() {
-			zxing_ImageView_delete(cValue)
-			pinnedData.unpin()
-		}
+	override fun close() {
+		zxing_ImageView_delete(cValue)
+		pinnedData.unpin()
 	}
-
-	internal val cValueWrapped: ClosableCImageView
-		get() = ClosableCImageView(data, width, height, format, rowStride, pixStride)
 }
 
 @OptIn(ExperimentalForeignApi::class)
