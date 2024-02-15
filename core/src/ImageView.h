@@ -16,6 +16,7 @@ enum class ImageFormat : uint32_t
 {
 	None = 0,
 	Lum  = 0x01000000,
+	LumX = 0x02000000,
 	RGB  = 0x03000102,
 	BGR  = 0x03020100,
 	RGBX = 0x04000102,
