@@ -151,7 +151,7 @@ jobs:
     - name: Build Library
       run: |
         export PATH="$PATH:$(brew --prefix llvm@15)/bin"
-        ./gradlew assemble
+        ./gradlew allTests
 
   build-python:
     runs-on: ${{ matrix.os }}
