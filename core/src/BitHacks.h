@@ -42,12 +42,16 @@ inline int NumberOfLeadingZeros(T x)
 	return std::countl_zero(static_cast<std::make_unsigned_t<T>>(x));
 #else
 	if constexpr (sizeof(x) <= 4) {
+		static_assert(sizeof(x) == 4, "NumberOfLeadingZeros not implemented for 8 and 16 bit ints.");
 		if (x == 0)
 			return 32;
 #ifdef ZX_HAS_GCC_BUILTINS
 		return __builtin_clz(x);
 #elif defined(ZX_HAS_MSC_BUILTINS)
-		return __lzcnt(x);
+		unsigned long where;
+		if (_BitScanReverse(&where, x))
+			return 31 - static_cast<int>(where);
+		return 32;
 #else
 		int n = 0;
 		if ((x & 0xFFFF0000) == 0) { n = n + 16; x = x << 16; }
@@ -62,9 +66,7 @@ inline int NumberOfLeadingZeros(T x)
 			return 64;
 #ifdef ZX_HAS_GCC_BUILTINS
 		return __builtin_clzll(x);
-#elif defined(ZX_HAS_MSC_BUILTINS)
-		return __lzcnt64(x);
-#else
+#else // including ZX_HAS_MSC_BUILTINS
 		int n = NumberOfLeadingZeros(static_cast<uint32_t>(x >> 32));
 		if (n == 32)
 			n += NumberOfLeadingZeros(static_cast<uint32_t>(x));
@@ -85,6 +87,7 @@ inline int NumberOfTrailingZeros(T v)
 	return std::countr_zero(static_cast<std::make_unsigned_t<T>>(v));
 #else
 	if constexpr (sizeof(v) <= 4) {
+		static_assert(sizeof(v) == 4, "NumberOfTrailingZeros not implemented for 8 and 16 bit ints.");
 #ifdef ZX_HAS_GCC_BUILTINS
 		return __builtin_ctz(v);
 #elif defined(ZX_HAS_MSC_BUILTINS)
@@ -106,21 +109,7 @@ inline int NumberOfTrailingZeros(T v)
 	} else {
 #ifdef ZX_HAS_GCC_BUILTINS
 		return __builtin_ctzll(v);
-#elif defined(ZX_HAS_MSC_BUILTINS)
-		unsigned long where;
-	#if defined(_WIN64)
-		if (_BitScanForward64(&where, v))
-			return static_cast<int>(where);
-	#elif defined(_WIN32)
-		if (_BitScanForward(&where, static_cast<unsigned long>(v)))
-			return static_cast<int>(where);
-		if (_BitScanForward(&where, static_cast<unsigned long>(v >> 32)))
-			return static_cast<int>(where + 32);
-	#else
-		#error "Implementation of __builtin_ctzll required"
-	#endif
-		return 64;
-#else
+#else // including ZX_HAS_MSC_BUILTINS
 		int n = NumberOfTrailingZeros(static_cast<uint32_t>(v));
 		if (n == 32)
 			n += NumberOfTrailingZeros(static_cast<uint32_t>(v >> 32));
