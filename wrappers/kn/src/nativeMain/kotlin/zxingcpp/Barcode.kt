@@ -1,23 +1,23 @@
 package zxingcpp
 
-import cnames.structs.zxing_Barcode
-import cnames.structs.zxing_Barcodes
+import cnames.structs.ZXing_Barcode
+import cnames.structs.ZXing_Barcodes
 import kotlinx.cinterop.*
 import zxingcpp.cinterop.*
-import zxingcpp.cinterop.zxing_ContentType.*
+import zxingcpp.cinterop.ZXing_ContentType.*
 
 @OptIn(ExperimentalForeignApi::class)
-enum class ContentType(internal val cValue: zxing_ContentType) {
-	Text(zxing_ContentType_Text),
-	Binary(zxing_ContentType_Binary),
-	Mixed(zxing_ContentType_Mixed),
-	GS1(zxing_ContentType_GS1),
-	ISO15434(zxing_ContentType_ISO15434),
-	UnknownECI(zxing_ContentType_UnknownECI);
+enum class ContentType(internal val cValue: ZXing_ContentType) {
+	Text(ZXing_ContentType_Text),
+	Binary(ZXing_ContentType_Binary),
+	Mixed(ZXing_ContentType_Mixed),
+	GS1(ZXing_ContentType_GS1),
+	ISO15434(ZXing_ContentType_ISO15434),
+	UnknownECI(ZXing_ContentType_UnknownECI);
 }
 
 @OptIn(ExperimentalForeignApi::class)
-fun zxing_ContentType.toKObject(): ContentType {
+fun ZXing_ContentType.toKObject(): ContentType {
 	return ContentType.entries.first { it.cValue == this }
 }
 
@@ -27,7 +27,7 @@ data class PointI(
 )
 
 @OptIn(ExperimentalForeignApi::class)
-fun zxing_PointI.toKObject(): PointI = PointI(x, y)
+fun ZXing_PointI.toKObject(): PointI = PointI(x, y)
 
 data class Position(
 	val topLeft: PointI,
@@ -37,7 +37,7 @@ data class Position(
 )
 
 @OptIn(ExperimentalForeignApi::class)
-fun zxing_Position.toKObject(): Position = Position(
+fun ZXing_Position.toKObject(): Position = Position(
 	topLeft.toKObject(),
 	topRight.toKObject(),
 	bottomRight.toKObject(),
@@ -113,36 +113,36 @@ data class Barcode(
 }
 
 @OptIn(ExperimentalForeignApi::class)
-fun CValuesRef<zxing_Barcode>.toKObject(): Barcode = Barcode(
-	zxing_Barcode_isValid(this),
-	zxing_Barcode_errorMsg(this)?.toKStringAndFree(),
-	zxing_Barcode_format(this).parseIntoBarcodeFormat().first { it != BarcodeFormat.None },
-	zxing_Barcode_contentType(this).toKObject(),
+fun CValuesRef<ZXing_Barcode>.toKObject(): Barcode = Barcode(
+	ZXing_Barcode_isValid(this),
+	ZXing_Barcode_errorMsg(this)?.toKStringAndFree(),
+	ZXing_Barcode_format(this).parseIntoBarcodeFormat().first { it != BarcodeFormat.None },
+	ZXing_Barcode_contentType(this).toKObject(),
 	memScoped {
 		val len = alloc<IntVar>()
-		zxing_Barcode_bytes(this@toKObject, len.ptr)?.run {
-			readBytes(len.value).also { zxing_free(this) }
+		ZXing_Barcode_bytes(this@toKObject, len.ptr)?.run {
+			readBytes(len.value).also { ZXing_free(this) }
 		}
 	},
 	memScoped {
 		val len = alloc<IntVar>()
-		zxing_Barcode_bytesECI(this@toKObject, len.ptr)?.run {
-			readBytes(len.value).also { zxing_free(this) }
+		ZXing_Barcode_bytesECI(this@toKObject, len.ptr)?.run {
+			readBytes(len.value).also { ZXing_free(this) }
 		}
 	},
-	zxing_Barcode_text(this)?.toKStringAndFree(),
-	zxing_Barcode_ecLevel(this)?.toKStringAndFree(),
-	zxing_Barcode_symbologyIdentifier(this)?.toKStringAndFree(),
-	zxing_Barcode_position(this).useContents { toKObject() },
-	zxing_Barcode_orientation(this),
-	zxing_Barcode_hasECI(this),
-	zxing_Barcode_isInverted(this),
-	zxing_Barcode_isMirrored(this),
-	zxing_Barcode_lineCount(this),
+	ZXing_Barcode_text(this)?.toKStringAndFree(),
+	ZXing_Barcode_ecLevel(this)?.toKStringAndFree(),
+	ZXing_Barcode_symbologyIdentifier(this)?.toKStringAndFree(),
+	ZXing_Barcode_position(this).useContents { toKObject() },
+	ZXing_Barcode_orientation(this),
+	ZXing_Barcode_hasECI(this),
+	ZXing_Barcode_isInverted(this),
+	ZXing_Barcode_isMirrored(this),
+	ZXing_Barcode_lineCount(this),
 )
 
 @OptIn(ExperimentalForeignApi::class)
-fun CValuesRef<zxing_Barcodes>.toKObject(): List<Barcode> = mutableListOf<Barcode>().apply {
-	for (i in 0..<zxing_Barcodes_size(this@toKObject))
-		zxing_Barcodes_at(this@toKObject, i)?.toKObject()?.let { add(it) }
+fun CValuesRef<ZXing_Barcodes>.toKObject(): List<Barcode> = mutableListOf<Barcode>().apply {
+	for (i in 0..<ZXing_Barcodes_size(this@toKObject))
+		ZXing_Barcodes_at(this@toKObject, i)?.toKObject()?.let { add(it) }
 }.toList()

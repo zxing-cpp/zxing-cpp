@@ -84,7 +84,7 @@ krossCompile {
 
             cinterop {
                 packageName = "zxingcpp.cinterop"
-                headers = listOf("$sourceDir/src/zxing-c.h")
+                headers = listOf("$sourceDir/src/ZXingC.h")
             }
             cmake.apply {
                 val buildPath = project.layout.buildDirectory.dir("cmake").get().asFile.absolutePath +

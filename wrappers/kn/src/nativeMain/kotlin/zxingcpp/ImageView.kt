@@ -1,6 +1,6 @@
 package zxingcpp
 
-import cnames.structs.zxing_ImageView
+import cnames.structs.ZXing_ImageView
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
@@ -17,8 +17,8 @@ data class ImageView(
 	val pixStride: Int = 0,
 ) : AutoCloseable {
 	private val pinnedData = data.pin()
-	val cValue: CPointer<zxing_ImageView>? =
-		zxing_ImageView_new(
+	val cValue: CPointer<ZXing_ImageView>? =
+		ZXing_ImageView_new(
 			pinnedData.addressOf(0),
 			width,
 			height,
@@ -28,23 +28,23 @@ data class ImageView(
 		)
 
 	override fun close() {
-		zxing_ImageView_delete(cValue)
+		ZXing_ImageView_delete(cValue)
 		pinnedData.unpin()
 	}
 }
 
 @OptIn(ExperimentalForeignApi::class)
-enum class ImageFormat(internal val rawValue: zxing_ImageFormat) {
-	None(zxing_ImageFormat_None),
-	Lum(zxing_ImageFormat_Lum),
-	RGB(zxing_ImageFormat_RGB),
-	BGR(zxing_ImageFormat_BGR),
-	RGBX(zxing_ImageFormat_RGBX),
-	XRGB(zxing_ImageFormat_XRGB),
-	BGRX(zxing_ImageFormat_BGRX),
-	XBGR(zxing_ImageFormat_XBGR)
+enum class ImageFormat(internal val rawValue: ZXing_ImageFormat) {
+	None(ZXing_ImageFormat_None),
+	Lum(ZXing_ImageFormat_Lum),
+	RGB(ZXing_ImageFormat_RGB),
+	BGR(ZXing_ImageFormat_BGR),
+	RGBX(ZXing_ImageFormat_RGBX),
+	XRGB(ZXing_ImageFormat_XRGB),
+	BGRX(ZXing_ImageFormat_BGRX),
+	XBGR(ZXing_ImageFormat_XBGR)
 }
 
 @OptIn(ExperimentalForeignApi::class)
-fun zxing_ImageFormat.parseIntoImageFormat(): ImageFormat? =
+fun ZXing_ImageFormat.parseIntoImageFormat(): ImageFormat? =
 	ImageFormat.entries.firstOrNull { it.rawValue == this }
