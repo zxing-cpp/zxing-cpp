@@ -5,8 +5,6 @@ import cnames.structs.zxing_Barcodes
 import kotlinx.cinterop.*
 import zxingcpp.cinterop.*
 import zxingcpp.cinterop.zxing_ContentType.*
-import kotlin.experimental.ExperimentalNativeApi
-import kotlin.native.ref.createCleaner
 
 @OptIn(ExperimentalForeignApi::class)
 enum class ContentType(internal val cValue: zxing_ContentType) {
@@ -46,72 +44,105 @@ fun zxing_Position.toKObject(): Position = Position(
 	bottomLeft.toKObject(),
 )
 
-@OptIn(ExperimentalForeignApi::class)
-class Barcode(val cValue: CValuesRef<zxing_Barcode>) {
-	val isValid: Boolean
-		get() = zxing_Barcode_isValid(cValue)
-	val errorMsg: String?
-		get() = zxing_Barcode_errorMsg(cValue)?.toKStringAndFree()
-	val format: BarcodeFormat
-		get() = zxing_Barcode_format(cValue).parseIntoBarcodeFormat().first { it != BarcodeFormat.None }
-	val contentType: ContentType
-		get() = zxing_Barcode_contentType(cValue).toKObject()
+data class Barcode(
+	val isValid: Boolean,
+	val errorMsg: String?,
+	val format: BarcodeFormat,
+	val contentType: ContentType,
+	val bytes: ByteArray?,
+	val bytesECI: ByteArray?,
+	val text: String?,
+	val ecLevel: String?,
+	val symbologyIdentifier: String?,
+	val position: Position,
+	val orientation: Int,
+	val hasECI: Boolean,
+	val isInverted: Boolean,
+	val isMirrored: Boolean,
+	val lineCount: Int,
+) {
+	override fun equals(other: Any?): Boolean {
+		if (this === other) return true
+		if ((other == null) || (other::class != Barcode::class)) return false
 
-	fun bytes(len: Int): ByteArray? = zxing_Barcode_bytes(cValue, cValuesOf(len))?.run {
-		readBytes(len).also { zxing_free(this) }
+		other as Barcode
+
+		if (isValid != other.isValid) return false
+		if (errorMsg != other.errorMsg) return false
+		if (format != other.format) return false
+		if (contentType != other.contentType) return false
+		if (bytes != null) {
+			if (other.bytes == null) return false
+			if (!bytes.contentEquals(other.bytes)) return false
+		} else if (other.bytes != null) return false
+		if (bytesECI != null) {
+			if (other.bytesECI == null) return false
+			if (!bytesECI.contentEquals(other.bytesECI)) return false
+		} else if (other.bytesECI != null) return false
+		if (text != other.text) return false
+		if (ecLevel != other.ecLevel) return false
+		if (symbologyIdentifier != other.symbologyIdentifier) return false
+		if (position != other.position) return false
+		if (orientation != other.orientation) return false
+		if (hasECI != other.hasECI) return false
+		if (isInverted != other.isInverted) return false
+		if (isMirrored != other.isMirrored) return false
+		if (lineCount != other.lineCount) return false
+
+		return true
 	}
 
-	fun bytesECI(len: Int): ByteArray? = zxing_Barcode_bytesECI(cValue, cValuesOf(len))?.run {
-		readBytes(len).also { zxing_free(this) }
-	}
-
-	val text: String?
-		get() = zxing_Barcode_text(cValue)?.toKStringAndFree()
-	val ecLevel: String?
-		get() = zxing_Barcode_ecLevel(cValue)?.toKStringAndFree()
-	val symbologyIdentifier: String?
-		get() = zxing_Barcode_symbologyIdentifier(cValue)?.toKStringAndFree()
-	val position: Position
-		get() = zxing_Barcode_position(cValue).useContents { toKObject() }
-	val orientation: Int
-		get() = zxing_Barcode_orientation(cValue)
-	val hasECI: Boolean
-		get() = zxing_Barcode_hasECI(cValue)
-	val isInverted: Boolean
-		get() = zxing_Barcode_isInverted(cValue)
-	val isMirrored: Boolean
-		get() = zxing_Barcode_isMirrored(cValue)
-	val lineCount: Int
-		get() = zxing_Barcode_lineCount(cValue)
-
-	@Suppress("unused")
-	@OptIn(ExperimentalNativeApi::class)
-	private val cleaner = createCleaner(cValue) { zxing_Barcode_delete(it) }
-
-	override fun toString(): String {
-		return "Barcode(" +
-			"isValid=$isValid, " +
-			"errorMsg=$errorMsg, " +
-			"format=$format, " +
-			"contentType=$contentType, " +
-			"text=$text, " +
-			"ecLevel=$ecLevel, " +
-			"symbologyIdentifier=$symbologyIdentifier, " +
-			"position=$position, " +
-			"orientation=$orientation, " +
-			"hasECI=$hasECI, " +
-			"isInverted=$isInverted, " +
-			"isMirrored=$isMirrored, " +
-			"lineCount=$lineCount" +
-			")"
+	override fun hashCode(): Int {
+		var result = isValid.hashCode()
+		result = 31 * result + (errorMsg?.hashCode() ?: 0)
+		result = 31 * result + format.hashCode()
+		result = 31 * result + contentType.hashCode()
+		result = 31 * result + (bytes?.contentHashCode() ?: 0)
+		result = 31 * result + (bytesECI?.contentHashCode() ?: 0)
+		result = 31 * result + (text?.hashCode() ?: 0)
+		result = 31 * result + (ecLevel?.hashCode() ?: 0)
+		result = 31 * result + (symbologyIdentifier?.hashCode() ?: 0)
+		result = 31 * result + position.hashCode()
+		result = 31 * result + orientation.hashCode()
+		result = 31 * result + hasECI.hashCode()
+		result = 31 * result + isInverted.hashCode()
+		result = 31 * result + isMirrored.hashCode()
+		result = 31 * result + lineCount.hashCode()
+		return result
 	}
 }
 
 @OptIn(ExperimentalForeignApi::class)
-fun CValuesRef<zxing_Barcode>.toKObject(): Barcode = Barcode(this)
+fun CValuesRef<zxing_Barcode>.toKObject(): Barcode = Barcode(
+	zxing_Barcode_isValid(this),
+	zxing_Barcode_errorMsg(this)?.toKStringAndFree(),
+	zxing_Barcode_format(this).parseIntoBarcodeFormat().first { it != BarcodeFormat.None },
+	zxing_Barcode_contentType(this).toKObject(),
+	memScoped {
+		val len = alloc<IntVar>()
+		zxing_Barcode_bytes(this@toKObject, len.ptr)?.run {
+			readBytes(len.value).also { zxing_free(this) }
+		}
+	},
+	memScoped {
+		val len = alloc<IntVar>()
+		zxing_Barcode_bytesECI(this@toKObject, len.ptr)?.run {
+			readBytes(len.value).also { zxing_free(this) }
+		}
+	},
+	zxing_Barcode_text(this)?.toKStringAndFree(),
+	zxing_Barcode_ecLevel(this)?.toKStringAndFree(),
+	zxing_Barcode_symbologyIdentifier(this)?.toKStringAndFree(),
+	zxing_Barcode_position(this).useContents { toKObject() },
+	zxing_Barcode_orientation(this),
+	zxing_Barcode_hasECI(this),
+	zxing_Barcode_isInverted(this),
+	zxing_Barcode_isMirrored(this),
+	zxing_Barcode_lineCount(this),
+)
 
 @OptIn(ExperimentalForeignApi::class)
 fun CValuesRef<zxing_Barcodes>.toKObject(): List<Barcode> = mutableListOf<Barcode>().apply {
 	for (i in 0..<zxing_Barcodes_size(this@toKObject))
-		zxing_Barcodes_move(this@toKObject, i)?.toKObject()?.let { add(it) }
+		zxing_Barcodes_at(this@toKObject, i)?.toKObject()?.let { add(it) }
 }.toList()
