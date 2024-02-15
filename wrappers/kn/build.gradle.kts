@@ -72,23 +72,7 @@ kotlin {
     enabledTargetList.addAll(linuxTargets())
     enabledTargetList.addAll(windowsTargets())
 
-    applyDefaultHierarchyTemplate()
-
     if (hostOs == "Mac OS X") enabledTargetList.addAll(appleTargets())
-
-    sourceSets {
-        val nonAndroidNativeTest by creating {
-            dependsOn(nativeTest.get())
-            dependencies {
-                implementation(libs.test.korlibs.korim)
-            }
-        }
-        if (hostOs == "Mac OS X") {
-            appleTest.get().dependsOn(nonAndroidNativeTest)
-        }
-        linuxTest.get().dependsOn(nonAndroidNativeTest)
-        mingwTest.get().dependsOn(nonAndroidNativeTest)
-    }
 }
 
 krossCompile {
