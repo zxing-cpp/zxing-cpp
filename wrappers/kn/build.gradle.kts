@@ -62,15 +62,17 @@ kotlin {
             linuxArm64(),
         )
     }
-    val windowsTargets = {
-        listOf(
-            mingwX64(),
-        )
-    }
+    // TODO: Linking failed, keep up with https://youtrack.jetbrains.com/issue/KT-65671
+//    val windowsTargets = {
+//        listOf(
+//            mingwX64(),
+//        )
+//    }
     val enabledTargetList = mutableListOf<KotlinNativeTarget>()
     enabledTargetList.addAll(androidTargets())
     enabledTargetList.addAll(linuxTargets())
-    enabledTargetList.addAll(windowsTargets())
+    // TODO: Linking failed, keep up with https://youtrack.jetbrains.com/issue/KT-65671
+//    enabledTargetList.addAll(windowsTargets())
 
     if (hostOs == "Mac OS X") enabledTargetList.addAll(appleTargets())
 }
@@ -132,7 +134,8 @@ krossCompile {
                     ).asCMakeParams
                 }
             }
-            mingwX64.konan()
+            // TODO: Linking failed, keep up with https://youtrack.jetbrains.com/issue/KT-65671
+//            mingwX64.konan()
 
             if (hostOs == "Mac OS X") {
                 iosX64.konan()
