@@ -57,12 +57,18 @@ class Barcode(val cValue: CValuesRef<ZXing_Barcode>) {
 	val contentType: ContentType
 		get() = ZXing_Barcode_contentType(cValue).toKObject()
 
-	fun bytes(len: Int): ByteArray? = ZXing_Barcode_bytes(cValue, cValuesOf(len))?.run {
-		readBytes(len).also { ZXing_free(this) }
+	val bytes: ByteArray? = memScoped {
+		val len = alloc<IntVar>()
+		ZXing_Barcode_bytes(cValue, len.ptr)?.run {
+			readBytes(len.value).also { ZXing_free(this) }
+		}
 	}
 
-	fun bytesECI(len: Int): ByteArray? = ZXing_Barcode_bytesECI(cValue, cValuesOf(len))?.run {
-		readBytes(len).also { ZXing_free(this) }
+	val bytesECI: ByteArray? = memScoped {
+		val len = alloc<IntVar>()
+		ZXing_Barcode_bytesECI(cValue, len.ptr)?.run {
+			readBytes(len.value).also { ZXing_free(this) }
+		}
 	}
 
 	val text: String?
