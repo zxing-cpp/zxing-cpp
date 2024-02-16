@@ -31,7 +31,7 @@ static void PrintUsage(const char* exePath)
 			  << "    -norotate  Don't try rotated image during detection (faster)\n"
 			  << "    -noinvert  Don't search for inverted codes during detection (faster)\n"
 			  << "    -noscale   Don't try downscaled images during detection (faster)\n"
-			  << "    -format <FORMAT[,...]>\n"
+			  << "    -formats <FORMAT[,...]>\n"
 			  << "               Only detect given format(s) (faster)\n"
 			  << "    -single    Stop after the first barcode is detected (faster)\n"
 			  << "    -ispure    Assume the image contains only a 'pure'/perfect code (faster)\n"
@@ -54,8 +54,8 @@ static void PrintUsage(const char* exePath)
 	std::cout << "Formats can be lowercase, with or without '-', separated by ',' and/or '|'\n";
 }
 
-static bool ParseOptions(int argc, char* argv[], ReaderOptions& options, bool& oneLine, bool& bytesOnly,
-						 std::vector<std::string>& filePaths, std::string& outPath)
+static bool ParseOptions(int argc, char* argv[], ReaderOptions& options, bool& oneLine, bool& bytesOnly, int& forceChannels,
+						 int& rotate, std::vector<std::string>& filePaths, std::string& outPath)
 {
 #ifdef ZXING_BUILD_EXPERIMENTAL_API
 	options.setTryDenoise(true);
@@ -122,6 +122,14 @@ static bool ParseOptions(int argc, char* argv[], ReaderOptions& options, bool& o
 			if (++i == argc)
 				return false;
 			outPath = argv[i];
+		} else if (is("-channels")) {
+			if (++i == argc)
+				return false;
+			forceChannels = atoi(argv[i]);
+		} else if (is("-rotate")) {
+			if (++i == argc)
+				return false;
+			rotate = atoi(argv[i]);
 		} else if (is("-help") || is("--help")) {
 			PrintUsage(argv[0]);
 			exit(0);
@@ -166,29 +174,33 @@ int main(int argc, char* argv[])
 	std::string outPath;
 	bool oneLine = false;
 	bool bytesOnly = false;
+	int forceChannels = 0;
+	int rotate = 0;
 	int ret = 0;
 
 	options.setTextMode(TextMode::HRI);
 	options.setEanAddOnSymbol(EanAddOnSymbol::Read);
 
-	if (!ParseOptions(argc, argv, options, oneLine, bytesOnly, filePaths, outPath)) {
+	if (!ParseOptions(argc, argv, options, oneLine, bytesOnly, forceChannels, rotate, filePaths, outPath)) {
 		PrintUsage(argv[0]);
 		return -1;
 	}
-
 
 	std::cout.setf(std::ios::boolalpha);
 
 	for (const auto& filePath : filePaths) {
 		int width, height, channels;
-		std::unique_ptr<stbi_uc, void(*)(void*)> buffer(stbi_load(filePath.c_str(), &width, &height, &channels, 3), stbi_image_free);
+		std::unique_ptr<stbi_uc, void (*)(void*)> buffer(stbi_load(filePath.c_str(), &width, &height, &channels, forceChannels),
+														 stbi_image_free);
 		if (buffer == nullptr) {
 			std::cerr << "Failed to read image: " << filePath << " (" << stbi_failure_reason() << ")" << "\n";
 			return -1;
 		}
+		channels = forceChannels ? forceChannels : channels;
 
-		ImageView image{buffer.get(), width, height, ImageFormat::RGB};
-		auto results = ReadBarcodes(image, options);
+		auto ImageFormatFromChannels = std::array{ImageFormat::None, ImageFormat::Lum, ImageFormat::LumX, ImageFormat::RGB, ImageFormat::RGBX};
+		ImageView image{buffer.get(), width, height, ImageFormatFromChannels.at(channels)};
+		auto results = ReadBarcodes(image.rotated(rotate), options);
 
 		// if we did not find anything, insert a dummy to produce some output for each file
 		if (results.empty())

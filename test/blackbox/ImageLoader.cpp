@@ -9,6 +9,7 @@
 #include "BinaryBitmap.h"
 #include "ImageView.h"
 
+#include <array>
 #include <map>
 #include <memory>
 #include <stdexcept>
@@ -27,18 +28,21 @@ public:
 
 	void load(const fs::path& imgPath)
 	{
-		int width, height, colors;
-		_memory.reset(stbi_load(imgPath.string().c_str(), &width, &height, &colors, 3));
+		int width, height, channels;
+		_memory.reset(stbi_load(imgPath.string().c_str(), &width, &height, &channels, 0));
 		if (_memory == nullptr)
-			throw std::runtime_error("Failed to read image");
-#if 1
-		auto* img = _memory.get();
-		for (int i = 0; i < width * height; ++i )
-			img[i] = RGBToLum(img[3 * i + 0], img[3 * i + 1], img[3 * i + 2]);
-		ImageView::operator=({_memory.get(), width, height, ImageFormat::Lum});
-#else
-		ImageView::operator=({_memory.get(), width, height, ImageFormat::RGB});
-#endif
+			throw std::runtime_error("Failed to read image: " + imgPath.string() + " (" + stbi_failure_reason() + ")");
+
+		auto ImageFormatFromChannels = std::array{ImageFormat::None, ImageFormat::Lum, ImageFormat::LumX, ImageFormat::RGB, ImageFormat::RGBX};
+		ImageView::operator=({_memory.get(), width, height, ImageFormatFromChannels.at(channels)});
+
+		// preconvert from RGB -> Lum to do this only once instead of for each rotation
+		if (_format == ImageFormat::RGB) {
+			auto* img = _memory.get();
+			for (int i = 0; i < width * height; ++i)
+				img[i] = RGBToLum(img[3 * i + 0], img[3 * i + 1], img[3 * i + 2]);
+			ImageView::operator=({_memory.get(), width, height, ImageFormat::Lum});
+		}
 	}
 
 	operator bool() const { return _data; }
