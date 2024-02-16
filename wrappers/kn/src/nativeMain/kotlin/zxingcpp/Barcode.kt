@@ -93,22 +93,24 @@ class Barcode(val cValue: CValuesRef<ZXing_Barcode>) {
 	@Suppress("unused")
 	@OptIn(ExperimentalNativeApi::class)
 	private val cleaner = createCleaner(cValue) { ZXing_Barcode_delete(it) }
-
 	override fun toString(): String {
 		return "Barcode(" +
-			"isValid=$isValid, " +
-			"errorMsg=$errorMsg, " +
-			"format=$format, " +
-			"contentType=$contentType, " +
-			"text=$text, " +
-			"ecLevel=$ecLevel, " +
-			"symbologyIdentifier=$symbologyIdentifier, " +
-			"position=$position, " +
-			"orientation=$orientation, " +
-			"hasECI=$hasECI, " +
-			"isInverted=$isInverted, " +
+			"cValue=$cValue, " +
+			"bytes=${bytes?.contentToString()}, " +
+			"bytesECI=${bytesECI?.contentToString()}, " +
+			"lineCount=$lineCount, " +
 			"isMirrored=$isMirrored, " +
-			"lineCount=$lineCount" +
+			"isInverted=$isInverted, " +
+			"hasECI=$hasECI, " +
+			"orientation=$orientation, " +
+			"position=$position, " +
+			"symbologyIdentifier=$symbologyIdentifier, " +
+			"ecLevel=$ecLevel, " +
+			"text=$text, " +
+			"contentType=$contentType, " +
+			"format=$format, " +
+			"errorMsg=$errorMsg, " +
+			"isValid=$isValid" +
 			")"
 	}
 }
