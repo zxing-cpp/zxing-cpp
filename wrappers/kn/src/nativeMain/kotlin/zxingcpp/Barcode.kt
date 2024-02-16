@@ -93,6 +93,7 @@ class Barcode(val cValue: CValuesRef<ZXing_Barcode>) {
 	@Suppress("unused")
 	@OptIn(ExperimentalNativeApi::class)
 	private val cleaner = createCleaner(cValue) { ZXing_Barcode_delete(it) }
+
 	override fun toString(): String {
 		return "Barcode(" +
 			"cValue=$cValue, " +
