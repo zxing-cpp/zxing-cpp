@@ -217,6 +217,7 @@ int ZXing_Barcodes_size(const ZXing_Barcodes* barcodes);
 const ZXing_Barcode* ZXing_Barcodes_at(const ZXing_Barcodes* barcodes, int i);
 ZXing_Barcode* ZXing_Barcodes_move(ZXing_Barcodes* barcodes, int i);
 
+/* ZXing_LastErrorMsg() returns NULL in case there is no last error and a copy of the string otherwise. */
 char* ZXing_LastErrorMsg();
 
 void ZXing_free(void* ptr);

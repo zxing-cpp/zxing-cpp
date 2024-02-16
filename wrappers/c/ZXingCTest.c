@@ -81,6 +81,7 @@ int main(int argc, char** argv)
 			const ZXing_Barcode* barcode = ZXing_Barcodes_at(barcodes, i);
 
 			printF("Text       : %s\n", ZXing_Barcode_text(barcode));
+			printF("BytesECI   : %s\n", (char*)ZXing_Barcode_bytesECI(barcode, NULL));
 			printF("Format     : %s\n", ZXing_BarcodeFormatToString(ZXing_Barcode_format(barcode)));
 			printF("Content    : %s\n", ZXing_ContentTypeToString(ZXing_Barcode_contentType(barcode)));
 			printF("Identifier : %s\n", ZXing_Barcode_symbologyIdentifier(barcode));
