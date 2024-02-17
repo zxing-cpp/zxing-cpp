@@ -11,7 +11,7 @@ class BarcodeReader : ReaderOptions() {
 	fun read(imageView: ImageView): List<Barcode> =
 		imageView.use {
 			ZXing_ReadBarcodes(it.cValue, cValue)?.let { cValues -> cValues.toKObject().also { ZXing_Barcodes_delete(cValues) } }
-				?: throw BarcodeReadingException(ZXing_LastErrorMsg()?.toKStringAndFree())
+				?: throw BarcodeReadingException(ZXing_LastErrorMsg()?.toKStringNullPtrHandledAndFree())
 		}
 }
 

@@ -7,6 +7,6 @@ import kotlinx.cinterop.toKString
 import zxingcpp.cinterop.ZXing_free
 
 @OptIn(ExperimentalForeignApi::class)
-internal fun CPointer<ByteVar>.toKStringAndFree(): String = run {
-	toKString().also { ZXing_free(this) }
+internal fun CPointer<ByteVar>?.toKStringNullPtrHandledAndFree(): String? = (this ?: throw OutOfMemoryError()).run {
+	toKString().also { ZXing_free(this) }.ifEmpty { null }
 }
