@@ -6,6 +6,8 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.pin
 import zxingcpp.cinterop.*
+import kotlin.experimental.ExperimentalNativeApi
+import kotlin.native.ref.createCleaner
 
 @OptIn(ExperimentalForeignApi::class, ExperimentalStdlibApi::class)
 class ImageView(
@@ -15,7 +17,7 @@ class ImageView(
 	val format: ImageFormat,
 	val rowStride: Int = 0,
 	val pixStride: Int = 0,
-) : AutoCloseable {
+) {
 	private val pinnedData = data.pin()
 	val cValue: CPointer<ZXing_ImageView>? =
 		ZXing_ImageView_new(
@@ -27,10 +29,13 @@ class ImageView(
 			pixStride
 		)
 
-	override fun close() {
-		ZXing_ImageView_delete(cValue)
-		pinnedData.unpin()
-	}
+	@Suppress("unused")
+	@OptIn(ExperimentalNativeApi::class)
+	private val cValueCleaner = createCleaner(cValue) { ZXing_ImageView_delete(it) }
+
+	@Suppress("unused")
+	@OptIn(ExperimentalNativeApi::class)
+	private val pinnedDataCleaner = createCleaner(pinnedData) { it.unpin() }
 }
 
 @OptIn(ExperimentalForeignApi::class)
