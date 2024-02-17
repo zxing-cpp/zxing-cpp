@@ -54,10 +54,12 @@ class Barcode(val cValue: CValuesRef<ZXing_Barcode>) {
 		(ZXing_Barcode_errorMsg(cValue)?.toKStringAndFree()
 			?: if (isValid) null else throw OutOfMemoryError())?.ifEmpty { null }
 	}
-	val format: BarcodeFormat
-		get() = ZXing_Barcode_format(cValue).parseIntoBarcodeFormat().first { it != BarcodeFormat.None }
-	val contentType: ContentType
-		get() = ZXing_Barcode_contentType(cValue).toKObject()
+	val format: BarcodeFormat by lazy {
+		ZXing_Barcode_format(cValue).parseIntoBarcodeFormat().first { it != BarcodeFormat.None }
+	}
+	val contentType: ContentType by lazy {
+		ZXing_Barcode_contentType(cValue).toKObject()
+	}
 
 	val bytes: ByteArray? by lazy {
 		memScoped {
@@ -86,8 +88,9 @@ class Barcode(val cValue: CValuesRef<ZXing_Barcode>) {
 	val symbologyIdentifier: String? by lazy {
 		ZXing_Barcode_symbologyIdentifier(cValue)?.toKStringAndFree()
 	}
-	val position: Position
-		get() = ZXing_Barcode_position(cValue).useContents { toKObject() }
+	val position: Position by lazy {
+		ZXing_Barcode_position(cValue).useContents { toKObject() }
+	}
 	val orientation: Int
 		get() = ZXing_Barcode_orientation(cValue)
 	val hasECI: Boolean
