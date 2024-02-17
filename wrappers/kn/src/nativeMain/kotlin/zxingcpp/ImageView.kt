@@ -8,7 +8,7 @@ import kotlinx.cinterop.pin
 import zxingcpp.cinterop.*
 
 @OptIn(ExperimentalForeignApi::class, ExperimentalStdlibApi::class)
-data class ImageView(
+class ImageView(
 	val data: UByteArray,
 	val width: Int,
 	val height: Int,
