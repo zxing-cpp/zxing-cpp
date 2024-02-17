@@ -51,7 +51,8 @@ class Barcode(val cValue: CValuesRef<ZXing_Barcode>) {
 	val isValid: Boolean
 		get() = ZXing_Barcode_isValid(cValue)
 	val errorMsg: String?
-		get() = ZXing_Barcode_errorMsg(cValue)?.toKStringAndFree()
+		get() = (ZXing_Barcode_errorMsg(cValue)?.toKStringAndFree()
+			?: if (isValid) null else throw OutOfMemoryError())?.ifEmpty { null }
 	val format: BarcodeFormat
 		get() = ZXing_Barcode_format(cValue).parseIntoBarcodeFormat().first { it != BarcodeFormat.None }
 	val contentType: ContentType
@@ -59,22 +60,22 @@ class Barcode(val cValue: CValuesRef<ZXing_Barcode>) {
 
 	val bytes: ByteArray? = memScoped {
 		val len = alloc<IntVar>()
-		ZXing_Barcode_bytes(cValue, len.ptr)?.run {
+		(ZXing_Barcode_bytes(cValue, len.ptr)?.run {
 			readBytes(len.value).also { ZXing_free(this) }
-		}
+		} ?: throw OutOfMemoryError()).takeUnless { it.isEmpty() }
 	}
 
 	val bytesECI: ByteArray? = memScoped {
 		val len = alloc<IntVar>()
-		ZXing_Barcode_bytesECI(cValue, len.ptr)?.run {
+		(ZXing_Barcode_bytesECI(cValue, len.ptr)?.run {
 			readBytes(len.value).also { ZXing_free(this) }
-		}
+		} ?: throw OutOfMemoryError()).takeUnless { it.isEmpty() }
 	}
 
 	val text: String?
-		get() = ZXing_Barcode_text(cValue)?.toKStringAndFree()
+		get() = (ZXing_Barcode_text(cValue)?.toKStringAndFree() ?: throw OutOfMemoryError()).ifEmpty { null }
 	val ecLevel: String?
-		get() = ZXing_Barcode_ecLevel(cValue)?.toKStringAndFree()
+		get() = (ZXing_Barcode_ecLevel(cValue)?.toKStringAndFree() ?: throw OutOfMemoryError()).ifEmpty { null }
 	val symbologyIdentifier: String?
 		get() = ZXing_Barcode_symbologyIdentifier(cValue)?.toKStringAndFree()
 	val position: Position
