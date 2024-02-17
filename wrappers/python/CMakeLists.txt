@@ -17,8 +17,16 @@ if (NOT hasParent)
     option (BUILD_WRITERS "Build with writer support (encoders)" ON)
     option (BUILD_READERS "Build with reader support (decoders)" ON)
     set(BUILD_DEPENDENCIES "AUTO")
-    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/core)
-        add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/core ZXing EXCLUDE_FROM_ALL)
+
+    set(CORE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/core)
+    if(IS_SYMLINK ${CORE_PATH})
+        # This is needed because otherwise GCC resolves the symlink which causes paths to randomly
+        # be prefixed by /core or by /wrappers/python/core depending on include order.
+        set(CORE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../core)
+    endif()
+
+    if(EXISTS ${CORE_PATH})
+        add_subdirectory(${CORE_PATH} ZXing EXCLUDE_FROM_ALL)
         include(${CMAKE_CURRENT_SOURCE_DIR}/zxing.cmake)
     else()
         message(FATAL_ERROR "Unable to locate zxing source code")
