@@ -50,36 +50,42 @@ fun ZXing_Position.toKObject(): Position = Position(
 class Barcode(val cValue: CValuesRef<ZXing_Barcode>) {
 	val isValid: Boolean
 		get() = ZXing_Barcode_isValid(cValue)
-	val errorMsg: String?
-		get() = (ZXing_Barcode_errorMsg(cValue)?.toKStringAndFree()
+	val errorMsg: String? by lazy {
+		(ZXing_Barcode_errorMsg(cValue)?.toKStringAndFree()
 			?: if (isValid) null else throw OutOfMemoryError())?.ifEmpty { null }
+	}
 	val format: BarcodeFormat
 		get() = ZXing_Barcode_format(cValue).parseIntoBarcodeFormat().first { it != BarcodeFormat.None }
 	val contentType: ContentType
 		get() = ZXing_Barcode_contentType(cValue).toKObject()
 
-	val bytes: ByteArray?
-		get() = memScoped {
+	val bytes: ByteArray? by lazy {
+		memScoped {
 			val len = alloc<IntVar>()
 			(ZXing_Barcode_bytes(cValue, len.ptr)?.run {
 				readBytes(len.value).also { ZXing_free(this) }
 			} ?: throw OutOfMemoryError()).takeUnless { it.isEmpty() }
 		}
+	}
 
-	val bytesECI: ByteArray?
-		get() = memScoped {
+	val bytesECI: ByteArray? by lazy {
+		memScoped {
 			val len = alloc<IntVar>()
 			(ZXing_Barcode_bytesECI(cValue, len.ptr)?.run {
 				readBytes(len.value).also { ZXing_free(this) }
 			} ?: throw OutOfMemoryError()).takeUnless { it.isEmpty() }
 		}
+	}
 
-	val text: String?
-		get() = (ZXing_Barcode_text(cValue)?.toKStringAndFree() ?: throw OutOfMemoryError()).ifEmpty { null }
-	val ecLevel: String?
-		get() = (ZXing_Barcode_ecLevel(cValue)?.toKStringAndFree() ?: throw OutOfMemoryError()).ifEmpty { null }
-	val symbologyIdentifier: String?
-		get() = ZXing_Barcode_symbologyIdentifier(cValue)?.toKStringAndFree()
+	val text: String? by lazy {
+		(ZXing_Barcode_text(cValue)?.toKStringAndFree() ?: throw OutOfMemoryError()).ifEmpty { null }
+	}
+	val ecLevel: String? by lazy {
+		(ZXing_Barcode_ecLevel(cValue)?.toKStringAndFree() ?: throw OutOfMemoryError()).ifEmpty { null }
+	}
+	val symbologyIdentifier: String? by lazy {
+		ZXing_Barcode_symbologyIdentifier(cValue)?.toKStringAndFree()
+	}
 	val position: Position
 		get() = ZXing_Barcode_position(cValue).useContents { toKObject() }
 	val orientation: Int
