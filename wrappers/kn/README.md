@@ -15,35 +15,30 @@ to your `build.gradle.kts` file in the `dependencies` section of `nativeMain` so
 A trivial use case looks like this:
 
 ```kotlin
-import zxingcpp.BarcodeFormat.EAN13
-import zxingcpp.BarcodeFormat.QRCode
+import zxingcpp.BarcodeFormat
 import zxingcpp.BarcodeReader
 import zxingcpp.ImageFormat
 import zxingcpp.ImageView
 
+val data: ByteArray = ...    // the image data
+val width: Int = ...         // the image width
+val height: Int = ...        // the image height
+val format = ImageFormat.Lum // ImageFormat.Lum assumes grey scale image data
 
+val image = ImageView(data, width, height, format)
 val barcodeReader = BarcodeReader().apply {
-   formats = setOf(EAN13, QRCode)
+   formats = setOf(BarcodeFormat.EAN13, BarcodeFormat.QRCode)
    tryHarder = true
    maxNumberOfSymbols = 3
    // more options, see documentation
 }
 
-@OptIn(ExperimentalUnsignedTypes::class)
-fun process(
-   data: UByteArray,
-   width: Int,
-   height: Int,
-   imageFormat: ImageFormat = ImageFormat.Lum // ImageFormat.Lum assumes grey scale image data.
-) {
-   val image = ImageView(data, width, height, imageFormat)
-   barcodeReader.read(image).joinToString("\n") { barcode: Barcode ->
-      "${barcode.format} (${barcode.contentType}): ${barcode.text}"
-   }
+barcodeReader.read(image).joinToString("\n") { barcode: Barcode ->
+   "${barcode.format} (${barcode.contentType}): ${barcode.text}"
 }
 ```
 
-Here you have to load your image into memory by yourself and pass the decoded data to the constructor of `ImageView`
+Here you have to load your image into memory by yourself and pass the decoded data to the constructor of `ImageView`.
 
 ## Build locally
 
