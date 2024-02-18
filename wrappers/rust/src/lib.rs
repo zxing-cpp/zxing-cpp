@@ -127,8 +127,6 @@ make_zxing_flags!(BarcodeFormat {
 	MaxiCode, PDF417, QRCode, UPCA, UPCE, MicroQRCode, RMQRCode, DXFilmEdge, LinearCodes, MatrixCodes, Any
 });
 
-pub type BarcodeFormats = FlagSet<BarcodeFormat>;
-
 impl Display for BarcodeFormat {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		write!(f, "{}", unsafe { c2r_str(ZXing_BarcodeFormatToString(BarcodeFormats::from(*self).bits())) })
@@ -138,6 +136,24 @@ impl Display for BarcodeFormat {
 impl Display for ContentType {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		write!(f, "{}", unsafe { c2r_str(ZXing_ContentTypeToString(transmute(*self))) })
+	}
+}
+
+pub type BarcodeFormats = FlagSet<BarcodeFormat>;
+
+pub trait FromStr: Sized {
+	fn from_str(str: impl AsRef<str>) -> Result<Self, Error>;
+}
+
+impl FromStr for BarcodeFormats {
+	fn from_str(str: impl AsRef<str>) -> Result<BarcodeFormats, Error> {
+		let cstr = CString::new(str.as_ref())?;
+		let res = unsafe { BarcodeFormats::new_unchecked(ZXing_BarcodeFormatsFromString(cstr.as_ptr())) };
+		match res.bits() {
+			u32::MAX => last_error_or!(BarcodeFormats::default()),
+			0 => Ok(BarcodeFormats::full()),
+			_ => Ok(res),
+		}
 	}
 }
 
@@ -253,65 +269,6 @@ impl<'a> TryFrom<&'a image::DynamicImage> for ImageView<'a> {
 	}
 }
 
-pub struct ReaderOptions(*mut ZXing_ReaderOptions);
-
-impl Drop for ReaderOptions {
-	fn drop(&mut self) {
-		unsafe { ZXing_ReaderOptions_delete(self.0) }
-	}
-}
-
-impl Default for ReaderOptions {
-	fn default() -> Self {
-		Self::new()
-	}
-}
-
-impl AsRef<ReaderOptions> for ReaderOptions {
-	fn as_ref(&self) -> &ReaderOptions {
-		self
-	}
-}
-
-macro_rules! property {
-	($name:ident, $type:ty) => {
-		pub fn $name(self, v: impl Into<$type>) -> Self {
-			paste! { unsafe { [<ZXing_ReaderOptions_set $name:camel>](self.0, transmute(v.into())) } };
-			self
-		}
-
-		paste! {
-			pub fn [<set_ $name>](&mut self, v : impl Into<$type>) -> &mut Self {
-				unsafe { [<ZXing_ReaderOptions_set $name:camel>](self.0, transmute(v.into())) };
-				self
-			}
-
-			pub fn [<get_ $name>](&self) -> $type {
-				unsafe { transmute([<ZXing_ReaderOptions_get $name:camel>](self.0)) }
-			}
-		}
-	};
-}
-
-impl ReaderOptions {
-	pub fn new() -> Self {
-		unsafe { ReaderOptions(ZXing_ReaderOptions_new()) }
-	}
-
-	property!(try_harder, bool);
-	property!(try_rotate, bool);
-	property!(try_invert, bool);
-	property!(try_downscale, bool);
-	property!(is_pure, bool);
-	property!(return_errors, bool);
-	property!(formats, BarcodeFormats);
-	property!(text_mode, TextMode);
-	property!(binarizer, Binarizer);
-	property!(ean_add_on_symbol, EanAddOnSymbol);
-	property!(max_number_of_symbols, i32);
-	property!(min_line_count, i32);
-}
-
 pub struct Barcode(*mut ZXing_Barcode);
 
 impl Drop for Barcode {
@@ -377,35 +334,77 @@ impl Barcode {
 	}
 }
 
-pub fn barcode_formats_from_string(str: impl AsRef<str>) -> Result<BarcodeFormats, Error> {
-	let cstr = CString::new(str.as_ref())?;
-	let res = unsafe { BarcodeFormats::new_unchecked(ZXing_BarcodeFormatsFromString(cstr.as_ptr())) };
-	match res.bits() {
-		u32::MAX => last_error_or!(BarcodeFormats::default()),
-		0 => Ok(BarcodeFormats::full()),
-		_ => Ok(res),
+pub struct BarcodeReader(*mut ZXing_ReaderOptions);
+
+impl Drop for BarcodeReader {
+	fn drop(&mut self) {
+		unsafe { ZXing_ReaderOptions_delete(self.0) }
 	}
 }
 
-pub fn read_barcodes<'a, IV, RO>(image: IV, opts: RO) -> Result<Vec<Barcode>, Error>
-where
-	IV: TryInto<ImageView<'a>>,
-	IV::Error: Into<Error>,
-	RO: AsRef<ReaderOptions>,
-{
-	let iv_: ImageView = image.try_into().map_err(Into::into)?;
-	unsafe {
-		let results = ZXing_ReadBarcodes((iv_.0).0, opts.as_ref().0);
-		if !results.is_null() {
-			let size = ZXing_Barcodes_size(results);
-			let mut vec = Vec::<Barcode>::with_capacity(size as usize);
-			for i in 0..size {
-				vec.push(Barcode(ZXing_Barcodes_move(results, i)));
+impl Default for BarcodeReader {
+	fn default() -> Self {
+		Self::new()
+	}
+}
+
+macro_rules! property {
+	($name:ident, $type:ty) => {
+		pub fn $name(self, v: impl Into<$type>) -> Self {
+			paste! { unsafe { [<ZXing_ReaderOptions_set $name:camel>](self.0, transmute(v.into())) } };
+			self
+		}
+
+		paste! {
+			pub fn [<set_ $name>](&mut self, v : impl Into<$type>) -> &mut Self {
+				unsafe { [<ZXing_ReaderOptions_set $name:camel>](self.0, transmute(v.into())) };
+				self
 			}
-			ZXing_Barcodes_delete(results);
-			Ok(vec)
-		} else {
-			Err(last_error())
+
+			pub fn [<get_ $name>](&self) -> $type {
+				unsafe { transmute([<ZXing_ReaderOptions_get $name:camel>](self.0)) }
+			}
+		}
+	};
+}
+
+impl BarcodeReader {
+	pub fn new() -> Self {
+		unsafe { BarcodeReader(ZXing_ReaderOptions_new()) }
+	}
+
+	property!(try_harder, bool);
+	property!(try_rotate, bool);
+	property!(try_invert, bool);
+	property!(try_downscale, bool);
+	property!(is_pure, bool);
+	property!(return_errors, bool);
+	property!(formats, BarcodeFormats);
+	property!(text_mode, TextMode);
+	property!(binarizer, Binarizer);
+	property!(ean_add_on_symbol, EanAddOnSymbol);
+	property!(max_number_of_symbols, i32);
+	property!(min_line_count, i32);
+
+	pub fn read<'a, IV>(&self, image: IV) -> Result<Vec<Barcode>, Error>
+	where
+		IV: TryInto<ImageView<'a>>,
+		IV::Error: Into<Error>,
+	{
+		let iv_: ImageView = image.try_into().map_err(Into::into)?;
+		unsafe {
+			let results = ZXing_ReadBarcodes((iv_.0).0, self.0);
+			if !results.is_null() {
+				let size = ZXing_Barcodes_size(results);
+				let mut vec = Vec::<Barcode>::with_capacity(size as usize);
+				for i in 0..size {
+					vec.push(Barcode(ZXing_Barcodes_move(results, i)));
+				}
+				ZXing_Barcodes_delete(results);
+				Ok(vec)
+			} else {
+				Err(last_error())
+			}
 		}
 	}
 }

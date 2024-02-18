@@ -17,8 +17,8 @@ fn main() -> anyhow::Result<()> {
 	#[cfg(not(feature = "image"))]
 	let iv = ImageView::from_slice(&lum_img, lum_img.width(), lum_img.height(), ImageFormat::Lum)?;
 
-	let formats = barcode_formats_from_string(formats.unwrap_or_default())?;
-	let opts = ReaderOptions::default()
+	let formats = BarcodeFormats::from_str(formats.unwrap_or_default())?;
+	let reader = BarcodeReader::new()
 		.formats(formats)
 		.try_harder(!fast)
 		.try_invert(!fast)
@@ -26,9 +26,9 @@ fn main() -> anyhow::Result<()> {
 		.try_downscale(!fast);
 
 	#[cfg(feature = "image")]
-	let barcodes = read_barcodes(&image, &opts)?;
+	let barcodes = reader.read(&image)?;
 	#[cfg(not(feature = "image"))]
-	let barcodes = read_barcodes(iv, opts)?;
+	let barcodes = reader.read(iv)?;
 
 	if barcodes.is_empty() {
 		println!("No barcode found.");

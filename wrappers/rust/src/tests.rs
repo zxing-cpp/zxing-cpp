@@ -8,14 +8,14 @@ mod tests {
 	use crate::*;
 
 	#[test]
-	fn barcode_formats_from_string_valid() {
-		let formats = barcode_formats_from_string("qrcode,linearcodes").unwrap();
+	fn barcode_formats_from_str_valid() {
+		let formats = BarcodeFormats::from_str("qrcode,linearcodes").unwrap();
 		assert_eq!(formats, BarcodeFormat::QRCode | BarcodeFormat::LinearCodes);
 	}
 
 	#[test]
-	fn reader_options() {
-		let mut o1 = ReaderOptions::default();
+	fn barcode_reader_new() {
+		let mut o1 = BarcodeReader::new();
 		assert_eq!(o1.get_formats(), BarcodeFormat::None);
 		assert_eq!(o1.get_try_harder(), true);
 		o1.set_formats(BarcodeFormat::EAN8);
@@ -23,7 +23,7 @@ mod tests {
 		o1.set_try_harder(false);
 		assert_eq!(o1.get_try_harder(), false);
 
-		o1 = ReaderOptions::default().is_pure(true).text_mode(TextMode::Hex);
+		o1 = BarcodeReader::new().is_pure(true).text_mode(TextMode::Hex);
 		assert_eq!(o1.get_formats(), BarcodeFormat::None);
 		assert_eq!(o1.get_try_harder(), true);
 		assert_eq!(o1.get_is_pure(), true);
@@ -32,19 +32,18 @@ mod tests {
 
 	#[test]
 	#[should_panic]
-	fn barcode_formats_from_string_invalid() {
-		let _ = barcode_formats_from_string("qrcoder").unwrap();
+	fn barcode_formats_from_str_invalid() {
+		let _ = BarcodeFormats::from_str("qrcoder").unwrap();
 	}
 
 	#[test]
-	fn read_barcodes_pure() {
+	fn read_pure() {
 		let mut data = Vec::<u8>::new();
 		for v in "0000101000101101011110111101011011101010100111011100101000100101110010100000".chars() {
 			data.push(if v == '0' { 255 } else { 0 });
 		}
 		let iv = ImageView::from_slice(&data, data.len(), 1, ImageFormat::Lum).unwrap();
-		let op = ReaderOptions::default().binarizer(Binarizer::BoolCast);
-		let res = read_barcodes(&iv, &op).unwrap();
+		let res = BarcodeReader::new().binarizer(Binarizer::BoolCast).read(&iv).unwrap();
 
 		let expected = "96385074";
 
