@@ -1,17 +1,14 @@
 package zxingcpp
 
 import cnames.structs.ZXing_ImageView
-import kotlinx.cinterop.CPointer
-import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.addressOf
-import kotlinx.cinterop.pin
+import kotlinx.cinterop.*
 import zxingcpp.cinterop.*
 import kotlin.experimental.ExperimentalNativeApi
 import kotlin.native.ref.createCleaner
 
-@OptIn(ExperimentalForeignApi::class, ExperimentalStdlibApi::class)
+@OptIn(ExperimentalForeignApi::class)
 class ImageView(
-	val data: UByteArray,
+	val data: ByteArray,
 	val width: Int,
 	val height: Int,
 	val format: ImageFormat,
@@ -21,7 +18,7 @@ class ImageView(
 	private val pinnedData = data.pin()
 	val cValue: CPointer<ZXing_ImageView>? =
 		ZXing_ImageView_new(
-			pinnedData.addressOf(0),
+			pinnedData.addressOf(0).reinterpret(),
 			width,
 			height,
 			format.rawValue,

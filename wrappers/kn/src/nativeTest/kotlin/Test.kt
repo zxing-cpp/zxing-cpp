@@ -14,7 +14,7 @@ class BarcodeReaderTest {
 			if (it == '0') 255.toByte() else 0.toByte()
 		}
 
-		val iv = ImageView(data.toByteArray().asUByteArray(), data.size, 1, ImageFormat.Lum)
+		val iv = ImageView(data.toByteArray(), data.size, 1, ImageFormat.Lum)
 		val br = BarcodeReader().apply {
 			binarizer = Binarizer.BoolCast
 		}
