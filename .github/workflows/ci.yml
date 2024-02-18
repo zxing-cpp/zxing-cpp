@@ -115,7 +115,7 @@ jobs:
         path: "wrappers/android/zxingcpp/build/outputs/aar/zxingcpp-debug.aar"
 
   build-kn:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: ./wrappers/kn
@@ -147,12 +147,11 @@ jobs:
 
     - name: Export Toolchain properties
       run: |
-        echo -e "konan.dir=$HOME/.konan/kotlin-native-prebuilt-macos-x86_64-1.9.22" > local.properties
+        echo -e "konan.dir=$HOME/.konan/kotlin-native-prebuilt-linux-x86_64-1.9.22" > local.properties
 
     - name: Build Library
       run: |
-        export PATH="$PATH:$(brew --prefix llvm@15)/bin"
-        ./gradlew allTests
+        ./gradlew linuxX64Test
 
   build-python:
     runs-on: ${{ matrix.os }}
