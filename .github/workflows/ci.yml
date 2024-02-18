@@ -146,7 +146,7 @@ jobs:
 
     - name: Initialize Kotlin/Native toolchain
       working-directory: wrappers/kn/.kn-toolchain-initializer
-      run: ./gradlew build
+      run: ./gradlew build -DkotlinVersion=1.9.22
 
     - name: Build Library
       run: |
