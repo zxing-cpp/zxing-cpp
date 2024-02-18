@@ -149,7 +149,7 @@ jobs:
       run: |
         echo -e "konan.dir=$HOME/.konan/kotlin-native-prebuilt-linux-x86_64-1.9.22" > local.properties
 
-    - name: Build Library
+    - name: Run test for linuxX64 target
       run: |
         ./gradlew linuxX64Test
 
