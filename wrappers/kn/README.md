@@ -47,7 +47,9 @@ Here you have to load your image into memory by yourself and pass the decoded da
 2. Prepare kotlin/native toolchain (You can easily do this by cloning
    [K/N Toolchain Initializer](https://github.com/ISNing/kn-toolchain-initializer) and executing `gradle build`
    so that kotlin will download toolchains needed into user's home dir.).
-3. Ensure there's `llvm-ar` available in `$PATH` for mingwX64 target building.
+3. Ensure there's `run_konan` available in `$PATH` or specify path of kotlin-native toolchain in `local.properties`
+   like `konan.dir=/home/user/.konan/kotlin-native-prebuilt-linux-x86_64-1.9.22`.
+5. Ensure there's `llvm-ar` available in `$PATH` for mingwX64 target building.
 
 And then you can build the project from the command line:
 
