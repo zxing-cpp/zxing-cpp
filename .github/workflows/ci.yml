@@ -138,15 +138,16 @@ jobs:
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v3
 
-    - name: Install required packages
-      run: brew install kotlin-native
-
     - name: Validate Gradle Wrapper
       uses: gradle/wrapper-validation-action@v2
 
     - name: Initialize Kotlin/Native toolchain
       working-directory: wrappers/kn/.kn-toolchain-initializer
       run: ./gradlew build -DkotlinVersion=1.9.22
+
+    - name: Export Toolchain properties
+      run: |
+        echo -e "konan.dir=$HOME/.konan/kotlin-native-prebuilt-macos-x86_64-1.9.22" > local.properties
 
     - name: Build Library
       run: |
