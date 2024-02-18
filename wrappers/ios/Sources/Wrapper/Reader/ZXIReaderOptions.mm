@@ -17,47 +17,6 @@
     return self;
 }
 
-- (instancetype)initWithFormats:(NSArray<NSNumber*>*)formats
-                      tryHarder:(BOOL)tryHarder
-                      tryRotate:(BOOL)tryRotate
-                      tryInvert:(BOOL)tryInvert
-                   tryDownscale:(BOOL)tryDownscale
-                         isPure:(BOOL)isPure
-                      binarizer:(ZXIBinarizer)binarizer
-                downscaleFactor:(NSInteger)downscaleFactor
-             downscaleThreshold:(NSInteger)downscaleThreshold
-                   minLineCount:(NSInteger)minLineCount
-             maxNumberOfSymbols:(NSInteger)maxNumberOfSymbols
-          tryCode39ExtendedMode:(BOOL)tryCode39ExtendedMode
-         validateCode39CheckSum:(BOOL)validateCode39CheckSum
-            validateITFCheckSum:(BOOL)validateITFCheckSum
-          returnCodabarStartEnd:(BOOL)returnCodabarStartEnd
-                   returnErrors:(BOOL)returnErrors
-                 eanAddOnSymbol:(ZXIEanAddOnSymbol)eanAddOnSymbol
-                       textMode:(ZXITextMode)textMode {
-    self = [super init];
-    self.cppOpts = ZXing::ReaderOptions();
-    self.formats = formats;
-    self.tryHarder = tryHarder;
-    self.tryRotate = tryRotate;
-    self.tryInvert = tryInvert;
-    self.tryDownscale = tryDownscale;
-    self.isPure = isPure;
-    self.binarizer = binarizer;
-    self.downscaleFactor = downscaleFactor;
-    self.downscaleThreshold = downscaleThreshold;
-    self.minLineCount = minLineCount;
-    self.maxNumberOfSymbols = maxNumberOfSymbols;
-    self.tryCode39ExtendedMode = tryCode39ExtendedMode;
-    self.validateCode39CheckSum = validateCode39CheckSum;
-    self.validateITFCheckSum = validateITFCheckSum;
-    self.returnCodabarStartEnd = returnCodabarStartEnd;
-    self.returnErrors = returnErrors;
-    self.eanAddOnSymbol = eanAddOnSymbol;
-    self.textMode = textMode;
-    return self;
-}
-
 -(BOOL)tryHarder {
     return self.cppOpts.tryHarder();
 }

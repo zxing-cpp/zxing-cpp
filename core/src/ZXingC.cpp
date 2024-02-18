@@ -25,26 +25,23 @@ template<typename R, typename T> R transmute_cast(const T& v)
 	return *(const R*)(&v);
 }
 
-static char* copy(std::string_view sv)
+template<typename C, typename P = typename C::pointer>
+P copy(const C& c)
 {
-	auto ret = (char*)malloc(sv.size() + 1);
+	auto ret = (P)malloc(c.size() + 1);
 	if (ret) {
-		strncpy(ret, sv.data(), sv.size());
-		ret[sv.size()] = '\0';
+		memcpy(ret, c.data(), c.size());
+		ret[c.size()] = 0;
 	}
 	return ret;
 }
 
 static uint8_t* copy(const ByteArray& ba, int* len)
 {
-	*len = Size(ba);
-
-	auto ret = (uint8_t*)malloc(*len + 1);
-	if (ret)
-		memcpy(ret, ba.data(), *len);
-	else
-		*len = 0;
-
+	// for convencience and as a safety measure, we NULL terminate even byte arrays
+	auto ret = copy(ba);
+	if (len)
+		*len = ret ? Size(ba) : 0;
 	return ret;
 }
 

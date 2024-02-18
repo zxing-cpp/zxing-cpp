@@ -48,24 +48,6 @@ typedef NS_ENUM(NSInteger, ZXITextMode) {
 @property(nonatomic) ZXIEanAddOnSymbol eanAddOnSymbol;
 @property(nonatomic) ZXITextMode textMode;
 
-- (instancetype)initWithFormats:(NSArray<NSNumber*>*)formats
-                      tryHarder:(BOOL)tryHarder
-                      tryRotate:(BOOL)tryRotate
-                      tryInvert:(BOOL)tryInvert
-                   tryDownscale:(BOOL)tryDownscale
-                         isPure:(BOOL)isPure
-                      binarizer:(ZXIBinarizer)binarizer
-                downscaleFactor:(NSInteger)downscaleFactor
-             downscaleThreshold:(NSInteger)downscaleThreshold
-                   minLineCount:(NSInteger)minLineCount
-             maxNumberOfSymbols:(NSInteger)maxNumberOfSymbols
-          tryCode39ExtendedMode:(BOOL)tryCode39ExtendedMode
-         validateCode39CheckSum:(BOOL)validateCode39CheckSum
-            validateITFCheckSum:(BOOL)validateITFCheckSum
-          returnCodabarStartEnd:(BOOL)returnCodabarStartEnd
-                   returnErrors:(BOOL)returnErrors
-                 eanAddOnSymbol:(ZXIEanAddOnSymbol)eanAddOnSymbol
-                       textMode:(ZXITextMode)textMode;
 @end
 
 NS_ASSUME_NONNULL_END
