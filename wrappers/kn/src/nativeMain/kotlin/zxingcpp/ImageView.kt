@@ -17,8 +17,9 @@ class ImageView(
 ) {
 	private val pinnedData = data.pin()
 	val cValue: CPointer<ZXing_ImageView>? =
-		ZXing_ImageView_new(
+		ZXing_ImageView_new_checked(
 			pinnedData.addressOf(0).reinterpret(),
+			data.size,
 			width,
 			height,
 			format.rawValue,
