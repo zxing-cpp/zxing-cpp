@@ -3,6 +3,9 @@ package zxingcpp
 import cnames.structs.ZXing_ReaderOptions
 import kotlinx.cinterop.*
 import zxingcpp.cinterop.*
+import zxingcpp.cinterop.ZXing_Binarizer.*
+import zxingcpp.cinterop.ZXing_EanAddOnSymbol.*
+import zxingcpp.cinterop.ZXing_TextMode.*
 import kotlin.experimental.ExperimentalNativeApi
 import kotlin.native.ref.createCleaner
 
@@ -72,10 +75,10 @@ open class ReaderOptions {
 
 @OptIn(ExperimentalForeignApi::class)
 enum class Binarizer(internal val cValue: ZXing_Binarizer) {
-	LocalAverage(ZXing_Binarizer.ZXing_Binarizer_LocalAverage),
-	GlobalHistogram(ZXing_Binarizer.ZXing_Binarizer_GlobalHistogram),
-	FixedThreshold(ZXing_Binarizer.ZXing_Binarizer_FixedThreshold),
-	BoolCast(ZXing_Binarizer.ZXing_Binarizer_BoolCast);
+	LocalAverage(ZXing_Binarizer_LocalAverage),
+	GlobalHistogram(ZXing_Binarizer_GlobalHistogram),
+	FixedThreshold(ZXing_Binarizer_FixedThreshold),
+	BoolCast(ZXing_Binarizer_BoolCast);
 
 	companion object {
 		fun fromCValue(cValue: ZXing_Binarizer): Binarizer {
@@ -86,9 +89,9 @@ enum class Binarizer(internal val cValue: ZXing_Binarizer) {
 
 @OptIn(ExperimentalForeignApi::class)
 enum class EanAddOnSymbol(internal val cValue: ZXing_EanAddOnSymbol) {
-	Ignore(ZXing_EanAddOnSymbol.ZXing_EanAddOnSymbol_Ignore),
-	Read(ZXing_EanAddOnSymbol.ZXing_EanAddOnSymbol_Read),
-	Require(ZXing_EanAddOnSymbol.ZXing_EanAddOnSymbol_Require);
+	Ignore(ZXing_EanAddOnSymbol_Ignore),
+	Read(ZXing_EanAddOnSymbol_Read),
+	Require(ZXing_EanAddOnSymbol_Require);
 
 	companion object {
 		fun fromCValue(cValue: ZXing_EanAddOnSymbol): EanAddOnSymbol {
@@ -99,11 +102,11 @@ enum class EanAddOnSymbol(internal val cValue: ZXing_EanAddOnSymbol) {
 
 @OptIn(ExperimentalForeignApi::class)
 enum class TextMode(internal val cValue: ZXing_TextMode) {
-	Plain(ZXing_TextMode.ZXing_TextMode_Plain),
-	ECI(ZXing_TextMode.ZXing_TextMode_ECI),
-	HRI(ZXing_TextMode.ZXing_TextMode_HRI),
-	Hex(ZXing_TextMode.ZXing_TextMode_Hex),
-	Escaped(ZXing_TextMode.ZXing_TextMode_Escaped);
+	Plain(ZXing_TextMode_Plain),
+	ECI(ZXing_TextMode_ECI),
+	HRI(ZXing_TextMode_HRI),
+	Hex(ZXing_TextMode_Hex),
+	Escaped(ZXing_TextMode_Escaped);
 
 	companion object {
 		fun fromCValue(cValue: ZXing_TextMode): TextMode {
