@@ -1,3 +1,8 @@
+/*
+* Copyright 2024 ISNing
+*/
+// SPDX-License-Identifier: Apache-2.0
+
 package zxingcpp
 
 import kotlinx.cinterop.ExperimentalForeignApi
