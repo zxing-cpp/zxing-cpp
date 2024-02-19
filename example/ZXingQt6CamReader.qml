@@ -36,24 +36,21 @@ Window {
         tryDownscale: tryDownscaleSwitch.checked
         textMode: ZXing.TextMode.HRI
 
-        // callback with parameter 'result', called for every successfully processed frame
-        // onFoundBarcode: {}
+        // callback with parameter 'barcode', called for every successfully processed frame
+        onFoundBarcode: (barcode)=> {
+            points = [barcode.position.topLeft, barcode.position.topRight, barcode.position.bottomRight, barcode.position.bottomLeft]
+            info.text = qsTr("Format: \t %1 \nText: \t %2 \nType: \t %3 \nTime: \t %4 ms").arg(barcode.formatName).arg(barcode.text).arg(barcode.contentTypeName).arg(runTime)
 
-        // callback with parameter 'result', called for every processed frame
-        onNewResult: (result)=> {
-            points = result.isValid
-                    ? [result.position.topLeft, result.position.topRight, result.position.bottomRight, result.position.bottomLeft]
-                    : nullPoints
+            resetInfo.restart()
+//          console.log(barcode)
+        }
 
-            if (result.isValid) {
-                resetInfo.restart()
-                info.text = qsTr("Format: \t %1 \nText: \t %2 \nType: \t %3 \nTime: \t %4 ms").arg(result.formatName).arg(result.text).arg(result.contentTypeName).arg(result.runTime)
-            }
+        // called for every processed frame where no barcode was detected
+        onFailedRead: ()=> {
+            points = nullPoints
 
             if (!resetInfo.running)
-                info.text = "No barcode found"
-
-//            console.log(result)
+                info.text = "No barcode found (in %1 ms)".arg(runTime)
         }
     }
 

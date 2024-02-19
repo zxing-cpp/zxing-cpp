@@ -27,18 +27,18 @@ int main(int argc, char* argv[])
 
 	auto options = ReaderOptions()
 					 .setFormats(BarcodeFormat::MatrixCodes)
-					 .setTryRotate(false)
+					 .setTryInvert(false)
 					 .setTextMode(TextMode::HRI)
 					 .setMaxNumberOfSymbols(10);
 
-	auto results = ReadBarcodes(image, options);
+	auto barcodes = ReadBarcodes(image, options);
 
-	for (auto& result : results) {
-		qDebug() << "Text:   " << result.text();
-		qDebug() << "Format: " << result.format();
-		qDebug() << "Content:" << result.contentType();
+	for (auto& barcode : barcodes) {
+		qDebug() << "Text:   " << barcode.text();
+		qDebug() << "Format: " << barcode.format();
+		qDebug() << "Content:" << barcode.contentType();
 		qDebug() << "";
 	}
 
-	return results.isEmpty() ? 1 : 0;
+	return barcodes.isEmpty() ? 1 : 0;
 }
