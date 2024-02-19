@@ -22,7 +22,7 @@ class ImageView(
 			data.size,
 			width,
 			height,
-			format.rawValue,
+			format.cValue,
 			rowStride,
 			pixStride
 		)
@@ -37,7 +37,7 @@ class ImageView(
 }
 
 @OptIn(ExperimentalForeignApi::class)
-enum class ImageFormat(internal val rawValue: ZXing_ImageFormat) {
+enum class ImageFormat(internal val cValue: ZXing_ImageFormat) {
 	None(ZXing_ImageFormat_None),
 	Lum(ZXing_ImageFormat_Lum),
 	RGB(ZXing_ImageFormat_RGB),
@@ -50,4 +50,4 @@ enum class ImageFormat(internal val rawValue: ZXing_ImageFormat) {
 
 @OptIn(ExperimentalForeignApi::class)
 fun ZXing_ImageFormat.parseIntoImageFormat(): ImageFormat? =
-	ImageFormat.entries.firstOrNull { it.rawValue == this }
+	ImageFormat.entries.firstOrNull { it.cValue == this }
