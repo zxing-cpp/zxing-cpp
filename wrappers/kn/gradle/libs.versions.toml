@@ -1,0 +1,9 @@
+[versions]
+kotlin = "1.9.22"
+krossCompile = "0.1.6"
+
+[libraries]
+
+[plugins]
+kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+krossCompile = { id = "io.github.isning.gradle.plugins.kn.krossCompile", version.ref = "krossCompile" }
