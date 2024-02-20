@@ -7,7 +7,7 @@
 
 #include "ReaderOptions.h"
 #include "ImageView.h"
-#include "Result.h"
+#include "Barcode.h"
 
 namespace ZXing {
 

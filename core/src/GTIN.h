@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "Result.h"
+#include "Barcode.h"
 #include "BarcodeFormat.h"
 #include "ZXAlgorithms.h"
 

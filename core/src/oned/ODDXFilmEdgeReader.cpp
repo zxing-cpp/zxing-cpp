@@ -6,7 +6,7 @@
 
 #include "ODDXFilmEdgeReader.h"
 
-#include "Result.h"
+#include "Barcode.h"
 
 #include <optional>
 #include <vector>

@@ -9,7 +9,7 @@
 
 #include "BitArray.h"
 #include "Pattern.h"
-#include "Result.h"
+#include "Barcode.h"
 #include "ZXAlgorithms.h"
 
 #include <algorithm>

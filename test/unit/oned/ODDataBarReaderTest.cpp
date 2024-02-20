@@ -6,7 +6,7 @@
 #include "oned/ODDataBarReader.h"
 
 #include "ReaderOptions.h"
-#include "Result.h"
+#include "Barcode.h"
 
 #include "gtest/gtest.h"
 

@@ -11,7 +11,7 @@
 #include "PDFCodewordDecoder.h"
 #include "ReaderOptions.h"
 #include "DecoderResult.h"
-#include "Result.h"
+#include "Barcode.h"
 
 #include "BitMatrixCursor.h"
 #include "BinaryBitmap.h"

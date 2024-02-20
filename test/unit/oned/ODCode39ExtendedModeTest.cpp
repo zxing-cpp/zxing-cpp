@@ -7,7 +7,7 @@
 #include "BitArray.h"
 #include "BitArrayUtility.h"
 #include "ReaderOptions.h"
-#include "Result.h"
+#include "Barcode.h"
 #include "oned/ODCode39Reader.h"
 
 #include "gtest/gtest.h"

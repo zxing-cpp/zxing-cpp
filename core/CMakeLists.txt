@@ -108,6 +108,8 @@ set (COMMON_FILES
 )
 if (BUILD_READERS)
     set (COMMON_FILES ${COMMON_FILES}
+        src/Barcode.h
+        src/Barcode.cpp
         src/BinaryBitmap.h
         src/BinaryBitmap.cpp
         src/BitSource.h
@@ -138,8 +140,7 @@ if (BUILD_READERS)
         src/ReadBarcode.cpp
         src/ReedSolomonDecoder.h
         src/ReedSolomonDecoder.cpp
-        src/Result.h
-        src/Result.cpp
+        src/Result.h # [[deprecated]]
         src/ResultPoint.h
         src/ResultPoint.cpp
         src/StructuredAppend.h

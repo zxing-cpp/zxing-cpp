@@ -7,7 +7,7 @@
 #include "ODCode128Reader.h"
 
 #include "ODCode128Patterns.h"
-#include "Result.h"
+#include "Barcode.h"
 #include "ZXAlgorithms.h"
 
 #include <array>

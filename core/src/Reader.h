@@ -7,7 +7,7 @@
 #pragma once
 
 #include "ReaderOptions.h"
-#include "Result.h"
+#include "Barcode.h"
 
 namespace ZXing {
 

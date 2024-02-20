@@ -11,7 +11,7 @@
 #include "DecoderResult.h"
 #include "ODDataBarCommon.h"
 #include "ODDataBarExpandedBitDecoder.h"
-#include "Result.h"
+#include "Barcode.h"
 
 #include <cmath>
 #include <map>

@@ -12,7 +12,7 @@
 #include "ReaderOptions.h"
 #include "DecoderResult.h"
 #include "DetectorResult.h"
-#include "Result.h"
+#include "Barcode.h"
 
 #include <utility>
 

@@ -4,7 +4,7 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "Result.h"
+#include "Barcode.h"
 
 #include "DecoderResult.h"
 #include "ZXAlgorithms.h"

@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "Result.h"
+#include "Barcode.h"
 
 #include <vector>
 #include <memory>

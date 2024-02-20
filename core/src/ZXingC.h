@@ -14,7 +14,7 @@
 
 #include "ReaderOptions.h"
 #include "ImageView.h"
-#include "Result.h"
+#include "Barcode.h"
 
 typedef ZXing::ImageView ZXing_ImageView;
 typedef ZXing::ReaderOptions ZXing_ReaderOptions;
@@ -160,7 +160,7 @@ int ZXing_ReaderOptions_getMinLineCount(const ZXing_ReaderOptions* opts);
 int ZXing_ReaderOptions_getMaxNumberOfSymbols(const ZXing_ReaderOptions* opts);
 
 /*
- * ZXing/Result.h
+ * ZXing/Barcode.h
  */
 
 typedef enum

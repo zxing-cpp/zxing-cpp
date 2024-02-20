@@ -5,7 +5,7 @@
 
 #include "GTIN.h"
 
-#include "Result.h"
+#include "Barcode.h"
 #include "oned/ODUPCEANCommon.h"
 
 #include "gtest/gtest.h"

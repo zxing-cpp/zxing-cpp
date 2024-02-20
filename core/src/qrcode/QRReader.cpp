@@ -15,7 +15,7 @@
 #include "LogMatrix.h"
 #include "QRDecoder.h"
 #include "QRDetector.h"
-#include "Result.h"
+#include "Barcode.h"
 
 #include <utility>
 

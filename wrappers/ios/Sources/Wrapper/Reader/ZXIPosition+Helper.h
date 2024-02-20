@@ -4,7 +4,7 @@
 
 #import <Foundation/Foundation.h>
 #import "ZXIPosition.h"
-#import "Result.h"
+#import "Barcode.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

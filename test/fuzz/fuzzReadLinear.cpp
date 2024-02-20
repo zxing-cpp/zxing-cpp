@@ -16,7 +16,7 @@
 #include "oned/ODITFReader.h"
 #include "oned/ODCodabarReader.h"
 #include "ReaderOptions.h"
-#include "Result.h"
+#include "Barcode.h"
 
 using namespace ZXing;
 using namespace ZXing::OneD;

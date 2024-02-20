@@ -13,7 +13,7 @@
 #include "BinaryBitmap.h"
 #include "ReaderOptions.h"
 #include "DecoderResult.h"
-#include "Result.h"
+#include "Barcode.h"
 
 #include <utility>
 

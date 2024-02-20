@@ -11,7 +11,7 @@
 #include "DecoderResult.h"
 #include "GTIN.h"
 #include "ODDataBarCommon.h"
-#include "Result.h"
+#include "Barcode.h"
 
 #include <cmath>
 #include <unordered_set>

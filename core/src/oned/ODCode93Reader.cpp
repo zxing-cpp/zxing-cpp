@@ -7,7 +7,7 @@
 
 #include "ODCode93Reader.h"
 
-#include "Result.h"
+#include "Barcode.h"
 #include "ZXAlgorithms.h"
 
 #include <array>

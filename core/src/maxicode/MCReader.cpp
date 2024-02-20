@@ -11,7 +11,7 @@
 #include "DecoderResult.h"
 #include "MCBitMatrixParser.h"
 #include "MCDecoder.h"
-#include "Result.h"
+#include "Barcode.h"
 
 namespace ZXing::MaxiCode {
 

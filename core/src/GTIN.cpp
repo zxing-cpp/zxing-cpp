@@ -6,7 +6,7 @@
 
 #include "GTIN.h"
 
-#include "Result.h"
+#include "Barcode.h"
 
 #include <algorithm>
 #include <iomanip>

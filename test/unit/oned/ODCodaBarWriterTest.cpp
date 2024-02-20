@@ -7,7 +7,7 @@
 #include "oned/ODCodabarWriter.h"
 #include "BitMatrixIO.h"
 #include "ReaderOptions.h"
-#include "Result.h"
+#include "Barcode.h"
 #include "oned/ODCodabarReader.h"
 
 #include "gtest/gtest.h"

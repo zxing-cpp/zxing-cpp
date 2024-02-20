@@ -12,7 +12,7 @@
 #include "ReaderOptions.h"
 #include "GTIN.h"
 #include "ODUPCEANCommon.h"
-#include "Result.h"
+#include "Barcode.h"
 
 #include <cmath>
 

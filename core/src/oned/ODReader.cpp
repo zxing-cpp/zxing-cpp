@@ -18,7 +18,7 @@
 #include "ODDXFilmEdgeReader.h"
 #include "ODITFReader.h"
 #include "ODMultiUPCEANReader.h"
-#include "Result.h"
+#include "Barcode.h"
 
 #include <algorithm>
 #include <utility>
