@@ -14,7 +14,7 @@ using namespace ZXing;
 using namespace ZXing::OneD;
 
 // Helper to call decodePattern()
-static Result parse(const int startPattern, PatternRow row)
+static Barcode parse(const int startPattern, PatternRow row)
 {
 	if (startPattern == 'A') {
 		row.insert(row.begin(), { 0, 2, 1, 1, 4, 1, 2 });

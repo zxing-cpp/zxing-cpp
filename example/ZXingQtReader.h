@@ -97,7 +97,7 @@ public:
 	using Base::Base;
 };
 
-class Barcode : private ZXing::Result
+class Barcode : private ZXing::Barcode
 {
 	Q_GADGET
 
@@ -117,26 +117,26 @@ class Barcode : private ZXing::Result
 public:
 	Barcode() = default; // required for qmetatype machinery
 
-	explicit Barcode(ZXing::Result&& r) : ZXing::Result(std::move(r)) {
-		_text = QString::fromStdString(ZXing::Result::text());
-		_bytes = QByteArray(reinterpret_cast<const char*>(ZXing::Result::bytes().data()), Size(ZXing::Result::bytes()));
-		auto& pos = ZXing::Result::position();
+	explicit Barcode(ZXing::Barcode&& r) : ZXing::Barcode(std::move(r)) {
+		_text = QString::fromStdString(ZXing::Barcode::text());
+		_bytes = QByteArray(reinterpret_cast<const char*>(ZXing::Barcode::bytes().data()), Size(ZXing::Barcode::bytes()));
+		auto& pos = ZXing::Barcode::position();
 		auto qp = [&pos](int i) { return QPoint(pos[i].x, pos[i].y); };
 		_position = {qp(0), qp(1), qp(2), qp(3)};
 	}
 
-	using ZXing::Result::isValid;
+	using ZXing::Barcode::isValid;
 
-	BarcodeFormat format() const { return static_cast<BarcodeFormat>(ZXing::Result::format()); }
-	ContentType contentType() const { return static_cast<ContentType>(ZXing::Result::contentType()); }
-	QString formatName() const { return QString::fromStdString(ZXing::ToString(ZXing::Result::format())); }
-	QString contentTypeName() const { return QString::fromStdString(ZXing::ToString(ZXing::Result::contentType())); }
+	BarcodeFormat format() const { return static_cast<BarcodeFormat>(ZXing::Barcode::format()); }
+	ContentType contentType() const { return static_cast<ContentType>(ZXing::Barcode::contentType()); }
+	QString formatName() const { return QString::fromStdString(ZXing::ToString(ZXing::Barcode::format())); }
+	QString contentTypeName() const { return QString::fromStdString(ZXing::ToString(ZXing::Barcode::contentType())); }
 	const QString& text() const { return _text; }
 	const QByteArray& bytes() const { return _bytes; }
 	const Position& position() const { return _position; }
 };
 
-inline QList<Barcode> ZXBarcodesToQBarcodes(ZXing::Results&& zxres)
+inline QList<Barcode> ZXBarcodesToQBarcodes(ZXing::Barcodes&& zxres)
 {
 	QList<Barcode> res;
 	for (auto&& r : zxres)

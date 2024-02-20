@@ -64,7 +64,7 @@ public:
 
 	virtual ~RowReader() {}
 
-	virtual Result decodePattern(int rowNumber, PatternView& next, std::unique_ptr<DecodingState>& state) const = 0;
+	virtual Barcode decodePattern(int rowNumber, PatternView& next, std::unique_ptr<DecodingState>& state) const = 0;
 
 	/**
 	 * Determines how closely a set of observed counts of runs of black/white values matches a given
@@ -215,7 +215,7 @@ public:
 };
 
 template<typename Range>
-Result DecodeSingleRow(const RowReader& reader, const Range& range)
+Barcode DecodeSingleRow(const RowReader& reader, const Range& range)
 {
 	PatternRow row;
 	GetPatternRow(range, row);

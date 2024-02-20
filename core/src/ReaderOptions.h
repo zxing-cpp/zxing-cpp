@@ -153,13 +153,13 @@ public:
 	/// Deprecated / does nothing. Codabar start/stop characters are always returned.
 	ZX_PROPERTY(bool, returnCodabarStartEnd, setReturnCodabarStartEnd, [[deprecated]])
 
-	/// If true, return the barcodes with errors as well (e.g. checksum errors, see @Result::error())
+	/// If true, return the barcodes with errors as well (e.g. checksum errors, see @Barcode::error())
 	ZX_PROPERTY(bool, returnErrors, setReturnErrors)
 
 	/// Specify whether to ignore, read or require EAN-2/5 add-on symbols while scanning EAN/UPC codes
 	ZX_PROPERTY(EanAddOnSymbol, eanAddOnSymbol, setEanAddOnSymbol)
 
-	/// Specifies the TextMode that controls the return of the Result::text() function
+	/// Specifies the TextMode that controls the return of the Barcode::text() function
 	ZX_PROPERTY(TextMode, textMode, setTextMode)
 
 	/// Specifies fallback character set to use instead of auto-detecting it (when applicable)

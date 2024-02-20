@@ -195,7 +195,7 @@ static jobject NewError(JNIEnv* env, const Error& error)
 	return env->NewObject(cls, midInit, NewEnum(env, JavaErrorTypeName(error.type()), "ErrorType"), C2JString(env, error.msg()));
 }
 
-static jobject NewResult(JNIEnv* env, const Result& result)
+static jobject NewResult(JNIEnv* env, const Barcode& result)
 {
 	jclass cls = env->FindClass(PACKAGE "Result");
 	jmethodID midInit = env->GetMethodID(
@@ -238,7 +238,7 @@ static jobject Read(JNIEnv *env, jobject thiz, ImageView image, const ReaderOpti
 {
 	try {
 		auto startTime = std::chrono::high_resolution_clock::now();
-		auto results = ReadBarcodes(image, opts);
+		auto barcodes = ReadBarcodes(image, opts);
 		auto duration = std::chrono::high_resolution_clock::now() - startTime;
 //		LOGD("time: %4d ms\n", (int)std::chrono::duration_cast<std::chrono::milliseconds>(duration).count());
 		auto time = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
@@ -247,10 +247,10 @@ static jobject Read(JNIEnv *env, jobject thiz, ImageView image, const ReaderOpti
 
 		jclass clsList = env->FindClass("java/util/ArrayList");
 		jobject objList = env->NewObject(clsList, env->GetMethodID(clsList, "<init>", "()V"));
-		if (!results.empty()) {
+		if (!barcodes.empty()) {
 			jmethodID midAdd = env->GetMethodID(clsList, "add", "(Ljava/lang/Object;)Z");
-			for (const auto& result: results)
-				env->CallBooleanMethod(objList, midAdd, NewResult(env, result));
+			for (const auto& barcode: barcodes)
+				env->CallBooleanMethod(objList, midAdd, NewResult(env, barcode));
 		}
 		return objList;
 	} catch (const std::exception& e) {

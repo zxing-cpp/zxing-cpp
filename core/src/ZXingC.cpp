@@ -45,8 +45,8 @@ static uint8_t* copy(const ByteArray& ba, int* len)
 	return ret;
 }
 
-static std::tuple<Results, bool> ReadBarcodesAndSetLastError(const ZXing_ImageView* iv, const ZXing_ReaderOptions* opts,
-															 int maxSymbols)
+static std::tuple<Barcodes, bool> ReadBarcodesAndSetLastError(const ZXing_ImageView* iv, const ZXing_ReaderOptions* opts,
+															  int maxSymbols)
 {
 	try {
 		if (iv) {
@@ -62,7 +62,7 @@ static std::tuple<Results, bool> ReadBarcodesAndSetLastError(const ZXing_ImageVi
 		lastErrorMsg = "Unknown error";
 	}
 
-	return {Results{}, false};
+	return {Barcodes{}, false};
 }
 
 extern "C" {
@@ -187,7 +187,7 @@ ZX_ENUM_PROPERTY(EanAddOnSymbol, eanAddOnSymbol, EanAddOnSymbol)
 ZX_ENUM_PROPERTY(TextMode, textMode, TextMode)
 
 /*
- * ZXing/Result.h
+ * ZXing/Barcode.h
  */
 
 char* ZXing_ContentTypeToString(ZXing_ContentType type)
@@ -250,13 +250,13 @@ ZX_GETTER(int, lineCount,)
 ZXing_Barcode* ZXing_ReadBarcode(const ZXing_ImageView* iv, const ZXing_ReaderOptions* opts)
 {
 	auto [res, ok] = ReadBarcodesAndSetLastError(iv, opts, 1);
-	return !res.empty() ? new Result(std::move(res.front())) : NULL;
+	return !res.empty() ? new Barcode(std::move(res.front())) : NULL;
 }
 
 ZXing_Barcodes* ZXing_ReadBarcodes(const ZXing_ImageView* iv, const ZXing_ReaderOptions* opts)
 {
 	auto [res, ok] = ReadBarcodesAndSetLastError(iv, opts, 0);
-	return !res.empty() || ok ? new Results(std::move(res)) : NULL;
+	return !res.empty() || ok ? new Barcodes(std::move(res)) : NULL;
 }
 
 void ZXing_Barcode_delete(ZXing_Barcode* barcode)
@@ -286,7 +286,7 @@ ZXing_Barcode* ZXing_Barcodes_move(ZXing_Barcodes* barcodes, int i)
 	if (!barcodes || i < 0 || i >= Size(*barcodes))
 		return NULL;
 
-	return new Result(std::move((*barcodes)[i]));
+	return new Barcode(std::move((*barcodes)[i]));
 }
 
 char* ZXing_LastErrorMsg()

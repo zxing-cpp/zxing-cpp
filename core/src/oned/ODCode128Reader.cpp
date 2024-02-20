@@ -175,7 +175,7 @@ static auto E2E_PATTERNS = [] {
 	return res;
 }();
 
-Result Code128Reader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<DecodingState>&) const
+Barcode Code128Reader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<DecodingState>&) const
 {
 	int minCharCount = 4; // start + payload + checksum + stop
 	auto decodePattern = [](const PatternView& view, bool start = false) {
@@ -238,8 +238,8 @@ Result Code128Reader::decodePattern(int rowNumber, PatternView& next, std::uniqu
 		error = ChecksumError();
 
 	int xStop = next.pixelsTillEnd();
-	return Result(raw2txt.text(), rowNumber, xStart, xStop, BarcodeFormat::Code128, raw2txt.symbologyIdentifier(), error,
-				  raw2txt.readerInit());
+	return Barcode(raw2txt.text(), rowNumber, xStart, xStop, BarcodeFormat::Code128, raw2txt.symbologyIdentifier(), error,
+				   raw2txt.readerInit());
 }
 
 } // namespace ZXing::OneD

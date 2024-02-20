@@ -199,12 +199,11 @@ std::string LookupCountryIdentifier(const std::string& GTIN, const BarcodeFormat
 	return it != std::end(COUNTRIES) && prefix >= it->first && prefix <= it->last ? it->id : std::string();
 }
 
-std::string EanAddOn(const Result& result)
+std::string EanAddOn(const Barcode& barcode)
 {
-	if (!(BarcodeFormat::EAN13 | BarcodeFormat::UPCA | BarcodeFormat::UPCE | BarcodeFormat::EAN8)
-			.testFlag(result.format()))
+	if (!(BarcodeFormat::EAN13 | BarcodeFormat::UPCA | BarcodeFormat::UPCE | BarcodeFormat::EAN8).testFlag(barcode.format()))
 		return {};
-	auto txt = result.bytes().asString();
+	auto txt = barcode.bytes().asString();
 	auto pos = txt.find(' ');
 	return pos != std::string::npos ? std::string(txt.substr(pos + 1)) : std::string();
 }

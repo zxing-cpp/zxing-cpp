@@ -7,16 +7,13 @@
 
 #pragma once
 
+#include "Result.h"
 #include "BarcodeFormat.h"
 #include "ZXAlgorithms.h"
 
 #include <string>
 
-namespace ZXing {
-
-class Result;
-
-namespace GTIN {
+namespace ZXing::GTIN {
 
 template <typename T>
 T ComputeCheckDigit(const std::basic_string<T>& digits, bool skipTail = false)
@@ -47,10 +44,9 @@ bool IsCheckDigitValid(const std::basic_string<T>& s)
  */
 std::string LookupCountryIdentifier(const std::string& GTIN, const BarcodeFormat format = BarcodeFormat::None);
 
-std::string EanAddOn(const Result& result);
+std::string EanAddOn(const Barcode& barcode);
 
 std::string IssueNr(const std::string& ean2AddOn);
 std::string Price(const std::string& ean5AddOn);
 
-} // namespace GTIN
-} // namespace ZXing
+} // namespace ZXing::GTIN

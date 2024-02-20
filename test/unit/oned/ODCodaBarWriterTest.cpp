@@ -52,7 +52,7 @@ TEST(ODCodaBarWriterTest, FullCircle)
 	auto matrix = CodabarWriter().encode(text, 0, 0);
 	auto opts = ReaderOptions();
 
-	Result res = OneD::DecodeSingleRow(CodabarReader(opts), matrix.row(0));
+	auto res = OneD::DecodeSingleRow(CodabarReader(opts), matrix.row(0));
 	EXPECT_EQ(text, res.text());
 }
 

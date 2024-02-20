@@ -142,17 +142,17 @@ auto read_barcodes_impl(py::object _image, const BarcodeFormats& formats, bool t
 	return ReadBarcodes({bytes, width, height, imgfmt, rowStride, pixStride}, opts);
 }
 
-std::optional<Result> read_barcode(py::object _image, const BarcodeFormats& formats, bool try_rotate, bool try_downscale,
-								   TextMode text_mode, Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol,
-								   bool return_errors)
+std::optional<Barcode> read_barcode(py::object _image, const BarcodeFormats& formats, bool try_rotate, bool try_downscale,
+									TextMode text_mode, Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol,
+									bool return_errors)
 {
 	auto res = read_barcodes_impl(_image, formats, try_rotate, try_downscale, text_mode, binarizer, is_pure, ean_add_on_symbol,
 								  return_errors, 1);
 	return res.empty() ? std::nullopt : std::optional(res.front());
 }
 
-Results read_barcodes(py::object _image, const BarcodeFormats& formats, bool try_rotate, bool try_downscale,
-					  TextMode text_mode, Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol, bool return_errors)
+Barcodes read_barcodes(py::object _image, const BarcodeFormats& formats, bool try_rotate, bool try_downscale, TextMode text_mode,
+					   Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol, bool return_errors)
 {
 	return read_barcodes_impl(_image, formats, try_rotate, try_downscale, text_mode, binarizer, is_pure, ean_add_on_symbol,
 							  return_errors);
@@ -281,36 +281,36 @@ PYBIND11_MODULE(zxingcpp, m)
 			":return: Error message\n"
 			":rtype: str")
 		.def("__str__", [](Error e) { return ToString(e); });
-	py::class_<Result>(m, "Result", "Result of barcode reading")
-		.def_property_readonly("valid", &Result::isValid,
-			":return: whether or not result is valid (i.e. a symbol was found)\n"
+	py::class_<Barcode>(m, "Result", "Result of barcode reading")
+		.def_property_readonly("valid", &Barcode::isValid,
+			":return: whether or not barcode is valid (i.e. a symbol was found and decoded)\n"
 			":rtype: bool")
-		.def_property_readonly("text", [](const Result& res) { return res.text(); },
+		.def_property_readonly("text", [](const Barcode& res) { return res.text(); },
 			":return: text of the decoded symbol (see also TextMode parameter)\n"
 			":rtype: str")
-		.def_property_readonly("bytes", [](const Result& res) { return py::bytes(res.bytes().asString()); },
+		.def_property_readonly("bytes", [](const Barcode& res) { return py::bytes(res.bytes().asString()); },
 			":return: uninterpreted bytes of the decoded symbol\n"
 			":rtype: bytes")
-		.def_property_readonly("format", &Result::format,
+		.def_property_readonly("format", &Barcode::format,
 			":return: decoded symbol format\n"
 			":rtype: zxing.BarcodeFormat")
-		.def_property_readonly("symbology_identifier", &Result::symbologyIdentifier,
+		.def_property_readonly("symbology_identifier", &Barcode::symbologyIdentifier,
 			":return: decoded symbology idendifier\n"
 			":rtype: str")
-		.def_property_readonly("ec_level", &Result::ecLevel,
+		.def_property_readonly("ec_level", &Barcode::ecLevel,
 			":return: error correction level of the symbol (empty string if not applicable)\n"
 			":rtype: str")
-		.def_property_readonly("content_type", &Result::contentType,
+		.def_property_readonly("content_type", &Barcode::contentType,
 			":return: content type of symbol\n"
 			":rtype: zxing.ContentType")
-		.def_property_readonly("position", &Result::position,
+		.def_property_readonly("position", &Barcode::position,
 			":return: position of the decoded symbol\n"
 			":rtype: zxing.Position")
-		.def_property_readonly("orientation", &Result::orientation,
+		.def_property_readonly("orientation", &Barcode::orientation,
 			":return: orientation (in degree) of the decoded symbol\n"
 			":rtype: int")
 		.def_property_readonly(
-			"error", [](const Result& res) { return res.error() ? std::optional(res.error()) : std::nullopt; },
+			"error", [](const Barcode& res) { return res.error() ? std::optional(res.error()) : std::nullopt; },
 			":return: Error code or None\n"
 			":rtype: zxing.Error");
 	m.def("barcode_format_from_str", &BarcodeFormatFromString,
@@ -367,7 +367,7 @@ PYBIND11_MODULE(zxingcpp, m)
 		":param return_errors: Set to True to return the barcodes with errors as well (e.g. checksum errors); see ``Result.error``.\n"
 		" Default is False."
 		":rtype: zxing.Result\n"
-		":return: a zxing result containing decoded symbol if found, None otherwise"
+		":return: a Barcode if found, None otherwise"
 	);
 	m.def("read_barcodes", &read_barcodes,
 		py::arg("image"),
@@ -409,7 +409,7 @@ PYBIND11_MODULE(zxingcpp, m)
 		":param return_errors: Set to True to return the barcodes with errors as well (e.g. checksum errors); see ``Result.error``.\n"
 		" Default is False.\n"
 		":rtype: zxing.Result\n"
-		":return: a list of zxing results containing decoded symbols, the list is empty if none is found"
+		":return: a list of Barcodes, the list is empty if none is found"
 	);
 	py::class_<Matrix<uint8_t>>(m, "Bitmap", py::buffer_protocol())
 		.def_property_readonly(

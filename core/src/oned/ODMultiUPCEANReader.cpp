@@ -262,7 +262,7 @@ static bool AddOn(PartialResult& res, PatternView begin, int digitCount)
 	return true;
 }
 
-Result MultiUPCEANReader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<RowReader::DecodingState>&) const
+Barcode MultiUPCEANReader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<RowReader::DecodingState>&) const
 {
 	const int minSize = 3 + 6*4 + 6; // UPC-E
 
@@ -317,7 +317,7 @@ Result MultiUPCEANReader::decodePattern(int rowNumber, PatternView& next, std::u
 	if (_opts.eanAddOnSymbol() == EanAddOnSymbol::Require && !addOnRes.isValid())
 		return {};
 
-	return Result(res.txt, rowNumber, begin.pixelsInFront(), next.pixelsTillEnd(), res.format, symbologyIdentifier, error);
+	return Barcode(res.txt, rowNumber, begin.pixelsInFront(), next.pixelsTillEnd(), res.format, symbologyIdentifier, error);
 }
 
 } // namespace ZXing::OneD

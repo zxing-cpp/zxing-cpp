@@ -17,7 +17,7 @@ constexpr auto START_PATTERN_ = FixedPattern<4, 4>{1, 1, 1, 1};
 constexpr auto STOP_PATTERN_1 = FixedPattern<3, 4>{2, 1, 1};
 constexpr auto STOP_PATTERN_2 = FixedPattern<3, 5>{3, 1, 1};
 
-Result ITFReader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<DecodingState>&) const
+Barcode ITFReader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<DecodingState>&) const
 {
 	const int minCharCount = 6;
 	const int minQuietZone = 10;
@@ -70,7 +70,7 @@ Result ITFReader::decodePattern(int rowNumber, PatternView& next, std::unique_pt
 	SymbologyIdentifier symbologyIdentifier = {'I', GTIN::IsCheckDigitValid(txt) ? '1' : '0'};
 	
 	int xStop = next.pixelsTillEnd();
-	return Result(txt, rowNumber, xStart, xStop, BarcodeFormat::ITF, symbologyIdentifier, error);
+	return Barcode(txt, rowNumber, xStart, xStop, BarcodeFormat::ITF, symbologyIdentifier, error);
 }
 
 } // namespace ZXing::OneD

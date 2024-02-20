@@ -18,7 +18,7 @@
 
 namespace ZXing::DataMatrix {
 
-Result Reader::decode(const BinaryBitmap& image) const
+Barcode Reader::decode(const BinaryBitmap& image) const
 {
 #ifdef __cpp_impl_coroutine
 	return FirstOrDefault(decode(image, 1));
@@ -31,28 +31,28 @@ Result Reader::decode(const BinaryBitmap& image) const
 	if (!detectorResult.isValid())
 		return {};
 
-	return Result(Decode(detectorResult.bits()), std::move(detectorResult).position(), BarcodeFormat::DataMatrix);
+	return Barcode(Decode(detectorResult.bits()), std::move(detectorResult).position(), BarcodeFormat::DataMatrix);
 #endif
 }
 
 #ifdef __cpp_impl_coroutine
-Results Reader::decode(const BinaryBitmap& image, int maxSymbols) const
+Barcodes Reader::decode(const BinaryBitmap& image, int maxSymbols) const
 {
 	auto binImg = image.getBitMatrix();
 	if (binImg == nullptr)
 		return {};
 
-	Results results;
+	Barcodes res;
 	for (auto&& detRes : Detect(*binImg, _opts.tryHarder(), _opts.tryRotate(), _opts.isPure())) {
 		auto decRes = Decode(detRes.bits());
 		if (decRes.isValid(_opts.returnErrors())) {
-			results.emplace_back(std::move(decRes), std::move(detRes).position(), BarcodeFormat::DataMatrix);
-			if (maxSymbols > 0 && Size(results) >= maxSymbols)
+			res.emplace_back(std::move(decRes), std::move(detRes).position(), BarcodeFormat::DataMatrix);
+			if (maxSymbols > 0 && Size(res) >= maxSymbols)
 				break;
 		}
 	}
 
-	return results;
+	return res;
 }
 #endif
 } // namespace ZXing::DataMatrix

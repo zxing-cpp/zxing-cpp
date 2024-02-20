@@ -18,8 +18,8 @@
 
 typedef ZXing::ImageView ZXing_ImageView;
 typedef ZXing::ReaderOptions ZXing_ReaderOptions;
-typedef ZXing::Result ZXing_Barcode;
-typedef ZXing::Results ZXing_Barcodes;
+typedef ZXing::Barcode ZXing_Barcode;
+typedef ZXing::Barcodes ZXing_Barcodes;
 
 extern "C"
 {

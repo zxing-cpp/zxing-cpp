@@ -46,21 +46,20 @@ MultiFormatReader::MultiFormatReader(const ReaderOptions& opts) : _opts(opts)
 
 MultiFormatReader::~MultiFormatReader() = default;
 
-Result
-MultiFormatReader::read(const BinaryBitmap& image) const
+Barcode MultiFormatReader::read(const BinaryBitmap& image) const
 {
-	Result r;
+	Barcode r;
 	for (const auto& reader : _readers) {
 		r = reader->decode(image);
   		if (r.isValid())
 			return r;
 	}
-	return _opts.returnErrors() ? r : Result();
+	return _opts.returnErrors() ? r : Barcode();
 }
 
-Results MultiFormatReader::readMultiple(const BinaryBitmap& image, int maxSymbols) const
+Barcodes MultiFormatReader::readMultiple(const BinaryBitmap& image, int maxSymbols) const
 {
-	std::vector<Result> res;
+	Barcodes res;
 
 	for (const auto& reader : _readers) {
 		if (image.inverted() && !reader->supportsInversion)
@@ -77,8 +76,8 @@ Results MultiFormatReader::readMultiple(const BinaryBitmap& image, int maxSymbol
 			break;
 	}
 
-	// sort results based on their position on the image
-	std::sort(res.begin(), res.end(), [](const Result& l, const Result& r) {
+	// sort barcodes based on their position on the image
+	std::sort(res.begin(), res.end(), [](const Barcode& l, const Barcode& r) {
 		auto lp = l.position().topLeft();
 		auto rp = r.position().topLeft();
 		return lp.y < rp.y || (lp.y == rp.y && lp.x < rp.x);

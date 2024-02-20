@@ -21,9 +21,9 @@ int main()
 	else
 		while (waitKey(25) != 27) {
 			cap >> image;
-			auto results = ReadBarcodes(image);
-			for (auto& r : results)
-				DrawResult(image, r);
+			auto barcodes = ReadBarcodes(image);
+			for (auto& barcode : barcodes)
+				DrawBarcode(image, barcode);
 			imshow("Display window", image);
 		}
 

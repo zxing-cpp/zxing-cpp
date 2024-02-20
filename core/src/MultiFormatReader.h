@@ -13,7 +13,6 @@
 
 namespace ZXing {
 
-class Result;
 class Reader;
 class BinaryBitmap;
 class ReaderOptions;
@@ -25,10 +24,10 @@ public:
 	explicit MultiFormatReader(ReaderOptions&& opts) = delete;
 	~MultiFormatReader();
 
-	Result read(const BinaryBitmap& image) const;
+	Barcode read(const BinaryBitmap& image) const;
 
 	// WARNING: this API is experimental and may change/disappear
-	Results readMultiple(const BinaryBitmap& image, int maxSymbols = 0xFF) const;
+	Barcodes readMultiple(const BinaryBitmap& image, int maxSymbols = 0xFF) const;
 
 private:
 	std::vector<std::unique_ptr<Reader>> _readers;

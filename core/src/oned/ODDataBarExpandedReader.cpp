@@ -330,8 +330,7 @@ struct DBERState : public RowReader::DecodingState
 	PairMap allPairs;
 };
 
-Result DataBarExpandedReader::decodePattern(int rowNumber, PatternView& view,
-											std::unique_ptr<RowReader::DecodingState>& state) const
+Barcode DataBarExpandedReader::decodePattern(int rowNumber, PatternView& view, std::unique_ptr<RowReader::DecodingState>& state) const
 {
 #if 0 // non-stacked version
 	auto pairs = ReadRowOfPairs<false>(view, rowNumber);

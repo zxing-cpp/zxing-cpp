@@ -47,9 +47,9 @@ inline bool Contains(const char* str, char c) {
 }
 
 template <template <typename...> typename C, typename... Ts>
-auto FirstOrDefault(C<Ts...>&& results)
+auto FirstOrDefault(C<Ts...>&& container)
 {
-	return results.empty() ? typename C<Ts...>::value_type() : std::move(results.front());
+	return container.empty() ? typename C<Ts...>::value_type() : std::move(container.front());
 }
 
 template <typename Iterator, typename Value = typename std::iterator_traits<Iterator>::value_type, typename Op = std::plus<Value>>

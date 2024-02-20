@@ -80,7 +80,7 @@ static bool IsStartGuard(const PatternView& window, int spaceInPixel)
 		   RowReader::OneToFourBitPattern<CHAR_LEN, CHAR_SUM>(window) == ASTERISK_ENCODING;
 }
 
-Result Code93Reader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<DecodingState>&) const
+Barcode Code93Reader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<DecodingState>&) const
 {
 	// minimal number of characters that must be present (including start, stop, checksum and 1 payload characters)
 	int minCharCount = 5;
@@ -128,7 +128,7 @@ Result Code93Reader::decodePattern(int rowNumber, PatternView& next, std::unique
 	SymbologyIdentifier symbologyIdentifier = {'G', '0'};
 
 	int xStop = next.pixelsTillEnd();
-	return Result(txt, rowNumber, xStart, xStop, BarcodeFormat::Code93, symbologyIdentifier, error);
+	return Barcode(txt, rowNumber, xStart, xStop, BarcodeFormat::Code93, symbologyIdentifier, error);
 }
 
 } // namespace ZXing::OneD

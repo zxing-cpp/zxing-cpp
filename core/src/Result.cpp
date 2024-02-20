@@ -157,45 +157,45 @@ bool Result::operator==(const Result& o) const
 	return std::min(dTop, dBot) < length / 2 && dLength < length / 5;
 }
 
-Result MergeStructuredAppendSequence(const Results& results)
+Barcode MergeStructuredAppendSequence(const Barcodes& barcodes)
 {
-	if (results.empty())
+	if (barcodes.empty())
 		return {};
 
-	std::list<Result> allResults(results.begin(), results.end());
-	allResults.sort([](const Result& r1, const Result& r2) { return r1.sequenceIndex() < r2.sequenceIndex(); });
+	std::list<Barcode> allBarcodes(barcodes.begin(), barcodes.end());
+	allBarcodes.sort([](const Barcode& r1, const Barcode& r2) { return r1.sequenceIndex() < r2.sequenceIndex(); });
 
-	Result res = allResults.front();
-	for (auto i = std::next(allResults.begin()); i != allResults.end(); ++i)
+	Barcode res = allBarcodes.front();
+	for (auto i = std::next(allBarcodes.begin()); i != allBarcodes.end(); ++i)
 		res._content.append(i->_content);
 
 	res._position = {};
 	res._sai.index = -1;
 
-	if (allResults.back().sequenceSize() != Size(allResults) ||
-		!std::all_of(allResults.begin(), allResults.end(),
-					 [&](Result& it) { return it.sequenceId() == allResults.front().sequenceId(); }))
+	if (allBarcodes.back().sequenceSize() != Size(allBarcodes) ||
+		!std::all_of(allBarcodes.begin(), allBarcodes.end(),
+					 [&](Barcode& it) { return it.sequenceId() == allBarcodes.front().sequenceId(); }))
 		res._error = FormatError("sequenceIDs not matching during structured append sequence merging");
 
 	return res;
 }
 
-Results MergeStructuredAppendSequences(const Results& results)
+Barcodes MergeStructuredAppendSequences(const Barcodes& barcodes)
 {
-	std::map<std::string, Results> sas;
-	for (auto& res : results) {
-		if (res.isPartOfSequence())
-			sas[res.sequenceId()].push_back(res);
+	std::map<std::string, Barcodes> sas;
+	for (auto& barcode : barcodes) {
+		if (barcode.isPartOfSequence())
+			sas[barcode.sequenceId()].push_back(barcode);
 	}
 
-	Results saiResults;
+	Barcodes res;
 	for (auto& [id, seq] : sas) {
-		auto res = MergeStructuredAppendSequence(seq);
-		if (res.isValid())
-			saiResults.push_back(std::move(res));
+		auto barcode = MergeStructuredAppendSequence(seq);
+		if (barcode.isValid())
+			res.push_back(std::move(barcode));
 	}
 
-	return saiResults;
+	return res;
 }
 
 } // ZXing

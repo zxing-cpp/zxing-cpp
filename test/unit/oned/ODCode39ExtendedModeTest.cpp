@@ -19,7 +19,7 @@ static std::string Decode(std::string_view encoded)
 {
 	auto opts = ReaderOptions();
 	BitArray row = Utility::ParseBitArray(encoded, '1');
-	Result result = DecodeSingleRow(Code39Reader(opts), row.range());
+	auto result = DecodeSingleRow(Code39Reader(opts), row.range());
 	return result.text(TextMode::Plain);
 }
 

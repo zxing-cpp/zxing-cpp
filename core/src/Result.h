@@ -22,20 +22,24 @@ namespace ZXing {
 
 class DecoderResult;
 class ImageView;
+class Result; // TODO: 3.0 replace deprected symbol name
 
 using Position = QuadrilateralI;
+using Barcode = Result;
+using Barcodes = std::vector<Barcode>;
+using Results = std::vector<Result>;
 
 /**
- * @brief The Result class encapsulates the result of decoding a barcode within an image.
+ * @brief The Barcode class encapsulates the result of decoding a barcode within an image.
  */
 class Result
 {
 	void setIsInverted(bool v) { _isInverted = v; }
 	Result& setReaderOptions(const ReaderOptions& opts);
 
-	friend Result MergeStructuredAppendSequence(const std::vector<Result>& results);
-	friend std::vector<Result> ReadBarcodes(const ImageView&, const ReaderOptions&);
-	friend void IncrementLineCount(Result&);
+	friend Barcode MergeStructuredAppendSequence(const Barcodes&);
+	friend Barcodes ReadBarcodes(const ImageView&, const ReaderOptions&);
+	friend void IncrementLineCount(Barcode&);
 
 public:
 	Result() = default;
@@ -168,16 +172,14 @@ private:
 	bool _readerInit = false;
 };
 
-using Results = std::vector<Result>;
+/**
+ * @brief Merge a list of Barcodes from one Structured Append sequence to a single barcode
+ */
+Barcode MergeStructuredAppendSequence(const Barcodes& results);
 
 /**
- * @brief Merge a list of Results from one Structured Append sequence to a single result
+ * @brief Automatically merge all Structured Append sequences found in the given list of barcodes
  */
-Result MergeStructuredAppendSequence(const Results& results);
-
-/**
- * @brief Automatically merge all Structured Append sequences found in the given results
- */
-Results MergeStructuredAppendSequences(const Results& results);
+Barcodes MergeStructuredAppendSequences(const Barcodes& barcodes);
 
 } // ZXing

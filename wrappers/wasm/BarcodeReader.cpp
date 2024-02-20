@@ -39,22 +39,22 @@ std::vector<ReadResult> readBarcodes(ImageView iv, bool tryHarder, const std::st
 		opts.setMaxNumberOfSymbols(maxSymbols);
 //		opts.setReturnErrors(maxSymbols > 1);
 
-		auto results = ReadBarcodes(iv, opts);
+		auto barcodes = ReadBarcodes(iv, opts);
 
 		std::vector<ReadResult> readResults{};
-		readResults.reserve(results.size());
+		readResults.reserve(barcodes.size());
 
 		thread_local const emscripten::val Uint8Array = emscripten::val::global("Uint8Array");
 
-		for (auto&& result : results) {
-			const ByteArray& bytes = result.bytes();
+		for (auto&& barcode : barcodes) {
+			const ByteArray& bytes = barcode.bytes();
 			readResults.push_back({
-				ToString(result.format()),
-				result.text(),
+				ToString(barcode.format()),
+				barcode.text(),
 				Uint8Array.new_(emscripten::typed_memory_view(bytes.size(), bytes.data())),
-				ToString(result.error()),
-				result.position(),
-				result.symbologyIdentifier()
+				ToString(barcode.error()),
+				barcode.position(),
+				barcode.symbologyIdentifier()
 			});
 		}
 

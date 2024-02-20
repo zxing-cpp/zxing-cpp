@@ -35,7 +35,7 @@ static void PrintUsage(const char* exePath)
 			  << "               Only detect given format(s) (faster)\n"
 			  << "    -single    Stop after the first barcode is detected (faster)\n"
 			  << "    -ispure    Assume the image contains only a 'pure'/perfect code (faster)\n"
-			  << "    -errors    Include results with errors (like checksum error)\n"
+			  << "    -errors    Include barcodes with errors (like checksum error)\n"
 			  << "    -binarizer <local|global|fixed>\n"
 			  << "               Binarizer to be used for gray to binary conversion\n"
 			  << "    -mode <plain|eci|hri|escaped>\n"
@@ -170,7 +170,7 @@ int main(int argc, char* argv[])
 {
 	ReaderOptions options;
 	std::vector<std::string> filePaths;
-	Results allResults;
+	Barcodes allBarcodes;
 	std::string outPath;
 	bool oneLine = false;
 	bool bytesOnly = false;
@@ -200,42 +200,42 @@ int main(int argc, char* argv[])
 
 		auto ImageFormatFromChannels = std::array{ImageFormat::None, ImageFormat::Lum, ImageFormat::LumX, ImageFormat::RGB, ImageFormat::RGBX};
 		ImageView image{buffer.get(), width, height, ImageFormatFromChannels.at(channels)};
-		auto results = ReadBarcodes(image.rotated(rotate), options);
+		auto barcodes = ReadBarcodes(image.rotated(rotate), options);
 
 		// if we did not find anything, insert a dummy to produce some output for each file
-		if (results.empty())
-			results.emplace_back();
+		if (barcodes.empty())
+			barcodes.emplace_back();
 
-		allResults.insert(allResults.end(), results.begin(), results.end());
+		allBarcodes.insert(allBarcodes.end(), barcodes.begin(), barcodes.end());
 		if (filePath == filePaths.back()) {
-			auto merged = MergeStructuredAppendSequences(allResults);
+			auto merged = MergeStructuredAppendSequences(allBarcodes);
 			// report all merged sequences as part of the last file to make the logic not overly complicated here
-			results.insert(results.end(), std::make_move_iterator(merged.begin()), std::make_move_iterator(merged.end()));
+			barcodes.insert(barcodes.end(), std::make_move_iterator(merged.begin()), std::make_move_iterator(merged.end()));
 		}
 
-		for (auto&& result : results) {
+		for (auto&& barcode : barcodes) {
 
 			if (!outPath.empty())
-				drawRect(image, result.position(), bool(result.error()));
+				drawRect(image, barcode.position(), bool(barcode.error()));
 
-			ret |= static_cast<int>(result.error().type());
+			ret |= static_cast<int>(barcode.error().type());
 
 			if (bytesOnly) {
-				std::cout.write(reinterpret_cast<const char*>(result.bytes().data()), result.bytes().size());
+				std::cout.write(reinterpret_cast<const char*>(barcode.bytes().data()), barcode.bytes().size());
 				continue;
 			}
 
 			if (oneLine) {
-				std::cout << filePath << " " << ToString(result.format());
-				if (result.isValid())
-					std::cout << " \"" << result.text(TextMode::Escaped) << "\"";
-				else if (result.error())
-					std::cout << " " << ToString(result.error());
+				std::cout << filePath << " " << ToString(barcode.format());
+				if (barcode.isValid())
+					std::cout << " \"" << barcode.text(TextMode::Escaped) << "\"";
+				else if (barcode.error())
+					std::cout << " " << ToString(barcode.error());
 				std::cout << "\n";
 				continue;
 			}
 
-			if (filePaths.size() > 1 || results.size() > 1) {
+			if (filePaths.size() > 1 || barcodes.size() > 1) {
 				static bool firstFile = true;
 				if (!firstFile)
 					std::cout << "\n";
@@ -244,52 +244,52 @@ int main(int argc, char* argv[])
 				firstFile = false;
 			}
 
-			if (result.format() == BarcodeFormat::None) {
+			if (barcode.format() == BarcodeFormat::None) {
 				std::cout << "No barcode found\n";
 				continue;
 			}
 
-			std::cout << "Text:       \"" << result.text() << "\"\n"
-					  << "Bytes:      " << ToHex(options.textMode() == TextMode::ECI ? result.bytesECI() : result.bytes()) << "\n"
-					  << "Format:     " << ToString(result.format()) << "\n"
-					  << "Identifier: " << result.symbologyIdentifier() << "\n"
-					  << "Content:    " << ToString(result.contentType()) << "\n"
-					  << "HasECI:     " << result.hasECI() << "\n"
-					  << "Position:   " << ToString(result.position()) << "\n"
-					  << "Rotation:   " << result.orientation() << " deg\n"
-					  << "IsMirrored: " << result.isMirrored() << "\n"
-					  << "IsInverted: " << result.isInverted() << "\n";
+			std::cout << "Text:       \"" << barcode.text() << "\"\n"
+					  << "Bytes:      " << ToHex(options.textMode() == TextMode::ECI ? barcode.bytesECI() : barcode.bytes()) << "\n"
+					  << "Format:     " << ToString(barcode.format()) << "\n"
+					  << "Identifier: " << barcode.symbologyIdentifier() << "\n"
+					  << "Content:    " << ToString(barcode.contentType()) << "\n"
+					  << "HasECI:     " << barcode.hasECI() << "\n"
+					  << "Position:   " << ToString(barcode.position()) << "\n"
+					  << "Rotation:   " << barcode.orientation() << " deg\n"
+					  << "IsMirrored: " << barcode.isMirrored() << "\n"
+					  << "IsInverted: " << barcode.isInverted() << "\n";
 
 			auto printOptional = [](const char* key, const std::string& v) {
 				if (!v.empty())
 					std::cout << key << v << "\n";
 			};
 
-			printOptional("EC Level:   ", result.ecLevel());
-			printOptional("Version:    ", result.version());
-			printOptional("Error:      ", ToString(result.error()));
+			printOptional("EC Level:   ", barcode.ecLevel());
+			printOptional("Version:    ", barcode.version());
+			printOptional("Error:      ", ToString(barcode.error()));
 
-			if (result.lineCount())
-				std::cout << "Lines:      " << result.lineCount() << "\n";
+			if (barcode.lineCount())
+				std::cout << "Lines:      " << barcode.lineCount() << "\n";
 
 			if ((BarcodeFormat::EAN13 | BarcodeFormat::EAN8 | BarcodeFormat::UPCA | BarcodeFormat::UPCE)
-					.testFlag(result.format())) {
-				printOptional("Country:    ", GTIN::LookupCountryIdentifier(result.text(), result.format()));
-				printOptional("Add-On:     ", GTIN::EanAddOn(result));
-				printOptional("Price:      ", GTIN::Price(GTIN::EanAddOn(result)));
-				printOptional("Issue #:    ", GTIN::IssueNr(GTIN::EanAddOn(result)));
-			} else if (result.format() == BarcodeFormat::ITF && Size(result.bytes()) == 14) {
-				printOptional("Country:    ", GTIN::LookupCountryIdentifier(result.text(), result.format()));
+					.testFlag(barcode.format())) {
+				printOptional("Country:    ", GTIN::LookupCountryIdentifier(barcode.text(), barcode.format()));
+				printOptional("Add-On:     ", GTIN::EanAddOn(barcode));
+				printOptional("Price:      ", GTIN::Price(GTIN::EanAddOn(barcode)));
+				printOptional("Issue #:    ", GTIN::IssueNr(GTIN::EanAddOn(barcode)));
+			} else if (barcode.format() == BarcodeFormat::ITF && Size(barcode.bytes()) == 14) {
+				printOptional("Country:    ", GTIN::LookupCountryIdentifier(barcode.text(), barcode.format()));
 			}
 
-			if (result.isPartOfSequence())
-				std::cout << "Structured Append: symbol " << result.sequenceIndex() + 1 << " of "
-						  << result.sequenceSize() << " (parity/id: '" << result.sequenceId() << "')\n";
-			else if (result.sequenceSize() > 0)
-				std::cout << "Structured Append: merged result from " << result.sequenceSize() << " symbols (parity/id: '"
-						  << result.sequenceId() << "')\n";
+			if (barcode.isPartOfSequence())
+				std::cout << "Structured Append: symbol " << barcode.sequenceIndex() + 1 << " of "
+						  << barcode.sequenceSize() << " (parity/id: '" << barcode.sequenceId() << "')\n";
+			else if (barcode.sequenceSize() > 0)
+				std::cout << "Structured Append: merged result from " << barcode.sequenceSize() << " symbols (parity/id: '"
+						  << barcode.sequenceId() << "')\n";
 
-			if (result.readerInit())
+			if (barcode.readerInit())
 				std::cout << "Reader Initialisation/Programming\n";
 		}
 

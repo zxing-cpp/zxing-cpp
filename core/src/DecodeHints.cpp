@@ -17,12 +17,12 @@ struct DecodeHints
 	char data[sizeof(ReaderOptions)];
 };
 
-Result ReadBarcode(const ImageView& image, const DecodeHints& hints = {})
+Barcode ReadBarcode(const ImageView& image, const DecodeHints& hints = {})
 {
 	return ReadBarcode(image, reinterpret_cast<const ReaderOptions&>(hints));
 }
 
-Results ReadBarcodes(const ImageView& image, const DecodeHints& hints = {})
+Barcodes ReadBarcodes(const ImageView& image, const DecodeHints& hints = {})
 {
 	return ReadBarcodes(image, reinterpret_cast<const ReaderOptions&>(hints));
 }

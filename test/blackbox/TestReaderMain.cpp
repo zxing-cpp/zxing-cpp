@@ -40,15 +40,15 @@ int main(int argc, char** argv)
 		int rotation = getEnv("ROTATION");
 
 		for (int i = 1; i < argc; ++i) {
-			Result result = ReadBarcode(ImageLoader::load(argv[i]).rotated(rotation), opts);
+			Barcode barcode = ReadBarcode(ImageLoader::load(argv[i]).rotated(rotation), opts);
 			std::cout << argv[i] << ": ";
-			if (result.isValid())
-				std::cout << ToString(result.format()) << ": " << result.text() << "\n";
+			if (barcode.isValid())
+				std::cout << ToString(barcode.format()) << ": " << barcode.text() << "\n";
 			else
 				std::cout << "FAILED\n";
-			if (result.isValid() && getenv("WRITE_TEXT")) {
+			if (barcode.isValid() && getenv("WRITE_TEXT")) {
 				std::ofstream f(fs::path(argv[i]).replace_extension(".txt"));
-				f << result.text();
+				f << barcode.text();
 			}
 		}
 		return 0;
