@@ -277,6 +277,21 @@ impl Drop for Barcode {
 	}
 }
 
+#[derive(Error, Debug, PartialEq)]
+pub enum BarcodeError {
+	#[error("")]
+	None(),
+
+	#[error("{0}")]
+	Checksum(String),
+
+	#[error("{0}")]
+	Format(String),
+
+	#[error("{0}")]
+	Unsupported(String),
+}
+
 pub type PointI = ZXing_PointI;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -315,7 +330,6 @@ impl Barcode {
 	getter!(content_type, contentType, transmute, ContentType);
 	getter!(text, text, c2r_str, String);
 	getter!(ec_level, ecLevel, c2r_str, String);
-	getter!(error_message, errorMsg, c2r_str, String);
 	getter!(symbology_identifier, symbologyIdentifier, c2r_str, String);
 	getter!(position, position, transmute, Position);
 	getter!(orientation, orientation, transmute, i32);
@@ -331,6 +345,19 @@ impl Barcode {
 	pub fn bytes_eci(&self) -> Vec<u8> {
 		let mut len: c_int = 0;
 		unsafe { c2r_vec(ZXing_Barcode_bytesECI(self.0, &mut len), len) }
+	}
+
+	pub fn error(&self) -> BarcodeError {
+		let error_type = unsafe { ZXing_Barcode_errorType(self.0) };
+		let error_msg = unsafe { c2r_str(ZXing_Barcode_errorMsg(self.0)) };
+		#[allow(non_upper_case_globals)]
+		match error_type {
+			ZXing_ErrorType_None => BarcodeError::None(),
+			ZXing_ErrorType_Format => BarcodeError::Format(error_msg),
+			ZXing_ErrorType_Checksum => BarcodeError::Checksum(error_msg),
+			ZXing_ErrorType_Unsupported => BarcodeError::Unsupported(error_msg),
+			_ => panic!("Internal error: invalid ZXing_ErrorType"),
+		}
 	}
 }
 

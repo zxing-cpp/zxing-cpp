@@ -59,6 +59,7 @@ internal class Dll
 
 	[DllImport(DllName)] public static extern bool ZXing_Barcode_isValid(IntPtr result);
 	[DllImport(DllName)] public static extern IntPtr ZXing_Barcode_errorMsg(IntPtr result);
+	[DllImport(DllName)] public static extern ErrorType ZXing_Barcode_errorType(IntPtr result);
 	[DllImport(DllName)] public static extern BarcodeFormat ZXing_Barcode_format(IntPtr result);
 	[DllImport(DllName)] public static extern ContentType ZXing_Barcode_contentType(IntPtr result);
 	[DllImport(DllName)] public static extern IntPtr ZXing_Barcode_bytes(IntPtr result, out int len);
@@ -157,6 +158,8 @@ public enum TextMode
 };
 
 public enum ContentType { Text, Binary, Mixed, GS1, ISO15434, UnknownECI };
+
+public enum ErrorType { None, Format, Checksum, Unsupported };
 
 public enum ImageFormat {
 	None = 0,
@@ -305,6 +308,7 @@ public class Barcode
 	public string ECLevel => MarshalAsString(ZXing_Barcode_ecLevel(_d));
 	public string SymbologyIdentifier => MarshalAsString(ZXing_Barcode_symbologyIdentifier(_d));
 	public string ErrorMsg => MarshalAsString(ZXing_Barcode_errorMsg(_d));
+	public ErrorType ErrorType => ZXing_Barcode_errorType(_d);
 	public Position Position => ZXing_Barcode_position(_d);
 	public int Orientation => ZXing_Barcode_orientation(_d);
 	public bool HasECI => ZXing_Barcode_hasECI(_d);

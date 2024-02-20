@@ -52,5 +52,7 @@ public class UnitTest1
 		Assert.Equal(0, res[0].Orientation);
 		Assert.Equal(new PointI() { X = 4, Y = 0 }, res[0].Position.TopLeft);
 		Assert.Equal(1, res[0].LineCount);
+		Assert.Equal(ErrorType.None, res[0].ErrorType);
+		Assert.Equal("", res[0].ErrorMsg);
 	}
 }

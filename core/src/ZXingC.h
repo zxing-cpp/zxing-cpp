@@ -172,6 +172,14 @@ typedef enum
 	ZXing_ContentType_UnknownECI
 } ZXing_ContentType;
 
+typedef enum
+{
+	ZXing_ErrorType_None,
+	ZXing_ErrorType_Format,
+	ZXing_ErrorType_Checksum,
+	ZXing_ErrorType_Unsupported
+} ZXing_ErrorType;
+
 char* ZXing_ContentTypeToString(ZXing_ContentType type);
 
 typedef struct ZXing_PointI
@@ -187,6 +195,7 @@ typedef struct ZXing_Position
 char* ZXing_PositionToString(ZXing_Position position);
 
 bool ZXing_Barcode_isValid(const ZXing_Barcode* barcode);
+ZXing_ErrorType ZXing_Barcode_errorType(const ZXing_Barcode* barcode);
 char* ZXing_Barcode_errorMsg(const ZXing_Barcode* barcode);
 ZXing_BarcodeFormat ZXing_Barcode_format(const ZXing_Barcode* barcode);
 ZXing_ContentType ZXing_Barcode_contentType(const ZXing_Barcode* barcode);

@@ -206,6 +206,11 @@ bool ZXing_Barcode_isValid(const ZXing_Barcode* barcode)
 	return barcode != NULL && barcode->isValid();
 }
 
+ZXing_ErrorType ZXing_Barcode_errorType(const ZXing_Barcode* barcode)
+{
+	return static_cast<ZXing_ErrorType>(barcode->error().type());
+}
+
 char* ZXing_Barcode_errorMsg(const ZXing_Barcode* barcode)
 {
 	return copy(ToString(barcode->error()));

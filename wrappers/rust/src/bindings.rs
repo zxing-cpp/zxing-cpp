@@ -77,6 +77,11 @@ pub const ZXing_ContentType_GS1: ZXing_ContentType = 3;
 pub const ZXing_ContentType_ISO15434: ZXing_ContentType = 4;
 pub const ZXing_ContentType_UnknownECI: ZXing_ContentType = 5;
 pub type ZXing_ContentType = ::core::ffi::c_uint;
+pub const ZXing_ErrorType_None: ZXing_ErrorType = 0;
+pub const ZXing_ErrorType_Format: ZXing_ErrorType = 1;
+pub const ZXing_ErrorType_Checksum: ZXing_ErrorType = 2;
+pub const ZXing_ErrorType_Unsupported: ZXing_ErrorType = 3;
+pub type ZXing_ErrorType = ::core::ffi::c_uint;
 #[repr(C)]
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct ZXing_PointI {
@@ -150,6 +155,7 @@ extern "C" {
 	pub fn ZXing_ContentTypeToString(type_: ZXing_ContentType) -> *mut ::core::ffi::c_char;
 	pub fn ZXing_PositionToString(position: ZXing_Position) -> *mut ::core::ffi::c_char;
 	pub fn ZXing_Barcode_isValid(barcode: *const ZXing_Barcode) -> bool;
+	pub fn ZXing_Barcode_errorType(barcode: *const ZXing_Barcode) -> ZXing_ErrorType;
 	pub fn ZXing_Barcode_errorMsg(barcode: *const ZXing_Barcode) -> *mut ::core::ffi::c_char;
 	pub fn ZXing_Barcode_format(barcode: *const ZXing_Barcode) -> ZXing_BarcodeFormat;
 	pub fn ZXing_Barcode_contentType(barcode: *const ZXing_Barcode) -> ZXing_ContentType;
