@@ -14,6 +14,10 @@ exclude = [
     "core/**/*Encode*",
 ]
 
+[lib]
+name = "zxingcpp"
+path = "src/lib.rs"
+
 [features]
 default = []
 image = ["dep:image"]

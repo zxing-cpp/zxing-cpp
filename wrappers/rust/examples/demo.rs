@@ -3,7 +3,7 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-use zxing_cpp::*;
+use zxingcpp::*;
 
 fn main() -> anyhow::Result<()> {
 	let filename = std::env::args().nth(1).expect("no image file name provided");

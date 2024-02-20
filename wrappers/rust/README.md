@@ -21,7 +21,7 @@ zxing-cpp = { version = "0.3.0", features = ["bundled", "image"] }
 Simple example usage:
 
 ```rust
-use zxing_cpp::{BarcodeFormat, BarcodeReader, ImageView};
+use zxingcpp::{BarcodeFormat, BarcodeReader, ImageView};
 
 fn main() -> anyhow::Result<()> {
 	let image = image::open("some-image-file.jpg")?;
