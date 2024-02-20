@@ -45,7 +45,7 @@ jobs:
         CIBW_ARCHS_MACOS: universal2
         CIBW_ENVIRONMENT_MACOS: CMAKE_OSX_ARCHITECTURES="arm64;x86_64"
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v3 # v4 breaks the build, see https://github.com/actions/upload-artifact/blob/main/docs/MIGRATION.md 
       with:
         path: ./wheelhouse/*.whl
 
@@ -70,7 +70,7 @@ jobs:
       working-directory: wrappers/python
       run: python3 setup.py sdist
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v3
       with:
         path: wrappers/python/dist/*.tar.gz
 
