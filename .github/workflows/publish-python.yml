@@ -26,6 +26,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -33,20 +35,28 @@ jobs:
         python-version: '3.12'
 
     - name: Install cibuildwheel
-      run: python3 -m pip install cibuildwheel==2.16.2
+      run: python3 -m pip install cibuildwheel==2.16.5
 
     - name: Build wheels
       run: python3 -m cibuildwheel --output-dir wheelhouse wrappers/python
       env:
-        CIBW_BUILD: cp38-* cp39-* cp310-* cp311-* cp312-*
+        # TODO: setup a "BEFORE" cmake build and link the python module to the prebuild libZXing.a
+        # see https://github.com/YannickJadoul/Parselmouth/blob/523c117aa780184345121f6ff8315670bc7d4d94/.github/workflows/wheels.yml#L120
+        CIBW_BUILD: cp39-* cp310-* cp311-* cp312-*
         CIBW_SKIP: "*musllinux*"
         # the default maylinux2014 image does not contain a c++20 compiler, see https://github.com/pypa/manylinux
         CIBW_MANYLINUX_X86_64_IMAGE: quay.io/pypa/manylinux_2_28_x86_64
+        # CIBW_ARCHS_MACOS: "x86_64 arm64"
         CIBW_ARCHS_MACOS: universal2
         CIBW_ENVIRONMENT_MACOS: CMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+        # the default macOS target version is 10.9 which does not support c++20 coroutines
+        MACOSX_DEPLOYMENT_TARGET: "10.13"
+        CIBW_BUILD_VERBOSITY: 1
 
-    - uses: actions/upload-artifact@v3 # v4 breaks the build, see https://github.com/actions/upload-artifact/blob/main/docs/MIGRATION.md 
+    - name: Upload wheels
+      uses: actions/upload-artifact@v4
       with:
+        name: cibw-wheels-${{ matrix.os }}
         path: ./wheelhouse/*.whl
 
   build-sdist:
@@ -55,7 +65,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
-        submodules: recursive
+        fetch-depth: 0
 
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -70,8 +80,10 @@ jobs:
       working-directory: wrappers/python
       run: python3 setup.py sdist
 
-    - uses: actions/upload-artifact@v3
+    - name: Upload sdist
+      uses: actions/upload-artifact@v4
       with:
+        name: cibw-sdist
         path: wrappers/python/dist/*.tar.gz
 
   upload-pypi:
@@ -89,8 +101,12 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: artifact
+          pattern: cibw-*
           path: dist
+          merge-multiple: true
+
+      - name: List wheels
+        run: ls dist
 
       - uses: pypa/gh-action-pypi-publish@release/v1
 #        with:
