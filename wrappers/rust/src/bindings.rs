@@ -22,6 +22,7 @@ pub struct ZXing_Barcodes {
 }
 pub const ZXing_ImageFormat_None: ZXing_ImageFormat = 0;
 pub const ZXing_ImageFormat_Lum: ZXing_ImageFormat = 16777216;
+pub const ZXing_ImageFormat_LumX: ZXing_ImageFormat = 33554432;
 pub const ZXing_ImageFormat_RGB: ZXing_ImageFormat = 50331906;
 pub const ZXing_ImageFormat_BGR: ZXing_ImageFormat = 50462976;
 pub const ZXing_ImageFormat_RGBX: ZXing_ImageFormat = 67109122;

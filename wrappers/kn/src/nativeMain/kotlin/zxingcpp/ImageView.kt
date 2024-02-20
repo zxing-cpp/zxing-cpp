@@ -45,6 +45,7 @@ class ImageView(
 enum class ImageFormat(internal val cValue: ZXing_ImageFormat) {
 	None(ZXing_ImageFormat_None),
 	Lum(ZXing_ImageFormat_Lum),
+	LumX(ZXing_ImageFormat_LumX),
 	RGB(ZXing_ImageFormat_RGB),
 	BGR(ZXing_ImageFormat_BGR),
 	RGBX(ZXing_ImageFormat_RGBX),

@@ -39,6 +39,7 @@ typedef struct ZXing_Barcodes ZXing_Barcodes;
 typedef enum {
 	ZXing_ImageFormat_None = 0,
 	ZXing_ImageFormat_Lum = 0x01000000,
+	ZXing_ImageFormat_LumX = 0x02000000,
 	ZXing_ImageFormat_RGB = 0x03000102,
 	ZXing_ImageFormat_BGR = 0x03020100,
 	ZXing_ImageFormat_RGBX = 0x04000102,

@@ -111,7 +111,7 @@ macro_rules! make_zxing_flags {
     }
 }
 #[rustfmt::skip] // workaround for broken #[rustfmt::skip::macros(make_zxing_enum)]
-make_zxing_enum!(ImageFormat { Lum, RGB, RGBX });
+make_zxing_enum!(ImageFormat { Lum, LumX, RGB, BGR, RGBX, XRGB, BGRX, XBGR });
 #[rustfmt::skip]
 make_zxing_enum!(ContentType { Text, Binary, Mixed, GS1, ISO15434, UnknownECI });
 #[rustfmt::skip]
@@ -258,13 +258,14 @@ impl<'a> TryFrom<&'a image::DynamicImage> for ImageView<'a> {
 	fn try_from(img: &'a image::DynamicImage) -> Result<Self, Error> {
 		let format = match img {
 			image::DynamicImage::ImageLuma8(_) => Some(ImageFormat::Lum),
+			image::DynamicImage::ImageLumaA8(_) => Some(ImageFormat::LumX),
 			image::DynamicImage::ImageRgb8(_) => Some(ImageFormat::RGB),
 			image::DynamicImage::ImageRgba8(_) => Some(ImageFormat::RGBX),
 			_ => None,
 		};
 		match format {
 			Some(format) => Ok(ImageView::from_slice(img.as_bytes(), img.width(), img.height(), format)?),
-			None => Err(Error::InvalidInput("Invalid image format (must be either luma8|rgb8|rgba8)".to_string())),
+			None => Err(Error::InvalidInput("Invalid image format (must be either luma8|lumaA8|rgb8|rgba8)".to_string())),
 		}
 	}
 }
