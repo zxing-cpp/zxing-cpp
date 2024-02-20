@@ -137,7 +137,7 @@ ZXIGTIN *getGTIN(const Result &result) {
 - (NSArray<ZXIResult*> *)readImageView:(ImageView)imageView
                                  error:(NSError *__autoreleasing _Nullable *)error {
     try {
-        Results results = ReadBarcodes(imageView, [ZXIBarcodeReader ReaderOptionsFromZXIReaderOptions:self.options]);
+        Barcodes results = ReadBarcodes(imageView, [ZXIBarcodeReader ReaderOptionsFromZXIReaderOptions:self.options]);
         NSMutableArray* zxiResults = [NSMutableArray array];
         for (auto result: results) {
             [zxiResults addObject:
