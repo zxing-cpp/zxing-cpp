@@ -110,9 +110,9 @@ bool GlobalHistogramBinarizer::getPatternRow(int row, int rotation, PatternRow& 
 	if (buffer.width() < 3)
 		return false; // special casing the code below for a width < 3 makes no sense
 
-#ifdef __AVX__
+#if defined(__AVX__) // or defined(__ARM_NEON)
 	// If we are extracting a column (instead of a row), we run into cache misses on every pixel access both
-	// during the histogram caluculation and during the sharpen+threshold operation. Additionally, if we
+	// during the histogram calculation and during the sharpen+threshold operation. Additionally, if we
 	// perform the ThresholdSharpened function on pixStride==1 data, the auto-vectorizer makes that part
 	// 8x faster on an AVX2 cpu which easily recovers the extra cost that we pay for the copying.
 	thread_local std::vector<uint8_t> line;
