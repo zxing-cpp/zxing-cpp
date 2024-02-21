@@ -179,6 +179,7 @@ set (PUBLIC_HEADERS
 )
 if (BUILD_READERS)
     set (PUBLIC_HEADERS ${PUBLIC_HEADERS}
+        src/Barcode.h
         src/Content.h
         src/DecodeHints.h
         src/Error.h
