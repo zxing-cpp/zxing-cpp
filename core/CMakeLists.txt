@@ -181,16 +181,16 @@ if (BUILD_READERS)
     set (PUBLIC_HEADERS ${PUBLIC_HEADERS}
         src/Barcode.h
         src/Content.h
-        src/DecodeHints.h
+        src/DecodeHints.h # [[deprecated]]
         src/Error.h
         src/ImageView.h
         src/Point.h
         src/Quadrilateral.h
         src/ReadBarcode.h
         src/ReaderOptions.h
-        src/Result.h
+        src/Result.h # [[deprecated]]
         src/StructuredAppend.h
-        $<$<BOOL:${BUILD_C_API}>:${CMAKE_CURRENT_SOURCE_DIR}/src/ZXingC.h>
+        $<$<BOOL:${BUILD_C_API}>:src/ZXingC.h>
     )
 endif()
 if (BUILD_WRITERS)
@@ -492,8 +492,9 @@ endif()
 set_target_properties(ZXing PROPERTIES PUBLIC_HEADER "${PUBLIC_HEADERS}")
 
 set(PRECOMPILE_HEADERS ${PUBLIC_HEADERS})
-list(REMOVE_ITEM PRECOMPILE_HEADERS "$<$<BOOL:${BUILD_C_API}>:${CMAKE_CURRENT_SOURCE_DIR}/src/ZXingC.h>")
-list(REMOVE_ITEM PRECOMPILE_HEADERS "$<$<BOOL:${BUILD_C_API}>:${CMAKE_CURRENT_SOURCE_DIR}/src/Result.h>") # [[deprecated]]
+list(REMOVE_ITEM PRECOMPILE_HEADERS "$<$<BOOL:${BUILD_C_API}>:src/ZXingC.h>")
+list(REMOVE_ITEM PRECOMPILE_HEADERS src/DecodeHints.h) # [[deprecated]]
+list(REMOVE_ITEM PRECOMPILE_HEADERS src/Result.h)      # [[deprecated]]
 target_precompile_headers(ZXing PRIVATE ${PRECOMPILE_HEADERS})
 set_source_files_properties(src/libzueci/zueci.c PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
 set_source_files_properties(src/DecodeHints.cpp PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
