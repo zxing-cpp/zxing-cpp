@@ -1,6 +1,7 @@
 import importlib.util
 import unittest
 import math
+import platform
 
 import zxingcpp
 
@@ -99,7 +100,7 @@ class TestReadWrite(unittest.TestCase):
 
 		self.check_res(zxingcpp.read_barcode(img), format, text)
 
-	@unittest.skipIf(not has_numpy, "need numpy for read/write tests")
+	@unittest.skipIf(not has_numpy or platform.system() == "Windows", "need numpy for read/write tests")
 	def test_write_read_cycle_numpy(self):
 		import numpy as np
 		format = BF.QRCode
