@@ -2,6 +2,10 @@ name: publish-kn
 
 on:
   workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Publish package (y/n)'
+        default: 'n'
 
 jobs:
   publish:
@@ -43,7 +47,13 @@ jobs:
         run: |
           echo -e "konan.dir=$HOME/.konan/kotlin-native-prebuilt-macos-x86_64-1.9.22" > local.properties
 
+      - name: Build Library
+        run: |
+          export PATH="$PATH:$(brew --prefix llvm@15)/bin"
+          ./gradlew assembleRelease
+
       - name: Publish Library
+        if: ${{ github.event.inputs.publish == 'y' }}
         env:
           ORG_GRADLE_PROJECT_signingKey: ${{ secrets.OSSRH_GPG_SECRET_KEY }}
           ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }}
@@ -51,4 +61,4 @@ jobs:
           ORG_GRADLE_PROJECT_ossrhPassword: ${{ secrets.OSSRH_PASSWORD }}
         run: |
           export PATH="$PATH:$(brew --prefix llvm@15)/bin"
-          ./gradlew publishAllPublicationsToSonatypeRepository
+          ./gradlew publishReleasePublicationToSonatypeRepository

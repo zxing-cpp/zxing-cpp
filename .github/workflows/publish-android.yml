@@ -21,7 +21,13 @@ jobs:
         java-version: '17'
 #      working-directory: wrappers/android
 #      run: ./gradlew versionDisplay
+
+    - name: Build Library
+      working-directory: wrappers/android
+      run: ./gradlew assembleRelease
+
     - name: Publish Library
+      if: ${{ github.event.inputs.publish == 'y' }}
       working-directory: wrappers/android
       env:
         ORG_GRADLE_PROJECT_signingKey: ${{ secrets.OSSRH_GPG_SECRET_KEY }}
