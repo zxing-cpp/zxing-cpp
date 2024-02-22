@@ -190,7 +190,7 @@ if (BUILD_READERS)
         src/ReaderOptions.h
         src/Result.h # [[deprecated]]
         src/StructuredAppend.h
-        $<$<BOOL:${BUILD_C_API}>:src/ZXingC.h>
+        $<$<BOOL:${BUILD_C_API}>:${CMAKE_CURRENT_SOURCE_DIR}/src/ZXingC.h>
     )
 endif()
 if (BUILD_WRITERS)
@@ -492,7 +492,7 @@ endif()
 set_target_properties(ZXing PROPERTIES PUBLIC_HEADER "${PUBLIC_HEADERS}")
 
 set(PRECOMPILE_HEADERS ${PUBLIC_HEADERS})
-list(REMOVE_ITEM PRECOMPILE_HEADERS "$<$<BOOL:${BUILD_C_API}>:src/ZXingC.h>")
+list(REMOVE_ITEM PRECOMPILE_HEADERS "$<$<BOOL:${BUILD_C_API}>:${CMAKE_CURRENT_SOURCE_DIR}/src/ZXingC.h>")
 list(REMOVE_ITEM PRECOMPILE_HEADERS src/DecodeHints.h) # [[deprecated]]
 list(REMOVE_ITEM PRECOMPILE_HEADERS src/Result.h)      # [[deprecated]]
 target_precompile_headers(ZXing PRIVATE ${PRECOMPILE_HEADERS})
