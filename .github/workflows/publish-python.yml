@@ -50,7 +50,7 @@ jobs:
         CIBW_ARCHS_MACOS: universal2
         CIBW_ENVIRONMENT_MACOS: CMAKE_OSX_ARCHITECTURES="arm64;x86_64"
         # the default macOS target version is 10.9 which does not support c++20 coroutines
-        MACOSX_DEPLOYMENT_TARGET: "10.13"
+        MACOSX_DEPLOYMENT_TARGET: "10.15"
         CIBW_BUILD_VERBOSITY: 1
 
     - name: Upload wheels
