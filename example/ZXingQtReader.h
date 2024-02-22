@@ -157,13 +157,13 @@ inline QList<Barcode> ReadBarcodes(const QImage& img, const ReaderOptions& opts 
 		case QImage::Format_ARGB32:
 		case QImage::Format_RGB32:
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-			return ImageFormat::BGRX;
+			return ImageFormat::BGRA;
 #else
-			return ImageFormat::XRGB;
+			return ImageFormat::ARGB;
 #endif
 		case QImage::Format_RGB888: return ImageFormat::RGB;
 		case QImage::Format_RGBX8888:
-		case QImage::Format_RGBA8888: return ImageFormat::RGBX;
+		case QImage::Format_RGBA8888: return ImageFormat::RGBA;
 		case QImage::Format_Grayscale8: return ImageFormat::Lum;
 		default: return ImageFormat::None;
 		}
@@ -205,9 +205,9 @@ inline QList<Barcode> ReadBarcodes(const QVideoFrame& frame, const ReaderOptions
 	case FORMAT(ARGB32_Premultiplied, ARGB8888_Premultiplied):
 	case FORMAT(RGB32, RGBX8888):
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-		fmt = ImageFormat::BGRX;
+		fmt = ImageFormat::BGRA;
 #else
-		fmt = ImageFormat::XRGB;
+		fmt = ImageFormat::ARGB;
 #endif
 		break;
 
@@ -215,9 +215,9 @@ inline QList<Barcode> ReadBarcodes(const QVideoFrame& frame, const ReaderOptions
 	case FORMAT(BGRA32_Premultiplied, BGRA8888_Premultiplied):
 	case FORMAT(BGR32, BGRX8888):
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-		fmt = ImageFormat::RGBX;
+		fmt = ImageFormat::RGBA;
 #else
-		fmt = ImageFormat::XBGR;
+		fmt = ImageFormat::ABGR;
 #endif
 		break;
 
@@ -256,9 +256,9 @@ inline QList<Barcode> ReadBarcodes(const QVideoFrame& frame, const ReaderOptions
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 13, 0))
 	case FORMAT(ABGR32, ABGR8888):
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-		fmt = ImageFormat::RGBX;
+		fmt = ImageFormat::RGBA;
 #else
-		fmt = ImageFormat::XBGR;
+		fmt = ImageFormat::ABGR;
 #endif
 		break;
 #endif

@@ -33,7 +33,7 @@ public:
 		if (_memory == nullptr)
 			throw std::runtime_error("Failed to read image: " + imgPath.string() + " (" + stbi_failure_reason() + ")");
 
-		auto ImageFormatFromChannels = std::array{ImageFormat::None, ImageFormat::Lum, ImageFormat::LumX, ImageFormat::RGB, ImageFormat::RGBX};
+		auto ImageFormatFromChannels = std::array{ImageFormat::None, ImageFormat::Lum, ImageFormat::LumA, ImageFormat::RGB, ImageFormat::RGBA};
 		ImageView::operator=({_memory.get(), width, height, ImageFormatFromChannels.at(channels)});
 
 		// preconvert from RGB -> Lum to do this only once instead of for each rotation

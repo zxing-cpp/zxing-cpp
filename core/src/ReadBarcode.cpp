@@ -110,7 +110,7 @@ ImageView SetupLumImageView(ImageView iv, LumImage& lum, const ReaderOptions& op
 		// manually spell out the 3 most common pixel formats to get at least gcc to vectorize the code
 		if (iv.format() == ImageFormat::RGB && iv.pixStride() == 3) {
 			lum = ExtractLum(iv, [](const uint8_t* src) { return RGBToLum(src[0], src[1], src[2]); });
-		} else if (iv.format() == ImageFormat::RGBX && iv.pixStride() == 4) {
+		} else if (iv.format() == ImageFormat::RGBA && iv.pixStride() == 4) {
 			lum = ExtractLum(iv, [](const uint8_t* src) { return RGBToLum(src[0], src[1], src[2]); });
 		} else if (iv.format() == ImageFormat::BGR && iv.pixStride() == 3) {
 			lum = ExtractLum(iv, [](const uint8_t* src) { return RGBToLum(src[2], src[1], src[0]); });

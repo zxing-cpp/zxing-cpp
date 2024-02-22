@@ -361,7 +361,7 @@ Java_zxingcpp_BarcodeReader_readBitmap(
 	ImageFormat fmt = ImageFormat::None;
 	switch (bmInfo.format) {
 	case ANDROID_BITMAP_FORMAT_A_8: fmt = ImageFormat::Lum; break;
-	case ANDROID_BITMAP_FORMAT_RGBA_8888: fmt = ImageFormat::RGBX; break;
+	case ANDROID_BITMAP_FORMAT_RGBA_8888: fmt = ImageFormat::RGBA; break;
 	default: return ThrowJavaException(env, "Unsupported image format in AndroidBitmap");
 	}
 

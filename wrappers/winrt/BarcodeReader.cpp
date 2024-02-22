@@ -184,8 +184,8 @@ BarcodeReader::Read(SoftwareBitmap^ bitmap, int cropWidth, int cropHeight)
 			switch (bitmap->BitmapPixelFormat)
 			{
 			case BitmapPixelFormat::Gray8: fmt = ImageFormat::Lum; break;
-			case BitmapPixelFormat::Bgra8: fmt = ImageFormat::BGRX; break;
-			case BitmapPixelFormat::Rgba8: fmt = ImageFormat::RGBX; break;
+			case BitmapPixelFormat::Bgra8: fmt = ImageFormat::BGRA; break;
+			case BitmapPixelFormat::Rgba8: fmt = ImageFormat::RGBA; break;
 			default:
 				throw std::runtime_error("Unsupported BitmapPixelFormat");
 			}

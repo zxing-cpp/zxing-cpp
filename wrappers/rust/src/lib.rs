@@ -111,7 +111,7 @@ macro_rules! make_zxing_flags {
     }
 }
 #[rustfmt::skip] // workaround for broken #[rustfmt::skip::macros(make_zxing_enum)]
-make_zxing_enum!(ImageFormat { Lum, LumX, RGB, BGR, RGBX, XRGB, BGRX, XBGR });
+make_zxing_enum!(ImageFormat { Lum, LumA, RGB, BGR, RGBA, ARGB, BGRA, ABGR });
 #[rustfmt::skip]
 make_zxing_enum!(ContentType { Text, Binary, Mixed, GS1, ISO15434, UnknownECI });
 #[rustfmt::skip]
@@ -258,9 +258,9 @@ impl<'a> TryFrom<&'a image::DynamicImage> for ImageView<'a> {
 	fn try_from(img: &'a image::DynamicImage) -> Result<Self, Error> {
 		let format = match img {
 			image::DynamicImage::ImageLuma8(_) => Some(ImageFormat::Lum),
-			image::DynamicImage::ImageLumaA8(_) => Some(ImageFormat::LumX),
+			image::DynamicImage::ImageLumaA8(_) => Some(ImageFormat::LumA),
 			image::DynamicImage::ImageRgb8(_) => Some(ImageFormat::RGB),
-			image::DynamicImage::ImageRgba8(_) => Some(ImageFormat::RGBX),
+			image::DynamicImage::ImageRgba8(_) => Some(ImageFormat::RGBA),
 			_ => None,
 		};
 		match format {

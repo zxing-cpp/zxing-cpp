@@ -63,7 +63,7 @@ auto read_barcodes_impl(py::object _image, const BarcodeFormats& formats, bool t
 				else if (mode == "RGB")
 					imgfmt = ImageFormat::RGB;
 				else if (mode == "RGBA")
-					imgfmt = ImageFormat::RGBX;
+					imgfmt = ImageFormat::RGBA;
 				else {
 					// Unsupported mode in ImageFormat. Let's do conversion to L mode with PIL.
 					_image = _image.attr("convert")("L");

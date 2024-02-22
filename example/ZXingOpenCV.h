@@ -16,8 +16,9 @@ inline ZXing::ImageView ImageViewFromMat(const cv::Mat& image)
 	auto fmt = ImageFormat::None;
 	switch (image.channels()) {
 	case 1: fmt = ImageFormat::Lum; break;
+	case 2: fmt = ImageFormat::LumA; break;
 	case 3: fmt = ImageFormat::BGR; break;
-	case 4: fmt = ImageFormat::BGRX; break;
+	case 4: fmt = ImageFormat::BGRA; break;
 	}
 
 	if (image.depth() != CV_8U || fmt == ImageFormat::None)

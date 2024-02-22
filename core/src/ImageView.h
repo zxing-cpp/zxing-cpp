@@ -16,13 +16,17 @@ enum class ImageFormat : uint32_t
 {
 	None = 0,
 	Lum  = 0x01000000,
-	LumX = 0x02000000,
+	LumA = 0x02000000,
 	RGB  = 0x03000102,
 	BGR  = 0x03020100,
-	RGBX = 0x04000102,
-	XRGB = 0x04010203,
-	BGRX = 0x04020100,
-	XBGR = 0x04030201,
+	RGBA = 0x04000102,
+	ARGB = 0x04010203,
+	BGRA = 0x04020100,
+	ABGR = 0x04030201,
+	RGBX [[deprecated("use RGBA")]] = RGBA,
+	XRGB [[deprecated("use ARGB")]] = ARGB,
+	BGRX [[deprecated("use BGRA")]] = BGRA,
+	XBGR [[deprecated("use ABGR")]] = ABGR,
 };
 
 constexpr inline int PixStride(ImageFormat format) { return (static_cast<uint32_t>(format) >> 3*8) & 0xFF; }

@@ -39,13 +39,13 @@ typedef struct ZXing_Barcodes ZXing_Barcodes;
 typedef enum {
 	ZXing_ImageFormat_None = 0,
 	ZXing_ImageFormat_Lum = 0x01000000,
-	ZXing_ImageFormat_LumX = 0x02000000,
+	ZXing_ImageFormat_LumA = 0x02000000,
 	ZXing_ImageFormat_RGB = 0x03000102,
 	ZXing_ImageFormat_BGR = 0x03020100,
-	ZXing_ImageFormat_RGBX = 0x04000102,
-	ZXing_ImageFormat_XRGB = 0x04010203,
-	ZXing_ImageFormat_BGRX = 0x04020100,
-	ZXing_ImageFormat_XBGR = 0x04030201,
+	ZXing_ImageFormat_RGBA = 0x04000102,
+	ZXing_ImageFormat_ARGB = 0x04010203,
+	ZXing_ImageFormat_BGRA = 0x04020100,
+	ZXing_ImageFormat_ABGR = 0x04030201,
 } ZXing_ImageFormat;
 
 ZXing_ImageView* ZXing_ImageView_new(const uint8_t* data, int width, int height, ZXing_ImageFormat format, int rowStride,

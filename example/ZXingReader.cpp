@@ -198,7 +198,7 @@ int main(int argc, char* argv[])
 		}
 		channels = forceChannels ? forceChannels : channels;
 
-		auto ImageFormatFromChannels = std::array{ImageFormat::None, ImageFormat::Lum, ImageFormat::LumX, ImageFormat::RGB, ImageFormat::RGBX};
+		auto ImageFormatFromChannels = std::array{ImageFormat::None, ImageFormat::Lum, ImageFormat::LumA, ImageFormat::RGB, ImageFormat::RGBA};
 		ImageView image{buffer.get(), width, height, ImageFormatFromChannels.at(channels)};
 		auto barcodes = ReadBarcodes(image.rotated(rotate), options);
 

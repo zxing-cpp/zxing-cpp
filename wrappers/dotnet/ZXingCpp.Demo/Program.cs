@@ -29,8 +29,8 @@ public static class SkBitmapBarcodeReader
 		var format = img.Info.ColorType switch
 		{
 			SKColorType.Gray8 => ImageFormat.Lum,
-			SKColorType.Rgba8888 => ImageFormat.RGBX,
-			SKColorType.Bgra8888 => ImageFormat.BGRX,
+			SKColorType.Rgba8888 => ImageFormat.RGBA,
+			SKColorType.Bgra8888 => ImageFormat.BGRA,
 			_ => ImageFormat.None,
 		};
 		if (format == ImageFormat.None)
