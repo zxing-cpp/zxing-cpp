@@ -14,7 +14,7 @@ or
 python setup.py install
 ```
 
-**Note**: To enable position independent and multi-symbol DataMatrix detection, the library needs to be compiled with a c++20 compiler. Unfortunatelly some build environments used by `cibuildwheel` to generate the binary wheels that are published on [pypi.org](https://pypi.org/project/zxing-cpp/) don't include a c++20 compiler. Best chance to enable proper DataMatrix support in that case is by installing from source:
+**Note**: To enable position independent and multi-symbol DataMatrix detection, the library needs to be compiled with a c++20 compiler. Unfortunately some build environments (currently the 32-bit builds for Linux) used by `cibuildwheel` to generate the binary wheels that are published on [pypi.org](https://pypi.org/project/zxing-cpp/) don't include a c++20 compiler. Best chance to enable proper DataMatrix support in that case is by installing from source:
 
 ```bash
 pip install zxing-cpp --no-binary zxing-cpp

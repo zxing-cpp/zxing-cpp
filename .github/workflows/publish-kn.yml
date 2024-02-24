@@ -11,7 +11,7 @@ jobs:
   publish:
     name: Library Publish
 
-    runs-on: macos-latest
+    runs-on: macos-13 # at least macos-13 is required to enable c++20 support
 
     defaults:
       run:
