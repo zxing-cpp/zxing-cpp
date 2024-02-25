@@ -500,6 +500,34 @@ target_precompile_headers(ZXing PRIVATE ${PRECOMPILE_HEADERS})
 set_source_files_properties(src/libzueci/zueci.c PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
 set_source_files_properties(src/DecodeHints.cpp PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
 
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    # The following is a list of translation units that fulfill two criteria regarding the use of -Os vs -O3:
+    #  1. their binary size decreases significantly
+    #  2. the runtime of ReaderTest is not (measurably) affected
+    # Compiling them with -Os saves about 40kB (3%) with clang and 190kB (12%) with gcc.
+    check_cxx_compiler_flag("-Os" COMPILER_KNOWS_Os)
+    if(COMPILER_KNOWS_Os)
+    set_source_files_properties(
+        src/BitMatrixIO.cpp
+        src/Error.cpp
+        src/MultiFormatReader.cpp
+        src/ZXingC.cpp
+        src/aztec/AZHighLevelEncoder.cpp
+        src/datamatrix/DMDataBlock.cpp
+        src/datamatrix/DMHighLevelEncoder.cpp
+        src/oned/ODDataBarExpandedBitDecoder.cpp
+        src/pdf417/PDFHighLevelEncoder.cpp
+        src/qrcode/QRBitMatrixParser.cpp
+        src/qrcode/QRDataBlock.cpp
+        src/qrcode/QRDecoder.cpp
+        src/qrcode/QREncoder.cpp
+        src/qrcode/QRMaskUtil.cpp
+        src/qrcode/QRReader.cpp
+        src/qrcode/QRVersion.cpp
+        PROPERTIES SKIP_PRECOMPILE_HEADERS ON COMPILE_FLAGS -Os)
+    endif()
+endif()
+
 include (GNUInstallDirs)
 
 set(ZX_INSTALL_TARGETS ZXing)
