@@ -121,6 +121,7 @@ if (BUILD_READERS)
         src/DecoderResult.h
         src/DetectorResult.h
         src/Error.h
+        src/Error.cpp
         src/GlobalHistogramBinarizer.h
         src/GlobalHistogramBinarizer.cpp
         src/GridSampler.h

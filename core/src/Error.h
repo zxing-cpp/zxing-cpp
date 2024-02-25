@@ -18,13 +18,7 @@ public:
 	const std::string& msg() const noexcept { return _msg; }
 	explicit operator bool() const noexcept { return _type != Type::None; }
 
-	std::string location() const
-	{
-		if (!_file)
-			return {};
-		std::string file(_file);
-		return file.substr(file.find_last_of("/\\") + 1) + ":" + std::to_string(_line);
-	}
+	std::string location() const;
 
 	Error() = default;
 	Error(Type type, std::string msg = {}) : _msg(std::move(msg)), _type(type) {}
@@ -56,15 +50,6 @@ inline bool operator!=(Error::Type t, const Error& e) noexcept { return !(t == e
 #define ChecksumError(...) Error(__FILE__, __LINE__, Error::Checksum, std::string(__VA_ARGS__))
 #define UnsupportedError(...) Error(__FILE__, __LINE__, Error::Unsupported, std::string(__VA_ARGS__))
 
-inline std::string ToString(const Error& e)
-{
-	const char* name[] = {"", "FormatError", "ChecksumError", "Unsupported"};
-	std::string ret = name[static_cast<int>(e.type())];
-	if (!e.msg().empty())
-		ret += " (" + e.msg() + ")";
-	if (auto location = e.location(); !location.empty())
-		ret += " @ " + e.location();
-	return ret;
-}
+std::string ToString(const Error& e);
 
 }
