@@ -9,6 +9,7 @@
 
 #include "BarcodeFormat.h"
 #include "DecoderResult.h"
+#include "DetectorResult.h"
 #include "GTIN.h"
 #include "ODDataBarCommon.h"
 #include "Barcode.h"
@@ -195,8 +196,9 @@ Barcode DataBarReader::decodePattern(int rowNumber, PatternView& next, std::uniq
 			if (ChecksumIsValid(leftPair, rightPair)) {
 				// Symbology identifier ISO/IEC 24724:2011 Section 9 and GS1 General Specifications 5.1.3 Figure 5.1.3-2
 				Barcode res{DecoderResult(Content(ByteArray(ConstructText(leftPair, rightPair)), {'e', '0'}))
-							   .setLineCount(EstimateLineCount(leftPair, rightPair)),
-						   EstimatePosition(leftPair, rightPair), BarcodeFormat::DataBar};
+								.setLineCount(EstimateLineCount(leftPair, rightPair)),
+							{{}, EstimatePosition(leftPair, rightPair)},
+							BarcodeFormat::DataBar};
 
 				prevState->leftPairs.erase(leftPair);
 				prevState->rightPairs.erase(rightPair);

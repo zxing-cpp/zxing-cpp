@@ -7,6 +7,7 @@
 #include "Barcode.h"
 
 #include "DecoderResult.h"
+#include "DetectorResult.h"
 #include "ZXAlgorithms.h"
 
 #include <cmath>
@@ -24,10 +25,10 @@ Result::Result(const std::string& text, int y, int xStart, int xStop, BarcodeFor
 	  _readerInit(readerInit)
 {}
 
-Result::Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat format)
+Result::Result(DecoderResult&& decodeResult, DetectorResult&& detectorResult, BarcodeFormat format)
 	: _content(std::move(decodeResult).content()),
 	  _error(std::move(decodeResult).error()),
-	  _position(std::move(position)),
+	  _position(std::move(detectorResult).position()),
 	  _sai(decodeResult.structuredAppend()),
 	  _format(format),
 	  _lineCount(decodeResult.lineCount()),
@@ -40,6 +41,10 @@ Result::Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat 
 
 	// TODO: add type opaque and code specific 'extra data'? (see DecoderResult::extra())
 }
+
+Result::Result(DecoderResult&& decodeResult, Position&& position, BarcodeFormat format)
+	: Result(std::move(decodeResult), {{}, std::move(position)}, format)
+{}
 
 bool Result::isValid() const
 {

@@ -44,12 +44,11 @@ Barcode Reader::decode(const BinaryBitmap& image) const
 		return {};
 
 	auto decoderResult = Decode(detectorResult.bits());
-	auto position = detectorResult.position();
+	auto format = detectorResult.bits().width() != detectorResult.bits().height() ? BarcodeFormat::RMQRCode
+				  : detectorResult.bits().width() < 21                            ? BarcodeFormat::MicroQRCode
+																				  : BarcodeFormat::QRCode;
 
-	return Barcode(std::move(decoderResult), std::move(position),
-				   detectorResult.bits().width() != detectorResult.bits().height() ? BarcodeFormat::RMQRCode
-				   : detectorResult.bits().width() < 21                            ? BarcodeFormat::MicroQRCode
-																				   : BarcodeFormat::QRCode);
+	return Barcode(std::move(decoderResult), std::move(detectorResult), format);
 }
 
 void logFPSet(const FinderPatternSet& fps [[maybe_unused]])
@@ -98,14 +97,13 @@ Barcodes Reader::decode(const BinaryBitmap& image, int maxSymbols) const
 			auto detectorResult = SampleQR(*binImg, fpSet);
 			if (detectorResult.isValid()) {
 				auto decoderResult = Decode(detectorResult.bits());
-				auto position = detectorResult.position();
 				if (decoderResult.isValid()) {
 					usedFPs.push_back(fpSet.bl);
 					usedFPs.push_back(fpSet.tl);
 					usedFPs.push_back(fpSet.tr);
 				}
 				if (decoderResult.isValid(_opts.returnErrors())) {
-					res.emplace_back(std::move(decoderResult), std::move(position), BarcodeFormat::QRCode);
+					res.emplace_back(std::move(decoderResult), std::move(detectorResult), BarcodeFormat::QRCode);
 					if (maxSymbols && Size(res) == maxSymbols)
 						break;
 				}
@@ -121,9 +119,8 @@ Barcodes Reader::decode(const BinaryBitmap& image, int maxSymbols) const
 			auto detectorResult = SampleMQR(*binImg, fp);
 			if (detectorResult.isValid()) {
 				auto decoderResult = Decode(detectorResult.bits());
-				auto position = detectorResult.position();
 				if (decoderResult.isValid(_opts.returnErrors())) {
-					res.emplace_back(std::move(decoderResult), std::move(position), BarcodeFormat::MicroQRCode);
+					res.emplace_back(std::move(decoderResult), std::move(detectorResult), BarcodeFormat::MicroQRCode);
 					if (maxSymbols && Size(res) == maxSymbols)
 						break;
 				}
@@ -141,9 +138,8 @@ Barcodes Reader::decode(const BinaryBitmap& image, int maxSymbols) const
 			auto detectorResult = SampleRMQR(*binImg, fp);
 			if (detectorResult.isValid()) {
 				auto decoderResult = Decode(detectorResult.bits());
-				auto position = detectorResult.position();
 				if (decoderResult.isValid(_opts.returnErrors())) {
-					res.emplace_back(std::move(decoderResult), std::move(position), BarcodeFormat::RMQRCode);
+					res.emplace_back(std::move(decoderResult), std::move(detectorResult), BarcodeFormat::RMQRCode);
 					if (maxSymbols && Size(res) == maxSymbols)
 						break;
 				}

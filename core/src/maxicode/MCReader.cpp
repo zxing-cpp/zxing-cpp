@@ -9,6 +9,7 @@
 #include "BinaryBitmap.h"
 #include "BitMatrix.h"
 #include "DecoderResult.h"
+#include "DetectorResult.h"
 #include "MCBitMatrixParser.h"
 #include "MCDecoder.h"
 #include "Barcode.h"
@@ -59,7 +60,7 @@ Barcode Reader::decode(const BinaryBitmap& image) const
 	if (!decRes.isValid())
 		return {};
 
-	return Barcode(std::move(decRes), {}, BarcodeFormat::MaxiCode);
+	return Barcode(std::move(decRes), DetectorResult{}, BarcodeFormat::MaxiCode);
 }
 
 } // namespace ZXing::MaxiCode

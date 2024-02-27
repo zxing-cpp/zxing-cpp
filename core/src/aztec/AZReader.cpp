@@ -34,7 +34,7 @@ Barcode Reader::decode(const BinaryBitmap& image) const
 							.setIsMirrored(detectorResult.isMirrored())
 							.setVersionNumber(detectorResult.nbLayers());
 
-	return Barcode(std::move(decodeResult), std::move(detectorResult).position(), BarcodeFormat::Aztec);
+	return Barcode(std::move(decodeResult), std::move(detectorResult), BarcodeFormat::Aztec);
 }
 
 Barcodes Reader::decode(const BinaryBitmap& image, int maxSymbols) const
@@ -50,7 +50,7 @@ Barcodes Reader::decode(const BinaryBitmap& image, int maxSymbols) const
 		auto decRes =
 			Decode(detRes).setReaderInit(detRes.readerInit()).setIsMirrored(detRes.isMirrored()).setVersionNumber(detRes.nbLayers());
 		if (decRes.isValid(_opts.returnErrors())) {
-			baracodes.emplace_back(std::move(decRes), std::move(detRes).position(), BarcodeFormat::Aztec);
+			baracodes.emplace_back(std::move(decRes), std::move(detRes), BarcodeFormat::Aztec);
 			if (maxSymbols > 0 && Size(baracodes) >= maxSymbols)
 				break;
 		}

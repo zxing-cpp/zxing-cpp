@@ -11,6 +11,7 @@
 #include "PDFCodewordDecoder.h"
 #include "ReaderOptions.h"
 #include "DecoderResult.h"
+#include "DetectorResult.h"
 #include "Barcode.h"
 
 #include "BitMatrixCursor.h"
@@ -85,8 +86,8 @@ static Barcodes DoDecode(const BinaryBitmap& image, bool multiple, bool tryRotat
 									GetMinCodewordWidth(points), GetMaxCodewordWidth(points));
 		if (decoderResult.isValid(returnErrors)) {
 			auto point = [&](int i) { return rotate(PointI(points[i].value())); };
-			Barcode barcode(std::move(decoderResult), {point(0), point(2), point(3), point(1)}, BarcodeFormat::PDF417);
-			res.push_back(barcode);
+			res.emplace_back(std::move(decoderResult), DetectorResult{{}, {point(0), point(2), point(3), point(1)}},
+							 BarcodeFormat::PDF417);
 			if (!multiple)
 				return res;
 		}
@@ -292,7 +293,7 @@ static Barcode DecodePure(const BinaryBitmap& image_)
 
 	auto res = DecodeCodewords(codeWords, NumECCodeWords(info.ecLevel));
 
-	return Barcode(std::move(res), {{left, top}, {right, top}, {right, bottom}, {left, bottom}}, BarcodeFormat::PDF417);
+	return Barcode(std::move(res), {{}, {{left, top}, {right, top}, {right, bottom}, {left, bottom}}}, BarcodeFormat::PDF417);
 }
 
 Barcode
