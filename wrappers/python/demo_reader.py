@@ -2,12 +2,12 @@ import sys, zxingcpp
 from PIL import Image
 
 img = Image.open(sys.argv[1])
-results = zxingcpp.read_barcodes(img)
-for result in results:
+barcodes = zxingcpp.read_barcodes(img)
+for barcode in barcodes:
 	print('Found barcode:'
-		f'\n Text:    "{result.text}"'
-		f'\n Format:   {result.format}'
-		f'\n Content:  {result.content_type}'
-		f'\n Position: {result.position}')
-if len(results) == 0:
+		f'\n Text:    "{barcode.text}"'
+		f'\n Format:   {barcode.format}'
+		f'\n Content:  {barcode.content_type}'
+		f'\n Position: {barcode.position}')
+if len(barcodes) == 0:
 	print("Could not find any barcode.")

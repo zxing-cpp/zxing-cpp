@@ -281,7 +281,7 @@ PYBIND11_MODULE(zxingcpp, m)
 			":return: Error message\n"
 			":rtype: str")
 		.def("__str__", [](Error e) { return ToString(e); });
-	py::class_<Barcode>(m, "Result", "Result of barcode reading")
+	py::class_<Barcode>(m, "Barcode", "The Barcode class")
 		.def_property_readonly("valid", &Barcode::isValid,
 			":return: whether or not barcode is valid (i.e. a symbol was found and decoded)\n"
 			":rtype: bool")
@@ -313,6 +313,7 @@ PYBIND11_MODULE(zxingcpp, m)
 			"error", [](const Barcode& res) { return res.error() ? std::optional(res.error()) : std::nullopt; },
 			":return: Error code or None\n"
 			":rtype: zxingcpp.Error");
+	m.attr("Result") = m.attr("Barcode"); // alias to deprecated name for the Barcode class
 	m.def("barcode_format_from_str", &BarcodeFormatFromString,
 		py::arg("str"),
 		"Convert string to BarcodeFormat\n\n"
@@ -364,9 +365,9 @@ PYBIND11_MODULE(zxingcpp, m)
 		":param ean_add_on_symbol: Specify whether to Ignore, Read or Require EAN-2/5 add-on symbols while scanning \n"
 		"  EAN/UPC codes. Default is ``Ignore``.\n"
 		":type return_errors: bool\n"
-		":param return_errors: Set to True to return the barcodes with errors as well (e.g. checksum errors); see ``Result.error``.\n"
+		":param return_errors: Set to True to return the barcodes with errors as well (e.g. checksum errors); see ``Barcode.error``.\n"
 		" Default is False."
-		":rtype: zxing.Result\n"
+		":rtype: zxingcpp.Barcode\n"
 		":return: a Barcode if found, None otherwise"
 	);
 	m.def("read_barcodes", &read_barcodes,
@@ -406,9 +407,9 @@ PYBIND11_MODULE(zxingcpp, m)
 		":param ean_add_on_symbol: Specify whether to Ignore, Read or Require EAN-2/5 add-on symbols while scanning \n"
 		"  EAN/UPC codes. Default is ``Ignore``.\n"
 		":type return_errors: bool\n"
-		":param return_errors: Set to True to return the barcodes with errors as well (e.g. checksum errors); see ``Result.error``.\n"
+		":param return_errors: Set to True to return the barcodes with errors as well (e.g. checksum errors); see ``Barcode.error``.\n"
 		" Default is False.\n"
-		":rtype: zxing.Result\n"
+		":rtype: list[zxingcpp.Barcode]\n"
 		":return: a list of Barcodes, the list is empty if none is found"
 	);
 	py::class_<Matrix<uint8_t>>(m, "Bitmap", py::buffer_protocol())
