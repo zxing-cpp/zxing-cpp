@@ -15,6 +15,11 @@
 #include "Quadrilateral.h"
 #include "StructuredAppend.h"
 
+#ifdef ZXING_BUILD_EXPERIMENTAL_API
+#include "BitMatrix.h"
+#include <memory>
+#endif
+
 #include <string>
 #include <vector>
 
@@ -158,6 +163,10 @@ public:
 	 */
 	std::string version() const;
 
+#ifdef ZXING_BUILD_EXPERIMENTAL_API
+	const BitMatrix& symbol() const { return *_symbol; }
+#endif
+
 	bool operator==(const Result& o) const;
 
 private:
@@ -173,6 +182,9 @@ private:
 	bool _isMirrored = false;
 	bool _isInverted = false;
 	bool _readerInit = false;
+#ifdef ZXING_BUILD_EXPERIMENTAL_API
+	std::shared_ptr<BitMatrix> _symbol;
+#endif
 };
 
 /**

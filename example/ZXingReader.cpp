@@ -4,8 +4,9 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "ReadBarcode.h"
+#include "BitMatrixIO.h"
 #include "GTIN.h"
+#include "ReadBarcode.h"
 #include "ZXVersion.h"
 
 #include <cctype>
@@ -52,6 +53,9 @@ static void PrintUsage(const char* exePath)
 			  << "    -mode <plain|eci|hri|escaped>\n"
 			  << "               Text mode used to render the raw byte content into text\n"
 			  << "    -1         Print only file name, content/error on one line per file/barcode (implies '-mode Escaped')\n"
+#ifdef ZXING_BUILD_EXPERIMENTAL_API
+			  << "    -symbol    Print the detected symbol (if available)\n"
+#endif
 			  << "    -bytes     Write (only) the bytes content of the symbol(s) to stdout\n"
 			  << "    -pngout <file name>\n"
 			  << "               Write a copy of the input image with barcodes outlined by a green line\n"
@@ -128,6 +132,8 @@ static bool ParseOptions(int argc, char* argv[], ReaderOptions& options, CLI& cl
 			cli.oneLine = true;
 		} else if (is("-bytes")) {
 			cli.bytesOnly = true;
+		} else if (is("-symbol")) {
+			cli.showSymbol = true;
 		} else if (is("-pngout")) {
 			if (++i == argc)
 				return false;
@@ -296,6 +302,11 @@ int main(int argc, char* argv[])
 
 			if (barcode.readerInit())
 				std::cout << "Reader Initialisation/Programming\n";
+
+#ifdef ZXING_BUILD_EXPERIMENTAL_API
+			if (auto& symbol = barcode.symbol(); cli.showSymbol && !symbol.empty())
+				std::cout << "Symbol:\n" << ToString(symbol);
+#endif
 		}
 
 		if (Size(cli.filePaths) == 1 && !cli.outPath.empty())
