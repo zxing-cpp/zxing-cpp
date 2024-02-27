@@ -50,7 +50,7 @@ include (CheckCXXCompilerFlag)
 # Without this, the usage of the __FILE__ macro leaves the build directory in
 # the binary. When building the Python extension with build isolation enabled
 # this would lead to random paths in the binary.
-set(FILE_PREFIX_ARG "-ffile-prefix-map=${CMAKE_CURRENT_SOURCE_DIR}=")
+set(FILE_PREFIX_ARG "-fmacro-prefix-map=${CMAKE_CURRENT_SOURCE_DIR}/=")
 check_cxx_compiler_flag("${FILE_PREFIX_ARG}" HAS_FILE_PREFIX_ARG)
 if(HAS_FILE_PREFIX_ARG)
     set(ZXING_CORE_LOCAL_DEFINES ${ZXING_CORE_LOCAL_DEFINES} "${FILE_PREFIX_ARG}")
