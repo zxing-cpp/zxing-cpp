@@ -55,7 +55,7 @@ Thanks a lot for your contribution!
 
 ### To read barcodes:
 1. Load your image into memory (3rd-party library required).
-2. Call `ReadBarcodes()` from [`ReadBarcode.h`](core/src/ReadBarcode.h), the simplest API to get a list of `Result` objects.
+2. Call `ReadBarcodes()` from [`ReadBarcode.h`](core/src/ReadBarcode.h), the simplest API to get a list of `Barcode` objects.
 
 A very simple example looks like this:
 ```c++
