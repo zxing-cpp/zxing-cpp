@@ -14,15 +14,6 @@ android {
         compileSdk = libs.versions.androidCompileSdk.get().toInt()
         minSdk = libs.versions.androidMinSdk.get().toInt()
 
-        ndk {
-            // speed up build: compile only arm versions
-
-            //noinspection ChromeOsAbiSupport
-            abiFilters += "armeabi-v7a"
-
-            //noinspection ChromeOsAbiSupport
-            abiFilters += "arm64-v8a"
-        }
         externalNativeBuild {
             cmake {
                 arguments("-DCMAKE_BUILD_TYPE=RelWithDebInfo", "-DANDROID_ARM_NEON=ON", "-DBUILD_WRITERS=OFF")
