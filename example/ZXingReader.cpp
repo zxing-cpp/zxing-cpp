@@ -310,7 +310,7 @@ int main(int argc, char* argv[])
 		}
 
 		if (Size(cli.filePaths) == 1 && !cli.outPath.empty())
-			stbi_write_png(cli.outPath.c_str(), image.width(), image.height(), 3, image.data(0, 0), image.rowStride());
+			stbi_write_png(cli.outPath.c_str(), image.width(), image.height(), 3, image.data(), image.rowStride());
 
 #ifdef NDEBUG
 		if (getenv("MEASURE_PERF")) {

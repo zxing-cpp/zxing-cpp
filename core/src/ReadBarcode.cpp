@@ -18,18 +18,12 @@
 
 namespace ZXing {
 
-class LumImage : public ImageView
+class LumImage : public Image
 {
-	std::unique_ptr<uint8_t[]> _memory;
-	LumImage(std::unique_ptr<uint8_t[]>&& data, int w, int h)
-		: ImageView(data.get(), w, h, ImageFormat::Lum), _memory(std::move(data))
-	{}
-
 public:
-	LumImage() = default;
-	LumImage(int w, int h) : LumImage(std::make_unique<uint8_t[]>(w * h), w, h) {}
+	using Image::Image;
 
-	uint8_t* data() { return _memory.get(); }
+	uint8_t* data() { return const_cast<uint8_t*>(Image::data()); }
 };
 
 template<typename P>
@@ -148,7 +142,7 @@ Barcodes ReadBarcodes(const ImageView& _iv, const ReaderOptions& opts)
 	if (sizeof(PatternType) < 4 && (_iv.width() > 0xffff || _iv.height() > 0xffff))
 		throw std::invalid_argument("Maximum image width/height is 65535");
 
-	if (!_iv.data(0, 0) || _iv.width() * _iv.height() == 0)
+	if (!_iv.data() || _iv.width() * _iv.height() == 0)
 		throw std::invalid_argument("ImageView is null/empty");
 
 	LumImage lum;

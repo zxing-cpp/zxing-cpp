@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstdio>
+#include <memory>
 #include <stdexcept>
 
 namespace ZXing {
@@ -104,6 +105,7 @@ public:
 	int rowStride() const { return _rowStride; }
 	ImageFormat format() const { return _format; }
 
+	const uint8_t* data() const { return _data; }
 	const uint8_t* data(int x, int y) const { return _data + y * _rowStride + x * _pixStride; }
 
 	ImageView cropped(int left, int top, int width, int height) const
@@ -130,6 +132,16 @@ public:
 		return {_data, _width / scale, _height / scale, _format, _rowStride * scale, _pixStride * scale};
 	}
 
+};
+
+class Image : public ImageView
+{
+	std::unique_ptr<uint8_t[]> _memory;
+	Image(std::unique_ptr<uint8_t[]>&& data, int w, int h, ImageFormat f) : ImageView(data.get(), w, h, f), _memory(std::move(data)) {}
+
+public:
+	Image() = default;
+	Image(int w, int h, ImageFormat f = ImageFormat::Lum) : Image(std::make_unique<uint8_t[]>(w * h * PixStride(f)), w, h, f) {}
 };
 
 } // ZXing

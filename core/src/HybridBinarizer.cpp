@@ -268,7 +268,7 @@ static std::shared_ptr<BitMatrix> ThresholdImage(const ImageView iv, const Matri
 		int yoffset = std::min(y * BLOCK_SIZE, iv.height() - BLOCK_SIZE);
 		for (int x = 0; x < thresholds.width(); x++) {
 			int xoffset = std::min(x * BLOCK_SIZE, iv.width() - BLOCK_SIZE);
-			ThresholdBlock(iv.data(0, 0), xoffset, yoffset, thresholds(x, y), iv.rowStride(), *matrix);
+			ThresholdBlock(iv.data(), xoffset, yoffset, thresholds(x, y), iv.rowStride(), *matrix);
 
 #ifndef NDEBUG
 			for (int yy = 0; yy < 8; ++yy)
@@ -296,7 +296,7 @@ std::shared_ptr<const BitMatrix> HybridBinarizer::getBlackMatrix() const
 		auto thrs = SmoothThresholds(BlockThresholds(_buffer));
 		return ThresholdImage(_buffer, thrs);
 #else
-		const uint8_t* luminances = _buffer.data(0, 0);
+		const uint8_t* luminances = _buffer.data();
 		int subWidth = (width() + BLOCK_SIZE - 1) / BLOCK_SIZE; // ceil(width/BS)
 		int subHeight = (height() + BLOCK_SIZE - 1) / BLOCK_SIZE; // ceil(height/BS)
 		auto blackPoints =
