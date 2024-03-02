@@ -163,6 +163,8 @@ if (BUILD_WRITERS)
         src/TextEncoder.cpp
         src/MultiFormatWriter.h
         src/MultiFormatWriter.cpp
+        $<$<BOOL:${BUILD_EXPERIMENTAL_API}>:src/WriteBarcode.h>
+        $<$<BOOL:${BUILD_EXPERIMENTAL_API}>:src/WriteBarcode.cpp>
     )
 endif()
 
@@ -191,6 +193,7 @@ if (BUILD_READERS)
         src/ReaderOptions.h
         src/Result.h # [[deprecated]]
         src/StructuredAppend.h
+        $<$<BOOL:${BUILD_EXPERIMENTAL_API}>:${CMAKE_CURRENT_SOURCE_DIR}/src/WriteBarcode.h>
         $<$<BOOL:${BUILD_C_API}>:${CMAKE_CURRENT_SOURCE_DIR}/src/ZXingC.h>
     )
 endif()

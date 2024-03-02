@@ -4,10 +4,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "BarcodeFormat.h"
-#include "BitMatrix.h"
 #include "BitMatrixIO.h"
+
+#ifdef ZXING_BUILD_EXPERIMENTAL_API
+#include "WriteBarcode.h"
+#else
+#include "BitMatrix.h"
 #include "CharacterSet.h"
 #include "MultiFormatWriter.h"
+#endif
 #include "ZXVersion.h"
 
 #include <algorithm>
@@ -25,12 +30,14 @@ using namespace ZXing;
 static void PrintUsage(const char* exePath)
 {
 	std::cout << "Usage: " << exePath
-			  << " [-size <width>x<height>] [-margin <margin>] [-encoding <encoding>] [-ecc <level>] <format> <text> <output>\n"
+			  << " [-size <width/height>] [-eclevel <level>] [-noqz] [-hrt] <format> <text> <output>\n"
 			  << "    -size      Size of generated image\n"
-			  << "    -margin    Margin around barcode\n"
-			  << "    -encoding  Encoding used to encode input text\n"
-			  << "    -ecc       Error correction level, [0-8]\n"
+//			  << "    -margin    Margin around barcode\n"
+//			  << "    -encoding  Encoding used to encode input text\n"
+			  << "    -eclevel   Error correction level, [0-8]\n"
 			  << "    -binary    Interpret <text> as a file name containing binary data\n"
+			  << "    -noqz      Print barcode witout quiet zone\n"
+			  << "    -hrt       Print human readable text below the barcode (if supported)\n"
 			  << "    -help      Print usage information\n"
 			  << "    -version   Print version information\n"
 			  << "\n"
@@ -54,8 +61,21 @@ static bool ParseSize(std::string str, int* width, int* height)
 	return false;
 }
 
-static bool ParseOptions(int argc, char* argv[], int* width, int* height, int* margin, CharacterSet* encoding,
-						 int* eccLevel, BarcodeFormat* format, std::string* text, std::string* filePath, bool* inputIsFile)
+struct CLI
+{
+	BarcodeFormat format;
+	int sizeHint = 0;
+	std::string input;
+	std::string outPath;
+	std::string ecLevel;
+	bool inputIsFile = false;
+	bool withHRT = false;
+	bool withQZ = true;
+	bool verbose = false;
+//	CharacterSet encoding = CharacterSet::Unknown;
+};
+
+static bool ParseOptions(int argc, char* argv[], CLI& cli)
 {
 	int nonOptArgCount = 0;
 	for (int i = 1; i < argc; ++i) {
@@ -63,24 +83,27 @@ static bool ParseOptions(int argc, char* argv[], int* width, int* height, int* m
 		if (is("-size")) {
 			if (++i == argc)
 				return false;
-			if (!ParseSize(argv[i], width, height)) {
-				std::cerr << "Invalid size specification: " << argv[i] << std::endl;
-				return false;
-			}
-		} else if (is("-margin")) {
+			cli.sizeHint = std::stoi(argv[i]);
+		} else if (is("-eclevel")) {
 			if (++i == argc)
 				return false;
-			*margin = std::stoi(argv[i]);
-		} else if (is("-ecc")) {
-			if (++i == argc)
-				return false;
-			*eccLevel = std::stoi(argv[i]);
-		} else if (is("-encoding")) {
-			if (++i == argc)
-				return false;
-			*encoding = CharacterSetFromString(argv[i]);
+			cli.ecLevel = argv[i];
+		// } else if (is("-margin")) {
+		// 	if (++i == argc)
+		// 		return false;
+		// 	cli.margin = std::stoi(argv[i]);
+		// } else if (is("-encoding")) {
+		// 	if (++i == argc)
+		// 		return false;
+		// 	cli.encoding = CharacterSetFromString(argv[i]);
 		} else if (is("-binary")) {
-			*inputIsFile = true;
+			cli.inputIsFile = true;
+		} else if (is("-hrt")) {
+			cli.withHRT = true;
+		} else if (is("-noqz")) {
+			cli.withQZ = false;
+		} else if (is("-verbose")) {
+			cli.verbose = true;
 		} else if (is("-help") || is("--help")) {
 			PrintUsage(argv[0]);
 			exit(0);
@@ -88,17 +111,17 @@ static bool ParseOptions(int argc, char* argv[], int* width, int* height, int* m
 			std::cout << "ZXingWriter " << ZXING_VERSION_STR << "\n";
 			exit(0);
 		} else if (nonOptArgCount == 0) {
-			*format = BarcodeFormatFromString(argv[i]);
-			if (*format == BarcodeFormat::None) {
+			cli.format = BarcodeFormatFromString(argv[i]);
+			if (cli.format == BarcodeFormat::None) {
 				std::cerr << "Unrecognized format: " << argv[i] << std::endl;
 				return false;
 			}
 			++nonOptArgCount;
 		} else if (nonOptArgCount == 1) {
-			*text = argv[i];
+			cli.input = argv[i];
 			++nonOptArgCount;
 		} else if (nonOptArgCount == 2) {
-			*filePath = argv[i];
+			cli.outPath = argv[i];
 			++nonOptArgCount;
 		} else {
 			return false;
@@ -118,55 +141,81 @@ static std::string GetExtension(const std::string& path)
 	return ext;
 }
 
-static std::string ReadFile(const std::string& fn)
+template <typename T = char>
+std::vector<T> ReadFile(const std::string& fn)
 {
-	std::ifstream ifs(fn, std::ios::binary);
-	return ifs ? std::string(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>()) : std::string();
+	std::basic_ifstream<T> ifs(fn, std::ios::binary);
+	if (!ifs.good())
+		throw std::runtime_error("failed to open/read file " + fn);
+	return ifs ? std::vector(std::istreambuf_iterator<T>(ifs), std::istreambuf_iterator<T>()) : std::vector<T>();
 };
 
 int main(int argc, char* argv[])
 {
-	int width = 100, height = 100;
-	int margin = 10;
-	int eccLevel = -1;
-	bool inputIsFile = false;
-	CharacterSet encoding = CharacterSet::Unknown;
-	std::string input, filePath;
-	BarcodeFormat format;
+	CLI cli;
 
-	if (!ParseOptions(argc, argv, &width, &height, &margin, &encoding, &eccLevel, &format, &input, &filePath, &inputIsFile)) {
+	if (!ParseOptions(argc, argv, cli)) {
 		PrintUsage(argv[0]);
 		return -1;
 	}
 
 	try {
-		auto writer = MultiFormatWriter(format).setMargin(margin).setEncoding(encoding).setEccLevel(eccLevel);
+#ifdef ZXING_BUILD_EXPERIMENTAL_API
+		auto cOpts = CreatorOptions(cli.format).ecLevel(cli.ecLevel);
+		auto barcode = cli.inputIsFile ? CreateBarcodeFromBytes(ReadFile(cli.input), cOpts) : CreateBarcodeFromText(cli.input, cOpts);
+
+		auto wOpts = WriterOptions().sizeHint(cli.sizeHint).withQuietZones(cli.withQZ).withHRT(cli.withHRT).rotate(0);
+		auto bitmap = WriteBarcodeToImage(barcode, wOpts);
+
+		if (cli.verbose) {
+			std::cout << "Text:       \"" << barcode.text() << "\"\n"
+					  << "Bytes:      " << ToHex(barcode.bytes()) << "\n"
+					  << "Format:     " << ToString(barcode.format()) << "\n"
+					  << "Identifier: " << barcode.symbologyIdentifier() << "\n"
+					  << "Content:    " << ToString(barcode.contentType()) << "\n"
+					  << "HasECI:     " << barcode.hasECI() << "\n"
+					  << "Position:   " << ToString(barcode.position()) << "\n"
+					  << "Rotation:   " << barcode.orientation() << " deg\n"
+					  << "IsMirrored: " << barcode.isMirrored() << "\n"
+					  << "IsInverted: " << barcode.isInverted() << "\n"
+					  << "ecLevel:    " << barcode.ecLevel() << "\n";
+			std::cout << ToString(barcode.symbol());
+		}
+#else
+		auto writer = MultiFormatWriter(cli.format).setMargin(cli.withQZ ? 10 : 0);
+		if (!cli.ecLevel.empty())
+			writer.setEccLevel(std::stoi(cli.ecLevel));
 
 		BitMatrix matrix;
-		if (inputIsFile) {
-			auto file = ReadFile(input);
+		if (cli.inputIsFile) {
+			auto file = ReadFile(cli.input);
 			std::wstring bytes;
 			for (uint8_t c : file)
 				bytes.push_back(c);
 			writer.setEncoding(CharacterSet::BINARY);
-			matrix = writer.encode(bytes, width, height);
+			matrix = writer.encode(bytes, cli.sizeHint, std::clamp(cli.sizeHint / 2, 50, 300));
 		} else {
-			matrix = writer.encode(input, width, height);
+			matrix = writer.encode(cli.input, cli.sizeHint, std::clamp(cli.sizeHint / 2, 50, 300));
 		}
 		auto bitmap = ToMatrix<uint8_t>(matrix);
+#endif
 
-		auto ext = GetExtension(filePath);
+		auto ext = GetExtension(cli.outPath);
 		int success = 0;
 		if (ext == "" || ext == "png") {
-			success = stbi_write_png(filePath.c_str(), bitmap.width(), bitmap.height(), 1, bitmap.data(), 0);
+			success = stbi_write_png(cli.outPath.c_str(), bitmap.width(), bitmap.height(), 1, bitmap.data(), 0);
 		} else if (ext == "jpg" || ext == "jpeg") {
-			success = stbi_write_jpg(filePath.c_str(), bitmap.width(), bitmap.height(), 1, bitmap.data(), 0);
+			success = stbi_write_jpg(cli.outPath.c_str(), bitmap.width(), bitmap.height(), 1, bitmap.data(), 0);
 		} else if (ext == "svg") {
-			success = (std::ofstream(filePath) << ToSVG(matrix)).good();
+#ifdef ZXING_BUILD_EXPERIMENTAL_API
+			success = (std::ofstream(cli.outPath) << WriteBarcodeToSVG(barcode, wOpts)).good();
+#else
+			success = (std::ofstream(cli.outPath) << ToSVG(matrix)).good();
+#endif
 		}
 
 		if (!success) {
-			std::cerr << "Failed to write image: " << filePath << std::endl;
+			std::cerr << "Failed to write image: " << cli.outPath << std::endl;
 			return -1;
 		}
 	} catch (const std::exception& e) {

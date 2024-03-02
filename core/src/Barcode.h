@@ -164,6 +164,7 @@ public:
 	std::string version() const;
 
 #ifdef ZXING_BUILD_EXPERIMENTAL_API
+	void symbol(BitMatrix&& bits) { _symbol = std::make_shared<BitMatrix>(std::move(bits)); }
 	const BitMatrix& symbol() const { return *_symbol; }
 #endif
 

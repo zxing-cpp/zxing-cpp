@@ -206,4 +206,4 @@ Barcodes MergeStructuredAppendSequences(const Barcodes& barcodes)
 	return res;
 }
 
-} // ZXing
+} // namespace ZXing
