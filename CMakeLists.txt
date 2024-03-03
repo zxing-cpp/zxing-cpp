@@ -10,6 +10,7 @@ option (BUILD_UNIT_TESTS "Build the unit tests (don't enable for production buil
 option (BUILD_PYTHON_MODULE "Build the python module" OFF)
 option (BUILD_C_API "Build the C-API" OFF)
 option (BUILD_EXPERIMENTAL_API "Build with experimental API" OFF)
+option (ZXING_USE_ZINT "Use libzint for barcode creation/generation" OFF)
 set(BUILD_DEPENDENCIES "AUTO" CACHE STRING "Fetch from github or use locally installed (AUTO/GITHUB/LOCAL)")
 
 if (WIN32)
@@ -45,6 +46,11 @@ if (BUILD_UNIT_TESTS AND (NOT BUILD_WRITERS OR NOT BUILD_READERS))
     message("Note: To build with unit tests, the library will be build with READERS and WRITERS.")
     set (BUILD_WRITERS ON)
     set (BUILD_READERS ON)
+endif()
+
+if (ZXING_USE_ZINT)
+    set (BUILD_EXPERIMENTAL_API ON)
+    add_definitions (-DZXING_USE_ZINT)
 endif()
 
 if (BUILD_EXPERIMENTAL_API)

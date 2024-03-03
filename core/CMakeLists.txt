@@ -479,6 +479,12 @@ target_compile_features(ZXing PUBLIC cxx_std_17)
 
 target_link_libraries (ZXing PRIVATE Threads::Threads)
 
+if (ZXING_USE_ZINT)
+    include(../zxing.cmake)
+    zxing_add_package(zint zint https://github.com/zint/zint.git 11b3c18aed29cf9eb2a31debd66c8fe8a1d77604)
+    target_link_libraries (ZXing PRIVATE zint)
+endif()
+
 add_library(ZXing::ZXing ALIAS ZXing)
 # add the old alias as well, to keep old clients compiling
 # note: this only affects client code that includes ZXing via sub_directory.

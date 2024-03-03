@@ -10,6 +10,10 @@
 #include "DetectorResult.h"
 #include "ZXAlgorithms.h"
 
+#ifdef ZXING_USE_ZINT
+#include <zint.h>
+#endif
+
 #include <cmath>
 #include <list>
 #include <map>
@@ -127,6 +131,13 @@ Result& Result::setReaderOptions(const ReaderOptions& opts)
 	_readerOpts = opts;
 	return *this;
 }
+
+#ifdef ZXING_USE_ZINT
+void Result::zint(std::unique_ptr<zint_symbol>&& z)
+{
+	_zint = std::shared_ptr(std::move(z));
+}
+#endif
 
 bool Result::operator==(const Result& o) const
 {
