@@ -5,7 +5,7 @@
 #import "ZXIBarcodeReader.h"
 #import "ReadBarcode.h"
 #import "ImageView.h"
-#import "Result.h"
+#import "Barcode.h"
 #import "GTIN.h"
 #import "ZXIFormatHelper.h"
 #import "ZXIPosition+Helper.h"
