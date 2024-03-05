@@ -19,14 +19,14 @@ using namespace ZXing;
 
 static thread_local std::string lastErrorMsg;
 
-template<typename R, typename T> R transmute_cast(const T& v)
+template<typename R, typename T> R transmute_cast(const T& v) noexcept
 {
 	static_assert(sizeof(T) == sizeof(R));
 	return *(const R*)(&v);
 }
 
 template<typename C, typename P = typename C::pointer>
-P copy(const C& c)
+P copy(const C& c) noexcept
 {
 	auto ret = (P)malloc(c.size() + 1);
 	if (ret) {
@@ -36,7 +36,7 @@ P copy(const C& c)
 	return ret;
 }
 
-static uint8_t* copy(const ByteArray& ba, int* len)
+static uint8_t* copy(const ByteArray& ba, int* len) noexcept
 {
 	// for convencience and as a safety measure, we NULL terminate even byte arrays
 	auto ret = copy(ba);
@@ -45,24 +45,37 @@ static uint8_t* copy(const ByteArray& ba, int* len)
 	return ret;
 }
 
+#define ZX_CHECK( GOOD, MSG ) \
+	if (!(GOOD)) { \
+		lastErrorMsg = MSG; \
+		return {}; \
+	}
+
+#define ZX_CATCH(...) \
+	catch (std::exception & e) { \
+		lastErrorMsg = e.what(); \
+	} catch (...) { \
+		lastErrorMsg = "Unknown error"; \
+	} \
+	return __VA_ARGS__;
+
+#define ZX_TRY(...) \
+	try { \
+		return __VA_ARGS__; \
+	} \
+	ZX_CATCH({})
+
 static std::tuple<Barcodes, bool> ReadBarcodesAndSetLastError(const ZXing_ImageView* iv, const ZXing_ReaderOptions* opts,
 															  int maxSymbols)
 {
+	ZX_CHECK(iv, "ImageView param is NULL")
 	try {
-		if (iv) {
-			auto o = opts ? *opts : ReaderOptions{};
-			if (maxSymbols)
-				o.setMaxNumberOfSymbols(maxSymbols);
-			return {ReadBarcodes(*iv, o), true};
-		} else
-			lastErrorMsg = "ImageView param is NULL";
-	} catch (std::exception& e) {
-		lastErrorMsg = e.what();
-	} catch (...) {
-		lastErrorMsg = "Unknown error";
+		auto o = opts ? *opts : ReaderOptions{};
+		if (maxSymbols)
+			o.setMaxNumberOfSymbols(maxSymbols);
+		return {ReadBarcodes(*iv, o), true};
 	}
-
-	return {Barcodes{}, false};
+	ZX_CATCH({Barcodes{}, false})
 }
 
 extern "C" {
@@ -74,24 +87,14 @@ ZXing_ImageView* ZXing_ImageView_new(const uint8_t* data, int width, int height,
 									 int pixStride)
 {
 	ImageFormat cppformat = static_cast<ImageFormat>(format);
-	try {
-		return new ImageView(data, width, height, cppformat, rowStride, pixStride);
-	} catch (std::exception& e) {
-		lastErrorMsg = e.what();
-	}
-	return NULL;
+	ZX_TRY(new ImageView(data, width, height, cppformat, rowStride, pixStride))
 }
 
 ZXing_ImageView* ZXing_ImageView_new_checked(const uint8_t* data, int size, int width, int height, ZXing_ImageFormat format,
 											 int rowStride, int pixStride)
 {
 	ImageFormat cppformat = static_cast<ImageFormat>(format);
-	try {
-		return new ImageView(data, size, width, height, cppformat, rowStride, pixStride);
-	} catch (std::exception& e) {
-		lastErrorMsg = e.what();
-	}
-	return NULL;
+	ZX_TRY(new ImageView(data, size, width, height, cppformat, rowStride, pixStride))
 }
 
 void ZXing_ImageView_delete(ZXing_ImageView* iv)
@@ -118,15 +121,9 @@ ZXing_BarcodeFormats ZXing_BarcodeFormatsFromString(const char* str)
 	if (!str)
 		return {};
 	try {
-		auto format = BarcodeFormatsFromString(str);
-		return static_cast<ZXing_BarcodeFormats>(transmute_cast<BarcodeFormat>(format));
-	} catch (std::exception& e) {
-		lastErrorMsg = e.what();
-	} catch (...) {
-		lastErrorMsg = "Unknown error";
+		return transmute_cast<ZXing_BarcodeFormats>(BarcodeFormatsFromString(str));
 	}
-
-	return ZXing_BarcodeFormat_Invalid;
+	ZX_CATCH(ZXing_BarcodeFormat_Invalid)
 }
 
 ZXing_BarcodeFormat ZXing_BarcodeFormatFromString(const char* str)
@@ -146,7 +143,7 @@ char* ZXing_BarcodeFormatToString(ZXing_BarcodeFormat format)
 
 ZXing_ReaderOptions* ZXing_ReaderOptions_new()
 {
-	return new ReaderOptions();
+	ZX_TRY(new ReaderOptions());
 }
 
 void ZXing_ReaderOptions_delete(ZXing_ReaderOptions* opts)
@@ -166,6 +163,8 @@ ZX_PROPERTY(bool, isPure, IsPure)
 ZX_PROPERTY(bool, returnErrors, ReturnErrors)
 ZX_PROPERTY(int, minLineCount, MinLineCount)
 ZX_PROPERTY(int, maxNumberOfSymbols, MaxNumberOfSymbols)
+
+#undef ZX_PROPERTY
 
 void ZXing_ReaderOptions_setFormats(ZXing_ReaderOptions* opts, ZXing_BarcodeFormats formats)
 {
@@ -286,7 +285,7 @@ ZXing_Barcode* ZXing_Barcodes_move(ZXing_Barcodes* barcodes, int i)
 	if (!barcodes || i < 0 || i >= Size(*barcodes))
 		return NULL;
 
-	return new Barcode(std::move((*barcodes)[i]));
+	ZX_TRY(new Barcode(std::move((*barcodes)[i])));
 }
 
 char* ZXing_LastErrorMsg()
