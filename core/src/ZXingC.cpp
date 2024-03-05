@@ -112,6 +112,31 @@ void ZXing_ImageView_rotate(ZXing_ImageView* iv, int degree)
 	*iv = iv->rotated(degree);
 }
 
+void ZXing_Image_delete(ZXing_Image* img)
+{
+	delete img;
+}
+
+const uint8_t* ZXing_Image_data(const ZXing_Image* img)
+{
+	return img->data();
+}
+
+int ZXing_Image_width(const ZXing_Image* img)
+{
+	return img->width();
+}
+
+int ZXing_Image_height(const ZXing_Image* img)
+{
+	return img->height();
+}
+
+ZXing_ImageFormat ZXing_Image_format(const ZXing_Image* img)
+{
+	return static_cast<ZXing_ImageFormat>(img->format());
+}
+
 /*
  * ZXing/BarcodeFormat.h
  */
@@ -287,6 +312,97 @@ ZXing_Barcode* ZXing_Barcodes_move(ZXing_Barcodes* barcodes, int i)
 
 	ZX_TRY(new Barcode(std::move((*barcodes)[i])));
 }
+
+#ifdef ZXING_BUILD_EXPERIMENTAL_API
+/*
+ * ZXing/WriteBarcode.h
+ */
+
+ZXing_CreatorOptions* ZXing_CreatorOptions_new(ZXing_BarcodeFormat format)
+{
+	ZX_TRY(new CreatorOptions(static_cast<BarcodeFormat>(format)));
+}
+
+void ZXing_CreatorOptions_delete(ZXing_CreatorOptions* opts)
+{
+	delete opts;
+}
+
+#define ZX_PROPERTY(TYPE, GETTER, SETTER) \
+	TYPE ZXing_CreatorOptions_get##SETTER(const ZXing_CreatorOptions* opts) { return opts->GETTER(); } \
+	void ZXing_CreatorOptions_set##SETTER(ZXing_CreatorOptions* opts, TYPE val) { opts->GETTER(val); }
+
+ZX_PROPERTY(bool, readerInit, ReaderInit)
+ZX_PROPERTY(bool, forceSquareDataMatrix, ForceSquareDataMatrix)
+
+#undef ZX_PROPERTY
+
+//ZX_PROPERTY(BarcodeFormat, format, Format)
+
+char* ZXing_CreatorOptions_getEcLevel(const ZXing_CreatorOptions* opts)
+{
+	return copy(opts->ecLevel());
+}
+
+void ZXing_CreatorOptions_setEcLevel(ZXing_CreatorOptions* opts, const char* val)
+{
+	opts->ecLevel(val);
+}
+
+
+ZXing_WriterOptions* ZXing_WriterOptions_new()
+{
+	ZX_TRY(new ZXing_WriterOptions());
+}
+
+void ZXing_WriterOptions_delete(ZXing_CreatorOptions* opts)
+{
+	delete opts;
+}
+
+#define ZX_PROPERTY(TYPE, GETTER, SETTER) \
+	TYPE ZXing_WriterOptions_get##SETTER(const ZXing_WriterOptions* opts) { return opts->GETTER(); } \
+	void ZXing_WriterOptions_set##SETTER(ZXing_WriterOptions* opts, TYPE val) { opts->GETTER(val); }
+
+ZX_PROPERTY(int, scale, Scale)
+ZX_PROPERTY(int, sizeHint, SizeHint)
+ZX_PROPERTY(int, rotate, Rotate)
+ZX_PROPERTY(bool, withHRT, WithHRT)
+ZX_PROPERTY(bool, withQuietZones, WithQuietZones)
+
+#undef ZX_PROPERTY
+
+ZXing_Barcode* ZXing_CreateBarcodeFromText(const char* data, int size, const ZXing_CreatorOptions* opts)
+{
+	ZX_CHECK(data && opts, "Data and/or options param in CreateBarcodeFromText is NULL")
+	ZX_TRY(new Barcode(CreateBarcodeFromText({data, size ? static_cast<size_t>(size) : strlen(data)}, *opts));)
+}
+
+ZXing_Barcode* ZXing_CreateBarcodeFromBytes(const void* data, int size, const ZXing_CreatorOptions* opts)
+{
+	ZX_CHECK(data && size && opts, "Data and/or options param in CreateBarcodeFromBytes is NULL")
+	ZX_TRY(new Barcode(CreateBarcodeFromBytes(data, size, *opts)))
+}
+
+char* ZXing_WriteBarcodeToSVG(const ZXing_Barcode* barcode, const ZXing_WriterOptions* opts)
+{
+	static WriterOptions defOpts;
+	ZX_CHECK(barcode, "Barcode param in WriteBarcodeToSVG is NULL")
+	ZX_TRY(copy(WriteBarcodeToSVG(*barcode, *(opts ? opts : &defOpts))))
+}
+
+ZXing_Image* ZXing_WriteBarcodeToImage(const ZXing_Barcode* barcode, const ZXing_WriterOptions* opts)
+{
+	static WriterOptions defOpts;
+	ZX_CHECK(barcode, "Barcode param in WriteBarcodeToSVG is NULL")
+	ZX_TRY(new Image(WriteBarcodeToImage(*barcode, *(opts ? opts : &defOpts))))
+}
+
+#endif
+
+/*
+ * ZXingC.h
+ */
 
 char* ZXing_LastErrorMsg()
 {

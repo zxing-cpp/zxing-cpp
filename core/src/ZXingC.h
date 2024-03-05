@@ -12,11 +12,21 @@
 
 #ifdef __cplusplus
 
-#include "ReaderOptions.h"
-#include "ImageView.h"
 #include "Barcode.h"
+#include "ImageView.h"
+#include "ReaderOptions.h"
+
+#ifdef ZXING_BUILD_EXPERIMENTAL_API
+#include "WriteBarcode.h"
+typedef ZXing::CreatorOptions ZXing_CreatorOptions;
+typedef ZXing::WriterOptions ZXing_WriterOptions;
+#else
+typedef struct ZXing_CreatorOptions ZXing_CreatorOptions;
+typedef struct ZXing_WriterOptions ZXing_WriterOptions;
+#endif
 
 typedef ZXing::ImageView ZXing_ImageView;
+typedef ZXing::Image ZXing_Image;
 typedef ZXing::ReaderOptions ZXing_ReaderOptions;
 typedef ZXing::Barcode ZXing_Barcode;
 typedef ZXing::Barcodes ZXing_Barcodes;
@@ -26,7 +36,10 @@ extern "C"
 #else
 
 typedef struct ZXing_ImageView ZXing_ImageView;
+typedef struct ZXing_Image ZXing_Image;
 typedef struct ZXing_ReaderOptions ZXing_ReaderOptions;
+typedef struct ZXing_CreatorOptions ZXing_CreatorOptions;
+typedef struct ZXing_WriterOptions ZXing_WriterOptions;
 typedef struct ZXing_Barcode ZXing_Barcode;
 typedef struct ZXing_Barcodes ZXing_Barcodes;
 
@@ -56,6 +69,13 @@ void ZXing_ImageView_delete(ZXing_ImageView* iv);
 
 void ZXing_ImageView_crop(ZXing_ImageView* iv, int left, int top, int width, int height);
 void ZXing_ImageView_rotate(ZXing_ImageView* iv, int degree);
+
+void ZXing_Image_delete(ZXing_Image* img);
+
+const uint8_t* ZXing_Image_data(const ZXing_Image* img);
+int ZXing_Image_width(const ZXing_Image* img);
+int ZXing_Image_height(const ZXing_Image* img);
+ZXing_ImageFormat ZXing_Image_format(const ZXing_Image* img);
 
 /*
  * ZXing/BarcodeFormat.h
@@ -231,6 +251,53 @@ ZXing_Barcode* ZXing_Barcodes_move(ZXing_Barcodes* barcodes, int i);
 char* ZXing_LastErrorMsg();
 
 void ZXing_free(void* ptr);
+
+/*
+ * ZXing/WriteBarcode.h
+ */
+
+ZXing_CreatorOptions* ZXing_CreatorOptions_new(ZXing_BarcodeFormat format);
+void ZXing_CreatorOptions_delete(ZXing_CreatorOptions* opts);
+
+void ZXing_CreatorOptions_setFormat(ZXing_CreatorOptions* opts, ZXing_BarcodeFormat format);
+ZXing_BarcodeFormat ZXing_CreatorOptions_getFormat(const ZXing_CreatorOptions* opts);
+
+void ZXing_CreatorOptions_setReaderInit(ZXing_CreatorOptions* opts, bool readerInit);
+bool ZXing_CreatorOptions_getReaderInit(const ZXing_CreatorOptions* opts);
+
+void ZXing_CreatorOptions_setForceSquareDataMatrix(ZXing_CreatorOptions* opts, bool forceSquareDataMatrix);
+bool ZXing_CreatorOptions_getForceSquareDataMatrix(const ZXing_CreatorOptions* opts);
+
+void ZXing_CreatorOptions_setEcLevel(ZXing_CreatorOptions* opts, const char* ecLevel);
+char* ZXing_CreatorOptions_getEcLevel(const ZXing_CreatorOptions* opts);
+
+
+ZXing_WriterOptions* ZXing_WriterOptions_new();
+void ZXing_WriterOptions_delete(ZXing_CreatorOptions* opts);
+
+void ZXing_WriterOptions_setScale(ZXing_WriterOptions* opts, int scale);
+int ZXing_WriterOptions_getScale(const ZXing_WriterOptions* opts);
+
+void ZXing_WriterOptions_setSizeHint(ZXing_WriterOptions* opts, int sizeHint);
+int ZXing_WriterOptions_getSizeHint(const ZXing_WriterOptions* opts);
+
+void ZXing_WriterOptions_setRotate(ZXing_WriterOptions* opts, int rotate);
+int ZXing_WriterOptions_getRotate(const ZXing_WriterOptions* opts);
+
+void ZXing_WriterOptions_setWithHRT(ZXing_WriterOptions* opts, bool withHRT);
+bool ZXing_WriterOptions_getWithHRT(const ZXing_WriterOptions* opts);
+
+void ZXing_WriterOptions_setWithQuietZones(ZXing_WriterOptions* opts, bool withQuietZones);
+bool ZXing_WriterOptions_getWithQuietZones(const ZXing_WriterOptions* opts);
+
+
+ZXing_Barcode* ZXing_CreateBarcodeFromText(const char* data, int size, const ZXing_CreatorOptions* opts);
+ZXing_Barcode* ZXing_CreateBarcodeFromBytes(const void* data, int size, const ZXing_CreatorOptions* opts);
+
+/** Note: opts is optional, i.e. it can be NULL, which will imply default settings. */
+char* ZXing_WriteBarcodeToSVG(const ZXing_Barcode* barcode, const ZXing_WriterOptions* opts);
+ZXing_Image* ZXing_WriteBarcodeToImage(const ZXing_Barcode* barcode, const ZXing_WriterOptions* opts);
+
 
 #ifdef __cplusplus
 }

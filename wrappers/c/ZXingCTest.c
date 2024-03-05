@@ -44,6 +44,14 @@ void printF(const char* fmt, char* text)
 	ZXing_free(text);
 }
 
+#define CHECK(GOOD) \
+	if (!(GOOD)) { \
+		char* error = ZXing_LastErrorMsg(); \
+		fprintf(stderr, "CHECK(%s) failed: %s\n", #GOOD, error); \
+		ZXing_free(error); \
+		return 2; \
+	}
+
 int main(int argc, char** argv)
 {
 	int ret = 0;
@@ -57,9 +65,30 @@ int main(int argc, char** argv)
 	int height = 0;
 	int channels = 0;
 	stbi_uc* data = stbi_load(filename, &width, &height, &channels, STBI_grey);
-	if (!data) {
+
+	ZXing_ImageView* iv = NULL;
+	ZXing_Image* img = NULL;
+
+	if (data) {
+		iv = ZXing_ImageView_new(data, width, height, ZXing_ImageFormat_Lum, 0, 0);
+		CHECK(iv)
+	} else {
 		fprintf(stderr, "Could not read image '%s'\n", filename);
+#ifdef ZXING_BUILD_EXPERIMENTAL_API
+		if (formats == ZXing_BarcodeFormat_Invalid)
+			return 2;
+		fprintf(stderr, "Using '%s' as text input to create barcode\n", filename);
+		ZXing_CreatorOptions* cOpts = ZXing_CreatorOptions_new(formats);
+		CHECK(cOpts)
+		ZXing_Barcode* barcode = ZXing_CreateBarcodeFromText(filename, 0, cOpts);
+		CHECK(barcode)
+		img = ZXing_WriteBarcodeToImage(barcode, NULL);
+		CHECK(img)
+		ZXing_CreatorOptions_delete(cOpts);
+		ZXing_Barcode_delete(barcode);
+#else
 		return 2;
+#endif
 	}
 
 	ZXing_ReaderOptions* opts = ZXing_ReaderOptions_new();
@@ -68,42 +97,35 @@ int main(int argc, char** argv)
 	ZXing_ReaderOptions_setFormats(opts, formats);
 	ZXing_ReaderOptions_setReturnErrors(opts, true);
 
-	ZXing_ImageView* iv = ZXing_ImageView_new(data, width, height, ZXing_ImageFormat_Lum, 0, 0);
-
-	ZXing_Barcodes* barcodes = ZXing_ReadBarcodes(iv, opts);
+	ZXing_Barcodes* barcodes = ZXing_ReadBarcodes(iv ? iv : (ZXing_ImageView*)img, opts);
+	CHECK(barcodes)
 
 	ZXing_ImageView_delete(iv);
+	ZXing_Image_delete(img);
 	ZXing_ReaderOptions_delete(opts);
 	stbi_image_free(data);
 
-	if (barcodes) {
-		for (int i = 0, n = ZXing_Barcodes_size(barcodes); i < n; ++i) {
-			const ZXing_Barcode* barcode = ZXing_Barcodes_at(barcodes, i);
+	for (int i = 0, n = ZXing_Barcodes_size(barcodes); i < n; ++i) {
+		const ZXing_Barcode* barcode = ZXing_Barcodes_at(barcodes, i);
 
-			printF("Text       : %s\n", ZXing_Barcode_text(barcode));
-			printF("BytesECI   : %s\n", (char*)ZXing_Barcode_bytesECI(barcode, NULL));
-			printF("Format     : %s\n", ZXing_BarcodeFormatToString(ZXing_Barcode_format(barcode)));
-			printF("Content    : %s\n", ZXing_ContentTypeToString(ZXing_Barcode_contentType(barcode)));
-			printF("Identifier : %s\n", ZXing_Barcode_symbologyIdentifier(barcode));
-			printF("EC Level   : %s\n", ZXing_Barcode_ecLevel(barcode));
-			printF("Error      : %s\n", ZXing_Barcode_errorMsg(barcode));
-			printF("Position   : %s\n", ZXing_PositionToString(ZXing_Barcode_position(barcode)));
-			printf("Rotation   : %d\n", ZXing_Barcode_orientation(barcode));
+		printF("Text       : %s\n", ZXing_Barcode_text(barcode));
+		printF("BytesECI   : %s\n", (char*)ZXing_Barcode_bytesECI(barcode, NULL));
+		printF("Format     : %s\n", ZXing_BarcodeFormatToString(ZXing_Barcode_format(barcode)));
+		printF("Content    : %s\n", ZXing_ContentTypeToString(ZXing_Barcode_contentType(barcode)));
+		printF("Identifier : %s\n", ZXing_Barcode_symbologyIdentifier(barcode));
+		printF("EC Level   : %s\n", ZXing_Barcode_ecLevel(barcode));
+		printF("Error      : %s\n", ZXing_Barcode_errorMsg(barcode));
+		printF("Position   : %s\n", ZXing_PositionToString(ZXing_Barcode_position(barcode)));
+		printf("Rotation   : %d\n", ZXing_Barcode_orientation(barcode));
 
-			if (i < n-1)
-				printf("\n");
-		}
-
-		if (ZXing_Barcodes_size(barcodes) == 0)
-			printf("No barcode found\n");
-
-		ZXing_Barcodes_delete(barcodes);
-	} else {
-		char* error = ZXing_LastErrorMsg();
-		fprintf(stderr, "%s\n", error);
-		ZXing_free(error);
-		ret = 2;
+		if (i < n-1)
+			printf("\n");
 	}
+
+	if (ZXing_Barcodes_size(barcodes) == 0)
+		printf("No barcode found\n");
+
+	ZXing_Barcodes_delete(barcodes);
 
 	return ret;
 }
