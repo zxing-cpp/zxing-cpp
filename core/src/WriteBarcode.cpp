@@ -139,7 +139,7 @@ static int ParseECLevel(int symbology, std::string_view s)
 		throw std::invalid_argument("Invalid ecLevel: '" + std::string(s) + "'");
 
 	auto findClosestECLevel = [](const std::vector<int>& list, int val) {
-		int mIdx, mAbs = 100;
+		int mIdx = -2, mAbs = 100;
 		for (int i = 0; i < Size(list); ++i)
 		if (int abs = std::abs(val - list[i]); abs < mAbs) {
 				mIdx = i;
