@@ -5,7 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "BitMatrix.h"
+#ifdef ZXING_BUILD_EXPERIMENTAL_API
+#include "WriteBarcode.h"
+#else
 #include "MultiFormatWriter.h"
+#endif
 
 #include <vector>
 
@@ -30,7 +34,11 @@ int main()
 		BarcodeFormat::PDF417,
 		BarcodeFormat::QRCode })
 	{
+#ifdef ZXING_BUILD_EXPERIMENTAL_API
+		savePng(CreateBarcodeFromText(text, format).symbol(), format);
+#else
 		savePng(MultiFormatWriter(format).encode(text, 200, 200), format);
+#endif
 	}
 
 	text = "012345678901234567890123456789";
@@ -47,6 +55,10 @@ int main()
 		{BarcodeFormat::UPCE, 7} }))
 	{
 		auto input = length > 0 ? text.substr(0, length) : text;
+#ifdef ZXING_BUILD_EXPERIMENTAL_API
+		savePng(CreateBarcodeFromText(input, format).symbol(), format);
+#else
 		savePng(MultiFormatWriter(format).encode(input, 100, 100), format);
+#endif
 	}
 }
