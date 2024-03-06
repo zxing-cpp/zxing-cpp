@@ -83,11 +83,12 @@ WriterOptions& WriterOptions::operator=(WriterOptions&&) = default;
 } // namespace ZXing
 
 #ifdef ZXING_USE_ZINT
+#include "BitMatrixIO.h"
 #include "ECI.h"
 #include "ReadBarcode.h"
 
-#include <zint.h>
 #include <charconv>
+#include <zint.h>
 
 namespace ZXing {
 
@@ -294,10 +295,10 @@ Image WriteBarcodeToImage(const Barcode& barcode, const WriterOptions& opts)
 
 } // ZXing
 
-
 #else
 
 #include "BitMatrix.h"
+#include "BitMatrixIO.h"
 #include "MultiFormatWriter.h"
 #include "ReadBarcode.h"
 
