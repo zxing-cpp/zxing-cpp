@@ -486,7 +486,7 @@ if (ZXING_USE_ZINT)
 endif()
 
 add_library(ZXing::ZXing ALIAS ZXing)
-# add the old alias as well, to keep old clients compiling
+# add the old alias as well, to keep old clients compiling [[deprecated]]
 # note: this only affects client code that includes ZXing via sub_directory.
 #       for clients using the exported target, see ZXingConfig.cmake.in
 add_library(ZXing::Core ALIAS ZXing)
