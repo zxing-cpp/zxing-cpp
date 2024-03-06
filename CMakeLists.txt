@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.15)
 
 project(ZXing)
 
-option (BUILD_WRITERS "Build with writer support (encoders)" ON)
+# option (BUILD_WRITERS "Build with writer support (encoders)" ON)
+set(BUILD_WRITERS "ON" CACHE STRING "Build with old and/or new writer (encoder) backend (OFF/ON/OLD/NEW/BOTH)")
 option (BUILD_READERS "Build with reader support (decoders)" ON)
 option (BUILD_EXAMPLES "Build the example barcode reader/writer applications" ON)
 option (BUILD_BLACKBOX_TESTS "Build the black box reader/writer tests" OFF)
@@ -10,7 +11,6 @@ option (BUILD_UNIT_TESTS "Build the unit tests (don't enable for production buil
 option (BUILD_PYTHON_MODULE "Build the python module" OFF)
 option (BUILD_C_API "Build the C-API" OFF)
 option (BUILD_EXPERIMENTAL_API "Build with experimental API" OFF)
-option (ZXING_USE_ZINT "Use libzint for barcode creation/generation" OFF)
 set(BUILD_DEPENDENCIES "AUTO" CACHE STRING "Fetch from github or use locally installed (AUTO/GITHUB/LOCAL)")
 
 if (WIN32)
@@ -48,14 +48,10 @@ if (BUILD_UNIT_TESTS AND (NOT BUILD_WRITERS OR NOT BUILD_READERS))
     set (BUILD_READERS ON)
 endif()
 
-if (ZXING_USE_ZINT)
-    set (BUILD_EXPERIMENTAL_API ON)
-    add_definitions (-DZXING_USE_ZINT)
-endif()
-
-if (BUILD_EXPERIMENTAL_API)
-    set (CMAKE_CXX_STANDARD 20)
-    add_definitions (-DZXING_BUILD_EXPERIMENTAL_API)
+set(BUILD_WRITERS_LIST OFF ON OLD NEW BOTH)
+set_property(CACHE BUILD_WRITERS PROPERTY STRINGS ${BUILD_WRITERS_LIST})
+if(NOT BUILD_WRITERS IN_LIST BUILD_WRITERS_LIST)
+    message(FATAL_ERROR "BUILD_WRITERS must be one of ${BUILD_WRITERS_LIST}")
 endif()
 
 set(BUILD_DEPENDENCIES_LIST AUTO GITHUB LOCAL)

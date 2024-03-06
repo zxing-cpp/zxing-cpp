@@ -75,6 +75,12 @@ Barcode CreateBarcodeFromBytes(const R& contents, const CreatorOptions& options)
 {
 	return CreateBarcodeFromBytes(std::ranges::data(contents), std::ranges::size(contents), options);
 }
+#else
+template <typename R>
+Barcode CreateBarcodeFromBytes(const R& contents, const CreatorOptions& options)
+{
+	return CreateBarcodeFromBytes(std::data(contents), std::size(contents), options);
+}
 #endif
 
 // =================================================================================

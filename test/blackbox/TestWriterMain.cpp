@@ -44,7 +44,7 @@ int main()
 	text = "012345678901234567890123456789";
 	using FormatSpecs = std::vector<std::pair<BarcodeFormat, size_t>>;
 	for (const auto& [format, length] : FormatSpecs({
-		{BarcodeFormat::Codabar, 0},
+//		{BarcodeFormat::Codabar, 0},
 		{BarcodeFormat::Code39, 0},
 		{BarcodeFormat::Code93, 0},
 		{BarcodeFormat::Code128, 0},

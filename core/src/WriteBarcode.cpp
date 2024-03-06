@@ -15,7 +15,6 @@ struct std::default_delete<zint_symbol>
 {
 	void operator()(zint_symbol* p) const noexcept { ZBarcode_Delete(p); }
 };
-
 #else
 struct zint_symbol {};
 #endif
@@ -33,6 +32,10 @@ struct CreatorOptions::Data
 	// structured_append (idx, cnt, ID)
 
 	mutable std::unique_ptr<zint_symbol> zint;
+
+#if __cplusplus <= 201703L
+	Data(BarcodeFormat f) : format(f) {}
+#endif
 };
 
 #define ZX_PROPERTY(TYPE, NAME) \
@@ -110,7 +113,7 @@ static constexpr BarcodeFormatZXing2Zint barcodeFormatZXing2Zint[] = {
 	{BarcodeFormat::DXFilmEdge, -1},
 	{BarcodeFormat::EAN8, BARCODE_EANX},
 	{BarcodeFormat::EAN13, BARCODE_EANX},
-	{BarcodeFormat::ITF, BARCODE_ITF14},
+	{BarcodeFormat::ITF, BARCODE_C25INTER},
 	{BarcodeFormat::MaxiCode, BARCODE_MAXICODE},
 	{BarcodeFormat::MicroQRCode, BARCODE_MICROQR},
 	{BarcodeFormat::PDF417, BARCODE_PDF417},
@@ -226,10 +229,12 @@ Barcode CreateBarcodeFromText(std::string_view contents, const CreatorOptions& o
 	return CreateBarcode(contents.data(), contents.size(), UNICODE_MODE, opts);
 }
 
+#if __cplusplus > 201703L
 Barcode CreateBarcodeFromText(std::u8string_view contents, const CreatorOptions& opts)
 {
 	return CreateBarcode(contents.data(), contents.size(), UNICODE_MODE, opts);
 }
+#endif
 
 Barcode CreateBarcodeFromBytes(const void* data, int size, const CreatorOptions& opts)
 {
@@ -328,10 +333,12 @@ Barcode CreateBarcodeFromText(std::string_view contents, const CreatorOptions& o
 	return CreateBarcode(writer.encode(std::string(contents), 0, IsLinearCode(opts.format()) ? 50 : 0), opts);
 }
 
+#if __cplusplus > 201703L
 Barcode CreateBarcodeFromText(std::u8string_view contents, const CreatorOptions& opts)
 {
 	return CreateBarcodeFromText({reinterpret_cast<const char*>(contents.data()), contents.size()}, opts);
 }
+#endif
 
 Barcode CreateBarcodeFromBytes(const void* data, int size, const CreatorOptions& opts)
 {
