@@ -50,7 +50,7 @@ jobs:
       - name: Build Library
         run: |
           export PATH="$PATH:$(brew --prefix llvm@15)/bin"
-          ./gradlew assembleRelease
+          ./gradlew assemble
 
       - name: Publish Library
         if: ${{ github.event.inputs.publish == 'y' }}
