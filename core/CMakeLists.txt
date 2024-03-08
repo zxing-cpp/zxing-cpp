@@ -121,8 +121,6 @@ if (BUILD_READERS OR BUILD_WRITERS_OLD)
         src/TextUtfEncoding.h # [[deprecated]]
         src/TextUtfEncoding.cpp # [[deprecated]]
         src/Scope.h
-        src/ZXBigInteger.h # PDF417
-        src/ZXBigInteger.cpp
     )
 endif()
 if (BUILD_READERS)
@@ -134,7 +132,6 @@ if (BUILD_READERS)
         src/BitSource.cpp
         src/ConcentricFinder.h
         src/ConcentricFinder.cpp
-        src/CustomData.h # PDF417
         src/DecodeHints.h
         $<$<BOOL:${BUILD_SHARED_LIBS}>:src/DecodeHints.cpp> # [[deprecated]]
         src/DecoderResult.h
@@ -172,7 +169,6 @@ if (BUILD_READERS)
         src/TritMatrix.h # QRCode
         src/WhiteRectDetector.h
         src/WhiteRectDetector.cpp
-        src/ZXNullable.h # PDF417
     )
 endif()
 
@@ -376,6 +372,12 @@ if (BUILD_WRITERS_OLD)
 endif()
 
 
+if (BUILD_READERS OR BUILD_WRITERS_OLD)
+    set (PDF417_FILES
+        src/pdf417/ZXBigInteger.h
+        src/pdf417/ZXBigInteger.cpp
+    )
+endif()
 if (BUILD_READERS)
     set (PDF417_FILES ${PDF417_FILES}
         src/pdf417/PDFBarcodeMetadata.h
@@ -403,6 +405,8 @@ if (BUILD_READERS)
         src/pdf417/PDFReader.cpp
         src/pdf417/PDFScanningDecoder.h
         src/pdf417/PDFScanningDecoder.cpp
+        src/pdf417/CustomData.h
+        src/pdf417/ZXNullable.h
     )
 endif()
 if (BUILD_WRITERS_OLD)
