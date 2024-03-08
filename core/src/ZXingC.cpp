@@ -15,12 +15,6 @@
 #include <tuple>
 #include <utility>
 
-#if !defined(ZXING_BUILD_READERS) && !defined(ZXING_BUILD_WRITERS)
-// This is a workaround to prevent the kotlin/native build from failing,
-// see https://github.com/axxel/zxing-cpp/actions/runs/8179832983/job/22366666211#step:9:32
-#define ZXING_BUILD_READERS
-#endif
-
 using namespace ZXing;
 
 static thread_local std::string lastErrorMsg;
