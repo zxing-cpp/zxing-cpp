@@ -50,7 +50,18 @@ jobs:
       - name: Build Library
         run: |
           export PATH="$PATH:$(brew --prefix llvm@15)/bin"
-          ./gradlew assembleRelease
+          ./gradlew assemble
+
+      - name: Run All Library Tests
+        run: |
+          export PATH="$PATH:$(brew --prefix llvm@15)/bin"
+          ./gradlew allTests
+
+      - name: Upload Library Test Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: allTests-reports
+          path: wrappers/kn/build/reports/tests/allTests
 
       - name: Publish Library
         if: ${{ github.event.inputs.publish == 'y' }}
