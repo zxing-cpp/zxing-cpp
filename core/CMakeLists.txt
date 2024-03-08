@@ -29,35 +29,35 @@ elseif (BUILD_WRITERS MATCHES "BOTH")
     set (BUILD_WRITERS_OLD ON)
 endif()
 
-set (ZXING_CORE_DEFINES
+set (ZXING_PUBLIC_FLAGS
     $<$<BOOL:${BUILD_EXPERIMENTAL_API}>:-DZXING_BUILD_EXPERIMENTAL_API>
 )
 if (WINRT)
-    set (ZXING_CORE_DEFINES ${ZXING_CORE_DEFINES}
+    set (ZXING_PUBLIC_FLAGS ${ZXING_PUBLIC_FLAGS}
         -DWINRT
     )
 endif()
 if (MSVC)
-    set (ZXING_CORE_DEFINES ${ZXING_CORE_DEFINES}
+    set (ZXING_PUBLIC_FLAGS ${ZXING_PUBLIC_FLAGS}
         /Zc:__cplusplus
     )
 endif()
 
-set (ZXING_CORE_LOCAL_DEFINES
+set (ZXING_PRIVATE_FLAGS
     $<$<BOOL:${BUILD_READERS}>:-DZXING_BUILD_READERS>
     $<$<BOOL:${BUILD_WRITERS}>:-DZXING_BUILD_WRITERS>
     $<$<BOOL:${BUILD_WRITERS_NEW}>:-DZXING_USE_ZINT>
     $<$<BOOL:${BUILD_UNIT_TESTS}>:-DZXING_BUILD_FOR_TEST>
 )
 if (MSVC)
-    set (ZXING_CORE_LOCAL_DEFINES ${ZXING_CORE_LOCAL_DEFINES}
+    set (ZXING_PRIVATE_FLAGS ${ZXING_PRIVATE_FLAGS}
         -D_SCL_SECURE_NO_WARNINGS
         -D_CRT_SECURE_NO_WARNINGS
         -D_CRT_NONSTDC_NO_WARNINGS
         -DNOMINMAX
     )
 else()
-    set (ZXING_CORE_LOCAL_DEFINES ${ZXING_CORE_LOCAL_DEFINES}
+    set (ZXING_PRIVATE_FLAGS ${ZXING_PRIVATE_FLAGS}
         -Wall -Wextra -Wno-missing-braces -Werror=undef -Werror=return-type)
 endif()
 
@@ -70,7 +70,7 @@ include (CheckCXXCompilerFlag)
 set(FILE_PREFIX_ARG "-fmacro-prefix-map=${CMAKE_CURRENT_SOURCE_DIR}/=")
 check_cxx_compiler_flag("${FILE_PREFIX_ARG}" HAS_FILE_PREFIX_ARG)
 if(HAS_FILE_PREFIX_ARG)
-    set(ZXING_CORE_LOCAL_DEFINES ${ZXING_CORE_LOCAL_DEFINES} "${FILE_PREFIX_ARG}")
+    set(ZXING_PRIVATE_FLAGS ${ZXING_PRIVATE_FLAGS} "${FILE_PREFIX_ARG}")
 endif()
 
 ################# Source files
@@ -502,8 +502,8 @@ target_include_directories (ZXing
 )
 
 target_compile_options (ZXing
-    PUBLIC ${ZXING_CORE_DEFINES}
-    PRIVATE ${ZXING_CORE_LOCAL_DEFINES}
+    PUBLIC ${ZXING_PUBLIC_FLAGS}
+    PRIVATE ${ZXING_PRIVATE_FLAGS}
 )
 
 target_compile_features(ZXing PUBLIC cxx_std_17)
