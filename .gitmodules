@@ -1,0 +1,4 @@
+[submodule "zint"]
+	path = zint
+	url = https://github.com/zint/zint.git
+	shallow = true

@@ -15,6 +15,7 @@ let package = Package(
         .target(
             name: "ZXingCppCore",
             path: "core/src",
+            exclude: ["libzint"],
             publicHeadersPath: "."
         ),
         .target(

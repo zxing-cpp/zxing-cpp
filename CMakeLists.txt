@@ -11,6 +11,7 @@ option (BUILD_UNIT_TESTS "Build the unit tests (don't enable for production buil
 option (BUILD_PYTHON_MODULE "Build the python module" OFF)
 option (BUILD_C_API "Build the C-API" OFF)
 option (BUILD_EXPERIMENTAL_API "Build with experimental API" OFF)
+option (ZXING_USE_BUNDLED_ZINT "Use the bundled libzint for barcode creation/generation" ON)
 set(BUILD_DEPENDENCIES "AUTO" CACHE STRING "Fetch from github or use locally installed (AUTO/GITHUB/LOCAL)")
 
 if (WIN32)

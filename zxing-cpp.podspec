@@ -24,6 +24,7 @@ Pod::Spec.new do |s|
 
   s.subspec 'Core' do |ss|
     ss.source_files = 'core/src/**/*.{h,c,cpp}'
+    ss.exclude_files = [ 'core/src/libzint/**' ]
     ss.private_header_files = 'core/src/**/*.h'
   end
 

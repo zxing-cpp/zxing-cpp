@@ -12,6 +12,7 @@ categories = ["api-bindings", "computer-vision"]
 exclude = [
     "core/**/*Write*",
     "core/**/*Encode*",
+    "core/src/libzint/**",
 ]
 
 [lib]

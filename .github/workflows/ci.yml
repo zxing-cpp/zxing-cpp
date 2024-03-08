@@ -84,7 +84,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
-        ref: ${{github.ref}}
+        submodules: true
 
     - name: Build the swift package
       run: swift build
