@@ -164,6 +164,24 @@ Barcodes read_barcodes(py::object _image, const BarcodeFormats& formats, bool tr
 
 Matrix<uint8_t> write_barcode(BarcodeFormat format, py::object content, int width, int height, int quiet_zone, int ec_level)
 {
+#ifdef ZXING_BUILD_EXPERIMENTAL_API
+	auto cOpts = CreatorOptions(format).ecLevel(std::to_string(ec_level));
+	auto data = py::cast<std::string>(content);
+
+	auto barcode = Barcode();
+	if (py::isinstance<py::str>(content))
+		barcode = CreateBarcodeFromText(data, cOpts);
+	else if (py::isinstance<py::bytes>(content))
+		barcode = CreateBarcodeFromBytes(data, cOpts);
+	else
+		throw py::type_error("Invalid input: only 'str' and 'bytes' supported.");
+
+	auto wOpts = WriterOptions().sizeHint(std::max(width, height)).withQuietZones(quiet_zone != 0);
+	auto bitmap = WriteBarcodeToImage(barcode, wOpts);
+	Matrix<uint8_t> res(bitmap.width(), bitmap.height());
+	memcpy(res.begin(), bitmap.data(), res.size());
+	return res;
+#else
 	CharacterSet encoding [[maybe_unused]];
 	if (py::isinstance<py::str>(content))
 		encoding  = CharacterSet::UTF8;
@@ -172,17 +190,6 @@ Matrix<uint8_t> write_barcode(BarcodeFormat format, py::object content, int widt
 	else
 		throw py::type_error("Invalid input: only 'str' and 'bytes' supported.");
 
-#ifdef ZXING_BUILD_EXPERIMENTAL_API
-	auto cOpts = CreatorOptions(format).ecLevel(std::to_string(ec_level));
-	//TODO byte array
-	auto barcode = CreateBarcodeFromText(py::cast<std::string>(content), cOpts);
-
-	auto wOpts = WriterOptions().sizeHint(std::max(width, height)).withQuietZones(quiet_zone != 0);
-	auto bitmap = WriteBarcodeToImage(barcode, wOpts);
-	Matrix<uint8_t> res(bitmap.width(), bitmap.height());
-	memcpy(res.begin(), bitmap.data(), res.size());
-	return res;
-#else
 	auto writer = MultiFormatWriter(format).setEncoding(encoding).setMargin(quiet_zone).setEccLevel(ec_level);
 	auto bitmap = writer.encode(py::cast<std::string>(content), width, height);
 	return ToMatrix<uint8_t>(bitmap);
