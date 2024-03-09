@@ -196,8 +196,6 @@ set (PUBLIC_HEADERS
     src/Barcode.h
     src/BarcodeFormat.h
     src/BitHacks.h
-    src/BitMatrix.h
-    src/BitMatrixIO.h
     src/ByteArray.h
     src/CharacterSet.h
     src/Content.h
@@ -205,14 +203,11 @@ set (PUBLIC_HEADERS
     src/Flags.h
     src/GTIN.h
     src/ImageView.h
-    src/Matrix.h
     src/Point.h
     src/Quadrilateral.h
-    src/Range.h
     src/StructuredAppend.h
     src/TextUtfEncoding.h # [[deprecated]]
     src/ZXAlgorithms.h
-    src/ZXConfig.h
     $<$<BOOL:${BUILD_C_API}>:${CMAKE_CURRENT_SOURCE_DIR}/src/ZXingC.h>
 )
 if (BUILD_READERS)
@@ -230,6 +225,10 @@ if (BUILD_WRITERS)
 endif()
 if (BUILD_WRITERS_OLD)
     set (PUBLIC_HEADERS ${PUBLIC_HEADERS}
+        src/BitMatrix.h
+        src/BitMatrixIO.h
+        src/Range.h
+        src/Matrix.h
         src/MultiFormatWriter.h
     )
 endif()
