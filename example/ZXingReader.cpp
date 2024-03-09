@@ -6,7 +6,7 @@
 
 #include "GTIN.h"
 #include "ReadBarcode.h"
-#include "ZXVersion.h"
+#include "Version.h"
 
 #ifdef ZXING_BUILD_EXPERIMENTAL_API
 #include "WriteBarcode.h"

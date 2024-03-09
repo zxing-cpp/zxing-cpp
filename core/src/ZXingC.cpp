@@ -65,7 +65,7 @@ static uint8_t* copy(const ByteArray& ba, int* len) noexcept
 	} \
 	ZX_CATCH({})
 
-#ifdef ZXING_BUILD_READERS
+#ifdef ZXING_HAS_READERS
 static std::tuple<Barcodes, bool> ReadBarcodesAndSetLastError(const ZXing_ImageView* iv, const ZXing_ReaderOptions* opts,
 															  int maxSymbols)
 {
@@ -250,7 +250,7 @@ ZXing_Barcode* ZXing_Barcodes_move(ZXing_Barcodes* barcodes, int i)
 	ZX_TRY(new Barcode(std::move((*barcodes)[i])));
 }
 
-#ifdef ZXING_BUILD_READERS
+#ifdef ZXING_HAS_READERS
 
 /*
  * ZXing/ReaderOptions.h
@@ -319,7 +319,7 @@ ZXing_Barcodes* ZXing_ReadBarcodes(const ZXing_ImageView* iv, const ZXing_Reader
 
 #endif
 
-#ifdef ZXING_BUILD_WRITERS
+#ifdef ZXING_HAS_WRITERS
 #ifdef ZXING_BUILD_EXPERIMENTAL_API
 /*
  * ZXing/WriteBarcode.h

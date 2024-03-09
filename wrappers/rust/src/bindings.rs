@@ -2,22 +2,27 @@
 
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
-pub struct ZXing_ImageView {
-	_unused: [u8; 0],
-}
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct ZXing_ReaderOptions {
-	_unused: [u8; 0],
-}
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
 pub struct ZXing_Barcode {
 	_unused: [u8; 0],
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct ZXing_Barcodes {
+	_unused: [u8; 0],
+}
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct ZXing_ImageView {
+	_unused: [u8; 0],
+}
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct ZXing_Image {
+	_unused: [u8; 0],
+}
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct ZXing_ReaderOptions {
 	_unused: [u8; 0],
 }
 pub const ZXing_ImageFormat_None: ZXing_ImageFormat = 0;
@@ -56,21 +61,6 @@ pub const ZXing_BarcodeFormat_Any: ZXing_BarcodeFormat = 524287;
 pub const ZXing_BarcodeFormat_Invalid: ZXing_BarcodeFormat = 4294967295;
 pub type ZXing_BarcodeFormat = ::core::ffi::c_uint;
 pub use self::ZXing_BarcodeFormat as ZXing_BarcodeFormats;
-pub const ZXing_Binarizer_LocalAverage: ZXing_Binarizer = 0;
-pub const ZXing_Binarizer_GlobalHistogram: ZXing_Binarizer = 1;
-pub const ZXing_Binarizer_FixedThreshold: ZXing_Binarizer = 2;
-pub const ZXing_Binarizer_BoolCast: ZXing_Binarizer = 3;
-pub type ZXing_Binarizer = ::core::ffi::c_uint;
-pub const ZXing_EanAddOnSymbol_Ignore: ZXing_EanAddOnSymbol = 0;
-pub const ZXing_EanAddOnSymbol_Read: ZXing_EanAddOnSymbol = 1;
-pub const ZXing_EanAddOnSymbol_Require: ZXing_EanAddOnSymbol = 2;
-pub type ZXing_EanAddOnSymbol = ::core::ffi::c_uint;
-pub const ZXing_TextMode_Plain: ZXing_TextMode = 0;
-pub const ZXing_TextMode_ECI: ZXing_TextMode = 1;
-pub const ZXing_TextMode_HRI: ZXing_TextMode = 2;
-pub const ZXing_TextMode_Hex: ZXing_TextMode = 3;
-pub const ZXing_TextMode_Escaped: ZXing_TextMode = 4;
-pub type ZXing_TextMode = ::core::ffi::c_uint;
 pub const ZXing_ContentType_Text: ZXing_ContentType = 0;
 pub const ZXing_ContentType_Binary: ZXing_ContentType = 1;
 pub const ZXing_ContentType_Mixed: ZXing_ContentType = 2;
@@ -97,6 +87,21 @@ pub struct ZXing_Position {
 	pub bottomRight: ZXing_PointI,
 	pub bottomLeft: ZXing_PointI,
 }
+pub const ZXing_Binarizer_LocalAverage: ZXing_Binarizer = 0;
+pub const ZXing_Binarizer_GlobalHistogram: ZXing_Binarizer = 1;
+pub const ZXing_Binarizer_FixedThreshold: ZXing_Binarizer = 2;
+pub const ZXing_Binarizer_BoolCast: ZXing_Binarizer = 3;
+pub type ZXing_Binarizer = ::core::ffi::c_uint;
+pub const ZXing_EanAddOnSymbol_Ignore: ZXing_EanAddOnSymbol = 0;
+pub const ZXing_EanAddOnSymbol_Read: ZXing_EanAddOnSymbol = 1;
+pub const ZXing_EanAddOnSymbol_Require: ZXing_EanAddOnSymbol = 2;
+pub type ZXing_EanAddOnSymbol = ::core::ffi::c_uint;
+pub const ZXing_TextMode_Plain: ZXing_TextMode = 0;
+pub const ZXing_TextMode_ECI: ZXing_TextMode = 1;
+pub const ZXing_TextMode_HRI: ZXing_TextMode = 2;
+pub const ZXing_TextMode_Hex: ZXing_TextMode = 3;
+pub const ZXing_TextMode_Escaped: ZXing_TextMode = 4;
+pub type ZXing_TextMode = ::core::ffi::c_uint;
 extern "C" {
 	pub fn ZXing_ImageView_new(
 		data: *const u8,
@@ -124,9 +129,37 @@ extern "C" {
 		height: ::core::ffi::c_int,
 	);
 	pub fn ZXing_ImageView_rotate(iv: *mut ZXing_ImageView, degree: ::core::ffi::c_int);
+	pub fn ZXing_Image_delete(img: *mut ZXing_Image);
+	pub fn ZXing_Image_data(img: *const ZXing_Image) -> *const u8;
+	pub fn ZXing_Image_width(img: *const ZXing_Image) -> ::core::ffi::c_int;
+	pub fn ZXing_Image_height(img: *const ZXing_Image) -> ::core::ffi::c_int;
+	pub fn ZXing_Image_format(img: *const ZXing_Image) -> ZXing_ImageFormat;
 	pub fn ZXing_BarcodeFormatsFromString(str_: *const ::core::ffi::c_char) -> ZXing_BarcodeFormats;
 	pub fn ZXing_BarcodeFormatFromString(str_: *const ::core::ffi::c_char) -> ZXing_BarcodeFormat;
 	pub fn ZXing_BarcodeFormatToString(format: ZXing_BarcodeFormat) -> *mut ::core::ffi::c_char;
+	pub fn ZXing_ContentTypeToString(type_: ZXing_ContentType) -> *mut ::core::ffi::c_char;
+	pub fn ZXing_PositionToString(position: ZXing_Position) -> *mut ::core::ffi::c_char;
+	pub fn ZXing_Barcode_isValid(barcode: *const ZXing_Barcode) -> bool;
+	pub fn ZXing_Barcode_errorType(barcode: *const ZXing_Barcode) -> ZXing_ErrorType;
+	pub fn ZXing_Barcode_errorMsg(barcode: *const ZXing_Barcode) -> *mut ::core::ffi::c_char;
+	pub fn ZXing_Barcode_format(barcode: *const ZXing_Barcode) -> ZXing_BarcodeFormat;
+	pub fn ZXing_Barcode_contentType(barcode: *const ZXing_Barcode) -> ZXing_ContentType;
+	pub fn ZXing_Barcode_bytes(barcode: *const ZXing_Barcode, len: *mut ::core::ffi::c_int) -> *mut u8;
+	pub fn ZXing_Barcode_bytesECI(barcode: *const ZXing_Barcode, len: *mut ::core::ffi::c_int) -> *mut u8;
+	pub fn ZXing_Barcode_text(barcode: *const ZXing_Barcode) -> *mut ::core::ffi::c_char;
+	pub fn ZXing_Barcode_ecLevel(barcode: *const ZXing_Barcode) -> *mut ::core::ffi::c_char;
+	pub fn ZXing_Barcode_symbologyIdentifier(barcode: *const ZXing_Barcode) -> *mut ::core::ffi::c_char;
+	pub fn ZXing_Barcode_position(barcode: *const ZXing_Barcode) -> ZXing_Position;
+	pub fn ZXing_Barcode_orientation(barcode: *const ZXing_Barcode) -> ::core::ffi::c_int;
+	pub fn ZXing_Barcode_hasECI(barcode: *const ZXing_Barcode) -> bool;
+	pub fn ZXing_Barcode_isInverted(barcode: *const ZXing_Barcode) -> bool;
+	pub fn ZXing_Barcode_isMirrored(barcode: *const ZXing_Barcode) -> bool;
+	pub fn ZXing_Barcode_lineCount(barcode: *const ZXing_Barcode) -> ::core::ffi::c_int;
+	pub fn ZXing_Barcode_delete(barcode: *mut ZXing_Barcode);
+	pub fn ZXing_Barcodes_delete(barcodes: *mut ZXing_Barcodes);
+	pub fn ZXing_Barcodes_size(barcodes: *const ZXing_Barcodes) -> ::core::ffi::c_int;
+	pub fn ZXing_Barcodes_at(barcodes: *const ZXing_Barcodes, i: ::core::ffi::c_int) -> *const ZXing_Barcode;
+	pub fn ZXing_Barcodes_move(barcodes: *mut ZXing_Barcodes, i: ::core::ffi::c_int) -> *mut ZXing_Barcode;
 	pub fn ZXing_ReaderOptions_new() -> *mut ZXing_ReaderOptions;
 	pub fn ZXing_ReaderOptions_delete(opts: *mut ZXing_ReaderOptions);
 	pub fn ZXing_ReaderOptions_setTryHarder(opts: *mut ZXing_ReaderOptions, tryHarder: bool);
@@ -153,31 +186,8 @@ extern "C" {
 	pub fn ZXing_ReaderOptions_getTextMode(opts: *const ZXing_ReaderOptions) -> ZXing_TextMode;
 	pub fn ZXing_ReaderOptions_getMinLineCount(opts: *const ZXing_ReaderOptions) -> ::core::ffi::c_int;
 	pub fn ZXing_ReaderOptions_getMaxNumberOfSymbols(opts: *const ZXing_ReaderOptions) -> ::core::ffi::c_int;
-	pub fn ZXing_ContentTypeToString(type_: ZXing_ContentType) -> *mut ::core::ffi::c_char;
-	pub fn ZXing_PositionToString(position: ZXing_Position) -> *mut ::core::ffi::c_char;
-	pub fn ZXing_Barcode_isValid(barcode: *const ZXing_Barcode) -> bool;
-	pub fn ZXing_Barcode_errorType(barcode: *const ZXing_Barcode) -> ZXing_ErrorType;
-	pub fn ZXing_Barcode_errorMsg(barcode: *const ZXing_Barcode) -> *mut ::core::ffi::c_char;
-	pub fn ZXing_Barcode_format(barcode: *const ZXing_Barcode) -> ZXing_BarcodeFormat;
-	pub fn ZXing_Barcode_contentType(barcode: *const ZXing_Barcode) -> ZXing_ContentType;
-	pub fn ZXing_Barcode_bytes(barcode: *const ZXing_Barcode, len: *mut ::core::ffi::c_int) -> *mut u8;
-	pub fn ZXing_Barcode_bytesECI(barcode: *const ZXing_Barcode, len: *mut ::core::ffi::c_int) -> *mut u8;
-	pub fn ZXing_Barcode_text(barcode: *const ZXing_Barcode) -> *mut ::core::ffi::c_char;
-	pub fn ZXing_Barcode_ecLevel(barcode: *const ZXing_Barcode) -> *mut ::core::ffi::c_char;
-	pub fn ZXing_Barcode_symbologyIdentifier(barcode: *const ZXing_Barcode) -> *mut ::core::ffi::c_char;
-	pub fn ZXing_Barcode_position(barcode: *const ZXing_Barcode) -> ZXing_Position;
-	pub fn ZXing_Barcode_orientation(barcode: *const ZXing_Barcode) -> ::core::ffi::c_int;
-	pub fn ZXing_Barcode_hasECI(barcode: *const ZXing_Barcode) -> bool;
-	pub fn ZXing_Barcode_isInverted(barcode: *const ZXing_Barcode) -> bool;
-	pub fn ZXing_Barcode_isMirrored(barcode: *const ZXing_Barcode) -> bool;
-	pub fn ZXing_Barcode_lineCount(barcode: *const ZXing_Barcode) -> ::core::ffi::c_int;
 	pub fn ZXing_ReadBarcode(iv: *const ZXing_ImageView, opts: *const ZXing_ReaderOptions) -> *mut ZXing_Barcode;
 	pub fn ZXing_ReadBarcodes(iv: *const ZXing_ImageView, opts: *const ZXing_ReaderOptions) -> *mut ZXing_Barcodes;
-	pub fn ZXing_Barcode_delete(barcode: *mut ZXing_Barcode);
-	pub fn ZXing_Barcodes_delete(barcodes: *mut ZXing_Barcodes);
-	pub fn ZXing_Barcodes_size(barcodes: *const ZXing_Barcodes) -> ::core::ffi::c_int;
-	pub fn ZXing_Barcodes_at(barcodes: *const ZXing_Barcodes, i: ::core::ffi::c_int) -> *const ZXing_Barcode;
-	pub fn ZXing_Barcodes_move(barcodes: *mut ZXing_Barcodes, i: ::core::ffi::c_int) -> *mut ZXing_Barcode;
 	pub fn ZXing_LastErrorMsg() -> *mut ::core::ffi::c_char;
 	pub fn ZXing_free(ptr: *mut ::core::ffi::c_void);
 }

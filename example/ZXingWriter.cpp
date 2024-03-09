@@ -3,17 +3,15 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "BarcodeFormat.h"
-#include "BitMatrixIO.h"
-
 #ifdef ZXING_BUILD_EXPERIMENTAL_API
 #include "WriteBarcode.h"
 #else
 #include "BitMatrix.h"
+#include "BitMatrixIO.h"
 #include "CharacterSet.h"
 #include "MultiFormatWriter.h"
 #endif
-#include "ZXVersion.h"
+#include "Version.h"
 
 #include <algorithm>
 #include <cctype>

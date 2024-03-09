@@ -44,8 +44,6 @@ if (MSVC)
 endif()
 
 set (ZXING_PRIVATE_FLAGS
-    $<$<BOOL:${BUILD_READERS}>:-DZXING_BUILD_READERS>
-    $<$<BOOL:${BUILD_WRITERS}>:-DZXING_BUILD_WRITERS>
     $<$<BOOL:${BUILD_WRITERS_NEW}>:-DZXING_USE_ZINT>
     $<$<BOOL:${BUILD_UNIT_TESTS}>:-DZXING_BUILD_FOR_TEST>
 )
@@ -106,6 +104,7 @@ set (COMMON_FILES
     src/ZXAlgorithms.h
     src/ZXConfig.h
     src/ZXTestSupport.h
+    src/ZXVersion.h # [[deprecated]]
     $<$<BOOL:${BUILD_C_API}>:src/ZXingC.h>
     $<$<BOOL:${BUILD_C_API}>:src/ZXingC.cpp>
 )
@@ -208,6 +207,7 @@ set (PUBLIC_HEADERS
     src/StructuredAppend.h
     src/TextUtfEncoding.h # [[deprecated]]
     src/ZXAlgorithms.h
+    src/ZXVersion.h # [[deprecated]]
     $<$<BOOL:${BUILD_C_API}>:${CMAKE_CURRENT_SOURCE_DIR}/src/ZXingC.h>
 )
 if (BUILD_READERS)
@@ -599,10 +599,12 @@ install (
     PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/ZXing"
 )
 
-configure_file (ZXVersion.h.in ZXVersion.h)
+set(ZXING_HAS_READERS ${BUILD_READERS})
+set(ZXING_HAS_WRITERS ${BUILD_WRITERS})
+configure_file (Version.h.in Version.h)
 
 install (
-    FILES "${CMAKE_CURRENT_BINARY_DIR}/ZXVersion.h"
+    FILES "${CMAKE_CURRENT_BINARY_DIR}/Version.h"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/ZXing"
 )
 
