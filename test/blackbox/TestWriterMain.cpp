@@ -19,11 +19,18 @@ using namespace std::literals;
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
 
+#ifdef ZXING_BUILD_EXPERIMENTAL_API
+void savePng(ImageView iv, BarcodeFormat format)
+{
+	stbi_write_png((ToString(format) + ".png"s).c_str(), iv.width(), iv.height(), iv.pixStride(), iv.data(), iv.rowStride());
+}
+#else
 void savePng(const BitMatrix& matrix, BarcodeFormat format)
 {
 	auto bitmap = ToMatrix<uint8_t>(matrix);
 	stbi_write_png((ToString(format) + ".png"s).c_str(), bitmap.width(), bitmap.height(), 1, bitmap.data(), 0);
 }
+#endif
 
 int main()
 {

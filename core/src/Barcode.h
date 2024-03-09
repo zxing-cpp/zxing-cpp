@@ -12,13 +12,16 @@
 #include "Content.h"
 #include "ReaderOptions.h"
 #include "Error.h"
+#include "ImageView.h"
 #include "Quadrilateral.h"
 #include "StructuredAppend.h"
 
 #ifdef ZXING_BUILD_EXPERIMENTAL_API
-#include "BitMatrix.h"
 #include <memory>
 extern "C" struct zint_symbol;
+namespace ZXing {
+class BitMatrix;
+}
 #endif
 
 #include <string>
@@ -28,7 +31,7 @@ namespace ZXing {
 
 class DecoderResult;
 class DetectorResult;
-class ImageView;
+class WriterOptions;
 class Result; // TODO: 3.0 replace deprected symbol name
 
 using Position = QuadrilateralI;
@@ -46,6 +49,7 @@ class Result
 
 	friend Barcode MergeStructuredAppendSequence(const Barcodes&);
 	friend Barcodes ReadBarcodes(const ImageView&, const ReaderOptions&);
+	friend Image WriteBarcodeToImage(const Barcode&, const WriterOptions&);
 	friend void IncrementLineCount(Barcode&);
 
 public:
@@ -165,8 +169,8 @@ public:
 	std::string version() const;
 
 #ifdef ZXING_BUILD_EXPERIMENTAL_API
-	void symbol(BitMatrix&& bits) { _symbol = std::make_shared<BitMatrix>(std::move(bits)); }
-	const BitMatrix& symbol() const { return *_symbol; }
+	void symbol(BitMatrix&& bits);
+	ImageView symbol() const;
 	void zint(std::unique_ptr<zint_symbol>&& z);
 	zint_symbol* zint() const { return _zint.get(); }
 #endif

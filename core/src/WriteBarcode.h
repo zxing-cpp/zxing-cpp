@@ -122,6 +122,15 @@ public:
 std::string WriteBarcodeToSVG(const Barcode& barcode, const WriterOptions& options = {});
 
 /**
+ * Write barcode symbol to a utf8 string using graphical characters (e.g. '▀')
+ *
+ * @param barcode  Barcode to write
+ * @param options  WriterOptions to parameterize rendering
+ * @return std::string  Utf8 string representation of barcode symbol
+ */
+std::string WriteBarcodeToUtf8(const Barcode& barcode, const WriterOptions& options = {});
+
+/**
  * Write barcode symbol to Image (Bitmap)
  *
  * @param barcode  Barcode to write

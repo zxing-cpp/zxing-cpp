@@ -7,6 +7,8 @@
 
 #include "WriteBarcode.h"
 
+#include <sstream>
+
 #ifdef ZXING_USE_ZINT
 #include <zint.h>
 
@@ -83,10 +85,34 @@ WriterOptions::~WriterOptions() = default;
 WriterOptions::WriterOptions(WriterOptions&&) = default;
 WriterOptions& WriterOptions::operator=(WriterOptions&&) = default;
 
+
+static std::string ToSVG(ImageView iv)
+{
+	if (!iv.data())
+		return {};
+
+	// see https://stackoverflow.com/questions/10789059/create-qr-code-in-vector-image/60638350#60638350
+
+	std::ostringstream res;
+
+	res << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+		<< "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" viewBox=\"0 0 " << iv.width() << " " << iv.height()
+		<< "\" stroke=\"none\">\n"
+		<< "<path d=\"";
+
+	for (int y = 0; y < iv.height(); ++y)
+		for (int x = 0; x < iv.width(); ++x)
+			if (*iv.data(x, y) == 0)
+				res << "M" << x << "," << y << "h1v1h-1z";
+
+	res << "\"/>\n</svg>";
+
+	return res.str();
+}
+
 } // namespace ZXing
 
 #ifdef ZXING_USE_ZINT
-#include "BitMatrixIO.h"
 #include "ECI.h"
 #include "ReadBarcode.h"
 
@@ -303,7 +329,6 @@ Image WriteBarcodeToImage(const Barcode& barcode, const WriterOptions& opts)
 #else
 
 #include "BitMatrix.h"
-#include "BitMatrixIO.h"
 #include "MultiFormatWriter.h"
 #include "ReadBarcode.h"
 
@@ -361,7 +386,9 @@ std::string WriteBarcodeToSVG(const Barcode& barcode, [[maybe_unused]] const Wri
 
 Image WriteBarcodeToImage(const Barcode& barcode, [[maybe_unused]] const WriterOptions& opts)
 {
-	auto symbol = Inflate(barcode.symbol().copy(), opts.sizeHint(),
+	auto invSmbol = barcode._symbol->copy();
+	invSmbol.flipAll();
+	auto symbol = Inflate(std::move(invSmbol), opts.sizeHint(),
 						  IsLinearCode(barcode.format()) ? std::clamp(opts.sizeHint() / 2, 50, 300) : opts.sizeHint(),
 						  opts.withQuietZones() ? 10 : 0);
 	auto bitmap = ToMatrix<uint8_t>(symbol);
@@ -373,5 +400,31 @@ Image WriteBarcodeToImage(const Barcode& barcode, [[maybe_unused]] const WriterO
 } // namespace ZXing
 
 #endif
+
+namespace ZXing {
+
+std::string WriteBarcodeToUtf8(const Barcode& barcode, [[maybe_unused]] const WriterOptions& options)
+{
+	auto iv = barcode.symbol();
+	if (!iv.data())
+		return {};
+
+	constexpr auto map = std::array{" ", "▀", "▄", "█"};
+	std::ostringstream res;
+	bool inverted = false; // TODO: take from WriterOptions
+
+	for (int y = 0; y < iv.height(); y += 2) {
+		for (int x = 0; x < iv.width(); ++x) {
+			int tp = *iv.data(x, y) ^ inverted;
+			int bt = (iv.height() == 1 && tp) || (y + 1 < iv.height() && (*iv.data(x, y) ^ inverted));
+			res << map[tp | (bt << 1)];
+		}
+		res << '\n';
+	}
+
+	return res.str();
+}
+
+} // namespace ZXing
 
 #endif // ZXING_BUILD_EXPERIMENTAL_API

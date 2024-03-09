@@ -4,10 +4,13 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "BitMatrixIO.h"
 #include "GTIN.h"
 #include "ReadBarcode.h"
 #include "ZXVersion.h"
+
+#ifdef ZXING_BUILD_EXPERIMENTAL_API
+#include "WriteBarcode.h"
+#endif
 
 #include <cctype>
 #include <chrono>
@@ -304,8 +307,8 @@ int main(int argc, char* argv[])
 				std::cout << "Reader Initialisation/Programming\n";
 
 #ifdef ZXING_BUILD_EXPERIMENTAL_API
-			if (auto& symbol = barcode.symbol(); cli.showSymbol && !symbol.empty())
-				std::cout << "Symbol:\n" << ToString(symbol);
+			if (cli.showSymbol && barcode.symbol().data())
+				std::cout << "Symbol:\n" << WriteBarcodeToUtf8(barcode);
 #endif
 		}
 

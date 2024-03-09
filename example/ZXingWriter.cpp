@@ -179,7 +179,7 @@ int main(int argc, char* argv[])
 					  << "IsMirrored: " << barcode.isMirrored() << "\n"
 					  << "IsInverted: " << barcode.isInverted() << "\n"
 					  << "ecLevel:    " << barcode.ecLevel() << "\n";
-			std::cout << ToString(barcode.symbol());
+			std::cout << WriteBarcodeToUtf8(barcode);
 		}
 #else
 		auto writer = MultiFormatWriter(cli.format).setMargin(cli.withQZ ? 10 : 0);
