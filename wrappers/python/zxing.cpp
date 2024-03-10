@@ -162,25 +162,36 @@ Barcodes read_barcodes(py::object _image, const BarcodeFormats& formats, bool tr
 							  return_errors);
 }
 
-Matrix<uint8_t> write_barcode(BarcodeFormat format, py::object content, int width, int height, int quiet_zone, int ec_level)
-{
 #ifdef ZXING_BUILD_EXPERIMENTAL_API
-	auto cOpts = CreatorOptions(format).ecLevel(std::to_string(ec_level));
+Barcode create_barcode(BarcodeFormat format, py::object content, std::string ec_level)
+{
+	auto cOpts = CreatorOptions(format).ecLevel(ec_level);
 	auto data = py::cast<std::string>(content);
 
-	auto barcode = Barcode();
 	if (py::isinstance<py::str>(content))
-		barcode = CreateBarcodeFromText(data, cOpts);
+		return CreateBarcodeFromText(data, cOpts);
 	else if (py::isinstance<py::bytes>(content))
-		barcode = CreateBarcodeFromBytes(data, cOpts);
+		return CreateBarcodeFromBytes(data, cOpts);
 	else
 		throw py::type_error("Invalid input: only 'str' and 'bytes' supported.");
+}
 
-	auto wOpts = WriterOptions().sizeHint(std::max(width, height)).withQuietZones(quiet_zone != 0);
-	auto bitmap = WriteBarcodeToImage(barcode, wOpts);
-	Matrix<uint8_t> res(bitmap.width(), bitmap.height());
-	memcpy(res.begin(), bitmap.data(), res.size());
-	return res;
+Image write_barcode_to_image(Barcode barcode, int size_hint, bool with_hrt, bool with_quiet_zones)
+{
+	return WriteBarcodeToImage(barcode, WriterOptions().sizeHint(size_hint).withHRT(with_hrt).withQuietZones(with_quiet_zones));
+}
+
+std::string write_barcode_to_svg(Barcode barcode, int size_hint, bool with_hrt, bool with_quiet_zones)
+{
+	return WriteBarcodeToSVG(barcode, WriterOptions().sizeHint(size_hint).withHRT(with_hrt).withQuietZones(with_quiet_zones));
+}
+#endif
+
+Image write_barcode(BarcodeFormat format, py::object content, int width, int height, int quiet_zone, int ec_level)
+{
+#ifdef ZXING_BUILD_EXPERIMENTAL_API
+	auto barcode = create_barcode(format, content, std::to_string(ec_level));
+	return write_barcode_to_image(barcode, std::max(width, height), false, quiet_zone != 0);
 #else
 	CharacterSet encoding [[maybe_unused]];
 	if (py::isinstance<py::str>(content))
@@ -191,8 +202,11 @@ Matrix<uint8_t> write_barcode(BarcodeFormat format, py::object content, int widt
 		throw py::type_error("Invalid input: only 'str' and 'bytes' supported.");
 
 	auto writer = MultiFormatWriter(format).setEncoding(encoding).setMargin(quiet_zone).setEccLevel(ec_level);
-	auto bitmap = writer.encode(py::cast<std::string>(content), width, height);
-	return ToMatrix<uint8_t>(bitmap);
+	auto bits = writer.encode(py::cast<std::string>(content), width, height);
+	auto bitmap = ToMatrix<uint8_t>(bits);
+	Image res(bitmap.width(), bitmap.height());
+	memcpy(const_cast<uint8_t*>(res.data()), bitmap.data(), bitmap.size());
+	return res;
 #endif
 }
 
@@ -335,7 +349,18 @@ PYBIND11_MODULE(zxingcpp, m)
 		.def_property_readonly(
 			"error", [](const Barcode& res) { return res.error() ? std::optional(res.error()) : std::nullopt; },
 			":return: Error code or None\n"
-			":rtype: zxingcpp.Error");
+			":rtype: zxingcpp.Error")
+#ifdef ZXING_BUILD_EXPERIMENTAL_API
+		.def("to_image", &write_barcode_to_image,
+			  py::arg("size_hint") = 0,
+			  py::arg("with_hrt") = false,
+			  py::arg("with_quiet_zones") = true)
+		.def("to_svg", &write_barcode_to_svg,
+			  py::arg("size_hint") = 0,
+			  py::arg("with_hrt") = false,
+			  py::arg("with_quiet_zones") = true)
+#endif
+		;
 	m.attr("Result") = m.attr("Barcode"); // alias to deprecated name for the Barcode class
 	m.def("barcode_format_from_str", &BarcodeFormatFromString,
 		py::arg("str"),
@@ -435,25 +460,48 @@ PYBIND11_MODULE(zxingcpp, m)
 		":rtype: list[zxingcpp.Barcode]\n"
 		":return: a list of Barcodes, the list is empty if none is found"
 	);
-	py::class_<Matrix<uint8_t>>(m, "Bitmap", py::buffer_protocol())
+	py::class_<Image>(m, "Image", py::buffer_protocol())
 		.def_property_readonly(
 			"__array_interface__",
-			[](const Matrix<uint8_t>& m) {
+			[](const Image& m) {
 				return py::dict("version"_a = 3, "data"_a = m, "shape"_a = py::make_tuple(m.height(), m.width()), "typestr"_a = "|u1");
 			})
-		.def_property_readonly("shape", [](const Matrix<uint8_t>& m) { return py::make_tuple(m.height(), m.width()); })
-		.def_buffer([](const Matrix<uint8_t>& m) -> py::buffer_info {
+		.def_property_readonly("shape", [](const Image& m) { return py::make_tuple(m.height(), m.width()); })
+		.def_buffer([](const Image& m) -> py::buffer_info {
 			return {
 				const_cast<uint8_t*>(m.data()),                 // Pointer to buffer
 				sizeof(uint8_t),                                // Size of one scalar
 				py::format_descriptor<uint8_t>::format(),       // Python struct-style format descriptor
 				2,                                              // Number of dimensions
 				{m.height(), m.width()},                        // Buffer dimensions
-				{sizeof(uint8_t) * m.width(), sizeof(uint8_t)}, // Strides (in bytes) for each index
+				{m.rowStride(), m.pixStride()},                 // Strides (in bytes) for each index
 				true                                            // read-only
 			};
 		});
 
+#ifdef ZXING_BUILD_EXPERIMENTAL_API
+	m.def("create_barcode", &create_barcode,
+		py::arg("format"),
+		py::arg("content"),
+		py::arg("ec_level") = ""
+	);
+
+	m.def("write_barcode_to_image", &write_barcode_to_image,
+		py::arg("barcode"),
+		py::arg("size_hint") = 0,
+		py::arg("with_hrt") = false,
+		py::arg("with_quiet_zones") = true
+	);
+
+	m.def("write_barcode_to_svg", &write_barcode_to_svg,
+		py::arg("barcode"),
+		py::arg("size_hint") = 0,
+		py::arg("with_hrt") = false,
+		py::arg("with_quiet_zones") = true
+	);
+#endif
+
+	m.attr("Bitmap") = m.attr("Image"); // alias to deprecated name for the Image class
 	m.def("write_barcode", &write_barcode,
 		py::arg("format"),
 		py::arg("text"),
