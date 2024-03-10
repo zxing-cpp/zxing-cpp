@@ -113,6 +113,7 @@ static std::string ToSVG(ImageView iv)
 } // namespace ZXing
 
 #ifdef ZXING_USE_ZINT
+#include "BitMatrix.h"
 #include "ECI.h"
 #include "ReadBarcode.h"
 
