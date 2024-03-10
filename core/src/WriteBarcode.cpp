@@ -219,6 +219,10 @@ zint_symbol* CreatorOptions::zint() const
 	return zint.get();
 }
 
+#define CHECK(ZINT_CALL) \
+	if (int err = (ZINT_CALL); err) \
+		throw std::invalid_argument(zint->errtxt);
+
 Barcode CreateBarcode(const void* data, int size, int mode, const CreatorOptions& opts)
 {
 	auto zint = opts.zint();
@@ -229,10 +233,7 @@ Barcode CreateBarcode(const void* data, int size, int mode, const CreatorOptions
 	if (mode == DATA_MODE && ZBarcode_Cap(zint->symbology, ZINT_CAP_ECI))
 		zint->eci = static_cast<int>(ECI::Binary);
 
-	int err = ZBarcode_Encode_and_Buffer(zint, (uint8_t*)data, size, 0);
-
-	if (err || *zint->errtxt)
-		printf("Error %d: %s\n", err, zint->errtxt);
+	CHECK(ZBarcode_Encode_and_Buffer(zint, (uint8_t*)data, size, 0));
 
 	printf("symbol size: %dx%d\n", zint->width, zint->rows);
 
@@ -270,53 +271,57 @@ Barcode CreateBarcodeFromBytes(const void* data, int size, const CreatorOptions&
 
 // Writer ========================================================================
 
-static void SetCommonWriterOptions(zint_symbol* zint, const WriterOptions& opts)
+struct SetCommonWriterOptions
 {
-	zint->show_hrt = opts.withHRT();
+	zint_symbol* zint;
 
-	zint->output_options &= ~OUT_BUFFER_INTERMEDIATE;
-	zint->output_options |= opts.withQuietZones() ? BARCODE_QUIET_ZONES: BARCODE_NO_QUIET_ZONES;
+	SetCommonWriterOptions(zint_symbol* zint, const WriterOptions& opts) : zint(zint)
+	{
+		zint->show_hrt = opts.withHRT();
 
-	if (opts.scale())
-		zint->scale = opts.scale();
-	else if (opts.sizeHint()) {
-		int size = std::max(zint->width, zint->rows);
-		zint->scale = std::max(1, int(float(opts.sizeHint()) / size)) / 2.f;
+		zint->output_options &= ~OUT_BUFFER_INTERMEDIATE;
+		zint->output_options |= opts.withQuietZones() ? BARCODE_QUIET_ZONES : BARCODE_NO_QUIET_ZONES;
+
+		if (opts.scale())
+			zint->scale = opts.scale();
+		else if (opts.sizeHint()) {
+			int size = std::max(zint->width, zint->rows);
+			zint->scale = std::max(1, int(float(opts.sizeHint()) / size)) / 2.f;
+		}
 	}
-}
+
+	// reset the defaults such that consecutive write calls don't influence each other
+	~SetCommonWriterOptions() { zint->scale = 0.5f; }
+};
 
 std::string WriteBarcodeToSVG(const Barcode& barcode, const WriterOptions& opts)
 {
-	auto zs = barcode.zint();
+	auto zint = barcode.zint();
 
-	if (!zs)
+	if (!zint)
 		return ToSVG(barcode.symbol());
 
-	SetCommonWriterOptions(zs, opts);
+	auto resetOnExit = SetCommonWriterOptions(zint, opts);
 
-	zs->output_options |= BARCODE_MEMORY_FILE;// | EMBED_VECTOR_FONT;
-	strcpy(zs->outfile, "null.svg");
+	zint->output_options |= BARCODE_MEMORY_FILE;// | EMBED_VECTOR_FONT;
+	strcpy(zint->outfile, "null.svg");
 
-	int err = ZBarcode_Print(zs, opts.rotate());
-	if (err || *zs->errtxt)
-		printf("Error %d: %s\n", err, zs->errtxt);
+	CHECK(ZBarcode_Print(zint, opts.rotate()));
 
-	return std::string(reinterpret_cast<const char*>(zs->memfile), zs->memfile_size);
+	return std::string(reinterpret_cast<const char*>(zint->memfile), zint->memfile_size);
 }
 
 Image WriteBarcodeToImage(const Barcode& barcode, const WriterOptions& opts)
 {
-	auto zs = barcode.zint();
+	auto zint = barcode.zint();
 
-	SetCommonWriterOptions(zs, opts);
+	auto resetOnExit = SetCommonWriterOptions(zint, opts);
 
-	int err = ZBarcode_Buffer(zs, opts.rotate());
-	if (err || *zs->errtxt)
-		printf("Error %d: %s\n", err, zs->errtxt);
+	CHECK(ZBarcode_Buffer(zint, opts.rotate()));
 
-	printf("symbol size: %dx%d\n", zs->bitmap_width, zs->bitmap_height);
-	auto iv = Image(zs->bitmap_width, zs->bitmap_height);
-	auto* src = zs->bitmap;
+	printf("symbol size: %dx%d\n", zint->bitmap_width, zint->bitmap_height);
+	auto iv = Image(zint->bitmap_width, zint->bitmap_height);
+	auto* src = zint->bitmap;
 	auto* dst = const_cast<uint8_t*>(iv.data());
 	for(int y = 0; y < iv.height(); ++y)
 		for(int x = 0, w = iv.width(); x < w; ++x, src += 3)
