@@ -79,20 +79,22 @@ kotlin {
 
 krossCompile {
     libraries {
+        val cmakeDir = project.layout.buildDirectory.dir("cmake").get().asFile.absolutePath
         val zxingCpp by creating {
             sourceDir = file("../../core").absolutePath
             outputPath = ""
             libraryArtifactNames = listOf("libZXing.a")
 
             cinterop {
+                val buildDir = "$cmakeDir/{libraryName}/{targetName}"
                 packageName = "zxingcpp.cinterop"
+                includeDirs.from(buildDir)
                 headers = listOf("$sourceDir/src/ZXingC.h")
             }
             cmake.apply {
-                val buildPath = project.layout.buildDirectory.dir("cmake").get().asFile.absolutePath +
-                        "/{projectName}/{targetName}"
+                val buildDir = "$cmakeDir/{projectName}/{targetName}"
                 configParams {
-                    buildDir = buildPath
+                    this.buildDir = buildDir
                 }
                 configParams += (ModifiablePlatformEntriesImpl().apply {
                     buildType = "Release"
@@ -105,7 +107,7 @@ krossCompile {
                     )
                 )).asCMakeParams
                 buildParams {
-                    buildDir = buildPath
+                    this.buildDir = buildDir
                     config = "Release"
                 }
                 buildParams += CustomCMakeParams(listOf("-j16"))
