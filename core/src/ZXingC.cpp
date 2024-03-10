@@ -362,7 +362,7 @@ ZXing_WriterOptions* ZXing_WriterOptions_new()
 	ZX_TRY(new ZXing_WriterOptions());
 }
 
-void ZXing_WriterOptions_delete(ZXing_CreatorOptions* opts)
+void ZXing_WriterOptions_delete(ZXing_WriterOptions* opts)
 {
 	delete opts;
 }
