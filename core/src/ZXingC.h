@@ -294,7 +294,7 @@ char* ZXing_CreatorOptions_getEcLevel(const ZXing_CreatorOptions* opts);
 
 
 ZXing_WriterOptions* ZXing_WriterOptions_new();
-void ZXing_WriterOptions_delete(ZXing_CreatorOptions* opts);
+void ZXing_WriterOptions_delete(ZXing_WriterOptions* opts);
 
 void ZXing_WriterOptions_setScale(ZXing_WriterOptions* opts, int scale);
 int ZXing_WriterOptions_getScale(const ZXing_WriterOptions* opts);
