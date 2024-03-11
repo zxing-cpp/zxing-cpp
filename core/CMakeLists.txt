@@ -516,15 +516,9 @@ target_link_libraries (ZXing PRIVATE Threads::Threads)
 if (BUILD_WRITERS_NEW)
     if (ZXING_USE_BUNDLED_ZINT)
         aux_source_directory(src/libzint LIBZINT_FILES) # manually re-run cmake after adding a new file/symlink
-        add_library(bundled_zint STATIC EXCLUDE_FROM_ALL ${LIBZINT_FILES})
-        target_include_directories (bundled_zint
-            PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libzint>"
-        )
-        target_compile_options (bundled_zint
-            PUBLIC ${ZXING_PUBLIC_FLAGS}
-            PRIVATE ${ZXING_PRIVATE_FLAGS}
-        )
-        target_link_libraries (ZXing PRIVATE bundled_zint)
+        set_source_files_properties(${LIBZINT_FILES} PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
+        target_sources(ZXing PRIVATE ${LIBZINT_FILES})
+        target_include_directories (ZXing PRIVATE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libzint>")
     else()
         include(../zxing.cmake)
         zxing_add_package(zint zint https://github.com/zint/zint.git 55a7369cd8c4a6b58bcd62f02a3a2d486952c897)
