@@ -1,6 +1,6 @@
 [versions]
 kotlin = "1.9.22"
-krossCompile = "0.1.8"
+krossCompile = "0.1.9"
 
 [libraries]
 
