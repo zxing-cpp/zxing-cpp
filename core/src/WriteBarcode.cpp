@@ -35,7 +35,7 @@ struct CreatorOptions::Data
 
 	mutable std::unique_ptr<zint_symbol> zint;
 
-#if __cplusplus <= 201703L
+#if __cplusplus <= 201703L || defined(__APPLE__)
 	Data(BarcodeFormat f) : format(f) {}
 #endif
 };
