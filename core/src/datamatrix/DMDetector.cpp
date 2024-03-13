@@ -484,6 +484,38 @@ public:
 
 		return lineLength / meanModSize;
 	}
+
+	bool splitIfLShape(DMRegressionLine& lineB)
+	{
+		auto lenThis = Size(_points);
+		auto lineAB = RegressionLine(_points.front(), _points.back());
+		if (lenThis < 16 || lineAB.distance(_points[lenThis / 2]) < 5)
+			return false;
+
+		auto maxP = _points.begin();
+		double maxD = 0.0;
+		for (auto p = _points.begin(); p != _points.end(); ++p) {
+			auto d = lineAB.distance(*p);
+			if (d > maxD) {
+				maxP = p;
+				maxD = d;
+			}
+		}
+
+		auto lenL = distance(_points.front(), *maxP) - 1;
+		auto lenB = distance(*maxP, _points.back()) - 1;
+		if (maxD < std::min(lenL, lenB) / 2 || !(lenL >= 8 && lenB >= 10 && lenB >= lenL / 4 && lenB <= lenL * 18))
+			return false;
+
+		setDirectionInward(_points.back() - *maxP);
+		lineB.setDirectionInward(_points.front() - *maxP);
+		for (auto p = maxP + 1; p != _points.end(); ++p)
+			lineB.add(*p);
+
+		_points.resize(std::distance(_points.begin(), maxP) - 1);
+
+		return true;
+	}
 };
 
 class EdgeTracer : public BitMatrixCursorF
@@ -710,6 +742,7 @@ static DetectorResult Scan(EdgeTracer& startTracer, std::array<DMRegressionLine,
 #endif
 
 		auto t = startTracer;
+		PointF up, right;
 
 		// follow left leg upwards
 		t.turnRight();
@@ -724,17 +757,24 @@ static DetectorResult Scan(EdgeTracer& startTracer, std::array<DMRegressionLine,
 		t.state = 1;
 		t.setDirection(tlTracer.right());
 		CHECK(t.traceLine(t.left(), lineL));
-		if (!lineL.isValid())
-			t.updateDirectionFromOrigin(tl);
-		auto up = t.back();
-		CHECK(t.traceCorner(t.left(), bl));
 
-		// follow bottom leg right
-		t.state = 2;
-		CHECK(t.traceLine(t.left(), lineB));
-		if (!lineB.isValid())
+		// check if lineL is L-shaped -> split it in lineL and lineB
+		if (lineL.splitIfLShape(lineB)) {
+			bl = lineL.points().back();
+			up = bresenhamDirection(tl - bl);
+			right = bresenhamDirection(lineB.points().back() - lineB.points().front());
+			t.state = 2;
+		} else {
+			t.updateDirectionFromOrigin(tl);
+			up = t.back();
+			CHECK(t.traceCorner(t.left(), bl));
+
+			// follow bottom leg right
+			t.state = 2;
+			CHECK(t.traceLine(t.left(), lineB));
 			t.updateDirectionFromOrigin(bl);
-		auto right = t.front();
+			right = t.front();
+		}
 		CHECK(t.traceCorner(t.left(), br));
 
 		auto lenL = distance(tl, bl) - 1;
