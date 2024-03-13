@@ -283,7 +283,7 @@ struct SetCommonWriterOptions
 		zint->output_options |= opts.withQuietZones() ? BARCODE_QUIET_ZONES : BARCODE_NO_QUIET_ZONES;
 
 		if (opts.scale())
-			zint->scale = opts.scale();
+			zint->scale = opts.scale() / 2.f;
 		else if (opts.sizeHint()) {
 			int size = std::max(zint->width, zint->rows);
 			zint->scale = std::max(1, int(float(opts.sizeHint()) / size)) / 2.f;
