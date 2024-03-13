@@ -15,30 +15,38 @@ In your Cargo.toml:
 # `bundled` causes cargo to compile and statically link an up to
 # date version of the c++ core library. This is the most convenient
 # and safe way to build the library.
-zxing-cpp = { version = "0.3.0", features = ["bundled", "image"] }
+zxing-cpp = { version = "0.4.0", features = ["bundled", "image"] }
 ```
 
-Simple example usage:
+Simple example reading some barcodes from a jpg file:
 
 ```rust
-use zxingcpp::{BarcodeFormat, BarcodeReader, ImageView};
+use zxingcpp::BarcodeFormat;
 
 fn main() -> anyhow::Result<()> {
 	let image = image::open("some-image-file.jpg")?;
-	let reader = BarcodeReader::new()
+
+	let read_barcodes = zxingcpp::read()
 		.formats(BarcodeFormat::QRCode | BarcodeFormat::LinearCodes)
 		.try_invert(false);
 
-	let barcodes = reader.read(&image)?;
+	let barcodes = read_barcodes.from(&image)?;
 
-	if barcodes.is_empty() {
-		println!("No barcode found.");
-	} else {
-		for barcode in barcodes {
-			println!("{}: {}", barcode.format(), barcode.text());
-		}
+	for barcode in barcodes {
+		println!("{}: {}", barcode.format(), barcode.text());
 	}
 
+	Ok(())
+}
+```
+
+Simple example creating a barcode and writing it to a svg file:
+```rust
+fn main() -> anyhow::Result<()> {
+	let svg = zxingcpp::create(zxingcpp::BarcodeFormat::QRCode)
+		.from_str("https://github.com/zxing-cpp/zxing-cpp")?
+		.to_svg_with(&zxingcpp::write().scale(5))?;
+	std::fs::write("zxingcpp.svg", svg)?;
 	Ok(())
 }
 ```

@@ -90,6 +90,103 @@ macro_rules! last_error_or {
 	};
 }
 
+macro_rules! last_error_if_null_or {
+	($ptr:ident, $expr:expr) => {
+		match $ptr.is_null() {
+			true => Err(last_error()),
+			false => Ok($expr),
+		}
+	};
+}
+
+macro_rules! make_zxing_class {
+	($r_class:ident, $c_class:ident) => {
+		paste! {
+			pub struct $r_class(*mut $c_class);
+
+			impl Drop for $r_class {
+				fn drop(&mut self) {
+					unsafe { [<$c_class _delete>](self.0) }
+				}
+			}
+		}
+	};
+}
+
+macro_rules! make_zxing_class_with_default {
+	($r_class:ident, $c_class:ident) => {
+		make_zxing_class!($r_class, $c_class);
+		paste! {
+			impl $r_class {
+				pub fn new() -> Self {
+					unsafe { $r_class([<$c_class _new>]()) }
+				}
+			}
+
+			impl Default for $r_class {
+				fn default() -> Self {
+					Self::new()
+				}
+			}
+		}
+	};
+}
+
+macro_rules! getter {
+	($class:ident, $c_name:ident, $r_name:ident, $conv:expr, $type:ty) => {
+		pub fn $r_name(&self) -> $type {
+			paste! { unsafe { $conv([<ZXing_ $class _ $c_name>](self.0)) } }
+		}
+	};
+	($class:ident, $c_name:ident, $conv:expr, $type:ty) => {
+		paste! { getter! { $class, $c_name, [<$c_name:snake>], $conv, $type } }
+	};
+}
+
+macro_rules! property {
+	($class:ident, $c_name:ident, $r_name:ident, String) => {
+		pub fn $r_name(self, v: impl AsRef<str>) -> Self {
+			let cstr = CString::new(v.as_ref()).unwrap();
+			paste! { unsafe { [<ZXing_ $class _set $c_name>](self.0, cstr.as_ptr()) } };
+			self
+		}
+
+		paste! {
+			pub fn [<set_ $r_name>](&mut self, v : impl AsRef<str>) -> &mut Self {
+				let cstr = CString::new(v.as_ref()).unwrap();
+				unsafe { [<ZXing_ $class _set $c_name>](self.0, cstr.as_ptr()) };
+				self
+			}
+
+			pub fn [<get_ $r_name>](&self) -> String {
+				unsafe { c2r_str([<ZXing_ $class _get $c_name>](self.0)) }
+			}
+		}
+	};
+
+	($class:ident, $c_name:ident, $r_name:ident, $type:ty) => {
+		pub fn $r_name(self, v: impl Into<$type>) -> Self {
+			paste! { unsafe { [<ZXing_ $class _set $c_name>](self.0, transmute(v.into())) } };
+			self
+		}
+
+		paste! {
+			pub fn [<set_ $r_name>](&mut self, v : impl Into<$type>) -> &mut Self {
+				unsafe { [<ZXing_ $class _set $c_name>](self.0, transmute(v.into())) };
+				self
+			}
+
+			pub fn [<get_ $r_name>](&self) -> $type {
+				unsafe { transmute([<ZXing_ $class _get $c_name>](self.0)) }
+			}
+		}
+	};
+
+	($class:ident, $c_name:ident, $type:ty) => {
+		paste! { property! { $class, $c_name, [<$c_name:snake>], $type } }
+	};
+}
+
 macro_rules! make_zxing_enum {
     ($name:ident { $($field:ident),* }) => {
         #[repr(u32)]
@@ -143,6 +240,17 @@ pub type BarcodeFormats = FlagSet<BarcodeFormat>;
 
 pub trait FromStr: Sized {
 	fn from_str(str: impl AsRef<str>) -> Result<Self, Error>;
+}
+
+impl FromStr for BarcodeFormat {
+	fn from_str(str: impl AsRef<str>) -> Result<BarcodeFormat, Error> {
+		let cstr = CString::new(str.as_ref())?;
+		let res = unsafe { BarcodeFormats::new_unchecked(ZXing_BarcodeFormatFromString(cstr.as_ptr())) };
+		match res.bits() {
+			u32::MAX => last_error_or!(BarcodeFormat::None),
+			_ => Ok(res.into_iter().last().unwrap()),
+		}
+	}
 }
 
 impl FromStr for BarcodeFormats {
@@ -204,11 +312,7 @@ impl<'a> ImageView<'a> {
 			Self::try_into_int(row_stride)?,
 			Self::try_into_int(pix_stride)?,
 		);
-		if iv.is_null() {
-			Err(last_error())
-		} else {
-			Ok(ImageView(Rc::new(ImageViewOwner(iv, PhantomData))))
-		}
+		last_error_if_null_or!(iv, ImageView(Rc::new(ImageViewOwner(iv, PhantomData))))
 	}
 
 	pub fn from_slice<T: TryInto<c_int>>(data: &'a [u8], width: T, height: T, format: ImageFormat) -> Result<Self, Error> {
@@ -222,11 +326,7 @@ impl<'a> ImageView<'a> {
 				0,
 				0,
 			);
-			if iv.is_null() {
-				Err(last_error())
-			} else {
-				Ok(ImageView(Rc::new(ImageViewOwner(iv, PhantomData))))
-			}
+			last_error_if_null_or!(iv, ImageView(Rc::new(ImageViewOwner(iv, PhantomData))))
 		}
 	}
 
@@ -270,11 +370,27 @@ impl<'a> TryFrom<&'a image::DynamicImage> for ImageView<'a> {
 	}
 }
 
-pub struct Barcode(*mut ZXing_Barcode);
+make_zxing_class!(Image, ZXing_Image);
 
-impl Drop for Barcode {
-	fn drop(&mut self) {
-		unsafe { ZXing_Barcode_delete(self.0) }
+impl Image {
+	getter!(Image, width, transmute, i32);
+	getter!(Image, height, transmute, i32);
+	getter!(Image, format, transmute, ImageFormat);
+
+	pub fn data(&self) -> Vec<u8> {
+		let ptr = unsafe { ZXing_Image_data(self.0) };
+		if ptr.is_null() {
+			Vec::<u8>::new()
+		} else {
+			unsafe { std::slice::from_raw_parts(ptr, (self.width() * self.height()) as usize).to_vec() }
+		}
+	}
+}
+
+#[cfg(feature = "image")]
+impl From<&Image> for image::GrayImage {
+	fn from(img: &Image) -> image::GrayImage {
+		image::GrayImage::from_vec(img.width() as u32, img.height() as u32, img.data()).unwrap()
 	}
 }
 
@@ -317,27 +433,21 @@ impl Display for Position {
 	}
 }
 
-macro_rules! getter {
-	($r_name:ident, $c_name:ident, $conv:expr, $type:ty) => {
-		pub fn $r_name(&self) -> $type {
-			paste! { unsafe { $conv([<ZXing_Barcode_ $c_name>](self.0)) } }
-		}
-	};
-}
+make_zxing_class!(Barcode, ZXing_Barcode);
 
 impl Barcode {
-	getter!(is_valid, isValid, transmute, bool);
-	getter!(format, format, (|f| BarcodeFormats::new(f).unwrap().into_iter().last().unwrap()), BarcodeFormat);
-	getter!(content_type, contentType, transmute, ContentType);
-	getter!(text, text, c2r_str, String);
-	getter!(ec_level, ecLevel, c2r_str, String);
-	getter!(symbology_identifier, symbologyIdentifier, c2r_str, String);
-	getter!(position, position, transmute, Position);
-	getter!(orientation, orientation, transmute, i32);
-	getter!(has_eci, hasECI, transmute, bool);
-	getter!(is_inverted, isInverted, transmute, bool);
-	getter!(is_mirrored, isMirrored, transmute, bool);
-	getter!(line_count, lineCount, transmute, i32);
+	getter!(Barcode, isValid, transmute, bool);
+	getter!(Barcode, format, (|f| BarcodeFormats::new(f).unwrap().into_iter().last().unwrap()), BarcodeFormat);
+	getter!(Barcode, contentType, transmute, ContentType);
+	getter!(Barcode, text, c2r_str, String);
+	getter!(Barcode, ecLevel, c2r_str, String);
+	getter!(Barcode, symbologyIdentifier, c2r_str, String);
+	getter!(Barcode, position, transmute, Position);
+	getter!(Barcode, orientation, transmute, i32);
+	getter!(Barcode, hasECI, has_eci, transmute, bool);
+	getter!(Barcode, isInverted, transmute, bool);
+	getter!(Barcode, isMirrored, transmute, bool);
+	getter!(Barcode, lineCount, transmute, i32);
 
 	pub fn bytes(&self) -> Vec<u8> {
 		let mut len: c_int = 0;
@@ -360,61 +470,43 @@ impl Barcode {
 			_ => panic!("Internal error: invalid ZXing_ErrorType"),
 		}
 	}
-}
 
-pub struct BarcodeReader(*mut ZXing_ReaderOptions);
+	pub fn to_svg_with(&self, opts: &BarcodeWriter) -> Result<String, Error> {
+		let str = unsafe { ZXing_WriteBarcodeToSVG(self.0, opts.0) };
+		last_error_if_null_or!(str, c2r_str(str))
+	}
 
-impl Drop for BarcodeReader {
-	fn drop(&mut self) {
-		unsafe { ZXing_ReaderOptions_delete(self.0) }
+	pub fn to_svg(&self) -> Result<String, Error> {
+		self.to_svg_with(&BarcodeWriter::default())
+	}
+
+	pub fn to_image_with(&self, opts: &BarcodeWriter) -> Result<Image, Error> {
+		let img = unsafe { ZXing_WriteBarcodeToImage(self.0, opts.0) };
+		last_error_if_null_or!(img, Image(img))
+	}
+
+	pub fn to_image(&self) -> Result<Image, Error> {
+		self.to_image_with(&BarcodeWriter::default())
 	}
 }
 
-impl Default for BarcodeReader {
-	fn default() -> Self {
-		Self::new()
-	}
-}
-
-macro_rules! property {
-	($name:ident, $type:ty) => {
-		pub fn $name(self, v: impl Into<$type>) -> Self {
-			paste! { unsafe { [<ZXing_ReaderOptions_set $name:camel>](self.0, transmute(v.into())) } };
-			self
-		}
-
-		paste! {
-			pub fn [<set_ $name>](&mut self, v : impl Into<$type>) -> &mut Self {
-				unsafe { [<ZXing_ReaderOptions_set $name:camel>](self.0, transmute(v.into())) };
-				self
-			}
-
-			pub fn [<get_ $name>](&self) -> $type {
-				unsafe { transmute([<ZXing_ReaderOptions_get $name:camel>](self.0)) }
-			}
-		}
-	};
-}
+make_zxing_class_with_default!(BarcodeReader, ZXing_ReaderOptions);
 
 impl BarcodeReader {
-	pub fn new() -> Self {
-		unsafe { BarcodeReader(ZXing_ReaderOptions_new()) }
-	}
+	property!(ReaderOptions, TryHarder, bool);
+	property!(ReaderOptions, TryRotate, bool);
+	property!(ReaderOptions, TryInvert, bool);
+	property!(ReaderOptions, TryDownscale, bool);
+	property!(ReaderOptions, IsPure, bool);
+	property!(ReaderOptions, ReturnErrors, bool);
+	property!(ReaderOptions, Formats, BarcodeFormats);
+	property!(ReaderOptions, TextMode, TextMode);
+	property!(ReaderOptions, Binarizer, Binarizer);
+	property!(ReaderOptions, EanAddOnSymbol, EanAddOnSymbol);
+	property!(ReaderOptions, MaxNumberOfSymbols, i32);
+	property!(ReaderOptions, MinLineCount, i32);
 
-	property!(try_harder, bool);
-	property!(try_rotate, bool);
-	property!(try_invert, bool);
-	property!(try_downscale, bool);
-	property!(is_pure, bool);
-	property!(return_errors, bool);
-	property!(formats, BarcodeFormats);
-	property!(text_mode, TextMode);
-	property!(binarizer, Binarizer);
-	property!(ean_add_on_symbol, EanAddOnSymbol);
-	property!(max_number_of_symbols, i32);
-	property!(min_line_count, i32);
-
-	pub fn read<'a, IV>(&self, image: IV) -> Result<Vec<Barcode>, Error>
+	pub fn from<'a, IV>(&self, image: IV) -> Result<Vec<Barcode>, Error>
 	where
 		IV: TryInto<ImageView<'a>>,
 		IV::Error: Into<Error>,
@@ -435,4 +527,50 @@ impl BarcodeReader {
 			}
 		}
 	}
+}
+
+make_zxing_class!(BarcodeCreator, ZXing_CreatorOptions);
+
+impl BarcodeCreator {
+	pub fn new(format: BarcodeFormat) -> Self {
+		unsafe { BarcodeCreator(ZXing_CreatorOptions_new(BarcodeFormats::from(format).bits())) }
+	}
+
+	property!(CreatorOptions, ReaderInit, bool);
+	property!(CreatorOptions, ForceSquareDataMatrix, bool);
+	property!(CreatorOptions, EcLevel, String);
+
+	pub fn from_str(&self, str: impl AsRef<str>) -> Result<Barcode, Error> {
+		let cstr = CString::new(str.as_ref())?;
+		let bc = unsafe { ZXing_CreateBarcodeFromText(cstr.as_ptr(), 0, self.0) };
+		last_error_if_null_or!(bc, Barcode(bc))
+	}
+
+	pub fn from_slice(&self, data: impl AsRef<[u8]>) -> Result<Barcode, Error> {
+		let data = data.as_ref();
+		let bc = unsafe { ZXing_CreateBarcodeFromBytes(data.as_ptr() as *const c_void, data.len() as i32, self.0) };
+		last_error_if_null_or!(bc, Barcode(bc))
+	}
+}
+
+make_zxing_class_with_default!(BarcodeWriter, ZXing_WriterOptions);
+
+impl BarcodeWriter {
+	property!(WriterOptions, Scale, i32);
+	property!(WriterOptions, SizeHint, i32);
+	property!(WriterOptions, Rotate, i32);
+	property!(WriterOptions, WithHRT, with_hrt, bool);
+	property!(WriterOptions, WithQuietZones, bool);
+}
+
+pub fn read() -> BarcodeReader {
+	BarcodeReader::default()
+}
+
+pub fn create(format: BarcodeFormat) -> BarcodeCreator {
+	BarcodeCreator::new(format)
+}
+
+pub fn write() -> BarcodeWriter {
+	BarcodeWriter::default()
 }

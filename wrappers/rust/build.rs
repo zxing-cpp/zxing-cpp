@@ -6,8 +6,10 @@ fn main() -> miette::Result<()> {
 		let mut dst = cmake::Config::new("core")
 			.define("BUILD_SHARED_LIBS", "OFF")
 			.define("BUILD_READERS", "ON")
-			.define("BUILD_WRITERS", "OFF")
+			.define("BUILD_WRITERS", "NEW")
+			.define("BUILD_EXPERIMENTAL_API", "ON")
 			.define("BUILD_C_API", "ON")
+			.define("ZXING_USE_BUNDLED_ZINT", "ON")
 			.define("CMAKE_CXX_STANDARD", "20")
 			.build();
 		dst.push("lib");

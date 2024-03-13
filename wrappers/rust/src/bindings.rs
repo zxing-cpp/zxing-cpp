@@ -25,6 +25,16 @@ pub struct ZXing_Image {
 pub struct ZXing_ReaderOptions {
 	_unused: [u8; 0],
 }
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct ZXing_CreatorOptions {
+	_unused: [u8; 0],
+}
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct ZXing_WriterOptions {
+	_unused: [u8; 0],
+}
 pub const ZXing_ImageFormat_None: ZXing_ImageFormat = 0;
 pub const ZXing_ImageFormat_Lum: ZXing_ImageFormat = 16777216;
 pub const ZXing_ImageFormat_LumA: ZXing_ImageFormat = 33554432;
@@ -188,6 +198,40 @@ extern "C" {
 	pub fn ZXing_ReaderOptions_getMaxNumberOfSymbols(opts: *const ZXing_ReaderOptions) -> ::core::ffi::c_int;
 	pub fn ZXing_ReadBarcode(iv: *const ZXing_ImageView, opts: *const ZXing_ReaderOptions) -> *mut ZXing_Barcode;
 	pub fn ZXing_ReadBarcodes(iv: *const ZXing_ImageView, opts: *const ZXing_ReaderOptions) -> *mut ZXing_Barcodes;
+	pub fn ZXing_CreatorOptions_new(format: ZXing_BarcodeFormat) -> *mut ZXing_CreatorOptions;
+	pub fn ZXing_CreatorOptions_delete(opts: *mut ZXing_CreatorOptions);
+	pub fn ZXing_CreatorOptions_setFormat(opts: *mut ZXing_CreatorOptions, format: ZXing_BarcodeFormat);
+	pub fn ZXing_CreatorOptions_getFormat(opts: *const ZXing_CreatorOptions) -> ZXing_BarcodeFormat;
+	pub fn ZXing_CreatorOptions_setReaderInit(opts: *mut ZXing_CreatorOptions, readerInit: bool);
+	pub fn ZXing_CreatorOptions_getReaderInit(opts: *const ZXing_CreatorOptions) -> bool;
+	pub fn ZXing_CreatorOptions_setForceSquareDataMatrix(opts: *mut ZXing_CreatorOptions, forceSquareDataMatrix: bool);
+	pub fn ZXing_CreatorOptions_getForceSquareDataMatrix(opts: *const ZXing_CreatorOptions) -> bool;
+	pub fn ZXing_CreatorOptions_setEcLevel(opts: *mut ZXing_CreatorOptions, ecLevel: *const ::core::ffi::c_char);
+	pub fn ZXing_CreatorOptions_getEcLevel(opts: *const ZXing_CreatorOptions) -> *mut ::core::ffi::c_char;
+	pub fn ZXing_WriterOptions_new() -> *mut ZXing_WriterOptions;
+	pub fn ZXing_WriterOptions_delete(opts: *mut ZXing_WriterOptions);
+	pub fn ZXing_WriterOptions_setScale(opts: *mut ZXing_WriterOptions, scale: ::core::ffi::c_int);
+	pub fn ZXing_WriterOptions_getScale(opts: *const ZXing_WriterOptions) -> ::core::ffi::c_int;
+	pub fn ZXing_WriterOptions_setSizeHint(opts: *mut ZXing_WriterOptions, sizeHint: ::core::ffi::c_int);
+	pub fn ZXing_WriterOptions_getSizeHint(opts: *const ZXing_WriterOptions) -> ::core::ffi::c_int;
+	pub fn ZXing_WriterOptions_setRotate(opts: *mut ZXing_WriterOptions, rotate: ::core::ffi::c_int);
+	pub fn ZXing_WriterOptions_getRotate(opts: *const ZXing_WriterOptions) -> ::core::ffi::c_int;
+	pub fn ZXing_WriterOptions_setWithHRT(opts: *mut ZXing_WriterOptions, withHRT: bool);
+	pub fn ZXing_WriterOptions_getWithHRT(opts: *const ZXing_WriterOptions) -> bool;
+	pub fn ZXing_WriterOptions_setWithQuietZones(opts: *mut ZXing_WriterOptions, withQuietZones: bool);
+	pub fn ZXing_WriterOptions_getWithQuietZones(opts: *const ZXing_WriterOptions) -> bool;
+	pub fn ZXing_CreateBarcodeFromText(
+		data: *const ::core::ffi::c_char,
+		size: ::core::ffi::c_int,
+		opts: *const ZXing_CreatorOptions,
+	) -> *mut ZXing_Barcode;
+	pub fn ZXing_CreateBarcodeFromBytes(
+		data: *const ::core::ffi::c_void,
+		size: ::core::ffi::c_int,
+		opts: *const ZXing_CreatorOptions,
+	) -> *mut ZXing_Barcode;
+	pub fn ZXing_WriteBarcodeToSVG(barcode: *const ZXing_Barcode, opts: *const ZXing_WriterOptions) -> *mut ::core::ffi::c_char;
+	pub fn ZXing_WriteBarcodeToImage(barcode: *const ZXing_Barcode, opts: *const ZXing_WriterOptions) -> *mut ZXing_Image;
 	pub fn ZXing_LastErrorMsg() -> *mut ::core::ffi::c_char;
 	pub fn ZXing_free(ptr: *mut ::core::ffi::c_void);
 }

@@ -1,6 +1,6 @@
 [package]
 name = "zxing-cpp"
-version = "0.3.0"
+version = "0.4.0"
 edition = "2021"
 # authors = ["Axel Waggershauser <zxingcpp@gmail.com>"]
 license = "Apache-2.0"
@@ -10,9 +10,8 @@ readme = "README.md"
 keywords = ["zxing", "barcode", "barcode_reader", "ffi"]
 categories = ["api-bindings", "computer-vision"]
 exclude = [
-    "core/**/*Write*",
+    "core/**/*Writer*",
     "core/**/*Encode*",
-    "core/src/libzint/**",
 ]
 
 [lib]
