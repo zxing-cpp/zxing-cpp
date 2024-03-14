@@ -17,7 +17,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest, macOS-latest]
+        os: [windows-latest, ubuntu-latest, macos-13]
       # don't cancel all jobs just because one of them failed
       fail-fast: false
 
@@ -63,8 +63,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-      with:
-        ref: ${{github.ref}}
 
     - name: Configure
       run: >
@@ -72,6 +70,8 @@ jobs:
         -DBUILD_BLACKBOX_TESTS=ON -DBUILD_UNIT_TESTS=ON -DBUILD_PYTHON_MODULE=OFF -DBUILD_C_API=OFF
         -DCMAKE_CXX_COMPILER=clang++
         -DCMAKE_CXX_FLAGS="-march=native -fsanitize=address,undefined -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-omit-frame-pointer"
+        -DCMAKE_C_COMPILER=clang
+        -DCMAKE_C_FLAGS="-march=native -fsanitize=address,undefined -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-omit-frame-pointer"
 
     - name: Build
       run: cmake --build build -j8
@@ -118,7 +118,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./wrappers/kn
+        working-directory: wrappers/kn
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -145,12 +145,9 @@ jobs:
       working-directory: wrappers/kn/.kn-toolchain-initializer
       run: ./gradlew build -DkotlinVersion=1.9.22
 
-    - name: Export Toolchain properties
-      run: |
-        echo -e "konan.dir=$HOME/.konan/kotlin-native-prebuilt-linux-x86_64-1.9.22" > local.properties
-
     - name: Run test for linuxX64 target
       run: |
+        echo -e "konan.dir=$HOME/.konan/kotlin-native-prebuilt-linux-x86_64-1.9.22" > local.properties
         ./gradlew linuxX64Test
 
   build-python:
@@ -171,7 +168,6 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Install dependencies
-      working-directory: wrappers/python
       run: |
         python -m pip install --upgrade pip setuptools
         python -m pip install numpy pillow
@@ -189,6 +185,9 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-13, windows-latest]
+    defaults:
+      run:
+        working-directory: wrappers/rust
 
     steps:
     - uses: actions/checkout@v4
@@ -196,23 +195,19 @@ jobs:
         submodules: true
 
     - name: Lint
-      working-directory: wrappers/rust
       run: |
         cargo fmt --check
         cargo clippy -- -Dwarnings
 
     - name: Build
-      working-directory: wrappers/rust
-      run: cargo build --release --verbose --features bundled,image --examples
+      run: cargo build --release --verbose --all-features --examples
 
     - name: Test
-      working-directory: wrappers/rust
-      run: cargo test --release --features bundled,image
+      run: cargo test --release --all-features
 
     - name: Package
-      working-directory: wrappers/rust
       # --allow-dirty is required on the windows build (but not the ubuntu build?!)
-      run: cargo package --verbose --allow-dirty --features bundled,image
+      run: cargo package --verbose --allow-dirty --all-features
 
   build-wasm:
     runs-on: ubuntu-latest
