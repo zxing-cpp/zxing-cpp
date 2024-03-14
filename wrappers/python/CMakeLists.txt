@@ -11,9 +11,11 @@ if (NOT hasParent)
     set(CMAKE_CXX_STANDARD_REQUIRED OFF)
 
     option (BUILD_SHARED_LIBS "Link python module to shared lib" OFF)
-    option (BUILD_WRITERS "Build with writer support (encoders)" ON)
     option (BUILD_READERS "Build with reader support (decoders)" ON)
-    set(BUILD_DEPENDENCIES "AUTO")
+    set(BUILD_WRITERS "NEW" CACHE STRING "Build with old and/or new writer (encoder) backend (OFF/ON/OLD/NEW)")
+    set(BUILD_DEPENDENCIES "AUTO" CACHE STRING "Fetch from github or use locally installed (AUTO/GITHUB/LOCAL)")
+    option (BUILD_EXPERIMENTAL_API "Build with experimental API" ON)
+    option (ZXING_USE_BUNDLED_ZINT "Use the bundled libzint for barcode creation/generation" ON)
 
     set(CORE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/core)
     if(IS_SYMLINK ${CORE_PATH})

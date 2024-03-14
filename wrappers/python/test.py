@@ -42,6 +42,15 @@ class TestReadWrite(unittest.TestCase):
 		res = zxingcpp.read_barcode(img, formats=format)
 		self.check_res(res, format, text)
 
+	@unittest.skipIf(not hasattr(zxingcpp, 'create_barcode'), "skipping test for new create_barcode API")
+	def test_create_write_read_cycle(self):
+		format = BF.RMQRCode
+		text = "I have the best words."
+		img = zxingcpp.create_barcode(format, text).to_image()
+
+		res = zxingcpp.read_barcode(img)
+		self.check_res(res, format, text)
+
 	def test_write_read_oned_cycle(self):
 		format = BF.Code128
 		text = "I have the best words."
@@ -67,6 +76,17 @@ class TestReadWrite(unittest.TestCase):
 		format = BF.QRCode
 		text = b"\1\2\3\4"
 		img = zxingcpp.write_barcode(format, text)
+
+		res = zxingcpp.read_barcode(img)
+		self.assertTrue(res.valid)
+		self.assertEqual(res.bytes, text)
+		self.assertEqual(res.content_type, CT.Binary)
+
+	@unittest.skipIf(not hasattr(zxingcpp, 'create_barcode'), "skipping test for new create_barcode API")
+	def test_create_write_read_bytes_cycle(self):
+		format = BF.RMQRCode
+		text = b"\1\2\3\4"
+		img = zxingcpp.create_barcode(format, text).to_image()
 
 		res = zxingcpp.read_barcode(img)
 		self.assertTrue(res.valid)
