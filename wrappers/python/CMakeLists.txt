@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 project(ZXingPython)
 
-set (pybind11_git_repo https://github.com/pybind/pybind11.git)
-set (pybind11_git_rev v2.11.1)
-
 # check if we are called from the top-level ZXing project
 get_directory_property(hasParent PARENT_DIRECTORY)
 if (NOT hasParent)
@@ -34,7 +31,7 @@ if (NOT hasParent)
 endif()
 
 find_package(Python3 COMPONENTS Interpreter Development.Module REQUIRED) # see https://github.com/pybind/pybind11/issues/4785
-zxing_add_package(pybind11 pybind11 ${pybind11_git_repo} ${pybind11_git_rev})
+zxing_add_package(pybind11 pybind11 https://github.com/pybind/pybind11.git v2.11.1)
 
 # build the python module
 pybind11_add_module(zxingcpp zxing.cpp)

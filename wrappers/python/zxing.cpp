@@ -12,19 +12,18 @@
 #include "ZXAlgorithms.h"
 
 // Writer
-#include "BitMatrix.h"
-#include "Matrix.h"
 #ifdef ZXING_BUILD_EXPERIMENTAL_API
 #include "WriteBarcode.h"
 #else
+#include "BitMatrix.h"
+#include "Matrix.h"
 #include "MultiFormatWriter.h"
+#include <cstring>
 #endif
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <optional>
-#include <functional>
-#include <memory>
 #include <sstream>
 #include <vector>
 
