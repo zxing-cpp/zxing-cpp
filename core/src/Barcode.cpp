@@ -10,7 +10,7 @@
 #include "DetectorResult.h"
 #include "ZXAlgorithms.h"
 
-#ifdef ZXING_BUILD_EXPERIMENTAL_API
+#ifdef ZXING_EXPERIMENTAL_API
 #include "BitMatrix.h"
 #endif
 
@@ -44,7 +44,7 @@ Result::Result(DecoderResult&& decodeResult, DetectorResult&& detectorResult, Ba
 	  _lineCount(decodeResult.lineCount()),
 	  _isMirrored(decodeResult.isMirrored()),
 	  _readerInit(decodeResult.readerInit())
-#ifdef ZXING_BUILD_EXPERIMENTAL_API
+#ifdef ZXING_EXPERIMENTAL_API
 	  , _symbol(std::make_shared<BitMatrix>(std::move(detectorResult).bits()))
 #endif
 {
@@ -138,7 +138,7 @@ Result& Result::setReaderOptions(const ReaderOptions& opts)
 	return *this;
 }
 
-#ifdef ZXING_BUILD_EXPERIMENTAL_API
+#ifdef ZXING_EXPERIMENTAL_API
 void Result::symbol(BitMatrix&& bits)
 {
 	bits.flipAll();

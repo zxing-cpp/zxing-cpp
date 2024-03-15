@@ -5,7 +5,7 @@
 
 #pragma once
 
-#ifdef ZXING_BUILD_EXPERIMENTAL_API
+#ifdef ZXING_EXPERIMENTAL_API
 
 #include "Barcode.h"
 #include "ImageView.h"
@@ -141,4 +141,4 @@ Image WriteBarcodeToImage(const Barcode& barcode, const WriterOptions& options =
 
 } // ZXing
 
-#endif // ZXING_BUILD_EXPERIMENTAL_API
+#endif // ZXING_EXPERIMENTAL_API

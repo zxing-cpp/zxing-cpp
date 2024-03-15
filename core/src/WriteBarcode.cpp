@@ -3,7 +3,7 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#ifdef ZXING_BUILD_EXPERIMENTAL_API
+#ifdef ZXING_EXPERIMENTAL_API
 
 #include "WriteBarcode.h"
 
@@ -438,4 +438,4 @@ std::string WriteBarcodeToUtf8(const Barcode& barcode, [[maybe_unused]] const Wr
 
 } // namespace ZXing
 
-#endif // ZXING_BUILD_EXPERIMENTAL_API
+#endif // ZXING_EXPERIMENTAL_API

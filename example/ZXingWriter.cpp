@@ -3,7 +3,7 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#ifdef ZXING_BUILD_EXPERIMENTAL_API
+#ifdef ZXING_EXPERIMENTAL_API
 #include "WriteBarcode.h"
 #else
 #include "BitMatrix.h"
@@ -158,7 +158,7 @@ int main(int argc, char* argv[])
 	}
 
 	try {
-#ifdef ZXING_BUILD_EXPERIMENTAL_API
+#ifdef ZXING_EXPERIMENTAL_API
 		auto cOpts = CreatorOptions(cli.format).ecLevel(cli.ecLevel);
 		auto barcode = cli.inputIsFile ? CreateBarcodeFromBytes(ReadFile(cli.input), cOpts) : CreateBarcodeFromText(cli.input, cOpts);
 
@@ -205,7 +205,7 @@ int main(int argc, char* argv[])
 		} else if (ext == "jpg" || ext == "jpeg") {
 			success = stbi_write_jpg(cli.outPath.c_str(), bitmap.width(), bitmap.height(), 1, bitmap.data(), 0);
 		} else if (ext == "svg") {
-#ifdef ZXING_BUILD_EXPERIMENTAL_API
+#ifdef ZXING_EXPERIMENTAL_API
 			success = (std::ofstream(cli.outPath) << WriteBarcodeToSVG(barcode, wOpts)).good();
 #else
 			success = (std::ofstream(cli.outPath) << ToSVG(matrix)).good();

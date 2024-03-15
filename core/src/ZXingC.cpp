@@ -320,7 +320,7 @@ ZXing_Barcodes* ZXing_ReadBarcodes(const ZXing_ImageView* iv, const ZXing_Reader
 #endif
 
 #ifdef ZXING_HAS_WRITERS
-#ifdef ZXING_BUILD_EXPERIMENTAL_API
+#ifdef ZXING_EXPERIMENTAL_API
 /*
  * ZXing/WriteBarcode.h
  */

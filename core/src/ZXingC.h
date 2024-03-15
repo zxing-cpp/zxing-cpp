@@ -32,7 +32,7 @@ typedef ZXing::Image ZXing_Image;
 typedef ZXing::ReaderOptions ZXing_ReaderOptions;
 #endif
 
-#ifdef ZXING_BUILD_EXPERIMENTAL_API
+#ifdef ZXING_EXPERIMENTAL_API
 #ifdef ZXING_HAS_WRITERS
 #include "WriteBarcode.h"
 typedef ZXing::CreatorOptions ZXing_CreatorOptions;
@@ -271,7 +271,7 @@ ZXing_Barcodes* ZXing_ReadBarcodes(const ZXing_ImageView* iv, const ZXing_Reader
 #endif /* ZXING_HAS_READERS */
 
 #ifdef ZXING_HAS_WRITERS
-#ifdef ZXING_BUILD_EXPERIMENTAL_API
+#ifdef ZXING_EXPERIMENTAL_API
 
 /*
  * ZXing/WriteBarcode.h
@@ -320,7 +320,7 @@ char* ZXing_WriteBarcodeToSVG(const ZXing_Barcode* barcode, const ZXing_WriterOp
 ZXing_Image* ZXing_WriteBarcodeToImage(const ZXing_Barcode* barcode, const ZXing_WriterOptions* opts);
 
 #endif /* ZXING_HAS_WRITERS */
-#endif /* ZXING_BUILD_EXPERIMENTAL_API */
+#endif /* ZXING_EXPERIMENTAL_API */
 
 /* ZXing_LastErrorMsg() returns NULL in case there is no last error and a copy of the string otherwise. */
 char* ZXing_LastErrorMsg();

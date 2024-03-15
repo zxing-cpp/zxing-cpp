@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "BarcodeFormat.h"
-#ifdef ZXING_BUILD_EXPERIMENTAL_API
+#ifdef ZXING_EXPERIMENTAL_API
 #include "WriteBarcode.h"
 #else
 #include "BitMatrix.h"
@@ -20,7 +20,7 @@ QImage WriteBarcode(QStringView text, ZXing::BarcodeFormat format)
 {
 	using namespace ZXing;
 
-#ifdef ZXING_BUILD_EXPERIMENTAL_API
+#ifdef ZXING_EXPERIMENTAL_API
 	auto barcode = CreateBarcodeFromText(text.toString().toStdString(), format);
 	auto bitmap = WriteBarcodeToImage(barcode);
 #else

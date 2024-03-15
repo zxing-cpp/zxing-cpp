@@ -153,7 +153,7 @@ Barcodes ReadBarcodes(const ImageView& _iv, const ReaderOptions& opts)
 		return {reader.read(*CreateBitmap(opts.binarizer(), iv))};
 
 	std::unique_ptr<MultiFormatReader> closedReader;
-#ifdef ZXING_BUILD_EXPERIMENTAL_API
+#ifdef ZXING_EXPERIMENTAL_API
 	auto formatsBenefittingFromClosing = BarcodeFormat::Aztec | BarcodeFormat::DataMatrix | BarcodeFormat::QRCode | BarcodeFormat::MicroQRCode;
 	ReaderOptions closedOptions = opts;
 	if (opts.tryDenoise() && opts.hasFormat(formatsBenefittingFromClosing) && _iv.height() >= 3) {
