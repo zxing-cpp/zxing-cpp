@@ -35,10 +35,6 @@ if (NOT CMAKE_BUILD_TYPE)
     set_property (CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
-if (BUILD_SHARED_LIBS)
-    set (CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-endif()
-
 if (NOT (BUILD_READERS OR BUILD_WRITERS))
     message(FATAL_ERROR "At least one of BUILD_READERS/BUILD_WRITERS must be enabled.")
 endif()
