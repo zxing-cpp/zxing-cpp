@@ -607,8 +607,6 @@ install (
     PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/ZXing"
 )
 
-set(ZXING_HAS_READERS ${ZXING_READERS})
-set(ZXING_HAS_WRITERS ${ZXING_WRITERS})
 configure_file (Version.h.in Version.h)
 
 install (

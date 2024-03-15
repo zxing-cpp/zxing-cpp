@@ -13,7 +13,7 @@
 #if __has_include("Version.h")
 #include "Version.h"
 #else
-#define ZXING_HAS_READERS
+#define ZXING_READERS
 #endif
 
 #ifdef __cplusplus
@@ -26,14 +26,14 @@ typedef ZXing::Barcodes ZXing_Barcodes;
 typedef ZXing::ImageView ZXing_ImageView;
 typedef ZXing::Image ZXing_Image;
 
-#ifdef ZXING_HAS_READERS
+#ifdef ZXING_READERS
 #include "ReaderOptions.h"
 
 typedef ZXing::ReaderOptions ZXing_ReaderOptions;
 #endif
 
 #ifdef ZXING_EXPERIMENTAL_API
-#ifdef ZXING_HAS_WRITERS
+#ifdef ZXING_WRITERS
 #include "WriteBarcode.h"
 typedef ZXing::CreatorOptions ZXing_CreatorOptions;
 typedef ZXing::WriterOptions ZXing_WriterOptions;
@@ -52,11 +52,11 @@ typedef struct ZXing_Barcodes ZXing_Barcodes;
 typedef struct ZXing_ImageView ZXing_ImageView;
 typedef struct ZXing_Image ZXing_Image;
 
-#ifdef ZXING_HAS_READERS
+#ifdef ZXING_READERS
 typedef struct ZXing_ReaderOptions ZXing_ReaderOptions;
 #endif
 
-#ifdef ZXING_HAS_WRITERS
+#ifdef ZXING_WRITERS
 typedef struct ZXing_CreatorOptions ZXing_CreatorOptions;
 typedef struct ZXing_WriterOptions ZXing_WriterOptions;
 #endif
@@ -201,7 +201,7 @@ const ZXing_Barcode* ZXing_Barcodes_at(const ZXing_Barcodes* barcodes, int i);
 ZXing_Barcode* ZXing_Barcodes_move(ZXing_Barcodes* barcodes, int i);
 
 
-#ifdef ZXING_HAS_READERS
+#ifdef ZXING_READERS
 
 /*
  * ZXing/ReaderOptions.h
@@ -268,9 +268,9 @@ int ZXing_ReaderOptions_getMaxNumberOfSymbols(const ZXing_ReaderOptions* opts);
 ZXing_Barcode* ZXing_ReadBarcode(const ZXing_ImageView* iv, const ZXing_ReaderOptions* opts);
 ZXing_Barcodes* ZXing_ReadBarcodes(const ZXing_ImageView* iv, const ZXing_ReaderOptions* opts);
 
-#endif /* ZXING_HAS_READERS */
+#endif /* ZXING_READERS */
 
-#ifdef ZXING_HAS_WRITERS
+#ifdef ZXING_WRITERS
 #ifdef ZXING_EXPERIMENTAL_API
 
 /*
@@ -319,7 +319,7 @@ ZXing_Barcode* ZXing_CreateBarcodeFromBytes(const void* data, int size, const ZX
 char* ZXing_WriteBarcodeToSVG(const ZXing_Barcode* barcode, const ZXing_WriterOptions* opts);
 ZXing_Image* ZXing_WriteBarcodeToImage(const ZXing_Barcode* barcode, const ZXing_WriterOptions* opts);
 
-#endif /* ZXING_HAS_WRITERS */
+#endif /* ZXING_WRITERS */
 #endif /* ZXING_EXPERIMENTAL_API */
 
 /* ZXing_LastErrorMsg() returns NULL in case there is no last error and a copy of the string otherwise. */

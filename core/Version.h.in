@@ -6,8 +6,8 @@
 
 #pragma once
 
-#cmakedefine ZXING_HAS_READERS
-#cmakedefine ZXING_HAS_WRITERS
+#cmakedefine ZXING_READERS
+#cmakedefine ZXING_WRITERS
 
 // Version numbering
 #define ZXING_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
