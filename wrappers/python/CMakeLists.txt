@@ -11,10 +11,10 @@ if (NOT hasParent)
     set(CMAKE_CXX_STANDARD_REQUIRED OFF)
 
     option (BUILD_SHARED_LIBS "Link python module to shared lib" OFF)
-    option (BUILD_READERS "Build with reader support (decoders)" ON)
-    set(BUILD_WRITERS "NEW" CACHE STRING "Build with old and/or new writer (encoder) backend (OFF/ON/OLD/NEW)")
-    set(BUILD_DEPENDENCIES "AUTO" CACHE STRING "Fetch from github or use locally installed (AUTO/GITHUB/LOCAL)")
-    option (BUILD_EXPERIMENTAL_API "Build with experimental API" ON)
+    option (ZXING_READERS "Build with reader support (decoders)" ON)
+    set    (ZXING_WRITERS "NEW" CACHE STRING "Build with old and/or new writer (encoder) backend (OFF/ON/OLD/NEW)")
+    set    (ZXING_DEPENDENCIES "AUTO" CACHE STRING "Fetch from github or use locally installed (AUTO/GITHUB/LOCAL)")
+    option (ZXING_EXPERIMENTAL_API "Build with experimental API" ON)
     option (ZXING_USE_BUNDLED_ZINT "Use the bundled libzint for barcode creation/generation" ON)
 
     set(CORE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/core)
@@ -39,7 +39,7 @@ zxing_add_package(pybind11 pybind11 https://github.com/pybind/pybind11.git v2.11
 pybind11_add_module(zxingcpp zxing.cpp)
 target_link_libraries(zxingcpp PRIVATE ZXing::ZXing)
 
-if (BUILD_READERS AND BUILD_WRITERS)
+if (ZXING_READERS AND ZXING_WRITERS)
     add_test(NAME PythonTest COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test.py -v)
     set_property(TEST PythonTest PROPERTY ENVIRONMENT PYTHONPATH=$<TARGET_FILE_DIR:zxingcpp>)
 endif()

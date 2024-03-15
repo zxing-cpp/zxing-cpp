@@ -2,7 +2,7 @@ zxing_add_package_stb()
 
 include (GNUInstallDirs)
 
-if (BUILD_WRITERS)
+if (ZXING_WRITERS)
     add_executable (ZXingWriter ZXingWriter.cpp)
 
     target_link_libraries (ZXingWriter ZXing::ZXing stb::stb)
@@ -12,7 +12,7 @@ if (BUILD_WRITERS)
     install(TARGETS ZXingWriter DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
 
-if (BUILD_READERS)
+if (ZXING_READERS)
     add_executable (ZXingReader ZXingReader.cpp)
 
     target_link_libraries (ZXingReader ZXing::ZXing stb::stb)
@@ -30,7 +30,7 @@ endif()
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-if (BUILD_READERS)
+if (ZXING_READERS)
     if (TARGET Qt::Gui)
         add_executable (ZXingQtReader ZXingQtReader.cpp ZXingQtReader.h)
         target_link_libraries(ZXingQtReader ZXing::ZXing Qt::Gui)
@@ -51,7 +51,7 @@ if (BUILD_READERS)
     endif()
 endif()
 
-if (BUILD_WRITERS)
+if (ZXING_WRITERS)
     if (TARGET Qt::Gui)
         add_executable (ZXingQtWriter ZXingQtWriter.cpp)
         target_link_libraries(ZXingQtWriter ZXing::ZXing Qt::Gui)

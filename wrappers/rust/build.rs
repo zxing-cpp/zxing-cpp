@@ -5,10 +5,10 @@ fn main() -> miette::Result<()> {
 		// Builds the project in the directory located in `core`, installing it into $OUT_DIR
 		let mut dst = cmake::Config::new("core")
 			.define("BUILD_SHARED_LIBS", "OFF")
-			.define("BUILD_READERS", "ON")
-			.define("BUILD_WRITERS", "NEW")
-			.define("BUILD_EXPERIMENTAL_API", "ON")
-			.define("BUILD_C_API", "ON")
+			.define("ZXING_READERS", "ON")
+			.define("ZXING_WRITERS", "NEW")
+			.define("ZXING_EXPERIMENTAL_API", "ON")
+			.define("ZXING_C_API", "ON")
 			.define("ZXING_USE_BUNDLED_ZINT", "ON")
 			.define("CMAKE_CXX_STANDARD", "20")
 			.build();

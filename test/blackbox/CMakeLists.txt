@@ -1,7 +1,7 @@
 zxing_add_package_stb()
 zxing_add_package(fmt fmtlib https://github.com/fmtlib/fmt.git 10.0.0)
 
-if (BUILD_READERS)
+if (ZXING_READERS)
     add_executable (ReaderTest
         TestReaderMain.cpp
         ImageLoader.h
@@ -19,7 +19,7 @@ if (BUILD_READERS)
     add_test(NAME ReaderTest COMMAND ReaderTest ${CMAKE_CURRENT_SOURCE_DIR}/../samples)
 endif()
 
-if (BUILD_WRITERS)
+if (ZXING_WRITERS)
     add_executable (WriterTest TestWriterMain.cpp)
 
     target_link_libraries (WriterTest ZXing::ZXing stb::stb)

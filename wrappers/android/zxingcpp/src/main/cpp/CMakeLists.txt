@@ -5,8 +5,8 @@ project(ZXingCppAndroid)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(BUILD_READERS ON)
-set(BUILD_WRITERS OFF)
+set(ZXING_READERS ON)
+set(ZXING_WRITERS OFF)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../core ZXing EXCLUDE_FROM_ALL)
 

@@ -33,7 +33,8 @@ jobs:
     - name: Configure
       run: >
         cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_SHARED_LIBS=ON
-        -DBUILD_BLACKBOX_TESTS=ON -DBUILD_UNIT_TESTS=ON -DBUILD_PYTHON_MODULE=ON -DBUILD_C_API=ON
+        -DZXING_READERS=ON -DZXING_WRITERS=ON
+        -DZXING_BLACKBOX_TESTS=ON -DZXING_UNIT_TESTS=ON -DZXING_PYTHON_MODULE=ON -DZXING_C_API=ON
 
     - name: Build
       run: cmake --build build -j8 --config ${{env.BUILD_TYPE}}
@@ -67,7 +68,8 @@ jobs:
     - name: Configure
       run: >
         cmake -S . -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo
-        -DBUILD_BLACKBOX_TESTS=ON -DBUILD_UNIT_TESTS=ON -DBUILD_PYTHON_MODULE=OFF -DBUILD_C_API=OFF
+        -DZXING_READERS=ON -DZXING_WRITERS=ON
+        -DZXING_BLACKBOX_TESTS=ON -DZXING_UNIT_TESTS=ON -DZXING_PYTHON_MODULE=OFF -DZXING_C_API=OFF
         -DCMAKE_CXX_COMPILER=clang++
         -DCMAKE_CXX_FLAGS="-march=native -fsanitize=address,undefined -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-omit-frame-pointer"
         -DCMAKE_C_COMPILER=clang
@@ -242,7 +244,7 @@ jobs:
       run: >
         cmake -S wrappers/winrt -B build -A ARM64
         -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0 -DCMAKE_BUILD_TYPE=Release
-        -DBUILD_WINRT_LIB=ON -DBUILD_EXAMPLES=OFF -DBUILD_BLACKBOX_TESTS=OFF -DBUILD_C_API=OFF
+        -DBUILD_WINRT_LIB=ON -DZXING_EXAMPLES=OFF -DZXING_BLACKBOX_TESTS=OFF -DZXING_C_API=OFF
         -DEXTENSION_SDK_OUTPUT=dist/UAP/v0.8.0.0/ExtensionSDKs/ZXingWinRT/1.0.0.0
 
     - name: Build

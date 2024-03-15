@@ -8,8 +8,8 @@ project (ZXingFuzz)
 set (CMAKE_CXX_STANDARD 20)
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -march=native -fsanitize=address,fuzzer")
 
-set (BUILD_WRITERS ON)
-set (BUILD_READERS ON)
+set (ZXING_WRITERS OLD)
+set (ZXING_READERS ON)
 
 add_definitions (-DZXING_BUILD_FOR_TEST)
 add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/../../core ${CMAKE_BINARY_DIR}/ZXing)

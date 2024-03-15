@@ -101,9 +101,9 @@ krossCompile {
                     buildSharedLibs = false
                 } + CustomCMakeCacheEntries(
                     mapOf(
-                        "BUILD_READERS" to "ON",
-                        "BUILD_WRITERS" to "OFF",
-                        "BUILD_C_API" to "ON",
+                        "ZXING_READERS" to "ON",
+                        "ZXING_WRITERS" to "OFF",
+                        "ZXING_C_API" to "ON",
                     )
                 )).asCMakeParams
                 buildParams {
