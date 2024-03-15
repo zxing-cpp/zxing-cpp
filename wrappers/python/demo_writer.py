@@ -12,7 +12,7 @@ img = zxingcpp.write_barcode(format, content, width=200, height=200)
 Image.fromarray(img).save("test.png")
 
 # new/experimental writer API
-# barcode = zxingcpp.create_barcode(format, content, ec_level = "50%")
+# barcode = zxingcpp.create_barcode(content, format, ec_level = "50%")
 
 # img = barcode.to_image(size_hint = 500)
 # Image.fromarray(img).save("test.png")

@@ -162,7 +162,7 @@ Barcodes read_barcodes(py::object _image, const BarcodeFormats& formats, bool tr
 }
 
 #ifdef ZXING_BUILD_EXPERIMENTAL_API
-Barcode create_barcode(BarcodeFormat format, py::object content, std::string ec_level)
+Barcode create_barcode(py::object content, BarcodeFormat format, std::string ec_level)
 {
 	auto cOpts = CreatorOptions(format).ecLevel(ec_level);
 	auto data = py::cast<std::string>(content);
@@ -189,7 +189,7 @@ std::string write_barcode_to_svg(Barcode barcode, int size_hint, bool with_hrt, 
 Image write_barcode(BarcodeFormat format, py::object content, int width, int height, int quiet_zone, int ec_level)
 {
 #ifdef ZXING_BUILD_EXPERIMENTAL_API
-	auto barcode = create_barcode(format, content, std::to_string(ec_level));
+	auto barcode = create_barcode(content, format, std::to_string(ec_level));
 	return write_barcode_to_image(barcode, std::max(width, height), false, quiet_zone != 0);
 #else
 	CharacterSet encoding [[maybe_unused]];
@@ -480,8 +480,8 @@ PYBIND11_MODULE(zxingcpp, m)
 
 #ifdef ZXING_BUILD_EXPERIMENTAL_API
 	m.def("create_barcode", &create_barcode,
-		py::arg("format"),
 		py::arg("content"),
+		py::arg("format"),
 		py::arg("ec_level") = ""
 	);
 
