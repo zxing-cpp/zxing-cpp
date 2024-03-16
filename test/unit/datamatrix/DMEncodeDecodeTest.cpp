@@ -9,11 +9,6 @@
 #include "datamatrix/DMDecoder.h"
 #include "datamatrix/DMWriter.h"
 
-#include <algorithm>
-#ifndef NDEBUG
-#include <fstream>
-#endif
-
 #include "gtest/gtest.h"
 
 using namespace ZXing;

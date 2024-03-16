@@ -5,9 +5,6 @@
 
 #include "GTIN.h"
 
-#include "Barcode.h"
-#include "oned/ODUPCEANCommon.h"
-
 #include "gtest/gtest.h"
 
 using namespace ZXing;

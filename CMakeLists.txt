@@ -58,12 +58,6 @@ if (NOT (ZXING_READERS OR ZXING_WRITERS))
     message(FATAL_ERROR "At least one of ZXING_READERS/ZXING_WRITERS must be enabled.")
 endif()
 
-if (ZXING_UNIT_TESTS AND (NOT ZXING_WRITERS OR NOT ZXING_READERS))
-    message("Note: To build with unit tests, the library will be build with READERS and WRITERS.")
-    set (ZXING_WRITERS ON)
-    set (ZXING_READERS ON)
-endif()
-
 set(ZXING_WRITERS_LIST OFF ON OLD NEW BOTH)
 set_property(CACHE ZXING_WRITERS PROPERTY STRINGS ${ZXING_WRITERS_LIST})
 if(NOT ZXING_WRITERS IN_LIST ZXING_WRITERS_LIST)

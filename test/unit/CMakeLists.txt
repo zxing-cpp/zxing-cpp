@@ -10,70 +10,84 @@ if (MSVC)
     add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 endif()
 
-# Our executable
 add_executable (UnitTest
     BarcodeFormatTest.cpp
-    BitArrayUtility.h
     BitArrayUtility.cpp
-    PseudoRandom.h
+    BitArrayUtility.h
     BitHacksTest.cpp
     CharacterSetECITest.cpp
-    ContentTest.cpp
     ErrorTest.cpp
     GTINTest.cpp
+    PseudoRandom.h
+    SanitizerSupport.cpp
+    TextUtfEncodingTest.cpp
+    ZXAlgorithmsTest.cpp
+)
+
+if (ZXING_READERS)
+target_sources (UnitTest PRIVATE
     GS1Test.cpp
     PatternTest.cpp
-    ReedSolomonTest.cpp
-    SanitizerSupport.cpp
     TextDecoderTest.cpp
-    TextEncoderTest.cpp
-    TextUtfEncodingTest.cpp
     ThresholdBinarizerTest.cpp
-    ZXAlgorithmsTest.cpp
-    aztec/AZDetectorTest.cpp
     aztec/AZDecoderTest.cpp
-    aztec/AZEncoderTest.cpp
-    aztec/AZEncodeDecodeTest.cpp
-    aztec/AZHighLevelEncoderTest.cpp
+    aztec/AZDetectorTest.cpp
     datamatrix/DMDecodedBitStreamParserTest.cpp
-    datamatrix/DMEncodeDecodeTest.cpp
-    datamatrix/DMHighLevelEncodeTest.cpp
-    datamatrix/DMPlacementTest.cpp
-    datamatrix/DMSymbolInfoTest.cpp
-    datamatrix/DMWriterTest.cpp
     maxicode/MCDecoderTest.cpp
-    oned/ODCodaBarWriterTest.cpp
+    oned/ODCode128ReaderTest.cpp
     oned/ODCode39ExtendedModeTest.cpp
     oned/ODCode39ReaderTest.cpp
-    oned/ODCode39WriterTest.cpp
     oned/ODCode93ReaderTest.cpp
-    oned/ODCode93WriterTest.cpp
-    oned/ODCode128ReaderTest.cpp
-    oned/ODCode128WriterTest.cpp
-    oned/ODDataBarReaderTest.cpp
     oned/ODDataBarExpandedBitDecoderTest.cpp
-    oned/ODEAN8WriterTest.cpp
-    oned/ODEAN13WriterTest.cpp
-    oned/ODITFWriterTest.cpp
-    oned/ODUPCAWriterTest.cpp
-    oned/ODUPCEWriterTest.cpp
+    oned/ODDataBarReaderTest.cpp
+    pdf417/PDF417DecoderTest.cpp
+    pdf417/PDF417ErrorCorrectionTest.cpp
+    pdf417/PDF417ScanningDecoderTest.cpp
     qrcode/MQRDecoderTest.cpp
     qrcode/QRBitMatrixParserTest.cpp
     qrcode/QRDataMaskTest.cpp
     qrcode/QRDecodedBitStreamParserTest.cpp
-    qrcode/QREncoderTest.cpp
     qrcode/QRErrorCorrectionLevelTest.cpp
     qrcode/QRFormatInformationTest.cpp
     qrcode/QRModeTest.cpp
     qrcode/QRVersionTest.cpp
-    qrcode/QRWriterTest.cpp
     qrcode/RMQRDecoderTest.cpp
-    pdf417/PDF417DecoderTest.cpp
-    pdf417/PDF417ErrorCorrectionTest.cpp
-    pdf417/PDF417HighLevelEncoderTest.cpp
-    pdf417/PDF417ScanningDecoderTest.cpp
-    pdf417/PDF417WriterTest.cpp
 )
+endif()
+
+if (ZXING_WRITERS MATCHES "ON|OLD|BOTH")
+target_sources (UnitTest PRIVATE
+    aztec/AZEncoderTest.cpp
+    datamatrix/DMHighLevelEncodeTest.cpp
+    datamatrix/DMPlacementTest.cpp
+    datamatrix/DMSymbolInfoTest.cpp
+    datamatrix/DMWriterTest.cpp
+    oned/ODCode39WriterTest.cpp
+    oned/ODCode93WriterTest.cpp
+    oned/ODEAN13WriterTest.cpp
+    oned/ODEAN8WriterTest.cpp
+    oned/ODITFWriterTest.cpp
+    oned/ODUPCAWriterTest.cpp
+    oned/ODUPCEWriterTest.cpp
+    pdf417/PDF417HighLevelEncoderTest.cpp
+    pdf417/PDF417WriterTest.cpp
+    qrcode/QRWriterTest.cpp
+)
+endif()
+
+if (ZXING_READERS AND ZXING_WRITERS MATCHES "OLD|ON")
+target_sources (UnitTest PRIVATE
+    ContentTest.cpp
+    ReedSolomonTest.cpp
+    TextEncoderTest.cpp
+    aztec/AZEncodeDecodeTest.cpp
+    aztec/AZHighLevelEncoderTest.cpp
+    datamatrix/DMEncodeDecodeTest.cpp
+    oned/ODCodaBarWriterTest.cpp
+    oned/ODCode128WriterTest.cpp
+    qrcode/QREncoderTest.cpp
+)
+endif()
 
 target_include_directories (UnitTest PRIVATE .)
 
