@@ -75,7 +75,7 @@ target_sources (UnitTest PRIVATE
 )
 endif()
 
-if (ZXING_READERS AND ZXING_WRITERS MATCHES "OLD|ON")
+if (ZXING_READERS AND ZXING_WRITERS MATCHES "ON|OLD|BOTH")
 target_sources (UnitTest PRIVATE
     ContentTest.cpp
     ReedSolomonTest.cpp
