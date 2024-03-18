@@ -243,12 +243,12 @@ Barcode CreateBarcode(const void* data, int size, int mode, const CreatorOptions
 	auto buffer = std::vector<uint8_t>(zint->bitmap_width * zint->bitmap_height);
 	std::transform(zint->bitmap, zint->bitmap + zint->bitmap_width * zint->bitmap_height, buffer.data(),
 				   [](unsigned char v) { return (v == '0') * 0xff; });
-	auto bits = BitMatrix(zint->bitmap_width, zint->bitmap_height);
-	std::transform(zint->bitmap, zint->bitmap + zint->bitmap_width * zint->bitmap_height, bits.row(0).begin(),
-				   [](unsigned char v) { return (v == '0') * BitMatrix::SET_V; });
 
 	auto res = ReadBarcode({buffer.data(), zint->bitmap_width, zint->bitmap_height, ImageFormat::Lum},
 						   ReaderOptions().setFormats(opts.format()).setIsPure(true).setBinarizer(Binarizer::BoolCast));
+	auto bits = BitMatrix(zint->bitmap_width, zint->bitmap_height);
+	std::transform(zint->bitmap, zint->bitmap + zint->bitmap_width * zint->bitmap_height, bits.row(0).begin(),
+				   [](unsigned char v) { return (v == '1') * BitMatrix::SET_V; });
 	res.symbol(std::move(bits));
 	res.zint(std::move(opts.d->zint));
 
