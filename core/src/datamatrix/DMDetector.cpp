@@ -485,7 +485,7 @@ public:
 		return lineLength / meanModSize;
 	}
 
-	bool splitIfLShape(DMRegressionLine& lineB)
+	bool truncateIfLShape()
 	{
 		auto lenThis = Size(_points);
 		auto lineAB = RegressionLine(_points.front(), _points.back());
@@ -504,13 +504,10 @@ public:
 
 		auto lenL = distance(_points.front(), *maxP) - 1;
 		auto lenB = distance(*maxP, _points.back()) - 1;
-		if (maxD < std::min(lenL, lenB) / 2 || !(lenL >= 8 && lenB >= 10 && lenB >= lenL / 4 && lenB <= lenL * 18))
+		if (maxD < std::min(lenL, lenB) / 2)
 			return false;
 
 		setDirectionInward(_points.back() - *maxP);
-		lineB.setDirectionInward(_points.front() - *maxP);
-		for (auto p = maxP + 1; p != _points.end(); ++p)
-			lineB.add(*p);
 
 		_points.resize(std::distance(_points.begin(), maxP) - 1);
 
@@ -758,23 +755,18 @@ static DetectorResult Scan(EdgeTracer& startTracer, std::array<DMRegressionLine,
 		t.setDirection(tlTracer.right());
 		CHECK(t.traceLine(t.left(), lineL));
 
-		// check if lineL is L-shaped -> split it in lineL and lineB
-		if (lineL.splitIfLShape(lineB)) {
-			bl = lineL.points().back();
-			up = bresenhamDirection(tl - bl);
-			right = bresenhamDirection(lineB.points().back() - lineB.points().front());
-			t.state = 2;
-		} else {
-			t.updateDirectionFromOrigin(tl);
-			up = t.back();
-			CHECK(t.traceCorner(t.left(), bl));
+		// check if lineL is L-shaped -> truncate the lower leg and set t to just before the corner
+		if (lineL.truncateIfLShape())
+			t.p = lineL.points().back();
+		t.updateDirectionFromOrigin(tl);
+		up = t.back();
+		CHECK(t.traceCorner(t.left(), bl));
 
-			// follow bottom leg right
-			t.state = 2;
-			CHECK(t.traceLine(t.left(), lineB));
-			t.updateDirectionFromOrigin(bl);
-			right = t.front();
-		}
+		// follow bottom leg right
+		t.state = 2;
+		CHECK(t.traceLine(t.left(), lineB));
+		t.updateDirectionFromOrigin(bl);
+		right = t.front();
 		CHECK(t.traceCorner(t.left(), br));
 
 		auto lenL = distance(tl, bl) - 1;
