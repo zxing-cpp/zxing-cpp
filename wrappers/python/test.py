@@ -44,7 +44,7 @@ class TestReadWrite(unittest.TestCase):
 
 	@unittest.skipIf(not hasattr(zxingcpp, 'create_barcode'), "skipping test for new create_barcode API")
 	def test_create_write_read_cycle(self):
-		format = BF.RMQRCode
+		format = BF.DataMatrix
 		text = "I have the best words."
 		img = zxingcpp.create_barcode(text, format).to_image()
 
@@ -84,7 +84,7 @@ class TestReadWrite(unittest.TestCase):
 
 	@unittest.skipIf(not hasattr(zxingcpp, 'create_barcode'), "skipping test for new create_barcode API")
 	def test_create_write_read_bytes_cycle(self):
-		format = BF.RMQRCode
+		format = BF.DataMatrix
 		text = b"\1\2\3\4"
 		img = zxingcpp.create_barcode(text, format).to_image()
 
