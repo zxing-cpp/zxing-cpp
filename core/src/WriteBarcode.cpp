@@ -6,20 +6,28 @@
 #ifdef ZXING_EXPERIMENTAL_API
 
 #include "WriteBarcode.h"
+#include "BitMatrix.h"
+
+#if !defined(ZXING_READERS) && !defined(ZXING_WRITERS)
+#include "Version.h"
+#endif
 
 #include <sstream>
 
 #ifdef ZXING_USE_ZINT
-#include <zint.h>
 
+#include <zint.h>
 template <>
 struct std::default_delete<zint_symbol>
 {
 	void operator()(zint_symbol* p) const noexcept { ZBarcode_Delete(p); }
 };
+
 #else
+
 struct zint_symbol {};
-#endif
+
+#endif // ZXING_USE_ZINT
 
 namespace ZXing {
 
@@ -85,6 +93,10 @@ WriterOptions::~WriterOptions() = default;
 WriterOptions::WriterOptions(WriterOptions&&) = default;
 WriterOptions& WriterOptions::operator=(WriterOptions&&) = default;
 
+static bool IsLinearCode(BarcodeFormat format)
+{
+	return BarcodeFormats(BarcodeFormat::LinearCodes).testFlag(format);
+}
 
 static std::string ToSVG(ImageView iv)
 {
@@ -110,10 +122,24 @@ static std::string ToSVG(ImageView iv)
 	return res.str();
 }
 
+static Image ToImage(BitMatrix bits, bool isLinearCode, const WriterOptions& opts)
+{
+	bits.flipAll();
+	auto symbol = Inflate(std::move(bits), opts.sizeHint(),
+						  isLinearCode ? std::clamp(opts.sizeHint() / 2, 50, 300) : opts.sizeHint(),
+						  opts.withQuietZones() ? 10 : 0);
+	auto bitmap = ToMatrix<uint8_t>(symbol);
+	auto iv = Image(symbol.width(), symbol.height());
+	std::memcpy(const_cast<uint8_t*>(iv.data()), bitmap.data(), iv.width() * iv.height());
+	return iv;
+}
+
 } // namespace ZXing
 
+
+#ifdef ZXING_WRITERS
+
 #ifdef ZXING_USE_ZINT
-#include "BitMatrix.h"
 #include "ECI.h"
 #include "ReadBarcode.h"
 
@@ -240,12 +266,18 @@ Barcode CreateBarcode(const void* data, int size, int mode, const CreatorOptions
 	printf("create symbol with size: %dx%d\n", zint->width, zint->rows);
 #endif
 
+#ifdef ZXING_READERS
 	auto buffer = std::vector<uint8_t>(zint->bitmap_width * zint->bitmap_height);
 	std::transform(zint->bitmap, zint->bitmap + zint->bitmap_width * zint->bitmap_height, buffer.data(),
 				   [](unsigned char v) { return (v == '0') * 0xff; });
 
 	auto res = ReadBarcode({buffer.data(), zint->bitmap_width, zint->bitmap_height, ImageFormat::Lum},
 						   ReaderOptions().setFormats(opts.format()).setIsPure(true).setBinarizer(Binarizer::BoolCast));
+#else
+	//TODO: replace by proper construction from encoded data from within zint
+	auto res = Barcode(std::string((const char*)data, size), 0, 0, 0, opts.format(), {});
+#endif
+
 	auto bits = BitMatrix(zint->bitmap_width, zint->bitmap_height);
 	std::transform(zint->bitmap, zint->bitmap + zint->bitmap_width * zint->bitmap_height, bits.row(0).begin(),
 				   [](unsigned char v) { return (v == '1') * BitMatrix::SET_V; });
@@ -297,53 +329,16 @@ struct SetCommonWriterOptions
 	~SetCommonWriterOptions() { zint->scale = 0.5f; }
 };
 
-std::string WriteBarcodeToSVG(const Barcode& barcode, const WriterOptions& opts)
-{
-	auto zint = barcode.zint();
-
-	if (!zint)
-		return ToSVG(barcode.symbol());
-
-	auto resetOnExit = SetCommonWriterOptions(zint, opts);
-
-	zint->output_options |= BARCODE_MEMORY_FILE;// | EMBED_VECTOR_FONT;
-	strcpy(zint->outfile, "null.svg");
-
-	CHECK(ZBarcode_Print(zint, opts.rotate()));
-
-	return std::string(reinterpret_cast<const char*>(zint->memfile), zint->memfile_size);
-}
-
-Image WriteBarcodeToImage(const Barcode& barcode, const WriterOptions& opts)
-{
-	auto zint = barcode.zint();
-
-	auto resetOnExit = SetCommonWriterOptions(zint, opts);
-
-	CHECK(ZBarcode_Buffer(zint, opts.rotate()));
-
-#ifdef PRINT_DEBUG
-	printf("write symbol with size: %dx%d\n", zint->bitmap_width, zint->bitmap_height);
-#endif
-	auto iv = Image(zint->bitmap_width, zint->bitmap_height);
-	auto* src = zint->bitmap;
-	auto* dst = const_cast<uint8_t*>(iv.data());
-	for(int y = 0; y < iv.height(); ++y)
-		for(int x = 0, w = iv.width(); x < w; ++x, src += 3)
-			*dst++ = RGBToLum(src[0], src[1], src[2]);
-
-	return iv;
-}
-
 } // ZXing
 
-#else
+#else // ZXING_USE_ZINT
 
-#include "BitMatrix.h"
 #include "MultiFormatWriter.h"
 #include "ReadBarcode.h"
 
 namespace ZXing {
+
+zint_symbol* CreatorOptions::zint() const { return nullptr; }
 
 static Barcode CreateBarcode(BitMatrix&& bits, const CreatorOptions& opts)
 {
@@ -353,11 +348,6 @@ static Barcode CreateBarcode(BitMatrix&& bits, const CreatorOptions& opts)
 						   ReaderOptions().setFormats(opts.format()).setIsPure(true).setBinarizer(Binarizer::BoolCast));
 	res.symbol(std::move(bits));
 	return res;
-}
-
-static bool IsLinearCode(BarcodeFormat format)
-{
-	return BarcodeFormats(BarcodeFormat::LinearCodes).testFlag(format);
 }
 
 Barcode CreateBarcodeFromText(std::string_view contents, const CreatorOptions& opts)
@@ -390,29 +380,87 @@ Barcode CreateBarcodeFromBytes(const void* data, int size, const CreatorOptions&
 	return CreateBarcode(writer.encode(bytes, 0, IsLinearCode(opts.format()) ? 50 : 0), opts);
 }
 
-std::string WriteBarcodeToSVG(const Barcode& barcode, [[maybe_unused]] const WriterOptions& opts)
+} // namespace ZXing
+
+#endif // ZXING_USE_ZINT
+
+#else // ZXING_WRITERS
+
+namespace ZXing {
+
+zint_symbol* CreatorOptions::zint() const { return nullptr; }
+
+Barcode CreateBarcodeFromText(std::string_view, const CreatorOptions&)
 {
-	return ToSVG(barcode.symbol());
+	throw std::runtime_error("This build of zxing-cpp does not support creating barcodes.");
 }
 
-Image WriteBarcodeToImage(const Barcode& barcode, [[maybe_unused]] const WriterOptions& opts)
+#if __cplusplus > 201703L
+Barcode CreateBarcodeFromText(std::u8string_view, const CreatorOptions&)
 {
-	auto invSmbol = barcode._symbol->copy();
-	invSmbol.flipAll();
-	auto symbol = Inflate(std::move(invSmbol), opts.sizeHint(),
-						  IsLinearCode(barcode.format()) ? std::clamp(opts.sizeHint() / 2, 50, 300) : opts.sizeHint(),
-						  opts.withQuietZones() ? 10 : 0);
-	auto bitmap = ToMatrix<uint8_t>(symbol);
-	auto iv = Image(symbol.width(), symbol.height());
-	std::memcpy(const_cast<uint8_t*>(iv.data()), bitmap.data(), iv.width() * iv.height());
-	return iv;
+	throw std::runtime_error("This build of zxing-cpp does not support creating barcodes.");
+}
+#endif
+
+Barcode CreateBarcodeFromBytes(const void*, int, const CreatorOptions&)
+{
+	throw std::runtime_error("This build of zxing-cpp does not support creating barcodes.");
 }
 
 } // namespace ZXing
 
-#endif
+#endif // ZXING_WRITERS
 
 namespace ZXing {
+
+std::string WriteBarcodeToSVG(const Barcode& barcode, [[maybe_unused]] const WriterOptions& opts)
+{
+	auto zint = barcode.zint();
+
+	if (!zint)
+		return ToSVG(barcode.symbol());
+
+#if defined(ZXING_WRITERS) && defined(ZXING_USE_ZINT)
+	auto resetOnExit = SetCommonWriterOptions(zint, opts);
+
+	zint->output_options |= BARCODE_MEMORY_FILE;// | EMBED_VECTOR_FONT;
+	strcpy(zint->outfile, "null.svg");
+
+	CHECK(ZBarcode_Print(zint, opts.rotate()));
+
+	return std::string(reinterpret_cast<const char*>(zint->memfile), zint->memfile_size);
+#else
+	return {}; // unreachable code
+#endif
+}
+
+Image WriteBarcodeToImage(const Barcode& barcode, [[maybe_unused]] const WriterOptions& opts)
+{
+	auto zint = barcode.zint();
+
+	if (!zint)
+		return ToImage(barcode._symbol->copy(), IsLinearCode(barcode.format()), opts);
+
+#if defined(ZXING_WRITERS) && defined(ZXING_USE_ZINT)
+	auto resetOnExit = SetCommonWriterOptions(zint, opts);
+
+	CHECK(ZBarcode_Buffer(zint, opts.rotate()));
+
+#ifdef PRINT_DEBUG
+	printf("write symbol with size: %dx%d\n", zint->bitmap_width, zint->bitmap_height);
+#endif
+	auto iv = Image(zint->bitmap_width, zint->bitmap_height);
+	auto* src = zint->bitmap;
+	auto* dst = const_cast<uint8_t*>(iv.data());
+	for(int y = 0; y < iv.height(); ++y)
+		for(int x = 0, w = iv.width(); x < w; ++x, src += 3)
+			*dst++ = RGBToLum(src[0], src[1], src[2]);
+
+	return iv;
+#else
+	return {}; // unreachable code
+#endif
+}
 
 std::string WriteBarcodeToUtf8(const Barcode& barcode, [[maybe_unused]] const WriterOptions& options)
 {

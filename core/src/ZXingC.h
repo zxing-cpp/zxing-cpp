@@ -10,37 +10,19 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#if __has_include("Version.h")
-#include "Version.h"
-#else
-#define ZXING_READERS
-#endif
-
 #ifdef __cplusplus
 
-#include "Barcode.h"
-#include "ImageView.h"
+#include "ZXingCpp.h"
 
 typedef ZXing::Barcode ZXing_Barcode;
 typedef ZXing::Barcodes ZXing_Barcodes;
 typedef ZXing::ImageView ZXing_ImageView;
 typedef ZXing::Image ZXing_Image;
-
-#ifdef ZXING_READERS
-#include "ReaderOptions.h"
-
 typedef ZXing::ReaderOptions ZXing_ReaderOptions;
-#endif
 
 #ifdef ZXING_EXPERIMENTAL_API
-#ifdef ZXING_WRITERS
-#include "WriteBarcode.h"
 typedef ZXing::CreatorOptions ZXing_CreatorOptions;
 typedef ZXing::WriterOptions ZXing_WriterOptions;
-#else
-typedef struct ZXing_CreatorOptions ZXing_CreatorOptions;
-typedef struct ZXing_WriterOptions ZXing_WriterOptions;
-#endif
 #endif
 
 extern "C"
@@ -51,15 +33,9 @@ typedef struct ZXing_Barcode ZXing_Barcode;
 typedef struct ZXing_Barcodes ZXing_Barcodes;
 typedef struct ZXing_ImageView ZXing_ImageView;
 typedef struct ZXing_Image ZXing_Image;
-
-#ifdef ZXING_READERS
 typedef struct ZXing_ReaderOptions ZXing_ReaderOptions;
-#endif
-
-#ifdef ZXING_WRITERS
 typedef struct ZXing_CreatorOptions ZXing_CreatorOptions;
 typedef struct ZXing_WriterOptions ZXing_WriterOptions;
-#endif
 
 #endif
 
@@ -141,6 +117,23 @@ ZXing_BarcodeFormat ZXing_BarcodeFormatFromString(const char* str);
 char* ZXing_BarcodeFormatToString(ZXing_BarcodeFormat format);
 
 /*
+ * ZXing/ZXingCpp.h
+ */
+
+#ifdef ZXING_EXPERIMENTAL_API
+
+typedef enum {
+	ZXing_Operation_Create,
+	ZXing_Operation_Read,
+	ZXing_Operation_CreateAndRead,
+	ZXing_Operation_CreateOrRead,
+} ZXing_Operation;
+
+ZXing_BarcodeFormats ZXing_SupportedBarcodeFormats(ZXing_Operation op);
+
+#endif
+
+/*
  * ZXing/Barcode.h
  */
 
@@ -199,9 +192,6 @@ void ZXing_Barcodes_delete(ZXing_Barcodes* barcodes);
 int ZXing_Barcodes_size(const ZXing_Barcodes* barcodes);
 const ZXing_Barcode* ZXing_Barcodes_at(const ZXing_Barcodes* barcodes, int i);
 ZXing_Barcode* ZXing_Barcodes_move(ZXing_Barcodes* barcodes, int i);
-
-
-#ifdef ZXING_READERS
 
 /*
  * ZXing/ReaderOptions.h
@@ -268,9 +258,6 @@ int ZXing_ReaderOptions_getMaxNumberOfSymbols(const ZXing_ReaderOptions* opts);
 ZXing_Barcode* ZXing_ReadBarcode(const ZXing_ImageView* iv, const ZXing_ReaderOptions* opts);
 ZXing_Barcodes* ZXing_ReadBarcodes(const ZXing_ImageView* iv, const ZXing_ReaderOptions* opts);
 
-#endif /* ZXING_READERS */
-
-#ifdef ZXING_WRITERS
 #ifdef ZXING_EXPERIMENTAL_API
 
 /*
@@ -319,7 +306,6 @@ ZXing_Barcode* ZXing_CreateBarcodeFromBytes(const void* data, int size, const ZX
 char* ZXing_WriteBarcodeToSVG(const ZXing_Barcode* barcode, const ZXing_WriterOptions* opts);
 ZXing_Image* ZXing_WriteBarcodeToImage(const ZXing_Barcode* barcode, const ZXing_WriterOptions* opts);
 
-#endif /* ZXING_WRITERS */
 #endif /* ZXING_EXPERIMENTAL_API */
 
 /* ZXing_LastErrorMsg() returns NULL in case there is no last error and a copy of the string otherwise. */

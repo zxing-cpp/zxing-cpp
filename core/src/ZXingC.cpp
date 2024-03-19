@@ -6,7 +6,7 @@
 
 #include "ZXingC.h"
 
-#include "ReadBarcode.h"
+#include "ZXingCpp.h"
 
 #include <cstdlib>
 #include <exception>
@@ -65,7 +65,7 @@ static uint8_t* copy(const ByteArray& ba, int* len) noexcept
 	} \
 	ZX_CATCH({})
 
-#ifdef ZXING_READERS
+
 static std::tuple<Barcodes, bool> ReadBarcodesAndSetLastError(const ZXing_ImageView* iv, const ZXing_ReaderOptions* opts,
 															  int maxSymbols)
 {
@@ -78,7 +78,6 @@ static std::tuple<Barcodes, bool> ReadBarcodesAndSetLastError(const ZXing_ImageV
 	}
 	ZX_CATCH({Barcodes{}, false})
 }
-#endif
 
 extern "C" {
 /*
@@ -163,6 +162,18 @@ char* ZXing_BarcodeFormatToString(ZXing_BarcodeFormat format)
 {
 	return copy(ToString(static_cast<BarcodeFormat>(format)));
 }
+
+/*
+ * ZXing/ZXingCpp.h
+ */
+
+
+#ifdef ZXING_EXPERIMENTAL_API
+ZXing_BarcodeFormats ZXing_SupportedBarcodeFormats(ZXing_Operation op)
+{
+	return transmute_cast<ZXing_BarcodeFormats>(SupportedBarcodeFormats(static_cast<Operation>(op)));
+}
+#endif
 
 /*
  * ZXing/Barcode.h
@@ -250,8 +261,6 @@ ZXing_Barcode* ZXing_Barcodes_move(ZXing_Barcodes* barcodes, int i)
 	ZX_TRY(new Barcode(std::move((*barcodes)[i])));
 }
 
-#ifdef ZXING_READERS
-
 /*
  * ZXing/ReaderOptions.h
  */
@@ -317,9 +326,7 @@ ZXing_Barcodes* ZXing_ReadBarcodes(const ZXing_ImageView* iv, const ZXing_Reader
 	return !res.empty() || ok ? new Barcodes(std::move(res)) : NULL;
 }
 
-#endif
 
-#ifdef ZXING_WRITERS
 #ifdef ZXING_EXPERIMENTAL_API
 /*
  * ZXing/WriteBarcode.h
@@ -393,19 +400,16 @@ ZXing_Barcode* ZXing_CreateBarcodeFromBytes(const void* data, int size, const ZX
 
 char* ZXing_WriteBarcodeToSVG(const ZXing_Barcode* barcode, const ZXing_WriterOptions* opts)
 {
-	static WriterOptions defOpts;
 	ZX_CHECK(barcode, "Barcode param in WriteBarcodeToSVG is NULL")
-	ZX_TRY(copy(WriteBarcodeToSVG(*barcode, *(opts ? opts : &defOpts))))
+	ZX_TRY(copy(opts ? WriteBarcodeToSVG(*barcode, *opts) : WriteBarcodeToSVG(*barcode)))
 }
 
 ZXing_Image* ZXing_WriteBarcodeToImage(const ZXing_Barcode* barcode, const ZXing_WriterOptions* opts)
 {
-	static WriterOptions defOpts;
 	ZX_CHECK(barcode, "Barcode param in WriteBarcodeToSVG is NULL")
-	ZX_TRY(new Image(WriteBarcodeToImage(*barcode, *(opts ? opts : &defOpts))))
+	ZX_TRY(new Image(opts ? WriteBarcodeToImage(*barcode, *opts) : WriteBarcodeToImage(*barcode)))
 }
 
-#endif
 #endif
 
 /*

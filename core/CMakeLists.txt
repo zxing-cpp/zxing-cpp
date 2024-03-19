@@ -114,8 +114,15 @@ set (COMMON_FILES
     src/Point.h
     src/Quadrilateral.h
     src/Range.h
+    src/ReaderOptions.h
+    src/ReadBarcode.h
+    src/ReadBarcode.cpp
     src/Utf.h
     src/Utf.cpp
+    src/WriteBarcode.h
+    src/WriteBarcode.cpp
+    src/ZXingCpp.h
+    src/ZXingCpp.cpp
     src/ZXAlgorithms.h
     src/ZXConfig.h
     src/ZXTestSupport.h
@@ -165,9 +172,6 @@ if (ZXING_READERS)
         src/PerspectiveTransform.h
         src/PerspectiveTransform.cpp
         src/Reader.h
-        src/ReaderOptions.h
-        src/ReadBarcode.h
-        src/ReadBarcode.cpp
         src/ReedSolomonDecoder.h
         src/ReedSolomonDecoder.cpp
         src/RegressionLine.h
@@ -186,8 +190,6 @@ endif()
 
 if (ZXING_WRITERS)
     set (COMMON_FILES ${COMMON_FILES}
-        src/WriteBarcode.h
-        src/WriteBarcode.cpp
     )
 endif()
 
@@ -217,23 +219,20 @@ set (PUBLIC_HEADERS
     src/ImageView.h
     src/Point.h
     src/Quadrilateral.h
+    src/ReadBarcode.h
+    src/ReaderOptions.h
     src/StructuredAppend.h
     src/TextUtfEncoding.h # [[deprecated]]
+    src/ZXingCpp.h
     src/ZXAlgorithms.h
     src/ZXVersion.h # [[deprecated]]
     $<$<BOOL:${ZXING_C_API}>:${CMAKE_CURRENT_SOURCE_DIR}/src/ZXingC.h>
+    $<$<BOOL:${ZXING_EXPERIMENTAL_API}>:${CMAKE_CURRENT_SOURCE_DIR}/src/WriteBarcode.h>
 )
 if (ZXING_READERS)
     set (PUBLIC_HEADERS ${PUBLIC_HEADERS}
         src/DecodeHints.h # [[deprecated]]
-        src/ReadBarcode.h
-        src/ReaderOptions.h
         src/Result.h # [[deprecated]]
-    )
-endif()
-if (ZXING_WRITERS)
-    set (PUBLIC_HEADERS ${PUBLIC_HEADERS}
-        $<$<BOOL:${ZXING_EXPERIMENTAL_API}>:${CMAKE_CURRENT_SOURCE_DIR}/src/WriteBarcode.h>
     )
 endif()
 if (ZXING_WRITERS_OLD)
@@ -476,18 +475,6 @@ if (ZXING_WRITERS_OLD)
     )
 endif()
 
-set (LIBZUECI_FILES
-    src/libzueci/zueci.c
-    src/libzueci/zueci.h
-)
-
-if (NOT ZXING_READERS)
-    set_source_files_properties(src/libzueci/zueci.c PROPERTIES COMPILE_FLAGS -DZUECI_EMBED_NO_TO_UTF)
-endif()
-if (NOT ZXING_WRITERS_OLD)
-    set_source_files_properties(src/libzueci/zueci.c PROPERTIES COMPILE_FLAGS -DZUECI_EMBED_NO_TO_ECI)
-endif()
-
 source_group (Sources FILES ${COMMON_FILES})
 source_group (Sources\\aztec FILES ${AZTEC_FILES})
 source_group (Sources\\datamatrix FILES ${DATAMATRIX_FILES})
@@ -495,7 +482,6 @@ source_group (Sources\\maxicode FILES ${MAXICODE_FILES})
 source_group (Sources\\oned FILES ${ONED_FILES})
 source_group (Sources\\pdf417 FILES ${PDF417_FILES})
 source_group (Sources\\qrcode FILES ${QRCODE_FILES})
-source_group (Sources\\libzueci FILES ${LIBZUECI_FILES})
 
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
@@ -509,7 +495,6 @@ add_library (ZXing
     ${ONED_FILES}
     ${PDF417_FILES}
     ${QRCODE_FILES}
-    ${LIBZUECI_FILES}
 )
 
 target_include_directories (ZXing
@@ -526,11 +511,25 @@ target_compile_features(ZXing PUBLIC cxx_std_17)
 
 target_link_libraries (ZXing PRIVATE Threads::Threads)
 
+if (ZXING_READERS OR ZXING_WRITERS_OLD)
+    set (LIBZUECI_FILES
+        src/libzueci/zueci.c
+        src/libzueci/zueci.h
+    )
+    set_source_files_properties(${LIBZUECI_FILES} PROPERTIES
+        COMPILE_FLAGS "$<$<NOT:$<BOOL:${ZXING_READERS}>>:-DZUECI_EMBED_NO_TO_UTF> $<$<NOT:$<BOOL:${ZXING_WRITERS_OLD}>>:-DZUECI_EMBED_NO_TO_ECI>"
+        SKIP_PRECOMPILE_HEADERS ON
+    )
+    target_sources(ZXing PRIVATE ${LIBZUECI_FILES})
+    source_group (Sources\\libzueci FILES ${LIBZUECI_FILES})
+endif()
+
 if (ZXING_WRITERS_NEW)
     if (ZXING_USE_BUNDLED_ZINT)
         aux_source_directory(src/libzint LIBZINT_FILES) # manually re-run cmake after adding a new file/symlink
         set_source_files_properties(${LIBZINT_FILES} PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
         target_sources(ZXing PRIVATE ${LIBZINT_FILES})
+        source_group (Sources\\libzint FILES ${LIBZINT_FILES})
         target_include_directories (ZXing PRIVATE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libzint>")
     else()
         include(../zxing.cmake)
@@ -561,7 +560,6 @@ list(REMOVE_ITEM PRECOMPILE_HEADERS src/DecodeHints.h) # [[deprecated]]
 list(REMOVE_ITEM PRECOMPILE_HEADERS src/Result.h)      # [[deprecated]]
 list(REMOVE_ITEM PRECOMPILE_HEADERS src/ZXVersion.h)   # [[deprecated]]
 target_precompile_headers(ZXing PRIVATE ${PRECOMPILE_HEADERS})
-set_source_files_properties(src/libzueci/zueci.c PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
 set_source_files_properties(src/DecodeHints.cpp PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")

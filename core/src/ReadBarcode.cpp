@@ -5,18 +5,25 @@
 
 #include "ReadBarcode.h"
 
-#include "ReaderOptions.h"
+#if !defined(ZXING_READERS) && !defined(ZXING_WRITERS)
+#include "Version.h"
+#endif
+
+#ifdef ZXING_READERS
 #include "GlobalHistogramBinarizer.h"
 #include "HybridBinarizer.h"
 #include "MultiFormatReader.h"
 #include "Pattern.h"
 #include "ThresholdBinarizer.h"
+#endif
 
 #include <climits>
 #include <memory>
 #include <stdexcept>
 
 namespace ZXing {
+
+#ifdef ZXING_READERS
 
 class LumImage : public Image
 {
@@ -194,5 +201,19 @@ Barcodes ReadBarcodes(const ImageView& _iv, const ReaderOptions& opts)
 
 	return res;
 }
+
+#else // ZXING_READERS
+
+Barcode ReadBarcode(const ImageView&, const ReaderOptions&)
+{
+	throw std::runtime_error("This build of zxing-cpp does not support reading barcodes.");
+}
+
+Barcodes ReadBarcodes(const ImageView&, const ReaderOptions&)
+{
+	throw std::runtime_error("This build of zxing-cpp does not support reading barcodes.");
+}
+
+#endif // ZXING_READERS
 
 } // ZXing
