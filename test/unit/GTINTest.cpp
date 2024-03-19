@@ -16,7 +16,7 @@ TEST(GTINTest, CountryIdentifierEAN13)
 	EXPECT_EQ(LookupCountryIdentifier("8413000065504"), "ES");
 	EXPECT_EQ(LookupCountryIdentifier("8413000065504 12"), "ES");
 	EXPECT_EQ(LookupCountryIdentifier("8413000065504 51299"), "ES");
-	EXPECT_EQ(LookupCountryIdentifier("5449000039231"), "BE/LU");
+	EXPECT_EQ(LookupCountryIdentifier("5449000039231"), "BE");
 	EXPECT_TRUE(LookupCountryIdentifier("9788430532674").empty()); // Bookland (ISBN)
 	EXPECT_EQ(LookupCountryIdentifier("8480017507990"), "ES");
 	EXPECT_EQ(LookupCountryIdentifier("3166298099809"), "FR");
@@ -48,9 +48,9 @@ TEST(GTINTest, CountryIdentifierEAN13)
 	EXPECT_EQ(LookupCountryIdentifier("0000902301465"), "US");
 	EXPECT_EQ(LookupCountryIdentifier("0001602301465"), "US"); // 0001-0009 US
 	EXPECT_EQ(LookupCountryIdentifier("0009602301461 12"), "US");
-	EXPECT_EQ(LookupCountryIdentifier("0016602301469"), "US/CA"); // 001-019 US/CA
-	EXPECT_EQ(LookupCountryIdentifier("0036602301467"), "US/CA");
-	EXPECT_EQ(LookupCountryIdentifier("0196602301468 51299"), "US/CA");
+	EXPECT_EQ(LookupCountryIdentifier("0016602301469"), "US"); // 001-019 US
+	EXPECT_EQ(LookupCountryIdentifier("0036602301467"), "US");
+	EXPECT_EQ(LookupCountryIdentifier("0196602301468 51299"), "US");
 	EXPECT_TRUE(LookupCountryIdentifier("0206602301464").empty()); // 020-029 Restricted Circulation Numbers
 	EXPECT_TRUE(LookupCountryIdentifier("0296602301465").empty());
 	EXPECT_EQ(LookupCountryIdentifier("0306602301461"), "US"); // 030-039 US
@@ -59,8 +59,8 @@ TEST(GTINTest, CountryIdentifierEAN13)
 	EXPECT_TRUE(LookupCountryIdentifier("0496602301469").empty());
 	EXPECT_TRUE(LookupCountryIdentifier("0506602301465").empty()); // 050-059 reserved for future use
 	EXPECT_TRUE(LookupCountryIdentifier("0596602301466").empty());
-	EXPECT_EQ(LookupCountryIdentifier("0606602301462"), "US/CA"); // 060-099 US/CA
-	EXPECT_EQ(LookupCountryIdentifier("0996602301464"), "US/CA");
+	EXPECT_EQ(LookupCountryIdentifier("0606602301462"), "US"); // 060-099 US
+	EXPECT_EQ(LookupCountryIdentifier("0996602301464"), "US");
 	EXPECT_EQ(LookupCountryIdentifier("1006602301469"), "US"); // 100-139 US
 	EXPECT_EQ(LookupCountryIdentifier("1396602301461"), "US");
 	EXPECT_TRUE(LookupCountryIdentifier("1406602301467").empty()); // 140-199 unassigned
@@ -99,23 +99,23 @@ TEST(GTINTest, CountryIdentifierEAN13)
 TEST(GTINTest, CountryIdentifierUPCA)
 {
 	// From test/samples/upca-*/
-	EXPECT_EQ(LookupCountryIdentifier("036602301467"), "US/CA"); // 001-019 US/CA
-	EXPECT_EQ(LookupCountryIdentifier("036602301467 12"), "US/CA"); // 001-019 US/CA
-	EXPECT_EQ(LookupCountryIdentifier("036602301467 51299"), "US/CA"); // 001-019 US/CA
-	EXPECT_EQ(LookupCountryIdentifier("070097025088"), "US/CA");
-	EXPECT_EQ(LookupCountryIdentifier("781735802045"), "US/CA"); // 060-099 US/CA
+	EXPECT_EQ(LookupCountryIdentifier("036602301467"), "US"); // 001-019 US/CA
+	EXPECT_EQ(LookupCountryIdentifier("036602301467 12"), "US"); // 001-019 US
+	EXPECT_EQ(LookupCountryIdentifier("036602301467 51299"), "US"); // 001-019 US
+	EXPECT_EQ(LookupCountryIdentifier("070097025088"), "US");
+	EXPECT_EQ(LookupCountryIdentifier("781735802045"), "US"); // 060-099 US
 	EXPECT_TRUE(LookupCountryIdentifier("456314319671").empty()); // 040-049 Restricted Circulation Numbers
 	EXPECT_TRUE(LookupCountryIdentifier("434704791429").empty());
-	EXPECT_EQ(LookupCountryIdentifier("752919460009"), "US/CA"); // 060-099 US/CA
-	EXPECT_EQ(LookupCountryIdentifier("606949762520"), "US/CA");
-	EXPECT_EQ(LookupCountryIdentifier("890444000335"), "US/CA");
-	EXPECT_EQ(LookupCountryIdentifier("181497000879"), "US/CA"); // 001-019 US/CA
-	EXPECT_EQ(LookupCountryIdentifier("012546619592"), "US/CA");
-	EXPECT_EQ(LookupCountryIdentifier("854818000116"), "US/CA"); // 060-099 US/CA
+	EXPECT_EQ(LookupCountryIdentifier("752919460009"), "US"); // 060-099 US
+	EXPECT_EQ(LookupCountryIdentifier("606949762520"), "US");
+	EXPECT_EQ(LookupCountryIdentifier("890444000335"), "US");
+	EXPECT_EQ(LookupCountryIdentifier("181497000879"), "US"); // 001-019 US
+	EXPECT_EQ(LookupCountryIdentifier("012546619592"), "US");
+	EXPECT_EQ(LookupCountryIdentifier("854818000116"), "US"); // 060-099 US
 	EXPECT_EQ(LookupCountryIdentifier("312547701310"), "US"); // 030-039 US
-	EXPECT_EQ(LookupCountryIdentifier("071831007995 19868"), "US/CA"); // 001-019 US/CA
-	EXPECT_EQ(LookupCountryIdentifier("027011006951 02601"), "US/CA");
-	EXPECT_EQ(LookupCountryIdentifier("024543136538 00"), "US/CA");
+	EXPECT_EQ(LookupCountryIdentifier("071831007995 19868"), "US"); // 001-019 US
+	EXPECT_EQ(LookupCountryIdentifier("027011006951 02601"), "US");
+	EXPECT_EQ(LookupCountryIdentifier("024543136538 00"), "US");
 
 	// Other
 	EXPECT_TRUE(LookupCountryIdentifier("000000001465").empty()); // 0000000 Restricted Circulation Numbers
@@ -127,9 +127,9 @@ TEST(GTINTest, CountryIdentifierUPCA)
 	EXPECT_EQ(LookupCountryIdentifier("000902301465"), "US");
 	EXPECT_EQ(LookupCountryIdentifier("001602301465"), "US"); // 0001-0009 US
 	EXPECT_EQ(LookupCountryIdentifier("009602301461 12"), "US");
-	EXPECT_EQ(LookupCountryIdentifier("016602301469"), "US/CA"); // 001-019 US/CA
-	EXPECT_EQ(LookupCountryIdentifier("036602301467"), "US/CA");
-	EXPECT_EQ(LookupCountryIdentifier("196602301468 51299"), "US/CA");
+	EXPECT_EQ(LookupCountryIdentifier("016602301469"), "US"); // 001-019 US
+	EXPECT_EQ(LookupCountryIdentifier("036602301467"), "US");
+	EXPECT_EQ(LookupCountryIdentifier("196602301468 51299"), "US");
 	EXPECT_TRUE(LookupCountryIdentifier("206602301464").empty()); // 020-029 Restricted Circulation Numbers
 	EXPECT_TRUE(LookupCountryIdentifier("296602301465").empty());
 	EXPECT_EQ(LookupCountryIdentifier("306602301461"), "US"); // 030-039 US
@@ -138,33 +138,33 @@ TEST(GTINTest, CountryIdentifierUPCA)
 	EXPECT_TRUE(LookupCountryIdentifier("496602301469").empty());
 	EXPECT_TRUE(LookupCountryIdentifier("506602301465").empty()); // 050-059 reserved for future use
 	EXPECT_TRUE(LookupCountryIdentifier("596602301466").empty());
-	EXPECT_EQ(LookupCountryIdentifier("606602301462"), "US/CA"); // 060-099 US/CA
-	EXPECT_EQ(LookupCountryIdentifier("996602301464"), "US/CA");
+	EXPECT_EQ(LookupCountryIdentifier("606602301462"), "US"); // 060-099 US
+	EXPECT_EQ(LookupCountryIdentifier("996602301464"), "US");
 }
 
 TEST(GTINTest, CountryIdentifierUPCE)
 {
 	// From test/samples/upce-*/
-	EXPECT_EQ(LookupCountryIdentifier("01234565"), "US/CA"); // 001-019 US/CA
-	EXPECT_EQ(LookupCountryIdentifier("01234565", BarcodeFormat::UPCE), "US/CA"); // 001-019 US/CA
+	EXPECT_EQ(LookupCountryIdentifier("01234565"), "US"); // 001-019 US
+	EXPECT_EQ(LookupCountryIdentifier("01234565", BarcodeFormat::UPCE), "US"); // 001-019 US
 	EXPECT_EQ(LookupCountryIdentifier("00123457"), "US"); // 0001-0009 US
 	EXPECT_EQ(LookupCountryIdentifier("00123457", BarcodeFormat::UPCE), "US"); // 0001-0009 US
-	EXPECT_EQ(LookupCountryIdentifier("05096893"), "US/CA"); // 001-019 US/CA
-	EXPECT_EQ(LookupCountryIdentifier("05096893", BarcodeFormat::UPCE), "US/CA"); // 001-019 US/CA
-	EXPECT_EQ(LookupCountryIdentifier("04963406 01"), "US/CA"); // 001-019 US/CA
-	EXPECT_EQ(LookupCountryIdentifier("04963406 01", BarcodeFormat::UPCE), "US/CA"); // 001-019 US/CA
+	EXPECT_EQ(LookupCountryIdentifier("05096893"), "US"); // 001-019 US
+	EXPECT_EQ(LookupCountryIdentifier("05096893", BarcodeFormat::UPCE), "US"); // 001-019 US
+	EXPECT_EQ(LookupCountryIdentifier("04963406 01"), "US"); // 001-019 US
+	EXPECT_EQ(LookupCountryIdentifier("04963406 01", BarcodeFormat::UPCE), "US"); // 001-019 US
 
 	// Other
 	// 0000000, 0000001-0000099 and 00001-00009 not possible for UPC-E
 	EXPECT_EQ(LookupCountryIdentifier("00021357"), "US"); // 0001-0009 US
 	EXPECT_EQ(LookupCountryIdentifier("00021357 01"), "US");
-	EXPECT_EQ(LookupCountryIdentifier("11621355"), "US/CA"); // 001-019 US/CA
+	EXPECT_EQ(LookupCountryIdentifier("11621355"), "US"); // 001-019 US
 	EXPECT_TRUE(LookupCountryIdentifier("22221111").empty()); // 020-029 Restricted Circulation Numbers
-	EXPECT_EQ(LookupCountryIdentifier("31621358"), "US"); // 030-039 US/CA
+	EXPECT_EQ(LookupCountryIdentifier("31621358"), "US"); // 030-039 US
 	EXPECT_TRUE(LookupCountryIdentifier("40621359").empty()); // 040-049 Restricted Circulation Numbers
 	EXPECT_TRUE(LookupCountryIdentifier("50621359").empty()); // 050-059 reserved for future use
-	EXPECT_EQ(LookupCountryIdentifier("61621358"), "US/CA"); // 060-099 US/CA
-	EXPECT_EQ(LookupCountryIdentifier("99621350"), "US/CA");
+	EXPECT_EQ(LookupCountryIdentifier("61621358"), "US"); // 060-099 US
+	EXPECT_EQ(LookupCountryIdentifier("99621350"), "US");
 }
 
 TEST(GTINTest, CountryIdentifierEAN8)
@@ -200,8 +200,8 @@ TEST(GTINTest, CountryIdentifierEAN8)
 TEST(GTINTest, CountryIdentifierGTIN14)
 {
 	// From test/samples/itf-*/
-	EXPECT_EQ(LookupCountryIdentifier("30712345000010"), "US/CA");
-	EXPECT_EQ(LookupCountryIdentifier("00012345678905"), "US/CA");
+	EXPECT_EQ(LookupCountryIdentifier("30712345000010"), "US");
+	EXPECT_EQ(LookupCountryIdentifier("00012345678905"), "US");
 
 	// Other
 	EXPECT_TRUE(LookupCountryIdentifier("12345678901231").empty()); // 200-299 Restricted Circulation Numbers

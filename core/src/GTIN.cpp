@@ -18,9 +18,9 @@ namespace ZXing::GTIN {
 
 struct CountryId
 {
-	int first;
-	int last;
-	const char *id;
+	uint16_t first;
+	uint16_t last;
+	const char id[3];
 };
 
 bool operator<(const CountryId& lhs, const CountryId& rhs)
@@ -32,9 +32,9 @@ bool operator<(const CountryId& lhs, const CountryId& rhs)
 // and https://en.wikipedia.org/wiki/List_of_GS1_country_codes
 static const CountryId COUNTRIES[] = {
 	// clang-format off
-	{1, 19, "US/CA"},
+	{1, 19, "US"},
 	{30, 39, "US"},
-	{60, 99, "US/CA"}, // Note 99 coupon identification
+	{60, 99, "US"}, // Note 99 coupon identification
 	{100, 139, "US"},
 	{300, 379, "FR"}, // France (and Monaco according to Wikipedia)
 	{380, 380, "BG"}, // Bulgaria
@@ -73,7 +73,7 @@ static const CountryId COUNTRIES[] = {
 	{531, 531, "MK"}, // North Macedonia
 	{535, 535, "MT"}, // Malta
 	{539, 539, "IE"}, // Ireland
-	{540, 549, "BE/LU"}, // Belgium & Luxembourg
+	{540, 549, "BE"}, // Belgium & Luxembourg
 	{560, 560, "PT"}, // Portugal
 	{569, 569, "IS"}, // Iceland
 	{570, 579, "DK"}, // Denmark (and Faroe Islands and Greenland according to Wikipedia)
@@ -194,7 +194,7 @@ std::string LookupCountryIdentifier(const std::string& GTIN, const BarcodeFormat
 	if (size == 8 && format == BarcodeFormat::EAN8 && prefix <= 99) // Restricted Circulation Numbers
 		return {};
 
-	const auto it = std::lower_bound(std::begin(COUNTRIES), std::end(COUNTRIES), CountryId{0, prefix, nullptr});
+	const auto it = std::lower_bound(std::begin(COUNTRIES), std::end(COUNTRIES), CountryId{0, narrow_cast<uint16_t>(prefix), ""});
 
 	return it != std::end(COUNTRIES) && prefix >= it->first && prefix <= it->last ? it->id : std::string();
 }
