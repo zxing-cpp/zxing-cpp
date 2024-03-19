@@ -562,7 +562,7 @@ list(REMOVE_ITEM PRECOMPILE_HEADERS src/ZXVersion.h)   # [[deprecated]]
 target_precompile_headers(ZXing PRIVATE ${PRECOMPILE_HEADERS})
 set_source_files_properties(src/DecodeHints.cpp PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
 
-if(CMAKE_BUILD_TYPE STREQUAL "Release")
+if(CMAKE_BUILD_TYPE MATCHES "Release|RelWithDebInfo")
     # The following is a list of translation units that fulfill two criteria regarding the use of -Os vs -O3:
     #  1. their binary size decreases significantly
     #  2. the runtime of ReaderTest is not (measurably) affected
@@ -570,10 +570,16 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
     check_cxx_compiler_flag("-Os" COMPILER_KNOWS_Os)
     if(COMPILER_KNOWS_Os)
     set_source_files_properties(
+        src/Barcode.cpp
+        src/BarcodeFormat.cpp
         src/BitMatrixIO.cpp
         src/Error.cpp
+        src/GTIN.cpp
+        src/HRI.cpp
         src/MultiFormatReader.cpp
+        src/WriteBarcode.cpp
         src/ZXingC.cpp
+        src/ZXingCpp.cpp
         src/aztec/AZHighLevelEncoder.cpp
         src/datamatrix/DMDataBlock.cpp
         src/datamatrix/DMHighLevelEncoder.cpp
