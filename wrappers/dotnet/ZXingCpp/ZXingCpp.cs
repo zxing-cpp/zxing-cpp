@@ -20,17 +20,17 @@ internal class Dll
 	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_delete(IntPtr opts);
 
 	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setTryHarder(IntPtr opts, bool tryHarder);
-	[DllImport(DllName)] public static extern bool ZXing_ReaderOptions_getTryHarder(IntPtr opts);
+	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_ReaderOptions_getTryHarder(IntPtr opts);
 	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setTryRotate(IntPtr opts, bool tryRotate);
-	[DllImport(DllName)] public static extern bool ZXing_ReaderOptions_getTryRotate(IntPtr opts);
+	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_ReaderOptions_getTryRotate(IntPtr opts);
 	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setTryInvert(IntPtr opts, bool tryInvert);
-	[DllImport(DllName)] public static extern bool ZXing_ReaderOptions_getTryInvert(IntPtr opts);
+	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_ReaderOptions_getTryInvert(IntPtr opts);
 	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setTryDownscale(IntPtr opts, bool tryDownscale);
-	[DllImport(DllName)] public static extern bool ZXing_ReaderOptions_getTryDownscale(IntPtr opts);
-	[DllImport(DllName)] public static extern bool ZXing_ReaderOptions_getIsPure(IntPtr opts);
+	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_ReaderOptions_getTryDownscale(IntPtr opts);
+	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_ReaderOptions_getIsPure(IntPtr opts);
 	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setIsPure(IntPtr opts, bool isPure);
 	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setReturnErrors(IntPtr opts, bool returnErrors);
-	[DllImport(DllName)] public static extern bool ZXing_ReaderOptions_getReturnErrors(IntPtr opts);
+	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_ReaderOptions_getReturnErrors(IntPtr opts);
 	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setFormats(IntPtr opts, BarcodeFormats formats);
 	[DllImport(DllName)] public static extern BarcodeFormats ZXing_ReaderOptions_getFormats(IntPtr opts);
 	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setBinarizer(IntPtr opts, Binarizer binarizer);
@@ -57,7 +57,7 @@ internal class Dll
 	[DllImport(DllName)] public static extern int ZXing_Barcodes_size(IntPtr barcodes);
 	[DllImport(DllName)] public static extern IntPtr ZXing_Barcodes_move(IntPtr barcodes, int i);
 
-	[DllImport(DllName)] public static extern bool ZXing_Barcode_isValid(IntPtr barcode);
+	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_Barcode_isValid(IntPtr barcode);
 	[DllImport(DllName)] public static extern IntPtr ZXing_Barcode_errorMsg(IntPtr barcode);
 	[DllImport(DllName)] public static extern ErrorType ZXing_Barcode_errorType(IntPtr barcode);
 	[DllImport(DllName)] public static extern BarcodeFormat ZXing_Barcode_format(IntPtr barcode);
@@ -69,9 +69,9 @@ internal class Dll
 	[DllImport(DllName)] public static extern IntPtr ZXing_Barcode_symbologyIdentifier(IntPtr barcode);
 	[DllImport(DllName)] public static extern Position ZXing_Barcode_position(IntPtr barcode);
 	[DllImport(DllName)] public static extern int ZXing_Barcode_orientation(IntPtr barcode);
-	[DllImport(DllName)] public static extern bool ZXing_Barcode_hasECI(IntPtr barcode);
-	[DllImport(DllName)] public static extern bool ZXing_Barcode_isInverted(IntPtr barcode);
-	[DllImport(DllName)] public static extern bool ZXing_Barcode_isMirrored(IntPtr barcode);
+	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_Barcode_hasECI(IntPtr barcode);
+	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_Barcode_isInverted(IntPtr barcode);
+	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_Barcode_isMirrored(IntPtr barcode);
 	[DllImport(DllName)] public static extern int ZXing_Barcode_lineCount(IntPtr barcode);
 
 	[DllImport(DllName)] public static extern void ZXing_free(IntPtr opts);
