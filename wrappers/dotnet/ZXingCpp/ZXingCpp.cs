@@ -78,11 +78,16 @@ internal class Dll
 	[DllImport(DllName)] public static extern IntPtr ZXing_LastErrorMsg();
 
 
-	public static string MarshalAsString(IntPtr ptr)
+	public static IntPtr CheckError(IntPtr ptr, string? msg = null)
 	{
 		if (ptr == IntPtr.Zero)
-			throw new Exception("ZXing C-API returned a NULL char*.");
+			throw new Exception(msg ?? MarshalAsString(ZXing_LastErrorMsg()));
+		return ptr;
+	}
 
+	public static string MarshalAsString(IntPtr ptr)
+	{
+		ptr = CheckError(ptr, "ZXing C-API returned a NULL char*.");
 		string res = Marshal.PtrToStringUTF8(ptr) ?? "";
 		ZXing_free(ptr);
 		return res;
@@ -92,10 +97,7 @@ internal class Dll
 
 	public static byte[] MarshalAsBytes(RetBytesFunc func, IntPtr d)
 	{
-		IntPtr ptr = func(d, out int len);
-		if (ptr == IntPtr.Zero)
-			throw new Exception("ZXing C-API returned a NULL byte*.");
-
+		IntPtr ptr = CheckError(func(d, out int len), "ZXing C-API returned a NULL byte*.");
 		byte[] res = new byte[len];
 		Marshal.Copy(ptr, res, 0, len);
 		ZXing_free(ptr);
@@ -190,18 +192,10 @@ public class ImageView
 	internal IntPtr _d;
 
 	public ImageView(byte[] data, int width, int height, ImageFormat format, int rowStride = 0, int pixStride = 0)
-	{
-		_d = ZXing_ImageView_new_checked(data, data.Length, width, height, format, rowStride, pixStride);
-		if (_d == IntPtr.Zero)
-			throw new Exception(MarshalAsString(ZXing_LastErrorMsg()));
-	}
+		=> _d = CheckError(ZXing_ImageView_new_checked(data, data.Length, width, height, format, rowStride, pixStride));
 
 	public ImageView(IntPtr data, int width, int height, ImageFormat format, int rowStride = 0, int pixStride = 0)
-	{
-		_d = ZXing_ImageView_new(data, width, height, format, rowStride, pixStride);
-		if (_d == IntPtr.Zero)
-			throw new Exception(MarshalAsString(ZXing_LastErrorMsg()));
-	}
+		=> _d = CheckError(ZXing_ImageView_new(data, width, height, format, rowStride, pixStride));
 
 	~ImageView() => ZXing_ImageView_delete(_d);
 }
@@ -210,12 +204,8 @@ public class ReaderOptions
 {
 	internal IntPtr _d;
 
-	public ReaderOptions()
-	{
-		_d = ZXing_ReaderOptions_new();
-		if (_d == IntPtr.Zero)
-			throw new Exception("Failed to create ReaderOptions.");
-	}
+
+	public ReaderOptions() => _d = CheckError(ZXing_ReaderOptions_new(), "Failed to create ReaderOptions.");
 
 	~ReaderOptions() => ZXing_ReaderOptions_delete(_d);
 
@@ -330,9 +320,7 @@ public class BarcodeReader : ReaderOptions
 
 	public static List<Barcode> Read(ImageView iv, ReaderOptions? opts = null)
 	{
-		var ptr = ZXing_ReadBarcodes(iv._d, opts?._d ?? IntPtr.Zero);
-		if (ptr == IntPtr.Zero)
-			throw new Exception(MarshalAsString(ZXing_LastErrorMsg()));
+		var ptr = CheckError(ZXing_ReadBarcodes(iv._d, opts?._d ?? IntPtr.Zero));
 
 		var size = ZXing_Barcodes_size(ptr);
 		var res = new List<Barcode>(size);
