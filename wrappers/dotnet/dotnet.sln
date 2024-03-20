@@ -5,7 +5,7 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZXingCpp", "ZXingCpp\ZXingCpp.csproj", "{64E71DE2-C1C6-4FCF-B8A6-FFC6D1605ECD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZXingCpp.Demo", "ZXingCpp.Demo\ZXingCpp.Demo.csproj", "{05C626FE-A5CE-4263-9419-35E44F14DB93}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZXingCpp.DemoReader", "ZXingCpp.DemoReader\ZXingCpp.DemoReader.csproj", "{05C626FE-A5CE-4263-9419-35E44F14DB93}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZXingCpp.Tests", "ZXingCpp.Tests\ZXingCpp.Tests.csproj", "{9D57E7B5-A24F-4F1D-8AF0-CED8FAE54B06}"
 EndProject
