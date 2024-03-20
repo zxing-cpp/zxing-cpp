@@ -9,15 +9,15 @@ public class UnitTest1
 	[Fact]
 	public void ValidBarcodeFormatsParsing()
 	{
-		Assert.Equal(BarcodeFormats.QRCode, BarcodeReader.FormatsFromString("qrcode"));
-		Assert.Equal(BarcodeFormats.LinearCodes, BarcodeReader.FormatsFromString("linear_codes"));
-		Assert.Equal(BarcodeFormats.None, BarcodeReader.FormatsFromString(""));
+		Assert.Equal(BarcodeFormats.QRCode, Barcode.FormatsFromString("qrcode"));
+		Assert.Equal(BarcodeFormats.LinearCodes, Barcode.FormatsFromString("linear_codes"));
+		Assert.Equal(BarcodeFormats.None, Barcode.FormatsFromString(""));
 	}
 
 	[Fact]
 	public void InvalidBarcodeFormatsParsing()
 	{
-		Assert.Throws<Exception>(() => BarcodeReader.FormatsFromString("nope"));
+		Assert.Throws<Exception>(() => Barcode.FormatsFromString("nope"));
 	}
 
 	[Fact]
@@ -38,7 +38,7 @@ public class UnitTest1
 		var br = new BarcodeReader() {
 			Binarizer = Binarizer.BoolCast,
 		};
-		var res = br.Read(iv);
+		var res = br.From(iv);
 
 		var expected = "96385074";
 
@@ -52,7 +52,29 @@ public class UnitTest1
 		Assert.Equal(0, res[0].Orientation);
 		Assert.Equal(new PointI() { X = 4, Y = 0 }, res[0].Position.TopLeft);
 		Assert.Equal(1, res[0].LineCount);
+		Assert.False(res[0].IsMirrored);
+		Assert.False(res[0].IsInverted);
 		Assert.Equal(ErrorType.None, res[0].ErrorType);
 		Assert.Equal("", res[0].ErrorMsg);
+	}
+
+	[Fact]
+	public void Create()
+	{
+		var text = "hello";
+        var res = new Barcode(text, BarcodeFormats.DataMatrix);
+
+		Assert.True(res.IsValid);
+		Assert.Equal(BarcodeFormats.DataMatrix, res.Format);
+		Assert.Equal(text, res.Text);
+		Assert.Equal(Encoding.ASCII.GetBytes(text), res.Bytes);
+		Assert.False(res.HasECI);
+		Assert.Equal(ContentType.Text, res.ContentType);
+		Assert.Equal(0, res.Orientation);
+		Assert.False(res.IsMirrored);
+		Assert.False(res.IsInverted);
+		Assert.Equal(new PointI() { X = 1, Y = 1 }, res.Position.TopLeft);
+		Assert.Equal(ErrorType.None, res.ErrorType);
+		Assert.Equal("", res.ErrorMsg);
 	}
 }

@@ -45,17 +45,54 @@ internal class Dll
 	[DllImport(DllName)] public static extern int ZXing_ReaderOptions_getMaxNumberOfSymbols(IntPtr opts);
 
 	[DllImport(DllName)] public static extern IntPtr ZXing_PositionToString(Position position);
+	[DllImport(DllName)] public static extern BarcodeFormat ZXing_BarcodeFormatFromString(string str);
 	[DllImport(DllName)] public static extern BarcodeFormats ZXing_BarcodeFormatsFromString(string str);
 
 	[DllImport(DllName)] public static extern IntPtr ZXing_ImageView_new(IntPtr data, int width, int height, ImageFormat format, int rowStride, int pixStride);
 	[DllImport(DllName)] public static extern IntPtr ZXing_ImageView_new_checked(byte[] data, int size, int width, int height, ImageFormat format, int rowStride, int pixStride);
 	[DllImport(DllName)] public static extern void ZXing_ImageView_delete(IntPtr iv);
 
+	[DllImport(DllName)] public static extern void ZXing_Image_delete(IntPtr img);
+	[DllImport(DllName)] public static extern IntPtr ZXing_Image_data(IntPtr img);
+	[DllImport(DllName)] public static extern int ZXing_Image_width(IntPtr img);
+	[DllImport(DllName)] public static extern int ZXing_Image_height(IntPtr img);
+	[DllImport(DllName)] public static extern ImageFormat ZXing_Image_format(IntPtr img);
+
 	[DllImport(DllName)] public static extern IntPtr ZXing_ReadBarcodes(IntPtr iv, IntPtr opts);
 	[DllImport(DllName)] public static extern void ZXing_Barcode_delete(IntPtr barcode);
 	[DllImport(DllName)] public static extern void ZXing_Barcodes_delete(IntPtr barcodes);
 	[DllImport(DllName)] public static extern int ZXing_Barcodes_size(IntPtr barcodes);
 	[DllImport(DllName)] public static extern IntPtr ZXing_Barcodes_move(IntPtr barcodes, int i);
+
+	[DllImport(DllName)] public static extern IntPtr ZXing_CreatorOptions_new(BarcodeFormat format);
+	[DllImport(DllName)] public static extern void ZXing_CreatorOptions_delete(IntPtr opts);
+	[DllImport(DllName)] public static extern void ZXing_CreatorOptions_setFormat(IntPtr opts, BarcodeFormat format);
+	[DllImport(DllName)] public static extern BarcodeFormat ZXing_CreatorOptions_getFormat(IntPtr opts);
+	[DllImport(DllName)] public static extern void ZXing_CreatorOptions_setReaderInit(IntPtr opts, bool readerInit);
+	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_CreatorOptions_getReaderInit(IntPtr opts);
+	[DllImport(DllName)] public static extern void ZXing_CreatorOptions_setForceSquareDataMatrix(IntPtr opts, bool forceSquareDataMatrix);
+	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_CreatorOptions_getForceSquareDataMatrix(IntPtr opts);
+	[DllImport(DllName)] public static extern void ZXing_CreatorOptions_setEcLevel(IntPtr opts, string ecLevel);
+	[DllImport(DllName)] public static extern IntPtr ZXing_CreatorOptions_getEcLevel(IntPtr opts);
+
+	[DllImport(DllName)] public static extern IntPtr ZXing_WriterOptions_new();
+	[DllImport(DllName)] public static extern void ZXing_WriterOptions_delete(IntPtr opts);
+	[DllImport(DllName)] public static extern void ZXing_WriterOptions_setScale(IntPtr opts, int scale);
+	[DllImport(DllName)] public static extern int ZXing_WriterOptions_getScale(IntPtr opts);
+	[DllImport(DllName)] public static extern void ZXing_WriterOptions_setSizeHint(IntPtr opts, int sizeHint);
+	[DllImport(DllName)] public static extern int ZXing_WriterOptions_getSizeHint(IntPtr opts);
+	[DllImport(DllName)] public static extern void ZXing_WriterOptions_setRotate(IntPtr opts, int rotate);
+	[DllImport(DllName)] public static extern int ZXing_WriterOptions_getRotate(IntPtr opts);
+	[DllImport(DllName)] public static extern void ZXing_WriterOptions_setWithHRT(IntPtr opts, bool withHRT);
+	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_WriterOptions_getWithHRT(IntPtr opts);
+	[DllImport(DllName)] public static extern void ZXing_WriterOptions_setWithQuietZones(IntPtr opts, bool withQuietZones);
+	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_WriterOptions_getWithQuietZones(IntPtr opts);
+
+	[DllImport(DllName)] public static extern IntPtr ZXing_CreateBarcodeFromText(string data, int size, IntPtr opts);
+	[DllImport(DllName)] public static extern IntPtr ZXing_CreateBarcodeFromBytes(byte[] data, int size, IntPtr opts);
+
+	[DllImport(DllName)] public static extern IntPtr ZXing_WriteBarcodeToSVG(IntPtr barcode, IntPtr opts);
+	[DllImport(DllName)] public static extern IntPtr ZXing_WriteBarcodeToImage(IntPtr barcode, IntPtr opts);
 
 	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_Barcode_isValid(IntPtr barcode);
 	[DllImport(DllName)] public static extern IntPtr ZXing_Barcode_errorMsg(IntPtr barcode);
@@ -200,10 +237,42 @@ public class ImageView
 	~ImageView() => ZXing_ImageView_delete(_d);
 }
 
-public class ReaderOptions
+public class Image : IDisposable
 {
 	internal IntPtr _d;
 
+	internal Image(IntPtr d) => _d = d;
+
+	~Image() => Dispose();
+
+	public void Dispose()
+	{
+		ZXing_Image_delete(_d);
+		_d = IntPtr.Zero;
+		GC.SuppressFinalize(this);
+	}
+
+	public IntPtr Data => ZXing_Image_data(_d);
+	public int Width => ZXing_Image_width(_d);
+	public int Height => ZXing_Image_height(_d);
+	public ImageFormat Format => ZXing_Image_format(_d);
+
+	public byte[] ToArray()
+	{
+		IntPtr ptr = ZXing_Image_data(_d);
+		if (ptr == IntPtr.Zero)
+			return new byte[0];
+
+		int len = Width * Height;
+		byte[] res = new byte[len];
+		Marshal.Copy(ptr, res, 0, len);
+		return res;
+	}
+}
+
+public class ReaderOptions
+{
+	internal IntPtr _d;
 
 	public ReaderOptions() => _d = CheckError(ZXing_ReaderOptions_new(), "Failed to create ReaderOptions.");
 
@@ -283,12 +352,89 @@ public class ReaderOptions
 
 }
 
+public class CreatorOptions
+{
+	internal IntPtr _d;
+
+	public CreatorOptions(BarcodeFormat format)
+		=> _d = CheckError(ZXing_CreatorOptions_new(format), "Failed to create CreatorOptions.");
+
+	public static implicit operator CreatorOptions(BarcodeFormat f) => new CreatorOptions(f);
+
+	~CreatorOptions() => ZXing_CreatorOptions_delete(_d);
+
+	public bool ReaderInit
+	{
+		get => ZXing_CreatorOptions_getReaderInit(_d);
+		set => ZXing_CreatorOptions_setReaderInit(_d, value);
+	}
+
+	public bool ForceSquareDataMatrix
+	{
+		get => ZXing_CreatorOptions_getForceSquareDataMatrix(_d);
+		set => ZXing_CreatorOptions_setForceSquareDataMatrix(_d, value);
+	}
+
+	public String ECLevel
+	{
+		get => MarshalAsString(ZXing_CreatorOptions_getEcLevel(_d));
+		set => ZXing_CreatorOptions_setEcLevel(_d, value);
+	}
+
+}
+
+public class WriterOptions
+{
+    internal IntPtr _d;
+
+	public WriterOptions() => _d = CheckError(ZXing_WriterOptions_new(), "Failed to create WriterOptions.");
+
+	~WriterOptions() => ZXing_WriterOptions_delete(_d);
+
+	public int Scale
+	{
+		get => ZXing_WriterOptions_getScale(_d);
+		set => ZXing_WriterOptions_setScale(_d, value);
+	}
+
+	public int SizeHint
+	{
+		get => ZXing_WriterOptions_getSizeHint(_d);
+		set => ZXing_WriterOptions_setSizeHint(_d, value);
+	}
+
+	public int Rotate
+	{
+		get => ZXing_WriterOptions_getRotate(_d);
+		set => ZXing_WriterOptions_setRotate(_d, value);
+	}
+
+	public bool WithHRT
+	{
+		get => ZXing_WriterOptions_getWithHRT(_d);
+		set => ZXing_WriterOptions_setWithHRT(_d, value);
+	}
+
+	public bool WithQuietZones
+	{
+		get => ZXing_WriterOptions_getWithQuietZones(_d);
+		set => ZXing_WriterOptions_setWithQuietZones(_d, value);
+	}
+}
+
 public class Barcode
 {
 	internal IntPtr _d;
 
 	internal Barcode(IntPtr d) => _d = d;
+
 	~Barcode() => ZXing_Barcode_delete(_d);
+
+	public Barcode(string data, CreatorOptions opts)
+		=> _d = CheckError(ZXing_CreateBarcodeFromText(data, data.Length, opts._d));
+
+	public Barcode(byte[] data, CreatorOptions opts)
+		=> _d = CheckError(ZXing_CreateBarcodeFromBytes(data, data.Length, opts._d));
 
 	public bool IsValid => ZXing_Barcode_isValid(_d);
 	public BarcodeFormat Format => ZXing_Barcode_format(_d);
@@ -306,18 +452,32 @@ public class Barcode
 	public bool IsInverted => ZXing_Barcode_isInverted(_d);
 	public bool IsMirrored => ZXing_Barcode_isMirrored(_d);
 	public int LineCount => ZXing_Barcode_lineCount(_d);
+
+	public string ToSVG(WriterOptions? opts = null)
+		=> MarshalAsString(CheckError(ZXing_WriteBarcodeToSVG(_d, opts?._d ?? IntPtr.Zero)));
+
+	public Image ToImage(WriterOptions? opts = null)
+		=> new Image(CheckError(ZXing_WriteBarcodeToImage(_d, opts?._d ?? IntPtr.Zero)));
+
+	public static BarcodeFormat FormatFromString(string str)
+	{
+		var res = ZXing_BarcodeFormatFromString(str);
+		if ((int)res == -1) // see ZXing_BarcodeFormat_Invalid
+			throw new Exception(MarshalAsString(ZXing_LastErrorMsg()));
+		return res;
+	}
+
+	public static BarcodeFormats FormatsFromString(string str)
+	{
+		var res = ZXing_BarcodeFormatsFromString(str);
+		if ((int)res == -1) // see ZXing_BarcodeFormat_Invalid
+			throw new Exception(MarshalAsString(ZXing_LastErrorMsg()));
+		return res;
+	}
 }
 
 public class BarcodeReader : ReaderOptions
 {
-	public static BarcodeFormats FormatsFromString(string str)
-	{
-		var fmts = ZXing_BarcodeFormatsFromString(str);
-		if ((int)fmts == -1) // see ZXing_BarcodeFormat_Invalid
-			throw new Exception(MarshalAsString(ZXing_LastErrorMsg()));
-		return fmts;
-	}
-
 	public static List<Barcode> Read(ImageView iv, ReaderOptions? opts = null)
 	{
 		var ptr = CheckError(ZXing_ReadBarcodes(iv._d, opts?._d ?? IntPtr.Zero));
@@ -331,7 +491,15 @@ public class BarcodeReader : ReaderOptions
 		return res;
 	}
 
-	public List<Barcode> Read(ImageView iv) => Read(iv, this);
+	public List<Barcode> From(ImageView iv) => Read(iv, this);
+}
+
+public class BarcodeCreator : CreatorOptions
+{
+	public BarcodeCreator(BarcodeFormat format) : base(format) {}
+
+	public Barcode From(string data) => new Barcode(data, this);
+	public Barcode From(byte[] data) => new Barcode(data, this);
 }
 
 }

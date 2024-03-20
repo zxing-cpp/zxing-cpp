@@ -64,7 +64,7 @@ public class Program
 		};
 
 		if (args.Length >= 2)
-			reader.Formats = BarcodeReader.FormatsFromString(args[1]);
+			reader.Formats = Barcode.FormatsFromString(args[1]);
 	
 		foreach (var b in reader.Read(img))
 			Console.WriteLine($"{b.Format} ({b.ContentType}): {b.Text} / [{string.Join(", ", b.Bytes)}] {b.ErrorMsg}");

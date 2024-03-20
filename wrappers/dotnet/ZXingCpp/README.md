@@ -7,7 +7,7 @@ It was originally ported from the Java ZXing library but has been developed furt
 many improvements in terms of runtime and detection performance.
 
 
-## Usage
+## Usage Reading
 
 ```cs
 using SkiaSharp;
@@ -21,7 +21,7 @@ public class Program
         var iv = new ImageView(img.GetPixels(), img.Info.Width, img.Info.Height, ImageFormat.Lum);
 
         var reader = new BarcodeReader() {
-            Formats = args.Length > 1 ? BarcodeReader.FormatsFromString(args[1]) : BarcodeFormats.Any,
+            Formats = args.Length > 1 ? Barcode.FormatsFromString(args[1]) : BarcodeFormats.Any,
             TryInvert = false,
             // see the ReaderOptions implementation for more available options
         };
@@ -46,6 +46,25 @@ Windows).
 Note: This is an alpha release, meaning the API may still change slightly to potentially feel even
 more like a native C# library depending on community feedback.
 
+## Usage Writing
+
+```cs
+using ZXingCpp;
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        var barcode = new Barcode(args[1], Barcode.FormatFromString(args[0]));
+        File.WriteAllText(args[2], barcode.ToSVG());
+    }
+}
+```
+
+Executing this sample code from the command line would look like this:
+```sh
+dotnet run -- <barcode-format> <text> <out-file-name>
+```
 
 ## Why ZXingCpp?
 
