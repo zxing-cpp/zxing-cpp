@@ -216,10 +216,10 @@ uint8_t* ZXing_Barcode_bytesECI(const ZXing_Barcode* barcode, int* len)
 }
 
 #define ZX_GETTER(TYPE, GETTER, TRANS) \
-	TYPE ZXing_Barcode_##GETTER(const ZXing_Barcode* barcode) { return static_cast<TYPE>(TRANS(barcode->GETTER())); }
+	TYPE ZXing_Barcode_##GETTER(const ZXing_Barcode* barcode) { return TRANS(barcode->GETTER()); }
 
-ZX_GETTER(ZXing_BarcodeFormat, format,)
-ZX_GETTER(ZXing_ContentType, contentType,)
+ZX_GETTER(ZXing_BarcodeFormat, format, static_cast<ZXing_BarcodeFormat>)
+ZX_GETTER(ZXing_ContentType, contentType, static_cast<ZXing_ContentType>)
 ZX_GETTER(char*, text, copy)
 ZX_GETTER(char*, ecLevel, copy)
 ZX_GETTER(char*, symbologyIdentifier, copy)
