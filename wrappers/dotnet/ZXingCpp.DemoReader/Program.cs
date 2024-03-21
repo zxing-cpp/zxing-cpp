@@ -19,7 +19,7 @@ public static class MagickImageBarcodeReader
 		return BarcodeReader.Read(iv, opts);
 	}
 
-	public static List<Barcode> Read(this BarcodeReader reader, MagickImage img) => Read(img, reader);
+	public static List<Barcode> From(this BarcodeReader reader, MagickImage img) => Read(img, reader);
 }
 
 public static class SkBitmapBarcodeReader
@@ -44,7 +44,7 @@ public static class SkBitmapBarcodeReader
 		return BarcodeReader.Read(iv, opts);
 	}
 
-	public static List<Barcode> Read(this BarcodeReader reader, SKBitmap img) => Read(img, reader);
+	public static List<Barcode> From(this BarcodeReader reader, SKBitmap img) => Read(img, reader);
 }
 
 public class Program
@@ -58,15 +58,15 @@ public class Program
 #endif
 		Console.WriteLine(img);
 
-		var reader = new BarcodeReader() {
+		var readBarcodes = new BarcodeReader() {
 			TryInvert = false,
 			ReturnErrors = true,
 		};
 
 		if (args.Length >= 2)
-			reader.Formats = Barcode.FormatsFromString(args[1]);
+			readBarcodes.Formats = Barcode.FormatsFromString(args[1]);
 	
-		foreach (var b in reader.Read(img))
+		foreach (var b in readBarcodes.From(img))
 			Console.WriteLine($"{b.Format} ({b.ContentType}): {b.Text} / [{string.Join(", ", b.Bytes)}] {b.ErrorMsg}");
 	}
 }

@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
 
     <PackageId>ZXingCpp</PackageId>
-    <Version>0.1.3-alpha</Version>
+    <Version>0.2.1-alpha</Version>
     <Authors>Axel Waggershauser</Authors>
     <Company>zxing-cpp</Company>
     <Description>

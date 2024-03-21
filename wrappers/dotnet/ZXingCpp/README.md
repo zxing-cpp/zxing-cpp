@@ -20,13 +20,13 @@ public class Program
         var img = SKBitmap.Decode(args[0]).Copy(SKColorType.Gray8);
         var iv = new ImageView(img.GetPixels(), img.Info.Width, img.Info.Height, ImageFormat.Lum);
 
-        var reader = new BarcodeReader() {
+        var readBarcodes = new BarcodeReader() {
             Formats = args.Length > 1 ? Barcode.FormatsFromString(args[1]) : BarcodeFormats.Any,
             TryInvert = false,
             // see the ReaderOptions implementation for more available options
         };
 
-        foreach (var b in reader.Read(iv))
+        foreach (var b in readBarcodes.From(iv))
             Console.WriteLine($"{b.Format} : {b.Text}");
     }
 }
@@ -36,6 +36,9 @@ Executing this sample code from the command line would look like this:
 ```sh
 dotnet run -- <image-file-name> [barcode-format-list]
 ```
+
+See also the [ZXingCpp.DemoReader](https://github.com/zxing-cpp/zxing-cpp/blob/master/wrappers/dotnet/ZXingCpp.DemoReader/Program.cs)
+which shows the use of extension classes to support SkiaSharp and ImageMagick based input.
 
 The NuGet package includes the runtime/native c++ libraries for the x64 architecture on
 Windows, Linux and macOS. If something is not working out of the box or you need arm64 support
@@ -63,8 +66,11 @@ public class Program
 
 Executing this sample code from the command line would look like this:
 ```sh
-dotnet run -- <barcode-format> <text> <out-file-name>
+dotnet run -- <barcode-format> <text> <out-svg-file-name>
 ```
+
+For an example how to write a PNG file instead of a SVG file, have a look at the
+[ZXingCpp.DemoWriter](https://github.com/zxing-cpp/zxing-cpp/blob/master/wrappers/dotnet/ZXingCpp.DemoWriter/Program.cs).
 
 ## Why ZXingCpp?
 
