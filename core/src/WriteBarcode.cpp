@@ -474,8 +474,8 @@ std::string WriteBarcodeToUtf8(const Barcode& barcode, [[maybe_unused]] const Wr
 
 	for (int y = 0; y < iv.height(); y += 2) {
 		for (int x = 0; x < iv.width(); ++x) {
-			int tp = *iv.data(x, y) ^ inverted;
-			int bt = (iv.height() == 1 && tp) || (y + 1 < iv.height() && (*iv.data(x, y) ^ inverted));
+			int tp = bool(*iv.data(x, y)) ^ inverted;
+			int bt = (iv.height() == 1 && tp) || (y + 1 < iv.height() && (bool(*iv.data(x, y)) ^ inverted));
 			res << map[tp | (bt << 1)];
 		}
 		res << '\n';
