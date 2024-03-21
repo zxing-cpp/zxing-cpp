@@ -60,6 +60,40 @@ jobs:
         name: ${{matrix.os}}-artifacts
         path: install
 
+  build-experimental:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-13]
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: true
+
+    - name: Configure
+      run: >
+        cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_SHARED_LIBS=ON
+        -DZXING_READERS=ON -DZXING_WRITERS=NEW -DZXING_EXPERIMENTAL_API=ON -DCMAKE_CXX_STANDARD=20
+        -DZXING_BLACKBOX_TESTS=ON -DZXING_UNIT_TESTS=OFF -DZXING_PYTHON_MODULE=OFF -DZXING_C_API=ON
+
+    - name: Build
+      run: cmake --build build -j8 --config ${{env.BUILD_TYPE}}
+
+    - name: Test
+      if: runner.os != 'Windows' # need to disable ctest on Windows when build as shared library for now
+      run: ctest --test-dir build -V -C ${{env.BUILD_TYPE}}
+
+    - name: Install
+      run: |
+        cmake -E make_directory install
+        cmake --install build --config ${{env.BUILD_TYPE}} --prefix ${{github.workspace}}/install
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: ${{matrix.os}}-exp-artifacts
+        path: install
+
   build-ubuntu-sanitize:
     runs-on: ubuntu-20.04 # see https://github.com/quantumlib/Stim/issues/717#issuecomment-2002623560
     steps:
