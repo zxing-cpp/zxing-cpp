@@ -82,14 +82,13 @@ inline int NumberOfLeadingZeros(T x)
 template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
 inline int NumberOfTrailingZeros(T v)
 {
-	assert(v != 0);
 #ifdef __cpp_lib_bitops
 	return std::countr_zero(static_cast<std::make_unsigned_t<T>>(v));
 #else
 	if constexpr (sizeof(v) <= 4) {
 		static_assert(sizeof(v) == 4, "NumberOfTrailingZeros not implemented for 8 and 16 bit ints.");
 #ifdef ZX_HAS_GCC_BUILTINS
-		return __builtin_ctz(v);
+		return v == 0 ? 32 : __builtin_ctz(v);
 #elif defined(ZX_HAS_MSC_BUILTINS)
 		unsigned long where;
 		if (_BitScanForward(&where, v))
@@ -108,7 +107,7 @@ inline int NumberOfTrailingZeros(T v)
 #endif
 	} else {
 #ifdef ZX_HAS_GCC_BUILTINS
-		return __builtin_ctzll(v);
+		return v == 0 ? 64 : __builtin_ctzll(v);
 #else // including ZX_HAS_MSC_BUILTINS
 		int n = NumberOfTrailingZeros(static_cast<uint32_t>(v));
 		if (n == 32)
