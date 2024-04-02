@@ -66,6 +66,7 @@ if (MSVC)
         -D_CRT_SECURE_NO_WARNINGS
         -D_CRT_NONSTDC_NO_WARNINGS
         -DNOMINMAX
+        /utf-8 # see https://github.com/zxing-cpp/zxing-cpp/issues/757
     )
 else()
     set (ZXING_PRIVATE_FLAGS ${ZXING_PRIVATE_FLAGS}
