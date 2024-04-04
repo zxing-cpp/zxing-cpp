@@ -14,7 +14,7 @@
 #include "HybridBinarizer.h"
 #include "MultiFormatReader.h"
 #include "Pattern.h"
-#include "ThresholdBinarizer.h"
+// #include "ThresholdBinarizer.h" // ZXING_CUSTOM
 #endif
 
 #include <climits>
@@ -76,7 +76,7 @@ class LumImagePyramid
 		case 2: addLayer<2>(); break;
 		case 3: addLayer<3>(); break;
 		case 4: addLayer<4>(); break;
-		default: throw std::invalid_argument("Invalid ReaderOptions::downscaleFactor"); break;
+		// default: throw std::invalid_argument("Invalid ReaderOptions::downscaleFactor"); break; // ZXING_CUSTOM
 		}
 	}
 
@@ -85,8 +85,12 @@ public:
 
 	LumImagePyramid(const ImageView& iv, int threshold, int factor)
 	{
+		/*
+		 * ZXING_CUSTOM
+		 *
 		if (factor < 2)
 			throw std::invalid_argument("Invalid ReaderOptions::downscaleFactor");
+		*/
 
 		layers.push_back(iv);
 		// TODO: if only matrix codes were considered, then using std::min would be sufficient (see #425)
@@ -104,8 +108,12 @@ public:
 
 ImageView SetupLumImageView(ImageView iv, LumImage& lum, const ReaderOptions& opts)
 {
+	/*
+	 * ZXING_CUSTOM
+	 *
 	if (iv.format() == ImageFormat::None)
 		throw std::invalid_argument("Invalid image format");
+	*/
 
 	if (opts.binarizer() == Binarizer::GlobalHistogram || opts.binarizer() == Binarizer::LocalAverage) {
 		// manually spell out the 3 most common pixel formats to get at least gcc to vectorize the code
@@ -131,8 +139,8 @@ ImageView SetupLumImageView(ImageView iv, LumImage& lum, const ReaderOptions& op
 std::unique_ptr<BinaryBitmap> CreateBitmap(ZXing::Binarizer binarizer, const ImageView& iv)
 {
 	switch (binarizer) {
-	case Binarizer::BoolCast: return std::make_unique<ThresholdBinarizer>(iv, 0);
-	case Binarizer::FixedThreshold: return std::make_unique<ThresholdBinarizer>(iv, 127);
+	// case Binarizer::BoolCast: return std::make_unique<ThresholdBinarizer>(iv, 0); // ZXING_CUSTOM
+	// case Binarizer::FixedThreshold: return std::make_unique<ThresholdBinarizer>(iv, 127); // ZXING_CUSTOM
 	case Binarizer::GlobalHistogram: return std::make_unique<GlobalHistogramBinarizer>(iv);
 	case Binarizer::LocalAverage: return std::make_unique<HybridBinarizer>(iv);
 	}
@@ -146,11 +154,15 @@ Barcode ReadBarcode(const ImageView& _iv, const ReaderOptions& opts)
 
 Barcodes ReadBarcodes(const ImageView& _iv, const ReaderOptions& opts)
 {
+	/*
+	 * ZXING_CUSTOM
+	 *
 	if (sizeof(PatternType) < 4 && (_iv.width() > 0xffff || _iv.height() > 0xffff))
 		throw std::invalid_argument("Maximum image width/height is 65535");
 
 	if (!_iv.data() || _iv.width() * _iv.height() == 0)
 		throw std::invalid_argument("ImageView is null/empty");
+	*/
 
 	LumImage lum;
 	ImageView iv = SetupLumImageView(_iv, lum, opts);

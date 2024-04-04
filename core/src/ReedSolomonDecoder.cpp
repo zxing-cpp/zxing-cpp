@@ -23,7 +23,8 @@ RunEuclideanAlgorithm(const GenericGF& field, std::vector<int>&& rCoefs, Generic
 	GenericGFPoly r(field, std::move(rCoefs));
 	GenericGFPoly& tLast = omega.setField(field);
 	GenericGFPoly& t = sigma.setField(field);
-	ZX_THREAD_LOCAL GenericGFPoly q, rLast;
+	// ZX_THREAD_LOCAL GenericGFPoly q, rLast; // ZXING_CUSTOM
+	GenericGFPoly q, rLast;
 
 	rLast.setField(field);
 	q.setField(field);
@@ -51,8 +52,12 @@ RunEuclideanAlgorithm(const GenericGF& field, std::vector<int>&& rCoefs, Generic
 		q.addOrSubtract(t);
 		swap(t, q); // t = q
 
+		/*
+		 * ZXING_CUSTOM
+		 *
 		if (r.degree() >= rLast.degree())
 			throw std::runtime_error("Division algorithm failed to reduce polynomial?");
+		*/
 	}
 
 	int sigmaTildeAtZero = t.constant();
@@ -118,7 +123,8 @@ ReedSolomonDecode(const GenericGF& field, std::vector<int>& message, int numECCo
 	if (std::all_of(syndromes.begin(), syndromes.end(), [](int c) { return c == 0; }))
 		return true;
 
-	ZX_THREAD_LOCAL GenericGFPoly sigma, omega;
+	// ZX_THREAD_LOCAL GenericGFPoly sigma, omega; // ZXING_CUSTOM
+	GenericGFPoly sigma, omega;
 
 	if (!RunEuclideanAlgorithm(field, std::move(syndromes), sigma, omega))
 		return false;

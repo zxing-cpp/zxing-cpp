@@ -33,7 +33,8 @@ CodecMode CodecModeForBits(int bits, Type type)
 			return static_cast<CodecMode>(bits);
 	}
 
-	throw FormatError("Invalid codec mode");
+	// throw FormatError("Invalid codec mode"); // ZXING_CUSTOM
+	return CodecMode::TERMINATOR; // ZXING_CUSTOM
 }
 
 int CharacterCountBits(CodecMode mode, const Version& version)

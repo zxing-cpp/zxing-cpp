@@ -124,15 +124,20 @@ std::string Content::render(bool withECI) const
 			lastECI = eci;
 
 			std::string tmp;
-			TextDecoder::Append(tmp, bytes.data() + begin, end - begin, cs);
+			// TextDecoder::Append(tmp, bytes.data() + begin, end - begin, cs); // ZXING_CUSTOM
 			for (auto c : tmp) {
 				res += c;
 				if (c == '\\') // in the ECI protocol a '\' has to be doubled
 					res += c;
 			}
-		} else {
+		}
+		/*
+		 * ZXING_CUSTOM
+		 * 
+		else {
 			TextDecoder::Append(res, bytes.data() + begin, end - begin, cs);
 		}
+		*/
 	});
 
 	return res;
@@ -200,7 +205,8 @@ CharacterSet Content::guessEncoding() const
 	if (input.empty())
 		return CharacterSet::Unknown;
 
-	return TextDecoder::GuessEncoding(input.data(), input.size(), CharacterSet::ISO8859_1);
+	// return TextDecoder::GuessEncoding(input.data(), input.size(), CharacterSet::ISO8859_1); // ZXING_CUSTOM
+	return CharacterSet::BINARY;
 }
 
 ContentType Content::type() const

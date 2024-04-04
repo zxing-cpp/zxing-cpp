@@ -21,9 +21,13 @@ BitSource::available() const
 
 static int ReadBitsImpl(int numBits, const ByteArray& _bytes, int available, int& _byteOffset, int& _bitOffset)
 {
+	/*
+	 * ZXING_CUSTOM
+	 *
 	if (numBits < 1 || numBits > 32 || numBits > available) {
 		throw std::out_of_range("BitSource::readBits: out of range");
 	}
+	*/
 
 	int result = 0;
 

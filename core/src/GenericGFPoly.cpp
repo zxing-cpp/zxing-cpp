@@ -103,8 +103,12 @@ GenericGFPoly::divide(const GenericGFPoly& other, GenericGFPoly& quotient)
 {
 	assert(_field == other._field); // "GenericGFPolys do not have same GenericGF field"
 
+	/*
+	 * ZXING_CUSTOM
+	 *
 	if (other.isZero())
 		throw std::invalid_argument("Divide by 0");
+	*/
 
 	quotient.setField(*_field);
 	if (degree() < other.degree()) {

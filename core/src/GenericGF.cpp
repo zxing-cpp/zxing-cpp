@@ -8,6 +8,9 @@
 
 namespace ZXing {
 
+/*
+ * ZXING_CUSTOM
+ *
 const GenericGF &
 GenericGF::AztecData12()
 {
@@ -35,6 +38,7 @@ GenericGF::AztecParam()
 	static GenericGF inst(0x13, 16, 1); // x^4 + x + 1
 	return inst;
 }
+*/
 
 const GenericGF &
 GenericGF::QRCodeField256()
@@ -43,6 +47,9 @@ GenericGF::QRCodeField256()
 	return inst;
 }
 
+/*
+ * ZXING_CUSTOM
+ *
 const GenericGF &
 GenericGF::DataMatrixField256()
 {
@@ -63,6 +70,7 @@ GenericGF::MaxiCodeField64()
 	static const GenericGF inst(0x43, 64, 1); // = AZTEC_DATA_6;
 	return inst;
 }
+*/
 
 
 /**

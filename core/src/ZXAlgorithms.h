@@ -99,8 +99,12 @@ Value TransformReduce(const Container& c, Value s, UnaryOp op) {
 template <typename T = char>
 T ToDigit(int i)
 {
+	/*
+	 * ZXING_CUSTOM
+	 *
 	if (i < 0 || i > 9)
 		throw FormatError("Invalid digit value");
+	*/
 	return static_cast<T>('0' + i);
 }
 
@@ -108,12 +112,20 @@ template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
 std::string ToString(T val, int len)
 {
 	std::string result(len--, '0');
+	/*
+	 * ZXING_CUSTOM
+	 *
 	if (val < 0)
 		throw FormatError("Invalid value");
+	*/
 	for (; len >= 0 && val != 0; --len, val /= 10)
 		result[len] = '0' + val % 10;
+	/*
+	 * ZXING_CUSTOM
+	 *
 	if (val)
 		throw FormatError("Invalid value");
+	*/
 	return result;
 }
 

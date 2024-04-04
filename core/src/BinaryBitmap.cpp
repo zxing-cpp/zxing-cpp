@@ -7,13 +7,13 @@
 
 #include "BitMatrix.h"
 
-#include <mutex>
+// #include <mutex> // ZXING_CUSTOM
 
 namespace ZXing {
 
 struct BinaryBitmap::Cache
 {
-	std::once_flag once;
+	// std::once_flag once; // ZXING_CUSTOM
 	std::shared_ptr<const BitMatrix> matrix;
 };
 
@@ -53,7 +53,8 @@ BinaryBitmap::~BinaryBitmap() = default;
 
 const BitMatrix* BinaryBitmap::getBitMatrix() const
 {
-	std::call_once(_cache->once, [&](){_cache->matrix = getBlackMatrix();});
+	// std::call_once(_cache->once, [&](){_cache->matrix = getBlackMatrix();}); // ZXING_CUSTOM
+	_cache->matrix = getBlackMatrix(); // ZXING_CUSTOM
 	return _cache->matrix.get();
 }
 

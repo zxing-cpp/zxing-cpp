@@ -17,17 +17,25 @@ namespace ZXing {
 void
 BitMatrix::setRegion(int left, int top, int width, int height)
 {
+	/*
+	 * ZXING_CUSTOM
+	 *
 	if (top < 0 || left < 0) {
 		throw std::invalid_argument("BitMatrix::setRegion(): Left and top must be nonnegative");
 	}
 	if (height < 1 || width < 1) {
 		throw std::invalid_argument("BitMatrix::setRegion(): Height and width must be at least 1");
 	}
+	*/
 	int right = left + width;
 	int bottom = top + height;
+	/*
+	 * ZXING_CUSTOM
+	 *
 	if (bottom > _height || right > _width) {
 		throw std::invalid_argument("BitMatrix::setRegion(): The region must fit inside the matrix");
 	}
+	*/
 	for (int y = top; y < bottom; y++) {
 		auto offset = y * _width;
 		for (int x = left; x < right; x++) {

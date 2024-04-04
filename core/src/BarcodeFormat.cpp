@@ -92,8 +92,12 @@ BarcodeFormats BarcodeFormatsFromString(std::string_view str)
 	for (std::string token; std::getline(input, token, '|');) {
 		if(!token.empty()) {
 			auto bc = ParseFormatString(token);
+			/*
+			 * ZXING_CUSTOM
+			 *
 			if (bc == BarcodeFormat::None)
 				throw std::invalid_argument("This is not a valid barcode format: " + token);
+			*/
 			res |= bc;
 		}
 	}

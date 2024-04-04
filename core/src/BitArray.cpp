@@ -16,9 +16,13 @@ namespace ZXing {
 void
 BitArray::bitwiseXOR(const BitArray& other)
 {
+	/*
+	 * ZXING_CUSTOM
+	 *
 	if (size() != other.size()) {
 		throw std::invalid_argument("BitArray::xor(): Sizes don't match");
 	}
+	*/
 	for (size_t i = 0; i < _bits.size(); i++) {
 		// The last int could be incomplete (i.e. not have 32 bits in
 		// it) but there is no problem since 0 XOR 0 == 0.

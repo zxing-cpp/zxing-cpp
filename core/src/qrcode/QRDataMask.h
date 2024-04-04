@@ -23,8 +23,12 @@ namespace ZXing::QRCode {
 inline bool GetDataMaskBit(int maskIndex, int x, int y, bool isMicro = false)
 {
 	if (isMicro) {
+		/*
+		 * ZXING_CUSTOM
+		 *
 		if (maskIndex < 0 || maskIndex >= 4)
 			throw std::invalid_argument("QRCode maskIndex out of range");
+		*/
 		maskIndex = std::array{1, 4, 6, 7}[maskIndex]; // map from MQR to QR indices
 	}
 
@@ -39,7 +43,8 @@ inline bool GetDataMaskBit(int maskIndex, int x, int y, bool isMicro = false)
 	case 7: return (y + x + ((y * x) % 3)) % 2 == 0;
 	}
 
-	throw std::invalid_argument("QRCode maskIndex out of range");
+	// throw std::invalid_argument("QRCode maskIndex out of range"); // ZXING_CUSTOM
+	return false; // ZXING_CUSTOM
 }
 
 inline bool GetMaskedBit(const BitMatrix& bits, int x, int y, int maskIndex, bool isMicro = false)

@@ -46,14 +46,14 @@ class GenericGF
 	GenericGF(int primitive, int size, int b);
 
 public:
-	static const GenericGF& AztecData12();
-	static const GenericGF& AztecData10();
-	static const GenericGF& AztecData6();
-	static const GenericGF& AztecParam();
+	// static const GenericGF& AztecData12(); // ZXING_CUSTOM
+	// static const GenericGF& AztecData10(); // ZXING_CUSTOM
+	// static const GenericGF& AztecData6(); // ZXING_CUSTOM
+	// static const GenericGF& AztecParam(); // ZXING_CUSTOM
 	static const GenericGF& QRCodeField256();
-	static const GenericGF& DataMatrixField256();
-	static const GenericGF& AztecData8();
-	static const GenericGF& MaxiCodeField64();
+	// static const GenericGF& DataMatrixField256(); // ZXING_CUSTOM
+	// static const GenericGF& AztecData8(); // ZXING_CUSTOM
+	// static const GenericGF& MaxiCodeField64(); // ZXING_CUSTOM
 
 	// note: replaced addOrSubstract calls with '^' / '^='. everyone trying to understand this code needs to look into
 	// Galois Fields with characteristic 2 and will then understand that XOR is addition/subtraction. And those
@@ -70,9 +70,13 @@ public:
 	* @return base 2 log of a in GF(size)
 	*/
 	int log(int a) const {
+		/*
+		 * ZXING_CUSTOM
+		 *
 		if (a == 0) {
 			throw std::invalid_argument("a == 0");
 		}
+		*/
 		return _logTable.at(a);
 	}
 

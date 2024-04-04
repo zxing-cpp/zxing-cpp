@@ -20,6 +20,7 @@
 #include "StructuredAppend.h"
 #include "ZXAlgorithms.h"
 #include "ZXTestSupport.h"
+#include "ECI.h"
 
 #include <algorithm>
 #include <stdexcept>
@@ -124,8 +125,12 @@ static char ToAlphaNumericChar(int value)
 		' ', '$', '%', '*', '+', '-', '.', '/', ':'
 	};
 
+	/*
+	 * ZXING_CUSTOM
+	 */
 	if (value < 0 || value >= Size(ALPHANUMERIC_CHARS))
-		throw std::out_of_range("ToAlphaNumericChar: out of range");
+		return ALPHANUMERIC_CHARS[0]; // throw std::out_of_range("ToAlphaNumericChar: out of range");
+	
 
 	return ALPHANUMERIC_CHARS[value];
 }
@@ -194,7 +199,8 @@ static ECI ParseECIValue(BitSource& bits)
 		int secondThirdBytes = bits.readBits(16);
 		return ECI(((firstByte & 0x1F) << 16) | secondThirdBytes);
 	}
-	throw FormatError("ParseECIValue: invalid value");
+	// throw FormatError("ParseECIValue: invalid value"); // ZXING_CUSTOM
+	return ECI::Unknown; // ZXING_CUSTOM
 }
 
 /**
@@ -240,8 +246,8 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 	if (version.isModel1())
 		bits.readBits(4); // Model 1 is leading with 4 0-bits -> drop them
 
-	try
-	{
+	// try // ZXING_CUSTOM
+	// { // ZXING_CUSTOM
 		while(!IsEndOfStream(bits, version)) {
 			CodecMode mode;
 			if (modeBitLength == 0)
@@ -251,22 +257,36 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 
 			switch (mode) {
 			case CodecMode::FNC1_FIRST_POSITION:
-//				if (!result.empty()) // uncomment to enforce specification
-//					throw FormatError("GS1 Indicator (FNC1 in first position) at illegal position");
+				if (!result.empty()) {
+					error = FormatError("GS1 Indicator (FNC1 in first position) at illegal position");
+					break; // throw FormatError("GS1 Indicator (FNC1 in first position) at illegal position");
+				}
 				result.symbology.modifier = '3';
 				result.symbology.aiFlag = AIFlag::GS1; // In Alphanumeric mode undouble doubled '%' and treat single '%' as <GS>
 				break;
 			case CodecMode::FNC1_SECOND_POSITION:
-				if (!result.empty())
-					throw FormatError("AIM Application Indicator (FNC1 in second position) at illegal position");
+				/*
+				 * ZXING_CUSTOM
+				 */
+				if (!result.empty()) {
+					error = FormatError("AIM Application Indicator (FNC1 in second position) at illegal position");
+					break; // throw FormatError("AIM Application Indicator (FNC1 in second position) at illegal position");
+				}
+
 				result.symbology.modifier = '5'; // As above
 				// ISO/IEC 18004:2015 7.4.8.3 AIM Application Indicator (FNC1 in second position), "00-99" or "A-Za-z"
 				if (int appInd = bits.readBits(8); appInd < 100) // "00-09"
 					result += ZXing::ToString(appInd, 2);
 				else if ((appInd >= 165 && appInd <= 190) || (appInd >= 197 && appInd <= 222)) // "A-Za-z"
 					result += narrow_cast<uint8_t>(appInd - 100);
-				else
-					throw FormatError("Invalid AIM Application Indicator");
+				/*
+				 * ZXING_CUSTOM
+				 */
+				else {
+					error = FormatError("Invalid AIM Application Indicator");
+					break; // throw FormatError("Invalid AIM Application Indicator");
+				}
+				
 				result.symbology.aiFlag = AIFlag::AIM; // see also above
 				break;
 			case CodecMode::STRUCTURED_APPEND:
@@ -277,16 +297,29 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 				structuredAppend.id    = std::to_string(bits.readBits(8));
 				break;
 			case CodecMode::ECI:
-				if (version.isModel1())
-					throw FormatError("QRCode Model 1 does not support ECI");
+				/*
+				 * ZXING_CUSTOM
+				 */
+				if (version.isModel1()) {
+					error = FormatError("QRCode Model 1 does not support ECI");
+					break; // throw FormatError("QRCode Model 1 does not support ECI");
+				}
+				
 				// Count doesn't apply to ECI
 				result.switchEncoding(ParseECIValue(bits));
 				break;
 			case CodecMode::HANZI: {
 				// First handle Hanzi mode which does not start with character count
 				// chinese mode contains a sub set indicator right after mode indicator
+				/*
+				 * ZXING_CUSTOM
+				 */
 				if (int subset = bits.readBits(4); subset != 1) // GB2312_SUBSET is the only supported one right now
-					throw FormatError("Unsupported HANZI subset");
+				{
+					error = FormatError("Unsupported HANZI subset");
+					break; // throw FormatError("Unsupported HANZI subset");
+				}
+				
 				int count = bits.readBits(CharacterCountBits(mode, version));
 				DecodeHanziSegment(bits, count, result);
 				break;
@@ -300,17 +333,21 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 				case CodecMode::ALPHANUMERIC: DecodeAlphanumericSegment(bits, count, result); break;
 				case CodecMode::BYTE:         DecodeByteSegment(bits, count, result); break;
 				case CodecMode::KANJI:        DecodeKanjiSegment(bits, count, result); break;
-				default:                      throw FormatError("Invalid CodecMode");
+				default: error = FormatError("Invalid CodecMode"); break; // throw FormatError("Invalid CodecMode"); // ZXING_CUSTOM
 				}
 				break;
 			}
 			}
 		}
+	/*
+	 * ZXING_CUSTOM
+	 *
 	} catch (std::out_of_range&) { // see BitSource::readBits
 		error = FormatError("Truncated bit stream");
 	} catch (Error e) {
 		error = std::move(e);
 	}
+	*/
 
 	return DecoderResult(std::move(result))
 		.setError(std::move(error))
