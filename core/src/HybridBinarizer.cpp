@@ -50,7 +50,7 @@ using T_t = uint8_t;
 /**
 * Applies a single threshold to a block of pixels.
 */
-static void ThresholdBlock(const uint8_t* __restrict luminances, int xoffset, int yoffset, int threshold, int rowStride,
+static void ThresholdBlock(const uint8_t* __restrict luminances, int xoffset, int yoffset, T_t threshold, int rowStride,
 						   BitMatrix& matrix)
 {
 	for (int y = yoffset; y < yoffset + BLOCK_SIZE; ++y) {
