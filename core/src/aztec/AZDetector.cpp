@@ -261,9 +261,10 @@ static uint32_t SampleOrientationBits(const BitMatrix& image, const PerspectiveT
 	return bits;
 }
 
-static int ModeMessage(const BitMatrix& image, const PerspectiveTransform& mod2Pix, int radius)
+static int ModeMessage(const BitMatrix& image, const PerspectiveTransform& mod2Pix, int radius, bool& isRune)
 {
 	const bool compact = radius == 5;
+	isRune = false;
 
 	// read the bits between the corner bits along the 4 edges
 	uint64_t bits = 0;
@@ -291,7 +292,21 @@ static int ModeMessage(const BitMatrix& image, const PerspectiveTransform& mod2P
 		words[i] = narrow_cast<int>(bits & 0xF);
 		bits >>= 4;
 	}
-	if (!ReedSolomonDecode(GenericGF::AztecParam(), words, numECCodewords))
+
+	bool decodeResult = ReedSolomonDecode(GenericGF::AztecParam(), words, numECCodewords);
+
+	if ((!decodeResult) && compact) {
+		// Is this a Rune?
+		for (int i = numCodewords - 1; i >= 0; --i) {
+			words[i] ^= 0b1010;
+		}
+		decodeResult = ReedSolomonDecode(GenericGF::AztecParam(), words, numECCodewords);
+
+		if (decodeResult)
+			isRune = true;
+	}
+
+	if (!decodeResult)
 		return -1;
 
 	int res = 0;
@@ -350,6 +365,7 @@ DetectorResults Detect(const BitMatrix& image, bool isPure, bool tryHarder, int 
 		int mirror; // 0 or 1
 		int rotate; // [0..3]
 		int modeMessage = -1;
+		bool isRune = false;
 		[&]() {
 			// 24778:2008(E) 14.3.3 reads:
 			// In the outer layer of the Core Symbol, the 12 orientation bits at the corners are bitwise compared against the specified
@@ -369,7 +385,7 @@ DetectorResults Detect(const BitMatrix& image, bool isPure, bool tryHarder, int 
 					rotate = FindRotation(bits, mirror);
 					if (rotate == -1)
 						continue;
-					modeMessage = ModeMessage(image, PerspectiveTransform(srcQuad, RotatedCorners(*fpQuad, rotate, mirror)), radius);
+					modeMessage = ModeMessage(image, PerspectiveTransform(srcQuad, RotatedCorners(*fpQuad, rotate, mirror)), radius, isRune);
 					if (modeMessage != -1)
 						return;
 				}
@@ -399,7 +415,9 @@ DetectorResults Detect(const BitMatrix& image, bool isPure, bool tryHarder, int 
 		int nbLayers = 0;
 		int nbDataBlocks = 0;
 		bool readerInit = false;
-		ExtractParameters(modeMessage, radius == 5, nbLayers, nbDataBlocks, readerInit);
+		if (!isRune) {
+			ExtractParameters(modeMessage, radius == 5, nbLayers, nbDataBlocks, readerInit);
+		}
 
 		int dim = radius == 5 ? 4 * nbLayers + 11 : 4 * nbLayers + 2 * ((2 * nbLayers + 6) / 15) + 15;
 		double low = dim / 2.0 + srcQuad[0].x;
@@ -409,7 +427,7 @@ DetectorResults Detect(const BitMatrix& image, bool isPure, bool tryHarder, int 
 		if (!bits.isValid())
 			continue;
 
-		res.emplace_back(std::move(bits), radius == 5, nbDataBlocks, nbLayers, readerInit, mirror != 0);
+		res.emplace_back(std::move(bits), radius == 5, nbDataBlocks, nbLayers, readerInit, mirror != 0, isRune ? modeMessage : 0);
 
 		if (Size(res) == maxSymbols)
 			break;
