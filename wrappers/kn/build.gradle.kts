@@ -90,6 +90,7 @@ krossCompile {
                 packageName = "zxingcpp.cinterop"
                 includeDirs.from(buildDir)
                 headers = listOf("$sourceDir/src/ZXingC.h")
+                compilerOpts += "-DZXING_EXPERIMENTAL_API=ON"
             }
             cmake.apply {
                 val buildDir = "$cmakeDir/{projectName}/{targetName}"
@@ -102,7 +103,9 @@ krossCompile {
                 } + CustomCMakeCacheEntries(
                     mapOf(
                         "ZXING_READERS" to "ON",
-                        "ZXING_WRITERS" to "OFF",
+                        "ZXING_WRITERS" to "NEW",
+                        "ZXING_EXPERIMENTAL_API" to "ON",
+                        "ZXING_USE_BUNDLED_ZINT" to "ON",
                         "ZXING_C_API" to "ON",
                     )
                 )).asCMakeParams

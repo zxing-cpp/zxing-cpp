@@ -53,6 +53,23 @@ fun ZXing_Position.toKObject(): Position = Position(
 
 @OptIn(ExperimentalForeignApi::class)
 class Barcode(val cValue: CValuesRef<ZXing_Barcode>) {
+	companion object {
+		@ExperimentalWriterApi
+		fun fromText(text: String, opts: CreatorOptions): Barcode =
+			ZXing_CreateBarcodeFromText(text, text.length, opts.cValue)?.toKObject()
+				?: throw BarcodeReadingException(ZXing_LastErrorMsg()?.toKStringNullPtrHandledAndFree())
+		@ExperimentalWriterApi
+		fun fromText(text: String, format: BarcodeFormat): Barcode =
+			fromText(text, CreatorOptions(format))
+		@ExperimentalWriterApi
+		fun fromBytes(bytes: ByteArray, opts: CreatorOptions): Barcode =
+			ZXing_CreateBarcodeFromBytes(bytes.refTo(0), bytes.size, opts.cValue)?.toKObject()
+				?: throw BarcodeReadingException(ZXing_LastErrorMsg()?.toKStringNullPtrHandledAndFree())
+		@ExperimentalWriterApi
+		fun fromBytes(bytes: ByteArray, format: BarcodeFormat): Barcode =
+			fromBytes(bytes, CreatorOptions(format))
+	}
+
 	val isValid: Boolean
 		get() = ZXing_Barcode_isValid(cValue)
 	val errorMsg: String? by lazy {
@@ -131,6 +148,12 @@ class Barcode(val cValue: CValuesRef<ZXing_Barcode>) {
 			")"
 	}
 }
+
+@ExperimentalWriterApi
+fun Barcode.toSVG(opts: WriterOptions? = null): String = BarcodeWriter.writeToSVG(this, opts)
+
+@ExperimentalWriterApi
+fun Barcode.toImage(opts: WriterOptions? = null): Image = BarcodeWriter.writeToImage(this, opts)
 
 @OptIn(ExperimentalForeignApi::class)
 fun CValuesRef<ZXing_Barcode>.toKObject(): Barcode = Barcode(this)
