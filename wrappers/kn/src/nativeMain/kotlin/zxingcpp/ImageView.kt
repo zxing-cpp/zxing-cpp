@@ -13,43 +13,52 @@ import kotlin.experimental.ExperimentalNativeApi
 import kotlin.native.ref.Cleaner
 import kotlin.native.ref.createCleaner
 
-@OptIn(ExperimentalForeignApi::class)
-abstract class ImageView {
-	abstract val cValue: CValuesRef<ZXing_ImageView>
-
+@OptIn(ExperimentalForeignApi::class, ExperimentalNativeApi::class)
+class ImageView(
+	val cValue: CValuesRef<ZXing_ImageView>, private val pinnedData: Pinned<ByteArray>? = null,
 	@Suppress("unused")
-	@OptIn(ExperimentalNativeApi::class)
-	protected abstract val cValueCleaner: Cleaner
-}
-
-@OptIn(ExperimentalForeignApi::class)
-open class ImageViewImplNoCopy(
-	data: ByteArray,
-	width: Int,
-	height: Int,
-	format: ImageFormat,
-	rowStride: Int = 0,
-	pixStride: Int = 0,
-) : ImageView() {
-	private val pinnedData = data.pin()
-
-	final override val cValue: CPointer<ZXing_ImageView> = ZXing_ImageView_new_checked(
-		pinnedData.addressOf(0).reinterpret(),
-		data.size,
-		width,
-		height,
-		format.cValue,
-		rowStride,
-		pixStride
-	) ?: error("Failed to create ZXing_ImageView")
-
+	private val cValueCleaner: Cleaner = createCleaner(cValue) { ZXing_ImageView_delete(it) },
 	@Suppress("unused")
-	@OptIn(ExperimentalNativeApi::class)
-	private val pinnedDataCleaner = createCleaner(pinnedData) { it.unpin() }
+	private val pinnedDataCleaner: Cleaner? = pinnedData?.let { createCleaner(pinnedData) { it.unpin() } }
+) {
 
-	@Suppress("unused")
-	@OptIn(ExperimentalNativeApi::class)
-	override val cValueCleaner = createCleaner(cValue) { ZXing_ImageView_delete(it) }
+	constructor(
+		pinnedData: Pinned<ByteArray>,
+		pinnedDataCleaner: Cleaner? = createCleaner(pinnedData) { it.unpin() },
+		width: Int,
+		height: Int,
+		format: ImageFormat,
+		rowStride: Int = 0,
+		pixStride: Int = 0,
+	) : this(
+		cValue = ZXing_ImageView_new_checked(
+			pinnedData.addressOf(0).reinterpret(),
+			pinnedData.get().size,
+			width,
+			height,
+			format.cValue,
+			rowStride,
+			pixStride,
+		) ?: error("Failed to create ZXing_ImageView"),
+		pinnedData = pinnedData,
+		pinnedDataCleaner = pinnedDataCleaner
+	)
+
+	constructor(
+		data: ByteArray,
+		width: Int,
+		height: Int,
+		format: ImageFormat,
+		rowStride: Int = 0,
+		pixStride: Int = 0,
+	) : this(
+		pinnedData = data.pin(),
+		width = width,
+		height = height,
+		format = format,
+		rowStride = rowStride,
+		pixStride = pixStride,
+	)
 }
 
 
@@ -72,20 +81,29 @@ fun ZXing_ImageFormat.parseIntoImageFormat(): ImageFormat? =
 
 @ExperimentalWriterApi
 @OptIn(ExperimentalForeignApi::class)
-class Image(val cValueImage: CValuesRef<ZXing_Image>) : ImageView() {
-	@Suppress("unchecked_cast")
-	override val cValue: CValuesRef<ZXing_ImageView> = cValueImage as CValuesRef<ZXing_ImageView>
-
-	val data: ByteArray get() = ZXing_Image_data(cValueImage)?.run {
-		readBytes(width * height).also { ZXing_free(this) }
-	}?.takeUnless { it.isEmpty() } ?: throw OutOfMemoryError()
-	val width: Int get() = ZXing_Image_width(cValueImage)
-	val height: Int get() = ZXing_Image_height(cValueImage)
-	val format: ImageFormat get() = ZXing_Image_format(cValueImage).parseIntoImageFormat() ?: error("Unknown format ${ZXing_Image_format(cValueImage)} for image")
+class Image(val cValue: CValuesRef<ZXing_Image>) {
+	val data: ByteArray
+		get() = ZXing_Image_data(cValue)?.run {
+			readBytes(width * height).also { ZXing_free(this) }
+		}?.takeUnless { it.isEmpty() } ?: throw OutOfMemoryError()
+	val width: Int get() = ZXing_Image_width(cValue)
+	val height: Int get() = ZXing_Image_height(cValue)
+	val format: ImageFormat
+		get() = ZXing_Image_format(cValue).parseIntoImageFormat() ?: error(
+			"Unknown format ${
+				ZXing_Image_format(
+					cValue
+				)
+			} for image"
+		)
 
 	@Suppress("unused")
 	@OptIn(ExperimentalNativeApi::class)
-	override val cValueCleaner = createCleaner(cValueImage) { ZXing_Image_delete(it) }
+	val cValueCleaner = createCleaner(cValue) { ZXing_Image_delete(it) }
+
+	@Suppress("unchecked_cast")
+	@OptIn(ExperimentalNativeApi::class)
+	fun asImageView(): ImageView = ImageView(cValue as CValuesRef<ZXing_ImageView>, null, cValueCleaner, null)
 }
 
 @ExperimentalWriterApi

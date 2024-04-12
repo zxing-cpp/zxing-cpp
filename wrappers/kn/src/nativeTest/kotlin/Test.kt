@@ -19,7 +19,7 @@ class BarcodeReaderTest {
 			if (it == '0') 255.toByte() else 0.toByte()
 		}
 
-		val iv = ImageViewImplNoCopy(data.toByteArray(), data.size, 1, ImageFormat.Lum)
+		val iv = ImageView(data.toByteArray(), data.size, 1, ImageFormat.Lum)
 		val br = BarcodeReader().apply {
 			binarizer = Binarizer.BoolCast
 		}
@@ -46,7 +46,7 @@ class BarcodeReaderTest {
 		val barcode = Barcode.fromText(text, BarcodeFormat.DataMatrix)
 		val image = barcode.toImage()
 
-		val res = BarcodeReader.read(image).firstOrNull()
+		val res = BarcodeReader.read(image.asImageView()).firstOrNull()
 
 		assertNotNull(res)
 		assert(res.isValid)
@@ -67,7 +67,7 @@ class BarcodeReaderTest {
 		val barcode = Barcode.fromBytes(text.encodeToByteArray(), BarcodeFormat.DataMatrix)
 		val image = barcode.toImage()
 
-		val res = BarcodeReader.read(image).firstOrNull()
+		val res = BarcodeReader.read(image.asImageView()).firstOrNull()
 
 		assertNotNull(res)
 		assert(res.isValid)
