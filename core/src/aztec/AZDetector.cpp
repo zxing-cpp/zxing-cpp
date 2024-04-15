@@ -109,8 +109,13 @@ static std::optional<ConcentricPattern> LocateAztecCenter(const BitMatrix& image
 static std::vector<ConcentricPattern> FindPureFinderPattern(const BitMatrix& image)
 {
 	int left, top, width, height;
-	if (!image.findBoundingBox(left, top, width, height, 11)) // 11 is the size of an Aztec Rune, see ISO/IEC 24778:2008(E) Annex A
-		return {};
+	if (!image.findBoundingBox(left, top, width, height, 11)) {  // 11 is the size of an Aztec Rune, see ISO/IEC 24778:2008(E) Annex A
+		// Runes 68 and 223 have none of their bits set on the bottom row
+		if (image.findBoundingBox(left, top, width, height, 10) && (width == 11) && (height == 10))
+			height = 11;
+		else
+			return {};
+	}	
 
 	PointF p(left + width / 2, top + height / 2);
 	constexpr auto PATTERN = FixedPattern<7, 7>{1, 1, 1, 1, 1, 1, 1};
