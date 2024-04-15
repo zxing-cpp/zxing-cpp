@@ -19,7 +19,7 @@ class DetectorResult : public ZXing::DetectorResult
 	int _nbLayers = 0;
 	bool _readerInit = false;
 	bool _isMirrored = false;
-	int _runeValue = 0;
+	int _runeValue = -1;
 
 	DetectorResult(const DetectorResult&) = delete;
 	DetectorResult& operator=(const DetectorResult&) = delete;
