@@ -200,3 +200,52 @@ TEST(AZEncoderTest, BorderCompact4Case)
 	EXPECT_TRUE(aztec.compact);
 	EXPECT_EQ(aztec.layers, 4);
 }
+
+
+TEST(AZEncoderTest, Rune)
+{
+	{
+		Aztec::EncodeResult aztec = Aztec::Encoder::Encode("\x19", 0, Aztec::Encoder::AZTEC_RUNE_LAYERS);
+		
+		EXPECT_EQ(aztec.layers, 0);
+		EXPECT_EQ(aztec.matrix, ParseBitMatrix(
+			"X X X   X X     X   X \n"
+			"X X X X X X X X X X X \n"
+			"  X               X X \n"
+			"  X   X X X X X   X X \n"
+			"  X   X       X   X   \n"
+			"X X   X   X   X   X X \n"
+			"X X   X       X   X X \n"
+			"X X   X X X X X   X   \n"
+			"X X               X X \n"
+			"  X X X X X X X X X X \n"
+			"    X     X           \n"
+		));
+	}
+	{
+		Aztec::EncodeResult aztec = Aztec::Encoder::Encode("\xFF", 0, Aztec::Encoder::AZTEC_RUNE_LAYERS);
+		
+		EXPECT_EQ(aztec.layers, 0);
+		EXPECT_EQ(aztec.matrix, ParseBitMatrix(
+			"X X   X   X   X     X \n"
+			"X X X X X X X X X X X \n"
+			"  X               X X \n"
+			"X X   X X X X X   X X \n"
+			"X X   X       X   X X \n"
+			"  X   X   X   X   X X \n"
+			"  X   X       X   X   \n"
+			"X X   X X X X X   X X \n"
+			"X X               X   \n"
+			"  X X X X X X X X X X \n"
+			"    X X     X X X     \n"
+		));
+	}
+	{
+		Aztec::EncodeResult aztec = Aztec::Encoder::Encode("\x44", 0, Aztec::Encoder::AZTEC_RUNE_LAYERS);
+
+		std::cout << ToString(aztec.matrix, 'X', ' ', true);
+	}
+
+	
+	
+}
