@@ -302,9 +302,9 @@ static int ModeMessage(const BitMatrix& image, const PerspectiveTransform& mod2P
 
 	if ((!decodeResult) && compact) {
 		// Is this a Rune?
-		for (int i = numCodewords - 1; i >= 0; --i) {
-			words[i] ^= 0b1010;
-		}
+		for (auto& word : words)
+			word ^= 0b1010;
+		
 		decodeResult = ReedSolomonDecode(GenericGF::AztecParam(), words, numECCodewords);
 
 		if (decodeResult)
@@ -432,7 +432,7 @@ DetectorResults Detect(const BitMatrix& image, bool isPure, bool tryHarder, int 
 		if (!bits.isValid())
 			continue;
 
-		res.emplace_back(std::move(bits), radius == 5, nbDataBlocks, nbLayers, readerInit, mirror != 0, isRune ? modeMessage : 0);
+		res.emplace_back(std::move(bits), radius == 5, nbDataBlocks, nbLayers, readerInit, mirror != 0, isRune ? modeMessage : -1);
 
 		if (Size(res) == maxSymbols)
 			break;
