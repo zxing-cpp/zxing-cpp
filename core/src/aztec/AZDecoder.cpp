@@ -14,6 +14,7 @@
 #include "GenericGF.h"
 #include "ReedSolomonDecoder.h"
 #include "ZXTestSupport.h"
+#include "ZXAlgorithms.h"
 
 #include <cctype>
 #include <cstring>
@@ -348,9 +349,11 @@ DecoderResult Decode(const BitArray& bits)
 
 DecoderResult DecodeRune(const DetectorResult& detectorResult) {
 	Content res;
-	res.symbology = {'z', 'C', 3};
+	res.symbology = {'z', 'C', 0}; // Runes cannot have ECI
 
-	res.push_back(detectorResult.runeValue());
+	// Bizarrely, this is what it says to do in the spec
+	auto runeString = ToString(detectorResult.runeValue(), 3);
+	res.append(runeString);
 
 	return DecoderResult(std::move(res));
 }
