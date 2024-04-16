@@ -426,3 +426,63 @@ TEST(AZDetectorTest, ReaderInitCompact)
 		EXPECT_EQ(r.nbLayers(), 1);
 	}
 }
+
+TEST(AZDetectorTest, Rune)
+{
+	{
+		auto r = Aztec::Detect(ParseBitMatrix(
+			"X X X   X   X   X   X \n"
+			"X X X X X X X X X X X \n"
+			"  X               X   \n"
+			"X X   X X X X X   X X \n"
+			"  X   X       X   X   \n"
+			"X X   X   X   X   X X \n"
+			"  X   X       X   X   \n"
+			"X X   X X X X X   X X \n"
+			"  X               X   \n"
+			"  X X X X X X X X X X \n"
+			"    X   X   X   X     \n"
+		), false /*isPure*/, false /*tryHarder*/);
+
+		EXPECT_TRUE(r.isValid());
+		EXPECT_EQ(r.nbDatablocks(), 0);
+		EXPECT_EQ(r.runeValue(), 0);
+	}
+	{
+		auto r = Aztec::Detect(ParseBitMatrix(
+			"X X X   X X     X   X \n"
+			"X X X X X X X X X X X \n"
+			"  X               X X \n"
+			"  X   X X X X X   X X \n"
+			"  X   X       X   X   \n"
+			"X X   X   X   X   X X \n"
+			"X X   X       X   X X \n"
+			"X X   X X X X X   X   \n"
+			"X X               X X \n"
+			"  X X X X X X X X X X \n"
+			"    X     X           \n"
+		), true /*isPure*/, false /*tryHarder*/);
+
+		EXPECT_TRUE(r.isValid());
+		EXPECT_EQ(r.nbDatablocks(), 0);
+		EXPECT_EQ(r.runeValue(), 25);
+	}
+	{
+		auto r = Aztec::Detect(ParseBitMatrix(
+			"X X             X   X \n"
+			"X X X X X X X X X X X \n"
+			"  X               X   \n"
+			"X X   X X X X X   X   \n"
+			"  X   X       X   X X \n"
+			"  X   X   X   X   X   \n"
+			"  X   X       X   X X \n"
+			"  X   X X X X X   X X \n"
+			"X X               X   \n"
+			"  X X X X X X X X X X \n"
+			"          X X         \n"
+		), true /*isPure*/, false /*tryHarder*/);
+
+		// This is just the core of a regular compact code, and not a valid rune
+		EXPECT_FALSE(r.isValid());
+	}
+}

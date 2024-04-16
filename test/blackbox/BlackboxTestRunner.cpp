@@ -334,12 +334,16 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		auto startTime = std::chrono::steady_clock::now();
 
 		// clang-format off
-		runTests("aztec-1", "Aztec", 27, {
-			{ 26, 27, 0   },
-			{ 26, 27, 90  },
-			{ 26, 27, 180 },
-			{ 26, 27, 270 },
-			{ 25, 0, pure },
+
+		// Expected failures:
+		// abc-inverted.png (fast) - fast does not try inverted
+		// az-thick.png (pure)
+		runTests("aztec-1", "Aztec", 31, {
+			{ 30, 31, 0   },
+			{ 30, 31, 90  },
+			{ 30, 31, 180 },
+			{ 30, 31, 270 },
+			{ 29, 0, pure },
 		});
 
 		runTests("aztec-2", "Aztec", 22, {

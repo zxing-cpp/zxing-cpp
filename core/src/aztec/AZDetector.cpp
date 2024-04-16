@@ -109,12 +109,17 @@ static std::optional<ConcentricPattern> LocateAztecCenter(const BitMatrix& image
 static std::vector<ConcentricPattern> FindPureFinderPattern(const BitMatrix& image)
 {
 	int left, top, width, height;
-	if (!image.findBoundingBox(left, top, width, height, 11)) // 11 is the size of an Aztec Rune, see ISO/IEC 24778:2008(E) Annex A
-		return {};
+	if (!image.findBoundingBox(left, top, width, height, 11)) {  // 11 is the size of an Aztec Rune, see ISO/IEC 24778:2008(E) Annex A
+		// Runes 68 and 223 have none of their bits set on the bottom row
+		if (image.findBoundingBox(left, top, width, height, 10) && (width == 11) && (height == 10))
+			height = 11;
+		else
+			return {};
+	}	
 
 	PointF p(left + width / 2, top + height / 2);
 	constexpr auto PATTERN = FixedPattern<7, 7>{1, 1, 1, 1, 1, 1, 1};
-	if (auto pattern = LocateConcentricPattern(image, PATTERN, p, width / 2))
+	if (auto pattern = LocateConcentricPattern(image, PATTERN, p, width))
 		return {*pattern};
 	else
 		return {};
@@ -261,9 +266,10 @@ static uint32_t SampleOrientationBits(const BitMatrix& image, const PerspectiveT
 	return bits;
 }
 
-static int ModeMessage(const BitMatrix& image, const PerspectiveTransform& mod2Pix, int radius)
+static int ModeMessage(const BitMatrix& image, const PerspectiveTransform& mod2Pix, int radius, bool& isRune)
 {
 	const bool compact = radius == 5;
+	isRune = false;
 
 	// read the bits between the corner bits along the 4 edges
 	uint64_t bits = 0;
@@ -291,7 +297,21 @@ static int ModeMessage(const BitMatrix& image, const PerspectiveTransform& mod2P
 		words[i] = narrow_cast<int>(bits & 0xF);
 		bits >>= 4;
 	}
-	if (!ReedSolomonDecode(GenericGF::AztecParam(), words, numECCodewords))
+
+	bool decodeResult = ReedSolomonDecode(GenericGF::AztecParam(), words, numECCodewords);
+
+	if ((!decodeResult) && compact) {
+		// Is this a Rune?
+		for (auto& word : words)
+			word ^= 0b1010;
+		
+		decodeResult = ReedSolomonDecode(GenericGF::AztecParam(), words, numECCodewords);
+
+		if (decodeResult)
+			isRune = true;
+	}
+
+	if (!decodeResult)
 		return -1;
 
 	int res = 0;
@@ -350,6 +370,7 @@ DetectorResults Detect(const BitMatrix& image, bool isPure, bool tryHarder, int 
 		int mirror; // 0 or 1
 		int rotate; // [0..3]
 		int modeMessage = -1;
+		bool isRune = false;
 		[&]() {
 			// 24778:2008(E) 14.3.3 reads:
 			// In the outer layer of the Core Symbol, the 12 orientation bits at the corners are bitwise compared against the specified
@@ -369,7 +390,7 @@ DetectorResults Detect(const BitMatrix& image, bool isPure, bool tryHarder, int 
 					rotate = FindRotation(bits, mirror);
 					if (rotate == -1)
 						continue;
-					modeMessage = ModeMessage(image, PerspectiveTransform(srcQuad, RotatedCorners(*fpQuad, rotate, mirror)), radius);
+					modeMessage = ModeMessage(image, PerspectiveTransform(srcQuad, RotatedCorners(*fpQuad, rotate, mirror)), radius, isRune);
 					if (modeMessage != -1)
 						return;
 				}
@@ -399,7 +420,9 @@ DetectorResults Detect(const BitMatrix& image, bool isPure, bool tryHarder, int 
 		int nbLayers = 0;
 		int nbDataBlocks = 0;
 		bool readerInit = false;
-		ExtractParameters(modeMessage, radius == 5, nbLayers, nbDataBlocks, readerInit);
+		if (!isRune) {
+			ExtractParameters(modeMessage, radius == 5, nbLayers, nbDataBlocks, readerInit);
+		}
 
 		int dim = radius == 5 ? 4 * nbLayers + 11 : 4 * nbLayers + 2 * ((2 * nbLayers + 6) / 15) + 15;
 		double low = dim / 2.0 + srcQuad[0].x;
@@ -409,7 +432,7 @@ DetectorResults Detect(const BitMatrix& image, bool isPure, bool tryHarder, int 
 		if (!bits.isValid())
 			continue;
 
-		res.emplace_back(std::move(bits), radius == 5, nbDataBlocks, nbLayers, readerInit, mirror != 0);
+		res.emplace_back(std::move(bits), radius == 5, nbDataBlocks, nbLayers, readerInit, mirror != 0, isRune ? modeMessage : -1);
 
 		if (Size(res) == maxSymbols)
 			break;

@@ -10,6 +10,7 @@
 #include "PseudoRandom.h"
 #include "TextEncoder.h"
 #include "aztec/AZDecoder.h"
+#include "aztec/AZDetector.h"
 #include "aztec/AZDetectorResult.h"
 #include "aztec/AZEncoder.h"
 #include "aztec/AZWriter.h"
@@ -35,7 +36,7 @@ namespace {
 	// Shorthand to call Decode()
 	static DecoderResult parse(BitMatrix&& bits, bool compact, int nbDatablocks, int nbLayers)
 	{
-		return Aztec::Decode({{std::move(bits), {}}, compact, nbDatablocks, nbLayers, false /*readerInit*/, false /*isMirrored*/});
+		return Aztec::Decode({{std::move(bits), {}}, compact, nbDatablocks, nbLayers, false /*readerInit*/, false /*isMirrored*/, 0 /*runeValue*/});
 	}
 
 	void TestEncodeDecode(const std::string& data, bool compact, int layers) {
@@ -227,4 +228,18 @@ TEST(AZEncodeDecodeTest, AztecWriter)
 		Aztec::Encoder::Encode(TextEncoder::FromUnicode(data, CharacterSet::ISO8859_1),
 							   Aztec::Encoder::DEFAULT_EC_PERCENT, Aztec::Encoder::DEFAULT_AZTEC_LAYERS);
 	EXPECT_EQ(matrix, aztec.matrix);
+}
+
+TEST(AZEncodeDecodeTest, RunePure)
+{
+	for(uint8_t word = 0; word < 255; word++) {
+		std::string data(1, word);
+		Aztec::EncodeResult aztec =
+			Aztec::Encoder::Encode(data, 0, Aztec::Encoder::AZTEC_RUNE_LAYERS);
+		
+		auto result = Aztec::Detect(aztec.matrix, true, false);
+		EXPECT_TRUE(result.isValid());
+		EXPECT_EQ(result.nbDatablocks(), 0);
+		EXPECT_EQ(result.runeValue(), word);
+	}
 }
