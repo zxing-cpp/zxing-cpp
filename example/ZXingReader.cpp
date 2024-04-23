@@ -202,6 +202,9 @@ int main(int argc, char* argv[])
 
 	std::cout.setf(std::ios::boolalpha);
 
+	if (!cli.outPath.empty())
+		cli.forceChannels = 3; // the drawing code only works for RGB data
+
 	for (const auto& filePath : cli.filePaths) {
 		int width, height, channels;
 		std::unique_ptr<stbi_uc, void (*)(void*)> buffer(stbi_load(filePath.c_str(), &width, &height, &channels, cli.forceChannels),
