@@ -179,18 +179,23 @@ bool Result::operator==(const Result& o) const
 	// the following code is only meant for this or other lineCount == 1
 	assert(lineCount() == 1 || o.lineCount() == 1);
 
-	const auto& r1 = lineCount() == 1 ? *this : o;
-	const auto& r2 = lineCount() == 1 ? o : *this;
+	// sl == single line, ml = multi line
+	const auto& sl = lineCount() == 1 ? *this : o;
+	const auto& ml = lineCount() == 1 ? o : *this;
 
-	// if one line is less than half the length of the other away from the
-	// latter, we consider it to belong to the same symbol. additionally, both need to have
-	// roughly the same length (see #367)
-	auto dTop = maxAbsComponent(r2.position().topLeft() - r1.position().topLeft());
-	auto dBot = maxAbsComponent(r2.position().bottomLeft() - r1.position().topLeft());
-	auto length = maxAbsComponent(r1.position().topLeft() - r1.position().bottomRight());
-	auto dLength = std::abs(length - maxAbsComponent(r2.position().topLeft() - r2.position().bottomRight()));
+	// If one line is less than half the length of the other away from the
+	// latter, we consider it to belong to the same symbol.
+	// Additionally, both need to have roughly the same length (see #367).
+	auto dTop = maxAbsComponent(ml.position().topLeft() - sl.position().topLeft());
+	auto dBot = maxAbsComponent(ml.position().bottomLeft() - sl.position().topLeft());
+	auto slLength = maxAbsComponent(sl.position().topLeft() - sl.position().bottomRight());
+	bool isHorizontal = sl.position().topLeft().y == sl.position().bottomRight().y;
+	// Measure the multi line length in the same direction as the single line one (not diagonaly)
+	// to make sure overly tall symbols don't get segmented (see #769).
+	auto mlLength = isHorizontal ? std::abs(ml.position().topLeft().x - ml.position().bottomRight().x)
+								 : std::abs(ml.position().topLeft().y - ml.position().bottomRight().y);
 
-	return std::min(dTop, dBot) < length / 2 && dLength < length / 5;
+	return std::min(dTop, dBot) < slLength / 2 && std::abs(slLength - mlLength) < slLength / 5;
 }
 
 Barcode MergeStructuredAppendSequence(const Barcodes& barcodes)
