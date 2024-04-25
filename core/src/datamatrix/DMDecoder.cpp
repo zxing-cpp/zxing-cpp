@@ -451,7 +451,7 @@ DecoderResult Decode(const BitMatrix& bits)
 	//TODO:
 	// * unify bit mirroring helper code with QRReader?
 	// * rectangular symbols with the a size of 8 x Y are not supported a.t.m.
-	if (auto mirroredRes = DoDecode(FlippedL(bits)); mirroredRes.isValid()) {
+	if (auto mirroredRes = DoDecode(FlippedL(bits)); mirroredRes.error().type() != Error::Checksum) {
 		mirroredRes.setIsMirrored(true);
 		return mirroredRes;
 	}
