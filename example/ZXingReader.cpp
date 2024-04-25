@@ -46,7 +46,7 @@ static void PrintUsage(const char* exePath)
 			  << "    -norotate  Don't try rotated image during detection (faster)\n"
 			  << "    -noinvert  Don't search for inverted codes during detection (faster)\n"
 			  << "    -noscale   Don't try downscaled images during detection (faster)\n"
-			  << "    -formats <FORMAT[,...]>\n"
+			  << "    -format <FORMAT[,...]>\n"
 			  << "               Only detect given format(s) (faster)\n"
 			  << "    -single    Stop after the first barcode is detected (faster)\n"
 			  << "    -ispure    Assume the image contains only a 'pure'/perfect code (faster)\n"
