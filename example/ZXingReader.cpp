@@ -98,7 +98,7 @@ static bool ParseOptions(int argc, char* argv[], ReaderOptions& options, CLI& cl
 			options.setBinarizer(Binarizer::FixedThreshold);
 		} else if (is("-errors")) {
 			options.setReturnErrors(true);
-		} else if (is("-format")) {
+		} else if (is("-formats")) {
 			if (++i == argc)
 				return false;
 			try {
