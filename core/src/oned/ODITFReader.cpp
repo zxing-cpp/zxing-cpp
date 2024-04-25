@@ -13,28 +13,33 @@
 
 namespace ZXing::OneD {
 
-constexpr auto START_PATTERN_ = FixedPattern<4, 4>{1, 1, 1, 1};
-constexpr auto STOP_PATTERN_1 = FixedPattern<3, 4>{2, 1, 1};
-constexpr auto STOP_PATTERN_2 = FixedPattern<3, 5>{3, 1, 1};
-
 Barcode ITFReader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<DecodingState>&) const
 {
 	const int minCharCount = 6;
 	const int minQuietZone = 6; // spec requires 10
 
-	next = FindLeftGuard(next, 4 + minCharCount/2 + 3, START_PATTERN_, minQuietZone);
+	next = FindLeftGuard(next, 4 + minCharCount/2 + 3, FixedPattern<4, 4>{1, 1, 1, 1}, minQuietZone);
 	if (!next.isValid())
 		return {};
 
-	std::string txt;
-	txt.reserve(20);
+	// get threshold of first character pair
+	auto threshold = NarrowWideThreshold(next.subView(4, 10));
+	if (!threshold.isValid())
+		return {};
+	// check that each bar/space in the start pattern is < threshold
+	for (int i = 0; i < 4; ++i)
+		if (next[i] > threshold[i])
+			return {};
 
 	constexpr int weights[] = {1, 2, 4, 7, 0};
 	int xStart = next.pixelsInFront();
 	next = next.subView(4, 10);
 
+	std::string txt;
+	txt.reserve(20);
+
 	while (next.isValid()) {
-		const auto threshold = NarrowWideThreshold(next);
+		threshold = NarrowWideThreshold(next);
 		if (!threshold.isValid())
 			break;
 
@@ -60,7 +65,12 @@ Barcode ITFReader::decodePattern(int rowNumber, PatternView& next, std::unique_p
 	if (Size(txt) < minCharCount || !next.isValid())
 		return {};
 
-	if (!IsRightGuard(next, STOP_PATTERN_1, minQuietZone) && !IsRightGuard(next, STOP_PATTERN_2, minQuietZone))
+	// Check quiet zone size
+	if (!(next.isAtLastBar() || next[3] > minQuietZone * (threshold.bar + threshold.space) / 3))
+		return {};
+
+	// Check stop pattern
+	if (next[0] < threshold[0] || next[1] > threshold[1] || next[2] > threshold[2])
 		return {};
 
 	Error error = _opts.validateITFCheckSum() && !GTIN::IsCheckDigitValid(txt) ? ChecksumError() : Error();
