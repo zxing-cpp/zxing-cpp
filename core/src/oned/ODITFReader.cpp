@@ -20,7 +20,7 @@ constexpr auto STOP_PATTERN_2 = FixedPattern<3, 5>{3, 1, 1};
 Barcode ITFReader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<DecodingState>&) const
 {
 	const int minCharCount = 6;
-	const int minQuietZone = 10;
+	const int minQuietZone = 6; // spec requires 10
 
 	next = FindLeftGuard(next, 4 + minCharCount/2 + 3, START_PATTERN_, minQuietZone);
 	if (!next.isValid())
