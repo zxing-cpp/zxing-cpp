@@ -46,7 +46,7 @@ class BarcodeReaderTest {
 		val barcode = Barcode(text, BarcodeFormat.DataMatrix)
 		val image = barcode.toImage()
 
-		val res = BarcodeReader.read(image.asImageView()).firstOrNull()
+		val res = BarcodeReader.read(image.toImageView()).firstOrNull()
 
 		assertNotNull(res)
 		assert(res.isValid)
@@ -67,7 +67,7 @@ class BarcodeReaderTest {
 		val barcode = Barcode(text.encodeToByteArray(), BarcodeFormat.DataMatrix)
 		val image = barcode.toImage()
 
-		val res = BarcodeReader.read(image.asImageView()).firstOrNull()
+		val res = BarcodeReader.read(image.toImageView()).firstOrNull()
 
 		assertNotNull(res)
 		assert(res.isValid)

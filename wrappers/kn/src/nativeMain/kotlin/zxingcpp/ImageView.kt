@@ -10,55 +10,36 @@ import cnames.structs.ZXing_ImageView
 import kotlinx.cinterop.*
 import zxingcpp.cinterop.*
 import kotlin.experimental.ExperimentalNativeApi
-import kotlin.native.ref.Cleaner
 import kotlin.native.ref.createCleaner
 
 @OptIn(ExperimentalForeignApi::class, ExperimentalNativeApi::class)
 class ImageView(
-	val cValue: CValuesRef<ZXing_ImageView>, private val pinnedData: Pinned<ByteArray>? = null,
-	@Suppress("unused")
-	private val cValueCleaner: Cleaner = createCleaner(cValue) { ZXing_ImageView_delete(it) },
-	@Suppress("unused")
-	private val pinnedDataCleaner: Cleaner? = pinnedData?.let { createCleaner(pinnedData) { it.unpin() } }
+	val data: ByteArray,
+	val width: Int,
+	val height: Int,
+	val format: ImageFormat,
+	val rowStride: Int = 0,
+	val pixStride: Int = 0,
 ) {
-
-	constructor(
-		pinnedData: Pinned<ByteArray>,
-		pinnedDataCleaner: Cleaner? = createCleaner(pinnedData) { it.unpin() },
-		width: Int,
-		height: Int,
-		format: ImageFormat,
-		rowStride: Int = 0,
-		pixStride: Int = 0,
-	) : this(
-		cValue = ZXing_ImageView_new_checked(
+	private val pinnedData = data.pin()
+	val cValue: CPointer<ZXing_ImageView>? =
+		ZXing_ImageView_new_checked(
 			pinnedData.addressOf(0).reinterpret(),
-			pinnedData.get().size,
+			data.size,
 			width,
 			height,
 			format.cValue,
 			rowStride,
-			pixStride,
-		) ?: error("Failed to create ZXing_ImageView"),
-		pinnedData = pinnedData,
-		pinnedDataCleaner = pinnedDataCleaner
-	)
+			pixStride
+		)
 
-	constructor(
-		data: ByteArray,
-		width: Int,
-		height: Int,
-		format: ImageFormat,
-		rowStride: Int = 0,
-		pixStride: Int = 0,
-	) : this(
-		pinnedData = data.pin(),
-		width = width,
-		height = height,
-		format = format,
-		rowStride = rowStride,
-		pixStride = pixStride,
-	)
+	@Suppress("unused")
+	@OptIn(ExperimentalNativeApi::class)
+	private val cValueCleaner = createCleaner(cValue) { ZXing_ImageView_delete(it) }
+
+	@Suppress("unused")
+	@OptIn(ExperimentalNativeApi::class)
+	private val pinnedDataCleaner = createCleaner(pinnedData) { it.unpin() }
 }
 
 
@@ -101,9 +82,7 @@ class Image(val cValue: CValuesRef<ZXing_Image>) {
 	@OptIn(ExperimentalNativeApi::class)
 	val cValueCleaner = createCleaner(cValue) { ZXing_Image_delete(it) }
 
-	@Suppress("unchecked_cast")
-	@OptIn(ExperimentalNativeApi::class)
-	fun asImageView(): ImageView = ImageView(cValue as CValuesRef<ZXing_ImageView>, null, cValueCleaner, null)
+	fun toImageView(): ImageView = ImageView(data, width, height, format)
 }
 
 @ExperimentalWriterApi
