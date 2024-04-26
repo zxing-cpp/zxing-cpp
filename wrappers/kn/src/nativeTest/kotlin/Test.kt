@@ -43,7 +43,7 @@ class BarcodeReaderTest {
 	@OptIn(ExperimentalNativeApi::class, ExperimentalWriterApi::class)
 	fun `create write and read barcode with text`() {
 		val text = "I have the best words."
-		val barcode = Barcode.fromText(text, BarcodeFormat.DataMatrix)
+		val barcode = Barcode(text, BarcodeFormat.DataMatrix)
 		val image = barcode.toImage()
 
 		val res = BarcodeReader.read(image.asImageView()).firstOrNull()
@@ -64,7 +64,7 @@ class BarcodeReaderTest {
 	@OptIn(ExperimentalNativeApi::class, ExperimentalWriterApi::class)
 	fun `create write and read barcode with bytes`() {
 		val text = "I have the best words."
-		val barcode = Barcode.fromBytes(text.encodeToByteArray(), BarcodeFormat.DataMatrix)
+		val barcode = Barcode(text.encodeToByteArray(), BarcodeFormat.DataMatrix)
 		val image = barcode.toImage()
 
 		val res = BarcodeReader.read(image.asImageView()).firstOrNull()

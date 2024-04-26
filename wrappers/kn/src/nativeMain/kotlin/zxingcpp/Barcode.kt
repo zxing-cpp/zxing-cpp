@@ -51,24 +51,28 @@ fun ZXing_Position.toKObject(): Position = Position(
 	bottomLeft.toKObject(),
 )
 
+class BarcodeConstructionException(message: String?) : Exception("Failed to construct barcode: $message")
+
 @OptIn(ExperimentalForeignApi::class)
 class Barcode(val cValue: CValuesRef<ZXing_Barcode>) {
-	companion object {
-		@ExperimentalWriterApi
-		fun fromText(text: String, opts: CreatorOptions): Barcode =
-			ZXing_CreateBarcodeFromText(text, text.length, opts.cValue)?.toKObject()
-				?: throw BarcodeReadingException(ZXing_LastErrorMsg()?.toKStringNullPtrHandledAndFree())
-		@ExperimentalWriterApi
-		fun fromText(text: String, format: BarcodeFormat): Barcode =
-			fromText(text, CreatorOptions(format))
-		@ExperimentalWriterApi
-		fun fromBytes(bytes: ByteArray, opts: CreatorOptions): Barcode =
-			ZXing_CreateBarcodeFromBytes(bytes.refTo(0), bytes.size, opts.cValue)?.toKObject()
-				?: throw BarcodeReadingException(ZXing_LastErrorMsg()?.toKStringNullPtrHandledAndFree())
-		@ExperimentalWriterApi
-		fun fromBytes(bytes: ByteArray, format: BarcodeFormat): Barcode =
-			fromBytes(bytes, CreatorOptions(format))
-	}
+
+	@OptIn(ExperimentalWriterApi::class)
+	constructor(text: String, opts: CreatorOptions) : this(
+		ZXing_CreateBarcodeFromText(text, text.length, opts.cValue)
+			?: throw BarcodeConstructionException(ZXing_LastErrorMsg()?.toKStringNullPtrHandledAndFree())
+	)
+
+	@OptIn(ExperimentalWriterApi::class)
+	constructor(text: String, format: BarcodeFormat) : this(text, CreatorOptions(format))
+
+	@OptIn(ExperimentalWriterApi::class)
+	constructor(bytes: ByteArray, opts: CreatorOptions) : this(
+		ZXing_CreateBarcodeFromBytes(bytes.refTo(0), bytes.size, opts.cValue)
+			?: throw BarcodeConstructionException(ZXing_LastErrorMsg()?.toKStringNullPtrHandledAndFree())
+	)
+
+	@OptIn(ExperimentalWriterApi::class)
+	constructor(bytes: ByteArray, format: BarcodeFormat) : this(bytes, CreatorOptions(format))
 
 	val isValid: Boolean
 		get() = ZXing_Barcode_isValid(cValue)
