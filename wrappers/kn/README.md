@@ -12,6 +12,8 @@ to your `build.gradle.kts` file in the `dependencies` section of `nativeMain` so
 
 ## Use
 
+### Reading
+
 A trivial use case looks like this:
 
 ```kotlin
@@ -39,6 +41,48 @@ barcodeReader.read(image).joinToString("\n") { barcode: Barcode ->
 ```
 
 Here you have to load your image into memory by yourself and pass the decoded data to the constructor of `ImageView`.
+
+### Writing
+
+A trivial use case looks like this:
+
+```kotlin
+import zxingcpp.BarcodeFormat
+import zxingcpp.BarcodeWriter
+import zxingcpp.CreatorOptions
+import zxingcpp.ImageFormat
+import zxingcpp.ImageView
+import zxingcpp.toSVG
+import zxingcpp.toImage
+
+val text: String = "Hello, World!"
+val format = BarcodeFormat.QRCode
+val width: Int = 256
+val height: Int = 256
+
+val opts = CreatorOptions().apply {
+    format = BarcodeFormat.QRCode
+   // more options, see documentation
+}
+
+val barcode = Barcode(text, opts)
+// or
+val barcode2 = Barcode(text, format)
+
+val barcodeWriter = BarcodeWriter().apply {
+   rotate = 10
+   // more options, see documentation
+}
+
+val svg: String = barcodeWriter.writeToSVG(barcode)
+val image: ImageView = barcodeWriter.writeToImage(barcode)
+// or
+val svg: String = barcode.toSVG()
+val image: ImageView = barcode.toImage()
+```
+
+> Note: The Writer api is still experimental and may change in future versions.
+> You will have to opt-in `zxingcpp.ExperimentalWriterApi` to use it.
 
 ## Build locally
 
