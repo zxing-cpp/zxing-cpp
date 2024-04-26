@@ -19,14 +19,13 @@ import zxingcpp.BarcodeFormat
 import zxingcpp.BarcodeReader
 import zxingcpp.ImageFormat
 import zxingcpp.ImageView
-import zxingcpp.ImageViewImplNoCopy
 
 val data: ByteArray = ...    // the image data
 val width: Int = ...         // the image width
 val height: Int = ...        // the image height
 val format: ImageFormat = ImageFormat.Lum // ImageFormat.Lum assumes grey scale image data
 
-val image: ImageView = ImageViewImplNoCopy(data, width, height, format)
+val image: ImageView = ImageView(data, width, height, format)
 val barcodeReader = BarcodeReader().apply {
    formats = setOf(BarcodeFormat.EAN13, BarcodeFormat.QRCode)
    tryHarder = true
