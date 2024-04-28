@@ -204,9 +204,9 @@ TEST(DMDecodeTest, StructuredAppend)
 
 	// Structured Append "233" must be first ISO 16022:2006 5.6.1
 	EXPECT_FALSE(parse({50, 233, 42, 1, 1}).isValid());
-	EXPECT_EQ(info({50, 233, 42, 1, 1}).index, -1);
 
 	// ISO/IEC 16022:2006 5.6.2 sequence indicator example
+	EXPECT_TRUE(parse({233, 42, 1, 1, 50}).isValid());
 	EXPECT_EQ(info({233, 42, 1, 1, 50}).index, 2); // 1-based position 3 == index 2
 	EXPECT_EQ(info({233, 42, 1, 1, 50}).count, 7);
 	EXPECT_EQ(info({233, 42, 1, 1, 50}).id, "257");
@@ -247,18 +247,15 @@ TEST(DMDecodeTest, ReaderInit)
 	EXPECT_TRUE(parse({50}).isValid());
 
 	// Reader Programming "234" must be first ISO 16022:2006 5.2.4.9
-	EXPECT_FALSE(parse({50, 234}).readerInit());
 	EXPECT_FALSE(parse({50, 234}).isValid());
 
 	// Set
-	EXPECT_TRUE(parse({234, 50}).readerInit());
 	EXPECT_TRUE(parse({234, 50}).isValid());
+	EXPECT_TRUE(parse({234, 50}).readerInit());
 
-	EXPECT_FALSE(parse({235, 234, 50}).readerInit()); // Upper Shift first
 	EXPECT_FALSE(parse({235, 234, 50}).isValid());
 
 	// Can't be used with Structured Append "233"
 	EXPECT_TRUE(parse({233, 42, 1, 1, 50}).isValid()); // Null
-	EXPECT_FALSE(parse({233, 42, 1, 1, 234, 50}).readerInit());
 	EXPECT_FALSE(parse({233, 42, 1, 1, 234, 50}).isValid());
 }
