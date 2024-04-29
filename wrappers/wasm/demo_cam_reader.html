@@ -16,8 +16,8 @@
 
 	Camera:
 	<select id="cameraSelector">
-		<option value="front">Front Camera</option>
-		<option value="back">Back Camera</option>
+		<option value="user">Front Camera</option>
+		<option value="environment">Back Camera</option>
 	</select>
 	&nbsp;&nbsp;
 
@@ -131,6 +131,9 @@
 		};
 
 		const updateVideoStream = function (deviceId) {
+			// To ensure the camera switch, it is advisable to free up the media resources
+			if (video.srcObject) video.srcObject.getTracks().forEach(track => track.stop());
+
 			navigator.mediaDevices
 				.getUserMedia({ video: { facingMode: deviceId }, audio: false })
 				.then(function (stream) {
