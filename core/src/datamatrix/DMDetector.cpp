@@ -953,7 +953,7 @@ static DetectorResult DetectPure(const BitMatrix& image)
 	int bottom = top + height - 1;
 
 	// Now just read off the bits (this is a crop + subsample)
-	return {Deflate(image, dimT, dimR, top + modSizeX / 2, left + modSizeY / 2, modSize),
+	return {Deflate(image, dimT, dimR, top + modSizeY / 2, left + modSizeX / 2, modSize),
 			{{left, top}, {right, top}, {right, bottom}, {left, bottom}}};
 }
 
