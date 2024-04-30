@@ -41,6 +41,7 @@ fn main() -> anyhow::Result<()> {
 ```
 
 Simple example creating a barcode and writing it to a svg file:
+
 ```rust
 fn main() -> anyhow::Result<()> {
 	let svg = zxingcpp::create(zxingcpp::BarcodeFormat::QRCode)
@@ -52,7 +53,7 @@ fn main() -> anyhow::Result<()> {
 ```
 
 Note: This should currently be considered a pre-release. The API may change slightly to be even more
-"rusty" depending on community feedback.
+idiomatic rust depending on community feedback.
 
 ## Optional Features
 
@@ -60,10 +61,10 @@ zxing-cpp provides features that are behind [Cargo features](https://doc.rust-la
 They are:
 
 * `bundled` uses a bundled version of the [zxing-cpp](https://github.com/zxing-cpp/zxing-cpp) c++ library.
-* [`image`](https://crates.io/crates/image) allows convenient/implicit `ImageView` construction from `GreyImage` and `DynamicImage`.
+* [`image`](https://crates.io/crates/image) allows convenient/implicit conversion between `ImageView`/`Image` and`GreyImage`/`DynamicImage`.
 
 ## Benchmarking
 
-To compare the performance of this Rust wrapper project with other availble barcode scanner Rust libraries,
+To compare the performance of this Rust wrapper project with other available barcode scanner Rust libraries,
 I started the project [zxing-bench](https://github.com/axxel/zxing-bench). The README contains a few
 results to get an idea.
