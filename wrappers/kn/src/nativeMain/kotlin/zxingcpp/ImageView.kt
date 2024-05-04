@@ -12,7 +12,7 @@ import zxingcpp.cinterop.*
 import kotlin.experimental.ExperimentalNativeApi
 import kotlin.native.ref.createCleaner
 
-@OptIn(ExperimentalForeignApi::class, ExperimentalNativeApi::class)
+@OptIn(ExperimentalForeignApi::class)
 class ImageView(
 	val data: ByteArray,
 	val width: Int,
