@@ -56,22 +56,22 @@ class BarcodeConstructionException(message: String?) : Exception("Failed to cons
 @OptIn(ExperimentalForeignApi::class)
 class Barcode(val cValue: CValuesRef<ZXing_Barcode>) {
 
-	@OptIn(ExperimentalWriterApi::class)
+	@ExperimentalWriterApi
 	constructor(text: String, opts: CreatorOptions) : this(
 		ZXing_CreateBarcodeFromText(text, text.length, opts.cValue)
 			?: throw BarcodeConstructionException(ZXing_LastErrorMsg()?.toKStringNullPtrHandledAndFree())
 	)
 
-	@OptIn(ExperimentalWriterApi::class)
+	@ExperimentalWriterApi
 	constructor(text: String, format: BarcodeFormat) : this(text, CreatorOptions(format))
 
-	@OptIn(ExperimentalWriterApi::class)
+	@ExperimentalWriterApi
 	constructor(bytes: ByteArray, opts: CreatorOptions) : this(
 		ZXing_CreateBarcodeFromBytes(bytes.refTo(0), bytes.size, opts.cValue)
 			?: throw BarcodeConstructionException(ZXing_LastErrorMsg()?.toKStringNullPtrHandledAndFree())
 	)
 
-	@OptIn(ExperimentalWriterApi::class)
+	@ExperimentalWriterApi
 	constructor(bytes: ByteArray, format: BarcodeFormat) : this(bytes, CreatorOptions(format))
 
 	val isValid: Boolean
