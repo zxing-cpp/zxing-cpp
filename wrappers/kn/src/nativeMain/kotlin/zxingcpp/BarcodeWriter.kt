@@ -17,30 +17,6 @@ import kotlin.native.ref.createCleaner
 @Retention(AnnotationRetention.BINARY)
 annotation class ExperimentalWriterApi
 
-
-@ExperimentalWriterApi
-@OptIn(ExperimentalForeignApi::class)
-class BarcodeWriter : WriterOptions() {
-	fun writeToSVG(barcode: Barcode): String = Companion.writeToSVG(barcode, this)
-
-	fun writeToImage(barcode: Barcode): Image = Companion.writeToImage(barcode, this)
-
-	companion object {
-		@OptIn(ExperimentalForeignApi::class)
-		fun writeToSVG(barcode: Barcode, opts: WriterOptions? = null): String = barcode.cValue.usePinned {
-			ZXing_WriteBarcodeToSVG(it.get(), opts?.cValue)?.toKStringNullPtrHandledAndFree()
-				?: throw BarcodeWritingException(ZXing_LastErrorMsg()?.toKStringNullPtrHandledAndFree())
-		}
-
-		@OptIn(ExperimentalForeignApi::class)
-		fun writeToImage(barcode: Barcode, opts: WriterOptions? = null): Image = barcode.cValue.usePinned {
-			ZXing_WriteBarcodeToImage(it.get(), opts?.cValue)?.toKObject()
-				?: throw BarcodeWritingException(ZXing_LastErrorMsg()?.toKStringNullPtrHandledAndFree())
-		}
-
-	}
-}
-
 class BarcodeWritingException(message: String?) : Exception("Failed to write barcode: $message")
 
 @ExperimentalWriterApi

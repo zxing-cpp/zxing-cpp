@@ -153,11 +153,19 @@ class Barcode(val cValue: CValuesRef<ZXing_Barcode>) {
 	}
 }
 
+@OptIn(ExperimentalForeignApi::class)
 @ExperimentalWriterApi
-fun Barcode.toSVG(opts: WriterOptions? = null): String = BarcodeWriter.writeToSVG(this, opts)
+fun Barcode.toSVG(opts: WriterOptions? = null): String = cValue.usePinned {
+	ZXing_WriteBarcodeToSVG(it.get(), opts?.cValue)?.toKStringNullPtrHandledAndFree()
+		?: throw BarcodeWritingException(ZXing_LastErrorMsg()?.toKStringNullPtrHandledAndFree())
+}
 
+@OptIn(ExperimentalForeignApi::class)
 @ExperimentalWriterApi
-fun Barcode.toImage(opts: WriterOptions? = null): Image = BarcodeWriter.writeToImage(this, opts)
+fun Barcode.toImage(opts: WriterOptions? = null): Image = cValue.usePinned {
+	ZXing_WriteBarcodeToImage(it.get(), opts?.cValue)?.toKObject()
+		?: throw BarcodeWritingException(ZXing_LastErrorMsg()?.toKStringNullPtrHandledAndFree())
+}
 
 @OptIn(ExperimentalForeignApi::class)
 fun CValuesRef<ZXing_Barcode>.toKObject(): Barcode = Barcode(this)
