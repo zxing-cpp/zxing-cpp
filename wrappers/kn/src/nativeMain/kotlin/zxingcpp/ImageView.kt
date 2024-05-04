@@ -71,11 +71,8 @@ class Image(val cValue: CValuesRef<ZXing_Image>) {
 	val height: Int get() = ZXing_Image_height(cValue)
 	val format: ImageFormat
 		get() = ZXing_Image_format(cValue).parseIntoImageFormat() ?: error(
-			"Unknown format ${
-				ZXing_Image_format(
-					cValue
-				)
-			} for image"
+			"Unknown format ${ZXing_Image_format(cValue)} for image, " +
+				"this is an internal error, please report it to the library maintainers."
 		)
 
 	@Suppress("unused")
