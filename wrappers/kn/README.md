@@ -12,6 +12,8 @@ to your `build.gradle.kts` file in the `dependencies` section of `nativeMain` so
 
 ## Use
 
+### Reading
+
 A trivial use case looks like this:
 
 ```kotlin
@@ -23,9 +25,9 @@ import zxingcpp.ImageView
 val data: ByteArray = ...    // the image data
 val width: Int = ...         // the image width
 val height: Int = ...        // the image height
-val format = ImageFormat.Lum // ImageFormat.Lum assumes grey scale image data
+val format: ImageFormat = ImageFormat.Lum // ImageFormat.Lum assumes grey scale image data
 
-val image = ImageView(data, width, height, format)
+val image: ImageView = ImageView(data, width, height, format)
 val barcodeReader = BarcodeReader().apply {
    formats = setOf(BarcodeFormat.EAN13, BarcodeFormat.QRCode)
    tryHarder = true
@@ -39,6 +41,40 @@ barcodeReader.read(image).joinToString("\n") { barcode: Barcode ->
 ```
 
 Here you have to load your image into memory by yourself and pass the decoded data to the constructor of `ImageView`.
+
+### Writing
+
+A trivial use case looks like this:
+
+```kotlin
+import zxingcpp.*
+
+val text: String = "Hello, World!"
+val format = BarcodeFormat.QRCode
+
+@OptIn(ExperimentalWriterApi::class)
+val cOpts = CreatorOptions(format) // more options, see documentation
+
+@OptIn(ExperimentalWriterApi::class)
+val barcode = Barcode(text, cOpts)
+// or
+@OptIn(ExperimentalWriterApi::class)
+val barcode2 = Barcode(text.encodeToByteArray(), format)
+
+@OptIn(ExperimentalWriterApi::class)
+val wOpts = WriterOptions().apply {
+   sizeHint = 400
+   // more options, see documentation
+}
+
+@OptIn(ExperimentalWriterApi::class)
+val svg: String = barcode.toSVG(wOpts)
+@OptIn(ExperimentalWriterApi::class)
+val image: Image = barcode.toImage(wOpts)
+```
+
+> Note: The Writer api is still experimental and may change in future versions.
+> You will have to opt-in `zxingcpp.ExperimentalWriterApi` to use it.
 
 ## Build locally
 

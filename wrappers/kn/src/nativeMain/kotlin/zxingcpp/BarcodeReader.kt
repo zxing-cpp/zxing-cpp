@@ -24,9 +24,14 @@ internal fun CPointer<ByteVar>?.toKStringNullPtrHandledAndFree(): String? = (thi
 @OptIn(ExperimentalForeignApi::class)
 class BarcodeReader : ReaderOptions() {
 	@Throws(BarcodeReadingException::class)
-	fun read(imageView: ImageView): List<Barcode> =
-		ZXing_ReadBarcodes(imageView.cValue, cValue)?.let { cValues -> cValues.toKObject().also { ZXing_Barcodes_delete(cValues) } }
-			?: throw BarcodeReadingException(ZXing_LastErrorMsg()?.toKStringNullPtrHandledAndFree())
+	fun read(imageView: ImageView): List<Barcode> = Companion.read(imageView, this)
+
+	companion object {
+		@Throws(BarcodeReadingException::class)
+		fun read(imageView: ImageView, opts: ReaderOptions? = null): List<Barcode> =
+			ZXing_ReadBarcodes(imageView.cValue, opts?.cValue)?.let { cValues -> cValues.toKObject().also { ZXing_Barcodes_delete(cValues) } }
+				?: throw BarcodeReadingException(ZXing_LastErrorMsg()?.toKStringNullPtrHandledAndFree())
+	}
 }
 
 class BarcodeReadingException(message: String?) : Exception("Failed to read barcodes: $message")

@@ -5,6 +5,7 @@
 
 package zxingcpp
 
+import cnames.structs.ZXing_Image
 import cnames.structs.ZXing_ImageView
 import kotlinx.cinterop.*
 import zxingcpp.cinterop.*
@@ -41,6 +42,7 @@ class ImageView(
 	private val pinnedDataCleaner = createCleaner(pinnedData) { it.unpin() }
 }
 
+
 @OptIn(ExperimentalForeignApi::class)
 enum class ImageFormat(internal val cValue: ZXing_ImageFormat) {
 	None(ZXing_ImageFormat_None),
@@ -57,3 +59,29 @@ enum class ImageFormat(internal val cValue: ZXing_ImageFormat) {
 @OptIn(ExperimentalForeignApi::class)
 fun ZXing_ImageFormat.parseIntoImageFormat(): ImageFormat? =
 	ImageFormat.entries.firstOrNull { it.cValue == this }
+
+@ExperimentalWriterApi
+@OptIn(ExperimentalForeignApi::class)
+class Image(val cValue: CValuesRef<ZXing_Image>) {
+	val data: ByteArray
+		get() = ZXing_Image_data(cValue)?.run {
+			readBytes(width * height).also { ZXing_free(this) }
+		}?.takeUnless { it.isEmpty() } ?: throw OutOfMemoryError()
+	val width: Int get() = ZXing_Image_width(cValue)
+	val height: Int get() = ZXing_Image_height(cValue)
+	val format: ImageFormat
+		get() = ZXing_Image_format(cValue).parseIntoImageFormat() ?: error(
+			"Unknown format ${ZXing_Image_format(cValue)} for image, " +
+				"this is an internal error, please report it to the library maintainers."
+		)
+
+	@Suppress("unused")
+	@OptIn(ExperimentalNativeApi::class)
+	val cValueCleaner = createCleaner(cValue) { ZXing_Image_delete(it) }
+
+	fun toImageView(): ImageView = ImageView(data, width, height, format)
+}
+
+@ExperimentalWriterApi
+@OptIn(ExperimentalForeignApi::class)
+fun CValuesRef<ZXing_Image>.toKObject(): Image = Image(this)

@@ -29,13 +29,55 @@ class BarcodeReaderTest {
 
 		assertNotNull(res)
 		assert(res.isValid)
-		assertEquals(res.format, BarcodeFormat.EAN8)
-		assertEquals(res.text, expected)
-		assertContentEquals(res.bytes, expected.encodeToByteArray())
+		assertEquals(BarcodeFormat.EAN8, res.format)
+		assertEquals(expected, res.text)
+		assertContentEquals(expected.encodeToByteArray(), res.bytes)
 		assert(!res.hasECI)
-		assertEquals(res.contentType, ContentType.Text)
-		assertEquals(res.orientation, 0)
-		assertEquals(res.position.topLeft, PointI(4, 0))
-		assertEquals(res.lineCount, 1)
+		assertEquals(ContentType.Text, res.contentType)
+		assertEquals(0, res.orientation)
+		assertEquals(PointI(4, 0), res.position.topLeft)
+		assertEquals(1, res.lineCount)
+	}
+
+	@Test
+	@OptIn(ExperimentalNativeApi::class, ExperimentalWriterApi::class)
+	fun `create write and read barcode with text`() {
+		val text = "I have the best words."
+		val barcode = Barcode(text, BarcodeFormat.DataMatrix)
+		val image = barcode.toImage()
+
+		val res = BarcodeReader.read(image.toImageView()).firstOrNull()
+
+		assertNotNull(res)
+		assert(res.isValid)
+		assertEquals(BarcodeFormat.DataMatrix, res.format)
+		assertEquals(text, res.text)
+		assertContentEquals(text.encodeToByteArray(), res.bytes)
+		assert(!res.hasECI)
+		assertEquals(ContentType.Text, res.contentType)
+		assertEquals(0, res.orientation)
+		assertEquals(PointI(1, 1), res.position.topLeft)
+		assertEquals(0, res.lineCount)
+	}
+
+	@Test
+	@OptIn(ExperimentalNativeApi::class, ExperimentalWriterApi::class)
+	fun `create write and read barcode with bytes`() {
+		val text = "I have the best words."
+		val barcode = Barcode(text.encodeToByteArray(), BarcodeFormat.DataMatrix)
+		val image = barcode.toImage()
+
+		val res = BarcodeReader.read(image.toImageView()).firstOrNull()
+
+		assertNotNull(res)
+		assert(res.isValid)
+		assertEquals(BarcodeFormat.DataMatrix, res.format)
+		assertEquals(text, res.text)
+		assertContentEquals(text.encodeToByteArray(), res.bytes)
+		assert(res.hasECI)
+		assertEquals(ContentType.Binary, res.contentType)
+		assertEquals(0, res.orientation)
+		assertEquals(PointI(1, 1), res.position.topLeft)
+		assertEquals(0, res.lineCount)
 	}
 }
