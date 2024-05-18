@@ -52,7 +52,7 @@ if (WINRT)
 endif()
 if (MSVC)
     set (ZXING_PUBLIC_FLAGS ${ZXING_PUBLIC_FLAGS}
-    $<$<CXX_COMPILER_ID:MSVC>:/Zc:__cplusplus>
+        $<$<CXX_COMPILER_ID:MSVC>:/Zc:__cplusplus>
     )
 endif()
 
