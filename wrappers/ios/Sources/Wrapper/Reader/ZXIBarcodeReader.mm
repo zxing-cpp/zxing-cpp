@@ -109,6 +109,7 @@ ZXIGTIN *getGTIN(const Result &result) {
                                                     cols,              // Bytes per row
                                                     colorSpace,                 // Colorspace
                                                     kCGBitmapByteOrderDefault); // Bitmap info flags
+    CGColorSpaceRelease(colorSpace);
     CGContextDrawImage(contextRef, CGRectMake(0, 0, cols, rows), image);
     CGContextRelease(contextRef);
 
