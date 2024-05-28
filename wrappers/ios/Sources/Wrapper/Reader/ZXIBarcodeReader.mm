@@ -96,12 +96,11 @@ ZXIGTIN *getGTIN(const Result &result) {
 
 - (NSArray<ZXIResult *> *)readCGImage:(nonnull CGImageRef)image
                                 error:(NSError *__autoreleasing _Nullable *)error {
-    CGColorSpaceRef colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericGray);
     CGFloat cols = CGImageGetWidth(image);
     CGFloat rows = CGImageGetHeight(image);
     NSMutableData *data = [NSMutableData dataWithLength: cols * rows];
 
-
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericGray);
     CGContextRef contextRef = CGBitmapContextCreate(data.mutableBytes,// Pointer to backing data
                                                     cols,                      // Width of bitmap
                                                     rows,                     // Height of bitmap
