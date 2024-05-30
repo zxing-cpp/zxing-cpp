@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "zxingcpp"
+    namespace = "io.github.zxingcpp"
     // ndk version 25 is known to support c++20 (see #386)
     // ndkVersion = "25.1.8937393"
 

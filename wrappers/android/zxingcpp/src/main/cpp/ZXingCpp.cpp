@@ -16,7 +16,7 @@
 using namespace ZXing;
 using namespace std::string_literals;
 
-#define PACKAGE "zxingcpp/BarcodeReader$"
+#define PACKAGE "io/github/zxingcpp/BarcodeReader$"
 
 #define ZX_LOG_TAG "zxingcpp"
 #define LOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, ZX_LOG_TAG, __VA_ARGS__)
@@ -318,7 +318,7 @@ static ReaderOptions CreateReaderOptions(JNIEnv* env, jobject opts)
 }
 
 extern "C" JNIEXPORT jobject JNICALL
-Java_zxingcpp_BarcodeReader_readYBuffer(
+Java_io_github_zxingcpp_BarcodeReader_readYBuffer(
 	JNIEnv *env, jobject thiz, jobject yBuffer, jint rowStride,
 	jint left, jint top, jint width, jint height, jint rotation, jobject options)
 {
@@ -351,7 +351,7 @@ struct LockedPixels
 };
 
 extern "C" JNIEXPORT jobject JNICALL
-Java_zxingcpp_BarcodeReader_readBitmap(
+Java_io_github_zxingcpp_BarcodeReader_readBitmap(
 	JNIEnv* env, jobject thiz, jobject bitmap,
 	jint left, jint top, jint width, jint height, jint rotation, jobject options)
 {

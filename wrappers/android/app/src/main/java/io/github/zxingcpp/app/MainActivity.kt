@@ -3,7 +3,7 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-package zxingcpp.app
+package io.github.zxingcpp.app
 
 import android.Manifest
 import android.content.Context
@@ -41,12 +41,12 @@ import com.google.zxing.DecodeHintType
 import com.google.zxing.MultiFormatReader
 import com.google.zxing.PlanarYUVLuminanceSource
 import com.google.zxing.common.HybridBinarizer
+import io.github.zxingcpp.BarcodeReader
+import io.github.zxingcpp.BarcodeReader.Format.*
+import io.github.zxingcpp.app.databinding.ActivityCameraBinding
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.util.concurrent.Executors
-import zxingcpp.app.databinding.ActivityCameraBinding
-import zxingcpp.BarcodeReader
-import zxingcpp.BarcodeReader.Format.*
 
 class MainActivity : AppCompatActivity() {
 	private lateinit var binding: ActivityCameraBinding

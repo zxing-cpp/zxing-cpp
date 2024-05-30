@@ -13,7 +13,7 @@ to your `build.gradle.kts` file in the `dependencies` section.
 A trivial use case looks like this (in Kotlin):
 
 ```kotlin
-import zxingcpp.BarcodeReader
+import io.github.zxingcpp.BarcodeReader
 
 var barcodeReader = BarcodeReader()
 

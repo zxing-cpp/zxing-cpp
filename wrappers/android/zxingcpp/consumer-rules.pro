@@ -1,1 +1,1 @@
--keep class zxingcpp.** { *; }
+-keep class io.github.zxingcpp.** { *; }

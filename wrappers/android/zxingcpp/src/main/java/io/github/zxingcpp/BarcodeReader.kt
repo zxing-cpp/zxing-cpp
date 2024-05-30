@@ -3,7 +3,7 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-package zxingcpp
+package io.github.zxingcpp
 
 import android.graphics.Bitmap
 import android.graphics.ImageFormat
