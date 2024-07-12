@@ -22,6 +22,12 @@ extern "C" struct zint_symbol;
 namespace ZXing {
 class BitMatrix;
 }
+
+struct zint_symbol_deleter
+{
+	void operator()(zint_symbol* p) const noexcept;
+};
+using unique_zint_symbol = std::unique_ptr<zint_symbol, zint_symbol_deleter>;
 #endif
 
 #include <string>
@@ -171,7 +177,7 @@ public:
 #ifdef ZXING_EXPERIMENTAL_API
 	void symbol(BitMatrix&& bits);
 	ImageView symbol() const;
-	void zint(std::unique_ptr<zint_symbol>&& z);
+	void zint(unique_zint_symbol&& z);
 	zint_symbol* zint() const { return _zint.get(); }
 #endif
 
