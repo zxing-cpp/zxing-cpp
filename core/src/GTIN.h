@@ -44,7 +44,9 @@ bool IsCheckDigitValid(const std::basic_string<T>& s)
  */
 std::string LookupCountryIdentifier(const std::string& GTIN, const BarcodeFormat format = BarcodeFormat::None);
 
+#ifdef ZXING_READERS
 std::string EanAddOn(const Barcode& barcode);
+#endif // ZXING_READERS
 
 std::string IssueNr(const std::string& ean2AddOn);
 std::string Price(const std::string& ean5AddOn);

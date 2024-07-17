@@ -38,7 +38,9 @@ class Content
 	void ForEachECIBlock(FUNC f) const;
 
 	void switchEncoding(ECI eci, bool isECI);
+#ifdef ZXING_READERS
 	std::string render(bool withECI) const;
+#endif // ZXING_READERS
 
 public:
 	struct Encoding
@@ -75,13 +77,17 @@ public:
 	bool empty() const { return bytes.empty(); }
 	bool canProcess() const;
 
+#ifdef ZXING_READERS
 	std::string text(TextMode mode) const;
 	std::wstring utfW() const; // utf16 or utf32 depending on the platform, i.e. on size_of(wchar_t)
 	std::string utf8() const { return render(false); }
+#endif // ZXING_READERS
 
 	ByteArray bytesECI() const;
+#ifdef ZXING_READERS
 	CharacterSet guessEncoding() const;
 	ContentType type() const;
+#endif // ZXING_READERS
 };
 
 } // ZXing

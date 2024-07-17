@@ -199,6 +199,7 @@ std::string LookupCountryIdentifier(const std::string& GTIN, const BarcodeFormat
 	return it != std::end(COUNTRIES) && prefix >= it->first && prefix <= it->last ? it->id : std::string();
 }
 
+#ifdef ZXING_READERS
 std::string EanAddOn(const Barcode& barcode)
 {
 	if (!(BarcodeFormat::EAN13 | BarcodeFormat::UPCA | BarcodeFormat::UPCE | BarcodeFormat::EAN8).testFlag(barcode.format()))
@@ -207,6 +208,7 @@ std::string EanAddOn(const Barcode& barcode)
 	auto pos = txt.find(' ');
 	return pos != std::string::npos ? std::string(txt.substr(pos + 1)) : std::string();
 }
+#endif // ZXING_READERS
 
 std::string IssueNr(const std::string& ean2AddOn)
 {

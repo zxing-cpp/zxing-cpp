@@ -85,25 +85,28 @@ public:
 	 */
 	ByteArray bytesECI() const;
 
+#ifdef ZXING_READERS
 	/**
 	 * @brief text returns the bytes() content rendered to unicode/utf8 text accoring to specified TextMode
 	 */
 	std::string text(TextMode mode) const;
-
 	/**
 	 * @brief text returns the bytes() content rendered to unicode/utf8 text accoring to the TextMode set in the ReaderOptions
 	 */
 	std::string text() const;
+#endif // ZXING_READERS
 
 	/**
 	 * @brief ecLevel returns the error correction level of the symbol (empty string if not applicable)
 	 */
 	std::string ecLevel() const;
 
+#ifdef ZXING_READERS
 	/**
 	 * @brief contentType gives a hint to the type of content found (Text/Binary/GS1/etc.)
 	 */
 	ContentType contentType() const;
+#endif // ZXING_READERS
 
 	/**
 	 * @brief hasECI specifies wheter or not an ECI tag was found

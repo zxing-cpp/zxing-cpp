@@ -93,6 +93,7 @@ bool Content::canProcess() const
 	return std::all_of(encodings.begin(), encodings.end(), [](Encoding e) { return CanProcess(e.eci); });
 }
 
+#ifdef ZXING_READERS
 std::string Content::render(bool withECI) const
 {
 	if (empty() || !canProcess())
@@ -165,6 +166,7 @@ std::wstring Content::utfW() const
 {
 	return FromUtf8(render(false));
 }
+#endif // ZXING_READERS
 
 ByteArray Content::bytesECI() const
 {
@@ -188,6 +190,7 @@ ByteArray Content::bytesECI() const
 	return ByteArray(res);
 }
 
+#ifdef ZXING_READERS
 CharacterSet Content::guessEncoding() const
 {
 	// assemble all blocks with unknown encoding
@@ -236,5 +239,6 @@ ContentType Content::type() const
 
 	return ContentType::Mixed;
 }
+#endif // ZXING_READERS
 
 } // namespace ZXing

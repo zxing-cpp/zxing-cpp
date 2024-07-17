@@ -78,6 +78,7 @@ ByteArray Result::bytesECI() const
 	return _content.bytesECI();
 }
 
+#ifdef ZXING_READERS
 std::string Result::text(TextMode mode) const
 {
 	return _content.text(mode);
@@ -87,16 +88,19 @@ std::string Result::text() const
 {
 	return text(_readerOpts.textMode());
 }
+#endif // ZXING_READERS
 
 std::string Result::ecLevel() const
 {
 	return _ecLevel;
 }
 
+#ifdef ZXING_READERS
 ContentType Result::contentType() const
 {
 	return _content.type();
 }
+#endif // ZXING_READERS
 
 bool Result::hasECI() const
 {
