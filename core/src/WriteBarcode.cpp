@@ -17,11 +17,6 @@
 #ifdef ZXING_USE_ZINT
 
 #include <zint.h>
-template <>
-struct std::default_delete<zint_symbol>
-{
-	void operator()(zint_symbol* p) const noexcept { ZBarcode_Delete(p); }
-};
 
 #else
 
@@ -41,7 +36,7 @@ struct CreatorOptions::Data
 	// symbol size (qrcode, datamatrix, etc), map from I, 'WxH'
 	// structured_append (idx, cnt, ID)
 
-	mutable std::unique_ptr<zint_symbol> zint;
+	mutable unique_zint_symbol zint;
 
 #if __cplusplus <= 201703L || defined(__APPLE__)
 	Data(BarcodeFormat f) : format(f) {}

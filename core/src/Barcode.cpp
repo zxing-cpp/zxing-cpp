@@ -16,6 +16,10 @@
 
 #ifdef ZXING_USE_ZINT
 #include <zint.h>
+void zint_symbol_deleter::operator()(zint_symbol* p) const noexcept
+{
+	ZBarcode_Delete(p);
+}
 #else
 struct zint_symbol {};
 #endif
@@ -150,7 +154,7 @@ ImageView Result::symbol() const
 	return {_symbol->row(0).begin(), _symbol->width(), _symbol->height(), ImageFormat::Lum};
 }
 
-void Result::zint(std::unique_ptr<zint_symbol>&& z)
+void Result::zint(unique_zint_symbol&& z)
 {
 	_zint = std::shared_ptr(std::move(z));
 }
