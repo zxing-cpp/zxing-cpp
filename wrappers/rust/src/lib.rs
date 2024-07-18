@@ -3,9 +3,11 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
+#![allow(unknown_lints)] // backward compatibility
 #![allow(unused_unsafe)]
 #![allow(clippy::useless_transmute)]
 #![allow(clippy::redundant_closure_call)]
+#![allow(clippy::missing_transmute_annotations)] // introduced in 1.79
 
 mod tests;
 
