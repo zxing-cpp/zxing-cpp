@@ -10,8 +10,11 @@
 #include "HRI.h"
 #include "TextDecoder.h"
 #include "Utf.h"
-#include "Version.h"
 #include "ZXAlgorithms.h"
+
+#if !defined(ZXING_READERS) && !defined(ZXING_WRITERS)
+#include "Version.h"
+#endif
 
 #include <cctype>
 
