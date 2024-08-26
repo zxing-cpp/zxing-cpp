@@ -79,7 +79,7 @@ static bool ParseOptions(int argc, char* argv[], ReaderOptions& options, CLI& cl
 #endif
 
 	for (int i = 1; i < argc; ++i) {
-		auto is = [&](const char* str) { return strncmp(argv[i], str, strlen(argv[i])) == 0; };
+		auto is = [&](const char* str) { return strlen(argv[i]) > 1 && strncmp(argv[i], str, strlen(argv[i])) == 0; };
 		if (is("-fast")) {
 			options.setTryHarder(false);
 #ifdef ZXING_EXPERIMENTAL_API
@@ -207,8 +207,10 @@ int main(int argc, char* argv[])
 
 	for (const auto& filePath : cli.filePaths) {
 		int width, height, channels;
-		std::unique_ptr<stbi_uc, void (*)(void*)> buffer(stbi_load(filePath.c_str(), &width, &height, &channels, cli.forceChannels),
-														 stbi_image_free);
+		std::unique_ptr<stbi_uc, void (*)(void*)> buffer(
+			filePath == "-" ? stbi_load_from_file(stdin, &width, &height, &channels, cli.forceChannels)
+							: stbi_load(filePath.c_str(), &width, &height, &channels, cli.forceChannels),
+			stbi_image_free);
 		if (buffer == nullptr) {
 			std::cerr << "Failed to read image: " << filePath << " (" << stbi_failure_reason() << ")" << "\n";
 			return -1;
