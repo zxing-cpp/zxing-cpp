@@ -242,7 +242,7 @@ zint_symbol* CreatorOptions::zint() const
 }
 
 #define CHECK(ZINT_CALL) \
-	if (int err = (ZINT_CALL); err) \
+	if (int err = (ZINT_CALL); err >= ZINT_ERROR) \
 		throw std::invalid_argument(zint->errtxt);
 
 Barcode CreateBarcode(const void* data, int size, int mode, const CreatorOptions& opts)
