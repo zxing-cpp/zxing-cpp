@@ -267,8 +267,9 @@ int main(int argc, char* argv[])
 				std::cout << "No barcode found\n";
 				continue;
 			}
-
+			
 			std::cout << "Text:       \"" << barcode.text() << "\"\n"
+					  << "Secret:     " << ToHex(barcode.secretBytes()) << "\n"
 					  << "Bytes:      " << ToHex(options.textMode() == TextMode::ECI ? barcode.bytesECI() : barcode.bytes()) << "\n"
 					  << "Format:     " << ToString(barcode.format()) << "\n"
 					  << "Identifier: " << barcode.symbologyIdentifier() << "\n"

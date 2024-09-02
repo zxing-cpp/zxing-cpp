@@ -327,6 +327,9 @@ PYBIND11_MODULE(zxingcpp, m)
 		.def_property_readonly("bytes", [](const Barcode& res) { return py::bytes(res.bytes().asString()); },
 			":return: uninterpreted bytes of the decoded symbol\n"
 			":rtype: bytes")
+		.def_property_readonly("secretBytes", [](const Barcode& res) { return py::bytes(res.secretBytes().asString()); },
+			":return: the bytes found after jaylo's custom terminator. Empty otherwise\n"
+			":rtype: bytes")
 		.def_property_readonly("format", &Barcode::format,
 			":return: decoded symbol format\n"
 			":rtype: zxingcpp.BarcodeFormat")

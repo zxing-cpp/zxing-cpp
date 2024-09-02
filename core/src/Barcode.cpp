@@ -68,6 +68,11 @@ bool Result::isValid() const
 	return format() != BarcodeFormat::None && !_content.bytes.empty() && !error();
 }
 
+const ByteArray& Result::secretBytes() const
+{
+	return _content.secretBytes;
+}
+
 const ByteArray& Result::bytes() const
 {
 	return _content.bytes;

@@ -59,6 +59,8 @@ Content::Content() {}
 
 Content::Content(ByteArray&& bytes, SymbologyIdentifier si) : bytes(std::move(bytes)), symbology(si) {}
 
+Content::Content(ByteArray&& bytes, ByteArray&& secretBytes, SymbologyIdentifier si) : bytes(std::move(bytes)), secretBytes(std::move(secretBytes)), symbology(si) {}
+
 void Content::switchEncoding(CharacterSet cs)
 {
 	switchEncoding(ToECI(cs), false);

@@ -20,6 +20,7 @@
 #include "StructuredAppend.h"
 #include "ZXAlgorithms.h"
 #include "ZXTestSupport.h"
+#include <iostream>
 
 #include <algorithm>
 #include <stdexcept>
@@ -236,7 +237,6 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 	result.symbology = {'Q', version.isModel1() ? '0' : '1', 1};
 	StructuredAppendInfo structuredAppend;
 	const int modeBitLength = CodecModeBitsLength(version);
-
 	if (version.isModel1())
 		bits.readBits(4); // Model 1 is leading with 4 0-bits -> drop them
 
@@ -306,6 +306,21 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 			}
 			}
 		}
+		// ------ Start of our custom logic added to the ZXing library
+
+		// The loop above stopped because it reached the terminator code (or the end of the bit stream)
+		// We first check if there even is enough bits to store our custom terminator code (8 bit) + secret (8 bit)
+		if (bits.available() >= 16) {
+			// Then validte that the next 8 bits are our "custom" terminator code: 0000 0000
+			// A regular terminator code is only 0000;
+			const int terminatorCode = bits.readBits(8);
+			if (terminatorCode == 0) {
+				// Now read the following byte to extract the secret :yay:
+				const int secret = bits.readBits(8); 
+				result.secretBytes = {narrow_cast<uint8_t>(secret)};
+			}
+		}
+		// ------ End of our custom logic added to the ZXing library
 	} catch (std::out_of_range&) { // see BitSource::readBits
 		error = FormatError("Truncated bit stream");
 	} catch (Error e) {
@@ -341,6 +356,7 @@ DecoderResult Decode(const BitMatrix& bits)
 
 	// Separate into data blocks
 	std::vector<DataBlock> dataBlocks = DataBlock::GetDataBlocks(codewords, version, formatInfo.ecLevel);
+
 	if (dataBlocks.empty())
 		return FormatError("Failed to get data blocks");
 

@@ -48,6 +48,7 @@ public:
 	};
 
 	ByteArray bytes;
+	ByteArray secretBytes;
 	std::vector<Encoding> encodings;
 	SymbologyIdentifier symbology;
 	CharacterSet defaultCharset = CharacterSet::Unknown;
@@ -55,6 +56,8 @@ public:
 
 	Content();
 	Content(ByteArray&& bytes, SymbologyIdentifier si);
+	Content(ByteArray&& bytes, ByteArray&& secretBytes, SymbologyIdentifier si);
+
 
 	void switchEncoding(ECI eci) { switchEncoding(eci, true); }
 	void switchEncoding(CharacterSet cs);
