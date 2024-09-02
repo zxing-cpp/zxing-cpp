@@ -20,6 +20,7 @@
 #include "StructuredAppend.h"
 #include "ZXAlgorithms.h"
 #include "ZXTestSupport.h"
+#include <iostream>
 
 #include <algorithm>
 #include <stdexcept>
@@ -339,6 +340,7 @@ DecoderResult Decode(const BitMatrix& bits)
 	if (codewords.empty())
 		return FormatError("Failed to read codewords");
 
+	std::cout << "Codewords Complete:\n" << ToHex(codewords) << "\n";
 	// Separate into data blocks
 	std::vector<DataBlock> dataBlocks = DataBlock::GetDataBlocks(codewords, version, formatInfo.ecLevel);
 	if (dataBlocks.empty())
@@ -350,17 +352,22 @@ DecoderResult Decode(const BitMatrix& bits)
 	ByteArray resultBytes(totalBytes);
 	auto resultIterator = resultBytes.begin();
 
+
 	// Error-correct and copy data blocks together into a stream of bytes
 	for (auto& dataBlock : dataBlocks)
 	{
 		ByteArray& codewordBytes = dataBlock.codewords();
+		std::cout << "Codewords Split:\n" << ToHex(codewordBytes) << "\n";
 		int numDataCodewords = dataBlock.numDataCodewords();
-
 		if (!CorrectErrors(codewordBytes, numDataCodewords))
 			return ChecksumError();
 
+		std::cout << "Codewords Split (Corrected):\n" << ToHex(codewordBytes) << "\n";
 		resultIterator = std::copy_n(codewordBytes.begin(), numDataCodewords, resultIterator);
 	}
+
+	// Result bytes represents the whole data :yay: This is what we want (to read the full message if using terminator codes)
+	std::cout << "ResultBytes:\n" << ToHex(resultBytes) << "\n";
 
 	// Decode the contents of that stream of bytes
 	return DecodeBitStream(std::move(resultBytes), version, formatInfo.ecLevel).setIsMirrored(formatInfo.isMirrored);
