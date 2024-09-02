@@ -18,11 +18,11 @@
 
 #ifdef ZXING_EXPERIMENTAL_API
 #include <memory>
-extern "C" struct zint_symbol;
 namespace ZXing {
 class BitMatrix;
 }
 
+extern "C" struct zint_symbol;
 struct zint_symbol_deleter
 {
 	void operator()(zint_symbol* p) const noexcept;
