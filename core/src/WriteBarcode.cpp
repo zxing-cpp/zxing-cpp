@@ -242,7 +242,7 @@ zint_symbol* CreatorOptions::zint() const
 }
 
 #define CHECK(ZINT_CALL) \
-	if (int err = (ZINT_CALL); err) \
+	if (int err = (ZINT_CALL); err >= ZINT_ERROR) \
 		throw std::invalid_argument(zint->errtxt);
 
 Barcode CreateBarcode(const void* data, int size, int mode, const CreatorOptions& opts)
@@ -350,6 +350,7 @@ Barcode CreateBarcodeFromText(std::string_view contents, const CreatorOptions& o
 	auto writer = MultiFormatWriter(opts.format()).setMargin(0);
 	if (!opts.ecLevel().empty())
 		writer.setEccLevel(std::stoi(opts.ecLevel()));
+	writer.setEncoding(CharacterSet::UTF8); // write UTF8 (ECI value 26) for maximum compatibility
 
 	return CreateBarcode(writer.encode(std::string(contents), 0, IsLinearCode(opts.format()) ? 50 : 0), opts);
 }

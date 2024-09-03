@@ -12,7 +12,6 @@
 
 #ifdef ZXING_EXPERIMENTAL_API
 #include "BitMatrix.h"
-#endif
 
 #ifdef ZXING_USE_ZINT
 #include <zint.h>
@@ -22,6 +21,9 @@ void zint_symbol_deleter::operator()(zint_symbol* p) const noexcept
 }
 #else
 struct zint_symbol {};
+void zint_symbol_deleter::operator()(zint_symbol*) const noexcept {}
+#endif
+
 #endif
 
 #include <cmath>

@@ -193,6 +193,7 @@ int main(int argc, char* argv[])
 			writer.setEncoding(CharacterSet::BINARY);
 			matrix = writer.encode(bytes, cli.sizeHint, std::clamp(cli.sizeHint / 2, 50, 300));
 		} else {
+			writer.setEncoding(CharacterSet::UTF8);
 			matrix = writer.encode(cli.input, cli.sizeHint, std::clamp(cli.sizeHint / 2, 50, 300));
 		}
 		auto bitmap = ToMatrix<uint8_t>(matrix);
