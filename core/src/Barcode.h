@@ -75,6 +75,12 @@ public:
 
 	BarcodeFormat format() const { return _format; }
 
+
+	/**
+	 * @brief secretBytes are the bytes found after jaylo's custom terminator. Empty otherwise
+	 */
+	const ByteArray& secretBytes() const;
+
 	/**
 	 * @brief bytes is the raw / standard content without any modifications like character set conversions
 	 */
