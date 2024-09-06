@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "zxingcpp"
+    namespace = "io.github.zxing_cpp"
     // ndk version 25 is known to support c++20 (see #386)
     // ndkVersion = "25.1.8937393"
 
@@ -51,8 +51,9 @@ dependencies {
     implementation(libs.androidx.camera.core)
 }
 
+val publishSnapshot: String? by project
 group = "io.github.zxing-cpp"
-version = "2.2.0"
+version = "2.2.0" + if (publishSnapshot == "true") "-SNAPSHOT" else ""
 
 val javadocJar by tasks.registering(Jar::class) {
     archiveClassifier.set("javadoc")
@@ -102,7 +103,9 @@ publishing {
 
             val releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
             val snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
-            setUrl(if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
+            setUrl(if (version.toString().endsWith("-SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
+            if (!version.toString().endsWith("-SNAPSHOT") && publishSnapshot == "true")
+                throw IllegalStateException("$version does not end with -SNAPSHOT but $publishSnapshot is true")
 
             credentials {
                 val ossrhUsername: String? by project
