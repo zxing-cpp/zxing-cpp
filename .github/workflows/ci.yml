@@ -151,6 +151,7 @@ jobs:
         path: "wrappers/android/zxingcpp/build/outputs/aar/zxingcpp-release.aar"
 
     - name: Publish Library Snapshot
+      if: github.repository == 'zxing-cpp/zxing-cpp' && github.event_name != 'pull_request'
       working-directory: wrappers/android
       env:
         ORG_GRADLE_PROJECT_publishSnapshot: true
