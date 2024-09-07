@@ -143,12 +143,22 @@ jobs:
 
     - name: Build the lib/app
       working-directory: wrappers/android
-      run: ./gradlew assembleDebug # build only the debug version of the aar (faster build)
+      run: ./gradlew assembleRelease
 
     - uses: actions/upload-artifact@v4
       with:
         name: android-artifacts
-        path: "wrappers/android/zxingcpp/build/outputs/aar/zxingcpp-debug.aar"
+        path: "wrappers/android/zxingcpp/build/outputs/aar/zxingcpp-release.aar"
+
+    - name: Publish Library Snapshot
+      working-directory: wrappers/android
+      env:
+        ORG_GRADLE_PROJECT_publishSnapshot: true
+        ORG_GRADLE_PROJECT_signingKey: ${{ secrets.OSSRH_GPG_SECRET_KEY }}
+        ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }}
+        ORG_GRADLE_PROJECT_ossrhUsername: ${{ secrets.OSSRH_USERNAME }}
+        ORG_GRADLE_PROJECT_ossrhPassword: ${{ secrets.OSSRH_PASSWORD }}
+      run: ./gradlew publishReleasePublicationToSonatypeRepository
 
   build-kn:
     runs-on: ubuntu-latest
