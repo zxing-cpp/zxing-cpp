@@ -20,7 +20,7 @@ android {
         }
         externalNativeBuild {
             cmake {
-                arguments("-DCMAKE_BUILD_TYPE=RelWithDebInfo", "-DANDROID_ARM_NEON=ON", "-DBUILD_WRITERS=OFF")
+                arguments("-DCMAKE_BUILD_TYPE=RelWithDebInfo", "-DANDROID_ARM_NEON=ON", "-DZXING_WRITERS=OFF")
             }
         }
 
