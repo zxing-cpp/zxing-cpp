@@ -4,7 +4,7 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-package com.example.zxingcppdemo
+package zxingcpp.app
 
 import android.content.Context
 import android.graphics.Canvas
