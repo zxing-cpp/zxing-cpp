@@ -2,8 +2,7 @@
 
 ZXingCpp is a .NET wrapper for [zxing-cpp](https://github.com/zxing-cpp/zxing-cpp).
 
-There is a NuGet package available: https://www.nuget.org/packages/ZXingCpp. It does currently not yet
-contain the native binary dll file. That needs to be copied/build separately at the moment.
+There is a NuGet package available: https://www.nuget.org/packages/ZXingCpp.
 
 ## Usage
 
@@ -21,3 +20,10 @@ LD_LIBRARY_PATH=<ZXing.so-path> dotnet run --project ZXingCpp.Demo -- ../../test
 To compare the performance of this .NET wrapper project with other available barcode scanner .NET libraries,
 I started the project [zxing-bench](https://github.com/axxel/zxing-bench). The README contains a few
 results to get an idea.
+
+## Release howto (for internal use)
+
+ * download `*-latest-exp-artifacts` from gha page and copy binaries to `runtimes`
+ * update `Version` in `ZXingCpp.csproj`
+ * `dotnet pack`
+ * `dotnet nuget push ZXingCpp/bin/Release/ZXingCpp.<version>.nupkg -s https://api.nuget.org/v3/index.json -k <api-key>`
