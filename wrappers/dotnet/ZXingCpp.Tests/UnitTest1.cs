@@ -62,7 +62,7 @@ public class UnitTest1
 	public void Create()
 	{
 		var text = "hello";
-        var res = new Barcode(text, BarcodeFormats.DataMatrix);
+		var res = new Barcode(text, BarcodeFormats.DataMatrix);
 
 		Assert.True(res.IsValid);
 		Assert.Equal(BarcodeFormats.DataMatrix, res.Format);

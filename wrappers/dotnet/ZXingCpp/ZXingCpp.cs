@@ -385,7 +385,7 @@ public class CreatorOptions
 
 public class WriterOptions
 {
-    internal IntPtr _d;
+	internal IntPtr _d;
 
 	public WriterOptions() => _d = CheckError(ZXing_WriterOptions_new(), "Failed to create WriterOptions.");
 
