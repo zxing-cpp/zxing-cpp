@@ -74,4 +74,4 @@ jobs:
           ORG_GRADLE_PROJECT_ossrhPassword: ${{ secrets.OSSRH_PASSWORD }}
         run: |
           export PATH="$PATH:$(brew --prefix llvm@15)/bin"
-          ./gradlew publishReleasePublicationToSonatypeRepository
+          ./gradlew publishAllPublicationsToSonatypeRepository
