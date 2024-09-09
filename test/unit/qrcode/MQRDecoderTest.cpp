@@ -96,7 +96,7 @@ TEST(MQRDecoderTest, MQRCodeM1Error4Bits)
 										  88, false);
 	const auto result = Decode(bitMatrix);
 	EXPECT_EQ(Error::Checksum, result.error());
-	EXPECT_TRUE(result.text().empty());
+	EXPECT_EQ(result.text(), L"6350");
 }
 
 TEST(MQRDecoderTest, MQRCodeM4)

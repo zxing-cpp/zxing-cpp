@@ -46,8 +46,8 @@ TEST(RMQRDecoderTest, RMQRCodeR7x43MError6Bits)
 
 	const auto result = Decode(bitMatrix);
 	EXPECT_EQ(Error::Checksum, result.error());
-	EXPECT_TRUE(result.text().empty());
-	EXPECT_TRUE(result.content().text(TextMode::Plain).empty());
+	EXPECT_EQ(result.text(), L"LSZ2EFJ");
+	EXPECT_EQ(result.content().text(TextMode::Plain), "LSZ2EFJ");
 }
 
 TEST(RMQRDecoderTest, RMQRCodeR7x139H)

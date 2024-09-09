@@ -351,19 +351,23 @@ DecoderResult Decode(const BitMatrix& bits)
 	auto resultIterator = resultBytes.begin();
 
 	// Error-correct and copy data blocks together into a stream of bytes
+	Error error;
 	for (auto& dataBlock : dataBlocks)
 	{
 		ByteArray& codewordBytes = dataBlock.codewords();
 		int numDataCodewords = dataBlock.numDataCodewords();
 
 		if (!CorrectErrors(codewordBytes, numDataCodewords))
-			return ChecksumError();
+			error = ChecksumError();
 
 		resultIterator = std::copy_n(codewordBytes.begin(), numDataCodewords, resultIterator);
 	}
 
 	// Decode the contents of that stream of bytes
-	return DecodeBitStream(std::move(resultBytes), version, formatInfo.ecLevel).setIsMirrored(formatInfo.isMirrored);
+	auto ret = DecodeBitStream(std::move(resultBytes), version, formatInfo.ecLevel).setIsMirrored(formatInfo.isMirrored);
+	if (error)
+		ret.setError(error);
+	return ret;
 }
 
 } // namespace ZXing::QRCode
