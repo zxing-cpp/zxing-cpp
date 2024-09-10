@@ -187,7 +187,7 @@ static void DecodeAlphanumericSegment(BitSource& bits, int count, Content& resul
 	result += buffer;
 }
 
-static std::vector<uint8_t> ExtractAlphanumericSegment(BitSource& bits, int count)
+static ByteArray ExtractAlphanumericSegment(BitSource& bits, int count)
 {
 	// We reproduce the logic of DecodeAlphanumericSegment here, but instead return it as an ASCII encoded byte array
 	std::string buffer;
@@ -202,7 +202,7 @@ static std::vector<uint8_t> ExtractAlphanumericSegment(BitSource& bits, int coun
 		buffer += ToAlphaNumericChar(bits.readBits(6));
 	}
 
-    std::vector<uint8_t> result(buffer.begin(), buffer.end());
+    ByteArray result(buffer);
     return result;
 }
 
@@ -407,10 +407,10 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 						segment = ExtractNumericSegment(bits, count);
 						std::cout << "Numeric segment: " << ToHex(segment) << std::endl;
 						break;
-					// case CodecMode::ALPHANUMERIC:
-					// 	segment = ExtractAlphanumericSegment(bits, count);
-					// 	std::cout << "Alphanumeric segment:" << std::endl;
-					// 	break;
+					case CodecMode::ALPHANUMERIC:
+						segment = ExtractAlphanumericSegment(bits, count);
+						std::cout << "Alphanumeric segment:" << ToHex(segment) << std::endl;
+						break;
 					case CodecMode::BYTE:
 						segment = ExtractByteSegment(bits, count);
 						std::cout << "Byte segment: " << ToHex(segment) << std::endl;
