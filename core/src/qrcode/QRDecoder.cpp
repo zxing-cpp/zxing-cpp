@@ -25,8 +25,22 @@
 #include <stdexcept>
 #include <utility>
 #include <vector>
+#include <iostream>
+
+
 
 namespace ZXing::QRCode {
+
+/**
+ * This function determines the endianness of the system by checking the byte order of a 16-bit number.
+ * If the least significant byte comes first, the system is little-endian.
+ * 
+ * @return true if the system is little-endian, false otherwise.
+ */
+static bool isLittleEndian() {
+    uint16_t number = 1;
+    return *reinterpret_cast<uint8_t*>(&number) == 1;
+}
 
 /**
 * <p>Given data and error-correction codewords received, possibly corrupted by errors, attempts to
@@ -112,6 +126,15 @@ static void DecodeByteSegment(BitSource& bits, int count, Content& result)
 		result += narrow_cast<uint8_t>(bits.readBits(8));
 }
 
+static ByteArray ExtractByteSegment(BitSource& bits, int count)
+{
+	ByteArray result;   
+    for (int i = 0; i < count; i++) {
+		result.push_back(narrow_cast<uint8_t>(bits.readBits(8)));
+    }
+    return result;
+}
+
 static char ToAlphaNumericChar(int value)
 {
 	/**
@@ -164,6 +187,25 @@ static void DecodeAlphanumericSegment(BitSource& bits, int count, Content& resul
 	result += buffer;
 }
 
+static std::vector<uint8_t> ExtractAlphanumericSegment(BitSource& bits, int count)
+{
+	// We reproduce the logic of DecodeAlphanumericSegment here, but instead return it as an ASCII encoded byte array
+	std::string buffer;
+	while (count > 1) {
+		int nextTwoCharsBits = bits.readBits(11);
+		buffer += ToAlphaNumericChar(nextTwoCharsBits / 45);
+		buffer += ToAlphaNumericChar(nextTwoCharsBits % 45);
+		count -= 2;
+	}
+	if (count == 1) {
+		// special case: one character left
+		buffer += ToAlphaNumericChar(bits.readBits(6));
+	}
+
+    std::vector<uint8_t> result(buffer.begin(), buffer.end());
+    return result;
+}
+
 static void DecodeNumericSegment(BitSource& bits, int count, Content& result)
 {
 	result.switchEncoding(CharacterSet::ISO8859_1);
@@ -175,6 +217,39 @@ static void DecodeNumericSegment(BitSource& bits, int count, Content& result)
 		result.append(ZXing::ToString(nDigits, n));
 		count -= n;
 	}
+}
+
+static ByteArray ExtractNumericSegment(BitSource& bits, int count)
+{
+	ByteArray result;   
+
+	// Used to concatenate the digits
+	std::string resultBuffer;
+    while (count) {
+        int n = std::min(count, 3);
+        int nDigits = bits.readBits(1 + 3 * n); // Read 4, 7, or 10 bits into 1, 2, or 3 digits
+        resultBuffer += ZXing::ToString(nDigits, n);
+		count -= n;
+    }
+
+	// Now we can convert the string to an integer
+	int value = std::stoi(resultBuffer);
+
+    // Convert the integer to a byte array
+    if (isLittleEndian()) {
+        // Little-endian system, push bytes in little-endian order
+        while (value > 0) {
+            result.push_back(static_cast<uint8_t>(value & 0xFF)); // Extract the lowest 8 bits
+            value >>= 8; // Shift right by 8 bits
+        }
+    } else {
+        // Big-endian order
+        while (value > 0) {
+            result.insert(result.begin(), static_cast<uint8_t>(value & 0xFF)); // Insert at the beginning
+            value >>= 8; // Shift right by 8 bits
+        }
+    }
+    return result;  // Return the byte array result
 }
 
 static ECI ParseECIValue(BitSource& bits)
@@ -306,17 +381,45 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 			}
 		}
 		// ------ Start of our custom logic added to the ZXing library
-
 		// The loop above stopped because it reached the terminator code (or the end of the bit stream)
-		// We first check if there even is enough bits to store our custom terminator code (8 bit) + secret (8 bit)
-		if (bits.available() >= 16) {
-			// Then validte that the next 8 bits are our "custom" terminator code: 0000 0000
-			// A regular terminator code is only 0000;
-			const int terminatorCode = bits.readBits(8);
-			if (terminatorCode == 0) {
-				// Now read the following byte to extract the secret :yay:
-				const int secret = bits.readBits(8); 
-				result.secretBytes = {narrow_cast<uint8_t>(secret)};
+		// A regular terminator code is only 0000, validate it is our custom one 0000 0000
+		if (bits.readBits(8) == 0) {
+			std::cout << "Reached the terminator code, there has to be a secret!!" << std::endl;
+
+			std::vector<ByteArray> secretSegments;
+			while(!IsEndOfStream(bits, version)) {
+
+				CodecMode secretMode;
+				if (modeBitLength == 0)
+					secretMode = CodecMode::NUMERIC; // MicroQRCode version 1 is always NUMERIC and modeBitLength is 0
+				else
+					secretMode = CodecModeForBits(bits.readBits(modeBitLength), version.type());
+
+				// "Normal" QR code modes:
+				// How many characters will follow, encoded in this mode?
+				int count = bits.readBits(CharacterCountBits(secretMode, version));
+				ByteArray segment;
+
+				switch (secretMode) {
+					// For now, jaylo's embedded secret only supports alphanumeric, numeric, and byte modes
+					// TODO: Implement support for other modes
+					case CodecMode::NUMERIC:
+						segment = ExtractNumericSegment(bits, count);
+						std::cout << "Numeric segment: " << ToHex(segment) << std::endl;
+						break;
+					// case CodecMode::ALPHANUMERIC:
+					// 	segment = ExtractAlphanumericSegment(bits, count);
+					// 	std::cout << "Alphanumeric segment:" << std::endl;
+					// 	break;
+					case CodecMode::BYTE:
+						segment = ExtractByteSegment(bits, count);
+						std::cout << "Byte segment: " << ToHex(segment) << std::endl;
+						break;
+					default:
+						throw FormatError("Invalid CodecMode");
+				}
+				// Add the extracted secret segment to the outer vector
+				secretSegments.push_back(segment);
 			}
 		}
 		// ------ End of our custom logic added to the ZXing library
