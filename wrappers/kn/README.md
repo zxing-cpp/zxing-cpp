@@ -2,13 +2,18 @@
 
 ## Install
 
-The easiest way to use the library is to fetch if from _mavenCentral_. Simply add
+The easiest way to use the library is to fetch it from _mavenCentral_. Simply add
 
 ```gradle
-implementation("io.github.zxing-cpp:kotlin-native:2.2.1")
+implementation("io.github.zxing-cpp:kotlin-native:2.2.1-SNAPSHOT")
 ```
 
 to your `build.gradle.kts` file in the `dependencies` section of `nativeMain` source set.
+To access the SNAPSHOT version, you also need to add a separate repositories entry in your build.cradle file:
+
+```gradle
+maven { url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots") }
+```
 
 ## Use
 
