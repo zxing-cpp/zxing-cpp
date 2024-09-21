@@ -71,10 +71,26 @@ if(NOT ZXING_DEPENDENCIES IN_LIST ZXING_DEPENDENCIES_LIST)
 endif()
 
 if (NOT DEFINED CMAKE_CXX_STANDARD)
-    set (CMAKE_CXX_STANDARD 17)
+    set (CMAKE_CXX_STANDARD 20) # Use C++20 standard if available
 endif()
 if (NOT DEFINED CMAKE_CXX_EXTENSIONS)
     set (CMAKE_CXX_EXTENSIONS OFF)
+endif()
+
+# Since CMAKE_CXX_STANDARD 20 does not guarantee that the c++20 standard will be
+# selected, check for needed char_tratis<T> support.
+try_compile(HAVE_CHAR8_T_CT "${CMAKE_BINARY_DIR}/tmp" "${CMAKE_SOURCE_DIR}/cmake/tests/t_ct_support.cpp"
+    COMPILE_DEFINITIONS "-DZXING_CPP_CT_T_TYPE=char8_t"
+)
+if (HAVE_CHAR8_T_CT)
+    add_compile_definitions("HAVE_CHAR8_T_CT")
+else()
+    try_compile(HAVE_UINT8_T_CT "${CMAKE_BINARY_DIR}/tmp" "${CMAKE_SOURCE_DIR}/cmake/tests/t_ct_support.cpp"
+        COMPILE_DEFINITIONS "-DZXING_CPP_CT_T_TYPE=uint8_t"
+    )
+    if (NOT HAVE_UINT8_T_CT)
+        message(FATAL_ERROR "C++ RT library not supported. C++ RT library must support either std::char_traits<char8_t> or std::char_traits<uint8_t>.")
+    endif()
 endif()
 
 add_subdirectory (core)

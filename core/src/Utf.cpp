@@ -16,8 +16,7 @@
 
 namespace ZXing {
 
-// TODO: c++20 has char8_t
-#if __cplusplus <= 201703L
+#ifndef HAVE_CHAR8_T_CT
 using char8_t = uint8_t;
 #endif
 using utf8_t = std::basic_string_view<char8_t>;
