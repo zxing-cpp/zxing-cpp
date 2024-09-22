@@ -18,7 +18,7 @@ Thanks a lot for your contribution!
 
 ## Features
 
-* Written in pure C++17 (/C++20), no third-party dependencies (for the library itself)
+* Written in pure C++20 (/C++17), no third-party dependencies (for the library itself)
 * Thread safe
 * Wrappers/Bindings for:
   * [Android](wrappers/android/README.md)
@@ -47,7 +47,7 @@ Thanks a lot for your contribution!
 [Note:]
  * DataBar used to be called RSS.
  * DataBar, DX Film Edge, MaxiCode, Micro QR Code and rMQR Code are not supported for writing.
- * Building with C++20 (see [CMakeLists.txt](https://github.com/zxing-cpp/zxing-cpp/blob/d4b0f502775857f257d13efd25fb840ece1bca3e/CMakeLists.txt#L45)) changes the behaviour of the library: it then supports multi-symbol and position independent detection for DataMatrix. This comes at a noticable performace cost. C++20 is enabled by default for the Android, iOS, Python and WASM wrappers.
+ * Building with only C++17 (see [CMakeLists.txt](https://github.com/zxing-cpp/zxing-cpp/blob/d4b0f502775857f257d13efd25fb840ece1bca3e/CMakeLists.txt#L45)) changes the behaviour of the library: it then lacks supports multi-symbol and position independent detection for DataMatrix.
 
 ## Getting Started
 

@@ -71,7 +71,9 @@ if(NOT ZXING_DEPENDENCIES IN_LIST ZXING_DEPENDENCIES_LIST)
 endif()
 
 if (NOT DEFINED CMAKE_CXX_STANDARD)
-    set (CMAKE_CXX_STANDARD 17)
+    set (CMAKE_CXX_STANDARD 20)
+    # Allow the fallback to earlier versions if the compiler does not support it.
+    set(CMAKE_CXX_STANDARD_REQUIRED OFF)
 endif()
 if (NOT DEFINED CMAKE_CXX_EXTENSIONS)
     set (CMAKE_CXX_EXTENSIONS OFF)
