@@ -2,11 +2,16 @@
 
 ## Install
 
-The easiest way to use the library is to fetch if from _mavenCentral_. Simply add
+The easiest way to use the library is to fetch if from _mavenCentral_. Simply add **one** of the following two lines
 ```gradle
 implementation("io.github.zxing-cpp:android:2.2.0")
+implementation("io.github.zxing-cpp:android:2.3.0-SNAPSHOT")
 ```
-to your `build.gradle.kts` file in the `dependencies` section.
+to your `build.gradle.kts` file in the `dependencies` section. To access the SNAPSHOT version, you also need to add a separate repositories entry in your `build.cradle.kts` file:
+
+```gradle
+maven { url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots") }
+```
 
 ## Use
 
