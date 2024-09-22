@@ -41,6 +41,8 @@ macro(zxing_add_package name depname git_repo git_rev)
             set (gtest_force_shared_crt ON CACHE BOOL "" FORCE)
         endif()
         #FetchContent_MakeAvailable (${depname})
+        # TODO: reqire cmake 3.28 and pass EXCLUDE_FROM_ALL to FetchContent_Declare instead of calling FetchContent_Populate below.
+        #       This would fix a warning but cmake 3.28 is not in Debian bookworm but at least in Ubuntu 24.04 (LTS)
         FetchContent_GetProperties(${depname})
         if(NOT ${depname}_POPULATED)
             FetchContent_Populate(${depname})
