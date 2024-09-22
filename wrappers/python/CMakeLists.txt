@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.18)
 project(ZXingPython)
 
 # check if we are called from the top-level ZXing project
@@ -33,6 +33,7 @@ if (NOT hasParent)
 endif()
 
 find_package(Python3 COMPONENTS Interpreter Development.Module REQUIRED) # see https://github.com/pybind/pybind11/issues/4785
+set(PYBIND11_FINDPYTHON ON) # see https://github.com/pybind/pybind11/issues/4785
 zxing_add_package(pybind11 pybind11 https://github.com/pybind/pybind11.git v2.13.6)
 
 # build the python module
