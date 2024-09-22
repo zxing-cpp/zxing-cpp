@@ -151,15 +151,15 @@ bool HaveIntersectingBoundingBoxes(const Quadrilateral<PointT>& a, const Quadril
 }
 
 template <typename PointT>
-Quadrilateral<PointT> Blend(const Quadrilateral<PointT>& a, const Quadrilateral<PointT>& b)
+Quadrilateral<PointT> Blend(const Quadrilateral<PointT>& aa, const Quadrilateral<PointT>& bb)
 {
-	auto dist2First = [c = a[0]](auto a, auto b) { return distance(a, c) < distance(b, c); };
+	auto dist2First = [c = aa[0]](auto a, auto b) { return distance(a, c) < distance(b, c); };
 	// rotate points such that the the two topLeft points are closest to each other
-	auto offset = std::min_element(b.begin(), b.end(), dist2First) - b.begin();
+	auto offset = std::min_element(bb.begin(), bb.end(), dist2First) - bb.begin();
 
 	Quadrilateral<PointT> res;
 	for (int i = 0; i < 4; ++i)
-		res[i] = (a[i] + b[(i + offset) % 4]) / 2;
+		res[i] = (aa[i] + bb[(i + offset) % 4]) / 2;
 
 	return res;
 }
