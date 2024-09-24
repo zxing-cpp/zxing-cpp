@@ -38,7 +38,7 @@ struct CreatorOptions::Data
 
 	mutable unique_zint_symbol zint;
 
-#if __cplusplus <= 201703L || defined(__APPLE__)
+#ifndef __cpp_aggregate_paren_init
 	Data(BarcodeFormat f) : format(f) {}
 #endif
 };
