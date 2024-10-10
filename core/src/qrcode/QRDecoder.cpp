@@ -364,7 +364,9 @@ DecoderResult Decode(const BitMatrix& bits)
 	}
 
 	// Decode the contents of that stream of bytes
-	auto ret = DecodeBitStream(std::move(resultBytes), version, formatInfo.ecLevel).setIsMirrored(formatInfo.isMirrored);
+	auto ret = DecodeBitStream(std::move(resultBytes), version, formatInfo.ecLevel)
+		.setDataMask(formatInfo.mask)
+		.setIsMirrored(formatInfo.isMirrored);
 	if (error)
 		ret.setError(error);
 	return ret;
