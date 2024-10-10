@@ -1,0 +1,34 @@
+{
+	"backtrace" : 0,
+	"backtraceGraph" : 
+	{
+		"commands" : [],
+		"files" : 
+		[
+			"example/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			}
+		]
+	},
+	"dependencies" : 
+	[
+		{
+			"backtrace" : 0,
+			"id" : "ZXing::@57760688d1f824db5d9c"
+		}
+	],
+	"id" : "ZXingQtWriter_autogen_timestamp_deps::@70983d692f648185febe",
+	"isGeneratorProvided" : true,
+	"name" : "ZXingQtWriter_autogen_timestamp_deps",
+	"paths" : 
+	{
+		"build" : "example",
+		"source" : "example"
+	},
+	"sources" : [],
+	"type" : "UTILITY"
+}

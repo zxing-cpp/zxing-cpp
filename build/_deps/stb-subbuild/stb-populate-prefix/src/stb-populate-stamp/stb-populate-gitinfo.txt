@@ -1,0 +1,15 @@
+# This is a generated file and its contents are an internal implementation detail.
+# The download step will be re-executed if anything in this file changes.
+# No other meaning or use of this file is supported.
+
+method=git
+command=/usr/bin/cmake;-DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE;-P;/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/build/_deps/stb-subbuild/stb-populate-prefix/tmp/stb-populate-gitclone.cmake
+source_dir=/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/build/_deps/stb-src
+work_dir=/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/build/_deps
+repository=https://github.com/nothings/stb.git
+remote=origin
+init_submodules=TRUE
+recurse_submodules=--recursive
+submodules=
+CMP0097=NEW
+      

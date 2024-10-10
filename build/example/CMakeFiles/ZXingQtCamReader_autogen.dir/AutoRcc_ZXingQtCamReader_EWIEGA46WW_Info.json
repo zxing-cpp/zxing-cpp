@@ -1,0 +1,26 @@
+{
+	"BUILD_DIR" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/build/example/ZXingQtCamReader_autogen",
+	"CMAKE_BINARY_DIR" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/build",
+	"CMAKE_CURRENT_BINARY_DIR" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/build/example",
+	"CMAKE_CURRENT_SOURCE_DIR" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/example",
+	"CMAKE_SOURCE_DIR" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp",
+	"CROSS_CONFIG" : false,
+	"GENERATOR" : "Ninja",
+	"INCLUDE_DIR" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/build/example/ZXingQtCamReader_autogen/include",
+	"INPUTS" : 
+	[
+		"/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/example/ZXingQt5CamReader.qml",
+		"/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/example/ZXingQt6CamReader.qml"
+	],
+	"LOCK_FILE" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/build/example/CMakeFiles/ZXingQtCamReader_autogen.dir/AutoRcc_ZXingQtCamReader_EWIEGA46WW_Lock.lock",
+	"MULTI_CONFIG" : false,
+	"OPTIONS" : [ "-name", "ZXingQtCamReader" ],
+	"OUTPUT_CHECKSUM" : "EWIEGA46WW",
+	"OUTPUT_NAME" : "qrc_ZXingQtCamReader.cpp",
+	"RCC_EXECUTABLE" : "/usr/lib/qt6/rcc",
+	"RCC_LIST_OPTIONS" : [ "--list" ],
+	"SETTINGS_FILE" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/build/example/CMakeFiles/ZXingQtCamReader_autogen.dir/AutoRcc_ZXingQtCamReader_EWIEGA46WW_Used.txt",
+	"SOURCE" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/example/ZXingQtCamReader.qrc",
+	"USE_BETTER_GRAPH" : false,
+	"VERBOSITY" : 0
+}

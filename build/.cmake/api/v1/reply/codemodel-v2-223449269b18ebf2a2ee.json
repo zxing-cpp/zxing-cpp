@@ -1,0 +1,221 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1,
+						2
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-RelWithDebInfo-f5ebdc15457944623624.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.15"
+					},
+					"projectIndex" : 0,
+					"source" : "."
+				},
+				{
+					"build" : "core",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-core-RelWithDebInfo-7f18f29d3d86d15c47c7.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.15"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "core",
+					"targetIndexes" : 
+					[
+						0
+					]
+				},
+				{
+					"build" : "example",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-example-RelWithDebInfo-049054a68f44c48f3c43.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.16"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "example",
+					"targetIndexes" : 
+					[
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14
+					]
+				}
+			],
+			"name" : "RelWithDebInfo",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1,
+						2
+					],
+					"name" : "ZXing",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 1,
+					"id" : "ZXing::@57760688d1f824db5d9c",
+					"jsonFile" : "target-ZXing-RelWithDebInfo-5d299f8593c522e611f2.json",
+					"name" : "ZXing",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "ZXingOpenCV::@70983d692f648185febe",
+					"jsonFile" : "target-ZXingOpenCV-RelWithDebInfo-0c22a4d757645c156f01.json",
+					"name" : "ZXingOpenCV",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "ZXingOpenCV_autogen::@70983d692f648185febe",
+					"jsonFile" : "target-ZXingOpenCV_autogen-RelWithDebInfo-37f91b13e4b9e08fd490.json",
+					"name" : "ZXingOpenCV_autogen",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "ZXingOpenCV_autogen_timestamp_deps::@70983d692f648185febe",
+					"jsonFile" : "target-ZXingOpenCV_autogen_timestamp_deps-RelWithDebInfo-ccb49a7c605a2fce5c5c.json",
+					"name" : "ZXingOpenCV_autogen_timestamp_deps",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "ZXingQtCamReader::@70983d692f648185febe",
+					"jsonFile" : "target-ZXingQtCamReader-RelWithDebInfo-ce608f86dbcef581e85e.json",
+					"name" : "ZXingQtCamReader",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "ZXingQtCamReader_autogen::@70983d692f648185febe",
+					"jsonFile" : "target-ZXingQtCamReader_autogen-RelWithDebInfo-347a1ba844441c0ca588.json",
+					"name" : "ZXingQtCamReader_autogen",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "ZXingQtCamReader_autogen_timestamp_deps::@70983d692f648185febe",
+					"jsonFile" : "target-ZXingQtCamReader_autogen_timestamp_deps-RelWithDebInfo-c7b39d0de9c6f8b35c64.json",
+					"name" : "ZXingQtCamReader_autogen_timestamp_deps",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "ZXingQtReader::@70983d692f648185febe",
+					"jsonFile" : "target-ZXingQtReader-RelWithDebInfo-dfb13ef4da11787fd4dc.json",
+					"name" : "ZXingQtReader",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "ZXingQtReader_autogen::@70983d692f648185febe",
+					"jsonFile" : "target-ZXingQtReader_autogen-RelWithDebInfo-8c8f079b1107764301c4.json",
+					"name" : "ZXingQtReader_autogen",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "ZXingQtReader_autogen_timestamp_deps::@70983d692f648185febe",
+					"jsonFile" : "target-ZXingQtReader_autogen_timestamp_deps-RelWithDebInfo-595766b0574ffa57156f.json",
+					"name" : "ZXingQtReader_autogen_timestamp_deps",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "ZXingQtWriter::@70983d692f648185febe",
+					"jsonFile" : "target-ZXingQtWriter-RelWithDebInfo-e12b44d9514c35c8ed93.json",
+					"name" : "ZXingQtWriter",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "ZXingQtWriter_autogen::@70983d692f648185febe",
+					"jsonFile" : "target-ZXingQtWriter_autogen-RelWithDebInfo-165ef3d7e1af973f96df.json",
+					"name" : "ZXingQtWriter_autogen",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "ZXingQtWriter_autogen_timestamp_deps::@70983d692f648185febe",
+					"jsonFile" : "target-ZXingQtWriter_autogen_timestamp_deps-RelWithDebInfo-37fc6c7ae8f5e96b47b6.json",
+					"name" : "ZXingQtWriter_autogen_timestamp_deps",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "ZXingReader::@70983d692f648185febe",
+					"jsonFile" : "target-ZXingReader-RelWithDebInfo-b7f792d02bbbea7002c2.json",
+					"name" : "ZXingReader",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "ZXingWriter::@70983d692f648185febe",
+					"jsonFile" : "target-ZXingWriter-RelWithDebInfo-d2eee1c470025ddaf0bd.json",
+					"name" : "ZXingWriter",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/build",
+		"source" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 7
+	}
+}

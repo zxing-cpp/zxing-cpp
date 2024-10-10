@@ -1,0 +1,3 @@
+/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/build/_deps/stb-subbuild/CMakeFiles/stb-populate.dir
+/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/build/_deps/stb-subbuild/CMakeFiles/edit_cache.dir
+/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/build/_deps/stb-subbuild/CMakeFiles/rebuild_cache.dir

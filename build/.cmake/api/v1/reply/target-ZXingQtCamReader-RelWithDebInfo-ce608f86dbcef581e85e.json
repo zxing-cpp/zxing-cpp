@@ -1,0 +1,711 @@
+{
+	"artifacts" : 
+	[
+		{
+			"path" : "example/ZXingQtCamReader"
+		}
+	],
+	"backtrace" : 1,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_executable",
+			"target_link_libraries",
+			"set_target_properties",
+			"include",
+			"find_package",
+			"find_dependency",
+			"_qt_internal_find_qt_dependencies",
+			"set_property",
+			"_qt_internal_find_third_party_dependencies"
+		],
+		"files" : 
+		[
+			"example/CMakeLists.txt",
+			"/usr/lib/cmake/Qt6Multimedia/Qt6MultimediaVersionlessTargets.cmake",
+			"/usr/lib/cmake/Qt6Multimedia/Qt6MultimediaConfig.cmake",
+			"/usr/lib/cmake/Qt6/Qt6Config.cmake",
+			"/usr/lib/cmake/Qt6Quick/Qt6QuickVersionlessTargets.cmake",
+			"/usr/lib/cmake/Qt6Quick/Qt6QuickConfig.cmake",
+			"/usr/lib/cmake/Qt6Quick/Qt6QuickTargets.cmake",
+			"/usr/lib/cmake/Qt6Network/Qt6NetworkVersionlessTargets.cmake",
+			"/usr/lib/cmake/Qt6Network/Qt6NetworkConfig.cmake",
+			"/usr/share/cmake/Modules/CMakeFindDependencyMacro.cmake",
+			"/usr/lib/cmake/Qt6/QtPublicDependencyHelpers.cmake",
+			"/usr/lib/cmake/Qt6Multimedia/Qt6MultimediaDependencies.cmake",
+			"/usr/lib/cmake/Qt6Qml/Qt6QmlTargets.cmake",
+			"/usr/lib/cmake/Qt6Qml/Qt6QmlConfig.cmake",
+			"/usr/lib/cmake/Qt6Quick/Qt6QuickDependencies.cmake",
+			"/usr/lib/cmake/Qt6OpenGL/Qt6OpenGLVersionlessTargets.cmake",
+			"/usr/lib/cmake/Qt6OpenGL/Qt6OpenGLConfig.cmake",
+			"/usr/lib/cmake/Qt6Gui/Qt6GuiVersionlessTargets.cmake",
+			"/usr/lib/cmake/Qt6Gui/Qt6GuiConfig.cmake",
+			"/usr/share/cmake/Modules/FindOpenGL.cmake",
+			"/usr/lib/cmake/Qt6/FindWrapOpenGL.cmake",
+			"/usr/lib/cmake/Qt6Gui/Qt6GuiDependencies.cmake",
+			"/usr/lib/cmake/Qt6Gui/Qt6GuiTargets.cmake"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 40,
+				"parent" : 0
+			},
+			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 41,
+				"parent" : 0
+			},
+			{
+				"command" : 4,
+				"file" : 0,
+				"line" : 25,
+				"parent" : 0
+			},
+			{
+				"file" : 3,
+				"parent" : 3
+			},
+			{
+				"command" : 4,
+				"file" : 3,
+				"line" : 179,
+				"parent" : 4
+			},
+			{
+				"file" : 2,
+				"parent" : 5
+			},
+			{
+				"command" : 3,
+				"file" : 2,
+				"line" : 70,
+				"parent" : 6
+			},
+			{
+				"file" : 1,
+				"parent" : 7
+			},
+			{
+				"command" : 2,
+				"file" : 1,
+				"line" : 70,
+				"parent" : 8
+			},
+			{
+				"command" : 4,
+				"file" : 3,
+				"line" : 179,
+				"parent" : 4
+			},
+			{
+				"file" : 5,
+				"parent" : 10
+			},
+			{
+				"command" : 3,
+				"file" : 5,
+				"line" : 70,
+				"parent" : 11
+			},
+			{
+				"file" : 4,
+				"parent" : 12
+			},
+			{
+				"command" : 2,
+				"file" : 4,
+				"line" : 70,
+				"parent" : 13
+			},
+			{
+				"command" : 3,
+				"file" : 5,
+				"line" : 65,
+				"parent" : 11
+			},
+			{
+				"file" : 6,
+				"parent" : 15
+			},
+			{
+				"command" : 2,
+				"file" : 6,
+				"line" : 70,
+				"parent" : 16
+			},
+			{
+				"command" : 3,
+				"file" : 2,
+				"line" : 53,
+				"parent" : 6
+			},
+			{
+				"file" : 11,
+				"parent" : 18
+			},
+			{
+				"command" : 6,
+				"file" : 11,
+				"line" : 42,
+				"parent" : 19
+			},
+			{
+				"command" : 5,
+				"file" : 10,
+				"line" : 111,
+				"parent" : 20
+			},
+			{
+				"command" : 4,
+				"file" : 9,
+				"line" : 76,
+				"parent" : 21
+			},
+			{
+				"file" : 8,
+				"parent" : 22
+			},
+			{
+				"command" : 3,
+				"file" : 8,
+				"line" : 70,
+				"parent" : 23
+			},
+			{
+				"file" : 7,
+				"parent" : 24
+			},
+			{
+				"command" : 2,
+				"file" : 7,
+				"line" : 70,
+				"parent" : 25
+			},
+			{
+				"command" : 3,
+				"file" : 5,
+				"line" : 53,
+				"parent" : 11
+			},
+			{
+				"file" : 14,
+				"parent" : 27
+			},
+			{
+				"command" : 6,
+				"file" : 14,
+				"line" : 42,
+				"parent" : 28
+			},
+			{
+				"command" : 5,
+				"file" : 10,
+				"line" : 111,
+				"parent" : 29
+			},
+			{
+				"command" : 4,
+				"file" : 9,
+				"line" : 76,
+				"parent" : 30
+			},
+			{
+				"file" : 13,
+				"parent" : 31
+			},
+			{
+				"command" : 3,
+				"file" : 13,
+				"line" : 66,
+				"parent" : 32
+			},
+			{
+				"file" : 12,
+				"parent" : 33
+			},
+			{
+				"command" : 2,
+				"file" : 12,
+				"line" : 70,
+				"parent" : 34
+			},
+			{
+				"command" : 5,
+				"file" : 10,
+				"line" : 111,
+				"parent" : 29
+			},
+			{
+				"command" : 4,
+				"file" : 9,
+				"line" : 76,
+				"parent" : 36
+			},
+			{
+				"file" : 16,
+				"parent" : 37
+			},
+			{
+				"command" : 3,
+				"file" : 16,
+				"line" : 70,
+				"parent" : 38
+			},
+			{
+				"file" : 15,
+				"parent" : 39
+			},
+			{
+				"command" : 2,
+				"file" : 15,
+				"line" : 70,
+				"parent" : 40
+			},
+			{
+				"command" : 4,
+				"file" : 3,
+				"line" : 179,
+				"parent" : 4
+			},
+			{
+				"file" : 18,
+				"parent" : 42
+			},
+			{
+				"command" : 3,
+				"file" : 18,
+				"line" : 70,
+				"parent" : 43
+			},
+			{
+				"file" : 17,
+				"parent" : 44
+			},
+			{
+				"command" : 2,
+				"file" : 17,
+				"line" : 70,
+				"parent" : 45
+			},
+			{
+				"command" : 3,
+				"file" : 18,
+				"line" : 53,
+				"parent" : 43
+			},
+			{
+				"file" : 21,
+				"parent" : 47
+			},
+			{
+				"command" : 8,
+				"file" : 21,
+				"line" : 33,
+				"parent" : 48
+			},
+			{
+				"command" : 5,
+				"file" : 10,
+				"line" : 36,
+				"parent" : 49
+			},
+			{
+				"command" : 4,
+				"file" : 9,
+				"line" : 76,
+				"parent" : 50
+			},
+			{
+				"file" : 20,
+				"parent" : 51
+			},
+			{
+				"command" : 4,
+				"file" : 20,
+				"line" : 13,
+				"parent" : 52
+			},
+			{
+				"file" : 19,
+				"parent" : 53
+			},
+			{
+				"command" : 7,
+				"file" : 19,
+				"line" : 712,
+				"parent" : 54
+			},
+			{
+				"command" : 2,
+				"file" : 19,
+				"line" : 710,
+				"parent" : 54
+			},
+			{
+				"command" : 3,
+				"file" : 18,
+				"line" : 65,
+				"parent" : 43
+			},
+			{
+				"file" : 22,
+				"parent" : 57
+			},
+			{
+				"command" : 2,
+				"file" : 22,
+				"line" : 70,
+				"parent" : 58
+			}
+		]
+	},
+	"compileGroups" : 
+	[
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : "-O2 -g -DNDEBUG -std=c++20"
+				},
+				{
+					"backtrace" : 2,
+					"fragment" : "-mno-direct-extern-access"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 2,
+					"define" : "QT_CORE_LIB"
+				},
+				{
+					"backtrace" : 2,
+					"define" : "QT_GUI_LIB"
+				},
+				{
+					"backtrace" : 2,
+					"define" : "QT_MULTIMEDIA_LIB"
+				},
+				{
+					"backtrace" : 2,
+					"define" : "QT_NETWORK_LIB"
+				},
+				{
+					"backtrace" : 2,
+					"define" : "QT_NO_DEBUG"
+				},
+				{
+					"backtrace" : 2,
+					"define" : "QT_OPENGL_LIB"
+				},
+				{
+					"backtrace" : 2,
+					"define" : "QT_QMLBUILTINS_LIB"
+				},
+				{
+					"backtrace" : 2,
+					"define" : "QT_QMLINTEGRATION_LIB"
+				},
+				{
+					"backtrace" : 2,
+					"define" : "QT_QMLMODELS_LIB"
+				},
+				{
+					"backtrace" : 2,
+					"define" : "QT_QML_LIB"
+				},
+				{
+					"backtrace" : 2,
+					"define" : "QT_QUICK_LIB"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 0,
+					"path" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/build/example/ZXingQtCamReader_autogen/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/build/core"
+				},
+				{
+					"backtrace" : 2,
+					"isSystem" : true,
+					"path" : "/usr/include/qt6/QtGui"
+				},
+				{
+					"backtrace" : 2,
+					"isSystem" : true,
+					"path" : "/usr/include/qt6"
+				},
+				{
+					"backtrace" : 2,
+					"isSystem" : true,
+					"path" : "/usr/include/qt6/QtCore"
+				},
+				{
+					"backtrace" : 2,
+					"isSystem" : true,
+					"path" : "/usr/lib/qt6/mkspecs/linux-g++"
+				},
+				{
+					"backtrace" : 2,
+					"isSystem" : true,
+					"path" : "/usr/include/qt6/QtMultimedia"
+				},
+				{
+					"backtrace" : 2,
+					"isSystem" : true,
+					"path" : "/usr/include/qt6/QtNetwork"
+				},
+				{
+					"backtrace" : 2,
+					"isSystem" : true,
+					"path" : "/usr/include/qt6/QtQuick"
+				},
+				{
+					"backtrace" : 2,
+					"isSystem" : true,
+					"path" : "/usr/include/qt6/QtQml"
+				},
+				{
+					"backtrace" : 2,
+					"isSystem" : true,
+					"path" : "/usr/include/qt6/QtQmlIntegration"
+				},
+				{
+					"backtrace" : 2,
+					"isSystem" : true,
+					"path" : "/usr/include/qt6/QtQmlBuiltins"
+				},
+				{
+					"backtrace" : 2,
+					"isSystem" : true,
+					"path" : "/usr/include/qt6/QtQmlModels"
+				},
+				{
+					"backtrace" : 2,
+					"isSystem" : true,
+					"path" : "/usr/include/qt6/QtOpenGL"
+				}
+			],
+			"language" : "CXX",
+			"languageStandard" : 
+			{
+				"backtraces" : 
+				[
+					2,
+					2
+				],
+				"standard" : "20"
+			},
+			"sourceIndexes" : 
+			[
+				0,
+				1,
+				5
+			]
+		}
+	],
+	"dependencies" : 
+	[
+		{
+			"backtrace" : 2,
+			"id" : "ZXing::@57760688d1f824db5d9c"
+		},
+		{
+			"id" : "ZXingQtCamReader_autogen_timestamp_deps::@70983d692f648185febe"
+		},
+		{
+			"backtrace" : 0,
+			"id" : "ZXingQtCamReader_autogen::@70983d692f648185febe"
+		}
+	],
+	"id" : "ZXingQtCamReader::@70983d692f648185febe",
+	"link" : 
+	{
+		"commandFragments" : 
+		[
+			{
+				"fragment" : "-O2 -g -DNDEBUG",
+				"role" : "flags"
+			},
+			{
+				"fragment" : "",
+				"role" : "flags"
+			},
+			{
+				"fragment" : "-Wl,-rpath,/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/build/core",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "core/libZXing.so.2.2.1",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 9,
+				"fragment" : "/usr/lib/libQt6Multimedia.so.6.7.3",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 14,
+				"fragment" : "/usr/lib/libQt6Quick.so.6.7.3",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 17,
+				"fragment" : "/usr/lib/libQt6QmlModels.so.6.7.3",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 17,
+				"fragment" : "/usr/lib/libQt6Qml.so.6.7.3",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 26,
+				"fragment" : "/usr/lib/libQt6Network.so.6.7.3",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 35,
+				"fragment" : "/usr/lib/libQt6QmlBuiltins.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 41,
+				"fragment" : "/usr/lib/libQt6OpenGL.so.6.7.3",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 46,
+				"fragment" : "/usr/lib/libQt6Gui.so.6.7.3",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 55,
+				"fragment" : "/usr/lib/libGLX.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 56,
+				"fragment" : "/usr/lib/libOpenGL.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 59,
+				"fragment" : "/usr/lib/libQt6Core.so.6.7.3",
+				"role" : "libraries"
+			}
+		],
+		"language" : "CXX"
+	},
+	"name" : "ZXingQtCamReader",
+	"nameOnDisk" : "ZXingQtCamReader",
+	"paths" : 
+	{
+		"build" : "example",
+		"source" : "example"
+	},
+	"sourceGroups" : 
+	[
+		{
+			"name" : "Source Files",
+			"sourceIndexes" : 
+			[
+				0,
+				1,
+				5
+			]
+		},
+		{
+			"name" : "",
+			"sourceIndexes" : 
+			[
+				2,
+				4
+			]
+		},
+		{
+			"name" : "Header Files",
+			"sourceIndexes" : 
+			[
+				3
+			]
+		},
+		{
+			"name" : "CMake Rules",
+			"sourceIndexes" : 
+			[
+				6,
+				7
+			]
+		}
+	],
+	"sources" : 
+	[
+		{
+			"backtrace" : 0,
+			"compileGroupIndex" : 0,
+			"isGenerated" : true,
+			"path" : "build/example/ZXingQtCamReader_autogen/mocs_compilation.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "example/ZXingQtCamReader.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"path" : "example/ZXingQtCamReader.qrc",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "example/ZXingQtReader.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "build/example/ZXingQtCamReader_autogen/timestamp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 0,
+			"compileGroupIndex" : 0,
+			"isGenerated" : true,
+			"path" : "build/example/ZXingQtCamReader_autogen/EWIEGA46WW/qrc_ZXingQtCamReader.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "build/example/ZXingQtCamReader_autogen/timestamp.rule",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "build/example/ZXingQtCamReader_autogen/EWIEGA46WW/qrc_ZXingQtCamReader.cpp.rule",
+			"sourceGroupIndex" : 3
+		}
+	],
+	"type" : "EXECUTABLE"
+}

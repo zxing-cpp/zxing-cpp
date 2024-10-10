@@ -1,0 +1,8 @@
+libdir=/usr/local/lib
+includedir=/usr/local/include
+
+Name: ZXing
+Description: ZXing-C++ library
+Version: 2.2.1
+Libs: -L${libdir} -lZXing
+Cflags: -I${includedir} -I${includedir}/ZXing

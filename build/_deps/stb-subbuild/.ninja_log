@@ -1,0 +1,21 @@
+# ninja log v6
+1	22	1728565307773371300	stb-populate-prefix/src/stb-populate-stamp/stb-populate-mkdir	3ecb0c645380863c
+1	22	1728565307773371300	/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/build/_deps/stb-subbuild/stb-populate-prefix/src/stb-populate-stamp/stb-populate-mkdir	3ecb0c645380863c
+23	3884	1728565311636683600	stb-populate-prefix/src/stb-populate-stamp/stb-populate-download	6869add688647b7d
+23	3884	1728565311636683600	/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/build/_deps/stb-subbuild/stb-populate-prefix/src/stb-populate-stamp/stb-populate-download	6869add688647b7d
+3884	4840	1728565311636683600	stb-populate-prefix/src/stb-populate-stamp/stb-populate-update	b89e047f6a70a70
+3884	4840	1728565311636683600	/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/build/_deps/stb-subbuild/stb-populate-prefix/src/stb-populate-stamp/stb-populate-update	b89e047f6a70a70
+4840	4862	1728565312613345000	stb-populate-prefix/src/stb-populate-stamp/stb-populate-patch	41c4730e8a8439a8
+4840	4862	1728565312613345000	/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/build/_deps/stb-subbuild/stb-populate-prefix/src/stb-populate-stamp/stb-populate-patch	41c4730e8a8439a8
+4862	4884	1728565312636678200	stb-populate-prefix/src/stb-populate-stamp/stb-populate-configure	979b332732285f36
+4862	4884	1728565312636678200	/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/build/_deps/stb-subbuild/stb-populate-prefix/src/stb-populate-stamp/stb-populate-configure	979b332732285f36
+4885	4905	1728565312656678100	stb-populate-prefix/src/stb-populate-stamp/stb-populate-build	555c54870ffc7bb6
+4885	4905	1728565312656678100	/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/build/_deps/stb-subbuild/stb-populate-prefix/src/stb-populate-stamp/stb-populate-build	555c54870ffc7bb6
+4905	4925	1728565312676678000	stb-populate-prefix/src/stb-populate-stamp/stb-populate-install	893664a870771883
+4905	4925	1728565312676678000	/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/build/_deps/stb-subbuild/stb-populate-prefix/src/stb-populate-stamp/stb-populate-install	893664a870771883
+4925	4945	1728565312696677900	stb-populate-prefix/src/stb-populate-stamp/stb-populate-test	b4a4621bae14aae1
+4925	4945	1728565312696677900	/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/build/_deps/stb-subbuild/stb-populate-prefix/src/stb-populate-stamp/stb-populate-test	b4a4621bae14aae1
+4945	4975	1728565312726677700	CMakeFiles/stb-populate-complete	f461cda16b219bb1
+4945	4975	1728565312726677700	stb-populate-prefix/src/stb-populate-stamp/stb-populate-done	f461cda16b219bb1
+4945	4975	1728565312726677700	/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/build/_deps/stb-subbuild/CMakeFiles/stb-populate-complete	f461cda16b219bb1
+4945	4975	1728565312726677700	/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/build/_deps/stb-subbuild/stb-populate-prefix/src/stb-populate-stamp/stb-populate-done	f461cda16b219bb1

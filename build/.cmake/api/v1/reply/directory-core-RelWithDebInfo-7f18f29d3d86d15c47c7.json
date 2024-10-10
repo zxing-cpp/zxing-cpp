@@ -1,0 +1,168 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"core/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 605,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 617,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 634,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 641,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 658,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "lib",
+			"paths" : 
+			[
+				"core/libZXing.so.2.2.1",
+				"core/libZXing.so.3"
+			],
+			"targetId" : "ZXing::@57760688d1f824db5d9c",
+			"targetIndex" : 0,
+			"targetInstallNamelink" : "skip",
+			"type" : "target"
+		},
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "lib",
+			"paths" : 
+			[
+				"core/libZXing.so"
+			],
+			"targetId" : "ZXing::@57760688d1f824db5d9c",
+			"targetIndex" : 0,
+			"targetInstallNamelink" : "only",
+			"type" : "target"
+		},
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "include/ZXing",
+			"paths" : 
+			[
+				"core/src/Barcode.h",
+				"core/src/BarcodeFormat.h",
+				"core/src/BitHacks.h",
+				"core/src/ByteArray.h",
+				"core/src/CharacterSet.h",
+				"core/src/Content.h",
+				"core/src/Error.h",
+				"core/src/Flags.h",
+				"core/src/GTIN.h",
+				"core/src/ImageView.h",
+				"core/src/Point.h",
+				"core/src/Quadrilateral.h",
+				"core/src/ReadBarcode.h",
+				"core/src/ReaderOptions.h",
+				"core/src/StructuredAppend.h",
+				"core/src/TextUtfEncoding.h",
+				"core/src/ZXingCpp.h",
+				"core/src/ZXAlgorithms.h",
+				"core/src/ZXVersion.h",
+				"core/src/DecodeHints.h",
+				"core/src/Result.h",
+				"core/src/BitMatrix.h",
+				"core/src/BitMatrixIO.h",
+				"core/src/Range.h",
+				"core/src/Matrix.h",
+				"core/src/MultiFormatWriter.h"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 2,
+			"component" : "Unspecified",
+			"destination" : "include/ZXing",
+			"paths" : 
+			[
+				"build/core/Version.h"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 3,
+			"component" : "Unspecified",
+			"destination" : "lib/cmake/ZXing",
+			"exportName" : "ZXingTargets",
+			"exportTargets" : 
+			[
+				{
+					"id" : "ZXing::@57760688d1f824db5d9c",
+					"index" : 0
+				}
+			],
+			"paths" : 
+			[
+				"core/CMakeFiles/Export/f9e04a807b27a41299a115186893fdf1/ZXingTargets.cmake"
+			],
+			"type" : "export"
+		},
+		{
+			"backtrace" : 4,
+			"component" : "Unspecified",
+			"destination" : "lib/pkgconfig",
+			"paths" : 
+			[
+				"build/core/zxing.pc"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 5,
+			"component" : "Unspecified",
+			"destination" : "lib/cmake/ZXing",
+			"paths" : 
+			[
+				"build/core/ZXingConfig.cmake",
+				"build/core/ZXingConfigVersion.cmake"
+			],
+			"type" : "file"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "core",
+		"source" : "core"
+	}
+}

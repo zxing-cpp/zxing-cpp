@@ -1,0 +1,2723 @@
+{
+	"artifacts" : 
+	[
+		{
+			"path" : "core/libZXing.so"
+		}
+	],
+	"backtrace" : 1,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_library",
+			"install",
+			"target_compile_options",
+			"target_include_directories",
+			"target_precompile_headers",
+			"target_compile_features",
+			"target_sources"
+		],
+		"files" : 
+		[
+			"core/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 491,
+				"parent" : 0
+			},
+			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 605,
+				"parent" : 0
+			},
+			{
+				"command" : 2,
+				"file" : 0,
+				"line" : 506,
+				"parent" : 0
+			},
+			{
+				"command" : 3,
+				"file" : 0,
+				"line" : 501,
+				"parent" : 0
+			},
+			{
+				"command" : 4,
+				"file" : 0,
+				"line" : 563,
+				"parent" : 0
+			},
+			{
+				"command" : 5,
+				"file" : 0,
+				"line" : 511,
+				"parent" : 0
+			},
+			{
+				"command" : 6,
+				"file" : 0,
+				"line" : 524,
+				"parent" : 0
+			}
+		]
+	},
+	"compileGroups" : 
+	[
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : "-O2 -g -DNDEBUG -std=c++20 -fPIC"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wall"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wextra"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wno-missing-braces"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Werror=undef"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Werror=return-type"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-fmacro-prefix-map=/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/="
+				},
+				{
+					"fragment" : "-Winvalid-pch -x c++-header -include /run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/build/core/CMakeFiles/ZXing.dir/cmake_pch.hxx"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"define" : "ZXing_EXPORTS"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 4,
+					"path" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src"
+				},
+				{
+					"backtrace" : 4,
+					"path" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/build/core"
+				}
+			],
+			"language" : "CXX",
+			"languageStandard" : 
+			{
+				"backtraces" : 
+				[
+					6
+				],
+				"standard" : "20"
+			},
+			"precompileHeaders" : 
+			[
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Barcode.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/BarcodeFormat.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/BitHacks.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/ByteArray.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/CharacterSet.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Content.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Error.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Flags.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/GTIN.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/ImageView.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Point.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Quadrilateral.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/ReadBarcode.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/ReaderOptions.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/StructuredAppend.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/TextUtfEncoding.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/ZXingCpp.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/ZXAlgorithms.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/BitMatrix.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/BitMatrixIO.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Range.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Matrix.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/MultiFormatWriter.h"
+				}
+			],
+			"sourceIndexes" : 
+			[
+				0
+			]
+		},
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : "-O2 -g -DNDEBUG -std=c++20 -fPIC"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wall"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wextra"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wno-missing-braces"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Werror=undef"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Werror=return-type"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-fmacro-prefix-map=/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/="
+				},
+				{
+					"fragment" : "-Os"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"define" : "ZXing_EXPORTS"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 4,
+					"path" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src"
+				},
+				{
+					"backtrace" : 4,
+					"path" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/build/core"
+				}
+			],
+			"language" : "CXX",
+			"languageStandard" : 
+			{
+				"backtraces" : 
+				[
+					6
+				],
+				"standard" : "20"
+			},
+			"precompileHeaders" : 
+			[
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Barcode.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/BarcodeFormat.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/BitHacks.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/ByteArray.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/CharacterSet.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Content.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Error.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Flags.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/GTIN.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/ImageView.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Point.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Quadrilateral.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/ReadBarcode.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/ReaderOptions.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/StructuredAppend.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/TextUtfEncoding.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/ZXingCpp.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/ZXAlgorithms.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/BitMatrix.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/BitMatrixIO.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Range.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Matrix.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/MultiFormatWriter.h"
+				}
+			],
+			"sourceIndexes" : 
+			[
+				2,
+				4,
+				9,
+				19,
+				22,
+				34,
+				36,
+				68,
+				72,
+				107,
+				117,
+				128,
+				157,
+				222,
+				230,
+				232,
+				234,
+				237,
+				244,
+				246,
+				249
+			]
+		},
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : "-O2 -g -DNDEBUG -std=c++20 -fPIC"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wall"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wextra"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wno-missing-braces"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Werror=undef"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Werror=return-type"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-fmacro-prefix-map=/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/="
+				},
+				{
+					"fragment" : "-Winvalid-pch -include /run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/build/core/CMakeFiles/ZXing.dir/cmake_pch.hxx"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"define" : "ZXing_EXPORTS"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 4,
+					"path" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src"
+				},
+				{
+					"backtrace" : 4,
+					"path" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/build/core"
+				}
+			],
+			"language" : "CXX",
+			"languageStandard" : 
+			{
+				"backtraces" : 
+				[
+					6
+				],
+				"standard" : "20"
+			},
+			"precompileHeaders" : 
+			[
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Barcode.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/BarcodeFormat.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/BitHacks.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/ByteArray.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/CharacterSet.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Content.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Error.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Flags.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/GTIN.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/ImageView.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Point.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Quadrilateral.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/ReadBarcode.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/ReaderOptions.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/StructuredAppend.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/TextUtfEncoding.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/ZXingCpp.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/ZXAlgorithms.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/BitMatrix.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/BitMatrixIO.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Range.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Matrix.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/MultiFormatWriter.h"
+				}
+			],
+			"sourceIndexes" : 
+			[
+				7,
+				13,
+				15,
+				17,
+				30,
+				32,
+				42,
+				45,
+				47,
+				49,
+				52,
+				55,
+				57,
+				63,
+				65,
+				70,
+				75,
+				78,
+				82,
+				85,
+				89,
+				91,
+				93,
+				95,
+				97,
+				99,
+				102,
+				105,
+				109,
+				111,
+				113,
+				115,
+				119,
+				121,
+				123,
+				125,
+				130,
+				133,
+				135,
+				137,
+				139,
+				141,
+				143,
+				145,
+				147,
+				149,
+				151,
+				153,
+				155,
+				159,
+				161,
+				163,
+				165,
+				167,
+				170,
+				172,
+				174,
+				176,
+				178,
+				180,
+				182,
+				184,
+				186,
+				188,
+				190,
+				193,
+				195,
+				198,
+				200,
+				203,
+				205,
+				207,
+				209,
+				211,
+				213,
+				215,
+				220,
+				224,
+				226,
+				228,
+				239,
+				242,
+				251,
+				253
+			]
+		},
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : "-O2 -g -DNDEBUG -std=c++20 -fPIC"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wall"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wextra"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wno-missing-braces"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Werror=undef"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Werror=return-type"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-fmacro-prefix-map=/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/="
+				}
+			],
+			"defines" : 
+			[
+				{
+					"define" : "ZXing_EXPORTS"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 4,
+					"path" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src"
+				},
+				{
+					"backtrace" : 4,
+					"path" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/build/core"
+				}
+			],
+			"language" : "CXX",
+			"languageStandard" : 
+			{
+				"backtraces" : 
+				[
+					6
+				],
+				"standard" : "20"
+			},
+			"precompileHeaders" : 
+			[
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Barcode.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/BarcodeFormat.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/BitHacks.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/ByteArray.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/CharacterSet.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Content.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Error.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Flags.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/GTIN.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/ImageView.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Point.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Quadrilateral.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/ReadBarcode.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/ReaderOptions.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/StructuredAppend.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/TextUtfEncoding.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/ZXingCpp.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/ZXAlgorithms.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/BitMatrix.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/BitMatrixIO.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Range.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Matrix.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/MultiFormatWriter.h"
+				}
+			],
+			"sourceIndexes" : 
+			[
+				59
+			]
+		},
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : "-O2 -g -DNDEBUG -fPIC"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wall"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wextra"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wno-missing-braces"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Werror=undef"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Werror=return-type"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-fmacro-prefix-map=/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/="
+				},
+				{
+					"fragment" : " "
+				}
+			],
+			"defines" : 
+			[
+				{
+					"define" : "ZXing_EXPORTS"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 4,
+					"path" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src"
+				},
+				{
+					"backtrace" : 4,
+					"path" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/build/core"
+				}
+			],
+			"language" : "C",
+			"precompileHeaders" : 
+			[
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Barcode.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/BarcodeFormat.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/BitHacks.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/ByteArray.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/CharacterSet.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Content.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Error.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Flags.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/GTIN.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/ImageView.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Point.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Quadrilateral.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/ReadBarcode.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/ReaderOptions.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/StructuredAppend.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/TextUtfEncoding.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/ZXingCpp.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/ZXAlgorithms.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/BitMatrix.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/BitMatrixIO.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Range.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/Matrix.h"
+				},
+				{
+					"backtrace" : 5,
+					"header" : "/run/media/leemu/D8C48579C4855B20/projects/zxing-cpp/core/src/MultiFormatWriter.h"
+				}
+			],
+			"sourceIndexes" : 
+			[
+				254
+			]
+		}
+	],
+	"id" : "ZXing::@57760688d1f824db5d9c",
+	"install" : 
+	{
+		"destinations" : 
+		[
+			{
+				"backtrace" : 2,
+				"path" : "lib"
+			},
+			{
+				"backtrace" : 2,
+				"path" : "lib"
+			}
+		],
+		"prefix" : 
+		{
+			"path" : "/usr/local"
+		}
+	},
+	"link" : 
+	{
+		"commandFragments" : 
+		[
+			{
+				"fragment" : "",
+				"role" : "flags"
+			}
+		],
+		"language" : "CXX"
+	},
+	"name" : "ZXing",
+	"nameOnDisk" : "libZXing.so",
+	"paths" : 
+	{
+		"build" : "core",
+		"source" : "core"
+	},
+	"sourceGroups" : 
+	[
+		{
+			"name" : "Source Files",
+			"sourceIndexes" : 
+			[
+				0,
+				59
+			]
+		},
+		{
+			"name" : "Sources",
+			"sourceIndexes" : 
+			[
+				1,
+				2,
+				3,
+				4,
+				5,
+				6,
+				7,
+				8,
+				9,
+				10,
+				11,
+				12,
+				13,
+				14,
+				15,
+				16,
+				17,
+				18,
+				19,
+				20,
+				21,
+				22,
+				23,
+				24,
+				25,
+				26,
+				27,
+				28,
+				29,
+				30,
+				31,
+				32,
+				33,
+				34,
+				35,
+				36,
+				37,
+				38,
+				39,
+				40,
+				41,
+				42,
+				43,
+				44,
+				45,
+				46,
+				47,
+				48,
+				49,
+				50,
+				51,
+				52,
+				53,
+				54,
+				55,
+				56,
+				57,
+				58,
+				60,
+				61,
+				62,
+				63,
+				64,
+				65,
+				66,
+				67,
+				68,
+				69,
+				70,
+				71,
+				72,
+				73,
+				74,
+				75,
+				76,
+				77,
+				78,
+				79,
+				80,
+				81,
+				82,
+				83,
+				84,
+				85,
+				86,
+				87,
+				88,
+				89,
+				90,
+				91,
+				92,
+				93,
+				94,
+				95
+			]
+		},
+		{
+			"name" : "Sources\\aztec",
+			"sourceIndexes" : 
+			[
+				96,
+				97,
+				98,
+				99,
+				100,
+				101,
+				102,
+				103,
+				104,
+				105,
+				106,
+				107,
+				108,
+				109,
+				110,
+				111
+			]
+		},
+		{
+			"name" : "Sources\\datamatrix",
+			"sourceIndexes" : 
+			[
+				112,
+				113,
+				114,
+				115,
+				116,
+				117,
+				118,
+				119,
+				120,
+				121,
+				122,
+				123,
+				124,
+				125,
+				126,
+				127,
+				128,
+				129,
+				130,
+				131,
+				132,
+				133
+			]
+		},
+		{
+			"name" : "Sources\\maxicode",
+			"sourceIndexes" : 
+			[
+				134,
+				135,
+				136,
+				137,
+				138,
+				139
+			]
+		},
+		{
+			"name" : "Sources\\oned",
+			"sourceIndexes" : 
+			[
+				140,
+				141,
+				142,
+				143,
+				144,
+				145,
+				146,
+				147,
+				148,
+				149,
+				150,
+				151,
+				152,
+				153,
+				154,
+				155,
+				156,
+				157,
+				158,
+				159,
+				160,
+				161,
+				162,
+				163,
+				164,
+				165,
+				166,
+				167,
+				168,
+				169,
+				170,
+				171,
+				172,
+				173,
+				174,
+				175,
+				176,
+				177,
+				178,
+				179,
+				180,
+				181,
+				182,
+				183,
+				184,
+				185,
+				186,
+				187,
+				188
+			]
+		},
+		{
+			"name" : "Sources\\pdf417",
+			"sourceIndexes" : 
+			[
+				189,
+				190,
+				191,
+				192,
+				193,
+				194,
+				195,
+				196,
+				197,
+				198,
+				199,
+				200,
+				201,
+				202,
+				203,
+				204,
+				205,
+				206,
+				207,
+				208,
+				209,
+				210,
+				211,
+				212,
+				213,
+				214,
+				215,
+				216,
+				217,
+				218,
+				219,
+				220,
+				221,
+				222,
+				223,
+				224
+			]
+		},
+		{
+			"name" : "Sources\\qrcode",
+			"sourceIndexes" : 
+			[
+				225,
+				226,
+				227,
+				228,
+				229,
+				230,
+				231,
+				232,
+				233,
+				234,
+				235,
+				236,
+				237,
+				238,
+				239,
+				240,
+				241,
+				242,
+				243,
+				244,
+				245,
+				246,
+				247,
+				248,
+				249,
+				250,
+				251,
+				252,
+				253
+			]
+		},
+		{
+			"name" : "Sources\\libzueci",
+			"sourceIndexes" : 
+			[
+				254,
+				255
+			]
+		},
+		{
+			"name" : "Precompile Header File",
+			"sourceIndexes" : 
+			[
+				256
+			]
+		}
+	],
+	"sources" : 
+	[
+		{
+			"backtrace" : 0,
+			"compileGroupIndex" : 0,
+			"path" : "build/core/CMakeFiles/ZXing.dir/cmake_pch.hxx.cxx",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/Barcode.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "core/src/Barcode.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/BarcodeFormat.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "core/src/BarcodeFormat.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/BitHacks.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/BitMatrix.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/BitMatrix.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/BitMatrixIO.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "core/src/BitMatrixIO.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/ByteArray.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/ByteMatrix.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/CharacterSet.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/CharacterSet.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/Content.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/Content.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/ECI.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/ECI.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/Error.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "core/src/Error.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/Flags.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/GTIN.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "core/src/GTIN.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/ImageView.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/Matrix.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/Point.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/Quadrilateral.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/Range.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/ReaderOptions.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/ReadBarcode.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/ReadBarcode.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/Utf.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/Utf.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/WriteBarcode.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "core/src/WriteBarcode.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/ZXingCpp.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "core/src/ZXingCpp.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/ZXAlgorithms.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/ZXConfig.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/ZXTestSupport.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/ZXVersion.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/BitArray.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/BitArray.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/Generator.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/GenericGF.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/GenericGF.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/GenericGFPoly.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/GenericGFPoly.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/TextUtfEncoding.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/TextUtfEncoding.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/Scope.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/BinaryBitmap.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/BinaryBitmap.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/BitMatrixCursor.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/BitSource.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/BitSource.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/ConcentricFinder.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/ConcentricFinder.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/DecodeHints.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 3,
+			"path" : "core/src/DecodeHints.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/DecoderResult.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/DetectorResult.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/GlobalHistogramBinarizer.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/GlobalHistogramBinarizer.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/GridSampler.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/GridSampler.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/LogMatrix.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/HRI.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "core/src/HRI.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/HybridBinarizer.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/HybridBinarizer.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/MultiFormatReader.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "core/src/MultiFormatReader.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/Pattern.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/PerspectiveTransform.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/PerspectiveTransform.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/Reader.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/ReedSolomonDecoder.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/ReedSolomonDecoder.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/RegressionLine.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/Result.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/ResultPoint.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/ResultPoint.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/StructuredAppend.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/TextDecoder.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/TextDecoder.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/ThresholdBinarizer.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/TritMatrix.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/WhiteRectDetector.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/WhiteRectDetector.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/ReedSolomonEncoder.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/ReedSolomonEncoder.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/TextEncoder.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/TextEncoder.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/MultiFormatWriter.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/MultiFormatWriter.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/aztec/AZDecoder.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/aztec/AZDecoder.cpp",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/aztec/AZDetector.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/aztec/AZDetector.cpp",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/aztec/AZDetectorResult.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/aztec/AZReader.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/aztec/AZReader.cpp",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/aztec/AZEncodingState.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/aztec/AZEncoder.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/aztec/AZEncoder.cpp",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/aztec/AZHighLevelEncoder.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "core/src/aztec/AZHighLevelEncoder.cpp",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/aztec/AZToken.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/aztec/AZToken.cpp",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/aztec/AZWriter.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/aztec/AZWriter.cpp",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/datamatrix/DMBitLayout.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/datamatrix/DMBitLayout.cpp",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/datamatrix/DMVersion.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/datamatrix/DMVersion.cpp",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/datamatrix/DMDataBlock.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "core/src/datamatrix/DMDataBlock.cpp",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/datamatrix/DMDecoder.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/datamatrix/DMDecoder.cpp",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/datamatrix/DMDetector.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/datamatrix/DMDetector.cpp",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/datamatrix/DMReader.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/datamatrix/DMReader.cpp",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/datamatrix/DMECEncoder.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/datamatrix/DMECEncoder.cpp",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/datamatrix/DMEncoderContext.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/datamatrix/DMHighLevelEncoder.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "core/src/datamatrix/DMHighLevelEncoder.cpp",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/datamatrix/DMSymbolInfo.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/datamatrix/DMSymbolInfo.cpp",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/datamatrix/DMSymbolShape.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/datamatrix/DMWriter.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/datamatrix/DMWriter.cpp",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/maxicode/MCBitMatrixParser.h",
+			"sourceGroupIndex" : 4
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/maxicode/MCBitMatrixParser.cpp",
+			"sourceGroupIndex" : 4
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/maxicode/MCDecoder.h",
+			"sourceGroupIndex" : 4
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/maxicode/MCDecoder.cpp",
+			"sourceGroupIndex" : 4
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/maxicode/MCReader.h",
+			"sourceGroupIndex" : 4
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/maxicode/MCReader.cpp",
+			"sourceGroupIndex" : 4
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/oned/ODUPCEANCommon.h",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/oned/ODUPCEANCommon.cpp",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/oned/ODCode128Patterns.h",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/oned/ODCode128Patterns.cpp",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/oned/ODCodabarReader.h",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/oned/ODCodabarReader.cpp",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/oned/ODCode39Reader.h",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/oned/ODCode39Reader.cpp",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/oned/ODCode93Reader.h",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/oned/ODCode93Reader.cpp",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/oned/ODCode128Reader.h",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/oned/ODCode128Reader.cpp",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/oned/ODDataBarCommon.h",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/oned/ODDataBarCommon.cpp",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/oned/ODDataBarReader.h",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/oned/ODDataBarReader.cpp",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/oned/ODDataBarExpandedBitDecoder.h",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "core/src/oned/ODDataBarExpandedBitDecoder.cpp",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/oned/ODDataBarExpandedReader.h",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/oned/ODDataBarExpandedReader.cpp",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/oned/ODDXFilmEdgeReader.h",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/oned/ODDXFilmEdgeReader.cpp",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/oned/ODITFReader.h",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/oned/ODITFReader.cpp",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/oned/ODMultiUPCEANReader.h",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/oned/ODMultiUPCEANReader.cpp",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/oned/ODReader.h",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/oned/ODReader.cpp",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/oned/ODRowReader.h",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/oned/ODCodabarWriter.h",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/oned/ODCodabarWriter.cpp",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/oned/ODCode39Writer.h",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/oned/ODCode39Writer.cpp",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/oned/ODCode93Writer.h",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/oned/ODCode93Writer.cpp",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/oned/ODCode128Writer.h",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/oned/ODCode128Writer.cpp",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/oned/ODEAN8Writer.h",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/oned/ODEAN8Writer.cpp",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/oned/ODEAN13Writer.h",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/oned/ODEAN13Writer.cpp",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/oned/ODITFWriter.h",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/oned/ODITFWriter.cpp",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/oned/ODUPCEWriter.h",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/oned/ODUPCEWriter.cpp",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/oned/ODUPCAWriter.h",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/oned/ODUPCAWriter.cpp",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/oned/ODWriterHelper.h",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/oned/ODWriterHelper.cpp",
+			"sourceGroupIndex" : 5
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/pdf417/ZXBigInteger.h",
+			"sourceGroupIndex" : 6
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/pdf417/ZXBigInteger.cpp",
+			"sourceGroupIndex" : 6
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/pdf417/PDFBarcodeMetadata.h",
+			"sourceGroupIndex" : 6
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/pdf417/PDFBarcodeValue.h",
+			"sourceGroupIndex" : 6
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/pdf417/PDFBarcodeValue.cpp",
+			"sourceGroupIndex" : 6
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/pdf417/PDFBoundingBox.h",
+			"sourceGroupIndex" : 6
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/pdf417/PDFBoundingBox.cpp",
+			"sourceGroupIndex" : 6
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/pdf417/PDFCodeword.h",
+			"sourceGroupIndex" : 6
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/pdf417/PDFCodewordDecoder.h",
+			"sourceGroupIndex" : 6
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/pdf417/PDFCodewordDecoder.cpp",
+			"sourceGroupIndex" : 6
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/pdf417/PDFDecoder.h",
+			"sourceGroupIndex" : 6
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/pdf417/PDFDecoder.cpp",
+			"sourceGroupIndex" : 6
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/pdf417/PDFDecoderResultExtra.h",
+			"sourceGroupIndex" : 6
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/pdf417/PDFDetectionResult.h",
+			"sourceGroupIndex" : 6
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/pdf417/PDFDetectionResult.cpp",
+			"sourceGroupIndex" : 6
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/pdf417/PDFDetectionResultColumn.h",
+			"sourceGroupIndex" : 6
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/pdf417/PDFDetectionResultColumn.cpp",
+			"sourceGroupIndex" : 6
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/pdf417/PDFDetector.h",
+			"sourceGroupIndex" : 6
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/pdf417/PDFDetector.cpp",
+			"sourceGroupIndex" : 6
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/pdf417/PDFModulusGF.h",
+			"sourceGroupIndex" : 6
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/pdf417/PDFModulusGF.cpp",
+			"sourceGroupIndex" : 6
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/pdf417/PDFModulusPoly.h",
+			"sourceGroupIndex" : 6
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/pdf417/PDFModulusPoly.cpp",
+			"sourceGroupIndex" : 6
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/pdf417/PDFReader.h",
+			"sourceGroupIndex" : 6
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/pdf417/PDFReader.cpp",
+			"sourceGroupIndex" : 6
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/pdf417/PDFScanningDecoder.h",
+			"sourceGroupIndex" : 6
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/pdf417/PDFScanningDecoder.cpp",
+			"sourceGroupIndex" : 6
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/pdf417/CustomData.h",
+			"sourceGroupIndex" : 6
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/pdf417/ZXNullable.h",
+			"sourceGroupIndex" : 6
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/pdf417/PDFCompaction.h",
+			"sourceGroupIndex" : 6
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/pdf417/PDFEncoder.h",
+			"sourceGroupIndex" : 6
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/pdf417/PDFEncoder.cpp",
+			"sourceGroupIndex" : 6
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/pdf417/PDFHighLevelEncoder.h",
+			"sourceGroupIndex" : 6
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "core/src/pdf417/PDFHighLevelEncoder.cpp",
+			"sourceGroupIndex" : 6
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/pdf417/PDFWriter.h",
+			"sourceGroupIndex" : 6
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/pdf417/PDFWriter.cpp",
+			"sourceGroupIndex" : 6
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/qrcode/QRCodecMode.h",
+			"sourceGroupIndex" : 7
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/qrcode/QRCodecMode.cpp",
+			"sourceGroupIndex" : 7
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/qrcode/QRErrorCorrectionLevel.h",
+			"sourceGroupIndex" : 7
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/qrcode/QRErrorCorrectionLevel.cpp",
+			"sourceGroupIndex" : 7
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/qrcode/QRVersion.h",
+			"sourceGroupIndex" : 7
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "core/src/qrcode/QRVersion.cpp",
+			"sourceGroupIndex" : 7
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/qrcode/QRBitMatrixParser.h",
+			"sourceGroupIndex" : 7
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "core/src/qrcode/QRBitMatrixParser.cpp",
+			"sourceGroupIndex" : 7
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/qrcode/QRDataBlock.h",
+			"sourceGroupIndex" : 7
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "core/src/qrcode/QRDataBlock.cpp",
+			"sourceGroupIndex" : 7
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/qrcode/QRDataMask.h",
+			"sourceGroupIndex" : 7
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/qrcode/QRDecoder.h",
+			"sourceGroupIndex" : 7
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "core/src/qrcode/QRDecoder.cpp",
+			"sourceGroupIndex" : 7
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/qrcode/QRDetector.h",
+			"sourceGroupIndex" : 7
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/qrcode/QRDetector.cpp",
+			"sourceGroupIndex" : 7
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/qrcode/QRECB.h",
+			"sourceGroupIndex" : 7
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/qrcode/QRFormatInformation.h",
+			"sourceGroupIndex" : 7
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/qrcode/QRFormatInformation.cpp",
+			"sourceGroupIndex" : 7
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/qrcode/QRReader.h",
+			"sourceGroupIndex" : 7
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "core/src/qrcode/QRReader.cpp",
+			"sourceGroupIndex" : 7
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/qrcode/QREncoder.h",
+			"sourceGroupIndex" : 7
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "core/src/qrcode/QREncoder.cpp",
+			"sourceGroupIndex" : 7
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/qrcode/QREncodeResult.h",
+			"sourceGroupIndex" : 7
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/qrcode/QRMaskUtil.h",
+			"sourceGroupIndex" : 7
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "core/src/qrcode/QRMaskUtil.cpp",
+			"sourceGroupIndex" : 7
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/qrcode/QRMatrixUtil.h",
+			"sourceGroupIndex" : 7
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/qrcode/QRMatrixUtil.cpp",
+			"sourceGroupIndex" : 7
+		},
+		{
+			"backtrace" : 1,
+			"path" : "core/src/qrcode/QRWriter.h",
+			"sourceGroupIndex" : 7
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "core/src/qrcode/QRWriter.cpp",
+			"sourceGroupIndex" : 7
+		},
+		{
+			"backtrace" : 7,
+			"compileGroupIndex" : 4,
+			"path" : "core/src/libzueci/zueci.c",
+			"sourceGroupIndex" : 8
+		},
+		{
+			"backtrace" : 7,
+			"path" : "core/src/libzueci/zueci.h",
+			"sourceGroupIndex" : 8
+		},
+		{
+			"backtrace" : 0,
+			"path" : "build/core/CMakeFiles/ZXing.dir/cmake_pch.hxx",
+			"sourceGroupIndex" : 9
+		}
+	],
+	"type" : "SHARED_LIBRARY"
+}
