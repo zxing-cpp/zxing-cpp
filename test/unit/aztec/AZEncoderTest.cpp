@@ -32,7 +32,11 @@ namespace {
 	}
 
 	std::string StripSpaces(std::string str) {
+#ifdef __cpp_lib_erase_if
+		std::erase_if(str, isspace);
+#else
 		str.erase(std::remove_if(str.begin(), str.end(), isspace), str.end());
+#endif
 		return str;
 	}
 
