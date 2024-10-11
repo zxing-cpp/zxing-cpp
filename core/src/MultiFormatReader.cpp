@@ -67,8 +67,8 @@ Barcodes MultiFormatReader::readMultiple(const BinaryBitmap& image, int maxSymbo
 		auto r = reader->decode(image, maxSymbols);
 		if (!_opts.returnErrors()) {
 			//TODO: C++20 res.erase_if()
-			auto it = std::remove_if(res.begin(), res.end(), [](auto&& r) { return !r.isValid(); });
-			res.erase(it, res.end());
+			auto it = std::remove_if(r.begin(), r.end(), [](auto&& s) { return !s.isValid(); });
+            r.erase(it, r.end());
 		}
 		maxSymbols -= Size(r);
 		res.insert(res.end(), std::move_iterator(r.begin()), std::move_iterator(r.end()));
