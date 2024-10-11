@@ -36,7 +36,11 @@ static int combins(int n, int r)
 	return val;
 }
 
+#ifdef __cpp_lib_span
+int GetValue(const std::span<int> widths, int maxWidth, bool noNarrow)
+#else
 int GetValue(const Array4I& widths, int maxWidth, bool noNarrow)
+#endif
 {
 	int elements = Size(widths);
 	int n = Reduce(widths);
@@ -64,13 +68,6 @@ int GetValue(const Array4I& widths, int maxWidth, bool noNarrow)
 	}
 	return val;
 }
-
-template <typename T>
-struct OddEven
-{
-	T odd = {}, evn = {};
-	T& operator[](int i) { return i & 1 ? evn : odd; }
-};
 
 using Array4F = std::array<float, 4>;
 

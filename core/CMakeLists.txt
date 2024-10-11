@@ -347,6 +347,8 @@ if (ZXING_READERS)
         src/oned/ODDataBarExpandedBitDecoder.cpp
         src/oned/ODDataBarExpandedReader.h
         src/oned/ODDataBarExpandedReader.cpp
+        src/oned/ODDataBarLimitedReader.h
+        src/oned/ODDataBarLimitedReader.cpp
         src/oned/ODDXFilmEdgeReader.h
         src/oned/ODDXFilmEdgeReader.cpp
         src/oned/ODITFReader.h

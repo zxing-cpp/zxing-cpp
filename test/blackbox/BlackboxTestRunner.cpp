@@ -566,6 +566,12 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 2, 2, 180 },
 		});
 
+		runTests("databarltd-1", "DataBarLimited", 2, {
+			{ 2, 2, 0   },
+			{ 2, 2, 180 },
+			{ 2, 0, pure },
+		});
+
 		runTests("qrcode-1", "QRCode", 16, {
 			{ 16, 16, 0   },
 			{ 16, 16, 90  },

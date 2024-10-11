@@ -13,6 +13,7 @@ You can sponsor this library at [GitHub Sponsors](https://github.com/sponsors/ax
 Named Sponsors:
 * [KURZ Digital Solutions GmbH & Co. KG](https://github.com/kurzdigital)
 * [Useful Sensors Inc](https://github.com/usefulsensors)
+* [EUREKAM](https://eurecam.fr/)
 
 Thanks a lot for your contribution!
 
@@ -34,20 +35,20 @@ Thanks a lot for your contribution!
 
 ## Supported Formats
 
-| Linear product | Linear industrial | Matrix             |
-|----------------|-------------------|--------------------|
-| UPC-A          | Code 39           | QR Code            |
-| UPC-E          | Code 93           | Micro QR Code      |
-| EAN-8          | Code 128          | rMQR Code          |
-| EAN-13         | Codabar           | Aztec              |
-| DataBar        | DataBar Expanded  | DataMatrix         |
-|                | DX Film Edge      | PDF417             |
-|                | ITF               | MaxiCode (partial) |
+| Linear product  | Linear industrial | Matrix             |
+|-----------------|-------------------|--------------------|
+| UPC-A           | Code 39           | QR Code            |
+| UPC-E           | Code 93           | Micro QR Code      |
+| EAN-8           | Code 128          | rMQR Code          |
+| EAN-13          | Codabar           | Aztec              |
+| DataBar         | DataBar Expanded  | DataMatrix         |
+| DataBar Limited | DX Film Edge      | PDF417             |
+|                 | ITF               | MaxiCode (partial) |
 
 [Note:]
  * DataBar used to be called RSS.
  * DataBar, DX Film Edge, MaxiCode, Micro QR Code and rMQR Code are not supported for writing.
- * Building with only C++17 (see [CMakeLists.txt](https://github.com/zxing-cpp/zxing-cpp/blob/d4b0f502775857f257d13efd25fb840ece1bca3e/CMakeLists.txt#L45)) changes the behaviour of the library: it then lacks supports multi-symbol and position independent detection for DataMatrix.
+ * Building with only C++17 (see [CMakeLists.txt](https://github.com/zxing-cpp/zxing-cpp/blob/d4b0f502775857f257d13efd25fb840ece1bca3e/CMakeLists.txt#L45)) changes the behaviour of the library: it then lacks support for DataBarLimited and multi-symbol and position independent detection for DataMatrix.
 
 ## Getting Started
 

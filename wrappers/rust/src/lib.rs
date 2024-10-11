@@ -222,8 +222,9 @@ make_zxing_enum!(EanAddOnSymbol { Ignore, Read, Require });
 
 #[rustfmt::skip]
 make_zxing_flags!(BarcodeFormat {
-	None, Aztec, Codabar, Code39, Code93, Code128, DataBar, DataBarExpanded, DataMatrix, EAN8, EAN13, ITF,
-	MaxiCode, PDF417, QRCode, UPCA, UPCE, MicroQRCode, RMQRCode, DXFilmEdge, LinearCodes, MatrixCodes, Any
+	None, Aztec, Codabar, Code39, Code93, Code128, DataBar, DataBarExpanded, DataBarLimited, DataMatrix,
+	EAN8, EAN13, ITF, MaxiCode, PDF417, QRCode, UPCA, UPCE, MicroQRCode, RMQRCode, DXFilmEdge,
+	LinearCodes, MatrixCodes, Any
 });
 
 impl Display for BarcodeFormat {

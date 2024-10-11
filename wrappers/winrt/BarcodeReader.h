@@ -30,6 +30,7 @@ public enum class BarcodeType : int {
 	RMQR_CODE,
 	RSS_14,
 	RSS_EXPANDED,
+	DATA_BAR_LIMITED,
 	UPC_A,
 	UPC_E
 };

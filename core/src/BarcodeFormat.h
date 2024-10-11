@@ -41,12 +41,14 @@ enum class BarcodeFormat
 	MicroQRCode     = (1 << 16), ///< Micro QR Code
 	RMQRCode        = (1 << 17), ///< Rectangular Micro QR Code
 	DXFilmEdge      = (1 << 18), ///< DX Film Edge Barcode
+	DataBarLimited  = (1 << 19), ///< GS1 DataBar Limited
 
-	LinearCodes = Codabar | Code39 | Code93 | Code128 | EAN8 | EAN13 | ITF | DataBar | DataBarExpanded | DXFilmEdge | UPCA | UPCE,
+	LinearCodes = Codabar | Code39 | Code93 | Code128 | EAN8 | EAN13 | ITF | DataBar | DataBarExpanded | DataBarLimited
+				  | DXFilmEdge | UPCA | UPCE,
 	MatrixCodes = Aztec | DataMatrix | MaxiCode | PDF417 | QRCode | MicroQRCode | RMQRCode,
 	Any         = LinearCodes | MatrixCodes,
 
-	_max = DXFilmEdge, ///> implementation detail, don't use
+	_max = DataBarLimited, ///> implementation detail, don't use
 };
 
 ZX_DECLARE_FLAGS(BarcodeFormats, BarcodeFormat)

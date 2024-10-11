@@ -12,6 +12,10 @@
 #include <array>
 #include <cmath>
 
+#if __has_include(<span>) // c++20
+#include <span>
+#endif
+
 namespace ZXing::OneD::DataBar {
 
 inline bool IsFinder(int a, int b, int c, int d, int e)
@@ -121,12 +125,23 @@ int ParseFinderPattern(const PatternView& view, bool reversed, T l2rPattern, T r
 	return reversed ? -i : i;
 }
 
+template <typename T>
+struct OddEven
+{
+	T odd = {}, evn = {};
+	T& operator[](int i) { return i & 1 ? evn : odd; }
+};
+
 using Array4I = std::array<int, 4>;
 
 bool ReadDataCharacterRaw(const PatternView& view, int numModules, bool reversed, Array4I& oddPattern,
 						  Array4I& evnPattern);
 
+#ifdef __cpp_lib_span
+int GetValue(const std::span<int> widths, int maxWidth, bool noNarrow);
+#else
 int GetValue(const Array4I& widths, int maxWidth, bool noNarrow);
+#endif
 
 Position EstimatePosition(const Pair& first, const Pair& last);
 int EstimateLineCount(const Pair& first, const Pair& last);

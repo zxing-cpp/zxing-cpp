@@ -97,11 +97,13 @@ typedef enum
 	ZXing_BarcodeFormat_MicroQRCode = (1 << 16),
 	ZXing_BarcodeFormat_RMQRCode = (1 << 17),
 	ZXing_BarcodeFormat_DXFilmEdge = (1 << 18),
+	ZXing_BarcodeFormat_DataBarLimited = (1 << 19),
 
 	ZXing_BarcodeFormat_LinearCodes = ZXing_BarcodeFormat_Codabar | ZXing_BarcodeFormat_Code39 | ZXing_BarcodeFormat_Code93
 									  | ZXing_BarcodeFormat_Code128 | ZXing_BarcodeFormat_EAN8 | ZXing_BarcodeFormat_EAN13
 									  | ZXing_BarcodeFormat_ITF | ZXing_BarcodeFormat_DataBar | ZXing_BarcodeFormat_DataBarExpanded
-									  | ZXing_BarcodeFormat_DXFilmEdge | ZXing_BarcodeFormat_UPCA | ZXing_BarcodeFormat_UPCE,
+									  | ZXing_BarcodeFormat_DataBarLimited | ZXing_BarcodeFormat_DXFilmEdge | ZXing_BarcodeFormat_UPCA
+									  | ZXing_BarcodeFormat_UPCE,
 	ZXing_BarcodeFormat_MatrixCodes = ZXing_BarcodeFormat_Aztec | ZXing_BarcodeFormat_DataMatrix | ZXing_BarcodeFormat_MaxiCode
 									  | ZXing_BarcodeFormat_PDF417 | ZXing_BarcodeFormat_QRCode | ZXing_BarcodeFormat_MicroQRCode
 									  | ZXing_BarcodeFormat_RMQRCode,

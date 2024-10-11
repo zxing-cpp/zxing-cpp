@@ -18,6 +18,7 @@ enum class BarcodeFormat(internal val rawValue: UInt) {
 	Code128(ZXing_BarcodeFormat_Code128),
 	DataBar(ZXing_BarcodeFormat_DataBar),
 	DataBarExpanded(ZXing_BarcodeFormat_DataBarExpanded),
+	DataBarLimited(ZXing_BarcodeFormat_DataBarLimited),
 	DataMatrix(ZXing_BarcodeFormat_DataMatrix),
 	DXFilmEdge(ZXing_BarcodeFormat_DXFilmEdge),
 	EAN8(ZXing_BarcodeFormat_EAN8),

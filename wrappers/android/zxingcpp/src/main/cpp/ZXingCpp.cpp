@@ -45,6 +45,7 @@ static const char* JavaBarcodeFormatName(BarcodeFormat format)
 	case BarcodeFormat::RMQRCode: return "RMQR_CODE";
 	case BarcodeFormat::DataBar: return "DATA_BAR";
 	case BarcodeFormat::DataBarExpanded: return "DATA_BAR_EXPANDED";
+	case BarcodeFormat::DataBarLimited: return "DATA_BAR_LIMITED";
 	case BarcodeFormat::DXFilmEdge: return "DX_FILM_EDGE";
 	case BarcodeFormat::UPCA: return "UPC_A";
 	case BarcodeFormat::UPCE: return "UPC_E";
