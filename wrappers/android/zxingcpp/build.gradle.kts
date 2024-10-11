@@ -8,7 +8,7 @@ plugins {
 android {
     namespace = "zxingcpp.lib" // used to be just zxingcpp but needs to contain a '.' in release builds
     // ndk version 27 has sufficient c++20 support to enable all features (see #386)
-    // ndkVersion = "27.1.12297006"
+    // ndkVersion = "27.0.12077973"
 
     defaultConfig {
         compileSdk = libs.versions.androidCompileSdk.get().toInt()

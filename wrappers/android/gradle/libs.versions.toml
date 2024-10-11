@@ -1,5 +1,5 @@
 [versions]
-androidGradlePlugin = "8.2.2"
+androidGradlePlugin = "8.7.0"
 androidCompileSdk = "34"
 androidMinSdk = "21"
 androidTargetSdk = "33"
