@@ -13,7 +13,7 @@ You can sponsor this library at [GitHub Sponsors](https://github.com/sponsors/ax
 Named Sponsors:
 * [KURZ Digital Solutions GmbH & Co. KG](https://github.com/kurzdigital)
 * [Useful Sensors Inc](https://github.com/usefulsensors)
-* [EUREKAM](https://eurecam.fr/)
+* [EUREKAM](https://eurekam.fr/)
 
 Thanks a lot for your contribution!
 
