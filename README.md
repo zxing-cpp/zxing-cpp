@@ -47,7 +47,7 @@ Thanks a lot for your contribution!
 
 [Note:]
  * DataBar used to be called RSS.
- * DataBar, DX Film Edge, MaxiCode, Micro QR Code, and rMQR Code are not supported for writing.
+ * DataBar, DX Film Edge, MaxiCode, Micro QR Code and rMQR Code are not supported for writing.
  * Building with only C++17 (see [CMakeLists.txt](https://github.com/zxing-cpp/zxing-cpp/blob/d4b0f502775857f257d13efd25fb840ece1bca3e/CMakeLists.txt#L45)) changes the behavior of the library: it then lacks support for DataBarLimited and multi-symbol and position independent detection for DataMatrix.
 
 ## Getting Started
@@ -98,7 +98,7 @@ As an example, have a look at [`ZXingWriter.cpp`](example/ZXingWriter.cpp).
 ## Build Instructions
 These are the generic instructions to build the library on Windows/macOS/Linux. For details on how to build the individual wrappers, follow the links above.
 
-1. Make sure [CMake](https://cmake.org) version 3.15 or newer is installed.
+1. Make sure [CMake](https://cmake.org) version 3.16 or newer is installed. The python module requires 3.18 or higher.
 2. Make sure a sufficiently C++20 compliant compiler is installed (minimum VS 2019 16.10? / gcc 11 / clang 12?).
 3. See the cmake `ZXING_...` options to enable the testing code, python wrapper, etc.
 
