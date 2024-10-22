@@ -47,8 +47,8 @@ Thanks a lot for your contribution!
 
 [Note:]
  * DataBar used to be called RSS.
- * DataBar, DX Film Edge, MaxiCode, Micro QR Code and rMQR Code are not supported for writing.
- * Building with only C++17 (see [CMakeLists.txt](https://github.com/zxing-cpp/zxing-cpp/blob/d4b0f502775857f257d13efd25fb840ece1bca3e/CMakeLists.txt#L45)) changes the behaviour of the library: it then lacks support for DataBarLimited and multi-symbol and position independent detection for DataMatrix.
+ * DataBar, DX Film Edge, MaxiCode, Micro QR Code, and rMQR Code are not supported for writing.
+ * Building with only C++17 (see [CMakeLists.txt](https://github.com/zxing-cpp/zxing-cpp/blob/d4b0f502775857f257d13efd25fb840ece1bca3e/CMakeLists.txt#L45)) changes the behavior of the library: it then lacks support for DataBarLimited and multi-symbol and position independent detection for DataMatrix.
 
 ## Getting Started
 
@@ -79,7 +79,7 @@ int main(int argc, char** argv)
 ```
 To see the full capability of the API, have a look at [`ZXingReader.cpp`](example/ZXingReader.cpp).
 
-[Note: At least C++17 is reqired on the client side to use the API.]
+[Note: At least C++17 is required on the client side to use the API.]
 
 ### To write barcodes:
 1. Create a [`MultiFormatWriter`](core/src/MultiFormatWriter.h) instance with the format you want to generate. Set encoding and margins if needed.
