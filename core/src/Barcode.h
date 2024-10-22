@@ -174,6 +174,11 @@ public:
 	 */
 	std::string version() const;
 
+	/**
+	 * @brief QRCode data mask.
+	 */
+	int dataMask() const;
+
 #ifdef ZXING_EXPERIMENTAL_API
 	void symbol(BitMatrix&& bits);
 	ImageView symbol() const;
@@ -192,6 +197,7 @@ private:
 	BarcodeFormat _format = BarcodeFormat::None;
 	char _ecLevel[4] = {};
 	char _version[4] = {};
+	int _dataMask = 0;
 	int _lineCount = 0;
 	bool _isMirrored = false;
 	bool _isInverted = false;
