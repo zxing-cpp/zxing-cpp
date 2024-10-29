@@ -114,14 +114,22 @@ struct PairHash
 constexpr int FULL_PAIR_SIZE = 8 + 5 + 8;
 constexpr int HALF_PAIR_SIZE = 8 + 5 + 2; // half has to be followed by a guard pattern
 
-template<typename T>
-int ParseFinderPattern(const PatternView& view, bool reversed, T l2rPattern, T r2lPattern)
+template<int N>
+int ParseFinderPattern(const PatternView& view, bool reversed, const std::array<std::array<int, 3>, N>& e2ePatterns)
 {
-	constexpr float MAX_AVG_VARIANCE        = 0.2f;
-	constexpr float MAX_INDIVIDUAL_VARIANCE = 0.45f;
+	const auto e2e = NormalizedE2EPattern<5>(view, 15, reversed);
 
-	int i = 1 + RowReader::DecodeDigit(view, reversed ? r2lPattern : l2rPattern, MAX_AVG_VARIANCE,
-									   MAX_INDIVIDUAL_VARIANCE, true);
+	int best_i, best_e = 3;
+	for (int i = 0; i < Size(e2ePatterns); ++i) {
+		int e = 0;
+		for (int j = 0; j < 3; ++j)
+			e += std::abs(e2ePatterns[i][j] - e2e[j]);
+		if (e < best_e) {
+			best_e = e;
+			best_i = i;
+		}
+	}
+	int i = best_e <= 1 ? 1 + best_i : 0;
 	return reversed ? -i : i;
 }
 
@@ -133,6 +141,49 @@ struct OddEven
 };
 
 using Array4I = std::array<int, 4>;
+
+// elements() determines the element widths of an (n,k) character with
+// at least one even-numbered element that's just one module wide.
+// (Note: even-numbered elements - 2nd, 4th, 6th, etc., have odd indexes)
+// for DataBarLimited: LEN=14, mods=26/18
+template <int LEN>
+std::array<int, LEN> NormalizedPatternFromE2E(const PatternView& view, int mods, bool reversed = false)
+{
+	bool isExp = mods == 17; // elementsExp() with at least one odd-numbered element that's just one module wide
+	const auto e2e = NormalizedE2EPattern<LEN>(view, mods, reversed);
+	std::array<int, LEN> widths;
+
+	// derive element widths from normalized edge-to-similar-edge measurements
+	int barSum = widths[0] = isExp ? 8 : 1; // first assume 1st bar is 1 / 8
+	for (int i = 0; i < Size(e2e); i++) {
+		widths[i + 1] = e2e[i] - widths[i];
+		barSum += widths[i + 1];
+	}
+	widths.back() = mods - barSum; // last even element makes mods modules
+
+	// int minEven = widths[1];
+	// for (int i = 3; i < Size(widths); i += 2)
+	// 	minEven = std::min(minEven, widths[i]);
+	OddEven<int> min = {widths[0], widths[1]};
+	for (int i = 2; i < Size(widths); i++)
+		min[i] = std::min(min[i], widths[i]);
+
+	if (isExp && min[0] > 1) {
+		// minimum odd width is too big, readjust so minimum odd is 1
+		for (int i = 0; i < Size(widths); i += 2) {
+			widths[i] -= min[0] - 1;
+			widths[i + 1] += min[0] - 1;
+		}
+	} else if (!isExp && min[1] > 1) {
+		// minimum even width is too big, readjust so minimum even is 1
+		for (int i = 0; i < Size(widths); i += 2) {
+			widths[i] += min[1] - 1;
+			widths[i + 1] -= min[1] - 1;
+		}
+	}
+
+	return widths;
+}
 
 bool ReadDataCharacterRaw(const PatternView& view, int numModules, bool reversed, Array4I& oddPattern,
 						  Array4I& evnPattern);

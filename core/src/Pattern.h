@@ -278,14 +278,15 @@ PatternView FindLeftGuard(const PatternView& view, int minSize, const FixedPatte
 							  });
 }
 
-template <int LEN, int SUM>
-std::array<int, LEN - 2> NormalizedE2EPattern(const PatternView& view)
+template <int LEN>
+std::array<int, LEN - 2> NormalizedE2EPattern(const PatternView& view, int mods, bool reverse = false)
 {
-	double moduleSize = static_cast<double>(view.sum(LEN)) / SUM;
+	double moduleSize = static_cast<double>(view.sum(LEN)) / mods;
 	std::array<int, LEN - 2> e2e;
 
 	for (int i = 0; i < LEN - 2; i++) {
-		double v = (view[i] + view[i + 1]) / moduleSize;
+		int i_v = reverse ? LEN - 2 - i : i;
+		double v = (view[i_v] + view[i_v + 1]) / moduleSize;
 		e2e[i] = int(v + .5);
 	}
 

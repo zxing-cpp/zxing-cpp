@@ -86,25 +86,19 @@ static Character ReadDataCharacter(const PatternView& view, bool outsideChar, bo
 
 int ParseFinderPattern(const PatternView& view, bool reversed)
 {
-	static constexpr std::array<FixedPattern<5, 15>, 10> FINDER_PATTERNS = {{
-		{3, 8, 2, 1, 1},
-		{3, 5, 5, 1, 1},
-		{3, 3, 7, 1, 1},
-		{3, 1, 9, 1, 1},
-		{2, 7, 4, 1, 1},
-		{2, 5, 6, 1, 1},
-		{2, 3, 8, 1, 1},
-		{1, 5, 7, 1, 1},
-		{1, 3, 9, 1, 1},
+	static constexpr std::array<std::array<int, 3>, 9> e2ePatterns = {{
+		{11, 10, 3 }, // {3, 8, 2, 1, 1}
+		{8 , 10, 6 }, // {3, 5, 5, 1, 1}
+		{6 , 10, 8 }, // {3, 3, 7, 1, 1}
+		{4 , 10, 10}, // {3, 1, 9, 1, 1}
+		{9 , 11, 5 }, // {2, 7, 4, 1, 1}
+		{7 , 11, 7 }, // {2, 5, 6, 1, 1}
+		{5 , 11, 9 }, // {2, 3, 8, 1, 1}
+		{6 , 11, 8 }, // {1, 5, 7, 1, 1}
+		{4 , 12, 10}, // {1, 3, 9, 1, 1}
 	}};
 
-	// TODO: c++20 constexpr inversion from FIND_PATTERN?
-	static constexpr std::array<FixedPattern<5, 15>, 10> REVERSED_FINDER_PATTERNS = {{
-		{1, 1, 2, 8, 3}, {1, 1, 5, 5, 3}, {1, 1, 7, 3, 3}, {1, 1, 9, 1, 3}, {1, 1, 4, 7, 2},
-		{1, 1, 6, 5, 2}, {1, 1, 8, 3, 2}, {1, 1, 7, 5, 1}, {1, 1, 9, 3, 1},
-	}};
-
-	return ParseFinderPattern(view, reversed, FINDER_PATTERNS, REVERSED_FINDER_PATTERNS);
+	return ParseFinderPattern<9>(view, reversed, e2ePatterns);
 }
 
 static Pair ReadPair(const PatternView& view, bool rightPair)

@@ -137,19 +137,16 @@ static const std::array<int, 7> VALID_HALF_PAIRS = {{-FINDER_A, FINDER_B, -FINDE
 
 static int ParseFinderPattern(const PatternView& view, Direction dir)
 {
-	static constexpr std::array<FixedPattern<5, 15>, 6> FINDER_PATTERNS = {{
-		{1, 8, 4, 1, 1}, // A
-		{3, 6, 4, 1, 1}, // B
-		{3, 4, 6, 1, 1}, // C
-		{3, 2, 8, 1, 1}, // D
-		{2, 6, 5, 1, 1}, // E
-		{2, 2, 9, 1, 1}, // F
+	static constexpr std::array<std::array<int, 3>, 6> e2ePatterns = {{
+		{9, 12, 5 }, // {1, 8, 4, 1, 1}, // A
+		{9, 10, 5 }, // {3, 6, 4, 1, 1}, // B
+		{7, 10, 7 }, // {3, 4, 6, 1, 1}, // C
+		{5, 10, 9 }, // {3, 2, 8, 1, 1}, // D
+		{8, 11, 6 }, // {2, 6, 5, 1, 1}, // E
+		{4, 11, 10}, // {2, 2, 9, 1, 1}, // F
 	}};
-	// TODO: c++20 constexpr inversion from FIND_PATTERN?
-	static constexpr std::array<FixedPattern<5, 15>, 6> REVERSED_FINDER_PATTERNS = {
-		{{1, 1, 4, 8, 1}, {1, 1, 4, 6, 3}, {1, 1, 6, 4, 3}, {1, 1, 8, 2, 3}, {1, 1, 5, 6, 2}, {1, 1, 9, 2, 2}}};
 
-	return ParseFinderPattern(view, dir == Direction::Left, FINDER_PATTERNS, REVERSED_FINDER_PATTERNS);
+	return ParseFinderPattern<6>(view, dir == Direction::Left, e2ePatterns);
 }
 
 static bool ChecksumIsValid(const Pairs& pairs)

@@ -158,7 +158,7 @@ public:
 constexpr auto START_PATTERN_PREFIX = FixedPattern<3, 4>{2, 1, 1};
 constexpr int CHAR_LEN = 6;
 constexpr float QUIET_ZONE = 5;	// quiet zone spec is 10 modules, real world examples ignore that, see #138
-constexpr int CHAR_SUM = 11;
+constexpr int CHAR_MODS = 11;
 
 //TODO: make this a constexpr variable initialization
 static auto E2E_PATTERNS = [] {
@@ -180,7 +180,7 @@ Barcode Code128Reader::decodePattern(int rowNumber, PatternView& next, std::uniq
 	int minCharCount = 4; // start + payload + checksum + stop
 	auto decodePattern = [](const PatternView& view, bool start = false) {
 		// This is basically the reference algorithm from the specification
-		int code = IndexOf(E2E_PATTERNS, ToInt(NormalizedE2EPattern<CHAR_LEN, CHAR_SUM>(view)));
+		int code = IndexOf(E2E_PATTERNS, ToInt(NormalizedE2EPattern<CHAR_LEN>(view, CHAR_MODS)));
 		if (code == -1 && !start) // if the reference algo fails, give the original upstream version a try (required to decode a few samples)
 			code = DecodeDigit(view, Code128::CODE_PATTERNS, MAX_AVG_VARIANCE, MAX_INDIVIDUAL_VARIANCE);
 		return code;

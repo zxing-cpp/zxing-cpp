@@ -27,39 +27,6 @@ using namespace DataBar;
 constexpr int CHAR_LEN = 14;
 constexpr int SYMBOL_LEN = 1 + 3 * CHAR_LEN + 2;
 
-// elements() determines the element widths of an (n,k) character with
-// at least one even-numbered element that's just one module wide.
-// (Note: even-numbered elements - 2nd, 4th, 6th, etc., have odd indexes)
-// for DataBarLimited: SUM=26/18, LEN=14
-template <int LEN, int SUM>
-std::array<int, LEN> NormalizedPatternFromE2E(const PatternView& view)
-{
-	auto e2e = NormalizedE2EPattern<LEN, SUM>(view);
-	std::array<int, LEN> widths;
-
-	// derive element widths from normalized edge-to-similar-edge measurements
-	int barSum = widths[0] = 1; // first assume 1st bar is 1
-	for (int i = 0; i < Size(e2e); i++) {
-		widths[i + 1] = e2e[i] - widths[i];
-		barSum += widths[i + 1];
-	}
-	widths.back() = SUM - barSum; // last even element makes SUM modules
-
-	int minEven = widths[1];
-	for (int i = 3; i < Size(widths); i += 2)
-		minEven = std::min(minEven, widths[i]);
-
-	if (minEven > 1) {
-		// minimum even width is too big, readjust so minimum even is 1
-		for (int i = 0; i < Size(widths); i += 2) {
-			widths[i] += minEven - 1;
-			widths[i + 1] -= minEven - 1;
-		}
-	}
-
-	return widths;
-}
-
 static Character ReadDataCharacter(const PatternView& view)
 {
 	constexpr int G_SUM[] = {0, 183064, 820064, 1000776, 1491021, 1979845, 1996939};
@@ -67,7 +34,7 @@ static Character ReadDataCharacter(const PatternView& view)
 	constexpr int ODD_SUM[] = {17, 13, 9, 15, 11, 19, 7};
 	constexpr int ODD_WIDEST[] = {6, 5, 3, 5, 4, 8, 1};
 
-	auto pattern = NormalizedPatternFromE2E<14, 26>(view);
+	auto pattern = NormalizedPatternFromE2E<14>(view, 26);
 
 	int checkSum = 0;
 	for (auto it = pattern.rbegin(); it != pattern.rend(); ++it)
@@ -170,13 +137,13 @@ Barcode DataBarLimitedReader::decodePattern(int rowNumber, PatternView& next, st
 		if ((!next.isAtFirstBar() && next[-1] < modSize) || (!next.isAtLastBar() && next[SYMBOL_LEN] < 5 * modSize))
 			continue;
 
-		auto checkCharPattern = ToInt(NormalizedPatternFromE2E<CHAR_LEN, 18>(checkView));
+		auto checkCharPattern = ToInt(NormalizedPatternFromE2E<CHAR_LEN>(checkView, 18));
 		int checkSum = IndexOf(CheckChars, checkCharPattern);
 		if (checkSum == -1)
 			continue;
 
 		printf("%f - ", modSize);
-		printv("%d ", NormalizedPatternFromE2E<CHAR_LEN, 18>(checkView));
+		printv("%d ", NormalizedPatternFromE2E<CHAR_LEN>(checkView, 18));
 
 		auto left = ReadDataCharacter(leftView);
 		auto right = ReadDataCharacter(rightView);
