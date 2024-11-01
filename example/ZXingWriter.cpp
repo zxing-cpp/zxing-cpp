@@ -28,11 +28,12 @@ using namespace ZXing;
 static void PrintUsage(const char* exePath)
 {
 	std::cout << "Usage: " << exePath
-			  << " [-size <width/height>] [-eclevel <level>] [-noqz] [-hrt] <format> <text> <output>\n"
+			  << " [-size <width/height>] [-eclevel <level>] [-qrversion <version>] [-noqz] [-hrt] <format> <text> <output>\n"
 			  << "    -size      Size of generated image\n"
 //			  << "    -margin    Margin around barcode\n"
 //			  << "    -encoding  Encoding used to encode input text\n"
 			  << "    -eclevel   Error correction level, [0-8]\n"
+			  << "    -qrversion QR Code version, [1-40]\n"
 			  << "    -binary    Interpret <text> as a file name containing binary data\n"
 			  << "    -noqz      Print barcode without quiet zone\n"
 			  << "    -hrt       Print human readable text below the barcode (if supported)\n"
@@ -66,6 +67,7 @@ struct CLI
 	std::string input;
 	std::string outPath;
 	std::string ecLevel;
+	std::string qrVersion;
 	bool inputIsFile = false;
 	bool withHRT = false;
 	bool withQZ = true;
@@ -86,6 +88,10 @@ static bool ParseOptions(int argc, char* argv[], CLI& cli)
 			if (++i == argc)
 				return false;
 			cli.ecLevel = argv[i];
+		} else if (is("-qrversion")) {
+			if (++i == argc)
+				return false;
+			cli.qrVersion = argv[i];
 		// } else if (is("-margin")) {
 		// 	if (++i == argc)
 		// 		return false;
@@ -159,7 +165,7 @@ int main(int argc, char* argv[])
 
 	try {
 #ifdef ZXING_EXPERIMENTAL_API
-		auto cOpts = CreatorOptions(cli.format).ecLevel(cli.ecLevel);
+		auto cOpts = CreatorOptions(cli.format).ecLevel(cli.ecLevel).qrVersion(cli.qrVersion);
 		auto barcode = cli.inputIsFile ? CreateBarcodeFromBytes(ReadFile(cli.input), cOpts) : CreateBarcodeFromText(cli.input, cOpts);
 
 		auto wOpts = WriterOptions().sizeHint(cli.sizeHint).withQuietZones(cli.withQZ).withHRT(cli.withHRT).rotate(0);
@@ -176,13 +182,17 @@ int main(int argc, char* argv[])
 					  << "Rotation:   " << barcode.orientation() << " deg\n"
 					  << "IsMirrored: " << barcode.isMirrored() << "\n"
 					  << "IsInverted: " << barcode.isInverted() << "\n"
-					  << "ecLevel:    " << barcode.ecLevel() << "\n";
+					  << "ecLevel:    " << barcode.ecLevel() << "\n"
+					  << "qrVersion:  " << barcode.version() << "\n";
 			std::cout << WriteBarcodeToUtf8(barcode);
 		}
 #else
 		auto writer = MultiFormatWriter(cli.format).setMargin(cli.withQZ ? 10 : 0);
 		if (!cli.ecLevel.empty())
 			writer.setEccLevel(std::stoi(cli.ecLevel));
+
+		if (!cli.qrVersion.empty())
+			writer.setQrVersion(std::stoi(cli.qrVersion));
 
 		BitMatrix matrix;
 		if (cli.inputIsFile) {
