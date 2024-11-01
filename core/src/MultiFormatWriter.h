@@ -42,6 +42,14 @@ public:
 	}
 
 	/**
+	* Used for QRCode only, [1-40].
+	*/
+	MultiFormatWriter& setQrVersion(int qrVersion) {
+		_qrVersion = qrVersion;
+		return *this;
+	}
+
+	/**
 	* Used for all formats, sets the minimum number of quiet zone pixels.
 	*/
 	MultiFormatWriter& setMargin(int margin) {
@@ -57,6 +65,7 @@ private:
 	CharacterSet _encoding = CharacterSet::Unknown;
 	int _margin = -1;
 	int _eccLevel = -1;
+	int _qrVersion = 0;
 };
 
 } // ZXing
