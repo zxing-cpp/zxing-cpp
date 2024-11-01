@@ -32,6 +32,7 @@ struct CreatorOptions::Data
 	bool readerInit = false;
 	bool forceSquareDataMatrix = false;
 	std::string ecLevel;
+	std::string qrVersion;
 
 	// symbol size (qrcode, datamatrix, etc), map from I, 'WxH'
 	// structured_append (idx, cnt, ID)
@@ -52,6 +53,7 @@ struct CreatorOptions::Data
 	ZX_PROPERTY(bool, readerInit)
 	ZX_PROPERTY(bool, forceSquareDataMatrix)
 	ZX_PROPERTY(std::string, ecLevel)
+	ZX_PROPERTY(std::string, qrVersion)
 
 #undef ZX_PROPERTY
 
@@ -351,6 +353,8 @@ Barcode CreateBarcodeFromText(std::string_view contents, const CreatorOptions& o
 	auto writer = MultiFormatWriter(opts.format()).setMargin(0);
 	if (!opts.ecLevel().empty())
 		writer.setEccLevel(std::stoi(opts.ecLevel()));
+	if (!opts.qrVersion().empty())
+		writer.setQrVersion(std::stoi(opts.qrVersion()));
 	writer.setEncoding(CharacterSet::UTF8); // write UTF8 (ECI value 26) for maximum compatibility
 
 	return CreateBarcode(writer.encode(std::string(contents), 0, IsLinearCode(opts.format()) ? 50 : 0), opts);
@@ -372,6 +376,9 @@ Barcode CreateBarcodeFromBytes(const void* data, int size, const CreatorOptions&
 	auto writer = MultiFormatWriter(opts.format()).setMargin(0);
 	if (!opts.ecLevel().empty())
 		writer.setEccLevel(std::stoi(opts.ecLevel()));
+	if (!opts.qrVersion().empty())
+		writer.setQrVersion(std::stoi(opts.qrVersion()));
+
 	writer.setEncoding(CharacterSet::BINARY);
 
 	return CreateBarcode(writer.encode(bytes, 0, IsLinearCode(opts.format()) ? 50 : 0), opts);
