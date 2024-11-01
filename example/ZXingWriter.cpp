@@ -34,7 +34,7 @@ static void PrintUsage(const char* exePath)
 //			  << "    -encoding  Encoding used to encode input text\n"
 			  << "    -eclevel   Error correction level, [0-8]\n"
 			  << "    -binary    Interpret <text> as a file name containing binary data\n"
-			  << "    -noqz      Print barcode witout quiet zone\n"
+			  << "    -noqz      Print barcode without quiet zone\n"
 			  << "    -hrt       Print human readable text below the barcode (if supported)\n"
 			  << "    -help      Print usage information\n"
 			  << "    -version   Print version information\n"
