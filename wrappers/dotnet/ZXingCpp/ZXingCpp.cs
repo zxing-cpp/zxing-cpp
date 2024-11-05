@@ -479,20 +479,25 @@ public class Barcode
 
 public class BarcodeReader : ReaderOptions
 {
-	public static List<Barcode> Read(ImageView iv, ReaderOptions? opts = null)
+	public static Barcode[] Read(ImageView iv, ReaderOptions? opts = null)
 	{
 		var ptr = CheckError(ZXing_ReadBarcodes(iv._d, opts?._d ?? IntPtr.Zero));
 
+		// return static empty array if no Barcodes are found, avoiding any managed heap allocation
+		var res = Array.Empty<Barcode>();
 		var size = ZXing_Barcodes_size(ptr);
-		var res = new List<Barcode>(size);
-		for (int i = 0; i < size; ++i)
-			res.Add(new Barcode(ZXing_Barcodes_move(ptr, i)));
+		if (size > 0) {
+			res = new Barcode[size];
+			for (int i = 0; i < size; ++i)
+				res[i] = new Barcode(ZXing_Barcodes_move(ptr, i));
+		}
+
 		ZXing_Barcodes_delete(ptr);
 
 		return res;
 	}
 
-	public List<Barcode> From(ImageView iv) => Read(iv, this);
+	public Barcode[] From(ImageView iv) => Read(iv, this);
 }
 
 public class BarcodeCreator : CreatorOptions

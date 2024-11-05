@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
 
     <PackageId>ZXingCpp</PackageId>
-    <Version>0.2.2-alpha</Version>
+    <Version>0.3.0-alpha</Version>
     <Authors>Axel Waggershauser</Authors>
     <Company>zxing-cpp</Company>
     <Description>
@@ -29,4 +29,4 @@
 </Project>
 
 <!-- .NET Standard 2. (netstandard), see https://learn.microsoft.com/en-us/dotnet/standard/net-standard?tabs=net-standard-1-0#when-to-target-net80-vs-netstandard -->
-<!-- dotnet nuget push bin/Release/ZXingCpp.0.1.0-alpha.nupkg -s https://api.nuget.org/v3/index.json -k <api-key> -->
+<!-- dotnet nuget push ZXingCpp/bin/Release/ZXingCpp.0.1.0-alpha.nupkg -s https://api.nuget.org/v3/index.json -k <api-key> -->

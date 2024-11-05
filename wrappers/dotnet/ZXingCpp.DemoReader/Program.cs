@@ -10,7 +10,7 @@ using ZXingCpp;
 
 public static class MagickImageBarcodeReader
 {
-	public static List<Barcode> Read(MagickImage img, ReaderOptions? opts = null)
+	public static Barcode[] Read(MagickImage img, ReaderOptions? opts = null)
 	{
 		if (img.DetermineBitDepth() < 8)
 			img.SetBitDepth(8);
@@ -19,12 +19,12 @@ public static class MagickImageBarcodeReader
 		return BarcodeReader.Read(iv, opts);
 	}
 
-	public static List<Barcode> From(this BarcodeReader reader, MagickImage img) => Read(img, reader);
+	public static Barcode[] From(this BarcodeReader reader, MagickImage img) => Read(img, reader);
 }
 
 public static class SkBitmapBarcodeReader
 {
-	public static List<Barcode> Read(SKBitmap img, ReaderOptions? opts = null)
+	public static Barcode[] Read(SKBitmap img, ReaderOptions? opts = null)
 	{
 		var format = img.Info.ColorType switch
 		{
@@ -44,7 +44,7 @@ public static class SkBitmapBarcodeReader
 		return BarcodeReader.Read(iv, opts);
 	}
 
-	public static List<Barcode> From(this BarcodeReader reader, SKBitmap img) => Read(img, reader);
+	public static Barcode[] From(this BarcodeReader reader, SKBitmap img) => Read(img, reader);
 }
 
 public class Program
@@ -65,7 +65,7 @@ public class Program
 
 		if (args.Length >= 2)
 			readBarcodes.Formats = Barcode.FormatsFromString(args[1]);
-	
+
 		foreach (var b in readBarcodes.From(img))
 			Console.WriteLine($"{b.Format} ({b.ContentType}): {b.Text} / [{string.Join(", ", b.Bytes)}] {b.ErrorMsg}");
 	}
