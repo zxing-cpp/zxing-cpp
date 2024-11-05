@@ -41,23 +41,26 @@ Barcode ITFReader::decodePattern(int rowNumber, PatternView& next, std::unique_p
 	txt.reserve(20);
 
 	while (next.isValid()) {
-		threshold = NarrowWideThreshold(next);
-		if (!threshold.isValid())
+		// look for end-of-symbol
+		if (next[3] > threshold.space * 3)
 			break;
 
 		BarAndSpace<int> digits, numWide;
+		bool bad = false;
 		for (int i = 0; i < 10; ++i) {
-			if (next[i] > threshold[i] * 2)
-				break;
+			bad |= next[i] > threshold[i] * 3 || next[i] < threshold[i] / 3;
 			numWide[i] += next[i] > threshold[i];
 			digits[i] += weights[i/2] * (next[i] > threshold[i]);
 		}
 
-		if (numWide.bar != 2 || numWide.space != 2)
+		if (bad || numWide.bar != 2 || numWide.space != 2)
 			break;
 
 		for (int i = 0; i < 2; ++i)
 			txt.push_back(ToDigit(digits[i] == 11 ? 0 : digits[i]));
+
+		// update threshold to support scanning slanted symbols (scanned non-perpendicular)
+		threshold = NarrowWideThreshold(next);
 
 		next.skipSymbol();
 	}
@@ -65,7 +68,8 @@ Barcode ITFReader::decodePattern(int rowNumber, PatternView& next, std::unique_p
 	next = next.subView(0, 3);
 
 	// Check quiet zone size
-	if (!next.isValid() || !(next.isAtLastBar() || next[3] > minQuietZone * (threshold.bar + threshold.space) / 3))
+	if (!next.isValid() || !threshold.isValid()
+		|| !(next.isAtLastBar() || next[3] > minQuietZone * (threshold.bar + threshold.space) / 3))
 		return {};
 
 	// Check stop pattern

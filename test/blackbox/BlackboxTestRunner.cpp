@@ -464,9 +464,9 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 3, 5, 180 },
 		}, ReaderOptions().setEanAddOnSymbol(EanAddOnSymbol::Require));
 
-		runTests("itf-1", "ITF", 12, {
-			{ 11, 12, 0   },
-			{ 11, 12, 180 },
+		runTests("itf-1", "ITF", 14, {
+			{ 13, 14, 0   },
+			{ 13, 14, 180 },
 		});
 
 		runTests("itf-2", "ITF", 6, {
