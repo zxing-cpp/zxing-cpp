@@ -11,11 +11,16 @@
 #include <cstring>
 #include <vector>
 
-#if __has_include(<bit>) && __cplusplus > 201703L // MSVC has the <bit> header but then warns about including it
+// MSVC has the <bit> header but then warns about including it.
+// We check for _MSVC_LANG here as well, so client code is depending on /Zc:__cplusplus
+#if __has_include(<bit>) && (__cplusplus > 201703L || _MSVC_LANG > 201703L)
 #include <bit>
 #if __cplusplus > 201703L && defined(__ANDROID__) // NDK 25.1.8937393 has the implementation but fails to advertise it
 #define __cpp_lib_bitops 201907L
 #endif
+#elif defined(_MSC_VER)
+// accoring to #863 MSVC defines __cpp_lib_bitops even when <bit> it not included and bitops are not available
+#undef __cpp_lib_bitops
 #endif
 
 #if defined(__clang__) || defined(__GNUC__)
