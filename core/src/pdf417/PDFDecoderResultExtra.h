@@ -33,6 +33,8 @@ class DecoderResultExtra : public CustomData
 
 public:
 
+	int approxSymbolWidth = -1;
+
 	int segmentIndex() const {
 		return _segmentIndex;
 	}

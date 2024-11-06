@@ -9,6 +9,7 @@
 #include "PDFDetector.h"
 #include "PDFScanningDecoder.h"
 #include "PDFCodewordDecoder.h"
+#include "PDFDecoderResultExtra.h"
 #include "ReaderOptions.h"
 #include "DecoderResult.h"
 #include "DetectorResult.h"
@@ -85,7 +86,13 @@ static Barcodes DoDecode(const BinaryBitmap& image, bool multiple, bool tryRotat
 			ScanningDecoder::Decode(*detectorResult.bits, points[4], points[5], points[6], points[7],
 									GetMinCodewordWidth(points), GetMaxCodewordWidth(points));
 		if (decoderResult.isValid(returnErrors)) {
-			auto point = [&](int i) { return rotate(PointI(points[i].value())); };
+			auto point = [&](int i) {
+				auto meta = dynamic_cast<DecoderResultExtra*>(decoderResult.extra().get());
+				if (points[i].hasValue() || i < 2 || !meta)
+					return rotate(PointI(points[i].value()));
+				else
+					return rotate(PointI(points[i-2].value()) + PointI(meta->approxSymbolWidth, 0));
+			};
 			res.emplace_back(std::move(decoderResult), DetectorResult{{}, {point(0), point(2), point(3), point(1)}},
 							 BarcodeFormat::PDF417);
 			if (!multiple)
@@ -306,7 +313,7 @@ Reader::decode(const BinaryBitmap& image) const
 		// This falls through and tries the non-pure code path if we have a checksum error. This approach is
 		// currently the best option to deal with 'aliased' input like e.g. 03-aliased.png
 	}
-	
+
 	return FirstOrDefault(DoDecode(image, false, _opts.tryRotate(), _opts.returnErrors()));
 }
 

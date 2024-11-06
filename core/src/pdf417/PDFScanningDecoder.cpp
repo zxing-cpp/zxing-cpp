@@ -13,6 +13,7 @@
 #include "PDFCodewordDecoder.h"
 #include "PDFDetectionResult.h"
 #include "PDFDecoder.h"
+#include "PDFDecoderResultExtra.h"
 #include "PDFModulusGF.h"
 #include "ZXAlgorithms.h"
 #include "ZXTestSupport.h"
@@ -127,7 +128,7 @@ static Nullable<Codeword> DetectCodeword(const BitMatrix& image, int minColumn, 
 	}
 	// TODO implement check for width and correction of black and white bars
 	// use start (and maybe stop pattern) to determine if blackbars are wider than white bars. If so, adjust.
-	// should probably done only for codewords with a lot more than 17 bits. 
+	// should probably done only for codewords with a lot more than 17 bits.
 	// The following fixes 10-1.png, which has wide black bars and small white bars
 	//    for (int i = 0; i < moduleBitCount.length; i++) {
 	//      if (i % 2 == 0) {
@@ -674,7 +675,7 @@ static DecoderResult CreateDecoderResult(DetectionResult& detectionResult)
 
 // TODO don't pass in minCodewordWidth and maxCodewordWidth, pass in barcode columns for start and stop pattern
 // columns. That way width can be deducted from the pattern column.
-// This approach also allows detecting more details about the barcode, e.g. if a bar type (white or black) is wider 
+// This approach also allows detecting more details about the barcode, e.g. if a bar type (white or black) is wider
 // than it should be. This can happen if the scanner used a bad blackpoint.
 DecoderResult
 ScanningDecoder::Decode(const BitMatrix& image, const Nullable<ResultPoint>& imageTopLeft, const Nullable<ResultPoint>& imageBottomLeft,
@@ -685,7 +686,7 @@ ScanningDecoder::Decode(const BitMatrix& image, const Nullable<ResultPoint>& ima
 	if (!BoundingBox::Create(image.width(), image.height(), imageTopLeft, imageBottomLeft, imageTopRight, imageBottomRight, boundingBox)) {
 		return {};
 	}
-	
+
 	Nullable<DetectionResultColumn> leftRowIndicatorColumn, rightRowIndicatorColumn;
 	DetectionResult detectionResult;
 	for (int i = 0; i < 2; i++) {
@@ -739,7 +740,11 @@ ScanningDecoder::Decode(const BitMatrix& image, const Nullable<ResultPoint>& ima
 			}
 		}
 	}
-	return CreateDecoderResult(detectionResult);
+	auto res = CreateDecoderResult(detectionResult);
+	auto meta = dynamic_cast<DecoderResultExtra*>(res.extra().get());
+	if (meta)
+		meta->approxSymbolWidth = (detectionResult.barcodeColumnCount() + 2) * (minCodewordWidth + maxCodewordWidth) / 2;
+	return res;
 }
 
 } // Pdf417
