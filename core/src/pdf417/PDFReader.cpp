@@ -90,8 +90,12 @@ static Barcodes DoDecode(const BinaryBitmap& image, bool multiple, bool tryRotat
 				auto meta = dynamic_cast<DecoderResultExtra*>(decoderResult.extra().get());
 				if (points[i].hasValue() || i < 2 || !meta)
 					return rotate(PointI(points[i].value()));
-				else
-					return rotate(PointI(points[i-2].value()) + PointI(meta->approxSymbolWidth, 0));
+				else {
+					auto p = rotate(PointI(points[i - 2].value()) + PointI(meta->approxSymbolWidth, 0));
+					p.x = std::clamp(p.x, 0, image.width() - 1);
+					p.y = std::clamp(p.y, 0, image.height() - 1);
+					return p;
+				}
 			};
 			res.emplace_back(std::move(decoderResult), DetectorResult{{}, {point(0), point(2), point(3), point(1)}},
 							 BarcodeFormat::PDF417);
