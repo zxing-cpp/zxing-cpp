@@ -20,7 +20,12 @@ android {
         }
         externalNativeBuild {
             cmake {
-                arguments("-DCMAKE_BUILD_TYPE=RelWithDebInfo", "-DANDROID_ARM_NEON=ON", "-DZXING_WRITERS=OFF")
+                arguments(
+                    "-DCMAKE_BUILD_TYPE=RelWithDebInfo",
+                    "-DANDROID_ARM_NEON=ON",
+                    "-DZXING_WRITERS=OFF",
+                    "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON" // This flag can be removed when NDK 28 is the default version
+                )
             }
         }
 
@@ -116,6 +121,10 @@ publishing {
 }
 
 signing {
+    setRequired {
+        // signing is required if the artifacts are to be published
+        gradle.taskGraph.allTasks.any { it is PublishToMavenRepository }
+    }
     val signingKey: String? by project
     val signingPassword: String? by project
     useInMemoryPgpKeys(signingKey, signingPassword)
