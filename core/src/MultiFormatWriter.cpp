@@ -55,11 +55,17 @@ MultiFormatWriter::encode(const std::wstring& contents, int width, int height) c
 		return exec0(std::move(writer));
 	};
 
+	auto exec3 = [&](auto&& writer, auto setEccLevel) {
+		if (_qrVersion > 0 && _qrVersion <= 40)
+			writer.setVersion(_qrVersion);
+		return exec1(std::move(writer), setEccLevel);
+	};
+
 	switch (_format) {
 	case BarcodeFormat::Aztec: return exec1(Aztec::Writer(), AztecEccLevel);
 	case BarcodeFormat::DataMatrix: return exec2(DataMatrix::Writer());
 	case BarcodeFormat::PDF417: return exec1(Pdf417::Writer(), Pdf417EccLevel);
-	case BarcodeFormat::QRCode: return exec1(QRCode::Writer(), QRCodeEccLevel);
+	case BarcodeFormat::QRCode: return exec3(QRCode::Writer(), QRCodeEccLevel);
 	case BarcodeFormat::Codabar: return exec0(OneD::CodabarWriter());
 	case BarcodeFormat::Code39: return exec0(OneD::Code39Writer());
 	case BarcodeFormat::Code93: return exec0(OneD::Code93Writer());
