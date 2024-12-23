@@ -1,18 +1,18 @@
 /*
-* Copyright 2016 Nu-book Inc.
-* Copyright 2016 ZXing authors
-* Copyright 2020 Axel Waggershauser
-*/
+ * Copyright 2016 Nu-book Inc.
+ * Copyright 2016 ZXing authors
+ * Copyright 2020 Axel Waggershauser
+ */
 // SPDX-License-Identifier: Apache-2.0
 
 #include "ODDataBarReader.h"
 
+#include "Barcode.h"
 #include "BarcodeFormat.h"
 #include "DecoderResult.h"
 #include "DetectorResult.h"
 #include "GTIN.h"
 #include "ODDataBarCommon.h"
-#include "Barcode.h"
 
 #include <cmath>
 #include <unordered_set>
@@ -40,11 +40,11 @@ static bool IsRightPair(const PatternView& v)
 static Character ReadDataCharacter(const PatternView& view, bool outsideChar, bool rightPair)
 {
 	constexpr int OUTSIDE_EVEN_TOTAL_SUBSET[] = {1, 10, 34, 70, 126};
-	constexpr int INSIDE_ODD_TOTAL_SUBSET[]   = {4, 20, 48, 81};
-	constexpr int OUTSIDE_GSUM[]              = {0, 161, 961, 2015, 2715};
-	constexpr int INSIDE_GSUM[]               = {0, 336, 1036, 1516};
-	constexpr int OUTSIDE_ODD_WIDEST[]        = {8, 6, 4, 3, 1};
-	constexpr int INSIDE_ODD_WIDEST[]         = {2, 4, 6, 8};
+	constexpr int INSIDE_ODD_TOTAL_SUBSET[] = {4, 20, 48, 81};
+	constexpr int OUTSIDE_GSUM[] = {0, 161, 961, 2015, 2715};
+	constexpr int INSIDE_GSUM[] = {0, 336, 1036, 1516};
+	constexpr int OUTSIDE_ODD_WIDEST[] = {8, 6, 4, 3, 1};
+	constexpr int INSIDE_ODD_WIDEST[] = {2, 4, 6, 8};
 
 	Array4I oddPattern = {}, evnPattern = {};
 	if (!ReadDataCharacterRaw(view, outsideChar ? 16 : 15, outsideChar == rightPair, oddPattern, evnPattern))
@@ -87,15 +87,15 @@ static Character ReadDataCharacter(const PatternView& view, bool outsideChar, bo
 int ParseFinderPattern(const PatternView& view, bool reversed)
 {
 	static constexpr std::array<std::array<int, 3>, 9> e2ePatterns = {{
-		{11, 10, 3 }, // {3, 8, 2, 1, 1}
-		{8 , 10, 6 }, // {3, 5, 5, 1, 1}
-		{6 , 10, 8 }, // {3, 3, 7, 1, 1}
-		{4 , 10, 10}, // {3, 1, 9, 1, 1}
-		{9 , 11, 5 }, // {2, 7, 4, 1, 1}
-		{7 , 11, 7 }, // {2, 5, 6, 1, 1}
-		{5 , 11, 9 }, // {2, 3, 8, 1, 1}
-		{6 , 11, 8 }, // {1, 5, 7, 1, 1}
-		{4 , 12, 10}, // {1, 3, 9, 1, 1}
+		{11, 10, 3}, // {3, 8, 2, 1, 1}
+		{8, 10, 6},  // {3, 5, 5, 1, 1}
+		{6, 10, 8},  // {3, 3, 7, 1, 1}
+		{4, 10, 10}, // {3, 1, 9, 1, 1}
+		{9, 11, 5},  // {2, 7, 4, 1, 1}
+		{7, 11, 7},  // {2, 5, 6, 1, 1}
+		{5, 11, 9},  // {2, 3, 8, 1, 1}
+		{6, 11, 8},  // {1, 5, 7, 1, 1}
+		{4, 12, 10}, // {1, 3, 9, 1, 1}
 	}};
 
 	return ParseFinderPattern<9>(view, reversed, e2ePatterns);
@@ -108,7 +108,7 @@ static Pair ReadPair(const PatternView& view, bool rightPair)
 			if (auto inside = ReadDataCharacter(rightPair ? LeftChar(view) : RightChar(view), false, rightPair)) {
 				// include left and right guards
 				int xStart = view.pixelsInFront() - view[-1];
-				int xStop  = view.pixelsTillEnd() + 2 * view[FULL_PAIR_SIZE];
+				int xStop = view.pixelsTillEnd() + 2 * view[FULL_PAIR_SIZE];
 				return {outside, inside, pattern, xStart, xStop};
 			}
 
@@ -133,7 +133,7 @@ static std::string ConstructText(Pair leftPair, Pair rightPair)
 	auto res = 4537077LL * value(leftPair) + value(rightPair);
 	if (res >= 10000000000000LL) { // Strip 2D linkage flag (GS1 Composite) if any (ISO/IEC 24724:2011 Section 5.2.3)
 		res -= 10000000000000LL;
-		assert(res <= 9999999999999LL); // 13 digits
+		throw FormatError("res is over than 9999999999999LL"); // 13 digits
 	}
 	auto txt = ToString(res, 13);
 	return txt + GTIN::ComputeCheckDigit(txt);
