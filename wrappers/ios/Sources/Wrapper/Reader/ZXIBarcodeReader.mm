@@ -143,6 +143,9 @@ ZXIGTIN *getGTIN(const Result &result) {
              ];
         }
         return zxiResults;
+    } catch (const ZXing::Error& e) {
+        SetNSError(error, ZXIReaderError, ZXing::ToString(e).c_str());
+        return nil;
     } catch(std::exception &e) {
         SetNSError(error, ZXIReaderError, e.what());
         return nil;
