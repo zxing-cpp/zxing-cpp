@@ -10,6 +10,24 @@
 
 namespace ZXing {
 
+/**
+ * @brief The Error class is a value type for the error() member of @Barcode
+ *
+ * The use-case of this class is to communicate whether or not a particular Barcode
+ * symbol is in error. It is (primarily) not meant to be thrown as an exception and
+ * therefore not derived from std::exception. The library code may throw (and catch!)
+ * objects of this class as a convenient means of flow control (c++23's std::expected
+ * will allow to replace those use-cases with something similarly convenient). In
+ * those situations, the author is advised to make sure any thrown Error object is
+ * caught before leaking into user/wrapper code, i.e. the functions of the public
+ * API should be considered `noexcept` with respect to this class.
+ *
+ * Looking at the implementation of std::runtime_exception, it might actually be of
+ * interest to replace the std::string msg member with a std::runtime_exception base
+ * class, thereby reducing sizeof(Error) by 16 bytes. This would be a breaking ABI
+ * change and would therefore have to wait for release 3.0. (TODO)
+ */
+
 class Error
 {
 public:

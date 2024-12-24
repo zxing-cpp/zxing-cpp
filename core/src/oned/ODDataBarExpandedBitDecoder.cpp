@@ -212,34 +212,37 @@ static std::string DecodeAI013x0x1x(BitArrayView& bits, const char* aiPrefix, co
 
 std::string DecodeExpandedBits(const BitArray& _bits)
 {
-	auto bits = BitArrayView(_bits);
-	bits.readBits(1); // skip linkage bit
+	try {
+		auto bits = BitArrayView(_bits);
+		bits.readBits(1); // skip linkage bit
 
-	if (bits.peakBits(1) == 1)
-		return DecodeAI01AndOtherAIs(bits.skipBits(1));
+		if (bits.peakBits(1) == 1)
+			return DecodeAI01AndOtherAIs(bits.skipBits(1));
 
-	if (bits.peakBits(2) == 0)
-		return DecodeAnyAI(bits.skipBits(2));
+		if (bits.peakBits(2) == 0)
+			return DecodeAnyAI(bits.skipBits(2));
 
-	switch (bits.peakBits(4)) {
-	case 4: return DecodeAI013103(bits.skipBits(4));
-	case 5: return DecodeAI01320x(bits.skipBits(4));
-	}
+		switch (bits.peakBits(4)) {
+		case 4: return DecodeAI013103(bits.skipBits(4));
+		case 5: return DecodeAI01320x(bits.skipBits(4));
+		}
 
-	switch (bits.peakBits(5)) {
-	case 12: return DecodeAI0139yx(bits.skipBits(5), '2');
-	case 13: return DecodeAI0139yx(bits.skipBits(5), '3');
-	}
+		switch (bits.peakBits(5)) {
+		case 12: return DecodeAI0139yx(bits.skipBits(5), '2');
+		case 13: return DecodeAI0139yx(bits.skipBits(5), '3');
+		}
 
-	switch (bits.readBits(7)) {
-	case 56: return DecodeAI013x0x1x(bits, "310", "11");
-	case 57: return DecodeAI013x0x1x(bits, "320", "11");
-	case 58: return DecodeAI013x0x1x(bits, "310", "13");
-	case 59: return DecodeAI013x0x1x(bits, "320", "13");
-	case 60: return DecodeAI013x0x1x(bits, "310", "15");
-	case 61: return DecodeAI013x0x1x(bits, "320", "15");
-	case 62: return DecodeAI013x0x1x(bits, "310", "17");
-	case 63: return DecodeAI013x0x1x(bits, "320", "17");
+		switch (bits.readBits(7)) {
+		case 56: return DecodeAI013x0x1x(bits, "310", "11");
+		case 57: return DecodeAI013x0x1x(bits, "320", "11");
+		case 58: return DecodeAI013x0x1x(bits, "310", "13");
+		case 59: return DecodeAI013x0x1x(bits, "320", "13");
+		case 60: return DecodeAI013x0x1x(bits, "310", "15");
+		case 61: return DecodeAI013x0x1x(bits, "320", "15");
+		case 62: return DecodeAI013x0x1x(bits, "310", "17");
+		case 63: return DecodeAI013x0x1x(bits, "320", "17");
+		}
+	} catch (Error) {
 	}
 
 	return {};
