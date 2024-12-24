@@ -133,7 +133,7 @@ static std::string ConstructText(Pair leftPair, Pair rightPair)
 	auto res = 4537077LL * value(leftPair) + value(rightPair);
 	if (res >= 10000000000000LL) { // Strip 2D linkage flag (GS1 Composite) if any (ISO/IEC 24724:2011 Section 5.2.3)
 		res -= 10000000000000LL;
-		assert(res <= 9999999999999LL); // 13 digits
+		throw FormatError("res is over than 9999999999999LL"); // 13 digits
 	}
 	auto txt = ToString(res, 13);
 	return txt + GTIN::ComputeCheckDigit(txt);
