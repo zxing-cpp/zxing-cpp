@@ -67,13 +67,14 @@ Barcode ITFReader::decodePattern(int rowNumber, PatternView& next, std::unique_p
 
 	next = next.subView(0, 3);
 
-	// Check quiet zone size
+	// Check stop pattern
 	if (!next.isValid() || !threshold.isValid()
-		|| !(next.isAtLastBar() || next[3] > minQuietZone * (threshold.bar + threshold.space) / 3))
+		|| next[0] < threshold[0] || next[1] > threshold[1] || next[2] > threshold[2])
 		return {};
 
-	// Check stop pattern
-	if (next[0] < threshold[0] || next[1] > threshold[1] || next[2] > threshold[2])
+	// Check quiet zone size (full quiet zone or cropped on both ends)
+	if (!(next[3] > minQuietZone * (threshold.bar + threshold.space) / 3
+		  || (next.isAtLastBar() && startsAtFirstBar && std::max(xStart, (int)next[3]) < 2 * std::min(xStart, (int)next[3]) + 2)))
 		return {};
 
 	// Check min length depending on whether the code covers the complete image or not
