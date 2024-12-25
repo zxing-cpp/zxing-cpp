@@ -146,6 +146,9 @@ ZXIGTIN *getGTIN(const Result &result) {
     } catch(std::exception &e) {
         SetNSError(error, ZXIReaderError, e.what());
         return nil;
+    } catch (...) {
+        SetNSError(error, ZXIReaderError, "An unknown error occurred");
+        return nil;
     }
 }
 
