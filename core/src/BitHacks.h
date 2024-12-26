@@ -13,7 +13,7 @@
 
 // MSVC has the <bit> header but then warns about including it.
 // We check for _MSVC_LANG here as well, so client code is depending on /Zc:__cplusplus
-#if __has_include(<bit>) && (__cplusplus > 201703L || _MSVC_LANG > 201703L)
+#if __has_include(<bit>) && (__cplusplus > 201703L || (defined(_MSVC_LANG) && _MSVC_LANG > 201703L))
 #include <bit>
 #if __cplusplus > 201703L && defined(__ANDROID__) // NDK 25.1.8937393 has the implementation but fails to advertise it
 #define __cpp_lib_bitops 201907L
