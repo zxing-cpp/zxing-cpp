@@ -40,7 +40,11 @@ static void PrintUsage(const char* exePath)
 			  << "    -version   Print version information\n"
 			  << "\n"
 			  << "Supported formats are:\n";
+#ifdef ZXING_EXPERIMENTAL_API
+	for (auto f : BarcodeFormats::all())
+#else
 	for (auto f : BarcodeFormatsFromString("Aztec Codabar Code39 Code93 Code128 DataMatrix EAN8 EAN13 ITF PDF417 QRCode UPCA UPCE"))
+#endif
 		std::cout << "    " << ToString(f) << "\n";
 
 	std::cout << "Format can be lowercase letters, with or without '-'.\n"
