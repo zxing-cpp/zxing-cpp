@@ -18,6 +18,7 @@
 using namespace ZXing;
 
 static thread_local std::string lastErrorMsg;
+static Barcodes emptyBarcodes{}; // used to prevent new heap allocation for each empty result
 
 template<typename R, typename T> R transmute_cast(const T& v) noexcept
 {
@@ -65,19 +66,6 @@ static uint8_t* copy(const ByteArray& ba, int* len) noexcept
 	} \
 	ZX_CATCH({})
 
-
-static std::tuple<Barcodes, bool> ReadBarcodesAndSetLastError(const ZXing_ImageView* iv, const ZXing_ReaderOptions* opts,
-															  int maxSymbols)
-{
-	ZX_CHECK(iv, "ImageView param is NULL")
-	try {
-		auto o = opts ? *opts : ReaderOptions{};
-		if (maxSymbols)
-			o.setMaxNumberOfSymbols(maxSymbols);
-		return {ReadBarcodes(*iv, o), true};
-	}
-	ZX_CATCH({Barcodes{}, false})
-}
 
 extern "C" {
 /*
@@ -238,7 +226,8 @@ void ZXing_Barcode_delete(ZXing_Barcode* barcode)
 
 void ZXing_Barcodes_delete(ZXing_Barcodes* barcodes)
 {
-	delete barcodes;
+	if (barcodes != &emptyBarcodes)
+		delete barcodes;
 }
 
 int ZXing_Barcodes_size(const ZXing_Barcodes* barcodes)
@@ -314,16 +303,14 @@ ZX_ENUM_PROPERTY(TextMode, textMode, TextMode)
  * ZXing/ReadBarcode.h
  */
 
-ZXing_Barcode* ZXing_ReadBarcode(const ZXing_ImageView* iv, const ZXing_ReaderOptions* opts)
-{
-	auto [res, ok] = ReadBarcodesAndSetLastError(iv, opts, 1);
-	return !res.empty() ? new Barcode(std::move(res.front())) : NULL;
-}
-
 ZXing_Barcodes* ZXing_ReadBarcodes(const ZXing_ImageView* iv, const ZXing_ReaderOptions* opts)
 {
-	auto [res, ok] = ReadBarcodesAndSetLastError(iv, opts, 0);
-	return !res.empty() || ok ? new Barcodes(std::move(res)) : NULL;
+	ZX_CHECK(iv, "ImageView param is NULL")
+	try {
+		auto res = ReadBarcodes(*iv, opts ? *opts : ReaderOptions{});
+		return res.empty() ? &emptyBarcodes : new Barcodes(std::move(res));
+	}
+	ZX_CATCH(NULL);
 }
 
 

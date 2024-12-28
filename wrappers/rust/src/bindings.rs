@@ -197,7 +197,6 @@ extern "C" {
 	pub fn ZXing_ReaderOptions_getTextMode(opts: *const ZXing_ReaderOptions) -> ZXing_TextMode;
 	pub fn ZXing_ReaderOptions_getMinLineCount(opts: *const ZXing_ReaderOptions) -> ::core::ffi::c_int;
 	pub fn ZXing_ReaderOptions_getMaxNumberOfSymbols(opts: *const ZXing_ReaderOptions) -> ::core::ffi::c_int;
-	pub fn ZXing_ReadBarcode(iv: *const ZXing_ImageView, opts: *const ZXing_ReaderOptions) -> *mut ZXing_Barcode;
 	pub fn ZXing_ReadBarcodes(iv: *const ZXing_ImageView, opts: *const ZXing_ReaderOptions) -> *mut ZXing_Barcodes;
 	pub fn ZXing_CreatorOptions_new(format: ZXing_BarcodeFormat) -> *mut ZXing_CreatorOptions;
 	pub fn ZXing_CreatorOptions_delete(opts: *mut ZXing_CreatorOptions);

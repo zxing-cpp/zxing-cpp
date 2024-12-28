@@ -257,7 +257,6 @@ int ZXing_ReaderOptions_getMaxNumberOfSymbols(const ZXing_ReaderOptions* opts);
  */
 
 /** Note: opts is optional, i.e. it can be NULL, which will imply default settings. */
-ZXing_Barcode* ZXing_ReadBarcode(const ZXing_ImageView* iv, const ZXing_ReaderOptions* opts);
 ZXing_Barcodes* ZXing_ReadBarcodes(const ZXing_ImageView* iv, const ZXing_ReaderOptions* opts);
 
 #ifdef ZXING_EXPERIMENTAL_API
