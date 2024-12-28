@@ -159,7 +159,7 @@ static constexpr BarcodeFormatZXing2Zint barcodeFormatZXing2Zint[] = {
 	{BarcodeFormat::DataBarExpanded, BARCODE_DBAR_EXP},
 	{BarcodeFormat::DataBarLimited, BARCODE_DBAR_LTD},
 	{BarcodeFormat::DataMatrix, BARCODE_DATAMATRIX},
-	{BarcodeFormat::DXFilmEdge, -1},
+	{BarcodeFormat::DXFilmEdge, BARCODE_DXFILMEDGE},
 	{BarcodeFormat::EAN8, BARCODE_EANX},
 	{BarcodeFormat::EAN13, BARCODE_EANX},
 	{BarcodeFormat::ITF, BARCODE_C25INTER},
