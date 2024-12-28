@@ -1,4 +1,4 @@
-zxing_add_package(GTest googletest https://github.com/google/googletest.git v1.14.0)
+zxing_add_package(GTest googletest https://github.com/google/googletest.git v1.15.2)
 
 if (GTest_POPULATED)
     # don't install gtest stuff on "make install"
