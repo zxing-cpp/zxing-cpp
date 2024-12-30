@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project (ZXing VERSION "2.2.1")
+project (ZXing VERSION "2.3.0")
 set (ZXING_SONAME 3) # see https://github.com/zxing-cpp/zxing-cpp/issues/333
 
 if (BUILD_SHARED_LIBS)

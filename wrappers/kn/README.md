@@ -5,7 +5,7 @@
 The easiest way to use the library is to fetch it from _mavenCentral_. Simply add
 
 ```gradle
-implementation("io.github.zxing-cpp:kotlin-native:2.2.1-SNAPSHOT")
+implementation("io.github.zxing-cpp:kotlin-native:2.3.0-SNAPSHOT")
 ```
 
 to your `build.gradle.kts` file in the `dependencies` section of `nativeMain` source set.

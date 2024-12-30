@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name = 'zxing-cpp'
-  s.version = '2.2.0'
+  s.version = '2.3.0'
   s.summary = 'C++ port of ZXing'
   s.homepage = 'https://github.com/zxing-cpp/zxing-cpp'
   s.author = 'axxel'
