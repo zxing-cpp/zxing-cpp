@@ -32,7 +32,7 @@ struct AiInfo
 	}
 };
 
-// https://github.com/gs1/gs1-syntax-dictionary 2023-09-22
+// https://github.com/gs1/gs1-syntax-dictionary 2024-06-10
 static const AiInfo aiInfos[] = {
 //TWO_DIGIT_DATA_LENGTH
 	{ "00", 18 },
@@ -220,6 +220,16 @@ static const AiInfo aiInfos[] = {
 	{ "7240", -20 },
 	{ "7241", 2 },
 	{ "7242", -25 },
+	{ "7250", 8 },
+	{ "7251", 12 },
+	{ "7252", 1 },
+	{ "7253", -40 },
+	{ "7254", -40 },
+	{ "7255", -10 },
+	{ "7256", -90 },
+	{ "7257", -70 },
+	{ "7258", 3 },
+	{ "7259", -40 },
 
 	{ "8001", 14 },
 	{ "8002", -20 },
