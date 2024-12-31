@@ -15,6 +15,8 @@
 #include "MultiFormatReader.h"
 #include "Pattern.h"
 #include "ThresholdBinarizer.h"
+#include "Reader.h"
+#include "ZXVersion.h"
 #endif
 
 #include <climits>
@@ -212,6 +214,11 @@ Barcode ReadBarcode(const ImageView&, const ReaderOptions&)
 Barcodes ReadBarcodes(const ImageView&, const ReaderOptions&)
 {
 	throw std::runtime_error("This build of zxing-cpp does not support reading barcodes.");
+}
+
+const char* Reader::getZXingVersion()
+{
+	return ZXING_VERSION_STR;
 }
 
 #endif // ZXING_READERS
