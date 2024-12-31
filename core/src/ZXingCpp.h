@@ -9,9 +9,11 @@
 #include "ReadBarcode.h"
 #include "WriteBarcode.h"
 
-#ifdef ZXING_EXPERIMENTAL_API
-
 namespace ZXing {
+
+const std::string& Version();
+
+#ifdef ZXING_EXPERIMENTAL_API
 
 enum class Operation
 {
@@ -23,6 +25,6 @@ enum class Operation
 
 BarcodeFormats SupportedBarcodeFormats(Operation op = Operation::CreateOrRead);
 
-} // namespace ZXing
-
 #endif // ZXING_EXPERIMENTAL_API
+
+} // namespace ZXing

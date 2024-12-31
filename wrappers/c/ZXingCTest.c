@@ -16,7 +16,7 @@
 
 int usage(char* pname)
 {
-	fprintf(stderr, "Usage: %s FILE [FORMATS]\n", pname);
+	fprintf(stderr, "ZXingCTest %s, usage: %s FILE [FORMATS]\n", ZXing_Version(), pname);
 	return 1;
 }
 

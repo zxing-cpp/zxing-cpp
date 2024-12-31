@@ -7,12 +7,12 @@
 #include "ZXingC.h"
 
 #include "ZXingCpp.h"
+#include "Version.h"
 
 #include <cstdlib>
 #include <exception>
 #include <string>
 #include <string_view>
-#include <tuple>
 #include <utility>
 
 using namespace ZXing;
@@ -411,9 +411,15 @@ char* ZXing_LastErrorMsg()
 	return copy(std::exchange(lastErrorMsg, {}));
 }
 
+const char* ZXing_Version()
+{
+	return ZXING_VERSION_STR;
+}
+
 void ZXing_free(void* ptr)
 {
-	free(ptr);
+	if (ptr != ZXing_Version())
+		free(ptr);
 }
 
 } // extern "C"

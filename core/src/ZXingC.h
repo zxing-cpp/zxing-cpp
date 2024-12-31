@@ -312,6 +312,8 @@ ZXing_Image* ZXing_WriteBarcodeToImage(const ZXing_Barcode* barcode, const ZXing
 /* ZXing_LastErrorMsg() returns NULL in case there is no last error and a copy of the string otherwise. */
 char* ZXing_LastErrorMsg();
 
+const char* ZXing_Version();
+
 void ZXing_free(void* ptr);
 
 #ifdef __cplusplus

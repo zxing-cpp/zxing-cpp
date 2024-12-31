@@ -3,11 +3,19 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#ifdef ZXING_EXPERIMENTAL_API
-
 #include "ZXingCpp.h"
 
+#include "Version.h"
+
 namespace ZXing {
+
+const std::string& Version()
+{
+	static std::string res = ZXING_VERSION_STR;
+	return res;
+}
+
+#ifdef ZXING_EXPERIMENTAL_API
 
 BarcodeFormats SupportedBarcodeFormats(Operation op)
 {
@@ -31,6 +39,6 @@ BarcodeFormats SupportedBarcodeFormats(Operation op)
 	return {}; // unreachable code
 }
 
-} // namespace ZXing
-
 #endif // ZXING_EXPERIMENTAL_API
+
+} // namespace ZXing
