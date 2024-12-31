@@ -33,6 +33,8 @@ public:
 		auto res = decode(image);
 		return res.isValid() || (_opts.returnErrors() && res.format() != BarcodeFormat::None) ? Barcodes{std::move(res)} : Barcodes{};
 	}
+
+	static const char* getZXingVersion();
 };
 
 } // ZXing
