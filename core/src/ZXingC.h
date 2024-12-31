@@ -314,6 +314,8 @@ char* ZXing_LastErrorMsg();
 
 void ZXing_free(void* ptr);
 
+const char* ZXing_Version();
+
 #ifdef __cplusplus
 }
 #endif
