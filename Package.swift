@@ -15,7 +15,7 @@ let package = Package(
         .target(
             name: "ZXingCppCore",
             path: "core/src",
-            exclude: ["libzint"],
+            exclude: ["libzint", "ZXingC.cpp", "ZXingCpp.cpp"],
             publicHeadersPath: ".",
             cxxSettings: [
                 .define("ZXING_READERS")
