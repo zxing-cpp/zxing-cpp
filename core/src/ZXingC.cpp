@@ -14,6 +14,7 @@
 #include <string_view>
 #include <tuple>
 #include <utility>
+#include "ZXVersion.h"
 
 using namespace ZXing;
 
@@ -414,6 +415,11 @@ char* ZXing_LastErrorMsg()
 void ZXing_free(void* ptr)
 {
 	free(ptr);
+}
+
+const char* ZXing_Version()
+{
+	return ZXING_VERSION_STR;
 }
 
 } // extern "C"
