@@ -47,7 +47,7 @@ Thanks a lot for your contribution!
 
 [Note:]
  * DataBar used to be called RSS.
- * DataBar, DX Film Edge, MaxiCode, Micro QR Code and rMQR Code are not supported for writing.
+ * DataBar, DX Film Edge, MaxiCode, Micro QR Code and rMQR Code are not supported for writing (unless the library is configured `ZXING_WRITERS=NEW` and `ZING_EXPERIMENTAL_API=ON`).
  * Building with only C++17 (see [CMakeLists.txt](https://github.com/zxing-cpp/zxing-cpp/blob/d4b0f502775857f257d13efd25fb840ece1bca3e/CMakeLists.txt#L45)) changes the behavior of the library: it then lacks support for DataBarLimited and multi-symbol and position independent detection for DataMatrix.
 
 ## Getting Started
@@ -86,7 +86,7 @@ To see the full capability of the API, have a look at [`ZXingReader.cpp`](exampl
 2. Call `encode()` with text content and the image size. This returns a [`BitMatrix`](core/src/BitMatrix.h) which is a binary image of the barcode where `true` == visual black and `false` == visual white.
 3. Convert the bit matrix to your native image format. See also the `ToMatrix<T>(BitMatrix&)` helper function.
 
-As an example, have a look at [`ZXingWriter.cpp`](example/ZXingWriter.cpp).
+As an example, have a look at [`ZXingWriter.cpp`](example/ZXingWriter.cpp). That file also contains example code showing the new `ZXING_EXPERIMENTAL_API` for writing barcodes.
 
 ## Web Demos
 - [Read barcodes](https://zxing-cpp.github.io/zxing-cpp/demo_reader.html)
