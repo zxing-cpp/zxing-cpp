@@ -15,7 +15,7 @@
     <tags>zxing barcode scanner qrcode</tags>
   </metadata>
   <files>
-    <file src="..\UAP\v0.8.0.0\ExtensionSDKs\ZXingWinRT\1.0.0.0\Redist\Retail\ARM\ZXing.dll" target="runtimes\win10-arm\native"/>
+    <file src="..\UAP\v0.8.0.0\ExtensionSDKs\ZXingWinRT\1.0.0.0\References\CommonConfiguration\Neutral\ZXing.winmd" target="lib\uap10.0"/>
     <file src="..\UAP\v0.8.0.0\ExtensionSDKs\ZXingWinRT\1.0.0.0\References\CommonConfiguration\Neutral\ZXing.pri" target="runtimes\win10-arm64\native"/>
     <file src="..\UAP\v0.8.0.0\ExtensionSDKs\ZXingWinRT\1.0.0.0\Redist\Retail\ARM64\ZXing.dll" target="runtimes\win10-arm64\native"/>
     <file src="..\UAP\v0.8.0.0\ExtensionSDKs\ZXingWinRT\1.0.0.0\References\CommonConfiguration\Neutral\ZXing.pri" target="runtimes\win10-x64\native"/>
