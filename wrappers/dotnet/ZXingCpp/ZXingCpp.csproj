@@ -1,12 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net5.0</TargetFrameworks>
+    <LangVersion>9</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>  <!-- required for netstandard2.0 fallback implementation of Marshal.PtrToStringUTF8() -->
     <!-- <ImplicitUsings>enable</ImplicitUsings> -->
     <Nullable>enable</Nullable>
 
     <PackageId>ZXingCpp</PackageId>
-    <Version>0.3.0-alpha</Version>
+    <Version>0.4.0-alpha</Version>
     <Authors>Axel Waggershauser</Authors>
     <Company>zxing-cpp</Company>
     <Description>

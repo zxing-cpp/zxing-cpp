@@ -6,6 +6,9 @@
 namespace ZXingCpp {
 
 using System;
+#if NETSTANDARD
+using System.Text;
+#endif
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
 
@@ -125,7 +128,17 @@ internal class Dll
 	public static string MarshalAsString(IntPtr ptr)
 	{
 		ptr = CheckError(ptr, "ZXing C-API returned a NULL char*.");
+#if NET
 		string res = Marshal.PtrToStringUTF8(ptr) ?? "";
+#else
+		string res;
+		unsafe
+		{
+			int length = 0;
+			for (byte* i = (byte*)ptr; *i != 0; i++, length++);
+			res = Encoding.UTF8.GetString((byte*)ptr, length);
+		}
+#endif
 		ZXing_free(ptr);
 		return res;
 	}
