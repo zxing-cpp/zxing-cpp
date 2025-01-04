@@ -1,10 +1,10 @@
 # C bindings for zxing-cpp
 
-This is a preview/proposal for a C-API to zxing-cpp. If you have any comments or feedback, please have a look at https://github.com/zxing-cpp/zxing-cpp/discussions/583.
+This is about the C-API of zxing-cpp. If you have any comments or feedback, please have a look at https://github.com/zxing-cpp/zxing-cpp/discussions/583.
 
 ## Installation
 
-It is currently included in the default build to be trivially accessible for everyone.
+To enable the C-API, the library needs to be configured with `cmake -DZING_C_API=ON`.
 
 Probably the easiest way to play with the C-API is to just modify the [ZXingCTest.c](https://github.com/zxing-cpp/zxing-cpp/blob/master/wrappers/c/ZXingCTest.c) file.
 
