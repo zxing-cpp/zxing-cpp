@@ -21,7 +21,7 @@ namespace {
 		ASSERT_EQ(matrix.empty(), false);
 
 		DecoderResult res = DataMatrix::Decode(matrix);
-#ifndef NDEBUG
+#ifdef PRINT_DEBUG
 		if (!res.isValid() || data != res.text())
 			SaveAsPBM(matrix, "failed-datamatrix.pbm", 4);
 #endif

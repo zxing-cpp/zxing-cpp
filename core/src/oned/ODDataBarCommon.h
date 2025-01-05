@@ -37,7 +37,7 @@ inline bool IsFinder(int a, int b, int c, int d, int e)
 //			 (c < 5 + 10 * e) &&
 			 (a < 2 + 4 * e) &&
 			 (4 * a > n);
-#if !defined(NDEBUG) && 0
+#if defined(PRINT_DEBUG) && 0
 	printf("[");
 	for (bool v :
 		 {w + 5 > 9 * n,
