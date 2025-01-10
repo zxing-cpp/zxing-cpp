@@ -8,6 +8,7 @@
 
 #include "BitMatrix.h"
 #include "Pattern.h"
+#include "ZXConfig.h"
 
 #include <algorithm>
 #include <array>
