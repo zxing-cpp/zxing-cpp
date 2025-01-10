@@ -22,7 +22,7 @@
 
 using namespace ZXing;
 
-static thread_local std::string lastErrorMsg;
+static ZX_THREAD_LOCAL std::string lastErrorMsg;
 static Barcodes emptyBarcodes{}; // used to prevent new heap allocation for each empty result
 
 template<typename R, typename T> R transmute_cast(const T& v) noexcept
