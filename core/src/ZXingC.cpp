@@ -7,6 +7,7 @@
 #include "ZXingC.h"
 
 #include "ZXingCpp.h"
+#include "ZXConfig.h"
 
 #if __has_include("Version.h")
 #include "Version.h"
