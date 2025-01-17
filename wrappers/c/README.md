@@ -4,7 +4,7 @@ This is about the C-API of zxing-cpp. If you have any comments or feedback, plea
 
 ## Installation
 
-To enable the C-API, the library needs to be configured with `cmake -DZING_C_API=ON`.
+To enable the C-API, the library needs to be configured with `cmake -DZXING_C_API=ON`.
 
 Probably the easiest way to play with the C-API is to just modify the [ZXingCTest.c](https://github.com/zxing-cpp/zxing-cpp/blob/master/wrappers/c/ZXingCTest.c) file.
 
