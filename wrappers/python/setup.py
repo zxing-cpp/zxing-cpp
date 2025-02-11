@@ -1,5 +1,6 @@
 import os
 import platform
+import shutil
 import subprocess
 import sys
 
@@ -46,6 +47,11 @@ with open("README.md", "r", encoding="utf-8") as fh:
 	long_description = fh.read()
 
 
+setup_requires = []
+if shutil.which("cmake") is None:
+	setup_requires += ["cmake>=3.15"]
+
+
 setup(
 	name='zxing-cpp',
 	# setuptools_scm cannot be used because of the structure of the project until the following issues are solved:
@@ -76,6 +82,7 @@ setup(
 		"Topic :: Multimedia :: Graphics",
 	],
 	python_requires=">=3.6",
+	setup_requires=setup_requires,
 	ext_modules=[CMakeExtension('zxingcpp')],
 	cmdclass=dict(build_ext=CMakeBuild),
 	zip_safe=False,
