@@ -44,12 +44,16 @@ class CMakeBuild(build_ext):
 
 
 def get_setup_requires():
-	subp = subprocess.run(['cmake', '-E', 'capabilities'], stdout=subprocess.PIPE)
-	if subp.returncode == 0:
-		version = json.loads(subp.stdout).get('version', {})
-		version_split = (version.get('major', 0), version.get('minor', 0))
-		if version_split >= (3, 15):
-			return []
+	try:
+		subp = subprocess.run(['cmake', '-E', 'capabilities'], stdout=subprocess.PIPE)
+	except OSError:
+		pass
+	else:
+		if subp.returncode == 0:
+			version = json.loads(subp.stdout).get('version', {})
+			version_split = (version.get('major', 0), version.get('minor', 0))
+			if version_split >= (3, 15):
+				return []
 	return ['cmake>=3.15']
 
 
