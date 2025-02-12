@@ -1,6 +1,6 @@
+import json
 import os
 import platform
-import shutil
 import subprocess
 import sys
 
@@ -43,13 +43,18 @@ class CMakeBuild(build_ext):
 		subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
 
 
+def get_setup_requires():
+	subp = subprocess.run(['cmake', '-E', 'capabilities'], stdout=subprocess.PIPE)
+	if subp.returncode == 0:
+		version = json.loads(subp.stdout).get('version', {})
+		version_split = (version.get('major', 0), version.get('minor', 0))
+		if version_split >= (3, 15):
+			return []
+	return ['cmake>=3.15']
+
+
 with open("README.md", "r", encoding="utf-8") as fh:
 	long_description = fh.read()
-
-
-setup_requires = []
-if shutil.which("cmake") is None:
-	setup_requires += ["cmake>=3.15"]
 
 
 setup(
@@ -82,7 +87,7 @@ setup(
 		"Topic :: Multimedia :: Graphics",
 	],
 	python_requires=">=3.6",
-	setup_requires=setup_requires,
+	setup_requires=get_setup_requires(),
 	ext_modules=[CMakeExtension('zxingcpp')],
 	cmdclass=dict(build_ext=CMakeBuild),
 	zip_safe=False,
