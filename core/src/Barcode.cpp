@@ -47,6 +47,7 @@ Result::Result(DecoderResult&& decodeResult, DetectorResult&& detectorResult, Ba
 	  _position(std::move(detectorResult).position()),
 	  _sai(decodeResult.structuredAppend()),
 	  _format(format),
+	  _dataMask(decodeResult.dataMask()),
 	  _lineCount(decodeResult.lineCount()),
 	  _isMirrored(decodeResult.isMirrored()),
 	  _readerInit(decodeResult.readerInit())
@@ -134,6 +135,11 @@ std::string Result::sequenceId() const
 std::string Result::version() const
 {
 	return _version;
+}
+
+int Result::dataMask() const
+{
+	return _dataMask;
 }
 
 Result& Result::setReaderOptions(const ReaderOptions& opts)
