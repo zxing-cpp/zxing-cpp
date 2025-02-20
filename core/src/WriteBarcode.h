@@ -43,6 +43,7 @@ public:
 	ZX_PROPERTY(bool, readerInit)
 	ZX_PROPERTY(bool, forceSquareDataMatrix)
 	ZX_PROPERTY(std::string, ecLevel)
+	ZX_PROPERTY(std::string, qrVersion)
 
 #undef ZX_PROPERTY
 };
