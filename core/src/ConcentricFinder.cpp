@@ -156,8 +156,14 @@ static std::vector<PointF> CollectRingPoints(const BitMatrix& image, PointF cent
 static std::optional<QuadrilateralF> FitQadrilateralToPoints(PointF center, std::vector<PointF>& points)
 {
 	auto dist2Center = [c = center](auto a, auto b) { return distance(a, c) < distance(b, c); };
+	auto [minDistElem, maxDistElem] = std::minmax_element(points.begin(), points.end(), dist2Center);
+
+	// check if points are on a circle: for a square the min/max ratio is 0.7, for a circle it is 1
+	if (distance(center, *minDistElem) / distance(center, *maxDistElem) > 0.85)
+		return {};
+
 	// rotate points such that the first one is the furthest away from the center (hence, a corner)
-	std::rotate(points.begin(), std::max_element(points.begin(), points.end(), dist2Center), points.end());
+	std::rotate(points.begin(), maxDistElem, points.end());
 
 	std::array<const PointF*, 4> corners;
 	corners[0] = &points[0];
@@ -207,7 +213,7 @@ static bool QuadrilateralIsPlausibleSquare(const QuadrilateralF q, int lineIndex
 	return m >= lineIndex * 2 && m > M / 3;
 }
 
-static std::optional<QuadrilateralF> FitSquareToPoints(const BitMatrix& image, PointF center, int range, int lineIndex, bool backup)
+std::optional<QuadrilateralF> FitSquareToPoints(const BitMatrix& image, PointF center, int range, int lineIndex, bool backup)
 {
 	auto points = CollectRingPoints(image, center, range, lineIndex, backup);
 	if (points.empty())

@@ -101,6 +101,8 @@ std::optional<PointF> CenterOfRing(const BitMatrix& image, PointI center, int ra
 
 std::optional<PointF> FinetuneConcentricPatternCenter(const BitMatrix& image, PointF center, int range, int finderPatternSize);
 
+std::optional<QuadrilateralF> FitSquareToPoints(const BitMatrix& image, PointF center, int range, int lineIndex, bool backup);
+
 std::optional<QuadrilateralF> FindConcentricPatternCorners(const BitMatrix& image, PointF center, int range, int ringIndex);
 
 struct ConcentricPattern : public PointF
