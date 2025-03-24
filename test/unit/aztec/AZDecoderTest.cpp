@@ -145,6 +145,23 @@ static DecoderResult getData(std::string_view bitStr)
 	return Aztec::Decode(bits);
 }
 
+TEST(AZDecoderTest, InitialGS)
+{
+	// Issue #916 The first byte is lost when recognizing the Aztec code
+	{
+		// Initial <GS>
+		auto data = getData("1111101000000111010101010100010000100101001110001011100111000101001111111111111");
+		EXPECT_EQ(data.symbologyIdentifier(), "]z0");
+		EXPECT_EQ(data.content().text(TextMode::Hex), "1D 55 10 94 E2 E7 14 FF");
+	}
+	{
+		// Initial FNC1 (invalid GS1 data)
+		auto data = getData("00000000000001011011111001100001000010010100111000101110011100010100111111111111");
+		EXPECT_EQ(data.symbologyIdentifier(), "]z1");
+		EXPECT_EQ(data.content().text(TextMode::Hex), "55 10 94 E2 E7 14 FF");
+	}
+}
+
 TEST(AZDecoderTest, SymbologyIdentifier)
 {
 	{
