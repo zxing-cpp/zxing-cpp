@@ -249,12 +249,13 @@ static StructuredAppendInfo ParseStructuredAppend(ByteArray& bytes)
 	return sai;
 }
 
-static void DecodeContent(const BitArray& bits, Content& res)
+static void DecodeContent(const BitArray& bits, Content& res, bool &haveFNC1)
 {
 	Table latchTable = Table::UPPER; // table most recently latched to
 	Table shiftTable = Table::UPPER; // table to use for the next read
 
 	auto remBits = BitArrayView(bits);
+	haveFNC1 = false;
 
 	while (remBits.size() >= (shiftTable == Table::DIGIT ? 4 : 5)) { // see ISO/IEC 24778:2008 7.3.1.2 regarding padding bits
 		if (shiftTable == Table::BINARY) {
@@ -283,6 +284,7 @@ static void DecodeContent(const BitArray& bits, Content& res)
 			} else if (std::strcmp(str, "FLGN") == 0) {
 				int flg = remBits.readBits(3);
 				if (flg == 0) { // FNC1
+					haveFNC1 = true;
 					res.push_back(29); // May be removed at end if first/second FNC1
 				} else if (flg <= 6) {
 					// FLG(1) to FLG(6) ECI
@@ -305,9 +307,10 @@ DecoderResult Decode(const BitArray& bits)
 {
 	Content res;
 	res.symbology = {'z', '0', 3};
+	bool haveFNC1;
 
 	try {
-		DecodeContent(bits, res);
+		DecodeContent(bits, res, haveFNC1);
 	} catch (const std::exception&) { // see BitArrayView::readBits
 		return FormatError();
 	}
@@ -321,24 +324,24 @@ DecoderResult Decode(const BitArray& bits)
 
 	StructuredAppendInfo sai = haveStructuredAppend ? ParseStructuredAppend(res.bytes) : StructuredAppendInfo();
 
-	// As converting character set ECIs ourselves and ignoring/skipping non-character ECIs, not using
-	// modifiers that indicate ECI protocol (ISO/IEC 24778:2008 Annex F Table F.1)
-	if (res.bytes.size() > 1 && res.bytes[0] == 29) {
-		res.symbology.modifier = '1'; // GS1
-		res.symbology.aiFlag = AIFlag::GS1;
-		res.erase(0, 1); // Remove FNC1
-	} else if (res.bytes.size() > 2 && std::isupper(res.bytes[0]) && res.bytes[1] == 29) {
-		// FNC1 following single uppercase letter (the AIM Application Indicator)
-		res.symbology.modifier = '2'; // AIM
-		res.symbology.aiFlag = AIFlag::AIM;
-		res.erase(1, 1); // Remove FNC1,
-						 // The AIM Application Indicator character "A"-"Z" is left in the stream (ISO/IEC 24778:2008 16.2)
-	} else if (res.bytes.size() > 3 && std::isdigit(res.bytes[0]) && std::isdigit(res.bytes[1]) && res.bytes[2] == 29) {
-		// FNC1 following 2 digits (the AIM Application Indicator)
-		res.symbology.modifier = '2'; // AIM
-		res.symbology.aiFlag = AIFlag::AIM;
-		res.erase(2, 1); // Remove FNC1
-						 // The AIM Application Indicator characters "00"-"99" are left in the stream (ISO/IEC 24778:2008 16.2)
+	if (haveFNC1) {
+		if (res.bytes[0] == 29) {
+			res.symbology.modifier = '1'; // GS1
+			res.symbology.aiFlag = AIFlag::GS1;
+			res.erase(0, 1); // Remove FNC1
+		} else if (res.bytes.size() > 2 && std::isupper(res.bytes[0]) && res.bytes[1] == 29) {
+			// FNC1 following single uppercase letter (the AIM Application Indicator)
+			res.symbology.modifier = '2'; // AIM
+			res.symbology.aiFlag = AIFlag::AIM;
+			res.erase(1, 1); // Remove FNC1,
+							 // The AIM Application Indicator character "A"-"Z" is left in the stream (ISO/IEC 24778:2008 16.2)
+		} else if (res.bytes.size() > 3 && std::isdigit(res.bytes[0]) && std::isdigit(res.bytes[1]) && res.bytes[2] == 29) {
+			// FNC1 following 2 digits (the AIM Application Indicator)
+			res.symbology.modifier = '2'; // AIM
+			res.symbology.aiFlag = AIFlag::AIM;
+			res.erase(2, 1); // Remove FNC1
+							 // The AIM Application Indicator characters "00"-"99" are left in the stream (ISO/IEC 24778:2008 16.2)
+		}
 	}
 
 	if (sai.index != -1)
