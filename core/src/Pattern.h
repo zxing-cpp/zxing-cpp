@@ -184,7 +184,7 @@ double IsPattern(const PatternView& view, const FixedPattern<LEN, SUM, false>& p
 		if (minQuietZone && spaceInPixel < minQuietZone * modSize.space)
 			return 0;
 
-		const BarAndSpace<double> thr = {modSize[0] * .75 + .5, modSize[1] / (2 + (LEN < 6)) + .5};
+		const BarAndSpace<double> thr = {modSize[0] * .75 + .5, modSize[1] * .5 + .5};
 
 		for (int x = 0; x < LEN; ++x)
 			if (std::abs(view[x] - pattern[x] * modSize[x]) > thr[x])
