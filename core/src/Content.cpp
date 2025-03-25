@@ -81,7 +81,7 @@ void Content::erase(int pos, int n)
 	bytes.erase(bytes.begin() + pos, bytes.begin() + pos + n);
 	for (auto& e : encodings)
 		if (e.pos > pos)
-			pos -= n;
+			e.pos -= n;
 }
 
 void Content::insert(int pos, const std::string& str)
@@ -89,7 +89,7 @@ void Content::insert(int pos, const std::string& str)
 	bytes.insert(bytes.begin() + pos, str.begin(), str.end());
 	for (auto& e : encodings)
 		if (e.pos > pos)
-			pos += Size(str);
+			e.pos += Size(str);
 }
 
 bool Content::canProcess() const

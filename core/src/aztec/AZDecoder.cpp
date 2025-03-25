@@ -220,9 +220,9 @@ static ECI ParseECIValue(BitArrayView& bits, const int flg)
 /**
 * See ISO/IEC 24778:2008 Section 8
 */
-static StructuredAppendInfo ParseStructuredAppend(ByteArray& bytes)
+static StructuredAppendInfo ParseStructuredAppend(Content& res)
 {
-	std::string text(bytes.begin(), bytes.end());
+	std::string text(res.bytes.begin(), res.bytes.end());
 	StructuredAppendInfo sai;
 	std::string::size_type i = 0;
 
@@ -243,8 +243,7 @@ static StructuredAppendInfo ParseStructuredAppend(ByteArray& bytes)
 	if (sai.count == 1 || sai.count <= sai.index) // If info doesn't make sense
 		sai.count = 0; // Choose to mark count as unknown
 
-	text.erase(0, i + 2); // Remove
-	bytes = ByteArray(text);
+	res.erase(0, i + 2); // Remove
 
 	return sai;
 }
@@ -322,7 +321,7 @@ DecoderResult Decode(const BitArray& bits)
 	bool haveStructuredAppend = Size(bits) > 20 && ToInt(bits, 0, 5) == 29 // latch to MIXED (from UPPER)
 								&& ToInt(bits, 5, 5) == 29;                // latch back to UPPER (from MIXED)
 
-	StructuredAppendInfo sai = haveStructuredAppend ? ParseStructuredAppend(res.bytes) : StructuredAppendInfo();
+	StructuredAppendInfo sai = haveStructuredAppend ? ParseStructuredAppend(res) : StructuredAppendInfo();
 
 	if (haveFNC1) {
 		if (res.bytes[0] == 29) {

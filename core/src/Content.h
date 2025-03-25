@@ -28,7 +28,8 @@ struct SymbologyIdentifier
 
 	std::string toString(bool hasECI = false) const
 	{
-		return code ? ']' + std::string(1, code) + static_cast<char>(modifier + eciModifierOffset * hasECI) : std::string();
+		int modVal = (modifier >= 'A' ? modifier - 'A' + 10 : modifier - '0') + eciModifierOffset * hasECI;
+		return code ? ']' + std::string(1, code) + static_cast<char>((modVal >= 10 ? 'A' - 10 : '0') + modVal) : std::string();
 	}
 };
 
