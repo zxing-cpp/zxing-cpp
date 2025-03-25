@@ -162,83 +162,74 @@ TEST(AZDecoderTest, InitialGS)
 	}
 }
 
+// Shorthand to check SymbologyIdentifier result
+static void check_si(int line, const DecoderResult& res, const std::string& si, const std::string& text,
+					 int sa_index = -1, int sa_count = -1,
+					 const std::string& textECI = {}, const std::string& bytesECI = {})
+{
+	EXPECT_EQ(res.symbologyIdentifier(), si) << "line:" << line;
+	EXPECT_EQ(res.content().text(TextMode::Plain), text) << "line:" << line;
+	EXPECT_EQ(res.structuredAppend().index, sa_index) << "line:" << line;
+	EXPECT_EQ(res.structuredAppend().count, sa_count) << "line:" << line;
+	if (!textECI.empty())
+		EXPECT_EQ(res.content().text(TextMode::ECI), textECI) << "line:" << line;
+	if (!bytesECI.empty())
+		EXPECT_EQ(ToHex(res.content().bytesECI()), bytesECI) << "line:" << line;
+}
+
 TEST(AZDecoderTest, SymbologyIdentifier)
 {
-	{
-		// Plain
-		auto data = getData("00010");
-		EXPECT_EQ(data.symbologyIdentifier(), "]z0");
-		EXPECT_EQ(data.text(), L"A");
-	}
+	// Plain
+	check_si(__LINE__, getData("00010"), "]z0", "A", -1, -1, "]z3\\000026A", "5D 7A 33 41");
 
-	{
-		// GS1 ("PS FLGN(0) DL (20)01")
-		auto data = getData("0000000000000111100100001000100011");
-		EXPECT_EQ(data.symbologyIdentifier(), "]z1");
-		EXPECT_EQ(data.text(), L"2001");
-	}
+	// GS1 ("PS FLGN(0) DL (20)01")
+	check_si(__LINE__, getData("0000000000000111100100001000100011"), "]z1", "2001");
 
-	{
-		// AIM ("A PS FLGN(0) B")
-		auto data = getData("00010000000000000000011");
-		EXPECT_EQ(data.symbologyIdentifier(), "]z2");
-		EXPECT_EQ(data.text(), L"AB");
-	}
+	// AIM ("A PS FLGN(0) B")
+	check_si(__LINE__, getData("00010000000000000000011"), "]z2", "AB");
 
-	{
-		// AIM ("DL 99 UL PS FLGN(0) B")
-		auto data = getData("11110101110111110000000000000000011");
-		EXPECT_EQ(data.symbologyIdentifier(), "]z2");
-		EXPECT_EQ(data.text(), L"99B");
-	}
+	// AIM ("DL 99 UL PS FLGN(0) B")
+	check_si(__LINE__, getData("11110101110111110000000000000000011"), "]z2", "99B");
 
-	{
-		// Structured Append ("UL ML A D A")
-		auto data = getData("1110111101000100010100010");
-		EXPECT_EQ(data.symbologyIdentifier(), "]z6");
-		EXPECT_EQ(data.text(), L"A");
-		EXPECT_EQ(data.structuredAppend().index, 0);
-		EXPECT_EQ(data.structuredAppend().count, 4);
-	}
+	// Structured Append (no ID) ("UL ML A D A")
+	check_si(__LINE__, getData("1110111101000100010100010"), "]z6", "A", 0, 4);
 
-	{
-		// Structured Append with GS1 ("UL ML A D PS FLGN(0) DL (20)01")
-		auto data = getData("111011110100010001010000000000000111100100001000100011");
-		EXPECT_EQ(data.symbologyIdentifier(), "]z7");
-		EXPECT_EQ(data.text(), L"2001");
-		EXPECT_EQ(data.structuredAppend().index, 0);
-		EXPECT_EQ(data.structuredAppend().count, 4);
-	}
+	// Structured Append (no ID) with GS1 ("UL ML A D PS FLGN(0) DL (20)01")
+	check_si(__LINE__, getData("111011110100010001010000000000000111100100001000100011"), "]z7", "2001", 0, 4);
 
-	{
-		// Structured Append with AIM ("UL ML A D A PS FLGN(0) B")
-		auto data = getData("1110111101000100010100010000000000000000011");
-		EXPECT_EQ(data.symbologyIdentifier(), "]z8");
-		EXPECT_EQ(data.text(), L"AB");
-		EXPECT_EQ(data.structuredAppend().index, 0);
-		EXPECT_EQ(data.structuredAppend().count, 4);
-	}
+	// Structured Append (no ID) with AIM ("UL ML A D A PS FLGN(0) B")
+	check_si(__LINE__, getData("1110111101000100010100010000000000000000011"), "]z8", "AB", 0, 4);
 
-	{
-		// Plain with FNC1 not in first/second position ("A B PS FLGN(0) C")
-		auto data = getData("0001000011000000000000000100");
-		EXPECT_EQ(data.symbologyIdentifier(), "]z0");
-		EXPECT_EQ(data.text(), L"AB\u001DC"); // "AB<GS>C"
-	}
+	// Plain with FNC1 not in first/second position ("A B PS FLGN(0) C")
+	check_si(__LINE__, getData("0001000011000000000000000100"), "]z0", "AB\u001DC"); // "AB<GS>C"
 
-	{
-		// Plain with FNC1 not in first/second position ("A B C PS FLGN(0) D")
-		auto data = getData("000100001100100000000000000000101");
-		EXPECT_EQ(data.symbologyIdentifier(), "]z0");
-		EXPECT_EQ(data.text(), L"ABC\u001DD"); // "ABC<GS>D"
-	}
+	// Plain with FNC1 not in first/second position ("A B C PS FLGN(0) D")
+	check_si(__LINE__, getData("000100001100100000000000000000101"), "]z0", "ABC\u001DD"); // "ABC<GS>D"
 
-	{
-		// Plain with FNC1 not in first/second position ("DL 1 UL PS FLGN(0) A")
-		auto data = getData("1111000111110000000000000000010");
-		EXPECT_EQ(data.symbologyIdentifier(), "]z0");
-		EXPECT_EQ(data.text(), L"1\u001DA"); // "1<GS>D"
-	}
+	// Plain with FNC1 not in first/second position ("DL 1 UL PS FLGN(0) A")
+	check_si(__LINE__, getData("1111000111110000000000000000010"), "]z0", "1\u001DA"); // "1<GS>D"
+
+	// ECI 3 with Plain - `res.symbologyIdentifier()` would be "]z3" if used `toString(hasECI())`
+	check_si(__LINE__, getData("0000000000001010100010"), "]z0", "A", -1, -1, "]z3\\000026A", "5D 7A 33 5C 30 30 30 30 30 33 41");
+
+	// ECI 3 with Plain, showing doubled backslash and ISO/IEC 8859-1 `bytesECI()` - "]z3" ditto
+	check_si(__LINE__, getData("000000000000101010001011101101011110100011111110000111101001"), "]z0", "A\\Bé", -1, -1,
+			 "]z3\\000026A\\\\Bé", "5D 7A 33 5C 30 30 30 30 30 33 41 5C 5C 42 E9");
+
+	// ECI 3 with GS1 - "]z4" ditto
+	check_si(__LINE__, getData("000000000000000000000000010101111100100001000100011"), "]z1", "2001");
+
+	// ECI 3 with AIM - "]z5" ditto
+	check_si(__LINE__, getData("0000000000001010100010000000000000000011"), "]z2", "AB");
+
+	// ECI 3 with Structured Append (no ID) - "]z9" ditto
+	check_si(__LINE__, getData("111011110100010001010000000000001010100010"), "]z6", "A", 0, 4);
+
+	// ECI 3 with Structured Append (no ID) with GS1 - "]zA" ditto
+	check_si(__LINE__, getData("11101111010001000101000000000000000000000000010101111100100001000100011"), "]z7", "2001", 0, 4, "]zA\\0000262001");
+
+	// ECI 3 with Structured Append (no ID) with AIM - "]zB" ditto
+	check_si(__LINE__, getData("111011110100010001010000000000001010100010000000000000000011"), "]z8", "AB", 0, 4, "]zB\\000026AB");
 }
 
 // Helper taking 5-bit word array to call GetEncodedData()
