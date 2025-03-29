@@ -6,9 +6,9 @@
 
 #include "QRDecoder.h"
 
-#include "BitMatrix.h"
+#include <ZXing/BitMatrix.h>
 #include "BitSource.h"
-#include "CharacterSet.h"
+#include <ZXing/CharacterSet.h>
 #include "DecoderResult.h"
 #include "GenericGF.h"
 #include "QRBitMatrixParser.h"
@@ -17,8 +17,8 @@
 #include "QRFormatInformation.h"
 #include "QRVersion.h"
 #include "ReedSolomonDecoder.h"
-#include "StructuredAppend.h"
-#include "ZXAlgorithms.h"
+#include <ZXing/StructuredAppend.h>
+#include <ZXing/ZXAlgorithms.h>
 #include "ZXTestSupport.h"
 
 #include <algorithm>

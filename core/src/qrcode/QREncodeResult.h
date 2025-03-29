@@ -6,8 +6,8 @@
 
 #pragma once
 
-#include "BitMatrix.h"
-#include "ByteArray.h"
+#include <ZXing/BitMatrix.h>
+#include <ZXing/ByteArray.h>
 #include "QRCodecMode.h"
 #include "QRVersion.h"
 

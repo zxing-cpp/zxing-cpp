@@ -6,8 +6,8 @@
 
 #include "QRMatrixUtil.h"
 
-#include "BitArray.h"
-#include "BitHacks.h"
+#include <ZXing/BitArray.h>
+#include <ZXing/BitHacks.h>
 #include "QRDataMask.h"
 #include "QRErrorCorrectionLevel.h"
 #include "QRVersion.h"

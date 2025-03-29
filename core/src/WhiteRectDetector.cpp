@@ -6,7 +6,7 @@
 
 #include "WhiteRectDetector.h"
 
-#include "BitMatrix.h"
+#include <ZXing/BitMatrix.h>
 #include "BitMatrixCursor.h"
 #include "ResultPoint.h"
 

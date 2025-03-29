@@ -6,7 +6,7 @@
 
 #include "aztec/AZDetector.h"
 
-#include "BitMatrixIO.h"
+#include <ZXing/BitMatrixIO.h>
 #include "DecoderResult.h"
 #include "PseudoRandom.h"
 #include "Utf.h"

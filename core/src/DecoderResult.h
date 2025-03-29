@@ -6,9 +6,9 @@
 
 #pragma once
 
-#include "Content.h"
-#include "Error.h"
-#include "StructuredAppend.h"
+#include <ZXing/Content.h>
+#include <ZXing/Error.h>
+#include <ZXing/StructuredAppend.h>
 
 #include <memory>
 #include <string>

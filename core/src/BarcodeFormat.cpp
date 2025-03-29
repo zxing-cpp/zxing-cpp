@@ -4,9 +4,9 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "BarcodeFormat.h"
+#include <ZXing/BarcodeFormat.h>
 
-#include "ZXAlgorithms.h"
+#include <ZXing/ZXAlgorithms.h>
 
 #include <algorithm>
 #include <cctype>

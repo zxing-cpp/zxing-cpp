@@ -9,10 +9,10 @@
 #include "BinaryBitmap.h"
 #include "DMDecoder.h"
 #include "DMDetector.h"
-#include "ReaderOptions.h"
+#include <ZXing/ReaderOptions.h>
 #include "DecoderResult.h"
 #include "DetectorResult.h"
-#include "Barcode.h"
+#include <ZXing/Barcode.h>
 
 #include <utility>
 

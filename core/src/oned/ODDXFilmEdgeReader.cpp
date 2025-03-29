@@ -6,7 +6,7 @@
 
 #include "ODDXFilmEdgeReader.h"
 
-#include "Barcode.h"
+#include <ZXing/Barcode.h>
 
 #include <optional>
 #include <vector>

@@ -6,7 +6,7 @@
 
 #include "ODWriterHelper.h"
 
-#include "BitMatrix.h"
+#include <ZXing/BitMatrix.h>
 
 #include <algorithm>
 

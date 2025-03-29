@@ -3,7 +3,7 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "ZXAlgorithms.h"
+#include <ZXing/ZXAlgorithms.h>
 
 #include "gtest/gtest.h"
 

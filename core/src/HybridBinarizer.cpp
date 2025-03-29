@@ -6,8 +6,8 @@
 
 #include "HybridBinarizer.h"
 
-#include "BitMatrix.h"
-#include "Matrix.h"
+#include <ZXing/BitMatrix.h>
+#include <ZXing/Matrix.h>
 
 #include <algorithm>
 #include <cstdint>

@@ -5,10 +5,10 @@
 
 #include "ODDataBarLimitedReader.h"
 
-#include "BarcodeFormat.h"
-#include "GTIN.h"
+#include <ZXing/BarcodeFormat.h>
+#include <ZXing/GTIN.h>
 #include "ODDataBarCommon.h"
-#include "Barcode.h"
+#include <ZXing/Barcode.h>
 
 //#define PRINT_DEBUG
 #ifndef PRINT_DEBUG

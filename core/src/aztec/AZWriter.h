@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "CharacterSet.h"
+#include <ZXing/CharacterSet.h>
 
 #include <string>
 

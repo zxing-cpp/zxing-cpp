@@ -3,7 +3,7 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "BitHacks.h"
+#include <ZXing/BitHacks.h>
 
 #include "gtest/gtest.h"
 #include <vector>

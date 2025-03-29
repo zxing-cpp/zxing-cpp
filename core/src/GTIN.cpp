@@ -4,9 +4,9 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "GTIN.h"
+#include <ZXing/GTIN.h>
 
-#include "Barcode.h"
+#include <ZXing/Barcode.h>
 
 #include <algorithm>
 #include <iomanip>

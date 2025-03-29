@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "Matrix.h"
+#include <ZXing/Matrix.h>
 
 #include <cstdint>
 

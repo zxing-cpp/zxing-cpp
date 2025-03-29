@@ -7,9 +7,9 @@
 
 #include "QRBitMatrixParser.h"
 
-#include "BitArray.h"
-#include "BitMatrix.h"
-#include "ByteArray.h"
+#include <ZXing/BitArray.h>
+#include <ZXing/BitMatrix.h>
+#include <ZXing/ByteArray.h>
 #include "QRDataMask.h"
 #include "QRFormatInformation.h"
 #include "QRVersion.h"

@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "BitArrayUtility.h"
-#include "BitArray.h"
+#include <ZXing/BitArray.h>
 
 namespace ZXing { namespace Utility {
 

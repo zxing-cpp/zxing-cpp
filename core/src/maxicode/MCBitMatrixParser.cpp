@@ -6,8 +6,8 @@
 
 #include "MCBitMatrixParser.h"
 
-#include "BitMatrix.h"
-#include "ByteArray.h"
+#include <ZXing/BitMatrix.h>
+#include <ZXing/ByteArray.h>
 
 #include <array>
 

@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "ImageView.h"
+#include <ZXing/ImageView.h>
 
 #include <cstdint>
 #include <memory>

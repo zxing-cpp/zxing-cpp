@@ -6,7 +6,7 @@
 
 #include "AZToken.h"
 
-#include "BitArray.h"
+#include <ZXing/BitArray.h>
 
 #include <algorithm>
 

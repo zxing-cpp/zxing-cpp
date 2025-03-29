@@ -4,7 +4,7 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "BitMatrixIO.h"
+#include <ZXing/BitMatrixIO.h>
 #include "DecoderResult.h"
 #include "datamatrix/DMDecoder.h"
 #include "datamatrix/DMWriter.h"

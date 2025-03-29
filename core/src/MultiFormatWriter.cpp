@@ -3,9 +3,9 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "MultiFormatWriter.h"
+#include <ZXing/MultiFormatWriter.h>
 
-#include "BitMatrix.h"
+#include <ZXing/BitMatrix.h>
 #include "aztec/AZWriter.h"
 #include "datamatrix/DMWriter.h"
 #include "oned/ODCodabarWriter.h"

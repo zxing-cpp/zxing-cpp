@@ -7,9 +7,9 @@
 
 #include "ODDataBarExpandedBitDecoder.h"
 
-#include "BitArray.h"
-#include "Error.h"
-#include "GTIN.h"
+#include <ZXing/BitArray.h>
+#include <ZXing/Error.h>
+#include <ZXing/GTIN.h>
 
 namespace ZXing::OneD::DataBar {
 

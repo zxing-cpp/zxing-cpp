@@ -5,7 +5,7 @@
 
 #include "BinaryBitmap.h"
 
-#include "BitMatrix.h"
+#include <ZXing/BitMatrix.h>
 
 #include <mutex>
 

@@ -6,8 +6,8 @@
 
 #include "qrcode/QRVersion.h"
 
-#include "BitMatrix.h"
-#include "BitMatrixIO.h"
+#include <ZXing/BitMatrix.h>
+#include <ZXing/BitMatrixIO.h>
 
 #include "gtest/gtest.h"
 

@@ -6,8 +6,8 @@
 
 #include "BitSource.h"
 
-#include "ByteArray.h"
-#include "ZXAlgorithms.h"
+#include <ZXing/ByteArray.h>
+#include <ZXing/ZXAlgorithms.h>
 
 #include <stdexcept>
 

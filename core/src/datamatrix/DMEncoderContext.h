@@ -6,9 +6,9 @@
 
 #pragma once
 
-#include "ByteArray.h"
+#include <ZXing/ByteArray.h>
 #include "DMSymbolInfo.h"
-#include "ZXAlgorithms.h"
+#include <ZXing/ZXAlgorithms.h>
 
 #include <stdexcept>
 #include <string>

@@ -8,7 +8,7 @@
 #include "Utf.h"
 
 #include "ZXTestSupport.h"
-#include "ZXAlgorithms.h"
+#include <ZXing/ZXAlgorithms.h>
 
 #include <iomanip>
 #include <cstdint>

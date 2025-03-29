@@ -5,9 +5,9 @@
 
 #pragma once
 
-#include "BitMatrix.h"
-#include "Matrix.h"
-#include "Point.h"
+#include <ZXing/BitMatrix.h>
+#include <ZXing/Matrix.h>
+#include <ZXing/Point.h>
 
 #include <cassert>
 #include <cstdint>

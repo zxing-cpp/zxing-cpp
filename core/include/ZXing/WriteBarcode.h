@@ -7,8 +7,8 @@
 
 #ifdef ZXING_EXPERIMENTAL_API
 
-#include "Barcode.h"
-#include "ImageView.h"
+#include <ZXing/Barcode.h>
+#include <ZXing/ImageView.h>
 
 #include <memory>
 #include <string_view>

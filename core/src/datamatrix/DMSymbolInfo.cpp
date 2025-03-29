@@ -6,7 +6,7 @@
 
 #include "DMSymbolInfo.h"
 
-#include "ZXAlgorithms.h"
+#include <ZXing/ZXAlgorithms.h>
 #include "ZXTestSupport.h"
 
 #include <cstddef>

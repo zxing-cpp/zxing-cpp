@@ -3,7 +3,7 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "BitArray.h"
+#include <ZXing/BitArray.h>
 #include "BitArrayUtility.h"
 #include "HRI.h"
 #include "oned/ODDataBarExpandedBitDecoder.h"

@@ -4,10 +4,10 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "BitArray.h"
+#include <ZXing/BitArray.h>
 #include "BitArrayUtility.h"
-#include "ReaderOptions.h"
-#include "Barcode.h"
+#include <ZXing/ReaderOptions.h>
+#include <ZXing/Barcode.h>
 #include "oned/ODCode39Reader.h"
 
 #include "gtest/gtest.h"

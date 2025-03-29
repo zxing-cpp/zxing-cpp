@@ -7,11 +7,11 @@
 
 #include "PDFHighLevelEncoder.h"
 #include "PDFCompaction.h"
-#include "CharacterSet.h"
+#include <ZXing/CharacterSet.h>
 #include "ECI.h"
 #include "TextEncoder.h"
 #include "ZXBigInteger.h"
-#include "ZXAlgorithms.h"
+#include <ZXing/ZXAlgorithms.h>
 
 #include <cstdint>
 #include <algorithm>

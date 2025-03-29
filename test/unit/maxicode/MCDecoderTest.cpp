@@ -3,7 +3,7 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "ByteArray.h"
+#include <ZXing/ByteArray.h>
 #include "DecoderResult.h"
 
 #include "gtest/gtest.h"

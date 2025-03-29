@@ -6,7 +6,7 @@
 
 #include "DMDecoder.h"
 
-#include "BitMatrix.h"
+#include <ZXing/BitMatrix.h>
 #include "BitSource.h"
 #include "DMBitLayout.h"
 #include "DMDataBlock.h"
@@ -14,7 +14,7 @@
 #include "DecoderResult.h"
 #include "GenericGF.h"
 #include "ReedSolomonDecoder.h"
-#include "ZXAlgorithms.h"
+#include <ZXing/ZXAlgorithms.h>
 #include "ZXTestSupport.h"
 
 #include <algorithm>

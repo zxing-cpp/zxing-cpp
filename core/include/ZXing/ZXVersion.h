@@ -5,6 +5,6 @@
 
 #pragma once
 
-#include "Version.h"
+#include <ZXing/Version.h>
 
 #pragma message("Header `ZXVersion.h` is deprecated, please include `Version.h`.")

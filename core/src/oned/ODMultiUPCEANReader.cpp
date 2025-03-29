@@ -7,12 +7,12 @@
 
 #include "ODMultiUPCEANReader.h"
 
-#include "BarcodeFormat.h"
-#include "BitArray.h"
-#include "ReaderOptions.h"
-#include "GTIN.h"
+#include <ZXing/BarcodeFormat.h>
+#include <ZXing/BitArray.h>
+#include <ZXing/ReaderOptions.h>
+#include <ZXing/GTIN.h>
 #include "ODUPCEANCommon.h"
-#include "Barcode.h"
+#include <ZXing/Barcode.h>
 
 #include <cmath>
 

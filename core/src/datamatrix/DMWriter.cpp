@@ -6,9 +6,9 @@
 
 #include "DMWriter.h"
 
-#include "BitMatrix.h"
-#include "ByteArray.h"
-#include "CharacterSet.h"
+#include <ZXing/BitMatrix.h>
+#include <ZXing/ByteArray.h>
+#include <ZXing/CharacterSet.h>
 #include "DMBitLayout.h"
 #include "DMECEncoder.h"
 #include "DMHighLevelEncoder.h"

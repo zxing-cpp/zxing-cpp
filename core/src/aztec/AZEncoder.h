@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "BitMatrix.h"
+#include <ZXing/BitMatrix.h>
 
 #include <string>
 

@@ -5,7 +5,7 @@
 
 #include "ECI.h"
 
-#include "ZXAlgorithms.h"
+#include <ZXing/ZXAlgorithms.h>
 
 #include <map>
 

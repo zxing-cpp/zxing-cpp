@@ -5,11 +5,11 @@
 
 #ifdef ZXING_EXPERIMENTAL_API
 
-#include "WriteBarcode.h"
-#include "BitMatrix.h"
+#include <ZXing/WriteBarcode.h>
+#include <ZXing/BitMatrix.h>
 
 #if !defined(ZXING_READERS) && !defined(ZXING_WRITERS)
-#include "Version.h"
+#include <ZXing/Version.h>
 #endif
 
 #include <sstream>
@@ -329,8 +329,8 @@ struct SetCommonWriterOptions
 
 #else // ZXING_USE_ZINT
 
-#include "MultiFormatWriter.h"
-#include "ReadBarcode.h"
+#include <ZXing/MultiFormatWriter.h>
+#include <ZXing/ReadBarcode.h>
 
 namespace ZXing {
 

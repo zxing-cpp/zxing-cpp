@@ -8,7 +8,7 @@
 #include "DMDataBlock.h"
 
 #include "DMVersion.h"
-#include "ZXAlgorithms.h"
+#include <ZXing/ZXAlgorithms.h>
 
 #include <vector>
 

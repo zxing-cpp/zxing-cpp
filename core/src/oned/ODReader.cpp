@@ -8,7 +8,7 @@
 #include "ODReader.h"
 
 #include "BinaryBitmap.h"
-#include "ReaderOptions.h"
+#include <ZXing/ReaderOptions.h>
 #include "ODCodabarReader.h"
 #include "ODCode128Reader.h"
 #include "ODCode39Reader.h"
@@ -19,7 +19,7 @@
 #include "ODDXFilmEdgeReader.h"
 #include "ODITFReader.h"
 #include "ODMultiUPCEANReader.h"
-#include "Barcode.h"
+#include <ZXing/Barcode.h>
 
 #include <algorithm>
 #include <utility>

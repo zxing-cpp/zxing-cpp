@@ -8,8 +8,8 @@
 
 #include "QRFormatInformation.h"
 
-#include "BitHacks.h"
-#include "ZXAlgorithms.h"
+#include <ZXing/BitHacks.h>
+#include <ZXing/ZXAlgorithms.h>
 
 namespace ZXing::QRCode {
 

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "oned/ODCode39Writer.h"
-#include "BitMatrixIO.h"
+#include <ZXing/BitMatrixIO.h>
 
 #include "gtest/gtest.h"
 

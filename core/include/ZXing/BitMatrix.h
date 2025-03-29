@@ -7,9 +7,9 @@
 
 #pragma once
 
-#include "Matrix.h"
-#include "Point.h"
-#include "Range.h"
+#include <ZXing/Matrix.h>
+#include <ZXing/Point.h>
+#include <ZXing/Range.h>
 
 #include <cstdint>
 #include <stdexcept>

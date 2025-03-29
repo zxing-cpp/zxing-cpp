@@ -6,7 +6,7 @@
 
 #include "PDFDetector.h"
 #include "BinaryBitmap.h"
-#include "BitMatrix.h"
+#include <ZXing/BitMatrix.h>
 #include "ZXNullable.h"
 #include "Pattern.h"
 

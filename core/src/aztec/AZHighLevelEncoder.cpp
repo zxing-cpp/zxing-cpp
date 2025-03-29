@@ -8,8 +8,8 @@
 
 #include "AZEncodingState.h"
 #include "AZToken.h"
-#include "BitArray.h"
-#include "ZXAlgorithms.h"
+#include <ZXing/BitArray.h>
+#include <ZXing/ZXAlgorithms.h>
 
 #include <algorithm>
 #include <array>

@@ -6,7 +6,7 @@
 
 #include "DMECEncoder.h"
 
-#include "ByteArray.h"
+#include <ZXing/ByteArray.h>
 #include "DMSymbolInfo.h"
 
 #include <algorithm>

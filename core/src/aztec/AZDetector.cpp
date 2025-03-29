@@ -8,16 +8,16 @@
 #include "AZDetector.h"
 
 #include "AZDetectorResult.h"
-#include "BitArray.h"
-#include "BitHacks.h"
-#include "BitMatrix.h"
+#include <ZXing/BitArray.h>
+#include <ZXing/BitHacks.h>
+#include <ZXing/BitMatrix.h>
 #include "ConcentricFinder.h"
 #include "GenericGF.h"
 #include "GridSampler.h"
 #include "LogMatrix.h"
 #include "Pattern.h"
 #include "ReedSolomonDecoder.h"
-#include "ZXAlgorithms.h"
+#include <ZXing/ZXAlgorithms.h>
 
 #include <algorithm>
 #include <optional>

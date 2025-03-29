@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "ImageView.h"
+#include <ZXing/ImageView.h>
 #include "ZXFilesystem.h"
 
 namespace ZXing::Test::ImageLoader {

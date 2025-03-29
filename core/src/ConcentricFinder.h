@@ -7,8 +7,8 @@
 
 #include "BitMatrixCursor.h"
 #include "Pattern.h"
-#include "Quadrilateral.h"
-#include "ZXAlgorithms.h"
+#include <ZXing/Quadrilateral.h>
+#include <ZXing/ZXAlgorithms.h>
 
 #include <optional>
 

@@ -4,9 +4,9 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "BitArray.h"
+#include <ZXing/BitArray.h>
 
-#include "ByteArray.h"
+#include <ZXing/ByteArray.h>
 
 #include <cstddef>
 #include <stdexcept>

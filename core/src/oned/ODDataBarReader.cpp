@@ -7,12 +7,12 @@
 
 #include "ODDataBarReader.h"
 
-#include "BarcodeFormat.h"
+#include <ZXing/BarcodeFormat.h>
 #include "DecoderResult.h"
 #include "DetectorResult.h"
-#include "GTIN.h"
+#include <ZXing/GTIN.h>
 #include "ODDataBarCommon.h"
-#include "Barcode.h"
+#include <ZXing/Barcode.h>
 
 #include <cmath>
 #include <unordered_set>

@@ -12,7 +12,7 @@
 
 #ifdef __cplusplus
 
-#include "ZXingCpp.h"
+#include <ZXing/ZXingCpp.h>
 
 typedef ZXing::Barcode ZXing_Barcode;
 typedef ZXing::Barcodes ZXing_Barcodes;

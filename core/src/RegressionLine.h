@@ -5,8 +5,8 @@
 
 #pragma once
 
-#include "Point.h"
-#include "ZXAlgorithms.h"
+#include <ZXing/Point.h>
+#include <ZXing/ZXAlgorithms.h>
 
 #include <algorithm>
 #include <cmath>

@@ -7,12 +7,12 @@
 #include "MCReader.h"
 
 #include "BinaryBitmap.h"
-#include "BitMatrix.h"
+#include <ZXing/BitMatrix.h>
 #include "DecoderResult.h"
 #include "DetectorResult.h"
 #include "MCBitMatrixParser.h"
 #include "MCDecoder.h"
-#include "Barcode.h"
+#include <ZXing/Barcode.h>
 
 namespace ZXing::MaxiCode {
 

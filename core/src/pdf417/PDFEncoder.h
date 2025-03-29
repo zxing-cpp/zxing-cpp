@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
-#include "CharacterSet.h"
+#include <ZXing/CharacterSet.h>
 #include "PDFCompaction.h"
-#include "ZXAlgorithms.h"
+#include <ZXing/ZXAlgorithms.h>
 
 #include <string>
 #include <vector>

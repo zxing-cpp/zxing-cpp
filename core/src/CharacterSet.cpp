@@ -4,9 +4,9 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "CharacterSet.h"
+#include <ZXing/CharacterSet.h>
 
-#include "ZXAlgorithms.h"
+#include <ZXing/ZXAlgorithms.h>
 
 #include <algorithm>
 #include <cctype>

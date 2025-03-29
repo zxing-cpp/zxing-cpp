@@ -7,7 +7,7 @@
 #include "AZWriter.h"
 
 #include "AZEncoder.h"
-#include "CharacterSet.h"
+#include <ZXing/CharacterSet.h>
 #include "TextEncoder.h"
 #include "Utf.h"
 

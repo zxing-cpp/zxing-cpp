@@ -6,8 +6,8 @@
 
 #include "QRWriter.h"
 
-#include "BitMatrix.h"
-#include "CharacterSet.h"
+#include <ZXing/BitMatrix.h>
+#include <ZXing/CharacterSet.h>
 #include "QREncodeResult.h"
 #include "QREncoder.h"
 #include "QRErrorCorrectionLevel.h"

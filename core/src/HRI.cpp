@@ -7,7 +7,7 @@
 
 #include "HRI.h"
 
-#include "ZXAlgorithms.h"
+#include <ZXing/ZXAlgorithms.h>
 
 #include <cmath>
 #include <cstring>

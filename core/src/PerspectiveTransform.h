@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include "Point.h"
-#include "Quadrilateral.h"
+#include <ZXing/Point.h>
+#include <ZXing/Quadrilateral.h>
 
 namespace ZXing {
 

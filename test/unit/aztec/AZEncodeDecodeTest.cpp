@@ -4,8 +4,8 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "BitMatrix.h"
-#include "CharacterSet.h"
+#include <ZXing/BitMatrix.h>
+#include <ZXing/CharacterSet.h>
 #include "DecoderResult.h"
 #include "PseudoRandom.h"
 #include "TextEncoder.h"

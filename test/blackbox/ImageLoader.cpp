@@ -7,7 +7,7 @@
 #include "ImageLoader.h"
 
 #include "BinaryBitmap.h"
-#include "ImageView.h"
+#include <ZXing/ImageView.h>
 
 #include <array>
 #include <map>

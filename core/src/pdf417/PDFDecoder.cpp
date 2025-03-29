@@ -6,10 +6,10 @@
 
 #include "PDFDecoder.h"
 
-#include "CharacterSet.h"
+#include <ZXing/CharacterSet.h>
 #include "DecoderResult.h"
 #include "PDFDecoderResultExtra.h"
-#include "ZXAlgorithms.h"
+#include <ZXing/ZXAlgorithms.h>
 #include "ZXBigInteger.h"
 #include "ZXTestSupport.h"
 

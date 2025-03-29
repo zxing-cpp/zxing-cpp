@@ -11,9 +11,9 @@
 #include "AZDetector.h"
 #include "AZDetectorResult.h"
 #include "BinaryBitmap.h"
-#include "ReaderOptions.h"
+#include <ZXing/ReaderOptions.h>
 #include "DecoderResult.h"
-#include "Barcode.h"
+#include <ZXing/Barcode.h>
 
 #include <utility>
 

@@ -6,7 +6,7 @@
 
 #include "ODUPCAWriter.h"
 
-#include "BitMatrix.h"
+#include <ZXing/BitMatrix.h>
 #include "ODEAN13Writer.h"
 #include "Utf.h"
 

@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "aztec/AZEncoder.h"
-#include "BitArray.h"
+#include <ZXing/BitArray.h>
 #include "BitArrayUtility.h"
-#include "BitMatrixIO.h"
+#include <ZXing/BitMatrixIO.h>
 
 #include "gtest/gtest.h"
 #include <algorithm>

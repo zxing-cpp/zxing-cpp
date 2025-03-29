@@ -7,9 +7,9 @@
 
 #include "ODCodabarReader.h"
 
-#include "ReaderOptions.h"
-#include "Barcode.h"
-#include "ZXAlgorithms.h"
+#include <ZXing/ReaderOptions.h>
+#include <ZXing/Barcode.h>
+#include <ZXing/ZXAlgorithms.h>
 
 #include <string>
 #include <memory>

@@ -5,8 +5,8 @@
 
 #include "oned/ODDataBarReader.h"
 
-#include "ReaderOptions.h"
-#include "Barcode.h"
+#include <ZXing/ReaderOptions.h>
+#include <ZXing/Barcode.h>
 
 #include "gtest/gtest.h"
 

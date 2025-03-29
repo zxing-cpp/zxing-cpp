@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "Barcode.h"
+#include <ZXing/Barcode.h>
 
 #include <vector>
 #include <memory>

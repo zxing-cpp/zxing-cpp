@@ -6,7 +6,7 @@
 
 #include "PDFScanningDecoder.h"
 
-#include "BitMatrix.h"
+#include <ZXing/BitMatrix.h>
 #include "DecoderResult.h"
 #include "PDFBarcodeMetadata.h"
 #include "PDFBarcodeValue.h"
@@ -15,7 +15,7 @@
 #include "PDFDecoder.h"
 #include "PDFDecoderResultExtra.h"
 #include "PDFModulusGF.h"
-#include "ZXAlgorithms.h"
+#include <ZXing/ZXAlgorithms.h>
 #include "ZXTestSupport.h"
 
 #include <cmath>

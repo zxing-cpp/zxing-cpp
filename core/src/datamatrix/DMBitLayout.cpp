@@ -7,9 +7,9 @@
 
 #include "DMBitLayout.h"
 
-#include "BitArray.h"
-#include "BitMatrix.h"
-#include "ByteArray.h"
+#include <ZXing/BitArray.h>
+#include <ZXing/BitMatrix.h>
+#include <ZXing/ByteArray.h>
 #include "DMVersion.h"
 
 #include <array>

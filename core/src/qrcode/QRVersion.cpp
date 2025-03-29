@@ -8,8 +8,8 @@
 
 #include "QRVersion.h"
 
-#include "BitHacks.h"
-#include "BitMatrix.h"
+#include <ZXing/BitHacks.h>
+#include <ZXing/BitMatrix.h>
 #include "QRECB.h"
 
 #include <limits>

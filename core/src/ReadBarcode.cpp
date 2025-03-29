@@ -3,10 +3,10 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "ReadBarcode.h"
+#include <ZXing/ReadBarcode.h>
 
 #if !defined(ZXING_READERS) && !defined(ZXING_WRITERS)
-#include "Version.h"
+#include <ZXing/Version.h>
 #endif
 
 #ifdef ZXING_READERS

@@ -8,13 +8,13 @@
 #include "AZDecoder.h"
 
 #include "AZDetectorResult.h"
-#include "BitArray.h"
-#include "BitMatrix.h"
+#include <ZXing/BitArray.h>
+#include <ZXing/BitMatrix.h>
 #include "DecoderResult.h"
 #include "GenericGF.h"
 #include "ReedSolomonDecoder.h"
 #include "ZXTestSupport.h"
-#include "ZXAlgorithms.h"
+#include <ZXing/ZXAlgorithms.h>
 
 #include <cctype>
 #include <cstring>

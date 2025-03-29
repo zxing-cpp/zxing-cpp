@@ -6,7 +6,7 @@
 
 #include "PDFWriter.h"
 #include "PDFEncoder.h"
-#include "BitMatrix.h"
+#include <ZXing/BitMatrix.h>
 #include "Utf.h"
 
 #include <utility>

@@ -89,7 +89,7 @@ target_sources (UnitTest PRIVATE
 )
 endif()
 
-target_include_directories (UnitTest PRIVATE .)
+target_include_directories (UnitTest PRIVATE . ${PROJECT_SOURCE_DIR}/core/src)
 
 target_link_libraries (UnitTest ZXing::ZXing GTest::gtest_main GTest::gmock)
 

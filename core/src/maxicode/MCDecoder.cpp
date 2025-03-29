@@ -6,8 +6,8 @@
 
 #include "MCDecoder.h"
 
-#include "ByteArray.h"
-#include "CharacterSet.h"
+#include <ZXing/ByteArray.h>
+#include <ZXing/CharacterSet.h>
 #include "DecoderResult.h"
 #include "GenericGF.h"
 #include "MCBitMatrixParser.h"

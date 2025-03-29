@@ -5,8 +5,8 @@
 
 #include "ZXBigInteger.h"
 
-#include "BitHacks.h"
-#include "ZXAlgorithms.h"
+#include <ZXing/BitHacks.h>
+#include <ZXing/ZXAlgorithms.h>
 
 #include <algorithm>
 #include <cassert>

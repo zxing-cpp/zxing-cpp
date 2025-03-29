@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "GTIN.h"
+#include <ZXing/GTIN.h>
 
 #include <array>
 #include <cstddef>

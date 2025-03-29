@@ -7,12 +7,12 @@
 
 #include "ODDataBarExpandedReader.h"
 
-#include "BarcodeFormat.h"
+#include <ZXing/BarcodeFormat.h>
 #include "DecoderResult.h"
 #include "DetectorResult.h"
 #include "ODDataBarCommon.h"
 #include "ODDataBarExpandedBitDecoder.h"
-#include "Barcode.h"
+#include <ZXing/Barcode.h>
 
 #include <cmath>
 #include <map>

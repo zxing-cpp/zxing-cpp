@@ -6,7 +6,7 @@
 
 #include "QREncoder.h"
 
-#include "BitArray.h"
+#include <ZXing/BitArray.h>
 #include "ECI.h"
 #include "GenericGF.h"
 #include "QREncodeResult.h"

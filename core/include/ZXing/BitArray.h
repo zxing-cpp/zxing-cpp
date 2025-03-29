@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include "Range.h"
-#include "ZXAlgorithms.h"
+#include <ZXing/Range.h>
+#include <ZXing/ZXAlgorithms.h>
 
 #include <algorithm>
 #include <cassert>

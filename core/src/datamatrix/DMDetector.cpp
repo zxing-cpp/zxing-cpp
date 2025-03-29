@@ -7,13 +7,13 @@
 
 #include "DMDetector.h"
 
-#include "BitMatrix.h"
+#include <ZXing/BitMatrix.h>
 #include "BitMatrixCursor.h"
 #include "ByteMatrix.h"
 #include "DetectorResult.h"
 #include "GridSampler.h"
 #include "LogMatrix.h"
-#include "Point.h"
+#include <ZXing/Point.h>
 #include "RegressionLine.h"
 #include "ResultPoint.h"
 #include "Scope.h"

@@ -10,14 +10,14 @@
 #include "PDFScanningDecoder.h"
 #include "PDFCodewordDecoder.h"
 #include "PDFDecoderResultExtra.h"
-#include "ReaderOptions.h"
+#include <ZXing/ReaderOptions.h>
 #include "DecoderResult.h"
 #include "DetectorResult.h"
-#include "Barcode.h"
+#include <ZXing/Barcode.h>
 
 #include "BitMatrixCursor.h"
 #include "BinaryBitmap.h"
-#include "BitArray.h"
+#include <ZXing/BitArray.h>
 #include "Pattern.h"
 
 #include <vector>

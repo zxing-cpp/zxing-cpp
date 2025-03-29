@@ -6,11 +6,11 @@
 
 #include "DMHighLevelEncoder.h"
 
-#include "ByteArray.h"
-#include "CharacterSet.h"
+#include <ZXing/ByteArray.h>
+#include <ZXing/CharacterSet.h>
 #include "DMEncoderContext.h"
 #include "TextEncoder.h"
-#include "ZXAlgorithms.h"
+#include <ZXing/ZXAlgorithms.h>
 
 #include <algorithm>
 #include <array>

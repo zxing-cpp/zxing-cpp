@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "oned/ODCodabarWriter.h"
-#include "BitMatrixIO.h"
-#include "ReaderOptions.h"
-#include "Barcode.h"
+#include <ZXing/BitMatrixIO.h>
+#include <ZXing/ReaderOptions.h>
+#include <ZXing/Barcode.h>
 #include "oned/ODCodabarReader.h"
 
 #include "gtest/gtest.h"

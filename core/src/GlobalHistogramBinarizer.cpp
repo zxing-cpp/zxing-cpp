@@ -6,7 +6,7 @@
 
 #include "GlobalHistogramBinarizer.h"
 
-#include "BitMatrix.h"
+#include <ZXing/BitMatrix.h>
 #include "Pattern.h"
 #include "ZXConfig.h"
 

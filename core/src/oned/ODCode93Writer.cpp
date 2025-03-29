@@ -8,7 +8,7 @@
 
 #include "ODWriterHelper.h"
 #include "Utf.h"
-#include "ZXAlgorithms.h"
+#include <ZXing/ZXAlgorithms.h>
 #include "ZXTestSupport.h"
 
 #include <stdexcept>

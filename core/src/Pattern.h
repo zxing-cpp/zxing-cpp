@@ -5,9 +5,9 @@
 
 #pragma once
 
-#include "BitHacks.h"
-#include "Range.h"
-#include "ZXAlgorithms.h"
+#include <ZXing/BitHacks.h>
+#include <ZXing/Range.h>
+#include <ZXing/ZXAlgorithms.h>
 
 #include <algorithm>
 #include <array>

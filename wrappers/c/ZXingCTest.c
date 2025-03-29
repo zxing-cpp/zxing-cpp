@@ -4,7 +4,7 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "ZXingC.h"
+#include <ZXing/ZXingC.h>
 
 #include <stdio.h>
 #include <stdlib.h>

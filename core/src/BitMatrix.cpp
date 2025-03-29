@@ -4,7 +4,7 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "BitMatrix.h"
+#include "ZXing/BitMatrix.h"
 
 #include "Pattern.h"
 

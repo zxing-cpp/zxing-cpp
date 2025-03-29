@@ -16,6 +16,8 @@ if (ZXING_READERS)
         $<$<AND:$<CXX_COMPILER_ID:GNU>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,9.0>>:stdc++fs>
     )
 
+    target_include_directories(ReaderTest PRIVATE ${PROJECT_SOURCE_DIR}/core/src)
+
     add_test(NAME ReaderTest COMMAND ReaderTest ${CMAKE_CURRENT_SOURCE_DIR}/../samples)
 endif()
 

@@ -7,7 +7,7 @@
 #include "AZEncoder.h"
 
 #include "AZHighLevelEncoder.h"
-#include "BitArray.h"
+#include <ZXing/BitArray.h>
 #include "GenericGF.h"
 #include "ReedSolomonEncoder.h"
 #include "ZXTestSupport.h"

@@ -3,10 +3,10 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "BitArray.h"
+#include <ZXing/BitArray.h>
 #include "BitArrayUtility.h"
-#include "BitMatrixIO.h"
-#include "CharacterSet.h"
+#include <ZXing/BitMatrixIO.h>
+#include <ZXing/CharacterSet.h>
 #include "TextDecoder.h"
 #include "Utf.h"
 #include "qrcode/QREncoder.h"

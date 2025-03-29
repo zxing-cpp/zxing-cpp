@@ -7,14 +7,14 @@
 
 #pragma once
 
-#include "BarcodeFormat.h"
-#include "ByteArray.h"
-#include "Content.h"
-#include "ReaderOptions.h"
-#include "Error.h"
-#include "ImageView.h"
-#include "Quadrilateral.h"
-#include "StructuredAppend.h"
+#include <ZXing/BarcodeFormat.h>
+#include <ZXing/ByteArray.h>
+#include <ZXing/Content.h>
+#include <ZXing/ReaderOptions.h>
+#include <ZXing/Error.h>
+#include <ZXing/ImageView.h>
+#include <ZXing/Quadrilateral.h>
+#include <ZXing/StructuredAppend.h>
 
 #ifdef ZXING_EXPERIMENTAL_API
 #include <memory>

@@ -3,7 +3,7 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "Content.h"
+#include <ZXing/Content.h>
 #include "ECI.h"
 
 #include "gtest/gtest.h"

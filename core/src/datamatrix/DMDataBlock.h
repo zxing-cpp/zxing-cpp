@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "ByteArray.h"
+#include <ZXing/ByteArray.h>
 
 #include <vector>
 

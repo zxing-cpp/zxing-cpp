@@ -7,7 +7,7 @@
 
 #include "LogMatrix.h"
 #include "RegressionLine.h"
-#include "ZXAlgorithms.h"
+#include <ZXing/ZXAlgorithms.h>
 
 namespace ZXing {
 

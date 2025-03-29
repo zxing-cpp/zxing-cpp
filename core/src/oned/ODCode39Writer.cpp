@@ -6,11 +6,11 @@
 
 #include "ODCode39Writer.h"
 
-#include "CharacterSet.h"
+#include <ZXing/CharacterSet.h>
 #include "ODWriterHelper.h"
 #include "TextEncoder.h"
 #include "Utf.h"
-#include "ZXAlgorithms.h"
+#include <ZXing/ZXAlgorithms.h>
 
 #include <array>
 #include <stdexcept>

@@ -3,7 +3,7 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "CharacterSet.h"
+#include <ZXing/CharacterSet.h>
 #include "TextDecoder.h"
 #include "Utf.h"
 

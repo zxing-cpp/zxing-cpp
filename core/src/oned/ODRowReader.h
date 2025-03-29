@@ -7,10 +7,10 @@
 
 #pragma once
 
-#include "BitArray.h"
+#include <ZXing/BitArray.h>
 #include "Pattern.h"
-#include "Barcode.h"
-#include "ZXAlgorithms.h"
+#include <ZXing/Barcode.h>
+#include <ZXing/ZXAlgorithms.h>
 
 #include <algorithm>
 #include <cassert>

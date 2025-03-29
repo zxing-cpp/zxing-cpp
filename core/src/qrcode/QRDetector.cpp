@@ -8,8 +8,8 @@
 
 #include "QRDetector.h"
 
-#include "BitArray.h"
-#include "BitMatrix.h"
+#include <ZXing/BitArray.h>
+#include <ZXing/BitMatrix.h>
 #include "BitMatrixCursor.h"
 #include "ConcentricFinder.h"
 #include "GridSampler.h"
@@ -17,7 +17,7 @@
 #include "Pattern.h"
 #include "QRFormatInformation.h"
 #include "QRVersion.h"
-#include "Quadrilateral.h"
+#include <ZXing/Quadrilateral.h>
 #include "RegressionLine.h"
 
 #include <algorithm>

@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "ReadBarcode.h"
+#include <ZXing/ReadBarcode.h>
 
 #include <opencv2/opencv.hpp>
 

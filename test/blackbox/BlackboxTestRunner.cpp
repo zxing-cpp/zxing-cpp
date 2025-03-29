@@ -7,9 +7,9 @@
 #include "BlackboxTestRunner.h"
 
 #include "ImageLoader.h"
-#include "ReadBarcode.h"
+#include <ZXing/ReadBarcode.h>
 #include "Utf.h"
-#include "ZXAlgorithms.h"
+#include <ZXing/ZXAlgorithms.h>
 
 #include <fmt/core.h>
 #include <fmt/ostream.h>

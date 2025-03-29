@@ -7,10 +7,10 @@
 
 #pragma once
 
-#include "Point.h"
+#include <ZXing/Point.h>
 #include "QRECB.h"
 #include "QRErrorCorrectionLevel.h"
-#include "ZXAlgorithms.h"
+#include <ZXing/ZXAlgorithms.h>
 
 #include <array>
 #include <initializer_list>

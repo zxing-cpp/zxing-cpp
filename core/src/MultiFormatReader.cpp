@@ -6,9 +6,9 @@
 
 #include "MultiFormatReader.h"
 
-#include "BarcodeFormat.h"
+#include <ZXing/BarcodeFormat.h>
 #include "BinaryBitmap.h"
-#include "ReaderOptions.h"
+#include <ZXing/ReaderOptions.h>
 #include "aztec/AZReader.h"
 #include "datamatrix/DMReader.h"
 #include "maxicode/MCReader.h"

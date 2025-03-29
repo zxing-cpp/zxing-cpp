@@ -88,59 +88,34 @@ endif()
 ################# Source files
 
 set (COMMON_FILES
-    src/Barcode.h
     src/Barcode.cpp
-    src/BarcodeFormat.h
     src/BarcodeFormat.cpp
-    src/BitHacks.h
-    src/BitMatrix.h
     src/BitMatrix.cpp
-    src/BitMatrixIO.h
     src/BitMatrixIO.cpp
-    src/ByteArray.h
     src/ByteMatrix.h
-    src/CharacterSet.h
     src/CharacterSet.cpp
-    src/Content.h
     src/Content.cpp
     src/ECI.h
     src/ECI.cpp
-    src/Error.h
     src/Error.cpp
-    src/Flags.h
-    src/GTIN.h
     src/GTIN.cpp
-    src/ImageView.h
-    src/Matrix.h
-    src/Point.h
-    src/Quadrilateral.h
-    src/Range.h
-    src/ReaderOptions.h
-    src/ReadBarcode.h
     src/ReadBarcode.cpp
     src/Utf.h
     src/Utf.cpp
-    src/WriteBarcode.h
     src/WriteBarcode.cpp
-    src/ZXingCpp.h
     src/ZXingCpp.cpp
-    src/ZXAlgorithms.h
     src/ZXConfig.h
     src/ZXTestSupport.h
-    src/ZXVersion.h # [[deprecated]]
-    $<$<BOOL:${ZXING_C_API}>:src/ZXingC.h>
     $<$<BOOL:${ZXING_C_API}>:src/ZXingC.cpp>
 )
 if (ZXING_READERS OR ZXING_WRITERS_OLD)
     set (COMMON_FILES ${COMMON_FILES}
-        src/BitArray.h
         src/BitArray.cpp
         src/Generator.h
         src/GenericGF.h
         src/GenericGF.cpp
         src/GenericGFPoly.h
         src/GenericGFPoly.cpp
-        src/TextUtfEncoding.h # [[deprecated]]
         src/TextUtfEncoding.cpp # [[deprecated]]
         src/Scope.h
     )
@@ -154,7 +129,6 @@ if (ZXING_READERS)
         src/BitSource.cpp
         src/ConcentricFinder.h
         src/ConcentricFinder.cpp
-        src/DecodeHints.h
         $<$<BOOL:${BUILD_SHARED_LIBS}>:src/DecodeHints.cpp> # [[deprecated]]
         src/DecoderResult.h
         src/DetectorResult.h
@@ -176,10 +150,8 @@ if (ZXING_READERS)
         src/ReedSolomonDecoder.h
         src/ReedSolomonDecoder.cpp
         src/RegressionLine.h
-        src/Result.h # [[deprecated]]
         src/ResultPoint.h
         src/ResultPoint.cpp
-        src/StructuredAppend.h
         src/TextDecoder.h
         src/TextDecoder.cpp
         src/ThresholdBinarizer.h
@@ -201,48 +173,47 @@ if (ZXING_WRITERS_OLD)
         src/ReedSolomonEncoder.cpp
         src/TextEncoder.h
         src/TextEncoder.cpp
-        src/MultiFormatWriter.h
         src/MultiFormatWriter.cpp
     )
 endif()
 
 # define subset of public headers that get distributed with the binaries
 set (PUBLIC_HEADERS
-    src/Barcode.h
-    src/BarcodeFormat.h
-    src/BitHacks.h
-    src/ByteArray.h
-    src/CharacterSet.h
-    src/Content.h
-    src/Error.h
-    src/Flags.h
-    src/GTIN.h
-    src/ImageView.h
-    src/Point.h
-    src/Quadrilateral.h
-    src/ReadBarcode.h
-    src/ReaderOptions.h
-    src/StructuredAppend.h
-    src/TextUtfEncoding.h # [[deprecated]]
-    src/ZXingCpp.h
-    src/ZXAlgorithms.h
-    src/ZXVersion.h # [[deprecated]]
-    $<$<BOOL:${ZXING_C_API}>:${CMAKE_CURRENT_SOURCE_DIR}/src/ZXingC.h>
-    $<$<BOOL:${ZXING_EXPERIMENTAL_API}>:${CMAKE_CURRENT_SOURCE_DIR}/src/WriteBarcode.h>
+    include/ZXing/Barcode.h
+    include/ZXing/BarcodeFormat.h
+    include/ZXing/BitHacks.h
+    include/ZXing/ByteArray.h
+    include/ZXing/CharacterSet.h
+    include/ZXing/Content.h
+    include/ZXing/Error.h
+    include/ZXing/Flags.h
+    include/ZXing/GTIN.h
+    include/ZXing/ImageView.h
+    include/ZXing/Point.h
+    include/ZXing/Quadrilateral.h
+    include/ZXing/ReadBarcode.h
+    include/ZXing/ReaderOptions.h
+    include/ZXing/StructuredAppend.h
+    include/ZXing/TextUtfEncoding.h # [[deprecated]]
+    include/ZXing/ZXingCpp.h
+    include/ZXing/ZXAlgorithms.h
+    include/ZXing/ZXVersion.h # [[deprecated]]
+    $<$<BOOL:${ZXING_C_API}>:${CMAKE_CURRENT_SOURCE_DIR}/include/ZXing/ZXingC.h>
+    $<$<BOOL:${ZXING_EXPERIMENTAL_API}>:${CMAKE_CURRENT_SOURCE_DIR}/include/ZXing/WriteBarcode.h>
 )
 if (ZXING_READERS)
     set (PUBLIC_HEADERS ${PUBLIC_HEADERS}
-        src/DecodeHints.h # [[deprecated]]
-        src/Result.h # [[deprecated]]
+        include/ZXing/DecodeHints.h # [[deprecated]]
+        include/ZXing/Result.h # [[deprecated]]
     )
 endif()
 if (ZXING_WRITERS_OLD)
     set (PUBLIC_HEADERS ${PUBLIC_HEADERS}
-        src/BitMatrix.h
-        src/BitMatrixIO.h
-        src/Range.h
-        src/Matrix.h
-        src/MultiFormatWriter.h
+        include/ZXing/BitMatrix.h
+        include/ZXing/BitMatrixIO.h
+        include/ZXing/Range.h
+        include/ZXing/Matrix.h
+        include/ZXing/MultiFormatWriter.h
     )
 endif()
 # end of public header set
@@ -501,8 +472,8 @@ add_library (ZXing
 )
 
 target_include_directories (ZXing
-    PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>" "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
-    INTERFACE "$<INSTALL_INTERFACE:include>"
+    PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>" "$<INSTALL_INTERFACE:include>"
+    PRIVATE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>"
 )
 
 target_compile_options (ZXing

@@ -3,7 +3,7 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "Error.h"
+#include <ZXing/Error.h>
 
 #include "gtest/gtest.h"
 

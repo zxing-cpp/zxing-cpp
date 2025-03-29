@@ -3,17 +3,17 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "Content.h"
+#include <ZXing/Content.h>
 
-#include "CharacterSet.h"
+#include <ZXing/CharacterSet.h>
 #include "ECI.h"
 #include "HRI.h"
 #include "TextDecoder.h"
 #include "Utf.h"
-#include "ZXAlgorithms.h"
+#include <ZXing/ZXAlgorithms.h>
 
 #if !defined(ZXING_READERS) && !defined(ZXING_WRITERS)
-#include "Version.h"
+#include <ZXing/Version.h>
 #endif
 
 #include <cctype>

@@ -7,9 +7,9 @@
 
 #include "QRCodecMode.h"
 
-#include "Error.h"
+#include <ZXing/Error.h>
 #include "QRVersion.h"
-#include "ZXAlgorithms.h"
+#include <ZXing/ZXAlgorithms.h>
 
 #include <array>
 

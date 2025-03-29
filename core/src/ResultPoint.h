@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "Point.h"
+#include <ZXing/Point.h>
 
 namespace ZXing {
 

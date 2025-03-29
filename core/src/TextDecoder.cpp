@@ -6,10 +6,10 @@
 
 #include "TextDecoder.h"
 
-#include "CharacterSet.h"
+#include <ZXing/CharacterSet.h>
 #include "ECI.h"
 #include "Utf.h"
-#include "ZXAlgorithms.h"
+#include <ZXing/ZXAlgorithms.h>
 #include "libzueci/zueci.h"
 
 #include <cassert>

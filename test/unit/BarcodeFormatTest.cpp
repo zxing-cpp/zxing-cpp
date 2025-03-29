@@ -3,7 +3,7 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "BarcodeFormat.h"
+#include <ZXing/BarcodeFormat.h>
 
 #include "gtest/gtest.h"
 #include <stdexcept>

@@ -4,14 +4,14 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "Barcode.h"
+#include <ZXing/Barcode.h>
 
 #include "DecoderResult.h"
 #include "DetectorResult.h"
-#include "ZXAlgorithms.h"
+#include <ZXing/ZXAlgorithms.h>
 
 #ifdef ZXING_EXPERIMENTAL_API
-#include "BitMatrix.h"
+#include <ZXing/BitMatrix.h>
 
 #ifdef ZXING_USE_ZINT
 #include <zint.h>

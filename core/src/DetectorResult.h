@@ -6,8 +6,8 @@
 
 #pragma once
 
-#include "BitMatrix.h"
-#include "Quadrilateral.h"
+#include <ZXing/BitMatrix.h>
+#include <ZXing/Quadrilateral.h>
 
 #include <utility>
 

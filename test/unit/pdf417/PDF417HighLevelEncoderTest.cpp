@@ -4,7 +4,7 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "CharacterSet.h"
+#include <ZXing/CharacterSet.h>
 #include "pdf417/PDFCompaction.h"
 #include "pdf417/PDFHighLevelEncoder.h"
 

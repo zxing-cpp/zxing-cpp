@@ -4,9 +4,9 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "BitMatrix.h"
-#include "BitMatrixIO.h"
-#include "ByteArray.h"
+#include <ZXing/BitMatrix.h>
+#include <ZXing/BitMatrixIO.h>
+#include <ZXing/ByteArray.h>
 #include "qrcode/QRBitMatrixParser.h"
 #include "qrcode/QRFormatInformation.h"
 #include "qrcode/QRVersion.h"
