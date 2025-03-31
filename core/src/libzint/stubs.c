@@ -16,6 +16,7 @@
 		(void)symbol; \
 		(void)source; \
 		(void)length; \
+		strcpy(symbol->errtxt, "Symbology " #NAME " not implemented in embedded libzint"); \
 		return ZINT_ERROR_ENCODING_PROBLEM; \
 	}
 
@@ -25,6 +26,7 @@
 		(void)symbol; \
 		(void)segs; \
 		(void)seg_count; \
+		strcpy(symbol->errtxt, "Symbology " #NAME " not implemented in embedded libzint"); \
 		return ZINT_ERROR_ENCODING_PROBLEM; \
 	}
 

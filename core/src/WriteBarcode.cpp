@@ -181,10 +181,11 @@ struct String2Int
 static int ParseECLevel(int symbology, std::string_view s)
 {
 	constexpr std::string_view EC_LABELS_QR[4] = {"L", "M", "Q", "H"};
-
 	int res = 0;
+
+	// Convert L/M/Q/H to Zint 1-4
 	if (Contains({BARCODE_QRCODE, BARCODE_MICROQR, BARCODE_RMQR}, symbology))
-		if ((res = IndexOf(EC_LABELS_QR, s) != -1))
+		if ((res = IndexOf(EC_LABELS_QR, s)) != -1)
 			return res + 1;
 
 	if (std::from_chars(s.data(), s.data() + s.size() - (s.back() == '%'), res).ec != std::errc{})
@@ -193,21 +194,20 @@ static int ParseECLevel(int symbology, std::string_view s)
 	auto findClosestECLevel = [](const std::vector<int>& list, int val) {
 		int mIdx = -2, mAbs = 100;
 		for (int i = 0; i < Size(list); ++i)
-		if (int abs = std::abs(val - list[i]); abs < mAbs) {
+			if (int abs = std::abs(val - list[i]); abs < mAbs) {
 				mIdx = i;
 				mAbs = abs;
-		}
+			}
 		return mIdx + 1;
 	};
 
-	if (s.back()=='%'){
+	// Convert percentage to Zint
+	if (s.back() == '%') {
 		switch (symbology) {
-		case BARCODE_QRCODE:
-		case BARCODE_MICROQR:
-		case BARCODE_RMQR:
-			return findClosestECLevel({20, 37, 55, 65}, res);
-		case BARCODE_AZTEC:
-			return findClosestECLevel({10, 23, 26, 50}, res);
+		case BARCODE_QRCODE: return findClosestECLevel({20, 37, 55, 65}, res);
+		case BARCODE_MICROQR: return findClosestECLevel({20, 37, 55}, res);
+		case BARCODE_RMQR: return res <= 46 ? 2 : 4;
+		case BARCODE_AZTEC: return findClosestECLevel({10, 23, 36, 50}, res);
 		case BARCODE_PDF417:
 			// TODO: do something sensible with PDF417?
 		default:
@@ -244,7 +244,7 @@ zint_symbol* CreatorOptions::zint() const
 
 #define CHECK(ZINT_CALL) \
 	if (int err = (ZINT_CALL); err >= ZINT_ERROR) \
-		throw std::invalid_argument(zint->errtxt);
+		throw std::invalid_argument(std::string(zint->errtxt) + " (retval: " + std::to_string(err) + ")");
 
 Barcode CreateBarcode(const void* data, int size, int mode, const CreatorOptions& opts)
 {
