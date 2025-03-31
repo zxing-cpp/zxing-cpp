@@ -490,7 +490,7 @@ static int NumericCompaction(const std::vector<int>& codewords, int codeIndex, C
 			codeIndex++;
 		}
 		if (count > 0 && (count == MAX_NUMERIC_CODEWORDS || codeIndex == codewords[0] || code >= TEXT_COMPACTION_MODE_LATCH)) {
-			result += DecodeBase900toBase10(codewords, codeIndex, count);
+			result.append(DecodeBase900toBase10(codewords, codeIndex, count));
 			count = 0;
 		}
 

@@ -265,7 +265,7 @@ static void DecodeBase256Segment(BitSource& bits, Content& result)
 	for (int i = 0; i < count; i++) {
 		// readBits(8) may fail, have seen this particular error in the wild, such as at
 		// http://www.bcgen.com/demo/IDAutomationStreamingDataMatrix.aspx?MODE=3&D=Fred&PFMT=3&PT=F&X=0.3&O=0&LM=0.2
-		result += narrow_cast<uint8_t>(Unrandomize255State(bits.readBits(8), codewordPosition++));
+		result.push_back(Unrandomize255State(bits.readBits(8), codewordPosition++));
 	}
 }
 

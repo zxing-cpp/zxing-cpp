@@ -84,7 +84,7 @@ void Content::erase(int pos, int n)
 			e.pos -= n;
 }
 
-void Content::insert(int pos, const std::string& str)
+void Content::insert(int pos, std::string_view str)
 {
 	bytes.insert(bytes.begin() + pos, str.begin(), str.end());
 	for (auto& e : encodings)
