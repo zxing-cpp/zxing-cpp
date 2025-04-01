@@ -276,7 +276,7 @@ DecoderResult Decode(ByteArray&& bytes, const int mode)
 		auto country  = ToString(GetCountry(bytes), 3);
 		auto service  = ToString(GetServiceClass(bytes), 3);
 		GetMessage(bytes, 10, 84, result, sai);
-		result.insert(result.bytes.asString().starts_with("[)>\u001E01\u001D") ? 9 : 0, // "[)>" + RS + "01" + GS
+		result.insert(result.bytes.asString().compare(0, 7, "[)>\u001E01\u001D") == 0 ? 9 : 0, // "[)>" + RS + "01" + GS
 					  postcode + GS + country + GS + service + GS);
 		break;
 	}
