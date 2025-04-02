@@ -154,7 +154,7 @@ Barcode DataBarLimitedReader::decodePattern(int rowNumber, PatternView& next, st
 			continue;
 
 		return {ConstructText(left, right),    rowNumber, next.pixelsInFront(), next.pixelsTillEnd(),
-				BarcodeFormat::DataBarLimited, {'e', '0'}};
+				BarcodeFormat::DataBarLimited, {'e', '0', 0, AIFlag::GS1}};
 	}
 
 	// guarantee progress (see loop in ODReader.cpp)
