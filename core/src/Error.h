@@ -46,10 +46,15 @@ inline bool operator!=(const Error& e, Error::Type t) noexcept { return !(e == t
 inline bool operator==(Error::Type t, const Error& e) noexcept { return e.type() == t; }
 inline bool operator!=(Error::Type t, const Error& e) noexcept { return !(t == e); }
 
+#if DEBUG
 #define FormatError(...) Error(__FILE__, __LINE__, Error::Format, std::string(__VA_ARGS__))
 #define ChecksumError(...) Error(__FILE__, __LINE__, Error::Checksum, std::string(__VA_ARGS__))
 #define UnsupportedError(...) Error(__FILE__, __LINE__, Error::Unsupported, std::string(__VA_ARGS__))
-
+#else
+#define FormatError(...) Error(Error::Format, std::string(""))
+#define ChecksumError(...) Error(Error::Checksum, std::string(""))
+#define UnsupportedError(...) Error(Error::Unsupported, std::string(""))
+#endif
 std::string ToString(const Error& e);
 
 }
