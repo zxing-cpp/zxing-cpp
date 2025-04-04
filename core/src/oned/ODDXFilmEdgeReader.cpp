@@ -41,7 +41,7 @@ bool IsPattern(PatternView& view, const FixedPattern<N, SUM>& pattern, float min
 
 bool DistIsBelowThreshold(PointI a, PointI b, PointI threshold)
 {
-	return std::abs(a.x - b.x) < threshold.x && std::abs(a.y - b.y) < threshold.y;
+	return std::abs(a.x - b.x) <= threshold.x && std::abs(a.y - b.y) <= threshold.y;
 }
 
 // DX Film Edge clock track found on 35mm films.
@@ -70,7 +70,7 @@ struct DXFEState : public RowReader::DecodingState
 	// see if we a clock that starts near {x, y}
 	Clock* findClock(int x, int y)
 	{
-		auto i = FindIf(clocks, [start = PointI{x, y}](auto& v) { return v.isCloseToStart(start.x, start.y); });
+		auto i = FindIf(clocks, [start = PointI{x, y}](auto& v) { return v.rowNumber != start.y && v.isCloseToStart(start.x, start.y); });
 		return i != clocks.end() ? &(*i) : nullptr;
 	}
 
@@ -114,7 +114,7 @@ Barcode DXFilmEdgeReader::decodePattern(int rowNumber, PatternView& next, std::u
 	auto dxState = static_cast<DXFEState*>(state.get());
 
 	// Only consider rows below the center row of the image
-	if (!_opts.tryRotate() && rowNumber < dxState->centerRow)
+	if (!_opts.tryRotate() && rowNumber < dxState->centerRow - 1)
 		return {};
 
 	// Look for a pattern that is part of both the clock as well as the data track (ommitting the first bar)
