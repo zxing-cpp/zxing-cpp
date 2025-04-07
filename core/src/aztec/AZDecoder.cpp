@@ -119,7 +119,7 @@ static BitArray ExtractBits(const DetectorResult& ddata)
 /**
 * @brief Performs RS error correction on an array of bits.
 */
-static BitArray CorrectBits(const DetectorResult& ddata, const BitArray& rawbits)
+static std::pair<BitArray, int> CorrectBits(const DetectorResult& ddata, const BitArray& rawbits)
 {
 	const GenericGF* gf = nullptr;
 	int codewordSize;
@@ -167,7 +167,7 @@ static BitArray CorrectBits(const DetectorResult& ddata, const BitArray& rawbits
 			correctedBits.appendBits(dataWord, codewordSize);
 	}
 
-	return correctedBits;
+	return {std::move(correctedBits), numECCodewords * 100 / numCodewords};
 }
 
 /**
@@ -367,8 +367,8 @@ DecoderResult Decode(const DetectorResult& detectorResult)
 			// This is a rune - just return the rune value
 			return DecodeRune(detectorResult);
 		}
-		auto bits = CorrectBits(detectorResult, ExtractBits(detectorResult));
-		return Decode(bits);
+		auto [bits, ecLevel] = CorrectBits(detectorResult, ExtractBits(detectorResult));
+		return Decode(bits).setEcLevel(std::to_string(ecLevel) + "%");
 	} catch (Error e) {
 		return e;
 	}
