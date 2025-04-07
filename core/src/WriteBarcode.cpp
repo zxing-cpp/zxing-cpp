@@ -470,6 +470,11 @@ std::string WriteBarcodeToUtf8(const Barcode& barcode, [[maybe_unused]] const Wr
 	bool inverted = false; // TODO: take from WriterOptions
 
 	for (int y = 0; y < iv.height(); y += 2) {
+		// for linear barcodes, only print line pairs that are distinct from the previous one
+		if (IsLinearBarcode(barcode.format()) && y > 1 && y < iv.height() - 1
+			&& memcmp(iv.data(0, y), iv.data(0, y - 2), 2 * iv.rowStride()) == 0)
+			continue;
+
 		for (int x = 0; x < iv.width(); ++x) {
 			int tp = bool(*iv.data(x, y)) ^ inverted;
 			int bt = (iv.height() == 1 && tp) || (y + 1 < iv.height() && (bool(*iv.data(x, y + 1)) ^ inverted));
