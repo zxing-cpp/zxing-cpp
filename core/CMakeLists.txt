@@ -103,6 +103,8 @@ set (COMMON_FILES
     src/CharacterSet.cpp
     src/Content.h
     src/Content.cpp
+    src/DecoderResult.h
+    src/DetectorResult.h
     src/ECI.h
     src/ECI.cpp
     src/Error.h
@@ -156,8 +158,6 @@ if (ZXING_READERS)
         src/ConcentricFinder.cpp
         src/DecodeHints.h
         $<$<BOOL:${BUILD_SHARED_LIBS}>:src/DecodeHints.cpp> # [[deprecated]]
-        src/DecoderResult.h
-        src/DetectorResult.h
         src/GlobalHistogramBinarizer.h
         src/GlobalHistogramBinarizer.cpp
         src/GridSampler.h

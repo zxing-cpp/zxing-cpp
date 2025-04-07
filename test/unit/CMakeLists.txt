@@ -89,6 +89,12 @@ target_sources (UnitTest PRIVATE
 )
 endif()
 
+if (ZXING_WRITERS MATCHES "NEW|BOTH")
+target_sources (UnitTest PRIVATE
+    WriteBarcodeTest.cpp
+)
+endif()
+
 target_include_directories (UnitTest PRIVATE .)
 
 target_link_libraries (UnitTest ZXing::ZXing GTest::gtest_main GTest::gmock)

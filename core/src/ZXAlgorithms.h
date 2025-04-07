@@ -46,6 +46,10 @@ inline bool Contains(const char* str, char c) {
 	return strchr(str, c) != nullptr;
 }
 
+inline bool Contains(std::string_view str, std::string_view substr) {
+	return str.find(substr) != std::string_view::npos;
+}
+
 template <template <typename...> typename C, typename... Ts>
 auto FirstOrDefault(C<Ts...>&& container)
 {
