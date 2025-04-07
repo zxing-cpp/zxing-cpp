@@ -485,32 +485,32 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		runTests("upca-1", "UPC-A", 12, {
 			{ 10, 12, 0   },
 			{ 11, 12, 180 },
-		});
+		}, ReaderOptions().setFormats(BarcodeFormat::UPCA));
 
 		runTests("upca-2", "UPC-A", 36, {
 			{ 17, 22, 0   },
 			{ 17, 22, 180 },
-		});
+		}, ReaderOptions().setFormats(BarcodeFormat::UPCA));
 
 		runTests("upca-3", "UPC-A", 21, {
 			{ 7, 11, 0   },
 			{ 8, 11, 180 },
-		});
+		}, ReaderOptions().setFormats(BarcodeFormat::UPCA));
 
 		runTests("upca-4", "UPC-A", 19, {
 			{ 8, 12, 0, 1, 0 },
 			{ 9, 12, 0, 1, 180 },
-		});
+		}, ReaderOptions().setFormats(BarcodeFormat::UPCA));
 
 		runTests("upca-5", "UPC-A", 32, {
 			{ 18, 20, 0   },
 			{ 18, 20, 180 },
-		});
+		}, ReaderOptions().setFormats(BarcodeFormat::UPCA));
 
 		runTests("upca-extension-1", "UPC-A", 6, {
 			{ 4, 4, 0 },
 			{ 3, 4, 180 },
-		}, ReaderOptions().setEanAddOnSymbol(EanAddOnSymbol::Require));
+		}, ReaderOptions().setEanAddOnSymbol(EanAddOnSymbol::Require).setFormats(BarcodeFormat::UPCA));
 
 		runTests("upce-1", "UPC-E", 3, {
 			{ 3, 3, 0   },
