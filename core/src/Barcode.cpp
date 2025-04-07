@@ -164,19 +164,19 @@ void Result::zint(unique_zint_symbol&& z)
 
 bool Result::operator==(const Result& o) const
 {
-	// handle case where both are MatrixCodes first
-	if (!BarcodeFormats(BarcodeFormat::LinearCodes).testFlags(format() | o.format())) {
-		if (format() != o.format() || (bytes() != o.bytes() && isValid() && o.isValid()))
+	if (format() != o.format())
+		return false;
+
+	// handle MatrixCodes first
+	if (!IsLinearBarcode(format())) {
+		if (bytes() != o.bytes() && isValid() && o.isValid())
 			return false;
 
 		// check for equal position if both are valid with equal bytes or at least one is in error
 		return IsInside(Center(o.position()), position());
 	}
 
-	if (format() != o.format() || bytes() != o.bytes() || error() != o.error())
-		return false;
-
-	if (orientation() != o.orientation())
+	if (bytes() != o.bytes() || error() != o.error() || orientation() != o.orientation())
 		return false;
 
 	if (lineCount() > 1 && o.lineCount() > 1)

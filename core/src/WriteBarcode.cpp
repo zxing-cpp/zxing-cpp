@@ -436,7 +436,7 @@ Image WriteBarcodeToImage(const Barcode& barcode, [[maybe_unused]] const WriterO
 	auto zint = barcode.zint();
 
 	if (!zint)
-		return ToImage(barcode._symbol->copy(), IsLinearCode(barcode.format()), opts);
+		return ToImage(barcode._symbol->copy(), IsLinearBarcode(barcode.format()), opts);
 
 #if defined(ZXING_WRITERS) && defined(ZXING_USE_ZINT)
 	auto resetOnExit = SetCommonWriterOptions(zint, opts);

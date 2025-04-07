@@ -53,6 +53,11 @@ enum class BarcodeFormat
 
 ZX_DECLARE_FLAGS(BarcodeFormats, BarcodeFormat)
 
+inline constexpr bool IsLinearBarcode(BarcodeFormat format)
+{
+	return BarcodeFormats(BarcodeFormat::LinearCodes).testFlag(format);
+}
+
 std::string ToString(BarcodeFormat format);
 std::string ToString(BarcodeFormats formats);
 
