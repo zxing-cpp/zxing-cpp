@@ -150,7 +150,7 @@ Barcode DataBarLimitedReader::decodePattern(int rowNumber, PatternView& next, st
 
 		printf("- %d, %d, %d\n", checkSum, left.value, right.value);
 
-		if ((left.checksum + 20 * right.checksum) % 89 != checkSum)
+		if (!left || !right || (left.checksum + 20 * right.checksum) % 89 != checkSum)
 			continue;
 
 		return {ConstructText(left, right),    rowNumber, next.pixelsInFront(), next.pixelsTillEnd(),
