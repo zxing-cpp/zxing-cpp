@@ -95,7 +95,7 @@ jobs:
         path: install
 
   build-ubuntu-sanitize:
-    runs-on: ubuntu-20.04 # see https://github.com/quantumlib/Stim/issues/717#issuecomment-2002623560
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
 
