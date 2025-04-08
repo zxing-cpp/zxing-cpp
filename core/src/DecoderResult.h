@@ -24,11 +24,11 @@ class DecoderResult
 	std::string _ecLevel;
 	int _lineCount = 0;
 	int _versionNumber = 0;
-	int _dataMask = 0;
 	StructuredAppendInfo _structuredAppend;
 	bool _isMirrored = false;
 	bool _readerInit = false;
 	Error _error;
+	std::string _json;
 	std::shared_ptr<CustomData> _extra;
 
 	DecoderResult(const DecoderResult &) = delete;
@@ -72,11 +72,11 @@ public:
 	ZX_PROPERTY(std::string, ecLevel, setEcLevel)
 	ZX_PROPERTY(int, lineCount, setLineCount)
 	ZX_PROPERTY(int, versionNumber, setVersionNumber)
-	ZX_PROPERTY(int, dataMask, setDataMask)
 	ZX_PROPERTY(StructuredAppendInfo, structuredAppend, setStructuredAppend)
 	ZX_PROPERTY(Error, error, setError)
 	ZX_PROPERTY(bool, isMirrored, setIsMirrored)
 	ZX_PROPERTY(bool, readerInit, setReaderInit)
+	ZX_PROPERTY(std::string, json, setJson)
 	ZX_PROPERTY(std::shared_ptr<CustomData>, extra, setExtra)
 
 #undef ZX_PROPERTY

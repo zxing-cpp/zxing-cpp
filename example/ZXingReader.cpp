@@ -312,6 +312,7 @@ int main(int argc, char* argv[])
 				std::cout << "Reader Initialisation/Programming\n";
 
 #ifdef ZXING_EXPERIMENTAL_API
+			printOptional("Extra:      ", barcode.extra());
 			if (cli.showSymbol && barcode.symbol().data())
 				std::cout << "Symbol:\n" << WriteBarcodeToUtf8(barcode);
 #endif

@@ -114,6 +114,7 @@ static bool DecodeDigits(int digitCount, PatternView& next, std::string& txt, in
 struct PartialResult
 {
 	std::string txt;
+	std::string json;
 	PatternView end;
 	BarcodeFormat format = BarcodeFormat::None;
 
@@ -280,9 +281,10 @@ Barcode MultiUPCEANReader::decodePattern(int rowNumber, PatternView& next, std::
 
 	// ISO/IEC 15420:2009 (& GS1 General Specifications 5.1.3) states that the content for "]E0" should be 13 digits,
 	// i.e. converted to EAN-13 if UPC-A/E
-	if (res.format == BarcodeFormat::UPCE)
-		// TODO: save UPCE text in JSON extension (3.0)
+	if (res.format == BarcodeFormat::UPCE) {
+		res.json = JsonValue("UPC-E", res.txt);
 		res.txt = "0" + UPCEANCommon::ConvertUPCEtoUPCA(res.txt);
+	}
 
 	Error error = !GTIN::IsCheckDigitValid(res.txt) ? ChecksumError() : Error();
 
@@ -314,7 +316,11 @@ Barcode MultiUPCEANReader::decodePattern(int rowNumber, PatternView& next, std::
 	if (_opts.eanAddOnSymbol() == EanAddOnSymbol::Require && !addOnRes.isValid())
 		return {};
 
-	return Barcode(res.txt, rowNumber, begin.pixelsInFront(), next.pixelsTillEnd(), res.format, symbologyIdentifier, error);
+	return Barcode(res.txt, rowNumber, begin.pixelsInFront(), next.pixelsTillEnd(), res.format, symbologyIdentifier, error)
+#ifdef ZXING_EXPERIMENTAL_API
+		.extra(std::move(res.json))
+#endif
+		;
 }
 
 } // namespace ZXing::OneD

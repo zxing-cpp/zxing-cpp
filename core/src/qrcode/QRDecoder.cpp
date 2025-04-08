@@ -363,10 +363,13 @@ DecoderResult Decode(const BitMatrix& bits)
 		resultIterator = std::copy_n(codewordBytes.begin(), numDataCodewords, resultIterator);
 	}
 
+	auto versionStr = version.isRMQR() ? "R" + ToString(Version::SymbolSize(version.versionNumber(), version.type()), true)
+									   : (version.isMicro() ? "M" : "") + std::to_string(version.versionNumber());
+
 	// Decode the contents of that stream of bytes
 	auto ret = DecodeBitStream(std::move(resultBytes), version, formatInfo.ecLevel)
-		.setDataMask(formatInfo.mask)
-		.setIsMirrored(formatInfo.isMirrored);
+		.setIsMirrored(formatInfo.isMirrored)
+		.setJson(JsonValue("DataMask", formatInfo.dataMask) + JsonValue("Version", versionStr));
 	if (error)
 		ret.setError(error);
 	return ret;

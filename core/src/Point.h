@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <string>
 
 namespace ZXing {
 
@@ -153,6 +154,11 @@ PointT<T> mainDirection(PointT<T> d)
 	return std::abs(d.x) > std::abs(d.y) ? PointT<T>(d.x, 0) : PointT<T>(0, d.y);
 }
 
+template <typename T>
+std::string ToString(const PointT<T>& p, bool swap = false, char delim = 'x')
+{
+	return std::to_string(swap ? p.y : p.x) + delim + std::to_string(swap ? p.x : p.y);
+}
 
 } // ZXing
 

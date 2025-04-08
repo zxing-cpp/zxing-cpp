@@ -52,6 +52,7 @@ Result::Result(DecoderResult&& decodeResult, DetectorResult&& detectorResult, Ba
 	  _readerInit(decodeResult.readerInit())
 #ifdef ZXING_EXPERIMENTAL_API
 	  , _symbol(std::make_shared<BitMatrix>(std::move(detectorResult).bits()))
+	  , _json(std::move(decodeResult).json())
 #endif
 {
 	if (decodeResult.versionNumber())
