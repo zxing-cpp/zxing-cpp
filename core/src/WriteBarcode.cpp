@@ -103,8 +103,9 @@ WriterOptions& WriterOptions::operator=(WriterOptions&&) = default;
 
 static bool SupportsGS1(BarcodeFormat format)
 {
-	using enum BarcodeFormat;
-	return (Aztec | Code128 | DataMatrix | QRCode | RMQRCode).testFlag(format);
+	return (BarcodeFormat::Aztec | BarcodeFormat::Code128 | BarcodeFormat::DataMatrix | BarcodeFormat::QRCode
+			| BarcodeFormat::RMQRCode)
+		.testFlag(format);
 }
 
 static std::string ToSVG(ImageView iv)

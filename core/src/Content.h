@@ -74,6 +74,7 @@ public:
 	void append(std::span<const uint8_t> ba) { bytes.insert(bytes.end(), ba.begin(), ba.end()); }
 #else
 	void append(const ByteArray& ba) { bytes.insert(bytes.end(), ba.begin(), ba.end()); }
+	void append(std::basic_string_view<uint8_t> ba) { bytes.insert(bytes.end(), ba.begin(), ba.end()); }
 #endif
 	void append(const Content& other);
 
