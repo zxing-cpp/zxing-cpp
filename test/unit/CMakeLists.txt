@@ -18,6 +18,7 @@ add_executable (UnitTest
     CharacterSetECITest.cpp
     ErrorTest.cpp
     GTINTest.cpp
+    JSONTest.cpp
     PseudoRandom.h
     SanitizerSupport.cpp
     TextUtfEncodingTest.cpp

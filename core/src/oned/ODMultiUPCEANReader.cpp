@@ -13,6 +13,7 @@
 #include "GTIN.h"
 #include "ODUPCEANCommon.h"
 #include "Barcode.h"
+#include "JSON.h"
 
 #include <cmath>
 

@@ -11,6 +11,7 @@
 #include "CharacterSet.h"
 #include "DecoderResult.h"
 #include "GenericGF.h"
+#include "JSON.h"
 #include "QRBitMatrixParser.h"
 #include "QRCodecMode.h"
 #include "QRDataBlock.h"

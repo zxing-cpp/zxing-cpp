@@ -121,18 +121,6 @@ std::string ToString(T val, int len)
 	return result;
 }
 
-inline std::string JsonValue(std::string_view key, std::string_view val, int indent = 0)
-{
-	//TODO: use std::format from c++20
-	return val.empty() ? std::string() : std::string(indent * 2, ' ') + "\"" + std::string(key) + "\":\"" + std::string(val) + "\",";
-}
-
-template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
-std::string JsonValue(std::string_view key, T val, int indent = 0)
-{
-	return JsonValue(key, std::to_string(val), indent);
-}
-
 template <typename T>
 void UpdateMin(T& min, T val)
 {

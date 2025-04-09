@@ -8,6 +8,7 @@
 
 #include "WriteBarcode.h"
 #include "BitMatrix.h"
+#include "JSON.h"
 
 #if !defined(ZXING_READERS) && !defined(ZXING_WRITERS)
 #include "Version.h"
@@ -62,7 +63,7 @@ struct CreatorOptions::Data
 #undef ZX_PROPERTY
 
 #define ZX_RO_PROPERTY(TYPE, NAME) \
-	TYPE CreatorOptions::NAME() const noexcept { return Contains(std::string_view(d->options), std::string_view(#NAME)); }
+	TYPE CreatorOptions::NAME() const noexcept { return JsonGet<TYPE>(d->options, #NAME); }
 
 	ZX_RO_PROPERTY(bool, gs1);
 	ZX_RO_PROPERTY(bool, stacked);

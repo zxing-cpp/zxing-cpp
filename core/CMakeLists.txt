@@ -113,6 +113,7 @@ set (COMMON_FILES
     src/GTIN.h
     src/GTIN.cpp
     src/ImageView.h
+    src/JSON.h
     src/Matrix.h
     src/Point.h
     src/Quadrilateral.h
