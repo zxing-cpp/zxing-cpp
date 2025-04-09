@@ -390,12 +390,12 @@ zint_symbol* CreatorOptions::zint() const
 			zint->option_1 = ParseECLevel(zint->symbology, ecLevel());
 
 		if (auto str = version(); str.size() && !IsLinearBarcode(format()))
-			if (std::from_chars(str.begin(), str.end(), zint->option_2).ec != std::errc())
+			if (std::from_chars(str.data(), str.data() + str.size(), zint->option_2).ec != std::errc())
 				throw std::invalid_argument("failed to parse version number from options");
 
 		if (auto str = datamask(); str.size() && (BarcodeFormat::QRCode | BarcodeFormat::MicroQRCode).testFlag(format())) {
 			int val = 0;
-			if (std::from_chars(str.begin(), str.end(), val).ec != std::errc())
+			if (std::from_chars(str.data(), str.data() + str.size(), val).ec != std::errc())
 				throw std::invalid_argument("failed to parse version number from options");
 			zint->option_3 = (zint->option_3 & 0xFF) | (val + 1) << 8;
 		}
