@@ -52,6 +52,8 @@ public:
 
 	ZX_RO_PROPERTY(bool, gs1);
 	ZX_RO_PROPERTY(bool, stacked);
+	ZX_RO_PROPERTY(std::string_view, version);
+	ZX_RO_PROPERTY(std::string_view, datamask);
 #undef ZX_RO_PROPERTY
 };
 

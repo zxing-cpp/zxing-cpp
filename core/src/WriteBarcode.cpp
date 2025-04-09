@@ -67,6 +67,8 @@ struct CreatorOptions::Data
 
 	ZX_RO_PROPERTY(bool, gs1);
 	ZX_RO_PROPERTY(bool, stacked);
+	ZX_RO_PROPERTY(std::string_view, version);
+	ZX_RO_PROPERTY(std::string_view, datamask);
 
 #undef ZX_PROPERTY
 
@@ -386,6 +388,17 @@ zint_symbol* CreatorOptions::zint() const
 
 		if (!ecLevel().empty())
 			zint->option_1 = ParseECLevel(zint->symbology, ecLevel());
+
+		if (auto str = version(); str.size() && !IsLinearBarcode(format()))
+			if (std::from_chars(str.begin(), str.end(), zint->option_2).ec != std::errc())
+				throw std::invalid_argument("failed to parse version number from options");
+
+		if (auto str = datamask(); str.size() && (BarcodeFormat::QRCode | BarcodeFormat::MicroQRCode).testFlag(format())) {
+			int val = 0;
+			if (std::from_chars(str.begin(), str.end(), val).ec != std::errc())
+				throw std::invalid_argument("failed to parse version number from options");
+			zint->option_3 = (zint->option_3 & 0xFF) | (val + 1) << 8;
+		}
 	}
 
 	return zint.get();
