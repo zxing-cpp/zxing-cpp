@@ -37,7 +37,7 @@ static int combins(int n, int r)
 }
 
 #ifdef __cpp_lib_span
-int GetValue(const std::span<int> widths, int maxWidth, bool noNarrow)
+int GetValue(std::span<const int> widths, int maxWidth, bool noNarrow)
 #else
 int GetValue(const Array4I& widths, int maxWidth, bool noNarrow)
 #endif

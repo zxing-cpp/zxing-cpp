@@ -60,8 +60,8 @@ static Character ReadDataCharacter(const PatternView& view)
 	int evnWidest = 9 - oddWidest;
 #ifndef __cpp_lib_span
 #pragma message("DataBarLimited not supported without std::span<> (c++20 feature)")
-	int vOdd = 0;
-	int vEvn = 0;
+	int vOdd = oddWidest;
+	int vEvn = evnWidest;
 #else
 	int vOdd = GetValue(oddPattern, oddWidest, false);
 	int vEvn = GetValue(evnPattern, evnWidest, true);
