@@ -114,6 +114,7 @@ set (COMMON_FILES
     src/GTIN.cpp
     src/ImageView.h
     src/JSON.h
+    src/JSON.cpp
     src/Matrix.h
     src/Point.h
     src/Quadrilateral.h

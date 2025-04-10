@@ -5,10 +5,13 @@
 
 #pragma once
 
-#include <cstring>
-#include <string>
+#include "Error.h"
 
-#include "ZXAlgorithms.h"
+#include <charconv>
+#include <cstring>
+#include <stdexcept>
+#include <string>
+#include <string_view>
 
 namespace ZXing {
 
@@ -27,36 +30,11 @@ inline std::string JsonValue(std::string_view key, T val, int indent = 0)
 		return JsonValue(key, std::to_string(val), indent);
 }
 
-inline bool JsonGetBool(std::string_view json, std::string_view key)
-{
-	auto posKey = json.find(key);
-	if (posKey == std::string_view::npos || key.empty())
-		return false;
+bool JsonGetBool(std::string_view json, std::string_view key);
+std::string_view JsonGetStr(std::string_view json, std::string_view key);
 
-	auto posSep = posKey + key.size();
-	if (posSep == json.size() || json[posSep] == ',')
-		return true;
-
-	if (json[posSep] != ':')
-		return false;
-
-	return posSep < json.size() - 1 && Contains("1tT", json[posSep + 1]);
-}
-
-inline std::string_view JsonGetStr(std::string_view json, std::string_view key)
-{
-	auto posKey = json.find(key);
-	if (posKey == std::string_view::npos)
-		return {};
-
-	auto posSep = posKey + key.size();
-	if (posSep + 1 >= json.size() || json[posSep] != ':')
-		return {};
-
-	return json.substr(posSep + 1, json.find_first_of(',', posSep + 1) - posSep - 1);
-}
-
-template<typename T> T JsonGet(std::string_view json, std::string_view key)
+template <typename T>
+inline T JsonGet(std::string_view json, std::string_view key)
 {
 	if constexpr (std::is_same_v<bool, T>)
 		return JsonGetBool(json, key);
@@ -64,6 +42,16 @@ template<typename T> T JsonGet(std::string_view json, std::string_view key)
 		return JsonGetStr(json, key);
 
 	throw UnsupportedError("internal error");
+}
+
+inline int svtoi(std::string_view sv)
+{
+	int val = 0;
+	auto [ptr, ec] = std::from_chars(sv.data(), sv.data() + sv.size(), val);
+	if (ec != std::errc() || ptr != sv.data() + sv.size())
+		throw std::invalid_argument("failed to parse int from '" + std::string(sv) + "'");
+
+	return val;
 }
 
 } // ZXing

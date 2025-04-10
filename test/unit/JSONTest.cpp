@@ -22,6 +22,8 @@ TEST(JSONTest, GetBool)
 	EXPECT_TRUE(JsonGetBool("key:true", "key"));
 	EXPECT_TRUE(JsonGetBool("key:1", "key"));
 	EXPECT_TRUE(JsonGetBool("key,other", "key"));
+	EXPECT_TRUE(JsonGetBool("key", "KEY"));
+	EXPECT_TRUE(JsonGetBool("key1", "key1"));
 
 	EXPECT_FALSE(JsonGetBool("", ""));
 	EXPECT_FALSE(JsonGetBool("", "key"));
@@ -29,6 +31,10 @@ TEST(JSONTest, GetBool)
 	EXPECT_FALSE(JsonGetBool("key:false", "key"));
 	EXPECT_FALSE(JsonGetBool("key:0", "key"));
 	EXPECT_FALSE(JsonGetBool("keys", "key"));
+	EXPECT_FALSE(JsonGetBool("thekey", "key"));
+
+	EXPECT_TRUE(JsonGetBool("key , other", "key"));
+	EXPECT_TRUE(JsonGetBool("\"key\": \"true\"", "key"));
 }
 
 TEST(JSONTest, GetStr)
@@ -40,4 +46,7 @@ TEST(JSONTest, GetStr)
 	EXPECT_EQ(JsonGetStr("key:abc", "key"), "abc");
 	EXPECT_EQ(JsonGetStr("key:abc,", "key"), "abc");
 	EXPECT_EQ(JsonGetStr("key:abc,key2", "key"), "abc");
+	EXPECT_EQ(JsonGetStr("key:abc", "KEY"), "abc");
+
+	EXPECT_EQ(JsonGetStr("\"key\": \"abc\"", "KEY"), "abc");
 }

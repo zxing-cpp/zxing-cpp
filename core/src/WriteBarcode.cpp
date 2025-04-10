@@ -68,7 +68,7 @@ struct CreatorOptions::Data
 	ZX_RO_PROPERTY(bool, gs1);
 	ZX_RO_PROPERTY(bool, stacked);
 	ZX_RO_PROPERTY(std::string_view, version);
-	ZX_RO_PROPERTY(std::string_view, datamask);
+	ZX_RO_PROPERTY(std::string_view, dataMask);
 
 #undef ZX_PROPERTY
 
@@ -344,18 +344,6 @@ static std::string ECLevelZint2ZXing(const zint_symbol* zint)
 	return {};
 }
 
-static std::string NormalizedOptionsString(std::string_view sv)
-{
-	std::string str(sv);
-	std::transform(str.begin(), str.end(), str.begin(), [](char c) { return (char)std::tolower(c); });
-#ifdef __cpp_lib_erase_if
-	std::erase_if(str, [](char c) { return Contains("\n \"", c); });
-#else
-	str.erase(std::remove_if(str.begin(), str.end(), [](char c) { return Contains("\n \"", c); }), str.end());
-#endif
-	return str;
-}
-
 zint_symbol* CreatorOptions::zint() const
 {
 	auto& zint = d->zint;
@@ -366,7 +354,6 @@ zint_symbol* CreatorOptions::zint() const
 #endif
 		zint.reset(ZBarcode_Create());
 
-		d->options = NormalizedOptionsString(options());
 #ifdef PRINT_DEBUG
 		printf("options: %s\n", options().c_str());
 #endif
@@ -390,15 +377,10 @@ zint_symbol* CreatorOptions::zint() const
 			zint->option_1 = ParseECLevel(zint->symbology, ecLevel());
 
 		if (auto str = version(); str.size() && !IsLinearBarcode(format()))
-			if (std::from_chars(str.data(), str.data() + str.size(), zint->option_2).ec != std::errc())
-				throw std::invalid_argument("failed to parse version number from options");
+			zint->option_2 = svtoi(str);
 
-		if (auto str = datamask(); str.size() && (BarcodeFormat::QRCode | BarcodeFormat::MicroQRCode).testFlag(format())) {
-			int val = 0;
-			if (std::from_chars(str.data(), str.data() + str.size(), val).ec != std::errc())
-				throw std::invalid_argument("failed to parse version number from options");
-			zint->option_3 = (zint->option_3 & 0xFF) | (val + 1) << 8;
-		}
+		if (auto str = dataMask(); str.size() && (BarcodeFormat::QRCode | BarcodeFormat::MicroQRCode).testFlag(format()))
+			zint->option_3 = (zint->option_3 & 0xFF) | (svtoi(str) + 1) << 8;
 	}
 
 	return zint.get();
