@@ -254,9 +254,11 @@ jobs:
     - name: Test
       run: cargo test --release --all-features
 
-    - name: Package
-      # --allow-dirty is required on the windows build (but not the ubuntu build?!)
-      run: cargo package --verbose --allow-dirty --all-features
+    # disable for now, as this started to cause random failures like "error: attempt to get status of nonexistent file 'zint/backend/rss.c'"
+    # this is apparently related with the used symlinks
+    # - name: Package
+    #   # --allow-dirty is required on the windows build (but not the ubuntu build?!)
+    #   run: cargo package --verbose --allow-dirty --all-features
 
   build-wasm:
     runs-on: ubuntu-latest
