@@ -35,6 +35,8 @@ TEST(JSONTest, GetBool)
 
 	EXPECT_TRUE(JsonGetBool("key , other", "key"));
 	EXPECT_TRUE(JsonGetBool("\"key\": \"true\"", "key"));
+	EXPECT_TRUE(JsonGetBool("{\"key\": \"true\"}", "key")); // JSON
+	EXPECT_TRUE(JsonGetBool("{'key': True'}", "key"));      // Python
 }
 
 TEST(JSONTest, GetStr)
@@ -49,4 +51,6 @@ TEST(JSONTest, GetStr)
 	EXPECT_EQ(JsonGetStr("key:abc", "KEY"), "abc");
 
 	EXPECT_EQ(JsonGetStr("\"key\": \"abc\"", "KEY"), "abc");
+	EXPECT_EQ(JsonGetStr("{\"key\": \"true\"}", "key"), "true"); // JSON
+	EXPECT_EQ(JsonGetStr("{'key': True}", "key"), "True");       // Python
 }
