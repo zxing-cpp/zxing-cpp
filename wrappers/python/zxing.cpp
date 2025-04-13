@@ -489,7 +489,7 @@ PYBIND11_MODULE(zxingcpp, m)
 		"Read (decode) multiple barcodes from a numpy BGR or grayscale image array or from a PIL image.\n\n"
 		":type image: buffer|numpy.ndarray|PIL.Image.Image\n"
 		":param image: The image object to decode. The image can be either:\n"
-		"  - a buffer with the correct shape, use .cast on memory view to convert\n"
+		"  - a buffer with the correct shape, use .cast on memoryview to convert\n"
 		"  - a numpy array containing image either in grayscale (1 byte per pixel) or BGR mode (3 bytes per pixel)\n"
 		"  - a PIL Image\n"
 		"  - a QtGui.QImage\n"
@@ -527,15 +527,15 @@ PYBIND11_MODULE(zxingcpp, m)
 				return py::dict("version"_a = 3, "data"_a = m, "shape"_a = py::make_tuple(m.height(), m.width()), "typestr"_a = "|u1");
 			})
 		.def_property_readonly("shape", [](const Image& m) { return py::make_tuple(m.height(), m.width()); })
-		.def_buffer([](const Image& m) -> py::buffer_info {
+		.def_buffer([](const Image& img) -> py::buffer_info {
 			return {
-				const_cast<uint8_t*>(m.data()),                 // Pointer to buffer
-				sizeof(uint8_t),                                // Size of one scalar
-				py::format_descriptor<uint8_t>::format(),       // Python struct-style format descriptor
-				2,                                              // Number of dimensions
-				{m.height(), m.width()},                        // Buffer dimensions
-				{m.rowStride(), m.pixStride()},                 // Strides (in bytes) for each index
-				true                                            // read-only
+				const_cast<uint8_t*>(img.data()),         // Pointer to buffer
+				sizeof(uint8_t),                          // Size of one scalar
+				py::format_descriptor<uint8_t>::format(), // Python struct-style format descriptor
+				2,                                        // Number of dimensions
+				{img.height(), img.width()},              // Buffer dimensions
+				{img.rowStride(), img.pixStride()},       // Strides (in bytes) for each index
+				true                                      // read-only
 			};
 		});
 
