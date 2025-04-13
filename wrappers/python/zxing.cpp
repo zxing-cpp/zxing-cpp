@@ -14,6 +14,7 @@
 // Writer
 #ifdef ZXING_EXPERIMENTAL_API
 #include "WriteBarcode.h"
+#include <bit>
 #else
 #include "BitMatrix.h"
 #include "Matrix.h"
@@ -106,6 +107,31 @@ auto read_barcodes_impl(py::object _image, const BarcodeFormats& formats, bool t
 			} else {
 				info = _image.cast<py::buffer>().request();
 			}
+#ifdef ZXING_EXPERIMENTAL_API
+		} else if(_type.find("QtGui.QImage") != std::string::npos) {
+			const std::string format = py::str(_image.attr("format")());
+			if (format.ends_with("Format_ARGB32") || format.ends_with("Format_RGB32")) {
+				if constexpr (std::endian::native == std::endian::little)
+					imgfmt = ImageFormat::BGRA;
+				else
+					imgfmt = ImageFormat::ARGB;
+			} else if (format.ends_with("Format_RGBA8888"))
+				imgfmt = ImageFormat::RGBA;
+			else if (format.ends_with("Format_RGB888"))
+				imgfmt = ImageFormat::RGB;
+			else if (format.ends_with("Format_BGR888"))
+				imgfmt = ImageFormat::BGR;
+			else if (format.ends_with("Format_Grayscale8"))
+				imgfmt = ImageFormat::Lum;
+			else {
+				_image = _image.attr("convertToFormat")(24).cast<py::buffer>(); // 24 is Format_Greyscale8
+				imgfmt = ImageFormat::Lum;
+			}
+			info = _image.attr("constBits")().cast<py::buffer>().request();
+			info.ndim = 3;
+			info.shape = {_image.attr("height")().cast<ssize_t>(), _image.attr("width")().cast<ssize_t>(), PixStride(imgfmt)};
+			info.strides = {_image.attr("bytesPerLine")().cast<ssize_t>(), PixStride(imgfmt), 1};
+#endif
 		} else {
 			info = _image.cast<py::buffer>().request();
 		}
@@ -392,6 +418,7 @@ PYBIND11_MODULE(zxingcpp, m)
 		"  - a buffer with the correct shape, use .cast on memory view to convert\n"
 		"  - a numpy array containing image either in grayscale (1 byte per pixel) or BGR mode (3 bytes per pixel)\n"
 		"  - a PIL Image\n"
+		"  - a QtGui.QImage\n"
 		":type formats: zxing.BarcodeFormat|zxing.BarcodeFormats\n"
 		":param formats: the format(s) to decode. If ``None``, decode all formats.\n"
 		":type try_rotate: bool\n"
@@ -434,6 +461,7 @@ PYBIND11_MODULE(zxingcpp, m)
 		"  - a buffer with the correct shape, use .cast on memory view to convert\n"
 		"  - a numpy array containing image either in grayscale (1 byte per pixel) or BGR mode (3 bytes per pixel)\n"
 		"  - a PIL Image\n"
+		"  - a QtGui.QImage\n"
 		":type formats: zxing.BarcodeFormat|zxing.BarcodeFormats\n"
 		":param formats: the format(s) to decode. If ``None``, decode all formats.\n"
 		":type try_rotate: bool\n"
