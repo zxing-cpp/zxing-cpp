@@ -229,6 +229,11 @@ jobs:
       working-directory: wrappers/python
       run: python -m unittest -v
 
+    - uses: actions/upload-artifact@v4
+      with:
+        name: ${{matrix.os}}-python-artifacts
+        path: wrappers/python/zxingcpp.*
+
   build-rust:
     runs-on: ${{ matrix.os }}
     strategy:
