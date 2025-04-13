@@ -136,8 +136,8 @@ auto read_barcodes_impl(py::object _image, const BarcodeFormats& formats, bool t
 			}
 			info = _image.attr("constBits")().cast<py::buffer>().request();
 			info.ndim = 3;
-			info.shape = {_image.attr("height")().cast<ssize_t>(), _image.attr("width")().cast<ssize_t>(), PixStride(imgfmt)};
-			info.strides = {_image.attr("bytesPerLine")().cast<ssize_t>(), PixStride(imgfmt), 1};
+			info.shape = {_image.attr("height")().cast<py::ssize_t>(), _image.attr("width")().cast<py::ssize_t>(), PixStride(imgfmt)};
+			info.strides = {_image.attr("bytesPerLine")().cast<py::ssize_t>(), PixStride(imgfmt), 1};
 #endif
 		} else {
 			info = _image.cast<py::buffer>().request();
