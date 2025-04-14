@@ -275,7 +275,7 @@ static SymbologyIdentifier SymbologyIdentifierZint2ZXing(const CreatorOptions& o
 	SymbologyIdentifier ret = i->si;
 
 	if ((BarcodeFormat::EAN13 | BarcodeFormat::UPCA | BarcodeFormat::UPCE).testFlag(format)) {
-		if (Contains(ba.asString().data(), ' ')) // Have EAN-2/5 add-on?
+		if (ba.size() > 13) // Have EAN-2/5 add-on?
 			ret.modifier = '3'; // Combined packet, EAN-13, UPC-A, UPC-E, with add-on
 	} else if (format == BarcodeFormat::Code39) {
 		if (FindIf(ba, iscntrl) != ba.end()) // Extended Code 39?

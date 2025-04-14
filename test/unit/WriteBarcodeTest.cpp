@@ -40,7 +40,7 @@ static void check(int line, std::string_view input, CreatorOptions cOpts, std::s
 	// EXPECT_EQ(bc.ecLevel(), ecLevel) << "line:" << line;
 	// EXPECT_EQ(bc.version(), version) << "line:" << line;
 
-	auto br = ReadBarcode(bc.symbol(), ReaderOptions().setFormats(bc.format()).setIsPure(true));
+	auto br = ReadBarcode(bc.symbol(), ReaderOptions().setFormats(bc.format()).setIsPure(true).setEanAddOnSymbol(EanAddOnSymbol::Read));
 
 	EXPECT_EQ(bc.isValid(), br.isValid()) << "line:" << line;
 	EXPECT_EQ(ToString(bc.format()), ToString(br.format())) << "line:" << line;
@@ -183,6 +183,19 @@ TEST(WriteBarcodeTest, ZintASCII)
 
 	check(__LINE__, "1234", BarcodeFormat::UPCE, "]E0", "0000120000034", "30 30 30 30 31 32 30 30 30 30 30 33 34", false, "]E0\\0000260000120000034",
 		  "5D 45 30 30 30 30 30 31 32 30 30 30 30 30 33 34", "0000120000034", "Text", "0x0 50x0 50x73 0x73");
+}
+
+
+TEST(WriteBarcodeTest, EANUPCAddOn)
+{
+	check(__LINE__, "1234567890128+12345", BarcodeFormat::EAN13, "]E3", "123456789012812345", "31 32 33 34 35 36 37 38 39 30 31 32 38 31 32 33 34 35", false,
+		  "]E3\\000026123456789012812345", "5D 45 33 31 32 33 34 35 36 37 38 39 30 31 32 38 31 32 33 34 35", "123456789012812345", "Text");
+
+	check(__LINE__, "000000012348+12345", BarcodeFormat::UPCA, "]E3", "000000001234812345", "30 30 30 30 30 30 30 30 31 32 33 34 38 31 32 33 34 35", false,
+		  "]E3\\000026000000001234812345", "5D 45 33 30 30 30 30 30 30 30 30 31 32 33 34 38 31 32 33 34 35", "000000001234812345", "Text");
+
+	check(__LINE__, "1234+12345", BarcodeFormat::UPCE, "]E3", "000012000003412345", "30 30 30 30 31 32 30 30 30 30 30 33 34 31 32 33 34 35", false,
+		  "]E3\\000026000012000003412345", "5D 45 33 30 30 30 30 31 32 30 30 30 30 30 33 34 31 32 33 34 35", "000012000003412345", "Text");
 }
 
 TEST(WriteBarcodeTest, ZintISO8859_1)
