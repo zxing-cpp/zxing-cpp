@@ -18,7 +18,6 @@
 
 #ifdef ZXING_USE_ZINT
 
-#include "oned/ODUPCEANCommon.h"
 #include "DecoderResult.h"
 #include "DetectorResult.h"
 #include <zint.h>
@@ -428,10 +427,6 @@ Barcode CreateBarcode(const void* data, int size, int mode, const CreatorOptions
 			content.switchEncoding(CharacterSet::ISO8859_1); // set this as default to prevent guessing without setting "hasECI"
 		content.append({raw_seg.source, static_cast<size_t>(raw_seg.length - (opts.format() == BarcodeFormat::Code93 ? 2 : 0))});
 	}
-	if (opts.format() == BarcodeFormat::UPCE)
-		content.bytes = ByteArray("0" + OneD::UPCEANCommon::ConvertUPCEtoUPCA(std::string(content.bytes.asString())));
-	else if (opts.format() == BarcodeFormat::UPCA)
-		content.bytes = ByteArray("0" + std::string(content.bytes.asString()));
 #else
 	if (zint->text_length) {
 		content.switchEncoding(ECI::UTF8);
