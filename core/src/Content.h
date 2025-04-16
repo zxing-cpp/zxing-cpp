@@ -10,9 +10,6 @@
 #include "ReaderOptions.h"
 #include "ZXAlgorithms.h"
 
-#if __has_include(<span>) // c++20
-#include <span>
-#endif
 #include <string>
 #include <string_view>
 #include <vector>
@@ -70,12 +67,7 @@ public:
 	void push_back(uint8_t val) { bytes.push_back(val); }
 	void push_back(int val) { bytes.push_back(narrow_cast<uint8_t>(val)); }
 	void append(std::string_view str) { bytes.insert(bytes.end(), str.begin(), str.end()); }
-#ifdef __cpp_lib_span
-	void append(std::span<const uint8_t> ba) { bytes.insert(bytes.end(), ba.begin(), ba.end()); }
-#else
-	void append(const ByteArray& ba) { bytes.insert(bytes.end(), ba.begin(), ba.end()); }
-	void append(std::basic_string_view<uint8_t> ba) { bytes.insert(bytes.end(), ba.begin(), ba.end()); }
-#endif
+	void append(ByteView bv) { bytes.insert(bytes.end(), bv.begin(), bv.end()); }
 	void append(const Content& other);
 
 	void erase(int pos, int n);

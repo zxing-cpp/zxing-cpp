@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include "Range.h"
+
 #include <cstdint>
 #include <cstdio>
 #include <string>
@@ -15,7 +17,7 @@
 namespace ZXing {
 
 /**
-	ByteArray is an extension of std::vector<unsigned char>.
+	ByteArray is an extension of std::vector<uint8_t>.
 */
 class ByteArray : public std::vector<uint8_t>
 {
@@ -25,15 +27,20 @@ public:
 	explicit ByteArray(int len) : std::vector<uint8_t>(len, 0) {}
 	explicit ByteArray(const std::string& str) : std::vector<uint8_t>(str.begin(), str.end()) {}
 
-	void append(const ByteArray& other) { insert(end(), other.begin(), other.end()); }
+	void append(ByteView other) { insert(end(), other.begin(), other.end()); }
 
 	std::string_view asString(size_t pos = 0, size_t len = std::string_view::npos) const
 	{
 		return std::string_view(reinterpret_cast<const char*>(data()), size()).substr(pos, len);
 	}
+
+	ByteView asView(size_t pos = 0, size_t len = size_t(-1)) const
+	{
+		return ByteView(*this).subview(pos, len);
+	}
 };
 
-inline std::string ToHex(const ByteArray& bytes)
+inline std::string ToHex(ByteView bytes)
 {
 	std::string res(bytes.size() * 3, ' ');
 

@@ -104,39 +104,36 @@ std::string Content::render(bool withECI) const
 
 #ifdef ZXING_READERS
 	std::string res;
+	res.reserve(bytes.size() * 2);
 	if (withECI)
-		res = symbology.toString(true);
+		res += symbology.toString(true);
 	ECI lastECI = ECI::Unknown;
 	auto fallbackCS = defaultCharset;
 	if (!hasECI && fallbackCS == CharacterSet::Unknown)
 		fallbackCS = guessEncoding();
 
 	ForEachECIBlock([&](ECI eci, int begin, int end) {
-		// first determine how to decode the content (choose character set)
-		//  * eci == ECI::Unknown implies !hasECI and we guess
-		//  * if !IsText(eci) the ToCharcterSet(eci) will return Unknown and we decode as binary
-		CharacterSet cs = eci == ECI::Unknown ? fallbackCS : ToCharacterSet(eci);
-
+		// basic idea: if IsText(eci), we transcode it to UTF8, otherwise we treat it as binary but
+		// transcoded it to valid UTF8 bytes seqences representing the code points 0-255. The eci we report
+		// back to the caller by inserting their "\XXXXXX" ECI designator is UTF8 for text and
+		// the original ECI for everything else.
+		// first determine how to decode the content (use fallback if unknown)
+		auto inEci = IsText(eci) ? eci : eci == ECI::Unknown ? ToECI(fallbackCS) : ECI::Binary;
 		if (withECI) {
 			// then find the eci to report back in the ECI designator
-			if (IsText(ToECI(cs))) // everything decoded as text is reported as utf8
-				eci = ECI::UTF8;
-			else if (eci == ECI::Unknown) // implies !hasECI and fallbackCS is Unknown or Binary
-				eci = ECI::Binary;
+			auto outEci = IsText(inEci) ? ECI::UTF8 : eci;
 
-			if (lastECI != eci)
-				res += ToString(eci);
-			lastECI = eci;
+			if (lastECI != outEci)
+				res += ToString(outEci);
+			lastECI = outEci;
 
-			std::string tmp;
-			TextDecoder::Append(tmp, bytes.data() + begin, end - begin, cs);
-			for (auto c : tmp) {
+			for (auto c : BytesToUtf8(bytes.asView(begin, end - begin), inEci)) {
 				res += c;
-				if (c == '\\') // in the ECI protocol a '\' has to be doubled
+				if (c == '\\') // in the ECI protocol a '\' (0x5c) has to be doubled, works only because 0x5c can only mean `\`
 					res += c;
 			}
 		} else {
-			TextDecoder::Append(res, bytes.data() + begin, end - begin, cs);
+			res += BytesToUtf8(bytes.asView(begin, end - begin), inEci);
 		}
 	});
 
@@ -183,6 +180,7 @@ ByteArray Content::bytesECI() const
 		return {};
 
 	std::string res = symbology.toString(true);
+	res.reserve(res.size() + bytes.size() + encodings.size() * 8);
 
 	ForEachECIBlock([&](ECI eci, int begin, int end) {
 		if (hasECI)
@@ -206,13 +204,13 @@ CharacterSet Content::guessEncoding() const
 	ByteArray input;
 	ForEachECIBlock([&](ECI eci, int begin, int end) {
 		if (eci == ECI::Unknown)
-			input.insert(input.end(), bytes.begin() + begin, bytes.begin() + end);
+			input.append(bytes.asView(begin, end - begin));
 	});
 
 	if (input.empty())
 		return CharacterSet::Unknown;
 
-	return TextDecoder::GuessEncoding(input.data(), input.size(), CharacterSet::ISO8859_1);
+	return GuessTextEncoding(input);
 #else
 	return CharacterSet::ISO8859_1;
 #endif

@@ -1,14 +1,12 @@
 /*
 * Copyright 2016 Nu-book Inc.
 * Copyright 2022 gitlost
+* Copyright 2025 Axel Waggershauser
 */
 // SPDX-License-Identifier: Apache-2.0
 
 #include "TextDecoder.h"
 
-#include "CharacterSet.h"
-#include "ECI.h"
-#include "Utf.h"
 #include "ZXAlgorithms.h"
 #include "libzueci/zueci.h"
 
@@ -17,38 +15,29 @@
 
 namespace ZXing {
 
-void TextDecoder::Append(std::string& str, const uint8_t* bytes, size_t length, CharacterSet charset, bool sjisASCII)
+std::string BytesToUtf8(ByteView bytes, ECI eci)
 {
-	int eci = ToInt(ToECI(charset));
-	const size_t str_len = str.length();
-	const int bytes_len = narrow_cast<int>(length);
 	constexpr unsigned int replacement = 0xFFFD;
-	const unsigned int flags = ZUECI_FLAG_SB_STRAIGHT_THRU | (sjisASCII ? ZUECI_FLAG_SJIS_STRAIGHT_THRU : 0);
+	constexpr unsigned int flags = ZUECI_FLAG_SB_STRAIGHT_THRU | ZUECI_FLAG_SJIS_STRAIGHT_THRU;
 	int utf8_len;
 
-	if (eci == -1)
-		eci = 899; // Binary
+	if (eci == ECI::Unknown)
+		eci = ECI::Binary;
 
-	int error_number = zueci_dest_len_utf8(eci, bytes, bytes_len, replacement, flags, &utf8_len);
+	int error_number = zueci_dest_len_utf8(ToInt(eci), bytes.data(), bytes.size(), replacement, flags, &utf8_len);
 	if (error_number >= ZUECI_ERROR)
 		throw std::runtime_error("zueci_dest_len_utf8 failed");
 
-	str.resize(str_len + utf8_len); // Precise length
-	unsigned char *utf8_buf = reinterpret_cast<unsigned char *>(str.data()) + str_len;
+	std::string utf8(utf8_len, 0);
 
-	error_number = zueci_eci_to_utf8(eci, bytes, bytes_len, replacement, flags, utf8_buf, &utf8_len);
-	if (error_number >= ZUECI_ERROR) {
-		str.resize(str_len);
+	error_number = zueci_eci_to_utf8(ToInt(eci), bytes.data(), bytes.size(), replacement, flags,
+									 reinterpret_cast<uint8_t*>(utf8.data()), &utf8_len);
+	if (error_number >= ZUECI_ERROR)
 		throw std::runtime_error("zueci_eci_to_utf8 failed");
-	}
-	assert(str.length() == str_len + utf8_len);
-}
 
-void TextDecoder::Append(std::wstring& str, const uint8_t* bytes, size_t length, CharacterSet charset)
-{
-	std::string u8str;
-	Append(u8str, bytes, length, charset);
-	str.append(FromUtf8(u8str));
+	assert(Size(utf8) == utf8_len);
+
+	return utf8;
 }
 
 /**
@@ -57,8 +46,7 @@ void TextDecoder::Append(std::wstring& str, const uint8_t* bytes, size_t length,
 *  {@link #SHIFT_JIS}, {@link #UTF8}, {@link #ISO88591}, or the platform
 *  default encoding if none of these can possibly be correct
 */
-CharacterSet
-TextDecoder::GuessEncoding(const uint8_t* bytes, size_t length, CharacterSet fallback)
+CharacterSet GuessTextEncoding(ByteView bytes, CharacterSet fallback)
 {
 	// For now, merely tries to distinguish ISO-8859-1, UTF-8 and Shift_JIS,
 	// which should be by far the most common encodings.
@@ -82,11 +70,12 @@ TextDecoder::GuessEncoding(const uint8_t* bytes, size_t length, CharacterSet fal
 	//int isoHighChars = 0;
 	int isoHighOther = 0;
 
-	bool utf8bom = length > 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF;
+	bool utf8bom = bytes.size() > 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF;
 
-	for (size_t i = 0; i < length && (canBeISO88591 || canBeShiftJIS || canBeUTF8); ++i)
+	for (int value : bytes)
 	{
-		int value = bytes[i];
+		if(!(canBeISO88591 || canBeShiftJIS || canBeUTF8))
+			break;
 
 		// UTF-8 stuff
 		if (canBeUTF8) {
@@ -208,7 +197,7 @@ TextDecoder::GuessEncoding(const uint8_t* bytes, size_t length, CharacterSet fal
 	//   - at least 10% of bytes that could be "upper" not-alphanumeric Latin1,
 	// - then we conclude Shift_JIS, else ISO-8859-1
 	if (canBeISO88591 && canBeShiftJIS) {
-		return (sjisMaxKatakanaWordLength == 2 && sjisKatakanaChars == 2) || isoHighOther * 10 >= (int)length
+		return (sjisMaxKatakanaWordLength == 2 && sjisKatakanaChars == 2) || isoHighOther * 10 >= Size(bytes)
 			? CharacterSet::Shift_JIS : CharacterSet::ISO8859_1;
 	}
 
@@ -224,12 +213,6 @@ TextDecoder::GuessEncoding(const uint8_t* bytes, size_t length, CharacterSet fal
 	}
 	// Otherwise, we take a wild guess with platform encoding
 	return fallback;
-}
-
-CharacterSet
-TextDecoder::DefaultEncoding()
-{
-	return CharacterSet::ISO8859_1;
 }
 
 } // ZXing
