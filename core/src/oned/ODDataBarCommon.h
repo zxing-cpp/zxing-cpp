@@ -6,15 +6,12 @@
 #pragma once
 
 #include "ODRowReader.h"
+#include "Range.h"
 #include "Pattern.h"
 #include "Barcode.h"
 
 #include <array>
 #include <cmath>
-
-#if __has_include(<span>) // c++20
-#include <span>
-#endif
 
 namespace ZXing::OneD::DataBar {
 
@@ -188,11 +185,7 @@ std::array<int, LEN> NormalizedPatternFromE2E(const PatternView& view, int mods,
 bool ReadDataCharacterRaw(const PatternView& view, int numModules, bool reversed, Array4I& oddPattern,
 						  Array4I& evnPattern);
 
-#ifdef __cpp_lib_span
-int GetValue(std::span<const int> widths, int maxWidth, bool noNarrow);
-#else
-int GetValue(const Array4I& widths, int maxWidth, bool noNarrow);
-#endif
+int GetValue(ArrayView<int> widths, int maxWidth, bool noNarrow);
 
 Position EstimatePosition(const Pair& first, const Pair& last);
 int EstimateLineCount(const Pair& first, const Pair& last);
