@@ -58,14 +58,8 @@ static Character ReadDataCharacter(const PatternView& view)
 
 	int oddWidest = ODD_WIDEST[group];
 	int evnWidest = 9 - oddWidest;
-#ifndef __cpp_lib_span
-#pragma message("DataBarLimited not supported without std::span<> (c++20 feature)")
-	int vOdd = oddWidest;
-	int vEvn = evnWidest;
-#else
 	int vOdd = GetValue(oddPattern, oddWidest, false);
 	int vEvn = GetValue(evnPattern, evnWidest, true);
-#endif
 	int tEvn = T_EVEN[group];
 	int gSum = G_SUM[group];
 
