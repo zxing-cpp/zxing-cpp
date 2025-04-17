@@ -14,13 +14,16 @@
 #include <cstdint>
 #include <sstream>
 
-namespace ZXing {
-
-// TODO: c++20 has char8_t
 #if __cplusplus <= 201703L
+#include "Range.h"
 using char8_t = uint8_t;
+using utf8_t = ZXing::ArrayView<char8_t>;
+#else
+#include <string_view>
+using utf8_t = std::u8string_view;
 #endif
-using utf8_t = std::basic_string_view<char8_t>;
+
+namespace ZXing {
 
 using state_t = uint8_t;
 constexpr state_t kAccepted = 0;

@@ -538,7 +538,7 @@ Barcode CreateBarcodeFromText(std::u8string_view contents, const CreatorOptions&
 Barcode CreateBarcodeFromBytes(const void* data, int size, const CreatorOptions& opts)
 {
 	std::wstring bytes;
-	for (uint8_t c : std::basic_string_view<uint8_t>((uint8_t*)data, size))
+	for (uint8_t c : ByteView(data, size))
 		bytes.push_back(c);
 
 	auto writer = MultiFormatWriter(opts.format()).setMargin(0);

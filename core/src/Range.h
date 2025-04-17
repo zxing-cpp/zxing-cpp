@@ -79,6 +79,11 @@ public:
 
 	constexpr ArrayView(pointer data, size_type size) noexcept : _data(data), _size(size) {}
 
+	template <typename P, typename U = T,
+			  typename = std::enable_if_t<sizeof(U) == 1 && std::is_same_v<void, std::remove_cvref_t<std::remove_pointer_t<P>>>>>
+	constexpr ArrayView(P data, size_type size) noexcept : _data(reinterpret_cast<pointer>(data)), _size(size)
+	{}
+
 	template <typename Container,
 			  typename = std::enable_if_t<std::is_convertible_v<decltype(std::data(std::declval<Container&>())), const_pointer>>>
 	constexpr ArrayView(const Container& c) noexcept : _data(std::data(c)), _size(std::size(c))
