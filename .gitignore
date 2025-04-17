@@ -17,3 +17,10 @@ CMakeLists.txt.user
 
 # JetBrain (AndroidStudio, clion)
 .idea
+
+# Visual Studio
+/.vs
+/CMakeUserPresets.json
+
+# Visual Studio Code
+/.vscode
