@@ -525,7 +525,7 @@ Barcode CreateBarcodeFromText(std::string_view contents, const CreatorOptions& o
 		writer.setEccLevel(std::stoi(opts.ecLevel()));
 	writer.setEncoding(CharacterSet::UTF8); // write UTF8 (ECI value 26) for maximum compatibility
 
-	return CreateBarcode(writer.encode(std::string(contents), 0, IsLinearCode(opts.format()) ? 50 : 0), opts);
+	return CreateBarcode(writer.encode(std::string(contents), 0, IsLinearBarcode(opts.format()) ? 50 : 0), opts);
 }
 
 #if __cplusplus > 201703L
@@ -546,7 +546,7 @@ Barcode CreateBarcodeFromBytes(const void* data, int size, const CreatorOptions&
 		writer.setEccLevel(std::stoi(opts.ecLevel()));
 	writer.setEncoding(CharacterSet::BINARY);
 
-	return CreateBarcode(writer.encode(bytes, 0, IsLinearCode(opts.format()) ? 50 : 0), opts);
+	return CreateBarcode(writer.encode(bytes, 0, IsLinearBarcode(opts.format()) ? 50 : 0), opts);
 }
 
 } // namespace ZXing
