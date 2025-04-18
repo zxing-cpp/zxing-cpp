@@ -180,7 +180,7 @@ static void check_si(int line, const DecoderResult& res, const std::string& si, 
 TEST(AZDecoderTest, SymbologyIdentifier)
 {
 	// Plain
-	check_si(__LINE__, getData("00010"), "]z0", "A", -1, -1, "]z3\\000026A", "5D 7A 33 41");
+	check_si(__LINE__, getData("00010"), "]z0", "A", -1, -1, "]z3\\000026A", "5D 7A 30 41");
 
 	// GS1 ("PS FLGN(0) DL (20)01")
 	check_si(__LINE__, getData("0000000000000111100100001000100011"), "]z1", "2001");

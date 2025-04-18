@@ -179,22 +179,28 @@ ByteArray Content::bytesECI() const
 	if (empty())
 		return {};
 
-	std::string res = symbology.toString(true);
-	res.reserve(res.size() + bytes.size() + encodings.size() * 8);
+	ByteArray res;
+	res.reserve(3 + bytes.size() + hasECI * encodings.size() * 7);
 
-	ForEachECIBlock([&](ECI eci, int begin, int end) {
-		if (hasECI)
-			res += ToString(eci);
+	// report ECI protocol only if actually found ECI data in the barode bit stream
+	// see also https://github.com/zxing-cpp/zxing-cpp/issues/936
+	res.append(symbology.toString(hasECI));
 
-		for (int i = begin; i != end; ++i) {
-			char c = static_cast<char>(bytes[i]);
-			res += c;
-			if (c == '\\') // in the ECI protocol a '\' has to be doubled
-				res += c;
-		}
-	});
+	if (hasECI)
+		ForEachECIBlock([&](ECI eci, int begin, int end) {
+			if (hasECI)
+				res.append(ToString(eci));
 
-	return ByteArray(res);
+			for (auto b : bytes.asView(begin, end - begin)) {
+				res.push_back(b);
+				if (b == '\\') // in the ECI protocol a '\' has to be doubled
+					res.push_back(b);
+			}
+		});
+	else
+		res.append(bytes);
+
+	return res;
 }
 
 CharacterSet Content::guessEncoding() const

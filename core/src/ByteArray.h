@@ -28,6 +28,7 @@ public:
 	explicit ByteArray(const std::string& str) : std::vector<uint8_t>(str.begin(), str.end()) {}
 
 	void append(ByteView other) { insert(end(), other.begin(), other.end()); }
+	void append(std::string_view other) { insert(end(), other.begin(), other.end()); }
 
 	std::string_view asString(size_t pos = 0, size_t len = std::string_view::npos) const
 	{
