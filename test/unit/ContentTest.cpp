@@ -76,27 +76,33 @@ TEST(ContentTest, ECI)
 {
 	{ // switch to ECI::ISO8859_5
 		Content c;
+		c.symbology = {'d', '1', 3}; // DataMatrix
 		c.append(ByteArray{'A', 0xE9, 'Z'});
 		c.switchEncoding(ECI::ISO8859_5);
 		c.append(ByteArray{'A', 0xE9, 'Z'});
 		EXPECT_TRUE(c.hasECI);
 		EXPECT_EQ(c.utf8(), u8"A\u00E9ZA\u0449Z");
-		EXPECT_EQ(c.bytesECI().asString(), std::string_view("\\000003A\xE9Z\\000007A\xE9Z"));
+		EXPECT_EQ(c.bytesECI().asString(), std::string_view("]d4\\000003A\xE9Z\\000007A\xE9Z"));
 	}
 
 	{ // switch ECI -> latin1 for unknown (instead of Shift_JIS)
 		Content c;
+		c.symbology = {'d', '1', 3}; // DataMatrix
 		c.append(ByteArray{'A', 0x83, 0x65, 'Z'});
 		c.switchEncoding(ECI::ISO8859_5);
 		c.append(ByteArray{'A', 0xE9, 'Z'});
 		EXPECT_EQ(c.utf8(), u8"A\u0083\u0065ZA\u0449Z");
-		EXPECT_EQ(c.bytesECI().asString(), std::string_view("\\000003A\x83\x65Z\\000007A\xE9Z"));
+		EXPECT_EQ(c.bytesECI().asString(), std::string_view("]d4\\000003A\x83\x65Z\\000007A\xE9Z"));
 	}
 
 	{ // double '\'
 		Content c;
+		c.symbology = {'d', '1', 3}; // DataMatrix
 		c.append("C:\\Test");
 		EXPECT_EQ(c.utf8(), u8"C:\\Test");
-		EXPECT_EQ(c.bytesECI().asString(), std::string_view("C:\\\\Test"));
+		EXPECT_EQ(c.bytesECI().asString(), std::string_view("]d1C:\\Test"));
+		c.switchEncoding(ECI::UTF8);
+		c.append("Täßt");
+		EXPECT_EQ(c.bytesECI().asString(), std::string_view("]d4\\000003C:\\\\Test\\000026Täßt"));
 	}
 }
