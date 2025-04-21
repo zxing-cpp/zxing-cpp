@@ -4,7 +4,10 @@
  */
 // SPDX-License-Identifier: Apache-2.0
 
+#include "GTIN.h"
 #include "Version.h"
+
+#include <iomanip>
 
 #if defined(ZXING_EXPERIMENTAL_API)
 
@@ -312,6 +315,30 @@ TEST(WriteBarcodeTest, ZintGS1)
 		  "30 31 31 32 33 34 35 36 37 38 39 30 31 32 33 31 32 30 31 32", false, "]Q4\\00002601123456789012312012",
 		  "5D 51 34 30 31 31 32 33 34 35 36 37 38 39 30 31 32 33 31 32 30 31 32", "(01)12345678901231(20)12", "GS1",
 		  "0x0 26x0 26x12 0x12", "M", "17");
+}
+
+TEST(WriteBarcodeTest, RandomDataBar)
+{
+	auto randomTest = [](BarcodeFormat format) {
+		auto read_opts = ReaderOptions().setFormats(format).setIsPure(true).setBinarizer(Binarizer::BoolCast);
+
+		int n = 1000;
+		int nErrors = 0;
+		for (int i = 0; i < n; i += 1) {
+			auto input = ToString(rand(), 13);
+			input = "(01)" + input + GTIN::ComputeCheckDigit(input);
+			auto bc = CreateBarcodeFromText(input, format);
+			auto br = ReadBarcode(bc.symbol(), read_opts);
+
+			nErrors += !br.isValid() || bc.text(TextMode::HRI) != input;
+		}
+		EXPECT_EQ(nErrors, 0) << std::fixed << std::setw(4) << std::setprecision(2) << "(Error rate of " << ToString(format) << " is "
+							  << nErrors * 100 / (double)n << "%)";
+	};
+
+	randomTest(BarcodeFormat::DataBar);
+	randomTest(BarcodeFormat::DataBarLimited);
+	randomTest(BarcodeFormat::DataBarExpanded);
 }
 
 #endif // #if defined(ZXING_EXPERIMENTAL_API) && defined(ZXING_WRITERS) && defined(ZXING_USE_ZINT)

@@ -139,19 +139,28 @@ struct OddEven
 
 using Array4I = std::array<int, 4>;
 
-// elements() determines the element widths of an (n,k) character with
-// at least one even-numbered element that's just one module wide.
-// (Note: even-numbered elements - 2nd, 4th, 6th, etc., have odd indexes)
-// for DataBarLimited: LEN=14, mods=26/18
+// elements() determines the element widths of an (n,k) character.
+// for DataBar:         LEN=8, mods=15/16
+// for DataBarExpanded: LEN=8, mods=17
+// for DataBarLimited:  LEN=14, mods=26/18
 template <int LEN>
 std::array<int, LEN> NormalizedPatternFromE2E(const PatternView& view, int mods, bool reversed = false)
 {
-	bool isExp = mods == 17; // elementsExp() with at least one odd-numbered element that's just one module wide
+	// To disambiguate the edge-to-edge measurements, it is defined that either the odd or the even-numbered
+	// elements contain at least 1 element that is 1 module wide. (Note: even-numbered elements - 2nd, 4th, 6th, etc., have odd
+	// indexes).
+	// The reference decoding algorithm in Annex G of ISO/IEC 24724:2011 is distinguishing between DataBarExpanded on one side
+	// and all other variants on the other. That seems to contradict the rest of the specification. For details see
+	// https://github.com/zxing-cpp/zxing-cpp/issues/935.
+	// Turns out the true distinction is to be made as follows:
+	//   min-even-is-one: DataBarLimited, DataBar outside character
+	//   min-odd-is-one:  DataBarExpanded, DataBar inside character
+	bool minOddIsOne = mods == 15 || mods == 17;
 	const auto e2e = NormalizedE2EPattern<LEN>(view, mods, reversed);
 	std::array<int, LEN> widths;
 
 	// derive element widths from normalized edge-to-similar-edge measurements
-	int barSum = widths[0] = isExp ? 8 : 1; // first assume 1st bar is 1 / 8
+	int barSum = widths[0] = minOddIsOne ? 8 : 1; // first assume 1st bar is 1 / 8
 	for (int i = 0; i < Size(e2e); i++) {
 		widths[i + 1] = e2e[i] - widths[i];
 		barSum += widths[i + 1];
@@ -165,13 +174,13 @@ std::array<int, LEN> NormalizedPatternFromE2E(const PatternView& view, int mods,
 	for (int i = 2; i < Size(widths); i++)
 		min[i] = std::min(min[i], widths[i]);
 
-	if (isExp && min[0] > 1) {
+	if (minOddIsOne && min[0] > 1) {
 		// minimum odd width is too big, readjust so minimum odd is 1
 		for (int i = 0; i < Size(widths); i += 2) {
 			widths[i] -= min[0] - 1;
 			widths[i + 1] += min[0] - 1;
 		}
-	} else if (!isExp && min[1] > 1) {
+	} else if (!minOddIsOne && min[1] > 1) {
 		// minimum even width is too big, readjust so minimum even is 1
 		for (int i = 0; i < Size(widths); i += 2) {
 			widths[i] += min[1] - 1;
