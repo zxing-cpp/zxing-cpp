@@ -159,8 +159,8 @@ Barcode DataBarReader::decodePattern(int rowNumber, PatternView& next, std::uniq
 		if (IsLeftPair(next)) {
 			if (auto leftPair = ReadPair(next, false); leftPair && next.shift(FULL_PAIR_SIZE) && IsRightPair(next)) {
 				if (auto rightPair = ReadPair(next, true); rightPair && ChecksumIsValid(leftPair, rightPair)) {
-					return {ConstructText(leftPair, rightPair), rowNumber, leftPair.xStart, rightPair.xStop,
-							BarcodeFormat::DataBar};
+					return {ConstructText(leftPair, rightPair), rowNumber, leftPair.xStart, rightPair.xStop, BarcodeFormat::DataBar,
+							{'e', '0', 0, AIFlag::GS1}};
 				}
 			}
 		}

@@ -106,7 +106,7 @@ WriterOptions& WriterOptions::operator=(WriterOptions&&) = default;
 static bool SupportsGS1(BarcodeFormat format)
 {
 	return (BarcodeFormat::Aztec | BarcodeFormat::Code128 | BarcodeFormat::DataMatrix | BarcodeFormat::QRCode
-			| BarcodeFormat::RMQRCode)
+			| BarcodeFormat::RMQRCode | BarcodeFormat::DataBarExpanded)
 		.testFlag(format);
 }
 
@@ -349,13 +349,9 @@ zint_symbol* CreatorOptions::zint() const
 
 	if (!zint) {
 #ifdef PRINT_DEBUG
-		printf("zint version: %d, sizeof(zint_symbol): %ld\n", ZBarcode_Version(), sizeof(zint_symbol));
+//		printf("zint version: %d, sizeof(zint_symbol): %ld, options: %s\n", ZBarcode_Version(), sizeof(zint_symbol), options().c_str());
 #endif
 		zint.reset(ZBarcode_Create());
-
-#ifdef PRINT_DEBUG
-		printf("options: %s\n", options().c_str());
-#endif
 
 		auto i = FindIf(barcodeFormatZXing2Zint, [zxing = format()](auto& v) { return v.zxing == zxing; });
 		if (i == std::end(barcodeFormatZXing2Zint))
@@ -421,7 +417,7 @@ Barcode CreateBarcode(const void* data, int size, int mode, const CreatorOptions
 	for (int i = 0; i < zint->raw_seg_count; ++i) {
 		const auto& raw_seg = zint->raw_segs[i];
 #ifdef PRINT_DEBUG
-		printf("  seg %d of %d with eci %d: %s\n", i, zint->raw_seg_count, raw_seg.eci, (char*)raw_seg.source);
+		printf("  seg %d of %d with eci %d: %.*s\n", i, zint->raw_seg_count, raw_seg.eci, raw_seg.length, (char*)raw_seg.source);
 #endif
 		if (ECI(raw_seg.eci) != ECI::ISO8859_1)
 			content.switchEncoding(ECI(raw_seg.eci));

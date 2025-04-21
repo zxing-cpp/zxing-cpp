@@ -34,7 +34,7 @@ static Character ReadDataCharacter(const PatternView& view)
 	constexpr int ODD_SUM[] = {17, 13, 9, 15, 11, 19, 7};
 	constexpr int ODD_WIDEST[] = {6, 5, 3, 5, 4, 8, 1};
 
-	auto pattern = NormalizedPatternFromE2E<14>(view, 26);
+	auto pattern = NormalizedPatternFromE2E<CHAR_LEN>(view, 26);
 
 	int checkSum = 0;
 	for (auto it = pattern.rbegin(); it != pattern.rend(); ++it)
@@ -147,8 +147,8 @@ Barcode DataBarLimitedReader::decodePattern(int rowNumber, PatternView& next, st
 		if (!left || !right || (left.checksum + 20 * right.checksum) % 89 != checkSum)
 			continue;
 
-		return {ConstructText(left, right),    rowNumber, next.pixelsInFront(), next.pixelsTillEnd(),
-				BarcodeFormat::DataBarLimited, {'e', '0', 0, AIFlag::GS1}};
+		return {ConstructText(left, right), rowNumber, next.pixelsInFront(), next.pixelsTillEnd(), BarcodeFormat::DataBarLimited,
+				{'e', '0', 0, AIFlag::GS1}};
 	}
 
 	// guarantee progress (see loop in ODReader.cpp)

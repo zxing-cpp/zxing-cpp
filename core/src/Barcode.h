@@ -78,7 +78,7 @@ public:
 	/**
 	 * @brief bytes is the raw / standard content without any modifications like character set conversions
 	 */
-	const ByteArray& bytes() const;
+	const ByteArray& bytes() const; // TODO 3.0: replace ByteArray with std::vector<uint8_t>
 
 	/**
 	 * @brief bytesECI is the raw / standard content following the ECI protocol
