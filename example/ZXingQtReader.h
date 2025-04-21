@@ -16,8 +16,11 @@
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #include <QAbstractVideoFilter>
 #else
+#include <QMutex>
+#include <QThread>
 #include <QVideoFrame>
 #include <QVideoSink>
+#include <QWaitCondition>
 #endif
 #include <QElapsedTimer>
 #endif
@@ -307,6 +310,47 @@ inline Barcode ReadBarcode(const QVideoFrame& frame, const ReaderOptions& opts =
 	return !res.isEmpty() ? res.takeFirst() : Barcode();
 }
 
+class BarcodeReader;
+
+class BarcodeProcessor : public QThread
+{
+	BarcodeReader& _reader;
+	QVideoFrame _nextFrame;
+	QMutex _mutex;
+	QWaitCondition _wait;
+public:
+	BarcodeProcessor(BarcodeReader& reader) : _reader(reader) {}
+
+	void start() {QThread::start();}
+	void stop()
+	{
+		requestInterruption();
+		_wait.wakeOne();
+		wait();
+	}
+
+	void setNextFrame(const QVideoFrame& frame)
+	{
+		QMutexLocker l(&_mutex);
+		_nextFrame = frame;
+		_wait.wakeOne();
+	}
+
+private:
+	virtual void run() override;
+
+	QVideoFrame takeNextFrame ()
+	{
+		QMutexLocker l(&_mutex);
+		if (!_nextFrame.isValid())
+			_wait.wait(&_mutex);
+
+		QVideoFrame f = _nextFrame;
+		_nextFrame = QVideoFrame();
+		return f;
+	}
+};
+
 #define ZQ_PROPERTY(Type, name, setter) \
 public: \
 	Q_PROPERTY(Type name READ name WRITE setter NOTIFY name##Changed) \
@@ -333,7 +377,15 @@ public:
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	BarcodeReader(QObject* parent = nullptr) : QAbstractVideoFilter(parent) {}
 #else
-	BarcodeReader(QObject* parent = nullptr) : QObject(parent) {}
+	BarcodeReader(QObject* parent = nullptr) : QObject(parent), _processor(*this)
+	{
+		_processor.start();
+	}
+	~BarcodeReader()
+	{
+		_processor.stop();
+	}
+
 #endif
 
 	// TODO: find out how to properly expose QFlags to QML
@@ -373,10 +425,11 @@ public:
 	ZQ_PROPERTY(bool, isPure, setIsPure)
 
 	// For debugging/development
-	int runTime = 0;
+	QAtomicInt runTime = 0;
 	Q_PROPERTY(int runTime MEMBER runTime)
 
 public slots:
+	// Function should be thread safe, as it may be called from a separate thread.
 	ZXingQt::Barcode process(const QVideoFrame& image)
 	{
 		QElapsedTimer t;
@@ -403,6 +456,7 @@ public:
 #else
 private:
 	QVideoSink *_sink = nullptr;
+	BarcodeProcessor _processor;
 
 public:
 	void setVideoSink(QVideoSink* sink) {
@@ -410,10 +464,10 @@ public:
 			return;
 
 		if (_sink)
-			disconnect(_sink, nullptr, this, nullptr);
+			disconnect(_sink, nullptr, &_processor, nullptr);
 
 		_sink = sink;
-		connect(_sink, &QVideoSink::videoFrameChanged, this, &BarcodeReader::process);
+		connect(_sink, &QVideoSink::videoFrameChanged, &_processor, &BarcodeProcessor::setNextFrame, Qt::DirectConnection);
 	}
 	Q_PROPERTY(QVideoSink* videoSink MEMBER _sink WRITE setVideoSink)
 #endif
@@ -440,6 +494,16 @@ public:
 inline QVideoFilterRunnable* BarcodeReader::createFilterRunnable()
 {
 	return new VideoFilterRunnable(this);
+}
+#else
+inline void BarcodeProcessor::run()
+{
+	while(!isInterruptionRequested())
+	{
+		QVideoFrame frame = takeNextFrame();
+		if (frame.isValid())
+            _reader.process(frame);
+	}
 }
 #endif
 
