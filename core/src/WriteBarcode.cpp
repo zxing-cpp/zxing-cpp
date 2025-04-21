@@ -393,7 +393,9 @@ Barcode CreateBarcode(const void* data, int size, int mode, const CreatorOptions
 {
 	auto zint = opts.zint();
 
-	zint->input_mode = mode == UNICODE_MODE && opts.gs1() && SupportsGS1(opts.format()) ? GS1_MODE | GS1PARENS_MODE : mode;
+	zint->input_mode = mode == UNICODE_MODE && opts.gs1() && SupportsGS1(opts.format()) ? GS1_MODE : mode;
+	if (mode == UNICODE_MODE && static_cast<const char*>(data)[0] != '[')
+		zint->input_mode |= GS1PARENS_MODE;
 	zint->output_options |= OUT_BUFFER_INTERMEDIATE | BARCODE_QUIET_ZONES | BARCODE_RAW_TEXT;
 
 	if (mode == DATA_MODE && ZBarcode_Cap(zint->symbology, ZINT_CAP_ECI))
