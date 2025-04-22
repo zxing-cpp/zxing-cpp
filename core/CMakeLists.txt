@@ -214,6 +214,7 @@ set (PUBLIC_HEADERS
     src/BarcodeFormat.h
     src/BitHacks.h
     src/ByteArray.h
+    src/Range.h
     src/CharacterSet.h
     src/Content.h
     src/Error.h
