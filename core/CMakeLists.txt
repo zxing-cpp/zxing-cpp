@@ -404,9 +404,9 @@ if (ZXING_READERS)
         src/pdf417/PDFCodeword.h
         src/pdf417/PDFCodewordDecoder.h
         src/pdf417/PDFCodewordDecoder.cpp
+        src/pdf417/PDFCustomData.h
         src/pdf417/PDFDecoder.h
         src/pdf417/PDFDecoder.cpp
-        src/pdf417/PDFDecoderResultExtra.h
         src/pdf417/PDFDetectionResult.h
         src/pdf417/PDFDetectionResult.cpp
         src/pdf417/PDFDetectionResultColumn.h
@@ -421,7 +421,6 @@ if (ZXING_READERS)
         src/pdf417/PDFReader.cpp
         src/pdf417/PDFScanningDecoder.h
         src/pdf417/PDFScanningDecoder.cpp
-        src/pdf417/CustomData.h
         src/pdf417/ZXNullable.h
     )
 endif()

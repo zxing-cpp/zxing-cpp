@@ -13,7 +13,7 @@
 #include "PDFCodewordDecoder.h"
 #include "PDFDetectionResult.h"
 #include "PDFDecoder.h"
-#include "PDFDecoderResultExtra.h"
+#include "PDFCustomData.h"
 #include "PDFModulusGF.h"
 #include "ZXAlgorithms.h"
 #include "ZXTestSupport.h"
@@ -741,9 +741,9 @@ ScanningDecoder::Decode(const BitMatrix& image, const Nullable<ResultPoint>& ima
 		}
 	}
 	auto res = CreateDecoderResult(detectionResult);
-	auto meta = dynamic_cast<DecoderResultExtra*>(res.extra().get());
-	if (meta)
-		meta->approxSymbolWidth = (detectionResult.barcodeColumnCount() + 2) * (minCodewordWidth + maxCodewordWidth) / 2;
+	auto customData = std::static_pointer_cast<PDF417CustomData>(res.customData());
+	if (customData)
+		customData->approxSymbolWidth = (detectionResult.barcodeColumnCount() + 2) * (minCodewordWidth + maxCodewordWidth) / 2;
 	return res;
 }
 

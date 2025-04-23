@@ -9,7 +9,7 @@
 #include "PDFDetector.h"
 #include "PDFScanningDecoder.h"
 #include "PDFCodewordDecoder.h"
-#include "PDFDecoderResultExtra.h"
+#include "PDFCustomData.h"
 #include "ReaderOptions.h"
 #include "DecoderResult.h"
 #include "DetectorResult.h"
@@ -87,11 +87,11 @@ static Barcodes DoDecode(const BinaryBitmap& image, bool multiple, bool tryRotat
 									GetMinCodewordWidth(points), GetMaxCodewordWidth(points));
 		if (decoderResult.isValid(returnErrors)) {
 			auto point = [&](int i) {
-				auto meta = dynamic_cast<DecoderResultExtra*>(decoderResult.extra().get());
-				if (points[i].hasValue() || i < 2 || !meta)
+				auto customData = std::static_pointer_cast<PDF417CustomData>(decoderResult.customData());
+				if (points[i].hasValue() || i < 2 || !customData)
 					return rotate(PointI(points[i].value()));
 				else {
-					auto p = rotate(PointI(points[i - 2].value()) + PointI(meta->approxSymbolWidth, 0));
+					auto p = rotate(PointI(points[i - 2].value()) + PointI(customData->approxSymbolWidth, 0));
 					p.x = std::clamp(p.x, 0, image.width() - 1);
 					p.y = std::clamp(p.y, 0, image.height() - 1);
 					return p;
