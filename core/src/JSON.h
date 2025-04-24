@@ -25,7 +25,7 @@ template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
 inline std::string JsonValue(std::string_view key, T val, int indent = 0)
 {
 	if constexpr (std::is_same_v<T, bool>)
-		return JsonValue(key, val ? "true" : "false", indent);
+		return JsonValue(key, val ? "true" : "", indent);
 	else
 		return JsonValue(key, std::to_string(val), indent);
 }
