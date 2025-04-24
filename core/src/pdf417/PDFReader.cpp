@@ -6,25 +6,25 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "PDFReader.h"
-#include "PDFDetector.h"
-#include "PDFScanningDecoder.h"
-#include "PDFCodewordDecoder.h"
-#include "PDFCustomData.h"
-#include "ReaderOptions.h"
-#include "DecoderResult.h"
-#include "DetectorResult.h"
-#include "Barcode.h"
 
-#include "BitMatrixCursor.h"
+#include "Barcode.h"
 #include "BinaryBitmap.h"
 #include "BitArray.h"
+#include "BitMatrixCursor.h"
+#include "DecoderResult.h"
+#include "DetectorResult.h"
+#include "PDFCodewordDecoder.h"
+#include "PDFCustomData.h"
+#include "PDFDetector.h"
+#include "PDFScanningDecoder.h"
 #include "Pattern.h"
+#include "ReaderOptions.h"
 
-#include <vector>
-#include <cstdlib>
 #include <algorithm>
+#include <cstdlib>
 #include <limits>
 #include <utility>
+#include <vector>
 
 #ifdef PRINT_DEBUG
 #include "BitMatrixIO.h"
