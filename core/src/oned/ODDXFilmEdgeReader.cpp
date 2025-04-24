@@ -54,7 +54,7 @@ struct Clock
 
 	int dataLength() const { return hasFrameNr ? DATA_LENGTH_FN : DATA_LENGTH_NO_FN; }
 
-	float moduleSize() const { return float(xStop - xStart) / (hasFrameNr ? CLOCK_LENGTH_FN : CLOCK_LENGTH_NO_FN); }
+	float moduleSize() const { return float(xStop + 1 - xStart) / (hasFrameNr ? CLOCK_LENGTH_FN : CLOCK_LENGTH_NO_FN); }
 
 	bool isCloseTo(PointI p, int x) const { return DistIsBelowThreshold(p, {x, rowNumber}, PointI(moduleSize() * PointF{0.5, 4})); }
 
@@ -150,6 +150,10 @@ Barcode DXFilmEdgeReader::decodePattern(int rowNumber, PatternView& next, std::u
 	// Only consider data tracks that are next to a clock track
 	auto clock = dxState->findClock(xStart, rowNumber);
 	if (!clock)
+		return {};
+
+	// Make sure the start pattern has the proper size (approx. 5 modules)
+	if (std::fabs(next.sum() / clock->moduleSize() - 5) > 1.0 )
 		return {};
 
 	// Skip the data start pattern (black, white, black, white, black)
