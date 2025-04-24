@@ -13,6 +13,7 @@
 #include "BitMatrixCursor.h"
 #include "DecoderResult.h"
 #include "DetectorResult.h"
+#include "JSON.h"
 #include "PDFCodewordDecoder.h"
 #include "PDFCustomData.h"
 #include "PDFDetector.h"
@@ -86,8 +87,8 @@ static Barcodes DoDecode(const BinaryBitmap& image, bool multiple, bool tryRotat
 			ScanningDecoder::Decode(*detectorResult.bits, points[4], points[5], points[6], points[7],
 									GetMinCodewordWidth(points), GetMaxCodewordWidth(points));
 		if (decoderResult.isValid(returnErrors)) {
+			auto customData = std::static_pointer_cast<PDF417CustomData>(decoderResult.customData());
 			auto point = [&](int i) {
-				auto customData = std::static_pointer_cast<PDF417CustomData>(decoderResult.customData());
 				if (points[i].hasValue() || i < 2 || !customData)
 					return rotate(PointI(points[i].value()));
 				else {
@@ -97,8 +98,19 @@ static Barcodes DoDecode(const BinaryBitmap& image, bool multiple, bool tryRotat
 					return p;
 				}
 			};
-			res.emplace_back(std::move(decoderResult), DetectorResult{{}, {point(0), point(2), point(3), point(1)}},
-							 BarcodeFormat::PDF417);
+			auto barcode =
+				Barcode(std::move(decoderResult), DetectorResult{{}, {point(0), point(2), point(3), point(1)}}, BarcodeFormat::PDF417)
+#ifdef ZXING_EXPERIMENTAL_API
+					.addExtra(JsonValue("Sender", customData->sender))
+					.addExtra(JsonValue("Addresse", customData->addressee))
+					.addExtra(JsonValue("FileId", customData->fileId))
+					.addExtra(JsonValue("FileName", customData->fileName))
+					.addExtra(customData->fileSize != -1 ? JsonValue("FileSize", customData->fileSize) : "")
+					.addExtra(customData->timestamp != -1 ? JsonValue("Timestamp", customData->timestamp) : "")
+					.addExtra(customData->checksum != -1 ? JsonValue("Checksum", customData->checksum) : "")
+#endif
+					;
+			res.push_back(std::move(barcode));
 			if (!multiple)
 				return res;
 		}
