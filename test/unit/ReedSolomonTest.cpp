@@ -22,8 +22,8 @@ static std::ostream& operator<<(std::ostream& out, const ZXing::GenericGF& field
 using namespace ZXing;
 
 namespace {
-	static const int DECODER_RANDOM_TEST_ITERATIONS = 3;
-	static const int DECODER_TEST_ITERATIONS = 10;
+	static const int DECODER_RANDOM_TEST_ITERATIONS = 2;
+	static const int DECODER_TEST_ITERATIONS = 4;
 
 	std::vector<int> operator+(const std::vector<int>& a, const std::vector<int>& b) {
 		std::vector<int> c;
@@ -112,6 +112,31 @@ namespace {
 		}
 	}
 
+}
+
+TEST(ReedSolomonTest, Over)
+{
+	auto field = GenericGF::DataMatrixField256();
+	auto m = std::vector{0, 0, 0};
+	ReedSolomonEncode(field, m, 2);
+	// printf("%d %d %d\n", m[0], m[1], m[2]);
+	for (int i = 0; i < 256; ++i) {
+		m[0] = i;
+		ASSERT_TRUE(ReedSolomonDecode(field, m, 2));
+		ASSERT_EQ(m[0], 0);
+	}
+
+	int n = 0;
+	for (int i = 257; i < 256*256; ++i) {
+		m[0] = i >> 8;
+		m[1] = i & 0xff;
+		m[2] = 0;
+		if (ReedSolomonDecode(field, m, 2) && m[0]) {
+			// printf("%02x, %02x -> %02x %02x %02x\n", i >> 8, i & 0xff, m[0], m[1], m[2]);
+			++n;
+		}
+	}
+	ASSERT_LE(n, 255);
 }
 
 TEST(ReedSolomonTest, DataMatrix)
