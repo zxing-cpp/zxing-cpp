@@ -72,8 +72,8 @@ Barcode ITFReader::decodePattern(int rowNumber, PatternView& next, std::unique_p
 		|| next[0] < threshold[0] || next[1] > threshold[1] || next[2] > threshold[2])
 		return {};
 
-	// Check quiet zone size (full quiet zone or cropped on both ends)
-	if (!(next[3] > minQuietZone * (threshold.bar + threshold.space) / 3
+	// Check quiet zone size (full quiet zone on both ends or cropped on both ends)
+	if (!(std::min((int)next[3], xStart) > minQuietZone * (threshold.bar + threshold.space) / 3
 		  || (next.isAtLastBar() && startsAtFirstBar && std::max(xStart, (int)next[3]) < 2 * std::min(xStart, (int)next[3]) + 2)))
 		return {};
 
