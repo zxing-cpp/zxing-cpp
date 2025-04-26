@@ -16,11 +16,9 @@
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #include <QAbstractVideoFilter>
 #else
-#include <QMutex>
-#include <QThread>
+#include <QThreadPool>
 #include <QVideoFrame>
 #include <QVideoSink>
-#include <QWaitCondition>
 #endif
 #include <QElapsedTimer>
 #endif
@@ -310,47 +308,6 @@ inline Barcode ReadBarcode(const QVideoFrame& frame, const ReaderOptions& opts =
 	return !res.isEmpty() ? res.takeFirst() : Barcode();
 }
 
-class BarcodeReader;
-
-class BarcodeProcessor : public QThread
-{
-	BarcodeReader& _reader;
-	QVideoFrame _nextFrame;
-	QMutex _mutex;
-	QWaitCondition _wait;
-public:
-	BarcodeProcessor(BarcodeReader& reader) : _reader(reader) {}
-
-	void start() {QThread::start();}
-	void stop()
-	{
-		requestInterruption();
-		_wait.wakeOne();
-		wait();
-	}
-
-	void setNextFrame(const QVideoFrame& frame)
-	{
-		QMutexLocker l(&_mutex);
-		_nextFrame = frame;
-		_wait.wakeOne();
-	}
-
-private:
-	virtual void run() override;
-
-	QVideoFrame takeNextFrame ()
-	{
-		QMutexLocker l(&_mutex);
-		if (!_nextFrame.isValid())
-			_wait.wait(&_mutex);
-
-		QVideoFrame f = _nextFrame;
-		_nextFrame = QVideoFrame();
-		return f;
-	}
-};
-
 #define ZQ_PROPERTY(Type, name, setter) \
 public: \
 	Q_PROPERTY(Type name READ name WRITE setter NOTIFY name##Changed) \
@@ -377,13 +334,13 @@ public:
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	BarcodeReader(QObject* parent = nullptr) : QAbstractVideoFilter(parent) {}
 #else
-	BarcodeReader(QObject* parent = nullptr) : QObject(parent), _processor(*this)
+	BarcodeReader(QObject* parent = nullptr) : QObject(parent)
 	{
-		_processor.start();
+		_pool.setMaxThreadCount(1);
 	}
 	~BarcodeReader()
 	{
-		_processor.stop();
+		_pool.waitForDone(-1);
 	}
 
 #endif
@@ -456,7 +413,7 @@ public:
 #else
 private:
 	QVideoSink *_sink = nullptr;
-	BarcodeProcessor _processor;
+	QThreadPool _pool;
 
 public:
 	void setVideoSink(QVideoSink* sink) {
@@ -464,12 +421,32 @@ public:
 			return;
 
 		if (_sink)
-			disconnect(_sink, nullptr, &_processor, nullptr);
+			disconnect(_sink, nullptr, this, nullptr);
 
 		_sink = sink;
-		connect(_sink, &QVideoSink::videoFrameChanged, &_processor, &BarcodeProcessor::setNextFrame, Qt::DirectConnection);
+		connect(_sink, &QVideoSink::videoFrameChanged, this, &BarcodeReader::onVideoFrameChanged, Qt::DirectConnection);
+	}
+	void onVideoFrameChanged(const QVideoFrame& frame)
+	{
+		if (_pool.activeThreadCount() >= _pool.maxThreadCount())
+			return; // we are busy => skip the frame
+
+		_pool.start([this, frame](){process(frame);});
 	}
 	Q_PROPERTY(QVideoSink* videoSink MEMBER _sink WRITE setVideoSink)
+	Q_PROPERTY(int maxThreadCount READ maxThreadCount WRITE setMaxThreadCount)
+	int maxThreadCount () const
+	{
+		return _pool.maxThreadCount();
+	}
+	void setMaxThreadCount (int maxThreadCount)
+	{
+		if (_pool.maxThreadCount() != maxThreadCount) {
+			_pool.setMaxThreadCount(maxThreadCount);
+			emit maxThreadCountChanged();
+		}
+	}
+	Q_SIGNAL void maxThreadCountChanged();
 #endif
 
 };
@@ -494,16 +471,6 @@ public:
 inline QVideoFilterRunnable* BarcodeReader::createFilterRunnable()
 {
 	return new VideoFilterRunnable(this);
-}
-#else
-inline void BarcodeProcessor::run()
-{
-	while(!isInterruptionRequested())
-	{
-		QVideoFrame frame = takeNextFrame();
-		if (frame.isValid())
-            _reader.process(frame);
-	}
 }
 #endif
 
