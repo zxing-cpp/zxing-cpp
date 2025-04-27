@@ -340,6 +340,7 @@ public:
 	}
 	~BarcodeReader()
 	{
+		_pool.setMaxThreadCount(0);
 		_pool.waitForDone(-1);
 	}
 
