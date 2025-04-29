@@ -144,11 +144,11 @@ static bool ParseOptions(int argc, char* argv[], ReaderOptions& options, CLI& cl
 		} else if (is("-channels")) {
 			if (++i == argc)
 				return false;
-			cli.forceChannels = atoi(argv[i]);
+			cli.forceChannels = std::stoi(argv[i]);
 		} else if (is("-rotate")) {
 			if (++i == argc)
 				return false;
-			cli.rotate = atoi(argv[i]);
+			cli.rotate = std::stoi(argv[i]);
 		} else if (is("-help") || is("--help")) {
 			PrintUsage(argv[0]);
 			exit(0);

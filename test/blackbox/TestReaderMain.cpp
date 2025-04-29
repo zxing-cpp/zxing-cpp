@@ -21,7 +21,7 @@ using namespace ZXing::Test;
 int getEnv(const char* name, int fallback = 0)
 {
 	auto var = getenv(name);
-	return var ? atoi(var) : fallback;
+	return var ? std::stoi(var) : fallback;
 }
 
 int main(int argc, char** argv)
