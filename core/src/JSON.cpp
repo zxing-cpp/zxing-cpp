@@ -51,7 +51,7 @@ std::string_view JsonGetStr(std::string_view json, std::string_view key)
 #ifdef ZXING_USE_CTRE
 	for (auto [ma, mk, mv] : ctre::search_all<PATTERN>(json))
 		if (IsEqualCaseInsensitive(key, mk))
-			return mv;
+			return mv.size() ? mv.to_view() : std::string_view(mk.data(), 0);
 
 	return {};
 #else
@@ -73,21 +73,6 @@ std::string_view JsonGetStr(std::string_view json, std::string_view key)
 	}
 
 	return {};
-#endif
-}
-
-bool JsonGetBool(std::string_view json, std::string_view key)
-{
-#ifdef ZXING_USE_CTRE
-	for (auto [ma, mk, mv] : ctre::search_all<PATTERN>(json))
-		if (IsEqualCaseInsensitive(key, mk))
-			return mv.size() == 0 || Contains("1tT", *mv.data());
-
-	return false;
-#else
-	auto val = JsonGetStr(json, key);
-
-	return val.data() && (val.size() == 0 || Contains("1tT", val.front()));
 #endif
 }
 

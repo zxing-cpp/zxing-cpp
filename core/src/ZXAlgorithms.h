@@ -8,11 +8,13 @@
 #include "Error.h"
 
 #include <algorithm>
+#include <charconv>
 #include <cstring>
 #include <initializer_list>
 #include <iterator>
 #include <numeric>
 #include <string>
+#include <stdexcept>
 #include <utility>
 
 namespace ZXing {
@@ -134,6 +136,32 @@ std::string ToString(T val, int len)
 	if (val)
 		throw FormatError("Invalid value");
 	return result;
+}
+
+template <class T>
+constexpr std::string_view TypeName()
+{
+#ifdef __clang__
+	std::string_view p = __PRETTY_FUNCTION__;
+	return p.substr(40, p.size() - 40 - 1);
+#elif defined(__GNUC__)
+	std::string_view p = __PRETTY_FUNCTION__;
+	return p.substr(55, p.find(';', 55) - 55);
+#elif defined(_MSC_VER)
+	std::string_view p = __FUNCSIG__;
+	return p.substr(90, p.size() - 90 - 7);
+#endif
+}
+
+template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+inline T FromString(std::string_view sv)
+{
+	T val = {};
+	auto [ptr, ec] = std::from_chars(sv.data(), sv.data() + sv.size(), val);
+	if (ec != std::errc() || ptr != sv.data() + sv.size())
+		throw std::invalid_argument(StrCat("failed to parse '", TypeName<T>(), "' from '", sv, "'"));
+
+	return val;
 }
 
 template <typename T>

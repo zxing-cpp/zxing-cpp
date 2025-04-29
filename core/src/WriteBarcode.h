@@ -11,6 +11,7 @@
 #include "ImageView.h"
 
 #include <memory>
+#include <optional>
 #include <string_view>
 
 extern "C" struct zint_symbol;
@@ -48,12 +49,12 @@ public:
 #undef ZX_PROPERTY
 
 #define ZX_RO_PROPERTY(TYPE, NAME) \
-	TYPE NAME() const noexcept;
+	std::optional<TYPE> NAME() const noexcept;
 
 	ZX_RO_PROPERTY(bool, gs1);
 	ZX_RO_PROPERTY(bool, stacked);
-	ZX_RO_PROPERTY(std::string_view, version);
-	ZX_RO_PROPERTY(std::string_view, dataMask);
+	ZX_RO_PROPERTY(int, version);
+	ZX_RO_PROPERTY(int, dataMask);
 #undef ZX_RO_PROPERTY
 };
 

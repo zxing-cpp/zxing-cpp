@@ -62,12 +62,12 @@ ZX_PROPERTY(std::string, options)
 #undef ZX_PROPERTY
 
 #define ZX_RO_PROPERTY(TYPE, NAME) \
-	TYPE CreatorOptions::NAME() const noexcept { return JsonGet<TYPE>(d->options, #NAME); }
+	std::optional<TYPE> CreatorOptions::NAME() const noexcept { return JsonGet<TYPE>(d->options, #NAME); }
 
 ZX_RO_PROPERTY(bool, gs1);
 ZX_RO_PROPERTY(bool, stacked);
-ZX_RO_PROPERTY(std::string_view, version);
-ZX_RO_PROPERTY(std::string_view, dataMask);
+ZX_RO_PROPERTY(int, version);
+ZX_RO_PROPERTY(int, dataMask);
 
 #undef ZX_RO_PROPERTY
 
@@ -371,11 +371,11 @@ zint_symbol* CreatorOptions::zint() const
 		if (!ecLevel().empty())
 			zint->option_1 = ParseECLevel(zint->symbology, ecLevel());
 
-		if (auto str = version(); str.size() && !IsLinearBarcode(format()))
-			zint->option_2 = svtoi(str);
+		if (auto val = version(); val && !IsLinearBarcode(format()))
+			zint->option_2 = *val;
 
-		if (auto str = dataMask(); str.size() && (BarcodeFormat::QRCode | BarcodeFormat::MicroQRCode).testFlag(format()))
-			zint->option_3 = (zint->option_3 & 0xFF) | (svtoi(str) + 1) << 8;
+		if (auto val = dataMask(); val && (BarcodeFormat::QRCode | BarcodeFormat::MicroQRCode).testFlag(format()))
+			zint->option_3 = (zint->option_3 & 0xFF) | (*val + 1) << 8;
 	}
 
 	return zint.get();
