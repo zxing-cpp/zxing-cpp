@@ -209,7 +209,7 @@ static int ParseECLevel(int symbology, std::string_view s)
 			return res + 1;
 
 	if (std::from_chars(s.data(), s.data() + s.size() - (s.back() == '%'), res).ec != std::errc{})
-		throw std::invalid_argument("Invalid ecLevel: '" + std::string(s) + "'");
+		throw std::invalid_argument(StrCat("Invalid ecLevel: '", s, "'"));
 
 	auto findClosestECLevel = [](const std::vector<int>& list, int val) {
 		int mIdx = -2, mAbs = 100;
@@ -383,7 +383,7 @@ zint_symbol* CreatorOptions::zint() const
 
 #define CHECK(ZINT_CALL) \
 	if (int err = (ZINT_CALL); err >= ZINT_ERROR) \
-		throw std::invalid_argument(std::string(zint->errtxt) + " (retval: " + std::to_string(err) + ")");
+		throw std::invalid_argument(StrCat(zint->errtxt, " (retval: ", std::to_string(err), ")"));
 
 Barcode CreateBarcode(const void* data, int size, int mode, const CreatorOptions& opts)
 {

@@ -78,8 +78,23 @@ constexpr auto Size(const Container& c) -> decltype(c.size(), int()) {
 }
 
 template <class T, std::size_t N>
-constexpr int Size(const T (&)[N]) noexcept {
+constexpr int Size(T const (&)[N]) noexcept {
 	return narrow_cast<int>(N);
+}
+
+inline constexpr int Size(const char* s) noexcept {
+	return narrow_cast<int>(std::char_traits<char>::length(s));
+}
+
+inline constexpr int Size(char) noexcept { return 1; }
+
+template <typename... Args>
+std::string StrCat(Args&&... args)
+{
+	std::string res;
+	res.reserve((Size(args) + ...));
+	(res += ... += args);
+	return res;
 }
 
 template <typename Container, typename Value>

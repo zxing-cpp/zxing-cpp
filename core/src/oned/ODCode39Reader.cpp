@@ -14,7 +14,7 @@
 
 namespace ZXing::OneD {
 
-static const char ALPHABET[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%*";
+static constexpr char ALPHABET[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%*";
 
 /**
 * Each character consists of 5 bars and 4 spaces, 3 of which are wide (i.e. 6 are narrow).
@@ -23,7 +23,7 @@ static const char ALPHABET[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%*";
 * The 9 least-significant bits of each int correspond to the pattern of wide and narrow,
 * with 1s representing "wide" and 0s representing "narrow".
 */
-static const int CHARACTER_ENCODINGS[] = {
+static constexpr std::array CHARACTER_ENCODINGS = {
 	0x034, 0x121, 0x061, 0x160, 0x031, 0x130, 0x070, 0x025, 0x124, 0x064, // 0-9
 	0x109, 0x049, 0x148, 0x019, 0x118, 0x058, 0x00D, 0x10C, 0x04C, 0x01C, // A-J
 	0x103, 0x043, 0x142, 0x013, 0x112, 0x052, 0x007, 0x106, 0x046, 0x016, // K-T
@@ -31,9 +31,9 @@ static const int CHARACTER_ENCODINGS[] = {
 	0x0A2, 0x08A, 0x02A, 0x094 // /-% , *
 };
 
-static_assert(Size(ALPHABET) - 1 == Size(CHARACTER_ENCODINGS), "table size mismatch");
+static_assert(Size(ALPHABET) == Size(CHARACTER_ENCODINGS), "table size mismatch");
 
-static const char PERCENTAGE_MAPPING[26] = {
+static constexpr std::array<char, 26> PERCENTAGE_MAPPING = {
 	'A' - 38, 'B' - 38, 'C' - 38, 'D' - 38, 'E' - 38,	// %A to %E map to control codes ESC to USep
 	'F' - 11, 'G' - 11, 'H' - 11, 'I' - 11, 'J' - 11,	// %F to %J map to ; < = > ?
 	'K' + 16, 'L' + 16, 'M' + 16, 'N' + 16, 'O' + 16,	// %K to %O map to [ \ ] ^ _

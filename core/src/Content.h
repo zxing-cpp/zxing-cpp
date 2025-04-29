@@ -31,7 +31,7 @@ struct SymbologyIdentifier
 	std::string toString(bool hasECI = false) const
 	{
 		int modVal = (modifier >= 'A' ? modifier - 'A' + 10 : modifier - '0') + eciModifierOffset * hasECI;
-		return code ? ']' + std::string(1, code) + static_cast<char>((modVal >= 10 ? 'A' - 10 : '0') + modVal) : std::string();
+		return code ? StrCat(']', code, static_cast<char>((modVal >= 10 ? 'A' - 10 : '0') + modVal)) : std::string();
 	}
 };
 
