@@ -403,9 +403,9 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 4, 4, 180 },
 		});
 
-		runTests("code39-2", "Code39", 2, {
-			{ 2, 2, 0   },
-			{ 2, 2, 180 },
+		runTests("code39-2", "Code39", 3, {
+			{ 3, 3, 0   },
+			{ 3, 3, 180 },
 		});
 
 		runTests("code39-3", "Code39", 12, {
