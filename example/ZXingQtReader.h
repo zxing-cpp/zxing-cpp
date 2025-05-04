@@ -27,11 +27,12 @@
 
 namespace ZXingQt {
 
-Q_NAMESPACE
 
 //TODO: find a better way to export these enums to QML than to duplicate their definition
 // #ifdef Q_MOC_RUN produces meta information in the moc output but it does end up working in qml
 #ifdef QT_QML_LIB
+namespace QML {
+Q_NAMESPACE
 enum class BarcodeFormat
 {
 #define X(NAME, SYM, VAR, FLAGS, ZINT, ENABLED, HRI) NAME = ZX_BCF_ID(SYM, VAR),
@@ -43,19 +44,23 @@ enum class ContentType { Text, Binary, Mixed, GS1, ISO15434, UnknownECI };
 
 enum class TextMode { Plain, ECI, HRI, Escaped, Hex, HexECI };
 
-#else
+Q_DECLARE_FLAGS(BarcodeFormats, BarcodeFormat)
+Q_DECLARE_OPERATORS_FOR_FLAGS(BarcodeFormats)
+Q_FLAG_NS(BarcodeFormats)
+Q_ENUM_NS(BarcodeFormat)
+
+Q_ENUM_NS(ContentType)
+Q_ENUM_NS(TextMode)
+} // namespace QML
+#endif
+
 using ZXing::BarcodeFormat;
 using ZXing::ContentType;
 using ZXing::TextMode;
-#endif
 
 using ZXing::ReaderOptions;
 using ZXing::Binarizer;
 using ZXing::BarcodeFormats;
-
-Q_ENUM_NS(BarcodeFormat)
-Q_ENUM_NS(ContentType)
-Q_ENUM_NS(TextMode)
 
 template<typename T, typename = decltype(ZXing::ToString(T()))>
 QDebug operator<<(QDebug dbg, const T& v)
@@ -108,8 +113,8 @@ public:
 
 	using ZXing::Barcode::isValid;
 
-	BarcodeFormat format() const { return static_cast<BarcodeFormat>(ZXing::Barcode::format()); }
-	ContentType contentType() const { return static_cast<ContentType>(ZXing::Barcode::contentType()); }
+	BarcodeFormat format() const { return ZXing::Barcode::format(); }
+	ContentType contentType() const { return ZXing::Barcode::contentType(); }
 	QString formatName() const { return QString::fromStdString(ZXing::ToString(ZXing::Barcode::format())); }
 	QString contentTypeName() const { return QString::fromStdString(ZXing::ToString(ZXing::Barcode::contentType())); }
 	const QString& text() const { return _text; }
@@ -117,6 +122,7 @@ public:
 	const Position& position() const { return _position; }
 };
 
+namespace Detail {
 inline QList<Barcode> ZXBarcodesToQBarcodes(ZXing::Barcodes&& zxres)
 {
 	QList<Barcode> res;
@@ -128,6 +134,7 @@ inline QList<Barcode> ZXBarcodesToQBarcodes(ZXing::Barcodes&& zxres)
 #endif
 	return res;
 }
+} // namespace Detail
 
 inline QList<Barcode> ReadBarcodes(const QImage& img, const ReaderOptions& opts = {})
 {
@@ -151,7 +158,7 @@ inline QList<Barcode> ReadBarcodes(const QImage& img, const ReaderOptions& opts 
 	};
 
 	auto exec = [&](const QImage& img) {
-		return ZXBarcodesToQBarcodes(ZXing::ReadBarcodes(
+		return Detail::ZXBarcodesToQBarcodes(ZXing::ReadBarcodes(
 			{img.bits(), img.width(), img.height(), ImgFmtFromQImg(img), static_cast<int>(img.bytesPerLine())}, opts));
 	};
 
@@ -261,7 +268,7 @@ inline QList<Barcode> ReadBarcodes(const QVideoFrame& frame, const ReaderOptions
 		}
 		QScopeGuard unmap([&] { img.unmap(); });
 
-		return ZXBarcodesToQBarcodes(ZXing::ReadBarcodes(
+		return Detail::ZXBarcodesToQBarcodes(ZXing::ReadBarcodes(
 			{img.bits(FIRST_PLANE) + pixOffset, img.width(), img.height(), fmt, img.bytesPerLine(FIRST_PLANE), pixStride}, opts));
 	}
 	else {
@@ -309,6 +316,9 @@ class BarcodeReader : public QObject, private ReaderOptions
 {
 	Q_OBJECT
 
+	Q_PROPERTY(QML::BarcodeFormats formats READ formatsQML WRITE setFormatsQML NOTIFY formatsChanged)
+	Q_PROPERTY(QML::TextMode textMode READ textModeQML WRITE setTextModeQML NOTIFY textModeChanged)
+
 public:
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	BarcodeReader(QObject* parent = nullptr) : QAbstractVideoFilter(parent) {}
@@ -325,35 +335,23 @@ public:
 
 #endif
 
-	// TODO: find out how to properly expose QFlags to QML
-	// simply using ZQ_PROPERTY(BarcodeFormats, formats, setFormats)
-	// results in the runtime error "can't assign int to formats"
-	Q_PROPERTY(int formats READ formats WRITE setFormats NOTIFY formatsChanged)
-	int formats() const noexcept
-	{
-		auto fmts = ReaderOptions::formats();
-		return *reinterpret_cast<int*>(&fmts);
-	}
-	Q_SLOT void setFormats(int newVal)
+	BarcodeFormats formats() const noexcept { return ReaderOptions::formats(); }
+	void setFormats(BarcodeFormats newVal)
 	{
 		if (formats() != newVal) {
-			ReaderOptions::setFormats(static_cast<ZXing::BarcodeFormat>(newVal));
+			ReaderOptions::setFormats(newVal);
 			Q_EMIT formatsChanged();
-			qDebug() << ReaderOptions::formats();
 		}
 	}
-	Q_SIGNAL void formatsChanged();
 
-	Q_PROPERTY(TextMode textMode READ textMode WRITE setTextMode NOTIFY textModeChanged)
-	TextMode textMode() const noexcept { return static_cast<TextMode>(ReaderOptions::textMode()); }
-	Q_SLOT void setTextMode(TextMode newVal)
+	TextMode textMode() const noexcept { return ReaderOptions::textMode(); }
+	void setTextMode(TextMode newVal)
 	{
 		if (textMode() != newVal) {
-			ReaderOptions::setTextMode(static_cast<ZXing::TextMode>(newVal));
+			ReaderOptions::setTextMode(newVal);
 			Q_EMIT textModeChanged();
 		}
 	}
-	Q_SIGNAL void textModeChanged();
 
 	ZQ_PROPERTY(bool, tryRotate, setTryRotate)
 	ZQ_PROPERTY(bool, tryHarder, setTryHarder)
@@ -386,6 +384,20 @@ public Q_SLOTS:
 Q_SIGNALS:
 	void failedRead();
 	void foundBarcode(ZXingQt::Barcode barcode);
+
+	void formatsChanged();
+	void textModeChanged();
+
+private:
+	QML::BarcodeFormats formatsQML() const noexcept
+	{
+		auto fmts = formats();
+		return QML::BarcodeFormats(*reinterpret_cast<int*>(&fmts));
+	}
+	void setFormatsQML(QML::BarcodeFormats newVal) { setFormats(static_cast<ZXing::BarcodeFormat>(newVal.operator int())); }
+
+	QML::TextMode textModeQML() const noexcept { return static_cast<QML::TextMode>(textMode()); }
+	void setTextModeQML(QML::TextMode newVal) { setTextMode(static_cast<ZXing::TextMode>(newVal)); }
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 public:
@@ -468,6 +480,8 @@ Q_DECLARE_METATYPE(ZXingQt::Barcode)
 
 namespace ZXingQt {
 
+namespace Detail {
+
 inline void registerQmlAndMetaTypes()
 {
 	qRegisterMetaType<ZXingQt::BarcodeFormat>("BarcodeFormat");
@@ -476,13 +490,23 @@ inline void registerQmlAndMetaTypes()
 
 	// supposedly the Q_DECLARE_METATYPE should be used with the overload without a custom name
 	// but then the qml side complains about "unregistered type"
-	qRegisterMetaType<ZXingQt::Position>("Position");
-	qRegisterMetaType<ZXingQt::Barcode>("Barcode");
+	qmlRegisterType<ZXingQt::Position>("ZXingQt", 1, 0, "position");
+	qmlRegisterType<ZXingQt::Barcode>("ZXingQt", 1, 0, "barcode");
 
 	qmlRegisterUncreatableMetaObject(
-		ZXingQt::staticMetaObject, "ZXing", 1, 0, "ZXing", QStringLiteral("Access to enums & flags only"));
-	qmlRegisterType<ZXingQt::BarcodeReader>("ZXing", 1, 0, "BarcodeReader");
+		ZXingQt::QML::staticMetaObject, "ZXingQt", 1, 0, "ZXingQt", QStringLiteral("Access to enums & flags only"));
+#ifdef QT_MULTIMEDIA_LIB
+	qmlRegisterType<ZXingQt::BarcodeReader>("ZXingQt", 1, 0, "BarcodeReader");
+#endif // QT_MULTIMEDIA_LIB
 }
+
+struct ZXingQtInitializer
+{
+	ZXingQtInitializer() {registerQmlAndMetaTypes();}
+} inline zxingQtInitializer;
+
+} // namespace Detail
+
 
 } // namespace ZXingQt
 

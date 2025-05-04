@@ -9,7 +9,8 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Shapes
 import QtMultimedia
-import ZXing
+import ZXingQt
+import QtCore // required for CameraPermission (Qt 6.6 and above)
 
 Window {
 	visible: true
@@ -29,12 +30,12 @@ Window {
 		id: barcodeReader
 		videoSink: videoOutput.videoSink
 
-		formats: (linearSwitch.checked ? (ZXing.LinearCodes) : ZXing.None) | (matrixSwitch.checked ? (ZXing.MatrixCodes) : ZXing.None)
+		formats: (linearSwitch.checked ? (ZXingQt.LinearCodes) : ZXingQt.None) | (matrixSwitch.checked ? (ZXingQt.MatrixCodes) : ZXingQt.None)
 		tryRotate: tryRotateSwitch.checked
 		tryHarder: tryHarderSwitch.checked
 		tryInvert: tryInvertSwitch.checked
 		tryDownscale: tryDownscaleSwitch.checked
-		textMode: ZXing.TextMode.HRI
+		textMode: ZXingQt.TextMode.HRI
 
 		// callback with parameter 'barcode', called for every successfully processed frame
 		onFoundBarcode: (barcode)=> {
@@ -58,12 +59,23 @@ Window {
 		id: devices
 	}
 
+	// Starting from Qt 6.6, camera permission should be requested manually. For older Qt versions, CameraPermission object can be simply removed as Qt automatically requests the permission.
+	CameraPermission {
+		id: cameraPermission
+		Component.onCompleted: {
+			if (status !== Qt.PermissionStatus.Granted)
+				request();
+		}
+	}
+	// End of Qt 6.6+ section
+
 	Camera {
 		id: camera
 		cameraDevice: devices.videoInputs[camerasComboBox.currentIndex] ? devices.videoInputs[camerasComboBox.currentIndex] : devices.defaultVideoInput
 		focusMode: Camera.FocusModeAutoNear
 		onErrorOccurred: console.log("camera error:" + errorString)
-		active: true
+		active: cameraPermission.status === Qt.PermissionStatus.Granted // for Qt 6.6 and above
+		// active: true // pre Qt 6.6
 	}
 
 	CaptureSession {
