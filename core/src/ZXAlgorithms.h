@@ -167,20 +167,20 @@ inline T FromString(std::string_view sv)
 template <typename T>
 void UpdateMin(T& min, T val)
 {
-	min = std::min(min, val);
+	min = std::min<T>(min, val);
 }
 
 template <typename T>
 void UpdateMax(T& max, T val)
 {
-	max = std::max(max, val);
+	max = std::max<T>(max, val);
 }
 
 template <typename T>
 void UpdateMinMax(T& min, T& max, T val)
 {
-	min = std::min(min, val);
-	max = std::max(max, val);
+	min = std::min<T>(min, val);
+	max = std::max<T>(max, val);
 
 	// Note: the above code is not equivalent to
 	//    if (val < min)        min = val;

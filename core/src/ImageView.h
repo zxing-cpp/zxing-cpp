@@ -112,8 +112,8 @@ public:
 	{
 		left   = std::clamp(left, 0, _width - 1);
 		top    = std::clamp(top, 0, _height - 1);
-		width  = width <= 0 ? (_width - left) : std::min(_width - left, width);
-		height = height <= 0 ? (_height - top) : std::min(_height - top, height);
+		width  = width <= 0 ? (_width - left) : std::min<int>(_width - left, width);
+		height = height <= 0 ? (_height - top) : std::min<int>(_height - top, height);
 		return {data(left, top), width, height, _format, _rowStride, _pixStride};
 	}
 

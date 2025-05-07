@@ -111,7 +111,7 @@ auto length(PointT<T> p) -> decltype(std::sqrt(dot(p, p)))
 template <typename T>
 T maxAbsComponent(PointT<T> p)
 {
-	return std::max(std::abs(p.x), std::abs(p.y));
+	return std::max<T>(std::abs(p.x), std::abs(p.y));
 }
 
 template <typename T>

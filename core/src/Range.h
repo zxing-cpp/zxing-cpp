@@ -103,7 +103,7 @@ public:
 	{
 		if (pos > _size)
 			return {};
-		return {_data + pos, std::min(len, _size - pos)};
+		return {_data + pos, std::min<size_type>(len, _size - pos)};
 	}
 };
 
