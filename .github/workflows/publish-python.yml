@@ -47,6 +47,8 @@ jobs:
         #CIBW_ARCHS_MACOS: universal2
         #CIBW_ENVIRONMENT_MACOS: CMAKE_OSX_ARCHITECTURES="arm64;x86_64"
         #MACOSX_DEPLOYMENT_TARGET: "10.15"
+        # Remove existing extension module to ensures tests import zxingcpp from the built wheel
+        CIBW_BEFORE_TEST: rm -f wrappers/python/zxingcpp.*
         CIBW_BUILD_VERBOSITY: 1
         CIBW_TEST_COMMAND: python {package}/test.py
         CIBW_TEST_SOURCES: wrappers/python/test.py
