@@ -187,6 +187,9 @@ bool ZXing_Barcode_hasECI(const ZXing_Barcode* barcode);
 bool ZXing_Barcode_isInverted(const ZXing_Barcode* barcode);
 bool ZXing_Barcode_isMirrored(const ZXing_Barcode* barcode);
 int ZXing_Barcode_lineCount(const ZXing_Barcode* barcode);
+int ZXing_Barcode_sequenceIndex(const ZXing_Barcode* barcode);
+int ZXing_Barcode_sequenceSize(const ZXing_Barcode* barcode);
+char* ZXing_Barcode_sequenceId(const ZXing_Barcode* barcode);
 
 void ZXing_Barcode_delete(ZXing_Barcode* barcode);
 void ZXing_Barcodes_delete(ZXing_Barcodes* barcodes);
