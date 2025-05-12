@@ -155,7 +155,7 @@ void Result::symbol(BitMatrix&& bits)
 
 ImageView Result::symbol() const
 {
-	return {_symbol->row(0).begin(), _symbol->width(), _symbol->height(), ImageFormat::Lum};
+	return _symbol ? ImageView{_symbol->row(0).begin(), _symbol->width(), _symbol->height(), ImageFormat::Lum} : ImageView{};
 }
 
 void Result::zint(unique_zint_symbol&& z)
