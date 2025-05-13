@@ -67,6 +67,7 @@ public:
 	int count() const noexcept { return BitHacks::CountBitsSet(i); }
 
 	constexpr inline bool operator==(Flags other) const noexcept { return i == other.i; }
+	constexpr inline bool operator!=(Flags other) const noexcept { return i != other.i; }
 
 	inline Flags& operator&=(Flags mask) noexcept { return i &= mask.i, *this; }
 	inline Flags& operator&=(Enum mask) noexcept { return i &= Int(mask), *this; }
