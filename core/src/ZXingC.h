@@ -250,7 +250,7 @@ bool ZXing_ReaderOptions_getTryRotate(const ZXing_ReaderOptions* opts);
 bool ZXing_ReaderOptions_getTryInvert(const ZXing_ReaderOptions* opts);
 bool ZXing_ReaderOptions_getTryDownscale(const ZXing_ReaderOptions* opts);
 #ifdef ZXING_EXPERIMENTAL_API
-	bool ZXing_ReaderOptions_getTryDenoise(ZXing_ReaderOptions* opts);
+	bool ZXing_ReaderOptions_getTryDenoise(const ZXing_ReaderOptions* opts);
 #endif
 bool ZXing_ReaderOptions_getIsPure(const ZXing_ReaderOptions* opts);
 bool ZXing_ReaderOptions_getReturnErrors(const ZXing_ReaderOptions* opts);
