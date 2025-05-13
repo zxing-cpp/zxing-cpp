@@ -281,6 +281,9 @@ ZX_PROPERTY(bool, tryHarder, TryHarder)
 ZX_PROPERTY(bool, tryRotate, TryRotate)
 ZX_PROPERTY(bool, tryInvert, TryInvert)
 ZX_PROPERTY(bool, tryDownscale, TryDownscale)
+#ifdef ZXING_EXPERIMENTAL_API
+	ZX_PROPERTY(bool, tryDenoise, TryDenoise)
+#endif
 ZX_PROPERTY(bool, isPure, IsPure)
 ZX_PROPERTY(bool, returnErrors, ReturnErrors)
 ZX_PROPERTY(int, minLineCount, MinLineCount)
