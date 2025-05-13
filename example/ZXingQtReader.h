@@ -11,6 +11,7 @@
 #include <QDebug>
 #include <QMetaType>
 #include <QScopeGuard>
+#include <QtQmlIntegration/qqmlintegration.h>
 
 #ifdef QT_MULTIMEDIA_LIB
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -336,7 +337,7 @@ public:
 #endif
 
 	BarcodeFormats formats() const noexcept { return ReaderOptions::formats(); }
-	void setFormats(BarcodeFormats newVal)
+	Q_SLOT void setFormats(BarcodeFormats newVal)
 	{
 		if (formats() != newVal) {
 			ReaderOptions::setFormats(newVal);
@@ -345,7 +346,7 @@ public:
 	}
 
 	TextMode textMode() const noexcept { return ReaderOptions::textMode(); }
-	void setTextMode(TextMode newVal)
+	Q_SLOT void setTextMode(TextMode newVal)
 	{
 		if (textMode() != newVal) {
 			ReaderOptions::setTextMode(newVal);
@@ -490,13 +491,13 @@ inline void registerQmlAndMetaTypes()
 
 	// supposedly the Q_DECLARE_METATYPE should be used with the overload without a custom name
 	// but then the qml side complains about "unregistered type"
-	qmlRegisterType<ZXingQt::Position>("ZXingQt", 1, 0, "position");
-	qmlRegisterType<ZXingQt::Barcode>("ZXingQt", 1, 0, "barcode");
+	qmlRegisterType<ZXingQt::Position>("ZXing", 1, 0, "position");
+	qmlRegisterType<ZXingQt::Barcode>("ZXing", 1, 0, "barcode");
 
 	qmlRegisterUncreatableMetaObject(
-		ZXingQt::QML::staticMetaObject, "ZXingQt", 1, 0, "ZXingQt", QStringLiteral("Access to enums & flags only"));
+		ZXingQt::QML::staticMetaObject, "ZXing", 1, 0, "ZXing", QStringLiteral("Access to enums & flags only"));
 #ifdef QT_MULTIMEDIA_LIB
-	qmlRegisterType<ZXingQt::BarcodeReader>("ZXingQt", 1, 0, "BarcodeReader");
+	qmlRegisterType<ZXingQt::BarcodeReader>("ZXing", 1, 0, "BarcodeReader");
 #endif // QT_MULTIMEDIA_LIB
 }
 

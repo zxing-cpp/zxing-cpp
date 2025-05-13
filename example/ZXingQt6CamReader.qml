@@ -9,7 +9,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Shapes
 import QtMultimedia
-import ZXingQt
+import ZXing
 import QtCore // required for CameraPermission (Qt 6.6 and above)
 
 Window {
@@ -30,12 +30,12 @@ Window {
 		id: barcodeReader
 		videoSink: videoOutput.videoSink
 
-		formats: (linearSwitch.checked ? (ZXingQt.LinearCodes) : ZXingQt.None) | (matrixSwitch.checked ? (ZXingQt.MatrixCodes) : ZXingQt.None)
+		formats: (linearSwitch.checked ? (ZXing.LinearCodes) : ZXing.None) | (matrixSwitch.checked ? (ZXing.MatrixCodes) : ZXing.None)
 		tryRotate: tryRotateSwitch.checked
 		tryHarder: tryHarderSwitch.checked
 		tryInvert: tryInvertSwitch.checked
 		tryDownscale: tryDownscaleSwitch.checked
-		textMode: ZXingQt.TextMode.HRI
+		textMode: ZXing.TextMode.HRI
 
 		// callback with parameter 'barcode', called for every successfully processed frame
 		onFoundBarcode: (barcode)=> {
