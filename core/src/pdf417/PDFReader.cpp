@@ -102,7 +102,7 @@ static Barcodes DoDecode(const BinaryBitmap& image, bool multiple, bool tryRotat
 				Barcode(std::move(decoderResult), DetectorResult{{}, {point(0), point(2), point(3), point(1)}}, BarcodeFormat::PDF417)
 #ifdef ZXING_EXPERIMENTAL_API
 					.addExtra(JsonValue("Sender", customData->sender))
-					.addExtra(JsonValue("Addresse", customData->addressee))
+					.addExtra(JsonValue("Addressee", customData->addressee))
 					.addExtra(JsonValue("FileId", customData->fileId))
 					.addExtra(JsonValue("FileName", customData->fileName))
 					.addExtra(customData->fileSize != -1 ? JsonValue("FileSize", customData->fileSize) : "")
