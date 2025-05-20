@@ -113,14 +113,16 @@ FinderPatternSets GenerateFinderPatternSets(FinderPatterns& patterns)
 
 	auto sets            = std::multimap<double, FinderPatternSet>();
 	auto squaredDistance = [](const auto* a, const auto* b) {
-		// The scaling of the distance by the b/a size ratio is a very coarse compensation for the shortening effect of
+		// The scaling of the distance based on the b/a size ratio is a very coarse compensation for the shortening effect of
 		// the camera projection on slanted symbols. The fact that the size of the finder pattern is proportional to the
 		// distance from the camera is used here. This approximation only works if a < b < 2*a (see below).
 		// Test image: fix-finderpattern-order.jpg
-		return dot((*a - *b), (*a - *b)) * std::pow(double(b->size) / a->size, 2);
+		// Originally, I scaled the squaredDistance with the (b/a)^2 ratio but that could skew the cosine calculation
+		// below too much, resulting in the acceptance of degenerate triangles (a, b and c on a line).
+		return dot((*a - *b), (*a - *b)) * double(b->size) / a->size;
 	};
-	const double cosUpper = std::cos(45. / 180 * 3.1415); // TODO: use c++20 std::numbers::pi_v
-	const double cosLower = std::cos(135. / 180 * 3.1415);
+	const double cosUpper = std::cos(60. / 180 * 3.1415); // TODO: use c++20 std::numbers::pi_v
+	const double cosLower = std::cos(120. / 180 * 3.1415);
 
 	int nbPatterns = Size(patterns);
 	for (int i = 0; i < nbPatterns - 2; i++) {
@@ -162,7 +164,7 @@ FinderPatternSets GenerateFinderPatternSets(FinderPatterns& patterns)
 					moduleCount < 21 * 0.9 || moduleCount > 177 * 1.5) // moduleCount may be overestimated, see above
 					continue;
 
-				// Make sure the angle between AB and BC does not deviate from 90° by more than 45°
+				// Make sure the angle between AB and BC does not deviate from 90° too much
 				auto cosAB_BC = (distAB2 + distBC2 - distAC2) / (2 * distAB * distBC);
 				if (std::isnan(cosAB_BC) || cosAB_BC > cosUpper || cosAB_BC < cosLower)
 					continue;
