@@ -166,7 +166,20 @@ void Result::zint(unique_zint_symbol&& z)
 
 std::string Result::extra(std::string_view key) const
 {
-	return _json.empty() ? "" : key.empty() ? "{" + _json.substr(0, _json.size() - 1) + "}" : std::string(JsonGetStr(_json, key));
+	if (key == "ALL") {
+		if (format() == BarcodeFormat::None)
+			return {};
+		auto res =
+			StrCat("{", JsonProp("Text", text(TextMode::Plain)), JsonProp("HRI", text(TextMode::HRI)),
+				   JsonProp("TextECI", text(TextMode::ECI)), JsonProp("Bytes", text(TextMode::Hex)),
+				   JsonProp("Identifier", symbologyIdentifier()), JsonProp("Format", ToString(format())),
+				   JsonProp("ContentType", isValid() ? ToString(contentType()) : ""), JsonProp("Position", ToString(position())),
+				   JsonProp("HasECI", hasECI()), JsonProp("IsMirrored", isMirrored()), JsonProp("IsInverted", isInverted()), _json,
+				   JsonProp("Error", ToString(error())));
+		res.back() = '}';
+		return res;
+	}
+	return _json.empty() ? "" : key.empty() ? StrCat("{", _json.substr(0, _json.size() - 1), "}") : std::string(JsonGetStr(_json, key));
 }
 #endif
 
