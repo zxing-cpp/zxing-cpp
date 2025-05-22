@@ -8,6 +8,7 @@
 
 #include "Content.h"
 #include "Error.h"
+#include "JSON.h"
 #include "StructuredAppend.h"
 
 #include <memory>
@@ -81,8 +82,11 @@ public:
 	ZX_PROPERTY(bool, readerInit, setReaderInit)
 	ZX_PROPERTY(std::string, json, setJson)
 	ZX_PROPERTY(std::shared_ptr<CustomData>, customData, setCustomData)
-
 #undef ZX_PROPERTY
+
+	template<typename T>
+	DecoderResult&& addExtra(std::string_view key, T val, T ignore = {}) { _json += JsonProp(key, val, ignore); return std::move(*this); }
+
 };
 
 } // ZXing

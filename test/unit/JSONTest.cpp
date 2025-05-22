@@ -9,11 +9,14 @@
 
 using namespace ZXing;
 
-TEST(JSONTest, Value)
+TEST(JSONTest, Prop)
 {
-	EXPECT_EQ(JsonValue("key", "val"), R"("key":"val",)");
-	EXPECT_EQ(JsonValue("key", true), R"("key":true,)");
-	EXPECT_EQ(JsonValue("key", 1), R"("key":1,)");
+	EXPECT_EQ(JsonProp("key", "val"), R"("key":"val",)");
+	EXPECT_EQ(JsonProp("key", true), R"("key":true,)");
+	EXPECT_EQ(JsonProp("key", 1), R"("key":1,)");
+
+	EXPECT_EQ(JsonProp("key", R"(C:\)"), R"("key":"C:\\",)");
+	EXPECT_EQ(JsonProp("key", R"("quotes")"), R"("key":"\"quotes\"",)");
 }
 
 TEST(JSONTest, GetStr)
@@ -49,8 +52,8 @@ TEST(JSONTest, GetBool)
 	EXPECT_FALSE(JsonGet<bool>("keys", "key"));
 	EXPECT_FALSE(JsonGet<bool>("thekey", "key"));
 
-	EXPECT_TRUE(JsonGet<bool>("key , other", "key"));
-	EXPECT_TRUE(JsonGet<bool>("\"key\": \"true\"", "key"));
+	EXPECT_TRUE(JsonGet<bool>("key , other", "key").value());
+	EXPECT_TRUE(JsonGet<bool>("\"key\": \"true\"", "key").value());
 	EXPECT_TRUE(JsonGet<bool>("{\"key\": true}", "key")); // JSON
 	EXPECT_TRUE(JsonGet<bool>("{'key': True'}", "key"));  // Python
 }
@@ -62,5 +65,25 @@ TEST(JSONTest, GetInt)
 
 	EXPECT_EQ(JsonGet<int>("key:1", "key").value(), 1);
 	EXPECT_EQ(JsonGet<int>("{\"key\": 2}", "key").value(), 2); // JSON
-	EXPECT_EQ(JsonGet<int>("{'key': 1}", "key").value(), 1);  // Python
+	EXPECT_EQ(JsonGet<int>("{'key': 1}", "key").value(), 1);   // Python
+}
+
+TEST(JSONTest, GetString)
+{
+	EXPECT_FALSE(JsonGet<std::string>("key:", "key"));
+
+	EXPECT_EQ(JsonGet<std::string>("key:abc", "key").value(), "abc");
+	EXPECT_EQ(JsonGet<std::string>("{\"key\":\"abc\\n\"}", "key").value(), "abc\n"); // JSON
+	EXPECT_EQ(JsonGet<std::string>("{'key': 'abc'}", "key").value(), "abc");         // Python
+}
+
+TEST(JSONTest, Escaping)
+{
+	EXPECT_EQ("\\u0001", JsonEscapeStr("\x01"));
+	EXPECT_EQ("\x80", JsonEscapeStr("\x80"));
+
+	for (int c = 0; c <= 0xFF; ++c) {
+		auto str = std::string(1, static_cast<char>(c));
+		EXPECT_EQ(str, JsonUnEscapeStr(JsonEscapeStr(str)));
+	}
 }

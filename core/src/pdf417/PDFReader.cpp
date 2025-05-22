@@ -13,7 +13,6 @@
 #include "BitMatrixCursor.h"
 #include "DecoderResult.h"
 #include "DetectorResult.h"
-#include "JSON.h"
 #include "PDFCodewordDecoder.h"
 #include "PDFCustomData.h"
 #include "PDFDetector.h"
@@ -98,19 +97,19 @@ static Barcodes DoDecode(const BinaryBitmap& image, bool multiple, bool tryRotat
 					return p;
 				}
 			};
-			auto barcode =
-				Barcode(std::move(decoderResult), DetectorResult{{}, {point(0), point(2), point(3), point(1)}}, BarcodeFormat::PDF417)
 #ifdef ZXING_EXPERIMENTAL_API
-					.addExtra(JsonValue("Sender", customData->sender))
-					.addExtra(JsonValue("Addresse", customData->addressee))
-					.addExtra(JsonValue("FileId", customData->fileId))
-					.addExtra(JsonValue("FileName", customData->fileName))
-					.addExtra(customData->fileSize != -1 ? JsonValue("FileSize", customData->fileSize) : "")
-					.addExtra(customData->timestamp != -1 ? JsonValue("Timestamp", customData->timestamp) : "")
-					.addExtra(customData->checksum != -1 ? JsonValue("Checksum", customData->checksum) : "")
+			decoderResult
+				.addExtra("Sender", customData->sender)
+				.addExtra("Addressee", customData->addressee)
+				.addExtra("FileId", customData->fileId)
+				.addExtra("FileName", customData->fileName)
+				.addExtra("FileSize", customData->fileSize, -1L)
+				.addExtra("Timestamp", customData->timestamp, -1L)
+				.addExtra("Checksum", customData->checksum, -1)
+			;
 #endif
-					;
-			res.push_back(std::move(barcode));
+			res.emplace_back(std::move(decoderResult), DetectorResult{{}, {point(0), point(2), point(3), point(1)}},
+							 BarcodeFormat::PDF417);
 			if (!multiple)
 				return res;
 		}

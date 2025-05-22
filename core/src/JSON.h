@@ -14,22 +14,25 @@
 
 namespace ZXing {
 
-inline std::string JsonKeyValue(std::string_view key, std::string_view val)
-{
-	return val.empty() ? std::string() : StrCat("\"", key, "\":", val, ',');
-}
+std::string JsonEscapeStr(std::string_view str);
+std::string JsonUnEscapeStr(std::string_view str);
 
 template<typename T>
-inline std::string JsonValue(std::string_view key, T val)
+inline std::string JsonProp(std::string_view key, T val, T ignore = {})
 {
+	if (val == ignore)
+		return {};
+
+	#define ZX_JSON_KEY_VAL(...) StrCat("\"", key, "\":", __VA_ARGS__, ',')
 	if constexpr (std::is_same_v<T, bool>)
-		return val ? JsonKeyValue(key, "true") : "";
+		return val ? ZX_JSON_KEY_VAL("true") : "";
 	else if constexpr (std::is_arithmetic_v<T>)
-		return JsonKeyValue(key, std::to_string(val));
+		return ZX_JSON_KEY_VAL(std::to_string(val));
 	else if constexpr (std::is_convertible_v<T, std::string_view>)
-		return JsonKeyValue(key, StrCat("\"" , val, "\""));
+		return ZX_JSON_KEY_VAL("\"" , JsonEscapeStr(val), "\"");
 	else
 		static_assert("unsupported JSON value type");
+	#undef ZX_JSON_KEY_VAL
 }
 
 std::string_view JsonGetStr(std::string_view json, std::string_view key);
@@ -45,8 +48,8 @@ inline std::optional<T> JsonGet(std::string_view json, std::string_view key)
 		return str.empty() || Contains("1tT", str.front()) ? std::optional(true) : std::nullopt;
 	else if constexpr (std::is_arithmetic_v<T>)
 		return str.empty() ? std::nullopt : std::optional(FromString<T>(str));
-	else if constexpr (std::is_same_v<std::string_view, T>)
-		return str;
+	else if constexpr (std::is_same_v<std::string, T>)
+		return JsonUnEscapeStr(str);
 	else
 		static_assert("unsupported JSON value type");
 }

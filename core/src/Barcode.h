@@ -20,7 +20,17 @@
 #include <memory>
 namespace ZXing {
 class BitMatrix;
-}
+
+namespace BarcodeExtra {
+	#define ZX_EXTRA(NAME) static constexpr auto NAME = #NAME
+	ZX_EXTRA(DataMask); // QRCodes
+	ZX_EXTRA(Version);
+	ZX_EXTRA(EanAddOn); // EAN/UPC
+	ZX_EXTRA(UPCE);
+	#undef ZX_EXTRA
+} // namespace BarcodeExtra
+
+} // namespace ZXing
 
 extern "C" struct zint_symbol;
 struct zint_symbol_deleter
@@ -180,6 +190,8 @@ public:
 	void zint(unique_zint_symbol&& z);
 	zint_symbol* zint() const { return _zint.get(); }
 	Result&& addExtra(std::string&& json) { _json += std::move(json); return std::move(*this); }
+	// template<typename T>
+	// Result&& addExtra(std::string_view key, T val, T ignore = {}) { _json += JsonProp(key, val, ignore); return std::move(*this); }
 	std::string extra(std::string_view key = "") const;
 #endif
 

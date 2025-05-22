@@ -22,7 +22,8 @@
 #include "ctre.hpp"
 #pragma GCC diagnostic error "-Wundef"
 
-static constexpr auto PATTERN = ctll::fixed_string{R"(["']?([[:alpha:]][[:alnum:]]*)["']?\s*(?:[:]\s*["']?([[:alnum:]]+)["']?)?(?:,|\}|$))"};
+static constexpr auto PATTERN =
+	ctll::fixed_string{R"(["']?([[:alpha:]][[:alnum:]]*)["']?\s*(?:[:]\s*["']?([[:alnum:]]+)["']?)?(?:,|\}|$))"};
 #else
 #include "ZXAlgorithms.h"
 #endif
@@ -74,6 +75,85 @@ std::string_view JsonGetStr(std::string_view json, std::string_view key)
 
 	return {};
 #endif
+}
+
+std::string JsonEscapeStr(std::string_view str)
+{
+	std::string res;
+	res.reserve(str.size() + 10);
+
+	for (unsigned char c : str) {
+		switch (c) {
+		case '\"': res += "\\\""; break;
+		case '\\': res += "\\\\"; break;
+		case '\b': res += "\\b"; break;
+		case '\f': res += "\\f"; break;
+		case '\n': res += "\\n"; break;
+		case '\r': res += "\\r"; break;
+		case '\t': res += "\\t"; break;
+		default:
+			if (c <= 0x1F) {
+				char buf[7];
+				std::snprintf(buf, sizeof(buf), "\\u%04X", c);
+				res += buf;
+			} else {
+				res += c;
+			}
+			break;
+		}
+	}
+
+	return res;
+}
+
+std::string JsonUnEscapeStr(std::string_view str)
+{
+	std::string res;
+	res.reserve(str.size());
+
+	for (size_t i = 0; i < str.size(); ++i) {
+		char c = str[i];
+		if (c == '\\') {
+			if (++i >= str.size())
+				throw std::runtime_error("Invalid escape sequence");
+
+			char esc = str[i];
+			switch (esc) {
+			case '"': res += '\"'; break;
+			case '\\': res += '\\'; break;
+			case '/': res += '/'; break;
+			case 'b': res += '\b'; break;
+			case 'f': res += '\f'; break;
+			case 'n': res += '\n'; break;
+			case 'r': res += '\r'; break;
+			case 't': res += '\t'; break;
+			case 'u': {
+				if (i + 4 >= str.size())
+					throw std::runtime_error("Incomplete \\u escape");
+
+				uint32_t code = 0;
+				auto first = str.data() + i + 1;
+				auto last = first + 4;
+
+				auto [ptr, ec] = std::from_chars(first, last, code, 16);
+				if (ec != std::errc() || ptr != last)
+					throw std::runtime_error("Failed to parse hex code");
+
+				if (code > 0x1F)
+					throw std::runtime_error("Unexpected code point in \\u escape");
+
+				res += static_cast<char>(code);
+				i += 4;
+				break;
+			}
+			default: throw std::runtime_error("Unknown escape sequence");
+			}
+		} else {
+			res += c;
+		}
+	}
+
+	return res;
 }
 
 } // ZXing
