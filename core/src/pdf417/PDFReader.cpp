@@ -103,8 +103,8 @@ static Barcodes DoDecode(const BinaryBitmap& image, bool multiple, bool tryRotat
 				.addExtra("Addressee", customData->addressee)
 				.addExtra("FileId", customData->fileId)
 				.addExtra("FileName", customData->fileName)
-				.addExtra("FileSize", customData->fileSize, -1L)
-				.addExtra("Timestamp", customData->timestamp, -1L)
+				.addExtra("FileSize", customData->fileSize, int64_t(-1))
+				.addExtra("Timestamp", customData->timestamp, int64_t(-1))
 				.addExtra("Checksum", customData->checksum, -1)
 			;
 #endif

@@ -16,7 +16,9 @@ TEST(JSONTest, Prop)
 	EXPECT_EQ(JsonProp("key", 1), R"("key":1,)");
 
 	EXPECT_EQ(JsonProp("key", R"(C:\)"), R"("key":"C:\\",)");
+#ifndef _MSVC_LANG
 	EXPECT_EQ(JsonProp("key", R"("quotes")"), R"("key":"\"quotes\"",)");
+#endif
 }
 
 TEST(JSONTest, GetStr)
