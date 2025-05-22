@@ -190,24 +190,24 @@ macro_rules! property {
 }
 
 macro_rules! make_zxing_enum {
-    ($name:ident { $($field:ident),* }) => {
-        #[repr(u32)]
-        #[derive(Debug, Copy, Clone, PartialEq)]
-        pub enum $name {
-            $($field = paste! { [<ZXing_ $name _ $field>] },)*
-        }
-    }
+	($name:ident { $($field:ident),* }) => {
+		#[repr(u32)]
+		#[derive(Debug, Copy, Clone, PartialEq)]
+		pub enum $name {
+			$($field = paste! { [<ZXing_ $name _ $field>] },)*
+		}
+	}
 }
 
 macro_rules! make_zxing_flags {
-    ($name:ident { $($field:ident),* }) => {
-        flags! {
-            #[repr(u32)]
-            pub enum $name: c_uint {
-                $($field = paste! { [<ZXing_ $name _ $field>] },)*
-            }
-        }
-    }
+	($name:ident { $($field:ident),* }) => {
+		flags! {
+			#[repr(u32)]
+			pub enum $name: c_uint {
+				$($field = paste! { [<ZXing_ $name _ $field>] },)*
+			}
+		}
+	}
 }
 #[rustfmt::skip] // workaround for broken #[rustfmt::skip::macros(make_zxing_enum)]
 make_zxing_enum!(ImageFormat { Lum, LumA, RGB, BGR, RGBA, ARGB, BGRA, ABGR });
