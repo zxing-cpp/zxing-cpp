@@ -439,7 +439,7 @@ retry:
 	return DecodedBitStreamParser::Decode(std::move(resultBytes), version->isDMRE())
 		.setVersionNumber(version->versionNumber)
 #ifdef ZXING_EXPERIMENTAL_API
-		.addExtra(BarcodeExtra::Version, std::to_string(version->symbolWidth) + 'x' + std::to_string(version->symbolWidth))
+		.addExtra(BarcodeExtra::Version, std::to_string(version->symbolHeight) + 'x' + std::to_string(version->symbolWidth))
 #endif
 		;
 }
