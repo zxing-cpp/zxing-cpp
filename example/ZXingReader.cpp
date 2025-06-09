@@ -60,6 +60,7 @@ static void PrintUsage(const char* exePath)
 #ifdef ZXING_EXPERIMENTAL_API
 			  << "    -symbol    Print the detected symbol (if available)\n"
 			  << "    -json      Print a complete JSON formated serialization\n"
+			  << "    -denoise   Use extra denoiseing (closing operation)\n"
 #endif
 			  << "    -bytes     Write (only) the bytes content of the symbol(s) to stdout\n"
 			  << "    -pngout <file name>\n"
@@ -76,23 +77,20 @@ static void PrintUsage(const char* exePath)
 
 static bool ParseOptions(int argc, char* argv[], ReaderOptions& options, CLI& cli)
 {
-#ifdef ZXING_EXPERIMENTAL_API
-	options.setTryDenoise(true);
-#endif
-
 	for (int i = 1; i < argc; ++i) {
 		auto is = [&](const char* str) { return strlen(argv[i]) > 1 && strncmp(argv[i], str, strlen(argv[i])) == 0; };
 		if (is("-fast")) {
 			options.setTryHarder(false);
-#ifdef ZXING_EXPERIMENTAL_API
-			options.setTryDenoise(false);
-#endif
 		} else if (is("-norotate")) {
 			options.setTryRotate(false);
 		} else if (is("-noinvert")) {
 			options.setTryInvert(false);
 		} else if (is("-noscale")) {
 			options.setTryDownscale(false);
+#ifdef ZXING_EXPERIMENTAL_API
+		} else if (is("-denoise")) {
+			options.setTryDenoise(true);
+#endif
 		} else if (is("-single")) {
 			options.setMaxNumberOfSymbols(1);
 		} else if (is("-ispure")) {
