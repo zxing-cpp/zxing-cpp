@@ -18,7 +18,7 @@ Barcode ITFReader::decodePattern(int rowNumber, PatternView& next, std::unique_p
 	const int minCharCount = _opts.formats().count() == 1 ? 4 : 6; // if we are only looking for ITF, we accept shorter symbols
 	const int minQuietZone = 6; // spec requires 10
 
-	next = FindLeftGuard(next, 4 + minCharCount/2 + 3, FixedPattern<4, 4>{1, 1, 1, 1}, minQuietZone);
+	next = FindLeftGuard(next, 4 + 10 + 3, FixedPattern<4, 4>{1, 1, 1, 1}, minQuietZone);
 	if (!next.isValid())
 		return {};
 
