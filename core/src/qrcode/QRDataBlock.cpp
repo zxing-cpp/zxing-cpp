@@ -54,10 +54,16 @@ std::vector<DataBlock> DataBlock::GetDataBlocks(const ByteArray& rawCodewords, c
 	// The last elements of result may be 1 element longer;
 	// first fill out as many elements as all of them have
 	int rawCodewordsOffset = 0;
-	for (int i = 0; i < shorterBlocksNumDataCodewords; i++) {
-		for (int j = 0; j < numResultBlocks; j++) {
-			result[j]._codewords[i] = rawCodewords[rawCodewordsOffset++];
-		}
+	if (version.isModel1()) {
+		// in Model 1 symbols the data blocks are concatenated back to back
+		for (int j = 0; j < numResultBlocks; j++)
+			for (int i = 0; i < shorterBlocksNumDataCodewords; i++)
+				result[j]._codewords[i] = rawCodewords[rawCodewordsOffset++];
+	} else {
+		// in all others, the data blocks are interleaved
+		for (int i = 0; i < shorterBlocksNumDataCodewords; i++)
+			for (int j = 0; j < numResultBlocks; j++)
+				result[j]._codewords[i] = rawCodewords[rawCodewordsOffset++];
 	}
 	// Fill out the last data block in the longer ones
 	for (int j = longerBlocksStartAt; j < numResultBlocks; j++) {
@@ -65,10 +71,19 @@ std::vector<DataBlock> DataBlock::GetDataBlocks(const ByteArray& rawCodewords, c
 	}
 	// Now add in error correction blocks
 	int max = Size(result[0]._codewords);
-	for (int i = shorterBlocksNumDataCodewords; i < max; i++) {
+	if (version.isModel1()) {
 		for (int j = 0; j < numResultBlocks; j++) {
-			int iOffset = j < longerBlocksStartAt ? i : i + 1;
-			result[j]._codewords[iOffset] = rawCodewords[rawCodewordsOffset++];
+			for (int i = shorterBlocksNumDataCodewords; i < max; i++) {
+				int iOffset = j < longerBlocksStartAt ? i : i + 1;
+				result[j]._codewords[iOffset] = rawCodewords[rawCodewordsOffset++];
+			}
+		}
+	} else {
+		for (int i = shorterBlocksNumDataCodewords; i < max; i++) {
+			for (int j = 0; j < numResultBlocks; j++) {
+				int iOffset = j < longerBlocksStartAt ? i : i + 1;
+				result[j]._codewords[iOffset] = rawCodewords[rawCodewordsOffset++];
+			}
 		}
 	}
 	return result;

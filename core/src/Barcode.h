@@ -20,7 +20,17 @@
 #include <memory>
 namespace ZXing {
 class BitMatrix;
-}
+
+namespace BarcodeExtra {
+	#define ZX_EXTRA(NAME) static constexpr auto NAME = #NAME
+	ZX_EXTRA(DataMask); // QRCodes
+	ZX_EXTRA(Version);
+	ZX_EXTRA(EanAddOn); // EAN/UPC
+	ZX_EXTRA(UPCE);
+	#undef ZX_EXTRA
+} // namespace BarcodeExtra
+
+} // namespace ZXing
 
 extern "C" struct zint_symbol;
 struct zint_symbol_deleter
@@ -78,7 +88,7 @@ public:
 	/**
 	 * @brief bytes is the raw / standard content without any modifications like character set conversions
 	 */
-	const ByteArray& bytes() const;
+	const ByteArray& bytes() const; // TODO 3.0: replace ByteArray with std::vector<uint8_t>
 
 	/**
 	 * @brief bytesECI is the raw / standard content following the ECI protocol
@@ -179,6 +189,10 @@ public:
 	ImageView symbol() const;
 	void zint(unique_zint_symbol&& z);
 	zint_symbol* zint() const { return _zint.get(); }
+	Result&& addExtra(std::string&& json) { _json += std::move(json); return std::move(*this); }
+	// template<typename T>
+	// Result&& addExtra(std::string_view key, T val, T ignore = {}) { _json += JsonProp(key, val, ignore); return std::move(*this); }
+	std::string extra(std::string_view key = "") const;
 #endif
 
 	bool operator==(const Result& o) const;
@@ -199,6 +213,7 @@ private:
 #ifdef ZXING_EXPERIMENTAL_API
 	std::shared_ptr<BitMatrix> _symbol;
 	std::shared_ptr<zint_symbol> _zint;
+	std::string _json;
 #endif
 };
 

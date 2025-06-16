@@ -103,6 +103,8 @@ set (COMMON_FILES
     src/CharacterSet.cpp
     src/Content.h
     src/Content.cpp
+    src/DecoderResult.h
+    src/DetectorResult.h
     src/ECI.h
     src/ECI.cpp
     src/Error.h
@@ -111,6 +113,8 @@ set (COMMON_FILES
     src/GTIN.h
     src/GTIN.cpp
     src/ImageView.h
+    src/JSON.h
+    src/JSON.cpp
     src/Matrix.h
     src/Point.h
     src/Quadrilateral.h
@@ -156,8 +160,6 @@ if (ZXING_READERS)
         src/ConcentricFinder.cpp
         src/DecodeHints.h
         $<$<BOOL:${BUILD_SHARED_LIBS}>:src/DecodeHints.cpp> # [[deprecated]]
-        src/DecoderResult.h
-        src/DetectorResult.h
         src/GlobalHistogramBinarizer.h
         src/GlobalHistogramBinarizer.cpp
         src/GridSampler.h
@@ -220,6 +222,7 @@ set (PUBLIC_HEADERS
     src/ImageView.h
     src/Point.h
     src/Quadrilateral.h
+    src/Range.h # re-evaluate for 3.0
     src/ReadBarcode.h
     src/ReaderOptions.h
     src/StructuredAppend.h
@@ -240,7 +243,6 @@ if (ZXING_WRITERS_OLD)
     set (PUBLIC_HEADERS ${PUBLIC_HEADERS}
         src/BitMatrix.h
         src/BitMatrixIO.h
-        src/Range.h
         src/Matrix.h
         src/MultiFormatWriter.h
     )
@@ -402,9 +404,9 @@ if (ZXING_READERS)
         src/pdf417/PDFCodeword.h
         src/pdf417/PDFCodewordDecoder.h
         src/pdf417/PDFCodewordDecoder.cpp
+        src/pdf417/PDFCustomData.h
         src/pdf417/PDFDecoder.h
         src/pdf417/PDFDecoder.cpp
-        src/pdf417/PDFDecoderResultExtra.h
         src/pdf417/PDFDetectionResult.h
         src/pdf417/PDFDetectionResult.cpp
         src/pdf417/PDFDetectionResultColumn.h
@@ -419,7 +421,6 @@ if (ZXING_READERS)
         src/pdf417/PDFReader.cpp
         src/pdf417/PDFScanningDecoder.h
         src/pdf417/PDFScanningDecoder.cpp
-        src/pdf417/CustomData.h
         src/pdf417/ZXNullable.h
     )
 endif()
@@ -639,6 +640,9 @@ install (
 )
 
 IF (NOT WIN32 OR MINGW)
+    if (${ZXING_EXPERIMENTAL_API})
+        set(COMPILE_FLAGS "-DZXING_EXPERIMENTAL_API")
+    endif()
     configure_file(zxing.pc.in zxing.pc @ONLY)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/zxing.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 ENDIF()

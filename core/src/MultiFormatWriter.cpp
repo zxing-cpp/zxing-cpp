@@ -69,7 +69,7 @@ MultiFormatWriter::encode(const std::wstring& contents, int width, int height) c
 	case BarcodeFormat::ITF: return exec0(OneD::ITFWriter());
 	case BarcodeFormat::UPCA: return exec0(OneD::UPCAWriter());
 	case BarcodeFormat::UPCE: return exec0(OneD::UPCEWriter());
-	default: throw std::invalid_argument(std::string("Unsupported format: ") + ToString(_format));
+	default: throw std::invalid_argument("Unsupported format: " + ToString(_format));
 	}
 }
 

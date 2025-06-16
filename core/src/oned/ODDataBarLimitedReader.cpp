@@ -34,7 +34,7 @@ static Character ReadDataCharacter(const PatternView& view)
 	constexpr int ODD_SUM[] = {17, 13, 9, 15, 11, 19, 7};
 	constexpr int ODD_WIDEST[] = {6, 5, 3, 5, 4, 8, 1};
 
-	auto pattern = NormalizedPatternFromE2E<14>(view, 26);
+	auto pattern = NormalizedPatternFromE2E<CHAR_LEN>(view, 26);
 
 	int checkSum = 0;
 	for (auto it = pattern.rbegin(); it != pattern.rend(); ++it)
@@ -58,14 +58,8 @@ static Character ReadDataCharacter(const PatternView& view)
 
 	int oddWidest = ODD_WIDEST[group];
 	int evnWidest = 9 - oddWidest;
-#ifndef __cpp_lib_span
-#pragma message("DataBarLimited not supported without std::span<> (c++20 feature)")
-	int vOdd = 0;
-	int vEvn = 0;
-#else
 	int vOdd = GetValue(oddPattern, oddWidest, false);
 	int vEvn = GetValue(evnPattern, evnWidest, true);
-#endif
 	int tEvn = T_EVEN[group];
 	int gSum = G_SUM[group];
 
@@ -150,11 +144,11 @@ Barcode DataBarLimitedReader::decodePattern(int rowNumber, PatternView& next, st
 
 		printf("- %d, %d, %d\n", checkSum, left.value, right.value);
 
-		if ((left.checksum + 20 * right.checksum) % 89 != checkSum)
+		if (!left || !right || (left.checksum + 20 * right.checksum) % 89 != checkSum)
 			continue;
 
-		return {ConstructText(left, right),    rowNumber, next.pixelsInFront(), next.pixelsTillEnd(),
-				BarcodeFormat::DataBarLimited, {'e', '0'}};
+		return {ConstructText(left, right), rowNumber, next.pixelsInFront(), next.pixelsTillEnd(), BarcodeFormat::DataBarLimited,
+				{'e', '0', 0, AIFlag::GS1}};
 	}
 
 	// guarantee progress (see loop in ODReader.cpp)

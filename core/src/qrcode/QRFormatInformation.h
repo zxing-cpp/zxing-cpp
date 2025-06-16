@@ -28,7 +28,7 @@ public:
 	uint8_t bitsIndex = 255;
 
 	bool isMirrored = false;
-	uint8_t dataMask = 0;
+	uint8_t dataMask = 255;
 	uint8_t microVersion = 0;
 	ErrorCorrectionLevel ecLevel = ErrorCorrectionLevel::Invalid;
 

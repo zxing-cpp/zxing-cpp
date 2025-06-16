@@ -140,7 +140,8 @@ static bool ChecksumIsValid(Pair leftPair, Pair rightPair)
 static std::string ConstructText(Pair leftPair, Pair rightPair)
 {
 	auto txt = ToString(Value(leftPair, rightPair), 13);
-	return txt + GTIN::ComputeCheckDigit(txt);
+	// see ISO/IEC 24724:2011 Section 9
+	return "01" + txt + GTIN::ComputeCheckDigit(txt);
 }
 
 struct State : public RowReader::DecodingState
@@ -158,8 +159,8 @@ Barcode DataBarReader::decodePattern(int rowNumber, PatternView& next, std::uniq
 		if (IsLeftPair(next)) {
 			if (auto leftPair = ReadPair(next, false); leftPair && next.shift(FULL_PAIR_SIZE) && IsRightPair(next)) {
 				if (auto rightPair = ReadPair(next, true); rightPair && ChecksumIsValid(leftPair, rightPair)) {
-					return {ConstructText(leftPair, rightPair), rowNumber, leftPair.xStart, rightPair.xStop,
-							BarcodeFormat::DataBar};
+					return {ConstructText(leftPair, rightPair), rowNumber, leftPair.xStart, rightPair.xStop, BarcodeFormat::DataBar,
+							{'e', '0', 0, AIFlag::GS1}};
 				}
 			}
 		}
@@ -193,7 +194,7 @@ Barcode DataBarReader::decodePattern(int rowNumber, PatternView& next, std::uniq
 		for (const auto& rightPair : prevState->rightPairs)
 			if (ChecksumIsValid(leftPair, rightPair)) {
 				// Symbology identifier ISO/IEC 24724:2011 Section 9 and GS1 General Specifications 5.1.3 Figure 5.1.3-2
-				Barcode res{DecoderResult(Content(ByteArray(ConstructText(leftPair, rightPair)), {'e', '0'}))
+				Barcode res{DecoderResult(Content(ByteArray(ConstructText(leftPair, rightPair)), {'e', '0', 0, AIFlag::GS1}))
 								.setLineCount(EstimateLineCount(leftPair, rightPair)),
 							{{}, EstimatePosition(leftPair, rightPair)},
 							BarcodeFormat::DataBar};

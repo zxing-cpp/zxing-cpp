@@ -175,8 +175,12 @@ Barcodes ReadBarcodes(const ImageView& _iv, const ReaderOptions& opts)
 	for (auto&& iv : pyramid.layers) {
 		auto bitmap = CreateBitmap(opts.binarizer(), iv);
 		for (int close = 0; close <= (closedReader ? 1 : 0); ++close) {
-			if (close)
+			if (close) {
+				// if we already inverted the image in the first round, we need to undo that first
+				if (bitmap->inverted())
+					bitmap->invert();
 				bitmap->close();
+			}
 
 			// TODO: check if closing after invert would be beneficial
 			for (int invert = 0; invert <= static_cast<int>(opts.tryInvert() && !close); ++invert) {

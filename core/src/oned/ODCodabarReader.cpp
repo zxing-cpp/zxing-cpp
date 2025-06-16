@@ -16,16 +16,16 @@
 
 namespace ZXing::OneD {
 
-static const char ALPHABET[] = "0123456789-$:/.+ABCD";
+static constexpr char ALPHABET[] = "0123456789-$:/.+ABCD";
 
 // These represent the encodings of characters, as patterns of wide and narrow bars. The 7 least-significant bits of
 // each int correspond to the pattern of wide and narrow, with 1s representing wide and 0s representing narrow.
-static const int CHARACTER_ENCODINGS[] = {
+static constexpr int CHARACTER_ENCODINGS[] = {
 	0x03, 0x06, 0x09, 0x60, 0x12, 0x42, 0x21, 0x24, 0x30, 0x48, // 0-9
 	0x0c, 0x18, 0x45, 0x51, 0x54, 0x15, 0x1A, 0x29, 0x0B, 0x0E, // -$:/.+ABCD
 };
 
-static_assert(Size(ALPHABET) - 1 == Size(CHARACTER_ENCODINGS), "table size mismatch");
+static_assert(Size(ALPHABET) == Size(CHARACTER_ENCODINGS), "table size mismatch");
 
 // some industries use a checksum standard but this is not part of the original codabar standard
 // for more information see : http://www.mecsw.com/specs/codabar.html

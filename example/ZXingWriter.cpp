@@ -36,6 +36,7 @@ static void PrintUsage(const char* exePath)
 			  << "    -binary    Interpret <text> as a file name containing binary data\n"
 			  << "    -noqz      Print barcode witout quiet zone\n"
 			  << "    -hrt       Print human readable text below the barcode (if supported)\n"
+			  << "    -options   Comma separated list of symbology specific options and flags\n"
 			  << "    -help      Print usage information\n"
 			  << "    -version   Print version information\n"
 			  << "\n"
@@ -70,6 +71,7 @@ struct CLI
 	std::string input;
 	std::string outPath;
 	std::string ecLevel;
+	std::string options;
 	bool inputIsFile = false;
 	bool withHRT = false;
 	bool withQZ = true;
@@ -104,6 +106,10 @@ static bool ParseOptions(int argc, char* argv[], CLI& cli)
 			cli.withHRT = true;
 		} else if (is("-noqz")) {
 			cli.withQZ = false;
+		} else if (is("-options")) {
+			if (++i == argc)
+				return false;
+			cli.options = argv[i];
 		} else if (is("-verbose")) {
 			cli.verbose = true;
 		} else if (is("-help") || is("--help")) {
@@ -163,7 +169,7 @@ int main(int argc, char* argv[])
 
 	try {
 #ifdef ZXING_EXPERIMENTAL_API
-		auto cOpts = CreatorOptions(cli.format).ecLevel(cli.ecLevel);
+		auto cOpts = CreatorOptions(cli.format).ecLevel(cli.ecLevel).options(cli.options);
 		auto barcode = cli.inputIsFile ? CreateBarcodeFromBytes(ReadFile(cli.input), cOpts) : CreateBarcodeFromText(cli.input, cOpts);
 
 		auto wOpts = WriterOptions().sizeHint(cli.sizeHint).withQuietZones(cli.withQZ).withHRT(cli.withHRT).rotate(0);

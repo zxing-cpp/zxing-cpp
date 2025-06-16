@@ -49,6 +49,7 @@ target_link_libraries (ZXingWinRT
 target_compile_options (ZXingWinRT PRIVATE
     -D_WINRT_DLL
     -ZW             # Consume Windows Runtime Extension
+                    # this is incompatible with c++20 (see https://learn.microsoft.com/en-us/cpp/build/reference/zw-windows-runtime-compilation?view=msvc-170)
 )
 
 set_target_properties (ZXingWinRT PROPERTIES

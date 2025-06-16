@@ -6,25 +6,25 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "PDFReader.h"
-#include "PDFDetector.h"
-#include "PDFScanningDecoder.h"
-#include "PDFCodewordDecoder.h"
-#include "PDFDecoderResultExtra.h"
-#include "ReaderOptions.h"
-#include "DecoderResult.h"
-#include "DetectorResult.h"
-#include "Barcode.h"
 
-#include "BitMatrixCursor.h"
+#include "Barcode.h"
 #include "BinaryBitmap.h"
 #include "BitArray.h"
+#include "BitMatrixCursor.h"
+#include "DecoderResult.h"
+#include "DetectorResult.h"
+#include "PDFCodewordDecoder.h"
+#include "PDFCustomData.h"
+#include "PDFDetector.h"
+#include "PDFScanningDecoder.h"
 #include "Pattern.h"
+#include "ReaderOptions.h"
 
-#include <vector>
-#include <cstdlib>
 #include <algorithm>
+#include <cstdlib>
 #include <limits>
 #include <utility>
+#include <vector>
 
 #ifdef PRINT_DEBUG
 #include "BitMatrixIO.h"
@@ -86,17 +86,28 @@ static Barcodes DoDecode(const BinaryBitmap& image, bool multiple, bool tryRotat
 			ScanningDecoder::Decode(*detectorResult.bits, points[4], points[5], points[6], points[7],
 									GetMinCodewordWidth(points), GetMaxCodewordWidth(points));
 		if (decoderResult.isValid(returnErrors)) {
+			auto customData = std::static_pointer_cast<PDF417CustomData>(decoderResult.customData());
 			auto point = [&](int i) {
-				auto meta = dynamic_cast<DecoderResultExtra*>(decoderResult.extra().get());
-				if (points[i].hasValue() || i < 2 || !meta)
+				if (points[i].hasValue() || i < 2 || !customData)
 					return rotate(PointI(points[i].value()));
 				else {
-					auto p = rotate(PointI(points[i - 2].value()) + PointI(meta->approxSymbolWidth, 0));
+					auto p = rotate(PointI(points[i - 2].value()) + PointI(customData->approxSymbolWidth, 0));
 					p.x = std::clamp(p.x, 0, image.width() - 1);
 					p.y = std::clamp(p.y, 0, image.height() - 1);
 					return p;
 				}
 			};
+#ifdef ZXING_EXPERIMENTAL_API
+			decoderResult
+				.addExtra("Sender", customData->sender)
+				.addExtra("Addressee", customData->addressee)
+				.addExtra("FileId", customData->fileId)
+				.addExtra("FileName", customData->fileName)
+				.addExtra("FileSize", customData->fileSize, int64_t(-1))
+				.addExtra("Timestamp", customData->timestamp, int64_t(-1))
+				.addExtra("Checksum", customData->checksum, -1)
+			;
+#endif
 			res.emplace_back(std::move(decoderResult), DetectorResult{{}, {point(0), point(2), point(3), point(1)}},
 							 BarcodeFormat::PDF417);
 			if (!multiple)

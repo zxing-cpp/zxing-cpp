@@ -41,22 +41,22 @@ namespace DecodedBitStreamParser {
 * See ISO 16022:2006, Annex C Table C.1
 * The C40 Basic Character Set (*'s used for placeholders for the shift values)
 */
-static const char C40_BASIC_SET_CHARS[] = {
+static constexpr std::array C40_BASIC_SET_CHARS = {
 	'*', '*', '*', ' ', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
 	'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
 	'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
 };
 
-static const char C40_SHIFT2_SET_CHARS[] = {
+static constexpr std::array C40_SHIFT2_SET_CHARS = {
 	'!', '"', '#', '$', '%', '&', '\'', '(', ')', '*',  '+', ',', '-', '.',
-	'/', ':', ';', '<', '=', '>', '?',  '@', '[', '\\', ']', '^', '_', 29 // FNC1->29
+	'/', ':', ';', '<', '=', '>', '?',  '@', '[', '\\', ']', '^', '_', (char)29 // FNC1->29
 };
 
 /**
 * See ISO 16022:2006, Annex C Table C.2
 * The Text Basic Character Set (*'s used for placeholders for the shift values)
 */
-static const char TEXT_BASIC_SET_CHARS[] = {
+static constexpr std::array TEXT_BASIC_SET_CHARS = {
 	'*', '*', '*', ' ', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
 	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
 	'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
@@ -65,9 +65,9 @@ static const char TEXT_BASIC_SET_CHARS[] = {
 // Shift 2 for Text is the same encoding as C40
 #define TEXT_SHIFT2_SET_CHARS C40_SHIFT2_SET_CHARS
 
-static const char TEXT_SHIFT3_SET_CHARS[] = {
+static constexpr std::array TEXT_SHIFT3_SET_CHARS = {
 	'`', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
-	'O',  'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '{', '|', '}', '~', 127
+	'O',  'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '{', '|', '}', '~', (char)127
 };
 
 struct Shift128
@@ -146,8 +146,8 @@ static void DecodeC40OrTextSegment(BitSource& bits, Content& result, Mode mode)
 	Shift128 upperShift;
 	int shift = 0;
 
-	const char* BASIC_SET_CHARS = mode == Mode::C40 ? C40_BASIC_SET_CHARS : TEXT_BASIC_SET_CHARS;
-	const char* SHIFT_SET_CHARS = mode == Mode::C40 ? C40_SHIFT2_SET_CHARS : TEXT_SHIFT2_SET_CHARS;
+	auto& BASIC_SET_CHARS = mode == Mode::C40 ? C40_BASIC_SET_CHARS : TEXT_BASIC_SET_CHARS;
+	auto& SHIFT_SET_CHARS = mode == Mode::C40 ? C40_SHIFT2_SET_CHARS : TEXT_SHIFT2_SET_CHARS;
 
 	while (auto triple = DecodeNextTriple(bits)) {
 		for (int cValue : *triple) {
@@ -155,14 +155,14 @@ static void DecodeC40OrTextSegment(BitSource& bits, Content& result, Mode mode)
 			case 0:
 				if (cValue < 3)
 					shift = cValue + 1;
-				else if (cValue < 40) // Size(BASIC_SET_CHARS)
+				else if (cValue < Size(BASIC_SET_CHARS))
 					result.push_back(upperShift(BASIC_SET_CHARS[cValue]));
 				else
 					throw FormatError("invalid value in C40 or Text segment");
 				break;
 			case 1: result.push_back(upperShift(cValue)); break;
 			case 2:
-				if (cValue < 28) // Size(SHIFT_SET_CHARS))
+				if (cValue < Size(SHIFT_SET_CHARS))
 					result.push_back(upperShift(SHIFT_SET_CHARS[cValue]));
 				else if (cValue == 30) // Upper Shift
 					upperShift.set = true;
@@ -265,7 +265,7 @@ static void DecodeBase256Segment(BitSource& bits, Content& result)
 	for (int i = 0; i < count; i++) {
 		// readBits(8) may fail, have seen this particular error in the wild, such as at
 		// http://www.bcgen.com/demo/IDAutomationStreamingDataMatrix.aspx?MODE=3&D=Fred&PFMT=3&PT=F&X=0.3&O=0&LM=0.2
-		result += narrow_cast<uint8_t>(Unrandomize255State(bits.readBits(8), codewordPosition++));
+		result.push_back(Unrandomize255State(bits.readBits(8), codewordPosition++));
 	}
 }
 
@@ -437,7 +437,11 @@ retry:
 
 	// Decode the contents of that stream of bytes
 	return DecodedBitStreamParser::Decode(std::move(resultBytes), version->isDMRE())
-		.setVersionNumber(version->versionNumber);
+		.setVersionNumber(version->versionNumber)
+#ifdef ZXING_EXPERIMENTAL_API
+		.addExtra(BarcodeExtra::Version, std::to_string(version->symbolHeight) + 'x' + std::to_string(version->symbolWidth))
+#endif
+		;
 }
 
 static BitMatrix FlippedL(const BitMatrix& bits)

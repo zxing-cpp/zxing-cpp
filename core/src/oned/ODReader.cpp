@@ -59,11 +59,11 @@ Reader::Reader(const ReaderOptions& opts) : ZXing::Reader(opts)
 		_readers.emplace_back(new ITFReader(opts));
 	if (formats.testFlag(BarcodeFormat::Codabar))
 		_readers.emplace_back(new CodabarReader(opts));
-	if (formats.testFlags(BarcodeFormat::DataBar))
+	if (formats.testFlag(BarcodeFormat::DataBar))
 		_readers.emplace_back(new DataBarReader(opts));
-	if (formats.testFlags(BarcodeFormat::DataBarExpanded))
+	if (formats.testFlag(BarcodeFormat::DataBarExpanded))
 		_readers.emplace_back(new DataBarExpandedReader(opts));
-	if (formats.testFlags(BarcodeFormat::DataBarLimited))
+	if (formats.testFlag(BarcodeFormat::DataBarLimited))
 		_readers.emplace_back(new DataBarLimitedReader(opts));
 	if (formats.testFlag(BarcodeFormat::DXFilmEdge))
 		_readers.emplace_back(new DXFilmEdgeReader(opts));

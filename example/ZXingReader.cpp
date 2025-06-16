@@ -37,6 +37,7 @@ struct CLI
 	bool oneLine = false;
 	bool bytesOnly = false;
 	bool showSymbol = false;
+	bool json = false;
 };
 
 static void PrintUsage(const char* exePath)
@@ -58,6 +59,8 @@ static void PrintUsage(const char* exePath)
 			  << "    -1         Print only file name, content/error on one line per file/barcode (implies '-mode Escaped')\n"
 #ifdef ZXING_EXPERIMENTAL_API
 			  << "    -symbol    Print the detected symbol (if available)\n"
+			  << "    -json      Print a complete JSON formated serialization\n"
+			  << "    -denoise   Use extra denoiseing (closing operation)\n"
 #endif
 			  << "    -bytes     Write (only) the bytes content of the symbol(s) to stdout\n"
 			  << "    -pngout <file name>\n"
@@ -74,23 +77,20 @@ static void PrintUsage(const char* exePath)
 
 static bool ParseOptions(int argc, char* argv[], ReaderOptions& options, CLI& cli)
 {
-#ifdef ZXING_EXPERIMENTAL_API
-	options.setTryDenoise(true);
-#endif
-
 	for (int i = 1; i < argc; ++i) {
 		auto is = [&](const char* str) { return strlen(argv[i]) > 1 && strncmp(argv[i], str, strlen(argv[i])) == 0; };
 		if (is("-fast")) {
 			options.setTryHarder(false);
-#ifdef ZXING_EXPERIMENTAL_API
-			options.setTryDenoise(false);
-#endif
 		} else if (is("-norotate")) {
 			options.setTryRotate(false);
 		} else if (is("-noinvert")) {
 			options.setTryInvert(false);
 		} else if (is("-noscale")) {
 			options.setTryDownscale(false);
+#ifdef ZXING_EXPERIMENTAL_API
+		} else if (is("-denoise")) {
+			options.setTryDenoise(true);
+#endif
 		} else if (is("-single")) {
 			options.setMaxNumberOfSymbols(1);
 		} else if (is("-ispure")) {
@@ -137,6 +137,8 @@ static bool ParseOptions(int argc, char* argv[], ReaderOptions& options, CLI& cl
 			cli.bytesOnly = true;
 		} else if (is("-symbol")) {
 			cli.showSymbol = true;
+		} else if (is("-json")) {
+			cli.json = true;
 		} else if (is("-pngout")) {
 			if (++i == argc)
 				return false;
@@ -144,11 +146,11 @@ static bool ParseOptions(int argc, char* argv[], ReaderOptions& options, CLI& cl
 		} else if (is("-channels")) {
 			if (++i == argc)
 				return false;
-			cli.forceChannels = atoi(argv[i]);
+			cli.forceChannels = std::stoi(argv[i]);
 		} else if (is("-rotate")) {
 			if (++i == argc)
 				return false;
-			cli.rotate = atoi(argv[i]);
+			cli.rotate = std::stoi(argv[i]);
 		} else if (is("-help") || is("--help")) {
 			PrintUsage(argv[0]);
 			exit(0);
@@ -244,6 +246,14 @@ int main(int argc, char* argv[])
 				continue;
 			}
 
+#ifdef ZXING_EXPERIMENTAL_API
+			if (cli.json) {
+				if (barcode.format() != ZXing::BarcodeFormat::None)
+					std::cout << "{\"FilePath\":\"" << filePath << "\"," << barcode.extra("ALL").substr(1) << "\n";
+				continue;
+			}
+#endif
+
 			if (cli.oneLine) {
 				std::cout << filePath << " " << ToString(barcode.format());
 				if (barcode.isValid())
@@ -312,6 +322,8 @@ int main(int argc, char* argv[])
 				std::cout << "Reader Initialisation/Programming\n";
 
 #ifdef ZXING_EXPERIMENTAL_API
+			printOptional("UPC-E:      ", barcode.extra("UPC-E"));
+			printOptional("Extra:      ", barcode.extra());
 			if (cli.showSymbol && barcode.symbol().data())
 				std::cout << "Symbol:\n" << WriteBarcodeToUtf8(barcode);
 #endif

@@ -16,6 +16,7 @@
 		(void)symbol; \
 		(void)source; \
 		(void)length; \
+		strcpy(symbol->errtxt, "Symbology " #NAME " not implemented in embedded libzint"); \
 		return ZINT_ERROR_ENCODING_PROBLEM; \
 	}
 
@@ -25,6 +26,7 @@
 		(void)symbol; \
 		(void)segs; \
 		(void)seg_count; \
+		strcpy(symbol->errtxt, "Symbology " #NAME " not implemented in embedded libzint"); \
 		return ZINT_ERROR_ENCODING_PROBLEM; \
 	}
 
@@ -46,23 +48,24 @@ INTERNAL int emf_plot(struct zint_symbol* symbol, int rotate_angle)
 	return ZINT_ERROR_ENCODING_PROBLEM;
 }
 
-// STUB_FUNC_CHAR(pzn)
 // STUB_FUNC_CHAR(c25ind)
 // STUB_FUNC_CHAR(c25iata)
-// STUB_FUNC_CHAR(c25inter)
 // STUB_FUNC_CHAR(c25logic)
-// STUB_FUNC_CHAR(itf14)
-// STUB_FUNC_CHAR(dpleit)
-// STUB_FUNC_CHAR(dpident)
-// STUB_FUNC_CHAR(code11)
+STUB_FUNC_CHAR(itf14)
+STUB_FUNC_CHAR(ean14)
+STUB_FUNC_CHAR(dpleit)
+STUB_FUNC_CHAR(dpident)
+STUB_FUNC_CHAR(code11)
 STUB_FUNC_CHAR(msi_plessey)
 STUB_FUNC_CHAR(telepen)
 STUB_FUNC_CHAR(telepen_num)
 STUB_FUNC_CHAR(plessey)
-// STUB_FUNC_CHAR(pharma)
 STUB_FUNC_CHAR(flat)
 STUB_FUNC_CHAR(fim)
-// STUB_FUNC_CHAR(pharma_two)
+STUB_FUNC_CHAR(code32)
+STUB_FUNC_CHAR(pharma)
+STUB_FUNC_CHAR(pharma_two)
+STUB_FUNC_CHAR(pzn)
 STUB_FUNC_CHAR(postnet)
 STUB_FUNC_CHAR(planet)
 STUB_FUNC_CHAR(usps_imail)
@@ -71,13 +74,12 @@ STUB_FUNC_CHAR(auspost)
 STUB_FUNC_CHAR(code16k)
 STUB_FUNC_CHAR(composite)
 STUB_FUNC_CHAR(kix)
-// STUB_FUNC_CHAR(code32)
 STUB_FUNC_CHAR(daft)
-// STUB_FUNC_CHAR(nve18)
+STUB_FUNC_CHAR(nve18)
 STUB_FUNC_CHAR(koreapost)
 STUB_FUNC_CHAR(japanpost)
 STUB_FUNC_CHAR(code49)
-// STUB_FUNC_CHAR(channel)
+STUB_FUNC_CHAR(channel)
 STUB_FUNC_SEGS(codeone)
 STUB_FUNC_SEGS(gridmatrix)
 STUB_FUNC_SEGS(hanxin)
@@ -86,7 +88,7 @@ STUB_FUNC_SEGS(codablockf)
 // STUB_FUNC_CHAR(vin)
 STUB_FUNC_CHAR(mailmark_2d)
 STUB_FUNC_CHAR(mailmark_4s)
-// STUB_FUNC_CHAR(upu_s10)
+STUB_FUNC_CHAR(upu_s10)
 STUB_FUNC_SEGS(ultra)
-// STUB_FUNC_CHAR(dpd)
+STUB_FUNC_CHAR(dpd)
 STUB_FUNC_CHAR(bc412)

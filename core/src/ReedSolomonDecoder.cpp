@@ -71,7 +71,7 @@ RunEuclideanAlgorithm(const GenericGF& field, std::vector<int>&& rCoefs, Generic
 static std::vector<int>
 FindErrorLocations(const GenericGF& field, const GenericGFPoly& errorLocator)
 {
-	// This is a direct application of Chien's search
+	// This is a brute force search for roots of errorLocator (not Chien's search)
 	int numErrors = errorLocator.degree();
 	std::vector<int> res;
 	res.reserve(numErrors);
@@ -79,9 +79,6 @@ FindErrorLocations(const GenericGF& field, const GenericGFPoly& errorLocator)
 	for (int i = 1; i < field.size() && Size(res) < numErrors; i++)
 		if (errorLocator.evaluateAt(i) == 0)
 			res.push_back(field.inverse(i));
-
-	if (Size(res) != numErrors)
-		return {}; // Error locator degree does not match number of roots
 
 	return res;
 }
@@ -124,8 +121,8 @@ ReedSolomonDecode(const GenericGF& field, std::vector<int>& message, int numECCo
 		return false;
 
 	auto errorLocations = FindErrorLocations(field, sigma);
-	if (errorLocations.empty())
-		return false;
+	if (Size(errorLocations) != sigma.degree())
+		return false; // Error locator degree does not match number of roots, most likely there are more errors than can be recovered
 
 	auto errorMagnitudes = FindErrorMagnitudes(field, omega, errorLocations);
 
@@ -137,6 +134,16 @@ ReedSolomonDecode(const GenericGF& field, std::vector<int>& message, int numECCo
 
 		message[position] ^= errorMagnitudes[i];
 	}
+
+#if 1
+	// re-evaluate the syndromes of the recovered message to make sure it is a valid (see #940)
+	poly = GenericGFPoly(field, message);
+
+	for (int i = 0; i < numECCodeWords; i++)
+		if (poly.evaluateAt(field.exp(i + field.generatorBase())) != 0)
+			return false;
+#endif
+
 	return true;
 }
 

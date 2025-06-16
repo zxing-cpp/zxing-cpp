@@ -403,9 +403,9 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 4, 4, 180 },
 		});
 
-		runTests("code39-2", "Code39", 2, {
-			{ 2, 2, 0   },
-			{ 2, 2, 180 },
+		runTests("code39-2", "Code39", 3, {
+			{ 3, 3, 0   },
+			{ 3, 3, 180 },
 		});
 
 		runTests("code39-3", "Code39", 12, {
@@ -485,32 +485,32 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		runTests("upca-1", "UPC-A", 12, {
 			{ 10, 12, 0   },
 			{ 11, 12, 180 },
-		});
+		}, ReaderOptions().setFormats(BarcodeFormat::UPCA));
 
 		runTests("upca-2", "UPC-A", 36, {
 			{ 17, 22, 0   },
 			{ 17, 22, 180 },
-		});
+		}, ReaderOptions().setFormats(BarcodeFormat::UPCA));
 
 		runTests("upca-3", "UPC-A", 21, {
 			{ 7, 11, 0   },
 			{ 8, 11, 180 },
-		});
+		}, ReaderOptions().setFormats(BarcodeFormat::UPCA));
 
 		runTests("upca-4", "UPC-A", 19, {
 			{ 8, 12, 0, 1, 0 },
 			{ 9, 12, 0, 1, 180 },
-		});
+		}, ReaderOptions().setFormats(BarcodeFormat::UPCA));
 
 		runTests("upca-5", "UPC-A", 32, {
 			{ 18, 20, 0   },
 			{ 18, 20, 180 },
-		});
+		}, ReaderOptions().setFormats(BarcodeFormat::UPCA));
 
 		runTests("upca-extension-1", "UPC-A", 6, {
 			{ 4, 4, 0 },
 			{ 3, 4, 180 },
-		}, ReaderOptions().setEanAddOnSymbol(EanAddOnSymbol::Require));
+		}, ReaderOptions().setEanAddOnSymbol(EanAddOnSymbol::Require).setFormats(BarcodeFormat::UPCA));
 
 		runTests("upce-1", "UPC-E", 3, {
 			{ 3, 3, 0   },
@@ -579,12 +579,12 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 16, 16, 270 },
 		});
 
-		runTests("qrcode-2", "QRCode", 52, {
-			{ 46, 49, 0   },
-			{ 46, 49, 90  },
-			{ 46, 49, 180 },
-			{ 46, 49, 270 },
-			{ 22, 1, pure }, // the misread is the 'outer' symbol in 16.png
+		runTests("qrcode-2", "QRCode", 53, {
+			{ 47, 50, 0   },
+			{ 47, 50, 90  },
+			{ 47, 50, 180 },
+			{ 47, 50, 270 },
+			{ 23, 1, pure }, // the misread is the 'outer' symbol in 16.png
 		});
 
 		runTests("qrcode-3", "QRCode", 28, {

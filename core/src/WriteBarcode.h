@@ -11,6 +11,7 @@
 #include "ImageView.h"
 
 #include <memory>
+#include <optional>
 #include <string_view>
 
 extern "C" struct zint_symbol;
@@ -26,7 +27,7 @@ class CreatorOptions
 	friend Barcode CreateBarcode(const void* data, int size, int mode, const CreatorOptions& options);
 
 public:
-	CreatorOptions(BarcodeFormat format);
+	CreatorOptions(BarcodeFormat format, std::string options = {});
 
 	~CreatorOptions();
 	CreatorOptions(CreatorOptions&&);
@@ -35,7 +36,7 @@ public:
 	zint_symbol* zint() const;
 
 #define ZX_PROPERTY(TYPE, NAME) \
-	TYPE NAME() const noexcept; \
+	const TYPE& NAME() const noexcept; \
 	CreatorOptions& NAME(TYPE v)&; \
 	CreatorOptions&& NAME(TYPE v)&&;
 
@@ -43,8 +44,18 @@ public:
 	ZX_PROPERTY(bool, readerInit)
 	ZX_PROPERTY(bool, forceSquareDataMatrix)
 	ZX_PROPERTY(std::string, ecLevel)
+	ZX_PROPERTY(std::string, options)
 
 #undef ZX_PROPERTY
+
+#define ZX_RO_PROPERTY(TYPE, NAME) \
+	std::optional<TYPE> NAME() const noexcept;
+
+	ZX_RO_PROPERTY(bool, gs1);
+	ZX_RO_PROPERTY(bool, stacked);
+	ZX_RO_PROPERTY(int, version);
+	ZX_RO_PROPERTY(int, dataMask);
+#undef ZX_RO_PROPERTY
 };
 
 /**

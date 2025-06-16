@@ -16,8 +16,10 @@ add_executable (UnitTest
     BitArrayUtility.h
     BitHacksTest.cpp
     CharacterSetECITest.cpp
+    ContentTest.cpp
     ErrorTest.cpp
     GTINTest.cpp
+    JSONTest.cpp
     PseudoRandom.h
     SanitizerSupport.cpp
     TextUtfEncodingTest.cpp
@@ -77,7 +79,6 @@ endif()
 
 if (ZXING_READERS AND ZXING_WRITERS MATCHES "ON|OLD|BOTH")
 target_sources (UnitTest PRIVATE
-    ContentTest.cpp
     ReedSolomonTest.cpp
     TextEncoderTest.cpp
     aztec/AZEncodeDecodeTest.cpp
@@ -86,6 +87,12 @@ target_sources (UnitTest PRIVATE
     oned/ODCodaBarWriterTest.cpp
     oned/ODCode128WriterTest.cpp
     qrcode/QREncoderTest.cpp
+)
+endif()
+
+if (ZXING_WRITERS MATCHES "NEW|BOTH")
+target_sources (UnitTest PRIVATE
+    WriteBarcodeTest.cpp
 )
 endif()
 

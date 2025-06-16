@@ -16,6 +16,7 @@
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #include <QAbstractVideoFilter>
 #else
+#include <QThreadPool>
 #include <QVideoFrame>
 #include <QVideoSink>
 #endif
@@ -333,7 +334,16 @@ public:
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	BarcodeReader(QObject* parent = nullptr) : QAbstractVideoFilter(parent) {}
 #else
-	BarcodeReader(QObject* parent = nullptr) : QObject(parent) {}
+	BarcodeReader(QObject* parent = nullptr) : QObject(parent)
+	{
+		_pool.setMaxThreadCount(1);
+	}
+	~BarcodeReader()
+	{
+		_pool.setMaxThreadCount(0);
+		_pool.waitForDone(-1);
+	}
+
 #endif
 
 	// TODO: find out how to properly expose QFlags to QML
@@ -373,10 +383,11 @@ public:
 	ZQ_PROPERTY(bool, isPure, setIsPure)
 
 	// For debugging/development
-	int runTime = 0;
+	QAtomicInt runTime = 0;
 	Q_PROPERTY(int runTime MEMBER runTime)
 
 public slots:
+	// Function should be thread safe, as it may be called from a separate thread.
 	ZXingQt::Barcode process(const QVideoFrame& image)
 	{
 		QElapsedTimer t;
@@ -403,6 +414,7 @@ public:
 #else
 private:
 	QVideoSink *_sink = nullptr;
+	QThreadPool _pool;
 
 public:
 	void setVideoSink(QVideoSink* sink) {
@@ -413,9 +425,29 @@ public:
 			disconnect(_sink, nullptr, this, nullptr);
 
 		_sink = sink;
-		connect(_sink, &QVideoSink::videoFrameChanged, this, &BarcodeReader::process);
+		connect(_sink, &QVideoSink::videoFrameChanged, this, &BarcodeReader::onVideoFrameChanged, Qt::DirectConnection);
+	}
+	void onVideoFrameChanged(const QVideoFrame& frame)
+	{
+		if (_pool.activeThreadCount() >= _pool.maxThreadCount())
+			return; // we are busy => skip the frame
+
+		_pool.start([this, frame](){process(frame);});
 	}
 	Q_PROPERTY(QVideoSink* videoSink MEMBER _sink WRITE setVideoSink)
+	Q_PROPERTY(int maxThreadCount READ maxThreadCount WRITE setMaxThreadCount)
+	int maxThreadCount () const
+	{
+		return _pool.maxThreadCount();
+	}
+	void setMaxThreadCount (int maxThreadCount)
+	{
+		if (_pool.maxThreadCount() != maxThreadCount) {
+			_pool.setMaxThreadCount(maxThreadCount);
+			emit maxThreadCountChanged();
+		}
+	}
+	Q_SIGNAL void maxThreadCountChanged();
 #endif
 
 };

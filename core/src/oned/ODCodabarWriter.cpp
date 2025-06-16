@@ -11,16 +11,17 @@
 #include "ZXAlgorithms.h"
 
 #include <stdexcept>
+#include <string_view>
 #include <vector>
 
 namespace ZXing::OneD {
 
-static constexpr wchar_t START_END_CHARS[] =  L"ABCD";
-static constexpr wchar_t ALT_START_END_CHARS[] = L"TN*E";
-static constexpr wchar_t CHARS_WHICH_ARE_TEN_LENGTH_EACH_AFTER_DECODED[] = L"/:+.";
+static constexpr std::wstring_view START_END_CHARS =  L"ABCD";
+static constexpr std::wstring_view ALT_START_END_CHARS = L"TN*E";
+static constexpr std::wstring_view CHARS_WHICH_ARE_TEN_LENGTH_EACH_AFTER_DECODED = L"/:+.";
 static constexpr wchar_t DEFAULT_GUARD = START_END_CHARS[0];
 
-static constexpr wchar_t ALPHABET[] = L"0123456789-$:/.+ABCD";
+static constexpr std::wstring_view ALPHABET = L"0123456789-$:/.+ABCD";
 
 static constexpr int WIDE_TO_NARROW_BAR_RATIO = 2; //TODO: spec says 2.25 to 3 is the valid range. So this is technically illformed.
 
@@ -33,7 +34,7 @@ static const int CHARACTER_ENCODINGS[] = {
 	0x00c, 0x018, 0x045, 0x051, 0x054, 0x015, 0x01A, 0x029, 0x00B, 0x00E, // -$:/.+ABCD
 };
 
-static_assert(Size(ALPHABET) - 1 == Size(CHARACTER_ENCODINGS), "table size mismatch");
+static_assert(Size(ALPHABET) == Size(CHARACTER_ENCODINGS), "table size mismatch");
 
 BitMatrix
 CodabarWriter::encode(const std::wstring& contents_, int width, int height) const
@@ -97,7 +98,7 @@ CodabarWriter::encode(const std::wstring& contents_, int width, int height) cons
 			resultLength += 10;
 		}
 		else {
-			throw std::invalid_argument(std::string("Cannot encode : '") + static_cast<char>(c) + std::string("'"));
+			throw std::invalid_argument(StrCat("Cannot encode : '", static_cast<char>(c), "'"));
 		}
 	}
 	// A blank is placed between each character.
