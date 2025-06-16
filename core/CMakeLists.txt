@@ -640,6 +640,9 @@ install (
 )
 
 IF (NOT WIN32 OR MINGW)
+    if (${ZXING_EXPERIMENTAL_API})
+        set(COMPILE_FLAGS "-DZXING_EXPERIMENTAL_API")
+    endif()
     configure_file(zxing.pc.in zxing.pc @ONLY)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/zxing.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 ENDIF()
