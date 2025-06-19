@@ -399,7 +399,7 @@ DetectorResult SampleQR(const BitMatrix& image, const FinderPatternSet& fp)
 		auto version = ReadVersion(image, dimension, mod2Pix);
 
 		// if the version bits are garbage -> discard the detection
-		if (!version || std::abs(version->dimension() - dimension) > 8)
+		if (!version || std::min(std::abs(version->dimension() - top.dim), std::abs(version->dimension() - left.dim)) > 8)
 			return DetectorResult();
 		if (version->dimension() != dimension) {
 			printf("update dimension: %d -> %d\n", dimension, version->dimension());
