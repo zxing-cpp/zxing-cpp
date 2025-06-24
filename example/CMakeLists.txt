@@ -18,6 +18,7 @@ if (ZXING_READERS)
     target_link_libraries (ZXingReader ZXing::ZXing stb::stb)
 
     add_test(NAME ZXingReaderTest COMMAND ZXingReader -fast -format qrcode test.png) # see above
+    set_tests_properties(ZXingReaderTest PROPERTIES DEPENDS ZXingWriterTest)
 
     install(TARGETS ZXingReader DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
