@@ -190,16 +190,6 @@ public:
 	}
 
 	/**
-	 * @brief each bar/space is 1-4 modules wide, we have N bars/spaces, they are SUM modules wide in total
-	 */
-	template <int LEN, int SUM>
-	static int OneToFourBitPattern(const PatternView& view)
-	{
-		// TODO: make sure none of the elements in the normalized pattern exceeds 4
-		return ToInt(NormalizedPattern<LEN, SUM>(view));
-	}
-
-	/**
 	 * @brief Lookup the pattern in the table and return the character in alphabet at the same index.
 	 * @returns 0 if pattern is not found. Used to be -1 but that fails on systems where char is unsigned.
 	 */

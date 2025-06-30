@@ -44,7 +44,6 @@ constexpr float QUIET_ZONE_ADDON = 3;
 
 static bool DecodeDigit(const PatternView& view, std::string& txt, int* lgPattern = nullptr)
 {
-#if 1
 	// These two values are critical for determining how permissive the decoding will be.
 	// We've arrived at these values through a lot of trial and error. Setting them any higher
 	// lets false positives creep in quickly.
@@ -62,46 +61,6 @@ static bool DecodeDigit(const PatternView& view, std::string& txt, int* lgPatter
 		AppendBit(*lgPattern, bestMatch >= 10);
 
 	return true;
-#else
-	constexpr int CHAR_SUM = 7;
-	auto pattern = RowReader::OneToFourBitPattern<CHAR_LEN, CHAR_SUM>(view);
-
-	// remove first and last bit
-	pattern = (~pattern >> 1) & 0b11111;
-
-	// clang-format off
-/* pattern now contains the central 5 bits of the L/G/R code
- * L/G-codes always start with 1 and end with 0, R-codes are simply
- * inverted L-codes.
-
-		L-Code  G-Code  R-Code
-	___________________________________
-	0 	00110 	10011 	11001
-	1 	01100 	11001 	10011
-	2 	01001 	01101 	10110
-	3 	11110 	10000 	00001
-	4 	10001 	01110 	01110
-	5 	11000 	11100 	00111
-	6 	10111 	00010 	01000
-	7 	11101 	01000 	00010
-	8 	11011 	00100 	00100
-	9 	00101 	01011 	11010
-*/
-	constexpr char I = 0xf0; // invalid pattern
-
-	const char digit[] = {I,    I,    0x16, I,    0x18, 0x09, 0x00, I,
-                          0x17, 0x02, I,    0x19, 0x01, 0x12, 0x14, I,
-                          0x13, 0x04, I,    0x10, I,    I,    I,    0x06,
-                          0x05, 0x11, I,    0x08, 0x15, 0x07, 0x03, I};
-	// clang-format on
-
-	char d = digit[pattern];
-	txt += ToDigit(d & 0xf);
-	if (lgPattern)
-		AppendBit(*lgPattern, (d >> 4) & 1);
-
-	return d != I;
-#endif
 }
 
 static bool DecodeDigits(int digitCount, PatternView& next, std::string& txt, int* lgPattern = nullptr)
