@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>ZXingQtQmlWriter.qml</file>
+    </qresource>
+</RCC>
