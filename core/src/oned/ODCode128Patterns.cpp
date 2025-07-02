@@ -8,7 +8,7 @@
 
 namespace ZXing::OneD::Code128 {
 
-constexpr std::array<std::array<int, 6>, 107> CODE_PATTERNS = { {
+const std::array<std::array<int, 6>, 107> CODE_PATTERNS = { {
 	{ 2, 1, 2, 2, 2, 2 }, // 0
 	{ 2, 2, 2, 1, 2, 2 },
 	{ 2, 2, 2, 2, 2, 1 },
