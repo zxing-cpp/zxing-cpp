@@ -61,4 +61,3 @@ constexpr std::array<std::array<int, 6>, 48> CODE_PATTERNS = { {
 } };
 
 } // namespace ZXing::OneD::Code93
-
