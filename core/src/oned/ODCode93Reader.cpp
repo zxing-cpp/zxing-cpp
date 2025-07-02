@@ -17,7 +17,10 @@
 namespace ZXing::OneD {
 
 // Note that 'abcd' are dummy characters in place of control characters.
+// Control chars ($)==a, (%)==b, (/)==c, (+)==d
 static constexpr char ALPHABET[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%abcd*";
+
+static_assert(Size(ALPHABET) == Size(Code93::CODE_PATTERNS), "table size mismatch");
 
 static const int ASTERISK_ENCODING = 0x660; // E2E_PATTERNS[47]
 
@@ -95,13 +98,10 @@ Barcode Code93Reader::decodePattern(int rowNumber, PatternView& next, std::uniqu
 		if (!next.skipSymbol())
 			return {};
 
-		int code = IndexOf(E2E_PATTERNS, ToInt(NormalizedE2EPattern<CHAR_LEN>(next, CHAR_MODS)));
+		txt += LookupBitPattern(ToInt(NormalizedE2EPattern<CHAR_LEN>(next, CHAR_MODS)), E2E_PATTERNS, ALPHABET);
 
-		if (code == -1)
+		if (txt.back() == 0)
 			return {};
-
-		txt += ALPHABET[code];
-		
 	} while (txt.back() != '*');
 
 	txt.pop_back(); // remove asterisk
