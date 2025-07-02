@@ -327,6 +327,7 @@ if (ZXING_READERS OR ZXING_WRITERS_OLD)
     set (ONED_FILES
         src/oned/ODUPCEANCommon.h
         src/oned/ODUPCEANCommon.cpp
+        src/oned/ODCode93Patterns.h
         src/oned/ODCode128Patterns.h
         src/oned/ODCode128Patterns.cpp
     )

@@ -7,6 +7,7 @@
 
 #include "ODCode93Reader.h"
 
+#include "ODCode93Patterns.h"
 #include "Barcode.h"
 #include "ZXAlgorithms.h"
 
@@ -16,29 +17,12 @@
 namespace ZXing::OneD {
 
 // Note that 'abcd' are dummy characters in place of control characters.
+// Control chars ($)==a, (%)==b, (/)==c, (+)==d
 static constexpr char ALPHABET[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%abcd*";
 
-/**
-* Each character consist of 3 bars and 3 spaces and is 9 modules wide in total.
-* Each bar and space is from 1 to 4 modules wide.
-* These represent the encodings of characters. Each module is assigned 1 bit.
-* The 9 least-significant bits of each int correspond to the 9 modules in a symbol.
-* Note: bit 9 (the first) is always 1, bit 1 (the last) is always 0.
-*/
-static constexpr int CHARACTER_ENCODINGS[] = {
-	0x114, 0x148, 0x144, 0x142, 0x128, 0x124, 0x122, 0x150, 0x112, 0x10A, // 0-9
-	0x1A8, 0x1A4, 0x1A2, 0x194, 0x192, 0x18A, 0x168, 0x164, 0x162, 0x134, // A-J
-	0x11A, 0x158, 0x14C, 0x146, 0x12C, 0x116, 0x1B4, 0x1B2, 0x1AC, 0x1A6, // K-T
-	0x196, 0x19A, 0x16C, 0x166, 0x136, 0x13A, // U-Z
-	0x12E, 0x1D4, 0x1D2, 0x1CA, 0x16E, 0x176, 0x1AE, // - - %
-	0x126, 0x1DA, 0x1D6, 0x132, 0x15E, // Control chars ($)==a, (%)==b, (/)==c, (+)==d, *
-};
+static_assert(Size(ALPHABET) == Size(Code93::CODE_PATTERNS), "table size mismatch");
 
-static_assert(Size(ALPHABET) == Size(CHARACTER_ENCODINGS), "table size mismatch");
-
-static const int ASTERISK_ENCODING = 0x15E;
-
-using CounterContainer = std::array<int, 6>;
+static const int ASTERISK_ENCODING = 0x660; // E2E_PATTERNS[47]
 
 static bool
 CheckOneChecksum(const std::string& result, int checkPosition, int weightMax)
@@ -65,19 +49,34 @@ CheckChecksums(const std::string& result)
 std::string DecodeCode39AndCode93FullASCII(std::string encoded, const char ctrl[4]);
 
 constexpr int CHAR_LEN = 6;
-constexpr int CHAR_SUM = 9;
+constexpr int CHAR_MODS = 9;
 // quiet zone is half the width of a character symbol
 constexpr float QUIET_ZONE_SCALE = 0.5f;
 
+//TODO: make this a constexpr variable initialization
+static auto E2E_PATTERNS = [ ] {
+	// This creates an array of ints for fast IndexOf lookup of the edge-2-edge patterns (ISO/IEC 15417:2007(E) Table 2)
+	// e.g. a code pattern of { 2, 1, 2, 2, 2, 2 } becomes the e2e pattern { 3, 3, 4, 4 } and the value 0bs100011110000.
+	std::array<int, 48> res;
+	for (int i = 0; i < Size(res); ++i) {
+		const auto& a = Code93::CODE_PATTERNS[i];
+		std::array<int, 4> e2e;
+		for (int j = 0; j < 4; j++)
+			e2e[j] = a[j] + a[j + 1];
+		res[i] = ToInt(e2e);
+	}
+	return res;
+}();
+
 static bool IsStartGuard(const PatternView& window, int spaceInPixel)
 {
-	// The complete start pattern is FixedPattern<CHAR_LEN, CHAR_SUM>{1, 1, 1, 1, 4, 1}.
+	// The complete start pattern is FixedPattern<CHAR_LEN, CHAR_MODS>{1, 1, 1, 1, 4, 1}.
 	// Use only the first 4 elements which results in more than a 2x speedup. This is counter-intuitive since we save at
 	// most 1/3rd of the loop iterations in FindPattern. The reason might be a successful vectorization with the limited
 	// pattern size that is missed otherwise. We check for the remaining 2 slots for plausibility of the 4:1 ratio.
 	return IsPattern(window, FixedPattern<4, 4>{1, 1, 1, 1}, spaceInPixel, QUIET_ZONE_SCALE * 12) &&
 		   window[4] > 3 * window[5] - 2 &&
-		   RowReader::OneToFourBitPattern<CHAR_LEN, CHAR_SUM>(window) == ASTERISK_ENCODING;
+		   ToInt(NormalizedE2EPattern<CHAR_LEN>(window, CHAR_MODS)) == ASTERISK_ENCODING;
 }
 
 Barcode Code93Reader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<DecodingState>&) const
@@ -99,7 +98,8 @@ Barcode Code93Reader::decodePattern(int rowNumber, PatternView& next, std::uniqu
 		if (!next.skipSymbol())
 			return {};
 
-		txt += LookupBitPattern(OneToFourBitPattern<CHAR_LEN, CHAR_SUM>(next), CHARACTER_ENCODINGS, ALPHABET);
+		txt += LookupBitPattern(ToInt(NormalizedE2EPattern<CHAR_LEN>(next, CHAR_MODS)), E2E_PATTERNS, ALPHABET);
+
 		if (txt.back() == 0)
 			return {};
 	} while (txt.back() != '*');
