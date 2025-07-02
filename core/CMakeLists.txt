@@ -328,7 +328,6 @@ if (ZXING_READERS OR ZXING_WRITERS_OLD)
         src/oned/ODUPCEANCommon.h
         src/oned/ODUPCEANCommon.cpp
         src/oned/ODCode93Patterns.h
-        src/oned/ODCode93Patterns.cpp
         src/oned/ODCode128Patterns.h
         src/oned/ODCode128Patterns.cpp
     )
