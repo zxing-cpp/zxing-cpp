@@ -316,7 +316,7 @@ public: \
 	{ \
 		if (name() != newVal) { \
 			ReaderOptions::setter(newVal); \
-			emit name##Changed(); \
+			Q_EMIT name##Changed(); \
 		} \
 	} \
 	Q_SIGNAL void name##Changed();
@@ -359,7 +359,7 @@ public:
 	{
 		if (formats() != newVal) {
 			ReaderOptions::setFormats(static_cast<ZXing::BarcodeFormat>(newVal));
-			emit formatsChanged();
+			Q_EMIT formatsChanged();
 			qDebug() << ReaderOptions::formats();
 		}
 	}
@@ -371,7 +371,7 @@ public:
 	{
 		if (textMode() != newVal) {
 			ReaderOptions::setTextMode(static_cast<ZXing::TextMode>(newVal));
-			emit textModeChanged();
+			Q_EMIT textModeChanged();
 		}
 	}
 	Q_SIGNAL void textModeChanged();
@@ -386,7 +386,7 @@ public:
 	QAtomicInt runTime = 0;
 	Q_PROPERTY(int runTime MEMBER runTime)
 
-public slots:
+public Q_SLOTS:
 	// Function should be thread safe, as it may be called from a separate thread.
 	ZXingQt::Barcode process(const QVideoFrame& image)
 	{
@@ -398,13 +398,13 @@ public slots:
 		runTime = t.elapsed();
 
 		if (res.isValid())
-			emit foundBarcode(res);
+			Q_EMIT foundBarcode(res);
 		else
-			emit failedRead();
+			Q_EMIT failedRead();
 		return res;
 	}
 
-signals:
+Q_SIGNALS:
 	void failedRead();
 	void foundBarcode(ZXingQt::Barcode barcode);
 
@@ -444,7 +444,7 @@ public:
 	{
 		if (_pool.maxThreadCount() != maxThreadCount) {
 			_pool.setMaxThreadCount(maxThreadCount);
-			emit maxThreadCountChanged();
+			Q_EMIT maxThreadCountChanged();
 		}
 	}
 	Q_SIGNAL void maxThreadCountChanged();
@@ -501,7 +501,7 @@ inline void registerQmlAndMetaTypes()
 	qRegisterMetaType<ZXingQt::Barcode>("Barcode");
 
 	qmlRegisterUncreatableMetaObject(
-		ZXingQt::staticMetaObject, "ZXing", 1, 0, "ZXing", "Access to enums & flags only");
+		ZXingQt::staticMetaObject, "ZXing", 1, 0, "ZXing", QStringLiteral("Access to enums & flags only"));
 	qmlRegisterType<ZXingQt::BarcodeReader>("ZXing", 1, 0, "BarcodeReader");
 }
 

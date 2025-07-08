@@ -16,7 +16,7 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
-	QString filePath = argv[1];
+	QString filePath = QString::fromUtf8(argv[1]);
 
 	QImage image = QImage(filePath);
 
