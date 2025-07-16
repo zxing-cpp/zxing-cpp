@@ -1,5 +1,5 @@
 [versions]
-kotlin = "1.9.22"
+kotlin = "2.2.0"
 krossCompile = "0.1.9"
 
 [libraries]
