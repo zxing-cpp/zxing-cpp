@@ -15,20 +15,39 @@ To access the SNAPSHOT version, you also need to add a separate repositories ent
 maven { url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots") }
 ```
 
-### Shared library distribution
-The library has to be installed on both dev and client host to ensure the wrapper works.
+### Library distribution
 
-You need to specify the place of compiled shared library for each target you need for kn's linker like following code:
+> For further information, see: [zxing-cpp#939](https://github.com/zxing-cpp/zxing-cpp/issues/939)
+
+We currently provide two ways to distribute the native library, depending on the target platform:
+
+#### Static library distribution
+
+This section is suitable for all targets other than `linuxX64` and `linuxArm64`, such as `androidNativeArm64`,
+`macosX64`, etc.
+
+The wrapper is distributed with its prebuilt static library in klibs,
+so you can use it without any additional configuration when using the library on these targets.
+
+#### Shared library distribution
+
+This section is suitable for only `linuxX64` and `linuxArm64` targets.
+The library has to be installed on both dev and client host to ensure the library works.
+
+You need to specify the place of compiled shared library for each target you need for kn's linker like the following
+code:
+
 ```kotlin
 linuxX64.compilations["main"].compileTaskProvider.configure {
     compilerOptions.freeCompilerArgs.addAll(
-       "-linker-options",
-       "-L/usr/lib/x86_64-linux-gnu -lZXing"
+        "-linker-options",
+        "-L/home/user/zxing-cpp/build/install/lib -lZXing"
     )
 }
 ```
 
-Otherwise when compiling the (consumer)project, you will see following error:
+Otherwise, when compiling the (consumer)project, you will see the following error:
+
 ```text
 > Task :linkDebugTestLinuxX64 FAILED
 e: .../usr/bin/ld invocation reported errors
@@ -45,11 +64,6 @@ Undefined symbols for architecture arm64:
 ld: symbol(s) not found for architecture x86_64
 FAILURE: Build failed with an exception.
 ```
-
-### Static library distribution
-The Former version of the wrapper provided a static library bundled in the klib file shipping to maven central, but this is no longer the case.
-
-For further information, see: [zxing-cpp#939](https://github.com/zxing-cpp/zxing-cpp/issues/939)
 
 ## Use
 
@@ -70,14 +84,14 @@ val format: ImageFormat = ImageFormat.Lum // ImageFormat.Lum assumes grey scale 
 
 val image: ImageView = ImageView(data, width, height, format)
 val barcodeReader = BarcodeReader().apply {
-   formats = setOf(BarcodeFormat.EAN13, BarcodeFormat.QRCode)
-   tryHarder = true
-   maxNumberOfSymbols = 3
-   // more options, see documentation
+    formats = setOf(BarcodeFormat.EAN13, BarcodeFormat.QRCode)
+    tryHarder = true
+    maxNumberOfSymbols = 3
+    // more options, see documentation
 }
 
 barcodeReader.read(image).joinToString("\n") { barcode: Barcode ->
-   "${barcode.format} (${barcode.contentType}): ${barcode.text}"
+    "${barcode.format} (${barcode.contentType}): ${barcode.text}"
 }
 ```
 
@@ -104,12 +118,13 @@ val barcode2 = Barcode(text.encodeToByteArray(), format)
 
 @OptIn(ExperimentalWriterApi::class)
 val wOpts = WriterOptions().apply {
-   sizeHint = 400
-   // more options, see documentation
+    sizeHint = 400
+    // more options, see documentation
 }
 
 @OptIn(ExperimentalWriterApi::class)
 val svg: String = barcode.toSVG(wOpts)
+
 @OptIn(ExperimentalWriterApi::class)
 val image: Image = barcode.toImage(wOpts)
 ```
