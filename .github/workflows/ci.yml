@@ -186,6 +186,12 @@ jobs:
       with:
         submodules: true
 
+    - name: Checkout toolchain initializer repository
+      uses: actions/checkout@v4
+      with:
+        repository: ISNing/kn-toolchain-initializer
+        path: wrappers/kn/.kn-toolchain-initializer
+
     - name: Set up JDK
       uses: actions/setup-java@v4
       with:
@@ -198,9 +204,14 @@ jobs:
     - name: Validate Gradle Wrapper
       uses: gradle/wrapper-validation-action@v2
 
+    - name: Initialize Kotlin/Native toolchain
+      working-directory: wrappers/kn/.kn-toolchain-initializer
+      run: ./gradlew build -DkotlinVersion=2.2.0
+
     - name: Run test for linuxX64 target
       run: |
-        echo -e "linuxX64.test.compilerOptions=-linker-options, -L/usr/lib/x86_64-linux-gnu -lZXing" > local.properties
+        echo -e "konan.dir=$HOME/.konan/kotlin-native-prebuilt-linux-x86_64-1.9.22" >> local.properties
+        echo -e "linuxX64.test.compilerOptions=-linker-options, -L/usr/lib/x86_64-linux-gnu -lZXing" >> local.properties
         ./gradlew linuxX64Test
 
   build-python:

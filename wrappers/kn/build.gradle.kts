@@ -1,8 +1,16 @@
+import io.github.isning.gradle.plugins.cmake.params.CustomCMakeParams
+import io.github.isning.gradle.plugins.cmake.params.entries.CustomCMakeCacheEntries
+import io.github.isning.gradle.plugins.cmake.params.entries.asCMakeParams
+import io.github.isning.gradle.plugins.cmake.params.entries.platform.ModifiablePlatformEntriesImpl
+import io.github.isning.gradle.plugins.cmake.params.entries.plus
+import io.github.isning.gradle.plugins.cmake.params.plus
+import io.github.isning.gradle.plugins.kn.krossCompile.invoke
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import java.util.*
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.krossCompile)
     `maven-publish`
     signing
 }
@@ -24,7 +32,7 @@ repositories {
 }
 
 kotlin {
-    val androidTargets = {
+    val androidTargets by lazy {
         listOf(
             androidNativeArm32(),
             androidNativeArm64(),
@@ -32,7 +40,7 @@ kotlin {
             androidNativeX64(),
         )
     }
-    val appleTargets = {
+    val appleTargets by lazy {
         listOf(
             iosX64(),
             iosArm64(),
@@ -48,25 +56,26 @@ kotlin {
             tvosSimulatorArm64(),
         )
     }
-    val linuxTargets = {
+    val linuxTargets by lazy {
         listOf(
             linuxX64(),
             linuxArm64(),
         )
     }
-    val windowsTargets = {
+    val windowsTargets by lazy {
         listOf(
             mingwX64(),
         )
     }
     val enabledTargetList = mutableListOf<KotlinNativeTarget>()
-    enabledTargetList.addAll(androidTargets())
-    enabledTargetList.addAll(linuxTargets())
-    enabledTargetList.addAll(windowsTargets())
+    enabledTargetList.addAll(androidTargets)
+    enabledTargetList.addAll(linuxTargets)
+    // TODO: Linking failed, keep up with https://youtrack.jetbrains.com/issue/KT-65671
+//    enabledTargetList.addAll(windowsTargets)
 
-    if (hostOs == "Mac OS X") enabledTargetList.addAll(appleTargets())
+    if (hostOs == "Mac OS X") enabledTargetList.addAll(appleTargets)
 
-    enabledTargetList.forEach { target ->
+    linuxTargets.forEach { target ->
         val main by target.compilations.getting
         val test by target.compilations.getting
         val libZXing by main.cinterops.creating {
@@ -87,6 +96,71 @@ kotlin {
         val commonMain by getting
         val nativeMain by creating
         val nativeTest by creating
+    }
+}
+
+krossCompile {
+    libraries {
+        val cmakeDir = project.layout.buildDirectory.dir("cmake").get().asFile.absolutePath
+        val libZXing by creating {
+            sourceDir = file("../../core").absolutePath
+            outputPath = ""
+            libraryArtifactNames = listOf("libZXing.a")
+
+            cinterop {
+                val buildDir = "$cmakeDir/{libraryName}/{targetName}"
+                packageName = "zxingcpp.cinterop"
+                includeDirs.from(buildDir)
+                headers = listOf("$sourceDir/src/ZXingC.h")
+                compilerOpts += "-DZXING_EXPERIMENTAL_API=ON"
+            }
+            cmake.apply {
+                val buildDir = "$cmakeDir/{projectName}/{targetName}"
+                configParams {
+                    this.buildDir = buildDir
+                }
+                configParams += (ModifiablePlatformEntriesImpl().apply {
+                    buildType = "Release"
+                    buildSharedLibs = false
+                } + CustomCMakeCacheEntries(
+                    mapOf(
+                        "ZXING_READERS" to "ON",
+                        "ZXING_WRITERS" to "NEW",
+                        "ZXING_EXPERIMENTAL_API" to "ON",
+                        "ZXING_USE_BUNDLED_ZINT" to "ON",
+                        "ZXING_C_API" to "ON",
+                    )
+                )).asCMakeParams
+                buildParams {
+                    this.buildDir = buildDir
+                    config = "Release"
+                }
+                buildParams += CustomCMakeParams(listOf("-j16"))
+            }
+
+            androidNativeX64.ndk()
+            androidNativeX86.ndk()
+            androidNativeArm32.ndk()
+            androidNativeArm64.ndk()
+
+            // TODO: Linking failed, keep up with https://youtrack.jetbrains.com/issue/KT-65671
+//            mingwX64.konan()
+
+            if (hostOs == "Mac OS X") {
+                iosX64.xcode()
+                iosArm64.xcode()
+                iosSimulatorArm64.xcode()
+                macosX64.xcode()
+                macosArm64.xcode()
+                watchosX64.xcode()
+                watchosArm32.xcode()
+                watchosArm64.xcode()
+                watchosSimulatorArm64.xcode()
+                tvosX64.xcode()
+                tvosArm64.xcode()
+                tvosSimulatorArm64.xcode()
+            }
+        }
     }
 }
 
