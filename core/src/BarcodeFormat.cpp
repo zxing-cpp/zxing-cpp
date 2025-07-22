@@ -22,7 +22,7 @@ struct BarcodeFormatName
 	std::string_view name;
 };
 
-static BarcodeFormatName NAMES[] = {
+static const BarcodeFormatName NAMES[] = {
 	{BarcodeFormat::None, "None"},
 	{BarcodeFormat::Aztec, "Aztec"},
 	{BarcodeFormat::Codabar, "Codabar"},

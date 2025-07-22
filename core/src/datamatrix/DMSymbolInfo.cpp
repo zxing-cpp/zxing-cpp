@@ -50,7 +50,7 @@ static constexpr const SymbolInfo PROD_SYMBOLS[] = {
 	{ false, 1558, 620, 22, 22, 36, -1, 62 },
 };
 
-static const SymbolInfo* s_symbols = PROD_SYMBOLS;
+static const SymbolInfo* ZXING_IF_NOT_TEST(const) s_symbols = PROD_SYMBOLS;
 static ZXING_IF_NOT_TEST(const) size_t s_symbolCount = Size(PROD_SYMBOLS);
 
 #ifdef ZXING_BUILD_FOR_TEST
