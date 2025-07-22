@@ -28,6 +28,7 @@ struct StrideIter
 	auto operator[](int i) const { return *(pos + i * stride); }
 	StrideIter<Iterator>& operator++() { return pos += stride, *this; }
 	StrideIter<Iterator> operator++(int) { auto temp = *this; ++*this; return temp; }
+	bool operator==(const StrideIter<Iterator>& rhs) const { return pos == rhs.pos; }
 	bool operator!=(const StrideIter<Iterator>& rhs) const { return pos != rhs.pos; }
 	StrideIter<Iterator> operator+(int i) const { return {pos + i * stride, stride}; }
 	StrideIter<Iterator> operator-(int i) const { return {pos - i * stride, stride}; }
