@@ -32,7 +32,7 @@ repositories {
 }
 
 kotlin {
-    val androidTargets = {
+    val androidTargets by lazy {
         listOf(
             androidNativeArm32(),
             androidNativeArm64(),
@@ -40,7 +40,7 @@ kotlin {
             androidNativeX64(),
         )
     }
-    val appleTargets = {
+    val appleTargets by lazy {
         listOf(
             iosX64(),
             iosArm64(),
@@ -56,31 +56,53 @@ kotlin {
             tvosSimulatorArm64(),
         )
     }
-    val linuxTargets = {
+    val linuxTargets by lazy {
         listOf(
             linuxX64(),
             linuxArm64(),
         )
     }
-    // TODO: Linking failed, keep up with https://youtrack.jetbrains.com/issue/KT-65671
-//    val windowsTargets = {
-//        listOf(
-//            mingwX64(),
-//        )
-//    }
+    val windowsTargets by lazy {
+        listOf(
+            mingwX64(),
+        )
+    }
     val enabledTargetList = mutableListOf<KotlinNativeTarget>()
-    enabledTargetList.addAll(androidTargets())
-    enabledTargetList.addAll(linuxTargets())
+    enabledTargetList.addAll(androidTargets)
+    enabledTargetList.addAll(linuxTargets)
     // TODO: Linking failed, keep up with https://youtrack.jetbrains.com/issue/KT-65671
-//    enabledTargetList.addAll(windowsTargets())
+//    enabledTargetList.addAll(windowsTargets)
 
-    if (hostOs == "Mac OS X") enabledTargetList.addAll(appleTargets())
+    if (hostOs == "Mac OS X") enabledTargetList.addAll(appleTargets)
+
+    linuxTargets.forEach { target ->
+        val main by target.compilations.getting
+        val test by target.compilations.getting
+        val libZXing by main.cinterops.creating {
+            packageName = "zxingcpp.cinterop"
+        }
+
+        (project.properties["${target.name}.test.compilerOptions"] as? String)?.let {
+            test.compileTaskProvider.configure {
+                compilerOptions.freeCompilerArgs.addAll(
+                    it.split(",").map(String::trim)
+                )
+            }
+        }
+    }
+
+
+    sourceSets {
+        val commonMain by getting
+        val nativeMain by creating
+        val nativeTest by creating
+    }
 }
 
 krossCompile {
     libraries {
         val cmakeDir = project.layout.buildDirectory.dir("cmake").get().asFile.absolutePath
-        val zxingCpp by creating {
+        val libZXing by creating {
             sourceDir = file("../../core").absolutePath
             outputPath = ""
             libraryArtifactNames = listOf("libZXing.a")
@@ -121,25 +143,6 @@ krossCompile {
             androidNativeArm32.ndk()
             androidNativeArm64.ndk()
 
-            // TODO: Find a way to build linux targets with cxx20. Detail: https://github.com/zxing-cpp/zxing-cpp/pull/719#discussion_r1485701269
-            linuxX64.konan {
-                cmake {
-                    configParams += CustomCMakeCacheEntries(
-                        mapOf(
-                            "CMAKE_CXX_STANDARD" to "17",
-                        )
-                    ).asCMakeParams
-                }
-            }
-            linuxArm64.konan {
-                cmake {
-                    configParams += CustomCMakeCacheEntries(
-                        mapOf(
-                            "CMAKE_CXX_STANDARD" to "17",
-                        )
-                    ).asCMakeParams
-                }
-            }
             // TODO: Linking failed, keep up with https://youtrack.jetbrains.com/issue/KT-65671
 //            mingwX64.konan()
 
@@ -164,32 +167,32 @@ krossCompile {
 publishing {
     publications.withType<MavenPublication>().all {
         artifactId = artifactId.replace(project.name, "kotlin-native")
-            groupId = project.group.toString()
-            version = project.version.toString()
+        groupId = project.group.toString()
+        version = project.version.toString()
 
-            pom {
-                name = "zxing-cpp"
-                description = "Wrapper for zxing-cpp barcode image processing library"
-                url = "https://github.com/zxing-cpp/zxing-cpp"
-                licenses {
-                    license {
-                        name = "The Apache License, Version 2.0"
-                        url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
-                    }
-                }
-                developers {
-                    developer {
-                        id = "zxing-cpp"
-                        name = "zxing-cpp community"
-                        email = "zxingcpp@gmail.com"
-                    }
-                }
-                scm {
-                    connection = "scm:git:git://github.com/zxing-cpp/zxing-cpp.git"
-                    developerConnection = "scm:git:git://github.com/zxing-cpp/zxing-cpp.git"
-                    url = "https://github.com/zxing-cpp/zxing-cpp"
+        pom {
+            name = "zxing-cpp"
+            description = "Wrapper for zxing-cpp barcode image processing library"
+            url = "https://github.com/zxing-cpp/zxing-cpp"
+            licenses {
+                license {
+                    name = "The Apache License, Version 2.0"
+                    url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
                 }
             }
+            developers {
+                developer {
+                    id = "zxing-cpp"
+                    name = "zxing-cpp community"
+                    email = "zxingcpp@gmail.com"
+                }
+            }
+            scm {
+                connection = "scm:git:git://github.com/zxing-cpp/zxing-cpp.git"
+                developerConnection = "scm:git:git://github.com/zxing-cpp/zxing-cpp.git"
+                url = "https://github.com/zxing-cpp/zxing-cpp"
+            }
+        }
     }
     repositories {
         maven {
