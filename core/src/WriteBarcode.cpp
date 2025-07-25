@@ -66,6 +66,7 @@ ZX_PROPERTY(std::string, options)
 
 ZX_RO_PROPERTY(bool, gs1);
 ZX_RO_PROPERTY(bool, stacked);
+ZX_RO_PROPERTY(bool, forceSquare);
 ZX_RO_PROPERTY(int, version);
 ZX_RO_PROPERTY(int, dataMask);
 
@@ -376,6 +377,9 @@ zint_symbol* CreatorOptions::zint() const
 
 		if (auto val = dataMask(); val && (BarcodeFormat::QRCode | BarcodeFormat::MicroQRCode).testFlag(format()))
 			zint->option_3 = (zint->option_3 & 0xFF) | (*val + 1) << 8;
+
+		if (format() == BarcodeFormat::DataMatrix)
+			zint->option_3 = (forceSquare() ? DM_SQUARE : DM_DMRE) | DM_ISO_144;
 	}
 
 	return zint.get();

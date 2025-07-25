@@ -52,9 +52,10 @@ public:
 	std::optional<TYPE> NAME() const noexcept;
 
 	ZX_RO_PROPERTY(bool, gs1);
-	ZX_RO_PROPERTY(bool, stacked);
-	ZX_RO_PROPERTY(int, version);
-	ZX_RO_PROPERTY(int, dataMask);
+	ZX_RO_PROPERTY(bool, stacked);     // DataBar/DataBarExpanded: generates a stacked version
+	ZX_RO_PROPERTY(bool, forceSquare); // DataMatrix: only consider square symbol versions
+	ZX_RO_PROPERTY(int, version);      // most 2D symbologies: specify the version/size of the symbol
+	ZX_RO_PROPERTY(int, dataMask);     // QRCode/MicroQRCode: specify dataMask to use
 #undef ZX_RO_PROPERTY
 };
 
