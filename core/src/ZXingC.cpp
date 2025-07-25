@@ -362,6 +362,16 @@ void ZXing_CreatorOptions_setEcLevel(ZXing_CreatorOptions* opts, const char* val
 	opts->ecLevel(val);
 }
 
+char* ZXing_CreatorOptions_getOptions(const ZXing_CreatorOptions* opts)
+{
+	return copy(opts->options());
+}
+
+void ZXing_CreatorOptions_setOptions(ZXing_CreatorOptions* opts, const char* val)
+{
+	opts->options(val);
+}
+
 
 ZXing_WriterOptions* ZXing_WriterOptions_new()
 {

@@ -289,6 +289,9 @@ bool ZXing_CreatorOptions_getForceSquareDataMatrix(const ZXing_CreatorOptions* o
 void ZXing_CreatorOptions_setEcLevel(ZXing_CreatorOptions* opts, const char* ecLevel);
 char* ZXing_CreatorOptions_getEcLevel(const ZXing_CreatorOptions* opts);
 
+void ZXing_CreatorOptions_setOptions(ZXing_CreatorOptions* opts, const char* options);
+char* ZXing_CreatorOptions_getOptions(const ZXing_CreatorOptions* opts);
+
 
 ZXing_WriterOptions* ZXing_WriterOptions_new();
 void ZXing_WriterOptions_delete(ZXing_WriterOptions* opts);

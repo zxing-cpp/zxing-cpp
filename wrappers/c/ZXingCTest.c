@@ -6,6 +6,8 @@
 
 #include "ZXingC.h"
 
+#include "Version.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -80,6 +82,8 @@ int main(int argc, char** argv)
 		fprintf(stderr, "Using '%s' as text input to create barcode\n", filename);
 		ZXing_CreatorOptions* cOpts = ZXing_CreatorOptions_new(formats);
 		CHECK(cOpts)
+		if (argc >= 4)
+			ZXing_CreatorOptions_setOptions(cOpts, argv[3]);
 		ZXing_Barcode* barcode = ZXing_CreateBarcodeFromText(filename, 0, cOpts);
 		CHECK(barcode)
 		img = ZXing_WriteBarcodeToImage(barcode, NULL);
