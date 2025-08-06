@@ -59,6 +59,34 @@ jobs:
         name: cibw-wheels-${{ matrix.os }}
         path: ./wheelhouse/*.whl
 
+  build-wheels-arm64:
+    name: Build ARM64 wheels on Linux
+    runs-on: ubuntu-latest-arm64
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install cibuildwheel
+        run: python3 -m pip install cibuildwheel==2.22.0
+      - name: Build ARM64 wheels
+        run: python3 -m cibuildwheel --output-dir wheelhouse wrappers/python
+        env:
+          CIBW_BUILD: cp39-* cp310-* cp311-* cp312-* cp313-*
+          CIBW_SKIP: "*musllinux*"
+          # Use ARM64 compatible manylinux image
+          CIBW_MANYLINUX_AARCH64_IMAGE: quay.io/pypa/manylinux_2_28_aarch64
+          CIBW_ARCHS: aarch64
+          CIBW_BUILD_VERBOSITY: 1
+      - name: Upload ARM64 wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: cibw-wheels-linux-arm64
+          path: ./wheelhouse/*.whl
+
   build-sdist:
     name: Build source distribution
     runs-on: ubuntu-latest
@@ -88,7 +116,7 @@ jobs:
 
   upload-pypi:
     name: Upload to PyPI
-    needs: [build-wheels, build-sdist]
+    needs: [build-wheels, build-wheels-arm64, build-sdist]
     runs-on: ubuntu-latest
     environment:
       name: pypi
