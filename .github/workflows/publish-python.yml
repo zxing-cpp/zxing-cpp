@@ -61,7 +61,7 @@ jobs:
 
   build-wheels-arm64:
     name: Build ARM64 wheels on Linux
-    runs-on: ubuntu-latest-arm64
+    runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v4
         with:
