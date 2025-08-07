@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-13, windows-latest] # at least macos-13 is required to enable c++20 support
+        os: [ubuntu-latest, macos-latest, windows-latest, macos-13, ubuntu-24.04-arm] # windows-11-arm currently fails with a linker error
 
     steps:
     - uses: actions/checkout@v4
@@ -35,7 +35,7 @@ jobs:
         python-version: '3.12'
 
     - name: Install cibuildwheel
-      run: python3 -m pip install cibuildwheel==2.22.0
+      run: python3 -m pip install cibuildwheel==3.1.0
 
     - name: Build wheels
       run: python3 -m cibuildwheel --output-dir wheelhouse wrappers/python
@@ -44,13 +44,9 @@ jobs:
         # see https://github.com/YannickJadoul/Parselmouth/blob/523c117aa780184345121f6ff8315670bc7d4d94/.github/workflows/wheels.yml#L120
         CIBW_BUILD: cp39-* cp310-* cp311-* cp312-* cp313-*
         CIBW_SKIP: "*musllinux*"
-        # the default maylinux2014 image does not contain a c++20 compiler, see https://github.com/pypa/manylinux
-        CIBW_MANYLINUX_X86_64_IMAGE: quay.io/pypa/manylinux_2_28_x86_64
-        # CIBW_ARCHS_MACOS: "x86_64 arm64"
-        CIBW_ARCHS_MACOS: universal2
-        CIBW_ENVIRONMENT_MACOS: CMAKE_OSX_ARCHITECTURES="arm64;x86_64"
-        # the default macOS target version is 10.9. it might be required to increase that to support c++20 or later features.
-        # MACOSX_DEPLOYMENT_TARGET: "10.15"
+        #CIBW_ARCHS_MACOS: universal2
+        #CIBW_ENVIRONMENT_MACOS: CMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+        #MACOSX_DEPLOYMENT_TARGET: "10.15"
         CIBW_BUILD_VERBOSITY: 1
 
     - name: Upload wheels
