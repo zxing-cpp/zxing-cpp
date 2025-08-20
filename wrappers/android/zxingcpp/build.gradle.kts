@@ -1,3 +1,7 @@
+import java.net.HttpURLConnection
+import java.net.URL
+import java.util.Base64
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
