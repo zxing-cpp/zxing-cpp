@@ -1,3 +1,7 @@
+import java.net.HttpURLConnection
+import java.net.URL
+import java.util.Base64
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
@@ -63,6 +67,8 @@ version = "2.4.0" + if (publishSnapshot == "true") "-SNAPSHOT" else ""
 val javadocJar by tasks.registering(Jar::class) {
     archiveClassifier.set("javadoc")
 }
+val ossrhUsername: String? by project
+val ossrhPassword: String? by project
 
 publishing {
     publications {
@@ -106,13 +112,11 @@ publishing {
         maven {
             name = "sonatype"
 
-            val releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-            val snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+            val releasesRepoUrl = "https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/"
+            val snapshotsRepoUrl = "https://ossrh-staging-api.central.sonatype.com/content/repositories/snapshots/"
             setUrl(if (version.toString().endsWith("-SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
 
             credentials {
-                val ossrhUsername: String? by project
-                val ossrhPassword: String? by project
                 username = ossrhUsername
                 password = ossrhPassword
             }
@@ -129,4 +133,23 @@ signing {
     val signingPassword: String? by project
     useInMemoryPgpKeys(signingKey, signingPassword)
     sign(publishing.publications)
+}
+
+val url = "https://ossrh-staging-api.central.sonatype.com/manual/upload/defaultRepository/${project.group}"
+val token = Base64.getEncoder().encodeToString("${ossrhUsername}:${ossrhPassword}".toByteArray())
+
+tasks.register("postPublish") {
+    doLast {
+        val conn = URL(url).openConnection() as HttpURLConnection
+        conn.requestMethod = "POST"
+        conn.setRequestProperty("Authorization", "Bearer ${token}")
+        val status = conn.responseCode
+        if (status != HttpURLConnection.HTTP_OK) {
+            throw GradleException("Failed to POST '${url}'. Received status code ${status}: ${conn.responseMessage}")
+        }
+    }
+}
+
+tasks.named("publish") {
+    finalizedBy(tasks.named("postPublish"))
 }
