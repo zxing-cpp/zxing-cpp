@@ -131,23 +131,21 @@ signing {
     sign(publishing.publications)
 }
 
-if (version.toString().endsWith("-SNAPSHOT")) {
-    val url = "https://ossrh-staging-api.central.sonatype.com/manual/upload/defaultRepository/${project.group}"
-    val token = Base64.getEncoder().encodeToString("${ossrhUsername}:${ossrhPassword}".toByteArray())
+val url = "https://ossrh-staging-api.central.sonatype.com/manual/upload/defaultRepository/${project.group}"
+val token = Base64.getEncoder().encodeToString("${ossrhUsername}:${ossrhPassword}".toByteArray())
 
-    tasks.register("postPublish") {
-        doLast {
-            val conn = URL(url).openConnection() as HttpURLConnection
-            conn.requestMethod = "POST"
-            conn.setRequestProperty("Authorization", "Bearer ${token}")
-            val status = conn.responseCode
-            if (status != HttpURLConnection.HTTP_OK) {
-                throw GradleException("Failed to POST '${url}'. Received status code ${status}: ${conn.responseMessage}")
-            }
+tasks.register("postPublish") {
+    doLast {
+        val conn = URL(url).openConnection() as HttpURLConnection
+        conn.requestMethod = "POST"
+        conn.setRequestProperty("Authorization", "Bearer ${token}")
+        val status = conn.responseCode
+        if (status != HttpURLConnection.HTTP_OK) {
+            throw GradleException("Failed to POST '${url}'. Received status code ${status}: ${conn.responseMessage}")
         }
     }
+}
 
-    tasks.named("publish") {
-        finalizedBy(tasks.named("postPublish"))
-    }
+tasks.named("publish") {
+    finalizedBy(tasks.named("postPublish"))
 }
