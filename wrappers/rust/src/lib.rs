@@ -530,6 +530,14 @@ impl BarcodeReader {
 			}
 		}
 	}
+
+	pub fn from_image<'a, IV>(&self, image: IV) -> Result<Vec<Barcode>, Error>
+	where
+		IV: TryInto<ImageView<'a>>,
+		IV::Error: Into<Error>,
+	{
+		Self::from(image)
+	}
 }
 
 make_zxing_class!(BarcodeCreator, ZXing_CreatorOptions);
