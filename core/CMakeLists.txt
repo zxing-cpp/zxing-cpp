@@ -73,6 +73,25 @@ else()
         -Wall -Wextra -Wno-missing-braces -Werror=undef -Werror=return-type)
 endif()
 
+if (ZXING_ENABLE_1D AND (ZXING_READERS OR ZXING_WRITERS_OLD))
+    list(APPEND ZXING_PUBLIC_FLAGS -DZXING_BUILD_1D)
+endif()
+if (ZXING_ENABLE_AZTEC AND (ZXING_READERS OR ZXING_WRITERS_OLD))
+    list(APPEND ZXING_PUBLIC_FLAGS -DZXING_BUILD_AZTEC)
+endif()
+if (ZXING_ENABLE_DATAMATRIX AND (ZXING_READERS OR ZXING_WRITERS_OLD))
+    list(APPEND ZXING_PUBLIC_FLAGS -DZXING_BUILD_DATAMATRIX)
+endif()
+if (ZXING_ENABLE_MAXICODE AND (ZXING_READERS OR ZXING_WRITERS_OLD))
+    list(APPEND ZXING_PUBLIC_FLAGS -DZXING_BUILD_MAXICODE)
+endif()
+if (ZXING_ENABLE_PDF417 AND (ZXING_READERS OR ZXING_WRITERS_OLD))
+    list(APPEND ZXING_PUBLIC_FLAGS -DZXING_BUILD_PDF417)
+endif()
+if (ZXING_ENABLE_QRCODE AND (ZXING_READERS OR ZXING_WRITERS_OLD))
+    list(APPEND ZXING_PUBLIC_FLAGS -DZXING_BUILD_QRCODE)
+endif()
+
 include (CheckCXXCompilerFlag)
 
 # This is needed for reproducible builds across different build directories.
@@ -249,7 +268,7 @@ if (ZXING_WRITERS_OLD)
 endif()
 # end of public header set
 
-if (ZXING_READERS)
+if (ZXING_READERS AND ZXING_ENABLE_AZTEC)
     set (AZTEC_FILES ${AZTEC_FILES}
         src/aztec/AZDecoder.h
         src/aztec/AZDecoder.cpp
@@ -260,7 +279,7 @@ if (ZXING_READERS)
         src/aztec/AZReader.cpp
     )
 endif()
-if (ZXING_WRITERS_OLD)
+if (ZXING_WRITERS_OLD AND ZXING_ENABLE_AZTEC)
     set (AZTEC_FILES ${AZTEC_FILES}
         src/aztec/AZEncodingState.h
         src/aztec/AZEncoder.h
@@ -275,7 +294,7 @@ if (ZXING_WRITERS_OLD)
 endif()
 
 
-if (ZXING_READERS OR ZXING_WRITERS_OLD)
+if ((ZXING_READERS OR ZXING_WRITERS_OLD) AND ZXING_ENABLE_DATAMATRIX)
     set (DATAMATRIX_FILES
         src/datamatrix/DMBitLayout.h
         src/datamatrix/DMBitLayout.cpp
@@ -283,7 +302,7 @@ if (ZXING_READERS OR ZXING_WRITERS_OLD)
         src/datamatrix/DMVersion.cpp
     )
 endif()
-if (ZXING_READERS)
+if (ZXING_READERS AND ZXING_ENABLE_DATAMATRIX)
     set (DATAMATRIX_FILES ${DATAMATRIX_FILES}
         src/datamatrix/DMDataBlock.h
         src/datamatrix/DMDataBlock.cpp
@@ -295,7 +314,7 @@ if (ZXING_READERS)
         src/datamatrix/DMReader.cpp
     )
 endif()
-if (ZXING_WRITERS_OLD)
+if (ZXING_WRITERS_OLD AND ZXING_ENABLE_DATAMATRIX)
     set (DATAMATRIX_FILES ${DATAMATRIX_FILES}
         src/datamatrix/DMECEncoder.h
         src/datamatrix/DMECEncoder.cpp
@@ -311,7 +330,7 @@ if (ZXING_WRITERS_OLD)
 endif()
 
 
-if (ZXING_READERS)
+if (ZXING_READERS AND ZXING_ENABLE_MAXICODE)
     set (MAXICODE_FILES ${MAXICODE_FILES}
         src/maxicode/MCBitMatrixParser.h
         src/maxicode/MCBitMatrixParser.cpp
@@ -323,7 +342,7 @@ if (ZXING_READERS)
 endif()
 
 
-if (ZXING_READERS OR ZXING_WRITERS_OLD)
+if ((ZXING_READERS OR ZXING_WRITERS_OLD) AND ZXING_ENABLE_1D)
     set (ONED_FILES
         src/oned/ODUPCEANCommon.h
         src/oned/ODUPCEANCommon.cpp
@@ -332,7 +351,7 @@ if (ZXING_READERS OR ZXING_WRITERS_OLD)
         src/oned/ODCode128Patterns.cpp
     )
 endif()
-if (ZXING_READERS)
+if (ZXING_READERS AND ZXING_ENABLE_1D)
     set (ONED_FILES ${ONED_FILES}
         src/oned/ODCodabarReader.h
         src/oned/ODCodabarReader.cpp
@@ -363,7 +382,7 @@ if (ZXING_READERS)
         src/oned/ODRowReader.h
     )
 endif()
-if (ZXING_WRITERS_OLD)
+if (ZXING_WRITERS_OLD AND ZXING_ENABLE_1D)
     set (ONED_FILES ${ONED_FILES}
         src/oned/ODCodabarWriter.h
         src/oned/ODCodabarWriter.cpp
@@ -389,13 +408,13 @@ if (ZXING_WRITERS_OLD)
 endif()
 
 
-if (ZXING_READERS OR ZXING_WRITERS_OLD)
+if ((ZXING_READERS OR ZXING_WRITERS_OLD) AND ZXING_ENABLE_PDF417)
     set (PDF417_FILES
         src/pdf417/ZXBigInteger.h
         src/pdf417/ZXBigInteger.cpp
     )
 endif()
-if (ZXING_READERS)
+if (ZXING_READERS AND ZXING_ENABLE_PDF417)
     set (PDF417_FILES ${PDF417_FILES}
         src/pdf417/PDFBarcodeMetadata.h
         src/pdf417/PDFBarcodeValue.h
@@ -425,7 +444,7 @@ if (ZXING_READERS)
         src/pdf417/ZXNullable.h
     )
 endif()
-if (ZXING_WRITERS_OLD)
+if (ZXING_WRITERS_OLD AND ZXING_ENABLE_PDF417)
     set (PDF417_FILES ${PDF417_FILES}
         src/pdf417/PDFCompaction.h
         src/pdf417/PDFEncoder.h
@@ -438,7 +457,7 @@ if (ZXING_WRITERS_OLD)
 endif()
 
 
-if (ZXING_READERS OR ZXING_WRITERS_OLD)
+if ((ZXING_READERS OR ZXING_WRITERS_OLD) AND ZXING_ENABLE_QRCODE)
     set (QRCODE_FILES
         src/qrcode/QRCodecMode.h
         src/qrcode/QRCodecMode.cpp
@@ -448,7 +467,7 @@ if (ZXING_READERS OR ZXING_WRITERS_OLD)
         src/qrcode/QRVersion.cpp
     )
 endif()
-if (ZXING_READERS)
+if (ZXING_READERS AND ZXING_ENABLE_QRCODE)
     set (QRCODE_FILES ${QRCODE_FILES}
         src/qrcode/QRBitMatrixParser.h
         src/qrcode/QRBitMatrixParser.cpp
@@ -466,7 +485,7 @@ if (ZXING_READERS)
         src/qrcode/QRReader.cpp
     )
 endif()
-if (ZXING_WRITERS_OLD)
+if (ZXING_WRITERS_OLD AND ZXING_ENABLE_QRCODE)
     set (QRCODE_FILES ${QRCODE_FILES}
         src/qrcode/QREncoder.h
         src/qrcode/QREncoder.cpp
