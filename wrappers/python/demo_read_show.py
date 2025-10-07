@@ -1,68 +1,70 @@
-from typing import List, Dict, Any, Union  # built-in
-from PIL import Image, ImageDraw  # pip install pillow
-from io import BytesIO  # built-in
-import zxingcpp  # pip install zxing-cpp
-import httpx  # pip install httpx
+# pip install opencv-python numpy zxing-cpp httpx
+from typing import Union
+import sys
+import cv2
+import numpy as np
+import zxingcpp
+import httpx
 
-def _decode_image(data: bytes) -> List[Dict[str, Any]]:
-    img = Image.open(BytesIO(data))
+
+def get_image_bytes(source: Union[str, bytes]) -> bytes:
+    """Load image bytes from URL, file path, or bytes."""
+    if isinstance(source, bytes):
+        return source
+    if source.startswith(("http://", "https://")):
+        with httpx.Client() as client:
+            response = client.get(source)
+            response.raise_for_status()
+            return response.content
+    with open(source, "rb") as f:
+        return f.read()
+
+
+def scan_and_display(source: Union[str, bytes]):
+    """Scan barcodes from image source and display results."""
+    image_bytes = get_image_bytes(source)
+    img_array = np.frombuffer(image_bytes, dtype=np.uint8)
+    img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+    
+    if img is None:
+        raise ValueError("Failed to decode image")
+    
     results = zxingcpp.read_barcodes(img)
+    
     if not results:
-        raise ValueError("No barcode found.")
-    return [{
-        "code": barcode.text,
-        "type": barcode.format.name,
-        "content": barcode.content_type.name,
-        "position": {
-            "top_left": (barcode.position.top_left.x, barcode.position.top_left.y),
-            "top_right": (barcode.position.top_right.x, barcode.position.top_right.y),
-            "bottom_right": (barcode.position.bottom_right.x, barcode.position.bottom_right.y),
-            "bottom_left": (barcode.position.bottom_left.x, barcode.position.bottom_left.y)
-        }
-    } for barcode in results]
+        print("No barcode found")
+        return
+    
+    for barcode in results:
+        print(f"Text: {barcode.text}")
+        print(f"Format: {barcode.format.name}")
+        print(f"Content Type: {barcode.content_type.name}")
+        
+        pts = np.array([
+            [barcode.position.top_left.x, barcode.position.top_left.y],
+            [barcode.position.top_right.x, barcode.position.top_right.y],
+            [barcode.position.bottom_right.x, barcode.position.bottom_right.y],
+            [barcode.position.bottom_left.x, barcode.position.bottom_left.y]
+        ], dtype=np.int32)
+        
+        cv2.polylines(img, [pts], isClosed=True, color=(0, 0, 255), thickness=3)
+    
+    scale = min(800 / img.shape[0], 1200 / img.shape[1], 1.0)
+    if scale < 1.0:
+        img = cv2.resize(img, (int(img.shape[1] * scale), int(img.shape[0] * scale)))
+    
+    cv2.imshow('Barcode Scan Result', img)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
-def _get_bytes(source: Union[str, bytes]) -> bytes:
-    try:
-        if isinstance(source, bytes):
-            return source
-        if source.startswith(("http://", "https://")):
-            with httpx.Client() as client:
-                response = client.get(source)
-                response.raise_for_status()
-                return response.content
-        with open(source, "rb") as f:
-            return f.read()
-    except Exception as e:
-        raise RuntimeError(f"Failed to get bytes from source: {e}")
-
-def scan_barcode(source: Union[str, bytes]) -> List[Dict[str, Any]]:
-    """Scan barcode from image source synchronously."""
-    data = _get_bytes(source)
-    return _decode_image(data)
 
 if __name__ == "__main__":
-    import cv2, numpy as np  # pip install opencv-python numpy
-    IMAGE_URL = "https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Databar_14_00075678164125.png/250px-Databar_14_00075678164125.png"
-
-    def show_results(results, image_bytes):
-        if not results:
-            print("Hiç barkod bulunamadı."); return
-        img = Image.open(BytesIO(image_bytes)).convert("RGB")
-        draw = ImageDraw.Draw(img)
-        for r in results:
-            pts = [r['position'][k] for k in ("top_left", "top_right", "bottom_right", "bottom_left")]
-            draw.polygon(pts, outline="red", width=4)
-        arr = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
-        scale = 800 / arr.shape[0]
-        arr = cv2.resize(arr, (int(arr.shape[1] * scale), 800))
-        cv2.imshow('Barkod Scan Result', arr)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-
+    if len(sys.argv) > 1:
+        source = sys.argv[1]
+    else:
+        source = "https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Databar_14_00075678164125.png/250px-Databar_14_00075678164125.png"
+    
     try:
-        image_bytes = _get_bytes(IMAGE_URL)
-        res = scan_barcode(image_bytes)
-        print("Results:", res)
-        show_results(res, image_bytes)
+        scan_and_display(source)
     except Exception as e:
-        print(f"Scan error: {e}")
+        print(f"Error: {e}")
