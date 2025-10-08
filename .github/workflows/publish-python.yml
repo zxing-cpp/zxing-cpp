@@ -70,11 +70,11 @@ jobs:
 
     - name: Install dependencies
       working-directory: wrappers/python
-      run: python -m pip install --upgrade pip setuptools
+      run: python -m pip install --upgrade build
 
     - name: Build sdist
       working-directory: wrappers/python
-      run: python3 setup.py sdist
+      run: python3 -m build --sdist
 
     - name: Upload sdist
       uses: actions/upload-artifact@v4
