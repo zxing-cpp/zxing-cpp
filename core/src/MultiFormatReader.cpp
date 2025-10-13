@@ -8,6 +8,7 @@
 
 #include "BarcodeFormat.h"
 #include "BinaryBitmap.h"
+#include "Reader.h"
 #include "ReaderOptions.h"
 #ifdef ZXING_BUILD_AZTEC
 #include "aztec/AZReader.h"
