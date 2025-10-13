@@ -24,6 +24,14 @@ if (NOT DEFINED ZXING_READERS)
     set (ZXING_READERS ON)
 endif()
 
+# If parent CMakeLists.txt does not define ZXING_ENABLE_... options, set them to ON.
+foreach(format 1D AZTEC DATAMATRIX MAXICODE PDF417 QRCODE)
+    set(_var "ZXING_ENABLE_${format}")
+    if (NOT DEFINED ${_var})
+        set(${_var} ON CACHE BOOL "Enable support for ${format} barcodes" FORCE)
+    endif()
+endforeach()
+
 set (ZXING_WRITERS_NEW OFF)
 set (ZXING_WRITERS_OLD OFF)
 if (ZXING_WRITERS MATCHES "OLD|ON")
