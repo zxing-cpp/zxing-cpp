@@ -13,13 +13,6 @@ option (ZXING_UNIT_TESTS "Build the unit tests (don't enable for production buil
 option (ZXING_PYTHON_MODULE "Build the python module" OFF)
 set    (ZXING_DEPENDENCIES "AUTO" CACHE STRING "Fetch from github or use locally installed (AUTO/GITHUB/LOCAL)")
 
-option (ZXING_ENABLE_1D "Enable support for 1D/linear barcode formats" ON)
-option (ZXING_ENABLE_AZTEC "Enable support for Aztec barcodes" ON)
-option (ZXING_ENABLE_DATAMATRIX "Enable support for Data Matrix barcodes" ON)
-option (ZXING_ENABLE_MAXICODE "Enable support for MaxiCode barcodes" ON)
-option (ZXING_ENABLE_PDF417 "Enable support for PDF417 barcodes" ON)
-option (ZXING_ENABLE_QRCODE "Enable support for QR Code barcodes" ON)
-
 if (WIN32)
     option (BUILD_SHARED_LIBS "Build and link as shared library" OFF)
 else()

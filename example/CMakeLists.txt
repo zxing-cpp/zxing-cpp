@@ -2,7 +2,7 @@ zxing_add_package_stb()
 
 include (GNUInstallDirs)
 
-if (ZXING_WRITERS)
+if (ZXING_WRITERS AND ZXING_ENABLE_QRCODE)
     add_executable (ZXingWriter ZXingWriter.cpp)
 
     target_link_libraries (ZXingWriter ZXing::ZXing stb::stb)

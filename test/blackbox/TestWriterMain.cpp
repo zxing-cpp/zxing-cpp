@@ -36,10 +36,19 @@ int main()
 {
 	std::string text = "http://www.google.com/";
 	for (auto format : {
+#ifdef ZXING_WITH_AZTEC
 		BarcodeFormat::Aztec,
+#endif
+#ifdef ZXING_WITH_DATAMATRIX
 		BarcodeFormat::DataMatrix,
+#endif
+#ifdef ZXING_WITH_PDF417
 		BarcodeFormat::PDF417,
-		BarcodeFormat::QRCode })
+#endif
+#ifdef ZXING_WITH_QRCODE
+		BarcodeFormat::QRCode,
+#endif
+	})
 	{
 #ifdef ZXING_EXPERIMENTAL_API
 		savePng(CreateBarcodeFromText(text, format).symbol(), format);
@@ -51,6 +60,7 @@ int main()
 	text = "012345678901234567890123456789";
 	using FormatSpecs = std::vector<std::pair<BarcodeFormat, size_t>>;
 	for (const auto& [format, length] : FormatSpecs({
+#ifdef ZXING_WITH_1D
 //		{BarcodeFormat::Codabar, 0},
 		{BarcodeFormat::Code39, 0},
 		{BarcodeFormat::Code93, 0},
@@ -59,7 +69,9 @@ int main()
 		{BarcodeFormat::EAN13, 12},
 		{BarcodeFormat::ITF, 0},
 		{BarcodeFormat::UPCA, 11},
-		{BarcodeFormat::UPCE, 7} }))
+		{BarcodeFormat::UPCE, 7}
+#endif
+	}))
 	{
 		auto input = length > 0 ? text.substr(0, length) : text;
 #ifdef ZXING_EXPERIMENTAL_API

@@ -3,6 +3,10 @@ cmake_minimum_required(VERSION 3.16)
 project (ZXing VERSION "2.3.0")
 set (ZXING_SONAME 3) # see https://github.com/zxing-cpp/zxing-cpp/issues/333
 
+foreach(format 1D AZTEC DATAMATRIX MAXICODE PDF417 QRCODE)
+    option ("ZXING_ENABLE_${format}" "Enable support for ${format} barcodes" ON)
+endforeach()
+
 if (BUILD_SHARED_LIBS)
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif()
@@ -23,14 +27,6 @@ endif()
 if (NOT DEFINED ZXING_READERS)
     set (ZXING_READERS ON)
 endif()
-
-# If parent CMakeLists.txt does not define ZXING_ENABLE_... options, set them to ON.
-foreach(format 1D AZTEC DATAMATRIX MAXICODE PDF417 QRCODE)
-    set(_var "ZXING_ENABLE_${format}")
-    if (NOT DEFINED ${_var})
-        set(${_var} ON CACHE BOOL "Enable support for ${format} barcodes" FORCE)
-    endif()
-endforeach()
 
 set (ZXING_WRITERS_NEW OFF)
 set (ZXING_WRITERS_OLD OFF)
@@ -53,6 +49,10 @@ endif()
 set (ZXING_PUBLIC_FLAGS
     $<$<BOOL:${ZXING_EXPERIMENTAL_API}>:-DZXING_EXPERIMENTAL_API>
 )
+foreach(format 1D AZTEC DATAMATRIX MAXICODE PDF417 QRCODE)
+    list (APPEND ZXING_PUBLIC_FLAGS $<$<BOOL:${ZXING_ENABLE_${format}}>:-DZXING_WITH_${format}>)
+endforeach()
+
 if (WINRT)
     set (ZXING_PUBLIC_FLAGS ${ZXING_PUBLIC_FLAGS}
         -DWINRT
@@ -79,25 +79,6 @@ if (MSVC)
 else()
     set (ZXING_PRIVATE_FLAGS ${ZXING_PRIVATE_FLAGS}
         -Wall -Wextra -Wno-missing-braces -Werror=undef -Werror=return-type)
-endif()
-
-if (ZXING_ENABLE_1D AND (ZXING_READERS OR ZXING_WRITERS_OLD))
-    list(APPEND ZXING_PUBLIC_FLAGS -DZXING_BUILD_1D)
-endif()
-if (ZXING_ENABLE_AZTEC AND (ZXING_READERS OR ZXING_WRITERS_OLD))
-    list(APPEND ZXING_PUBLIC_FLAGS -DZXING_BUILD_AZTEC)
-endif()
-if (ZXING_ENABLE_DATAMATRIX AND (ZXING_READERS OR ZXING_WRITERS_OLD))
-    list(APPEND ZXING_PUBLIC_FLAGS -DZXING_BUILD_DATAMATRIX)
-endif()
-if (ZXING_ENABLE_MAXICODE AND (ZXING_READERS OR ZXING_WRITERS_OLD))
-    list(APPEND ZXING_PUBLIC_FLAGS -DZXING_BUILD_MAXICODE)
-endif()
-if (ZXING_ENABLE_PDF417 AND (ZXING_READERS OR ZXING_WRITERS_OLD))
-    list(APPEND ZXING_PUBLIC_FLAGS -DZXING_BUILD_PDF417)
-endif()
-if (ZXING_ENABLE_QRCODE AND (ZXING_READERS OR ZXING_WRITERS_OLD))
-    list(APPEND ZXING_PUBLIC_FLAGS -DZXING_BUILD_QRCODE)
 endif()
 
 include (CheckCXXCompilerFlag)
