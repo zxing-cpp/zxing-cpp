@@ -20,6 +20,7 @@
 
 #include "DecoderResult.h"
 #include "DetectorResult.h"
+#include "TextEncoder.h"
 #include <zint.h>
 
 #else
@@ -104,13 +105,6 @@ WriterOptions::~WriterOptions() = default;
 WriterOptions::WriterOptions(WriterOptions&&) = default;
 WriterOptions& WriterOptions::operator=(WriterOptions&&) = default;
 
-static bool SupportsGS1(BarcodeFormat format)
-{
-	return (BarcodeFormat::Aztec | BarcodeFormat::Code128 | BarcodeFormat::DataMatrix | BarcodeFormat::QRCode
-			| BarcodeFormat::RMQRCode | BarcodeFormat::DataBarExpanded)
-		.testFlag(format);
-}
-
 static std::string ToSVG(ImageView iv)
 {
 	if (!iv.data())
@@ -163,6 +157,13 @@ static Image ToImage(BitMatrix bits, bool isLinearCode, const WriterOptions& opt
 #include <zint.h>
 
 namespace ZXing {
+
+static bool SupportsGS1(BarcodeFormat format)
+{
+	return (BarcodeFormat::Aztec | BarcodeFormat::Code128 | BarcodeFormat::DataMatrix | BarcodeFormat::QRCode
+			| BarcodeFormat::RMQRCode | BarcodeFormat::DataBarExpanded)
+		.testFlag(format);
+}
 
 struct BarcodeFormatZXing2Zint
 {
@@ -344,6 +345,26 @@ static std::string ECLevelZint2ZXing(const zint_symbol* zint)
 	return {};
 }
 
+#ifndef ZXING_READERS
+// Convert bytes to UTF-8 code points 0-255
+static std::string BinaryToUtf8(ByteView ba)
+{
+	std::string utf8;
+	utf8.reserve(ba.size() * 2);
+	for (auto c : ba)
+		if (c < 0x80) {
+			utf8.push_back(c);
+		} else if (c < 0xC0) {
+			utf8.push_back(0xC2);
+			utf8.push_back(c);
+		} else {
+			utf8.push_back(0xC3);
+			utf8.push_back(c - 0x40);
+		}
+	return utf8;
+}
+#endif
+
 zint_symbol* CreatorOptions::zint() const
 {
 	auto& zint = d->zint;
@@ -388,6 +409,9 @@ zint_symbol* CreatorOptions::zint() const
 #define CHECK(ZINT_CALL) \
 	if (int err = (ZINT_CALL); err >= ZINT_ERROR) \
 		throw std::invalid_argument(StrCat(zint->errtxt, " (retval: ", std::to_string(err), ")"));
+#define CHECK_WARN(ZINT_CALL, WARN) \
+	if (WARN = (ZINT_CALL); WARN >= ZINT_ERROR) \
+		throw std::invalid_argument(StrCat(zint->errtxt, " (retval: ", std::to_string(WARN), ")"));
 
 Barcode CreateBarcode(const void* data, int size, int mode, const CreatorOptions& opts)
 {
@@ -401,7 +425,8 @@ Barcode CreateBarcode(const void* data, int size, int mode, const CreatorOptions
 	if (mode == DATA_MODE && ZBarcode_Cap(zint->symbology, ZINT_CAP_ECI))
 		zint->eci = static_cast<int>(ECI::Binary);
 
-	CHECK(ZBarcode_Encode_and_Buffer(zint, (uint8_t*)data, size, 0));
+	int warning;
+	CHECK_WARN(ZBarcode_Encode_and_Buffer(zint, (uint8_t*)data, size, 0), warning);
 
 #ifdef PRINT_DEBUG
 	printf("create symbol with size: %dx%d\n", zint->width, zint->rows);
@@ -415,29 +440,30 @@ Barcode CreateBarcode(const void* data, int size, int mode, const CreatorOptions
 	auto res = ReadBarcode({buffer.data(), zint->bitmap_width, zint->bitmap_height, ImageFormat::Lum},
 						   ReaderOptions().setFormats(opts.format()).setIsPure(true).setBinarizer(Binarizer::BoolCast));
 #else
+	assert(zint->raw_seg_count == 1);
+	const auto& raw_seg = zint->raw_segs[0];
+	const size_t raw_seg_len = static_cast<size_t>(raw_seg.length - (opts.format() == BarcodeFormat::Code93 && raw_seg.length >= 2 ? 2 : 0));
+
 	Content content;
 
-#ifdef ZXING_READERS
-	for (int i = 0; i < zint->raw_seg_count; ++i) {
-		const auto& raw_seg = zint->raw_segs[i];
-#ifdef PRINT_DEBUG
-		printf("  seg %d of %d with eci %d: %.*s\n", i, zint->raw_seg_count, raw_seg.eci, raw_seg.length, (char*)raw_seg.source);
+	if (zint->eci || warning == ZINT_WARN_USES_ECI)
+		content.switchEncoding(ECI(raw_seg.eci));
+	else
+		content.switchEncoding(ToCharacterSet(ECI(raw_seg.eci)));
+
+	if ((zint->input_mode & 0x07) == UNICODE_MODE) {
+		// `raw_segs` returned as UTF-8
+		std::string utf8(reinterpret_cast<const char *>(raw_seg.source), raw_seg_len);
+		content.append(TextEncoder::FromUnicode(utf8, ToCharacterSet(ECI(raw_seg.eci))));
+#ifndef ZXING_READERS
+		content.utf8Cache.push_back(std::move(utf8));
 #endif
-		if (ECI(raw_seg.eci) != ECI::ISO8859_1)
-			content.switchEncoding(ECI(raw_seg.eci));
-		else
-			content.switchEncoding(CharacterSet::ISO8859_1); // set this as default to prevent guessing without setting "hasECI"
-		content.append({raw_seg.source, static_cast<size_t>(raw_seg.length - (opts.format() == BarcodeFormat::Code93 ? 2 : 0))});
-	}
-#else
-	if (zint->text_length) {
-		content.switchEncoding(ECI::UTF8);
-		content.append({zint->text, static_cast<size_t>(zint->text_length)});
 	} else {
-		content.switchEncoding(mode == DATA_MODE ? ECI::Binary : ECI::UTF8);
-		content.append({static_cast<const uint8_t*>(data), static_cast<size_t>(size)});
-	}
+		content.append({raw_seg.source, raw_seg_len});
+#ifndef ZXING_READERS
+		content.utf8Cache.push_back(BinaryToUtf8(content.bytes));
 #endif
+	}
 
 	content.symbology = SymbologyIdentifierZint2ZXing(opts, content.bytes);
 

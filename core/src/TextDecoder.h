@@ -20,6 +20,4 @@ inline std::string BytesToUtf8(ByteView bytes, CharacterSet cs)
 	return BytesToUtf8(bytes, ToECI(cs));
 }
 
-CharacterSet GuessTextEncoding(ByteView bytes, CharacterSet fallback = CharacterSet::ISO8859_1);
-
 } // ZXing

@@ -48,6 +48,7 @@ endif()
 
 set (ZXING_PUBLIC_FLAGS
     $<$<BOOL:${ZXING_EXPERIMENTAL_API}>:-DZXING_EXPERIMENTAL_API>
+    $<$<BOOL:${ZXING_WRITERS_NEW}>:-DZXING_USE_ZINT>
 )
 foreach(format 1D AZTEC DATAMATRIX MAXICODE PDF417 QRCODE)
     list (APPEND ZXING_PUBLIC_FLAGS $<$<BOOL:${ZXING_ENABLE_${format}}>:-DZXING_WITH_${format}>)
@@ -65,7 +66,6 @@ if (MSVC)
 endif()
 
 set (ZXING_PRIVATE_FLAGS
-    $<$<BOOL:${ZXING_WRITERS_NEW}>:-DZXING_USE_ZINT>
     $<$<BOOL:${ZXING_UNIT_TESTS}>:-DZXING_BUILD_FOR_TEST>
 )
 if (MSVC)
@@ -157,6 +157,12 @@ if (ZXING_READERS OR ZXING_WRITERS_OLD)
         src/Scope.h
     )
 endif()
+if (ZXING_READERS OR ZXING_WRITERS_NEW)
+    set (COMMON_FILES ${COMMON_FILES}
+        src/HRI.h
+        src/HRI.cpp
+    )
+endif()
 if (ZXING_READERS)
     set (COMMON_FILES ${COMMON_FILES}
         src/BinaryBitmap.h
@@ -173,8 +179,6 @@ if (ZXING_READERS)
         src/GridSampler.h
         src/GridSampler.cpp
         src/LogMatrix.h
-        src/HRI.h
-        src/HRI.cpp
         src/HybridBinarizer.h
         src/HybridBinarizer.cpp
         src/MultiFormatReader.h
@@ -201,6 +205,8 @@ endif()
 
 if (ZXING_WRITERS)
     set (COMMON_FILES ${COMMON_FILES}
+        src/TextEncoder.h
+        src/TextEncoder.cpp
     )
 endif()
 
@@ -209,8 +215,6 @@ if (ZXING_WRITERS_OLD)
         src/ByteMatrix.h
         src/ReedSolomonEncoder.h
         src/ReedSolomonEncoder.cpp
-        src/TextEncoder.h
-        src/TextEncoder.cpp
         src/MultiFormatWriter.h
         src/MultiFormatWriter.cpp
     )
@@ -546,7 +550,7 @@ if (ZXING_WRITERS_NEW)
         target_include_directories (ZXing PRIVATE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libzint>")
     else()
         include(../zxing.cmake)
-        zxing_add_package(zint zint https://github.com/zint/zint.git 7a9fdd6cd00cd5bfd0082705d934c13ef84f25e1)
+        zxing_add_package(zint zint https://github.com/zint/zint.git 543696cb0674a5e574e36e2df74394d1cb707a40)
         target_link_libraries (ZXing PRIVATE zint)
     endif()
 endif()
