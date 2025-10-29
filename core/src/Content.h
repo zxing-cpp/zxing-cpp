@@ -52,6 +52,9 @@ public:
 
 	ByteArray bytes;
 	std::vector<Encoding> encodings;
+#if !defined(ZXING_READERS) && defined(ZXING_EXPERIMENTAL_API) && defined(ZXING_USE_ZINT)
+	std::vector<std::string> utf8Cache;
+#endif
 	SymbologyIdentifier symbology;
 	CharacterSet defaultCharset = CharacterSet::Unknown;
 	bool hasECI = false;

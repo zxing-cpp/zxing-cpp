@@ -24,15 +24,14 @@ using namespace testing;
 static void check(int line, std::string_view input, CreatorOptions cOpts, std::string_view symbologyIdentifier, std::string_view text,
 				  std::string_view bytes, bool hasECI, std::string_view textECI, std::string_view bytesECI, std::string_view HRI,
 				  std::string_view contentType, std::string_view position = {}, std::string_view ecLevel = {},
-				  std::string_view version = {})
+				  std::string_view version = {}, bool fromBytes = false)
 {
-	auto bc = CreateBarcodeFromText(input, cOpts);
+	auto bc = fromBytes ? CreateBarcodeFromBytes(input, cOpts) : CreateBarcodeFromText(input, cOpts);
 
 	EXPECT_TRUE(bc.isValid()) << "line:" << line;
 	EXPECT_EQ(bc.symbologyIdentifier(), symbologyIdentifier) << "line:" << line;
 	EXPECT_EQ(ToString(bc.contentType()), contentType) << "line:" << line;
 	EXPECT_EQ(bc.text(TextMode::HRI), HRI) << "line:" << line;
-#ifdef ZXING_READERS
 	EXPECT_EQ(bc.text(TextMode::Plain), text) << "line:" << line;
 	EXPECT_EQ(ToHex(bc.bytes()), bytes) << "line:" << line;
 	EXPECT_EQ(bc.hasECI(), hasECI) << "line:" << line;
@@ -43,6 +42,7 @@ static void check(int line, std::string_view input, CreatorOptions cOpts, std::s
 	// EXPECT_EQ(bc.ecLevel(), ecLevel) << "line:" << line;
 	// EXPECT_EQ(bc.version(), version) << "line:" << line;
 
+#ifdef ZXING_READERS
 	auto br = ReadBarcode(bc.symbol(), ReaderOptions().setFormats(bc.format()).setIsPure(true).setEanAddOnSymbol(EanAddOnSymbol::Read));
 
 	EXPECT_EQ(bc.isValid(), br.isValid()) << "line:" << line;
@@ -317,6 +317,20 @@ TEST(WriteBarcodeTest, ZintGS1)
 		  "0x0 26x0 26x12 0x12", "M", "17");
 }
 
+TEST(WriteBarcodeTest, ZintBinary)
+{
+	check(__LINE__, std::string("\x00\x80", 2), BarcodeFormat::Code128, "]C0", std::string("\0\xC2\x80", 3),
+		  "00 80", false, std::string("]C0\\000026\0\xC2\x80", 13),
+		  "5D 43 30 00 80", "<NUL><U+80>", "Binary",
+		  "0x0 67x0 67x49 0x49" /*position*/, "" /*ecLevel*/, "" /*version*/, true /*fromBytes*/);
+
+	check(__LINE__, std::string("\x00\x80", 2), BarcodeFormat::Aztec, "]z0", std::string("\0\xC2\x80", 3),
+		  "00 80", true, std::string("]z3\\000899\0\xC2\x80", 13),
+		  "5D 7A 33 5C 30 30 30 38 39 39 00 80", "<NUL><U+80>", "Binary",
+		  "0x0 15x0 15x15 0x15" /*position*/, "23%" /*ecLevel*/, "1" /*version*/, true /*fromBytes*/);
+}
+
+#ifdef ZXING_READERS
 TEST(WriteBarcodeTest, RandomDataBar)
 {
 	auto randomTest = [](BarcodeFormat format) {
@@ -340,5 +354,6 @@ TEST(WriteBarcodeTest, RandomDataBar)
 	randomTest(BarcodeFormat::DataBarLimited);
 	randomTest(BarcodeFormat::DataBarExpanded);
 }
+#endif
 
 #endif // #if defined(ZXING_EXPERIMENTAL_API) && defined(ZXING_WRITERS) && defined(ZXING_USE_ZINT)
