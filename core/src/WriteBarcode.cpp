@@ -420,7 +420,7 @@ Barcode CreateBarcode(const void* data, int size, int mode, const CreatorOptions
 	zint->input_mode = mode == UNICODE_MODE && opts.gs1() && SupportsGS1(opts.format()) ? GS1_MODE : mode;
 	if (mode == UNICODE_MODE && static_cast<const char*>(data)[0] != '[')
 		zint->input_mode |= GS1PARENS_MODE;
-	zint->output_options |= OUT_BUFFER_INTERMEDIATE | BARCODE_QUIET_ZONES | BARCODE_RAW_TEXT;
+	zint->output_options |= OUT_BUFFER_INTERMEDIATE | BARCODE_QUIET_ZONES | BARCODE_CONTENT_SEGS;
 
 	if (mode == DATA_MODE && ZBarcode_Cap(zint->symbology, ZINT_CAP_ECI))
 		zint->eci = static_cast<int>(ECI::Binary);
@@ -440,26 +440,26 @@ Barcode CreateBarcode(const void* data, int size, int mode, const CreatorOptions
 	auto res = ReadBarcode({buffer.data(), zint->bitmap_width, zint->bitmap_height, ImageFormat::Lum},
 						   ReaderOptions().setFormats(opts.format()).setIsPure(true).setBinarizer(Binarizer::BoolCast));
 #else
-	assert(zint->raw_seg_count == 1);
-	const auto& raw_seg = zint->raw_segs[0];
-	const size_t raw_seg_len = static_cast<size_t>(raw_seg.length - (opts.format() == BarcodeFormat::Code93 && raw_seg.length >= 2 ? 2 : 0));
+	assert(zint->content_seg_count == 1);
+	const auto& content_seg = zint->content_segs[0];
+	const size_t content_seg_len = static_cast<size_t>(content_seg.length - (opts.format() == BarcodeFormat::Code93 && content_seg.length >= 2 ? 2 : 0));
 
 	Content content;
 
 	if (zint->eci || warning == ZINT_WARN_USES_ECI)
-		content.switchEncoding(ECI(raw_seg.eci));
+		content.switchEncoding(ECI(content_seg.eci));
 	else
-		content.switchEncoding(ToCharacterSet(ECI(raw_seg.eci)));
+		content.switchEncoding(ToCharacterSet(ECI(content_seg.eci)));
 
 	if ((zint->input_mode & 0x07) == UNICODE_MODE) {
-		// `raw_segs` returned as UTF-8
-		std::string utf8(reinterpret_cast<const char *>(raw_seg.source), raw_seg_len);
-		content.append(TextEncoder::FromUnicode(utf8, ToCharacterSet(ECI(raw_seg.eci))));
+		// `content_segs` returned as UTF-8
+		std::string utf8(reinterpret_cast<const char *>(content_seg.source), content_seg_len);
+		content.append(TextEncoder::FromUnicode(utf8, ToCharacterSet(ECI(content_seg.eci))));
 #ifndef ZXING_READERS
 		content.utf8Cache.push_back(std::move(utf8));
 #endif
 	} else {
-		content.append({raw_seg.source, raw_seg_len});
+		content.append({content_seg.source, content_seg_len});
 #ifndef ZXING_READERS
 		content.utf8Cache.push_back(BinaryToUtf8(content.bytes));
 #endif
