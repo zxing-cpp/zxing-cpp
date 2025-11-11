@@ -6,13 +6,13 @@ There is a NuGet package available: https://www.nuget.org/packages/ZXingCpp.
 
 ## Usage
 
-See either the [ZXingCpp/README.md](ZXingCpp/README.md) or the [ZXingCpp.Demo](ZXingCpp.Demo) project.
+See either the [ZXingCpp/README.md](ZXingCpp/README.md) or the [ZXingCpp.DemoReader](ZXingCpp.DemoReader) or [ZXingCpp.DemoWriter](ZXingCpp.DemoWriter) project.
 
-To run the `ZXingCpp.Demo` sample program, it is important that the dotnet runtime finds the native
+To run the `ZXingCpp.DemoReader` sample program, it is important that the dotnet runtime finds the native
 `ZXing[.dll|.so|.dylib]` in your path. E.g. on Linux a complete command line would look like this
 
 ```sh
-LD_LIBRARY_PATH=<ZXing.so-path> dotnet run --project ZXingCpp.Demo -- ../../test/samples/multi-1/1.png
+LD_LIBRARY_PATH=<ZXing.so-path> dotnet run --project ZXingCpp.DemoReader -- ../../test/samples/multi-1/1.png
 ```
 
 ## Benchmarking
