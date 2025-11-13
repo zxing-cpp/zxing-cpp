@@ -63,7 +63,7 @@ std::optional<PointF> CenterOfRing(const BitMatrix& image, PointI center, int ra
 	bool inner = nth < 0;
 	nth = std::abs(nth);
 	log(center, 3);
-	BitMatrixCursorI cur(image, center, {0, 1});
+	BitMatrixCursorI cur(image, center, {1, 0});
 	if (!cur.stepToEdge(nth, radius, inner))
 		return {};
 	cur.turnRight(); // move clock wise and keep edge on the right/left depending on backup
@@ -120,7 +120,7 @@ static std::vector<PointF> CollectRingPoints(const BitMatrix& image, PointF cent
 {
 	PointI centerI(center);
 	int radius = range;
-	BitMatrixCursorI cur(image, centerI, {0, 1});
+	BitMatrixCursorI cur(image, centerI, {1, 0});
 	if (!cur.stepToEdge(edgeIndex, radius, backup))
 		return {};
 	cur.turnRight(); // move clock wise and keep edge on the right/left depending on backup
