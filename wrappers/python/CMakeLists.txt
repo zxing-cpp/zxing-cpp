@@ -34,7 +34,7 @@ endif()
 
 find_package(Python3 COMPONENTS Interpreter Development.Module REQUIRED) # see https://github.com/pybind/pybind11/issues/4785
 set(PYBIND11_FINDPYTHON ON) # see https://github.com/pybind/pybind11/issues/4785
-zxing_add_package(pybind11 pybind11 https://github.com/pybind/pybind11.git v2.13.6)
+zxing_add_package(pybind11 pybind11 https://github.com/pybind/pybind11.git v3.0.1)
 
 # build the python module
 pybind11_add_module(zxingcpp zxing.cpp)
