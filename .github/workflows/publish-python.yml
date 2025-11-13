@@ -42,7 +42,7 @@ jobs:
       env:
         # TODO: setup a "BEFORE" cmake build and link the python module to the prebuild libZXing.a
         # see https://github.com/YannickJadoul/Parselmouth/blob/523c117aa780184345121f6ff8315670bc7d4d94/.github/workflows/wheels.yml#L120
-        CIBW_BUILD: cp39-* cp310-* cp311-* cp312-* cp313-*
+        CIBW_BUILD: cp310-* cp311-* cp312-* cp313-* cp314-*
         CIBW_SKIP: "*musllinux*"
         #CIBW_ARCHS_MACOS: universal2
         #CIBW_ENVIRONMENT_MACOS: CMAKE_OSX_ARCHITECTURES="arm64;x86_64"
@@ -66,7 +66,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.13'
+        python-version: '3.14'
 
     - name: Install dependencies
       working-directory: wrappers/python
