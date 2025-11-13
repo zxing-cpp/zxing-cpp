@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest, macos-13, ubuntu-24.04-arm] # windows-11-arm currently fails with a linker error
+        os: [ubuntu-latest, macos-latest, windows-latest, macos-15-intel, ubuntu-24.04-arm] # windows-11-arm still fails with a linker error
 
     steps:
     - uses: actions/checkout@v4
