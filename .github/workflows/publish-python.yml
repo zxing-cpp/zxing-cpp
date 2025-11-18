@@ -48,6 +48,8 @@ jobs:
         #CIBW_ENVIRONMENT_MACOS: CMAKE_OSX_ARCHITECTURES="arm64;x86_64"
         #MACOSX_DEPLOYMENT_TARGET: "10.15"
         CIBW_BUILD_VERBOSITY: 1
+        CIBW_TEST_COMMAND: python {package}/test.py
+        CIBW_TEST_SOURCES: wrappers/python/test.py
 
     - name: Upload wheels
       uses: actions/upload-artifact@v4
