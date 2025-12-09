@@ -38,6 +38,13 @@ elseif (ZXING_WRITERS MATCHES "BOTH")
     set (ZXING_WRITERS_OLD ON)
 endif()
 
+option (ZXING_AZTEC "Build with aztec support" ON)
+option (ZXING_DATAMATRIX "Build with datamatrix support" ON)
+option (ZXING_MAXICODE "Build with maxicode support" ON)
+option (ZXING_ONED "Build with oned support" ON)
+option (ZXING_PDF417 "Build with pdf417 support" ON)
+option (ZXING_QRCODE "Build with qrcode support" ON)
+
 if (BUILD_SHARED_LIBS)
     set (CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif()
@@ -490,15 +497,12 @@ set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 find_package(Threads REQUIRED)
 
-add_library (ZXing
-    ${COMMON_FILES}
-    ${AZTEC_FILES}
-    ${DATAMATRIX_FILES}
-    ${MAXICODE_FILES}
-    ${ONED_FILES}
-    ${PDF417_FILES}
-    ${QRCODE_FILES}
-)
+add_library (ZXing ${COMMON_FILES})
+foreach(entry AZTEC DATAMATRIX MAXICODE ONED PDF417 QRCODE)
+    if(${ZXING_${entry}})
+        target_sources(ZXing PRIVATE ${${entry}_FILES})
+    endif()
+endforeach()
 
 target_include_directories (ZXing
     PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>" "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
