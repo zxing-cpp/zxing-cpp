@@ -1,15 +1,15 @@
 [versions]
-androidGradlePlugin = "8.7.3"
+androidGradlePlugin = "8.13.2"
 androidCompileSdk = "35"
 androidMinSdk = "21"
 androidTargetSdk = "35"
-androidx-appcompat = "1.7.0"
-androidx-camera = "1.4.1"
-androidx-core = "1.15.0"
-androidx-constraintLayout = "2.2.0"
-android-material = "1.12.0"
-kotlin = "1.9.10"
-zxing-core = "3.5.3"
+androidx-appcompat = "1.7.1"
+androidx-camera = "1.5.2"
+androidx-core = "1.16.0"
+androidx-constraintLayout = "2.2.1"
+android-material = "1.13.0"
+kotlin = "2.2.21"
+zxing-core = "3.5.4"
 
 [libraries]
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }
