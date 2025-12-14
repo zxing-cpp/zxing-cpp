@@ -6,6 +6,10 @@ plugins {
     id("com.vanniktech.maven.publish") version "0.35.0"
 }
 
+// Determine the Java version from the current JVM running Gradle.
+// This was the only way to make it compile on axxel's Android Studio based dev-env as well as on the CI build.
+val jvmVersion = JavaVersion.toVersion(System.getProperty("java.version"))
+
 android {
     namespace = "zxingcpp.lib" // used to be just zxingcpp but needs to contain a '.' in release builds
     // ndk version 27 has sufficient c++20 support to enable all features (see #386)
@@ -33,12 +37,12 @@ android {
         consumerProguardFiles("consumer-rules.pro")
     }
     compileOptions {
-//        sourceCompatibility = JavaVersion.VERSION_17
-//        targetCompatibility = JavaVersion.VERSION_17
-	}
-    kotlin {
-//        jvmToolchain(17)
+        sourceCompatibility = jvmVersion
+        targetCompatibility = jvmVersion
     }
+//  kotlin {
+//      jvmToolchain(17) // defaults to the JDK version used by Gradle
+//  }
     externalNativeBuild {
         cmake {
             path = file("src/main/cpp/CMakeLists.txt")
