@@ -83,6 +83,7 @@ struct WriterOptions::Data
 	int scale = 0;
 	int sizeHint = 0;
 	int rotate = 0;
+	bool invert = false;
 	bool withHRT = false;
 	bool withQuietZones = true;
 };
@@ -95,6 +96,7 @@ struct WriterOptions::Data
 ZX_PROPERTY(int, scale)
 ZX_PROPERTY(int, sizeHint)
 ZX_PROPERTY(int, rotate)
+ZX_PROPERTY(bool, invert)
 ZX_PROPERTY(bool, withHRT)
 ZX_PROPERTY(bool, withQuietZones)
 
@@ -522,10 +524,20 @@ struct SetCommonWriterOptions
 			int size = std::max(zint->width, zint->rows);
 			zint->scale = std::max(1, int(float(opts.sizeHint()) / size)) / 2.f;
 		}
+
+		if (opts.invert()) {
+			strcpy(zint->bgcolour, "000000");
+			strcpy(zint->fgcolour, "ffffff");
+		}
 	}
 
 	// reset the defaults such that consecutive write calls don't influence each other
-	~SetCommonWriterOptions() { zint->scale = 0.5f; }
+	~SetCommonWriterOptions()
+	{
+		zint->scale = 0.5f;
+		strcpy(zint->fgcolour, "000000");
+		strcpy(zint->bgcolour, "ffffff");
+	}
 };
 
 } // ZXing
@@ -670,7 +682,7 @@ std::string WriteBarcodeToUtf8(const Barcode& barcode, [[maybe_unused]] const Wr
 
 	constexpr auto map = std::array{" ", "▀", "▄", "█"};
 	std::ostringstream res;
-	bool inverted = true; // TODO: take from WriterOptions
+	bool invert = !options.invert();
 
 	for (int y = 0; y < iv.height(); y += 2) {
 		// for linear barcodes, only print line pairs that are distinct from the previous one
@@ -679,8 +691,8 @@ std::string WriteBarcodeToUtf8(const Barcode& barcode, [[maybe_unused]] const Wr
 			continue;
 
 		for (int x = 0; x < iv.width(); ++x) {
-			int tp = bool(*iv.data(x, y)) ^ inverted;
-			int bt = (iv.height() == 1 && tp) || (y + 1 < iv.height() && (bool(*iv.data(x, y + 1)) ^ inverted));
+			int tp = bool(*iv.data(x, y)) ^ invert;
+			int bt = (iv.height() == 1 && tp) || (y + 1 < iv.height() && (bool(*iv.data(x, y + 1)) ^ invert));
 			res << map[tp | (bt << 1)];
 		}
 		res << '\n';
