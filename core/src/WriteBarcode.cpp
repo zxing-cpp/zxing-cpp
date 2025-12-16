@@ -421,6 +421,8 @@ Barcode CreateBarcode(const void* data, int size, int mode, const CreatorOptions
 	if (mode == UNICODE_MODE && static_cast<const char*>(data)[0] != '[')
 		zint->input_mode |= GS1PARENS_MODE;
 	zint->output_options |= OUT_BUFFER_INTERMEDIATE | BARCODE_NO_QUIET_ZONES | BARCODE_CONTENT_SEGS;
+	if (opts.readerInit())
+		zint->output_options |= READER_INIT;
 
 	if (mode == DATA_MODE && ZBarcode_Cap(zint->symbology, ZINT_CAP_ECI))
 		zint->eci = static_cast<int>(ECI::Binary);
@@ -469,15 +471,16 @@ Barcode CreateBarcode(const void* data, int size, int mode, const CreatorOptions
 
 	DecoderResult decRes(std::move(content));
 	decRes.setEcLevel(ECLevelZint2ZXing(zint));
-	DetectorResult detRes;
-
-	auto res = Barcode(std::move(decRes), std::move(detRes), opts.format());
-#endif
-
+	decRes.setReaderInit(zint->output_options & READER_INIT);
 	auto bits = BitMatrix(zint->bitmap_width, zint->bitmap_height);
 	std::transform(zint->bitmap, zint->bitmap + zint->bitmap_width * zint->bitmap_height, bits.row(0).begin(),
 				   [](unsigned char v) { return (v == '1') * BitMatrix::SET_V; });
-	res.symbol(std::move(bits));
+	int left, top, width, height;
+	bits.findBoundingBox(left, top, width, height);
+
+	auto res = Barcode(std::move(decRes), {std::move(bits), Rectangle<PointI>(left, top, width, height)}, opts.format());
+#endif
+
 	res.zint(std::move(opts.d->zint));
 
 	return res;
