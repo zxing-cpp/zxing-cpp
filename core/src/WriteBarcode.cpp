@@ -420,7 +420,7 @@ Barcode CreateBarcode(const void* data, int size, int mode, const CreatorOptions
 	zint->input_mode = mode == UNICODE_MODE && opts.gs1() && SupportsGS1(opts.format()) ? GS1_MODE : mode;
 	if (mode == UNICODE_MODE && static_cast<const char*>(data)[0] != '[')
 		zint->input_mode |= GS1PARENS_MODE;
-	zint->output_options |= OUT_BUFFER_INTERMEDIATE | BARCODE_QUIET_ZONES | BARCODE_CONTENT_SEGS;
+	zint->output_options |= OUT_BUFFER_INTERMEDIATE | BARCODE_NO_QUIET_ZONES | BARCODE_CONTENT_SEGS;
 
 	if (mode == DATA_MODE && ZBarcode_Cap(zint->symbology, ZINT_CAP_ECI))
 		zint->eci = static_cast<int>(ECI::Binary);
@@ -510,7 +510,7 @@ struct SetCommonWriterOptions
 	{
 		zint->show_hrt = opts.withHRT();
 
-		zint->output_options &= ~OUT_BUFFER_INTERMEDIATE;
+		zint->output_options &= ~(OUT_BUFFER_INTERMEDIATE | BARCODE_NO_QUIET_ZONES);
 		zint->output_options |= opts.withQuietZones() ? BARCODE_QUIET_ZONES : BARCODE_NO_QUIET_ZONES;
 
 		if (opts.scale())
