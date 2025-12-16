@@ -55,6 +55,21 @@ Quadrilateral<PointT> Rectangle(int width, int height, typename PointT::value_t 
 }
 
 template <typename PointT = PointF>
+Quadrilateral<PointT> Rectangle(int x0, int x1, int y0, int y1, typename PointT::value_t o)
+{
+	return {PointT{x0 + o, y0 + o}, {x1 + o, y0 + o}, {x1 + o, y1 + o}, {x0 + o, y1 + o}};
+}
+
+template <typename PointT = PointF>
+Quadrilateral<PointT> Rectangle(int left, int top, int width, int height)
+{
+	int right  = left + width - 1;
+	int bottom = top + height - 1;
+
+	return {PointT{left, top}, {right, top}, {right, bottom}, {left, bottom}};
+}
+
+template <typename PointT = PointF>
 Quadrilateral<PointT> CenteredSquare(int size)
 {
 	return Scale(Quadrilateral(PointT{-1, -1}, {1, -1}, {1, 1}, {-1, 1}), size / 2);

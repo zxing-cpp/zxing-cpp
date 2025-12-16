@@ -500,7 +500,7 @@ DetectorResult SampleQR(const BitMatrix& image, const FinderPatternSet& fp)
 			for (int x = 0; x < N; ++x) {
 				int x0 = apM[x], x1 = apM[x + 1], y0 = apM[y], y1 = apM[y + 1];
 				rois.push_back({x0 - (x == 0) * 6, x1 + (x == N - 1) * 7, y0 - (y == 0) * 6, y1 + (y == N - 1) * 7,
-								PerspectiveTransform{Rectangle(x0, x1, y0, y1),
+								PerspectiveTransform{Rectangle(x0, x1, y0, y1, 0.5),
 													 {*apP(x, y), *apP(x + 1, y), *apP(x + 1, y + 1), *apP(x, y + 1)}}});
 			}
 
@@ -530,10 +530,9 @@ DetectorResult DetectPureQR(const BitMatrix& image)
 	int left, top, width, height;
 	if (!image.findBoundingBox(left, top, width, height, MIN_MODULES) || std::abs(width - height) > 1)
 		return {};
-	int right  = left + width - 1;
-	int bottom = top + height - 1;
+	auto pos = Rectangle<PointI>(left, top, width, height);
 
-	PointI tl{left, top}, tr{right, top}, bl{left, bottom};
+	const PointI &tl = pos.topLeft(), &tr = pos.topRight(), &bl = pos.bottomLeft();
 	Pattern diagonal;
 	// allow corners be moved one pixel inside to accommodate for possible aliasing artifacts
 	for (auto [p, d] : {std::pair(tl, PointI{1, 1}), {tr, {-1, 1}}, {bl, {1, -1}}}) {
@@ -561,8 +560,7 @@ DetectorResult DetectPureQR(const BitMatrix& image)
 #endif
 
 	// Now just read off the bits (this is a crop + subsample)
-	return {Deflate(image, dimension, dimension, top + moduleSize / 2, left + moduleSize / 2, moduleSize),
-			{{left, top}, {right, top}, {right, bottom}, {left, bottom}}};
+	return {Deflate(image, dimension, dimension, top + moduleSize / 2, left + moduleSize / 2, moduleSize), std::move(pos)};
 }
 
 DetectorResult DetectPureMQR(const BitMatrix& image)
@@ -574,8 +572,6 @@ DetectorResult DetectPureMQR(const BitMatrix& image)
 	int left, top, width, height;
 	if (!image.findBoundingBox(left, top, width, height, MIN_MODULES) || std::abs(width - height) > 1)
 		return {};
-	int right  = left + width - 1;
-	int bottom = top + height - 1;
 
 	// allow corners be moved one pixel inside to accommodate for possible aliasing artifacts
 	auto diagonal = BitMatrixCursorI(image, {left, top}, {1, 1}).readPatternFromBlack<Pattern>(1);
@@ -601,7 +597,7 @@ DetectorResult DetectPureMQR(const BitMatrix& image)
 
 	// Now just read off the bits (this is a crop + subsample)
 	return {Deflate(image, dimension, dimension, top + moduleSize / 2, left + moduleSize / 2, moduleSize),
-			{{left, top}, {right, top}, {right, bottom}, {left, bottom}}};
+			Rectangle<PointI>(left, top, width, height)};
 }
 
 DetectorResult DetectPureRMQR(const BitMatrix& image)
@@ -622,10 +618,9 @@ DetectorResult DetectPureRMQR(const BitMatrix& image)
 	int left, top, width, height;
 	if (!image.findBoundingBox(left, top, width, height, MIN_MODULES) || height >= width)
 		return {};
-	int right  = left + width - 1;
-	int bottom = top + height - 1;
+	auto pos = Rectangle<PointI>(left, top, width, height);
 
-	PointI tl{left, top}, tr{right, top}, br{right, bottom}, bl{left, bottom};
+	const PointI &tl = pos.topLeft(), &tr = pos.topRight(), &bl = pos.bottomLeft(), &br = pos.bottomRight();
 
 	// allow corners be moved one pixel inside to accommodate for possible aliasing artifacts
 	auto diagonal = BitMatrixCursorI(image, tl, {1, 1}).readPatternFromBlack<Pattern>(1);
@@ -662,11 +657,11 @@ DetectorResult DetectPureRMQR(const BitMatrix& image)
 	LogMatrixWriter lmw(log, image, 5, "grid2.pnm");
 	for (int y = 0; y < dimH; y++)
 		for (int x = 0; x < dimW; x++)
-			log(PointF(left + (x + .5f) * moduleSize, top + (y + .5f) * moduleSize));
+			log(pos.topLeft() + moduleSize * PointF(x + .5f, y + .5f));
 #endif
 
 	// Now just read off the bits (this is a crop + subsample)
-	return {Deflate(image, dimW, dimH, top + moduleSize / 2, left + moduleSize / 2, moduleSize), {tl, tr, br, bl}};
+	return {Deflate(image, dimW, dimH, top + moduleSize / 2, left + moduleSize / 2, moduleSize), std::move(pos)};
 }
 
 DetectorResult SampleMQR(const BitMatrix& image, const ConcentricPattern& fp)

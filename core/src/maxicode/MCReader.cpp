@@ -40,10 +40,7 @@ static DetectorResult ExtractPureBits(const BitMatrix& image)
 		}
 	}
 
-	int right  = left + width - 1;
-	int bottom = top + height - 1;
-
-	return {std::move(bits), {{left, top}, {right, top}, {right, bottom}, {left, bottom}}};
+	return {std::move(bits), Rectangle<PointI>(left, top, width, height)};
 }
 
 Barcode Reader::decode(const BinaryBitmap& image) const
