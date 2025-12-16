@@ -667,7 +667,7 @@ std::string WriteBarcodeToUtf8(const Barcode& barcode, [[maybe_unused]] const Wr
 
 	constexpr auto map = std::array{" ", "▀", "▄", "█"};
 	std::ostringstream res;
-	bool inverted = false; // TODO: take from WriterOptions
+	bool inverted = true; // TODO: take from WriterOptions
 
 	for (int y = 0; y < iv.height(); y += 2) {
 		// for linear barcodes, only print line pairs that are distinct from the previous one
