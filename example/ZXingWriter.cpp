@@ -52,18 +52,6 @@ static void PrintUsage(const char* exePath)
 			  << "Output format is determined by file name, supported are png, jpg and svg.\n";
 }
 
-static bool ParseSize(std::string str, int* width, int* height)
-{
-	std::transform(str.begin(), str.end(), str.begin(), [](char c) { return (char)std::tolower(c); });
-	auto xPos = str.find('x');
-	if (xPos != std::string::npos) {
-		*width  = std::stoi(str.substr(0, xPos));
-		*height = std::stoi(str.substr(xPos + 1));
-		return true;
-	}
-	return false;
-}
-
 struct CLI
 {
 	BarcodeFormat format;
