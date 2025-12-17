@@ -342,6 +342,14 @@ void ZXing_CreatorOptions_delete(ZXing_CreatorOptions* opts)
 	delete opts;
 }
 
+#define ZX_ENUM_PROPERTY(TYPE, GETTER, SETTER) \
+	ZXing_##TYPE ZXing_CreatorOptions_get##SETTER(const ZXing_CreatorOptions* opts) { return static_cast<ZXing_##TYPE>(opts->GETTER()); } \
+	void ZXing_ReaderOptions_set##SETTER(ZXing_CreatorOptions* opts, ZXing_##TYPE val) { opts->GETTER(static_cast<TYPE>(val)); }
+
+ZX_ENUM_PROPERTY(BarcodeFormat, format, Format)
+
+#undef ZX_ENUM_PROPERTY
+
 #define ZX_PROPERTY(TYPE, GETTER, SETTER) \
 	TYPE ZXing_CreatorOptions_get##SETTER(const ZXing_CreatorOptions* opts) { return opts->GETTER(); } \
 	void ZXing_CreatorOptions_set##SETTER(ZXing_CreatorOptions* opts, TYPE val) { opts->GETTER(val); }
