@@ -208,9 +208,9 @@ auto image_view(py::buffer buffer, int width, int height, ImageFormat format, in
 	return ImageView(static_cast<const uint8_t*>(info.ptr), info.size, width, height, format, rowStride, pixStride);
 }
 
-Barcode create_barcode(py::object content, BarcodeFormat format, std::string ec_level)
+Barcode create_barcode(py::object content, BarcodeFormat format, const py::kwargs& kwargs)
 {
-	auto cOpts = CreatorOptions(format).ecLevel(ec_level);
+	auto cOpts = CreatorOptions(format, py::str(kwargs.str())); // see https://github.com/pybind/pybind11/issues/5938
 	auto data = py::cast<std::string>(content);
 
 	if (py::isinstance<py::str>(content))
@@ -235,7 +235,7 @@ std::string write_barcode_to_svg(Barcode barcode, int size_hint, bool with_hrt, 
 Image write_barcode(BarcodeFormat format, py::object content, int width, int height, int quiet_zone, int ec_level)
 {
 #ifdef ZXING_EXPERIMENTAL_API
-	auto barcode = create_barcode(content, format, std::to_string(ec_level));
+	auto barcode = create_barcode(content, format, py::dict("ecLevel"_a = ec_level / 2));
 	return write_barcode_to_image(barcode, std::max(width, height), false, quiet_zone != 0);
 #else
 	CharacterSet encoding [[maybe_unused]];
@@ -542,8 +542,7 @@ PYBIND11_MODULE(zxingcpp, m)
 #ifdef ZXING_EXPERIMENTAL_API
 	m.def("create_barcode", &create_barcode,
 		py::arg("content"),
-		py::arg("format"),
-		py::arg("ec_level") = ""
+		py::arg("format")
 	);
 
 	m.def("write_barcode_to_image", &write_barcode_to_image,

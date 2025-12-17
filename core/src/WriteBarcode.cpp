@@ -35,9 +35,6 @@ struct CreatorOptions::Data
 {
 	BarcodeFormat format;
 	std::string options;
-	bool readerInit = false;
-	bool forceSquareDataMatrix = false;
-	std::string ecLevel;
 
 	// symbol size (qrcode, datamatrix, etc), map from I, 'WxH'
 	// structured_append (idx, cnt, ID)
@@ -55,9 +52,6 @@ struct CreatorOptions::Data
 	CreatorOptions&& CreatorOptions::NAME(TYPE v)&& { return d->NAME = std::move(v), std::move(*this); }
 
 ZX_PROPERTY(BarcodeFormat, format)
-ZX_PROPERTY(bool, readerInit)
-ZX_PROPERTY(bool, forceSquareDataMatrix)
-ZX_PROPERTY(std::string, ecLevel)
 ZX_PROPERTY(std::string, options)
 
 #undef ZX_PROPERTY
@@ -65,7 +59,9 @@ ZX_PROPERTY(std::string, options)
 #define ZX_RO_PROPERTY(TYPE, NAME) \
 	std::optional<TYPE> CreatorOptions::NAME() const noexcept { return JsonGet<TYPE>(d->options, #NAME); }
 
+ZX_RO_PROPERTY(std::string, ecLevel);
 ZX_RO_PROPERTY(bool, gs1);
+ZX_RO_PROPERTY(bool, readerInit);
 ZX_RO_PROPERTY(bool, stacked);
 ZX_RO_PROPERTY(bool, forceSquare);
 ZX_RO_PROPERTY(int, version);
@@ -392,8 +388,8 @@ zint_symbol* CreatorOptions::zint() const
 
 		zint->scale = 0.5f;
 
-		if (!ecLevel().empty())
-			zint->option_1 = ParseECLevel(zint->symbology, ecLevel());
+		if (auto val = ecLevel(); val)
+			zint->option_1 = ParseECLevel(zint->symbology, *val);
 
 		if (auto val = version(); val && !IsLinearBarcode(format()))
 			zint->option_2 = *val;

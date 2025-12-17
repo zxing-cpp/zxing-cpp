@@ -59,7 +59,6 @@ struct CLI
 	int sizeHint = 0;
 	std::string input;
 	std::string outPath;
-	std::string ecLevel;
 	std::string options;
 	bool inputIsFile = false;
 	bool invert = false;
@@ -78,10 +77,6 @@ static bool ParseOptions(int argc, char* argv[], CLI& cli)
 			if (++i == argc)
 				return false;
 			cli.sizeHint = std::stoi(argv[i]);
-		} else if (is("-eclevel")) {
-			if (++i == argc)
-				return false;
-			cli.ecLevel = argv[i];
 		// } else if (is("-margin")) {
 		// 	if (++i == argc)
 		// 		return false;
@@ -161,7 +156,7 @@ int main(int argc, char* argv[])
 
 	try {
 #ifdef ZXING_EXPERIMENTAL_API
-		auto cOpts = CreatorOptions(cli.format).ecLevel(cli.ecLevel).options(cli.options);
+		auto cOpts = CreatorOptions(cli.format, cli.options);
 		auto barcode = cli.inputIsFile ? CreateBarcodeFromBytes(ReadFile(cli.input), cOpts) : CreateBarcodeFromText(cli.input, cOpts);
 
 		auto wOpts = WriterOptions().sizeHint(cli.sizeHint).withQuietZones(cli.withQZ).withHRT(cli.withHRT).invert(cli.invert).rotate(0);
@@ -183,8 +178,6 @@ int main(int argc, char* argv[])
 		}
 #else
 		auto writer = MultiFormatWriter(cli.format).setMargin(cli.withQZ ? 10 : 0);
-		if (!cli.ecLevel.empty())
-			writer.setEccLevel(std::stoi(cli.ecLevel));
 
 		BitMatrix matrix;
 		if (cli.inputIsFile) {

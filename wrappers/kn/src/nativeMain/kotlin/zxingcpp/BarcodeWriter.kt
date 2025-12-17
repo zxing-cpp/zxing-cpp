@@ -25,15 +25,9 @@ open class CreatorOptions(format: BarcodeFormat) {
 	var format: BarcodeFormat
 		get() = ZXing_CreatorOptions_getFormat(cValue).parseIntoBarcodeFormat().first()
 		set(value) = ZXing_CreatorOptions_setFormat(cValue, value.rawValue)
-	var readerInit: Boolean
-		get() = ZXing_CreatorOptions_getReaderInit(cValue)
-		set(value) = ZXing_CreatorOptions_setReaderInit(cValue, value)
-	var forceSquareDataMatrix: Boolean
-		get() = ZXing_CreatorOptions_getForceSquareDataMatrix(cValue)
-		set(value) = ZXing_CreatorOptions_setForceSquareDataMatrix(cValue, value)
-	var ecLevel: String
-		get() = ZXing_CreatorOptions_getEcLevel(cValue)?.toKStringNullPtrHandledAndFree() ?: ""
-		set(value) = ZXing_CreatorOptions_setEcLevel(cValue, value)
+	var options: String
+		get() = ZXing_CreatorOptions_getOptions(cValue)?.toKStringNullPtrHandledAndFree() ?: ""
+		set(value) = ZXing_CreatorOptions_setOptions(cValue, value)
 
 	val cValue: CValuesRef<ZXing_CreatorOptions>? = ZXing_CreatorOptions_new(format.rawValue)
 

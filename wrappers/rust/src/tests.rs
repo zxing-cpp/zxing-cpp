@@ -33,9 +33,9 @@ mod tests {
 	#[test]
 	fn barcode_creator_new() {
 		let mut o1 = BarcodeCreator::new(BarcodeFormat::QRCode);
-		assert_eq!(o1.get_reader_init(), false);
-		o1.set_reader_init(true);
-		assert_eq!(o1.get_reader_init(), true);
+		assert_eq!(o1.get_options(), "");
+		o1.set_options("version:1");
+		assert_eq!(o1.get_options(), "version:1");
 	}
 
 	#[test]
@@ -47,7 +47,7 @@ mod tests {
 	#[test]
 	fn create_from_str() {
 		let str = "123456";
-		let res = create(BarcodeFormat::QRCode).ec_level("Q").from_str(str).unwrap();
+		let res = create(BarcodeFormat::QRCode).options("ecLevel:Q").from_str(str).unwrap();
 
 		assert_eq!(res.is_valid(), true);
 		assert_eq!(res.format(), BarcodeFormat::QRCode);
@@ -62,13 +62,12 @@ mod tests {
 	#[test]
 	fn create_from_slice() {
 		let data = [1, 2, 3, 4, 5];
-		let res = create(BarcodeFormat::QRCode).reader_init(true).from_slice(&data).unwrap();
+		let res = create(BarcodeFormat::QRCode).from_slice(&data).unwrap();
 
 		assert_eq!(res.is_valid(), true);
 		assert_eq!(res.format(), BarcodeFormat::QRCode);
 		assert_eq!(res.bytes(), data);
 		assert_eq!(res.has_eci(), true);
-		// assert_eq!(res.reader_init(), true); // TODO
 		assert_eq!(res.content_type(), ContentType::Binary);
 		assert!(matches!(res.error(), BarcodeError::None()));
 		assert_eq!(res.error().to_string(), "");

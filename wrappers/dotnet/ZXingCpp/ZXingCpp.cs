@@ -71,12 +71,8 @@ internal class Dll
 	[DllImport(DllName)] public static extern void ZXing_CreatorOptions_delete(IntPtr opts);
 	[DllImport(DllName)] public static extern void ZXing_CreatorOptions_setFormat(IntPtr opts, BarcodeFormat format);
 	[DllImport(DllName)] public static extern BarcodeFormat ZXing_CreatorOptions_getFormat(IntPtr opts);
-	[DllImport(DllName)] public static extern void ZXing_CreatorOptions_setReaderInit(IntPtr opts, bool readerInit);
-	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_CreatorOptions_getReaderInit(IntPtr opts);
-	[DllImport(DllName)] public static extern void ZXing_CreatorOptions_setForceSquareDataMatrix(IntPtr opts, bool forceSquareDataMatrix);
-	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_CreatorOptions_getForceSquareDataMatrix(IntPtr opts);
-	[DllImport(DllName)] public static extern void ZXing_CreatorOptions_setEcLevel(IntPtr opts, string ecLevel);
-	[DllImport(DllName)] public static extern IntPtr ZXing_CreatorOptions_getEcLevel(IntPtr opts);
+	[DllImport(DllName)] public static extern void ZXing_CreatorOptions_setOptions(IntPtr opts, string options);
+	[DllImport(DllName)] public static extern IntPtr ZXing_CreatorOptions_getOptions(IntPtr opts);
 
 	[DllImport(DllName)] public static extern IntPtr ZXing_WriterOptions_new();
 	[DllImport(DllName)] public static extern void ZXing_WriterOptions_delete(IntPtr opts);
@@ -377,22 +373,16 @@ public class CreatorOptions
 
 	~CreatorOptions() => ZXing_CreatorOptions_delete(_d);
 
-	public bool ReaderInit
+	public BarcodeFormat Format
 	{
-		get => ZXing_CreatorOptions_getReaderInit(_d);
-		set => ZXing_CreatorOptions_setReaderInit(_d, value);
+		get => ZXing_CreatorOptions_getFormat(_d);
+		set => ZXing_CreatorOptions_setFormat(_d, value);
 	}
 
-	public bool ForceSquareDataMatrix
+	public String Options
 	{
-		get => ZXing_CreatorOptions_getForceSquareDataMatrix(_d);
-		set => ZXing_CreatorOptions_setForceSquareDataMatrix(_d, value);
-	}
-
-	public String ECLevel
-	{
-		get => MarshalAsString(ZXing_CreatorOptions_getEcLevel(_d));
-		set => ZXing_CreatorOptions_setEcLevel(_d, value);
+		get => MarshalAsString(ZXing_CreatorOptions_getOptions(_d));
+		set => ZXing_CreatorOptions_setOptions(_d, value);
 	}
 
 }

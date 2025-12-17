@@ -202,12 +202,8 @@ extern "C" {
 	pub fn ZXing_CreatorOptions_delete(opts: *mut ZXing_CreatorOptions);
 	pub fn ZXing_CreatorOptions_setFormat(opts: *mut ZXing_CreatorOptions, format: ZXing_BarcodeFormat);
 	pub fn ZXing_CreatorOptions_getFormat(opts: *const ZXing_CreatorOptions) -> ZXing_BarcodeFormat;
-	pub fn ZXing_CreatorOptions_setReaderInit(opts: *mut ZXing_CreatorOptions, readerInit: bool);
-	pub fn ZXing_CreatorOptions_getReaderInit(opts: *const ZXing_CreatorOptions) -> bool;
-	pub fn ZXing_CreatorOptions_setForceSquareDataMatrix(opts: *mut ZXing_CreatorOptions, forceSquareDataMatrix: bool);
-	pub fn ZXing_CreatorOptions_getForceSquareDataMatrix(opts: *const ZXing_CreatorOptions) -> bool;
-	pub fn ZXing_CreatorOptions_setEcLevel(opts: *mut ZXing_CreatorOptions, ecLevel: *const ::core::ffi::c_char);
-	pub fn ZXing_CreatorOptions_getEcLevel(opts: *const ZXing_CreatorOptions) -> *mut ::core::ffi::c_char;
+	pub fn ZXing_CreatorOptions_setOptions(opts: *mut ZXing_CreatorOptions, options: *const ::core::ffi::c_char);
+	pub fn ZXing_CreatorOptions_getOptions(opts: *const ZXing_CreatorOptions) -> *mut ::core::ffi::c_char;
 	pub fn ZXing_WriterOptions_new() -> *mut ZXing_WriterOptions;
 	pub fn ZXing_WriterOptions_delete(opts: *mut ZXing_WriterOptions);
 	pub fn ZXing_WriterOptions_setScale(opts: *mut ZXing_WriterOptions, scale: ::core::ffi::c_int);

@@ -32,11 +32,12 @@ class TestReadWrite(unittest.TestCase):
 	def test_write_read_cycle(self):
 		format = BF.QRCode
 		text = "I have the best words."
-		img = zxingcpp.write_barcode(format, text)
+		img = zxingcpp.write_barcode(format, text, ec_level = 8)
 
 		res = zxingcpp.read_barcode(img)
 		self.check_res(res, format, text)
 		self.assertEqual(res.symbology_identifier, "]Q1")
+		self.assertEqual(res.ec_level, "H")
 		# self.assertEqual(res.position.top_left.x, 4)
 
 		res = zxingcpp.read_barcode(img, formats=format)

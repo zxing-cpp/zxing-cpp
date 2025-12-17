@@ -41,9 +41,6 @@ public:
 	CreatorOptions&& NAME(TYPE v)&&;
 
 	ZX_PROPERTY(BarcodeFormat, format)
-	ZX_PROPERTY(bool, readerInit)
-	ZX_PROPERTY(bool, forceSquareDataMatrix)
-	ZX_PROPERTY(std::string, ecLevel)
 	ZX_PROPERTY(std::string, options)
 
 #undef ZX_PROPERTY
@@ -51,11 +48,14 @@ public:
 #define ZX_RO_PROPERTY(TYPE, NAME) \
 	std::optional<TYPE> NAME() const noexcept;
 
+	ZX_RO_PROPERTY(std::string, ecLevel); // most 2D symbologies: ecLevel, e.g. "30%", see also libzint doc
 	ZX_RO_PROPERTY(bool, gs1);
-	ZX_RO_PROPERTY(bool, stacked);     // DataBar/DataBarExpanded: generates a stacked version
-	ZX_RO_PROPERTY(bool, forceSquare); // DataMatrix: only consider square symbol versions
-	ZX_RO_PROPERTY(int, version);      // most 2D symbologies: specify the version/size of the symbol
-	ZX_RO_PROPERTY(int, dataMask);     // QRCode/MicroQRCode: specify dataMask to use
+	ZX_RO_PROPERTY(bool, readerInit);     // most 2D symbologies: set the "reader init" flag
+	ZX_RO_PROPERTY(bool, stacked);        // DataBar/DataBarExpanded: generates a stacked version
+	ZX_RO_PROPERTY(bool, forceSquare);    // DataMatrix: only consider square symbol versions
+	ZX_RO_PROPERTY(int, version);         // most 2D symbologies: specify the version/size of the symbol
+	ZX_RO_PROPERTY(int, dataMask);        // QRCode/MicroQRCode: specify dataMask to use
+
 #undef ZX_RO_PROPERTY
 };
 
