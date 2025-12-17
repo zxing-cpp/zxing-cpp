@@ -52,7 +52,7 @@ internal class Dll
 	[DllImport(DllName)] public static extern BarcodeFormats ZXing_BarcodeFormatsFromString(string str);
 
 	[DllImport(DllName)] public static extern IntPtr ZXing_ImageView_new(IntPtr data, int width, int height, ImageFormat format, int rowStride, int pixStride);
-	[DllImport(DllName)] public static extern IntPtr ZXing_ImageView_new_checked(byte[] data, int size, int width, int height, ImageFormat format, int rowStride, int pixStride);
+	[DllImport(DllName)] public static extern IntPtr ZXing_ImageView_new_checked(ref byte data, int size, int width, int height, ImageFormat format, int rowStride, int pixStride);
 	[DllImport(DllName)] public static extern void ZXing_ImageView_delete(IntPtr iv);
 
 	[DllImport(DllName)] public static extern void ZXing_Image_delete(IntPtr img);
@@ -238,8 +238,13 @@ public class ImageView
 {
 	internal IntPtr _d;
 
+#if NET
+	public ImageView(ReadOnlySpan<byte> data, int width, int height, ImageFormat format, int rowStride = 0, int pixStride = 0)
+		=> _d = CheckError(ZXing_ImageView_new_checked(ref MemoryMarshal.GetReference(data), data.Length, width, height, format, rowStride, pixStride));
+#else
 	public ImageView(byte[] data, int width, int height, ImageFormat format, int rowStride = 0, int pixStride = 0)
-		=> _d = CheckError(ZXing_ImageView_new_checked(data, data.Length, width, height, format, rowStride, pixStride));
+		=> _d = CheckError(ZXing_ImageView_new_checked(ref data[0], data.Length, width, height, format, rowStride, pixStride));
+#endif
 
 	public ImageView(IntPtr data, int width, int height, ImageFormat format, int rowStride = 0, int pixStride = 0)
 		=> _d = CheckError(ZXing_ImageView_new(data, width, height, format, rowStride, pixStride));
