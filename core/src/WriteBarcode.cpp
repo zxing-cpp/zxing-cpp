@@ -680,6 +680,15 @@ std::string WriteBarcodeToUtf8(const Barcode& barcode, [[maybe_unused]] const Wr
 	std::ostringstream res;
 	bool invert = !options.invert();
 
+	Image buffer;
+	if (options.withQuietZones()) {
+		buffer = Image(iv.width() + 2, iv.height() + 2);
+		memset(const_cast<uint8_t*>(buffer.data()), 0xff, buffer.rowStride() * buffer.height());
+		for (int y = 0; y < iv.height(); y++)
+			memcpy(const_cast<uint8_t*>(buffer.data(1, y + 1)), iv.data(0, y), iv.width());
+		iv = IsLinearBarcode(barcode.format()) ? iv.cropped(0, 1, buffer.width(), buffer.height() - 2) : buffer;
+	}
+
 	for (int y = 0; y < iv.height(); y += 2) {
 		// for linear barcodes, only print line pairs that are distinct from the previous one
 		if (IsLinearBarcode(barcode.format()) && y > 1 && y < iv.height() - 1
