@@ -11,6 +11,7 @@
 // This code is trying to find the value of a key-value pair in a string of those.
 // The input could be valid JSON, like '{"key": "val"}' or a stipped down version like
 // 'key:val'. This is also compatible with the string serialization of a python dictionary.
+// For convenience, also 'key=val' is supported, key is checked case insensitive and '_' is ignored.
 // This could easily be done with the following regex (see below).
 // But using std::regex adds 140k+ to the binary size. ctre is _very_ nice to use and has
 // the same binary footprint as the hand-roled code below! But I don't want to add
@@ -41,10 +42,26 @@ inline std::string_view Trim(std::string_view sv)
 	return sv.empty() ? std::string_view() : sv;
 }
 
-inline bool IsEqualCaseInsensitive(std::string_view sv1, std::string_view sv2)
+inline bool IsEqualIgnoreCaseAndUnderscore(std::string_view a, std::string_view b)
 {
-	return sv1.size() == sv2.size()
-		   && std::equal(sv1.begin(), sv1.end(), sv2.begin(), [](uint8_t a, uint8_t b) { return std::tolower(a) == std::tolower(b); });
+	// return a.size() == b.size()
+	// 	   && std::equal(a.begin(), a.end(), b.begin(), [](uint8_t a, uint8_t b) { return std::tolower(a) == std::tolower(b); });
+
+	auto i = a.begin(), j = b.begin();
+	for (; i != a.end() && j != b.end(); ++i, ++j) {
+		if (*i == '_')
+			++i;
+		if (*j == '_')
+			++j;
+
+		if (i == a.end() || j == b.end())
+			break;
+
+		if (std::tolower(static_cast<uint8_t>(*i)) != std::tolower(static_cast<uint8_t>(*j)))
+			return false;
+	}
+
+	return i == a.end() && j == b.end();
 }
 
 std::string_view JsonGetStr(std::string_view json, std::string_view key)
@@ -62,13 +79,13 @@ std::string_view JsonGetStr(std::string_view json, std::string_view key)
 		auto posComma = json.find(',');
 		auto pair = Trim(json.substr(0, posComma));
 
-		if (IsEqualCaseInsensitive(pair, key))
+		if (IsEqualIgnoreCaseAndUnderscore(pair, key))
 			return {pair.data(), 0}; // return non-null data to signal that we found the key
 
-		auto posColon = pair.find(':');
+		auto posSep = pair.find_first_of(":=");
 
-		if (posColon != std::string_view::npos && IsEqualCaseInsensitive(Trim(pair.substr(0, posColon)), key))
-			return Trim(pair.substr(posColon + 1));
+		if (posSep != std::string_view::npos && IsEqualIgnoreCaseAndUnderscore(Trim(pair.substr(0, posSep)), key))
+			return Trim(pair.substr(posSep + 1));
 
 		json = (posComma == std::string_view::npos) ? std::string_view{} : json.substr(posComma + 1);
 	}

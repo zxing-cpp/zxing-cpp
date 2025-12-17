@@ -235,7 +235,7 @@ std::string write_barcode_to_svg(Barcode barcode, int size_hint, bool with_hrt, 
 Image write_barcode(BarcodeFormat format, py::object content, int width, int height, int quiet_zone, int ec_level)
 {
 #ifdef ZXING_EXPERIMENTAL_API
-	auto barcode = create_barcode(content, format, py::dict("ecLevel"_a = ec_level / 2));
+	auto barcode = create_barcode(content, format, py::dict("ec_level"_a = ec_level / 2));
 	return write_barcode_to_image(barcode, std::max(width, height), false, quiet_zone != 0);
 #else
 	CharacterSet encoding [[maybe_unused]];

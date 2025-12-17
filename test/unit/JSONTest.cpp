@@ -35,6 +35,9 @@ TEST(JSONTest, GetStr)
 	EXPECT_EQ(JsonGetStr("\"key\": \"abc\"", "KEY"), "abc");
 	EXPECT_EQ(JsonGetStr("{\"key\": true}", "key"), "true"); // JSON
 	EXPECT_EQ(JsonGetStr("{'key': True}", "key"), "True");   // Python
+	EXPECT_EQ(JsonGetStr("key=val", "key"), "val");          // user input
+	EXPECT_EQ(JsonGetStr("Key:val", "key"), "val");          // ignore case
+	EXPECT_EQ(JsonGetStr("k_ey:val", "key"), "val");         // ignore underscore
 }
 
 TEST(JSONTest, GetBool)

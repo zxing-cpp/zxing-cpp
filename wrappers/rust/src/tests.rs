@@ -47,7 +47,7 @@ mod tests {
 	#[test]
 	fn create_from_str() {
 		let str = "123456";
-		let res = create(BarcodeFormat::QRCode).options("ecLevel:Q").from_str(str).unwrap();
+		let res = create(BarcodeFormat::QRCode).options("ec_level:Q").from_str(str).unwrap();
 
 		assert_eq!(res.is_valid(), true);
 		assert_eq!(res.format(), BarcodeFormat::QRCode);
