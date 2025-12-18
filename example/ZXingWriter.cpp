@@ -28,11 +28,9 @@ using namespace ZXing;
 static void PrintUsage(const char* exePath)
 {
 	std::cout << "Usage: " << exePath
-			  << " [-size <width/height>] [-eclevel <level>] [-noqz] [-hrt] <format> <text> <output>\n"
+			  << " [-size <width/height>] [-options <creator-options>] [-noqz] [-hrt] <format> <text> <output>\n"
 			  << "    -size      Size of generated image\n"
-//			  << "    -margin    Margin around barcode\n"
 //			  << "    -encoding  Encoding used to encode input text\n"
-			  << "    -eclevel   Error correction level, [0-8]\n"
 			  << "    -binary    Interpret <text> as a file name containing binary data\n"
 			  << "    -noqz      Print barcode witout quiet zone\n"
 			  << "    -hrt       Print human readable text below the barcode (if supported)\n"
@@ -77,10 +75,6 @@ static bool ParseOptions(int argc, char* argv[], CLI& cli)
 			if (++i == argc)
 				return false;
 			cli.sizeHint = std::stoi(argv[i]);
-		// } else if (is("-margin")) {
-		// 	if (++i == argc)
-		// 		return false;
-		// 	cli.margin = std::stoi(argv[i]);
 		// } else if (is("-encoding")) {
 		// 	if (++i == argc)
 		// 		return false;
