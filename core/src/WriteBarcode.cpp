@@ -80,8 +80,8 @@ struct WriterOptions::Data
 	int sizeHint = 0;
 	int rotate = 0;
 	bool invert = false;
-	bool withHRT = false;
-	bool withQuietZones = true;
+	bool addHRT = false;
+	bool addQuietZones = true;
 };
 
 #define ZX_PROPERTY(TYPE, NAME) \
@@ -93,8 +93,8 @@ ZX_PROPERTY(int, scale)
 ZX_PROPERTY(int, sizeHint)
 ZX_PROPERTY(int, rotate)
 ZX_PROPERTY(bool, invert)
-ZX_PROPERTY(bool, withHRT)
-ZX_PROPERTY(bool, withQuietZones)
+ZX_PROPERTY(bool, addHRT)
+ZX_PROPERTY(bool, addQuietZones)
 
 #undef ZX_PROPERTY
 
@@ -132,7 +132,7 @@ static Image ToImage(BitMatrix bits, bool isLinearCode, const WriterOptions& opt
 	bits.flipAll();
 	auto symbol = Inflate(std::move(bits), opts.sizeHint(),
 						  isLinearCode ? std::clamp(opts.sizeHint() / 2, 50, 300) : opts.sizeHint(),
-						  opts.withQuietZones() ? 10 : 0);
+						  opts.addQuietZones() ? 10 : 0);
 	auto bitmap = ToMatrix<uint8_t>(symbol);
 	auto iv = Image(symbol.width(), symbol.height());
 	std::memcpy(const_cast<uint8_t*>(iv.data()), bitmap.data(), iv.width() * iv.height());
@@ -509,10 +509,10 @@ struct SetCommonWriterOptions
 
 	SetCommonWriterOptions(zint_symbol* zint, const WriterOptions& opts) : zint(zint)
 	{
-		zint->show_hrt = opts.withHRT();
+		zint->show_hrt = opts.addHRT();
 
 		zint->output_options &= ~(OUT_BUFFER_INTERMEDIATE | BARCODE_NO_QUIET_ZONES);
-		zint->output_options |= opts.withQuietZones() ? BARCODE_QUIET_ZONES : BARCODE_NO_QUIET_ZONES;
+		zint->output_options |= opts.addQuietZones() ? BARCODE_QUIET_ZONES : BARCODE_NO_QUIET_ZONES;
 
 		if (opts.scale())
 			zint->scale = opts.scale() / 2.f;
@@ -681,7 +681,7 @@ std::string WriteBarcodeToUtf8(const Barcode& barcode, [[maybe_unused]] const Wr
 	bool invert = !options.invert();
 
 	Image buffer;
-	if (options.withQuietZones()) {
+	if (options.addQuietZones()) {
 		buffer = Image(iv.width() + 2, iv.height() + 2);
 		memset(const_cast<uint8_t*>(buffer.data()), 0xff, buffer.rowStride() * buffer.height());
 		for (int y = 0; y < iv.height(); y++)

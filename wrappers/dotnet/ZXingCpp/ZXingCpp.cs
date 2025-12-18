@@ -82,10 +82,10 @@ internal class Dll
 	[DllImport(DllName)] public static extern int ZXing_WriterOptions_getSizeHint(IntPtr opts);
 	[DllImport(DllName)] public static extern void ZXing_WriterOptions_setRotate(IntPtr opts, int rotate);
 	[DllImport(DllName)] public static extern int ZXing_WriterOptions_getRotate(IntPtr opts);
-	[DllImport(DllName)] public static extern void ZXing_WriterOptions_setWithHRT(IntPtr opts, bool withHRT);
-	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_WriterOptions_getWithHRT(IntPtr opts);
-	[DllImport(DllName)] public static extern void ZXing_WriterOptions_setWithQuietZones(IntPtr opts, bool withQuietZones);
-	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_WriterOptions_getWithQuietZones(IntPtr opts);
+	[DllImport(DllName)] public static extern void ZXing_WriterOptions_setAddHRT(IntPtr opts, bool addHRT);
+	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_WriterOptions_getAddHRT(IntPtr opts);
+	[DllImport(DllName)] public static extern void ZXing_WriterOptions_setAddQuietZones(IntPtr opts, bool addQuietZones);
+	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_WriterOptions_getAddQuietZones(IntPtr opts);
 
 	[DllImport(DllName)] public static extern IntPtr ZXing_CreateBarcodeFromText(string data, int size, IntPtr opts);
 	[DllImport(DllName)] public static extern IntPtr ZXing_CreateBarcodeFromBytes(byte[] data, int size, IntPtr opts);
@@ -418,16 +418,16 @@ public class WriterOptions
 		set => ZXing_WriterOptions_setRotate(_d, value);
 	}
 
-	public bool WithHRT
+	public bool AddHRT
 	{
-		get => ZXing_WriterOptions_getWithHRT(_d);
-		set => ZXing_WriterOptions_setWithHRT(_d, value);
+		get => ZXing_WriterOptions_getAddHRT(_d);
+		set => ZXing_WriterOptions_setAddHRT(_d, value);
 	}
 
-	public bool WithQuietZones
+	public bool AddQuietZones
 	{
-		get => ZXing_WriterOptions_getWithQuietZones(_d);
-		set => ZXing_WriterOptions_setWithQuietZones(_d, value);
+		get => ZXing_WriterOptions_getAddQuietZones(_d);
+		set => ZXing_WriterOptions_setAddQuietZones(_d, value);
 	}
 }
 

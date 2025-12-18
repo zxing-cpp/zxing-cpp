@@ -118,8 +118,8 @@ public:
 	ZX_PROPERTY(int, sizeHint)
 	ZX_PROPERTY(int, rotate)
 	ZX_PROPERTY(bool, invert)
-	ZX_PROPERTY(bool, withHRT)
-	ZX_PROPERTY(bool, withQuietZones)
+	ZX_PROPERTY(bool, addHRT)
+	ZX_PROPERTY(bool, addQuietZones)
 
 #undef ZX_PROPERTY
 };

@@ -221,14 +221,14 @@ Barcode create_barcode(py::object content, BarcodeFormat format, const py::kwarg
 		throw py::type_error("Invalid input: only 'str' and 'bytes' supported.");
 }
 
-Image write_barcode_to_image(Barcode barcode, int size_hint, bool with_hrt, bool with_quiet_zones)
+Image write_barcode_to_image(Barcode barcode, int size_hint, bool add_hrt, bool add_quiet_zones)
 {
-	return WriteBarcodeToImage(barcode, WriterOptions().sizeHint(size_hint).withHRT(with_hrt).withQuietZones(with_quiet_zones));
+	return WriteBarcodeToImage(barcode, WriterOptions().sizeHint(size_hint).addHRT(add_hrt).addQuietZones(add_quiet_zones));
 }
 
-std::string write_barcode_to_svg(Barcode barcode, int size_hint, bool with_hrt, bool with_quiet_zones)
+std::string write_barcode_to_svg(Barcode barcode, int size_hint, bool add_hrt, bool add_quiet_zones)
 {
-	return WriteBarcodeToSVG(barcode, WriterOptions().sizeHint(size_hint).withHRT(with_hrt).withQuietZones(with_quiet_zones));
+	return WriteBarcodeToSVG(barcode, WriterOptions().sizeHint(size_hint).addHRT(add_hrt).addQuietZones(add_quiet_zones));
 }
 #endif
 
@@ -409,12 +409,12 @@ PYBIND11_MODULE(zxingcpp, m)
 #ifdef ZXING_EXPERIMENTAL_API
 		.def("to_image", &write_barcode_to_image,
 			  py::arg("size_hint") = 0,
-			  py::arg("with_hrt") = false,
-			  py::arg("with_quiet_zones") = true)
+			  py::arg("add_hrt") = false,
+			  py::arg("add_quiet_zones") = true)
 		.def("to_svg", &write_barcode_to_svg,
 			  py::arg("size_hint") = 0,
-			  py::arg("with_hrt") = false,
-			  py::arg("with_quiet_zones") = true)
+			  py::arg("add_hrt") = false,
+			  py::arg("add_quiet_zones") = true)
 #endif
 		;
 	m.attr("Result") = m.attr("Barcode"); // alias to deprecated name for the Barcode class
@@ -548,15 +548,15 @@ PYBIND11_MODULE(zxingcpp, m)
 	m.def("write_barcode_to_image", &write_barcode_to_image,
 		py::arg("barcode"),
 		py::arg("size_hint") = 0,
-		py::arg("with_hrt") = false,
-		py::arg("with_quiet_zones") = true
+		py::arg("add_hrt") = false,
+		py::arg("add_quiet_zones") = true
 	);
 
 	m.def("write_barcode_to_svg", &write_barcode_to_svg,
 		py::arg("barcode"),
 		py::arg("size_hint") = 0,
-		py::arg("with_hrt") = false,
-		py::arg("with_quiet_zones") = true
+		py::arg("add_hrt") = false,
+		py::arg("add_quiet_zones") = true
 	);
 
 	py::class_<ImageView>(m, "ImageView", py::buffer_protocol())

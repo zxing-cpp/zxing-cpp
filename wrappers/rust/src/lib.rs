@@ -560,8 +560,8 @@ impl BarcodeWriter {
 	property!(WriterOptions, Scale, i32);
 	property!(WriterOptions, SizeHint, i32);
 	property!(WriterOptions, Rotate, i32);
-	property!(WriterOptions, WithHRT, with_hrt, bool);
-	property!(WriterOptions, WithQuietZones, bool);
+	property!(WriterOptions, AddHRT, add_hrt, bool);
+	property!(WriterOptions, AddQuietZones, bool);
 }
 
 pub fn read() -> BarcodeReader {

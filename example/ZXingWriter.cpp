@@ -62,8 +62,8 @@ struct CLI
 	std::string options;
 	bool inputIsFile = false;
 	bool invert = false;
-	bool withHRT = false;
-	bool withQZ = true;
+	bool addHRT = false;
+	bool addQZs = true;
 	bool verbose = false;
 //	CharacterSet encoding = CharacterSet::Unknown;
 };
@@ -88,9 +88,9 @@ static bool ParseOptions(int argc, char* argv[], CLI& cli)
 		} else if (is("-binary")) {
 			cli.inputIsFile = true;
 		} else if (is("-hrt")) {
-			cli.withHRT = true;
+			cli.addHRT = true;
 		} else if (is("-noqz")) {
-			cli.withQZ = false;
+			cli.addQZs = false;
 		} else if (is("-invert")) {
 			cli.invert = true;
 		} else if (is("-options")) {
@@ -159,7 +159,7 @@ int main(int argc, char* argv[])
 		auto cOpts = CreatorOptions(cli.format, cli.options);
 		auto barcode = cli.inputIsFile ? CreateBarcodeFromBytes(ReadFile(cli.input), cOpts) : CreateBarcodeFromText(cli.input, cOpts);
 
-		auto wOpts = WriterOptions().sizeHint(cli.sizeHint).withQuietZones(cli.withQZ).withHRT(cli.withHRT).invert(cli.invert).rotate(0);
+		auto wOpts = WriterOptions().sizeHint(cli.sizeHint).addQuietZones(cli.addQZs).addHRT(cli.addHRT).invert(cli.invert).rotate(0);
 		auto bitmap = WriteBarcodeToImage(barcode, wOpts);
 
 		if (cli.verbose) {
@@ -177,7 +177,7 @@ int main(int argc, char* argv[])
 			std::cout << WriteBarcodeToUtf8(barcode, wOpts);
 		}
 #else
-		auto writer = MultiFormatWriter(cli.format).setMargin(cli.withQZ ? 10 : 0);
+		auto writer = MultiFormatWriter(cli.format).setMargin(cli.addQZs ? 10 : 0);
 
 		BitMatrix matrix;
 		if (cli.inputIsFile) {

@@ -384,8 +384,8 @@ void ZXing_WriterOptions_delete(ZXing_WriterOptions* opts)
 ZX_PROPERTY(int, scale, Scale)
 ZX_PROPERTY(int, sizeHint, SizeHint)
 ZX_PROPERTY(int, rotate, Rotate)
-ZX_PROPERTY(bool, withHRT, WithHRT)
-ZX_PROPERTY(bool, withQuietZones, WithQuietZones)
+ZX_PROPERTY(bool, addHRT, AddHRT)
+ZX_PROPERTY(bool, addQuietZones, AddQuietZones)
 
 #undef ZX_PROPERTY
 

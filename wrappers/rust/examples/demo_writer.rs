@@ -16,7 +16,7 @@ fn main() -> anyhow::Result<()> {
 	let bc = create_barcode.from_str(text)?;
 
 	if filename.ends_with(".svg") {
-		fs::write(filename, bc.to_svg_with(&write().with_hrt(true))?).expect("Unable to write file");
+		fs::write(filename, bc.to_svg_with(&write().add_hrt(true))?).expect("Unable to write file");
 	} else {
 		image::GrayImage::from(&bc.to_image_with(&write().scale(4))?).save(filename)?;
 	}

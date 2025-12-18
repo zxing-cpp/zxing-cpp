@@ -212,10 +212,10 @@ extern "C" {
 	pub fn ZXing_WriterOptions_getSizeHint(opts: *const ZXing_WriterOptions) -> ::core::ffi::c_int;
 	pub fn ZXing_WriterOptions_setRotate(opts: *mut ZXing_WriterOptions, rotate: ::core::ffi::c_int);
 	pub fn ZXing_WriterOptions_getRotate(opts: *const ZXing_WriterOptions) -> ::core::ffi::c_int;
-	pub fn ZXing_WriterOptions_setWithHRT(opts: *mut ZXing_WriterOptions, withHRT: bool);
-	pub fn ZXing_WriterOptions_getWithHRT(opts: *const ZXing_WriterOptions) -> bool;
-	pub fn ZXing_WriterOptions_setWithQuietZones(opts: *mut ZXing_WriterOptions, withQuietZones: bool);
-	pub fn ZXing_WriterOptions_getWithQuietZones(opts: *const ZXing_WriterOptions) -> bool;
+	pub fn ZXing_WriterOptions_setAddHRT(opts: *mut ZXing_WriterOptions, addHRT: bool);
+	pub fn ZXing_WriterOptions_getAddHRT(opts: *const ZXing_WriterOptions) -> bool;
+	pub fn ZXing_WriterOptions_setAddQuietZones(opts: *mut ZXing_WriterOptions, addQuietZones: bool);
+	pub fn ZXing_WriterOptions_getAddQuietZones(opts: *const ZXing_WriterOptions) -> bool;
 	pub fn ZXing_CreateBarcodeFromText(
 		data: *const ::core::ffi::c_char,
 		size: ::core::ffi::c_int,

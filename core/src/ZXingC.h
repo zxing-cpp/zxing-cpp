@@ -296,11 +296,11 @@ int ZXing_WriterOptions_getSizeHint(const ZXing_WriterOptions* opts);
 void ZXing_WriterOptions_setRotate(ZXing_WriterOptions* opts, int rotate);
 int ZXing_WriterOptions_getRotate(const ZXing_WriterOptions* opts);
 
-void ZXing_WriterOptions_setWithHRT(ZXing_WriterOptions* opts, bool withHRT);
-bool ZXing_WriterOptions_getWithHRT(const ZXing_WriterOptions* opts);
+void ZXing_WriterOptions_setAddHRT(ZXing_WriterOptions* opts, bool addHRT);
+bool ZXing_WriterOptions_getAddHRT(const ZXing_WriterOptions* opts);
 
-void ZXing_WriterOptions_setWithQuietZones(ZXing_WriterOptions* opts, bool withQuietZones);
-bool ZXing_WriterOptions_getWithQuietZones(const ZXing_WriterOptions* opts);
+void ZXing_WriterOptions_setAddQuietZones(ZXing_WriterOptions* opts, bool addQuietZones);
+bool ZXing_WriterOptions_getAddQuietZones(const ZXing_WriterOptions* opts);
 
 
 ZXing_Barcode* ZXing_CreateBarcodeFromText(const char* data, int size, const ZXing_CreatorOptions* opts);
