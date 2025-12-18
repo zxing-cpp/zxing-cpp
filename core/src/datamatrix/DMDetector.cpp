@@ -198,7 +198,7 @@ static DetectorResult SampleGrid(const BitMatrix& image, const ResultPoint& topL
 								 const ResultPoint& bottomRight, const ResultPoint& topRight, int width, int height)
 {
 	return SampleGrid(image, width, height,
-					  {Rectangle(width, height, 0.5), {topLeft, topRight, bottomRight, bottomLeft}});
+					  {Rectangle(width, height, 0), {topLeft, topRight, bottomRight, bottomLeft}});
 }
 
 /**
