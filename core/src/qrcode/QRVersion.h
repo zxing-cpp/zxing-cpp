@@ -107,10 +107,12 @@ public:
 
 	static const Version* DecodeVersionInformation(int versionBitsA, int versionBitsB = 0);
 
-	static const Version* Model1(int number);
 	static const Version* Model2(int number);
+#ifndef ZXING_EMBEDDED_QR_ONLY
+	static const Version* Model1(int number);
 	static const Version* Micro(int number);
 	static const Version* rMQR(int number);
+#endif // ZXING_EMBEDDED_QR_ONLY
 
 private:
 	int _versionNumber;

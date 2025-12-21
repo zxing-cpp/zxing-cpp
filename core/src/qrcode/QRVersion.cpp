@@ -283,6 +283,7 @@ const Version* Version::Model2(int number)
 	return allVersions + number - 1;
 }
 
+#ifndef ZXING_EMBEDDED_QR_ONLY
 const Version* Version::Micro(int number)
 {
 	/**
@@ -606,6 +607,7 @@ const Version* Version::Model1(int number)
 		return nullptr;
 	return allVersions + number - 1;
 }
+#endif // ZXING_EMBEDDED_QR_ONLY
 
 Version::Version(int versionNumber, std::initializer_list<int> alignmentPatternCenters, const std::array<ECBlocks, 4>& ecBlocks)
 	: _versionNumber(versionNumber), _alignmentPatternCenters(alignmentPatternCenters), _ecBlocks(ecBlocks),

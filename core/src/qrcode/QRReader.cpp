@@ -35,18 +35,24 @@ Barcode Reader::decode(const BinaryBitmap& image) const
 	DetectorResult detectorResult;
 	if (_opts.hasFormat(BarcodeFormat::QRCode))
 		detectorResult = DetectPureQR(*binImg);
+#ifndef ZXING_EMBEDDED_QR_ONLY
 	if (_opts.hasFormat(BarcodeFormat::MicroQRCode) && !detectorResult.isValid())
 		detectorResult = DetectPureMQR(*binImg);
 	if (_opts.hasFormat(BarcodeFormat::RMQRCode) && !detectorResult.isValid())
 		detectorResult = DetectPureRMQR(*binImg);
+#endif
 
 	if (!detectorResult.isValid())
 		return {};
 
 	auto decoderResult = Decode(detectorResult.bits());
+#ifdef ZXING_EMBEDDED_QR_ONLY
+	auto format = BarcodeFormat::QRCode;
+#else
 	auto format = detectorResult.bits().width() != detectorResult.bits().height() ? BarcodeFormat::RMQRCode
 				  : detectorResult.bits().width() < 21                            ? BarcodeFormat::MicroQRCode
 																				  : BarcodeFormat::QRCode;
+#endif
 
 	return Barcode(std::move(decoderResult), std::move(detectorResult), format);
 }
@@ -111,6 +117,7 @@ Barcodes Reader::decode(const BinaryBitmap& image, int maxSymbols) const
 		}
 	}
 	
+#ifndef ZXING_EMBEDDED_QR_ONLY
 	if (_opts.hasFormat(BarcodeFormat::MicroQRCode) && !(maxSymbols && Size(res) == maxSymbols)) {
 		for (const auto& fp : allFPs) {
 			if (Contains(usedFPs, fp))
@@ -147,6 +154,7 @@ Barcodes Reader::decode(const BinaryBitmap& image, int maxSymbols) const
 			}
 		}
 	}
+#endif // ZXING_EMBEDDED_QR_ONLY
 
 	return res;
 }

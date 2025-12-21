@@ -29,6 +29,11 @@ const Version* ReadVersion(const BitMatrix& bitMatrix, Type type)
 
 	int number = Version::Number(bitMatrix);
 
+#ifdef ZXING_EMBEDDED_QR_ONLY
+	// In embedded QR-only mode, only Model2 (standard QR) is supported
+	(void)type;
+	return Version::Model2(number);
+#else
 	switch (type) {
 	case Type::Micro: return Version::Micro(number);
 	case Type::rMQR: return Version::rMQR(number);
@@ -37,10 +42,12 @@ const Version* ReadVersion(const BitMatrix& bitMatrix, Type type)
 	}
 
 	return nullptr;
+#endif
 }
 
 FormatInformation ReadFormatInformation(const BitMatrix& bitMatrix)
 {
+#ifndef ZXING_EMBEDDED_QR_ONLY
 	if (Version::HasValidSize(bitMatrix, Type::Micro)) {
 		// Read top-left format info bits
 		int formatInfoBits = 0;
@@ -72,6 +79,7 @@ FormatInformation ReadFormatInformation(const BitMatrix& bitMatrix)
 
 		return FormatInformation::DecodeRMQR(formatInfoBits1, formatInfoBits2);
 	}
+#endif // ZXING_EMBEDDED_QR_ONLY
 
 	// Read top-left format info bits
 	int formatInfoBits1 = 0;
