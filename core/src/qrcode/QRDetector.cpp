@@ -561,6 +561,7 @@ DetectorResult DetectPureQR(const BitMatrix& image)
 			{{left, top}, {right, top}, {right, bottom}, {left, bottom}}};
 }
 
+#ifndef ZXING_EMBEDDED_QR_ONLY
 DetectorResult DetectPureMQR(const BitMatrix& image)
 {
 	using Pattern = std::array<PatternView::value_type, PATTERN.size()>;
@@ -599,7 +600,9 @@ DetectorResult DetectPureMQR(const BitMatrix& image)
 	return {Deflate(image, dimension, dimension, top + moduleSize / 2, left + moduleSize / 2, moduleSize),
 			{{left, top}, {right, top}, {right, bottom}, {left, bottom}}};
 }
+#endif // ZXING_EMBEDDED_QR_ONLY
 
+#ifndef ZXING_EMBEDDED_QR_ONLY
 DetectorResult DetectPureRMQR(const BitMatrix& image)
 {
 	constexpr auto SUBPATTERN = FixedPattern<4, 4>{1, 1, 1, 1};
@@ -817,5 +820,6 @@ DetectorResult SampleRMQR(const BitMatrix& image, const ConcentricPattern& fp)
 
 	return SampleGrid(image, dim.x, dim.y, bestPT);
 }
+#endif // ZXING_EMBEDDED_QR_ONLY
 
 } // namespace ZXing::QRCode

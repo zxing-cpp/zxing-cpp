@@ -7,7 +7,9 @@
 
 #include "CharacterSet.h"
 #include "ECI.h"
+#ifndef ZXING_EMBEDDED_QR_ONLY
 #include "HRI.h"
+#endif
 #include "TextDecoder.h"
 #include "Utf.h"
 #include "ZXAlgorithms.h"
@@ -150,12 +152,14 @@ std::string Content::text(TextMode mode) const
 	case TextMode::ECI: return render(true);
 	case TextMode::HRI:
 		switch (type()) {
+#ifndef ZXING_EMBEDDED_QR_ONLY
 		case ContentType::GS1: {
 			auto plain = render(false);
 			auto hri = HRIFromGS1(plain);
 			return hri.empty() ? plain : hri;
 		}
 		case ContentType::ISO15434: return HRIFromISO15434(render(false));
+#endif
 		case ContentType::Text: return render(false);
 		default: return text(TextMode::Escaped);
 		}

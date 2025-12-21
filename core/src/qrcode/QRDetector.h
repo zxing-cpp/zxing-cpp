@@ -31,12 +31,14 @@ FinderPatterns FindFinderPatterns(const BitMatrix& image, bool tryHarder);
 FinderPatternSets GenerateFinderPatternSets(FinderPatterns& patterns);
 
 DetectorResult SampleQR(const BitMatrix& image, const FinderPatternSet& fp);
+DetectorResult DetectPureQR(const BitMatrix& image);
+
+#ifndef ZXING_EMBEDDED_QR_ONLY
 DetectorResult SampleMQR(const BitMatrix& image, const ConcentricPattern& fp);
 DetectorResult SampleRMQR(const BitMatrix& image, const ConcentricPattern& fp);
-
-DetectorResult DetectPureQR(const BitMatrix& image);
 DetectorResult DetectPureMQR(const BitMatrix& image);
 DetectorResult DetectPureRMQR(const BitMatrix& image);
+#endif // ZXING_EMBEDDED_QR_ONLY
 
 } // QRCode
 } // ZXing
