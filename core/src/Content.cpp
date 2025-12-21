@@ -171,7 +171,6 @@ std::string Content::render(bool withECI) const
 
 	return res;
 #else
-	//TODO: replace by proper construction from encoded data from within zint
 	(void)withECI;
 	return std::string(bytes.asString());
 #endif

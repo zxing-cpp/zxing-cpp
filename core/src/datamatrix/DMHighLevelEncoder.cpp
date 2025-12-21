@@ -840,7 +840,7 @@ namespace Base256Encoder {
 
 } // Base256Encoder
 
-//TODO: c++20
+// c++20
 static bool StartsWith(std::wstring_view s, std::wstring_view ss)
 {
 	return s.length() > ss.length() && s.compare(0, ss.length(), ss) == 0;

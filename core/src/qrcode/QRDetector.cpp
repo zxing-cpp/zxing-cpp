@@ -155,7 +155,7 @@ FinderPatternSets GenerateFinderPatternSets(FinderPatterns& patterns)
 				auto distBC = std::sqrt(distBC2);
 
 				// Make sure distAB and distBC don't differ more than reasonable
-				// TODO: make sure the constant 2 is not to conservative for reasonably tilted symbols
+				// TODO: make sure the constant 2 is not too conservative for reasonably tilted symbols
 				if (distAB > 2 * distBC || distBC > 2 * distAB)
 					continue;
 
