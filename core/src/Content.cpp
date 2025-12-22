@@ -248,7 +248,7 @@ CharacterSet GuessTextEncoding(ByteView bytes, CharacterSet fallback = Character
 	// which should be by far the most common encodings.
 	bool canBeISO88591 = true;
 	bool canBeShiftJIS = true;
-	bool canBeUTF8 = true;
+	bool canBeUTF8 = IsValidUtf8(bytes);
 	int utf8BytesLeft = 0;
 	//int utf8LowChars = 0;
 	int utf2BytesChars = 0;
