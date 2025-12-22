@@ -294,7 +294,7 @@ int main(int argc, char* argv[])
 					std::cout << key << v << "\n";
 			};
 
-			printOptional("EC Level:   ", barcode.ecLevel());
+			printOptional("ECLevel:    ", barcode.ecLevel());
 			printOptional("Version:    ", barcode.version());
 			printOptional("Error:      ", ToString(barcode.error()));
 

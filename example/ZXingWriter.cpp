@@ -157,6 +157,7 @@ int main(int argc, char* argv[])
 		auto bitmap = WriteBarcodeToImage(barcode, wOpts);
 
 		if (cli.verbose) {
+			std::cout.setf(std::ios::boolalpha);
 			std::cout << "Text:       \"" << barcode.text() << "\"\n"
 					  << "Bytes:      " << ToHex(barcode.bytes()) << "\n"
 					  << "Format:     " << ToString(barcode.format()) << "\n"
@@ -167,7 +168,7 @@ int main(int argc, char* argv[])
 					  << "Rotation:   " << barcode.orientation() << " deg\n"
 					  << "IsMirrored: " << barcode.isMirrored() << "\n"
 					  << "IsInverted: " << barcode.isInverted() << "\n"
-					  << "ecLevel:    " << barcode.ecLevel() << "\n";
+					  << "ECLevel:    " << barcode.ecLevel() << "\n";
 			std::cout << WriteBarcodeToUtf8(barcode, wOpts);
 		}
 #else
