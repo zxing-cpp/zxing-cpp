@@ -64,44 +64,23 @@ std::string ToString(BarcodeFormats formats)
 	return res.substr(0, res.size() - 1);
 }
 
-static std::string NormalizeFormatString(std::string_view sv)
-{
-	std::string str(sv);
-	std::transform(str.begin(), str.end(), str.begin(), [](char c) { return (char)std::tolower(c); });
-#ifdef __cpp_lib_erase_if
-	std::erase_if(str, [](char c) { return Contains("_-[]", c); });
-#else
-	str.erase(std::remove_if(str.begin(), str.end(), [](char c) { return Contains("_-[]", c); }), str.end());
-#endif
-	return str;
-}
-
-static BarcodeFormat ParseFormatString(const std::string& str)
-{
-	auto i = FindIf(NAMES, [str](auto& v) { return NormalizeFormatString(v.name) == str; });
-	return i == std::end(NAMES) ? BarcodeFormat::None : i->format;
-}
-
 BarcodeFormat BarcodeFormatFromString(std::string_view str)
 {
-	return ParseFormatString(NormalizeFormatString(str));
+	auto i = FindIf(NAMES, [str](auto& v) { return IsEqualIgnoreCaseAnd(v.name, str, "_-"); });
+	return i == std::end(NAMES) ? BarcodeFormat::None : i->format;
 }
 
 BarcodeFormats BarcodeFormatsFromString(std::string_view str)
 {
-	auto normalized = NormalizeFormatString(str);
-	std::replace_if(
-		normalized.begin(), normalized.end(), [](char c) { return Contains(" ,", c); }, '|');
-	std::istringstream input(normalized);
 	BarcodeFormats res;
-	for (std::string token; std::getline(input, token, '|');) {
-		if(!token.empty()) {
-			auto bc = ParseFormatString(token);
+	ForEachToken(TrimWS(str, " []"), " ,|", [&res](std::string_view token) {
+		if (!token.empty()) {
+			auto bc = BarcodeFormatFromString(token);
 			if (bc == BarcodeFormat::None)
-				throw std::invalid_argument("This is not a valid barcode format: " + token);
+				throw std::invalid_argument("This is not a valid barcode format: '" + std::string(token) + "'");
 			res |= bc;
 		}
-	}
+	});
 	return res;
 }
 

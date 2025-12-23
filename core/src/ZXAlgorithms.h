@@ -45,7 +45,7 @@ auto Contains(const std::initializer_list<ListType>& c, const Value& v) -> declt
 }
 
 inline bool Contains(const char* str, char c) {
-	return strchr(str, c) != nullptr;
+	return str && strchr(str, c) != nullptr;
 }
 
 inline bool Contains(std::string_view str, std::string_view substr) {
@@ -162,6 +162,51 @@ inline T FromString(std::string_view sv)
 		throw std::invalid_argument(StrCat("failed to parse '", TypeName<T>(), "' from '", sv, "'"));
 
 	return val;
+}
+
+// Trim whitespace from both ends
+inline std::string_view TrimWS(std::string_view sv, const char* ws = " \t\n\r")
+{
+	while (sv.size() && Contains(ws, sv.back()))
+		sv.remove_suffix(1);
+	while (sv.size() && Contains(ws, sv.front()))
+		sv.remove_prefix(1);
+	return sv.empty() ? std::string_view() : sv;
+}
+
+// Split string into tokens based on delimiters and call callback for each token
+template <typename FUNC>
+inline void ForEachToken(std::string_view str, std::string_view delimiters, FUNC&& callback)
+{
+	std::size_t pos = 0;
+	while (pos < str.size()) {
+        auto const next_pos = str.find_first_of(delimiters, pos);
+        callback(str.substr(pos, next_pos - pos));
+        pos = next_pos == std::string_view::npos ? str.size() : next_pos + 1;
+    }
+}
+
+inline bool IsEqualIgnoreCase(std::string_view a, std::string_view b)
+{
+	return a.size() == b.size()
+		   && std::equal(a.begin(), a.end(), b.begin(), [](uint8_t a, uint8_t b) { return std::tolower(a) == std::tolower(b); });
+}
+
+// Compare two strings ignoring case and specified whitespace characters
+inline bool IsEqualIgnoreCaseAnd(std::string_view a, std::string_view b, const char* ws)
+{
+	auto i = a.begin(), j = b.begin();
+	while (i != a.end() && j != b.end()) {
+		if (Contains(ws, *i))
+			++i;
+		else if (Contains(ws, *j))
+			++j;
+		else if (std::tolower(static_cast<uint8_t>(*i)) != std::tolower(static_cast<uint8_t>(*j)))
+			return false;
+		else
+			++i, ++j;
+	}
+	return i == a.end() && j == b.end();
 }
 
 template <typename T>
