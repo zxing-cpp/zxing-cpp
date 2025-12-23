@@ -276,12 +276,12 @@ int ImageView_getbuffer_impl(ImageView& self, PyObject* obj, Py_buffer* view, in
 	return 0;
 }
 
-extern "C" inline int ImageView_getbuffer(PyObject* obj, Py_buffer* view, int flags) {
+extern "C" int ImageView_getbuffer(PyObject* obj, Py_buffer* view, int flags) {
 	auto &self = nb::cast<ZXing::ImageView&>(nb::handle(obj));
 	return ImageView_getbuffer_impl(self, obj, view, flags);
 }
 
-extern "C" inline int Image_getbuffer(PyObject* obj, Py_buffer* view, int flags) {
+extern "C" int Image_getbuffer(PyObject* obj, Py_buffer* view, int flags) {
 	auto &self = nb::cast<ZXing::Image&>(nb::handle(obj));
 	return ImageView_getbuffer_impl(self, obj, view, flags);
 }
