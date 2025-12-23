@@ -139,6 +139,11 @@ static Image ToImage(BitMatrix bits, bool isLinearCode, const WriterOptions& opt
 	return iv;
 }
 
+inline bool IsAscii(ByteView bv)
+{
+	return std::all_of(bv.begin(), bv.end(), [](uint8_t c) { return c <= 127; });
+}
+
 } // namespace ZXing
 
 
@@ -424,6 +429,8 @@ Barcode CreateBarcode(const void* data, int size, int mode, const CreatorOptions
 
 	if (mode == DATA_MODE && ZBarcode_Cap(zint->symbology, ZINT_CAP_ECI))
 		zint->eci = static_cast<int>(ECI::Binary);
+	else if (mode == UNICODE_MODE && ZBarcode_Cap(zint->symbology, ZINT_CAP_ECI) && !IsAscii({data, narrow_cast<size_t>(size)}))
+		zint->eci = static_cast<int>(ECI::UTF8);
 
 	int warning;
 	CHECK_WARN(ZBarcode_Encode_and_Buffer(zint, (uint8_t*)data, size, 0), warning);
@@ -562,7 +569,8 @@ Barcode CreateBarcodeFromText(std::string_view contents, const CreatorOptions& o
 	auto writer = MultiFormatWriter(opts.format()).setMargin(0);
 	if (auto ecLevel = opts.ecLevel(); ecLevel)
 		writer.setEccLevel(std::stoi(*ecLevel));
-	writer.setEncoding(CharacterSet::UTF8); // write UTF8 (ECI value 26) for maximum compatibility
+	if (!IsAscii({(const uint8_t*)contents.data(), contents.size()}))
+		writer.setEncoding(CharacterSet::UTF8); // write UTF8 (ECI value 26) for maximum compatibility
 
 	return CreateBarcode(writer.encode(std::string(contents), 0, IsLinearBarcode(opts.format()) ? 50 : 0), opts);
 }
