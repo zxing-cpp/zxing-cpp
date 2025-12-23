@@ -213,9 +213,9 @@ Barcodes read_barcodes(nb::object _image, const BarcodeFormats& formats, bool tr
 }
 
 #ifdef ZXING_EXPERIMENTAL_API
-Barcode create_barcode(nb::object content, BarcodeFormat format, std::string ec_level)
+Barcode create_barcode(nb::object content, BarcodeFormat format, const nb::kwargs& kwargs)
 {
-	auto cOpts = CreatorOptions(format).ecLevel(ec_level);
+	auto cOpts = CreatorOptions(format, nb::cast<std::string>(nb::str(kwargs))); // see https://github.com/pybind/pybind11/issues/5938
 
 	if (nb::str content_str; nb::try_cast(content, content_str))
 		return CreateBarcodeFromText(nb::cast<std::string>(content_str), cOpts);
@@ -225,21 +225,23 @@ Barcode create_barcode(nb::object content, BarcodeFormat format, std::string ec_
 		nb::raise_type_error("Invalid input: only 'str' and 'bytes' supported.");
 }
 
-Image write_barcode_to_image(Barcode barcode, int size_hint, bool with_hrt, bool with_quiet_zones)
+Image write_barcode_to_image(Barcode barcode, int size_hint, bool add_hrt, bool add_quiet_zones)
 {
-	return WriteBarcodeToImage(barcode, WriterOptions().sizeHint(size_hint).withHRT(with_hrt).withQuietZones(with_quiet_zones));
+	return WriteBarcodeToImage(barcode, WriterOptions().sizeHint(size_hint).addHRT(add_hrt).addQuietZones(add_quiet_zones));
 }
 
-std::string write_barcode_to_svg(Barcode barcode, int size_hint, bool with_hrt, bool with_quiet_zones)
+std::string write_barcode_to_svg(Barcode barcode, int size_hint, bool add_hrt, bool add_quiet_zones)
 {
-	return WriteBarcodeToSVG(barcode, WriterOptions().sizeHint(size_hint).withHRT(with_hrt).withQuietZones(with_quiet_zones));
+	return WriteBarcodeToSVG(barcode, WriterOptions().sizeHint(size_hint).addHRT(add_hrt).addQuietZones(add_quiet_zones));
 }
 #endif
 
 Image write_barcode(BarcodeFormat format, nb::object content, int width, int height, int quiet_zone, int ec_level)
 {
 #ifdef ZXING_EXPERIMENTAL_API
-	auto barcode = create_barcode(content, format, std::to_string(ec_level));
+	auto kwargs = nb::kwargs();
+	kwargs["ec_level"] = ec_level / 2;
+	auto barcode = create_barcode(content, format, kwargs);
 	return write_barcode_to_image(barcode, std::max(width, height), false, quiet_zone != 0);
 #else
 	BitMatrix bits;
@@ -443,12 +445,12 @@ NB_MODULE(zxingcpp, m)
 #ifdef ZXING_EXPERIMENTAL_API
 		.def("to_image", &write_barcode_to_image,
 			  nb::arg("size_hint") = 0,
-			  nb::arg("with_hrt") = false,
-			  nb::arg("with_quiet_zones") = true)
+			  nb::arg("add_hrt") = false,
+			  nb::arg("add_quiet_zones") = true)
 		.def("to_svg", &write_barcode_to_svg,
 			  nb::arg("size_hint") = 0,
-			  nb::arg("with_hrt") = false,
-			  nb::arg("with_quiet_zones") = true)
+			  nb::arg("add_hrt") = false,
+			  nb::arg("add_quiet_zones") = true)
 #endif
 		;
 	m.attr("Result") = m.attr("Barcode"); // alias to deprecated name for the Barcode class
@@ -581,21 +583,21 @@ NB_MODULE(zxingcpp, m)
 	m.def("create_barcode", &create_barcode,
 		nb::arg("content"),
 		nb::arg("format"),
-		nb::arg("ec_level") = ""
+		nb::arg("**kwargs")
 	);
 
 	m.def("write_barcode_to_image", &write_barcode_to_image,
 		nb::arg("barcode"),
 		nb::arg("size_hint") = 0,
-		nb::arg("with_hrt") = false,
-		nb::arg("with_quiet_zones") = true
+		nb::arg("add_hrt") = false,
+		nb::arg("add_quiet_zones") = true
 	);
 
 	m.def("write_barcode_to_svg", &write_barcode_to_svg,
 		nb::arg("barcode"),
 		nb::arg("size_hint") = 0,
-		nb::arg("with_hrt") = false,
-		nb::arg("with_quiet_zones") = true
+		nb::arg("add_hrt") = false,
+		nb::arg("add_quiet_zones") = true
 	);
 
 	PyType_Slot ImageView_slots[] = {

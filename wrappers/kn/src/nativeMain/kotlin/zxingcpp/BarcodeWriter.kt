@@ -25,15 +25,9 @@ open class CreatorOptions(format: BarcodeFormat) {
 	var format: BarcodeFormat
 		get() = ZXing_CreatorOptions_getFormat(cValue).parseIntoBarcodeFormat().first()
 		set(value) = ZXing_CreatorOptions_setFormat(cValue, value.rawValue)
-	var readerInit: Boolean
-		get() = ZXing_CreatorOptions_getReaderInit(cValue)
-		set(value) = ZXing_CreatorOptions_setReaderInit(cValue, value)
-	var forceSquareDataMatrix: Boolean
-		get() = ZXing_CreatorOptions_getForceSquareDataMatrix(cValue)
-		set(value) = ZXing_CreatorOptions_setForceSquareDataMatrix(cValue, value)
-	var ecLevel: String
-		get() = ZXing_CreatorOptions_getEcLevel(cValue)?.toKStringNullPtrHandledAndFree() ?: ""
-		set(value) = ZXing_CreatorOptions_setEcLevel(cValue, value)
+	var options: String
+		get() = ZXing_CreatorOptions_getOptions(cValue)?.toKStringNullPtrHandledAndFree() ?: ""
+		set(value) = ZXing_CreatorOptions_setOptions(cValue, value)
 
 	val cValue: CValuesRef<ZXing_CreatorOptions>? = ZXing_CreatorOptions_new(format.rawValue)
 
@@ -54,12 +48,12 @@ open class WriterOptions {
 	var rotate: Int
 		get() = ZXing_WriterOptions_getRotate(cValue)
 		set(value) = ZXing_WriterOptions_setRotate(cValue, value)
-	var withHRT: Boolean
-		get() = ZXing_WriterOptions_getWithHRT(cValue)
-		set(value) = ZXing_WriterOptions_setWithHRT(cValue, value)
-	var withQuietZones: Boolean
-		get() = ZXing_WriterOptions_getWithQuietZones(cValue)
-		set(value) = ZXing_WriterOptions_setWithQuietZones(cValue, value)
+	var addHRT: Boolean
+		get() = ZXing_WriterOptions_getAddHRT(cValue)
+		set(value) = ZXing_WriterOptions_setAddHRT(cValue, value)
+	var addQuietZones: Boolean
+		get() = ZXing_WriterOptions_getAddQuietZones(cValue)
+		set(value) = ZXing_WriterOptions_setAddQuietZones(cValue, value)
 
 	val cValue: CValuesRef<ZXing_WriterOptions>? = ZXing_WriterOptions_new()
 

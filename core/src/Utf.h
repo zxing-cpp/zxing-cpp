@@ -5,10 +5,14 @@
 
 #pragma once
 
+#include "Range.h"
+
 #include <string>
 #include <string_view>
 
 namespace ZXing {
+
+bool IsValidUtf8(ByteView bytes);
 
 std::string ToUtf8(std::wstring_view str);
 std::wstring FromUtf8(std::string_view utf8);

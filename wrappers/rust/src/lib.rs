@@ -539,9 +539,7 @@ impl BarcodeCreator {
 		unsafe { BarcodeCreator(ZXing_CreatorOptions_new(BarcodeFormats::from(format).bits())) }
 	}
 
-	property!(CreatorOptions, ReaderInit, bool);
-	property!(CreatorOptions, ForceSquareDataMatrix, bool);
-	property!(CreatorOptions, EcLevel, String);
+	property!(CreatorOptions, Options, String);
 
 	pub fn from_str(&self, str: impl AsRef<str>) -> Result<Barcode, Error> {
 		let cstr = CString::new(str.as_ref())?;
@@ -562,8 +560,8 @@ impl BarcodeWriter {
 	property!(WriterOptions, Scale, i32);
 	property!(WriterOptions, SizeHint, i32);
 	property!(WriterOptions, Rotate, i32);
-	property!(WriterOptions, WithHRT, with_hrt, bool);
-	property!(WriterOptions, WithQuietZones, bool);
+	property!(WriterOptions, AddHRT, add_hrt, bool);
+	property!(WriterOptions, AddQuietZones, bool);
 }
 
 pub fn read() -> BarcodeReader {

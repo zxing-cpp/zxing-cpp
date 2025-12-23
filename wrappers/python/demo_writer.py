@@ -17,6 +17,6 @@ Image.fromarray(img).save("test.png")
 # img = barcode.to_image(size_hint = 500)
 # Image.fromarray(img).save("test.png")
 
-# svg = barcode.to_svg(with_hrt = True)
+# svg = barcode.to_svg(add_hrt = True)
 # with open("test.svg", "w") as svg_file:
 # 	svg_file.write(svg)

@@ -28,14 +28,13 @@ using namespace ZXing;
 static void PrintUsage(const char* exePath)
 {
 	std::cout << "Usage: " << exePath
-			  << " [-size <width/height>] [-eclevel <level>] [-noqz] [-hrt] <format> <text> <output>\n"
+			  << " [-size <width/height>] [-options <creator-options>] [-noqz] [-hrt] <format> <text> <output>\n"
 			  << "    -size      Size of generated image\n"
-//			  << "    -margin    Margin around barcode\n"
 //			  << "    -encoding  Encoding used to encode input text\n"
-			  << "    -eclevel   Error correction level, [0-8]\n"
 			  << "    -binary    Interpret <text> as a file name containing binary data\n"
 			  << "    -noqz      Print barcode witout quiet zone\n"
 			  << "    -hrt       Print human readable text below the barcode (if supported)\n"
+			  << "    -invert    Invert colors (switch black and white)\n"
 			  << "    -options   Comma separated list of symbology specific options and flags\n"
 			  << "    -help      Print usage information\n"
 			  << "    -version   Print version information\n"
@@ -52,29 +51,17 @@ static void PrintUsage(const char* exePath)
 			  << "Output format is determined by file name, supported are png, jpg and svg.\n";
 }
 
-static bool ParseSize(std::string str, int* width, int* height)
-{
-	std::transform(str.begin(), str.end(), str.begin(), [](char c) { return (char)std::tolower(c); });
-	auto xPos = str.find('x');
-	if (xPos != std::string::npos) {
-		*width  = std::stoi(str.substr(0, xPos));
-		*height = std::stoi(str.substr(xPos + 1));
-		return true;
-	}
-	return false;
-}
-
 struct CLI
 {
 	BarcodeFormat format;
 	int sizeHint = 0;
 	std::string input;
 	std::string outPath;
-	std::string ecLevel;
 	std::string options;
 	bool inputIsFile = false;
-	bool withHRT = false;
-	bool withQZ = true;
+	bool invert = false;
+	bool addHRT = false;
+	bool addQZs = true;
 	bool verbose = false;
 //	CharacterSet encoding = CharacterSet::Unknown;
 };
@@ -88,14 +75,6 @@ static bool ParseOptions(int argc, char* argv[], CLI& cli)
 			if (++i == argc)
 				return false;
 			cli.sizeHint = std::stoi(argv[i]);
-		} else if (is("-eclevel")) {
-			if (++i == argc)
-				return false;
-			cli.ecLevel = argv[i];
-		// } else if (is("-margin")) {
-		// 	if (++i == argc)
-		// 		return false;
-		// 	cli.margin = std::stoi(argv[i]);
 		// } else if (is("-encoding")) {
 		// 	if (++i == argc)
 		// 		return false;
@@ -103,9 +82,11 @@ static bool ParseOptions(int argc, char* argv[], CLI& cli)
 		} else if (is("-binary")) {
 			cli.inputIsFile = true;
 		} else if (is("-hrt")) {
-			cli.withHRT = true;
+			cli.addHRT = true;
 		} else if (is("-noqz")) {
-			cli.withQZ = false;
+			cli.addQZs = false;
+		} else if (is("-invert")) {
+			cli.invert = true;
 		} else if (is("-options")) {
 			if (++i == argc)
 				return false;
@@ -169,10 +150,10 @@ int main(int argc, char* argv[])
 
 	try {
 #ifdef ZXING_EXPERIMENTAL_API
-		auto cOpts = CreatorOptions(cli.format).ecLevel(cli.ecLevel).options(cli.options);
+		auto cOpts = CreatorOptions(cli.format, cli.options);
 		auto barcode = cli.inputIsFile ? CreateBarcodeFromBytes(ReadFile(cli.input), cOpts) : CreateBarcodeFromText(cli.input, cOpts);
 
-		auto wOpts = WriterOptions().sizeHint(cli.sizeHint).withQuietZones(cli.withQZ).withHRT(cli.withHRT).rotate(0);
+		auto wOpts = WriterOptions().sizeHint(cli.sizeHint).addQuietZones(cli.addQZs).addHRT(cli.addHRT).invert(cli.invert).rotate(0);
 		auto bitmap = WriteBarcodeToImage(barcode, wOpts);
 
 		if (cli.verbose) {
@@ -187,12 +168,10 @@ int main(int argc, char* argv[])
 					  << "IsMirrored: " << barcode.isMirrored() << "\n"
 					  << "IsInverted: " << barcode.isInverted() << "\n"
 					  << "ecLevel:    " << barcode.ecLevel() << "\n";
-			std::cout << WriteBarcodeToUtf8(barcode);
+			std::cout << WriteBarcodeToUtf8(barcode, wOpts);
 		}
 #else
-		auto writer = MultiFormatWriter(cli.format).setMargin(cli.withQZ ? 10 : 0);
-		if (!cli.ecLevel.empty())
-			writer.setEccLevel(std::stoi(cli.ecLevel));
+		auto writer = MultiFormatWriter(cli.format).setMargin(cli.addQZs ? 10 : 0);
 
 		BitMatrix matrix;
 		if (cli.inputIsFile) {

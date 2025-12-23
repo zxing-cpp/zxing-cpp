@@ -96,7 +96,7 @@ static uint8_t mult(uint8_t a, uint8_t b)
 	return ALOG[(LOG[a] + LOG[b]) % 255];
 }
 
-//TODO: replace this duplicated code with ReedSolomonEncoder
+//Note: replace this duplicated code with ReedSolomonEncoder
 static void CreateECCBlock(ByteArray& data, int codeOffset, int codeLength, int eccOffset, int eccLength, int stride)
 {
 	// binary search for the poly vector with length numECWords

@@ -35,9 +35,6 @@ struct CreatorOptions::Data
 {
 	BarcodeFormat format;
 	std::string options;
-	bool readerInit = false;
-	bool forceSquareDataMatrix = false;
-	std::string ecLevel;
 
 	// symbol size (qrcode, datamatrix, etc), map from I, 'WxH'
 	// structured_append (idx, cnt, ID)
@@ -55,9 +52,6 @@ struct CreatorOptions::Data
 	CreatorOptions&& CreatorOptions::NAME(TYPE v)&& { return d->NAME = std::move(v), std::move(*this); }
 
 ZX_PROPERTY(BarcodeFormat, format)
-ZX_PROPERTY(bool, readerInit)
-ZX_PROPERTY(bool, forceSquareDataMatrix)
-ZX_PROPERTY(std::string, ecLevel)
 ZX_PROPERTY(std::string, options)
 
 #undef ZX_PROPERTY
@@ -65,7 +59,9 @@ ZX_PROPERTY(std::string, options)
 #define ZX_RO_PROPERTY(TYPE, NAME) \
 	std::optional<TYPE> CreatorOptions::NAME() const noexcept { return JsonGet<TYPE>(d->options, #NAME); }
 
+ZX_RO_PROPERTY(std::string, ecLevel);
 ZX_RO_PROPERTY(bool, gs1);
+ZX_RO_PROPERTY(bool, readerInit);
 ZX_RO_PROPERTY(bool, stacked);
 ZX_RO_PROPERTY(bool, forceSquare);
 ZX_RO_PROPERTY(int, version);
@@ -83,8 +79,9 @@ struct WriterOptions::Data
 	int scale = 0;
 	int sizeHint = 0;
 	int rotate = 0;
-	bool withHRT = false;
-	bool withQuietZones = true;
+	bool invert = false;
+	bool addHRT = false;
+	bool addQuietZones = true;
 };
 
 #define ZX_PROPERTY(TYPE, NAME) \
@@ -95,8 +92,9 @@ struct WriterOptions::Data
 ZX_PROPERTY(int, scale)
 ZX_PROPERTY(int, sizeHint)
 ZX_PROPERTY(int, rotate)
-ZX_PROPERTY(bool, withHRT)
-ZX_PROPERTY(bool, withQuietZones)
+ZX_PROPERTY(bool, invert)
+ZX_PROPERTY(bool, addHRT)
+ZX_PROPERTY(bool, addQuietZones)
 
 #undef ZX_PROPERTY
 
@@ -134,7 +132,7 @@ static Image ToImage(BitMatrix bits, bool isLinearCode, const WriterOptions& opt
 	bits.flipAll();
 	auto symbol = Inflate(std::move(bits), opts.sizeHint(),
 						  isLinearCode ? std::clamp(opts.sizeHint() / 2, 50, 300) : opts.sizeHint(),
-						  opts.withQuietZones() ? 10 : 0);
+						  opts.addQuietZones() ? 10 : 0);
 	auto bitmap = ToMatrix<uint8_t>(symbol);
 	auto iv = Image(symbol.width(), symbol.height());
 	std::memcpy(const_cast<uint8_t*>(iv.data()), bitmap.data(), iv.width() * iv.height());
@@ -390,8 +388,8 @@ zint_symbol* CreatorOptions::zint() const
 
 		zint->scale = 0.5f;
 
-		if (!ecLevel().empty())
-			zint->option_1 = ParseECLevel(zint->symbology, ecLevel());
+		if (auto val = ecLevel(); val)
+			zint->option_1 = ParseECLevel(zint->symbology, *val);
 
 		if (auto val = version(); val && !IsLinearBarcode(format()))
 			zint->option_2 = *val;
@@ -420,7 +418,9 @@ Barcode CreateBarcode(const void* data, int size, int mode, const CreatorOptions
 	zint->input_mode = mode == UNICODE_MODE && opts.gs1() && SupportsGS1(opts.format()) ? GS1_MODE : mode;
 	if (mode == UNICODE_MODE && static_cast<const char*>(data)[0] != '[')
 		zint->input_mode |= GS1PARENS_MODE;
-	zint->output_options |= OUT_BUFFER_INTERMEDIATE | BARCODE_QUIET_ZONES | BARCODE_CONTENT_SEGS;
+	zint->output_options |= OUT_BUFFER_INTERMEDIATE | BARCODE_NO_QUIET_ZONES | BARCODE_CONTENT_SEGS;
+	if (opts.readerInit())
+		zint->output_options |= READER_INIT;
 
 	if (mode == DATA_MODE && ZBarcode_Cap(zint->symbology, ZINT_CAP_ECI))
 		zint->eci = static_cast<int>(ECI::Binary);
@@ -469,15 +469,16 @@ Barcode CreateBarcode(const void* data, int size, int mode, const CreatorOptions
 
 	DecoderResult decRes(std::move(content));
 	decRes.setEcLevel(ECLevelZint2ZXing(zint));
-	DetectorResult detRes;
-
-	auto res = Barcode(std::move(decRes), std::move(detRes), opts.format());
-#endif
-
+	decRes.setReaderInit(zint->output_options & READER_INIT);
 	auto bits = BitMatrix(zint->bitmap_width, zint->bitmap_height);
 	std::transform(zint->bitmap, zint->bitmap + zint->bitmap_width * zint->bitmap_height, bits.row(0).begin(),
 				   [](unsigned char v) { return (v == '1') * BitMatrix::SET_V; });
-	res.symbol(std::move(bits));
+	int left, top, width, height;
+	bits.findBoundingBox(left, top, width, height);
+
+	auto res = Barcode(std::move(decRes), {std::move(bits), Rectangle<PointI>(left, top, width, height)}, opts.format());
+#endif
+
 	res.zint(std::move(opts.d->zint));
 
 	return res;
@@ -508,10 +509,10 @@ struct SetCommonWriterOptions
 
 	SetCommonWriterOptions(zint_symbol* zint, const WriterOptions& opts) : zint(zint)
 	{
-		zint->show_hrt = opts.withHRT();
+		zint->show_hrt = opts.addHRT();
 
-		zint->output_options &= ~OUT_BUFFER_INTERMEDIATE;
-		zint->output_options |= opts.withQuietZones() ? BARCODE_QUIET_ZONES : BARCODE_NO_QUIET_ZONES;
+		zint->output_options &= ~(OUT_BUFFER_INTERMEDIATE | BARCODE_NO_QUIET_ZONES);
+		zint->output_options |= opts.addQuietZones() ? BARCODE_QUIET_ZONES : BARCODE_NO_QUIET_ZONES;
 
 		if (opts.scale())
 			zint->scale = opts.scale() / 2.f;
@@ -519,10 +520,20 @@ struct SetCommonWriterOptions
 			int size = std::max(zint->width, zint->rows);
 			zint->scale = std::max(1, int(float(opts.sizeHint()) / size)) / 2.f;
 		}
+
+		if (opts.invert()) {
+			strcpy(zint->bgcolour, "000000");
+			strcpy(zint->fgcolour, "ffffff");
+		}
 	}
 
 	// reset the defaults such that consecutive write calls don't influence each other
-	~SetCommonWriterOptions() { zint->scale = 0.5f; }
+	~SetCommonWriterOptions()
+	{
+		zint->scale = 0.5f;
+		strcpy(zint->fgcolour, "000000");
+		strcpy(zint->bgcolour, "ffffff");
+	}
 };
 
 } // ZXing
@@ -549,8 +560,8 @@ static Barcode CreateBarcode(BitMatrix&& bits, const CreatorOptions& opts)
 Barcode CreateBarcodeFromText(std::string_view contents, const CreatorOptions& opts)
 {
 	auto writer = MultiFormatWriter(opts.format()).setMargin(0);
-	if (!opts.ecLevel().empty())
-		writer.setEccLevel(std::stoi(opts.ecLevel()));
+	if (auto ecLevel = opts.ecLevel(); ecLevel)
+		writer.setEccLevel(std::stoi(*ecLevel));
 	writer.setEncoding(CharacterSet::UTF8); // write UTF8 (ECI value 26) for maximum compatibility
 
 	return CreateBarcode(writer.encode(std::string(contents), 0, IsLinearBarcode(opts.format()) ? 50 : 0), opts);
@@ -570,8 +581,8 @@ Barcode CreateBarcodeFromBytes(const void* data, int size, const CreatorOptions&
 		bytes.push_back(c);
 
 	auto writer = MultiFormatWriter(opts.format()).setMargin(0);
-	if (!opts.ecLevel().empty())
-		writer.setEccLevel(std::stoi(opts.ecLevel()));
+	if (auto ecLevel = opts.ecLevel(); ecLevel)
+		writer.setEccLevel(std::stoi(*ecLevel));
 	writer.setEncoding(CharacterSet::BINARY);
 
 	return CreateBarcode(writer.encode(bytes, 0, IsLinearBarcode(opts.format()) ? 50 : 0), opts);
@@ -667,7 +678,16 @@ std::string WriteBarcodeToUtf8(const Barcode& barcode, [[maybe_unused]] const Wr
 
 	constexpr auto map = std::array{" ", "▀", "▄", "█"};
 	std::ostringstream res;
-	bool inverted = false; // TODO: take from WriterOptions
+	bool invert = !options.invert();
+
+	Image buffer;
+	if (options.addQuietZones()) {
+		buffer = Image(iv.width() + 2, iv.height() + 2);
+		memset(const_cast<uint8_t*>(buffer.data()), 0xff, buffer.rowStride() * buffer.height());
+		for (int y = 0; y < iv.height(); y++)
+			memcpy(const_cast<uint8_t*>(buffer.data(1, y + 1)), iv.data(0, y), iv.width());
+		iv = IsLinearBarcode(barcode.format()) ? iv.cropped(0, 1, buffer.width(), buffer.height() - 2) : buffer;
+	}
 
 	for (int y = 0; y < iv.height(); y += 2) {
 		// for linear barcodes, only print line pairs that are distinct from the previous one
@@ -676,8 +696,8 @@ std::string WriteBarcodeToUtf8(const Barcode& barcode, [[maybe_unused]] const Wr
 			continue;
 
 		for (int x = 0; x < iv.width(); ++x) {
-			int tp = bool(*iv.data(x, y)) ^ inverted;
-			int bt = (iv.height() == 1 && tp) || (y + 1 < iv.height() && (bool(*iv.data(x, y + 1)) ^ inverted));
+			int tp = bool(*iv.data(x, y)) ^ invert;
+			int bt = (iv.height() == 1 && tp) || (y + 1 < iv.height() && (bool(*iv.data(x, y + 1)) ^ invert));
 			res << map[tp | (bt << 1)];
 		}
 		res << '\n';

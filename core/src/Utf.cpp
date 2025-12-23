@@ -118,6 +118,18 @@ static void AppendFromUtf8(utf8_t utf8, std::wstring& buffer)
 	}
 }
 
+bool IsValidUtf8(ByteView bytes)
+{
+	state_t state = kAccepted;
+	char32_t codepoint = 0;
+	for (int value : bytes) {
+		Utf8Decode(value, state, codepoint);
+		if (state == kRejected)
+			return false;
+	}
+	return state == kAccepted;
+}
+
 std::wstring FromUtf8(std::string_view utf8)
 {
 	std::wstring str;

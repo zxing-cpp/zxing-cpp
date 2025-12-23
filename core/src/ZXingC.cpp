@@ -310,6 +310,7 @@ ZX_ENUM_PROPERTY(Binarizer, binarizer, Binarizer)
 ZX_ENUM_PROPERTY(EanAddOnSymbol, eanAddOnSymbol, EanAddOnSymbol)
 ZX_ENUM_PROPERTY(TextMode, textMode, TextMode)
 
+#undef ZX_ENUM_PROPERTY
 
 /*
  * ZXing/ReadBarcode.h
@@ -341,26 +342,19 @@ void ZXing_CreatorOptions_delete(ZXing_CreatorOptions* opts)
 	delete opts;
 }
 
+#define ZX_ENUM_PROPERTY(TYPE, GETTER, SETTER) \
+	ZXing_##TYPE ZXing_CreatorOptions_get##SETTER(const ZXing_CreatorOptions* opts) { return static_cast<ZXing_##TYPE>(opts->GETTER()); } \
+	void ZXing_ReaderOptions_set##SETTER(ZXing_CreatorOptions* opts, ZXing_##TYPE val) { opts->GETTER(static_cast<TYPE>(val)); }
+
+ZX_ENUM_PROPERTY(BarcodeFormat, format, Format)
+
+#undef ZX_ENUM_PROPERTY
+
 #define ZX_PROPERTY(TYPE, GETTER, SETTER) \
 	TYPE ZXing_CreatorOptions_get##SETTER(const ZXing_CreatorOptions* opts) { return opts->GETTER(); } \
 	void ZXing_CreatorOptions_set##SETTER(ZXing_CreatorOptions* opts, TYPE val) { opts->GETTER(val); }
 
-ZX_PROPERTY(bool, readerInit, ReaderInit)
-ZX_PROPERTY(bool, forceSquareDataMatrix, ForceSquareDataMatrix)
-
 #undef ZX_PROPERTY
-
-//ZX_PROPERTY(BarcodeFormat, format, Format)
-
-char* ZXing_CreatorOptions_getEcLevel(const ZXing_CreatorOptions* opts)
-{
-	return copy(opts->ecLevel());
-}
-
-void ZXing_CreatorOptions_setEcLevel(ZXing_CreatorOptions* opts, const char* val)
-{
-	opts->ecLevel(val);
-}
 
 char* ZXing_CreatorOptions_getOptions(const ZXing_CreatorOptions* opts)
 {
@@ -390,8 +384,8 @@ void ZXing_WriterOptions_delete(ZXing_WriterOptions* opts)
 ZX_PROPERTY(int, scale, Scale)
 ZX_PROPERTY(int, sizeHint, SizeHint)
 ZX_PROPERTY(int, rotate, Rotate)
-ZX_PROPERTY(bool, withHRT, WithHRT)
-ZX_PROPERTY(bool, withQuietZones, WithQuietZones)
+ZX_PROPERTY(bool, addHRT, AddHRT)
+ZX_PROPERTY(bool, addQuietZones, AddQuietZones)
 
 #undef ZX_PROPERTY
 
