@@ -16,10 +16,11 @@
 
 #include <sstream>
 
-#ifdef ZXING_USE_ZINT
-
 #include "DecoderResult.h"
 #include "DetectorResult.h"
+
+#ifdef ZXING_USE_ZINT
+
 #include "TextEncoder.h"
 #include <zint.h>
 
@@ -554,14 +555,22 @@ namespace ZXing {
 
 zint_symbol* CreatorOptions::zint() const { return nullptr; }
 
-static Barcode CreateBarcode(BitMatrix&& bits, const CreatorOptions& opts)
+static Barcode CreateBarcode(BitMatrix&& bits, std::string_view contents, const CreatorOptions& opts)
 {
 	auto img = ToMatrix<uint8_t>(bits);
 
-	auto res = ReadBarcode({img.data(), img.width(), img.height(), ImageFormat::Lum},
-						   ReaderOptions().setFormats(opts.format()).setIsPure(true).setBinarizer(Binarizer::BoolCast));
-	res.symbol(std::move(bits));
-	return res;
+#ifdef ZXING_READERS
+	(void)contents; // unused
+	return ReadBarcode({img.data(), img.width(), img.height(), ImageFormat::Lum},
+					   ReaderOptions().setFormats(opts.format()).setIsPure(true).setBinarizer(Binarizer::BoolCast));
+#else
+	Content content;
+	content.append(contents);
+
+	DecoderResult decRes(std::move(content));
+	DetectorResult detRes(std::move(bits), Rectangle<PointI>(0, 0, bits.width(), bits.height()));
+	return Barcode(std::move(decRes), std::move(detRes), opts.format());
+#endif
 }
 
 Barcode CreateBarcodeFromText(std::string_view contents, const CreatorOptions& opts)
@@ -572,7 +581,7 @@ Barcode CreateBarcodeFromText(std::string_view contents, const CreatorOptions& o
 	if (!IsAscii({(const uint8_t*)contents.data(), contents.size()}))
 		writer.setEncoding(CharacterSet::UTF8); // write UTF8 (ECI value 26) for maximum compatibility
 
-	return CreateBarcode(writer.encode(std::string(contents), 0, IsLinearBarcode(opts.format()) ? 50 : 0), opts);
+	return CreateBarcode(writer.encode(std::string(contents), 0, IsLinearBarcode(opts.format()) ? 50 : 0), contents, opts);
 }
 
 #if __cplusplus > 201703L
@@ -593,7 +602,7 @@ Barcode CreateBarcodeFromBytes(const void* data, int size, const CreatorOptions&
 		writer.setEccLevel(std::stoi(*ecLevel));
 	writer.setEncoding(CharacterSet::BINARY);
 
-	return CreateBarcode(writer.encode(bytes, 0, IsLinearBarcode(opts.format()) ? 50 : 0), opts);
+	return CreateBarcode(writer.encode(bytes, 0, IsLinearBarcode(opts.format()) ? 50 : 0), {(const char*)data, (size_t)size}, opts);
 }
 
 } // namespace ZXing
