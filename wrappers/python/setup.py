@@ -34,8 +34,10 @@ class CMakeBuild(build_ext):
 		subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, cwd=self.build_temp)
 		subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
 
-
+extension = CMakeExtension('zxingcpp')
+extension.py_limited_api = True
 setup(
-	ext_modules=[CMakeExtension('zxingcpp')],
+	ext_modules=[extension],
 	cmdclass={'build_ext': CMakeBuild},
+	options={'bdist_wheel': {'py_limited_api': 'cp312'}},
 )
