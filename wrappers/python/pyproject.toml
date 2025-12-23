@@ -4,7 +4,9 @@ requires = [
 #    "setuptools-scm>=8",
     "wheel",
     "cmake>=3.18",
-    "pybind11[global]",
+    "nanobind >=1.3.2",
+    # Required for nanobind stub generation on Python < 3.11
+    'typing_extensions >=4.12;python_version<"3.11"',
 ]
 build-backend = "setuptools.build_meta"
 
