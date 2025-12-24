@@ -61,6 +61,7 @@ ZX_PROPERTY(std::string, options)
 	std::optional<TYPE> CreatorOptions::NAME() const noexcept { return JsonGet<TYPE>(d->options, #NAME); }
 
 ZX_RO_PROPERTY(std::string, ecLevel);
+ZX_RO_PROPERTY(std::string, eci);
 ZX_RO_PROPERTY(bool, gs1);
 ZX_RO_PROPERTY(bool, readerInit);
 ZX_RO_PROPERTY(bool, stacked);
@@ -428,10 +429,22 @@ Barcode CreateBarcode(const void* data, int size, int mode, const CreatorOptions
 	if (opts.readerInit())
 		zint->output_options |= READER_INIT;
 
-	if (mode == DATA_MODE && ZBarcode_Cap(zint->symbology, ZINT_CAP_ECI))
-		zint->eci = static_cast<int>(ECI::Binary);
-	else if (mode == UNICODE_MODE && ZBarcode_Cap(zint->symbology, ZINT_CAP_ECI) && !IsAscii({data, narrow_cast<size_t>(size)}))
-		zint->eci = static_cast<int>(ECI::UTF8);
+	if (ZBarcode_Cap(zint->symbology, ZINT_CAP_ECI)) {
+		auto eci = opts.eci().value_or("");
+		if (mode == DATA_MODE || IsEqualIgnoreCase(eci, "binary")) {
+			zint->eci = static_cast<int>(ECI::Binary);
+		} else if (!eci.empty()) {
+			if (auto cs = CharacterSetFromString(eci); cs != CharacterSet::Unknown) {
+				zint->eci = static_cast<int>(ToECI(cs));
+			} else if (std::all_of(eci.begin(), eci.end(), [](char c) { return std::isdigit(c); })) {
+				zint->eci = std::stoi(eci);
+			}
+		}
+		// the following would make sure that non-ASCII text is encoded as UTF-8, hence the GuessTextEncoding for
+		// non-ECI data can't produce a wrong result.
+		// else if (mode == UNICODE_MODE && !IsAscii({data, narrow_cast<size_t>(size)}))
+		// 	zint->eci = static_cast<int>(ECI::UTF8);
+	}
 
 	int warning;
 	CHECK_WARN(ZBarcode_Encode_and_Buffer(zint, (uint8_t*)data, size, 0), warning);

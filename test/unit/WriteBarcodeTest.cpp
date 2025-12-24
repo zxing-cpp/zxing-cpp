@@ -223,50 +223,49 @@ TEST(WriteBarcodeTest, ZintISO8859_1)
 	check(__LINE__, "1234é", BarcodeFormat::Aztec, "]z0", "1234é", "31 32 33 34 E9", false, "]z3\\0000261234é",
 		  "5D 7A 30 31 32 33 34 E9", "1234é", "Text", "" /*position*/, "35%" /*ecLevel*/, "1" /*version*/);
 
-	// With ECI cOpts.eci(ECI::ISO8859_1);
-	// check(__LINE__, "1234é", BarcodeFormat::Aztec, "]z3", "1234é", "31 32 33 34 E9", true, "]z3\\0000261234é",
-	// 	  "5D 7A 33 5C 30 30 30 30 30 33 31 32 33 34 E9", "1234é", "Text", "" /*position*/, "17%", "1");
+	// With ECI
+	check(__LINE__, "1234é", {BarcodeFormat::Aztec, "eci=ISO8859_1"}, "]z0", "1234é", "31 32 33 34 E9", true, "]z3\\0000261234é",
+		  "5D 7A 33 5C 30 30 30 30 30 33 31 32 33 34 E9", "1234é", "Text", "" /*position*/, "17%", "1");
 
 	// No ECI
 	check(__LINE__, "1234é", BarcodeFormat::DataMatrix, "]d1", "1234é", "31 32 33 34 E9", false, "]d4\\0000261234é",
 		  "5D 64 31 31 32 33 34 E9", "1234é", "Text", "" /*position*/, "" /*ecLevel*/, "2" /*version*/);
 
-	// With ECI cOpts.eci(ECI::ISO8859_1);
-	// check(__LINE__, "1234é", BarcodeFormat::DataMatrix, "]d4", "1234é", "31 32 33 34 E9", true,
-	// 	  "]d4\\0000261234é", "5D 64 34 5C 30 30 30 30 30 33 31 32 33 34 E9", "1234é", "Text", "" /*position*/, "" /*ecLevel*/, "3");
+	// With ECI
+	check(__LINE__, "1234é", {BarcodeFormat::DataMatrix, "eci=3"}, "]d1", "1234é", "31 32 33 34 E9", true,
+		  "]d4\\0000261234é", "5D 64 34 5C 30 30 30 30 30 33 31 32 33 34 E9", "1234é", "Text", "" /*position*/, "" /*ecLevel*/, "3");
 
-	// No ECIMaxiCode
+	// No ECI
 	check(__LINE__, "1234é", BarcodeFormat::MaxiCode, "]U0", "1234é", "31 32 33 34 E9", false, "]U2\\0000261234é",
 		  "5D 55 30 31 32 33 34 E9", "1234é", "Text", "" /*position*/, "4" /*ecLevel*/);
 
-	// With ECI cOpts.eci(ECI::ISO8859_1);
-	// check(__LINE__, "1234é", BarcodeFormat::MaxiCode, "]U2", "1234é", "31 32 33 34 E9", true,
-	// 	  "]U2\\0000261234é", "5D 55 32 5C 30 30 30 30 30 33 31 32 33 34 E9", "1234é", "Text", "" /*position*/, "4" /*ecLevel*/);
+	// With ECI
+	check(__LINE__, "1234é", {BarcodeFormat::MaxiCode, "eci=ISO8859_1"}, "]U0", "1234é", "31 32 33 34 E9", true,
+		  "]U2\\0000261234é", "5D 55 32 5C 30 30 30 30 30 33 31 32 33 34 E9", "1234é", "Text", "" /*position*/, "4" /*ecLevel*/);
 
 	// No ECI
 	check(__LINE__, "1234é", BarcodeFormat::PDF417, "]L2", "1234é", "31 32 33 34 E9", false, "]L1\\0000261234é",
 		  "5D 4C 32 31 32 33 34 E9", "1234é", "Text", "" /*position*/, "57%");
 
-	// With ECI cOpts.eci(ECI::ISO8859_1);
-	// check(__LINE__, "1234é", BarcodeFormat::PDF417, "]L1", "1234é", "31 32 33 34 E9", true, "]L1\\0000261234é",
-	// 	  "5D 4C 31 5C 30 30 30 30 30 33 31 32 33 34 E9", "1234é", "Text", "" /*position*/, "50%");
-	//
+	// With ECI
+	check(__LINE__, "1234é", {BarcodeFormat::PDF417, "eci=ISO8859_1"}, "]L2", "1234é", "31 32 33 34 E9", true, "]L1\\0000261234é",
+		  "5D 4C 31 5C 30 30 30 30 30 33 31 32 33 34 E9", "1234é", "Text", "" /*position*/, "50%");
 
 	// No ECI
 	check(__LINE__, "1234é", BarcodeFormat::QRCode, "]Q1", "1234é", "31 32 33 34 E9", false, "]Q2\\0000261234é",
 		  "5D 51 31 31 32 33 34 E9", "1234é", "Text", "0x0 20x0 20x20 0x20", "H", "1");
 
-	// With ECI	cOpts.eci(ECI::ISO8859_1);
-	// check(__LINE__, "1234é", BarcodeFormat::QRCode, "]Q2", "1234é", "31 32 33 34 E9", true, "]Q2\\0000261234é",
-	// 	  "5D 51 32 5C 30 30 30 30 30 33 31 32 33 34 E9", "1234é", "Text", "0x0 20x0 20x20 0x20", "H", "1");
+	// With ECI
+	check(__LINE__, "1234é", {BarcodeFormat::QRCode, "eci=ISO8859_1"}, "]Q1", "1234é", "31 32 33 34 E9", true, "]Q2\\0000261234é",
+		  "5D 51 32 5C 30 30 30 30 30 33 31 32 33 34 E9", "1234é", "Text", "0x0 20x0 20x20 0x20", "H", "1");
 
 	// No ECI
 	check(__LINE__, "1234é", BarcodeFormat::RMQRCode, "]Q1", "1234é", "31 32 33 34 E9", false, "]Q2\\0000261234é",
 		  "5D 51 31 31 32 33 34 E9", "1234é", "Text", "0x0 26x0 26x10 0x10", "H", "11");
 
-	// With ECI cOpts.eci(ECI::ISO8859_1);
-	// check(__LINE__, "1234é", BarcodeFormat::RMQRCode, "]Q2", "1234é", "31 32 33 34 E9", true,
-	// 	  "]Q2\\0000261234é", "5D 51 32 5C 30 30 30 30 30 33 31 32 33 34 E9", "1234é", "Text", "0x0 26x0 26x10 0x10", "M", "11");
+	// With ECI
+	check(__LINE__, "1234é", {BarcodeFormat::RMQRCode, "eci=ISO8859_1"}, "]Q1", "1234é", "31 32 33 34 E9", true,
+		  "]Q2\\0000261234é", "5D 51 32 5C 30 30 30 30 30 33 31 32 33 34 E9", "1234é", "Text", "0x0 26x0 26x10 0x10", "M", "11");
 }
 
 TEST(WriteBarcodeTest, ZintGS1)
