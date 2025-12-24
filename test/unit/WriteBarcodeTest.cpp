@@ -63,7 +63,7 @@ static void check(int line, std::string_view input, CreatorOptions cOpts, std::s
 	EXPECT_EQ(bc.isMirrored(), br.isMirrored()) << "line:" << line;
 	EXPECT_EQ(bc.isInverted(), br.isInverted()) << "line:" << line;
 	EXPECT_EQ(bc.readerInit(), br.readerInit()) << "line:" << line;
-#endif
+#endif // ZXING_READERS
 }
 
 TEST(WriteBarcodeTest, ZintASCII)
@@ -353,6 +353,6 @@ TEST(WriteBarcodeTest, RandomDataBar)
 	randomTest(BarcodeFormat::DataBarLimited);
 	randomTest(BarcodeFormat::DataBarExpanded);
 }
-#endif
+#endif // ZXING_READERS
 
-#endif // #if defined(ZXING_EXPERIMENTAL_API) && defined(ZXING_WRITERS) && defined(ZXING_USE_ZINT)
+#endif // ZXING_EXPERIMENTAL_API
