@@ -210,7 +210,7 @@ auto image_view(py::buffer buffer, int width, int height, ImageFormat format, in
 
 Barcode create_barcode(py::object content, BarcodeFormat format, const py::kwargs& kwargs)
 {
-	auto cOpts = CreatorOptions(format, py::str(kwargs.str())); // see https://github.com/pybind/pybind11/issues/5938
+	auto cOpts = CreatorOptions(format, py::str(static_cast<py::handle>(kwargs))); // see https://github.com/pybind/pybind11/issues/5938
 	auto data = py::cast<std::string>(content);
 
 	if (py::isinstance<py::str>(content))
