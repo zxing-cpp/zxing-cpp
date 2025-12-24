@@ -430,15 +430,14 @@ Barcode CreateBarcode(const void* data, int size, int mode, const CreatorOptions
 		zint->output_options |= READER_INIT;
 
 	if (ZBarcode_Cap(zint->symbology, ZINT_CAP_ECI)) {
-		auto eci = opts.eci().value_or("");
-		if (mode == DATA_MODE || IsEqualIgnoreCase(eci, "binary")) {
-			zint->eci = static_cast<int>(ECI::Binary);
-		} else if (!eci.empty()) {
-			if (auto cs = CharacterSetFromString(eci); cs != CharacterSet::Unknown) {
+		if (auto eci = opts.eci(); eci) {
+			if (auto cs = CharacterSetFromString(*eci); cs != CharacterSet::Unknown) {
 				zint->eci = static_cast<int>(ToECI(cs));
-			} else if (std::all_of(eci.begin(), eci.end(), [](char c) { return std::isdigit(c); })) {
-				zint->eci = std::stoi(eci);
+			} else if (std::all_of(eci->begin(), eci->end(), [](char c) { return std::isdigit(c); })) {
+				zint->eci = std::stoi(*eci);
 			}
+		} else if (mode == DATA_MODE) {
+			zint->eci = static_cast<int>(ECI::Binary);
 		}
 		// the following would make sure that non-ASCII text is encoded as UTF-8, hence the GuessTextEncoding for
 		// non-ECI data can't produce a wrong result.
