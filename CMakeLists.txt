@@ -79,6 +79,8 @@ if (NOT DEFINED CMAKE_CXX_EXTENSIONS)
     set (CMAKE_CXX_EXTENSIONS OFF)
 endif()
 
+set(CMAKE_COLOR_DIAGNOSTICS ON)
+
 add_subdirectory (core)
 
 enable_testing()
