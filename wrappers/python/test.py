@@ -3,7 +3,7 @@ import unittest
 import math
 import platform
 
-import zxingcpp
+import zxingcpp # pyright: ignore[reportMissingImports]
 
 has_numpy = importlib.util.find_spec('numpy') is not None
 has_pil = importlib.util.find_spec('PIL') is not None
@@ -108,7 +108,7 @@ class TestReadWrite(unittest.TestCase):
 
 	@unittest.skipIf(not has_numpy, "need numpy for read/write tests")
 	def test_failed_read_numpy(self):
-		import numpy as np
+		import numpy as np # pyright: ignore
 		res = zxingcpp.read_barcode(
 			np.zeros((100, 100), np.uint8), formats=BF.EAN8 | BF.Aztec, binarizer=zxingcpp.Binarizer.BoolCast
 		)
@@ -124,7 +124,7 @@ class TestReadWrite(unittest.TestCase):
 
 	@unittest.skipIf(not has_numpy, "need numpy for read/write tests")
 	def test_write_read_cycle_numpy(self):
-		import numpy as np
+		import numpy as np # pyright: ignore
 		format = BF.QRCode
 		text = "I have the best words."
 		img = zxingcpp.write_barcode(format, text, quiet_zone=10)
@@ -135,7 +135,7 @@ class TestReadWrite(unittest.TestCase):
 
 	@unittest.skipIf(not has_pil, "need PIL for read/write tests")
 	def test_write_read_cycle_pil(self):
-		from PIL import Image
+		from PIL import Image # pyright: ignore
 		format = BF.QRCode
 		text = "I have the best words."
 		img = zxingcpp.write_barcode(format, text)
@@ -149,7 +149,7 @@ class TestReadWrite(unittest.TestCase):
 
 	@unittest.skipIf(not has_cv2, "need cv2 for read/write tests")
 	def test_write_read_cycle_cv2(self):
-		import cv2, numpy
+		import cv2, numpy # pyright: ignore
 		format = BF.QRCode
 		text = "I have the best words."
 		img = zxingcpp.write_barcode(format, text, quiet_zone=10)
@@ -171,7 +171,7 @@ class TestReadWrite(unittest.TestCase):
 
 	@unittest.skipIf(not has_numpy, "need numpy for read/write tests")
 	def test_read_invalid_numpy_array_channels_numpy(self):
-		import numpy as np
+		import numpy as np # pyright: ignore
 		self.assertRaisesRegex(
 			ValueError, "Unsupported number of channels for buffer: 4", zxingcpp.read_barcode,
 			np.zeros((100, 100, 4), np.uint8)
