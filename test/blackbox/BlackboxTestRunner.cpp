@@ -25,6 +25,13 @@
 #include <string_view>
 #include <vector>
 
+#ifdef __cpp_lib_execution
+#include <execution>
+#else
+#include <future>
+#include <thread>
+#endif
+
 namespace ZXing::Test {
 
 namespace {
@@ -237,8 +244,29 @@ static void doRunTests(const fs::path& directory, std::string_view format, int t
 			opts.setIsPure(tc.name == "pure");
 			if (opts.isPure())
 				opts.setBinarizer(Binarizer::FixedThreshold);
+#if 1
+#ifdef __cpp_lib_execution
+			std::vector<Barcode> barcodes(imgPaths.size());
+			std::transform(std::execution::par, imgPaths.begin(), imgPaths.end(), barcodes.begin(), [&](const fs::path& imgPath) {
+				return ReadBarcode(ImageLoader::load(imgPath).rotated(test.rotation), opts);
+			});
+			for (size_t i = 0; i < imgPaths.size(); ++i) {
+				const auto& imgPath = imgPaths[i];
+				const auto& barcode = barcodes[i];
+#else
+			auto futures = std::vector<std::pair<fs::path, std::future<Barcode>>>{};
+			for (const auto& imgPath : imgPaths) {
+				futures.push_back(std::make_pair(imgPath, std::async(std::launch::async, [&](const fs::path& path) {
+					return ReadBarcode(ImageLoader::load(path).rotated(test.rotation), opts);
+				}, imgPath)));
+			}
+			for (auto& [imgPath, fut] : futures) {
+				auto barcode = fut.get();
+#endif // __cpp_lib_execution
+#else
 			for (const auto& imgPath : imgPaths) {
 				auto barcode = ReadBarcode(ImageLoader::load(imgPath).rotated(test.rotation), opts);
+#endif
 				if (barcode.isValid()) {
 					auto error = checkResult(imgPath, format, barcode);
 					if (!error.empty())
