@@ -1,5 +1,5 @@
 /*
-* Copyright 2022 Axel Waggershauser
+* Copyright 2024 Axel Waggershauser
 */
 // SPDX-License-Identifier: Apache-2.0
 
@@ -12,6 +12,18 @@
 
 namespace ZXing {
 
+/**
+ * @class WriterOptions
+ * @brief Configuration options for barcode writing/generation.
+ *
+ * WriterOptions provides a fluent interface for setting various parameters
+ * that control how barcodes are generated.
+ *
+ * This class supports method chaining for convenient option configuration.
+ *
+ * @example
+ * auto opts = WriterOptions().scale(5).addHRT(true);
+ */
 class WriterOptions
 {
 	struct Data;

@@ -15,6 +15,25 @@ extern "C" struct zint_symbol;
 
 namespace ZXing {
 
+/**
+ * @class CreatorOptions
+ * @brief Configuration options for barcode creation.
+ *
+ * This class encapsulates all the parameters needed to create a barcode with
+ * specific format and settings.
+ *
+ * @details
+ * The options property is a string that can contain multiple key-value pairs
+ * separated by commas. Each key-value pair configures a specific aspect of the
+ * barcode generation process and are dependent on the used BarcodeFormat.
+ * Boolean properties are interpreted as true if only the property name is present.
+ * Keys are case-insensitive. Passing a serialized JSON object is also supported.
+ *
+ * For a list of all supported options, see the list of read-only properties below.
+ *
+ * @example
+ * auto opts = CreatorOptions(BarcodeFormat::QRCode, "ecLevel=30%, gs1");
+ */
 class CreatorOptions
 {
 	struct Data;
@@ -25,7 +44,6 @@ class CreatorOptions
 
 public:
 	CreatorOptions(BarcodeFormat format, std::string options = {});
-
 	~CreatorOptions();
 	CreatorOptions(CreatorOptions&&);
 	CreatorOptions& operator=(CreatorOptions&&);
