@@ -73,7 +73,7 @@ TEST(ContentTest, Base)
 #endif
 }
 
-#if defined(ZXING_READERS) || (defined(ZXING_EXPERIMENTAL_API) && defined(ZXING_USE_ZINT))
+#if defined(ZXING_READERS) || defined(ZXING_USE_ZINT)
 TEST(ContentTest, GuessEncoding)
 {
 	{ // guess latin1
@@ -99,7 +99,7 @@ TEST(ContentTest, GuessEncoding)
 }
 #endif
 
-#if defined(ZXING_READERS) || (defined(ZXING_EXPERIMENTAL_API) && defined(ZXING_USE_ZINT))
+#if defined(ZXING_READERS) || defined(ZXING_USE_ZINT)
 TEST(ContentTest, ECI)
 {
 	{ // switch to ECI::ISO8859_5
