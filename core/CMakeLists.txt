@@ -109,6 +109,8 @@ set (COMMON_FILES
     src/ByteMatrix.h
     src/CharacterSet.h
     src/CharacterSet.cpp
+    src/CreateBarcode.h
+    src/CreateBarcode.cpp
     src/Content.h
     src/Content.cpp
     src/ContentType.h
@@ -229,6 +231,7 @@ set (PUBLIC_HEADERS
     src/ByteArray.h
     src/CharacterSet.h
     src/ContentType.h
+    src/CreateBarcode.h
     src/Error.h
     src/Flags.h
     src/GTIN.h

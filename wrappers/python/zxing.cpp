@@ -13,6 +13,7 @@
 
 // Writer
 #ifdef ZXING_EXPERIMENTAL_API
+#include "CreateBarcode.h"
 #include "WriteBarcode.h"
 #include <bit>
 #else

@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "BarcodeFormat.h"
+#include "CreateBarcode.h"
 #ifdef ZXING_EXPERIMENTAL_API
 #include "WriteBarcode.h"
 #else

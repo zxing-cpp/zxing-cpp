@@ -12,6 +12,7 @@
 #ifdef ZXING_READERS
 #include "ReadBarcode.h"
 #endif
+#include "CreateBarcode.h"
 #include "WriteBarcode.h"
 
 #include "gtest/gtest.h"

@@ -4,6 +4,7 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
+#include "CreateBarcode.h"
 #include "WriteBarcode.h"
 #include "BitMatrix.h"
 #include "JSON.h"
@@ -14,12 +15,8 @@
 
 #include <sstream>
 
-#include "DecoderResult.h"
-#include "DetectorResult.h"
-
 #ifdef ZXING_USE_ZINT
 
-#include "TextEncoder.h"
 #include <zint.h>
 
 #else
@@ -30,50 +27,6 @@ using unique_zint_symbol = std::unique_ptr<zint_symbol>;
 #endif // ZXING_USE_ZINT
 
 namespace ZXing {
-
-struct CreatorOptions::Data
-{
-	BarcodeFormat format;
-	std::string options;
-
-	// symbol size (qrcode, datamatrix, etc), map from I, 'WxH'
-	// structured_append (idx, cnt, ID)
-
-	mutable unique_zint_symbol zint;
-
-#ifndef __cpp_aggregate_paren_init // MSVC 17.14
-	Data(BarcodeFormat f, std::string o) : format(f), options(std::move(o)) {}
-#endif
-};
-
-#define ZX_PROPERTY(TYPE, NAME) \
-	const TYPE& CreatorOptions::NAME() const noexcept { return d->NAME; } \
-	CreatorOptions& CreatorOptions::NAME(TYPE v)& { return d->NAME = std::move(v), *this; } \
-	CreatorOptions&& CreatorOptions::NAME(TYPE v)&& { return d->NAME = std::move(v), std::move(*this); }
-
-ZX_PROPERTY(BarcodeFormat, format)
-ZX_PROPERTY(std::string, options)
-
-#undef ZX_PROPERTY
-
-#define ZX_RO_PROPERTY(TYPE, NAME) \
-	std::optional<TYPE> CreatorOptions::NAME() const noexcept { return JsonGet<TYPE>(d->options, #NAME); }
-
-ZX_RO_PROPERTY(std::string, ecLevel);
-ZX_RO_PROPERTY(std::string, eci);
-ZX_RO_PROPERTY(bool, gs1);
-ZX_RO_PROPERTY(bool, readerInit);
-ZX_RO_PROPERTY(bool, stacked);
-ZX_RO_PROPERTY(bool, forceSquare);
-ZX_RO_PROPERTY(int, version);
-ZX_RO_PROPERTY(int, dataMask);
-
-#undef ZX_RO_PROPERTY
-
-CreatorOptions::CreatorOptions(BarcodeFormat format, std::string options) : d(std::make_unique<Data>(format, std::move(options))) {}
-CreatorOptions::~CreatorOptions() = default;
-CreatorOptions::CreatorOptions(CreatorOptions&&) = default;
-CreatorOptions& CreatorOptions::operator=(CreatorOptions&&) = default;
 
 struct WriterOptions::Data
 {
@@ -103,6 +56,47 @@ WriterOptions::WriterOptions() : d(std::make_unique<Data>()) {}
 WriterOptions::~WriterOptions() = default;
 WriterOptions::WriterOptions(WriterOptions&&) = default;
 WriterOptions& WriterOptions::operator=(WriterOptions&&) = default;
+
+#ifdef ZXING_USE_ZINT
+
+struct SetCommonWriterOptions
+{
+	zint_symbol* zint;
+
+	SetCommonWriterOptions(zint_symbol* zint, const WriterOptions& opts) : zint(zint)
+	{
+		zint->show_hrt = opts.addHRT();
+
+		zint->output_options &= ~(OUT_BUFFER_INTERMEDIATE | BARCODE_NO_QUIET_ZONES);
+		zint->output_options |= opts.addQuietZones() ? BARCODE_QUIET_ZONES : BARCODE_NO_QUIET_ZONES;
+
+		if (opts.scale())
+			zint->scale = opts.scale() / 2.f;
+		else if (opts.sizeHint()) {
+			int size = std::max(zint->width, zint->rows);
+			zint->scale = std::max(1, int(float(opts.sizeHint()) / size)) / 2.f;
+		}
+
+		if (opts.invert()) {
+			strcpy(zint->bgcolour, "000000");
+			strcpy(zint->fgcolour, "ffffff");
+		}
+	}
+
+	// reset the defaults such that consecutive write calls don't influence each other
+	~SetCommonWriterOptions()
+	{
+		zint->scale = 0.5f;
+		strcpy(zint->fgcolour, "000000");
+		strcpy(zint->bgcolour, "ffffff");
+	}
+};
+
+#define CHECK(ZINT_CALL) \
+	if (int err = (ZINT_CALL); err >= ZINT_ERROR) \
+		throw std::invalid_argument(StrCat(zint->errtxt, " (retval: ", std::to_string(err), ")"));
+
+#endif // ZXING_USE_ZINT
 
 static std::string ToSVG(ImageView iv)
 {
@@ -139,516 +133,6 @@ static Image ToImage(BitMatrix bits, bool isLinearCode, const WriterOptions& opt
 	std::memcpy(const_cast<uint8_t*>(iv.data()), bitmap.data(), iv.width() * iv.height());
 	return iv;
 }
-
-inline bool IsAscii(ByteView bv)
-{
-	return std::all_of(bv.begin(), bv.end(), [](uint8_t c) { return c <= 127; });
-}
-
-} // namespace ZXing
-
-
-#ifdef ZXING_WRITERS
-
-#ifdef ZXING_USE_ZINT
-#include "ECI.h"
-
-#ifdef ZXING_READERS
-#include "ReadBarcode.h"
-#endif
-
-#include <charconv>
-#include <zint.h>
-
-namespace ZXing {
-
-static bool SupportsGS1(BarcodeFormat format)
-{
-	return (BarcodeFormat::Aztec | BarcodeFormat::Code128 | BarcodeFormat::DataMatrix | BarcodeFormat::QRCode
-			| BarcodeFormat::RMQRCode | BarcodeFormat::DataBarExpanded)
-		.testFlag(format);
-}
-
-struct BarcodeFormatZXing2Zint
-{
-	BarcodeFormat zxing;
-	int zint;
-};
-
-static constexpr BarcodeFormatZXing2Zint barcodeFormatZXing2Zint[] = {
-	{BarcodeFormat::Aztec, BARCODE_AZTEC},
-	{BarcodeFormat::Codabar, BARCODE_CODABAR},
-	{BarcodeFormat::Code39, BARCODE_CODE39},
-	{BarcodeFormat::Code93, BARCODE_CODE93},
-	{BarcodeFormat::Code128, BARCODE_CODE128},
-	{BarcodeFormat::DataBar, BARCODE_DBAR_OMN},
-	{BarcodeFormat::DataBarExpanded, BARCODE_DBAR_EXP},
-	{BarcodeFormat::DataBarLimited, BARCODE_DBAR_LTD},
-	{BarcodeFormat::DataMatrix, BARCODE_DATAMATRIX},
-	{BarcodeFormat::DXFilmEdge, BARCODE_DXFILMEDGE},
-	{BarcodeFormat::EAN8, BARCODE_EAN8},
-	{BarcodeFormat::EAN13, BARCODE_EAN13},
-	{BarcodeFormat::ITF, BARCODE_C25INTER},
-	{BarcodeFormat::MaxiCode, BARCODE_MAXICODE},
-	{BarcodeFormat::MicroQRCode, BARCODE_MICROQR},
-	{BarcodeFormat::PDF417, BARCODE_PDF417},
-	{BarcodeFormat::QRCode, BARCODE_QRCODE},
-	{BarcodeFormat::RMQRCode, BARCODE_RMQR},
-	{BarcodeFormat::UPCA, BARCODE_UPCA},
-	{BarcodeFormat::UPCE, BARCODE_UPCE},
-};
-
-struct String2Int
-{
-	const char* str;
-	int val;
-};
-
-static int ParseECLevel(int symbology, std::string_view s)
-{
-	constexpr std::string_view EC_LABELS_QR[4] = {"L", "M", "Q", "H"};
-	int res = 0;
-
-	// Convert L/M/Q/H to Zint 1-4
-	if (Contains({BARCODE_QRCODE, BARCODE_MICROQR, BARCODE_RMQR}, symbology))
-		if ((res = IndexOf(EC_LABELS_QR, s)) != -1)
-			return res + 1;
-
-	if (std::from_chars(s.data(), s.data() + s.size() - (s.back() == '%'), res).ec != std::errc{})
-		throw std::invalid_argument(StrCat("Invalid ecLevel: '", s, "'"));
-
-	auto findClosestECLevel = [](const std::vector<int>& list, int val) {
-		int mIdx = -2, mAbs = 100;
-		for (int i = 0; i < Size(list); ++i)
-			if (int abs = std::abs(val - list[i]); abs < mAbs) {
-				mIdx = i;
-				mAbs = abs;
-			}
-		return mIdx + 1;
-	};
-
-	// Convert percentage to Zint
-	if (s.back() == '%') {
-		switch (symbology) {
-		case BARCODE_QRCODE: return findClosestECLevel({20, 37, 55, 65}, res);
-		case BARCODE_MICROQR: return findClosestECLevel({20, 37, 55}, res);
-		case BARCODE_RMQR: return res <= 46 ? 2 : 4;
-		case BARCODE_AZTEC: return findClosestECLevel({10, 23, 36, 50}, res);
-		case BARCODE_PDF417:
-			// TODO: do something sensible with PDF417?
-		default:
-			return -1;
-		}
-	}
-
-	return res;
-};
-
-static constexpr struct { BarcodeFormat format; SymbologyIdentifier si; } barcodeFormat2SymbologyIdentifier[] = {
-	{BarcodeFormat::Aztec, {'z', '0', 3}}, // '1' GS1, '2' AIM
-	{BarcodeFormat::Codabar, {'F', '0'}}, // if checksum processing were implemented and checksum present and stripped then modifier would be 4
-	// {BarcodeFormat::CodablockF, {'O', '4'}}, // '5' GS1
-	{BarcodeFormat::Code128, {'C', '0'}}, // '1' GS1, '2' AIM
-	// {BarcodeFormat::Code16K, {'K', '0'}}, // '1' GS1, '2' AIM, '4' D1 PAD
-	{BarcodeFormat::Code39, {'A', '0'}}, // '3' checksum, '4' extended, '7' checksum,extended
-	{BarcodeFormat::Code93, {'G', '0'}}, // no modifiers
-	{BarcodeFormat::DataBar, {'e', '0', 0, AIFlag::GS1}},
-	{BarcodeFormat::DataBarExpanded, {'e', '0', 0, AIFlag::GS1}},
-	{BarcodeFormat::DataBarLimited, {'e', '0', 0, AIFlag::GS1}},
-	{BarcodeFormat::DataMatrix, {'d', '1', 3}}, // '2' GS1, '3' AIM
-	// {BarcodeFormat::DotCode, {'J', '0', 3}}, // '1' GS1, '2' AIM
-	{BarcodeFormat::DXFilmEdge, {}},
-	{BarcodeFormat::EAN8, {'E', '4'}},
-	{BarcodeFormat::EAN13, {'E', '0'}},
-	// {BarcodeFormat::HanXin, {'h', '0', 1}}, // '2' GS1
-	{BarcodeFormat::ITF, {'I', '0'}}, // '1' check digit
-	{BarcodeFormat::MaxiCode, {'U', '0', 2}}, // '1' mode 2 or 3
-	// {BarcodeFormat::MicroPDF417, {'L', '2', char(-1)}},
-	{BarcodeFormat::MicroQRCode, {'Q', '1', 1}},
-	{BarcodeFormat::PDF417, {'L', '2', char(-1)}},
-	{BarcodeFormat::QRCode, {'Q', '1', 1}}, // '3' GS1, '5' AIM
-	{BarcodeFormat::RMQRCode, {'Q', '1', 1}}, // '3' GS1, '5' AIM
-	{BarcodeFormat::UPCA, {'E', '0'}},
-	{BarcodeFormat::UPCE, {'E', '0'}},
-};
-
-static SymbologyIdentifier SymbologyIdentifierZint2ZXing(const CreatorOptions& opts, const ByteArray& ba)
-{
-	const BarcodeFormat format = opts.format();
-
-	auto i = FindIf(barcodeFormat2SymbologyIdentifier, [format](auto& v) { return v.format == format; });
-	assert(i != std::end(barcodeFormat2SymbologyIdentifier));
-	SymbologyIdentifier ret = i->si;
-
-	if ((BarcodeFormat::EAN13 | BarcodeFormat::UPCA | BarcodeFormat::UPCE).testFlag(format)) {
-		if (ba.size() > 13) // Have EAN-2/5 add-on?
-			ret.modifier = '3'; // Combined packet, EAN-13, UPC-A, UPC-E, with add-on
-	} else if (format == BarcodeFormat::Code39) {
-		if (FindIf(ba, iscntrl) != ba.end()) // Extended Code 39?
-			ret.modifier = static_cast<char>(ret.modifier + 4);
-	} else if (opts.gs1() && SupportsGS1(format)) {
-		if ((BarcodeFormat::Aztec | BarcodeFormat::Code128).testFlag(format))
-			ret.modifier = '1';
-		else if (format == BarcodeFormat::DataMatrix)
-			ret.modifier = '2';
-		else if ((BarcodeFormat::QRCode | BarcodeFormat::RMQRCode).testFlag(format))
-			ret.modifier = '3';
-		ret.aiFlag = AIFlag::GS1;
-	}
-
-	return ret;
-}
-
-static std::string ECLevelZint2ZXing(const zint_symbol* zint)
-{
-	constexpr char EC_LABELS_QR[4] = {'L', 'M', 'Q', 'H'};
-
-	const int symbology = zint->symbology;
-	const int option_1 = zint->option_1;
-
-	switch (symbology) {
-	case BARCODE_AZTEC:
-		if ((option_1 >> 8) >= 0 && (option_1 >> 8) <= 99)
-			return std::to_string(option_1 >> 8) + "%";
-		break;
-	case BARCODE_MAXICODE:
-		// Mode
-		if (option_1 >= 2 && option_1 <= 6)
-			return std::to_string(option_1);
-		break;
-	case BARCODE_PDF417:
-	case BARCODE_PDF417COMP:
-		// Convert to percentage
-		if (option_1 >= 0 && option_1 <= 8) {
-			int overhead = symbology == BARCODE_PDF417COMP ? 35 : 69;
-			int cols = (zint->width - overhead) / 17;
-			int tot_cws = zint->rows * cols;
-			assert(tot_cws);
-			return std::to_string((2 << option_1) * 100 / tot_cws) + "%";
-		}
-		break;
-	// case BARCODE_MICROPDF417:
-	// 	if ((option_1 >> 8) >= 0 && (option_1 >> 8) <= 99)
-	// 		return std::to_string(option_1 >> 8) + "%";
-	// 	break;
-	case BARCODE_QRCODE:
-	case BARCODE_MICROQR:
-	case BARCODE_RMQR:
-		// Convert to L/M/Q/H
-		if (option_1 >= 1 && option_1 <= 4)
-			return {EC_LABELS_QR[option_1 - 1]};
-		break;
-	// case BARCODE_HANXIN:
-	// 	if (option_1 >= 1 && option_1 <= 4)
-	// 		return "L" + std::to_string(option_1);
-	// 	break;
-	default:
-		break;
-	}
-
-	return {};
-}
-
-#ifndef ZXING_READERS
-// Convert bytes to UTF-8 code points 0-255
-static std::string BinaryToUtf8(ByteView ba)
-{
-	std::string utf8;
-	utf8.reserve(ba.size() * 2);
-	for (auto c : ba)
-		if (c < 0x80) {
-			utf8.push_back(c);
-		} else if (c < 0xC0) {
-			utf8.push_back(0xC2);
-			utf8.push_back(c);
-		} else {
-			utf8.push_back(0xC3);
-			utf8.push_back(c - 0x40);
-		}
-	return utf8;
-}
-#endif
-
-zint_symbol* CreatorOptions::zint() const
-{
-	auto& zint = d->zint;
-
-	if (!zint) {
-#ifdef PRINT_DEBUG
-//		printf("zint version: %d, sizeof(zint_symbol): %ld, options: %s\n", ZBarcode_Version(), sizeof(zint_symbol), options().c_str());
-#endif
-		zint.reset(ZBarcode_Create());
-
-		auto i = FindIf(barcodeFormatZXing2Zint, [zxing = format()](auto& v) { return v.zxing == zxing; });
-		if (i == std::end(barcodeFormatZXing2Zint))
-			throw std::invalid_argument("unsupported barcode format: " + ToString(format()));
-
-		if (format() == BarcodeFormat::Code128 && gs1())
-			zint->symbology = BARCODE_GS1_128;
-		else if (format() == BarcodeFormat::DataBar && stacked())
-			zint->symbology = BARCODE_DBAR_OMNSTK;
-		else if (format() == BarcodeFormat::DataBarExpanded && stacked())
-			zint->symbology = BARCODE_DBAR_EXPSTK;
-		else
-			zint->symbology = i->zint;
-
-		zint->scale = 0.5f;
-
-		if (auto val = ecLevel(); val)
-			zint->option_1 = ParseECLevel(zint->symbology, *val);
-
-		if (auto val = version(); val && !IsLinearBarcode(format()))
-			zint->option_2 = *val;
-
-		if (auto val = dataMask(); val && (BarcodeFormat::QRCode | BarcodeFormat::MicroQRCode).testFlag(format()))
-			zint->option_3 = (zint->option_3 & 0xFF) | (*val + 1) << 8;
-
-		if (format() == BarcodeFormat::DataMatrix)
-			zint->option_3 = (forceSquare() ? DM_SQUARE : DM_DMRE) | DM_ISO_144;
-	}
-
-	return zint.get();
-}
-
-#define CHECK(ZINT_CALL) \
-	if (int err = (ZINT_CALL); err >= ZINT_ERROR) \
-		throw std::invalid_argument(StrCat(zint->errtxt, " (retval: ", std::to_string(err), ")"));
-#define CHECK_WARN(ZINT_CALL, WARN) \
-	if (WARN = (ZINT_CALL); WARN >= ZINT_ERROR) \
-		throw std::invalid_argument(StrCat(zint->errtxt, " (retval: ", std::to_string(WARN), ")"));
-
-Barcode CreateBarcode(const void* data, int size, int mode, const CreatorOptions& opts)
-{
-	auto zint = opts.zint();
-
-	zint->input_mode = mode == UNICODE_MODE && opts.gs1() && SupportsGS1(opts.format()) ? GS1_MODE : mode;
-	if (mode == UNICODE_MODE && static_cast<const char*>(data)[0] != '[')
-		zint->input_mode |= GS1PARENS_MODE;
-	zint->output_options |= OUT_BUFFER_INTERMEDIATE | BARCODE_NO_QUIET_ZONES | BARCODE_CONTENT_SEGS;
-	if (opts.readerInit())
-		zint->output_options |= READER_INIT;
-
-	if (ZBarcode_Cap(zint->symbology, ZINT_CAP_ECI)) {
-		if (auto eci = opts.eci(); eci) {
-			if (auto cs = CharacterSetFromString(*eci); cs != CharacterSet::Unknown) {
-				zint->eci = static_cast<int>(ToECI(cs));
-			} else if (std::all_of(eci->begin(), eci->end(), [](char c) { return std::isdigit(c); })) {
-				zint->eci = std::stoi(*eci);
-			}
-		} else if (mode == DATA_MODE) {
-			zint->eci = static_cast<int>(ECI::Binary);
-		}
-		// the following would make sure that non-ASCII text is encoded as UTF-8, hence the GuessTextEncoding for
-		// non-ECI data can't produce a wrong result.
-		// else if (mode == UNICODE_MODE && !IsAscii({data, narrow_cast<size_t>(size)}))
-		// 	zint->eci = static_cast<int>(ECI::UTF8);
-	}
-
-	int warning;
-	CHECK_WARN(ZBarcode_Encode_and_Buffer(zint, (uint8_t*)data, size, 0), warning);
-
-#ifdef PRINT_DEBUG
-	printf("create symbol with size: %dx%d\n", zint->width, zint->rows);
-#endif
-
-#if 0 // use ReadBarcode to create Barcode object
-	auto buffer = std::vector<uint8_t>(zint->bitmap_width * zint->bitmap_height);
-	std::transform(zint->bitmap, zint->bitmap + zint->bitmap_width * zint->bitmap_height, buffer.data(),
-				   [](unsigned char v) { return (v == '0') * 0xff; });
-
-	auto res = ReadBarcode({buffer.data(), zint->bitmap_width, zint->bitmap_height, ImageFormat::Lum},
-						   ReaderOptions().setFormats(opts.format()).setIsPure(true).setBinarizer(Binarizer::BoolCast));
-#else
-	assert(zint->content_seg_count == 1);
-	const auto& content_seg = zint->content_segs[0];
-	const size_t content_seg_len =
-		static_cast<size_t>(content_seg.length - (opts.format() == BarcodeFormat::Code93 && content_seg.length >= 2 ? 2 : 0));
-
-	Content content;
-
-	if (zint->eci || warning == ZINT_WARN_USES_ECI)
-		content.switchEncoding(ECI(content_seg.eci));
-	else
-		content.switchEncoding(ToCharacterSet(ECI(content_seg.eci)));
-
-	if ((zint->input_mode & 0x07) == UNICODE_MODE) {
-		// `content_segs` returned as UTF-8
-		std::string utf8(reinterpret_cast<const char *>(content_seg.source), content_seg_len);
-		content.append(TextEncoder::FromUnicode(utf8, ToCharacterSet(ECI(content_seg.eci))));
-#ifndef ZXING_READERS
-		content.utf8Cache.push_back(std::move(utf8));
-#endif
-	} else {
-		content.append({content_seg.source, content_seg_len});
-#ifndef ZXING_READERS
-		content.utf8Cache.push_back(BinaryToUtf8(content.bytes));
-#endif
-	}
-
-	content.symbology = SymbologyIdentifierZint2ZXing(opts, content.bytes);
-
-	DecoderResult decRes(std::move(content));
-	decRes.setEcLevel(ECLevelZint2ZXing(zint));
-	decRes.setReaderInit(zint->output_options & READER_INIT);
-	auto bits = BitMatrix(zint->bitmap_width, zint->bitmap_height);
-	std::transform(zint->bitmap, zint->bitmap + zint->bitmap_width * zint->bitmap_height, bits.row(0).begin(),
-				   [](unsigned char v) { return (v == '1') * BitMatrix::SET_V; });
-	int left, top, width, height;
-	bits.findBoundingBox(left, top, width, height);
-
-	auto res = Barcode(std::move(decRes), {std::move(bits), Rectangle<PointI>(left, top, width, height)}, opts.format());
-#endif
-
-	res.zint(std::move(opts.d->zint));
-
-	return res;
-}
-
-Barcode CreateBarcodeFromText(std::string_view contents, const CreatorOptions& opts)
-{
-	return CreateBarcode(contents.data(), contents.size(), UNICODE_MODE, opts);
-}
-
-#if __cplusplus > 201703L
-Barcode CreateBarcodeFromText(std::u8string_view contents, const CreatorOptions& opts)
-{
-	return CreateBarcode(contents.data(), contents.size(), UNICODE_MODE, opts);
-}
-#endif
-
-Barcode CreateBarcodeFromBytes(const void* data, int size, const CreatorOptions& opts)
-{
-	return CreateBarcode(data, size, DATA_MODE, opts);
-}
-
-// Writer ========================================================================
-
-struct SetCommonWriterOptions
-{
-	zint_symbol* zint;
-
-	SetCommonWriterOptions(zint_symbol* zint, const WriterOptions& opts) : zint(zint)
-	{
-		zint->show_hrt = opts.addHRT();
-
-		zint->output_options &= ~(OUT_BUFFER_INTERMEDIATE | BARCODE_NO_QUIET_ZONES);
-		zint->output_options |= opts.addQuietZones() ? BARCODE_QUIET_ZONES : BARCODE_NO_QUIET_ZONES;
-
-		if (opts.scale())
-			zint->scale = opts.scale() / 2.f;
-		else if (opts.sizeHint()) {
-			int size = std::max(zint->width, zint->rows);
-			zint->scale = std::max(1, int(float(opts.sizeHint()) / size)) / 2.f;
-		}
-
-		if (opts.invert()) {
-			strcpy(zint->bgcolour, "000000");
-			strcpy(zint->fgcolour, "ffffff");
-		}
-	}
-
-	// reset the defaults such that consecutive write calls don't influence each other
-	~SetCommonWriterOptions()
-	{
-		zint->scale = 0.5f;
-		strcpy(zint->fgcolour, "000000");
-		strcpy(zint->bgcolour, "ffffff");
-	}
-};
-
-} // ZXing
-
-#else // ZXING_USE_ZINT
-
-#include "MultiFormatWriter.h"
-#include "ReadBarcode.h"
-
-namespace ZXing {
-
-zint_symbol* CreatorOptions::zint() const { return nullptr; }
-
-static Barcode CreateBarcode(BitMatrix&& bits, std::string_view contents, const CreatorOptions& opts)
-{
-	auto img = ToMatrix<uint8_t>(bits);
-
-#ifdef ZXING_READERS
-	(void)contents; // unused
-	return ReadBarcode({img.data(), img.width(), img.height(), ImageFormat::Lum},
-					   ReaderOptions().setFormats(opts.format()).setIsPure(true).setBinarizer(Binarizer::BoolCast));
-#else
-	Content content;
-	content.append(contents);
-
-	DecoderResult decRes(std::move(content));
-	DetectorResult detRes(std::move(bits), Rectangle<PointI>(0, 0, bits.width(), bits.height()));
-	return Barcode(std::move(decRes), std::move(detRes), opts.format());
-#endif
-}
-
-Barcode CreateBarcodeFromText(std::string_view contents, const CreatorOptions& opts)
-{
-	auto writer = MultiFormatWriter(opts.format()).setMargin(0);
-	if (auto ecLevel = opts.ecLevel(); ecLevel && ecLevel->size() == 1 && strchr("012345678", (*ecLevel)[0]))
-		writer.setEccLevel(std::stoi(*ecLevel));
-	if (!IsAscii({(const uint8_t*)contents.data(), contents.size()}))
-		writer.setEncoding(CharacterSet::UTF8); // write UTF8 (ECI value 26) for maximum compatibility
-
-	return CreateBarcode(writer.encode(std::string(contents), 0, IsLinearBarcode(opts.format()) ? 50 : 0), contents, opts);
-}
-
-#if __cplusplus > 201703L
-Barcode CreateBarcodeFromText(std::u8string_view contents, const CreatorOptions& opts)
-{
-	return CreateBarcodeFromText({reinterpret_cast<const char*>(contents.data()), contents.size()}, opts);
-}
-#endif
-
-Barcode CreateBarcodeFromBytes(const void* data, int size, const CreatorOptions& opts)
-{
-	std::wstring bytes;
-	for (uint8_t c : ByteView(data, size))
-		bytes.push_back(c);
-
-	auto writer = MultiFormatWriter(opts.format()).setMargin(0);
-	if (auto ecLevel = opts.ecLevel(); ecLevel && ecLevel->size() == 1 && strchr("012345678", (*ecLevel)[0]))
-		writer.setEccLevel(std::stoi(*ecLevel));
-	writer.setEncoding(CharacterSet::BINARY);
-
-	return CreateBarcode(writer.encode(bytes, 0, IsLinearBarcode(opts.format()) ? 50 : 0), {(const char*)data, (size_t)size}, opts);
-}
-
-} // namespace ZXing
-
-#endif // ZXING_USE_ZINT
-
-#else // ZXING_WRITERS
-
-namespace ZXing {
-
-zint_symbol* CreatorOptions::zint() const { return nullptr; }
-
-Barcode CreateBarcodeFromText(std::string_view, const CreatorOptions&)
-{
-	throw std::runtime_error("This build of zxing-cpp does not support creating barcodes.");
-}
-
-#if __cplusplus > 201703L
-Barcode CreateBarcodeFromText(std::u8string_view, const CreatorOptions&)
-{
-	throw std::runtime_error("This build of zxing-cpp does not support creating barcodes.");
-}
-#endif
-
-Barcode CreateBarcodeFromBytes(const void*, int, const CreatorOptions&)
-{
-	throw std::runtime_error("This build of zxing-cpp does not support creating barcodes.");
-}
-
-} // namespace ZXing
-
-#endif // ZXING_WRITERS
-
-namespace ZXing {
 
 std::string WriteBarcodeToSVG(const Barcode& barcode, [[maybe_unused]] const WriterOptions& opts)
 {
