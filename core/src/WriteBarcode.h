@@ -79,7 +79,7 @@ Barcode CreateBarcodeFromText(std::string_view contents, const CreatorOptions& o
  */
 Barcode CreateBarcodeFromBytes(const void* data, int size, const CreatorOptions& options);
 
-#if __cplusplus > 201703L
+#if __cplusplus >= 202002L && __cpp_concepts >= 202002L
 Barcode CreateBarcodeFromText(std::u8string_view contents, const CreatorOptions& options);
 
 template <typename R>
