@@ -31,8 +31,8 @@ BarcodeFormats SupportedBarcodeFormats(Operation op)
 		return BarcodeFormat::None;
 #endif
 	case Operation::Create:
-#if defined(ZXING_WRITERS) && defined(ZXING_EXPERIMENTAL_API)
-		return BarcodeFormats(BarcodeFormat::Any).setFlag(BarcodeFormat::DXFilmEdge, false);
+#if defined(ZXING_WRITERS) && defined(ZXING_USE_ZINT)
+		return BarcodeFormat::Any;
 #else
 		return BarcodeFormat::None;
 #endif

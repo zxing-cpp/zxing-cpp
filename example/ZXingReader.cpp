@@ -7,10 +7,7 @@
 #include "GTIN.h"
 #include "ReadBarcode.h"
 #include "Version.h"
-
-#ifdef ZXING_EXPERIMENTAL_API
 #include "WriteBarcode.h"
-#endif
 
 #include <cctype>
 #include <chrono>
@@ -57,9 +54,9 @@ static void PrintUsage(const char* exePath)
 			  << "    -mode <plain|eci|hri|escaped>\n"
 			  << "               Text mode used to render the raw byte content into text\n"
 			  << "    -1         Print only file name, content/error on one line per file/barcode (implies '-mode Escaped')\n"
-#ifdef ZXING_EXPERIMENTAL_API
 			  << "    -symbol    Print the detected symbol (if available)\n"
 			  << "    -json      Print a complete JSON formated serialization\n"
+#ifdef ZXING_EXPERIMENTAL_API
 			  << "    -denoise   Use extra denoiseing (closing operation)\n"
 #endif
 			  << "    -bytes     Write (only) the bytes content of the symbol(s) to stdout\n"
@@ -246,13 +243,11 @@ int main(int argc, char* argv[])
 				continue;
 			}
 
-#ifdef ZXING_EXPERIMENTAL_API
 			if (cli.json) {
 				if (barcode.format() != ZXing::BarcodeFormat::None)
 					std::cout << "{\"FilePath\":\"" << filePath << "\"," << barcode.extra("ALL").substr(1) << "\n";
 				continue;
 			}
-#endif
 
 			if (cli.oneLine) {
 				std::cout << filePath << " " << ToString(barcode.format());
@@ -318,15 +313,9 @@ int main(int argc, char* argv[])
 				std::cout << "Structured Append: merged result from " << barcode.sequenceSize() << " symbols (parity/id: '"
 						  << barcode.sequenceId() << "')\n";
 
-			if (barcode.readerInit())
-				std::cout << "Reader Initialisation/Programming\n";
-
-#ifdef ZXING_EXPERIMENTAL_API
-			printOptional("UPC-E:      ", barcode.extra("UPC-E"));
 			printOptional("Extra:      ", barcode.extra());
 			if (cli.showSymbol && barcode.symbol().data())
 				std::cout << "Symbol:\n" << WriteBarcodeToUtf8(barcode);
-#endif
 		}
 
 		if (Size(cli.filePaths) == 1 && !cli.outPath.empty())

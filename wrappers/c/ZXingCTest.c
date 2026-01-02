@@ -76,7 +76,7 @@ int main(int argc, char** argv)
 		CHECK(iv)
 	} else {
 		fprintf(stderr, "Could not read image '%s'\n", filename);
-#if defined(ZXING_EXPERIMENTAL_API) && defined(ZXING_WRITERS)
+#ifdef ZXING_WRITERS
 		if (formats == ZXing_BarcodeFormat_Invalid)
 			return 2;
 		fprintf(stderr, "Using '%s' as text input to create barcode\n", filename);

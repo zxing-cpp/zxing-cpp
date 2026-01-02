@@ -29,15 +29,6 @@
 #include "BitMatrixIO.h"
 #endif
 
-namespace ZXing {
-
-void IncrementLineCount(Barcode& r)
-{
-	++r._lineCount;
-}
-
-} // namespace ZXing
-
 namespace ZXing::OneD {
 
 Reader::Reader(const ReaderOptions& opts) : ZXing::Reader(opts)
@@ -80,7 +71,7 @@ Reader::~Reader() = default;
 * decided that moving up and down by about 1/16 of the image is pretty good; we try more of the
 * image if "trying harder".
 */
-static Barcodes DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, const BinaryBitmap& image, bool tryHarder,
+Barcodes DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, const BinaryBitmap& image, bool tryHarder,
 						 bool rotate, bool isPure, int maxSymbols, int minLineCount, bool returnErrors)
 {
 	Barcodes res;
@@ -171,7 +162,7 @@ static Barcodes DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers,
 				do {
 					Barcode result = readers[r]->decodePattern(rowNumber, next, decodingState[r]);
 					if (result.isValid() || (returnErrors && result.error())) {
-						IncrementLineCount(result);
+						result.incrementLineCount();
 						if (upsideDown) {
 							// update position (flip horizontally).
 							auto points = result.position();
@@ -204,7 +195,7 @@ static Barcodes DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers,
 									points[3] = result.position()[3];
 								}
 								other.setPosition(points);
-								IncrementLineCount(other);
+								other.incrementLineCount();
 								// clear the result, so we don't insert it again below
 								result = Barcode();
 								break;

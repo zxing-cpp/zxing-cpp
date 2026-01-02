@@ -138,7 +138,7 @@ std::string Content::render(bool withECI) const
 	});
 
 	return res;
-#elif defined(ZXING_EXPERIMENTAL_API) && defined(ZXING_USE_ZINT)
+#elif defined(ZXING_USE_ZINT)
 	assert(!utf8Cache.empty());
 	if (!withECI)
 		return std::accumulate(utf8Cache.begin(), utf8Cache.end(), std::string());
@@ -183,7 +183,7 @@ std::string Content::text(TextMode mode) const
 	case TextMode::ECI: return render(true);
 	case TextMode::HRI:
 		switch (type()) {
-#if defined(ZXING_READERS) || (defined(ZXING_EXPERIMENTAL_API) && defined(ZXING_USE_ZINT))
+#if defined(ZXING_READERS) || defined(ZXING_USE_ZINT)
 		case ContentType::GS1: {
 			auto plain = render(false);
 			auto hri = HRIFromGS1(plain);
@@ -235,7 +235,7 @@ ByteArray Content::bytesECI() const
 	return res;
 }
 
-#if defined(ZXING_READERS) || (defined(ZXING_EXPERIMENTAL_API) && defined(ZXING_USE_ZINT))
+#if defined(ZXING_READERS) || defined(ZXING_USE_ZINT)
 /**
 * @param bytes bytes encoding a string, whose encoding should be guessed
 * @return name of guessed encoding; at the moment will only guess one of:
@@ -414,7 +414,7 @@ CharacterSet GuessTextEncoding(ByteView bytes, CharacterSet fallback = Character
 
 CharacterSet Content::guessEncoding() const
 {
-#if defined(ZXING_READERS) || (defined(ZXING_EXPERIMENTAL_API) && defined(ZXING_USE_ZINT))
+#if defined(ZXING_READERS) || defined(ZXING_USE_ZINT)
 	// assemble all blocks with unknown encoding
 	ByteArray input;
 	ForEachECIBlock([&](ECI eci, int begin, int end) {

@@ -111,6 +111,7 @@ set (COMMON_FILES
     src/CharacterSet.cpp
     src/Content.h
     src/Content.cpp
+    src/ContentType.h
     src/DecoderResult.h
     src/DetectorResult.h
     src/ECI.h
@@ -130,6 +131,7 @@ set (COMMON_FILES
     src/ReaderOptions.h
     src/ReadBarcode.h
     src/ReadBarcode.cpp
+    src/SymbologyIdentifier.h
     src/Utf.h
     src/Utf.cpp
     src/WriteBarcode.h
@@ -190,7 +192,6 @@ if (ZXING_READERS)
         src/ReedSolomonDecoder.h
         src/ReedSolomonDecoder.cpp
         src/RegressionLine.h
-        src/Result.h # [[deprecated]]
         src/ResultPoint.h
         src/ResultPoint.cpp
         src/StructuredAppend.h
@@ -227,7 +228,7 @@ set (PUBLIC_HEADERS
     src/BitHacks.h
     src/ByteArray.h
     src/CharacterSet.h
-    src/Content.h
+    src/ContentType.h
     src/Error.h
     src/Flags.h
     src/GTIN.h
@@ -239,16 +240,15 @@ set (PUBLIC_HEADERS
     src/ReaderOptions.h
     src/StructuredAppend.h
     src/TextUtfEncoding.h # [[deprecated]]
+    src/WriteBarcode.h
     src/ZXingCpp.h
     src/ZXAlgorithms.h
     src/ZXVersion.h # [[deprecated]]
     $<$<BOOL:${ZXING_C_API}>:${CMAKE_CURRENT_SOURCE_DIR}/src/ZXingC.h>
-    $<$<BOOL:${ZXING_EXPERIMENTAL_API}>:${CMAKE_CURRENT_SOURCE_DIR}/src/WriteBarcode.h>
 )
 if (ZXING_READERS)
     set (PUBLIC_HEADERS ${PUBLIC_HEADERS}
         src/DecodeHints.h # [[deprecated]]
-        src/Result.h # [[deprecated]]
     )
 endif()
 if (ZXING_WRITERS_OLD)
@@ -574,7 +574,6 @@ set_target_properties(ZXing PROPERTIES PUBLIC_HEADER "${PUBLIC_HEADERS}")
 set(PRECOMPILE_HEADERS ${PUBLIC_HEADERS})
 list(REMOVE_ITEM PRECOMPILE_HEADERS "$<$<BOOL:${ZXING_C_API}>:${CMAKE_CURRENT_SOURCE_DIR}/src/ZXingC.h>")
 list(REMOVE_ITEM PRECOMPILE_HEADERS src/DecodeHints.h) # [[deprecated]]
-list(REMOVE_ITEM PRECOMPILE_HEADERS src/Result.h)      # [[deprecated]]
 list(REMOVE_ITEM PRECOMPILE_HEADERS src/ZXVersion.h)   # [[deprecated]]
 target_precompile_headers(ZXing PRIVATE ${PRECOMPILE_HEADERS})
 set_source_files_properties(src/DecodeHints.cpp PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
@@ -653,9 +652,9 @@ install (
 )
 
 IF (NOT WIN32 OR MINGW)
-    if (${ZXING_EXPERIMENTAL_API})
-        set(COMPILE_FLAGS "-DZXING_EXPERIMENTAL_API")
-    endif()
+    # if (${ZXING_EXPERIMENTAL_API})
+    #     set(COMPILE_FLAGS "-DZXING_EXPERIMENTAL_API")
+    # endif()
     configure_file(zxing.pc.in zxing.pc @ONLY)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/zxing.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 ENDIF()

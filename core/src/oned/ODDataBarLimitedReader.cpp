@@ -9,6 +9,7 @@
 #include "GTIN.h"
 #include "ODDataBarCommon.h"
 #include "Barcode.h"
+#include "SymbologyIdentifier.h"
 
 //#define PRINT_DEBUG
 #ifndef PRINT_DEBUG

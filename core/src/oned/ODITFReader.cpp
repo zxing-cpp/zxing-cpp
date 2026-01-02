@@ -9,6 +9,7 @@
 #include "ReaderOptions.h"
 #include "GTIN.h"
 #include "Barcode.h"
+#include "SymbologyIdentifier.h"
 #include "ZXAlgorithms.h"
 
 namespace ZXing::OneD {

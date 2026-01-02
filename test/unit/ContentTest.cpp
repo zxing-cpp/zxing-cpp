@@ -25,7 +25,7 @@ TEST(ContentTest, Base)
 {
 	{ // Null
 		Content c;
-#if defined(ZXING_READERS) || (defined(ZXING_EXPERIMENTAL_API) && defined(ZXING_USE_ZINT))
+#if defined(ZXING_READERS) || defined(ZXING_USE_ZINT)
 		EXPECT_EQ(c.guessEncoding(), CharacterSet::Unknown);
 #else
 		EXPECT_EQ(c.guessEncoding(), CharacterSet::ISO8859_1);
@@ -34,7 +34,7 @@ TEST(ContentTest, Base)
 		EXPECT_TRUE(c.empty());
 	}
 
-#if defined(ZXING_READERS) || (defined(ZXING_EXPERIMENTAL_API) && defined(ZXING_USE_ZINT))
+#if defined(ZXING_READERS) || defined(ZXING_USE_ZINT)
 	{ // set latin1
 		Content c;
 		c.switchEncoding(CharacterSet::ISO8859_1);

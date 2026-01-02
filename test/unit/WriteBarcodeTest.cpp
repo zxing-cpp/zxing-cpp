@@ -9,8 +9,6 @@
 
 #include <iomanip>
 
-#if defined(ZXING_EXPERIMENTAL_API)
-
 #ifdef ZXING_READERS
 #include "ReadBarcode.h"
 #endif
@@ -354,5 +352,3 @@ TEST(WriteBarcodeTest, RandomDataBar)
 	randomTest(BarcodeFormat::DataBarExpanded);
 }
 #endif // ZXING_READERS
-
-#endif // ZXING_EXPERIMENTAL_API

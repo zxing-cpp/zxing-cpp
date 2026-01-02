@@ -14,6 +14,7 @@
 #include "ODUPCEANCommon.h"
 #include "Barcode.h"
 #include "JSON.h"
+#include "SymbologyIdentifier.h"
 
 #include <cmath>
 
@@ -317,12 +318,8 @@ Barcode MultiUPCEANReader::decodePattern(int rowNumber, PatternView& next, std::
 	if (_opts.eanAddOnSymbol() == EanAddOnSymbol::Require && !addOnRes.isValid())
 		return {};
 
-	return Barcode(res.txt, rowNumber, begin.pixelsInFront(), next.pixelsTillEnd(), res.format, symbologyIdentifier, error)
-#ifdef ZXING_EXPERIMENTAL_API
-		.addExtra(JsonProp(BarcodeExtra::UPCE, upceTxt))
-		.addExtra(JsonProp(BarcodeExtra::EanAddOn, addOnRes.txt))
-#endif
-		;
+	return Barcode(res.txt, rowNumber, begin.pixelsInFront(), next.pixelsTillEnd(), res.format, symbologyIdentifier, error,
+				   JsonProp(BarcodeExtra::UPCE, upceTxt) + JsonProp(BarcodeExtra::EanAddOn, addOnRes.txt));
 }
 
 } // namespace ZXing::OneD

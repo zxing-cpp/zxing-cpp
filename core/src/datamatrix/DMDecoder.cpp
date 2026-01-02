@@ -6,6 +6,7 @@
 
 #include "DMDecoder.h"
 
+#include "Barcode.h"
 #include "BitMatrix.h"
 #include "BitSource.h"
 #include "DMBitLayout.h"
@@ -438,10 +439,7 @@ retry:
 	// Decode the contents of that stream of bytes
 	return DecodedBitStreamParser::Decode(std::move(resultBytes), version->isDMRE())
 		.setVersionNumber(version->versionNumber)
-#ifdef ZXING_EXPERIMENTAL_API
-		.addExtra(BarcodeExtra::Version, std::to_string(version->symbolHeight) + 'x' + std::to_string(version->symbolWidth))
-#endif
-		;
+		.addExtra(BarcodeExtra::Version, std::to_string(version->symbolHeight) + 'x' + std::to_string(version->symbolWidth));
 }
 
 static BitMatrix FlippedL(const BitMatrix& bits)

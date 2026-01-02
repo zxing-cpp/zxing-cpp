@@ -7,6 +7,7 @@
 #include "ODDXFilmEdgeReader.h"
 
 #include "Barcode.h"
+#include "SymbologyIdentifier.h"
 
 #include <optional>
 #include <vector>

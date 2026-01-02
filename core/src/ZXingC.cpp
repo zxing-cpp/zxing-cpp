@@ -327,7 +327,6 @@ ZXing_Barcodes* ZXing_ReadBarcodes(const ZXing_ImageView* iv, const ZXing_Reader
 }
 
 
-#ifdef ZXING_EXPERIMENTAL_API
 /*
  * ZXing/WriteBarcode.h
  */
@@ -412,8 +411,6 @@ ZXing_Image* ZXing_WriteBarcodeToImage(const ZXing_Barcode* barcode, const ZXing
 	ZX_CHECK(barcode, "Barcode param in WriteBarcodeToSVG is NULL")
 	ZX_TRY(new Image(opts ? WriteBarcodeToImage(*barcode, *opts) : WriteBarcodeToImage(*barcode)))
 }
-
-#endif
 
 /*
  * ZXingC.h

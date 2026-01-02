@@ -5,8 +5,6 @@
 
 #pragma once
 
-#ifdef ZXING_EXPERIMENTAL_API
-
 #include "Barcode.h"
 #include "ImageView.h"
 
@@ -154,5 +152,3 @@ std::string WriteBarcodeToUtf8(const Barcode& barcode, const WriterOptions& opti
 Image WriteBarcodeToImage(const Barcode& barcode, const WriterOptions& options = {});
 
 } // ZXing
-
-#endif // ZXING_EXPERIMENTAL_API

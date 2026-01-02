@@ -7,33 +7,21 @@
 
 #include "ByteArray.h"
 #include "CharacterSet.h"
+#include "ContentType.h"
+#include "ECI.h"
 #include "ReaderOptions.h"
+#include "SymbologyIdentifier.h"
 #include "ZXAlgorithms.h"
+
+#if !defined(ZXING_READERS) && !defined(ZXING_WRITERS)
+#include "Version.h"
+#endif
 
 #include <string>
 #include <string_view>
 #include <vector>
 
 namespace ZXing {
-
-enum class ECI : int;
-
-enum class ContentType { Text, Binary, Mixed, GS1, ISO15434, UnknownECI };
-enum class AIFlag : char { None, GS1, AIM };
-
-std::string ToString(ContentType type);
-
-struct SymbologyIdentifier
-{
-	char code = 0, modifier = 0, eciModifierOffset = 0;
-	AIFlag aiFlag = AIFlag::None;
-
-	std::string toString(bool hasECI = false) const
-	{
-		int modVal = (modifier >= 'A' ? modifier - 'A' + 10 : modifier - '0') + eciModifierOffset * hasECI;
-		return code ? StrCat(']', code, static_cast<char>((modVal >= 10 ? 'A' - 10 : '0') + modVal)) : std::string();
-	}
-};
 
 class Content
 {
@@ -52,7 +40,7 @@ public:
 
 	ByteArray bytes;
 	std::vector<Encoding> encodings;
-#if !defined(ZXING_READERS) && defined(ZXING_EXPERIMENTAL_API) && defined(ZXING_USE_ZINT)
+#if !defined(ZXING_READERS) && defined(ZXING_USE_ZINT)
 	std::vector<std::string> utf8Cache;
 #endif
 	SymbologyIdentifier symbology;

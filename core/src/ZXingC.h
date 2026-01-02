@@ -20,10 +20,8 @@ typedef ZXing::ImageView ZXing_ImageView;
 typedef ZXing::Image ZXing_Image;
 typedef ZXing::ReaderOptions ZXing_ReaderOptions;
 
-#ifdef ZXING_EXPERIMENTAL_API
 typedef ZXing::CreatorOptions ZXing_CreatorOptions;
 typedef ZXing::WriterOptions ZXing_WriterOptions;
-#endif
 
 extern "C"
 {
@@ -268,7 +266,6 @@ int ZXing_ReaderOptions_getMaxNumberOfSymbols(const ZXing_ReaderOptions* opts);
 /** Note: opts is optional, i.e. it can be NULL, which will imply default settings. */
 ZXing_Barcodes* ZXing_ReadBarcodes(const ZXing_ImageView* iv, const ZXing_ReaderOptions* opts);
 
-#ifdef ZXING_EXPERIMENTAL_API
 
 /*
  * ZXing/WriteBarcode.h
@@ -310,7 +307,6 @@ ZXing_Barcode* ZXing_CreateBarcodeFromBytes(const void* data, int size, const ZX
 char* ZXing_WriteBarcodeToSVG(const ZXing_Barcode* barcode, const ZXing_WriterOptions* opts);
 ZXing_Image* ZXing_WriteBarcodeToImage(const ZXing_Barcode* barcode, const ZXing_WriterOptions* opts);
 
-#endif /* ZXING_EXPERIMENTAL_API */
 
 /* ZXing_LastErrorMsg() returns NULL in case there is no last error and a copy of the string otherwise. */
 char* ZXing_LastErrorMsg();

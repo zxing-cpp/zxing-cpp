@@ -4,8 +4,6 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#ifdef ZXING_EXPERIMENTAL_API
-
 #include "WriteBarcode.h"
 #include "BitMatrix.h"
 #include "JSON.h"
@@ -27,6 +25,7 @@
 #else
 
 struct zint_symbol {};
+using unique_zint_symbol = std::unique_ptr<zint_symbol>;
 
 #endif // ZXING_USE_ZINT
 
@@ -42,7 +41,7 @@ struct CreatorOptions::Data
 
 	mutable unique_zint_symbol zint;
 
-#ifndef __cpp_aggregate_paren_init
+#ifndef __cpp_aggregate_paren_init // MSVC 17.14
 	Data(BarcodeFormat f, std::string o) : format(f), options(std::move(o)) {}
 #endif
 };
@@ -462,7 +461,8 @@ Barcode CreateBarcode(const void* data, int size, int mode, const CreatorOptions
 #else
 	assert(zint->content_seg_count == 1);
 	const auto& content_seg = zint->content_segs[0];
-	const size_t content_seg_len = static_cast<size_t>(content_seg.length - (opts.format() == BarcodeFormat::Code93 && content_seg.length >= 2 ? 2 : 0));
+	const size_t content_seg_len =
+		static_cast<size_t>(content_seg.length - (opts.format() == BarcodeFormat::Code93 && content_seg.length >= 2 ? 2 : 0));
 
 	Content content;
 
@@ -652,9 +652,11 @@ namespace ZXing {
 
 std::string WriteBarcodeToSVG(const Barcode& barcode, [[maybe_unused]] const WriterOptions& opts)
 {
-	auto zint = barcode.zint();
+#if defined(ZXING_WRITERS) && defined(ZXING_USE_ZINT)
+	auto* zint = barcode.zint();
 
 	if (!zint)
+#endif
 		return ToSVG(barcode.symbol());
 
 #if defined(ZXING_WRITERS) && defined(ZXING_USE_ZINT)
@@ -666,17 +668,17 @@ std::string WriteBarcodeToSVG(const Barcode& barcode, [[maybe_unused]] const Wri
 	CHECK(ZBarcode_Print(zint, opts.rotate()));
 
 	return std::string(reinterpret_cast<const char*>(zint->memfile), zint->memfile_size);
-#else
-	return {}; // unreachable code
 #endif
 }
 
 Image WriteBarcodeToImage(const Barcode& barcode, [[maybe_unused]] const WriterOptions& opts)
 {
-	auto zint = barcode.zint();
+#if defined(ZXING_WRITERS) && defined(ZXING_USE_ZINT)
+	auto* zint = barcode.zint();
 
 	if (!zint)
-		return ToImage(barcode._symbol->copy(), IsLinearBarcode(barcode.format()), opts);
+#endif
+		return ToImage(barcode.symbolMatrix().copy(), IsLinearBarcode(barcode.format()), opts);
 
 #if defined(ZXING_WRITERS) && defined(ZXING_USE_ZINT)
 	auto resetOnExit = SetCommonWriterOptions(zint, opts);
@@ -694,8 +696,6 @@ Image WriteBarcodeToImage(const Barcode& barcode, [[maybe_unused]] const WriterO
 			*dst++ = RGBToLum(src[0], src[1], src[2]);
 
 	return iv;
-#else
-	return {}; // unreachable code
 #endif
 }
 
@@ -736,5 +736,3 @@ std::string WriteBarcodeToUtf8(const Barcode& barcode, [[maybe_unused]] const Wr
 }
 
 } // namespace ZXing
-
-#endif // ZXING_EXPERIMENTAL_API
