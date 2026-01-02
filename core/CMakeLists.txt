@@ -143,7 +143,6 @@ set (COMMON_FILES
     src/ZXAlgorithms.h
     src/ZXConfig.h
     src/ZXTestSupport.h
-    src/ZXVersion.h # [[deprecated]]
     $<$<BOOL:${ZXING_C_API}>:src/ZXingC.h>
     $<$<BOOL:${ZXING_C_API}>:src/ZXingC.cpp>
 )
@@ -156,8 +155,6 @@ if (ZXING_READERS OR ZXING_WRITERS_OLD)
         src/GenericGF.cpp
         src/GenericGFPoly.h
         src/GenericGFPoly.cpp
-        src/TextUtfEncoding.h # [[deprecated]]
-        src/TextUtfEncoding.cpp # [[deprecated]]
         src/Scope.h
     )
 endif()
@@ -176,8 +173,6 @@ if (ZXING_READERS)
         src/BitSource.cpp
         src/ConcentricFinder.h
         src/ConcentricFinder.cpp
-        src/DecodeHints.h
-        $<$<BOOL:${BUILD_SHARED_LIBS}>:src/DecodeHints.cpp> # [[deprecated]]
         src/GlobalHistogramBinarizer.h
         src/GlobalHistogramBinarizer.cpp
         src/GridSampler.h
@@ -242,16 +237,13 @@ set (PUBLIC_HEADERS
     src/ReadBarcode.h
     src/ReaderOptions.h
     src/StructuredAppend.h
-    src/TextUtfEncoding.h # [[deprecated]]
     src/WriteBarcode.h
     src/ZXingCpp.h
     src/ZXAlgorithms.h
-    src/ZXVersion.h # [[deprecated]]
     $<$<BOOL:${ZXING_C_API}>:${CMAKE_CURRENT_SOURCE_DIR}/src/ZXingC.h>
 )
 if (ZXING_READERS)
     set (PUBLIC_HEADERS ${PUBLIC_HEADERS}
-        src/DecodeHints.h # [[deprecated]]
     )
 endif()
 if (ZXING_WRITERS_OLD)
@@ -576,10 +568,7 @@ set_target_properties(ZXing PROPERTIES PUBLIC_HEADER "${PUBLIC_HEADERS}")
 
 set(PRECOMPILE_HEADERS ${PUBLIC_HEADERS})
 list(REMOVE_ITEM PRECOMPILE_HEADERS "$<$<BOOL:${ZXING_C_API}>:${CMAKE_CURRENT_SOURCE_DIR}/src/ZXingC.h>")
-list(REMOVE_ITEM PRECOMPILE_HEADERS src/DecodeHints.h) # [[deprecated]]
-list(REMOVE_ITEM PRECOMPILE_HEADERS src/ZXVersion.h)   # [[deprecated]]
 target_precompile_headers(ZXing PRIVATE ${PRECOMPILE_HEADERS})
-set_source_files_properties(src/DecodeHints.cpp PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
 
 if(CMAKE_BUILD_TYPE MATCHES "Release|RelWithDebInfo")
     # The following is a list of translation units that fulfill two criteria regarding the use of -Os vs -O3:
