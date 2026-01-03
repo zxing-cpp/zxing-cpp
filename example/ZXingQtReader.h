@@ -121,7 +121,7 @@ public:
 
 	explicit Barcode(ZXing::Barcode&& r) : ZXing::Barcode(std::move(r)) {
 		_text = QString::fromStdString(ZXing::Barcode::text());
-		_bytes = QByteArray(reinterpret_cast<const char*>(ZXing::Barcode::bytes().data()), Size(ZXing::Barcode::bytes()));
+		_bytes = QByteArray(reinterpret_cast<const char*>(ZXing::Barcode::bytes().data()), ZXing::Size(ZXing::Barcode::bytes()));
 		auto& pos = ZXing::Barcode::position();
 		auto qp = [&pos](int i) { return QPoint(pos[i].x, pos[i].y); };
 		_position = {qp(0), qp(1), qp(2), qp(3)};

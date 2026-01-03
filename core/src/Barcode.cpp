@@ -107,12 +107,12 @@ void Barcode::setPosition(Position pos)
 	d->position = pos;
 }
 
-const ByteArray& Barcode::bytes() const
+const std::vector<uint8_t>& Barcode::bytes() const
 {
 	return d->content.bytes;
 }
 
-ByteArray Barcode::bytesECI() const
+std::vector<uint8_t> Barcode::bytesECI() const
 {
 	return d->content.bytesECI();
 }

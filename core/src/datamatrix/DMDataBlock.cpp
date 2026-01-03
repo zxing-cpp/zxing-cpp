@@ -7,6 +7,7 @@
 
 #include "DMDataBlock.h"
 
+#include "ByteArray.h"
 #include "DMVersion.h"
 #include "ZXAlgorithms.h"
 

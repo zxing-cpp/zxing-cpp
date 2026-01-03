@@ -382,7 +382,7 @@ PYBIND11_MODULE(zxingcpp, m)
 		.def_property_readonly("text", [](const Barcode& res) { return res.text(); },
 			":return: text of the decoded symbol (see also TextMode parameter)\n"
 			":rtype: str")
-		.def_property_readonly("bytes", [](const Barcode& res) { return py::bytes(res.bytes().asString()); },
+		.def_property_readonly("bytes", [](const Barcode& res) { return py::bytes((char*)res.bytes().data(), res.bytes().size()); },
 			":return: uninterpreted bytes of the decoded symbol\n"
 			":rtype: bytes")
 		.def_property_readonly("format", &Barcode::format,

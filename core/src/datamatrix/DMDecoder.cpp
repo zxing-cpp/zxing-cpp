@@ -9,6 +9,7 @@
 #include "Barcode.h"
 #include "BitMatrix.h"
 #include "BitSource.h"
+#include "ByteArray.h"
 #include "DMBitLayout.h"
 #include "DMDataBlock.h"
 #include "DMVersion.h"

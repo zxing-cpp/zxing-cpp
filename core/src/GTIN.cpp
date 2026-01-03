@@ -203,7 +203,7 @@ std::string EanAddOn(const Barcode& barcode)
 {
 	if (barcode.symbologyIdentifier() != "]E3")
 		return {};
-	return std::string(barcode.bytes().asString().substr(barcode.format() == BarcodeFormat::EAN8 ? 8 : 13));
+	return barcode.text().substr(barcode.format() == BarcodeFormat::EAN8 ? 8 : 13);
 }
 
 std::string IssueNr(const std::string& ean2AddOn)

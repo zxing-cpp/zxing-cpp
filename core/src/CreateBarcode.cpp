@@ -7,6 +7,7 @@
 #include "CreateBarcode.h"
 
 #include "BitMatrix.h"
+#include "ByteArray.h"
 #include "DecoderResult.h"
 #include "DetectorResult.h"
 #include "JSON.h"

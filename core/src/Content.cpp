@@ -5,6 +5,7 @@
 
 #include "Content.h"
 
+#include "ByteArray.h"
 #include "CharacterSet.h"
 #include "ECI.h"
 #include "HRI.h"

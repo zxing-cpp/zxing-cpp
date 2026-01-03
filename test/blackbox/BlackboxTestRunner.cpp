@@ -6,6 +6,7 @@
 
 #include "BlackboxTestRunner.h"
 
+#include "ByteArray.h"
 #include "ImageLoader.h"
 #include "ReadBarcode.h"
 #include "Utf.h"

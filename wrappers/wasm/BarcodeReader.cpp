@@ -47,7 +47,7 @@ std::vector<ReadResult> readBarcodes(ImageView iv, bool tryHarder, const std::st
 		thread_local const emscripten::val Uint8Array = emscripten::val::global("Uint8Array");
 
 		for (auto&& barcode : barcodes) {
-			const ByteArray& bytes = barcode.bytes();
+			const auto& bytes = barcode.bytes();
 			readResults.push_back({
 				ToString(barcode.format()),
 				barcode.text(),

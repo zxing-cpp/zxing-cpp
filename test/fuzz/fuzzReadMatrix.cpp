@@ -38,7 +38,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
 
 	assert(width * height <= nBits);
 
-	ByteArray buffer(nBits);
+	std::vector<uint8_t> buffer(nBits);
 	for (size_t i = 1; i < size; ++i)
 		*reinterpret_cast<uint64_t*>(&buffer[(i - 1) * 8]) = Expand(data[i]);
 

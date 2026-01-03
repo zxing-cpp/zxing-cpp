@@ -8,6 +8,7 @@
 
 #include "ODCode128Patterns.h"
 #include "Barcode.h"
+#include "ByteArray.h"
 #include "JSON.h"
 #include "SymbologyIdentifier.h"
 #include "ZXAlgorithms.h"

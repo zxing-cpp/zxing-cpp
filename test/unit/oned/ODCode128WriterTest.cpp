@@ -100,11 +100,11 @@ TEST(ODCode128Writer, RoundtripGS1)
 
 TEST(ODCode128Writer, RoundtripFNC1)
 {
-	auto toEncode = L"1\u00f10958\u00f117160526";
+	auto toEncode = L"1\u00f10\u00f11";
 
 	auto encResult = Code128Writer().encode(toEncode, 0, 0);
 	auto decResult = Decode(encResult);
-	EXPECT_EQ(decResult.bytes().asString(), "1\u001D0958\u001D17160526");
+	EXPECT_EQ(ToHex(decResult.bytes()), "31 1D 30 1D 31");
 	EXPECT_EQ(decResult.symbologyIdentifier(), "]C0");
 }
 

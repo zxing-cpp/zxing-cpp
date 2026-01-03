@@ -9,7 +9,6 @@
 #include "Range.h"
 
 #include <cstdint>
-#include <cstdio>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -40,21 +39,5 @@ public:
 		return ByteView(*this).subview(pos, len);
 	}
 };
-
-inline std::string ToHex(ByteView bytes)
-{
-	std::string res(bytes.size() * 3, ' ');
-
-	for (size_t i = 0; i < bytes.size(); ++i)
-	{
-#ifdef _MSC_VER
-		sprintf_s(&res[i * 3], 4, "%02X ", bytes[i]);
-#else
-		snprintf(&res[i * 3], 4, "%02X ", bytes[i]);
-#endif
-	}
-
-	return res.substr(0, res.size()-1);
-}
 
 } // ZXing

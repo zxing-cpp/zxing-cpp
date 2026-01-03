@@ -8,7 +8,6 @@
 #pragma once
 
 #include "BarcodeFormat.h"
-#include "ByteArray.h"
 #include "ContentType.h"
 #include "ReaderOptions.h"
 #include "Error.h"
@@ -101,12 +100,12 @@ public:
 	/**
 	 * @brief bytes is the raw / standard content without any modifications like character set conversions
 	 */
-	const ByteArray& bytes() const; // TODO 3.0: replace ByteArray with std::vector<uint8_t>
+	const std::vector<uint8_t>& bytes() const;
 
 	/**
 	 * @brief bytesECI is the raw / standard content following the ECI protocol
 	 */
-	ByteArray bytesECI() const;
+	std::vector<uint8_t> bytesECI() const;
 
 	/**
 	 * @brief text returns the bytes() content rendered to unicode/utf8 text accoring to specified TextMode

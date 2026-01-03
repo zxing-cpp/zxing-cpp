@@ -6,6 +6,7 @@
 
 #include "QRDataBlock.h"
 
+#include "ByteArray.h"
 #include "QRErrorCorrectionLevel.h"
 #include "QRVersion.h"
 #include "ZXAlgorithms.h"
