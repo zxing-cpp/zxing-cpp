@@ -97,7 +97,6 @@ set (COMMON_FILES
     src/BitMatrixIO.h
     src/BitMatrixIO.cpp
     src/ByteArray.h
-    src/ByteMatrix.h
     src/CharacterSet.h
     src/CharacterSet.cpp
     src/CreateBarcode.h
@@ -201,7 +200,6 @@ endif()
 
 if (ZXING_WRITERS_OLD)
     set (COMMON_FILES ${COMMON_FILES}
-        src/ByteMatrix.h
         src/ReedSolomonEncoder.h
         src/ReedSolomonEncoder.cpp
         src/MultiFormatWriter.h

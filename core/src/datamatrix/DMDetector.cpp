@@ -9,7 +9,7 @@
 
 #include "BitMatrix.h"
 #include "BitMatrixCursor.h"
-#include "ByteMatrix.h"
+#include "Matrix.h"
 #include "DetectorResult.h"
 #include "GridSampler.h"
 #include "LogMatrix.h"
@@ -565,7 +565,8 @@ class EdgeTracer : public BitMatrixCursorF
 	}
 
 public:
-	ByteMatrix* history = nullptr;
+	using StateMatrix = Matrix<int8_t>;
+	StateMatrix* history = nullptr;
 	int state = 0;
 
 	using BitMatrixCursorF::BitMatrixCursor;
@@ -871,9 +872,9 @@ static DetectorResults DetectNew(const BitMatrix& image, bool tryHarder, bool tr
 #endif
 
 	// a history log to remember where the tracing already passed by to prevent a later trace from doing the same work twice
-	ByteMatrix history;
+	EdgeTracer::StateMatrix history;
 	if (tryHarder)
-		history = ByteMatrix(image.width(), image.height());
+		history = EdgeTracer::StateMatrix(image.width(), image.height());
 
 	// instantiate RegressionLine objects outside of Scan function to prevent repetitive std::vector allocations
 	std::array<DMRegressionLine, 4> lines;
