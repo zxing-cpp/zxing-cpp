@@ -25,8 +25,7 @@ static std::vector<std::unique_ptr<RowReader>> readers;
 
 bool init()
 {
-	static ReaderOptions opts;
-	opts.setReturnErrors(true);
+	static auto opts = ReaderOptions().returnErrors(true);
 	readers.emplace_back(new MultiUPCEANReader(opts));
 	readers.emplace_back(new Code39Reader(opts));
 	readers.emplace_back(new Code93Reader(opts));

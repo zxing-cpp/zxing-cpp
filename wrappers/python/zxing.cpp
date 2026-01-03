@@ -46,15 +46,15 @@ auto read_barcodes_impl(py::object _image, const BarcodeFormats& formats, bool t
 						uint8_t max_number_of_symbols = 0xff)
 {
 	const auto opts = ReaderOptions()
-		.setFormats(formats)
-		.setTryRotate(try_rotate)
-		.setTryDownscale(try_downscale)
-		.setTextMode(text_mode)
-		.setBinarizer(binarizer)
-		.setIsPure(is_pure)
-		.setMaxNumberOfSymbols(max_number_of_symbols)
-		.setEanAddOnSymbol(ean_add_on_symbol)
-		.setReturnErrors(return_errors);
+		.formats(formats)
+		.tryRotate(try_rotate)
+		.tryDownscale(try_downscale)
+		.textMode(text_mode)
+		.binarizer(binarizer)
+		.isPure(is_pure)
+		.maxNumberOfSymbols(max_number_of_symbols)
+		.eanAddOnSymbol(ean_add_on_symbol)
+		.returnErrors(return_errors);
 
 	if (py::isinstance<ImageView>(_image)) {
 		// Disables the GIL during zxing processing (restored automatically upon completion)

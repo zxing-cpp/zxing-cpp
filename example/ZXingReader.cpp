@@ -77,29 +77,29 @@ static bool ParseOptions(int argc, char* argv[], ReaderOptions& options, CLI& cl
 	for (int i = 1; i < argc; ++i) {
 		auto is = [&](const char* str) { return strlen(argv[i]) > 1 && strncmp(argv[i], str, strlen(argv[i])) == 0; };
 		if (is("-fast")) {
-			options.setTryHarder(false);
+			options.tryHarder(false);
 		} else if (is("-norotate")) {
-			options.setTryRotate(false);
+			options.tryRotate(false);
 		} else if (is("-noinvert")) {
-			options.setTryInvert(false);
+			options.tryInvert(false);
 		} else if (is("-noscale")) {
-			options.setTryDownscale(false);
+			options.tryDownscale(false);
 #ifdef ZXING_EXPERIMENTAL_API
 		} else if (is("-denoise")) {
-			options.setTryDenoise(true);
+			options.tryDenoise(true);
 #endif
 		} else if (is("-single")) {
-			options.setMaxNumberOfSymbols(1);
+			options.maxNumberOfSymbols(1);
 		} else if (is("-ispure")) {
-			options.setIsPure(true);
-			options.setBinarizer(Binarizer::FixedThreshold);
+			options.isPure(true);
+			options.binarizer(Binarizer::FixedThreshold);
 		} else if (is("-errors")) {
-			options.setReturnErrors(true);
+			options.returnErrors(true);
 		} else if (is("-formats")) {
 			if (++i == argc)
 				return false;
 			try {
-				options.setFormats(BarcodeFormatsFromString(argv[i]));
+				options.formats(BarcodeFormatsFromString(argv[i]));
 			} catch (const std::exception& e) {
 				std::cerr << e.what() << "\n";
 				return false;
@@ -108,24 +108,24 @@ static bool ParseOptions(int argc, char* argv[], ReaderOptions& options, CLI& cl
 			if (++i == argc)
 				return false;
 			else if (is("local"))
-				options.setBinarizer(Binarizer::LocalAverage);
+				options.binarizer(Binarizer::LocalAverage);
 			else if (is("global"))
-				options.setBinarizer(Binarizer::GlobalHistogram);
+				options.binarizer(Binarizer::GlobalHistogram);
 			else if (is("fixed"))
-				options.setBinarizer(Binarizer::FixedThreshold);
+				options.binarizer(Binarizer::FixedThreshold);
 			else
 				return false;
 		} else if (is("-mode")) {
 			if (++i == argc)
 				return false;
 			else if (is("plain"))
-				options.setTextMode(TextMode::Plain);
+				options.textMode(TextMode::Plain);
 			else if (is("eci"))
-				options.setTextMode(TextMode::ECI);
+				options.textMode(TextMode::ECI);
 			else if (is("hri"))
-				options.setTextMode(TextMode::HRI);
+				options.textMode(TextMode::HRI);
 			else if (is("escaped"))
-				options.setTextMode(TextMode::Escaped);
+				options.textMode(TextMode::Escaped);
 			else
 				return false;
 		} else if (is("-1")) {
@@ -191,8 +191,8 @@ int main(int argc, char* argv[])
 	Barcodes allBarcodes;
 	int ret = 0;
 
-	options.setTextMode(TextMode::HRI);
-	options.setEanAddOnSymbol(EanAddOnSymbol::Read);
+	options.textMode(TextMode::HRI);
+	options.eanAddOnSymbol(EanAddOnSymbol::Read);
 
 	if (!ParseOptions(argc, argv, options, cli)) {
 		PrintUsage(argv[0]);

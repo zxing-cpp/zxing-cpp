@@ -34,9 +34,9 @@ int main(int argc, char** argv)
 	fs::path pathPrefix = argv[1];
 
 	if (Contains({".png", ".jpg", ".pgm", ".gif"}, pathPrefix.extension())) {
-		auto opts = ReaderOptions().setTryHarder(!getEnv("FAST", false)).setTryRotate(true).setIsPure(getEnv("IS_PURE"));
+		auto opts = ReaderOptions().tryHarder(!getEnv("FAST", false)).tryRotate(true).isPure(getEnv("IS_PURE"));
 		if (getenv("FORMATS"))
-			opts.setFormats(BarcodeFormatsFromString(getenv("FORMATS")));
+			opts.formats(BarcodeFormatsFromString(getenv("FORMATS")));
 		int rotation = getEnv("ROTATION");
 
 		for (int i = 1; i < argc; ++i) {

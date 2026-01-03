@@ -210,8 +210,8 @@ uint8_t* ZXing_Barcode_bytesECI(const ZXing_Barcode* barcode, int* len)
 	return copy(barcode->bytesECI(), len);
 }
 
-#define ZX_GETTER(TYPE, GETTER, TRANS) \
-	TYPE ZXing_Barcode_##GETTER(const ZXing_Barcode* barcode) { return TRANS(barcode->GETTER()); }
+#define ZX_GETTER(TYPE, NAME, TRANS) \
+	TYPE ZXing_Barcode_##NAME(const ZXing_Barcode* barcode) { return TRANS(barcode->NAME()); }
 
 ZX_GETTER(ZXing_BarcodeFormat, format, static_cast<ZXing_BarcodeFormat>)
 ZX_GETTER(ZXing_ContentType, contentType, static_cast<ZXing_ContentType>)
@@ -274,9 +274,9 @@ void ZXing_ReaderOptions_delete(ZXing_ReaderOptions* opts)
 	delete opts;
 }
 
-#define ZX_PROPERTY(TYPE, GETTER, SETTER) \
-	TYPE ZXing_ReaderOptions_get##SETTER(const ZXing_ReaderOptions* opts) { return opts->GETTER(); } \
-	void ZXing_ReaderOptions_set##SETTER(ZXing_ReaderOptions* opts, TYPE val) { opts->set##SETTER(val); }
+#define ZX_PROPERTY(TYPE, NAME, CAP_NAME) \
+	TYPE ZXing_ReaderOptions_get##CAP_NAME(const ZXing_ReaderOptions* opts) { return opts->NAME(); } \
+	void ZXing_ReaderOptions_set##CAP_NAME(ZXing_ReaderOptions* opts, TYPE val) { opts->NAME(val); }
 
 ZX_PROPERTY(bool, tryHarder, TryHarder)
 ZX_PROPERTY(bool, tryRotate, TryRotate)
@@ -294,7 +294,7 @@ ZX_PROPERTY(int, maxNumberOfSymbols, MaxNumberOfSymbols)
 
 void ZXing_ReaderOptions_setFormats(ZXing_ReaderOptions* opts, ZXing_BarcodeFormats formats)
 {
-	opts->setFormats(static_cast<BarcodeFormat>(formats));
+	opts->formats(static_cast<BarcodeFormat>(formats));
 }
 
 ZXing_BarcodeFormats ZXing_ReaderOptions_getFormats(const ZXing_ReaderOptions* opts)
@@ -303,9 +303,9 @@ ZXing_BarcodeFormats ZXing_ReaderOptions_getFormats(const ZXing_ReaderOptions* o
 	return transmute_cast<ZXing_BarcodeFormats>(v);
 }
 
-#define ZX_ENUM_PROPERTY(TYPE, GETTER, SETTER) \
-	ZXing_##TYPE ZXing_ReaderOptions_get##SETTER(const ZXing_ReaderOptions* opts) { return static_cast<ZXing_##TYPE>(opts->GETTER()); } \
-	void ZXing_ReaderOptions_set##SETTER(ZXing_ReaderOptions* opts, ZXing_##TYPE val) { opts->set##SETTER(static_cast<TYPE>(val)); }
+#define ZX_ENUM_PROPERTY(TYPE, NAME, CAP_NAME) \
+	ZXing_##TYPE ZXing_ReaderOptions_get##CAP_NAME(const ZXing_ReaderOptions* opts) { return static_cast<ZXing_##TYPE>(opts->NAME()); } \
+	void ZXing_ReaderOptions_set##CAP_NAME(ZXing_ReaderOptions* opts, ZXing_##TYPE val) { opts->NAME(static_cast<TYPE>(val)); }
 
 ZX_ENUM_PROPERTY(Binarizer, binarizer, Binarizer)
 ZX_ENUM_PROPERTY(EanAddOnSymbol, eanAddOnSymbol, EanAddOnSymbol)
@@ -342,17 +342,17 @@ void ZXing_CreatorOptions_delete(ZXing_CreatorOptions* opts)
 	delete opts;
 }
 
-#define ZX_ENUM_PROPERTY(TYPE, GETTER, SETTER) \
-	ZXing_##TYPE ZXing_CreatorOptions_get##SETTER(const ZXing_CreatorOptions* opts) { return static_cast<ZXing_##TYPE>(opts->GETTER()); } \
-	void ZXing_ReaderOptions_set##SETTER(ZXing_CreatorOptions* opts, ZXing_##TYPE val) { opts->GETTER(static_cast<TYPE>(val)); }
+#define ZX_ENUM_PROPERTY(TYPE, NAME, CAP_NAME) \
+	ZXing_##TYPE ZXing_CreatorOptions_get##CAP_NAME(const ZXing_CreatorOptions* opts) { return static_cast<ZXing_##TYPE>(opts->NAME()); } \
+	void ZXing_ReaderOptions_set##CAP_NAME(ZXing_CreatorOptions* opts, ZXing_##TYPE val) { opts->NAME(static_cast<TYPE>(val)); }
 
 ZX_ENUM_PROPERTY(BarcodeFormat, format, Format)
 
 #undef ZX_ENUM_PROPERTY
 
-#define ZX_PROPERTY(TYPE, GETTER, SETTER) \
-	TYPE ZXing_CreatorOptions_get##SETTER(const ZXing_CreatorOptions* opts) { return opts->GETTER(); } \
-	void ZXing_CreatorOptions_set##SETTER(ZXing_CreatorOptions* opts, TYPE val) { opts->GETTER(val); }
+#define ZX_PROPERTY(TYPE, NAME, CAP_NAME) \
+	TYPE ZXing_CreatorOptions_get##CAP_NAME(const ZXing_CreatorOptions* opts) { return opts->NAME(); } \
+	void ZXing_CreatorOptions_set##CAP_NAME(ZXing_CreatorOptions* opts, TYPE val) { opts->NAME(val); }
 
 #undef ZX_PROPERTY
 
@@ -377,9 +377,9 @@ void ZXing_WriterOptions_delete(ZXing_WriterOptions* opts)
 	delete opts;
 }
 
-#define ZX_PROPERTY(TYPE, GETTER, SETTER) \
-	TYPE ZXing_WriterOptions_get##SETTER(const ZXing_WriterOptions* opts) { return opts->GETTER(); } \
-	void ZXing_WriterOptions_set##SETTER(ZXing_WriterOptions* opts, TYPE val) { opts->GETTER(val); }
+#define ZX_PROPERTY(TYPE, NAME, CAP_NAME) \
+	TYPE ZXing_WriterOptions_get##CAP_NAME(const ZXing_WriterOptions* opts) { return opts->NAME(); } \
+	void ZXing_WriterOptions_set##CAP_NAME(ZXing_WriterOptions* opts, TYPE val) { opts->NAME(val); }
 
 ZX_PROPERTY(int, scale, Scale)
 ZX_PROPERTY(int, sizeHint, SizeHint)

@@ -42,7 +42,7 @@ static void check(int line, std::string_view input, CreatorOptions cOpts, std::s
 	// EXPECT_EQ(bc.version(), version) << "line:" << line;
 
 #ifdef ZXING_READERS
-	auto br = ReadBarcode(bc.symbol(), ReaderOptions().setFormats(bc.format()).setIsPure(true).setEanAddOnSymbol(EanAddOnSymbol::Read));
+	auto br = ReadBarcode(bc.symbol(), ReaderOptions().formats(bc.format()).isPure(true).eanAddOnSymbol(EanAddOnSymbol::Read));
 
 	EXPECT_EQ(bc.isValid(), br.isValid()) << "line:" << line;
 	EXPECT_EQ(ToString(bc.format()), ToString(br.format())) << "line:" << line;
@@ -332,7 +332,7 @@ TEST(WriteBarcodeTest, ZintBinary)
 TEST(WriteBarcodeTest, RandomDataBar)
 {
 	auto randomTest = [](BarcodeFormat format) {
-		auto read_opts = ReaderOptions().setFormats(format).setIsPure(true).setBinarizer(Binarizer::BoolCast);
+		auto read_opts = ReaderOptions().formats(format).isPure(true).binarizer(Binarizer::BoolCast);
 
 		int n = 1000;
 		int nErrors = 0;

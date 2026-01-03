@@ -46,6 +46,26 @@ enum class TextMode : unsigned char // see above
 	Escaped, ///< Use the EscapeNonGraphical() function (e.g. ASCII 29 will be transcoded to "<GS>")
 };
 
+/**
+ * @class ReaderOptions
+ * @brief Configuration options for barcode reading and decoding behavior.
+ *
+ * @details
+ * ReaderOptions encapsulates a set of flags and parameters that control
+ * how barcode detection and decoding is performed. It provides
+ * fluent setters that support chaining. Both `name(val)` and `setName(val)`
+ * forms are available for convenience and compatibility.
+ *
+ * The class is intended to be passed to the ReadBarcodes function to
+ * influence scanning heuristics, performance vs. accuracy trade-offs, output
+ * formatting, and symbol filtering. Instances can be reused across multiple
+ * read operations.
+ *
+ * The default settings are optimized for detection rate and can be tuned
+ * for speed or specific use-cases.
+ * 
+ * @see BarcodeFormats, Binarizer, TextMode, CharacterSet, ReadBarcodes
+ */
 class ReaderOptions
 {
 	bool _tryHarder                : 1;
@@ -94,10 +114,12 @@ public:
 #endif
 	{}
 
-#define ZX_PROPERTY(TYPE, GETTER, SETTER, ...) \
-	TYPE GETTER() const noexcept { return _##GETTER; } \
-	__VA_ARGS__ ReaderOptions& SETTER(TYPE v)& { return (void)(_##GETTER = std::move(v)), *this; } \
-	__VA_ARGS__ ReaderOptions&& SETTER(TYPE v)&& { return (void)(_##GETTER = std::move(v)), std::move(*this); }
+#define ZX_PROPERTY(TYPE, NAME, SETTER, ...) \
+	TYPE NAME() const noexcept { return _##NAME; } \
+	__VA_ARGS__ ReaderOptions& NAME(TYPE v)& { return (void)(_##NAME = std::move(v)), *this; } \
+	__VA_ARGS__ ReaderOptions&& NAME(TYPE v)&& { return (void)(_##NAME = std::move(v)), std::move(*this); } \
+	__VA_ARGS__ inline ReaderOptions& SETTER(TYPE v)& { return NAME(v); } \
+	__VA_ARGS__ inline ReaderOptions&& SETTER(TYPE v)&& { return std::move(*this).NAME(v); }
 
 	/// Specify a set of BarcodeFormats that should be searched for, the default is all supported formats.
 	ZX_PROPERTY(BarcodeFormats, formats, setFormats)
@@ -126,11 +148,9 @@ public:
 	ZX_PROPERTY(bool, isPure, setIsPure)
 
 	/// Image size ( min(width, height) ) threshold at which to start downscaled scanning
-	// WARNING: this API is experimental and may change/disappear
 	ZX_PROPERTY(uint16_t, downscaleThreshold, setDownscaleThreshold)
 
 	/// Scale factor used during downscaling, meaningful values are 2, 3 and 4
-	// WARNING: this API is experimental and may change/disappear
 	ZX_PROPERTY(uint8_t, downscaleFactor, setDownscaleFactor)
 
 	/// The number of scan lines in a linear barcode that have to be equal to accept the result, default is 2

@@ -94,8 +94,8 @@ TEST(ThresholdBinarizerTest, PatternRowClear)
 				"01000111000101111010011000000000101011110100111000010";
 
 	bits = ParseBitMatrix(bitstream, 53 /*width*/);
-	opts.setFormats(BarcodeFormat::DataBarExpanded);
-	opts.setMinLineCount(1);
+	opts.formats(BarcodeFormat::DataBarExpanded);
+	opts.minLineCount(1);
 	OneD::Reader reader(opts);
 
 	auto barcode = reader.decode(ThresholdBinarizer(getImageView(buf, bits), 0x7F));

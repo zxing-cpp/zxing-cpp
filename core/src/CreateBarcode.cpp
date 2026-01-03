@@ -381,7 +381,7 @@ Barcode CreateBarcode(const void* data, int size, int mode, const CreatorOptions
 				   [](unsigned char v) { return (v == '0') * 0xff; });
 
 	auto res = ReadBarcode({buffer.data(), zint->bitmap_width, zint->bitmap_height, ImageFormat::Lum},
-						   ReaderOptions().setFormats(opts.format()).setIsPure(true).setBinarizer(Binarizer::BoolCast));
+						   ReaderOptions().formats(opts.format()).isPure(true).binarizer(Binarizer::BoolCast));
 #else
 	assert(zint->content_seg_count == 1);
 	const auto& content_seg = zint->content_segs[0];
@@ -456,7 +456,7 @@ static Barcode CreateBarcode(BitMatrix&& bits, std::string_view contents, const 
 #ifdef ZXING_READERS
 	(void)contents; // unused
 	return ReadBarcode({img.data(), img.width(), img.height(), ImageFormat::Lum},
-					   ReaderOptions().setFormats(opts.format()).setIsPure(true).setBinarizer(Binarizer::BoolCast));
+					   ReaderOptions().formats(opts.format()).isPure(true).binarizer(Binarizer::BoolCast));
 #else
 	Content content;
 	content.append(contents);

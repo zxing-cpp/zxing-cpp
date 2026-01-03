@@ -236,15 +236,15 @@ static void doRunTests(const fs::path& directory, std::string_view format, int t
 			if (tc.name.empty())
 				break;
 			auto startTime = std::chrono::steady_clock::now();
-			opts.setTryDownscale(tc.name == "slow_");
-			opts.setDownscaleFactor(2);
-			opts.setDownscaleThreshold(180);
-			opts.setTryHarder(tc.name == "slow");
-			opts.setTryRotate(tc.name == "slow");
-			opts.setTryInvert(tc.name == "slow");
-			opts.setIsPure(tc.name == "pure");
+			opts.tryDownscale(tc.name == "slow_");
+			opts.downscaleFactor(2);
+			opts.downscaleThreshold(180);
+			opts.tryHarder(tc.name == "slow");
+			opts.tryRotate(tc.name == "slow");
+			opts.tryInvert(tc.name == "slow");
+			opts.isPure(tc.name == "pure");
 			if (opts.isPure())
-				opts.setBinarizer(Binarizer::FixedThreshold);
+				opts.binarizer(Binarizer::FixedThreshold);
 #if 1
 #ifdef __cpp_lib_execution
 			std::vector<Barcode> barcodes(imgPaths.size());
@@ -291,7 +291,7 @@ static Barcode readMultiple(const std::vector<fs::path>& imgPaths, std::string_v
 	Barcodes allBarcodes;
 	for (const auto& imgPath : imgPaths) {
 		auto barcodes = ReadBarcodes(ImageLoader::load(imgPath),
-									 ReaderOptions().setFormats(BarcodeFormatFromString(format)).setTryDownscale(false));
+									 ReaderOptions().formats(BarcodeFormatFromString(format)).tryDownscale(false));
 		allBarcodes.insert(allBarcodes.end(), barcodes.begin(), barcodes.end());
 	}
 
@@ -493,7 +493,7 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		runTests("ean13-extension-1", "EAN-13", 5, {
 			{ 3, 5, 0 },
 			{ 3, 5, 180 },
-		}, ReaderOptions().setEanAddOnSymbol(EanAddOnSymbol::Require));
+		}, ReaderOptions().eanAddOnSymbol(EanAddOnSymbol::Require));
 
 		runTests("itf-1", "ITF", 14, {
 			{ 13, 14, 0   },
@@ -508,32 +508,32 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		runTests("upca-1", "UPC-A", 12, {
 			{ 10, 12, 0   },
 			{ 11, 12, 180 },
-		}, ReaderOptions().setFormats(BarcodeFormat::UPCA));
+		}, ReaderOptions().formats(BarcodeFormat::UPCA));
 
 		runTests("upca-2", "UPC-A", 36, {
 			{ 17, 22, 0   },
 			{ 17, 22, 180 },
-		}, ReaderOptions().setFormats(BarcodeFormat::UPCA));
+		}, ReaderOptions().formats(BarcodeFormat::UPCA));
 
 		runTests("upca-3", "UPC-A", 21, {
 			{ 7, 11, 0   },
 			{ 8, 11, 180 },
-		}, ReaderOptions().setFormats(BarcodeFormat::UPCA));
+		}, ReaderOptions().formats(BarcodeFormat::UPCA));
 
 		runTests("upca-4", "UPC-A", 19, {
 			{ 8, 12, 0, 1, 0 },
 			{ 9, 12, 0, 1, 180 },
-		}, ReaderOptions().setFormats(BarcodeFormat::UPCA));
+		}, ReaderOptions().formats(BarcodeFormat::UPCA));
 
 		runTests("upca-5", "UPC-A", 32, {
 			{ 18, 20, 0   },
 			{ 18, 20, 180 },
-		}, ReaderOptions().setFormats(BarcodeFormat::UPCA));
+		}, ReaderOptions().formats(BarcodeFormat::UPCA));
 
 		runTests("upca-extension-1", "UPC-A", 6, {
 			{ 4, 4, 0 },
 			{ 3, 4, 180 },
-		}, ReaderOptions().setEanAddOnSymbol(EanAddOnSymbol::Require).setFormats(BarcodeFormat::UPCA));
+		}, ReaderOptions().eanAddOnSymbol(EanAddOnSymbol::Require).formats(BarcodeFormat::UPCA));
 
 		runTests("upce-1", "UPC-E", 3, {
 			{ 3, 3, 0   },

@@ -25,12 +25,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
 		return 0;
 
 	static auto opts = ReaderOptions()
-						   .setFormats(BarcodeFormat::MatrixCodes)
-						   .setBinarizer(Binarizer::BoolCast)
-						   .setReturnErrors(true)
-						   .setTryInvert(false)
-						   .setTryRotate(false);
-
+						   .formats(BarcodeFormat::MatrixCodes)
+						   .binarizer(Binarizer::BoolCast)
+						   .returnErrors(true)
+						   .tryInvert(false)
+						   .tryRotate(false);
 	int ratio = data[0] + 1;
 	int nBits = (size - 1) * 8;
 	int width = std::clamp(nBits * ratio / 256, 1, nBits);

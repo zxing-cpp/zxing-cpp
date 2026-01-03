@@ -141,7 +141,7 @@ std::unique_ptr<BinaryBitmap> CreateBitmap(ZXing::Binarizer binarizer, const Ima
 
 Barcode ReadBarcode(const ImageView& _iv, const ReaderOptions& opts)
 {
-	return FirstOrDefault(ReadBarcodes(_iv, ReaderOptions(opts).setMaxNumberOfSymbols(1)));
+	return FirstOrDefault(ReadBarcodes(_iv, ReaderOptions(opts).maxNumberOfSymbols(1)));
 }
 
 Barcodes ReadBarcodes(const ImageView& _iv, const ReaderOptions& opts)
@@ -164,7 +164,7 @@ Barcodes ReadBarcodes(const ImageView& _iv, const ReaderOptions& opts)
 	auto formatsBenefittingFromClosing = BarcodeFormat::Aztec | BarcodeFormat::DataMatrix | BarcodeFormat::QRCode | BarcodeFormat::MicroQRCode;
 	ReaderOptions closedOptions = opts;
 	if (opts.tryDenoise() && opts.hasFormat(formatsBenefittingFromClosing) && _iv.height() >= 3) {
-		closedOptions.setFormats((opts.formats().empty() ? BarcodeFormat::Any : opts.formats()) & formatsBenefittingFromClosing);
+		closedOptions.formats((opts.formats().empty() ? BarcodeFormat::Any : opts.formats()) & formatsBenefittingFromClosing);
 		closedReader = std::make_unique<MultiFormatReader>(closedOptions);
 	}
 #endif

@@ -68,7 +68,7 @@ int main(int argc, char** argv)
     // load your image data from somewhere. ImageFormat::Lum assumes grey scale image data.
 
     auto image = ZXing::ImageView(data, width, height, ZXing::ImageFormat::Lum);
-    auto options = ZXing::ReaderOptions().setFormats(ZXing::BarcodeFormat::Any);
+    auto options = ZXing::ReaderOptions().formats(ZXing::BarcodeFormat::Any);
     auto barcodes = ZXing::ReadBarcodes(image, options);
 
     for (const auto& b : barcodes)
