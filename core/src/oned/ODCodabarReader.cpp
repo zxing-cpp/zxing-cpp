@@ -83,10 +83,6 @@ Barcode CodabarReader::decodePattern(int rowNumber, PatternView& next, std::uniq
 	if (Size(txt) < minCharCount || !next.hasQuietZoneAfter(QUIET_ZONE_SCALE))
 		return {};
 
-	// remove stop/start characters
-	if (!_opts.returnCodabarStartEnd())
-		txt = txt.substr(1, txt.size() - 2);
-
 	// symbology identifier ISO/IEC 15424:2008 4.4.9
 	// if checksum processing were implemented and checksum present and stripped then modifier would be 4
 	SymbologyIdentifier symbologyIdentifier = {'F', '0'};

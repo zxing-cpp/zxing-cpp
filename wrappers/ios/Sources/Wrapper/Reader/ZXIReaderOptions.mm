@@ -145,14 +145,6 @@ ZXing::Binarizer toNativeBinarizer(ZXIBinarizer binarizer) {
     self.cppOpts = self.cppOpts.setValidateITFCheckSum(validateITFCheckSum);
 }
 
--(BOOL)returnCodabarStartEnd {
-    return self.cppOpts.returnCodabarStartEnd();
-}
-
--(void)setReturnCodabarStartEnd:(BOOL)returnCodabarStartEnd {
-    self.cppOpts = self.cppOpts.setReturnCodabarStartEnd(returnCodabarStartEnd);
-}
-
 -(BOOL)returnErrors {
     return self.cppOpts.returnErrors();
 }

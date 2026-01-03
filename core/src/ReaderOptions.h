@@ -56,7 +56,6 @@ class ReaderOptions
 	bool _tryCode39ExtendedMode    : 1;
 	bool _validateCode39CheckSum   : 1;
 	bool _validateITFCheckSum      : 1;
-	bool _returnCodabarStartEnd    : 1;
 	bool _returnErrors             : 1;
 	uint8_t _downscaleFactor       : 3;
 	EanAddOnSymbol _eanAddOnSymbol : 2;
@@ -83,7 +82,6 @@ public:
 		  _tryCode39ExtendedMode(1),
 		  _validateCode39CheckSum(0),
 		  _validateITFCheckSum(0),
-		  _returnCodabarStartEnd(1),
 		  _returnErrors(0),
 		  _downscaleFactor(3),
 		  _eanAddOnSymbol(EanAddOnSymbol::Ignore),
@@ -149,9 +147,6 @@ public:
 
 	/// Deprecated / does nothing. The ITF symbol has a valid checksum iff symbologyIdentifier()[2] == '1'.
 	ZX_PROPERTY(bool, validateITFCheckSum, setValidateITFCheckSum, [[deprecated]])
-
-	/// Deprecated / does nothing. Codabar start/stop characters are always returned.
-	ZX_PROPERTY(bool, returnCodabarStartEnd, setReturnCodabarStartEnd, [[deprecated]])
 
 	/// If true, return the barcodes with errors as well (e.g. checksum errors, see @Barcode::error())
 	ZX_PROPERTY(bool, returnErrors, setReturnErrors)

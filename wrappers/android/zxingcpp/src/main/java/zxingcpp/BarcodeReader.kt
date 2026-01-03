@@ -69,8 +69,6 @@ public class BarcodeReader(public var options: Options = Options()) {
 		var validateCode39CheckSum: Boolean = false,
 		@Deprecated("See https://github.com/zxing-cpp/zxing-cpp/discussions/704")
 		var validateITFCheckSum: Boolean = false,
-		@Deprecated("See https://github.com/zxing-cpp/zxing-cpp/discussions/704")
-		var returnCodabarStartEnd: Boolean = false,
 		var returnErrors: Boolean = false,
 		var eanAddOnSymbol: EanAddOnSymbol = EanAddOnSymbol.IGNORE,
 		var textMode: TextMode = TextMode.HRI,

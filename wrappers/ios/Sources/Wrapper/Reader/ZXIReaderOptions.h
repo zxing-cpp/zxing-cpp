@@ -42,7 +42,6 @@ typedef NS_ENUM(NSInteger, ZXITextMode) {
 @property(nonatomic) BOOL tryCode39ExtendedMode;
 @property(nonatomic) BOOL validateCode39CheckSum;
 @property(nonatomic) BOOL validateITFCheckSum;
-@property(nonatomic) BOOL returnCodabarStartEnd;
 @property(nonatomic) BOOL returnErrors;
 @property(nonatomic) ZXIEanAddOnSymbol eanAddOnSymbol;
 @property(nonatomic) ZXITextMode textMode;
