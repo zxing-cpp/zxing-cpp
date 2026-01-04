@@ -4,6 +4,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "ReadBarcode.h"
+#include "ReaderOptions.h"
+
+#include <utility>
 
 #if !defined(ZXING_READERS) && !defined(ZXING_WRITERS)
 #include "Version.h"
@@ -22,6 +25,122 @@
 #include <stdexcept>
 
 namespace ZXing {
+
+// ==============================================================================
+// ReaderOptions implementation
+// ==============================================================================
+
+struct ReaderOptions::Data
+{
+	bool tryHarder                : 1;
+	bool tryRotate                : 1;
+	bool tryInvert                : 1;
+	bool tryDownscale             : 1;
+#ifdef ZXING_EXPERIMENTAL_API
+	bool tryDenoise               : 1;
+#endif
+	bool isPure                   : 1;
+	bool tryCode39ExtendedMode    : 1;
+	bool validateCode39CheckSum   : 1;
+	bool validateITFCheckSum      : 1;
+	bool returnErrors             : 1;
+	uint8_t downscaleFactor       : 3;
+	EanAddOnSymbol eanAddOnSymbol : 2;
+	Binarizer binarizer           : 2;
+	TextMode textMode             : 3;
+	CharacterSet characterSet     : 6;
+
+	uint8_t minLineCount          = 2;
+	uint8_t maxNumberOfSymbols    = 0xff;
+	uint16_t downscaleThreshold   = 500;
+	BarcodeFormats formats        = BarcodeFormat::None;
+
+	Data()
+		: tryHarder(1),
+		  tryRotate(1),
+		  tryInvert(1),
+		  tryDownscale(1),
+#ifdef ZXING_EXPERIMENTAL_API
+		  tryDenoise(0),
+#endif
+		  isPure(0),
+		  tryCode39ExtendedMode(1),
+		  validateCode39CheckSum(0),
+		  validateITFCheckSum(0),
+		  returnErrors(0),
+		  downscaleFactor(3),
+		  eanAddOnSymbol(EanAddOnSymbol::Ignore),
+		  binarizer(Binarizer::LocalAverage),
+		  textMode(TextMode::HRI),
+		  characterSet(CharacterSet::Unknown)
+	{}
+};
+
+ReaderOptions::ReaderOptions() : d(std::make_unique<Data>()) {}
+ReaderOptions::~ReaderOptions() = default;
+
+// copy
+ReaderOptions::ReaderOptions(const ReaderOptions& other) : d(std::make_unique<Data>(*other.d)) {}
+ReaderOptions& ReaderOptions::operator=(const ReaderOptions& other)
+{
+    if (this != &other)
+        d = std::make_unique<Data>(*other.d);
+    return *this;
+}
+
+// move
+ReaderOptions::ReaderOptions(ReaderOptions&&) = default;
+ReaderOptions& ReaderOptions::operator=(ReaderOptions&&) = default;
+
+#define ZX_PROPERTY(TYPE, NAME, SETTER) \
+	TYPE ReaderOptions::NAME() const noexcept { return d->NAME; } \
+	ReaderOptions& ReaderOptions::NAME(TYPE v) & { return (void)(d->NAME = std::move(v)), *this; } \
+	ReaderOptions&& ReaderOptions::NAME(TYPE v) && { return (void)(d->NAME = std::move(v)), std::move(*this); }
+
+ZX_PROPERTY(BarcodeFormats, formats, setFormats)
+ZX_PROPERTY(bool, tryHarder, setTryHarder)
+ZX_PROPERTY(bool, tryRotate, setTryRotate)
+ZX_PROPERTY(bool, tryInvert, setTryInvert)
+ZX_PROPERTY(bool, tryDownscale, setTryDownscale)
+#ifdef ZXING_EXPERIMENTAL_API
+ZX_PROPERTY(bool, tryDenoise, setTryDenoise)
+#endif
+ZX_PROPERTY(Binarizer, binarizer, setBinarizer)
+ZX_PROPERTY(bool, isPure, setIsPure)
+ZX_PROPERTY(uint16_t, downscaleThreshold, setDownscaleThreshold)
+ZX_PROPERTY(uint8_t, downscaleFactor, setDownscaleFactor)
+ZX_PROPERTY(uint8_t, minLineCount, setMinLineCount)
+ZX_PROPERTY(uint8_t, maxNumberOfSymbols, setMaxNumberOfSymbols)
+ZX_PROPERTY(bool, tryCode39ExtendedMode, setTryCode39ExtendedMode)
+ZX_PROPERTY(bool, validateCode39CheckSum, setValidateCode39CheckSum)
+ZX_PROPERTY(bool, validateITFCheckSum, setValidateITFCheckSum)
+ZX_PROPERTY(bool, returnErrors, setReturnErrors)
+ZX_PROPERTY(EanAddOnSymbol, eanAddOnSymbol, setEanAddOnSymbol)
+ZX_PROPERTY(TextMode, textMode, setTextMode)
+ZX_PROPERTY(CharacterSet, characterSet, setCharacterSet)
+
+#undef ZX_PROPERTY
+
+ReaderOptions& ReaderOptions::characterSet(std::string_view v) &
+{
+	d->characterSet = CharacterSetFromString(v);
+	return *this;
+}
+ReaderOptions&& ReaderOptions::characterSet(std::string_view v) &&
+{
+	d->characterSet = CharacterSetFromString(v);
+	return std::move(*this);
+}
+
+bool ReaderOptions::hasFormat(BarcodeFormats f) const noexcept
+{
+	return d->formats.testFlags(f) || d->formats.empty();
+}
+
+
+// ==============================================================================
+// ReadBarcode implementation
+// ==============================================================================
 
 #ifdef ZXING_READERS
 
