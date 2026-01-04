@@ -9,7 +9,6 @@
 #include "Range.h"
 
 #include <cstdint>
-#include <string>
 #include <string_view>
 #include <vector>
 
@@ -24,7 +23,7 @@ public:
 	ByteArray() = default;
 	ByteArray(std::initializer_list<uint8_t> list) : std::vector<uint8_t>(list) {}
 	explicit ByteArray(int len) : std::vector<uint8_t>(len, 0) {}
-	explicit ByteArray(const std::string& str) : std::vector<uint8_t>(str.begin(), str.end()) {}
+	explicit ByteArray(std::string_view str) : std::vector<uint8_t>(str.begin(), str.end()) {}
 
 	void append(ByteView other) { insert(end(), other.begin(), other.end()); }
 	void append(std::string_view other) { insert(end(), other.begin(), other.end()); }
