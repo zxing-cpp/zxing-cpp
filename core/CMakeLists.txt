@@ -212,7 +212,6 @@ set (PUBLIC_HEADERS
     src/Barcode.h
     src/BarcodeFormat.h
     src/BitHacks.h
-    src/ByteArray.h
     src/CharacterSet.h
     src/ContentType.h
     src/CreateBarcode.h
@@ -222,7 +221,6 @@ set (PUBLIC_HEADERS
     src/ImageView.h
     src/Point.h
     src/Quadrilateral.h
-    src/Range.h # re-evaluate for 3.0
     src/ReadBarcode.h
     src/ReaderOptions.h
     src/StructuredAppend.h
