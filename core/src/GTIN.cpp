@@ -157,7 +157,7 @@ static const CountryId COUNTRIES[] = {
 	// clang-format on
 };
 
-std::string LookupCountryIdentifier(const std::string& GTIN, const BarcodeFormat format)
+std::string LookupCountryIdentifier(std::string_view GTIN, const BarcodeFormat format)
 {
 	// Ignore add-on if any
 	const auto space = GTIN.find(' ');
@@ -173,22 +173,22 @@ std::string LookupCountryIdentifier(const std::string& GTIN, const BarcodeFormat
 
 	if (size != 8 || format != BarcodeFormat::EAN8) { // Assuming following doesn't apply to EAN-8
 		// 0000000 Restricted Circulation Numbers; 0000001-0000099 unused to avoid collision with GTIN-8
-		int prefix = std::stoi(GTIN.substr(first, 7 - implicitZero));
+		int prefix = FromString<int>(GTIN.substr(first, 7 - implicitZero));
 		if (prefix >= 0 && prefix <= 99)
 			return {};
 
 		// 00001-00009 US
-		prefix = std::stoi(GTIN.substr(first, 5 - implicitZero));
+		prefix = FromString<int>(GTIN.substr(first, 5 - implicitZero));
 		if (prefix >= 1 && prefix <= 9)
 			return "US";
 
 		// 0001-0009 US
-		prefix = std::stoi(GTIN.substr(first, 4 - implicitZero));
+		prefix = FromString<int>(GTIN.substr(first, 4 - implicitZero));
 		if (prefix >= 1 && prefix <= 9)
 			return "US";
 	}
 
-	const int prefix = std::stoi(GTIN.substr(first, 3 - implicitZero));
+	const int prefix = FromString<int>(GTIN.substr(first, 3 - implicitZero));
 
 	// Special case EAN-8 for prefix < 100 (GS1 General Specifications Figure 1.4.3-1)
 	if (size == 8 && format == BarcodeFormat::EAN8 && prefix <= 99) // Restricted Circulation Numbers
