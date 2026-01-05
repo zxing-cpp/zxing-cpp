@@ -277,7 +277,7 @@ Barcodes ReadBarcodes(const ImageView& _iv, const ReaderOptions& opts)
 	MultiFormatReader reader(opts);
 
 	if (opts.isPure())
-		return {reader.read(*CreateBitmap(opts.binarizer(), iv)).setReaderOptions(opts)};
+		return {FirstOrDefault(reader.read(*CreateBitmap(opts.binarizer(), iv), 1)).setReaderOptions(opts)};
 
 	std::unique_ptr<MultiFormatReader> closedReader;
 #ifdef ZXING_EXPERIMENTAL_API
@@ -306,7 +306,7 @@ Barcodes ReadBarcodes(const ImageView& _iv, const ReaderOptions& opts)
 			for (int invert = 0; invert <= static_cast<int>(opts.tryInvert() && !close); ++invert) {
 				if (invert)
 					bitmap->invert();
-				auto rs = (close ? *closedReader : reader).readMultiple(*bitmap, maxSymbols);
+				auto rs = (close ? *closedReader : reader).read(*bitmap, maxSymbols);
 				for (auto& r : rs) {
 					if (iv.width() != _iv.width())
 						r.d->position = Scale(r.position(), _iv.width() / iv.width());
