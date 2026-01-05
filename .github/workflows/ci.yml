@@ -303,24 +303,25 @@ jobs:
             build/zxing*
             build/demo*
 
-  build-winrt:
-    runs-on: windows-latest
+# disable WinRT build for now, as it does not compile with C++20 (see wrappers/winrt/CMakeLists.txt)
+  # build-winrt:
+  #   runs-on: windows-latest
 
-    steps:
-    - uses: actions/checkout@v4
+  #   steps:
+  #   - uses: actions/checkout@v4
 
-    - name: Configure
-      shell: cmd # powershell messes up the arguments containing a '.' ?!?
-      run: >
-        cmake -S wrappers/winrt -B build -A ARM64
-        -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0 -DCMAKE_BUILD_TYPE=Release
-        -DBUILD_WINRT_LIB=ON -DZXING_EXAMPLES=OFF -DZXING_BLACKBOX_TESTS=OFF -DZXING_C_API=OFF
-        -DEXTENSION_SDK_OUTPUT=dist/UAP/v0.8.0.0/ExtensionSDKs/ZXingWinRT/1.0.0.0
+  #   - name: Configure
+  #     shell: cmd # powershell messes up the arguments containing a '.' ?!?
+  #     run: >
+  #       cmake -S wrappers/winrt -B build -A ARM64
+  #       -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0 -DCMAKE_BUILD_TYPE=Release
+  #       -DBUILD_WINRT_LIB=ON -DZXING_EXAMPLES=OFF -DZXING_BLACKBOX_TESTS=OFF -DZXING_C_API=OFF
+  #       -DEXTENSION_SDK_OUTPUT=dist/UAP/v0.8.0.0/ExtensionSDKs/ZXingWinRT/1.0.0.0
 
-    - name: Build
-      run: cmake --build build -j8 --config Release
+  #   - name: Build
+  #     run: cmake --build build -j8 --config Release
 
-    - uses: actions/upload-artifact@v4
-      with:
-        name: winrt-ARM64-artifacts
-        path: build/dist
+  #   - uses: actions/upload-artifact@v4
+  #     with:
+  #       name: winrt-ARM64-artifacts
+  #       path: build/dist

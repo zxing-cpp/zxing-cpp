@@ -14,6 +14,7 @@ project (ZXingWinRT)
 set (CMAKE_CONFIGURATION_TYPES "RelWithDebInfo;Release" CACHE STRING "" FORCE)
 set (WINRT ON)
 set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /INCREMENTAL:NO" )
+set (CMAKE_CXX_STANDARD 20) # does not work with /ZW, see https://learn.microsoft.com/en-us/cpp/build/reference/zw-windows-runtime-compilation?view=msvc-170
 
 add_definitions (-DUNICODE -D_UNICODE)
 
