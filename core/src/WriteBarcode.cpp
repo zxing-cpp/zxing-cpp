@@ -6,6 +6,7 @@
 
 #include "CreateBarcode.h"
 #include "WriteBarcode.h"
+#include "BarcodeData.h"
 #include "BitMatrix.h"
 #include "JSON.h"
 
@@ -16,14 +17,7 @@
 #include <sstream>
 
 #ifdef ZXING_USE_ZINT
-
 #include <zint.h>
-
-#else
-
-struct zint_symbol {};
-using unique_zint_symbol = std::unique_ptr<zint_symbol>;
-
 #endif // ZXING_USE_ZINT
 
 namespace ZXing {
@@ -137,7 +131,7 @@ static Image ToImage(BitMatrix bits, bool isLinearCode, const WriterOptions& opt
 std::string WriteBarcodeToSVG(const Barcode& barcode, [[maybe_unused]] const WriterOptions& opts)
 {
 #if defined(ZXING_WRITERS) && defined(ZXING_USE_ZINT)
-	auto* zint = barcode.zint();
+	auto* zint = barcode.d->zint.get();
 
 	if (!zint)
 #endif
@@ -158,11 +152,11 @@ std::string WriteBarcodeToSVG(const Barcode& barcode, [[maybe_unused]] const Wri
 Image WriteBarcodeToImage(const Barcode& barcode, [[maybe_unused]] const WriterOptions& opts)
 {
 #if defined(ZXING_WRITERS) && defined(ZXING_USE_ZINT)
-	auto* zint = barcode.zint();
+	auto* zint = barcode.d->zint.get();
 
 	if (!zint)
 #endif
-		return ToImage(barcode.symbolMatrix().copy(), IsLinearBarcode(barcode.format()), opts);
+		return ToImage(barcode.d->symbol.copy(), IsLinearBarcode(barcode.format()), opts);
 
 #if defined(ZXING_WRITERS) && defined(ZXING_USE_ZINT)
 	auto resetOnExit = SetCommonWriterOptions(zint, opts);

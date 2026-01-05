@@ -53,7 +53,7 @@ endif()
 if (NOT DEFINED CMAKE_CXX_STANDARD)
     set (CMAKE_CXX_STANDARD 20)
     # Allow the fallback to earlier versions if the compiler does not support it.
-    set(CMAKE_CXX_STANDARD_REQUIRED OFF)
+    # set(CMAKE_CXX_STANDARD_REQUIRED ON)
 endif()
 if (NOT DEFINED CMAKE_CXX_EXTENSIONS)
     set (CMAKE_CXX_EXTENSIONS OFF)

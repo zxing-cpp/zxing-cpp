@@ -5,6 +5,7 @@
 
 #include "ReadBarcode.h"
 #include "ReaderOptions.h"
+#include "BarcodeData.h"
 
 #include <utility>
 
@@ -308,10 +309,10 @@ Barcodes ReadBarcodes(const ImageView& _iv, const ReaderOptions& opts)
 				auto rs = (close ? *closedReader : reader).readMultiple(*bitmap, maxSymbols);
 				for (auto& r : rs) {
 					if (iv.width() != _iv.width())
-						r.setPosition(Scale(r.position(), _iv.width() / iv.width()));
+						r.d->position = Scale(r.position(), _iv.width() / iv.width());
 					if (!Contains(res, r)) {
 						r.setReaderOptions(opts);
-						r.setIsInverted(bitmap->inverted());
+						r.d->isInverted = bitmap->inverted();
 						res.push_back(std::move(r));
 						--maxSymbols;
 					}

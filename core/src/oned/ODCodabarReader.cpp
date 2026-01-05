@@ -46,7 +46,7 @@ bool IsLeftGuard(const PatternView& view, int spaceInPixel)
 		   Contains({0x1A, 0x29, 0x0B, 0x0E}, RowReader::NarrowWideBitPattern(view));
 }
 
-Barcode CodabarReader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<DecodingState>&) const
+BarcodeData CodabarReader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<DecodingState>&) const
 {
 	// minimal number of characters that must be present (including start, stop and checksum characters)
 	// absolute minimum would be 2 (meaning 0 'content'). everything below 4 produces too many false
@@ -88,7 +88,7 @@ Barcode CodabarReader::decodePattern(int rowNumber, PatternView& next, std::uniq
 	SymbologyIdentifier symbologyIdentifier = {'F', '0'};
 
 	int xStop = next.pixelsTillEnd();
-	return Barcode(txt, rowNumber, xStart, xStop, BarcodeFormat::Codabar, symbologyIdentifier);
+	return LinearBarcode(BarcodeFormat::Codabar, txt, rowNumber, xStart, xStop, symbologyIdentifier);
 }
 
 } // namespace ZXing::OneD

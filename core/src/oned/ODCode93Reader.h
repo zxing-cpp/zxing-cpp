@@ -15,7 +15,7 @@ class Code93Reader : public RowReader
 public:
 	using RowReader::RowReader;
 
-	Barcode decodePattern(int rowNumber, PatternView& next, std::unique_ptr<DecodingState>&) const override;
+	BarcodeData decodePattern(int rowNumber, PatternView& next, std::unique_ptr<DecodingState>&) const override;
 };
 
 } // namespace ZXing::OneD

@@ -9,7 +9,7 @@
 
 #include "BitArray.h"
 #include "Pattern.h"
-#include "Barcode.h"
+#include "BarcodeData.h"
 #include "ZXAlgorithms.h"
 
 #include <algorithm>
@@ -64,7 +64,7 @@ public:
 
 	virtual ~RowReader() {}
 
-	virtual Barcode decodePattern(int rowNumber, PatternView& next, std::unique_ptr<DecodingState>& state) const = 0;
+	virtual BarcodeData decodePattern(int rowNumber, PatternView& next, std::unique_ptr<DecodingState>& state) const = 0;
 
 	/**
 	 * Determines how closely a set of observed counts of runs of black/white values matches a given
@@ -215,7 +215,7 @@ Barcode DecodeSingleRow(const RowReader& reader, const Range& range)
 	PatternView view(row);
 
 	std::unique_ptr<RowReader::DecodingState> state;
-	return reader.decodePattern(0, view, state);
+	return {reader.decodePattern(0, view, state)};
 }
 
 } // OneD

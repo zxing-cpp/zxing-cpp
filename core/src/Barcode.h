@@ -9,7 +9,7 @@
 
 #include "BarcodeFormat.h"
 #include "ContentType.h"
-#include "ReaderOptions.h"
+#include "ReaderOptions.h" // for TextMode
 #include "Error.h"
 #include "ImageView.h"
 #include "Quadrilateral.h"
@@ -21,31 +21,19 @@
 
 #ifdef ZXING_USE_ZINT
 extern "C" struct zint_symbol;
-struct zint_symbol_deleter
-{
-	void operator()(zint_symbol* p) const noexcept;
-};
-using unique_zint_symbol = std::unique_ptr<zint_symbol, zint_symbol_deleter>;
 #endif
 
 namespace ZXing {
 
-struct SymbologyIdentifier;
 class DecoderResult;
 class DetectorResult;
 class CreatorOptions;
+class ReaderOptions;
 class WriterOptions;
 class Barcode;
 
 using Position = QuadrilateralI;
 using Barcodes = std::vector<Barcode>;
-
-class BitMatrix;
-class BinaryBitmap;
-namespace OneD {
-class RowReader;
-Barcodes DoDecode(const std::vector<std::unique_ptr<RowReader>>&, const BinaryBitmap&, bool, bool, bool, int, int, bool);
-}
 
 namespace BarcodeExtra {
 	#define ZX_EXTRA(NAME) static constexpr auto NAME = #NAME
@@ -62,32 +50,21 @@ namespace BarcodeExtra {
  */
 class Barcode
 {
-	struct Data;
+	using Data = struct BarcodeData;
 
 	std::shared_ptr<Data> d;
 
-	void setIsInverted(bool v);
-	void setPosition(Position pos);
-	void incrementLineCount();
-	const BitMatrix& symbolMatrix() const;
 	Barcode& setReaderOptions(const ReaderOptions& opts);
-#ifdef ZXING_USE_ZINT
-	void zint(unique_zint_symbol&& z);
-#endif
 
 	friend Barcode MergeStructuredAppendSequence(const Barcodes&);
 	friend Barcodes ReadBarcodes(const ImageView&, const ReaderOptions&);
 	friend Barcode CreateBarcode(const void*, int, int, const CreatorOptions&);
 	friend Image WriteBarcodeToImage(const Barcode&, const WriterOptions&);
-	friend Barcodes OneD::DoDecode(const std::vector<std::unique_ptr<OneD::RowReader>>&, const BinaryBitmap&, bool, bool, bool, int,
-								   int, bool);
+	friend std::string WriteBarcodeToSVG(const Barcode&, const WriterOptions&);
 
 public:
 	Barcode();
-
-	// linear symbology convenience constructor
-	Barcode(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format, SymbologyIdentifier si, Error error = {},
-			std::string extra = {});
+	Barcode(Barcode::Data&& data);
 
 	Barcode(DecoderResult&& decodeResult, DetectorResult&& detectorResult, BarcodeFormat format);
 
@@ -196,7 +173,7 @@ public:
 	std::string version() const;
 
 	ImageView symbol() const;
-#ifdef ZXING_USE_ZINT
+#if defined(ZXING_USE_ZINT) && defined(ZXING_EXPERIMENTAL_API)
 	zint_symbol* zint() const;
 #endif
 	std::string extra(std::string_view key = "") const;

@@ -6,6 +6,7 @@
 
 #include "Barcode.h"
 
+#include "BarcodeData.h"
 #include "DecoderResult.h"
 #include "DetectorResult.h"
 #include "JSON.h"
@@ -24,43 +25,13 @@ void zint_symbol_deleter::operator()(zint_symbol* p) const noexcept
 {
 	ZBarcode_Delete(p);
 }
-#else
-struct zint_symbol {};
 #endif
 
 namespace ZXing {
 
-struct Barcode::Data
-{
-	Content content;
-	Error error;
-	Position position;
-	BarcodeFormat format = BarcodeFormat::None;
-	std::string extra;
-	StructuredAppendInfo sai;
-	ReaderOptions readerOpts;
-	BitMatrix symbol;
-	std::shared_ptr<zint_symbol> zint;
-	char ecLevel[4] = {};
-	char version[4] = {};
-	int lineCount = 0;
-	bool isMirrored = false;
-	bool isInverted = false;
-
-#ifndef __cpp_aggregate_paren_init // MSVC 17.14
-	Data() = default;
-	Data(Content&& c, Error&& e, Position&& p, BarcodeFormat f, std::string ex)
-		: content(std::move(c)), error(std::move(e)), position(std::move(p)), format(f), extra(std::move(ex))
-	{}
-#endif
-};
-
 Barcode::Barcode() : d(std::make_shared<Data>()) {}
 
-Barcode::Barcode(const std::string& text, int y, int xStart, int xStop, BarcodeFormat format, SymbologyIdentifier si, Error error,
-				 std::string extra)
-	: d(std::make_shared<Data>(Content({ByteArray(text)}, si), std::move(error), Position(Line(y, xStart, xStop)), format, std::move(extra)))
-{}
+Barcode::Barcode(Data&& data) : d(std::make_shared<Data>(std::move(data))) {}
 
 Barcode::Barcode(DecoderResult&& decodeResult, DetectorResult&& detectorResult, BarcodeFormat format)
 	: d(std::make_shared<Data>(std::move(decodeResult).content(), std::move(decodeResult).error(),
@@ -84,7 +55,7 @@ Barcode::Barcode(DecoderResult&& decodeResult, DetectorResult&& detectorResult, 
 
 bool Barcode::isValid() const
 {
-	return format() != BarcodeFormat::None && !d->content.bytes.empty() && !error();
+	return d->isValid();
 }
 
 const Error& Barcode::error() const
@@ -100,11 +71,6 @@ BarcodeFormat Barcode::format() const
 const Position& Barcode::position() const
 {
 	return d->position;
-}
-
-void Barcode::setPosition(Position pos)
-{
-	d->position = pos;
 }
 
 const std::vector<uint8_t>& Barcode::bytes() const
@@ -196,33 +162,13 @@ Barcode& Barcode::setReaderOptions(const ReaderOptions& opts)
 	return *this;
 }
 
-void Barcode::setIsInverted(bool v)
-{
-	d->isInverted = v;
-}
-
-void Barcode::incrementLineCount()
-{
-	++d->lineCount;
-}
-
-const BitMatrix& Barcode::symbolMatrix() const
-{
-	return d->symbol;
-}
-
 ImageView Barcode::symbol() const
 {
 	return !d->symbol.empty() ? ImageView{d->symbol.row(0).begin(), d->symbol.width(), d->symbol.height(), ImageFormat::Lum}
 							  : ImageView{};
 }
 
-#ifdef ZXING_USE_ZINT
-void Barcode::zint(unique_zint_symbol&& z)
-{
-	d->zint = std::shared_ptr(std::move(z));
-}
-
+#if defined(ZXING_USE_ZINT) && defined(ZXING_EXPERIMENTAL_API)
 zint_symbol* Barcode::zint() const
 {
 	return d->zint.get();
@@ -249,42 +195,47 @@ std::string Barcode::extra(std::string_view key) const
 
 bool Barcode::operator==(const Barcode& o) const
 {
-	if (format() != o.format())
+	return *d == *o.d;
+}
+
+bool BarcodeData::operator==(const BarcodeData& o) const
+{
+	if (format != o.format)
 		return false;
 
 	// handle MatrixCodes first
-	if (!IsLinearBarcode(format())) {
-		if (bytes() != o.bytes() && isValid() && o.isValid())
+	if (!IsLinearBarcode(format)) {
+		if (isValid() && o.isValid() && content.bytes != o.content.bytes)
 			return false;
 
 		// check for equal position if both are valid with equal bytes or at least one is in error
-		return IsInside(Center(o.position()), position());
+		return IsInside(Center(o.position), position);
 	}
 
-	if (bytes() != o.bytes() || error() != o.error() || orientation() != o.orientation())
+	if (content.bytes != o.content.bytes || error != o.error || orientation() != o.orientation())
 		return false;
 
-	if (lineCount() > 1 && o.lineCount() > 1)
-		return HaveIntersectingBoundingBoxes(o.position(), position());
+	if (lineCount > 1 && o.lineCount > 1)
+		return HaveIntersectingBoundingBoxes(o.position, position);
 
 	// the following code is only meant for this or other lineCount == 1
-	assert(lineCount() == 1 || o.lineCount() == 1);
+	assert(lineCount == 1 || o.lineCount == 1);
 
 	// sl == single line, ml = multi line
-	const auto& sl = lineCount() == 1 ? *this : o;
-	const auto& ml = lineCount() == 1 ? o : *this;
+	const auto& sl = lineCount == 1 ? *this : o;
+	const auto& ml = lineCount == 1 ? o : *this;
 
 	// If one line is less than half the length of the other away from the
 	// latter, we consider it to belong to the same symbol.
 	// Additionally, both need to have roughly the same length (see #367).
-	auto dTop = maxAbsComponent(ml.position().topLeft() - sl.position().topLeft());
-	auto dBot = maxAbsComponent(ml.position().bottomLeft() - sl.position().topLeft());
-	auto slLength = maxAbsComponent(sl.position().topLeft() - sl.position().bottomRight());
-	bool isHorizontal = sl.position().topLeft().y == sl.position().bottomRight().y;
+	auto dTop = maxAbsComponent(ml.position.topLeft() - sl.position.topLeft());
+	auto dBot = maxAbsComponent(ml.position.bottomLeft() - sl.position.topLeft());
+	auto slLength = maxAbsComponent(sl.position.topLeft() - sl.position.bottomRight());
+	bool isHorizontal = sl.position.topLeft().y == sl.position.bottomRight().y;
 	// Measure the multi line length in the same direction as the single line one (not diagonaly)
 	// to make sure overly tall symbols don't get segmented (see #769).
-	auto mlLength = isHorizontal ? std::abs(ml.position().topLeft().x - ml.position().bottomRight().x)
-								 : std::abs(ml.position().topLeft().y - ml.position().bottomRight().y);
+	auto mlLength = isHorizontal ? std::abs(ml.position.topLeft().x - ml.position.bottomRight().x)
+								 : std::abs(ml.position.topLeft().y - ml.position.bottomRight().y);
 
 	return std::min(dTop, dBot) < slLength / 2 && std::abs(slLength - mlLength) < slLength / 5;
 }

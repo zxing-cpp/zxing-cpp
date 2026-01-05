@@ -19,7 +19,7 @@ class DataBarExpandedReader : public RowReader
 public:
 	using RowReader::RowReader;
 
-	Barcode decodePattern(int rowNumber, PatternView& next, std::unique_ptr<DecodingState>& state) const override;
+	BarcodeData decodePattern(int rowNumber, PatternView& next, std::unique_ptr<DecodingState>& state) const override;
 };
 
 } // namespace ZXing::OneD

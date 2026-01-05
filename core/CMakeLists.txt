@@ -89,6 +89,7 @@ endif()
 set (COMMON_FILES
     src/Barcode.h
     src/Barcode.cpp
+    src/BarcodeData.h
     src/BarcodeFormat.h
     src/BarcodeFormat.cpp
     src/BitHacks.h

@@ -6,6 +6,7 @@
 
 #include "CreateBarcode.h"
 
+#include "BarcodeData.h"
 #include "BitMatrix.h"
 #include "ByteArray.h"
 #include "DecoderResult.h"
@@ -26,8 +27,6 @@
 #include <zint.h>
 #else
 #include "MultiFormatWriter.h"
-struct zint_symbol {};
-using unique_zint_symbol = std::unique_ptr<zint_symbol>;
 #endif // ZXING_USE_ZINT
 
 #include <charconv>
@@ -423,7 +422,7 @@ Barcode CreateBarcode(const void* data, int size, int mode, const CreatorOptions
 	auto res = Barcode(std::move(decRes), {std::move(bits), Rectangle<PointI>(left, top, width, height)}, opts.format());
 #endif
 
-	res.zint(std::move(opts.d->zint));
+	res.d->zint = std::move(opts.d->zint);
 
 	return res;
 }

@@ -106,7 +106,7 @@ std::array<int, 89> CheckChars = {
 	0b11'01010010'10011010, 0b11'01010010'01011010, 0b11'01001010'10011010, 0b11'01010101'10010010,
 };
 
-Barcode DataBarLimitedReader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<RowReader::DecodingState>&) const
+BarcodeData DataBarLimitedReader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<RowReader::DecodingState>&) const
 {
 	next = next.subView(-2, SYMBOL_LEN);
 	while (next.shift(2)) {
@@ -148,8 +148,8 @@ Barcode DataBarLimitedReader::decodePattern(int rowNumber, PatternView& next, st
 		if (!left || !right || (left.checksum + 20 * right.checksum) % 89 != checkSum)
 			continue;
 
-		return {ConstructText(left, right), rowNumber, next.pixelsInFront(), next.pixelsTillEnd(), BarcodeFormat::DataBarLimited,
-				{'e', '0', 0, AIFlag::GS1}};
+		return LinearBarcode(BarcodeFormat::DataBarLimited, ConstructText(left, right), rowNumber, next.pixelsInFront(),
+							 next.pixelsTillEnd(), {'e', '0', 0, AIFlag::GS1});
 	}
 
 	// guarantee progress (see loop in ODReader.cpp)

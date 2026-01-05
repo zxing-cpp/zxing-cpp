@@ -178,7 +178,7 @@ static auto E2E_PATTERNS = [] {
 	return res;
 }();
 
-Barcode Code128Reader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<DecodingState>&) const
+BarcodeData Code128Reader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<DecodingState>&) const
 {
 	int minCharCount = 4; // start + payload + checksum + stop
 	auto decodePattern = [](const PatternView& view, bool start = false) {
@@ -241,7 +241,7 @@ Barcode Code128Reader::decodePattern(int rowNumber, PatternView& next, std::uniq
 		error = ChecksumError();
 
 	int xStop = next.pixelsTillEnd();
-	return Barcode(raw2txt.text(), rowNumber, xStart, xStop, BarcodeFormat::Code128, raw2txt.symbologyIdentifier(), error,
+	return LinearBarcode(BarcodeFormat::Code128, raw2txt.text(), rowNumber, xStart, xStop, raw2txt.symbologyIdentifier(), error,
 				   JsonProp(BarcodeExtra::ReaderInit, raw2txt.readerInit()));
 }
 

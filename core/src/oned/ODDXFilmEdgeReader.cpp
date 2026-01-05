@@ -105,7 +105,7 @@ std::optional<Clock> CheckForClock(int rowNumber, PatternView& view)
 
 } // namespace
 
-Barcode DXFilmEdgeReader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<DecodingState>& state) const
+BarcodeData DXFilmEdgeReader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<DecodingState>& state) const
 {
 	if (!state) {
 		state.reset(new DXFEState);
@@ -224,7 +224,7 @@ Barcode DXFilmEdgeReader::decodePattern(int rowNumber, PatternView& next, std::u
 	clock->xStart = xStart;
 	clock->xStop = xStop;
 
-	return Barcode(txt, rowNumber, xStart, xStop, BarcodeFormat::DXFilmEdge, {});
+	return LinearBarcode(BarcodeFormat::DXFilmEdge, txt, rowNumber, xStart, xStop, {});
 }
 
 } // namespace ZXing::OneD

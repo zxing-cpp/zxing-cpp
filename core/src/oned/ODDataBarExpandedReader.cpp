@@ -328,7 +328,7 @@ struct DBERState : public RowReader::DecodingState
 	PairMap allPairs;
 };
 
-Barcode DataBarExpandedReader::decodePattern(int rowNumber, PatternView& view, std::unique_ptr<RowReader::DecodingState>& state) const
+BarcodeData DataBarExpandedReader::decodePattern(int rowNumber, PatternView& view, std::unique_ptr<RowReader::DecodingState>& state) const
 {
 #if 0 // non-stacked version
 	auto pairs = ReadRowOfPairs<false>(view, rowNumber);
@@ -370,9 +370,11 @@ Barcode DataBarExpandedReader::decodePattern(int rowNumber, PatternView& view, s
 	// TODO: EstimatePosition misses part of the symbol in the stacked case where the last row contains less pairs than
 	// the first
 	// Symbology identifier: ISO/IEC 24724:2011 Section 9 and GS1 General Specifications 5.1.3 Figure 5.1.3-2
-	return {DecoderResult(Content(ByteArray(txt), {'e', '0', 0, AIFlag::GS1}))
-				.setLineCount(EstimateLineCount(pairs.front(), pairs.back())),
-			{{}, EstimatePosition(pairs.front(), pairs.back())}, BarcodeFormat::DataBarExpanded};
+	return {.content = Content(ByteArray(txt), {'e', '0', 0, AIFlag::GS1}),
+			.error = Error{},
+			.position = EstimatePosition(pairs.front(), pairs.back()),
+			.format = BarcodeFormat::DataBarExpanded,
+			.lineCount = EstimateLineCount(pairs.front(), pairs.back())};
 }
 
 } // namespace ZXing::OneD
