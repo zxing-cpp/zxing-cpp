@@ -21,17 +21,8 @@
 
 namespace ZXing::QRCode {
 
-Barcode Reader::decode(const BinaryBitmap& image) const
+static Barcode readPure(const BitMatrix* binImg, const ReaderOptions& _opts)
 {
-#if 1
-	if (!_opts.isPure())
-		return FirstOrDefault(decode(image, 1));
-#endif
-
-	auto binImg = image.getBitMatrix();
-	if (binImg == nullptr)
-		return {};
-
 	DetectorResult detectorResult;
 	if (_opts.hasFormat(BarcodeFormat::QRCode))
 		detectorResult = DetectPureQR(*binImg);
@@ -76,7 +67,10 @@ Barcodes Reader::decode(const BinaryBitmap& image, int maxSymbols) const
 #ifdef PRINT_DEBUG
 	LogMatrixWriter lmw(log, *binImg, 5, "qr-log.pnm");
 #endif
-	
+
+	if (_opts.isPure())
+		return {readPure(binImg, _opts)};
+
 	auto allFPs = FindFinderPatterns(*binImg, _opts.tryHarder());
 
 #ifdef PRINT_DEBUG

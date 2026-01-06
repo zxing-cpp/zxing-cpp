@@ -19,11 +19,6 @@
 
 namespace ZXing::Aztec {
 
-Barcode Reader::decode(const BinaryBitmap& image) const
-{
-	return FirstOrDefault(decode(image, 1));
-}
-
 Barcodes Reader::decode(const BinaryBitmap& image, int maxSymbols) const
 {
 	auto binImg = image.getBitMatrix();

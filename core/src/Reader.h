@@ -26,13 +26,7 @@ public:
 	explicit Reader(ReaderOptions&& opts) = delete;
 	virtual ~Reader() = default;
 
-	virtual Barcode decode(const BinaryBitmap& image) const = 0;
-
-	// WARNING: this API is experimental and may change/disappear
-	virtual Barcodes decode(const BinaryBitmap& image, [[maybe_unused]] int maxSymbols) const {
-		auto res = decode(image);
-		return res.isValid() || (_opts.returnErrors() && res.format() != BarcodeFormat::None) ? Barcodes{std::move(res)} : Barcodes{};
-	}
+	virtual Barcodes decode(const BinaryBitmap& image, int maxSymbols) const = 0;
 };
 
 } // ZXing

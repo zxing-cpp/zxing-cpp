@@ -255,21 +255,10 @@ out:
 	return finalRes;
 }
 
-Barcode Reader::decode(const BinaryBitmap& image) const
-{
-	auto result =
-		DoDecode(_readers, image, _opts.tryHarder(), false, _opts.isPure(), 1, _opts.minLineCount(), _opts.returnErrors());
-	
-	if (result.empty() && _opts.tryRotate())
-		result = DoDecode(_readers, image, _opts.tryHarder(), true, _opts.isPure(), 1, _opts.minLineCount(), _opts.returnErrors());
-
-	return FirstOrDefault(std::move(result));
-}
-
 Barcodes Reader::decode(const BinaryBitmap& image, int maxSymbols) const
 {
-	auto resH = DoDecode(_readers, image, _opts.tryHarder(), false, _opts.isPure(), maxSymbols, _opts.minLineCount(),
-						 _opts.returnErrors());
+	auto resH =
+		DoDecode(_readers, image, _opts.tryHarder(), false, _opts.isPure(), maxSymbols, _opts.minLineCount(), _opts.returnErrors());
 	if ((!maxSymbols || Size(resH) < maxSymbols) && _opts.tryRotate()) {
 		auto resV = DoDecode(_readers, image, _opts.tryHarder(), true, _opts.isPure(), maxSymbols - Size(resH),
 							 _opts.minLineCount(), _opts.returnErrors());

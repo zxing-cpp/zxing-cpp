@@ -18,26 +18,9 @@
 
 namespace ZXing::DataMatrix {
 
-Barcode Reader::decode(const BinaryBitmap& image) const
-{
-#ifdef __cpp_impl_coroutine
-	return FirstOrDefault(decode(image, 1));
-#else
-	auto binImg = image.getBitMatrix();
-	if (binImg == nullptr)
-		return {};
-	
-	auto detectorResult = Detect(*binImg, _opts.tryHarder(), _opts.tryRotate(), _opts.isPure());
-	if (!detectorResult.isValid())
-		return {};
-
-	return Barcode(Decode(detectorResult.bits()), std::move(detectorResult), BarcodeFormat::DataMatrix);
-#endif
-}
-
-#ifdef __cpp_impl_coroutine
 Barcodes Reader::decode(const BinaryBitmap& image, int maxSymbols) const
 {
+#ifdef __cpp_impl_coroutine
 	auto binImg = image.getBitMatrix();
 	if (binImg == nullptr)
 		return {};
@@ -53,6 +36,17 @@ Barcodes Reader::decode(const BinaryBitmap& image, int maxSymbols) const
 	}
 
 	return res;
-}
+#else
+	auto binImg = image.getBitMatrix();
+	if (binImg == nullptr)
+		return {};
+
+	auto detectorResult = Detect(*binImg, _opts.tryHarder(), _opts.tryRotate(), _opts.isPure());
+	if (!detectorResult.isValid())
+		return {};
+
+	return {Barcode(Decode(detectorResult.bits()), std::move(detectorResult), BarcodeFormat::DataMatrix)};
 #endif
+}
+
 } // namespace ZXing::DataMatrix

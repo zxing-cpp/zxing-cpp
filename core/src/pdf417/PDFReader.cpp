@@ -314,22 +314,17 @@ static Barcode DecodePure(const BinaryBitmap& image_)
 	return Barcode(std::move(res), {{}, Rectangle<PointI>(left, top, width, height)}, BarcodeFormat::PDF417);
 }
 
-Barcode
-Reader::decode(const BinaryBitmap& image) const
+Barcodes Reader::decode(const BinaryBitmap& image, [[maybe_unused]] int maxSymbols) const
 {
 	if (_opts.isPure()) {
 		auto res = DecodePure(image);
 		if (res.error() != Error::Checksum)
-			return res;
+			return {res};
 		// This falls through and tries the non-pure code path if we have a checksum error. This approach is
 		// currently the best option to deal with 'aliased' input like e.g. 03-aliased.png
 	}
 
-	return FirstOrDefault(DoDecode(image, false, _opts.tryRotate(), _opts.returnErrors()));
-}
-
-Barcodes Reader::decode(const BinaryBitmap& image, [[maybe_unused]] int maxSymbols) const
-{
+	// TODO: respect maxSymbols
 	return DoDecode(image, true, _opts.tryRotate(), _opts.returnErrors());
 }
 
