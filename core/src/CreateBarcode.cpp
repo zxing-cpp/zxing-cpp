@@ -66,6 +66,8 @@ ZX_RO_PROPERTY(bool, gs1);
 ZX_RO_PROPERTY(bool, readerInit);
 ZX_RO_PROPERTY(bool, stacked);
 ZX_RO_PROPERTY(bool, forceSquare);
+ZX_RO_PROPERTY(int, columns);
+ZX_RO_PROPERTY(int, rows);
 ZX_RO_PROPERTY(int, version);
 ZX_RO_PROPERTY(int, dataMask);
 
@@ -321,6 +323,12 @@ zint_symbol* CreatorOptions::zint() const
 
 		if (auto val = version(); val && !IsLinearBarcode(format()))
 			zint->option_2 = *val;
+
+		if (auto val = columns(); val && (BarcodeFormat::DataBarExpanded | BarcodeFormat::PDF417).testFlag(format()))
+			zint->option_2 = *val;
+
+		if (auto val = rows(); val && (BarcodeFormat::DataBarExpanded | BarcodeFormat::PDF417).testFlag(format()))
+			zint->option_3 = *val;
 
 		if (auto val = dataMask(); val && (BarcodeFormat::QRCode | BarcodeFormat::MicroQRCode).testFlag(format()))
 			zint->option_3 = (zint->option_3 & 0xFF) | (*val + 1) << 8;

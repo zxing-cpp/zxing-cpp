@@ -69,6 +69,8 @@ public:
 	ZX_RO_PROPERTY(bool, readerInit);     // most 2D symbologies: set the "reader init" flag
 	ZX_RO_PROPERTY(bool, stacked);        // DataBar/DataBarExpanded: generates a stacked version
 	ZX_RO_PROPERTY(bool, forceSquare);    // DataMatrix: only consider square symbol versions
+	ZX_RO_PROPERTY(int, columns);         // specify number of columns (e.g. for DataBarExpanded, PDF417)
+	ZX_RO_PROPERTY(int, rows);            // specify number of rows (e.g. for DataBarExpanded, PDF417)
 	ZX_RO_PROPERTY(int, version);         // most 2D symbologies: specify the version/size of the symbol
 	ZX_RO_PROPERTY(int, dataMask);        // QRCode/MicroQRCode: specify dataMask to use
 
