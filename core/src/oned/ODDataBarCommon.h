@@ -8,7 +8,6 @@
 #include "ODRowReader.h"
 #include "Range.h"
 #include "Pattern.h"
-#include "Barcode.h"
 
 #include <array>
 #include <cmath>

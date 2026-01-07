@@ -8,7 +8,7 @@
 #include "ODCode93Reader.h"
 
 #include "ODCode93Patterns.h"
-#include "Barcode.h"
+#include "BarcodeData.h"
 #include "SymbologyIdentifier.h"
 #include "ZXAlgorithms.h"
 

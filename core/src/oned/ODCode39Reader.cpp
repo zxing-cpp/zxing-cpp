@@ -7,7 +7,7 @@
 #include "ODCode39Reader.h"
 
 #include "ReaderOptions.h"
-#include "Barcode.h"
+#include "BarcodeData.h"
 #include "SymbologyIdentifier.h"
 #include "ZXAlgorithms.h"
 

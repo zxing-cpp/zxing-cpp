@@ -7,7 +7,7 @@
 #include "ODCode128Reader.h"
 
 #include "ODCode128Patterns.h"
-#include "Barcode.h"
+#include "BarcodeData.h"
 #include "ByteArray.h"
 #include "JSON.h"
 #include "SymbologyIdentifier.h"

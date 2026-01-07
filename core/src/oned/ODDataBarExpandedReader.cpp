@@ -12,7 +12,7 @@
 #include "DetectorResult.h"
 #include "ODDataBarCommon.h"
 #include "ODDataBarExpandedBitDecoder.h"
-#include "Barcode.h"
+#include "BarcodeData.h"
 
 #include <cmath>
 #include <map>
