@@ -17,6 +17,7 @@
 #include <string>
 #include <stdexcept>
 #include <utility>
+#include <vector>
 
 namespace ZXing {
 
@@ -160,6 +161,15 @@ template <typename Container>
 inline std::string ToHex(const Container& c)
 {
 	return ToHex(c.data(), c.size());
+}
+
+template <typename T>
+std::vector<T> ToVector(T&& v)
+{
+	// simply construcing a vector via initializer_list does not work with move-only types
+	std::vector<T> res;
+	res.emplace_back(std::move(v));
+	return res;
 }
 
 template <class T>

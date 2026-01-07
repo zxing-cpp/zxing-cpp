@@ -80,7 +80,7 @@ Barcodes MultiFormatReader::read(const BinaryBitmap& image, int maxSymbols) cons
 	for (const auto& reader : _readers) {
 		if (image.inverted() && !reader->supportsInversion)
 			continue;
-		auto r = reader->decode(image, maxSymbols);
+		auto r = reader->read(image, maxSymbols);
 		if (!_opts.returnErrors()) {
 #ifdef __cpp_lib_erase_if
 			std::erase_if(r, [](auto&& s) { return !s.isValid(); });

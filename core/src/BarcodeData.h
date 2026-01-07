@@ -8,12 +8,15 @@
 #include "Barcode.h"
 #include "BitMatrix.h"
 #include "Content.h"
+#include "DecoderResult.h"
+#include "DetectorResult.h"
 #include "Error.h"
 #include "ReaderOptions.h"
 #include "StructuredAppend.h"
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #ifdef ZXING_USE_ZINT
 extern "C" struct zint_symbol;
@@ -57,6 +60,8 @@ struct BarcodeData
 	}
 };
 
+using BarcodesData = std::vector<BarcodeData>;
+
 inline BarcodeData LinearBarcode(BarcodeFormat format, const std::string& text, int y, int xStart, int xStop, SymbologyIdentifier si,
                                  Error error = {}, std::string extra = {})
 {
@@ -65,6 +70,31 @@ inline BarcodeData LinearBarcode(BarcodeFormat format, const std::string& text, 
 			.position = Line(y, xStart, xStop),
 			.format = format,
 			.extra = std::move(extra)};
+}
+
+inline BarcodeData MatrixBarcode(DecoderResult&& decodeResult, DetectorResult&& detectorResult, BarcodeFormat format)
+{
+	auto extra = std::move(decodeResult).json();
+	if (JsonGetStr(extra, BarcodeExtra::Version).empty() && decodeResult.versionNumber())
+		extra += JsonProp(BarcodeExtra::Version, std::to_string(decodeResult.versionNumber()));
+	if (JsonGetStr(extra, BarcodeExtra::ECLevel).empty() && !decodeResult.ecLevel().empty())
+		extra += JsonProp(BarcodeExtra::ECLevel, decodeResult.ecLevel());
+
+	extra += JsonProp(BarcodeExtra::ReaderInit, decodeResult.readerInit());
+
+	// the BitMatrix stores 'black'/foreground as 0xFF and 'white'/background as 0, but we
+	// want the ImageView returned by symbol() to be a standard luminance image (black == 0)
+	std::move(detectorResult).bits().flipAll();
+
+	return {.content = std::move(decodeResult).content(),
+			.error = std::move(decodeResult).error(),
+			.position = std::move(detectorResult).position(),
+			.format = format,
+			.extra = std::move(extra),
+			.sai = std::move(decodeResult).structuredAppend(),
+			.symbol = std::move(detectorResult).bits(),
+			.lineCount = decodeResult.lineCount(),
+			.isMirrored = decodeResult.isMirrored()};
 }
 
 } // namespace ZXing

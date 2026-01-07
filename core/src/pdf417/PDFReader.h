@@ -22,7 +22,7 @@ class Reader : public ZXing::Reader
 public:
 	using ZXing::Reader::Reader;
 
-	Barcodes decode(const BinaryBitmap& image, int maxSymbols) const override;
+	BarcodesData read(const BinaryBitmap& image, int maxSymbols) const override;
 };
 
 } // namespace ZXing::Pdf417

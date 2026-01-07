@@ -6,8 +6,6 @@
 
 #include "GTIN.h"
 
-#include "Barcode.h"
-
 #include <algorithm>
 #include <iomanip>
 #include <iterator>

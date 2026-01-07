@@ -19,7 +19,7 @@
 #include "ODDXFilmEdgeReader.h"
 #include "ODITFReader.h"
 #include "ODMultiUPCEANReader.h"
-#include "Barcode.h"
+#include "BarcodeData.h"
 
 #include <algorithm>
 #include <utility>
@@ -71,10 +71,10 @@ Reader::~Reader() = default;
 * decided that moving up and down by about 1/16 of the image is pretty good; we try more of the
 * image if "trying harder".
 */
-Barcodes DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, const BinaryBitmap& image, bool tryHarder,
+BarcodesData DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, const BinaryBitmap& image, bool tryHarder,
 						 bool rotate, bool isPure, int maxSymbols, int minLineCount, bool returnErrors)
 {
-	std::vector<BarcodeData> res;
+	BarcodesData res;
 
 	std::vector<std::unique_ptr<RowReader::DecodingState>> decodingState(readers.size());
 
@@ -248,21 +248,17 @@ out:
 	SaveAsPBM(dbg, rotate ? "od-log-r.pnm" : "od-log.pnm");
 #endif
 
-	Barcodes finalRes;
-	finalRes.reserve(res.size());
-	for (auto& r : res)
-		finalRes.emplace_back(std::move(r));
-	return finalRes;
+	return res;
 }
 
-Barcodes Reader::decode(const BinaryBitmap& image, int maxSymbols) const
+BarcodesData Reader::read(const BinaryBitmap& image, int maxSymbols) const
 {
 	auto resH =
 		DoDecode(_readers, image, _opts.tryHarder(), false, _opts.isPure(), maxSymbols, _opts.minLineCount(), _opts.returnErrors());
 	if ((!maxSymbols || Size(resH) < maxSymbols) && _opts.tryRotate()) {
 		auto resV = DoDecode(_readers, image, _opts.tryHarder(), true, _opts.isPure(), maxSymbols - Size(resH),
-							 _opts.minLineCount(), _opts.returnErrors());
-		resH.insert(resH.end(), resV.begin(), resV.end());
+								 _opts.minLineCount(), _opts.returnErrors());
+		resH.insert(resH.end(), std::make_move_iterator(resV.begin()), std::make_move_iterator(resV.end()));
 	}
 	return resH;
 }

@@ -25,8 +25,6 @@ extern "C" struct zint_symbol;
 
 namespace ZXing {
 
-class DecoderResult;
-class DetectorResult;
 class CreatorOptions;
 class ReaderOptions;
 class WriterOptions;
@@ -66,8 +64,6 @@ class Barcode
 public:
 	Barcode();
 	Barcode(Barcode::Data&& data);
-
-	Barcode(DecoderResult&& decodeResult, DetectorResult&& detectorResult, BarcodeFormat format);
 
 	bool isValid() const;
 

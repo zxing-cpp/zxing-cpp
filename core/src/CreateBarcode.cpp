@@ -415,10 +415,10 @@ Barcode CreateBarcode(const void* data, int size, int mode, const CreatorOptions
 	int left, top, width, height;
 	bits.findBoundingBox(left, top, width, height);
 
-	auto res = Barcode(std::move(decRes), {std::move(bits), Rectangle<PointI>(left, top, width, height)}, opts.format());
+	auto res = MatrixBarcode(std::move(decRes), {std::move(bits), Rectangle<PointI>(left, top, width, height)}, opts.format());
 #endif
 
-	res.d->zint = std::move(opts.d->zint);
+	res.zint = std::move(opts.d->zint);
 
 	return res;
 }

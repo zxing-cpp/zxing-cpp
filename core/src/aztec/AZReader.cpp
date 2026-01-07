@@ -13,13 +13,13 @@
 #include "BinaryBitmap.h"
 #include "ReaderOptions.h"
 #include "DecoderResult.h"
-#include "Barcode.h"
+#include "BarcodeData.h"
 
 #include <utility>
 
 namespace ZXing::Aztec {
 
-Barcodes Reader::decode(const BinaryBitmap& image, int maxSymbols) const
+BarcodesData Reader::read(const BinaryBitmap& image, int maxSymbols) const
 {
 	auto binImg = image.getBitMatrix();
 	if (binImg == nullptr)
@@ -27,12 +27,12 @@ Barcodes Reader::decode(const BinaryBitmap& image, int maxSymbols) const
 	
 	auto detRess = Detect(*binImg, _opts.isPure(), _opts.tryHarder(), maxSymbols);
 
-	Barcodes res;
+	BarcodesData res;
 	for (auto&& detRes : detRess) {
 		auto decRes =
 			Decode(detRes).setReaderInit(detRes.readerInit()).setIsMirrored(detRes.isMirrored()).setVersionNumber(detRes.nbLayers());
 		if (decRes.isValid(_opts.returnErrors())) {
-			res.emplace_back(std::move(decRes), std::move(detRes), BarcodeFormat::Aztec);
+			res.emplace_back(MatrixBarcode(std::move(decRes), std::move(detRes), BarcodeFormat::Aztec));
 			if (maxSymbols > 0 && Size(res) >= maxSymbols)
 				break;
 		}

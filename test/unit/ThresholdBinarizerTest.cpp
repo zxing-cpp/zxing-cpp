@@ -98,7 +98,7 @@ TEST(ThresholdBinarizerTest, PatternRowClear)
 	opts.minLineCount(1);
 	OneD::Reader reader(opts);
 
-	auto barcodes = reader.decode(ThresholdBinarizer(getImageView(buf, bits), 0x7F), 1);
+	auto barcodes = reader.read(ThresholdBinarizer(getImageView(buf, bits), 0x7F), 1);
 	EXPECT_TRUE(barcodes.size() == 1);
-	EXPECT_EQ(barcodes[0].text(TextMode::HRI), "(91)12345678901234567890123456789012345678901234567890123456789012345678");
+	EXPECT_EQ(barcodes[0].content.text(TextMode::HRI), "(91)12345678901234567890123456789012345678901234567890123456789012345678");
 }

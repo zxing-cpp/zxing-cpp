@@ -33,27 +33,6 @@ Barcode::Barcode() : d(std::make_shared<Data>()) {}
 
 Barcode::Barcode(Data&& data) : d(std::make_shared<Data>(std::move(data))) {}
 
-Barcode::Barcode(DecoderResult&& decodeResult, DetectorResult&& detectorResult, BarcodeFormat format)
-	: d(std::make_shared<Data>(std::move(decodeResult).content(), std::move(decodeResult).error(),
-							   std::move(detectorResult).position(), format, std::move(decodeResult).json()))
-{
-	if (JsonGetStr(decodeResult.json(), BarcodeExtra::Version).empty() && decodeResult.versionNumber())
-		decodeResult.addExtra(BarcodeExtra::Version, std::to_string(decodeResult.versionNumber()));
-	if (JsonGetStr(decodeResult.json(), BarcodeExtra::ECLevel).empty())
-		decodeResult.addExtra(BarcodeExtra::ECLevel, decodeResult.ecLevel());
-
-	decodeResult.addExtra(BarcodeExtra::ReaderInit, decodeResult.readerInit());
-	d->extra = std::move(decodeResult).json();
-	d->sai = decodeResult.structuredAppend();
-	d->symbol = std::move(detectorResult).bits();
-	d->lineCount = decodeResult.lineCount();
-	d->isMirrored = decodeResult.isMirrored();
-
-	// the BitMatrix stores 'black'/foreground as 0xFF and 'white'/background as 0, but we
-	// want the ImageView returned by symbol() to be a standard luminance image (black == 0)
-	d->symbol.flipAll();
-}
-
 bool Barcode::isValid() const
 {
 	return d->isValid();

@@ -7,7 +7,7 @@
 #pragma once
 
 #include "ReaderOptions.h"
-#include "Barcode.h"
+#include "BarcodeData.h"
 
 namespace ZXing {
 
@@ -26,7 +26,7 @@ public:
 	explicit Reader(ReaderOptions&& opts) = delete;
 	virtual ~Reader() = default;
 
-	virtual Barcodes decode(const BinaryBitmap& image, int maxSymbols) const = 0;
+	virtual BarcodesData read(const BinaryBitmap& image, int maxSymbols) const = 0;
 };
 
 } // ZXing

@@ -12,24 +12,24 @@
 #include "ReaderOptions.h"
 #include "DecoderResult.h"
 #include "DetectorResult.h"
-#include "Barcode.h"
+#include "BarcodeData.h"
 
 #include <utility>
 
 namespace ZXing::DataMatrix {
 
-Barcodes Reader::decode(const BinaryBitmap& image, int maxSymbols) const
+BarcodesData Reader::read(const BinaryBitmap& image, int maxSymbols) const
 {
 #ifdef __cpp_impl_coroutine
 	auto binImg = image.getBitMatrix();
 	if (binImg == nullptr)
 		return {};
 
-	Barcodes res;
+	BarcodesData res;
 	for (auto&& detRes : Detect(*binImg, _opts.tryHarder(), _opts.tryRotate(), _opts.isPure())) {
 		auto decRes = Decode(detRes.bits());
 		if (decRes.isValid(_opts.returnErrors())) {
-			res.emplace_back(std::move(decRes), std::move(detRes), BarcodeFormat::DataMatrix);
+			res.emplace_back(MatrixBarcode(std::move(decRes), std::move(detRes), BarcodeFormat::DataMatrix));
 			if (maxSymbols > 0 && Size(res) >= maxSymbols)
 				break;
 		}
@@ -45,7 +45,7 @@ Barcodes Reader::decode(const BinaryBitmap& image, int maxSymbols) const
 	if (!detectorResult.isValid())
 		return {};
 
-	return {Barcode(Decode(detectorResult.bits()), std::move(detectorResult), BarcodeFormat::DataMatrix)};
+	return ToVector(MatrixBarcode(Decode(detectorResult.bits()), std::move(detectorResult), BarcodeFormat::DataMatrix));
 #endif
 }
 
