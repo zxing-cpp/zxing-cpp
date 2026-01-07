@@ -45,10 +45,6 @@ struct CreatorOptions::Data
 	// structured_append (idx, cnt, ID)
 
 	mutable unique_zint_symbol zint;
-
-#ifndef __cpp_aggregate_paren_init // MSVC 17.14
-	Data(BarcodeFormat f, std::string o) : format(f), options(std::move(o)) {}
-#endif
 };
 
 #define ZX_PROPERTY(TYPE, NAME) \

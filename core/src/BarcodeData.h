@@ -46,13 +46,6 @@ struct BarcodeData
 	bool isMirrored = false;
 	bool isInverted = false;
 
-#ifndef __cpp_aggregate_paren_init // MSVC 17.14 compatibility
-	BarcodeData() = default;
-	BarcodeData(Content&& c, Error&& e, Position&& p, BarcodeFormat f, std::string&& ex)
-		: content(std::move(c)), error(std::move(e)), position(std::move(p)), format(f), extra(std::move(ex))
-	{}
-#endif
-
 	bool operator==(const BarcodeData& other) const;
 
 	inline bool isValid() const { return format != BarcodeFormat::None && !content.bytes.empty() && !error; }
