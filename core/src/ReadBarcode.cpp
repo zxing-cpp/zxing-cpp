@@ -84,9 +84,9 @@ ReaderOptions::~ReaderOptions() = default;
 ReaderOptions::ReaderOptions(const ReaderOptions& other) : d(std::make_unique<Data>(*other.d)) {}
 ReaderOptions& ReaderOptions::operator=(const ReaderOptions& other)
 {
-    if (this != &other)
-        d = std::make_unique<Data>(*other.d);
-    return *this;
+	if (this != &other)
+		d = std::make_unique<Data>(*other.d);
+	return *this;
 }
 
 // move

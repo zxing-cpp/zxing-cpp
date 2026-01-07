@@ -14,9 +14,9 @@ using namespace ZXing;
 
 uint64_t Expand(uint8_t b)
 {
-    uint64_t shift = 0x0000040810204081ul; // bits set: 0, 7, 14, 21, 28, 35, 42
-    uint64_t mask = 0x0001010101010101ul; // bits set: 0, 8, 16, 24, 32, 40, 48
-    return ((uint64_t)(b & 127) * shift & mask) | (uint64_t)(b & 128) << 49;
+	uint64_t shift = 0x0000040810204081ul; // bits set: 0, 7, 14, 21, 28, 35, 42
+	uint64_t mask = 0x0001010101010101ul;  // bits set: 0, 8, 16, 24, 32, 40, 48
+	return ((uint64_t)(b & 127) * shift & mask) | (uint64_t)(b & 128) << 49;
 }
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)

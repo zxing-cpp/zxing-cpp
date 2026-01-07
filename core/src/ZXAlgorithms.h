@@ -214,10 +214,10 @@ inline void ForEachToken(std::string_view str, std::string_view delimiters, FUNC
 {
 	std::size_t pos = 0;
 	while (pos < str.size()) {
-        auto const next_pos = str.find_first_of(delimiters, pos);
-        callback(str.substr(pos, next_pos - pos));
-        pos = next_pos == std::string_view::npos ? str.size() : next_pos + 1;
-    }
+		auto const next_pos = str.find_first_of(delimiters, pos);
+		callback(str.substr(pos, next_pos - pos));
+		pos = next_pos == std::string_view::npos ? str.size() : next_pos + 1;
+	}
 }
 
 inline bool IsEqualIgnoreCase(std::string_view a, std::string_view b)
