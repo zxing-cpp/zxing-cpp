@@ -42,8 +42,6 @@ struct BarcodeData
 #ifdef ZXING_USE_ZINT
 	unique_zint_symbol zint = {};
 #endif
-	char ecLevel[4] = {};
-	char version[4] = {};
 	int lineCount = 0;
 	bool isMirrored = false;
 	bool isInverted = false;

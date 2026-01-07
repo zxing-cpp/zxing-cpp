@@ -37,6 +37,11 @@ Barcode::Barcode(DecoderResult&& decodeResult, DetectorResult&& detectorResult, 
 	: d(std::make_shared<Data>(std::move(decodeResult).content(), std::move(decodeResult).error(),
 							   std::move(detectorResult).position(), format, std::move(decodeResult).json()))
 {
+	if (JsonGetStr(decodeResult.json(), BarcodeExtra::Version).empty() && decodeResult.versionNumber())
+		decodeResult.addExtra(BarcodeExtra::Version, std::to_string(decodeResult.versionNumber()));
+	if (JsonGetStr(decodeResult.json(), BarcodeExtra::ECLevel).empty())
+		decodeResult.addExtra(BarcodeExtra::ECLevel, decodeResult.ecLevel());
+
 	decodeResult.addExtra(BarcodeExtra::ReaderInit, decodeResult.readerInit());
 	d->extra = std::move(decodeResult).json();
 	d->sai = decodeResult.structuredAppend();
@@ -47,10 +52,6 @@ Barcode::Barcode(DecoderResult&& decodeResult, DetectorResult&& detectorResult, 
 	// the BitMatrix stores 'black'/foreground as 0xFF and 'white'/background as 0, but we
 	// want the ImageView returned by symbol() to be a standard luminance image (black == 0)
 	d->symbol.flipAll();
-
-	if (decodeResult.versionNumber())
-		snprintf(d->version, 4, "%d", decodeResult.versionNumber());
-	snprintf(d->ecLevel, 4, "%s", decodeResult.ecLevel().data());
 }
 
 bool Barcode::isValid() const
@@ -91,11 +92,6 @@ std::string Barcode::text(TextMode mode) const
 std::string Barcode::text() const
 {
 	return text(d->readerOpts.textMode());
-}
-
-std::string Barcode::ecLevel() const
-{
-	return d->ecLevel;
 }
 
 ContentType Barcode::contentType() const
@@ -142,11 +138,6 @@ int Barcode::sequenceIndex() const
 std::string Barcode::sequenceId() const
 {
 	return d->sai.id;
-}
-
-std::string Barcode::version() const
-{
-	return d->version;
 }
 
 int Barcode::lineCount() const
