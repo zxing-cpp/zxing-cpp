@@ -458,7 +458,7 @@ static Barcode CreateBarcode(BitMatrix&& bits, std::string_view contents, const 
 
 	DecoderResult decRes(std::move(content));
 	DetectorResult detRes(std::move(bits), Rectangle<PointI>(0, 0, bits.width(), bits.height()));
-	return Barcode(std::move(decRes), std::move(detRes), opts.format());
+	return MatrixBarcode(std::move(decRes), std::move(detRes), opts.format());
 #endif
 }
 
