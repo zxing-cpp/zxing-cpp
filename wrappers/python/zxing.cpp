@@ -12,7 +12,7 @@
 #include "ZXAlgorithms.h"
 
 // Writer
-#ifdef ZXING_EXPERIMENTAL_API
+#ifdef ZXING_USE_ZINT
 #include "CreateBarcode.h"
 #include "WriteBarcode.h"
 #include <bit>
@@ -195,8 +195,6 @@ Barcodes read_barcodes(py::object _image, const BarcodeFormats& formats, bool tr
 							  return_errors);
 }
 
-#ifdef ZXING_EXPERIMENTAL_API
-
 auto image_view(py::buffer buffer, int width, int height, ImageFormat format, int rowStride, int pixStride)
 {
 	const auto _type = std::string(py::str(py::type::of(buffer)));
@@ -231,11 +229,10 @@ std::string write_barcode_to_svg(Barcode barcode, int size_hint, bool add_hrt, b
 {
 	return WriteBarcodeToSVG(barcode, WriterOptions().sizeHint(size_hint).addHRT(add_hrt).addQuietZones(add_quiet_zones));
 }
-#endif
 
 Image write_barcode(BarcodeFormat format, py::object content, int width, int height, int quiet_zone, int ec_level)
 {
-#ifdef ZXING_EXPERIMENTAL_API
+#ifdef ZXING_USE_ZINT
 	auto barcode = create_barcode(content, format, py::dict("ec_level"_a = ec_level / 2));
 	return write_barcode_to_image(barcode, std::max(width, height), false, quiet_zone != 0);
 #else
