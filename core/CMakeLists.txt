@@ -556,7 +556,10 @@ set_target_properties(ZXing PROPERTIES PUBLIC_HEADER "${PUBLIC_HEADERS}")
 
 set(PRECOMPILE_HEADERS ${PUBLIC_HEADERS})
 list(REMOVE_ITEM PRECOMPILE_HEADERS "$<$<BOOL:${ZXING_C_API}>:${CMAKE_CURRENT_SOURCE_DIR}/src/ZXingC.h>")
-target_precompile_headers(ZXing PRIVATE ${PRECOMPILE_HEADERS})
+list(APPEND PRECOMPILE_HEADERS "src/BarcodeData.h" "src/Content.h" "src/Range.h")
+if (NOT ZXING_DISABLE_PCH)
+    target_precompile_headers(ZXing PRIVATE ${PRECOMPILE_HEADERS})
+endif()
 
 if(CMAKE_BUILD_TYPE MATCHES "Release|RelWithDebInfo")
     # The following is a list of translation units that fulfill two criteria regarding the use of -Os vs -O3:
@@ -569,6 +572,7 @@ if(CMAKE_BUILD_TYPE MATCHES "Release|RelWithDebInfo")
         src/Barcode.cpp
         src/BarcodeFormat.cpp
         src/BitMatrixIO.cpp
+        src/CreateBarcode.cpp
         src/Error.cpp
         src/GTIN.cpp
         src/HRI.cpp
