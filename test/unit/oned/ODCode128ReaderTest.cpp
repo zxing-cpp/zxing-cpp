@@ -109,3 +109,13 @@ TEST(ODCode128ReaderTest, ReaderInit)
 		EXPECT_EQ(result.text(), "92");
 	}
 }
+
+TEST(ODCode128ReaderTest, ISO8859_1)
+{
+	{
+		// "aé<U+A0>" (NBSP)
+		PatternRow row({ 1, 2, 1, 1, 2, 4, 1, 1, 4, 1, 3, 1, 1, 4, 2, 1, 1, 2, 1, 1, 4, 1, 3, 1, 2, 1, 2, 2, 2, 2, 2, 2, 1, 4, 1, 1 });
+		auto result = parse('B', row);
+		EXPECT_EQ(result.text(), "a\u00E9\u00A0");
+	}
+}

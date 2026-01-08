@@ -48,7 +48,7 @@ public:
 	bool hasECI = false;
 
 	Content();
-	Content(ByteArray&& bytes, SymbologyIdentifier si);
+	Content(ByteArray&& bytes, SymbologyIdentifier si, CharacterSet defaultCharset = CharacterSet::Unknown);
 
 	// make movable but not copyable
 	Content(const Content& other) = delete;
