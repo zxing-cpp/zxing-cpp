@@ -78,8 +78,6 @@ internal class Dll
 	[DllImport(DllName)] public static extern void ZXing_WriterOptions_delete(IntPtr opts);
 	[DllImport(DllName)] public static extern void ZXing_WriterOptions_setScale(IntPtr opts, int scale);
 	[DllImport(DllName)] public static extern int ZXing_WriterOptions_getScale(IntPtr opts);
-	[DllImport(DllName)] public static extern void ZXing_WriterOptions_setSizeHint(IntPtr opts, int sizeHint);
-	[DllImport(DllName)] public static extern int ZXing_WriterOptions_getSizeHint(IntPtr opts);
 	[DllImport(DllName)] public static extern void ZXing_WriterOptions_setRotate(IntPtr opts, int rotate);
 	[DllImport(DllName)] public static extern int ZXing_WriterOptions_getRotate(IntPtr opts);
 	[DllImport(DllName)] public static extern void ZXing_WriterOptions_setAddHRT(IntPtr opts, bool addHRT);
@@ -404,12 +402,6 @@ public class WriterOptions
 	{
 		get => ZXing_WriterOptions_getScale(_d);
 		set => ZXing_WriterOptions_setScale(_d, value);
-	}
-
-	public int SizeHint
-	{
-		get => ZXing_WriterOptions_getSizeHint(_d);
-		set => ZXing_WriterOptions_setSizeHint(_d, value);
 	}
 
 	public int Rotate

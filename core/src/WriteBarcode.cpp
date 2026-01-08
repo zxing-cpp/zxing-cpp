@@ -24,8 +24,7 @@ namespace ZXing {
 
 struct WriterOptions::Data
 {
-	int scale = 0;
-	int sizeHint = 0;
+	int scale = 1;
 	int rotate = 0;
 	bool invert = false;
 	bool addHRT = false;
@@ -38,7 +37,6 @@ struct WriterOptions::Data
 	WriterOptions&& WriterOptions::NAME(TYPE v)&& { return d->NAME = std::move(v), std::move(*this); }
 
 ZX_PROPERTY(int, scale)
-ZX_PROPERTY(int, sizeHint)
 ZX_PROPERTY(int, rotate)
 ZX_PROPERTY(bool, invert)
 ZX_PROPERTY(bool, addHRT)
@@ -64,11 +62,11 @@ struct SetCommonWriterOptions
 		zint->output_options &= ~(OUT_BUFFER_INTERMEDIATE | BARCODE_NO_QUIET_ZONES);
 		zint->output_options |= opts.addQuietZones() ? BARCODE_QUIET_ZONES : BARCODE_NO_QUIET_ZONES;
 
-		if (opts.scale())
+		if (opts.scale() > 0)
 			zint->scale = opts.scale() / 2.f;
-		else if (opts.sizeHint()) {
+		else if (opts.scale() < 0) {
 			int size = std::max(zint->width, zint->rows);
-			zint->scale = std::max(1, int(float(opts.sizeHint()) / size)) / 2.f;
+			zint->scale = std::max(1, int(float(-opts.scale()) / size)) / 2.f;
 		}
 
 		if (opts.invert()) {
@@ -119,9 +117,9 @@ static std::string ToSVG(ImageView iv)
 static Image ToImage(BitMatrix bits, bool isLinearCode, const WriterOptions& opts)
 {
 	bits.flipAll();
-	auto symbol = Inflate(std::move(bits), opts.sizeHint(),
-						  isLinearCode ? std::clamp(opts.sizeHint() / 2, 50, 300) : opts.sizeHint(),
-						  opts.addQuietZones() ? 10 : 0);
+	int width = opts.scale() > 0 ? bits.width() * opts.scale() : -opts.scale();
+	int height = isLinearCode ? std::clamp(width / 2, 50, 300) : opts.scale() > 0 ? bits.height() * opts.scale() : -opts.scale();
+	auto symbol = Inflate(std::move(bits), width, height, opts.addQuietZones() ? 10 : 0);
 	auto bitmap = ToMatrix<uint8_t>(symbol);
 	auto iv = Image(symbol.width(), symbol.height());
 	std::memcpy(const_cast<uint8_t*>(iv.data()), bitmap.data(), iv.width() * iv.height());

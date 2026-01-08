@@ -558,7 +558,6 @@ make_zxing_class_with_default!(BarcodeWriter, ZXing_WriterOptions);
 
 impl BarcodeWriter {
 	property!(WriterOptions, Scale, i32);
-	property!(WriterOptions, SizeHint, i32);
 	property!(WriterOptions, Rotate, i32);
 	property!(WriterOptions, AddHRT, add_hrt, bool);
 	property!(WriterOptions, AddQuietZones, bool);

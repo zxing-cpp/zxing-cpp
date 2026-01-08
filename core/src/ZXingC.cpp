@@ -382,7 +382,6 @@ void ZXing_WriterOptions_delete(ZXing_WriterOptions* opts)
 	void ZXing_WriterOptions_set##CAP_NAME(ZXing_WriterOptions* opts, TYPE val) { opts->NAME(val); }
 
 ZX_PROPERTY(int, scale, Scale)
-ZX_PROPERTY(int, sizeHint, SizeHint)
 ZX_PROPERTY(int, rotate, Rotate)
 ZX_PROPERTY(bool, addHRT, AddHRT)
 ZX_PROPERTY(bool, addQuietZones, AddQuietZones)

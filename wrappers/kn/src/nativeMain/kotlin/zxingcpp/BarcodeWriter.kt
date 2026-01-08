@@ -42,9 +42,6 @@ open class WriterOptions {
 	var scale: Int
 		get() = ZXing_WriterOptions_getScale(cValue)
 		set(value) = ZXing_WriterOptions_setScale(cValue, value)
-	var sizeHint: Int
-		get() = ZXing_WriterOptions_getSizeHint(cValue)
-		set(value) = ZXing_WriterOptions_setSizeHint(cValue, value)
 	var rotate: Int
 		get() = ZXing_WriterOptions_getRotate(cValue)
 		set(value) = ZXing_WriterOptions_setRotate(cValue, value)

@@ -31,14 +31,14 @@ using namespace ZXing;
 static void PrintUsage(const char* exePath)
 {
 	std::cout << "Usage: " << exePath
-			  << " [-size <width/height>] [-options <creator-options>] [-noqz] [-hrt] <format> <text> <output>\n"
-			  << "    -size      Size of generated image\n"
+			  << " [-options <creator-options>] [-scale <factor>] [-binary] [-noqz] [-hrt] [-invert] <format> <text> <output>\n"
+			  << "    -options   Comma separated list of symbology specific options and flags\n"
+			  << "    -scale     module size of generated image / negative numbers mean 'target size in pixels'\n"
 //			  << "    -encoding  Encoding used to encode input text\n"
 			  << "    -binary    Interpret <text> as a file name containing binary data\n"
 			  << "    -noqz      Print barcode witout quiet zone\n"
 			  << "    -hrt       Print human readable text below the barcode (if supported)\n"
 			  << "    -invert    Invert colors (switch black and white)\n"
-			  << "    -options   Comma separated list of symbology specific options and flags\n"
 			  << "    -help      Print usage information\n"
 			  << "    -version   Print version information\n"
 			  << "\n"
@@ -57,7 +57,7 @@ static void PrintUsage(const char* exePath)
 struct CLI
 {
 	BarcodeFormat format;
-	int sizeHint = 0;
+	int scale = 0;
 	std::string input;
 	std::string outPath;
 	std::string options;
@@ -74,10 +74,10 @@ static bool ParseOptions(int argc, char* argv[], CLI& cli)
 	int nonOptArgCount = 0;
 	for (int i = 1; i < argc; ++i) {
 		auto is = [&](const char* str) { return strncmp(argv[i], str, strlen(argv[i])) == 0; };
-		if (is("-size")) {
+		if (is("-scale")) {
 			if (++i == argc)
 				return false;
-			cli.sizeHint = std::stoi(argv[i]);
+			cli.scale = std::stoi(argv[i]);
 		// } else if (is("-encoding")) {
 		// 	if (++i == argc)
 		// 		return false;
@@ -156,7 +156,7 @@ int main(int argc, char* argv[])
 		auto cOpts = CreatorOptions(cli.format, cli.options);
 		auto barcode = cli.inputIsFile ? CreateBarcodeFromBytes(ReadFile(cli.input), cOpts) : CreateBarcodeFromText(cli.input, cOpts);
 
-		auto wOpts = WriterOptions().sizeHint(cli.sizeHint).addQuietZones(cli.addQZs).addHRT(cli.addHRT).invert(cli.invert).rotate(0);
+		auto wOpts = WriterOptions().scale(cli.scale).addQuietZones(cli.addQZs).addHRT(cli.addHRT).invert(cli.invert).rotate(0);
 		auto bitmap = WriteBarcodeToImage(barcode, wOpts);
 
 		if (cli.verbose) {
@@ -184,10 +184,10 @@ int main(int argc, char* argv[])
 			for (uint8_t c : file)
 				bytes.push_back(c);
 			writer.setEncoding(CharacterSet::BINARY);
-			matrix = writer.encode(bytes, cli.sizeHint, std::clamp(cli.sizeHint / 2, 50, 300));
+			matrix = writer.encode(bytes, cli.scale, std::clamp(cli.scale / 2, 50, 300));
 		} else {
 			writer.setEncoding(CharacterSet::UTF8);
-			matrix = writer.encode(cli.input, cli.sizeHint, std::clamp(cli.sizeHint / 2, 50, 300));
+			matrix = writer.encode(cli.input, cli.scale, std::clamp(cli.scale / 2, 50, 300));
 		}
 		auto bitmap = ToMatrix<uint8_t>(matrix);
 #endif

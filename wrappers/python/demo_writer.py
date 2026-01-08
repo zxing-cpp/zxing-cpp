@@ -14,7 +14,7 @@ Image.fromarray(img).save("test.png")
 # new/experimental writer API
 # barcode = zxingcpp.create_barcode(content, format, ec_level = "50%")
 
-# img = barcode.to_image(size_hint = 500)
+# img = barcode.to_image(scale = 5, add_hrt = True)
 # Image.fromarray(img).save("test.png")
 
 # svg = barcode.to_svg(add_hrt = True)

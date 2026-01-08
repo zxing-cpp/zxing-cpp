@@ -208,8 +208,6 @@ extern "C" {
 	pub fn ZXing_WriterOptions_delete(opts: *mut ZXing_WriterOptions);
 	pub fn ZXing_WriterOptions_setScale(opts: *mut ZXing_WriterOptions, scale: ::core::ffi::c_int);
 	pub fn ZXing_WriterOptions_getScale(opts: *const ZXing_WriterOptions) -> ::core::ffi::c_int;
-	pub fn ZXing_WriterOptions_setSizeHint(opts: *mut ZXing_WriterOptions, sizeHint: ::core::ffi::c_int);
-	pub fn ZXing_WriterOptions_getSizeHint(opts: *const ZXing_WriterOptions) -> ::core::ffi::c_int;
 	pub fn ZXing_WriterOptions_setRotate(opts: *mut ZXing_WriterOptions, rotate: ::core::ffi::c_int);
 	pub fn ZXing_WriterOptions_getRotate(opts: *const ZXing_WriterOptions) -> ::core::ffi::c_int;
 	pub fn ZXing_WriterOptions_setAddHRT(opts: *mut ZXing_WriterOptions, addHRT: bool);

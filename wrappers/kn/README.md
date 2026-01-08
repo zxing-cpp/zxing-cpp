@@ -118,7 +118,7 @@ val barcode2 = Barcode(text.encodeToByteArray(), format)
 
 @OptIn(ExperimentalWriterApi::class)
 val wOpts = WriterOptions().apply {
-    sizeHint = 400
+    scale = 4
     // more options, see documentation
 }
 

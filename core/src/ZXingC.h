@@ -287,9 +287,6 @@ void ZXing_WriterOptions_delete(ZXing_WriterOptions* opts);
 void ZXing_WriterOptions_setScale(ZXing_WriterOptions* opts, int scale);
 int ZXing_WriterOptions_getScale(const ZXing_WriterOptions* opts);
 
-void ZXing_WriterOptions_setSizeHint(ZXing_WriterOptions* opts, int sizeHint);
-int ZXing_WriterOptions_getSizeHint(const ZXing_WriterOptions* opts);
-
 void ZXing_WriterOptions_setRotate(ZXing_WriterOptions* opts, int rotate);
 int ZXing_WriterOptions_getRotate(const ZXing_WriterOptions* opts);
 

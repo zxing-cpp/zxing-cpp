@@ -41,11 +41,21 @@ public:
 	WriterOptions& NAME(TYPE v)&; \
 	WriterOptions&& NAME(TYPE v)&&;
 
+	/** @brief scale factor for rendering, i.e. the module size (default is 1)
+	 * Passing a negative value will choose the scale automatically to fit the size of the barcode to abs(scale) as close as possible.
+	 */
 	ZX_PROPERTY(int, scale)
-	ZX_PROPERTY(int, sizeHint)
+
+	/// rotate the barcode by given degrees (0, 90, 180, 270)
 	ZX_PROPERTY(int, rotate)
+
+	/// invert the colors of the barcode
 	ZX_PROPERTY(bool, invert)
+
+	/// add human readable text (HRI) to the barcode
 	ZX_PROPERTY(bool, addHRT)
+
+	/// add quiet zones around the barcode
 	ZX_PROPERTY(bool, addQuietZones)
 
 #undef ZX_PROPERTY
