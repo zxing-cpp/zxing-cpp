@@ -153,14 +153,15 @@ struct State : public RowReader::DecodingState
 BarcodeData DataBarReader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<RowReader::DecodingState>& state) const
 {
 #if 0 // non-stacked version
+	(void)state;
 	next = next.subView(-1, FULL_PAIR_SIZE + 1); // +1 reflects the guard pattern on the right, see IsRightPair());
 	// yes: the first view we test is at index 1 (black bar at 0 would be the guard pattern)
 	while (next.shift(2)) {
 		if (IsLeftPair(next)) {
 			if (auto leftPair = ReadPair(next, false); leftPair && next.shift(FULL_PAIR_SIZE) && IsRightPair(next)) {
 				if (auto rightPair = ReadPair(next, true); rightPair && ChecksumIsValid(leftPair, rightPair)) {
-					return {ConstructText(leftPair, rightPair), rowNumber, leftPair.xStart, rightPair.xStop, BarcodeFormat::DataBar,
-							{'e', '0', 0, AIFlag::GS1}};
+					return LinearBarcode(BarcodeFormat::DataBar, ConstructText(leftPair, rightPair), rowNumber, leftPair.xStart,
+										 rightPair.xStop, {'e', '0', 0, AIFlag::GS1});
 				}
 			}
 		}
