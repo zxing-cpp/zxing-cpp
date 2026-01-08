@@ -81,8 +81,10 @@ public:
 	ReaderOptions& operator=(ReaderOptions&&);
 
 	// Silence deprecated-declarations warnings, only happending here for deprecated inline functions and only with GCC
+#ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
 
 #define ZX_PROPERTY(TYPE, NAME, SETTER, ...) \
 	TYPE NAME() const noexcept; \
@@ -156,8 +158,11 @@ public:
 
 #undef ZX_PROPERTY
 
+#ifdef __GNUC__
 #pragma GCC diagnostic pop
+#endif
 
+	/// Check if a specific format is enabled in the formats set
 	bool hasFormat(BarcodeFormats f) const noexcept;
 };
 
