@@ -14,16 +14,16 @@ or
 python setup.py install
 ```
 
-**Note**: To enable position independent and multi-symbol DataMatrix detection, the library needs to be compiled with a c++20 compiler. Unfortunately some build environments (currently the 32-bit builds for Linux) used by `cibuildwheel` to generate the binary wheels that are published on [pypi.org](https://pypi.org/project/zxing-cpp/) don't include a c++20 compiler. Best chance to enable proper DataMatrix support in that case is by installing from source:
+In case there is no pre-build wheel available for your platform or python version or if you use `setup.py` directly, a suitable [build environment](https://github.com/zxing-cpp/zxing-cpp#build-instructions) including a c++20 compiler is required. To build from source, you can call:
 
 ```bash
 pip install zxing-cpp --no-binary zxing-cpp
 ```
 
-In that case or if there is no pre-build wheel available for your platform or python version or if you use `setup.py` directly, a suitable [build environment](https://github.com/zxing-cpp/zxing-cpp#build-instructions) including a c++ compiler is required.
-
 
 ## Usage
+
+### Reading barcodes
 
 ```python
 import cv2, zxingcpp
@@ -40,4 +40,20 @@ if len(barcodes) == 0:
 	print("Could not find any barcode.")
 ```
 
-To get a full list of available parameters for `read_barcodes` and `write_barcode` as well as the properties of the Barcode objects, have a look at the `PYBIND11_MODULE` definition in [this c++ source file](https://github.com/zxing-cpp/zxing-cpp/blob/master/wrappers/python/zxing.cpp).
+### Writing barcodes
+
+```python
+import zxingcpp
+from PIL import Image
+
+barcode = zxingcpp.create_barcode('This is a test', zxingcpp.BarcodeFormat.QRCode, ec_level = "50%")
+
+img = barcode.to_image(scale = 5)
+Image.fromarray(img).save("test.png")
+
+svg = barcode.to_svg(add_quiet_zones = False)
+with open("test.svg", "w") as svg_file:
+	svg_file.write(svg)
+```
+
+To get a full list of available parameters for `read_barcodes` and `create_barcode` as well as the properties of the Barcode objects, have a look at the `PYBIND11_MODULE` definition in [this c++ source file](https://github.com/zxing-cpp/zxing-cpp/blob/master/wrappers/python/zxing.cpp).

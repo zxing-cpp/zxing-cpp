@@ -233,6 +233,10 @@ std::string write_barcode_to_svg(Barcode barcode, int scale, bool add_hrt, bool 
 Image write_barcode(BarcodeFormat format, py::object content, int width, int height, int quiet_zone, int ec_level)
 {
 #ifdef ZXING_USE_ZINT
+	auto warnings = pybind11::module::import("warnings");
+	auto builtins = pybind11::module::import("builtins");
+	warnings.attr("warn")("write_barcode() is deprecated, use create_barcode() instead.", builtins.attr("DeprecationWarning"));
+
 	auto barcode = create_barcode(content, format, py::dict("ec_level"_a = ec_level / 2));
 	return write_barcode_to_image(barcode, -std::max(width, height), false, quiet_zone != 0);
 #else
@@ -404,7 +408,6 @@ PYBIND11_MODULE(zxingcpp, m)
 			"error", [](const Barcode& res) { return res.error() ? std::optional(res.error()) : std::nullopt; },
 			":return: Error code or None\n"
 			":rtype: zxingcpp.Error")
-#ifdef ZXING_EXPERIMENTAL_API
 		.def("to_image", &write_barcode_to_image,
 			  py::arg("scale") = 1,
 			  py::arg("add_hrt") = false,
@@ -413,7 +416,6 @@ PYBIND11_MODULE(zxingcpp, m)
 			  py::arg("scale") = 1,
 			  py::arg("add_hrt") = false,
 			  py::arg("add_quiet_zones") = true)
-#endif
 		;
 	m.attr("Result") = m.attr("Barcode"); // alias to deprecated name for the Barcode class
 	m.def("barcode_format_from_str", &BarcodeFormatFromString,
@@ -537,7 +539,6 @@ PYBIND11_MODULE(zxingcpp, m)
 			};
 		});
 
-#ifdef ZXING_EXPERIMENTAL_API
 	m.def("create_barcode", &create_barcode,
 		py::arg("content"),
 		py::arg("format")
@@ -577,8 +578,6 @@ PYBIND11_MODULE(zxingcpp, m)
 				true                                               // read-only
 			};
 		});
-
-#endif
 
 	m.attr("Bitmap") = m.attr("Image"); // alias to deprecated name for the Image class
 	m.def("write_barcode", &write_barcode,
