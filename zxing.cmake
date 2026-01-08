@@ -33,21 +33,43 @@ macro(zxing_add_package name depname git_repo git_rev)
 
     if (NOT ${name}_FOUND)
         include(FetchContent)
-        FetchContent_Declare (${depname}
-            GIT_REPOSITORY ${git_repo}
-            GIT_TAG ${git_rev})
-        if (${depname} STREQUAL "googletest")
-            # Prevent overriding the parent project's compiler/linker settings on Windows
-            set (gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+        if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.28")
+            FetchContent_Declare(
+                ${depname}
+                GIT_REPOSITORY ${git_repo}
+                GIT_TAG ${git_rev}
+                EXCLUDE_FROM_ALL
+            )
+
+            if (${depname} STREQUAL "googletest")
+                # Prevent overriding the parent project's compiler/linker settings on Windows
+                set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+            endif()
+
+            FetchContent_MakeAvailable(${depname})
+        else()
+            FetchContent_Declare(
+                ${depname}
+                GIT_REPOSITORY ${git_repo}
+                GIT_TAG ${git_rev}
+            )
+
+            if (${depname} STREQUAL "googletest")
+                # Prevent overriding the parent project's compiler/linker settings on Windows
+                set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+            endif()
+
+            FetchContent_GetProperties(${depname})
+            if (NOT ${depname}_POPULATED)
+                FetchContent_Populate(${depname})
+                add_subdirectory(
+                    ${${depname}_SOURCE_DIR}
+                    ${${depname}_BINARY_DIR}
+                    EXCLUDE_FROM_ALL
+                )
+            endif()
+        # set (${name}_POPULATED TRUE) # this is supposed to be done in MakeAvailable but it seems not to?!?
         endif()
-        #FetchContent_MakeAvailable (${depname})
-        # TODO: reqire cmake 3.28 and pass EXCLUDE_FROM_ALL to FetchContent_Declare instead of calling FetchContent_Populate below.
-        #       This would fix a warning but cmake 3.28 is not in Debian bookworm but at least in Ubuntu 24.04 (LTS)
-        FetchContent_GetProperties(${depname})
-        if(NOT ${depname}_POPULATED)
-            FetchContent_Populate(${depname})
-            add_subdirectory(${${depname}_SOURCE_DIR} ${${depname}_BINARY_DIR} EXCLUDE_FROM_ALL) # prevent installing of dependencies
-        endif()
-        set (${name}_POPULATED TRUE) # this is supposed to be done in MakeAvailable but it seems not to?!?
     endif()
 endmacro()
