@@ -80,6 +80,10 @@ public:
 	ReaderOptions(ReaderOptions&&);
 	ReaderOptions& operator=(ReaderOptions&&);
 
+	// Silence deprecated-declarations warnings, only happending here for deprecated inline functions and only with GCC
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 #define ZX_PROPERTY(TYPE, NAME, SETTER, ...) \
 	TYPE NAME() const noexcept; \
 	__VA_ARGS__ ReaderOptions& NAME(TYPE v) &; \
@@ -151,6 +155,8 @@ public:
 	inline ReaderOptions&& setCharacterSet(std::string_view v) && { return std::move(*this).characterSet(v); }
 
 #undef ZX_PROPERTY
+
+#pragma GCC diagnostic pop
 
 	bool hasFormat(BarcodeFormats f) const noexcept;
 };
