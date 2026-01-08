@@ -88,13 +88,13 @@ target_sources (UnitTest PRIVATE
 )
 endif()
 
-if (ZXING_READERS OR ZXING_WRITERS MATCHES "NEW|BOTH")
+if (ZXING_READERS OR ZXING_WRITERS MATCHES "ON|NEW|BOTH")
 target_sources (UnitTest PRIVATE
     GS1Test.cpp
 )
 endif()
 
-if (ZXING_WRITERS MATCHES "NEW|BOTH")
+if (ZXING_WRITERS MATCHES "ON|NEW|BOTH")
 target_sources (UnitTest PRIVATE
     WriteBarcodeTest.cpp
     TextEncoderTest.cpp
