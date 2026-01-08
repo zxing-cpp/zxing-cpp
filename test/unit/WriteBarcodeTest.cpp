@@ -328,6 +328,38 @@ TEST(WriteBarcodeTest, ZintBinary)
 		  "0x0 15x0 15x15 0x15" /*position*/, "23%" /*ecLevel*/, "1" /*version*/, true /*fromBytes*/);
 }
 
+TEST(WriteBarcodeTest, CreatorOptions)
+{
+	Barcode bc;
+
+	bc = CreateBarcodeFromText("12345", {BarcodeFormat::PDF417});
+	EXPECT_EQ(bc.symbol().height(), 18);
+
+	bc = CreateBarcodeFromText("12345", {BarcodeFormat::PDF417, "rows=3"});
+	EXPECT_EQ(bc.symbol().height(), 9);
+
+	bc = CreateBarcodeFromText("12345", {BarcodeFormat::PDF417, "columns=1"});
+	EXPECT_EQ(bc.symbol().height(), 36);
+
+	bc = CreateBarcodeFromText("(21)123456789", {BarcodeFormat::DataBarExpanded, "stacked,columns=1"});
+	EXPECT_GT(bc.symbol().height(), bc.symbol().width());
+
+	bc = CreateBarcodeFromText("12345", {BarcodeFormat::DataMatrix, "readerInit"});
+	EXPECT_TRUE(bc.readerInit());
+
+	bc = CreateBarcodeFromText("12345abcdefghijklmnopqr", {BarcodeFormat::DataMatrix, "forceSquare"});
+	EXPECT_EQ(bc.symbol().height(), bc.symbol().width());
+
+	bc = CreateBarcodeFromText("12345", {BarcodeFormat::QRCode, "version=5"});
+	EXPECT_EQ(bc.symbol().height(), 37);
+
+#ifdef ZXING_READERS
+	bc = CreateBarcodeFromText("12345", {BarcodeFormat::QRCode, "dataMask=0"});
+	bc = ReadBarcode(bc.symbol(), ReaderOptions().isPure(true).binarizer(Binarizer::BoolCast));
+	EXPECT_EQ(bc.extra("dataMask"), "0");
+#endif // ZXING_READERS
+}
+
 #ifdef ZXING_READERS
 TEST(WriteBarcodeTest, RandomDataBar)
 {
