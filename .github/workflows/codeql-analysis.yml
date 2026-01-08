@@ -9,18 +9,17 @@
 # the `language` matrix defined below to confirm you have the correct set of
 # supported CodeQL languages.
 #
-name: "CodeQL"
+name: CodeQL
 
-on: workflow_dispatch
-
-#on:
-#  push:
-#    branches: [ master ]
-#  pull_request:
-#    # The branches below must be a subset of the branches above
-#    branches: [ master ]
-#  schedule:
-#    - cron: '18 21 * * 6'
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ master ]
+  workflow_dispatch:
+  # schedule:
+  #   - cron: '18 21 * * 6'
 
 jobs:
   analyze:
@@ -30,7 +29,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'c-cpp', 'python' ] # , 'java-kotlin', 'swift' currently fail with autobuild
+        language: [ 'cpp' ] # , 'java-kotlin', 'swift' currently fail with autobuild, 'python' is not worth the extra build time
         # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python' ]
         # Learn more:
         # https://docs.github.com/en/free-pro-team@latest/github/finding-security-vulnerabilities-and-errors-in-your-code/configuring-code-scanning#changing-the-languages-that-are-analyzed
@@ -38,34 +37,23 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+      with:
+        submodules: true
 
-    # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
+      uses: github/codeql-action/init@v4
       with:
         languages: ${{ matrix.language }}
+        build-mode: manual
         # If you wish to specify custom queries, you can do so here or in a config file.
         # By default, queries listed here will override any specified in a config file.
         # Prefix the list here with "+" to use these queries and those in the config file.
         # queries: ./path/to/local/query, your-org/your-repo/queries@main
 
-    # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
-    # If this step fails, then you should remove it and run the build manually (see below)
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v3
-
-    # ℹ️ Command-line programs to run using the OS shell.
-    # 📚 https://git.io/JvXDl
-
-    # ✏️ If the Autobuild fails above, remove it and uncomment the following three lines
-    #    and modify them (or add more) to build your code if your project
-    #    uses a compiled language
-
-    #- run: |
-    #   make bootstrap
-    #   make release
+    - name: Build
+      run: |
+        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DZXING_C_API=ON -DZXING_EXPERIMENTAL_API=ON -DZXING_READERS=ON -DZXING_WRITERS=ON
+        cmake --build build -j
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
-      with:
-        category: "/language:${{matrix.language}}"
+      uses: github/codeql-action/analyze@v4
