@@ -189,6 +189,7 @@ if (ZXING_READERS)
         src/ResultPoint.cpp
         src/StructuredAppend.h
         src/StdGenerator.h
+        src/StdPrint.h
         src/StdScope.h
         src/TextDecoder.h
         src/TextDecoder.cpp
