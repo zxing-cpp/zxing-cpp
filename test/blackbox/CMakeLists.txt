@@ -8,7 +8,6 @@ if (ZXING_READERS)
         ImageLoader.cpp
         BlackboxTestRunner.h
         BlackboxTestRunner.cpp
-        ZXFilesystem.h
     )
 
     target_link_libraries(ReaderTest
