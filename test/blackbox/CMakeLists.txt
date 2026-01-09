@@ -1,5 +1,4 @@
 zxing_add_package_stb()
-zxing_add_package(fmt fmtlib https://github.com/fmtlib/fmt.git 11.1.1)
 
 if (ZXING_READERS)
     add_executable (ReaderTest
@@ -11,7 +10,7 @@ if (ZXING_READERS)
     )
 
     target_link_libraries(ReaderTest
-        ZXing::ZXing fmt::fmt stb::stb
+        ZXing::ZXing stb::stb
         $<$<AND:$<CXX_COMPILER_ID:GNU>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,9.0>>:stdc++fs>
     )
 
