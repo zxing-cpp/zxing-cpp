@@ -25,6 +25,7 @@
 #include <cstdlib>
 #include <iterator>
 #include <map>
+#include <numbers>
 #include <utility>
 #include <vector>
 
@@ -121,8 +122,8 @@ FinderPatternSets GenerateFinderPatternSets(FinderPatterns& patterns)
 		// below too much, resulting in the acceptance of degenerate triangles (a, b and c on a line).
 		return dot((*a - *b), (*a - *b)) * double(b->size) / a->size;
 	};
-	const double cosUpper = std::cos(60. / 180 * 3.1415); // TODO: use c++20 std::numbers::pi_v
-	const double cosLower = std::cos(120. / 180 * 3.1415);
+	const double cosUpper = std::cos(60. / 180 * std::numbers::pi);
+	const double cosLower = std::cos(120. / 180 * std::numbers::pi);
 
 	int nbPatterns = Size(patterns);
 	for (int i = 0; i < nbPatterns - 2; i++) {

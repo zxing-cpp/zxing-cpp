@@ -258,15 +258,13 @@ static const AiInfo aiInfos[] = {
 
 std::string HRIFromGS1(std::string_view gs1)
 {
-	//TODO: c++20
-	auto starts_with = [](std::string_view str, std::string_view pre) { return str.substr(0, pre.size()) == pre; };
 	constexpr char GS = 29; // GS character (29 / 0x1D)
 
 	std::string_view rem = gs1;
 	std::string res;
 
 	while (rem.size()) {
-		const AiInfo* i = FindIf(aiInfos, [&](const AiInfo& i) { return starts_with(rem, i.aiPrefix); });
+		const AiInfo* i = FindIf(aiInfos, [&](const AiInfo& i) { return rem.starts_with(i.aiPrefix); });
 		if (i == std::end(aiInfos))
 			return {};
 

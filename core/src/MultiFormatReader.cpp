@@ -81,14 +81,8 @@ Barcodes MultiFormatReader::read(const BinaryBitmap& image, int maxSymbols) cons
 		if (image.inverted() && !reader->supportsInversion)
 			continue;
 		auto r = reader->read(image, maxSymbols);
-		if (!_opts.returnErrors()) {
-#ifdef __cpp_lib_erase_if
+		if (!_opts.returnErrors())
 			std::erase_if(r, [](auto&& s) { return !s.isValid(); });
-#else
-			auto it = std::remove_if(r.begin(), r.end(), [](auto&& s) { return !s.isValid(); });
-			r.erase(it, r.end());
-#endif
-		}
 		maxSymbols -= Size(r);
 		res.insert(res.end(), std::move_iterator(r.begin()), std::move_iterator(r.end()));
 		if (maxSymbols <= 0)
