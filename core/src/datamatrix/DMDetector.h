@@ -6,23 +6,16 @@
 
 #pragma once
 
-#ifdef __cpp_impl_coroutine
-#include <Generator.h>
-#include <DetectorResult.h>
-#endif
+#include "StdGenerator.h"
+#include "DetectorResult.h"
 
 namespace ZXing {
 
 class BitMatrix;
-class DetectorResult;
 
 namespace DataMatrix {
 
-#ifdef __cpp_impl_coroutine
-using DetectorResults = Generator<DetectorResult>;
-#else
-using DetectorResults = DetectorResult;
-#endif
+using DetectorResults = std::generator<DetectorResult>;
 
 DetectorResults Detect(const BitMatrix& image, bool tryHarder, bool tryRotate, bool isPure);
 

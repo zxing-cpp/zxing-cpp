@@ -148,7 +148,6 @@ if (ZXING_READERS OR ZXING_WRITERS_OLD)
     set (COMMON_FILES ${COMMON_FILES}
         src/BitArray.h
         src/BitArray.cpp
-        src/Generator.h
         src/GenericGF.h
         src/GenericGF.cpp
         src/GenericGFPoly.h
@@ -190,6 +189,7 @@ if (ZXING_READERS)
         src/ResultPoint.h
         src/ResultPoint.cpp
         src/StructuredAppend.h
+        src/StdGenerator.h
         src/TextDecoder.h
         src/TextDecoder.cpp
         src/ThresholdBinarizer.h
