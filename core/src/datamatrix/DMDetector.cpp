@@ -16,7 +16,7 @@
 #include "Point.h"
 #include "RegressionLine.h"
 #include "ResultPoint.h"
-#include "Scope.h"
+#include "StdScope.h"
 #include "WhiteRectDetector.h"
 
 #include <algorithm>

@@ -152,7 +152,6 @@ if (ZXING_READERS OR ZXING_WRITERS_OLD)
         src/GenericGF.cpp
         src/GenericGFPoly.h
         src/GenericGFPoly.cpp
-        src/Scope.h
     )
 endif()
 if (ZXING_READERS OR ZXING_WRITERS_NEW)
@@ -190,6 +189,7 @@ if (ZXING_READERS)
         src/ResultPoint.cpp
         src/StructuredAppend.h
         src/StdGenerator.h
+        src/StdScope.h
         src/TextDecoder.h
         src/TextDecoder.cpp
         src/ThresholdBinarizer.h
