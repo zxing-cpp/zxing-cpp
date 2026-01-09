@@ -3,9 +3,16 @@ cmake_minimum_required(VERSION 3.16)
 project (ZXing VERSION "2.3.0")
 set (ZXING_SONAME 3) # see https://github.com/zxing-cpp/zxing-cpp/issues/333
 
+option (ZXING_USE_BUNDLED_ZINT "Use the bundled libzint for barcode creation/writing" ON)
 foreach(format 1D AZTEC DATAMATRIX MAXICODE PDF417 QRCODE)
     option ("ZXING_ENABLE_${format}" "Enable support for ${format} barcodes" ON)
 endforeach()
+
+if (NOT DEFINED CMAKE_CXX_STANDARD)
+    set (CMAKE_CXX_STANDARD 20)
+    set (CMAKE_CXX_STANDARD_REQUIRED ON)
+    set (CMAKE_CXX_EXTENSIONS OFF)
+endif()
 
 if (BUILD_SHARED_LIBS)
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)

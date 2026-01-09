@@ -4,7 +4,6 @@ project(ZXing)
 
 option (ZXING_READERS "Build with reader support (decoders)" ON)
 set    (ZXING_WRITERS "ON" CACHE STRING "Build with old and/or new writer (encoder) backend (OFF/ON/OLD/NEW/BOTH)")
-option (ZXING_USE_BUNDLED_ZINT "Use the bundled libzint for barcode creation/writing" ON)
 option (ZXING_C_API "Build the C-API" OFF)
 option (ZXING_EXPERIMENTAL_API "Build with experimental API" OFF)
 option (ZXING_EXAMPLES "Build the example barcode reader/writer applications" ON)
@@ -52,10 +51,7 @@ endif()
 
 if (NOT DEFINED CMAKE_CXX_STANDARD)
     set (CMAKE_CXX_STANDARD 20)
-    # Allow the fallback to earlier versions if the compiler does not support it.
-    # set(CMAKE_CXX_STANDARD_REQUIRED ON)
-endif()
-if (NOT DEFINED CMAKE_CXX_EXTENSIONS)
+    set (CMAKE_CXX_STANDARD_REQUIRED ON)
     set (CMAKE_CXX_EXTENSIONS OFF)
 endif()
 

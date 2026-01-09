@@ -4,18 +4,13 @@ project(ZXingPython)
 # check if we are called from the top-level ZXing project
 get_directory_property(hasParent PARENT_DIRECTORY)
 if (NOT hasParent)
-    # Build with C++20 by default (which enables position independent DataMatrix detection).
-    set(CMAKE_CXX_STANDARD 20)
-    set(CMAKE_CXX_EXTENSIONS OFF)
-    # Allow the fallback to earlier versions if the compiler does not support it.
-    set(CMAKE_CXX_STANDARD_REQUIRED OFF)
+    set(CMAKE_CXX_STANDARD 20) # requried here for the module itself
 
     option (BUILD_SHARED_LIBS "Link python module to shared lib" OFF)
     option (ZXING_READERS "Build with reader support (decoders)" ON)
     set    (ZXING_WRITERS "NEW" CACHE STRING "Build with old and/or new writer (encoder) backend (OFF/ON/OLD/NEW)")
     set    (ZXING_DEPENDENCIES "AUTO" CACHE STRING "Fetch from github or use locally installed (AUTO/GITHUB/LOCAL)")
     option (ZXING_EXPERIMENTAL_API "Build with experimental API" ON)
-    option (ZXING_USE_BUNDLED_ZINT "Use the bundled libzint for barcode creation/generation" ON)
 
     set(CORE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/core)
     if(IS_SYMLINK ${CORE_PATH})
