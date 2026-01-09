@@ -97,15 +97,16 @@ static BarcodesData DoDecode(const BinaryBitmap& image, bool multiple, bool tryR
 					return p;
 				}
 			};
-			decoderResult
-				.addExtra("Sender", customData->sender)
-				.addExtra("Addressee", customData->addressee)
-				.addExtra("FileId", customData->fileId)
-				.addExtra("FileName", customData->fileName)
-				.addExtra("FileSize", customData->fileSize, int64_t(-1))
-				.addExtra("Timestamp", customData->timestamp, int64_t(-1))
-				.addExtra("Checksum", customData->checksum, -1)
-			;
+			if (customData) // might be nullptr if e.g. in case of a FormatError
+				decoderResult
+					.addExtra("Sender", customData->sender)
+					.addExtra("Addressee", customData->addressee)
+					.addExtra("FileId", customData->fileId)
+					.addExtra("FileName", customData->fileName)
+					.addExtra("FileSize", customData->fileSize, int64_t(-1))
+					.addExtra("Timestamp", customData->timestamp, int64_t(-1))
+					.addExtra("Checksum", customData->checksum, -1)
+				;
 			res.emplace_back(MatrixBarcode(std::move(decoderResult), DetectorResult{{}, {point(0), point(2), point(3), point(1)}},
 										   BarcodeFormat::PDF417));
 			if (!multiple)
