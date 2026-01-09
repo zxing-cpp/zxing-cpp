@@ -56,7 +56,7 @@ static void PrintUsage(const char* exePath)
 
 struct CLI
 {
-	BarcodeFormat format;
+	BarcodeFormat format = BarcodeFormat::None;
 	int scale = 0;
 	std::string input;
 	std::string outPath;
