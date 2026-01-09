@@ -9,7 +9,6 @@
 
 #include <algorithm>
 #include <charconv>
-#include <cstdio>
 #include <cstring>
 #include <initializer_list>
 #include <iterator>
@@ -140,27 +139,26 @@ std::string ToString(T val, int len)
 	return result;
 }
 
-template <typename P, typename = std::enable_if_t<std::is_pointer_v<P> && sizeof(std::remove_pointer_t<P>) == 1>>
-inline std::string ToHex(P data, size_t size)
+template<typename C, typename = std::enable_if_t<sizeof(typename C::value_type) == 1>>
+std::string ToHex(const C& c)
 {
-	std::string res(size * 3, ' ');
+	static constexpr char hex[] = "0123456789ABCDEF";
 
-	for (size_t i = 0; i < size; ++i) {
-		// TODO c++20 std::format
-#ifdef _MSC_VER
-		sprintf_s(&res[i * 3], 4, "%02X ", data[i]);
-#else
-		snprintf(&res[i * 3], 4, "%02X ", data[i]);
-#endif
+	const auto data = reinterpret_cast<const uint8_t*>(c.data());
+	const auto size = Size(c);
+	if (size == 0)
+		return {};
+
+	std::string res(size * 3 - 1, ' ');
+
+	for (int i = 0; i < size; ++i) {
+		res[i * 3 + 0] = hex[data[i] >> 4];
+		res[i * 3 + 1] = hex[data[i] & 0x0F];
+		if (i + 1 < size)
+			res[i * 3 + 2] = ' ';
 	}
 
-	return res.substr(0, res.size()-1);
-}
-
-template <typename Container>
-inline std::string ToHex(const Container& c)
-{
-	return ToHex(c.data(), c.size());
+	return res;
 }
 
 template <typename T>
