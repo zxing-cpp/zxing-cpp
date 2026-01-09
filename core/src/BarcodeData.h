@@ -65,7 +65,7 @@ using BarcodesData = std::vector<BarcodeData>;
 inline BarcodeData LinearBarcode(BarcodeFormat format, const std::string& text, int y, int xStart, int xStop, SymbologyIdentifier si,
                                  Error error = {}, std::string extra = {})
 {
-	return {.content = Content(ByteArray(text), si),
+	return {.content = Content(ByteArray(text), si, CharacterSet::ISO8859_1),
 			.error = std::move(error),
 			.position = Line(y, xStart, xStop),
 			.format = format,
