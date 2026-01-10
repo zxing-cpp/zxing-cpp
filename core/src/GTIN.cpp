@@ -7,9 +7,9 @@
 #include "GTIN.h"
 
 #include <algorithm>
+#include <format>
 #include <iomanip>
 #include <iterator>
-#include <sstream>
 #include <string>
 
 namespace ZXing::GTIN {
@@ -241,9 +241,11 @@ std::string Price(const std::string& ean5AddOn)
 	}
 
 	int rawAmount = std::stoi(ean5AddOn.substr(1));
-	std::stringstream buf;
-	buf << currency << std::fixed << std::setprecision(2) << (float(rawAmount) / 100);
-	return buf.str();
+#ifndef __cpp_lib_to_chars // not available on older macOS
+	return currency + std::to_string(rawAmount / 100) + '.' + std::to_string(rawAmount % 100);
+#else
+	return std::format("{}{:.2f}", currency, float(rawAmount) / 100);
+#endif
 }
 
 } // namespace ZXing::GTIN
