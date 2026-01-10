@@ -7,8 +7,6 @@
 #include "Barcode.h"
 
 #include "BarcodeData.h"
-#include "DecoderResult.h"
-#include "DetectorResult.h"
 #include "JSON.h"
 #include "ZXAlgorithms.h"
 

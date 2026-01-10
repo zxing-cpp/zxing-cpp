@@ -7,15 +7,15 @@
 
 #include "QRReader.h"
 
+#include "BarcodeData.h"
 #include "BinaryBitmap.h"
 #include "ConcentricFinder.h"
-#include "ReaderOptions.h"
 #include "DecoderResult.h"
 #include "DetectorResult.h"
 #include "LogMatrix.h"
 #include "QRDecoder.h"
 #include "QRDetector.h"
-#include "BarcodeData.h"
+#include "ReaderOptions.h"
 
 #include <utility>
 

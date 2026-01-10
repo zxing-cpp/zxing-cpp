@@ -7,7 +7,6 @@
 
 #include "ZXAlgorithms.h"
 
-#include <algorithm>
 #include <string_view>
 
 // This code is trying to find the value of a key-value pair in a string of those.

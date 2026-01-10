@@ -230,7 +230,6 @@ set (PUBLIC_HEADERS
     src/Quadrilateral.h
     src/ReadBarcode.h
     src/ReaderOptions.h
-    src/StructuredAppend.h
     src/WriteBarcode.h
     src/ZXingCpp.h
     src/ZXAlgorithms.h

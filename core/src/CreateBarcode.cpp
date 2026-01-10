@@ -31,7 +31,6 @@
 
 #include <charconv>
 #include <optional>
-#include <sstream>
 
 
 namespace ZXing {

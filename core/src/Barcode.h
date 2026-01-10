@@ -13,7 +13,6 @@
 #include "Error.h"
 #include "ImageView.h"
 #include "Quadrilateral.h"
-#include "StructuredAppend.h"
 
 #include <memory>
 #include <string>

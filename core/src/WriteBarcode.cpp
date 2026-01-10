@@ -4,11 +4,11 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "CreateBarcode.h"
 #include "WriteBarcode.h"
+
 #include "BarcodeData.h"
 #include "BitMatrix.h"
-#include "JSON.h"
+#include "CreateBarcode.h"
 
 #if !defined(ZXING_READERS) && !defined(ZXING_WRITERS)
 #include "Version.h"
