@@ -15,6 +15,7 @@
 #define ZXING_VERSION_STR "undefined"
 #endif
 
+#include <bit>
 #include <cstdlib>
 #include <exception>
 #include <string>
@@ -150,7 +151,7 @@ ZXing_BarcodeFormats ZXing_BarcodeFormatsFromString(const char* str)
 ZXing_BarcodeFormat ZXing_BarcodeFormatFromString(const char* str)
 {
 	ZXing_BarcodeFormat res = ZXing_BarcodeFormatsFromString(str);
-	return BitHacks::CountBitsSet(res) == 1 ? res : ZXing_BarcodeFormat_Invalid;
+	return std::has_single_bit(ToUnsigned(std::to_underlying(res))) ? res : ZXing_BarcodeFormat_Invalid;
 }
 
 char* ZXing_BarcodeFormatToString(ZXing_BarcodeFormat format)

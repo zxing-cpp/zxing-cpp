@@ -170,6 +170,12 @@ std::vector<T> ToVector(T&& v)
 	return res;
 }
 
+template <typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
+constexpr inline auto ToUnsigned(T v) noexcept
+{
+	return static_cast<std::make_unsigned_t<T>>(v);
+}
+
 template <class T>
 constexpr std::string_view TypeName()
 {
@@ -267,4 +273,41 @@ void UpdateMinMax(T& min, T& max, T val)
 	// Also it turns out clang and gcc can vectorize the code above but not the code below.
 }
 
+inline uint32_t ReverseBits32(uint32_t v)
+{
+	v = ((v >> 1) & 0x55555555) | ((v & 0x55555555) << 1);
+	// swap consecutive pairs
+	v = ((v >> 2) & 0x33333333) | ((v & 0x33333333) << 2);
+	// swap nibbles ...
+	v = ((v >> 4) & 0x0F0F0F0F) | ((v & 0x0F0F0F0F) << 4);
+	// swap bytes
+	v = ((v >> 8) & 0x00FF00FF) | ((v & 0x00FF00FF) << 8);
+	// swap 2-byte long pairs
+	v = (v >> 16) | (v << 16);
+	return v;
+}
+
+// use to avoid "load of misaligned address" when using a simple type cast
+template <typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
+T LoadU(const void* ptr)
+{
+	T res;
+	memcpy(&res, ptr, sizeof(T));
+	return res;
+}
+
 } // ZXing
+
+#ifndef __cpp_lib_to_underlying
+
+namespace std {
+
+template <typename E, typename = std::enable_if_t<std::is_enum_v<E>>>
+constexpr std::underlying_type_t<E> to_underlying(E e) noexcept
+{
+	return static_cast<std::underlying_type_t<E>>(e);
+}
+
+} // namespace std
+
+#endif // __cpp_lib_to_underlying

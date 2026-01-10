@@ -99,7 +99,6 @@ set (COMMON_FILES
     src/BarcodeData.h
     src/BarcodeFormat.h
     src/BarcodeFormat.cpp
-    src/BitHacks.h
     src/BitMatrix.h
     src/BitMatrix.cpp
     src/BitMatrixIO.h
@@ -220,7 +219,6 @@ endif()
 set (PUBLIC_HEADERS
     src/Barcode.h
     src/BarcodeFormat.h
-    src/BitHacks.h
     src/CharacterSet.h
     src/ContentType.h
     src/CreateBarcode.h

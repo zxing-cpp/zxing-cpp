@@ -14,7 +14,6 @@ add_executable (UnitTest
     BarcodeFormatTest.cpp
     BitArrayUtility.cpp
     BitArrayUtility.h
-    BitHacksTest.cpp
     CharacterSetECITest.cpp
     ContentTest.cpp
     ErrorTest.cpp

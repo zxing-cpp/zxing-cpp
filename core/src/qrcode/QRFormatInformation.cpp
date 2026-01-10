@@ -8,14 +8,15 @@
 
 #include "QRFormatInformation.h"
 
-#include "BitHacks.h"
 #include "ZXAlgorithms.h"
+
+#include <bit>
 
 namespace ZXing::QRCode {
 
 static uint32_t MirrorBits(uint32_t bits)
 {
-	return BitHacks::Reverse(bits) >> 17;
+	return ReverseBits32(bits) >> 17;
 }
 
 static FormatInformation FindBestFormatInfo(const std::vector<uint32_t>& masks, const std::vector<uint32_t>& bits)
@@ -34,7 +35,7 @@ static FormatInformation FindBestFormatInfo(const std::vector<uint32_t>& masks, 
 				// 'unmask' the pattern first to get the original 5-data bits + 10-ec bits back
 				pattern ^= FORMAT_INFO_MASK_MODEL2;
 				// Find the pattern with fewest bits differing
-				if (int hammingDist = BitHacks::CountBitsSet((bits[bitsIndex] ^ mask) ^ pattern);
+				if (int hammingDist = std::popcount((bits[bitsIndex] ^ mask) ^ pattern);
 					hammingDist < fi.hammingDistance) {
 					fi.mask = mask; // store the used mask to discriminate between types/models
 					fi.data = pattern >> 10; // drop the 10 BCH error correction bits
@@ -79,7 +80,7 @@ static FormatInformation FindBestFormatInfoRMQR(const std::vector<uint32_t>& bit
 				// 'unmask' the pattern first to get the original 6-data bits + 12-ec bits back
 				pattern ^= mask;
 				// Find the pattern with fewest bits differing
-				if (int hammingDist = BitHacks::CountBitsSet((bits[bitsIndex] ^ mask) ^ pattern);
+				if (int hammingDist = std::popcount((bits[bitsIndex] ^ mask) ^ pattern);
 					hammingDist < fi.hammingDistance) {
 					fi.mask = mask; // store the used mask to discriminate between types/models
 					fi.data = pattern >> 12; // drop the 12 BCH error correction bits
