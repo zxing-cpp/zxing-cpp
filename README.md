@@ -4,7 +4,7 @@
 
 ZXing-C++ ("zebra crossing") is an open-source, multi-format linear/matrix barcode image processing library implemented in C++.
 
-It was originally ported from the Java [ZXing Library](https://github.com/zxing/zxing) but has been developed further and now includes many improvements in terms of runtime and detection performance. It can both read and write barcodes in a number of formats. Since version 3.0 the default writing backend is provided by the [zint library](https://github.com/zint/zint).
+It was originally ported from the Java [ZXing library](https://github.com/zxing/zxing) but has been developed further and now includes many improvements in terms of runtime and detection performance. It can both read and write barcodes in a number of formats. Since version 3.0 the default writing backend is provided by the [zint library](https://sourceforge.net/projects/zint/).
 
 ## Sponsors
 
@@ -47,7 +47,7 @@ Thanks a lot for your contribution!
 
 [Note:]
  * DataBar used to be called RSS.
- * DataBar, DX Film Edge, MaxiCode, Micro QR Code and rMQR Code are not supported for writing (unless the library is configured `ZXING_WRITERS=NEW`).
+ * DataBar, DX Film Edge, MaxiCode, Micro QR Code and rMQR Code are not supported for writing if the library is configured with `ZXING_WRITERS=OLD`.
 
 ## Getting Started
 
@@ -77,8 +77,6 @@ int main(int argc, char** argv)
 }
 ```
 To see the full capability of the API, have a look at [`ZXingReader.cpp`](example/ZXingReader.cpp).
-
-[Note: At least C++17 is required on the client side to use the API.]
 
 ### To write barcodes:
 1. Create a `Barcode` object with `CreateBarcode()` from [`CreateBarcode.h`](core/src/CreateBarcode.h).
