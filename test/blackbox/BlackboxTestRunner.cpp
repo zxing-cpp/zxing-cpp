@@ -25,11 +25,15 @@
 #include <string_view>
 #include <vector>
 
+#ifdef __GNUC__
+// turns out that libstdc++ is depending on TBB without even linking against it, so this fails to link :-/
+#undef __cpp_lib_execution
+#endif
+
 #ifdef __cpp_lib_execution
 #include <execution>
 #else
 #include <future>
-#include <thread>
 #endif
 
 namespace ZXing::Test {
