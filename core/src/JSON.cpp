@@ -41,7 +41,7 @@ inline bool IsEqualIgnoreCaseAndUnderscore(std::string_view a, std::string_view 
 	return IsEqualIgnoreCaseAnd(a, b, "_");
 }
 
-std::string_view JsonGetStr(std::string_view json, std::string_view key)
+std::string_view JsonFind(std::string_view json, std::string_view key)
 {
 #ifdef ZXING_USE_CTRE
 	for (auto [ma, mk, mv] : ctre::search_all<PATTERN>(json))

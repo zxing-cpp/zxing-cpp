@@ -23,21 +23,21 @@ TEST(JSONTest, Prop)
 
 TEST(JSONTest, GetStr)
 {
-	EXPECT_EQ(JsonGetStr("", "key"), "");
-	EXPECT_EQ(JsonGetStr("key", "key"), "");
-	EXPECT_EQ(JsonGetStr("keys:abc", "key"), "");
-	EXPECT_EQ(JsonGetStr("key:", "key"), "");
-	EXPECT_EQ(JsonGetStr("key:abc", "key"), "abc");
-	EXPECT_EQ(JsonGetStr("key:abc,", "key"), "abc");
-	EXPECT_EQ(JsonGetStr("key:abc,key2", "key"), "abc");
-	EXPECT_EQ(JsonGetStr("key:abc", "KEY"), "abc");
+	EXPECT_EQ(JsonFind("", "key"), "");
+	EXPECT_EQ(JsonFind("key", "key"), "");
+	EXPECT_EQ(JsonFind("keys:abc", "key"), "");
+	EXPECT_EQ(JsonFind("key:", "key"), "");
+	EXPECT_EQ(JsonFind("key:abc", "key"), "abc");
+	EXPECT_EQ(JsonFind("key:abc,", "key"), "abc");
+	EXPECT_EQ(JsonFind("key:abc,key2", "key"), "abc");
+	EXPECT_EQ(JsonFind("key:abc", "KEY"), "abc");
 
-	EXPECT_EQ(JsonGetStr("\"key\": \"abc\"", "KEY"), "abc");
-	EXPECT_EQ(JsonGetStr("{\"key\": true}", "key"), "true"); // JSON
-	EXPECT_EQ(JsonGetStr("{'key': True}", "key"), "True");   // Python
-	EXPECT_EQ(JsonGetStr("key=val", "key"), "val");          // user input
-	EXPECT_EQ(JsonGetStr("Key:val", "key"), "val");          // ignore case
-	EXPECT_EQ(JsonGetStr("k_ey:val", "key"), "val");         // ignore underscore
+	EXPECT_EQ(JsonFind("\"key\": \"abc\"", "KEY"), "abc");
+	EXPECT_EQ(JsonFind("{\"key\": true}", "key"), "true"); // JSON
+	EXPECT_EQ(JsonFind("{'key': True}", "key"), "True");   // Python
+	EXPECT_EQ(JsonFind("key=val", "key"), "val");          // user input
+	EXPECT_EQ(JsonFind("Key:val", "key"), "val");          // ignore case
+	EXPECT_EQ(JsonFind("k_ey:val", "key"), "val");         // ignore underscore
 }
 
 TEST(JSONTest, GetBool)

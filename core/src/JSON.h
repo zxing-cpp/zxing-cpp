@@ -35,12 +35,13 @@ inline std::string JsonProp(std::string_view key, T val, T ignore = {})
 	#undef ZX_JSON_KEY_VAL
 }
 
-std::string_view JsonGetStr(std::string_view json, std::string_view key);
+// Finds the (potentially escaped / raw) value of the provided key
+std::string_view JsonFind(std::string_view json, std::string_view key);
 
 template <typename T>
 inline std::optional<T> JsonGet(std::string_view json, std::string_view key)
 {
-	auto str = JsonGetStr(json, key);
+	auto str = JsonFind(json, key);
 	if (!str.data())
 		return std::nullopt;
 

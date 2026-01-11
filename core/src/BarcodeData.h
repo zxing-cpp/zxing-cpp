@@ -72,9 +72,9 @@ inline BarcodeData LinearBarcode(BarcodeFormat format, const std::string& text, 
 inline BarcodeData MatrixBarcode(DecoderResult&& decodeResult, DetectorResult&& detectorResult, BarcodeFormat format)
 {
 	auto extra = std::move(decodeResult).json();
-	if (JsonGetStr(extra, BarcodeExtra::Version).empty() && decodeResult.versionNumber())
+	if (JsonFind(extra, BarcodeExtra::Version).empty() && decodeResult.versionNumber())
 		extra += JsonProp(BarcodeExtra::Version, std::to_string(decodeResult.versionNumber()));
-	if (JsonGetStr(extra, BarcodeExtra::ECLevel).empty() && !decodeResult.ecLevel().empty())
+	if (JsonFind(extra, BarcodeExtra::ECLevel).empty() && !decodeResult.ecLevel().empty())
 		extra += JsonProp(BarcodeExtra::ECLevel, decodeResult.ecLevel());
 
 	extra += JsonProp(BarcodeExtra::ReaderInit, decodeResult.readerInit());

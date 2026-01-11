@@ -158,7 +158,9 @@ std::string Barcode::extra(std::string_view key) const
 		res.back() = '}';
 		return res;
 	}
-	return d->extra.empty() ? "" : key.empty() ? StrCat("{", d->extra.substr(0, d->extra.size() - 1), "}") : std::string(JsonGetStr(d->extra, key));
+	return d->extra.empty() ? ""
+		   : key.empty()    ? StrCat("{", std::string_view(d->extra).substr(0, d->extra.size() - 1), "}") // remove trailing ','
+							: JsonGet<std::string>(d->extra, key).value_or(""); // make sure JsonUnescape() is called
 }
 
 bool Barcode::operator==(const Barcode& o) const
