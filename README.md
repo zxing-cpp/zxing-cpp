@@ -79,7 +79,7 @@ int main(int argc, char** argv)
 To see the full capability of the API, have a look at [`ZXingReader.cpp`](example/ZXingReader.cpp).
 
 ### To write barcodes:
-1. Create a `Barcode` object with `CreateBarcode()` from [`CreateBarcode.h`](core/src/CreateBarcode.h).
+1. Create a `Barcode` object with `CreateBarcodeFrom...()` from [`CreateBarcode.h`](core/src/CreateBarcode.h).
 2. The `Barcode::symbol()` can be used to get access to the bit matrix (1 module == 1 pixel, no quiet zone)
 3. Alternatively the 3 `WriteBarcodeTo...()` functions from [`WriteBarcode.h`](core/src/WriteBarcode.h) can be used to create an `Image`, a SVG string or a UTF-8 string representation.
 
