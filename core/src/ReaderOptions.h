@@ -43,8 +43,9 @@ enum class TextMode : unsigned char // see above
 	Plain,   ///< bytes() transcoded to unicode based on ECI info or guessed charset (the default mode prior to 2.0)
 	ECI,     ///< standard content following the ECI protocol with every character set ECI segment transcoded to unicode
 	HRI,     ///< Human Readable Interpretation (dependent on the ContentType)
-	Hex,     ///< bytes() transcoded to ASCII string of HEX values
 	Escaped, ///< Use the EscapeNonGraphical() function (e.g. ASCII 29 will be transcoded to "<GS>")
+	Hex,     ///< bytes() transcoded to ASCII string of HEX values
+	HexECI,  ///< bytesECI() transcoded to ASCII string of HEX values
 };
 
 /**

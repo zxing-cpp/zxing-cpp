@@ -216,7 +216,7 @@ make_zxing_enum!(ContentType { Text, Binary, Mixed, GS1, ISO15434, UnknownECI })
 #[rustfmt::skip]
 make_zxing_enum!(Binarizer { LocalAverage, GlobalHistogram, FixedThreshold, BoolCast });
 #[rustfmt::skip]
-make_zxing_enum!(TextMode { Plain, ECI, HRI, Hex, Escaped });
+make_zxing_enum!(TextMode { Plain, ECI, HRI, Escaped, Hex, HexECI });
 #[rustfmt::skip]
 make_zxing_enum!(EanAddOnSymbol { Ignore, Read, Require });
 

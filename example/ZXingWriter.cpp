@@ -162,7 +162,7 @@ int main(int argc, char* argv[])
 		if (cli.verbose) {
 			std::cout.setf(std::ios::boolalpha);
 			std::cout << "Text:       \"" << barcode.text() << "\"\n"
-					  << "Bytes:      " << ToHex(barcode.bytes()) << "\n"
+					  << "Bytes:      " << barcode.text(TextMode::Hex) << "\n"
 					  << "Format:     " << ToString(barcode.format()) << "\n"
 					  << "Identifier: " << barcode.symbologyIdentifier() << "\n"
 					  << "Content:    " << ToString(barcode.contentType()) << "\n"

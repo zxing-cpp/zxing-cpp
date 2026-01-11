@@ -274,7 +274,7 @@ int main(int argc, char* argv[])
 			}
 
 			std::cout << "Text:       \"" << barcode.text() << "\"\n"
-					  << "Bytes:      " << ToHex(options.textMode() == TextMode::ECI ? barcode.bytesECI() : barcode.bytes()) << "\n"
+					  << "Bytes:      " << barcode.text(options.textMode() == TextMode::ECI ? TextMode::HexECI : TextMode::Hex) << "\n"
 					  << "Format:     " << ToString(barcode.format()) << "\n"
 					  << "Identifier: " << barcode.symbologyIdentifier() << "\n"
 					  << "Content:    " << ToString(barcode.contentType()) << "\n"

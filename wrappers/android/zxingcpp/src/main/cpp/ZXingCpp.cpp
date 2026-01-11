@@ -115,8 +115,9 @@ static TextMode TextModeFromString(std::string_view name)
 		case "PLAIN"_h :   return TextMode::Plain;
 		case "ECI"_h :     return TextMode::ECI;
 		case "HRI"_h :     return TextMode::HRI;
-		case "HEX"_h :     return TextMode::Hex;
 		case "ESCAPED"_h : return TextMode::Escaped;
+		case "HEX"_h :     return TextMode::Hex;
+		case "HEXECI"_h :  return TextMode::HexECI;
 		default: throw std::invalid_argument("Invalid textMode name");
 	}
 }

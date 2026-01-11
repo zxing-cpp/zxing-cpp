@@ -23,8 +23,9 @@ typedef NS_ENUM(NSInteger, ZXITextMode) {
     ZXITextModePlain,
     ZXITextModeECI,
     ZXITextModeHRI,
+    ZXITextModeEscaped,
     ZXITextModeHex,
-    ZXITextModeEscaped
+    ZXITextModeHexECI
 };
 
 @interface ZXIReaderOptions : NSObject

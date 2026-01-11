@@ -220,8 +220,9 @@ typedef enum
 	ZXing_TextMode_Plain,
 	ZXing_TextMode_ECI,
 	ZXing_TextMode_HRI,
-	ZXing_TextMode_Hex,
 	ZXing_TextMode_Escaped,
+	ZXing_TextMode_Hex,
+	ZXing_TextMode_HexECI,
 } ZXing_TextMode;
 
 ZXing_ReaderOptions* ZXing_ReaderOptions_new();

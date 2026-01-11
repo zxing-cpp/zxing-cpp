@@ -110,8 +110,9 @@ pub type ZXing_EanAddOnSymbol = ::core::ffi::c_uint;
 pub const ZXing_TextMode_Plain: ZXing_TextMode = 0;
 pub const ZXing_TextMode_ECI: ZXing_TextMode = 1;
 pub const ZXing_TextMode_HRI: ZXing_TextMode = 2;
-pub const ZXing_TextMode_Hex: ZXing_TextMode = 3;
-pub const ZXing_TextMode_Escaped: ZXing_TextMode = 4;
+pub const ZXing_TextMode_Escaped: ZXing_TextMode = 3;
+pub const ZXing_TextMode_Hex: ZXing_TextMode = 4;
+pub const ZXing_TextMode_HexECI: ZXing_TextMode = 5;
 pub type ZXing_TextMode = ::core::ffi::c_uint;
 extern "C" {
 	pub fn ZXing_ImageView_new(

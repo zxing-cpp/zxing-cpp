@@ -196,8 +196,9 @@ std::string Content::text(TextMode mode) const
 #endif
 		default: return text(TextMode::Escaped);
 		}
-	case TextMode::Hex: return ToHex(bytes);
 	case TextMode::Escaped: return EscapeNonGraphical(render(false));
+	case TextMode::Hex: return ToHex(bytes);
+	case TextMode::HexECI: return ToHex(bytesECI());
 	}
 
 	return {}; // silence compiler warning

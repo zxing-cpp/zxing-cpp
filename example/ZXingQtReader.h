@@ -62,7 +62,7 @@ enum class BarcodeFormat
 
 enum class ContentType { Text, Binary, Mixed, GS1, ISO15434, UnknownECI };
 
-enum class TextMode { Plain, ECI, HRI, Hex, Escaped };
+enum class TextMode { Plain, ECI, HRI, Escaped, Hex, HexECI };
 
 #else
 using ZXing::BarcodeFormat;
