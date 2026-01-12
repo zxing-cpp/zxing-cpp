@@ -9,6 +9,7 @@ option (ZXING_EXPERIMENTAL_API "Build with experimental API" OFF)
 option (ZXING_EXAMPLES "Build the example barcode reader/writer applications" ON)
 option (ZXING_BLACKBOX_TESTS "Build the black box reader/writer tests" OFF)
 option (ZXING_UNIT_TESTS "Build the unit tests (don't enable for production builds)" OFF)
+option (ZXING_INSTALL_TEST "Test if the installed/public API works" OFF)
 option (ZXING_PYTHON_MODULE "Build the python module" OFF)
 set    (ZXING_DEPENDENCIES "AUTO" CACHE STRING "Fetch from github or use locally installed (AUTO/GITHUB/LOCAL)")
 
@@ -71,6 +72,16 @@ if (ZXING_BLACKBOX_TESTS)
 endif()
 if (ZXING_UNIT_TESTS)
     add_subdirectory (test/unit)
+endif()
+if (ZXING_INSTALL_TEST)
+    add_test(
+        NAME InstallTest
+        COMMAND
+            ${CMAKE_COMMAND}
+            -DPROJECT_BINARY_DIR=${CMAKE_BINARY_DIR}
+            -DSOURCE_DIR=${CMAKE_SOURCE_DIR}/test/install
+            -P ${CMAKE_SOURCE_DIR}/test/install/run.cmake
+    )
 endif()
 if (ZXING_PYTHON_MODULE)
     add_subdirectory (wrappers/python)
