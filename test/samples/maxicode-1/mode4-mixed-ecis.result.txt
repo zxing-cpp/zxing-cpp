@@ -1,2 +1,2 @@
-symbologyIdentifier=]U0
+symbologyIdentifier=]U2
 ecLevel=4

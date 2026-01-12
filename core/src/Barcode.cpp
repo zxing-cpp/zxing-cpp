@@ -99,7 +99,7 @@ bool Barcode::isInverted() const
 
 std::string Barcode::symbologyIdentifier() const
 {
-	return d->content.symbology.toString();
+	return d->content.symbology.toString(d->content.hasECI);
 }
 
 int Barcode::sequenceSize() const

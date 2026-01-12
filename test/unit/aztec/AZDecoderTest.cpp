@@ -209,27 +209,27 @@ TEST(AZDecoderTest, SymbologyIdentifier)
 	// Plain with FNC1 not in first/second position ("DL 1 UL PS FLGN(0) A")
 	check_si(__LINE__, getData("1111000111110000000000000000010"), "]z0", "1\u001DA"); // "1<GS>D"
 
-	// ECI 3 with Plain - `res.symbologyIdentifier()` would be "]z3" if used `toString(hasECI())`
-	check_si(__LINE__, getData("0000000000001010100010"), "]z0", "A", -1, -1, "]z3\\000026A", "5D 7A 33 5C 30 30 30 30 30 33 41");
+	// ECI 3 with Plain
+	check_si(__LINE__, getData("0000000000001010100010"), "]z3", "A", -1, -1, "]z3\\000026A", "5D 7A 33 5C 30 30 30 30 30 33 41");
 
-	// ECI 3 with Plain, showing doubled backslash and ISO/IEC 8859-1 `bytesECI()` - "]z3" ditto
-	check_si(__LINE__, getData("000000000000101010001011101101011110100011111110000111101001"), "]z0", "A\\Bé", -1, -1,
+	// ECI 3 with Plain, showing doubled backslash and ISO/IEC 8859-1 `bytesECI()`
+	check_si(__LINE__, getData("000000000000101010001011101101011110100011111110000111101001"), "]z3", "A\\Bé", -1, -1,
 			 "]z3\\000026A\\\\Bé", "5D 7A 33 5C 30 30 30 30 30 33 41 5C 5C 42 E9");
 
-	// ECI 3 with GS1 - "]z4" ditto
-	check_si(__LINE__, getData("000000000000000000000000010101111100100001000100011"), "]z1", "2001");
+	// ECI 3 with GS1
+	check_si(__LINE__, getData("000000000000000000000000010101111100100001000100011"), "]z4", "2001");
 
-	// ECI 3 with AIM - "]z5" ditto
-	check_si(__LINE__, getData("0000000000001010100010000000000000000011"), "]z2", "AB");
+	// ECI 3 with AIM
+	check_si(__LINE__, getData("0000000000001010100010000000000000000011"), "]z5", "AB");
 
-	// ECI 3 with Structured Append (no ID) - "]z9" ditto
-	check_si(__LINE__, getData("111011110100010001010000000000001010100010"), "]z6", "A", 0, 4);
+	// ECI 3 with Structured Append (no ID)
+	check_si(__LINE__, getData("111011110100010001010000000000001010100010"), "]z9", "A", 0, 4);
 
-	// ECI 3 with Structured Append (no ID) with GS1 - "]zA" ditto
-	check_si(__LINE__, getData("11101111010001000101000000000000000000000000010101111100100001000100011"), "]z7", "2001", 0, 4, "]zA\\0000262001");
+	// ECI 3 with Structured Append (no ID) with GS1
+	check_si(__LINE__, getData("11101111010001000101000000000000000000000000010101111100100001000100011"), "]zA", "2001", 0, 4, "]zA\\0000262001");
 
-	// ECI 3 with Structured Append (no ID) with AIM - "]zB" ditto
-	check_si(__LINE__, getData("111011110100010001010000000000001010100010000000000000000011"), "]z8", "AB", 0, 4, "]zB\\000026AB");
+	// ECI 3 with Structured Append (no ID) with AIM
+	check_si(__LINE__, getData("111011110100010001010000000000001010100010000000000000000011"), "]zB", "AB", 0, 4, "]zB\\000026AB");
 }
 
 // Helper taking 5-bit word array to call GetEncodedData()

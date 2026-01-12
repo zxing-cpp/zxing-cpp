@@ -56,7 +56,7 @@ public:
 
 	// to keep the unit tests happy for now:
 	std::wstring text() const { return _content.utfW(); }
-	std::string symbologyIdentifier() const { return _content.symbology.toString(false); }
+	std::string symbologyIdentifier() const { return _content.symbology.toString(_content.hasECI); }
 
 	// Simple macro to set up getter/setter methods that save lots of boilerplate.
 	// It sets up a standard 'const & () const', 2 setters for setting lvalues via
