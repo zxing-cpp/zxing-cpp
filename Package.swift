@@ -4,7 +4,7 @@ import PackageDescription
 let package = Package(
     name: "ZXingCpp",
     platforms: [
-        .iOS(.v11)
+        .macOS(.v13), .iOS(.v12)
     ],
     products: [
         .library(
@@ -18,7 +18,8 @@ let package = Package(
             exclude: ["libzint", "ZXingC.cpp", "ZXingCpp.cpp"],
             publicHeadersPath: ".",
             cxxSettings: [
-                .define("ZXING_READERS")
+                .headerSearchPath("../../wrappers/ios/Sources/Wrapper"),
+                .define("ZXING_INTERNAL")
             ]
         ),
         .target(
