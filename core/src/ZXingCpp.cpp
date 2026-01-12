@@ -48,7 +48,7 @@ BarcodeFormats SupportedBarcodeFormats(Operation op)
 #endif // ZXING_READERS
 			;
 	case Operation::Create:
-#if defined(ZXING_WRITERS) && defined(ZXING_USE_ZINT_)
+#if defined(ZXING_WRITERS) && defined(ZXING_USE_ZINT)
 		return BarcodeFormat::Any;
 #else
 		return BarcodeFormat::None
