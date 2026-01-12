@@ -115,7 +115,7 @@ int ParseFinderPattern(const PatternView& view, bool reversed, const std::array<
 {
 	const auto e2e = NormalizedE2EPattern<5>(view, 15, reversed);
 
-	int best_i, best_e = 3;
+	int best_i = -1, best_e = 3;
 	for (int i = 0; i < Size(e2ePatterns); ++i) {
 		int e = 0;
 		for (int j = 0; j < 3; ++j)

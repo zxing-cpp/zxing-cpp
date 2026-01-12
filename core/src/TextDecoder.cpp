@@ -24,13 +24,13 @@ std::string BytesToUtf8(ByteView bytes, ECI eci)
 	if (eci == ECI::Unknown)
 		eci = ECI::Binary;
 
-	int error_number = zueci_dest_len_utf8(ToInt(eci), bytes.data(), bytes.size(), replacement, flags, &utf8_len);
+	int error_number = zueci_dest_len_utf8(ToInt(eci), bytes.data(), Size(bytes), replacement, flags, &utf8_len);
 	if (error_number >= ZUECI_ERROR)
 		throw std::runtime_error("zueci_dest_len_utf8 failed");
 
 	std::string utf8(utf8_len, 0);
 
-	error_number = zueci_eci_to_utf8(ToInt(eci), bytes.data(), bytes.size(), replacement, flags,
+	error_number = zueci_eci_to_utf8(ToInt(eci), bytes.data(), Size(bytes), replacement, flags,
 									 reinterpret_cast<uint8_t*>(utf8.data()), &utf8_len);
 	if (error_number >= ZUECI_ERROR)
 		throw std::runtime_error("zueci_eci_to_utf8 failed");

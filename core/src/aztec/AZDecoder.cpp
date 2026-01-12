@@ -243,7 +243,7 @@ static StructuredAppendInfo ParseStructuredAppend(Content& res)
 	if (sai.count == 1 || sai.count <= sai.index) // If info doesn't make sense
 		sai.count = 0; // Choose to mark count as unknown
 
-	res.erase(0, i + 2); // Remove
+	res.erase(0, narrow_cast<int>(i + 2)); // Remove
 
 	return sai;
 }

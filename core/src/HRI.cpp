@@ -28,7 +28,7 @@ struct AiInfo
 		if ((aiPrefix[0] == '3' && Contains("1234569", aiPrefix[1])) || aiPrefix == "703"sv || aiPrefix == "723"sv)
 			return 4;
 		else
-			return strlen(aiPrefix);
+			return narrow_cast<int>(strlen(aiPrefix));
 	}
 };
 

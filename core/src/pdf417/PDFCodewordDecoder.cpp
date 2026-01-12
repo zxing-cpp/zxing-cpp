@@ -485,7 +485,7 @@ static int GetClosestDecodedValue(const ModuleBitCountType& moduleBitCount)
 	}
 	float bestMatchError = std::numeric_limits<float>::max();
 	int bestMatch = -1;
-	for (size_t j = 0; j < ratioTable.size(); j++) {
+	for (int j = 0; j < Size(ratioTable); j++) {
 		float error = 0.0f;
 		auto& ratioTableRow = ratioTable[j];
 		for (int k = 0; k < CodewordDecoder::BARS_IN_MODULE; k++) {
