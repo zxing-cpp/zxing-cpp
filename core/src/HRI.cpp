@@ -312,7 +312,7 @@ std::string HRIFromISO15434(std::string_view str)
 
 	for (char c : str) {
 #if 1
-		if (0 <= c && c <= 0x20)
+		if (!((c) & ~0x1f) || c == 0x20)
 			(res += "\xe2\x90") += char(0x80 + c); // Unicode Block “Control Pictures”: 0x2400
 		else
 			res += c;

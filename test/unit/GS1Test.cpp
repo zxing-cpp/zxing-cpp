@@ -350,3 +350,8 @@ TEST(HRIFromGS1, MultiVariable)
 {
 	EXPECT_EQ(HRIFromGS1("70041234\x1d""81111234"), "(7004)1234(8111)1234");
 }
+
+TEST(HRIFromISO15434, Basic)
+{
+	EXPECT_EQ(HRIFromISO15434(std::string{ 'A', '\0', '\x01', '\x04', '\x1C', '\x1D', '\x1E', '\x1F', '!', '\xc3', '\xa9' }), "A␀␁␄␜␝␞␟!é");
+}
