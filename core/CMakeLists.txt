@@ -51,6 +51,7 @@ set (ZXING_PUBLIC_FLAGS
 )
 
 set (ZXING_PRIVATE_FLAGS
+    -DZXING_INTERNAL
     $<$<BOOL:${ZXING_UNIT_TESTS}>:-DZXING_BUILD_FOR_TEST>
 )
 
@@ -226,7 +227,6 @@ set (PUBLIC_HEADERS
     src/ReaderOptions.h
     src/WriteBarcode.h
     src/ZXingCpp.h
-    src/ZXAlgorithms.h
     $<$<BOOL:${ZXING_C_API}>:${CMAKE_CURRENT_SOURCE_DIR}/src/ZXingC.h>
 )
 if (ZXING_READERS)

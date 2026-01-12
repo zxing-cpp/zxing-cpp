@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include "ZXAlgorithms.h"
-
 #include <cstddef>
 #include <iterator>
 #include <limits>
@@ -65,7 +63,12 @@ class Flags
 	Int i = 0;
 
 	constexpr inline Flags(Int other) : i(other) {}
-	constexpr static inline auto highestBitSet(Int x) noexcept { return std::numeric_limits<Int>::digits - std::countl_zero(ToUnsigned(x)); }
+
+	constexpr static inline auto ToUnsigned(Int x) noexcept { return static_cast<std::make_unsigned_t<Int>>(x); }
+	constexpr static inline auto highestBitSet(Int x) noexcept
+	{
+		return std::numeric_limits<Int>::digits - std::countl_zero(ToUnsigned(x));
+	}
 
 public:
 	using enum_type = Enum;

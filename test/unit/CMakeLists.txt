@@ -102,8 +102,10 @@ endif()
 
 target_include_directories (UnitTest PRIVATE .)
 
+target_compile_options (UnitTest PRIVATE -DZXING_INTERNAL)
+
 target_link_libraries (UnitTest ZXing::ZXing GTest::gtest_main GTest::gmock)
 
-#target_precompile_headers(UnitTest PRIVATE ${CMAKE_SOURCE_DIR}/core/src/ReadBarcode.h)
+# target_precompile_headers(UnitTest PRIVATE ${CMAKE_SOURCE_DIR}/core/src/ZXingCpp.h) # <gtest/gtest.h>)
 
 add_test(NAME UnitTest COMMAND UnitTest)

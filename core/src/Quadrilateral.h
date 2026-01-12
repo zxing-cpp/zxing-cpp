@@ -6,7 +6,10 @@
 #pragma once
 
 #include "Point.h"
+
+#ifdef ZXING_INTERNAL
 #include "ZXAlgorithms.h"
+#endif
 
 #include <array>
 #include <cmath>
@@ -46,6 +49,17 @@ public:
 
 using QuadrilateralF = Quadrilateral<PointF>;
 using QuadrilateralI = Quadrilateral<PointI>;
+
+template <typename T>
+std::string ToString(const Quadrilateral<PointT<T>>& points)
+{
+	std::string res;
+	for (const auto& p : points)
+		res += std::to_string(p.x) + "x" + std::to_string(p.y) + (&p == &points.back() ? "" : " ");
+	return res;
+}
+
+#ifdef ZXING_INTERNAL
 
 template <typename PointT = PointF>
 Quadrilateral<PointT> Rectangle(int width, int height, typename PointT::value_t margin = 0)
@@ -179,14 +193,7 @@ Quadrilateral<PointT> Blend(const Quadrilateral<PointT>& a, const Quadrilateral<
 	return res;
 }
 
-template <typename T>
-std::string ToString(const Quadrilateral<PointT<T>>& points)
-{
-	std::string res;
-	for (const auto& p : points)
-		res += std::to_string(p.x) + "x" + std::to_string(p.y) + (&p == &points.back() ? "" : " ");
-	return res;
-}
+#endif
 
 } // ZXing
 

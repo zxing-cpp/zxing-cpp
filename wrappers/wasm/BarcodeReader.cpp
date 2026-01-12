@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "ReadBarcode.h"
+#include "ZXAlgorithms.h"
 
 #include <emscripten/bind.h>
 #include <emscripten/val.h>

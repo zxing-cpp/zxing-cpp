@@ -9,6 +9,7 @@
 #include "BitMatrixIO.h"
 #include "DecoderResult.h"
 #include "aztec/AZDetectorResult.h"
+#include "ZXAlgorithms.h"
 
 #include "gtest/gtest.h"
 #include <string_view>

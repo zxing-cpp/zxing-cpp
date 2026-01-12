@@ -9,6 +9,7 @@
 #include "ReaderOptions.h"
 #include "Barcode.h"
 #include "oned/ODCode128Reader.h"
+#include "ZXAlgorithms.h"
 
 #include "gtest/gtest.h"
 

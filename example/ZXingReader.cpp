@@ -5,9 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "GTIN.h"
-#include "ReadBarcode.h"
-#include "Version.h"
-#include "WriteBarcode.h"
+#include "ZXingCpp.h"
 
 #include <cctype>
 #include <chrono>
@@ -152,7 +150,7 @@ static bool ParseOptions(int argc, char* argv[], ReaderOptions& options, CLI& cl
 			PrintUsage(argv[0]);
 			exit(0);
 		} else if (is("-version") || is("--version")) {
-			std::cout << "ZXingReader " << ZXING_VERSION_STR << "\n";
+			std::cout << "ZXingReader " << Version() << "\n";
 			exit(0);
 		} else {
 			cli.filePaths.push_back(argv[i]);
@@ -302,7 +300,7 @@ int main(int argc, char* argv[])
 				printOptional("Add-On:     ", GTIN::EanAddOn(barcode));
 				printOptional("Price:      ", GTIN::Price(GTIN::EanAddOn(barcode)));
 				printOptional("Issue #:    ", GTIN::IssueNr(GTIN::EanAddOn(barcode)));
-			} else if (barcode.format() == BarcodeFormat::ITF && Size(barcode.bytes()) == 14) {
+			} else if (barcode.format() == BarcodeFormat::ITF && barcode.bytes().size() == 14) {
 				printOptional("Country:    ", GTIN::LookupCountryIdentifier(barcode.text(), barcode.format()));
 			}
 
@@ -318,7 +316,7 @@ int main(int argc, char* argv[])
 				std::cout << "Symbol:\n" << WriteBarcodeToUtf8(barcode);
 		}
 
-		if (Size(cli.filePaths) == 1 && !cli.outPath.empty())
+		if (cli.filePaths.size() == 1 && !cli.outPath.empty())
 			stbi_write_png(cli.outPath.c_str(), image.width(), image.height(), 3, image.data(), image.rowStride());
 
 #ifdef NDEBUG
