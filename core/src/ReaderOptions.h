@@ -9,6 +9,7 @@
 
 #include "BarcodeFormat.h"
 #include "CharacterSet.h"
+#include "Version.h"
 
 #include <string_view>
 #include <utility>

@@ -9,10 +9,11 @@
 
 #include "BarcodeFormat.h"
 #include "ContentType.h"
-#include "ReaderOptions.h" // for TextMode
 #include "Error.h"
 #include "ImageView.h"
 #include "Quadrilateral.h"
+#include "ReaderOptions.h" // for TextMode
+#include "Version.h" // ZXING_... macros
 
 #include <memory>
 #include <string>

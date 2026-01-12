@@ -44,30 +44,24 @@ if (BUILD_SHARED_LIBS)
     set (CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif()
 
-set (ZXING_PUBLIC_FLAGS
-    $<$<BOOL:${ZXING_EXPERIMENTAL_API}>:-DZXING_EXPERIMENTAL_API>
-    $<$<BOOL:${ZXING_WRITERS_NEW}>:-DZXING_USE_ZINT>
-)
-foreach(format 1D AZTEC DATAMATRIX MAXICODE PDF417 QRCODE)
-    list (APPEND ZXING_PUBLIC_FLAGS $<$<BOOL:${ZXING_ENABLE_${format}}>:-DZXING_WITH_${format}>)
-endforeach()
+set (ZXING_USE_ZINT ${ZXING_WRITERS_NEW}) # see Version.h.in
 
-if (WINRT)
-    set (ZXING_PUBLIC_FLAGS ${ZXING_PUBLIC_FLAGS}
-        -DWINRT
-    )
-endif()
-if (MSVC)
-    set (ZXING_PUBLIC_FLAGS ${ZXING_PUBLIC_FLAGS}
-        $<$<CXX_COMPILER_ID:MSVC>:/Zc:__cplusplus>
-    )
-endif()
+set (ZXING_PUBLIC_FLAGS
+    $<$<CXX_COMPILER_ID:MSVC>:/Zc:__cplusplus>
+)
 
 set (ZXING_PRIVATE_FLAGS
     $<$<BOOL:${ZXING_UNIT_TESTS}>:-DZXING_BUILD_FOR_TEST>
 )
+
+if (WINRT)
+    list (APPEND ZXING_PUBLIC_FLAGS
+        -DWINRT
+    )
+endif()
+
 if (MSVC)
-    set (ZXING_PRIVATE_FLAGS ${ZXING_PRIVATE_FLAGS}
+    list (APPEND ZXING_PRIVATE_FLAGS
         -D_SCL_SECURE_NO_WARNINGS
         -D_CRT_SECURE_NO_WARNINGS
         -D_CRT_NONSTDC_NO_WARNINGS
@@ -75,7 +69,7 @@ if (MSVC)
         /utf-8 # see https://github.com/zxing-cpp/zxing-cpp/issues/757
     )
 else()
-    set (ZXING_PRIVATE_FLAGS ${ZXING_PRIVATE_FLAGS}
+    list (APPEND ZXING_PRIVATE_FLAGS
         -Wall -Wextra -Wno-missing-braces -Werror=undef -Werror=return-type)
 endif()
 
@@ -88,7 +82,7 @@ include (CheckCXXCompilerFlag)
 set(FILE_PREFIX_ARG "-fmacro-prefix-map=${CMAKE_CURRENT_SOURCE_DIR}/=")
 check_cxx_compiler_flag("${FILE_PREFIX_ARG}" HAS_FILE_PREFIX_ARG)
 if(HAS_FILE_PREFIX_ARG)
-    set(ZXING_PRIVATE_FLAGS ${ZXING_PRIVATE_FLAGS} "${FILE_PREFIX_ARG}")
+    list (APPEND ZXING_PRIVATE_FLAGS "${FILE_PREFIX_ARG}")
 endif()
 
 ################# Source files

@@ -6,8 +6,8 @@
 
 #include "GTIN.h"
 #include "Version.h"
-
-#include <iomanip>
+#include "ZXAlgorithms.h"
+#include "ZXingCpp.h"
 
 #ifdef ZXING_READERS
 #include "ReadBarcode.h"
@@ -15,6 +15,8 @@
 #include "CreateBarcode.h"
 
 #include "gtest/gtest.h"
+
+#include <iomanip>
 
 using namespace ZXing;
 using namespace testing;
@@ -24,6 +26,11 @@ static void check(int line, std::string_view input, CreatorOptions cOpts, std::s
 				  std::string_view contentType, std::string_view position = {}, std::string_view ecLevel = {},
 				  std::string_view version = {}, bool fromBytes = false)
 {
+#ifdef ZXING_EXPERIMENTAL_API
+	if (!SupportedBarcodeFormats(Operation::Create).testFlag(cOpts.format()))
+		return;
+#endif
+
 	auto bc = fromBytes ? CreateBarcodeFromBytes(input, cOpts) : CreateBarcodeFromText(input, cOpts);
 
 	EXPECT_TRUE(bc.isValid()) << "line:" << line;
@@ -41,6 +48,11 @@ static void check(int line, std::string_view input, CreatorOptions cOpts, std::s
 	// EXPECT_EQ(bc.version(), version) << "line:" << line;
 
 #ifdef ZXING_READERS
+#ifdef ZXING_EXPERIMENTAL_API
+	if (!SupportedBarcodeFormats(Operation::Read).testFlag(cOpts.format()))
+		return;
+#endif
+
 	auto br = ReadBarcode(bc.symbol(), ReaderOptions().formats(bc.format()).isPure(true).eanAddOnSymbol(EanAddOnSymbol::Read));
 
 	EXPECT_EQ(bc.isValid(), br.isValid()) << "line:" << line;
@@ -359,7 +371,7 @@ TEST(WriteBarcodeTest, CreatorOptions)
 #endif // ZXING_READERS
 }
 
-#ifdef ZXING_READERS
+#if defined(ZXING_READERS) && defined(ZXING_ENABLE_1D)
 TEST(WriteBarcodeTest, RandomDataBar)
 {
 	auto randomTest = [](BarcodeFormat format) {

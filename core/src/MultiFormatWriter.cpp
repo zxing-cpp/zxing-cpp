@@ -6,13 +6,16 @@
 #include "MultiFormatWriter.h"
 
 #include "BitMatrix.h"
-#ifdef ZXING_WITH_AZTEC
+#include "Utf.h"
+#include "Version.h"
+
+#ifdef ZXING_ENABLE_AZTEC
 #include "aztec/AZWriter.h"
 #endif
-#ifdef ZXING_WITH_DATAMATRIX
+#ifdef ZXING_ENABLE_DATAMATRIX
 #include "datamatrix/DMWriter.h"
 #endif
-#ifdef ZXING_WITH_1D
+#ifdef ZXING_ENABLE_1D
 #include "oned/ODCodabarWriter.h"
 #include "oned/ODCode128Writer.h"
 #include "oned/ODCode39Writer.h"
@@ -23,14 +26,13 @@
 #include "oned/ODUPCAWriter.h"
 #include "oned/ODUPCEWriter.h"
 #endif
-#ifdef ZXING_WITH_PDF417
+#ifdef ZXING_ENABLE_PDF417
 #include "pdf417/PDFWriter.h"
 #endif
-#ifdef ZXING_WITH_QRCODE
+#ifdef ZXING_ENABLE_QRCODE
 #include "qrcode/QRErrorCorrectionLevel.h"
 #include "qrcode/QRWriter.h"
 #endif
-#include "Utf.h"
 
 #include <stdexcept>
 
@@ -45,13 +47,13 @@ MultiFormatWriter::encode(const std::wstring& contents, int width, int height) c
 		return writer.encode(contents, width, height);
 	};
 
-#ifdef ZXING_WITH_AZTEC
+#ifdef ZXING_ENABLE_AZTEC
 	auto AztecEccLevel = [&](Aztec::Writer& writer, int eccLevel) { writer.setEccPercent(eccLevel * 100 / 8); };
 #endif
-#ifdef ZXING_WITH_PDF417
+#ifdef ZXING_ENABLE_PDF417
 	auto Pdf417EccLevel = [&](Pdf417::Writer& writer, int eccLevel) { writer.setErrorCorrectionLevel(eccLevel); };
 #endif
-#ifdef ZXING_WITH_QRCODE
+#ifdef ZXING_ENABLE_QRCODE
 	auto QRCodeEccLevel = [&](QRCode::Writer& writer, int eccLevel) {
 		writer.setErrorCorrectionLevel(static_cast<QRCode::ErrorCorrectionLevel>(--eccLevel / 2));
 	};
@@ -72,19 +74,19 @@ MultiFormatWriter::encode(const std::wstring& contents, int width, int height) c
 	};
 
 	switch (_format) {
-#ifdef ZXING_WITH_AZTEC
+#ifdef ZXING_ENABLE_AZTEC
 	case BarcodeFormat::Aztec: return exec1(Aztec::Writer(), AztecEccLevel);
 #endif
-#ifdef ZXING_WITH_DATAMATRIX
+#ifdef ZXING_ENABLE_DATAMATRIX
 	case BarcodeFormat::DataMatrix: return exec2(DataMatrix::Writer());
 #endif
-#ifdef ZXING_WITH_PDF417
+#ifdef ZXING_ENABLE_PDF417
 	case BarcodeFormat::PDF417: return exec1(Pdf417::Writer(), Pdf417EccLevel);
 #endif
-#ifdef ZXING_WITH_QRCODE
+#ifdef ZXING_ENABLE_QRCODE
 	case BarcodeFormat::QRCode: return exec1(QRCode::Writer(), QRCodeEccLevel);
 #endif
-#ifdef ZXING_WITH_1D
+#ifdef ZXING_ENABLE_1D
 	case BarcodeFormat::Codabar: return exec0(OneD::CodabarWriter());
 	case BarcodeFormat::Code39: return exec0(OneD::Code39Writer());
 	case BarcodeFormat::Code93: return exec0(OneD::Code93Writer());

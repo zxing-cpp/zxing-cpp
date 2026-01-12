@@ -6,6 +6,7 @@
 
 #include "CreateBarcode.h"
 #include "WriteBarcode.h"
+#include "Version.h"
 
 #include <vector>
 
@@ -24,16 +25,16 @@ int main()
 {
 	std::string text = "http://www.google.com/";
 	for (auto format : {
-#ifdef ZXING_WITH_AZTEC
+#ifdef ZXING_ENABLE_AZTEC
 		BarcodeFormat::Aztec,
 #endif
-#ifdef ZXING_WITH_DATAMATRIX
+#ifdef ZXING_ENABLE_DATAMATRIX
 		BarcodeFormat::DataMatrix,
 #endif
-#ifdef ZXING_WITH_PDF417
+#ifdef ZXING_ENABLE_PDF417
 		BarcodeFormat::PDF417,
 #endif
-#ifdef ZXING_WITH_QRCODE
+#ifdef ZXING_ENABLE_QRCODE
 		BarcodeFormat::QRCode,
 #endif
 	})
@@ -41,10 +42,10 @@ int main()
 		savePng(CreateBarcodeFromText(text, format).symbol(), format);
 	}
 
+#ifdef ZXING_ENABLE_1D
 	text = "012345678901234567890123456789";
 	using FormatSpecs = std::vector<std::pair<BarcodeFormat, size_t>>;
 	for (const auto& [format, length] : FormatSpecs({
-#ifdef ZXING_WITH_1D
 //		{BarcodeFormat::Codabar, 0},
 		{BarcodeFormat::Code39, 0},
 		{BarcodeFormat::Code93, 0},
@@ -54,10 +55,10 @@ int main()
 		{BarcodeFormat::ITF, 0},
 		{BarcodeFormat::UPCA, 11},
 		{BarcodeFormat::UPCE, 7}
-#endif
 	}))
 	{
 		auto input = length > 0 ? text.substr(0, length) : text;
-		savePng(CreateBarcodeFromText(input, format).symbol(), format);
+		savePng(WriteBarcodeToImage(CreateBarcodeFromText(input, format)), format);
 	}
+#endif
 }
