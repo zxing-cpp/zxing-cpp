@@ -186,9 +186,9 @@ static constexpr struct { BarcodeFormat format; SymbologyIdentifier si; } barcod
 	// {BarcodeFormat::HanXin, {'h', '0', 1}}, // '2' GS1
 	{BarcodeFormat::ITF, {'I', '0'}}, // '1' check digit
 	{BarcodeFormat::MaxiCode, {'U', '0', 2}}, // '1' mode 2 or 3
-	// {BarcodeFormat::MicroPDF417, {'L', '2', char(-1)}},
+	// {BarcodeFormat::MicroPDF417, {'L', '2', -1}},
 	{BarcodeFormat::MicroQRCode, {'Q', '1', 1}},
-	{BarcodeFormat::PDF417, {'L', '2', char(-1)}},
+	{BarcodeFormat::PDF417, {'L', '2', -1}},
 	{BarcodeFormat::QRCode, {'Q', '1', 1}}, // '3' GS1, '5' AIM
 	{BarcodeFormat::RMQRCode, {'Q', '1', 1}}, // '3' GS1, '5' AIM
 	{BarcodeFormat::UPCA, {'E', '0'}},
