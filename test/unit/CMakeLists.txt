@@ -95,7 +95,7 @@ endif()
 
 if (ZXING_WRITERS MATCHES "ON|NEW|BOTH")
 target_sources (UnitTest PRIVATE
-    WriteBarcodeTest.cpp
+    CreateBarcodeTest.cpp
     TextEncoderTest.cpp
 )
 endif()

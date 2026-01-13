@@ -76,7 +76,7 @@ static void check(int line, std::string_view input, CreatorOptions cOpts, std::s
 #endif // ZXING_READERS
 }
 
-TEST(WriteBarcodeTest, ZintASCII)
+TEST(CreateBarcodeTest, ZintASCII)
 {
 	check(__LINE__, "1234", BarcodeFormat::Aztec, "]z0", "1234", "31 32 33 34", false, "]z3\\0000261234", "5D 7A 30 31 32 33 34",
 		  "1234", "Text", "0x0 15x0 15x15 0x15", "58%", "1" /*version*/);
@@ -199,7 +199,7 @@ TEST(WriteBarcodeTest, ZintASCII)
 }
 
 
-TEST(WriteBarcodeTest, EANUPCAddOn)
+TEST(CreateBarcodeTest, EANUPCAddOn)
 {
 	check(__LINE__, "1234567890128+12345", BarcodeFormat::EAN13, "]E3", "123456789012812345", "31 32 33 34 35 36 37 38 39 30 31 32 38 31 32 33 34 35", false,
 		  "]E3\\000026123456789012812345", "5D 45 33 31 32 33 34 35 36 37 38 39 30 31 32 38 31 32 33 34 35", "123456789012812345", "Text");
@@ -211,7 +211,7 @@ TEST(WriteBarcodeTest, EANUPCAddOn)
 		  "]E3\\000026000012000003412345", "5D 45 33 30 30 30 30 31 32 30 30 30 30 30 33 34 31 32 33 34 35", "000012000003412345", "Text");
 }
 
-TEST(WriteBarcodeTest, ZintISO8859_1)
+TEST(CreateBarcodeTest, ZintISO8859_1)
 {
 	// Control chars (SOH & DEL)
 	check(__LINE__, "12\001\17734", BarcodeFormat::Code128, "]C0", "12\001\17734", "31 32 01 7F 33 34", false,
@@ -278,7 +278,7 @@ TEST(WriteBarcodeTest, ZintISO8859_1)
 		  "]Q2\\0000261234é", "5D 51 32 5C 30 30 30 30 30 33 31 32 33 34 E9", "1234é", "Text", "0x0 26x0 26x10 0x10", "M", "11");
 }
 
-TEST(WriteBarcodeTest, ZintGS1)
+TEST(CreateBarcodeTest, ZintGS1)
 {
 	check(__LINE__, "(01)12345678901231(20)12", {BarcodeFormat::Aztec, "GS1"}, "]z1", "01123456789012312012",
 		  "30 31 31 32 33 34 35 36 37 38 39 30 31 32 33 31 32 30 31 32", false, "]z4\\00002601123456789012312012",
@@ -326,7 +326,7 @@ TEST(WriteBarcodeTest, ZintGS1)
 		  "0x0 26x0 26x12 0x12", "M", "17");
 }
 
-TEST(WriteBarcodeTest, ZintBinary)
+TEST(CreateBarcodeTest, ZintBinary)
 {
 	check(__LINE__, std::string("\x00\x80", 2), BarcodeFormat::Code128, "]C0", std::string("\0\xC2\x80", 3),
 		  "00 80", false, std::string("]C0\\000026\0\xC2\x80", 13),
@@ -339,7 +339,7 @@ TEST(WriteBarcodeTest, ZintBinary)
 		  "0x0 15x0 15x15 0x15" /*position*/, "23%" /*ecLevel*/, "1" /*version*/, true /*fromBytes*/);
 }
 
-TEST(WriteBarcodeTest, CreatorOptions)
+TEST(CreateBarcodeTest, CreatorOptions)
 {
 	Barcode bc;
 
@@ -372,7 +372,7 @@ TEST(WriteBarcodeTest, CreatorOptions)
 }
 
 #if defined(ZXING_READERS) && defined(ZXING_ENABLE_1D)
-TEST(WriteBarcodeTest, RandomDataBar)
+TEST(CreateBarcodeTest, RandomDataBar)
 {
 	auto randomTest = [](BarcodeFormat format) {
 		auto read_opts = ReaderOptions().formats(format).isPure(true).binarizer(Binarizer::BoolCast);
