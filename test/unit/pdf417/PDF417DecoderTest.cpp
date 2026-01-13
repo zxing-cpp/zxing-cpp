@@ -567,3 +567,11 @@ TEST(PDF417DecoderTest, Reserved)
 	EXPECT_FALSE(valid({ 3, 903, 0 })); // Not supported
 	EXPECT_FALSE(valid({ 3, 0, 903 }));
 }
+
+TEST(PDF417DecoderTest, BytesECI)
+{
+	// No ECI ("AA")
+	EXPECT_EQ(Decode({ 2, 0 }).content().bytesECI(), ByteArray("]L2AA"));
+	// ECI 4 ("AA")
+	EXPECT_EQ(Decode({ 4, 927, 4, 0 }).content().bytesECI(), ByteArray("]L1\\000004AA"));
+}
