@@ -15,7 +15,8 @@ enum class AIFlag : char { None, GS1, AIM };
 
 struct SymbologyIdentifier
 {
-	char code = 0, modifier = 0, eciModifierOffset = 0;
+	char code = 0, modifier = 0;
+	signed char eciModifierOffset = 0;
 	AIFlag aiFlag = AIFlag::None;
 
 	std::string toString(bool hasECI = false) const

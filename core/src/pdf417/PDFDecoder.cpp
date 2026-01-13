@@ -631,7 +631,7 @@ int DecodeMacroBlock(const std::vector<int>& codewords, int codeIndex, PDF417Cus
 DecoderResult Decode(const std::vector<int>& codewords)
 {
 	Content result;
-	result.symbology = {'L', '2', char(-1)};
+	result.symbology = {'L', '2', -1};
 
 	bool readerInit = false;
 	auto customData = std::make_shared<PDF417CustomData>();
