@@ -152,9 +152,9 @@ constexpr auto BarAndSpaceSum(const T* view) noexcept
  *
  * N = number of bars/spaces
  * SUM = sum over all N elements (size of pattern in modules)
- * IS_SPARCE = whether or not the pattern contains '0's denoting 'wide' bars/spaces
+ * IS_SPARSE = whether or not the pattern contains '0's denoting 'wide' bars/spaces
  */
-template <int N, int SUM, bool IS_SPARCE = false>
+template <int N, int SUM, bool IS_SPARSE = false>
 struct FixedPattern
 {
 	using value_type = PatternRow::value_type;
@@ -166,7 +166,7 @@ struct FixedPattern
 };
 
 template <int N, int SUM>
-using FixedSparcePattern = FixedPattern<N, SUM, true>;
+using FixedSparsePattern = FixedPattern<N, SUM, true>;
 
 template <bool E2E = false, int LEN, int SUM>
 double IsPattern(const PatternView& view, const FixedPattern<LEN, SUM, false>& pattern, int spaceInPixel = 0,
@@ -244,8 +244,8 @@ double IsPattern(const PatternView& view, const FixedPattern<N, SUM, true>& patt
 	return moduleSize;
 }
 
-template <int N, int SUM, bool IS_SPARCE>
-bool IsRightGuard(const PatternView& view, const FixedPattern<N, SUM, IS_SPARCE>& pattern, double minQuietZone,
+template <int N, int SUM, bool IS_SPARSE>
+bool IsRightGuard(const PatternView& view, const FixedPattern<N, SUM, IS_SPARSE>& pattern, double minQuietZone,
 				  double moduleSizeRef = 0)
 {
 	int spaceInPixel = view.isAtLastBar() ? std::numeric_limits<int>::max() : *view.end();
@@ -268,8 +268,8 @@ PatternView FindLeftGuard(const PatternView& view, int minSize, Pred isGuard)
 	return {};
 }
 
-template <int LEN, int SUM, bool IS_SPARCE>
-PatternView FindLeftGuard(const PatternView& view, int minSize, const FixedPattern<LEN, SUM, IS_SPARCE>& pattern,
+template <int LEN, int SUM, bool IS_SPARSE>
+PatternView FindLeftGuard(const PatternView& view, int minSize, const FixedPattern<LEN, SUM, IS_SPARSE>& pattern,
 						  double minQuietZone)
 {
 	return FindLeftGuard<LEN>(view, std::max(minSize, LEN),

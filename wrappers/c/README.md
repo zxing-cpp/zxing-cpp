@@ -24,8 +24,8 @@ int main(int argc, char** argv)
 	ZXing_ImageView* iv = ZXing_ImageView_new(data, width, height, ZXing_ImageFormat_Lum, 0, 0);
 
 	ZXing_ReaderOptions* opts = ZXing_ReaderOptions_new();
-	/* set ReaderOptions properties, if requried, e.g. */
-	ZXing_ReaderOptions_setFormats(ZXing_BarcodeFormat_QRCode | ZXing_BarcodeFromat_EAN13);
+	/* set ReaderOptions properties, if required, e.g. */
+	ZXing_ReaderOptions_setFormats(ZXing_BarcodeFormat_QRCode | ZXing_BarcodeFormat_EAN13);
 
 	ZXing_Barcodes* barcodes = ZXing_ReadBarcodes(iv, opts);
 

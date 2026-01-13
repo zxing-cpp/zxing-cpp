@@ -85,7 +85,7 @@ std::string WriteBarcodeToUtf8(const Barcode& barcode, const WriterOptions& opti
  *
  * @param barcode  Barcode to write
  * @param options  WriterOptions to parameterize rendering
- * @return Image  Bitmap reprentation of barcode symbol
+ * @return Image  Bitmap representation of barcode symbol
  */
 Image WriteBarcodeToImage(const Barcode& barcode, const WriterOptions& options = {});
 

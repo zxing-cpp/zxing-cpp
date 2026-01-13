@@ -267,15 +267,15 @@ TEST(DMHighLevelEncodeTest, Base256Encodation)
 
 	visualized = Encode(CreateBinaryMessage(276));
 	std::string expectedStart = "231 38 219 2 208 120 20 150 35";
-	std::string epxectedEnd = "146 40 194 129";
+	std::string expectedEnd = "146 40 194 129";
 	EXPECT_EQ(visualized.substr(0, expectedStart.length()), expectedStart);
-	EXPECT_EQ(visualized.substr(visualized.length() - epxectedEnd.length()), epxectedEnd);
+	EXPECT_EQ(visualized.substr(visualized.length() - expectedEnd.length()), expectedEnd);
 
 	visualized = Encode(CreateBinaryMessage(277));
 	expectedStart = "231 38 220 2 208 120 20 150 35";
-	epxectedEnd = "146 40 190 87";
+	expectedEnd = "146 40 190 87";
 	EXPECT_EQ(visualized.substr(0, expectedStart.length()), expectedStart);
-	EXPECT_EQ(visualized.substr(visualized.length() - epxectedEnd.length()), epxectedEnd);
+	EXPECT_EQ(visualized.substr(visualized.length() - expectedEnd.length()), expectedEnd);
 }
 
 TEST(DMHighLevelEncodeTest, UnlatchingFromC40)

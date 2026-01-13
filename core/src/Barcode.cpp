@@ -202,7 +202,7 @@ bool BarcodeData::operator==(const BarcodeData& o) const
 	auto dBot = maxAbsComponent(ml.position.bottomLeft() - sl.position.topLeft());
 	auto slLength = maxAbsComponent(sl.position.topLeft() - sl.position.bottomRight());
 	bool isHorizontal = sl.position.topLeft().y == sl.position.bottomRight().y;
-	// Measure the multi line length in the same direction as the single line one (not diagonaly)
+	// Measure the multi line length in the same direction as the single line one (not diagonally)
 	// to make sure overly tall symbols don't get segmented (see #769).
 	auto mlLength = isHorizontal ? std::abs(ml.position.topLeft().x - ml.position.bottomRight().x)
 								 : std::abs(ml.position.topLeft().y - ml.position.bottomRight().y);

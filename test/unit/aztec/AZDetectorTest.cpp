@@ -77,7 +77,7 @@ namespace {
 				}
 
 				// here used to be a test for 3-bit errors but since we determine both the rotation and the mirrored info
-				// from the orentation bits (as suggested in the specification) this does not work anymore.
+				// from the orientation bits (as suggested in the specification) this does not work anymore.
 
 				matrix.rotate90();
 			}

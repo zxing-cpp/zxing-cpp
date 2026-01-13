@@ -49,7 +49,7 @@ DetectorResult SampleGrid(const BitMatrix& image, int width, int height, const R
 				// that even though all boundary grid points get projected inside the image, it can still happen that an
 				// inner grid points is not. See #563. A true perspective transformation cannot have this property.
 				// The following check takes 100% care of the issue and turned out to be less of a performance impact than feared.
-				// TODO: Check some mathematical/numercial property of mod2Pix to determine if it is a perspective transforation.
+				// TODO: Check some mathematical/numercial property of mod2Pix to determine if it is a perspective transformation.
 				if (!image.isIn(p))
 					return {};
 

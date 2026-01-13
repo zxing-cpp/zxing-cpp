@@ -116,7 +116,7 @@ std::string Content::render(bool withECI) const
 
 	ForEachECIBlock([&](ECI eci, int begin, int end) {
 		// basic idea: if IsText(eci), we transcode it to UTF8, otherwise we treat it as binary but
-		// transcoded it to valid UTF8 bytes seqences representing the code points 0-255. The eci we report
+		// transcoded it to valid UTF8 bytes sequences representing the code points 0-255. The eci we report
 		// back to the caller by inserting their "\XXXXXX" ECI designator is UTF8 for text and
 		// the original ECI for everything else.
 		// first determine how to decode the content (use fallback if unknown)
@@ -446,7 +446,7 @@ ContentType Content::type() const
 	if (symbology.aiFlag == AIFlag::GS1)
 		return ContentType::GS1;
 
-	// check for the absolut minimum of a ISO 15434 conforming message ("[)>" + RS + digit + digit)
+	// check for the absolute minimum of a ISO 15434 conforming message ("[)>" + RS + digit + digit)
 	if (bytes.size() > 6 && bytes.asString(0, 4) == "[)>\x1E" && std::isdigit(bytes[4]) && std::isdigit(bytes[5]))
 		return ContentType::ISO15434;
 

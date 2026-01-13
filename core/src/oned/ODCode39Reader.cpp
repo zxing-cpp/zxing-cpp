@@ -81,7 +81,7 @@ BarcodeData Code39Reader::decodePattern(int rowNumber, PatternView& next, std::u
 	auto isStartOrStopSymbol = [](char c) { return c == '*'; };
 
 	// provide the indices with the narrow bars/spaces which have to be equally wide
-	constexpr auto START_PATTERN = FixedSparcePattern<CHAR_LEN, 6>{0, 2, 3, 5, 7, 8};
+	constexpr auto START_PATTERN = FixedSparsePattern<CHAR_LEN, 6>{0, 2, 3, 5, 7, 8};
 	// the spec requires a quiet zone of 10x narrow bar width, so with a 1:3 narrow:wide ratio
 	// and 3w+6n, a single character is 15x wide, so the below scale would need to be 2/3.
 	// This value used to be 1/2 but real-world feedback suggests 1/3 is preferable.

@@ -43,7 +43,7 @@ constexpr bool E2E = true;
 PatternView FindPattern(const PatternView& view)
 {
 	return FindLeftGuard<PATTERN.size()>(view, PATTERN.size(), [](const PatternView& view, int spaceInPixel) {
-		// perform a fast plausability test for 1:1:3:1:1 pattern
+		// perform a fast plausibility test for 1:1:3:1:1 pattern
 		if (view[2] < 3 || view[2] < 2 * std::max(view[0], view[4]) || view[2] < std::max(view[1], view[3]))
 			return 0.;
 		return IsPattern<E2E>(view, PATTERN, spaceInPixel, 0.1); // the requires 4, here we accept almost 0
@@ -479,7 +479,7 @@ DetectorResult SampleQR(const BitMatrix& image, const FinderPatternSet& fp)
 			mod2Pix = Mod2Pix(dimension, PointF(3, 3), {fp.tl, fp.tr, *c, fp.bl});
 
 		// go over the whole set of alignment patters again and fill any remaining gaps by a projection based on an updated mod2Pix
-		// projection. This works if the symbol is flat, wich is a reasonable fall-back assumption.
+		// projection. This works if the symbol is flat, which is a reasonable fall-back assumption.
 		for (int y = 0; y <= N; ++y)
 			for (int x = 0; x <= N; ++x) {
 				if (apP(x, y))

@@ -10,7 +10,7 @@
 namespace ZXing::OneD {
 
 /**
-* Decodes DataBarLimited sybmols. See ISO/IEC 24724:2011.
+* Decodes DataBarLimited symbols. See ISO/IEC 24724:2011.
 */
 class DataBarLimitedReader : public RowReader
 {

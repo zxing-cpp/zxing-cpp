@@ -103,7 +103,7 @@ static FormatInformation FindBestFormatInfoRMQR(const std::vector<uint32_t>& bit
 */
 FormatInformation FormatInformation::DecodeQR(uint32_t formatInfoBits1, uint32_t formatInfoBits2)
 {
-	// maks out the 'Dark Module' for mirrored and non-mirrored case (see Figure 25 in ISO/IEC 18004:2015)
+	// marks out the 'Dark Module' for mirrored and non-mirrored case (see Figure 25 in ISO/IEC 18004:2015)
 	uint32_t mirroredFormatInfoBits2 = MirrorBits(((formatInfoBits2 >> 1) & 0b111111110000000) | (formatInfoBits2 & 0b1111111));
 	formatInfoBits2 = ((formatInfoBits2 >> 1) & 0b111111100000000) | (formatInfoBits2 & 0b11111111);
 	// Some (Model2) QR codes apparently do not apply the XOR mask. Try with (standard) and without (quirk) masking.

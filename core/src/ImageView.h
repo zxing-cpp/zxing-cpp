@@ -76,7 +76,7 @@ public:
 		  _pixStride(pixStride ? pixStride : PixStride(format)),
 		  _rowStride(rowStride ? rowStride : width * _pixStride)
 	{
-		// TODO: [[deprecated]] this check is to prevent exising code from suddenly throwing, remove in 3.0
+		// TODO: [[deprecated]] this check is to prevent existing code from suddenly throwing, remove in 3.0
 		if (_data == nullptr && _width == 0 && _height == 0 && rowStride == 0 && pixStride == 0) {
 			fprintf(stderr, "zxing-cpp deprecation warning: ImageView(nullptr, ...) will throw in the future, use ImageView()\n");
 			return;

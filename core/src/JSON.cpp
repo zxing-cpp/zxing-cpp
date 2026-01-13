@@ -10,7 +10,7 @@
 #include <string_view>
 
 // This code is trying to find the value of a key-value pair in a string of those.
-// The input could be valid JSON, like '{"key": "val"}' or a stipped down version like
+// The input could be valid JSON, like '{"key": "val"}' or a stripped down version like
 // 'key:val'. This is also compatible with the string serialization of a python dictionary.
 // For convenience, also 'key=val' is supported, key is checked case insensitive and '_' is ignored.
 // This could easily be done with the following regex (see below).

@@ -167,7 +167,7 @@ static std::optional<QuadrilateralF> FitQadrilateralToPoints(PointF center, std:
 
 	std::array<const PointF*, 4> corners;
 	corners[0] = &points[0];
-	// find the oposite corner by looking for the farthest point near the oposite point
+	// find the opposite corner by looking for the farthest point near the opposite point
 	corners[2] = std::max_element(&points[Size(points) * 3 / 8], &points[Size(points) * 5 / 8], dist2Center);
 
 	// find the two in between corners by looking for the points farthest from the long diagonal

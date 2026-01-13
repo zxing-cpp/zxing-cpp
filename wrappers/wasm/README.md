@@ -16,7 +16,7 @@ There is an alternative (external) wrapper project called [zxing-wasm](https://g
 
 ## Performance
 
-It turns out that compiling the library with the `-Os` (`MinSizeRel`) flag causes a noticible performance penalty. Here are some measurements from the demo_cam_reader (performed on Chromium 109 running on a Core i9-9980HK):
+It turns out that compiling the library with the `-Os` (`MinSizeRel`) flag causes a noticeable performance penalty. Here are some measurements from the demo_cam_reader (performed on Chromium 109 running on a Core i9-9980HK):
 
 |         | `-Os` | `-Os -flto` | `-O3`  | `-O3 -flto` | _Build system_ |
 |---------|-------|-------------|--------|-------------|-|
