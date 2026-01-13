@@ -1,4 +1,4 @@
-[![Build Status](https://github.com/zxing-cpp/zxing-cpp/workflows/CI/badge.svg?branch=master)](https://github.com/zxing-cpp/zxing-cpp/actions?query=workflow%3ACI)
+[![Build Status](https://github.com/zxing-cpp/zxing-cpp/actions/workflows/ci.yml/badge.svg)](https://github.com/zxing-cpp/zxing-cpp/actions?query=workflow%3ACI)
 
 # ZXing-C++
 
