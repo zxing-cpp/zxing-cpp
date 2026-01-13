@@ -180,7 +180,7 @@ static constexpr struct { BarcodeFormat format; SymbologyIdentifier si; } barcod
 	{BarcodeFormat::DataBarLimited, {'e', '0', 0, AIFlag::GS1}},
 	{BarcodeFormat::DataMatrix, {'d', '1', 3}}, // '2' GS1, '3' AIM
 	// {BarcodeFormat::DotCode, {'J', '0', 3}}, // '1' GS1, '2' AIM
-	{BarcodeFormat::DXFilmEdge, {}},
+	{BarcodeFormat::DXFilmEdge, {'X', 'F'}},
 	{BarcodeFormat::EAN8, {'E', '4'}},
 	{BarcodeFormat::EAN13, {'E', '0'}},
 	// {BarcodeFormat::HanXin, {'h', '0', 1}}, // '2' GS1

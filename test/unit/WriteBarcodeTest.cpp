@@ -153,12 +153,12 @@ TEST(WriteBarcodeTest, ZintASCII)
 	// 	  "5D 4A 33 31 32 33 34", "1234", "Text", "1x1 25x1 25x19 1x19", "" /*ecLevel*/, "" /*version*/, 3 /*dataMask*/);
 
 	// DX number only
-	check(__LINE__, "77-2", BarcodeFormat::DXFilmEdge, "" /*si*/, "77-2", "37 37 2D 32", false, "\\00002677-2", "37 37 2D 32", "77-2",
+	check(__LINE__, "77-2", BarcodeFormat::DXFilmEdge, "]XF", "77-2", "37 37 2D 32", false, "]XF\\00002677-2", "5D 58 46 37 37 2D 32", "77-2",
 		  "Text", "0x0 22x0 22x5 0x5");
 
 	// DX number + frame number
-	check(__LINE__, "77-2/62A", BarcodeFormat::DXFilmEdge, "" /*si*/, "77-2/62A", "37 37 2D 32 2F 36 32 41", false, "\\00002677-2/62A",
-		  "37 37 2D 32 2F 36 32 41", "77-2/62A", "Text", "0x0 30x0 30x5 0x5");
+	check(__LINE__, "77-2/62A", BarcodeFormat::DXFilmEdge, "]XF", "77-2/62A", "37 37 2D 32 2F 36 32 41", false, "]XF\\00002677-2/62A",
+		  "5D 58 46 37 37 2D 32 2F 36 32 41", "77-2/62A", "Text", "0x0 30x0 30x5 0x5");
 
 	check(__LINE__, "123456", BarcodeFormat::EAN8, "]E4", "01234565", "30 31 32 33 34 35 36 35", false, "]E4\\00002601234565",
 		  "5D 45 34 30 31 32 33 34 35 36 35", "01234565", "Text", "0x0 66x0 66x59 0x59");

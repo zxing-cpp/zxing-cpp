@@ -224,7 +224,10 @@ BarcodeData DXFilmEdgeReader::decodePattern(int rowNumber, PatternView& next, st
 	clock->xStart = xStart;
 	clock->xStop = xStop;
 
-	return LinearBarcode(BarcodeFormat::DXFilmEdge, txt, rowNumber, xStart, xStop, {});
+	// ISO/IEC 15424:2008(E) specifies 'X' as 'other barcode' that can be used by the decoder manufacturer as he sees fit.
+	SymbologyIdentifier si {'X', 'F'};
+
+	return LinearBarcode(BarcodeFormat::DXFilmEdge, txt, rowNumber, xStart, xStop, si);
 }
 
 } // namespace ZXing::OneD
