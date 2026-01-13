@@ -59,15 +59,14 @@ class Flags
 {
 	static_assert(std::is_enum<Enum>::value, "Flags is only usable on enumeration types.");
 
-	using Int = typename std::underlying_type<Enum>::type;
+	using Int = std::make_unsigned_t<typename std::underlying_type<Enum>::type>;
 	Int i = 0;
 
 	constexpr inline Flags(Int other) : i(other) {}
 
-	constexpr static inline auto ToUnsigned(Int x) noexcept { return static_cast<std::make_unsigned_t<Int>>(x); }
 	constexpr static inline auto highestBitSet(Int x) noexcept
 	{
-		return std::numeric_limits<Int>::digits - std::countl_zero(ToUnsigned(x));
+		return std::numeric_limits<Int>::digits - 1 - std::countl_zero(x);
 	}
 
 public:
@@ -93,11 +92,11 @@ public:
 		using pointer = Enum*;
 		using reference = Enum&;
 
-		Enum operator*() const noexcept { return Enum(1 << _pos); }
+		Enum operator*() const noexcept { return Enum(Int(1) << _pos); }
 
 		iterator& operator++() noexcept
 		{
-			while (++_pos < highestBitSet(_flags) && !((1 << _pos) & _flags))
+			while (++_pos < highestBitSet(_flags) && !((Int(1) << _pos) & _flags))
 				;
 			return *this;
 		}
@@ -106,11 +105,11 @@ public:
 		bool operator!=(const iterator& rhs) const noexcept { return !(*this == rhs); }
 	};
 
-	iterator begin() const noexcept { return {i, std::countr_zero(ToUnsigned(i))}; }
+	iterator begin() const noexcept { return {i, std::countr_zero(i)}; }
 	iterator end() const noexcept { return {i, highestBitSet(i) + 1}; }
 
 	bool empty() const noexcept { return i == 0; }
-	int count() const noexcept { return std::popcount(ToUnsigned(i)); }
+	int count() const noexcept { return std::popcount(i); }
 
 	constexpr inline bool operator==(Flags other) const noexcept { return i == other.i; }
 
@@ -144,7 +143,7 @@ public:
 	}
 	inline void clear() noexcept { i = 0; }
 
-	constexpr static Flags all() noexcept { return ~(unsigned(~0) << highestBitSet(Int(Enum::_max))); }
+	constexpr static Flags all() noexcept { return ~(Int(~0) << highestBitSet(Int(Enum::_max))); }
 
 private:
 //	constexpr static inline Int
