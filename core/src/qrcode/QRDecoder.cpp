@@ -204,7 +204,7 @@ static ECI ParseECIValue(BitSource& bits)
  * M2 - 1 bit mode code, 5 bits terminator code
  * M3 - 2 bit mode code, 7 bits terminator code
  * M4 - 3 bit mode code, 9 bits terminator code
- * IsTerminator peaks into the bit stream to see if the current position is at the start of
+ * IsTerminator peeks into the bit stream to see if the current position is at the start of
  * a terminator code.  If true, then the decoding can finish. If false, then the decoding
  * can read off the next mode code.
  *
@@ -217,7 +217,7 @@ bool IsEndOfStream(const BitSource& bits, const Version& version)
 {
 	const int bitsRequired = TerminatorBitsLength(version);
 	const int bitsAvailable = std::min(bits.available(), bitsRequired);
-	return bitsAvailable == 0 || bits.peakBits(bitsAvailable) == 0;
+	return bitsAvailable == 0 || bits.peekBits(bitsAvailable) == 0;
 }
 
 /**

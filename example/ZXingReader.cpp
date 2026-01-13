@@ -55,7 +55,7 @@ static void PrintUsage(const char* exePath)
 			  << "               Text mode used to render the raw byte content into text\n"
 			  << "    -1         Print only file name, content/error on one line per file/barcode (implies '-mode Escaped')\n"
 			  << "    -symbol    Print the detected symbol (if available)\n"
-			  << "    -json      Print a complete JSON formated serialization\n"
+			  << "    -json      Print a complete JSON formatted serialization\n"
 #ifdef ZXING_EXPERIMENTAL_API
 			  << "    -denoise   Use extra denoiseing (closing operation)\n"
 #endif

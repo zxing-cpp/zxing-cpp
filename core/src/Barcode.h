@@ -81,12 +81,12 @@ public:
 	std::vector<uint8_t> bytesECI() const;
 
 	/**
-	 * @brief text returns the bytes() content rendered to unicode/utf8 text accoring to specified TextMode
+	 * @brief text returns the bytes() content rendered to unicode/utf8 text according to specified TextMode
 	 */
 	std::string text(TextMode mode) const;
 
 	/**
-	 * @brief text returns the bytes() content rendered to unicode/utf8 text accoring to the TextMode set in the ReaderOptions
+	 * @brief text returns the bytes() content rendered to unicode/utf8 text according to the TextMode set in the ReaderOptions
 	 */
 	std::string text() const;
 
@@ -96,7 +96,7 @@ public:
 	ContentType contentType() const;
 
 	/**
-	 * @brief hasECI specifies wheter or not an ECI tag was found
+	 * @brief hasECI specifies whether or not an ECI tag was found
 	 */
 	bool hasECI() const;
 
@@ -112,7 +112,7 @@ public:
 	 */
 	bool isMirrored() const;
 	/**
-	 * @brief isInverted is the symbol inverted / has reveresed reflectance (see ReaderOptions::tryInvert)
+	 * @brief isInverted is the symbol inverted / has reversed reflectance (see ReaderOptions::tryInvert)
 	 */
 	bool isInverted() const;
 

@@ -47,7 +47,7 @@ P copy(const C& c) noexcept
 template<typename C, typename P = typename C::pointer>
 P copy(const C& c, int* len) noexcept
 {
-	// for convencience and as a safety measure, we NULL terminate even byte arrays
+	// for convenience and as a safety measure, we NULL terminate even byte arrays
 	auto ret = copy(c);
 	if (len)
 		*len = ret ? Size(c) : 0;

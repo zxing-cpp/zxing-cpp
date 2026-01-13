@@ -4,7 +4,7 @@ project(ZXingPython)
 # check if we are called from the top-level ZXing project
 get_directory_property(hasParent PARENT_DIRECTORY)
 if (NOT hasParent)
-    set(CMAKE_CXX_STANDARD 20) # requried here for the module itself
+    set(CMAKE_CXX_STANDARD 20) # required here for the module itself
 
     option (BUILD_SHARED_LIBS "Link python module to shared lib" OFF)
     option (ZXING_READERS "Build with reader support (decoders)" ON)

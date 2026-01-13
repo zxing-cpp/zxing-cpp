@@ -29,7 +29,7 @@ static std::string DecodeGeneralPurposeBits(BitArrayView& bits)
 			res.push_back(GS);
 			state = NUMERIC;
 			// Allow for some generators incorrectly placing a numeric latch "000" after an FNC1
-			if (bits.size() >= 7 && bits.peakBits(7) < 8)
+			if (bits.size() >= 7 && bits.peekBits(7) < 8)
 				bits.skipBits(3);
 		} else {
 			res.push_back(v + 43);
@@ -38,7 +38,7 @@ static std::string DecodeGeneralPurposeBits(BitArrayView& bits)
 
 	auto isPadding = [](State state, BitArrayView& bits) {
 		bool res = (state == NUMERIC) ? bits.size() < 4
-									  : bits.size() < 5 && (0b00100 >> (5 - bits.size()) == bits.peakBits(bits.size()));
+									  : bits.size() < 5 && (0b00100 >> (5 - bits.size()) == bits.peekBits(bits.size()));
 		if (res)
 			bits.skipBits(bits.size());
 		return res;
@@ -53,7 +53,7 @@ static std::string DecodeGeneralPurposeBits(BitArrayView& bits)
 				int v = bits.readBits(4);
 				if (v > 0)
 					res.push_back(ToDigit(v - 1));
-			} else if (bits.peakBits(4) == 0) {
+			} else if (bits.peekBits(4) == 0) {
 				bits.skipBits(4);
 				state = ALPHA;
 			} else {
@@ -65,7 +65,7 @@ static std::string DecodeGeneralPurposeBits(BitArrayView& bits)
 		case ALPHA:
 			if (isPadding(state, bits))
 				break;
-			if (bits.peakBits(1) == 1) {
+			if (bits.peekBits(1) == 1) {
 				constexpr char const* lut58to62 = R"(*,-./)";
 				int v = bits.readBits(6);
 				if (v < 58)
@@ -74,7 +74,7 @@ static std::string DecodeGeneralPurposeBits(BitArrayView& bits)
 					res.push_back(lut58to62[v - 58]);
 				else
 					throw FormatError();
-			} else if (bits.peakBits(3) == 0) {
+			} else if (bits.peekBits(3) == 0) {
 				bits.skipBits(3);
 				state = NUMERIC;
 			} else {
@@ -84,11 +84,11 @@ static std::string DecodeGeneralPurposeBits(BitArrayView& bits)
 		case ISO_IEC_646:
 			if (isPadding(state, bits))
 				break;
-			if (bits.peakBits(3) == 0) {
+			if (bits.peekBits(3) == 0) {
 				bits.skipBits(3);
 				state = NUMERIC;
 			} else {
-				int v = bits.peakBits(5);
+				int v = bits.peekBits(5);
 				if (v < 16) {
 					decode5Bits(state, res, bits);
 				} else if (v < 29) {
@@ -216,18 +216,18 @@ std::string DecodeExpandedBits(const BitArray& _bits)
 		auto bits = BitArrayView(_bits);
 		bits.readBits(1); // skip linkage bit
 
-		if (bits.peakBits(1) == 1)
+		if (bits.peekBits(1) == 1)
 			return DecodeAI01AndOtherAIs(bits.skipBits(1));
 
-		if (bits.peakBits(2) == 0)
+		if (bits.peekBits(2) == 0)
 			return DecodeAnyAI(bits.skipBits(2));
 
-		switch (bits.peakBits(4)) {
+		switch (bits.peekBits(4)) {
 		case 4: return DecodeAI013103(bits.skipBits(4));
 		case 5: return DecodeAI01320x(bits.skipBits(4));
 		}
 
-		switch (bits.peakBits(5)) {
+		switch (bits.peekBits(5)) {
 		case 12: return DecodeAI0139yx(bits.skipBits(5), '2');
 		case 13: return DecodeAI0139yx(bits.skipBits(5), '3');
 		}

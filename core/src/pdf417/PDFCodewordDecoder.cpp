@@ -453,10 +453,10 @@ static constexpr int getSymbol(int idx)
 
 static int GetClosestDecodedValue(const ModuleBitCountType& moduleBitCount)
 {
-#if 1 // put 87kB on heap and calucate per process on first use -> 7% smaller binary
+#if 1 // put 87kB on heap and calculate per process on first use -> 7% smaller binary
 	static const auto ratioTable = []() {
 		auto table = std::vector<std::array<float, CodewordDecoder::BARS_IN_MODULE>>(SYMBOL_COUNT);
-#else // put 87kB in .rodata shared by all processes and calcuate during compilation
+#else // put 87kB in .rodata shared by all processes and calculate during compilation
 	static constexpr const auto ratioTable = []() constexpr {
 		auto table = std::array<std::array<float, CodewordDecoder::BARS_IN_MODULE>, SYMBOL_COUNT>();
 #endif

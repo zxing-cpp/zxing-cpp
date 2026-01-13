@@ -12,7 +12,7 @@
 namespace ZXing::OneD {
 
 /**
-* Decodes DataBar (formerly known as RSS) sybmols, including truncated and stacked variants. See ISO/IEC 24724:2006.
+* Decodes DataBar (formerly known as RSS) symbols, including truncated and stacked variants. See ISO/IEC 24724:2006.
 */
 class DataBarReader : public RowReader
 {

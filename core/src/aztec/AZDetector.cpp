@@ -229,7 +229,7 @@ static std::vector<ConcentricPattern> FindFinderPatterns(const BitMatrix& image,
 #endif
 
 #ifdef PRINT_DEBUG
-	printf("\n# checked centeres: %d, # found centers: %d\n", N, Size(res));
+	printf("\n# checked centers: %d, # found centers: %d\n", N, Size(res));
 #endif
 	return res;
 }
@@ -238,7 +238,7 @@ static int FindRotation(uint32_t bits, bool mirror)
 {
 	const uint32_t mask = mirror ? 0b111'000'001'110 : 0b111'011'100'000;
 	for (int i = 0; i < 4; ++i) {
-		if (std::popcount(mask ^ bits) <= 2) // at most 2 bits may be wrong (24778:2008(E) 14.3.3 sais 3 but that is wrong)
+		if (std::popcount(mask ^ bits) <= 2) // at most 2 bits may be wrong (24778:2008(E) 14.3.3 says 3 but that is wrong)
 			return i;
 		bits = ((bits << 3) & 0xfff) | ((bits >> 9) & 0b111); // left shift/rotate, see RotatedCorners(Quadrilateral)
 	}
@@ -379,7 +379,7 @@ DetectorResults Detect(const BitMatrix& image, bool isPure, bool tryHarder, int 
 			// decoding fails.
 			// Unfortunately, this seems to be wrong: there are 12-bit patterns in those 8 cases that differ only in 4 bits like
 			// 011'100'000'111 (rot90 && !mirror) and 111'000'001'110 (rot0 && mirror), meaning if two of those are wrong, both cases
-			// have a hamming distance of 2, meaning only 1 bit errors can be relyable recovered from. The following code therefore
+			// have a hamming distance of 2, meaning only 1 bit errors can be reliable recovered from. The following code therefore
 			// incorporates the complete set of mode message bits to help determine the orientation of the symbol. This is still not
 			// sufficient for the ErrorInModeMessageZero test case in AZDecoderTest.cpp but good enough for the author.
 			for (radius = 5; radius <= 7; radius += 2) {

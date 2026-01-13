@@ -80,7 +80,7 @@ public:
 	ReaderOptions(ReaderOptions&&);
 	ReaderOptions& operator=(ReaderOptions&&);
 
-	// Silence deprecated-declarations warnings, only happending here for deprecated inline functions and only with GCC
+	// Silence deprecated-declarations warnings, only happening here for deprecated inline functions and only with GCC
 #ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"

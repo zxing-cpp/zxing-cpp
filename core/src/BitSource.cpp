@@ -67,7 +67,7 @@ int BitSource::readBits(int numBits)
 	return ReadBitsImpl(numBits, _bytes, available(), _byteOffset, _bitOffset);
 }
 
-int BitSource::peakBits(int numBits) const
+int BitSource::peekBits(int numBits) const
 {
 	int bitOffset = _bitOffset;
 	int byteOffset = _byteOffset;

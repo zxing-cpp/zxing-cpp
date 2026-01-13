@@ -164,7 +164,7 @@ std::string ToHex(const C& c)
 template <typename T>
 std::vector<T> ToVector(T&& v)
 {
-	// simply construcing a vector via initializer_list does not work with move-only types
+	// simply constructing a vector via initializer_list does not work with move-only types
 	std::vector<T> res;
 	res.emplace_back(std::move(v));
 	return res;

@@ -390,7 +390,7 @@ PYBIND11_MODULE(zxingcpp, m)
 			":return: decoded symbol format\n"
 			":rtype: zxingcpp.BarcodeFormat")
 		.def_property_readonly("symbology_identifier", &Barcode::symbologyIdentifier,
-			":return: decoded symbology idendifier\n"
+			":return: decoded symbology identifier\n"
 			":rtype: str")
 		.def_property_readonly("ec_level", &Barcode::ecLevel,
 			":return: error correction level of the symbol (empty string if not applicable)\n"

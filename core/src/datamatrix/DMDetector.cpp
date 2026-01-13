@@ -276,7 +276,7 @@ static DetectorResult DetectOld(const BitMatrix& image)
 	const auto& lSideOne = transitions[0];
 	const auto& lSideTwo = transitions[1];
 
-	// We accept at most 4 transisions inside the L pattern (i.e. 2 corruptions) to reduce false positive FormatErrors
+	// We accept at most 4 transitions inside the L pattern (i.e. 2 corruptions) to reduce false positive FormatErrors
 	if (lSideTwo.transitions > 2)
 		return {};
 

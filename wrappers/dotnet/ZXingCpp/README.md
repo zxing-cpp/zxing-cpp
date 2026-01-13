@@ -89,11 +89,11 @@ an idea: ZXingCpp is on average 2x-10x faster than Dynamsoft and 10x-50x faster 
 
 The benchmarking tool also showed that ZXingCpp has a superior detection rate compared to ZXing.Net while it is
 sometimes better sometimes worse than the commercial Dynamsoft package, depending on the sample type and the
-library configuration. The latter definitively supports more barcode formats compared to the two ZXing decendents.
+library configuration. The latter definitively supports more barcode formats compared to the two ZXing descendents.
 
 ### Ease of use
 
-The sample program above shows the simplicitly of the API. The others are similar but seem a bit more
+The sample program above shows the simplicity of the API. The others are similar but seem a bit more
 complicated with regards to setting parameters.
 
 ### Standards support
