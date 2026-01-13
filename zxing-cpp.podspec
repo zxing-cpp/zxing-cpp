@@ -17,12 +17,12 @@ Pod::Spec.new do |s|
   s.platform = :ios, '12.0'
   s.library = ['c++']
   s.compiler_flags = [
-    '-I../../wrappers/ios/Sources/Wrapper',
     '-DZXING_INTERNAL',
     '-Wno-comma'
   ]
   s.pod_target_xcconfig = {
-    'CLANG_CXX_LANGUAGE_STANDARD' => 'c++20'
+    'CLANG_CXX_LANGUAGE_STANDARD' => 'c++20',
+    'HEADER_SEARCH_PATHS' => '$(PODS_TARGET_SRCROOT)/wrappers/ios/Sources/Wrapper'
   }
 
   s.default_subspec = 'Wrapper'
