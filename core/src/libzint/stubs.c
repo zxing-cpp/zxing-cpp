@@ -48,9 +48,10 @@ INTERNAL int zint_emf_plot(struct zint_symbol* symbol, int rotate_angle)
 	return ZINT_ERROR_ENCODING_PROBLEM;
 }
 
-// STUB_FUNC_CHAR(zint_c25ind)
-// STUB_FUNC_CHAR(zint_c25iata)
-// STUB_FUNC_CHAR(zint_c25logic)
+STUB_FUNC_CHAR(zint_c25standard)
+STUB_FUNC_CHAR(zint_c25ind)
+STUB_FUNC_CHAR(zint_c25iata)
+STUB_FUNC_CHAR(zint_c25logic)
 STUB_FUNC_CHAR(zint_itf14)
 STUB_FUNC_CHAR(zint_ean14)
 STUB_FUNC_CHAR(zint_dpleit)
