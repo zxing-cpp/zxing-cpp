@@ -341,7 +341,7 @@ void ZXing_CreatorOptions_delete(ZXing_CreatorOptions* opts)
 
 #define ZX_ENUM_PROPERTY(TYPE, NAME, CAP_NAME) \
 	ZXing_##TYPE ZXing_CreatorOptions_get##CAP_NAME(const ZXing_CreatorOptions* opts) { return static_cast<ZXing_##TYPE>(opts->NAME()); } \
-	void ZXing_ReaderOptions_set##CAP_NAME(ZXing_CreatorOptions* opts, ZXing_##TYPE val) { opts->NAME(static_cast<TYPE>(val)); }
+	void ZXing_CreatorOptions_set##CAP_NAME(ZXing_CreatorOptions* opts, ZXing_##TYPE val) { opts->NAME(static_cast<TYPE>(val)); }
 
 ZX_ENUM_PROPERTY(BarcodeFormat, format, Format)
 
