@@ -34,6 +34,8 @@ static void check(int line, std::string_view input, CreatorOptions cOpts, std::s
 	auto bc = fromBytes ? CreateBarcodeFromBytes(input, cOpts) : CreateBarcodeFromText(input, cOpts);
 
 	EXPECT_TRUE(bc.isValid()) << "line:" << line;
+	if (!bc.isValid())
+		return;
 	EXPECT_EQ(bc.symbologyIdentifier(), symbologyIdentifier) << "line:" << line;
 	EXPECT_EQ(ToString(bc.contentType()), contentType) << "line:" << line;
 	EXPECT_EQ(bc.text(TextMode::HRI), HRI) << "line:" << line;
