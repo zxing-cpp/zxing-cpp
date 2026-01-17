@@ -99,7 +99,7 @@ static bool ParseOptions(int argc, char* argv[], ReaderOptions& options, CLI& cl
 			try {
 				options.formats(BarcodeFormatsFromString(argv[i]));
 			} catch (const std::exception& e) {
-				std::cerr << e.what() << "\n";
+				std::cerr << "Error: " << e.what() << "\n\n";
 				return false;
 			}
 		} else if (is("-binarizer")) {
