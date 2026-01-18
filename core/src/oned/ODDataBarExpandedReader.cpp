@@ -373,7 +373,7 @@ BarcodeData DataBarExpandedReader::decodePattern(int rowNumber, PatternView& vie
 	return {.content = Content(ByteArray(txt), {'e', '0', 0, AIFlag::GS1}),
 			.error = Error{},
 			.position = EstimatePosition(pairs.front(), pairs.back()),
-			.format = BarcodeFormat::DataBarExpanded,
+			.format = BarcodeFormat::DataBarExp,
 			.lineCount = EstimateLineCount(pairs.front(), pairs.back())};
 }
 

@@ -69,7 +69,15 @@ public:
 
 	const Error& error() const;
 
+	/**
+	 * @brief format returns the BarcodeFormat of the barcode
+	 */
 	BarcodeFormat format() const;
+
+	/**
+	 * @brief symbology returns the symbology of the barcode format (e.g. EAN/UPC for EAN13, EAN8, UPCA, etc.)
+	 */
+	BarcodeFormat symbology() const { return Symbology(format()); }
 
 	/**
 	 * @brief bytes is the raw / standard content without any modifications like character set conversions

@@ -132,7 +132,7 @@ static bool compareResult(const Barcode& barcode, const std::string& expected, s
 
 static std::string checkResult(const fs::path& imgPath, std::string_view expectedFormat, const Barcode& barcode)
 {
-	if (auto format = ToString(barcode.format()); expectedFormat != format)
+	if (auto format = ToString(barcode.format()); !IsEqualIgnoreCaseAnd(expectedFormat, format, " /-"))
 		return std::format("Format mismatch: expected '{}' but got '{}'", expectedFormat, format);
 
 	auto readFile = [imgPath](const char* ending) {
@@ -367,7 +367,7 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		auto startTime = std::chrono::steady_clock::now();
 
 		// clang-format off
-#ifdef ZXING_ENABLE_AZTEC
+#if ZXING_ENABLE_AZTEC
 		// Expected failures:
 		// abc-inverted.png (fast) - fast does not try inverted
 		// az-thick.png (pure)
@@ -386,7 +386,7 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 21, 21, 270 },
 		});
 #endif
-#ifdef ZXING_ENABLE_DATAMATRIX
+#if ZXING_ENABLE_DATAMATRIX
 		runTests("datamatrix-1", "DataMatrix", 29, {
 			{ 29, 29, 0   },
 			{  0, 27, 90  },
@@ -417,7 +417,7 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 19, 0, pure },
 		});
 #endif
-#ifdef ZXING_ENABLE_1D
+#if ZXING_ENABLE_1D
 		runTests("dxfilmedge-1", "DXFilmEdge", 3, {
 			{ 1, 3, 0 },
 			{ 0, 3, 180 },
@@ -599,7 +599,7 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 2, 0, pure },
 		});
 #endif
-#ifdef ZXING_ENABLE_MAXICODE
+#if ZXING_ENABLE_MAXICODE
 		runTests("maxicode-1", "MaxiCode", 9, {
 			{ 9, 9, 0 },
 		});
@@ -608,7 +608,7 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 0, 0, 0 },
 		});
 #endif
-#ifdef ZXING_ENABLE_QRCODE
+#if ZXING_ENABLE_QRCODE
 		runTests("qrcode-1", "QRCode", 16, {
 			{ 16, 16, 0   },
 			{ 16, 16, 90  },
@@ -673,7 +673,7 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{  2,  2, pure },
 		});
 #endif
-#ifdef ZXING_ENABLE_PDF417
+#if ZXING_ENABLE_PDF417
 		runTests("pdf417-1", "PDF417", 17, {
 			{ 16, 17, 0   },
 			{  1, 17, 90  },

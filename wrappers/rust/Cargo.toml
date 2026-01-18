@@ -23,7 +23,6 @@ bundled = []
 [dependencies]
 thiserror = "1.0"
 paste = "1.0"
-flagset = "0.4.4"
 image = { version = ">=0.24", optional = true }
 
 [dev-dependencies]

@@ -21,13 +21,13 @@ mod bindings {
 
 use bindings::*;
 
-use flagset::{flags, FlagSet};
 use paste::paste;
-use std::ffi::{c_char, c_int, c_uint, c_void, CStr, CString, NulError};
+use std::ffi::{c_char, c_int, c_void, CStr, CString, NulError};
 use std::fmt::{Display, Formatter};
 use std::marker::PhantomData;
 use std::mem::transmute;
 use std::rc::Rc;
+use std::slice;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -145,6 +145,13 @@ macro_rules! getter {
 	};
 }
 
+/// Expands to a set of convenience accessors for a given wrapper type.
+///
+/// - A builder-style setter: `fn name(self, v: impl AsRef/Into) -> Self`
+/// - A mutable setter: `fn set_name(&mut self, v: impl AsRef/Into) -> &mut Self`
+/// - A getter: `fn get_name(&self) -> T`
+///
+/// Works for `String` and other value types. TODO: support slices/arrays
 macro_rules! property {
 	($class:ident, $c_name:ident, $r_name:ident, String) => {
 		pub fn $r_name(self, v: impl AsRef<str>) -> Self {
@@ -192,23 +199,13 @@ macro_rules! property {
 macro_rules! make_zxing_enum {
 	($name:ident { $($field:ident),* }) => {
 		#[repr(u32)]
-		#[derive(Debug, Copy, Clone, PartialEq)]
+		#[derive(Debug, Copy, Clone, PartialEq, PartialOrd, Eq, Ord)]
 		pub enum $name {
 			$($field = paste! { [<ZXing_ $name _ $field>] },)*
 		}
 	}
 }
 
-macro_rules! make_zxing_flags {
-	($name:ident { $($field:ident),* }) => {
-		flags! {
-			#[repr(u32)]
-			pub enum $name: c_uint {
-				$($field = paste! { [<ZXing_ $name _ $field>] },)*
-			}
-		}
-	}
-}
 #[rustfmt::skip] // workaround for broken #[rustfmt::skip::macros(make_zxing_enum)]
 make_zxing_enum!(ImageFormat { Lum, LumA, RGB, BGR, RGBA, ARGB, BGRA, ABGR });
 #[rustfmt::skip]
@@ -221,15 +218,20 @@ make_zxing_enum!(TextMode { Plain, ECI, HRI, Escaped, Hex, HexECI });
 make_zxing_enum!(EanAddOnSymbol { Ignore, Read, Require });
 
 #[rustfmt::skip]
-make_zxing_flags!(BarcodeFormat {
-	None, Aztec, Codabar, Code39, Code93, Code128, DataBar, DataBarExpanded, DataBarLimited, DataMatrix,
-	EAN8, EAN13, ITF, MaxiCode, PDF417, QRCode, UPCA, UPCE, MicroQRCode, RMQRCode, DXFilmEdge,
-	LinearCodes, MatrixCodes, Any
+make_zxing_enum!(BarcodeFormat {
+	Invalid, None, All, AllReadable, AllCreatable, AllLinear, AllStacked, AllMatrix, AllGS1,
+	Codabar, Code39, PZN, Code93, Code128, ITF,
+	DataBar, DataBarOmD, DataBarLtd, DataBarExp,
+	EANUPC, EAN13, EAN8, EAN5, EAN2, ISBN, UPCA, UPCE, DXFilmEdge,
+	PDF417, CompactPDF417, MicroPDF417,
+	Aztec, AztecCode, AztecRune,
+	QRCode, QRCodeModel1, MicroQRCode, RMQRCode,
+	DataMatrix, MaxiCode
 });
 
 impl Display for BarcodeFormat {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-		write!(f, "{}", unsafe { c2r_str(ZXing_BarcodeFormatToString(BarcodeFormats::from(*self).bits())) })
+		write!(f, "{}", unsafe { c2r_str(ZXing_BarcodeFormatToString(transmute(*self))) })
 	}
 }
 
@@ -239,7 +241,93 @@ impl Display for ContentType {
 	}
 }
 
-pub type BarcodeFormats = FlagSet<BarcodeFormat>;
+impl BarcodeFormat {
+	pub fn symbology(self) -> BarcodeFormat {
+		unsafe { transmute(ZXing_BarcodeFormatSymbology(transmute(self))) }
+	}
+}
+
+#[derive(Clone, Debug, Default)]
+pub struct BarcodeFormats(pub Vec<BarcodeFormat>);
+
+impl BarcodeFormats {
+	pub fn as_slice(&self) -> &[BarcodeFormat] {
+		&self.0
+	}
+	pub fn is_empty(&self) -> bool {
+		self.0.is_empty()
+	}
+	pub fn len(&self) -> usize {
+		self.0.len()
+	}
+	pub fn contains(&self, f: BarcodeFormat) -> bool {
+		self.0.contains(&f)
+	}
+	pub fn iter(&self) -> std::slice::Iter<'_, BarcodeFormat> {
+		self.0.iter()
+	}
+
+	pub fn list(filter: BarcodeFormat) -> Self {
+		unsafe {
+			let mut size: c_int = 0;
+			let ptr = ZXing_BarcodeFormatsList(transmute(filter), &mut size) as *const BarcodeFormat;
+			if ptr.is_null() || size == 0 {
+				BarcodeFormats::default()
+			} else {
+				BarcodeFormats(slice::from_raw_parts(ptr, size as usize).to_vec())
+			}
+		}
+	}
+}
+
+impl PartialEq<[BarcodeFormat]> for BarcodeFormats {
+	fn eq(&self, other: &[BarcodeFormat]) -> bool {
+		self.0.as_slice() == other
+	}
+}
+
+impl PartialEq<BarcodeFormats> for [BarcodeFormat] {
+	fn eq(&self, other: &BarcodeFormats) -> bool {
+		self == other.0.as_slice()
+	}
+}
+
+impl Display for BarcodeFormats {
+	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+		write!(f, "{}", unsafe {
+			c2r_str(ZXing_BarcodeFormatsToString(transmute(self.0.as_ptr()), self.0.len() as c_int))
+		})
+	}
+}
+
+// Add conversions so single values/slices/vecs can be passed conveniently
+// impl From<BarcodeFormat> for BarcodeFormats {
+// 	fn from(f: BarcodeFormat) -> Self {
+// 		BarcodeFormats(vec![f])
+// 	}
+// }
+impl From<Vec<BarcodeFormat>> for BarcodeFormats {
+	fn from(v: Vec<BarcodeFormat>) -> Self {
+		BarcodeFormats(v)
+	}
+}
+impl From<&[BarcodeFormat]> for BarcodeFormats {
+	fn from(s: &[BarcodeFormat]) -> Self {
+		BarcodeFormats(s.to_vec())
+	}
+}
+
+impl AsRef<[BarcodeFormat]> for BarcodeFormats {
+	fn as_ref(&self) -> &[BarcodeFormat] {
+		&self.0
+	}
+}
+
+impl AsRef<[BarcodeFormat]> for BarcodeFormat {
+	fn as_ref(&self) -> &[BarcodeFormat] {
+		std::slice::from_ref(self)
+	}
+}
 
 pub trait FromStr: Sized {
 	fn from_str(str: impl AsRef<str>) -> Result<Self, Error>;
@@ -248,10 +336,11 @@ pub trait FromStr: Sized {
 impl FromStr for BarcodeFormat {
 	fn from_str(str: impl AsRef<str>) -> Result<BarcodeFormat, Error> {
 		let cstr = CString::new(str.as_ref())?;
-		let res = unsafe { BarcodeFormats::new_unchecked(ZXing_BarcodeFormatFromString(cstr.as_ptr())) };
-		match res.bits() {
-			u32::MAX => last_error_or!(BarcodeFormat::None),
-			_ => Ok(res.into_iter().last().unwrap()),
+		let fmt = unsafe { ZXing_BarcodeFormatFromString(cstr.as_ptr()) };
+		if fmt == ZXing_BarcodeFormat_Invalid {
+			last_error_or!(BarcodeFormat::Invalid)
+		} else {
+			Ok(unsafe { transmute(fmt) })
 		}
 	}
 }
@@ -259,11 +348,12 @@ impl FromStr for BarcodeFormat {
 impl FromStr for BarcodeFormats {
 	fn from_str(str: impl AsRef<str>) -> Result<BarcodeFormats, Error> {
 		let cstr = CString::new(str.as_ref())?;
-		let res = unsafe { BarcodeFormats::new_unchecked(ZXing_BarcodeFormatsFromString(cstr.as_ptr())) };
-		match res.bits() {
-			u32::MAX => last_error_or!(BarcodeFormats::default()),
-			0 => Ok(BarcodeFormats::full()),
-			_ => Ok(res),
+		let mut size: c_int = 0;
+		let ptr = unsafe { ZXing_BarcodeFormatsFromString(cstr.as_ptr(), &mut size) as *const BarcodeFormat };
+		if ptr.is_null() || size == 0 {
+			last_error_or!(BarcodeFormats::default())
+		} else {
+			Ok(BarcodeFormats(unsafe { slice::from_raw_parts(ptr, size as usize).to_vec() }))
 		}
 	}
 }
@@ -440,7 +530,8 @@ make_zxing_class!(Barcode, ZXing_Barcode);
 
 impl Barcode {
 	getter!(Barcode, isValid, transmute, bool);
-	getter!(Barcode, format, (|f| BarcodeFormats::new(f).unwrap().into_iter().last().unwrap()), BarcodeFormat);
+	getter!(Barcode, format, transmute, BarcodeFormat);
+	getter!(Barcode, symbology, transmute, BarcodeFormat);
 	getter!(Barcode, contentType, transmute, ContentType);
 	getter!(Barcode, text, c2r_str, String);
 	getter!(Barcode, ecLevel, c2r_str, String);
@@ -502,12 +593,33 @@ impl BarcodeReader {
 	property!(ReaderOptions, TryDownscale, bool);
 	property!(ReaderOptions, IsPure, bool);
 	property!(ReaderOptions, ReturnErrors, bool);
-	property!(ReaderOptions, Formats, BarcodeFormats);
 	property!(ReaderOptions, TextMode, TextMode);
 	property!(ReaderOptions, Binarizer, Binarizer);
 	property!(ReaderOptions, EanAddOnSymbol, EanAddOnSymbol);
 	property!(ReaderOptions, MaxNumberOfSymbols, i32);
 	property!(ReaderOptions, MinLineCount, i32);
+
+	pub fn formats(self, v: impl AsRef<[BarcodeFormat]>) -> Self {
+		unsafe { ZXing_ReaderOptions_setFormats(self.0, transmute(v.as_ref().as_ptr()), v.as_ref().len() as c_int) };
+		self
+	}
+
+	pub fn set_formats(&mut self, v: impl AsRef<[BarcodeFormat]>) -> &mut Self {
+		unsafe { ZXing_ReaderOptions_setFormats(self.0, transmute(v.as_ref().as_ptr()), v.as_ref().len() as c_int) };
+		self
+	}
+
+	pub fn get_formats(&self) -> BarcodeFormats {
+		unsafe {
+			let mut size: c_int = 0;
+			let ptr = ZXing_ReaderOptions_getFormats(self.0, &mut size) as *const BarcodeFormat;
+			if ptr.is_null() || size == 0 {
+				BarcodeFormats::default()
+			} else {
+				BarcodeFormats(slice::from_raw_parts(ptr, size as usize).to_vec())
+			}
+		}
+	}
 
 	pub fn from<'a, IV>(&self, image: IV) -> Result<Vec<Barcode>, Error>
 	where
@@ -536,7 +648,7 @@ make_zxing_class!(BarcodeCreator, ZXing_CreatorOptions);
 
 impl BarcodeCreator {
 	pub fn new(format: BarcodeFormat) -> Self {
-		unsafe { BarcodeCreator(ZXing_CreatorOptions_new(BarcodeFormats::from(format).bits())) }
+		unsafe { BarcodeCreator(ZXing_CreatorOptions_new(format as ZXing_BarcodeFormat)) }
 	}
 
 	property!(CreatorOptions, Options, String);

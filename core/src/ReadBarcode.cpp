@@ -54,7 +54,7 @@ struct ReaderOptions::Data
 	uint8_t minLineCount          = 2;
 	uint8_t maxNumberOfSymbols    = 0xff;
 	uint16_t downscaleThreshold   = 500;
-	BarcodeFormats formats        = BarcodeFormat::None;
+	BarcodeFormats formats        = {};
 
 	Data()
 		: tryHarder(1),
@@ -93,12 +93,15 @@ ReaderOptions& ReaderOptions::operator=(const ReaderOptions& other)
 ReaderOptions::ReaderOptions(ReaderOptions&&) = default;
 ReaderOptions& ReaderOptions::operator=(ReaderOptions&&) = default;
 
+const BarcodeFormats& ReaderOptions::formats() const noexcept { return d->formats; }
+ReaderOptions& ReaderOptions::formats(BarcodeFormats&& v) & { return (void)(d->formats = std::move(v)), *this; }
+ReaderOptions&& ReaderOptions::formats(BarcodeFormats&& v) && { return (void)(d->formats = std::move(v)), std::move(*this); }
+
 #define ZX_PROPERTY(TYPE, NAME, SETTER) \
 	TYPE ReaderOptions::NAME() const noexcept { return d->NAME; } \
 	ReaderOptions& ReaderOptions::NAME(TYPE v) & { return (void)(d->NAME = std::move(v)), *this; } \
 	ReaderOptions&& ReaderOptions::NAME(TYPE v) && { return (void)(d->NAME = std::move(v)), std::move(*this); }
 
-ZX_PROPERTY(BarcodeFormats, formats, setFormats)
 ZX_PROPERTY(bool, tryHarder, setTryHarder)
 ZX_PROPERTY(bool, tryRotate, setTryRotate)
 ZX_PROPERTY(bool, tryInvert, setTryInvert)
@@ -133,11 +136,10 @@ ReaderOptions&& ReaderOptions::characterSet(std::string_view v) &&
 	return std::move(*this);
 }
 
-bool ReaderOptions::hasFormat(BarcodeFormats f) const noexcept
+bool ReaderOptions::hasFormat(const BarcodeFormats& formats) const noexcept
 {
-	return d->formats.testFlags(f) || d->formats.empty();
+	return d->formats.empty() || std::any_of(formats.begin(), formats.end(), [this](BarcodeFormat bt) { return bt & d->formats; });
 }
-
 
 // ==============================================================================
 // ReadBarcode implementation
@@ -281,10 +283,11 @@ Barcodes ReadBarcodes(const ImageView& _iv, const ReaderOptions& opts)
 
 	std::unique_ptr<MultiFormatReader> closedReader;
 #ifdef ZXING_EXPERIMENTAL_API
-	auto formatsBenefittingFromClosing = BarcodeFormat::Aztec | BarcodeFormat::DataMatrix | BarcodeFormat::QRCode | BarcodeFormat::MicroQRCode;
+	using enum BarcodeFormat;
+	BarcodeFormats formatsBenefittingFromClosing = Aztec | DataMatrix | QRCode | MicroQRCode;
 	ReaderOptions closedOptions = opts;
 	if (opts.tryDenoise() && opts.hasFormat(formatsBenefittingFromClosing) && _iv.height() >= 3) {
-		closedOptions.formats((opts.formats().empty() ? BarcodeFormat::Any : opts.formats()) & formatsBenefittingFromClosing);
+		closedOptions.formats(opts.formats().empty() ? formatsBenefittingFromClosing : formatsBenefittingFromClosing & opts.formats());
 		closedReader = std::make_unique<MultiFormatReader>(closedOptions);
 	}
 #endif

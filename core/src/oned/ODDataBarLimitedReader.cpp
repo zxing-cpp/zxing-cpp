@@ -148,7 +148,7 @@ BarcodeData DataBarLimitedReader::decodePattern(int rowNumber, PatternView& next
 		if (!left || !right || (left.checksum + 20 * right.checksum) % 89 != checkSum)
 			continue;
 
-		return LinearBarcode(BarcodeFormat::DataBarLimited, ConstructText(left, right), rowNumber, next.pixelsInFront(),
+		return LinearBarcode(BarcodeFormat::DataBarLtd, ConstructText(left, right), rowNumber, next.pixelsInFront(),
 							 next.pixelsTillEnd(), {'e', '0', 0, AIFlag::GS1});
 	}
 

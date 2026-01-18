@@ -18,18 +18,18 @@
 
 int usage(char* pname)
 {
-	fprintf(stderr, "ZXingCTest %s, usage: %s FILE [FORMATS]\n", ZXing_Version(), pname);
+	fprintf(stderr, "ZXingCTest %s, usage: %s FILE|TXT [FORMAT(S)] [OPTIONS]\n", ZXing_Version(), pname);
 	return 1;
 }
 
-bool parse_args(int argc, char** argv, char** filename, ZXing_BarcodeFormats* formats)
+bool parse_args(int argc, char** argv, char** filename, ZXing_BarcodeFormat** formats)
 {
 	if (argc < 2)
 		return false;
 	*filename = argv[1];
 	if (argc >= 3) {
-		*formats = ZXing_BarcodeFormatsFromString(argv[2]);
-		if (*formats == ZXing_BarcodeFormat_Invalid) {
+		*formats = ZXing_BarcodeFormatsFromString(argv[2], NULL);
+		if (*formats == NULL) {
 			fprintf(stderr, "%s\n", ZXing_LastErrorMsg());
 			return false;
 		}
@@ -58,7 +58,8 @@ int main(int argc, char** argv)
 {
 	int ret = 0;
 	char* filename = NULL;
-	ZXing_BarcodeFormats formats = ZXing_BarcodeFormat_None;
+	ZXing_BarcodeFormat* formats = NULL;
+	int formatCount = 0;
 
 	if (!parse_args(argc, argv, &filename, &formats))
 		return usage(argv[0]);
@@ -77,10 +78,10 @@ int main(int argc, char** argv)
 	} else {
 		fprintf(stderr, "Could not read image '%s'\n", filename);
 #ifdef ZXING_WRITERS
-		if (formats == ZXing_BarcodeFormat_Invalid)
+		if (formats == NULL)
 			return 2;
-		fprintf(stderr, "Using '%s' as text input to create barcode\n", filename);
-		ZXing_CreatorOptions* cOpts = ZXing_CreatorOptions_new(formats);
+		fprintf(stderr, "Using '%s' as text input to create barcode of format '%s'\n", filename, (char*)formats);
+		ZXing_CreatorOptions* cOpts = ZXing_CreatorOptions_new(*formats);
 		CHECK(cOpts)
 		if (argc >= 4)
 			ZXing_CreatorOptions_setOptions(cOpts, argv[3]);
@@ -98,7 +99,7 @@ int main(int argc, char** argv)
 	ZXing_ReaderOptions* opts = ZXing_ReaderOptions_new();
 	ZXing_ReaderOptions_setTextMode(opts, ZXing_TextMode_HRI);
 	ZXing_ReaderOptions_setEanAddOnSymbol(opts, ZXing_EanAddOnSymbol_Ignore);
-	ZXing_ReaderOptions_setFormats(opts, formats);
+	ZXing_ReaderOptions_setFormats(opts, formats, 0);
 	ZXing_ReaderOptions_setReturnErrors(opts, true);
 
 	ZXing_Barcodes* barcodes = ZXing_ReadBarcodes(iv ? iv : (ZXing_ImageView*)img, opts);

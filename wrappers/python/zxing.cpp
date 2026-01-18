@@ -273,23 +273,30 @@ PYBIND11_MODULE(zxingcpp, m)
 		.value("MicroQRCode", BarcodeFormat::MicroQRCode)
 		.value("RMQRCode", BarcodeFormat::RMQRCode)
 		.value("DataBar", BarcodeFormat::DataBar)
-		.value("DataBarExpanded", BarcodeFormat::DataBarExpanded)
-		.value("DataBarLimited", BarcodeFormat::DataBarLimited)
+		.value("DataBarExp", BarcodeFormat::DataBarExp)
+		.value("DataBarLtd", BarcodeFormat::DataBarLtd)
 		.value("DXFilmEdge", BarcodeFormat::DXFilmEdge)
 		.value("UPCA", BarcodeFormat::UPCA)
 		.value("UPCE", BarcodeFormat::UPCE)
 		// use upper case 'NONE' because 'None' is a reserved identifier in python
 		.value("NONE", BarcodeFormat::None)
-		.value("LinearCodes", BarcodeFormat::LinearCodes)
-		.value("MatrixCodes", BarcodeFormat::MatrixCodes)
+		.value("DataBarExpanded", BarcodeFormat::DataBarExp) // backward compatibility alias
+		.value("DataBarLimited", BarcodeFormat::DataBarLtd) // backward compatibility alias
+		.value("LinearCodes", BarcodeFormat::AllLinear) // backward compatibility alias
+		.value("MatrixCodes", BarcodeFormat::AllMatrix) // backward compatibility alias
 		.export_values()
 		// see https://github.com/pybind/pybind11/issues/2221
-		.def("__or__", [](BarcodeFormat f1, BarcodeFormat f2){ return f1 | f2; });
+		.def("__or__", [](BarcodeFormat f1, BarcodeFormat f2){ return BarcodeFormats(f1 | f2); });
 	pyBarcodeFormats
-		.def("__repr__", py::overload_cast<BarcodeFormats>(static_cast<std::string(*)(BarcodeFormats)>(ToString)))
-		.def("__str__", py::overload_cast<BarcodeFormats>(static_cast<std::string(*)(BarcodeFormats)>(ToString)))
-		.def("__eq__", [](BarcodeFormats f1, BarcodeFormats f2){ return f1 == f2; })
-		.def("__or__", [](BarcodeFormats fs, BarcodeFormat f){ return fs | f; })
+		.def("__repr__", py::overload_cast<const BarcodeFormats&>(static_cast<std::string (*)(const BarcodeFormats&)>(ToString)))
+		.def("__str__", py::overload_cast<const BarcodeFormats&>(static_cast<std::string (*)(const BarcodeFormats&)>(ToString)))
+		.def("__eq__", [](const BarcodeFormats& f1, const BarcodeFormats& f2) { return f1 == f2; })
+		.def("__or__",
+			 [](const BarcodeFormats& fs, BarcodeFormat f) {
+				 auto res = std::vector(fs.begin(), fs.end());
+				 res.push_back(f);
+				 return BarcodeFormats(std::move(res));
+			 })
 		.def(py::init<BarcodeFormat>());
 	py::implicitly_convertible<BarcodeFormat, BarcodeFormats>();
 	py::enum_<Binarizer>(m, "Binarizer", "Enumeration of binarizers used before decoding images")
@@ -300,7 +307,7 @@ PYBIND11_MODULE(zxingcpp, m)
 		.export_values();
 	py::enum_<EanAddOnSymbol>(m, "EanAddOnSymbol", "Enumeration of options for EAN-2/5 add-on symbols check")
 		.value("Ignore", EanAddOnSymbol::Ignore, "Ignore any Add-On symbol during read/scan")
-		.value("Read", EanAddOnSymbol::Read, "Read EAN-2/EAN-5 Add-On symbol if found")
+		.value("Read", EanAddOnSymbol::Read, "Read EAN-2/EAN-5 Add-On symbol if found")	
 		.value("Require", EanAddOnSymbol::Require, "Require EAN-2/EAN-5 Add-On symbol to be present")
 		.export_values();
 	py::enum_<ContentType>(m, "ContentType", "Enumeration of content types")

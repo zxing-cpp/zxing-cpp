@@ -96,7 +96,15 @@ public:
 	__VA_ARGS__ inline ReaderOptions&& SETTER(TYPE v) && { return std::move(*this).NAME(v); }
 
 	/// Specify a set of BarcodeFormats that should be searched for, the default is all supported formats.
-	ZX_PROPERTY(BarcodeFormats, formats, setFormats)
+	const BarcodeFormats& formats() const noexcept;
+	ReaderOptions& formats(BarcodeFormats&& v) &;
+	ReaderOptions&& formats(BarcodeFormats&& v) &&;
+	ReaderOptions& formats(const BarcodeFormats& v) & { return formats(BarcodeFormats(v)); }
+	ReaderOptions&& formats(const BarcodeFormats& v) && { return std::move(*this).formats(BarcodeFormats(v)); }
+	inline ReaderOptions& setFormats(BarcodeFormats&& v) & { return formats(std::move(v)); }
+	inline ReaderOptions&& setFormats(BarcodeFormats&& v) && { return std::move(*this).formats(std::move(v)); }
+	inline ReaderOptions& setFormats(const BarcodeFormats& v) & { return formats(BarcodeFormats(v)); }
+	inline ReaderOptions&& setFormats(const BarcodeFormats& v) && { return std::move(*this).formats(BarcodeFormats(v)); }
 
 	/// Spend more time to try to find a barcode; optimize for accuracy, not speed.
 	ZX_PROPERTY(bool, tryHarder, setTryHarder)
@@ -111,7 +119,7 @@ public:
 	ZX_PROPERTY(bool, tryDownscale, setTryDownscale)
 
 #ifdef ZXING_EXPERIMENTAL_API
-	/// Also try detecting code after denoising (currently morphological closing filter for 2D symbologies only).
+	/// Also try detecting code after denoising (currently morphological closing filter for 2D formats only).
 	ZX_PROPERTY(bool, tryDenoise, setTryDenoise)
 #endif
 
@@ -165,7 +173,7 @@ public:
 #endif
 
 	/// Check if a specific format is enabled in the formats set
-	bool hasFormat(BarcodeFormats f) const noexcept;
+	bool hasFormat(const BarcodeFormats& formats) const noexcept;
 };
 
 } // ZXing

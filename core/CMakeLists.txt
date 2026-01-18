@@ -218,7 +218,6 @@ set (PUBLIC_HEADERS
     src/ContentType.h
     src/CreateBarcode.h
     src/Error.h
-    src/Flags.h
     src/GTIN.h
     src/ImageView.h
     src/Point.h

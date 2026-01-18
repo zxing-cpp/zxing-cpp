@@ -12,22 +12,22 @@
 #include "ReaderOptions.h"
 #include "Version.h"
 
-#ifdef ZXING_ENABLE_AZTEC
+#if ZXING_ENABLE_AZTEC
 #include "aztec/AZReader.h"
 #endif
-#ifdef ZXING_ENABLE_DATAMATRIX
+#if ZXING_ENABLE_DATAMATRIX
 #include "datamatrix/DMReader.h"
 #endif
-#ifdef ZXING_ENABLE_MAXICODE
+#if ZXING_ENABLE_MAXICODE
 #include "maxicode/MCReader.h"
 #endif
-#ifdef ZXING_ENABLE_1D
+#if ZXING_ENABLE_1D
 #include "oned/ODReader.h"
 #endif
-#ifdef ZXING_ENABLE_PDF417
+#if ZXING_ENABLE_PDF417
 #include "pdf417/PDFReader.h"
 #endif
-#ifdef ZXING_ENABLE_QRCODE
+#if ZXING_ENABLE_QRCODE
 #include "qrcode/QRReader.h"
 #endif
 
@@ -37,38 +37,38 @@ namespace ZXing {
 
 MultiFormatReader::MultiFormatReader(const ReaderOptions& opts) : _opts(opts)
 {
-	auto formats = opts.formats().empty() ? BarcodeFormat::Any : opts.formats();
+	using enum BarcodeFormat;
 
 	// Put linear readers upfront in "normal" mode
-#ifdef ZXING_ENABLE_1D
-	if (formats.testFlags(BarcodeFormat::LinearCodes) && !opts.tryHarder())
+#if ZXING_ENABLE_1D
+	if (!opts.tryHarder() && opts.hasFormat(AllLinear))
 		_readers.emplace_back(new OneD::Reader(opts));
 #endif
 
-#ifdef ZXING_ENABLE_QRCODE
-	if (formats.testFlags(BarcodeFormat::QRCode | BarcodeFormat::MicroQRCode | BarcodeFormat::RMQRCode))
+#if ZXING_ENABLE_QRCODE
+	if (opts.hasFormat(QRCode | MicroQRCode | RMQRCode))
 		_readers.emplace_back(new QRCode::Reader(opts, true));
 #endif
-#ifdef ZXING_ENABLE_DATAMATRIX
-	if (formats.testFlag(BarcodeFormat::DataMatrix))
+#if ZXING_ENABLE_DATAMATRIX
+	if (opts.hasFormat(DataMatrix))
 		_readers.emplace_back(new DataMatrix::Reader(opts, true));
 #endif
-#ifdef ZXING_ENABLE_AZTEC
-	if (formats.testFlag(BarcodeFormat::Aztec))
+#if ZXING_ENABLE_AZTEC
+	if (opts.hasFormat(Aztec))
 		_readers.emplace_back(new Aztec::Reader(opts, true));
 #endif
-#ifdef ZXING_ENABLE_PDF417
-	if (formats.testFlag(BarcodeFormat::PDF417))
+#if ZXING_ENABLE_PDF417
+	if (opts.hasFormat(PDF417))
 		_readers.emplace_back(new Pdf417::Reader(opts));
 #endif
-#ifdef ZXING_ENABLE_MAXICODE
-	if (formats.testFlag(BarcodeFormat::MaxiCode))
+#if ZXING_ENABLE_MAXICODE
+	if (opts.hasFormat(MaxiCode))
 		_readers.emplace_back(new MaxiCode::Reader(opts));
 #endif
 
 	// At end in "try harder" mode
-#ifdef ZXING_ENABLE_1D
-	if (formats.testFlags(BarcodeFormat::LinearCodes) && opts.tryHarder())
+#if ZXING_ENABLE_1D
+	if (opts.tryHarder() && opts.hasFormat(AllLinear))
 		_readers.emplace_back(new OneD::Reader(opts));
 #endif
 }

@@ -26,7 +26,7 @@ int main(int argc, char* argv[])
 	}
 
 	auto options = ReaderOptions()
-					 .setFormats(BarcodeFormat::MatrixCodes)
+					 .setFormats(BarcodeFormat::AllMatrix)
 					 .setTryInvert(false)
 					 .setTextMode(TextMode::HRI)
 					 .setMaxNumberOfSymbols(10);

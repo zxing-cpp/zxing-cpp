@@ -11,9 +11,9 @@ using System.Text;
 #endif
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
+using System.Linq;
 
 using static Dll;
-using BarcodeFormat = BarcodeFormats;
 
 internal class Dll
 {
@@ -34,8 +34,8 @@ internal class Dll
 	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setIsPure(IntPtr opts, bool isPure);
 	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setReturnErrors(IntPtr opts, bool returnErrors);
 	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_ReaderOptions_getReturnErrors(IntPtr opts);
-	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setFormats(IntPtr opts, BarcodeFormats formats);
-	[DllImport(DllName)] public static extern BarcodeFormats ZXing_ReaderOptions_getFormats(IntPtr opts);
+	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setFormats(IntPtr opts, BarcodeFormat[] formats, int count);
+	[DllImport(DllName)] public static extern IntPtr ZXing_ReaderOptions_getFormats(IntPtr opts, out int count);
 	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setBinarizer(IntPtr opts, Binarizer binarizer);
 	[DllImport(DllName)] public static extern Binarizer ZXing_ReaderOptions_getBinarizer(IntPtr opts);
 	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setEanAddOnSymbol(IntPtr opts, EanAddOnSymbol eanAddOnSymbol);
@@ -48,8 +48,13 @@ internal class Dll
 	[DllImport(DllName)] public static extern int ZXing_ReaderOptions_getMaxNumberOfSymbols(IntPtr opts);
 
 	[DllImport(DllName)] public static extern IntPtr ZXing_PositionToString(Position position);
+	[DllImport(DllName)] public static extern BarcodeFormat ZXing_BarcodeFormatSymbology(BarcodeFormat format);
 	[DllImport(DllName)] public static extern BarcodeFormat ZXing_BarcodeFormatFromString(string str);
-	[DllImport(DllName)] public static extern BarcodeFormats ZXing_BarcodeFormatsFromString(string str);
+	[DllImport(DllName)] public static extern IntPtr ZXing_BarcodeFormatToString(BarcodeFormat format);
+
+	[DllImport(DllName)] public static extern IntPtr ZXing_BarcodeFormatsList(BarcodeFormat filter, out int count);
+	[DllImport(DllName)] public static extern IntPtr ZXing_BarcodeFormatsFromString(string str, out int count);
+	[DllImport(DllName)] public static extern IntPtr ZXing_BarcodeFormatsToString(BarcodeFormat[] format, int count);
 
 	[DllImport(DllName)] public static extern IntPtr ZXing_ImageView_new(IntPtr data, int width, int height, ImageFormat format, int rowStride, int pixStride);
 	[DllImport(DllName)] public static extern IntPtr ZXing_ImageView_new_checked(ref byte data, int size, int width, int height, ImageFormat format, int rowStride, int pixStride);
@@ -95,6 +100,7 @@ internal class Dll
 	[DllImport(DllName)] public static extern IntPtr ZXing_Barcode_errorMsg(IntPtr barcode);
 	[DllImport(DllName)] public static extern ErrorType ZXing_Barcode_errorType(IntPtr barcode);
 	[DllImport(DllName)] public static extern BarcodeFormat ZXing_Barcode_format(IntPtr barcode);
+	[DllImport(DllName)] public static extern BarcodeFormat ZXing_Barcode_symbology(IntPtr barcode);
 	[DllImport(DllName)] public static extern ContentType ZXing_Barcode_contentType(IntPtr barcode);
 	[DllImport(DllName)] public static extern IntPtr ZXing_Barcode_bytes(IntPtr barcode, out int len);
 	[DllImport(DllName)] public static extern IntPtr ZXing_Barcode_bytesECI(IntPtr barcode, out int len);
@@ -147,38 +153,97 @@ internal class Dll
 		ZXing_free(ptr);
 		return res;
 	}
+
+	public static BarcodeFormat[] MarshalAsFormats(IntPtr ptr, int count)
+	{
+		if (ptr == IntPtr.Zero || count <= 0)
+			return Array.Empty<BarcodeFormat>();
+
+		int[] vals = new int[count];
+		Marshal.Copy(ptr, vals, 0, count);
+		var res = Array.ConvertAll(vals, v => (BarcodeFormat)v);
+		ZXing_free(ptr);
+		return res;
+	}
 }
 
-[Flags]
-public enum BarcodeFormats
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 4)]
+public readonly struct BarcodeFormat : IEquatable<BarcodeFormat>
 {
-	None            = 0,         ///< Used as a return value if no valid barcode has been detected
-	Aztec           = (1 << 0),  ///< Aztec
-	Codabar         = (1 << 1),  ///< Codabar
-	Code39          = (1 << 2),  ///< Code39
-	Code93          = (1 << 3),  ///< Code93
-	Code128         = (1 << 4),  ///< Code128
-	DataBar         = (1 << 5),  ///< GS1 DataBar, formerly known as RSS 14
-	DataBarExpanded = (1 << 6),  ///< GS1 DataBar Expanded, formerly known as RSS EXPANDED
-	DataMatrix      = (1 << 7),  ///< DataMatrix
-	EAN8            = (1 << 8),  ///< EAN-8
-	EAN13           = (1 << 9),  ///< EAN-13
-	ITF             = (1 << 10), ///< ITF (Interleaved Two of Five)
-	MaxiCode        = (1 << 11), ///< MaxiCode
-	PDF417          = (1 << 12), ///< PDF417
-	QRCode          = (1 << 13), ///< QR Code
-	UPCA            = (1 << 14), ///< UPC-A
-	UPCE            = (1 << 15), ///< UPC-E
-	MicroQRCode     = (1 << 16), ///< Micro QR Code
-	RMQRCode        = (1 << 17), ///< Rectangular Micro QR Code
-	DXFilmEdge      = (1 << 18), ///< DX Film Edge Barcode
-	DataBarLimited  = (1 << 19), ///< GS1 DataBar Limited
+	private readonly int _value;
+	private BarcodeFormat(int v) => _value = v;
 
-	LinearCodes = Codabar | Code39 | Code93 | Code128 | EAN8 | EAN13 | ITF | DataBar | DataBarExpanded | DataBarLimited | DXFilmEdge | UPCA | UPCE,
-	MatrixCodes = Aztec | DataMatrix | MaxiCode | PDF417 | QRCode | MicroQRCode | RMQRCode,
-	Any         = LinearCodes | MatrixCodes,
-};
+	public static readonly BarcodeFormat Invalid = new BarcodeFormat(0xFFFF);
+	public static readonly BarcodeFormat None = new BarcodeFormat(0x0000);
+	public static readonly BarcodeFormat AllReadable = new BarcodeFormat(0x722A);
+	public static readonly BarcodeFormat AllCreatable = new BarcodeFormat(0x772A);
+	public static readonly BarcodeFormat AllLinear = new BarcodeFormat(0x6CAA);
+	public static readonly BarcodeFormat AllStacked = new BarcodeFormat(0x733A);
+	public static readonly BarcodeFormat AllMatrix = new BarcodeFormat(0x6D8A);
+	public static readonly BarcodeFormat AllGS1 = new BarcodeFormat(0x670A);
+	public static readonly BarcodeFormat Codabar = new BarcodeFormat(0x2046);
+	public static readonly BarcodeFormat Code39 = new BarcodeFormat(0x2041);
+	public static readonly BarcodeFormat PZN = new BarcodeFormat(0x7041);
+	public static readonly BarcodeFormat Code93 = new BarcodeFormat(0x2047);
+	public static readonly BarcodeFormat Code128 = new BarcodeFormat(0x2043);
+	public static readonly BarcodeFormat ITF = new BarcodeFormat(0x2049);
+	public static readonly BarcodeFormat DataBar = new BarcodeFormat(0x2065);
+	public static readonly BarcodeFormat DataBarOmD = new BarcodeFormat(0x6F65);
+	public static readonly BarcodeFormat DataBarLtd = new BarcodeFormat(0x6C65);
+	public static readonly BarcodeFormat DataBarExp = new BarcodeFormat(0x6565);
+	public static readonly BarcodeFormat EANUPC = new BarcodeFormat(0x2045);
+	public static readonly BarcodeFormat EAN13 = new BarcodeFormat(0x3145);
+	public static readonly BarcodeFormat EAN8 = new BarcodeFormat(0x3845);
+	public static readonly BarcodeFormat EAN5 = new BarcodeFormat(0x3545);
+	public static readonly BarcodeFormat EAN2 = new BarcodeFormat(0x3245);
+	public static readonly BarcodeFormat ISBN = new BarcodeFormat(0x6945);
+	public static readonly BarcodeFormat UPCA = new BarcodeFormat(0x6145);
+	public static readonly BarcodeFormat UPCE = new BarcodeFormat(0x6545);
+	public static readonly BarcodeFormat DXFilmEdge = new BarcodeFormat(0x7858);
+	public static readonly BarcodeFormat PDF417 = new BarcodeFormat(0x204C);
+	public static readonly BarcodeFormat CompactPDF417 = new BarcodeFormat(0x634C);
+	public static readonly BarcodeFormat MicroPDF417 = new BarcodeFormat(0x6D4C);
+	public static readonly BarcodeFormat Aztec = new BarcodeFormat(0x207A);
+	public static readonly BarcodeFormat AztecCode = new BarcodeFormat(0x637A);
+	public static readonly BarcodeFormat AztecRune = new BarcodeFormat(0x727A);
+	public static readonly BarcodeFormat QRCode = new BarcodeFormat(0x2051);
+	public static readonly BarcodeFormat QRCodeModel1 = new BarcodeFormat(0x3151);
+	public static readonly BarcodeFormat MicroQRCode = new BarcodeFormat(0x6D51);
+	public static readonly BarcodeFormat RMQRCode = new BarcodeFormat(0x7251);
+	public static readonly BarcodeFormat DataMatrix = new BarcodeFormat(0x2064);
+	public static readonly BarcodeFormat MaxiCode = new BarcodeFormat(0x2055);
 
+	// conversions
+	public static implicit operator int(BarcodeFormat f) => f._value;
+	public static implicit operator BarcodeFormat(int v) => new BarcodeFormat(v);
+
+	// equality
+	public bool Equals(BarcodeFormat other) => _value == other._value;
+	public override bool Equals(object? obj) => obj is BarcodeFormat other && Equals(other);
+	public override int GetHashCode() => _value.GetHashCode();
+	public static bool operator ==(BarcodeFormat a, BarcodeFormat b) => a.Equals(b);
+	public static bool operator !=(BarcodeFormat a, BarcodeFormat b) => !a.Equals(b);
+
+	// string/parse helpers using native C API
+	public override string ToString() => MarshalAsString(ZXing_BarcodeFormatToString(this));
+
+	public static BarcodeFormat Parse(string s)
+	{
+		if (!TryParse(s, out var fmt))
+			throw new FormatException($"Invalid BarcodeFormat: '{s}'");
+		return fmt;
+	}
+
+	public static bool TryParse(string? s, out BarcodeFormat format)
+	{
+		// ZXing_BarcodeFormatFromString will return the native representation.
+		// Consider any result equal to Invalid as parse failure.
+		format = ZXing_BarcodeFormatFromString(s ?? "");
+		return format != Invalid;
+	}
+
+	public BarcodeFormat Symbology() => ZXing_BarcodeFormatSymbology(this);
+}
 
 public enum Binarizer
 {
@@ -284,6 +349,48 @@ public class Image : IDisposable
 	}
 }
 
+public class BarcodeFormats : IReadOnlyCollection<BarcodeFormat>
+{
+	private readonly BarcodeFormat[] _d;
+
+	public BarcodeFormats() => _d = Array.Empty<BarcodeFormat>();
+	public BarcodeFormats(params BarcodeFormat[] formats) => _d = formats ?? Array.Empty<BarcodeFormat>();
+	public BarcodeFormats(IEnumerable<BarcodeFormat> formats) => _d = formats?.ToArray() ?? Array.Empty<BarcodeFormat>();
+
+	public static implicit operator BarcodeFormats(BarcodeFormat format) => new BarcodeFormats(format);
+	public static implicit operator BarcodeFormat[](BarcodeFormats formats) => formats._d;
+
+	public bool Contains(BarcodeFormat format) => Array.IndexOf(_d, format) >= 0;
+	public int Count => _d.Length;
+	public bool IsEmpty => _d.Length == 0;
+
+	public IEnumerator<BarcodeFormat> GetEnumerator() => ((IEnumerable<BarcodeFormat>)_d).GetEnumerator();
+	System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => _d.GetEnumerator();
+
+	public static BarcodeFormats List(BarcodeFormat filter)
+	{
+		IntPtr ptr = ZXing_BarcodeFormatsList(filter, out int count);
+		return new BarcodeFormats(MarshalAsFormats(ptr, count));
+	}
+
+	public static bool TryParse(string str, out BarcodeFormats formats)
+	{
+		IntPtr ptr = ZXing_BarcodeFormatsFromString(str, out int count);
+		formats = new BarcodeFormats(MarshalAsFormats(ptr, count));
+		return formats.Count > 0;
+	}
+
+	public static BarcodeFormats Parse(string str)
+	{
+		if (TryParse(str, out var formats))
+			return formats;
+
+		throw new Exception($"'{str}' is not a valid set of barcode formats.");
+	}
+
+	public override string ToString() => MarshalAsString(ZXing_BarcodeFormatsToString(_d, _d.Length));
+}
+
 public class ReaderOptions
 {
 	internal IntPtr _d;
@@ -330,8 +437,13 @@ public class ReaderOptions
 
 	public BarcodeFormats Formats
 	{
-		get => ZXing_ReaderOptions_getFormats(_d);
-		set => ZXing_ReaderOptions_setFormats(_d, value);
+		get {
+			IntPtr ptr = ZXing_ReaderOptions_getFormats(_d, out int count);
+			return new BarcodeFormats(MarshalAsFormats(ptr, count));
+		}
+		set {
+			ZXing_ReaderOptions_setFormats(_d, value, value.Count);
+		}
 	}
 
 	public Binarizer Binarizer
@@ -370,8 +482,12 @@ public class CreatorOptions
 {
 	internal IntPtr _d;
 
-	public CreatorOptions(BarcodeFormat format)
-		=> _d = CheckError(ZXing_CreatorOptions_new(format), "Failed to create CreatorOptions.");
+	public CreatorOptions(BarcodeFormat format, string? options = null)
+	{
+		_d = CheckError(ZXing_CreatorOptions_new(format), "Failed to create CreatorOptions.");
+		if (options != null)
+			Options = options;
+	}
 
 	public static implicit operator CreatorOptions(BarcodeFormat f) => new CreatorOptions(f);
 
@@ -440,6 +556,7 @@ public class Barcode
 
 	public bool IsValid => ZXing_Barcode_isValid(_d);
 	public BarcodeFormat Format => ZXing_Barcode_format(_d);
+	public BarcodeFormat Symbology => ZXing_Barcode_symbology(_d);
 	public ContentType ContentType => ZXing_Barcode_contentType(_d);
 	public string Text => MarshalAsString(ZXing_Barcode_text(_d));
 	public byte[] Bytes => MarshalAsBytes(ZXing_Barcode_bytes, _d);
@@ -460,22 +577,6 @@ public class Barcode
 
 	public Image ToImage(WriterOptions? opts = null)
 		=> new Image(CheckError(ZXing_WriteBarcodeToImage(_d, opts?._d ?? IntPtr.Zero)));
-
-	public static BarcodeFormat FormatFromString(string str)
-	{
-		var res = ZXing_BarcodeFormatFromString(str);
-		if ((int)res == -1) // see ZXing_BarcodeFormat_Invalid
-			throw new Exception(MarshalAsString(ZXing_LastErrorMsg()));
-		return res;
-	}
-
-	public static BarcodeFormats FormatsFromString(string str)
-	{
-		var res = ZXing_BarcodeFormatsFromString(str);
-		if ((int)res == -1) // see ZXing_BarcodeFormat_Invalid
-			throw new Exception(MarshalAsString(ZXing_LastErrorMsg()));
-		return res;
-	}
 }
 
 public class BarcodeReader : ReaderOptions

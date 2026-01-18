@@ -12,7 +12,7 @@ int main(int argc, char** argv)
 	auto img = WriteBarcodeToImage(barcode, wopts);
 
 	auto iv = ImageView(img.data(), img.width(), img.height(), img.format());
-	auto ropts = ReaderOptions().formats(BarcodeFormat::MatrixCodes);
+	auto ropts = ReaderOptions().formats(BarcodeFormat::AllLinear);
 	auto barcodes = ReadBarcodes(iv, ropts);
 
 	for (const auto& b : barcodes)

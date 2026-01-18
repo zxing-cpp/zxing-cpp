@@ -44,8 +44,8 @@ static const char* JavaBarcodeFormatName(BarcodeFormat format)
 	case BarcodeFormat::MicroQRCode: return "MICRO_QR_CODE";
 	case BarcodeFormat::RMQRCode: return "RMQR_CODE";
 	case BarcodeFormat::DataBar: return "DATA_BAR";
-	case BarcodeFormat::DataBarExpanded: return "DATA_BAR_EXPANDED";
-	case BarcodeFormat::DataBarLimited: return "DATA_BAR_LIMITED";
+	case BarcodeFormat::DataBarExp: return "DATA_BAR_EXPANDED";
+	case BarcodeFormat::DataBarLtd: return "DATA_BAR_LIMITED";
 	case BarcodeFormat::DXFilmEdge: return "DX_FILM_EDGE";
 	case BarcodeFormat::UPCA: return "UPC_A";
 	case BarcodeFormat::UPCE: return "UPC_E";
@@ -289,10 +289,10 @@ static BarcodeFormats GetFormats(JNIEnv* env, jclass clsOptions, jobject opts)
 		return {};
 
 	jmethodID midName = env->GetMethodID(env->FindClass(PACKAGE "Format"), "name", "()Ljava/lang/String;");
-	BarcodeFormats ret;
+	std::vector<BarcodeFormat> ret;
 	for (int i = 0, size = env->GetArrayLength(objArray); i < size; ++i) {
 		auto objName = static_cast<jstring>(env->CallObjectMethod(env->GetObjectArrayElement(objArray, i), midName));
-		ret |= BarcodeFormatFromString(J2CString(env, objName));
+		ret.push_back(BarcodeFormatFromString(J2CString(env, objName)));
 	}
 	return ret;
 }

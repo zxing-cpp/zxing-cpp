@@ -32,7 +32,7 @@ static void PrintUsage(const char* exePath)
 {
 	std::cout << "Usage: " << exePath
 			  << " [-options <creator-options>] [-scale <factor>] [-binary] [-noqz] [-hrt] [-invert] <format> <text> <output>\n"
-			  << "    -options   Comma separated list of symbology specific options and flags\n"
+			  << "    -options   Comma separated list of format specific options and flags\n"
 			  << "    -scale     module size of generated image / negative numbers mean 'target size in pixels'\n"
 //			  << "    -encoding  Encoding used to encode input text\n"
 			  << "    -binary    Interpret <text> as a file name containing binary data\n"
@@ -43,14 +43,10 @@ static void PrintUsage(const char* exePath)
 			  << "    -version   Print version information\n"
 			  << "\n"
 			  << "Supported formats are:\n";
-#ifdef ZXING_USE_ZINT
-	for (auto f : BarcodeFormats::all())
-#else
-	for (auto f : BarcodeFormatsFromString("Aztec Codabar Code39 Code93 Code128 DataMatrix EAN8 EAN13 ITF PDF417 QRCode UPCA UPCE"))
-#endif
+	for (auto f : BarcodeFormats::list(BarcodeFormat::AllCreatable))
 		std::cout << "    " << ToString(f) << "\n";
 
-	std::cout << "Format can be lowercase letters, with or without '-'.\n"
+	std::cout << "Format can be lowercase letters, with or without any of ' -_/'.\n"
 			  << "Output format is determined by file name, supported are png, jpg and svg.\n";
 }
 
@@ -103,9 +99,10 @@ static bool ParseOptions(int argc, char* argv[], CLI& cli)
 			std::cout << "ZXingWriter " << ZXING_VERSION_STR << "\n";
 			exit(0);
 		} else if (nonOptArgCount == 0) {
-			cli.format = BarcodeFormatFromString(argv[i]);
-			if (cli.format == BarcodeFormat::None) {
-				std::cerr << "Unrecognized format: " << argv[i] << std::endl;
+			try {
+				cli.format = BarcodeFormatFromString(argv[i]);
+			} catch (const std::exception& e) {
+				std::cerr << "Error: " << e.what() << "\n\n";
 				return false;
 			}
 			++nonOptArgCount;
@@ -164,6 +161,7 @@ int main(int argc, char* argv[])
 			std::cout << "Text:       \"" << barcode.text() << "\"\n"
 					  << "Bytes:      " << barcode.text(TextMode::Hex) << "\n"
 					  << "Format:     " << ToString(barcode.format()) << "\n"
+					  << "Symbology:  " << ToString(barcode.symbology()) << "\n"
 					  << "Identifier: " << barcode.symbologyIdentifier() << "\n"
 					  << "Content:    " << ToString(barcode.contentType()) << "\n"
 					  << "HasECI:     " << barcode.hasECI() << "\n"

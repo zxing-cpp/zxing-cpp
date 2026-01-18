@@ -9,12 +9,12 @@
 #cmakedefine ZXING_READERS
 #cmakedefine ZXING_WRITERS
 
-#cmakedefine ZXING_ENABLE_1D
-#cmakedefine ZXING_ENABLE_AZTEC
-#cmakedefine ZXING_ENABLE_DATAMATRIX
-#cmakedefine ZXING_ENABLE_MAXICODE
-#cmakedefine ZXING_ENABLE_PDF417
-#cmakedefine ZXING_ENABLE_QRCODE
+#cmakedefine01 ZXING_ENABLE_1D
+#cmakedefine01 ZXING_ENABLE_AZTEC
+#cmakedefine01 ZXING_ENABLE_DATAMATRIX
+#cmakedefine01 ZXING_ENABLE_MAXICODE
+#cmakedefine01 ZXING_ENABLE_PDF417
+#cmakedefine01 ZXING_ENABLE_QRCODE
 
 #cmakedefine ZXING_EXPERIMENTAL_API
 #cmakedefine ZXING_USE_ZINT

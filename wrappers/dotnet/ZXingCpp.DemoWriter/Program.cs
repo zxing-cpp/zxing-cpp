@@ -25,9 +25,16 @@ public class Program
 {
 	public static void Main(string[] args)
 	{
-		var (format, text, fn) = (args[0], args[1], args[2]);
+		var (formatStr, text, fn) = (args[0], args[1], args[2]);
 
-		var bc = new Barcode(text, Barcode.FormatFromString(format));
+		BarcodeFormat format;
+		if (!BarcodeFormat.TryParse(formatStr, out format)) {
+			Console.WriteLine($"Invalid format: '{formatStr}'.");
+			Console.WriteLine($"Valid formats are: {BarcodeFormats.List(BarcodeFormat.AllCreatable)}");
+			return;
+		}
+
+		var bc = new Barcode(text, new CreatorOptions(format, "EcLevel=50%"));
 
 		var img = bc.ToImage();
 		Console.WriteLine($"{img.Data}, {img.Width}, {img.Height}, {img.ToArray()}");

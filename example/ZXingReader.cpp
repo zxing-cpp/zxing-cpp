@@ -64,10 +64,10 @@ static void PrintUsage(const char* exePath)
 			  << "    -version   Print version information\n"
 			  << "\n"
 			  << "Supported formats are:\n";
-	for (auto f : BarcodeFormats::all()) {
+	for (auto f : BarcodeFormats::list(BarcodeFormat::AllReadable)) {
 		std::cout << "    " << ToString(f) << "\n";
 	}
-	std::cout << "Formats can be lowercase, with or without '-', separated by ',' and/or '|'\n";
+	std::cout << "BarcodeFormats can be lowercase, with or without any of ' -_/', separated by ',' or '|'\n";
 }
 
 static bool ParseOptions(int argc, char* argv[], ReaderOptions& options, CLI& cli)
@@ -242,7 +242,7 @@ int main(int argc, char* argv[])
 			}
 
 			if (cli.json) {
-				if (barcode.format() != ZXing::BarcodeFormat::None)
+				if (barcode.format() != BarcodeFormat::None)
 					std::cout << "{\"FilePath\":\"" << filePath << "\"," << barcode.extra("ALL").substr(1) << "\n";
 				continue;
 			}
@@ -274,6 +274,7 @@ int main(int argc, char* argv[])
 			std::cout << "Text:       \"" << barcode.text() << "\"\n"
 					  << "Bytes:      " << barcode.text(options.textMode() == TextMode::ECI ? TextMode::HexECI : TextMode::Hex) << "\n"
 					  << "Format:     " << ToString(barcode.format()) << "\n"
+					  << "Symbology:  " << ToString(barcode.symbology()) << "\n"
 					  << "Identifier: " << barcode.symbologyIdentifier() << "\n"
 					  << "Content:    " << ToString(barcode.contentType()) << "\n"
 					  << "HasECI:     " << barcode.hasECI() << "\n"
@@ -294,8 +295,7 @@ int main(int argc, char* argv[])
 			if (barcode.lineCount())
 				std::cout << "Lines:      " << barcode.lineCount() << "\n";
 
-			if ((BarcodeFormat::EAN13 | BarcodeFormat::EAN8 | BarcodeFormat::UPCA | BarcodeFormat::UPCE)
-					.testFlag(barcode.format())) {
+			if (barcode.symbology() == BarcodeFormat::EANUPC) {
 				printOptional("Country:    ", GTIN::LookupCountryIdentifier(barcode.text(), barcode.format()));
 				printOptional("Add-On:     ", GTIN::EanAddOn(barcode));
 				printOptional("Price:      ", GTIN::Price(GTIN::EanAddOn(barcode)));

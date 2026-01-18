@@ -151,10 +151,10 @@ std::string Barcode::extra(std::string_view key) const
 		auto res =
 			StrCat("{", JsonProp("Text", text(TextMode::Plain)), JsonProp("HRI", text(TextMode::HRI)),
 				   JsonProp("TextECI", text(TextMode::ECI)), JsonProp("Bytes", text(TextMode::Hex)),
-				   JsonProp("Identifier", symbologyIdentifier()), JsonProp("Format", ToString(format())),
-				   JsonProp("ContentType", isValid() ? ToString(contentType()) : ""), JsonProp("Position", ToString(position())),
-				   JsonProp("HasECI", hasECI()), JsonProp("IsMirrored", isMirrored()), JsonProp("IsInverted", isInverted()), d->extra,
-				   JsonProp("Error", ToString(error())));
+				   JsonProp("Identifier", symbologyIdentifier()), JsonProp("Type", Name(format())),
+				   JsonProp("Symbology", Name(Symbology(format()))), JsonProp("ContentType", isValid() ? ToString(contentType()) : ""),
+				   JsonProp("Position", ToString(position())), JsonProp("HasECI", hasECI()), JsonProp("IsMirrored", isMirrored()),
+				   JsonProp("IsInverted", isInverted()), d->extra, JsonProp("Error", ToString(error())));
 		res.back() = '}';
 		return res;
 	}
@@ -174,7 +174,7 @@ bool BarcodeData::operator==(const BarcodeData& o) const
 		return false;
 
 	// handle MatrixCodes first
-	if (!IsLinearBarcode(format)) {
+	if (!(format & BarcodeFormat::AllLinear)) {
 		if (isValid() && o.isValid() && content.bytes != o.content.bytes)
 			return false;
 

@@ -64,9 +64,11 @@ public class Program
 		};
 
 		if (args.Length >= 2)
-			readBarcodes.Formats = Barcode.FormatsFromString(args[1]);
+			readBarcodes.Formats = BarcodeFormats.Parse(args[1]);
+		else 
+			readBarcodes.Formats = BarcodeFormat.AllReadable;
 
 		foreach (var b in readBarcodes.From(img))
-			Console.WriteLine($"{b.Format} ({b.ContentType}): {b.Text} / [{string.Join(", ", b.Bytes)}] {b.ErrorMsg}");
+			Console.WriteLine($"{b.Format} ({b.Symbology} / {b.ContentType}): {b.Text} / [{string.Join(", ", b.Bytes)}] {b.ErrorMsg}");
 	}
 }

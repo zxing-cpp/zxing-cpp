@@ -19,7 +19,6 @@ typedef ZXing::Barcodes ZXing_Barcodes;
 typedef ZXing::ImageView ZXing_ImageView;
 typedef ZXing::Image ZXing_Image;
 typedef ZXing::ReaderOptions ZXing_ReaderOptions;
-
 typedef ZXing::CreatorOptions ZXing_CreatorOptions;
 typedef ZXing::WriterOptions ZXing_WriterOptions;
 
@@ -34,6 +33,8 @@ typedef struct ZXing_Image ZXing_Image;
 typedef struct ZXing_ReaderOptions ZXing_ReaderOptions;
 typedef struct ZXing_CreatorOptions ZXing_CreatorOptions;
 typedef struct ZXing_WriterOptions ZXing_WriterOptions;
+
+#include "BarcodeFormat.h"
 
 #endif
 
@@ -75,63 +76,20 @@ ZXing_ImageFormat ZXing_Image_format(const ZXing_Image* img);
 
 typedef enum
 {
-	ZXing_BarcodeFormat_None = 0,
-	ZXing_BarcodeFormat_Aztec = (1 << 0),
-	ZXing_BarcodeFormat_Codabar = (1 << 1),
-	ZXing_BarcodeFormat_Code39 = (1 << 2),
-	ZXing_BarcodeFormat_Code93 = (1 << 3),
-	ZXing_BarcodeFormat_Code128 = (1 << 4),
-	ZXing_BarcodeFormat_DataBar = (1 << 5),
-	ZXing_BarcodeFormat_DataBarExpanded = (1 << 6),
-	ZXing_BarcodeFormat_DataMatrix = (1 << 7),
-	ZXing_BarcodeFormat_EAN8 = (1 << 8),
-	ZXing_BarcodeFormat_EAN13 = (1 << 9),
-	ZXing_BarcodeFormat_ITF = (1 << 10),
-	ZXing_BarcodeFormat_MaxiCode = (1 << 11),
-	ZXing_BarcodeFormat_PDF417 = (1 << 12),
-	ZXing_BarcodeFormat_QRCode = (1 << 13),
-	ZXing_BarcodeFormat_UPCA = (1 << 14),
-	ZXing_BarcodeFormat_UPCE = (1 << 15),
-	ZXing_BarcodeFormat_MicroQRCode = (1 << 16),
-	ZXing_BarcodeFormat_RMQRCode = (1 << 17),
-	ZXing_BarcodeFormat_DXFilmEdge = (1 << 18),
-	ZXing_BarcodeFormat_DataBarLimited = (1 << 19),
-
-	ZXing_BarcodeFormat_LinearCodes = ZXing_BarcodeFormat_Codabar | ZXing_BarcodeFormat_Code39 | ZXing_BarcodeFormat_Code93
-									  | ZXing_BarcodeFormat_Code128 | ZXing_BarcodeFormat_EAN8 | ZXing_BarcodeFormat_EAN13
-									  | ZXing_BarcodeFormat_ITF | ZXing_BarcodeFormat_DataBar | ZXing_BarcodeFormat_DataBarExpanded
-									  | ZXing_BarcodeFormat_DataBarLimited | ZXing_BarcodeFormat_DXFilmEdge | ZXing_BarcodeFormat_UPCA
-									  | ZXing_BarcodeFormat_UPCE,
-	ZXing_BarcodeFormat_MatrixCodes = ZXing_BarcodeFormat_Aztec | ZXing_BarcodeFormat_DataMatrix | ZXing_BarcodeFormat_MaxiCode
-									  | ZXing_BarcodeFormat_PDF417 | ZXing_BarcodeFormat_QRCode | ZXing_BarcodeFormat_MicroQRCode
-									  | ZXing_BarcodeFormat_RMQRCode,
-	ZXing_BarcodeFormat_Any = ZXing_BarcodeFormat_LinearCodes | ZXing_BarcodeFormat_MatrixCodes,
-
-	ZXing_BarcodeFormat_Invalid = 0xFFFFFFFFu /* return value when BarcodeFormatsFromString() throws */
+	ZXing_BarcodeFormat_Invalid = ZX_BCF_ID(0xff, 0xff), /* return value when BarcodeFormatsFromString() throws */
+#define X(NAME, SYM, VAR, FLAGS, ZINT, ENABLED, HRI) ZXing_BarcodeFormat_##NAME = ZX_BCF_ID(SYM, VAR),
+	ZX_BCF_LIST(X)
+#undef X
 } ZXing_BarcodeFormat;
 
-typedef ZXing_BarcodeFormat ZXing_BarcodeFormats;
-
-ZXing_BarcodeFormats ZXing_BarcodeFormatsFromString(const char* str);
+ZXing_BarcodeFormat ZXing_BarcodeFormatSymbology(ZXing_BarcodeFormat format);
 ZXing_BarcodeFormat ZXing_BarcodeFormatFromString(const char* str);
 char* ZXing_BarcodeFormatToString(ZXing_BarcodeFormat format);
 
-/*
- * ZXing/ZXingCpp.h
- */
+ZXing_BarcodeFormat* ZXing_BarcodeFormatsList(ZXing_BarcodeFormat filter, int* outCount);
+ZXing_BarcodeFormat* ZXing_BarcodeFormatsFromString(const char* str, int* outCount);
+char* ZXing_BarcodeFormatsToString(const ZXing_BarcodeFormat* formats, int count);
 
-#ifdef ZXING_EXPERIMENTAL_API
-
-typedef enum {
-	ZXing_Operation_Create,
-	ZXing_Operation_Read,
-	ZXing_Operation_CreateAndRead,
-	ZXing_Operation_CreateOrRead,
-} ZXing_Operation;
-
-ZXing_BarcodeFormats ZXing_SupportedBarcodeFormats(ZXing_Operation op);
-
-#endif
 
 /*
  * ZXing/Barcode.h
@@ -173,6 +131,7 @@ bool ZXing_Barcode_isValid(const ZXing_Barcode* barcode);
 ZXing_ErrorType ZXing_Barcode_errorType(const ZXing_Barcode* barcode);
 char* ZXing_Barcode_errorMsg(const ZXing_Barcode* barcode);
 ZXing_BarcodeFormat ZXing_Barcode_format(const ZXing_Barcode* barcode);
+ZXing_BarcodeFormat ZXing_Barcode_symbology(const ZXing_Barcode* barcode);
 ZXing_ContentType ZXing_Barcode_contentType(const ZXing_Barcode* barcode);
 uint8_t* ZXing_Barcode_bytes(const ZXing_Barcode* barcode, int* len);
 uint8_t* ZXing_Barcode_bytesECI(const ZXing_Barcode* barcode, int* len);
@@ -237,7 +196,7 @@ void ZXing_ReaderOptions_setTryDownscale(ZXing_ReaderOptions* opts, bool tryDown
 #endif
 void ZXing_ReaderOptions_setIsPure(ZXing_ReaderOptions* opts, bool isPure);
 void ZXing_ReaderOptions_setReturnErrors(ZXing_ReaderOptions* opts, bool returnErrors);
-void ZXing_ReaderOptions_setFormats(ZXing_ReaderOptions* opts, ZXing_BarcodeFormats formats);
+void ZXing_ReaderOptions_setFormats(ZXing_ReaderOptions* opts, const ZXing_BarcodeFormat* formats, int count);
 void ZXing_ReaderOptions_setBinarizer(ZXing_ReaderOptions* opts, ZXing_Binarizer binarizer);
 void ZXing_ReaderOptions_setEanAddOnSymbol(ZXing_ReaderOptions* opts, ZXing_EanAddOnSymbol eanAddOnSymbol);
 void ZXing_ReaderOptions_setTextMode(ZXing_ReaderOptions* opts, ZXing_TextMode textMode);
@@ -253,7 +212,7 @@ bool ZXing_ReaderOptions_getTryDownscale(const ZXing_ReaderOptions* opts);
 #endif
 bool ZXing_ReaderOptions_getIsPure(const ZXing_ReaderOptions* opts);
 bool ZXing_ReaderOptions_getReturnErrors(const ZXing_ReaderOptions* opts);
-ZXing_BarcodeFormats ZXing_ReaderOptions_getFormats(const ZXing_ReaderOptions* opts);
+ZXing_BarcodeFormat* ZXing_ReaderOptions_getFormats(const ZXing_ReaderOptions* opts, int* outCount);
 ZXing_Binarizer ZXing_ReaderOptions_getBinarizer(const ZXing_ReaderOptions* opts);
 ZXing_EanAddOnSymbol ZXing_ReaderOptions_getEanAddOnSymbol(const ZXing_ReaderOptions* opts);
 ZXing_TextMode ZXing_ReaderOptions_getTextMode(const ZXing_ReaderOptions* opts);
@@ -277,7 +236,6 @@ void ZXing_CreatorOptions_delete(ZXing_CreatorOptions* opts);
 
 void ZXing_CreatorOptions_setFormat(ZXing_CreatorOptions* opts, ZXing_BarcodeFormat format);
 ZXing_BarcodeFormat ZXing_CreatorOptions_getFormat(const ZXing_CreatorOptions* opts);
-
 void ZXing_CreatorOptions_setOptions(ZXing_CreatorOptions* opts, const char* options);
 char* ZXing_CreatorOptions_getOptions(const ZXing_CreatorOptions* opts);
 

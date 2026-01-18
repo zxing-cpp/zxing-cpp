@@ -8,23 +8,52 @@ mod tests {
 	use crate::*;
 
 	#[test]
+	fn barcode_format() {
+		let format = BarcodeFormat::from_str("Micro PDF417").unwrap();
+		assert_eq!(format, BarcodeFormat::MicroPDF417);
+		assert_eq!(format.to_string(), "MicroPDF417");
+		let symbology = format.symbology();
+		assert_eq!(symbology, BarcodeFormat::PDF417);
+		assert_eq!(symbology.to_string(), "PDF417");
+	}
+
+	#[test]
 	fn barcode_formats_from_str_valid() {
-		let formats = BarcodeFormats::from_str("qrcode,linearcodes").unwrap();
-		assert_eq!(formats, BarcodeFormat::QRCode | BarcodeFormat::LinearCodes);
+		let formats = BarcodeFormats::from_str("qrcode,Aztec").unwrap();
+		assert_eq!(formats.as_slice(), &[BarcodeFormat::QRCode, BarcodeFormat::Aztec]);
+		assert_eq!(formats.len(), 2);
+		assert!(formats.contains(BarcodeFormat::QRCode));
+		assert!(formats.contains(BarcodeFormat::Aztec));
+		assert!(!formats.contains(BarcodeFormat::EAN8));
+	}
+
+	#[test]
+	#[should_panic]
+	fn barcode_formats_from_str_invalid() {
+		let _ = BarcodeFormats::from_str("qrcoder").unwrap();
+	}
+
+	#[test]
+	fn barcode_formats_list() {
+		let formats = BarcodeFormats::list(BarcodeFormat::AllReadable);
+		assert!(formats.len() > 25);
+		assert!(formats.contains(BarcodeFormat::QRCode));
+		assert!(formats.contains(BarcodeFormat::Aztec));
+		assert!(!formats.contains(BarcodeFormat::MicroPDF417));
 	}
 
 	#[test]
 	fn barcode_reader_new() {
 		let mut o1 = BarcodeReader::new();
-		assert_eq!(o1.get_formats(), BarcodeFormat::None);
+		assert_eq!(o1.get_formats().is_empty(), true);
 		assert_eq!(o1.get_try_harder(), true);
 		o1.set_formats(BarcodeFormat::EAN8);
-		assert_eq!(o1.get_formats(), BarcodeFormat::EAN8);
+		assert_eq!(o1.get_formats().contains(BarcodeFormat::EAN8), true);
 		o1.set_try_harder(false);
 		assert_eq!(o1.get_try_harder(), false);
 
 		o1 = BarcodeReader::new().is_pure(true).text_mode(TextMode::Hex);
-		assert_eq!(o1.get_formats(), BarcodeFormat::None);
+		assert_eq!(o1.get_formats().is_empty(), true);
 		assert_eq!(o1.get_try_harder(), true);
 		assert_eq!(o1.get_is_pure(), true);
 		assert_eq!(o1.get_text_mode(), TextMode::Hex);
@@ -36,12 +65,6 @@ mod tests {
 		assert_eq!(o1.get_options(), "");
 		o1.set_options("version:1");
 		assert_eq!(o1.get_options(), "version:1");
-	}
-
-	#[test]
-	#[should_panic]
-	fn barcode_formats_from_str_invalid() {
-		let _ = BarcodeFormats::from_str("qrcoder").unwrap();
 	}
 
 	#[test]
@@ -62,10 +85,10 @@ mod tests {
 	#[test]
 	fn create_from_slice() {
 		let data = [1, 2, 3, 4, 5];
-		let res = create(BarcodeFormat::QRCode).from_slice(&data).unwrap();
+		let res = create(BarcodeFormat::PDF417).from_slice(&data).unwrap();
 
 		assert_eq!(res.is_valid(), true);
-		assert_eq!(res.format(), BarcodeFormat::QRCode);
+		assert_eq!(res.format(), BarcodeFormat::PDF417);
 		assert_eq!(res.bytes(), data);
 		assert_eq!(res.has_eci(), true);
 		assert_eq!(res.content_type(), ContentType::Binary);
@@ -87,6 +110,7 @@ mod tests {
 		assert_eq!(res.len(), 1);
 		assert_eq!(res[0].is_valid(), true);
 		assert_eq!(res[0].format(), BarcodeFormat::EAN8);
+		assert_eq!(res[0].symbology(), BarcodeFormat::EANUPC);
 		assert_eq!(res[0].text(), expected);
 		assert_eq!(res[0].bytes(), expected.as_bytes());
 		assert_eq!(res[0].has_eci(), false);

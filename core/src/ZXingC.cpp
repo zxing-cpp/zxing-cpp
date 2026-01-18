@@ -32,10 +32,10 @@ template<typename R, typename T> R transmute_cast(const T& v) noexcept
 template<typename C, typename P = typename C::pointer>
 P copy(const C& c) noexcept
 {
-	auto ret = (P)malloc(c.size() + 1);
+	auto ret = (P)malloc((c.size() + 1) * sizeof(typename C::value_type));
 	if (ret) {
-		memcpy(ret, c.data(), c.size());
-		ret[c.size()] = 0;
+		memcpy(ret, c.data(), c.size() * sizeof(typename C::value_type));
+		ret[c.size()] = typename C::value_type(0);
 	}
 	return ret;
 }
@@ -127,45 +127,65 @@ int ZXing_Image_height(const ZXing_Image* img)
 
 ZXing_ImageFormat ZXing_Image_format(const ZXing_Image* img)
 {
-	return static_cast<ZXing_ImageFormat>(img->format());
+	return transmute_cast<ZXing_ImageFormat>(img->format());
 }
 
 /*
  * ZXing/BarcodeFormat.h
  */
 
-ZXing_BarcodeFormats ZXing_BarcodeFormatsFromString(const char* str)
+ZXing_BarcodeFormat ZXing_BarcodeFormatSymbology(ZXing_BarcodeFormat format)
 {
-	if (!str)
-		return {};
-	try {
-		return transmute_cast<ZXing_BarcodeFormats>(BarcodeFormatsFromString(str));
-	}
-	ZX_CATCH(ZXing_BarcodeFormat_Invalid)
+	return transmute_cast<ZXing_BarcodeFormat>(Symbology(transmute_cast<BarcodeFormat>(format)));
 }
 
 ZXing_BarcodeFormat ZXing_BarcodeFormatFromString(const char* str)
 {
-	ZXing_BarcodeFormat res = ZXing_BarcodeFormatsFromString(str);
-	return std::has_single_bit(ToUnsigned(std::to_underlying(res))) ? res : ZXing_BarcodeFormat_Invalid;
+	try {
+		return transmute_cast<ZXing_BarcodeFormat>(BarcodeFormatFromString(str));
+	}
+	ZX_CATCH(ZXing_BarcodeFormat_Invalid)
 }
 
 char* ZXing_BarcodeFormatToString(ZXing_BarcodeFormat format)
 {
-	return copy(ToString(static_cast<BarcodeFormat>(format)));
+	try {
+		return copy(ToString(transmute_cast<BarcodeFormat>(format)));
+	}
+	ZX_CATCH(NULL)
 }
 
-/*
- * ZXing/ZXingCpp.h
- */
-
-
-#ifdef ZXING_EXPERIMENTAL_API
-ZXing_BarcodeFormats ZXing_SupportedBarcodeFormats(ZXing_Operation op)
+ZXing_BarcodeFormat* ZXing_BarcodeFormatsList(ZXing_BarcodeFormat filter, int* outCount)
 {
-	return transmute_cast<ZXing_BarcodeFormats>(SupportedBarcodeFormats(static_cast<Operation>(op)));
+	try {
+		return (ZXing_BarcodeFormat*)copy(BarcodeFormats::list(transmute_cast<BarcodeFormat>(filter)), outCount);
+	}
+	ZX_CATCH(NULL)
 }
-#endif
+
+ZXing_BarcodeFormat* ZXing_BarcodeFormatsFromString(const char* str, int* outCount)
+{
+	if (!str) {
+		if (outCount)
+			*outCount = 0;
+		return NULL;
+	}
+	try {
+		return (ZXing_BarcodeFormat*)copy(BarcodeFormats(str), outCount);
+	}
+	ZX_CATCH(NULL)
+}
+
+char* ZXing_BarcodeFormatsToString(const ZXing_BarcodeFormat* formats, int count)
+{
+	if (!formats || count == 0)
+		return copy(std::string{});
+	try {
+		std::vector<BarcodeFormat> v((BarcodeFormat*)formats, (BarcodeFormat*)formats + count);
+		return copy(ToString(BarcodeFormats(std::move(v))));
+	}
+	ZX_CATCH(NULL)
+}
 
 /*
  * ZXing/Barcode.h
@@ -211,6 +231,7 @@ uint8_t* ZXing_Barcode_bytesECI(const ZXing_Barcode* barcode, int* len)
 	TYPE ZXing_Barcode_##NAME(const ZXing_Barcode* barcode) { return TRANS(barcode->NAME()); }
 
 ZX_GETTER(ZXing_BarcodeFormat, format, static_cast<ZXing_BarcodeFormat>)
+ZX_GETTER(ZXing_BarcodeFormat, symbology, static_cast<ZXing_BarcodeFormat>)
 ZX_GETTER(ZXing_ContentType, contentType, static_cast<ZXing_ContentType>)
 ZX_GETTER(char*, text, copy)
 ZX_GETTER(char*, ecLevel, copy)
@@ -289,15 +310,20 @@ ZX_PROPERTY(int, maxNumberOfSymbols, MaxNumberOfSymbols)
 
 #undef ZX_PROPERTY
 
-void ZXing_ReaderOptions_setFormats(ZXing_ReaderOptions* opts, ZXing_BarcodeFormats formats)
+void ZXing_ReaderOptions_setFormats(ZXing_ReaderOptions* opts, const ZXing_BarcodeFormat* formats, int count)
 {
-	opts->formats(static_cast<BarcodeFormat>(formats));
+	if (!formats)
+		return;
+	if (count == 0) // determine count by looking for null terminator
+		for (; formats[count] != ZXing_BarcodeFormat_None; ++count)
+			;
+	std::vector<BarcodeFormat> v((BarcodeFormat*)formats, (BarcodeFormat*)formats + count);
+	opts->formats(std::move(v));
 }
 
-ZXing_BarcodeFormats ZXing_ReaderOptions_getFormats(const ZXing_ReaderOptions* opts)
+ZXing_BarcodeFormat* ZXing_ReaderOptions_getFormats(const ZXing_ReaderOptions* opts, int* outCount)
 {
-	auto v = opts->formats();
-	return transmute_cast<ZXing_BarcodeFormats>(v);
+	return (ZXing_BarcodeFormat*)copy(opts->formats(), outCount);
 }
 
 #define ZX_ENUM_PROPERTY(TYPE, NAME, CAP_NAME) \
@@ -340,10 +366,11 @@ void ZXing_CreatorOptions_delete(ZXing_CreatorOptions* opts)
 }
 
 #define ZX_ENUM_PROPERTY(TYPE, NAME, CAP_NAME) \
-	ZXing_##TYPE ZXing_CreatorOptions_get##CAP_NAME(const ZXing_CreatorOptions* opts) { return static_cast<ZXing_##TYPE>(opts->NAME()); } \
-	void ZXing_CreatorOptions_set##CAP_NAME(ZXing_CreatorOptions* opts, ZXing_##TYPE val) { opts->NAME(static_cast<TYPE>(val)); }
+	ZXing_##TYPE ZXing_CreatorOptions_get##CAP_NAME(const ZXing_CreatorOptions* opts) { return transmute_cast<ZXing_##TYPE>(opts->NAME()); } \
+	void ZXing_CreatorOptions_set##CAP_NAME(ZXing_CreatorOptions* opts, ZXing_##TYPE val) { opts->NAME(transmute_cast<TYPE>(val)); }
 
 ZX_ENUM_PROPERTY(BarcodeFormat, format, Format)
+
 
 #undef ZX_ENUM_PROPERTY
 

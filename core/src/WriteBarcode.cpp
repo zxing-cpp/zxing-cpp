@@ -154,7 +154,7 @@ Image WriteBarcodeToImage(const Barcode& barcode, [[maybe_unused]] const WriterO
 
 	if (!zint)
 #endif
-		return ToImage(barcode.d->symbol.copy(), IsLinearBarcode(barcode.format()), opts);
+		return ToImage(barcode.d->symbol.copy(), barcode.format() & BarcodeFormat::AllLinear, opts);
 
 #if defined(ZXING_WRITERS) && defined(ZXING_USE_ZINT)
 	auto resetOnExit = SetCommonWriterOptions(zint, opts);
@@ -191,12 +191,12 @@ std::string WriteBarcodeToUtf8(const Barcode& barcode, [[maybe_unused]] const Wr
 		memset(const_cast<uint8_t*>(buffer.data()), 0xff, buffer.rowStride() * buffer.height());
 		for (int y = 0; y < iv.height(); y++)
 			memcpy(const_cast<uint8_t*>(buffer.data(1, y + 1)), iv.data(0, y), iv.width());
-		iv = IsLinearBarcode(barcode.format()) ? iv.cropped(0, 1, buffer.width(), buffer.height() - 2) : buffer;
+		iv = barcode.format() & BarcodeFormat::AllLinear ? iv.cropped(0, 1, buffer.width(), buffer.height() - 2) : buffer;
 	}
 
 	for (int y = 0; y < iv.height(); y += 2) {
 		// for linear barcodes, only print line pairs that are distinct from the previous one
-		if (IsLinearBarcode(barcode.format()) && y > 1 && y < iv.height() - 1
+		if (barcode.format() & BarcodeFormat::AllLinear && y > 1 && y < iv.height() - 1
 			&& memcmp(iv.data(0, y), iv.data(0, y - 2), 2 * iv.rowStride()) == 0)
 			continue;
 
