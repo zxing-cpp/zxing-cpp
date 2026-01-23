@@ -8,8 +8,6 @@ set(ZXING_EXPERIMENTAL_API ON CACHE BOOL "Enable ZXing experimental API (hardcod
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../core ZXing EXCLUDE_FROM_ALL)
 
-target_compile_definitions(ZXing INTERFACE "_ZXING_EXPERIMENTAL_API")
-
 add_library(zxingcpp_android SHARED ZXingCpp.cpp)
 
 target_link_options(zxingcpp_android PRIVATE "-Wl,-z,max-page-size=16384")
