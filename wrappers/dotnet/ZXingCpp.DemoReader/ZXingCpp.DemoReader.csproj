@@ -9,11 +9,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SkiaSharp" Version="3.119.0" ExcludeAssets="native" />
+    <PackageReference Include="SkiaSharp" Version="3.119.1" ExcludeAssets="native" />
     <!-- the following line was required to make dotnet install the missing *.so file on Linux -->
     <!-- on another platform, you will need to remove the "ExcludeAssets" property above -->
-    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="3.119.0" />
-    <PackageReference Include="Magick.NET-Q8-x64" Version="14.10.1" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="3.119.1" Condition="$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))" />
+    <PackageReference Include="SkiaSharp.NativeAssets.macOS" Version="3.119.1" Condition="$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Win32" Version="3.119.1" Condition="$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))" />
+    <PackageReference Include="Magick.NET-Q8-x64" Version="14.10.2" />
     <ProjectReference Include="..\ZXingCpp\ZXingCpp.csproj" />
   </ItemGroup>
 
