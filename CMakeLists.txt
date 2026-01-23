@@ -58,6 +58,15 @@ endif()
 
 set(CMAKE_COLOR_DIAGNOSTICS ON)
 
+# make installed binaries relocatable on macOS and Linux
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+if(APPLE)
+    set(CMAKE_MACOSX_RPATH ON) # make the binar
+    set(CMAKE_INSTALL_RPATH "@loader_path/../lib")
+elseif(UNIX)
+    set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
+endif()
+
 add_subdirectory (core)
 
 enable_testing()
