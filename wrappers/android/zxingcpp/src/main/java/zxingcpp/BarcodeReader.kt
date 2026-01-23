@@ -58,6 +58,7 @@ public class BarcodeReader(public var options: Options = Options()) {
 		var tryRotate: Boolean = false,
 		var tryInvert: Boolean = false,
 		var tryDownscale: Boolean = false,
+		var tryDenoise: Boolean = false,
 		var isPure: Boolean = false,
 		var binarizer: Binarizer = Binarizer.LOCAL_AVERAGE,
 		var downscaleFactor: Int = 3,
