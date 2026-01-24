@@ -32,6 +32,13 @@ using namespace ZXing;
 namespace py = pybind11;
 using namespace pybind11::literals; // to bring in the `_a` literal
 
+static void deprecation_warning(std::string_view msg)
+{
+	auto warnings = pybind11::module::import("warnings");
+	auto builtins = pybind11::module::import("builtins");
+	warnings.attr("warn")(msg, builtins.attr("DeprecationWarning"));
+}
+
 auto read_barcodes_impl(py::object _image, const BarcodeFormats& formats, bool try_rotate, bool try_downscale, TextMode text_mode,
 						Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol, bool return_errors,
 						uint8_t max_number_of_symbols = 0xff)
@@ -224,9 +231,7 @@ std::string write_barcode_to_svg(Barcode barcode, int scale, bool add_hrt, bool 
 Image write_barcode(BarcodeFormat format, py::object content, int width, int height, int quiet_zone, int ec_level)
 {
 #ifdef ZXING_USE_ZINT
-	auto warnings = pybind11::module::import("warnings");
-	auto builtins = pybind11::module::import("builtins");
-	warnings.attr("warn")("write_barcode() is deprecated, use create_barcode() instead.", builtins.attr("DeprecationWarning"));
+	deprecation_warning("write_barcode() is deprecated, use create_barcode() and write_barcode_to_image() instead.");
 
 	auto barcode = create_barcode(content, format, py::dict("ec_level"_a = ec_level / 2));
 	return write_barcode_to_image(barcode, -std::max(width, height), false, quiet_zone != 0);
@@ -248,7 +253,6 @@ Image write_barcode(BarcodeFormat format, py::object content, int width, int hei
 #endif
 }
 
-
 PYBIND11_MODULE(zxingcpp, m)
 {
 	m.doc() = "python bindings for zxing-cpp";
@@ -258,12 +262,20 @@ PYBIND11_MODULE(zxingcpp, m)
 	py::class_<BarcodeFormats> pyBarcodeFormats(m, "BarcodeFormats");
 
 	py::enum_<BarcodeFormat>(m, "BarcodeFormat", py::arithmetic{}, "Enumeration of zxing supported barcode formats")
+		.value("All", BarcodeFormat::All)
+		.value("AllCreatable", BarcodeFormat::AllCreatable)
+		.value("AllReadable", BarcodeFormat::AllReadable)
+		.value("AllLinear", BarcodeFormat::AllLinear)
+		.value("AllStacked", BarcodeFormat::AllStacked)
+		.value("AllMatrix", BarcodeFormat::AllMatrix)
+		.value("AllGS1", BarcodeFormat::AllGS1)
 		.value("Aztec", BarcodeFormat::Aztec)
 		.value("Codabar", BarcodeFormat::Codabar)
 		.value("Code39", BarcodeFormat::Code39)
 		.value("Code93", BarcodeFormat::Code93)
 		.value("Code128", BarcodeFormat::Code128)
 		.value("DataMatrix", BarcodeFormat::DataMatrix)
+		.value("EANUPC", BarcodeFormat::EANUPC)
 		.value("EAN8", BarcodeFormat::EAN8)
 		.value("EAN13", BarcodeFormat::EAN13)
 		.value("ITF", BarcodeFormat::ITF)
@@ -281,23 +293,47 @@ PYBIND11_MODULE(zxingcpp, m)
 		// use upper case 'NONE' because 'None' is a reserved identifier in python
 		.value("NONE", BarcodeFormat::None)
 		.value("DataBarExpanded", BarcodeFormat::DataBarExp) // backward compatibility alias
-		.value("DataBarLimited", BarcodeFormat::DataBarLtd) // backward compatibility alias
-		.value("LinearCodes", BarcodeFormat::AllLinear) // backward compatibility alias
-		.value("MatrixCodes", BarcodeFormat::AllMatrix) // backward compatibility alias
+		.value("DataBarLimited", BarcodeFormat::DataBarLtd)  // backward compatibility alias
+		.value("LinearCodes", BarcodeFormat::AllLinear)      // backward compatibility alias
+		.value("MatrixCodes", BarcodeFormat::AllMatrix)      // backward compatibility alias
 		.export_values()
 		// see https://github.com/pybind/pybind11/issues/2221
-		.def("__or__", [](BarcodeFormat f1, BarcodeFormat f2){ return BarcodeFormats(f1 | f2); });
+		.def("__or__", [](BarcodeFormat f1, BarcodeFormat f2) {
+			deprecation_warning("operator | is deprecated, pass array or tuple instead.");
+			return BarcodeFormats(f1 | f2);
+		})
+		.def("__str__", [](BarcodeFormat f) { return ToString(f); }, py::prepend{})
+		.def_property_readonly("symbology", [](BarcodeFormat f) { return Symbology(f); });
 	pyBarcodeFormats
-		.def("__repr__", py::overload_cast<const BarcodeFormats&>(static_cast<std::string (*)(const BarcodeFormats&)>(ToString)))
-		.def("__str__", py::overload_cast<const BarcodeFormats&>(static_cast<std::string (*)(const BarcodeFormats&)>(ToString)))
+		.def("__repr__", [](const BarcodeFormats& f) { return ToString(f); })
 		.def("__eq__", [](const BarcodeFormats& f1, const BarcodeFormats& f2) { return f1 == f2; })
 		.def("__or__",
 			 [](const BarcodeFormats& fs, BarcodeFormat f) {
+				 deprecation_warning("operator | is deprecated, pass array or tuple instead.");
 				 auto res = std::vector(fs.begin(), fs.end());
 				 res.push_back(f);
 				 return BarcodeFormats(std::move(res));
 			 })
-		.def(py::init<BarcodeFormat>());
+		.def("__len__", [](const BarcodeFormats& fs) { return static_cast<py::ssize_t>(fs.size()); })
+		.def(
+			"__iter__", [](const BarcodeFormats& fs) { return py::make_iterator(fs.begin(), fs.end()); }, py::keep_alive<0, 1>())
+		.def("__getitem__",
+			 [](const BarcodeFormats& fs, py::ssize_t idx) {
+				 if (idx < 0)
+					 idx += static_cast<py::ssize_t>(fs.size());
+				 if (idx < 0 || idx >= static_cast<py::ssize_t>(fs.size()))
+					 throw py::index_error("BarcodeFormats index out of range");
+				 return *(fs.begin() + idx);
+			 })
+		.def(py::init<BarcodeFormat>())
+		.def(py::init([](py::iterable values) {
+			std::vector<BarcodeFormat> list;
+			for (auto fmt : values)
+				list.push_back(fmt.cast<BarcodeFormat>());
+			return BarcodeFormats(std::move(list));
+		}));
+	py::implicitly_convertible<py::list, BarcodeFormats>();
+	py::implicitly_convertible<py::tuple, BarcodeFormats>();
 	py::implicitly_convertible<BarcodeFormat, BarcodeFormats>();
 	py::enum_<Binarizer>(m, "Binarizer", "Enumeration of binarizers used before decoding images")
 		.value("BoolCast", Binarizer::BoolCast)
@@ -383,6 +419,9 @@ PYBIND11_MODULE(zxingcpp, m)
 			":rtype: bytes")
 		.def_property_readonly("format", &Barcode::format,
 			":return: decoded symbol format\n"
+			":rtype: zxingcpp.BarcodeFormat")
+		.def_property_readonly("symbology", &Barcode::symbology,
+			":return: decoded symbol symbology\n"
 			":rtype: zxingcpp.BarcodeFormat")
 		.def_property_readonly("symbology_identifier", &Barcode::symbologyIdentifier,
 			":return: decoded symbology identifier\n"

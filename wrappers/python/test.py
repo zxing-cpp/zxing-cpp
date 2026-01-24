@@ -16,8 +16,12 @@ class TestFormat(unittest.TestCase):
 
 	def test_format(self):
 		self.assertEqual(zxingcpp.barcode_format_from_str('qrcode'), BF.QRCode)
-		self.assertEqual(zxingcpp.barcode_formats_from_str('ITF, qrcode'), BF.ITF | BF.QRCode)
-
+		self.assertEqual(zxingcpp.barcode_formats_from_str('ITF, qrcode'), [BF.ITF, BF.QRCode])
+		self.assertEqual(BF.Code128 | BF.EAN13, [BF.Code128, BF.EAN13])
+		self.assertEqual(zxingcpp.BarcodeFormats(BF.EAN13), [BF.EAN13])
+		self.assertEqual(zxingcpp.BarcodeFormats(BF.EAN13), BF.EAN13)
+		self.assertEqual(str(BF.QRCode), "QR Code")
+		self.assertEqual(BF.EAN13.symbology, BF.EANUPC)
 
 class TestReadWrite(unittest.TestCase):
 
@@ -34,7 +38,7 @@ class TestReadWrite(unittest.TestCase):
 		text = "I have the best words."
 		img = zxingcpp.create_barcode(text, format, ec_level="L", version=2).to_image()
 
-		res = zxingcpp.read_barcode(img)
+		res = zxingcpp.read_barcode(img, format)
 		self.check_res(res, format, text)
 		self.assertEqual(res.ec_level, "L")
 		self.assertEqual(res.symbology_identifier, "]Q1")
@@ -77,7 +81,7 @@ class TestReadWrite(unittest.TestCase):
 		self.assertEqual(res.ec_level, "H")
 		# self.assertEqual(res.position.top_left.x, 4)
 
-		res = zxingcpp.read_barcode(img, formats=format)
+		res = zxingcpp.read_barcode(img, formats=[format])
 		self.check_res(res, format, text)
 
 	@unittest.skipIf(not hasattr(zxingcpp, 'write_barcode'), "skipping test for deprecated write_barcode API")
@@ -97,7 +101,7 @@ class TestReadWrite(unittest.TestCase):
 
 	def test_failed_read_buffer(self):
 		res = zxingcpp.read_barcode(
-			self.zeroes((100, 100)), formats=BF.EAN8 | BF.Aztec, binarizer=zxingcpp.Binarizer.BoolCast
+			self.zeroes((100, 100)), formats=[BF.EAN8, BF.Aztec], binarizer=zxingcpp.Binarizer.BoolCast
 		)
 
 		self.assertEqual(res, None)
@@ -106,7 +110,7 @@ class TestReadWrite(unittest.TestCase):
 	def test_failed_read_numpy(self):
 		import numpy as np # pyright: ignore
 		res = zxingcpp.read_barcode(
-			np.zeros((100, 100), np.uint8), formats=BF.EAN8 | BF.Aztec, binarizer=zxingcpp.Binarizer.BoolCast
+			np.zeros((100, 100), np.uint8), formats=[BF.EAN8, BF.Aztec], binarizer=zxingcpp.Binarizer.BoolCast
 		)
 
 		self.assertEqual(res, None)
