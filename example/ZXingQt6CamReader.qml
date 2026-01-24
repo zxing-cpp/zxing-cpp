@@ -30,7 +30,7 @@ Window {
 		id: barcodeReader
 		videoSink: videoOutput.videoSink
 
-		formats: (linearSwitch.checked ? (ZXing.LinearCodes) : ZXing.None) | (matrixSwitch.checked ? (ZXing.MatrixCodes) : ZXing.None)
+		formats: [linearSwitch.checked ? ZXing.AllLinear : ZXing.None, matrixSwitch.checked ? ZXing.AllMatrix : ZXing.None]
 		tryRotate: tryRotateSwitch.checked
 		tryHarder: tryHarderSwitch.checked
 		tryInvert: tryInvertSwitch.checked

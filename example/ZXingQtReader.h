@@ -34,7 +34,7 @@ namespace ZXingQt {
 #ifdef QT_QML_LIB
 namespace QML {
 Q_NAMESPACE
-enum class BarcodeFormat
+enum class BarcodeFormat : unsigned int
 {
 #define X(NAME, SYM, VAR, FLAGS, ZINT, ENABLED, HRI) NAME = ZX_BCF_ID(SYM, VAR),
 	ZX_BCF_LIST(X)
@@ -45,11 +45,8 @@ enum class ContentType { Text, Binary, Mixed, GS1, ISO15434, UnknownECI };
 
 enum class TextMode { Plain, ECI, HRI, Escaped, Hex, HexECI };
 
-Q_DECLARE_FLAGS(BarcodeFormats, BarcodeFormat)
-Q_DECLARE_OPERATORS_FOR_FLAGS(BarcodeFormats)
-Q_FLAG_NS(BarcodeFormats)
+typedef QList<BarcodeFormat> BarcodeFormats;
 Q_ENUM_NS(BarcodeFormat)
-
 Q_ENUM_NS(ContentType)
 Q_ENUM_NS(TextMode)
 } // namespace QML
@@ -393,9 +390,20 @@ private:
 	QML::BarcodeFormats formatsQML() const noexcept
 	{
 		auto fmts = formats();
-		return QML::BarcodeFormats(*reinterpret_cast<int*>(&fmts));
+
+		QML::BarcodeFormats formats;
+		for (const BarcodeFormat& format : fmts)
+			formats.push_back(static_cast<QML::BarcodeFormat>(format));
+
+		return formats;
 	}
-	void setFormatsQML(QML::BarcodeFormats newVal) { setFormats(static_cast<ZXing::BarcodeFormat>(newVal.operator int())); }
+	void setFormatsQML(QML::BarcodeFormats newVal)
+	{
+		std::vector<BarcodeFormat> formats;
+		for (const QML::BarcodeFormat& format : newVal)
+			formats.push_back(static_cast<ZXing::BarcodeFormat>(format));
+		setFormats(std::move(formats));
+	}
 
 	QML::TextMode textModeQML() const noexcept { return static_cast<QML::TextMode>(textMode()); }
 	void setTextModeQML(QML::TextMode newVal) { setTextMode(static_cast<ZXing::TextMode>(newVal)); }
