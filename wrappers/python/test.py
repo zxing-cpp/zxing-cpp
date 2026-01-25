@@ -42,6 +42,7 @@ class TestReadWrite(unittest.TestCase):
 		self.check_res(res, format, text)
 		self.assertEqual(res.ec_level, "L")
 		self.assertEqual(res.symbology_identifier, "]Q1")
+		self.assertEqual(res.extra["Version"], '2')
 
 	def test_create_from_str(self):
 		format = BF.Code128

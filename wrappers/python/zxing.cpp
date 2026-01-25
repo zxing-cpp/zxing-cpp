@@ -407,7 +407,7 @@ PYBIND11_MODULE(zxingcpp, m)
 			":return: Error message\n"
 			":rtype: str")
 		.def("__str__", [](Error e) { return ToString(e); });
-	py::class_<Barcode>(m, "Barcode", "The Barcode class")
+	py::class_<Barcode>(m, "Barcode", "The Barcode class", py::dynamic_attr{})
 		.def_property_readonly("valid", &Barcode::isValid,
 			":return: whether or not barcode is valid (i.e. a symbol was found and decoded)\n"
 			":rtype: bool")
@@ -442,6 +442,26 @@ PYBIND11_MODULE(zxingcpp, m)
 			"error", [](const Barcode& res) { return res.error() ? std::optional(res.error()) : std::nullopt; },
 			":return: Error code or None\n"
 			":rtype: zxingcpp.Error")
+		.def_property_readonly(
+			"extra", [](py::object self) -> py::object {
+				if (py::hasattr(self, "_cached_extra"))
+					return self.attr("_cached_extra");
+				const auto extra = self.cast<const Barcode&>().extra();
+				if (extra.empty()) {
+					self.attr("_cached_extra") = py::none();
+				} else {
+					try {
+						auto json = py::module::import("json");
+						auto parsed = json.attr("loads")(extra);
+						self.attr("_cached_extra") = parsed;
+					} catch (py::error_already_set& e) {
+						throw py::value_error(std::string("Invalid JSON in Barcode::extra(): ") + e.what());
+					}
+				}
+				return self.attr("_cached_extra");
+			},
+			":return: Symbology specific extra information as a Python dictionary (might be empty)\n"
+			":rtype: dict")
 		.def("to_image", &write_barcode_to_image,
 			  py::arg("scale") = 1,
 			  py::arg("add_hrt") = false,

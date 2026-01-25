@@ -8,6 +8,7 @@ for barcode in barcodes:
 		f'\n Text:    "{barcode.text}"'
 		f'\n Format:   {barcode.format}'
 		f'\n Content:  {barcode.content_type}'
-		f'\n Position: {barcode.position}')
+		f'\n Position: {barcode.position}'
+		f'\n Extra:    {barcode.extra}')
 if len(barcodes) == 0:
 	print("Could not find any barcode.")
