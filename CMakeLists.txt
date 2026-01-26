@@ -12,6 +12,7 @@ option (ZXING_UNIT_TESTS "Build the unit tests (don't enable for production buil
 option (ZXING_INSTALL_TEST "Test if the installed/public API works" OFF)
 option (ZXING_PYTHON_MODULE "Build the python module" OFF)
 set    (ZXING_DEPENDENCIES "AUTO" CACHE STRING "Fetch from github or use locally installed (AUTO/GITHUB/LOCAL)")
+option (ZXING_CLANG_TIDY "Enable clang-tidy analysis" OFF)
 
 if (WIN32)
     option (BUILD_SHARED_LIBS "Build and link as shared library" OFF)
@@ -57,6 +58,16 @@ if (NOT DEFINED CMAKE_CXX_STANDARD)
 endif()
 
 set(CMAKE_COLOR_DIAGNOSTICS ON)
+
+if (ZXING_CLANG_TIDY)
+    find_program(CMAKE_CXX_CLANG_TIDY NAMES "clang-tidy" DOC "Path to clang-tidy executable")
+    if (NOT CMAKE_CXX_CLANG_TIDY)
+        message(WARNING "clang-tidy not found.")
+    else()
+        message(STATUS "clang-tidy found: ${CMAKE_CXX_CLANG_TIDY}")
+        set(ZXING_DISABLE_PCH ON)
+    endif()
+endif()
 
 # make installed binaries relocatable on macOS and Linux
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
