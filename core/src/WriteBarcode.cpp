@@ -46,8 +46,8 @@ ZX_PROPERTY(bool, addQuietZones)
 
 WriterOptions::WriterOptions() : d(std::make_unique<Data>()) {}
 WriterOptions::~WriterOptions() = default;
-WriterOptions::WriterOptions(WriterOptions&&) = default;
-WriterOptions& WriterOptions::operator=(WriterOptions&&) = default;
+WriterOptions::WriterOptions(WriterOptions&&) noexcept = default;
+WriterOptions& WriterOptions::operator=(WriterOptions&&) noexcept = default;
 
 #ifdef ZXING_USE_ZINT
 
@@ -99,9 +99,9 @@ static std::string ToSVG(ImageView iv)
 
 	std::ostringstream res;
 
-	res << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-		<< "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" viewBox=\"0 0 " << iv.width() << " " << iv.height()
-		<< "\" stroke=\"none\">\n"
+	res << R"(<?xml version="1.0" encoding="UTF-8"?>)" << "\n"
+		<< R"(<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 )" << iv.width() << ' ' << iv.height()
+		<< R"(" stroke="none">)" << "\n"
 		<< "<path d=\"";
 
 	for (int y = 0; y < iv.height(); ++y)
@@ -126,7 +126,7 @@ static Image ToImage(BitMatrix bits, bool isLinearCode, const WriterOptions& opt
 	return iv;
 }
 
-std::string WriteBarcodeToSVG(const Barcode& barcode, [[maybe_unused]] const WriterOptions& opts)
+std::string WriteBarcodeToSVG(const Barcode& barcode, [[maybe_unused]] const WriterOptions& options)
 {
 #if defined(ZXING_WRITERS) && defined(ZXING_USE_ZINT)
 	auto* zint = barcode.d->zint.get();
@@ -136,30 +136,30 @@ std::string WriteBarcodeToSVG(const Barcode& barcode, [[maybe_unused]] const Wri
 		return ToSVG(barcode.symbol());
 
 #if defined(ZXING_WRITERS) && defined(ZXING_USE_ZINT)
-	auto resetOnExit = SetCommonWriterOptions(zint, opts);
+	auto resetOnExit = SetCommonWriterOptions(zint, options);
 
 	zint->output_options |= BARCODE_MEMORY_FILE;// | EMBED_VECTOR_FONT;
 	strcpy(zint->outfile, "null.svg");
 
-	CHECK(ZBarcode_Print(zint, opts.rotate()));
+	CHECK(ZBarcode_Print(zint, options.rotate()));
 
 	return std::string(reinterpret_cast<const char*>(zint->memfile), zint->memfile_size);
 #endif
 }
 
-Image WriteBarcodeToImage(const Barcode& barcode, [[maybe_unused]] const WriterOptions& opts)
+Image WriteBarcodeToImage(const Barcode& barcode, [[maybe_unused]] const WriterOptions& options)
 {
 #if defined(ZXING_WRITERS) && defined(ZXING_USE_ZINT)
 	auto* zint = barcode.d->zint.get();
 
 	if (!zint)
 #endif
-		return ToImage(barcode.d->symbol.copy(), barcode.format() & BarcodeFormat::AllLinear, opts);
+		return ToImage(barcode.d->symbol.copy(), barcode.format() & BarcodeFormat::AllLinear, options);
 
 #if defined(ZXING_WRITERS) && defined(ZXING_USE_ZINT)
-	auto resetOnExit = SetCommonWriterOptions(zint, opts);
+	auto resetOnExit = SetCommonWriterOptions(zint, options);
 
-	CHECK(ZBarcode_Buffer(zint, opts.rotate()));
+	CHECK(ZBarcode_Buffer(zint, options.rotate()));
 
 #ifdef PRINT_DEBUG
 	printf("write symbol with size: %dx%d\n", zint->bitmap_width, zint->bitmap_height);

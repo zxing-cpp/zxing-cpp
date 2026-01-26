@@ -45,8 +45,8 @@ class CreatorOptions
 public:
 	CreatorOptions(BarcodeFormat format, std::string options = {});
 	~CreatorOptions();
-	CreatorOptions(CreatorOptions&&);
-	CreatorOptions& operator=(CreatorOptions&&);
+	CreatorOptions(CreatorOptions&&) noexcept;
+	CreatorOptions& operator=(CreatorOptions&&) noexcept;
 
 	zint_symbol* zint() const;
 

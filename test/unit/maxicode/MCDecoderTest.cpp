@@ -11,7 +11,7 @@
 
 namespace ZXing::MaxiCode::DecodedBitStreamParser {
 
-DecoderResult Decode(ByteArray&& bytes, const int mode);
+DecoderResult Decode(ByteArray&& bytes, int mode);
 
 }
 
@@ -55,7 +55,7 @@ static DecoderResult parse(ByteArray bytes, const int mode, ByteArray *mode2or3 
 // Helper to return Structured Append
 static StructuredAppendInfo info(ByteArray bytes, const int mode)
 {
-	return parse(bytes, mode).structuredAppend();
+	return parse(std::move(bytes), mode).structuredAppend();
 }
 
 TEST(MCDecoderTest, StructuredAppendSymbologyIdentifier)

@@ -21,13 +21,12 @@ class DetectorResult : public ZXing::DetectorResult
 	bool _isMirrored = false;
 	int _runeValue = -1;
 
-	DetectorResult(const DetectorResult&) = delete;
-	DetectorResult& operator=(const DetectorResult&) = delete;
-
 public:
 	DetectorResult() = default;
 	DetectorResult(DetectorResult&&) noexcept = default;
 	DetectorResult& operator=(DetectorResult&&) noexcept = default;
+	DetectorResult(const DetectorResult&) = delete;
+	DetectorResult& operator=(const DetectorResult&) = delete;
 
 	DetectorResult(ZXing::DetectorResult&& result, bool isCompact, int nbDatablocks, int nbLayers, bool readerInit, bool isMirrored, int runeValue)
 		: ZXing::DetectorResult{std::move(result)},

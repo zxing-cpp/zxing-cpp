@@ -31,7 +31,7 @@ ByteArray BitArray::toBytes(int bitOffset, int numBytes) const
 	ByteArray res(numBytes == -1 ? (size() - bitOffset + 7) / 8 : numBytes);
 	for (int i = 0; i < Size(res); i++)
 		for (int j = 0; j < 8; j++)
-			AppendBit(res[i], (numBytes != -1 || bitOffset < size()) ? get(bitOffset++) : 0);
+			AppendBit(res[i], (numBytes != -1 || bitOffset < size()) ? get(bitOffset++) : false);
 	return res;
 }
 

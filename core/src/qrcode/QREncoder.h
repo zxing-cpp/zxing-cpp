@@ -15,7 +15,7 @@ namespace ZXing::QRCode {
 enum class ErrorCorrectionLevel;
 class EncodeResult;
 
-EncodeResult Encode(const std::wstring& content, ErrorCorrectionLevel ecLevel, CharacterSet encoding, int versionNumber,
+EncodeResult Encode(const std::wstring& content, ErrorCorrectionLevel ecLevel, CharacterSet charset, int versionNumber,
 					bool useGs1Format, int maskPattern = -1);
 
 } // namespace ZXing::QRCode

@@ -108,7 +108,7 @@ std::optional<Clock> CheckForClock(int rowNumber, PatternView& view)
 BarcodeData DXFilmEdgeReader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<DecodingState>& state) const
 {
 	if (!state) {
-		state.reset(new DXFEState);
+		state = std::make_unique<DXFEState>();
 		static_cast<DXFEState*>(state.get())->centerRow = rowNumber;
 	}
 

@@ -176,7 +176,7 @@ public:
 	BarcodeFormats(std::vector<BarcodeFormat>&& formats) : formats_(std::move(formats)) { normalize(); }
 
 	/// @brief Constructs a collection from a textual representation (e.g. a comma-separated list of format identifiers).
-	explicit BarcodeFormats(std::string_view ids);
+	explicit BarcodeFormats(std::string_view str);
 
 	BarcodeFormats(const BarcodeFormats&) = default;
 	BarcodeFormats(BarcodeFormats&&) = default;
@@ -194,7 +194,7 @@ public:
 	auto data() const noexcept { return formats_.data(); }
 
 	bool empty() const noexcept { return formats_.empty(); }
-	int size() const noexcept { return formats_.size(); }
+	int size() const noexcept { return static_cast<int>(formats_.size()); }
 
 	// BarcodeFormats&& operator|(BarcodeFormat bt) &&;
 	// BarcodeFormats&& operator|(const BarcodeFormats& other) &&;
@@ -211,7 +211,7 @@ public:
 	{
 		return std::any_of(begin(), end(), [format](BarcodeFormat f) { return f & format; });
 	}
-	[[deprecated]] inline bool testFlags(BarcodeFormats formats) const noexcept
+	[[deprecated]] inline bool testFlags(const BarcodeFormats& formats) const noexcept
 	{
 		return std::any_of(begin(), end(), [formats](BarcodeFormat fo) {
 			return std::any_of(formats.begin(), formats.end(), [fo](BarcodeFormat fi) { return fo & fi; });

@@ -179,7 +179,7 @@ BarcodeData DataBarReader::decodePattern(int rowNumber, PatternView& next, std::
 	}
 #else
 	if (!state)
-		state.reset(new State);
+		state = std::make_unique<State>();
 	auto* prevState = static_cast<State*>(state.get());
 
 	next = next.subView(0, FULL_PAIR_SIZE + 1); // +1 reflects the guard pattern on the right, see IsRightPair()

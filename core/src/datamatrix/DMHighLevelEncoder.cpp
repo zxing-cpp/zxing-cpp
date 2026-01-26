@@ -840,17 +840,6 @@ namespace Base256Encoder {
 
 } // Base256Encoder
 
-// c++20
-static bool StartsWith(std::wstring_view s, std::wstring_view ss)
-{
-	return s.length() > ss.length() && s.compare(0, ss.length(), ss) == 0;
-}
-
-static bool EndsWith(std::wstring_view s, std::wstring_view ss)
-{
-	return s.length() > ss.length() && s.compare(s.length() - ss.length(), ss.length(), ss) == 0;
-}
-
 ByteArray Encode(const std::wstring& msg)
 {
 	return Encode(msg, CharacterSet::ISO8859_1, SymbolShape::NONE, -1, -1, -1, -1);
@@ -887,12 +876,12 @@ ByteArray Encode(const std::wstring& msg, CharacterSet charset, SymbolShape shap
 	constexpr std::wstring_view MACRO_06_HEADER = L"[)>\x1E""06\x1D";
 	constexpr std::wstring_view MACRO_TRAILER = L"\x1E\x04";
 
-	if (StartsWith(msg, MACRO_05_HEADER) && EndsWith(msg, MACRO_TRAILER)) {
+	if (msg.starts_with(MACRO_05_HEADER) && msg.ends_with(MACRO_TRAILER)) {
 		context.addCodeword(MACRO_05);
 		context.setSkipAtEnd(2);
 		context.setCurrentPos(Size(MACRO_05_HEADER));
 	}
-	else if (StartsWith(msg, MACRO_06_HEADER) && EndsWith(msg, MACRO_TRAILER)) {
+	else if (msg.starts_with(MACRO_06_HEADER) && msg.ends_with(MACRO_TRAILER)) {
 		context.addCodeword(MACRO_06);
 		context.setSkipAtEnd(2);
 		context.setCurrentPos(Size(MACRO_06_HEADER));

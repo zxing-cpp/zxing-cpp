@@ -166,7 +166,7 @@ std::vector<T> ToVector(T&& v)
 {
 	// simply constructing a vector via initializer_list does not work with move-only types
 	std::vector<T> res;
-	res.emplace_back(std::move(v));
+	res.emplace_back(std::forward<T>(v));
 	return res;
 }
 

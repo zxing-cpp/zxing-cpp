@@ -13,6 +13,6 @@ namespace fs = std::filesystem;
 
 namespace ZXing::Test {
 
-int runBlackBoxTests(const fs::path& blackboxPath, const std::set<std::string>& includedTests);
+int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>& includedTests);
 
 } // ZXing::Test

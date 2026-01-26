@@ -401,7 +401,7 @@ DetectorResult SampleQR(const BitMatrix& image, const FinderPatternSet& fp)
 
 		// if the version bits are garbage -> discard the detection
 		if (!version || std::min(std::abs(version->dimension() - top.dim), std::abs(version->dimension() - left.dim)) > 8)
-			return DetectorResult();
+			return {};
 		if (version->dimension() != dimension) {
 			printf("update dimension: %d -> %d\n", dimension, version->dimension());
 			dimension = version->dimension();
@@ -443,7 +443,7 @@ DetectorResult SampleQR(const BitMatrix& image, const FinderPatternSet& fp)
 				PointF guessed =
 					x * y == 0 ? bestGuessAPP(x, y) : bestGuessAPP(x - 1, y) + bestGuessAPP(x, y - 1) - bestGuessAPP(x - 1, y - 1);
 				if (auto found = LocateAlignmentPattern(image, moduleSize, guessed))
-					apP.set(x, y, *found);
+					apP.set(x, y, found);
 			}
 
 		// go over the whole set of alignment patters again and try to fill any remaining gap by using available neighbors as guides
@@ -760,8 +760,8 @@ DetectorResult SampleRMQR(const BitMatrix& image, const ConcentricPattern& fp)
 			continue;
 
 		uint32_t formatInfoBits = 0;
-		for (int i = 0; i < Size(FORMAT_INFO_COORDS); ++i)
-			AppendBit(formatInfoBits, cur.blackAt(mod2Pix(centered(FORMAT_INFO_COORDS[i]))));
+		for (auto c : FORMAT_INFO_COORDS)
+			AppendBit(formatInfoBits, cur.blackAt(mod2Pix(centered(c))));
 
 		auto fi = FormatInformation::DecodeRMQR(formatInfoBits, 0 /*formatInfoBits2*/);
 		if (fi.hammingDistance < bestFI.hammingDistance) {

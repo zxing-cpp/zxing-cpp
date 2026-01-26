@@ -16,6 +16,6 @@ std::string ToString(const BitMatrix& matrix, bool inverted = false);
 std::string ToString(const BitMatrix& matrix, char one, char zero = ' ', bool addSpace = true, bool printAsCString = false);
 std::string ToSVG(const BitMatrix& matrix);
 BitMatrix ParseBitMatrix(const std::string& str, char one = 'X', bool expectSpace = true);
-void SaveAsPBM(const BitMatrix& matrix, const std::string filename, int quietZone = 0);
+void SaveAsPBM(const BitMatrix& matrix, const std::string& filename, int quietZone = 0);
 
 } // ZXing

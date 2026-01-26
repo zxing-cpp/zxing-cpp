@@ -33,7 +33,6 @@ class BitArray
 	// Nothing wrong to support it, just to make it explicit, instead of by mistake.
 	// Use copy() below.
 	BitArray(const BitArray &) = default;
-	BitArray& operator=(const BitArray &) = delete;
 
 public:
 
@@ -45,6 +44,7 @@ public:
 
 	BitArray(BitArray&& other) noexcept = default;
 	BitArray& operator=(BitArray&& other) noexcept = default;
+	BitArray& operator=(const BitArray &) = delete;
 
 	BitArray copy() const { return *this; }
 
@@ -75,6 +75,11 @@ public:
 	{
 		for (; numBits; --numBits)
 			_bits.push_back((value >> (numBits-1)) & 1);
+	}
+
+	void appendBits(uint32_t value, int numBits)
+	{
+		appendBits(static_cast<int>(value), numBits);
 	}
 
 	void appendBit(bool bit) { _bits.push_back(bit); }

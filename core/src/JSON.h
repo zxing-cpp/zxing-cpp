@@ -18,7 +18,7 @@ std::string JsonEscapeStr(std::string_view str);
 std::string JsonUnEscapeStr(std::string_view str);
 
 template<typename T>
-inline std::string JsonProp(std::string_view key, T val, T ignore = {})
+inline std::string JsonProp(std::string_view key, const T& val, const T& ignore = {})
 {
 	if (val == ignore)
 		return {};

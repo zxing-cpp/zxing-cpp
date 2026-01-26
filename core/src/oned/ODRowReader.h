@@ -62,7 +62,7 @@ public:
 		virtual ~DecodingState() = default;
 	};
 
-	virtual ~RowReader() {}
+	virtual ~RowReader() = default;
 
 	virtual BarcodeData decodePattern(int rowNumber, PatternView& next, std::unique_ptr<DecodingState>& state) const = 0;
 

@@ -75,7 +75,7 @@ static void EmbedPositionDetectionPattern(int xStart, int yStart, TritMatrix& ma
 	// Surround the 7x7 pattern with one line of white space (separation pattern)
 	auto setIfInside = [&](int x, int y) {
 		if( x >= 0 && x < matrix.width() && y >= 0 && y < matrix.height())
-			matrix.set(x, y, 0);
+			matrix.set(x, y, false);
 	};
 
 	for (int i = -1; i < 8; ++i) {
@@ -101,7 +101,7 @@ static void EmbedPositionDetectionPatternsAndSeparators(TritMatrix& matrix)
 // Embed the lonely dark dot at left bottom corner. JISX0510:2004 (p.46)
 static void EmbedDarkDotAtLeftBottomCorner(TritMatrix& matrix)
 {
-	matrix.set(8, matrix.height() - 8, 1);
+	matrix.set(8, matrix.height() - 8, true);
 }
 
 // Return the position of the most significant bit set (to one) in the "value". The most

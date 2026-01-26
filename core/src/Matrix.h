@@ -30,7 +30,6 @@ private:
 	// Nothing wrong to support it, just to make it explicit, instead of by mistake.
 	// Use copy() below.
 	Matrix(const Matrix &) = default;
-	Matrix& operator=(const Matrix &) = delete;
 
 public:
 	Matrix() = default;
@@ -45,6 +44,7 @@ public:
 
 	Matrix(Matrix&&) noexcept = default;
 	Matrix& operator=(Matrix&&) noexcept = default;
+	Matrix& operator=(const Matrix &) = delete;
 
 	Matrix copy() const {
 		return *this;

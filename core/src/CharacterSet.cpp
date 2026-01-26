@@ -64,9 +64,9 @@ static CharacterSetName NAME_TO_CHARSET[] = {
 	{"BINARY",		CharacterSet::BINARY},
 };
 
-CharacterSet CharacterSetFromString(std::string_view str)
+CharacterSet CharacterSetFromString(std::string_view name)
 {
-	auto i = FindIf(NAME_TO_CHARSET, [str](auto& v) { return IsEqualIgnoreCaseAnd(v.name, str, "_- "); });
+	auto i = FindIf(NAME_TO_CHARSET, [name](auto& v) { return IsEqualIgnoreCaseAnd(v.name, name, "_- "); });
 	return i == std::end(NAME_TO_CHARSET) ? CharacterSet::Unknown : i->cs;
 }
 

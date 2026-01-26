@@ -133,7 +133,7 @@ BarcodesData DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, co
 		bool val = false;
 		int x = 0;
 		for (auto b : bars) {
-			for(int j = 0; j < b; ++j)
+			for(unsigned j = 0; j < b; ++j)
 				dbg.set(x++, rowNumber, val);
 			val = !val;
 		}

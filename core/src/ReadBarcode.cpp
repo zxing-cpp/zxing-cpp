@@ -54,7 +54,7 @@ struct ReaderOptions::Data
 	uint8_t minLineCount          = 2;
 	uint8_t maxNumberOfSymbols    = 0xff;
 	uint16_t downscaleThreshold   = 500;
-	BarcodeFormats formats        = {};
+	BarcodeFormats formats;
 
 	Data()
 		: tryHarder(1),
@@ -90,8 +90,8 @@ ReaderOptions& ReaderOptions::operator=(const ReaderOptions& other)
 }
 
 // move
-ReaderOptions::ReaderOptions(ReaderOptions&&) = default;
-ReaderOptions& ReaderOptions::operator=(ReaderOptions&&) = default;
+ReaderOptions::ReaderOptions(ReaderOptions&&) noexcept = default;
+ReaderOptions& ReaderOptions::operator=(ReaderOptions&&) noexcept = default;
 
 const BarcodeFormats& ReaderOptions::formats() const noexcept { return d->formats; }
 ReaderOptions& ReaderOptions::formats(BarcodeFormats&& v) & { return (void)(d->formats = std::move(v)), *this; }

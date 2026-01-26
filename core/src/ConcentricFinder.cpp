@@ -178,7 +178,7 @@ static std::optional<QuadrilateralF> FitQadrilateralToPoints(PointF center, std:
 	std::array lines{RegressionLine{corners[0] + 1, corners[1]}, RegressionLine{corners[1] + 1, corners[2]},
 					 RegressionLine{corners[2] + 1, corners[3]}, RegressionLine{corners[3] + 1, &points.back() + 1}};
 
-	if (std::any_of(lines.begin(), lines.end(), [](auto line) { return !line.isValid(); }))
+	if (std::any_of(lines.begin(), lines.end(), [](const auto& line) { return !line.isValid(); }))
 		return {};
 
 	std::array<const PointF*, 4> beg = {corners[0] + 1, corners[1] + 1, corners[2] + 1, corners[3] + 1};
@@ -226,13 +226,13 @@ std::optional<QuadrilateralF> FitSquareToPoints(const BitMatrix& image, PointF c
 	return res;
 }
 
-std::optional<QuadrilateralF> FindConcentricPatternCorners(const BitMatrix& image, PointF center, int range, int lineIndex)
+std::optional<QuadrilateralF> FindConcentricPatternCorners(const BitMatrix& image, PointF center, int range, int ringIndex)
 {
-	auto innerCorners = FitSquareToPoints(image, center, range, lineIndex, false);
+	auto innerCorners = FitSquareToPoints(image, center, range, ringIndex, false);
 	if (!innerCorners)
 		return {};
 
-	auto outerCorners = FitSquareToPoints(image, center, range, lineIndex + 1, true);
+	auto outerCorners = FitSquareToPoints(image, center, range, ringIndex + 1, true);
 	if (!outerCorners)
 		return {};
 

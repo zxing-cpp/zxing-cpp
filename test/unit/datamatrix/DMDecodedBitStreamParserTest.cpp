@@ -12,7 +12,7 @@
 
 namespace ZXing::DataMatrix::DecodedBitStreamParser {
 
-DecoderResult Decode(ByteArray&& bytes, const bool isDMRE);
+DecoderResult Decode(ByteArray&& bytes, bool isDMRE);
 
 }
 

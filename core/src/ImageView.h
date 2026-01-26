@@ -123,8 +123,8 @@ public:
 		case 90:  return {data(0, _height - 1), _height, _width, _format, _pixStride, -_rowStride};
 		case 180: return {data(_width - 1, _height - 1), _width, _height, _format, -_rowStride, -_pixStride};
 		case 270: return {data(_width - 1, 0), _height, _width, _format, -_pixStride, _rowStride};
+		default:  return *this;
 		}
-		return *this;
 	}
 
 	ImageView subsampled(int scale) const

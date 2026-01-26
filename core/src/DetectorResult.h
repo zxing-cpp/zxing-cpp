@@ -23,13 +23,13 @@ class DetectorResult
 	BitMatrix _bits;
 	QuadrilateralI _position;
 
-	DetectorResult(const DetectorResult&) = delete;
-	DetectorResult& operator=(const DetectorResult&) = delete;
-
 public:
 	DetectorResult() = default;
 	DetectorResult(DetectorResult&&) noexcept = default;
 	DetectorResult& operator=(DetectorResult&&) noexcept = default;
+
+	DetectorResult(const DetectorResult&) = delete;
+	DetectorResult& operator=(const DetectorResult&) = delete;
 
 	DetectorResult(BitMatrix&& bits, QuadrilateralI&& position) : _bits(std::move(bits)), _position(std::move(position)) {}
 

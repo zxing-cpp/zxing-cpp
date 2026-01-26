@@ -95,7 +95,7 @@ public:
 		return a.m_hasValue;
 	}
 
-	friend inline void swap(Nullable &a, Nullable &b) {
+	friend inline void swap(Nullable &a, Nullable &b) noexcept {
 		using std::swap;
 		swap(a.m_value, b.m_value);
 		swap(a.m_hasValue, b.m_hasValue);

@@ -79,14 +79,14 @@ extern "C" {
 ZXing_ImageView* ZXing_ImageView_new(const uint8_t* data, int width, int height, ZXing_ImageFormat format, int rowStride,
 									 int pixStride)
 {
-	ImageFormat cppformat = static_cast<ImageFormat>(format);
+	auto cppformat = static_cast<ImageFormat>(format);
 	ZX_TRY(new ImageView(data, width, height, cppformat, rowStride, pixStride))
 }
 
 ZXing_ImageView* ZXing_ImageView_new_checked(const uint8_t* data, int size, int width, int height, ZXing_ImageFormat format,
 											 int rowStride, int pixStride)
 {
-	ImageFormat cppformat = static_cast<ImageFormat>(format);
+	auto cppformat = static_cast<ImageFormat>(format);
 	ZX_TRY(new ImageView(data, size, width, height, cppformat, rowStride, pixStride))
 }
 
@@ -294,7 +294,7 @@ void ZXing_ReaderOptions_delete(ZXing_ReaderOptions* opts)
 
 #define ZX_PROPERTY(TYPE, NAME, CAP_NAME) \
 	TYPE ZXing_ReaderOptions_get##CAP_NAME(const ZXing_ReaderOptions* opts) { return opts->NAME(); } \
-	void ZXing_ReaderOptions_set##CAP_NAME(ZXing_ReaderOptions* opts, TYPE val) { opts->NAME(val); }
+	void ZXing_ReaderOptions_set##CAP_NAME(ZXing_ReaderOptions* opts, TYPE NAME) { opts->NAME(NAME); }
 
 ZX_PROPERTY(bool, tryHarder, TryHarder)
 ZX_PROPERTY(bool, tryRotate, TryRotate)
@@ -328,7 +328,7 @@ ZXing_BarcodeFormat* ZXing_ReaderOptions_getFormats(const ZXing_ReaderOptions* o
 
 #define ZX_ENUM_PROPERTY(TYPE, NAME, CAP_NAME) \
 	ZXing_##TYPE ZXing_ReaderOptions_get##CAP_NAME(const ZXing_ReaderOptions* opts) { return static_cast<ZXing_##TYPE>(opts->NAME()); } \
-	void ZXing_ReaderOptions_set##CAP_NAME(ZXing_ReaderOptions* opts, ZXing_##TYPE val) { opts->NAME(static_cast<TYPE>(val)); }
+	void ZXing_ReaderOptions_set##CAP_NAME(ZXing_ReaderOptions* opts, ZXing_##TYPE NAME) { opts->NAME(static_cast<TYPE>(NAME)); }
 
 ZX_ENUM_PROPERTY(Binarizer, binarizer, Binarizer)
 ZX_ENUM_PROPERTY(EanAddOnSymbol, eanAddOnSymbol, EanAddOnSymbol)
@@ -367,7 +367,7 @@ void ZXing_CreatorOptions_delete(ZXing_CreatorOptions* opts)
 
 #define ZX_ENUM_PROPERTY(TYPE, NAME, CAP_NAME) \
 	ZXing_##TYPE ZXing_CreatorOptions_get##CAP_NAME(const ZXing_CreatorOptions* opts) { return transmute_cast<ZXing_##TYPE>(opts->NAME()); } \
-	void ZXing_CreatorOptions_set##CAP_NAME(ZXing_CreatorOptions* opts, ZXing_##TYPE val) { opts->NAME(transmute_cast<TYPE>(val)); }
+	void ZXing_CreatorOptions_set##CAP_NAME(ZXing_CreatorOptions* opts, ZXing_##TYPE NAME) { opts->NAME(transmute_cast<TYPE>(NAME)); }
 
 ZX_ENUM_PROPERTY(BarcodeFormat, format, Format)
 
@@ -376,7 +376,7 @@ ZX_ENUM_PROPERTY(BarcodeFormat, format, Format)
 
 #define ZX_PROPERTY(TYPE, NAME, CAP_NAME) \
 	TYPE ZXing_CreatorOptions_get##CAP_NAME(const ZXing_CreatorOptions* opts) { return opts->NAME(); } \
-	void ZXing_CreatorOptions_set##CAP_NAME(ZXing_CreatorOptions* opts, TYPE val) { opts->NAME(val); }
+	void ZXing_CreatorOptions_set##CAP_NAME(ZXing_CreatorOptions* opts, TYPE NAME) { opts->NAME(NAME); }
 
 #undef ZX_PROPERTY
 

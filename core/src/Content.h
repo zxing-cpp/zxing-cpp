@@ -47,7 +47,7 @@ public:
 	CharacterSet defaultCharset = CharacterSet::Unknown;
 	bool hasECI = false;
 
-	Content();
+	Content() = default;
 	Content(ByteArray&& bytes, SymbologyIdentifier si, CharacterSet defaultCharset = CharacterSet::Unknown);
 
 	// make movable but not copyable

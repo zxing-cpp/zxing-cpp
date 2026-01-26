@@ -70,7 +70,7 @@ public:
 	ModulusPoly multiplyByMonomial(int degree, int coefficient) const;
 	void divide(const ModulusPoly& other, ModulusPoly& quotient, ModulusPoly& remainder) const;
 
-	friend void swap(ModulusPoly& a, ModulusPoly& b)
+	friend void swap(ModulusPoly& a, ModulusPoly& b) noexcept
 	{
 		std::swap(a._field, b._field);
 		std::swap(a._coefficients, b._coefficients);

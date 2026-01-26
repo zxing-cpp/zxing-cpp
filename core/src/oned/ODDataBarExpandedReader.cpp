@@ -337,7 +337,7 @@ BarcodeData DataBarExpandedReader::decodePattern(int rowNumber, PatternView& vie
 		return {};
 #else
 	if (!state)
-		state.reset(new DBERState);
+		state = std::make_unique<DBERState>();
 	auto& allPairs = static_cast<DBERState*>(state.get())->allPairs;
 
 	// Stacked codes can be laid out in a number of ways. The following rules apply:

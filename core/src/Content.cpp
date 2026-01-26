@@ -56,8 +56,6 @@ void Content::switchEncoding(ECI eci, bool isECI)
 	hasECI |= isECI;
 }
 
-Content::Content() {}
-
 Content::Content(ByteArray&& bytes, SymbologyIdentifier si, CharacterSet defaultCharset)
 	: bytes(std::move(bytes)), symbology(si), defaultCharset(defaultCharset) {}
 
@@ -342,10 +340,7 @@ CharacterSet GuessTextEncoding(ByteView bytes, CharacterSet fallback = Character
 					sjisBytesLeft--;
 				}
 			}
-			else if (value == 0x80 || value == 0xA0 || value > 0xEF) {
-				canBeShiftJIS = false;
-			}
-			else if (value < 0x20 && value != 0xa && value != 0xd) {
+			else if (value == 0x80 || value == 0xA0 || value > 0xEF || (value < 0x20 && value != 0xa && value != 0xd)) {
 				canBeShiftJIS = false; // use non-printable ASCII as indication for binary content
 			}
 			else if (value > 0xA0 && value < 0xE0) {

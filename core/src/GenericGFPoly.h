@@ -137,7 +137,7 @@ public:
 	GenericGFPoly& multiplyByMonomial(int coefficient, int degree = 0);
 	GenericGFPoly& divide(const GenericGFPoly& other, GenericGFPoly& quotient);
 
-	friend void swap(GenericGFPoly& a, GenericGFPoly& b)
+	friend void swap(GenericGFPoly& a, GenericGFPoly& b) noexcept
 	{
 		std::swap(a._field, b._field);
 		std::swap(a._coefficients, b._coefficients);

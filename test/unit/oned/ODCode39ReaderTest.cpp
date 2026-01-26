@@ -14,7 +14,7 @@ using namespace ZXing;
 using namespace ZXing::OneD;
 
 // Helper to call decodePattern()
-static Barcode parse(PatternRow row, ReaderOptions opts = {})
+static Barcode parse(PatternRow row, const ReaderOptions& opts = {})
 {
 	Code39Reader reader(opts);
 

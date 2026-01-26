@@ -49,7 +49,7 @@ ModulusGF::buildMonomial(int degree, int coefficient) const
 	}
 	std::vector<int> coefficients(degree + 1, 0);
 	coefficients[0] = coefficient;
-	return ModulusPoly(*this, coefficients);
+	return {*this, coefficients};
 }
 
 } // Pdf417

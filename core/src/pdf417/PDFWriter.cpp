@@ -57,7 +57,7 @@ static BitMatrix BitMatrixFromBitArray(const std::vector<std::vector<bool>>& inp
 	int width = Size(input[0]);
 	int height = Size(input);
 	BitMatrix result(width + 2 * margin, height + 2 * margin);
-	for (int y = 0, yOutput = static_cast<int>(result.height()) - margin - 1; y < height; y++, yOutput--) {
+	for (int y = 0, yOutput = result.height() - margin - 1; y < height; y++, yOutput--) {
 		for (int x = 0; x < width; ++x) {
 			// Zero is white in the bytematrix
 			if (input[y][x]) {
@@ -119,7 +119,7 @@ BitMatrix Writer::encode(const std::string& contents, int width, int height) con
 
 Writer::Writer()
 {
-	_encoder.reset(new Encoder);
+	_encoder = std::make_unique<Encoder>();
 }
 
 Writer::Writer(Writer &&other) noexcept:
@@ -129,9 +129,7 @@ Writer::Writer(Writer &&other) noexcept:
 {
 }
 
-Writer::~Writer()
-{
-}
+Writer::~Writer() = default;
 
 Writer&
 Writer::setDimensions(int minCols, int maxCols, int minRows, int maxRows)

@@ -33,8 +33,8 @@ class WriterOptions
 public:
 	WriterOptions();
 	~WriterOptions();
-	WriterOptions(WriterOptions&&);
-	WriterOptions& operator=(WriterOptions&&);
+	WriterOptions(WriterOptions&&) noexcept;
+	WriterOptions& operator=(WriterOptions&&) noexcept;
 
 #define ZX_PROPERTY(TYPE, NAME) \
 	TYPE NAME() const noexcept; \

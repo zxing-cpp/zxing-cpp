@@ -64,13 +64,13 @@ MultiFormatWriter::encode(const std::wstring& contents, int width, int height) c
 			writer.setEncoding(_encoding);
 		if (_eccLevel >= 0 && _eccLevel <= 8)
 			setEccLevel(writer, _eccLevel);
-		return exec0(std::move(writer));
+		return exec0(std::forward<decltype(writer)>(writer));
 	};
 
 	[[maybe_unused]] auto exec2 = [&](auto&& writer) {
 		if (_encoding != CharacterSet::Unknown)
 			writer.setEncoding(_encoding);
-		return exec0(std::move(writer));
+		return exec0(std::forward<decltype(writer)>(writer));
 	};
 
 	switch (_format) {

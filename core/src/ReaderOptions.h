@@ -79,8 +79,8 @@ public:
 	~ReaderOptions();
 	ReaderOptions(const ReaderOptions&);
 	ReaderOptions& operator=(const ReaderOptions&);
-	ReaderOptions(ReaderOptions&&);
-	ReaderOptions& operator=(ReaderOptions&&);
+	ReaderOptions(ReaderOptions&&) noexcept;
+	ReaderOptions& operator=(ReaderOptions&&) noexcept;
 
 	// Silence deprecated-declarations warnings, only happening here for deprecated inline functions and only with GCC
 #ifdef __GNUC__

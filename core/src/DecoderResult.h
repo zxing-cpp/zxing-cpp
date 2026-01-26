@@ -35,9 +35,6 @@ class DecoderResult
 	std::string _json;
 	std::shared_ptr<CustomData> _customData;
 
-	DecoderResult(const DecoderResult &) = delete;
-	DecoderResult& operator=(const DecoderResult &) = delete;
-
 public:
 	DecoderResult() = default;
 	DecoderResult(Error error) : _error(std::move(error)) {}
@@ -45,6 +42,9 @@ public:
 
 	DecoderResult(DecoderResult&&) noexcept = default;
 	DecoderResult& operator=(DecoderResult&&) noexcept = default;
+
+	DecoderResult(const DecoderResult&) = delete;
+	DecoderResult& operator=(const DecoderResult&) = delete;
 
 	bool isValid(bool includeErrors = false) const
 	{

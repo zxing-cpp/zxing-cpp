@@ -344,8 +344,8 @@ static void EncodeBinary(const std::string& bytes, int startpos, int count, int 
 				t <<= 8;
 				t += bytes[idx + i] & 0xff;
 			}
-			for (int i = 0; i < 5; i++) {
-				chars[i] = t % 900;
+			for (int &c : chars) {
+				c = static_cast<int>(t % 900);
 				t /= 900;
 			}
 			for (int i = 4; i >= 0; i--) {

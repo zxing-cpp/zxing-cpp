@@ -25,7 +25,7 @@ enum class ErrorCorrectionLevel
 
 const char* ToString(ErrorCorrectionLevel l);
 ErrorCorrectionLevel ECLevelFromString(const char* str);
-ErrorCorrectionLevel ECLevelFromBits(int bits, const bool isMicro = false);
+ErrorCorrectionLevel ECLevelFromBits(int bits, bool isMicro = false);
 int BitsFromECLevel(ErrorCorrectionLevel l);
 
 enum class Type

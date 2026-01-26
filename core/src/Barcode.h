@@ -200,7 +200,7 @@ public:
 /**
  * @brief Merge a list of Barcodes from one Structured Append sequence to a single barcode
  */
-Barcode MergeStructuredAppendSequence(const Barcodes& results);
+Barcode MergeStructuredAppendSequence(const Barcodes& barcodes);
 
 /**
  * @brief Automatically merge all Structured Append sequences found in the given list of barcodes

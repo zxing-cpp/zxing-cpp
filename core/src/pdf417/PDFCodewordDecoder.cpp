@@ -412,7 +412,7 @@ using ModuleBitCountType = std::array<int, CodewordDecoder::BARS_IN_MODULE>;
 
 static ModuleBitCountType SampleBitCounts(const ModuleBitCountType& moduleBitCount)
 {
-	float bitCountSum = static_cast<float>(Reduce(moduleBitCount));
+	float bitCountSum = Reduce(moduleBitCount);
 	ModuleBitCountType result;
 	result.fill(0);
 	int bitCountIndex = 0;
