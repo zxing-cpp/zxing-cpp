@@ -80,6 +80,20 @@ kotlin {
         val test by target.compilations.getting
         val libZXing by main.cinterops.creating {
             packageName = "zxingcpp.cinterop"
+
+            // Use installed headers in CI, source headers for local development
+            val useInstalledHeaders = System.getenv("CI") == "true" || 
+                                    File("/usr/include/ZXing/ZXingC.h").exists()
+
+            if (useInstalledHeaders) {
+                includeDirs("/usr/include/ZXing")
+                headers(files("/usr/include/ZXing/ZXingC.h"))
+            } else {
+                // Fallback to source headers for local development
+                includeDirs(file("../../core/src").absolutePath)
+                headers(files("${file("../../core/src").absolutePath}/ZXingC.h"))
+            }
+            compilerOpts += "-DZXING_EXPERIMENTAL_API=ON"
         }
 
         (project.properties["${target.name}.test.compilerOptions"] as? String)?.let {

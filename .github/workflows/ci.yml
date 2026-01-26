@@ -187,6 +187,7 @@ jobs:
       working-directory: ""
       run: |
         sudo cp ubuntu-latest-exp-artifacts/lib/*.* /usr/lib/x86_64-linux-gnu/
+        sudo cp -r ubuntu-latest-exp-artifacts/include/* /usr/include/
         rm -rf ubuntu-latest-exp-artifacts
 
     - name: Checkout repository

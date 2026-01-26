@@ -23,13 +23,13 @@ class BarcodeWritingException(message: String?) : Exception("Failed to write bar
 @OptIn(ExperimentalForeignApi::class)
 open class CreatorOptions(format: BarcodeFormat) {
 	var format: BarcodeFormat
-		get() = ZXing_CreatorOptions_getFormat(cValue).parseIntoBarcodeFormat().first()
-		set(value) = ZXing_CreatorOptions_setFormat(cValue, value.rawValue)
+		get() = ZXing_CreatorOptions_getFormat(cValue).toKObject()
+		set(value) = ZXing_CreatorOptions_setFormat(cValue, value.cValue)
 	var options: String
 		get() = ZXing_CreatorOptions_getOptions(cValue)?.toKStringNullPtrHandledAndFree() ?: ""
 		set(value) = ZXing_CreatorOptions_setOptions(cValue, value)
 
-	val cValue: CValuesRef<ZXing_CreatorOptions>? = ZXing_CreatorOptions_new(format.rawValue)
+	val cValue: CValuesRef<ZXing_CreatorOptions>? = ZXing_CreatorOptions_new(format.cValue)
 
 	@Suppress("unused")
 	@OptIn(ExperimentalNativeApi::class)

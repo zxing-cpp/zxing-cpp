@@ -5,11 +5,11 @@
 
 package zxingcpp
 
-import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.*
 import zxingcpp.cinterop.*
 
 @OptIn(ExperimentalForeignApi::class)
-enum class BarcodeFormat(internal val rawValue: UInt) {
+enum class BarcodeFormat(internal val cValue: ZXing_BarcodeFormat) {
 	None(ZXing_BarcodeFormat_None),
 	Aztec(ZXing_BarcodeFormat_Aztec),
 	Codabar(ZXing_BarcodeFormat_Codabar),
@@ -17,8 +17,9 @@ enum class BarcodeFormat(internal val rawValue: UInt) {
 	Code93(ZXing_BarcodeFormat_Code93),
 	Code128(ZXing_BarcodeFormat_Code128),
 	DataBar(ZXing_BarcodeFormat_DataBar),
-	DataBarExpanded(ZXing_BarcodeFormat_DataBarExpanded),
-	DataBarLimited(ZXing_BarcodeFormat_DataBarLimited),
+	DataBarOmD(ZXing_BarcodeFormat_DataBarOmD),
+	DataBarLtd(ZXing_BarcodeFormat_DataBarLtd),
+	DataBarExp(ZXing_BarcodeFormat_DataBarExp),
 	DataMatrix(ZXing_BarcodeFormat_DataMatrix),
 	DXFilmEdge(ZXing_BarcodeFormat_DXFilmEdge),
 	EAN8(ZXing_BarcodeFormat_EAN8),
@@ -27,22 +28,38 @@ enum class BarcodeFormat(internal val rawValue: UInt) {
 	MaxiCode(ZXing_BarcodeFormat_MaxiCode),
 	PDF417(ZXing_BarcodeFormat_PDF417),
 	QRCode(ZXing_BarcodeFormat_QRCode),
-	MicroQrCode(ZXing_BarcodeFormat_MicroQRCode),
+	MicroQRCode(ZXing_BarcodeFormat_MicroQRCode),
 	RMQRCode(ZXing_BarcodeFormat_RMQRCode),
 	UPCA(ZXing_BarcodeFormat_UPCA),
 	UPCE(ZXing_BarcodeFormat_UPCE),
 
-	LinearCodes(ZXing_BarcodeFormat_LinearCodes),
-	MatrixCodes(ZXing_BarcodeFormat_MatrixCodes),
-	Any(ZXing_BarcodeFormat_Any),
+	All(ZXing_BarcodeFormat_All),
+	AllReadable(ZXing_BarcodeFormat_AllReadable),
+	AllCreatable(ZXing_BarcodeFormat_AllCreatable),
+	AllLinear(ZXing_BarcodeFormat_AllLinear),
+	AllStacked(ZXing_BarcodeFormat_AllStacked),
+	AllMatrix(ZXing_BarcodeFormat_AllMatrix),
+	AllGS1(ZXing_BarcodeFormat_AllGS1),
 
 	Invalid(ZXing_BarcodeFormat_Invalid),
 }
 
 @OptIn(ExperimentalForeignApi::class)
-fun ZXing_BarcodeFormat.parseIntoBarcodeFormat(): Set<BarcodeFormat> =
-	BarcodeFormat.entries.filter { this.or(it.rawValue) == this }.toSet()
+fun ZXing_BarcodeFormat.toKObject(): BarcodeFormat {
+	return BarcodeFormat.entries.first { it.cValue == this }
+}
 
 @OptIn(ExperimentalForeignApi::class)
-fun Iterable<BarcodeFormat>.toValue(): ZXing_BarcodeFormat =
-	this.map { it.rawValue }.reduce { acc, format -> acc.or(format) }
+fun CPointer<ZXing_BarcodeFormatVar>?.toKotlinSet(count: Int): Set<BarcodeFormat> {
+	if (this == null || count <= 0) return emptySet()
+	return (0 until count).map { i ->
+		val rawVal = this[i]
+		BarcodeFormat.entries.first { it.cValue == rawVal }
+	}.toSet()
+}
+
+@OptIn(ExperimentalForeignApi::class)
+fun Set<BarcodeFormat>.toCValues(): CValues<UIntVar> {
+	val arr = this.map { it.cValue }.toUIntArray()
+	return arr.toCValues()
+}
