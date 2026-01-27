@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "ReadBarcode.h"
+#include "ZXingCpp.h"
 
 #include <QImage>
 #include <QDebug>
@@ -33,6 +33,26 @@ namespace ZXingQt {
 
 Q_NAMESPACE
 
+namespace Detail {
+
+template<typename Cout, typename Cin>
+inline Cout transcode(Cin&& in)
+{
+	Cout out;
+	out.reserve(in.size());
+	for (auto&& v : in)
+		out.push_back(static_cast<typename Cout::value_type>(std::move(v)));
+	return out;
+}
+
+inline std::string_view qba2sv(const QByteArray& ba) noexcept
+{
+	return std::string_view(ba.constData(), static_cast<size_t>(ba.size()));
+}
+
+} // namespace Detail
+
+
 enum class BarcodeFormat : unsigned int
 {
 #define X(NAME, SYM, VAR, FLAGS, ZINT, ENABLED, HRI) NAME = ZX_BCF_ID(SYM, VAR),
@@ -52,12 +72,22 @@ Q_ENUM_NS(Binarizer)
 using BarcodeFormats = QVector<BarcodeFormat>;
 
 using ZXing::ReaderOptions;
+using ZXing::WriterOptions;
 
-template<typename T, typename = decltype(ZXing::ToString(T()))>
-QDebug operator<<(QDebug dbg, const T& v)
+inline BarcodeFormat BarcodeFormatFromString(QStringView str)
 {
-	return dbg.noquote() << QString::fromStdString(ToString(v));
+	return static_cast<BarcodeFormat>(ZXing::BarcodeFormatFromString(Detail::qba2sv(str.toUtf8())));
 }
+
+inline BarcodeFormats BarcodeFormatsFromString(QStringView str)
+{
+	return Detail::transcode<BarcodeFormats>(ZXing::BarcodeFormatsFromString(Detail::qba2sv(str.toUtf8())));
+}
+// template <typename T, typename = decltype(ToString(T()))>
+// QDebug operator<<(QDebug dbg, const T& v)
+// {
+// 	return dbg.noquote() << ToString(v);
+// }
 
 class Position : public ZXing::Quadrilateral<QPoint>
 {
@@ -90,20 +120,10 @@ class Barcode : private ZXing::Barcode
 	Q_PROPERTY(QString contentTypeName READ contentTypeName)
 	Q_PROPERTY(Position position READ position)
 
-	QString _text;
-	QByteArray _bytes;
-	Position _position;
-
 public:
 	Barcode() = default; // required for qmetatype machinery
 
-	explicit Barcode(ZXing::Barcode&& r) : ZXing::Barcode(std::move(r)) {
-		_text = QString::fromStdString(ZXing::Barcode::text());
-		_bytes = QByteArray(reinterpret_cast<const char*>(ZXing::Barcode::bytes().data()), std::size(ZXing::Barcode::bytes()));
-		auto& pos = ZXing::Barcode::position();
-		auto qp = [&pos](int i) { return QPoint(pos[i].x, pos[i].y); };
-		_position = {qp(0), qp(1), qp(2), qp(3)};
-	}
+	explicit Barcode(ZXing::Barcode&& r) : ZXing::Barcode(std::move(r)) {}
 
 	using ZXing::Barcode::isValid;
 
@@ -111,24 +131,44 @@ public:
 	ContentType contentType() const { return static_cast<ContentType>(ZXing::Barcode::contentType()); }
 	QString formatName() const { return QString::fromStdString(ZXing::ToString(ZXing::Barcode::format())); }
 	QString contentTypeName() const { return QString::fromStdString(ZXing::ToString(ZXing::Barcode::contentType())); }
-	const QString& text() const { return _text; }
-	const QByteArray& bytes() const { return _bytes; }
-	const Position& position() const { return _position; }
+	QString text() const { return QString::fromStdString(ZXing::Barcode::text()); }
+
+	QByteArray bytes() const
+	{
+		return QByteArray(reinterpret_cast<const char*>(ZXing::Barcode::bytes().data()), std::size(ZXing::Barcode::bytes()));
+	}
+
+	Position position() const
+	{
+		auto& pos = ZXing::Barcode::position();
+		auto qp = [&pos](int i) { return QPoint(pos[i].x, pos[i].y); };
+		return {qp(0), qp(1), qp(2), qp(3)};
+	}
+
+	QString toSVG(const WriterOptions& options = {}) const
+	{
+		return QString::fromStdString(ZXing::WriteBarcodeToSVG(*this, options));
+	}
+
+	QImage toImage(const WriterOptions& options = {}) const
+	{
+		auto img = ZXing::WriteBarcodeToImage(*this, options);
+		return QImage(img.data(), img.width(), img.height(), img.width(), QImage::Format::Format_Grayscale8).copy();
+	}
+
+	static Barcode fromText(QStringView text, BarcodeFormat format, QStringView options = {})
+	{
+		auto opts = ZXing::CreatorOptions(static_cast<ZXing::BarcodeFormat>(format), options.toUtf8().toStdString());
+		return Barcode(ZXing::CreateBarcodeFromText(Detail::qba2sv(text.toUtf8()), opts));
+	}
+
+	static Barcode fromBytes(const QByteArray& bytes, BarcodeFormat format, QStringView options = {})
+	{
+		auto opts = ZXing::CreatorOptions(static_cast<ZXing::BarcodeFormat>(format), options.toUtf8().toStdString());
+		return Barcode(ZXing::CreateBarcodeFromBytes(bytes, opts));
+	}
+
 };
-
-namespace Detail {
-
-template<typename Cout, typename Cin>
-inline Cout transcode(Cin&& in)
-{
-	Cout out;
-	out.reserve(in.size());
-	for (auto&& v : in)
-		out.push_back(static_cast<typename Cout::value_type>(std::move(v)));
-	return out;
-}
-
-} // namespace Detail
 
 inline QVector<Barcode> ReadBarcodes(const QImage& img, const ReaderOptions& opts = {})
 {

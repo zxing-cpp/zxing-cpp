@@ -3,26 +3,12 @@
  */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "BarcodeFormat.h"
-#include "CreateBarcode.h"
-#include "WriteBarcode.h"
+#include "ZXingQt.h"
 
 #include <QDebug>
 #include <QImage>
 
-namespace ZXingQt {
-
-QImage WriteBarcode(QStringView text, ZXing::BarcodeFormat format)
-{
-	using namespace ZXing;
-
-	auto barcode = CreateBarcodeFromText(text.toString().toStdString(), format);
-	auto bitmap = WriteBarcodeToImage(barcode);
-
-	return QImage(bitmap.data(), bitmap.width(), bitmap.height(), bitmap.width(), QImage::Format::Format_Grayscale8).copy();
-}
-
-} // namespace ZXingQt
+using namespace ZXingQt;
 
 int main(int argc, char* argv[])
 {
@@ -31,13 +17,13 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
-	auto format = ZXing::BarcodeFormatFromString(argv[1]);
+	auto format = BarcodeFormatFromString(QString::fromUtf8(argv[1]));
 	auto text = QString::fromUtf8(argv[2]);
 	auto filename = QString::fromUtf8(argv[3]);
 
-	auto result = ZXingQt::WriteBarcode(text, format);
-
-	result.save(filename);
+	auto barcode = Barcode::fromText(text, format, QStringLiteral("ecLevel=50%"));
+	auto image = barcode.toImage(WriterOptions().scale(4));
+	image.save(filename);
 
 	return 0;
 }
