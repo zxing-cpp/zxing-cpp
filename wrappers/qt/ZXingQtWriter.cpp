@@ -32,8 +32,8 @@ int main(int argc, char* argv[])
 	}
 
 	auto format = ZXing::BarcodeFormatFromString(argv[1]);
-	auto text = QString(argv[2]);
-	auto filename = QString(argv[3]);
+	auto text = QString::fromUtf8(argv[2]);
+	auto filename = QString::fromUtf8(argv[3]);
 
 	auto result = ZXingQt::WriteBarcode(text, format);
 
