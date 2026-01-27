@@ -118,11 +118,11 @@ namespace Detail {
 template<typename Cout, typename Cin>
 inline Cout transcode(Cin&& in)
 {
-    Cout out;
-    out.reserve(in.size());
-	for (auto && v : in)
+	Cout out;
+	out.reserve(in.size());
+	for (auto&& v : in)
 		out.push_back(static_cast<typename Cout::value_type>(std::move(v)));
-    return out;
+	return out;
 }
 
 } // namespace Detail
@@ -313,12 +313,12 @@ class BarcodeReader : public QObject, private ReaderOptions
 	Q_PROPERTY(BarcodeFormats formats READ formats WRITE setFormats NOTIFY formatsChanged)
 	Q_PROPERTY(TextMode textMode READ textMode WRITE setTextMode NOTIFY textModeChanged)
 
-	void emitFoundBarcodes(QVector<Barcode>&& barcodes)
+	void emitFoundBarcodes(const QVector<Barcode>& barcodes)
 	{
-		for (auto&& b : barcodes)
-			Q_EMIT foundBarcode(b);
-		if (barcodes.isEmpty())
-			Q_EMIT failedRead();
+		if (!barcodes.isEmpty())
+			Q_EMIT foundBarcodes(barcodes);
+		else
+			Q_EMIT foundNoBarcodes();
 	}
 
 public:
@@ -380,24 +380,26 @@ public:
 	QAtomicInt runTime = 0;
 	Q_PROPERTY(int runTime MEMBER runTime)
 
-	Q_SLOT QVector<Barcode> read(const QImage& image) { return ReadBarcodes(image, *this); }
-	Q_SLOT void process(const QImage& image) { emitFoundBarcodes(read(image)); }
+	Q_SLOT QVector<Barcode> read(const QImage& image) {
+		auto barcodes = ReadBarcodes(image, *this);
+		emitFoundBarcodes(barcodes);
+		return barcodes;
+	}
 
 Q_SIGNALS:
-	void failedRead();
-	void foundBarcode(const Barcode& barcode);
+	void foundNoBarcodes();
+	void foundBarcodes(const QVector<Barcode>& barcodes);
 
 public:
 #ifdef QT_MULTIMEDIA_LIB
 	// Function should be thread safe, as it may be called from a separate thread.
-	Q_SLOT QVector<Barcode> read(const QVideoFrame& image) { return ReadBarcodes(image, *this); }
-	Q_SLOT void process(const QVideoFrame& image)
-	{
+	Q_SLOT QVector<Barcode> read(const QVideoFrame& image) {
 		QElapsedTimer t;
 		t.start();
-		auto res = read(image);
+		auto barcodes = ReadBarcodes(image, *this);
 		runTime = t.elapsed();
-		emitFoundBarcodes(std::move(res));
+		emitFoundBarcodes(barcodes);
+		return barcodes;
 	}
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -423,7 +425,7 @@ public:
 		if (_pool.activeThreadCount() >= _pool.maxThreadCount())
 			return; // we are busy => skip the frame
 
-		_pool.start([this, frame](){process(frame);});
+		_pool.start([this, frame](){read(frame);});
 	}
 	Q_PROPERTY(QVideoSink* videoSink MEMBER _sink WRITE setVideoSink)
 
@@ -444,7 +446,7 @@ public:
 
 	QVideoFrame run(QVideoFrame* input, const QVideoSurfaceFormat& /*surfaceFormat*/, RunFlags /*flags*/) override
 	{
-		_filter->process(*input);
+		_filter->read(*input);
 		return *input;
 	}
 };
@@ -478,6 +480,7 @@ inline void registerQmlAndMetaTypes()
 	qRegisterMetaType<ZXingQt::TextMode>("TextMode");
 	qRegisterMetaType<ZXingQt::Position>("Position");
 	qRegisterMetaType<ZXingQt::Barcode>("Barcode");
+	qRegisterMetaType<QVector<ZXingQt::Barcode>>("QVector<Barcode>");
 
 	// qmlRegisterType allows us to store the position / barcode in a QML property, i.e. property barcode myBarcode: ...
 	qmlRegisterType<ZXingQt::Position>("ZXing", 1, 0, "position");

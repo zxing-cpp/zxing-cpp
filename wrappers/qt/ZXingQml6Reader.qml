@@ -18,8 +18,7 @@ Window {
 	height: 480
 	title: Qt.application.name
 
-	property var nullPoints: [Qt.point(0,0), Qt.point(0,0), Qt.point(0,0), Qt.point(0,0)]
-	property var points: nullPoints
+	property var allBarcodePositions: [] // Array of position arrays
 
 	Timer {
 		id: resetInfo
@@ -37,19 +36,36 @@ Window {
 		tryDownscale: tryDownscaleSwitch.checked
 		textMode: ZXing.TextMode.HRI
 
-		// callback with parameter 'barcode', called for every successfully processed frame
-		onFoundBarcode: (barcode)=> {
-			points = [barcode.position.topLeft, barcode.position.topRight, barcode.position.bottomRight, barcode.position.bottomLeft]
-			info.text = qsTr("Format: \t %1 \nText: \t %2 \nType: \t %3 \nTime: \t %4 ms").arg(barcode.formatName).arg(barcode.text).arg(barcode.contentTypeName).arg(runTime)
+		// callback with parameter 'barcodes', called for every successfully processed frame
+		onFoundBarcodes: (barcodes)=> {
+			if (barcodes.length === 0)
+				return
+
+			// Store all barcode positions
+			allBarcodePositions = barcodes.map(b => [b.position.topLeft, b.position.topRight, b.position.bottomRight, b.position.bottomLeft])
+
+			// Build info text for all barcodes
+			let infoParts = []
+			barcodes.forEach((barcode, i) => {
+				if (barcodes.length > 1)
+					infoParts.push(qsTr("[%1]").arg(i + 1))
+				infoParts.push(
+					qsTr("Format: %1").arg(barcode.formatName),
+					qsTr("Text: %1").arg(barcode.text),
+					qsTr("Type: %1").arg(barcode.contentTypeName)
+				)
+				if (i < barcodes.length - 1)
+					infoParts.push("")
+			})
+			infoParts.push("", qsTr("Time: %1 ms").arg(runTime))
+			info.text = infoParts.join("\n")
 
 			resetInfo.restart()
-//			console.log(barcode)
 		}
 
 		// called for every processed frame where no barcode was detected
-		onFailedRead: ()=> {
-			points = nullPoints
-
+		onFoundNoBarcodes: ()=> {
+			allBarcodePositions = []
 			if (!resetInfo.running)
 				info.text = "No barcode found (in %1 ms)".arg(runTime)
 		}
@@ -142,35 +158,39 @@ Window {
 				}
 			}
 
-			Shape {
-				id: polygon
-				anchors.fill: parent
-				visible: points.length === 4
+			Repeater {
+				model: allBarcodePositions
 
-				ShapePath {
-					strokeWidth: 3
-					strokeColor: "red"
-					strokeStyle: ShapePath.SolidLine
-					fillColor: "transparent"
-					//TODO: really? I don't know qml...
-					startX: videoOutput.mapPointToItem(points[3]).x
-					startY: videoOutput.mapPointToItem(points[3]).y
+				Shape {
+					anchors.fill: parent
+					property var points: modelData
+					visible: points && points.length === 4
 
-					PathLine {
-						x: videoOutput.mapPointToItem(points[0]).x
-						y: videoOutput.mapPointToItem(points[0]).y
-					}
-					PathLine {
-						x: videoOutput.mapPointToItem(points[1]).x
-						y: videoOutput.mapPointToItem(points[1]).y
-					}
-					PathLine {
-						x: videoOutput.mapPointToItem(points[2]).x
-						y: videoOutput.mapPointToItem(points[2]).y
-					}
-					PathLine {
-						x: videoOutput.mapPointToItem(points[3]).x
-						y: videoOutput.mapPointToItem(points[3]).y
+					ShapePath {
+						strokeWidth: 3
+						strokeColor: "red"
+						strokeStyle: ShapePath.SolidLine
+						fillColor: "transparent"
+						//TODO: really? I don't know qml...
+						startX: videoOutput.mapPointToItem(points[3]).x
+						startY: videoOutput.mapPointToItem(points[3]).y
+
+						PathLine {
+							x: videoOutput.mapPointToItem(points[0]).x
+							y: videoOutput.mapPointToItem(points[0]).y
+						}
+						PathLine {
+							x: videoOutput.mapPointToItem(points[1]).x
+							y: videoOutput.mapPointToItem(points[1]).y
+						}
+						PathLine {
+							x: videoOutput.mapPointToItem(points[2]).x
+							y: videoOutput.mapPointToItem(points[2]).y
+						}
+						PathLine {
+							x: videoOutput.mapPointToItem(points[3]).x
+							y: videoOutput.mapPointToItem(points[3]).y
+						}
 					}
 				}
 			}
@@ -182,16 +202,24 @@ Window {
 				background: Rectangle { color: "#80808080" }
 			}
 
-			ColumnLayout {
+			Rectangle {
 				anchors.right: parent.right
 				anchors.bottom: parent.bottom
+				color: "#80808080"
+				width: controlsLayout.implicitWidth + 10
+				height: controlsLayout.implicitHeight + 10
 
-				Switch {id: tryRotateSwitch; text: qsTr("Try Rotate"); checked: true }
-				Switch {id: tryHarderSwitch; text: qsTr("Try Harder"); checked: true }
-				Switch {id: tryInvertSwitch; text: qsTr("Try Invert"); checked: true }
-				Switch {id: tryDownscaleSwitch; text: qsTr("Try Downscale"); checked: true }
-				Switch {id: linearSwitch; text: qsTr("Linear Codes"); checked: true }
-				Switch {id: matrixSwitch; text: qsTr("Matrix Codes"); checked: true }
+				ColumnLayout {
+					id: controlsLayout
+					anchors.centerIn: parent
+
+					Switch {id: tryRotateSwitch; text: qsTr("Try Rotate"); checked: true }
+					Switch {id: tryHarderSwitch; text: qsTr("Try Harder"); checked: true }
+					Switch {id: tryInvertSwitch; text: qsTr("Try Invert"); checked: true }
+					Switch {id: tryDownscaleSwitch; text: qsTr("Try Downscale"); checked: true }
+					Switch {id: linearSwitch; text: qsTr("Linear Codes"); checked: true }
+					Switch {id: matrixSwitch; text: qsTr("Matrix Codes"); checked: true }
+				}
 			}
 		}
 	}

@@ -9,12 +9,14 @@
 
 using namespace ZXingQt;
 
-void printBarcode(const Barcode& barcode)
+void printBarcodes(const QVector<Barcode>& barcodes)
 {
-	qDebug() << "Text:   " << barcode.text();
-	qDebug() << "Format: " << barcode.format();
-	qDebug() << "Content:" << barcode.contentType();
-	qDebug() << "";
+	for (const auto& barcode : barcodes) {
+		qDebug() << "Text:   " << barcode.text();
+		qDebug() << "Format: " << barcode.format();
+		qDebug() << "Content:" << barcode.contentType();
+		qDebug() << "";
+	}
 }
 
 int main(int argc, char* argv[])
@@ -42,8 +44,7 @@ int main(int argc, char* argv[])
 
 	auto barcodes = ReadBarcodes(image, options);
 
-	for (auto& barcode : barcodes)
-		printBarcode(barcode);
+	printBarcodes(barcodes);
 
 	return barcodes.isEmpty() ? 1 : 0;
 #else // QObject with signal/slot use case
@@ -51,11 +52,12 @@ int main(int argc, char* argv[])
 	reader.setFormats({BarcodeFormat::AllReadable});
 	reader.setTryInvert(false);
 	reader.setTextMode(TextMode::HRI);
-	QObject::connect(&reader, &BarcodeReader::foundBarcode, &printBarcode);
-	QObject::connect(&reader, &BarcodeReader::failedRead, []() {
+	QObject::connect(&reader, &BarcodeReader::foundBarcodes, &printBarcodes);
+	QObject::connect(&reader, &BarcodeReader::foundNoBarcodes, []() {
 		qDebug() << "No barcodes found";
 	});
-	reader.process(image);
+
+	reader.read(image);
 
 	return 0;
 #endif
