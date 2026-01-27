@@ -129,12 +129,10 @@ class Barcode : private ZXing::Barcode
 	Q_GADGET
 
 	Q_PROPERTY(BarcodeFormat format READ format)
-	Q_PROPERTY(QString formatName READ formatName)
 	Q_PROPERTY(QString text READ text)
 	Q_PROPERTY(QByteArray bytes READ bytes)
 	Q_PROPERTY(bool isValid READ isValid)
 	Q_PROPERTY(ContentType contentType READ contentType)
-	Q_PROPERTY(QString contentTypeName READ contentTypeName)
 	Q_PROPERTY(Position position READ position)
 
 public:
@@ -146,8 +144,6 @@ public:
 
 	BarcodeFormat format() const { return static_cast<BarcodeFormat>(ZXing::Barcode::format()); }
 	ContentType contentType() const { return static_cast<ContentType>(ZXing::Barcode::contentType()); }
-	QString formatName() const { return QString::fromStdString(ZXing::ToString(ZXing::Barcode::format())); }
-	QString contentTypeName() const { return QString::fromStdString(ZXing::ToString(ZXing::Barcode::contentType())); }
 	QString text() const { return QString::fromStdString(ZXing::Barcode::text()); }
 
 	QByteArray bytes() const
@@ -440,7 +436,8 @@ public:
 	QAtomicInt runTime = 0;
 	Q_PROPERTY(int runTime MEMBER runTime)
 
-	Q_SLOT QVector<Barcode> read(const QImage& image) {
+	Q_SLOT QVector<Barcode> read(const QImage& image)
+	{
 		auto barcodes = ReadBarcodes(image, *this);
 		emitFoundBarcodes(barcodes);
 		return barcodes;
@@ -453,7 +450,8 @@ Q_SIGNALS:
 public:
 #ifdef QT_MULTIMEDIA_LIB
 	// Function should be thread safe, as it may be called from a separate thread.
-	Q_SLOT QVector<Barcode> read(const QVideoFrame& image) {
+	Q_SLOT QVector<Barcode> read(const QVideoFrame& image)
+	{
 		QElapsedTimer t;
 		t.start();
 		auto barcodes = ReadBarcodes(image, *this);
@@ -470,7 +468,8 @@ private:
 	QVideoSink *_sink = nullptr;
 
 public:
-	void setVideoSink(QVideoSink* sink) {
+	void setVideoSink(QVideoSink* sink)
+	{
 		if (_sink == sink)
 			return;
 
@@ -485,7 +484,7 @@ public:
 		if (_pool.activeThreadCount() >= _pool.maxThreadCount())
 			return; // we are busy => skip the frame
 
-		_pool.start([this, frame](){read(frame);});
+		_pool.start([this, frame]() { read(frame); });
 	}
 	Q_PROPERTY(QVideoSink* videoSink MEMBER _sink WRITE setVideoSink)
 
