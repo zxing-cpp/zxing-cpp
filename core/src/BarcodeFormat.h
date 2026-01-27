@@ -204,7 +204,7 @@ public:
 
 	/// @brief Returns a list of available/supported barcode formats, optionally filtered by the provided formats.
 	/// @example BarcodeFormats::list(BarcodeFormat::AllReadable);
-	static BarcodeFormats list(const BarcodeFormats& filter = BarcodeFormat::All);
+	static BarcodeFormats list(const BarcodeFormats& filter = {});
 
 	[[deprecated]] inline int count() const noexcept { return size(); }
 	[[deprecated]] inline bool testFlag(BarcodeFormat format) const noexcept

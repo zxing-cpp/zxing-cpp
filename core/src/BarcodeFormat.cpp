@@ -123,6 +123,14 @@ BarcodeFormats BarcodeFormats::list(const BarcodeFormats& filter)
 {
 	std::vector<BarcodeFormat> res;
 	res.reserve(100);
+	if (filter.empty()) {
+#define X(NAME, SYM, VAR, FLAGS, ZINT, ENABLED, HRI) \
+		if (ENABLED) \
+			res.push_back(BarcodeFormat(ZX_BCF_ID(SYM, VAR)));
+		ZX_BCF_LIST(X)
+#undef X
+		return res;
+	}
 	for (auto f : filter) {
 		// printf("Filter for: %s\n", IdStr(f).c_str());
 #define X(NAME, SYM, VAR, FLAGS, ZINT, ENABLED, HRI) \
