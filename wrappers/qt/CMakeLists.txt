@@ -40,6 +40,19 @@ if (ZXING_READERS)
         qt_finalize_executable(ZXingQmlReader)
     endif()
 
+    if (TARGET Qt::Multimedia AND TARGET Qt::Widgets)
+        add_executable(ZXingQtCamReader ZXingQtCamReader.cpp ZXingQt.h)
+        target_link_libraries(ZXingQtCamReader PRIVATE ZXing::ZXing Qt::Gui Qt::Multimedia Qt::Widgets)
+        target_compile_definitions(ZXingQtCamReader PRIVATE ${ZXING_QT_DEFINITIONS})
+        if (APPLE)
+            set_target_properties(ZXingQtCamReader PROPERTIES
+                MACOSX_BUNDLE TRUE
+                MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/ZXingQtCamReader-Info.plist
+            )
+        endif()
+        qt_finalize_executable(ZXingQtCamReader)
+    endif()
+
 endif()
 
 if (ZXING_WRITERS)

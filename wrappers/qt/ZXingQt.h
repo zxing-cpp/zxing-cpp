@@ -67,11 +67,14 @@ class Position : public ZXing::Quadrilateral<QPoint>
 	Q_PROPERTY(QPoint topRight READ topRight)
 	Q_PROPERTY(QPoint bottomRight READ bottomRight)
 	Q_PROPERTY(QPoint bottomLeft READ bottomLeft)
+	Q_PROPERTY(QPoint center READ center)
 
 	using Base = ZXing::Quadrilateral<QPoint>;
 
 public:
 	using Base::Base;
+
+	QPoint center() const { return std::accumulate(this->begin(), this->end(), QPoint(0, 0)) / 4; }
 };
 
 class Barcode : private ZXing::Barcode
