@@ -13,6 +13,7 @@ You can sponsor this library at [GitHub Sponsors](https://github.com/sponsors/ax
 Named Sponsors:
 * [KURZ Digital Solutions GmbH & Co. KG](https://github.com/kurzdigital)
 * [Useful Sensors Inc](https://github.com/usefulsensors)
+* [SAP Open Source Program Office](https://www.sap.com/germany/about/company/innovation/open-source.html)
 * [synedra](https://synedra.com/)
 
 Thanks a lot for your contribution!
@@ -28,6 +29,7 @@ Thanks a lot for your contribution!
   * [Kotlin/Native](wrappers/kn/README.md)
   * [.NET](wrappers/dotnet/README.md)
   * [Python](wrappers/python/README.md)
+  * [Qt](wrappers/qt/README.md)
   * [Rust](wrappers/rust/README.md)
   * [WebAssembly](wrappers/wasm/README.md)
   * [WinRT](wrappers/winrt/README.md)
@@ -67,7 +69,7 @@ int main(int argc, char** argv)
     // load your image data from somewhere. ImageFormat::Lum assumes grey scale image data.
 
     auto image = ZXing::ImageView(data, width, height, ZXing::ImageFormat::Lum);
-    auto options = ZXing::ReaderOptions().formats(ZXing::BarcodeFormat::Any);
+    auto options = ZXing::ReaderOptions().formats(ZXing::BarcodeFormat::QRCode);
     auto barcodes = ZXing::ReadBarcodes(image, options);
 
     for (const auto& b : barcodes)

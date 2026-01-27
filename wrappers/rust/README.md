@@ -27,7 +27,7 @@ fn main() -> anyhow::Result<()> {
 	let image = image::open("some-image-file.jpg")?;
 
 	let read_barcodes = zxingcpp::read()
-		.formats(BarcodeFormat::QRCode | BarcodeFormat::LinearCodes)
+		.formats(&[BarcodeFormat::QRCode, BarcodeFormat::AllLinear])
 		.try_invert(false);
 
 	let barcodes = read_barcodes.from(&image)?;

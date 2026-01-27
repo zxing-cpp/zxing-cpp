@@ -21,7 +21,7 @@ public class Program
         var iv = new ImageView(img.GetPixels(), img.Info.Width, img.Info.Height, ImageFormat.Lum);
 
         var readBarcodes = new BarcodeReader() {
-            Formats = args.Length > 1 ? Barcode.FormatsFromString(args[1]) : BarcodeFormats.Any,
+            Formats = args.Length > 1 ? BarcodeFormats.Parse(args[1]) : BarcodeFormat.All,
             TryInvert = false,
             // see the ReaderOptions implementation for more available options
         };
