@@ -24,7 +24,10 @@ namespace ZXing {
 std::string ToString(ContentType type)
 {
 	const char* t2s[] = {"Text", "Binary", "Mixed", "GS1", "ISO15434", "UnknownECI"};
-	return t2s[static_cast<int>(type)];
+	int idx = static_cast<int>(type);
+	if (idx < 0 || idx >= Size(t2s))
+		return "InvalidContentType";
+	return t2s[idx];
 }
 
 template <typename FUNC>
