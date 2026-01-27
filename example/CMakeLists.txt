@@ -66,6 +66,13 @@ if (ZXING_READERS)
                 QT_USE_FAST_OPERATOR_PLUS
                 QT_DISABLE_DEPRECATED_BEFORE=0x060400
         )
+        if (APPLE)
+            set_target_properties(ZXingQtCamReader PROPERTIES
+                MACOSX_BUNDLE TRUE
+                MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/ZXingQtCamReader-Info.plist
+            )
+        endif()
+        qt_finalize_executable(ZXingQtCamReader)
     endif()
 
     find_package(OpenCV QUIET)
