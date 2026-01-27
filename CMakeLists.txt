@@ -86,6 +86,7 @@ include(zxing.cmake)
 
 if (ZXING_EXAMPLES)
     add_subdirectory (example)
+    add_subdirectory (wrappers/qt)
 endif()
 if (ZXING_BLACKBOX_TESTS)
     add_subdirectory (test/blackbox)

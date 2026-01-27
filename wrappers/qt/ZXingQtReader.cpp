@@ -3,7 +3,7 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "ZXingQtReader.h"
+#include "ZXingQt.h"
 
 #include <QDebug>
 
