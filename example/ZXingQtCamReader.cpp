@@ -14,8 +14,6 @@ int main(int argc, char *argv[])
 	QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 #endif
 
-	ZXingQt::registerQmlAndMetaTypes();
-
 	QGuiApplication app(argc, argv);
 	app.setApplicationName(QStringLiteral("ZXingQtCamReader"));
 	QQmlApplicationEngine engine;
