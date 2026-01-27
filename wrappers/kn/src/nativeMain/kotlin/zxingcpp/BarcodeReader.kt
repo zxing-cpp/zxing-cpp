@@ -67,7 +67,7 @@ open class ReaderOptions {
 			ptr.toKotlinSet(countVar.value).also { if (ptr != null) ZXing_free(ptr) }
 		}
 		set(value) {
-			val arr = value.map { it.rawValue }.toUIntArray()
+			val arr = value.map { it.cValue }.toUIntArray()
 			arr.usePinned { pinned ->
 				ZXing_ReaderOptions_setFormats(cValue, pinned.addressOf(0), arr.size)
 			}
