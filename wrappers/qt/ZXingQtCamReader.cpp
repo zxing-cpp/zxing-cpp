@@ -29,6 +29,8 @@
 #include <QPermission>
 #endif
 
+using namespace ZXingQt;
+
 class VideoWidget : public QWidget
 {
 	Q_OBJECT
@@ -46,7 +48,7 @@ public:
 		update();
 	}
 
-	void setBarcodes(const QVector<ZXingQt::Barcode>& barcodes)
+	void setBarcodes(const QVector<Barcode>& barcodes)
 	{
 		_barcodes = barcodes;
 		update();
@@ -121,7 +123,7 @@ protected:
 
 private:
 	QVideoFrame _frame;
-	QVector<ZXingQt::Barcode> _barcodes;
+	QVector<Barcode> _barcodes;
 };
 
 class CameraReaderWidget : public QMainWindow
@@ -191,7 +193,8 @@ private:
 		_controlsWidget = new QWidget(videoContainer);
 		_controlsWidget->setStyleSheet(
 			QStringLiteral("QWidget#controlsWidget { background-color: rgba(128, 128, 128, 180); padding: 10px; } "
-						   "QCheckBox { color: white; background: transparent; }"));
+						   "QCheckBox, QLabel { color: white; background: transparent; } "
+						   "QComboBox { color: white; background: rgba(0, 0, 0, 100); padding: 3px; }"));
 		_controlsWidget->setObjectName(QStringLiteral("controlsWidget"));
 		auto controlsLayout = new QVBoxLayout(_controlsWidget);
 		controlsLayout->setContentsMargins(10, 10, 10, 10);
@@ -208,8 +211,18 @@ private:
 		addCheckBox(_tryHarderCheck, tr("Try Harder"));
 		addCheckBox(_tryInvertCheck, tr("Try Invert"));
 		addCheckBox(_tryDownscaleCheck, tr("Try Downscale"));
-		addCheckBox(_linearCodesCheck, tr("Linear Codes"));
-		addCheckBox(_matrixCodesCheck, tr("Matrix Codes"));
+
+		// Format filter combobox
+		auto formatLayout = new QHBoxLayout();
+		formatLayout->addWidget(new QLabel(tr("Formats:")));
+		_formatCombo = new QComboBox();
+
+		for (auto format : ListBarcodeFormats())
+			_formatCombo->addItem(ToString(format), static_cast<unsigned int>(format));
+
+		connect(_formatCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &CameraReaderWidget::updateReaderOptions);
+		formatLayout->addWidget(_formatCombo);
+		controlsLayout->addLayout(formatLayout);
 
 		controlsLayout->addStretch();
 		gridLayout->addWidget(_controlsWidget, 0, 0, 1, 1, Qt::AlignBottom | Qt::AlignRight);
@@ -269,12 +282,12 @@ private:
 
 	void setupBarcodeReader()
 	{
-		_barcodeReader = new ZXingQt::BarcodeReader(this);
-		_barcodeReader->setTextMode(ZXingQt::TextMode::HRI);
+		_barcodeReader = new BarcodeReader(this);
+		_barcodeReader->setTextMode(TextMode::HRI);
 		updateReaderOptions();
 
-		connect(_barcodeReader, &ZXingQt::BarcodeReader::foundBarcodes, this, &CameraReaderWidget::onBarcodesFound);
-		connect(_barcodeReader, &ZXingQt::BarcodeReader::foundNoBarcodes, this, &CameraReaderWidget::onFoundNoBarcodes);
+		connect(_barcodeReader, &BarcodeReader::foundBarcodes, this, &CameraReaderWidget::onBarcodesFound);
+		connect(_barcodeReader, &BarcodeReader::foundNoBarcodes, this, &CameraReaderWidget::onFoundNoBarcodes);
 
 		_resetTimer = new QTimer(this);
 		_resetTimer->setSingleShot(true);
@@ -284,13 +297,8 @@ private:
 
 	void updateReaderOptions()
 	{
-		ZXingQt::BarcodeFormats formats;
-		if (_linearCodesCheck->isChecked())
-			formats.push_back(ZXingQt::BarcodeFormat::AllLinear);
-		if (_matrixCodesCheck->isChecked())
-			formats.push_back(ZXingQt::BarcodeFormat::AllMatrix);
-
-		_barcodeReader->setFormats(std::move(formats));
+		auto formatFilter = static_cast<BarcodeFormat>(_formatCombo->currentData().toUInt());
+		_barcodeReader->setFormats(ListBarcodeFormats(formatFilter));
 		_barcodeReader->setTryRotate(_tryRotateCheck->isChecked());
 		_barcodeReader->setTryHarder(_tryHarderCheck->isChecked());
 		_barcodeReader->setTryInvert(_tryInvertCheck->isChecked());
@@ -306,7 +314,7 @@ private Q_SLOTS:
 		_barcodeReader->read(frame);
 	}
 
-	void onBarcodesFound(const QVector<ZXingQt::Barcode>& barcodes)
+	void onBarcodesFound(const QVector<Barcode>& barcodes)
 	{
 		if (barcodes.isEmpty())
 			return;
@@ -319,13 +327,11 @@ private Q_SLOTS:
 			const auto& barcode = barcodes[i];
 			if (barcodes.size() > 1)
 				infoParts.append(tr("[%1]").arg(i + 1));
-			infoParts.append(tr("Format: %1").arg(barcode.formatName()));
 			infoParts.append(tr("Text: %1").arg(barcode.text()));
-			infoParts.append(tr("Type: %1").arg(barcode.contentTypeName()));
-			if (i < barcodes.size() - 1)
-				infoParts.append(QStringLiteral(""));
+			infoParts.append(tr("Format: %1").arg(ToString(barcode.format())));
+			infoParts.append(tr("Type: %1").arg(ToString(barcode.contentType())));
+			infoParts.append(QStringLiteral(""));
 		}
-		infoParts.append(QStringLiteral(""));
 		infoParts.append(tr("Time: %1 ms").arg(_barcodeReader->runTime.loadRelaxed()));
 
 		_infoLabel->setText(infoParts.join(QStringLiteral("\n")));
@@ -359,17 +365,16 @@ private:
 	QLabel* _infoLabel = nullptr;
 	QWidget* _controlsWidget = nullptr;
 	QComboBox* _cameraCombo = nullptr;
+	QComboBox* _formatCombo = nullptr;
 	QCheckBox* _tryRotateCheck = nullptr;
 	QCheckBox* _tryHarderCheck = nullptr;
 	QCheckBox* _tryInvertCheck = nullptr;
 	QCheckBox* _tryDownscaleCheck = nullptr;
-	QCheckBox* _linearCodesCheck = nullptr;
-	QCheckBox* _matrixCodesCheck = nullptr;
 
 	QCamera* _camera = nullptr;
 	QMediaCaptureSession* _captureSession = nullptr;
 	QVideoSink* _videoSink = nullptr;
-	ZXingQt::BarcodeReader* _barcodeReader = nullptr;
+	BarcodeReader* _barcodeReader = nullptr;
 	QTimer* _resetTimer = nullptr;
 };
 

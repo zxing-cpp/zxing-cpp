@@ -29,7 +29,7 @@ Window {
 		id: barcodeReader
 		videoSink: videoOutput.videoSink
 
-		formats: [linearSwitch.checked ? ZXing.AllLinear : ZXing.None, matrixSwitch.checked ? ZXing.AllMatrix : ZXing.None]
+		formats: formatCombo.selectedFormat
 		tryRotate: tryRotateSwitch.checked
 		tryHarder: tryHarderSwitch.checked
 		tryInvert: tryInvertSwitch.checked
@@ -50,9 +50,9 @@ Window {
 				if (barcodes.length > 1)
 					infoParts.push(qsTr("[%1]").arg(i + 1))
 				infoParts.push(
-					qsTr("Format: %1").arg(barcode.formatName),
+					qsTr("Format: %1").arg(ZXingQml.FormatToString(barcode.format)),
 					qsTr("Text: %1").arg(barcode.text),
-					qsTr("Type: %1").arg(barcode.contentTypeName)
+					qsTr("Type: %1").arg(ZXingQml.ContentTypeToString(barcode.contentType))
 				)
 				if (i < barcodes.length - 1)
 					infoParts.push("")
@@ -217,8 +217,26 @@ Window {
 					Switch {id: tryHarderSwitch; text: qsTr("Try Harder"); checked: true }
 					Switch {id: tryInvertSwitch; text: qsTr("Try Invert"); checked: true }
 					Switch {id: tryDownscaleSwitch; text: qsTr("Try Downscale"); checked: true }
-					Switch {id: linearSwitch; text: qsTr("Linear Codes"); checked: true }
-					Switch {id: matrixSwitch; text: qsTr("Matrix Codes"); checked: true }
+
+					RowLayout {
+						Label {
+							text: qsTr("Formats:")
+							color: "white"
+						}
+					ComboBox {
+						id: formatCombo
+						property var selectedFormat: currentIndex >= 0 ? model[currentIndex] : ZXing.None
+						model: ZXingQml.ListBarcodeFormats()
+						textRole: "display"
+						valueRole: "display"
+						currentIndex: model.indexOf(ZXing.All)
+						displayText: ZXingQml.FormatToString(selectedFormat)
+							delegate: ItemDelegate {
+								text: ZXingQml.FormatToString(modelData)
+								highlighted: formatCombo.highlightedIndex === index
+							}
+						}
+					}
 				}
 			}
 		}
