@@ -306,6 +306,16 @@ Barcodes ReadBarcodes(const ImageView& _iv, const ReaderOptions& opts)
 		}
 	}
 
+	if (opts.returnErrors()) {
+		// if symbols overlap and one is in error remove it
+		for (auto a = res.begin(); a != res.end(); ++a)
+			for (auto b = std::next(a); b != res.end(); ++b)
+				if (HaveIntersectingBoundingBoxes(a->position(), b->position()) && (a->error() != b->error()))
+					*(a->error() ? a : b) = BarcodeData();
+
+		std::erase_if(res, [](auto&& r) { return r.format() == BarcodeFormat::None; });
+	}
+
 	return res;
 }
 
