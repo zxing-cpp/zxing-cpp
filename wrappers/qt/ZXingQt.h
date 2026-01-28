@@ -106,6 +106,30 @@ ZQ_DECL_TO_STRING(ContentType)
 // 	return dbg.noquote() << ToString(v);
 // }
 
+class Error : private ZXing::Error
+{
+	Q_GADGET
+
+	Q_PROPERTY(Type type READ type)
+	Q_PROPERTY(QString message READ message)
+	Q_PROPERTY(QString location READ location)
+
+public:
+	enum class Type { None, Format, Checksum, Unsupported };
+	Q_ENUM(Type)
+
+	Error() = default;
+	explicit Error(const ZXing::Error& e) : ZXing::Error(e) {}
+
+	Type type() const { return static_cast<Type>(ZXing::Error::type()); }
+	QString message() const { return QString::fromStdString(ZXing::Error::msg()); }
+	QString location() const { return QString::fromStdString(ZXing::Error::location()); }
+
+	using ZXing::Error::operator bool;
+
+	bool operator==(const Error& o) const { return ZXing::Error::operator==(o); }
+};
+
 class Position : public ZXing::Quadrilateral<QPoint>
 {
 	Q_GADGET
@@ -129,11 +153,25 @@ class Barcode : private ZXing::Barcode
 	Q_GADGET
 
 	Q_PROPERTY(BarcodeFormat format READ format)
+	Q_PROPERTY(BarcodeFormat symbology READ symbology)
 	Q_PROPERTY(QString text READ text)
 	Q_PROPERTY(QByteArray bytes READ bytes)
+	Q_PROPERTY(QByteArray bytesECI READ bytesECI)
 	Q_PROPERTY(bool isValid READ isValid)
+	Q_PROPERTY(Error error READ error)
 	Q_PROPERTY(ContentType contentType READ contentType)
+	Q_PROPERTY(bool hasECI READ hasECI)
 	Q_PROPERTY(Position position READ position)
+	Q_PROPERTY(int orientation READ orientation)
+	Q_PROPERTY(bool isMirrored READ isMirrored)
+	Q_PROPERTY(bool isInverted READ isInverted)
+	Q_PROPERTY(QString symbologyIdentifier READ symbologyIdentifier)
+	Q_PROPERTY(int sequenceSize READ sequenceSize)
+	Q_PROPERTY(int sequenceIndex READ sequenceIndex)
+	Q_PROPERTY(QString sequenceId READ sequenceId)
+	Q_PROPERTY(bool isLastInSequence READ isLastInSequence)
+	Q_PROPERTY(bool isPartOfSequence READ isPartOfSequence)
+	Q_PROPERTY(int lineCount READ lineCount)
 
 public:
 	Barcode() = default; // required for qmetatype machinery
@@ -143,13 +181,26 @@ public:
 	using ZXing::Barcode::isValid;
 
 	BarcodeFormat format() const { return static_cast<BarcodeFormat>(ZXing::Barcode::format()); }
+	BarcodeFormat symbology() const { return static_cast<BarcodeFormat>(ZXing::Barcode::symbology()); }
 	ContentType contentType() const { return static_cast<ContentType>(ZXing::Barcode::contentType()); }
+
+	Error error() const { return Error(ZXing::Barcode::error()); }
+
 	QString text() const { return QString::fromStdString(ZXing::Barcode::text()); }
+	QString text(TextMode mode) const { return QString::fromStdString(ZXing::Barcode::text(static_cast<ZXing::TextMode>(mode))); }
 
 	QByteArray bytes() const
 	{
 		return QByteArray(reinterpret_cast<const char*>(ZXing::Barcode::bytes().data()), std::size(ZXing::Barcode::bytes()));
 	}
+
+	QByteArray bytesECI() const
+	{
+		auto b = ZXing::Barcode::bytesECI();
+		return QByteArray(reinterpret_cast<const char*>(b.data()), b.size());
+	}
+
+	using ZXing::Barcode::hasECI;
 
 	Position position() const
 	{
@@ -157,6 +208,22 @@ public:
 		auto qp = [&pos](int i) { return QPoint(pos[i].x, pos[i].y); };
 		return {qp(0), qp(1), qp(2), qp(3)};
 	}
+
+	using ZXing::Barcode::orientation;
+	using ZXing::Barcode::isMirrored;
+	using ZXing::Barcode::isInverted;
+
+	QString symbologyIdentifier() const { return QString::fromStdString(ZXing::Barcode::symbologyIdentifier()); }
+
+	using ZXing::Barcode::sequenceSize;
+	using ZXing::Barcode::sequenceIndex;
+	using ZXing::Barcode::isLastInSequence;
+	using ZXing::Barcode::isPartOfSequence;
+	QString sequenceId() const { return QString::fromStdString(ZXing::Barcode::sequenceId()); }
+
+	QString extra(QStringView key = {}) const { return QString::fromStdString(ZXing::Barcode::extra(Detail::qba2sv(key.toUtf8()))); }
+
+	using ZXing::Barcode::lineCount;
 
 	QString toSVG(const WriterOptions& options = {}) const
 	{
@@ -168,6 +235,14 @@ public:
 		auto img = ZXing::WriteBarcodeToImage(*this, options);
 		return QImage(img.data(), img.width(), img.height(), img.width(), QImage::Format::Format_Grayscale8).copy();
 	}
+
+	QImage symbol() const
+	{
+		auto img = ZXing::Barcode::symbol();
+		return img.data() ? QImage(img.data(), img.width(), img.height(), img.width(), QImage::Format::Format_Grayscale8).copy() : QImage();
+	}
+
+	bool operator==(const Barcode& o) const { return ZXing::Barcode::operator==(o); }
 
 	static Barcode fromText(QStringView text, BarcodeFormat format, QStringView options = {})
 	{
@@ -432,6 +507,7 @@ public:
 	ZQ_PROPERTY(bool, tryInvert, setTryInvert)
 	ZQ_PROPERTY(bool, tryDownscale, setTryDownscale)
 	ZQ_PROPERTY(bool, isPure, setIsPure)
+	ZQ_PROPERTY(bool, returnErrors, setReturnErrors)
 
 	// For debugging/development
 	mutable QAtomicInt runTime = 0;
@@ -525,6 +601,7 @@ inline QVideoFilterRunnable* BarcodeReader::createFilterRunnable()
 
 
 // Q_DECLARE_METATYPE: compile-time declaration required for QVariant storage and template instantiation
+Q_DECLARE_METATYPE(ZXingQt::Error)
 Q_DECLARE_METATYPE(ZXingQt::Position)
 Q_DECLARE_METATYPE(ZXingQt::Barcode)
 
@@ -554,6 +631,8 @@ inline void registerQmlAndMetaTypes()
 	qRegisterMetaType<ZXingQt::BarcodeFormat>("BarcodeFormat");
 	qRegisterMetaType<ZXingQt::ContentType>("ContentType");
 	qRegisterMetaType<ZXingQt::TextMode>("TextMode");
+	qRegisterMetaType<ZXingQt::Error>("Error");
+	qRegisterMetaType<ZXingQt::Error::Type>("Error::Type");
 	qRegisterMetaType<ZXingQt::Position>("Position");
 	qRegisterMetaType<ZXingQt::Barcode>("Barcode");
 	qRegisterMetaType<QList<ZXingQt::BarcodeFormat>>("QList<BarcodeFormat>");
@@ -567,6 +646,7 @@ inline void registerQmlAndMetaTypes()
 		[](ContentType type) { return QString::fromStdString(ZXing::ToString(static_cast<ZXing::ContentType>(type))); });
 
 	// qmlRegisterType allows us to store the position / barcode in a QML property, i.e. property barcode myBarcode: ...
+	qmlRegisterType<ZXingQt::Error>("ZXing", 1, 0, "error");
 	qmlRegisterType<ZXingQt::Position>("ZXing", 1, 0, "position");
 	qmlRegisterType<ZXingQt::Barcode>("ZXing", 1, 0, "barcode");
 
