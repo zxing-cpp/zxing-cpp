@@ -69,6 +69,9 @@ bool operator&(BarcodeFormat a, BarcodeFormat b)
 
 	if (SymbologyKey(b) == '*') {
 		char vkb = VariantKey(b);
+		if (vkb == '*')
+			return true;
+
 		switch (a) {
 #ifdef ZXING_USE_ZINT
 #define USING_ZINT 1

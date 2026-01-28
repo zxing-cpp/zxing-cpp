@@ -11,7 +11,7 @@
 
 using namespace ZXing;
 
-TEST(BarcodeFormatTest, BarcodeFormat)
+TEST(BarcodeFormatTest, BarcodeFormatCreation)
 {
 #if 0 // old API
 	EXPECT_EQ(ToString(BarcodeFormat::QRCode), "QRCode");
@@ -72,4 +72,31 @@ TEST(BarcodeFormatTest, BarcodeFormat)
 	EXPECT_EQ(f1, f2);
 
 	EXPECT_THROW(BarcodeFormatsFromString("ITF, invalid-string"), std::invalid_argument);
+}
+
+TEST(BarcodeFormatTest, BarcodeFormatIntersection)
+{
+	using enum BarcodeFormat;
+
+	EXPECT_TRUE(EAN8 & EAN8);
+	EXPECT_TRUE(EAN8 & EANUPC);
+	EXPECT_TRUE(EANUPC & EAN8);
+	EXPECT_TRUE(EAN8 & AllLinear);
+	EXPECT_TRUE(EANUPC & AllLinear);
+	EXPECT_TRUE(EAN8 & All);
+	EXPECT_TRUE(EANUPC & All);
+	EXPECT_TRUE(AllMatrix & All);
+	EXPECT_TRUE(AllLinear & EAN8);
+	EXPECT_TRUE(AllLinear & EANUPC);
+	EXPECT_TRUE(All & EAN8);
+	EXPECT_TRUE(All & EANUPC);
+	EXPECT_TRUE(All & AllMatrix);
+	EXPECT_TRUE(All & All);
+
+	EXPECT_FALSE(EAN8 & EAN13);
+	EXPECT_FALSE(EAN8 & QRCode);
+	EXPECT_FALSE(EAN8 & MicroQRCode);
+	EXPECT_FALSE(EANUPC & QRCode);
+	EXPECT_FALSE(AllMatrix & EAN8);
+	EXPECT_FALSE(AllMatrix & EANUPC);
 }
