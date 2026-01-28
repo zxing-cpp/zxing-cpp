@@ -167,6 +167,10 @@ internal class Dll
 	}
 }
 
+/// <summary>
+/// Represents a barcode format/symbology. Can represent a specific format (e.g., QRCode)
+/// or a combination of formats (e.g., AllReadable).
+/// </summary>
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 4)]
 public readonly struct BarcodeFormat : IEquatable<BarcodeFormat>
 {
@@ -213,20 +217,22 @@ public readonly struct BarcodeFormat : IEquatable<BarcodeFormat>
 	public static readonly BarcodeFormat DataMatrix = new BarcodeFormat(0x2064);
 	public static readonly BarcodeFormat MaxiCode = new BarcodeFormat(0x2055);
 
-	// conversions
 	public static implicit operator int(BarcodeFormat f) => f._value;
 	public static implicit operator BarcodeFormat(int v) => new BarcodeFormat(v);
 
-	// equality
 	public bool Equals(BarcodeFormat other) => _value == other._value;
 	public override bool Equals(object? obj) => obj is BarcodeFormat other && Equals(other);
 	public override int GetHashCode() => _value.GetHashCode();
 	public static bool operator ==(BarcodeFormat a, BarcodeFormat b) => a.Equals(b);
 	public static bool operator !=(BarcodeFormat a, BarcodeFormat b) => !a.Equals(b);
 
-	// string/parse helpers using native C API
+	/// <summary>Converts the barcode format to its human readable string representation.</summary>
+	/// <returns>The format name (e.g., "QR Code", "DataBar Limited").</returns>
 	public override string ToString() => MarshalAsString(ZXing_BarcodeFormatToString(this));
 
+	/// <summary>Parses a string into a BarcodeFormat.</summary>
+	/// <param name="s">Format name (case-insensitive).</param>
+	/// <exception cref="FormatException">Thrown when the string is not a valid format name.</exception>
 	public static BarcodeFormat Parse(string s)
 	{
 		if (!TryParse(s, out var fmt))
@@ -234,40 +240,57 @@ public readonly struct BarcodeFormat : IEquatable<BarcodeFormat>
 		return fmt;
 	}
 
+	/// <summary>Attempts to parse a string into a BarcodeFormat.</summary>
+	/// <returns>true if parsing succeeded; otherwise false.</returns>
 	public static bool TryParse(string? s, out BarcodeFormat format)
 	{
-		// ZXing_BarcodeFormatFromString will return the native representation.
-		// Consider any result equal to Invalid as parse failure.
 		format = ZXing_BarcodeFormatFromString(s ?? "");
 		return format != Invalid;
 	}
 
+	/// <summary>Gets the symbology for this format (e.g., EAN13 returns EANUPC).</summary>
 	public BarcodeFormat Symbology() => ZXing_BarcodeFormatSymbology(this);
 }
 
+/// <summary>Binarization algorithm for converting grayscale images to black/white for detection.</summary>
 public enum Binarizer
 {
-	LocalAverage,    ///< T = average of neighboring pixels for matrix and GlobalHistogram for linear (HybridBinarizer)
-	GlobalHistogram, ///< T = valley between the 2 largest peaks in the histogram (per line in linear case)
-	FixedThreshold,  ///< T = 127
-	BoolCast,        ///< T = 0, fastest possible
+	/// <summary>Average of neighboring pixels for matrix, GlobalHistogram for linear (HybridBinarizer).</summary>
+	LocalAverage,
+	/// <summary>Valley between the 2 largest peaks in the histogram (per line in linear case).</summary>
+	GlobalHistogram,
+	/// <summary>Fixed threshold at 127.</summary>
+	FixedThreshold,
+	/// <summary>Threshold at 0, fastest option.</summary>
+	BoolCast,
 };
 
+/// <summary>Handling of EAN-2/EAN-5 Add-On symbols.</summary>
 public enum EanAddOnSymbol
 {
-	Ignore,  ///< Ignore any Add-On symbol during read/scan
-	Read,    ///< Read EAN-2/EAN-5 Add-On symbol if found
-	Require, ///< Require EAN-2/EAN-5 Add-On symbol to be present
+	/// <summary>Ignore any Add-On symbol during read/scan.</summary>
+	Ignore,
+	/// <summary>Read EAN-2/EAN-5 Add-On symbol if found.</summary>
+	Read,
+	/// <summary>Require EAN-2/EAN-5 Add-On symbol to be present.</summary>
+	Require,
 };
 
+/// <summary>Text encoding mode that controls how barcode content bytes are converted to strings.</summary>
 public enum TextMode
 {
-	Plain,   ///< bytes() transcoded to unicode based on ECI info or guessed charset (the default mode prior to 2.0)
-	ECI,     ///< standard content following the ECI protocol with every character set ECI segment transcoded to unicode
-	HRI,     ///< Human Readable Interpretation (dependent on the ContentType)
-	Escaped, ///< Use the EscapeNonGraphical() function (e.g. ASCII 29 will be transcoded to "<GS>")
-	Hex,     ///< bytes() transcoded to ASCII string of HEX values
-	HexECI,  ///< bytesECI() transcoded to ASCII string of HEX values
+	/// <summary>bytes() transcoded to unicode based on ECI info or guessed charset (default mode prior to 2.0).</summary>
+	Plain,
+	/// <summary>Standard content following the ECI protocol with every character set ECI segment transcoded to unicode.</summary>
+	ECI,
+	/// <summary>Human Readable Interpretation (dependent on the ContentType).</summary>
+	HRI,
+	/// <summary>Use EscapeNonGraphical() function (e.g., ASCII 29 becomes "&lt;GS&gt;").</summary>
+	Escaped,
+	/// <summary>bytes() transcoded to ASCII string of HEX values.</summary>
+	Hex,
+	/// <summary>bytesECI() transcoded to ASCII string of HEX values.</summary>
+	HexECI,
 };
 
 public enum ContentType { Text, Binary, Mixed, GS1, ISO15434, UnknownECI };
@@ -298,6 +321,9 @@ public struct Position
 	public override string ToString() => MarshalAsString(ZXing_PositionToString(this));
 };
 
+/// <summary>
+/// Non-owning view into image data for barcode detection. Does not copy pixel data.
+/// </summary>
 public class ImageView
 {
 	internal IntPtr _d;
@@ -316,6 +342,9 @@ public class ImageView
 	~ImageView() => ZXing_ImageView_delete(_d);
 }
 
+/// <summary>
+/// Owns barcode image data. Returned by Barcode.ToImage().
+/// </summary>
 public class Image : IDisposable
 {
 	internal IntPtr _d;
@@ -349,6 +378,9 @@ public class Image : IDisposable
 	}
 }
 
+/// <summary>
+/// Collection of barcode formats, supporting combinations like "QRCode, DataMatrix".
+/// </summary>
 public class BarcodeFormats : IReadOnlyCollection<BarcodeFormat>
 {
 	private readonly BarcodeFormat[] _d;
@@ -367,6 +399,9 @@ public class BarcodeFormats : IReadOnlyCollection<BarcodeFormat>
 	public IEnumerator<BarcodeFormat> GetEnumerator() => ((IEnumerable<BarcodeFormat>)_d).GetEnumerator();
 	System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => _d.GetEnumerator();
 
+	/// <summary>Lists all supported barcode formats, optionally filtered by a specific format.</summary>
+	/// <param name="filter">e.g. AllReadable or AllLinear.</param>
+	/// <returns>All supported barcode formats that match the filter.</returns>
 	public static BarcodeFormats List(BarcodeFormat filter)
 	{
 		IntPtr ptr = ZXing_BarcodeFormatsList(filter, out int count);
@@ -391,6 +426,7 @@ public class BarcodeFormats : IReadOnlyCollection<BarcodeFormat>
 	public override string ToString() => MarshalAsString(ZXing_BarcodeFormatsToString(_d, _d.Length));
 }
 
+/// <summary>Configuration options for barcode reading/detection.</summary>
 public class ReaderOptions : IDisposable
 {
 	internal IntPtr _d;
@@ -406,42 +442,49 @@ public class ReaderOptions : IDisposable
 		GC.SuppressFinalize(this);
 	}
 
+	/// <summary>Spend more time to find barcodes; slower but more accurate.</summary>
 	public bool TryHarder
 	{
 		get => ZXing_ReaderOptions_getTryHarder(_d);
 		set => ZXing_ReaderOptions_setTryHarder(_d, value);
 	}
 
+	/// <summary>Also detect barcodes in 90/180/270 degree rotated images.</summary>
 	public bool TryRotate
 	{
 		get => ZXing_ReaderOptions_getTryRotate(_d);
 		set => ZXing_ReaderOptions_setTryRotate(_d, value);
 	}
 
+	/// <summary>Also try detecting inverted (white on black) barcodes.</summary>
 	public bool TryInvert
 	{
 		get => ZXing_ReaderOptions_getTryInvert(_d);
 		set => ZXing_ReaderOptions_setTryInvert(_d, value);
 	}
 
+	/// <summary>Try downscaled images (high resolution images can hamper the detection).</summary>
 	public bool TryDownscale
 	{
 		get => ZXing_ReaderOptions_getTryDownscale(_d);
 		set => ZXing_ReaderOptions_setTryDownscale(_d, value);
 	}
 
+	/// <summary>Assume the image contains only a single, perfectly aligned barcode, nothing else.</summary>
 	public bool IsPure
 	{
 		get => ZXing_ReaderOptions_getIsPure(_d);
 		set => ZXing_ReaderOptions_setIsPure(_d, value);
 	}
 
+	/// <summary>Return invalid barcodes with error information instead of skipping them.</summary>
 	public bool ReturnErrors
 	{
 		get => ZXing_ReaderOptions_getReturnErrors(_d);
 		set => ZXing_ReaderOptions_setReturnErrors(_d, value);
 	}
 
+	/// <summary>Barcode formats to search for (increase performance by limiting the set).</summary>
 	public BarcodeFormats Formats
 	{
 		get {
@@ -471,12 +514,14 @@ public class ReaderOptions : IDisposable
 		set => ZXing_ReaderOptions_setTextMode(_d, value);
 	}
 
+	/// <summary>Minimum number of lines for linear barcodes (default is 2).</summary>
 	public int MinLineCount
 	{
 		get => ZXing_ReaderOptions_getMinLineCount(_d);
 		set => ZXing_ReaderOptions_setMinLineCount(_d, value);
 	}
 
+	/// <summary>Maximum number of symbols to detect (can be used to limit processing time).</summary>
 	public int MaxNumberOfSymbols
 	{
 		get => ZXing_ReaderOptions_getMaxNumberOfSymbols(_d);
@@ -485,6 +530,7 @@ public class ReaderOptions : IDisposable
 
 }
 
+/// <summary>Options for creating/encoding barcodes.</summary>
 public class CreatorOptions : IDisposable
 {
 	internal IntPtr _d;
@@ -513,6 +559,8 @@ public class CreatorOptions : IDisposable
 		set => ZXing_CreatorOptions_setFormat(_d, value);
 	}
 
+	/// <summary>Format-specific options as key=value pairs (e.g., "EcLevel=H").</summary>
+	/// <remarks>This can be a serialized JSON object or simple key=value pairs separated by commas.</remarks>
 	public String Options
 	{
 		get => MarshalAsString(ZXing_CreatorOptions_getOptions(_d));
@@ -521,6 +569,7 @@ public class CreatorOptions : IDisposable
 
 }
 
+/// <summary>Options for rendering barcodes to images or SVG.</summary>
 public class WriterOptions : IDisposable
 {
 	internal IntPtr _d;
@@ -536,24 +585,28 @@ public class WriterOptions : IDisposable
 		GC.SuppressFinalize(this);
 	}
 
+	/// <summary>Scaling factor for the barcode modules (>0 means 'pixels per module', <0 means 'target size in pixels').</summary>
 	public int Scale
 	{
 		get => ZXing_WriterOptions_getScale(_d);
 		set => ZXing_WriterOptions_setScale(_d, value);
 	}
 
+	/// <summary>Rotation in degrees (0, 90, 180, or 270).</summary>
 	public int Rotate
 	{
 		get => ZXing_WriterOptions_getRotate(_d);
 		set => ZXing_WriterOptions_setRotate(_d, value);
 	}
 
+	/// <summary>Add Human Readable Text (the barcode content) below linear barcodes.</summary>
 	public bool AddHRT
 	{
 		get => ZXing_WriterOptions_getAddHRT(_d);
 		set => ZXing_WriterOptions_setAddHRT(_d, value);
 	}
 
+	/// <summary>Add standard quiet zones (white margins) around the barcode.</summary>
 	public bool AddQuietZones
 	{
 		get => ZXing_WriterOptions_getAddQuietZones(_d);
@@ -561,6 +614,7 @@ public class WriterOptions : IDisposable
 	}
 }
 
+/// <summary>A detected or created barcode with its data, format, and metadata.</summary>
 public class Barcode : IDisposable
 {
 	internal IntPtr _d;
@@ -582,18 +636,25 @@ public class Barcode : IDisposable
 	public Barcode(byte[] data, CreatorOptions opts)
 		=> _d = CheckError(ZXing_CreateBarcodeFromBytes(data, data.Length, opts._d));
 
+	/// <summary>True if successfully decoded or created without errors.</summary>
 	public bool IsValid => ZXing_Barcode_isValid(_d);
 	public BarcodeFormat Format => ZXing_Barcode_format(_d);
+	/// <summary>Base symbology (e.g., EAN13 -> EANUPC).</summary>
 	public BarcodeFormat Symbology => ZXing_Barcode_symbology(_d);
 	public ContentType ContentType => ZXing_Barcode_contentType(_d);
 	public string Text => MarshalAsString(ZXing_Barcode_text(_d));
 	public byte[] Bytes => MarshalAsBytes(ZXing_Barcode_bytes, _d);
+	/// <summary>Bytes with Extended Channel Interpretation markers included.</summary>
 	public byte[] BytesECI => MarshalAsBytes(ZXing_Barcode_bytesECI, _d);
+	/// <summary>Error correction level (e.g., "H" for QR codes).</summary>
 	public string ECLevel => MarshalAsString(ZXing_Barcode_ecLevel(_d));
+	/// <summary>ISO/IEC 15424 symbology identifier (e.g., "]Q1" for QR Code).</summary>
 	public string SymbologyIdentifier => MarshalAsString(ZXing_Barcode_symbologyIdentifier(_d));
 	public string ErrorMsg => MarshalAsString(ZXing_Barcode_errorMsg(_d));
 	public ErrorType ErrorType => ZXing_Barcode_errorType(_d);
+	/// <summary>Corner points of the barcode in the image.</summary>
 	public Position Position => ZXing_Barcode_position(_d);
+	/// <summary>Detected rotation in degrees.</summary>
 	public int Orientation => ZXing_Barcode_orientation(_d);
 	public bool HasECI => ZXing_Barcode_hasECI(_d);
 	public bool IsInverted => ZXing_Barcode_isInverted(_d);
@@ -607,8 +668,13 @@ public class Barcode : IDisposable
 		=> new Image(CheckError(ZXing_WriteBarcodeToImage(_d, opts?._d ?? IntPtr.Zero)));
 }
 
+/// <summary>Barcode reader. Inherits ReaderOptions for convenient configuration.</summary>
 public class BarcodeReader : ReaderOptions
 {
+	/// <summary>Scans an image for barcodes.</summary>
+	/// <param name="iv">Image to scan.</param>
+	/// <param name="opts">Optional configuration; uses defaults if null.</param>
+	/// <returns>Array of detected barcodes (empty if none found).</returns>
 	public static Barcode[] Read(ImageView iv, ReaderOptions? opts = null)
 	{
 		var ptr = CheckError(ZXing_ReadBarcodes(iv._d, opts?._d ?? IntPtr.Zero));
@@ -630,6 +696,7 @@ public class BarcodeReader : ReaderOptions
 	public Barcode[] From(ImageView iv) => Read(iv, this);
 }
 
+/// <summary>Barcode creator. Inherits CreatorOptions for convenient configuration.</summary>
 public class BarcodeCreator : CreatorOptions
 {
 	public BarcodeCreator(BarcodeFormat format) : base(format) {}
