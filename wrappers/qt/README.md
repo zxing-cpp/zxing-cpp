@@ -49,9 +49,8 @@ QObject::connect(&reader, &BarcodeReader::foundNoBarcodes,
         qDebug() << "No barcodes found";
     });
 
-// Read synchronously (emits signals)
 QImage image("barcode.png");
-reader.read(image);
+reader.read(image); // read synchronously (emits signals)
 ```
 
 ### Writing Barcodes
@@ -137,8 +136,8 @@ BarcodeFormat::Aztec
 
 // Special groups, usable when reading barcodes
 BarcodeFormat::AllLinear    // All 1D barcodes
-BarcodeFormat::AllMatrix    // All 2D barcodes
-BarcodeFormat::AllReadable  // All supported formats
+BarcodeFormat::AllMatrix    // All 2D barcodes (without the stacked ones)
+BarcodeFormat::AllReadable
 // ... and more
 ```
 
@@ -192,7 +191,7 @@ See the `ZXingQmlReader` example program.
 
 1. **Limit formats**: Only enable formats you actually need
 2. **Avoid tryHarder**: Use only when necessary (significantly slower)
-3. **Threading**: The `BarcodeReader` class handles threading automatically with `maxThreadCount`
+3. **Threading**: The `BarcodeReader` class can process input asynchronously (see also `maxThreadCount`)
 4. **Frame skipping**: When processing video frames and all threads from the pool are busy, the frame is dropped
 
 ## Building
