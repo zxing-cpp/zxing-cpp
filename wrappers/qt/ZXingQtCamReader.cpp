@@ -17,6 +17,7 @@
 #include <QLabel>
 #include <QMainWindow>
 #include <QMediaCaptureSession>
+#include <QPushButton>
 #include <QMediaDevices>
 #include <QPainter>
 #include <QTimer>
@@ -176,21 +177,63 @@ private:
 		// Info label overlay (top-left aligned)
 		_infoLabel = new QLabel(videoContainer);
 		_infoLabel->setStyleSheet(
-			QStringLiteral("QLabel { color: white; background-color: rgba(128, 128, 128, 180); padding: 10px; }"));
+			QStringLiteral("QLabel { color: white; background-color: rgba(40, 40, 40, 200); padding: 12px 16px; border-radius: 8px; }"));
 		_infoLabel->setAttribute(Qt::WA_TransparentForMouseEvents);
 		_infoLabel->setText(tr("Initializing camera..."));
 		_infoLabel->adjustSize();
 		gridLayout->addWidget(_infoLabel, 0, 0, 1, 1, Qt::AlignTop | Qt::AlignLeft);
 
-		// Controls overlay (bottom-right aligned)
+		// Settings button (bottom-right aligned)
+		_settingsButton = new QPushButton(QStringLiteral("⚙"), videoContainer);
+		_settingsButton->setFixedSize(48, 48);
+		_settingsButton->setStyleSheet(
+			QStringLiteral("QPushButton { "
+						   "  background-color: rgba(40, 40, 40, 200); "
+						   "  color: white; "
+						   "  border: none; "
+						   "  border-radius: 24px; "
+						   "  font-size: 24px; "
+						   "} "
+						   "QPushButton:hover { "
+						   "  background-color: rgba(60, 60, 60, 220); "
+						   "} "
+						   "QPushButton:pressed { "
+						   "  background-color: rgba(80, 80, 80, 240); "
+						   "}"));
+		_settingsButton->setCursor(Qt::PointingHandCursor);
+		connect(_settingsButton, &QPushButton::clicked, this, &CameraReaderWidget::toggleSettings);
+		gridLayout->addWidget(_settingsButton, 0, 0, 1, 1, Qt::AlignBottom | Qt::AlignRight);
+
+		// Controls panel (initially hidden)
 		_controlsWidget = new QWidget(videoContainer);
 		_controlsWidget->setStyleSheet(
-			QStringLiteral("QWidget#controlsWidget { background-color: rgba(128, 128, 128, 180); padding: 10px; } "
-						   "QCheckBox, QLabel { color: white; background: transparent; }"));
+			QStringLiteral("QWidget#controlsWidget { "
+						   "  background-color: rgba(40, 40, 40, 230); "
+						   "  border-radius: 12px; "
+						   "} "
+						   "QCheckBox, QLabel { "
+						   "  color: white; "
+						   "  background: transparent; "
+						   "  font-size: 13px; "
+						   "}"));
 		_controlsWidget->setObjectName(QStringLiteral("controlsWidget"));
+		_controlsWidget->hide();
 		auto controlsLayout = new QVBoxLayout(_controlsWidget);
-		controlsLayout->setContentsMargins(10, 10, 10, 10);
-		controlsLayout->setSpacing(5);
+		controlsLayout->setContentsMargins(16, 16, 16, 16);
+		controlsLayout->setSpacing(8);
+
+		// Header with close button
+		auto headerLayout = new QHBoxLayout();
+		headerLayout->addWidget(new QLabel(tr("Settings")));
+		headerLayout->addStretch();
+
+		auto closeButton = new QPushButton(QStringLiteral("✕"));
+		closeButton->setFixedSize(24, 24);
+		closeButton->setStyleSheet(QStringLiteral("QPushButton { background: transparent; border: none; color: white; font-size: 18px; }"));
+		closeButton->setCursor(Qt::PointingHandCursor);
+		connect(closeButton, &QPushButton::clicked, _controlsWidget, &QWidget::hide);
+		headerLayout->addWidget(closeButton);
+		controlsLayout->addLayout(headerLayout);
 
 		auto addCheckBox = [&](QCheckBox*& checkbox, const QString& text, bool defaultValue = true) {
 			checkbox = new QCheckBox(text);
@@ -206,19 +249,25 @@ private:
 		addCheckBox(_returnErrorsCheck, tr("Return Errors"), false);
 
 		// Format filter combobox
-		auto formatLayout = new QHBoxLayout();
-		formatLayout->addWidget(new QLabel(tr("Formats:")));
 		_formatCombo = new QComboBox();
-
 		for (auto format : ListBarcodeFormats())
 			_formatCombo->addItem(ToString(format), static_cast<unsigned int>(format));
 
 		connect(_formatCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &CameraReaderWidget::updateReaderOptions);
-		formatLayout->addWidget(_formatCombo);
-		controlsLayout->addLayout(formatLayout);
+		controlsLayout->addWidget(_formatCombo);
 
-		controlsLayout->addStretch();
+		// Position controls panel above the settings button with some margin
 		gridLayout->addWidget(_controlsWidget, 0, 0, 1, 1, Qt::AlignBottom | Qt::AlignRight);
+	}
+
+	void toggleSettings()
+	{
+		if (_controlsWidget->isVisible()) {
+			_controlsWidget->hide();
+		} else {
+			_controlsWidget->show();
+			_controlsWidget->adjustSize();
+		}
 	}
 
 	void setupCameraAndReader()
@@ -349,6 +398,7 @@ private Q_SLOTS:
 private:
 	VideoWidget* _videoWidget = nullptr;
 	QLabel* _infoLabel = nullptr;
+	QPushButton* _settingsButton = nullptr;
 	QWidget* _controlsWidget = nullptr;
 	QComboBox* _cameraCombo = nullptr;
 	QComboBox* _formatCombo = nullptr;
