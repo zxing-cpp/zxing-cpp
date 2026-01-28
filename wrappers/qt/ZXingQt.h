@@ -364,12 +364,12 @@ class BarcodeReader : public QObject, private ReaderOptions
 {
 	Q_OBJECT
 
-	QThreadPool _pool;
+	mutable QThreadPool _pool;
 
 	Q_PROPERTY(BarcodeFormats formats READ formats WRITE setFormats NOTIFY formatsChanged)
 	Q_PROPERTY(TextMode textMode READ textMode WRITE setTextMode NOTIFY textModeChanged)
 
-	void emitFoundBarcodes(const QVector<Barcode>& barcodes)
+	void emitFoundBarcodes(const QVector<Barcode>& barcodes) const
 	{
 		if (!barcodes.isEmpty())
 			Q_EMIT foundBarcodes(barcodes);
@@ -433,24 +433,29 @@ public:
 	ZQ_PROPERTY(bool, isPure, setIsPure)
 
 	// For debugging/development
-	QAtomicInt runTime = 0;
+	mutable QAtomicInt runTime = 0;
 	Q_PROPERTY(int runTime MEMBER runTime)
 
-	Q_SLOT QVector<Barcode> read(const QImage& image)
+	Q_SLOT QVector<Barcode> read(const QImage& image) const
 	{
 		auto barcodes = ReadBarcodes(image, *this);
 		emitFoundBarcodes(barcodes);
 		return barcodes;
 	}
 
+	Q_SLOT void readAsync(const QImage& image) const
+	{
+		_pool.start([this, image]() { read(image); });
+	}
+
 Q_SIGNALS:
-	void foundNoBarcodes();
-	void foundBarcodes(const QVector<Barcode>& barcodes);
+	/// @note If an async read is called, the foundBarcodes() and foundNoBarcodes() signals are emitted from a worker thread.
+	void foundNoBarcodes() const;
+	void foundBarcodes(const QVector<Barcode>& barcodes) const;
 
 public:
 #ifdef QT_MULTIMEDIA_LIB
-	// Function should be thread safe, as it may be called from a separate thread.
-	Q_SLOT QVector<Barcode> read(const QVideoFrame& image)
+	Q_SLOT QVector<Barcode> read(const QVideoFrame& image) const
 	{
 		QElapsedTimer t;
 		t.start();
@@ -458,6 +463,11 @@ public:
 		runTime = t.elapsed();
 		emitFoundBarcodes(barcodes);
 		return barcodes;
+	}
+
+	Q_SLOT bool tryReadAsync(const QVideoFrame& frame) const
+	{
+		return _pool.tryStart([this, frame]() { read(frame); });
 	}
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -477,14 +487,7 @@ public:
 			disconnect(_sink, nullptr, this, nullptr);
 
 		_sink = sink;
-		connect(_sink, &QVideoSink::videoFrameChanged, this, &BarcodeReader::onVideoFrameChanged, Qt::DirectConnection);
-	}
-	void onVideoFrameChanged(const QVideoFrame& frame)
-	{
-		if (_pool.activeThreadCount() >= _pool.maxThreadCount())
-			return; // we are busy => skip the frame
-
-		_pool.start([this, frame]() { read(frame); });
+		connect(_sink, &QVideoSink::videoFrameChanged, this, &BarcodeReader::tryReadAsync, Qt::DirectConnection);
 	}
 	Q_PROPERTY(QVideoSink* videoSink MEMBER _sink WRITE setVideoSink)
 
