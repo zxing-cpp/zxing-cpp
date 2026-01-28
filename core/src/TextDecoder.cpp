@@ -12,6 +12,7 @@
 
 #include <cassert>
 #include <stdexcept>
+#include <cstdio>
 
 namespace ZXing {
 
@@ -25,15 +26,25 @@ std::string BytesToUtf8(ByteView bytes, ECI eci)
 		eci = ECI::Binary;
 
 	int error_number = zueci_dest_len_utf8(ToInt(eci), bytes.data(), Size(bytes), replacement, flags, &utf8_len);
-	if (error_number >= ZUECI_ERROR)
-		throw std::runtime_error("zueci_dest_len_utf8 failed");
+	if (error_number >= ZUECI_ERROR) {
+#ifdef PRINT_DEBUG
+		fprintf(stderr, "zueci_dest_len_utf8 error: %d\n", error_number);
+#endif
+		// throw FormatError("Invalid UTF-8 data");
+		return {};
+	}
 
 	std::string utf8(utf8_len, 0);
 
 	error_number = zueci_eci_to_utf8(ToInt(eci), bytes.data(), Size(bytes), replacement, flags,
 									 reinterpret_cast<uint8_t*>(utf8.data()), &utf8_len);
-	if (error_number >= ZUECI_ERROR)
-		throw std::runtime_error("zueci_eci_to_utf8 failed");
+	if (error_number >= ZUECI_ERROR) {
+#ifdef PRINT_DEBUG
+		fprintf(stderr, "zueci_eci_to_utf8 error: %d\n", error_number);
+#endif
+		// throw FormatError("Invalid UTF-8 data");
+		return {};
+	}
 
 	assert(Size(utf8) == utf8_len);
 
