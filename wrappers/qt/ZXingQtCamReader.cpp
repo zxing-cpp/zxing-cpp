@@ -186,16 +186,15 @@ private:
 		_controlsWidget = new QWidget(videoContainer);
 		_controlsWidget->setStyleSheet(
 			QStringLiteral("QWidget#controlsWidget { background-color: rgba(128, 128, 128, 180); padding: 10px; } "
-						   "QCheckBox, QLabel { color: white; background: transparent; } "
-						   "QComboBox { color: white; background: rgba(0, 0, 0, 100); padding: 3px; }"));
+						   "QCheckBox, QLabel { color: white; background: transparent; }"));
 		_controlsWidget->setObjectName(QStringLiteral("controlsWidget"));
 		auto controlsLayout = new QVBoxLayout(_controlsWidget);
 		controlsLayout->setContentsMargins(10, 10, 10, 10);
 		controlsLayout->setSpacing(5);
 
-		auto addCheckBox = [&](QCheckBox*& checkbox, const QString& text) {
+		auto addCheckBox = [&](QCheckBox*& checkbox, const QString& text, bool defaultValue = true) {
 			checkbox = new QCheckBox(text);
-			checkbox->setChecked(true);
+			checkbox->setChecked(defaultValue);
 			connect(checkbox, &QCheckBox::toggled, this, &CameraReaderWidget::updateReaderOptions);
 			controlsLayout->addWidget(checkbox);
 		};
@@ -204,6 +203,7 @@ private:
 		addCheckBox(_tryHarderCheck, tr("Try Harder"));
 		addCheckBox(_tryInvertCheck, tr("Try Invert"));
 		addCheckBox(_tryDownscaleCheck, tr("Try Downscale"));
+		addCheckBox(_returnErrorsCheck, tr("Return Errors"), false);
 
 		// Format filter combobox
 		auto formatLayout = new QHBoxLayout();
@@ -295,6 +295,7 @@ private:
 		_barcodeReader->setTryHarder(_tryHarderCheck->isChecked());
 		_barcodeReader->setTryInvert(_tryInvertCheck->isChecked());
 		_barcodeReader->setTryDownscale(_tryDownscaleCheck->isChecked());
+		_barcodeReader->setReturnErrors(_returnErrorsCheck->isChecked());
 	}
 
 private Q_SLOTS:
@@ -355,6 +356,7 @@ private:
 	QCheckBox* _tryHarderCheck = nullptr;
 	QCheckBox* _tryInvertCheck = nullptr;
 	QCheckBox* _tryDownscaleCheck = nullptr;
+	QCheckBox* _returnErrorsCheck = nullptr;
 
 	QCamera* _camera = nullptr;
 	QMediaCaptureSession* _captureSession = nullptr;
