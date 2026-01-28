@@ -391,13 +391,20 @@ public class BarcodeFormats : IReadOnlyCollection<BarcodeFormat>
 	public override string ToString() => MarshalAsString(ZXing_BarcodeFormatsToString(_d, _d.Length));
 }
 
-public class ReaderOptions
+public class ReaderOptions : IDisposable
 {
 	internal IntPtr _d;
 
 	public ReaderOptions() => _d = CheckError(ZXing_ReaderOptions_new(), "Failed to create ReaderOptions.");
 
-	~ReaderOptions() => ZXing_ReaderOptions_delete(_d);
+	~ReaderOptions() => Dispose();
+
+	public void Dispose()
+	{
+		ZXing_ReaderOptions_delete(_d);
+		_d = IntPtr.Zero;
+		GC.SuppressFinalize(this);
+	}
 
 	public bool TryHarder
 	{
@@ -478,7 +485,7 @@ public class ReaderOptions
 
 }
 
-public class CreatorOptions
+public class CreatorOptions : IDisposable
 {
 	internal IntPtr _d;
 
@@ -491,7 +498,14 @@ public class CreatorOptions
 
 	public static implicit operator CreatorOptions(BarcodeFormat f) => new CreatorOptions(f);
 
-	~CreatorOptions() => ZXing_CreatorOptions_delete(_d);
+	~CreatorOptions() => Dispose();
+
+	public void Dispose()
+	{
+		ZXing_CreatorOptions_delete(_d);
+		_d = IntPtr.Zero;
+		GC.SuppressFinalize(this);
+	}
 
 	public BarcodeFormat Format
 	{
@@ -507,13 +521,20 @@ public class CreatorOptions
 
 }
 
-public class WriterOptions
+public class WriterOptions : IDisposable
 {
 	internal IntPtr _d;
 
 	public WriterOptions() => _d = CheckError(ZXing_WriterOptions_new(), "Failed to create WriterOptions.");
 
-	~WriterOptions() => ZXing_WriterOptions_delete(_d);
+	~WriterOptions() => Dispose();
+
+	public void Dispose()
+	{
+		ZXing_WriterOptions_delete(_d);
+		_d = IntPtr.Zero;
+		GC.SuppressFinalize(this);
+	}
 
 	public int Scale
 	{
@@ -540,13 +561,20 @@ public class WriterOptions
 	}
 }
 
-public class Barcode
+public class Barcode : IDisposable
 {
 	internal IntPtr _d;
 
 	internal Barcode(IntPtr d) => _d = d;
 
-	~Barcode() => ZXing_Barcode_delete(_d);
+	~Barcode() => Dispose();
+
+	public void Dispose()
+	{
+		ZXing_Barcode_delete(_d);
+		_d = IntPtr.Zero;
+		GC.SuppressFinalize(this);
+	}
 
 	public Barcode(string data, CreatorOptions opts)
 		=> _d = CheckError(ZXing_CreateBarcodeFromText(data, data.Length, opts._d));
