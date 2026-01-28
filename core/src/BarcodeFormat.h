@@ -52,6 +52,7 @@
 	X(AztecRune,        'z', 'r', "mr  ", 128, ZXING_ENABLE_AZTEC,      "Aztec Rune") \
 	X(QRCode,           'Q', ' ', "mrwg",  58, ZXING_ENABLE_QRCODE,     "QR Code") \
 	X(QRCodeModel1,     'Q', '1', "mr  ",   0, ZXING_ENABLE_QRCODE,     "QR Code Model 1") \
+	X(QRCodeModel2,     'Q', '2', "mr  ",  58, ZXING_ENABLE_QRCODE,     "QR Code Model 2") \
 	X(MicroQRCode,      'Q', 'm', "mr  ",  97, ZXING_ENABLE_QRCODE,     "Micro QR Code") \
 	X(RMQRCode,         'Q', 'r', "mr g", 145, ZXING_ENABLE_QRCODE,     "rMQR Code") \
 	X(DataMatrix,       'd', ' ', "mrwg",  71, ZXING_ENABLE_DATAMATRIX, "Data Matrix") \

@@ -80,7 +80,7 @@ BarcodesData Reader::read(const BinaryBitmap& image, int maxSymbols) const
 	std::vector<ConcentricPattern> usedFPs;
 	BarcodesData res;
 	
-	if (_opts.hasFormat(BarcodeFormat::QRCode)) {
+	if (_opts.hasFormat(BarcodeFormat::QRCodeModel1 | BarcodeFormat::QRCodeModel2)) {
 		auto allFPSets = GenerateFinderPatternSets(allFPs);
 		for (const auto& fpSet : allFPSets) {
 			if (Contains(usedFPs, fpSet.bl) || Contains(usedFPs, fpSet.tl) || Contains(usedFPs, fpSet.tr))
@@ -91,6 +91,9 @@ BarcodesData Reader::read(const BinaryBitmap& image, int maxSymbols) const
 			auto detectorResult = SampleQR(*binImg, fpSet);
 			if (detectorResult.isValid()) {
 				auto decoderResult = Decode(detectorResult.bits());
+				if ((decoderResult.content().symbology.modifier == '0' && !_opts.hasFormat(BarcodeFormat::QRCodeModel1))
+					|| (decoderResult.content().symbology.modifier == '1' && !_opts.hasFormat(BarcodeFormat::QRCodeModel2)))
+					continue;
 				if (decoderResult.isValid()) {
 					usedFPs.push_back(fpSet.bl);
 					usedFPs.push_back(fpSet.tl);
