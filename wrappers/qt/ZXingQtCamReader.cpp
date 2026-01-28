@@ -94,7 +94,7 @@ protected:
 			int barcodeIndex = 1;
 			for (const auto& barcode : _barcodes) {
 				const auto& position = barcode.position();
-				painter.setPen(QPen(Qt::red, 3));
+				painter.setPen(QPen(barcode.isValid() ? Qt::green : Qt::red, 3));
 				for (int i = 0; i < 4; ++i)
 					painter.drawLine(mapPoint(position[i]), mapPoint(position[(i + 1) % 4]));
 
@@ -362,8 +362,11 @@ private Q_SLOTS:
 			const auto& barcode = barcodes[i];
 			if (barcodes.size() > 1)
 				infoParts.append(tr("[%1]").arg(i + 1));
-			infoParts.append(tr("Text: %1").arg(barcode.text()));
 			infoParts.append(tr("Format: %1").arg(ToString(barcode.format())));
+			if (barcode.isValid())
+				infoParts.append(tr("Text: %1").arg(barcode.text()));
+			else
+				infoParts.append(tr("Error: %1").arg(ToString(barcode.error())));
 			infoParts.append(tr("Type: %1").arg(ToString(barcode.contentType())));
 			infoParts.append(QStringLiteral(""));
 		}

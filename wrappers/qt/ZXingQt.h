@@ -114,6 +114,8 @@ class Error : private ZXing::Error
 	Q_PROPERTY(QString message READ message)
 	Q_PROPERTY(QString location READ location)
 
+	friend QString ToString(const Error& err);
+
 public:
 	enum class Type { None, Format, Checksum, Unsupported };
 	Q_ENUM(Type)
@@ -129,6 +131,11 @@ public:
 
 	bool operator==(const Error& o) const { return ZXing::Error::operator==(o); }
 };
+
+inline QString ToString(const Error& err)
+{
+	return QString::fromStdString(ZXing::ToString(static_cast<ZXing::Error>(err)));
+}
 
 class Position : public ZXing::Quadrilateral<QPoint>
 {
