@@ -39,7 +39,7 @@ reader.setTryInvert(false);
 reader.setTextMode(TextMode::HRI);
 
 QObject::connect(&reader, &BarcodeReader::foundBarcodes, 
-    [](const QVector<Barcode>& barcodes) {
+    [](const QList<Barcode>& barcodes) {
         for (const auto& barcode : barcodes)
             qDebug() << "Found:" << barcode.text();
     });

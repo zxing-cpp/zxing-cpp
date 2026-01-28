@@ -48,7 +48,7 @@ public:
 		update();
 	}
 
-	void setBarcodes(const QVector<Barcode>& barcodes)
+	void setBarcodes(const QList<Barcode>& barcodes)
 	{
 		_barcodes = barcodes;
 		update();
@@ -117,7 +117,7 @@ protected:
 
 private:
 	QVideoFrame _frame;
-	QVector<Barcode> _barcodes;
+	QList<Barcode> _barcodes;
 };
 
 class CameraReaderWidget : public QMainWindow
@@ -299,7 +299,7 @@ private:
 
 private Q_SLOTS:
 
-	void onBarcodesFound(const QVector<Barcode>& barcodes)
+	void onBarcodesFound(const QList<Barcode>& barcodes)
 	{
 		if (barcodes.isEmpty())
 			return;

@@ -9,7 +9,7 @@
 
 using namespace ZXingQt;
 
-void printBarcodes(const QVector<Barcode>& barcodes)
+void printBarcodes(const QList<Barcode>& barcodes)
 {
 	for (const auto& barcode : barcodes) {
 		qDebug() << "Text:   " << barcode.text();

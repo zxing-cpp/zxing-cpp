@@ -11,7 +11,7 @@
 #include <QDebug>
 #include <QMetaType>
 #include <QPoint>
-#include <QVector>
+#include <QList>
 #include <QObject>
 #include <QScopeGuard>
 #include <QThreadPool>
@@ -69,7 +69,7 @@ Q_ENUM_NS(ContentType)
 Q_ENUM_NS(TextMode)
 Q_ENUM_NS(Binarizer)
 
-using BarcodeFormats = QVector<BarcodeFormat>;
+using BarcodeFormats = QList<BarcodeFormat>;
 
 using ZXing::ReaderOptions;
 using ZXing::WriterOptions;
@@ -183,7 +183,7 @@ public:
 
 };
 
-inline QVector<Barcode> ReadBarcodes(const QImage& img, const ReaderOptions& opts = {})
+inline QList<Barcode> ReadBarcodes(const QImage& img, const ReaderOptions& opts = {})
 {
 	using namespace ZXing;
 
@@ -205,7 +205,7 @@ inline QVector<Barcode> ReadBarcodes(const QImage& img, const ReaderOptions& opt
 	};
 
 	auto exec = [&](const QImage& img) {
-		return Detail::transcode<QVector<Barcode>>(ZXing::ReadBarcodes(
+		return Detail::transcode<QList<Barcode>>(ZXing::ReadBarcodes(
 			{img.bits(), img.width(), img.height(), ImgFmtFromQImg(img), static_cast<int>(img.bytesPerLine())}, opts));
 	};
 
@@ -219,7 +219,7 @@ inline Barcode ReadBarcode(const QImage& img, const ReaderOptions& opts = {})
 }
 
 #ifdef QT_MULTIMEDIA_LIB
-inline QVector<Barcode> ReadBarcodes(const QVideoFrame& frame, const ReaderOptions& opts = {})
+inline QList<Barcode> ReadBarcodes(const QVideoFrame& frame, const ReaderOptions& opts = {})
 {
 	using namespace ZXing;
 
@@ -315,7 +315,7 @@ inline QVector<Barcode> ReadBarcodes(const QVideoFrame& frame, const ReaderOptio
 		}
 		QScopeGuard unmap([&] { img.unmap(); });
 
-		return Detail::transcode<QVector<Barcode>>(ZXing::ReadBarcodes(
+		return Detail::transcode<QList<Barcode>>(ZXing::ReadBarcodes(
 			{img.bits(FIRST_PLANE) + pixOffset, img.width(), img.height(), fmt, img.bytesPerLine(FIRST_PLANE), pixStride}, opts));
 	}
 	else {
@@ -369,7 +369,7 @@ class BarcodeReader : public QObject, private ReaderOptions
 	Q_PROPERTY(BarcodeFormats formats READ formats WRITE setFormats NOTIFY formatsChanged)
 	Q_PROPERTY(TextMode textMode READ textMode WRITE setTextMode NOTIFY textModeChanged)
 
-	void emitFoundBarcodes(const QVector<Barcode>& barcodes) const
+	void emitFoundBarcodes(const QList<Barcode>& barcodes) const
 	{
 		if (!barcodes.isEmpty())
 			Q_EMIT foundBarcodes(barcodes);
@@ -412,6 +412,7 @@ public:
 			Q_EMIT formatsChanged();
 		}
 	}
+	// Q_SLOT void setFormats(BarcodeFormat newVal) { setFormats(BarcodeFormats({newVal})); }
 	Q_SIGNAL void formatsChanged();
 
 	TextMode textMode() const noexcept { return static_cast<TextMode>(ReaderOptions::textMode()); }
@@ -436,7 +437,7 @@ public:
 	mutable QAtomicInt runTime = 0;
 	Q_PROPERTY(int runTime MEMBER runTime)
 
-	Q_SLOT QVector<Barcode> read(const QImage& image) const
+	Q_SLOT QList<Barcode> read(const QImage& image) const
 	{
 		auto barcodes = ReadBarcodes(image, *this);
 		emitFoundBarcodes(barcodes);
@@ -451,11 +452,11 @@ public:
 Q_SIGNALS:
 	/// @note If an async read is called, the foundBarcodes() and foundNoBarcodes() signals are emitted from a worker thread.
 	void foundNoBarcodes() const;
-	void foundBarcodes(const QVector<Barcode>& barcodes) const;
+	void foundBarcodes(const QList<Barcode>& barcodes) const;
 
 public:
 #ifdef QT_MULTIMEDIA_LIB
-	Q_SLOT QVector<Barcode> read(const QVideoFrame& image) const
+	Q_SLOT QList<Barcode> read(const QVideoFrame& image) const
 	{
 		QElapsedTimer t;
 		t.start();
@@ -539,7 +540,7 @@ class ZXingQml : public QObject
 public:
 	Q_INVOKABLE static QString FormatToString(BarcodeFormat format) { return ZXingQt::ToString(format); }
 	Q_INVOKABLE static QString ContentTypeToString(ContentType type) { return ZXingQt::ToString(type); }
-	Q_INVOKABLE static QVector<BarcodeFormat> ListBarcodeFormats(BarcodeFormat filter = BarcodeFormat::None)
+	Q_INVOKABLE static QList<BarcodeFormat> ListBarcodeFormats(BarcodeFormat filter = BarcodeFormat::None)
 	{
 		return ZXingQt::ListBarcodeFormats(filter);
 	}
@@ -555,8 +556,8 @@ inline void registerQmlAndMetaTypes()
 	qRegisterMetaType<ZXingQt::TextMode>("TextMode");
 	qRegisterMetaType<ZXingQt::Position>("Position");
 	qRegisterMetaType<ZXingQt::Barcode>("Barcode");
-	qRegisterMetaType<QVector<ZXingQt::BarcodeFormat>>("QVector<BarcodeFormat>");
-	qRegisterMetaType<QVector<ZXingQt::Barcode>>("QVector<Barcode>");
+	qRegisterMetaType<QList<ZXingQt::BarcodeFormat>>("QList<BarcodeFormat>");
+	qRegisterMetaType<QList<ZXingQt::Barcode>>("QList<Barcode>");
 
 	// Custom enum to string converters
 	QMetaType::registerConverter<BarcodeFormat, QString>(
