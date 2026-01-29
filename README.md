@@ -6,18 +6,6 @@ ZXing-C++ ("zebra crossing") is an open-source, multi-format linear/matrix barco
 
 It was originally ported from the Java [ZXing library](https://github.com/zxing/zxing) but has been developed further and now includes many improvements in terms of runtime and detection performance. It can both read and write barcodes in a number of formats. Since version 3.0 the default writing backend is provided by the [zint library](https://sourceforge.net/projects/zint/).
 
-## Sponsors
-
-You can sponsor this library at [GitHub Sponsors](https://github.com/sponsors/axxel).
-
-Named Sponsors:
-* [KURZ Digital Solutions GmbH & Co. KG](https://github.com/kurzdigital)
-* [Useful Sensors Inc](https://github.com/usefulsensors)
-* [SAP Open Source Program Office](https://www.sap.com/germany/about/company/innovation/open-source.html)
-* [synedra](https://synedra.com/)
-
-Thanks a lot for your contribution!
-
 ## Features
 
 * Written in pure C++20 (public API is C++17 compatible), no third-party dependencies (for the library itself)
@@ -50,6 +38,19 @@ Thanks a lot for your contribution!
 [Note:]
  * DataBar used to be called RSS.
  * DataBar, DX Film Edge, MaxiCode, Micro QR Code and rMQR Code are not supported for writing if the library is configured with `ZXING_WRITERS=OLD`.
+
+## Sponsors
+
+You can sponsor this library at [GitHub Sponsors](https://github.com/sponsors/axxel).
+
+| | Named Sponsors: |
+|:-:|:-|
+| [![KURZ](https://avatars.githubusercontent.com/u/25196688?s=32)](https://github.com/kurzdigital) | [KURZ Digital Solutions GmbH & Co. KG](https://github.com/kurzdigital) |
+| [![Moonshine AI](https://avatars.githubusercontent.com/u/98664891?s=32)](https://github.com/moonshine-ai) | [Moonshine AI](https://github.com/moonshine-ai) |
+| [![SAP](https://avatars.githubusercontent.com/u/2531208?s=32)](https://www.sap.com/germany/about/company/innovation/open-source.html) | [SAP (Open Source Program Office)](https://www.sap.com/germany/about/company/innovation/open-source.html) |
+| [![synedra](https://www.synedra.com/favicon.ico)](https://synedra.com/) | [synedra information technologies GmbH](https://synedra.com/) |
+
+Thanks a lot for your contribution!
 
 ## Getting Started
 
