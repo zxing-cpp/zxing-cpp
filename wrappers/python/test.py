@@ -26,6 +26,15 @@ class TestFormat(unittest.TestCase):
 		self.assertEqual(zxingcpp.BarcodeFormats(BF.EAN13), BF.EAN13)
 		self.assertIn(BF.QRCode, zxingcpp.BarcodeFormats(BF.EAN13 | BF.QRCode))
 		self.assertIn(BF.QRCode, zxingcpp.barcode_formats_list(BF.AllMatrix))
+		self.assertIn(BF.QRCode, zxingcpp.barcode_formats_list((BF.QRCode, BF.Aztec)))
+		self.assertIn(BF.QRCode, zxingcpp.barcode_formats_list([BF.QRCode, BF.Aztec]))
+
+	def test_module_scope_aliases(self):
+		self.assertIs(zxingcpp.QRCode, zxingcpp.BarcodeFormat.QRCode)
+		self.assertIs(zxingcpp.LocalAverage, zxingcpp.Binarizer.LocalAverage)
+		self.assertIs(zxingcpp.Text, zxingcpp.ContentType.Text)
+		self.assertIs(zxingcpp.HRI, zxingcpp.TextMode.HRI)
+		self.assertIs(zxingcpp.Lum, zxingcpp.ImageFormat.Lum)
 
 class TestReadWrite(unittest.TestCase):
 
@@ -126,10 +135,14 @@ class TestReadWrite(unittest.TestCase):
 		format = BF.QRCode
 		text = "I have the best words."
 		img = zxingcpp.create_barcode(text, format).to_image()
-		img = np.array(img)
+		npa = np.array(img, copy=False)
 
-		self.check_res(zxingcpp.read_barcode(img), format, text)
-		self.check_res(zxingcpp.read_barcode(img[4:40,4:40]), format, text)
+		self.assertEqual(npa.ndim, 2)
+		self.assertEqual(npa.dtype, np.uint8)
+		self.assertEqual(npa.shape, (img.shape[0], img.shape[1]))
+
+		self.check_res(zxingcpp.read_barcode(npa), format, text)
+		self.check_res(zxingcpp.read_barcode(npa[4:40,4:40]), format, text)
 
 	@unittest.skipIf(not has_pil, "need PIL for read/write tests")
 	def test_write_read_cycle_pil(self):
@@ -174,6 +187,23 @@ class TestReadWrite(unittest.TestCase):
 			ValueError, "Unsupported number of channels for buffer: 4", zxingcpp.read_barcode,
 			np.zeros((100, 100, 4), np.uint8)
 		)
+
+	def test_image_buffer_protocol(self):
+		"""Test that Image objects support the buffer protocol"""
+		format = BF.QRCode
+		text = "Buffer protocol test"
+		img = zxingcpp.create_barcode(text, format).to_image()
+
+		# Test memoryview
+		mv = memoryview(img)
+		self.assertEqual(mv.ndim, 2)
+		self.assertEqual(mv.format, 'B')
+		self.assertEqual(mv.readonly, True)
+		self.assertEqual(mv.shape, (img.shape[0], img.shape[1]))
+
+		# Test that we can read the barcode back using memoryview
+		res = zxingcpp.read_barcode(mv, format)
+		self.check_res(res, format, text)
 
 
 if __name__ == '__main__':

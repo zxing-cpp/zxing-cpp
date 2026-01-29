@@ -1,4 +1,0 @@
-global-include CMakeLists.txt
-include zxing.cpp
-include zxing.cmake
-graft core/
