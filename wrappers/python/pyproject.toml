@@ -45,6 +45,12 @@ build-dir = "build/{wheel_tag}"
 # Build stable ABI wheels for CPython 3.12+
 wheel.py-api = "cp312"
 
+# Workaround: Force CMake to run during sdist generation.
+# This triggers the logic in CMakeLists.txt that dereferences symlinks (e.g. core/, zxing.cmake)
+# and copies actual files into the source tree, ensuring the sdist is self-contained and usable
+# on systems without symlink support (Windows) or outside the git repo.
+sdist.cmake = true
+
 # [tool.setuptools_scm]
 # root = "../.."
 # version_scheme = "guess-next-dev"

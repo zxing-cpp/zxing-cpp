@@ -27,6 +27,52 @@ if (NOT hasParent)
     endif()
 endif()
 
+if (SKBUILD_STATE STREQUAL "sdist")
+    message(WARNING "sdist mode detected: Dereferencing symlinks to include actual content...\n"
+                    "Background: sdist preserves symlinks, which breaks the package when used outside the git repository. We replace them with actual copies.\n"
+                    "This modifies the source tree. To restore a clean git state, run:\n"
+                    "  git checkout ${CMAKE_CURRENT_SOURCE_DIR}")
+
+    find_package(Python REQUIRED COMPONENTS Interpreter)
+
+    # List of symlinks to replace with actual content
+    set(ITEMS_TO_COPY
+        "../../core" "core"
+        "../../zxing.cmake" "zxing.cmake"
+        "../../LICENSE" "LICENSE"
+    )
+
+    while(ITEMS_TO_COPY)
+        list(POP_FRONT ITEMS_TO_COPY SRC DST)
+
+        set(ABS_SRC "${CMAKE_CURRENT_SOURCE_DIR}/${SRC}")
+        set(ABS_DST "${CMAKE_CURRENT_SOURCE_DIR}/${DST}")
+
+        message(STATUS "Copying ${SRC} to ${DST} (dereferencing symlinks)...")
+
+        # Use Python's shutil to copy files/directories and dereference symlinks (including nested ones)
+        execute_process(COMMAND "${Python_EXECUTABLE}" -c
+            "import shutil, os, sys;
+src = sys.argv[1]; dst = sys.argv[2];
+# Remove existing destination (symlink or file/dir)
+if os.path.lexists(dst):
+    if os.path.isdir(dst) and not os.path.islink(dst): shutil.rmtree(dst)
+    else: os.remove(dst)
+# Copy source to destination, dereferencing symlinks
+if os.path.isdir(src):
+    shutil.copytree(src, dst, symlinks=False, dirs_exist_ok=True)
+else:
+    shutil.copy2(src, dst, follow_symlinks=True)"
+            "${ABS_SRC}" "${ABS_DST}"
+            RESULT_VARIABLE RET
+        )
+
+        if(NOT RET EQUAL 0)
+            message(FATAL_ERROR "Failed to copy ${SRC} to ${DST}")
+        endif()
+    endwhile()
+endif() # SKBUILD_STATE STREQUAL "sdist"
+
 # Try to import all Python components potentially needed by nanobind
 find_package(Python 3.10
     REQUIRED COMPONENTS Interpreter Development.Module
