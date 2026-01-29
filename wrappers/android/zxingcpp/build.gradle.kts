@@ -63,7 +63,7 @@ dependencies {
 
 val publishSnapshot: String? by project
 group = "io.github.zxing-cpp"
-version = "2.3.1" + if (publishSnapshot == "true") "-SNAPSHOT" else ""
+version = "3.0.0" + if (publishSnapshot == "true") "-SNAPSHOT" else ""
 
 val javadocJar by tasks.registering(Jar::class) {
     archiveClassifier.set("javadoc")
