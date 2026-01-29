@@ -6,6 +6,13 @@ import io.github.isning.gradle.plugins.cmake.params.entries.plus
 import io.github.isning.gradle.plugins.cmake.params.plus
 import io.github.isning.gradle.plugins.kn.krossCompile.invoke
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithHostTests
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithSimulatorTests
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithTests
+import org.jetbrains.kotlin.gradle.targets.native.AbstractKotlinNativeTestRun
+import org.jetbrains.kotlin.gradle.targets.native.DefaultHostTestRun
+import org.jetbrains.kotlin.gradle.targets.native.DefaultSimulatorTestRun
+import org.jetbrains.kotlin.gradle.testing.KotlinTaskTestRun
 import java.util.*
 
 plugins {
@@ -76,24 +83,29 @@ kotlin {
     if (hostOs == "Mac OS X") enabledTargetList.addAll(appleTargets)
 
     linuxTargets.forEach { target ->
-        val main by target.compilations.getting
-        val test by target.compilations.getting
-        val libZXing by main.cinterops.creating {
-            packageName = "zxingcpp.cinterop"
-
-            // Use installed headers in CI, source headers for local development
-            val useInstalledHeaders = System.getenv("CI") == "true" || 
-                                    File("/usr/include/ZXing/ZXingC.h").exists()
-
-            if (useInstalledHeaders) {
-                includeDirs("/usr/include/ZXing")
-                headers(files("/usr/include/ZXing/ZXingC.h"))
-            } else {
-                // Fallback to source headers for local development
-                includeDirs(file("../../core/src").absolutePath)
-                headers(files("${file("../../core/src").absolutePath}/ZXingC.h"))
+        when (target) {
+            is KotlinNativeTargetWithHostTests -> {
+                target.testRuns.withType<DefaultHostTestRun> {
+                    executionTask.configure {
+                        environment("LD_LIBRARY_PATH", "build/cmake/libZXing/${target.name}")
+                    }
+                }
             }
-            compilerOpts += "-DZXING_EXPERIMENTAL_API=ON"
+            is KotlinNativeTargetWithSimulatorTests -> {
+                target.testRuns.withType<DefaultSimulatorTestRun> {
+                    executionTask.configure {
+                        environment("LD_LIBRARY_PATH", "build/cmake/libZXing/${target.name}")
+                    }
+                }
+            }
+        }
+
+        val test by target.compilations.getting
+        test.compileTaskProvider.configure {
+            compilerOptions.freeCompilerArgs.addAll(
+                "-linker-options",
+                "-Lbuild/cmake/libZXing/${target.name} -lZXing",
+            )
         }
 
         (project.properties["${target.name}.test.compilerOptions"] as? String)?.let {
@@ -156,6 +168,23 @@ krossCompile {
             androidNativeX86.ndk()
             androidNativeArm32.ndk()
             androidNativeArm64.ndk()
+
+            linuxX64.zig {
+                libraryArtifactNames = listOf()
+                cmake {
+                    configParams += (ModifiablePlatformEntriesImpl().apply {
+                        buildSharedLibs = true
+                    }).asCMakeParams
+                }
+            }
+            linuxArm64.zig {
+                libraryArtifactNames = listOf()
+                cmake {
+                    configParams += (ModifiablePlatformEntriesImpl().apply {
+                        buildSharedLibs = true
+                    }).asCMakeParams
+                }
+            }
 
             // TODO: Linking failed, keep up with https://youtrack.jetbrains.com/issue/KT-65671
 //            mingwX64.konan()
