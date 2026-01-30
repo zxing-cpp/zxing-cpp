@@ -158,6 +158,9 @@ krossCompile {
             val buildDir = "$cmakeDir/{libraryName}/{targetName}"
             val installDir = listOf("$cmakeDir/{libraryName}/{targetName}", outputPath).filter { isNotEmpty() }.joinToString("/")
 
+            /**
+             * For reference, see: https://kotlinlang.org/docs/native-definition-file.html#properties
+             */
             cinterop {
                 packageName = "zxingcpp.cinterop"
                 headers = listOf("ZXingC.h")
