@@ -74,13 +74,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: linuxArm64-shared
-          path: wrappers/kn/build/cmake/linuxArm64
+          path: wrappers/kn/build/cmake/libZXing/linuxArm64
 
       - name: Upload Built LinuxX64 shared library
         uses: actions/upload-artifact@v4
         with:
           name: linuxX64-shared
-          path: wrappers/kn/build/cmake/linuxX64
+          path: wrappers/kn/build/cmake/libZXing/linuxX64
 
       - name: Publish Library
         if: ${{ github.event.inputs.publish == 'y' }}
