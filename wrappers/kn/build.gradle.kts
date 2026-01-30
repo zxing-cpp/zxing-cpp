@@ -149,7 +149,6 @@ krossCompile {
          * and allows us to run tests directly against the resulting dynamic library,
          * without having to build zxing-cpp manually.
          */
-        // This variable name implicitly includes "libZXing.def" by kotlin cinterop plugin as cinterop configuration base.
         val libZXing by creating {
             sourceDir = file("../../core").absolutePath
             outputPath = "out"
