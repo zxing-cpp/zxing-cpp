@@ -81,11 +81,12 @@ kotlin {
 
     // Enable testing with shared libraries for Linux targets
     linuxTargets.forEach { target ->
+        val soPath = "build/cmake/libZXing/${target.name}/out/lib"
         when (target) {
             is KotlinNativeTargetWithHostTests -> {
                 target.testRuns.withType<DefaultHostTestRun> {
                     executionTask.configure {
-                        environment("LD_LIBRARY_PATH", "build/cmake/libZXing/${target.name}")
+                        environment("LD_LIBRARY_PATH", soPath)
                     }
                 }
             }
@@ -93,7 +94,7 @@ kotlin {
             is KotlinNativeTargetWithSimulatorTests -> {
                 target.testRuns.withType<DefaultSimulatorTestRun> {
                     executionTask.configure {
-                        environment("LD_LIBRARY_PATH", "build/cmake/libZXing/${target.name}")
+                        environment("LD_LIBRARY_PATH", soPath)
                     }
                 }
             }
@@ -104,7 +105,7 @@ kotlin {
         test.compileTaskProvider.configure {
             compilerOptions.freeCompilerArgs.addAll(
                 "-linker-options",
-                "-Lbuild/cmake/libZXing/${target.name} -lZXing",
+                "-L$soPath -lZXing",
             )
         }
 
@@ -151,27 +152,84 @@ krossCompile {
         // This variable name implicitly includes "libZXing.def" by kotlin cinterop plugin as cinterop configuration base.
         val libZXing by creating {
             sourceDir = file("../../core").absolutePath
-            outputPath = ""
-            libraryArtifactNames = listOf("libZXing.a")
+            outputPath = "out"
+            libraryArtifactNames = listOf("lib/libZXing.a")
 
-            // With base configuration from "nativeInterop/libZXing.def"
+            val buildDir = "$cmakeDir/{libraryName}/{targetName}"
+            val installDir = listOf("$cmakeDir/{libraryName}/{targetName}", outputPath).filter { isNotEmpty() }.joinToString("/")
+
             cinterop {
-                val buildDir = "$cmakeDir/{libraryName}/{targetName}"
                 packageName = "zxingcpp.cinterop"
-                includeDirs.from(buildDir)
-                headers = listOf("$sourceDir/src/ZXingC.h")
-                compilerOpts += "-DZXING_EXPERIMENTAL_API=ON"
+                headers = listOf("ZXingC.h")
+                includeDirs.from("$installDir/include/ZXing")
+                strictEnums = listOf(
+                    "ZXing_ContentType_Text",
+                    "ZXing_ContentType_Binary",
+                    "ZXing_ContentType_Mixed",
+                    "ZXing_ContentType_GS1",
+                    "ZXing_ContentType_ISO15434",
+                    "ZXing_ContentType_UnknownECI",
+                    "ZXing_Binarizer_BoolCast",
+                    "ZXing_Binarizer_GlobalHistogram",
+                    "ZXing_Binarizer_FixedThreshold",
+                    "ZXing_EanAddOnSymbol_Ignore",
+                    "ZXing_EanAddOnSymbol_Read",
+                    "ZXing_EanAddOnSymbol_Require",
+                    "ZXing_TextMode_Plain",
+                    "ZXing_TextMode_ECI",
+                    "ZXing_TextMode_HRI",
+                    "ZXing_TextMode_Escaped",
+                    "ZXing_TextMode_Hex",
+                    "ZXing_TextMode_HexECI",
+                    "ZXing_ImageFormat_None",
+                    "ZXing_ImageFormat_Lum",
+                    "ZXing_ImageFormat_LumA",
+                    "ZXing_ImageFormat_RGB",
+                    "ZXing_ImageFormat_BGR",
+                    "ZXing_ImageFormat_RGBA",
+                    "ZXing_ImageFormat_ARGB",
+                    "ZXing_ImageFormat_BGRA",
+                    "ZXing_ImageFormat_ABGR",
+                    "ZXing_BarcodeFormat_None",
+                    "ZXing_BarcodeFormat_Aztec",
+                    "ZXing_BarcodeFormat_Codabar",
+                    "ZXing_BarcodeFormat_Code39",
+                    "ZXing_BarcodeFormat_Code93",
+                    "ZXing_BarcodeFormat_Code128",
+                    "ZXing_BarcodeFormat_DataBar",
+                    "ZXing_BarcodeFormat_DataBarExp",
+                    "ZXing_BarcodeFormat_DataBarLtd",
+                    "ZXing_BarcodeFormat_DataMatrix",
+                    "ZXing_BarcodeFormat_DXFilmEdge",
+                    "ZXing_BarcodeFormat_EAN8",
+                    "ZXing_BarcodeFormat_EAN13",
+                    "ZXing_BarcodeFormat_ITF",
+                    "ZXing_BarcodeFormat_MaxiCode",
+                    "ZXing_BarcodeFormat_PDF417",
+                    "ZXing_BarcodeFormat_QRCode",
+                    "ZXing_BarcodeFormat_MicroQRCode",
+                    "ZXing_BarcodeFormat_RMQRCode",
+                    "ZXing_BarcodeFormat_UPCA",
+                    "ZXing_BarcodeFormat_UPCE",
+                    "ZXing_BarcodeFormat_Invalid",
+                )
+                userSetupHint = "Due to Kotlin toolchain limitations (C++20 cannot be enabled), the Kotlin/Native " +
+                        "wrapper of zxing-cpp does not ship prebuilt binaries for Linux targets in its klibs. " +
+                        "Linux users must provide and distribute the required shared library themselves. " +
+                        "For details, see: https://github.com/zxing-cpp/zxing-cpp/issues/939."
             }
             cmake.apply {
-                val buildDir = "$cmakeDir/{projectName}/{targetName}"
+                val buildDirCmake = buildDir.replace("{libraryName}","{projectName}")
+                val installDirCmake = installDir.replace("{libraryName}","{projectName}")
                 configParams {
-                    this.buildDir = buildDir
+                    this.buildDir = buildDirCmake
                 }
                 configParams += (ModifiablePlatformEntriesImpl().apply {
                     buildType = "Release"
                     buildSharedLibs = false
                 } + CustomCMakeCacheEntries(
                     mapOf(
+                        "CMAKE_INSTALL_PREFIX" to installDirCmake,
                         "ZXING_READERS" to "ON",
                         "ZXING_WRITERS" to "NEW",
                         "ZXING_EXPERIMENTAL_API" to "ON",
@@ -180,8 +238,9 @@ krossCompile {
                     )
                 )).asCMakeParams
                 buildParams {
-                    this.buildDir = buildDir
+                    this.buildDir = buildDirCmake
                     config = "Release"
+                    target = "install"
                 }
                 buildParams += CustomCMakeParams(listOf("-j16"))
             }
