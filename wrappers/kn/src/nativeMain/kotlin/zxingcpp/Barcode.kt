@@ -80,7 +80,7 @@ class Barcode(val cValue: CValuesRef<ZXing_Barcode>) {
 		ZXing_Barcode_errorMsg(cValue)?.toKStringNullPtrHandledAndFree()
 	}
 	val format: BarcodeFormat by lazy {
-		ZXing_Barcode_format(cValue).toKObject()
+		BarcodeFormat.fromCValue(ZXing_Barcode_format(cValue))
 	}
 	val contentType: ContentType by lazy {
 		ZXing_Barcode_contentType(cValue).toKObject()
