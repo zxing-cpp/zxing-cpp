@@ -42,3 +42,4 @@ bin/
 .DS_Store
 
 local.properties
+.kotlin
