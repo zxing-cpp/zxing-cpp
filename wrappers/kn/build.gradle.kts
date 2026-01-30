@@ -8,11 +8,8 @@ import io.github.isning.gradle.plugins.kn.krossCompile.invoke
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithHostTests
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithSimulatorTests
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithTests
-import org.jetbrains.kotlin.gradle.targets.native.AbstractKotlinNativeTestRun
 import org.jetbrains.kotlin.gradle.targets.native.DefaultHostTestRun
 import org.jetbrains.kotlin.gradle.targets.native.DefaultSimulatorTestRun
-import org.jetbrains.kotlin.gradle.testing.KotlinTaskTestRun
 import java.util.*
 
 plugins {
@@ -82,6 +79,7 @@ kotlin {
 
     if (hostOs == "Mac OS X") enabledTargetList.addAll(appleTargets)
 
+    // Enable testing with shared libraries for Linux targets
     linuxTargets.forEach { target ->
         when (target) {
             is KotlinNativeTargetWithHostTests -> {
@@ -91,6 +89,7 @@ kotlin {
                     }
                 }
             }
+
             is KotlinNativeTargetWithSimulatorTests -> {
                 target.testRuns.withType<DefaultSimulatorTestRun> {
                     executionTask.configure {
@@ -100,6 +99,7 @@ kotlin {
             }
         }
 
+        // Link to the shared library built by kross-compile
         val test by target.compilations.getting
         test.compileTaskProvider.configure {
             compilerOptions.freeCompilerArgs.addAll(
@@ -108,6 +108,7 @@ kotlin {
             )
         }
 
+        // Customizable linker options for test compilation
         (project.properties["${target.name}.test.compilerOptions"] as? String)?.let {
             test.compileTaskProvider.configure {
                 compilerOptions.freeCompilerArgs.addAll(
@@ -128,11 +129,32 @@ kotlin {
 krossCompile {
     libraries {
         val cmakeDir = project.layout.buildDirectory.dir("cmake").get().asFile.absolutePath
+
+        /**
+         * At the moment, we build all targets in a uniform way:
+         * most of them are compiled as static libraries and linked accordingly.
+         *
+         * Linux is the only exception. For Linux targets, we override this behavior
+         * and build shared libraries instead, because the Kotlin toolchain currently
+         * prevents us from enabling C++20 support:
+         * https://github.com/zxing-cpp/zxing-cpp/issues/939
+         *
+         * We do NOT ship prebuilt Linux binaries as part of the Kotlin/Native
+         * distribution. Linux consumers are expected to provide and distribute the
+         * required shared library themselves.
+         *
+         * The Linux shared-library build is integrated into Gradle mainly to support
+         * development workflows: it produces the header files required for cinterop
+         * and allows us to run tests directly against the resulting dynamic library,
+         * without having to build zxing-cpp manually.
+         */
+        // This variable name implicitly includes "libZXing.def" by kotlin cinterop plugin as cinterop configuration base.
         val libZXing by creating {
             sourceDir = file("../../core").absolutePath
             outputPath = ""
             libraryArtifactNames = listOf("libZXing.a")
 
+            // With base configuration from "nativeInterop/libZXing.def"
             cinterop {
                 val buildDir = "$cmakeDir/{libraryName}/{targetName}"
                 packageName = "zxingcpp.cinterop"
@@ -169,6 +191,16 @@ krossCompile {
             androidNativeArm32.ndk()
             androidNativeArm64.ndk()
 
+            /**
+             * We use zig provided sysroot for cross compilation convenience for Linux targets
+             *
+             * Although Zig is often described as “another language compatible with C,”
+             * in this context we only use it for the cross-compilation sysroot it provides,
+             * in order to build Linux targets.
+             * In practice, it is essentially a wrapper around Clang, combined with a set of tools
+             * that handle tasks such as downloading and managing sysroots.
+             * It also makes it easy to specify details like the glibc version used by the sysroot.
+             */
             linuxX64.zig {
                 libraryArtifactNames = listOf()
                 cmake {
