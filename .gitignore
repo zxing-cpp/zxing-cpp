@@ -1,9 +1,12 @@
+# Build artifacts
 *.o
 *.so
 *.lib
 *.d
 *.a
 compile_commands.json
+/build
+/**/zxing-cpp.release
 
 # QtCreator
 CMakeLists.txt.user
