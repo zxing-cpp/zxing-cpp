@@ -121,9 +121,9 @@ These are the generic instructions to build the library on Windows/macOS/Linux. 
 3. See the cmake `ZXING_...` options to enable the testing code, python wrapper, etc.
 
 ```
-git clone https://github.com/zxing-cpp/zxing-cpp.git --recursive --single-branch --depth 1
-cmake -S zxing-cpp -B zxing-cpp.release -DCMAKE_BUILD_TYPE=Release
-cmake --build zxing-cpp.release -j8 --config Release
+git clone https://github.com/zxing-cpp/zxing-cpp.git --recursive --depth 1
+cmake -S zxing-cpp -B zxing-cpp/build -DCMAKE_BUILD_TYPE=Release
+cmake --build zxing-cpp/build --parallel --config Release
 ```
 
 [Note: binary packages are available for/as
