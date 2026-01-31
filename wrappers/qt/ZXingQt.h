@@ -527,6 +527,8 @@ public:
 		return barcodes;
 	}
 
+	/// @brief  Read barcodes from the given image asynchronously.
+	/// @note   The foundBarcodes() and foundNoBarcodes() signals are emitted from a worker thread.
 	Q_SLOT void readAsync(const QImage& image) const
 	{
 		_pool.start([this, image]() { read(image); });
@@ -549,6 +551,8 @@ public:
 		return barcodes;
 	}
 
+	/// @brief  Try to read barcodes from the given video frame asynchronously.
+	/// @return true iff a read task was started, false if all worker threads are busy.
 	Q_SLOT bool tryReadAsync(const QVideoFrame& frame) const
 	{
 		return _pool.tryStart([this, frame]() { read(frame); });
