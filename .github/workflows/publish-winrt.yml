@@ -20,7 +20,7 @@ jobs:
         target: [Win32, x64, ARM64]
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Create build environment
       shell: cmd
@@ -39,7 +39,7 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       run: cmake --build . -j8 --config Release
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v6
       with:
         name: winrt-${{matrix.target}}-artifacts
         path: ${{runner.workspace}}/build/dist
@@ -49,13 +49,13 @@ jobs:
     runs-on: windows-latest
     if: ${{ github.event_name == 'release' || github.event.inputs.publish == 'y' }}
     steps:
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v7
       with:
         name: winrt-Win32-artifacts
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v7
       with:
         name: winrt-x64-artifacts
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v7
       with:
         name: winrt-ARM64-artifacts
 
@@ -75,7 +75,7 @@ jobs:
       shell: cmd
       run: nuget push huycn.zxingcpp.winrt.nupkg -ApiKey ${{ secrets.NUGET_API_KEY }} -Source https://api.nuget.org/v3/index.json
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v6
       with:
         name: nuget-package
         path: huycn.zxingcpp.winrt.nupkg
