@@ -8,36 +8,8 @@ on:
         default: 'n'
 
 jobs:
-  prebuild-linuxX64:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          submodules: true
-
-      - name: Configure
-        run: >
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON
-          -DZXING_READERS=ON -DZXING_WRITERS=NEW -DZXING_EXPERIMENTAL_API=ON
-          -DZXING_BLACKBOX_TESTS=ON -DZXING_UNIT_TESTS=OFF -DZXING_PYTHON_MODULE=OFF -DZXING_C_API=ON
-
-      - name: Build
-        run: cmake --build build -j8 --config Release
-
-      - name: Install
-        run: |
-          cmake -E make_directory install
-          cmake --install build --config Release --prefix ${{github.workspace}}/install
-
-      - uses: actions/upload-artifact@v6
-        with:
-          name: linuxX64-prebuilt-artifacts
-          path: install
-
   publish:
     name: Library Publish
-    needs: prebuild-linuxX64
 
     runs-on: macos-latest # at least macos-13 is required to enable c++20 support
 
@@ -50,6 +22,11 @@ jobs:
         uses: actions/checkout@v6
         with:
           submodules: true
+
+      - name: Prepare Zig toolchain
+        uses: mlugg/setup-zig@v2
+        with:
+          version: 0.13.0
 
       - name: Checkout toolchain initializer repository
         uses: actions/checkout@v6
@@ -69,13 +46,6 @@ jobs:
       - name: Validate Gradle Wrapper
         uses: gradle/actions/wrapper-validation@v5
 
-      # Download the prebuilt library for passing test for linuxX64 target
-      - name: Download prebuilt linuxX64 artifact
-        uses: actions/download-artifact@v7
-        with:
-          name: linuxX64-prebuilt-artifacts
-          path: linuxX64-prebuilt-artifacts
-
       - name: Initialize Kotlin/Native toolchain
         working-directory: wrappers/kn/.kn-toolchain-initializer
         run: ./gradlew build -DkotlinVersion=2.2.0
@@ -83,7 +53,6 @@ jobs:
       - name: Export Toolchain properties
         run: |
           echo -e "konan.dir=$HOME/.konan/kotlin-native-prebuilt-macos-aarch64-2.2.0" >> local.properties
-          echo -e "linuxX64.test.compilerOptions=-linker-options, -L${GITHUB_WORKSPACE}/linuxX64-prebuilt-artifacts/lib -lZXing" >> local.properties
 
       - name: Build Library
         run: |
@@ -100,6 +69,18 @@ jobs:
         with:
           name: allTests-reports
           path: wrappers/kn/build/reports/tests/allTests
+
+      - name: Upload Built LinuxArm64 shared library
+        uses: actions/upload-artifact@v4
+        with:
+          name: linuxArm64-shared
+          path: wrappers/kn/build/cmake/libZXing/linuxArm64
+
+      - name: Upload Built LinuxX64 shared library
+        uses: actions/upload-artifact@v4
+        with:
+          name: linuxX64-shared
+          path: wrappers/kn/build/cmake/libZXing/linuxX64
 
       - name: Publish Library
         if: ${{ github.event.inputs.publish == 'y' }}
