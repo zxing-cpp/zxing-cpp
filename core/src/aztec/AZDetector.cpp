@@ -117,6 +117,15 @@ static std::vector<ConcentricPattern> FindPureFinderPattern(const BitMatrix& ima
 			return {};
 	}	
 
+	// Symbols can have a blank row or column at the edge (in particular, top and left)
+	if (width < height && image.width() >= height) {
+		left = std::max(0, left - (height - width + 1) / 2); // No real net effect if right edge blank
+		width = height;
+	} else if (height < width && image.height() >= width) {
+		top = std::max(0, top - (width - height + 1) / 2); // No real net effect if bottom edge blank
+		height = width;
+	}
+
 	PointF p(left + width / 2, top + height / 2);
 	constexpr auto PATTERN = FixedPattern<7, 7>{1, 1, 1, 1, 1, 1, 1};
 	if (auto pattern = LocateConcentricPattern(image, PATTERN, p, width))

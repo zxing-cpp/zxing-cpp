@@ -427,6 +427,45 @@ TEST(AZDetectorTest, ReaderInitCompact)
 	}
 }
 
+TEST(AZDetectorTest, PureBlankEdge)
+{
+	{
+		// Binary "\xC3\x95\xAB", ECI 899, EC Level >= 10% + 3 (17% + 3)
+		// zint -b AZTEC --binary --eci=899 -d '\xC3\x95\xAB' --esc --secure=1 --scale=0.5
+		// Blank top row
+		auto matrix = ParseBitMatrix(
+			"                              \n"
+			"    X X X X X X X   X X X X X \n"
+			"    X X         X   X   X X X \n"
+			"  X X X X X X X X X X X X   X \n"
+			"      X               X   X X \n"
+			"    X X   X X X X X   X   X   \n"
+			"  X   X   X       X   X   X   \n"
+			"  X X X   X   X   X   X X   X \n"
+			"X X X X   X       X   X   X X \n"
+			"  X X X   X X X X X   X X X X \n"
+			"  X X X               X X X   \n"
+			"  X   X X X X X X X X X X X   \n"
+			"X X       X     X   X     X   \n"
+			"X X X X   X X     X X     X X \n"
+			"  X X X     X X     X   X   X \n"
+		);
+
+		for (int i = 0; i < 4; ++i) {
+			auto r = Aztec::Detect(matrix, true /*isPure*/, false /*tryHarder*/);
+
+			EXPECT_TRUE(r.isValid()) << "rotate " << i;
+			if (r.isValid()) {
+				EXPECT_TRUE(r.isCompact()) << "rotate " << i;
+				EXPECT_EQ(r.nbLayers(), 1) << "rotate " << i;
+				EXPECT_EQ(r.nbDatablocks(), 11) << "rotate " << i;
+			}
+
+			matrix.rotate90(); // Anticlockwise
+		}
+	}
+}
+
 TEST(AZDetectorTest, Rune)
 {
 	{
