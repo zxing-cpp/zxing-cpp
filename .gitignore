@@ -4,6 +4,7 @@
 *.d
 *.a
 compile_commands.json
+/build
 
 # QtCreator
 CMakeLists.txt.user
