@@ -130,7 +130,7 @@ barcode.sequenceId()        // Parity/checksum data for sequence
 barcode.isLastInSequence()  // Check if this is the last symbol in sequence
 barcode.isPartOfSequence()  // Check if this is part of a structured append sequence
 barcode.extra(key)          // Get extra metadata by key
-barcode.lineCount()         // Number of lines (for stacked linear codes)
+barcode.lineCount()         // Number of lines (for linear codes)
 barcode.symbol()            // Get symbol image (1 pixel per module)
 barcode.toImage(options)    // Convert to QImage (for writing)
 barcode.toSVG(options)      // Export as SVG (for writing)

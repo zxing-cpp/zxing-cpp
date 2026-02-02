@@ -50,6 +50,13 @@ std::string ToString(BarcodeFormat format)
 	return std::string(Name(format));
 }
 
+bool operator<=(BarcodeFormat e, BarcodeFormat s)
+{
+	return e == s || s == BarcodeFormat::All
+		   || (SymbologyKey(s) == '*' ? SymbologyKey(e) != '*' && (e & s)
+									  : SymbologyKey(s) == SymbologyKey(e) && VariantKey(s) == ' ');
+}
+
 bool operator&(BarcodeFormat a, BarcodeFormat b)
 {
 	if (SymbologyKey(a) == '*' && SymbologyKey(b) == '*') {

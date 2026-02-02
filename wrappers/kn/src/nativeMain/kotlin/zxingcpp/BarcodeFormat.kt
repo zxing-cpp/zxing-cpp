@@ -17,7 +17,7 @@ enum class BarcodeFormat(internal val cValue: ZXing_BarcodeFormat) {
 	Code93(ZXing_BarcodeFormat.ZXing_BarcodeFormat_Code93),
 	Code128(ZXing_BarcodeFormat.ZXing_BarcodeFormat_Code128),
 	DataBar(ZXing_BarcodeFormat.ZXing_BarcodeFormat_DataBar),
-	DataBarOmD(ZXing_BarcodeFormat.ZXing_BarcodeFormat_DataBarOmD),
+	DataBarOmni(ZXing_BarcodeFormat.ZXing_BarcodeFormat_DataBarOmni),
 	DataBarLtd(ZXing_BarcodeFormat.ZXing_BarcodeFormat_DataBarLtd),
 	DataBarExp(ZXing_BarcodeFormat.ZXing_BarcodeFormat_DataBarExp),
 	DataMatrix(ZXing_BarcodeFormat.ZXing_BarcodeFormat_DataMatrix),

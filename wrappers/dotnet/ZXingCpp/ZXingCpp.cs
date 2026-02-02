@@ -192,7 +192,7 @@ public readonly struct BarcodeFormat : IEquatable<BarcodeFormat>
 	public static readonly BarcodeFormat Code128 = new BarcodeFormat(0x2043);
 	public static readonly BarcodeFormat ITF = new BarcodeFormat(0x2049);
 	public static readonly BarcodeFormat DataBar = new BarcodeFormat(0x2065);
-	public static readonly BarcodeFormat DataBarOmD = new BarcodeFormat(0x6F65);
+	public static readonly BarcodeFormat DataBarOmni = new BarcodeFormat(0x6F65);
 	public static readonly BarcodeFormat DataBarLtd = new BarcodeFormat(0x6C65);
 	public static readonly BarcodeFormat DataBarExp = new BarcodeFormat(0x6565);
 	public static readonly BarcodeFormat EANUPC = new BarcodeFormat(0x2045);

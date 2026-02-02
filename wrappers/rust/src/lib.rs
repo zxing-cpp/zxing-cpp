@@ -221,7 +221,7 @@ make_zxing_enum!(EanAddOnSymbol { Ignore, Read, Require });
 make_zxing_enum!(BarcodeFormat {
 	Invalid, None, All, AllReadable, AllCreatable, AllLinear, AllStacked, AllMatrix, AllGS1,
 	Codabar, Code39, PZN, Code93, Code128, ITF,
-	DataBar, DataBarOmD, DataBarLtd, DataBarExp,
+	DataBar, DataBarOmni, DataBarLtd, DataBarExp,
 	EANUPC, EAN13, EAN8, EAN5, EAN2, ISBN, UPCA, UPCE, DXFilmEdge,
 	PDF417, CompactPDF417, MicroPDF417,
 	Aztec, AztecCode, AztecRune,

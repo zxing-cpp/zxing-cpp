@@ -41,34 +41,34 @@ MultiFormatReader::MultiFormatReader(const ReaderOptions& opts) : _opts(opts)
 
 	// Put linear readers upfront in "normal" mode
 #if ZXING_ENABLE_1D
-	if (!opts.tryHarder() && opts.hasFormat(AllLinear))
+	if (!opts.tryHarder() && opts.hasAnyFormat(AllLinear))
 		_readers.emplace_back(new OneD::Reader(opts));
 #endif
 
 #if ZXING_ENABLE_QRCODE
-	if (opts.hasFormat(QRCode | MicroQRCode | RMQRCode))
+	if (opts.hasAnyFormat(QRCode))
 		_readers.emplace_back(new QRCode::Reader(opts, true));
 #endif
 #if ZXING_ENABLE_DATAMATRIX
-	if (opts.hasFormat(DataMatrix))
+	if (opts.hasAnyFormat(DataMatrix))
 		_readers.emplace_back(new DataMatrix::Reader(opts, true));
 #endif
 #if ZXING_ENABLE_AZTEC
-	if (opts.hasFormat(Aztec))
+	if (opts.hasAnyFormat(Aztec))
 		_readers.emplace_back(new Aztec::Reader(opts, true));
 #endif
 #if ZXING_ENABLE_PDF417
-	if (opts.hasFormat(PDF417))
+	if (opts.hasAnyFormat(PDF417))
 		_readers.emplace_back(new Pdf417::Reader(opts));
 #endif
 #if ZXING_ENABLE_MAXICODE
-	if (opts.hasFormat(MaxiCode))
+	if (opts.hasAnyFormat(MaxiCode))
 		_readers.emplace_back(new MaxiCode::Reader(opts));
 #endif
 
 	// At end in "try harder" mode
 #if ZXING_ENABLE_1D
-	if (opts.tryHarder() && opts.hasFormat(AllLinear))
+	if (opts.tryHarder() && opts.hasAnyFormat(AllLinear))
 		_readers.emplace_back(new OneD::Reader(opts));
 #endif
 }

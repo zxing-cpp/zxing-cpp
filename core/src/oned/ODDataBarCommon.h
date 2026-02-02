@@ -11,6 +11,7 @@
 
 #include <array>
 #include <cmath>
+#include <numeric>
 
 namespace ZXing::OneD::DataBar {
 
@@ -97,6 +98,7 @@ struct Pair
 	operator bool() const noexcept { return finder != 0; }
 	bool operator==(const Pair& o) const noexcept { return finder == o.finder && left == o.left && right == o.right; }
 	bool operator!=(const Pair& o) const noexcept { return !(*this == o); }
+	int center() const { return std::midpoint(xStart, xStop); }
 };
 
 struct PairHash

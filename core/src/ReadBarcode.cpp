@@ -118,6 +118,11 @@ ReaderOptions&& ReaderOptions::characterSet(std::string_view v) &&
 
 bool ReaderOptions::hasFormat(const BarcodeFormats& formats) const noexcept
 {
+	return d->formats.empty() || std::any_of(formats.begin(), formats.end(), [this](BarcodeFormat bt) { return bt <= d->formats; });
+}
+
+bool ReaderOptions::hasAnyFormat(const BarcodeFormats& formats) const noexcept
+{
 	return d->formats.empty() || std::any_of(formats.begin(), formats.end(), [this](BarcodeFormat bt) { return bt & d->formats; });
 }
 
@@ -264,9 +269,9 @@ Barcodes ReadBarcodes(const ImageView& _iv, const ReaderOptions& opts)
 	std::unique_ptr<MultiFormatReader> closedReader;
 #ifdef ZXING_EXPERIMENTAL_API
 	using enum BarcodeFormat;
-	BarcodeFormats formatsBenefittingFromClosing = Aztec | DataMatrix | QRCode | MicroQRCode;
+	BarcodeFormats formatsBenefittingFromClosing = Aztec | DataMatrix | QRCode;
 	ReaderOptions closedOptions = opts;
-	if (opts.tryDenoise() && opts.hasFormat(formatsBenefittingFromClosing) && _iv.height() >= 3) {
+	if (opts.tryDenoise() && opts.hasAnyFormat(formatsBenefittingFromClosing) && _iv.height() >= 3) {
 		closedOptions.formats(opts.formats().empty() ? formatsBenefittingFromClosing : formatsBenefittingFromClosing & opts.formats());
 		closedReader = std::make_unique<MultiFormatReader>(closedOptions);
 	}

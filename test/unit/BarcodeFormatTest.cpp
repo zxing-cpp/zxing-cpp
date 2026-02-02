@@ -100,3 +100,34 @@ TEST(BarcodeFormatTest, BarcodeFormatIntersection)
 	EXPECT_FALSE(AllMatrix & EAN8);
 	EXPECT_FALSE(AllMatrix & EANUPC);
 }
+
+TEST(BarcodeFormatTest, BarcodeFormatSubset)
+{
+	using enum BarcodeFormat;
+
+	EXPECT_TRUE(EAN8 <= EAN8);
+	EXPECT_TRUE(EAN8 <= EANUPC);
+	EXPECT_TRUE(EAN8 <= AllLinear);
+	EXPECT_TRUE(EANUPC <= AllLinear);
+	EXPECT_TRUE(EAN8 <= All);
+	EXPECT_TRUE(EANUPC <= All);
+	EXPECT_TRUE(AllMatrix <= All);
+	EXPECT_TRUE(All <= All);
+
+	EXPECT_TRUE(EAN13 <= (EAN13 | UPCA));
+	EXPECT_TRUE(EAN13 <= (EANUPC | DataBar));
+
+	EXPECT_FALSE(EANUPC <= EAN8);
+	EXPECT_FALSE(AllLinear <= EAN8);
+	EXPECT_FALSE(AllLinear <= EANUPC);
+	EXPECT_FALSE(All <= EAN8);
+	EXPECT_FALSE(All <= EANUPC);
+	EXPECT_FALSE(All <= AllMatrix);
+
+	EXPECT_FALSE(EAN8 <= EAN13);
+	EXPECT_FALSE(EAN8 <= QRCode);
+	EXPECT_FALSE(EAN8 <= MicroQRCode);
+	EXPECT_FALSE(EANUPC <= QRCode);
+
+	EXPECT_FALSE(EAN13 <= (EAN8 | DataBar));
+}

@@ -172,8 +172,13 @@ public:
 #pragma GCC diagnostic pop
 #endif
 
-	/// Check if a specific format is enabled in the formats set
+#ifdef ZXING_INTERNAL
+	/// Check if a specific format is explicitly enabled in the formats set
 	bool hasFormat(const BarcodeFormats& formats) const noexcept;
+
+	/// Check if any format is ex or implicitly enabled in the formats set
+	bool hasAnyFormat(const BarcodeFormats& formats) const noexcept;
+#endif
 };
 
 } // ZXing

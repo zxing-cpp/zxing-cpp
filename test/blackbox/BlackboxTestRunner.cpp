@@ -555,20 +555,20 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 6, 7, 180 },
 		});
 
-		runTests("rss14-1", "DataBar", 6, {
-			{ 6, 6, 0   },
-			{ 6, 6, 180 },
-		});
-
-		runTests("rss14-2", "DataBar", 14, {
-			{ 10, 11, 0   },
+		runTests("rss14-1", "DataBarOmni", 13, {
+			{ 11, 11, 0   },
 			{ 10, 11, 180 },
 		});
 
-		runTests("rssexpanded-1", "DataBarExpanded", 34, {
-			{ 34, 34, 0   },
-			{ 34, 34, 180 },
-			{ 34, 0, pure },
+		runTests("rss14-2", "DataBarStacked", 7, {
+			{ 5, 6, 0   },
+			{ 6, 6, 180 },
+		});
+
+		runTests("rssexpanded-1", "DataBarExpanded", 37, {
+			{ 37, 37, 0   },
+			{ 37, 37, 180 },
+			{ 37, 0, pure },
 		});
 
 		runTests("rssexpanded-2", "DataBarExpanded", 15, {
@@ -582,13 +582,13 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 118, 0, pure },
 		});
 
-		runTests("rssexpandedstacked-1", "DataBarExpanded", 65, {
-			{ 55, 65, 0   },
-			{ 55, 65, 180 },
-			{ 60, 0, pure },
+		runTests("rssexpandedstacked-1", "DataBarExpandedStacked", 62, {
+			{ 52, 62, 0   },
+			{ 52, 62, 180 },
+			{ 57, 0, pure },
 		});
 
-		runTests("rssexpandedstacked-2", "DataBarExpanded", 2, {
+		runTests("rssexpandedstacked-2", "DataBarExpandedStacked", 2, {
 			{ 2, 2, 0   },
 			{ 2, 2, 180 },
 		});

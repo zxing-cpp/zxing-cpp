@@ -31,10 +31,13 @@
 	X(Code93,           'G', ' ', "lrw ",  25, ZXING_ENABLE_1D,         "Code 93") \
 	X(Code128,          'C', ' ', "lrwg",  20, ZXING_ENABLE_1D,         "Code 128") \
 	X(ITF,              'I', ' ', "lrw ",   3, ZXING_ENABLE_1D,         "ITF") \
-	X(DataBar,          'e', ' ', "lr  ",  29, ZXING_ENABLE_1D,         "DataBar") \
-	X(DataBarOmD,       'e', 'o', "lr  ",  29, ZXING_ENABLE_1D,         "DataBar Omnidirectional") \
-	X(DataBarLtd,       'e', 'l', "lr  ",  30, ZXING_ENABLE_1D,         "DataBar Limited") \
+	X(DataBar,          'e', ' ', "lr g",  29, ZXING_ENABLE_1D,         "DataBar") \
+	X(DataBarOmni,      'e', 'o', "lr g",  29, ZXING_ENABLE_1D,         "DataBar Omni") \
+	X(DataBarStk,       'e', 's', "lr g",  79, ZXING_ENABLE_1D,         "DataBar Stacked") \
+	X(DataBarStkOmni,   'e', 'O', "lr g",  80, ZXING_ENABLE_1D,         "DataBar Stacked Omni") \
+	X(DataBarLtd,       'e', 'l', "lr g",  30, ZXING_ENABLE_1D,         "DataBar Limited") \
 	X(DataBarExp,       'e', 'e', "lr g",  31, ZXING_ENABLE_1D,         "DataBar Expanded") \
+	X(DataBarExpStk,    'e', 'E', "lr g",  81, ZXING_ENABLE_1D,         "DataBar Expanded Stacked") \
 	X(EANUPC,           'E', ' ', "lr  ",  15, ZXING_ENABLE_1D,         "EAN/UPC") \
 	X(EAN13,            'E', '1', "lrw ",  15, ZXING_ENABLE_1D,         "EAN-13") \
 	X(EAN8,             'E', '8', "lrw ",  10, ZXING_ENABLE_1D,         "EAN-8") \
@@ -108,6 +111,9 @@ BarcodeFormat Symbology(BarcodeFormat format);
 
 /// @brief Returns the human-readable name of the given barcode format.
 std::string_view Name(BarcodeFormat format);
+
+/// Test if left hand side (e == element) is 'inside' right hand side (s == set) (e.g. MicroQRCode <= QRCode)
+bool operator<=(BarcodeFormat e, BarcodeFormat s);
 
 /// Test if the two BarcodeFormats have a non-empty intersection (e.g. AllMatrix & QRCode)
 bool operator&(BarcodeFormat a, BarcodeFormat b);
@@ -219,6 +225,11 @@ public:
 		});
 	}
 };
+
+inline bool operator<=(BarcodeFormat lhs, const BarcodeFormats& rhs)
+{
+	return std::any_of(rhs.begin(), rhs.end(), [lhs](BarcodeFormat bf) { return lhs <= bf; });
+}
 
 inline bool operator&(BarcodeFormat lhs, const BarcodeFormats& rhs)
 {

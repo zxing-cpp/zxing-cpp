@@ -65,7 +65,6 @@ ZX_RO_PROPERTY(std::string, ecLevel);
 ZX_RO_PROPERTY(std::string, eci);
 ZX_RO_PROPERTY(bool, gs1);
 ZX_RO_PROPERTY(bool, readerInit);
-ZX_RO_PROPERTY(bool, stacked);
 ZX_RO_PROPERTY(bool, forceSquare);
 ZX_RO_PROPERTY(int, columns);
 ZX_RO_PROPERTY(int, rows);
@@ -141,7 +140,11 @@ static constexpr struct { BarcodeFormat format; SymbologyIdentifier si; } barcod
 	// {BarcodeFormat::Code16K, {'K', '0'}}, // '1' GS1, '2' AIM, '4' D1 PAD
 	// {BarcodeFormat::Code39, {'A', '0'}}, // '3' checksum, '4' extended, '7' checksum,extended
 	{BarcodeFormat::DataBar, {'e', '0', 0, AIFlag::GS1}},
+	{BarcodeFormat::DataBarOmni, {'e', '0', 0, AIFlag::GS1}},
+	{BarcodeFormat::DataBarStk, {'e', '0', 0, AIFlag::GS1}},
+	{BarcodeFormat::DataBarStkOmni, {'e', '0', 0, AIFlag::GS1}},
 	{BarcodeFormat::DataBarExp, {'e', '0', 0, AIFlag::GS1}},
+	{BarcodeFormat::DataBarExpStk, {'e', '0', 0, AIFlag::GS1}},
 	{BarcodeFormat::DataBarLtd, {'e', '0', 0, AIFlag::GS1}},
 	{BarcodeFormat::DataMatrix, {'d', '1', 3}}, // '2' GS1, '3' AIM
 	// {BarcodeFormat::DotCode, {'J', '0', 3}}, // '1' GS1, '2' AIM
@@ -276,10 +279,6 @@ zint_symbol* CreatorOptions::zint() const
 
 		if (format() == Code128 && gs1())
 			zint->symbology = BARCODE_GS1_128;
-		else if (format() == DataBar && stacked())
-			zint->symbology = BARCODE_DBAR_OMNSTK;
-		else if (format() == DataBarExp && stacked())
-			zint->symbology = BARCODE_DBAR_EXPSTK;
 
 		zint->scale = 0.5f;
 
@@ -289,10 +288,10 @@ zint_symbol* CreatorOptions::zint() const
 		if (auto val = version(); val && !(format() & AllLinear))
 			zint->option_2 = *val;
 
-		if (auto val = columns(); val && format() & (DataBarExp | PDF417 | MicroPDF417 | CompactPDF417))
+		if (auto val = columns(); val && format() & (DataBarExpStk | PDF417 | MicroPDF417 | CompactPDF417))
 			zint->option_2 = *val;
 
-		if (auto val = rows(); val && format() & (DataBarExp | PDF417))
+		if (auto val = rows(); val && format() & (DataBarExpStk | PDF417))
 			zint->option_3 = *val;
 
 		if (auto val = dataMask(); val && format() & (QRCode | MicroQRCode))
