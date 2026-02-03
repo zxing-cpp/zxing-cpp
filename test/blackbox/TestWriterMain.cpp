@@ -24,7 +24,7 @@ int main()
 {
 	std::string text = "zxing-cpp";
 	for (auto format : BarcodeFormats::list(AllMatrix | AllStacked))
-		if (format & AllCreatable)
+		if (format & AllCreatable && format != AztecRune)
 			savePng(CreateBarcodeFromText(text, format).symbol(), format);
 
 	text = "012345678901234567890123456789";
