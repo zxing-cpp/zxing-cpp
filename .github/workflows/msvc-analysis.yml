@@ -41,7 +41,7 @@ jobs:
           submodules: true
 
       - name: Configure CMake
-        run: cmake -B ${{ env.build }} -DZXING_C_API=ON -DZXING_EXPERIMENTAL_API=ON -DZXING_READERS=ON -DZXING_WRITERS=ON -DZXING_DISABLE_PCH=ON
+        run: cmake -B ${{ env.build }} -DZXING_EXPERIMENTAL_API=ON -DZXING_DISABLE_PCH=ON
 
       # Build is not required unless generated source files are used
       # - name: Build CMake

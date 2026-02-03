@@ -52,7 +52,7 @@ jobs:
 
     - name: Build
       run: |
-        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DZXING_C_API=ON -DZXING_EXPERIMENTAL_API=ON -DZXING_READERS=ON -DZXING_WRITERS=ON
+        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DZXING_EXPERIMENTAL_API=ON
         cmake --build build -j
 
     - name: Perform CodeQL Analysis

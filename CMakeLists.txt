@@ -4,7 +4,7 @@ project(ZXing)
 
 option (ZXING_READERS "Build with reader support (decoders)" ON)
 set    (ZXING_WRITERS "ON" CACHE STRING "Build with old and/or new writer (encoder) backend (OFF/ON/OLD/NEW/BOTH)")
-option (ZXING_C_API "Build the C-API" OFF)
+option (ZXING_C_API "Build the C-API" ON)
 option (ZXING_EXPERIMENTAL_API "Build with experimental API" OFF)
 option (ZXING_EXAMPLES "Build the example barcode reader/writer applications" ON)
 option (ZXING_BLACKBOX_TESTS "Build the black box reader/writer tests" OFF)
