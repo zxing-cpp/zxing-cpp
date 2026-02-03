@@ -73,6 +73,8 @@ public:
 	*/
 	void appendBits(int value, int numBits)
 	{
+		assert(numBits >= 1 && numBits <= 32);
+
 		for (; numBits; --numBits)
 			_bits.push_back((value >> (numBits-1)) & 1);
 	}

@@ -249,7 +249,7 @@ static void doRunTests(const fs::path& directory, std::string_view format, int t
 			opts.isPure(tc.name == "pure");
 			if (opts.isPure())
 				opts.binarizer(Binarizer::FixedThreshold);
-#if 1
+#ifndef PRINT_DEBUG
 #ifdef __cpp_lib_execution
 			std::vector<Barcode> barcodes(imgPaths.size());
 			std::transform(std::execution::par, imgPaths.begin(), imgPaths.end(), barcodes.begin(), [&](const fs::path& imgPath) {
