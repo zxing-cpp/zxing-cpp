@@ -99,6 +99,13 @@ TEST(BarcodeFormatTest, BarcodeFormatIntersection)
 	EXPECT_FALSE(EANUPC & QRCode);
 	EXPECT_FALSE(AllMatrix & EAN8);
 	EXPECT_FALSE(AllMatrix & EANUPC);
+
+#ifdef ZXING_READERS
+	EXPECT_EQ(DataMatrix & AllReadable, ZXING_ENABLE_DATAMATRIX);
+#endif
+#ifdef ZXING_WRITERS
+	EXPECT_EQ(AztecCode & AllCreatable, ZXING_ENABLE_AZTEC);
+#endif
 }
 
 TEST(BarcodeFormatTest, BarcodeFormatSubset)
