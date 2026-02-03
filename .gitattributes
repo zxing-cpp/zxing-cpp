@@ -1,1 +1,3 @@
 test/samples export-ignore
+zint export-ignore
+.git* export-ignore
