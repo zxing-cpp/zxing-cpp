@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 
+#include "Version.h"
 #include "common.h"
 
 #define STUB_PIXEL_PLOT(NAME) \
@@ -86,10 +87,51 @@ STUB_FUNC_SEGS(zint_gridmatrix)
 STUB_FUNC_SEGS(zint_hanxin)
 STUB_FUNC_SEGS(zint_dotcode)
 STUB_FUNC_SEGS(zint_codablockf)
-// STUB_FUNC_CHAR(zint_vin)
 STUB_FUNC_CHAR(zint_mailmark_2d)
 STUB_FUNC_CHAR(zint_mailmark_4s)
 STUB_FUNC_CHAR(zint_upu_s10)
 STUB_FUNC_SEGS(zint_ultra)
 STUB_FUNC_CHAR(zint_dpd)
 STUB_FUNC_CHAR(zint_bc412)
+
+#if !ZXING_ENABLE_1D
+STUB_FUNC_CHAR(zint_c25inter)
+STUB_FUNC_CHAR(zint_codabar)
+STUB_FUNC_CHAR(zint_code39)
+STUB_FUNC_CHAR(zint_code93)
+STUB_FUNC_CHAR(zint_code128)
+STUB_FUNC_CHAR(zint_gs1_128)
+STUB_FUNC_CHAR(zint_excode39)
+STUB_FUNC_CHAR(zint_dbar_exp)
+STUB_FUNC_CHAR(zint_dbar_ltd)
+STUB_FUNC_CHAR(zint_dbar_omn)
+STUB_FUNC_CHAR(zint_eanx)
+STUB_FUNC_CHAR(zint_dxfilmedge)
+STUB_FUNC_CHAR(zint_vin)
+#endif
+
+#if !ZXING_ENABLE_AZTEC
+STUB_FUNC_CHAR(zint_aztec)
+STUB_FUNC_CHAR(zint_azrune)
+#endif
+
+#if !ZXING_ENABLE_DATAMATRIX
+STUB_FUNC_SEGS(zint_datamatrix)
+#endif
+
+#if !ZXING_ENABLE_MAXICODE
+STUB_FUNC_CHAR(zint_maxicode)
+#endif
+
+#if !ZXING_ENABLE_PDF417
+STUB_FUNC_SEGS(zint_pdf417)
+STUB_FUNC_SEGS(zint_micropdf417)
+#endif
+
+#if !ZXING_ENABLE_QRCODE
+STUB_FUNC_SEGS(zint_qrcode)
+STUB_FUNC_SEGS(zint_microqr)
+STUB_FUNC_SEGS(zint_rmqr)
+STUB_FUNC_SEGS(zint_upnqr)
+#endif
+

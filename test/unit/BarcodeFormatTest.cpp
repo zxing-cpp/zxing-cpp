@@ -63,13 +63,13 @@ TEST(BarcodeFormatTest, BarcodeFormatCreation)
 	EXPECT_EQ(formats, BarcodeFormats("EAN-8, ITF"));
 	EXPECT_EQ(formats, BarcodeFormats("ean8|itf"));
 	EXPECT_EQ(formats, BarcodeFormats("[EAN-8,, ITF]"));
-#endif
-
-#endif // 0
 
 	auto f1 = std::vector<BarcodeFormat>(formats.begin(), formats.end());
 	auto f2 = std::vector<BarcodeFormat>{BarcodeFormat::EAN8, BarcodeFormat::ITF};
 	EXPECT_EQ(f1, f2);
+#endif
+
+#endif // 0
 
 	EXPECT_THROW(BarcodeFormatsFromString("ITF, invalid-string"), std::invalid_argument);
 }
@@ -77,7 +77,7 @@ TEST(BarcodeFormatTest, BarcodeFormatCreation)
 TEST(BarcodeFormatTest, BarcodeFormatIntersection)
 {
 	using enum BarcodeFormat;
-
+#if ZXING_ENABLE_1D
 	EXPECT_TRUE(EAN8 & EAN8);
 	EXPECT_TRUE(EAN8 & EANUPC);
 	EXPECT_TRUE(EANUPC & EAN8);
@@ -85,7 +85,7 @@ TEST(BarcodeFormatTest, BarcodeFormatIntersection)
 	EXPECT_TRUE(EANUPC & AllLinear);
 	EXPECT_TRUE(EAN8 & All);
 	EXPECT_TRUE(EANUPC & All);
-	EXPECT_TRUE(AllMatrix & All);
+	EXPECT_TRUE(AllMatrix & All || !ZXING_ENABLE_QRCODE);
 	EXPECT_TRUE(AllLinear & EAN8);
 	EXPECT_TRUE(AllLinear & EANUPC);
 	EXPECT_TRUE(All & EAN8);
@@ -99,6 +99,7 @@ TEST(BarcodeFormatTest, BarcodeFormatIntersection)
 	EXPECT_FALSE(EANUPC & QRCode);
 	EXPECT_FALSE(AllMatrix & EAN8);
 	EXPECT_FALSE(AllMatrix & EANUPC);
+#endif // ZXING_ENABLE_1D
 
 #ifdef ZXING_READERS
 	EXPECT_EQ(DataMatrix & AllReadable, ZXING_ENABLE_DATAMATRIX);
@@ -112,6 +113,7 @@ TEST(BarcodeFormatTest, BarcodeFormatSubset)
 {
 	using enum BarcodeFormat;
 
+#if ZXING_ENABLE_1D
 	EXPECT_TRUE(EAN8 <= EAN8);
 	EXPECT_TRUE(EAN8 <= EANUPC);
 	EXPECT_TRUE(EAN8 <= AllLinear);
@@ -137,4 +139,5 @@ TEST(BarcodeFormatTest, BarcodeFormatSubset)
 	EXPECT_FALSE(EANUPC <= QRCode);
 
 	EXPECT_FALSE(EAN13 <= (EAN8 | DataBar));
+#endif // ZXING_ENABLE_1D
 }
