@@ -328,3 +328,35 @@ jobs:
   #     with:
   #       name: winrt-ARM64-artifacts
   #       path: build/dist
+
+  build-tarball:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        submodules: true
+
+    - name: Build
+      run: python .github/create_release_archive.py
+
+    - name: Find generated archives
+      id: find
+      run: |
+        tgz=$(ls zxing-cpp-*.tar.gz 2>/dev/null | head -n1 || true)
+        zip=$(ls zxing-cpp-*.zip 2>/dev/null | head -n1 || true)
+        echo "tgz=$tgz" >> $GITHUB_OUTPUT
+        echo "zip=$zip" >> $GITHUB_OUTPUT
+
+    - name: Upload tarball archive
+      if: steps.find.outputs.tgz != ''
+      uses: actions/upload-artifact@v6
+      with:
+        name: ${{ steps.find.outputs.tgz }}
+        path: ${{ steps.find.outputs.tgz }}
+
+    - name: Upload zip archive
+      if: steps.find.outputs.zip != ''
+      uses: actions/upload-artifact@v6
+      with:
+        name: ${{ steps.find.outputs.zip }}
+        path: ${{ steps.find.outputs.zip }}
