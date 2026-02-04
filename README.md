@@ -25,17 +25,30 @@ It was originally ported from the Java [ZXing library](https://github.com/zxing/
 
 ## Supported Formats
 
-| Linear product  | Linear industrial | Matrix             |
-|-----------------|-------------------|--------------------|
-| UPC-A           | Code 39           | QR Code            |
-| UPC-E           | Code 93           | Micro QR Code      |
-| EAN-8           | Code 128          | rMQR Code          |
-| EAN-13          | Codabar           | Aztec              |
-| DataBar         | DataBar Expanded  | DataMatrix         |
-| DataBar Limited | DX Film Edge      | PDF417             |
-|                 | ITF               | MaxiCode (partial) |
+| Symbology | Variants |
+|:----------|:---------|
+| ***Retail:*** | *(Point-of-Sale, Coupons)*
+| EAN/UPC | EAN-13, EAN-8, EAN-5ᵂ, EAN-2ᵂ, UPC-A, UPC-E, ISBN
+| DataBar | Omnidirectional, Stacked, Limited, Expanded, Expanded Stacked
+| ***Industrial:*** | *(Logistics, Tracking, Pharma)*
+| Code39 | Standard, Extended, PZN, LOGMARS, Code32, VIN
+| Code93 |
+| Code128 |
+| ITF | ITF-14, Leitcode, Identcode
+| ***Matrix:*** | *(Documents, Tickets, Logistics, IDs)*
+| Aztec Code | Aztec Code, Aztec Rune
+| Data Matrix | ECC200
+| MaxiCode | (partial read support)
+| PDF417 | PDF417, Compact PDF417, MicroPDF417ᵂ
+| QR Code | Model 1ᴿ, Model 2, Micro QR Code, rMQR
+| ***Other:*** | *(Legacy, Nitch)*
+| Codabar |
+| DXFilmEdge |
+
 
 [Note:]
+ * ᵂ : write support only
+ * ᴿ : read support only
  * DataBar used to be called RSS.
  * DataBar, DX Film Edge, MaxiCode, Micro QR Code and rMQR Code are not supported for writing if the library is configured with `ZXING_WRITERS=OLD`.
 
