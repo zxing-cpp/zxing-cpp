@@ -568,6 +568,7 @@ if (ZXING_WRITERS_NEW)
         if (ZXING_ENABLE_1D)
             list(APPEND LIBZINT_FILES
                 src/libzint/2of5inter.c
+                src/libzint/2of5inter_based.c
                 src/libzint/codabar.c
                 src/libzint/code128.c
                 src/libzint/code128.h
