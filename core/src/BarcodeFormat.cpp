@@ -38,7 +38,7 @@ BarcodeFormat BarcodeFormatFromString(std::string_view str)
 	if (str.size() < 3)
 		throw std::invalid_argument(StrCat("This is not a valid barcode format: '", str, "'"));
 #define X(NAME, SYM, VAR, FLAGS, ZINT, ENABLED, HRI) \
-	if ((str[0] == ']' && str[1] == SYM && str[2] == VAR) || IsEqualIgnoreCaseAnd(str, HRI, " -_/")) \
+	if ((str[0] == ']' && str[1] == SYM && str[2] == VAR) || IsEqualIgnoreCase(str, #NAME) || IsEqualIgnoreCaseAnd(str, HRI, " -_/")) \
 		return BarcodeFormat(ZX_BCF_ID(SYM, VAR));
 	ZX_BCF_LIST(X)
 #undef X
