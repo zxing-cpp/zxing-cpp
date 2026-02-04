@@ -573,6 +573,7 @@ if (ZXING_WRITERS_NEW)
                 src/libzint/code128.h
                 src/libzint/code.c
                 src/libzint/dxfilmedge.c
+                src/libzint/medical.c
                 src/libzint/rss.c
                 src/libzint/rss.h
                 src/libzint/upcean.c

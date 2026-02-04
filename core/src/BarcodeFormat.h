@@ -27,7 +27,10 @@
 	X(AllGS1,           '*', 'g', "    ",   0, 1,                       "All GS1") \
 	X(Codabar,          'F', ' ', "lrw ",  18, ZXING_ENABLE_1D,         "Codabar") \
 	X(Code39,           'A', ' ', "lrw ",   8, ZXING_ENABLE_1D,         "Code 39") \
-	X(PZN,              'A', 'p', "lr  ",   8, ZXING_ENABLE_1D,         "Pharmazentralnummer") \
+	X(Code32,           'A', '2', "lr  ", 129, ZXING_ENABLE_1D,         "Code 32") \
+	X(LOGMARS,          'A', 'l', "lr  ",  50, ZXING_ENABLE_1D,         "LOGMARS") \
+	X(PZN,              'A', 'p', "lr  ",  52, ZXING_ENABLE_1D,         "Pharmazentralnummer") \
+	X(VIN,              'A', 'v', "lr  ",  73, ZXING_ENABLE_1D,         "VIN") \
 	X(Code93,           'G', ' ', "lrw ",  25, ZXING_ENABLE_1D,         "Code 93") \
 	X(Code128,          'C', ' ', "lrwg",  20, ZXING_ENABLE_1D,         "Code 128") \
 	X(ITF,              'I', ' ', "lrw ",   3, ZXING_ENABLE_1D,         "ITF") \
