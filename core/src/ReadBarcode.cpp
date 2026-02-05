@@ -41,9 +41,7 @@ struct ReaderOptions::Data
 	bool tryDenoise               : 1 = false;
 #endif
 	bool isPure                   : 1 = false;
-	bool tryCode39ExtendedMode    : 1 = true;
-	bool validateCode39CheckSum   : 1 = false;
-	bool validateITFCheckSum      : 1 = false;
+	bool validateOptionalCheckSum : 1 = false;
 	bool returnErrors             : 1 = false;
 	uint8_t downscaleFactor       : 3 = 3; // values 2, 3, 4
 	EanAddOnSymbol eanAddOnSymbol : 2 = EanAddOnSymbol::Ignore;
@@ -95,9 +93,7 @@ ZX_PROPERTY(uint16_t, downscaleThreshold, setDownscaleThreshold)
 ZX_PROPERTY(uint8_t, downscaleFactor, setDownscaleFactor)
 ZX_PROPERTY(uint8_t, minLineCount, setMinLineCount)
 ZX_PROPERTY(uint8_t, maxNumberOfSymbols, setMaxNumberOfSymbols)
-ZX_PROPERTY(bool, tryCode39ExtendedMode, setTryCode39ExtendedMode)
-ZX_PROPERTY(bool, validateCode39CheckSum, setValidateCode39CheckSum)
-ZX_PROPERTY(bool, validateITFCheckSum, setValidateITFCheckSum)
+ZX_PROPERTY(bool, validateOptionalCheckSum, setValidateOptionalCheckSum)
 ZX_PROPERTY(bool, returnErrors, setReturnErrors)
 ZX_PROPERTY(EanAddOnSymbol, eanAddOnSymbol, setEanAddOnSymbol)
 ZX_PROPERTY(TextMode, textMode, setTextMode)

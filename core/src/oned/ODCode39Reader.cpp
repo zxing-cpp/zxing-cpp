@@ -77,7 +77,7 @@ std::string DecodeCode39AndCode93FullASCII(std::string encoded, const char ctrl[
 BarcodeData Code39Reader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<RowReader::DecodingState>&) const
 {
 	// minimal number of characters that must be present (including start, stop and checksum characters)
-	int minCharCount = _opts.validateCode39CheckSum() ? 4 : 3;
+	int minCharCount = _opts.validateOptionalCheckSum() ? 4 : 3;
 	auto isStartOrStopSymbol = [](char c) { return c == '*'; };
 
 	// provide the indices with the narrow bars/spaces which have to be equally wide
@@ -132,7 +132,7 @@ BarcodeData Code39Reader::decodePattern(int rowNumber, PatternView& next, std::u
 	if (hasValidCheckSum)
 		txt.push_back(lastChar);
 
-	Error error = _opts.validateCode39CheckSum() && !hasValidCheckSum ? ChecksumError() : Error();
+	Error error = _opts.validateOptionalCheckSum() && !hasValidCheckSum ? ChecksumError() : Error();
 
 	// Symbology identifier modifiers ISO/IEC 16388:2007 Annex C Table C.1
 	constexpr const char symbologyModifiers[4] = { '0', '1' /*checksum*/, '4' /*full ASCII*/, '5' /*checksum + full ASCII*/ };
