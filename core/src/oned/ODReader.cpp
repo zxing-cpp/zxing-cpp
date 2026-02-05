@@ -40,15 +40,15 @@ Reader::Reader(const ReaderOptions& opts) : ZXing::Reader(opts)
 	if (opts.hasAnyFormat(EANUPC))
 		_readers.emplace_back(new MultiUPCEANReader(opts));
 
-	if (opts.hasFormat(Code39))
+	if (opts.hasAnyFormat(Code39))
 		_readers.emplace_back(new Code39Reader(opts));
-	if (opts.hasFormat(Code93))
+	if (opts.hasAnyFormat(Code93))
 		_readers.emplace_back(new Code93Reader(opts));
-	if (opts.hasFormat(Code128))
+	if (opts.hasAnyFormat(Code128))
 		_readers.emplace_back(new Code128Reader(opts));
-	if (opts.hasFormat(ITF))
+	if (opts.hasAnyFormat(ITF))
 		_readers.emplace_back(new ITFReader(opts));
-	if (opts.hasFormat(Codabar))
+	if (opts.hasAnyFormat(Codabar))
 		_readers.emplace_back(new CodabarReader(opts));
 	if (opts.hasFormat(DataBar | DataBarOmni | DataBarStk | DataBarStkOmni))
 		_readers.emplace_back(new DataBarReader(opts));
@@ -56,7 +56,7 @@ Reader::Reader(const ReaderOptions& opts) : ZXing::Reader(opts)
 		_readers.emplace_back(new DataBarExpandedReader(opts));
 	if (opts.hasFormat(DataBar | DataBarLtd))
 		_readers.emplace_back(new DataBarLimitedReader(opts));
-	if (opts.hasFormat(DXFilmEdge))
+	if (opts.hasAnyFormat(DXFilmEdge))
 		_readers.emplace_back(new DXFilmEdgeReader(opts));
 }
 
