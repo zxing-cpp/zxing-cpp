@@ -21,6 +21,7 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 #include <string>
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -42,9 +43,14 @@ static void PrintUsage(const char* exePath)
 			  << "    -help      Print usage information\n"
 			  << "    -version   Print version information\n"
 			  << "\n"
-			  << "Supported formats are:\n";
-	for (auto f : BarcodeFormats::list(BarcodeFormat::AllCreatable))
-		std::cout << "    " << ToString(f) << "\n";
+			  << "Supported formats are (Symbology : Variants):";
+	for (auto f : BarcodeFormats::list(BarcodeFormat::AllCreatable)) {
+		if (Symbology(f) == f || f == BarcodeFormat::DXFilmEdge)
+			std::cout << "\n " << std::setw(13) << ToString(f) << " : ";
+		else
+			std::cout << ToString(f) << ", ";
+	}
+	std::cout << "\n\n";
 
 	std::cout << "Format can be lowercase letters, with or without any of ' -_/'.\n"
 			  << "Output format is determined by file name, supported are png, jpg and svg.\n";
