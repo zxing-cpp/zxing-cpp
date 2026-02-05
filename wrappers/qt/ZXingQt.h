@@ -346,7 +346,7 @@ inline QList<Barcode> ReadBarcodes(const QVideoFrame& frame, const ReaderOptions
 
 	if (fmt != ImageFormat::None) {
 		auto img = frame; // shallow copy just get access to non-const map() function
-		if (!img.isValid() || !img.map(QVideoFrame::ReadOnly)){
+		if (!img.isValid() || !img.map(QVideoFrame::ReadOnly)) {
 			qWarning() << "invalid QVideoFrame: could not map memory";
 			return {};
 		}
@@ -517,7 +517,6 @@ public:
 #endif // QT_MULTIMEDIA_LIB
 
 };
-
 
 #undef ZQ_PROPERTY
 
