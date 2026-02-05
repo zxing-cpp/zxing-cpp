@@ -37,7 +37,6 @@ enum class BarcodeFormat(internal val cValue: ZXing_BarcodeFormat) {
 	AllReadable(ZXing_BarcodeFormat.ZXing_BarcodeFormat_AllReadable),
 	AllCreatable(ZXing_BarcodeFormat.ZXing_BarcodeFormat_AllCreatable),
 	AllLinear(ZXing_BarcodeFormat.ZXing_BarcodeFormat_AllLinear),
-	AllStacked(ZXing_BarcodeFormat.ZXing_BarcodeFormat_AllStacked),
 	AllMatrix(ZXing_BarcodeFormat.ZXing_BarcodeFormat_AllMatrix),
 	AllGS1(ZXing_BarcodeFormat.ZXing_BarcodeFormat_AllGS1),
 

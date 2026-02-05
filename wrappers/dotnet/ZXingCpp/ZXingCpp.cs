@@ -184,7 +184,6 @@ public readonly struct BarcodeFormat : IEquatable<BarcodeFormat>
 	public static readonly BarcodeFormat AllReadable = new BarcodeFormat(0x722A);
 	public static readonly BarcodeFormat AllCreatable = new BarcodeFormat(0x772A);
 	public static readonly BarcodeFormat AllLinear = new BarcodeFormat(0x6CAA);
-	public static readonly BarcodeFormat AllStacked = new BarcodeFormat(0x733A);
 	public static readonly BarcodeFormat AllMatrix = new BarcodeFormat(0x6D8A);
 	public static readonly BarcodeFormat AllGS1 = new BarcodeFormat(0x670A);
 	public static readonly BarcodeFormat Codabar = new BarcodeFormat(0x2046);

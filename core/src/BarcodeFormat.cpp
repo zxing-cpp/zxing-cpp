@@ -88,7 +88,7 @@ bool operator&(BarcodeFormat a, BarcodeFormat b)
 #define X(NAME, SYM, VAR, FLAGS, ZINT, ENABLED, HRI) \
 	case BarcodeFormat(ZX_BCF_ID(SYM, VAR)): \
 		return ENABLED \
-			   && ((vkb == 'w' && USING_ZINT) ? ZINT : (FLAGS[0] == vkb || FLAGS[1] == vkb || FLAGS[2] == vkb || FLAGS[3] == vkb));
+			   && ((vkb == 'w' && USING_ZINT) ? ZINT : (FLAGS[0] == vkb || FLAGS[1] == vkb || FLAGS[2] == vkb || FLAGS[3] == vkb || FLAGS[4] == vkb));
 			ZX_BCF_LIST(X)
 #undef X
 		};

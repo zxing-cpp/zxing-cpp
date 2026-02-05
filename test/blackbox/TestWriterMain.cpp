@@ -23,7 +23,7 @@ void savePng(ImageView iv, BarcodeFormat format)
 int main()
 {
 	std::string text = "zxing-cpp";
-	for (auto format : BarcodeFormats::list(AllMatrix | AllStacked))
+	for (auto format : BarcodeFormats::list(AllMatrix))
 		if (format & AllCreatable && format != AztecRune)
 			savePng(CreateBarcodeFromText(text, format).symbol(), format);
 

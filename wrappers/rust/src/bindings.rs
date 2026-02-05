@@ -51,7 +51,6 @@ pub const ZXing_BarcodeFormat_All: ZXing_BarcodeFormat = 0x2A2A;
 pub const ZXing_BarcodeFormat_AllReadable: ZXing_BarcodeFormat = 0x722A;
 pub const ZXing_BarcodeFormat_AllCreatable: ZXing_BarcodeFormat = 0x772A;
 pub const ZXing_BarcodeFormat_AllLinear: ZXing_BarcodeFormat = 0x6C2A;
-pub const ZXing_BarcodeFormat_AllStacked: ZXing_BarcodeFormat = 0x732A;
 pub const ZXing_BarcodeFormat_AllMatrix: ZXing_BarcodeFormat = 0x6D2A;
 pub const ZXing_BarcodeFormat_AllGS1: ZXing_BarcodeFormat = 0x672A;
 pub const ZXing_BarcodeFormat_Codabar: ZXing_BarcodeFormat = 0x2046;
