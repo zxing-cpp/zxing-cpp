@@ -312,9 +312,9 @@ ZX_PROPERTY(int, maxNumberOfSymbols, MaxNumberOfSymbols)
 
 void ZXing_ReaderOptions_setFormats(ZXing_ReaderOptions* opts, const ZXing_BarcodeFormat* formats, int count)
 {
-	if (!formats)
+	if (!formats || !count)
 		return;
-	if (count == 0) // determine count by looking for null terminator
+	if (count == -1) // determine count by looking for null terminator
 		for (; formats[count] != ZXing_BarcodeFormat_None; ++count)
 			;
 	std::vector<BarcodeFormat> v((BarcodeFormat*)formats, (BarcodeFormat*)formats + count);

@@ -59,7 +59,6 @@ int main(int argc, char** argv)
 	int ret = 0;
 	char* filename = NULL;
 	ZXing_BarcodeFormat* formats = NULL;
-	int formatCount = 0;
 
 	if (!parse_args(argc, argv, &filename, &formats))
 		return usage(argv[0]);
@@ -99,7 +98,7 @@ int main(int argc, char** argv)
 	ZXing_ReaderOptions* opts = ZXing_ReaderOptions_new();
 	ZXing_ReaderOptions_setTextMode(opts, ZXing_TextMode_HRI);
 	ZXing_ReaderOptions_setEanAddOnSymbol(opts, ZXing_EanAddOnSymbol_Ignore);
-	ZXing_ReaderOptions_setFormats(opts, formats, 0);
+	ZXing_ReaderOptions_setFormats(opts, formats, -1); // -1 means formats is null-terminated
 	ZXing_ReaderOptions_setReturnErrors(opts, true);
 
 	ZXing_Barcodes* barcodes = ZXing_ReadBarcodes(iv ? iv : (ZXing_ImageView*)img, opts);
