@@ -39,14 +39,15 @@ static void deprecation_warning(std::string_view msg)
 	warnings.attr("warn")(msg, builtins.attr("DeprecationWarning"));
 }
 
-auto read_barcodes_impl(py::object _image, const BarcodeFormats& formats, bool try_rotate, bool try_downscale, TextMode text_mode,
-						Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol, bool return_errors,
+auto read_barcodes_impl(py::object _image, const BarcodeFormats& formats, bool try_rotate, bool try_downscale, bool try_invert,
+						TextMode text_mode, Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol, bool return_errors,
 						uint8_t max_number_of_symbols = 0xff)
 {
 	const auto opts = ReaderOptions()
 		.formats(formats)
 		.tryRotate(try_rotate)
 		.tryDownscale(try_downscale)
+		.tryInvert(try_invert)
 		.textMode(text_mode)
 		.binarizer(binarizer)
 		.isPure(is_pure)
@@ -178,18 +179,18 @@ auto read_barcodes_impl(py::object _image, const BarcodeFormats& formats, bool t
 }
 
 std::optional<Barcode> read_barcode(py::object _image, const BarcodeFormats& formats, bool try_rotate, bool try_downscale,
-									TextMode text_mode, Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol,
-									bool return_errors)
+									bool try_invert, TextMode text_mode, Binarizer binarizer, bool is_pure,
+									EanAddOnSymbol ean_add_on_symbol, bool return_errors)
 {
-	auto res = read_barcodes_impl(_image, formats, try_rotate, try_downscale, text_mode, binarizer, is_pure, ean_add_on_symbol,
-								  return_errors, 1);
+	auto res = read_barcodes_impl(_image, formats, try_rotate, try_downscale, try_invert, text_mode, binarizer, is_pure,
+								  ean_add_on_symbol, return_errors, 1);
 	return res.empty() ? std::nullopt : std::optional(res.front());
 }
 
-Barcodes read_barcodes(py::object _image, const BarcodeFormats& formats, bool try_rotate, bool try_downscale, TextMode text_mode,
-					   Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol, bool return_errors)
+Barcodes read_barcodes(py::object _image, const BarcodeFormats& formats, bool try_rotate, bool try_downscale, bool try_invert,
+					   TextMode text_mode, Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol, bool return_errors)
 {
-	return read_barcodes_impl(_image, formats, try_rotate, try_downscale, text_mode, binarizer, is_pure, ean_add_on_symbol,
+	return read_barcodes_impl(_image, formats, try_rotate, try_downscale, try_invert, text_mode, binarizer, is_pure, ean_add_on_symbol,
 							  return_errors);
 }
 
@@ -466,6 +467,7 @@ PYBIND11_MODULE(zxingcpp, m)
 		py::arg("formats") = BarcodeFormats{},
 		py::arg("try_rotate") = true,
 		py::arg("try_downscale") = true,
+		py::arg("try_invert") = true,
 		py::arg("text_mode") = TextMode::HRI,
 		py::arg("binarizer") = Binarizer::LocalAverage,
 		py::arg("is_pure") = false,
@@ -487,6 +489,8 @@ PYBIND11_MODULE(zxingcpp, m)
 		":type try_downscale: bool\n"
 		":param try_downscale: if ``True`` (the default), decoder also scans downscaled versions of the input; \n"
 		"  if ``False``, it will only search in the resolution provided.\n"
+		":type try_invert: bool\n"
+		":param try_invert: if ``True`` (the default), decoder also tries inverted (light on dark) barcodes.\n"
 		":type text_mode: zxing.TextMode\n"
 		":param text_mode: specifies the TextMode that governs how the raw bytes content is transcoded to text.\n"
 		"  Defaults to :py:attr:`zxing.TextMode.HRI`."
@@ -510,6 +514,7 @@ PYBIND11_MODULE(zxingcpp, m)
 		py::arg("formats") = BarcodeFormats{},
 		py::arg("try_rotate") = true,
 		py::arg("try_downscale") = true,
+		py::arg("try_invert") = true,
 		py::arg("text_mode") = TextMode::HRI,
 		py::arg("binarizer") = Binarizer::LocalAverage,
 		py::arg("is_pure") = false,
@@ -531,6 +536,8 @@ PYBIND11_MODULE(zxingcpp, m)
 		":type try_downscale: bool\n"
 		":param try_downscale: if ``True`` (the default), decoder also scans downscaled versions of the input; \n"
 		"  if ``False``, it will only search in the resolution provided.\n"
+		":type try_invert: bool\n"
+		":param try_invert: if ``True`` (the default), decoder also tries inverted (light on dark) barcodes.\n"
 		":type text_mode: zxing.TextMode\n"
 		":param text_mode: specifies the TextMode that governs how the raw bytes content is transcoded to text.\n"
 		"  Defaults to :py:attr:`zxing.TextMode.HRI`."
