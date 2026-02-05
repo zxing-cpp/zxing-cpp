@@ -139,6 +139,7 @@ static constexpr struct { BarcodeFormat format; SymbologyIdentifier si; } barcod
 	{BarcodeFormat::Code128, {'C', '0'}}, // '1' GS1, '2' AIM
 	// {BarcodeFormat::Code16K, {'K', '0'}}, // '1' GS1, '2' AIM, '4' D1 PAD
 	// {BarcodeFormat::Code39, {'A', '0'}}, // '3' checksum, '4' extended, '7' checksum,extended
+	{BarcodeFormat::Code39Ext, {'A', '4'}}, // '3' checksum, '4' extended, '7' checksum,extended
 	{BarcodeFormat::DataBar, {'e', '0', 0, AIFlag::GS1}},
 	{BarcodeFormat::DataBarOmni, {'e', '0', 0, AIFlag::GS1}},
 	{BarcodeFormat::DataBarStk, {'e', '0', 0, AIFlag::GS1}},
@@ -172,9 +173,6 @@ static SymbologyIdentifier SymbologyIdentifierZint2ZXing(const CreatorOptions& o
 	if (format & (EAN13 | UPCA | UPCE)) {
 		if (ba.size() > 13)     // Have EAN-2/5 add-on?
 			ret.modifier = '3'; // Combined packet, EAN-13, UPC-A, UPC-E, with add-on
-	} else if (format == Code39) {
-		if (FindIf(ba, iscntrl) != ba.end()) // Extended Code 39?
-			ret.modifier = static_cast<char>(ret.modifier + 4);
 	} else if (opts.gs1() && format & AllGS1) {
 		if (format & (Aztec | Code128))
 			ret.modifier = '1';

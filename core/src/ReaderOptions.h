@@ -141,8 +141,8 @@ public:
 	/// The maximum number of symbols (barcodes) to detect / look for in the image with ReadBarcodes
 	ZX_PROPERTY(uint8_t, maxNumberOfSymbols, setMaxNumberOfSymbols)
 
-	/// Enable the heuristic to detect and decode "full ASCII"/extended Code39 symbols
-	ZX_PROPERTY(bool, tryCode39ExtendedMode, setTryCode39ExtendedMode)
+	/// Deprecated / does nothing. See BarcodeFormat::Code39Ext and ::Code39Std to select full ASCII or standard Code39 mode.
+	ZX_PROPERTY(bool, tryCode39ExtendedMode, setTryCode39ExtendedMode, [[deprecated]])
 
 	/// Deprecated / does nothing. The Code39 symbol has a valid checksum iff symbologyIdentifier()[2] is an odd digit
 	ZX_PROPERTY(bool, validateCode39CheckSum, setValidateCode39CheckSum, [[deprecated]])
