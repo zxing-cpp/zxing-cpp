@@ -1,7 +1,7 @@
 
 find_package(Qt6 COMPONENTS Gui Multimedia Quick Widgets QUIET)
-if (NOT (Qt5_FOUND OR Qt6_FOUND))
-    message("INFO: Qt (Gui/Multimedia/Quick/Widgets) not found, skipping Qt examples")
+if (NOT Qt6_FOUND)
+    message("INFO: Qt6 (Gui/Multimedia/Quick/Widgets) not found, skipping Qt examples")
 endif()
 
 set(CMAKE_AUTOMOC ON)
