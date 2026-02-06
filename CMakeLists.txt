@@ -70,13 +70,9 @@ if (ZXING_CLANG_TIDY)
 endif()
 
 # make installed binaries relocatable on macOS and Linux
+set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)  # improve build reproducibility
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
-if(APPLE)
-    set(CMAKE_MACOSX_RPATH ON) # make the binar
-    set(CMAKE_INSTALL_RPATH "@loader_path/../lib")
-elseif(UNIX)
-    set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
-endif()
+set(CMAKE_INSTALL_RPATH "$<$<PLATFORM_ID:Darwin>:@loader_path/../lib>$<$<PLATFORM_ID:Linux>:$ORIGIN/../lib>")
 
 add_subdirectory (core)
 
