@@ -1,4 +1,6 @@
 
+include (GNUInstallDirs)
+
 find_package(Qt6 COMPONENTS Gui Multimedia Quick Widgets QUIET)
 if (NOT Qt6_FOUND)
     message("INFO: Qt6 (Gui/Multimedia/Quick/Widgets) not found, skipping Qt examples")
@@ -20,15 +22,17 @@ set(ZXING_QT_DEFINITIONS
     QT_DISABLE_DEPRECATED_BEFORE=0x060400
 )
 
-if (ZXING_READERS)
+if (ZXING_READERS AND ZXING_EXAMPLES)
     if (TARGET Qt::Gui)
-        add_executable (ZXingQtReader ZXingQtReader.cpp ZXingQt.h)
+        add_executable (ZXingQtReader ZXingQtReader.cpp)
+        target_sources(ZXingQtReader PRIVATE ${CMAKE_SOURCE_DIR}/core/src/ZXingQt.h) # help automoc find the header
         target_link_libraries(ZXingQtReader ZXing::ZXing Qt::Gui)
         target_compile_definitions(ZXingQtReader PRIVATE ${ZXING_QT_DEFINITIONS})
     endif()
 
     if (TARGET Qt::Multimedia AND TARGET Qt::Quick)
-        add_executable(ZXingQmlReader ZXingQmlReader.cpp ZXingQmlReader.qrc ZXingQt.h)
+        add_executable(ZXingQmlReader ZXingQmlReader.cpp ZXingQmlReader.qrc)
+        target_sources(ZXingQmlReader PRIVATE ${CMAKE_SOURCE_DIR}/core/src/ZXingQt.h) # help automoc find the header
         target_link_libraries(ZXingQmlReader PRIVATE ZXing::ZXing Qt::Gui Qt::Multimedia Qt::Quick)
         target_compile_definitions(ZXingQmlReader PRIVATE ${ZXING_QT_DEFINITIONS})
         if (APPLE)
@@ -41,21 +45,33 @@ if (ZXING_READERS)
     endif()
 
     if (TARGET Qt::Multimedia AND TARGET Qt::Widgets)
-        add_executable(ZXingQtCamReader ZXingQtCamReader.cpp ZXingQt.h)
+        add_executable(ZXingQtCamReader ZXingQtCamReader.cpp)
+        target_sources(ZXingQtCamReader PRIVATE ${CMAKE_SOURCE_DIR}/core/src/ZXingQt.h) # help automoc find the header
         target_link_libraries(ZXingQtCamReader PRIVATE ZXing::ZXing Qt::Gui Qt::Multimedia Qt::Widgets)
         target_compile_definitions(ZXingQtCamReader PRIVATE ${ZXING_QT_DEFINITIONS})
         if (APPLE)
             set_target_properties(ZXingQtCamReader PROPERTIES
                 MACOSX_BUNDLE TRUE
                 MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/ZXingQtCamReader-Info.plist
+                INSTALL_RPATH "@executable_path/../Frameworks"
             )
         endif()
         qt_finalize_executable(ZXingQtCamReader)
+        if (APPLE)
+            install(TARGETS ZXingQtCamReader BUNDLE DESTINATION .)
+            install(FILES
+                $<TARGET_FILE:ZXing>
+                $<TARGET_SONAME_FILE:ZXing>
+                DESTINATION ZXingQtCamReader.app/Contents/Frameworks
+            )
+        else()
+            install(TARGETS ZXingQtCamReader DESTINATION ${CMAKE_INSTALL_BINDIR})
+        endif()
     endif()
 
 endif()
 
-if (ZXING_WRITERS)
+if (ZXING_WRITERS AND ZXING_EXAMPLES)
     if (TARGET Qt::Gui)
         add_executable (ZXingQtWriter ZXingQtWriter.cpp)
         target_link_libraries(ZXingQtWriter ZXing::ZXing Qt::Gui)
