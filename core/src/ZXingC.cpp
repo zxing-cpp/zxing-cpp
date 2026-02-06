@@ -316,7 +316,7 @@ void ZXing_ReaderOptions_setFormats(ZXing_ReaderOptions* opts, const ZXing_Barco
 	if (!formats || !count)
 		return;
 	if (count == -1) // determine count by looking for null terminator
-		for (; formats[count] != ZXing_BarcodeFormat_None; ++count)
+		for (count = 0; formats[count] != ZXing_BarcodeFormat_None; ++count)
 			;
 	std::vector<BarcodeFormat> v((BarcodeFormat*)formats, (BarcodeFormat*)formats + count);
 	opts->formats(std::move(v));
