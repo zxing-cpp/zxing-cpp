@@ -25,7 +25,7 @@ class STBImage : public ImageView
 	std::unique_ptr<stbi_uc[], void (*)(void*)> _memory;
 
 public:
-	STBImage() : ImageView(), _memory(nullptr, stbi_image_free) {}
+	STBImage() : _memory(nullptr, stbi_image_free) {}
 
 	void load(const fs::path& imgPath)
 	{
@@ -54,13 +54,13 @@ std::mutex cacheMutex;
 
 void ImageLoader::clearCache()
 {
-	std::lock_guard lock(cacheMutex);
+	std::scoped_lock lock(cacheMutex);
 	cache.clear();
 }
 
 const ImageView& ImageLoader::load(const fs::path& imgPath)
 {
-	std::lock_guard lock(cacheMutex);
+	std::scoped_lock lock(cacheMutex);
 	auto& binImg = cache[imgPath];
 	if (!binImg)
 		binImg.load(imgPath);

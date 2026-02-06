@@ -404,7 +404,7 @@ void ZXing_WriterOptions_delete(ZXing_WriterOptions* opts)
 
 #define ZX_PROPERTY(TYPE, NAME, CAP_NAME) \
 	TYPE ZXing_WriterOptions_get##CAP_NAME(const ZXing_WriterOptions* opts) { return opts->NAME(); } \
-	void ZXing_WriterOptions_set##CAP_NAME(ZXing_WriterOptions* opts, TYPE val) { opts->NAME(val); }
+	void ZXing_WriterOptions_set##CAP_NAME(ZXing_WriterOptions* opts, TYPE NAME) { opts->NAME(NAME); }
 
 ZX_PROPERTY(int, scale, Scale)
 ZX_PROPERTY(int, rotate, Rotate)

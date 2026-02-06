@@ -15,6 +15,7 @@
 #include "BarcodeData.h"
 
 #include <cmath>
+#include <ranges>
 #include <unordered_set>
 
 namespace ZXing::OneD {
@@ -52,8 +53,8 @@ static Character ReadDataCharacter(const PatternView& view, bool outsideChar, bo
 
 	auto calcChecksumPortion = [](const Array4I& counts) {
 		int res = 0;
-		for (auto it = counts.rbegin(); it != counts.rend(); ++it)
-			res = 9 * res + *it;
+		for (int count : std::ranges::reverse_view(counts))
+			res = 9 * res + count;
 		return res;
 	};
 

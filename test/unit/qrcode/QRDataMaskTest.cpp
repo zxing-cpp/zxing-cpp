@@ -15,7 +15,8 @@ using namespace ZXing::QRCode;
 
 namespace {
 
-	void TestMaskAcrossDimensionsImpl(int maskIndex, bool isMicro, const int versionMax, const int dimensionStart, const int dimensionStep, std::function<bool(int, int)> condition)
+	void TestMaskAcrossDimensionsImpl(int maskIndex, bool isMicro, const int versionMax, const int dimensionStart, const int dimensionStep,
+									const std::function<bool(int, int)>& condition)
 	{
 		for (int version = 1; version <= versionMax; version++) {
 			int dimension = dimensionStart + dimensionStep * version;
@@ -27,12 +28,12 @@ namespace {
 		}
 	}
 
-	void TestMaskAcrossDimensions(int maskIndex, std::function<bool(int, int)> condition)
+	void TestMaskAcrossDimensions(int maskIndex, const std::function<bool(int, int)>& condition)
 	{
 		TestMaskAcrossDimensionsImpl(maskIndex, false, 40, 17, 4, condition);
 	}
 
-	void TestMicroMaskAcrossDimensions(int maskIndex, std::function<bool(int, int)> condition)
+	void TestMicroMaskAcrossDimensions(int maskIndex, const std::function<bool(int, int)>& condition)
 	{
 		TestMaskAcrossDimensionsImpl(maskIndex, true, 4, 9, 2, condition);
 	}

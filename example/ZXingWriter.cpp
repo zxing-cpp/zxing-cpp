@@ -217,11 +217,11 @@ int main(int argc, char* argv[])
 		}
 
 		if (!success) {
-			std::cerr << "Failed to write image: " << cli.outPath << std::endl;
+			std::cerr << "Failed to write image: " << cli.outPath << "\n";
 			return -1;
 		}
 	} catch (const std::exception& e) {
-		std::cerr << e.what() << std::endl;
+		std::cerr << e.what() << "\n";
 		return -1;
 	}
 

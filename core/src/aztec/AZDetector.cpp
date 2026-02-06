@@ -20,6 +20,7 @@
 
 #include <algorithm>
 #include <bit>
+#include <ranges>
 #include <optional>
 #include <vector>
 
@@ -209,11 +210,11 @@ static std::vector<ConcentricPattern> FindFinderPatterns(const BitMatrix& image,
 
 			// make sure p is not 'inside' an already found pattern area
 			bool found = false;
-			for (auto old = res.rbegin(); old != res.rend(); ++old) {
+			for (auto& old : std::ranges::reverse_view(res)) {
 				// search from back to front, stop once we are out of range due to the y-coordinate
-				if (p.y - old->y > old->size / 2)
+				if (p.y - old.y > old.size / 2)
 					break;
-				if (distance(p, *old) < old->size / 2) {
+				if (distance(p, old) < old.size / 2) {
 					found = true;
 					break;
 				}

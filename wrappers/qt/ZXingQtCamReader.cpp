@@ -135,7 +135,7 @@ public:
 		setupCameraAndReader();
 	}
 
-	~CameraReaderWidget() { _camera->stop(); }
+	~CameraReaderWidget() override { _camera->stop(); }
 
 private:
 	void setupUI()

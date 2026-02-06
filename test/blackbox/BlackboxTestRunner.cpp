@@ -125,7 +125,7 @@ static bool compareResult(const Barcode& barcode, const std::string& expected, s
 			ret = false;
 			actualValue += " ***Mismatch***";
 		}
-		actual += key + '=' + actualValue + '\n';
+		actual += StrCat(key, '=', actualValue, '\n');
 	}
 	return ret;
 }
