@@ -16,12 +16,16 @@ class TestFormat(unittest.TestCase):
 
 	def test_format(self):
 		self.assertEqual(zxingcpp.barcode_format_from_str('qrcode'), BF.QRCode)
+		self.assertEqual(str(BF.QRCode), "QR Code")
+		self.assertEqual(BF.EAN13.symbology, BF.EANUPC)
+
+	def test_formats(self):
 		self.assertEqual(zxingcpp.barcode_formats_from_str('ITF, qrcode'), [BF.ITF, BF.QRCode])
 		self.assertEqual(BF.Code128 | BF.EAN13, [BF.Code128, BF.EAN13])
 		self.assertEqual(zxingcpp.BarcodeFormats(BF.EAN13), [BF.EAN13])
 		self.assertEqual(zxingcpp.BarcodeFormats(BF.EAN13), BF.EAN13)
-		self.assertEqual(str(BF.QRCode), "QR Code")
-		self.assertEqual(BF.EAN13.symbology, BF.EANUPC)
+		self.assertIn(BF.QRCode, zxingcpp.BarcodeFormats(BF.EAN13 | BF.QRCode))
+		self.assertIn(BF.QRCode, zxingcpp.barcode_formats_list(BF.AllMatrix))
 
 class TestReadWrite(unittest.TestCase):
 

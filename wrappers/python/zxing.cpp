@@ -462,6 +462,13 @@ PYBIND11_MODULE(zxingcpp, m)
 		":param str: string representing a list of barcodes formats\n"
 		":return: corresponding barcode formats\n"
 		":rtype: zxingcpp.BarcodeFormats");
+	m.def("barcode_formats_list", &BarcodeFormats::list,
+		py::arg("filter") = BarcodeFormats{},
+		"Returns a list of available/supported barcode formats, optionally filtered by the provided format(s).\n\n"
+		":type filter: zxingcpp.BarcodeFormats\n"
+		":param filter: the BarcodeFormat(s) to filter by\n"
+		":return: list of available/supported barcode formats (optionally filtered)\n"
+		":rtype: list[zxingcpp.BarcodeFormat]");
 	m.def("read_barcode", &read_barcode,
 		py::arg("image"),
 		py::arg("formats") = BarcodeFormats{},

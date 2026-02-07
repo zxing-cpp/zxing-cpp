@@ -3,9 +3,11 @@ import zxingcpp
 from PIL import Image
 
 if len(sys.argv) < 3:
-	format, content = zxingcpp.BarcodeFormat.QRCode, "I have the best words."
-else:
-	format, content = zxingcpp.barcode_format_from_str(sys.argv[1]), sys.argv[2]
+	print(f"Usage: {sys.argv[0]} <format> <content>\n\nExample: {sys.argv[0]} QRCode 'I have the best words.'\n")
+	print("Available formats:\n" + "\n".join(f" - {fmt}" for fmt in zxingcpp.barcode_formats_list(zxingcpp.BarcodeFormat.AllCreatable)))
+	sys.exit()
+
+format, content = zxingcpp.barcode_format_from_str(sys.argv[1]), sys.argv[2]
 
 # new writer API
 barcode = zxingcpp.create_barcode(content, format, ec_level = "50%")
