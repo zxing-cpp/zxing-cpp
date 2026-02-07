@@ -62,3 +62,5 @@ int main(int argc, char* argv[])
 	return 0;
 #endif
 }
+
+#include "moc_ZXingQt.cpp"

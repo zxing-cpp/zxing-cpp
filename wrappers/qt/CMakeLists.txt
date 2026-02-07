@@ -25,14 +25,12 @@ set(ZXING_QT_DEFINITIONS
 if (ZXING_READERS AND ZXING_EXAMPLES)
     if (TARGET Qt::Gui)
         add_executable (ZXingQtReader ZXingQtReader.cpp)
-        target_sources(ZXingQtReader PRIVATE ${CMAKE_SOURCE_DIR}/core/src/ZXingQt.h) # help automoc find the header
         target_link_libraries(ZXingQtReader ZXing::ZXing Qt::Gui)
         target_compile_definitions(ZXingQtReader PRIVATE ${ZXING_QT_DEFINITIONS})
     endif()
 
     if (TARGET Qt::Multimedia AND TARGET Qt::Quick)
         add_executable(ZXingQmlReader ZXingQmlReader.cpp ZXingQmlReader.qrc)
-        target_sources(ZXingQmlReader PRIVATE ${CMAKE_SOURCE_DIR}/core/src/ZXingQt.h) # help automoc find the header
         target_link_libraries(ZXingQmlReader PRIVATE ZXing::ZXing Qt::Gui Qt::Multimedia Qt::Quick)
         target_compile_definitions(ZXingQmlReader PRIVATE ${ZXING_QT_DEFINITIONS})
         if (APPLE)
@@ -46,7 +44,6 @@ if (ZXING_READERS AND ZXING_EXAMPLES)
 
     if (TARGET Qt::Multimedia AND TARGET Qt::Widgets)
         add_executable(ZXingQtCamReader ZXingQtCamReader.cpp)
-        target_sources(ZXingQtCamReader PRIVATE ${CMAKE_SOURCE_DIR}/core/src/ZXingQt.h) # help automoc find the header
         target_link_libraries(ZXingQtCamReader PRIVATE ZXing::ZXing Qt::Gui Qt::Multimedia Qt::Widgets)
         target_compile_definitions(ZXingQtCamReader PRIVATE ${ZXING_QT_DEFINITIONS})
         if (APPLE)

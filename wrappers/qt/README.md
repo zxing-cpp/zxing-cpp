@@ -252,3 +252,11 @@ target_link_libraries(myapp
     ZXing::ZXing
 )
 ```
+
+**Note on Qt Meta-Object Compiler (moc)**: If `ZXingQt.h` is located outside your project directory (e.g., in a system include path), Qt's automoc may not detect the `Q_OBJECT` classes in the header. To fix this, add the following line at the end of your `.cpp` file that uses `BarcodeReader` or other Qt classes from `ZXingQt.h`:
+
+```cpp
+#include "moc_ZXingQt.cpp"
+```
+
+This explicitly includes the moc-generated file, ensuring proper signal/slot functionality without requiring CMake workarounds.
