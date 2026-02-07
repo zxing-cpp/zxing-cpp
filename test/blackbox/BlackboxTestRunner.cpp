@@ -72,6 +72,8 @@ namespace {
 // Helper for `compareResult()` - map `key` to Barcode property, converting value to std::string
 static std::string getBarcodeValue(const Barcode& barcode, const std::string& key)
 {
+	if (key == "format")
+		return ToString(barcode.format());
 	if (key == "contentType")
 		return ToString(barcode.contentType());
 	if (key == "ecLevel")
@@ -432,9 +434,9 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 2, 3, 180 },
 		});
 
-		runTests("code39-1", Code39, 4, {
-			{ 4, 4, 0   },
-			{ 4, 4, 180 },
+		runTests("code39-1", Code39, 6, {
+			{ 6, 6, 0   },
+			{ 6, 6, 180 },
 		});
 
 		runTests("code39-2", Code39Ext, 3, {

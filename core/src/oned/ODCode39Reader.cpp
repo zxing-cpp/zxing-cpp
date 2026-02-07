@@ -11,6 +11,7 @@
 #include "SymbologyIdentifier.h"
 #include "ZXAlgorithms.h"
 
+#include <algorithm>
 #include <array>
 
 namespace ZXing::OneD {
@@ -74,6 +75,44 @@ std::string DecodeCode39AndCode93FullASCII(std::string encoded, const char ctrl[
 	return encoded;
 }
 
+/* Requires 6 character `str` containing only TABELLA characters */
+static std::string DecodeCode32(std::string_view str)
+{
+	constexpr const char TABELLA[] = "0123456789BCDFGHJKLMNPQRSTUVWXYZ"; // 0-9, A-Z less A,E,I,O
+
+	if (str.size() != 6 || !std::all_of(str.begin(), str.end(), [&](char c) { return Contains(TABELLA, c); }))
+		return {};
+
+	int val = Reduce(str, 0, [&](int acc, char c) { return acc * 32 + IndexOf(TABELLA, c); });
+
+	std::string res = ToString(val, 9);
+
+	int checksum = 0;
+	for (int i = 0; i < 8; i += 2) {
+		int j = 2 * (res[i + 1] - '0');
+		checksum += (res[i] - '0') + j % 10 + (j >= 10);
+	}
+	checksum %= 10;
+
+	if (checksum != res.back() - '0')
+		return {};
+
+	return "A" + res;
+}
+
+static bool IsPZN(std::string_view str)
+{
+	if (str.size() != 9 || str[0] != '-' || !std::all_of(str.begin() + 1, str.end(), [](char c) { return std::isdigit(c); }))
+		return false;
+
+	int checksum = 0;
+	for (int i = 1; i < 8; ++i)
+		checksum += (str[i] - '0') * i;
+	checksum %= 11;
+
+	return checksum == str.back() - '0';
+}
+
 BarcodeData Code39Reader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<RowReader::DecodingState>&) const
 {
 	// minimal number of characters that must be present (including start, stop and checksum characters)
@@ -116,30 +155,56 @@ BarcodeData Code39Reader::decodePattern(int rowNumber, PatternView& next, std::u
 	if (Size(txt) < minCharCount - 2 || !next.hasQuietZoneAfter(QUIET_ZONE_SCALE))
 		return {};
 
-	auto lastChar = txt.back();
-	txt.pop_back();
-	int checksum = TransformReduce(txt, 0, [](char c) { return IndexOf(ALPHABET, c); });
-	bool hasValidCheckSum = lastChar == ALPHABET[checksum % 43];
-	if (!hasValidCheckSum)
-		txt.push_back(lastChar);
+	int xStop = next.pixelsTillEnd();
 
-	const char shiftChars[] = "$%/+";
-	auto fullASCII = _opts.hasFormat(BarcodeFormat::Code39Ext) ? DecodeCode39AndCode93FullASCII(txt, shiftChars) : "";
-	bool hasFullASCII = !fullASCII.empty() && std::find_first_of(txt.begin(), txt.end(), shiftChars, shiftChars + 4) != txt.end();
-	if (hasFullASCII)
-		txt = fullASCII;
-
-	if (hasValidCheckSum)
-		txt.push_back(lastChar);
-
-	Error error = _opts.validateOptionalCheckSum() && !hasValidCheckSum ? ChecksumError() : Error();
+	using enum BarcodeFormat;
+	BarcodeFormat format = None;
+	Error error;
 
 	// Symbology identifier modifiers ISO/IEC 16388:2007 Annex C Table C.1
-	constexpr const char symbologyModifiers[4] = { '0', '1' /*checksum*/, '4' /*full ASCII*/, '5' /*checksum + full ASCII*/ };
-	SymbologyIdentifier symbologyIdentifier = {'A', symbologyModifiers[(int)hasValidCheckSum + 2 * (int)hasFullASCII]};
+	// constexpr const char symbologyModifiers[4] = {'0', '1' /*checksum*/, '4' /*full ASCII*/, '5' /*checksum + full ASCII*/};
+	SymbologyIdentifier symbologyIdentifier = {'A', '0' };
 
-	int xStop = next.pixelsTillEnd();
-	return LinearBarcode(BarcodeFormat::Code39, std::move(txt), rowNumber, xStart, xStop, symbologyIdentifier, error);
+	if (format == None && _opts.hasFormat(PZN) && IsPZN(txt)) {
+		format = PZN;
+	}
+	if (format == None && _opts.hasFormat(Code32)) {
+		auto code32Txt = DecodeCode32(txt);
+		if (!code32Txt.empty()) {
+			format = Code32;
+			txt = std::move(code32Txt);
+		}
+	}
+	if (format == None) {
+		auto lastChar = txt.back();
+		txt.pop_back();
+		int checksum = TransformReduce(txt, 0, [](char c) { return IndexOf(ALPHABET, c); });
+		bool hasValidCheckSum = lastChar == ALPHABET[checksum % 43];
+		if (!hasValidCheckSum) {
+			txt.push_back(lastChar);
+			if (_opts.validateOptionalCheckSum())
+				error = ChecksumError();
+		}
+
+		constexpr const char shiftChars[] = "$%/+";
+		if (_opts.hasFormat(Code39Ext) && std::ranges::find_first_of(txt, shiftChars) != txt.end()) {
+			auto fullASCII = DecodeCode39AndCode93FullASCII(txt, shiftChars);
+			if (!fullASCII.empty()) {
+				txt = std::move(fullASCII);
+				format = Code39Ext;
+			}
+		}
+
+		if (format == None && _opts.hasFormat(Code39Std))
+			format = Code39;
+
+		if (hasValidCheckSum)
+			txt.push_back(lastChar);
+
+		symbologyIdentifier.modifier += (hasValidCheckSum ? 1 : 0) + (format == Code39Ext ? 4 : 0);
+	}
+
+	return LinearBarcode(format, std::move(txt), rowNumber, xStart, xStop, symbologyIdentifier, error);
 }
 
 } // namespace ZXing::OneD
