@@ -32,9 +32,7 @@
 	X(Code39Std,        'A', 's', "lrw I",   8, ZXING_ENABLE_1D,         "Code 39 Standard") \
 	X(Code39Ext,        'A', 'e', "lr  I",   9, ZXING_ENABLE_1D,         "Code 39 Extended") \
 	X(Code32,           'A', '2', "lr  I", 129, ZXING_ENABLE_1D,         "Code 32") \
-	X(LOGMARS,          'A', 'l', "lr  I",  50, ZXING_ENABLE_1D,         "LOGMARS") \
 	X(PZN,              'A', 'p', "lr  I",  52, ZXING_ENABLE_1D,         "Pharmazentralnummer") \
-	X(VIN,              'A', 'v', "lr  I",  73, ZXING_ENABLE_1D,         "VIN") \
 	X(Code93,           'G', ' ', "lrw I",  25, ZXING_ENABLE_1D,         "Code 93") \
 	X(Code128,          'C', ' ', "lrwGI",  20, ZXING_ENABLE_1D,         "Code 128") \
 	X(ITF,              'I', ' ', "lrw I",   3, ZXING_ENABLE_1D,         "ITF") \

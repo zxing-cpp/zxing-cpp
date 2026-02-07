@@ -31,7 +31,7 @@ It was originally ported from the Java [ZXing library](https://github.com/zxing/
 | EAN/UPC | EAN-13, EAN-8, EAN-5ᵂ, EAN-2ᵂ, UPC-A, UPC-E, ISBN
 | DataBar | Omnidirectional, Stacked, Limited, Expanded, Expanded Stacked
 | ***Industrial:*** | *(Logistics, Tracking, Pharma)*
-| Code39 | Standard, Extended, PZN, LOGMARS, Code32, VIN
+| Code39 | Standard, Extended, PZN, Code32, (VIN, LOGMARS)
 | Code93 |
 | Code128 |
 | ITF | ITF-14, Leitcode, Identcode
