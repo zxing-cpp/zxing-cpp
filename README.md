@@ -34,7 +34,7 @@ It was originally ported from the Java [ZXing library](https://github.com/zxing/
 | Code39 | Standard, Extended, PZN, Code32, (VIN, LOGMARS)
 | Code93 |
 | Code128 |
-| ITF | ITF-14, Leitcode, Identcode
+| ITF | ITF-14, (DHL Leitcode, DHL Identcode)
 | ***Matrix:*** | *(Documents, Tickets, Logistics, IDs)*
 | Aztec Code | Aztec Code, Aztec Rune
 | Data Matrix | ECC200

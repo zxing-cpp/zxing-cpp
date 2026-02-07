@@ -37,8 +37,6 @@
 	X(Code128,          'C', ' ', "lrwGI",  20, ZXING_ENABLE_1D,         "Code 128") \
 	X(ITF,              'I', ' ', "lrw I",   3, ZXING_ENABLE_1D,         "ITF") \
 	X(ITF14,            'I', '4', "lr  I",  89, ZXING_ENABLE_1D,         "ITF-14") \
-	X(Leitcode,         'I', 'l', "lr  I",  21, ZXING_ENABLE_1D,         "Leitcode") \
-	X(Identcode,        'I', 'i', "lr  I",  22, ZXING_ENABLE_1D,         "Identcode") \
 	X(DataBar,          'e', ' ', "lr GR",  29, ZXING_ENABLE_1D,         "DataBar") \
 	X(DataBarOmni,      'e', 'o', "lr GR",  29, ZXING_ENABLE_1D,         "DataBar Omni") \
 	X(DataBarStk,       'e', 's', "lr GR",  79, ZXING_ENABLE_1D,         "DataBar Stacked") \
