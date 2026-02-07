@@ -510,7 +510,8 @@ public:
 			disconnect(_sink, nullptr, this, nullptr);
 
 		_sink = sink;
-		connect(_sink, &QVideoSink::videoFrameChanged, this, &BarcodeReader::tryReadAsync, Qt::DirectConnection);
+		if (_sink)
+			connect(_sink, &QVideoSink::videoFrameChanged, this, &BarcodeReader::tryReadAsync, Qt::DirectConnection);
 	}
 	Q_PROPERTY(QVideoSink* videoSink MEMBER _sink WRITE setVideoSink)
 
