@@ -41,7 +41,7 @@ It was originally ported from the Java [ZXing library](https://github.com/zxing/
 | MaxiCode | (partial read support)
 | PDF417 | PDF417, Compact PDF417, MicroPDF417ᵂ
 | QR Code | Model 1ᴿ, Model 2, Micro QR Code, rMQR
-| ***Other:*** | *(Legacy, Nitch)*
+| ***Other:*** | *(Legacy, Niche)*
 | Codabar |
 | DXFilmEdge |
 
