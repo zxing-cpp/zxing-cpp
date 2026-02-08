@@ -45,7 +45,7 @@ public class BarcodeReader(public var options: Options = Options()) {
 	}
 
 	public enum class TextMode {
-		PLAIN, ECI, HRI, HEX, ESCAPED
+		PLAIN, ECI, HRI, ESCAPED, HEX, HEXECI
 	}
 
 	public enum class ErrorType {
