@@ -47,19 +47,13 @@ endif()
 
 set (ZXING_USE_ZINT ${ZXING_WRITERS_NEW}) # see Version.h.in
 
-set (ZXING_PUBLIC_FLAGS
-    $<$<CXX_COMPILER_ID:MSVC>:/Zc:__cplusplus>
-)
-
 set (ZXING_PRIVATE_FLAGS
     -DZXING_INTERNAL
     $<$<BOOL:${ZXING_UNIT_TESTS}>:-DZXING_BUILD_FOR_TEST>
 )
 
 if (WINRT)
-    list (APPEND ZXING_PUBLIC_FLAGS
-        -DWINRT
-    )
+    set (ZXING_PUBLIC_FLAGS -DWINRT )
 endif()
 
 if (MSVC)

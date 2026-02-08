@@ -9,12 +9,10 @@
 
 using namespace ZXing;
 
-#if __cplusplus > 201703L
 std::string EscapeNonGraphical(const char8_t* utf8)
 {
 	return EscapeNonGraphical(reinterpret_cast<const char*>(utf8));
 }
-#endif
 
 TEST(TextUtfEncodingTest, EscapeNonGraphical)
 {

@@ -95,9 +95,11 @@ Barcode CreateBarcodeFromText(std::string_view contents, const CreatorOptions& o
  */
 Barcode CreateBarcodeFromBytes(const void* data, int size, const CreatorOptions& options);
 
-#if __cplusplus > 201703L
+#if defined(__cpp_lib_char8_t)
 Barcode CreateBarcodeFromText(std::u8string_view contents, const CreatorOptions& options);
+#endif
 
+#if defined(__cpp_lib_ranges)
 template <typename R>
 requires std::ranges::contiguous_range<R> && std::ranges::sized_range<R> && (sizeof(std::ranges::range_value_t<R>) == 1)
 Barcode CreateBarcodeFromBytes(const R& contents, const CreatorOptions& options)

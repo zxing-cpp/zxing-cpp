@@ -401,12 +401,10 @@ Barcode CreateBarcodeFromText(std::string_view contents, const CreatorOptions& o
 	return CreateBarcode(contents.data(), contents.size(), UNICODE_MODE, options);
 }
 
-#if __cplusplus > 201703L
 Barcode CreateBarcodeFromText(std::u8string_view contents, const CreatorOptions& options)
 {
 	return CreateBarcode(contents.data(), contents.size(), UNICODE_MODE, options);
 }
-#endif
 
 Barcode CreateBarcodeFromBytes(const void* data, int size, const CreatorOptions& options)
 {
@@ -446,12 +444,10 @@ Barcode CreateBarcodeFromText(std::string_view contents, const CreatorOptions& o
 	return CreateBarcode(writer.encode(std::string(contents), 0, opts.format() & BarcodeFormat::AllLinear ? 50 : 0), contents, opts);
 }
 
-#if __cplusplus > 201703L
 Barcode CreateBarcodeFromText(std::u8string_view contents, const CreatorOptions& opts)
 {
 	return CreateBarcodeFromText({reinterpret_cast<const char*>(contents.data()), contents.size()}, opts);
 }
-#endif
 
 Barcode CreateBarcodeFromBytes(const void* data, int size, const CreatorOptions& opts)
 {
@@ -478,12 +474,10 @@ Barcode CreateBarcodeFromText(std::string_view, const CreatorOptions&)
 	throw std::runtime_error("This build of zxing-cpp does not support creating barcodes.");
 }
 
-#if __cplusplus > 201703L
 Barcode CreateBarcodeFromText(std::u8string_view, const CreatorOptions&)
 {
 	throw std::runtime_error("This build of zxing-cpp does not support creating barcodes.");
 }
-#endif
 
 Barcode CreateBarcodeFromBytes(const void*, int, const CreatorOptions&)
 {
