@@ -40,15 +40,15 @@ jobs:
     - name: Build
       run: cmake --build build -j8 --config ${{env.BUILD_TYPE}}
 
-    # - name: Set PATH for Tests
-    #   shell: bash # to make the $GITHUB_PATH update work
-    #   if: runner.os == 'Windows'
-    #   run: |
-    #     echo "${GITHUB_WORKSPACE}/build/core/${BUILD_TYPE}" >> $GITHUB_PATH
-    #     echo "${GITHUB_WORKSPACE}/build/lib/${BUILD_TYPE}" >> $GITHUB_PATH
+    - name: Set PATH for Tests
+      shell: bash # to make the $GITHUB_PATH update work
+      if: runner.os == 'Windows'
+      run: |
+        echo "${GITHUB_WORKSPACE}/build/core/${BUILD_TYPE}" >> $GITHUB_PATH
+        echo "${GITHUB_WORKSPACE}/build/bin/${BUILD_TYPE}" >> $GITHUB_PATH
+        cp "${GITHUB_WORKSPACE}/build/core/Release/ZXing.dll" "${GITHUB_WORKSPACE}/build/wrappers/python/Release/"
 
     - name: Test
-      if: runner.os != 'Windows' # need to disable ctest on Windows when build as shared library for now
       run: ctest --test-dir build -V -C ${{env.BUILD_TYPE}}
 
     - name: Install
@@ -81,8 +81,14 @@ jobs:
     - name: Build
       run: cmake --build build -j8 --config ${{env.BUILD_TYPE}}
 
+    - name: Set PATH for Tests
+      shell: bash # to make the $GITHUB_PATH update work
+      if: runner.os == 'Windows'
+      run: |
+        echo "${GITHUB_WORKSPACE}/build/core/${BUILD_TYPE}" >> $GITHUB_PATH
+        echo "${GITHUB_WORKSPACE}/build/bin/${BUILD_TYPE}" >> $GITHUB_PATH
+
     - name: Test
-      if: runner.os != 'Windows' # need to disable ctest on Windows when build as shared library for now
       run: ctest --test-dir build -V -C ${{env.BUILD_TYPE}}
 
     - name: Install
