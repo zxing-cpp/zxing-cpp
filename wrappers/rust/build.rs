@@ -30,7 +30,7 @@ fn main() -> miette::Result<()> {
 	}
 
 	// manual bindings.rs generation:
-	// bindgen core/src/ZXingC.h -o src/bindings.rs --no-prepend-enum-name --merge-extern-blocks --use-core --no-doc-comments --no-layout-tests --with-derive-partialeq --allowlist-item "ZXing.*" -- -DZXING_EXPERIMENTAL_API -Itarget/release/build/zxing-cpp-*/out/include
+	// bindgen core/src/ZXingC.h -o src/bindings.rs --no-prepend-enum-name --merge-extern-blocks --use-core --no-doc-comments --no-layout-tests --with-derive-partialeq --allowlist-item "ZXing.*" -- -Itarget/release/build/zxing-cpp-*/out/include
 
 	// replace enum decimal constants with hexadecimal ones for better readability
 	// perl -0777 -i -pe 's/(pub const (?:ZXing_(?:Barcode|Image)Format_\w+: ZXing_(?:Barcode|Image)Format) = )(\d+);/$1 . sprintf("0x%04X;", $2)/ge' src/bindings.rs

@@ -26,6 +26,7 @@ use std::ffi::{c_char, c_int, c_void, CStr, CString, NulError};
 use std::fmt::{Display, Formatter};
 use std::marker::PhantomData;
 use std::mem::transmute;
+use std::ptr::null;
 use std::rc::Rc;
 use std::slice;
 use thiserror::Error;
@@ -221,11 +222,11 @@ make_zxing_enum!(EanAddOnSymbol { Ignore, Read, Require });
 make_zxing_enum!(BarcodeFormat {
 	Invalid, None, All, AllReadable, AllCreatable, AllLinear, AllMatrix, AllGS1,
 	Codabar, Code39, PZN, Code93, Code128, ITF,
-	DataBar, DataBarOmni, DataBarLtd, DataBarExp,
-	EANUPC, EAN13, EAN8, EAN5, EAN2, ISBN, UPCA, UPCE, DXFilmEdge,
+	DataBar, DataBarOmni, DataBarStk, DataBarStkOmni, DataBarLtd, DataBarExp, DataBarExpStk,
+	EANUPC, EAN13, EAN8, EAN5, EAN2, ISBN, UPCA, UPCE, OtherBarcode, DXFilmEdge,
 	PDF417, CompactPDF417, MicroPDF417,
 	Aztec, AztecCode, AztecRune,
-	QRCode, QRCodeModel1, MicroQRCode, RMQRCode,
+	QRCode, QRCodeModel1, QRCodeModel2, MicroQRCode, RMQRCode,
 	DataMatrix, MaxiCode
 });
 
@@ -534,7 +535,6 @@ impl Barcode {
 	getter!(Barcode, symbology, transmute, BarcodeFormat);
 	getter!(Barcode, contentType, transmute, ContentType);
 	getter!(Barcode, text, c2r_str, String);
-	getter!(Barcode, ecLevel, c2r_str, String);
 	getter!(Barcode, symbologyIdentifier, c2r_str, String);
 	getter!(Barcode, position, transmute, Position);
 	getter!(Barcode, orientation, transmute, i32);
@@ -542,6 +542,9 @@ impl Barcode {
 	getter!(Barcode, isInverted, transmute, bool);
 	getter!(Barcode, isMirrored, transmute, bool);
 	getter!(Barcode, lineCount, transmute, i32);
+	getter!(Barcode, sequenceSize, transmute, i32);
+	getter!(Barcode, sequenceIndex, transmute, i32);
+	getter!(Barcode, sequenceId, c2r_str, String);
 
 	pub fn bytes(&self) -> Vec<u8> {
 		let mut len: c_int = 0;
@@ -550,6 +553,15 @@ impl Barcode {
 	pub fn bytes_eci(&self) -> Vec<u8> {
 		let mut len: c_int = 0;
 		unsafe { c2r_vec(ZXing_Barcode_bytesECI(self.0, &mut len), len) }
+	}
+
+	pub fn extra(&self) -> String {
+		unsafe { c2r_str(ZXing_Barcode_extra(self.0, null())) }
+	}
+
+	pub fn extra_with_key(&self, key: impl AsRef<str>) -> String {
+		let cstr = CString::new(key.as_ref()).unwrap();
+		unsafe { c2r_str(ZXing_Barcode_extra(self.0, cstr.as_ptr())) }
 	}
 
 	pub fn error(&self) -> BarcodeError {

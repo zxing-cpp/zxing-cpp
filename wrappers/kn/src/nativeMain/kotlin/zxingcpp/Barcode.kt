@@ -107,9 +107,6 @@ class Barcode(val cValue: CValuesRef<ZXing_Barcode>) {
 	val text: String? by lazy {
 		ZXing_Barcode_text(cValue)?.toKStringNullPtrHandledAndFree()
 	}
-	val ecLevel: String? by lazy {
-		ZXing_Barcode_ecLevel(cValue)?.toKStringNullPtrHandledAndFree()
-	}
 	val symbologyIdentifier: String? by lazy {
 		ZXing_Barcode_symbologyIdentifier(cValue)?.toKStringNullPtrHandledAndFree()
 	}
@@ -126,6 +123,8 @@ class Barcode(val cValue: CValuesRef<ZXing_Barcode>) {
 		get() = ZXing_Barcode_isMirrored(cValue)
 	val lineCount: Int
 		get() = ZXing_Barcode_lineCount(cValue)
+	fun extra(key: String? = null): String? =
+		ZXing_Barcode_extra(cValue, key)?.toKStringNullPtrHandledAndFree()
 
 	@Suppress("unused")
 	@OptIn(ExperimentalNativeApi::class)
@@ -143,7 +142,7 @@ class Barcode(val cValue: CValuesRef<ZXing_Barcode>) {
 			"orientation=$orientation, " +
 			"position=$position, " +
 			"symbologyIdentifier=$symbologyIdentifier, " +
-			"ecLevel=$ecLevel, " +
+			"extra=${extra()}, " +
 			"text=$text, " +
 			"contentType=$contentType, " +
 			"format=$format, " +

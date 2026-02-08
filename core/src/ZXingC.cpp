@@ -227,6 +227,11 @@ uint8_t* ZXing_Barcode_bytesECI(const ZXing_Barcode* barcode, int* len)
 	return copy(barcode->bytesECI(), len);
 }
 
+char* ZXing_Barcode_extra(const ZXing_Barcode* barcode, const char* key)
+{
+	return copy(barcode->extra(key ? key : ""));
+}
+
 #define ZX_GETTER(TYPE, NAME, TRANS) \
 	TYPE ZXing_Barcode_##NAME(const ZXing_Barcode* barcode) { return TRANS(barcode->NAME()); }
 

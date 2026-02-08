@@ -136,7 +136,6 @@ ZXing_ContentType ZXing_Barcode_contentType(const ZXing_Barcode* barcode);
 uint8_t* ZXing_Barcode_bytes(const ZXing_Barcode* barcode, int* len);
 uint8_t* ZXing_Barcode_bytesECI(const ZXing_Barcode* barcode, int* len);
 char* ZXing_Barcode_text(const ZXing_Barcode* barcode);
-char* ZXing_Barcode_ecLevel(const ZXing_Barcode* barcode);
 char* ZXing_Barcode_symbologyIdentifier(const ZXing_Barcode* barcode);
 ZXing_Position ZXing_Barcode_position(const ZXing_Barcode* barcode);
 int ZXing_Barcode_orientation(const ZXing_Barcode* barcode);
@@ -147,6 +146,7 @@ int ZXing_Barcode_lineCount(const ZXing_Barcode* barcode);
 int ZXing_Barcode_sequenceIndex(const ZXing_Barcode* barcode);
 int ZXing_Barcode_sequenceSize(const ZXing_Barcode* barcode);
 char* ZXing_Barcode_sequenceId(const ZXing_Barcode* barcode);
+char* ZXing_Barcode_extra(const ZXing_Barcode* barcode, const char* key); /* key can be NULL */
 
 void ZXing_Barcode_delete(ZXing_Barcode* barcode);
 void ZXing_Barcodes_delete(ZXing_Barcodes* barcodes);

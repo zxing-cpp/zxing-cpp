@@ -107,7 +107,6 @@ internal class Dll
 	[DllImport(DllName)] public static extern IntPtr ZXing_Barcode_bytes(IntPtr barcode, out int len);
 	[DllImport(DllName)] public static extern IntPtr ZXing_Barcode_bytesECI(IntPtr barcode, out int len);
 	[DllImport(DllName)] public static extern IntPtr ZXing_Barcode_text(IntPtr barcode);
-	[DllImport(DllName)] public static extern IntPtr ZXing_Barcode_ecLevel(IntPtr barcode);
 	[DllImport(DllName)] public static extern IntPtr ZXing_Barcode_symbologyIdentifier(IntPtr barcode);
 	[DllImport(DllName)] public static extern Position ZXing_Barcode_position(IntPtr barcode);
 	[DllImport(DllName)] public static extern int ZXing_Barcode_orientation(IntPtr barcode);
@@ -115,6 +114,10 @@ internal class Dll
 	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_Barcode_isInverted(IntPtr barcode);
 	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_Barcode_isMirrored(IntPtr barcode);
 	[DllImport(DllName)] public static extern int ZXing_Barcode_lineCount(IntPtr barcode);
+	[DllImport(DllName)] public static extern int ZXing_Barcode_sequenceIndex(IntPtr barcode);
+	[DllImport(DllName)] public static extern int ZXing_Barcode_sequenceSize(IntPtr barcode);
+	[DllImport(DllName)] public static extern IntPtr ZXing_Barcode_sequenceId(IntPtr barcode);
+	[DllImport(DllName)] public static extern IntPtr ZXing_Barcode_extra(IntPtr barcode, string? key);
 
 	[DllImport(DllName)] public static extern void ZXing_free(IntPtr opts);
 	[DllImport(DllName)] public static extern IntPtr ZXing_LastErrorMsg();
@@ -183,19 +186,25 @@ public readonly struct BarcodeFormat : IEquatable<BarcodeFormat>
 	public static readonly BarcodeFormat None = new BarcodeFormat(0x0000);
 	public static readonly BarcodeFormat AllReadable = new BarcodeFormat(0x722A);
 	public static readonly BarcodeFormat AllCreatable = new BarcodeFormat(0x772A);
-	public static readonly BarcodeFormat AllLinear = new BarcodeFormat(0x6CAA);
-	public static readonly BarcodeFormat AllMatrix = new BarcodeFormat(0x6D8A);
-	public static readonly BarcodeFormat AllGS1 = new BarcodeFormat(0x670A);
+	public static readonly BarcodeFormat AllLinear = new BarcodeFormat(0x6C2A);
+	public static readonly BarcodeFormat AllMatrix = new BarcodeFormat(0x6D2A);
+	public static readonly BarcodeFormat AllGS1 = new BarcodeFormat(0x672A);
+	public static readonly BarcodeFormat AllRetail = new BarcodeFormat(0x522A);
+	public static readonly BarcodeFormat AllIndustrial = new BarcodeFormat(0x492A);
 	public static readonly BarcodeFormat Codabar = new BarcodeFormat(0x2046);
 	public static readonly BarcodeFormat Code39 = new BarcodeFormat(0x2041);
 	public static readonly BarcodeFormat PZN = new BarcodeFormat(0x7041);
 	public static readonly BarcodeFormat Code93 = new BarcodeFormat(0x2047);
 	public static readonly BarcodeFormat Code128 = new BarcodeFormat(0x2043);
 	public static readonly BarcodeFormat ITF = new BarcodeFormat(0x2049);
+	public static readonly BarcodeFormat ITF14 = new BarcodeFormat(0x3449);
 	public static readonly BarcodeFormat DataBar = new BarcodeFormat(0x2065);
 	public static readonly BarcodeFormat DataBarOmni = new BarcodeFormat(0x6F65);
+	public static readonly BarcodeFormat DataBarStk = new BarcodeFormat(0x7365);
+	public static readonly BarcodeFormat DataBarStkOmni = new BarcodeFormat(0x4F65);
 	public static readonly BarcodeFormat DataBarLtd = new BarcodeFormat(0x6C65);
 	public static readonly BarcodeFormat DataBarExp = new BarcodeFormat(0x6565);
+	public static readonly BarcodeFormat DataBarExpStk = new BarcodeFormat(0x4565);
 	public static readonly BarcodeFormat EANUPC = new BarcodeFormat(0x2045);
 	public static readonly BarcodeFormat EAN13 = new BarcodeFormat(0x3145);
 	public static readonly BarcodeFormat EAN8 = new BarcodeFormat(0x3845);
@@ -204,6 +213,7 @@ public readonly struct BarcodeFormat : IEquatable<BarcodeFormat>
 	public static readonly BarcodeFormat ISBN = new BarcodeFormat(0x6945);
 	public static readonly BarcodeFormat UPCA = new BarcodeFormat(0x6145);
 	public static readonly BarcodeFormat UPCE = new BarcodeFormat(0x6545);
+	public static readonly BarcodeFormat OtherBarcode = new BarcodeFormat(0x2058);
 	public static readonly BarcodeFormat DXFilmEdge = new BarcodeFormat(0x7858);
 	public static readonly BarcodeFormat PDF417 = new BarcodeFormat(0x204C);
 	public static readonly BarcodeFormat CompactPDF417 = new BarcodeFormat(0x634C);
@@ -213,6 +223,7 @@ public readonly struct BarcodeFormat : IEquatable<BarcodeFormat>
 	public static readonly BarcodeFormat AztecRune = new BarcodeFormat(0x727A);
 	public static readonly BarcodeFormat QRCode = new BarcodeFormat(0x2051);
 	public static readonly BarcodeFormat QRCodeModel1 = new BarcodeFormat(0x3151);
+	public static readonly BarcodeFormat QRCodeModel2 = new BarcodeFormat(0x3251);
 	public static readonly BarcodeFormat MicroQRCode = new BarcodeFormat(0x6D51);
 	public static readonly BarcodeFormat RMQRCode = new BarcodeFormat(0x7251);
 	public static readonly BarcodeFormat DataMatrix = new BarcodeFormat(0x2064);
@@ -233,11 +244,11 @@ public readonly struct BarcodeFormat : IEquatable<BarcodeFormat>
 
 	/// <summary>Parses a string into a BarcodeFormat.</summary>
 	/// <param name="s">Format name (case-insensitive).</param>
-	/// <exception cref="FormatException">Thrown when the string is not a valid format name.</exception>
+	/// <exception cref="Exception">Thrown when the string is not a valid format name.</exception>
 	public static BarcodeFormat Parse(string s)
 	{
 		if (!TryParse(s, out var fmt))
-			throw new FormatException($"Invalid BarcodeFormat: '{s}'");
+			throw new Exception($"Invalid BarcodeFormat: '{s}'");
 		return fmt;
 	}
 
@@ -654,8 +665,6 @@ public class Barcode : IDisposable
 	public byte[] Bytes => MarshalAsBytes(ZXing_Barcode_bytes, _d);
 	/// <summary>Bytes with Extended Channel Interpretation markers included.</summary>
 	public byte[] BytesECI => MarshalAsBytes(ZXing_Barcode_bytesECI, _d);
-	/// <summary>Error correction level (e.g., "H" for QR codes).</summary>
-	public string ECLevel => MarshalAsString(ZXing_Barcode_ecLevel(_d));
 	/// <summary>ISO/IEC 15424 symbology identifier (e.g., "]Q1" for QR Code).</summary>
 	public string SymbologyIdentifier => MarshalAsString(ZXing_Barcode_symbologyIdentifier(_d));
 	public string ErrorMsg => MarshalAsString(ZXing_Barcode_errorMsg(_d));
@@ -668,6 +677,15 @@ public class Barcode : IDisposable
 	public bool IsInverted => ZXing_Barcode_isInverted(_d);
 	public bool IsMirrored => ZXing_Barcode_isMirrored(_d);
 	public int LineCount => ZXing_Barcode_lineCount(_d);
+	public int SequenceIndex => ZXing_Barcode_sequenceIndex(_d);
+	public int SequenceSize => ZXing_Barcode_sequenceSize(_d);
+	public string SequenceId => MarshalAsString(ZXing_Barcode_sequenceId(_d));
+	/// <summary>
+	/// Additional format-specific metadata as JSON pairs (e.g., '{"EcLevel":"H","Version":5}' for QR Codes).
+	/// </summary>
+	/// <param name="key"></param>
+	/// <returns>JSON string or value of the specified key in the extra metadata.</returns>
+	public string Extra(string? key = null) => MarshalAsString(ZXing_Barcode_extra(_d, key));
 
 	public string ToSVG(WriterOptions? opts = null)
 		=> MarshalAsString(CheckError(ZXing_WriteBarcodeToSVG(_d, opts?._d ?? IntPtr.Zero)));
