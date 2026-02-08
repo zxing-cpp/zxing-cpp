@@ -25,6 +25,8 @@ extern "C" struct zint_symbol;
 
 namespace ZXing {
 
+struct BarcodeData; // forward declaration: workaround for MSVC v143 (VS2022) bug with 'using Data = struct BarcodeData;'
+
 class CreatorOptions;
 class ReaderOptions;
 class WriterOptions;
@@ -49,7 +51,7 @@ namespace BarcodeExtra {
  */
 class Barcode
 {
-	using Data = struct BarcodeData;
+	using Data = BarcodeData;
 
 	std::shared_ptr<Data> d;
 

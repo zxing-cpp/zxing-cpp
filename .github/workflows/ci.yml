@@ -95,6 +95,38 @@ jobs:
         name: ${{matrix.os}}-exp-artifacts
         path: install
 
+  build-windows-vs2022-v143:
+    # Test with Visual Studio 2022 (v143 platform toolset, MSVC 19.29-19.42)
+    # to ensure compatibility with older MSVC versions
+    runs-on: windows-2022
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        submodules: true
+
+    - name: Setup Python 3
+      uses: actions/setup-python@v6
+      with:
+        python-version: '3.x'
+
+    - name: Configure
+      run: >
+        cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_SHARED_LIBS=ON
+        -DZXING_BLACKBOX_TESTS=ON -DZXING_INSTALL_TEST=ON -DZXING_UNIT_TESTS=ON -DZXING_PYTHON_MODULE=ON
+
+    - name: Build
+      run: cmake --build build -j8 --config ${{env.BUILD_TYPE}}
+
+    - name: Install
+      run: |
+        cmake -E make_directory install
+        cmake --install build --config ${{env.BUILD_TYPE}} --prefix ${{github.workspace}}/install
+
+    - uses: actions/upload-artifact@v6
+      with:
+        name: windows-vs2022-v143-artifacts
+        path: install
+
   build-ubuntu-sanitize:
     runs-on: ubuntu-latest
     steps:
