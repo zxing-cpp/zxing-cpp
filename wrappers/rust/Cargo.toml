@@ -9,7 +9,7 @@ repository = "https://github.com/zxing-cpp/zxing-cpp/"
 readme = "README.md"
 keywords = ["zxing", "barcode", "barcode_reader", "ffi"]
 categories = ["api-bindings", "computer-vision"]
-exclude = ["core/**/*Writer*", "core/**/*Encode*"]
+exclude = ["core/**/*Writer*", "core/src/*/*Encoder*", "core/src/ReedSolomonEncoder.*"]
 
 [lib]
 name = "zxingcpp"

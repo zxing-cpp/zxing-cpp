@@ -212,7 +212,6 @@ unsafe extern "C" {
 	pub fn ZXing_ReaderOptions_setTryRotate(opts: *mut ZXing_ReaderOptions, tryRotate: bool);
 	pub fn ZXing_ReaderOptions_setTryInvert(opts: *mut ZXing_ReaderOptions, tryInvert: bool);
 	pub fn ZXing_ReaderOptions_setTryDownscale(opts: *mut ZXing_ReaderOptions, tryDownscale: bool);
-	pub fn ZXing_ReaderOptions_setTryDenoise(opts: *mut ZXing_ReaderOptions, tryDenoise: bool);
 	pub fn ZXing_ReaderOptions_setIsPure(opts: *mut ZXing_ReaderOptions, isPure: bool);
 	pub fn ZXing_ReaderOptions_setValidateOptionalCheckSum(opts: *mut ZXing_ReaderOptions, validateOptionalCheckSum: bool);
 	pub fn ZXing_ReaderOptions_setReturnErrors(opts: *mut ZXing_ReaderOptions, returnErrors: bool);
@@ -230,7 +229,6 @@ unsafe extern "C" {
 	pub fn ZXing_ReaderOptions_getTryRotate(opts: *const ZXing_ReaderOptions) -> bool;
 	pub fn ZXing_ReaderOptions_getTryInvert(opts: *const ZXing_ReaderOptions) -> bool;
 	pub fn ZXing_ReaderOptions_getTryDownscale(opts: *const ZXing_ReaderOptions) -> bool;
-	pub fn ZXing_ReaderOptions_getTryDenoise(opts: *const ZXing_ReaderOptions) -> bool;
 	pub fn ZXing_ReaderOptions_getIsPure(opts: *const ZXing_ReaderOptions) -> bool;
 	pub fn ZXing_ReaderOptions_getValidateOptionalCheckSum(opts: *const ZXing_ReaderOptions) -> bool;
 	pub fn ZXing_ReaderOptions_getReturnErrors(opts: *const ZXing_ReaderOptions) -> bool;

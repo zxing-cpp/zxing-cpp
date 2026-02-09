@@ -7,7 +7,7 @@ fn main() -> miette::Result<()> {
 			.define("BUILD_SHARED_LIBS", "OFF")
 			.define("ZXING_READERS", "ON")
 			.define("ZXING_WRITERS", "ON")
-			.define("ZXING_EXPERIMENTAL_API", "ON")
+			.define("ZXING_EXPERIMENTAL_API", "OFF")
 			.define("ZXING_C_API", "ON")
 			.define("ZXING_USE_BUNDLED_ZINT", "ON")
 			.build();

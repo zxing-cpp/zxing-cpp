@@ -3,9 +3,11 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-use image;
 use std::fs;
 use zxingcpp::*;
+
+#[cfg(feature = "image")]
+use image;
 
 fn main() -> anyhow::Result<()> {
 	let text = std::env::args().nth(1).expect("no input text provided");
@@ -27,6 +29,7 @@ fn main() -> anyhow::Result<()> {
 	if filename.ends_with(".svg") {
 		fs::write(filename, bc.to_svg_with(&write().add_hrt(true))?).expect("Unable to write file");
 	} else {
+		#[cfg(feature = "image")]
 		image::GrayImage::from(&bc.to_image_with(&write().scale(4))?).save(filename)?;
 	}
 
