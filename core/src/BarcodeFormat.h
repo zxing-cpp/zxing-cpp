@@ -188,6 +188,7 @@ public:
 	}
 
 	BarcodeFormats(std::vector<BarcodeFormat>&& formats) : formats_(std::move(formats)) { normalize(); }
+	BarcodeFormats(const std::vector<BarcodeFormat>& formats) : formats_(formats) { normalize(); }
 
 	/// @brief Constructs a collection from a textual representation (e.g. a comma-separated list of format identifiers).
 	explicit BarcodeFormats(std::string_view str);

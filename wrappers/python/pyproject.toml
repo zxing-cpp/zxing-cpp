@@ -1,12 +1,13 @@
 [build-system]
 requires = [
-    "setuptools>=77",
-#    "setuptools-scm>=8",
+    "scikit-build-core >=0.11",
     "wheel",
     "cmake>=3.18",
-    "pybind11[global]",
+    "nanobind >=2.11.0",
+    # Required for nanobind stub generation on Python < 3.11
+    'typing_extensions >=4.12;python_version<"3.11"',
 ]
-build-backend = "setuptools.build_meta"
+build-backend = "scikit_build_core.build"
 
 [project]
 name = "zxing-cpp"
@@ -33,6 +34,22 @@ Homepage = "https://github.com/zxing-cpp/zxing-cpp"
 
 [tool.setuptools]
 include-package-data = false
+
+[tool.scikit-build]
+# Protect the configuration against future changes in scikit-build-core
+minimum-version = "build-system.requires"
+
+# Setuptools-style build caching in a local directory
+build-dir = "build/{wheel_tag}"
+
+# Build stable ABI wheels for CPython 3.12+
+wheel.py-api = "cp312"
+
+# Workaround: Force CMake to run during sdist generation.
+# This triggers the logic in CMakeLists.txt that dereferences symlinks (e.g. core/, zxing.cmake)
+# and copies actual files into the source tree, ensuring the sdist is self-contained and usable
+# on systems without symlink support (Windows) or outside the git repo.
+sdist.cmake = true
 
 # [tool.setuptools_scm]
 # root = "../.."

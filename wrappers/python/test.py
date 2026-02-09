@@ -175,6 +175,61 @@ class TestReadWrite(unittest.TestCase):
 			np.zeros((100, 100, 4), np.uint8)
 		)
 
+	def test_image_buffer_protocol(self):
+		"""Test that Image objects support the buffer protocol"""
+		format = BF.QRCode
+		text = "Buffer protocol test"
+		img = zxingcpp.create_barcode(text, format).to_image()
+
+		# Test memoryview
+		mv = memoryview(img)
+		self.assertEqual(mv.ndim, 2)
+		self.assertEqual(mv.format, 'B')
+		self.assertEqual(mv.readonly, True)
+		self.assertEqual(mv.shape, (img.shape[0], img.shape[1]))
+
+		# Test that we can read the barcode back using memoryview
+		res = zxingcpp.read_barcode(mv, format)
+		self.check_res(res, format, text)
+
+	@unittest.skipIf(not has_numpy, "need numpy for read/write tests")
+	def test_image_buffer_protocol_numpy(self):
+		"""Test that Image objects can be converted to numpy arrays via buffer protocol"""
+		import numpy as np # pyright: ignore
+		format = BF.QRCode
+		text = "Numpy buffer test"
+		img = zxingcpp.create_barcode(text, format).to_image()
+
+		# Convert Image to numpy array via buffer protocol
+		arr = np.array(img, copy=False)
+		self.assertEqual(arr.ndim, 2)
+		self.assertEqual(arr.dtype, np.uint8)
+		self.assertEqual(arr.shape, (img.shape[0], img.shape[1]))
+
+		# Test that we can read the barcode back
+		res = zxingcpp.read_barcode(arr, format)
+		self.check_res(res, format, text)
+
+	def test_imageview_buffer_protocol(self):
+		"""Test that ImageView objects support the buffer protocol"""
+		format = BF.QRCode
+		text = "ImageView buffer test"
+		img = zxingcpp.create_barcode(text, format).to_image()
+
+		# Create ImageView from memoryview
+		mv = memoryview(img)
+		iv = zxingcpp.ImageView(mv, img.shape[1], img.shape[0], zxingcpp.ImageFormat.Lum)
+
+		# Test memoryview of ImageView
+		mv2 = memoryview(iv)
+		self.assertEqual(mv2.ndim, 2)
+		self.assertEqual(mv2.format, 'B')
+		self.assertEqual(mv2.readonly, True)
+
+		# Test that we can read the barcode back using memoryview
+		res = zxingcpp.read_barcode(mv2, format)
+		self.check_res(res, format, text)
+
 
 if __name__ == '__main__':
 	unittest.main()
