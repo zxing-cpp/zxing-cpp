@@ -8,7 +8,7 @@
     <Nullable>enable</Nullable>
 
     <PackageId>ZXingCpp</PackageId>
-    <Version>0.4.0-alpha</Version>
+    <Version>0.5.0</Version>
     <Authors>Axel Waggershauser</Authors>
     <Company>zxing-cpp</Company>
     <Description>

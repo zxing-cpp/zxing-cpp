@@ -11,6 +11,7 @@
 #include <chrono>
 #include <cstring>
 #include <iostream>
+#include <iomanip>
 #include <iterator>
 #include <memory>
 #include <string>
@@ -63,10 +64,15 @@ static void PrintUsage(const char* exePath)
 			  << "    -help      Print usage information\n"
 			  << "    -version   Print version information\n"
 			  << "\n"
-			  << "Supported formats are:\n";
+			  << "Supported formats are (Symbology : Variants):";
 	for (auto f : BarcodeFormats::list(BarcodeFormat::AllReadable)) {
-		std::cout << "    " << ToString(f) << "\n";
+		if (Symbology(f) == f)
+			std::cout << "\n " << std::setw(13) << ToString(f) << " : ";
+		else
+			std::cout << ToString(f) << ", ";
 	}
+	std::cout << "\n\n";
+
 	std::cout << "BarcodeFormats can be lowercase, with or without any of ' -_/', separated by ',' or '|'\n";
 }
 

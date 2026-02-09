@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 project (ZXing VERSION "3.0.0")
+set (ZXING_VERSION_SUFFIX "-rc1")
 set (ZXING_SONAME 4) # see https://github.com/zxing-cpp/zxing-cpp/issues/333
 
 option (ZXING_USE_BUNDLED_ZINT "Use the bundled libzint for barcode creation/writing" ON)
@@ -46,19 +47,13 @@ endif()
 
 set (ZXING_USE_ZINT ${ZXING_WRITERS_NEW}) # see Version.h.in
 
-set (ZXING_PUBLIC_FLAGS
-    $<$<CXX_COMPILER_ID:MSVC>:/Zc:__cplusplus>
-)
-
 set (ZXING_PRIVATE_FLAGS
     -DZXING_INTERNAL
     $<$<BOOL:${ZXING_UNIT_TESTS}>:-DZXING_BUILD_FOR_TEST>
 )
 
 if (WINRT)
-    list (APPEND ZXING_PUBLIC_FLAGS
-        -DWINRT
-    )
+    set (ZXING_PUBLIC_FLAGS -DWINRT )
 endif()
 
 if (MSVC)
@@ -132,6 +127,7 @@ set (COMMON_FILES
     src/WriteBarcode.cpp
     src/ZXingCpp.h
     src/ZXingCpp.cpp
+    src/ZXingQt.h
     src/ZXAlgorithms.h
     src/ZXConfig.h
     src/ZXTestSupport.h
@@ -226,6 +222,7 @@ set (PUBLIC_HEADERS
     src/ReaderOptions.h
     src/WriteBarcode.h
     src/ZXingCpp.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ZXingQt.h
     $<$<BOOL:${ZXING_C_API}>:${CMAKE_CURRENT_SOURCE_DIR}/src/ZXingC.h>
 )
 if (ZXING_READERS)
@@ -524,8 +521,94 @@ endif()
 
 if (ZXING_WRITERS_NEW)
     if (ZXING_USE_BUNDLED_ZINT)
-        aux_source_directory(src/libzint LIBZINT_FILES) # manually re-run cmake after adding a new file/symlink
-        set_source_files_properties(${LIBZINT_FILES} PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
+        set (LIBZINT_FILES
+            src/libzint/stubs.c
+            src/libzint/common.c
+            src/libzint/common.h
+            src/libzint/big5.h
+            src/libzint/eci.c
+            src/libzint/eci.h
+            src/libzint/eci_sb.h
+            src/libzint/filemem.c
+            src/libzint/filemem.h
+            src/libzint/fonts/normal_woff2.h
+            src/libzint/fonts/upcean_woff2.h
+            src/libzint/gb18030.h
+            src/libzint/gb2312.h
+            src/libzint/gbk.h
+            src/libzint/general_field.c
+            src/libzint/general_field.h
+            src/libzint/gs1.c
+            src/libzint/gs1.h
+            src/libzint/gs1_lint.h
+            src/libzint/iso3166.h
+            src/libzint/iso4217.h
+            src/libzint/ksx1001.h
+            src/libzint/large.c
+            src/libzint/large.h
+            src/libzint/library.c
+            src/libzint/output.c
+            src/libzint/output.h
+            src/libzint/raster.c
+            src/libzint/raster_font.h
+            src/libzint/reedsol.c
+            src/libzint/reedsol.h
+            src/libzint/reedsol_logs.h
+            src/libzint/sjis.h
+            src/libzint/svg.c
+            src/libzint/vector.c
+            src/libzint/zfiletypes.h
+            src/libzint/zintconfig.h
+            src/libzint/zint.h
+        )
+        if (ZXING_ENABLE_1D)
+            list(APPEND LIBZINT_FILES
+                src/libzint/2of5inter.c
+                src/libzint/2of5inter_based.c
+                src/libzint/codabar.c
+                src/libzint/code128.c
+                src/libzint/code128.h
+                src/libzint/code.c
+                src/libzint/dxfilmedge.c
+                src/libzint/medical.c
+                src/libzint/rss.c
+                src/libzint/rss.h
+                src/libzint/upcean.c
+            )
+        endif()
+        if (ZXING_ENABLE_AZTEC)
+            list(APPEND LIBZINT_FILES
+                src/libzint/aztec.c
+                src/libzint/aztec.h
+            )
+        endif()
+        if (ZXING_ENABLE_DATAMATRIX)
+            list(APPEND LIBZINT_FILES
+                src/libzint/dmatrix.c
+                src/libzint/dmatrix.h
+            )
+        endif()
+        if (ZXING_ENABLE_MAXICODE)
+            list(APPEND LIBZINT_FILES
+                src/libzint/maxicode.c
+                src/libzint/maxicode.h
+            )
+        endif()
+        if (ZXING_ENABLE_PDF417)
+            list(APPEND LIBZINT_FILES
+                src/libzint/pdf417.c
+                src/libzint/pdf417.h
+                src/libzint/pdf417_tabs.h
+            )
+        endif()
+
+        if (ZXING_ENABLE_QRCODE)
+            list(APPEND LIBZINT_FILES
+                src/libzint/qr.c
+                src/libzint/qr.h
+            )
+        endif()
+        set_source_files_properties(${LIBZINT_FILES} PROPERTIES SKIP_PRECOMPILE_HEADERS ON COMPILE_OPTIONS -DZINT_NO_PNG)
         target_sources(ZXing PRIVATE ${LIBZINT_FILES})
         source_group (Sources\\libzint FILES ${LIBZINT_FILES})
         target_include_directories (ZXing PRIVATE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libzint>")
@@ -550,10 +633,13 @@ if (PROJECT_VERSION)
     set_target_properties(ZXing PROPERTIES SOVERSION ${ZXING_SONAME})
 endif()
 
+# TODO: use FILE_SET HEADERS instead of PUBLIC_HEADER and target_sources, once CMake 3.23+ is required
 set_target_properties(ZXing PROPERTIES PUBLIC_HEADER "${PUBLIC_HEADERS}")
 
 set(PRECOMPILE_HEADERS ${PUBLIC_HEADERS})
-list(REMOVE_ITEM PRECOMPILE_HEADERS "$<$<BOOL:${ZXING_C_API}>:${CMAKE_CURRENT_SOURCE_DIR}/src/ZXingC.h>")
+list(REMOVE_ITEM PRECOMPILE_HEADERS
+    "$<$<BOOL:${ZXING_C_API}>:${CMAKE_CURRENT_SOURCE_DIR}/src/ZXingC.h>"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/ZXingQt.h")
 list(APPEND PRECOMPILE_HEADERS "src/BarcodeData.h" "src/Content.h" "src/Range.h")
 if (NOT ZXING_DISABLE_PCH)
     target_precompile_headers(ZXing PRIVATE ${PRECOMPILE_HEADERS})

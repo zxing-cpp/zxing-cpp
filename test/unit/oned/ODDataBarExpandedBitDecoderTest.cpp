@@ -12,7 +12,7 @@
 
 using namespace ZXing;
 
-static std::string parse(std::string bitStr)
+static std::string parse(std::string_view bitStr)
 {
 	return HRIFromGS1(OneD::DataBar::DecodeExpandedBits(Utility::ParseBitArray(bitStr, '1')));
 }

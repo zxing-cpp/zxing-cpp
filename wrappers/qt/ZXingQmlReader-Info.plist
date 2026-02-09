@@ -3,11 +3,11 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleExecutable</key>
-	<string>ZXingQtCamReader</string>
+	<string>ZXingQmlReader</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.zxing.ZXingQtCamReader</string>
+	<string>org.zxing.ZXingQmlReader</string>
 	<key>CFBundleName</key>
-	<string>ZXingQtCamReader</string>
+	<string>ZXingQmlReader</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

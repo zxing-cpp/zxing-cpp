@@ -136,7 +136,6 @@ ZXing_ContentType ZXing_Barcode_contentType(const ZXing_Barcode* barcode);
 uint8_t* ZXing_Barcode_bytes(const ZXing_Barcode* barcode, int* len);
 uint8_t* ZXing_Barcode_bytesECI(const ZXing_Barcode* barcode, int* len);
 char* ZXing_Barcode_text(const ZXing_Barcode* barcode);
-char* ZXing_Barcode_ecLevel(const ZXing_Barcode* barcode);
 char* ZXing_Barcode_symbologyIdentifier(const ZXing_Barcode* barcode);
 ZXing_Position ZXing_Barcode_position(const ZXing_Barcode* barcode);
 int ZXing_Barcode_orientation(const ZXing_Barcode* barcode);
@@ -147,6 +146,7 @@ int ZXing_Barcode_lineCount(const ZXing_Barcode* barcode);
 int ZXing_Barcode_sequenceIndex(const ZXing_Barcode* barcode);
 int ZXing_Barcode_sequenceSize(const ZXing_Barcode* barcode);
 char* ZXing_Barcode_sequenceId(const ZXing_Barcode* barcode);
+char* ZXing_Barcode_extra(const ZXing_Barcode* barcode, const char* key); /* key can be NULL */
 
 void ZXing_Barcode_delete(ZXing_Barcode* barcode);
 void ZXing_Barcodes_delete(ZXing_Barcodes* barcodes);
@@ -195,6 +195,7 @@ void ZXing_ReaderOptions_setTryDownscale(ZXing_ReaderOptions* opts, bool tryDown
 	void ZXing_ReaderOptions_setTryDenoise(ZXing_ReaderOptions* opts, bool tryDenoise);
 #endif
 void ZXing_ReaderOptions_setIsPure(ZXing_ReaderOptions* opts, bool isPure);
+void ZXing_ReaderOptions_setValidateOptionalCheckSum(ZXing_ReaderOptions* opts, bool validateOptionalCheckSum);
 void ZXing_ReaderOptions_setReturnErrors(ZXing_ReaderOptions* opts, bool returnErrors);
 void ZXing_ReaderOptions_setFormats(ZXing_ReaderOptions* opts, const ZXing_BarcodeFormat* formats, int count);
 void ZXing_ReaderOptions_setBinarizer(ZXing_ReaderOptions* opts, ZXing_Binarizer binarizer);
@@ -211,6 +212,7 @@ bool ZXing_ReaderOptions_getTryDownscale(const ZXing_ReaderOptions* opts);
 	bool ZXing_ReaderOptions_getTryDenoise(const ZXing_ReaderOptions* opts);
 #endif
 bool ZXing_ReaderOptions_getIsPure(const ZXing_ReaderOptions* opts);
+bool ZXing_ReaderOptions_getValidateOptionalCheckSum(const ZXing_ReaderOptions* opts);
 bool ZXing_ReaderOptions_getReturnErrors(const ZXing_ReaderOptions* opts);
 ZXing_BarcodeFormat* ZXing_ReaderOptions_getFormats(const ZXing_ReaderOptions* opts, int* outCount);
 ZXing_Binarizer ZXing_ReaderOptions_getBinarizer(const ZXing_ReaderOptions* opts);

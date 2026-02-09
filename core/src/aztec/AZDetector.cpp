@@ -20,6 +20,7 @@
 
 #include <algorithm>
 #include <bit>
+#include <ranges>
 #include <optional>
 #include <vector>
 
@@ -117,6 +118,15 @@ static std::vector<ConcentricPattern> FindPureFinderPattern(const BitMatrix& ima
 			return {};
 	}	
 
+	// Symbols can have a blank row or column at the edge (in particular, top and left)
+	if (width < height && image.width() >= height) {
+		left = std::max(0, left - (height - width + 1) / 2); // No real net effect if right edge blank
+		width = height;
+	} else if (height < width && image.height() >= width) {
+		top = std::max(0, top - (width - height + 1) / 2); // No real net effect if bottom edge blank
+		height = width;
+	}
+
 	PointF p(left + width / 2, top + height / 2);
 	constexpr auto PATTERN = FixedPattern<7, 7>{1, 1, 1, 1, 1, 1, 1};
 	if (auto pattern = LocateConcentricPattern(image, PATTERN, p, width))
@@ -200,11 +210,11 @@ static std::vector<ConcentricPattern> FindFinderPatterns(const BitMatrix& image,
 
 			// make sure p is not 'inside' an already found pattern area
 			bool found = false;
-			for (auto old = res.rbegin(); old != res.rend(); ++old) {
+			for (auto& old : std::ranges::reverse_view(res)) {
 				// search from back to front, stop once we are out of range due to the y-coordinate
-				if (p.y - old->y > old->size / 2)
+				if (p.y - old.y > old.size / 2)
 					break;
-				if (distance(p, *old) < old->size / 2) {
+				if (distance(p, old) < old.size / 2) {
 					found = true;
 					break;
 				}

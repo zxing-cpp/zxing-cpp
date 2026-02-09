@@ -408,7 +408,7 @@ namespace C40Encoder {
 	}
 
 	static int BacktrackOneCharacter(EncoderContext& context, std::string& buffer, std::string& removed, int lastCharSize,
-									 std::function<int(int, std::string&)> encodeChar)
+									 const std::function<int(int, std::string&)>& encodeChar)
 	{
 		buffer.resize(buffer.size() - lastCharSize);
 		context.setCurrentPos(context.currentPos() - 1);
@@ -481,7 +481,7 @@ namespace C40Encoder {
 		context.setNewEncoding(ASCII_ENCODATION);
 	}
 
-	static void EncodeC40(EncoderContext& context, std::function<int (int, std::string&)> encodeChar, int encodingMode)
+	static void EncodeC40(EncoderContext& context, const std::function<int (int, std::string&)>& encodeChar, int encodingMode)
 	{
 		//step C
 		std::string buffer;

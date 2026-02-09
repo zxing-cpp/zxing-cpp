@@ -41,9 +41,7 @@ struct ReaderOptions::Data
 	bool tryDenoise               : 1 = false;
 #endif
 	bool isPure                   : 1 = false;
-	bool tryCode39ExtendedMode    : 1 = true;
-	bool validateCode39CheckSum   : 1 = false;
-	bool validateITFCheckSum      : 1 = false;
+	bool validateOptionalCheckSum : 1 = false;
 	bool returnErrors             : 1 = false;
 	uint8_t downscaleFactor       : 3 = 3; // values 2, 3, 4
 	EanAddOnSymbol eanAddOnSymbol : 2 = EanAddOnSymbol::Ignore;
@@ -95,9 +93,7 @@ ZX_PROPERTY(uint16_t, downscaleThreshold, setDownscaleThreshold)
 ZX_PROPERTY(uint8_t, downscaleFactor, setDownscaleFactor)
 ZX_PROPERTY(uint8_t, minLineCount, setMinLineCount)
 ZX_PROPERTY(uint8_t, maxNumberOfSymbols, setMaxNumberOfSymbols)
-ZX_PROPERTY(bool, tryCode39ExtendedMode, setTryCode39ExtendedMode)
-ZX_PROPERTY(bool, validateCode39CheckSum, setValidateCode39CheckSum)
-ZX_PROPERTY(bool, validateITFCheckSum, setValidateITFCheckSum)
+ZX_PROPERTY(bool, validateOptionalCheckSum, setValidateOptionalCheckSum)
 ZX_PROPERTY(bool, returnErrors, setReturnErrors)
 ZX_PROPERTY(EanAddOnSymbol, eanAddOnSymbol, setEanAddOnSymbol)
 ZX_PROPERTY(TextMode, textMode, setTextMode)
@@ -117,6 +113,11 @@ ReaderOptions&& ReaderOptions::characterSet(std::string_view v) &&
 }
 
 bool ReaderOptions::hasFormat(const BarcodeFormats& formats) const noexcept
+{
+	return d->formats.empty() || std::any_of(formats.begin(), formats.end(), [this](BarcodeFormat bt) { return bt <= d->formats; });
+}
+
+bool ReaderOptions::hasAnyFormat(const BarcodeFormats& formats) const noexcept
 {
 	return d->formats.empty() || std::any_of(formats.begin(), formats.end(), [this](BarcodeFormat bt) { return bt & d->formats; });
 }
@@ -264,9 +265,9 @@ Barcodes ReadBarcodes(const ImageView& _iv, const ReaderOptions& opts)
 	std::unique_ptr<MultiFormatReader> closedReader;
 #ifdef ZXING_EXPERIMENTAL_API
 	using enum BarcodeFormat;
-	BarcodeFormats formatsBenefittingFromClosing = Aztec | DataMatrix | QRCode | MicroQRCode;
+	BarcodeFormats formatsBenefittingFromClosing = Aztec | DataMatrix | QRCode;
 	ReaderOptions closedOptions = opts;
-	if (opts.tryDenoise() && opts.hasFormat(formatsBenefittingFromClosing) && _iv.height() >= 3) {
+	if (opts.tryDenoise() && opts.hasAnyFormat(formatsBenefittingFromClosing) && _iv.height() >= 3) {
 		closedOptions.formats(opts.formats().empty() ? formatsBenefittingFromClosing : formatsBenefittingFromClosing & opts.formats());
 		closedReader = std::make_unique<MultiFormatReader>(closedOptions);
 	}

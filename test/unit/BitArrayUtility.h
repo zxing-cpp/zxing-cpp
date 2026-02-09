@@ -10,7 +10,7 @@ class BitArray;
 namespace Utility {
 
 	std::string ToString(const BitArray& arr, char one, char zero);
-	std::string ToString(const BitArray& BitArray);
+	std::string ToString(const BitArray& arr);
 	BitArray ParseBitArray(std::string_view str, char one = 'X');
 
 }} // ZXing::Utility

@@ -21,11 +21,6 @@ namespace ZXing {
  * those situations, the author is advised to make sure any thrown Error object is
  * caught before leaking into user/wrapper code, i.e. the functions of the public
  * API should be considered `noexcept` with respect to this class.
- *
- * Looking at the implementation of std::runtime_exception, it might actually be of
- * interest to replace the std::string msg member with a std::runtime_exception base
- * class, thereby reducing sizeof(Error) by 16 bytes. This would be a breaking ABI
- * change and would therefore have to wait for release 3.0. (TODO)
  */
 
 class Error

@@ -21,6 +21,7 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 #include <string>
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -34,6 +35,7 @@ static void PrintUsage(const char* exePath)
 			  << " [-options <creator-options>] [-scale <factor>] [-binary] [-noqz] [-hrt] [-invert] <format> <text> <output>\n"
 			  << "    -options   Comma separated list of format specific options and flags\n"
 			  << "    -scale     module size of generated image / negative numbers mean 'target size in pixels'\n"
+			  << "    -rotate	 Rotate image by given angle (90, 180 or 270)\n"
 //			  << "    -encoding  Encoding used to encode input text\n"
 			  << "    -binary    Interpret <text> as a file name containing binary data\n"
 			  << "    -noqz      Print barcode witout quiet zone\n"
@@ -42,9 +44,14 @@ static void PrintUsage(const char* exePath)
 			  << "    -help      Print usage information\n"
 			  << "    -version   Print version information\n"
 			  << "\n"
-			  << "Supported formats are:\n";
-	for (auto f : BarcodeFormats::list(BarcodeFormat::AllCreatable))
-		std::cout << "    " << ToString(f) << "\n";
+			  << "Supported formats are (Symbology : Variants):";
+	for (auto f : BarcodeFormats::list(BarcodeFormat::AllCreatable)) {
+		if (Symbology(f) == f || f == BarcodeFormat::DXFilmEdge)
+			std::cout << "\n " << std::setw(13) << ToString(f) << " : ";
+		else
+			std::cout << ToString(f) << ", ";
+	}
+	std::cout << "\n\n";
 
 	std::cout << "Format can be lowercase letters, with or without any of ' -_/'.\n"
 			  << "Output format is determined by file name, supported are png, jpg and svg.\n";
@@ -54,6 +61,7 @@ struct CLI
 {
 	BarcodeFormat format = BarcodeFormat::None;
 	int scale = 0;
+	int rotate = 0;
 	std::string input;
 	std::string outPath;
 	std::string options;
@@ -74,6 +82,10 @@ static bool ParseOptions(int argc, char* argv[], CLI& cli)
 			if (++i == argc)
 				return false;
 			cli.scale = std::stoi(argv[i]);
+		} else if (is("-rotate")) {
+			if (++i == argc)
+				return false;
+			cli.rotate = std::stoi(argv[i]);
 		// } else if (is("-encoding")) {
 		// 	if (++i == argc)
 		// 		return false;
@@ -153,7 +165,7 @@ int main(int argc, char* argv[])
 		auto cOpts = CreatorOptions(cli.format, cli.options);
 		auto barcode = cli.inputIsFile ? CreateBarcodeFromBytes(ReadFile(cli.input), cOpts) : CreateBarcodeFromText(cli.input, cOpts);
 
-		auto wOpts = WriterOptions().scale(cli.scale).addQuietZones(cli.addQZs).addHRT(cli.addHRT).invert(cli.invert).rotate(0);
+		auto wOpts = WriterOptions().scale(cli.scale).addQuietZones(cli.addQZs).addHRT(cli.addHRT).invert(cli.invert).rotate(cli.rotate);
 		auto bitmap = WriteBarcodeToImage(barcode, wOpts);
 
 		if (cli.verbose) {
@@ -205,11 +217,11 @@ int main(int argc, char* argv[])
 		}
 
 		if (!success) {
-			std::cerr << "Failed to write image: " << cli.outPath << std::endl;
+			std::cerr << "Failed to write image: " << cli.outPath << "\n";
 			return -1;
 		}
 	} catch (const std::exception& e) {
-		std::cerr << e.what() << std::endl;
+		std::cerr << e.what() << "\n";
 		return -1;
 	}
 

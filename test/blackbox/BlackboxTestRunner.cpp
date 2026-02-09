@@ -72,6 +72,8 @@ namespace {
 // Helper for `compareResult()` - map `key` to Barcode property, converting value to std::string
 static std::string getBarcodeValue(const Barcode& barcode, const std::string& key)
 {
+	if (key == "format")
+		return ToString(barcode.format());
 	if (key == "contentType")
 		return ToString(barcode.contentType());
 	if (key == "ecLevel")
@@ -125,15 +127,15 @@ static bool compareResult(const Barcode& barcode, const std::string& expected, s
 			ret = false;
 			actualValue += " ***Mismatch***";
 		}
-		actual += key + '=' + actualValue + '\n';
+		actual += StrCat(key, '=', actualValue, '\n');
 	}
 	return ret;
 }
 
-static std::string checkResult(const fs::path& imgPath, std::string_view expectedFormat, const Barcode& barcode)
+static std::string checkResult(const fs::path& imgPath, BarcodeFormat expectedFormat, const Barcode& barcode)
 {
-	if (auto format = ToString(barcode.format()); !IsEqualIgnoreCaseAnd(expectedFormat, format, " /-"))
-		return std::format("Format mismatch: expected '{}' but got '{}'", expectedFormat, format);
+	if (expectedFormat != barcode.format() && expectedFormat != barcode.symbology()) // allow matching either format or symbology
+		return std::format("Format mismatch: expected '{}' but got '{}'", ToString(expectedFormat), ToString(barcode.format()));
 
 	auto readFile = [imgPath](const char* ending) {
 		std::ifstream ifs(fs::path(imgPath).replace_extension(ending), std::ios::binary);
@@ -223,7 +225,7 @@ static std::vector<fs::path> getImagesInDirectory(const fs::path& directory)
 	return result;
 }
 
-static void doRunTests(const fs::path& directory, std::string_view format, int totalTests, const std::vector<TestCase>& tests,
+static void doRunTests(const fs::path& directory, BarcodeFormat format, int totalTests, const std::vector<TestCase>& tests,
 					   ReaderOptions opts)
 {
 	auto imgPaths = getImagesInDirectory(directory);
@@ -249,7 +251,7 @@ static void doRunTests(const fs::path& directory, std::string_view format, int t
 			opts.isPure(tc.name == "pure");
 			if (opts.isPure())
 				opts.binarizer(Binarizer::FixedThreshold);
-#if 1
+#ifndef PRINT_DEBUG
 #ifdef __cpp_lib_execution
 			std::vector<Barcode> barcodes(imgPaths.size());
 			std::transform(std::execution::par, imgPaths.begin(), imgPaths.end(), barcodes.begin(), [&](const fs::path& imgPath) {
@@ -290,19 +292,19 @@ static void doRunTests(const fs::path& directory, std::string_view format, int t
 	}
 }
 
-static Barcode readMultiple(const std::vector<fs::path>& imgPaths, std::string_view format)
+static Barcode readMultiple(const std::vector<fs::path>& imgPaths, BarcodeFormat format)
 {
 	Barcodes allBarcodes;
 	for (const auto& imgPath : imgPaths) {
 		auto barcodes = ReadBarcodes(ImageLoader::load(imgPath),
-									 ReaderOptions().formats(BarcodeFormatFromString(format)).tryDownscale(false));
+									 ReaderOptions().formats(format).tryDownscale(false));
 		allBarcodes.insert(allBarcodes.end(), barcodes.begin(), barcodes.end());
 	}
 
 	return MergeStructuredAppendSequence(allBarcodes);
 }
 
-static void doRunStructuredAppendTest(const fs::path& directory, std::string_view format, int totalTests,
+static void doRunStructuredAppendTest(const fs::path& directory, BarcodeFormat format, int totalTests,
 									  const std::vector<TestCase>& tests)
 {
 	auto imgPaths = getImagesInDirectory(directory);
@@ -350,15 +352,15 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 				Contains(includedTests, stem.substr(0, stem.size() - 2));
 	};
 
-	auto runTests = [&](std::string_view directory, std::string_view format, int total,
+	auto runTests = [&](std::string_view directory, BarcodeFormat format, int total,
 						const std::vector<TestCase>& tests, const ReaderOptions& opts = ReaderOptions()) {
-		if (hasTest(directory))
+		if (hasTest(directory) && format & (BarcodeFormat::AllReadable | BarcodeFormat::None))
 			doRunTests(testPathPrefix / directory, format, total, tests, opts);
 	};
 
-	auto runStructuredAppendTest = [&](std::string_view directory, std::string_view format, int total,
+	auto runStructuredAppendTest = [&](std::string_view directory, BarcodeFormat format, int total,
 									   const std::vector<TestCase>& tests) {
-		if (hasTest(directory))
+		if (hasTest(directory) && format & (BarcodeFormat::AllReadable | BarcodeFormat::None))
 			doRunStructuredAppendTest(testPathPrefix / directory, format, total, tests);
 	};
 
@@ -366,12 +368,13 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 	{
 		auto startTime = std::chrono::steady_clock::now();
 
+		using enum BarcodeFormat;
 		// clang-format off
-#if ZXING_ENABLE_AZTEC
+
 		// Expected failures:
 		// abc-inverted.png (fast) - fast does not try inverted
 		// az-thick.png (pure)
-		runTests("aztec-1", "Aztec", 31, {
+		runTests("aztec-1", Aztec, 31, {
 			{ 30, 31, 0   },
 			{ 30, 31, 90  },
 			{ 30, 31, 180 },
@@ -379,15 +382,14 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 29, 0, pure },
 		});
 
-		runTests("aztec-2", "Aztec", 22, {
+		runTests("aztec-2", Aztec, 22, {
 			{ 21, 21, 0   },
 			{ 21, 21, 90  },
 			{ 21, 21, 180 },
 			{ 21, 21, 270 },
 		});
-#endif
-#if ZXING_ENABLE_DATAMATRIX
-		runTests("datamatrix-1", "DataMatrix", 29, {
+
+		runTests("datamatrix-1", DataMatrix, 29, {
 			{ 29, 29, 0   },
 			{  0, 27, 90  },
 			{  0, 27, 180 },
@@ -395,228 +397,225 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 28, 0, pure },
 		});
 
-		runTests("datamatrix-2", "DataMatrix", 13, {
+		runTests("datamatrix-2", DataMatrix, 13, {
 			{ 13, 13, 0   },
 			{  0, 13, 90  },
 			{  0, 13, 180 },
 			{  0, 13, 270 },
 		});
 
-		runTests("datamatrix-3", "DataMatrix", 21, {
+		runTests("datamatrix-3", DataMatrix, 21, {
 			{ 20, 21, 0   },
 			{  0, 21, 90  },
 			{  0, 21, 180 },
 			{  0, 21, 270 },
 		});
 
-		runTests("datamatrix-4", "DataMatrix", 21, {
+		runTests("datamatrix-4", DataMatrix, 21, {
 			{ 21, 21, 0   },
 			{  0, 21, 90  },
 			{  0, 21, 180 },
 			{  0, 21, 270 },
 			{ 19, 0, pure },
 		});
-#endif
-#if ZXING_ENABLE_1D
-		runTests("dxfilmedge-1", "DXFilmEdge", 3, {
+
+		runTests("dxfilmedge-1", DXFilmEdge, 3, {
 			{ 1, 3, 0 },
 			{ 0, 3, 180 },
 		});
 
-		runTests("codabar-1", "Codabar", 11, {
+		runTests("codabar-1", Codabar, 11, {
 			{ 11, 11, 0   },
 			{ 11, 11, 180 },
 		});
 
-		runTests("codabar-2", "Codabar", 4, {
+		runTests("codabar-2", Codabar, 4, {
 			{ 2, 3, 0   },
 			{ 2, 3, 180 },
 		});
 
-		runTests("code39-1", "Code39", 4, {
-			{ 4, 4, 0   },
-			{ 4, 4, 180 },
-		});
-
-		runTests("code39-2", "Code39", 3, {
-			{ 3, 3, 0   },
-			{ 3, 3, 180 },
-		});
-
-		runTests("code39-3", "Code39", 12, {
-			{ 12, 12, 0   },
-			{ 12, 12, 180 },
-		});
-
-		runTests("code93-1", "Code93", 3, {
-			{ 3, 3, 0   },
-			{ 3, 3, 180 },
-		});
-
-		runTests("code128-1", "Code128", 6, {
+		runTests("code39-1", Code39, 6, {
 			{ 6, 6, 0   },
 			{ 6, 6, 180 },
 		});
 
-		runTests("code128-2", "Code128", 22, {
+		runTests("code39-2", Code39Ext, 3, {
+			{ 3, 3, 0   },
+			{ 3, 3, 180 },
+		});
+
+		runTests("code39-3", Code39, 12, {
+			{ 12, 12, 0   },
+			{ 12, 12, 180 },
+		});
+
+		runTests("code93-1", Code93, 3, {
+			{ 3, 3, 0   },
+			{ 3, 3, 180 },
+		});
+
+		runTests("code128-1", Code128, 6, {
+			{ 6, 6, 0   },
+			{ 6, 6, 180 },
+		});
+
+		runTests("code128-2", Code128, 22, {
 			{ 19, 22, 0   },
 			{ 20, 22, 180 },
 		});
 
-		runTests("code128-3", "Code128", 2, {
+		runTests("code128-3", Code128, 2, {
 			{ 2, 2, 0   },
 			{ 2, 2, 180 },
 		});
 
-		runTests("ean8-1", "EAN-8", 9, {
+		runTests("ean8-1", EAN8, 9, {
 			{ 9, 9, 0   },
 			{ 9, 9, 180 },
 			{ 8, 0, pure },
 		});
 
-		runTests("ean13-1", "EAN-13", 32, {
+		runTests("ean13-1", EAN13, 32, {
 			{ 26, 30, 0   },
 			{ 25, 30, 180 },
 		});
 
-		runTests("ean13-2", "EAN-13", 24, {
+		runTests("ean13-2", EAN13, 24, {
 			{ 7, 13, 0   },
 			{ 7, 13, 180 },
 		});
 
-		runTests("ean13-3", "EAN-13", 21, {
+		runTests("ean13-3", EAN13, 21, {
 			{ 20, 21, 0   },
 			{ 21, 21, 180 },
 		});
 
-		runTests("ean13-4", "EAN-13", 22, {
+		runTests("ean13-4", EAN13, 22, {
 			{ 6, 13, 0   },
 			{ 7, 13, 180 },
 		});
 
-		runTests("ean13-extension-1", "EAN-13", 5, {
+		runTests("ean13-extension-1", EAN13, 5, {
 			{ 3, 5, 0 },
 			{ 3, 5, 180 },
 		}, ReaderOptions().eanAddOnSymbol(EanAddOnSymbol::Require));
 
-		runTests("itf-1", "ITF", 14, {
+		runTests("itf-1", ITF, 14, {
 			{ 13, 14, 0   },
 			{ 13, 14, 180 },
 		});
 
-		runTests("itf-2", "ITF", 6, {
+		runTests("itf-2", ITF, 6, {
 			{ 6, 6, 0   },
 			{ 6, 6, 180 },
 		});
 
-		runTests("upca-1", "UPC-A", 12, {
+		runTests("upca-1", UPCA, 12, {
 			{ 10, 12, 0   },
 			{ 11, 12, 180 },
-		}, ReaderOptions().formats(BarcodeFormat::UPCA));
+		}, ReaderOptions().formats(UPCA));
 
-		runTests("upca-2", "UPC-A", 36, {
+		runTests("upca-2", UPCA, 36, {
 			{ 17, 22, 0   },
 			{ 17, 22, 180 },
-		}, ReaderOptions().formats(BarcodeFormat::UPCA));
+		}, ReaderOptions().formats(UPCA));
 
-		runTests("upca-3", "UPC-A", 21, {
+		runTests("upca-3", UPCA, 21, {
 			{ 7, 11, 0   },
 			{ 8, 11, 180 },
-		}, ReaderOptions().formats(BarcodeFormat::UPCA));
+		}, ReaderOptions().formats(UPCA));
 
-		runTests("upca-4", "UPC-A", 19, {
+		runTests("upca-4", UPCA, 19, {
 			{ 8, 12, 0, 1, 0 },
 			{ 9, 12, 0, 1, 180 },
-		}, ReaderOptions().formats(BarcodeFormat::UPCA));
+		}, ReaderOptions().formats(UPCA));
 
-		runTests("upca-5", "UPC-A", 32, {
+		runTests("upca-5", UPCA, 32, {
 			{ 18, 20, 0   },
 			{ 18, 20, 180 },
-		}, ReaderOptions().formats(BarcodeFormat::UPCA));
+		}, ReaderOptions().formats(UPCA));
 
-		runTests("upca-extension-1", "UPC-A", 6, {
+		runTests("upca-extension-1", UPCA, 6, {
 			{ 4, 4, 0 },
 			{ 3, 4, 180 },
-		}, ReaderOptions().eanAddOnSymbol(EanAddOnSymbol::Require).formats(BarcodeFormat::UPCA));
+		}, ReaderOptions().eanAddOnSymbol(EanAddOnSymbol::Require).formats(UPCA));
 
-		runTests("upce-1", "UPC-E", 3, {
+		runTests("upce-1", UPCE, 3, {
 			{ 3, 3, 0   },
 			{ 3, 3, 180 },
 			{ 3, 0, pure },
 		});
 
-		runTests("upce-2", "UPC-E", 28, {
+		runTests("upce-2", UPCE, 28, {
 			{ 18, 22, 0, 1, 0   },
 			{ 19, 22, 1, 1, 180 },
 		});
 
-		runTests("upce-3", "UPC-E", 11, {
+		runTests("upce-3", UPCE, 11, {
 			{ 5, 7, 0   },
 			{ 6, 7, 180 },
 		});
 
-		runTests("rss14-1", "DataBar", 6, {
-			{ 6, 6, 0   },
-			{ 6, 6, 180 },
-		});
-
-		runTests("rss14-2", "DataBar", 14, {
-			{ 10, 11, 0   },
+		runTests("rss14-1", DataBarOmni, 13, {
+			{ 11, 11, 0   },
 			{ 10, 11, 180 },
 		});
 
-		runTests("rssexpanded-1", "DataBarExpanded", 34, {
-			{ 34, 34, 0   },
-			{ 34, 34, 180 },
-			{ 34, 0, pure },
+		runTests("rss14-2", DataBarStk, 7, {
+			{ 5, 6, 0   },
+			{ 6, 6, 180 },
 		});
 
-		runTests("rssexpanded-2", "DataBarExpanded", 15, {
+		runTests("rssexpanded-1", DataBarExp, 37, {
+			{ 37, 37, 0   },
+			{ 37, 37, 180 },
+			{ 37, 0, pure },
+		});
+
+		runTests("rssexpanded-2", DataBarExp, 15, {
 			{ 13, 15, 0   },
 			{ 13, 15, 180 },
 		});
 
-		runTests("rssexpanded-3", "DataBarExpanded", 118, {
+		runTests("rssexpanded-3", DataBarExp, 118, {
 			{ 118, 118, 0   },
 			{ 118, 118, 180 },
 			{ 118, 0, pure },
 		});
 
-		runTests("rssexpandedstacked-1", "DataBarExpanded", 65, {
-			{ 55, 65, 0   },
-			{ 55, 65, 180 },
-			{ 60, 0, pure },
+		runTests("rssexpandedstacked-1", DataBarExpStk, 62, {
+			{ 52, 62, 0   },
+			{ 52, 62, 180 },
+			{ 57, 0, pure },
 		});
 
-		runTests("rssexpandedstacked-2", "DataBarExpanded", 2, {
+		runTests("rssexpandedstacked-2", DataBarExpStk, 2, {
 			{ 2, 2, 0   },
 			{ 2, 2, 180 },
 		});
 
-		runTests("databarltd-1", "DataBarLimited", 2, {
+		runTests("databarltd-1", DataBarLtd, 2, {
 			{ 2, 2, 0   },
 			{ 2, 2, 180 },
 			{ 2, 0, pure },
 		});
-#endif
-#if ZXING_ENABLE_MAXICODE
-		runTests("maxicode-1", "MaxiCode", 9, {
+
+		runTests("maxicode-1", MaxiCode, 9, {
 			{ 9, 9, 0 },
 		});
 
-		runTests("maxicode-2", "MaxiCode", 4, {
+		runTests("maxicode-2", MaxiCode, 4, {
 			{ 0, 0, 0 },
 		});
-#endif
-#if ZXING_ENABLE_QRCODE
-		runTests("qrcode-1", "QRCode", 16, {
+
+		runTests("qrcode-1", QRCode, 16, {
 			{ 16, 16, 0   },
 			{ 16, 16, 90  },
 			{ 16, 16, 180 },
 			{ 16, 16, 270 },
 		});
 
-		runTests("qrcode-2", "QRCode", 53, {
+		runTests("qrcode-2", QRCode, 53, {
 			{ 47, 50, 0   },
 			{ 47, 50, 90  },
 			{ 47, 50, 180 },
@@ -624,21 +623,21 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 23, 1, pure }, // the misread is the 'outer' symbol in 16.png
 		});
 
-		runTests("qrcode-3", "QRCode", 28, {
+		runTests("qrcode-3", QRCode, 28, {
 			{ 28, 28, 0   },
 			{ 28, 28, 90  },
 			{ 28, 28, 180 },
 			{ 28, 28, 270 },
 		});
 
-		runTests("qrcode-4", "QRCode", 41, {
+		runTests("qrcode-4", QRCode, 41, {
 			{ 31, 31, 0   },
 			{ 31, 31, 90  },
 			{ 31, 31, 180 },
 			{ 31, 31, 270 },
 		});
 
-		runTests("qrcode-5", "QRCode", 16, {
+		runTests("qrcode-5", QRCode, 16, {
 			{ 16, 16, 0   },
 			{ 16, 16, 90  },
 			{ 16, 16, 180 },
@@ -646,18 +645,18 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 4, 0, pure },
 		});
 
-		runTests("qrcode-6", "QRCode", 15, {
+		runTests("qrcode-6", QRCode, 15, {
 			{ 15, 15, 0   },
 			{ 15, 15, 90  },
 			{ 15, 15, 180 },
 			{ 15, 15, 270 },
 		});
 
-		runStructuredAppendTest("qrcode-7", "QRCode", 1, {
+		runStructuredAppendTest("qrcode-7", QRCode, 1, {
 			{ 1, 1, 0   },
 		});
 
-		runTests("microqrcode-1", "MicroQRCode", 16, {
+		runTests("microqrcode-1", MicroQRCode, 16, {
 			{ 15, 15, 0   },
 			{ 14, 14, 90  },
 			{ 14, 14, 180 }, // ughs: 1 result is platform/compiler dependent (e.g. -march=core2 vs. haswell)
@@ -665,16 +664,15 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 9, 0, pure },
 		});
 
-		runTests("rmqrcode-1", "rMQRCode", 3, {
+		runTests("rmqrcode-1", RMQRCode, 3, {
 			{  2,  3, 0   },
 			{  2,  3, 90  },
 			{  2,  3, 180 },
 			{  2,  3, 270 },
 			{  2,  2, pure },
 		});
-#endif
-#if ZXING_ENABLE_PDF417
-		runTests("pdf417-1", "PDF417", 17, {
+
+		runTests("pdf417-1", PDF417, 17, {
 			{ 16, 17, 0   },
 			{  1, 17, 90  },
 			{ 16, 17, 180 },
@@ -682,14 +680,14 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 16, 0, pure },
 		});
 
-		runTests("pdf417-2", "PDF417", 25, {
+		runTests("pdf417-2", PDF417, 25, {
 			{ 25, 25, 0   },
 			{  0, 25, 90   },
 			{ 25, 25, 180 },
 			{  0, 25, 270   },
 		});
 
-		runTests("pdf417-3", "PDF417", 16, {
+		runTests("pdf417-3", PDF417, 16, {
 			{ 16, 16, 0   },
 			{  0, 16, 90  },
 			{ 16, 16, 180 },
@@ -697,11 +695,11 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 7, 0, pure },
 		});
 
-		runStructuredAppendTest("pdf417-4", "PDF417", 3, {
+		runStructuredAppendTest("pdf417-4", PDF417, 3, {
 			{ 3, 3, 0   },
 		});
-#endif
-		runTests("falsepositives-1", "None", 27, {
+
+		runTests("falsepositives-1", None, 27, {
 			{ 0, 0, 0, 0, 0   },
 			{ 0, 0, 0, 0, 90  },
 			{ 0, 0, 0, 0, 180 },
@@ -709,7 +707,7 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 0, 0, pure },
 		});
 
-		runTests("falsepositives-2", "None", 25, {
+		runTests("falsepositives-2", None, 25, {
 			{ 0, 0, 0, 0, 0   },
 			{ 0, 0, 0, 0, 90  },
 			{ 0, 0, 0, 0, 180 },

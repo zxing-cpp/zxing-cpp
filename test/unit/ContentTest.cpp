@@ -12,14 +12,12 @@
 using namespace ZXing;
 using namespace testing;
 
-#if __cplusplus > 201703L
 namespace std {
 bool operator==(const string& lhs, const char8_t* rhs)
 {
 	return lhs == reinterpret_cast<const char*>(rhs);
 }
 } // namespace std
-#endif
 
 TEST(ContentTest, Base)
 {

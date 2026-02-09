@@ -11,7 +11,6 @@ public class UnitTest1
 	{
 		Assert.Equal(BarcodeFormat.QRCode, BarcodeFormat.Parse("qrcode"));
 		Assert.Equal(BarcodeFormat.AllLinear, BarcodeFormat.Parse("AllLinear"));
-		Assert.Equal(BarcodeFormat.None, BarcodeFormat.Parse(""));
 	}
 
 	[Fact]
@@ -56,6 +55,11 @@ public class UnitTest1
 		Assert.False(res[0].IsInverted);
 		Assert.Equal(ErrorType.None, res[0].ErrorType);
 		Assert.Equal("", res[0].ErrorMsg);
+		Assert.Equal(-1, res[0].SequenceIndex);
+		Assert.Equal(-1, res[0].SequenceSize);
+		Assert.Equal("", res[0].SequenceId);
+		Assert.Equal("", res[0].Extra());
+		Assert.Equal("", res[0].Extra("invalid_key"));
 	}
 
 	[Fact]
@@ -73,7 +77,7 @@ public class UnitTest1
 		Assert.Equal(0, res.Orientation);
 		Assert.False(res.IsMirrored);
 		Assert.False(res.IsInverted);
-		Assert.Equal(new PointI() { X = 1, Y = 1 }, res.Position.TopLeft);
+		Assert.Equal(new PointI() { X = 0, Y = 0 }, res.Position.TopLeft);
 		Assert.Equal(ErrorType.None, res.ErrorType);
 		Assert.Equal("", res.ErrorMsg);
 	}

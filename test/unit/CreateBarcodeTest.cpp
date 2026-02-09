@@ -114,11 +114,11 @@ TEST(CreateBarcodeTest, ZintASCII)
 	check(__LINE__, "1234", Code93, "]G0", "1234", "31 32 33 34", false, "]G0\\0000261234", "5D 47 30 31 32 33 34",
 		  "1234", "Text", "0x0 72x0 72x39 0x39"); // Check digits removed
 
-	check(__LINE__, "1234", DataBar, "]e0", "0100000000012348", "30 31 30 30 30 30 30 30 30 30 30 31 32 33 34 38",
+	check(__LINE__, "1234", DataBarOmni, "]e0", "0100000000012348", "30 31 30 30 30 30 30 30 30 30 30 31 32 33 34 38",
 		  false, "]e0\\0000260100000000012348", "5D 65 30 30 31 30 30 30 30 30 30 30 30 30 31 32 33 34 38", "(01)00000000012348",
 		  "GS1", "1x0 96x0 96x32 1x32");
 
-	check(__LINE__, "1234", {DataBar, "stacked"}, "]e0", "0100000000012348",
+	check(__LINE__, "1234", DataBarStk, "]e0", "0100000000012348",
 		  "30 31 30 30 30 30 30 30 30 30 30 31 32 33 34 38", false, "]e0\\0000260100000000012348",
 		  "5D 65 30 30 31 30 30 30 30 30 30 30 30 30 31 32 33 34 38", "(01)00000000012348", "GS1", "1x0 50x0 50x68 1x68");
 
@@ -131,7 +131,7 @@ TEST(CreateBarcodeTest, ZintASCII)
 		  "5D 65 30 30 31 31 32 33 34 35 36 37 38 39 30 31 32 33 31 32 30 31 32 39 30 31 32 33 1D 39 31 31 32 33 34",
 		  "(01)12345678901231(20)12(90)123(91)1234", "GS1", "2x0 246x0 246x33 2x33");
 
-	check(__LINE__, "(01)12345678901231(20)12(90)123(91)1234", {DataBarExp, "stacked"}, "]e0",
+	check(__LINE__, "(01)12345678901231(20)12(90)123(91)1234", DataBarExpStk, "]e0",
 		  "0112345678901231201290123\x1D"
 		  "911234",
 		  "30 31 31 32 33 34 35 36 37 38 39 30 31 32 33 31 32 30 31 32 39 30 31 32 33 1D 39 31 31 32 33 34", false,
@@ -341,7 +341,7 @@ TEST(CreateBarcodeTest, ZintBinary)
 TEST(CreateBarcodeTest, CreatorOptions)
 {
 	Barcode bc;
-
+#if ZXING_ENABLE_PDF417
 	bc = CreateBarcodeFromText("12345", {PDF417});
 	EXPECT_EQ(bc.symbol().height(), 18);
 
@@ -350,27 +350,34 @@ TEST(CreateBarcodeTest, CreatorOptions)
 
 	bc = CreateBarcodeFromText("12345", {PDF417, "columns=1"});
 	EXPECT_EQ(bc.symbol().height(), 36);
+#endif // ZXING_ENABLE_PDF417
 
-	bc = CreateBarcodeFromText("(21)123456789", {DataBarExp, "stacked,columns=1"});
+#if ZXING_ENABLE_1D
+	bc = CreateBarcodeFromText("(21)123456789", {DataBarExpStk, "columns=1"});
 	EXPECT_GT(bc.symbol().height(), bc.symbol().width());
+#endif // ZXING_ENABLE_1D
 
+#if ZXING_ENABLE_DATAMATRIX
 	bc = CreateBarcodeFromText("12345", {DataMatrix, "readerInit"});
 	EXPECT_TRUE(bc.readerInit());
 
 	bc = CreateBarcodeFromText("12345abcdefghijklmnopqr", {DataMatrix, "forceSquare"});
 	EXPECT_EQ(bc.symbol().height(), bc.symbol().width());
+#endif // ZXING_ENABLE_DATAMATRIX
 
+#if ZXING_ENABLE_QRCODE
 	bc = CreateBarcodeFromText("12345", {QRCode, "version=5"});
 	EXPECT_EQ(bc.symbol().height(), 37);
+#endif // ZXING_ENABLE_QRCODE
 
-#ifdef ZXING_READERS
+#if defined(ZXING_READERS) && ZXING_ENABLE_QRCODE
 	bc = CreateBarcodeFromText("12345", {QRCode, "dataMask=0"});
 	bc = ReadBarcode(bc.symbol(), ReaderOptions().isPure(true).binarizer(Binarizer::BoolCast));
 	EXPECT_EQ(bc.extra("dataMask"), "0");
 #endif // ZXING_READERS
 }
 
-#if defined(ZXING_READERS) && defined(ZXING_ENABLE_1D)
+#if defined(ZXING_READERS) && ZXING_ENABLE_1D
 TEST(CreateBarcodeTest, RandomDataBar)
 {
 	auto randomTest = [](BarcodeFormat format) {

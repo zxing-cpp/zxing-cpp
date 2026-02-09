@@ -5,8 +5,8 @@
 
 #include "oned/ODCode39Reader.h"
 
-#include "ReaderOptions.h"
 #include "Barcode.h"
+#include "ReaderOptions.h"
 
 #include "gtest/gtest.h"
 
@@ -48,6 +48,10 @@ TEST(ODCode39ReaderTest, SymbologyIdentifier)
 		auto result = parse(row);
 		EXPECT_EQ(result.symbologyIdentifier(), "]A4");
 		EXPECT_EQ(result.text(), "a");
+
+		result = parse(row, ReaderOptions().formats(BarcodeFormat::Code39Std));
+		EXPECT_EQ(result.symbologyIdentifier(), "]A0");
+		EXPECT_EQ(result.text(), "+A");
 	}
 	{
 		// Extended "a" with checksum
@@ -55,5 +59,9 @@ TEST(ODCode39ReaderTest, SymbologyIdentifier)
 		auto result = parse(row);
 		EXPECT_EQ(result.symbologyIdentifier(), "]A5");
 		EXPECT_EQ(result.text(), "a8");
+
+		result = parse(row, ReaderOptions().formats(BarcodeFormat::Code39Std));
+		EXPECT_EQ(result.symbologyIdentifier(), "]A1");
+		EXPECT_EQ(result.text(), "+A8");
 	}
 }

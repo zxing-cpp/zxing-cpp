@@ -367,13 +367,16 @@ BarcodeData DataBarExpandedReader::decodePattern(int rowNumber, PatternView& vie
 
 	RemovePairs(allPairs, pairs);
 
+	bool isStacked =
+		std::any_of(pairs.begin() + 1, pairs.end(), [center = pairs.front().center()](const Pair& p) { return p.xStart < center; });
+
 	// TODO: EstimatePosition misses part of the symbol in the stacked case where the last row contains less pairs than
 	// the first
 	// Symbology identifier: ISO/IEC 24724:2011 Section 9 and GS1 General Specifications 5.1.3 Figure 5.1.3-2
 	return {.content = Content(ByteArray(txt), {'e', '0', 0, AIFlag::GS1}),
 			.error = Error{},
 			.position = EstimatePosition(pairs.front(), pairs.back()),
-			.format = BarcodeFormat::DataBarExp,
+			.format = isStacked ? BarcodeFormat::DataBarExpStk : BarcodeFormat::DataBarExp,
 			.lineCount = EstimateLineCount(pairs.front(), pairs.back())};
 }
 

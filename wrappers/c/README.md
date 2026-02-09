@@ -4,7 +4,7 @@ This is about the C-API of zxing-cpp. If you have any comments or feedback, plea
 
 ## Installation
 
-To enable the C-API, the library needs to be configured with `cmake -DZXING_C_API=ON`.
+The C-API is enabled by default but can be removed (`cmake -DZXING_C_API=OFF`).
 
 Probably the easiest way to play with the C-API is to just modify the [ZXingCTest.c](https://github.com/zxing-cpp/zxing-cpp/blob/master/wrappers/c/ZXingCTest.c) file.
 
@@ -25,7 +25,8 @@ int main(int argc, char** argv)
 
 	ZXing_ReaderOptions* opts = ZXing_ReaderOptions_new();
 	/* set ReaderOptions properties, if required, e.g. */
-	ZXing_ReaderOptions_setFormats(ZXing_BarcodeFormat_QRCode | ZXing_BarcodeFormat_EAN13);
+	ZXing_BarcodeFormat formats[] = {ZXing_BarcodeFormat_QRCode, ZXing_BarcodeFormat_EAN13};
+	ZXing_ReaderOptions_setFormats(opts, formats, 2);
 
 	ZXing_Barcodes* barcodes = ZXing_ReadBarcodes(iv, opts);
 

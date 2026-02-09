@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>ZXingQml5Reader.qml</file>
         <file>ZXingQml6Reader.qml</file>
     </qresource>
 </RCC>

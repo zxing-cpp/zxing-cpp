@@ -4,14 +4,13 @@
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "CreateBarcode.h"
-#include "WriteBarcode.h"
-#include "Version.h"
+#include "ZXingCpp.h"
 
 #include <vector>
 
 using namespace ZXing;
 using namespace std::literals;
+using enum BarcodeFormat;
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
@@ -23,42 +22,27 @@ void savePng(ImageView iv, BarcodeFormat format)
 
 int main()
 {
-	std::string text = "http://www.google.com/";
-	for (auto format : {
-#ifdef ZXING_ENABLE_AZTEC
-		BarcodeFormat::Aztec,
-#endif
-#ifdef ZXING_ENABLE_DATAMATRIX
-		BarcodeFormat::DataMatrix,
-#endif
-#ifdef ZXING_ENABLE_PDF417
-		BarcodeFormat::PDF417,
-#endif
-#ifdef ZXING_ENABLE_QRCODE
-		BarcodeFormat::QRCode,
-#endif
-	})
-	{
-		savePng(CreateBarcodeFromText(text, format).symbol(), format);
-	}
+	std::string text = "zxing-cpp";
+	for (auto format : BarcodeFormats::list(AllMatrix))
+		if (format & AllCreatable && format != AztecRune)
+			savePng(CreateBarcodeFromText(text, format).symbol(), format);
 
-#ifdef ZXING_ENABLE_1D
 	text = "012345678901234567890123456789";
 	using FormatSpecs = std::vector<std::pair<BarcodeFormat, size_t>>;
 	for (const auto& [format, length] : FormatSpecs({
-//		{BarcodeFormat::Codabar, 0},
-		{BarcodeFormat::Code39, 0},
-		{BarcodeFormat::Code93, 0},
-		{BarcodeFormat::Code128, 0},
-		{BarcodeFormat::EAN8, 7},
-		{BarcodeFormat::EAN13, 12},
-		{BarcodeFormat::ITF, 0},
-		{BarcodeFormat::UPCA, 11},
-		{BarcodeFormat::UPCE, 7}
+		// {Codabar, 0}, // needs to start with A, B, C or D
+		{Code39, 0},
+		{Code93, 0},
+		{Code128, 0},
+		{EAN8, 7},
+		{EAN13, 12},
+		{ITF, 0},
+		{UPCA, 11},
+		{UPCE, 7}
 	}))
 	{
 		auto input = length > 0 ? text.substr(0, length) : text;
-		savePng(WriteBarcodeToImage(CreateBarcodeFromText(input, format)), format);
+		if (format & AllCreatable)
+			savePng(WriteBarcodeToImage(CreateBarcodeFromText(input, format)), format);
 	}
-#endif
 }

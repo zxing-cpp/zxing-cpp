@@ -45,15 +45,15 @@ class ImageView(
 
 @OptIn(ExperimentalForeignApi::class)
 enum class ImageFormat(internal val cValue: ZXing_ImageFormat) {
-	None(ZXing_ImageFormat_None),
-	Lum(ZXing_ImageFormat_Lum),
-	LumA(ZXing_ImageFormat_LumA),
-	RGB(ZXing_ImageFormat_RGB),
-	BGR(ZXing_ImageFormat_BGR),
-	RGBA(ZXing_ImageFormat_RGBA),
-	ARGB(ZXing_ImageFormat_ARGB),
-	BGRA(ZXing_ImageFormat_BGRA),
-	ABGR(ZXing_ImageFormat_ABGR)
+	None(ZXing_ImageFormat.ZXing_ImageFormat_None),
+	Lum(ZXing_ImageFormat.ZXing_ImageFormat_Lum),
+	LumA(ZXing_ImageFormat.ZXing_ImageFormat_LumA),
+	RGB(ZXing_ImageFormat.ZXing_ImageFormat_RGB),
+	BGR(ZXing_ImageFormat.ZXing_ImageFormat_BGR),
+	RGBA(ZXing_ImageFormat.ZXing_ImageFormat_RGBA),
+	ARGB(ZXing_ImageFormat.ZXing_ImageFormat_ARGB),
+	BGRA(ZXing_ImageFormat.ZXing_ImageFormat_BGRA),
+	ABGR(ZXing_ImageFormat.ZXing_ImageFormat_ABGR)
 }
 
 @OptIn(ExperimentalForeignApi::class)

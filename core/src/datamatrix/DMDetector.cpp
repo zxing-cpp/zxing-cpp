@@ -813,7 +813,7 @@ static DetectorResult Scan(EdgeTracer& startTracer, std::array<DMRegressionLine,
 		int dimT, dimR;
 		double fracT, fracR;
 		auto splitDouble = [](double d, int* i, double* f) {
-			*i = std::isnormal(d) ? static_cast<int>(d + 0.5) : 0;
+			*i = std::isnormal(d) ? narrow_cast<int>(std::lround(d)) : 0;
 			*f = std::isnormal(d) ? std::abs(d - *i) : INFINITY;
 		};
 		splitDouble(lineT.modules(tl, tr), &dimT, &fracT);

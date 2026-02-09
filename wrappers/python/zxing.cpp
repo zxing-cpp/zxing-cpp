@@ -61,14 +61,15 @@ std::string ToString(nb::dlpack::dtype dt)
 	return res;
 }
 
-auto read_barcodes_impl(nb::object _image, const BarcodeFormats& formats, bool try_rotate, bool try_downscale, TextMode text_mode,
-						Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol, bool return_errors,
+auto read_barcodes_impl(nb::object _image, const BarcodeFormats& formats, bool try_rotate, bool try_downscale, bool try_invert,
+						TextMode text_mode, Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol, bool return_errors,
 						uint8_t max_number_of_symbols = 0xff)
 {
 	const auto opts = ReaderOptions()
 		.formats(formats)
 		.tryRotate(try_rotate)
 		.tryDownscale(try_downscale)
+		.tryInvert(try_invert)
 		.textMode(text_mode)
 		.binarizer(binarizer)
 		.isPure(is_pure)
@@ -204,18 +205,18 @@ auto read_barcodes_impl(nb::object _image, const BarcodeFormats& formats, bool t
 }
 
 std::optional<Barcode> read_barcode(nb::object _image, BarcodeFormats formats, bool try_rotate, bool try_downscale,
-									TextMode text_mode, Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol,
-									bool return_errors)
+									bool try_invert, TextMode text_mode, Binarizer binarizer, bool is_pure,
+									EanAddOnSymbol ean_add_on_symbol, bool return_errors)
 {
-	auto res = read_barcodes_impl(_image, formats, try_rotate, try_downscale, text_mode, binarizer, is_pure, ean_add_on_symbol,
-								  return_errors, 1);
+	auto res = read_barcodes_impl(_image, formats, try_rotate, try_downscale, try_invert, text_mode, binarizer, is_pure,
+								  ean_add_on_symbol, return_errors, 1);
 	return res.empty() ? std::nullopt : std::optional(res.front());
 }
 
-Barcodes read_barcodes(nb::object _image, BarcodeFormats formats, bool try_rotate, bool try_downscale, TextMode text_mode,
-					   Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol, bool return_errors)
+Barcodes read_barcodes(nb::object _image, BarcodeFormats formats, bool try_rotate, bool try_downscale, bool try_invert,
+					   TextMode text_mode, Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol, bool return_errors)
 {
-	return read_barcodes_impl(_image, formats, try_rotate, try_downscale, text_mode, binarizer, is_pure, ean_add_on_symbol,
+	return read_barcodes_impl(_image, formats, try_rotate, try_downscale, try_invert, text_mode, binarizer, is_pure, ean_add_on_symbol,
 							  return_errors);
 }
 
@@ -508,11 +509,19 @@ NB_MODULE(zxingcpp, m)
 		":param str: string representing a list of barcodes formats\n"
 		":return: corresponding barcode formats\n"
 		":rtype: zxingcpp.BarcodeFormats");
+	m.def("barcode_formats_list", &BarcodeFormats::list,
+		nb::arg("filter") = BarcodeFormats{},
+		"Returns a list of available/supported barcode formats, optionally filtered by the provided format(s).\n\n"
+		":type filter: zxingcpp.BarcodeFormats\n"
+		":param filter: the BarcodeFormat(s) to filter by\n"
+		":return: list of available/supported barcode formats (optionally filtered)\n"
+		":rtype: list[zxingcpp.BarcodeFormat]");
 	m.def("read_barcode", &read_barcode,
 		nb::arg("image"),
 		nb::arg("formats") = BarcodeFormats{},
 		nb::arg("try_rotate") = true,
 		nb::arg("try_downscale") = true,
+		nb::arg("try_invert") = true,
 		nb::arg("text_mode") = TextMode::HRI,
 		nb::arg("binarizer") = Binarizer::LocalAverage,
 		nb::arg("is_pure") = false,
@@ -534,6 +543,8 @@ NB_MODULE(zxingcpp, m)
 		":type try_downscale: bool\n"
 		":param try_downscale: if ``True`` (the default), decoder also scans downscaled versions of the input; \n"
 		"  if ``False``, it will only search in the resolution provided.\n"
+		":type try_invert: bool\n"
+		":param try_invert: if ``True`` (the default), decoder also tries inverted (light on dark) barcodes.\n"
 		":type text_mode: zxing.TextMode\n"
 		":param text_mode: specifies the TextMode that governs how the raw bytes content is transcoded to text.\n"
 		"  Defaults to :py:attr:`zxing.TextMode.HRI`."
@@ -557,6 +568,7 @@ NB_MODULE(zxingcpp, m)
 		nb::arg("formats") = BarcodeFormats{},
 		nb::arg("try_rotate") = true,
 		nb::arg("try_downscale") = true,
+		nb::arg("try_invert") = true,
 		nb::arg("text_mode") = TextMode::HRI,
 		nb::arg("binarizer") = Binarizer::LocalAverage,
 		nb::arg("is_pure") = false,
@@ -578,6 +590,8 @@ NB_MODULE(zxingcpp, m)
 		":type try_downscale: bool\n"
 		":param try_downscale: if ``True`` (the default), decoder also scans downscaled versions of the input; \n"
 		"  if ``False``, it will only search in the resolution provided.\n"
+		":type try_invert: bool\n"
+		":param try_invert: if ``True`` (the default), decoder also tries inverted (light on dark) barcodes.\n"
 		":type text_mode: zxing.TextMode\n"
 		":param text_mode: specifies the TextMode that governs how the raw bytes content is transcoded to text.\n"
 		"  Defaults to :py:attr:`zxing.TextMode.HRI`."

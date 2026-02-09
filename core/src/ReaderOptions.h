@@ -82,12 +82,6 @@ public:
 	ReaderOptions(ReaderOptions&&) noexcept;
 	ReaderOptions& operator=(ReaderOptions&&) noexcept;
 
-	// Silence deprecated-declarations warnings, only happening here for deprecated inline functions and only with GCC
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
-
 #define ZX_PROPERTY(TYPE, NAME, SETTER, ...) \
 	TYPE NAME() const noexcept; \
 	__VA_ARGS__ ReaderOptions& NAME(TYPE v) &; \
@@ -141,14 +135,8 @@ public:
 	/// The maximum number of symbols (barcodes) to detect / look for in the image with ReadBarcodes
 	ZX_PROPERTY(uint8_t, maxNumberOfSymbols, setMaxNumberOfSymbols)
 
-	/// Enable the heuristic to detect and decode "full ASCII"/extended Code39 symbols
-	ZX_PROPERTY(bool, tryCode39ExtendedMode, setTryCode39ExtendedMode)
-
-	/// Deprecated / does nothing. The Code39 symbol has a valid checksum iff symbologyIdentifier()[2] is an odd digit
-	ZX_PROPERTY(bool, validateCode39CheckSum, setValidateCode39CheckSum, [[deprecated]])
-
-	/// Deprecated / does nothing. The ITF symbol has a valid checksum iff symbologyIdentifier()[2] == '1'.
-	ZX_PROPERTY(bool, validateITFCheckSum, setValidateITFCheckSum, [[deprecated]])
+	/// Validate optional chechsums where applicable (e.g. Code39, ITF)
+	ZX_PROPERTY(bool, validateOptionalCheckSum, setValidateOptionalCheckSum)
 
 	/// If true, return the barcodes with errors as well (e.g. checksum errors, see @Barcode::error())
 	ZX_PROPERTY(bool, returnErrors, setReturnErrors)
@@ -168,12 +156,42 @@ public:
 
 #undef ZX_PROPERTY
 
+	// Silence deprecated-declarations warnings, only happening here for deprecated inline functions and only with GCC
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
+#define ZX_DEPRECATED_PROPERTY(TYPE, NAME, SETTER, GET_IMPL, SET_IMPL) \
+	[[deprecated]] inline TYPE NAME() const noexcept { return GET_IMPL; } \
+	[[deprecated]] ReaderOptions& NAME(TYPE v) & { SET_IMPL; return *this; } \
+	[[deprecated]] ReaderOptions&& NAME(TYPE v) && { SET_IMPL; return std::move(*this); } \
+	[[deprecated]] inline ReaderOptions& SETTER(TYPE v) & { return NAME(v); } \
+	[[deprecated]] inline ReaderOptions&& SETTER(TYPE v) && { return std::move(*this).NAME(v); }
+
+	/// Deprecated / does nothing. See BarcodeFormat::Code39Ext and ::Code39Std to select full ASCII or standard Code39 mode.
+	ZX_DEPRECATED_PROPERTY(bool, tryCode39ExtendedMode, setTryCode39ExtendedMode, true, (void)v)
+
+	/// Deprecated (use validateOptionalCheckSum). The Code39 symbol has a valid checksum iff symbologyIdentifier()[2] is an odd digit
+	ZX_DEPRECATED_PROPERTY(bool, validateCode39CheckSum, setValidateCode39CheckSum, validateOptionalCheckSum(),
+						   validateOptionalCheckSum(v))
+
+	/// Deprecated (use validateOptionalCheckSum). The ITF symbol has a valid checksum iff symbologyIdentifier()[2] == '1'.
+	ZX_DEPRECATED_PROPERTY(bool, validateITFCheckSum, setValidateITFCheckSum, validateOptionalCheckSum(), validateOptionalCheckSum(v))
+
+#undef ZX_DEPRECATED_PROPERTY
+
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
 #endif
 
-	/// Check if a specific format is enabled in the formats set
+#ifdef ZXING_INTERNAL
+	/// Check if a specific format is explicitly enabled in the formats set
 	bool hasFormat(const BarcodeFormats& formats) const noexcept;
+
+	/// Check if any format is explicitly or implicitly enabled in the formats set
+	bool hasAnyFormat(const BarcodeFormats& formats) const noexcept;
+#endif
 };
 
 } // ZXing

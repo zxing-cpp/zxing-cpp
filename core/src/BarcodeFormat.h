@@ -9,54 +9,64 @@
 
 #include <stdint.h>
 
-// FLAGS[0]: l == linear, s == stacked, m == matrix
+// FLAGS[0]: l == linear, m == matrix
 // FLAGS[1]: r == readable
 // FLAGS[2]: w == writable (MultiformatWriter))
-// FLAGS[3]: g == GS1
+// FLAGS[3]: G == GS1
+// FLAGS[4]: R == Retail, I == Industrial, O == Other
 
 // clang-format off
 //    NAME,            SYM, VAR, FLAGS, ZINT, ENABLED,                 HRI
 #define ZX_BCF_LIST(X) \
-	X(None,              0,   0,  "    ",   0, 1,                       "None") \
-	X(All,              '*', '*', "    ",   0, 1,                       "All") \
-	X(AllReadable,      '*', 'r', "    ",   0, 1,                       "All Readable") \
-	X(AllCreatable,     '*', 'w', "    ",   0, 1,                       "All Creatable") \
-	X(AllLinear,        '*', 'l', "    ",   0, 1,                       "All Linear") \
-	X(AllStacked,       '*', 's', "    ",   0, 1,                       "All Stacked") \
-	X(AllMatrix,        '*', 'm', "    ",   0, 1,					    "All Matrix") \
-	X(AllGS1,           '*', 'g', "    ",   0, 1,                       "All GS1") \
-	X(Codabar,          'F', ' ', "lrw ",  18, ZXING_ENABLE_1D,         "Codabar") \
-	X(Code39,           'A', ' ', "lrw ",   8, ZXING_ENABLE_1D,         "Code 39") \
-	X(PZN,              'A', 'p', "lr  ",   8, ZXING_ENABLE_1D,         "Pharmazentralnummer") \
-	X(Code93,           'G', ' ', "lrw ",  25, ZXING_ENABLE_1D,         "Code 93") \
-	X(Code128,          'C', ' ', "lrwg",  20, ZXING_ENABLE_1D,         "Code 128") \
-	X(ITF,              'I', ' ', "lrw ",   3, ZXING_ENABLE_1D,         "ITF") \
-	X(DataBar,          'e', ' ', "lr  ",  29, ZXING_ENABLE_1D,         "DataBar") \
-	X(DataBarOmD,       'e', 'o', "lr  ",  29, ZXING_ENABLE_1D,         "DataBar Omnidirectional") \
-	X(DataBarLtd,       'e', 'l', "lr  ",  30, ZXING_ENABLE_1D,         "DataBar Limited") \
-	X(DataBarExp,       'e', 'e', "lr g",  31, ZXING_ENABLE_1D,         "DataBar Expanded") \
-	X(EANUPC,           'E', ' ', "lr  ",  15, ZXING_ENABLE_1D,         "EAN/UPC") \
-	X(EAN13,            'E', '1', "lrw ",  15, ZXING_ENABLE_1D,         "EAN-13") \
-	X(EAN8,             'E', '8', "lrw ",  10, ZXING_ENABLE_1D,         "EAN-8") \
-	X(EAN5,             'E', '5', "l   ",  12, ZXING_ENABLE_1D,         "EAN-5") \
-	X(EAN2,             'E', '2', "l   ",  11, ZXING_ENABLE_1D,         "EAN-2") \
-	X(ISBN,             'E', 'i', "lr  ",  69, ZXING_ENABLE_1D,         "ISBN") \
-	X(UPCA,             'E', 'a', "lrw ",  34, ZXING_ENABLE_1D,         "UPC-A") \
-	X(UPCE,             'E', 'e', "lrw ",  37, ZXING_ENABLE_1D,         "UPC-E") \
-	X(DXFilmEdge,       'X', 'x', "lr  ", 147, ZXING_ENABLE_1D,         "DX Film Edge") \
-	X(PDF417,           'L', ' ', "srw ",  55, ZXING_ENABLE_PDF417,     "PDF417") \
-	X(CompactPDF417,    'L', 'c', "sr  ",  56, ZXING_ENABLE_PDF417,     "Compact PDF417") \
-	X(MicroPDF417,      'L', 'm', "s   ",  84, ZXING_ENABLE_PDF417,     "MicroPDF417") \
-	X(Aztec,            'z', ' ', "mrwg",  92, ZXING_ENABLE_AZTEC,      "Aztec") \
-	X(AztecCode,        'z', 'c', "mrwg",  92, ZXING_ENABLE_AZTEC,      "Aztec Code") \
-	X(AztecRune,        'z', 'r', "mr  ", 128, ZXING_ENABLE_AZTEC,      "Aztec Rune") \
-	X(QRCode,           'Q', ' ', "mrwg",  58, ZXING_ENABLE_QRCODE,     "QR Code") \
-	X(QRCodeModel1,     'Q', '1', "mr  ",   0, ZXING_ENABLE_QRCODE,     "QR Code Model 1") \
-	X(QRCodeModel2,     'Q', '2', "mr  ",  58, ZXING_ENABLE_QRCODE,     "QR Code Model 2") \
-	X(MicroQRCode,      'Q', 'm', "mr  ",  97, ZXING_ENABLE_QRCODE,     "Micro QR Code") \
-	X(RMQRCode,         'Q', 'r', "mr g", 145, ZXING_ENABLE_QRCODE,     "rMQR Code") \
-	X(DataMatrix,       'd', ' ', "mrwg",  71, ZXING_ENABLE_DATAMATRIX, "Data Matrix") \
-	X(MaxiCode,         'U', ' ', "mr  ",  57, ZXING_ENABLE_MAXICODE,   "MaxiCode") \
+	X(None,              0,   0,  "     ",   0, 1,                       "None") \
+	X(All,              '*', '*', "     ",   0, 1,                       "All") \
+	X(AllReadable,      '*', 'r', "     ",   0, 1,                       "All Readable") \
+	X(AllCreatable,     '*', 'w', "     ",   0, 1,                       "All Creatable") \
+	X(AllLinear,        '*', 'l', "     ",   0, 1,                       "All Linear") \
+	X(AllMatrix,        '*', 'm', "     ",   0, 1,                       "All Matrix") \
+	X(AllGS1,           '*', 'G', "     ",   0, 1,                       "All GS1") \
+	X(AllRetail,        '*', 'R', "     ",   0, 1,                       "All Retail") \
+	X(AllIndustrial,    '*', 'I', "     ",   0, 1,                       "All Industrial") \
+	X(Codabar,          'F', ' ', "lrw  ",  18, ZXING_ENABLE_1D,         "Codabar") \
+	X(Code39,           'A', ' ', "lrw I",   8, ZXING_ENABLE_1D,         "Code 39") \
+	X(Code39Std,        'A', 's', "lrw I",   8, ZXING_ENABLE_1D,         "Code 39 Standard") \
+	X(Code39Ext,        'A', 'e', "lr  I",   9, ZXING_ENABLE_1D,         "Code 39 Extended") \
+	X(Code32,           'A', '2', "lr  I", 129, ZXING_ENABLE_1D,         "Code 32") \
+	X(PZN,              'A', 'p', "lr  I",  52, ZXING_ENABLE_1D,         "Pharmazentralnummer") \
+	X(Code93,           'G', ' ', "lrw I",  25, ZXING_ENABLE_1D,         "Code 93") \
+	X(Code128,          'C', ' ', "lrwGI",  20, ZXING_ENABLE_1D,         "Code 128") \
+	X(ITF,              'I', ' ', "lrw I",   3, ZXING_ENABLE_1D,         "ITF") \
+	X(ITF14,            'I', '4', "lr  I",  89, ZXING_ENABLE_1D,         "ITF-14") \
+	X(DataBar,          'e', ' ', "lr GR",  29, ZXING_ENABLE_1D,         "DataBar") \
+	X(DataBarOmni,      'e', 'o', "lr GR",  29, ZXING_ENABLE_1D,         "DataBar Omni") \
+	X(DataBarStk,       'e', 's', "lr GR",  79, ZXING_ENABLE_1D,         "DataBar Stacked") \
+	X(DataBarStkOmni,   'e', 'O', "lr GR",  80, ZXING_ENABLE_1D,         "DataBar Stacked Omni") \
+	X(DataBarLtd,       'e', 'l', "lr GR",  30, ZXING_ENABLE_1D,         "DataBar Limited") \
+	X(DataBarExp,       'e', 'e', "lr GR",  31, ZXING_ENABLE_1D,         "DataBar Expanded") \
+	X(DataBarExpStk,    'e', 'E', "lr GR",  81, ZXING_ENABLE_1D,         "DataBar Expanded Stacked") \
+	X(EANUPC,           'E', ' ', "lr  R",  15, ZXING_ENABLE_1D,         "EAN/UPC") \
+	X(EAN13,            'E', '1', "lrw R",  15, ZXING_ENABLE_1D,         "EAN-13") \
+	X(EAN8,             'E', '8', "lrw R",  10, ZXING_ENABLE_1D,         "EAN-8") \
+	X(EAN5,             'E', '5', "l   R",  12, ZXING_ENABLE_1D,         "EAN-5") \
+	X(EAN2,             'E', '2', "l   R",  11, ZXING_ENABLE_1D,         "EAN-2") \
+	X(ISBN,             'E', 'i', "lr  R",  69, ZXING_ENABLE_1D,         "ISBN") \
+	X(UPCA,             'E', 'a', "lrw R",  34, ZXING_ENABLE_1D,         "UPC-A") \
+	X(UPCE,             'E', 'e', "lrw R",  37, ZXING_ENABLE_1D,         "UPC-E") \
+	X(OtherBarcode,     'X', ' ', " r   ",   0, ZXING_ENABLE_1D,         "Other barcode") /* see ISO/IEC 15424:2025 */ \
+	X(DXFilmEdge,       'X', 'x', "lr   ", 147, ZXING_ENABLE_1D,         "DX Film Edge") \
+	X(PDF417,           'L', ' ', "mrw  ",  55, ZXING_ENABLE_PDF417,     "PDF417") \
+	X(CompactPDF417,    'L', 'c', "mr   ",  56, ZXING_ENABLE_PDF417,     "Compact PDF417") \
+	X(MicroPDF417,      'L', 'm', "m    ",  84, ZXING_ENABLE_PDF417,     "MicroPDF417") \
+	X(Aztec,            'z', ' ', "mrwG ",  92, ZXING_ENABLE_AZTEC,      "Aztec") \
+	X(AztecCode,        'z', 'c', "mrwG ",  92, ZXING_ENABLE_AZTEC,      "Aztec Code") \
+	X(AztecRune,        'z', 'r', "mr   ", 128, ZXING_ENABLE_AZTEC,      "Aztec Rune") \
+	X(QRCode,           'Q', ' ', "mrwG ",  58, ZXING_ENABLE_QRCODE,     "QR Code") \
+	X(QRCodeModel1,     'Q', '1', "mr   ",   0, ZXING_ENABLE_QRCODE,     "QR Code Model 1") \
+	X(QRCodeModel2,     'Q', '2', "mr   ",  58, ZXING_ENABLE_QRCODE,     "QR Code Model 2") \
+	X(MicroQRCode,      'Q', 'm', "mr   ",  97, ZXING_ENABLE_QRCODE,     "Micro QR Code") \
+	X(RMQRCode,         'Q', 'r', "mr G ", 145, ZXING_ENABLE_QRCODE,     "rMQR Code") \
+	X(DataMatrix,       'd', ' ', "mrwG ",  71, ZXING_ENABLE_DATAMATRIX, "Data Matrix") \
+	X(MaxiCode,         'U', ' ', "mr   ",  57, ZXING_ENABLE_MAXICODE,   "MaxiCode") \
 	/* Add new formats here */
 // clang-format on
 
@@ -108,6 +118,9 @@ BarcodeFormat Symbology(BarcodeFormat format);
 
 /// @brief Returns the human-readable name of the given barcode format.
 std::string_view Name(BarcodeFormat format);
+
+/// Test if left hand side (e == element) is 'inside' right hand side (s == set) (e.g. MicroQRCode <= QRCode)
+bool operator<=(BarcodeFormat e, BarcodeFormat s);
 
 /// Test if the two BarcodeFormats have a non-empty intersection (e.g. AllMatrix & QRCode)
 bool operator&(BarcodeFormat a, BarcodeFormat b);
@@ -221,6 +234,11 @@ public:
 	}
 };
 
+inline bool operator<=(BarcodeFormat lhs, const BarcodeFormats& rhs)
+{
+	return std::any_of(rhs.begin(), rhs.end(), [lhs](BarcodeFormat bf) { return lhs <= bf; });
+}
+
 inline bool operator&(BarcodeFormat lhs, const BarcodeFormats& rhs)
 {
 	return std::any_of(rhs.begin(), rhs.end(), [lhs](BarcodeFormat bf) { return lhs & bf; });
@@ -240,80 +258,3 @@ std::string ToString(const BarcodeFormats& formats);
 } // namespace ZXing
 
 #endif // __cplusplus
-
-#if 0
-/*
-* Copyright 2016 Nu-book Inc.
-* Copyright 2016 ZXing authors
-*/
-// SPDX-License-Identifier: Apache-2.0
-
-#pragma once
-
-#include "Flags.h"
-
-#include <string>
-#include <string_view>
-
-namespace ZXing {
-
-/**
-* Enumerates barcode formats known to this package.
-*/
-enum class BarcodeFormat
-{
-	// The values are an implementation detail. The c++ use-case (ZXing::Flags) could have been designed such that it
-	// would not have been necessary to explicitly set the values to single bit constants. This has been done to ease
-	// the interoperability with C-like interfaces, the python and the Qt wrapper.
-	None            = 0,         ///< Used as a return value if no valid barcode has been detected
-	Aztec           = (1 << 0),  ///< Aztec
-	Codabar         = (1 << 1),  ///< Codabar
-	Code39          = (1 << 2),  ///< Code39
-	Code93          = (1 << 3),  ///< Code93
-	Code128         = (1 << 4),  ///< Code128
-	DataBar         = (1 << 5),  ///< GS1 DataBar, formerly known as RSS 14
-	DataBarExpanded = (1 << 6),  ///< GS1 DataBar Expanded, formerly known as RSS EXPANDED
-	DataMatrix      = (1 << 7),  ///< DataMatrix
-	EAN8            = (1 << 8),  ///< EAN-8
-	EAN13           = (1 << 9),  ///< EAN-13
-	ITF             = (1 << 10), ///< ITF (Interleaved Two of Five)
-	MaxiCode        = (1 << 11), ///< MaxiCode
-	PDF417          = (1 << 12), ///< PDF417
-	QRCode          = (1 << 13), ///< QR Code
-	UPCA            = (1 << 14), ///< UPC-A
-	UPCE            = (1 << 15), ///< UPC-E
-	MicroQRCode     = (1 << 16), ///< Micro QR Code
-	RMQRCode        = (1 << 17), ///< Rectangular Micro QR Code
-	DXFilmEdge      = (1 << 18), ///< DX Film Edge Barcode
-	DataBarLimited  = (1 << 19), ///< GS1 DataBar Limited
-
-	LinearCodes = Codabar | Code39 | Code93 | Code128 | EAN8 | EAN13 | ITF | DataBar | DataBarExpanded | DataBarLimited
-				  | DXFilmEdge | UPCA | UPCE,
-	MatrixCodes = Aztec | DataMatrix | MaxiCode | PDF417 | QRCode | MicroQRCode | RMQRCode,
-	Any         = LinearCodes | MatrixCodes,
-
-	_max = DataBarLimited, ///> implementation detail, don't use
-};
-
-ZX_DECLARE_FLAGS(BarcodeFormats, BarcodeFormat)
-
-std::string ToString(BarcodeFormat format);
-std::string ToString(BarcodeFormats formats);
-
-/**
- * @brief Parse a string into a BarcodeFormat. '-' and '_' are optional.
- * @return None if str can not be parsed as a valid enum value
- */
-BarcodeFormat BarcodeFormatFromString(std::string_view str);
-
-/**
- * @brief Parse a string into a set of BarcodeFormats.
- * Separators can be (any combination of) '|', ',' or ' '.
- * Underscores are optional and input can be lower case.
- * e.g. "EAN-8 qrcode, Itf" would be parsed into [EAN8, QRCode, ITF].
- * @throws std::invalid_parameter if the string can not be fully parsed.
- */
-BarcodeFormats BarcodeFormatsFromString(std::string_view str);
-
-} // ZXing
-#endif // 0

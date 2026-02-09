@@ -11,6 +11,7 @@
 #include "QRErrorCorrectionLevel.h"
 #include "QRVersion.h"
 
+#include <bit>
 #include <stdexcept>
 #include <string>
 

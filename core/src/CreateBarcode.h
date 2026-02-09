@@ -67,10 +67,9 @@ public:
 	ZX_RO_PROPERTY(std::string, eci);     // most 2D symbologies: specify ECI designator to use
 	ZX_RO_PROPERTY(bool, gs1);
 	ZX_RO_PROPERTY(bool, readerInit);     // most 2D symbologies: set the "reader init" flag
-	ZX_RO_PROPERTY(bool, stacked);        // DataBar/DataBarExpanded: generates a stacked version
 	ZX_RO_PROPERTY(bool, forceSquare);    // DataMatrix: only consider square symbol versions
-	ZX_RO_PROPERTY(int, columns);         // specify number of columns (e.g. for DataBarExpanded, PDF417)
-	ZX_RO_PROPERTY(int, rows);            // specify number of rows (e.g. for DataBarExpanded, PDF417)
+	ZX_RO_PROPERTY(int, columns);         // specify number of columns (e.g. for DataBarExpStk, PDF417)
+	ZX_RO_PROPERTY(int, rows);            // specify number of rows (e.g. for DataBarExpStk, PDF417)
 	ZX_RO_PROPERTY(int, version);         // most 2D symbologies: specify the version/size of the symbol
 	ZX_RO_PROPERTY(int, dataMask);        // QRCode/MicroQRCode: specify dataMask to use
 
@@ -96,9 +95,11 @@ Barcode CreateBarcodeFromText(std::string_view contents, const CreatorOptions& o
  */
 Barcode CreateBarcodeFromBytes(const void* data, int size, const CreatorOptions& options);
 
-#if __cplusplus > 201703L
+#if defined(__cpp_lib_char8_t)
 Barcode CreateBarcodeFromText(std::u8string_view contents, const CreatorOptions& options);
+#endif
 
+#if defined(__cpp_lib_ranges)
 template <typename R>
 requires std::ranges::contiguous_range<R> && std::ranges::sized_range<R> && (sizeof(std::ranges::range_value_t<R>) == 1)
 Barcode CreateBarcodeFromBytes(const R& contents, const CreatorOptions& options)

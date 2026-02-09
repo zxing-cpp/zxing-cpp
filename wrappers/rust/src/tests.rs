@@ -46,6 +46,8 @@ mod tests {
 	fn barcode_reader_new() {
 		let mut o1 = BarcodeReader::new();
 		assert_eq!(o1.get_formats().is_empty(), true);
+		o1.set_formats(BarcodeFormats::default());
+		assert_eq!(o1.get_formats().is_empty(), true);
 		assert_eq!(o1.get_try_harder(), true);
 		o1.set_formats(BarcodeFormat::EAN8);
 		assert_eq!(o1.get_formats().contains(BarcodeFormat::EAN8), true);
@@ -118,7 +120,12 @@ mod tests {
 		assert_eq!(res[0].orientation(), 0);
 		assert_eq!(res[0].position().top_left, PointI { x: 4, y: 0 });
 		assert_eq!(res[0].line_count(), 1);
+		assert_eq!(res[0].sequence_size(), -1);
+		assert_eq!(res[0].sequence_index(), -1);
+		assert_eq!(res[0].sequence_id(), "");
 		assert!(matches!(res[0].error(), BarcodeError::None()));
 		assert_eq!(res[0].error().to_string(), "");
+		assert_eq!(res[0].extra(), "");
+		assert_eq!(res[0].extra_with_key("foo"), "");
 	}
 }

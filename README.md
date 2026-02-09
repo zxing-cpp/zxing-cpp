@@ -6,18 +6,6 @@ ZXing-C++ ("zebra crossing") is an open-source, multi-format linear/matrix barco
 
 It was originally ported from the Java [ZXing library](https://github.com/zxing/zxing) but has been developed further and now includes many improvements in terms of runtime and detection performance. It can both read and write barcodes in a number of formats. Since version 3.0 the default writing backend is provided by the [zint library](https://sourceforge.net/projects/zint/).
 
-## Sponsors
-
-You can sponsor this library at [GitHub Sponsors](https://github.com/sponsors/axxel).
-
-Named Sponsors:
-* [KURZ Digital Solutions GmbH & Co. KG](https://github.com/kurzdigital)
-* [Useful Sensors Inc](https://github.com/usefulsensors)
-* [SAP Open Source Program Office](https://www.sap.com/germany/about/company/innovation/open-source.html)
-* [synedra](https://synedra.com/)
-
-Thanks a lot for your contribution!
-
 ## Features
 
 * Written in pure C++20 (public API is C++17 compatible), no third-party dependencies (for the library itself)
@@ -37,19 +25,46 @@ Thanks a lot for your contribution!
 
 ## Supported Formats
 
-| Linear product  | Linear industrial | Matrix             |
-|-----------------|-------------------|--------------------|
-| UPC-A           | Code 39           | QR Code            |
-| UPC-E           | Code 93           | Micro QR Code      |
-| EAN-8           | Code 128          | rMQR Code          |
-| EAN-13          | Codabar           | Aztec              |
-| DataBar         | DataBar Expanded  | DataMatrix         |
-| DataBar Limited | DX Film Edge      | PDF417             |
-|                 | ITF               | MaxiCode (partial) |
+| Symbology | Variants |
+|:----------|:---------|
+| ***Retail:*** | *(Point-of-Sale, Coupons)*
+| EAN/UPC | EAN-13, EAN-8, EAN-5ᵂ, EAN-2ᵂ, UPC-A, UPC-E, ISBN
+| DataBar | Omnidirectional, Stacked, Limited, Expanded, Expanded Stacked
+| ***Industrial:*** | *(Logistics, Tracking, Pharma)*
+| Code39 | Standard, Extended, PZN, Code32, (VIN, LOGMARS)
+| Code93 |
+| Code128 |
+| ITF | ITF-14, (DHL Leitcode, DHL Identcode)
+| ***Matrix:*** | *(Documents, Tickets, Logistics, IDs)*
+| Aztec Code | Aztec Code, Aztec Rune
+| Data Matrix | ECC200
+| MaxiCode | (partial read support)
+| PDF417 | PDF417, Compact PDF417, MicroPDF417ᵂ
+| QR Code | Model 1ᴿ, Model 2, Micro QR Code, rMQR
+| ***Other:*** | *(Legacy, Niche)*
+| Codabar |
+| DXFilmEdge |
+
 
 [Note:]
+ * ᵂ : write support only
+ * ᴿ : read support only
  * DataBar used to be called RSS.
  * DataBar, DX Film Edge, MaxiCode, Micro QR Code and rMQR Code are not supported for writing if the library is configured with `ZXING_WRITERS=OLD`.
+
+## Sponsors
+
+You can sponsor this library at [GitHub Sponsors](https://github.com/sponsors/axxel).
+
+| | Named Sponsors: |
+|:-:|:-|
+| [![KURZ](https://avatars.githubusercontent.com/u/25196688?s=32)](https://github.com/kurzdigital) | [KURZ Digital Solutions GmbH & Co. KG](https://github.com/kurzdigital) |
+| [![Moonshine AI](https://avatars.githubusercontent.com/u/98664891?s=32)](https://github.com/moonshine-ai) | [Moonshine AI](https://github.com/moonshine-ai) |
+| [![SAP](https://avatars.githubusercontent.com/u/2531208?s=32)](https://www.sap.com/germany/about/company/innovation/open-source.html) | [SAP (Open Source Program Office)](https://www.sap.com/germany/about/company/innovation/open-source.html) |
+| [![Somco Software](https://avatars.githubusercontent.com/u/41477867?s=32)](https://github.com/somcosoftware) | [Somco Software](https://somcosoftware.com/en) |
+| [![synedra](https://www.synedra.com/favicon.ico)](https://synedra.com/) | [synedra information technologies GmbH](https://synedra.com/) |
+
+Thanks a lot for your contribution!
 
 ## Getting Started
 
@@ -120,9 +135,9 @@ These are the generic instructions to build the library on Windows/macOS/Linux. 
 3. See the cmake `ZXING_...` options to enable the testing code, python wrapper, etc.
 
 ```
-git clone https://github.com/zxing-cpp/zxing-cpp.git --recursive --single-branch --depth 1
-cmake -S zxing-cpp -B zxing-cpp.release -DCMAKE_BUILD_TYPE=Release
-cmake --build zxing-cpp.release -j8 --config Release
+git clone https://github.com/zxing-cpp/zxing-cpp.git --recursive --depth 1
+cmake -S zxing-cpp -B zxing-cpp/build -DCMAKE_BUILD_TYPE=Release
+cmake --build zxing-cpp/build --parallel --config Release
 ```
 
 [Note: binary packages are available for/as

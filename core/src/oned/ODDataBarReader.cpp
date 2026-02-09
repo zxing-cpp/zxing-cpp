@@ -15,6 +15,7 @@
 #include "BarcodeData.h"
 
 #include <cmath>
+#include <ranges>
 #include <unordered_set>
 
 namespace ZXing::OneD {
@@ -52,8 +53,8 @@ static Character ReadDataCharacter(const PatternView& view, bool outsideChar, bo
 
 	auto calcChecksumPortion = [](const Array4I& counts) {
 		int res = 0;
-		for (auto it = counts.rbegin(); it != counts.rend(); ++it)
-			res = 9 * res + *it;
+		for (int count : std::ranges::reverse_view(counts))
+			res = 9 * res + count;
 		return res;
 	};
 
@@ -163,24 +164,28 @@ struct State : public RowReader::DecodingState
 
 BarcodeData DataBarReader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<RowReader::DecodingState>& state) const
 {
-#if 0 // non-stacked version
-	(void)state;
-	next = next.subView(-1, FULL_PAIR_SIZE + 1); // +1 reflects the guard pattern on the right, see IsRightPair());
-	// yes: the first view we test is at index 1 (black bar at 0 would be the guard pattern)
-	while (next.shift(2)) {
-		if (IsLeftPair(next)) {
-			if (auto leftPair = ReadPair(next, false); leftPair && next.shift(FULL_PAIR_SIZE) && IsRightPair(next)) {
-				if (auto rightPair = ReadPair(next, true); rightPair && ChecksumIsValid(leftPair, rightPair)) {
-					return LinearBarcode(BarcodeFormat::DataBar, ConstructText(leftPair, rightPair), rowNumber, leftPair.xStart,
-										 rightPair.xStop, {'e', '0', 0, AIFlag::GS1});
-				}
-			}
-		}
-	}
-#else
 	if (!state)
 		state = std::make_unique<State>();
 	auto* prevState = static_cast<State*>(state.get());
+
+	if (_opts.hasFormat(BarcodeFormat::DataBarOmni) && !_opts.hasFormat(BarcodeFormat::DataBar) && !_opts.tryHarder()) {
+		// non-stacked version
+		(void)state;
+		next = next.subView(-1, FULL_PAIR_SIZE + 1); // +1 reflects the guard pattern on the right, see IsRightPair());
+		// yes: the first view we test is at index 1 (black bar at 0 would be the guard pattern)
+		while (next.shift(2)) {
+			if (IsLeftPair(next)) {
+				if (auto leftPair = ReadPair(next, false); leftPair && next.shift(FULL_PAIR_SIZE) && IsRightPair(next)) {
+					if (auto rightPair = ReadPair(next, true); rightPair && ChecksumIsValid(leftPair, rightPair)) {
+						return LinearBarcode(BarcodeFormat::DataBarOmni, ConstructText(leftPair, rightPair), rowNumber, leftPair.xStart,
+											 rightPair.xStop, {'e', '0', 0, AIFlag::GS1});
+					}
+				}
+			}
+		}
+
+		goto out;
+	}
 
 	next = next.subView(0, FULL_PAIR_SIZE + 1); // +1 reflects the guard pattern on the right, see IsRightPair()
 	// yes: the first view we test is at index 1 (black bar at 0 would be the guard pattern)
@@ -208,15 +213,16 @@ BarcodeData DataBarReader::decodePattern(int rowNumber, PatternView& next, std::
 				// Symbology identifier ISO/IEC 24724:2011 Section 9 and GS1 General Specifications 5.1.3 Figure 5.1.3-2
 				auto res = BarcodeData{.content = Content(ByteArray{ConstructText(leftPair, rightPair)}, {'e', '0', 0, AIFlag::GS1}),
 									   .position = EstimatePosition(leftPair, rightPair),
-									   .format = BarcodeFormat::DataBar,
+									   .format = leftPair.center() < rightPair.xStart ? BarcodeFormat::DataBarOmni
+																					  : BarcodeFormat::DataBarStk,
 									   .lineCount = EstimateLineCount(leftPair, rightPair)};
 
 				prevState->leftPairs.erase(leftPair);
 				prevState->rightPairs.erase(rightPair);
 				return res;
 			}
-#endif
 
+out:
 	// guarantee progress (see loop in ODReader.cpp)
 	next = {};
 

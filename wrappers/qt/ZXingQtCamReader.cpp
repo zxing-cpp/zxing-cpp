@@ -9,17 +9,19 @@
 #include <QCamera>
 #include <QCameraDevice>
 #include <QCheckBox>
+#include <QClipboard>
 #include <QComboBox>
 #include <QDebug>
 #include <QElapsedTimer>
 #include <QGridLayout>
 #include <QHBoxLayout>
+#include <QKeyEvent>
 #include <QLabel>
 #include <QMainWindow>
 #include <QMediaCaptureSession>
-#include <QPushButton>
 #include <QMediaDevices>
 #include <QPainter>
+#include <QPushButton>
 #include <QTimer>
 #include <QVBoxLayout>
 #include <QVideoFrame>
@@ -135,9 +137,20 @@ public:
 		setupCameraAndReader();
 	}
 
-	~CameraReaderWidget() { _camera->stop(); }
+	~CameraReaderWidget() override { _camera->stop(); }
 
 private:
+	void keyPressEvent(QKeyEvent* event) override
+	{
+		if (event->key() == Qt::Key_Space || event->key() == Qt::Key_P) {
+			togglePause();
+		} else if (event->key() == Qt::Key_S) {
+			toggleSettings();
+		} else {
+			QMainWindow::keyPressEvent(event);
+		}
+	}
+
 	void setupUI()
 	{
 		auto centralWidget = new QWidget(this);
@@ -176,46 +189,68 @@ private:
 
 		// Info label overlay (top-left aligned)
 		_infoLabel = new QLabel(videoContainer);
-		_infoLabel->setStyleSheet(
-			QStringLiteral("QLabel { color: white; background-color: rgba(40, 40, 40, 200); padding: 12px 16px; border-radius: 8px; }"));
+		_infoLabel->setStyleSheet(QStringLiteral(
+			"QLabel { color: white; background-color: rgba(40, 40, 40, 200); padding: 12px 16px; border-radius: 8px; }"));
 		_infoLabel->setAttribute(Qt::WA_TransparentForMouseEvents);
 		_infoLabel->setText(tr("Initializing camera..."));
 		_infoLabel->adjustSize();
 		gridLayout->addWidget(_infoLabel, 0, 0, 1, 1, Qt::AlignTop | Qt::AlignLeft);
 
-		// Settings button (bottom-right aligned)
-		_settingsButton = new QPushButton(QStringLiteral("⚙"), videoContainer);
+		// Feedback label overlay (center aligned)
+		_feedbackLabel = new QLabel(videoContainer);
+		_feedbackLabel->setStyleSheet(QStringLiteral(
+			"QLabel { color: white; background-color: rgba(40, 40, 40, 200); padding: 12px 16px; border-radius: 8px; }"));
+		_feedbackLabel->setAttribute(Qt::WA_TransparentForMouseEvents);
+		_feedbackLabel->hide();
+		gridLayout->addWidget(_feedbackLabel, 0, 0, 1, 1, Qt::AlignCenter);
+
+		// Control buttons container (bottom-right aligned)
+		auto buttonContainer = new QWidget(videoContainer);
+		auto buttonLayout = new QHBoxLayout(buttonContainer);
+		buttonLayout->setContentsMargins(0, 0, 0, 0);
+		buttonLayout->setSpacing(8);
+
+		const QString buttonStyle = QStringLiteral("QPushButton { "
+												   "  background-color: rgba(40, 40, 40, 200); "
+												   "  color: white; "
+												   "  border: none; "
+												   "  border-radius: 24px; "
+												   "  font-size: 24px; "
+												   "} "
+												   "QPushButton:hover { background-color: rgba(60, 60, 60, 220); } "
+												   "QPushButton:pressed { background-color: rgba(80, 80, 80, 240); }");
+
+		// Pause/Resume button
+		_pauseButton = new QPushButton(QStringLiteral("⏸"), buttonContainer);
+		_pauseButton->setFixedSize(48, 48);
+		_pauseButton->setStyleSheet(buttonStyle);
+		_pauseButton->setCursor(Qt::PointingHandCursor);
+		_pauseButton->setToolTip(tr("Pause capture"));
+		connect(_pauseButton, &QPushButton::clicked, this, &CameraReaderWidget::togglePause);
+		buttonLayout->addWidget(_pauseButton);
+
+		// Settings button
+		_settingsButton = new QPushButton(QStringLiteral("⚙"), buttonContainer);
 		_settingsButton->setFixedSize(48, 48);
-		_settingsButton->setStyleSheet(
-			QStringLiteral("QPushButton { "
-						   "  background-color: rgba(40, 40, 40, 200); "
-						   "  color: white; "
-						   "  border: none; "
-						   "  border-radius: 24px; "
-						   "  font-size: 24px; "
-						   "} "
-						   "QPushButton:hover { "
-						   "  background-color: rgba(60, 60, 60, 220); "
-						   "} "
-						   "QPushButton:pressed { "
-						   "  background-color: rgba(80, 80, 80, 240); "
-						   "}"));
+		_settingsButton->setStyleSheet(buttonStyle);
 		_settingsButton->setCursor(Qt::PointingHandCursor);
+		_settingsButton->setToolTip(tr("Settings"));
 		connect(_settingsButton, &QPushButton::clicked, this, &CameraReaderWidget::toggleSettings);
-		gridLayout->addWidget(_settingsButton, 0, 0, 1, 1, Qt::AlignBottom | Qt::AlignRight);
+		buttonLayout->addWidget(_settingsButton);
+
+		gridLayout->addWidget(buttonContainer, 0, 0, 1, 1, Qt::AlignBottom | Qt::AlignRight);
 
 		// Controls panel (initially hidden)
 		_controlsWidget = new QWidget(videoContainer);
-		_controlsWidget->setStyleSheet(
-			QStringLiteral("QWidget#controlsWidget { "
-						   "  background-color: rgba(40, 40, 40, 230); "
-						   "  border-radius: 12px; "
-						   "} "
-						   "QCheckBox, QLabel { "
-						   "  color: white; "
-						   "  background: transparent; "
-						   "  font-size: 13px; "
-						   "}"));
+		_controlsWidget->setStyleSheet(QStringLiteral("QWidget#controlsWidget { "
+													  "  background-color: rgba(40, 40, 40, 230); "
+													  "  border-radius: 12px; "
+													  "} "
+													  "QCheckBox, QLabel { "
+													  "  color: white; "
+													  "  background: transparent; "
+													  "  font-size: 13px; "
+													  "}"));
 		_controlsWidget->setObjectName(QStringLiteral("controlsWidget"));
 		_controlsWidget->hide();
 		auto controlsLayout = new QVBoxLayout(_controlsWidget);
@@ -229,7 +264,8 @@ private:
 
 		auto closeButton = new QPushButton(QStringLiteral("✕"));
 		closeButton->setFixedSize(24, 24);
-		closeButton->setStyleSheet(QStringLiteral("QPushButton { background: transparent; border: none; color: white; font-size: 18px; }"));
+		closeButton->setStyleSheet(
+			QStringLiteral("QPushButton { background: transparent; border: none; color: white; font-size: 18px; }"));
 		closeButton->setCursor(Qt::PointingHandCursor);
 		connect(closeButton, &QPushButton::clicked, _controlsWidget, &QWidget::hide);
 		headerLayout->addWidget(closeButton);
@@ -242,6 +278,7 @@ private:
 			controlsLayout->addWidget(checkbox);
 		};
 
+		addCheckBox(_autoPauseCheck, tr("Auto Pause"), false);
 		addCheckBox(_tryRotateCheck, tr("Try Rotate"));
 		addCheckBox(_tryHarderCheck, tr("Try Harder"));
 		addCheckBox(_tryInvertCheck, tr("Try Invert"));
@@ -268,6 +305,34 @@ private:
 			_controlsWidget->show();
 			_controlsWidget->adjustSize();
 		}
+	}
+
+	void togglePause() { _isPaused ? resumeScan() : pauseScan(); }
+
+	void pauseScan()
+	{
+		_isPaused = true;
+		_barcodeReader->setVideoSink(nullptr);
+		disconnect(_videoSink, &QVideoSink::videoFrameChanged, _videoWidget, &VideoWidget::setVideoFrame);
+		_pauseButton->setText(QStringLiteral("▶"));
+		_pauseButton->setToolTip(tr("Resume capture"));
+		_resetTimer->stop();
+
+		if (!_lastBarcodeText.isEmpty()) {
+			QApplication::beep();
+			QApplication::clipboard()->setText(_lastBarcodeText);
+			showFeedback(tr("Copied content of (first) barcode to clipboard."));
+		}
+	}
+
+	void resumeScan()
+	{
+		_isPaused = false;
+		_barcodeReader->setVideoSink(_videoSink);
+		connect(_videoSink, &QVideoSink::videoFrameChanged, _videoWidget, &VideoWidget::setVideoFrame);
+		_pauseButton->setText(QStringLiteral("⏸"));
+		_pauseButton->setToolTip(tr("Pause capture"));
+		_resetTimer->start();
 	}
 
 	void setupCameraAndReader()
@@ -335,6 +400,11 @@ private:
 		_resetTimer->setSingleShot(true);
 		_resetTimer->setInterval(1000);
 		connect(_resetTimer, &QTimer::timeout, [this]() { _infoLabel->clear(); });
+
+		_feedbackTimer = new QTimer(this);
+		_feedbackTimer->setSingleShot(true);
+		_feedbackTimer->setInterval(2000);
+		connect(_feedbackTimer, &QTimer::timeout, [this]() { _feedbackLabel->hide(); });
 	}
 
 	void updateReaderOptions()
@@ -351,10 +421,9 @@ private Q_SLOTS:
 
 	void onBarcodesFound(const QList<Barcode>& barcodes)
 	{
-		if (barcodes.isEmpty())
-			return;
-
 		_videoWidget->setBarcodes(barcodes);
+
+		_lastBarcodeText = barcodes.isEmpty() ? QString() : barcodes.first().text();
 
 		// Build info text for all barcodes
 		QStringList infoParts;
@@ -374,14 +443,18 @@ private Q_SLOTS:
 
 		_infoLabel->setText(infoParts.join(QStringLiteral("\n")));
 		_infoLabel->adjustSize();
-		_resetTimer->start();
+		if (!_isPaused)
+			_resetTimer->start();
+
+		if (_autoPauseCheck->isChecked() && !_isPaused)
+			pauseScan();
 	}
 
 	void onFoundNoBarcodes()
 	{
 		_videoWidget->setBarcodes({});
 
-		if (!_resetTimer->isActive()) {
+		if (!_resetTimer->isActive() && !_isPaused) {
 			_infoLabel->setText(tr("No barcode found (in %1 ms)").arg(_barcodeReader->runTime.loadRelaxed()));
 			_infoLabel->adjustSize();
 		}
@@ -398,9 +471,19 @@ private Q_SLOTS:
 		_camera->start();
 	}
 
+	void showFeedback(const QString& message)
+	{
+		_feedbackLabel->setText(message);
+		_feedbackLabel->adjustSize();
+		_feedbackLabel->show();
+		_feedbackTimer->start();
+	}
+
 private:
 	VideoWidget* _videoWidget = nullptr;
 	QLabel* _infoLabel = nullptr;
+	QLabel* _feedbackLabel = nullptr;
+	QPushButton* _pauseButton = nullptr;
 	QPushButton* _settingsButton = nullptr;
 	QWidget* _controlsWidget = nullptr;
 	QComboBox* _cameraCombo = nullptr;
@@ -410,12 +493,17 @@ private:
 	QCheckBox* _tryInvertCheck = nullptr;
 	QCheckBox* _tryDownscaleCheck = nullptr;
 	QCheckBox* _returnErrorsCheck = nullptr;
+	QCheckBox* _autoPauseCheck = nullptr;
 
 	QCamera* _camera = nullptr;
 	QMediaCaptureSession* _captureSession = nullptr;
 	QVideoSink* _videoSink = nullptr;
 	BarcodeReader* _barcodeReader = nullptr;
 	QTimer* _resetTimer = nullptr;
+	QTimer* _feedbackTimer = nullptr;
+
+	bool _isPaused = false;
+	QString _lastBarcodeText;
 };
 
 int main(int argc, char* argv[])
@@ -430,3 +518,4 @@ int main(int argc, char* argv[])
 }
 
 #include "ZXingQtCamReader.moc"
+#include "moc_ZXingQt.cpp"

@@ -9,6 +9,7 @@
 #include "BarcodeData.h"
 #include "SymbologyIdentifier.h"
 
+#include <cmath>
 #include <optional>
 #include <vector>
 
@@ -166,9 +167,12 @@ BarcodeData DXFilmEdgeReader::decodePattern(int rowNumber, PatternView& next, st
 	BitArray dataBits;
 	while (next.isValid(1) && dataBits.size() < clock->dataLength()) {
 
-		int modules = int(next[0] / clock->moduleSize() + 0.5);
-		// even index means we are at a bar, otherwise at a space
-		dataBits.appendBits(next.index() % 2 == 0 ? 0xFFFFFFFF : 0x0, modules);
+		// Max no. of modules is 20 spaces (with "96-0/0")
+		if (int modules = std::lround(next[0] / clock->moduleSize()); modules >= 1 && modules <= 20)
+			// even index means we are at a bar, otherwise at a space
+			dataBits.appendBits(next.index() % 2 == 0 ? 0xFFFFFFFF : 0x0, modules);
+		else
+			return {};
 
 		next.shift(1);
 	}
