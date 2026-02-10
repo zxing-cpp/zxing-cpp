@@ -5,26 +5,12 @@
  */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "BarcodeFormat.h"
-
-// Reader
-#include "ReadBarcode.h"
+#include "ZXingCpp.h"
 #include "ZXAlgorithms.h"
-
-// Writer
-#ifdef ZXING_USE_ZINT
-#include "CreateBarcode.h"
-#include "WriteBarcode.h"
-#include <bit>
-#else
-#include "BitMatrix.h"
-#include "Matrix.h"
-#include "MultiFormatWriter.h"
-#include <cstring>
-#endif
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <bit>
 #include <optional>
 #include <vector>
 
@@ -229,27 +215,14 @@ std::string write_barcode_to_svg(Barcode barcode, int scale, bool add_hrt, bool 
 
 Image write_barcode(BarcodeFormat format, py::object content, int width, int height, int quiet_zone, int ec_level)
 {
-#ifdef ZXING_USE_ZINT
 	deprecation_warning("write_barcode() is deprecated, use create_barcode() and write_barcode_to_image() instead.");
 
-	auto barcode = create_barcode(content, format, py::dict("ec_level"_a = ec_level / 2));
-	return write_barcode_to_image(barcode, -std::max(width, height), false, quiet_zone != 0);
-#else
-	CharacterSet encoding [[maybe_unused]];
-	if (py::isinstance<py::str>(content))
-		encoding  = CharacterSet::UTF8;
-	else if (py::isinstance<py::bytes>(content))
-		encoding = CharacterSet::BINARY;
-	else
-		throw py::type_error("Invalid input: only 'str' and 'bytes' supported.");
+	#ifdef ZXING_USE_ZINT
+	ec_level = format & BarcodeFormat::QRCode ? ec_level / 2 : ec_level; // Zint uses 0-4 for QR code EC level
+	#endif
 
-	auto writer = MultiFormatWriter(format).setEncoding(encoding).setMargin(quiet_zone).setEccLevel(ec_level);
-	auto bits = writer.encode(py::cast<std::string>(content), width, height);
-	auto bitmap = ToMatrix<uint8_t>(bits);
-	Image res(bitmap.width(), bitmap.height());
-	memcpy(const_cast<uint8_t*>(res.data()), bitmap.data(), bitmap.size());
-	return res;
-#endif
+	auto barcode = create_barcode(content, format, py::dict("ec_level"_a = ec_level));
+	return write_barcode_to_image(barcode, -std::max(width, height), false, quiet_zone != 0);
 }
 
 PYBIND11_MODULE(zxingcpp, m)

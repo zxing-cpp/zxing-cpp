@@ -123,6 +123,25 @@ jobs:
     - name: Test
       run: ctest -V --test-dir build
 
+  build-old-writers:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        submodules: true
+
+    - name: Configure
+      run: >
+        cmake -S . -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo
+        -DZXING_READERS=ON -DZXING_WRITERS=OLD -DZXING_PYTHON_MODULE=ON -DZXING_C_API=ON
+        -DZXING_BLACKBOX_TESTS=ON -DZXING_TEST_INSTALL=ON -DZXING_UNIT_TESTS=ON -DZXING_PYTHON_MODULE=ON
+
+    - name: Build
+      run: cmake --build build --parallel
+
+    - name: Test
+      run: ctest -V --test-dir build
+
   build-ios:
     runs-on: macos-latest
     steps:

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 
 find_program(DOTNET_EXECUTABLE NAMES dotnet)
 
-if (DOTNET_EXECUTABLE)
+if (DOTNET_EXECUTABLE AND ZXING_WRITERS AND ZXING_READERS)
     # Check available .NET runtimes
     execute_process(
         COMMAND ${DOTNET_EXECUTABLE} --list-runtimes
