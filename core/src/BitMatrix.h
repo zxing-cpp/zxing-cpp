@@ -9,7 +9,10 @@
 
 #include "Matrix.h"
 #include "Point.h"
+
+#ifdef ZXING_INTERNAL
 #include "Range.h"
+#endif
 
 #include <cstdint>
 #include <stdexcept>
@@ -59,7 +62,7 @@ public:
 #endif
 	BitMatrix(int width, int height) : _width(width), _height(height), _bits(width * height, UNSET_V)
 	{
-		if (width != 0 && Size(_bits) / width != height)
+		if (width != 0 && int(_bits.size()) / width != height)
 			throw std::invalid_argument("Invalid size: width * height is too big");
 	}
 
@@ -71,6 +74,7 @@ public:
 
 	BitMatrix copy() const { return *this; }
 
+#ifdef ZXING_INTERNAL
 	Range<data_t*> row(int y) { return {_bits.data() + y * _width, _bits.data() + (y + 1) * _width}; }
 	Range<const data_t*> row(int y) const { return {_bits.data() + y * _width, _bits.data() + (y + 1) * _width}; }
 
@@ -78,6 +82,7 @@ public:
 	{
 		return {{_bits.data() + x + (_height - 1) * _width, -_width}, {_bits.data() + x - _width, -_width}};
 	}
+#endif
 
 	bool get(int x, int y) const { return get(y * _width + x); }
 	void set(int x, int y, bool val = true) { get(y * _width + x) = val * SET_V; }
