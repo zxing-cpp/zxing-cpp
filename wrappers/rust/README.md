@@ -15,7 +15,7 @@ In your Cargo.toml:
 # `bundled` causes cargo to compile and statically link an up to
 # date version of the c++ core library. This is the most convenient
 # and safe way to build the library.
-zxing-cpp = { version = "0.4.1", features = ["bundled", "image"] }
+zxing-cpp = { version = "0.5.0", features = ["bundled", "image"] }
 ```
 
 Simple example reading some barcodes from a jpg file:
@@ -51,9 +51,6 @@ fn main() -> anyhow::Result<()> {
 	Ok(())
 }
 ```
-
-Note: This should currently be considered a pre-release. The API may change slightly to be even more
-idiomatic rust depending on community feedback.
 
 ## Optional Features
 
