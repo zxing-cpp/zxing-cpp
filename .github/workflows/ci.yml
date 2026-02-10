@@ -38,7 +38,7 @@ jobs:
         -DZXING_BLACKBOX_TESTS=ON -DZXING_TEST_DOTNET=ON -DZXING_TEST_INSTALL=ON -DZXING_UNIT_TESTS=ON -DZXING_PYTHON_MODULE=ON
 
     - name: Build
-      run: cmake --build build -j8 --config ${{env.BUILD_TYPE}}
+      run: cmake --build build --parallel --config ${{env.BUILD_TYPE}}
 
     - name: Set PATH for Tests
       shell: bash # to make the $GITHUB_PATH update work
@@ -61,7 +61,7 @@ jobs:
         name: ${{matrix.os}}-artifacts
         path: install
 
-  build-experimental:
+  build-exp:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -79,7 +79,7 @@ jobs:
         -DZXING_BLACKBOX_TESTS=ON -DZXING_TEST_INSTALL=ON -DZXING_UNIT_TESTS=OFF -DZXING_PYTHON_MODULE=OFF
 
     - name: Build
-      run: cmake --build build -j8 --config ${{env.BUILD_TYPE}}
+      run: cmake --build build --parallel --config ${{env.BUILD_TYPE}}
 
     - name: Set PATH for Tests
       shell: bash # to make the $GITHUB_PATH update work
@@ -110,7 +110,7 @@ jobs:
 
     - name: Configure
       run: >
-        cmake -S . -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo
+        cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
         -DZXING_BLACKBOX_TESTS=ON -DZXING_UNIT_TESTS=ON -DZXING_PYTHON_MODULE=OFF -DZXING_C_API=OFF
         -DCMAKE_CXX_COMPILER=clang++
         -DCMAKE_CXX_FLAGS="-march=native -fsanitize=address,undefined -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-omit-frame-pointer"
@@ -118,7 +118,7 @@ jobs:
         -DCMAKE_C_FLAGS="-march=native -fsanitize=address,undefined -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-omit-frame-pointer"
 
     - name: Build
-      run: cmake --build build -j8
+      run: cmake --build build --parallel
 
     - name: Test
       run: ctest -V --test-dir build
@@ -132,7 +132,7 @@ jobs:
 
     - name: Configure
       run: >
-        cmake -S . -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo
+        cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
         -DZXING_READERS=ON -DZXING_WRITERS=OLD -DZXING_PYTHON_MODULE=ON -DZXING_C_API=ON
         -DZXING_BLACKBOX_TESTS=ON -DZXING_TEST_INSTALL=ON -DZXING_UNIT_TESTS=ON -DZXING_PYTHON_MODULE=ON
 
