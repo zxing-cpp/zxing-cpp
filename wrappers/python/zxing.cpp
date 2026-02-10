@@ -114,7 +114,6 @@ auto read_barcodes_impl(py::object _image, const BarcodeFormats& formats, bool t
 			} else {
 				info = _image.cast<py::buffer>().request();
 			}
-#ifdef ZXING_EXPERIMENTAL_API
 		} else if(_type.find("QtGui.QImage") != std::string::npos) {
 			const std::string format = py::str(_image.attr("format")());
 			if (format.ends_with("Format_ARGB32") || format.ends_with("Format_RGB32")) {
@@ -138,7 +137,6 @@ auto read_barcodes_impl(py::object _image, const BarcodeFormats& formats, bool t
 			info.ndim = 3;
 			info.shape = {_image.attr("height")().cast<py::ssize_t>(), _image.attr("width")().cast<py::ssize_t>(), PixStride(imgfmt)};
 			info.strides = {_image.attr("bytesPerLine")().cast<py::ssize_t>(), PixStride(imgfmt), 1};
-#endif
 		} else {
 			info = _image.cast<py::buffer>().request();
 		}
