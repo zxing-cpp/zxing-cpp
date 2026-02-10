@@ -417,20 +417,12 @@ zint_symbol* CreatorOptions::zint() const { return nullptr; }
 
 static Barcode CreateBarcode(BitMatrix&& bits, std::string_view contents, const CreatorOptions& opts)
 {
-	auto img = ToMatrix<uint8_t>(bits);
-
-#ifdef ZXING_READERS
-	(void)contents; // unused
-	return ReadBarcode({img.data(), img.width(), img.height(), ImageFormat::Lum},
-					   ReaderOptions().formats(opts.format()).isPure(true).binarizer(Binarizer::BoolCast));
-#else
 	Content content;
 	content.append(contents);
 
 	DecoderResult decRes(std::move(content));
 	DetectorResult detRes(std::move(bits), Rectangle<PointI>(0, 0, bits.width(), bits.height()));
 	return MatrixBarcode(std::move(decRes), std::move(detRes), opts.format());
-#endif
 }
 
 Barcode CreateBarcodeFromText(std::string_view contents, const CreatorOptions& opts)
