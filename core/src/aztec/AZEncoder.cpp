@@ -59,9 +59,9 @@ static void GenerateCheckWords(const BitArray& bitArray, int totalBits, int word
 	// bitArray is guaranteed to be a multiple of the wordSize, so no padding needed
 	std::vector<int> messageWords = ToInts(bitArray, wordSize, totalBits / wordSize);
 	ReedSolomonEncode(GetGFFromWordSize(wordSize), messageWords, (totalBits - bitArray.size()) / wordSize);
-	int startPad = totalBits % wordSize;
 	messageBits = BitArray();
-	messageBits.appendBits(0, startPad);
+	if (int startPad = totalBits % wordSize)
+		messageBits.appendBits(0, startPad);
 	for (int messageWord : messageWords)
 		messageBits.appendBits(messageWord, wordSize);
 }

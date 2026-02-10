@@ -57,7 +57,7 @@
 	X(PDF417,           'L', ' ', "mrw  ",  55, ZXING_ENABLE_PDF417,     "PDF417") \
 	X(CompactPDF417,    'L', 'c', "mr   ",  56, ZXING_ENABLE_PDF417,     "Compact PDF417") \
 	X(MicroPDF417,      'L', 'm', "m    ",  84, ZXING_ENABLE_PDF417,     "MicroPDF417") \
-	X(Aztec,            'z', ' ', "mrwG ",  92, ZXING_ENABLE_AZTEC,      "Aztec") \
+	X(Aztec,            'z', ' ', "mr G ",  92, ZXING_ENABLE_AZTEC,      "Aztec") \
 	X(AztecCode,        'z', 'c', "mrwG ",  92, ZXING_ENABLE_AZTEC,      "Aztec Code") \
 	X(AztecRune,        'z', 'r', "mr   ", 128, ZXING_ENABLE_AZTEC,      "Aztec Rune") \
 	X(QRCode,           'Q', ' ', "mrwG ",  58, ZXING_ENABLE_QRCODE,     "QR Code") \

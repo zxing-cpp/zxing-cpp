@@ -75,7 +75,7 @@ MultiFormatWriter::encode(const std::wstring& contents, int width, int height) c
 
 	switch (_format) {
 #if ZXING_ENABLE_AZTEC
-	case BarcodeFormat::Aztec: return exec1(Aztec::Writer(), AztecEccLevel);
+	case BarcodeFormat::AztecCode: return exec1(Aztec::Writer(), AztecEccLevel);
 #endif
 #if ZXING_ENABLE_DATAMATRIX
 	case BarcodeFormat::DataMatrix: return exec2(DataMatrix::Writer());
