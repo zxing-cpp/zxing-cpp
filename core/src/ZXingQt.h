@@ -29,6 +29,11 @@ namespace ZXingQt {
 
 Q_NAMESPACE
 
+inline QString Version()
+{
+	return QString::fromStdString(ZXing::Version());
+}
+
 namespace Detail {
 
 template<typename Cout, typename Cin>

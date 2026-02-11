@@ -22,7 +22,8 @@ void printBarcodes(const QList<Barcode>& barcodes)
 int main(int argc, char* argv[])
 {
 	if (argc != 2) {
-		qDebug() << "Please supply exactly one image filename";
+		qDebug().noquote() << "ZXingQtReader" << Version();
+		qDebug() << "Usage:" << argv[0] << "<image file>";
 		return 1;
 	}
 
