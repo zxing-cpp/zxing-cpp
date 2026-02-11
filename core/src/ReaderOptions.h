@@ -135,7 +135,7 @@ public:
 	/// The maximum number of symbols (barcodes) to detect / look for in the image with ReadBarcodes
 	ZX_PROPERTY(uint8_t, maxNumberOfSymbols, setMaxNumberOfSymbols)
 
-	/// Validate optional chechsums where applicable (e.g. Code39, ITF)
+	/// Validate optional checksums where applicable (e.g. Code39, ITF)
 	ZX_PROPERTY(bool, validateOptionalCheckSum, setValidateOptionalCheckSum)
 
 	/// If true, return the barcodes with errors as well (e.g. checksum errors, see @Barcode::error())

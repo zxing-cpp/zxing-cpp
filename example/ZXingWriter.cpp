@@ -38,7 +38,7 @@ static void PrintUsage(const char* exePath)
 			  << "    -rotate	 Rotate image by given angle (90, 180 or 270)\n"
 //			  << "    -encoding  Encoding used to encode input text\n"
 			  << "    -binary    Interpret <text> as a file name containing binary data\n"
-			  << "    -noqz      Print barcode witout quiet zone\n"
+			  << "    -noqz      Print barcode without quiet zone\n"
 			  << "    -hrt       Print human readable text below the barcode (if supported)\n"
 			  << "    -invert    Invert colors (switch black and white)\n"
 			  << "    -help      Print usage information\n"
