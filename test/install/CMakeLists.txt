@@ -9,3 +9,7 @@ find_package(ZXing CONFIG REQUIRED)
 add_executable(InstallTest main.cpp)
 
 target_link_libraries(InstallTest PRIVATE ZXing::ZXing)
+
+add_executable(InstallTestOLD mainOLD.cpp)
+
+target_link_libraries(InstallTestOLD PRIVATE ZXing::ZXing)
