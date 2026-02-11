@@ -372,16 +372,10 @@ jobs:
         echo "tgz=$tgz" >> $GITHUB_OUTPUT
         echo "zip=$zip" >> $GITHUB_OUTPUT
 
-    - name: Upload tarball archive
-      if: steps.find.outputs.tgz != ''
+    - name: Upload source_artifacts
       uses: actions/upload-artifact@v6
       with:
-        name: ${{ steps.find.outputs.tgz }}
-        path: ${{ steps.find.outputs.tgz }}
-
-    - name: Upload zip archive
-      if: steps.find.outputs.zip != ''
-      uses: actions/upload-artifact@v6
-      with:
-        name: ${{ steps.find.outputs.zip }}
-        path: ${{ steps.find.outputs.zip }}
+        name: source_artifacts
+        path: |
+          ${{ steps.find.outputs.tgz }}
+          ${{ steps.find.outputs.zip }}
