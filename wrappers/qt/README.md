@@ -231,8 +231,7 @@ Add to your Qt project:
 
 ```qmake
 # .pro file
-INCLUDEPATH += path/to/zxing-cpp/core/src
-INCLUDEPATH += path/to/zxing-cpp/wrappers/qt
+INCLUDEPATH += path/to/zxing-cpp-install-root/include
 LIBS += -lZXing  # or link statically
 
 # Enable multimedia support
@@ -252,6 +251,8 @@ target_link_libraries(myapp
     ZXing::ZXing
 )
 ```
+
+To build the demo programs like ZXingQtCamReader, set cmake config variable `ZXING_EXAMPLES_QT=ON`.
 
 **Note on Qt Meta-Object Compiler (moc)**: If `ZXingQt.h` is located outside your project directory (e.g., in a system include path), Qt's automoc may not detect the `Q_OBJECT` classes in the header. To fix this, add the following line at the end of your `.cpp` file that uses `BarcodeReader` or other Qt classes from `ZXingQt.h`:
 
