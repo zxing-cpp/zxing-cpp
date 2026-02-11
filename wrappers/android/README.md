@@ -4,8 +4,8 @@
 
 The easiest way to use the library is to fetch if from _mavenCentral_. Simply add **one** of the following two lines
 ```gradle
-implementation("io.github.zxing-cpp:android:2.3.0")
-implementation("io.github.zxing-cpp:android:3.0.0-SNAPSHOT")
+implementation("io.github.zxing-cpp:android:3.0.0")
+implementation("io.github.zxing-cpp:android:3.1.0-SNAPSHOT")
 ```
 to your `build.gradle.kts` file in the `dependencies` section. To access the SNAPSHOT version, you also need to add a separate repositories entry in your `build.cradle.kts` file:
 
