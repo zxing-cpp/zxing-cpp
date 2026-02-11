@@ -10,6 +10,8 @@ add_executable(InstallTest main.cpp)
 
 target_link_libraries(InstallTest PRIVATE ZXing::ZXing)
 
-add_executable(InstallTestOLD mainOLD.cpp)
+if (ZXING_WRITERS MATCHES "BOTH|OLD")
+    add_executable(InstallTestOLD mainOLD.cpp)
 
-target_link_libraries(InstallTestOLD PRIVATE ZXing::ZXing)
+    target_link_libraries(InstallTestOLD PRIVATE ZXing::ZXing)
+endif()

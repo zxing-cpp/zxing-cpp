@@ -17,6 +17,7 @@ execute_process(
         -S "${SOURCE_DIR}"
         -B "${consumer_build}"
         -DCMAKE_PREFIX_PATH=${install_prefix}
+        -DZXING_WRITERS=${ZXING_WRITERS}
     RESULT_VARIABLE configure_result
 )
 if(NOT configure_result EQUAL 0)

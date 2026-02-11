@@ -101,6 +101,7 @@ if (ZXING_TEST_INSTALL)
             ${CMAKE_COMMAND}
             -DPROJECT_BINARY_DIR=${CMAKE_BINARY_DIR}
             -DSOURCE_DIR=${CMAKE_SOURCE_DIR}/test/install
+            -DZXING_WRITERS=${ZXING_WRITERS}
             -P ${CMAKE_SOURCE_DIR}/test/install/run.cmake
     )
 endif()

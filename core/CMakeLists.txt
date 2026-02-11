@@ -131,6 +131,7 @@ set (COMMON_FILES
     src/ZXAlgorithms.h
     src/ZXConfig.h
     src/ZXTestSupport.h
+    src/ZXVersion.h
     $<$<BOOL:${ZXING_C_API}>:src/ZXingC.h>
     $<$<BOOL:${ZXING_C_API}>:src/ZXingC.cpp>
 )
@@ -222,6 +223,7 @@ set (PUBLIC_HEADERS
     src/ReaderOptions.h
     src/WriteBarcode.h
     src/ZXingCpp.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ZXVersion.h # deprecated, but keep it for now to not break old clients
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ZXingQt.h
     $<$<BOOL:${ZXING_C_API}>:${CMAKE_CURRENT_SOURCE_DIR}/src/ZXingC.h>
 )
@@ -639,7 +641,8 @@ set_target_properties(ZXing PROPERTIES PUBLIC_HEADER "${PUBLIC_HEADERS}")
 set(PRECOMPILE_HEADERS ${PUBLIC_HEADERS})
 list(REMOVE_ITEM PRECOMPILE_HEADERS
     "$<$<BOOL:${ZXING_C_API}>:${CMAKE_CURRENT_SOURCE_DIR}/src/ZXingC.h>"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/ZXingQt.h")
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/ZXingQt.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/ZXVersion.h")
 list(APPEND PRECOMPILE_HEADERS "src/BarcodeData.h" "src/Content.h" "src/Range.h")
 if (NOT ZXING_DISABLE_PCH)
     target_precompile_headers(ZXing PRIVATE ${PRECOMPILE_HEADERS})
