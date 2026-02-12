@@ -35,7 +35,8 @@ jobs:
     - name: Configure
       run: >
         cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_SHARED_LIBS=ON
-        -DZXING_BLACKBOX_TESTS=ON -DZXING_TEST_DOTNET=ON -DZXING_TEST_INSTALL=ON -DZXING_UNIT_TESTS=ON -DZXING_PYTHON_MODULE=ON
+        -DZXING_BLACKBOX_TESTS=ON -DZXING_TEST_DOTNET=ON -DZXING_TEST_GO=ON -DZXING_TEST_INSTALL=ON -DZXING_UNIT_TESTS=ON
+        -DZXING_PYTHON_MODULE=ON
 
     - name: Build
       run: cmake --build build --parallel --config ${{env.BUILD_TYPE}}

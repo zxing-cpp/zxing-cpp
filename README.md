@@ -11,17 +11,13 @@ It was originally ported from the Java [ZXing library](https://github.com/zxing/
 * Written in pure C++20 (public API is C++17 compatible), no third-party dependencies (for the library itself)
 * Thread safe
 * Wrappers/Bindings for:
-  * [Android](wrappers/android/README.md)
-  * [C](wrappers/c/README.md)
-  * [iOS](wrappers/ios/README.md)
-  * [Kotlin/Native](wrappers/kn/README.md)
-  * [.NET](wrappers/dotnet/README.md)
-  * [Python](wrappers/python/README.md)
-  * [Qt](wrappers/qt/README.md)
-  * [Rust](wrappers/rust/README.md)
-  * [WebAssembly](wrappers/wasm/README.md)
-  * [WinRT](wrappers/winrt/README.md)
-  * [Flutter](https://pub.dev/packages/flutter_zxing) (external project)
+
+    | | | |
+    |:-|:-|:-|
+    | [Android](wrappers/android/README.md) | [C](wrappers/c/README.md) | [Go](wrappers/go/README.md) |
+    | [iOS](wrappers/ios/README.md) | [Kotlin/Native](wrappers/kn/README.md) | [.NET](wrappers/dotnet/README.md) |
+    | [Python](wrappers/python/README.md) | [Qt](wrappers/qt/README.md) | [Rust](wrappers/rust/README.md) |
+    | [WebAssembly](wrappers/wasm/README.md) | [WinRT](wrappers/winrt/README.md) | [Flutter](https://pub.dev/packages/flutter_zxing) (external project) |
 
 ## Supported Formats
 
