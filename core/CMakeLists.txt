@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project (ZXing VERSION "3.0.0")
+project (ZXing VERSION "3.0.1")
 set (ZXING_VERSION_SUFFIX "")
 set (ZXING_SONAME 4) # see https://github.com/zxing-cpp/zxing-cpp/issues/333
 
