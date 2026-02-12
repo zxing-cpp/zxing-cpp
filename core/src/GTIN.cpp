@@ -7,7 +7,9 @@
 #include "GTIN.h"
 
 #include <algorithm>
+#ifdef __cpp_lib_format // not available on gcc 12
 #include <format>
+#endif
 #include <iomanip>
 #include <iterator>
 #include <string>
@@ -241,7 +243,7 @@ std::string Price(const std::string& ean5AddOn)
 	}
 
 	int rawAmount = std::stoi(ean5AddOn.substr(1));
-#ifndef __cpp_lib_to_chars // not available on older macOS
+#if !defined(__cpp_lib_to_chars) || !defined(__cpp_lib_format) // not available on older macOS / gcc 12
 	return currency + std::to_string(rawAmount / 100) + '.' + std::to_string(rawAmount % 100);
 #else
 	return std::format("{}{:.2f}", currency, float(rawAmount) / 100);

@@ -9,7 +9,6 @@
 #include "ZXAlgorithms.h"
 
 #include <algorithm>
-#include <format>
 
 namespace ZXing {
 
