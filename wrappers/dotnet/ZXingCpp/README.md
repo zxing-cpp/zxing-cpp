@@ -40,14 +40,11 @@ dotnet run -- <image-file-name> [barcode-format-list]
 See also the [ZXingCpp.DemoReader](https://github.com/zxing-cpp/zxing-cpp/blob/master/wrappers/dotnet/ZXingCpp.DemoReader/Program.cs)
 which shows the use of extension classes to support SkiaSharp and ImageMagick based input.
 
-The NuGet package includes the runtime/native c++ libraries for the x64 architecture on
-Windows, Linux and macOS. If something is not working out of the box or you need arm64 support
-then you need to build the `[lib]ZXing[.dll|.so|.dylib]` file yourself and make sure the .NET
-runtime find it (see e.g. the environment variables `LD_LIBRARY_PATH` on Linux or `PATH` on
-Windows).
+The NuGet package includes the runtime/native C++ libraries for x64 and arm64 on
+Windows, Linux and macOS. If something is not working out of the box and you need to override
+library loading, make sure the .NET runtime can find `[lib]ZXing[.dll|.so|.dylib]`
+(see e.g. `LD_LIBRARY_PATH` on Linux or `PATH` on Windows).
 
-Note: This is an alpha release, meaning the API may still change slightly to potentially feel even
-more like a native C# library depending on community feedback.
 
 ## Usage Writing
 
@@ -58,7 +55,7 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        var barcode = new Barcode(args[1], Barcode.FormatFromString(args[0]));
+        var barcode = new Barcode(args[1], BarcodeFormat.Parse(args[0]));
         File.WriteAllText(args[2], barcode.ToSVG());
     }
 }

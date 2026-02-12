@@ -1,0 +1,130 @@
+name: publish-dotnet
+
+on:
+#  release:
+#    types: [published]
+
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Publish package (y/n)'
+        default: 'n'
+
+jobs:
+  build-native:
+    name: build-native ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            lib_name: ZXing.dll
+            rid: win-x64
+            lib_path: build/core/Release/ZXing.dll
+          - os: windows-11-arm
+            lib_name: ZXing.dll
+            rid: win-arm64
+            lib_path: build/core/Release/ZXing.dll
+          - os: ubuntu-latest
+            lib_name: libZXing.so
+            rid: linux-x64
+            lib_path: build/core/libZXing.so
+          - os: ubuntu-24.04-arm
+            lib_name: libZXing.so
+            rid: linux-arm64
+            lib_path: build/core/libZXing.so
+          - os: macos-15-intel
+            lib_name: libZXing.dylib
+            rid: osx-x64
+            lib_path: build/core/libZXing.dylib
+          - os: macos-latest
+            lib_name: libZXing.dylib
+            rid: osx-arm64
+            lib_path: build/core/libZXing.dylib
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: true
+
+      - name: Configure CMake
+        run: >
+          cmake -S . -B build
+          -DCMAKE_BUILD_TYPE=Release
+          -DBUILD_SHARED_LIBS=ON
+          -DZXING_EXAMPLES=OFF
+          -DZXING_TEST_DOTNET=ON
+
+      - name: Build
+        run: cmake --build build --config Release --parallel
+
+      - name: Test
+        run: ctest --test-dir build -V -C Release -R DotNetTest
+
+      - name: Stage native library
+        run: |
+          cmake -E make_directory artifact/runtimes/${{ matrix.rid }}/native
+          cmake -E copy_if_different ${{ matrix.lib_path }} artifact/runtimes/${{ matrix.rid }}/native/${{ matrix.lib_name }}
+
+      - name: Upload native library
+        uses: actions/upload-artifact@v6
+        with:
+          name: native-${{ matrix.rid }}
+          path: artifact
+
+  publish-nuget:
+    needs: build-native
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: true
+
+      - name: Download native libraries
+        uses: actions/download-artifact@v7
+        with:
+          pattern: native-*
+          path: wrappers/dotnet
+          merge-multiple: true
+
+      - name: Validate runtime files
+        shell: bash
+        run: |
+          test -f wrappers/dotnet/runtimes/win-x64/native/ZXing.dll
+          test -f wrappers/dotnet/runtimes/win-arm64/native/ZXing.dll
+          test -f wrappers/dotnet/runtimes/linux-x64/native/libZXing.so
+          test -f wrappers/dotnet/runtimes/linux-arm64/native/libZXing.so
+          test -f wrappers/dotnet/runtimes/osx-x64/native/libZXing.dylib
+          test -f wrappers/dotnet/runtimes/osx-arm64/native/libZXing.dylib
+
+      - name: Pack NuGet package
+        run: dotnet pack wrappers/dotnet/ZXingCpp/ZXingCpp.csproj --configuration Release --output wrappers/dotnet/artifacts
+
+      - name: Smoke test local NuGet package
+        shell: bash
+        run: |
+          set -euo pipefail
+          pkg_file="$(ls wrappers/dotnet/artifacts/ZXingCpp.*.nupkg | head -n 1)"
+          pkg_version="$(basename "$pkg_file" | sed -E 's/^ZXingCpp\.//; s/\.nupkg$//')"
+
+          tmp_dir="$(mktemp -d)"
+          dotnet new console -n ZxingPkgTest -o "$tmp_dir/ZxingPkgTest"
+          echo "Console.WriteLine(global::ZXingCpp.BarcodeFormat.QRCode.ToString());" > "$tmp_dir/ZxingPkgTest/Program.cs"
+
+          dotnet add "$tmp_dir/ZxingPkgTest/ZxingPkgTest.csproj" package ZXingCpp --version "$pkg_version" --no-restore
+          dotnet restore "$tmp_dir/ZxingPkgTest/ZxingPkgTest.csproj" \
+            --source "${{ github.workspace }}/wrappers/dotnet/artifacts" \
+            --source https://api.nuget.org/v3/index.json
+          dotnet run --project "$tmp_dir/ZxingPkgTest/ZxingPkgTest.csproj" --no-restore
+
+      - name: Upload NuGet package artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: dotnet-nuget-package
+          path: wrappers/dotnet/artifacts/*.nupkg
+
+      - name: Push NuGet package
+        if: ${{ github.event_name == 'release' || github.event.inputs.publish == 'y' }}
+        run: dotnet nuget push wrappers/dotnet/artifacts/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }} --skip-duplicate

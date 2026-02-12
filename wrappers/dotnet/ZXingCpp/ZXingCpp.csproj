@@ -24,9 +24,12 @@
 
   <ItemGroup>
       <None Include="README.md" Pack="true" PackagePath="README.md"/>
-      <None Include="../runtimes/ZXing.dll" Pack="true" PackagePath="runtimes/win-x64/native/" />
-      <None Include="../runtimes/libZXing.so" Pack="true" PackagePath="runtimes/linux-x64/native/" />
-      <None Include="../runtimes/libZXing.dylib" Pack="true" PackagePath="runtimes/osx-x64/native/" />
+      <None Include="../runtimes/win-x64/native/ZXing.dll" Pack="true" PackagePath="runtimes/win-x64/native/" />
+      <None Include="../runtimes/linux-x64/native/libZXing.so" Pack="true" PackagePath="runtimes/linux-x64/native/" />
+      <None Include="../runtimes/osx-x64/native/libZXing.dylib" Pack="true" PackagePath="runtimes/osx-x64/native/" />
+      <None Include="../runtimes/win-arm64/native/ZXing.dll" Pack="true" PackagePath="runtimes/win-arm64/native/" />
+      <None Include="../runtimes/linux-arm64/native/libZXing.so" Pack="true" PackagePath="runtimes/linux-arm64/native/" />
+      <None Include="../runtimes/osx-arm64/native/libZXing.dylib" Pack="true" PackagePath="runtimes/osx-arm64/native/" />
   </ItemGroup>
 </Project>
 
