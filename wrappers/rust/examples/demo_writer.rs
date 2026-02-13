@@ -13,6 +13,7 @@ fn main() -> anyhow::Result<()> {
 	let text = std::env::args().nth(1).expect("no input text provided");
 	let format_str = std::env::args().nth(2).expect("no format provided");
 	let filename = std::env::args().nth(3).expect("no output file name provided");
+	let options_str = std::env::args().nth(4).unwrap_or_default();
 
 	let format = match BarcodeFormat::from_str(format_str) {
 		Ok(f) => f,
@@ -23,7 +24,7 @@ fn main() -> anyhow::Result<()> {
 		}
 	};
 	println!("Creating barcode of format {:?} for text '{}'", format, text);
-	let create_barcode = create(format);
+	let create_barcode = create(format).options(options_str);
 	let bc = create_barcode.from_str(text)?;
 
 	if filename.ends_with(".svg") {
