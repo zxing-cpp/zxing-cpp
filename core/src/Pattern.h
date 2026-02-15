@@ -248,6 +248,9 @@ template <int N, int SUM, bool IS_SPARSE>
 bool IsRightGuard(const PatternView& view, const FixedPattern<N, SUM, IS_SPARSE>& pattern, double minQuietZone,
 				  double moduleSizeRef = 0)
 {
+	assert(view.size() == pattern.size());
+	if (!view.isValid())
+		return false;
 	int spaceInPixel = view.isAtLastBar() ? std::numeric_limits<int>::max() : *view.end();
 	return IsPattern(view, pattern, spaceInPixel, minQuietZone, moduleSizeRef) != 0;
 }

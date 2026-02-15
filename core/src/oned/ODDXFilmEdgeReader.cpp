@@ -184,7 +184,7 @@ BarcodeData DXFilmEdgeReader::decodePattern(int rowNumber, PatternView& next, st
 	next = next.subView(0, DATA_STOP_PATTERN.size());
 
 	// Check there is the Stop pattern at the end of the data track
-	if (!next.isValid() || !IsRightGuard(next, DATA_STOP_PATTERN, minDataQuietZone))
+	if (!IsRightGuard(next, DATA_STOP_PATTERN, minDataQuietZone))
 		return {};
 
 	// The following bits are always white (=false), they are separators.
