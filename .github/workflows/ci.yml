@@ -101,7 +101,7 @@ jobs:
         name: ${{matrix.os}}-exp-artifacts
         path: install
 
-  build-ubuntu-sanitize:
+  build-ubuntu-gcc-12: # keep homebrew happy
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
@@ -111,6 +111,25 @@ jobs:
     - name: Configure
       run: >
         cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
+        -DZXING_WRITERS=BOTH
+        -DCMAKE_CXX_COMPILER=g++-12 -DCMAKE_C_COMPILER=gcc-12
+
+    - name: Build
+      run: cmake --build build --parallel
+
+    - name: Test
+      run: ctest -V --test-dir build
+
+  build-ubuntu-sanitize:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        submodules: true
+
+    - name: Configure
+      run: >
+        cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DZXING_WRITERS=BOTH
         -DZXING_BLACKBOX_TESTS=ON -DZXING_UNIT_TESTS=ON -DZXING_PYTHON_MODULE=OFF -DZXING_C_API=OFF
         -DCMAKE_CXX_COMPILER=clang++
         -DCMAKE_CXX_FLAGS="-march=native -fsanitize=address,undefined -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-omit-frame-pointer"
