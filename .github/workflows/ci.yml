@@ -76,7 +76,7 @@ jobs:
       run: >
         cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_SHARED_LIBS=ON
         -DZXING_READERS=ON -DZXING_WRITERS=BOTH -DZXING_EXPERIMENTAL_API=ON
-        -DZXING_BLACKBOX_TESTS=ON -DZXING_TEST_INSTALL=ON -DZXING_UNIT_TESTS=OFF -DZXING_PYTHON_MODULE=OFF
+        -DZXING_BLACKBOX_TESTS=ON -DZXING_TEST_INSTALL=ON -DZXING_UNIT_TESTS=OFF -DZXING_PYTHON_MODULE=ON
 
     - name: Build
       run: cmake --build build --parallel --config ${{env.BUILD_TYPE}}
@@ -87,6 +87,7 @@ jobs:
       run: |
         echo "${GITHUB_WORKSPACE}/build/core/${BUILD_TYPE}" >> $GITHUB_PATH
         echo "${GITHUB_WORKSPACE}/build/bin/${BUILD_TYPE}" >> $GITHUB_PATH
+        cp "${GITHUB_WORKSPACE}/build/core/Release/ZXing.dll" "${GITHUB_WORKSPACE}/build/wrappers/python/Release/"
 
     - name: Test
       run: ctest --test-dir build -V -C ${{env.BUILD_TYPE}}
