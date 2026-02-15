@@ -19,6 +19,7 @@
 #include "ODDXFilmEdgeReader.h"
 #include "ODITFReader.h"
 #include "ODMultiUPCEANReader.h"
+#include "ODTelepenReader.h"
 #include "BarcodeData.h"
 
 #include <algorithm>
@@ -48,6 +49,8 @@ Reader::Reader(const ReaderOptions& opts) : ZXing::Reader(opts)
 		_readers.emplace_back(new Code128Reader(opts));
 	if (opts.hasAnyFormat(ITF))
 		_readers.emplace_back(new ITFReader(opts));
+	if (opts.hasAnyFormat(Telepen))
+		_readers.emplace_back(new TelepenReader(opts));
 	if (opts.hasAnyFormat(Codabar))
 		_readers.emplace_back(new CodabarReader(opts));
 	if (opts.hasFormat(DataBar | DataBarOmni | DataBarStk | DataBarStkOmni))

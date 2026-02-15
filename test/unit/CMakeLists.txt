@@ -40,6 +40,7 @@ target_sources (UnitTest PRIVATE
     $<$<BOOL:${ZXING_ENABLE_1D}>:oned/ODCode93ReaderTest.cpp>
     $<$<BOOL:${ZXING_ENABLE_1D}>:oned/ODDataBarExpandedBitDecoderTest.cpp>
     $<$<BOOL:${ZXING_ENABLE_1D}>:oned/ODDataBarReaderTest.cpp>
+    $<$<BOOL:${ZXING_ENABLE_1D}>:oned/ODTelepenReaderTest.cpp>
     $<$<BOOL:${ZXING_ENABLE_PDF417}>:pdf417/PDF417DecoderTest.cpp>
     $<$<BOOL:${ZXING_ENABLE_PDF417}>:pdf417/PDF417ErrorCorrectionTest.cpp>
     $<$<BOOL:${ZXING_ENABLE_PDF417}>:pdf417/PDF417ScanningDecoderTest.cpp>

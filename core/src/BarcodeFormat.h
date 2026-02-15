@@ -52,6 +52,9 @@
 	X(ISBN,             'E', 'i', "lr  R",  69, ZXING_ENABLE_1D,         "ISBN") \
 	X(UPCA,             'E', 'a', "lrw R",  34, ZXING_ENABLE_1D,         "UPC-A") \
 	X(UPCE,             'E', 'e', "lrw R",  37, ZXING_ENABLE_1D,         "UPC-E") \
+	X(Telepen,          'B', ' ', "lr  I",  32, ZXING_ENABLE_1D,         "Telepen") \
+	X(TelepenAlpha,     'B', '0', "lr  I",  32, ZXING_ENABLE_1D,         "Telepen Alpha") \
+	X(TelepenNumeric,   'B', '1', "lr  I",  87, ZXING_ENABLE_1D,         "Telepen Numeric") \
 	X(OtherBarcode,     'X', ' ', " r   ",   0, ZXING_ENABLE_1D,         "Other barcode") /* see ISO/IEC 15424:2025 */ \
 	X(DXFilmEdge,       'X', 'x', "lr   ", 147, ZXING_ENABLE_1D,         "DX Film Edge") \
 	X(PDF417,           'L', ' ', "mrw  ",  55, ZXING_ENABLE_PDF417,     "PDF417") \

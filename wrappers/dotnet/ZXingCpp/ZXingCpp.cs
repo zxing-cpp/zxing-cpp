@@ -217,6 +217,9 @@ public readonly struct BarcodeFormat : IEquatable<BarcodeFormat>
 	public static readonly BarcodeFormat ISBN            = new BarcodeFormat(0x6945);
 	public static readonly BarcodeFormat UPCA            = new BarcodeFormat(0x6145);
 	public static readonly BarcodeFormat UPCE            = new BarcodeFormat(0x6545);
+	public static readonly BarcodeFormat Telepen         = new BarcodeFormat(0x2042);
+	public static readonly BarcodeFormat TelepenAlpha    = new BarcodeFormat(0x3042);
+	public static readonly BarcodeFormat TelepenNumeric  = new BarcodeFormat(0x3142);
 	public static readonly BarcodeFormat OtherBarcode    = new BarcodeFormat(0x2058);
 	public static readonly BarcodeFormat DXFilmEdge      = new BarcodeFormat(0x7858);
 	public static readonly BarcodeFormat PDF417          = new BarcodeFormat(0x204C);

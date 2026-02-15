@@ -31,6 +31,7 @@ It was originally ported from the Java [ZXing library](https://github.com/zxing/
 | Code93 |
 | Code128 |
 | ITF | ITF-14, (DHL Leitcode, DHL Identcode)
+| Telepen | Telepen Alpha, Telepen Numeric
 | ***Matrix:*** | *(Documents, Tickets, Logistics, IDs)*
 | Aztec Code | Aztec Code, Aztec Rune
 | Data Matrix | ECC200

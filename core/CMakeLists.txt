@@ -354,6 +354,8 @@ if (ZXING_READERS AND ZXING_ENABLE_1D)
         src/oned/ODDXFilmEdgeReader.cpp
         src/oned/ODITFReader.h
         src/oned/ODITFReader.cpp
+        src/oned/ODTelepenReader.h
+        src/oned/ODTelepenReader.cpp
         src/oned/ODMultiUPCEANReader.h
         src/oned/ODMultiUPCEANReader.cpp
         src/oned/ODReader.h
@@ -577,6 +579,7 @@ if (ZXING_WRITERS_NEW)
             list(APPEND LIBZINT_FILES
                 src/libzint/2of5inter.c
                 src/libzint/2of5inter_based.c
+                src/libzint/telepen.c
                 src/libzint/codabar.c
                 src/libzint/code128.c
                 src/libzint/code128.h

@@ -341,6 +341,9 @@ Barcode CreateBarcode(const void* data, int size, int mode, const CreatorOptions
 		// 	zint->eci = static_cast<int>(ECI::UTF8);
 	}
 
+	if (opts.format() == BarcodeFormat::Telepen && (std::all_of((const char*)data, (const char*)data + size, IsDigit<char>)))
+		zint->symbology = BARCODE_TELEPEN_NUM;
+
 	int warning;
 	CHECK_WARN(ZBarcode_Encode_and_Buffer(zint, (uint8_t*)data, size, 0), warning);
 

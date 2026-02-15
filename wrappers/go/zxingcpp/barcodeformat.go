@@ -39,6 +39,9 @@ const (
 	BarcodeFormatISBN           BarcodeFormat = 0x6945
 	BarcodeFormatUPCA           BarcodeFormat = 0x6145
 	BarcodeFormatUPCE           BarcodeFormat = 0x6545
+	BarcodeFormatTelepen        BarcodeFormat = 0x2042
+	BarcodeFormatTelepenAlpha   BarcodeFormat = 0x3042
+	BarcodeFormatTelepenNumeric BarcodeFormat = 0x3142
 	BarcodeFormatOtherBarcode   BarcodeFormat = 0x2058
 	BarcodeFormatDXFilmEdge     BarcodeFormat = 0x7858
 	BarcodeFormatPDF417         BarcodeFormat = 0x204C
