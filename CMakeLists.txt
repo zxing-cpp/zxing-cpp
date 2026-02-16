@@ -114,3 +114,5 @@ endif()
 if (ZXING_C_API)
     add_subdirectory (wrappers/c)
 endif()
+
+add_subdirectory(wrappers/swift)
