@@ -108,7 +108,13 @@ static bool ParseOptions(int argc, char* argv[], CLI& cli)
 			PrintUsage(argv[0]);
 			exit(0);
 		} else if (is("-version") || is("--version")) {
-			std::cout << "ZXingWriter " << ZXING_VERSION_STR << "\n";
+			std::cout << "ZXingWriter version " << ZXING_VERSION_STR << " (with "
+#ifdef ZXING_USE_ZINT
+					  << "zint"
+#else
+					  << "zxing-cpp"
+#endif
+					  << " backend) \n";
 			exit(0);
 		} else if (nonOptArgCount == 0) {
 			try {

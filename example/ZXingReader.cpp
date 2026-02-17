@@ -156,7 +156,7 @@ static bool ParseOptions(int argc, char* argv[], ReaderOptions& options, CLI& cl
 			PrintUsage(argv[0]);
 			exit(0);
 		} else if (is("-version") || is("--version")) {
-			std::cout << "ZXingReader " << Version() << "\n";
+			std::cout << "ZXingReader version " << Version() << "\n";
 			exit(0);
 		} else {
 			cli.filePaths.push_back(argv[i]);
