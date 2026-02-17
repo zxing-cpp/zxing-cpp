@@ -617,7 +617,7 @@ if (ZXING_WRITERS_NEW)
     else()
         include(../zxing.cmake)
         zxing_add_package(zint zint https://github.com/zint/zint.git 2.16.0)
-        target_link_libraries (ZXing PRIVATE $<IF:$<BOOL:${ZINT_STATIC}>,zint-static,zint>)
+        target_link_libraries (ZXing PRIVATE $<IF:$<BOOL:${ZINT_STATIC}>,zint::zint-static,zint::zint>)
     endif()
 endif()
 
