@@ -39,9 +39,9 @@ static Character ReadDataCharacter(const PatternView& view)
 
 	auto pattern = NormalizedPatternFromE2E<CHAR_LEN>(view, 26);
 
-	int checkSum = 0;
+	int checksum = 0;
 	for (int v : std::ranges::reverse_view(pattern))
-		checkSum = 3 * checkSum + v;
+		checksum = 3 * checksum + v;
 
 	using Array7I = std::array<int, 7>;
 	Array7I oddPattern = {}, evnPattern = {};
@@ -66,7 +66,7 @@ static Character ReadDataCharacter(const PatternView& view)
 	int tEvn = T_EVEN[group];
 	int gSum = G_SUM[group];
 
-	return {vOdd * tEvn + vEvn + gSum, checkSum};
+	return {vOdd * tEvn + vEvn + gSum, checksum};
 }
 
 static std::string ConstructText(Character left, Character right)
@@ -135,8 +135,8 @@ BarcodeData DataBarLimitedReader::decodePattern(int rowNumber, PatternView& next
 			continue;
 
 		auto checkCharPattern = ToInt(NormalizedPatternFromE2E<CHAR_LEN>(checkView, 18));
-		int checkSum = IndexOf(CheckChars, checkCharPattern);
-		if (checkSum == -1)
+		int checksum = IndexOf(CheckChars, checkCharPattern);
+		if (checksum == -1)
 			continue;
 
 		printf("%f - ", modSize);
@@ -145,9 +145,9 @@ BarcodeData DataBarLimitedReader::decodePattern(int rowNumber, PatternView& next
 		auto left = ReadDataCharacter(leftView);
 		auto right = ReadDataCharacter(rightView);
 
-		printf("- %d, %d, %d\n", checkSum, left.value, right.value);
+		printf("- %d, %d, %d\n", checksum, left.value, right.value);
 
-		if (!left || !right || (left.checksum + 20 * right.checksum) % 89 != checkSum)
+		if (!left || !right || (left.checksum + 20 * right.checksum) % 89 != checksum)
 			continue;
 
 		return LinearBarcode(BarcodeFormat::DataBarLtd, ConstructText(left, right), rowNumber, next.pixelsInFront(),

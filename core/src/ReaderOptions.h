@@ -136,7 +136,7 @@ public:
 	ZX_PROPERTY(uint8_t, maxNumberOfSymbols, setMaxNumberOfSymbols)
 
 	/// Validate optional checksums where applicable (e.g. Code39, ITF)
-	ZX_PROPERTY(bool, validateOptionalCheckSum, setValidateOptionalCheckSum)
+	ZX_PROPERTY(bool, validateOptionalChecksum, setValidateOptionalChecksum)
 
 	/// If true, return the barcodes with errors as well (e.g. checksum errors, see @Barcode::error())
 	ZX_PROPERTY(bool, returnErrors, setReturnErrors)
@@ -172,12 +172,12 @@ public:
 	/// Deprecated / does nothing. See BarcodeFormat::Code39Ext and ::Code39Std to select full ASCII or standard Code39 mode.
 	ZX_DEPRECATED_PROPERTY(bool, tryCode39ExtendedMode, setTryCode39ExtendedMode, true, (void)v)
 
-	/// Deprecated (use validateOptionalCheckSum). The Code39 symbol has a valid checksum iff symbologyIdentifier()[2] is an odd digit
-	ZX_DEPRECATED_PROPERTY(bool, validateCode39CheckSum, setValidateCode39CheckSum, validateOptionalCheckSum(),
-						   validateOptionalCheckSum(v))
+	/// Deprecated (use validateOptionalChecksum). The Code39 symbol has a valid checksum iff symbologyIdentifier()[2] is an odd digit
+	ZX_DEPRECATED_PROPERTY(bool, validateCode39CheckSum, setValidateCode39CheckSum, validateOptionalChecksum(),
+						   validateOptionalChecksum(v))
 
-	/// Deprecated (use validateOptionalCheckSum). The ITF symbol has a valid checksum iff symbologyIdentifier()[2] == '1'.
-	ZX_DEPRECATED_PROPERTY(bool, validateITFCheckSum, setValidateITFCheckSum, validateOptionalCheckSum(), validateOptionalCheckSum(v))
+	/// Deprecated (use validateOptionalChecksum). The ITF symbol has a valid checksum iff symbologyIdentifier()[2] == '1'.
+	ZX_DEPRECATED_PROPERTY(bool, validateITFCheckSum, setValidateITFCheckSum, validateOptionalChecksum(), validateOptionalChecksum(v))
 
 #undef ZX_DEPRECATED_PROPERTY
 

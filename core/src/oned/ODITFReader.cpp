@@ -83,7 +83,7 @@ BarcodeData ITFReader::decodePattern(int rowNumber, PatternView& next, std::uniq
 	if (Size(txt) < (startsAtFirstBar && next.isAtLastBar() ? (minCharCount / 2) : minCharCount))
 		return {};
 
-	Error error = _opts.validateOptionalCheckSum() && !GTIN::IsCheckDigitValid(txt) ? ChecksumError() : Error();
+	Error error = _opts.validateOptionalChecksum() && !GTIN::IsCheckDigitValid(txt) ? ChecksumError() : Error();
 
 	// Symbology identifier ISO/IEC 16390:2007 Annex C Table C.1
 	// See also GS1 General Specifications 5.1.2 Figure 5.1.2-2

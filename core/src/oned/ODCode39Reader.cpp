@@ -116,7 +116,7 @@ static bool IsPZN(std::string_view str)
 BarcodeData Code39Reader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<RowReader::DecodingState>&) const
 {
 	// minimal number of characters that must be present (including start, stop and checksum characters)
-	int minCharCount = _opts.validateOptionalCheckSum() ? 4 : 3;
+	int minCharCount = _opts.validateOptionalChecksum() ? 4 : 3;
 	auto isStartOrStopSymbol = [](char c) { return c == '*'; };
 
 	// provide the indices with the narrow bars/spaces which have to be equally wide
@@ -179,10 +179,10 @@ BarcodeData Code39Reader::decodePattern(int rowNumber, PatternView& next, std::u
 		auto lastChar = txt.back();
 		txt.pop_back();
 		int checksum = TransformReduce(txt, 0, [](char c) { return IndexOf(ALPHABET, c); });
-		bool hasValidCheckSum = lastChar == ALPHABET[checksum % 43];
-		if (!hasValidCheckSum) {
+		bool hasValidChecksum = lastChar == ALPHABET[checksum % 43];
+		if (!hasValidChecksum) {
 			txt.push_back(lastChar);
-			if (_opts.validateOptionalCheckSum())
+			if (_opts.validateOptionalChecksum())
 				error = ChecksumError();
 		}
 
@@ -198,10 +198,10 @@ BarcodeData Code39Reader::decodePattern(int rowNumber, PatternView& next, std::u
 		if (format == None && _opts.hasFormat(Code39Std))
 			format = Code39;
 
-		if (hasValidCheckSum)
+		if (hasValidChecksum)
 			txt.push_back(lastChar);
 
-		symbologyIdentifier.modifier += (hasValidCheckSum ? 1 : 0) + (format == Code39Ext ? 4 : 0);
+		symbologyIdentifier.modifier += (hasValidChecksum ? 1 : 0) + (format == Code39Ext ? 4 : 0);
 	}
 
 	return LinearBarcode(format, std::move(txt), rowNumber, xStart, xStop, symbologyIdentifier, error);

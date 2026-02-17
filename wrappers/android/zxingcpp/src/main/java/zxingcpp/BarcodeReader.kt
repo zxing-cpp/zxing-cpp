@@ -65,12 +65,12 @@ public class BarcodeReader(public var options: Options = Options()) {
 		var downscaleThreshold: Int = 500,
 		var minLineCount: Int = 2,
 		var maxNumberOfSymbols: Int = 0xff,
-		var validateOptionalCheckSum: Boolean = false,
+		var validateOptionalChecksum: Boolean = false,
 		@Deprecated("See https://github.com/zxing-cpp/zxing-cpp/discussions/704")
 		var tryCode39ExtendedMode: Boolean = true,
-		@Deprecated("Use validateOptionalCheckSum")
+		@Deprecated("Use validateOptionalChecksum")
 		var validateCode39CheckSum: Boolean = false,
-		@Deprecated("Use validateOptionalCheckSum")
+		@Deprecated("Use validateOptionalChecksum")
 		var validateITFCheckSum: Boolean = false,
 		var returnErrors: Boolean = false,
 		var eanAddOnSymbol: EanAddOnSymbol = EanAddOnSymbol.IGNORE,

@@ -620,7 +620,7 @@ impl BarcodeReader {
 	property!(ReaderOptions, TryInvert, bool);
 	property!(ReaderOptions, TryDownscale, bool);
 	property!(ReaderOptions, IsPure, bool);
-	property!(ReaderOptions, ValidateOptionalCheckSum, bool);
+	property!(ReaderOptions, ValidateOptionalChecksum, bool);
 	property!(ReaderOptions, ReturnErrors, bool);
 	property!(ReaderOptions, Binarizer, Binarizer);
 	property!(ReaderOptions, EanAddOnSymbol, EanAddOnSymbol);

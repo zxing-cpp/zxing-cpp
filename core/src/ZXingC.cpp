@@ -310,7 +310,7 @@ ZX_PROPERTY(bool, tryDownscale, TryDownscale)
 	ZX_PROPERTY(bool, tryDenoise, TryDenoise)
 #endif
 ZX_PROPERTY(bool, isPure, IsPure)
-ZX_PROPERTY(bool, validateOptionalCheckSum, ValidateOptionalCheckSum)
+ZX_PROPERTY(bool, validateOptionalChecksum, ValidateOptionalChecksum)
 ZX_PROPERTY(bool, returnErrors, ReturnErrors)
 ZX_PROPERTY(int, minLineCount, MinLineCount)
 ZX_PROPERTY(int, maxNumberOfSymbols, MaxNumberOfSymbols)

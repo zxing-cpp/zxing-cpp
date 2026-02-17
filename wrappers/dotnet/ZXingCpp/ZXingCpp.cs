@@ -32,8 +32,8 @@ internal class Dll
 	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_ReaderOptions_getTryDownscale(IntPtr opts);
 	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_ReaderOptions_getIsPure(IntPtr opts);
 	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setIsPure(IntPtr opts, bool isPure);
-	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setValidateOptionalCheckSum(IntPtr opts, bool validateOptionalCheckSum);
-	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_ReaderOptions_getValidateOptionalCheckSum(IntPtr opts);
+	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setValidateOptionalChecksum(IntPtr opts, bool validateOptionalChecksum);
+	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_ReaderOptions_getValidateOptionalChecksum(IntPtr opts);
 	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setReturnErrors(IntPtr opts, bool returnErrors);
 	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_ReaderOptions_getReturnErrors(IntPtr opts);
 	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setFormats(IntPtr opts, BarcodeFormat[] formats, int count);
@@ -490,10 +490,10 @@ public class ReaderOptions : IDisposable
 	}
 
 	/// <summary>Validate optional checksums (e.g., Code39, ITF).</summary>
-	public bool ValidateOptionalCheckSum
+	public bool ValidateOptionalChecksum
 	{
-		get => ZXing_ReaderOptions_getValidateOptionalCheckSum(_d);
-		set => ZXing_ReaderOptions_setValidateOptionalCheckSum(_d, value);
+		get => ZXing_ReaderOptions_getValidateOptionalChecksum(_d);
+		set => ZXing_ReaderOptions_setValidateOptionalChecksum(_d, value);
 	}
 
 	/// <summary>Return invalid barcodes with error information instead of skipping them.</summary>

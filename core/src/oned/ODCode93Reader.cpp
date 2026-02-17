@@ -29,14 +29,14 @@ static bool
 CheckOneChecksum(const std::string& result, int checkPosition, int weightMax)
 {
 	int weight = 1;
-	int checkSum = 0;
+	int checksum = 0;
 	for (int i = checkPosition - 1; i >= 0; i--) {
-		checkSum += weight * IndexOf(ALPHABET, result[i]);
+		checksum += weight * IndexOf(ALPHABET, result[i]);
 		if (++weight > weightMax) {
 			weight = 1;
 		}
 	}
-	return result[checkPosition] == ALPHABET[checkSum % 47];
+	return result[checkPosition] == ALPHABET[checksum % 47];
 }
 
 static bool
