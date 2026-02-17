@@ -19,7 +19,7 @@ plugins {
 }
 
 group = "io.github.zxing-cpp"
-version = "3.0.0"
+version = "3.0.2"
 
 Properties().apply {
     rootProject.file("local.properties").takeIf { it.exists() && it.isFile }?.let { load(it.reader()) }
