@@ -72,8 +72,9 @@ P copy(const C& c, int* len) noexcept
 
 
 extern "C" {
+
 /*
- * ZXing/ImageView.h
+ * MARK: - ImageView.h
  */
 
 ZXing_ImageView* ZXing_ImageView_new(const uint8_t* data, int width, int height, ZXing_ImageFormat format, int rowStride,
@@ -131,7 +132,7 @@ ZXing_ImageFormat ZXing_Image_format(const ZXing_Image* img)
 }
 
 /*
- * ZXing/BarcodeFormat.h
+ * MARK: - BarcodeFormat.h
  */
 
 ZXing_BarcodeFormat ZXing_BarcodeFormatSymbology(ZXing_BarcodeFormat format)
@@ -188,7 +189,7 @@ char* ZXing_BarcodeFormatsToString(const ZXing_BarcodeFormat* formats, int count
 }
 
 /*
- * ZXing/Barcode.h
+ * MARK: - Barcode.h
  */
 
 char* ZXing_ContentTypeToString(ZXing_ContentType type)
@@ -284,7 +285,7 @@ ZXing_Barcode* ZXing_Barcodes_move(ZXing_Barcodes* barcodes, int i)
 }
 
 /*
- * ZXing/ReaderOptions.h
+ * MARK: - ReaderOptions.h
  */
 
 ZXing_ReaderOptions* ZXing_ReaderOptions_new()
@@ -343,7 +344,7 @@ ZX_ENUM_PROPERTY(TextMode, textMode, TextMode)
 #undef ZX_ENUM_PROPERTY
 
 /*
- * ZXing/ReadBarcode.h
+ * MARK: - ReadBarcode.h
  */
 
 ZXing_Barcodes* ZXing_ReadBarcodes(const ZXing_ImageView* iv, const ZXing_ReaderOptions* opts)
@@ -358,7 +359,7 @@ ZXing_Barcodes* ZXing_ReadBarcodes(const ZXing_ImageView* iv, const ZXing_Reader
 
 
 /*
- * ZXing/WriteBarcode.h
+ * MARK: - CreateBarcode.h
  */
 
 ZXing_CreatorOptions* ZXing_CreatorOptions_new(ZXing_BarcodeFormat format)
@@ -396,6 +397,10 @@ void ZXing_CreatorOptions_setOptions(ZXing_CreatorOptions* opts, const char* val
 	opts->options(val);
 }
 
+
+/*
+ * MARK: - WriteBarcode.h
+ */
 
 ZXing_WriterOptions* ZXing_WriterOptions_new()
 {
@@ -443,7 +448,7 @@ ZXing_Image* ZXing_WriteBarcodeToImage(const ZXing_Barcode* barcode, const ZXing
 }
 
 /*
- * ZXingC.h
+ * MARK: - ZXingC.h
  */
 
 char* ZXing_LastErrorMsg()

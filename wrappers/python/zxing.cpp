@@ -25,6 +25,8 @@ static void deprecation_warning(std::string_view msg)
 	warnings.attr("warn")(msg, builtins.attr("DeprecationWarning"));
 }
 
+// MARK: - Reader
+
 auto read_barcodes_impl(py::object _image, const BarcodeFormats& formats, bool try_rotate, bool try_downscale, bool try_invert,
 						TextMode text_mode, Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol, bool return_errors,
 						uint8_t max_number_of_symbols = 0xff)
@@ -178,6 +180,8 @@ Barcodes read_barcodes(py::object _image, const BarcodeFormats& formats, bool tr
 							  return_errors);
 }
 
+// MARK: - Writer
+
 auto image_view(py::buffer buffer, int width, int height, ImageFormat format, int rowStride, int pixStride)
 {
 	const auto _type = std::string(py::str(py::type::of(buffer)));
@@ -225,6 +229,8 @@ Image write_barcode(BarcodeFormat format, py::object content, int width, int hei
 	return write_barcode_to_image(barcode, -std::max(width, height), false, quiet_zone != 0);
 }
 
+// MARK: - Python
+
 PYBIND11_MODULE(zxingcpp, m)
 {
 	m.doc() = "python bindings for zxing-cpp";
@@ -232,6 +238,8 @@ PYBIND11_MODULE(zxingcpp, m)
 	// forward declaration of BarcodeFormats to fix BarcodeFormat function header typings
 	// see https://github.com/zxing-cpp/zxing-cpp/pull/271
 	py::class_<BarcodeFormats> pyBarcodeFormats(m, "BarcodeFormats");
+
+// MARK: - Enums
 
 	py::enum_<BarcodeFormat>(m, "BarcodeFormat", py::arithmetic{}, "Enumeration of zxing supported barcode formats")
 #define X(NAME, SYM, VAR, FLAGS, ZINT, ENABLED, HRI) .value(#NAME, BarcodeFormat::NAME)
@@ -319,6 +327,9 @@ PYBIND11_MODULE(zxingcpp, m)
 		.value("BGRA", ImageFormat::BGRA)
 		.value("ABGR", ImageFormat::ABGR)
 		.export_values();
+
+// MARK: - Classes
+
 	py::class_<PointI>(m, "Point", "Represents the coordinates of a point in an image")
 		.def_readonly("x", &PointI::x,
 			":return: horizontal coordinate of the point\n"
@@ -419,6 +430,9 @@ PYBIND11_MODULE(zxingcpp, m)
 			  py::arg("add_quiet_zones") = true)
 		;
 	m.attr("Result") = m.attr("Barcode"); // alias to deprecated name for the Barcode class
+
+// MARK: - Functions
+
 	m.def("barcode_format_from_str", &BarcodeFormatFromString,
 		py::arg("str"),
 		"Convert string to BarcodeFormat\n\n"

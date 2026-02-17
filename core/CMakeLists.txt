@@ -81,7 +81,7 @@ if(HAS_FILE_PREFIX_ARG)
     list (APPEND ZXING_PRIVATE_FLAGS "${FILE_PREFIX_ARG}")
 endif()
 
-################# Source files
+# MARK: - COMMON_FILES
 
 set (COMMON_FILES
     src/Barcode.h
@@ -207,6 +207,8 @@ if (ZXING_WRITERS_OLD)
     )
 endif()
 
+# MARK: - PUBLIC_HEADERS
+
 # define subset of public headers that get distributed with the binaries
 set (PUBLIC_HEADERS
     src/Barcode.h
@@ -240,6 +242,8 @@ if (ZXING_WRITERS_OLD)
     )
 endif()
 # end of public header set
+
+# MARK: - READERS/WRITERS
 
 if (ZXING_READERS AND ZXING_ENABLE_AZTEC)
     set (AZTEC_FILES ${AZTEC_FILES}
@@ -480,6 +484,8 @@ source_group (Sources\\oned FILES ${ONED_FILES})
 source_group (Sources\\pdf417 FILES ${PDF417_FILES})
 source_group (Sources\\qrcode FILES ${QRCODE_FILES})
 
+# MARK: - Library target
+
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 find_package(Threads REQUIRED)
@@ -520,6 +526,8 @@ if (ZXING_READERS OR ZXING_WRITERS_OLD)
     target_sources(ZXing PRIVATE ${LIBZUECI_FILES})
     source_group (Sources\\libzueci FILES ${LIBZUECI_FILES})
 endif()
+
+# MARK: - ZINT
 
 if (ZXING_WRITERS_NEW)
     if (ZXING_USE_BUNDLED_ZINT)
@@ -638,6 +646,8 @@ endif()
 # TODO: use FILE_SET HEADERS instead of PUBLIC_HEADER and target_sources, once CMake 3.23+ is required
 set_target_properties(ZXing PROPERTIES PUBLIC_HEADER "${PUBLIC_HEADERS}")
 
+# MARK: - Precompiled headers
+
 set(PRECOMPILE_HEADERS ${PUBLIC_HEADERS})
 list(REMOVE_ITEM PRECOMPILE_HEADERS
     "$<$<BOOL:${ZXING_C_API}>:${CMAKE_CURRENT_SOURCE_DIR}/src/ZXingC.h>"
@@ -683,6 +693,8 @@ if(CMAKE_BUILD_TYPE MATCHES "Release|RelWithDebInfo")
         PROPERTIES SKIP_PRECOMPILE_HEADERS ON COMPILE_FLAGS -Os)
     endif()
 endif()
+
+# MARK: - Installation
 
 include (GNUInstallDirs)
 

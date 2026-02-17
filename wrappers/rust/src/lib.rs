@@ -84,6 +84,8 @@ fn last_error() -> Error {
 	}
 }
 
+// MARK: - Convenience macros
+
 macro_rules! last_error_or {
 	($expr:expr) => {
 		match unsafe { ZXing_LastErrorMsg().as_mut() } {
@@ -207,6 +209,8 @@ macro_rules! make_zxing_enum {
 	}
 }
 
+// MARK: - Enums
+
 #[rustfmt::skip] // workaround for broken #[rustfmt::skip::macros(make_zxing_enum)]
 make_zxing_enum!(ImageFormat { Lum, LumA, RGB, BGR, RGBA, ARGB, BGRA, ABGR });
 #[rustfmt::skip]
@@ -247,6 +251,8 @@ impl BarcodeFormat {
 		unsafe { transmute(ZXing_BarcodeFormatSymbology(transmute(self))) }
 	}
 }
+
+// MARK: - BarcodeFormats
 
 #[derive(Clone, Debug, Default)]
 pub struct BarcodeFormats(pub Vec<BarcodeFormat>);
@@ -359,6 +365,8 @@ impl FromStr for BarcodeFormats {
 	}
 }
 
+// MARK: - ImageView
+
 #[derive(Debug, PartialEq)]
 struct ImageViewOwner<'a>(*mut ZXing_ImageView, PhantomData<&'a u8>);
 
@@ -464,6 +472,8 @@ impl<'a> TryFrom<&'a image::DynamicImage> for ImageView<'a> {
 	}
 }
 
+// MARK: - Image, Error
+
 make_zxing_class!(Image, ZXing_Image);
 
 impl Image {
@@ -503,6 +513,8 @@ pub enum BarcodeError {
 	Unsupported(String),
 }
 
+// MARK: - Point, Position
+
 pub type PointI = ZXing_PointI;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -526,6 +538,8 @@ impl Display for Position {
 		})
 	}
 }
+
+// MARK: - Barcode
 
 make_zxing_class!(Barcode, ZXing_Barcode);
 
@@ -596,6 +610,8 @@ impl Barcode {
 	}
 }
 
+// MARK: - BarcodeReader
+
 make_zxing_class_with_default!(BarcodeReader, ZXing_ReaderOptions);
 
 impl BarcodeReader {
@@ -657,6 +673,8 @@ impl BarcodeReader {
 	}
 }
 
+// MARK: - BarcodeCreator
+
 make_zxing_class!(BarcodeCreator, ZXing_CreatorOptions);
 
 impl BarcodeCreator {
@@ -679,6 +697,8 @@ impl BarcodeCreator {
 	}
 }
 
+// MARK: - BarcodeWriter
+
 make_zxing_class_with_default!(BarcodeWriter, ZXing_WriterOptions);
 
 impl BarcodeWriter {
@@ -687,6 +707,8 @@ impl BarcodeWriter {
 	property!(WriterOptions, AddHRT, add_hrt, bool);
 	property!(WriterOptions, AddQuietZones, bool);
 }
+
+// MARK: - Convenience Functions
 
 pub fn read() -> BarcodeReader {
 	BarcodeReader::default()

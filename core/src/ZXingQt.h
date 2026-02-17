@@ -53,6 +53,7 @@ inline std::string_view qba2sv(const QByteArray& ba) noexcept
 
 } // namespace Detail
 
+// MARK: - Enums and Types
 
 enum class BarcodeFormat : unsigned int
 {
@@ -155,6 +156,8 @@ public:
 
 	QPoint center() const { return std::accumulate(this->begin(), this->end(), QPoint(0, 0)) / 4; }
 };
+
+// MARK: - Barcode
 
 class Barcode : private ZXing::Barcode
 {
@@ -265,6 +268,8 @@ public:
 	}
 
 };
+
+// MARK: - Read
 
 inline QList<Barcode> ReadBarcodes(const QImage& img, const ReaderOptions& opts = {})
 {
@@ -389,6 +394,8 @@ public: \
 	} \
 	Q_SIGNAL void name##Changed();
 
+
+// MARK: - BarcodeReader
 
 class BarcodeReader : public QObject, private ReaderOptions
 {
@@ -535,6 +542,8 @@ Q_DECLARE_METATYPE(ZXingQt::Position)
 Q_DECLARE_METATYPE(ZXingQt::Barcode)
 
 #ifdef QT_QML_LIB
+
+// MARK: - QML Integration
 
 #include <QQmlEngine>
 
