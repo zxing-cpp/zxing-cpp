@@ -1,0 +1,26 @@
+name: Publish Source
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  publish-source:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        submodules: true
+
+    - name: Create source archives
+      run: python .github/create_release_archive.py
+
+    - name: Create test samples tarball
+      run: tar -czf test_samples.tar.gz test/samples
+
+    - name: Upload to release
+      if: github.event_name == 'release'
+      run: gh release upload ${{ github.event.release.tag_name }} zxing-cpp-${{ github.event.release.tag_name }}.tar.gz zxing-cpp-${{ github.event.release.tag_name }}.zip test_samples.tar.gz
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
