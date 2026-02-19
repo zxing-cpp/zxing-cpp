@@ -1,4 +1,4 @@
-name: gh-pages
+name: publish-gh-pages
 
 on:
   # Runs on pushes targeting the default branch

@@ -1,4 +1,4 @@
-name: Publish Source
+name: publish-source
 
 on:
   release:
