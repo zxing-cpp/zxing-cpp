@@ -15,7 +15,7 @@
     <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="3.119.1" Condition="$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))" />
     <PackageReference Include="SkiaSharp.NativeAssets.macOS" Version="3.119.1" Condition="$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))" />
     <PackageReference Include="SkiaSharp.NativeAssets.Win32" Version="3.119.1" Condition="$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))" />
-    <PackageReference Include="Magick.NET-Q8-x64" Version="14.10.2" />
+    <PackageReference Include="Magick.NET-Q8-x64" Version="14.10.3" />
     <ProjectReference Include="..\ZXingCpp\ZXingCpp.csproj" />
   </ItemGroup>
 
