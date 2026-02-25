@@ -19,7 +19,7 @@
 static void PrintUsage(const char* exePath)
 {
 	std::print("ZXingBarcodeFormat - A command line tool to generate wrapper source code for the BarcodeFormat enum\n\n");
-	std::println("Usage: {} <C#|Go|Rust|Swift>", exePath);
+	std::println("Usage: {} <C#|Go|K/N|Rust|Swift>", exePath);
 }
 
 static void PrintBFs(
@@ -46,6 +46,8 @@ int main(int argc, char* argv[])
 		std::println(")");
 	} else if (is("C#")) {
 		PrintBFs("	public static readonly BarcodeFormat {:15} = new BarcodeFormat(0x{:04X});");
+	} else if (is("K/N")) {
+		PrintBFs("	{0:15}(ZXing_BarcodeFormat.ZXing_BarcodeFormat_{0}),");
 	} else if (is("Rust")) {
 		PrintBFs("pub const ZXing_BarcodeFormat_{}: ZXing_BarcodeFormat = 0x{:04X};");
 	} else if (is("Swift")) {
