@@ -5,10 +5,14 @@
 
 #include "BarcodeFormat.h"
 
+#include <version>
+#ifdef __cpp_lib_format
+
 #include "StdPrint.h"
 
 #include <cctype>
 #include <cstring>
+#include <format>
 #include <functional>
 #include <string>
 
@@ -64,3 +68,15 @@ int main(int argc, char* argv[])
 
 	return 0;
 }
+
+#else
+
+#include <cstdio>
+
+int main()
+{
+	printf("This tool requires C++20 support with std::format. Please use a compatible compiler.\n");
+	return -1;
+}
+
+#endif
