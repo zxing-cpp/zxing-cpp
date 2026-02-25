@@ -33,3 +33,6 @@ if (ZXING_READERS)
         message("INFO: OpenCV not found, skipping ZXingOpenCV example")
     endif()
 endif()
+
+add_executable (ZXingBarcodeFormat ZXingBarcodeFormat.cpp)
+target_link_libraries (ZXingBarcodeFormat ZXing::ZXing)

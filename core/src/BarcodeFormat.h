@@ -16,9 +16,9 @@
 // FLAGS[4]: R == Retail, I == Industrial, O == Other
 
 // clang-format off
-//    NAME,            SYM, VAR, FLAGS, ZINT, ENABLED,                 HRI
+//    NAME,             SYM, VAR,  FLAGS, ZINT, ENABLED,                 HRI
 #define ZX_BCF_LIST(X) \
-	X(None,              0,   0,  "     ",   0, 1,                       "None") \
+	X(None,              0 ,  0,  "     ",   0, 1,                       "None") \
 	X(All,              '*', '*', "     ",   0, 1,                       "All") \
 	X(AllReadable,      '*', 'r', "     ",   0, 1,                       "All Readable") \
 	X(AllCreatable,     '*', 'w', "     ",   0, 1,                       "All Creatable") \
