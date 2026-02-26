@@ -1,0 +1,1 @@
+../../../../../core/src/ZXingC.h

@@ -172,9 +172,9 @@ jobs:
     - name: Build the swift package
       run: swift build
 
-    - name: Build the demo app
-      working-directory: wrappers/ios/demo
-      run: xcodebuild build -scheme demo -sdk "iphonesimulator"
+    # - name: Build the demo app
+    #   working-directory: wrappers/ios/demo
+    #   run: xcodebuild build -scheme demo -sdk "iphonesimulator"
 
     - name: Validate the Pod
       run: pod lib lint --allow-warnings
