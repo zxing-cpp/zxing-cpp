@@ -66,6 +66,14 @@ TEST(AZHighLevelEncoderTest, HighLevelEncode)
 	TestHighLevelEncodeString("ABCdEFG",
 		//'A'   'B'   'C'   B/S    =1    'd'     'E'   'F'   'G'
 		"...X. ...XX ..X.. XXXXX ....X .XX..X.. ..XX. ..XXX .X...");
+	// Mixed table '}' instead of '~' fix
+	TestHighLevelEncodeString("~",
+		//M/L   '~'
+		"XXX.X XX.X.");
+	// Mixed table '}' instead of '~' fix
+	TestHighLevelEncodeString("}",
+		//P/S   '}'
+		"..... XXXX.");
 
 	TestHighLevelEncodeString(
 		// Found on an airline boarding pass.  Several stretches of Binary shift are
