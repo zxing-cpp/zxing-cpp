@@ -17,6 +17,7 @@
 #include "Version.h"
 #endif
 
+#include <cassert>
 #include <cctype>
 
 namespace ZXing {
