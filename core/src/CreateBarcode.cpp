@@ -12,10 +12,7 @@
 #include "DecoderResult.h"
 #include "DetectorResult.h"
 #include "JSON.h"
-
-#if !defined(ZXING_READERS) && !defined(ZXING_WRITERS)
 #include "Version.h"
-#endif
 
 #ifdef ZXING_READERS
 #include "ReadBarcode.h"

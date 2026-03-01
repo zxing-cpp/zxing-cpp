@@ -9,10 +9,7 @@
 #include "BarcodeData.h"
 #include "BitMatrix.h"
 #include "CreateBarcode.h"
-
-#if !defined(ZXING_READERS) && !defined(ZXING_WRITERS)
 #include "Version.h"
-#endif
 
 #include <sstream>
 

@@ -6,12 +6,10 @@
 #include "ReadBarcode.h"
 #include "ReaderOptions.h"
 #include "BarcodeData.h"
+#include "Version.h"
 
 #include <utility>
 
-#if !defined(ZXING_READERS) && !defined(ZXING_WRITERS)
-#include "Version.h"
-#endif
 
 #ifdef ZXING_READERS
 #include "GlobalHistogramBinarizer.h"

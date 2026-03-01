@@ -11,11 +11,8 @@
 #include "ECI.h"
 #include "ReaderOptions.h"
 #include "SymbologyIdentifier.h"
-#include "ZXAlgorithms.h"
-
-#if !defined(ZXING_READERS) && !defined(ZXING_WRITERS)
 #include "Version.h"
-#endif
+#include "ZXAlgorithms.h"
 
 #include <string>
 #include <string_view>
