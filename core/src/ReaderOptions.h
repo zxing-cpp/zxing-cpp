@@ -156,10 +156,13 @@ public:
 
 #undef ZX_PROPERTY
 
-	// Silence deprecated-declarations warnings, only happening here for deprecated inline functions and only with GCC
+	// Silence deprecated-declarations warnings, only happening here for deprecated inline functions
 #ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#elif defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4996)
 #endif
 
 #define ZX_DEPRECATED_PROPERTY(TYPE, NAME, SETTER, GET_IMPL, SET_IMPL) \
@@ -183,6 +186,8 @@ public:
 
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
+#elif defined(_MSC_VER)
+#pragma warning(pop)
 #endif
 
 #ifdef ZXING_INTERNAL
