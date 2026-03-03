@@ -9,6 +9,8 @@
 #include "ECI.h"
 #include "Utf.h"
 #include "ZXAlgorithms.h"
+#include "Version.h"
+
 #ifdef ZXING_USE_ZINT
 #include <zint.h>
 #else
