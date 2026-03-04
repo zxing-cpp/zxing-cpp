@@ -16,13 +16,11 @@ extern "C" struct zint_symbol;
 namespace ZXing {
 
 /**
- * @class CreatorOptions
  * @brief Configuration options for barcode creation.
  *
  * This class encapsulates all the parameters needed to create a barcode with
  * specific format and settings.
  *
- * @details
  * The options property is a string that can contain multiple key-value pairs
  * separated by commas. Each key-value pair configures a specific aspect of the
  * barcode generation process and are dependent on the used BarcodeFormat.
@@ -31,8 +29,10 @@ namespace ZXing {
  *
  * For a list of all supported options, see the list of read-only properties below.
  *
- * @example
+ * ```c++
+ * // example of creating a QR code with 30% error correction level and GS1 mode enabled
  * auto opts = CreatorOptions(BarcodeFormat::QRCode, "ecLevel=30%, gs1");
+ * ```
  */
 class CreatorOptions
 {
@@ -63,35 +63,50 @@ public:
 #define ZX_RO_PROPERTY(TYPE, NAME) \
 	std::optional<TYPE> NAME() const noexcept;
 
-	ZX_RO_PROPERTY(std::string, ecLevel); // most 2D symbologies: ecLevel, e.g. "30%", see also libzint doc
-	ZX_RO_PROPERTY(std::string, eci);     // most 2D symbologies: specify ECI designator to use
+	/// most 2D symbologies: ecLevel, e.g. "30%", see also libzint docs for supported values per symbology
+	ZX_RO_PROPERTY(std::string, ecLevel);
+
+	/// most 2D symbologies: specify ECI designator to use (e.g. "UTF-8" or "26" for UTF-8), see also libzint docs
+	ZX_RO_PROPERTY(std::string, eci);
+
+	/// GS1 mode
 	ZX_RO_PROPERTY(bool, gs1);
-	ZX_RO_PROPERTY(bool, readerInit);     // most 2D symbologies: set the "reader init" flag
-	ZX_RO_PROPERTY(bool, forceSquare);    // DataMatrix: only consider square symbol versions
-	ZX_RO_PROPERTY(int, columns);         // specify number of columns (e.g. for DataBarExpStk, PDF417)
-	ZX_RO_PROPERTY(int, rows);            // specify number of rows (e.g. for DataBarExpStk, PDF417)
-	ZX_RO_PROPERTY(int, version);         // most 2D symbologies: specify the version/size of the symbol
-	ZX_RO_PROPERTY(int, dataMask);        // QRCode/MicroQRCode: specify dataMask to use
+
+	/// most 2D symbologies: set the "reader init" flag
+	ZX_RO_PROPERTY(bool, readerInit);
+
+	/// DataMatrix: only consider square symbol versions
+	ZX_RO_PROPERTY(bool, forceSquare);
+
+	/// specify number of columns (e.g. for DataBarExpStk, PDF417)
+	ZX_RO_PROPERTY(int, columns);
+
+	/// specify number of rows (e.g. for DataBarExpStk, PDF417)
+	ZX_RO_PROPERTY(int, rows);
+
+	/// most 2D symbologies: specify the version/size of the symbol
+	ZX_RO_PROPERTY(int, version);
+
+	/// QRCode/MicroQRCode: specify dataMask to use
+	ZX_RO_PROPERTY(int, dataMask);
 
 #undef ZX_RO_PROPERTY
 };
 
 /**
- * Generate barcode from unicode text
+ * @brief Generate Barcode from unicode text
  *
  * @param contents  UTF-8 string to encode into a barcode
  * @param options  CreatorOptions (including BarcodeFormat)
- * @return #Barcode  generated barcode
  */
 Barcode CreateBarcodeFromText(std::string_view contents, const CreatorOptions& options);
 
 /**
- * Generate barcode from raw binary data
+ * @brief Generate Barcode from raw binary data
  *
  * @param data  array of bytes to encode into a barcode
  * @param size  size of byte array
  * @param options  CreatorOptions (including BarcodeFormat)
- * @return #Barcode  generated barcode
  */
 Barcode CreateBarcodeFromBytes(const void* data, int size, const CreatorOptions& options);
 

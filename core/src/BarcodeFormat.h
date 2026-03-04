@@ -84,20 +84,31 @@
 namespace ZXing {
 
 /**
-* Enumerates barcode formats known to this package.
-*/
+ * @brief Enumerates barcode formats known to this package.
+ *
+ * Some formats represent a symbology (e.g. EANUPC) with multiple variants (EAN13, EAN8, etc.), while others represent a specific
+ * symbology variant (e.g. MicroQRCode). Both can be used with ReaderOptions::formats() to select which formats to read/scan for, but
+ * only specific variants are returned by the library when reading barcodes.
+ *
+ * If the format name starts with "All", it is a pseudo-format representing a set of formats (e.g. AllLinear, AllGS1, etc.). These can
+ * be used for filtering and selection purposes, but are not returned by the library when reading barcodes and can not be used when
+ * creating barcodes.
+ */
 enum class BarcodeFormat : unsigned int
 {
-#define X(NAME, SYM, VAR, FLAGS, ZINT, ENABLED, HRI) NAME = ZX_BCF_ID(SYM, VAR),
-	ZX_BCF_LIST(X)
-#undef X
+#define ZX_(NAME, SYM, VAR, FLAGS, ZINT, ENABLED, HRI) NAME = ZX_BCF_ID(SYM, VAR),
+	ZX_BCF_LIST(ZX_)
+#undef ZX_
+	/// @cond DEPRECATED
 	DataBarExpanded [[deprecated("Use DataBarExp instead")]] = DataBarExp,
 	DataBarLimited [[deprecated("Use DataBarLtd instead")]] = DataBarLtd,
 	LinearCodes [[deprecated("Use AllLinear instead")]] = AllLinear,
 	MatrixCodes [[deprecated("Use AllMatrix instead")]] = AllMatrix,
 	Any [[deprecated("Use All instead")]] = All,
+	/// @endcond
 };
 
+/// @cond INTERNAL
 inline char SymbologyKey(const BarcodeFormat& format)
 {
 	return uint32_t(format) & 0xFF;
@@ -112,17 +123,18 @@ inline std::string IdStr(const BarcodeFormat& format)
 {
 	return {']', SymbologyKey(format), VariantKey(format)};
 }
+/// @endcond
 
-/// @brief Returns the symbology (base type) of the given barcode format (e.g. EAN/UPC for EAN13, EAN8, UPCA, etc.).
+/// Returns the symbology (base type) of the given barcode format (e.g. EAN/UPC for EAN13, EAN8, UPCA, etc.).
 BarcodeFormat Symbology(BarcodeFormat format);
 
-/// @brief Returns the human-readable name of the given barcode format.
+/// Returns the human-readable name of the given barcode format.
 std::string_view Name(BarcodeFormat format);
 
-/// Test if left hand side (e == element) is 'inside' right hand side (s == set) (e.g. MicroQRCode <= QRCode)
+/// Test if left hand side (e == element) is 'inside' right hand side (s == set) (e.g. MicroQRCode <= QRCode).
 bool operator<=(BarcodeFormat e, BarcodeFormat s);
 
-/// Test if the two BarcodeFormats have a non-empty intersection (e.g. AllMatrix & QRCode)
+/// Test if the two BarcodeFormats have a non-empty intersection (e.g. AllMatrix & QRCode).
 bool operator&(BarcodeFormat a, BarcodeFormat b);
 
 template <std::size_t N>
@@ -149,16 +161,13 @@ constexpr bool operator&(BarcodeFormat lhs, const BarcodeFormatArray<N>& rhs)
 	return std::any_of(rhs.begin(), rhs.end(), [lhs](BarcodeFormat bt) { return lhs & bt; });
 }
 
-/**
- * @brief Parse a string into a BarcodeFormat. '-', '_', '/' and ' ' are optional.
- * @throws std::invalid_parameter if the string can not be fully parsed.
- */
+/// @brief Parse a string into a BarcodeFormat. '-', '_', '/' and ' ' are optional.
+/// @throws std::invalid_parameter if the string can not be fully parsed.
 BarcodeFormat BarcodeFormatFromString(std::string_view str);
 
 std::string ToString(BarcodeFormat format);
 
 /**
- * @class BarcodeFormats
  * @brief A small container representing a collection of BarcodeFormat values.
  *
  * BarcodeFormats encapsulates an ordered collection of BarcodeFormat values and
@@ -180,7 +189,9 @@ public:
 	BarcodeFormats(BarcodeFormat f) : formats_{f} {}
 
 	/// @brief Constructs a collection from a compile-time array of BarcodeFormat values.
-	/// @example BarcodeFormats formats = BarcodeFormat::QRCode | BarcodeFormat::EAN13;
+	/// ```c++
+	/// BarcodeFormats formats = BarcodeFormat::QRCode | BarcodeFormat::EAN13;
+	/// ```
 	template <std::size_t N>
 	BarcodeFormats(BarcodeFormatArray<N> formats) : formats_{formats.begin(), formats.end()}
 	{
@@ -189,7 +200,7 @@ public:
 
 	BarcodeFormats(std::vector<BarcodeFormat>&& formats) : formats_(std::move(formats)) { normalize(); }
 
-	/// @brief Constructs a collection from a textual representation (e.g. a comma-separated list of format identifiers).
+	/// Constructs a collection from a textual representation (e.g. a comma-separated list of format identifiers).
 	explicit BarcodeFormats(std::string_view str);
 
 	BarcodeFormats(const BarcodeFormats&) = default;
@@ -213,13 +224,14 @@ public:
 	// BarcodeFormats&& operator|(BarcodeFormat bt) &&;
 	// BarcodeFormats&& operator|(const BarcodeFormats& other) &&;
 
-	/// @brief Returns a BarcodeFormats containing the intersection of this collection and other.
+	/// Returns a BarcodeFormats containing the intersection of this collection and other.
 	BarcodeFormats operator&(const BarcodeFormats& other);
 
-	/// @brief Returns a list of available/supported barcode formats, optionally filtered by the provided formats.
-	/// @example BarcodeFormats::list(BarcodeFormat::AllReadable);
+	/// Returns a list of available/supported barcode formats, optionally filtered by the provided formats.
+	/// e.g. `BarcodeFormats::list(BarcodeFormat::AllReadable);`
 	static BarcodeFormats list(const BarcodeFormats& filter = {});
 
+	/// @cond DEPRECATED
 	[[deprecated]] inline int count() const noexcept { return size(); }
 	[[deprecated]] inline bool testFlag(BarcodeFormat format) const noexcept
 	{
@@ -231,6 +243,7 @@ public:
 			return std::any_of(formats.begin(), formats.end(), [fo](BarcodeFormat fi) { return fo & fi; });
 		});
 	}
+	/// @endcond
 };
 
 inline bool operator<=(BarcodeFormat lhs, const BarcodeFormats& rhs)
@@ -243,13 +256,10 @@ inline bool operator&(BarcodeFormat lhs, const BarcodeFormats& rhs)
 	return std::any_of(rhs.begin(), rhs.end(), [lhs](BarcodeFormat bf) { return lhs & bf; });
 }
 
-/**
- * @brief Parse a string into a set of BarcodeFormats.
- * Separators can be (any combination of) '|' or ','.
- * Input can be lower case and any of '-', '_', '/' or ' ' are optional.
- * e.g. "EAN-8 | qrcode, Itf" would be parsed into [EAN8, QRCode, ITF].
- * @throws std::invalid_parameter if the string can not be fully parsed.
- */
+/// @brief Parses a string into a set of BarcodeFormats.
+/// Separators can be (any combination of) '|' or ','. Input can be lower case and any of '-', '_', '/' or ' ' are optional,
+/// e.g. "EAN-8 | qrcode, Itf" would be parsed into [EAN8, QRCode, ITF].
+/// @throws std::invalid_parameter if the string can not be fully parsed.
 BarcodeFormats BarcodeFormatsFromString(std::string_view str);
 
 std::string ToString(const BarcodeFormats& formats);

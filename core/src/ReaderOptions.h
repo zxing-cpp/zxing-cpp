@@ -18,11 +18,9 @@
 namespace ZXing {
 
 /**
- * @brief The Binarizer enum
+ * @brief Specify which algorithm to use for the grayscale to binary transformation.
  *
- * Specify which algorithm to use for the grayscale to binary transformation.
- * The difference is how to get to a threshold value T which results in a bit
- * value R = L <= T.
+ * The difference is how to get to a threshold value T which results in a bit value R(esult) = L(uminance) <= T(hreshold).
  */
 enum class Binarizer : unsigned char // needs to be unsigned for the bitfield below to work, uint8_t fails as well
 {
@@ -39,6 +37,11 @@ enum class EanAddOnSymbol : unsigned char // see above
 	Require, ///< Require EAN-2/EAN-5 Add-On symbol to be present
 };
 
+/**
+ * @brief Specify how the decoded byte content of a barcode should be transcoded to text.
+ *
+ * @see Barcode::text(), ReaderOptions::textMode().
+ */
 enum class TextMode : unsigned char // see above
 {
 	Plain,   ///< bytes() transcoded to unicode based on ECI info or guessed charset (the default mode prior to 2.0)
@@ -50,10 +53,8 @@ enum class TextMode : unsigned char // see above
 };
 
 /**
- * @class ReaderOptions
  * @brief Configuration options for barcode reading and decoding behavior.
  *
- * @details
  * ReaderOptions encapsulates a set of flags and parameters that control
  * how barcode detection and decoding is performed. It provides
  * fluent setters that support chaining. Both `name(val)` and `setName(val)`
@@ -138,7 +139,7 @@ public:
 	/// Validate optional checksums where applicable (e.g. Code39, ITF)
 	ZX_PROPERTY(bool, validateOptionalChecksum, setValidateOptionalChecksum)
 
-	/// If true, return the barcodes with errors as well (e.g. checksum errors, see @Barcode::error())
+	/// If true, return the barcodes with errors as well (e.g. checksum errors, see Barcode::error())
 	ZX_PROPERTY(bool, returnErrors, setReturnErrors)
 
 	/// Specify whether to ignore, read or require EAN-2/5 add-on symbols while scanning EAN/UPC codes
@@ -156,6 +157,8 @@ public:
 
 #undef ZX_PROPERTY
 
+/// @cond DEPRECATED
+
 	// Silence deprecated-declarations warnings, only happening here for deprecated inline functions
 #ifdef __GNUC__
 #pragma GCC diagnostic push
@@ -172,14 +175,14 @@ public:
 	[[deprecated]] inline ReaderOptions& SETTER(TYPE v) & { return NAME(v); } \
 	[[deprecated]] inline ReaderOptions&& SETTER(TYPE v) && { return std::move(*this).NAME(v); }
 
-	/// Deprecated / does nothing. See BarcodeFormat::Code39Ext and ::Code39Std to select full ASCII or standard Code39 mode.
+	/// @deprecated (does nothing). See BarcodeFormat::Code39Ext and ::Code39Std to select full ASCII or standard Code39 mode.
 	ZX_DEPRECATED_PROPERTY(bool, tryCode39ExtendedMode, setTryCode39ExtendedMode, true, (void)v)
 
-	/// Deprecated (use validateOptionalChecksum). The Code39 symbol has a valid checksum iff symbologyIdentifier()[2] is an odd digit
+	/// @deprecated (use validateOptionalChecksum). The Code39 symbol has a valid checksum iff symbologyIdentifier()[2] is an odd digit
 	ZX_DEPRECATED_PROPERTY(bool, validateCode39CheckSum, setValidateCode39CheckSum, validateOptionalChecksum(),
 						   validateOptionalChecksum(v))
 
-	/// Deprecated (use validateOptionalChecksum). The ITF symbol has a valid checksum iff symbologyIdentifier()[2] == '1'.
+	/// @deprecated (use validateOptionalChecksum). The ITF symbol has a valid checksum iff symbologyIdentifier()[2] == '1'.
 	ZX_DEPRECATED_PROPERTY(bool, validateITFCheckSum, setValidateITFCheckSum, validateOptionalChecksum(), validateOptionalChecksum(v))
 
 #undef ZX_DEPRECATED_PROPERTY
@@ -189,6 +192,8 @@ public:
 #elif defined(_MSC_VER)
 #pragma warning(pop)
 #endif
+
+/// @endcond
 
 #ifdef ZXING_INTERNAL
 	/// Check if a specific format is explicitly enabled in the formats set

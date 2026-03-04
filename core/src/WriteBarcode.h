@@ -13,16 +13,15 @@
 namespace ZXing {
 
 /**
- * @class WriterOptions
  * @brief Configuration options for barcode writing/generation.
  *
  * WriterOptions provides a fluent interface for setting various parameters
  * that control how barcodes are generated.
  *
- * This class supports method chaining for convenient option configuration.
- *
- * @example
+ * This class supports method chaining for convenient option configuration:
+ * ```cpp
  * auto opts = WriterOptions().scale(5).addHRT(true);
+ * ```
  */
 class WriterOptions
 {
@@ -41,9 +40,8 @@ public:
 	WriterOptions& NAME(TYPE v)&; \
 	WriterOptions&& NAME(TYPE v)&&;
 
-	/** @brief scale factor for rendering, i.e. the module size (default is 1)
-	 * Passing a negative value will choose the scale automatically to fit the size of the barcode to abs(scale) as close as possible.
-	 */
+	/// scale factor for rendering, ie the module size (default: 1). Passing a negative value will choose the scale
+	/// automatically to fit the size of the barcode to abs(scale) as close as possible.
 	ZX_PROPERTY(int, scale)
 
 	/// rotate the barcode by given degrees (0, 90, 180, 270)
@@ -55,38 +53,20 @@ public:
 	/// add human readable text (HRI) to the barcode
 	ZX_PROPERTY(bool, addHRT)
 
-	/// add quiet zones around the barcode
+	/// add quiet zones around the barcode (default: true)
 	ZX_PROPERTY(bool, addQuietZones)
 
 #undef ZX_PROPERTY
 };
 
 
-/**
- * Write barcode symbol to SVG
- *
- * @param barcode  Barcode to write
- * @param options  WriterOptions to parameterize rendering
- * @return std::string  SVG representation of barcode symbol
- */
+/// Write barcode symbol to SVG
 std::string WriteBarcodeToSVG(const Barcode& barcode, const WriterOptions& options = {});
 
-/**
- * Write barcode symbol to a utf8 string using graphical characters (e.g. '▀')
- *
- * @param barcode  Barcode to write
- * @param options  WriterOptions to parameterize rendering
- * @return std::string  Utf8 string representation of barcode symbol
- */
+/// Write barcode symbol to a utf8 string using graphical characters (e.g. '▀')
 std::string WriteBarcodeToUtf8(const Barcode& barcode, const WriterOptions& options = {});
 
-/**
- * Write barcode symbol to Image (Bitmap)
- *
- * @param barcode  Barcode to write
- * @param options  WriterOptions to parameterize rendering
- * @return Image  Bitmap representation of barcode symbol
- */
+/// Write barcode symbol to Image (Bitmap)
 Image WriteBarcodeToImage(const Barcode& barcode, const WriterOptions& options = {});
 
 } // ZXing

@@ -120,6 +120,10 @@ int main(int argc, char** argv)
 
 As an example for how to parameterize the process with `CreatorOptions` and `WriterOptions`, have a look at [`ZXingWriter.cpp`](example/ZXingWriter.cpp).
 
+### Online API documentation
+
+The latest API documentation can be found here: https://zxing-cpp.github.io/zxing-cpp/docs/latest
+
 ## Web Demos
 - [Read barcodes](https://zxing-cpp.github.io/zxing-cpp/demo_reader.html)
 - [Write barcodes](https://zxing-cpp.github.io/zxing-cpp/demo_writer.html)

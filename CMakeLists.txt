@@ -77,6 +77,7 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
 set(CMAKE_INSTALL_RPATH "$<$<PLATFORM_ID:Darwin>:@loader_path/../lib>$<$<PLATFORM_ID:Linux>:$ORIGIN/../lib>")
 
 add_subdirectory (core)
+add_subdirectory (docs)
 
 enable_testing()
 

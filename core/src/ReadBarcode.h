@@ -16,7 +16,7 @@ namespace ZXing {
  *
  * @param image  view of the image data including layout and format
  * @param options  optional ReaderOptions to parameterize / speed up detection
- * @return #Barcode structure
+ * @return Barcode found, if any, otherwise a Barcode with empty content and format ZXing::BarcodeFormat::None
  */
 Barcode ReadBarcode(const ImageView& image, const ReaderOptions& options = {});
 
@@ -25,7 +25,7 @@ Barcode ReadBarcode(const ImageView& image, const ReaderOptions& options = {});
  *
  * @param image  view of the image data including layout and format
  * @param options  optional ReaderOptions to parameterize / speed up detection
- * @return #Barcodes  list of barcodes found, may be empty
+ * @return List of Barcode found, may be empty
  */
 Barcodes ReadBarcodes(const ImageView& image, const ReaderOptions& options = {});
 
