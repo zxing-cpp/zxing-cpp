@@ -42,6 +42,10 @@ struct CreatorOptions::Data
 	// structured_append (idx, cnt, ID)
 
 	mutable unique_zint_symbol zint;
+
+#ifndef __cpp_aggregate_paren_init // make XCode 14.x happy
+	Data(BarcodeFormat format, std::string options) : format(format), options(std::move(options)) {}
+#endif
 };
 
 // TODO: check return type
