@@ -125,9 +125,9 @@ As an example for how to parameterize the process with `CreatorOptions` and `Wri
 The latest API documentation can be found here: https://zxing-cpp.github.io/zxing-cpp/docs/latest
 
 ## Web Demos
-- [Read barcodes](https://zxing-cpp.github.io/zxing-cpp/demo_reader.html)
-- [Write barcodes](https://zxing-cpp.github.io/zxing-cpp/demo_writer.html)
-- [Read barcodes from camera](https://zxing-cpp.github.io/zxing-cpp/demo_cam_reader.html)
+- [Read barcodes](https://zxing-cpp.github.io/zxing-cpp/demo/demo_reader.html)
+- [Write barcodes](https://zxing-cpp.github.io/zxing-cpp/demo/demo_writer.html)
+- [Read barcodes from camera](https://zxing-cpp.github.io/zxing-cpp/demo/demo_cam_reader.html)
 
 [Note: those live demos are not necessarily fully up-to-date at all times.]
 

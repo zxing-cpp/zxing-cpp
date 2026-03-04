@@ -5,14 +5,13 @@ on:
 #  push:
 #    branches: ["master"]
 
+  # Runs on new releases
+  release:
+    types: [published]
+
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
-permissions:
-  contents: read
-  pages: write
-  id-token: write
 
 # Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
 # However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
@@ -21,35 +20,111 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # Single deploy job since we're just deploying
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  build-wasm:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          submodules: true
 
-      - name: Setup EMSDK
+      - name: Setup emsdk
         uses: mymindstorm/setup-emsdk@v14
+        # with:
+        #   # Make sure to set a version number!
+        #   version: 1.38.40
+        #   # This is the name of the cache folder.
+        #   # The cache folder will be placed in the build directory,
+        #   #  so make sure it doesn't conflict with anything!
+        #   actions-cache-folder: 'emsdk-cache'
 
       - name: Configure
         run: emcmake cmake -Swrappers/wasm -Bbuild
 
       - name: Build
-        run: cmake --build build -j4
+        run: cmake --build build --parallel
 
       - name: Prepare Archive
         shell: sh
         run: |
-          mkdir pages
-          mv build/zxing_* build/*.html pages
+          mkdir -p public/demo
+          mv build/zxing_* build/*.html public/demo/
 
       - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          path: 'public'
+          name: 'artifact-wasm'
+
+  build-docs:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: true
+
+      - name: Install dependencies
+        run: brew install doxygen
+
+      - name: Configure
+        run: cmake -S . -B build
+
+      - name: Build docs
+        run: cmake --build build --target docs
+
+      - name: Prepare deploy folder
+        run: |
+          mkdir -p public/docs
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/}
+            mkdir -p public/docs/$VERSION
+            cp -r build/docs/html/* public/docs/$VERSION/
+          else
+            mkdir -p public/docs/latest
+            cp -r build/docs/html/* public/docs/latest/
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          path: public
+          name: 'artifact-docs'
+
+  deploy:
+    needs: [build-wasm, build-docs]
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    steps:
+      - name: Download WASM artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: artifact-wasm
+          path: wasm
+
+      - name: Download Docs artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: artifact-docs
+          path: docs
+
+      - name: Merge artifacts
+        run: |
+          mkdir public
+          cp -r wasm/* public/
+          cp -r docs/* public/
+
+      - name: Upload merged artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: 'pages'
+          path: public
 
       - name: Deploy to GitHub Pages
         id: deployment
