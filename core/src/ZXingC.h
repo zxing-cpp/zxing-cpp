@@ -39,6 +39,15 @@ typedef struct ZXing_WriterOptions ZXing_WriterOptions;
 #endif
 
 /*
+ * Memory management: All functions that return a non-const pointer (e.g. ZXing_Barcode_text(), ZXing_ImageView_new() or
+ * ZXing_ReadBarcodes()) transfer the memory ownership to the caller, who is responsible for freeing it.
+ * If the returned type is some ZXing_<X>* pointer and a corresponding ZXing_<X>_delete() function is available (e.g.
+ * ZXing_Barcode_delete() for ZXing_Barcode*), that function must be used to free the memory. For all other types (e.g. cha* or
+ * uint8_t*), ZXing_free() must be used. For functions that return a const pointer (e.g. ZXing_Barcodes_at()), the caller must not
+ * attempt to free the returned pointer, as it is static memory or the memory is owned by the parent object.
+ */
+
+/*
  * MARK: - ImageView.h
  */
 
@@ -225,7 +234,11 @@ int ZXing_ReaderOptions_getMaxNumberOfSymbols(const ZXing_ReaderOptions* opts);
  * MARK: - ReadBarcode.h
  */
 
-/** Note: opts is optional, i.e. it can be NULL, which will imply default settings. */
+/**
+ * Note: opts is optional, i.e. it can be NULL, which will imply default settings.
+ * @return NULL in case of an error (e.g. invalid image or out of memory), otherwise a pointer to a ZXing_Barcodes object, which may
+ * contain zero or more barcodes. Freeing the empty ZXing_Barcodes object is optional.
+ */
 ZXing_Barcodes* ZXing_ReadBarcodes(const ZXing_ImageView* iv, const ZXing_ReaderOptions* opts);
 
 
