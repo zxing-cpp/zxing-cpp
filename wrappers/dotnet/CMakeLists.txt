@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 
 find_program(DOTNET_EXECUTABLE NAMES dotnet)
 
-if (DOTNET_EXECUTABLE AND ZXING_WRITERS AND ZXING_READERS)
+if (DOTNET_EXECUTABLE AND ZXING_WRITERS AND ZXING_READERS AND ZXING_C_API)
     # Check available .NET runtimes
     execute_process(
         COMMAND ${DOTNET_EXECUTABLE} --list-runtimes
@@ -28,6 +28,8 @@ if (DOTNET_EXECUTABLE AND ZXING_WRITERS AND ZXING_READERS)
     else()
         message(STATUS "dotnet found but no compatible runtime available - skipping .NET tests")
     endif()
-else()
+elseif (NOT DOTNET_EXECUTABLE)
     message(STATUS "dotnet not found - skipping .NET tests")
+else()
+    message(STATUS "ZXING_READERS/ZXING_WRITERS/ZXING_C_API not enabled - skipping .NET tests")
 endif()
