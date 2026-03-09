@@ -121,7 +121,7 @@ jobs:
     - name: Test
       run: ctest -V --test-dir build
 
-  build-ubuntu-sanitize:
+  build-ubuntu-asan-ubsan:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
@@ -136,6 +136,28 @@ jobs:
         -DCMAKE_CXX_FLAGS="-march=native -fsanitize=address,undefined -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-omit-frame-pointer"
         -DCMAKE_C_COMPILER=clang
         -DCMAKE_C_FLAGS="-march=native -fsanitize=address,undefined -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-omit-frame-pointer"
+
+    - name: Build
+      run: cmake --build build --parallel
+
+    - name: Test
+      run: ctest -V --test-dir build
+
+  build-ubuntu-tsan:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        submodules: true
+
+    - name: Configure
+      run: >
+        cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DZXING_WRITERS=OFF -DZXING_EXAMPLES=OFF
+        -DZXING_BLACKBOX_TESTS=ON -DZXING_UNIT_TESTS=OFF -DZXING_PYTHON_MODULE=OFF -DZXING_C_API=OFF
+        -DCMAKE_CXX_COMPILER=clang++
+        -DCMAKE_CXX_FLAGS="-march=native -fsanitize=thread -fno-optimize-sibling-calls -fno-omit-frame-pointer -g"
+        -DCMAKE_C_COMPILER=clang
+        -DCMAKE_C_FLAGS="-march=native -fsanitize=thread -fno-optimize-sibling-calls -fno-omit-frame-pointer -g"
 
     - name: Build
       run: cmake --build build --parallel
