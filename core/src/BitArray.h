@@ -120,8 +120,11 @@ int ToInt(const ARRAY& a)
 	assert(Reduce(a) <= 32);
 
 	int pattern = 0;
-	for (int i = 0; i < Size(a); i++)
+	for (int i = 0; i < Size(a); i++) {
+		if (a[i] < 0) // negative shift is undefined behavior
+			return -1;
 		pattern = (pattern << a[i]) | ~(0xffffffff << a[i]) * (~i & 1);
+	}
 	return pattern;
 }
 
