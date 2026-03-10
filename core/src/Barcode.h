@@ -84,7 +84,7 @@ public:
 	/// Returns the error associated with the barcode, if any.
 	const Error& error() const;
 
-	/// @brief Returns the BarcodeFormat of the barcode.
+	/// Returns the BarcodeFormat of the barcode.
 	BarcodeFormat format() const;
 
 	/// Returns the symbology of the barcode format (e.g. EAN/UPC for EAN13, EAN8, UPCA, etc.).

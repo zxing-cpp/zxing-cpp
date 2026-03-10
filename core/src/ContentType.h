@@ -9,6 +9,9 @@
 
 namespace ZXing {
 
+/**
+ * @brief Provides a hint to the type of content encoded in a barcode, such as text, binary data, etc.
+ */
 enum class ContentType { Text, Binary, Mixed, GS1, ISO15434, UnknownECI };
 
 std::string ToString(ContentType type);

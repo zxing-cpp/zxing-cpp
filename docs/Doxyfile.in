@@ -796,6 +796,8 @@ INPUT                  = @CMAKE_SOURCE_DIR@/core/src/Barcode.h \
                          @CMAKE_SOURCE_DIR@/core/src/Quadrilateral.h \
                          @CMAKE_SOURCE_DIR@/core/src/Point.h \
                          @CMAKE_SOURCE_DIR@/core/src/Error.h \
+                         @CMAKE_SOURCE_DIR@/core/src/ContentType.h \
+                         @CMAKE_SOURCE_DIR@/core/src/CharacterSet.h \
                          @CMAKE_SOURCE_DIR@/core/src/ZXingCpp.h \
                         #  core/src/ZXingC.h \
 

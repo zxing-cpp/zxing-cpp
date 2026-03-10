@@ -30,6 +30,9 @@ enum class Binarizer : unsigned char // needs to be unsigned for the bitfield be
 	BoolCast,        ///< T = 0, fastest possible
 };
 
+/**
+ * @brief Specify whether to ignore, read or require EAN-2/5 add-on symbols while scanning EAN/UPC codes.
+ */
 enum class EanAddOnSymbol : unsigned char // see above
 {
 	Ignore,  ///< Ignore any Add-On symbol during read/scan
@@ -101,16 +104,16 @@ public:
 	inline ReaderOptions& setFormats(const BarcodeFormats& v) & { return formats(BarcodeFormats(v)); }
 	inline ReaderOptions&& setFormats(const BarcodeFormats& v) && { return std::move(*this).formats(BarcodeFormats(v)); }
 
-	/// Spend more time to try to find a barcode; optimize for accuracy, not speed.
+	/// Spend more time to try to find a barcode; optimize for accuracy instead of not speed (default: true).
 	ZX_PROPERTY(bool, tryHarder, setTryHarder)
 
-	/// Also try detecting code in 90, 180 and 270 degree rotated images.
+	/// Try detecting codes in 90, 180 and 270 degree rotated images (default: true).
 	ZX_PROPERTY(bool, tryRotate, setTryRotate)
 
-	/// Also try detecting inverted ("reversed reflectance") codes if the format allows for those.
+	/// Try detecting inverted ("reversed reflectance") codes if the format allows for those (default: true).
 	ZX_PROPERTY(bool, tryInvert, setTryInvert)
 
-	/// Also try detecting code in downscaled images (depending on image size).
+	/// Try detecting code in downscaled images (depending on image size) (default: true).
 	ZX_PROPERTY(bool, tryDownscale, setTryDownscale)
 
 #ifdef ZXING_EXPERIMENTAL_API
@@ -118,37 +121,37 @@ public:
 	ZX_PROPERTY(bool, tryDenoise, setTryDenoise)
 #endif
 
-	/// Binarizer to use internally when using the ReadBarcode function
+	/// Binarizer to use for grayscale to binary transformation (default: Binarizer::LocalAverage).
 	ZX_PROPERTY(Binarizer, binarizer, setBinarizer)
 
-	/// Set to true if the input contains nothing but a single perfectly aligned barcode (generated image)
+	/// Set to true if the input contains nothing but a single perfectly aligned barcode (generated image).
 	ZX_PROPERTY(bool, isPure, setIsPure)
 
-	/// Image size ( min(width, height) ) threshold at which to start downscaled scanning
+	/// Image size ( min(width, height) ) threshold at which to start downscaled scanning.
 	ZX_PROPERTY(uint16_t, downscaleThreshold, setDownscaleThreshold)
 
-	/// Scale factor used during downscaling, meaningful values are 2, 3 and 4
+	/// Scale factor used during downscaling, meaningful values are 2, 3 and 4.
 	ZX_PROPERTY(uint8_t, downscaleFactor, setDownscaleFactor)
 
-	/// The number of scan lines in a linear barcode that have to be equal to accept the result, default is 2
+	/// The number of scan lines in a linear barcode that have to be equal to accept the result (default: 2).
 	ZX_PROPERTY(uint8_t, minLineCount, setMinLineCount)
 
-	/// The maximum number of symbols (barcodes) to detect / look for in the image with ReadBarcodes
+	/// The maximum number of symbols (barcodes) to detect / look for with ReadBarcodes().
 	ZX_PROPERTY(uint8_t, maxNumberOfSymbols, setMaxNumberOfSymbols)
 
-	/// Validate optional checksums where applicable (e.g. Code39, ITF)
+	/// Validate optional checksums where applicable (e.g. Code39, ITF) (default: false).
 	ZX_PROPERTY(bool, validateOptionalChecksum, setValidateOptionalChecksum)
 
-	/// If true, return the barcodes with errors as well (e.g. checksum errors, see Barcode::error())
+	/// If true, return the barcodes with errors as well (e.g. checksum errors, see Barcode::error()) (default: false).
 	ZX_PROPERTY(bool, returnErrors, setReturnErrors)
 
-	/// Specify whether to ignore, read or require EAN-2/5 add-on symbols while scanning EAN/UPC codes
+	/// Specify whether to ignore, read or require EAN-2/5 add-on symbols while scanning EAN/UPC codes.
 	ZX_PROPERTY(EanAddOnSymbol, eanAddOnSymbol, setEanAddOnSymbol)
 
-	/// Specifies the TextMode that controls the return of the Barcode::text() function
+	/// Specifies the TextMode that controls the return of the Barcode::text() function (default: TextMode::HRI).
 	ZX_PROPERTY(TextMode, textMode, setTextMode)
 
-	/// Specifies fallback character set to use instead of auto-detecting it (when applicable)
+	/// Specifies fallback character set to use instead of auto-detecting it (when applicable).
 	ZX_PROPERTY(CharacterSet, characterSet, setCharacterSet)
 	ReaderOptions& characterSet(std::string_view v) &;
 	ReaderOptions&& characterSet(std::string_view v) &&;

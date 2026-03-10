@@ -63,31 +63,31 @@ public:
 #define ZX_RO_PROPERTY(TYPE, NAME) \
 	std::optional<TYPE> NAME() const noexcept;
 
-	/// most 2D symbologies: ecLevel, e.g. "30%", see also libzint docs for supported values per symbology
+	/// EcLevel, e.g. "30%", see also libzint docs for supported values per symbology
 	ZX_RO_PROPERTY(std::string, ecLevel);
 
-	/// most 2D symbologies: specify ECI designator to use (e.g. "UTF-8" or "26" for UTF-8), see also libzint docs
+	/// Specify ECI designator to use (e.g. "UTF-8" or "26" for UTF-8), see also libzint docs (most 2D symbologies)
 	ZX_RO_PROPERTY(std::string, eci);
 
-	/// GS1 mode
+	/// GS1 mode (most 2D symbologies + Code128)
 	ZX_RO_PROPERTY(bool, gs1);
 
-	/// most 2D symbologies: set the "reader init" flag
+	/// Set the "reader init" flag (most 2D symbologies)
 	ZX_RO_PROPERTY(bool, readerInit);
 
 	/// DataMatrix: only consider square symbol versions
 	ZX_RO_PROPERTY(bool, forceSquare);
 
-	/// specify number of columns (e.g. for DataBarExpStk, PDF417)
+	/// Specify number of columns (e.g. for DataBarExpStk, PDF417)
 	ZX_RO_PROPERTY(int, columns);
 
-	/// specify number of rows (e.g. for DataBarExpStk, PDF417)
+	/// Specify number of rows (e.g. for DataBarExpStk, PDF417)
 	ZX_RO_PROPERTY(int, rows);
 
-	/// most 2D symbologies: specify the version/size of the symbol
+	/// Specify the version/size of the symbol (most 2D symbologies)
 	ZX_RO_PROPERTY(int, version);
 
-	/// QRCode/MicroQRCode: specify dataMask to use
+	/// Specify dataMask to use (QRCode/MicroQRCode)
 	ZX_RO_PROPERTY(int, dataMask);
 
 #undef ZX_RO_PROPERTY
