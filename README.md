@@ -19,6 +19,7 @@ It was originally ported from the Java [ZXing library](https://github.com/zxing/
   * [Python](wrappers/python/README.md)
   * [Qt](wrappers/qt/README.md)
   * [Rust](wrappers/rust/README.md)
+  * [Swift](wrappers/swift/README.md)
   * [WebAssembly](wrappers/wasm/README.md)
   * [WinRT](wrappers/winrt/README.md)
   * [Flutter](https://pub.dev/packages/flutter_zxing) (external project)
