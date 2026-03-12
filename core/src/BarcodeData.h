@@ -11,6 +11,7 @@
 #include "DecoderResult.h"
 #include "DetectorResult.h"
 #include "Error.h"
+#include "Quadrilateral.h"
 #include "ReaderOptions.h"
 #include "StructuredAppend.h"
 
