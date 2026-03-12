@@ -5,6 +5,9 @@ set (CMAKE_CXX_COMPILER /usr/bin/clang++) # -fsanitize=fuzzer only available in 
 
 project (ZXingFuzz)
 
+set (CMAKE_CXX_STANDARD 20)
+set (CMAKE_CXX_STANDARD_REQUIRED ON)
+
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -march=native -fsanitize=address,undefined,fuzzer")
 
 set (ZXING_WRITERS BOTH)
@@ -24,6 +27,7 @@ set (TESTS
 foreach (test ${TESTS})
     set (name "fuzz${test}")
     add_executable (${name} "${name}.cpp")
+    target_compile_options (${name} PRIVATE -DZXING_INTERNAL)
     target_link_libraries (${name} ZXing::ZXing)
 endforeach()
 

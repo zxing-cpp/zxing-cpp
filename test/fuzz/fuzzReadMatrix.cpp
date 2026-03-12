@@ -5,6 +5,8 @@
 
 #include "ReadBarcode.h"
 
+#include <algorithm>
+#include <cassert>
 #include <csignal>
 #include <cstddef>
 #include <cstdint>
@@ -25,7 +27,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
 		return 0;
 
 	static auto opts = ReaderOptions()
-						   .formats(BarcodeFormat::MatrixCodes)
+						   .formats(BarcodeFormat::AllMatrix)
 						   .binarizer(Binarizer::BoolCast)
 						   .returnErrors(true)
 						   .tryInvert(false)
@@ -54,7 +56,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
 #endif
 
 	static int detectedSybols = 0;
-	detectedSybols += Size(res);
+	detectedSybols += static_cast<int>(res.size());
 	if (!res.empty() && detectedSybols % 100 == 0)
 		printf("detected barcode symbols: %d\n", detectedSybols);
 

@@ -65,10 +65,10 @@ void pd(const uint8_t* data, size_t size)
 	auto codewords = std::vector<int>(size / 2);
 	auto u16 = reinterpret_cast<const uint16_t*>(data);
 
-	for (int i = 0; i < Size(codewords); ++i)
+	for (int i = 0; i < static_cast<int>(codewords.size()); ++i)
 		codewords[i] = u16[i] % 929;
 
-	codewords[0] = Size(codewords);
+	codewords[0] = static_cast<int>(codewords.size());
 
 	Pdf417::Decode(codewords);
 }
