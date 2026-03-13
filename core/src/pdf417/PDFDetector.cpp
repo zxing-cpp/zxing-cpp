@@ -100,7 +100,7 @@ FindGuardPattern(const BitMatrix& matrix, int column, int row, int width, bool w
 	int pixelDrift = 0;
 
 	// if there are black pixels left of the current pixel shift to the left, but only for MAX_PIXEL_DRIFT pixels 
-	while (matrix.get(patternStart, row) && patternStart > 0 && pixelDrift++ < MAX_PIXEL_DRIFT) {
+	while (patternStart < width && matrix.get(patternStart, row) && patternStart > 0 && pixelDrift++ < MAX_PIXEL_DRIFT) {
 		patternStart--;
 	}
 	int x = patternStart;
@@ -186,7 +186,7 @@ FindRowsWithPattern(const BitMatrix& matrix, int height, int width, int startRow
 				skippedRowCount++;
 			}
 		}
-		stopRow -= skippedRowCount + 1;
+		stopRow = std::max(startRow, stopRow - skippedRowCount - 1);
 		result[2] = ResultPoint(previousRowStart, stopRow);
 		result[3] = ResultPoint(previousRowEnd, stopRow);
 	}
