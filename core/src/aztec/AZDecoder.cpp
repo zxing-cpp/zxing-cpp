@@ -323,6 +323,9 @@ DecoderResult Decode(const BitArray& bits)
 
 	StructuredAppendInfo sai = haveStructuredAppend ? ParseStructuredAppend(res) : StructuredAppendInfo();
 
+	if (res.bytes.empty())
+		return FormatError("Empty symbol content after removing Structured Append info");
+
 	if (haveFNC1) {
 		if (res.bytes[0] == 29) {
 			res.symbology.modifier = '1'; // GS1
