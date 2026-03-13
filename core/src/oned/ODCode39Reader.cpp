@@ -85,6 +85,9 @@ static std::string DecodeCode32(std::string_view str)
 
 	int val = Reduce(str, 0, [&](int acc, char c) { return acc * 32 + IndexOf(TABELLA, c); });
 
+	if (val < 0 || val >= 1000000000)
+		return {};
+
 	std::string res = ToString(val, 9);
 
 	int checksum = 0;
