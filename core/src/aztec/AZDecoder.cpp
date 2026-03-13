@@ -323,7 +323,7 @@ DecoderResult Decode(const BitArray& bits)
 
 	StructuredAppendInfo sai = haveStructuredAppend ? ParseStructuredAppend(res) : StructuredAppendInfo();
 
-	if (haveFNC1) {
+	if (haveFNC1 && !res.bytes.empty()) {
 		if (res.bytes[0] == 29) {
 			res.symbology.modifier = '1'; // GS1
 			res.symbology.aiFlag = AIFlag::GS1;
