@@ -35,7 +35,7 @@ static int AdjustCodewordStartColumn(const BitMatrix& image, int minColumn, int 
 	int increment = leftToRight ? -1 : 1;
 	// there should be no black pixels before the start column. If there are, then we need to start earlier.
 	for (int i = 0; i < 2; i++) {
-		while ((leftToRight ? correctedStartColumn >= minColumn : correctedStartColumn < maxColumn) &&
+		while (correctedStartColumn >= minColumn && correctedStartColumn < maxColumn &&
 			leftToRight == image.get(correctedStartColumn, imageRow)) {
 			if (std::abs(codewordStartColumn - correctedStartColumn) > CODEWORD_SKEW_SIZE) {
 				return codewordStartColumn;
@@ -55,7 +55,7 @@ static bool GetModuleBitCount(const BitMatrix& image, int minColumn, int maxColu
 	int increment = leftToRight ? 1 : -1;
 	bool previousPixelValue = leftToRight;
 	std::fill(moduleBitCount.begin(), moduleBitCount.end(), 0);
-	while ((leftToRight ? (imageColumn < maxColumn) : (imageColumn >= minColumn)) && moduleNumber < moduleBitCount.size()) {
+	while (imageColumn >= minColumn && imageColumn < maxColumn && moduleNumber < moduleBitCount.size()) {
 		if (image.get(imageColumn, imageRow) == previousPixelValue) {
 			moduleBitCount[moduleNumber] += 1;
 			imageColumn += increment;
