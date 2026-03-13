@@ -10,6 +10,7 @@
 #include "BitArray.h"
 #include "Error.h"
 #include "GTIN.h"
+#include <stdexcept>
 
 namespace ZXing::OneD::DataBar {
 
@@ -242,6 +243,7 @@ std::string DecodeExpandedBits(const BitArray& _bits)
 		case 62: return DecodeAI013x0x1x(bits, "310", "17");
 		case 63: return DecodeAI013x0x1x(bits, "320", "17");
 		}
+	} catch (const std::out_of_range&) {
 	} catch (Error) {
 	}
 
