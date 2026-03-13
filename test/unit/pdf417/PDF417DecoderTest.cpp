@@ -297,6 +297,17 @@ TEST(PDF417DecoderTest, ByteCompaction)
 		L"\x7F\x7F\x7F\x7F\x7F\x7F\x7F\x7F\x7F\x7F\x7F\x7F\x7F\x7F\x7F");
 }
 
+TEST(PDF417DecoderTest, ByteCompactionWithInterleavedECI)
+{
+	// Interleaved ECIs in Byte Compaction (found via fuzzer)
+	// codewords: 10, 901, 200, 0, 200, 0, 925, 926, 55, 0
+	// 901: Byte Compaction Latch
+	// data: 200, 0, 200, 0, 55, 0 (6 data codewords)
+	// ECI 925: followed by 926 (skipped in data count)
+	// Total data codewords: 6. batches=1, trailingCount=1.
+	EXPECT_TRUE(valid({ 10, 901, 200, 0, 200, 0, 925, 926, 55, 0 }));
+}
+
 TEST(PDF417DecoderTest, NumericCompaction)
 {
 	// 43 consecutive
