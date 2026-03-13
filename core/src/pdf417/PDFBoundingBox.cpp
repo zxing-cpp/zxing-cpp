@@ -46,10 +46,10 @@ BoundingBox::calculateMinMaxValues()
 		_bottomRight = ResultPoint(static_cast<float>(_imgWidth - 1), _bottomLeft.value().y());
 	}
 
-	_minX = static_cast<int>(std::min(_topLeft.value().x(), _bottomLeft.value().x()));
-	_maxX = static_cast<int>(std::max(_topRight.value().x(), _bottomRight.value().x()));
-	_minY = static_cast<int>(std::min(_topLeft.value().y(), _topRight.value().y()));
-	_maxY = static_cast<int>(std::max(_bottomLeft.value().y(), _bottomRight.value().y()));
+	_minX = std::clamp(static_cast<int>(std::min(_topLeft.value().x(), _bottomLeft.value().x())), 0, _imgWidth - 1);
+	_maxX = std::clamp(static_cast<int>(std::max(_topRight.value().x(), _bottomRight.value().x())), 0, _imgWidth - 1);
+	_minY = std::clamp(static_cast<int>(std::min(_topLeft.value().y(), _topRight.value().y())), 0, _imgHeight - 1);
+	_maxY = std::clamp(static_cast<int>(std::max(_bottomLeft.value().y(), _bottomRight.value().y())), 0, _imgHeight - 1);
 }
 
 bool
