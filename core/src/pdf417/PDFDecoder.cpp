@@ -93,11 +93,13 @@ static bool TerminatesCompaction(int code)
 **/
 static int ProcessECI(const std::vector<int>& codewords, int codeIndex, const int length, const int code, Content& result)
 {
-	if (codeIndex < length && IsECI(code)) {
+	if (codeIndex < length) {
 		if (code == ECI_CHARSET)
-			result.switchEncoding(ECI(codewords[codeIndex++]));
-		else
-			codeIndex += code == ECI_GENERAL_PURPOSE ? 2 : 1; // Don't currently handle non-character set ECIs so just ignore
+			result.switchEncoding(ECI(codewords[codeIndex]));
+
+		codeIndex++;
+		if (code == ECI_GENERAL_PURPOSE && codeIndex < length)
+			codeIndex++;
 	}
 
 	return codeIndex;
@@ -574,6 +576,7 @@ int DecodeMacroBlock(const std::vector<int>& codewords, int codeIndex, PDF417Cus
 	if (codeIndex < codewords[0] && codewords[codeIndex] == BEGIN_MACRO_PDF417_OPTIONAL_FIELD)
 		optionalFieldsStart = codeIndex + 1;
 
+	bool foundTerminator = false;
 	while (codeIndex < codewords[0]) {
 		switch (codewords[codeIndex]) {
 		case BEGIN_MACRO_PDF417_OPTIONAL_FIELD: {
@@ -609,6 +612,7 @@ int DecodeMacroBlock(const std::vector<int>& codewords, int codeIndex, PDF417Cus
 		case MACRO_PDF417_TERMINATOR: {
 			codeIndex++;
 			customData.isLastSegment = true;
+			foundTerminator = true;
 			break;
 		}
 		default: throw FormatError();
@@ -618,7 +622,7 @@ int DecodeMacroBlock(const std::vector<int>& codewords, int codeIndex, PDF417Cus
 	// copy optional fields to additional options
 	if (optionalFieldsStart != -1) {
 		int optionalFieldsLength = codeIndex - optionalFieldsStart;
-		if (customData.isLastSegment)
+		if (foundTerminator && optionalFieldsLength > 0)
 			optionalFieldsLength--; // do not include terminator
 
 		customData.optionalData =
@@ -630,6 +634,9 @@ int DecodeMacroBlock(const std::vector<int>& codewords, int codeIndex, PDF417Cus
 
 DecoderResult Decode(const std::vector<int>& codewords)
 {
+	if (codewords.empty() || codewords[0] <= 0 || codewords[0] > static_cast<int>(codewords.size()))
+		return FormatError();
+
 	Content result;
 	result.symbology = {'L', '2', -1};
 
