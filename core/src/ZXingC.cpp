@@ -425,25 +425,25 @@ ZX_PROPERTY(bool, addQuietZones, AddQuietZones)
 
 ZXing_Barcode* ZXing_CreateBarcodeFromText(const char* data, int size, const ZXing_CreatorOptions* opts)
 {
-	ZX_CHECK(data && opts, "Data and/or options param in CreateBarcodeFromText is NULL")
-	ZX_TRY(new Barcode(CreateBarcodeFromText({data, size ? static_cast<size_t>(size) : strlen(data)}, *opts));)
+	ZX_CHECK(opts, "CreatorOptions param is NULL")
+	ZX_TRY(new Barcode(CreateBarcodeFromText({data, size ? static_cast<size_t>(size) : data ? strlen(data) : 0}, *opts));)
 }
 
 ZXing_Barcode* ZXing_CreateBarcodeFromBytes(const void* data, int size, const ZXing_CreatorOptions* opts)
 {
-	ZX_CHECK(data && size && opts, "Data and/or options param in CreateBarcodeFromBytes is NULL")
+	ZX_CHECK(opts, "CreatorOptions param is NULL")
 	ZX_TRY(new Barcode(CreateBarcodeFromBytes(data, size, *opts)))
 }
 
 char* ZXing_WriteBarcodeToSVG(const ZXing_Barcode* barcode, const ZXing_WriterOptions* opts)
 {
-	ZX_CHECK(barcode, "Barcode param in WriteBarcodeToSVG is NULL")
+	ZX_CHECK(barcode, "Barcode param is NULL")
 	ZX_TRY(copy(opts ? WriteBarcodeToSVG(*barcode, *opts) : WriteBarcodeToSVG(*barcode)))
 }
 
 ZXing_Image* ZXing_WriteBarcodeToImage(const ZXing_Barcode* barcode, const ZXing_WriterOptions* opts)
 {
-	ZX_CHECK(barcode, "Barcode param in WriteBarcodeToSVG is NULL")
+	ZX_CHECK(barcode, "Barcode param is NULL")
 	ZX_TRY(new Image(opts ? WriteBarcodeToImage(*barcode, *opts) : WriteBarcodeToImage(*barcode)))
 }
 

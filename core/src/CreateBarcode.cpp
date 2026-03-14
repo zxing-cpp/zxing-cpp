@@ -312,6 +312,9 @@ zint_symbol* CreatorOptions::zint() const
 
 Barcode CreateBarcode(const void* data, int size, int mode, const CreatorOptions& opts)
 {
+	if (!data || size < 1)
+		throw std::invalid_argument("Can not create a barcode from NULL or empty data");
+
 	auto zint = opts.zint();
 
 	zint->input_mode = mode == UNICODE_MODE && opts.gs1() && (opts.format() & BarcodeFormat::AllGS1) ? GS1_MODE : mode;
