@@ -93,11 +93,19 @@ static bool TerminatesCompaction(int code)
 **/
 static int ProcessECI(const std::vector<int>& codewords, int codeIndex, const int length, const int code, Content& result)
 {
-	if (codeIndex < length && IsECI(code)) {
-		if (code == ECI_CHARSET)
-			result.switchEncoding(ECI(codewords[codeIndex++]));
-		else
-			codeIndex += code == ECI_GENERAL_PURPOSE ? 2 : 1; // Don't currently handle non-character set ECIs so just ignore
+	if (!IsECI(code))
+		return codeIndex;
+
+	if (codeIndex >= length)
+		return codeIndex; // throw FormatError(); TODO: check why there are unit tests that expect this to be silently ignored
+
+	if (code == ECI_CHARSET) {
+		result.switchEncoding(ECI(codewords[codeIndex++]));
+	} else {
+		int paramCount = code == ECI_GENERAL_PURPOSE ? 2 : 1;
+		if (codeIndex + paramCount > length)
+			return codeIndex; // throw FormatError(); TODO: check why there are unit tests that expect this to be silently ignored
+		codeIndex += paramCount; // Don't currently handle non-character set ECIs so just ignore
 	}
 
 	return codeIndex;
@@ -630,6 +638,9 @@ int DecodeMacroBlock(const std::vector<int>& codewords, int codeIndex, PDF417Cus
 
 DecoderResult Decode(const std::vector<int>& codewords)
 {
+	if (codewords.empty() || codewords[0] < 1 || codewords[0] > Size(codewords))
+		return FormatError();
+
 	Content result;
 	result.symbology = {'L', '2', -1};
 
