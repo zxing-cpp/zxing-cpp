@@ -718,7 +718,225 @@ public:
 	}
 };
 
-static DetectorResult Scan(EdgeTracer& startTracer, std::array<DMRegressionLine, 4>& lines)
+// Piecewise-linear timing remap: stores knots mapping uniform module positions to actual
+// (non-uniform) fractional positions along the edge. Used by SampleGridCorrected.
+struct TimingRemap
+{
+	struct Knot { double mc, frac; };
+	std::vector<Knot> knots;
+	int numModules = 0;
+
+	explicit operator bool() const { return !knots.empty(); }
+
+	double operator()(double pos) const
+	{
+		int ki = 0;
+		while (ki + 1 < Size(knots) && knots[ki + 1].mc < pos)
+			++ki;
+		ki = std::min(ki, Size(knots) - 2);
+		double denom = knots[ki + 1].mc - knots[ki].mc;
+		if (std::abs(denom) < 1e-10)
+			return knots[ki].frac * numModules;
+		double t = (pos - knots[ki].mc) / denom;
+		return (knots[ki].frac + t * (knots[ki + 1].frac - knots[ki].frac)) * numModules;
+	}
+
+	double maxDeviation() const
+	{
+		double m = 0;
+		for (int i = 0; i < numModules; ++i)
+			m = std::max(m, std::abs((*this)(i + 0.5) - (i + 0.5)));
+		return m;
+	}
+};
+
+// Build piecewise-linear remaps from uniform module coordinates to actual (non-uniform) ones
+// by analyzing the gap structure in timing-pattern traced points. Returns 1-2 candidates when
+// start-anchoring and end-anchoring disagree on the first white module. See #794, #1063, #1072.
+static std::vector<TimingRemap> BuildTimingRemaps(const std::vector<PointF>& points, PointF start, PointF end,
+	int numModules, bool firstIsBlack)
+{
+	if (Size(points) < 5 || numModules < 10)
+		return {};
+
+	auto edgeDir = end - start;
+	auto edgeLen = length(edgeDir);
+	if (edgeLen < 1)
+		return {};
+	auto unitDir = (1.0 / edgeLen) * edgeDir;
+
+	// project traced points onto edge direction
+	std::vector<double> proj;
+	proj.reserve(points.size());
+	for (const auto& p : points)
+		proj.push_back(dot(p - start, unitDir));
+
+	if (Size(proj) >= 2 && proj.front() > proj.back())
+		std::reverse(proj.begin(), proj.end());
+
+	// detect gaps (white modules) — use a lower threshold than modules() (1.9×) to catch
+	// compressed gaps near edges caused by barrel distortion on curved surfaces
+	auto unitPixelDist = length(bresenhamDirection(end - start));
+	double gapThreshold = 1.4 * unitPixelDist;
+
+	std::vector<double> gapMids;
+	for (int i = 1; i < Size(proj); ++i)
+		if (proj[i] - proj[i - 1] > gapThreshold)
+			gapMids.push_back((proj[i - 1] + proj[i]) / 2);
+
+	if (Size(gapMids) < 4)
+		return {};
+
+	// compute inter-gap spacings and their median (each normal spacing ≈ 2 module widths)
+	std::vector<double> spacings;
+	for (int i = 1; i < Size(gapMids); ++i)
+		spacings.push_back(gapMids[i] - gapMids[i - 1]);
+	auto tmp = spacings;
+	std::nth_element(tmp.begin(), tmp.begin() + Size(tmp) / 2, tmp.end());
+	double medianSpacing = tmp[Size(tmp) / 2];
+
+	if (!(medianSpacing > 0))
+		return {};
+
+	// assign each gap a relative sequence index, accounting for missing gaps via spacing ratio
+	std::vector<int> seqIdx(gapMids.size());
+	seqIdx[0] = 0;
+	for (int i = 1; i < Size(gapMids); ++i) {
+		int skip = std::max(1, static_cast<int>(std::round(spacings[i - 1] / medianSpacing)));
+		seqIdx[i] = seqIdx[i - 1] + skip;
+	}
+
+	double halfMedian = medianSpacing / 2;
+
+	auto snapWhite = [&](double raw) {
+		return firstIsBlack
+			? 2 * static_cast<int>(std::round((raw - 1.0) / 2.0)) + 1
+			: 2 * static_cast<int>(std::round(raw / 2.0));
+	};
+
+	int whiteMin = firstIsBlack ? 1 : 0;
+	int whiteMax = firstIsBlack ? numModules - 1 : numModules - 2;
+
+	// start-anchoring: distance from edge start to first gap
+	int firstWhiteStart = std::clamp(snapWhite(gapMids.front() / halfMedian), whiteMin, whiteMax);
+
+	// end-anchoring: distance from last gap to edge end → infer last white module → subtract gap span
+	double rawEnd = (edgeLen - gapMids.back()) / halfMedian;
+	int lastModFromEnd = 2 * std::max(0, static_cast<int>(std::round(
+		(rawEnd - (firstIsBlack ? 0.5 : 1.5)) / 2.0)));
+	int firstWhiteEnd = std::clamp(whiteMax - lastModFromEnd - 2 * seqIdx.back(), whiteMin, whiteMax);
+
+	// generate candidates: primary with min anchor, alternative with max when they differ
+	std::vector<int> anchors = {std::min(firstWhiteStart, firstWhiteEnd)};
+	if (firstWhiteStart != firstWhiteEnd)
+		anchors.push_back(std::max(firstWhiteStart, firstWhiteEnd));
+
+	auto buildRemap = [&](int firstWhiteMod) {
+		TimingRemap remap;
+		remap.numModules = numModules;
+		remap.knots.reserve(Size(gapMids) + 6); // +6 accounts for sentinel endpoints + extrapolated edge knots
+		remap.knots.push_back({0.0, 0.0});
+		for (int k = 0; k < Size(gapMids); ++k) {
+			double mc = (firstWhiteMod + 2 * seqIdx[k]) + 0.5;
+			if (mc > 0 && mc < numModules)
+				remap.knots.push_back({mc, gapMids[k] / edgeLen});
+		}
+		remap.knots.push_back({double(numModules), 1.0});
+
+		// extrapolate missing knots at both edges using the nearest detected inter-gap spacing;
+		// barrel distortion compresses modules near the edges, making those gaps undetectable,
+		// but the spacing trend from the first/last detected pair is a reasonable estimate
+		if (Size(remap.knots) >= 4) {
+			double expectedFirstMc = firstIsBlack ? 1.5 : 0.5;
+			if (remap.knots[1].mc > expectedFirstMc + 1.5) {
+				double stepFrac = remap.knots[2].frac - remap.knots[1].frac;
+				std::vector<TimingRemap::Knot> extra;
+				for (double mc = remap.knots[1].mc - 2, frac = remap.knots[1].frac - stepFrac;
+					 mc >= expectedFirstMc - 0.5 && frac > 0.005; mc -= 2, frac -= stepFrac) // 0.005: stay inside edge
+					extra.push_back({mc, frac});
+				std::reverse(extra.begin(), extra.end());
+				remap.knots.insert(remap.knots.begin() + 1, extra.begin(), extra.end());
+			}
+			double expectedLastMc = numModules - (firstIsBlack ? 0.5 : 1.5);
+			int last = Size(remap.knots) - 2;
+			if (remap.knots[last].mc < expectedLastMc - 1.5) {
+				double stepFrac = remap.knots[last].frac - remap.knots[last - 1].frac;
+				for (double mc = remap.knots[last].mc + 2, frac = remap.knots[last].frac + stepFrac;
+					 mc <= expectedLastMc + 0.5 && frac < 0.995; mc += 2, frac += stepFrac) // 0.995: stay inside edge
+					remap.knots.insert(remap.knots.end() - 1, {mc, frac});
+			}
+		}
+
+		return remap;
+	};
+
+	std::vector<TimingRemap> results;
+	for (int anchor : anchors)
+		results.push_back(buildRemap(anchor));
+	return results;
+}
+
+// Sample the grid using timing-pattern-corrected non-uniform module spacing.
+// Returns an empty result if the correction is not applicable or insignificant.
+static DetectorResult SampleGridCorrected(const BitMatrix& image, int width, int height,
+	const PerspectiveTransform& mod2Pix, const TimingRemap& topRK, const TimingRemap& rightRK)
+{
+	if (!topRK && !rightRK)
+		return {};
+
+	double topDev = topRK ? topRK.maxDeviation() : 0;
+	double rightDev = rightRK ? rightRK.maxDeviation() : 0;
+	if (topDev < 0.25 && rightDev < 0.25) // less than 1/4 module deviation: correction not worthwhile
+		return {};
+
+	BitMatrix res(width, height);
+	for (int y = 0; y < height; ++y) {
+		double my = rightRK ? rightRK(y + 0.5) : y + 0.5;
+		for (int x = 0; x < width; ++x) {
+			auto p = mod2Pix(PointF{topRK ? topRK(x + 0.5) : x + 0.5, my});
+			if (!image.isIn(p))
+				return {};
+#ifdef PRINT_DEBUG
+			log(p, 3);
+#endif
+			if (image.get(p))
+				res.set(x, y);
+		}
+	}
+
+	auto projectCorner = [&](PointI p) { return PointI(mod2Pix(PointF(p)) + PointF(0.5, 0.5)); };
+	return {std::move(res),
+			{projectCorner({0, 0}), projectCorner({width, 0}), projectCorner({width, height}), projectCorner({0, height})}};
+}
+
+// Collect timing-pattern-corrected sampling candidates for the given dimension into `out`.
+// See #794, #1063, #1072 for the underlying distortion problem.
+static void AppendCorrectedCandidates(const BitMatrix& image, int w, int h, int stdW, int stdH,
+	const std::vector<PointF>& topPts, const std::vector<PointF>& rightPts,
+	PointF tl, PointF tr, PointF br, const QuadrilateralF& sourcePoints,
+	std::vector<DetectorResult>& out)
+{
+	auto mod2Pix = PerspectiveTransform(Rectangle(w, h, 0), sourcePoints);
+	auto topRKs = BuildTimingRemaps(topPts, tl, tr, w, true);
+	auto rightRKs = BuildTimingRemaps(rightPts, tr, br, h, false);
+
+	printf("tryDims(%d,%d) topRKs=%d rightRKs=%d\n", w, h, Size(topRKs), Size(rightRKs));
+
+	if (topRKs.empty()) topRKs.emplace_back();
+	if (rightRKs.empty()) rightRKs.emplace_back();
+	for (auto& topRK : topRKs)
+		for (auto& rightRK : rightRKs)
+			if (auto c = SampleGridCorrected(image, w, h, mod2Pix, topRK, rightRK); c.isValid())
+				out.push_back(std::move(c));
+
+	// also try standard sampling with this dimension as fallback
+	if (w != stdW || h != stdH)
+		if (auto s = SampleGrid(image, w, h, mod2Pix); s.isValid())
+			out.push_back(std::move(s));
+}
+
+static DetectorResult Scan(EdgeTracer& startTracer, std::array<DMRegressionLine, 4>& lines,
+	std::vector<DetectorResult>* corrected = nullptr)
 {
 	while (startTracer.moveToNextWhiteAfterBlack()) {
 		log(startTracer.p);
@@ -810,14 +1028,20 @@ static DetectorResult Scan(EdgeTracer& startTracer, std::array<DMRegressionLine,
 		tr = intersect(lineT, lineR);
 		br = intersect(lineB, lineR);
 
+		// save edge points before modules() filters them
+		auto topPts = lineT.points();
+		auto rightPts = lineR.points();
+
 		int dimT, dimR;
 		double fracT, fracR;
 		auto splitDouble = [](double d, int* i, double* f) {
 			*i = std::isnormal(d) ? narrow_cast<int>(std::lround(d)) : 0;
 			*f = std::isnormal(d) ? std::abs(d - *i) : INFINITY;
 		};
-		splitDouble(lineT.modules(tl, tr), &dimT, &fracT);
-		splitDouble(lineR.modules(br, tr), &dimR, &fracR);
+		auto rawModT = lineT.modules(tl, tr);
+		auto rawModR = lineR.modules(br, tr);
+		splitDouble(rawModT, &dimT, &fracT);
+		splitDouble(rawModR, &dimR, &fracR);
 
 		// the dimension is 2x the number of black/white transitions
 		dimT *= 2;
@@ -830,6 +1054,7 @@ static DetectorResult Scan(EdgeTracer& startTracer, std::array<DMRegressionLine,
 		// if we have an almost square (invalid rectangular) data matrix dimension, we try to parse it by assuming a
 		// square. we use the dimension that is closer to an integral value. all valid rectangular symbols differ in
 		// their dimension by at least 10. Note: this is currently not required for the black-box tests to complete.
+		int preDimT = dimT, preDimR = dimR;
 		if (std::abs(dimT - dimR) < 10)
 			dimT = dimR = fracR < fracT ? dimR : dimT;
 
@@ -849,11 +1074,25 @@ static DetectorResult Scan(EdgeTracer& startTracer, std::array<DMRegressionLine,
 			movedTowardsBy(bl, tl, br, 0.5f),
 		};
 
-		auto res = SampleGrid(*startTracer.img, dimT, dimR, PerspectiveTransform(Rectangle(dimT, dimR, 0), sourcePoints));
+		auto mod2Pix = PerspectiveTransform(Rectangle(dimT, dimR, 0), sourcePoints);
 
-		CHECK(res.isValid());
+		// produce timing-pattern-corrected alternatives for deformed symbols (see #794, #1063, #1072)
+		if (corrected) {
+			AppendCorrectedCandidates(*startTracer.img, dimT, dimR, dimT, dimR,
+				topPts, rightPts, tl, tr, br, sourcePoints, *corrected);
 
-		return res;
+			// when pre-square-fix dimensions were near-square but disagreed, also try the alternative
+			if (preDimT != preDimR && std::abs(preDimT - preDimR) < 10) {
+				int altDim = std::max(preDimT, preDimR);
+				if (altDim != dimT)
+					AppendCorrectedCandidates(*startTracer.img, altDim, altDim, dimT, dimR,
+						topPts, rightPts, tl, tr, br, sourcePoints, *corrected);
+			}
+		}
+
+		auto stdRes = SampleGrid(*startTracer.img, dimT, dimR, mod2Pix);
+		CHECK(stdRes.isValid());
+		return stdRes;
 	}
 
 	return {};
@@ -873,6 +1112,7 @@ static DetectorResults DetectNew(const BitMatrix& image, bool tryHarder, bool tr
 
 	// instantiate RegressionLine objects outside of Scan function to prevent repetitive std::vector allocations
 	std::array<DMRegressionLine, 4> lines;
+	std::vector<DetectorResult> corrected; // timing-pattern-corrected candidates, reused across iterations
 
 	constexpr int minSymbolSize = 8 * 2; // minimum realistic size in pixel: 8 modules x 2 pixels per module
 
@@ -892,8 +1132,18 @@ static DetectorResults DetectNew(const BitMatrix& image, bool tryHarder, bool tr
 				break;
 
 			DetectorResult res;
-			while (res = Scan(tracer, lines), res.isValid())
+			corrected.clear();
+			while (res = Scan(tracer, lines, &corrected), res.isValid()) {
 				co_yield std::move(res);
+				for (auto& c : corrected)
+					if (c.isValid())
+						co_yield std::move(c);
+				corrected.clear();
+			}
+			// yield corrected candidates from L-patterns whose standard result was invalid
+			for (auto& c : corrected)
+				if (c.isValid())
+					co_yield std::move(c);
 
 			if (!tryHarder)
 				break; // only test center lines
