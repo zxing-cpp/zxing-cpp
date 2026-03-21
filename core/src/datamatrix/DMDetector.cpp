@@ -24,6 +24,7 @@
 #include <cassert>
 #include <cmath>
 #include <cstdlib>
+#include <functional>
 #include <map>
 #include <utility>
 #include <vector>
@@ -467,6 +468,7 @@ public:
 		printf("unit pixel dist: %.1f\n", unitPixelDist);
 		printf("lineLength: %.1f, meanModSize: %.1f (min: %.1f, max: %.1f), gaps: %lu\n", lineLength, meanModSize, *iMin, *iMax,
 			   modSizes.size());
+		printf("modSizes: ");
 		printv("%.1f ", modSizes);
 
 		if (*iMax > 2 * *iMin) {
@@ -476,6 +478,7 @@ public:
 				else if (modSizes[i] > meanModSize * 1.6)
 					modSizes[i] = 0;
 			}
+			printf("filtered: ");
 			printv("%.1f ", modSizes);
 
 			meanModSize = average(modSizes, [](double dist) { return dist > 0; });
@@ -718,7 +721,187 @@ public:
 	}
 };
 
-static DetectorResult Scan(EdgeTracer& startTracer, std::array<DMRegressionLine, 4>& lines)
+// Store a LUT mapping module indices to their actual center positions along the edge.
+struct ModuleCenterLUT : std::vector<double>
+{
+	using std::vector<double>::vector;
+
+	double operator()(int i) const { return empty() ? i + 0.5 : (*this)[i]; }
+};
+
+// Build a module-center LUT from uniform module coordinates to actual (non-uniform) ones
+// by analyzing the gap structure in timing-pattern traced points. See #794, #1063, #1072.
+static ModuleCenterLUT BuildModuleCenterLUT(const std::vector<PointF>& points, PointF start, PointF end, int numModules,
+											const std::function<double(double)>& edgeFracToModule)
+{
+	if (Size(points) < 5)
+		return {};
+
+	auto edgeDir = end - start;
+	auto edgeLen = length(edgeDir);
+	auto unitDir = normalized(edgeDir);
+	auto modSize = edgeLen / numModules;
+
+	// project traced points onto edge direction
+	std::vector<double> proj;
+	proj.reserve(points.size());
+	for (const auto& p : points)
+		proj.push_back(dot(p - start, unitDir));
+
+	bool startsWithGap = false;
+	if (proj.front() > proj.back()) {
+		std::reverse(proj.begin(), proj.end());
+		startsWithGap = true;
+	}
+
+	// detect gaps (white modules) — use a lower threshold than modules() (1.9×) to catch
+	// compressed gaps near edges caused by barrel distortion on curved surfaces
+	auto unitPixelDist = length(bresenhamDirection(edgeDir));
+	double gapThreshold = 1.4 * unitPixelDist;
+
+	std::vector<double> gapMids;
+	for (int i = 1; i < Size(proj); ++i)
+		if (proj[i] - proj[i - 1] > gapThreshold) {
+			auto gapMid = (proj[i] + proj[i - 1]) / 2;
+			if (gapMids.empty() || gapMid - gapMids.back() > 0.75 * 2 * modSize)
+				gapMids.push_back(gapMid);
+		}
+
+	// assign each gap a module index, accounting for missing gaps via spacing ratio
+	std::vector<int> modIdx(gapMids.size());
+	modIdx[0] = static_cast<int>(std::round((gapMids.front() / modSize - (1.5 + startsWithGap)) / 2)) * 2 + 1 + startsWithGap;
+	for (int i = 1; i < Size(gapMids); ++i)
+		modIdx[i] = modIdx[i - 1] + std::max(1, static_cast<int>(std::round((gapMids[i] - gapMids[i - 1]) / (2 * modSize)))) * 2;
+
+	printf("mIdx: ");
+	printv("%d ", modIdx);
+
+	struct Knot
+	{
+		double mc, corrMc;
+	};
+	std::vector<Knot> knots;
+	knots.reserve(Size(gapMids) + 2);
+	knots.push_back({0.0, 0.0});
+	for (int k = 0; k < Size(gapMids); ++k)
+		knots.push_back({modIdx[k] + 0.5, edgeFracToModule(gapMids[k] / edgeLen)});
+	knots.push_back({double(numModules), double(numModules)});
+
+	// less than 1/2 module deviation: correction not worthwhile
+	if (Reduce(knots, 0.0, [](double m, const Knot& k) { return std::max(m, std::abs(k.mc - k.corrMc)); }) < 0.5)
+		return {};
+
+	ModuleCenterLUT centerLUT(numModules);
+
+	// #define ZXING_USE_POLY_TIMING_REMAP
+	// #define ZXING_USE_POLY_TIMING_REMAP_CONSTRAINED
+
+#ifdef ZXING_USE_POLY_TIMING_REMAP
+	{
+		// Fit degree-2 polynomial corrMc = poly[0] + poly[1]*mc + poly[2]*mc^2
+		// using least-squares on all knots (including endpoint sentinels at 0 and numModules).
+		double s0 = Size(knots), s1 = 0, s2 = 0, s3 = 0, s4 = 0;
+		double b0 = 0, b1 = 0, b2 = 0;
+		for (const auto& k : knots) {
+			double m = k.mc, c = k.corrMc, m2 = m * m;
+			s1 += m;
+			s2 += m2;
+			s3 += m2 * m;
+			s4 += m2 * m2;
+			b0 += c;
+			b1 += m * c;
+			b2 += m2 * c;
+		}
+		// Gaussian elimination on the 3x3 normal equations [A^T A | A^T b]
+		double mat[3][4] = {{s0, s1, s2, b0}, {s1, s2, s3, b1}, {s2, s3, s4, b2}};
+		for (int col = 0; col < 3; ++col)
+			for (int row = col + 1; row < 3; ++row) {
+				double f = mat[row][col] / mat[col][col];
+				for (int j = col; j <= 3; ++j)
+					mat[row][j] -= f * mat[col][j];
+			}
+		double p2 = mat[2][3] / mat[2][2];
+		double p1 = (mat[1][3] - mat[1][2] * p2) / mat[1][1];
+		double p0 = (mat[0][3] - mat[0][2] * p2 - mat[0][1] * p1) / mat[0][0];
+		for (int i = 0; i < numModules; ++i) {
+			double mc = i + 0.5;
+			centerLUT[i] = p0 + p1 * mc + p2 * mc * mc;
+		}
+	}
+#elif defined(ZXING_USE_POLY_TIMING_REMAP_CONSTRAINED)
+	{
+		// Fit a quadratic that reproduces both sentinel endpoints (0 and N) exactly:
+		// corrMc = mc + a * mc * (mc - N).
+		// This keeps corrMc(0) == 0 and corrMc(N) == N by construction,
+		// while fitting the interior gap knots in the least-squares sense.
+		double gg = 0, gb = 0;
+		for (const auto& k : knots) {
+			double g = k.mc * (k.mc - numModules);
+			gg += g * g;
+			gb += g * (k.corrMc - k.mc);
+		}
+		double a = gb / gg;
+		double p0 = 0;
+		double p1 = 1 - a * numModules;
+		double p2 = a;
+		for (int i = 0; i < numModules; ++i) {
+			double mc = i + 0.5;
+			centerLUT[i] = p0 + p1 * mc + p2 * mc * mc;
+		}
+	}
+#else
+	// Fill dense lookup table at module centers via piecewise-linear interpolation.
+	int ki = 0;
+	for (int i = 0; i < numModules; ++i) {
+		double mc = i + 0.5;
+		while (ki + 1 < Size(knots) - 1 && knots[ki + 1].mc < mc)
+			++ki;
+		double denom = knots[ki + 1].mc - knots[ki].mc;
+		assert(denom >= 0.1);
+		double t = (mc - knots[ki].mc) / denom;
+		centerLUT[i] = knots[ki].corrMc + t * (knots[ki + 1].corrMc - knots[ki].corrMc);
+	}
+#endif
+
+	printf("corr: ");
+	for (int i = 0; i < numModules; ++i)
+		printf("%.2f ", centerLUT[i] - (i + 0.5));
+	printf("\n");
+
+	return centerLUT;
+}
+
+//TODO: merge this into a generic SampleGrid function
+static DetectorResult SampleGridCorrected(const BitMatrix& image, int width, int height, const PerspectiveTransform& mod2Pix,
+										  const ModuleCenterLUT& topCenterLUT, const ModuleCenterLUT& rightCenterLUT)
+{
+#ifdef PRINT_DEBUG
+	LogMatrix log;
+	static int i = 0;
+	LogMatrixWriter lmw(log, image, 5, "grid_c" + std::to_string(i++) + ".pnm");
+#endif
+
+	BitMatrix res(width, height);
+	for (int y = 0; y < height; ++y) {
+		double my = rightCenterLUT(y);
+		for (int x = 0; x < width; ++x) {
+			auto p = mod2Pix(PointF{topCenterLUT(x), my});
+			if (!image.isIn(p))
+				return {};
+#ifdef PRINT_DEBUG
+			log(p, 3);
+#endif
+			if (image.get(p))
+				res.set(x, y);
+		}
+	}
+
+	auto projectCorner = [&](PointI p) { return PointI(mod2Pix(PointF(p)) + PointF(0.5, 0.5)); };
+	return {std::move(res),
+			{projectCorner({0, 0}), projectCorner({width, 0}), projectCorner({width, height}), projectCorner({0, height})}};
+}
+
+static DetectorResults Scan(EdgeTracer& startTracer, std::array<DMRegressionLine, 4>& lines)
 {
 	while (startTracer.moveToNextWhiteAfterBlack()) {
 		log(startTracer.p);
@@ -849,14 +1032,26 @@ static DetectorResult Scan(EdgeTracer& startTracer, std::array<DMRegressionLine,
 			movedTowardsBy(bl, tl, br, 0.5f),
 		};
 
-		auto res = SampleGrid(*startTracer.img, dimT, dimR, PerspectiveTransform(Rectangle(dimT, dimR, 0), sourcePoints));
+		auto mod2Pix = PerspectiveTransform(Rectangle(dimT, dimR, 0), sourcePoints);
+		auto pix2Mod = PerspectiveTransform(sourcePoints, Rectangle(dimT, dimR, 0));
 
-		CHECK(res.isValid());
+		if (auto res = SampleGrid(*startTracer.img, dimT, dimR, mod2Pix); res.isValid())
+			co_yield std::move(res);
 
-		return res;
+		// TODO: we currently only yield the corrected grid if at least one dimention is significantly deformed (has a LUT), but it
+		// would be even better if we stopped right after having a sucessful decoding result from the uncorrected grid. The current
+		// co-routine setup does not allow this. The runtime impact is very small though.
+
+		// produce timing-pattern-corrected alternatives for deformed symbols
+		tl = sourcePoints[0], tr = sourcePoints[1], br = sourcePoints[2];
+
+		auto tLUT = BuildModuleCenterLUT(lineT.points(), tl, tr, dimT, [&](double t) { return pix2Mod((1 - t) * tl + t * tr).x; });
+		auto rLUT = BuildModuleCenterLUT(lineR.points(), tr, br, dimR, [&](double t) { return pix2Mod((1 - t) * tr + t * br).y; });
+
+		if (!tLUT.empty() || !rLUT.empty())
+			if (auto res = SampleGridCorrected(*startTracer.img, dimT, dimR, mod2Pix, tLUT, rLUT); res.isValid())
+				co_yield std::move(res);
 	}
-
-	return {};
 }
 
 static DetectorResults DetectNew(const BitMatrix& image, bool tryHarder, bool tryRotate)
@@ -891,8 +1086,7 @@ static DetectorResults DetectNew(const BitMatrix& image, bool tryHarder, bool tr
 			if (!tracer.isIn())
 				break;
 
-			DetectorResult res;
-			while (res = Scan(tracer, lines), res.isValid())
+			for (auto&& res : Scan(tracer, lines))
 				co_yield std::move(res);
 
 			if (!tryHarder)
