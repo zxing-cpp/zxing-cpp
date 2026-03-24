@@ -9,6 +9,7 @@
 
 #include "ConcentricFinder.h"
 #include "DetectorResult.h"
+#include "StdGenerator.h"
 
 #include <vector>
 
@@ -30,7 +31,9 @@ using FinderPatternSets = std::vector<FinderPatternSet>;
 FinderPatterns FindFinderPatterns(const BitMatrix& image, bool tryHarder);
 FinderPatternSets GenerateFinderPatternSets(FinderPatterns& patterns);
 
-DetectorResult SampleQR(const BitMatrix& image, const FinderPatternSet& fp);
+using DetectorResults = std::generator<DetectorResult>;
+
+DetectorResults SampleQR(const BitMatrix& image, const FinderPatternSet& fp);
 DetectorResult SampleMQR(const BitMatrix& image, const ConcentricPattern& fp);
 DetectorResult SampleRMQR(const BitMatrix& image, const ConcentricPattern& fp);
 

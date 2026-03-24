@@ -346,13 +346,13 @@ static const Version* ReadVersion(const BitMatrix& image, int dimension, const P
 	return Version::DecodeVersionInformation(bits[0], bits[1]);
 }
 
-DetectorResult SampleQR(const BitMatrix& image, const FinderPatternSet& fp)
+DetectorResults SampleQR(const BitMatrix& image, const FinderPatternSet& fp)
 {
 	auto top  = EstimateDimension(image, fp.tl, fp.tr);
 	auto left = EstimateDimension(image, fp.tl, fp.bl);
 
 	if (!top.dim && !left.dim)
-		return {};
+		co_return;
 
 	auto best = top.err == left.err ? (top.dim > left.dim ? top : left) : (top.err < left.err ? top : left);
 	int dimension = best.dim;
@@ -387,7 +387,7 @@ DetectorResult SampleQR(const BitMatrix& image, const FinderPatternSet& fp)
 			br = brInter;
 	}
 
-	// otherwise the simple estimation used by upstream is used as a best guess fallback
+	// otherwise or if finder patterns are not square, the simple estimation used by upstream is used as a best guess fallback
 	if (!image.isIn(br) || !FitSquareToPoints(image, fp.bl, fp.bl.size, 2, false)) {
 		br = fp.tr - fp.tl + fp.bl;
 		brOffset = PointF(0, 0);
@@ -401,7 +401,7 @@ DetectorResult SampleQR(const BitMatrix& image, const FinderPatternSet& fp)
 
 		// if the version bits are garbage -> discard the detection
 		if (!version || std::min(std::abs(version->dimension() - top.dim), std::abs(version->dimension() - left.dim)) > 8)
-			return {};
+			co_return;
 		if (version->dimension() != dimension) {
 			printf("update dimension: %d -> %d\n", dimension, version->dimension());
 			dimension = version->dimension();
@@ -505,11 +505,18 @@ DetectorResult SampleQR(const BitMatrix& image, const FinderPatternSet& fp)
 													 {*apP(x, y), *apP(x + 1, y), *apP(x + 1, y + 1), *apP(x, y + 1)}}});
 			}
 
-		return SampleGrid(image, dimension, dimension, rois);
+		co_yield SampleGrid(image, dimension, dimension, rois);
 #endif
 	}
+	else
+		co_yield SampleGrid(image, dimension, dimension, mod2Pix);
 
-	return SampleGrid(image, dimension, dimension, mod2Pix);
+	// if we have a version 1 symbol (no alignment patterns) and tried and failed with the intersection of the lines around the finder
+	// patterns, use the simple estimation as a fallback. See #1086
+	if (dimension == 21 && brOffset != PointF(0, 0)) {
+		mod2Pix = Mod2Pix(dimension, PointF(0, 0), {fp.tl, fp.tr, fp.tr - fp.tl + fp.bl, fp.bl});
+		co_yield SampleGrid(image, dimension, dimension, mod2Pix);
+	}
 }
 
 /**
