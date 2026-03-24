@@ -175,10 +175,11 @@ bool BarcodeData::operator==(const BarcodeData& o) const
 
 	// handle MatrixCodes first
 	if (!(format & BarcodeFormat::AllLinear)) {
-		if (isValid() && o.isValid() && content.bytes != o.content.bytes)
+		if (content.bytes != o.content.bytes)
 			return false;
 
-		// check for equal position if both are valid with equal bytes or at least one is in error
+		// At this point both are valid with the same content or both are in error.
+		// Treat them as equal if their positions are about the same (center of one is inside the other).
 		return IsInside(Center(o.position), position);
 	}
 
