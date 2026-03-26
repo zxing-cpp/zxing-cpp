@@ -419,6 +419,10 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 19, 0, pure },
 		});
 
+		runTests("datamatrix-5", DataMatrix, 6, {
+			{ 6, 6, 0 },
+		});
+
 		runTests("dxfilmedge-1", DXFilmEdge, 3, {
 			{ 1, 3, 0 },
 			{ 0, 3, 180 },
