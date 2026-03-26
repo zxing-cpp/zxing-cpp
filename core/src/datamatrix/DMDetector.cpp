@@ -909,11 +909,63 @@ static DetectorResult SampleGridCorrected(const BitMatrix& image, int width, int
 			{projectCorner({0, 0}), projectCorner({width, 0}), projectCorner({width, height}), projectCorner({0, height})}};
 }
 
+// Sample grid using Coons-patch interpolation with timing-corrected top/right boundaries.
+// Avoids double-correction when combining timing remaps with perspective transforms.
+static DetectorResult SampleGridCoons(const BitMatrix& image, int w, int h,
+	const TimingRemap& topRK, const TimingRemap& rightRK,
+	PointF tl, PointF tr, PointF br, PointF bl)
+{
+	if (!topRK && !rightRK)
+		return {};
+
+	double topDev = topRK ? topRK.maxDeviation() : 0;
+	double rightDev = rightRK ? rightRK.maxDeviation() : 0;
+	if (topDev < 0.25 && rightDev < 0.25)
+		return {};
+
+	auto topEdge = tr - tl;
+	auto rightEdge = br - tr;
+	auto bottomEdge = br - bl;
+	auto leftEdge = bl - tl;
+
+	BitMatrix res(w, h);
+	for (int y = 0; y < h; ++y) {
+		double v = (y + 0.5) / h;
+		double rightV = rightRK ? rightRK(y + 0.5) / h : v;
+
+		for (int x = 0; x < w; ++x) {
+			double u = (x + 0.5) / w;
+			double topU = topRK ? topRK(x + 0.5) / w : u;
+
+			PointF pTop = tl + topU * topEdge;
+			PointF pBot = bl + u * bottomEdge;
+			PointF pLeft = tl + v * leftEdge;
+			PointF pRight = tr + rightV * rightEdge;
+
+			PointF p = (1 - v) * pTop + v * pBot
+					 + (1 - u) * pLeft + u * pRight
+					 - ((1 - u) * (1 - v) * tl + u * (1 - v) * tr
+					  + (1 - u) * v * bl + u * v * br);
+
+			if (!image.isIn(p))
+				return {};
+#ifdef PRINT_DEBUG
+			log(p, 3);
+#endif
+			if (image.get(p))
+				res.set(x, y);
+		}
+	}
+
+	auto roundCorner = [](PointF p) { return PointI(p + PointF(0.5, 0.5)); };
+	return {std::move(res), {roundCorner(tl), roundCorner(tr), roundCorner(br), roundCorner(bl)}};
+}
+
 // Collect timing-pattern-corrected sampling candidates for the given dimension into `out`.
 // See #794, #1063, #1072 for the underlying distortion problem.
 static void AppendCorrectedCandidates(const BitMatrix& image, int w, int h, int stdW, int stdH,
 	const std::vector<PointF>& topPts, const std::vector<PointF>& rightPts,
-	PointF tl, PointF tr, PointF br, const QuadrilateralF& sourcePoints,
+	PointF tl, PointF tr, PointF br, PointF bl, const QuadrilateralF& sourcePoints,
 	std::vector<DetectorResult>& out)
 {
 	auto mod2Pix = PerspectiveTransform(Rectangle(w, h, 0), sourcePoints);
@@ -921,6 +973,14 @@ static void AppendCorrectedCandidates(const BitMatrix& image, int w, int h, int 
 	auto rightRKs = BuildTimingRemaps(rightPts, tr, br, h, false);
 
 	printf("tryDims(%d,%d) topRKs=%d rightRKs=%d\n", w, h, Size(topRKs), Size(rightRKs));
+
+	// Coons-patch sampling: use boundary interpolation with unshrunk corners + timing patterns
+	if (!topRKs.empty() && !rightRKs.empty()) {
+		for (auto& topRK : topRKs)
+			for (auto& rightRK : rightRKs)
+				if (auto c = SampleGridCoons(image, w, h, topRK, rightRK, tl, tr, br, bl); c.isValid())
+					out.push_back(std::move(c));
+	}
 
 	if (topRKs.empty()) topRKs.emplace_back();
 	if (rightRKs.empty()) rightRKs.emplace_back();
@@ -1079,14 +1139,14 @@ static DetectorResult Scan(EdgeTracer& startTracer, std::array<DMRegressionLine,
 		// produce timing-pattern-corrected alternatives for deformed symbols (see #794, #1063, #1072)
 		if (corrected) {
 			AppendCorrectedCandidates(*startTracer.img, dimT, dimR, dimT, dimR,
-				topPts, rightPts, tl, tr, br, sourcePoints, *corrected);
+				topPts, rightPts, tl, tr, br, bl, sourcePoints, *corrected);
 
 			// when pre-square-fix dimensions were near-square but disagreed, also try the alternative
 			if (preDimT != preDimR && std::abs(preDimT - preDimR) < 10) {
 				int altDim = std::max(preDimT, preDimR);
 				if (altDim != dimT)
 					AppendCorrectedCandidates(*startTracer.img, altDim, altDim, dimT, dimR,
-						topPts, rightPts, tl, tr, br, sourcePoints, *corrected);
+						topPts, rightPts, tl, tr, br, bl, sourcePoints, *corrected);
 			}
 		}
 
