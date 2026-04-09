@@ -10,9 +10,11 @@
 #include "AZDetectorResult.h"
 #include "BitArray.h"
 #include "BitMatrix.h"
+#include "BitMatrixCursor.h"
 #include "ConcentricFinder.h"
 #include "GenericGF.h"
 #include "GridSampler.h"
+#include "LocalGrid.h"
 #include "LogMatrix.h"
 #include "Pattern.h"
 #include "ReedSolomonDecoder.h"
@@ -20,9 +22,13 @@
 
 #include <algorithm>
 #include <bit>
-#include <ranges>
 #include <optional>
+#include <ranges>
 #include <vector>
+
+#ifndef PRINT_DEBUG
+#define printf(...){}
+#endif
 
 namespace ZXing::Aztec {
 
@@ -435,10 +441,53 @@ DetectorResults Detect(const BitMatrix& image, bool isPure, bool tryHarder, int 
 		}
 
 		int dim = radius == 5 ? 4 * nbLayers + 11 : 4 * nbLayers + 2 * ((2 * nbLayers + 6) / 15) + 15;
-		double low = dim / 2.0 + srcQuad[0].x;
-		double high = dim / 2.0 + srcQuad[2].x;
 
-		auto bits = SampleGrid(image, dim, dim, PerspectiveTransform{{PointF{low, low}, {high, low}, {high, high}, {low, high}}, *fpQuad});
+		auto center = PointF(dim / 2.0, dim / 2.0);
+		srcQuad = Move(srcQuad, center);
+		mod2Pix = PerspectiveTransform{srcQuad, *fpQuad};
+
+		ZXing::DetectorResult bits;
+#if 1
+		// for symbols with timing patterns, find those starting from the center and successively move outward
+		if (dim >= 35) {
+			int R = (dim / 2) / 16;
+			int firstTimingPattern = dim / 2 - R * 16;
+
+			auto apM = std::vector<int>(); // alignment pattern positions in modules
+			for (int i = firstTimingPattern; i < dim; i += 16)
+				apM.push_back(i);//, printf("apM: %d\n", i);
+			auto apP = Matrix<std::optional<PointF>>(Size(apM), Size(apM)); // found/guessed alignment pattern positions in pixels
+			apP.set(Size(apM) / 2, Size(apM) / 2, mod2Pix(center)); // center point
+
+			for (int r = R-1; r >= 0; --r) {
+				srcQuad = Move(CenteredSquare(32 * (R - r)), center);
+				auto idxs = std::array<PointI, 4>{PointI{-1, -1}, {1, -1}, {1, 1}, {-1, 1}};
+				QuadrilateralF dstQuad;
+				for (int i = 0; i < 4; ++i) {
+					auto pi = (R - r) * idxs[i] + Size(apM) / 2 * PointI{1, 1};
+					printf("locate %dx%d\n", pi.x, pi.y);
+					apP.set(pi.x, pi.y, LocalGrid(image, mod2Pix, PointI(srcQuad[i]), PointI(dim, dim)).findTimingPatternCross(4));
+					dstQuad[i] = apP(pi.x, pi.y).value_or(mod2Pix(srcQuad[i]));
+					log(dstQuad[i], 2);
+				}
+				mod2Pix = PerspectiveTransform(srcQuad, dstQuad);
+			}
+
+#if 1
+			// find the remaining (non-corner) alignment patterns
+			for (int y = 0; y < Size(apM); ++y)
+				for (int x = 0; x < Size(apM); ++x) {
+					if (!apP(x, y))
+						apP.set(x, y, LocalGrid(image, mod2Pix, PointI(apM[x], apM[y]), PointI(dim, dim)).findTimingPatternCross(4));
+				}
+#endif
+
+			bits = SampleGrid(image, dim, dim, mod2Pix, std::move(apP), apM, apM);
+		}
+		else
+#endif
+			bits = SampleGrid(image, dim, dim, mod2Pix);
+
 		if (!bits.isValid())
 			continue;
 

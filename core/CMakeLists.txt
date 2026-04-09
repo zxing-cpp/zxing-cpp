@@ -165,6 +165,8 @@ if (ZXING_READERS)
         src/GridSampler.h
         src/GridSampler.cpp
         src/LogMatrix.h
+        src/LocalGrid.h
+        src/LocalGrid.cpp
         src/HybridBinarizer.h
         src/HybridBinarizer.cpp
         src/MultiFormatReader.h

@@ -146,6 +146,12 @@ Quadrilateral<PointT> Scale(const Quadrilateral<PointT>& q, int factor)
 }
 
 template <typename PointT>
+Quadrilateral<PointT> Move(const Quadrilateral<PointT>& q, PointT offset)
+{
+	return {q[0] + offset, q[1] + offset, q[2] + offset, q[3] + offset};
+}
+
+template <typename PointT>
 PointT Center(const Quadrilateral<PointT>& q)
 {
 	return Reduce(q) / Size(q);
