@@ -478,34 +478,7 @@ DetectorResults SampleQR(const BitMatrix& image, const FinderPatternSet& fp)
 		if (auto c = apP.get(N, N))
 			mod2Pix = Mod2Pix(dimension, PointF(3, 3), {fp.tl, fp.tr, *c, fp.bl});
 
-		// go over the whole set of alignment patters again and fill any remaining gaps by a projection based on an updated mod2Pix
-		// projection. This works if the symbol is flat, which is a reasonable fall-back assumption.
-		for (int y = 0; y <= N; ++y)
-			for (int x = 0; x <= N; ++x) {
-				if (apP(x, y))
-					continue;
-
-				printf("locate failed at %dx%d\n", x, y);
-				apP.set(x, y, projectM2P(x, y));
-			}
-
-#ifdef PRINT_DEBUG
-		for (int y = 0; y <= N; ++y)
-			for (int x = 0; x <= N; ++x)
-				log(*apP(x, y), 2);
-#endif
-
-		// assemble a list of region-of-interests based on the found alignment pattern pixel positions
-		ROIs rois;
-		for (int y = 0; y < N; ++y)
-			for (int x = 0; x < N; ++x) {
-				int x0 = apM[x], x1 = apM[x + 1], y0 = apM[y], y1 = apM[y + 1];
-				rois.push_back({x0 - (x == 0) * 6, x1 + (x == N - 1) * 7, y0 - (y == 0) * 6, y1 + (y == N - 1) * 7,
-								PerspectiveTransform{Rectangle(x0, x1, y0, y1, 0.5),
-													 {*apP(x, y), *apP(x + 1, y), *apP(x + 1, y + 1), *apP(x, y + 1)}}});
-			}
-
-		co_yield SampleGrid(image, dimension, dimension, rois);
+		co_yield SampleGrid(image, dimension, dimension, mod2Pix, std::move(apP), apM, apM);
 #endif
 	}
 	else

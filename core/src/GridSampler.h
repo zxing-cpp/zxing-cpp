@@ -7,7 +7,11 @@
 #pragma once
 
 #include "DetectorResult.h"
+#include "Matrix.h"
 #include "PerspectiveTransform.h"
+
+#include <optional>
+#include <vector>
 
 namespace ZXing {
 
@@ -48,5 +52,8 @@ public:
 using ROIs = std::vector<ROI>;
 
 DetectorResult SampleGrid(const BitMatrix& image, int width, int height, const ROIs& rois);
+
+DetectorResult SampleGrid(const BitMatrix& image, int width, int height, const PerspectiveTransform& mod2Pix,
+						  Matrix<std::optional<PointF>>&& apP, const std::vector<int>& apMX, const std::vector<int>& apMY);
 
 } // ZXing

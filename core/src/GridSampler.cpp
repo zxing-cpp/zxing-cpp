@@ -84,6 +84,41 @@ DetectorResult SampleGrid(const BitMatrix& image, int width, int height, const R
 
 	return {std::move(res),
 			{projectCorner({0, 0}), projectCorner({width, 0}), projectCorner({width, height}), projectCorner({0, height})}};
-	}
+}
+
+DetectorResult SampleGrid(const BitMatrix& image, int width, int height, const PerspectiveTransform& mod2Pix,
+						  Matrix<std::optional<PointF>>&& apP, const std::vector<int>& apMX, const std::vector<int>& apMY)
+{
+	const int W = Size(apMX) - 1, H = Size(apMY) - 1;
+
+	// go over the set of alignment patters and fill any remaining gaps by a projection based on the fallback
+	// mod2Pix projection. This works if the symbol is flat, which is a reasonable fall-back assumption.
+	for (int y = 0; y <= H; ++y)
+		for (int x = 0; x <= W; ++x) {
+			if (apP(x, y)) {
+#ifdef PRINT_DEBUG
+				log(*apP(x, y), 2);
+#endif
+			} else {
+#ifdef PRINT_DEBUG
+				printf("locate failed at %dx%d\n", x, y);
+#endif
+				// project the alignment pattern at module coordinates x/y to pixel coordinate based on current mod2Pix
+				apP.set(x, y, mod2Pix(centered(PointI(apMX[x], apMY[y]))));
+			}
+		}
+
+	// assemble a list of region-of-interests based on the found alignment pattern pixel positions
+	ROIs rois;
+	for (int y = 0; y < H; ++y)
+		for (int x = 0; x < W; ++x) {
+			int x0 = apMX[x], x1 = apMX[x + 1], y0 = apMY[y], y1 = apMY[y + 1];
+			rois.push_back({x == 0 ? 0 : x0, (x == W - 1) ? width : x1, (y == 0) ? 0 : y0, (y == H - 1) ? height : y1,
+							PerspectiveTransform{Rectangle(x0, x1, y0, y1, 0.5),
+												 {*apP(x, y), *apP(x + 1, y), *apP(x + 1, y + 1), *apP(x, y + 1)}}});
+		}
+
+	return SampleGrid(image, width, height, rois);
+}
 
 } // ZXing
