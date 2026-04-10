@@ -55,7 +55,7 @@ double clusterAvg(std::ranges::range auto& v, double threshold)
 	printf("ds: ");
 	for (auto d : v)
 		printf("%5.2f ", d);
-	printf(" -> len: %zu, avg: %5.2f | ", bestLen, sum);
+	printf(" -> len: %zu, avg: %5.2f\n", bestLen, sum);
 #endif
 	return sum;
 };
@@ -112,10 +112,8 @@ LocalGrid::LocalGrid(const BitMatrix& image, const PerspectiveTransform& mod2Pix
 	stepX = mod2Pix(centered(p) + PointF{1, 0}) - origin;
 	stepY = mod2Pix(centered(p) + PointF{0, 1}) - origin;
 
-#ifdef PRINT_DEBUG
-	printf("initial origin: (%.2f, %.2f), stepX: (%.2f, %.2f), stepY: (%.2f, %.2f)\n", origin.x, origin.y, stepX.x, stepX.y, stepY.x,
-		   stepY.y);
-#endif
+	printf("initial origin: (%.2f, %.2f), stepX: (%.2f, %.2f), stepY: (%.2f, %.2f)\n", origin.x * 5, origin.y * 5, stepX.x, stepX.y,
+		   stepY.x, stepY.y);
 	log(origin, 3);
 
 	// auto offsets = std::array{-stepX, -stepY, stepX, stepY};
@@ -124,9 +122,7 @@ LocalGrid::LocalGrid(const BitMatrix& image, const PerspectiveTransform& mod2Pix
 	for (int i = 0; i < 2; ++i) {
 		adjustOrigin(stepX, 2, offsets);
 		adjustOrigin(stepY, 2, offsets);
-#ifdef PRINT_DEBUG
 		printf("\n");
-#endif
 	}
 }
 
@@ -164,9 +160,7 @@ std::optional<PointF> LocalGrid::findTimingPatternCross(int radius)
 			// adjust origin with full radius and only in the direction of the timing pattern
 			adjustOrigin(stepX, radius, std::array{stepX, -stepX}, INFINITY);
 			adjustOrigin(stepY, radius, std::array{stepY, -stepY}, INFINITY);
-#ifdef PRINT_DEBUG
-			printf(" <- timing pattern\n");
-#endif
+			printf("timing pattern:\n");
 			// check again, now with the full radius, to make sure we are correctly aligned to the timing pattern
 			if (isTimingPatternCross(PointI{0, 0}, radius))
 				return origin;
