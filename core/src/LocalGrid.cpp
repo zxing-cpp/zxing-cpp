@@ -128,6 +128,7 @@ LocalGrid::LocalGrid(const BitMatrix& image, const PerspectiveTransform& mod2Pix
 
 bool LocalGrid::isTimingPatternCross(PointI p, int radius, int errorThreshold)
 {
+	// TODO: look into replacing this with something along the lines of CheckSymmetricAztecCenterPattern
 	auto wrapOffset = [&](int center, int offset, int dim) {
 		int pos = center + offset;
 		return pos < 0 ? radius - pos : (pos >= dim ? -(radius + (pos - dim) + 1) : offset);
@@ -138,7 +139,9 @@ bool LocalGrid::isTimingPatternCross(PointI p, int radius, int errorThreshold)
 		auto check = [&](int x, int y) {
 			x = wrapOffset(center.x, x, dim.x);
 			y = wrapOffset(center.y, y, dim.y);
-			errors += get(p.x + x, p.y + y) != LocalGrid::Value((x + y) % 2 == 0);
+			auto t = LocalGrid::Value((x + y) % 2 == 0);
+			double dx = x ? 0.25 : 0.0, dy = y ? 0.25 : 0.0;
+			errors += (get(p.x + x, p.y + y) != t && get(p.x + x + dx, p.y + y + dy) != t && get(p.x + x - dx, p.y + y - dy) != t);
 		};
 		check(-r, 0);
 		check(r, 0);
