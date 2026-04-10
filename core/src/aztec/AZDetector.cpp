@@ -387,7 +387,8 @@ DetectorResults Detect(const BitMatrix& image, bool isPure, bool tryHarder, int 
 		int rotate; // [0..3]
 		int modeMessage = -1;
 		bool isRune = false;
-		[&]() {
+
+		auto parseModeMessage = [&image, &radius, &mirror, &rotate, &modeMessage, &isRune](QuadrilateralF srcQuad, QuadrilateralF fpQuad) {
 			// 24778:2008(E) 14.3.3 reads:
 			// In the outer layer of the Core Symbol, the 12 orientation bits at the corners are bitwise compared against the specified
 			// pattern in each of four possible orientations and their four mirror inverse orientations as well. If in any of the 8
@@ -399,38 +400,38 @@ DetectorResults Detect(const BitMatrix& image, bool isPure, bool tryHarder, int 
 			// incorporates the complete set of mode message bits to help determine the orientation of the symbol. This is still not
 			// sufficient for the ErrorInModeMessageZero test case in AZDecoderTest.cpp but good enough for the author.
 			for (radius = 5; radius <= 7; radius += 2) {
-				uint32_t bits = SampleOrientationBits(image, mod2Pix, radius);
+				uint32_t bits = SampleOrientationBits(image, PerspectiveTransform(srcQuad, fpQuad), radius);
 				if (bits == 0)
 					continue;
 				for (mirror = 0; mirror <= 1; ++mirror) {
 					rotate = FindRotation(bits, mirror);
 					if (rotate == -1)
 						continue;
-					modeMessage = ModeMessage(image, PerspectiveTransform(srcQuad, RotatedCorners(*fpQuad, rotate, mirror)), radius, isRune);
+					modeMessage = ModeMessage(image, PerspectiveTransform(srcQuad, RotatedCorners(fpQuad, rotate, mirror)), radius, isRune);
 					if (modeMessage != -1)
-						return;
+						return true;
 				}
 			}
-		}();
-
-		if (modeMessage == -1)
-			continue;
+			return false;
+		};
 
 #if 1
-		// improve prescision of sample grid by extrapolating from outer square of white pixels (5 edges away from center)
-		if (radius == 7) {
+		if (!parseModeMessage(srcQuad, *fpQuad) || radius == 7) {
+			// improve prescision of sample grid by extrapolating from outer square of white pixels (5 edges away from center)
 			if (auto fpQuad5 = FindConcentricPatternCorners(image, fp, fp.size * 5 / 3, 5)) {
-				if (auto mod2Pix = PerspectiveTransform(CenteredSquare(11), *fpQuad5); mod2Pix.isValid()) {
-					int rotate5 = FindRotation(SampleOrientationBits(image, mod2Pix, radius), mirror);
-					if (rotate5 != -1) {
-						srcQuad = CenteredSquare(11);
-						fpQuad = fpQuad5;
-						rotate = rotate5;
-					}
+				if (parseModeMessage(CenteredSquare(11), *fpQuad5) && radius == 7) {
+					srcQuad = CenteredSquare(11);
+					fpQuad = fpQuad5;
 				}
 			}
+			if (modeMessage == -1)
+				continue;
 		}
+#else
+		if (!parseModeMessage(srcQuad, *fpQuad))
+			continue;
 #endif
+
 		*fpQuad = RotatedCorners(*fpQuad, rotate, mirror);
 
 		int nbLayers = 0;
