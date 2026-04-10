@@ -466,7 +466,7 @@ DetectorResults Detect(const BitMatrix& image, bool isPure, bool tryHarder, int 
 				QuadrilateralF dstQuad;
 				for (int i = 0; i < 4; ++i) {
 					auto pi = (R - r) * idxs[i] + Size(apM) / 2 * PointI{1, 1};
-					printf("locate %dx%d\n", pi.x, pi.y);
+					printf("\nlocate %dx%d\n", pi.x, pi.y);
 					apP.set(pi.x, pi.y, LocalGrid(image, mod2Pix, PointI(srcQuad[i]), PointI(dim, dim)).findTimingPatternCross(4));
 					dstQuad[i] = apP(pi.x, pi.y).value_or(mod2Pix(srcQuad[i]));
 					log(dstQuad[i], 2);
@@ -478,8 +478,10 @@ DetectorResults Detect(const BitMatrix& image, bool isPure, bool tryHarder, int 
 			// find the remaining (non-corner) alignment patterns
 			for (int y = 0; y < Size(apM); ++y)
 				for (int x = 0; x < Size(apM); ++x) {
-					if (!apP(x, y))
+					if (!apP(x, y)) {
+						printf("\nlocate %dx%d\n", x, y);
 						apP.set(x, y, LocalGrid(image, mod2Pix, PointI(apM[x], apM[y]), PointI(dim, dim)).findTimingPatternCross(4));
+					}
 				}
 #endif
 

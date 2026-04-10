@@ -382,11 +382,11 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 29, 0, pure },
 		});
 
-		runTests("aztec-2", Aztec, 22, {
-			{ 22, 22, 0   },
-			{ 22, 22, 90  },
-			{ 22, 22, 180 },
-			{ 22, 22, 270 },
+		runTests("aztec-2", Aztec, 23, {
+			{ 23, 23, 0   },
+			{ 23, 23, 90  },
+			{ 23, 23, 180 },
+			{ 23, 23, 270 },
 		});
 
 		runTests("datamatrix-1", DataMatrix, 30, {

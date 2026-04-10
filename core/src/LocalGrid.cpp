@@ -60,18 +60,21 @@ double clusterAvg(std::ranges::range auto& v, double threshold)
 	return sum;
 };
 
-void LocalGrid::adjustOrigin(PointF dir, int radius, const std::span<const PointF> offsets, double clusterThreshold)
+void LocalGrid::adjustOriginAndStep(PointF& step, int radius, const std::span<const PointF> offsets, double clusterThreshold)
 {
-	auto modSize = length(dir);
-	printf("\nMS: %.2f: ", modSize);
-	int limit = static_cast<int>(std::round(5 * modSize));
-	dir = bresenhamDirection(dir);
+	auto modSize = length(step);
+	int limit = int(6 * modSize);
+	auto dir = bresenhamDirection(step);
+	printf("step: (%.2f, %.2f) %.2f: ", step.x, step.y, modSize);
 
 	auto nearestHalfResidual = [](double n, double s) { return n - (std::round((n - s / 2) / s) * s + s / 2); };
 
-	thread_local std::vector<double> d;
-	d.clear();
-	d.reserve(offsets.size() * radius + 1);
+	struct DistMod {
+		double dist, modSize;
+	};
+	thread_local std::vector<DistMod> distMod;
+	distMod.clear();
+	distMod.reserve(offsets.size() * radius + 1);
 	for (int r = 0; r <= radius; ++r)
 		for (auto offset : offsets) {
 			auto start = origin + r * offset;
@@ -81,28 +84,55 @@ void LocalGrid::adjustOrigin(PointF dir, int radius, const std::span<const Point
 			auto distPos = stepsPos - dot(start - startC, dir) - 0.5; // +0.5 because the center of the pixel is at .5, .5
 			auto distNeg = stepsNeg - dot(start - startC, -dir) - 0.5;
 
-			auto localModSize = modSize;
-			if (stepsPos != 0 && stepsNeg != 0) {
+			if (stepsPos && stepsNeg) {
 				int blockSize = stepsPos + stepsNeg - 1;
-				localModSize = blockSize / std::max(1.0, std::round(blockSize / modSize));
+				auto localModSize = blockSize / std::max(1.0, std::round(blockSize / modSize));
+				distMod.emplace_back(distPos, blockSize / modSize < 5 ? localModSize : 0.0);
 				// if (r == 0 && (std::min(distNeg, distPos) < modSize / 4)) {
 				// 	origin += (distNeg < distPos ? 1 : -1) * modSize / 4 * dir;
 				// 	continue;
 				// }
 			}
-
-			printf("+%.2f -%.2f (%.1f) -> %.2f | ", distPos, distNeg, localModSize, nearestHalfResidual(distPos, localModSize));
-			if (stepsPos)
-				d.push_back(nearestHalfResidual(distPos, localModSize));
+			else if (stepsPos)
+				distMod.emplace_back(distPos, 0.0);
 			else if (stepsNeg)
-				d.push_back(-nearestHalfResidual(distNeg, localModSize));
+				distMod.emplace_back(-distNeg, 0.0);
+
+			printf("+%.2f -%.2f (%.1f) | ", distPos, distNeg, distMod.empty() ? 0.0 : distMod.back().modSize);
 
 			if (r == 0)
 				break; // only do the center point once
 		}
 
+	// calcuate the average local module size from the points where we found one...
+	double localModSize = 0.0;
+	int n = 0;
+	for (const auto& t : distMod | std::views::filter([](const DistMod& t) { return t.modSize > 0; }))
+		localModSize += t.modSize, ++n;
+	if (n == 0)
+		return;
+	localModSize /= n;
+	printf("\nlocal mod size: %.2f\n", localModSize);
+
+	// ... and use it for the points where we didn't find one
+	thread_local std::vector<double> d;
+	d.clear();
+	d.reserve(distMod.size());
+	for (auto& t : distMod) {
+		if (t.modSize == 0.0)
+			t.modSize = localModSize;
+		d.push_back(t.dist < 0 ? -nearestHalfResidual(-t.dist, t.modSize) : nearestHalfResidual(t.dist, t.modSize));
+		printf("%.2f (%.1f) -> %.2f | ", t.dist, t.modSize, d.back());
+	}
 	printf("\n");
+
 	origin += clusterAvg(d, clusterThreshold ? clusterThreshold : modSize * 0.5) * dir;
+
+	// if we found local mod sizes for each point (hopefully at the timing pattern crosses), we update the step size
+	if (n == Size(distMod) && std::abs(localModSize - modSize) > modSize * 0.1) {
+		step = localModSize / modSize * step;
+		printf("   adjusted mod size from %.2f to %.2f\n", modSize, localModSize);
+	}
 }
 
 LocalGrid::LocalGrid(const BitMatrix& image, const PerspectiveTransform& mod2Pix, PointI p, PointI dim)
@@ -120,8 +150,8 @@ LocalGrid::LocalGrid(const BitMatrix& image, const PerspectiveTransform& mod2Pix
 	auto offsets = std::array{-stepX - stepY, stepX - stepY, stepX + stepY, -stepX + stepY};
 	// auto offsets = std::array{-stepX, -stepY, stepX, stepY, -stepX - stepY, stepX - stepY, stepX + stepY, -stepX + stepY};
 	for (int i = 0; i < 2; ++i) {
-		adjustOrigin(stepX, 2, offsets);
-		adjustOrigin(stepY, 2, offsets);
+		adjustOriginAndStep(stepX, 2, offsets);
+		adjustOriginAndStep(stepY, 2, offsets);
 		printf("\n");
 	}
 }
@@ -160,10 +190,11 @@ std::optional<PointF> LocalGrid::findTimingPatternCross(int radius)
 		if (isTimingPatternCross(p, radius / 2)) {
 			auto original = origin;
 			origin += p.x * stepX + p.y * stepY;
-			// adjust origin with full radius and only in the direction of the timing pattern
-			adjustOrigin(stepX, radius, std::array{stepX, -stepX}, INFINITY);
-			adjustOrigin(stepY, radius, std::array{stepY, -stepY}, INFINITY);
+			// adjust origin and step with full radius and only in the direction of the timing pattern
 			printf("timing pattern:\n");
+			adjustOriginAndStep(stepX, radius, std::array{-stepX, stepX});
+			adjustOriginAndStep(stepY, radius, std::array{-stepY, stepY});
+
 			// check again, now with the full radius, to make sure we are correctly aligned to the timing pattern
 			if (isTimingPatternCross(PointI{0, 0}, radius))
 				return origin;
