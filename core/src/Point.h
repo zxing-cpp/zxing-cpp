@@ -23,7 +23,7 @@ struct PointT
 	T x = 0, y = 0;
 
 	constexpr PointT() = default;
-	constexpr PointT(T x, T y) : x(x), y(y) {}
+	constexpr PointT(T xx, T yy) : x(xx), y(yy) {}
 
 	template <typename U>
 	constexpr explicit PointT(const PointT<U>& p) : x(static_cast<T>(p.x)), y(static_cast<T>(p.y))
