@@ -29,7 +29,7 @@ typedef NS_ENUM(NSInteger, ZXITextMode) {
 };
 
 @interface ZXIReaderOptions : NSObject
-@property(nonatomic, strong) NSArray<NSNumber*> *formats;
+@property(nonatomic, copy) NSArray<NSNumber*> *formats;
 @property(nonatomic) BOOL tryHarder;
 @property(nonatomic) BOOL tryRotate;
 @property(nonatomic) BOOL tryInvert;

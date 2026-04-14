@@ -4,6 +4,7 @@
 
 #import "ZXIReaderOptions.h"
 #import "ReaderOptions.h"
+#import "ZXIFormatHelper.h"
 
 @interface ZXIReaderOptions()
 @property(nonatomic) ZXing::ReaderOptions cppOpts;
@@ -15,6 +16,28 @@
     self = [super init];
     self.cppOpts = ZXing::ReaderOptions();
     return self;
+}
+
+-(NSArray<NSNumber *> *)formats {
+    NSMutableArray<NSNumber *> *formats = [NSMutableArray array];
+    for (auto format : self.cppOpts.formats()) {
+        ZXIFormat mapped = ZXIFormatFromBarcodeFormat(format);
+        if (mapped != ZXIFormat::NONE) {
+            [formats addObject:[NSNumber numberWithInteger:mapped]];
+        }
+    }
+    return formats;
+}
+
+-(void)setFormats:(NSArray<NSNumber *> *)formats {
+    std::vector<ZXing::BarcodeFormat> nativeFormats;
+    nativeFormats.reserve(formats.count);
+
+    for (NSNumber *formatValue in formats) {
+        nativeFormats.push_back(BarcodeFormatFromZXIFormat((ZXIFormat)formatValue.integerValue));
+    }
+
+    self.cppOpts = self.cppOpts.setFormats(std::move(nativeFormats));
 }
 
 -(BOOL)tryHarder {
