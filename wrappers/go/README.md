@@ -15,10 +15,10 @@ The wrapper supports two build modes:
 
 ### Installed mode (default)
 
-Install zxing-cpp locally or as package first, for example:
+Install zxing-cpp locally or as development package first, for example:
 
 - macOS: `brew install zxing-cpp`
-- Debian/Ubuntu: `apt install zxing-cpp`
+- Debian/Ubuntu: `apt install libzxing-dev`
 
 Then run:
 
