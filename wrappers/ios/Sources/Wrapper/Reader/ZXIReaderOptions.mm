@@ -20,12 +20,10 @@
 
 -(NSArray<NSNumber *> *)formats {
     NSMutableArray<NSNumber *> *formats = [NSMutableArray array];
-    for (auto format : ZXing::BarcodeFormats::list()) {
-        if (format <= self.cppOpts.formats()) {
-            ZXIFormat mapped = ZXIFormatFromBarcodeFormat(format);
-            if (mapped != ZXIFormat::NONE) {
-                [formats addObject:[NSNumber numberWithInteger:mapped]];
-            }
+    for (auto format : self.cppOpts.formats()) {
+        ZXIFormat mapped = ZXIFormatFromBarcodeFormat(format);
+        if (mapped != ZXIFormat::NONE) {
+            [formats addObject:[NSNumber numberWithInteger:mapped]];
         }
     }
     return formats;
@@ -39,7 +37,7 @@
         nativeFormats.push_back(BarcodeFormatFromZXIFormat((ZXIFormat)formatValue.integerValue));
     }
 
-    self.cppOpts = self.cppOpts.setFormats(ZXing::BarcodeFormats(std::move(nativeFormats)));
+    self.cppOpts = self.cppOpts.setFormats(std::move(nativeFormats));
 }
 
 -(BOOL)tryHarder {
