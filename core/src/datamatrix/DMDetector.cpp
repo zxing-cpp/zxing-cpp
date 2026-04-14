@@ -767,6 +767,10 @@ static ModuleCenterLUT BuildModuleCenterLUT(const std::vector<PointF>& points, P
 				gapMids.push_back(gapMid);
 		}
 
+	if (gapMids.empty()) {
+		return {};
+	}
+
 	// assign each gap a module index, accounting for missing gaps via spacing ratio
 	std::vector<int> modIdx(gapMids.size());
 	modIdx[0] = static_cast<int>(std::round((gapMids.front() / modSize - (1.5 + startsWithGap)) / 2)) * 2 + 1 + startsWithGap;
