@@ -645,6 +645,27 @@ if (PROJECT_VERSION)
     set_target_properties(ZXing PROPERTIES SOVERSION ${ZXING_SONAME})
 endif()
 
+# Add Windows resource file for version information
+if (WIN32)
+    # Convert version to comma-separated format for Windows resources
+    string(REPLACE "." "," FILE_VERSION_COMMA "${PROJECT_VERSION}")
+    set(FILE_VERSION_STR "${PROJECT_VERSION}.0")
+    set(PRODUCT_VERSION_COMMA "${FILE_VERSION_COMMA}")
+    set(PRODUCT_VERSION_STR "${FILE_VERSION_STR}")
+    # Set original filename based on build type
+    if (BUILD_SHARED_LIBS)
+        set(ORIGINAL_FILENAME "${PROJECT_NAME}.dll")
+    else()
+        set(ORIGINAL_FILENAME "${PROJECT_NAME}.lib")
+    endif()
+    configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/version.rc.in
+        ${CMAKE_CURRENT_BINARY_DIR}/version.rc
+        @ONLY
+    )
+    target_sources(ZXing PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
+endif()
+
 # TODO: use FILE_SET HEADERS instead of PUBLIC_HEADER and target_sources, once CMake 3.23+ is required
 set_target_properties(ZXing PROPERTIES PUBLIC_HEADER "${PUBLIC_HEADERS}")
 
