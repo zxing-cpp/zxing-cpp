@@ -3,7 +3,7 @@
 
 VS_VERSION_INFO VERSIONINFO
 FILEVERSION @FILE_VERSION_COMMA@
-PRODUCTVERSION @PRODUCT_VERSION_COMMA@
+PRODUCTVERSION @FILE_VERSION_COMMA@
 FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
 FILEFLAGS 0x1L
@@ -16,7 +16,7 @@ FILESUBTYPE 0x0L
 BEGIN
     BLOCK "StringFileInfo"
     BEGIN
-        BLOCK "080404b0"
+        BLOCK "040904b0" // en-US, Unicode
         BEGIN
             VALUE "CompanyName", "zxing-cpp"
             VALUE "FileDescription", "ZXing-C++ Barcode Library"
@@ -24,11 +24,11 @@ BEGIN
             VALUE "InternalName", "ZXing"
             VALUE "LegalCopyright", "Copyright (C) zxing-cpp contributors"
             VALUE "ProductName", "ZXing-C++"
-            VALUE "ProductVersion", "@PRODUCT_VERSION_STR@"
+            VALUE "ProductVersion", "@FILE_VERSION_STR@"
         END
     END
     BLOCK "VarFileInfo"
     BEGIN
-        VALUE "Translation", 0x804, 1200
+        VALUE "Translation", 0x0409, 1200
     END
 END
