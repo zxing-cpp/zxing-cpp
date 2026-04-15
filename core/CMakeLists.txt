@@ -646,9 +646,9 @@ if (PROJECT_VERSION)
 endif()
 
 # Add Windows resource file for version information
-if (WIN32)
+if (WIN32 AND BUILD_SHARED_LIBS)
     # Convert version to comma-separated format for Windows resources
-    string(REPLACE "." "," FILE_VERSION_COMMA "${PROJECT_VERSION}")
+    string(REPLACE "." "," FILE_VERSION_COMMA "${PROJECT_VERSION}.0")
     set(FILE_VERSION_STR "${PROJECT_VERSION}.0")
     set(PRODUCT_VERSION_COMMA "${FILE_VERSION_COMMA}")
     set(PRODUCT_VERSION_STR "${FILE_VERSION_STR}")
