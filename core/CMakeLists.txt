@@ -650,8 +650,6 @@ if (WIN32 AND BUILD_SHARED_LIBS)
     # Convert version to comma-separated format for Windows resources
     string(REPLACE "." "," FILE_VERSION_COMMA "${PROJECT_VERSION}.0")
     set(FILE_VERSION_STR "${PROJECT_VERSION}.0")
-    set(PRODUCT_VERSION_COMMA "${FILE_VERSION_COMMA}")
-    set(PRODUCT_VERSION_STR "${FILE_VERSION_STR}")
     configure_file(
         ${CMAKE_CURRENT_SOURCE_DIR}/version.rc.in
         ${CMAKE_CURRENT_BINARY_DIR}/version.rc
