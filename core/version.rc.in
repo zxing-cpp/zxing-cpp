@@ -1,0 +1,34 @@
+// Windows resource file - Add version information to DLL
+#include <windows.h>
+
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION @FILE_VERSION_COMMA@
+PRODUCTVERSION @FILE_VERSION_COMMA@
+FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+FILEFLAGS 0x1L
+#else
+FILEFLAGS 0x0L
+#endif
+FILEOS 0x40004L
+FILETYPE 0x2L
+FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0" // en-US, Unicode
+        BEGIN
+            VALUE "CompanyName", "zxing-cpp"
+            VALUE "FileDescription", "ZXing-C++ Barcode Library"
+            VALUE "FileVersion", "@FILE_VERSION_STR@"
+            VALUE "InternalName", "ZXing"
+            VALUE "LegalCopyright", "Copyright (C) zxing-cpp contributors"
+            VALUE "ProductName", "ZXing-C++"
+            VALUE "ProductVersion", "@FILE_VERSION_STR@"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0409, 1200
+    END
+END
