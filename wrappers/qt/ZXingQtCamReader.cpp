@@ -140,6 +140,19 @@ public:
 	~CameraReaderWidget() override { _camera->stop(); }
 
 private:
+	void setInfoText(const QString& text)
+	{
+		_infoLabel->setText(text);
+		_infoLabel->adjustSize();
+	}
+
+	void resizeEvent(QResizeEvent* event) override
+	{
+		QMainWindow::resizeEvent(event);
+		if (_infoLabel)
+			_infoLabel->setMaximumWidth(width());
+	}
+
 	void keyPressEvent(QKeyEvent* event) override
 	{
 		if (event->key() == Qt::Key_Space || event->key() == Qt::Key_P) {
@@ -192,8 +205,8 @@ private:
 		_infoLabel->setStyleSheet(QStringLiteral(
 			"QLabel { color: white; background-color: rgba(40, 40, 40, 200); padding: 12px 16px; border-radius: 8px; }"));
 		_infoLabel->setAttribute(Qt::WA_TransparentForMouseEvents);
-		_infoLabel->setText(tr("Initializing camera..."));
-		_infoLabel->adjustSize();
+		_infoLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
+		setInfoText(tr("Initializing camera..."));
 		gridLayout->addWidget(_infoLabel, 0, 0, 1, 1, Qt::AlignTop | Qt::AlignLeft);
 
 		// Feedback label overlay (center aligned)
@@ -343,7 +356,7 @@ private:
 
 		connect(_camera, &QCamera::errorOccurred, this, [this](QCamera::Error error, const QString& errorString) {
 			qWarning() << "Camera error:" << error << errorString;
-			_infoLabel->setText(tr("Camera error: %1").arg(errorString));
+			setInfoText(tr("Camera error: %1").arg(errorString));
 		});
 
 		connect(_camera, &QCamera::activeChanged, this, [](bool active) { qDebug() << "Camera active state changed:" << active; });
@@ -357,7 +370,7 @@ private:
 		connect(_videoSink, &QVideoSink::videoFrameChanged, _videoWidget, &VideoWidget::setVideoFrame);
 
 		if (QMediaDevices::videoInputs().isEmpty()) {
-			_infoLabel->setText(tr("No camera found"));
+			setInfoText(tr("No camera found"));
 			return;
 		}
 
@@ -370,18 +383,18 @@ private:
 		case Qt::PermissionStatus::Undetermined:
 			qApp->requestPermission(cameraPermission, this, [this](const QPermission& permission) {
 				if (permission.status() == Qt::PermissionStatus::Granted) {
-					_infoLabel->setText(tr("Starting camera..."));
+					setInfoText(tr("Starting camera..."));
 					_camera->start();
 				} else {
-					_infoLabel->setText(tr("Camera permission denied"));
+					setInfoText(tr("Camera permission denied"));
 				}
 			});
 			break;
 		case Qt::PermissionStatus::Granted:
-			_infoLabel->setText(tr("Starting camera..."));
+			setInfoText(tr("Starting camera..."));
 			_camera->start();
 			break;
-		case Qt::PermissionStatus::Denied: _infoLabel->setText(tr("Camera permission denied")); break;
+		case Qt::PermissionStatus::Denied: setInfoText(tr("Camera permission denied")); break;
 		}
 #else
 		_camera->start();
@@ -441,8 +454,7 @@ private Q_SLOTS:
 		}
 		infoParts.append(tr("Time: %1 ms").arg(_barcodeReader->runTime.loadRelaxed()));
 
-		_infoLabel->setText(infoParts.join(QStringLiteral("\n")));
-		_infoLabel->adjustSize();
+		setInfoText(infoParts.join(QStringLiteral("\n")));
 		if (!_isPaused)
 			_resetTimer->start();
 
@@ -455,8 +467,7 @@ private Q_SLOTS:
 		_videoWidget->setBarcodes({});
 
 		if (!_resetTimer->isActive() && !_isPaused) {
-			_infoLabel->setText(tr("No barcode found (in %1 ms)").arg(_barcodeReader->runTime.loadRelaxed()));
-			_infoLabel->adjustSize();
+			setInfoText(tr("No barcode found (in %1 ms)").arg(_barcodeReader->runTime.loadRelaxed()));
 		}
 	}
 
