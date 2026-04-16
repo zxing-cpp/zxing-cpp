@@ -60,7 +60,7 @@ double clusterAvg(std::ranges::range auto& v, double threshold)
 	return sum;
 };
 
-void LocalGrid::adjustOriginAndStep(PointF& step, int radius, const std::span<const PointF> offsets, double clusterThreshold)
+void LocalGrid::adjustOriginAndStep(PointF& step, int radius, const std::span<const PointF> offsets)
 {
 	auto modSize = length(step);
 	int limit = int(6 * modSize);
@@ -126,7 +126,7 @@ void LocalGrid::adjustOriginAndStep(PointF& step, int radius, const std::span<co
 	}
 	printf("\n");
 
-	origin += clusterAvg(d, clusterThreshold ? clusterThreshold : modSize * 0.5) * dir;
+	origin += clusterAvg(d, modSize / 2) * dir;
 
 	// if we found local mod sizes for each point (hopefully at the timing pattern crosses), we update the step size
 	if (n == Size(distMod) && std::abs(localModSize - modSize) > modSize * 0.1) {
@@ -156,7 +156,7 @@ LocalGrid::LocalGrid(const BitMatrix& image, const PerspectiveTransform& mod2Pix
 	}
 }
 
-bool LocalGrid::isTimingPatternCross(PointI p, int radius, int errorThreshold)
+bool LocalGrid::isTimingPatternCross(PointI p, bool isBlack, int radius, int errorThreshold)
 {
 	// TODO: look into replacing this with something along the lines of CheckSymmetricAztecCenterPattern
 	auto wrapOffset = [&](int center, int offset, int dim) {
@@ -169,9 +169,8 @@ bool LocalGrid::isTimingPatternCross(PointI p, int radius, int errorThreshold)
 		auto check = [&](int x, int y) {
 			x = wrapOffset(center.x, x, dim.x);
 			y = wrapOffset(center.y, y, dim.y);
-			auto t = LocalGrid::Value((x + y) % 2 == 0);
-			double dx = x ? 0.25 : 0.0, dy = y ? 0.25 : 0.0;
-			errors += (get(p.x + x, p.y + y) != t && get(p.x + x + dx, p.y + y + dy) != t && get(p.x + x - dx, p.y + y - dy) != t);
+			auto d = PointI(x, y);
+			errors += !findValue(p + d, d, Value((x + y) % 2 == (isBlack ? 0 : 1)));
 		};
 		check(-r, 0);
 		check(r, 0);
@@ -183,20 +182,20 @@ bool LocalGrid::isTimingPatternCross(PointI p, int radius, int errorThreshold)
 	return errors <= errorThreshold;
 };
 
-std::optional<PointF> LocalGrid::findTimingPatternCross(int radius)
+std::optional<PointF> LocalGrid::findTimingPatternCross(bool isBlack, int radius)
 {
 	for (auto p : spiral(3)) {
 		// check if there is a timing pattern cross candidate centered at p with half the radius
-		if (isTimingPatternCross(p, radius / 2)) {
+		if (isTimingPatternCross(p, isBlack, radius / 2)) {
 			auto original = origin;
-			origin += p.x * stepX + p.y * stepY;
+			origin = getPos(p);
 			// adjust origin and step with full radius and only in the direction of the timing pattern
 			printf("timing pattern:\n");
 			adjustOriginAndStep(stepX, radius, std::array{-stepX, stepX});
 			adjustOriginAndStep(stepY, radius, std::array{-stepY, stepY});
 
 			// check again, now with the full radius, to make sure we are correctly aligned to the timing pattern
-			if (isTimingPatternCross(PointI{0, 0}, radius))
+			if (isTimingPatternCross(PointI{0, 0}, isBlack, radius))
 				return origin;
 
 			origin = original;
@@ -205,4 +204,4 @@ std::optional<PointF> LocalGrid::findTimingPatternCross(int radius)
 	return {};
 }
 
-} // namespace ZXing::Aztec
+} // namespace ZXing

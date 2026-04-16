@@ -467,7 +467,7 @@ DetectorResults Detect(const BitMatrix& image, bool isPure, bool tryHarder, int 
 				for (int i = 0; i < 4; ++i) {
 					auto pi = (R - r) * idxs[i] + Size(apM) / 2 * PointI{1, 1};
 					printf("\nlocate %dx%d\n", pi.x, pi.y);
-					apP.set(pi.x, pi.y, LocalGrid(image, mod2Pix, PointI(srcQuad[i]), PointI(dim, dim)).findTimingPatternCross(4));
+					apP.set(pi.x, pi.y, LocalGrid(image, mod2Pix, PointI(srcQuad[i]), {dim, dim}).findTimingPatternCross(true, 4));
 					dstQuad[i] = apP(pi.x, pi.y).value_or(mod2Pix(srcQuad[i]));
 					log(dstQuad[i], 2);
 				}
@@ -480,7 +480,7 @@ DetectorResults Detect(const BitMatrix& image, bool isPure, bool tryHarder, int 
 				for (int x = 0; x < Size(apM); ++x) {
 					if (!apP(x, y)) {
 						printf("\nlocate %dx%d\n", x, y);
-						apP.set(x, y, LocalGrid(image, mod2Pix, PointI(apM[x], apM[y]), PointI(dim, dim)).findTimingPatternCross(4));
+						apP.set(x, y, LocalGrid(image, mod2Pix, {apM[x], apM[y]}, {dim, dim}).findTimingPatternCross(true, 4));
 					}
 				}
 #endif
