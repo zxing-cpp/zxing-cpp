@@ -14,7 +14,9 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <iterator>
 #include <limits>
+#include <type_traits>
 #include <vector>
 
 namespace ZXing {
@@ -357,7 +359,7 @@ void GetPatternRow(Range<I> b_row, PatternRow& p_row)
 	if (*lastPos)
 		p_row.push_back(0); // first value is number of white pixels, here 0
 
-	for (auto p = b_row.begin() + 1; p < b_row.end(); ++p)
+	for (auto p = b_row.begin() + 1; p != b_row.end(); ++p)
 		if (bool(*p) != bool(*lastPos))
 			p_row.push_back(p - std::exchange(lastPos, p));
 
@@ -376,13 +378,17 @@ void GetPatternRow(Range<I> b_row, PatternRow& p_row)
 	if (*bitPos)
 		intPos++; // first value is number of white pixels, here 0
 
-	// The following code as been observed to cause a speedup of up to 30% on large images on an AVX cpu
+	// The following code has been observed to cause a speedup of up to 30% on large images on an AVX cpu
 	// and on an a Google Pixel 3 Android phone. Your mileage may vary.
-	if constexpr (std::is_pointer_v<I> && sizeof(I) == 8 && sizeof(std::remove_pointer_t<I>) == 1) {
+	if constexpr (std::contiguous_iterator<I> && sizeof(std::remove_cv_t<std::iter_value_t<I>>) == 1) {
 		using simd_t = uint64_t;
-		while (bitPos < bitPosEnd - sizeof(simd_t)) {
-			auto asSimd0 = LoadU<simd_t>(bitPos);
-			auto asSimd1 = LoadU<simd_t>(bitPos + 1);
+		const auto* const bitPtrBegin = std::to_address(bitPos);
+		const auto* const bitPtrEnd = std::to_address(bitPosEnd);
+		auto* bitPtr = bitPtrBegin;
+
+		while (bitPtr < bitPtrEnd - sizeof(simd_t)) {
+			auto asSimd0 = LoadU<simd_t>(bitPtr);
+			auto asSimd1 = LoadU<simd_t>(bitPtr + 1);
 			auto z = asSimd0 ^ asSimd1;
 			if (z) {
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
@@ -391,12 +397,14 @@ void GetPatternRow(Range<I> b_row, PatternRow& p_row)
 				int step = std::countl_zero(z) / 8 + 1;
 #endif
 				(*intPos++) += step;
-				bitPos += step;
+				bitPtr += step;
 			} else {
 				(*intPos) += sizeof(simd_t);
-				bitPos += sizeof(simd_t);
+				bitPtr += sizeof(simd_t);
 			}
 		}
+
+		bitPos += bitPtr - bitPtrBegin;
 	}
 
 	while (++bitPos != bitPosEnd) {
