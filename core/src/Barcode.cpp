@@ -69,7 +69,7 @@ std::string Barcode::text(TextMode mode) const
 
 std::string Barcode::text() const
 {
-	return text(d->readerOpts.textMode());
+	return text(d->defaultTextMode);
 }
 
 ContentType Barcode::contentType() const
@@ -126,7 +126,7 @@ Barcode& Barcode::setReaderOptions(const ReaderOptions& opts)
 {
 	if (opts.characterSet() != CharacterSet::Unknown)
 		d->content.defaultCharset = opts.characterSet();
-	d->readerOpts = opts;
+	d->defaultTextMode = opts.textMode();
 	return *this;
 }
 

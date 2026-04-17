@@ -396,6 +396,7 @@ Barcode CreateBarcode(const void* data, int size, int mode, const CreatorOptions
 #endif
 
 	res.zint = std::move(opts.d->zint);
+	res.zintMutex = std::make_unique<std::mutex>();
 
 	return res;
 }

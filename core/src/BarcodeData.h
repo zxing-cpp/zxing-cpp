@@ -43,12 +43,12 @@ struct BarcodeData
 	BarcodeFormat format = BarcodeFormat::None;
 	std::string extra = {};
 	StructuredAppendInfo sai = {};
-	ReaderOptions readerOpts = {};
 	BitMatrix symbol = {};
 #ifdef ZXING_USE_ZINT
 	unique_zint_symbol zint = {};
-	mutable std::unique_ptr<std::mutex> zintMutex = std::make_unique<std::mutex>();
+	mutable std::unique_ptr<std::mutex> zintMutex = {};
 #endif
+	TextMode defaultTextMode = TextMode::HRI;
 	int lineCount = 0;
 	bool isMirrored = false;
 	bool isInverted = false;
