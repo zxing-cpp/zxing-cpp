@@ -65,6 +65,7 @@ void LocalGrid::adjustOriginAndStep(PointF& step, int radius, const std::span<co
 	auto modSize = length(step);
 	int limit = int(6 * modSize);
 	auto dir = bresenhamDirection(step);
+	modSize /= length(dir); // mod size in terms of steps in the given direction
 	printf("step: (%.2f, %.2f) %.2f: ", step.x, step.y, modSize);
 
 	auto nearestHalfResidual = [](double n, double s) { return n - (std::round((n - s / 2) / s) * s + s / 2); };
