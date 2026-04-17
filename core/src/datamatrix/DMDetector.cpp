@@ -11,6 +11,7 @@
 #include "BitMatrixCursor.h"
 #include "Matrix.h"
 #include "DetectorResult.h"
+#include "DMVersion.h"
 #include "GridSampler.h"
 #include "LogMatrix.h"
 #include "Point.h"
@@ -1012,15 +1013,23 @@ static DetectorResults Scan(EdgeTracer& startTracer, std::array<DMRegressionLine
 
 		printf("L: %.1f, %.1f ^ %.1f, %.1f > %.1f, %.1f ^> %.1f, %.1f\n", bl.x, bl.y,
 			   tl.x - bl.x, tl.y - bl.y, br.x - bl.x, br.y - bl.y, tr.x, tr.y);
-		printf("dim: %d x %d\n", dimT, dimR);
+		printf("dim: %d x %d (%.2f, %.2f)\n", dimT, dimR, fracT, fracR);
 
-		// if we have an almost square (invalid rectangular) data matrix dimension, we try to parse it by assuming a
-		// square. we use the dimension that is closer to an integral value. all valid rectangular symbols differ in
-		// their dimension by at least 10. Note: this is currently not required for the black-box tests to complete.
-		if (std::abs(dimT - dimR) < 10)
-			dimT = dimR = fracR < fracT ? dimR : dimT;
+		auto* version = VersionForDimensions(dimR, dimT);
 
-		CHECK(dimT >= 10 && dimT <= 144 && dimR >= 8 && dimR <= 144);
+		// if we have an invalid dimension but it is almost square (all valid rectangular symbols differ in their dimension by at least 10),
+		// we try to parse it by assuming a square. If only one leads to a valid version, we use that, otherwise we use the dimension
+		// that is closer to an integral value.
+		if (!version && std::abs(dimT - dimR) < 10) {
+			auto* versionT = VersionForDimensions(dimT, dimT);
+			auto* versionR = VersionForDimensions(dimR, dimR);
+			if (bool(versionT) ^ bool(versionR))
+				dimT = dimR = versionT ? dimT : dimR;
+			else
+				dimT = dimR = fracR < fracT ? dimR : dimT;
+			version = VersionForDimensions(dimR, dimT);
+		}
+		CHECK(version);
 
 		auto movedTowardsBy = [](PointF a, PointF b1, PointF b2, auto d) {
 			return a + d * normalized(normalized(b1 - a) + normalized(b2 - a));
