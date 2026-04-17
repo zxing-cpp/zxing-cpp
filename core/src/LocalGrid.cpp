@@ -136,25 +136,29 @@ void LocalGrid::adjustOriginAndStep(PointF& step, int radius, const std::span<co
 	}
 }
 
-LocalGrid::LocalGrid(const BitMatrix& image, const PerspectiveTransform& mod2Pix, PointI p, PointI dim)
+LocalGrid::LocalGrid(const BitMatrix& image, const PerspectiveTransform& mod2Pix, PointI p, PointI dim, PointI offset)
 	: img(&image), dim(dim), center(p)
 {
 	origin = mod2Pix(centered(p));
 	stepX = mod2Pix(centered(p) + PointF{1, 0}) - origin;
 	stepY = mod2Pix(centered(p) + PointF{0, 1}) - origin;
 
-	printf("initial origin: (%.2f, %.2f), stepX: (%.2f, %.2f), stepY: (%.2f, %.2f)\n", origin.x * 5, origin.y * 5, stepX.x, stepX.y,
-		   stepY.x, stepY.y);
+	printf("LocalGrid @ (%d, %d), initial origin: (%.2f, %.2f), offset: (%d, %d), stepX: (%.2f, %.2f), stepY: (%.2f, %.2f)\n",
+		   center.x, center.y, origin.x, origin.y, offset.x, offset.y, stepX.x, stepX.y, stepY.x, stepY.y);
 	log(origin, 3);
 
-	// auto offsets = std::array{-stepX, -stepY, stepX, stepY};
-	auto offsets = std::array{-stepX - stepY, stepX - stepY, stepX + stepY, -stepX + stepY};
+	auto offsets = std::array{-stepX, -stepY, stepX, stepY}; // works better for DataMatrix (especially near the symbol edges)
+	// auto offsets = std::array{-stepX - stepY, stepX - stepY, stepX + stepY, -stepX + stepY};
 	// auto offsets = std::array{-stepX, -stepY, stepX, stepY, -stepX - stepY, stepX - stepY, stepX + stepY, -stepX + stepY};
+
+	// evaluate the image at origin + offset (allows to effectively work near the border of the symbol)
+	origin = getPos(PointF(offset));
 	for (int i = 0; i < 2; ++i) {
 		adjustOriginAndStep(stepX, 2, offsets);
 		adjustOriginAndStep(stepY, 2, offsets);
 		printf("\n");
 	}
+	origin = getPos(PointF(-offset));
 }
 
 bool LocalGrid::isTimingPatternCross(PointI p, bool isBlack, int radius, int errorThreshold)
@@ -203,6 +207,50 @@ std::optional<PointF> LocalGrid::findTimingPatternCross(bool isBlack, int radius
 		}
 	}
 	return {};
+}
+
+bool LocalGrid::findPattern(int radius, PointI timingStart, Directions timingDirs, PointI blackStart, Directions blackDirs,
+							PointI whiteStart, Directions whiteDirs)
+{
+	auto isPatternAt = [&](PointI p) {
+		for (int r = 0; r <= radius; ++r) {
+			for (auto d : timingDirs)
+				if (!findValue(p + timingStart + r * d, d, Value(r % 2 == 1)))
+					return false;
+			for (auto d : blackDirs)
+				if (!findValue(p + blackStart + r * d, d, Value(true)))
+					return false;
+			for (auto d : whiteDirs)
+				if (!findValue(p + whiteStart + r * d, d, Value(false)))
+					return false;
+		}
+		return true;
+	};
+
+	for (auto p : spiral(3)) {
+		if (isPatternAt(p)) {
+			auto original = origin;
+			origin = getPos(PointF(p));
+			// adjust origin and step with full radius and only in the direction of the timing pattern
+			printf("found pattern at (%.2f, %.2f)\n", origin.x, origin.y);
+			std::vector<PointF> stepsX, stepsY;
+			for (auto d : timingDirs)
+				d.y == 0 ? stepsX.push_back(d.x * stepX) : stepsY.push_back(d.y * stepY);
+
+			if (!stepsX.empty())
+				adjustOriginAndStep(stepX, radius, stepsX);
+			if (!stepsY.empty())
+				adjustOriginAndStep(stepY, radius, stepsY);
+			if ((!stepsX.empty() || !stepsY.empty()) && !isPatternAt(PointI{0, 0})) {
+				origin = original;
+				printf("pattern lost after adjusting for timing pattern, reverting origin\n");
+			}
+			printf("\n");
+			return true;
+		}
+	}
+	printf("\n");
+	return false;
 }
 
 } // namespace ZXing

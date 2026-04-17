@@ -53,6 +53,8 @@ public:
 	int totalCodewords() const { return ecBlocks.totalDataCodewords(); }
 	int dataWidth() const { return (symbolWidth / dataBlockWidth) * dataBlockWidth; }
 	int dataHeight() const { return (symbolHeight / dataBlockHeight) * dataBlockHeight; }
+	int dataBlocksX() const { return symbolWidth / dataBlockWidth; }
+	int dataBlocksY() const { return symbolHeight / dataBlockHeight; }
 	bool isDMRE() const { return versionNumber >= 31 && versionNumber <= 48; }
 };
 
@@ -61,7 +63,7 @@ public:
  *
  * @param height Number of rows in modules
  * @param width Number of columns in modules
- * @return Version for a Data Matrix Code of those dimensions, nullputr for invalid dimensions
+ * @return Version for a Data Matrix Code of those dimensions, nullptr for invalid dimensions
  */
 const Version* VersionForDimensions(int height, int width);
 

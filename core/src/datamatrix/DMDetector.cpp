@@ -14,6 +14,7 @@
 #include "DMVersion.h"
 #include "GridSampler.h"
 #include "LogMatrix.h"
+#include "LocalGrid.h"
 #include "Point.h"
 #include "RegressionLine.h"
 #include "ResultPoint.h"
@@ -1048,8 +1049,67 @@ static DetectorResults Scan(EdgeTracer& startTracer, std::array<DMRegressionLine
 		auto mod2Pix = PerspectiveTransform(Rectangle(dimT, dimR, 0), sourcePoints);
 		auto pix2Mod = PerspectiveTransform(sourcePoints, Rectangle(dimT, dimR, 0));
 
+#if 1
+		std::vector<int> apX(version->dataBlocksX() + 1), apY(version->dataBlocksY() + 1);
+		std::generate(apX.begin(), apX.end(), [i = 0, version]() mutable { return i++ * (version->dataBlockWidth + 2); });
+		std::generate(apY.begin(), apY.end(), [i = 0, version]() mutable { return i++ * (version->dataBlockHeight + 2); });
+		apX.back() = dimT - 1;
+		apY.back() = dimR - 1;
+		auto apP = Matrix<std::optional<PointF>>(Size(apX), Size(apY));
+
+		constexpr PointI l(-1, 0), r(1, 0), u(0, -1), d(0, 1);
+
+		// Find the position of the alignment pattern center by looking for the given b/w patterns around the initial estimate
+		// based on the mod2Pix projection.
+		auto findAP = [&](PointI p, PointI offset, int radius, PointI timingStart, LocalGrid::Directions timingDirs, PointI blackStart,
+						  LocalGrid::Directions blackDirs, PointI whiteStart,
+						  LocalGrid::Directions whiteDirs) -> std::optional<PointF> {
+			auto lg = LocalGrid(*startTracer.img, mod2Pix, p, {dimT, dimR}, offset);
+			if (lg.findPattern(radius, timingStart, timingDirs, blackStart, blackDirs, whiteStart, whiteDirs))
+				return lg.getPos();
+			return {};
+		};
+
+		for (int y = 0; y < Size(apY); ++y)
+			for (int x = 0; x < Size(apX); ++x) {
+				std::optional<PointF> ap;
+				PointI api{apX[x], apY[y]};
+				int Nx = Size(apX) - 1, Ny = Size(apY) - 1;
+
+				if (x == 0 && y == 0) // top-left
+					ap = findAP(api, {2, 0}, 4, {1, 0}, std::array{r}, {0, 0}, std::array{d}, {-1, -1}, std::array{d, r});
+				else if (x == Nx && y == 0) // top-right
+					ap = findAP(api, {-1, 1}, 4, {0, 0}, std::array{l, d}, {}, {}, {1, -1}, std::array{d, l});
+				else if (x == Nx && y == Ny) // bottom-right
+					ap = findAP(api, {-0, -2}, 4, {0, -1}, std::array{u}, {0, 0}, std::array{l}, {1, 1}, std::array{u, l});
+				else if (x == 0 && y == Ny) // bottom-left
+					ap = findAP(api, {1, -1}, 4, {}, {}, {0, 0}, std::array{u, r}, {-1, 1}, std::array{u, r});
+				else if (x == 0) // left
+					ap = findAP(api, {2, 0}, 3, {1, 0}, std::array{r}, {0, -1}, std::array{u, d, r}, {}, {});
+				else if (x == Nx) // right
+					ap = findAP(api, {-1, 0}, 3, {0, 0}, std::array{l, u, d}, {0, -1}, std::array{l}, {}, {});
+				else if (y == 0) // top
+					ap = findAP(api, {-1, 0}, 3, {-1, 0}, std::array{l, r, d}, {0, 0}, std::array{d}, {}, {});
+				else if (y == Ny) // bottom
+					ap = findAP(api, {-1, -1}, 3, {-1, -1}, std::array{u}, {0, 0}, std::array{l, r, u}, {}, {});
+				else // center
+					ap = findAP(api, {-1, 0}, 3, {-1, 0}, std::array{l, r, u, d}, {0, -1}, std::array{l, r, u, d}, {}, {});
+
+				if (ap)
+					apP.set(x, y, *ap);
+			}
+
+		if (auto res = SampleGrid(*startTracer.img, dimT, dimR, mod2Pix, std::move(apP), apX, apY); res.isValid())
+			co_yield std::move(res);
+#else
 		if (auto res = SampleGrid(*startTracer.img, dimT, dimR, mod2Pix); res.isValid())
 			co_yield std::move(res);
+#endif
+		// if (auto res = SampleGrid(*startTracer.img, dimT, dimR, mod2Pix); res.isValid())
+		// 	co_yield std::move(res);
+
+		if (dimT > 42 && dimR > 42) // symbols that are this large are unlikely to be fixable by a 'global' timing pattern correction
+			continue;
 
 		// TODO: we currently only yield the corrected grid if at least one dimention is significantly deformed (has a LUT), but it
 		// would be even better if we stopped right after having a sucessful decoding result from the uncorrected grid. The current
@@ -1070,7 +1130,7 @@ static DetectorResults Scan(EdgeTracer& startTracer, std::array<DMRegressionLine
 static DetectorResults DetectNew(const BitMatrix& image, bool tryHarder, bool tryRotate)
 {
 #ifdef PRINT_DEBUG
-	LogMatrixWriter lmw(log, image, 1, "dm-log.pnm");
+	LogMatrixWriter lmw(log, image, 3, "dm-log.pnm");
 //	tryRotate = tryHarder = false;
 #endif
 
