@@ -42,8 +42,16 @@ constexpr float QUIET_ZONE_SCALE = 0.5f;
 
 bool IsLeftGuard(const PatternView& view, int spaceInPixel)
 {
+#if 0
 	return spaceInPixel > view.sum() * QUIET_ZONE_SCALE &&
 		   Contains({0x1A, 0x29, 0x0B, 0x0E}, RowReader::NarrowWideBitPattern(view));
+#else
+	// "ABCD" all start with a narrow bar and have a wide space in the middle and either on 1st or 3rd position.
+	// The following check is not completely specific but very fast and the final check happens in isStartOrStopSymbol().
+	// Gain over the old check is a 10% - 15% reduction of the total runtime for a Codabar search on Lum input data.
+	return spaceInPixel > view[0] * 4 && view[0] < view[3] && view[1] + view[5] > view[3]
+		   && spaceInPixel > view.sum() * QUIET_ZONE_SCALE;
+#endif
 }
 
 BarcodeData CodabarReader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<DecodingState>&) const
