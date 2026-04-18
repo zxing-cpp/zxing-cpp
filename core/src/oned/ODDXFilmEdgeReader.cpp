@@ -121,9 +121,18 @@ BarcodeData DXFilmEdgeReader::decodePattern(int rowNumber, PatternView& next, st
 
 	// Look for a pattern that is part of both the clock as well as the data track (omitting the first bar)
 	constexpr auto Is4x1 = [](const PatternView& view, int spaceInPixel) {
-		// find min/max of 4 consecutive bars/spaces and make sure they are close together
-		auto [m, M] = std::minmax({view[1], view[2], view[3], view[4]});
+#if 0
+		// Find min/max of 4 consecutive bars/spaces and make sure they are close together.
+		auto a = view[1], b = view[2], c = view[3], d = view[4];
+		auto m = std::min(std::min(a, b), std::min(c, d));
+		auto M = std::max(std::max(a, b), std::max(c, d));
 		return M <= m * 4 / 3 + 1 && spaceInPixel > m / 2;
+#else
+		// perform a very rough check to see if the 4 bars/spaces are close together
+		auto a = view[1], b = view[2], c = view[3], d = view[4];
+		auto diff = std::abs(a - b) + std::abs(a - c) + std::abs(a - d);
+		return diff < a && spaceInPixel > a / 2;
+#endif
 	};
 
 	// 12 is the minimum size of the data track (at least one product class bit + one parity bit)
