@@ -274,10 +274,8 @@ BarcodeData MultiUPCEANReader::decodePattern(int rowNumber, PatternView& next, s
 
 	PartialResult res;
 	auto begin = next;
-	
-	if (!(((_opts.hasFormat(BarcodeFormat::EAN13 | BarcodeFormat::UPCA)) && EAN13(res, begin)) ||
-		  (_opts.hasFormat(BarcodeFormat::EAN8) && EAN8(res, begin)) ||
-		  (_opts.hasFormat(BarcodeFormat::UPCE) && UPCE(res, begin))))
+
+	if (!((((readEAN13 || readUPCA) && EAN13(res, begin)) || (readEAN8 && EAN8(res, begin)) || (readUPCE && UPCE(res, begin)))))
 		return {};
 
 	// ISO/IEC 15420:2009 (& GS1 General Specifications 5.1.3) states that the content for "]E0" should be 13 digits,
@@ -291,7 +289,7 @@ BarcodeData MultiUPCEANReader::decodePattern(int rowNumber, PatternView& next, s
 	Error error = !GTIN::IsCheckDigitValid(res.txt) ? ChecksumError() : Error();
 
 	// if we explicitly excluded EAN13, don't return an EAN13 symbol
-	if (res.format == BarcodeFormat::EAN13 && !_opts.hasFormat(BarcodeFormat::EAN13)) {
+	if (res.format == BarcodeFormat::EAN13 && !readEAN13) {
 		if (res.txt.front() == '0')
 			res.format = BarcodeFormat::UPCA;
 		else
