@@ -50,11 +50,35 @@ template <typename I>
 static auto GenHistogram(Range<I> line)
 {
 	// This code causes about 20% of the total runtime on an AVX2 system for a EAN13 search on Lum input data.
-	// Trying to increase the performance by performing 2 or 4 "parallel" histograms helped nothing.
+	// Trying to increase the performance by performing 2 or 4 "parallel" histograms helped nothing on the Intel
+	// system but was able to make the total runtime for that use case go down about 10% on an ARM M4.
+#if 1
+	Histogram res0 = {}, res1 = {}, res2 = {}, res3 = {};
+
+	auto src = line.begin();
+	const auto end = line.end();
+
+	while (end - src >= 4) {
+		res0[*src++ >> LUMINANCE_SHIFT]++;
+		res1[*src++ >> LUMINANCE_SHIFT]++;
+		res2[*src++ >> LUMINANCE_SHIFT]++;
+		res3[*src++ >> LUMINANCE_SHIFT]++;
+	}
+
+	Histogram res = {};
+	for (int i = 0; i < LUMINANCE_BUCKETS; ++i)
+		res[i] = res0[i] + res1[i] + res2[i] + res3[i];
+
+	while (src != end)
+		res[*src++ >> LUMINANCE_SHIFT]++;
+
+	return res;
+#else
 	Histogram res = {};
 	for (auto pix : line)
 		res[pix >> LUMINANCE_SHIFT]++;
 	return res;
+#endif
 }
 
 // Return -1 on error
