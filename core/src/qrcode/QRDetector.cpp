@@ -110,7 +110,7 @@ std::vector<ConcentricPattern> FindFinderPatterns(const BitMatrix& image, bool t
  */
 FinderPatternSets GenerateFinderPatternSets(FinderPatterns& patterns)
 {
-	std::sort(patterns.begin(), patterns.end(), [](const auto& a, const auto& b) { return a.size < b.size; });
+	std::sort(patterns.begin(), patterns.end(), [](const auto& a, const auto& b) { return a.size > b.size; });
 
 	auto sets            = std::multimap<double, FinderPatternSet>();
 	auto squaredDistance = [](const auto* a, const auto* b) {
@@ -129,9 +129,12 @@ FinderPatternSets GenerateFinderPatternSets(FinderPatterns& patterns)
 	for (int i = 0; i < nbPatterns - 2; i++) {
 		for (int j = i + 1; j < nbPatterns - 1; j++) {
 			for (int k = j + 1; k < nbPatterns - 0; k++) {
-				const auto* a = &patterns[i];
+				// patterns is sorted descending by size (the larger the pattern, the less likely is it noise),
+				// but the geometry/size heuristics below assume a <= b <= c in size. Keep that convention by remapping i/j/k.
+				const auto* a = &patterns[k];
 				const auto* b = &patterns[j];
-				const auto* c = &patterns[k];
+				const auto* c = &patterns[i];
+
 				// if the pattern sizes are too different to be part of the same symbol, skip this
 				// and the rest of the innermost loop (sorted list)
 				if (c->size > a->size * 2)
@@ -152,13 +155,14 @@ FinderPatternSets GenerateFinderPatternSets(FinderPatterns& patterns)
 					std::swap(distAB2, distAC2);
 				}
 
+				// Make sure distAB and distBC don't differ more than reasonable:
+				// equivalent to distAB > 2 * distBC || distBC > 2 * distAB but avoids sqrt.
+				// TODO: make sure the constant 2 is not too conservative for reasonably tilted symbols
+				if (distAB2 > 4 * distBC2 || distBC2 > 4 * distAB2)
+					continue;
+
 				auto distAB = std::sqrt(distAB2);
 				auto distBC = std::sqrt(distBC2);
-
-				// Make sure distAB and distBC don't differ more than reasonable
-				// TODO: make sure the constant 2 is not too conservative for reasonably tilted symbols
-				if (distAB > 2 * distBC || distBC > 2 * distAB)
-					continue;
 
 				// Estimate the module count and ignore this set if it can not result in a valid decoding
 				if (auto moduleCount = (distAB + distBC) / (2 * (a->size + b->size + c->size) / (3 * 7.f)) + 7;
@@ -175,19 +179,24 @@ FinderPatternSets GenerateFinderPatternSets(FinderPatterns& patterns)
 				// we need to check both two equal sides separately.
 				// The value of |c^2 - 2 * b^2| + |c^2 - 2 * a^2| increases as dissimilarity
 				// from isosceles right triangle.
-				double d = (std::abs(distAC2 - 2 * distAB2) + std::abs(distAC2 - 2 * distBC2));
+				// double score = (std::abs(distAC2 - 2 * distAB2) + std::abs(distAC2 - 2 * distBC2));
 
-				// Use cross product to figure out whether A and C are correct or flipped.
-				// This asks whether BC x BA has a positive z component, which is the arrangement
-				// we want for A, B, C. If it's negative then swap A and C.
-				if (cross(*c - *b, *a - *b) < 0)
-					std::swap(a, c);
+				// Calculate a score that is used to determine wich sets are most likely to be actual finder pattern sets,
+				// the smaller the better. Prefer finder patterns that are close to each with similar distances to each other.
+				// Note: experiments incorporating cosAB_BC or the difference of the finder pattern sizes did not yield better results.
+				auto score = distAB + distBC + std::abs(distAB - distBC);
 
 				// arbitrarily limit the number of potential sets
 				// (this has performance implications while limiting the maximal number of detected symbols)
-				const auto setSizeLimit = 256;
-				if (sets.size() < setSizeLimit || sets.crbegin()->first > d) {
-					sets.emplace(d, FinderPatternSet{*a, *b, *c});
+				const size_t setSizeLimit = 256 * 2;
+				if (sets.size() < setSizeLimit || sets.crbegin()->first > score) {
+					// Use cross product to figure out whether A and C are correct or flipped.
+					// This asks whether BC x BA has a positive z component, which is the arrangement
+					// we want for A, B, C. If it's negative then swap A and C.
+					if (cross(*c - *b, *a - *b) < 0)
+						std::swap(a, c);
+
+					sets.emplace(score, FinderPatternSet{*a, *b, *c});
 					if (sets.size() > setSizeLimit)
 						sets.erase(std::prev(sets.end()));
 				}
