@@ -1,14 +1,14 @@
 [versions]
 androidGradlePlugin = "8.13.2"
-androidCompileSdk = "35"
+androidCompileSdk = "36"
 androidMinSdk = "21"
-androidTargetSdk = "35"
+androidTargetSdk = "36"
 androidx-appcompat = "1.7.1"
 androidx-camera = "1.5.2"
-androidx-core = "1.16.0"
+androidx-core = "1.18.0"
 androidx-constraintLayout = "2.2.1"
 android-material = "1.13.0"
-kotlin = "2.2.21"
+kotlin = "2.3.20"
 zxing-core = "3.5.4"
 
 [libraries]

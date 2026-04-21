@@ -22,19 +22,20 @@ import android.os.Environment
 import android.view.View
 import androidx.annotation.OptIn
 import androidx.appcompat.app.AppCompatActivity
+import android.util.Size
 import androidx.camera.camera2.interop.Camera2CameraControl
 import androidx.camera.camera2.interop.CaptureRequestOptions
 import androidx.camera.camera2.interop.ExperimentalCamera2Interop
-import androidx.camera.core.AspectRatio
 import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
-import androidx.camera.core.Preview
-import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.core.app.ActivityCompat
+import androidx.camera.view.CameraController
+import androidx.camera.view.LifecycleCameraController
+import androidx.camera.core.resolutionselector.AspectRatioStrategy
+import androidx.camera.core.resolutionselector.ResolutionSelector
+import androidx.camera.core.resolutionselector.ResolutionStrategy
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.toPointF
-import androidx.lifecycle.LifecycleOwner
+import androidx.activity.result.contract.ActivityResultContracts
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.BinaryBitmap
 import com.google.zxing.DecodeHintType
@@ -50,11 +51,20 @@ import zxingcpp.BarcodeReader.Format.*
 
 class MainActivity : AppCompatActivity() {
 	private lateinit var binding: ActivityCameraBinding
+	private lateinit var cameraController: LifecycleCameraController
 
 	private val executor = Executors.newSingleThreadExecutor()
 	private val permissions = mutableListOf(Manifest.permission.CAMERA)
-	private val permissionsRequestCode = 1
 	private val beeper = ToneGenerator(AudioManager.STREAM_NOTIFICATION, 50)
+
+	private val requestPermissionsLauncher =
+		registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+			if (permissions.all { it.value }) {
+				bindCameraUseCases()
+			} else {
+				finish()
+			}
+		}
 
 	private var lastText = String()
 	private var doSaveImage: Boolean = false
@@ -78,6 +88,12 @@ class MainActivity : AppCompatActivity() {
 			doSaveImage = true
 			// Re-enable camera controls
 			it.isEnabled = true
+		}
+
+		binding.torch.setOnCheckedChangeListener { _, isChecked ->
+			if (::cameraController.isInitialized) {
+				cameraController.cameraControl?.enableTorch(isChecked)
+			}
 		}
 	}
 
@@ -122,172 +138,167 @@ class MainActivity : AppCompatActivity() {
 
 	@OptIn(ExperimentalCamera2Interop::class)
 	private fun bindCameraUseCases() = binding.viewFinder.post {
+		if (::cameraController.isInitialized) {
+			return@post
+		}
 
-		val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
-		cameraProviderFuture.addListener({
+		cameraController = LifecycleCameraController(this)
+		cameraController.bindToLifecycle(this)
+		cameraController.cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+		cameraController.setEnabledUseCases(CameraController.IMAGE_ANALYSIS)
 
-			// Set up the view finder use case to display camera preview
-			val preview = Preview.Builder()
-				.setTargetAspectRatio(AspectRatio.RATIO_16_9)
-				.build()
+		val resolutionSelector = ResolutionSelector.Builder()
+			.setAspectRatioStrategy(AspectRatioStrategy.RATIO_16_9_FALLBACK_AUTO_STRATEGY)
+			.build()
+		cameraController.setPreviewResolutionSelector(resolutionSelector)
 
-			// Set up the image analysis use case which will process frames in real time
-			val imageAnalysis = ImageAnalysis.Builder()
-				.setTargetAspectRatio(AspectRatio.RATIO_16_9) // -> 1280x720
-				.setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-				.build()
-
-			var frameCounter = 0
-			var lastFpsTimestamp = System.currentTimeMillis()
-			var runtimes: Long = 0
-			var runtime2: Long = 0
-			val readerJava = MultiFormatReader()
-			val readerCpp = BarcodeReader()
-
-
-			// Create a new camera selector each time, enforcing lens facing
-			val cameraSelector =
-				CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_BACK).build()
-
-			// Camera provider is now guaranteed to be available
-			val cameraProvider = cameraProviderFuture.get()
-
-			// Apply declared configs to CameraX using the same lifecycle owner
-			cameraProvider.unbindAll()
-			val camera = cameraProvider.bindToLifecycle(
-				this as LifecycleOwner, cameraSelector, preview, imageAnalysis
+		val analysisResolutionSelector = ResolutionSelector.Builder()
+			.setAspectRatioStrategy(AspectRatioStrategy.RATIO_16_9_FALLBACK_AUTO_STRATEGY)
+			.setResolutionStrategy(
+				ResolutionStrategy(
+					Size(1280, 720),
+					ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER_THEN_LOWER
+				)
 			)
+			.build()
+		cameraController.setImageAnalysisResolutionSelector(analysisResolutionSelector)
 
-			// Reduce exposure time to decrease effect of motion blur
-			val camera2 = Camera2CameraControl.from(camera.cameraControl)
-			camera2.captureRequestOptions = CaptureRequestOptions.Builder()
-				.setCaptureRequestOption(CaptureRequest.SENSOR_SENSITIVITY, 1600)
-				.setCaptureRequestOption(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION, -8)
-				.build()
+		var frameCounter = 0
+		var lastFpsTimestamp = System.currentTimeMillis()
+		var runtimes: Long = 0
+		var runtime2: Long = 0
+		val readerJava = MultiFormatReader()
+		val readerCpp = BarcodeReader()
 
-			// Use the camera object to link our preview use case with the view
-			preview.setSurfaceProvider(binding.viewFinder.surfaceProvider)
+		cameraController.setImageAnalysisAnalyzer(executor) { image ->
+			// Early exit: image analysis is in paused state
+			if (binding.pause.isChecked) {
+				image.close()
+				return@setImageAnalysisAnalyzer
+			}
 
-			imageAnalysis.setAnalyzer(executor, ImageAnalysis.Analyzer { image ->
-				// Early exit: image analysis is in paused state
-				if (binding.pause.isChecked) {
-					image.close()
-					return@Analyzer
-				}
+			if (doSaveImage) {
+				doSaveImage = false
+				saveImage(image)
+			}
 
-				if (doSaveImage) {
-					doSaveImage = false
-					saveImage(image)
-				}
+			val cropSize = image.height / 3 * 2
+			val cropRect = if (binding.crop.isChecked)
+				Rect(
+					(image.width - cropSize) / 2,
+					(image.height - cropSize) / 2,
+					(image.width - cropSize) / 2 + cropSize,
+					(image.height - cropSize) / 2 + cropSize
+				)
+			else
+				Rect(0, 0, image.width, image.height)
+			image.setCropRect(cropRect)
 
-				val cropSize = image.height / 3 * 2
-				val cropRect = if (binding.crop.isChecked)
-					Rect(
-						(image.width - cropSize) / 2,
-						(image.height - cropSize) / 2,
-						(image.width - cropSize) / 2 + cropSize,
-						(image.height - cropSize) / 2 + cropSize
-					)
-				else
-					Rect(0, 0, image.width, image.height)
-				image.setCropRect(cropRect)
+			val startTime = System.currentTimeMillis()
+			var resultText: String
+			val resultPoints = mutableListOf<List<PointF>>()
 
-				val startTime = System.currentTimeMillis()
-				var resultText: String
-				val resultPoints = mutableListOf<List<PointF>>()
+			if (binding.java.isChecked) {
+				val yPlane = image.planes[0]
+				val yBuffer = yPlane.buffer
+				val yStride = yPlane.rowStride
+				val data = ByteArray(yBuffer.remaining())
+				yBuffer.get(data, 0, data.size)
+				image.close()
+				val hints = mutableMapOf<DecodeHintType, Any>()
+				if (binding.qrcode.isChecked)
+					hints[DecodeHintType.POSSIBLE_FORMATS] = arrayListOf(BarcodeFormat.QR_CODE)
+				if (binding.tryHarder.isChecked)
+					hints[DecodeHintType.TRY_HARDER] = true
+				if (binding.tryInvert.isChecked)
+					hints[DecodeHintType.ALSO_INVERTED] = true
 
-				if (binding.java.isChecked) {
-					val yPlane = image.planes[0]
-					val yBuffer = yPlane.buffer
-					val yStride = yPlane.rowStride
-					val data = ByteArray(yBuffer.remaining())
-					yBuffer.get(data, 0, data.size)
-					image.close()
-					val hints = mutableMapOf<DecodeHintType, Any>()
-					if (binding.qrcode.isChecked)
-						hints[DecodeHintType.POSSIBLE_FORMATS] = arrayListOf(BarcodeFormat.QR_CODE)
-					if (binding.tryHarder.isChecked)
-						hints[DecodeHintType.TRY_HARDER] = true
-					if (binding.tryInvert.isChecked)
-						hints[DecodeHintType.ALSO_INVERTED] = true
-
-					resultText = try {
-						val bitmap = BinaryBitmap(
-							HybridBinarizer(
-								PlanarYUVLuminanceSource(
-									data,
-									yStride,
-									image.height,
-									cropRect.left,
-									cropRect.top,
-									cropRect.width(),
-									cropRect.height(),
-									false
-								)
+				resultText = try {
+					val bitmap = BinaryBitmap(
+						HybridBinarizer(
+							PlanarYUVLuminanceSource(
+								data,
+								yStride,
+								image.height,
+								cropRect.left,
+								cropRect.top,
+								cropRect.width(),
+								cropRect.height(),
+								false
 							)
 						)
-						val result = readerJava.decode(bitmap, hints)
-						result?.let { "${it.barcodeFormat}: ${it.text}" } ?: ""
-					} catch (e: Throwable) {
-						if (e.toString() != "com.google.zxing.NotFoundException") e.toString() else ""
-					}
-				} else {
-					readerCpp.options.apply {
-						formats = if (binding.qrcode.isChecked) setOf(QR_CODE, MICRO_QR_CODE, RMQR_CODE) else setOf()
-						tryHarder = binding.tryHarder.isChecked
-						tryRotate = binding.tryRotate.isChecked
-						tryInvert = binding.tryInvert.isChecked
-						tryDownscale = binding.tryDownscale.isChecked
-						maxNumberOfSymbols = if (binding.multiSymbol.isChecked) 255 else 1
-					}
-
-					resultText = try {
-						image.use {
-							readerCpp.read(it)
-						}.joinToString("\n") { result ->
-							result.position.let {
-								resultPoints.add(listOf(
-									it.topLeft, it.topRight, it.bottomRight, it.bottomLeft
-								).map { p ->
-									p.toPointF()
-								})
-							}
-							"${result.format} (${result.contentType}): ${
-								if (result.contentType != BarcodeReader.ContentType.BINARY) {
-									result.text
-								} else {
-									result.bytes!!.joinToString(separator = "") { v -> "%02x".format(v) }
-								}
-							}"
-						}
-					} catch (e: Throwable) {
-						e.message ?: "Error"
-					}
-				}
-
-				runtimes += System.currentTimeMillis() - startTime
-				runtime2 += readerCpp.lastReadTime
-
-				var infoText: String? = null
-				if (++frameCounter == 15) {
-					val now = System.currentTimeMillis()
-					val fps = 1000 * frameCounter.toDouble() / (now - lastFpsTimestamp)
-
-					infoText = "Time: %2d/%2d ms, FPS: %.02f, (%dx%d)".format(
-						runtimes / frameCounter, runtime2 / frameCounter, fps, image.width, image.height
 					)
-					lastFpsTimestamp = now
-					frameCounter = 0
-					runtimes = 0
-					runtime2 = 0
+					val result = readerJava.decode(bitmap, hints)
+					result?.let { "${it.barcodeFormat}: ${it.text}" } ?: ""
+				} catch (e: Throwable) {
+					if (e.toString() != "com.google.zxing.NotFoundException") e.toString() else ""
+				}
+			} else {
+				readerCpp.options.apply {
+					formats = if (binding.qrcode.isChecked) setOf(QR_CODE, MICRO_QR_CODE, RMQR_CODE) else setOf()
+					tryHarder = binding.tryHarder.isChecked
+					tryRotate = binding.tryRotate.isChecked
+					tryInvert = binding.tryInvert.isChecked
+					tryDownscale = binding.tryDownscale.isChecked
+					maxNumberOfSymbols = if (binding.multiSymbol.isChecked) 255 else 1
 				}
 
-				camera.cameraControl.enableTorch(binding.torch.isChecked)
+				resultText = try {
+					image.use {
+						readerCpp.read(it)
+					}.joinToString("\n") { result ->
+						result.position.let {
+							resultPoints.add(listOf(
+								it.topLeft, it.topRight, it.bottomRight, it.bottomLeft
+							).map { p ->
+								p.toPointF()
+							})
+						}
+						"${result.format} (${result.contentType}): ${
+							if (result.contentType != BarcodeReader.ContentType.BINARY) {
+								result.text
+							} else {
+								result.bytes!!.joinToString(separator = "") { v -> "%02x".format(v) }
+							}
+						}"
+					}
+				} catch (e: Throwable) {
+					e.message ?: "Error"
+				}
+			}
 
-				showResult(resultText, infoText, resultPoints, image)
-			})
+			runtimes += System.currentTimeMillis() - startTime
+			runtime2 += readerCpp.lastReadTime
 
+			var infoText: String? = null
+			if (++frameCounter == 15) {
+				val now = System.currentTimeMillis()
+				val fps = 1000 * frameCounter.toDouble() / (now - lastFpsTimestamp)
+
+				infoText = "Time: %2d/%2d ms, FPS: %.02f, (%dx%d)".format(
+					runtimes / frameCounter, runtime2 / frameCounter, fps, image.width, image.height
+				)
+				lastFpsTimestamp = now
+				frameCounter = 0
+				runtimes = 0
+				runtime2 = 0
+			}
+
+			showResult(resultText, infoText, resultPoints, image)
+		}
+
+		// Reduce exposure time to decrease effect of motion blur
+		cameraController.initializationFuture.addListener({
+			cameraController.cameraControl?.let {
+				val camera2 = Camera2CameraControl.from(it)
+				camera2.captureRequestOptions = CaptureRequestOptions.Builder()
+					.setCaptureRequestOption(CaptureRequest.SENSOR_SENSITIVITY, 1600)
+					.setCaptureRequestOption(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION, -8)
+					.build()
+			}
 		}, ContextCompat.getMainExecutor(this))
+
+		binding.viewFinder.controller = cameraController
 	}
 
 	private fun showResult(
@@ -317,26 +328,9 @@ class MainActivity : AppCompatActivity() {
 
 		// Request permissions each time the app resumes, since they can be revoked at any time
 		if (!hasPermissions(this)) {
-			ActivityCompat.requestPermissions(
-				this,
-				permissions.toTypedArray(),
-				permissionsRequestCode
-			)
+			requestPermissionsLauncher.launch(permissions.toTypedArray())
 		} else {
 			bindCameraUseCases()
-		}
-	}
-
-	override fun onRequestPermissionsResult(
-		requestCode: Int,
-		permissions: Array<out String>,
-		grantResults: IntArray,
-	) {
-		super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-		if (requestCode == permissionsRequestCode && hasPermissions(this)) {
-			bindCameraUseCases()
-		} else {
-			finish() // If we don't have the required permissions, we can't run
 		}
 	}
 

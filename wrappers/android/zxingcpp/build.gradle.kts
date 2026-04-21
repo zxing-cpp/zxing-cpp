@@ -58,7 +58,7 @@ kotlin {
 }
 
 dependencies {
-    implementation(libs.androidx.camera.core)
+    api(libs.androidx.camera.core)
 }
 
 val publishSnapshot: String? by project
