@@ -162,7 +162,8 @@ FinderPatternSets GenerateFinderPatternSets(FinderPatterns& patterns)
 		bins(bin(patterns[idx])).push_back(idx);
 
 	constexpr double maxModuleCount = 177 * 1.5;
-	constexpr size_t maxCandidates = 10;
+	// manually tuned to work with e.g. https://github.com/eventualbuddha/zedbar/blob/f0d9d9fa6158c108a21f7cde42c0339fb32dff69/examples/qr-code-140-grid02.jpg
+	constexpr size_t maxCandidates = 15;
 	auto candidates = std::vector<int>();
 	candidates.reserve(maxCandidates * 2);
 
