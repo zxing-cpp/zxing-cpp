@@ -73,6 +73,14 @@ public:
 		return _data[y * _width + x];
 	}
 
+	value_t& operator()(PointI p) {
+		return operator()(p.x, p.y);
+	}
+
+	const T& operator()(PointI p) const {
+		return operator()(p.x, p.y);
+	}
+
 	const value_t& get(int x, int y) const {
 		return operator()(x, y);
 	}

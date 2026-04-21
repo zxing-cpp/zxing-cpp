@@ -14,6 +14,7 @@
 #include "ConcentricFinder.h"
 #include "GridSampler.h"
 #include "LogMatrix.h"
+#include "Matrix.h"
 #include "Pattern.h"
 #include "QRFormatInformation.h"
 #include "QRVersion.h"
@@ -112,6 +113,16 @@ FinderPatternSets GenerateFinderPatternSets(FinderPatterns& patterns)
 {
 	std::sort(patterns.begin(), patterns.end(), [](const auto& a, const auto& b) { return a.size > b.size; });
 
+	struct {
+		int rejSize = 0;
+		int nearFPs = 0;
+		int candidates = 0;
+		int rejLegRatio = 0;
+		int rejModCount = 0;
+		int rejAngle = 0;
+		int accepted = 0;
+	} stats;
+
 	auto sets            = std::multimap<double, FinderPatternSet>();
 	auto squaredDistance = [](const auto* a, const auto* b) {
 		// The scaling of the distance based on the b/a size ratio is a very coarse compensation for the shortening effect of
@@ -125,10 +136,86 @@ FinderPatternSets GenerateFinderPatternSets(FinderPatterns& patterns)
 	const double cosUpper = std::cos(60. / 180 * std::numbers::pi);
 	const double cosLower = std::cos(120. / 180 * std::numbers::pi);
 
+#if 1
+	if (Size(patterns) < 3)
+		return {};
+
+	// Bin finder patterns into spatial bins to reduce the number of candidates to compare with geometry heuristics below.
+	// For each finder pattern, we only compare it to patterns in bins that are not further away than the largest symbol (177 modules)
+	// can occupy.  We search from inside out and stop after we found a limited number of candidates which reduces the complexity from
+	// O(n^3) to O(n). E.g. a sample with 140 small QRCodes has 420 finder patterns, which results in 12 million candidates to process
+	// while with the binning, we only compare 20k candidates -> total runtime goes from 190ms to 9ms.
+	auto [mX, MX] = std::ranges::minmax_element(patterns, {}, &PointF::x);
+	auto [mY, MY] = std::ranges::minmax_element(patterns, {}, &PointF::y);
+	int medianSize = patterns[Size(patterns) / 2].size;
+	int binSize = std::max(32, medianSize * 3); // 3 for minimum symbol size of 21 modules
+	Matrix<std::vector<int>> bins(std::ceil((MX->x - mX->x + 1) / binSize), std::ceil((MY->y - mY->y + 1) / binSize));
+
+	printf("medianSize=%d binSize=%d bins=(%dx%d) ", medianSize, binSize, bins.width(), bins.height());
+
+	auto bin = [&](PointF p) {
+		return PointI(std::clamp(int((p.x - mX->x) / binSize), 0, bins.width() - 1),
+					  std::clamp(int((p.y - mY->y) / binSize), 0, bins.height() - 1));
+	};
+
+	for (int idx = 0; idx < Size(patterns); ++idx)
+		bins(bin(patterns[idx])).push_back(idx);
+
+	constexpr double maxModuleCount = 177 * 1.5;
+	constexpr size_t maxCandidates = 10;
+	auto candidates = std::vector<int>();
+	candidates.reserve(maxCandidates * 2);
+
+	int nbPatterns = Size(patterns);
+	for (int i = 0; i < nbPatterns - 2; i++) {
+		const auto* c0 = &patterns[i];
+		double maxDistToC = c0->size / 7.0 * maxModuleCount;
+		auto cBin = bin(*c0);
+		int binRadius = std::ceil(maxDistToC / binSize);
+		candidates.clear();
+
+		for (auto d : Spiral(binRadius)) {
+			auto b = cBin + d;
+			if (b.x < 0 || b.x >= bins.width() || b.y < 0 || b.y >= bins.height())
+				continue;
+
+			for (int idx : bins(b)) {
+				if (idx <= i)
+					continue;
+
+				const auto* p = &patterns[idx];
+				if (c0->size > p->size * 2) {
+					stats.rejSize++;
+					continue;
+				}
+
+				candidates.push_back(idx);
+				stats.nearFPs++;
+			}
+
+			if (candidates.size() >= maxCandidates)
+				break;
+		}
+
+		for (int u = 0; u < Size(candidates) - 1; ++u) {
+			for (int v = u + 1; v < Size(candidates); ++v) {
+				stats.candidates++;
+				int j = candidates[u];
+				int k = candidates[v];
+
+				// patterns is sorted descending by size (the larger the pattern, the less likely is it noise),
+				// but the geometry/size heuristics below assume a <= b <= c in size. Keep that convention by remapping indices.
+				const auto* a = &patterns[std::max(j, k)];
+				const auto* b = &patterns[std::min(j, k)];
+				const auto* c = c0;
+
+#else
+
 	int nbPatterns = Size(patterns);
 	for (int i = 0; i < nbPatterns - 2; i++) {
 		for (int j = i + 1; j < nbPatterns - 1; j++) {
 			for (int k = j + 1; k < nbPatterns - 0; k++) {
+				stats.candidates++;
 				// patterns is sorted descending by size (the larger the pattern, the less likely is it noise),
 				// but the geometry/size heuristics below assume a <= b <= c in size. Keep that convention by remapping i/j/k.
 				const auto* a = &patterns[k];
@@ -139,6 +226,7 @@ FinderPatternSets GenerateFinderPatternSets(FinderPatterns& patterns)
 				// and the rest of the innermost loop (sorted list)
 				if (c->size > a->size * 2)
 					break;
+#endif
 
 				// Orders the three points in an order [A,B,C] such that AB is less than AC
 				// and BC is less than AC, and the angle between BC and BA is less than 180 degrees.
@@ -158,21 +246,27 @@ FinderPatternSets GenerateFinderPatternSets(FinderPatterns& patterns)
 				// Make sure distAB and distBC don't differ more than reasonable:
 				// equivalent to distAB > 2 * distBC || distBC > 2 * distAB but avoids sqrt.
 				// TODO: make sure the constant 2 is not too conservative for reasonably tilted symbols
-				if (distAB2 > 4 * distBC2 || distBC2 > 4 * distAB2)
+				if (distAB2 > 4 * distBC2 || distBC2 > 4 * distAB2) {
+					stats.rejLegRatio++;
 					continue;
+				}
 
 				auto distAB = std::sqrt(distAB2);
 				auto distBC = std::sqrt(distBC2);
 
 				// Estimate the module count and ignore this set if it can not result in a valid decoding
 				if (auto moduleCount = (distAB + distBC) / (2 * (a->size + b->size + c->size) / (3 * 7.f)) + 7;
-					moduleCount < 21 * 0.9 || moduleCount > 177 * 1.5) // moduleCount may be overestimated, see above
+					moduleCount < 21 * 0.9 || moduleCount > 177 * 1.5) { // moduleCount may be overestimated, see above
+					stats.rejModCount++;
 					continue;
+				}
 
 				// Make sure the angle between AB and BC does not deviate from 90° too much
 				auto cosAB_BC = (distAB2 + distBC2 - distAC2) / (2 * distAB * distBC);
-				if (std::isnan(cosAB_BC) || cosAB_BC > cosUpper || cosAB_BC < cosLower)
+				if (std::isnan(cosAB_BC) || cosAB_BC > cosUpper || cosAB_BC < cosLower) {
+					stats.rejAngle++;
 					continue;
+				}
 
 				// a^2 + b^2 = c^2 (Pythagorean theorem), and a = b (isosceles triangle).
 				// Since any right triangle satisfies the formula c^2 - b^2 - a^2 = 0,
@@ -188,7 +282,7 @@ FinderPatternSets GenerateFinderPatternSets(FinderPatterns& patterns)
 
 				// arbitrarily limit the number of potential sets
 				// (this has performance implications while limiting the maximal number of detected symbols)
-				const size_t setSizeLimit = 256 * 2;
+				const size_t setSizeLimit = 256;
 				if (sets.size() < setSizeLimit || sets.crbegin()->first > score) {
 					// Use cross product to figure out whether A and C are correct or flipped.
 					// This asks whether BC x BA has a positive z component, which is the arrangement
@@ -199,10 +293,14 @@ FinderPatternSets GenerateFinderPatternSets(FinderPatterns& patterns)
 					sets.emplace(score, FinderPatternSet{*a, *b, *c});
 					if (sets.size() > setSizeLimit)
 						sets.erase(std::prev(sets.end()));
+					stats.accepted++;
 				}
 			}
 		}
 	}
+
+	printf("rejectSize=%d nearFPs=%d candidates=%d rejectLeg=%d rejectMod=%d rejectAng=%d accepted=%d\n", stats.rejSize,
+		   stats.nearFPs, stats.candidates, stats.rejLegRatio, stats.rejModCount, stats.rejAngle, stats.accepted);
 
 	// convert from multimap to vector
 	FinderPatternSets res;
