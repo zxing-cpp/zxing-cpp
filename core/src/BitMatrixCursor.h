@@ -6,6 +6,8 @@
 #pragma once
 
 #include "BitMatrix.h"
+#include "Point.h"
+#include "StdGenerator.h"
 
 #include <climits>
 
@@ -226,5 +228,19 @@ public:
 		return steps;
 	}
 };
+
+// Generate points in a spiral pattern around the center
+inline std::generator<PointI> Spiral(int radius)
+{
+	co_yield{0, 0};
+	for (int r = 1; r <= radius; ++r) {
+		// clang-format off
+		for (int k = 0; k < 2 * r; ++k) co_yield{           r, -(r - 1) + k}; // right -> down
+		for (int k = 0; k < 2 * r; ++k)	co_yield{ (r - 1) - k,            r}; // bottom -> left
+		for (int k = 0; k < 2 * r; ++k)	co_yield{          -r,  (r - 1) - k}; // left -> up
+		for (int k = 0; k < 2 * r; ++k)	co_yield{-(r - 1) + k,           -r}; // top -> right
+		// clang-format on
+	}
+}
 
 } // ZXing

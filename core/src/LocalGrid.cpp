@@ -19,20 +19,6 @@
 
 namespace ZXing {
 
-// generates points in a spiral pattern around the center
-inline std::generator<PointI> spiral(int radius)
-{
-	co_yield{0, 0};
-	for (int r = 1; r <= radius; ++r) {
-		// clang-format off
-		for (int k = 0; k < 2 * r; ++k) co_yield{           r, -(r - 1) + k}; // right -> down
-		for (int k = 0; k < 2 * r; ++k)	co_yield{ (r - 1) - k,            r}; // bottom -> left
-		for (int k = 0; k < 2 * r; ++k)	co_yield{          -r,  (r - 1) - k}; // left -> up
-		for (int k = 0; k < 2 * r; ++k)	co_yield{-(r - 1) + k,           -r}; // top -> right
-		// clang-format on
-	}
-}
-
 // returns the average of the largest cluster of values where cluster is defined as values that are within threshold of each other
 double clusterAvg(std::ranges::range auto& v, double threshold)
 {
@@ -189,7 +175,7 @@ bool LocalGrid::isTimingPatternCross(PointI p, bool isBlack, int radius, int err
 
 std::optional<PointF> LocalGrid::findTimingPatternCross(bool isBlack, int radius)
 {
-	for (auto p : spiral(3)) {
+	for (auto p : Spiral(3)) {
 		// check if there is a timing pattern cross candidate centered at p with half the radius
 		if (isTimingPatternCross(p, isBlack, radius / 2)) {
 			auto original = origin;
@@ -227,7 +213,7 @@ bool LocalGrid::findPattern(int radius, PointI timingStart, Directions timingDir
 		return true;
 	};
 
-	for (auto p : spiral(3)) {
+	for (auto p : Spiral(3)) {
 		if (isPatternAt(p)) {
 			auto original = origin;
 			origin = getPos(PointF(p));
