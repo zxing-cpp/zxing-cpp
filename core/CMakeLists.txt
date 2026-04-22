@@ -535,95 +535,95 @@ if (ZXING_WRITERS_NEW)
     if (ZXING_USE_BUNDLED_ZINT)
         set (LIBZINT_FILES
             src/libzint/stubs.c
-            src/libzint/common.c
-            src/libzint/common.h
-            src/libzint/big5.h
-            src/libzint/eci.c
-            src/libzint/eci.h
-            src/libzint/eci_sb.h
-            src/libzint/filemem.c
-            src/libzint/filemem.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/common.c
+            ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/common.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/big5.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/eci.c
+            ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/eci.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/eci_sb.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/filemem.c
+            ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/filemem.h
             src/libzint/fonts/normal_woff2.h
             src/libzint/fonts/upcean_woff2.h
-            src/libzint/gb18030.h
-            src/libzint/gb2312.h
-            src/libzint/gbk.h
-            src/libzint/general_field.c
-            src/libzint/general_field.h
-            src/libzint/gs1.c
-            src/libzint/gs1.h
-            src/libzint/gs1_lint.h
-            src/libzint/iso3166.h
-            src/libzint/iso4217.h
-            src/libzint/ksx1001.h
-            src/libzint/large.c
-            src/libzint/large.h
-            src/libzint/library.c
-            src/libzint/output.c
-            src/libzint/output.h
-            src/libzint/raster.c
-            src/libzint/raster_font.h
-            src/libzint/reedsol.c
-            src/libzint/reedsol.h
-            src/libzint/reedsol_logs.h
-            src/libzint/sjis.h
-            src/libzint/svg.c
-            src/libzint/vector.c
-            src/libzint/zfiletypes.h
-            src/libzint/zintconfig.h
-            src/libzint/zint.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/gb18030.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/gb2312.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/gbk.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/general_field.c
+            ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/general_field.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/gs1.c
+            ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/gs1.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/gs1_lint.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/iso3166.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/iso4217.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/ksx1001.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/large.c
+            ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/large.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/library.c
+            ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/output.c
+            ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/output.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/raster.c
+            ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/raster_font.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/reedsol.c
+            ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/reedsol.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/reedsol_logs.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/sjis.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/svg.c
+            ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/vector.c
+            ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/zfiletypes.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/zintconfig.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/zint.h
         )
         if (ZXING_ENABLE_1D)
             list(APPEND LIBZINT_FILES
-                src/libzint/2of5inter.c
-                src/libzint/2of5inter_based.c
-                src/libzint/codabar.c
-                src/libzint/code128.c
-                src/libzint/code128.h
-                src/libzint/code.c
-                src/libzint/dxfilmedge.c
-                src/libzint/medical.c
-                src/libzint/rss.c
-                src/libzint/rss.h
-                src/libzint/upcean.c
+                ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/2of5inter.c
+                ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/2of5inter_based.c
+                ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/codabar.c
+                ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/code128.c
+                ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/code128.h
+                ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/code.c
+                ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/dxfilmedge.c
+                ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/medical.c
+                ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/rss.c
+                ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/rss.h
+                ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/upcean.c
             )
         endif()
         if (ZXING_ENABLE_AZTEC)
             list(APPEND LIBZINT_FILES
-                src/libzint/aztec.c
-                src/libzint/aztec.h
+                ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/aztec.c
+                ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/aztec.h
             )
         endif()
         if (ZXING_ENABLE_DATAMATRIX)
             list(APPEND LIBZINT_FILES
-                src/libzint/dmatrix.c
-                src/libzint/dmatrix.h
+                ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/dmatrix.c
+                ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/dmatrix.h
             )
         endif()
         if (ZXING_ENABLE_MAXICODE)
             list(APPEND LIBZINT_FILES
-                src/libzint/maxicode.c
-                src/libzint/maxicode.h
+                ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/maxicode.c
+                ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/maxicode.h
             )
         endif()
         if (ZXING_ENABLE_PDF417)
             list(APPEND LIBZINT_FILES
-                src/libzint/pdf417.c
-                src/libzint/pdf417.h
-                src/libzint/pdf417_tabs.h
+                ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/pdf417.c
+                ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/pdf417.h
+                ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/pdf417_tabs.h
             )
         endif()
 
         if (ZXING_ENABLE_QRCODE)
             list(APPEND LIBZINT_FILES
-                src/libzint/qr.c
-                src/libzint/qr.h
+                ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/qr.c
+                ${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend/qr.h
             )
         endif()
         set_source_files_properties(${LIBZINT_FILES} PROPERTIES SKIP_PRECOMPILE_HEADERS ON COMPILE_OPTIONS -DZINT_NO_PNG)
         target_sources(ZXing PRIVATE ${LIBZINT_FILES})
         source_group (Sources\\libzint FILES ${LIBZINT_FILES})
-        target_include_directories (ZXing PRIVATE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/libzint>")
+        target_include_directories (ZXing PRIVATE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${CMAKE_SOURCE_DIR}/zint>" "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../zint/backend>")
     else()
         include(../zxing.cmake)
         zxing_add_package(zint zint https://github.com/zint/zint.git 2.16.0)

@@ -1,1 +1,0 @@
-../../../zint/backend/svg.c

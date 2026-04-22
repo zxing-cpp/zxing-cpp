@@ -1,1 +1,0 @@
-../../../zint/backend/2of5inter_based.c

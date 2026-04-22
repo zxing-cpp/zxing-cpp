@@ -1,1 +1,0 @@
-../../../zint/backend/gs1.c
