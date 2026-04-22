@@ -15,7 +15,6 @@
 #include <QObject>
 #include <QScopeGuard>
 #include <QThreadPool>
-#include <QtQmlIntegration/qqmlintegration.h>
 
 #ifdef QT_MULTIMEDIA_LIB
 #include <QVideoFrame>
@@ -545,6 +544,7 @@ Q_DECLARE_METATYPE(ZXingQt::Barcode)
 
 // MARK: - QML Integration
 
+#include <QtQmlIntegration/qqmlintegration.h>
 #include <QQmlEngine>
 
 namespace ZXingQt {
