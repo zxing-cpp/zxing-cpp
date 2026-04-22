@@ -1,1 +1,1 @@
-../../../zint/backend/gb2312.h
+#include "../../../zint/backend/gb2312.h"

@@ -1,1 +1,1 @@
-../../../zint/backend/pdf417.c
+#include "../../../zint/backend/pdf417.c"

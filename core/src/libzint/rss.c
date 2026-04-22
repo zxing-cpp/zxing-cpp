@@ -1,1 +1,1 @@
-../../../zint/backend/rss.c
+#include "../../../zint/backend/rss.c"

@@ -1,1 +1,1 @@
-../../../zint/backend/library.c
+#include "../../../zint/backend/library.c"

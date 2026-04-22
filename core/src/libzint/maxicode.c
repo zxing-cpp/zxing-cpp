@@ -1,1 +1,1 @@
-../../../zint/backend/maxicode.c
+#include "../../../zint/backend/maxicode.c"

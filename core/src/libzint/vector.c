@@ -1,1 +1,1 @@
-../../../zint/backend/vector.c
+#include "../../../zint/backend/vector.c"

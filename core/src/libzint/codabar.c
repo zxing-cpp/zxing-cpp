@@ -1,1 +1,1 @@
-../../../zint/backend/codabar.c
+#include "../../../zint/backend/codabar.c"

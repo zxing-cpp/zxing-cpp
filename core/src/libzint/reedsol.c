@@ -1,1 +1,1 @@
-../../../zint/backend/reedsol.c
+#include "../../../zint/backend/reedsol.c"

@@ -1,1 +1,1 @@
-../../../zint/backend/2of5inter_based.c
+#include "../../../zint/backend/2of5inter_based.c"

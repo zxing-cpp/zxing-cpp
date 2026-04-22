@@ -1,1 +1,1 @@
-../../../zint/backend/output.c
+#include "../../../zint/backend/output.c"

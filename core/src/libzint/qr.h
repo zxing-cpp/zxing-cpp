@@ -1,1 +1,1 @@
-../../../zint/backend/qr.h
+#include "../../../zint/backend/qr.h"

@@ -1,1 +1,1 @@
-../../../zint/backend/gb18030.h
+#include "../../../zint/backend/gb18030.h"

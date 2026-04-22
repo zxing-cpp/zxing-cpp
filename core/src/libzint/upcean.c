@@ -1,1 +1,1 @@
-../../../zint/backend/upcean.c
+#include "../../../zint/backend/upcean.c"
