@@ -231,7 +231,7 @@ Image write_barcode(BarcodeFormat format, py::object content, int width, int hei
 
 // MARK: - Python
 
-PYBIND11_MODULE(zxingcpp, m)
+PYBIND11_MODULE(zxingcpp, m, py::mod_gil_not_used())
 {
 	m.doc() = "python bindings for zxing-cpp";
 
