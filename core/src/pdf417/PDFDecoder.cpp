@@ -366,6 +366,8 @@ static int ProcessByteECIs(const std::vector<int>& codewords, int codeIndex, Con
 		int code = codewords[codeIndex++];
 		if (IsECI(code))
 			codeIndex = ProcessECI(codewords, codeIndex, codewords[0], code, result);
+		else
+			throw FormatError();
 	}
 
 	return codeIndex;
@@ -393,8 +395,10 @@ static int ByteCompaction(int mode, const std::vector<int>& codewords, int codeI
 
 	for (int batch = 0; batch < batches; batch++) {
 		int64_t value = 0;
-		for (int count = 0; count < 5; count++)
+		for (int count = 0; count < 5; count++) {
+			codeIndex = ProcessByteECIs(codewords, codeIndex, result);
 			value = 900 * value + codewords[codeIndex++];
+		}
 
 		for (int j = 0; j < 6; ++j)
 			result.push_back((uint8_t)(value >> (8 * (5 - j))));
@@ -404,6 +408,7 @@ static int ByteCompaction(int mode, const std::vector<int>& codewords, int codeI
 	}
 
 	for (int i = 0; i < trailingCount; i++) {
+		codeIndex = ProcessByteECIs(codewords, codeIndex, result);
 		result.push_back((uint8_t)codewords[codeIndex++]);
 		// Deal with inter-byte ECIs
 		codeIndex = ProcessByteECIs(codewords, codeIndex, result);
