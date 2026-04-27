@@ -231,7 +231,11 @@ Image write_barcode(BarcodeFormat format, py::object content, int width, int hei
 
 // MARK: - Python
 
+#if PYBIND11_VERSION_HEX >= 0x020D0000 // py::mod_gil_not_used() is available starting from 2.13.0
 PYBIND11_MODULE(zxingcpp, m, py::mod_gil_not_used())
+#else
+PYBIND11_MODULE(zxingcpp, m)
+#endif
 {
 	m.doc() = "python bindings for zxing-cpp";
 
