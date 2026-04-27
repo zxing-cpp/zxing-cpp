@@ -397,6 +397,9 @@ TEST(PDF417DecoderTest, ECISingleByte)
 	// Byte6 ECI 20 (not allowed inside 5-codeword batch)
 	EXPECT_FALSE(valid({ 9, 924, 246, 877, 166, 106, 927, 20, 797 }));
 
+	// Byte ECI 20 inside a 5-codeword group that encodes 6 bytes (invalid, ISO/IEC 15438:2015 5.5.3.2)
+	EXPECT_FALSE(valid({ 14, 901, 213, 598, 927, 20, 413, 118, 87, 127, 127, 127, 127, 127 }));
+
 	// Byte ECI 20 "点茗テA"
 	EXPECT_EQ(decode({ 10, 901, 927, 20, 246, 877, 166, 106, 797, 65 }), L"\u70B9\u8317\u30C6A");
 }
