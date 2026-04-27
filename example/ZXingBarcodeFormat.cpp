@@ -32,6 +32,11 @@ static void PrintBFs(
 #undef X
 }
 
+static void PrintCopyrightAndLicense()
+{
+	std::print("// Copyright 2026 Axel Waggershauser\n// SPDX-License-Identifier: Apache-2.0\n\n");
+}
+
 int main(int argc, char* argv[])
 {
 	auto is = [&, i=1](const char* str) { return strncmp(argv[i], str, strlen(argv[i])) == 0; };
@@ -40,6 +45,7 @@ int main(int argc, char* argv[])
 		PrintUsage(argv[0]);
 		return -1;
 	} else if (is("Go")) {
+		PrintCopyrightAndLicense();
 		std::println("package zxingcpp\n");
 		std::println("const (");
 		PrintBFs("	BarcodeFormat{:15} BarcodeFormat = 0x{:04X}");
@@ -62,7 +68,10 @@ int main(int argc, char* argv[])
 			ret.back() = std::tolower(ret.back());
 			return ret == "eanupc" ? "eanUPC" : ret == "upca" ? "upcA" : ret == "upce" ? "upcE" : ret;
 		};
+		PrintCopyrightAndLicense();
+		std::println("extension BarcodeFormat {{");
 		PrintBFs("	public static let {:15} = BarcodeFormat(rawValue: 0x{:04X})", swiftName);
+		std::println("}}");
 	} else {
 		PrintUsage(argv[0]);
 		return -1;
