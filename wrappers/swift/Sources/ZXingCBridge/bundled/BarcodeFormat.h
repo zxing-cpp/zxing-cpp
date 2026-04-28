@@ -1,0 +1,1 @@
+../../../../../core/src/BarcodeFormat.h

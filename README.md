@@ -17,7 +17,8 @@ It was originally ported from the Java [ZXing library](https://github.com/zxing/
     | [Android](wrappers/android/README.md) | [C](wrappers/c/README.md) | [Go](wrappers/go/README.md) |
     | [iOS](wrappers/ios/README.md) | [Kotlin/Native](wrappers/kn/README.md) | [.NET](wrappers/dotnet/README.md) |
     | [Python](wrappers/python/README.md) | [Qt](wrappers/qt/README.md) | [Rust](wrappers/rust/README.md) |
-    | [WebAssembly](wrappers/wasm/README.md) | [WinRT](wrappers/winrt/README.md) | [Flutter](https://pub.dev/packages/flutter_zxing) (external project) |
+    | [Swift](wrappers/swift/README.md) | [WebAssembly](wrappers/wasm/README.md) | [WinRT](wrappers/winrt/README.md) |
+    | [Flutter](https://pub.dev/packages/flutter_zxing) |
 
 ## Supported Formats
 
