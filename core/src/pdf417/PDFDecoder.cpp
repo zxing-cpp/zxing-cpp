@@ -364,8 +364,9 @@ static int ProcessByteECIs(const std::vector<int>& codewords, int codeIndex, Con
 	while (codeIndex < codewords[0] && codewords[codeIndex] >= TEXT_COMPACTION_MODE_LATCH
 			&& !TerminatesCompaction(codewords[codeIndex])) {
 		int code = codewords[codeIndex++];
-		if (IsECI(code))
-			codeIndex = ProcessECI(codewords, codeIndex, codewords[0], code, result);
+		if (!IsECI(code))
+			throw FormatError();
+		codeIndex = ProcessECI(codewords, codeIndex, codewords[0], code, result);
 	}
 
 	return codeIndex;
@@ -393,8 +394,12 @@ static int ByteCompaction(int mode, const std::vector<int>& codewords, int codeI
 
 	for (int batch = 0; batch < batches; batch++) {
 		int64_t value = 0;
-		for (int count = 0; count < 5; count++)
+		for (int count = 0; count < 5; count++) {
+			// Per ISO/IEC 15438:2015 5.5.3.2, ECI shall not appear within a 5-codeword data group
+			if (codeIndex >= codewords[0] || codewords[codeIndex] >= TEXT_COMPACTION_MODE_LATCH)
+				throw FormatError();
 			value = 900 * value + codewords[codeIndex++];
+		}
 
 		for (int j = 0; j < 6; ++j)
 			result.push_back((uint8_t)(value >> (8 * (5 - j))));
@@ -403,7 +408,7 @@ static int ByteCompaction(int mode, const std::vector<int>& codewords, int codeI
 		codeIndex = ProcessByteECIs(codewords, codeIndex, result);
 	}
 
-	for (int i = 0; i < trailingCount; i++) {
+	for (int i = 0; i < trailingCount && codeIndex < codewords[0]; i++) {
 		result.push_back((uint8_t)codewords[codeIndex++]);
 		// Deal with inter-byte ECIs
 		codeIndex = ProcessByteECIs(codewords, codeIndex, result);
