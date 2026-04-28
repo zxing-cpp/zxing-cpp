@@ -354,13 +354,13 @@ jobs:
       with:
         submodules: true
 
-    - uses: mymindstorm/setup-emsdk@v14
+    - uses: emscripten-core/setup-emsdk@v15
 
     - name: Configure
       run: emcmake cmake -Swrappers/wasm -Bbuild
 
     - name: Build
-      run: cmake --build build -j4
+      run: cmake --build build --parallel
 
 #    - name: Test
 #      run: node build/EmGlueTests.js
