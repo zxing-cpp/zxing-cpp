@@ -83,7 +83,7 @@ jobs:
           submodules: true
 
       - name: Download native libraries
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           pattern: native-*
           path: wrappers/dotnet

@@ -49,13 +49,13 @@ jobs:
     runs-on: windows-latest
     if: ${{ github.event_name == 'release' || github.event.inputs.publish == 'y' }}
     steps:
-    - uses: actions/download-artifact@v7
+    - uses: actions/download-artifact@v8
       with:
         name: winrt-Win32-artifacts
-    - uses: actions/download-artifact@v7
+    - uses: actions/download-artifact@v8
       with:
         name: winrt-x64-artifacts
-    - uses: actions/download-artifact@v7
+    - uses: actions/download-artifact@v8
       with:
         name: winrt-ARM64-artifacts
 
