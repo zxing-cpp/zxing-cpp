@@ -363,7 +363,7 @@ static RegressionLine TraceLine(const BitMatrix& image, PointF p, PointF d, int 
 	auto curI = BitMatrixCursorI(image, PointI(cur.p), PointI(mainDirection(cur.d)));
 	// make sure curI positioned such that the white->black edge is directly behind
 	// Test image: fix-traceline.jpg
-	while (!curI.edgeAtBack()) {
+	while (curI.isIn() && !curI.edgeAtBack()) {
 		if (curI.edgeAtLeft())
 			curI.turnRight();
 		else if (curI.edgeAtRight())
