@@ -27,7 +27,7 @@ if (NOT hasParent)
     endif()
     zxing_add_package(nanobind nanobind https://github.com/wjakob/nanobind.git v2.12.0)
 else()
-    find_package(nanobind CONFIG REQUIRED)
+    zxing_add_package(nanobind nanobind https://github.com/wjakob/nanobind.git v2.12.0)
 endif()
 
 # build the python module
