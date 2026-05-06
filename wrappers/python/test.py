@@ -171,7 +171,7 @@ class TestReadWrite(unittest.TestCase):
 	def test_read_invalid_numpy_array_channels_numpy(self):
 		import numpy as np # pyright: ignore
 		self.assertRaisesRegex(
-			ValueError, "Unsupported number of channels for buffer: 4", zxingcpp.read_barcode,
+			ValueError, "Unsupported number of channels: 4", zxingcpp.read_barcode,
 			np.zeros((100, 100, 4), np.uint8)
 		)
 

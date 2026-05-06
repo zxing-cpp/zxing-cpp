@@ -283,6 +283,64 @@ Barcodes read_barcodes(nb::object _image, const BarcodeFormats& formats, bool tr
 							  return_errors);
 }
 
+// MARK: - numpy fast path
+
+static Barcodes read_barcodes_from_ndarray(nb::ndarray<nb::numpy, uint8_t> arr, const ReaderOptions& opts)
+{
+	if (arr.ndim() != 2 && arr.ndim() != 3)
+		throw nb::type_error(("Incompatible array dimension " + std::to_string(arr.ndim()) + " (needs to be 2 or 3).").c_str());
+
+	const auto height   = narrow_cast<int>(arr.shape(0));
+	const auto width    = narrow_cast<int>(arr.shape(1));
+	const auto channels = arr.ndim() == 2 ? 1 : narrow_cast<int>(arr.shape(2));
+
+	// stride_ptr() is null for C-contiguous DLPack tensors; compute from shape in that case.
+	// stride(i) is in element units; for uint8_t that equals bytes.
+	int rowStride, pixStride;
+	if (arr.stride_ptr() != nullptr) {
+		rowStride = narrow_cast<int>(arr.stride(0));
+		pixStride = narrow_cast<int>(arr.stride(1));
+	} else {
+		pixStride = arr.ndim() == 3 ? narrow_cast<int>(arr.shape(2)) : 1;
+		rowStride = width * pixStride;
+	}
+
+	ImageFormat imgfmt;
+	if (channels == 1)      imgfmt = ImageFormat::Lum;
+	else if (channels == 3) imgfmt = ImageFormat::BGR;
+	else
+		throw nb::value_error(("Unsupported number of channels: " + std::to_string(channels)).c_str());
+
+	const auto* bytes = static_cast<const uint8_t*>(arr.data());
+	nb::gil_scoped_release release;
+	return ReadBarcodes({bytes, width, height, imgfmt, rowStride, pixStride}, opts);
+}
+
+static std::optional<Barcode> read_barcode_ndarray(
+	nb::ndarray<nb::numpy, uint8_t> arr, const BarcodeFormats& formats,
+	bool try_rotate, bool try_downscale, bool try_invert, TextMode text_mode,
+	Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol, bool return_errors)
+{
+	const auto opts = ReaderOptions()
+		.formats(formats).tryRotate(try_rotate).tryDownscale(try_downscale).tryInvert(try_invert)
+		.textMode(text_mode).binarizer(binarizer).isPure(is_pure).maxNumberOfSymbols(1)
+		.eanAddOnSymbol(ean_add_on_symbol).returnErrors(return_errors);
+	auto res = read_barcodes_from_ndarray(arr, opts);
+	return res.empty() ? std::nullopt : std::optional(res.front());
+}
+
+static Barcodes read_barcodes_ndarray(
+	nb::ndarray<nb::numpy, uint8_t> arr, const BarcodeFormats& formats,
+	bool try_rotate, bool try_downscale, bool try_invert, TextMode text_mode,
+	Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol, bool return_errors)
+{
+	const auto opts = ReaderOptions()
+		.formats(formats).tryRotate(try_rotate).tryDownscale(try_downscale).tryInvert(try_invert)
+		.textMode(text_mode).binarizer(binarizer).isPure(is_pure)
+		.eanAddOnSymbol(ean_add_on_symbol).returnErrors(return_errors);
+	return read_barcodes_from_ndarray(arr, opts);
+}
+
 // MARK: - Writer
 
 ImageView image_view(nb::object buffer, int width, int height, ImageFormat format, int rowStride, int pixStride)
@@ -630,6 +688,30 @@ NB_MODULE(zxingcpp, m)
 		":param filter: the BarcodeFormat(s) to filter by\n"
 		":return: list of available/supported barcode formats (optionally filtered)\n"
 		":rtype: list[zxingcpp.BarcodeFormat]");
+
+	m.def("read_barcode", &read_barcode_ndarray,
+		nb::arg("image"),
+		nb::arg("formats")           = BarcodeFormats{},
+		nb::arg("try_rotate")        = true,
+		nb::arg("try_downscale")     = true,
+		nb::arg("try_invert")        = true,
+		nb::arg("text_mode")         = TextMode::HRI,
+		nb::arg("binarizer")         = Binarizer::LocalAverage,
+		nb::arg("is_pure")           = false,
+		nb::arg("ean_add_on_symbol") = EanAddOnSymbol::Ignore,
+		nb::arg("return_errors")     = false);
+
+	m.def("read_barcodes", &read_barcodes_ndarray,
+		nb::arg("image"),
+		nb::arg("formats")           = BarcodeFormats{},
+		nb::arg("try_rotate")        = true,
+		nb::arg("try_downscale")     = true,
+		nb::arg("try_invert")        = true,
+		nb::arg("text_mode")         = TextMode::HRI,
+		nb::arg("binarizer")         = Binarizer::LocalAverage,
+		nb::arg("is_pure")           = false,
+		nb::arg("ean_add_on_symbol") = EanAddOnSymbol::Ignore,
+		nb::arg("return_errors")     = false);
 
 	m.def("read_barcode", &read_barcode,
 		nb::arg("image"),
