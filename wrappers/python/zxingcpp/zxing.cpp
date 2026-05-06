@@ -387,12 +387,16 @@ Barcode create_barcode(nb::object content, BarcodeFormat format, const nb::kwarg
 
 Image write_barcode_to_image(Barcode barcode, int scale, bool add_hrt, bool add_quiet_zones)
 {
-	return WriteBarcodeToImage(barcode, make_writer_options(scale, add_hrt, add_quiet_zones));
+	const auto wOpts = make_writer_options(scale, add_hrt, add_quiet_zones);
+	nb::gil_scoped_release release;
+	return WriteBarcodeToImage(barcode, wOpts);
 }
 
 std::string write_barcode_to_svg(Barcode barcode, int scale, bool add_hrt, bool add_quiet_zones)
 {
-	return WriteBarcodeToSVG(barcode, make_writer_options(scale, add_hrt, add_quiet_zones));
+	const auto wOpts = make_writer_options(scale, add_hrt, add_quiet_zones);
+	nb::gil_scoped_release release;
+	return WriteBarcodeToSVG(barcode, wOpts);
 }
 
 Image write_barcode(BarcodeFormat format, nb::object content, int width, int height, int quiet_zone, int ec_level)
@@ -557,7 +561,7 @@ NB_MODULE(_zxingcpp_core, m)
 			":rtype: str")
 		.def("__str__", [](Error e) { return ToString(e); });
 
-	nb::class_<Barcode>(m, "Barcode", "The Barcode class", nb::dynamic_attr())
+	nb::class_<Barcode>(m, "Barcode", "The Barcode class", nb::dynamic_attr(), nb::is_final())
 		.def_prop_ro("valid",  &Barcode::isValid,
 			":return: whether or not barcode is valid (i.e. a symbol was found and decoded)\n"
 			":rtype: bool")
@@ -623,7 +627,7 @@ NB_MODULE(_zxingcpp_core, m)
 
 // MARK: - Functions (writer helpers and barcode creation)
 
-	nb::class_<Image>(m, "Image", nb::type_slots(image_slots))
+	nb::class_<Image>(m, "Image", nb::type_slots(image_slots), nb::is_final())
 		.def_prop_ro("__array_interface__",
 			[](nb::object self) {
 				const Image& img = nb::cast<const Image&>(self);
@@ -638,7 +642,7 @@ NB_MODULE(_zxingcpp_core, m)
 			return nb::make_tuple(img.height(), img.width());
 		});
 
-	m.def("create_barcode", &create_barcode);
+	m.def("create_barcode", &create_barcode, nb::rv_policy::move);
 
 	m.def("write_barcode_to_image", &write_barcode_to_image,
 		nb::arg("barcode"),
@@ -652,7 +656,7 @@ NB_MODULE(_zxingcpp_core, m)
 		nb::arg("add_hrt")         = false,
 		nb::arg("add_quiet_zones") = true);
 
-	nb::class_<ImageView>(m, "ImageView", nb::type_slots(imageview_slots))
+	nb::class_<ImageView>(m, "ImageView", nb::type_slots(imageview_slots), nb::is_final())
 		.def("__init__", [](ImageView* iv, nb::object buffer, int width, int height, ImageFormat format,
 							int row_stride, int pix_stride) {
 			new (iv) ImageView(image_view(buffer, width, height, format, row_stride, pix_stride));
