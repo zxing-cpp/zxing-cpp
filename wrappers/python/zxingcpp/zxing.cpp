@@ -408,7 +408,7 @@ Image write_barcode(BarcodeFormat format, nb::object content, int width, int hei
 
 // MARK: - Python
 
-NB_MODULE(zxingcpp, m)
+NB_MODULE(_zxingcpp_core, m)
 {
 	m.doc() = "python bindings for zxing-cpp";
 

@@ -30,3 +30,7 @@ Issues = "https://github.com/zxing-cpp/zxing-cpp/issues"
 [tool.scikit-build]
 cmake.build-type = "Release"
 wheel.packages = []
+sdist.include = [
+    "wrappers/python/zxingcpp/__init__.py",
+    "wrappers/python/zxingcpp/py.typed",
+]
