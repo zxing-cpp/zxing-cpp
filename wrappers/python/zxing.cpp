@@ -218,46 +218,53 @@ auto read_barcodes_impl(nb::object _image, const BarcodeFormats& formats, bool t
 		release_buf();
 		nb::raise_from(e, PyExc_TypeError, "%s",
 					   ("Invalid input: " + _type + " does not support the buffer protocol.").c_str());
-		throw;
+		throw nb::python_error();
 	} catch (...) {
 		release_buf();
 		throw;
 	}
 
-	if (has_buf && buf_view.format && std::string_view(buf_view.format) != "B") {
-		auto fmt = std::string(buf_view.format);
-		release_buf();
-		throw nb::type_error(("Incompatible buffer format '" + fmt + "': expected a uint8_t array.").c_str());
-	}
-
-	if (ndim != 2 && ndim != 3) {
-		release_buf();
-		throw nb::type_error(("Incompatible buffer dimension " + std::to_string(ndim) + " (needs to be 2 or 3).").c_str());
-	}
-
-	const auto height    = narrow_cast<int>(shape[0]);
-	const auto width     = narrow_cast<int>(shape[1]);
-	const auto channels  = ndim == 2 ? 1 : narrow_cast<int>(shape[2]);
-	const auto rowStride = narrow_cast<int>(strides[0]);
-	const auto pixStride = narrow_cast<int>(strides[1]);
-
-	if (imgfmt == ImageFormat::None) {
-		if (channels == 1)      imgfmt = ImageFormat::Lum;
-		else if (channels == 3) imgfmt = ImageFormat::BGR;
-		else {
+	// All remaining early exits and the final ReadBarcodes call are wrapped so
+	// release_buf() always runs even if narrow_cast or ReadBarcodes throws.
+	try {
+		if (has_buf && buf_view.format && std::string_view(buf_view.format) != "B") {
+			auto fmt = std::string(buf_view.format);
 			release_buf();
-			throw nb::value_error(("Unsupported number of channels for buffer: " + std::to_string(channels)).c_str());
+			throw nb::type_error(("Incompatible buffer format '" + fmt + "': expected a uint8_t array.").c_str());
 		}
-	}
 
-	const auto* bytes = static_cast<const uint8_t*>(data_ptr);
-	Barcodes result;
-	{
-		nb::gil_scoped_release release;
-		result = ReadBarcodes({bytes, width, height, imgfmt, rowStride, pixStride}, opts);
+		if (ndim != 2 && ndim != 3) {
+			release_buf();
+			throw nb::type_error(("Incompatible buffer dimension " + std::to_string(ndim) + " (needs to be 2 or 3).").c_str());
+		}
+
+		const auto height    = narrow_cast<int>(shape[0]);
+		const auto width     = narrow_cast<int>(shape[1]);
+		const auto channels  = ndim == 2 ? 1 : narrow_cast<int>(shape[2]);
+		const auto rowStride = narrow_cast<int>(strides[0]);
+		const auto pixStride = narrow_cast<int>(strides[1]);
+
+		if (imgfmt == ImageFormat::None) {
+			if (channels == 1)      imgfmt = ImageFormat::Lum;
+			else if (channels == 3) imgfmt = ImageFormat::BGR;
+			else {
+				release_buf();
+				throw nb::value_error(("Unsupported number of channels for buffer: " + std::to_string(channels)).c_str());
+			}
+		}
+
+		const auto* bytes = static_cast<const uint8_t*>(data_ptr);
+		Barcodes result;
+		{
+			nb::gil_scoped_release release;
+			result = ReadBarcodes({bytes, width, height, imgfmt, rowStride, pixStride}, opts);
+		}
+		release_buf();
+		return result;
+	} catch (...) {
+		release_buf();
+		throw;
 	}
-	release_buf();
-	return result;
 }
 
 std::optional<Barcode> read_barcode(nb::object _image, const BarcodeFormats& formats, bool try_rotate, bool try_downscale,
@@ -592,7 +599,8 @@ NB_MODULE(zxingcpp, m)
 			 nb::arg("height"),
 			 nb::arg("format"),
 			 nb::arg("row_stride") = 0,
-			 nb::arg("pix_stride") = 0)
+			 nb::arg("pix_stride") = 0,
+			 nb::keep_alive<0, 1>()) // keep buffer alive for the lifetime of the ImageView
 		.def_prop_ro("format", [](const ImageView& iv) { return iv.format(); });
 
 	m.attr("Bitmap") = m.attr("Image");
