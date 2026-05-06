@@ -30,6 +30,8 @@ Issues = "https://github.com/zxing-cpp/zxing-cpp/issues"
 [tool.scikit-build]
 cmake.build-type = "Release"
 wheel.packages = []
+wheel.license-files = ["../../LICENSE"]
+sdist.exclude = ["LICENSE", "zxing.cmake"]
 sdist.include = [
     "zxingcpp/__init__.py",
     "zxingcpp/py.typed",
