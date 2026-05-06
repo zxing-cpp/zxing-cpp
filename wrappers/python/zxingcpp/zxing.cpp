@@ -105,11 +105,11 @@ static PyType_Slot imageview_slots[] = {
 
 // MARK: - Reader
 
-auto read_barcodes_impl(nb::object _image, const BarcodeFormats& formats, bool try_rotate, bool try_downscale, bool try_invert,
-						TextMode text_mode, Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol, bool return_errors,
-						uint8_t max_number_of_symbols = 0xff)
+static ReaderOptions make_reader_options(const BarcodeFormats& formats, bool try_rotate, bool try_downscale, bool try_invert,
+										 TextMode text_mode, Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol,
+										 bool return_errors, uint8_t max_number_of_symbols = 0xff)
 {
-	const auto opts = ReaderOptions()
+	return ReaderOptions()
 		.formats(formats)
 		.tryRotate(try_rotate)
 		.tryDownscale(try_downscale)
@@ -120,6 +120,14 @@ auto read_barcodes_impl(nb::object _image, const BarcodeFormats& formats, bool t
 		.maxNumberOfSymbols(max_number_of_symbols)
 		.eanAddOnSymbol(ean_add_on_symbol)
 		.returnErrors(return_errors);
+}
+
+auto read_barcodes_impl(nb::object _image, const BarcodeFormats& formats, bool try_rotate, bool try_downscale, bool try_invert,
+						TextMode text_mode, Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol, bool return_errors,
+						uint8_t max_number_of_symbols = 0xff)
+{
+	const auto opts = make_reader_options(formats, try_rotate, try_downscale, try_invert, text_mode, binarizer, is_pure,
+										  ean_add_on_symbol, return_errors, max_number_of_symbols);
 
 	if (nb::isinstance<ImageView>(_image)) {
 		nb::gil_scoped_release release;
@@ -321,10 +329,8 @@ static std::optional<Barcode> read_barcode_ndarray(
 	bool try_rotate, bool try_downscale, bool try_invert, TextMode text_mode,
 	Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol, bool return_errors)
 {
-	const auto opts = ReaderOptions()
-		.formats(formats).tryRotate(try_rotate).tryDownscale(try_downscale).tryInvert(try_invert)
-		.textMode(text_mode).binarizer(binarizer).isPure(is_pure).maxNumberOfSymbols(1)
-		.eanAddOnSymbol(ean_add_on_symbol).returnErrors(return_errors);
+	const auto opts = make_reader_options(formats, try_rotate, try_downscale, try_invert, text_mode, binarizer, is_pure,
+										  ean_add_on_symbol, return_errors, 1);
 	auto res = read_barcodes_from_ndarray(arr, opts);
 	return res.empty() ? std::nullopt : std::optional(res.front());
 }
@@ -334,10 +340,8 @@ static Barcodes read_barcodes_ndarray(
 	bool try_rotate, bool try_downscale, bool try_invert, TextMode text_mode,
 	Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol, bool return_errors)
 {
-	const auto opts = ReaderOptions()
-		.formats(formats).tryRotate(try_rotate).tryDownscale(try_downscale).tryInvert(try_invert)
-		.textMode(text_mode).binarizer(binarizer).isPure(is_pure)
-		.eanAddOnSymbol(ean_add_on_symbol).returnErrors(return_errors);
+	const auto opts = make_reader_options(formats, try_rotate, try_downscale, try_invert, text_mode, binarizer, is_pure,
+										  ean_add_on_symbol, return_errors);
 	return read_barcodes_from_ndarray(arr, opts);
 }
 
@@ -359,27 +363,36 @@ ImageView image_view(nb::object buffer, int width, int height, ImageFormat forma
 	return result;
 }
 
+static Barcode barcode_from_content(nb::object content, const CreatorOptions& cOpts)
+{
+	if (nb::isinstance<nb::str>(content))
+		return CreateBarcodeFromText(nb::cast<std::string>(content), cOpts);
+	if (nb::isinstance<nb::bytes>(content)) {
+		auto b = nb::cast<nb::bytes>(content);
+		return CreateBarcodeFromBytes(std::string(b.c_str(), b.size()), cOpts);
+	}
+	throw nb::type_error("Invalid input: only 'str' and 'bytes' supported.");
+}
+
+static WriterOptions make_writer_options(int scale, bool add_hrt, bool add_quiet_zones)
+{
+	return WriterOptions().scale(scale).addHRT(add_hrt).addQuietZones(add_quiet_zones);
+}
+
 Barcode create_barcode(nb::object content, BarcodeFormat format, const nb::kwargs& kwargs)
 {
 	auto cOpts = CreatorOptions(format, std::string(nb::str(nb::cast<nb::object>(kwargs)).c_str()));
-
-	if (nb::isinstance<nb::str>(content))
-		return CreateBarcodeFromText(nb::cast<std::string>(content), cOpts);
-	else if (nb::isinstance<nb::bytes>(content)) {
-		auto b = nb::cast<nb::bytes>(content);
-		return CreateBarcodeFromBytes(std::string(b.c_str(), b.size()), cOpts);
-	} else
-		throw nb::type_error("Invalid input: only 'str' and 'bytes' supported.");
+	return barcode_from_content(content, cOpts);
 }
 
 Image write_barcode_to_image(Barcode barcode, int scale, bool add_hrt, bool add_quiet_zones)
 {
-	return WriteBarcodeToImage(barcode, WriterOptions().scale(scale).addHRT(add_hrt).addQuietZones(add_quiet_zones));
+	return WriteBarcodeToImage(barcode, make_writer_options(scale, add_hrt, add_quiet_zones));
 }
 
 std::string write_barcode_to_svg(Barcode barcode, int scale, bool add_hrt, bool add_quiet_zones)
 {
-	return WriteBarcodeToSVG(barcode, WriterOptions().scale(scale).addHRT(add_hrt).addQuietZones(add_quiet_zones));
+	return WriteBarcodeToSVG(barcode, make_writer_options(scale, add_hrt, add_quiet_zones));
 }
 
 Image write_barcode(BarcodeFormat format, nb::object content, int width, int height, int quiet_zone, int ec_level)
@@ -393,15 +406,7 @@ Image write_barcode(BarcodeFormat format, nb::object content, int width, int hei
 	nb::dict kw_dict;
 	kw_dict["ec_level"] = ec_level;
 	auto cOpts = CreatorOptions(format, std::string(nb::str(nb::cast<nb::object>(kw_dict)).c_str()));
-
-	Barcode barcode;
-	if (nb::isinstance<nb::str>(content))
-		barcode = CreateBarcodeFromText(nb::cast<std::string>(content), cOpts);
-	else if (nb::isinstance<nb::bytes>(content)) {
-		auto b = nb::cast<nb::bytes>(content);
-		barcode = CreateBarcodeFromBytes(std::string(b.c_str(), b.size()), cOpts);
-	} else
-		throw nb::type_error("Invalid input: only 'str' and 'bytes' supported.");
+	auto barcode = barcode_from_content(content, cOpts);
 
 	return write_barcode_to_image(barcode, -std::max(width, height), false, quiet_zone != 0);
 }

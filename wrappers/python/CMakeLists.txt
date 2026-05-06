@@ -19,24 +19,21 @@ if (NOT hasParent)
         set(CORE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../core)
     endif()
 
-    if(EXISTS ${CORE_PATH})
-        add_subdirectory(${CORE_PATH} ZXing EXCLUDE_FROM_ALL)
-        if (NOT SKBUILD)
-            # zxing.cmake provides zxing_add_package; not needed when scikit-build-core
-            # installs nanobind into the build environment via build-system.requires.
-            include(${CMAKE_CURRENT_SOURCE_DIR}/zxing.cmake)
-        endif()
-    else()
+    if(NOT EXISTS ${CORE_PATH})
         message(FATAL_ERROR "Unable to locate zxing source code")
     endif()
-    find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
-    if (SKBUILD)
-        find_package(nanobind CONFIG REQUIRED)
-    else()
-        zxing_add_package(nanobind nanobind https://github.com/wjakob/nanobind.git v2.12.0)
+    add_subdirectory(${CORE_PATH} ZXing EXCLUDE_FROM_ALL)
+    if (NOT SKBUILD)
+        # zxing.cmake provides zxing_add_package; not needed when scikit-build-core
+        # installs nanobind into the build environment via build-system.requires.
+        include(${CMAKE_CURRENT_SOURCE_DIR}/zxing.cmake)
     endif()
+endif()
+
+find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
+if (SKBUILD)
+    find_package(nanobind CONFIG REQUIRED)
 else()
-    find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
     zxing_add_package(nanobind nanobind https://github.com/wjakob/nanobind.git v2.12.0)
 endif()
 
