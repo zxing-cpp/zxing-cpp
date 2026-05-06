@@ -145,8 +145,6 @@ class BarcodeFormat(enum.IntEnum):
     @property
     def symbology(self) -> BarcodeFormat: ...
 
-None: ErrorType = ErrorType.None
-
 All: BarcodeFormat = BarcodeFormat.All
 
 AllReadable: BarcodeFormat = BarcodeFormat.AllReadable

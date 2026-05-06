@@ -31,7 +31,7 @@ Issues = "https://github.com/zxing-cpp/zxing-cpp/issues"
 cmake.build-type = "Release"
 wheel.packages = []
 sdist.include = [
-    "wrappers/python/zxingcpp/__init__.py",
-    "wrappers/python/zxingcpp/py.typed",
-    "wrappers/python/zxingcpp/_zxingcpp_core.pyi",
+    "zxingcpp/__init__.py",
+    "zxingcpp/py.typed",
+    "zxingcpp/_zxingcpp_core.pyi",
 ]
