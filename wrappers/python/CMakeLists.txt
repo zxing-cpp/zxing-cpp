@@ -41,7 +41,18 @@ endif()
 nanobind_add_module(_zxingcpp_core zxingcpp/zxing.cpp)
 target_link_libraries(_zxingcpp_core PRIVATE ZXing::ZXing)
 set_target_properties(_zxingcpp_core PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/zxingcpp")
+    LIBRARY_OUTPUT_DIRECTORY "$<1:${CMAKE_CURRENT_BINARY_DIR}/zxingcpp>"
+    RUNTIME_OUTPUT_DIRECTORY "$<1:${CMAKE_CURRENT_BINARY_DIR}/zxingcpp>")
+
+# On Windows with a shared ZXing library, copy ZXing.dll alongside the .pyd
+# so Windows can find it when Python loads the extension (Python 3.8+ uses
+# LOAD_WITH_ALTERED_SEARCH_PATH, which searches the .pyd's own directory).
+if (WIN32 AND BUILD_SHARED_LIBS)
+    add_custom_command(TARGET _zxingcpp_core POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_FILE:ZXing>
+            "$<1:${CMAKE_CURRENT_BINARY_DIR}/zxingcpp>")
+endif()
 
 # Copy __init__.py and py.typed alongside the compiled extension so that
 # `import zxingcpp` works directly from the build tree.
