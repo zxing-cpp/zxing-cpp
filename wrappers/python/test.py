@@ -27,6 +27,27 @@ class TestFormat(unittest.TestCase):
 		self.assertIn(BF.QRCode, zxingcpp.BarcodeFormats(BF.EAN13 | BF.QRCode))
 		self.assertIn(BF.QRCode, zxingcpp.barcode_formats_list(BF.AllMatrix))
 
+class TestModuleScopeAliases(unittest.TestCase):
+    """export_values() must make enum values accessible at module scope."""
+
+    def test_barcode_format_aliases(self):
+        self.assertIs(zxingcpp.QRCode, zxingcpp.BarcodeFormat.QRCode)
+        self.assertIs(zxingcpp.Code128, zxingcpp.BarcodeFormat.Code128)
+        self.assertIs(zxingcpp.DataMatrix, zxingcpp.BarcodeFormat.DataMatrix)
+
+    def test_binarizer_aliases(self):
+        self.assertIs(zxingcpp.LocalAverage, zxingcpp.Binarizer.LocalAverage)
+
+    def test_content_type_aliases(self):
+        self.assertIs(zxingcpp.Text, zxingcpp.ContentType.Text)
+
+    def test_text_mode_aliases(self):
+        self.assertIs(zxingcpp.HRI, zxingcpp.TextMode.HRI)
+
+    def test_image_format_aliases(self):
+        self.assertIs(zxingcpp.Lum, zxingcpp.ImageFormat.Lum)
+        self.assertIs(zxingcpp.RGB, zxingcpp.ImageFormat.RGB)
+
 class TestReadWrite(unittest.TestCase):
 
 	def check_res(self, res, format, text):
