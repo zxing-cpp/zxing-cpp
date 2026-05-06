@@ -699,6 +699,7 @@ NB_MODULE(_zxingcpp_core, m)
 		":rtype: list[zxingcpp.BarcodeFormat]");
 
 	m.def("read_barcode", &read_barcode_ndarray,
+		nb::rv_policy::move,
 		nb::arg("image"),
 		nb::arg("formats")           = BarcodeFormats{},
 		nb::arg("try_rotate")        = true,
@@ -711,6 +712,7 @@ NB_MODULE(_zxingcpp_core, m)
 		nb::arg("return_errors")     = false);
 
 	m.def("read_barcodes", &read_barcodes_ndarray,
+		nb::rv_policy::move,
 		nb::arg("image"),
 		nb::arg("formats")           = BarcodeFormats{},
 		nb::arg("try_rotate")        = true,
@@ -723,6 +725,7 @@ NB_MODULE(_zxingcpp_core, m)
 		nb::arg("return_errors")     = false);
 
 	m.def("read_barcode", &read_barcode,
+		nb::rv_policy::move,
 		nb::arg("image"),
 		nb::arg("formats")           = BarcodeFormats{},
 		nb::arg("try_rotate")        = true,
@@ -771,6 +774,7 @@ NB_MODULE(_zxingcpp_core, m)
 	);
 
 	m.def("read_barcodes", &read_barcodes,
+		nb::rv_policy::move,
 		nb::arg("image"),
 		nb::arg("formats")           = BarcodeFormats{},
 		nb::arg("try_rotate")        = true,
