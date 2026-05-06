@@ -699,6 +699,19 @@ NB_MODULE(_zxingcpp_core, m)
 		":rtype: list[zxingcpp.BarcodeFormat]");
 
 	m.def("read_barcode", &read_barcode_ndarray,
+		nb::sig(
+			"def read_barcode("
+				"image: NDArray[numpy.uint8] | PIL.Image.Image | ImageView, "
+				"formats: BarcodeFormats = BarcodeFormats(), "
+				"try_rotate: bool = True, "
+				"try_downscale: bool = True, "
+				"try_invert: bool = True, "
+				"text_mode: TextMode = TextMode.HRI, "
+				"binarizer: Binarizer = Binarizer.LocalAverage, "
+				"is_pure: bool = False, "
+				"ean_add_on_symbol: EanAddOnSymbol = EanAddOnSymbol.Ignore, "
+				"return_errors: bool = False"
+			") -> Barcode | None"),
 		nb::rv_policy::move,
 		nb::arg("image"),
 		nb::arg("formats")           = BarcodeFormats{},
@@ -712,6 +725,19 @@ NB_MODULE(_zxingcpp_core, m)
 		nb::arg("return_errors")     = false);
 
 	m.def("read_barcodes", &read_barcodes_ndarray,
+		nb::sig(
+			"def read_barcodes("
+				"image: NDArray[numpy.uint8] | PIL.Image.Image | ImageView, "
+				"formats: BarcodeFormats = BarcodeFormats(), "
+				"try_rotate: bool = True, "
+				"try_downscale: bool = True, "
+				"try_invert: bool = True, "
+				"text_mode: TextMode = TextMode.HRI, "
+				"binarizer: Binarizer = Binarizer.LocalAverage, "
+				"is_pure: bool = False, "
+				"ean_add_on_symbol: EanAddOnSymbol = EanAddOnSymbol.Ignore, "
+				"return_errors: bool = False"
+			") -> list[Barcode]"),
 		nb::rv_policy::move,
 		nb::arg("image"),
 		nb::arg("formats")           = BarcodeFormats{},
@@ -725,6 +751,19 @@ NB_MODULE(_zxingcpp_core, m)
 		nb::arg("return_errors")     = false);
 
 	m.def("read_barcode", &read_barcode,
+		nb::sig(
+			"def read_barcode("
+				"image: NDArray[numpy.uint8] | PIL.Image.Image | ImageView, "
+				"formats: BarcodeFormats = BarcodeFormats(), "
+				"try_rotate: bool = True, "
+				"try_downscale: bool = True, "
+				"try_invert: bool = True, "
+				"text_mode: TextMode = TextMode.HRI, "
+				"binarizer: Binarizer = Binarizer.LocalAverage, "
+				"is_pure: bool = False, "
+				"ean_add_on_symbol: EanAddOnSymbol = EanAddOnSymbol.Ignore, "
+				"return_errors: bool = False"
+			") -> Barcode | None"),
 		nb::rv_policy::move,
 		nb::arg("image"),
 		nb::arg("formats")           = BarcodeFormats{},
@@ -774,6 +813,19 @@ NB_MODULE(_zxingcpp_core, m)
 	);
 
 	m.def("read_barcodes", &read_barcodes,
+		nb::sig(
+			"def read_barcodes("
+				"image: NDArray[numpy.uint8] | PIL.Image.Image | ImageView, "
+				"formats: BarcodeFormats = BarcodeFormats(), "
+				"try_rotate: bool = True, "
+				"try_downscale: bool = True, "
+				"try_invert: bool = True, "
+				"text_mode: TextMode = TextMode.HRI, "
+				"binarizer: Binarizer = Binarizer.LocalAverage, "
+				"is_pure: bool = False, "
+				"ean_add_on_symbol: EanAddOnSymbol = EanAddOnSymbol.Ignore, "
+				"return_errors: bool = False"
+			") -> list[Barcode]"),
 		nb::rv_policy::move,
 		nb::arg("image"),
 		nb::arg("formats")           = BarcodeFormats{},

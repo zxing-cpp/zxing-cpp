@@ -4,9 +4,6 @@ from collections.abc import Iterable, Iterator
 import enum
 from typing import TypeAlias, overload
 
-import numpy
-from numpy.typing import NDArray
-
 
 class BarcodeFormats:
     @overload
@@ -144,6 +141,8 @@ class BarcodeFormat(enum.IntEnum):
 
     @property
     def symbology(self) -> BarcodeFormat: ...
+
+None: ErrorType = ErrorType.None
 
 All: BarcodeFormat = BarcodeFormat.All
 
@@ -629,11 +628,7 @@ def barcode_formats_list(filter: BarcodeFormats = ...) -> BarcodeFormats:
     :rtype: list[zxingcpp.BarcodeFormat]
     """
 
-@overload
-def read_barcode(image: NDArray[numpy.uint8], formats: BarcodeFormats = ..., try_rotate: bool = True, try_downscale: bool = True, try_invert: bool = True, text_mode: TextMode = TextMode.HRI, binarizer: Binarizer = Binarizer.LocalAverage, is_pure: bool = False, ean_add_on_symbol: EanAddOnSymbol = EanAddOnSymbol.Ignore, return_errors: bool = False) -> Barcode | None: ...
-
-@overload
-def read_barcode(image: object, formats: BarcodeFormats = ..., try_rotate: bool = True, try_downscale: bool = True, try_invert: bool = True, text_mode: TextMode = TextMode.HRI, binarizer: Binarizer = Binarizer.LocalAverage, is_pure: bool = False, ean_add_on_symbol: EanAddOnSymbol = EanAddOnSymbol.Ignore, return_errors: bool = False) -> Barcode | None:
+def read_barcode(image: NDArray[numpy.uint8] | PIL.Image.Image | ImageView, formats: BarcodeFormats = BarcodeFormats(), try_rotate: bool = True, try_downscale: bool = True, try_invert: bool = True, text_mode: TextMode = TextMode.HRI, binarizer: Binarizer = Binarizer.LocalAverage, is_pure: bool = False, ean_add_on_symbol: EanAddOnSymbol = EanAddOnSymbol.Ignore, return_errors: bool = False) -> Barcode | None:
     """
     Read (decode) a barcode from a numpy BGR or grayscale image array or from a PIL image.
 
@@ -669,11 +664,7 @@ def read_barcode(image: object, formats: BarcodeFormats = ..., try_rotate: bool 
     :return: a Barcode if found, None otherwise
     """
 
-@overload
-def read_barcodes(image: NDArray[numpy.uint8], formats: BarcodeFormats = ..., try_rotate: bool = True, try_downscale: bool = True, try_invert: bool = True, text_mode: TextMode = TextMode.HRI, binarizer: Binarizer = Binarizer.LocalAverage, is_pure: bool = False, ean_add_on_symbol: EanAddOnSymbol = EanAddOnSymbol.Ignore, return_errors: bool = False) -> list[Barcode]: ...
-
-@overload
-def read_barcodes(image: object, formats: BarcodeFormats = ..., try_rotate: bool = True, try_downscale: bool = True, try_invert: bool = True, text_mode: TextMode = TextMode.HRI, binarizer: Binarizer = Binarizer.LocalAverage, is_pure: bool = False, ean_add_on_symbol: EanAddOnSymbol = EanAddOnSymbol.Ignore, return_errors: bool = False) -> list[Barcode]:
+def read_barcodes(image: NDArray[numpy.uint8] | PIL.Image.Image | ImageView, formats: BarcodeFormats = BarcodeFormats(), try_rotate: bool = True, try_downscale: bool = True, try_invert: bool = True, text_mode: TextMode = TextMode.HRI, binarizer: Binarizer = Binarizer.LocalAverage, is_pure: bool = False, ean_add_on_symbol: EanAddOnSymbol = EanAddOnSymbol.Ignore, return_errors: bool = False) -> list[Barcode]:
     """
     Read (decode) multiple barcodes from a numpy BGR or grayscale image array or from a PIL image.
 

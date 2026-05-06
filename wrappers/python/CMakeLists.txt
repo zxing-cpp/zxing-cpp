@@ -89,6 +89,7 @@ if (NOT hasParent OR SKBUILD)
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/zxingcpp/_zxingcpp_core.pyi
         PYTHON_PATH $<TARGET_FILE_DIR:_zxingcpp_core>
         DEPENDS _zxingcpp_core
+        PATTERN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/zxingcpp/stubs.pats
         COMPONENT python
         VERBOSE)
 endif()

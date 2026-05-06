@@ -1,0 +1,13 @@
+# Collapse the two identical @overload entries (ndarray fast-path and
+# buffer/PIL path) into a single non-overloaded signature.  Both overloads
+# carry the same nb::sig() annotation after the changes in zxing.cpp, so the
+# replacement below drops the redundant second entry while keeping the
+# docstring from the second overload (which holds the full :param: docs).
+
+read_barcode$:
+    def read_barcode(image: NDArray[numpy.uint8] | PIL.Image.Image | ImageView, formats: BarcodeFormats = BarcodeFormats(), try_rotate: bool = True, try_downscale: bool = True, try_invert: bool = True, text_mode: TextMode = TextMode.HRI, binarizer: Binarizer = Binarizer.LocalAverage, is_pure: bool = False, ean_add_on_symbol: EanAddOnSymbol = EanAddOnSymbol.Ignore, return_errors: bool = False) -> Barcode | None:
+        \doc
+
+read_barcodes$:
+    def read_barcodes(image: NDArray[numpy.uint8] | PIL.Image.Image | ImageView, formats: BarcodeFormats = BarcodeFormats(), try_rotate: bool = True, try_downscale: bool = True, try_invert: bool = True, text_mode: TextMode = TextMode.HRI, binarizer: Binarizer = Binarizer.LocalAverage, is_pure: bool = False, ean_add_on_symbol: EanAddOnSymbol = EanAddOnSymbol.Ignore, return_errors: bool = False) -> list[Barcode]:
+        \doc
