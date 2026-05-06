@@ -33,4 +33,5 @@ wheel.packages = []
 sdist.include = [
     "wrappers/python/zxingcpp/__init__.py",
     "wrappers/python/zxingcpp/py.typed",
+    "wrappers/python/zxingcpp/_zxingcpp_core.pyi",
 ]
