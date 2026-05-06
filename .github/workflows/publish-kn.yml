@@ -71,13 +71,13 @@ jobs:
           path: wrappers/kn/build/reports/tests/allTests
 
       - name: Upload Built LinuxArm64 shared library
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: linuxArm64-shared
           path: wrappers/kn/build/cmake/libZXing/linuxArm64
 
       - name: Upload Built LinuxX64 shared library
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: linuxX64-shared
           path: wrappers/kn/build/cmake/libZXing/linuxX64

@@ -19,7 +19,7 @@
 static void PrintUsage(const char* exePath)
 {
 	std::print("ZXingBarcodeFormat - A command line tool to generate wrapper source code for the BarcodeFormat enum\n\n");
-	std::println("Usage: {} <C#|Go|K/N|Rust|Swift>", exePath);
+	std::println("Usage: {} <Android|C#|Go|K/N|Rust|Swift>", exePath);
 }
 
 static void PrintBFs(
@@ -63,6 +63,28 @@ int main(int argc, char* argv[])
 			return ret == "eanupc" ? "eanUPC" : ret == "upca" ? "upcA" : ret == "upce" ? "upcE" : ret;
 		};
 		PrintBFs("	public static let {:15} = BarcodeFormat(rawValue: 0x{:04X})", swiftName);
+	} else if (is("Android")) {
+		auto androidName = [](const char* name) {
+			std::string sv(name);
+			std::string ret = std::string(1, (char)std::toupper(sv[0]));
+
+			for (size_t i = 1; i < sv.size(); ++i) {
+				const int c = sv[i];
+				const int prev = sv[i - 1];
+				const int next = i + 1 < sv.size() ? sv[i + 1] : 0;
+				if ((std::isdigit(c) != std::isdigit(prev)) || (std::isupper(c) && std::islower(prev))
+					|| (std::isupper(c) && std::isupper(prev) && next != 0 && std::islower(next)))
+					ret.push_back('_');
+				ret.push_back(static_cast<char>(std::toupper(c)));
+			}
+
+			return ret == "EANUPC"     ? "EAN_UPC"
+				   : ret == "UPCA"     ? "UPC_A"
+				   : ret == "UPCE"     ? "UPC_E"
+				   : ret == "ALL_GS_1" ? "ALL_GS1"
+									   : ret;
+		};
+		PrintBFs("\t{:20}(0x{:04X}),", androidName);
 	} else {
 		PrintUsage(argv[0]);
 		return -1;

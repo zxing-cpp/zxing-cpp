@@ -97,7 +97,7 @@ jobs:
 #    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     if: github.event_name == 'release' || github.event.inputs.publish == 'y'
     steps:
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           pattern: cibw-*
           path: dist

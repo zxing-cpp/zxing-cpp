@@ -363,7 +363,7 @@ static RegressionLine TraceLine(const BitMatrix& image, PointF p, PointF d, int 
 	auto curI = BitMatrixCursorI(image, PointI(cur.p), PointI(mainDirection(cur.d)));
 	// make sure curI positioned such that the white->black edge is directly behind
 	// Test image: fix-traceline.jpg
-	while (!curI.edgeAtBack()) {
+	while (curI.isIn() && !curI.edgeAtBack()) {
 		if (curI.edgeAtLeft())
 			curI.turnRight();
 		else if (curI.edgeAtRight())
@@ -413,7 +413,11 @@ static std::optional<PointF> LocateAlignmentPattern(const BitMatrix& image, int 
 #else
 				   {0, -2}, {0, 2}, {-2, 0}, {2, 0}, {-1, -2}, {1, -2}, {-1, 2}, {1, 2}, {-2, -1}, {-2, 1}, {2, -1}, {2, 1}}) {
 #endif
-		auto cor = CenterOfRing(image, PointI(estimate + moduleSize * 2.25 * d), moduleSize * 3, 1, false);
+		auto p = estimate + moduleSize * 2.25 * d;
+		if (!image.isIn(p))
+			continue;
+
+		auto cor = CenterOfRing(image, PointI(p), moduleSize * 3, 1, false);
 
 		// if we did not land on a black pixel the concentric pattern finder will fail
 		if (!cor || !image.get(*cor))

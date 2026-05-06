@@ -29,7 +29,7 @@ jobs:
           submodules: true
 
       - name: Setup emsdk
-        uses: mymindstorm/setup-emsdk@v14
+        uses: emscripten-core/setup-emsdk@v15
         # with:
         #   # Make sure to set a version number!
         #   version: 1.38.40
@@ -51,7 +51,7 @@ jobs:
           mv build/zxing_* build/*.html public/demo/
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           path: 'public'
           name: 'artifact-wasm'
@@ -85,7 +85,7 @@ jobs:
             cp -r build/docs/html/* public/docs/latest/
           fi
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           path: public
           name: 'artifact-docs'
@@ -104,13 +104,13 @@ jobs:
 
     steps:
       - name: Download WASM artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: artifact-wasm
           path: wasm
 
       - name: Download Docs artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: artifact-docs
           path: docs
@@ -128,4 +128,4 @@ jobs:
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
