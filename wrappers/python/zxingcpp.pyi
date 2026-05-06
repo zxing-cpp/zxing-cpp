@@ -1,6 +1,6 @@
 import enum
 from collections.abc import Buffer
-from typing import Any, Iterable, Iterator, TypeAlias, overload
+from typing import Any, Iterator, Sequence, TypeAlias, overload
 from warnings import deprecated
 
 # MARK: - Enums
@@ -65,9 +65,8 @@ class BarcodeFormat(enum.Enum):
     LinearCodes: BarcodeFormat
     MatrixCodes: BarcodeFormat
 
-    def __init__(self) -> None:
-        self.symbology: BarcodeFormat
-
+    @property
+    def symbology(self) -> BarcodeFormat: ...
     @deprecated("operator | is deprecated, pass array or tuple instead.")
     def __or__(self, other: BarcodeFormat) -> BarcodeFormats: ...
     def __str__(self) -> str: ...
@@ -85,7 +84,7 @@ class BarcodeFormats:
     @overload
     def __init__(self, values: BarcodeFormatsLike) -> None: ...
 
-BarcodeFormatsLike: TypeAlias = BarcodeFormats | BarcodeFormat | Iterable[BarcodeFormat]
+BarcodeFormatsLike: TypeAlias = BarcodeFormats | BarcodeFormat | Sequence[BarcodeFormat]
 
 class Binarizer(enum.Enum):
     """
@@ -159,7 +158,7 @@ class ImageFormat(enum.Enum):
 
 # MARK: - Classes
 
-class PointI:
+class Point:
     """
     Represents the coordinates of a point in an image
     """
@@ -178,19 +177,19 @@ class Position:
     """
 
     @property
-    def top_left(self) -> PointI:
+    def top_left(self) -> Point:
         """coordinate of the symbol's top-left corner"""
 
     @property
-    def top_right(self) -> PointI:
+    def top_right(self) -> Point:
         """coordinate of the symbol's top-right corner"""
 
     @property
-    def bottom_left(self) -> PointI:
+    def bottom_left(self) -> Point:
         """coordinate of the symbol's bottom-left corner"""
 
     @property
-    def bottom_right(self) -> PointI:
+    def bottom_right(self) -> Point:
         """coordinate of the symbol's bottom-right corner"""
 
 class ErrorType(enum.Enum):
@@ -269,7 +268,7 @@ class Barcode:
         """Error code or None"""
 
     @property
-    def extra(self) -> dict[Any, Any]:
+    def extra(self) -> dict[str, Any]:
         """Symbology specific extra information as a Python dictionary (might be empty)"""
 
     def to_image(
@@ -277,9 +276,9 @@ class Barcode:
     ) -> Image: ...
     def to_svg(
         self, scale: int = 1, add_hrt: bool = False, add_quiet_zones: bool = True
-    ) -> Image: ...
+    ) -> str: ...
 
-@deprecated("Use Barcode instead.")
+@deprecated("Use Barcode class instead.")
 class Result(Barcode): ...
 
 # MARK: - Functions
@@ -413,9 +412,10 @@ def read_barcodes(
 
 class Image:
     @property
-    def __array_interface__(self) -> dict[str, int]: ...  # F IXME typeddict
+    def __array_interface__(self) -> dict[str, Any]: ...
     @property
     def shape(self) -> tuple[int, int]: ...
+    def __buffer__(self, flags: int, /) -> memoryview: ...
 
 def create_barcode(
     content: str | bytes, format: BarcodeFormat, **kwargs: Any
@@ -425,7 +425,7 @@ def write_barcode_to_image(
 ) -> Image: ...
 def write_barcode_to_svg(
     barcode: Barcode, scale: int = 1, add_hrt: bool = False, add_quiet_zone: bool = True
-) -> Image: ...
+) -> str: ...
 
 class ImageView:
     def __init__(
@@ -439,8 +439,9 @@ class ImageView:
     ) -> None: ...
     @property
     def format(self) -> BarcodeFormat: ...
+    def __buffer__(self, flags: int, /) -> memoryview: ...
 
-@deprecated("Use Image instead.")
+@deprecated("Use Image class instead.")
 class Bitmap(Image): ...
 
 @deprecated(
