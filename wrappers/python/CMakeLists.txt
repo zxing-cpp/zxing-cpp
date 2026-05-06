@@ -78,16 +78,22 @@ install(FILES
     COMPONENT python
     DESTINATION "zxingcpp")
 
-nanobind_add_stub(
-    _zxingcpp_core_stub
-    MODULE _zxingcpp_core
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/zxingcpp/_zxingcpp_core.pyi
-    PYTHON_PATH $<TARGET_FILE_DIR:_zxingcpp_core>
-    DEPENDS _zxingcpp_core
-    COMPONENT python
-    VERBOSE)
+# Skip stub generation in top-level builds: the parent may link ZXing as a shared
+# library, and the stub generator cannot import the module if ZXing.dll is not on
+# PATH. Standalone and scikit-build-core builds default to static linking and are
+# unaffected. The checked-in stub is always installed regardless.
+if (NOT hasParent OR SKBUILD)
+    nanobind_add_stub(
+        _zxingcpp_core_stub
+        MODULE _zxingcpp_core
+        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/zxingcpp/_zxingcpp_core.pyi
+        PYTHON_PATH $<TARGET_FILE_DIR:_zxingcpp_core>
+        DEPENDS _zxingcpp_core
+        COMPONENT python
+        VERBOSE)
+endif()
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/zxingcpp/_zxingcpp_core.pyi
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/zxingcpp/_zxingcpp_core.pyi
     COMPONENT python
     DESTINATION "zxingcpp")
 
