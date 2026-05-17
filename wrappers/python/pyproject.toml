@@ -51,7 +51,10 @@ sdist.exclude = ["zint/backend/tests", "zint/backend/tools"]
 #wheel.py-api = "cp312"
 
 [tool.cibuildwheel]
-build = ["cp310-*", "cp311-*", "cp312-*"]
+# note: stable ABI and free-threaded builds are mutually exclusive,
+# see https://nanobind.readthedocs.io/en/latest/free_threaded.html
+build = ["cp310-*", "cp311-*", "cp312-*", "cp313t-*", "cp314t-*"]
+enable = ["cpython-freethreading"]
 skip = ["*musllinux*", "*-win32"]
 # TODO: setup a "BEFORE" cmake build and link the python module to the prebuild libZXing.a
 # see https://github.com/YannickJadoul/Parselmouth/blob/523c117aa780184345121f6ff8315670bc7d4d94/.github/workflows/wheels.yml#L120
