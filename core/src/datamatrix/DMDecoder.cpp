@@ -354,6 +354,8 @@ DecoderResult Decode(ByteArray&& bytes, const bool isDMRE)
 		}
 	} catch (Error e) {
 		setError(std::move(e));
+	} catch (std::out_of_range&) { // see BitSource::readBits
+		error = FormatError("Truncated bit stream");
 	}
 
 	result.append(resultTrailer);

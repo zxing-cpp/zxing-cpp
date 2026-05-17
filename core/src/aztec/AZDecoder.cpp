@@ -310,8 +310,8 @@ DecoderResult Decode(const BitArray& bits)
 
 	try {
 		DecodeContent(bits, res, haveFNC1);
-	} catch (const std::exception&) { // see BitArrayView::readBits
-		return FormatError();
+	} catch (std::out_of_range&) { // see BitArrayView::readBits
+		return FormatError("Truncated bit stream");
 	}
 
 	if (res.bytes.empty())
