@@ -43,6 +43,7 @@ class Raw2TxtDecoder
 	int codeSet = 0;
 	SymbologyIdentifier _symbologyIdentifier = {'C', '0'}; // ISO/IEC 15417:2007 Annex C Table C.1
 	bool _readerInit = false;
+	bool _havePositionFNC1 = false;
 	std::string txt;
 	size_t lastTxtSize = 0;
 
@@ -52,7 +53,7 @@ class Raw2TxtDecoder
 
 	void fnc1(const bool isCodeSetC)
 	{
-		if (txt.empty()) {
+		if (!_havePositionFNC1 && txt.empty()) {
 			// ISO/IEC 15417:2007 Annex B.1 and GS1 General Specifications 21.0.1 Section 5.4.3.7
 			// If the first char after the start code is FNC1 then this is GS1-128.
 			_symbologyIdentifier.modifier = '1';
@@ -60,14 +61,17 @@ class Raw2TxtDecoder
 			// "Transmitted data ... is prefixed by the symbology identifier ]C1, if used."
 			// Choosing not to use symbology identifier, i.e. to not prefix to data.
 			_symbologyIdentifier.aiFlag = AIFlag::GS1;
+			_havePositionFNC1 = true;
 		}
-		else if ((isCodeSetC && txt.size() == 2 && txt[0] >= '0' && txt[0] <= '9' && txt[1] >= '0' && txt[1] <= '9')
-				|| (!isCodeSetC && txt.size() == 1 && ((txt[0] >= 'A' && txt[0] <= 'Z')
-														|| (txt[0] >= 'a' && txt[0] <= 'z')))) {
+		else if (!_havePositionFNC1
+					&& ((isCodeSetC && txt.size() == 2 && txt[0] >= '0' && txt[0] <= '9' && txt[1] >= '0' && txt[1] <= '9')
+						|| (!isCodeSetC && txt.size() == 1 && ((txt[0] >= 'A' && txt[0] <= 'Z')
+																|| (txt[0] >= 'a' && txt[0] <= 'z'))))) {
 			// ISO/IEC 15417:2007 Annex B.2
 			// FNC1 in second position following Code Set C "00-99" or Code Set A/B "A-Za-z" - AIM
 			_symbologyIdentifier.modifier = '2';
 			_symbologyIdentifier.aiFlag = AIFlag::AIM;
+			_havePositionFNC1 = true;
 		}
 		else {
 			// ISO/IEC 15417:2007 Annex B.3. Otherwise FNC1 is returned as ASCII 29 (GS)
