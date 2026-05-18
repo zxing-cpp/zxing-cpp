@@ -188,7 +188,7 @@ std::string Content::text(TextMode mode) const
 		case ContentType::GS1: {
 			auto plain = render(false);
 			auto hri = HRIFromGS1(plain);
-			return hri.empty() ? plain : hri;
+			return hri.empty() ? EscapeNonGraphical(plain) : hri;
 		}
 		case ContentType::ISO15434: return HRIFromISO15434(render(false));
 		case ContentType::Text: return render(false);
