@@ -170,19 +170,14 @@ static void EncodingECI(int eci, std::vector<int>& buffer)
 	}
 }
 
-static bool IsDigit(int ch)
-{
-	return ch >= '0' && ch <= '9';
-}
-
 static bool IsAlphaUpper(int ch)
 {
-	return ch == ' ' || (ch >= 'A' && ch <= 'Z');
+	return ch == ' ' || IsUpper(ch);
 }
 
 static bool IsAlphaLower(int ch)
 {
-	return ch == ' ' || (ch >= 'a' && ch <= 'z');
+	return ch == ' ' || IsLower(ch);
 }
 
 static bool IsMixed(int ch)

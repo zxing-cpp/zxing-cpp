@@ -118,6 +118,38 @@ Value TransformReduce(const Container& c, Value s, UnaryOp op) {
 	return s;
 }
 
+template <typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
+constexpr bool IsUpper(T v) noexcept
+{
+	return 'A' <= v && v <= 'Z';
+}
+
+template <typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
+constexpr bool IsLower(T v) noexcept
+{
+	return 'a' <= v && v <= 'z';
+}
+
+template <typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
+constexpr bool IsAlpha(T v) noexcept
+{
+	return IsUpper(v) || IsLower(v);
+}
+
+template <typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
+constexpr bool IsDigit(T v) noexcept
+{
+	return '0' <= v && v <= '9';
+}
+
+template <typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
+constexpr bool IsSpace(T v) noexcept
+{
+	// Matches the standard ASCII whitespace characters:
+    // ' ', '\t', '\n', '\v', '\f', '\r'
+	return v == ' ' || ('\t' <= v && v <= '\r');
+}
+
 template <typename T = char>
 T ToDigit(int i)
 {

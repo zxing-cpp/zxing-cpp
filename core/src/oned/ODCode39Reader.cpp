@@ -105,7 +105,7 @@ static std::string DecodeCode32(std::string_view str)
 
 static bool IsPZN(std::string_view str)
 {
-	if (str.size() != 9 || str[0] != '-' || !std::all_of(str.begin() + 1, str.end(), [](char c) { return std::isdigit(c); }))
+	if (str.size() != 9 || str[0] != '-' || !std::all_of(str.begin() + 1, str.end(), IsDigit<char>))
 		return false;
 
 	int checksum = 0;

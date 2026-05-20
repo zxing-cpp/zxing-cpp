@@ -13,6 +13,7 @@
 #include "DetectorResult.h"
 #include "JSON.h"
 #include "Version.h"
+#include "ZXAlgorithms.h"
 
 #ifdef ZXING_READERS
 #include "ReadBarcode.h"
@@ -328,7 +329,7 @@ Barcode CreateBarcode(const void* data, int size, int mode, const CreatorOptions
 		if (auto eci = opts.eci(); eci) {
 			if (auto cs = CharacterSetFromString(*eci); cs != CharacterSet::Unknown) {
 				zint->eci = static_cast<int>(ToECI(cs));
-			} else if (std::all_of(eci->begin(), eci->end(), [](char c) { return std::isdigit(c); })) {
+			} else if (std::all_of(eci->begin(), eci->end(), IsDigit<char>)) {
 				zint->eci = std::stoi(*eci);
 			}
 		} else if (mode == DATA_MODE) {

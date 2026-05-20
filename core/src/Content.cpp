@@ -15,7 +15,6 @@
 #include "Version.h"
 
 #include <cassert>
-#include <cctype>
 
 namespace ZXing {
 
@@ -443,7 +442,7 @@ ContentType Content::type() const
 		return ContentType::GS1;
 
 	// check for the absolute minimum of a ISO 15434 conforming message ("[)>" + RS + digit + digit)
-	if (bytes.size() > 6 && bytes.asString(0, 4) == "[)>\x1E" && std::isdigit(bytes[4]) && std::isdigit(bytes[5]))
+	if (bytes.size() > 6 && bytes.asString(0, 4) == "[)>\x1E" && IsDigit(bytes[4]) && IsDigit(bytes[5]))
 		return ContentType::ISO15434;
 
 	ECI fallback = ToECI(guessEncoding());
