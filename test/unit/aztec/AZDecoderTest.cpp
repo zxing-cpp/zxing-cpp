@@ -189,6 +189,9 @@ TEST(AZDecoderTest, SymbologyIdentifier)
 	// AIM ("A PS FLGN(0) B")
 	check_si(__LINE__, getData("00010000000000000000011"), "]z2", "AB");
 
+	// AIM ("LL a PS FLGN(0) US B")
+	check_si(__LINE__, getData("111000001000000000000001110000011"), "]z2", "aB");
+
 	// AIM ("DL 99 UL PS FLGN(0) B")
 	check_si(__LINE__, getData("11110101110111110000000000000000011"), "]z2", "99B");
 
