@@ -189,8 +189,17 @@ TEST(AZDecoderTest, SymbologyIdentifier)
 	// AIM ("A PS FLGN(0) B")
 	check_si(__LINE__, getData("00010000000000000000011"), "]z2", "AB");
 
+	// AIM ("LL a PS FLGN(0) US B")
+	check_si(__LINE__, getData("111000001000000000000001110000011"), "]z2", "aB");
+
 	// AIM ("DL 99 UL PS FLGN(0) B")
 	check_si(__LINE__, getData("11110101110111110000000000000000011"), "]z2", "99B");
+
+	// AIM with no further content ("A PS FLGN(0)")
+	check_si(__LINE__, getData("000100000000000000"), "]z2", "A");
+
+	// AIM with no further content ("12 PS FLGN(0)")
+	check_si(__LINE__, getData("1111000110100000000000000"), "]z2", "12");
 
 	// Structured Append (no ID) ("UL ML A D A")
 	check_si(__LINE__, getData("1110111101000100010100010"), "]z6", "A", 0, 4);
