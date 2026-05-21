@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
 	} else if (is("Go")) {
 		std::println("package zxingcpp\n");
 		std::println("const (");
-		PrintBFs("	BarcodeFormat{:15} BarcodeFormat = 0x{:04X}");
+		PrintBFs("	BarcodeFormat{:14} BarcodeFormat = 0x{:04X}");
 		std::println(")");
 	} else if (is("C#")) {
 		PrintBFs("	public static readonly BarcodeFormat {:15} = new BarcodeFormat(0x{:04X});");
@@ -84,7 +84,7 @@ int main(int argc, char* argv[])
 				   : ret == "ALL_GS_1" ? "ALL_GS1"
 									   : ret;
 		};
-		PrintBFs("\t{:20}(0x{:04X}),", androidName);
+		PrintBFs("\t\t{:20}(0x{:04X}),", androidName);
 	} else {
 		PrintUsage(argv[0]);
 		return -1;
