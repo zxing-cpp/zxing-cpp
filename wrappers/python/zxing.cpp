@@ -112,12 +112,12 @@ auto read_barcodes_impl(nb::object _image, const BarcodeFormats& formats, bool t
 		return ReadBarcodes(nb::cast<ImageView>(_image), opts);
 	}
 
-	const auto _type = std::string(nb::str(_image.type()).c_str());
+	const auto _type = nb::str(_image.type());
 	nb::ndarray<nb::ro> arr;
 	ImageFormat imgfmt = ImageFormat::None;
 	try {
 		if (nb::hasattr(_image, "__array_interface__")) {
-			if (_type.find("PIL.") != std::string::npos) {
+			if (Contains(_type.c_str(), "PIL.")) {
 				// TODO: make sure we don't leak memory (anymore), see https://github.com/zxing-cpp/zxing-cpp/discussions/762
 				// TODO: make sure we don't make unnecessary copies of the data, see https://uploadcare.com/blog/fast-import-of-pillow-images-to-numpy-opencv-arrays/
 				_image.attr("load")();
@@ -171,7 +171,7 @@ auto read_barcodes_impl(nb::object _image, const BarcodeFormats& formats, bool t
 			} else {
 				arr = nb::cast<nb::ndarray<nb::ro>>(_image);
 			}
-		} else if (_type.find("QtGui.QImage") != std::string::npos) {
+		} else if (Contains(_type.c_str(), "QtGui.QImage")) {
 			const std::string format = nb::cast<std::string>(nb::str(_image.attr("format")()));
 			if (format.ends_with("Format_ARGB32") || format.ends_with("Format_RGB32")) {
 				if constexpr (std::endian::native == std::endian::little)
@@ -201,7 +201,7 @@ auto read_barcodes_impl(nb::object _image, const BarcodeFormats& formats, bool t
 			arr = nb::cast<nb::ndarray<nb::ro>>(_image);
 		}
 	} catch (nb::python_error& e) {
-		nb::raise_from(e, PyExc_TypeError, ("Invalid input: " + _type + " does not support the buffer protocol.").c_str());
+		nb::raise_from(e, PyExc_TypeError, "Invalid input: %s does not support the buffer protocol.", _type.c_str());
 	} catch (...) {
 		nb::raise_type_error("Invalid input: %s does not support the buffer protocol.", _type.c_str());
 	}
