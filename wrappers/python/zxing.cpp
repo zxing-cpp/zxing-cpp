@@ -118,6 +118,8 @@ auto read_barcodes_impl(nb::object _image, const BarcodeFormats& formats, bool t
 	try {
 		if (nb::hasattr(_image, "__array_interface__")) {
 			if (_type.find("PIL.") != std::string::npos) {
+				// TODO: make sure we don't leak memory (anymore), see https://github.com/zxing-cpp/zxing-cpp/discussions/762
+				// TODO: make sure we don't make unnecessary copies of the data, see https://uploadcare.com/blog/fast-import-of-pillow-images-to-numpy-opencv-arrays/
 				_image.attr("load")();
 				const auto mode = nb::cast<std::string>(_image.attr("mode"));
 				if (mode == "L")
