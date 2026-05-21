@@ -9,10 +9,12 @@
 
 #include <algorithm>
 #include <charconv>
+#include <concepts>
 #include <cstring>
 #include <initializer_list>
 #include <iterator>
 #include <numeric>
+#include <ranges>
 #include <string>
 #include <stdexcept>
 #include <utility>
@@ -25,24 +27,17 @@ constexpr T narrow_cast(U&& u) noexcept {
 	return static_cast<T>(std::forward<U>(u));
 }
 
-template <typename Container, typename Value>
-auto Find(Container& c, const Value& v) -> decltype(std::begin(c)) {
-	return std::find(std::begin(c), std::end(c), v);
-}
+inline constexpr auto& Find   = std::ranges::find;
+inline constexpr auto& FindIf = std::ranges::find_if;
 
-template <typename Container, typename Predicate>
-auto FindIf(Container& c, Predicate p) -> decltype(std::begin(c)) {
-	return std::find_if(std::begin(c), std::end(c), p);
-}
-
-template <typename Container, typename Value>
-auto Contains(const Container& c, const Value& v) -> decltype(std::begin(c), bool()){
-	return Find(c, v) != std::end(c);
+template <typename Container, typename Value> requires std::ranges::input_range<const Container>
+auto Contains(const Container& c, const Value& v) {
+	return std::ranges::find(c, v) != std::ranges::end(c);
 }
 
 template <typename ListType, typename Value>
-auto Contains(const std::initializer_list<ListType>& c, const Value& v) -> decltype(std::begin(c), bool()){
-	return Find(c, v) != std::end(c);
+auto Contains(const std::initializer_list<ListType>& c, const Value& v) {
+	return std::ranges::find(c, v) != std::ranges::end(c);
 }
 
 inline bool Contains(const char* str, char c) {
@@ -118,31 +113,31 @@ Value TransformReduce(const Container& c, Value s, UnaryOp op) {
 	return s;
 }
 
-template <typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
+template <std::integral T>
 constexpr bool IsUpper(T v) noexcept
 {
 	return 'A' <= v && v <= 'Z';
 }
 
-template <typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
+template <std::integral T>
 constexpr bool IsLower(T v) noexcept
 {
 	return 'a' <= v && v <= 'z';
 }
 
-template <typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
+template <std::integral T>
 constexpr bool IsAlpha(T v) noexcept
 {
 	return IsUpper(v) || IsLower(v);
 }
 
-template <typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
+template <std::integral T>
 constexpr bool IsDigit(T v) noexcept
 {
 	return '0' <= v && v <= '9';
 }
 
-template <typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
+template <std::integral T>
 constexpr bool IsSpace(T v) noexcept
 {
 	// Matches the standard ASCII whitespace characters:
@@ -158,7 +153,7 @@ T ToDigit(int i)
 	return static_cast<T>('0' + i);
 }
 
-template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
+template <std::integral T>
 std::string ToString(T val, int len)
 {
 	std::string result(len--, '0');
@@ -171,7 +166,7 @@ std::string ToString(T val, int len)
 	return result;
 }
 
-template<typename C, typename = std::enable_if_t<sizeof(typename C::value_type) == 1>>
+template <typename C> requires (sizeof(typename C::value_type) == 1)
 std::string ToHex(const C& c)
 {
 	static constexpr char hex[] = "0123456789ABCDEF";
@@ -202,7 +197,7 @@ std::vector<T> ToVector(T&& v)
 	return res;
 }
 
-template <typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
+template <std::integral T>
 constexpr inline auto ToUnsigned(T v) noexcept
 {
 	return static_cast<std::make_unsigned_t<T>>(v);
@@ -223,7 +218,7 @@ constexpr std::string_view TypeName()
 #endif
 }
 
-template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+template <typename T> requires std::is_arithmetic_v<T>
 inline T FromString(std::string_view sv)
 {
 	T val = {};
@@ -258,8 +253,7 @@ inline void ForEachToken(std::string_view str, std::string_view delimiters, FUNC
 
 inline bool IsEqualIgnoreCase(std::string_view a, std::string_view b)
 {
-	return a.size() == b.size()
-		   && std::equal(a.begin(), a.end(), b.begin(), [](uint8_t a, uint8_t b) { return std::tolower(a) == std::tolower(b); });
+	return std::ranges::equal(a, b, [](uint8_t a, uint8_t b) { return std::tolower(a) == std::tolower(b); });
 }
 
 // Compare two strings ignoring case and specified whitespace characters

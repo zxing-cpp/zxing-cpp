@@ -53,7 +53,6 @@ public:
 		operator bool() const noexcept { return isValid(); }
 
 		bool operator==(Value o) const { return v == o.v; }
-		bool operator!=(Value o) const { return v != o.v; }
 	};
 
 	template <typename T>

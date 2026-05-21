@@ -317,8 +317,8 @@ std::array<int, LEN> NormalizedPattern(const PatternView& view)
 		return {};
 
 	if (err) {
-		auto mi = err > 0 ? std::max_element(std::begin(rs), std::end(rs)) - std::begin(rs)
-						  : std::min_element(std::begin(rs), std::end(rs)) - std::begin(rs);
+		auto mi = err > 0 ? std::ranges::max_element(rs) - rs.begin()
+						  : std::ranges::min_element(rs) - rs.begin();
 		is[mi] += err;
 		rs[mi] -= err;
 	}
