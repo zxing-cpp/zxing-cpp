@@ -64,9 +64,8 @@ class Raw2TxtDecoder
 			_havePositionFNC1 = true;
 		}
 		else if (!_havePositionFNC1
-					&& ((isCodeSetC && txt.size() == 2 && txt[0] >= '0' && txt[0] <= '9' && txt[1] >= '0' && txt[1] <= '9')
-						|| (!isCodeSetC && txt.size() == 1 && ((txt[0] >= 'A' && txt[0] <= 'Z')
-																|| (txt[0] >= 'a' && txt[0] <= 'z'))))) {
+					&& ((isCodeSetC && txt.size() == 2 && IsDigit(txt[0]) && IsDigit(txt[1]))
+						|| (!isCodeSetC && txt.size() == 1 && IsAlpha(txt[0])))) {
 			// ISO/IEC 15417:2007 Annex B.2
 			// FNC1 in second position following Code Set C "00-99" or Code Set A/B "A-Za-z" - AIM
 			_symbologyIdentifier.modifier = '2';

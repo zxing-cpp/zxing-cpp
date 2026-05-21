@@ -203,7 +203,6 @@ std::string ToString(const BarcodeFormats& formats)
 
 #include "ZXAlgorithms.h"
 
-#include <cctype>
 #include <iterator>
 #include <stdexcept>
 

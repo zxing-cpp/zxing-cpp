@@ -16,7 +16,6 @@
 #include "ZXTestSupport.h"
 #include "ZXAlgorithms.h"
 
-#include <cctype>
 #include <cstring>
 #include <numeric>
 #include <string>
@@ -234,7 +233,7 @@ static StructuredAppendInfo ParseStructuredAppend(Content& res)
 		sai.id = text.substr(1, sp - 1); // Strip space delimiters
 		i = sp + 1;
 	}
-	if (i + 1 >= text.size() || !std::isupper(text[i]) || !std::isupper(text[i + 1]))
+	if (i + 1 >= text.size() || !IsUpper(text[i]) || !IsUpper(text[i + 1]))
 		return {};
 
 	sai.index = text[i] - 'A';
@@ -331,13 +330,13 @@ DecoderResult Decode(const BitArray& bits)
 			res.symbology.modifier = '1'; // GS1
 			res.symbology.aiFlag = AIFlag::GS1;
 			res.erase(0, 1); // Remove FNC1
-		} else if (res.bytes.size() > 1 && std::isalpha(res.bytes[0]) && res.bytes[1] == 29) {
+		} else if (res.bytes.size() > 1 && IsAlpha(res.bytes[0]) && res.bytes[1] == 29) {
 			// FNC1 following single upper/lowercase letter (the AIM Application Indicator)
 			res.symbology.modifier = '2'; // AIM
 			res.symbology.aiFlag = AIFlag::AIM;
 			res.erase(1, 1); // Remove FNC1,
 							 // The AIM Application Indicator character "A"-"Z"/"a"-"z" is left in the stream (ISO/IEC 24778:2008 16.2)
-		} else if (res.bytes.size() > 2 && std::isdigit(res.bytes[0]) && std::isdigit(res.bytes[1]) && res.bytes[2] == 29) {
+		} else if (res.bytes.size() > 2 && IsDigit(res.bytes[0]) && IsDigit(res.bytes[1]) && res.bytes[2] == 29) {
 			// FNC1 following 2 digits (the AIM Application Indicator)
 			res.symbology.modifier = '2'; // AIM
 			res.symbology.aiFlag = AIFlag::AIM;

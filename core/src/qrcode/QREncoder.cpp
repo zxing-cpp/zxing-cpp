@@ -16,6 +16,7 @@
 #include "ReedSolomonEncoder.h"
 #include "TextEncoder.h"
 #include "ZXTestSupport.h"
+#include "ZXAlgorithms.h"
 
 #include <algorithm>
 #include <array>
@@ -79,7 +80,7 @@ CodecMode ChooseMode(const std::wstring& content, CharacterSet encoding)
 	bool hasNumeric = false;
 	bool hasAlphanumeric = false;
 	for (wchar_t c : content) {
-		if (c >= '0' && c <= '9') {
+		if (IsDigit(c)) {
 			hasNumeric = true;
 		}
 		else if (GetAlphanumericCode(c) != -1) {

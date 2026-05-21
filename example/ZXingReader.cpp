@@ -7,7 +7,6 @@
 #include "GTIN.h"
 #include "ZXingCpp.h"
 
-#include <cctype>
 #include <chrono>
 #include <cstring>
 #include <iostream>
