@@ -308,8 +308,12 @@ DecoderResult Decode(ByteArray&& bytes, const bool isDMRE)
 				// and a shift)
 				if (bits.byteOffset() == firstFNC1Position)
 					result.symbology.modifier = '2'; // GS1
-				else if (bits.byteOffset() == firstFNC1Position + 1)
-					result.symbology.modifier = '3'; // AIM, note no AIM Application Indicator format defined, ISO 16022:2006 11.2
+				// 2nd position AIM, note no AIM Application Indicator format defined in ISO/IEC 16022:2006 11.2
+				// however FNC1-originator Code 128 restricts ids to A-Z, a-z, 00-99 so enforcing that here
+				else if (bits.byteOffset() == firstFNC1Position + 1
+							&& ((Size(result.bytes) == 1 && IsAlpha(result.bytes[0]))
+								|| (Size(result.bytes) == 2 && IsDigit(result.bytes[0]) && IsDigit(result.bytes[1]))))
+					result.symbology.modifier = '3';
 				else
 					result.push_back((char)29); // translate as ASCII 29 <GS>
 				break;
