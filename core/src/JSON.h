@@ -8,6 +8,9 @@
 #include "ZXAlgorithms.h"
 
 #include <cstring>
+#ifdef __cpp_lib_format // not available on gcc 12
+#include <format>
+#endif
 #include <optional>
 #include <string>
 #include <string_view>
@@ -21,9 +24,17 @@ template<typename T>
 inline std::string JsonProp(std::string_view key, const T& val, const T& ignore = {})
 {
 	#define ZX_JSON_KEY_VAL(...) StrCat("\"", key, "\":", __VA_ARGS__, ',')
+#if !defined(__cpp_lib_to_chars) || !defined(__cpp_lib_format) // not available on older macOS / gcc 12
+	#define ZX_JSON_FMT_FLOAT(val) (std::to_string(int(val)) + '.' + std::to_string(int(val * 100) % 100))
+#else
+	#define ZX_JSON_FMT_FLOAT(val) std::format("{:.2f}", val)
+#endif
+
 	if constexpr (std::is_same_v<T, bool>)
 		return val != ignore ? ZX_JSON_KEY_VAL(val ? "true" : "false") : "";
-	else if constexpr (std::is_arithmetic_v<T>)
+	else if constexpr (std::is_floating_point_v<T>)
+		return val != ignore ? ZX_JSON_KEY_VAL(ZX_JSON_FMT_FLOAT(val)) : "";
+	else if constexpr (std::is_integral_v<T>)
 		return val != ignore ? ZX_JSON_KEY_VAL(std::to_string(val)) : "";
 	else if constexpr (std::is_convertible_v<T, std::string_view>)
 		return std::string_view(val) != std::string_view(ignore) ? ZX_JSON_KEY_VAL("\"", JsonEscapeStr(val), "\"") : "";

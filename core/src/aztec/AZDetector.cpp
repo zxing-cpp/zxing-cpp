@@ -314,7 +314,7 @@ static int ModeMessage(const BitMatrix& image, const PerspectiveTransform& mod2P
 		bits >>= 4;
 	}
 
-	bool decodeResult = ReedSolomonDecode(GenericGF::AztecParam(), words, numECCodewords);
+	auto decodeResult = ReedSolomonDecode(GenericGF::AztecParam(), words, numECCodewords);
 
 	if ((!decodeResult) && compact) {
 		// Is this a Rune?

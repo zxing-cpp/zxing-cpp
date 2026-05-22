@@ -102,7 +102,7 @@ FindErrorMagnitudes(const GenericGF& field, const GenericGFPoly& errorEvaluator,
 	return res;
 }
 
-bool
+std::optional<double>
 ReedSolomonDecode(const GenericGF& field, std::vector<int>& message, int numECCodeWords)
 {
 	GenericGFPoly poly(field, message);
@@ -113,16 +113,16 @@ ReedSolomonDecode(const GenericGF& field, std::vector<int>& message, int numECCo
 
 	// if all syndromes are 0 there is no error to correct
 	if (std::all_of(syndromes.begin(), syndromes.end(), [](int c) { return c == 0; }))
-		return true;
+		return 1.0;
 
 	ZX_THREAD_LOCAL GenericGFPoly sigma, omega;
 
 	if (!RunEuclideanAlgorithm(field, std::move(syndromes), sigma, omega))
-		return false;
+		return {};
 
 	auto errorLocations = FindErrorLocations(field, sigma);
 	if (Size(errorLocations) != sigma.degree())
-		return false; // Error locator degree does not match number of roots, most likely there are more errors than can be recovered
+		return {}; // Error locator degree does not match number of roots, most likely there are more errors than can be recovered
 
 	auto errorMagnitudes = FindErrorMagnitudes(field, omega, errorLocations);
 
@@ -130,7 +130,7 @@ ReedSolomonDecode(const GenericGF& field, std::vector<int>& message, int numECCo
 	for (int i = 0; i < Size(errorLocations); ++i) {
 		int position = msgLen - 1 - field.log(errorLocations[i]);
 		if (position < 0)
-			return false;
+			return {};
 
 		message[position] ^= errorMagnitudes[i];
 	}
@@ -141,10 +141,12 @@ ReedSolomonDecode(const GenericGF& field, std::vector<int>& message, int numECCo
 
 	for (int i = 0; i < numECCodeWords; i++)
 		if (poly.evaluateAt(field.exp(i + field.generatorBase())) != 0)
-			return false;
+			return {};
 #endif
 
-	return true;
+	// correcting 1 error consumes 2 EC codewords, so the unused error correction is 1 - 2*errors/numECCodeWords
+	// See also ISO/IEC 15415:2024 7.5.9
+	return std::clamp(1.0 - static_cast<double>(2 * Size(errorLocations)) / numECCodeWords, 0.0, 1.0);
 }
 
 } // namespace ZXing

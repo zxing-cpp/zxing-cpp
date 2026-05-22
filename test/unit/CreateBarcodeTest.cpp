@@ -363,7 +363,18 @@ TEST(CreateBarcodeTest, CreatorOptions)
 
 	bc = CreateBarcodeFromText("12345abcdefghijklmnopqr", {DataMatrix, "forceSquare"});
 	EXPECT_EQ(bc.symbol().height(), bc.symbol().width());
+#if defined(ZXING_READERS)
+	bc = CreateBarcodeFromText("12345", {DataMatrix});
+	bc = ReadBarcode(bc.symbol(), ReaderOptions().formats(DataMatrix).isPure(true).binarizer(Binarizer::BoolCast));
+	EXPECT_EQ(bc.extra("UEC"), "1.0");
+#endif
 #endif // ZXING_ENABLE_DATAMATRIX
+
+#if defined(ZXING_READERS) && ZXING_ENABLE_AZTEC
+	bc = CreateBarcodeFromText("12345", {Aztec});
+	bc = ReadBarcode(bc.symbol(), ReaderOptions().formats(Aztec).isPure(true).binarizer(Binarizer::BoolCast));
+	EXPECT_EQ(bc.extra("UEC"), "1.0");
+#endif
 
 #if ZXING_ENABLE_QRCODE
 	bc = CreateBarcodeFromText("12345", {QRCode, "version=5"});
@@ -374,6 +385,7 @@ TEST(CreateBarcodeTest, CreatorOptions)
 	bc = CreateBarcodeFromText("12345", {QRCode, "dataMask=0"});
 	bc = ReadBarcode(bc.symbol(), ReaderOptions().isPure(true).binarizer(Binarizer::BoolCast));
 	EXPECT_EQ(bc.extra("dataMask"), "0");
+	EXPECT_EQ(bc.extra("UEC"), "1.0");
 #endif // ZXING_READERS
 }
 

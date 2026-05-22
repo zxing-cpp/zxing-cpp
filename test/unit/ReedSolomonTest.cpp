@@ -69,7 +69,7 @@ namespace {
 				}
 				auto message = dataWords + ecWords;
 				Corrupt(message, i, random, field.size());
-				bool success = ReedSolomonDecode(field, message, Size(ecWords));
+				auto success = ReedSolomonDecode(field, message, Size(ecWords));
 				if (!success) {
 					// fail only if maxErrors exceeded
 					ASSERT_GT(i, maxErrors) << "Decode in " << field << " (" << dataWords.size() << ',' << ecWords.size() << ") failed at " << i;

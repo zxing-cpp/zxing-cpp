@@ -7,6 +7,7 @@
 #pragma once
 
 #include <vector>
+#include <optional>
 
 namespace ZXing {
 
@@ -40,8 +41,9 @@ class GenericGF;
  *
  * @param message data and error-correction/parity codewords
  * @param numECCodeWords number of error-correction code words
- * @return true iff message errors could successfully be fixed (or there have not been any)
+ * @return optional unused error correction in the range [0, 1] if message errors could successfully be fixed (or there have not been
+ * any), std::nullopt otherwise
  */
-bool ReedSolomonDecode(const GenericGF& field, std::vector<int>& message, int numECCodeWords);
+std::optional<double> ReedSolomonDecode(const GenericGF& field, std::vector<int>& message, int numECCodeWords);
 
 } // ZXing

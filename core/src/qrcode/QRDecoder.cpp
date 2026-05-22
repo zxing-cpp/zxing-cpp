@@ -36,21 +36,22 @@ namespace ZXing::QRCode {
 *
 * @param codewordBytes data and error correction codewords
 * @param numDataCodewords number of codewords that are data bytes
-* @return false if error correction fails
+* @return std::nullopt if error correction fails, otherwise the unused error correction in the range [0, 1]
 */
-static bool CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
+static std::optional<double> CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
 {
 	// First read into an array of ints
 	std::vector<int> codewordsInts(codewordBytes.begin(), codewordBytes.end());
 
 	int numECCodewords = Size(codewordBytes) - numDataCodewords;
-	if (!ReedSolomonDecode(GenericGF::QRCodeField256(), codewordsInts, numECCodewords))
-		return false;
+	auto res = ReedSolomonDecode(GenericGF::QRCodeField256(), codewordsInts, numECCodewords);
 
-	// Copy back into array of bytes -- only need to worry about the bytes that were data
-	// We don't care about errors in the error-correction codewords
-	std::copy_n(codewordsInts.begin(), numDataCodewords, codewordBytes.begin());
-	return true;
+	if (res) {
+		// Copy back into array of bytes -- only need to worry about the bytes that were data
+		// We don't care about errors in the error-correction codewords
+		std::copy_n(codewordsInts.begin(), numDataCodewords, codewordBytes.begin());
+	}
+	return res;
 }
 
 
@@ -348,6 +349,7 @@ DecoderResult Decode(const BitMatrix& bits)
 	const auto totalBytes = Reduce(dataBlocks, int{}, op);
 	ByteArray resultBytes(totalBytes);
 	auto resultIterator = resultBytes.begin();
+	double uec = 1.0;
 
 	// Error-correct and copy data blocks together into a stream of bytes
 	Error error;
@@ -355,9 +357,12 @@ DecoderResult Decode(const BitMatrix& bits)
 	{
 		ByteArray& codewordBytes = dataBlock.codewords();
 		int numDataCodewords = dataBlock.numDataCodewords();
+		auto blockUEC = CorrectErrors(codewordBytes, numDataCodewords);
 
-		if (!CorrectErrors(codewordBytes, numDataCodewords))
+		if (!blockUEC)
 			error = ChecksumError();
+
+		uec = std::min(uec, blockUEC.value_or(0.0));
 
 		resultIterator = std::copy_n(codewordBytes.begin(), numDataCodewords, resultIterator);
 	}
@@ -369,6 +374,7 @@ DecoderResult Decode(const BitMatrix& bits)
 	auto ret = DecodeBitStream(std::move(resultBytes), version, formatInfo.ecLevel)
 		.setIsMirrored(formatInfo.isMirrored)
 		.addExtra(BarcodeExtra::DataMask, formatInfo.dataMask, uint8_t(255))
+		.addExtra(BarcodeExtra::UEC, uec)
 		.addExtra(BarcodeExtra::Version, versionStr)
 		;
 	if (error)

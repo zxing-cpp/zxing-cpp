@@ -43,6 +43,7 @@ namespace BarcodeExtra {
 	ZX_EXTRA(Version);  ///< QRCodes, DataMatrix, MaxiCode (e.g. "12x12" for DataMatrix)
 	ZX_EXTRA(EanAddOn); ///< The EAN/UPC add-on content if detected
 	ZX_EXTRA(ECLevel);  ///< Error correction level (e.g. "L", "M", "Q", "H" for QRCode)
+	ZX_EXTRA(UEC);      ///< Unused error correction margin in the range [0, 1]
 	ZX_EXTRA(UPCE);     ///< The original (non-normalized) UPC-E code if UPC-E is detected
 	ZX_EXTRA(ReaderInit);
 	#undef ZX_EXTRA

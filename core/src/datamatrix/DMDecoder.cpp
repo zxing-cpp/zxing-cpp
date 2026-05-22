@@ -380,23 +380,23 @@ DecoderResult Decode(ByteArray&& bytes, const bool isDMRE)
 *
 * @param codewordBytes data and error correction codewords
 * @param numDataCodewords number of codewords that are data bytes
-* @return false if error correction fails
+* @return std::nullopt if error correction fails, otherwise the unused error correction in the range [0, 1]
 */
-static bool
+static std::optional<double>
 CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
 {
 	// First read into an array of ints
 	std::vector<int> codewordsInts(codewordBytes.begin(), codewordBytes.end());
 	int numECCodewords = Size(codewordBytes) - numDataCodewords;
 
-	if (!ReedSolomonDecode(GenericGF::DataMatrixField256(), codewordsInts, numECCodewords))
-		return false;
+	auto res = ReedSolomonDecode(GenericGF::DataMatrixField256(), codewordsInts, numECCodewords);
+	if (res) {
+		// Copy back into array of bytes -- only need to worry about the bytes that were data
+		// We don't care about errors in the error-correction codewords
+		std::copy_n(codewordsInts.begin(), numDataCodewords, codewordBytes.begin());
+	}
 
-	// Copy back into array of bytes -- only need to worry about the bytes that were data
-	// We don't care about errors in the error-correction codewords
-	std::copy_n(codewordsInts.begin(), numDataCodewords, codewordBytes.begin());
-
-	return true;
+	return res;
 }
 
 static DecoderResult DoDecode(const BitMatrix& bits)
@@ -417,6 +417,7 @@ retry:
 	std::vector<DataBlock> dataBlocks = GetDataBlocks(codewords, *version, fix259);
 	if (dataBlocks.empty())
 		return FormatError("Invalid number of data blocks");
+	double uec = 1.0;
 
 	// Count total number of data bytes
 	ByteArray resultBytes(TransformReduce(dataBlocks, 0, [](const auto& db) { return db.numDataCodewords; }));
@@ -425,13 +426,15 @@ retry:
 	const int dataBlocksCount = Size(dataBlocks);
 	for (int j = 0; j < dataBlocksCount; j++) {
 		auto& [numDataCodewords, codewords] = dataBlocks[j];
-		if (!CorrectErrors(codewords, numDataCodewords)) {
+		auto blockUEC = CorrectErrors(codewords, numDataCodewords);
+		if (!blockUEC) {
 			if(version->versionNumber == 24 && !fix259) {
 				fix259 = true;
 				goto retry;
 			}
 			return ChecksumError();
 		}
+		uec = std::min(uec, *blockUEC);
 
 		for (int i = 0; i < numDataCodewords; i++) {
 			// De-interlace data blocks.
@@ -446,6 +449,7 @@ retry:
 	// Decode the contents of that stream of bytes
 	return DecodedBitStreamParser::Decode(std::move(resultBytes), version->isDMRE())
 		.setVersionNumber(version->versionNumber)
+		.addExtra(BarcodeExtra::UEC, uec)
 		.addExtra(BarcodeExtra::Version, std::to_string(version->symbolHeight) + 'x' + std::to_string(version->symbolWidth));
 }
 
