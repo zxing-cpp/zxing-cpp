@@ -12,6 +12,10 @@
 #include <cstdint>
 #include <ranges>
 
+#ifndef PRINT_DEBUG
+#define printf(...){}
+#endif
+
 namespace ZXing::OneD {
 
 static std::string DecodeNumeric(std::string_view encoded)
@@ -48,14 +52,19 @@ BarcodeData TelepenReader::decodePattern(int rowNumber, PatternView& next, std::
 	constexpr auto startPattern = FixedPattern<12, 16>{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3};
 	constexpr auto endPattern = FixedPattern<11, 15>{3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
-#if 1 // use fast 1:1:1:1 start pattern plausibility check
+#if 0 // use fast 1:1:1:1 start pattern plausibility check, then E2E check for the whole start pattern
 	next = FindLeftGuard<12>(next, 2 * 12 + minCharCount * minCharLength, [=](const PatternView& view, int spaceInPixel) {
 		// find min/max of 4 consecutive bars/spaces and make sure they are close together
-		auto [m, M] = std::minmax({view[0], view[1], view[2], view[3]});
-		return M <= m * 4 / 3 + 1 && IsPattern(view, startPattern, spaceInPixel, minQuietZone);
+		auto mB = view[0], mS = view[1], MB = view[2], MS = view[3];
+		if (mB > MB)
+			std::swap(mB, MB);
+		if (mS > MS)
+			std::swap(mS, MS);
+		return MB <= mB * 4 / 3 + 1 && MS <= mS * 4 / 3 + 1 && MB < 2 * mS + 1 && MS < 2 * mB + 1
+			   && IsPattern<true>(view, startPattern, spaceInPixel, minQuietZone);
 	});
 #else
-	next = FindLeftGuard(next, 2 * 12 + minCharCount * minCharLength, startPattern, minQuietZone);
+	next = FindLeftGuard<true>(next, 2 * 12 + minCharCount * minCharLength, startPattern, minQuietZone);
 #endif
 	if (!next.isValid())
 		return {};
@@ -69,9 +78,10 @@ BarcodeData TelepenReader::decodePattern(int rowNumber, PatternView& next, std::
 
 	next = next.subView(startPattern.size(), endPattern.size());
 	std::string raw;
-	while (next.isValid() && !IsRightGuard(next, endPattern, minQuietZone)) {
+	while (next.isValid() && !IsRightGuard<true>(next, endPattern, minQuietZone)) {
 		BitArray ba;
 		bool inBlock = false;
+		BarAndSpace<int> wSum, wNum, nSum, nNum;
 		while (next.isValid() && ba.size() < 8) {
 			if (next[0] > threshold[0] * 3 || next[1] > threshold[1] * 3)
 				return {};
@@ -85,6 +95,17 @@ BarcodeData TelepenReader::decodePattern(int rowNumber, PatternView& next, std::
 				ba.appendBits(0b00, 2);
 			else if (wide.bar && wide.space)  // wide bar, wide space
 				ba.appendBits(0b010, 3);
+
+			for (int i = 0; i < 2; ++i) {
+				if (next[i] > threshold[i]) {
+					wSum[i] += next[i];
+					++wNum[i];
+				} else {
+					nSum[i] += next[i];
+					++nNum[i];
+				}
+			}
+
 			next.skipPair();
 		}
 		if (ba.size() != 8 || std::ranges::count(ba, false) % 2 != 0) // even parity check
@@ -92,13 +113,17 @@ BarcodeData TelepenReader::decodePattern(int rowNumber, PatternView& next, std::
 		ba.reverse();
 		raw += ToInt<char>(ba) & 0x7f; // drop the parity bit
 
-		// TODO: update threshold from (roughly) last valid character
-		// threshold = NarrowWideThreshold(next.subView(-16, 16));
-		// if (!threshold.isValid())
-		// 	return {};
+		printf("line: %d, threshold: %2d, %2d, wSum: %2d, %2d, wNum: %d, %d, nSum: %2d, %2d, nNum: %d, %d -> %c ends at: %d\n", rowNumber,
+			   threshold[0], threshold[1], wSum[0], wSum[1], wNum[0], wNum[1], nSum[0], nSum[1], nNum[0], nNum[1],
+			   raw.back(), next.pixelsInFront());
+
+		for (int i = 0; i < 2; ++i)
+			threshold[i] = wNum[i] && nNum[i] ? (wSum[i] / wNum[i] + nSum[i] / nNum[i]) / 2
+						   : nNum[i]          ? 2 * nSum[i] / nNum[i]
+											  : threshold[i];
 	}
 
-	if (raw.size() < minCharCount + 1 || !IsRightGuard(next, endPattern, minQuietZone))
+	if (raw.size() < minCharCount + 1 || !IsRightGuard<true>(next, endPattern, minQuietZone))
 		return {};
 
 	auto txt = raw.substr(0, raw.size() - 1); // drop checksum character
@@ -119,6 +144,7 @@ BarcodeData TelepenReader::decodePattern(int rowNumber, PatternView& next, std::
 
 	int xStop = next.pixelsTillEnd();
 	auto format = symbologyIdentifier.modifier == '1' ? BarcodeFormat::TelepenNumeric : BarcodeFormat::TelepenAlpha;
+	printf("line: %d, raw: %s, txt: %s, checksum: %d\n", rowNumber, raw.c_str(), txt.c_str(), checkSum);
 
 	return LinearBarcode(format, txt, rowNumber, xStart, xStop, symbologyIdentifier, error);
 }

@@ -186,7 +186,7 @@ double IsPattern(const PatternView& view, const FixedPattern<LEN, SUM, false>& p
 		if (minQuietZone && spaceInPixel < minQuietZone * modSize.space)
 			return 0;
 
-		const BarAndSpace<double> thr = {modSize[0] * .75 + .5, modSize[1] * .5 + .5};
+		const BarAndSpace<double> thr = {modSize[0] * .75 + .5, modSize[1] * .6 + .5};
 
 		for (int x = 0; x < LEN; ++x)
 			if (std::abs(view[x] - pattern[x] * modSize[x]) > thr[x])
@@ -246,7 +246,7 @@ double IsPattern(const PatternView& view, const FixedPattern<N, SUM, true>& patt
 	return moduleSize;
 }
 
-template <int N, int SUM, bool IS_SPARSE>
+template <bool E2E = false, int N, int SUM, bool IS_SPARSE>
 bool IsRightGuard(const PatternView& view, const FixedPattern<N, SUM, IS_SPARSE>& pattern, double minQuietZone,
 				  double moduleSizeRef = 0)
 {
@@ -254,7 +254,7 @@ bool IsRightGuard(const PatternView& view, const FixedPattern<N, SUM, IS_SPARSE>
 	if (!view.isValid())
 		return false;
 	int spaceInPixel = view.isAtLastBar() ? std::numeric_limits<int>::max() : *view.end();
-	return IsPattern(view, pattern, spaceInPixel, minQuietZone, moduleSizeRef) != 0;
+	return IsPattern<E2E>(view, pattern, spaceInPixel, minQuietZone, moduleSizeRef) != 0;
 }
 
 template<int LEN, typename Pred>
@@ -273,13 +273,13 @@ PatternView FindLeftGuard(const PatternView& view, int minSize, Pred isGuard)
 	return {};
 }
 
-template <int LEN, int SUM, bool IS_SPARSE>
+template <bool E2E = false, int LEN, int SUM, bool IS_SPARSE>
 PatternView FindLeftGuard(const PatternView& view, int minSize, const FixedPattern<LEN, SUM, IS_SPARSE>& pattern,
 						  double minQuietZone)
 {
 	return FindLeftGuard<LEN>(view, std::max(minSize, LEN),
 							  [&pattern, minQuietZone](const PatternView& window, int spaceInPixel) {
-								  return IsPattern(window, pattern, spaceInPixel, minQuietZone);
+								  return IsPattern<E2E>(window, pattern, spaceInPixel, minQuietZone);
 							  });
 }
 

@@ -510,9 +510,9 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 6, 6, 180 },
 		});
 
-		runTests("telepen-1", Telepen, 3, {
-			{ 3, 3, 0   },
-			{ 3, 3, 180 },
+		runTests("telepen-1", Telepen, 4, {
+			{ 4, 4, 0   },
+			{ 4, 4, 180 },
 		});
 
 		runTests("upca-1", UPCA, 12, {
