@@ -122,21 +122,27 @@ TEST(DMDecodeTest, SymbologyIdentifier)
 	EXPECT_EQ(id({230, 0x0A, 0x79, 254, 150, 131}), "]d1"); // shift2FNC1 = (1600 * 1) + (40 * 27) + 0 + 1 == 0x0A79
 	EXPECT_EQ(decode({230, 0x0A, 0x79, 254, 150, 131}), L"\u001D2001");
 
+	// Following Code 128 ISO/IEC 15417:2007 Annex B.2, only recognizing as AIM if FNC1 follows A-Z, a-z, 00-99
+
 	// AIM "A FNC1 B"
 	EXPECT_EQ(id({66, 232, 67}), "]d3");
 	EXPECT_EQ(decode({66, 232, 67}), L"AB");
 
-	// AIM "9 FNC1 A"
-	EXPECT_EQ(id({58, 232, 66}), "]d3");
-	EXPECT_EQ(decode({58, 232, 66}), L"9A");
+	// AIM "a FNC1 B"
+	EXPECT_EQ(id({98, 232, 67}), "]d3");
+	EXPECT_EQ(decode({98, 232, 67}), L"aB");
+
+	// "9 FNC1 A" (single digit before FNC1 not recognized as AIM)
+	EXPECT_EQ(id({58, 232, 66}), "]d1");
+	EXPECT_EQ(decode({58, 232, 66}), L"9\u001DA");
 
 	// AIM "99 FNC1 A" (double digit + 130)
 	EXPECT_EQ(id({99 + 130, 232, 66}), "]d3");
 	EXPECT_EQ(decode({99 + 130, 232, 66}), L"99A");
 
-	// AIM "? FNC1 A" (ISO/IEC 16022:2006 11.2 does not specify any restrictions on single first character)
-	EXPECT_EQ(id({64, 232, 66}), "]d3");
-	EXPECT_EQ(decode({64, 232, 66}), L"?A");
+	// "? FNC1 A" (non-alpha before FNC1 not recognized as AIM)
+	EXPECT_EQ(id({64, 232, 66}), "]d1");
+	EXPECT_EQ(decode({64, 232, 66}), L"?\u001DA");
 
 	// "LatchC40 A Shift2 FNC1 B" not recognized as FNC1 in second position
 	EXPECT_EQ(id({230, 0x57, 0xC4, 254, 67}), "]d1"); // shift2FNC1 = 1600 * 14 + (40 * 1) + 27 + 1 == 0x57C4
@@ -169,17 +175,21 @@ TEST(DMDecodeTest, DMRESymbologyIdentifier)
 	EXPECT_EQ(id({66, 232, 67}, true /*isDMRE*/), "]d9");
 	EXPECT_EQ(decode({66, 232, 67}, true /*isDMRE*/), L"AB");
 
-	// AIM "9 FNC1 A"
-	EXPECT_EQ(id({58, 232, 66}, true /*isDMRE*/), "]d9");
-	EXPECT_EQ(decode({58, 232, 66}, true /*isDMRE*/), L"9A");
+	// AIM "a FNC1 B"
+	EXPECT_EQ(id({98, 232, 67}, true /*isDMRE*/), "]d9");
+	EXPECT_EQ(decode({98, 232, 67}, true /*isDMRE*/), L"aB");
+
+	// "9 FNC1 A" (single digit before FNC1 not recognized as AIM - see `SymbologyIdentifier()` above)
+	EXPECT_EQ(id({58, 232, 66}, true /*isDMRE*/), "]d7");
+	EXPECT_EQ(decode({58, 232, 66}, true /*isDMRE*/), L"9\u001DA");
 
 	// AIM "99 FNC1 A" (double digit + 130)
 	EXPECT_EQ(id({99 + 130, 232, 66}, true /*isDMRE*/), "]d9");
 	EXPECT_EQ(decode({99 + 130, 232, 66}, true /*isDMRE*/), L"99A");
 
-	// AIM "? FNC1 A" (ISO/IEC 16022:2006 11.2 does not specify any restrictions on single first character)
-	EXPECT_EQ(id({64, 232, 66}, true /*isDMRE*/), "]d9");
-	EXPECT_EQ(decode({64, 232, 66}, true /*isDMRE*/), L"?A");
+	// "? FNC1 A" (non-alpha before FNC1 not recognized as AIM)
+	EXPECT_EQ(id({64, 232, 66}, true /*isDMRE*/), "]d7");
+	EXPECT_EQ(decode({64, 232, 66}, true /*isDMRE*/), L"?\u001DA");
 
 	// "99 FNC1 A" (2 single digits before FNC1 not recognized as AIM)
 	EXPECT_EQ(id({58, 58, 232, 66}, true /*isDMRE*/), "]d7");
