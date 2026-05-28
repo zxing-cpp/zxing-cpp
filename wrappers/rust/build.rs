@@ -10,6 +10,7 @@ fn main() -> miette::Result<()> {
 			.define("ZXING_EXPERIMENTAL_API", "OFF")
 			.define("ZXING_C_API", "ON")
 			.define("ZXING_USE_BUNDLED_ZINT", "ON")
+			.define("CMAKE_INSTALL_LIBDIR", "lib")
 			.build();
 		dst.push("lib");
 		println!("cargo:rustc-link-search=native={}", dst.display());
