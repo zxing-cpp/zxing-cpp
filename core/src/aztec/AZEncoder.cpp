@@ -8,8 +8,7 @@
 
 #include "AZHighLevelEncoder.h"
 #include "BitArray.h"
-#include "GenericGF.h"
-#include "ReedSolomonEncoder.h"
+#include "ReedSolomon.h"
 #include "ZXTestSupport.h"
 
 #include <cstdlib>
@@ -42,23 +41,11 @@ static void DrawBullsEye(BitMatrix& matrix, int center, int size)
 	matrix.set(center + size, center + size - 1);
 }
 
-static const GenericGF& GetGFFromWordSize(int wordSize)
-{
-	switch (wordSize) {
-	case 4:  return GenericGF::AztecParam();
-	case 6:  return GenericGF::AztecData6();
-	case 8:  return GenericGF::AztecData8();
-	case 10: return GenericGF::AztecData10();
-	case 12: return GenericGF::AztecData12();
-	default: throw std::invalid_argument("Unsupported word size " + std::to_string(wordSize));
-	}
-}
-
 static void GenerateCheckWords(const BitArray& bitArray, int totalBits, int wordSize, BitArray& messageBits)
 {
 	// bitArray is guaranteed to be a multiple of the wordSize, so no padding needed
 	std::vector<int> messageWords = ToInts(bitArray, wordSize, totalBits / wordSize);
-	ReedSolomonEncode(GetGFFromWordSize(wordSize), messageWords, (totalBits - bitArray.size()) / wordSize);
+	ReedSolomonEncode(GF2nAztec(wordSize), messageWords, (totalBits - bitArray.size()) / wordSize);
 	messageBits = BitArray();
 	if (int startPad = totalBits % wordSize)
 		messageBits.appendBits(0, startPad);

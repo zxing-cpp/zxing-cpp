@@ -14,8 +14,7 @@
 #include "DMDataBlock.h"
 #include "DMVersion.h"
 #include "DecoderResult.h"
-#include "GenericGF.h"
-#include "ReedSolomonDecoder.h"
+#include "ReedSolomon.h"
 #include "ZXAlgorithms.h"
 #include "ZXTestSupport.h"
 
@@ -374,30 +373,6 @@ DecoderResult Decode(ByteArray&& bytes, const bool isDMRE)
 
 } // namespace DecodedBitStreamParser
 
-/**
-* <p>Given data and error-correction codewords received, possibly corrupted by errors, attempts to
-* correct the errors in-place using Reed-Solomon error correction.</p>
-*
-* @param codewordBytes data and error correction codewords
-* @param numDataCodewords number of codewords that are data bytes
-* @return std::nullopt if error correction fails, otherwise the unused error correction in the range [0, 1]
-*/
-static std::optional<double>
-CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
-{
-	// First read into an array of ints
-	std::vector<int> codewordsInts(codewordBytes.begin(), codewordBytes.end());
-	int numECCodewords = Size(codewordBytes) - numDataCodewords;
-
-	auto res = ReedSolomonDecode(GenericGF::DataMatrixField256(), codewordsInts, numECCodewords);
-	if (res) {
-		// Copy back into array of bytes -- only need to worry about the bytes that were data
-		// We don't care about errors in the error-correction codewords
-		std::copy_n(codewordsInts.begin(), numDataCodewords, codewordBytes.begin());
-	}
-
-	return res;
-}
 
 static DecoderResult DoDecode(const BitMatrix& bits)
 {
@@ -426,7 +401,7 @@ retry:
 	const int dataBlocksCount = Size(dataBlocks);
 	for (int j = 0; j < dataBlocksCount; j++) {
 		auto& [numDataCodewords, codewords] = dataBlocks[j];
-		auto blockUEC = CorrectErrors(codewords, numDataCodewords);
+		auto blockUEC = ReedSolomonDecode(RSField::DataMatrix, codewords, Size(codewords) - numDataCodewords);
 		if (!blockUEC) {
 			if(version->versionNumber == 24 && !fix259) {
 				fix259 = true;

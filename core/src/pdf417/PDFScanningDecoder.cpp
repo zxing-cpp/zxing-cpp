@@ -14,9 +14,8 @@
 #include "PDFDetectionResult.h"
 #include "PDFDecoder.h"
 #include "PDFCustomData.h"
-#include "PDFModulusGF.h"
+#include "ReedSolomon.h"
 #include "ZXAlgorithms.h"
-#include "ZXTestSupport.h"
 
 #include <cmath>
 
@@ -24,8 +23,6 @@ namespace ZXing {
 namespace Pdf417 {
 
 static const int CODEWORD_SKEW_SIZE = 2;
-static const int MAX_ERRORS = 3;
-static const int MAX_EC_CODEWORDS = 512;
 
 using ModuleBitCountType = std::array<int, CodewordDecoder::BARS_IN_MODULE>;
 
@@ -355,186 +352,6 @@ static bool AdjustCodewordCount(const DetectionResult& detectionResult, std::vec
 	}
 	return true;
 }
-// +++++++++++++++++++++++++++++++++++ Error Correction
-
-static const ModulusGF& GetModulusGF()
-{
-	static const ModulusGF field(CodewordDecoder::NUMBER_OF_CODEWORDS, 3);
-	return field;
-}
-
-static bool RunEuclideanAlgorithm(ModulusPoly a, ModulusPoly b, int R, ModulusPoly& sigma, ModulusPoly& omega)
-{
-	const ModulusGF& field = GetModulusGF();
-
-	// Assume a's degree is >= b's
-	if (a.degree() < b.degree()) {
-		swap(a, b);
-	}
-
-	ModulusPoly rLast = a;
-	ModulusPoly r = b;
-	ModulusPoly tLast = field.zero();
-	ModulusPoly t = field.one();
-
-	// Run Euclidean algorithm until r's degree is less than R/2
-	while (r.degree() >= R / 2) {
-		ModulusPoly rLastLast = rLast;
-		ModulusPoly tLastLast = tLast;
-		rLast = r;
-		tLast = t;
-
-		// Divide rLastLast by rLast, with quotient in q and remainder in r
-		if (rLast.isZero()) {
-			// Oops, Euclidean algorithm already terminated?
-			return false;
-		}
-		r = rLastLast;
-		ModulusPoly q = field.zero();
-		int denominatorLeadingTerm = rLast.coefficient(rLast.degree());
-		int dltInverse = field.inverse(denominatorLeadingTerm);
-		while (r.degree() >= rLast.degree() && !r.isZero()) {
-			int degreeDiff = r.degree() - rLast.degree();
-			int scale = field.multiply(r.coefficient(r.degree()), dltInverse);
-			q = q.add(field.buildMonomial(degreeDiff, scale));
-			r = r.subtract(rLast.multiplyByMonomial(degreeDiff, scale));
-		}
-
-		t = q.multiply(tLast).subtract(tLastLast).negative();
-	}
-
-	int sigmaTildeAtZero = t.coefficient(0);
-	if (sigmaTildeAtZero == 0) {
-		return false;
-	}
-
-	int inverse = field.inverse(sigmaTildeAtZero);
-	sigma = t.multiply(inverse);
-	omega = r.multiply(inverse);
-	return true;
-}
-
-static bool FindErrorLocations(const ModulusPoly& errorLocator, std::vector<int>& result)
-{
-	const ModulusGF& field = GetModulusGF();
-	// This is a direct application of Chien's search
-	int numErrors = errorLocator.degree();
-	result.resize(numErrors);
-	int e = 0;
-	for (int i = 1; i < field.size() && e < numErrors; i++) {
-		if (errorLocator.evaluateAt(i) == 0) {
-			result[e] = field.inverse(i);
-			e++;
-		}
-	}
-	return e == numErrors;
-}
-
-static std::vector<int> FindErrorMagnitudes(const ModulusPoly& errorEvaluator, const ModulusPoly& errorLocator, const std::vector<int>& errorLocations)
-{
-	const ModulusGF& field = GetModulusGF();
-	int errorLocatorDegree = errorLocator.degree();
-	std::vector<int> formalDerivativeCoefficients(errorLocatorDegree);
-	for (int i = 1; i <= errorLocatorDegree; i++) {
-		formalDerivativeCoefficients[errorLocatorDegree - i] = field.multiply(i, errorLocator.coefficient(i));
-	}
-
-	ModulusPoly formalDerivative(field, formalDerivativeCoefficients);
-	// This is directly applying Forney's Formula
-	std::vector<int> result(errorLocations.size());
-	for (size_t i = 0; i < result.size(); i++) {
-		int xiInverse = field.inverse(errorLocations[i]);
-		int numerator = field.subtract(0, errorEvaluator.evaluateAt(xiInverse));
-		int denominator = field.inverse(formalDerivative.evaluateAt(xiInverse));
-		result[i] = field.multiply(numerator, denominator);
-	}
-	return result;
-}
-
-/**
-* @param received received codewords
-* @param numECCodewords number of those codewords used for EC
-* @param erasures location of erasures
-* @return false if errors cannot be corrected, maybe because of too many errors
-*/
-ZXING_EXPORT_TEST_ONLY
-bool DecodeErrorCorrection(std::vector<int>& received, int numECCodewords, const std::vector<int>& erasures [[maybe_unused]], int& nbErrors)
-{
-	const ModulusGF& field = GetModulusGF();
-	ModulusPoly poly(field, received);
-	std::vector<int> S(numECCodewords);
-	bool error = false;
-	for (int i = numECCodewords; i > 0; i--) {
-		int eval = poly.evaluateAt(field.exp(i));
-		S[numECCodewords - i] = eval;
-		if (eval != 0) {
-			error = true;
-		}
-	}
-
-	if (!error) {
-		nbErrors = 0;
-		return true;
-	}
-
-//	ModulusPoly knownErrors = field.one();
-//	for (int erasure : erasures) {
-//		int b = field.exp(Size(received) - 1 - erasure);
-//		// Add (1 - bx) term:
-//		ModulusPoly term(field, { field.subtract(0, b), 1 });
-//		knownErrors = knownErrors.multiply(term);
-//	}
-
-	ModulusPoly syndrome(field, S);
-//	syndrome = syndrome.multiply(knownErrors);
-
-	ModulusPoly sigma, omega;
-	if (!RunEuclideanAlgorithm(field.buildMonomial(numECCodewords, 1), syndrome, numECCodewords, sigma, omega)) {
-		return false;
-	}
-
-//	sigma = sigma.multiply(knownErrors);
-
-	std::vector<int> errorLocations;
-	if (!FindErrorLocations(sigma, errorLocations)) {
-		return false;
-	}
-
-	std::vector<int> errorMagnitudes = FindErrorMagnitudes(omega, sigma, errorLocations);
-
-	int receivedSize = Size(received);
-	for (size_t i = 0; i < errorLocations.size(); i++) {
-		int position = receivedSize - 1 - field.log(errorLocations[i]);
-		if (position < 0) {
-			return false;
-		}
-		received[position] = field.subtract(received[position], errorMagnitudes[i]);
-	}
-	nbErrors = Size(errorLocations);
-	return true;
-}
-
-// --------------------------------------- Error Correction
-
-/**
-* <p>Given data and error-correction codewords received, possibly corrupted by errors, attempts to
-* correct the errors in-place.</p>
-*
-* @param codewords   data and error correction codewords
-* @param erasures positions of any known erasures
-* @param numECCodewords number of error correction codewords that are available in codewords
-* @return false if error correction fails
-*/
-static bool CorrectErrors(std::vector<int>& codewords, const std::vector<int>& erasures, int numECCodewords, int& errorCount)
-{
-	if (Size(erasures) > numECCodewords / 2 + MAX_ERRORS ||
-		numECCodewords < 0 ||
-		numECCodewords > MAX_EC_CODEWORDS) {
-		// Too many errors or EC Codewords is corrupted
-		return false;
-	}
-	return DecodeErrorCorrection(codewords, numECCodewords, erasures, errorCount);
-}
 
 /**
 * Verify that all is OK with the codeword array.
@@ -567,13 +384,13 @@ static bool VerifyCodewordCount(std::vector<int>& codewords, int numECCodewords)
 	return true;
 }
 
-static DecoderResult DecodeCodewords(std::vector<int>& codewords, int numECCodewords, const std::vector<int>& erasures)
+DecoderResult DecodeCodewords(std::vector<int>& codewords, int numECCodewords, std::span<const int> erasures)
 {
 	if (codewords.empty())
 		return FormatError();
 
-	int correctedErrorsCount = 0;
-	if (!CorrectErrors(codewords, erasures, numECCodewords, correctedErrorsCount))
+	auto res = ReedSolomonDecode(RSField::PDF417, codewords, numECCodewords, erasures);
+	if (!res)
 		return ChecksumError();
 
 	if (!VerifyCodewordCount(codewords, numECCodewords))
@@ -582,16 +399,6 @@ static DecoderResult DecodeCodewords(std::vector<int>& codewords, int numECCodew
 	// Decode the codewords
 	return Decode(codewords).setEcLevel(std::to_string(numECCodewords * 100 / Size(codewords)) + "%");
 }
-
-DecoderResult DecodeCodewords(std::vector<int>& codewords, int numECCodeWords)
-{
-	for (auto& cw : codewords)
-		cw = std::clamp(cw, 0, CodewordDecoder::MAX_CODEWORDS_IN_BARCODE);
-
-	// erasures array has never been actually used inside the error correction code
-	return DecodeCodewords(codewords, numECCodeWords, {});
-}
-
 
 /**
 * This method deals with the fact, that the decoding process doesn't always yield a single most likely value. The

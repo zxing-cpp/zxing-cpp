@@ -12,13 +12,12 @@
 #include "ByteArray.h"
 #include "CharacterSet.h"
 #include "DecoderResult.h"
-#include "GenericGF.h"
 #include "QRBitMatrixParser.h"
 #include "QRCodecMode.h"
 #include "QRDataBlock.h"
 #include "QRFormatInformation.h"
 #include "QRVersion.h"
-#include "ReedSolomonDecoder.h"
+#include "ReedSolomon.h"
 #include "StructuredAppend.h"
 #include "ZXAlgorithms.h"
 #include "ZXTestSupport.h"
@@ -29,31 +28,6 @@
 #include <vector>
 
 namespace ZXing::QRCode {
-
-/**
-* <p>Given data and error-correction codewords received, possibly corrupted by errors, attempts to
-* correct the errors in-place using Reed-Solomon error correction.</p>
-*
-* @param codewordBytes data and error correction codewords
-* @param numDataCodewords number of codewords that are data bytes
-* @return std::nullopt if error correction fails, otherwise the unused error correction in the range [0, 1]
-*/
-static std::optional<double> CorrectErrors(ByteArray& codewordBytes, int numDataCodewords)
-{
-	// First read into an array of ints
-	std::vector<int> codewordsInts(codewordBytes.begin(), codewordBytes.end());
-
-	int numECCodewords = Size(codewordBytes) - numDataCodewords;
-	auto res = ReedSolomonDecode(GenericGF::QRCodeField256(), codewordsInts, numECCodewords);
-
-	if (res) {
-		// Copy back into array of bytes -- only need to worry about the bytes that were data
-		// We don't care about errors in the error-correction codewords
-		std::copy_n(codewordsInts.begin(), numDataCodewords, codewordBytes.begin());
-	}
-	return res;
-}
-
 
 /**
 * See specification GBT 18284-2000
@@ -357,7 +331,7 @@ DecoderResult Decode(const BitMatrix& bits)
 	{
 		ByteArray& codewordBytes = dataBlock.codewords();
 		int numDataCodewords = dataBlock.numDataCodewords();
-		auto blockUEC = CorrectErrors(codewordBytes, numDataCodewords);
+		auto blockUEC = ReedSolomonDecode(RSField::QRCode, codewordBytes, Size(codewordBytes) - numDataCodewords);
 
 		if (!blockUEC)
 			error = ChecksumError();

@@ -8,12 +8,11 @@
 
 #include "BitArray.h"
 #include "ECI.h"
-#include "GenericGF.h"
 #include "QREncodeResult.h"
 #include "QRErrorCorrectionLevel.h"
 #include "QRMaskUtil.h"
 #include "QRMatrixUtil.h"
-#include "ReedSolomonEncoder.h"
+#include "ReedSolomon.h"
 #include "TextEncoder.h"
 #include "ZXTestSupport.h"
 #include "ZXAlgorithms.h"
@@ -372,12 +371,8 @@ void GetNumDataBytesAndNumECBytesForBlockID(int numTotalBytes, int numDataBytes,
 ZXING_EXPORT_TEST_ONLY
 void GenerateECBytes(const ByteArray& dataBytes, int numEcBytes, ByteArray& ecBytes)
 {
-	std::vector<int> message(dataBytes.size() + numEcBytes, 0);
-	std::copy(dataBytes.begin(), dataBytes.end(), message.begin());
-	ReedSolomonEncode(GenericGF::QRCodeField256(), message, numEcBytes);
-
 	ecBytes.resize(numEcBytes);
-	std::transform(message.end() - numEcBytes, message.end(), ecBytes.begin(), [](auto c) { return narrow_cast<uint8_t>(c); });
+	ReedSolomonEncode(RSField::QRCode, dataBytes, ecBytes);
 }
 
 

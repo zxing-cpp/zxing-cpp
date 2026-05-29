@@ -7,6 +7,7 @@
 
 #include "PDFEncoder.h"
 #include "PDFHighLevelEncoder.h"
+#include "ReedSolomon.h"
 #include <array>
 #include <cmath>
 #include <vector>
@@ -210,6 +211,8 @@ static const std::array<std::array<int, 929>, 3> CODEWORD_TABLE = {
 static const float PREFERRED_RATIO = 3.0f;
 static const float MODULE_RATIO = 0.25f; // keep in sync with Writer::encode()
 
+#ifdef ZX_USE_SELFCONTAINED_RS_ENCODER
+
 /**
 * PDF417 error correction code following the algorithm described in ISO/IEC 15438:2001(E) in
 * chapter 4.10.
@@ -289,6 +292,7 @@ static const short EC_COEFFICIENTS_L8[] = { 352,  77, 373, 504,  35, 599, 428, 2
 static const short* const EC_COEFFICIENTS[] = {EC_COEFFICIENTS_L0, EC_COEFFICIENTS_L1, EC_COEFFICIENTS_L2,
 										 EC_COEFFICIENTS_L3, EC_COEFFICIENTS_L4, EC_COEFFICIENTS_L5,
 										 EC_COEFFICIENTS_L6, EC_COEFFICIENTS_L7, EC_COEFFICIENTS_L8};
+#endif
 
 /**
 * Determines the number of error correction codewords for a specified error correction
@@ -311,6 +315,11 @@ static int GetErrorCorrectionCodewordCount(int errorCorrectionLevel)
 static void GenerateErrorCorrection(std::vector<int>& dataCodewords, int errorCorrectionLevel)
 {
 	int k = GetErrorCorrectionCodewordCount(errorCorrectionLevel);
+
+#ifndef ZX_USE_SELFCONTAINED_RS_ENCODER
+	dataCodewords.resize(dataCodewords.size() + k, 0);
+	ReedSolomonEncode(RSField::PDF417, dataCodewords, k);
+#else
 	std::vector<int> e(k, 0);
 	int sld = Size(dataCodewords);
 	for (int i = 0; i < sld; i++) {
@@ -332,8 +341,8 @@ static void GenerateErrorCorrection(std::vector<int>& dataCodewords, int errorCo
 		}
 	}
 	dataCodewords.insert(dataCodewords.end(), e.rbegin(), e.rend());
+#endif
 }
-
 
 /**
 * Calculates the necessary number of rows as described in annex Q of ISO/IEC 15438:2001(E).
