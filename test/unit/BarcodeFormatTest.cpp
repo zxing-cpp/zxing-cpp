@@ -97,9 +97,22 @@ TEST(BarcodeFormatTest, BarcodeFormatIntersection)
 	EXPECT_FALSE(EAN8 & QRCode);
 	EXPECT_FALSE(EAN8 & MicroQRCode);
 	EXPECT_FALSE(EANUPC & QRCode);
+	EXPECT_FALSE(EANUPC & QRCodeModel2);
 	EXPECT_FALSE(AllMatrix & EAN8);
 	EXPECT_FALSE(AllMatrix & EANUPC);
 #endif // ZXING_ENABLE_1D
+
+#if ZXING_ENABLE_1D && ZXING_ENABLE_QRCODE
+	using BF = BarcodeFormats;
+	EXPECT_EQ(BF(EANUPC | QRCode) & BF(QRCode), BF(QRCode));
+	EXPECT_EQ(BF(QRCode) & BF(EANUPC | QRCode), BF(QRCode));
+	EXPECT_EQ(BF(EANUPC | QRCode) & BF(QRCodeModel2), BF(QRCodeModel2));
+	EXPECT_EQ(BF(QRCodeModel2) & BF(EANUPC | QRCode), BF(QRCodeModel2));
+	EXPECT_EQ(BF(AllLinear) & BF(EANUPC | QRCode), BF(EANUPC));
+	EXPECT_EQ(BF(Code39) & BF(EANUPC | QRCode), BF());
+	EXPECT_EQ(BF(RMQRCode) & BF(MicroQRCode | RMQRCode), BF(RMQRCode));
+	EXPECT_EQ(BF(QRCode) & BF(MicroQRCode | RMQRCode), BF(MicroQRCode | RMQRCode));
+#endif
 
 #ifdef ZXING_READERS
 	EXPECT_EQ(DataMatrix & AllReadable, ZXING_ENABLE_DATAMATRIX);
