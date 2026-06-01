@@ -36,7 +36,7 @@ It was originally ported from the Java [ZXing library](https://github.com/zxing/
 | Aztec Code | Aztec Code, Aztec Rune
 | Data Matrix | ECC200
 | MaxiCode | (partial read support)
-| PDF417 | PDF417, Compact PDF417, MicroPDF417ᵂ
+| PDF417 | PDF417, Compact PDF417, MicroPDF417
 | QR Code | Model 1ᴿ, Model 2, Micro QR Code, rMQR
 | ***Other:*** | *(Legacy, Niche)*
 | Codabar |
@@ -55,6 +55,7 @@ You can sponsor this library at [GitHub Sponsors](https://github.com/sponsors/ax
 
 | | Named Sponsors: |
 |:-:|:-|
+| [![ArAllAll](https://www.alliedvision.com/favicon.ico)](https://www.alliedvision.com/) | [Allied Vision Konstanz GmbH](https://www.alliedvision.com/) |
 | [![jknlsn](https://avatars.githubusercontent.com/u/9172090?s=32)](https://github.com/jknlsn) | [Jake Nelson](https://github.com/jknlsn) |
 | [![KURZ](https://avatars.githubusercontent.com/u/25196688?s=32)](https://github.com/kurzdigital) | [KURZ Digital Solutions GmbH & Co. KG](https://github.com/kurzdigital) |
 | [![Moonshine AI](https://avatars.githubusercontent.com/u/98664891?s=32)](https://github.com/moonshine-ai) | [Moonshine AI](https://github.com/moonshine-ai) |
