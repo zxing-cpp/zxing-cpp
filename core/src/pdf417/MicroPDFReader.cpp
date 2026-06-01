@@ -320,8 +320,26 @@ static Clusters FindCandidates(const BitMatrix& image, bool tryHarder, bool reve
 				}
 			}
 
-			if (p != PointI{})
+			if (p != PointI{}) {
+#ifdef ZXING_SUPPORT_MINIMAL_SIZE_MIRCOPDF417
+				if (tryHarder) {
+					int rowHeight = 2 * p.width / 27; // p is 27 modules wide, a row is nominally 2 modules high
+					if (rowHeight < skip) {
+						// TODO: this skip adjustment + 'restart' to detect very small symbols may break detection of multiple symbls
+						// with different sizes horizontally next to each other
+						y = std::max(0, y - skip); // the for loop will add `skip` back, so this effectively y - skip + rowHeight
+						skip = rowHeight;
+						printf("decreasing skip to %d at x=%3d, y=%3d, p.width=%d\n", skip, p.x, y, p.width);
+						break;
+					} else if (rowHeight > 2 * skip
+							   && std::ranges::all_of(res, [&](const Cluster& c) { return p.y - c.back().y > 2 * skip; })) {
+						skip = std::min(8, rowHeight); // reset skip to default when starting a new cluster
+						printf("increasing skip to %d at x=%3d, y=%3d, p.width=%d\n", skip, p.x, y, p.width);
+					}
+				}
+#endif
 				res.emplace_back(Cluster{p});
+			}
 
 			next.skipPair();
 			next.extend();
