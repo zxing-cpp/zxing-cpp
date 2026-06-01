@@ -7,14 +7,11 @@
 
 #include "BitMatrix.h"
 
-#include <mutex>
-
 namespace ZXing {
 
 struct BinaryBitmap::Cache
 {
-	std::once_flag once;
-	std::shared_ptr<const BitMatrix> matrix;
+	std::shared_ptr<const BitMatrix> matrix, transposed;
 };
 
 BitMatrix BinaryBitmap::binarize(const uint8_t threshold) const
@@ -51,18 +48,30 @@ BinaryBitmap::BinaryBitmap(const ImageView& buffer) : _cache(new Cache), _buffer
 
 BinaryBitmap::~BinaryBitmap() = default;
 
-const BitMatrix* BinaryBitmap::getBitMatrix() const
+const BitMatrix* BinaryBitmap::getBitMatrix(bool transposed) const
 {
-	std::call_once(_cache->once, [&](){_cache->matrix = getBlackMatrix();});
+	if (!_cache->matrix) {
+		_cache->matrix = getBlackMatrix();
+	}
+	if (transposed) {
+		if (!_cache->transposed) {
+			auto copy = std::make_shared<BitMatrix>(_cache->matrix->copy());
+			copy->rotate90();
+			_cache->transposed = std::move(copy);
+		}
+		return _cache->transposed.get();
+	}
 	return _cache->matrix.get();
 }
 
 void BinaryBitmap::invert()
 {
-	if (_cache->matrix) {
-		auto matrix = const_cast<BitMatrix*>(_cache->matrix.get());
-		matrix->flipAll();
-	}
+	if (_cache->matrix)
+		const_cast<BitMatrix*>(_cache->matrix.get())->flipAll();
+
+	if (_cache->transposed)
+		const_cast<BitMatrix*>(_cache->transposed.get())->flipAll();
+
 	_inverted = !_inverted;
 }
 
@@ -95,6 +104,7 @@ void BinaryBitmap::close()
 		// erode
 		SumFilter(tmp, matrix, [](int sum) { return (sum == 9 * BitMatrix::SET_V) * BitMatrix::SET_V; });
 	}
+	_cache->transposed.reset();
 	_closed = true;
 }
 

@@ -347,9 +347,7 @@ Detector::Result Detector::Detect(const BinaryBitmap& image, bool multiple, bool
 
 		result.rotation = 90 * rotate90;
 		if (rotate90) {
-			auto newBits = std::make_shared<BitMatrix>(binImg->copy());
-			newBits->rotate90();
-			binImg = newBits;
+			binImg = std::shared_ptr<const BitMatrix>(image.getBitMatrix(true), [](const BitMatrix*){});
 		}
 
 		result.points = DetectBarcode(*binImg, multiple);

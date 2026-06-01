@@ -54,7 +54,7 @@ public:
 	*/
 	virtual bool getPatternRow(int row, int rotation, PatternRow& res) const = 0;
 
-	const BitMatrix* getBitMatrix() const;
+	const BitMatrix* getBitMatrix(bool transposed = false) const;
 
 	void invert();
 	bool inverted() const { return _inverted; }
