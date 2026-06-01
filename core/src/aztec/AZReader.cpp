@@ -24,8 +24,9 @@ BarcodesData Reader::read(const BinaryBitmap& image, int maxSymbols) const
 	auto binImg = image.getBitMatrix();
 	if (binImg == nullptr)
 		return {};
-	
-	auto detRess = Detect(*binImg, _opts.isPure(), _opts.tryHarder(), maxSymbols);
+
+	auto detRess = Detect(*binImg, _opts.isPure(), _opts.tryHarder(), maxSymbols, _opts.hasFormat(BarcodeFormat::AztecCode),
+						  _opts.hasFormat(BarcodeFormat::AztecRune));
 
 	BarcodesData res;
 	for (auto&& detRes : detRess) {

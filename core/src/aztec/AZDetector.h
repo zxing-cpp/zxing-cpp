@@ -16,10 +16,10 @@ namespace Aztec {
 
 class DetectorResult;
 
-DetectorResult Detect(const BitMatrix& image, bool isPure, bool tryHarder = true);
+DetectorResult Detect(const BitMatrix& image, bool isPure, bool tryHarder = true, bool standard = true, bool runes = true);
 
 using DetectorResults = std::vector<DetectorResult>;
-DetectorResults Detect(const BitMatrix& image, bool isPure, bool tryHarder, int maxSymbols);
+DetectorResults Detect(const BitMatrix& image, bool isPure, bool tryHarder, int maxSymbols, bool standard = true, bool runes = true);
 
 } // Aztec
 } // ZXing
