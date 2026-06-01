@@ -274,7 +274,7 @@ struct Segment
 using Cluster = std::vector<LRAP>;
 using Clusters = std::list<Cluster>;
 
-static Clusters FindCandidates(const BitMatrix& image, bool tryHarder)
+static Clusters FindCandidates(const BitMatrix& image, bool tryHarder, bool reversed)
 {
 	const int height = image.height();
 	const int width = image.width();
@@ -290,7 +290,10 @@ static Clusters FindCandidates(const BitMatrix& image, bool tryHarder)
 	Clusters res;
 
 	for (int y = margin; y < height - margin; y += skip) {
-		GetPatternRow(image, y, row, false);
+		GetPatternRow(image, reversed ? height - 1 - y : y, row, false);
+		if (reversed)
+			std::ranges::reverse(row);
+
 		PatternView next = row;
 		int idx;
 #if 1
@@ -359,6 +362,13 @@ static Clusters FindCandidates(const BitMatrix& image, bool tryHarder)
 
 		return false;
 	});
+
+	if (reversed)
+		for (auto& cluster : res)
+			for (auto& lrap : cluster) {
+				lrap.x = width - 1 - lrap.x;
+				lrap.y = height - 1 - lrap.y;
+			}
 
 #ifdef PRINT_DEBUG
 	printf("\n# found LRAPs: %d\n", Size(res));
@@ -504,8 +514,10 @@ static BarcodeData ScanCandidate(const BitMatrix& image, const Cluster& lraps)
 		return true;
 	};
 
+	auto inSweepRange = [&, sweepDir = startCur.right()](PointF p) { return dot(PointF(lraps.back()) - p, sweepDir) >= 0; };
+
 	failedTries = 1;
-	for (; image.isIn(startCur.p + startCur.right()) && (startCur.p.y <= lraps.back().y || failedTries < 10);
+	for (; image.isIn(startCur.p + startCur.right()) && (inSweepRange(startCur.p) || failedTries < 10);
 		 startCur.p += startCur.right(), failedTries++) {
 		auto cur = startCur;
 		log(cur.p);
@@ -588,21 +600,31 @@ static BarcodeData ScanCandidate(const BitMatrix& image, const Cluster& lraps)
 
 BarcodesData Reader::read(const BinaryBitmap& image, int maxSymbols) const
 {
-	auto binImg = image.getBitMatrix();
-	if (binImg == nullptr)
-		return {};
+	BarcodesData res;
+	// TODO: implement proper isPure mode (performace)
+	bool tryRotate = _opts.tryRotate() && !_opts.isPure();
+	for (int rotate90 = 0; rotate90 <= static_cast<int>(tryRotate); ++rotate90) {
+		// TODO: implement rotation support without full image rotation (performance)
+		auto binImg = image.getBitMatrix(rotate90);
+		if (!binImg)
+			return {};
 
 #ifdef PRINT_DEBUG
-	LogMatrixWriter lmw(log, *binImg, 5, "mpdf-log.pnm");
+		LogMatrixWriter lmw(log, *binImg, 5, "mpdf-log.pnm");
 #endif
 
-	BarcodesData res;
-	for (const auto& x : FindCandidates(*binImg, _opts.tryHarder())) {
-		auto v = ScanCandidate(*binImg, x);
-		if (v.isValid() || _opts.returnErrors())
-			res.push_back(std::move(v));
-		if (maxSymbols && Size(res) >= maxSymbols)
-			break;
+		for (bool reversed : {false, true}) {
+			for (const auto& x : FindCandidates(*binImg, _opts.tryHarder(), reversed)) {
+				auto v = ScanCandidate(*binImg, x);
+				if (rotate90)
+					for (auto& p : v.position)
+						p = {binImg->height() - 1 - p.y, p.x};
+				if ((v.isValid() || _opts.returnErrors()) && !Contains(res, v))
+					res.push_back(std::move(v));
+				if (maxSymbols && Size(res) >= maxSymbols)
+					return res;
+			}
+		}
 	}
 
 	return res;
