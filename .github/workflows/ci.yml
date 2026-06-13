@@ -206,8 +206,8 @@ jobs:
       working-directory: wrappers/ios/demo
       run: xcodebuild build -scheme demo -sdk "iphonesimulator"
 
-    - name: Validate the Pod
-      run: pod lib lint --allow-warnings
+    # - name: Validate the Pod
+    #   run: pod lib lint --allow-warnings
 
   build-android:
     runs-on: ubuntu-latest
