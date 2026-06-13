@@ -120,6 +120,8 @@ set (COMMON_FILES
     src/ReaderOptions.h
     src/ReadBarcode.h
     src/ReadBarcode.cpp
+    src/ReedSolomon.h
+    src/ReedSolomon.cpp
     src/SymbologyIdentifier.h
     src/Utf.h
     src/Utf.cpp
@@ -139,10 +141,6 @@ if (ZXING_READERS OR ZXING_WRITERS_OLD)
     set (COMMON_FILES ${COMMON_FILES}
         src/BitArray.h
         src/BitArray.cpp
-        src/GenericGF.h
-        src/GenericGF.cpp
-        src/GenericGFPoly.h
-        src/GenericGFPoly.cpp
     )
 endif()
 if (ZXING_READERS OR ZXING_WRITERS_NEW)
@@ -175,8 +173,6 @@ if (ZXING_READERS)
         src/PerspectiveTransform.h
         src/PerspectiveTransform.cpp
         src/Reader.h
-        src/ReedSolomonDecoder.h
-        src/ReedSolomonDecoder.cpp
         src/RegressionLine.h
         src/ResultPoint.h
         src/ResultPoint.cpp
@@ -202,8 +198,6 @@ endif()
 
 if (ZXING_WRITERS_OLD)
     set (COMMON_FILES ${COMMON_FILES}
-        src/ReedSolomonEncoder.h
-        src/ReedSolomonEncoder.cpp
         src/MultiFormatWriter.h
         src/MultiFormatWriter.cpp
     )
@@ -414,10 +408,6 @@ if (ZXING_READERS AND ZXING_ENABLE_PDF417)
         src/pdf417/PDFDetectionResultColumn.cpp
         src/pdf417/PDFDetector.h
         src/pdf417/PDFDetector.cpp
-        src/pdf417/PDFModulusGF.h
-        src/pdf417/PDFModulusGF.cpp
-        src/pdf417/PDFModulusPoly.h
-        src/pdf417/PDFModulusPoly.cpp
         src/pdf417/PDFReader.h
         src/pdf417/PDFReader.cpp
         src/pdf417/PDFScanningDecoder.h
@@ -531,6 +521,15 @@ if (ZXING_READERS OR ZXING_WRITERS_OLD)
     )
     target_sources(ZXing PRIVATE ${LIBZUECI_FILES})
     source_group (Sources\\libzueci FILES ${LIBZUECI_FILES})
+
+    set (LIBRSCPP_FILES
+        src/librscpp/field.h
+        src/librscpp/poly.h
+        src/librscpp/encode.h
+        src/librscpp/decode.h
+    )
+    target_sources(ZXing PRIVATE ${LIBRSCPP_FILES})
+    source_group (Sources\\librscpp FILES ${LIBRSCPP_FILES})
 endif()
 
 # MARK: - ZINT

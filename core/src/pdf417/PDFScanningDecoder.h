@@ -7,6 +7,7 @@
 #pragma once
 
 #include <vector>
+#include <span>
 
 namespace ZXing {
 
@@ -34,7 +35,7 @@ inline int NumECCodeWords(int ecLevel)
 	return 1 << (ecLevel + 1);
 }
 
-DecoderResult DecodeCodewords(std::vector<int>& codewords, int numECCodeWords);
+DecoderResult DecodeCodewords(std::vector<int>& codewords, int numECC, std::span<const int> erasures = {});
 
 } // Pdf417
 } // ZXing

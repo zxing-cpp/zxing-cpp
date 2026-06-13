@@ -12,12 +12,11 @@
 #include "BitMatrix.h"
 #include "BitMatrixCursor.h"
 #include "ConcentricFinder.h"
-#include "GenericGF.h"
 #include "GridSampler.h"
 #include "LocalGrid.h"
 #include "LogMatrix.h"
 #include "Pattern.h"
-#include "ReedSolomonDecoder.h"
+#include "ReedSolomon.h"
 #include "ZXAlgorithms.h"
 
 #include <algorithm>
@@ -314,14 +313,14 @@ static int ModeMessage(const BitMatrix& image, const PerspectiveTransform& mod2P
 		bits >>= 4;
 	}
 
-	auto decodeResult = ReedSolomonDecode(GenericGF::AztecParam(), words, numECCodewords);
+	auto decodeResult = ReedSolomonDecode(GF2nAztec(4), words, numECCodewords);
 
 	if ((!decodeResult) && compact) {
 		// Is this a Rune?
 		for (auto& word : words)
 			word ^= 0b1010;
 		
-		decodeResult = ReedSolomonDecode(GenericGF::AztecParam(), words, numECCodewords);
+		decodeResult = ReedSolomonDecode(GF2nAztec(4), words, numECCodewords);
 
 		if (decodeResult)
 			isRune = true;

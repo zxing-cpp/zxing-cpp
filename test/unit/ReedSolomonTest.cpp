@@ -1,23 +1,36 @@
 /*
-* Copyright 2017 Huy Cuong Nguyen
 * Copyright 2013 ZXing authors
+* Copyright 2017 Huy Cuong Nguyen
+* Copyright 2026 Axel Waggershauser
 */
 // SPDX-License-Identifier: Apache-2.0
 
-#include "GenericGF.h"
 #include "PseudoRandom.h"
-#include "ReedSolomonDecoder.h"
-#include "ReedSolomonEncoder.h"
+#include "ReedSolomon.h"
+#include "ZXAlgorithms.h"
+
+#include "librscpp/encode.h"
+#include "librscpp/decode.h"
 
 #include <algorithm>
 #include <ostream>
 
-static std::ostream& operator<<(std::ostream& out, const ZXing::GenericGF& field) {
-	out << "GF(" << field.size() << ',' << field.generatorBase() << ')';
-	return out;
+#include "gtest/gtest.h"
+
+namespace rs = librscpp;
+
+using GF2nI = rs::GF2n<>;
+
+namespace ZXing {
+const GF2nI& GetGF2n(RSField field);
 }
 
-#include "gtest/gtest.h"
+namespace librscpp {
+static std::ostream& operator<<(std::ostream& out, const GF2nI& field)
+{
+	return out << "GF(" << field.size() << ',' << field.fcr() << ')';
+}
+}
 
 using namespace ZXing;
 
@@ -25,23 +38,13 @@ namespace {
 	static const int DECODER_RANDOM_TEST_ITERATIONS = 2;
 	static const int DECODER_TEST_ITERATIONS = 4;
 
-	std::vector<int> operator+(const std::vector<int>& a, const std::vector<int>& b) {
-		std::vector<int> c;
-		c.reserve(a.size() + b.size());
-		c.insert(c.end(), a.begin(), a.end());
-		c.insert(c.end(), b.begin(), b.end());
-		return c;
+	void TestEncoder(const GF2nI& field, const std::vector<int>& dataWords, const std::vector<int>& ecWords) {
+		std::vector<int> result(ecWords.size());
+		rs::encode(field, dataWords, result);
+		EXPECT_EQ(result, ecWords) << "Encode in " << field << " (" << dataWords.size() << ',' << ecWords.size() << ") failed";
 	}
 
-	void TestEncoder(const GenericGF& field, const std::vector<int>& dataWords, const std::vector<int>& ecWords) {
-		auto messageExpected = dataWords + ecWords;
-		auto message = dataWords;
-		message.resize(message.size() + ecWords.size());
-		ReedSolomonEncode(field, message, Size(ecWords));
-		EXPECT_EQ(message, messageExpected) << "Encode in " << field << " (" << dataWords.size() << ',' << ecWords.size() << ") failed";
-	}
-
-	void Corrupt(std::vector<int>& received, size_t howMany, PseudoRandom& random, int max) {
+	void Corrupt(std::span<int> received, size_t howMany, PseudoRandom& random, int max) {
 		std::vector<bool> corrupted(received.size(), false);
 		for (size_t j = 0; j < howMany; j++) {
 			auto location = random.next(size_t(0), received.size() - 1);
@@ -56,20 +59,22 @@ namespace {
 		}
 	}
 
-	void TestDecoder(const GenericGF& field, const std::vector<int>& dataWords, const std::vector<int>& ecWords) {
-		std::vector<int> message(dataWords.size() + ecWords.size());
+	void TestDecoder(const GF2nI& field, std::span<const int> dataWords, std::span<const int> ecWords) {
+		std::vector<int> message;
+		message.insert(message.end(), dataWords.begin(), dataWords.end());
+		message.insert(message.end(), ecWords.begin(), ecWords.end());
 		auto maxErrors = ecWords.size() / 2;
 		PseudoRandom random(0x12345678);
 		int iterations = field.size() > 256 ? 1 : DECODER_TEST_ITERATIONS;
 		for (int j = 0; j < iterations; j++) {
 			for (size_t i = 0; i < ecWords.size(); i++) {
-				if (i > 10 && i < ecWords.size() / 2 - 10) {
+				if (i > 10 && i < ecWords.size() - 10) {
 					// performance improvement - skip intermediate cases in long-running tests 
 					i += ecWords.size() / 10;
 				}
-				auto message = dataWords + ecWords;
-				Corrupt(message, i, random, field.size());
-				auto success = ReedSolomonDecode(field, message, Size(ecWords));
+				auto received = message;
+				Corrupt(received, i, random, field.size());
+				auto success = rs::decode(field, received, Size(ecWords));
 				if (!success) {
 					// fail only if maxErrors exceeded
 					ASSERT_GT(i, maxErrors) << "Decode in " << field << " (" << dataWords.size() << ',' << ecWords.size() << ") failed at " << i;
@@ -77,22 +82,20 @@ namespace {
 					break;
 				}
 				if (i < maxErrors) {
-					message.resize(dataWords.size());
-					ASSERT_EQ(message, dataWords) << "Decode in " << field << " (" << dataWords.size() << ',' << ecWords.size() << ") failed at " << i << " errors";
+					ASSERT_EQ(received, message) << "Decode in " << field << " (" << dataWords.size() << ',' << ecWords.size() << ") failed at " << i << " errors";
 				}
 			}
 		}
 	}
 
-	void TestEncodeDecode(const GenericGF& field, const std::vector<int>& dataWords, const std::vector<int>& ecWords) {
+	void TestEncodeDecode(const GF2nI& field, const std::vector<int>& dataWords, const std::vector<int>& ecWords) {
 		TestEncoder(field, dataWords, ecWords);
 		TestDecoder(field, dataWords, ecWords);
 	}
 
-	void TestEncodeDecodeRandom(const GenericGF& field, int dataSize, int ecSize) {
+	void TestEncodeDecodeRandom(const GF2nI& field, int dataSize, int ecSize) {
 		ASSERT_TRUE(dataSize > 0 && dataSize <= field.size() - 3) << "Invalid data size for " << field;
 		ASSERT_TRUE(ecSize > 0 && ecSize + dataSize <= field.size()) << "Invalid ECC size for " << field;
-		ReedSolomonEncoder encoder(field);
 		std::vector<int> message(dataSize + ecSize);
 		std::vector<int> dataWords(dataSize);
 		std::vector<int> ecWords(ecSize);
@@ -104,9 +107,7 @@ namespace {
 				val = random.next(0, field.size() - 1);
 			}
 			// generate ECC words
-			std::copy(dataWords.begin(), dataWords.end(), message.begin());
-			encoder.encode(message, Size(ecWords));
-			std::copy_n(message.begin() + dataWords.size(), ecSize, ecWords.begin());
+			rs::encode(field, dataWords, ecWords);
 			// check to see if Decoder can fix up to ecWords/2 random errors
 			TestDecoder(field, dataWords, ecWords);
 		}
@@ -114,27 +115,104 @@ namespace {
 
 }
 
+TEST(ReedSolomonTest, Erasures)
+{
+	auto field = GetGF2n(RSField::DataMatrix);
+	auto message = std::vector{ 142, 164, 186, 114, 25, 5, 88, 102 };
+	int numECCodeWords = 5, numDataWords = Size(message) - numECCodeWords;
+	std::vector<int> erasures;
+	for (size_t i = 0; i < numECCodeWords; i++) {
+		auto received = message;
+		std::fill_n(received.begin(), i + 1, 0);
+		erasures.push_back(i);
+		ASSERT_TRUE(librscpp::decode(field, received, numECCodeWords, erasures)) << "Failed at " << i + 1 << " erasures";
+		ASSERT_EQ(received, message) << "Decode in " << field << " (" << numDataWords << ',' << numECCodeWords << ") failed at " << i;
+	}
+
+	PseudoRandom random(0x12345678);
+	message = std::vector{
+		0x69, 0x75, 0x75, 0x71, 0x3B, 0x30, 0x30, 0x64,
+		0x70, 0x65, 0x66, 0x2F, 0x68, 0x70, 0x70, 0x68,
+		0x6D, 0x66, 0x2F, 0x64, 0x70, 0x6E, 0x30, 0x71,
+		0x30, 0x7B, 0x79, 0x6A, 0x6F, 0x68, 0x30, 0x81,
+		0xF0, 0x88, 0x1F, 0xB5, // data words
+		0x1C, 0x64, 0xEE, 0xEB, 0xD0, 0x1D, 0x00, 0x03,
+		0xF0, 0x1C, 0xF1, 0xD0, 0x6D, 0x00, 0x98, 0xDA,
+		0x80, 0x88, 0xBE, 0xFF, 0xB7, 0xFA, 0xA9, 0x95 };
+	numECCodeWords = 24;
+	numDataWords = Size(message) - numECCodeWords;
+	for (int j = 0; j < 100; j++) {
+		auto received = message;
+		std::vector<int> erasures;
+		while(erasures.size() < numECCodeWords) {
+			auto location = random.next(size_t(0), received.size() - 1);
+			if (Contains(erasures, location))
+				continue;
+			erasures.push_back(location);
+			received[location] = 0;
+		}
+		ASSERT_TRUE(librscpp::decode(field, received, numECCodeWords, erasures)) << "Failed at " << erasures.size() << " erasures";
+		ASSERT_EQ(received, message) << "Decode in " << field << " (" << numDataWords << ',' << numECCodeWords << ") failed at " << erasures.size() << " erasures";
+	}
+}
+
+TEST(ReedSolomonTest, Errata)
+{
+	auto field = GetGF2n(RSField::DataMatrix);
+	auto message = std::vector{ 142, 164, 186, 114, 25, 5, 88, 102 };
+	int numECCodeWords = 5, numDataWords = 3;
+	std::vector<int> erasures;
+#if 0
+	auto received = message;
+	received[0] = 0;
+	erasures.push_back(0);
+	received[1] = 0;
+	erasures.push_back(1);
+	received[2] = 0;
+	ASSERT_TRUE(rs::decode(field, received, numECCodeWords, erasures));
+#else
+	for (size_t i = 0; i < numECCodeWords; i++) {
+		auto received = message;
+		std::fill_n(received.begin(), i + 1 + (i < numECCodeWords / 2) + (i < numECCodeWords / 3), 0);
+		erasures.push_back(i);
+		ASSERT_TRUE(rs::decode(field, received, numECCodeWords, erasures)) << "Failed at " << i;
+		ASSERT_EQ(received, message) << "Decode in " << field << " (" << numDataWords << ',' << numECCodeWords << ") failed at " << i;
+	}
+#endif
+}
+
 TEST(ReedSolomonTest, Over)
 {
-	auto field = GenericGF::DataMatrixField256();
+	auto field = GetGF2n(RSField::DataMatrix);
 	auto m = std::vector{0, 0, 0};
-	ReedSolomonEncode(field, m, 2);
+	rs::encode(field, m, 2);
+	ASSERT_EQ(m[0], 0);
+	ASSERT_EQ(m[1], 0);
+	ASSERT_EQ(m[2], 0);
+
 	// printf("%d %d %d\n", m[0], m[1], m[2]);
 	for (int i = 0; i < 256; ++i) {
 		m[0] = i;
-		ASSERT_TRUE(ReedSolomonDecode(field, m, 2));
+		ASSERT_TRUE(rs::decode(field, m, 2));
 		ASSERT_EQ(m[0], 0);
 	}
 
 	int n = 0;
+	auto e = std::vector{0, 1};
 	for (int i = 257; i < 256*256; ++i) {
 		m[0] = i >> 8;
 		m[1] = i & 0xff;
 		m[2] = 0;
-		if (ReedSolomonDecode(field, m, 2) && m[0]) {
+		if (rs::decode(field, m, 2) && m[0]) {
 			// printf("%02x, %02x -> %02x %02x %02x\n", i >> 8, i & 0xff, m[0], m[1], m[2]);
 			++n;
 		}
+
+		m[0] = i >> 8;
+		m[1] = i & 0xff;
+		m[2] = 0;
+		ASSERT_TRUE(librscpp::decode(field, m, 2, e)) << "Failed at " << i;
+		ASSERT_EQ(m[0], 0);
 	}
 	ASSERT_LE(n, 255);
 }
@@ -142,9 +220,9 @@ TEST(ReedSolomonTest, Over)
 TEST(ReedSolomonTest, DataMatrix)
 {
 	// real life test cases
-	TestEncodeDecode(GenericGF::DataMatrixField256(),
+	TestEncodeDecode(GetGF2n(RSField::DataMatrix),
 		{ 142, 164, 186 }, { 114, 25, 5, 88, 102 });
-	TestEncodeDecode(GenericGF::DataMatrixField256(), {
+	TestEncodeDecode(GetGF2n(RSField::DataMatrix), {
 		0x69, 0x75, 0x75, 0x71, 0x3B, 0x30, 0x30, 0x64,
 		0x70, 0x65, 0x66, 0x2F, 0x68, 0x70, 0x70, 0x68,
 		0x6D, 0x66, 0x2F, 0x64, 0x70, 0x6E, 0x30, 0x71,
@@ -155,20 +233,20 @@ TEST(ReedSolomonTest, DataMatrix)
 		0x80, 0x88, 0xBE, 0xFF, 0xB7, 0xFA, 0xA9, 0x95 });
 	
 	// synthetic test cases
-	TestEncodeDecodeRandom(GenericGF::DataMatrixField256(), 10, 240);
-	TestEncodeDecodeRandom(GenericGF::DataMatrixField256(), 128, 127);
-	TestEncodeDecodeRandom(GenericGF::DataMatrixField256(), 220, 35);
+	TestEncodeDecodeRandom(GetGF2n(RSField::DataMatrix), 10, 240);
+	TestEncodeDecodeRandom(GetGF2n(RSField::DataMatrix), 128, 127);
+	TestEncodeDecodeRandom(GetGF2n(RSField::DataMatrix), 220, 35);
 }
 
 TEST(ReedSolomonTest, QRCode)
 {
 	// Test case from example given in ISO 18004, Annex I
-	TestEncodeDecode(GenericGF::QRCodeField256(), {
+	TestEncodeDecode(GetGF2n(RSField::QRCode), {
 		0x10, 0x20, 0x0C, 0x56, 0x61, 0x80, 0xEC, 0x11,
 		0xEC, 0x11, 0xEC, 0x11, 0xEC, 0x11, 0xEC, 0x11 }, {
 		0xA5, 0x24, 0xD4, 0xC1, 0xED, 0x36, 0xC7, 0x87,
 		0x2C, 0x55 });
-	TestEncodeDecode(GenericGF::QRCodeField256(), {
+	TestEncodeDecode(GetGF2n(RSField::QRCode), {
 		0x72, 0x67, 0x2F, 0x77, 0x69, 0x6B, 0x69, 0x2F,
 		0x4D, 0x61, 0x69, 0x6E, 0x5F, 0x50, 0x61, 0x67,
 		0x65, 0x3B, 0x3B, 0x00, 0xEC, 0x11, 0xEC, 0x11,
@@ -178,24 +256,24 @@ TEST(ReedSolomonTest, QRCode)
 		0x08, 0x62 });
 	// real life test cases
 	// synthetic test cases
-	TestEncodeDecodeRandom(GenericGF::QRCodeField256(), 10, 240);
-	TestEncodeDecodeRandom(GenericGF::QRCodeField256(), 128, 127);
-	TestEncodeDecodeRandom(GenericGF::QRCodeField256(), 220, 35);
+	TestEncodeDecodeRandom(GetGF2n(RSField::QRCode), 10, 240);
+	TestEncodeDecodeRandom(GetGF2n(RSField::QRCode), 128, 127);
+	TestEncodeDecodeRandom(GetGF2n(RSField::QRCode), 220, 35);
 }
 
 TEST(ReedSolomonTest, Aztec)
 {
 	// real life test cases
-	TestEncodeDecode(GenericGF::AztecParam(),
+	TestEncodeDecode(GetGF2n(RSField::Aztec4),
 		{ 0x5, 0x6 }, { 0x3, 0x2, 0xB, 0xB, 0x7 });
-	TestEncodeDecode(GenericGF::AztecParam(),
+	TestEncodeDecode(GetGF2n(RSField::Aztec4),
 		{ 0x0, 0x0, 0x0, 0x9 }, { 0xA, 0xD, 0x8, 0x6, 0x5, 0x6 });
-	TestEncodeDecode(GenericGF::AztecParam(),
+	TestEncodeDecode(GetGF2n(RSField::Aztec4),
 		{ 0x2, 0x8, 0x8, 0x7 }, { 0xE, 0xC, 0xA, 0x9, 0x6, 0x8 });
-	TestEncodeDecode(GenericGF::AztecData6(),
+	TestEncodeDecode(GetGF2n(RSField::Aztec6),
 		{ 0x9, 0x32, 0x1, 0x29, 0x2F, 0x2, 0x27, 0x25, 0x1, 0x1B },
 		{ 0x2C, 0x2, 0xD, 0xD, 0xA, 0x16, 0x28, 0x9, 0x22, 0xA, 0x14 });
-	TestEncodeDecode(GenericGF::AztecData8(), {
+	TestEncodeDecode(GetGF2n(RSField::Aztec8), {
 		0xE0, 0x86, 0x42, 0x98, 0xE8, 0x4A, 0x96, 0xC6,
 		0xB9, 0xF0, 0x8C, 0xA7, 0x4A, 0xDA, 0xF8, 0xCE,
 		0xB7, 0xDE, 0x88, 0x64, 0x29, 0x8E, 0x84, 0xA9,
@@ -212,7 +290,7 @@ TEST(ReedSolomonTest, Aztec)
 		0xED, 0xA1, 0xF8, 0x47, 0x2A, 0x50, 0xA6, 0xBC,
 		0x53, 0x7D, 0x29, 0xFE, 0x06, 0x49, 0xF3, 0x73,
 		0x9F, 0xC1, 0x75 });
-	TestEncodeDecode(GenericGF::AztecData10(), {
+	TestEncodeDecode(GetGF2n(RSField::Aztec10), {
 		0x15C, 0x1E1, 0x2D5, 0x02E, 0x048, 0x1E2, 0x037, 0x0CD,
 		0x02E, 0x056, 0x26A, 0x281, 0x1C2, 0x1A6, 0x296, 0x045,
 		0x041, 0x0AA, 0x095, 0x2CE, 0x003, 0x38F, 0x2CD, 0x1A2,
@@ -273,7 +351,7 @@ TEST(ReedSolomonTest, Aztec)
 		0x306, 0x3A5, 0x352, 0x351, 0x275, 0x0ED, 0x045, 0x229,
 		0x0BF, 0x05D, 0x253, 0x1BE, 0x02E, 0x35A, 0x0E4, 0x2E9,
 		0x17A, 0x166, 0x03C, 0x007 });
-	TestEncodeDecode(GenericGF::AztecData12(), {
+	TestEncodeDecode(GetGF2n(RSField::Aztec12), {
 		0x571, 0xE1B, 0x542, 0xE12, 0x1E2, 0x0DC, 0xCD0, 0xB85,
 		0x69A, 0xA81, 0x709, 0xA6A, 0x584, 0x510, 0x4AA, 0x256,
 		0xCE0, 0x0F8, 0xFB3, 0x5A2, 0x0D9, 0xAD1, 0x389, 0x09C,
@@ -484,13 +562,13 @@ TEST(ReedSolomonTest, Aztec)
 		0x03C, 0x1DE, 0x7DF, 0x2B1, 0x09D, 0xC81, 0xDA4, 0x8F7,
 		0x6B9, 0x947, 0x9B0 });
 	// synthetic test cases
-	TestEncodeDecodeRandom(GenericGF::AztecParam(), 2, 5); // compact mode message
-	TestEncodeDecodeRandom(GenericGF::AztecParam(), 4, 6); // full mode message
-	TestEncodeDecodeRandom(GenericGF::AztecData6(), 10, 7);
-	TestEncodeDecodeRandom(GenericGF::AztecData6(), 20, 12);
-	TestEncodeDecodeRandom(GenericGF::AztecData8(), 20, 11);
-	TestEncodeDecodeRandom(GenericGF::AztecData8(), 128, 127);
-	TestEncodeDecodeRandom(GenericGF::AztecData10(), 128, 128);
-	TestEncodeDecodeRandom(GenericGF::AztecData10(), 768, 255);
-	TestEncodeDecodeRandom(GenericGF::AztecData12(), 3072, 1023);
+	TestEncodeDecodeRandom(GetGF2n(RSField::Aztec4), 2, 5); // compact mode message
+	TestEncodeDecodeRandom(GetGF2n(RSField::Aztec4), 4, 6); // full mode message
+	TestEncodeDecodeRandom(GetGF2n(RSField::Aztec6), 10, 7);
+	TestEncodeDecodeRandom(GetGF2n(RSField::Aztec6), 20, 12);
+	TestEncodeDecodeRandom(GetGF2n(RSField::Aztec8), 20, 11);
+	TestEncodeDecodeRandom(GetGF2n(RSField::Aztec8), 128, 127);
+	TestEncodeDecodeRandom(GetGF2n(RSField::Aztec10), 128, 128);
+	TestEncodeDecodeRandom(GetGF2n(RSField::Aztec10), 768, 255);
+	TestEncodeDecodeRandom(GetGF2n(RSField::Aztec12), 3072, 1023);
 }
