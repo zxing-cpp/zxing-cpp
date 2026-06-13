@@ -126,7 +126,7 @@ public:
 			  return ix;
 		  })
 	{
-		if (primitive < (1 << n) || primitive >= (1 << (n + 1)) || (primitive & 1) == 0)
+		if (primitive < (1U << n) || primitive >= (1U << (n + 1)) || (primitive & 1) == 0)
 			throw std::invalid_argument("Invalid primitive polynomial " + std::to_string(primitive) + " for GF(2^" + std::to_string(n)
 										+ ')');
 	}
