@@ -424,7 +424,7 @@ retry:
 	// Decode the contents of that stream of bytes
 	return DecodedBitStreamParser::Decode(std::move(resultBytes), version->isDMRE())
 		.setVersionNumber(version->versionNumber)
-		.addExtra(BarcodeExtra::UEC, uec)
+		.addExtra(BarcodeExtra::UEC, uec, -1.0)
 		.addExtra(BarcodeExtra::Version, std::to_string(version->symbolHeight) + 'x' + std::to_string(version->symbolWidth));
 }
 

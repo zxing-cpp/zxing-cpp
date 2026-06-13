@@ -367,7 +367,7 @@ DecoderResult Decode(const DetectorResult& detectorResult)
 			return DecodeRune(detectorResult);
 		}
 		auto [bits, ecLevel, uec] = CorrectBits(detectorResult, ExtractBits(detectorResult));
-		return Decode(bits).setEcLevel(std::to_string(ecLevel) + "%").addExtra(BarcodeExtra::UEC, uec);
+		return Decode(bits).setEcLevel(std::to_string(ecLevel) + "%").addExtra(BarcodeExtra::UEC, uec, -1.0);
 	} catch (Error e) {
 		return e;
 	}

@@ -6,6 +6,7 @@
 
 #include "PDFScanningDecoder.h"
 
+#include "Barcode.h"
 #include "BitMatrix.h"
 #include "DecoderResult.h"
 #include "PDFBarcodeMetadata.h"
@@ -397,7 +398,7 @@ DecoderResult DecodeCodewords(std::vector<int>& codewords, int numECCodewords, s
 		return FormatError();
 
 	// Decode the codewords
-	return Decode(codewords).setEcLevel(std::to_string(numECCodewords * 100 / Size(codewords)) + "%");
+	return Decode(codewords).setEcLevel(std::to_string(numECCodewords * 100 / Size(codewords)) + "%").addExtra(BarcodeExtra::UEC, *res, -1.0);
 }
 
 /**

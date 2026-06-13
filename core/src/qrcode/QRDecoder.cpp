@@ -348,7 +348,7 @@ DecoderResult Decode(const BitMatrix& bits)
 	auto ret = DecodeBitStream(std::move(resultBytes), version, formatInfo.ecLevel)
 		.setIsMirrored(formatInfo.isMirrored)
 		.addExtra(BarcodeExtra::DataMask, formatInfo.dataMask, uint8_t(255))
-		.addExtra(BarcodeExtra::UEC, uec)
+		.addExtra(BarcodeExtra::UEC, uec, -1.0)
 		.addExtra(BarcodeExtra::Version, versionStr)
 		;
 	if (error)
