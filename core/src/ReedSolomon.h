@@ -6,6 +6,7 @@
 #include <optional>
 #include <span>
 #include <stdexcept>
+#include <string>
 
 namespace ZXing {
 

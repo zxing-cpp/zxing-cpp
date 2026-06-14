@@ -20,6 +20,7 @@ add_executable (UnitTest
     GTINTest.cpp
     JSONTest.cpp
     PseudoRandom.h
+    ReedSolomonTest.cpp
     SanitizerSupport.cpp
     TextUtfEncodingTest.cpp
     ZXAlgorithmsTest.cpp
@@ -78,7 +79,6 @@ endif()
 
 if (ZXING_READERS AND ZXING_WRITERS MATCHES "OLD|BOTH")
 target_sources (UnitTest PRIVATE
-    ReedSolomonTest.cpp
     $<$<BOOL:${ZXING_ENABLE_AZTEC}>:aztec/AZEncodeDecodeTest.cpp>
     $<$<BOOL:${ZXING_ENABLE_AZTEC}>:aztec/AZHighLevelEncoderTest.cpp>
     $<$<BOOL:${ZXING_ENABLE_DATAMATRIX}>:datamatrix/DMEncodeDecodeTest.cpp>
