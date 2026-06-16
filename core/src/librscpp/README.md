@@ -16,33 +16,33 @@ Pick a Galois field that matches your symbology or protocol, then call `encode()
 int main()
 {
 	// GF(256) used in QR Codes with primitive = x^8 + x^4 + x^3 + x^2 + 1 and fcr = 0.
-	auto field = librscpp::GF2n<uint8_t>(8, 0b1'0001'1101, 0);
+	std::println("Using field: GF({}) and fcr: {}", field.size(), field.fcr());
 
 	const std::string data = "Hello, World!";
 	constexpr int paritySize = 4;
 
 	auto codeword = librscpp::encode(field, data, paritySize);
-	std::println("Encoded codeword:  '{}'", codeword);
+	std::println("Encoded codeword: '{}'", codeword);
 
 	// Simulate a couple of symbol errors.
 	codeword[3] = codeword[8] = '*';
-	std::println("Received codeword: '{}'", codeword);
+	std::println("Corrupt codeword: '{}'", codeword);
 
 	auto res = librscpp::decode(field, codeword, paritySize);
 	if (res)
-		std::println("Decoded codeword:  '{}'\nUsed parity symbols: {}", codeword, *res);
+		std::println("Decoded codeword: '{}'\nUsed parity symbols: {}", codeword, *res);
 	else
 		std::println("Failed to decode codeword.");
 
-	return 0;
 }
 ```
 
 Running this example program produces the following output:
 ```
-Encoded codeword:  'Hello, World!??t'
-Received codeword: 'Hel*o, W*rld!??t'
-Decoded codeword:  'Hello, World!??t'
+Using field: GF(256) and fcr: 0
+Encoded codeword: 'Hello, World!??t'
+Corrupt codeword: 'Hel*o, W*rld!??t'
+Decoded codeword: 'Hello, World!??t'
 Used parity symbols: 4
 ```
 
@@ -54,10 +54,10 @@ If you are low on memory, you can `#define LIBRSCPP_SAVE_MEMORY` before includin
 
 Other common/usable `GF2n` configurations are:
 ```c++
-	GF2n<> gf_0x0013(4, 0x0013, 1);  // x^4 + x + 1
-	GF2n<> gf_0x0043(6, 0x0043, 1);  // x^6 + x + 1
-	GF2n<> gf_0x012D(8, 0x012D, 1);  // x^8 + x^5 + x^3 + x^2 + 1 : DataMatrix
-	GF2n<> gf_0x011D(8, 0x011D, 0);  // x^8 + x^4 + x^3 + x^2 + 1 : QRCode
-	GF2n<> gf_0x0409(10, 0x0409, 1); // x^10 + x^3 + 1
-	GF2n<> gf_0x1069(12, 0x1069, 1); // x^12 + x^6 + x^5 + x^3 + 1
+	GF2n<> gf_0x0013(0x0013, 1); // x^4 + x + 1
+	GF2n<> gf_0x0043(0x0043, 1); // x^6 + x + 1
+	GF2n<> gf_0x012D(0x012D, 1); // x^8 + x^5 + x^3 + x^2 + 1 : DataMatrix
+	GF2n<> gf_0x011D(0x011D, 0); // x^8 + x^4 + x^3 + x^2 + 1 : QRCode
+	GF2n<> gf_0x0409(0x0409, 1); // x^10 + x^3 + 1
+	GF2n<> gf_0x1069(0x1069, 1); // x^12 + x^6 + x^5 + x^3 + 1
 ```

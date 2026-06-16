@@ -20,12 +20,12 @@ using GF2nI = rs::GF2n<>;
 
 const GF2nI& GetGF2n(RSField field)
 {
-	static GF2nI gf2n_4_1(4, 0x0013, 1);       // x^4 + x + 1
-	static GF2nI gf2n_6_1(6, 0x0043, 1);       // x^6 + x + 1
-	static GF2nI gf2n_8_5_3_2(8, 0x012D, 1);   // x^8 + x^5 + x^3 + x^2 + 1 : DataMatrix
-	static GF2nI gf2n_8_4_3_2(8, 0x011D, 0);   // x^8 + x^4 + x^3 + x^2 + 1 : QRCode
-	static GF2nI gf2n_10_3(10, 0x0409, 1);     // x^10 + x^3 + 1
-	static GF2nI gf2n_12_6_5_3(12, 0x1069, 1); // x^12 + x^6 + x^5 + x^3 + 1
+	static GF2nI gf2n_4_1(0x0013, 1);      // x^4 + x + 1
+	static GF2nI gf2n_6_1(0x0043, 1);      // x^6 + x + 1
+	static GF2nI gf2n_8_5_3_2(0x012D, 1);  // x^8 + x^5 + x^3 + x^2 + 1 : DataMatrix
+	static GF2nI gf2n_8_4_3_2(0x011D, 0);  // x^8 + x^4 + x^3 + x^2 + 1 : QRCode
+	static GF2nI gf2n_10_3(0x0409, 1);     // x^10 + x^3 + 1
+	static GF2nI gf2n_12_6_5_3(0x1069, 1); // x^12 + x^6 + x^5 + x^3 + 1
 
 	switch (field) {
 	case RSField::Aztec4: return gf2n_4_1;

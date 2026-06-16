@@ -7,6 +7,7 @@
 #include <cassert>
 #include <concepts>
 #include <cstdint>
+#include <bit>
 #include <functional>
 #include <stdexcept>
 #include <vector>
@@ -92,7 +93,7 @@ public:
 
 	int size() const noexcept { return _size; }
 
-	// first consecutive root of the generator polynomial, sometimes also called "b" or "base"
+	// first consecutive root of the RS generator polynomial, sometimes also called "b" or "base"
 	int fcr() const noexcept { return _fcr; }
 };
 
@@ -106,30 +107,23 @@ public:
 	/**
 	 * @brief Create a Galois Field GF(2^n) using the given primitive polynomial.
 	 *
-	 * @param n the size of the field is 2^n, n is called the "word size".
-	 * @param primitive irreducible polynomial whose coefficients are represented by
+	 * @param poly irreducible polynomial whose coefficients are represented by
 	 *  the bits of an int, where the least-significant bit represents the constant
-	 *  coefficient
-	 * @param fcr the first consecutive root of the generator polynomial, sometimes also called "b" or "base"
-	 *  (g(x) = (x+a^b)(x+a^(b+1))...(x+a^(b+2t-1))).
-	 *  This is typically 1, but for e.g. QR Code it is 0.
+	 *  coefficient and the most-significant bit represents the x^n coefficient and defines the size of the field.
+	 *  For example, 0b1'0001'1101 represents the primitive polynomial x^8 + x^4 + x^3 + x^2 + 1.
+	 * @param fcr the first consecutive root of the RS generator polynomial, sometimes also called "b" or "base"
+	 *  (g(x) = (x+a^b)(x+a^(b+1))...(x+a^(b+2t-1))). This is typically 1, but for e.g. QR Code it is 0.
+	 *  It is technially not a property of the field but instead a property of the RS code defined over the field.
 	 */
-	GF2n(uint32_t n, uint32_t primitive, int fcr)
-		: GFBase<T, HP>(1 << n, fcr, [primitive, n](T x) {
-			  HP size = 1 << n;
+	GF2n(uint32_t poly, int fcr)
+		: GFBase<T, HP>(1 << (std::bit_width(poly) - 1), fcr, [poly, size = HP(1 << (std::bit_width(poly) - 1))](T x) {
 			  HP ix = x;
-			  ix *= 2;
-			  if (ix >= size) {
-				  ix ^= primitive;
-				  ix &= size - 1;
-			  }
+			  ix *= 2; // multiply by the primitive element / generator α (== x^1)
+			  if (ix >= size) // if deg(ix) == deg(poly), reduce modulo poly by subtracting it (== XOR)
+				  ix ^= poly;
 			  return ix;
 		  })
-	{
-		if (primitive < (1U << n) || primitive >= (1U << (n + 1)) || (primitive & 1) == 0)
-			throw std::invalid_argument("Invalid primitive polynomial " + std::to_string(primitive) + " for GF(2^" + std::to_string(n)
-										+ ')');
-	}
+	{}
 
 	T add(T a, T b) const { return a ^ b; }
 	T sub(T a, T b) const { return a ^ b; } // a - b == a + b in GF(2^n)
@@ -149,11 +143,11 @@ public:
 	 * @brief Create a Galois Field GF(p) using the given prime.
 	 *
 	 * @param prime a prime number representing the size of the field
-	 * @param primitive a primitive root modulo prime, representing the generator of the field
-	 * @param fcr the first consecutive root of the generator polynomial, sometimes also called "b" or "base"
+	 * @param generator a primitive root modulo prime, used as the generator α of GF(p)
+	 * @param fcr the first consecutive root of the RS generator polynomial, sometimes also called "b" or "base"
 	 */
-	GFp(uint32_t prime, uint32_t primitive, int fcr)
-		: GFBase<T, HP>(prime, fcr, [prime, primitive](T x) { return (x * primitive) % prime; })
+	GFp(uint32_t prime, uint32_t generator, int fcr)
+		: GFBase<T, HP>(prime, fcr, [prime, generator](T x) { return (x * generator) % prime; })
 	{}
 
 	T add(T a, T b) const { return Base::fast_mod(HP(a) + HP(b), Base::size()); }
