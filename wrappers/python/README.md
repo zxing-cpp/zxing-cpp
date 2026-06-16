@@ -2,22 +2,18 @@
 
 [![PyPI](https://img.shields.io/pypi/v/zxing-cpp.svg)](https://pypi.org/project/zxing-cpp/)
 
+The package uses [scikit-build-core](https://scikit-build-core.readthedocs.io/) as its build backend and [nanobind](https://nanobind.readthedocs.io/) for the Python bindings.
 
 ## Installation
 
 ```bash
 pip install zxing-cpp
 ```
-or
+
+To build from a checked out / extracted soruce tree, a suitable [build environment](https://github.com/zxing-cpp/zxing-cpp#build-instructions) including a C++20 compiler is required:
 
 ```bash
-python setup.py install
-```
-
-In case there is no pre-build wheel available for your platform or python version or if you use `setup.py` directly, a suitable [build environment](https://github.com/zxing-cpp/zxing-cpp#build-instructions) including a c++20 compiler is required. To build from source, you can call:
-
-```bash
-pip install zxing-cpp --no-binary zxing-cpp
+pip install .
 ```
 
 
@@ -56,4 +52,4 @@ with open("test.svg", "w") as svg_file:
 	svg_file.write(svg)
 ```
 
-To get a full list of available parameters for `read_barcodes` and `create_barcode` as well as the properties of the Barcode objects, have a look at the `PYBIND11_MODULE` definition in [this c++ source file](https://github.com/zxing-cpp/zxing-cpp/blob/master/wrappers/python/zxing.cpp).
+To get a full list of available parameters for `read_barcodes` and `create_barcode` as well as the properties of the Barcode objects, have a look at the `nanobind` module definition in [this C++ source file](https://github.com/zxing-cpp/zxing-cpp/blob/master/wrappers/python/zxing.cpp).
