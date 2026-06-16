@@ -15,7 +15,8 @@ Pick a Galois field that matches your symbology or protocol, then call `encode()
 
 int main()
 {
-	// GF(256) used in QR Codes with primitive = x^8 + x^4 + x^3 + x^2 + 1 and fcr = 0.
+	// GF(256) used in QR Codes with polynomial = x^8 + x^4 + x^3 + x^2 + 1 and fcr = 0.
+	auto field = librscpp::GF2n<uint8_t>(0b1'0001'1101, 0);
 	std::println("Using field: GF({}) and fcr: {}", field.size(), field.fcr());
 
 	const std::string data = "Hello, World!";
@@ -34,6 +35,7 @@ int main()
 	else
 		std::println("Failed to decode codeword.");
 
+	return 0;
 }
 ```
 
