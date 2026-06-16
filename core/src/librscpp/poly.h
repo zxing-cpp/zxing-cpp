@@ -95,13 +95,11 @@ public:
 	void sub(const Poly& rhs)
 	{
 		assert(&field == &rhs.field);
-		assert(size() >= rhs.size());
 
-		auto sizeDiff = size() - rhs.size();
-
-		// high-order terms only found in higher-degree polynomial's coefficients stay untouched
-		for (auto i = sizeDiff; i < size(); ++i)
-			at(i) = field.sub(at(i), rhs.at(i - sizeDiff));
+		auto oldCoef = [oldDeg = deg(), this](int i) { return i <= oldDeg ? at(oldDeg - i) : 0; };
+		resize(std::max(size(), rhs.size()));
+		for (int i = 0; i <= rhs.deg(); ++i)
+			coef(i) = field.sub(oldCoef(i), rhs.coef(i));
 
 		normalize();
 	}

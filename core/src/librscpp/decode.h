@@ -40,9 +40,7 @@ std::optional<std::tuple<Poly<Field>, Poly<Field>>> euclidean_algorithm(Poly<Fie
 		assert(r.deg() < rLast.deg());
 
 		q.mul(tLast);
-		q.sub(t);
-		q.neg();
-		swap(t, q); // t = q
+		t.sub(q);
 	}
 
 	int sigmaTildeAtZero = t.coef(0);
