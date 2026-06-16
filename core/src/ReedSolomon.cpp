@@ -53,41 +53,41 @@ static std::optional<double> UEC(std::optional<int> usedECC, int numECC)
 }
 
 #ifdef ZXING_READERS
-std::optional<double> ReedSolomonDecode(RSField field, std::span<uint8_t> message, int numECC, std::span<const int> erasures)
+std::optional<double> ReedSolomonDecode(RSField field, std::span<uint8_t> codeword, int numECC, std::span<const int> erasures)
 {
-	return UEC(rs::decode(GetGF2n(field), message, numECC, erasures), numECC);
+	return UEC(rs::decode(GetGF2n(field), codeword, numECC, erasures), numECC);
 }
 
-std::optional<double> ReedSolomonDecode(RSField field, std::span<int> message, int numECC, std::span<const int> erasures)
+std::optional<double> ReedSolomonDecode(RSField field, std::span<int> codeword, int numECC, std::span<const int> erasures)
 {
 #if ZXING_ENABLE_PDF417
 	if (field == RSField::PDF417)
-		return UEC(rs::decode(GetGFPDF417(), message, numECC, erasures), numECC);
+		return UEC(rs::decode(GetGFPDF417(), codeword, numECC, erasures), numECC);
 	else
 #endif
-		return UEC(rs::decode(GetGF2n(field), message, numECC, erasures), numECC);
+		return UEC(rs::decode(GetGF2n(field), codeword, numECC, erasures), numECC);
 }
 #endif
 
 #ifdef ZXING_WRITERS
-void ReedSolomonEncode(RSField field, std::span<const uint8_t> message, std::span<uint8_t> ecc)
+void ReedSolomonEncode(RSField field, std::span<const uint8_t> data, std::span<uint8_t> parity)
 {
-	rs::encode(GetGF2n(field), message, ecc);
+	rs::encode(GetGF2n(field), data, parity);
 }
 
-void ReedSolomonEncode(RSField field, std::span<uint8_t> message, int numECC)
+void ReedSolomonEncode(RSField field, std::span<uint8_t> codeword, int numECC)
 {
-	rs::encode(GetGF2n(field), message, numECC);
+	rs::encode_inplace(GetGF2n(field), codeword, numECC);
 }
 
-void ReedSolomonEncode(RSField field, std::span<int> message, int numECC)
+void ReedSolomonEncode(RSField field, std::span<int> codeword, int numECC)
 {
 #if ZXING_ENABLE_PDF417
 	if (field == RSField::PDF417)
-		return rs::encode(GetGFPDF417(), message, numECC);
+		return rs::encode_inplace(GetGFPDF417(), codeword, numECC);
 	else
 #endif
-		rs::encode(GetGF2n(field), message, numECC);
+		rs::encode_inplace(GetGF2n(field), codeword, numECC);
 }
 #endif
 

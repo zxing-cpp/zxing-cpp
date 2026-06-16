@@ -38,10 +38,10 @@ namespace {
 	static const int DECODER_RANDOM_TEST_ITERATIONS = 2;
 	static const int DECODER_TEST_ITERATIONS = 4;
 
-	void TestEncoder(const GF2nI& field, const std::vector<int>& dataWords, const std::vector<int>& ecWords) {
-		std::vector<int> result(ecWords.size());
-		rs::encode(field, dataWords, result);
-		EXPECT_EQ(result, ecWords) << "Encode in " << field << " (" << dataWords.size() << ',' << ecWords.size() << ") failed";
+	void TestEncoder(const GF2nI& field, const std::vector<int>& data, const std::vector<int>& parity) {
+		std::vector<int> result(parity.size());
+		rs::encode(field, data, result);
+		EXPECT_EQ(result, parity) << "Encode in " << field << " (" << data.size() << ',' << parity.size() << ") failed";
 	}
 
 	void Corrupt(std::span<int> received, size_t howMany, PseudoRandom& random, int max) {
@@ -59,57 +59,54 @@ namespace {
 		}
 	}
 
-	void TestDecoder(const GF2nI& field, std::span<const int> dataWords, std::span<const int> ecWords) {
-		std::vector<int> message;
-		message.insert(message.end(), dataWords.begin(), dataWords.end());
-		message.insert(message.end(), ecWords.begin(), ecWords.end());
-		auto maxErrors = ecWords.size() / 2;
+	void TestDecoder(const GF2nI& field, std::span<const int> data, std::span<const int> parity) {
+		std::vector<int> codeword;
+		codeword.insert(codeword.end(), data.begin(), data.end());
+		codeword.insert(codeword.end(), parity.begin(), parity.end());
+		auto maxErrors = parity.size() / 2;
 		PseudoRandom random(0x12345678);
 		int iterations = field.size() > 256 ? 1 : DECODER_TEST_ITERATIONS;
 		for (int j = 0; j < iterations; j++) {
-			for (size_t i = 0; i < ecWords.size(); i++) {
-				if (i > 10 && i < ecWords.size() - 10) {
+			for (size_t i = 0; i < parity.size(); i++) {
+				if (i > 10 && i < parity.size() - 10) {
 					// performance improvement - skip intermediate cases in long-running tests 
-					i += ecWords.size() / 10;
+					i += parity.size() / 10;
 				}
-				auto received = message;
+				auto received = codeword;
 				Corrupt(received, i, random, field.size());
-				auto success = rs::decode(field, received, Size(ecWords));
+				auto success = rs::decode(field, received, Size(parity));
 				if (!success) {
 					// fail only if maxErrors exceeded
-					ASSERT_GT(i, maxErrors) << "Decode in " << field << " (" << dataWords.size() << ',' << ecWords.size() << ") failed at " << i;
+					ASSERT_GT(i, maxErrors) << "Decode in " << field << " (" << data.size() << ',' << parity.size() << ") failed at " << i;
 					// else stop
 					break;
 				}
 				if (i < maxErrors) {
-					ASSERT_EQ(received, message) << "Decode in " << field << " (" << dataWords.size() << ',' << ecWords.size() << ") failed at " << i << " errors";
+					ASSERT_EQ(received, codeword) << "Decode in " << field << " (" << data.size() << ',' << parity.size() << ") failed at " << i << " errors";
 				}
 			}
 		}
 	}
 
-	void TestEncodeDecode(const GF2nI& field, const std::vector<int>& dataWords, const std::vector<int>& ecWords) {
-		TestEncoder(field, dataWords, ecWords);
-		TestDecoder(field, dataWords, ecWords);
+	void TestEncodeDecode(const GF2nI& field, const std::vector<int>& data, const std::vector<int>& parity) {
+		TestEncoder(field, data, parity);
+		TestDecoder(field, data, parity);
 	}
 
-	void TestEncodeDecodeRandom(const GF2nI& field, int dataSize, int ecSize) {
+	void TestEncodeDecodeRandom(const GF2nI& field, int dataSize, int paritySize) {
 		ASSERT_TRUE(dataSize > 0 && dataSize <= field.size() - 3) << "Invalid data size for " << field;
-		ASSERT_TRUE(ecSize > 0 && ecSize + dataSize <= field.size()) << "Invalid ECC size for " << field;
-		std::vector<int> message(dataSize + ecSize);
-		std::vector<int> dataWords(dataSize);
-		std::vector<int> ecWords(ecSize);
+		ASSERT_TRUE(paritySize > 0 && paritySize + dataSize <= field.size()) << "Invalid parity size for " << field;
+		std::vector<int> data(dataSize);
+		std::vector<int> parity(paritySize);
 		PseudoRandom random(0x12345678);
 		int iterations = field.size() > 256 ? 1 : DECODER_RANDOM_TEST_ITERATIONS;
 		for (int i = 0; i < iterations; i++) {
 			// generate random data
-			for (auto& val : dataWords) {
-				val = random.next(0, field.size() - 1);
-			}
-			// generate ECC words
-			rs::encode(field, dataWords, ecWords);
-			// check to see if Decoder can fix up to ecWords/2 random errors
-			TestDecoder(field, dataWords, ecWords);
+			std::ranges::generate(data, [&] { return random.next(0, field.size() - 1); });
+			// generate parity symbols
+			rs::encode(field, data, parity);
+			// check to see if Decoder can fix up to paritySize/2 random errors
+			TestDecoder(field, data, parity);
 		}
 	}
 
@@ -118,19 +115,19 @@ namespace {
 TEST(ReedSolomonTest, Erasures)
 {
 	auto field = GetGF2n(RSField::DataMatrix);
-	auto message = std::vector{ 142, 164, 186, 114, 25, 5, 88, 102 };
-	int numECCodeWords = 5, numDataWords = Size(message) - numECCodeWords;
+	auto codeword = std::vector{ 142, 164, 186, 114, 25, 5, 88, 102 };
+	int paritySize = 5, dataSize = Size(codeword) - paritySize;
 	std::vector<int> erasures;
-	for (size_t i = 0; i < numECCodeWords; i++) {
-		auto received = message;
+	for (size_t i = 0; i < paritySize; i++) {
+		auto received = codeword;
 		std::fill_n(received.begin(), i + 1, 0);
 		erasures.push_back(i);
-		ASSERT_TRUE(librscpp::decode(field, received, numECCodeWords, erasures)) << "Failed at " << i + 1 << " erasures";
-		ASSERT_EQ(received, message) << "Decode in " << field << " (" << numDataWords << ',' << numECCodeWords << ") failed at " << i;
+		ASSERT_TRUE(rs::decode(field, received, paritySize, erasures)) << "Failed at " << i + 1 << " erasures";
+		ASSERT_EQ(received, codeword) << "Decode in " << field << " (" << dataSize << ',' << paritySize << ") failed at " << i;
 	}
 
 	PseudoRandom random(0x12345678);
-	message = std::vector{
+	codeword = std::vector{
 		0x69, 0x75, 0x75, 0x71, 0x3B, 0x30, 0x30, 0x64,
 		0x70, 0x65, 0x66, 0x2F, 0x68, 0x70, 0x70, 0x68,
 		0x6D, 0x66, 0x2F, 0x64, 0x70, 0x6E, 0x30, 0x71,
@@ -139,44 +136,44 @@ TEST(ReedSolomonTest, Erasures)
 		0x1C, 0x64, 0xEE, 0xEB, 0xD0, 0x1D, 0x00, 0x03,
 		0xF0, 0x1C, 0xF1, 0xD0, 0x6D, 0x00, 0x98, 0xDA,
 		0x80, 0x88, 0xBE, 0xFF, 0xB7, 0xFA, 0xA9, 0x95 };
-	numECCodeWords = 24;
-	numDataWords = Size(message) - numECCodeWords;
+	paritySize = 24;
+	dataSize = Size(codeword) - paritySize;
 	for (int j = 0; j < 100; j++) {
-		auto received = message;
+		auto received = codeword;
 		std::vector<int> erasures;
-		while(erasures.size() < numECCodeWords) {
+		while(erasures.size() < paritySize) {
 			auto location = random.next(size_t(0), received.size() - 1);
 			if (Contains(erasures, location))
 				continue;
 			erasures.push_back(location);
 			received[location] = 0;
 		}
-		ASSERT_TRUE(librscpp::decode(field, received, numECCodeWords, erasures)) << "Failed at " << erasures.size() << " erasures";
-		ASSERT_EQ(received, message) << "Decode in " << field << " (" << numDataWords << ',' << numECCodeWords << ") failed at " << erasures.size() << " erasures";
+		ASSERT_TRUE(rs::decode(field, received, paritySize, erasures)) << "Failed at " << erasures.size() << " erasures";
+		ASSERT_EQ(received, codeword) << "Decode in " << field << " (" << dataSize << ',' << paritySize << ") failed at " << erasures.size() << " erasures";
 	}
 }
 
 TEST(ReedSolomonTest, Errata)
 {
 	auto field = GetGF2n(RSField::DataMatrix);
-	auto message = std::vector{ 142, 164, 186, 114, 25, 5, 88, 102 };
-	int numECCodeWords = 5, numDataWords = 3;
+	auto codeword = std::vector{ 142, 164, 186, 114, 25, 5, 88, 102 };
+	int paritySize = 5, dataSize = Size(codeword) - paritySize;
 	std::vector<int> erasures;
 #if 0
-	auto received = message;
+	auto received = codeword;
 	received[0] = 0;
 	erasures.push_back(0);
 	received[1] = 0;
 	erasures.push_back(1);
 	received[2] = 0;
-	ASSERT_TRUE(rs::decode(field, received, numECCodeWords, erasures));
+	ASSERT_TRUE(rs::decode(field, received, paritySize, erasures));
 #else
-	for (size_t i = 0; i < numECCodeWords; i++) {
-		auto received = message;
-		std::fill_n(received.begin(), i + 1 + (i < numECCodeWords / 2) + (i < numECCodeWords / 3), 0);
+	for (size_t i = 0; i < paritySize; i++) {
+		auto received = codeword;
+		std::fill_n(received.begin(), i + 1 + (i < paritySize / 2) + (i < paritySize / 3), 0);
 		erasures.push_back(i);
-		ASSERT_TRUE(rs::decode(field, received, numECCodeWords, erasures)) << "Failed at " << i;
-		ASSERT_EQ(received, message) << "Decode in " << field << " (" << numDataWords << ',' << numECCodeWords << ") failed at " << i;
+		ASSERT_TRUE(rs::decode(field, received, paritySize, erasures)) << "Failed at " << i;
+		ASSERT_EQ(received, codeword) << "Decode in " << field << " (" << dataSize << ',' << paritySize << ") failed at " << i;
 	}
 #endif
 }
@@ -185,7 +182,7 @@ TEST(ReedSolomonTest, Over)
 {
 	auto field = GetGF2n(RSField::DataMatrix);
 	auto m = std::vector{0, 0, 0};
-	rs::encode(field, m, 2);
+	rs::encode_inplace(field, m, 2);
 	ASSERT_EQ(m[0], 0);
 	ASSERT_EQ(m[1], 0);
 	ASSERT_EQ(m[2], 0);
@@ -211,7 +208,7 @@ TEST(ReedSolomonTest, Over)
 		m[0] = i >> 8;
 		m[1] = i & 0xff;
 		m[2] = 0;
-		ASSERT_TRUE(librscpp::decode(field, m, 2, e)) << "Failed at " << i;
+		ASSERT_TRUE(rs::decode(field, m, 2, e)) << "Failed at " << i;
 		ASSERT_EQ(m[0], 0);
 	}
 	ASSERT_LE(n, 255);

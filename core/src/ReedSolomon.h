@@ -36,25 +36,30 @@ inline RSField GF2nAztec(int wordSize)
 }
 
 /**
- * @brief ReedSolomonDecode fixes errors in a message containing both data and parity codewords.
+ * @brief ReedSolomonDecode fixes errors in a codeword containing both data and parity symbols.
  *
- * @param message data and error-correction/parity codewords
- * @param numECC number of error-correction code words
- * @param erasures positions of known erasures in the message
- * @return optional unused error correction in the range [0, 1] if message errors could successfully be fixed (or there have not been
+ * @param codeword data and error-correction/parity symbols; corrected in place on success
+ * @param numECC number of error-correction/parity symbols
+ * @param erasures positions of known erasures in the codeword
+ * @return optional unused error correction in the range [0, 1] if codeword errors could successfully be fixed (or there have not been
  * any), std::nullopt otherwise
  */
-std::optional<double> ReedSolomonDecode(RSField field, std::span<int> message, int numECC, std::span<const int> erasures = {});
+std::optional<double> ReedSolomonDecode(RSField field, std::span<int> codeword, int numECC, std::span<const int> erasures = {});
 
-std::optional<double> ReedSolomonDecode(RSField field, std::span<uint8_t> message, int numECC,
+std::optional<double> ReedSolomonDecode(RSField field, std::span<uint8_t> codeword, int numECC,
 										std::span<const int> erasures = {});
 
 /**
- * @brief ReedSolomonEncode replaces the last numECC in message with error correction code words
+ * @brief ReedSolomonEncode generates error correction symbols for the given data symbols.
+ *
+ * @param field The Galois field to use for encoding.
+ * @param data The input data symbols.
+ * @param parity The output buffer for the generated error correction symbols.
  */
-void ReedSolomonEncode(RSField field, std::span<const uint8_t> message, std::span<uint8_t> ecc);
-void ReedSolomonEncode(RSField field, std::span<uint8_t> message, int numECC);
+void ReedSolomonEncode(RSField field, std::span<const uint8_t> data, std::span<uint8_t> parity);
 
-void ReedSolomonEncode(RSField field, std::span<int> message, int numECC);
+/// @brief ReedSolomonEncode replaces the last numECC symbols in codeword with parity symbols
+void ReedSolomonEncode(RSField field, std::span<uint8_t> codeword, int numECC);
+void ReedSolomonEncode(RSField field, std::span<int> codeword, int numECC);
 
 } // ZXing
