@@ -72,7 +72,7 @@ public:
 		Base::resize(size);
 	}
 
-	Poly copy() const { return Poly(field, *this); }
+	Poly copy() const { return Poly(field, *this, capacity()); }
 	T coef(int degree) const { return at(size() - 1 - degree); }
 	T& coef(int degree) { return at(size() - 1 - degree); }
 	int deg() const { return static_cast<int>(size()) - 1; }
