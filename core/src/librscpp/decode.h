@@ -62,7 +62,7 @@ static std::vector<int> find_locations(const Poly<Field>& locator)
 	std::vector<int> res;
 	res.reserve(locator.deg());
 
-	for (int i = 1; i < locator.field.size() && res.size() < locator.size(); i++)
+	for (int i = 1; i < locator.field.size() && res.size() < res.capacity(); i++)
 		if (locator.evaluate(i) == 0)
 			res.push_back(locator.field.inv(i));
 
