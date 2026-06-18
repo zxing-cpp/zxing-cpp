@@ -38,7 +38,7 @@ template <int N, int SUM>
 bool IsPattern(PatternView& view, const FixedPattern<N, SUM>& pattern, float minQuietZone)
 {
 	view = view.subView(0, N);
-	return view.isValid() && IsPattern(view, pattern, view.isAtFirstBar() ? std::numeric_limits<int>::max() : view[-1], minQuietZone);
+	return view.isValid() && IsPattern(view, pattern, view.spaceInFront(), minQuietZone);
 }
 
 bool DistIsBelowThreshold(PointI a, PointI b, PointI threshold)

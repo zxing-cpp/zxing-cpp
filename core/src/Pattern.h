@@ -12,6 +12,7 @@
 #include <array>
 #include <bit>
 #include <cmath>
+#include <climits>
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
@@ -71,6 +72,7 @@ public:
 	bool isAtLastBar() const { return _data + _size == _end - 1; }
 	bool isValid(int n) const { return _data && _data >= _base && _data + n <= _end; }
 	bool isValid() const { return isValid(size()); }
+	int spaceInFront() const { return isAtFirstBar() ? INT_MAX : _data[-1]; }
 
 	template<bool acceptIfAtFirstBar = false>
 	bool hasQuietZoneBefore(float scale) const
