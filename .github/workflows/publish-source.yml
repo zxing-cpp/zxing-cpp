@@ -21,6 +21,9 @@ jobs:
 
     - name: Upload to release
       if: github.event_name == 'release'
-      run: gh release upload ${{ github.event.release.tag_name }} zxing-cpp-${{ github.event.release.tag_name }}.tar.gz zxing-cpp-${{ github.event.release.tag_name }}.zip test_samples.tar.gz
+      run: |
+        tag='${{ github.event.release.tag_name }}'
+        version="${tag#v}"
+        gh release upload --clobber "$tag" "$GITHUB_WORKSPACE/zxing-cpp-$version.tar.gz" "$GITHUB_WORKSPACE/zxing-cpp-$version.zip" "$GITHUB_WORKSPACE/test_samples.tar.gz"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
