@@ -19,6 +19,16 @@ jobs:
     - name: Create test samples tarball
       run: tar -czf test_samples.tar.gz test/samples
 
+    - name: Upload workflow artifact
+      if: github.event_name != 'release'
+      uses: actions/upload-artifact@v6
+      with:
+        name: source-archives
+        path: |
+          *.zip
+          *.gz
+        if-no-files-found: error
+
     - name: Upload to release
       if: github.event_name == 'release'
       run: |
