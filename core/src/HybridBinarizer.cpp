@@ -294,6 +294,8 @@ std::shared_ptr<const BitMatrix> HybridBinarizer::getBlackMatrix() const
 	if (width() >= WINDOW_SIZE && height() >= WINDOW_SIZE) {
 #ifdef USE_NEW_ALGORITHM
 		auto thrs = SmoothThresholds(BlockThresholds(_buffer));
+		if (std::ranges::max(thrs) == 0)
+			return GlobalHistogramBinarizer::getBlackMatrix();
 		return ThresholdImage(_buffer, thrs);
 #else
 		const uint8_t* luminances = _buffer.data();

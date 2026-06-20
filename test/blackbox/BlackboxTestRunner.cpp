@@ -374,12 +374,12 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 		// Expected failures:
 		// abc-inverted.png (fast) - fast does not try inverted
 		// az-thick.png (pure)
-		runTests("aztec-1", Aztec, 31, {
-			{ 30, 31, 0   },
-			{ 30, 31, 90  },
-			{ 30, 31, 180 },
-			{ 30, 31, 270 },
-			{ 29, 0, pure },
+		runTests("aztec-1", Aztec, 32, {
+			{ 31, 32, 0   },
+			{ 31, 32, 90  },
+			{ 31, 32, 180 },
+			{ 31, 32, 270 },
+			{ 30, 0, pure },
 		});
 
 		runTests("aztec-2", Aztec, 23, {
