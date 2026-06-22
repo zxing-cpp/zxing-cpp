@@ -3,6 +3,7 @@
 
 #include "ReedSolomon.h"
 #include "Version.h"
+#include "ZXAlgorithms.h"
 
 #include "librscpp/encode.h"
 #include "librscpp/decode.h"
@@ -60,6 +61,12 @@ std::optional<double> ReedSolomonDecode(RSField field, std::span<uint8_t> codewo
 
 std::optional<double> ReedSolomonDecode(RSField field, std::span<int> codeword, int numECC, std::span<const int> erasures)
 {
+	// The number of erasures may at most be numECC.
+	// Note that leaves 0 parity symbols to error correction (or even detection) but the final syndrome verification in rs::decode will
+	// still catch any errors in that case.
+	if (Size(erasures) > numECC)
+		return {};
+
 #if ZXING_ENABLE_PDF417
 	if (field == RSField::PDF417)
 		return UEC(rs::decode(GetGFPDF417(), codeword, numECC, erasures), numECC);
