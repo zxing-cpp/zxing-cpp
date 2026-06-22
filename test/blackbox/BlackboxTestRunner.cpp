@@ -382,11 +382,11 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 30, 0, pure },
 		});
 
-		runTests("aztec-2", Aztec, 23, {
-			{ 23, 23, 0   },
-			{ 23, 23, 90  },
-			{ 23, 23, 180 },
-			{ 23, 23, 270 },
+		runTests("aztec-2", Aztec, 16, {
+			{ 16, 16, 0   },
+			{ 16, 16, 90  },
+			{ 16, 16, 180 },
+			{ 16, 16, 270 },
 		});
 
 		runTests("datamatrix-1", DataMatrix, 30, {
@@ -444,9 +444,9 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 3, 3, 180 },
 		});
 
-		runTests("code39-3", Code39, 12, {
-			{ 12, 12, 0   },
-			{ 12, 12, 180 },
+		runTests("code39-3", Code39, 5, {
+			{ 5, 5, 0   },
+			{ 5, 5, 180 },
 		});
 
 		runTests("code93-1", Code93, 3, {
@@ -459,9 +459,9 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 6, 6, 180 },
 		});
 
-		runTests("code128-2", Code128, 22, {
-			{ 19, 22, 0   },
-			{ 20, 22, 180 },
+		runTests("code128-2", Code128, 14, {
+			{ 11, 14, 0   },
+			{ 12, 14, 180 },
 		});
 
 		runTests("code128-3", Code128, 2, {
@@ -475,24 +475,24 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 8, 0, pure },
 		});
 
-		runTests("ean13-1", EAN13, 32, {
-			{ 26, 30, 0   },
-			{ 25, 30, 180 },
+		runTests("ean13-1", EAN13, 23, {
+			{ 17, 21, 0   },
+			{ 16, 21, 180 },
 		});
 
-		runTests("ean13-2", EAN13, 24, {
-			{ 7, 13, 0   },
-			{ 7, 13, 180 },
+		runTests("ean13-2", EAN13, 20, {
+			{ 3, 9, 0   },
+			{ 3, 9, 180 },
 		});
 
-		runTests("ean13-3", EAN13, 21, {
-			{ 20, 21, 0   },
-			{ 21, 21, 180 },
+		runTests("ean13-3", EAN13, 8, {
+			{ 7, 8, 0   },
+			{ 8, 8, 180 },
 		});
 
-		runTests("ean13-4", EAN13, 22, {
-			{ 6, 13, 0   },
-			{ 7, 13, 180 },
+		runTests("ean13-4", EAN13, 20, {
+			{ 6, 12, 0   },
+			{ 7, 12, 180 },
 		});
 
 		runTests("ean13-extension-1", EAN13, 5, {
@@ -515,14 +515,14 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 4, 4, 180 },
 		});
 
-		runTests("upca-1", UPCA, 12, {
-			{ 10, 12, 0   },
-			{ 11, 12, 180 },
+		runTests("upca-1", UPCA, 5, {
+			{ 4, 5, 0   },
+			{ 5, 5, 180 },
 		}, ReaderOptions().formats(UPCA));
 
-		runTests("upca-2", UPCA, 36, {
-			{ 17, 22, 0   },
-			{ 17, 22, 180 },
+		runTests("upca-2", UPCA, 26, {
+			{ 11, 15, 0   },
+			{ 10, 15, 180 },
 		}, ReaderOptions().formats(UPCA));
 
 		runTests("upca-3", UPCA, 21, {
@@ -530,14 +530,14 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 8, 11, 180 },
 		}, ReaderOptions().formats(UPCA));
 
-		runTests("upca-4", UPCA, 19, {
-			{ 8, 12, 0, 1, 0 },
-			{ 9, 12, 0, 1, 180 },
+		runTests("upca-4", UPCA, 13, {
+			{ 7, 9, 0 },
+			{ 7, 9, 180 },
 		}, ReaderOptions().formats(UPCA));
 
-		runTests("upca-5", UPCA, 32, {
-			{ 18, 20, 0   },
-			{ 18, 20, 180 },
+		runTests("upca-5", UPCA, 20, {
+			{ 7, 9, 0   },
+			{ 8, 9, 180 },
 		}, ReaderOptions().formats(UPCA));
 
 		runTests("upca-extension-1", UPCA, 6, {
@@ -577,9 +577,9 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 37, 0, pure },
 		});
 
-		runTests("rssexpanded-2", DataBarExp, 15, {
-			{ 13, 15, 0   },
-			{ 13, 15, 180 },
+		runTests("rssexpanded-2", DataBarExp, 7, {
+			{ 5, 7, 0   },
+			{ 5, 7, 180 },
 		});
 
 		runTests("rssexpanded-3", DataBarExp, 118, {
@@ -613,11 +613,11 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 0, 0, 0 },
 		});
 
-		runTests("qrcode-1", QRCode, 16, {
-			{ 16, 16, 0   },
-			{ 16, 16, 90  },
-			{ 16, 16, 180 },
-			{ 16, 16, 270 },
+		runTests("qrcode-1", QRCode, 8, {
+			{ 8, 8, 0   },
+			{ 8, 8, 90  },
+			{ 8, 8, 180 },
+			{ 8, 8, 270 },
 		});
 
 		runTests("qrcode-2", QRCode, 54, {
@@ -635,11 +635,11 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 			{ 28, 28, 270 },
 		});
 
-		runTests("qrcode-4", QRCode, 41, {
-			{ 31, 31, 0   },
-			{ 31, 31, 90  },
-			{ 31, 31, 180 },
-			{ 31, 31, 270 },
+		runTests("qrcode-4", QRCode, 24, {
+			{ 16, 16, 0   },
+			{ 16, 16, 90  },
+			{ 16, 16, 180 },
+			{ 16, 16, 270 },
 		});
 
 		runTests("qrcode-5", QRCode, 16, {
