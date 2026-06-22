@@ -7,7 +7,7 @@
 
 #include "PseudoRandom.h"
 #include "ZXAlgorithms.h"
-#include "ReedSolomon.h"
+#include "librscpp/decode.h"
 
 #include "gtest/gtest.h"
 
@@ -28,9 +28,11 @@ static const int ERROR_LIMIT = NUM_ECC;
 static const int MAX_ERRORS = ERROR_LIMIT / 2;
 static const int MAX_ERASURES = ERROR_LIMIT;
 
+static librscpp::GFp<> gf929_3(929, 3, 1);
+
 static void CheckDecode(std::vector<int>& codeword, std::span<int> erasures = {}, int i = 0)
 {
-	auto res = ReedSolomonDecode(RSField::PDF417, codeword, NUM_ECC, erasures);
+	auto res = librscpp::decode(gf929_3, codeword, NUM_ECC, erasures);
 	EXPECT_TRUE(res) << "Failed to correct at " << i << " with " << erasures.size() << " erasures";
 	EXPECT_EQ(codeword, PDF417_TEST_WITH_EC);
 }
@@ -138,5 +140,5 @@ TEST(PDF417ErrorCorrectionTest, TooManyErrors)
 	std::vector<int> codeword(PDF417_TEST_WITH_EC);
 	PseudoRandom random(0x12345678);
 	Corrupt(codeword, MAX_ERRORS + 1, random, 929);
-	EXPECT_FALSE(ReedSolomonDecode(RSField::PDF417, codeword, NUM_ECC));
+	EXPECT_FALSE(librscpp::decode(gf929_3, codeword, NUM_ECC));
 }
