@@ -8,8 +8,10 @@
 #include "ZXingCpp.h"
 
 #include <chrono>
+#include <cctype>
 #include <cstring>
 #include <iostream>
+#include <fstream>
 #include <iomanip>
 #include <iterator>
 #include <memory>
@@ -20,6 +22,10 @@
 #include <stb_image.h>
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
+
+#ifdef ZXING_USE_WEBP
+#include <webp/decode.h>
+#endif
 
 using namespace ZXing;
 
@@ -187,6 +193,47 @@ void drawRect(const ImageView& image, const Position& pos, bool error)
 		drawLine(image, pos[i], pos[(i + 1) % 4], error);
 }
 
+std::unique_ptr<uint8_t, void (*)(void*)> LoadWebP(const std::string& filePath, int* width, int* height, int* channels)
+{
+#ifdef ZXING_USE_WEBP
+	std::ifstream file(filePath, std::ios::binary);
+	if (!file)
+		throw std::runtime_error("Failed to read image: " + filePath + " (failed to open file)");
+
+	std::vector<uint8_t> compressedData(std::istreambuf_iterator<char>(file), {});
+	if (compressedData.empty())
+		throw std::runtime_error("Failed to read image: " + filePath + " (empty file)");
+
+	*channels = 3;
+	uint8_t* img = WebPDecodeRGB(compressedData.data(), compressedData.size(), width, height);
+
+	if (img == nullptr)
+		throw std::runtime_error("Failed to read image: " + filePath + " (WebP decode failed)");
+
+	return std::unique_ptr<uint8_t, void (*)(void*)>(img, WebPFree);
+#else
+	std::cerr << "Failed to read image: " << filePath << " (WebP support is not enabled in this build)" << "\n";
+	return std::unique_ptr<uint8_t, void (*)(void*)>(nullptr, nullptr);
+#endif
+}
+
+std::unique_ptr<uint8_t, void (*)(void*)> LoadStbi(const std::string& filePath, int* width, int* height, int* channels, int forceChannels)
+{
+	auto buffer = std::unique_ptr<uint8_t, void (*)(void*)>(
+		filePath == "-" ? stbi_load_from_file(stdin, width, height, channels, forceChannels)
+						: stbi_load(filePath.c_str(), width, height, channels, forceChannels),
+		stbi_image_free);
+	if (buffer == nullptr)
+		std::cerr << "Failed to read image: " << filePath << " (" << stbi_failure_reason() << ")" << "\n";
+	return buffer;
+}
+
+bool IEndsWith(std::string_view str, std::string_view suffix)
+{
+	return str.size() > suffix.size() && std::equal(str.end() - suffix.size(), str.end(), suffix.begin(),
+			[](char a, char b) { return std::tolower(static_cast<unsigned char>(a)) == b; });
+}
+
 int main(int argc, char* argv[])
 {
 	ReaderOptions options;
@@ -209,14 +256,12 @@ int main(int argc, char* argv[])
 
 	for (const auto& filePath : cli.filePaths) {
 		int width, height, channels;
-		std::unique_ptr<stbi_uc, void (*)(void*)> buffer(
-			filePath == "-" ? stbi_load_from_file(stdin, &width, &height, &channels, cli.forceChannels)
-							: stbi_load(filePath.c_str(), &width, &height, &channels, cli.forceChannels),
-			stbi_image_free);
-		if (buffer == nullptr) {
-			std::cerr << "Failed to read image: " << filePath << " (" << stbi_failure_reason() << ")" << "\n";
-			return -1;
-		}
+		auto buffer = IEndsWith(filePath, ".webp")
+						  ? LoadWebP(filePath, &width, &height, &channels)
+						  : LoadStbi(filePath, &width, &height, &channels, cli.forceChannels);
+		if (buffer == nullptr)
+			continue;
+
 		channels = cli.forceChannels ? cli.forceChannels : channels;
 
 		auto ImageFormatFromChannels = std::array{ImageFormat::None, ImageFormat::Lum, ImageFormat::LumA, ImageFormat::RGB, ImageFormat::RGBA};
