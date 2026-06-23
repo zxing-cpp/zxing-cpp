@@ -33,7 +33,7 @@ int main(int argc, char** argv)
 
 	fs::path pathPrefix = argv[1];
 
-	if (Contains({".png", ".jpg", ".pgm", ".gif"}, pathPrefix.extension())) {
+	if (Contains({".png", ".jpg", ".pgm", ".gif", ".webp", ".jxl"}, pathPrefix.extension())) {
 		auto opts = ReaderOptions().tryHarder(!getEnv("FAST", false)).tryRotate(true).isPure(getEnv("IS_PURE"));
 		if (getenv("FORMATS"))
 			opts.formats(BarcodeFormatsFromString(getenv("FORMATS")));

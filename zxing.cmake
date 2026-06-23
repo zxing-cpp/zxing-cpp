@@ -76,5 +76,10 @@ macro(zxing_add_package name depname git_repo git_rev)
             endif()
         # set (${name}_POPULATED TRUE) # this is supposed to be done in MakeAvailable but it seems not to?!?
         endif()
+
+        if (${depname} STREQUAL "WebP" AND NOT TARGET WebP::webp)
+            add_library(WebP::webp ALIAS webp)
+        endif()
+
     endif()
 endmacro()
