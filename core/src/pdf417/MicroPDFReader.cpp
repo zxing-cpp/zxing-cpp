@@ -610,8 +610,14 @@ static BarcodeData ScanCandidate(const BitMatrix& image, const Cluster& lraps)
 	codewords[0] = Size(codewords); // see DecodeCodewords
 	std::copy_n(&mat(0, si.startRow), si.nCWs(), codewords.begin() + 1);
 
-	DecoderResult decoderResult = Pdf417::DecodeCodewords(codewords, si.nECCs);
-	printf("cws: %d, rotFam: %d, valid: %d\n", si.nCWs(), si.rotFam, decoderResult.isValid());
+	std::vector<int> erasures;
+	for (int i=0; i < Size(codewords); ++i)
+		if (codewords[i] == -1)
+			erasures.push_back(i);
+
+	DecoderResult decoderResult = Pdf417::DecodeCodewords(codewords, si.nECCs, erasures);
+	printf("cws: %d, rotFamHist: %d/%d/%d/%d, rotFam: %d, nEECs: %d, erasures: %d, valid: %d\n", si.nCWs(), rotFamHist[0],
+		   rotFamHist[1], rotFamHist[2], rotFamHist[3], si.rotFam, si.nECCs, Size(erasures), decoderResult.isValid());
 
 	return MatrixBarcode(std::move(decoderResult), DetectorResult({}, std::move(pos)), BarcodeFormat::MicroPDF417);
 }
