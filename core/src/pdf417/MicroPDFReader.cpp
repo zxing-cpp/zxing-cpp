@@ -478,24 +478,24 @@ static constexpr std::array<SymbolInfo, 35> SYMBOLS = {{
 	{4, 44, 50, 24, 1, 1, 44},
 }};
 
-static const SymbolInfo& DetermineSymbolInfo(const Matrix<int>& mat, const std::array<int, 4>& rotFamHist)
+static const SymbolInfo& DetermineSymbolInfo(const Matrix<int>& mat, const std::array<int, 4>& rotFamHist [[maybe_unused]])
 {
-	SymbolInfo res;
-	res.nCols = mat.width();
-	int rotFam = (std::ranges::max_element(rotFamHist) - rotFamHist.begin()) * 8;
+	// int rotFam = (std::ranges::max_element(rotFamHist) - rotFamHist.begin()) * 8;
 	std::array<int, SYMBOLS.size()> symHist = {};
+	auto nCWs = std::ranges::count_if(mat, [](auto i) { return i != -1; });
 
 	for (int y = 1; y < mat.height(); ++y) {
 		if (std::any_of(&mat(0, y), &mat(0, y) + mat.width(), [](auto i) { return i != -1; }))
 			for (const auto& s : SYMBOLS) {
-				if (s.nCols == res.nCols && s.rotFam == rotFam && s.rowB <= y && y <= s.rowE)
+				if (s.nCols == mat.width() && s.rowB <= y && y <= s.rowE && nCWs >= s.nCWs() - s.nECCs && nCWs < s.nCWs() + 2 * s.nCols)
+					// && s.rotFam == rotFam
 					symHist[&s - &SYMBOLS.front()]++;
 			}
 	}
 
 	int symIdx = std::ranges::max_element(symHist) - symHist.begin();
 	if (symHist[symIdx] < 1)
-		return SYMBOLS.front();
+		symIdx = 0; // fallback to the dummy symbol if no match was found
 	return SYMBOLS[symIdx];
 }
 
