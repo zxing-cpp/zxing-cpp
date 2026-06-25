@@ -196,6 +196,7 @@ CodeWord ReadCodeWord(BitMatrixModuleCursor<POINT>& cur, int expectedCluster = -
 		return {cluster, code};
 	};
 
+	log(cur.p, 4);
 	auto curBackup = cur;
 	auto cw = readCodeWord(cur);
 	if (!cw) {
@@ -205,7 +206,7 @@ CodeWord ReadCodeWord(BitMatrixModuleCursor<POINT>& cur, int expectedCluster = -
 			if (!curAlt.isIn()) // curBackup might be the first or last image row
 				continue;
 			if (auto cwAlt = readCodeWord(curAlt)) {
-				printf("offset at %s: %s\n", ToString(PointI(curBackup.p)).c_str(), ToString(PointI(offset)).c_str());
+				printf("adjust cursor at %s: %s\n", ToString(PointI(curBackup.p)).c_str(), ToString(PointI(offset)).c_str());
 				cur = curAlt;
 				return cwAlt;
 			}
@@ -218,6 +219,7 @@ using PatternRAP = std::array<uint16_t, 6>;
 
 static int ReadRAP(BitMatrixModuleCursorF& cur, RAP type)
 {
+	log(cur.p, 3);
 	int res = RAPIndex(ToInt(NormalizedPattern<6, 10>(cur.readPatternFromBlack<PatternRAP>(3, cur.ms * 15))), type);
 	if (type == RAP::R) {
 		auto c = cur;
@@ -398,7 +400,7 @@ static Clusters FindCandidates(const BitMatrix& image, bool tryHarder, bool reve
 	printf("\n# found LRAPs: %d\n", Size(res));
 	for (const auto& cluster : res) {
 		for (auto lrap : cluster)
-			printf("%d @ %dx%d\n", lrap.idx, lrap.x, lrap.y);
+			printf("%d @ %dx%d (width: %d)\n", lrap.idx, lrap.x, lrap.y, lrap.width);
 		printf("\n");
 	}
 #endif
@@ -506,7 +508,8 @@ static const SymbolInfo& DetermineSymbolInfo(const Matrix<int>& mat, const std::
 
 static BarcodeData ScanCandidate(const BitMatrix& image, const Cluster& lraps)
 {
-	BitMatrixModuleCursorF startCur(image, centered(lraps.front()), PointF(lraps.back() - lraps.front()), lraps.front().width / 27.f);
+	BitMatrixModuleCursorF startCur(image, centered(lraps.front()), PointF(lraps.back() - lraps.front()),
+									lraps.front().width / (10 + 17.f));
 	startCur.turnLeft();
 	startCur.step(-1);
 
@@ -519,8 +522,9 @@ static BarcodeData ScanCandidate(const BitMatrix& image, const Cluster& lraps)
 	while(failedTries < 10 && image.isIn(startCur.p + startCur.left())) {
 		startCur.p += startCur.left();
 		auto cur = startCur;
-		auto i = ReadRAP(cur, RAP::L);
-		failedTries = i ? 0 : failedTries + 1;
+		log(cur.p);
+		if (!ReadRAP(cur, RAP::L))
+			++failedTries;
 	}
 
 	startCur.p += failedTries * startCur.right();
@@ -618,14 +622,22 @@ static BarcodeData ScanCandidate(const BitMatrix& image, const Cluster& lraps)
 	codewords[0] = Size(codewords); // see DecodeCodewords
 	std::copy_n(&mat(0, si.startRow), si.nCWs(), codewords.begin() + 1);
 
+#ifdef PRINT_DEBUG
+	printf("codewords: ");
+	for (int cw: codewords)
+		printf("%3d ", cw);
+	printf("\n");
+#endif
+
 	std::vector<int> erasures;
 	for (int i=0; i < Size(codewords); ++i)
 		if (codewords[i] == -1)
 			erasures.push_back(i);
 
 	DecoderResult decoderResult = Pdf417::DecodeCodewords(codewords, si.nECCs, erasures);
-	printf("cws: %d, rotFamHist: %d/%d/%d/%d, rotFam: %d, nEECs: %d, erasures: %d, valid: %d\n", si.nCWs(), rotFamHist[0],
-		   rotFamHist[1], rotFamHist[2], rotFamHist[3], si.rotFam, si.nECCs, Size(erasures), decoderResult.isValid());
+	printf("size: %dx%d, cws: %d, rotFamHist: %d/%d/%d/%d, rotFam: %d, nEECs: %d, erasures: %d, valid: %d\n", si.nCols, si.nRows,
+		   si.nCWs(), rotFamHist[0], rotFamHist[1], rotFamHist[2], rotFamHist[3], si.rotFam, si.nECCs, Size(erasures),
+		   decoderResult.isValid());
 
 	return MatrixBarcode(std::move(decoderResult), DetectorResult({}, std::move(pos)), BarcodeFormat::MicroPDF417);
 }
