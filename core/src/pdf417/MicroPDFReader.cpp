@@ -194,12 +194,13 @@ CodeWord ReadCodeWord(BitMatrixModuleCursor<POINT>& cur, int expectedCluster = -
 	auto curBackup = cur;
 	auto cw = readCodeWord(cur);
 	if (!cw) {
-		for (auto offset : {curBackup.left(), curBackup.right()}) {
+		for (auto offset : {cur.ms * curBackup.left(), cur.ms * curBackup.right()}) {
 			auto curAlt = curBackup;
 			curAlt.p += offset;
 			if (!curAlt.isIn()) // curBackup might be the first or last image row
 				continue;
 			if (auto cwAlt = readCodeWord(curAlt)) {
+				printf("offset at %s: %s\n", ToString(PointI(curBackup.p)).c_str(), ToString(PointI(offset)).c_str());
 				cur = curAlt;
 				return cwAlt;
 			}
