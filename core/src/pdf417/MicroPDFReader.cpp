@@ -406,6 +406,8 @@ static int DetermineNumCols(BitMatrixModuleCursorF start, const Cluster& lraps)
 	auto c_cw_cw_r = [&](BitMatrixModuleCursorF cur) { return (ReadRAP(cur, RAP::C) != 0) && ReadCodeWord(cur) && cw_r(cur); };
 	auto cw_c_cw_cw_r = [&](BitMatrixModuleCursorF cur) { return ReadCodeWord(cur) && c_cw_cw_r(cur); };
 
+	int res = 0;
+
 	for (auto& p : lraps) {
 		auto cur = start;
 		cur.p = centered(p);
@@ -418,15 +420,15 @@ static int DetermineNumCols(BitMatrixModuleCursorF start, const Cluster& lraps)
 
 		if (cw_c_cw_cw_r(cur))
 			return 4;
-		if (c_cw_cw_r(cur))
-			return 3;
-		if (cw_r(cur))
-			return 2;
-		if (r(cur))
-			return 1;
+		else if (c_cw_cw_r(cur))
+			res = std::max(res, 3);
+		else if (cw_r(cur))
+			res = std::max(res, 2);
+		else if (r(cur))
+			res = std::max(res, 1);
 	}
 
-	return 0;
+	return res;
 }
 
 struct SymbolInfo
