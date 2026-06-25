@@ -166,25 +166,33 @@ public:
 	}
 
 	template<typename ARRAY>
-	ARRAY readPattern(int range = 0)
+	ARRAY readPattern(int max = 0, int min = 0)
 	{
 		ARRAY res = {};
 		for (auto& i : res) {
-			i = stepToEdge(1, range);
+			i = stepToEdge(1, max);
 			if (!i)
 				return res;
-			if (range)
-				range -= i;
+			if (max)
+				max -= i;
+		}
+		if (min && max) {
+			min -= Reduce(res);
+			int steps = -1;
+			while (min > 0 && max && (steps = stepToEdge(2, max))) {
+				max -= steps;
+				min -= steps;
+			}
 		}
 		return res;
 	}
 
 	template<typename ARRAY>
-	ARRAY readPatternFromBlack(int maxWhitePrefix, int range = 0)
+	ARRAY readPatternFromBlack(int maxWhitePrefix, int max = 0, int min = 0)
 	{
 		if (maxWhitePrefix && isWhite() && !stepToEdge(1, maxWhitePrefix))
 			return {};
-		return readPattern<ARRAY>(range);
+		return readPattern<ARRAY>(max, min);
 	}
 };
 

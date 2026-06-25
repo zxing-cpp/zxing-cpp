@@ -184,9 +184,14 @@ template <typename POINT>
 CodeWord ReadCodeWord(BitMatrixModuleCursor<POINT>& cur, int expectedCluster = -1)
 {
 	auto readCodeWord = [expectedCluster](auto& cur) -> CodeWord {
-		auto np = NormalizedPattern<8, 17>(cur.template readPattern<Pattern417>(cur.ms * 20));
+		auto startP = cur.p;
+		auto np = NormalizedPattern<8, 17>(cur.template readPatternFromBlack<Pattern417>(cur.ms / 2, cur.ms * 20, cur.ms * 15));
 		int cluster = (np[0] - np[2] + np[4] - np[6] + 9) % 9;
 		int code = expectedCluster == -1 || cluster == expectedCluster ? Pdf417::CodewordDecoder::GetCodeword(ToInt(np)) : -1;
+		if (code != -1) {
+			cur.ms = length(cur.p - startP) / length(cur.d) / 17.f;
+			// printf("new ms: %.1f\n", cur.ms);
+		}
 
 		return {cluster, code};
 	};
