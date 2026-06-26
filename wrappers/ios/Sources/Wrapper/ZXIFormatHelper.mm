@@ -7,11 +7,11 @@
 ZXing::BarcodeFormat BarcodeFormatFromZXIFormat(ZXIFormat format) {
     switch (format) {
         case ZXIFormat::ANY:
-            return ZXing::BarcodeFormat::Any;
+            return ZXing::BarcodeFormat::All;
         case ZXIFormat::MATRIX_CODES:
-            return ZXing::BarcodeFormat::MatrixCodes;
+            return ZXing::BarcodeFormat::AllMatrix;
         case ZXIFormat::LINEAR_CODES:
-            return ZXing::BarcodeFormat::LinearCodes;
+            return ZXing::BarcodeFormat::AllLinear;
         case ZXIFormat::UPC_E:
             return ZXing::BarcodeFormat::UPCE;
         case ZXIFormat::UPC_A:
@@ -31,9 +31,13 @@ ZXing::BarcodeFormat BarcodeFormatFromZXIFormat(ZXIFormat format) {
         case ZXIFormat::DATA_MATRIX:
             return ZXing::BarcodeFormat::DataMatrix;
         case ZXIFormat::DATA_BAR_EXPANDED:
-            return ZXing::BarcodeFormat::DataBarExpanded;
+            return ZXing::BarcodeFormat::DataBarExp;
+        case ZXIFormat::DATA_BAR_STACKED:
+            return ZXing::BarcodeFormat::DataBarStk;
+        case ZXIFormat::DATA_BAR_EXPANDED_STACKED:
+            return ZXing::BarcodeFormat::DataBarExpStk;
         case ZXIFormat::DATA_BAR_LIMITED:
-            return ZXing::BarcodeFormat::DataBarLimited;
+            return ZXing::BarcodeFormat::DataBarLtd;
         case ZXIFormat::DATA_BAR:
             return ZXing::BarcodeFormat::DataBar;
         case ZXIFormat::DX_FILM_EDGE:
@@ -77,9 +81,13 @@ ZXIFormat ZXIFormatFromBarcodeFormat(ZXing::BarcodeFormat format) {
             return ZXIFormat::CODE_128;
         case ZXing::BarcodeFormat::DataBar:
             return ZXIFormat::DATA_BAR;
-        case ZXing::BarcodeFormat::DataBarExpanded:
+        case ZXing::BarcodeFormat::DataBarExp:
             return ZXIFormat::DATA_BAR_EXPANDED;
-        case ZXing::BarcodeFormat::DataBarLimited:
+        case ZXing::BarcodeFormat::DataBarStk:
+            return ZXIFormat::DATA_BAR_STACKED;
+        case ZXing::BarcodeFormat::DataBarExpStk:
+            return ZXIFormat::DATA_BAR_EXPANDED_STACKED;
+        case ZXing::BarcodeFormat::DataBarLtd:
             return ZXIFormat::DATA_BAR_LIMITED;
         case ZXing::BarcodeFormat::DataMatrix:
             return ZXIFormat::DATA_MATRIX;
@@ -105,15 +113,15 @@ ZXIFormat ZXIFormatFromBarcodeFormat(ZXing::BarcodeFormat format) {
             return ZXIFormat::UPC_A;
         case ZXing::BarcodeFormat::UPCE:
             return ZXIFormat::UPC_E;
-        case ZXing::BarcodeFormat::LinearCodes:
+        case ZXing::BarcodeFormat::AllLinear:
             return ZXIFormat::LINEAR_CODES;
-        case ZXing::BarcodeFormat::MatrixCodes:
+        case ZXing::BarcodeFormat::AllMatrix:
             return ZXIFormat::MATRIX_CODES;
         case ZXing::BarcodeFormat::MicroQRCode:
             return ZXIFormat::MICRO_QR_CODE;
         case ZXing::BarcodeFormat::RMQRCode:
             return ZXIFormat::RMQR_CODE;
-        case ZXing::BarcodeFormat::Any:
+        case ZXing::BarcodeFormat::All:
             return ZXIFormat::ANY;
     }
     NSLog(@"ZXIWrapper: Received invalid BarcodeFormat, returning format: None");
