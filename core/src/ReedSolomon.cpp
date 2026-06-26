@@ -61,10 +61,9 @@ std::optional<double> ReedSolomonDecode(RSField field, std::span<uint8_t> codewo
 
 std::optional<double> ReedSolomonDecode(RSField field, std::span<int> codeword, int numECC, std::span<const int> erasures)
 {
-	// The number of erasures may at most be numECC.
-	// Note that leaves 0 parity symbols to error correction (or even detection) but the final syndrome verification in rs::decode will
-	// still catch any errors in that case.
-	if (Size(erasures) > numECC)
+	// The number of erasures may at most be numECC - 2 because leaving less than 2 parity symbols for error correction would make it
+	// impossible to correct or even detect any errors. See also ISO/IEC 24728-2006 5.7.2
+	if (Size(erasures) > numECC - 2)
 		return {};
 
 #if ZXING_ENABLE_PDF417
