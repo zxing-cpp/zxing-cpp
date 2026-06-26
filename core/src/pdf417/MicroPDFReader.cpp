@@ -619,7 +619,10 @@ static BarcodeData ScanCandidate(const BitMatrix& image, const Cluster& lraps)
 	auto si = DetermineSymbolInfo(mat, rotFamHist);
 
 	std::vector<int> codewords(si.nCWs() + 1);
-	codewords[0] = Size(codewords); // see DecodeCodewords
+	// MicroPDF417 does not encode the number of codewords in the symbol but the DecodeCodewords() function expects the first element
+	// to contain the number of codewords. The ReedSolomon algorithm can gracefully handle prepended zeros, the VerifyCodewordCount()
+	// function will autocorrect the number of codewords if the first element is zero.
+	codewords[0] = 0;
 	std::copy_n(&mat(0, si.startRow), si.nCWs(), codewords.begin() + 1);
 
 #ifdef PRINT_DEBUG
