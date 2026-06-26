@@ -697,6 +697,8 @@ static BarcodeData ScanCandidate(const BitMatrix& image, const Cluster& lraps)
 		if (codewords[i] == -1)
 			erasures.push_back(i);
 
+	// TODO: implement proper handling of ECI Descriptor codeword at the start of the codeword sequence
+	// (see ISO 24728:2006, section 5.2.4.2 ECI Descriptor codeword)
 	DecoderResult decoderResult = Pdf417::DecodeCodewords(codewords, si.nECCs, erasures);
 	printf("size: %dx%d, firstRow: %d, cws: %d, rotFamHist: %d/%d/%d/%d, rotFam: %d, nEECs: %d, erasures: %d, valid: %d\n", si.nCols,
 		   si.nRows, si.startRow, si.nCWs(), rotFamHist[0], rotFamHist[1], rotFamHist[2], rotFamHist[3], si.rotFam, si.nECCs,
