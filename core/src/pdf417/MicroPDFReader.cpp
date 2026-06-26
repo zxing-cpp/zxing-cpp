@@ -17,6 +17,7 @@
 
 #include <list>
 #include <map>
+#include <limits>
 #include <vector>
 
 #ifndef PRINT_DEBUG
@@ -279,6 +280,21 @@ struct Segment
 	std::vector<LRAP*> lraps;
 };
 
+struct RAPPair
+{
+	int first, second, offset, family;
+
+	RAPPair(int f, int s): first(f), second(s), offset(0), family(0) {
+		int diff = second - first;
+		if (diff < -4)
+			diff += 52;
+		family = (diff + 4) / 8 * 8;
+		offset = diff - family;
+	}
+
+	bool isValid() const { return first != 0 && second != 0 && family <= 24 && std::abs(offset) <= 3; }
+};
+
 using Cluster = std::vector<LRAP>;
 using Clusters = std::list<Cluster>;
 
@@ -485,25 +501,55 @@ static constexpr std::array<SymbolInfo, 35> SYMBOLS = {{
 	{4, 44, 50, 24, 1, 1, 44},
 }};
 
-static const SymbolInfo& DetermineSymbolInfo(const Matrix<int>& mat, const std::array<int, 4>& rotFamHist [[maybe_unused]])
+template <typename C, typename Comp = std::ranges::less>
+std::pair<typename C::const_iterator, typename C::const_iterator> FindBestAndSecondBest(const C& c, Comp comp = {})
 {
-	// int rotFam = (std::ranges::max_element(rotFamHist) - rotFamHist.begin()) * 8;
-	std::array<int, SYMBOLS.size()> symHist = {};
-	auto nCWs = std::ranges::count_if(mat, [](auto i) { return i != -1; });
+	auto best = std::ranges::max_element(c, comp);
+	auto secondBest = std::ranges::max_element(c, [&](const auto& a, const auto& b) { return &a == &*best || comp(a, b); });
+	return {best, secondBest};
+}
 
-	for (int y = 1; y < mat.height(); ++y) {
-		if (std::any_of(&mat(0, y), &mat(0, y) + mat.width(), [](auto i) { return i != -1; }))
-			for (const auto& s : SYMBOLS) {
-				if (s.nCols == mat.width() && s.rowB <= y && y <= s.rowE && nCWs >= s.nCWs() - s.nECCs && nCWs < s.nCWs() + 2 * s.nCols)
-					// && s.rotFam == rotFam
-					symHist[&s - &SYMBOLS.front()]++;
-			}
+struct CodewordEvidence
+{
+	int codeword = -1, count = 0;
+};
+
+static const SymbolInfo& DetermineSymbolInfo(const Matrix<CodewordEvidence>& mat, const std::array<int, 4>& rotFamHist [[maybe_unused]])
+{
+	auto rotFamMax = std::ranges::max_element(rotFamHist);
+	int rotFam = *rotFamMax && *rotFamMax > Reduce(rotFamHist) / 2 ? static_cast<int>(rotFamMax - rotFamHist.begin()) * 8 : -1;
+	// rotFam = -1; // uncomment to test symbol detection without rotation family filtering
+
+	std::vector<int> sightsPerRow(mat.height(), 0);
+	for (int y = 1; y < mat.height(); ++y)
+		for (int x = 0; x < mat.width(); ++x)
+			sightsPerRow[y] += mat(x, y).count;
+
+	const SymbolInfo* bestSym = SYMBOLS.data();
+	int minError = std::numeric_limits<int>::max();
+	float meanCount = Reduce(mat, 0.f, [](float acc, const CodewordEvidence& e) { return acc + e.count; })
+					  / std::ranges::count_if(mat, [](const auto& e) { return e.count > 0; });
+
+	for (const auto& s : SYMBOLS) {
+		if (s.nCols != mat.width() || (rotFam != -1 && s.rotFam != rotFam))
+			continue;
+
+		int error = s.nCWs() * meanCount; // with all inside filled and outside empty, this will result in 0 error
+		for (int y = 1; y < mat.height(); ++y) {
+			bool isOutside = y < s.startRow || y > s.startRow + s.nRows;
+			error += (isOutside ? 1 : -1) * sightsPerRow[y];
+		}
+
+		printf("symbol: %d, %2dx%2d, rotFam: %2d, firstRow: %2d, error: %d\n",
+			   static_cast<int>(&s - SYMBOLS.data()), s.nCols, s.nRows, s.rotFam, s.startRow, error);
+
+		if (error < minError) {
+			minError = error;
+			bestSym = &s;
+		}
 	}
 
-	int symIdx = std::ranges::max_element(symHist) - symHist.begin();
-	if (symHist[symIdx] < 1)
-		symIdx = 0; // fallback to the dummy symbol if no match was found
-	return SYMBOLS[symIdx];
+	return *bestSym;
 }
 
 static BarcodeData ScanCandidate(const BitMatrix& image, const Cluster& lraps)
@@ -535,11 +581,12 @@ static BarcodeData ScanCandidate(const BitMatrix& image, const Cluster& lraps)
 	std::array<int, 4> rotFamHist = {};
 	Position pos;
 
-	auto checkRAP = [&](int li, int ri, int scale = 1) {
-		int famIdx = ((52 + ri - li) % 52 + 4 * scale) / (8 * scale);
-		if (ri == 0 || famIdx > 3)
+	auto checkRAP = [&](int li, int ri) {
+		auto rap = RAPPair(li, ri);
+		if (!rap.isValid())
 			return false;
-		rotFamHist.at(famIdx)++;
+		// printf("li: %2d, ri: %2d, ri-li: %2d, fam: %d, offset: %d\n", li, ri, rap.second - rap.first, rap.family, rap.offset);
+		rotFamHist.at(rap.family/8)++;
 		failedTries = 0;
 		return true;
 	};
@@ -574,11 +621,13 @@ static BarcodeData ScanCandidate(const BitMatrix& image, const Cluster& lraps)
 		ri = ReadRAP(cur, RAP::R);
 
 		if (nCols <= 2) {
-			checkRAP(li, ri, 1);
+			checkRAP(li, ri);
 		} else {
-			checkRAP(li, ci, 1);
-			checkRAP(li, ri, 2);
+			checkRAP(li, ci);
+			checkRAP(ci, ri);
 		}
+
+		// printf("li: %2d, ci: %2d, ri: %2d, ci-li: %2d, ri-li: %2d\n", li, ci, ri, ci - li, ri - li);
 
 		if (ri) {
 			if (pos[0] == PointI()) {
@@ -611,10 +660,27 @@ static BarcodeData ScanCandidate(const BitMatrix& image, const Cluster& lraps)
 		printf("\n");
 	}
 
-	Matrix<int> mat(nCols, 53, -1);
+	Matrix<CodewordEvidence> mat(nCols, 53, {});
 	std::ranges::transform(histMat, mat.begin(), [](std::map<int, int>& hist) {
-		return hist.empty() ? -1 : std::ranges::max_element(hist, {}, &std::pair<const int, int>::second)->first;
+		if (hist.empty())
+			return CodewordEvidence{};
+		if (hist.size() == 1)
+			return CodewordEvidence{hist.begin()->first, hist.begin()->second};
+
+		auto [best, secondBest] = FindBestAndSecondBest(hist, [](const auto& a, const auto& b) { return a.second < b.second; });
+
+		return best->second > secondBest->second ? CodewordEvidence{best->first, best->second} : CodewordEvidence{};
 	});
+
+#ifdef PRINT_DEBUG
+	for (int y = 0; y < mat.height(); ++y) {
+		for (int x = 0; x < mat.width(); ++x) {
+			auto& e = mat(x, y);
+			printf("%3d (%2d) ", e.codeword, e.count);
+		}
+		printf("\n");
+	}
+#endif
 
 	auto si = DetermineSymbolInfo(mat, rotFamHist);
 
@@ -623,14 +689,8 @@ static BarcodeData ScanCandidate(const BitMatrix& image, const Cluster& lraps)
 	// to contain the number of codewords. The ReedSolomon algorithm can gracefully handle prepended zeros, the VerifyCodewordCount()
 	// function will autocorrect the number of codewords if the first element is zero.
 	codewords[0] = 0;
-	std::copy_n(&mat(0, si.startRow), si.nCWs(), codewords.begin() + 1);
-
-#ifdef PRINT_DEBUG
-	printf("codewords: ");
-	for (int cw: codewords)
-		printf("%3d ", cw);
-	printf("\n");
-#endif
+	for (int i = 0; i < si.nCWs(); ++i)
+		codewords[i + 1] = (&mat(0, si.startRow))[i].codeword;
 
 	std::vector<int> erasures;
 	for (int i=0; i < Size(codewords); ++i)
@@ -638,9 +698,9 @@ static BarcodeData ScanCandidate(const BitMatrix& image, const Cluster& lraps)
 			erasures.push_back(i);
 
 	DecoderResult decoderResult = Pdf417::DecodeCodewords(codewords, si.nECCs, erasures);
-	printf("size: %dx%d, cws: %d, rotFamHist: %d/%d/%d/%d, rotFam: %d, nEECs: %d, erasures: %d, valid: %d\n", si.nCols, si.nRows,
-		   si.nCWs(), rotFamHist[0], rotFamHist[1], rotFamHist[2], rotFamHist[3], si.rotFam, si.nECCs, Size(erasures),
-		   decoderResult.isValid());
+	printf("size: %dx%d, firstRow: %d, cws: %d, rotFamHist: %d/%d/%d/%d, rotFam: %d, nEECs: %d, erasures: %d, valid: %d\n", si.nCols,
+		   si.nRows, si.startRow, si.nCWs(), rotFamHist[0], rotFamHist[1], rotFamHist[2], rotFamHist[3], si.rotFam, si.nECCs,
+		   Size(erasures), decoderResult.isValid());
 
 	return MatrixBarcode(std::move(decoderResult), DetectorResult({}, std::move(pos)), BarcodeFormat::MicroPDF417);
 }
