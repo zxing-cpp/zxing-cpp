@@ -11,11 +11,17 @@
 #include <QCheckBox>
 #include <QClipboard>
 #include <QComboBox>
+#include <QDateTime>
 #include <QDebug>
+#include <QDir>
 #include <QElapsedTimer>
+#include <QFileDialog>
+#include <QFileInfo>
 #include <QGridLayout>
 #include <QHBoxLayout>
+#include <QImageWriter>
 #include <QKeyEvent>
+#include <QKeySequence>
 #include <QLabel>
 #include <QMainWindow>
 #include <QMediaCaptureSession>
@@ -56,6 +62,8 @@ public:
 		_barcodes = barcodes;
 		update();
 	}
+
+	QImage currentImage() const { return _frame.toImage(); }
 
 protected:
 	void paintEvent(QPaintEvent*) override
@@ -155,10 +163,15 @@ private:
 
 	void keyPressEvent(QKeyEvent* event) override
 	{
-		if (event->key() == Qt::Key_Space || event->key() == Qt::Key_P) {
+		if (event->matches(QKeySequence::Save)) {
+			saveCurrentFrame();
+			event->accept();
+		} else if (event->key() == Qt::Key_Space || event->key() == Qt::Key_P) {
 			togglePause();
+			event->accept();
 		} else if (event->key() == Qt::Key_S) {
 			toggleSettings();
+			event->accept();
 		} else {
 			QMainWindow::keyPressEvent(event);
 		}
@@ -321,6 +334,37 @@ private:
 	}
 
 	void togglePause() { _isPaused ? resumeScan() : pauseScan(); }
+
+	void saveCurrentFrame()
+	{
+		const QImage image = _videoWidget->currentImage();
+		if (image.isNull()) {
+			showFeedback(tr("No video frame available to save."));
+			return;
+		}
+
+		QString selectedFilter = tr("WebP image (*.webp)");
+		const QString defaultPath = QStringLiteral("%1/frame-%2.webp")
+			.arg(QDir::homePath(), QDateTime::currentDateTime().toString(QStringLiteral("yyyyMMdd-HHmmss")));
+		const QString filePath = QFileDialog::getSaveFileName(
+			this, tr("Save Current Frame"), defaultPath,
+			tr("WebP image (*.webp);;PNG image (*.png);;JPEG image (*.jpg *.jpeg);;BMP image (*.bmp)"), &selectedFilter);
+		if (filePath.isEmpty())
+			return;
+
+		QByteArray format = QFileInfo(filePath).suffix().toLatin1().toLower();
+		if (format.isEmpty())
+			format = "webp";
+
+		QImageWriter writer(filePath, format);
+		writer.setOptimizedWrite(true);
+		writer.setQuality(100);
+
+		if (!writer.write(image))
+			showFeedback(tr("Save failed: %1").arg(writer.errorString()));
+		else
+			showFeedback(tr("Saved frame to %1").arg(QDir::toNativeSeparators(filePath)));
+	}
 
 	void pauseScan()
 	{
