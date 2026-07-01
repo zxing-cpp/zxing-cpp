@@ -138,11 +138,17 @@ static constexpr FixedPattern<6, 10> CRAPs[] = {
 	{1, 1, 2, 1, 4, 1}, /*52*/
 };
 
+#define USE_E2E_PATTERNS
+
 static constexpr auto ToInts(const FixedPattern<6, 10> in[52])
 {
 	std::array<int, 52> res{};
 	for (int i = 0; i < 52; ++i)
+#ifdef USE_E2E_PATTERNS
+		res[i] = ToInt(NormalizedE2EPattern<6, 10, 5>(in[i]));
+#else
 		res[i] = ToInt(in[i]);
+#endif
 	return res;
 }
 
@@ -220,8 +226,13 @@ using PatternRAP = std::array<uint16_t, 6>;
 
 static int ReadRAP(BitMatrixModuleCursorF& cur, RAP type)
 {
-	log(cur.p, 3);
-	int res = RAPIndex(ToInt(NormalizedPattern<6, 10>(cur.readPatternFromBlack<PatternRAP>(3, cur.ms * 15))), type);
+	log(cur.p, 2);
+	auto pattern = cur.readPatternFromBlack<PatternRAP>(cur.ms * 1, cur.ms * 12, cur.ms * 8);
+#ifdef USE_E2E_PATTERNS
+	int res = RAPIndex(ToInt(NormalizedE2EPattern<6, 10, 5>(pattern)), type);
+#else
+	int res = RAPIndex(ToInt(NormalizedPattern<6, 10>(pattern)), type);
+#endif
 	if (type == RAP::R) {
 		auto c = cur;
 		if (cur.stepToEdge(1, cur.ms * 2) == 0 || ((c = cur).stepToEdge(1, cur.ms * 2) != 0 && c.isIn()))
@@ -249,7 +260,11 @@ static int IsLRAP(const PatternView& view)
 	if (view[0] < m * 3 / 2 || M > m * 6 || view[5] > 5 * m)
 		return 0;
 #endif
+#ifdef USE_E2E_PATTERNS
+	auto v = RAPIndex(ToInt(NormalizedE2EPattern<6, 10, 5>(view)), RAP::L);
+#else
 	auto v = RAPIndex(ToInt(NormalizedPattern<6, 10>(view)), RAP::L);
+#endif
 
 	return v;
 };
