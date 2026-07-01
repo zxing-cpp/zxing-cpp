@@ -87,7 +87,7 @@ static Character ReadDataCharacter(const PatternView& view, bool outsideChar, bo
 
 int ParseFinderPattern(const PatternView& view, bool reversed)
 {
-	static constexpr std::array<std::array<int, 3>, 9> e2ePatterns = {{
+	static constexpr std::array<Pattern<3>, 9> e2ePatterns = {{
 		{11, 10, 3 }, // {3, 8, 2, 1, 1}
 		{8 , 10, 6 }, // {3, 5, 5, 1, 1}
 		{6 , 10, 8 }, // {3, 3, 7, 1, 1}
@@ -99,7 +99,7 @@ int ParseFinderPattern(const PatternView& view, bool reversed)
 		{4 , 12, 10}, // {1, 3, 9, 1, 1}
 	}};
 
-	return ParseFinderPattern<9>(view, reversed, e2ePatterns);
+	return ParseFinderPattern(view, reversed, e2ePatterns);
 }
 
 static Pair ReadPair(const PatternView& view, bool rightPair)

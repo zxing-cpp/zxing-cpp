@@ -20,7 +20,6 @@ namespace ZXing::OneD {
 */
 class WriterHelper
 {
-	static int AppendPattern(std::vector<bool>& target, int pos, const int* pattern, size_t patternCount, bool startColor);
 public:
 	/**
 	* @return a byte array of horizontal pixels (0 = white, 1 = black)
@@ -35,8 +34,14 @@ public:
 	* @return the number of elements added to target.
 	*/
 	template <typename Container>
-	static int AppendPattern(std::vector<bool>& target, int pos, const Container& pattern, bool startColor) {
-		return AppendPattern(target, pos, pattern.data(), pattern.size(), startColor);
+	static int AppendPattern(std::vector<bool>& target, int pos, const Container& pattern, bool startColor)
+	{
+		for (auto s : pattern) {
+			for (int j = 0; j < s; j++)
+				target[pos++] = startColor;
+			startColor = !startColor; // flip color after each segment
+		}
+		return Reduce(pattern);
 	}
 };
 

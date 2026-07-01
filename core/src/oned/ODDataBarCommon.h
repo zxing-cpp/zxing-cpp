@@ -112,16 +112,17 @@ struct PairHash
 constexpr int FULL_PAIR_SIZE = 8 + 5 + 8;
 constexpr int HALF_PAIR_SIZE = 8 + 5 + 2; // half has to be followed by a guard pattern
 
-template<int N>
-int ParseFinderPattern(const PatternView& view, bool reversed, const std::array<std::array<int, 3>, N>& e2ePatterns)
+template<size_t E2E_LEN, size_t N>
+int ParseFinderPattern(const PatternView& view, bool reversed, const std::array<Pattern<E2E_LEN>, N>& e2ePatterns)
 {
-	const auto e2e = NormalizedE2EPattern<5>(view, 15, reversed);
+	static_assert(E2E_LEN == 3);
+	const auto e2e = NormalizedE2EPattern<5, E2E_LEN>(view, 15, reversed);
 
 	int best_i = -1, best_e = 3;
 	for (int i = 0; i < Size(e2ePatterns); ++i) {
 		int e = 0;
 		for (int j = 0; j < 3; ++j)
-			e += std::abs(e2ePatterns[i][j] - e2e[j]);
+			e += std::abs(static_cast<int>(e2ePatterns[i][j]) - e2e[j]);
 		if (e < best_e) {
 			best_e = e;
 			best_i = i;
@@ -157,7 +158,7 @@ std::array<int, LEN> NormalizedPatternFromE2E(const PatternView& view, int mods,
 	//   min-even-is-one: DataBarLimited, DataBar outside character
 	//   min-odd-is-one:  DataBarExpanded, DataBar inside character
 	bool minOddIsOne = mods == 15 || mods == 17;
-	const auto e2e = NormalizedE2EPattern<LEN>(view, mods, reversed);
+	const auto e2e = NormalizedE2EPattern<LEN, LEN - 2>(view, mods, reversed);
 	std::array<int, LEN> widths;
 
 	// derive element widths from normalized edge-to-similar-edge measurements

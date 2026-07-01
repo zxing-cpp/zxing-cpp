@@ -17,13 +17,7 @@
 
 namespace ZXing::OneD {
 
-// Note that 'abcd' are dummy characters in place of control characters.
-// Control chars ($)==a, (%)==b, (/)==c, (+)==d
-static constexpr char ALPHABET[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%abcd*";
-
-static_assert(Size(ALPHABET) == Size(Code93::CODE_PATTERNS), "table size mismatch");
-
-static const int ASTERISK_ENCODING = 0x660; // E2E_PATTERNS[47]
+using namespace Code93;
 
 static bool
 CheckOneChecksum(const std::string& result, int checkPosition, int weightMax)
@@ -49,25 +43,8 @@ CheckChecksums(const std::string& result)
 // forward declare here. see ODCode39Reader.cpp. Not put in header to not pollute the public facing API
 std::string DecodeCode39AndCode93FullASCII(std::string encoded, const char ctrl[4]);
 
-constexpr int CHAR_LEN = 6;
-constexpr int CHAR_MODS = 9;
 // quiet zone is half the width of a character symbol
 constexpr float QUIET_ZONE_SCALE = 0.5f;
-
-//TODO: make this a constexpr variable initialization
-static auto E2E_PATTERNS = [ ] {
-	// This creates an array of ints for fast IndexOf lookup of the edge-2-edge patterns (ISO/IEC 15417:2007(E) Table 2)
-	// e.g. a code pattern of { 2, 1, 2, 2, 2, 2 } becomes the e2e pattern { 3, 3, 4, 4 } and the value 0bs100011110000.
-	std::array<int, 48> res;
-	for (int i = 0; i < Size(res); ++i) {
-		const auto& a = Code93::CODE_PATTERNS[i];
-		std::array<int, 4> e2e;
-		for (int j = 0; j < 4; j++)
-			e2e[j] = a[j] + a[j + 1];
-		res[i] = ToInt(e2e);
-	}
-	return res;
-}();
 
 static bool IsStartGuard(const PatternView& window, int spaceInPixel)
 {
@@ -77,7 +54,7 @@ static bool IsStartGuard(const PatternView& window, int spaceInPixel)
 	// pattern size that is missed otherwise. We check for the remaining 2 slots for plausibility of the 4:1 ratio.
 	return IsPattern(window, FixedPattern<4, 4>{1, 1, 1, 1}, spaceInPixel, QUIET_ZONE_SCALE * 12) &&
 		   window[4] > 3 * window[5] - 2 &&
-		   ToInt(NormalizedE2EPattern<CHAR_LEN>(window, CHAR_MODS)) == ASTERISK_ENCODING;
+		   ToInt(NormalizedE2EPattern<CHAR_LEN, CHAR_MODS>(window)) == ASTERISK_ENCODING;
 }
 
 BarcodeData Code93Reader::decodePattern(int rowNumber, PatternView& next, std::unique_ptr<DecodingState>&) const
@@ -99,7 +76,7 @@ BarcodeData Code93Reader::decodePattern(int rowNumber, PatternView& next, std::u
 		if (!next.skipSymbol())
 			return {};
 
-		txt += LookupBitPattern(ToInt(NormalizedE2EPattern<CHAR_LEN>(next, CHAR_MODS)), E2E_PATTERNS, ALPHABET);
+		txt += LookupBitPattern(ToInt(NormalizedE2EPattern<CHAR_LEN, CHAR_MODS>(next)), E2E_PATTERNS, ALPHABET);
 
 		if (txt.back() == 0)
 			return {};

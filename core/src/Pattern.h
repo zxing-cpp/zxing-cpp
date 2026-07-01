@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <array>
 #include <bit>
+#include <cassert>
 #include <cmath>
 #include <climits>
 #include <cstddef>
@@ -48,21 +49,21 @@ public:
 	PatternView(Iterator data, int size, Iterator base, Iterator end) : _data(data), _size(size), _base(base), _end(end) {}
 
 	template <size_t N>
-	PatternView(const Pattern<N>& row) : _data(row.data()), _size(N)
+	constexpr PatternView(const Pattern<N>& row) : _data(row.data()), _size(N)
 	{}
 
 	Iterator data() const { return _data; }
 	Iterator begin() const { return _data; }
 	Iterator end() const { return _data + _size; }
 
-	value_type operator[](int i) const
+	constexpr value_type operator[](int i) const
 	{
 //		assert(i < _count);
 		return _data[i];
 	}
 
-	int sum(int n = 0) const { return Reduce(_data, _data + (n == 0 ? _size : n)); }
-	int size() const { return _size; }
+	constexpr int sum(int n = 0) const { return Reduce(_data, _data + (n == 0 ? _size : n)); }
+	constexpr int size() const { return _size; }
 
 	// index is the number of bars and spaces from the first bar to the current position
 	int index() const { return narrow_cast<int>(_data - _base) - 1; }
@@ -159,16 +160,17 @@ constexpr auto BarAndSpaceSum(const T* view) noexcept
  * IS_SPARSE = whether or not the pattern contains '0's denoting 'wide' bars/spaces
  */
 template <int N, int SUM, bool IS_SPARSE = false>
-struct FixedPattern
+struct FixedPattern : public Pattern<N>
 {
-	using value_type = PatternRow::value_type;
-	value_type _data[N];
-	constexpr value_type operator[](int i) const noexcept { return _data[i]; }
-	constexpr const value_type* data() const noexcept { return _data; }
+	static_assert(N > 0, "N must be > 0");
+	static_assert(SUM > 0, "SUM must be > 0");
+	static_assert(SUM >= N || IS_SPARSE, "SUM must be >= N");
+
+	using typename Pattern<N>::value_type;
+	using Pattern<N>::data;
+
 	constexpr int size() const noexcept { return N; }
-	constexpr const value_type* begin() const noexcept { return _data; }
-	constexpr const value_type* end() const noexcept { return _data + N; }
-	constexpr BarAndSpace<value_type> sums() const noexcept { return BarAndSpaceSum<N, value_type>(_data); }
+	constexpr BarAndSpace<value_type> sums() const noexcept { return BarAndSpaceSum<N, value_type>(data()); }
 };
 
 template <int N, int SUM>
@@ -287,13 +289,27 @@ PatternView FindLeftGuard(const PatternView& view, int minSize, const FixedPatte
 							  });
 }
 
-template <int LEN>
-std::array<int, LEN - 2> NormalizedE2EPattern(const PatternView& view, int mods, bool reverse = false)
+template <typename ARRAY, typename = std::enable_if_t<std::is_integral_v<typename ARRAY::value_type>>>
+constexpr int ToInt(const ARRAY& a)
+{
+	assert(Reduce(a) <= 32);
+
+	int pattern = 0;
+	for (int i = 0; i < Size(a); i++) {
+		if (a[i] < 0) // negative shift is undefined behavior
+			return -1;
+		pattern = (pattern << a[i]) | ~(0xffffffff << a[i]) * (~i & 1);
+	}
+	return pattern;
+}
+
+template <int LEN, int RET_LEN>
+constexpr std::array<int, RET_LEN> NormalizedE2EPattern(const PatternView& view, int mods, bool reverse = false)
 {
 	double moduleSize = static_cast<double>(view.sum(LEN)) / mods;
-	std::array<int, LEN - 2> e2e;
+	std::array<int, RET_LEN> e2e;
 
-	for (int i = 0; i < LEN - 2; i++) {
+	for (int i = 0; i < RET_LEN; i++) {
 		int i_v = reverse ? LEN - 2 - i : i;
 		double v = (view[i_v] + view[i_v + 1]) / moduleSize;
 		e2e[i] = int(v + .5);
@@ -302,8 +318,23 @@ std::array<int, LEN - 2> NormalizedE2EPattern(const PatternView& view, int mods,
 	return e2e;
 }
 
+template <int LEN, int SUM, int RET_LEN = LEN - 2>
+constexpr std::array<int, RET_LEN> NormalizedE2EPattern(const PatternView& view)
+{
+	return NormalizedE2EPattern<LEN, RET_LEN>(view, SUM);
+}
+
+template <int LEN, int SUM, size_t N>
+constexpr auto PatternsToE2EInts(const std::array<FixedPattern<LEN, SUM>, N>& in)
+{
+	std::array<int, N> res{};
+	for (size_t i = 0; i < N; ++i)
+		res[i] = ToInt(NormalizedE2EPattern<LEN, SUM>(in[i]));
+	return res;
+}
+
 template <int LEN, int SUM>
-std::array<int, LEN> NormalizedPattern(const PatternView& view)
+constexpr std::array<int, LEN> NormalizedPattern(const PatternView& view)
 {
 	double moduleSize = static_cast<double>(view.sum(LEN)) / SUM;
 #if 1

@@ -158,7 +158,7 @@ Code128Writer::encode(const std::wstring& contents, int width, int height) const
 		}
 	}
 
-	std::list<std::array<int, 6>> patterns; // temporary storage for patterns
+	std::list<Pattern<6>> patterns; // temporary storage for patterns
 	int checkSum = 0;
 	int checkWeight = 1;
 	int codeSet = 0; // selected code (CODE_CODE_B or CODE_CODE_C)

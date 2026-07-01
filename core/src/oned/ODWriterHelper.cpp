@@ -36,27 +36,4 @@ WriterHelper::RenderResult(const std::vector<bool>& code, int width, int height,
 	return result;
 }
 
-/**
-* @param target encode black/white pattern into this array
-* @param pos position to start encoding at in {@code target}
-* @param pattern lengths of black/white runs to encode
-* @param startColor starting color - false for white, true for black
-* @return the number of elements added to target.
-*/
-int
-WriterHelper::AppendPattern(std::vector<bool>& target, int pos, const int* pattern, size_t patternCount, bool startColor)
-{
-	bool color = startColor;
-	int numAdded = 0;
-	for (size_t i = 0; i < patternCount; ++i) {
-		int s = pattern[i];
-		for (int j = 0; j < s; j++) {
-			target[pos++] = color;
-		}
-		numAdded += s;
-		color = !color; // flip color after each segment
-	}
-	return numAdded;
-}
-
 } // namespace ZXing::OneD

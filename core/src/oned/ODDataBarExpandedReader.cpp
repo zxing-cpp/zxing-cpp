@@ -137,7 +137,7 @@ static const std::array<int, 7> VALID_HALF_PAIRS = {{-FINDER_A, FINDER_B, -FINDE
 
 static int ParseFinderPattern(const PatternView& view, Direction dir)
 {
-	static constexpr std::array<std::array<int, 3>, 6> e2ePatterns = {{
+	static constexpr std::array<Pattern<3>, 6> e2ePatterns = {{
 		{9, 12, 5 }, // {1, 8, 4, 1, 1}, // A
 		{9, 10, 5 }, // {3, 6, 4, 1, 1}, // B
 		{7, 10, 7 }, // {3, 4, 6, 1, 1}, // C
@@ -146,7 +146,7 @@ static int ParseFinderPattern(const PatternView& view, Direction dir)
 		{4, 11, 10}, // {2, 2, 9, 1, 1}, // F
 	}};
 
-	return ParseFinderPattern<6>(view, dir == Direction::Left, e2ePatterns);
+	return ParseFinderPattern(view, dir == Direction::Left, e2ePatterns);
 }
 
 static bool ChecksumIsValid(const Pairs& pairs)
