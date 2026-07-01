@@ -148,6 +148,18 @@ PointT<T> mainDirection(PointT<T> d)
 	return std::abs(d.x) > std::abs(d.y) ? PointT<T>(d.x, 0) : PointT<T>(0, d.y);
 }
 
+template <typename T>
+PointT<T> right(PointT<T> d)
+{
+	return {-d.y, d.x};
+}
+
+template <typename T>
+PointT<T> left(PointT<T> d)
+{
+	return {d.y, -d.x};
+}
+
 /// Calculate a floating point pixel coordinate representing the 'center' of the pixel.
 /// This is sort of the inverse operation of the PointI(PointF) conversion constructor.
 /// See also the documentation of the GridSampler API.
