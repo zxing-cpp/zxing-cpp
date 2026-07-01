@@ -20,7 +20,7 @@ namespace ZXing {
 
 class LogMatrix
 {
-	using LogBuffer = Matrix<uint8_t>;
+	using LogBuffer = Matrix<int8_t>;
 	LogBuffer _log;
 	const BitMatrix* _image = nullptr;
 	int _scale = 1;
@@ -48,8 +48,9 @@ public:
 				unsigned char &r = pix[0], &g = pix[1], &b = pix[2];
 				r = g = b = _image->get(x / _scale, y / _scale) ? 0 : 255;
 				if (_scale > 1 && x % _scale == _scale / 2 && y % _scale == _scale / 2)
-					r = g = b = r ? 230 : 50;
+					r = g = b = r ? 240 : 45;
 				switch (_log.get(x, y)) {
+				case -1: r = g = b = _scale > 1 ? 255 - r : (r ? 50 : 230); break;
 				case 1: r = g = b = _scale > 1 ? 128 : (r ? 230 : 50); break;
 				case 2: r = b = 50, g = 220; break;
 				case 3: g = r = 100, b = 250; break;
