@@ -618,14 +618,6 @@ static constexpr std::array<SymbolInfo, 35> SYMBOLS = {{
 	{4, 44, 50, 24, 1, 1, 44},
 }};
 
-template <typename C, typename Comp = std::ranges::less>
-std::pair<typename C::const_iterator, typename C::const_iterator> FindBestAndSecondBest(const C& c, Comp comp = {})
-{
-	auto best = std::ranges::max_element(c, comp);
-	auto secondBest = std::ranges::max_element(c, [&](const auto& a, const auto& b) { return &a == &*best || comp(a, b); });
-	return {best, secondBest};
-}
-
 struct CodewordEvidence
 {
 	int codeword = -1, count = 0;
@@ -800,9 +792,10 @@ static BarcodeData ScanCandidate(const BitMatrix& image, const Cluster& lraps)
 		if (hist.size() == 1)
 			return CodewordEvidence{hist.begin()->first, hist.begin()->second};
 
-		auto [best, secondBest] = FindBestAndSecondBest(hist, [](const auto& a, const auto& b) { return a.second < b.second; });
+		auto best = std::ranges::max_element(hist, [](const auto& a, const auto& b) { return a.second < b.second; });
+		bool bestIsUnique = std::ranges::all_of(hist, [&](const auto& a) { return &a == &*best || a.second < best->second; });
 
-		return best->second > secondBest->second ? CodewordEvidence{best->first, best->second} : CodewordEvidence{};
+		return bestIsUnique ? CodewordEvidence{best->first, best->second} : CodewordEvidence{};
 	});
 
 #ifdef PRINT_DEBUG
