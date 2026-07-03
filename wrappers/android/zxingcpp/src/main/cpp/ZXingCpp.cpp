@@ -262,7 +262,7 @@ struct LockedPixels
 	void *pixels = nullptr;
 
 	LockedPixels(JNIEnv* env, jobject bitmap) : env(env), bitmap(bitmap) {
-		if (AndroidBitmap_lockPixels(env, bitmap, &pixels) != ANDROID_BITMAP_RESUT_SUCCESS)
+		if (AndroidBitmap_lockPixels(env, bitmap, &pixels) != ANDROID_BITMAP_RESULT_SUCCESS)
 			pixels = nullptr;
 	}
 
