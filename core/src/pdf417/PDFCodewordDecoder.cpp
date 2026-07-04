@@ -6,6 +6,7 @@
 
 #include "PDFCodewordDecoder.h"
 #include "BitArray.h"
+#include "PDF417.h"
 #include "ZXAlgorithms.h"
 
 #include <algorithm>
@@ -15,6 +16,8 @@
 
 namespace ZXing {
 namespace Pdf417 {
+
+using namespace PDF417;
 
 static constexpr const int SYMBOL_COUNT = 2787;
 
@@ -527,6 +530,43 @@ CodewordDecoder::GetCodeword(int symbol)
 	if (it != SYMBOL_TABLE.end() && *it == symbol) {
 		return (CODEWORD_TABLE[it - SYMBOL_TABLE.begin()] - 1) % NUMBER_OF_CODEWORDS;
 	}
+	return -1;
+}
+
+static constexpr Pattern417 GetPdf417PatternFromBits(uint32_t value)
+{
+	Pattern417 result{};
+	for (int i = 7; i >= 0; --i)
+		value >>= (result[i] = std::countr_one(value) + std::countr_zero(value));
+	return result;
+}
+
+constexpr auto GenerateCodewordPatternTable()
+{
+	std::array<CodewordPattern, SYMBOL_COUNT> res{};
+	for (int i = 0; i < SYMBOL_COUNT; ++i) {
+		auto codeword = (CODEWORD_TABLE[i] - 1) % 929;
+		auto pattern = GetPdf417PatternFromBits(SYMBOL_TABLE[i] | 0x10000);
+		auto np = NormalizedE2EPattern<8, 17>(pattern);
+		res[i] = CodewordPattern(codeword, PackedPattern<3>(np, 2));
+		assert(res[i].cluster() == ((CODEWORD_TABLE[i] - 1) / 929) * 3);
+	}
+	return res;
+}
+
+int CodewordDecoder::GetCodeword(const std::array<int, 6>& ne2ep)
+{
+	static auto cwis = [] {
+		auto cwps = GenerateCodewordPatternTable();
+		std::sort(cwps.begin(), cwps.end());
+		return cwps;
+	}();
+
+	int cluster = CodewordCluster(ne2ep);
+	auto bits = PackedPattern<3>(ne2ep, 2);
+	auto it = std::lower_bound(cwis.begin(), cwis.end(), CodewordPattern{0, bits});
+	if (it != cwis.end() && it->cluster() == cluster && it->bits == bits)
+		return it->codeword;
 	return -1;
 }
 

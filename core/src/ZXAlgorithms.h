@@ -8,6 +8,7 @@
 #include "Error.h"
 
 #include <algorithm>
+#include <cassert>
 #include <charconv>
 #include <concepts>
 #include <cstring>
@@ -311,6 +312,19 @@ inline uint32_t ReverseBits32(uint32_t v)
 	// swap 2-byte long pairs
 	v = (v >> 16) | (v << 16);
 	return v;
+}
+
+template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
+constexpr T& AppendBits(T& val, T bits, int count)
+{
+	assert(count >= 0 && count <= int(sizeof(T) * 8) && (bits & ~((T(1) << count) - 1)) == 0);
+	return (val <<= count) |= bits;
+}
+
+template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
+constexpr T& AppendBit(T& val, bool bit)
+{
+	return AppendBits(val, static_cast<T>(bit), 1);
 }
 
 // use to avoid "load of misaligned address" when using a simple type cast

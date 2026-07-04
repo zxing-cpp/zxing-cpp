@@ -303,6 +303,19 @@ constexpr int ToInt(const ARRAY& a)
 	return pattern;
 }
 
+template <size_t BITS, typename T, size_t N, typename = std::enable_if_t<std::is_integral_v<T>>>
+constexpr uint32_t PackedPattern(const std::array<T, N>& np, T min = 0)
+{
+	static_assert(BITS * N <= 32, "PackedArray: BITS * N must be <= 32");
+	uint32_t res = 0;
+	for (size_t i = 0; i < N; ++i) {
+		if (np[i] < min || np[i] - min >= (1 << BITS))
+			return -1;
+		AppendBits(res, uint32_t(np[i] - min), BITS);
+	}
+	return res;
+}
+
 template <int LEN, int RET_LEN>
 constexpr std::array<int, RET_LEN> NormalizedE2EPattern(const PatternView& view, int mods, bool reverse = false)
 {

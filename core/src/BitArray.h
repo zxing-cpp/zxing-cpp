@@ -108,12 +108,6 @@ public:
 	friend bool operator==(const BitArray& a, const BitArray& b) { return a._bits == b._bits; }
 };
 
-template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
-constexpr T& AppendBit(T& val, bool bit)
-{
-	return (val <<= 1) |= static_cast<T>(bit);
-}
-
 template <typename T = int, typename = std::enable_if_t<std::is_integral_v<T>>>
 T ToInt(const BitArray& bits, int pos = 0, int count = 8 * sizeof(T))
 {

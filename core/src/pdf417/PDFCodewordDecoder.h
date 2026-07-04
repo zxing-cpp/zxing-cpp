@@ -33,6 +33,8 @@ public:
 	static int GetCodeword(int symbol);
 
 	static int GetDecodedValue(const std::array<int, BARS_IN_MODULE>& moduleBitCount);
+
+	static int GetCodeword(const std::array<int, 6>& ne2ep);
 };
 
 } // Pdf417
