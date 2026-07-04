@@ -390,6 +390,8 @@ if ((ZXING_READERS OR ZXING_WRITERS_OLD) AND ZXING_ENABLE_PDF417)
 endif()
 if (ZXING_READERS AND ZXING_ENABLE_PDF417)
     set (PDF417_FILES ${PDF417_FILES}
+        src/pdf417/PDF417.h
+        src/pdf417/PDF417.cpp
         src/pdf417/PDFBarcodeMetadata.h
         src/pdf417/PDFBarcodeValue.h
         src/pdf417/PDFBarcodeValue.cpp

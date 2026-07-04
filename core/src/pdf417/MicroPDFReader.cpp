@@ -11,33 +11,22 @@
 #include "ReaderOptions.h"
 #include "DecoderResult.h"
 #include "LogMatrix.h"
+#include "PDF417.h"
 #include "PDFCodewordDecoder.h"
 #include "PDFScanningDecoder.h"
 #include "Pattern.h"
 #include "RegressionLine.h"
 
 #include <list>
-#include <map>
 #include <limits>
 #include <vector>
 
-#ifndef PRINT_DEBUG
-#define printf(...){}
-#define printv(...){}
-#else
-#define printv(prefix, fmt, postfix, ...) \
-printf("%s", prefix); \
-for (auto v : __VA_ARGS__) \
-	printf(fmt, v); \
-printf("%s", postfix);
-#endif
-
 #define LRAP_WITH_CW 1
-#define MS_THR 2
+#define USE_E2E_PATTERNS
 
 namespace ZXing::MicroPdf417 {
 
-using Pattern417 = std::array<uint16_t, 8>;
+using namespace PDF417;
 
 static constexpr FixedPattern<6, 10> LRRAPs[] = {
 	{2, 2, 1, 3, 1, 1}, /* 1*/
@@ -149,8 +138,6 @@ static constexpr FixedPattern<6, 10> CRAPs[] = {
 	{1, 1, 2, 1, 4, 1}, /*52*/
 };
 
-#define USE_E2E_PATTERNS
-
 static constexpr auto ToInts(const FixedPattern<6, 10> in[52])
 {
 	std::array<int, 52> res{};
@@ -178,101 +165,6 @@ static int RAPIndex(int v, RAP t)
 static int RAPCluster(int idx)
 {
 	return ((idx - 1) % 3) * 3;
-}
-
-struct Codeword
-{
-	int cluster = -1;
-	int code = -1;
-	operator bool() const noexcept { return code != -1 && cluster % 3 == 0; }
-};
-
-inline int CodewordCluster(const std::array<int, 8>& np)
-{
-	return (np[0] - np[2] + np[4] - np[6] + 9) % 9;
-}
-
-template <typename POINT>
-class BitMatrixModuleCursor : public BitMatrixCursor<POINT>
-{
-public:
-	float ms;
-
-	BitMatrixModuleCursor(const BitMatrix& image, POINT p, POINT d, float ms) : BitMatrixCursor<POINT>(image, p, d), ms(ms) {}
-};
-
-using BitMatrixModuleCursorF = BitMatrixModuleCursor<PointF>;
-
-#if 0
-// upstream PDF417 PatternView -> codeword implementation (uses "pick the closest pattern" approach and is worse than the below implementation)
-using Pattern417I = std::array<int, Pdf417::CodewordDecoder::BARS_IN_MODULE>;
-static Pattern417I GetPdf417PatternFromBits(uint32_t value)
-{
-	Pattern417I result{};
-	for (int i = 7; i >= 0; --i)
-		value >>= (result[i] = std::countr_one(value) + std::countr_zero(value));
-	return result;
-}
-
-template <typename POINT>
-Codeword ReadCodeword(BitMatrixModuleCursor<POINT>& cur)
-{
-	auto pattern = cur.template readPatternFromBlack<Pattern417I>(cur.ms / 2, cur.ms * (17 + MS_THR), cur.ms * (17 - MS_THR));
-	auto symbol = Pdf417::CodewordDecoder::GetDecodedValue(pattern);
-	int cluster = CodewordCluster(GetPdf417PatternFromBits(symbol));
-	int code = Pdf417::CodewordDecoder::GetCodeword(symbol);
-	return {cluster, code};
-}
-#else
-template <typename POINT>
-Codeword ReadCodeword(BitMatrixModuleCursor<POINT>& cur)
-{
-	auto pattern = cur.template readPatternFromBlack<Pattern417>(cur.ms / 2, cur.ms * (17 + MS_THR), cur.ms * (17 - MS_THR));
-	auto np = NormalizedPattern<8, 17>(pattern);
-	int cluster = CodewordCluster(np);
-	int code = Pdf417::CodewordDecoder::GetCodeword(ToInt(np));
-	return {cluster, code};
-}
-#endif
-
-template <typename POINT>
-Codeword ReadCodeword(BitMatrixModuleCursor<POINT>& cur, int expectedCluster)
-{
-	log(cur.p, 4);
-	auto start = cur;
-	auto cw = ReadCodeword(cur);
-	if (!cw || cw.cluster != expectedCluster) {
-		for (auto offset : {start.left(), start.right()}) {
-			auto curAlt = start;
-			offset = cur.ms / 2 * offset;
-			curAlt.p += offset;
-			if (auto cwAlt = ReadCodeword(curAlt)) {
-				if (!cw || cwAlt.cluster == expectedCluster) {
-					cw = cwAlt;
-					if (cwAlt.cluster == expectedCluster)
-						break;
-				}
-			}
-		}
-	}
-	if (cw)
-		cur.ms = dot(cur.p - start.p, mainDirection(cur.d)) / 17.f;
-	printf("%3d/%d, ms: %.1f, @ %5.1fx%5.1f | ", cw.code, cw.cluster, cur.ms, cur.p.x, cur.p.y);
-
-	return cw;
-}
-
-bool SkipCodeword(BitMatrixModuleCursorF& cur)
-{
-	int min = cur.ms * (17 - MS_THR), max = cur.ms * (17 + MS_THR);
-	int steps = cur.stepToEdge(8, max);
-	int totalSteps = steps;
-	while (totalSteps < min && steps) {
-		steps = cur.stepToEdge(2, max - totalSteps);
-		totalSteps += steps;
-	}
-	cur.ms = totalSteps / 17.f;
-	return totalSteps >= min && max > 0;
 }
 
 using PatternRAP = std::array<uint16_t, 6>;
@@ -521,8 +413,7 @@ static int DetermineNumCols(BitMatrixModuleCursorF& start, const Cluster& lraps)
 		for (auto& p : lraps) {
 			auto cur = start;
 			auto tmp = cur;
-			cur.p = centered(p);
-			cur.p += s * cur.ms * right(cur.d); // if we don't have enough LRAPs, scan again with 1 modSize offset
+			cur.p = centered(p) + s * cur.ms * right(cur.d); // if we don't have enough LRAPs, scan again with 1 modSize offset
 
 			auto pair = RAPPair(ReadRAP(cur, RAP::L), 0);
 			if (!pair.first || !SkipCodeword(cur))
@@ -618,33 +509,28 @@ static constexpr std::array<SymbolInfo, 35> SYMBOLS = {{
 	{4, 44, 50, 24, 1, 1, 44},
 }};
 
-struct CodewordEvidence
-{
-	int codeword = -1, count = 0;
-};
-
-static const SymbolInfo& DetermineSymbolInfo(const Matrix<CodewordEvidence>& mat, const std::array<int, 4>& rotFamHist [[maybe_unused]])
+static const SymbolInfo& DetermineSymbolInfo(const Matrix<Codeword>& cwMat, const std::array<int, 4>& rotFamHist [[maybe_unused]])
 {
 	auto rotFamMax = std::ranges::max_element(rotFamHist);
 	int rotFam = *rotFamMax && *rotFamMax > Reduce(rotFamHist) / 2 ? static_cast<int>(rotFamMax - rotFamHist.begin()) * 8 : -1;
 	// rotFam = -1; // uncomment to test symbol detection without rotation family filtering
 
-	std::vector<int> sightsPerRow(mat.height(), 0);
-	for (int y = 1; y < mat.height(); ++y)
-		for (int x = 0; x < mat.width(); ++x)
-			sightsPerRow[y] += mat(x, y).count;
+	std::vector<int> sightsPerRow(cwMat.height(), 0);
+	for (int y = 1; y < cwMat.height(); ++y)
+		for (int x = 0; x < cwMat.width(); ++x)
+			sightsPerRow[y] += cwMat(x, y).count;
 
 	const SymbolInfo* bestSym = SYMBOLS.data();
 	int minError = std::numeric_limits<int>::max();
-	float meanCount = Reduce(mat, 0.f, [](float acc, const CodewordEvidence& e) { return acc + e.count; })
-					  / std::ranges::count_if(mat, [](const auto& e) { return e.count > 0; });
+	float meanCount = Reduce(cwMat, 0.f, [](float acc, const Codeword& e) { return acc + e.count; })
+					  / std::ranges::count_if(cwMat, [](const auto& e) { return e.count > 0; });
 
 	for (const auto& s : SYMBOLS) {
-		if (s.nCols != mat.width() || (rotFam != -1 && s.rotFam != rotFam))
+		if (s.nCols != cwMat.width() || (rotFam != -1 && s.rotFam != rotFam))
 			continue;
 
 		int error = s.nCWs() * meanCount; // with all inside filled and outside empty, this will result in 0 error
-		for (int y = 1; y < mat.height(); ++y) {
+		for (int y = 1; y < cwMat.height(); ++y) {
 			bool isOutside = y < s.startRow || y > s.startRow + s.nRows;
 			error += (isOutside ? 1 : -1) * sightsPerRow[y];
 		}
@@ -695,8 +581,8 @@ static BarcodeData ScanCandidate(const BitMatrix& image, const Cluster& lraps)
 
 	startCur.p += failedTries * down;
 
-	// Per-column histogram of observed RAP deltas (0..52), used to stabilize row/column pattern decoding.
-	Matrix<std::map<int, int>> histMat(nCols, 52 + 1);
+	// Matrix with vector of codewords for each cell, to collect all codeword sightings and their counts.
+	Matrix<std::vector<Codeword>> histMat(nCols, 52 + 1);
 	// Histogram of rotation family votes (4 possible families) collected while scanning RAP pairs.
 	std::array<int, 4> rotFamHist = {};
 	Position pos;
@@ -774,42 +660,47 @@ static BarcodeData ScanCandidate(const BitMatrix& image, const Cluster& lraps)
 
 		printf("%2d/%d -> ", li, RAPCluster(li));
 		for (int x = 0; x < nCols; ++x) {
-			printf("%3d/%d ", cw[x].code, cw[x].cluster);
+			printf("%3d/%d ", cw[x].codeword, cw[x].cluster);
 			if (cw[x]) {
 				li += rowOffset(cw[x].cluster);
 				if (li < 1 || li > 52)
-					break;
-				histMat(x, li)[cw[x].code]++;
+					continue;
+				auto& cell = histMat(x, li);
+				auto cwPtr = std::ranges::find(cell, cw[x]);
+				if (cwPtr != cell.end())
+					cwPtr->count++;
+				else
+					cell.push_back(cw[x]);
 			}
 		}
 		printf("\n");
 	}
 
-	Matrix<CodewordEvidence> mat(nCols, 53, {});
-	std::ranges::transform(histMat, mat.begin(), [](std::map<int, int>& hist) {
+	Matrix<Codeword> cwMat(nCols, 53, {});
+	std::ranges::transform(histMat, cwMat.begin(), [](std::vector<Codeword>& hist) {
 		if (hist.empty())
-			return CodewordEvidence{};
+			return Codeword{};
 		if (hist.size() == 1)
-			return CodewordEvidence{hist.begin()->first, hist.begin()->second};
+			return hist.front();
 
-		auto best = std::ranges::max_element(hist, [](const auto& a, const auto& b) { return a.second < b.second; });
-		bool bestIsUnique = std::ranges::all_of(hist, [&](const auto& a) { return &a == &*best || a.second < best->second; });
+		auto best = std::ranges::max_element(hist, [](const auto& a, const auto& b) { return a.count < b.count; });
+		bool bestIsUnique = std::ranges::all_of(hist, [&](const auto& a) { return &a == &*best || a.count < best->count; });
 
-		return bestIsUnique ? CodewordEvidence{best->first, best->second} : CodewordEvidence{};
+		return bestIsUnique ? *best : Codeword{};
 	});
 
 #ifdef PRINT_DEBUG
-	for (int y = 0; y < mat.height(); ++y) {
+	for (int y = 0; y < cwMat.height(); ++y) {
 		printf("%2d: ", y);
-		for (int x = 0; x < mat.width(); ++x) {
-			auto& e = mat(x, y);
+		for (int x = 0; x < cwMat.width(); ++x) {
+			auto& e = cwMat(x, y);
 			e.count ? printf("%3d %2d | ", e.codeword, e.count) : printf("       | ");
 		}
 		printf("\n");
 	}
 #endif
 
-	auto si = DetermineSymbolInfo(mat, rotFamHist);
+	auto si = DetermineSymbolInfo(cwMat, rotFamHist);
 
 	std::vector<int> codewords(si.nCWs() + 1);
 	// MicroPDF417 does not encode the number of codewords in the symbol but the DecodeCodewords() function expects the first element
@@ -817,7 +708,7 @@ static BarcodeData ScanCandidate(const BitMatrix& image, const Cluster& lraps)
 	// function will autocorrect the number of codewords if the first element is zero.
 	codewords[0] = 0;
 	for (int i = 0; i < si.nCWs(); ++i)
-		codewords[i + 1] = (&mat(0, si.startRow))[i].codeword;
+		codewords[i + 1] = (&cwMat(0, si.startRow))[i].codeword;
 
 	std::vector<int> erasures;
 	for (int i=0; i < Size(codewords); ++i)
