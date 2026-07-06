@@ -164,8 +164,9 @@ Position EstimatePosition(const Pair& first, const Pair& last)
 
 int EstimateLineCount(const Pair& first, const Pair& last)
 {
-	// see incrementLineCount() in ODReader.cpp for the -1 here
-	return std::min(first.count, last.count) - 1 + IsStacked(first, last);
+	// see ODReader.cpp 'lineCount++' and Barcode::operator==() for the -2 here
+	// TODO: this is a bit of a hack... implement a proper Pair clustering
+	return std::max(0, std::min(first.count, last.count) - 2) + IsStacked(first, last);
 }
 
 } // namespace ZXing::OneD::DataBar

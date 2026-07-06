@@ -23,7 +23,9 @@ static Barcode parse(PatternRow row, ReaderOptions opts = {})
 
 	std::unique_ptr<RowReader::DecodingState> state;
 	PatternView next(row);
-	return reader.decodePattern(0, next, state);
+	reader.decodePattern(0, next, state);
+	next = PatternView(row); // Reset to start of row
+	return reader.decodePattern(1, next, state);
 }
 
 TEST(ODDataBarReaderTest, Composite)

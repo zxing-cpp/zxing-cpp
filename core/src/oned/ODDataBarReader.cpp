@@ -138,18 +138,21 @@ static bool ChecksumIsValid(Pair leftPair, Pair rightPair)
 	return a == b && Value(leftPair, rightPair) <= 9999999999999LL; // 13 digits
 }
 
-static bool PositionIsPlausible(Pair l, Pair r)
+static bool PositionIsPlausible(const Pair& l, const Pair& r)
 {
 	int wl = l.xStop - l.xStart;
 	int wr = r.xStop - r.xStart;
 	int h = std::abs(l.y - r.y);
+	int dxl = std::abs(l.xStart - r.xStart);
+	int dxr = std::abs(l.xStop - r.xStart);
 
 	// - the pairs must be wider than the stack is high
 	// - the pairs must be roughly of the same width
-	return h < wl && h < wr && wl > wr / 2 && wr > wl / 2;
+	// - the pairs x positions must be sufficiently aligned (i.e. the stack is not too slanted)
+	return h < wl && h < wr && wl > wr / 2 && wr > wl / 2 && (dxl < wl / 2 || dxr < wr / 2);
 }
 
-static std::string ConstructText(Pair leftPair, Pair rightPair)
+static std::string ConstructText(const Pair& leftPair, const Pair& rightPair)
 {
 	auto txt = ToString(Value(leftPair, rightPair), 13);
 	// see ISO/IEC 24724:2011 Section 9
@@ -193,7 +196,9 @@ BarcodeData DataBarReader::decodePattern(int rowNumber, PatternView& next, std::
 		if (IsLeftPair(next)) {
 			if (auto leftPair = ReadPair(next, false)) {
 				leftPair.y = rowNumber;
-				prevState->leftPairs.insert(leftPair);
+				auto [it, inserted] = prevState->leftPairs.insert(leftPair);
+				if (!inserted)
+					const_cast<Pair&>(*it).count++;
 				next.shift(FULL_PAIR_SIZE - 1);
 			}
 		}
@@ -201,7 +206,9 @@ BarcodeData DataBarReader::decodePattern(int rowNumber, PatternView& next, std::
 		if (next.shift(1) && IsRightPair(next)) {
 			if (auto rightPair = ReadPair(next, true)) {
 				rightPair.y = rowNumber;
-				prevState->rightPairs.insert(rightPair);
+				auto [it, inserted] = prevState->rightPairs.insert(rightPair);
+				if (!inserted)
+					const_cast<Pair&>(*it).count++;
 				next.shift(FULL_PAIR_SIZE + 2);
 			}
 		}
@@ -209,7 +216,8 @@ BarcodeData DataBarReader::decodePattern(int rowNumber, PatternView& next, std::
 
 	for (const auto& leftPair : prevState->leftPairs)
 		for (const auto& rightPair : prevState->rightPairs)
-			if (ChecksumIsValid(leftPair, rightPair) && PositionIsPlausible(leftPair, rightPair)) {
+			if (ChecksumIsValid(leftPair, rightPair) && PositionIsPlausible(leftPair, rightPair) && leftPair.count > 1
+				&& rightPair.count > 1) {
 				// Symbology identifier ISO/IEC 24724:2011 Section 9 and GS1 General Specifications 5.1.3 Figure 5.1.3-2
 				auto res = BarcodeData{.content = Content(ByteArray{ConstructText(leftPair, rightPair)}, {'e', '0', 0, AIFlag::GS1}),
 									   .position = EstimatePosition(leftPair, rightPair),
