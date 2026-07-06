@@ -32,9 +32,12 @@ struct Codeword
 	int codeword : 12 = -1;
 	int cluster  : 4 = -1;
 	int count    : 16 = 0;
+	PointT<float> left, right;
 
 	constexpr operator bool() const noexcept { return codeword != -1 && cluster % 3 == 0; }
 	constexpr bool operator==(const Codeword& other) const noexcept { return codeword == other.codeword; }
+	PointF leftPos() const noexcept { return PointF(left / count); }
+	PointF rightPos() const noexcept { return PointF(right / count); }
 };
 
 struct CodewordPattern

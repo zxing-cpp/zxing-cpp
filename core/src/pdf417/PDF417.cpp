@@ -32,6 +32,7 @@ Codeword ReadCodeword(BitMatrixModuleCursorF& cur)
 #else
 Codeword ReadCodeword(BitMatrixModuleCursorF& cur)
 {
+    auto start = cur.p;
 	auto pattern = cur.template readPatternFromBlack<Pattern417>(cur.ms / 2, cur.ms * (17 + MS_THR), cur.ms * (17 - MS_THR));
 	auto np = NormalizedPattern<8, 17>(pattern);
     int cluster = CodewordCluster(np);
@@ -40,7 +41,7 @@ Codeword ReadCodeword(BitMatrixModuleCursorF& cur)
 #else
 	int codeword = Pdf417::CodewordDecoder::GetCodeword(NormalizedE2EPattern<8, 17>(pattern));
 #endif
-	return {codeword, cluster, 1};
+	return {codeword, cluster, 1, PointT<float>(start), PointT<float>(cur.p)};
 }
 #endif
 

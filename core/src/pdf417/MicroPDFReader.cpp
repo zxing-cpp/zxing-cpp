@@ -15,6 +15,7 @@
 #include "PDFCodewordDecoder.h"
 #include "PDFScanningDecoder.h"
 #include "Pattern.h"
+#include "PerspectiveTransform.h"
 #include "RegressionLine.h"
 
 #include <list>
@@ -467,6 +468,9 @@ struct SymbolInfo
 {
 	int nCols = 0, nRows = 0, nECCs = 0, rotFam = 0, startRow = 0, rowB = 0, rowE = 0;
 	int nCWs() const { return nCols * nRows; }
+	int lastRow() const { return startRow + nRows - 1; }
+	int width() const { return 21 + nCols * 17 + (nCols > 2) * 10; }
+	int height() const { return nRows * 2; }
 };
 
 static constexpr std::array<SymbolInfo, 35> SYMBOLS = {{
@@ -531,7 +535,7 @@ static const SymbolInfo& DetermineSymbolInfo(const Matrix<Codeword>& cwMat, cons
 
 		int error = s.nCWs() * meanCount; // with all inside filled and outside empty, this will result in 0 error
 		for (int y = 1; y < cwMat.height(); ++y) {
-			bool isOutside = y < s.startRow || y > s.startRow + s.nRows;
+			bool isOutside = y < s.startRow || y > s.lastRow();
 			error += (isOutside ? 1 : -1) * sightsPerRow[y];
 		}
 
@@ -638,9 +642,8 @@ static BarcodeData ScanCandidate(const BitMatrix& image, const Cluster& lraps)
 			checkRAP(ci, ri);
 		}
 
-		// printf("li: %2d, ci: %2d, ri: %2d, ci-li: %2d, ri-li: %2d\n", li, ci, ri, ci - li, ri - li);
-
-		if (ri) {
+		if (ci || ri || cw[0] || cw[1] || cw[2] || cw[3]) {
+			// collect crude approximation as fallback
 			if (pos[0] == PointI()) {
 				pos[0] = PointI(startCur.p);
 				pos[1] = PointI(cur.p);
@@ -667,8 +670,11 @@ static BarcodeData ScanCandidate(const BitMatrix& image, const Cluster& lraps)
 					continue;
 				auto& cell = histMat(x, li);
 				auto cwPtr = std::ranges::find(cell, cw[x]);
-				if (cwPtr != cell.end())
+				if (cwPtr != cell.end()) {
 					cwPtr->count++;
+					cwPtr->left += cw[x].left;
+					cwPtr->right += cw[x].right;
+				}
 				else
 					cell.push_back(cw[x]);
 			}
@@ -724,6 +730,30 @@ static BarcodeData ScanCandidate(const BitMatrix& image, const Cluster& lraps)
 	printf("size: %dx%d, firstRow: %d, cws: %d, rotFamHist: %d/%d/%d/%d, rotFam: %d, nEECs: %d, erasures: %d, valid: %d\n", si.nCols,
 		   si.nRows, si.startRow, si.nCWs(), rotFamHist[0], rotFamHist[1], rotFamHist[2], rotFamHist[3], si.rotFam, si.nECCs,
 		   Size(erasures), decoderResult.isValid());
+
+	// Extrapolate the symbol corners from a perspective transform created from detected codeword positions near the corners of the symbol.
+	auto closestCorner = [&](PointI corner, PointI dir) -> PointI {
+		for (int x = 0; x <= si.width() / 2; ++x)
+			for (int y = 0; y < si.height() / 2; ++y) {
+				auto offset = PointI{x, y} * dir;
+				if (cwMat(corner + offset).count > 1)
+					return offset;
+			}
+		return {};
+	};
+	PointI tlI = closestCorner({0, si.startRow}, {1, 1}), trI = closestCorner({si.nCols - 1, si.startRow}, {-1, 1}),
+		   brI = closestCorner({si.nCols - 1, si.lastRow()}, {-1, -1}), blI = closestCorner({0, si.lastRow()}, {1, -1});
+	PointI cell(17, 2);
+
+	auto src = QuadrilateralF(PointI{10, 1} + tlI * cell, PointI{si.width() - 11, 1} + trI * cell,
+							  PointI{si.width() - 11, si.height() - 1} + brI * cell, PointI{10, si.height() - 1} + blI * cell);
+	auto dst =
+		QuadrilateralF(cwMat(PointI{0, si.startRow} + tlI).leftPos(), cwMat(PointI{si.nCols - 1, si.startRow} + trI).rightPos(),
+					   cwMat(PointI{si.nCols - 1, si.lastRow()} + brI).rightPos(), cwMat(PointI{0, si.lastRow()} + blI).leftPos());
+	auto mod2pix = PerspectiveTransform(src, dst);
+	if (mod2pix.isValid())
+		pos = Position{mod2pix({0, 0}), mod2pix({(double)si.width(), 0}), mod2pix({(double)si.width(), (double)si.height()}),
+					   mod2pix({0, (double)si.height()})};
 
 	return MatrixBarcode(std::move(decoderResult), DetectorResult({}, std::move(pos)), BarcodeFormat::MicroPDF417);
 }
