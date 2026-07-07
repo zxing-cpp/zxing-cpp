@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 project (ZXing VERSION "3.1.0")
-set (ZXING_VERSION_SUFFIX "-rc1")
+set (ZXING_VERSION_SUFFIX "") # e.g. "-rc1"
 set (ZXING_SONAME 4) # see https://github.com/zxing-cpp/zxing-cpp/issues/333
 
 option (ZXING_USE_BUNDLED_ZINT "Use the bundled libzint for barcode creation/writing" ON)
