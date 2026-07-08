@@ -124,7 +124,7 @@ As an example for how to parameterize the process with `CreatorOptions` and `Wri
 
 ### Online API documentation
 
-The latest API documentation can be found here: https://zxing-cpp.github.io/zxing-cpp/docs/latest
+The latest API documentation can be found here: https://zxing-cpp.github.io/zxing-cpp/docs
 
 ## Web Demos
 - [Read barcodes](https://zxing-cpp.github.io/zxing-cpp/demo/demo_reader.html)

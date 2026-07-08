@@ -75,15 +75,17 @@ jobs:
 
       - name: Prepare deploy folder
         run: |
+          # mkdir -p public/docs
+          # if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+          #   VERSION=${GITHUB_REF#refs/tags/}
+          #   mkdir -p public/docs/$VERSION
+          #   cp -r build/docs/html/* public/docs/$VERSION/
+          # else
+          #   mkdir -p public/docs/latest
+          #   cp -r build/docs/html/* public/docs/latest/
+          # fi
           mkdir -p public/docs
-          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
-            VERSION=${GITHUB_REF#refs/tags/}
-            mkdir -p public/docs/$VERSION
-            cp -r build/docs/html/* public/docs/$VERSION/
-          else
-            mkdir -p public/docs/latest
-            cp -r build/docs/html/* public/docs/latest/
-          fi
+          cp -r build/docs/html/* public/docs
 
       - uses: actions/upload-artifact@v7
         with:
