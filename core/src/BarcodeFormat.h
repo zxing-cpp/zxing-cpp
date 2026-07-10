@@ -60,12 +60,12 @@
 	X(PDF417,           'L', ' ', "mrw  ",  55, ZXING_ENABLE_PDF417,     "PDF417") \
 	X(CompactPDF417,    'L', 'c', "mr   ",  56, ZXING_ENABLE_PDF417,     "Compact PDF417") \
 	X(MicroPDF417,      'L', 'm', "mr   ",  84, ZXING_ENABLE_PDF417,     "MicroPDF417") \
-	X(Aztec,            'z', ' ', "mr G ",  92, ZXING_ENABLE_AZTEC,      "Aztec") \
+	X(Aztec,            'z', ' ', "mrwG ",  92, ZXING_ENABLE_AZTEC,      "Aztec") \
 	X(AztecCode,        'z', 'c', "mrwG ",  92, ZXING_ENABLE_AZTEC,      "Aztec Code") \
 	X(AztecRune,        'z', 'r', "mr   ", 128, ZXING_ENABLE_AZTEC,      "Aztec Rune") \
 	X(QRCode,           'Q', ' ', "mrwG ",  58, ZXING_ENABLE_QRCODE,     "QR Code") \
 	X(QRCodeModel1,     'Q', '1', "mr   ",   0, ZXING_ENABLE_QRCODE,     "QR Code Model 1") \
-	X(QRCodeModel2,     'Q', '2', "mr   ",  58, ZXING_ENABLE_QRCODE,     "QR Code Model 2") \
+	X(QRCodeModel2,     'Q', '2', "mrw  ",  58, ZXING_ENABLE_QRCODE,     "QR Code Model 2") \
 	X(MicroQRCode,      'Q', 'm', "mr   ",  97, ZXING_ENABLE_QRCODE,     "Micro QR Code") \
 	X(RMQRCode,         'Q', 'r', "mr G ", 145, ZXING_ENABLE_QRCODE,     "rMQR Code") \
 	X(DataMatrix,       'd', ' ', "mrwG ",  71, ZXING_ENABLE_DATAMATRIX, "Data Matrix") \
