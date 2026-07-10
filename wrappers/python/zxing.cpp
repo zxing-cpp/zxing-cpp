@@ -23,6 +23,7 @@
 using namespace ZXing;
 namespace nb = nanobind;
 using namespace nb::literals; // to bring in the `_a` literal
+using namespace std::literals;
 
 static void deprecation_warning(std::string_view msg)
 {
@@ -302,11 +303,10 @@ NB_MODULE(zxingcpp, m)
 // MARK: - Enums
 
 	nb::enum_<BarcodeFormat>(m, "BarcodeFormat", nb::is_arithmetic{}, "Enumeration of zxing supported barcode formats")
-#define X(NAME, SYM, VAR, FLAGS, ZINT, ENABLED, HRI) .value(#NAME, BarcodeFormat::NAME)
+		// use upper case 'NONE' because 'None' is a reserved identifier in python
+#define X(NAME, SYM, VAR, FLAGS, ZINT, ENABLED, HRI) .value(#NAME == "None"sv ? "NONE" : #NAME, BarcodeFormat::NAME)
 		ZX_BCF_LIST(X)
 #undef X
-		// use upper case 'NONE' because 'None' is a reserved identifier in python
-		.value("NONE", BarcodeFormat::None)
 		.value("DataBarExpanded", BarcodeFormat::DataBarExp) // backward compatibility alias
 		.value("DataBarLimited", BarcodeFormat::DataBarLtd)  // backward compatibility alias
 		.value("LinearCodes", BarcodeFormat::AllLinear)      // backward compatibility alias
@@ -409,7 +409,7 @@ NB_MODULE(zxingcpp, m)
 			":rtype: zxingcpp.Point")
 		.def("__str__", [](Position pos) { return ToString(pos); });
 	nb::enum_<Error::Type>(m, "ErrorType", "")
-		.value("None", Error::Type::None, "No error")
+		.value("NONE", Error::Type::None, "No error")
 		.value("Format", Error::Type::Format, "Data format error")
 		.value("Checksum", Error::Type::Checksum, "Checksum error")
 		.value("Unsupported", Error::Type::Unsupported, "Unsupported content error")
@@ -620,7 +620,7 @@ NB_MODULE(zxingcpp, m)
 	m.def("create_barcode", &create_barcode,
 		nb::arg("content"),
 		nb::arg("format"),
-		nb::arg("**kwargs")
+		nb::arg("kwargs")
 	);
 
 	m.def("write_barcode_to_image", &write_barcode_to_image,
