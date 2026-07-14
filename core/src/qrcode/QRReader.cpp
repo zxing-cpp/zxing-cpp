@@ -73,10 +73,6 @@ BarcodesData Reader::read(const BinaryBitmap& image, int maxSymbols) const
 
 	auto allFPs = FindFinderPatterns(*binImg, _opts.tryHarder());
 
-#ifdef PRINT_DEBUG
-	printf("allFPs: %d\n", Size(allFPs));
-#endif
-
 	std::vector<ConcentricPattern> usedFPs;
 	BarcodesData res;
 	

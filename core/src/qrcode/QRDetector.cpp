@@ -99,7 +99,7 @@ std::vector<ConcentricPattern> FindFinderPatterns(const BitMatrix& image, bool t
 		}
 	}
 
-	printf("FPs?  : %d\n", N);
+	printf("FPs: FindPattern: %d, LocateConcentric: %d\n", N, Size(res));
 
 	return res;
 }
