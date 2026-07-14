@@ -733,8 +733,8 @@ static BarcodeData ScanCandidate(const BitMatrix& image, const Cluster& lraps)
 
 	// Extrapolate the symbol corners from a perspective transform created from detected codeword positions near the corners of the symbol.
 	auto closestCorner = [&](PointI corner, PointI dir) -> PointI {
-		for (int x = 0; x <= cwMat.width() / 2; ++x)
-			for (int y = 0; y < cwMat.height() / 2; ++y) {
+		for (int x = 0; x <= si.nCols / 2; ++x)
+			for (int y = 0; y < si.nRows / 2; ++y) {
 				auto offset = PointI{x, y} * dir;
 				if (cwMat(corner + offset).count > 1)
 					return offset;
