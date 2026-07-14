@@ -137,8 +137,8 @@ BarcodeData TelepenReader::decodePattern(int rowNumber, PatternView& next, std::
 			   raw.back(), next.pixelsInFront());
 
 		for (int i = 0; i < 2; ++i)
-			threshold[i] = wNum[i] && nNum[i] ? (wSum[i] / wNum[i] + nSum[i] / nNum[i]) / 2
-						   : nNum[i]          ? 2 * nSum[i] / nNum[i]
+			threshold[i] = wNum[i] && nNum[i] ? ((wSum[i] + wNum[i] / 2) / wNum[i] + (nSum[i] + nNum[i] / 2) / nNum[i]) / 2
+						   : nNum[i]          ? (2 * nSum[i] + nNum[i] / 2) / nNum[i]
 											  : threshold[i];
 	}
 
