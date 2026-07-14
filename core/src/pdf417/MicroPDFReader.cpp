@@ -736,7 +736,12 @@ static BarcodeData ScanCandidate(const BitMatrix& image, const Cluster& lraps)
 		for (int x = 0; x <= si.width() / 2; ++x)
 			for (int y = 0; y < si.height() / 2; ++y) {
 				auto offset = PointI{x, y} * dir;
-				if (cwMat(corner + offset).count > 1)
+				auto p = corner + offset;
+				// The scan range is derived from the module dimensions (si.width()/height()) while cwMat is
+				// only nCols x 53 codewords, so p can fall outside the matrix for small/degenerate candidates.
+				if (p.x < 0 || p.y < 0 || p.x >= cwMat.width() || p.y >= cwMat.height())
+					continue;
+				if (cwMat(p).count > 1)
 					return offset;
 			}
 		return {};
