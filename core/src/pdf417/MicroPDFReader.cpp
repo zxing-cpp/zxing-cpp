@@ -471,6 +471,7 @@ struct SymbolInfo
 	int lastRow() const { return startRow + nRows - 1; }
 	int width() const { return 21 + nCols * 17 + (nCols > 2) * 10; }
 	int height() const { return nRows * 2; }
+	bool isValid() const { return nCols > 0 && nRows > 0; }
 };
 
 static constexpr std::array<SymbolInfo, 35> SYMBOLS = {{
@@ -707,6 +708,8 @@ static BarcodeData ScanCandidate(const BitMatrix& image, const Cluster& lraps)
 #endif
 
 	auto si = DetermineSymbolInfo(cwMat, rotFamHist);
+	if (!si.isValid())
+		return {};
 
 	std::vector<int> codewords(si.nCWs() + 1);
 	// MicroPDF417 does not encode the number of codewords in the symbol but the DecodeCodewords() function expects the first element
