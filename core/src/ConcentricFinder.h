@@ -115,8 +115,8 @@ std::optional<ConcentricPattern> LocateConcentricPattern(const BitMatrix& image,
 {
 	auto cur = BitMatrixCursor(image, PointI(center), {});
 	int minSpread = image.width(), maxSpread = 0;
-	// TODO: setting maxError to 1 can subtantially help with detecting symbols with low print quality resulting in damaged
-	// finder patterns, but it sutantially increases the runtime (approx. 20% slower for the falsepositive images).
+	// TODO: setting maxError to 1 can substantially help with detecting symbols with low print quality resulting in damaged
+	// finder patterns, but it substantially increases the runtime (approx. 20% slower for the falsepositive images).
 	int maxError = 0;
 	for (auto d : {PointI{0, 1}, {1, 0}}) {
 		int spread = CheckSymmetricPattern<E2E>(cur.setDirection(d), pattern, range, true);

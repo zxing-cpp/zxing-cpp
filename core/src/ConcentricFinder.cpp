@@ -153,7 +153,7 @@ static std::vector<PointF> CollectRingPoints(const BitMatrix& image, PointF cent
 	return points;
 }
 
-static std::optional<QuadrilateralF> FitQadrilateralToPoints(PointF center, std::vector<PointF>& points)
+static std::optional<QuadrilateralF> FitQuadrilateralToPoints(PointF center, std::vector<PointF>& points)
 {
 	auto dist2Center = [c = center](auto a, auto b) { return distance(a, c) < distance(b, c); };
 	auto [minDistElem, maxDistElem] = std::minmax_element(points.begin(), points.end(), dist2Center);
@@ -219,7 +219,7 @@ std::optional<QuadrilateralF> FitSquareToPoints(const BitMatrix& image, PointF c
 	if (points.empty())
 		return {};
 
-	auto res = FitQadrilateralToPoints(center, points);
+	auto res = FitQuadrilateralToPoints(center, points);
 	if (!res || !QuadrilateralIsPlausibleSquare(*res, lineIndex - backup))
 		return {};
 
