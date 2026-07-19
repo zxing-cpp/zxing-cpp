@@ -168,6 +168,7 @@ FinderPatternSets GenerateFinderPatternSets(FinderPatterns& patterns)
 	candidates.reserve(maxCandidates * 2);
 
 	int nbPatterns = Size(patterns);
+	bool useFilters = nbPatterns > 5; // for a small number of patterns, we apply no/less filters (like size ratio, leg ratio, angle)
 	for (int i = 0; i < nbPatterns - 2; i++) {
 		const auto* c0 = &patterns[i];
 		double maxDistToC = c0->size / 7.0 * maxModuleCount;
@@ -185,7 +186,7 @@ FinderPatternSets GenerateFinderPatternSets(FinderPatterns& patterns)
 					continue;
 
 				const auto* p = &patterns[idx];
-				if (c0->size > p->size * 2) {
+				if (useFilters && c0->size > p->size * 2 + 2) {
 					stats.rejSize++;
 					continue;
 				}
@@ -247,7 +248,7 @@ FinderPatternSets GenerateFinderPatternSets(FinderPatterns& patterns)
 				// Make sure distAB and distBC don't differ more than reasonable:
 				// equivalent to distAB > 2 * distBC || distBC > 2 * distAB but avoids sqrt.
 				// TODO: make sure the constant 2 is not too conservative for reasonably tilted symbols
-				if (distAB2 > 4 * distBC2 || distBC2 > 4 * distAB2) {
+				if (useFilters && (distAB2 > 4 * distBC2 || distBC2 > 4 * distAB2)) {
 					stats.rejLegRatio++;
 					continue;
 				}
@@ -264,7 +265,7 @@ FinderPatternSets GenerateFinderPatternSets(FinderPatterns& patterns)
 
 				// Make sure the angle between AB and BC does not deviate from 90° too much
 				auto cosAB_BC = (distAB2 + distBC2 - distAC2) / (2 * distAB * distBC);
-				if (std::isnan(cosAB_BC) || cosAB_BC > cosUpper || cosAB_BC < cosLower) {
+				if (useFilters && (std::isnan(cosAB_BC) || cosAB_BC > cosUpper || cosAB_BC < cosLower)) {
 					stats.rejAngle++;
 					continue;
 				}
