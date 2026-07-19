@@ -472,6 +472,7 @@ DetectorResults SampleQR(const BitMatrix& image, const FinderPatternSet& fp)
 
 	auto br = PointF{-1, -1};
 	auto brOffset = PointF{3, 3};
+	bool brFound = false;
 
 	// Everything except version 1 (21 modules) has an alignment pattern. Estimate the center of that by intersecting
 	// line extensions of the 1 module wide square around the finder patterns. This could also help with detecting
@@ -493,9 +494,8 @@ DetectorResults SampleQR(const BitMatrix& image, const FinderPatternSet& fp)
 			if (auto brCP = LocateAlignmentPattern(image, moduleSize, brInter))
 				br = *brCP;
 
-		// if the symbol is tilted or the resolution of the RegressionLines is sufficient, use their intersection
-		// as the best estimate (see discussion in #199 and test image estimate-tilt.jpg )
-		if (!image.isIn(br) && (EstimateTilt(fp) > 1.1 || (bl2.isHighRes() && bl3.isHighRes() && tr2.isHighRes() && tr3.isHighRes())))
+		brFound = image.isIn(br);
+		if (!brFound)
 			br = brInter;
 	}
 
@@ -596,12 +596,17 @@ DetectorResults SampleQR(const BitMatrix& image, const FinderPatternSet& fp)
 	else
 		co_yield SampleGrid(image, dimension, dimension, mod2Pix);
 
-	// if we have a version 1 symbol (no alignment patterns) and tried and failed with the intersection of the lines around the finder
-	// patterns, use the simple estimation as a fallback. See #1086
-	if (dimension == 21 && brOffset != PointF(0, 0)) {
-		mod2Pix = Mod2Pix(dimension, PointF(0, 0), {fp.tl, fp.tr, fp.tr - fp.tl + fp.bl, fp.bl});
-		co_yield SampleGrid(image, dimension, dimension, mod2Pix);
-	}
+	// if we have not found the br alignment pattern, we check
+	// a) if we have a version 1 symbol and tried and failed with the intersection of the trace lines (#1086), or
+	// b) if the symbol is almost level and the resolution of the RegressionLines is not sufficient (#199 and estimate-tilt.jpg)
+	// we then try the fallback method of sampling the symbol with the br corner extrapolated from the other three corners.
+	if (!brFound
+		&& ((dimension == 21 && brOffset != PointF(0, 0))
+			|| (EstimateTilt(fp) < 1.1 && !(bl2.isHighRes() && bl3.isHighRes() && tr2.isHighRes() && tr3.isHighRes()))))
+		{
+			mod2Pix = Mod2Pix(dimension, PointF(0, 0), {fp.tl, fp.tr, fp.tr - fp.tl + fp.bl, fp.bl});
+			co_yield SampleGrid(image, dimension, dimension, mod2Pix);
+		}
 }
 
 /**
