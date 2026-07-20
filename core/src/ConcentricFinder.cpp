@@ -11,72 +11,89 @@
 
 namespace ZXing {
 
-std::optional<PointF> AverageEdgePixels(BitMatrixCursorI cur, int range, int numOfEdges)
+static std::optional<ConcentricPattern> AverageEdgePixels(BitMatrixCursorI cur, int range, int numOfEdges)
 {
 	PointF sum = {};
+	PointF::value_t totalSteps = 0;
 	for (int i = 0; i < numOfEdges; ++i) {
-		if (!cur.isIn())
+		int steps = cur.stepToEdge(1, range - totalSteps);
+		if (!steps)
 			return {};
-		cur.stepToEdge(1, range);
+		totalSteps += steps;
 		sum += centered(cur.p) + centered(cur.p + cur.back());
 		log(cur.p + cur.back(), 2);
 	}
-	return sum / (2 * numOfEdges);
+	return ConcentricPattern{sum / (2 * numOfEdges), totalSteps};
 }
 
-std::optional<PointF> CenterOfDoubleCross(const BitMatrix& image, PointI center, int range, int numOfEdges)
+static std::optional<ConcentricPattern> CenterOfDoubleCross(const BitMatrix& image, PointI center, int width, int numOfEdges)
 {
-	PointF sum = {};
+	PointF sumP = {};
+	PointF::value_t sumS = 0;
 	for (auto d : {PointI{0, 1}, {1, 0}, {1, 1}, {1, -1}}) {
-		auto avr1 = AverageEdgePixels({image, center,  d}, range, numOfEdges);
-		auto avr2 = AverageEdgePixels({image, center, -d}, range, numOfEdges);
+		auto avr1 = AverageEdgePixels({image, center,  d}, width * 3 / 5, numOfEdges);
+		auto avr2 = AverageEdgePixels({image, center, -d}, width * 3 / 5, numOfEdges);
 		if (!avr1 || !avr2)
 			return {};
-		sum += *avr1 + *avr2;
+		auto [m, M] = std::minmax(avr1->size, avr2->size);
+		if (M > 1.2 * m + 1) // only accept if the two legs are very similar in size
+			return {};
+		sumP += *avr1 + *avr2;
+		sumS += avr1->size + avr2->size;
 	}
-	return sum / 8;
+	return ConcentricPattern{sumP / 8, 2 * sumS / 8};
 }
 
-std::optional<PointF> CenterOfRing(const BitMatrix& image, PointI center, int range, int nth, bool requireCircle)
+static std::vector<PointF> CollectRingPoints(const BitMatrix& image, PointF center, int width, int edgeIndex, bool backup);
+
+std::optional<ConcentricPattern> CenterOfRing(const BitMatrix& image, PointI center, int width, int nth, bool requireCircle)
 {
+	auto meanRToSquareWidth = [](double r) { return 1.74 * r; }; // a square with mean radius r has a width of approx. 1.74*r
+
 #if 0
 	if (requireCircle) {
 		// alternative implementation with the aim of discarding closed loops that are not all circle like (M > 5*m)
-		auto points = CollectRingPoints(image, center, range, std::abs(nth), nth < 0);
+		auto points = CollectRingPoints(image, PointF(center), width, std::abs(nth), nth < 0);
 		if (points.empty())
 			return {};
 		auto res = Reduce(points, PointF{}, std::plus{}) / Size(points);
 
-		double m = range, M = 0;
-		for (auto p : points)
-			UpdateMinMax(m, M, maxAbsComponent(p - res));
+		double m = width, M = 0, sumR = 0;
+		for (auto p : points) {
+			auto r = distance(p, res);
+			UpdateMinMax(m, M, r);
+			sumR += r;
+		}
 
 		if (M > 5 * m)
 			return {};
 
-		return res;
+		return ConcentricPattern{res, meanRToSquareWidth(sumR / Size(points))};
 	}
 #endif
-	// range is the approximate width/height of the nth ring, if nth>1 then it would be plausible to limit the search radius
-	// to approximately range / 2 * sqrt(2) == range * 0.75 but it turned out to be too limiting with realworld/noisy data.
-	int radius = range;
+	const int maxN = 4 * (width + 1) * 3 / 2; // upper limit for circumference of the ring
+	const int maxR = requireCircle ? width + 1 : 2 * width;
 	bool inner = nth < 0;
 	nth = std::abs(nth);
 	log(center, 3);
 	BitMatrixCursorI cur(image, center, {1, 0});
-	if (!cur.stepToEdge(nth, radius, inner))
+	if (!cur.stepToEdge(nth, maxR, inner))
 		return {};
 	cur.turnRight(); // move clock wise and keep edge on the right/left depending on backup
 	const auto edgeDir = inner ? Direction::LEFT : Direction::RIGHT;
 
 	uint32_t neighbourMask = 0;
 	auto start = cur.p;
-	PointF sum = {};
-	int n = 0;
+	PointF sumP = {};
+	double sumR = 0;
+	int nP = 0;
+#ifdef PRINT_DEBUG
+	double sumR2 = 0, mR = maxR, MR = 0;
+#endif
 	do {
 		log(cur.p, 4);
-		sum += centered(cur.p);
-		++n;
+		sumP += centered(cur.p);
+		++nP;
 
 		// find out if we come full circle around the center. 8 bits have to be set in the end.
 		neighbourMask |= (1 << (4 + dot(bresenhamDirection(cur.p - center), PointI(1, 3))));
@@ -84,20 +101,40 @@ std::optional<PointF> CenterOfRing(const BitMatrix& image, PointI center, int ra
 		if (!cur.stepAlongEdge(edgeDir))
 			return {};
 
-		// use L-inf norm, simply because it is a lot faster than L2-norm and sufficiently accurate
-		if (maxAbsComponent(cur.p - center) > radius || center == cur.p || n > 4 * 2 * range)
+		double r = distance(cur.p, center) + (inner ? 0.5 : -0.5); // add/subtract 0.5 to go from pixel center to pixel edge
+		sumR += r;
+#ifdef PRINT_DEBUG
+		sumR2 += r * r;
+		UpdateMinMax(mR, MR, r);
+#endif
+		if (r > maxR || center == cur.p || nP > maxN)
 			return {};
 	} while (cur.p != start);
 
 	if (requireCircle && neighbourMask != 0b111101111)
 		return {};
 
-	return sum / n;
+	auto meanP = sumP / nP;
+	auto meanR = sumR / nP;
+	double C = nP / meanR; // C is the number of edge pixels per unit length, for a perfect circle C = 2*pi ~ 6.28, for a square C = 8
+	double centerMove = distance(meanP, PointF(center)) / width; // normalized distance between estimated and calculated center
+#ifdef PRINT_DEBUG
+	auto variation = std::sqrt(sumR2 / nP - meanR * meanR) / meanR;
+	printf("CenterOfRing: center=(%4d,%4d), width=%3d, nth=%d, reqCircle=%d, n=%3d, meanR=%5.2f, var=%5.2f, C=%5.2f, mR=%4.1f, MR=%4.1f, "
+		   "neighbourMask=%x -> res=(%5.1f,%5.1f), delta=%3.1f\n",
+		   center.x*5, center.y*5, width, nth, requireCircle, nP, meanR, variation, C, mR, MR, neighbourMask, meanP.x*5, meanP.y*5, centerMove);
+#endif
+	// C > 12 means that the edge is very irregular, centerMove > 0.5 means the center moved more than half the estimated width of the ring
+	if (requireCircle && (C > 12 || centerMove > 0.5))
+		return {};
+
+	return ConcentricPattern{meanP, meanRToSquareWidth(meanR)};
 }
 
-std::optional<PointF> CenterOfRings(const BitMatrix& image, PointF center, int range, int numOfRings)
+std::optional<ConcentricPattern> CenterOfRings(const BitMatrix& image, PointF center, int range, int numOfRings)
 {
 	int n = 1;
+	PointF::value_t size = 0;
 	PointF sum = center;
 	for (int i = 2; i < numOfRings + 1; ++i) {
 		auto c = CenterOfRing(image, PointI(center), range, i);
@@ -105,23 +142,25 @@ std::optional<PointF> CenterOfRings(const BitMatrix& image, PointF center, int r
 			if (n == 1)
 				return {};
 			else
-				return sum / n;
+				break;
 		} else if (distance(*c, center) > range / numOfRings / 2) {
 			return {};
 		}
 
 		sum += *c;
+		size = c->size;
 		n++;
 	}
-	return sum / n;
+	return ConcentricPattern{sum / n, n == numOfRings ? size : 0};
 }
 
-static std::vector<PointF> CollectRingPoints(const BitMatrix& image, PointF center, int range, int edgeIndex, bool backup)
+static std::vector<PointF> CollectRingPoints(const BitMatrix& image, PointF center, int width, int edgeIndex, bool backup)
 {
 	PointI centerI(center);
-	int radius = range;
+	const int maxN = 4 * (width + 1) * 3 / 2; // upper limit for circumference of the ring
+	const int maxR = width * 2; // TODO fix discrepancy between this and FindRind()
 	BitMatrixCursorI cur(image, centerI, {1, 0});
-	if (!cur.stepToEdge(edgeIndex, radius, backup))
+	if (!cur.stepToEdge(edgeIndex, maxR, backup))
 		return {};
 	cur.turnRight(); // move clock wise and keep edge on the right/left depending on backup
 	const auto edgeDir = backup ? Direction::LEFT : Direction::RIGHT;
@@ -129,7 +168,7 @@ static std::vector<PointF> CollectRingPoints(const BitMatrix& image, PointF cent
 	uint32_t neighbourMask = 0;
 	auto start = cur.p;
 	std::vector<PointF> points;
-	points.reserve(4 * range);
+	points.reserve(maxN / 2);
 
 	do {
 		log(cur.p, 4);
@@ -141,8 +180,7 @@ static std::vector<PointF> CollectRingPoints(const BitMatrix& image, PointF cent
 		if (!cur.stepAlongEdge(edgeDir))
 			return {};
 
-		// use L-inf norm, simply because it is a lot faster than L2-norm and sufficiently accurate
-		if (maxAbsComponent(cur.p - centerI) > radius || centerI == cur.p || Size(points) > 4 * 2 * range)
+		if (distance(cur.p, centerI) > maxR || centerI == cur.p || Size(points) > maxN)
 			return {};
 
 	} while (cur.p != start);
@@ -190,7 +228,8 @@ static std::optional<QuadrilateralF> FitQuadrilateralToPoints(PointF center, std
 			auto len = std::distance(beg[i], end[i]);
 			if (len > 3 && lines[i].distance(*p) > std::max(1., std::min(8., len / 8.))) {
 #ifdef PRINT_DEBUG
-				printf("%d: %.2f > %.2f @ %.fx%.f\n", i, lines[i].distance(*p), std::distance(beg[i], end[i]) / 1., p->x, p->y);
+				printf("FitQuadrilateral failed: center=(%3.f,%3.f), i=%d, dist=%.2f > %.2f @ (%3.f,%3.f)\n", center.x, center.y, i,
+					   lines[i].distance(*p), std::distance(beg[i], end[i]) / 8., p->x, p->y);
 #endif
 				return {};
 			}
@@ -213,9 +252,9 @@ static bool QuadrilateralIsPlausibleSquare(const QuadrilateralF q, int lineIndex
 	return m >= lineIndex * 2 && m > M / 3;
 }
 
-std::optional<QuadrilateralF> FitSquareToPoints(const BitMatrix& image, PointF center, int range, int lineIndex, bool backup)
+std::optional<QuadrilateralF> FitSquareToPoints(const BitMatrix& image, PointF center, int width, int lineIndex, bool backup)
 {
-	auto points = CollectRingPoints(image, center, range, lineIndex, backup);
+	auto points = CollectRingPoints(image, center, width, lineIndex, backup);
 	if (points.empty())
 		return {};
 
@@ -226,13 +265,13 @@ std::optional<QuadrilateralF> FitSquareToPoints(const BitMatrix& image, PointF c
 	return res;
 }
 
-std::optional<QuadrilateralF> FindConcentricPatternCorners(const BitMatrix& image, PointF center, int range, int ringIndex)
+std::optional<QuadrilateralF> FindConcentricPatternCorners(const BitMatrix& image, PointF center, int width, int ringIndex)
 {
-	auto innerCorners = FitSquareToPoints(image, center, range, ringIndex, false);
+	auto innerCorners = FitSquareToPoints(image, center, width, ringIndex, false);
 	if (!innerCorners)
 		return {};
 
-	auto outerCorners = FitSquareToPoints(image, center, range, ringIndex + 1, true);
+	auto outerCorners = FitSquareToPoints(image, center, width, ringIndex + 1, true);
 	if (!outerCorners)
 		return {};
 
@@ -250,18 +289,21 @@ std::optional<QuadrilateralF> FindConcentricPatternCorners(const BitMatrix& imag
 	return res;
 }
 
-std::optional<PointF> FinetuneConcentricPatternCenter(const BitMatrix& image, PointF center, int range, int finderPatternSize)
+std::optional<ConcentricPattern> FinetuneConcentricPatternCenter(const BitMatrix& image, PointF center, int width, int finderPatternSize)
 {
 	// make sure we have at least one path of white around the center
-	if (auto res1 = CenterOfRing(image, PointI(center), range, 1); res1 && image.get(*res1)) {
+	if (auto res1 = CenterOfRing(image, PointI(center), width * 2 / 3, 1); res1 && image.get(*res1)) {
 		// and then either at least one more ring around that
-		if (auto res2 = CenterOfRings(image, *res1, range, finderPatternSize / 2); res2 && image.get(*res2))
+		if (auto res2 = CenterOfRings(image, *res1, width, finderPatternSize / 2); res2 && image.get(*res2)) {
+			res2->size = res2->size * 7 / 5; // CenterOfRings only estimates the radius of the white ring
 			return res2;
+		}
 		// or the center can be approximated by a square
-		if (FitSquareToPoints(image, *res1, range, 1, false))
-			return res1;
+		// TODO: With the following CenterOfDoubleCross() check, this currently saves no additional test cases
+		// if (FitSquareToPoints(image, *res1, width, 1, false))
+		// 	return res1;
 		// TODO: this is currently only keeping #258 alive, evaluate if still worth it
-		if (auto res2 = CenterOfDoubleCross(image, PointI(*res1), range, finderPatternSize / 2 + 1); res2 && image.get(*res2))
+		if (auto res2 = CenterOfDoubleCross(image, PointI(*res1), width, finderPatternSize / 2 + 1); res2 && image.get(*res2))
 			return res2;
 	}
 	return {};

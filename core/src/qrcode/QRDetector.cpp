@@ -80,8 +80,8 @@ std::vector<ConcentricPattern> FindFinderPatterns(const BitMatrix& image, bool t
 			if (FindIf(res, [p](const auto& old) { return distance(p, old) < old.size / 2; }) == res.end()) {
 				log(p);
 				N++;
-				auto pattern = LocateConcentricPattern<E2E>(image, PATTERN, p,
-															next.sum() * 3); // 3 for very skewed samples
+				auto width = 2 * next.sum(); // the factor 2 allows for a maximum aspect ratio of 4:1 due to perspective distortion
+				auto pattern = LocateConcentricPattern<E2E>(image, PATTERN, p, width);
 				if (pattern) {
 					log(*pattern, 3);
 					log(*pattern + PointF(.2, 0), 3);
@@ -424,9 +424,9 @@ static std::optional<PointF> LocateAlignmentPattern(const BitMatrix& image, int 
 		if (!cor || !image.get(*cor))
 			continue;
 
-		if (auto cor1 = CenterOfRing(image, PointI(*cor), moduleSize, 1))
-			if (auto cor2 = CenterOfRing(image, PointI(*cor), moduleSize * 3, -2))
-				if (distance(*cor1, *cor2) < moduleSize / 2) {
+		if (auto cor1 = CenterOfRing(image, PointI(*cor), moduleSize * 2, 1))
+			if (auto cor2 = CenterOfRing(image, PointI(*cor), moduleSize * 3, 2))
+				if (distance(*cor1, *cor2) < moduleSize / 2 && cor2->size > cor1->size) {
 					auto res = (*cor1 + *cor2) / 2;
 					log(res, 3);
 					return res;
@@ -469,7 +469,7 @@ DetectorResults SampleQR(const BitMatrix& image, const FinderPatternSet& fp)
 
 	auto best = top.err == left.err ? (top.dim > left.dim ? top : left) : (top.err < left.err ? top : left);
 	int dimension = best.dim;
-	int moduleSize = static_cast<int>(best.ms + 1);
+	int moduleSize = static_cast<int>(top.dim == left.dim ? std::midpoint(top.ms, left.ms) : best.ms) + 1;
 
 	auto br = PointF{-1, -1};
 	auto brOffset = PointF{3, 3};
@@ -640,7 +640,7 @@ DetectorResult DetectPureQR(const BitMatrix& image)
 			return {};
 	}
 
-	auto fpWidth = Reduce(diagonal);
+	PointF::value_t fpWidth = Reduce(diagonal);
 	auto dimension =
 		EstimateDimension(image, {tl + fpWidth / 2 * PointF(1, 1), fpWidth}, {tr + fpWidth / 2 * PointF(-1, 1), fpWidth}).dim;
 

@@ -170,6 +170,7 @@ struct FixedPattern : public Pattern<N>
 	using Pattern<N>::data;
 
 	constexpr int size() const noexcept { return N; }
+	constexpr int sum() const noexcept { return SUM; }
 	constexpr BarAndSpace<value_type> sums() const noexcept { return BarAndSpaceSum<N, value_type>(data()); }
 };
 

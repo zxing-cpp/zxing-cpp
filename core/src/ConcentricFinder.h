@@ -97,23 +97,24 @@ int CheckSymmetricPattern(BitMatrixCursorI& cur, PATTERN pattern, int range, boo
 	return Reduce(res);
 }
 
-std::optional<PointF> CenterOfRing(const BitMatrix& image, PointI center, int range, int nth, bool requireCircle = true);
+struct ConcentricPattern : public PointF
+{
+	PointF::value_t size = 0;
+};
 
-std::optional<PointF> FinetuneConcentricPatternCenter(const BitMatrix& image, PointF center, int range, int finderPatternSize);
+std::optional<ConcentricPattern> CenterOfRing(const BitMatrix& image, PointI center, int range, int nth, bool requireCircle = true);
+
+std::optional<ConcentricPattern> FinetuneConcentricPatternCenter(const BitMatrix& image, PointF center, int range, int finderPatternSize);
 
 std::optional<QuadrilateralF> FitSquareToPoints(const BitMatrix& image, PointF center, int range, int lineIndex, bool backup);
 
 std::optional<QuadrilateralF> FindConcentricPatternCorners(const BitMatrix& image, PointF center, int range, int ringIndex);
 
-struct ConcentricPattern : public PointF
-{
-	int size = 0;
-};
-
 template <bool E2E = false, typename PATTERN>
-std::optional<ConcentricPattern> LocateConcentricPattern(const BitMatrix& image, PATTERN pattern, PointF center, int range)
+std::optional<ConcentricPattern> LocateConcentricPattern(const BitMatrix& image, PATTERN pattern, PointF center, int width)
 {
 	auto cur = BitMatrixCursor(image, PointI(center), {});
+	int range = width * 2;
 	int minSpread = image.width(), maxSpread = 0;
 	// TODO: setting maxError to 1 can substantially help with detecting symbols with low print quality resulting in damaged
 	// finder patterns, but it substantially increases the runtime (approx. 20% slower for the falsepositive images).
@@ -128,7 +129,7 @@ std::optional<ConcentricPattern> LocateConcentricPattern(const BitMatrix& image,
 
 #if 1
 	for (auto d : {PointI{1, 1}, {1, -1}}) {
-		int spread = CheckSymmetricPattern<true>(cur.setDirection(d), pattern, range * 2, false);
+		int spread = CheckSymmetricPattern<true>(cur.setDirection(d), pattern, range, false);
 		if (spread)
 			UpdateMinMax(minSpread, maxSpread, spread);
 		else if (--maxError < 0)
@@ -139,11 +140,16 @@ std::optional<ConcentricPattern> LocateConcentricPattern(const BitMatrix& image,
 	if (maxSpread > 5 * minSpread)
 		return {};
 
-	auto newCenter = FinetuneConcentricPatternCenter(image, PointF(cur.p), range, pattern.size());
-	if (!newCenter)
-		return {};
+	static_assert(pattern.sum() == 7, "see FinetuneConcentricPatternCenter()");
+	auto newCenter = FinetuneConcentricPatternCenter(image, PointF(cur.p), width, pattern.size());
+	if (newCenter) {
+		// printf("LocateConcentricPattern: center=(%5.2f,%5.2f), width=%3d, spread=%d, size=%d, newCenter=(%5.2f,%5.2f)\n",
+		// 	center.x*5, center.y*5, width, (maxSpread + minSpread) / 2, newCenter->size, newCenter->x*5, newCenter->y*5);
+		if (!newCenter->size)
+			newCenter->size = (maxSpread + minSpread) / 2;
+	}
 
-	return ConcentricPattern{*newCenter, (maxSpread + minSpread) / 2};
+	return newCenter;
 }
 
 } // ZXing

@@ -109,7 +109,7 @@ static std::optional<ConcentricPattern> LocateAztecCenter(const BitMatrix& image
 		UpdateMinMax(minSpread, maxSpread, spread);
 	}
 
-	return ConcentricPattern{centered(cur.p), (maxSpread + minSpread) / 2};
+	return ConcentricPattern{centered(cur.p), (maxSpread + minSpread) / 2.0};
 }
 
 static std::vector<ConcentricPattern> FindPureFinderPattern(const BitMatrix& image)
