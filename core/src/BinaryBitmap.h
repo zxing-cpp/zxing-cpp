@@ -48,6 +48,7 @@ public:
 
 	int width() const { return _buffer.width(); }
 	int height() const { return _buffer.height(); }
+	const ImageView& imageView() const { return _buffer; }
 
 	/**
 	* Converts one row of luminance data to a vector of ints denoting the widths of the bars and spaces.
@@ -55,6 +56,17 @@ public:
 	virtual bool getPatternRow(int row, int rotation, PatternRow& res) const = 0;
 
 	const BitMatrix* getBitMatrix(bool transposed = false) const;
+
+	/**
+	* Access to the underlying luminance for detectors that re-threshold locally
+	* (per symbol). Returns -1 when the buffer is not single-channel luminance.
+	*/
+	int luma(int x, int y) const
+	{
+		return _buffer.format() == ImageFormat::Lum && x >= 0 && x < width() && y >= 0 && y < height()
+				   ? *_buffer.data(x, y)
+				   : -1;
+	}
 
 	void invert();
 	bool inverted() const { return _inverted; }

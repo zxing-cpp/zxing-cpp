@@ -17,6 +17,7 @@ namespace ZXing {
 
 class DetectorResult;
 class BitMatrix;
+class BinaryBitmap;
 
 namespace QRCode {
 
@@ -35,7 +36,8 @@ using DetectorResults = std::generator<DetectorResult>;
 
 DetectorResults SampleQR(const BitMatrix& image, const FinderPatternSet& fp);
 DetectorResult SampleMQR(const BitMatrix& image, const ConcentricPattern& fp);
-DetectorResult SampleRMQR(const BitMatrix& image, const ConcentricPattern& fp);
+DetectorResult SampleRMQR(const BitMatrix& image, const ConcentricPattern& fp, const BinaryBitmap* lum = nullptr,
+						  bool tryHarder = true);
 
 DetectorResult DetectPureQR(const BitMatrix& image);
 DetectorResult DetectPureMQR(const BitMatrix& image);
