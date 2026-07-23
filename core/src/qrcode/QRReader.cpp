@@ -9,6 +9,7 @@
 
 #include "BarcodeData.h"
 #include "BinaryBitmap.h"
+#include "GlobalHistogramBinarizer.h"
 #include "ConcentricFinder.h"
 #include "DecoderResult.h"
 #include "DetectorResult.h"
@@ -17,6 +18,7 @@
 #include "QRDetector.h"
 #include "ReaderOptions.h"
 
+#include <optional>
 #include <utility>
 
 namespace ZXing::QRCode {
@@ -125,12 +127,38 @@ BarcodesData Reader::read(const BinaryBitmap& image, int maxSymbols) const
 	}
 	
 	if (_opts.hasFormat(BarcodeFormat::RMQRCode) && !(maxSymbols && Size(res) == maxSymbols)) {
-		// TODO proper
-		for (const auto& fp : allFPs) {
+		// Second detection front-end: the local-average binarization thresholds small soft
+		// symbols by the luck of its block-grid alignment; a global-histogram binarization
+		// of the same luminance sees a different (often complementary) set of finder
+		// patterns. Scan both, feed every distinct finder through the same single pipeline
+		// (each with the binarization that actually detected it).
+		std::optional<GlobalHistogramBinarizer> alt;
+		const BitMatrix* altBin = nullptr;
+		const int nOrigFPs = Size(allFPs);
+		int nAltFPs = nOrigFPs;
+		if (_opts.tryHarder() && image.imageView().format() == ImageFormat::Lum) {
+			alt.emplace(image.imageView());
+			if ((altBin = alt->getBitMatrix()))
+				for (auto& fp : FindFinderPatterns(*altBin, _opts.tryHarder()))
+					if (FindIf(allFPs, [&](const auto& o) { return distance(fp, o) < std::max<double>(20, o.size); }) == allFPs.end())
+						allFPs.push_back(fp);
+			nAltFPs = Size(allFPs);
+			// third front-end: finder patterns only visible in grayscale (defocus /
+			// directional blur destroys them in every binarization)
+			for (auto& fp : FindFinderPatternsLuma(image, allFPs))
+				allFPs.push_back(fp);
+		}
+		for (int iFP = 0; iFP < Size(allFPs); ++iFP) {
+			const auto& fp = allFPs[iFP];
 			if (Contains(usedFPs, fp))
 				continue;
 
-			auto detectorResult = SampleRMQR(*binImg, fp);
+			// One scored-fusion sample per finder pattern: SampleRMQR gathers anchors from
+			// every available function pattern (finder, both edge timing patterns, sub
+			// pattern), discards the unreliable ones and rebuilds what it can - a single
+			// pass, no rescaling, no fallbacks.
+			auto detectorResult = SampleRMQR(iFP < nOrigFPs || iFP >= nAltFPs ? *binImg : *altBin, fp, &image,
+											 _opts.tryHarder(), /*speculativeFP=*/iFP >= nAltFPs);
 			if (detectorResult.isValid()) {
 				auto decoderResult = Decode(detectorResult.bits());
 				if (decoderResult.isValid(_opts.returnErrors())) {
@@ -138,7 +166,6 @@ BarcodesData Reader::read(const BinaryBitmap& image, int maxSymbols) const
 					if (maxSymbols && Size(res) == maxSymbols)
 						break;
 				}
-
 			}
 		}
 	}

@@ -8,6 +8,9 @@
 
 #include "QRDetector.h"
 
+#include "BinaryBitmap.h"
+#include "DecoderResult.h"
+#include "QRDecoder.h"
 #include "BitArray.h"
 #include "BitMatrix.h"
 #include "BitMatrixCursor.h"
@@ -22,6 +25,7 @@
 #include "RegressionLine.h"
 
 #include <algorithm>
+#include <climits>
 #include <cmath>
 #include <cstdlib>
 #include <iterator>
@@ -826,13 +830,356 @@ DetectorResult SampleMQR(const BitMatrix& image, const ConcentricPattern& fp)
 	return SampleGrid(image, dim, dim, bestPT);
 }
 
-DetectorResult SampleRMQR(const BitMatrix& image, const ConcentricPattern& fp)
+// Follow an rMQR edge timing pattern, starting at pixel `start` stepping `stepX` per
+// module, for `nMods` modules. Advances transition-by-transition; a gap longer than one
+// module (a solid function pattern interrupting the timing) is counted by rounding the
+// travelled distance to whole modules. The direction and module size are continuously
+// re-estimated from the accumulated displacement so the trace follows steep rotation /
+// perspective. Returns the pixel position `nMods` modules along.
+static std::optional<PointF> TraceTimingLine(const BitMatrix& image, PointF start, PointF stepX, int nMods)
 {
-	auto fpQuad = FindConcentricPatternCorners(image, fp, fp.size, 2);
-	if (!fpQuad)
+	double modSize = length(stepX);
+	if (modSize < 1 || nMods < 1)
 		return {};
+	BitMatrixCursorF cur(image, start, bresenhamDirection(stepX));
+	if (!cur.isIn())
+		return {};
+	double travelled = 0;
+	int guard = nMods * 4 + 20;
+	PointF anchor = cur.p;
+	double anchorTravelled = 0;
+	while (travelled < nMods - 0.25 && guard-- > 0) {
+		PointF prev = cur.p;
+		if (!cur.stepToEdge(1, static_cast<int>(modSize * 5) + 8))
+			return {};
+		travelled += std::max(1.0, std::round(distance(cur.p, prev) / modSize));
+		// Re-estimate the line direction and module size from the accumulated displacement
+		// so the trace follows tilt / perspective instead of walking off the timing row.
+		if (travelled - anchorTravelled >= 3) {
+			PointF disp = cur.p - anchor;
+			double n = travelled - anchorTravelled;
+			if (length(disp) > modSize) {
+				cur.setDirection(disp);
+				modSize = length(disp) / n;
+			}
+			anchor = cur.p;
+			anchorTravelled = travelled;
+		}
+	}
+	return travelled >= nMods - 0.5 ? std::optional<PointF>(cur.p) : std::nullopt;
+}
 
-	auto srcQuad = Rectangle(7, 7, 0.5);
+
+// Robust straight-line fit  p(t) = A*t + B  over (t, point) samples. A line models a
+// rMQR edge under rotation/skew exactly and mild perspective closely, so residuals expose
+// the discrete jumps produced by a timing mis-count: while the worst residual exceeds `tol`
+// (and more than 3 samples remain) the worst sample is dropped and the line is refit.
+struct EdgeFit { PointF A{}, B{}; bool ok = false; int inliers = 0; };
+static EdgeFit fitEdge(std::vector<std::pair<double, PointF>> s, double tol)
+{
+	while (Size(s) >= 2) {
+		double st = 0, stt = 0;
+		PointF sp{}, stp{};
+		for (const auto& [t, p] : s) { st += t; stt += t * t; sp = sp + p; stp = stp + t * p; }
+		const double n = Size(s);
+		const double denom = n * stt - st * st;
+		if (std::abs(denom) < 1e-6)
+			return {};
+		const PointF A = (1.0 / denom) * (n * stp - st * sp);
+		const PointF B = (1.0 / n) * (sp - st * A);
+		double worst = -1;
+		size_t wi = 0;
+		for (size_t i = 0; i < s.size(); ++i)
+			if (double r = length(s[i].second - (s[i].first * A + B)); r > worst) { worst = r; wi = i; }
+		if (worst <= tol || Size(s) <= 3)
+			return {A, B, true, Size(s)};
+		s.erase(s.begin() + wi);
+	}
+	return {};
+}
+
+
+// Modules of a short rMQR symbol whose color is known a priori - the finder pattern, both
+// full-width edge timing patterns (dark on even columns, interrupted only by the always-
+// dark alignment columns), the corner pattern and the finder sub pattern. Used both to
+// calibrate luminance thresholds and to score how well a sampled grid matches reality.
+struct KnownModule
+{
+	int x, y;
+	bool dark;
+};
+static std::vector<KnownModule> RMQRKnownModules(PointI dim, const Version* version)
+{
+	std::vector<KnownModule> res;
+	res.reserve(2 * dim.x + 24);
+	// finder pattern: dark core, ring corners and midpoints; light separator ring
+	for (auto [x, y] : {std::pair{3, 3}, {2, 3}, {4, 3}, {3, 2}, {3, 4}, {0, 0}, {6, 0}, {0, 6}, {6, 6}, {3, 0}, {0, 3}, {6, 3}, {3, 6}})
+		res.push_back({x, y, true});
+	for (auto [x, y] : {std::pair{1, 1}, {5, 1}, {1, 5}, {5, 5}, {3, 1}, {1, 3}, {5, 3}, {3, 5}})
+		res.push_back({x, y, false});
+	// both edge timing patterns
+	for (int c = 7; c < dim.x; ++c) {
+		const bool align = version && Contains(version->alignmentPatternCenters(), c);
+		res.push_back({c, 0, align || c == dim.x - 1 || c % 2 == 0});
+		if (c < dim.x - 5)
+			res.push_back({c, dim.y - 1, align || c % 2 == 0});
+		else
+			res.push_back({c, dim.y - 1, true}); // sub pattern bottom edge is solid dark
+	}
+	// sub pattern: dark center, light ring
+	res.push_back({dim.x - 3, dim.y - 3, true});
+	res.push_back({dim.x - 2, dim.y - 3, false});
+	res.push_back({dim.x - 3, dim.y - 2, false});
+	return res;
+}
+
+// Sample a fitted short-rMQR module grid directly from the luminance image instead of the
+// globally binarized one. The global binarizer thresholds with a fixed block grid whose
+// alignment relative to a small, soft symbol is luck - the same symbol reads differently
+// depending on where it sits in the frame (this is exactly why panning a camera across a
+// wall "finds" codes a still misses). Here the symbol calibrates its own thresholds from
+// its known modules, interpolated per column so illumination gradients are followed, and
+// each module is read as the mean of a few sub-module taps against its local threshold.
+static DetectorResult SampleRMQRLuma(const BinaryBitmap& lum, bool inverted, PointI dim, const ROIs& rois,
+									 const std::vector<KnownModule>& known)
+{
+	// pixel position of a module-space coordinate via its covering ROI
+	auto pix = [&](double x, double y) -> std::optional<PointF> {
+		for (auto&& [x0, x1, y0, y1, mod2Pix] : rois)
+			if (x0 <= x && x <= x1 && y0 <= y && y <= y1)
+				return mod2Pix(PointF(x + 0.5, y + 0.5));
+		return {};
+	};
+	auto lumaAt = [&](PointF p) { return lum.luma(narrow_cast<int>(p.x + 0.5), narrow_cast<int>(p.y + 0.5)); };
+
+	struct Calib { int col; int v; bool dark; };
+	std::vector<Calib> calib;
+	calib.reserve(known.size());
+	for (const auto& k : known)
+		if (auto p = pix(k.x, k.y))
+			if (int v = lumaAt(*p); v >= 0)
+				calib.push_back({k.x, v, k.dark});
+
+	// per-column threshold: midpoint between the means of nearby dark and light samples,
+	// widening the window (up to global) until both sides have evidence
+	auto threshold = [&](int col) -> std::optional<int> {
+		for (int win = 8; win <= 2 * dim.x; win = std::min(win * 2, 2 * dim.x) + (win == 2 * dim.x)) {
+			int sd = 0, nd = 0, sl = 0, nl = 0;
+			for (const auto& c : calib)
+				if (std::abs(c.col - col) <= win) {
+					if (c.dark)
+						sd += c.v, ++nd;
+					else
+						sl += c.v, ++nl;
+				}
+			// require both evidence and usable contrast in this window; otherwise widen -
+			// a defocused region has low local contrast but the symbol as a whole thresholds
+			if (nd >= 2 && nl >= 2 && std::abs(sd / nd - sl / nl) >= (win >= 2 * dim.x ? 4 : 8))
+				return (sd / nd + sl / nl) / 2;
+		}
+		return {};
+	};
+	std::vector<int> thr(dim.x);
+	for (int c = 0; c < dim.x; ++c) {
+		auto t = threshold(c);
+		if (!t)
+			return {}; // no usable contrast - the caller keeps the binary sampling
+		thr[c] = *t;
+	}
+
+	// read each module as the mean of five sub-module taps against its column threshold
+	BitMatrix res(dim.x, dim.y);
+	for (int y = 0; y < dim.y; ++y)
+		for (int x = 0; x < dim.x; ++x) {
+			int sum = 0, n = 0;
+			for (auto [dx, dy] : {std::pair{0., 0.}, {.3, 0.}, {-.3, 0.}, {0., .3}, {0., -.3}})
+				if (auto p = pix(x + dx, y + dy))
+					if (int v = lumaAt(*p); v >= 0)
+						sum += v, ++n;
+			if (!n)
+				return {};
+			if (inverted ? sum / n > thr[x] : sum / n < thr[x])
+				res.set(x, y);
+		}
+
+	auto projectCorner = [&](PointI p) {
+		for (auto&& [x0, x1, y0, y1, mod2Pix] : rois)
+			if (x0 <= p.x && p.x <= x1 && y0 <= p.y && p.y <= y1)
+				return PointI(mod2Pix(PointF(p)) + PointF(0.5, 0.5));
+		return PointI();
+	};
+
+	return {std::move(res),
+			{projectCorner({0, 0}), projectCorner({dim.x, 0}), projectCorner({dim.x, dim.y}), projectCorner({0, dim.y})}};
+}
+
+
+// Scan the luminance image directly for rMQR finder patterns that survive in *no*
+// binarization. A defocused or motion-blurred finder keeps its 1:1:3:1:1 profile in
+// grayscale (often with full contrast along one axis while the other is smeared), but a
+// block-binarizer thresholds it into mush. Each row is thresholded at the midpoint of a
+// sliding local min/max window - a per-row, per-neighbourhood adaptive threshold - and
+// the resulting runs are matched with the same 1:1:3:1:1 matcher the binary scan uses.
+// Candidates are verified in luminance with tolerance for one soft axis.
+FinderPatterns FindFinderPatternsLuma(const BinaryBitmap& lum, const FinderPatterns& existing)
+{
+	const int w = lum.width(), h = lum.height();
+	const bool inv = lum.inverted();
+	auto L = [&](int x, int y) { return lum.luma(x, y); };
+
+	FinderPatterns res;
+	constexpr int SKIP = 3, BLOCK = 32;
+	std::vector<uint8_t> bin(w);
+	PatternRow row;
+	const int nBlocks = (w + BLOCK - 1) / BLOCK;
+	std::vector<int> bmin(nBlocks), bmax(nBlocks);
+
+	for (int y = SKIP - 1; y < h; y += SKIP) {
+		// per-block min/max, then threshold each pixel at the midpoint of its
+		// neighbourhood (block +- 1) - adapts to lighting without a global gamble
+		for (int b = 0; b < nBlocks; ++b) {
+			int mn = 255, mx = 0;
+			for (int x = b * BLOCK; x < std::min(w, (b + 1) * BLOCK); ++x) {
+				const int v = L(x, y);
+				mn = std::min(mn, v);
+				mx = std::max(mx, v);
+			}
+			bmin[b] = mn;
+			bmax[b] = mx;
+		}
+		for (int b = 0; b < nBlocks; ++b) {
+			const int b0 = std::max(0, b - 1), b1 = std::min(nBlocks - 1, b + 1);
+			const int mn = std::min({bmin[b0], bmin[b], bmin[b1]});
+			const int mx = std::max({bmax[b0], bmax[b], bmax[b1]});
+			const int thr = (mn + mx) / 2;
+			const bool flat = mx - mn < 24; // no real content in this neighbourhood
+			for (int x = b * BLOCK; x < std::min(w, (b + 1) * BLOCK); ++x)
+				bin[x] = !flat && (inv ? L(x, y) > thr : L(x, y) < thr);
+		}
+
+		// run-length encode (starting with a white run, like GetPatternRow)
+		row.clear();
+		row.push_back(0);
+		uint8_t cur = 0;
+		for (int x = 0; x < w; ++x) {
+			if (bin[x] != cur) {
+				row.push_back(0);
+				cur = bin[x];
+			}
+			row.back()++;
+		}
+		if (cur)
+			row.push_back(0); // GetPatternRow always ends on a white run
+
+		PatternView next = row;
+		while (next = FindPattern(next), next.isValid()) {
+			PointF p(next.pixelsInFront() + next[0] + next[1] + next[2] / 2.0, y + 0.5);
+			const double size = next.sum();
+			const double m = size / 7;
+			// dedupe against already-found patterns (either front-end)
+			const bool dup = FindIf(existing, [&](const auto& o) { return distance(p, o) < std::max<double>(o.size, size); }) != existing.end()
+							 || FindIf(res, [&](const auto& o) { return distance(p, o) < std::max<double>(o.size, size); }) != res.end();
+			if (!dup && size >= 14 && p.y > 3 * m && p.y < h - 3 * m) {
+				// luminance verification, tolerant of one soft axis (directional blur):
+				// the horizontal profile matched already; the vertical structure only has
+				// to *lean* the right way. All comparisons via local samples.
+				auto sampleAt = [&](double px, double py) {
+					const int v = L(narrow_cast<int>(px + 0.5), narrow_cast<int>(py + 0.5));
+					return inv ? 255 - v : v;
+				};
+				// the scan only visits every third row, so the hit can sit well off the
+				// finder's vertical center - refine by walking the dark core up and down
+				// (only adopt the refinement when the walk finds a sane core height; a
+				// smeared core can run away and must not drag the center with it)
+				{
+					const int t = (sampleAt(p.x, p.y) + sampleAt(p.x + 2 * m, p.y)) / 2;
+					double up = p.y, dn = p.y;
+					while (p.y - up < 2.5 * m && sampleAt(p.x, up - 1) < t)
+						up--;
+					while (dn - p.y < 2.5 * m && sampleAt(p.x, dn + 1) < t)
+						dn++;
+					if (dn - up >= m && dn - up <= 4.5 * m)
+						p.y = (up + dn) / 2;
+				}
+				auto sample = [&](double dx, double dy) { return sampleAt(p.x + dx, p.y + dy); };
+				const int center = (sample(0, 0) + sample(m / 2, 0) + sample(-m / 2, 0) + sample(0, m / 2) + sample(0, -m / 2)) / 5;
+				const int ringH = (sample(2 * m, 0) + sample(-2 * m, 0)) / 2;
+				const int ringV = (sample(0, 2 * m) + sample(0, -2 * m)) / 2;
+				const int outerH = (sample(3 * m, 0) + sample(-3 * m, 0)) / 2;
+				// cross-row: the same core-dark / ring-light structure must persist a row
+				// above and below the scan line (the core is 3 modules tall) - single-row
+				// texture matches don't, and they are what makes junk expensive downstream
+				const int centerUp = sample(0, -m), centerDn = sample(0, m);
+				const int ringHUp = (sample(2 * m, -m) + sample(-2 * m, -m)) / 2;
+				const int ringHDn = (sample(2 * m, m) + sample(-2 * m, m)) / 2;
+				// two-tier acceptance: a strong, clean match stands on its own (a soft
+				// vertical axis must not veto it - that is the very blur this scan exists
+				// for); a weaker match must show the same structure on neighbouring rows,
+				// which is what separates soft real finders from single-row texture junk.
+				const bool strong = center + 28 < ringH && center + 12 < ringV;
+				const bool crossOk = centerUp + 5 < ringHUp && centerDn + 5 < ringHDn;
+				if (center + 16 < ringH && center + 6 < ringV && outerH + 8 < ringH && (strong || crossOk))
+					res.push_back(ConcentricPattern{p, size});
+			}
+			next.skipPair();
+			next.skipPair();
+			next.extend();
+		}
+	}
+	return res;
+}
+
+DetectorResult SampleRMQR(const BitMatrix& image, const ConcentricPattern& fp, const BinaryBitmap* lum, bool tryHarder,
+						  bool speculativeFP)
+{
+	// A finder that only the grayscale scan could see is more speculative than one the
+	// binary scans confirmed: junk texture produces such candidates by the hundred, and
+	// each one that reaches the deep geometry search costs real time. Demand stronger
+	// format information evidence before spending it - the true grayscale-only symbols
+	// measured so far read their FI near-perfectly (hamming 0-2) once the quad is close.
+	const int deepHamming = speculativeFP ? 2 : 4;
+	// The finder pattern quad: ideally the blend of its 5x5 and 7x7 boundary squares, but on
+	// a small / blurry symbol often only one of the two ring lines is traceable. Use whatever
+	// is measurable - each line maps to a known square in module coordinates (the srcQuad
+	// margin), and the format information's error tolerance arbitrates correctness downstream.
+	auto innerQuad = FitSquareToPoints(image, fp, fp.size, 2, false);
+	auto outerQuad = FitSquareToPoints(image, fp, fp.size, 3, true);
+	std::optional<QuadrilateralF> fpQuad;
+	double srcMargin = 0.5;
+	if (innerQuad && outerQuad)
+		fpQuad = Blend(*innerQuad, *outerQuad);
+	else if (outerQuad)
+		fpQuad = *outerQuad, srcMargin = 0.0;
+	else if (innerQuad)
+		fpQuad = *innerQuad, srcMargin = 1.0;
+	else if (auto coreQuad = FitSquareToPoints(image, fp, fp.size, 1, false))
+		fpQuad = *coreQuad, srcMargin = 2.0; // the 3x3 core boundary - sharpest feature under blur
+	else if (lum && lum->luma(0, 0) >= 0) {
+		// No ring line traceable in the binary image at all (typically a finder that only
+		// the luminance scan could see). Synthesize an axis-aligned quad from the pattern's
+		// center and size - rotation up to the FI jitter's tolerance is recovered by the
+		// rotation loop, and the geometry search + ECC arbitrate everything downstream.
+		const double r = fp.size / 2.0;
+		const double x0 = fp.x - r, x1 = fp.x + r, y0 = fp.y - r, y1 = fp.y + r;
+		fpQuad = QuadrilateralF{PointF{x0, y0}, {x1, y0}, {x1, y1}, {x0, y1}};
+		srcMargin = 0.0;
+	} else {
+		return {};
+	}
+
+	// Quad hypotheses for the format information stage. Beside whatever the binary ring
+	// fits produced (which on a blurry finder can be badly rotated), an axis-aligned quad
+	// synthesized from the pattern's center and size is always tried when luminance is
+	// available - often the better guess for a defocused symbol. The FI hamming score,
+	// the geometry search and the ECC arbitrate between the hypotheses downstream.
+	std::vector<std::pair<QuadrilateralF, double>> quadCands = {{*fpQuad, srcMargin}};
+	if (lum && lum->luma(0, 0) >= 0 && srcMargin != 0.0) {
+		const double r = fp.size / 2.0;
+		const double qx0 = fp.x - r, qx1 = fp.x + r, qy0 = fp.y - r, qy1 = fp.y + r;
+		quadCands.push_back({QuadrilateralF{PointF{qx0, qy0}, {qx1, qy0}, {qx1, qy1}, {qx0, qy1}}, 0.0});
+	}
+
+	auto srcQuad = Rectangle(7, 7, srcMargin);
 
 	static const PointI FORMAT_INFO_EDGE_COORDS[] = {{8, 0}, {9, 0}, {10, 0}, {11, 0}};
 	static const PointI FORMAT_INFO_COORDS[] = {
@@ -842,36 +1189,100 @@ DetectorResult SampleRMQR(const BitMatrix& image, const ConcentricPattern& fp)
 		{ 8, 5}, { 8, 4}, { 8, 3}, { 8, 2}, { 8, 1},
 	};
 
-	FormatInformation bestFI;
-	PerspectiveTransform bestPT;
+	// Luminance threshold calibrated on the finder pattern's own known modules, letting
+	// the format information be read straight from grayscale - the global binarization of
+	// a small blurry symbol is exactly what corrupts these reads.
+	int fiThr = -1;
+	if (lum && lum->luma(0, 0) >= 0) {
+		const auto m2p = PerspectiveTransform(srcQuad, RotatedCorners(*fpQuad, 0));
+		int sd = 0, nd = 0, sl = 0, nl = 0;
+		auto sample = [&](int x, int y, bool dark) {
+			const PointF p = m2p(centered(PointI(x, y)));
+			if (int v = lum->luma(narrow_cast<int>(p.x + 0.5), narrow_cast<int>(p.y + 0.5)); v >= 0) {
+				if (dark)
+					sd += v, ++nd;
+				else
+					sl += v, ++nl;
+			}
+		};
+		for (auto [x, y] : {std::pair{3, 3}, {2, 3}, {4, 3}, {3, 2}, {3, 4}, {0, 0}, {6, 0}, {0, 6}, {6, 6}, {3, 0}, {0, 3}, {6, 3}, {3, 6}})
+			sample(x, y, true);
+		for (auto [x, y] : {std::pair{1, 1}, {5, 1}, {1, 5}, {5, 5}, {3, 1}, {1, 3}, {5, 3}, {3, 5}})
+			sample(x, y, false);
+		if (nd >= 3 && nl >= 3 && std::abs(sd / nd - sl / nl) >= 8)
+			fiThr = (sd / nd + sl / nl) / 2;
+	}
+
+	// Collect format information candidates instead of a single best guess: on a blurry
+	// symbol the finder-local transform can corrupt the FI reads enough that a *wrong*
+	// version wins the pure hamming race, and a read one bit past the BCH validity limit
+	// can still be the truth. Keep the best read per distinct version (up to a loose
+	// hamming bound) and let the sampled image content arbitrate below.
+	struct FICand { FormatInformation fi; PerspectiveTransform pt; };
+	std::vector<FICand> cands;
 	BitMatrixCursorF cur(image, {}, {});
 
+	for (auto& [quad, qmargin] : quadCands)
 	for (int i = 0; i < 4; ++i) {
-		auto mod2Pix = PerspectiveTransform(srcQuad, RotatedCorners(*fpQuad, i));
+		auto mod2Pix = PerspectiveTransform(Rectangle(7, 7, qmargin), RotatedCorners(quad, i));
 
-		auto check = [&](int i, bool on) {
-			return cur.testAt(mod2Pix(centered(FORMAT_INFO_EDGE_COORDS[i]))) == BitMatrixCursorF::Value(on);
-		};
+		// On a small / blurry symbol the finder-derived transform can be off by a fraction
+		// of a module, which corrupts these single-pixel reads. Sample the format
+		// information under a handful of sub-module offsets and keep whichever read the
+		// BCH code scores best - one more instance of measure-everything-and-score.
+		// a quad from a single ring line is less precise - search a denser, wider offset grid
+		const double jr = srcMargin == 0.5 ? 0.2 : 0.4;
+		for (double jx = -jr; jx <= jr + 0.01; jx += 0.2)
+		for (double jy = -jr; jy <= jr + 0.01; jy += 0.2) {
+			const PointF off{jx, jy};
+			auto at = [&](PointI p) { return mod2Pix(centered(p) + off); };
+			auto check = [&](int j, bool on) { return cur.testAt(at(FORMAT_INFO_EDGE_COORDS[j])) == BitMatrixCursorF::Value(on); };
 
-		// check that we see top edge timing pattern modules
-		if (!check(0, true) || !check(1, false) || !check(2, true) || !check(3, false))
-			continue;
+			auto keep = [&](const FormatInformation& fi) {
+				if (fi.hammingDistance > 5)
+					return;
+				auto same = std::find_if(cands.begin(), cands.end(), [&](auto& c) { return c.fi.microVersion == fi.microVersion; });
+				if (same == cands.end())
+					cands.push_back({fi, mod2Pix});
+				else if (fi.hammingDistance < same->fi.hammingDistance)
+					*same = {fi, mod2Pix};
+			};
 
-		uint32_t formatInfoBits = 0;
-		for (auto c : FORMAT_INFO_COORDS)
-			AppendBit(formatInfoBits, cur.blackAt(mod2Pix(centered(c))));
+			// Binary read, gated by the top-edge timing modules reading mostly right (most
+			// but not all: a single blurred module must not veto the rotation - the format
+			// information's hamming distance is the real arbiter between rotations).
+			if (check(0, true) + check(1, false) + check(2, true) + check(3, false) >= 3) {
+				uint32_t formatInfoBits = 0;
+				for (auto c : FORMAT_INFO_COORDS)
+					AppendBit(formatInfoBits, cur.blackAt(at(c)));
+				keep(FormatInformation::DecodeRMQR(formatInfoBits, 0 /*formatInfoBits2*/));
+			}
 
-		auto fi = FormatInformation::DecodeRMQR(formatInfoBits, 0 /*formatInfoBits2*/);
-		if (fi.hammingDistance < bestFI.hammingDistance) {
-			bestFI = fi;
-			bestPT = mod2Pix;
+			// The same read from calibrated luminance, with its own (luminance) gate - a
+			// symbol whose global binarization is mush still gets its grayscale chance.
+			if (fiThr >= 0) {
+				auto darkAt = [&](PointI c) {
+					const PointF p = at(c);
+					const int v = lum->luma(narrow_cast<int>(p.x + 0.5), narrow_cast<int>(p.y + 0.5));
+					return v >= 0 && (lum->inverted() ? v > fiThr : v < fiThr);
+				};
+				if (darkAt(FORMAT_INFO_EDGE_COORDS[0]) + !darkAt(FORMAT_INFO_EDGE_COORDS[1])
+						+ darkAt(FORMAT_INFO_EDGE_COORDS[2]) + !darkAt(FORMAT_INFO_EDGE_COORDS[3]) >= 3) {
+					uint32_t bitsL = 0;
+					for (auto c : FORMAT_INFO_COORDS)
+						AppendBit(bitsL, darkAt(c));
+					keep(FormatInformation::DecodeRMQR(bitsL, 0));
+				}
+			}
 		}
 	}
 
-	if (!bestFI.isValid())
+	if (cands.empty()) {
 		return {};
-
-	const PointI dim = Version::SymbolSize(bestFI.microVersion, Type::rMQR);
+	}
+	std::sort(cands.begin(), cands.end(), [](auto& a, auto& b) { return a.fi.hammingDistance < b.fi.hammingDistance; });
+	if (Size(cands) > 5) // each candidate pays for a full geometry search - keep the plausible few
+		cands.resize(5);
 
 	// TODO: this is a WIP
 	auto intersectQuads = [](QuadrilateralF& a, QuadrilateralF& b) {
@@ -899,22 +1310,444 @@ DetectorResult SampleRMQR(const BitMatrix& image, const ConcentricPattern& fp)
 		return QuadrilateralF{tl, tr, br, bl};
 	};
 
-	if (auto found = LocateAlignmentPattern(image, fp.size / 7, bestPT(dim - PointF(3, 3)))) {
-		log(*found, 2);
-		if (auto spQuad = FindConcentricPatternCorners(image, *found, fp.size / 2, 1)) {
-			auto dest = intersectQuads(*fpQuad, *spQuad);
-			if (dim.y <= 9) {
-				bestPT = PerspectiveTransform({{6.5, 0.5}, {dim.x - 1.5, dim.y - 3.5}, {dim.x - 1.5, dim.y - 1.5}, {6.5, 6.5}},
-											  {fpQuad->topRight(), spQuad->topRight(), spQuad->bottomRight(), fpQuad->bottomRight()});
-			} else {
+	// Attempt one candidate: build the module grid for its version and measure how well
+	// the resulting geometry explains the image (the joint timing-content score of the
+	// fused edges, normalized to its maximum). The confidence lets a near-valid FI read
+	// prove itself against the image and arbitrates between competing versions.
+	auto attempt = [&](const FormatInformation& fi, PerspectiveTransform bestPT) -> std::pair<DetectorResult, double> {
+	const PointI dim = Version::SymbolSize(fi.microVersion, Type::rMQR);
+
+	// Tall rMQR symbols: anchor the far side with the finder sub pattern. The corner
+	// intersection assumes the blended finder quad; with a single-ring quad (blurry
+	// finder) skip the refinement and sample with the transform we have.
+	if (dim.y > 9) {
+		if (auto found = LocateAlignmentPattern(image, fp.size / 7, bestPT(dim - PointF(3, 3))); found && srcMargin == 0.5)
+			if (auto spQuad = FindConcentricPatternCorners(image, *found, fp.size / 2, 1)) {
+				auto dest = intersectQuads(*fpQuad, *spQuad);
 				dest[0] = fp;
 				dest[2] = *found;
 				bestPT = PerspectiveTransform({{3.5, 3.5}, {dim.x - 2.5, 3.5}, {dim.x - 2.5, dim.y - 2.5}, {3.5, dim.y - 2.5}}, dest);
 			}
+		return {SampleGrid(image, dim.x, dim.y, bestPT), 0.5};
+	}
+
+	// Short rMQR symbols (7/9 modules tall): one scored fusion of every available function
+	// pattern. Gather anchor points from the finder, both edge timing patterns and the finder
+	// sub pattern; robustly line-fit each edge (rejecting the discrete jumps of a timing
+	// mis-count while tolerating rotation/skew); rebuild a wholly-lost edge from the other plus
+	// the finder's vertical; then sample tiles between the fitted anchors. Features that aren't
+	// reliable are simply dropped by the fit - one clean path, no separate fallbacks.
+	{
+		const PointF vDown = bestPT(centered(PointI(0, dim.y - 1))) - bestPT(centered(PointI(0, 0)));
+		const double modSize = length(vDown) / std::max(1, dim.y - 1);
+		const PointF stepTop = bestPT(centered(PointI(8, 0))) - bestPT(centered(PointI(7, 0)));
+		const PointF stepBot = bestPT(centered(PointI(8, dim.y - 1))) - bestPT(centered(PointI(7, dim.y - 1)));
+
+		std::vector<std::pair<double, PointF>> topS, botS;
+		for (int c : {0, 6}) { // two reliable finder anchors per edge
+			topS.push_back({double(c), bestPT(centered(PointI(c, 0)))});
+			botS.push_back({double(c), bestPT(centered(PointI(c, dim.y - 1)))});
+		}
+		// Reject a traced anchor that drifted *perpendicular* to the edge (off this symbol's
+		// row, e.g. onto a neighbouring symbol on a steep angle). Drift *along* the edge is
+		// the legitimate correction the trace exists for, so only the perpendicular
+		// component is checked against the finder's prediction.
+		auto perpDev = [](PointF v, PointF dir) {
+			PointF u = (1.0 / length(dir)) * dir;
+			return length(v - dot(v, u) * u);
+		};
+		for (int c : {dim.x / 3, dim.x * 2 / 3, dim.x - 1}) { // both edge timing patterns
+			if (auto t = TraceTimingLine(image, bestPT(centered(PointI(7, 0))), stepTop, c - 7))
+				if (perpDev(*t - bestPT(centered(PointI(c, 0))), stepTop) < 2.5 * modSize) topS.push_back({double(c), *t});
+			if (auto b = TraceTimingLine(image, bestPT(centered(PointI(7, dim.y - 1))), stepBot, c - 7))
+				if (perpDev(*b - bestPT(centered(PointI(c, dim.y - 1))), stepBot) < 2.5 * modSize) botS.push_back({double(c), *b});
+		}
+		// finder sub pattern: an independent far anchor, projected onto the bottom edge row
+		if (auto sp = LocateAlignmentPattern(image, fp.size / 7, bestPT(dim - PointF(3, 3))))
+			if (auto spQuad = FindConcentricPatternCorners(image, *sp, fp.size / 2, 1))
+				botS.push_back({double(dim.x) - 1.5, spQuad->bottomRight() + (1.0 / std::max(1, dim.y - 1)) * vDown});
+
+		EdgeFit ft = fitEdge(topS, 0.7 * modSize), fb = fitEdge(botS, 0.7 * modSize);
+		// Score a candidate edge line against the row's known content: the edge timing
+		// pattern alternates dark/light (dark on even columns) along the entire edge, broken
+		// only by the dark alignment columns and the corner / sub pattern at the right end,
+		// which are skipped. The number of module centers reading back the expected color
+		// measures how well the line explains the image.
+		const Version* version = Version::rMQR(fi.microVersion);
+		auto timingMax = [&](int row) {
+			int n = 0;
+			const int last = row == 0 ? dim.x - 1 : dim.x - 5;
+			for (int c = 8; c < last; ++c)
+				n += !(version && Contains(version->alignmentPatternCenters(), c));
+			return n;
+		};
+		auto timingScore = [&](const EdgeFit& e, int row) {
+			if (!e.ok)
+				return -1;
+			int score = 0;
+			const int last = row == 0 ? dim.x - 1 : dim.x - 5;
+			for (int c = 8; c < last; ++c) {
+				if (version && Contains(version->alignmentPatternCenters(), c))
+					continue;
+				PointF p = double(c) * e.A + e.B + PointF(0.5, 0.5);
+				if (!image.isIn(PointI(p)))
+					return -1;
+				score += image.get(PointI(p)) == (c % 2 == 0);
+			}
+			return score;
+		};
+		// Jointly refine the two edges against the image content. The near ends rest on
+		// reliable finder anchors; the far corner is where extrapolation errors land - a
+		// module mis-count corrupts the fitted length, and when few trace anchors survive
+		// (small, blurry modules) a tiny angular error displaces it by whole modules. Search
+		// a window around the predicted far corner and score each candidate line by how well
+		// BOTH rows then explain their known timing content, the bottom edge running one
+		// symbol height (the finder's vertical) below the top. Scoring the rows together
+		// pins the shared geometry with twice the evidence and rejects decoys such as a
+		// neighbouring symbol's timing row, which cannot satisfy both rows at once. The far
+		// corner is probed at the scale suggested by the trace fit and at the finder's own
+		// module size; ties prefer the smallest correction.
+		// Continuous, grayscale version of the timing-content score: how well separated
+		// are the luminances of the modules a candidate line predicts to be light vs dark?
+		// Unlike counting thresholded pixels this needs no threshold at all, degrades
+		// gracefully under defocus (smaller but still-ranking separation instead of noise),
+		// and has a genuine optimum at the true grid instead of a plateau.
+		auto lumaSep = [&](const EdgeFit& e, int row) -> int {
+			if (!e.ok || !lum)
+				return -1;
+			int sd = 0, nd = 0, sl = 0, nl = 0;
+			const int last = row == 0 ? dim.x - 1 : dim.x - 5;
+			for (int c = 8; c < last; ++c) {
+				if (version && Contains(version->alignmentPatternCenters(), c))
+					continue;
+				PointF p = double(c) * e.A + e.B;
+				const int v = lum->luma(narrow_cast<int>(p.x + 0.5), narrow_cast<int>(p.y + 0.5));
+				if (v < 0)
+					return -1;
+				if (c % 2 == 0)
+					sd += v, ++nd;
+				else
+					sl += v, ++nl;
+			}
+			if (!nd || !nl)
+				return -1;
+			const int sep = sl / nl - sd / nd;
+			return lum->inverted() ? -sep : sep;
+		};
+		const bool useLuma = lum && lum->luma(0, 0) >= 0;
+		auto rowScore = [&](const EdgeFit& e, int row) { return useLuma ? lumaSep(e, row) : timingScore(e, row); };
+		const auto known = RMQRKnownModules(dim, version);
+		// The refinement objective: luminance separation over ALL modules of known color -
+		// finder, both timing rows including the always-dark alignment columns, corner and
+		// sub pattern. The extra anchors are essential: alternation alone is invariant to
+		// even-module shifts along the row, so an impostor alignment can outscore the true
+		// one; the finder columns, alignment columns and sub pattern break that symmetry.
+		auto knownSep = [&](const EdgeFit& t) -> int {
+			int sd = 0, nd = 0, sl = 0, nl = 0;
+			for (const auto& k : known) {
+				const PointF p = double(k.x) * t.A + t.B + (double(k.y) / (dim.y - 1)) * vDown;
+				const int v = lum ? lum->luma(narrow_cast<int>(p.x + 0.5), narrow_cast<int>(p.y + 0.5)) : -1;
+				if (v < 0)
+					return INT_MIN / 2;
+				if (k.dark)
+					sd += v, ++nd;
+				else
+					sl += v, ++nl;
+			}
+			if (!nd || !nl)
+				return INT_MIN / 2;
+			const int sep = sl / nl - sd / nd;
+			return lum->inverted() ? -sep : sep;
+		};
+		auto jointScore = [&](const EdgeFit& t) {
+			if (useLuma)
+				return knownSep(t);
+
+			EdgeFit b = t;
+			b.B = b.B + vDown;
+			return timingScore(t, 0) + timingScore(b, dim.y - 1);
+		};
+		// Edge hypotheses whose content score ties (or nearly ties) the winner: the score
+		// plateaus once every probed timing module reads back correctly, so hypotheses on
+		// the plateau are indistinguishable to it - but not to the error correction, which
+		// sees every module. Kept for a decode-verified rescue below when the primary
+		// configuration fails to decode.
+		std::vector<std::pair<int, EdgeFit>> plateau;
+		if ((ft.ok || fb.ok) && modSize > 1) {
+			// the configuration used if no refinement is adopted: the fitted top edge
+			// (or the fitted bottom shifted up when only that one exists)
+			EdgeFit base = ft;
+			if (!base.ok) { base = fb; base.B = base.B - vDown; }
+			const int baseScore = jointScore(base);
+			int bestScore = -1;
+			double bestD = 0;
+			EdgeFit best;
+			plateau.clear();
+			// seed the search from each fitted edge (expressed as a top line) - whichever
+			// edge was measured well provides the geometry, the joint score arbitrates
+			for (auto [seed, ok] : {std::pair{ft, ft.ok}, std::pair{[&] { EdgeFit b = fb; b.B = b.B - vDown; return b; }(), fb.ok}}) {
+				if (!ok || length(seed.A) < 0.1)
+					continue;
+				const PointF dir = (1 / length(seed.A)) * seed.A;
+				const PointF perp = PointF(-dir.y, dir.x);
+				const double xf = dim.x - 1;
+				if (int sc = jointScore(seed); sc > bestScore) { bestScore = sc; bestD = 0; best = seed; }
+				// far-end grid, coarse: the multi-start descent below does the fine work,
+				// this only has to land each basin. The finder-scale variant of the seed
+				// covers timing mis-counts (fitted step length wrong, direction right).
+				for (PointF A0 : {seed.A, modSize * dir}) {
+					const PointF far0 = xf * A0 + seed.B;
+					const double aMax = tryHarder && fi.hammingDistance <= deepHamming ? 5.0 : 2.5;
+					for (double a = -aMax; a <= aMax; a += 1.0)
+						for (double q = -2.5; q <= 2.5; q += 1.0) {
+							EdgeFit c = seed;
+							c.A = (1 / xf) * (far0 + (a * modSize) * dir + (q * modSize) * perp - seed.B);
+							const int sc = jointScore(c);
+							const double d = std::abs(a) + std::abs(q);
+							if (sc > bestScore || (sc == bestScore && d < bestD)) {
+								bestScore = sc;
+								bestD = d;
+								best = c;
+							}
+							if (sc >= baseScore - (useLuma ? 4 : 1))
+								plateau.push_back({sc, c});
+						}
+					if (std::abs(length(seed.A) - modSize) < 0.1 * modSize)
+						break; // both A0 variants coincide - one pass suffices
+				}
+			}
+			// A fitted line is anchored in measured positions; a scored line is only as
+			// good as the score's resolution, which plateaus once every probed module reads
+			// the expected color. Only adopt the refined line when it beats the fit by a
+			// clear margin, i.e. when the fit is demonstrably wrong - never for plateau
+			// noise that would nudge a good fit off its measurement.
+			// Polish by shrinking-step coordinate descent over BOTH endpoints - the grid
+			// above only moves the far end, but a mis-fit intercept costs modules across
+			// the whole symbol. The objective is non-convex (neighbouring symbols, even-
+			// module impostors), so descend from several independent starts: the grid
+			// winner, the raw fit, and pure finder geometry.
+			auto descend = [&](EdgeFit e) -> std::pair<int, EdgeFit> {
+				if (!e.ok || length(e.A) < 0.1)
+					return {INT_MIN / 2, e};
+				const double xf = dim.x - 1;
+				const PointF dir0 = (1 / length(e.A)) * e.A;
+				const PointF perp0 = PointF(-dir0.y, dir0.x);
+				PointF nearEnd = e.B, farEnd = xf * e.A + e.B;
+				int sc0 = jointScore(e);
+				for (double step : {1.0, 0.4, 0.15, 0.06}) {
+					for (int iter = 0; iter < 8; ++iter) {
+						bool improved = false;
+						for (auto [dn, df] : {std::pair{step, 0.0}, {-step, 0.0}, {0.0, step}, {0.0, -step}, {step, step}, {-step, -step}}) {
+							for (PointF d : {dir0, perp0}) {
+								const PointF n2 = nearEnd + (dn * modSize) * d, f2 = farEnd + (df * modSize) * d;
+								EdgeFit c;
+								c.A = (1 / xf) * (f2 - n2);
+								c.B = n2;
+								c.ok = true;
+								if (const int sc = jointScore(c); sc > sc0) {
+									sc0 = sc;
+									nearEnd = n2;
+									farEnd = f2;
+									improved = true;
+								}
+							}
+						}
+						if (!improved)
+							break;
+					}
+				}
+				EdgeFit r;
+				r.A = (1 / xf) * (farEnd - nearEnd);
+				r.B = nearEnd;
+				r.ok = true;
+				return {sc0, r};
+			};
+			EdgeFit finderSeed;
+			finderSeed.A = length(stepTop) > 0.1 ? (modSize / length(stepTop)) * stepTop : PointF{};
+			finderSeed.B = bestPT(centered(PointI(0, 0)));
+			finderSeed.ok = length(stepTop) > 0.1;
+			// Coarse 4D sweep over both endpoints around pure finder geometry - a bad fit
+			// can be wrong in intercept AND scale at once, which neither the far-end grid
+			// nor a greedy descent from it can recover. The sweep's best cell becomes one
+			// more descent start.
+			EdgeFit coarse;
+			// the sweep is the most expensive stage - only spend it on candidates whose
+			// format info is at least near-plausible (junk finder patterns produce
+			// max-hamming candidates by the dozen)
+			if (finderSeed.ok && tryHarder && fi.hammingDistance <= deepHamming) {
+				const double xf = dim.x - 1;
+				const PointF dir0 = (1 / length(finderSeed.A)) * finderSeed.A;
+				const PointF perp0 = PointF(-dir0.y, dir0.x);
+				const PointF n0 = finderSeed.B, f0 = n0 + xf * finderSeed.A;
+				int cBest = INT_MIN / 2;
+				PointF bestF = f0;
+				// coordinate-decomposed: far-end grid at the seed's near end, then a
+				// near-end grid at the winning far end (the descent that follows recovers
+				// the residual interaction at a fraction of the full 4D cost)
+				for (double fpp = -5.; fpp <= 5.; fpp += 1.)
+					for (double fq = -4.; fq <= 4.; fq += 1.) {
+						const PointF f2 = f0 + (fpp * modSize) * dir0 + (fq * modSize) * perp0;
+						EdgeFit c;
+						c.A = (1 / xf) * (f2 - n0);
+						c.B = n0;
+						c.ok = true;
+						const int sc = jointScore(c);
+						if (sc > cBest) {
+							cBest = sc;
+							bestF = f2;
+							coarse = c;
+						}
+						// sweep cells are hypotheses too: expose them to the
+						// decode-verified rescue below
+						if (sc > baseScore - 4)
+							plateau.push_back({sc, c});
+					}
+				for (double np : {-2., -1., 0., 1., 2.})
+					for (double nq : {-1., 0., 1.}) {
+						const PointF n2 = n0 + (np * modSize) * dir0 + (nq * modSize) * perp0;
+						EdgeFit c;
+						c.A = (1 / xf) * (bestF - n2);
+						c.B = n2;
+						c.ok = true;
+						const int sc = jointScore(c);
+						if (sc > cBest) {
+							cBest = sc;
+							coarse = c;
+						}
+						if (sc > baseScore - 4)
+							plateau.push_back({sc, c});
+					}
+			}
+			for (const EdgeFit& start : {best, base, finderSeed, coarse}) {
+				auto [sc, line] = descend(start);
+				if (sc > bestScore) {
+					bestScore = sc;
+					best = line;
+				}
+				if (sc > baseScore - 4)
+					plateau.push_back({sc, line});
+			}
+			if (bestScore >= baseScore + (useLuma ? std::max(4, baseScore / 8) : 3)) {
+				ft = best;
+				ft.ok = true;
+			} else {
+				ft = base;
+			}
+			if (ft.ok) {
+				// The bottom edge: either the independently fitted one (which can track real
+				// perspective) or the top edge shifted rigidly one symbol height down (which
+				// is what the joint score just validated). Keep the fitted one only if it
+				// agrees with the refined top about the symbol height AND its row content
+				// scores no worse - otherwise sampling would silently deviate from the
+				// configuration the scoring approved.
+				const double xf = dim.x - 1;
+				EdgeFit rigid = ft;
+				rigid.B = rigid.B + vDown;
+				if (!fb.ok || length(((xf * fb.A + fb.B) - (xf * ft.A + ft.B)) - vDown) > modSize
+					|| rowScore(fb, dim.y - 1) < rowScore(rigid, dim.y - 1))
+					fb = rigid;
+			}
+		}
+		if (ft.ok && fb.ok) {
+			auto makeROIs = [&](const EdgeFit& t, const EdgeFit& b) {
+				const std::vector<int> cols = {0, dim.x / 3, dim.x * 2 / 3, dim.x - 1};
+				auto top = [&](int c) { return double(c) * t.A + t.B; };
+				auto bot = [&](int c) { return double(c) * b.A + b.B; };
+				ROIs rois;
+				for (size_t i = 0; i + 1 < cols.size(); ++i) {
+					const double x0 = cols[i] + 0.5, x1 = cols[i + 1] + 0.5, yT = 0.5, yB = dim.y - 0.5;
+					rois.push_back({i == 0 ? 0 : cols[i], i + 2 == cols.size() ? dim.x : cols[i + 1], 0, dim.y,
+									PerspectiveTransform({{x0, yT}, {x1, yT}, {x1, yB}, {x0, yB}},
+														 {top(cols[i]), top(cols[i + 1]), bot(cols[i + 1]), bot(cols[i])})});
+				}
+				return rois;
+			};
+			ROIs rois = makeROIs(ft, fb);
+			// Sample the grid from BOTH the globally binarized image and (when available)
+			// the luminance image with per-symbol calibrated thresholds, and keep whichever
+			// matrix agrees better with the symbol's known modules. Ties keep the binary
+			// sampling. This makes the choice of binarization a scored measurement instead
+			// of a global gamble on threshold-block alignment.
+			auto knownScore = [&](const DetectorResult& g) {
+				if (!g.isValid())
+					return -1;
+				int s = 0;
+				for (const auto& k : known)
+					s += g.bits().get(k.x, k.y) == k.dark;
+				return s;
+			};
+			auto rB = SampleGrid(image, dim.x, dim.y, rois);
+			auto rL = lum && lum->luma(0, 0) >= 0 ? SampleRMQRLuma(*lum, lum->inverted(), dim, rois, known)
+												  : DetectorResult();
+			// the error correction is the one scorer that sees every module: if exactly one
+			// of the two samplings decodes, that one is right, whatever the proxy says
+			const bool okB = rB.isValid() && Decode(rB.bits()).isValid();
+			const bool okL = rL.isValid() && Decode(rL.bits()).isValid();
+			auto r = okB		  ? std::move(rB)
+					 : okL		  ? std::move(rL)
+					 : knownScore(rL) > knownScore(rB) ? std::move(rL)
+												  : std::move(rB);
+			// Plateau rescue: the primary configuration did not decode, but hypotheses the
+			// content score could not separate from it might. Trial-decode them, best score
+			// first - only symbols that failed anyway pay for this.
+			if (!okB && !okL && !plateau.empty() && (tryHarder ? fi.hammingDistance <= deepHamming : fi.isValid())) {
+				std::sort(plateau.begin(), plateau.end(), [](auto& a, auto& b) { return a.first > b.first; });
+				const double xf = dim.x - 1;
+				std::vector<PointF> tried{xf * ft.A + ft.B};
+				for (auto& [sc, line] : plateau) {
+					const PointF farEnd = xf * line.A + line.B;
+					if (FindIf(tried, [&](PointF p) { return distance(p, farEnd) < 0.4 * modSize; }) != tried.end())
+						continue;
+					tried.push_back(farEnd);
+					if (Size(tried) > (tryHarder ? 33 : 8))
+						break;
+					EdgeFit b2 = line;
+					b2.B = b2.B + vDown;
+					ROIs rois2 = makeROIs(line, b2);
+					auto g = SampleGrid(image, dim.x, dim.y, rois2);
+					if (g.isValid() && Decode(g.bits()).isValid())
+						return {std::move(g), 1.0};
+					if (lum && lum->luma(0, 0) >= 0) {
+						auto gLum = SampleRMQRLuma(*lum, lum->inverted(), dim, rois2, known);
+						if (gLum.isValid() && Decode(gLum.bits()).isValid())
+							return {std::move(gLum), 1.0};
+					}
+				}
+			}
+			const double conf =
+				double(timingScore(ft, 0) + timingScore(fb, dim.y - 1)) / std::max(1, timingMax(0) + timingMax(dim.y - 1));
+			if (r.isValid())
+				return {std::move(r), conf};
 		}
 	}
 
-	return SampleGrid(image, dim.x, dim.y, bestPT);
+	return {SampleGrid(image, dim.x, dim.y, bestPT), 0.05};
+	};
+
+	// Try the candidates, best hamming first. A candidate with valid format information is
+	// trusted unless a competing valid one explains the image better; a near-valid read
+	// (hamming just past the BCH limit) is accepted only if the image confirms its
+	// geometry emphatically. The decoder's checksum remains the final arbiter either way.
+	DetectorResult bestGrid;
+	double bestRank = 0;
+	for (auto& [fi, pt] : cands) {
+		auto [grid, conf] = attempt(fi, pt);
+		if (!grid.isValid())
+			continue;
+		// the error correction sees every module - a candidate whose grid decodes is
+		// confirmed outright, whatever the content-score proxies say
+		if (Decode(grid.bits()).isValid())
+			return std::move(grid);
+		if (!fi.isValid() && conf < 0.75)
+			continue;
+		const double rank = (fi.isValid() ? 1.0 : 0.0) + conf;
+		if (rank > bestRank) {
+			bestRank = rank;
+			bestGrid = std::move(grid);
+		}
+	}
+	return bestGrid;
 }
+
 
 } // namespace ZXing::QRCode
