@@ -28,7 +28,7 @@ android {
                 arguments(
                     "-DCMAKE_BUILD_TYPE=RelWithDebInfo",
                     "-DANDROID_ARM_NEON=ON",
-                    "-DZXING_WRITERS=OFF",
+                    "-DZXING_WRITERS=OFF", // "-DANDROID_STL=c++_shared",
                     "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON" // This flag can be removed when NDK 28 is the default version
                 )
             }

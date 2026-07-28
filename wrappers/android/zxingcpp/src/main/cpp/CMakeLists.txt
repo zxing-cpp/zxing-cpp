@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
 project(ZXingCppAndroid)
 
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
+
 set(ZXING_READERS ON)
 set(ZXING_WRITERS OFF)
 
