@@ -34,7 +34,7 @@ public class UnitTest1
 			data.Add((byte)(v == '0' ? 255 : 0));
 
 		var iv = new ImageView(data.ToArray(), data.Count, 1, ImageFormat.Lum);
-		var br = new BarcodeReader() {
+		var br = new BarcodeReader {
 			Binarizer = Binarizer.BoolCast,
 		};
 		var res = br.From(iv);
@@ -46,10 +46,11 @@ public class UnitTest1
 		Assert.Equal(BarcodeFormat.EAN8, res[0].Format);
 		Assert.Equal(expected, res[0].Text);
 		Assert.Equal(Encoding.ASCII.GetBytes(expected), res[0].Bytes);
+		Assert.Equal("]E4", res[0].SymbologyIdentifier);
 		Assert.False(res[0].HasECI);
 		Assert.Equal(ContentType.Text, res[0].ContentType);
 		Assert.Equal(0, res[0].Orientation);
-		Assert.Equal(new PointI() { X = 4, Y = 0 }, res[0].Position.TopLeft);
+		Assert.Equal(new PointI { X = 4, Y = 0 }, res[0].Position.TopLeft);
 		Assert.Equal(1, res[0].LineCount);
 		Assert.False(res[0].IsMirrored);
 		Assert.False(res[0].IsInverted);
@@ -77,8 +78,19 @@ public class UnitTest1
 		Assert.Equal(0, res.Orientation);
 		Assert.False(res.IsMirrored);
 		Assert.False(res.IsInverted);
-		Assert.Equal(new PointI() { X = 0, Y = 0 }, res.Position.TopLeft);
+		Assert.Equal(new PointI { X = 0, Y = 0 }, res.Position.TopLeft);
 		Assert.Equal(ErrorType.None, res.ErrorType);
 		Assert.Equal("", res.ErrorMsg);
+	}
+
+	[Fact]
+	public void Write()
+	{
+		var text = "hello";
+		var res = new Barcode(text, BarcodeFormat.DataMatrix);
+
+		var img = res.ToImage(new WriterOptions { Scale = 2, AddQuietZones = false });
+		Assert.Equal(24, img.Width);
+		Assert.Equal(24, img.Height);
 	}
 }

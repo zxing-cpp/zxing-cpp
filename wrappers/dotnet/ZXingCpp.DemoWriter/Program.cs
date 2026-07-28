@@ -42,7 +42,7 @@ public class Program
 		if (fn.EndsWith(".svg"))
 			File.WriteAllText(fn, bc.ToSVG());
 		else
-			using (SKBitmap skb = bc.ToSKBitmap(new WriterOptions(){Scale = 5})) {
+			using (SKBitmap skb = bc.ToSKBitmap(new WriterOptions { Scale = 5 })) {
 				skb.Encode(new SKFileWStream(args[2]), SKEncodedImageFormat.Png, 100);
 			}
 	}
