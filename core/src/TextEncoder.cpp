@@ -23,6 +23,9 @@ namespace ZXing {
 
 void TextEncoder::GetBytes(const std::string& str, CharacterSet charset, std::string& bytes)
 {
+#if 0
+	bytes = str;
+#else
 	int eci = ToInt(ToECI(charset));
 	const int str_len = narrow_cast<int>(str.length());
 	int eci_len;
@@ -61,6 +64,7 @@ void TextEncoder::GetBytes(const std::string& str, CharacterSet charset, std::st
 #endif // ZXING_USE_ZINT
 
 	bytes.resize(eci_len); // Actual length
+#endif
 }
 
 void TextEncoder::GetBytes(const std::wstring& str, CharacterSet charset, std::string& bytes)
