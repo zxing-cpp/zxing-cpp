@@ -64,6 +64,7 @@ For comparative results with other .NET barcode libraries, see [zxing-bench](htt
 ## Platform support
 
 The NuGet package includes native libraries for x64 and arm64 on Windows, Linux, and macOS.
+Version 0.5.3 includes [zxing-cpp-v3.1.1](https://github.com/zxing-cpp/zxing-cpp/releases#release-v3.1.1)
 
 If you need to override native loading, ensure .NET can find `[lib]ZXing[.dll|.so|.dylib]`
 (for example via `PATH` on Windows or `LD_LIBRARY_PATH` on Linux).

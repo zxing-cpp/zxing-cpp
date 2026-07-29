@@ -1,10 +1,12 @@
 # zxing-cpp
 
-zxing-cpp is a Rust wrapper for the C++ library [zxing-cpp](https://github.com/zxing-cpp/zxing-cpp).
+zxing-cpp is a Rust wrapper for the C++ library [zxing-cpp](https://github.com/zxing-cpp/zxing-cpp), which comes included.
 
 It is an open-source, multi-format linear/matrix barcode image processing library implemented in C++.
 It was originally ported from the Java ZXing Library but has been developed further and now includes
 many improvements in terms of runtime and detection performance.
+
+Version 0.5.3 includes [zxing-cpp-v3.1.1](https://github.com/zxing-cpp/zxing-cpp/releases#release-v3.1.1)
 
 ## Usage
 
@@ -15,7 +17,7 @@ In your Cargo.toml:
 # `bundled` causes cargo to compile and statically link an up to
 # date version of the c++ core library. This is the most convenient
 # and safe way to build the library.
-zxing-cpp = { version = "0.5.2", features = ["bundled", "image"] }
+zxing-cpp = { version = "0.5.3", features = ["bundled", "image"] }
 ```
 
 Simple example reading some barcodes from a jpg file:
