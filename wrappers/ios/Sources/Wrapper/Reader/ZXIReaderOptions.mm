@@ -20,7 +20,9 @@
 
 -(NSArray<NSNumber *> *)formats {
     NSMutableArray<NSNumber *> *formats = [NSMutableArray array];
-    for (auto format : self.cppOpts.formats()) {
+    // the ivar, not the property: the latter returns by value, so the reference
+    // returned by formats() would dangle for the body of the loop
+    for (auto format : _cppOpts.formats()) {
         ZXIFormat mapped = ZXIFormatFromBarcodeFormat(format);
         if (mapped != ZXIFormat::NONE) {
             [formats addObject:[NSNumber numberWithInteger:mapped]];
