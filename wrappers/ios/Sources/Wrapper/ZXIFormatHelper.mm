@@ -76,12 +76,16 @@ ZXIFormat ZXIFormatFromBarcodeFormat(ZXing::BarcodeFormat format) {
         case ZXing::BarcodeFormat::Codabar:
             return ZXIFormat::CODABAR;
         case ZXing::BarcodeFormat::Code39:
+        case ZXing::BarcodeFormat::Code39Ext:
+        case ZXing::BarcodeFormat::Code32:
+        case ZXing::BarcodeFormat::PZN:
             return ZXIFormat::CODE_39;
         case ZXing::BarcodeFormat::Code93:
             return ZXIFormat::CODE_93;
         case ZXing::BarcodeFormat::Code128:
             return ZXIFormat::CODE_128;
         case ZXing::BarcodeFormat::DataBar:
+        case ZXing::BarcodeFormat::DataBarOmni:
             return ZXIFormat::DATA_BAR;
         case ZXing::BarcodeFormat::DataBarExp:
             return ZXIFormat::DATA_BAR_EXPANDED;
