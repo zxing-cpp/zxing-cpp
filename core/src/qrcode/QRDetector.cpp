@@ -13,7 +13,7 @@
 #include "BitMatrixCursor.h"
 #include "ConcentricFinder.h"
 #include "GridSampler.h"
-#include "LogMatrix.h"
+#include "Log.h"
 #include "Matrix.h"
 #include "Pattern.h"
 #include "QRFormatInformation.h"
@@ -32,8 +32,6 @@
 
 #ifdef PRINT_DEBUG
 #include "BitMatrixIO.h"
-#else
-#define printf(...){}
 #endif
 
 namespace ZXing::QRCode {
@@ -99,7 +97,7 @@ std::vector<ConcentricPattern> FindFinderPatterns(const BitMatrix& image, bool t
 		}
 	}
 
-	printf("FPs: FindPattern: %d, LocateConcentric: %d\n", N, Size(res));
+	log_l("FPs: FindPattern: %d, LocateConcentric: %d", N, Size(res));
 
 	return res;
 }
@@ -151,7 +149,7 @@ FinderPatternSets GenerateFinderPatternSets(FinderPatterns& patterns)
 	int binSize = std::max(32, medianSize * 3); // 3 for minimum symbol size of 21 modules
 	Matrix<std::vector<int>> bins(std::ceil((MX->x - mX->x + 1) / binSize), std::ceil((MY->y - mY->y + 1) / binSize));
 
-	printf("medianSize=%d binSize=%d bins=(%dx%d) ", medianSize, binSize, bins.width(), bins.height());
+	log_t("medianSize=%d binSize=%d bins=(%dx%d) ", medianSize, binSize, bins.width(), bins.height());
 
 	auto bin = [&](PointF p) {
 		return PointI(std::clamp(int((p.x - mX->x) / binSize), 0, bins.width() - 1),
@@ -301,8 +299,8 @@ FinderPatternSets GenerateFinderPatternSets(FinderPatterns& patterns)
 		}
 	}
 
-	printf("rejectSize=%d nearFPs=%d candidates=%d rejectLeg=%d rejectMod=%d rejectAng=%d accepted=%d\n", stats.rejSize,
-		   stats.nearFPs, stats.candidates, stats.rejLegRatio, stats.rejModCount, stats.rejAngle, stats.accepted);
+	log_l("rejectSize=%d nearFPs=%d candidates=%d rejectLeg=%d rejectMod=%d rejectAng=%d accepted=%d",
+		  stats.rejSize, stats.nearFPs, stats.candidates, stats.rejLegRatio, stats.rejModCount, stats.rejAngle, stats.accepted);
 
 	// convert from multimap to vector
 	FinderPatternSets res;
@@ -310,7 +308,7 @@ FinderPatternSets GenerateFinderPatternSets(FinderPatterns& patterns)
 	for (auto& [d, s] : sets)
 		res.push_back(s);
 
-	printf("FPSets: %d\n", Size(res));
+	log_l("FPSets: %d", Size(res));
 
 	return res;
 }
@@ -516,7 +514,7 @@ DetectorResults SampleQR(const BitMatrix& image, const FinderPatternSet& fp)
 		if (!version || std::min(std::abs(version->dimension() - top.dim), std::abs(version->dimension() - left.dim)) > 8)
 			co_return;
 		if (version->dimension() != dimension) {
-			printf("update dimension: %d -> %d\n", dimension, version->dimension());
+			log_l("update dimension: %d -> %d", dimension, version->dimension());
 			dimension = version->dimension();
 			mod2Pix = Mod2Pix(dimension, brOffset, {fp.tl, fp.tr, br, fp.bl});
 		}
@@ -583,7 +581,7 @@ DetectorResults SampleQR(const BitMatrix& image, const FinderPatternSet& fp)
 					auto guessed = intersect(RegressionLine(hori[0], hori[1]), RegressionLine(verti[0], verti[1]));
 					auto found = LocateAlignmentPattern(image, moduleSize, guessed);
 					// search again near that intersection and if the search fails, use the intersection
-					if (!found) printf("location guessed at %dx%d\n", x, y);
+					if (!found) log_l("location guessed at %dx%d", x, y);
 					apP.set(x, y, found ? *found : guessed);
 				}
 			}

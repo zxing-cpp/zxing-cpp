@@ -162,7 +162,7 @@ if (ZXING_READERS)
         src/GlobalHistogramBinarizer.cpp
         src/GridSampler.h
         src/GridSampler.cpp
-        src/LogMatrix.h
+        src/Log.h
         src/LocalGrid.h
         src/LocalGrid.cpp
         src/HybridBinarizer.h

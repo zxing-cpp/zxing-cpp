@@ -14,7 +14,7 @@
 #include "ConcentricFinder.h"
 #include "GridSampler.h"
 #include "LocalGrid.h"
-#include "LogMatrix.h"
+#include "Log.h"
 #include "Pattern.h"
 #include "ReedSolomon.h"
 #include "ZXAlgorithms.h"
@@ -24,10 +24,6 @@
 #include <optional>
 #include <ranges>
 #include <vector>
-
-#ifndef PRINT_DEBUG
-#define printf(...){}
-#endif
 
 namespace ZXing::Aztec {
 
@@ -243,9 +239,7 @@ static std::vector<ConcentricPattern> FindFinderPatterns(const BitMatrix& image,
 	}
 #endif
 
-#ifdef PRINT_DEBUG
-	printf("\n# checked centers: %d, # found centers: %d\n", N, Size(res));
-#endif
+	log_l("\n# checked centers: %d, # found centers: %d", N, Size(res));
 	return res;
 }
 
@@ -458,7 +452,7 @@ DetectorResults Detect(const BitMatrix& image, bool isPure, bool tryHarder, int 
 
 			auto apM = std::vector<int>(); // alignment pattern positions in modules
 			for (int i = firstTimingPattern; i < dim; i += 16)
-				apM.push_back(i);//, printf("apM: %d\n", i);
+				apM.push_back(i);//, log_l("apM: %d", i);
 			auto apP = Matrix<std::optional<PointF>>(Size(apM), Size(apM)); // found/guessed alignment pattern positions in pixels
 			apP.set(Size(apM) / 2, Size(apM) / 2, mod2Pix(center)); // center point
 
@@ -468,7 +462,7 @@ DetectorResults Detect(const BitMatrix& image, bool isPure, bool tryHarder, int 
 				QuadrilateralF dstQuad;
 				for (int i = 0; i < 4; ++i) {
 					auto pi = (R - r) * idxs[i] + Size(apM) / 2 * PointI{1, 1};
-					printf("\nlocate %dx%d\n", pi.x, pi.y);
+					log_l("\nlocate %dx%d", pi.x, pi.y);
 					apP.set(pi.x, pi.y, LocalGrid(image, mod2Pix, PointI(srcQuad[i]), {dim, dim}).findTimingPatternCross(true, 4));
 					dstQuad[i] = apP(pi.x, pi.y).value_or(mod2Pix(srcQuad[i]));
 					log(dstQuad[i], 2);
@@ -481,7 +475,7 @@ DetectorResults Detect(const BitMatrix& image, bool isPure, bool tryHarder, int 
 			for (int y = 0; y < Size(apM); ++y)
 				for (int x = 0; x < Size(apM); ++x) {
 					if (!apP(x, y)) {
-						printf("\nlocate %dx%d\n", x, y);
+						log_l("\nlocate %dx%d", x, y);
 						apP.set(x, y, LocalGrid(image, mod2Pix, {apM[x], apM[y]}, {dim, dim}).findTimingPatternCross(true, 4));
 					}
 				}

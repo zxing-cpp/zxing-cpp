@@ -13,7 +13,7 @@
 #include "DetectorResult.h"
 #include "DMVersion.h"
 #include "GridSampler.h"
-#include "LogMatrix.h"
+#include "Log.h"
 #include "LocalGrid.h"
 #include "Point.h"
 #include "RegressionLine.h"
@@ -30,16 +30,6 @@
 #include <map>
 #include <utility>
 #include <vector>
-
-#ifndef PRINT_DEBUG
-#define printf(...){}
-#define printv(...){}
-#else
-#define printv(fmt, vec) \
-for (auto v : vec) \
-	printf(fmt, v); \
-printf("\n");
-#endif
 
 namespace ZXing::DataMatrix {
 
@@ -467,11 +457,10 @@ public:
 		auto [iMin, iMax] = std::minmax_element(modSizes.begin() + 1, modSizes.end());
 		auto meanModSize = average(modSizes, [](double dist){ return dist > 0; });
 
-		printf("unit pixel dist: %.1f\n", unitPixelDist);
-		printf("lineLength: %.1f, meanModSize: %.1f (min: %.1f, max: %.1f), gaps: %lu\n", lineLength, meanModSize, *iMin, *iMax,
-			   modSizes.size());
-		printf("modSizes: ");
-		printv("%.1f ", modSizes);
+		log_l("unit pixel dist: %.1f", unitPixelDist);
+		log_l("lineLength: %.1f, meanModSize: %.1f (min: %.1f, max: %.1f), gaps: %lu", lineLength, meanModSize, *iMin, *iMax,
+		    modSizes.size());
+		log_r("modSizes: ", "%.1f ", modSizes);
 
 		if (*iMax > 2 * *iMin) {
 			for (int i = 1; i < Size(modSizes) - 2; ++i) {
@@ -480,12 +469,11 @@ public:
 				else if (modSizes[i] > meanModSize * 1.6)
 					modSizes[i] = 0;
 			}
-			printf("filtered: ");
-			printv("%.1f ", modSizes);
+			log_r("filtered: ", "%.1f ", modSizes);
 
 			meanModSize = average(modSizes, [](double dist) { return dist > 0; });
 		}
-		printf("post filter meanModSize: %.1f\n", meanModSize);
+		log_l("post filter meanModSize: %.1f", meanModSize);
 
 		return lineLength / meanModSize;
 	}
@@ -699,7 +687,7 @@ public:
 		corner = p;
 		std::swap(d, dir);
 		traceStep(-1 * dir, 2, false);
-		printf("turn: %.0f x %.0f -> %.2f, %.2f\n", p.x, p.y, d.x, d.y);
+		log_l("turn: %.0f x %.0f -> %.2f, %.2f", p.x, p.y, d.x, d.y);
 
 		return isIn(corner) && isIn(p);
 	}
@@ -779,8 +767,7 @@ static ModuleCenterLUT BuildModuleCenterLUT(const std::vector<PointF>& points, P
 	for (int i = 1; i < Size(gapMids); ++i)
 		modIdx[i] = modIdx[i - 1] + std::max(1, static_cast<int>(std::round((gapMids[i] - gapMids[i - 1]) / (2 * modSize)))) * 2;
 
-	printf("mIdx: ");
-	printv("%d ", modIdx);
+	log_r("mIdx: ", "%d ", modIdx);
 
 	struct Knot
 	{
@@ -869,10 +856,10 @@ static ModuleCenterLUT BuildModuleCenterLUT(const std::vector<PointF>& points, P
 	}
 #endif
 
-	printf("corr: ");
+	log_t("corr: ");
 	for (int i = 0; i < numModules; ++i)
-		printf("%.2f ", centerLUT[i] - (i + 0.5));
-	printf("\n");
+		log_t("%.2f ", centerLUT[i] - (i + 0.5));
+	log_l();
 
 	return centerLUT;
 }
@@ -894,9 +881,7 @@ static DetectorResult SampleGridCorrected(const BitMatrix& image, int width, int
 			auto p = mod2Pix(PointF{topCenterLUT(x), my});
 			if (!image.isIn(p))
 				return {};
-#ifdef PRINT_DEBUG
 			log(p, 3);
-#endif
 			if (image.get(p))
 				res.set(x, y);
 		}
@@ -923,7 +908,7 @@ static DetectorResults Scan(EdgeTracer& startTracer, std::array<DMRegressionLine
 			for (auto& l : lines)
 				log(l.points());
 		});
-# define CHECK(A) if (!(A)) { printf("broke at %d\n", __LINE__); continue; }
+# define CHECK(A) if (!(A)) { log_l("broke at %d", __LINE__); continue; }
 #else
 # define CHECK(A) if(!(A)) continue
 #endif
@@ -987,8 +972,8 @@ static DetectorResults Scan(EdgeTracer& startTracer, std::array<DMRegressionLine
 		// continue top row right until we cross the right line
 		CHECK(tlTracer.traceGaps(tlTracer.right(), lineT, maxStepSize, lineR));
 
-		printf("L: %.1f, %.1f ^ %.1f, %.1f > %.1f, %.1f (%d : %d : %d : %d)\n", bl.x, bl.y,
-			   tl.x - bl.x, tl.y - bl.y, br.x - bl.x, br.y - bl.y, (int)lenL, (int)lenB, (int)lenT, (int)lenR);
+		log_l("L: %.1f, %.1f ^ %.1f, %.1f > %.1f, %.1f (%d : %d : %d : %d)",
+			  bl.x, bl.y, tl.x - bl.x, tl.y - bl.y, br.x - bl.x, br.y - bl.y, (int)lenL, (int)lenB, (int)lenT, (int)lenR);
 
 		for (auto* l : {&lineL, &lineB, &lineT, &lineR})
 			l->evaluate(1.0);
@@ -1012,9 +997,9 @@ static DetectorResults Scan(EdgeTracer& startTracer, std::array<DMRegressionLine
 		dimT *= 2;
 		dimR *= 2;
 
-		printf("L: %.1f, %.1f ^ %.1f, %.1f > %.1f, %.1f ^> %.1f, %.1f\n", bl.x, bl.y,
-			   tl.x - bl.x, tl.y - bl.y, br.x - bl.x, br.y - bl.y, tr.x, tr.y);
-		printf("dim: %d x %d (%.2f, %.2f)\n", dimT, dimR, fracT, fracR);
+		log_l("L: %.1f, %.1f ^ %.1f, %.1f > %.1f, %.1f ^> %.1f, %.1f",
+			  bl.x, bl.y, tl.x - bl.x, tl.y - bl.y, br.x - bl.x, br.y - bl.y, tr.x, tr.y);
+		log_l("dim: %d x %d (%.2f, %.2f)", dimT, dimR, fracT, fracR);
 
 		auto* version = VersionForDimensions(dimR, dimT);
 

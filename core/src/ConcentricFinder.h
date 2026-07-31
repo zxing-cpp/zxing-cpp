@@ -6,6 +6,7 @@
 #pragma once
 
 #include "BitMatrixCursor.h"
+#include "Log.h"
 #include "Pattern.h"
 #include "Quadrilateral.h"
 #include "ZXAlgorithms.h"
@@ -143,7 +144,7 @@ std::optional<ConcentricPattern> LocateConcentricPattern(const BitMatrix& image,
 	static_assert(pattern.sum() == 7, "see FinetuneConcentricPatternCenter()");
 	auto newCenter = FinetuneConcentricPatternCenter(image, PointF(cur.p), width, pattern.size());
 	if (newCenter) {
-		// printf("LocateConcentricPattern: center=(%5.2f,%5.2f), width=%3d, spread=%d, size=%d, newCenter=(%5.2f,%5.2f)\n",
+		// log_l("LocateConcentricPattern: center=(%5.2f,%5.2f), width=%3d, spread=%d, size=%d, newCenter=(%5.2f,%5.2f)",
 		// 	center.x*5, center.y*5, width, (maxSpread + minSpread) / 2, newCenter->size, newCenter->x*5, newCenter->y*5);
 		if (!newCenter->size)
 			newCenter->size = (maxSpread + minSpread) / 2;

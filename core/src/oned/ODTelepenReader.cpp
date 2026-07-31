@@ -6,15 +6,12 @@
 #include "ODTelepenReader.h"
 
 #include "BarcodeData.h"
+#include "Log.h"
 #include "SymbologyIdentifier.h"
 #include "ZXAlgorithms.h"
 
 #include <cstdint>
 #include <ranges>
-
-#ifndef PRINT_DEBUG
-#define printf(...){}
-#endif
 
 // This code is based on the AIM Europe USS Telepen (1991) specification and ISO/IEC 15424:2025.
 // See also https://advanova.co.uk/wp-content/uploads/2022/05/Barcode-Symbology-information-and-History.pdf
@@ -132,9 +129,9 @@ BarcodeData TelepenReader::decodePattern(int rowNumber, PatternView& next, std::
 		ba.reverse();
 		raw += ToInt<char>(ba) & 0x7f; // drop the parity bit
 
-		printf("line: %d, threshold: %2d, %2d, wSum: %2d, %2d, wNum: %d, %d, nSum: %2d, %2d, nNum: %d, %d -> %c ends at: %d\n", rowNumber,
-			   threshold[0], threshold[1], wSum[0], wSum[1], wNum[0], wNum[1], nSum[0], nSum[1], nNum[0], nNum[1],
-			   raw.back(), next.pixelsInFront());
+		log_l("line: %d, threshold: %2d, %2d, wSum: %2d, %2d, wNum: %d, %d, nSum: %2d, %2d, nNum: %d, %d -> %c ends at: %d", rowNumber,
+			  threshold[0], threshold[1], wSum[0], wSum[1], wNum[0], wNum[1], nSum[0], nSum[1], nNum[0], nNum[1], raw.back(),
+			  next.pixelsInFront());
 
 		for (int i = 0; i < 2; ++i)
 			threshold[i] = wNum[i] && nNum[i] ? ((wSum[i] + wNum[i] / 2) / wNum[i] + (nSum[i] + nNum[i] / 2) / nNum[i]) / 2
@@ -191,7 +188,7 @@ BarcodeData TelepenReader::decodePattern(int rowNumber, PatternView& next, std::
 	int xStop = next.pixelsTillEnd();
 	SymbologyIdentifier symbologyIdentifier = {'B', modifier};
 	auto format = modifier == '1' ? BarcodeFormat::TelepenNumeric : BarcodeFormat::TelepenAlpha;
-	printf("line: %d, raw: %s, txt: %s, checksum: %d\n", rowNumber, raw.c_str(), txt.c_str(), checkSum);
+	log_l("line: %d, raw: %s, txt: %s, checksum: %d", rowNumber, raw.c_str(), txt.c_str(), checkSum);
 
 	return LinearBarcode(format, txt, rowNumber, xStart, xStop, symbologyIdentifier, error);
 }

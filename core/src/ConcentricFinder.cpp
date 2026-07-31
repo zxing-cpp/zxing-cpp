@@ -5,7 +5,7 @@
 
 #include "ConcentricFinder.h"
 
-#include "LogMatrix.h"
+#include "Log.h"
 #include "RegressionLine.h"
 #include "ZXAlgorithms.h"
 
@@ -120,9 +120,11 @@ std::optional<ConcentricPattern> CenterOfRing(const BitMatrix& image, PointI cen
 	double centerMove = distance(meanP, PointF(center)) / width; // normalized distance between estimated and calculated center
 #ifdef PRINT_DEBUG
 	auto variation = std::sqrt(sumR2 / nP - meanR * meanR) / meanR;
-	printf("CenterOfRing: center=(%4d,%4d), width=%3d, nth=%d, reqCircle=%d, n=%3d, meanR=%5.2f, var=%5.2f, C=%5.2f, mR=%4.1f, MR=%4.1f, "
-		   "neighbourMask=%x -> res=(%5.1f,%5.1f), delta=%3.1f\n",
-		   center.x*5, center.y*5, width, nth, requireCircle, nP, meanR, variation, C, mR, MR, neighbourMask, meanP.x*5, meanP.y*5, centerMove);
+	log_l(
+		"CenterOfRing: center=(%4d,%4d), width=%3d, nth=%d, reqCircle=%d, n=%3d, meanR=%5.2f, var=%5.2f, C=%5.2f, mR=%4.1f, MR=%4.1f, "
+		"neighbourMask=%x -> res=(%5.1f,%5.1f), delta=%3.1f",
+		center.x * 5, center.y * 5, width, nth, requireCircle, nP, meanR, variation, C, mR, MR, neighbourMask, meanP.x * 5,
+		meanP.y * 5, centerMove);
 #endif
 	// C > 12 means that the edge is very irregular, centerMove > 0.5 means the center moved more than half the estimated width of the ring
 	if (requireCircle && (C > 12 || centerMove > 0.5))
@@ -227,10 +229,8 @@ static std::optional<QuadrilateralF> FitQuadrilateralToPoints(PointF center, std
 		for (const PointF* p = beg[i]; p != end[i]; ++p) {
 			auto len = std::distance(beg[i], end[i]);
 			if (len > 3 && lines[i].distance(*p) > std::max(1., std::min(8., len / 8.))) {
-#ifdef PRINT_DEBUG
-				printf("FitQuadrilateral failed: center=(%3.f,%3.f), i=%d, dist=%.2f > %.2f @ (%3.f,%3.f)\n", center.x, center.y, i,
-					   lines[i].distance(*p), std::distance(beg[i], end[i]) / 8., p->x, p->y);
-#endif
+				log_l("FitQuadrilateral failed: center=(%3.f,%3.f), i=%d, dist=%.2f > %.2f @ (%3.f,%3.f)", center.x, center.y, i,
+					  lines[i].distance(*p), std::distance(beg[i], end[i]) / 8., p->x, p->y);
 				return {};
 			}
 		}

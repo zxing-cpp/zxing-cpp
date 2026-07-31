@@ -14,6 +14,7 @@
 #include "DMDataBlock.h"
 #include "DMVersion.h"
 #include "DecoderResult.h"
+#include "Log.h"
 #include "ReedSolomon.h"
 #include "ZXAlgorithms.h"
 #include "ZXTestSupport.h"
@@ -416,10 +417,9 @@ retry:
 			resultBytes[i * dataBlocksCount + j] = codewords[i];
 		}
 	}
-#ifdef PRINT_DEBUG
+
 	if (fix259)
-		printf("-> needed retry with fix259 for 144x144 symbol\n");
-#endif
+		log_l("-> needed retry with fix259 for 144x144 symbol");
 
 	// Decode the contents of that stream of bytes
 	return DecodedBitStreamParser::Decode(std::move(resultBytes), version->isDMRE())

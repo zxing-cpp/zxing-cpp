@@ -7,14 +7,11 @@
 
 #include "Point.h"
 #include "ZXAlgorithms.h"
+#include "Log.h"
 
 #include <algorithm>
 #include <cmath>
 #include <vector>
-
-#ifdef PRINT_DEBUG
-#include <cstdio>
-#endif
 
 namespace ZXing {
 
@@ -120,10 +117,7 @@ public:
 					return false;
 				if (old_points_size == points.size())
 					break;
-#ifdef PRINT_DEBUG
-				printf("removed %zu points -> %zu remaining\n", old_points_size - points.size(), points.size());
-				fflush(stdout);
-#endif
+				log_l("removed %zu points -> %zu remaining", old_points_size - points.size(), points.size());
 				ret = evaluate(points);
 			}
 

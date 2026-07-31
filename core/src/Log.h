@@ -10,6 +10,7 @@
 #include "Point.h"
 
 #include <cassert>
+#include <cstdarg>
 #include <cstdint>
 #include <cstdio>
 #include <string>
@@ -96,9 +97,41 @@ public:
 	~LogMatrixWriter() { log.write(fn.c_str()); }
 };
 
+/// @brief Logs text to stdout, no newline
+inline void log_t(const char* fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	std::vfprintf(stdout, fmt, args);
+	va_end(args);
+}
+
+/// @brief Logs text to stdout with a newline at the end.
+inline void log_l(const char* fmt = "", ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	std::vfprintf(stdout, fmt, args);
+	va_end(args);
+	std::fputc('\n', stdout);
+}
+
+/// @brief Logs a range of values to stdout with a prefix and postfix string.
+template<typename Range>
+void log_r(const char* prefix, const char* fmt, const Range& values, const char* postfix = "\n")
+{
+	log_t("%s", prefix);
+	for (const auto& v : values)
+		log_t(fmt, v);
+	log_t("%s", postfix);
+}
+
 #else
 
 template<typename T> void log(PointT<T>, int = 0) {}
+inline void log_t(const char*, ...) {}
+inline void log_l(const char* = "", ...) {}
+template<typename Range> void log_r(const char*, const char*, const Range&, const char* = "\n") {}
 
 #endif
 

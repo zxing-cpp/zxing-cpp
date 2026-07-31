@@ -9,6 +9,7 @@
 #include "BarcodeData.h"
 #include "BitMatrix.h"
 #include "CreateBarcode.h"
+#include "Log.h"
 #include "Version.h"
 
 #include <sstream>
@@ -160,9 +161,7 @@ Image WriteBarcodeToImage(const Barcode& barcode, [[maybe_unused]] const WriterO
 
 	CHECK(ZBarcode_Buffer(zint, options.rotate()));
 
-#ifdef PRINT_DEBUG
-	printf("write symbol with size: %dx%d\n", zint->bitmap_width, zint->bitmap_height);
-#endif
+	log_l("write symbol with size: %dx%d", zint->bitmap_width, zint->bitmap_height);
 	auto iv = Image(zint->bitmap_width, zint->bitmap_height);
 	auto* src = zint->bitmap;
 	auto* dst = const_cast<uint8_t*>(iv.data());

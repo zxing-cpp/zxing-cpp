@@ -6,9 +6,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "GridSampler.h"
+#include "Log.h"
 
 #ifdef PRINT_DEBUG
-#include "LogMatrix.h"
 #include "BitMatrixIO.h"
 #endif
 
@@ -69,10 +69,8 @@ DetectorResult SampleGrid(const BitMatrix& image, int width, int height, const R
 			}
 	}
 
-#ifdef PRINT_DEBUG
-	printf("width: %d, height: %d\n", width, height);
-//	printf("%s", ToString(res).c_str());
-#endif
+	log_l("width: %d, height: %d", width, height);
+//	log_l("%s", ToString(res).c_str());
 
 	auto projectCorner = [&](PointI p) {
 		for (auto&& [x0, x1, y0, y1, mod2Pix] : rois)
@@ -96,13 +94,9 @@ DetectorResult SampleGrid(const BitMatrix& image, int width, int height, const P
 	for (int y = 0; y <= H; ++y)
 		for (int x = 0; x <= W; ++x) {
 			if (apP(x, y)) {
-#ifdef PRINT_DEBUG
 				log(*apP(x, y), 2);
-#endif
 			} else {
-#ifdef PRINT_DEBUG
-				printf("locate failed at %dx%d\n", x, y);
-#endif
+				log_l("locate failed at %dx%d", x, y);
 				// project the alignment pattern at module coordinates x/y to pixel coordinate based on current mod2Pix
 				apP.set(x, y, mod2Pix(centered(PointI(apMX[x], apMY[y]))));
 			}

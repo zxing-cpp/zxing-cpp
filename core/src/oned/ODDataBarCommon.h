@@ -6,6 +6,7 @@
 #pragma once
 
 #include "ODRowReader.h"
+#include "Log.h"
 #include "Range.h"
 #include "Pattern.h"
 
@@ -35,7 +36,7 @@ inline bool IsFinder(int a, int b, int c, int d, int e)
 			 (a < 2 + 4 * e) &&
 			 (4 * a > n);
 #if defined(PRINT_DEBUG) && 0
-	printf("[");
+	log_t("[");
 	for (bool v :
 		 {w + 5 > 9 * n,
 		  w - 5 < 13 * n,
@@ -43,8 +44,8 @@ inline bool IsFinder(int a, int b, int c, int d, int e)
 //		  c < 5 + 10 * e,
 		  a < 2 + 4 * e,
 			4 * a > n})
-		printf(" %d", v);
-	printf("]"); fflush(stdout);
+		log_t(" %d", v);
+	log_t("]");
 #endif
 	return x;
 };
@@ -71,7 +72,7 @@ inline float ModSizeFinder(const PatternView& view)
 
 inline bool IsGuard(int a, int b)
 {
-	//	printf(" (%d, %d)", a, b);
+	// log_t(" (%d, %d)", a, b);
 	return a > b * 3 / 4 - 2 && a < b * 5 / 4 + 2;
 }
 

@@ -5,7 +5,7 @@
 
 #include "BitMatrixCursor.h"
 #include "BitMatrix.h"
-#include "LogMatrix.h"
+#include "Log.h"
 #include "Point.h"
 #include "PerspectiveTransform.h"
 

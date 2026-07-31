@@ -5,7 +5,7 @@
 
 #include "PDF417.h"
 
-#include "LogMatrix.h"
+#include "Log.h"
 #include "PDFCodewordDecoder.h"
 
 namespace ZXing::PDF417 {
@@ -64,7 +64,7 @@ Codeword ReadCodeword(BitMatrixModuleCursorF& cur, int expectedCluster)
 	}
 	if (cw)
 		cur.ms = dot(cur.p - start.p, mainDirection(cur.d)) / 17.f;
-	printf("%3d/%d, ms: %.1f, @ %5.1fx%5.1f | ", cw.codeword, cw.cluster, cur.ms, cur.p.x, cur.p.y);
+	log_t("%3d/%d, ms: %.1f, @ %5.1fx%5.1f | ", cw.codeword, cw.cluster, cur.ms, cur.p.x, cur.p.y);
 
 	return cw;
 }

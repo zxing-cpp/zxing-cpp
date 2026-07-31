@@ -10,7 +10,7 @@
 #include "BitMatrixCursor.h"
 #include "ReaderOptions.h"
 #include "DecoderResult.h"
-#include "LogMatrix.h"
+#include "Log.h"
 #include "PDF417.h"
 #include "PDFCodewordDecoder.h"
 #include "PDFScanningDecoder.h"
@@ -323,12 +323,12 @@ static Clusters FindCandidates(const BitMatrix& image, bool tryHarder, bool reve
 						// with different sizes horizontally next to each other
 						y = std::max(0, y - skip); // the for loop will add `skip` back, so this effectively y - skip + rowHeight
 						skip = rowHeight;
-						printf("decreasing skip to %d at x=%3d, y=%3d, p.width=%d\n", skip, p.x, y, p.width);
+						log_l("decreasing skip to %d at x=%3d, y=%3d, p.width=%d", skip, p.x, y, p.width);
 						break;
 					} else if (rowHeight > 2 * skip
 							   && std::ranges::all_of(res, [&](const Cluster& c) { return p.y - c.back().y > 2 * skip; })) {
 						skip = std::min(8, rowHeight); // reset skip to default when starting a new cluster
-						printf("increasing skip to %d at x=%3d, y=%3d, p.width=%d\n", skip, p.x, y, p.width);
+						log_l("increasing skip to %d at x=%3d, y=%3d, p.width=%d", skip, p.x, y, p.width);
 					}
 				}
 #endif
@@ -396,11 +396,11 @@ static Clusters FindCandidates(const BitMatrix& image, bool tryHarder, bool reve
 			}
 
 #ifdef PRINT_DEBUG
-	printf("\n# found LRAPs: %d\n", Size(res));
+	log_l("\n# found LRAPs: %d", Size(res));
 	for (const auto& cluster : res) {
 		for (auto lrap : cluster)
-			printf("%d @ %dx%d (width: %d)\n", lrap.idx, lrap.x, lrap.y, lrap.width);
-		printf("\n");
+			log_l("%d @ %dx%d (width: %d)", lrap.idx, lrap.x, lrap.y, lrap.width);
+		log_l();
 	}
 #endif
 	return res;
@@ -408,7 +408,7 @@ static Clusters FindCandidates(const BitMatrix& image, bool tryHarder, bool reve
 
 static int DetermineNumCols(BitMatrixModuleCursorF& start, const Cluster& lraps)
 {
-	printf("right: %s, ms: %.1f\n", ToString(start.d).c_str(), start.ms);
+	log_l("right: %s, ms: %.1f", ToString(start.d).c_str(), start.ms);
 	std::array<int, 16> colHist = {}, offsets = {};
 	for (int s = 0; s < 2 && std::ranges::max(colHist) < 3; ++s)
 		for (auto& p : lraps) {
@@ -420,7 +420,7 @@ static int DetermineNumCols(BitMatrixModuleCursorF& start, const Cluster& lraps)
 			if (!pair.first || !SkipCodeword(cur))
 				continue;
 
-			printf("\nLRAP: %2d @ %5.1fx%5.1f ", pair.first, cur.p.x, cur.p.y);
+			log_t("\nLRAP: %2d @ %5.1fx%5.1f ", pair.first, cur.p.x, cur.p.y);
 
 			auto checkRAP = [&](RAP rap, int colI) {
 				--colI;
@@ -429,7 +429,7 @@ static int DetermineNumCols(BitMatrixModuleCursorF& start, const Cluster& lraps)
 					colHist[colI * 4 + pair.family / 8] += 1;
 					offsets[colI * 4 + pair.family / 8] += pair.offset;
 				}
-				printf("%2d/%2d: %2d %s ", pair.first, pair.second, pair.offset, pair.isValid() ? "<  " : "   ");
+				log_t("%2d/%2d: %2d %s ", pair.first, pair.second, pair.offset, pair.isValid() ? "<  " : "   ");
 				return pair.isValid();
 			};
 
@@ -450,15 +450,16 @@ static int DetermineNumCols(BitMatrixModuleCursorF& start, const Cluster& lraps)
 				}
 			}
 		}
+	log_l();
 
-	printv("\ncolHist: ", "%2d ", "", colHist);
-	printv("\noffsets: ", "%2d ", "\n", offsets);
+	log_r("colHist: ", "%2d ", colHist);
+	log_r("offsets: ", "%2d ", offsets);
 	int nCol = std::ranges::max_element(colHist) - colHist.begin();
 
 	if (colHist[nCol]) {
 		auto offset = double(offsets[nCol]) / colHist[nCol];
 		start.d = bresenhamDirection((10. + 17. * 2) * start.d - 2. * offset * start.right());
-		printf("average offset: %.1f, new right: %s, ms: %.1f\n", offset, ToString(start.d).c_str(), start.ms);
+		log_l("average offset: %.1f, new right: %s, ms: %.1f", offset, ToString(start.d).c_str(), start.ms);
 	}
 
 	return nCol / 4 + 1;
@@ -540,8 +541,8 @@ static const SymbolInfo& DetermineSymbolInfo(const Matrix<Codeword>& cwMat, cons
 			error += (isOutside ? 1 : -1) * sightsPerRow[y];
 		}
 
-		printf("symbol: %d, %2dx%2d, rotFam: %2d, firstRow: %2d, error: %d\n",
-			   static_cast<int>(&s - SYMBOLS.data()), s.nCols, s.nRows, s.rotFam, s.startRow, error);
+		log_l("symbol: %d, %2dx%2d, rotFam: %2d, firstRow: %2d, error: %d",
+		    static_cast<int>(&s - SYMBOLS.data()), s.nCols, s.nRows, s.rotFam, s.startRow, error);
 
 		if (error < minError) {
 			minError = error;
@@ -565,13 +566,13 @@ static BarcodeData ScanCandidate(const BitMatrix& image, const Cluster& lraps)
 	lineL.evaluate(2, true);
 	lineR.evaluate(2, true);
 	auto down = bresenhamDirection(right(lineL.normal()));
-	printf("down: %s\n", ToString(down).c_str());
+	log_l("down: %s", ToString(down).c_str());
 	BitMatrixModuleCursorF startCur(image, centered(lraps.front()), bresenhamDirection(lineR.normal()),
 									lraps.front().width / (10. + 17. * LRAP_WITH_CW));
 	startCur.step(-1);
 
 	int nCols = DetermineNumCols(startCur, lraps);
-	printf("nCols: %d\n", nCols);
+	log_l("nCols: %d", nCols);
 	if (!nCols)
 		return {};
 
@@ -596,7 +597,7 @@ static BarcodeData ScanCandidate(const BitMatrix& image, const Cluster& lraps)
 		auto rap = RAPPair(li, ri);
 		if (!rap.isValid())
 			return false;
-		// printf("li: %2d, ri: %2d, ri-li: %2d, fam: %d, offset: %d\n", li, ri, rap.second - rap.first, rap.family, rap.offset);
+		// log_l("li: %2d, ri: %2d, ri-li: %2d, fam: %d, offset: %d", li, ri, rap.second - rap.first, rap.family, rap.offset);
 		rotFamHist.at(rap.family/8)++;
 		failedTries = 0;
 		return true;
@@ -610,7 +611,7 @@ static BarcodeData ScanCandidate(const BitMatrix& image, const Cluster& lraps)
 		log(cur.p);
 
 		auto li = ReadRAP(cur, RAP::L);
-		// printf("li: %2d @ (%f, %f)\n", li, cur.p.x, cur.p.y);
+		// log_l("li: %2d @ (%f, %f)", li, cur.p.x, cur.p.y);
 		if (!li)
 			continue;
 		startCur.ms = cur.ms;
@@ -662,9 +663,9 @@ static BarcodeData ScanCandidate(const BitMatrix& image, const Cluster& lraps)
 			return o;
 		};
 
-		printf("%2d/%d -> ", li, RAPCluster(li));
+		log_t("%2d/%d -> ", li, RAPCluster(li));
 		for (int x = 0; x < nCols; ++x) {
-			printf("%3d/%d ", cw[x].codeword, cw[x].cluster);
+			log_t("%3d/%d ", cw[x].codeword, cw[x].cluster);
 			if (cw[x]) {
 				li += rowOffset(cw[x].cluster);
 				if (li < 1 || li > 52)
@@ -680,7 +681,7 @@ static BarcodeData ScanCandidate(const BitMatrix& image, const Cluster& lraps)
 					cell.push_back(cw[x]);
 			}
 		}
-		printf("\n");
+		log_l();
 	}
 
 	Matrix<Codeword> cwMat(nCols, 53, {});
@@ -698,12 +699,12 @@ static BarcodeData ScanCandidate(const BitMatrix& image, const Cluster& lraps)
 
 #ifdef PRINT_DEBUG
 	for (int y = 0; y < cwMat.height(); ++y) {
-		printf("%2d: ", y);
+		log_t("%2d: ", y);
 		for (int x = 0; x < cwMat.width(); ++x) {
 			auto& e = cwMat(x, y);
-			e.count ? printf("%3d %2d | ", e.codeword, e.count) : printf("       | ");
+			e.count ? log_t("%3d %2d | ", e.codeword, e.count) : log_t("       | ");
 		}
-		printf("\n");
+		log_l();
 	}
 #endif
 
@@ -730,9 +731,9 @@ static BarcodeData ScanCandidate(const BitMatrix& image, const Cluster& lraps)
 	// TODO: implement proper handling of ECI Descriptor codeword at the start of the codeword sequence
 	// (see ISO 24728:2006, section 5.2.4.2 ECI Descriptor codeword)
 	DecoderResult decoderResult = Pdf417::DecodeCodewords(codewords, si.nECCs, erasures);
-	printf("size: %dx%d, firstRow: %d, cws: %d, rotFamHist: %d/%d/%d/%d, rotFam: %d, nEECs: %d, erasures: %d, valid: %d\n", si.nCols,
-		   si.nRows, si.startRow, si.nCWs(), rotFamHist[0], rotFamHist[1], rotFamHist[2], rotFamHist[3], si.rotFam, si.nECCs,
-		   Size(erasures), decoderResult.isValid());
+	log_l("size: %dx%d, firstRow: %d, cws: %d, rotFamHist: %d/%d/%d/%d, rotFam: %d, nEECs: %d, erasures: %d, valid: %d", si.nCols,
+		  si.nRows, si.startRow, si.nCWs(), rotFamHist[0], rotFamHist[1], rotFamHist[2], rotFamHist[3], si.rotFam, si.nECCs,
+		  Size(erasures), decoderResult.isValid());
 
 	// Extrapolate the symbol corners from a perspective transform created from detected codeword positions near the corners of the symbol.
 	auto closestCorner = [&](PointI corner, PointI dir) -> PointI {

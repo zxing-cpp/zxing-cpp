@@ -10,17 +10,6 @@
 #include "Point.h"
 #include "ZXAlgorithms.h"
 
-#ifndef PRINT_DEBUG
-#define printf(...){}
-#define printv(...){}
-#else
-#define printv(prefix, fmt, postfix, ...) \
-printf("%s", prefix); \
-for (auto v : __VA_ARGS__) \
-	printf(fmt, v); \
-printf("%s", postfix);
-#endif
-
 namespace ZXing::PDF417 {
 
 constexpr int MS_THR = 2; // tolerance of pattern size in modules

@@ -12,7 +12,7 @@
 #include "ConcentricFinder.h"
 #include "DecoderResult.h"
 #include "DetectorResult.h"
-#include "LogMatrix.h"
+#include "Log.h"
 #include "QRDecoder.h"
 #include "QRDetector.h"
 #include "ReaderOptions.h"

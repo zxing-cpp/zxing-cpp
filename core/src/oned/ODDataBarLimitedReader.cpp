@@ -9,19 +9,10 @@
 #include "GTIN.h"
 #include "ODDataBarCommon.h"
 #include "BarcodeData.h"
+#include "Log.h"
 #include "SymbologyIdentifier.h"
 
 #include <ranges>
-
-//#define PRINT_DEBUG
-#ifndef PRINT_DEBUG
-#define printf(...){}
-#define printv(...){}
-#else
-#define printv(fmt, ...) \
-for (auto v : __VA_ARGS__) \
-	printf(fmt, v);
-#endif
 
 namespace ZXing::OneD {
 
@@ -50,10 +41,8 @@ static Character ReadDataCharacter(const PatternView& view)
 	for (int i = 0; i < Size(pattern); ++i)
 		res[i % 2][i / 2] = pattern[i];
 
-	printf(" o: ");
-	printv("%d ", oddPattern);
-	printf(" e: ");
-	printv("%d ", evnPattern);
+	log_r(" o: ", "%d ", oddPattern, "");
+	log_r(" e: ", "%d ", evnPattern, "");
 
 	int group = IndexOf(ODD_SUM, Reduce(oddPattern));
 	if (group == -1)
@@ -139,13 +128,13 @@ BarcodeData DataBarLimitedReader::decodePattern(int rowNumber, PatternView& next
 		if (checksum == -1)
 			continue;
 
-		printf("%f - ", modSize);
-		printv("%d ", NormalizedPatternFromE2E<CHAR_LEN>(checkView, 18));
+		log_t("%f - ", modSize);
+		log_r("", "%d ", NormalizedPatternFromE2E<CHAR_LEN>(checkView, 18));
 
 		auto left = ReadDataCharacter(leftView);
 		auto right = ReadDataCharacter(rightView);
 
-		printf("- %d, %d, %d\n", checksum, left.value, right.value);
+		log_l("- %d, %d, %d", checksum, left.value, right.value);
 
 		if (!left || !right || (left.checksum + 20 * right.checksum) % 89 != checksum)
 			continue;
