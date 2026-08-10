@@ -149,13 +149,22 @@ public class BarcodeReader(public var options: Options = Options()) {
 		val orientation: Int,
 		val ecLevel: String?,
 		val symbologyIdentifier: String?,
+		private val extraJson: String?,
 		val sequenceSize: Int,
 		val sequenceIndex: Int,
 		val sequenceId: String?,
 		val readerInit: Boolean,
 		val lineCount: Int,
 		val error: Error?,
-	)
+	) {
+		// Additional symbology-specific metadata (e.g. "UPCE" for the original UPC-E text), keyed by name.
+		val extra: Map<String, String> by lazy {
+			extraJson?.takeIf { it.isNotEmpty() }?.let { json ->
+				val obj = org.json.JSONObject(json)
+				obj.keys().asSequence().associateWith(obj::getString)
+			} ?: emptyMap()
+		}
+	}
 
 	public val lastReadTime : Int = 0 // runtime of last read call in ms (for debugging purposes only)
 
