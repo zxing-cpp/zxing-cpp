@@ -17,6 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic) NSInteger orientation;
 @property(nonatomic, strong) NSString *ecLevel;
 @property(nonatomic, strong) NSString *symbologyIdentifier;
+@property(nonatomic, strong) NSDictionary<NSString *, NSString *> *extra;
 @property(nonatomic) NSInteger sequenceSize;
 @property(nonatomic) NSInteger sequenceIndex;
 @property(nonatomic, strong) NSString *sequenceId;
@@ -31,6 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
          orientation:(NSInteger)orientation
              ecLevel:(NSString *)ecLevel
  symbologyIdentifier:(NSString *)symbologyIdentifier
+               extra:(NSDictionary<NSString *, NSString *> *)extra
         sequenceSize:(NSInteger)sequenceSize
        sequenceIndex:(NSInteger)sequenceIndex
           sequenceId:(NSString *)sequenceId
