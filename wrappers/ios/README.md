@@ -15,10 +15,7 @@ You can also use [CocoaPods](https://cocoapods.org/pods/zxing-cpp). Just add the
 ```
 pod 'zxing-cpp'
 ```
-The module to be imported is named `ZXingCpp`. If you just need the core without the wrapper code, you can use:
-```
-pod 'zxing-cpp/Core'
-```
+The module to be imported is named `ZXingCpp`.
 
 ## Usage
 

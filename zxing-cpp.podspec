@@ -28,9 +28,11 @@ Pod::Spec.new do |s|
   s.default_subspec = 'Wrapper'
 
   s.subspec 'Core' do |ss|
-    ss.source_files = 'core/src/**/*.{h,c,cpp}'
+    ss.source_files = 'core/src/**/*.{h,c,cpp}', 'wrappers/ios/Sources/Wrapper/Version.h'
     ss.exclude_files = [ 'core/src/libzint/**' ]
-    ss.private_header_files = 'core/src/**/*.h'
+    # Keep all Core headers private: exposing the raw C++ API as public headers
+    # makes CocoaPods generate a module/umbrella import path that fails to build.
+    ss.private_header_files = 'core/src/**/*.h', 'wrappers/ios/Sources/Wrapper/Version.h'
   end
 
   s.subspec 'Wrapper' do |ss|
