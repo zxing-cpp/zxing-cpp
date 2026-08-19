@@ -20,6 +20,19 @@ using namespace std::string_literals;
 
 #define PACKAGE "zxingcpp/BarcodeReader$"
 
+// libc++abi's default terminate handler demangles the type name of an uncaught exception for its
+// abort message, and that single cosmetic call links the whole Itanium ABI mangling parser into
+// this library -- 165 KB of the stripped arm64 .so. Defining the symbol here means the linker
+// never pulls cxa_demangle.o out of libc++_static.a. The definition is hidden (see the visibility
+// preset in CMakeLists.txt), so other libraries in the process keep the real demangler; native
+// stack traces are unaffected either way, as those are symbolized from the symbol table.
+extern "C" char* __cxa_demangle(const char*, char*, size_t*, int* status)
+{
+	if (status)
+		*status = -3; // invalid argument -- the handler then prints the mangled name and what()
+	return nullptr;
+}
+
 #define ZX_LOG_TAG "zxingcpp"
 #define LOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, ZX_LOG_TAG, __VA_ARGS__)
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, ZX_LOG_TAG, __VA_ARGS__)
