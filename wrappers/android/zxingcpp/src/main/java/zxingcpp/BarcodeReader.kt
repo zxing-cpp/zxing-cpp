@@ -158,12 +158,9 @@ public class BarcodeReader(public var options: Options = Options()) {
 		val error: Error?,
 	) {
 		// Additional symbology-specific metadata (e.g. "UPCE" for the original UPC-E text), keyed by name.
-		val extraJson: org.json.JSONObject by lazy {
-			extraJsonString?.takeIf { it.isNotEmpty() }?.let { org.json.JSONObject(it) } ?: org.json.JSONObject()
-		}
-
 		val extra: Map<String, Any?> by lazy {
-			extraJson.keys().asSequence().associateWith { extraJson.get(it).takeIf { v -> v != org.json.JSONObject.NULL } }
+			val json = extraJsonString?.takeIf { it.isNotEmpty() }?.let { org.json.JSONObject(it) } ?: org.json.JSONObject()
+			json.keys().asSequence().associateWith { json.get(it).takeIf { v -> v != org.json.JSONObject.NULL } }
 		}
 	}
 
