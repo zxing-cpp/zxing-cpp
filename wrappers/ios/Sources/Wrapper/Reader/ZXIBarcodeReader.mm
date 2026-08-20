@@ -34,7 +34,7 @@ ZXIGTIN *getGTIN(const Barcode &barcode) {
     }
 }
 
-NSDictionary<NSString *, NSString *> *getExtra(const Barcode &barcode) {
+NSDictionary<NSString *, id> *getExtra(const Barcode &barcode) {
     std::string json = barcode.extra();
     if (json.empty()) {
         return @{};
