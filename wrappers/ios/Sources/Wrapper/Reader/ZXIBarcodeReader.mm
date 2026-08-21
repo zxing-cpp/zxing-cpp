@@ -34,6 +34,21 @@ ZXIGTIN *getGTIN(const Barcode &barcode) {
     }
 }
 
+NSDictionary<NSString *, id> *getExtra(const Barcode &barcode) {
+    std::string json = barcode.extra();
+    if (json.empty()) {
+        return @{};
+    }
+
+    NSData *data = [NSData dataWithBytes:json.data() length:json.size()];
+    NSError *jsonError = nil;
+    id obj = [NSJSONSerialization JSONObjectWithData:data options:0 error:&jsonError];
+    if (jsonError || ![obj isKindOfClass:[NSDictionary class]]) {
+        return @{};
+    }
+    return (NSDictionary<NSString *, id> *)obj;
+}
+
 @interface ZXIReaderOptions()
 @property(nonatomic) ZXing::ReaderOptions cppOpts;
 @end
@@ -134,6 +149,7 @@ ZXIGTIN *getGTIN(const Barcode &barcode) {
                          orientation:result.orientation()
                              ecLevel:stringToNSString(result.ecLevel())
                  symbologyIdentifier:stringToNSString(result.symbologyIdentifier())
+                               extra:getExtra(result)
                         sequenceSize:result.sequenceSize()
                        sequenceIndex:result.sequenceIndex()
                           sequenceId:stringToNSString(result.sequenceId())

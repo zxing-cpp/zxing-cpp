@@ -12,6 +12,7 @@
          orientation:(NSInteger)orientation
              ecLevel:(NSString *)ecLevel
  symbologyIdentifier:(NSString *)symbologyIdentifier
+               extra:(NSDictionary<NSString *, id> *)extra
         sequenceSize:(NSInteger)sequenceSize
        sequenceIndex:(NSInteger)sequenceIndex
           sequenceId:(NSString *)sequenceId
@@ -26,6 +27,7 @@
     self.orientation = orientation;
     self.ecLevel = ecLevel;
     self.symbologyIdentifier = symbologyIdentifier;
+    self.extra = extra;
     self.sequenceSize = sequenceSize;
     self.sequenceIndex = sequenceIndex;
     self.sequenceId = sequenceId;
