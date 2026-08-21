@@ -39,10 +39,14 @@ NSDictionary<NSString *, id> *getExtra(const Barcode &barcode) {
     if (json.empty()) {
         return @{};
     }
-    NSData *data = [stringToNSString(json) dataUsingEncoding:NSUTF8StringEncoding];
+
+    NSData *data = [NSData dataWithBytes:json.data() length:json.size()];
     NSError *jsonError = nil;
-    NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:data options:0 error:&jsonError];
-    return jsonError ? @{} : dict;
+    id obj = [NSJSONSerialization JSONObjectWithData:data options:0 error:&jsonError];
+    if (jsonError || ![obj isKindOfClass:[NSDictionary class]]) {
+        return @{};
+    }
+    return (NSDictionary<NSString *, id> *)obj;
 }
 
 @interface ZXIReaderOptions()
