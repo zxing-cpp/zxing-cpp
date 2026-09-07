@@ -109,7 +109,11 @@ std::vector<ConcentricPattern> FindFinderPatterns(const BitMatrix& image, bool t
  */
 FinderPatternSets GenerateFinderPatternSets(FinderPatterns& patterns)
 {
-	std::sort(patterns.begin(), patterns.end(), [](const auto& a, const auto& b) { return a.size < b.size; });
+	// ERA: libc qsort (already linked) instead of a private std::sort instantiation (~2.3 KB of flash).
+	std::qsort(patterns.data(), patterns.size(), sizeof(ConcentricPattern), [](const void* a, const void* b) {
+		int sa = static_cast<const ConcentricPattern*>(a)->size, sb = static_cast<const ConcentricPattern*>(b)->size;
+		return (sa > sb) - (sa < sb);
+	});
 
 	auto sets            = std::multimap<double, FinderPatternSet>();
 	auto squaredDistance = [](const auto* a, const auto* b) {
