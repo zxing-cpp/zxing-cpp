@@ -6,6 +6,7 @@
 #include "Log.h"
 #include "StdGenerator.h"
 #include "ZXAlgorithms.h"
+#include "ZXConfig.h"
 
 #include <algorithm>
 #include <optional>
@@ -52,7 +53,7 @@ void LocalGrid::adjustOriginAndStep(PointF& step, int radius, const std::span<co
 	struct DistMod {
 		double dist, modSize;
 	};
-	thread_local std::vector<DistMod> distMod;
+	ZX_THREAD_LOCAL std::vector<DistMod> distMod;
 	distMod.clear();
 	distMod.reserve(offsets.size() * radius + 1);
 	for (int r = 0; r <= radius; ++r)
@@ -95,7 +96,7 @@ void LocalGrid::adjustOriginAndStep(PointF& step, int radius, const std::span<co
 	log_l("\nlocal mod size: %.2f", localModSize);
 
 	// ... and use it for the points where we didn't find one
-	thread_local std::vector<double> d;
+	ZX_THREAD_LOCAL std::vector<double> d;
 	d.clear();
 	d.reserve(distMod.size());
 	for (auto& t : distMod) {
