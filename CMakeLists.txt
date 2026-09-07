@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.21)
 
 project(ZXing)
 
@@ -78,7 +78,9 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
 set(CMAKE_INSTALL_RPATH "$<$<PLATFORM_ID:Darwin>:@loader_path/../lib>$<$<PLATFORM_ID:Linux>:$ORIGIN/../lib>")
 
 add_subdirectory (core)
-add_subdirectory (docs)
+if (PROJECT_IS_TOP_LEVEL)
+    add_subdirectory (docs)
+endif()
 
 enable_testing()
 

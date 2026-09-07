@@ -138,7 +138,7 @@ The latest API documentation can be found here: https://zxing-cpp.github.io/zxin
 ## Build Instructions
 These are the generic instructions to build the library on Windows/macOS/Linux. For details on how to build the individual wrappers, follow the links above.
 
-1. Make sure [CMake](https://cmake.org) version 3.16 or newer is installed. The python module requires 3.18 or higher.
+1. Make sure [CMake](https://cmake.org) version 3.21 or newer is installed.
 2. Make sure a sufficiently C++20 compliant compiler is installed (minimum VS 2019 16.10? / gcc 11 / clang 12?).
 3. See the cmake `ZXING_...` options to enable the testing code, python wrapper, etc.
 
