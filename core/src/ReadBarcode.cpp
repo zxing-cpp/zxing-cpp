@@ -257,8 +257,12 @@ Barcodes ReadBarcodes(const ImageView& _iv, const ReaderOptions& opts)
 	ImageView iv = SetupLumImageView(_iv, lum, opts);
 	MultiFormatReader reader(opts);
 
-	if (opts.isPure())
-		return {FirstOrDefault(reader.read(*CreateBitmap(opts.binarizer(), iv), 1)).setReaderOptions(opts)};
+	if (opts.isPure()) {
+		auto res = reader.read(*CreateBitmap(opts.binarizer(), iv), 1);
+		if (!res.empty())
+			res.front().setReaderOptions(opts);
+		return res;
+	}
 
 	std::unique_ptr<MultiFormatReader> closedReader;
 #ifdef ZXING_EXPERIMENTAL_API
