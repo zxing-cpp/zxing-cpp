@@ -219,12 +219,12 @@ Barcode MergeStructuredAppendSequence(const Barcodes& barcodes)
 	std::list<Barcode> allBarcodes(barcodes.begin(), barcodes.end());
 	allBarcodes.sort([](const Barcode& r1, const Barcode& r2) { return r1.sequenceIndex() < r2.sequenceIndex(); });
 
-	Barcode res = allBarcodes.front();
-	for (auto i = std::next(allBarcodes.begin()); i != allBarcodes.end(); ++i)
-		res.d->content.append(i->d->content);
-
-	res.d->position = {};
-	res.d->sai.index = -1;
+	const BarcodeData* bd = allBarcodes.front().d.get();
+	Barcode res(BarcodeData{.format = bd->format, .sai = bd->sai});
+	res.d->sai.index = -1; // mark as merged sequence
+	res.d->content.symbology = bd->content.symbology;
+	for (const auto& barcode : allBarcodes)
+		res.d->content.append(barcode.d->content);
 
 	if (allBarcodes.back().sequenceSize() != Size(allBarcodes) ||
 		!std::all_of(allBarcodes.begin(), allBarcodes.end(),
