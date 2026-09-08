@@ -243,7 +243,7 @@ Barcodes MergeStructuredAppendSequences(const Barcodes& barcodes)
 	std::map<std::string, Barcodes> sas;
 	for (auto& barcode : barcodes) {
 		if (barcode.isPartOfSequence())
-			sas[barcode.sequenceId()].push_back(barcode);
+			sas[ToString(barcode.format()) + barcode.sequenceId()].push_back(barcode);
 	}
 
 	Barcodes res;
