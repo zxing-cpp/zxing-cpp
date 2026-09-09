@@ -172,7 +172,8 @@ class Barcode : private ZXing::Barcode
 	Q_PROPERTY(ContentType contentType READ contentType)
 	Q_PROPERTY(bool hasECI READ hasECI)
 	Q_PROPERTY(Position position READ position)
-	Q_PROPERTY(int orientation READ orientation)
+	Q_PROPERTY(int rotation READ rotation)
+	Q_PROPERTY(int orientation READ orientation) // Deprecated: Use rotation instead
 	Q_PROPERTY(bool isMirrored READ isMirrored)
 	Q_PROPERTY(bool isInverted READ isInverted)
 	Q_PROPERTY(QString symbologyIdentifier READ symbologyIdentifier)
@@ -219,6 +220,7 @@ public:
 		return {qp(0), qp(1), qp(2), qp(3)};
 	}
 
+	using ZXing::Barcode::rotation;
 	using ZXing::Barcode::orientation;
 	using ZXing::Barcode::isMirrored;
 	using ZXing::Barcode::isInverted;

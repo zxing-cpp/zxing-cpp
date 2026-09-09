@@ -195,6 +195,7 @@ unsafe extern "C" {
 	pub fn ZXing_Barcode_text(barcode: *const ZXing_Barcode) -> *mut ::core::ffi::c_char;
 	pub fn ZXing_Barcode_symbologyIdentifier(barcode: *const ZXing_Barcode) -> *mut ::core::ffi::c_char;
 	pub fn ZXing_Barcode_position(barcode: *const ZXing_Barcode) -> ZXing_Position;
+	pub fn ZXing_Barcode_rotation(barcode: *const ZXing_Barcode) -> ::core::ffi::c_int;
 	pub fn ZXing_Barcode_orientation(barcode: *const ZXing_Barcode) -> ::core::ffi::c_int;
 	pub fn ZXing_Barcode_hasECI(barcode: *const ZXing_Barcode) -> bool;
 	pub fn ZXing_Barcode_isInverted(barcode: *const ZXing_Barcode) -> bool;

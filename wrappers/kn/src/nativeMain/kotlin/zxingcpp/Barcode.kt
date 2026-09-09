@@ -113,8 +113,11 @@ class Barcode(val cValue: CValuesRef<ZXing_Barcode>) {
 	val position: Position by lazy {
 		ZXing_Barcode_position(cValue).useContents { toKObject() }
 	}
+	val rotation: Int
+		get() = ZXing_Barcode_rotation(cValue)
+	@Deprecated("Use rotation instead")
 	val orientation: Int
-		get() = ZXing_Barcode_orientation(cValue)
+		get() = rotation
 	val hasECI: Boolean
 		get() = ZXing_Barcode_hasECI(cValue)
 	val isInverted: Boolean
@@ -139,8 +142,8 @@ class Barcode(val cValue: CValuesRef<ZXing_Barcode>) {
 			"isMirrored=$isMirrored, " +
 			"isInverted=$isInverted, " +
 			"hasECI=$hasECI, " +
-			"orientation=$orientation, " +
 			"position=$position, " +
+			"rotation=$rotation, " +
 			"symbologyIdentifier=$symbologyIdentifier, " +
 			"extra=${extra()}, " +
 			"text=$text, " +

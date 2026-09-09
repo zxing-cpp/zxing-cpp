@@ -71,8 +71,12 @@ func (b *Barcode) Position() Position {
 	}
 }
 
-// Orientation returns the orientation of the barcode in degrees.
-func (b *Barcode) Orientation() int { return int(C.ZXing_Barcode_orientation(b.ptr)) }
+// Rotation returns the rotation of the barcode in degrees.
+func (b *Barcode) Rotation() int { return int(C.ZXing_Barcode_rotation(b.ptr)) }
+
+// Orientation returns the rotation of the barcode in degrees.
+// Deprecated: use Rotation instead.
+func (b *Barcode) Orientation() int { return b.Rotation() }
 
 // HasECI reports whether an ECI tag was found.
 func (b *Barcode) HasECI() bool { return bool(C.ZXing_Barcode_hasECI(b.ptr)) }

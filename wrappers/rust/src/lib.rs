@@ -552,7 +552,7 @@ impl Barcode {
 	getter!(Barcode, text, c2r_str, String);
 	getter!(Barcode, symbologyIdentifier, c2r_str, String);
 	getter!(Barcode, position, transmute, Position);
-	getter!(Barcode, orientation, transmute, i32);
+	getter!(Barcode, rotation, transmute, i32);
 	getter!(Barcode, hasECI, has_eci, transmute, bool);
 	getter!(Barcode, isInverted, transmute, bool);
 	getter!(Barcode, isMirrored, transmute, bool);
@@ -608,6 +608,11 @@ impl Barcode {
 
 	pub fn to_image(&self) -> Result<Image, Error> {
 		self.to_image_with(&BarcodeWriter::default())
+	}
+
+	#[deprecated(note = "Use rotation instead")]
+	pub fn orientation(&self) -> i32 {
+		self.rotation()
 	}
 }
 

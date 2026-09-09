@@ -113,8 +113,11 @@ public:
 	/// bottomLeft).
 	const Position& position() const;
 
-	/// Returns the orientation of the barcode in degrees, see also Position::orientation()
-	int orientation() const;
+	/// Returns the rotation of the barcode in degrees.
+	int rotation() const;
+
+	/// Returns the rotation of the barcode in degrees
+	[[deprecated("Use rotation() instead")]] int orientation() const; // deprecated in v3.2
 
 	/// Returns whether the symbol is mirrored (currently only supported by QRCode and DataMatrix).
 	bool isMirrored() const;

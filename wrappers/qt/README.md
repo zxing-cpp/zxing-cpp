@@ -120,7 +120,7 @@ barcode.contentType()       // ContentType enum (Text, Binary, Mixed, GS1, ISO15
 barcode.hasECI()            // Check if barcode has ECI
 barcode.error()             // Error information (type, message, location)
 barcode.position()          // Quadrilateral position in image (topLeft, topRight, bottomRight, bottomLeft, center)
-barcode.orientation()       // Orientation in degrees
+barcode.rotation()          // Rotation in degrees
 barcode.isMirrored()        // Check if barcode is mirrored
 barcode.isInverted()        // Check if barcode is inverted
 barcode.symbologyIdentifier() // ISO/IEC 15424 symbology identifier

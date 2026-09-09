@@ -329,7 +329,7 @@ int main(int argc, char* argv[])
 					  << "Content:    " << ToString(barcode.contentType()) << "\n"
 					  << "HasECI:     " << barcode.hasECI() << "\n"
 					  << "Position:   " << ToString(barcode.position()) << "\n"
-					  << "Rotation:   " << barcode.orientation() << " deg\n"
+					  << "Rotation:   " << barcode.rotation() << " deg\n"
 					  << "IsMirrored: " << barcode.isMirrored() << "\n"
 					  << "IsInverted: " << barcode.isInverted() << "\n";
 

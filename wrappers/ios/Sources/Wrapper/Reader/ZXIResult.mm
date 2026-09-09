@@ -9,7 +9,7 @@
               format:(ZXIFormat)format
                bytes:(NSData *)bytes
             position:(ZXIPosition *)position
-         orientation:(NSInteger)orientation
+            rotation:(NSInteger)rotation
              ecLevel:(NSString *)ecLevel
  symbologyIdentifier:(NSString *)symbologyIdentifier
                extra:(NSDictionary<NSString *, id> *)extra
@@ -24,7 +24,7 @@
     self.format = format;
     self.bytes = bytes;
     self.position = position;
-    self.orientation = orientation;
+    self.rotation = rotation;
     self.ecLevel = ecLevel;
     self.symbologyIdentifier = symbologyIdentifier;
     self.extra = extra;
@@ -35,5 +35,13 @@
     self.lineCount = lineCount;
     self.gtin = gtin;
     return self;
+}
+
+- (NSInteger)orientation {
+   return self.rotation;
+}
+
+- (void)setOrientation:(NSInteger)orientation {
+   self.rotation = orientation;
 }
 @end

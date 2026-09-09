@@ -10,6 +10,14 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#if defined(__GNUC__) || defined(__clang__)
+#define ZXING_DEPRECATED(msg) __attribute__((deprecated(msg)))
+#elif defined(_MSC_VER)
+#define ZXING_DEPRECATED(msg) __declspec(deprecated(msg))
+#else
+#define ZXING_DEPRECATED(msg)
+#endif
+
 #ifdef __cplusplus
 
 #include "ZXingCpp.h"
@@ -147,7 +155,8 @@ uint8_t* ZXing_Barcode_bytesECI(const ZXing_Barcode* barcode, int* len);
 char* ZXing_Barcode_text(const ZXing_Barcode* barcode);
 char* ZXing_Barcode_symbologyIdentifier(const ZXing_Barcode* barcode);
 ZXing_Position ZXing_Barcode_position(const ZXing_Barcode* barcode);
-int ZXing_Barcode_orientation(const ZXing_Barcode* barcode);
+int ZXing_Barcode_rotation(const ZXing_Barcode* barcode);
+ZXING_DEPRECATED("Use ZXing_Barcode_rotation instead") int ZXing_Barcode_orientation(const ZXing_Barcode* barcode);
 bool ZXing_Barcode_hasECI(const ZXing_Barcode* barcode);
 bool ZXing_Barcode_isInverted(const ZXing_Barcode* barcode);
 bool ZXing_Barcode_isMirrored(const ZXing_Barcode* barcode);

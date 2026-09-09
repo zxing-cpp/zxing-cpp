@@ -120,7 +120,7 @@ int main(int argc, char** argv)
 		printf("HasECI     : %d\n", ZXing_Barcode_hasECI(barcode));
 		printF("Error      : %s\n", ZXing_Barcode_errorMsg(barcode));
 		printF("Position   : %s\n", ZXing_PositionToString(ZXing_Barcode_position(barcode)));
-		printf("Rotation   : %d\n", ZXing_Barcode_orientation(barcode));
+		printf("Rotation   : %d\n", ZXing_Barcode_rotation(barcode));
 		printf("IsMirrored : %d\n", ZXing_Barcode_isMirrored(barcode));
 		printf("IsInverted : %d\n", ZXing_Barcode_isInverted(barcode));
 		printF("Extra      : %s\n", ZXing_Barcode_extra(barcode, NULL)); // get all extra data as JSON

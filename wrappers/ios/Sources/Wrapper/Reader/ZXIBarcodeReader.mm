@@ -146,7 +146,7 @@ NSDictionary<NSString *, id> *getExtra(const Barcode &barcode) {
                               format:ZXIFormatFromBarcodeFormat(result.format())
                                bytes:[[NSData alloc] initWithBytes:result.bytes().data() length:result.bytes().size()]
                             position:[[ZXIPosition alloc]initWithPosition: result.position()]
-                         orientation:result.orientation()
+                            rotation:result.rotation()
                              ecLevel:stringToNSString(result.ecLevel())
                  symbologyIdentifier:stringToNSString(result.symbologyIdentifier())
                                extra:getExtra(result)

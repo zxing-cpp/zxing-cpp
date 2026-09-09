@@ -34,7 +34,7 @@ class BarcodeReaderTest {
 		assertContentEquals(expected.encodeToByteArray(), res.bytes)
 		assert(!res.hasECI)
 		assertEquals(ContentType.Text, res.contentType)
-		assertEquals(0, res.orientation)
+		assertEquals(0, res.rotation)
 		assertEquals(PointI(4, 0), res.position.topLeft)
 		assertEquals(1, res.lineCount)
 	}
@@ -55,7 +55,7 @@ class BarcodeReaderTest {
 		assertContentEquals(text.encodeToByteArray(), res.bytes)
 		assert(!res.hasECI)
 		assertEquals(ContentType.Text, res.contentType)
-		assertEquals(0, res.orientation)
+		assertEquals(0, res.rotation)
 		assertEquals(PointI(1, 1), res.position.topLeft)
 		assertEquals(0, res.lineCount)
 	}
@@ -76,7 +76,7 @@ class BarcodeReaderTest {
 		assertContentEquals(text.encodeToByteArray(), res.bytes)
 		assert(res.hasECI)
 		assertEquals(ContentType.Binary, res.contentType)
-		assertEquals(0, res.orientation)
+		assertEquals(0, res.rotation)
 		assertEquals(PointI(1, 1), res.position.topLeft)
 		assertEquals(0, res.lineCount)
 	}

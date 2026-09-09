@@ -68,7 +68,7 @@ static void check(int line, std::string_view input, CreatorOptions cOpts, std::s
 	// EXPECT_EQ(bc.ecLevel(), br.ecLevel()) << "line:" << line;
 	// EXPECT_EQ(bc.version(), br.version()) << "line:" << line;
 
-	EXPECT_EQ(bc.orientation(), br.orientation()) << "line:" << line;
+	EXPECT_EQ(bc.rotation(), br.rotation()) << "line:" << line;
 	EXPECT_EQ(bc.isMirrored(), br.isMirrored()) << "line:" << line;
 	EXPECT_EQ(bc.isInverted(), br.isInverted()) << "line:" << line;
 	EXPECT_EQ(bc.readerInit(), br.readerInit()) << "line:" << line;

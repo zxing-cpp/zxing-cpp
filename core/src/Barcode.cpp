@@ -52,6 +52,11 @@ const Position& Barcode::position() const
 	return d->position;
 }
 
+int Barcode::rotation() const
+{
+	return d->rotation();
+}
+
 const std::vector<uint8_t>& Barcode::bytes() const
 {
 	return d->content.bytes;
@@ -84,7 +89,7 @@ bool Barcode::hasECI() const
 
 int Barcode::orientation() const
 {
-	return narrow_cast<int>(std::lround(d->position.orientation() * 180 / std::numbers::pi));
+	return rotation();
 }
 
 bool Barcode::isMirrored() const
@@ -183,7 +188,7 @@ bool BarcodeData::operator==(const BarcodeData& o) const
 		return IsInside(Center(o.position), position);
 	}
 
-	if (content.bytes != o.content.bytes || error != o.error || orientation() != o.orientation())
+	if (content.bytes != o.content.bytes || error != o.error || rotation() != o.rotation())
 		return false;
 
 	if (lineCount > 1 && o.lineCount > 1)

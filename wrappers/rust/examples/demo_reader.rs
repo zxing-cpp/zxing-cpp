@@ -41,7 +41,7 @@ fn main() -> anyhow::Result<()> {
 			println!("Content:    {}", barcode.content_type());
 			println!("Identifier: {}", barcode.symbology_identifier());
 			println!("Error:      {}", barcode.error());
-			println!("Rotation:   {}", barcode.orientation());
+			println!("Rotation:   {}", barcode.rotation());
 			println!("Position:   {}", barcode.position());
 			println!("Extra:      {}", barcode.extra());
 		}

@@ -57,7 +57,7 @@ struct BarcodeData
 
 	inline bool isValid() const { return format != BarcodeFormat::None && !content.bytes.empty() && !error; }
 
-	inline int orientation() const { return narrow_cast<int>(std::lround(position.orientation() * 180 / std::numbers::pi)); }
+	inline int rotation() const { return narrow_cast<int>(std::lround(position.rotation() * 180 / std::numbers::pi)); }
 };
 
 using BarcodesData = std::vector<BarcodeData>;

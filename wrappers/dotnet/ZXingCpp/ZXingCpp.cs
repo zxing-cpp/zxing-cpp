@@ -109,7 +109,7 @@ internal class Dll
 	[DllImport(DllName)] public static extern IntPtr ZXing_Barcode_text(IntPtr barcode);
 	[DllImport(DllName)] public static extern IntPtr ZXing_Barcode_symbologyIdentifier(IntPtr barcode);
 	[DllImport(DllName)] public static extern Position ZXing_Barcode_position(IntPtr barcode);
-	[DllImport(DllName)] public static extern int ZXing_Barcode_orientation(IntPtr barcode);
+	[DllImport(DllName)] public static extern int ZXing_Barcode_rotation(IntPtr barcode);
 	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_Barcode_hasECI(IntPtr barcode);
 	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_Barcode_isInverted(IntPtr barcode);
 	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_Barcode_isMirrored(IntPtr barcode);
@@ -679,7 +679,9 @@ public class Barcode : IDisposable
 	/// <summary>Corner points of the barcode in the image.</summary>
 	public Position Position => ZXing_Barcode_position(_d);
 	/// <summary>Detected rotation in degrees.</summary>
-	public int Orientation => ZXing_Barcode_orientation(_d);
+	public int Rotation => ZXing_Barcode_rotation(_d);
+	[Obsolete("Use Rotation instead")]
+	public int Orientation => Rotation;
 	public bool HasECI => ZXing_Barcode_hasECI(_d);
 	public bool IsInverted => ZXing_Barcode_isInverted(_d);
 	public bool IsMirrored => ZXing_Barcode_isMirrored(_d);

@@ -72,7 +72,7 @@ func run(args []string, stdout io.Writer) error {
 		fmt.Fprintf(stdout, "Format:     %s\n", bc.Format())
 		fmt.Fprintf(stdout, "Content:    %s\n", bc.ContentType())
 		fmt.Fprintf(stdout, "Identifier: %s\n", bc.SymbologyIdentifier())
-		fmt.Fprintf(stdout, "Rotation:   %d\n", bc.Orientation())
+		fmt.Fprintf(stdout, "Rotation:   %d\n", bc.Rotation())
 		fmt.Fprintf(stdout, "Position:   %s\n", bc.Position())
 		fmt.Fprintf(stdout, "Extra:      %s\n", bc.Extra())
 		if !bc.IsValid() {

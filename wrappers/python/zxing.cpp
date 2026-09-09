@@ -450,8 +450,14 @@ NB_MODULE(zxingcpp, m)
 		.def_prop_ro("position", &Barcode::position,
 			":return: position of the decoded symbol\n"
 			":rtype: zxingcpp.Position")
-		.def_prop_ro("orientation", &Barcode::orientation,
-			":return: orientation (in degree) of the decoded symbol\n"
+		.def_prop_ro("rotation", &Barcode::rotation,
+			":return: rotation (in degree) of the decoded symbol\n"
+			":rtype: int")
+		.def_prop_ro("orientation", [](const Barcode& res) {
+			deprecation_warning("Barcode.orientation is deprecated, use Barcode.rotation instead.");
+			return res.rotation();
+		},
+			":return: rotation (in degree) of the decoded symbol\n"
 			":rtype: int")
 		.def_prop_ro(
 			"error", [](const Barcode& res) { return res.error() ? std::optional(res.error()) : std::nullopt; },

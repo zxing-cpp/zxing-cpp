@@ -45,9 +45,9 @@ public:
 	constexpr Point bottomRight() const noexcept { return at(2); }
 	constexpr Point bottomLeft() const noexcept { return at(3); }
 
-	/// Return the orientation of the quadrilateral in radians, where 0 means the horizontal center line
+	/// Return the rotation of the quadrilateral in radians, where 0 means the horizontal center line
 	/// is parallel to the x-axis and positive values mean a clockwise rotation.
-	double orientation() const
+	double rotation() const
 	{
 		auto centerLine = (topRight() + bottomRight()) - (topLeft() + bottomLeft());
 		if (centerLine == Point{})
@@ -55,6 +55,8 @@ public:
 		auto centerLineF = normalized(centerLine);
 		return std::atan2(centerLineF.y, centerLineF.x);
 	}
+
+	[[deprecated("Use rotation() instead")]] double orientation() const { return rotation(); }
 };
 
 using QuadrilateralF = Quadrilateral<PointF>;

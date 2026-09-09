@@ -43,7 +43,7 @@ class TestReadWrite(unittest.TestCase):
 		self.assertEqual(res.format, format)
 		self.assertEqual(res.text, text)
 		self.assertEqual(res.bytes, bytes(text, 'utf-8'))
-		self.assertEqual(res.orientation, 0)
+		self.assertEqual(res.rotation, 0)
 		self.assertEqual(res.content_type, CT.Text)
 
 	def test_create_write_read_cycle(self):
