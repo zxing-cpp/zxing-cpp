@@ -321,6 +321,8 @@ template <int LEN, int RET_LEN>
 constexpr std::array<int, RET_LEN> NormalizedE2EPattern(const PatternView& view, int mods, bool reverse = false)
 {
 	double moduleSize = static_cast<double>(view.sum(LEN)) / mods;
+	if (!(moduleSize > 0))
+		return {};
 	std::array<int, RET_LEN> e2e;
 
 	for (int i = 0; i < RET_LEN; i++) {
@@ -351,6 +353,8 @@ template <int LEN, int SUM>
 constexpr std::array<int, LEN> NormalizedPattern(const PatternView& view)
 {
 	double moduleSize = static_cast<double>(view.sum(LEN)) / SUM;
+	if (!(moduleSize > 0))
+		return {};
 #if 1
 	int err = SUM;
 	std::array<int, LEN> is;
