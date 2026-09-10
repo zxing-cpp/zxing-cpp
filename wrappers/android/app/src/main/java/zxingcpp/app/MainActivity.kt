@@ -291,10 +291,10 @@ class MainActivity : AppCompatActivity() {
 		cameraController.initializationFuture.addListener({
 			cameraController.cameraControl?.let {
 				val camera2 = Camera2CameraControl.from(it)
-				camera2.captureRequestOptions = CaptureRequestOptions.Builder()
+				camera2.setCaptureRequestOptions(CaptureRequestOptions.Builder()
 					.setCaptureRequestOption(CaptureRequest.SENSOR_SENSITIVITY, 1600)
 					.setCaptureRequestOption(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION, -8)
-					.build()
+					.build())
 			}
 		}, ContextCompat.getMainExecutor(this))
 

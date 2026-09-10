@@ -2,8 +2,7 @@
 
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
-    id("com.vanniktech.maven.publish") version "0.35.0"
+    id("com.vanniktech.maven.publish") version "0.37.0"
 }
 
 // Determine the Java version from the current JVM running Gradle.
@@ -61,11 +60,12 @@ dependencies {
     api(libs.androidx.camera.core)
 }
 
-val publishSnapshot: String? by project
+val publishSnapshot = project.findProperty("publishSnapshot") as? String
 group = "io.github.zxing-cpp"
 version = if (publishSnapshot == "true") "3.2.0-SNAPSHOT" else "3.1.1"
 
-val javadocJar by tasks.registering(Jar::class) {
+val javadocJar = tasks.register<Jar>("javadocJar") {
+    description = "Assembles a jar archive containing the javadoc."
     archiveClassifier.set("javadoc")
 }
 
