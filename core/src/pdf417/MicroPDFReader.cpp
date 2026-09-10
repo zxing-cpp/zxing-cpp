@@ -521,6 +521,10 @@ static const SymbolInfo& DetermineSymbolInfo(const Matrix<Codeword>& cwMat, cons
 	int rotFam = *rotFamMax && *rotFamMax > Reduce(rotFamHist) / 2 ? static_cast<int>(rotFamMax - rotFamHist.begin()) * 8 : -1;
 	// rotFam = -1; // uncomment to test symbol detection without rotation family filtering
 
+	int numCWs = std::ranges::count_if(cwMat, [](const auto& e) { return e.count > 0; });
+	if (numCWs == 0)
+		return SYMBOLS.front();
+
 	std::vector<int> sightsPerRow(cwMat.height(), 0);
 	for (int y = 1; y < cwMat.height(); ++y)
 		for (int x = 0; x < cwMat.width(); ++x)
@@ -528,8 +532,7 @@ static const SymbolInfo& DetermineSymbolInfo(const Matrix<Codeword>& cwMat, cons
 
 	const SymbolInfo* bestSym = SYMBOLS.data();
 	int minError = std::numeric_limits<int>::max();
-	float meanCount = Reduce(cwMat, 0.f, [](float acc, const Codeword& e) { return acc + e.count; })
-					  / std::ranges::count_if(cwMat, [](const auto& e) { return e.count > 0; });
+	float meanCount = Reduce(cwMat, 0.f, [](float acc, const Codeword& e) { return acc + e.count; }) / numCWs;
 
 	for (const auto& s : SYMBOLS) {
 		if (s.nCols != cwMat.width() || (rotFam != -1 && s.rotFam != rotFam))
