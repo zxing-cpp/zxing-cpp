@@ -1,18 +1,15 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.21)
 project(ZXingPython)
 
-# check if we are called from the top-level ZXing project
-get_directory_property(hasParent PARENT_DIRECTORY)
-if (NOT hasParent)
+if (PROJECT_IS_TOP_LEVEL)
     # TODO: replace with symlinks once https://github.com/scikit-build/scikit-build-core/issues/801 is resolved
     message(STATUS "Copying files from parent folder needed for sdist")
     foreach(NAME zxing.cmake LICENSE)
-        if (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${NAME}")
-            execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                    "${CMAKE_CURRENT_SOURCE_DIR}/../../${NAME}"
-                    "${CMAKE_CURRENT_SOURCE_DIR}/${NAME}"
-                )
-        endif()
+        file(COPY_FILE
+                "${CMAKE_CURRENT_SOURCE_DIR}/../../${NAME}"
+                "${CMAKE_CURRENT_SOURCE_DIR}/${NAME}"
+                ONLY_IF_DIFFERENT
+            )
     endforeach()
 
     set(CMAKE_CXX_STANDARD 20) # required here for the module itself
@@ -23,12 +20,8 @@ if (NOT hasParent)
     set    (ZXING_DEPENDENCIES "AUTO" CACHE STRING "Fetch from github or use locally installed (AUTO/GITHUB/LOCAL)")
     option (ZXING_EXPERIMENTAL_API "Build with experimental API" ON)
 
-    set(CORE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/core)
-    if(IS_SYMLINK ${CORE_PATH})
-        # This is needed because otherwise GCC resolves the symlink which causes paths to randomly
-        # be prefixed by /core or by /wrappers/python/core depending on include order.
-        set(CORE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../core)
-    endif()
+    # resolve the symlink so GCC doesn't randomly prefix paths with /core or /wrappers/python/core
+    file(REAL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/core" CORE_PATH)
 
     if(EXISTS ${CORE_PATH})
         add_subdirectory(${CORE_PATH} ZXing EXCLUDE_FROM_ALL)
