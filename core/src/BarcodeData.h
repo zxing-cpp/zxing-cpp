@@ -37,7 +37,7 @@ namespace ZXing {
 
 struct BarcodeData
 {
-	Content content;
+	Content content = {};
 	Error error = {};
 	Position position = {};
 	BarcodeFormat format = BarcodeFormat::None;
