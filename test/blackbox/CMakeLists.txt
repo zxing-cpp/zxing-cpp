@@ -1,3 +1,5 @@
+find_package(Threads REQUIRED)
+
 zxing_add_package_stb()
 zxing_add_package(WebP WebP https://github.com/webmproject/libwebp.git v1.6.0)
 
@@ -11,7 +13,7 @@ if (ZXING_READERS)
     )
 
     target_link_libraries(ReaderTest
-        ZXing::ZXing stb::stb WebP::webp
+        ZXing::ZXing stb::stb WebP::webp Threads::Threads
         $<$<AND:$<CXX_COMPILER_ID:GNU>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,9.0>>:stdc++fs>
     )
 

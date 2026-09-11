@@ -485,7 +485,6 @@ source_group (Sources\\qrcode FILES ${QRCODE_FILES})
 
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
-find_package(Threads REQUIRED)
 
 add_library (ZXing
     ${COMMON_FILES}
@@ -508,8 +507,6 @@ target_compile_options (ZXing
 )
 
 target_compile_features(ZXing PUBLIC cxx_std_17)
-
-target_link_libraries (ZXing PRIVATE Threads::Threads)
 
 if (ZXING_READERS OR ZXING_WRITERS_OLD)
     set (LIBZUECI_FILES
