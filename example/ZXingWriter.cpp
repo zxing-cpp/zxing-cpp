@@ -35,7 +35,7 @@ static void PrintUsage(const char* exePath)
 			  << " [-options <creator-options>] [-scale <factor>] [-binary] [-noqz] [-hrt] [-invert] <format> <text> <output>\n"
 			  << "    -options   Comma separated list of format specific options and flags\n"
 			  << "    -scale     module size of generated image / negative numbers mean 'target size in pixels'\n"
-			  << "    -rotate	 Rotate image by given angle (90, 180 or 270)\n"
+			  << "    -rotate    Rotate image by given angle (90, 180 or 270)\n"
 //			  << "    -encoding  Encoding used to encode input text\n"
 			  << "    -binary    Interpret <text> as a file name containing binary data\n"
 			  << "    -noqz      Print barcode without quiet zone\n"
