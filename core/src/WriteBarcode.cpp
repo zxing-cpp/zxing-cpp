@@ -49,12 +49,20 @@ WriterOptions& WriterOptions::operator=(WriterOptions&&) noexcept = default;
 
 #ifdef ZXING_USE_ZINT
 
-struct SetCommonWriterOptions
+struct ShallowCloneWithOptions
 {
 	zint_symbol* zint;
 
-	SetCommonWriterOptions(zint_symbol* zint, const WriterOptions& opts) : zint(zint)
+	ShallowCloneWithOptions(const zint_symbol* original, const WriterOptions& opts)
 	{
+		zint = static_cast<zint_symbol*>(malloc(sizeof(zint_symbol)));
+		*zint = *original;
+		zint->bitmap = NULL;
+		zint->alphamap = NULL;
+		zint->vector = NULL;
+		zint->memfile = NULL;
+		// don't set zint->content_segs = NULL, so it keeps on pointing to the original symbol's memory
+
 		zint->show_hrt = opts.addHRT();
 
 		zint->output_options &= ~(OUT_BUFFER_INTERMEDIATE | BARCODE_NO_QUIET_ZONES);
@@ -73,12 +81,14 @@ struct SetCommonWriterOptions
 		}
 	}
 
-	// reset the defaults such that consecutive write calls don't influence each other
-	~SetCommonWriterOptions()
+	zint_symbol* get() const { return zint; }
+
+	~ShallowCloneWithOptions()
 	{
-		zint->scale = 0.5f;
-		strcpy(zint->fgcolour, "000000");
-		strcpy(zint->bgcolour, "ffffff");
+		// prevent ZBarcode_Delete from freeing content_segs, which point to the original symbol's memory
+		zint->content_segs = NULL;
+		zint->content_seg_count = 0;
+		ZBarcode_Delete(zint);
 	}
 };
 
@@ -134,8 +144,8 @@ std::string WriteBarcodeToSVG(const Barcode& barcode, [[maybe_unused]] const Wri
 		return ToSVG(barcode.symbol());
 
 #if defined(ZXING_WRITERS) && defined(ZXING_USE_ZINT)
-	auto zintLock = std::lock_guard(*barcode.d->zintMutex);
-	auto resetOnExit = SetCommonWriterOptions(zint, options);
+	auto tmp_zint = ShallowCloneWithOptions(zint, options);
+	zint = tmp_zint.get();
 
 	zint->output_options |= BARCODE_MEMORY_FILE;// | EMBED_VECTOR_FONT;
 	strcpy(zint->outfile, "null.svg");
@@ -156,8 +166,8 @@ Image WriteBarcodeToImage(const Barcode& barcode, [[maybe_unused]] const WriterO
 		return ToImage(barcode.d->symbol.copy(), barcode.format() & BarcodeFormat::AllLinear, options);
 
 #if defined(ZXING_WRITERS) && defined(ZXING_USE_ZINT)
-	auto zintLock = std::lock_guard(*barcode.d->zintMutex);
-	auto resetOnExit = SetCommonWriterOptions(zint, options);
+	auto tmp_zint = ShallowCloneWithOptions(zint, options);
+	zint = tmp_zint.get();
 
 	CHECK(ZBarcode_Buffer(zint, options.rotate()));
 

@@ -16,7 +16,6 @@
 #include "StructuredAppend.h"
 
 #include <memory>
-#include <mutex>
 #include <numbers>
 #include <string>
 #include <vector>
@@ -46,7 +45,6 @@ struct BarcodeData
 	BitMatrix symbol = {};
 #ifdef ZXING_USE_ZINT
 	unique_zint_symbol zint = {};
-	mutable std::unique_ptr<std::mutex> zintMutex = {};
 #endif
 	TextMode defaultTextMode = TextMode::HRI;
 	int lineCount = 0;
