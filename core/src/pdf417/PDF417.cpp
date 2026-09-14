@@ -64,6 +64,23 @@ Codeword ReadCodeword(BitMatrixModuleCursorF& cur, int expectedCluster)
 	}
 	if (cw)
 		cur.ms = dot(cur.p - start.p, mainDirection(cur.d)) / 17.f;
+	else {
+		cur = start;
+		// find the closest white edge near the expected position within the threshold
+		if (cur.step(17 * cur.ms) && (cur.isBlack() || !cur.edgeAtFront())) {
+			auto back = cur, front = cur;
+			for (int step = 0; step < cur.ms * MS_THR; ++step) {
+				if (back.step(-1) && back.isWhite() && back.edgeAtFront()) {
+					cur = back;
+					break;
+				}
+				if (front.step(1) && front.isWhite() && front.edgeAtFront()) {
+					cur = front;
+					break;
+				}
+			}
+		}
+	}
 	log_t("| %3d/%d @ %4.0fx%4.0f %3.0f ", cw.codeword, cw.cluster, cur.p.x * 5, cur.p.y * 5, cur.ms * 5);
 
 	return cw;

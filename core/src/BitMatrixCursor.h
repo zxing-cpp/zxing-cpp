@@ -178,6 +178,8 @@ public:
 		}
 		if (min && max) {
 			min -= Reduce(res);
+			if (min > 0)
+				res = {};
 			int steps = -1;
 			while (min > 0 && max && (steps = stepToEdge(2, max))) {
 				max -= steps;

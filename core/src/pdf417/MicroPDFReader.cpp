@@ -377,7 +377,7 @@ static Clusters FindCandidates(const BitMatrix& image, bool tryHarder, bool reve
 #endif
 
 		// remove complete segment if too small, too spread out or contains non-monotonic sequence
-		if (Size(segs) < 3 || std::abs(segs.back().idx - segs.front().idx) > 2 * Size(segs)
+		if (Size(segs) < 3 || std::abs(segs.back().idx - segs.front().idx) > 3 * Size(segs)
 			|| (LRAP_WITH_CW && !std::ranges::is_sorted(segs, {}, &Segment::idx)))
 			return true;
 
@@ -573,6 +573,8 @@ static BarcodeData ScanCandidate(const BitMatrix& image, const Cluster& lraps)
 	BitMatrixModuleCursorF startCur(image, centered(lraps.front()), bresenhamDirection(lineR.normal()),
 									lraps.front().width / (10. + 17. * LRAP_WITH_CW));
 	startCur.step(-1);
+	// adjust module size taking the angle between x-axis and lineR.normal() into account (tan(alpha)^2)
+	startCur.ms *= 1.0 / (1 + std::min(std::pow(startCur.d.x, 2), std::pow(startCur.d.y, 2)));
 
 	int nCols = DetermineNumCols(startCur, lraps);
 	log_l("nCols: %d", nCols);
