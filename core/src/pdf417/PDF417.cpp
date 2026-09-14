@@ -64,7 +64,7 @@ Codeword ReadCodeword(BitMatrixModuleCursorF& cur, int expectedCluster)
 	}
 	if (cw)
 		cur.ms = dot(cur.p - start.p, mainDirection(cur.d)) / 17.f;
-	log_t("%3d/%d, ms: %.1f, @ %5.1fx%5.1f | ", cw.codeword, cw.cluster, cur.ms, cur.p.x, cur.p.y);
+	log_t("| %3d/%d @ %4.0fx%4.0f %3.0f ", cw.codeword, cw.cluster, cur.p.x * 5, cur.p.y * 5, cur.ms * 5);
 
 	return cw;
 }

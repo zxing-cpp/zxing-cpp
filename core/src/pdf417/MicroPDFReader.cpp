@@ -399,7 +399,7 @@ static Clusters FindCandidates(const BitMatrix& image, bool tryHarder, bool reve
 	log_l("\n# found LRAPs: %d", Size(res));
 	for (const auto& cluster : res) {
 		for (auto lrap : cluster)
-			log_l("%d @ %dx%d (width: %d)", lrap.idx, lrap.x, lrap.y, lrap.width);
+			log_l("%d @ %4dx%4d (width: %d)", lrap.idx, lrap.x * 5, lrap.y * 5, lrap.width * 5);
 		log_l();
 	}
 #endif
@@ -420,7 +420,7 @@ static int DetermineNumCols(BitMatrixModuleCursorF& start, const Cluster& lraps)
 			if (!pair.first || !SkipCodeword(cur))
 				continue;
 
-			log_t("\nLRAP: %2d @ %5.1fx%5.1f ", pair.first, cur.p.x, cur.p.y);
+			log_t("\nLRAP: %2d @ %4.0fx%4.0f %3.0f -> ", pair.first, cur.p.x * 5, cur.p.y * 5, cur.ms * 5);
 
 			auto checkRAP = [&](RAP rap, int colI) {
 				--colI;
@@ -613,8 +613,9 @@ static BarcodeData ScanCandidate(const BitMatrix& image, const Cluster& lraps)
 		auto cur = startCur;
 		log(cur.p);
 
+		log_t("\n%4.0fx%4.0f %2.0f", cur.p.x * 5, cur.p.y * 5, cur.ms * 5);
 		auto li = ReadRAP(cur, RAP::L);
-		// log_l("li: %2d @ (%f, %f)", li, cur.p.x, cur.p.y);
+		log_t(" -> li: %2d @ %4.0fx%4.0f %2.0f   ", li, cur.p.x * 5, cur.p.y * 5, cur.ms * 5);
 		if (!li)
 			continue;
 		startCur.ms = cur.ms;
@@ -666,7 +667,7 @@ static BarcodeData ScanCandidate(const BitMatrix& image, const Cluster& lraps)
 			return o;
 		};
 
-		log_t("%2d/%d -> ", li, RAPCluster(li));
+		log_t("|  -> %2d/%d : ", li, RAPCluster(li));
 		for (int x = 0; x < nCols; ++x) {
 			log_t("%3d/%d ", cw[x].codeword, cw[x].cluster);
 			if (cw[x]) {
@@ -684,8 +685,8 @@ static BarcodeData ScanCandidate(const BitMatrix& image, const Cluster& lraps)
 					cell.push_back(cw[x]);
 			}
 		}
-		log_l();
 	}
+	log_l();
 
 	Matrix<Codeword> cwMat(nCols, 53, {});
 	std::ranges::transform(histMat, cwMat.begin(), [](std::vector<Codeword>& hist) {
