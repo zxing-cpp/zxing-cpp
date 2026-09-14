@@ -33,9 +33,11 @@ enum class Mode
 constexpr int TEXT_COMPACTION_MODE_LATCH = 900;
 constexpr int BYTE_COMPACTION_MODE_LATCH = 901;
 constexpr int NUMERIC_COMPACTION_MODE_LATCH = 902;
-// 903-912 reserved
+// 903-912 reserved in PDF417; assigned to MicroPDF417 function codewords
 constexpr int MODE_SHIFT_TO_BYTE_COMPACTION_MODE = 913;
-// 914-917 reserved
+// 914-917 reserved in PDF417; assigned to MicroPDF417 function codewords
+constexpr int MACRO_05 = 916;
+constexpr int MACRO_06 = 917;
 constexpr int LINKAGE_OTHER = 918;
 // 919 reserved
 constexpr int LINKAGE_EANUCC = 920; // GS1 Composite
@@ -124,13 +126,13 @@ static int ProcessECI(const std::vector<int>& codewords, int codeIndex, const in
 * @param length             The size of the text compaction data.
 * @param result             The data in the character set encoding.
 */
-static void DecodeTextCompaction(const std::vector<int>& textCompactionData, int length, Content& result)
+static void DecodeTextCompaction(const std::vector<int>& textCompactionData, int length, Content& result, Mode initialMode = Mode::ALPHA)
 {
 	// Beginning from an initial state of the Alpha sub-mode
 	// The default compaction mode for PDF417 in effect at the start of each symbol shall always be Text
 	// Compaction mode Alpha sub-mode (uppercase alphabetic). A latch codeword from another mode to the Text
 	// Compaction mode shall always switch to the Text Compaction Alpha sub-mode.
-	Mode subMode = Mode::ALPHA;
+	Mode subMode = initialMode;
 	Mode priorToShiftMode = Mode::ALPHA;
 	int i = 0;
 	while (i < length) {
@@ -260,7 +262,7 @@ static int ProcessTextECI(std::vector<int>& textCompactionData, int& index, cons
 * @param result        The data in the character set encoding.
 * @return The next index into the codeword array.
 */
-static int TextCompaction(const std::vector<int>& codewords, int codeIndex, Content& result)
+static int TextCompaction(const std::vector<int>& codewords, int codeIndex, Content& result, Mode initialMode = Mode::ALPHA)
 {
 	// 2 characters per codeword
 	std::vector<int> textCompactionData((codewords[0] - codeIndex) * 2, 0);
@@ -296,9 +298,17 @@ static int TextCompaction(const std::vector<int>& codewords, int codeIndex, Cont
 			case ECI_USER_DEFINED:
 				codeIndex = ProcessTextECI(textCompactionData, index, codewords, codeIndex, code);
 				break;
+			case 903: // Insert group separator (GS) in Macro_06 (MicroPDF417)
+			case 904:
+			case 905:
+				if (initialMode == Mode::MIXED) {
+					textCompactionData[index++] = MODE_SHIFT_TO_BYTE_COMPACTION_MODE;
+					textCompactionData[index++] = 29; // GS
+					break;
+				}
 			default:
 				if (!TerminatesCompaction(code))
-					throw FormatError();
+					throw FormatError("Reserved codeword encountered in Text Compaction mode");
 
 				codeIndex--;
 				end = true;
@@ -306,7 +316,7 @@ static int TextCompaction(const std::vector<int>& codewords, int codeIndex, Cont
 			}
 		}
 	}
-	DecodeTextCompaction(textCompactionData, index, result);
+	DecodeTextCompaction(textCompactionData, index, result, initialMode);
 	return codeIndex;
 }
 
@@ -640,7 +650,7 @@ int DecodeMacroBlock(const std::vector<int>& codewords, int codeIndex, PDF417Cus
 	return codeIndex;
 }
 
-DecoderResult Decode(const std::vector<int>& codewords)
+DecoderResult Decode(const std::vector<int>& codewords, bool microPDF417)
 {
 	if (codewords.empty() || codewords[0] < 1 || codewords[0] > Size(codewords))
 		return FormatError();
@@ -649,6 +659,7 @@ DecoderResult Decode(const std::vector<int>& codewords)
 	result.symbology = {'L', '2', -1};
 
 	bool readerInit = false;
+	bool macro = false;
 	auto customData = std::make_shared<PDF417CustomData>();
 
 	try {
@@ -665,7 +676,11 @@ DecoderResult Decode(const std::vector<int>& codewords)
 			case ECI_CHARSET:
 			case ECI_GENERAL_PURPOSE:
 			case ECI_USER_DEFINED: codeIndex = ProcessECI(codewords, codeIndex, codewords[0], code, result); break;
-			case BEGIN_MACRO_PDF417_CONTROL_BLOCK: codeIndex = DecodeMacroBlock(codewords, codeIndex, *customData); break;
+			case BEGIN_MACRO_PDF417_CONTROL_BLOCK:
+				if (macro)
+					throw FormatError();
+				codeIndex = DecodeMacroBlock(codewords, codeIndex, *customData);
+				break;
 			case BEGIN_MACRO_PDF417_OPTIONAL_FIELD:
 			case MACRO_PDF417_TERMINATOR:
 				// Should not see these outside a macro block
@@ -686,6 +701,29 @@ DecoderResult Decode(const std::vector<int>& codewords)
 				// Allowed to treat as invalid by ISO/IEC 24723:2010 5.4.1.5 and 5.4.6.1 when in Basic Channel Mode
 				throw UnsupportedError("LINKAGE_OTHER, see ISO/IEC 15438:2015 5.4.1.5");
 				break;
+			// MicroPDF417 function codewords (ISO/IEC 24728:2006 5.4.1.5 and 5.4.1.7)
+			case MACRO_05: // case 916: // 05 Macro strings, implied Numeric Compaction latch
+			case MACRO_06: // case 917: // 06 Macro strings, implied Text Compaction latch
+				if (!microPDF417 || codeIndex != 2 || macro)
+					throw FormatError();
+				macro = true;
+				result.append(code == MACRO_05 ? "[)>\x1e" "05" "\x1d" : "[)>\x1e" "06" "\x1d");
+				codeIndex = code == MACRO_05 ? NumericCompaction(codewords, codeIndex, result)
+									 : TextCompaction(codewords, codeIndex, result, Mode::MIXED);
+				break;
+			// case 903: // UCC/EAN-128 emulation, implied Text Compaction latch
+			// case 904: // UCC/EAN-128 emulation, implied Numeric Compaction latch
+			// case 905: // UCC/EAN-128 emulation with implied 01 AI and 14-digit expansion
+			// case 906: // Linked UCC/EAN-128, implied Text Compaction latch
+			// case 907: // Linked UCC/EAN-128, implied Numeric Compaction latch
+			// case 908: // Code 128 emulation, implied Text Compaction latch
+			// case 909: // Code 128 emulation, implied Numeric Compaction latch
+			// case 910: // Code 128 standard data package, implied Text Compaction latch
+			// case 911: // Code 128 standard data package, implied Numeric Compaction latch
+			// case 912: // Linked UCC/EAN-128 with leading date field
+			// case 914: // Linked UCC/EAN-128 with implied 10 AI
+			// case 915: // Linked UCC/EAN-128 with implied 21 AI
+			// case 919: // Reserved
 			default:
 				if (code >= TEXT_COMPACTION_MODE_LATCH) { // Reserved codewords (all others in switch)
 					// Allowed to treat as invalid by ISO/IEC 24723:2010 5.4.6.1 when in Basic Channel Mode
@@ -702,6 +740,9 @@ DecoderResult Decode(const std::vector<int>& codewords)
 	} catch (Error e) {
 		return e;
 	}
+
+	if (macro)
+		result.append("\x1e\x04");
 
 	if (result.empty() && customData->segmentIndex == -1)
 		return FormatError();

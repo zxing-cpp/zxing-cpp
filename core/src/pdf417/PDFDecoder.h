@@ -14,7 +14,7 @@ class DecoderResult;
 
 namespace Pdf417 {
 
-DecoderResult Decode(const std::vector<int>& codewords);
+DecoderResult Decode(const std::vector<int>& codewords, bool microPDF417 = false);
 
 } // namespace Pdf417
 } // namespace ZXing

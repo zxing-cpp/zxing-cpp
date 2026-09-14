@@ -385,7 +385,7 @@ static bool VerifyCodewordCount(std::vector<int>& codewords, int numECCodewords)
 	return true;
 }
 
-DecoderResult DecodeCodewords(std::vector<int>& codewords, int numECCodewords, std::span<const int> erasures)
+DecoderResult DecodeCodewords(std::vector<int>& codewords, int numECCodewords, std::span<const int> erasures, bool microPDF417)
 {
 	if (codewords.empty())
 		return FormatError();
@@ -398,7 +398,7 @@ DecoderResult DecodeCodewords(std::vector<int>& codewords, int numECCodewords, s
 		return FormatError();
 
 	// Decode the codewords
-	return Decode(codewords).setEcLevel(std::to_string(numECCodewords * 100 / Size(codewords)) + "%").addExtra(BarcodeExtra::UEC, *res, -1.0);
+	return Decode(codewords, microPDF417).setEcLevel(std::to_string(numECCodewords * 100 / Size(codewords)) + "%").addExtra(BarcodeExtra::UEC, *res, -1.0);
 }
 
 /**

@@ -733,7 +733,7 @@ static BarcodeData ScanCandidate(const BitMatrix& image, const Cluster& lraps)
 
 	// TODO: implement proper handling of ECI Descriptor codeword at the start of the codeword sequence
 	// (see ISO 24728:2006, section 5.2.4.2 ECI Descriptor codeword)
-	DecoderResult decoderResult = Pdf417::DecodeCodewords(codewords, si.nECCs, erasures);
+	DecoderResult decoderResult = Pdf417::DecodeCodewords(codewords, si.nECCs, erasures, true);
 	log_l("size: %dx%d, firstRow: %d, cws: %d, rotFamHist: %d/%d/%d/%d, rotFam: %d, nEECs: %d, erasures: %d, valid: %d", si.nCols,
 		  si.nRows, si.startRow, si.nCWs(), rotFamHist[0], rotFamHist[1], rotFamHist[2], rotFamHist[3], si.rotFam, si.nECCs,
 		  Size(erasures), decoderResult.isValid());

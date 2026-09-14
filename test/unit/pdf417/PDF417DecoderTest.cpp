@@ -166,15 +166,24 @@ TEST(PDF417DecoderTest, SampleWithMacroTerminatorOnly)
 }
 
 // Shorthand to decode and return text
-static std::wstring decode(const std::vector<int>& codewords)
+static std::wstring decode(const std::vector<int>& codewords, bool microPDF417 = false)
 {
-	return Decode(codewords).text();
+	return Decode(codewords, microPDF417).text();
 }
 
 // Shorthand to decode and return isValid
-static bool valid(const std::vector<int>& codewords)
+static bool valid(const std::vector<int>& codewords, bool microPDF417 = false)
 {
-	return Decode(codewords).isValid();
+	return Decode(codewords, microPDF417).isValid();
+}
+
+TEST(PDF417DecoderTest, MicroPDF417Macros)
+{
+	// 916 selects Macro 05 and starts Numeric Compaction. Codeword 11 decodes to "1".
+	EXPECT_EQ(decode({ 3, 916, 11 }, true), L"[)>\u001e05\u001d1\u001e\u0004");
+
+	// 917 selects Macro 06 and starts the Mixed sub-mode of Text Compaction. Codeword 0 decodes to "00".
+	EXPECT_EQ(decode({ 5, 917, 0, 903, 0 }, true), L"[)>\u001e06\u001d00\u001d00\u001e\u0004");
 }
 
 TEST(PDF417DecoderTest, TextCompactionSimple)

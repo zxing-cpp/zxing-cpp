@@ -35,7 +35,7 @@ inline int NumECCodeWords(int ecLevel)
 	return 1 << (ecLevel + 1);
 }
 
-DecoderResult DecodeCodewords(std::vector<int>& codewords, int numECC, std::span<const int> erasures = {});
+DecoderResult DecodeCodewords(std::vector<int>& codewords, int numECC, std::span<const int> erasures = {}, bool microPDF417 = false);
 
 } // Pdf417
 } // ZXing
