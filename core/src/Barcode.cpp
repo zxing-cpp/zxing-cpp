@@ -153,16 +153,41 @@ std::string Barcode::extra(std::string_view key) const
 	if (key == "ALL") {
 		if (format() == BarcodeFormat::None)
 			return {};
-		auto res =
-			StrCat("{", JsonProp("Text", text(TextMode::Plain)), JsonProp("HRI", text(TextMode::HRI)),
-				   JsonProp("TextECI", text(TextMode::ECI)), JsonProp("Bytes", text(TextMode::Hex)),
-				   JsonProp("Identifier", symbologyIdentifier()), JsonProp("Format", Name(format())),
-				   JsonProp("Symbology", Name(Symbology(format()))), JsonProp("ContentType", isValid() ? ToString(contentType()) : ""),
-				   JsonProp("Position", ToString(position())), JsonProp("HasECI", hasECI()), JsonProp("IsMirrored", isMirrored()),
-				   JsonProp("IsInverted", isInverted()), d->extra, JsonProp("Error", ToString(error())));
+		auto res = StrCat(
+			"{", JsonProp("Text", text(TextMode::Plain)), JsonProp("HRI", text(TextMode::HRI)),
+			JsonProp("TextECI", text(TextMode::ECI)), JsonProp("Bytes", text(TextMode::Hex)),
+			JsonProp("Identifier", symbologyIdentifier()), JsonProp("Format", Name(format())),
+			JsonProp("Symbology", Name(Symbology(format()))), JsonProp("ContentType", isValid() ? ToString(contentType()) : ""),
+			JsonProp("Position", ToString(position())), JsonProp("Rotation", rotation()), JsonProp("HasECI", hasECI()),
+			JsonProp("IsMirrored", isMirrored()), JsonProp("IsInverted", isInverted()), JsonProp("ReaderInit", readerInit()),
+			JsonProp("IsPartOfSequence", isPartOfSequence()), JsonProp("SequenceSize", sequenceSize(), -1),
+			JsonProp("SequenceIndex", sequenceIndex(), -1), JsonProp("SequenceId", sequenceId()),
+			JsonProp("IsLastInSequence", isLastInSequence()), d->extra, JsonProp("Error", ToString(error())));
 		res.back() = '}';
 		return res;
 	}
+
+	// clang-format off
+	if (key == "TextPlain")        return text(TextMode::Plain);
+	if (key == "TextHRI")          return text(TextMode::HRI);
+	if (key == "TextECI")          return text(TextMode::ECI);
+	if (key == "TextEscaped")      return text(TextMode::Escaped);
+	if (key == "TextHex")          return text(TextMode::Hex);
+	if (key == "Format")           return ToString(format());
+	if (key == "ContentType")      return ToString(contentType());
+	if (key == "Position")         return ToString(position());
+	if (key == "Rotation")         return std::to_string(rotation());
+	if (key == "HasECI")           return hasECI() ? "true" : "false";
+	if (key == "Identifier")       return symbologyIdentifier();
+	if (key == "IsMirrored")       return isMirrored() ? "true" : "false";
+	if (key == "IsInverted")       return isInverted() ? "true" : "false";
+	if (key == "IsPartOfSequence") return isPartOfSequence() ? "true" : "false";
+	if (key == "IsLastInSequence") return isLastInSequence() ? "true" : "false";
+	if (key == "SequenceId")       return sequenceId();
+	if (key == "SequenceIndex")    return std::to_string(sequenceIndex());
+	if (key == "SequenceSize")     return std::to_string(sequenceSize());
+	// clang-format on
+
 	return d->extra.empty() ? ""
 		   : key.empty()    ? StrCat("{", std::string_view(d->extra).substr(0, d->extra.size() - 1), "}") // remove trailing ','
 							: JsonGet<std::string>(d->extra, key).value_or(""); // make sure JsonUnescape() is called
