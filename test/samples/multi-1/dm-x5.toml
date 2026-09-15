@@ -1,0 +1,13 @@
+TextPlain = "X12X12X12X12"
+Format = "Data Matrix"
+
+find = "sa"
+
+[[symbol]]
+[[symbol]]
+[[symbol]]
+[[symbol]]
+[[symbol]]
+
+# TODO: one should be detectable in fast mode. 'ZXingReader -fast -nor -noi -nos' works!?!
+# find = "sa fa"

@@ -1,0 +1,12 @@
+Format = "EAN-8"
+
+[[symbol]]
+TextPlain = "48512343"
+
+[[symbol]]
+TextPlain = "12345670"
+find = "sa"
+
+[[symbol]]
+TextPlain = "67678983"
+find = "sa"

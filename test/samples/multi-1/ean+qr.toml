@@ -1,0 +1,7 @@
+[[symbol]]
+TextPlain = "www.airtable.com/jobs"
+Format = "QR Code"
+
+[[symbol]]
+TextPlain = "0031415926531"
+Format = "EAN-13"

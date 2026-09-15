@@ -1,0 +1,4 @@
+TextPlain = "I have the best words."
+
+# works with tryDownscale
+missing = "sa"

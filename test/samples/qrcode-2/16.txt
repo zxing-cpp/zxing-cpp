@@ -1,4 +1,0 @@
-[内側QRコード]
-
-*ダブルQR*
-http://d-qr.net/ex/

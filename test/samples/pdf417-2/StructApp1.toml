@@ -1,0 +1,19 @@
+Identifier = "]L2"
+SequenceSize = 3
+SequenceId = "001"
+
+[[symbol]]
+TextPlain = "US:$439.97;CN:"
+SequenceIndex = 0
+
+[[symbol]]
+TextPlain = "£¤ 3149.79;DE:"
+SequenceIndex = 1
+
+[[symbol]]
+TextPlain = "444,90 ､;"
+SequenceIndex = 2
+
+[[symbol]]
+TextPlain = "US:$439.97;CN:￥ 3149.79;DE:444,90 €;"
+SequenceIndex = -1

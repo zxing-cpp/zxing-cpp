@@ -1,0 +1,4 @@
+[[symbol]]
+TextEscaped = "[内側QRコード]<CR><LF><CR><LF>*ダブルQR*<CR><LF>http://d-qr.net/ex/"
+[[symbol]]
+TextEscaped = "[外側QRコード]<CR><LF> <CR><LF>*ﾀﾞﾌﾞﾙQR*<CR><LF>http://d-qr.net/ex/"

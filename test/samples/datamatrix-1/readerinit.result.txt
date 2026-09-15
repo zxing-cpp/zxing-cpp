@@ -1,2 +1,0 @@
-symbologyIdentifier=]d1
-readerInit=true

@@ -1,0 +1,15 @@
+[[symbol]]
+TextPlain = "PDF 417 Code"
+Format = "PDF417"
+
+[[symbol]]
+TextPlain = "CODE 39"
+Format = "Code 39"
+
+[[symbol]]
+TextPlain = "QR Code"
+Format = "QR Code"
+
+[[symbol]]
+TextPlain = "Aztec Code"
+Format = "Aztec"

@@ -1,4 +1,0 @@
-symbologyIdentifier=]z6
-sequenceSize=7
-sequenceIndex=3
-sequenceId=Z1.txt

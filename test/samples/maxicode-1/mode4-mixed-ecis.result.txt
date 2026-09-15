@@ -1,2 +1,0 @@
-symbologyIdentifier=]U0
-ecLevel=4

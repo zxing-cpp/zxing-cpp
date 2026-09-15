@@ -1,0 +1,5 @@
+Identifier = "]E3"
+
+formats = "upca"
+eanAddOnSymbol = "require"
+find = "sh fh"

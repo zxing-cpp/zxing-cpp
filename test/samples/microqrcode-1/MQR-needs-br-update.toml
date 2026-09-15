@@ -1,0 +1,4 @@
+TextPlain = "Micro QR Code"
+
+# TODO: platform depending result
+missing = "s12 f2"

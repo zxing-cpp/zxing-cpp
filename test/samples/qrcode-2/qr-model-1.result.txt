@@ -1,2 +1,0 @@
-symbologyIdentifier=]Q0
-ecLevel=M

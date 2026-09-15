@@ -1,1 +1,2 @@
-* binary
+# prevent git CRLF/LF normalization
+* -text
