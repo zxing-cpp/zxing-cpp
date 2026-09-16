@@ -335,7 +335,7 @@ static void runBlackBoxTestDirectory(const fs::path& directory)
 	Properties defaults;
 	defaults["find"] = format & BarcodeFormat::AllLinear ? "sh fh" : "sa fh";
 	if (format != BarcodeFormat::None) {
-		defaults["Format"] = ToString(format);
+		defaults["Format"] = Name(format);
 	}
 
 	defaults = readToml(directory / "!defaults.toml", defaults).front();
@@ -400,7 +400,7 @@ static void runBlackBoxTestDirectory(const fs::path& directory)
 				}
 
 				for (const auto& barcode : found) {
-					auto str = std::format("{}: \"{}\"", ToString(barcode.format()), Abbrev(barcode.text(TextMode::Escaped), 30));
+					auto str = std::format("{}: \"{}\"", EnumName(barcode.format()), Abbrev(barcode.text(TextMode::Escaped), 30));
 					unexpected[test.imgPath][str](mode, rotation) = true;
 				}
 			}

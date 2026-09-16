@@ -43,7 +43,7 @@ int main(int argc, char** argv)
 			Barcode barcode = ReadBarcode(ImageLoader::load(argv[i]).rotated(rotation), opts);
 			std::print("{}: ", argv[i]);
 			if (barcode.isValid())
-				std::println("{}: {}", ToString(barcode.format()), barcode.text());
+				std::println("{}: {}", EnumName(barcode.format()), barcode.text());
 			else
 				std::println("FAILED");
 			if (barcode.isValid() && getenv("WRITE_TEXT")) {

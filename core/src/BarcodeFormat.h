@@ -134,6 +134,9 @@ BarcodeFormat Symbology(BarcodeFormat format);
 /// Returns the human-readable name of the given barcode format.
 std::string_view Name(BarcodeFormat format);
 
+/// Returns the C++ enum identifier of the given barcode format.
+std::string_view EnumName(BarcodeFormat format);
+
 /// Test if left hand side (e == element) is 'inside' right hand side (s == set) (e.g. MicroQRCode <= QRCode).
 bool operator<=(BarcodeFormat e, BarcodeFormat s);
 

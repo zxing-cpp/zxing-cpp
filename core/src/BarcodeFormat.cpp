@@ -32,6 +32,17 @@ std::string_view Name(BarcodeFormat format)
 	};
 }
 
+std::string_view EnumName(BarcodeFormat format)
+{
+	switch (format) {
+#define X(NAME, SYM, VAR, FLAGS, ZINT, ENABLED, HRI) \
+	case BarcodeFormat(ZX_BCF_ID(SYM, VAR)): return #NAME;
+		ZX_BCF_LIST(X)
+#undef X
+	default: return "Unknown";
+	};
+}
+
 BarcodeFormat BarcodeFormatFromString(std::string_view str)
 {
 	if (str.size() < 3)
