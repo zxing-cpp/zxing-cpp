@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "Error.h"
+#include "ZXAlgorithms.h"
 
 namespace ZXing {
 
@@ -17,8 +18,7 @@ std::string Error::location() const
 
 std::string ToString(const Error& e)
 {
-	const char* name[] = {"", "FormatError", "ChecksumError", "Unsupported"};
-	std::string ret = name[static_cast<int>(e.type())];
+	std::string ret = EnumToString(e.type(), {"", "FormatError", "ChecksumError", "Unsupported"});
 	if (!e.msg().empty())
 		ret += " (" + e.msg() + ")";
 	if (auto location = e.location(); !location.empty())

@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include <string>
+
 namespace ZXing::QRCode {
 
 /**
@@ -23,7 +25,7 @@ enum class ErrorCorrectionLevel
 	Invalid, // denotes in invalid/unknown value
 };
 
-const char* ToString(ErrorCorrectionLevel l);
+std::string ToString(ErrorCorrectionLevel l);
 ErrorCorrectionLevel ECLevelFromString(const char* str);
 ErrorCorrectionLevel ECLevelFromBits(int bits, bool isMicro = false);
 int BitsFromECLevel(ErrorCorrectionLevel l);

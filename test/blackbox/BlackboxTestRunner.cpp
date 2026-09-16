@@ -74,14 +74,9 @@ static std::vector<fs::path> getImagesInDirectory(const fs::path& directory)
 
 enum class TestMode { Slow, Fast, Pure };
 
-static std::string_view ToString(TestMode mode)
+std::string ToString(TestMode mode)
 {
-	switch (mode) {
-	case TestMode::Slow: return "slow";
-	case TestMode::Fast: return "fast";
-	case TestMode::Pure: return "pure";
-	}
-	return {};
+	return EnumToString(mode, {"slow", "fast", "pure"});
 }
 
 struct TestFilter

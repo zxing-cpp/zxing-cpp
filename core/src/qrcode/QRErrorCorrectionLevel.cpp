@@ -5,16 +5,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "QRErrorCorrectionLevel.h"
+#include "ZXAlgorithms.h"
 
 #include <cassert>
 
 namespace ZXing::QRCode {
 
-const char* ToString(ErrorCorrectionLevel l)
+std::string ToString(ErrorCorrectionLevel l)
 {
 	assert(l != ErrorCorrectionLevel::Invalid);
-	static const char* const LEVEL_STR[] = {"L", "M", "Q", "H", nullptr};
-	return LEVEL_STR[static_cast<int>(l)];
+	return EnumToString(l, {"L", "M", "Q", "H", nullptr});
 }
 
 ErrorCorrectionLevel ECLevelFromString(const char* str)

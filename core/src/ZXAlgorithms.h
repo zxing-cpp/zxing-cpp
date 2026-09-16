@@ -21,6 +21,20 @@
 #include <utility>
 #include <vector>
 
+#ifndef __cpp_lib_to_underlying
+
+namespace std {
+
+template <typename E, typename = std::enable_if_t<std::is_enum_v<E>>>
+constexpr std::underlying_type_t<E> to_underlying(E e) noexcept
+{
+	return static_cast<std::underlying_type_t<E>>(e);
+}
+
+} // namespace std
+
+#endif // __cpp_lib_to_underlying
+
 namespace ZXing {
 
 template <class T, class U>
@@ -230,6 +244,16 @@ inline T FromString(std::string_view sv)
 	return val;
 }
 
+// generic helper to render a scoped/plain enum via a name lookup table, e.g. ToString(val, {"A", "B", ...})
+template <typename E> requires std::is_enum_v<E>
+std::string EnumToString(E val, std::initializer_list<const char*> names)
+{
+	auto idx = std::to_underlying(val);
+	if (idx < 0 || idx >= Size(names))
+		throw std::out_of_range(StrCat("Invalid index ", std::to_string(idx), " for enum ", TypeName<E>()));
+	return names.begin()[idx];
+}
+
 // Trim whitespace from both ends
 inline std::string_view TrimWS(std::string_view sv, const char* ws = " \t\n\r")
 {
@@ -337,17 +361,3 @@ T LoadU(const void* ptr)
 }
 
 } // ZXing
-
-#ifndef __cpp_lib_to_underlying
-
-namespace std {
-
-template <typename E, typename = std::enable_if_t<std::is_enum_v<E>>>
-constexpr std::underlying_type_t<E> to_underlying(E e) noexcept
-{
-	return static_cast<std::underlying_type_t<E>>(e);
-}
-
-} // namespace std
-
-#endif // __cpp_lib_to_underlying
