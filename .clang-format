@@ -8,7 +8,7 @@ TabWidth: 4
 UseTab: ForContinuationAndIndentation # ForIndentation
 
 AccessModifierOffset: -4
-ColumnLimit: 135
+ColumnLimit: 130
 
 #AlignConsecutiveAssignments: true
 AlignConsecutiveBitFields: true
