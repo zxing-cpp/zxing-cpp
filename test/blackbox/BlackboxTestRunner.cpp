@@ -334,9 +334,7 @@ static void runBlackBoxTestDirectory(const fs::path& directory)
 
 	Properties defaults;
 	defaults["find"] = format & BarcodeFormat::AllLinear ? "sh fh" : "sa fh";
-	if (format != BarcodeFormat::None) {
-		defaults["Format"] = Name(format);
-	}
+	defaults["Format"] = Name(format);
 
 	defaults = readToml(directory / "!defaults.toml", defaults).front();
 	auto imagePaths = getImagesInDirectory(directory);
@@ -371,6 +369,8 @@ static void runBlackBoxTestDirectory(const fs::path& directory)
 					found.push_back(MergeStructuredAppendSequence(found));
 
 				for (const auto& expected : test.props) {
+					if (!(BarcodeFormatFromString(expected.at("Format")) & BarcodeFormat::AllReadable))
+						continue;
 					auto expectAt = parseTestFilter(expected.at("find"));
 					if (expected.contains("missing"))
 						expectAt &= !parseTestFilter(expected.at("missing"));
