@@ -116,9 +116,6 @@ public:
 	/// Returns the rotation of the barcode in degrees.
 	int rotation() const;
 
-	/// Returns the rotation of the barcode in degrees
-	[[deprecated("Use rotation() instead")]] int orientation() const; // deprecated in v3.2
-
 	/// Returns whether the symbol is mirrored (currently only supported by QRCode and DataMatrix).
 	bool isMirrored() const;
 	/// Returns whether the symbol is inverted / has reversed reflectance (see ReaderOptions::tryInvert).
@@ -165,6 +162,9 @@ public:
 	std::string extra(std::string_view key = "") const;
 
 	/// @cond DEPRECATED
+	/// Returns the rotation of the barcode in degrees
+	[[deprecated("Use rotation() instead")]] int orientation() const; // deprecated in v3.2
+
 	/// Returns the error correction level of the symbol (empty string if not applicable).
 	// [[deprecated ("use extra(BarcodeExtra::ECLevel) instead")]]
 	std::string ecLevel() const { return extra(BarcodeExtra::ECLevel); }
