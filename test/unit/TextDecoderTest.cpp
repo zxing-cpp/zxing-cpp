@@ -13,6 +13,8 @@
 using namespace ZXing;
 using namespace testing;
 
+#if ZXING_ENABLE_UNICODE
+
 TEST(TextDecoderTest, AppendBINARY_ASCII)
 {
 	uint8_t data[256];
@@ -207,3 +209,5 @@ TEST(TextDecoderTest, AppendUTF16BE)
 		EXPECT_EQ(ToUtf8(str), "𐀀");
 	}
 }
+
+#endif

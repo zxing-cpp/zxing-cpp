@@ -23,9 +23,6 @@ namespace ZXing {
 
 void TextEncoder::GetBytes(const std::string& str, CharacterSet charset, std::string& bytes)
 {
-#if 0
-	bytes = str;
-#else
 	int eci = ToInt(ToECI(charset));
 	const int str_len = narrow_cast<int>(str.length());
 	int eci_len;
@@ -48,7 +45,7 @@ void TextEncoder::GetBytes(const std::string& str, CharacterSet charset, std::st
 		bytes.clear();
 		throw std::invalid_argument("Unexpected charcode");
 	}
-#else
+#elif ZXING_ENABLE_UNICODE
 	int error_number = zueci_dest_len_eci(eci, reinterpret_cast<const unsigned char *>(str.data()), str_len, &eci_len);
 	if (error_number >= ZUECI_ERROR) // Shouldn't happen
 		throw std::logic_error("Internal error `zueci_dest_len_eci()`");
@@ -61,10 +58,15 @@ void TextEncoder::GetBytes(const std::string& str, CharacterSet charset, std::st
 		bytes.clear();
 		throw std::invalid_argument("Unexpected charcode");
 	}
-#endif // ZXING_USE_ZINT
+#else
+	if (eci == ToInt(ECI::Binary) || eci == ToInt(ECI::UTF8)
+		|| std::ranges::all_of(str, [](char c) { return static_cast<unsigned char>(c) < 0x80; }))
+		bytes.assign(str.begin(), str.end());
+	else
+		throw std::invalid_argument("Non-ASCII input with Unicode disabled");
+#endif
 
 	bytes.resize(eci_len); // Actual length
-#endif
 }
 
 void TextEncoder::GetBytes(const std::wstring& str, CharacterSet charset, std::string& bytes)

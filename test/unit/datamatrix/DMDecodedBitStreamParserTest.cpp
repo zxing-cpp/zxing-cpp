@@ -66,6 +66,16 @@ TEST(DMDecodeTest, AsciiError)
 // Most of the following examples are taken from the DMHighLevelEncodeTest.cpp tests.
 // For an explanation of the different cases, see there.
 
+TEST(DMDecodeTest, Text)
+{
+	EXPECT_EQ(decode({239, 91, 11, 91, 11, 91, 11, 254}), L"aimaimaim");
+	EXPECT_EQ(decode({239, 91, 11, 91, 11, 91, 11, 254, 40, 129}), L"aimaimaim'");
+	EXPECT_EQ(decode({239, 91, 11, 91, 11, 87, 218, 110}), L"aimaimaIm");
+	EXPECT_EQ(decode({239, 91, 11, 91, 11, 91, 11, 254, 67, 129}), L"aimaimaimB");
+	EXPECT_EQ(decode({239, 91, 11, 91, 11, 91, 11, 16, 218, 236, 107, 181, 69, 254, 129, 237}), L"aimaimaim{txt}\x04");
+}
+
+#if ZXING_ENABLE_UNICODE
 TEST(DMDecodeTest, C40)
 {
 	EXPECT_EQ(decode({230, 91, 11, 91, 11, 91, 11, 254}), L"AIMAIMAIM");
@@ -81,15 +91,6 @@ TEST(DMDecodeTest, C40)
 	EXPECT_EQ(decode({230, 91, 11, 91, 11, 91, 11, 91, 11, 91, 11, 91, 11, 254, 66, 74}), L"AIMAIMAIMAIMAIMAIMAI");
 }
 
-TEST(DMDecodeTest, Text)
-{
-	EXPECT_EQ(decode({239, 91, 11, 91, 11, 91, 11, 254}), L"aimaimaim");
-	EXPECT_EQ(decode({239, 91, 11, 91, 11, 91, 11, 254, 40, 129}), L"aimaimaim'");
-	EXPECT_EQ(decode({239, 91, 11, 91, 11, 87, 218, 110}), L"aimaimaIm");
-	EXPECT_EQ(decode({239, 91, 11, 91, 11, 91, 11, 254, 67, 129}), L"aimaimaimB");
-	EXPECT_EQ(decode({239, 91, 11, 91, 11, 91, 11, 16, 218, 236, 107, 181, 69, 254, 129, 237}), L"aimaimaim{txt}\x04");
-}
-
 TEST(DMDecodeTest, C40AndTextShiftUpper)
 {
 	// additional shiftUpper test: (1->shift 2, 30->upperShift, 3->' '+128==0xa0) == 2804 == 0x0af4
@@ -97,6 +98,7 @@ TEST(DMDecodeTest, C40AndTextShiftUpper)
 	EXPECT_EQ(decode({230, 0x0a, 0xf4}), L"\xA0"); // C40
 	EXPECT_EQ(decode({239, 0x0a, 0xf4}), L"\xA0"); // Text
 }
+#endif // ZXING_ENABLE_UNICODE
 
 TEST(DMDecodeTest, X12)
 {

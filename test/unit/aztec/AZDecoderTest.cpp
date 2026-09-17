@@ -178,6 +178,7 @@ static void check_si(int line, const DecoderResult& res, const std::string& si, 
 		EXPECT_EQ(ToHex(res.content().bytesECI()), bytesECI) << "line:" << line;
 }
 
+#if ZXING_ENABLE_UNICODE
 TEST(AZDecoderTest, SymbologyIdentifier)
 {
 	// Plain
@@ -241,6 +242,7 @@ TEST(AZDecoderTest, SymbologyIdentifier)
 	// ECI 3 with Structured Append (no ID) with AIM - "]zB" ditto
 	check_si(__LINE__, getData("111011110100010001010000000000001010100010000000000000000011"), "]z8", "AB", 0, 4, "]zB\\000026AB");
 }
+#endif // ZXING_ENABLE_UNICODE
 
 // Helper taking 5-bit word array to call GetEncodedData()
 static DecoderResult getData(const ByteArray& bytes)

@@ -219,6 +219,7 @@ TEST(PDF417DecoderTest, TextCompactionSimple)
 		L"AB{}  C#+  de{}  {}F  12{}  G{}  H");
 }
 
+#if ZXING_ENABLE_UNICODE
 TEST(PDF417DecoderTest, TextCompactionShiftByte)
 {
 	// Alpha ShiftByte Alpha
@@ -272,6 +273,7 @@ TEST(PDF417DecoderTest, TextCompactionShiftByte)
 	// Text, Numeric, ShiftByte
 	EXPECT_FALSE(valid({ 13, 1, 63, 125, 902, 17, 110, 836, 811, 223, 913, 255, 775 }));
 }
+#endif // ZXING_ENABLE_UNICODE
 
 TEST(PDF417DecoderTest, ByteCompaction)
 {
@@ -363,6 +365,7 @@ TEST(PDF417DecoderTest, CompactionCombos)
 		L"1234567890123\x7F\x7F\x7F" L"ABCDEFVWXYZ");
 }
 
+#if ZXING_ENABLE_UNICODE
 TEST(PDF417DecoderTest, ECISingleText)
 {
 	// ECI 3 "Aé"
@@ -498,6 +501,7 @@ TEST(PDF417DecoderTest, ECIMultipleNumeric)
 		112, 924, 0, 382, 878, 524, 177, 927, 26, 901, 0xCE, 0x98 }),
 		L"12345678901234567890123456789\u3930\u3132\u3334\u3536\u3738\u3930\u3132A\u0100\u0141\u0398");
 }
+#endif // ZXING_ENABLE_UNICODE
 
 TEST(PDF417DecoderTest, ECIInvalid)
 {

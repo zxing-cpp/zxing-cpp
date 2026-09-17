@@ -19,6 +19,8 @@ bool operator==(const string& lhs, const char8_t* rhs)
 }
 } // namespace std
 
+#if ZXING_ENABLE_UNICODE
+
 TEST(ContentTest, Base)
 {
 	{ // Null
@@ -68,7 +70,7 @@ TEST(ContentTest, Base)
 #endif
 		EXPECT_EQ(c.utf8(), u8"A\u00E9ZA\u0449Z");
 	}
-#endif
+#endif // defined(ZXING_READERS) || defined(ZXING_USE_ZINT)
 }
 
 #if defined(ZXING_READERS) || defined(ZXING_USE_ZINT)
@@ -95,7 +97,7 @@ TEST(ContentTest, GuessEncoding)
 		EXPECT_EQ(c.utf8(), u8"A\u30C6Z");
 	}
 }
-#endif
+#endif // defined(ZXING_READERS) || defined(ZXING_USE_ZINT)
 
 #if defined(ZXING_READERS) || defined(ZXING_USE_ZINT)
 TEST(ContentTest, ECI)
@@ -150,4 +152,6 @@ TEST(ContentTest, ECI)
 		EXPECT_EQ(c.bytesECI().asString(), std::string_view("]d4\\000003C:\\\\Test\\000026Täßt"));
 	}
 }
-#endif
+#endif // defined(ZXING_READERS) || defined(ZXING_USE_ZINT)
+
+#endif // ZXING_ENABLE_UNICODE

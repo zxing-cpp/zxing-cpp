@@ -376,6 +376,15 @@ static void runBlackBoxTestDirectory(const fs::path& directory)
 						expectAt &= !parseTestFilter(expected.at("missing"));
 					if (!expectAt(mode, rotation))
 						continue;
+#if !ZXING_ENABLE_UNICODE
+					std::string txt;
+					if (expected.contains("TextPlain"))
+						txt = expected.at("TextPlain");
+					if (expected.contains("TextEscaped"))
+						txt = expected.at("TextEscaped");
+					if (std::ranges::any_of(txt, [](char c) { return static_cast<unsigned char>(c) > 127; }))
+						continue;
+#endif
 
 					// search expected in found, if not in found, report missing
 					auto it = std::ranges::find_if(found, [&](const auto& barcode) {
@@ -401,6 +410,10 @@ static void runBlackBoxTestDirectory(const fs::path& directory)
 
 				for (const auto& barcode : found) {
 					auto str = std::format("{}: \"{}\"", EnumName(barcode.format()), Abbrev(barcode.text(TextMode::Escaped), 30));
+#if !ZXING_ENABLE_UNICODE
+					if (str.ends_with("\"\""))
+						continue;
+#endif
 					unexpected[test.imgPath][str](mode, rotation) = true;
 				}
 			}

@@ -126,6 +126,7 @@ TEST(RMQRDecoderTest, RMQRCodeR11x27H)
 	EXPECT_EQ(result.content().text(TextMode::Plain), "ABCDEF");
 }
 
+#if ZXING_ENABLE_UNICODE
 TEST(RMQRDecoderTest, RMQRCodeR13x27M_ECI)
 {
 	const auto bitMatrix = ParseBitMatrix(
@@ -151,6 +152,7 @@ TEST(RMQRDecoderTest, RMQRCodeR13x27M_ECI)
 	EXPECT_EQ(result.content().encodings[0].eci, ECI::Shift_JIS);
 	EXPECT_EQ(result.content().symbology.toString(), "]Q1");
 }
+#endif // ZXING_ENABLE_UNICODE
 
 TEST(RMQRDecoderTest, RMQRCodeR15x59H_GS1)
 {
