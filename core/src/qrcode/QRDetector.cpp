@@ -824,7 +824,7 @@ DetectorResult SampleMQR(const BitMatrix& image, const ConcentricPattern& fp)
 	for (int i = 0; i < dim; ++i) {
 		auto px = bestPT(centered(PointI{i, dim}));
 		auto py = bestPT(centered(PointI{dim, i}));
-		blackPixels += cur.blackAt(px) && cur.blackAt(py);
+		blackPixels += cur.blackAt(px) + cur.blackAt(py);
 	}
 	if (blackPixels > 2 * dim / 3)
 		return {};
