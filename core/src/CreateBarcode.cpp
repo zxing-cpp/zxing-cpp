@@ -346,8 +346,6 @@ Barcode CreateBarcode(const void* data, int size, int mode, const CreatorOptions
 	int warning;
 	CHECK_WARN(ZBarcode_Encode_and_Buffer(zint, (uint8_t*)data, size, 0), warning);
 
-	log_l("create symbol with size: %dx%d", zint->width, zint->rows);
-
 #if 0 // use ReadBarcode to create Barcode object
 	auto buffer = std::vector<uint8_t>(zint->bitmap_width * zint->bitmap_height);
 	std::transform(zint->bitmap, zint->bitmap + zint->bitmap_width * zint->bitmap_height, buffer.data(),
