@@ -247,7 +247,8 @@ FinderPatternSets GenerateFinderPatternSets(FinderPatterns& patterns)
 				// Make sure distAB and distBC don't differ more than reasonable:
 				// equivalent to distAB > 2 * distBC || distBC > 2 * distAB but avoids sqrt.
 				// TODO: make sure the constant 2 is not too conservative for reasonably tilted symbols
-				if (useFilters && (distAB2 > 4 * distBC2 || distBC2 > 4 * distAB2)) {
+				int maxRatio = useFilters ? 4 : 8; // be more tolerant but still reject degenerate triangles (especially duplicate FPs)
+				if (distAB2 > maxRatio * distBC2 || distBC2 > maxRatio * distAB2) {
 					stats.rejLegRatio++;
 					continue;
 				}
