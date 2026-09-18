@@ -25,8 +25,9 @@ namespace ZXing {
 class LocalGrid
 {
 	const BitMatrix* img;
-	PointF origin, stepX, stepY;
+	const PerspectiveTransform& mod2Pix;
 	PointI dim, center;
+	PointF origin, stepX, stepY;
 
 	using Value = BitMatrixCursorF::Value;
 
@@ -46,11 +47,18 @@ public:
 	 *
 	 * @param image The source BitMatrix representing the image data.
 	 * @param mod2Pix The (global) PerspectiveTransform used to map module coordinates to pixel coordinates.
-	 * @param p The logical position of the grid origin in module coordinates.
 	 * @param dim The dimensions (width and height) of the (global) grid in modules.
+	 */
+	LocalGrid(const BitMatrix& image, const PerspectiveTransform& mod2Pix, PointI dim) : img(&image), mod2Pix(mod2Pix), dim(dim)
+	{}
+
+	/**
+	 * @brief Sets/finds the origin of the local grid near the specified module coordinates.
+	 *
+	 * @param p The logical position of the grid origin in module coordinates.
 	 * @param offset Optional offset in modules to specify the starting position of the search for the module center.
 	 */
-	LocalGrid(const BitMatrix& image, const PerspectiveTransform& mod2Pix, PointI p, PointI dim, PointI offset = {});
+	LocalGrid& at(PointI p, PointI offset = {});
 
 	inline PointF getPos(PointF p = {}) const { return origin + p.x * stepX + p.y * stepY; }
 	inline PointF getPos(PointI p) const { return getPos(PointF(p.x, p.y)); }
@@ -84,8 +92,11 @@ public:
 	 * This function attempts to locate a pattern in the grid by starting from given points
 	 * and following specified directions for timing, black, and white modules.
 	 */
-	bool findPattern(int radius, PointI timingStart, Directions timingDirs, PointI blackStart, Directions blackDirs, PointI whiteStart,
-					 Directions whiteDirs);
+	std::optional<PointF> findPattern(int radius, PointI timingStart, Directions timingDirs, PointI blackStart,
+									  Directions blackDirs, PointI whiteStart, Directions whiteDirs);
+
+	std::optional<PointF> findPattern(int radius, PointI timingStart, std::string_view timingDirs, PointI blackStart,
+									  std::string_view blackDirs, PointI whiteStart, std::string_view whiteDirs);
 };
 
 } // namespace ZXing

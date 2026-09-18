@@ -464,10 +464,11 @@ DetectorResults Detect(const BitMatrix& image, bool isPure, bool tryHarder, int 
 				srcQuad = Move(CenteredSquare(32 * (R - r)), center);
 				auto idxs = std::array<PointI, 4>{PointI{-1, -1}, {1, -1}, {1, 1}, {-1, 1}};
 				QuadrilateralF dstQuad;
+				auto grid = LocalGrid(image, mod2Pix, PointI{dim, dim});
 				for (int i = 0; i < 4; ++i) {
 					auto pi = (R - r) * idxs[i] + Size(apM) / 2 * PointI{1, 1};
 					log_l("\nlocate %dx%d", pi.x, pi.y);
-					apP.set(pi.x, pi.y, LocalGrid(image, mod2Pix, PointI(srcQuad[i]), {dim, dim}).findTimingPatternCross(true, 4));
+					apP.set(pi.x, pi.y, grid.at(PointI(srcQuad[i])).findTimingPatternCross(true, 4));
 					dstQuad[i] = apP(pi.x, pi.y).value_or(mod2Pix(srcQuad[i]));
 					log(dstQuad[i], LOG_G);
 				}
@@ -476,11 +477,12 @@ DetectorResults Detect(const BitMatrix& image, bool isPure, bool tryHarder, int 
 
 #if 1
 			// find the remaining (non-corner) alignment patterns
+			auto grid = LocalGrid(image, mod2Pix, PointI{dim, dim});
 			for (int y = 0; y < Size(apM); ++y)
 				for (int x = 0; x < Size(apM); ++x) {
 					if (!apP(x, y)) {
 						log_l("\nlocate %dx%d", x, y);
-						apP.set(x, y, LocalGrid(image, mod2Pix, {apM[x], apM[y]}, {dim, dim}).findTimingPatternCross(true, 4));
+						apP.set(x, y, grid.at({apM[x], apM[y]}).findTimingPatternCross(true, 4));
 					}
 				}
 #endif

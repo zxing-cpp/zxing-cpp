@@ -1041,19 +1041,7 @@ static DetectorResults Scan(EdgeTracer& startTracer, std::array<DMRegressionLine
 		apX.back() = dimT - 1;
 		apY.back() = dimR - 1;
 		auto apP = Matrix<std::optional<PointF>>(Size(apX), Size(apY));
-
-		constexpr PointI l(-1, 0), r(1, 0), u(0, -1), d(0, 1);
-
-		// Find the position of the alignment pattern center by looking for the given b/w patterns around the initial estimate
-		// based on the mod2Pix projection.
-		auto findAP = [&](PointI p, PointI offset, int radius, PointI timingStart, LocalGrid::Directions timingDirs, PointI blackStart,
-						  LocalGrid::Directions blackDirs, PointI whiteStart,
-						  LocalGrid::Directions whiteDirs) -> std::optional<PointF> {
-			auto lg = LocalGrid(*startTracer.img, mod2Pix, p, {dimT, dimR}, offset);
-			if (lg.findPattern(radius, timingStart, timingDirs, blackStart, blackDirs, whiteStart, whiteDirs))
-				return lg.getPos();
-			return {};
-		};
+		auto grid = LocalGrid(*startTracer.img, mod2Pix, {dimT, dimR});
 
 		for (int y = 0; y < Size(apY); ++y)
 			for (int x = 0; x < Size(apX); ++x) {
@@ -1062,23 +1050,23 @@ static DetectorResults Scan(EdgeTracer& startTracer, std::array<DMRegressionLine
 				int Nx = Size(apX) - 1, Ny = Size(apY) - 1;
 
 				if (x == 0 && y == 0) // top-left
-					ap = findAP(api, {2, 0}, 4, {1, 0}, std::array{r}, {0, 0}, std::array{d}, {-1, -1}, std::array{d, r});
+					ap = grid.at(api, {2, 0}).findPattern(4, {1, 0}, "r", {0, 0}, "d", {-1, -1}, "dr");
 				else if (x == Nx && y == 0) // top-right
-					ap = findAP(api, {-1, 1}, 4, {0, 0}, std::array{l, d}, {}, {}, {1, -1}, std::array{d, l});
+					ap = grid.at(api, {-1, 1}).findPattern(4, {0, 0}, "ld", {}, {}, {1, -1}, "dl");
 				else if (x == Nx && y == Ny) // bottom-right
-					ap = findAP(api, {-0, -2}, 4, {0, -1}, std::array{u}, {0, 0}, std::array{l}, {1, 1}, std::array{u, l});
+					ap = grid.at(api, {0, -2}).findPattern(4, {0, -1}, "u", {0, 0}, "l", {1, 1}, "ul");
 				else if (x == 0 && y == Ny) // bottom-left
-					ap = findAP(api, {1, -1}, 4, {}, {}, {0, 0}, std::array{u, r}, {-1, 1}, std::array{u, r});
+					ap = grid.at(api, {1, -1}).findPattern(4, {}, {}, {0, 0}, "ur", {-1, 1}, "ur");
 				else if (x == 0) // left
-					ap = findAP(api, {2, 0}, 3, {1, 0}, std::array{r}, {0, -1}, std::array{u, d, r}, {}, {});
+					ap = grid.at(api, {2, 0}).findPattern(3, {1, 0}, "r", {0, -1}, "udr", {}, {});
 				else if (x == Nx) // right
-					ap = findAP(api, {-1, 0}, 3, {0, 0}, std::array{l, u, d}, {0, -1}, std::array{l}, {}, {});
+					ap = grid.at(api, {-1, 0}).findPattern(3, {0, 0}, "lud", {0, -1}, "l", {}, {});
 				else if (y == 0) // top
-					ap = findAP(api, {-1, 0}, 3, {-1, 0}, std::array{l, r, d}, {0, 0}, std::array{d}, {}, {});
+					ap = grid.at(api, {-1, 0}).findPattern(3, {-1, 0}, "lrd", {0, 0}, "d", {}, {});
 				else if (y == Ny) // bottom
-					ap = findAP(api, {-1, -1}, 3, {-1, -1}, std::array{u}, {0, 0}, std::array{l, r, u}, {}, {});
+					ap = grid.at(api, {-1, -1}).findPattern(3, {-1, -1}, "u", {0, 0}, "lru", {}, {});
 				else // center
-					ap = findAP(api, {-1, 0}, 3, {-1, 0}, std::array{l, r, u, d}, {0, -1}, std::array{l, r, u, d}, {}, {});
+					ap = grid.at(api, {-1, 0}).findPattern(3, {-1, 0}, "lrud", {0, -1}, "lrud", {}, {});
 
 				if (ap)
 					apP.set(x, y, *ap);
