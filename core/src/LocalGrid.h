@@ -97,6 +97,8 @@ public:
 
 	std::optional<PointF> findPattern(int radius, PointI timingStart, std::string_view timingDirs, PointI blackStart,
 									  std::string_view blackDirs, PointI whiteStart, std::string_view whiteDirs);
+
+	std::optional<PointF> findCorner(int radius, PointI out);
 };
 
 } // namespace ZXing

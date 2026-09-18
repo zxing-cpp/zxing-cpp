@@ -255,4 +255,21 @@ std::optional<PointF> LocalGrid::findPattern(int radius, PointI timingStart, std
 	return findPattern(radius, timingStart, s2ps(timingDirs), blackStart, s2ps(blackDirs), whiteStart, s2ps(whiteDirs));
 }
 
+std::optional<PointF> LocalGrid::findCorner(int radius, PointI out)
+{
+	for (auto p : Spiral(3)) {
+		int quietZone = 0, symbolX = 0, symbolY = 0;
+		for (int r = 0; r <= radius; ++r) {
+			auto q = p + out;
+			PointI dx = PointI{out.x, 0}, dy = PointI{0, out.y};
+			quietZone += get(q - r * dx).isBlack() + get(q - r * dy).isBlack();
+			symbolX += findValue(p - r * dx, dx, Value(true));
+			symbolY += findValue(p - r * dy, dy, Value(true));
+		}
+		if (quietZone == 0 && symbolX > 0 && symbolY > 0)
+			return getPos(PointF(p));
+	}
+	return {};
+}
+
 } // namespace ZXing

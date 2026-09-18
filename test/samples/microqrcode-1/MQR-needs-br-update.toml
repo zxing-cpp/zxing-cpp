@@ -1,4 +1,2 @@
 TextPlain = "Micro QR Code"
-
-# TODO: platform depending result
-missing = "s12 f2"
+UEC = "1.0"

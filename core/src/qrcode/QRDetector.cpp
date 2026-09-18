@@ -13,6 +13,7 @@
 #include "BitMatrixCursor.h"
 #include "ConcentricFinder.h"
 #include "GridSampler.h"
+#include "LocalGrid.h"
 #include "Log.h"
 #include "Matrix.h"
 #include "Pattern.h"
@@ -828,6 +829,15 @@ DetectorResult SampleMQR(const BitMatrix& image, const ConcentricPattern& fp)
 	}
 	if (blackPixels > 2 * dim / 3)
 		return {};
+
+	auto grid = LocalGrid(image, bestPT, {dim, dim});
+
+	auto tr = grid.at({dim - 1, 0}, {-2, 1}).findPattern(3, {1, 0}, "l", {}, "", {1, -1}, "ld");
+	auto bl = grid.at({0, dim - 1}, {1, -2}).findPattern(3, {0, 1}, "u", {}, "", {-1, 1}, "ur");
+	auto br = grid.at({dim - 1, dim - 1}, {-3, -3}).findCorner(5, {1, 1});
+
+	if (tr && bl && br)
+		bestPT = PerspectiveTransform(Rectangle(dim, dim, 0.5), {bestPT({0.5, 0.5}), *tr, *br, *bl});
 
 	return SampleGrid(image, dim, dim, bestPT);
 }
