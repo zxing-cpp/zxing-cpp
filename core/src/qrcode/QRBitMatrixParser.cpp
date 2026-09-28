@@ -25,7 +25,10 @@ static bool getBit(const BitMatrix& bitMatrix, int x, int y, bool mirrored = fal
 
 const Version* ReadVersion(const BitMatrix& bitMatrix, Type type)
 {
-	assert(Version::HasValidSize(bitMatrix));
+	// the format info bits (which select `type`) are decoded independently of the physical symbol size; reject
+	// combinations where the two disagree instead of handing a mismatched Version on to the codeword parser
+	if (!Version::HasValidSize(bitMatrix, type))
+		return nullptr;
 
 	int number = Version::Number(bitMatrix);
 
