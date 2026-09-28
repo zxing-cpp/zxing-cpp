@@ -63,7 +63,7 @@ public:
 		auto valid = [](int v, int max) { return v >= 1 && v <= max; };
 
 		switch (type) {
-		case Type::Model1: return valid(version, 32) ? square(17 + 4 * version) : PointI{};
+		case Type::Model1: return valid(version, 14) ? square(17 + 4 * version) : PointI{};
 		case Type::Model2: return valid(version, 40) ? square(17 + 4 * version) : PointI{};
 		case Type::Micro: return valid(version, 4) ? square(9 + 2 * version) : PointI{};
 		case Type::rMQR: return valid(version, 32) ? RMQR_SIZES[version - 1] : PointI{};
@@ -75,7 +75,7 @@ public:
 	static constexpr bool IsValidSize(PointI size, Type type)
 	{
 		switch (type) {
-		case Type::Model1: return size.x == size.y && size.x >= 21 && size.x <= 145 && (size.x % 4 == 1);
+		case Type::Model1: return size.x == size.y && size.x >= 21 && size.x <= 73 && (size.x % 4 == 1);
 		case Type::Model2: return size.x == size.y && size.x >= 21 && size.x <= 177 && (size.x % 4 == 1);
 		case Type::Micro: return size.x == size.y && size.x >= 11 && size.x <= 17 && (size.x % 2 == 1);
 		case Type::rMQR:
