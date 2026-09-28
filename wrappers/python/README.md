@@ -36,6 +36,26 @@ if len(barcodes) == 0:
 	print("Could not find any barcode.")
 ```
 
+### Image formats
+
+Pillow images can be passed directly to `read_barcodes`. NumPy arrays must have
+dtype `uint8`. Grayscale arrays can have shape `(height, width)` or
+`(height, width, 1)`. Three-channel arrays are interpreted as BGR, matching
+OpenCV's default `imread` output.
+
+An RGBA Pillow image is accepted directly, but a four-channel NumPy array raises
+`ValueError: Unsupported number of channels for buffer: 4`. If you need to pass
+an image loaded by Pillow as a NumPy array, convert it to grayscale first:
+
+```python
+import numpy as np
+import zxingcpp
+from PIL import Image
+
+with Image.open('test.png') as img:
+	barcodes = zxingcpp.read_barcodes(np.asarray(img.convert('L')))
+```
+
 ### Writing barcodes
 
 ```python
