@@ -204,3 +204,21 @@ TEST(MCDecoderTest, Mode2)
 		EXPECT_EQ(parse({49}, 2, &mode2).content().utf8(), "00123456\035999\035999\0351"); // Class capped to 999
 	}
 }
+
+// Security regression test: the NS (Numeric Set) escape used to read 5 codewords past the end of the
+// data array when it appeared as the very last codeword, causing a heap out-of-bounds read.
+TEST(MCDecoderTest, TruncatedNumericSetEscape)
+{
+	ByteArray bytes(93); // zero-filled filler codewords ('\r' in charset A)
+	bytes.back() = 31;   // NS escape as the very last codeword, with no data following it
+	EXPECT_EQ(parse(bytes, 4).error(), Error::Format);
+}
+
+// Security regression test: the ECI escape used to read 1-4 codewords past the end of the data array
+// when it appeared as the very last codeword, causing a heap out-of-bounds read.
+TEST(MCDecoderTest, TruncatedECIEscape)
+{
+	ByteArray bytes(93);
+	bytes.back() = 27; // ECI escape as the very last codeword, with no data following it
+	EXPECT_EQ(parse(bytes, 4).error(), Error::Format);
+}
