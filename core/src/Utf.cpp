@@ -142,18 +142,18 @@ static size_t Utf8CountBytes(std::wstring_view str)
 			result += 1;
 		else if (str.front() < 0x800)
 			result += 2;
-		else if (sizeof(wchar_t) == 4) {
-			if (str.front() < 0x10000)
-				result += 3;
-			else
-				result += 4;
-		} else {
-			if (IsUtf16SurrogatePair(str)) {
-				result += 4;
-				str.remove_prefix(1);
-			} else
-				result += 3;
-		}
+#if WCHAR_MAX > 0xFFFF
+		else if (str.front() < 0x10000)
+			result += 3;
+		else
+			result += 4;
+#else
+		else if (IsUtf16SurrogatePair(str)) {
+			result += 4;
+			str.remove_prefix(1);
+		} else
+			result += 3;
+#endif
 	}
 	return result;
 }

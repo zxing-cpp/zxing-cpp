@@ -306,6 +306,7 @@ static int TextCompaction(const std::vector<int>& codewords, int codeIndex, Cont
 					textCompactionData[index++] = 29; // GS
 					break;
 				}
+				[[fallthrough]];
 			default:
 				if (!TerminatesCompaction(code))
 					throw FormatError("Reserved codeword encountered in Text Compaction mode");

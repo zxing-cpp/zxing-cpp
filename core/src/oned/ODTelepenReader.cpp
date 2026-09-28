@@ -124,7 +124,7 @@ BarcodeData TelepenReader::decodePattern(int rowNumber, PatternView& next, std::
 
 			next.skipPair();
 		}
-		if (ba.size() != 8 || std::ranges::count(ba, false) % 2 != 0) // even parity check
+		if (ba.size() != 8 || std::ranges::count(ba, 0) % 2 != 0) // even parity check
 			return {};
 		ba.reverse();
 		raw += ToInt<char>(ba) & 0x7f; // drop the parity bit
