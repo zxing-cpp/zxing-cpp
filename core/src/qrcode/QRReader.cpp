@@ -24,7 +24,7 @@ namespace ZXing::QRCode {
 static BarcodeData readPure(const BitMatrix* binImg, const ReaderOptions& _opts)
 {
 	DetectorResult detectorResult;
-	if (_opts.hasFormat(BarcodeFormat::QRCode))
+	if (_opts.hasFormat(BarcodeFormat::QRCodeModel1 | BarcodeFormat::QRCodeModel2))
 		detectorResult = DetectPureQR(*binImg);
 	if (_opts.hasFormat(BarcodeFormat::MicroQRCode) && !detectorResult.isValid())
 		detectorResult = DetectPureMQR(*binImg);
