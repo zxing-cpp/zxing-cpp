@@ -36,6 +36,17 @@ if len(barcodes) == 0:
 	print("Could not find any barcode.")
 ```
 
+The `read_barcodes` function can accept images in various formats, including OpenCV, Pillow, and Qt images,
+as well as NumPy arrays with dtype `uint8`. Grayscale arrays can have shape `(height, width)` or
+`(height, width, 1)`. Three-channel arrays are interpreted as BGR, matching OpenCV's default `imread` output.
+To explicitly specify the image buffer memory layout including the number of channels, the shape and the stride
+of any given memory view / array, you can use the `ImageView` class:
+
+```python
+view = zxingcpp.ImageView(memoryview(img), width, height, zxingcpp.ImageFormat.RGBA, row_stride, pix_stride)
+barcodes = zxingcpp.read_barcodes(view)
+```
+
 ### Writing barcodes
 
 ```python

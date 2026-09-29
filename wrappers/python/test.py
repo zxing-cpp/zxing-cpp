@@ -188,6 +188,15 @@ class TestReadWrite(unittest.TestCase):
 			np.zeros((100, 100, 4), np.uint8)
 		)
 
+	def test_image_view(self):
+		format = BF.QRCode
+		text = "ImageView test"
+		img = zxingcpp.create_barcode(text, format).to_image()
+		view = zxingcpp.ImageView(memoryview(img), img.shape[1], img.shape[0], zxingcpp.ImageFormat.Lum)
+
+		res = zxingcpp.read_barcode(view, format)
+		self.check_res(res, format, text)
+
 	def test_image_buffer_protocol(self):
 		"""Test that Image objects support the buffer protocol"""
 		format = BF.QRCode
