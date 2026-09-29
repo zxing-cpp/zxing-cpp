@@ -25,7 +25,7 @@ inline std::string JsonProp(std::string_view key, const T& val, const T& ignore 
 {
 	#define ZX_JSON_KEY_VAL(...) StrCat("\"", key, "\":", __VA_ARGS__, ',')
 #if !defined(__cpp_lib_to_chars) || !defined(__cpp_lib_format) // not available on older macOS / gcc 12
-	#define ZX_JSON_FMT_FLOAT(val) (std::to_string(int(val)) + '.' + std::to_string(int(val * 100) % 100))
+	#define ZX_JSON_FMT_FLOAT(val) (std::to_string(int(val)) + '.' + ToString(int(val * 100) % 100, 2))
 #else
 	#define ZX_JSON_FMT_FLOAT(val) std::format("{:.2f}", val)
 #endif

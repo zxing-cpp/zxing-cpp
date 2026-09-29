@@ -408,7 +408,8 @@ static void runBlackBoxTestDirectory(const fs::path& directory)
 				}
 
 				for (const auto& barcode : found) {
-					auto str = std::format("{}: \"{}\"", EnumName(barcode.format()), Abbrev(barcode.text(TextMode::Escaped), 30));
+					auto str = std::format("{}: \"{}\", Extra: {}", EnumName(barcode.format()),
+										   Abbrev(barcode.text(TextMode::Escaped), 30), barcode.extra());
 #if !ZXING_ENABLE_UNICODE
 					if (str.ends_with("\"\""))
 						continue;

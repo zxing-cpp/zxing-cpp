@@ -244,7 +244,7 @@ std::string Price(const std::string& ean5AddOn)
 
 	int rawAmount = std::stoi(ean5AddOn.substr(1));
 #if !defined(__cpp_lib_to_chars) || !defined(__cpp_lib_format) // not available on older macOS / gcc 12
-	return currency + std::to_string(rawAmount / 100) + '.' + std::to_string(rawAmount % 100);
+	return currency + std::to_string(rawAmount / 100) + '.' + ToString(rawAmount % 100, 2);
 #else
 	return std::format("{}{:.2f}", currency, float(rawAmount) / 100);
 #endif

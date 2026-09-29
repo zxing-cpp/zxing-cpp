@@ -1,4 +1,3 @@
 TextPlain = "Micro QR Code"
 
-#TODO: Not working on Windows!?!
-#UEC = "1.0"
+UEC = "1.00"
