@@ -2,3 +2,10 @@
 	path = zint
 	url = https://github.com/zint/zint.git
 	shallow = true
+	# ERA: not fetched by `git submodule update` / `clone --recurse-submodules`.
+	# The pinned commit is no longer on any upstream branch or tag (zint's
+	# history was rewritten), so a recursive clone would depend on GitHub still
+	# serving the orphaned SHA. ERA builds ZXing reader-only from an explicit
+	# source list (ERA-apps 3rdparty/CMakeLists.txt) and never uses the zint
+	# writer backend. To build the writers here: git submodule update --checkout zint
+	update = none
