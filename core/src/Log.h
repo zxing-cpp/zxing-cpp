@@ -71,15 +71,19 @@ public:
 	}
 
 	template <typename T>
-	void operator()(const PointT<T>& p, LogColor color = LOG_GR)
+	void operator()(const PointT<T>& p, LogColor color = LOG_GR, int size = 1)
 	{
-		if (_image && _image->isIn(p))
-			_log.set(static_cast<int>(p.x * _scale), static_cast<int>(p.y * _scale), color);
+		if (_image && _image->isIn(p)) {
+			for (int dy = -size / 2; dy <= size / 2; ++dy)
+				_log.set(static_cast<int>(p.x * _scale), static_cast<int>(p.y * _scale) + dy, color);
+			for (int dx = -size / 2; dx <= size / 2; ++dx)
+				_log.set(static_cast<int>(p.x * _scale) + dx, static_cast<int>(p.y * _scale), color);
+		}
 	}
 
-	void operator()(const PointT<int>& p, LogColor color)
+	void operator()(const PointT<int>& p, LogColor color, int size = 1)
 	{
-		operator()(centered(p), color);
+		operator()(centered(p), color, size);
 	}
 
 	template <typename T>
@@ -87,6 +91,15 @@ public:
 	{
 		for (auto p : points)
 			operator()(p, color);
+	}
+
+	template <typename T>
+	void operator()(const PointT<T>& a, const PointT<T>& b, LogColor color = LOG_G, int density = 1)
+	{
+		int steps = density * maxAbsComponent(b - a);
+		PointF dir = 1. / density * bresenhamDirection(PointF(b - a));
+		for (int i = 0; i <= steps; ++i)
+			operator()(a + i * dir, color);
 	}
 };
 
@@ -136,7 +149,8 @@ void log_r(const char* prefix, const char* fmt, const Range& values, const char*
 
 #else
 
-template<typename T> void log(PointT<T>, LogColor = LOG_GR) {}
+template<typename T> void log(PointT<T>, LogColor = LOG_GR, int = 1) {}
+template<typename T> void log(PointT<T>, PointT<T>, LogColor = LOG_GR, int = 1) {}
 inline void log_t(const char*, ...) {}
 inline void log_l(const char* = "", ...) {}
 template<typename Range> void log_r(const char*, const char*, const Range&, const char* = "\n") {}

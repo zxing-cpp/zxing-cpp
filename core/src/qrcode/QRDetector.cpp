@@ -82,11 +82,7 @@ std::vector<ConcentricPattern> FindFinderPatterns(const BitMatrix& image, bool t
 				auto width = 2 * next.sum(); // the factor 2 allows for a maximum aspect ratio of 4:1 due to perspective distortion
 				auto pattern = LocateConcentricPattern<E2E>(image, PATTERN, p, width);
 				if (pattern && !Contains(res, *pattern)) {
-					log(*pattern, LOG_B);
-					log(*pattern + PointF(.2, 0), LOG_B);
-					log(*pattern - PointF(.2, 0), LOG_B);
-					log(*pattern + PointF(0, .2), LOG_B);
-					log(*pattern - PointF(0, .2), LOG_B);
+					log(*pattern, LOG_B, 2);
 					assert(image.get(pattern->x, pattern->y));
 					res.push_back(*pattern);
 				}
