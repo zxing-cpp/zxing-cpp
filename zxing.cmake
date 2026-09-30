@@ -50,6 +50,7 @@ macro(zxing_add_package name depname git_repo git_rev)
             if (${depname} STREQUAL "googletest")
                 # Prevent overriding the parent project's compiler/linker settings on Windows
                 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+                set(BUILD_SHARED_LIBS OFF) # Ensure tests are actually found on Windows
             endif()
 
             FetchContent_MakeAvailable(${depname})
