@@ -36,7 +36,8 @@ namespace {
 	// Shorthand to call Decode()
 	static DecoderResult parse(BitMatrix&& bits, bool compact, int nbDatablocks, int nbLayers)
 	{
-		return Aztec::Decode({{std::move(bits), {}}, compact, nbDatablocks, nbLayers, false /*readerInit*/, false /*isMirrored*/, 0 /*runeValue*/});
+		return Aztec::Decode({{std::move(bits), {}}, compact, nbDatablocks, nbLayers, false /*readerInit*/, false /*isMirrored*/,
+							 0 /*runeValue*/, std::nullopt /*uec*/});
 	}
 
 	void TestEncodeDecode(const std::string& data, bool compact, int layers) {

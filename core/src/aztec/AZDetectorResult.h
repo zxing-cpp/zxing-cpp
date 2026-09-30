@@ -20,6 +20,7 @@ class DetectorResult : public ZXing::DetectorResult
 	bool _readerInit = false;
 	bool _isMirrored = false;
 	int _runeValue = -1;
+	std::optional<double> _uec;
 
 public:
 	DetectorResult() = default;
@@ -28,14 +29,15 @@ public:
 	DetectorResult(const DetectorResult&) = delete;
 	DetectorResult& operator=(const DetectorResult&) = delete;
 
-	DetectorResult(ZXing::DetectorResult&& result, bool isCompact, int nbDatablocks, int nbLayers, bool readerInit, bool isMirrored, int runeValue)
+	DetectorResult(ZXing::DetectorResult&& result, bool isCompact, int nbDatablocks, int nbLayers, bool readerInit, bool isMirrored, int runeValue, std::optional<double> uec)
 		: ZXing::DetectorResult{std::move(result)},
 		  _compact(isCompact),
 		  _nbDatablocks(nbDatablocks),
 		  _nbLayers(nbLayers),
 		  _readerInit(readerInit),
 		  _isMirrored(isMirrored),
-		  _runeValue(runeValue)
+		  _runeValue(runeValue),
+		  _uec(uec)
 	{}
 
 	bool isCompact() const { return _compact; }
@@ -43,8 +45,9 @@ public:
 	int nbLayers() const { return _nbLayers; }
 	bool readerInit() const { return _readerInit; }
 	bool isMirrored() const { return _isMirrored; }
+	std::optional<double> uec() const { return _uec; }
 
-	// Only meaningful is nbDatablocks == 0
+	// Only meaningful if nbDatablocks == 0
 	int runeValue() const { return _runeValue; }
 };
 

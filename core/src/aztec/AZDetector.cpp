@@ -279,7 +279,7 @@ static uint32_t SampleOrientationBits(const BitMatrix& image, const PerspectiveT
 	return bits;
 }
 
-static int ModeMessage(const BitMatrix& image, const PerspectiveTransform& mod2Pix, int radius, bool& isRune)
+static int ModeMessage(const BitMatrix& image, const PerspectiveTransform& mod2Pix, int radius, bool& isRune, std::optional<double>& uec)
 {
 	const bool compact = radius == 5;
 	isRune = false;
@@ -311,20 +311,20 @@ static int ModeMessage(const BitMatrix& image, const PerspectiveTransform& mod2P
 		bits >>= 4;
 	}
 
-	auto decodeResult = ReedSolomonDecode(GF2nAztec(4), words, numECCodewords);
+	uec = ReedSolomonDecode(GF2nAztec(4), words, numECCodewords);
 
-	if ((!decodeResult) && compact) {
+	if ((!uec) && compact) {
 		// Is this a Rune?
 		for (auto& word : words)
 			word ^= 0b1010;
 		
-		decodeResult = ReedSolomonDecode(GF2nAztec(4), words, numECCodewords);
+		uec = ReedSolomonDecode(GF2nAztec(4), words, numECCodewords);
 
-		if (decodeResult)
+		if (uec)
 			isRune = true;
 	}
 
-	if (!decodeResult)
+	if (!uec)
 		return -1;
 
 	int res = 0;
@@ -384,8 +384,9 @@ DetectorResults Detect(const BitMatrix& image, bool isPure, bool tryHarder, int 
 		int rotate; // [0..3]
 		int modeMessage = -1;
 		bool isRune = false;
+		std::optional<double> uec;
 
-		auto parseModeMessage = [&image, &radius, &mirror, &rotate, &modeMessage, &isRune](QuadrilateralF srcQuad, QuadrilateralF fpQuad) {
+		auto parseModeMessage = [&image, &radius, &mirror, &rotate, &modeMessage, &isRune, &uec](QuadrilateralF srcQuad, QuadrilateralF fpQuad) {
 			// 24778:2008(E) 14.3.3 reads:
 			// In the outer layer of the Core Symbol, the 12 orientation bits at the corners are bitwise compared against the specified
 			// pattern in each of four possible orientations and their four mirror inverse orientations as well. If in any of the 8
@@ -404,7 +405,7 @@ DetectorResults Detect(const BitMatrix& image, bool isPure, bool tryHarder, int 
 					rotate = FindRotation(bits, mirror);
 					if (rotate == -1)
 						continue;
-					modeMessage = ModeMessage(image, PerspectiveTransform(srcQuad, RotatedCorners(fpQuad, rotate, mirror)), radius, isRune);
+					modeMessage = ModeMessage(image, PerspectiveTransform(srcQuad, RotatedCorners(fpQuad, rotate, mirror)), radius, isRune, uec);
 					if (modeMessage != -1)
 						return true;
 				}
@@ -496,7 +497,7 @@ DetectorResults Detect(const BitMatrix& image, bool isPure, bool tryHarder, int 
 		if (!bits.isValid())
 			continue;
 
-		res.emplace_back(std::move(bits), radius == 5, nbDataBlocks, nbLayers, readerInit, mirror != 0, isRune ? modeMessage : -1);
+		res.emplace_back(std::move(bits), radius == 5, nbDataBlocks, nbLayers, readerInit, mirror != 0, isRune ? modeMessage : -1, uec);
 
 		if (Size(res) == maxSymbols)
 			break;

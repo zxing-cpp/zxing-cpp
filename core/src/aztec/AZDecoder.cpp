@@ -356,7 +356,7 @@ DecoderResult DecodeRune(const DetectorResult& detectorResult) {
 	auto runeString = ToString(detectorResult.runeValue(), 3);
 	res.append(runeString);
 
-	return DecoderResult(std::move(res));
+	return DecoderResult(std::move(res)).addExtra(BarcodeExtra::UEC, *detectorResult.uec(), -1.0);
 }
 
 DecoderResult Decode(const DetectorResult& detectorResult)
