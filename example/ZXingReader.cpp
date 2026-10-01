@@ -178,9 +178,9 @@ void drawLine(const ImageView& iv, PointI a, PointI b, bool error)
 	int R = RedIndex(iv.format()), G = GreenIndex(iv.format()), B = BlueIndex(iv.format());
 	for (int i = 0; i < steps; ++i) {
 		auto p = PointI(centered(a + i * dir));
-		auto* dst = const_cast<uint8_t*>(iv.data(p.x, p.y));
-		if (dst < iv.data(0, 0) || dst > iv.data(iv.width() - 1, iv.height() - 1))
+		if (p.x < 0 || p.y < 0 || p.x >= iv.width() || p.y >= iv.height())
 			continue;
+		auto* dst = const_cast<uint8_t*>(iv.data(p.x, p.y));
 		dst[R] = error ? 0xff : 0;
 		dst[G] = error ? 0 : 0xff;
 		dst[B] = 0;
@@ -265,8 +265,8 @@ int main(int argc, char* argv[])
 		channels = cli.forceChannels ? cli.forceChannels : channels;
 
 		auto ImageFormatFromChannels = std::array{ImageFormat::None, ImageFormat::Lum, ImageFormat::LumA, ImageFormat::RGB, ImageFormat::RGBA};
-		ImageView image{buffer.get(), width, height, ImageFormatFromChannels.at(channels)};
-		auto barcodes = ReadBarcodes(image.rotated(cli.rotate), options);
+		auto image = ImageView(buffer.get(), width, height, ImageFormatFromChannels.at(channels)).rotated(cli.rotate);
+		auto barcodes = ReadBarcodes(image, options);
 
 		// if we did not find anything, insert a dummy to produce some output for each file
 		if (barcodes.empty())
@@ -366,8 +366,10 @@ int main(int argc, char* argv[])
 				std::cout << "Symbol:\n" << WriteBarcodeToUtf8(barcode);
 		}
 
-		if (cli.filePaths.size() == 1 && !cli.outPath.empty())
+		if (cli.filePaths.size() == 1 && !cli.outPath.empty()){
+			image = image.rotated(-cli.rotate); // rotate back because stbi requires row-major order
 			stbi_write_png(cli.outPath.c_str(), image.width(), image.height(), 3, image.data(), image.rowStride());
+		}
 
 #ifdef NDEBUG
 		if (getenv("MEASURE_PERF")) {
