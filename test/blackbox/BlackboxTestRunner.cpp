@@ -64,7 +64,8 @@ static std::vector<fs::path> getImagesInDirectory(const fs::path& directory)
 {
 	std::vector<fs::path> result;
 	for (const auto& entry : fs::directory_iterator(directory))
-		if (fs::is_regular_file(entry.status()) && Contains({".webp", ".png", ".jpg", ".pgm", ".gif"}, entry.path().extension()))
+		if (fs::is_regular_file(entry.status())
+			&& Contains({".webp", ".png", ".jpg", ".jpeg", ".pgm", ".gif"}, entry.path().extension()))
 			result.push_back(entry.path());
 
 	preloadImageCache(result);
