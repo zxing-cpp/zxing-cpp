@@ -50,12 +50,19 @@ jobs:
         cp "$SCCACHE_PATH" "$dir/cl.exe"
         echo "set(CMAKE_VS_GLOBALS \"CLToolExe=cl.exe;CLToolPath=$dir;TrackFileAccess=false;UseMultiToolTask=true\" CACHE STRING \"\")" > "$RUNNER_TEMP/sccache.cmake"
 
+    - name: Setup ccache
+      if: runner.os != 'Windows'
+      uses: hendrikmuhs/ccache-action@v1.2
+      with:
+        key: ${{ matrix.os }}
+
     - name: Configure
       run: >
         cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_SHARED_LIBS=ON
         -DZXING_BLACKBOX_TESTS=ON -DZXING_TEST_DOTNET=ON -DZXING_TEST_GO=ON -DZXING_TEST_INSTALL=ON -DZXING_UNIT_TESTS=ON
-        -DZXING_PYTHON_MODULE=ON
-        ${{ runner.os == 'Windows' && format('-C {0}/sccache.cmake -DZXING_DISABLE_PCH=ON', runner.temp) || '' }}
+        -DZXING_PYTHON_MODULE=ON -DZXING_DISABLE_PCH=ON
+        ${{ runner.os == 'Windows' && format('-C {0}/sccache.cmake', runner.temp) || '' }}
+        ${{ runner.os != 'Windows' && '-DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache' || '' }}
 
     - name: Build
       run: cmake --build build --parallel --config ${{env.BUILD_TYPE}} ${{ runner.os == 'Windows' && '-- /v:m /clp:Summary' || '' }}
@@ -118,12 +125,19 @@ jobs:
         cp "$SCCACHE_PATH" "$dir/cl.exe"
         echo "set(CMAKE_VS_GLOBALS \"CLToolExe=cl.exe;CLToolPath=$dir;TrackFileAccess=false;UseMultiToolTask=true\" CACHE STRING \"\")" > "$RUNNER_TEMP/sccache.cmake"
 
+    - name: Setup ccache
+      if: runner.os != 'Windows'
+      uses: hendrikmuhs/ccache-action@v1.2
+      with:
+        key: ${{ matrix.os }}-exp
+
     - name: Configure
       run: >
         cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_SHARED_LIBS=ON
         -DZXING_READERS=ON -DZXING_WRITERS=BOTH -DZXING_EXPERIMENTAL_API=ON
-        -DZXING_BLACKBOX_TESTS=ON -DZXING_TEST_INSTALL=ON -DZXING_UNIT_TESTS=ON -DZXING_PYTHON_MODULE=ON
-        ${{ runner.os == 'Windows' && format('-C {0}/sccache.cmake -DZXING_DISABLE_PCH=ON', runner.temp) || '' }}
+        -DZXING_BLACKBOX_TESTS=ON -DZXING_TEST_INSTALL=ON -DZXING_UNIT_TESTS=ON -DZXING_PYTHON_MODULE=ON -DZXING_DISABLE_PCH=ON
+        ${{ runner.os == 'Windows' && format('-C {0}/sccache.cmake', runner.temp) || '' }}
+        ${{ runner.os != 'Windows' && '-DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache' || '' }}
         ${{ steps.setup-python.outputs.python-path != '' && format('-DPython_EXECUTABLE={0}', steps.setup-python.outputs.python-path) || '' }}
 
     - name: Build
@@ -175,10 +189,16 @@ jobs:
       with:
         submodules: true
 
+    - name: Setup ccache
+      uses: hendrikmuhs/ccache-action@v1.2
+      with:
+        key: ubuntu-asan-ubsan
+
     - name: Configure
       run: >
         cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DZXING_WRITERS=BOTH
         -DZXING_BLACKBOX_TESTS=ON -DZXING_UNIT_TESTS=ON -DZXING_PYTHON_MODULE=OFF -DZXING_C_API=OFF
+        -DZXING_DISABLE_PCH=ON -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
         -DCMAKE_CXX_COMPILER=clang++
         -DCMAKE_CXX_FLAGS="-march=native -fsanitize=address,undefined -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-omit-frame-pointer -fno-sanitize-recover=all"
         -DCMAKE_C_COMPILER=clang
