@@ -59,3 +59,9 @@ TEST(PDF417HighLevelEncoderTest, EncodeByteUnknown)
 {
 	EXPECT_THROW(HighLevelEncoder::EncodeHighLevel(L"\u00E9", Compaction::BYTE, CharacterSet::Unknown), std::invalid_argument);
 }
+
+TEST(PDF417HighLevelEncoderTest, Bug1166)
+{
+	auto encoded = HighLevelEncoder::EncodeHighLevel(L"äöü", Compaction::BYTE, CharacterSet::UTF8);
+	EXPECT_EQ(encoded, std::vector<int>({ 927, 26, 924, 327, 778, 695, 708, 444 }));
+}

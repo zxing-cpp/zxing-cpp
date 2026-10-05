@@ -334,7 +334,7 @@ static void EncodeBinary(const std::string& bytes, int startpos, int count, int 
 	if (count >= 6) {
 		int chars[5];
 		while ((startpos + count - idx) >= 6) {
-			long t = 0;
+			int64_t t = 0;
 			for (int i = 0; i < 6; i++) {
 				t <<= 8;
 				t += bytes[idx + i] & 0xff;
