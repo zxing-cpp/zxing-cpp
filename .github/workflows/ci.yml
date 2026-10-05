@@ -280,9 +280,18 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v5
+
+    - name: Setup ccache
+      uses: hendrikmuhs/ccache-action@v1.2
+      with:
+        key: android
+
     - name: Build the lib/app
       working-directory: wrappers/android
-      run: ./gradlew assembleRelease
+      # PRs only build arm64 to save time; master builds all ABIs
+      run: ./gradlew assembleRelease -PuseCcache ${{ github.event_name == 'pull_request' && '-PabiFilters=arm64-v8a' || '' }}
 
     - uses: actions/upload-artifact@v6
       with:

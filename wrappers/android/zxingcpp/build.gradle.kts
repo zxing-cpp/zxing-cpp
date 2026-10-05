@@ -19,8 +19,8 @@ android {
         minSdk = libs.versions.androidMinSdk.get().toInt()
 
         ndk {
-            // speed up build: compile only arm versions
-            // abiFilters += listOf("armeabi-v7a", "arm64-v8a")
+            // e.g. -PabiFilters=arm64-v8a,armeabi-v7a to speed up the build
+            (project.findProperty("abiFilters") as? String)?.let { abiFilters.addAll(it.split(",")) }
         }
         externalNativeBuild {
             cmake {
@@ -30,6 +30,12 @@ android {
                     "-DZXING_WRITERS=OFF", // "-DANDROID_STL=c++_shared",
                     "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON" // This flag can be removed when NDK 28 is the default version
                 )
+                if (project.hasProperty("useCcache")) // opt-in: ccache must be installed
+                    arguments(
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
+                        "-DZXING_DISABLE_PCH=ON" // clang PCH files defeat ccache hits
+                    )
             }
         }
 
