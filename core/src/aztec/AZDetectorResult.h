@@ -8,6 +8,7 @@
 
 #include "DetectorResult.h"
 
+#include <optional>
 #include <utility>
 
 namespace ZXing::Aztec {

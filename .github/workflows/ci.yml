@@ -11,6 +11,7 @@ on:
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
+  SCCACHE_GHA_ENABLED: "true"
 
 jobs:
   build:
@@ -32,14 +33,32 @@ jobs:
       with:
         python-version: '3.x'
 
+    - name: Setup sccache
+      if: runner.os == 'Windows'
+      uses: mozilla-actions/sccache-action@v0.0.9
+
+    - name: Setup MSVC environment
+      if: runner.os == 'Windows'
+      uses: ilammy/msvc-dev-cmd@v1 # puts the real cl.exe on PATH for sccache
+
+    - name: Configure sccache for MSBuild
+      if: runner.os == 'Windows'
+      shell: bash
+      run: |
+        dir="$(cygpath -m "$RUNNER_TEMP")/sccache-bin"
+        mkdir -p "$dir"
+        cp "$SCCACHE_PATH" "$dir/cl.exe"
+        echo "set(CMAKE_VS_GLOBALS \"CLToolExe=cl.exe;CLToolPath=$dir;TrackFileAccess=false;UseMultiToolTask=true\" CACHE STRING \"\")" > "$RUNNER_TEMP/sccache.cmake"
+
     - name: Configure
       run: >
         cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_SHARED_LIBS=ON
         -DZXING_BLACKBOX_TESTS=ON -DZXING_TEST_DOTNET=ON -DZXING_TEST_GO=ON -DZXING_TEST_INSTALL=ON -DZXING_UNIT_TESTS=ON
         -DZXING_PYTHON_MODULE=ON
+        ${{ runner.os == 'Windows' && format('-C {0}/sccache.cmake -DZXING_DISABLE_PCH=ON', runner.temp) || '' }}
 
     - name: Build
-      run: cmake --build build --parallel --config ${{env.BUILD_TYPE}}
+      run: cmake --build build --parallel --config ${{env.BUILD_TYPE}} ${{ runner.os == 'Windows' && '-- /v:m /clp:Summary' || '' }}
 
     - name: Set PATH for Tests
       shell: bash # to make the $GITHUB_PATH update work
@@ -80,15 +99,35 @@ jobs:
         python-version: '3.13'
         architecture: arm64
 
+    - name: Setup sccache
+      if: runner.os == 'Windows'
+      uses: mozilla-actions/sccache-action@v0.0.9
+
+    - name: Setup MSVC environment
+      if: runner.os == 'Windows'
+      uses: ilammy/msvc-dev-cmd@v1 # puts the real cl.exe on PATH for sccache
+      with:
+        arch: ${{ matrix.os == 'windows-11-arm' && 'arm64' || 'x64' }}
+
+    - name: Configure sccache for MSBuild
+      if: runner.os == 'Windows'
+      shell: bash
+      run: |
+        dir="$(cygpath -m "$RUNNER_TEMP")/sccache-bin"
+        mkdir -p "$dir"
+        cp "$SCCACHE_PATH" "$dir/cl.exe"
+        echo "set(CMAKE_VS_GLOBALS \"CLToolExe=cl.exe;CLToolPath=$dir;TrackFileAccess=false;UseMultiToolTask=true\" CACHE STRING \"\")" > "$RUNNER_TEMP/sccache.cmake"
+
     - name: Configure
       run: >
         cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_SHARED_LIBS=ON
         -DZXING_READERS=ON -DZXING_WRITERS=BOTH -DZXING_EXPERIMENTAL_API=ON
-        -DZXING_BLACKBOX_TESTS=ON -DZXING_TEST_INSTALL=ON -DZXING_UNIT_TESTS=OFF -DZXING_PYTHON_MODULE=ON
+        -DZXING_BLACKBOX_TESTS=ON -DZXING_TEST_INSTALL=ON -DZXING_UNIT_TESTS=ON -DZXING_PYTHON_MODULE=ON
+        ${{ runner.os == 'Windows' && format('-C {0}/sccache.cmake -DZXING_DISABLE_PCH=ON', runner.temp) || '' }}
         ${{ steps.setup-python.outputs.python-path != '' && format('-DPython_EXECUTABLE={0}', steps.setup-python.outputs.python-path) || '' }}
 
     - name: Build
-      run: cmake --build build --parallel --config ${{env.BUILD_TYPE}}
+      run: cmake --build build --parallel --config ${{env.BUILD_TYPE}} ${{ runner.os == 'Windows' && '-- /v:m /clp:Summary' || '' }}
 
     - name: Set PATH for Tests
       shell: bash # to make the $GITHUB_PATH update work
