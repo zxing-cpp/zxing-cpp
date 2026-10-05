@@ -273,7 +273,7 @@ Barcodes ReadBarcodes(const ImageView& _iv, const ReaderOptions& opts)
 	using enum BarcodeFormat;
 	BarcodeFormats formatsBenefittingFromClosing = Aztec | DataMatrix | QRCode;
 	ReaderOptions closedOptions = opts;
-	if (opts.tryDenoise() && opts.hasAnyFormat(formatsBenefittingFromClosing) && _iv.height() >= 3) {
+	if (opts.tryDenoise() && opts.hasAnyFormat(formatsBenefittingFromClosing)) {
 		closedOptions.formats(opts.formats().empty() ? formatsBenefittingFromClosing : formatsBenefittingFromClosing & opts.formats());
 		closedReader = std::make_unique<MultiFormatReader>(closedOptions);
 	}
@@ -288,7 +288,7 @@ Barcodes ReadBarcodes(const ImageView& _iv, const ReaderOptions& opts)
 		static int l = 0;
 		SaveAsPBM(*bitmap->getBitMatrix(), "layer-" + std::to_string(l++) + ".pnm");
 #endif
-		for (int close = 0; close <= (closedReader ? 1 : 0); ++close) {
+		for (int close = 0; close <= (closedReader && iv.height() >= 3 ? 1 : 0); ++close) {
 			if (close) {
 				// if we already inverted the image in the first round, we need to undo that first
 				if (bitmap->inverted())
