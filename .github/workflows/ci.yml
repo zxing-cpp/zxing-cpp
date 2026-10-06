@@ -28,6 +28,13 @@ jobs:
       with:
         submodules: true
 
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: nuget-${{ runner.os }}-${{ hashFiles('wrappers/dotnet/**/*.csproj') }}
+        restore-keys: nuget-${{ runner.os }}-
+
     - name: Setup Python 3
       uses: actions/setup-python@v6
       with:

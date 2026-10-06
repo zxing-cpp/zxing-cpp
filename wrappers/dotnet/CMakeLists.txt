@@ -14,7 +14,7 @@ if (DOTNET_EXECUTABLE AND ZXING_WRITERS AND ZXING_READERS AND ZXING_C_API)
         message(STATUS "Found dotnet with net10.0 runtime")
 
         # MSVC dev environments export Platform=x64, which makes MSBuild reject the "Debug|x64" solution config
-        add_test(NAME DotNetTest COMMAND ${CMAKE_COMMAND} -E env --unset=Platform ${DOTNET_EXECUTABLE} test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+        add_test(NAME DotNetTest COMMAND ${CMAKE_COMMAND} -E env --unset=Platform ${DOTNET_EXECUTABLE} test ZXingCpp.Tests/ZXingCpp.Tests.csproj WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
         # Copy native library to test output directories so .NET can find it
         # On macOS, DYLD_LIBRARY_PATH is ignored due to SIP when launching signed binaries
