@@ -207,9 +207,9 @@ jobs:
         -DZXING_BLACKBOX_TESTS=ON -DZXING_UNIT_TESTS=ON -DZXING_PYTHON_MODULE=OFF -DZXING_C_API=OFF
         -DZXING_DISABLE_PCH=ON -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
         -DCMAKE_CXX_COMPILER=clang++
-        -DCMAKE_CXX_FLAGS="-march=native -fsanitize=address,undefined -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-omit-frame-pointer -fno-sanitize-recover=all"
+        -DCMAKE_CXX_FLAGS="-march=x86-64-v3 -fsanitize=address,undefined -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-omit-frame-pointer -fno-sanitize-recover=all"
         -DCMAKE_C_COMPILER=clang
-        -DCMAKE_C_FLAGS="-march=native -fsanitize=address,undefined -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-omit-frame-pointer -fno-sanitize-recover=all"
+        -DCMAKE_C_FLAGS="-march=x86-64-v3 -fsanitize=address,undefined -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-omit-frame-pointer -fno-sanitize-recover=all"
 
     - name: Build
       run: cmake --build build --parallel
@@ -229,9 +229,9 @@ jobs:
         cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DZXING_WRITERS=OFF -DZXING_EXAMPLES=OFF
         -DZXING_BLACKBOX_TESTS=ON -DZXING_UNIT_TESTS=OFF -DZXING_PYTHON_MODULE=OFF -DZXING_C_API=OFF
         -DCMAKE_CXX_COMPILER=clang++
-        -DCMAKE_CXX_FLAGS="-march=native -fsanitize=thread -fno-optimize-sibling-calls -fno-omit-frame-pointer -g -fno-sanitize-recover=all"
+        -DCMAKE_CXX_FLAGS="-march=x86-64-v3 -fsanitize=thread -fno-optimize-sibling-calls -fno-omit-frame-pointer -g -fno-sanitize-recover=all"
         -DCMAKE_C_COMPILER=clang
-        -DCMAKE_C_FLAGS="-march=native -fsanitize=thread -fno-optimize-sibling-calls -fno-omit-frame-pointer -g -fno-sanitize-recover=all"
+        -DCMAKE_C_FLAGS="-march=x86-64-v3 -fsanitize=thread -fno-optimize-sibling-calls -fno-omit-frame-pointer -g -fno-sanitize-recover=all"
 
     - name: Build
       run: cmake --build build --parallel
