@@ -209,7 +209,12 @@ static ECI ParseECIValue(BitArrayView& bits, const int flg)
 {
 	int eci = 0;
 	for (int i = 0; i < flg; i++)
-		eci = 10 * eci + bits.readBits(4) - 2;
+	{
+		int digit = bits.readBits(4) - 2; // ECI digits use the DIGIT_TABLE 2...11 -> '0'..'9'
+		if (digit < 0 || digit > 9)
+			throw FormatError("Invalid ECI digit");
+		eci = 10 * eci + digit;
+	}
 	return ECI(eci);
 }
 
@@ -308,6 +313,8 @@ DecoderResult Decode(const BitArray& bits)
 		DecodeContent(bits, res, haveFNC1);
 	} catch (std::out_of_range&) { // see BitArrayView::readBits
 		return FormatError("Truncated bit stream");
+	} catch (const Error& e) { // invalid ECI value
+		return e;
 	}
 
 	if (res.bytes.empty())

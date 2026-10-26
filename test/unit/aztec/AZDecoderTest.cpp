@@ -164,6 +164,22 @@ TEST(AZDecoderTest, InitialGS)
 	}
 }
 
+TEST(AZDecoderTest, InvalidECIDigit)
+{
+	// P/S, FLG(1), ECI digit nibble, 'A'
+	// Valid digit nibbles are 2..11 ('0'..'9')
+	for (auto digit : {"0000", "0001", "1100", "1111"}) {
+		auto data = getData(std::string("00000" "00000" "001") + digit + "00010");
+		EXPECT_FALSE(data.isValid()) << digit;
+		EXPECT_EQ(data.error(), Error::Format) << digit;
+	}
+
+	// ECI 3 (value 5 = nibble 0101) is accepted
+	auto data = getData("00000" "00000" "001" "0101" "00010");
+	EXPECT_TRUE(data.isValid());
+	EXPECT_EQ(data.content().bytesECI(), ByteArray("]z3\\000003A"));
+}
+
 // Shorthand to check SymbologyIdentifier result
 static void check_si(int line, const DecoderResult& res, const std::string& si, const std::string& text,
 					 int sa_index = -1, int sa_count = -1,
