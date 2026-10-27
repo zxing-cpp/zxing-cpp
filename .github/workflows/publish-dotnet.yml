@@ -12,7 +12,7 @@ on:
 
 jobs:
   build-native:
-    name: build-native ${{ matrix.os }}
+    name: build-native ${{ matrix.rid }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -20,28 +20,39 @@ jobs:
         include:
           - os: windows-latest
             lib_name: ZXing.dll
+            rid: win-x86
+            lib_path: build/core/Release/ZXing.dll
+            cmake_args: -A Win32
+          - os: windows-latest
+            lib_name: ZXing.dll
             rid: win-x64
             lib_path: build/core/Release/ZXing.dll
+            cmake_args: ""
           - os: windows-11-arm
             lib_name: ZXing.dll
             rid: win-arm64
             lib_path: build/core/Release/ZXing.dll
+            cmake_args: ""
           - os: ubuntu-latest
             lib_name: libZXing.so
             rid: linux-x64
             lib_path: build/core/libZXing.so
+            cmake_args: ""
           - os: ubuntu-24.04-arm
             lib_name: libZXing.so
             rid: linux-arm64
             lib_path: build/core/libZXing.so
+            cmake_args: ""
           - os: macos-15-intel
             lib_name: libZXing.dylib
             rid: osx-x64
             lib_path: build/core/libZXing.dylib
+            cmake_args: ""
           - os: macos-latest
             lib_name: libZXing.dylib
             rid: osx-arm64
             lib_path: build/core/libZXing.dylib
+            cmake_args: ""
 
     steps:
       - uses: actions/checkout@v6
@@ -51,6 +62,7 @@ jobs:
       - name: Configure CMake
         run: >
           cmake -S . -B build
+          ${{ matrix.cmake_args }}
           -DCMAKE_BUILD_TYPE=Release
           -DBUILD_SHARED_LIBS=ON
           -DZXING_EXAMPLES=OFF
@@ -60,6 +72,7 @@ jobs:
         run: cmake --build build --config Release --parallel
 
       - name: Test
+        if: ${{ matrix.rid != 'win-x86' }}
         run: ctest --test-dir build -V -C Release -R DotNetTest
 
       - name: Stage native library
@@ -73,7 +86,7 @@ jobs:
           name: native-${{ matrix.rid }}
           path: artifact
 
-  publish-nuget:
+  pack-nuget:
     needs: build-native
     runs-on: ubuntu-latest
 
@@ -93,6 +106,7 @@ jobs:
         shell: bash
         run: |
           test -f wrappers/dotnet/runtimes/win-x64/native/ZXing.dll
+          test -f wrappers/dotnet/runtimes/win-x86/native/ZXing.dll
           test -f wrappers/dotnet/runtimes/win-arm64/native/ZXing.dll
           test -f wrappers/dotnet/runtimes/linux-x64/native/libZXing.so
           test -f wrappers/dotnet/runtimes/linux-arm64/native/libZXing.so
@@ -125,6 +139,66 @@ jobs:
           name: dotnet-nuget-package
           path: wrappers/dotnet/artifacts/*.nupkg
 
+  test-win-x86:
+    needs: pack-nuget
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 8.0.x
+          architecture: x86
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: dotnet-nuget-package
+          path: packages
+
+      - name: Test package in a 32-bit process
+        shell: pwsh
+        run: |
+          $package = Get-ChildItem packages/ZXingCpp.*.nupkg | Select-Object -First 1
+          $version = $package.BaseName -replace '^ZXingCpp\.', ''
+          $project = Join-Path $env:RUNNER_TEMP 'ZxingX86PackageTest'
+
+          dotnet new console --framework net8.0 --output $project
+          dotnet add "$project/ZxingX86PackageTest.csproj" package ZXingCpp --version $version --no-restore
+
+          @'
+          using ZXingCpp;
+
+          if (Environment.Is64BitProcess)
+              throw new Exception("The package smoke test must run as a 32-bit process.");
+
+          var barcode = new Barcode("x86 package smoke test", BarcodeFormat.DataMatrix);
+          if (!barcode.IsValid)
+              throw new Exception("The native ZXing library did not create a valid barcode.");
+          '@ | Set-Content "$project/Program.cs"
+
+          @"
+          <?xml version="1.0" encoding="utf-8"?>
+          <configuration>
+            <packageSources>
+              <clear />
+              <add key="local" value="$env:GITHUB_WORKSPACE/packages" />
+              <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+            </packageSources>
+          </configuration>
+          "@ | Set-Content "$project/NuGet.Config"
+
+          dotnet restore "$project/ZxingX86PackageTest.csproj" --runtime win-x86 --configfile "$project/NuGet.Config"
+          dotnet run --project "$project/ZxingX86PackageTest.csproj" --runtime win-x86 --no-restore
+
+  publish-nuget:
+    needs: test-win-x86
+    if: ${{ github.event_name == 'release' || github.event.inputs.publish == 'y' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: dotnet-nuget-package
+          path: packages
+
       - name: Push NuGet package
-        if: ${{ github.event_name == 'release' || github.event.inputs.publish == 'y' }}
-        run: dotnet nuget push wrappers/dotnet/artifacts/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }} --skip-duplicate
+        run: dotnet nuget push packages/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }} --skip-duplicate

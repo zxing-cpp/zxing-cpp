@@ -16,7 +16,7 @@ local clone of the repository would look like this:
 LD_LIBRARY_PATH=<ZXing.so-path> dotnet run --project ZXingCpp.DemoReader -- ../../test/samples/multi-1/1.png
 ```
 
-The NuGet package comes with native libraries for x64 and arm64 for Windows, Linux and macOS.
+The NuGet package comes with native libraries for x86, x64, and arm64 on Windows, and x64 and arm64 on Linux and macOS.
 
 ## Benchmarking
 
