@@ -16,6 +16,7 @@ option (ZXING_TEST_INSTALL "Test if the installed/public API works" OFF)
 option (ZXING_PYTHON_MODULE "Build the python module" OFF)
 set    (ZXING_DEPENDENCIES "AUTO" CACHE STRING "Fetch from github or use locally installed (AUTO/GITHUB/LOCAL)")
 option (ZXING_CLANG_TIDY "Enable clang-tidy analysis" OFF)
+option (ZXING_DOXYGEN "Enable doxygen documentation" OFF)
 
 if (WIN32)
     option (BUILD_SHARED_LIBS "Build and link as shared library" OFF)
@@ -78,7 +79,7 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
 set(CMAKE_INSTALL_RPATH "$<$<PLATFORM_ID:Darwin>:@loader_path/../lib>$<$<PLATFORM_ID:Linux>:$ORIGIN/../lib>")
 
 add_subdirectory (core)
-if (PROJECT_IS_TOP_LEVEL)
+if (PROJECT_IS_TOP_LEVEL AND ZXING_DOXYGEN)
     add_subdirectory (docs)
 endif()
 

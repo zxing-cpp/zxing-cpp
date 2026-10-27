@@ -178,16 +178,19 @@ jobs:
         submodules: true
 
     - name: Install GCC 12
-      run: sudo apt-get update && sudo apt-get install -y gcc-12 g++-12
+      run: sudo apt-get update && sudo apt-get install -y gcc-12 g++-12 doxygen
 
     - name: Configure
       run: >
         cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
+        -DZXING_DOXYGEN=ON
         -DZXING_WRITERS=BOTH
         -DCMAKE_CXX_COMPILER=g++-12 -DCMAKE_C_COMPILER=gcc-12
 
     - name: Build
-      run: cmake --build build --parallel
+      run: |
+        cmake --build build --parallel
+        cmake --build build --parallel --target docs
 
     - name: Test
       run: ctest -V --test-dir build
