@@ -23,7 +23,7 @@ namespace ZXing {
 using namespace ZXing;
 
 namespace {
-	
+
 	void TestEncode(const std::string& data, bool compact, int layers, const BitMatrix& expected) {
 		Aztec::EncodeResult aztec = Aztec::Encoder::Encode(data, 33, Aztec::Encoder::DEFAULT_AZTEC_LAYERS);
 		EXPECT_EQ(aztec.compact, compact) << "Unexpected symbol format (compact)";
@@ -210,7 +210,7 @@ TEST(AZEncoderTest, Rune)
 {
 	{
 		Aztec::EncodeResult aztec = Aztec::Encoder::Encode("\x19", 0, Aztec::Encoder::AZTEC_RUNE_LAYERS);
-		
+
 		EXPECT_EQ(aztec.layers, 0);
 		EXPECT_EQ(aztec.matrix, ParseBitMatrix(
 			"X X X   X X     X   X \n"
@@ -228,7 +228,7 @@ TEST(AZEncoderTest, Rune)
 	}
 	{
 		Aztec::EncodeResult aztec = Aztec::Encoder::Encode("\xFF", 0, Aztec::Encoder::AZTEC_RUNE_LAYERS);
-		
+
 		EXPECT_EQ(aztec.layers, 0);
 		EXPECT_EQ(aztec.matrix, ParseBitMatrix(
 			"X X   X   X   X     X \n"
@@ -244,12 +244,4 @@ TEST(AZEncoderTest, Rune)
 			"    X X     X X X     \n"
 		));
 	}
-	{
-		Aztec::EncodeResult aztec = Aztec::Encoder::Encode("\x44", 0, Aztec::Encoder::AZTEC_RUNE_LAYERS);
-
-		std::cout << ToString(aztec.matrix, 'X', ' ', true);
-	}
-
-	
-	
 }
