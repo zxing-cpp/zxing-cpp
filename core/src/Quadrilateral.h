@@ -56,7 +56,9 @@ public:
 		return std::atan2(centerLineF.y, centerLineF.x);
 	}
 
-	[[deprecated("Use rotation() instead")]] double orientation() const { return rotation(); }
+	/// @cond DEPRECATED
+	[[deprecated("Use rotation() instead")]] double orientation() const { return rotation(); } // deprecated in v3.2
+	/// @endcond
 };
 
 using QuadrilateralF = Quadrilateral<PointF>;
