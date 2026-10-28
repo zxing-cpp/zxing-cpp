@@ -4,7 +4,7 @@
     "https://unicode.org/Public/MAPPINGS/VENDORS/MICSFT/WINDOWS/CP125*.TXT" */
 /*
     libzueci - an open source UTF-8 ECI library adapted from libzint
-    Copyright (C) 2022 gitlost
+    Copyright (C) 2022-2026 gitlost
  */
 /* SPDX-License-Identifier: BSD-3-Clause */
 
@@ -51,7 +51,7 @@ static const unsigned char zueci_cp437_u_sb[128] = { /* Single-byte in Unicode o
 };
 #endif /* ZUECI_EMBED_NO_TO_ECI */
 #ifndef ZUECI_EMBED_NO_TO_UTF8
-static const char zueci_cp437_sb_u[128] = { /* Single-byte sorted indexes into Unicode table */
+static const signed char zueci_cp437_sb_u[128] = { /* Single-byte sorted indexes into Unicode table */
       21,     51,     35,     29,     30,     27,     31,     33,
       36,     37,     34,     41,     40,     38,     18,     19,
       22,     32,     20,     45,     46,     43,     50,     48,
@@ -79,7 +79,7 @@ static int zueci_u_iso8859(const zueci_u32 u, const zueci_u16 *tab_s, const zuec
 #ifndef ZUECI_EMBED_NO_TO_UTF8
 /* Forward reference to base ISO/IEC 8859 to Unicode routine - see "zueci.c" */
 static int zueci_iso8859_u(const unsigned char c, const unsigned int flags, const zueci_u16 *tab_s,
-            const zueci_u16 *tab_u_u, const char *tab_sb_u, const int c2_max, zueci_u32 *p_u);
+            const zueci_u16 *tab_u_u, const signed char *tab_sb_u, const int c2_max, zueci_u32 *p_u);
 #endif
 
 /* Tables for ECI 4 ISO/IEC 8859-2 */
@@ -109,7 +109,7 @@ static const unsigned char zueci_iso8859_2_u_sb[57] = { /* Single-byte in Unicod
 };
 #endif
 #ifndef ZUECI_EMBED_NO_TO_UTF8
-static const char zueci_iso8859_2_sb_u[96] = { /* Single-byte sorted indexes into Unicode table */
+static const signed char zueci_iso8859_2_sb_u[96] = { /* Single-byte sorted indexes into Unicode table */
       -1,      2,     53,     20,     -1,     18,     32,     -1,
       -1,     36,     34,     40,     46,     -1,     50,     48,
       -1,      3,     55,     21,     -1,     19,     33,     52,
@@ -160,7 +160,7 @@ static const unsigned char zueci_iso8859_3_u_sb[28] = { /* Single-byte in Unicod
 };
 #endif
 #ifndef ZUECI_EMBED_NO_TO_UTF8
-static const char zueci_iso8859_3_sb_u[96] = { /* Single-byte sorted indexes into Unicode table */
+static const signed char zueci_iso8859_3_sb_u[96] = { /* Single-byte sorted indexes into Unicode table */
       -1,     12,     26,     -1,     -1,     -1,     10,     -1,
       -1,     14,     20,      6,     16,     -1,     -1,     24,
       -1,     13,     -1,     -1,     -1,     -1,     11,     -1,
@@ -217,7 +217,7 @@ static const unsigned char zueci_iso8859_4_u_sb[50] = { /* Single-byte in Unicod
 };
 #endif
 #ifndef ZUECI_EMBED_NO_TO_UTF8
-static const char zueci_iso8859_4_sb_u[96] = { /* Single-byte sorted indexes into Unicode table */
+static const signed char zueci_iso8859_4_sb_u[96] = { /* Single-byte sorted indexes into Unicode table */
       -1,      2,     24,     33,     -1,     16,     25,     -1,
       -1,     35,      8,     14,     37,     -1,     45,     -1,
       -1,      3,     49,     34,     -1,     17,     26,     47,
@@ -284,7 +284,7 @@ static const unsigned char zueci_iso8859_5_u_sb[94] = { /* Single-byte in Unicod
 };
 #endif
 #ifndef ZUECI_EMBED_NO_TO_UTF8
-static const char zueci_iso8859_5_sb_u[96] = { /* Single-byte sorted indexes into Unicode table */
+static const signed char zueci_iso8859_5_sb_u[96] = { /* Single-byte sorted indexes into Unicode table */
       -1,      1,      2,      3,      4,      5,      6,      7,
        8,      9,     10,     11,     12,     -1,     13,     14,
       15,     16,     17,     18,     19,     20,     21,     22,
@@ -339,7 +339,7 @@ static const unsigned char zueci_iso8859_6_u_sb[48] = { /* Single-byte in Unicod
 };
 #endif
 #ifndef ZUECI_EMBED_NO_TO_UTF8
-static const char zueci_iso8859_6_sb_u[83] = { /* Single-byte sorted indexes into Unicode table */
+static const signed char zueci_iso8859_6_sb_u[83] = { /* Single-byte sorted indexes into Unicode table */
       -1,     -1,     -1,     -1,     -1,     -1,     -1,     -1,
       -1,     -1,     -1,     -1,      0,     -1,     -1,     -1,
       -1,     -1,     -1,     -1,     -1,     -1,     -1,     -1,
@@ -401,7 +401,7 @@ static const unsigned char zueci_iso8859_7_u_sb[77] = { /* Single-byte in Unicod
 };
 #endif
 #ifndef ZUECI_EMBED_NO_TO_UTF8
-static const char zueci_iso8859_7_sb_u[95] = { /* Single-byte sorted indexes into Unicode table */
+static const signed char zueci_iso8859_7_sb_u[95] = { /* Single-byte sorted indexes into Unicode table */
       -1,     73,     74,     -1,     75,     76,     -1,     -1,
       -1,     -1,      0,     -1,     -1,     -1,     -1,     72,
       -1,     -1,     -1,     -1,      1,      2,      3,     -1,
@@ -452,7 +452,7 @@ static const unsigned char zueci_iso8859_8_u_sb[32] = { /* Single-byte in Unicod
 };
 #endif
 #ifndef ZUECI_EMBED_NO_TO_UTF8
-static const char zueci_iso8859_8_sb_u[95] = { /* Single-byte sorted indexes into Unicode table */
+static const signed char zueci_iso8859_8_sb_u[95] = { /* Single-byte sorted indexes into Unicode table */
       -1,     -1,     -1,     -1,     -1,     -1,     -1,     -1,
       -1,     -1,      0,     -1,     -1,     -1,     -1,     -1,
       -1,     -1,     -1,     -1,     -1,     -1,     -1,     -1,
@@ -497,7 +497,7 @@ static const unsigned char zueci_iso8859_9_u_sb[6] = { /* Single-byte in Unicode
 };
 #endif
 #ifndef ZUECI_EMBED_NO_TO_UTF8
-static const char zueci_iso8859_9_sb_u[95] = { /* Single-byte sorted indexes into Unicode table */
+static const signed char zueci_iso8859_9_sb_u[95] = { /* Single-byte sorted indexes into Unicode table */
       -1,     -1,     -1,     -1,     -1,     -1,     -1,     -1,
       -1,     -1,     -1,     -1,     -1,     -1,     -1,     -1,
       -1,     -1,     -1,     -1,     -1,     -1,     -1,     -1,
@@ -552,7 +552,7 @@ static const unsigned char zueci_iso8859_10_u_sb[46] = { /* Single-byte in Unico
 };
 #endif
 #ifndef ZUECI_EMBED_NO_TO_UTF8
-static const char zueci_iso8859_10_sb_u[96] = { /* Single-byte sorted indexes into Unicode table */
+static const signed char zueci_iso8859_10_sb_u[96] = { /* Single-byte sorted indexes into Unicode table */
       -1,      2,      8,     14,     18,     16,     22,     -1,
       25,      6,     33,     35,     43,     -1,     39,     29,
       -1,      3,      9,     15,     19,     17,     23,     -1,
@@ -617,7 +617,7 @@ static const unsigned char zueci_iso8859_11_u_sb[87] = { /* Single-byte in Unico
 };
 #endif
 #ifndef ZUECI_EMBED_NO_TO_UTF8
-static const char zueci_iso8859_11_sb_u[92] = { /* Single-byte sorted indexes into Unicode table */
+static const signed char zueci_iso8859_11_sb_u[92] = { /* Single-byte sorted indexes into Unicode table */
       -1,      0,      1,      2,      3,      4,      5,      6,
        7,      8,      9,     10,     11,     12,     13,     14,
       15,     16,     17,     18,     19,     20,     21,     22,
@@ -674,7 +674,7 @@ static const unsigned char zueci_iso8859_13_u_sb[56] = { /* Single-byte in Unico
 };
 #endif
 #ifndef ZUECI_EMBED_NO_TO_UTF8
-static const char zueci_iso8859_13_sb_u[96] = { /* Single-byte sorted indexes into Unicode table */
+static const signed char zueci_iso8859_13_sb_u[96] = { /* Single-byte sorted indexes into Unicode table */
       -1,     54,     -1,     -1,     -1,     55,     -1,     -1,
        1,     -1,     36,     -1,     -1,     -1,     -1,      0,
       -1,     -1,     -1,     -1,     53,     -1,     -1,     -1,
@@ -725,7 +725,7 @@ static const unsigned char zueci_iso8859_14_u_sb[31] = { /* Single-byte in Unico
 };
 #endif
 #ifndef ZUECI_EMBED_NO_TO_UTF8
-static const char zueci_iso8859_14_sb_u[95] = { /* Single-byte sorted indexes into Unicode table */
+static const signed char zueci_iso8859_14_sb_u[95] = { /* Single-byte sorted indexes into Unicode table */
       -1,      9,     10,     -1,      0,      1,     11,     -1,
       23,     -1,     25,     12,     29,     -1,     -1,      8,
       13,     14,      2,      3,     15,     16,     -1,     17,
@@ -770,7 +770,7 @@ static const unsigned char zueci_iso8859_15_u_sb[8] = { /* Single-byte in Unicod
 };
 #endif
 #ifndef ZUECI_EMBED_NO_TO_UTF8
-static const char zueci_iso8859_15_sb_u[31] = { /* Single-byte sorted indexes into Unicode table */
+static const signed char zueci_iso8859_15_sb_u[31] = { /* Single-byte sorted indexes into Unicode table */
       -1,     -1,     -1,     -1,      7,     -1,      2,     -1,
        3,     -1,     -1,     -1,     -1,     -1,     -1,     -1,
       -1,     -1,     -1,     -1,      5,     -1,     -1,     -1,
@@ -815,7 +815,7 @@ static const unsigned char zueci_iso8859_16_u_sb[40] = { /* Single-byte in Unico
 };
 #endif
 #ifndef ZUECI_EMBED_NO_TO_UTF8
-static const char zueci_iso8859_16_sb_u[95] = { /* Single-byte sorted indexes into Unicode table */
+static const signed char zueci_iso8859_16_sb_u[95] = { /* Single-byte sorted indexes into Unicode table */
       -1,      2,      3,     12,     39,     38,     22,     -1,
       23,     -1,     33,     -1,     27,     -1,     28,     29,
       -1,     -1,      6,     13,     31,     37,     -1,     -1,
@@ -856,7 +856,7 @@ static int zueci_u_cp125x(const zueci_u32 u, const zueci_u16 *tab_s, const zueci
 #ifndef ZUECI_EMBED_NO_TO_UTF8
 /* Forward reference to base Windows-125x to Unicode routine - see "zueci.c" */
 static int zueci_cp125x_u(const unsigned char c, const unsigned int flags, const zueci_u16 *tab_s,
-            const zueci_u16 *tab_u_u, const char *tab_sb_u, const int c_max, zueci_u32 *p_u);
+            const zueci_u16 *tab_u_u, const signed char *tab_sb_u, const int c_max, zueci_u32 *p_u);
 #endif
 
 /* Tables for ECI 21 Windows 1250 */
@@ -890,7 +890,7 @@ static const unsigned char zueci_cp1250_u_sb[74] = { /* Single-byte in Unicode o
 };
 #endif /* ZUECI_EMBED_NO_TO_ECI */
 #ifndef ZUECI_EMBED_NO_TO_UTF8
-static const char zueci_cp1250_sb_u[128] = { /* Single-byte sorted indexes into Unicode table */
+static const signed char zueci_cp1250_sb_u[128] = { /* Single-byte sorted indexes into Unicode table */
       72,     -1,     61,     -1,     64,     68,     65,     66,
       -1,     69,     36,     70,     32,     40,     50,     46,
       -1,     59,     60,     62,     63,     67,     57,     58,
@@ -964,7 +964,7 @@ static const unsigned char zueci_cp1251_u_sb[112] = { /* Single-byte in Unicode 
 };
 #endif /* ZUECI_EMBED_NO_TO_ECI */
 #ifndef ZUECI_EMBED_NO_TO_UTF8
-static const char zueci_cp1251_sb_u[128] = { /* Single-byte sorted indexes into Unicode table */
+static const signed char zueci_cp1251_sb_u[128] = { /* Single-byte sorted indexes into Unicode table */
        1,      2,     98,     80,    101,    105,    102,    103,
      109,    106,      8,    107,      9,     11,     10,     13,
       79,     96,     97,     99,    100,    104,     94,     95,
@@ -1018,7 +1018,7 @@ static const unsigned char zueci_cp1252_u_sb[27] = { /* Single-byte in Unicode o
 };
 #endif /* ZUECI_EMBED_NO_TO_ECI */
 #ifndef ZUECI_EMBED_NO_TO_UTF8
-static const char zueci_cp1252_sb_u[32] = { /* Single-byte sorted indexes into Unicode table */
+static const signed char zueci_cp1252_sb_u[32] = { /* Single-byte sorted indexes into Unicode table */
       25,     -1,     14,      7,     17,     21,     18,     19,
        8,     22,      2,     23,      0,     -1,      5,     -1,
       -1,     12,     13,     15,     16,     20,     10,     11,
@@ -1074,7 +1074,7 @@ static const unsigned char zueci_cp1256_u_sb[85] = { /* Single-byte in Unicode o
 };
 #endif /* ZUECI_EMBED_NO_TO_ECI */
 #ifndef ZUECI_EMBED_NO_TO_UTF8
-static const char zueci_cp1256_sb_u[128] = { /* Single-byte sorted indexes into Unicode table */
+static const signed char zueci_cp1256_sb_u[128] = { /* Single-byte sorted indexes into Unicode table */
       83,     53,     72,      2,     75,     79,     76,     77,
        3,     80,     52,     81,      0,     54,     57,     55,
       59,     70,     71,     73,     74,     78,     68,     69,

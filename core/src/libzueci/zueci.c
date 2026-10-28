@@ -269,7 +269,7 @@ static int zueci_u_iso8859(const zueci_u32 u, const zueci_u16 *tab_s, const zuec
 #ifndef ZUECI_EMBED_NO_TO_UTF8
 /* Base ISO/IEC 8859 routine to convert single-byte `c` */
 static int zueci_iso8859_u(const unsigned char c, const unsigned int flags, const zueci_u16 *tab_s,
-            const zueci_u16 *tab_u_u, const char *tab_sb_u, const int c2_max, zueci_u32 *p_u) {
+            const zueci_u16 *tab_u_u, const signed char *tab_sb_u, const int c2_max, zueci_u32 *p_u) {
     unsigned char c2;
     int idx;
     if (c < 0xA0) {
@@ -332,7 +332,7 @@ static int zueci_u_cp125x(const zueci_u32 u, const zueci_u16 *tab_s, const zueci
 #ifndef ZUECI_EMBED_NO_TO_UTF8
 /* Base Windows-125x routine to convert single-byte `c` */
 static int zueci_cp125x_u(const unsigned char c, const unsigned int flags, const zueci_u16 *tab_s,
-            const zueci_u16 *tab_u_u, const char *tab_sb_u, const int c_max, zueci_u32 *p_u) {
+            const zueci_u16 *tab_u_u, const signed char *tab_sb_u, const int c_max, zueci_u32 *p_u) {
     int idx;
     if (c < 0x80) {
         *p_u = c;
