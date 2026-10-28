@@ -4,11 +4,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "oned/ODCode128Reader.h"
+#include "oned/ODCode128Patterns.h"
 
 #include "ReaderOptions.h"
 #include "Barcode.h"
 
 #include "gtest/gtest.h"
+
+#include <initializer_list>
+#include <utility>
 
 using namespace ZXing;
 using namespace ZXing::OneD;
@@ -30,6 +34,15 @@ static Barcode parse(const int startPattern, PatternRow row)
 	Code128Reader reader(opts);
 	PatternView next(row);
 	return reader.decodePattern(0, next, state);
+}
+
+static Barcode parse(const int startPattern, std::initializer_list<int> codes)
+{
+	PatternRow row;
+	for (int code : codes)
+		for (auto width : Code128::CODE_PATTERNS[code])
+			row.push_back(width);
+	return parse(startPattern, std::move(row));
 }
 
 TEST(ODCode128ReaderTest, SymbologyIdentifier)
@@ -97,6 +110,25 @@ TEST(ODCode128ReaderTest, SymbologyIdentifier)
 		EXPECT_EQ(result.symbologyIdentifier(), "]C2");
 		EXPECT_EQ(result.text(), "A<GS>");
 	}
+}
+
+TEST(ODCode128ReaderTest, ChecksumFunctionCodesDoNotAffectResult)
+{
+	// Start B, "As": the checksum is FNC2 (104 + 33 + 2 * 83 = 303 mod 103 = 97).
+	auto fnc2Checksum = parse('B', { 33, 83, 97 });
+	EXPECT_EQ(fnc2Checksum.symbologyIdentifier(), "]C0");
+	EXPECT_FALSE(fnc2Checksum.readerInit());
+	EXPECT_EQ(fnc2Checksum.text(), "As");
+
+	// Start C, switch to B: the checksum is FNC1 (105 + 100 = 102 mod 103).
+	auto fnc1Checksum = parse('C', { 100, 102 });
+	EXPECT_EQ(fnc1Checksum.symbologyIdentifier(), "]C0");
+	EXPECT_TRUE(fnc1Checksum.text().empty());
+
+	// Start B, DEL: the checksum is FNC3 (104 + 95 = 96 mod 103).
+	auto fnc3Checksum = parse('B', { 95, 96 });
+	EXPECT_FALSE(fnc3Checksum.readerInit());
+	EXPECT_EQ(fnc3Checksum.text(), std::string(1, '\x7f'));
 }
 
 TEST(ODCode128ReaderTest, ReaderInit)

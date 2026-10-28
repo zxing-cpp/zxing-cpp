@@ -44,7 +44,8 @@ class Raw2TxtDecoder
 {
 	int codeSet = 0;
 	SymbologyIdentifier _symbologyIdentifier = {'C', '0'}; // ISO/IEC 15417:2007 Annex C Table C.1
-	bool _readerInit = false;
+	SymbologyIdentifier lastSymbologyIdentifier;
+	bool _readerInit = false, lastReaderInit = false;
 	bool _havePositionFNC1 = false;
 	std::string txt;
 	size_t lastTxtSize = 0;
@@ -89,6 +90,8 @@ public:
 	bool decode(int code)
 	{
 		lastTxtSize = txt.size();
+		lastSymbologyIdentifier = _symbologyIdentifier;
+		lastReaderInit = _readerInit;
 
 		if (codeSet == CODE_CODE_C) {
 			if (code < 100) {
@@ -158,8 +161,8 @@ public:
 		return txt.substr(0, lastTxtSize);
 	}
 
-	SymbologyIdentifier symbologyIdentifier() const { return _symbologyIdentifier; }
-	bool readerInit() const { return _readerInit; }
+	SymbologyIdentifier symbologyIdentifier() const { return lastSymbologyIdentifier; }
+	bool readerInit() const { return lastReaderInit; }
 };
 
 // all 3 start patterns share the same 2-1-1 prefix
