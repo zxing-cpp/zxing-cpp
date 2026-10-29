@@ -49,6 +49,7 @@ bool DistIsBelowThreshold(PointI a, PointI b, PointI threshold)
 // DX Film Edge clock track found on 35mm films.
 struct Clock
 {
+	bool reversed = false; // Reading direction of the pattern row
 	bool hasFrameNr = false; // Clock track (thus data track) with frame number (longer version)
 	int rowNumber = 0;
 	int xStart = 0; // Beginning of the clock track on the X-axis, in pixels
@@ -70,16 +71,19 @@ struct DXFEState : public RowReader::DecodingState
 	std::vector<Clock> clocks;
 
 	// see if we a clock that starts near {x, y}
-	Clock* findClock(int x, int y)
+	Clock* findClock(int x, int y, bool reversed)
 	{
-		auto i = FindIf(clocks, [start = PointI{x, y}](auto& v) { return v.rowNumber != start.y && v.isCloseToStart(start.x, start.y); });
+		// Coordinates of reversed rows must not match clocks found in the other reading direction.
+		auto i = FindIf(clocks, [start = PointI{x, y}, reversed](auto& v) {
+			return v.reversed == reversed && v.rowNumber != start.y && v.isCloseToStart(start.x, start.y);
+		});
 		return i != clocks.end() ? &(*i) : nullptr;
 	}
 
 	// add/update clock
 	void addClock(const Clock& clock)
 	{
-		if (Clock* i = findClock(clock.xStart, clock.rowNumber))
+		if (Clock* i = findClock(clock.xStart, clock.rowNumber, clock.reversed))
 			*i = clock;
 		else
 			clocks.push_back(clock);
@@ -142,6 +146,7 @@ BarcodeData DXFilmEdgeReader::decodePattern(int rowNumber, PatternView& next, st
 
 	// Check if the 4x1 pattern is part of a clock track
 	if (auto clock = CheckForClock(rowNumber, next)) {
+		clock->reversed = next.isReversed();
 		dxState->addClock(*clock);
 		next.skipSymbol();
 		return {};
@@ -159,7 +164,7 @@ BarcodeData DXFilmEdgeReader::decodePattern(int rowNumber, PatternView& next, st
 	auto xStart = next.pixelsInFront();
 
 	// Only consider data tracks that are next to a clock track
-	auto clock = dxState->findClock(xStart, rowNumber);
+	auto clock = dxState->findClock(xStart, rowNumber, next.isReversed());
 	if (!clock)
 		return {};
 

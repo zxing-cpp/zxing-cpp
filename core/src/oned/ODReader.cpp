@@ -161,7 +161,7 @@ BarcodesData DoDecode(const std::vector<std::unique_ptr<RowReader>>& readers, co
 				if (isPure && i && !decodingState[r])
 					continue;
 
-				PatternView next(bars);
+				PatternView next(bars, upsideDown);
 				do {
 					BarcodeData result = readers[r]->decodePattern(rowNumber, next, decodingState[r]);
 					if (result.isValid() || (returnErrors && result.error)) {

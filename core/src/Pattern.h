@@ -34,6 +34,7 @@ class PatternView
 	int _size = 0;
 	Iterator _base = nullptr;
 	Iterator _end = nullptr;
+	bool _isReversed = false;
 
 public:
 	using value_type = PatternRow::value_type;
@@ -42,11 +43,13 @@ public:
 
 	// A PatternRow always starts with the width of whitespace in front of the first black bar.
 	// The first element of the PatternView is the first bar.
-	PatternView(const PatternRow& bars)
-		: _data(bars.data() + 1), _size(Size(bars) - 1), _base(bars.data()), _end(bars.data() + bars.size())
+	PatternView(const PatternRow& bars, bool isReversed = false)
+		: _data(bars.data() + 1), _size(Size(bars) - 1), _base(bars.data()), _end(bars.data() + bars.size()), _isReversed(isReversed)
 	{}
 
-	PatternView(Iterator data, int size, Iterator base, Iterator end) : _data(data), _size(size), _base(base), _end(end) {}
+	PatternView(Iterator data, int size, Iterator base, Iterator end, bool isReversed = false)
+		: _data(data), _size(size), _base(base), _end(end), _isReversed(isReversed)
+	{}
 
 	template <size_t N>
 	constexpr PatternView(const Pattern<N>& row) : _data(row.data()), _size(N)
@@ -64,6 +67,7 @@ public:
 
 	constexpr int sum(int n = 0) const { return Reduce(_data, _data + (n == 0 ? _size : n)); }
 	constexpr int size() const { return _size; }
+	bool isReversed() const { return _isReversed; }
 
 	// index is the number of bars and spaces from the first bar to the current position
 	int index() const { return narrow_cast<int>(_data - _base) - 1; }
@@ -96,7 +100,7 @@ public:
 			size = _size - offset;
 		else if (size < 0)
 			size = _size - offset + size;
-		return {begin() + offset, std::max(size, 0), _base, _end};
+		return {begin() + offset, std::max(size, 0), _base, _end, _isReversed};
 	}
 
 	bool shift(int n)
