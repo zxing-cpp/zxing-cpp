@@ -378,12 +378,12 @@ static void runBlackBoxTestDirectory(const fs::path& directory)
 					if (!expectAt(mode, rotation))
 						continue;
 #if !ZXING_ENABLE_UNICODE
-					std::string txt;
+					std::wstring txt;
 					if (expected.contains("TextPlain"))
-						txt = expected.at("TextPlain");
+						txt = FromUtf8(expected.at("TextPlain"));
 					if (expected.contains("TextEscaped"))
-						txt = expected.at("TextEscaped");
-					if (std::ranges::any_of(txt, [](char c) { return static_cast<unsigned char>(c) > 127; }))
+						txt = FromUtf8(expected.at("TextEscaped"));
+					if (std::ranges::any_of(txt, [](wchar_t c) { return static_cast<unsigned int>(c) > 255; }))
 						continue;
 #endif
 
@@ -412,7 +412,7 @@ static void runBlackBoxTestDirectory(const fs::path& directory)
 					auto str = std::format("{}: \"{}\", Extra: {}", EnumName(barcode.format()),
 										   Abbrev(barcode.text(TextMode::Escaped), 30), barcode.extra());
 #if !ZXING_ENABLE_UNICODE
-					if (str.ends_with("\"\""))
+					if (barcode.text().empty())
 						continue;
 #endif
 					unexpected[test.imgPath][str](mode, rotation) = true;

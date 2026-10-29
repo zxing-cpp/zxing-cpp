@@ -9,7 +9,12 @@
 
 #include "Version.h"
 #include "ZXAlgorithms.h"
+
+#if !ZXING_ENABLE_UNICODE
+#include "Utf.h"
+#else
 #include "libzueci/zueci.h"
+#endif
 
 #include <cassert>
 #include <stdexcept>
@@ -23,6 +28,16 @@ std::string BytesToUtf8(ByteView bytes, ECI eci)
 	switch (eci) {
 	case ECI::UTF8: [[fallthrough]];
 	case ECI::ASCII: return std::string(bytes.begin(), bytes.end());
+	case ECI::ISO8859_1: [[fallthrough]];
+	case ECI::Binary: {
+		// For ISO-8859-1 (default character set of e.g. DataMatrix) and binary data, simply map each byte to its UTF-8
+		// representation
+		std::string res;
+		res.reserve(bytes.size() * 2);
+		for (uint8_t b : bytes)
+			AppendToUtf8(res, b);
+		return res;
+	}
 	case ECI::UTF16BE: [[fallthrough]];
 	case ECI::UTF16LE: [[fallthrough]];
 	case ECI::UTF32BE: [[fallthrough]];
