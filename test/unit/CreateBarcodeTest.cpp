@@ -13,6 +13,7 @@
 #include "ReadBarcode.h"
 #endif
 #include "CreateBarcode.h"
+#include "WriteBarcode.h"
 
 #include "gtest/gtest.h"
 
@@ -21,6 +22,46 @@
 using namespace ZXing;
 using namespace testing;
 using enum BarcodeFormat;
+
+#if defined(ZXING_READERS) && ZXING_ENABLE_1D
+TEST(CreateBarcodeTest, DXFilmEdgeInversion)
+{
+	for (auto text : {"77-2", "77-2/62A"})
+		for (bool inverted : {false, true})
+			for (bool tryInvert : {false, true})
+				for (int rotation : {0, 270})
+					for (auto binarizer : {Binarizer::LocalAverage, Binarizer::GlobalHistogram, Binarizer::FixedThreshold,
+										   Binarizer::BoolCast}) {
+						SCOPED_TRACE(Message() << text << " inverted=" << inverted << " tryInvert=" << tryInvert
+											   << " rotation=" << rotation << " binarizer=" << int(binarizer));
+						auto image = WriteBarcodeToImage(CreateBarcodeFromText(text, DXFilmEdge),
+													WriterOptions().scale(5).invert(inverted).rotate(rotation));
+						// Empty formats exercises the default multi-format reader as well as DX-only reading.
+						for (auto formats : {BarcodeFormats(DXFilmEdge), BarcodeFormats()}) {
+							auto result = ReadBarcode(image, ReaderOptions().formats(formats).tryInvert(tryInvert).binarizer(binarizer));
+							EXPECT_EQ(result.isValid(), !inverted || tryInvert);
+							if (result.isValid()) {
+								EXPECT_EQ(result.format(), DXFilmEdge);
+								EXPECT_EQ(result.text(), text);
+								EXPECT_EQ(result.isInverted(), inverted);
+							}
+						}
+					}
+}
+
+TEST(CreateBarcodeTest, DXFilmEdgeInversionDoesNotEnableOtherLinearReaders)
+{
+	for (bool inverted : {false, true}) {
+		auto image = WriteBarcodeToImage(CreateBarcodeFromText("123456", Code128), WriterOptions().scale(5).invert(inverted));
+		auto result = ReadBarcode(image, ReaderOptions().formats(Code128 | DXFilmEdge).tryInvert(true));
+		EXPECT_EQ(result.isValid(), !inverted);
+		if (result.isValid()) {
+			EXPECT_EQ(result.format(), Code128);
+			EXPECT_EQ(result.text(), "123456");
+		}
+	}
+}
+#endif
 
 static void check(int line, std::string_view input, CreatorOptions cOpts, std::string_view symbologyIdentifier, std::string_view text,
 				  std::string_view bytes, bool hasECI, std::string_view textECI, std::string_view bytesECI, std::string_view HRI,

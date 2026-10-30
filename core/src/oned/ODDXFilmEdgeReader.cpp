@@ -7,6 +7,7 @@
 #include "ODDXFilmEdgeReader.h"
 
 #include "BarcodeData.h"
+#include "ReaderOptions.h"
 #include "SymbologyIdentifier.h"
 
 #include <cmath>
@@ -49,6 +50,7 @@ bool DistIsBelowThreshold(PointI a, PointI b, PointI threshold)
 // DX Film Edge clock track found on 35mm films.
 struct Clock
 {
+	bool inverted = false; // To detect barcodes on inverted negatives, i.e. positives
 	bool hasFrameNr = false; // Clock track (thus data track) with frame number (longer version)
 	int rowNumber = 0;
 	int xStart = 0; // Beginning of the clock track on the X-axis, in pixels
@@ -70,16 +72,18 @@ struct DXFEState : public RowReader::DecodingState
 	std::vector<Clock> clocks;
 
 	// see if we a clock that starts near {x, y}
-	Clock* findClock(int x, int y)
+	Clock* findClock(int x, int y, bool inverted)
 	{
-		auto i = FindIf(clocks, [start = PointI{x, y}](auto& v) { return v.rowNumber != start.y && v.isCloseToStart(start.x, start.y); });
+		auto i = FindIf(clocks, [start = PointI{x, y}, inverted](auto& v) {
+			return v.inverted == inverted && v.rowNumber != start.y && v.isCloseToStart(start.x, start.y);
+		});
 		return i != clocks.end() ? &(*i) : nullptr;
 	}
 
 	// add/update clock
 	void addClock(const Clock& clock)
 	{
-		if (Clock* i = findClock(clock.xStart, clock.rowNumber))
+		if (Clock* i = findClock(clock.xStart, clock.rowNumber, clock.inverted))
 			*i = clock;
 		else
 			clocks.push_back(clock);
@@ -119,7 +123,8 @@ BarcodeData DXFilmEdgeReader::decodePattern(int rowNumber, PatternView& next, st
 	if (!_opts.tryRotate() && rowNumber < dxState->centerRow - 1)
 		return {};
 
-	// Look for a pattern that is part of both the clock as well as the data track (omitting the first bar)
+	// Look for a pattern that is part of both the clock as well as the data track:
+	// white/black/white/black, omitting the candidate's first black run.
 	constexpr auto Is4x1 = [](const PatternView& view, int spaceInPixel) {
 #if 0
 		// Find min/max of 4 consecutive bars/spaces and make sure they are close together.
@@ -140,28 +145,41 @@ BarcodeData DXFilmEdgeReader::decodePattern(int rowNumber, PatternView& next, st
 	if (!next.isValid())
 		return {};
 
-	// Check if the 4x1 pattern is part of a clock track
-	if (auto clock = CheckForClock(rowNumber, next)) {
-		dxState->addClock(*clock);
-		next.skipSymbol();
-		return {};
+	// Check if the 4x1 pattern is part of a clock track.
+	for (bool inverted : {false, true}) {
+		if (inverted && (!_opts.tryInvert() || next.index() == 0))
+			break;
+		// On an inverted clock, the search lands on the first black one-module run.
+		// Move back one run to include the five-module white start.
+		auto candidate = next.subView(inverted ? -1 : 0);
+		if (auto clock = CheckForClock(rowNumber, candidate)) {
+			clock->inverted = inverted;
+			dxState->addClock(*clock);
+			next = candidate;
+			next.skipSymbol();
+			return {};
+		}
 	}
 
-	// Without at least one clock track, we stop here
-	if (dxState->clocks.empty())
-		return {};
-
+	// If the 4x1 pattern isn't part of a clock,
+	// check if it can be the beginning of the data track
 	constexpr float minDataQuietZone = 0.5;
-
-	if (!IsPattern(next, DATA_START_PATTERN, minDataQuietZone))
+	Clock* clock = nullptr;
+	for (bool inverted : {false, true}) {
+		if (inverted && !_opts.tryInvert())
+			break;
+		auto candidate = next.subView(inverted ? 1 : 0);
+		clock = dxState->findClock(candidate.pixelsInFront(), rowNumber, inverted);
+		if (clock && IsPattern(candidate, DATA_START_PATTERN, minDataQuietZone)) {
+			next = candidate;
+			break;
+		}
+		clock = nullptr;
+	}
+	if (!clock)
 		return {};
 
 	auto xStart = next.pixelsInFront();
-
-	// Only consider data tracks that are next to a clock track
-	auto clock = dxState->findClock(xStart, rowNumber);
-	if (!clock)
-		return {};
 
 	// Make sure the start pattern has the proper size (approx. 5 modules)
 	if (std::fabs(next.sum() / clock->moduleSize() - 5) > 1.0 )
@@ -179,7 +197,7 @@ BarcodeData DXFilmEdgeReader::decodePattern(int rowNumber, PatternView& next, st
 		// Max no. of modules is 20 spaces (with "96-0/0")
 		if (int modules = std::lround(next[0] / clock->moduleSize()); modules >= 1 && modules <= 20)
 			// even index means we are at a bar, otherwise at a space
-			dataBits.appendBits(next.index() % 2 == 0 ? 0xFFFFFFFF : 0x0, modules);
+			dataBits.appendBits((next.index() % 2 == 0) != clock->inverted ? 0xFFFFFFFF : 0x0, modules);
 		else
 			return {};
 
@@ -240,7 +258,9 @@ BarcodeData DXFilmEdgeReader::decodePattern(int rowNumber, PatternView& next, st
 	// ISO/IEC 15424:2008(E) specifies 'X' as 'other barcode' that can be used by the decoder manufacturer as he sees fit.
 	SymbologyIdentifier si {'X', 'F'};
 
-	return LinearBarcode(BarcodeFormat::DXFilmEdge, txt, rowNumber, xStart, xStop, si);
+	auto result = LinearBarcode(BarcodeFormat::DXFilmEdge, txt, rowNumber, xStart, xStop, si);
+	result.isInverted = clock->inverted;
+	return result;
 }
 
 } // namespace ZXing::OneD

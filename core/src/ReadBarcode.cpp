@@ -306,7 +306,7 @@ Barcodes ReadBarcodes(const ImageView& _iv, const ReaderOptions& opts)
 						r.d->position = Scale(r.position(), _iv.width() / iv.width());
 					if (!Contains(res, r)) {
 						r.setReaderOptions(opts);
-						r.d->isInverted = bitmap->inverted();
+						r.d->isInverted |= bitmap->inverted();
 						res.push_back(std::move(r));
 						--maxSymbols;
 					}
