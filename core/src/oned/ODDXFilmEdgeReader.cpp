@@ -161,6 +161,10 @@ BarcodeData DXFilmEdgeReader::decodePattern(int rowNumber, PatternView& next, st
 		}
 	}
 
+	// Without at least one clock track, we stop here
+	if (dxState->clocks.empty())
+		return {};
+
 	// If the 4x1 pattern isn't part of a clock,
 	// check if it can be the beginning of the data track
 	constexpr float minDataQuietZone = 0.5;
@@ -211,7 +215,9 @@ BarcodeData DXFilmEdgeReader::decodePattern(int rowNumber, PatternView& next, st
 	next = next.subView(0, DATA_STOP_PATTERN.size());
 
 	// Check there is the Stop pattern at the end of the data track
-	if (!IsRightGuard(next, DATA_STOP_PATTERN, minDataQuietZone))
+	// On an inverted image, the stop pattern ends in white,
+	// so we ensure there is a (black) space after the stop pattern to avoid out-of-bounds reads
+	if (!next.isValid(next.size() + 1) || !IsRightGuard(next, DATA_STOP_PATTERN, minDataQuietZone))
 		return {};
 
 	// The following bits are always white (=false), they are separators.

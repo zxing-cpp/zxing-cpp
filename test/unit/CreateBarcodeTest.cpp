@@ -49,6 +49,33 @@ TEST(CreateBarcodeTest, DXFilmEdgeInversion)
 					}
 }
 
+TEST(CreateBarcodeTest, DXFilmEdgeInvertedRequiresTrailingQuietZone)
+{
+	for (auto text : {"77-2", "77-2/62A"}) {
+		auto image = WriteBarcodeToImage(CreateBarcodeFromText(text, DXFilmEdge), WriterOptions().scale(5).invert(true));
+		// Find the end of the inverted stop (white/black/white) on the data track.
+		int stopEnd = image.width();
+		while (stopEnd > 0 && *image.data(stopEnd - 1, image.height() / 2) == 0)
+			--stopEnd;
+		ASSERT_GT(stopEnd, 0);
+		ASSERT_GE(image.width() - stopEnd, 3);
+		for (int margin : {0, 1, 3})
+			for (auto binarizer : {Binarizer::LocalAverage, Binarizer::GlobalHistogram, Binarizer::FixedThreshold,
+								  Binarizer::BoolCast}) {
+				SCOPED_TRACE(Message() << text << " margin=" << margin << " binarizer=" << int(binarizer));
+				auto cropped = image.cropped(0, 0, stopEnd + margin, image.height());
+				auto result = ReadBarcode(cropped, ReaderOptions().formats(DXFilmEdge).tryInvert(true).tryRotate(false)
+												.tryDownscale(false).binarizer(binarizer));
+				// A five-pixel module needs at least 0.5 * 5 - 1 pixels of quiet zone.
+				EXPECT_EQ(result.isValid(), margin == 3);
+				if (result.isValid()) {
+					EXPECT_EQ(result.text(), text);
+					EXPECT_TRUE(result.isInverted());
+				}
+			}
+	}
+}
+
 TEST(CreateBarcodeTest, DXFilmEdgeInversionDoesNotEnableOtherLinearReaders)
 {
 	for (bool inverted : {false, true}) {
