@@ -144,6 +144,20 @@ class TestReadWrite(unittest.TestCase):
 		self.check_res(zxingcpp.read_barcode(npa), format, text)
 		self.check_res(zxingcpp.read_barcode(npa[4:40,4:40]), format, text)
 
+	@unittest.skipIf(not has_numpy, "need numpy for read/write tests")
+	def test_read_denoise(self):
+		import numpy as np # pyright: ignore
+		format = BF.QRCode
+		text = "I have the best words."
+		img = zxingcpp.create_barcode(text, format).to_image(scale=5)
+		img = np.array(img)
+		# break up the dark modules into a checkerboard of dots, like a thermal printer does
+		y, x = np.indices(img.shape)
+		img[(img < 128) & ((x + y) % 2 == 1)] = 255
+
+		self.assertIsNone(zxingcpp.read_barcode(img, format))
+		self.check_res(zxingcpp.read_barcode(img, format, try_denoise=True), format, text)
+
 	@unittest.skipIf(not has_pil, "need PIL for read/write tests")
 	def test_write_read_cycle_pil(self):
 		from PIL import Image # pyright: ignore

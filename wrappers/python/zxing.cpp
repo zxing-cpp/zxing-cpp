@@ -93,9 +93,9 @@ static PyType_Slot ImageView_slots[] = {
 
 auto read_barcodes_impl(nb::object _image, const BarcodeFormats& formats, bool try_rotate, bool try_downscale, bool try_invert,
 						TextMode text_mode, Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol, bool return_errors,
-						uint8_t max_number_of_symbols = 0xff)
+						bool try_denoise, uint8_t max_number_of_symbols = 0xff)
 {
-	const auto opts = ReaderOptions()
+	auto opts = ReaderOptions()
 		.formats(formats)
 		.tryRotate(try_rotate)
 		.tryDownscale(try_downscale)
@@ -106,6 +106,12 @@ auto read_barcodes_impl(nb::object _image, const BarcodeFormats& formats, bool t
 		.maxNumberOfSymbols(max_number_of_symbols)
 		.eanAddOnSymbol(ean_add_on_symbol)
 		.returnErrors(return_errors);
+#ifdef ZXING_EXPERIMENTAL_API
+	opts.setTryDenoise(try_denoise);
+#else
+	if (try_denoise)
+		throw std::invalid_argument("try_denoise requires a build with ZXING_EXPERIMENTAL_API");
+#endif
 
 	if (nb::isinstance<ImageView>(_image)) {
 		// Disables the GIL during zxing processing (restored automatically upon completion)
@@ -236,18 +242,19 @@ auto read_barcodes_impl(nb::object _image, const BarcodeFormats& formats, bool t
 
 std::optional<Barcode> read_barcode(nb::object _image, const BarcodeFormats& formats, bool try_rotate, bool try_downscale,
 									bool try_invert, TextMode text_mode, Binarizer binarizer, bool is_pure,
-									EanAddOnSymbol ean_add_on_symbol, bool return_errors)
+									EanAddOnSymbol ean_add_on_symbol, bool return_errors, bool try_denoise)
 {
 	auto res = read_barcodes_impl(_image, formats, try_rotate, try_downscale, try_invert, text_mode, binarizer, is_pure,
-								  ean_add_on_symbol, return_errors, 1);
+								  ean_add_on_symbol, return_errors, try_denoise, 1);
 	return res.empty() ? std::nullopt : std::optional(res.front());
 }
 
 Barcodes read_barcodes(nb::object _image, const BarcodeFormats& formats, bool try_rotate, bool try_downscale, bool try_invert,
-					   TextMode text_mode, Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol, bool return_errors)
+					   TextMode text_mode, Binarizer binarizer, bool is_pure, EanAddOnSymbol ean_add_on_symbol, bool return_errors,
+					   bool try_denoise)
 {
 	return read_barcodes_impl(_image, formats, try_rotate, try_downscale, try_invert, text_mode, binarizer, is_pure, ean_add_on_symbol,
-							  return_errors);
+							  return_errors, try_denoise);
 }
 
 // MARK: - Writer
@@ -528,6 +535,7 @@ NB_MODULE(zxingcpp, m)
 		nb::arg("is_pure") = false,
 		nb::arg("ean_add_on_symbol") = EanAddOnSymbol::Ignore,
 		nb::arg("return_errors") = false,
+		nb::arg("try_denoise") = false,
 		"Read (decode) a barcode from a numpy BGR or grayscale image array or from a PIL image.\n\n"
 		":type image: buffer|numpy.ndarray|PIL.Image.Image\n"
 		":param image: The image object to decode. The image can be either:\n"
@@ -560,7 +568,10 @@ NB_MODULE(zxingcpp, m)
 		"  EAN/UPC codes. Default is ``Ignore``.\n"
 		":type return_errors: bool\n"
 		":param return_errors: Set to True to return the barcodes with errors as well (e.g. checksum errors); see ``Barcode.error``.\n"
-		" Default is False."
+		" Default is False.\n"
+		":type try_denoise: bool\n"
+		":param try_denoise: Set to True to also try a denoised (morphologically closed) version of the binarized image,\n"
+		"  which helps with low quality prints like thermal receipts (experimental, 2D formats only). Default is False.\n"
 		":rtype: zxingcpp.Barcode\n"
 		":return: a Barcode if found, None otherwise"
 	);
@@ -575,6 +586,7 @@ NB_MODULE(zxingcpp, m)
 		nb::arg("is_pure") = false,
 		nb::arg("ean_add_on_symbol") = EanAddOnSymbol::Ignore,
 		nb::arg("return_errors") = false,
+		nb::arg("try_denoise") = false,
 		"Read (decode) multiple barcodes from a numpy BGR or grayscale image array or from a PIL image.\n\n"
 		":type image: buffer|numpy.ndarray|PIL.Image.Image\n"
 		":param image: The image object to decode. The image can be either:\n"
@@ -608,6 +620,9 @@ NB_MODULE(zxingcpp, m)
 		":type return_errors: bool\n"
 		":param return_errors: Set to True to return the barcodes with errors as well (e.g. checksum errors); see ``Barcode.error``.\n"
 		" Default is False.\n"
+		":type try_denoise: bool\n"
+		":param try_denoise: Set to True to also try a denoised (morphologically closed) version of the binarized image,\n"
+		"  which helps with low quality prints like thermal receipts (experimental, 2D formats only). Default is False.\n"
 		":rtype: list[zxingcpp.Barcode]\n"
 		":return: a list of Barcodes, the list is empty if none is found"
 	);
