@@ -451,7 +451,7 @@ DetectorResults Detect(const BitMatrix& image, bool isPure, bool tryHarder, int 
 		ZXing::DetectorResult bits;
 #if 1
 		// for symbols with timing patterns, find those starting from the center and successively move outward
-		if (dim >= 35) {
+		if (!isPure && dim >= 35) {
 			int R = (dim / 2) / 16;
 			int firstTimingPattern = dim / 2 - R * 16;
 

@@ -220,6 +220,7 @@ TEST(AZDetectorTest, ReaderInitFull2Layers)
 		EXPECT_FALSE(r.readerInit());
 		EXPECT_FALSE(r.isCompact());
 		EXPECT_EQ(r.nbLayers(), 2);
+		EXPECT_EQ(r.uec(), 1.0);
 	}
 	{
 		// Set
@@ -252,6 +253,7 @@ TEST(AZDetectorTest, ReaderInitFull2Layers)
 		EXPECT_TRUE(r.readerInit());
 		EXPECT_FALSE(r.isCompact());
 		EXPECT_EQ(r.nbLayers(), 2);
+		EXPECT_EQ(r.uec(), 1.0);
 	}
 }
 
@@ -373,6 +375,7 @@ TEST(AZDetectorTest, ReaderInitFull22Layers)
 	EXPECT_TRUE(r.readerInit());
 	EXPECT_FALSE(r.isCompact());
 	EXPECT_EQ(r.nbLayers(), 22);
+	EXPECT_EQ(r.uec(), 1.0);
 }
 
 TEST(AZDetectorTest, ReaderInitCompact)
@@ -486,6 +489,7 @@ TEST(AZDetectorTest, Rune)
 		EXPECT_TRUE(r.isValid());
 		EXPECT_EQ(r.nbDatablocks(), 0);
 		EXPECT_EQ(r.runeValue(), 0);
+		EXPECT_EQ(r.uec(), 1.0);
 	}
 	{
 		auto r = Aztec::Detect(ParseBitMatrix(
@@ -505,6 +509,7 @@ TEST(AZDetectorTest, Rune)
 		EXPECT_TRUE(r.isValid());
 		EXPECT_EQ(r.nbDatablocks(), 0);
 		EXPECT_EQ(r.runeValue(), 25);
+		EXPECT_EQ(r.uec(), 1.0);
 	}
 	{
 		auto r = Aztec::Detect(ParseBitMatrix(
